@@ -15,12 +15,6 @@
 	return setDir(turn(dir, -90))
 // BLUEMOON ADD END
 
-/turf/open/floor/plasteel/rust_heretic_act()
-	if(prob(70))
-		new /obj/effect/temp_visual/glowing_rune(src)
-	var/turf/after = ChangeTurf(/turf/open/floor/plating/rust)
-	after?.AddElement(/datum/element/heretic_rust)
-
 /turf/open/floor/plasteel/update_icon_state()			//sandstorm change - tile floofing
 	if(broken || burnt)									//included - tile floofing
 		return											//included - tile floofing

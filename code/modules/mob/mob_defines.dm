@@ -149,6 +149,8 @@
 	var/turf/listed_turf = null	//the current turf being examined in the stat panel
 
 	var/list/observers = null	//The list of people observing this mob.
+	/// Группа z, значки которой лежат в client.images (get_hud_z_group). null - ещё не считали
+	var/hud_view_group
 
 	var/list/progressbars = null	//for stacking do_after bars
 

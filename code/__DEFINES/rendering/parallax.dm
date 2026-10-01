@@ -56,6 +56,9 @@
 /// юнит-тест parallax_profile_catalog.
 #define PARALLAX_MAX_MOVING_LAYERS 5
 
+/// Доля оси в направлении дрейфа, ниже которой слой по этой оси не двигается.
+#define PARALLAX_DRIFT_AXIS_MIN 0.01
+
 /// Токен модификатора, под которым админский инструмент подменяет профиль.
 #define PARALLAX_TOKEN_ADMIN "admin"
 

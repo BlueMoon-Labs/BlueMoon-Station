@@ -98,6 +98,8 @@ GLOBAL_LIST_EMPTY(loadout_whitelist_ids)
 	// BLUEMOON EDIT START - превью для вещей в лодауте
 	// Автоматически гененерируемая base64 иконка для превью в лодауте
 	var/base64icon
+	/// Готовый HTML превью: строка на килобайты, в строке меню её нельзя интерполировать заново
+	var/preview_html
 	// Возможный оверрайд иконки
 	var/item_icon = null
 	// Возможный оверрайд стейта иконки
@@ -137,6 +139,14 @@ GLOBAL_LIST_EMPTY(loadout_whitelist_ids)
 		stack_trace("Loadout icon generation failed for [name] ([type]): [e]")
 		base64icon = null // Item will work without preview icon
 	return base64icon
+
+/// Превью для строки меню лодаута, "" если иконки нет
+/datum/gear/proc/get_preview_html()
+	if(!isnull(preview_html))
+		return preview_html
+	var/icon_data = get_base64icon()
+	preview_html = icon_data ? "<center><img src='data:image/png;base64,[icon_data]'></center>" : ""
+	return preview_html
 
 
 //a comprehensive donator check proc is intentionally not implemented due to the fact that we (((might))) have job-whitelists for donator items in the future and I like to stay on the safe side.

@@ -6,6 +6,9 @@
 	w_class = WEIGHT_CLASS_TINY
 	var/translate_binary = FALSE
 	var/syndie = FALSE
+	//The single antagonist frequency this key decrypts (syndicate/inteq/pirate). 0 for a regular key.
+	//Antagonist keys are separate nets, so a syndicate radio can't listen to InteQ or pirate chatter.
+	var/syndie_freq = 0
 	var/independent = FALSE
 	var/list/channels = list()
 
@@ -135,6 +138,7 @@
 	icon_state = "syn_cypherkey"
 	channels = list(RADIO_CHANNEL_SYNDICATE = 1)
 	syndie = TRUE //Signifies that it de-crypts Syndicate transmissions
+	syndie_freq = FREQ_SYNDICATE
 
 /obj/item/encryptionkey/inteq
 	name = "InteQ Encryption Key"
@@ -142,12 +146,14 @@
 	icon = 'modular_bluemoon/icons/obj/radio.dmi'
 	channels = list(RADIO_CHANNEL_INTEQ = 1)
 	syndie = TRUE //Signifies that it de-crypts Syndicate transmissions
+	syndie_freq = FREQ_INTEQ
 
 /obj/item/encryptionkey/pirate
 	name = "Pirate Encryption Key"
 	icon_state = "syn_cypherkey"
 	channels = list(RADIO_CHANNEL_PIRATE = 1)
 	syndie = TRUE //Signifies that it de-crypts Syndicate transmissions
+	syndie_freq = FREQ_PIRATE
 
 /obj/item/encryptionkey/binary
 	name = "Binary Translator Key"

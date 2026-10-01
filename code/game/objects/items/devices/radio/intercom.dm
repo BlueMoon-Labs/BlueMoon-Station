@@ -42,6 +42,7 @@
 	icon_state = "intercom_syndicate"
 	icon_off = "intercom_syndicate-p"
 	syndie = TRUE
+	syndie_freq = FREQ_SYNDICATE
 	command = TRUE
 
 /obj/item/radio/intercom/inteq
@@ -141,6 +142,9 @@
 	ui_interact(user, state = GLOB.default_state)
 
 /obj/item/radio/intercom/can_receive(freq, level)
+	var/area/radio_area = get_area(src)
+	if(radio_area?.area_flags & RADIO_BLACKOUT)
+		return FALSE
 	if(!on)
 		return FALSE
 	if(wires.is_cut(WIRE_RX))
@@ -152,7 +156,7 @@
 	if(!src.listening)
 		return FALSE
 	if(freq == FREQ_SYNDICATE || freq == FREQ_INTEQ || freq == FREQ_PIRATE)
-		if(!(src.syndie))
+		if(src.syndie_freq != freq)
 			return FALSE//Prevents broadcast of messages over devices lacking the encryption
 
 	return TRUE

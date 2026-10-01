@@ -491,6 +491,9 @@
 
 /mob/onTransitZ(old_z, new_z)
 	. = ..()
-	if(old_z == new_z)
-		return
-	client?.parallax_holder?.Reset()
+	if(old_z != new_z)
+		client?.parallax_holder?.Reset()
+	if(client)
+		refresh_hud_view_group(new_z)
+	for(var/mob/watcher as anything in observers)
+		watcher.refresh_hud_view_group()

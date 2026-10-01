@@ -87,7 +87,7 @@ SUBSYSTEM_DEF(server_maint)
 				QDEL_IN(C, 1) //to ensure they get our message before getting disconnected
 				continue
 
-		if (ping_send_this_fire && !(world.time - C.connection_time < PING_BUFFER_TIME || C.inactivity >= 3000))
+		if (ping_send_this_fire && !(world.time - C.connection_time < PING_BUFFER_TIME || world.time - C.last_activity >= 5 MINUTES))
 			winset(C, null, "command=.update_ping+[ping_wire_num(world.time+world.tick_lag*TICK_USAGE_REAL/100)]+[ping_wire_num(REALTIMEOFDAY)]")
 
 		MC_TICK_CHECK
@@ -95,14 +95,8 @@ SUBSYSTEM_DEF(server_maint)
 /datum/controller/subsystem/server_maint/Shutdown()
 	log_connection_churn_summary() //до кика лоббистов, иначе он же и раздует статистику
 	kick_clients_in_lobby("<span class='boldannounce'>The round came to an end with you in the lobby.</span>", TRUE) //second parameter ensures only afk clients are kicked
-	var/server = CONFIG_GET(string/server)
-	for(var/thing in GLOB.clients)
-		if(!thing)
-			continue
-		var/client/C = thing
+	for(var/client/C as anything in GLOB.clients)
 		C?.tgui_panel?.send_roundrestart()
-		if(server)	//if you set a server location in config.txt, it sends you there instead of trying to reconnect to the same world address. -- NeoFite
-			C << link("byond://[server]")
 	var/datum/tgs_version/tgsversion = world.TgsVersion()
 	if(tgsversion)
 		SSblackbox.record_feedback("text", "server_tools", 1, tgsversion.raw_parameter)

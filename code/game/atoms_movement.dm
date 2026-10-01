@@ -27,6 +27,8 @@
 	var/atom/oldloc = loc
 	var/area/oldarea = get_area(oldloc)
 	var/area/newarea = get_area(newloc)
+	if((training_origin || (!oldarea && length(GLOB.antag_training_arenas)) || (oldarea != newarea && (istype(oldarea, /area/antag_training) || istype(newarea, /area/antag_training)))) && !training_move_allowed(newloc))
+		return
 	loc = newloc
 	. = TRUE
 	oldloc.Exited(src, newloc)
@@ -55,6 +57,8 @@
  * most of the time you want forceMove()
  */
 /atom/movable/proc/abstract_move(atom/new_loc)
+	if((training_origin || length(GLOB.antag_training_arenas)) && !training_move_allowed(new_loc))
+		return FALSE
 	var/atom/old_loc = loc
 	var/turf/old_turf = get_turf(old_loc)
 	var/turf/new_turf = get_turf(new_loc)
@@ -265,12 +269,16 @@
 	SEND_SIGNAL(src, COMSIG_MOVABLE_Z_CHANGED, old_z, new_z)
 	if(SSmapping.max_plane_offset)
 		update_plane_offset(old_z, new_z)
+	if(hud_memberships)
+		update_hud_z_group(new_z)
 	for (var/atom/movable/AM as anything in src) // Notify contents of Z-transition. This can be overridden IF we know the items contents do not care.
 		AM.onTransitZ(old_z,new_z)
 
 ///Separate from COMSIG_MOVABLE_Z_CHANGED: its older listeners do not all accept a null destination.
 /atom/movable/proc/onEnteredNullspace(old_z)
 	SEND_SIGNAL(src, COMSIG_MOVABLE_ENTERED_NULLSPACE, old_z, null)
+	if(hud_memberships)
+		update_hud_z_group(null)
 	for(var/atom/movable/movable_content as anything in src)
 		movable_content.onEnteredNullspace(old_z)
 
@@ -298,6 +306,8 @@
 
 /atom/movable/proc/doMove(atom/destination)
 	. = FALSE
+	if((training_origin || length(GLOB.antag_training_arenas)) && !training_move_allowed(destination))
+		return
 	if(destination)
 		// Возврат qdel-нутого мувера в мир = вечный пин ссылкой из contents турфа
 		// (класс "post-qdel forceMove" по уликам warnfail раунда 9746: обсерверы,

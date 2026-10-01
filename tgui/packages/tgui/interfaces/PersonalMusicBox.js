@@ -21,16 +21,18 @@ export const PersonalMusicBox = (props) => {
     upload_ready,
     play_ready,
     upload_block_reason,
-    play_cooldown,
+    play_block_reason,
     in_hand,
+    library = [],
+    uploads_max,
   } = data;
 
   return (
-    <Window title="Personal Music Box" width={420} height={340}>
+    <Window title="Personal Music Box" width={420} height={480}>
       <Window.Content scrollable>
         {!in_hand && (
           <NoticeBox mb={1}>
-            Возьмите шкатулку в руку, чтобы загрузить трек.
+            Возьмите шкатулку в руку, чтобы загрузить или выбрать трек.
           </NoticeBox>
         )}
         <Section
@@ -78,6 +80,28 @@ export const PersonalMusicBox = (props) => {
               />
             </LabeledList.Item>
           </LabeledList>
+          {!!has_track && !playing && !play_ready && play_block_reason && (
+            <NoticeBox mt={1}>{play_block_reason}</NoticeBox>
+          )}
+        </Section>
+        <Section title={`Библиотека (${library.length} из ${uploads_max})`}>
+          {library.length === 0 && (
+            <Box color="label">
+              Загруженные за раунд треки появятся здесь.
+            </Box>
+          )}
+          {library.map((track) => (
+            <Button
+              key={track.index}
+              fluid
+              ellipsis
+              icon="music"
+              content={`${track.name} (${track.duration})`}
+              selected={track.current}
+              disabled={!in_hand || playing}
+              onClick={() => act('select_track', { index: track.index })}
+            />
+          ))}
         </Section>
         <Section title="Загрузка">
           <Box mb={1}>
@@ -92,11 +116,6 @@ export const PersonalMusicBox = (props) => {
           />
           {in_hand && !upload_ready && upload_block_reason && (
             <NoticeBox mt={1}>{upload_block_reason}</NoticeBox>
-          )}
-          {!play_ready && play_cooldown && (
-            <NoticeBox mt={1}>
-              Повторный запуск через: {play_cooldown}
-            </NoticeBox>
           )}
         </Section>
       </Window.Content>

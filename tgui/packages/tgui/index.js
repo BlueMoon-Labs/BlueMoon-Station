@@ -11,6 +11,7 @@ import './styles/themes/disclaimer.scss';
 import './styles/themes/hotpink.scss';
 import './styles/themes/cardtable.scss';
 import './styles/themes/hackerman.scss';
+import './styles/themes/heretic.scss';
 import './styles/themes/malfunction.scss';
 import './styles/themes/neutral.scss';
 import './styles/themes/ntos.scss';

@@ -648,6 +648,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["sound_volume_instruments"] >> sound_volume_instruments
 	S["sound_volume_jukeboxes"] >> sound_volume_jukeboxes
 	S["sound_volume_personal_jukeboxes"] >> sound_volume_personal_jukeboxes
+	S["sound_volume_heretic_dance"] >> sound_volume_heretic_dance
+	S["sound_volume_heretic_sky"] >> sound_volume_heretic_sky
 	S["sound_volume_emote"] >> sound_volume_emote
 	S["sound_volume_mentorhelp"] >> sound_volume_mentorhelp
 	S["sound_volume_fax"] >> sound_volume_fax
@@ -805,6 +807,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	sound_volume_instruments = sanitize_integer(sound_volume_instruments, 0, 100, initial(sound_volume_instruments))
 	sound_volume_jukeboxes = sanitize_integer(sound_volume_jukeboxes, 0, 100, initial(sound_volume_jukeboxes))
 	sound_volume_personal_jukeboxes = sanitize_integer(sound_volume_personal_jukeboxes, 0, 100, initial(sound_volume_personal_jukeboxes))
+	sound_volume_heretic_dance = sanitize_integer(sound_volume_heretic_dance, 0, 100, initial(sound_volume_heretic_dance))
+	sound_volume_heretic_sky = sanitize_integer(sound_volume_heretic_sky, 0, 100, initial(sound_volume_heretic_sky))
 	sound_volume_emote = sanitize_integer(sound_volume_emote, 0, 100, initial(sound_volume_emote))
 	sound_volume_mentorhelp = sanitize_integer(sound_volume_mentorhelp, 0, 100, initial(sound_volume_mentorhelp))
 	sound_volume_fax = sanitize_integer(sound_volume_fax, 0, 100, initial(sound_volume_fax))
@@ -1293,6 +1297,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["sound_volume_instruments"], sound_volume_instruments)
 	WRITE_FILE(S["sound_volume_jukeboxes"], sound_volume_jukeboxes)
 	WRITE_FILE(S["sound_volume_personal_jukeboxes"], sound_volume_personal_jukeboxes)
+	WRITE_FILE(S["sound_volume_heretic_dance"], sound_volume_heretic_dance)
+	WRITE_FILE(S["sound_volume_heretic_sky"], sound_volume_heretic_sky)
 	WRITE_FILE(S["sound_volume_emote"], sound_volume_emote)
 	WRITE_FILE(S["sound_volume_mentorhelp"], sound_volume_mentorhelp)
 	WRITE_FILE(S["sound_volume_fax"], sound_volume_fax)
@@ -2245,6 +2251,44 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	return S
 
+/// Имена персонажей по слотам (null - слот пуст). Сейвфайл читается только после сброса кэша.
+/datum/preferences/proc/get_slot_names()
+	if(length(slot_names_cache) == max_save_slots)
+		return slot_names_cache
+	if(!path)
+		return null
+	var/savefile/S = new /savefile(path)
+	if(!S)
+		return null
+	var/list/names = new /list(max_save_slots)
+	for(var/slot in 1 to max_save_slots)
+		var/name
+		S.cd = "/character[slot]"
+		S["real_name"] >> name
+		names[slot] = name
+	slot_names_cache = names
+	return names
+
+/// Имя персонажа в локальном экспорте клиента, читается один раз до следующего экспорта или удаления
+/datum/preferences/proc/get_local_storage_name(client/viewer)
+	if(!viewer)
+		return null
+	if(viewer.local_storage_name_read)
+		return viewer.local_storage_name
+	viewer.local_storage_name_read = TRUE
+	viewer.local_storage_name = null
+	var/file = viewer.Import()
+	if(!file)
+		return null
+	var/savefile/client_file = new(file)
+	if(!istype(client_file, /savefile))
+		return null
+	if(!client_file["deleted"] || savefile_needs_update(client_file) != -2)
+		var/savefile_name
+		client_file["real_name"] >> savefile_name
+		viewer.local_storage_name = savefile_name
+	return viewer.local_storage_name
+
 /// Удаляет слот персонажа из сейвфайла. Очищает директорию /character[slot].
 /// Если удаляется текущий слот - переключается на ближайший непустой, или на слот 1.
 /datum/preferences/proc/delete_character(slot)
@@ -2265,6 +2309,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	// Удаляем директорию персонажа из сейвфайла
 	S.cd = "/"
 	S.dir.Remove("character[slot]")
+	slot_names_cache = null
 
 	// Если удалили текущий слот - нужно переключиться на другой
 	if(slot == default_slot)
@@ -2307,6 +2352,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		return FALSE
 	if(!export)
 		S.cd = "/character[default_slot]"
+		slot_names_cache = null
 
 	WRITE_FILE(S["version"]			, SAVEFILE_VERSION_MAX)	//load_character will sanitize any bad data, so assume up-to-date.)
 

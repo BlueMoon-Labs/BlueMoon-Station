@@ -37,6 +37,8 @@
 	var/translate_binary = FALSE  // If true, can hear the special binary channel.
 	var/independent = FALSE  // If true, can say/hear on the special CentCom channel.
 	var/syndie = FALSE  // If true, hears all well-known channels automatically, and can say/hear on the Syndicate channel.
+	//The one antagonist frequency this radio is allowed to decrypt (syndicate/inteq/pirate). 0 if it isn't a syndie one.
+	var/syndie_freq = 0
 	var/list/channels = list()  // Map from name (see communications.dm) to on/off. First entry is current department (:h).
 	var/list/secure_radio_connections
 
@@ -65,7 +67,9 @@
 	channels = list()
 	translate_binary = FALSE
 	syndie = FALSE
+	syndie_freq = 0
 	independent = FALSE
+	clearChannelConnections() //old channels have to be unhooked, or a rekeyed radio keeps listening to them
 
 	if(keyslot)
 		for(var/ch_name in keyslot.channels)
@@ -76,6 +80,7 @@
 			translate_binary = TRUE
 		if(keyslot.syndie)
 			syndie = TRUE
+			syndie_freq = keyslot.syndie_freq
 		if(keyslot.independent)
 			independent = TRUE
 
@@ -86,6 +91,15 @@
 
 	for(var/ch_name in channels)
 		secure_radio_connections[ch_name] = add_radio(src, GLOB.radiochannels[ch_name])
+
+/// Unhooks the radio from every channel it's registered on, `channels` itself is left alone.
+/obj/item/radio/proc/clearChannelConnections()
+	if(isnull(secure_radio_connections))
+		secure_radio_connections = list()
+		return
+	for(var/ch_name in secure_radio_connections)
+		remove_radio(src, secure_radio_connections[ch_name])
+	secure_radio_connections = list()
 
 /obj/item/radio/proc/make_syndie() // Turns normal radios into Syndicate radios!
 	qdel(keyslot)
@@ -221,6 +235,8 @@
 				. = TRUE
 
 /obj/item/radio/talk_into(atom/movable/M, message, channel, list/spans, datum/language/language)
+	if(speaker_jammed(M))
+		return ITALICS | REDUCE_RANGE
 	if(!spans)
 		spans = list(M.speech_span)
 	if(!language)
@@ -228,9 +244,15 @@
 	INVOKE_ASYNC(src, PROC_REF(talk_into_impl), M, message, channel, spans.Copy(), language)
 	return ITALICS | REDUCE_RANGE
 
+/obj/item/radio/proc/speaker_jammed(atom/movable/speaker)
+	return speaker && (SEND_SIGNAL(speaker, COMSIG_MOVABLE_USING_RADIO, src) & COMPONENT_CANNOT_USE_RADIO)
+
 /obj/item/radio/proc/talk_into_impl(atom/movable/M, message, channel, list/spans, datum/language/language)
 	if(!on)
 		return // the device has to be on
+	var/area/radio_area = get_area(src)
+	if(radio_area?.area_flags & RADIO_BLACKOUT)
+		return
 	if(!M || !message)
 		return
 	if(wires.is_cut(WIRE_TX))  // Permacell and otherwise tampered-with radios
@@ -306,6 +328,9 @@
 		addtimer(CALLBACK(src, PROC_REF(backup_transmission), signal), 20)
 
 /obj/item/radio/proc/backup_transmission(datum/signal/subspace/vocal/signal)
+	var/area/radio_area = get_area(src)
+	if(radio_area?.area_flags & RADIO_BLACKOUT)
+		return
 	var/turf/T = get_turf(src)
 	if (signal.data["done"] && T && (T.z in signal.levels))
 		return
@@ -337,11 +362,16 @@
 
 // Checks if this radio can receive on the given frequency.
 /obj/item/radio/proc/can_receive(freq, level)
+	var/area/radio_area = get_area(src)
+	if(radio_area?.area_flags & RADIO_BLACKOUT)
+		return FALSE
 	// deny checks
 	if (!on || !listening || wires.is_cut(WIRE_RX))
 		return FALSE
-	if ((freq == FREQ_SYNDICATE || freq == FREQ_INTEQ || freq == FREQ_PIRATE) && !syndie)
-		return FALSE
+	//Antagonist nets are encrypted separately - a syndicate radio only picks up syndicate chatter, an InteQ one
+	//only InteQ chatter and a pirate one only pirate chatter. They never hear each other.
+	if(freq == FREQ_SYNDICATE || freq == FREQ_INTEQ || freq == FREQ_PIRATE)
+		return freq == syndie_freq
 	if (freq == FREQ_CENTCOM)
 		return independent  // hard-ignores the z-level check
 	if (!(0 in level))
@@ -435,6 +465,7 @@
 
 /obj/item/radio/borg/Initialize(mapload)
 	. = ..()
+	recalculateChannels() //borg radios get their key without going through the headset, so the channels have to be set up here
 
 /obj/item/radio/borg/syndicate
 	syndie = 1
@@ -456,16 +487,12 @@
 
 	if(W.tool_behaviour == TOOL_SCREWDRIVER)
 		if(keyslot)
-			for(var/ch_name in channels)
-				SSradio.remove_object(src, GLOB.radiochannels[ch_name])
-				secure_radio_connections[ch_name] = null
+			clearChannelConnections()
 
-
-			if(keyslot)
-				var/turf/T = get_turf(user)
-				if(T)
-					keyslot.forceMove(T)
-					keyslot = null
+			var/turf/T = get_turf(user)
+			if(T)
+				keyslot.forceMove(T)
+				keyslot = null
 
 			recalculateChannels()
 			to_chat(user, "<span class='notice'>You pop out the encryption key in the radio.</span>")

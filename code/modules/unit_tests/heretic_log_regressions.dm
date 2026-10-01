@@ -1,0 +1,496 @@
+/datum/eldritch_knowledge/flesh_grasp/ghost_poll_probe
+	var/last_poll_body
+	var/last_poll_duration
+
+/datum/eldritch_knowledge/flesh_grasp/ghost_poll_probe/poll_servant_candidates(question, mob/living/body, duration)
+	last_poll_body = REF(body)
+	last_poll_duration = duration
+	return list()
+
+/datum/eldritch_knowledge/flesh_ghoul/ghost_poll_probe
+	var/last_poll_body
+	var/last_poll_duration
+
+/datum/eldritch_knowledge/flesh_ghoul/ghost_poll_probe/poll_servant_candidates(question, mob/living/body, duration)
+	last_poll_body = REF(body)
+	last_poll_duration = duration
+	return list()
+
+/// Учебная Хватка поднимает тело без mind; обычная роль зовёт призраков на 10 секунд и без ответа не тратит биомассу.
+/datum/unit_test/heretic_log_flesh_mindless/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_FLESH
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_flesh)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/flesh_grasp)
+	var/datum/eldritch_knowledge/base_flesh/path = heretic.get_knowledge(/datum/eldritch_knowledge/base_flesh)
+	var/datum/eldritch_knowledge/flesh_grasp/grasp = heretic.get_knowledge(/datum/eldritch_knowledge/flesh_grasp)
+	var/datum/eldritch_knowledge/flesh_grasp/ghost_poll_probe/probe = allocate(/datum/eldritch_knowledge/flesh_grasp/ghost_poll_probe)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(heretic.owner.current, EAST))
+	victim.death()
+	TEST_ASSERT_NULL(victim.mind, "Тело изначально без разума.")
+	path.combat_resource = 2
+	TEST_ASSERT(probe.on_mansus_grasp(victim, heretic.owner.current, TRUE), "Обычная роль зовёт призраков в пустое тело.")
+	TEST_ASSERT_EQUAL(probe.last_poll_body, REF(victim), "Опрос предлагает именно это тело.")
+	TEST_ASSERT_EQUAL(probe.last_poll_duration, 10 SECONDS, "Призракам даётся 10 секунд.")
+	TEST_ASSERT(!probe.ghoul_poll_pending, "Завершённый опрос снимает ожидание.")
+	TEST_ASSERT_EQUAL(path.combat_resource, 2, "Без ответа духов биомасса сохраняется.")
+	TEST_ASSERT(victim.stat == DEAD && isnull(victim.mind), "Без ответа духов тело остаётся мёртвым.")
+	probe.ghoul_poll_pending = TRUE
+	probe.last_poll_duration = null
+	TEST_ASSERT(!probe.on_mansus_grasp(victim, heretic.owner.current, TRUE), "Пока идёт опрос, второй не начинается.")
+	TEST_ASSERT_NULL(probe.last_poll_duration, "Повторный опрос не запущен.")
+	probe.ghoul_poll_pending = FALSE
+	heretic.simulated = TRUE
+	TEST_ASSERT(grasp.on_mansus_grasp(victim, heretic.owner.current, TRUE), "Учебная роль поднимает пустую мишень.")
+	TEST_ASSERT_NOTNULL(victim.mind, "Гулю создан разум.")
+	allocated += victim.mind
+	var/datum/antagonist/heretic_monster/ghoul/ghoul = victim.mind.has_antag_datum(/datum/antagonist/heretic_monster/ghoul)
+	TEST_ASSERT_NOTNULL(ghoul, "Гуль получил роль слуги.")
+	TEST_ASSERT(victim.stat != DEAD, "Тело ожило.")
+	TEST_ASSERT_EQUAL(path.combat_resource, 1, "Подъём расходует одну биомассу.")
+	TEST_ASSERT(!grasp.on_mansus_grasp(victim, heretic.owner.current, TRUE), "Живого гуля нельзя поднять повторно.")
+
+/// Повторное подключение ржавчины не повторяет урон и снимается при замене пола.
+/datum/unit_test/heretic_log_rust_attachment/Run()
+	var/turf/floor = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, floor)
+	var/obj/vehicle/sealed/mecha/working/ripley/mech = allocate(/obj/vehicle/sealed/mecha/working/ripley, floor)
+	floor.AddElement(/datum/element/heretic_rust)
+	var/integrity = mech.obj_integrity
+	TEST_ASSERT(victim.has_status_effect(/datum/status_effect/rust_corruption), "Первое подключение заражает стоящего на полу.")
+	floor.AddElement(/datum/element/heretic_rust)
+	TEST_ASSERT_EQUAL(mech.obj_integrity, integrity, "Повторное подключение не наносит второй удар меху.")
+	floor = floor.ChangeTurf(/turf/open/floor/plating)
+	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/rust_corruption), "Замена пола снимает заражение.")
+	floor.AddElement(/datum/element/heretic_rust)
+	TEST_ASSERT(victim.has_status_effect(/datum/status_effect/rust_corruption), "Новую поверхность можно заразить снова.")
+	victim.forceMove(get_step(floor, EAST))
+	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/rust_corruption), "Выход с нового пола снимает заражение.")
+
+/// Лунная способность проходит подготовку, отмену, применение и настоящую перезарядку.
+/datum/unit_test/heretic_log_moon_cooldown/Run()
+	var/mob/living/user = make_moon_heretic(run_loc_floor_bottom_left)
+	var/datum/eldritch_knowledge/base_moon/moon = get_heretic_moon(user)
+	var/obj/effect/proc_holder/spell/pointed/heretic_moon/create/spell = moon.reflection_spell
+	TEST_ASSERT_EQUAL(spell.charge_counter, spell.charge_max, "Выданная способность готова сразу.")
+	TEST_ASSERT(spell.can_cast(user), "Выданное заклинание проходит проверки применения.")
+	user.ranged_ability = spell
+	user.click_intercept = spell
+	spell.ranged_ability_user = user
+	spell.active = TRUE
+	spell.Trigger(user)
+	TEST_ASSERT(!spell.active, "Повторное нажатие отменяет прицеливание.")
+	TEST_ASSERT_EQUAL(spell.charge_counter, spell.charge_max, "Отмена не расходует заряд.")
+	user.ranged_ability = spell
+	user.click_intercept = spell
+	spell.ranged_ability_user = user
+	spell.active = TRUE
+	spell.InterceptClickOn(user, "", get_step(user, EAST))
+	TEST_ASSERT(length(moon.reflections), "Клик создал отражение.")
+	TEST_ASSERT(spell.charge_counter < spell.charge_max, "Применение расходует заряд.")
+	TEST_ASSERT(spell in SSfastprocess.processing, "Перезарядка подключена к подсистеме.")
+	TEST_ASSERT(wait_for_var(spell, "charge_counter", spell.charge_max, 15 SECONDS), "Подсистема завершила восьмисекундную перезарядку.")
+	TEST_ASSERT(spell.can_cast(user), "После перезарядки способность снова доступна.")
+	spell.remove_ranged_ability()
+	moon.on_body_lose(user)
+	TEST_ASSERT(QDELETED(spell), "Потеря тела удаляет старое заклинание.")
+	TEST_ASSERT(!length(moon.reflections), "Старые отражения удалены.")
+	moon.on_body_gain(user)
+	TEST_ASSERT_EQUAL(moon.reflection_spell.charge_counter, moon.reflection_spell.charge_max, "Возврат тела выдаёт готовую способность.")
+
+/// Размещение призм сообщает причину отказа и очищает сеть при утрате знания.
+/datum/unit_test/heretic_log_glass_placement/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_shards)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/datum/eldritch_knowledge/spell/glass_shards/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spell/glass_shards)
+	var/obj/effect/proc_holder/spell/pointed/heretic_glass/shards/spell = knowledge.granted_spell
+	var/turf/place = get_step(user, EAST)
+	var/mob/living/victim = allocate(/mob/living/carbon/human, place)
+	TEST_ASSERT(!spell.can_target(place, user, TRUE), "Занятый пол не подходит.")
+	TEST_ASSERT(findtext(spell.heretic_failure_reason, "существо"), "Причина указывает на существо.")
+	victim.forceMove(get_step(user, NORTH))
+	glass.combat_resource = 0
+	TEST_ASSERT(!spell.can_target(place, user, TRUE), "Без грани нельзя создать призму.")
+	TEST_ASSERT(findtext(spell.heretic_failure_reason, "1 грань"), "Причина указывает на ресурс.")
+	glass.combat_resource = 4
+	TEST_ASSERT(glass.shards(user, place), "Создана первая призма.")
+	TEST_ASSERT(glass.shards(user, get_step(place, EAST)), "Создана вторая призма.")
+	TEST_ASSERT(glass.shards(user, get_step(place, NORTHEAST)), "Создана третья призма.")
+	TEST_ASSERT(!spell.can_target(get_step(user, NORTHEAST), user, TRUE), "Четвёртая призма запрещена.")
+	TEST_ASSERT(findtext(spell.heretic_failure_reason, "предел"), "Причина указывает на лимит.")
+	var/list/prisms = glass.prisms.Copy()
+	glass.combat_resource = 0
+	TEST_ASSERT(spell.can_target(prisms[1], user, TRUE), "При полном лимите и пустом запасе можно повернуть свою призму.")
+	qdel(knowledge)
+	TEST_ASSERT(!length(glass.prisms), "Знание отпускает все призмы.")
+	for(var/obj/structure/heretic_glass_prism/prism as anything in prisms)
+		TEST_ASSERT(QDELETED(prism), "Каждая призма удалена.")
+		TEST_ASSERT(!(prism in SSobj.processing), "Подсистема не удерживает призму.")
+		TEST_ASSERT(!length(prism.signal_procs), "Призма не удерживается сигналами.")
+	prisms.Cut()
+
+/// Потерянный и запертый в шкафу кодекс возвращается, книга в чужом инвентаре остаётся у захватившего.
+/datum/unit_test/heretic_log_codex_recovery/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/summon/book)
+	var/datum/eldritch_knowledge/spell/summon/book/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spell/summon/book)
+	var/obj/effect/proc_holder/spell/self/heretic_summon/book/spell = knowledge.granted_spell
+	spell.recovery_time = 0.2 SECONDS
+	var/obj/item/forbidden_book/book = allocate(/obj/item/forbidden_book, get_step(user, EAST))
+	heretic.personal_codex = WEAKREF(book)
+	spell.recover_missing_item(user, heretic)
+	TEST_ASSERT(book in user.GetAllContents(), "Вернулся тот же кодекс.")
+	TEST_ASSERT(!spell.recovery_in_progress, "Канал завершён.")
+	var/mob/living/carbon/human/holder = allocate(/mob/living/carbon/human, get_step(user, NORTH))
+	user.transferItemToLoc(book, holder, TRUE)
+	TEST_ASSERT(!spell.recovery_allowed(user, heretic, heretic.personal_codex), "Чужой инвентарь блокирует возврат.")
+	TEST_ASSERT(findtext(spell.recovery_failure, "инвентаре"), "Отказ объясняет, что книгу держит существо.")
+	spell.recover_missing_item(user, heretic)
+	TEST_ASSERT_EQUAL(book.loc, holder, "Чужой кодекс не вырван из инвентаря.")
+	var/obj/structure/closet/locker = allocate(/obj/structure/closet, get_step(user, EAST))
+	var/obj/item/storage/backpack/bag = allocate(/obj/item/storage/backpack, locker)
+	book.forceMove(bag)
+	TEST_ASSERT(spell.recovery_allowed(user, heretic, heretic.personal_codex), "Шкаф с сумкой не запирает кодекс навсегда.")
+	spell.container_recovery_time = 0.2 SECONDS
+	spell.recover_missing_item(user, heretic)
+	TEST_ASSERT(book in user.GetAllContents(), "Кодекс вытянут из сумки в шкафу.")
+	book.forceMove(get_step(user, EAST))
+	var/obj/effect/eldritch/rune = allocate(/obj/effect/eldritch, book.loc)
+	GLOB.heretic_ritual_reservations[book] = rune
+	var/blocked = !spell.recovery_allowed(user, heretic, heretic.personal_codex)
+	var/ritual_reason = spell.recovery_failure
+	GLOB.heretic_ritual_reservations -= book
+	TEST_ASSERT(blocked, "Действующий обряд блокирует возврат.")
+	TEST_ASSERT(findtext(ritual_reason, "обрядом"), "Отказ предлагает освободить книгу из обряда.")
+	qdel(book)
+	spell.recover_missing_item(user, heretic)
+	var/obj/item/forbidden_book/replacement = heretic.personal_codex?.resolve()
+	TEST_ASSERT_NOTNULL(replacement, "Уничтоженный кодекс восстановлен.")
+	allocated += replacement
+	TEST_ASSERT(replacement in user.GetAllContents(), "Новая книга выдана владельцу.")
+	TEST_ASSERT_EQUAL(heretic.knowledge_points, HERETIC_STARTING_KNOWLEDGE, "Восстановление не сбрасывает знания.")
+	user.transferItemToLoc(replacement, run_loc_floor_top_right, TRUE)
+	spell.recovery_time = 2 SECONDS
+	addtimer(CALLBACK(replacement, TYPE_PROC_REF(/atom/movable, forceMove), holder), 0.2 SECONDS)
+	spell.cast(list(user), user)
+	TEST_ASSERT_EQUAL(replacement.loc, holder, "Книга, подобранная во время канала, остаётся у нового держателя.")
+	TEST_ASSERT(!spell.recovery_in_progress, "Сорванный канал освобождает способность.")
+	replacement.forceMove(run_loc_floor_top_right)
+	addtimer(CALLBACK(user, TYPE_PROC_REF(/atom/movable, forceMove), get_step(user, EAST)), 0.2 SECONDS)
+	spell.cast(list(user), user)
+	TEST_ASSERT_EQUAL(replacement.loc, run_loc_floor_top_right, "Движение владельца прерывает возврат.")
+	TEST_ASSERT_EQUAL(heretic.personal_codex.resolve(), replacement, "Прерывания не создают дубликатов.")
+
+/// Предмет, взятый в руку во время канала, не срывает возврат кодекса и сердца.
+/datum/unit_test/heretic_log_recovery_ignores_held_item/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/summon/book)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/summon/heart)
+	var/datum/eldritch_knowledge/spell/summon/book/book_knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spell/summon/book)
+	var/obj/effect/proc_holder/spell/self/heretic_summon/book/book_spell = book_knowledge.granted_spell
+	book_spell.recovery_time = 1 SECONDS
+	var/obj/item/forbidden_book/book = allocate(/obj/item/forbidden_book, run_loc_floor_top_right)
+	heretic.personal_codex = WEAKREF(book)
+	var/obj/item/pen/first_pen = allocate(/obj/item/pen)
+	addtimer(CALLBACK(user, TYPE_PROC_REF(/mob, put_in_active_hand), first_pen), 0.3 SECONDS)
+	book_spell.recover_missing_item(user, heretic)
+	TEST_ASSERT(book in user.GetAllContents(), "Кодекс вернулся, хотя в руке сменился предмет.")
+	user.dropItemToGround(first_pen)
+	user.dropItemToGround(book)
+	var/datum/eldritch_knowledge/spell/heart_knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spell/summon/heart)
+	var/obj/effect/proc_holder/spell/self/heretic_summon/heart/heart_spell = heart_knowledge.granted_spell
+	var/obj/item/living_heart/heart = allocate(/obj/item/living_heart, run_loc_floor_top_right)
+	heart.bind(heretic.owner)
+	var/obj/item/pen/second_pen = allocate(/obj/item/pen)
+	addtimer(CALLBACK(user, TYPE_PROC_REF(/mob, put_in_active_hand), second_pen), 1 SECONDS)
+	heart_spell.cast(list(user), user)
+	TEST_ASSERT(heart in user.GetAllContents(), "Сердце вернулось, хотя в руке сменился предмет.")
+
+/// Все пути получают боевую подсказку, результат по-прежнему определяется здоровьем цели.
+/datum/unit_test/heretic_log_training_guidance/Run()
+	var/datum/antag_training_session/session = allocate_training_session()
+	TEST_ASSERT(session.prepare(), "Полигон подготовлен.")
+	session.update_safety()
+	TEST_ASSERT(session.current_body.alerts["antag_training_safe"], "В центре показан индикатор защиты.")
+	var/datum/antag_training_session/guest = allocate_training_session(/datum/antag_training_program/free)
+	TEST_ASSERT(guest.prepare(session.arena), "Соперник без иммунитета Мансуса входит на полигон.")
+	var/datum/antagonist/heretic/attacker = allocate_heretic(get_turf(session.current_body))
+	var/obj/item/melee/touch_attack/mansus_fist/fist = allocate(/obj/item/melee/touch_attack/mansus_fist)
+	TEST_ASSERT(!fist.try_grasp(guest.current_body, attacker.owner.current, TRUE), "Безопасный центр сохраняет заряд хватки.")
+	guest.current_body.forceMove(session.arena.zones["melee"]["spawn"])
+	guest.update_safety()
+	TEST_ASSERT(fist.try_grasp(guest.current_body, attacker.owner.current, TRUE), "За пределами центра хватка расходует заряд на противника.")
+	session.current_body.forceMove(session.arena.zones["melee"]["spawn"])
+	session.update_safety()
+	TEST_ASSERT(!session.current_body.alerts["antag_training_safe"], "Выход на арену снимает индикатор защиты.")
+	TEST_ASSERT(session.start_practice("combat"), "Боевая мишень создана.")
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(session.current_body)
+	for(var/path_id in GLOB.heretic_paths)
+		var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
+		TEST_ASSERT(length(path.combat_practice), "Путь [path_id] имеет подсказку.")
+		heretic.selected_path = path_id
+		session.update_practice()
+		TEST_ASSERT(findtext(session.practice_hint, path.combat_practice), "Подсказка [path_id] показана в активном упражнении.")
+		TEST_ASSERT(!session.practice_complete, "Чтение подсказки не завершает упражнение.")
+	var/mob/living/target = session.practice_target.resolve()
+	target.adjustOxyLoss(150)
+	session.update_practice()
+	TEST_ASSERT(session.practice_complete, "Реальный крит завершает упражнение.")
+
+/// Незавершённый ритуал даёт призракам 10 секунд и без ответа не тратит биомассу; учебная роль поднимает мишень без опроса.
+/datum/unit_test/heretic_log_flesh_silent_dead_poll/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_FLESH
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_flesh)
+	var/datum/eldritch_knowledge/base_flesh/path = heretic.get_knowledge(/datum/eldritch_knowledge/base_flesh)
+	var/datum/eldritch_knowledge/flesh_ghoul/ghost_poll_probe/ritual = allocate(/datum/eldritch_knowledge/flesh_ghoul/ghost_poll_probe)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(heretic.owner.current, EAST))
+	victim.death()
+	path.combat_resource = 2
+	TEST_ASSERT(!ritual.on_finished_recipe(heretic.owner.current, list(victim), get_turf(victim)), "Без ответа духов ритуал не поднимает тело.")
+	TEST_ASSERT_EQUAL(ritual.last_poll_body, REF(victim), "Опрос предлагает тело с руны.")
+	TEST_ASSERT_EQUAL(ritual.last_poll_duration, 10 SECONDS, "Призракам даётся 10 секунд, как и при других призывах.")
+	TEST_ASSERT_EQUAL(path.combat_resource, 2, "Без ответа духов биомасса сохраняется.")
+	TEST_ASSERT(victim.stat == DEAD, "Тело остаётся мёртвым.")
+	heretic.simulated = TRUE
+	ritual.last_poll_body = null
+	COOLDOWN_RESET(ritual, servant_poll_cooldown)
+	TEST_ASSERT(ritual.on_finished_recipe(heretic.owner.current, list(victim), get_turf(victim)), "Учебная роль поднимает пустую мишень.")
+	TEST_ASSERT_NULL(ritual.last_poll_body, "Учебная роль не зовёт призраков сервера.")
+	TEST_ASSERT_NOTNULL(victim.mind, "Мертвецу создан разум.")
+	allocated += victim.mind
+	TEST_ASSERT_NOTNULL(victim.mind.has_antag_datum(/datum/antagonist/heretic_monster/voiceless_dead), "Мертвец получил роль слуги.")
+	TEST_ASSERT_EQUAL(path.combat_resource, 0, "Подъём расходует две биомассы.")
+
+/// Смена облика сохраняет перезарядку, здоровье и оставшиеся сегменты Повелителя Ночи.
+/datum/unit_test/heretic_log_flesh_transformation/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/carbon/human/human = heretic.owner.current
+	heretic.selected_path = PATH_FLESH
+	heretic.apply_innate_effects(human)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/touch_of_madness)
+	var/datum/eldritch_knowledge/spell/touch_of_madness/madness = heretic.get_knowledge(/datum/eldritch_knowledge/spell/touch_of_madness)
+	madness.granted_spell.charge_counter = 0
+	madness.granted_spell.start_recharge()
+	heretic.gain_knowledge(/datum/eldritch_knowledge/final_eldritch/flesh_final)
+	var/datum/eldritch_knowledge/final_eldritch/flesh_final/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/final_eldritch/flesh_final)
+	knowledge.finished = TRUE
+	knowledge.on_body_gain(human)
+	var/obj/effect/proc_holder/spell/targeted/shed_human_form/spell = knowledge.ascension_spell_instances[1]
+	spell.charge_counter = 0
+	spell.perform(list(human), TRUE, human)
+	var/mob/living/simple_animal/hostile/eldritch/armsy/prime/worm = heretic.owner.current
+	TEST_ASSERT(istype(worm), "Смена облика создаёт Повелителя Ночи.")
+	allocated += worm
+	spell = knowledge.ascension_spell_instances[1]
+	TEST_ASSERT(spell.charge_counter < spell.charge_max, "Новое тело не обнуляет перезарядку.")
+	TEST_ASSERT(spell in SSfastprocess.processing, "Перезарядка нового тела обрабатывается подсистемой.")
+	TEST_ASSERT(!spell.can_cast(worm), "Мгновенное обратное превращение недоступно.")
+	TEST_ASSERT(madness.granted_spell.charge_counter < madness.granted_spell.charge_max, "Смена тела не сбрасывает откат Касания безумия.")
+	TEST_ASSERT(wait_for_var(spell, "charge_counter", spell.charge_max, 15 SECONDS), "Перезарядка действительно завершается.")
+	worm.adjustBruteLoss(30)
+	worm.back.adjustBruteLoss(15)
+	qdel(worm.back.back)
+	var/head_health = worm.health
+	var/tail_health = worm.back.health
+	spell.charge_counter = 0
+	spell.perform(list(worm), TRUE, worm)
+	TEST_ASSERT_EQUAL(heretic.owner.current, human, "Разум возвращается в прежнее тело.")
+	TEST_ASSERT(madness.granted_spell.charge_counter < madness.granted_spell.charge_max, "Возврат в человека не обходит трёхминутный откат.")
+	TEST_ASSERT_EQUAL(length(knowledge.shed_form_health), 2, "Сохранены ровно два уцелевших сегмента.")
+	spell = knowledge.ascension_spell_instances[1]
+	TEST_ASSERT(spell.charge_counter < spell.charge_max, "Обратное превращение тоже сохраняет откат.")
+	spell.charge_counter = spell.charge_max
+	spell.cast(list(human), human)
+	worm = heretic.owner.current
+	allocated += worm
+	TEST_ASSERT_EQUAL(worm.health, head_health, "Повторное превращение не лечит голову.")
+	TEST_ASSERT_EQUAL(worm.back.health, tail_health, "Повторное превращение не лечит хвост.")
+	TEST_ASSERT_NULL(worm.back.back, "Повторное превращение не отращивает потерянные сегменты.")
+	worm.adjustBruteLoss(20)
+	head_health = worm.health
+	qdel(worm)
+	TEST_ASSERT_EQUAL(heretic.owner.current, human, "Удаление оболочки возвращает разум в тело.")
+	TEST_ASSERT_EQUAL(knowledge.shed_form_health[1], head_health, "Принудительная потеря оболочки тоже сохраняет раны.")
+
+/// Священный меч защищает только в руках; обычный нулевой жезл сохраняет защиту в кармане.
+/datum/unit_test/heretic_log_holy_sword_slots/Run()
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human)
+	var/obj/item/clothing/under/color/grey/uniform = allocate(/obj/item/clothing/under/color/grey)
+	TEST_ASSERT(user.equip_to_slot_if_possible(uniform, ITEM_SLOT_ICLOTHING), "Надета форма для поясного слота.")
+	var/obj/item/nullrod/claymore/sword = allocate(/obj/item/nullrod/claymore)
+	TEST_ASSERT(user.put_in_hands(sword), "Меч взят в руку.")
+	TEST_ASSERT(user.anti_magic_check(), "Меч в руке блокирует магию.")
+	for(var/slot in list(ITEM_SLOT_BELT, ITEM_SLOT_BACK))
+		user.temporarilyRemoveItemFromInventory(sword, TRUE)
+		TEST_ASSERT(user.equip_to_slot_if_possible(sword, slot), "Меч помещён в слот [slot].")
+		TEST_ASSERT(!user.anti_magic_check(), "Убранный меч не даёт пассивную антимагию.")
+		user.temporarilyRemoveItemFromInventory(sword, TRUE)
+		TEST_ASSERT(user.put_in_hands(sword), "Меч снова взят в руку.")
+		TEST_ASSERT(user.anti_magic_check(), "Защита возвращается вместе с мечом в руке.")
+	user.dropItemToGround(sword, TRUE)
+	TEST_ASSERT(!user.anti_magic_check(), "Брошенный меч больше не защищает.")
+	var/obj/item/nullrod/rod = allocate(/obj/item/nullrod)
+	TEST_ASSERT(user.equip_to_slot_if_possible(rod, ITEM_SLOT_LPOCKET), "Жезл помещён в карман.")
+	TEST_ASSERT(user.anti_magic_check(), "Обычный жезл сохраняет прежние правила защиты.")
+
+/datum/eldritch_knowledge/summon/raw_prophet/ghost_poll_probe
+	var/list/poll_result = list()
+
+/datum/eldritch_knowledge/summon/raw_prophet/ghost_poll_probe/poll_servant_candidates(question, mob/living/body, duration)
+	return poll_result.Copy()
+
+/// Руна выпускает цель из камня горгульи целой и сбитой, а далёкая статуя получает понятный отказ.
+/datum/unit_test/heretic_log_gargoyle_target/Run()
+	allocate(/datum/heretic_test_station_level, run_loc_floor_bottom_left.z)
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, run_loc_floor_top_right)
+	var/datum/mind/soul = allocate_mind()
+	soul.current = victim
+	victim.mind = soul
+	heretic.set_hunt_target(soul)
+	var/obj/structure/statue/gargoyle/statue = allocate(/obj/structure/statue/gargoyle, run_loc_floor_top_right, victim)
+	var/obj/effect/eldritch/near_rune = allocate(/obj/effect/eldritch, get_step(run_loc_floor_top_right, WEST))
+	var/obj/effect/eldritch/far_rune = allocate(/obj/effect/eldritch, run_loc_floor_bottom_left)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/basic)
+	var/datum/eldritch_knowledge/offering = heretic.get_knowledge(/datum/eldritch_knowledge/spell/basic)
+	TEST_ASSERT(!far_rune.release_petrified_hunt_target(user, heretic), "Далёкая руна не трогает статую.")
+	TEST_ASSERT_EQUAL(victim.loc, statue, "Цель осталась в камне.")
+	TEST_ASSERT(findtext(far_rune.recipe_failure_reason(offering, user), "застыла в камне"), "Отказ объясняет, что цель в камне.")
+	TEST_ASSERT(near_rune.release_petrified_hunt_target(user, heretic), "Соседняя руна раскалывает камень.")
+	TEST_ASSERT(QDELETED(statue), "Статуя удалена, а не разбита.")
+	TEST_ASSERT_EQUAL(victim.loc, run_loc_floor_top_right, "Цель стоит на месте статуи.")
+	TEST_ASSERT(victim.stat != DEAD && !(victim.status_flags & GODMODE), "Цель жива и уязвима.")
+	TEST_ASSERT(heretic.hunt_target_ready(victim), "Выпущенная цель готова к подношению.")
+
+/// Провал призыва после опроса называет причину и не оставляет пустого тела.
+/datum/unit_test/heretic_log_summon_failure_reason/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/summon/raw_prophet/ghost_poll_probe/probe = allocate(/datum/eldritch_knowledge/summon/raw_prophet/ghost_poll_probe)
+	heretic.researched_knowledge[probe.type] = probe
+	var/turf/far_turf = run_loc_floor_top_right
+	TEST_ASSERT(!probe.on_finished_recipe(user, list(), far_turf), "Без отклика призыв не удаётся.")
+	TEST_ASSERT(findtext(probe.finish_failure_reason, "Ни одна душа не откликнулась."), "Причина - пустой опрос.")
+	TEST_ASSERT_NULL(locate(/mob/living/simple_animal/hostile/eldritch/raw_prophet) in far_turf, "Пустое тело удалено.")
+	TEST_ASSERT(!probe.summoning, "Призыв снова доступен.")
+	probe.poll_result = list(user)
+	TEST_ASSERT(!probe.on_finished_recipe(user, list(), far_turf), "Отошедший от руны не завершает призыв.")
+	TEST_ASSERT_EQUAL(probe.finish_failure_reason, "Вы отошли от руны.", "Причина названа после отклика.")
+	TEST_ASSERT_NULL(locate(/mob/living/simple_animal/hostile/eldritch/raw_prophet) in far_turf, "Тело после отклика тоже удалено.")
+	heretic.researched_knowledge -= probe.type
+
+/// Цели еретика отмечаются выполненными для панели антагонистов.
+/datum/unit_test/heretic_log_objective_completion/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/datum/objective/sacrifice_ecult/sacrifice = allocate(/datum/objective/sacrifice_ecult)
+	var/datum/objective/ascend_ecult/ascend = allocate(/datum/objective/ascend_ecult)
+	sacrifice.owner = heretic.owner
+	ascend.owner = heretic.owner
+	heretic.objectives += list(sacrifice, ascend)
+	heretic.refresh_objective_completion()
+	TEST_ASSERT(!sacrifice.completed && !ascend.completed, "Без жертв цели не выполнены.")
+	heretic.total_sacrifices = sacrifice.target_amount
+	heretic.ascended = TRUE
+	heretic.refresh_objective_completion()
+	TEST_ASSERT(sacrifice.completed, "Набранные жертвы видны в панели.")
+	TEST_ASSERT(ascend.completed, "Вознесение видно в панели.")
+	heretic.objectives -= list(sacrifice, ascend)
+
+/// Отказ руны называет похожий, но неподходящий предмет: фонарик вместо шахтёрского фонаря.
+/datum/unit_test/heretic_log_ingredient_near_miss/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/spell/void_phase/recipe = allocate(/datum/eldritch_knowledge/spell/void_phase)
+	var/obj/effect/eldritch/rune = allocate(/obj/effect/eldritch/big, get_turf(user))
+	allocate(/obj/item/flashlight, get_turf(user))
+	var/reason = rune.recipe_failure_reason(recipe, user)
+	TEST_ASSERT(findtext(reason, "Шахтёрский фонарь ×1"), "Отказ называет шахтёрский фонарь: [reason]")
+	TEST_ASSERT(findtext(reason, "Фонарик не подходит"), "Отказ объясняет, что фонарик не подходит: [reason]")
+
+/// Разлом называет причину отказа и принимает касание любым предметом в руке.
+/datum/unit_test/heretic_log_rift_failure_reason/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	heretic.apply_innate_effects(user)
+	var/turf/rift_turf = get_step(user, EAST)
+	var/datum/reality_smash_tracker/tracker = allocate(/datum/reality_smash_tracker)
+	var/obj/effect/reality_smash/rift = allocate(/obj/effect/reality_smash, rift_turf, tracker)
+	rift.AddMind(user.mind)
+	var/obj/item/forbidden_book/loose_book = allocate(/obj/item/forbidden_book, run_loc_floor_top_right)
+	TEST_ASSERT(findtext(rift.harvest_failure_reason(user, loose_book), "Кодекс"), "Без кодекса при себе причина - кодекс.")
+	var/obj/item/forbidden_book/book = allocate(/obj/item/forbidden_book, user)
+	TEST_ASSERT_NULL(rift.harvest_failure_reason(user, book), "С кодексом рядом разлом доступен.")
+	var/obj/item/kitchen/knife/knife = allocate(/obj/item/kitchen/knife)
+	user.put_in_active_hand(knife)
+	user.ClickOn(rift_turf, "icon-x=16;icon-y=16;left=1")
+	TEST_ASSERT(user.mind in rift.harvesting_minds, "Клик ножом в руке по клетке разлома начинает исследование.")
+	rift.harvesting_minds.Cut()
+	rift.harvested_minds |= user.mind
+	TEST_ASSERT(findtext(rift.harvest_failure_reason(user, book), "уже исследовали"), "Повторное исследование названо.")
+	rift.harvested_minds -= user.mind
+	heretic.influences_harvested = HERETIC_INFLUENCE_LIMIT
+	TEST_ASSERT(findtext(rift.harvest_failure_reason(user, book), "подношения"), "Исчерпанный лимит назван.")
+	heretic.influences_harvested = 0
+	user.forceMove(run_loc_floor_top_right)
+	TEST_ASSERT(findtext(rift.harvest_failure_reason(user, book), "вплотную"), "Дальность названа.")
+
+/// Снятие роли убирает личный кодекс и сердце, где бы они ни были, и стартовый инъектор у бывшего еретика.
+/datum/unit_test/heretic_log_removal_clears_items/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/obj/item/forbidden_book/codex = allocate(/obj/item/forbidden_book, run_loc_floor_top_right)
+	heretic.personal_codex = WEAKREF(codex)
+	var/obj/item/living_heart/heart = allocate(/obj/item/living_heart)
+	TEST_ASSERT(heart.bind(heretic.owner), "Сердце привязано к еретику.")
+	user.put_in_hands(heart)
+	var/obj/item/living_heart/stranger_heart = allocate(/obj/item/living_heart, run_loc_floor_top_right)
+	heretic.give_starter_essence(user)
+	var/obj/item/injector = heretic.starter_essence?.resolve()
+	TEST_ASSERT_NOTNULL(injector, "Инъектор выдан.")
+	heretic.clear_heretic()
+	TEST_ASSERT(QDELETED(codex), "Выданный кодекс исчезает вместе с ролью.")
+	TEST_ASSERT(QDELETED(heart), "Привязанное сердце исчезает вместе с ролью.")
+	TEST_ASSERT(QDELETED(injector), "Стартовый инъектор у бывшего еретика исчезает.")
+	TEST_ASSERT(!QDELETED(stranger_heart), "Непривязанное сердце остаётся.")
+
+/// Клинок Пустоты в тепле не начинается, если Зимний предел погаснет раньше конца обряда.
+/datum/unit_test/heretic_log_void_field_expiring
+	var/turf/open/floor/ritual_floor
+	var/original_temperature
+
+/datum/unit_test/heretic_log_void_field_expiring/Destroy()
+	if(ritual_floor && !isnull(original_temperature))
+		ritual_floor.air.set_temperature(original_temperature)
+	return ..()
+
+/datum/unit_test/heretic_log_void_field_expiring/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	var/mob/living/user = heretic.owner.current
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_void)
+	var/datum/eldritch_knowledge/base_void/recipe = heretic.get_knowledge(/datum/eldritch_knowledge/base_void)
+	ritual_floor = get_turf(user)
+	original_temperature = ritual_floor.GetTemperature()
+	ritual_floor.air.set_temperature(T0C + 20)
+	var/obj/effect/eldritch/rune = allocate(/obj/effect/eldritch/big, ritual_floor)
+	var/obj/item/kitchen/knife/knife = allocate(/obj/item/kitchen/knife, ritual_floor)
+	var/obj/effect/heretic_combat_zone/void/winter = allocate(/obj/effect/heretic_combat_zone/void, ritual_floor, heretic.owner)
+	STOP_PROCESSING(SSprocessing, winter)
+	winter.refresh_boundary(list(ritual_floor))
+	recipe.combat_zone = winter
+	winter.expires_at = world.time + 1 SECONDS
+	TEST_ASSERT(!rune.do_ritual(user, recipe), "Гаснущее поле не начинает обряд.")
+	TEST_ASSERT(!QDELETED(knife) && !GLOB.heretic_ritual_reservations[knife], "Нож свободен после отказа.")
+	TEST_ASSERT(findtext(recipe.ritual_start_reason(user, ritual_floor, recipe.ritual_time), "погаснет"), "Отказ говорит, что поле погаснет.")
+	winter.expires_at = world.time + recipe.ritual_time + 1 SECONDS
+	TEST_ASSERT_NULL(recipe.ritual_start_reason(user, ritual_floor, recipe.ritual_time), "Поле на весь обряд не мешает.")
+	ritual_floor.air.set_temperature(T0C - 10)
+	winter.expires_at = world.time + 1 SECONDS
+	TEST_ASSERT_NULL(recipe.ritual_start_reason(user, ritual_floor, recipe.ritual_time), "Холодному воздуху поле не нужно.")

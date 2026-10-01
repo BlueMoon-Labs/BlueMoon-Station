@@ -24,7 +24,6 @@
 	var/new_z = z_list.len + 1
 	if (world.maxz < new_z)
 		world.incrementMaxZ()
-		CHECK_TICK
 	// TODO: sleep here if the Z level needs to be cleared
 	var/datum/space_level/S = new z_type(new_z, name, traits)
 	z_list += S
@@ -32,6 +31,7 @@
 	//z-уровни, созданные до инита грида, разложит SSspatial_grid/Initialize сам
 	SSspatial_grid.propogate_spatial_grid_to_new_z(S)
 	build_z_stacks()
+	CHECK_TICK
 	return S
 
 /// Раскладывает z-уровни по вертикальным связкам, кэшируя сами связки, смещения плоскостей и соседей сверху-снизу.
