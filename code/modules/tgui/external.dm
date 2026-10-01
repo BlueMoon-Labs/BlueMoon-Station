@@ -263,6 +263,10 @@
 		payload = json_decode(href_list["payload"])
 	// Pass message to window
 	if(window)
+		if(copytext(type, 1, 5) == "act/")
+			var/client/user_client = usr.client
+			if(user_client)
+				user_client.last_activity = world.time
 		window.on_message(type, payload, href_list)
 	if(log_handshake && window)
 		log_tgui(usr,
