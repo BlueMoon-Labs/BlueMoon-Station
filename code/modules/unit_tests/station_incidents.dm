@@ -45,7 +45,9 @@
 /datum/unit_test/station_incidents/proc/describe_crate_blockers(obj/structure/closet/crate)
 	var/list/blockers = list()
 	for(var/mob/living/blocker in get_turf(crate))
-		blockers += "[blocker.type] (density [blocker.density], size [blocker.mob_size], anchored [blocker.anchored])"
+		if(!blocker.anchored && blocker.move_resist < MOVE_FORCE_VERY_STRONG && !(crate.horizontal && blocker.mob_size > MOB_SIZE_TINY && blocker.density))
+			continue
+		blockers += "[blocker.type] (density [blocker.density], size [blocker.mob_size], anchored [blocker.anchored], move_resist [blocker.move_resist])"
 	return length(blockers) ? ": на клетке [jointext(blockers, ", ")]" : ""
 
 /datum/unit_test/station_incidents/proc/check_target_limits()
