@@ -310,6 +310,7 @@
 		"После вознесения побег клинком закрыт.",
 		"Экипаж видит при осмотре, что дубинки, станы и снотворное вас почти не берут; светошумовые гранаты всё ещё валят.",
 		"Смерть снимает всё это, оживление возвращает.",
+		"Уже на обряде над станцией проступает Знак вашего пути и звучит небо; вознёсшись, вы затмеваете Знаком планету, а с вашей смертью он тускнеет.",
 		"Финальный обряд проводится только на станции: шахта, Лаваленд и шаттлы вне станции не подходят.",
 		"Открытый космос не годится, даже на своей площадке с воздухом.",
 		"После отлёта эвакуационного шаттла со станции вознесение уже не начать и не завершить.",
@@ -320,7 +321,6 @@
 	ritual_time = 30 SECONDS
 	var/finished = FALSE
 	var/simulated = FALSE
-	var/parallax_scene
 	var/list/ascension_traits = list()
 	var/list/ascension_spells = list()
 	var/mob/living/applied_body
@@ -379,8 +379,7 @@
 	heretic.ascended = TRUE
 	heretic.refresh_objective_completion()
 	heretic.refresh_book_ui()
-	if(parallax_scene && !simulated)
-		set_antag_parallax_scene(parallax_scene, "[ANTAG_PARALLAX_TOKEN_HERETIC]-[REF(src)]")
+	GLOB.heretic_sky.ascend(src, get_turf(loc) || get_turf(user))
 	log_game("[key_name(user)] завершает вознесение [name] в [AREACOORD(user)].")
 	announce_ascension(user)
 	on_body_gain(user)
@@ -392,6 +391,7 @@
 	if(applied_body)
 		on_body_lose(applied_body)
 	applied_body = user
+	GLOB.heretic_sky.rise(src)
 	apply_ascension_presence(user)
 	for(var/trait in ascension_traits)
 		ADD_TRAIT(user, trait, REF(src))
@@ -408,6 +408,7 @@
 /datum/eldritch_knowledge/final_eldritch/on_body_lose(mob/living/user)
 	if(!applied_body)
 		return
+	GLOB.heretic_sky.fall(src)
 	remove_ascension_presence()
 	for(var/trait in ascension_traits)
 		REMOVE_TRAIT(applied_body, trait, REF(src))
@@ -420,8 +421,7 @@
 
 /datum/eldritch_knowledge/final_eldritch/on_lose(mob/user)
 	. = ..()
-	if(finished && parallax_scene && !simulated)
-		clear_antag_parallax_scene("[ANTAG_PARALLAX_TOKEN_HERETIC]-[REF(src)]")
+	GLOB.heretic_sky.end(src)
 
 /datum/eldritch_knowledge/final_eldritch/on_death(mob/user)
 	if(applied_body == user)

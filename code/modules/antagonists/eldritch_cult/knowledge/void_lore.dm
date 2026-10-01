@@ -365,7 +365,6 @@
 	sacs_needed = HERETIC_ASCENSION_SACRIFICES
 	required_atoms = list(/mob/living/carbon/human, /mob/living/carbon/human, /mob/living/carbon/human)
 	route = PATH_VOID
-	parallax_scene = ANTAG_SCENE_HERETIC_VOID
 	ascension_spells = list(/obj/effect/proc_holder/spell/self/heretic_last_waltz)
 	var/datum/looping_sound/void_loop/sound_loop
 	var/datum/weather/void_storm/heretic/storm

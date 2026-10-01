@@ -404,6 +404,8 @@
 		return FALSE
 	var/datum/status_effect/heretic_wax/procession/procession = user.apply_status_effect(/datum/status_effect/heretic_wax/procession, src, required, crown)
 	procession?.tick()
+	if(crown)
+		GLOB.heretic_sky.event(required)
 	playsound(user, crown ? 'modular_bluemoon/sound/heretic/wax_ascend.ogg' : 'modular_bluemoon/sound/heretic/wax_cast.ogg', 65, TRUE)
 	return TRUE
 

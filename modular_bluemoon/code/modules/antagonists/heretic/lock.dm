@@ -1770,7 +1770,6 @@
 	spell_to_add = /obj/effect/proc_holder/spell/pointed/heretic_lock/court
 
 /datum/eldritch_knowledge/final_eldritch/lock_final
-	parallax_scene = ANTAG_SCENE_HERETIC_LOCK
 	name = "Отпереть Лабиринт"
 	summary = "До 16 печатей и 6 ключей, Размыкание на 45, а любой шлюз станции становится вашим выходом."
 	details = list(
@@ -2099,6 +2098,7 @@
 		return
 	key.release(TRUE)
 	knowledge.house_raised_fx(user, positions)
+	heretic_sky_event_for(user, /datum/eldritch_knowledge/final_eldritch/lock_final)
 	knowledge.gain_combat_resource(knowledge.combat_resource_max)
 
 #undef HERETIC_LOCK_RANGE

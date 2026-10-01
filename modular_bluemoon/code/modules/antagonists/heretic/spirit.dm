@@ -529,6 +529,7 @@
 	var/radius = final_cast ? 4 : 3
 	if(final_cast)
 		last_voyage_fx(user)
+		GLOB.heretic_sky.event(required)
 	for(var/turf/tile in range(radius, user))
 		if(!line_clear(user, tile, radius))
 			continue

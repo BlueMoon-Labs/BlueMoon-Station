@@ -1243,6 +1243,7 @@
 			if(prob(25))
 				var/trauma = pick(subtypesof(BRAIN_TRAUMA_MILD) + subtypesof(BRAIN_TRAUMA_SEVERE))
 				humie.gain_trauma(new trauma(), TRAUMA_RESILIENCE_LOBOTOMY)
+		GLOB.heretic_sky.event(knowledge)
 		heretic_flesh_shed_fx(outside, human_look)
 		return
 

@@ -667,6 +667,7 @@
 	if(!length(radial_cells(user)) && !length(relay_cells(user)))
 		return FALSE
 	active_network = new(src, required)
+	GLOB.heretic_sky.event(required)
 	return TRUE
 
 /// Незрячие от квирка или повязки сами по себе не в счёт, как сон и добровольный отдых.
@@ -1982,7 +1983,6 @@
 	return ..()
 
 /datum/eldritch_knowledge/final_eldritch/glass_final
-	parallax_scene = ANTAG_SCENE_HERETIC_GLASS
 	name = "Расколоть небосвод"
 	summary = "Тело становится витражом, лучи бьют дальше, открывается Вечный витраж."
 	details = list(

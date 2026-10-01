@@ -25,10 +25,12 @@ type SoundsData = {
   sound_volume_emote: number;
   sound_volume_personal_jukeboxes: number;
   sound_volume_heretic_dance: number;
+  sound_volume_heretic_sky: number;
 };
 
 const VOLUME_ONLY: { label: string; volKey: string; tooltip?: string }[] = [
   { label: 'Музыка Пляски', volKey: 'sound_volume_heretic_dance', tooltip: 'Громкость тактов пути Пляски: их слышат еретик, втянутые в танец и зрители рядом. Отключить нельзя: музыка - часть механики. Акценты и барабан идут отдельными звуками' },
+  { label: 'Небо вознесений', volKey: 'sound_volume_heretic_sky', tooltip: 'Звук неба над станцией, пока еретик вознёсся: далёкий гул его пути и отклики неба на его удары' },
 ];
 
 const SOUND_WITH_VOL: { key: string; label: string; volKey: string; tooltip?: string }[] = [

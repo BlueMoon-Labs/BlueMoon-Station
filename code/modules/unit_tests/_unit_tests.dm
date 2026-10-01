@@ -180,6 +180,7 @@
 #include "heretic_blood.dm"
 #include "heretic_echo.dm"
 #include "heretic_sand.dm"
+#include "heretic_sky.dm"
 #include "heretic_spirit.dm"
 #include "heretic_dance.dm"
 #include "heretic_wax.dm"

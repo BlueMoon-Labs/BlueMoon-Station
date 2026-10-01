@@ -478,7 +478,6 @@
 	cost = 3
 	sacs_needed = HERETIC_ASCENSION_SACRIFICES
 	route = PATH_FLESH
-	parallax_scene = ANTAG_SCENE_HERETIC_FLESH
 	ascension_spells = list(/obj/effect/proc_holder/spell/targeted/shed_human_form)
 	var/list/shed_form_health
 	var/ascension_active = FALSE

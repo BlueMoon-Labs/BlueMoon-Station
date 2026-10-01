@@ -475,6 +475,7 @@
 				break
 	if(final_cast)
 		last_noon(user, target)
+		GLOB.heretic_sky.event(required)
 	new /obj/effect/temp_visual/heretic_sand/ascend(target)
 	playsound(target, final_cast ? 'modular_bluemoon/sound/heretic/sand_ascend.ogg' : 'modular_bluemoon/sound/heretic/sand_cast.ogg', 75, FALSE)
 	return TRUE

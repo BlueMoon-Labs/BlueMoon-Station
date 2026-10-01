@@ -366,6 +366,7 @@ GLOBAL_LIST_INIT(heretic_rust_wave_sounds, list(
 	var/turf/origin = get_turf(user)
 	if(!origin)
 		return
+	heretic_sky_event_for(user, /datum/eldritch_knowledge/final_eldritch/rust_final)
 	var/list/field = heretic_field_view(HERETIC_RUST_WAVE_RANGE, origin)
 	for(var/mob/living/victim in field)
 		if(!heretic_can_affect(user, victim))

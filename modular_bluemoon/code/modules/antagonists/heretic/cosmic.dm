@@ -1497,7 +1497,6 @@
 	spell_to_add = /obj/effect/proc_holder/spell/self/cosmic/collapse
 
 /datum/eldritch_knowledge/final_eldritch/cosmic_final
-	parallax_scene = ANTAG_SCENE_HERETIC_COSMIC
 	name = "Небо внутри"
 	summary = "Под шагами загораются звёзды, нити жгут вдвое сильнее, рядом парит Звездочёт."
 	details = list(
@@ -1560,6 +1559,7 @@
 	user.visible_message(span_danger("Над [user] раскрывается звёздная прореха, и из неё выплывает Звездочёт!"))
 	log_game("[key_name(user)] призывает Звездочёта в [AREACOORD(user)].")
 	stargazer.arrive(user)
+	GLOB.heretic_sky.event(src)
 	return TRUE
 
 /datum/eldritch_knowledge/final_eldritch/cosmic_final/proc/dismiss_stargazer()

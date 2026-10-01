@@ -291,7 +291,6 @@
 	cost = 3
 	sacs_needed = HERETIC_ASCENSION_SACRIFICES
 	route = PATH_ASH
-	parallax_scene = ANTAG_SCENE_HERETIC_ASH
 	ascension_traits = list(TRAIT_RESISTHEAT, TRAIT_NOFIRE)
 	ascension_spells = list(/obj/effect/proc_holder/spell/aoe_turf/fire_cascade/big, /obj/effect/proc_holder/spell/targeted/fire_sworn)
 

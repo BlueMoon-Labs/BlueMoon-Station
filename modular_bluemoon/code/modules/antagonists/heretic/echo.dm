@@ -666,6 +666,7 @@
 		return FALSE
 	new /obj/effect/temp_visual/heretic_echo/ascend(get_turf(user))
 	toll(user)
+	GLOB.heretic_sky.event(required)
 	user.visible_message(span_userdanger("[user] поднимает ладони. Невидимый хор вступает голос за голосом!"))
 	return TRUE
 
@@ -1715,7 +1716,6 @@ GLOBAL_LIST_INIT(heretic_echo_spinup_sounds, list(
 	return ..()
 
 /datum/eldritch_knowledge/final_eldritch/echo_final
-	parallax_scene = ANTAG_SCENE_HERETIC_ECHO
 	name = "Регент Последнего Хора"
 	summary = "Попадания по вам отвечают звуковым крестом, запас растёт, открывается Последняя служба."
 	details = list(

@@ -1,9 +1,9 @@
 /**
  * # Сцены за бортом от антагонистов
  *
- * Культ и вознёсшийся еретик меняют вид из иллюминатора. Механика у них одна и та
- * же, поэтому все такие сцены объявлены здесь списком, а не рассыпаны по файлам
- * антагонистов: те только называют нужный ключ в момент своего события.
+ * Культ меняет вид из иллюминатора по ступеням. Все его сцены объявлены здесь списком,
+ * а файлы культа только называют нужный ключ в момент своего события. Небо вознесений
+ * еретика собирает свой координатор (heretic/sky.dm).
  *
  * Сцена НЕ подменяет профиль уровня, а ложится слоями поверх него. Причина не
  * техническая: станционный фон - это ориентир сектора, по нему игрок понимает, где
@@ -20,34 +20,10 @@
 #define ANTAG_SCENE_CULT_ASCENDENT "cult_ascendent"
 /// Нар'Си призвана. Сильнее сцены в игре нет и быть не должно.
 #define ANTAG_SCENE_NARSIE "narsie"
-/// Вознесение еретика по путям.
-#define ANTAG_SCENE_HERETIC_ASH "heretic_ash"
-#define ANTAG_SCENE_HERETIC_RUST "heretic_rust"
-#define ANTAG_SCENE_HERETIC_VOID "heretic_void"
-#define ANTAG_SCENE_HERETIC_FLESH "heretic_flesh"
-#define ANTAG_SCENE_HERETIC_BLADE "heretic_blade"
-#define ANTAG_SCENE_HERETIC_MOON "heretic_moon"
-#define ANTAG_SCENE_HERETIC_COSMIC "heretic_cosmic"
-#define ANTAG_SCENE_HERETIC_LOCK "heretic_lock"
-#define ANTAG_SCENE_HERETIC_TIDE "heretic_tide"
-#define ANTAG_SCENE_HERETIC_GLASS "heretic_glass"
-#define ANTAG_SCENE_HERETIC_BLOOD "heretic_blood"
-#define ANTAG_SCENE_HERETIC_ECHO "heretic_echo"
-#define ANTAG_SCENE_HERETIC_SAND "heretic_sand"
-#define ANTAG_SCENE_HERETIC_WAX "heretic_wax"
-#define ANTAG_SCENE_HERETIC_SPIRIT "heretic_spirit"
-#define ANTAG_SCENE_HERETIC_DANCE "heretic_dance"
-/// Ступени Болеро: за иллюминаторами проступает бал, к Финалу он заполняет небо.
-#define ANTAG_SCENE_HERETIC_DANCE_BALL "heretic_dance_ball"
-#define ANTAG_SCENE_HERETIC_DANCE_ORCHESTRA "heretic_dance_orchestra"
-#define ANTAG_SCENE_HERETIC_DANCE_FINALE "heretic_dance_finale"
 
 /// Токен культа. Один на все три ступени: повторный add_modifier с тем же токеном
 /// ЗАМЕНЯЕТ запись, поэтому усиление сцены не складывается с предыдущей ступенью.
 #define ANTAG_PARALLAX_TOKEN_CULT "antag_cult"
-/// Префикс токена вознесения: финальное знание добавляет REF(src), поэтому снятие
-/// роли одного еретика сохраняет сцены остальных вознёсшихся.
-#define ANTAG_PARALLAX_TOKEN_HERETIC "antag_heretic"
 
 /// Ключ сцены -> слои поверх текущей сцены уровня.
 GLOBAL_LIST_INIT(antag_parallax_scenes, list(
@@ -60,85 +36,6 @@ GLOBAL_LIST_INIT(antag_parallax_scenes, list(
 	),
 	ANTAG_SCENE_NARSIE = list(
 		/atom/movable/screen/parallax_layer/tint/antag/cult_narsie,
-		/atom/movable/screen/parallax_layer/goon/void_clouds_2,
-	),
-	ANTAG_SCENE_HERETIC_ASH = list(
-		/atom/movable/screen/parallax_layer/tint/antag/heretic_ash,
-		/atom/movable/screen/parallax_layer/goon/embers_sparse,
-	),
-	ANTAG_SCENE_HERETIC_RUST = list(
-		/atom/movable/screen/parallax_layer/tint/antag/heretic_rust,
-		/atom/movable/screen/parallax_layer/goon/dust_sparse,
-	),
-	ANTAG_SCENE_HERETIC_VOID = list(
-		/atom/movable/screen/parallax_layer/tint/antag/heretic_void,
-		/atom/movable/screen/parallax_layer/goon/void_clouds_2,
-	),
-	ANTAG_SCENE_HERETIC_FLESH = list(
-		/atom/movable/screen/parallax_layer/tint/antag/heretic_flesh,
-		/atom/movable/screen/parallax_layer/goon/blowout_clouds,
-	),
-	ANTAG_SCENE_HERETIC_BLADE = list(
-		/atom/movable/screen/parallax_layer/tint/antag/heretic_blade,
-		/atom/movable/screen/parallax_layer/eris/close/micro_debris,
-	),
-	ANTAG_SCENE_HERETIC_MOON = list(
-		/atom/movable/screen/parallax_layer/tint/antag/heretic_moon,
-		/atom/movable/screen/parallax_layer/goon/void_clouds_1,
-	),
-	ANTAG_SCENE_HERETIC_COSMIC = list(
-		/atom/movable/screen/parallax_layer/tint/antag/heretic_cosmic,
-		/atom/movable/screen/parallax_layer/donor/tauceti_3,
-	),
-	ANTAG_SCENE_HERETIC_LOCK = list(
-		/atom/movable/screen/parallax_layer/tint/antag/heretic_lock,
-		/atom/movable/screen/parallax_layer/goon/dust_sparse,
-	),
-	ANTAG_SCENE_HERETIC_TIDE = list(
-		/atom/movable/screen/parallax_layer/tint/antag/heretic_tide,
-		/atom/movable/screen/parallax_layer/goon/void_clouds_2,
-	),
-	ANTAG_SCENE_HERETIC_GLASS = list(
-		/atom/movable/screen/parallax_layer/tint/antag/heretic_glass,
-		/atom/movable/screen/parallax_layer/eris/close/micro_debris,
-	),
-	ANTAG_SCENE_HERETIC_BLOOD = list(
-		/atom/movable/screen/parallax_layer/tint/antag/heretic_blood,
-		/atom/movable/screen/parallax_layer/goon/blowout_clouds,
-	),
-	ANTAG_SCENE_HERETIC_ECHO = list(
-		/atom/movable/screen/parallax_layer/tint/antag/heretic_echo,
-		/atom/movable/screen/parallax_layer/goon/void_clouds_1,
-	),
-	ANTAG_SCENE_HERETIC_SAND = list(
-		/atom/movable/screen/parallax_layer/tint/antag/heretic_sand,
-		/atom/movable/screen/parallax_layer/goon/dust_sparse,
-	),
-	ANTAG_SCENE_HERETIC_WAX = list(
-		/atom/movable/screen/parallax_layer/tint/antag/heretic_wax,
-		/atom/movable/screen/parallax_layer/goon/void_clouds_1,
-	),
-	ANTAG_SCENE_HERETIC_DANCE = list(
-		/atom/movable/screen/parallax_layer/tint/antag/heretic_dance,
-		/atom/movable/screen/parallax_layer/goon/dust_sparse,
-	),
-	ANTAG_SCENE_HERETIC_DANCE_BALL = list(
-		/atom/movable/screen/parallax_layer/tint/antag/heretic_dance,
-		/atom/movable/screen/parallax_layer/heretic_dance_couples,
-	),
-	ANTAG_SCENE_HERETIC_DANCE_ORCHESTRA = list(
-		/atom/movable/screen/parallax_layer/tint/antag/heretic_dance_orchestra,
-		/atom/movable/screen/parallax_layer/heretic_dance_couples,
-		/atom/movable/screen/parallax_layer/heretic_dance_couples/near,
-	),
-	ANTAG_SCENE_HERETIC_DANCE_FINALE = list(
-		/atom/movable/screen/parallax_layer/tint/antag/heretic_dance_finale,
-		/atom/movable/screen/parallax_layer/heretic_dance_couples,
-		/atom/movable/screen/parallax_layer/heretic_dance_couples/near,
-		/atom/movable/screen/parallax_layer/goon/embers_sparse,
-	),
-	ANTAG_SCENE_HERETIC_SPIRIT = list(
-		/atom/movable/screen/parallax_layer/tint/antag/heretic_spirit,
 		/atom/movable/screen/parallax_layer/goon/void_clouds_2,
 	),
 ))
@@ -192,101 +89,3 @@ GLOBAL_LIST_INIT(antag_parallax_scenes, list(
 /atom/movable/screen/parallax_layer/tint/antag/cult_narsie
 	color = "#c0121a"
 	alpha = 120
-
-/// Князь пепла: небо горит оранжевым.
-/atom/movable/screen/parallax_layer/tint/antag/heretic_ash
-	color = "#b34a12"
-	alpha = 70
-
-/// Ржавый всадник: рыжий налёт на всём.
-/atom/movable/screen/parallax_layer/tint/antag/heretic_rust
-	color = "#8a4a1a"
-	alpha = 65
-
-/// Дворянин пустоты: холодная синева.
-/atom/movable/screen/parallax_layer/tint/antag/heretic_void
-	color = "#2a3a7a"
-	alpha = 70
-
-/// Повелитель ночи: густой багрянец.
-/atom/movable/screen/parallax_layer/tint/antag/heretic_flesh
-	color = "#7a1030"
-	alpha = 75
-
-/// Мастер Клинка: холодный блеск стали среди острых осколков.
-/atom/movable/screen/parallax_layer/tint/antag/heretic_blade
-	color = "#718494"
-	alpha = 55
-
-/// Обратная сторона Луны: серебристая дымка с лиловым отсветом.
-/atom/movable/screen/parallax_layer/tint/antag/heretic_moon
-	color = "#776d9e"
-	alpha = 65
-
-/// Небо внутри: бирюзовое сияние и чужие звёзды поверх знакомого сектора.
-/atom/movable/screen/parallax_layer/tint/antag/heretic_cosmic
-	color = "#237d91"
-	alpha = 70
-
-/atom/movable/screen/parallax_layer/tint/antag/heretic_lock
-	color = "#b99335"
-	alpha = 65
-
-/atom/movable/screen/parallax_layer/tint/antag/heretic_tide
-	color = "#166c80"
-	alpha = 75
-
-/atom/movable/screen/parallax_layer/tint/antag/heretic_glass
-	color = "#70a6a2"
-	alpha = 60
-
-/atom/movable/screen/parallax_layer/tint/antag/heretic_blood
-	color = "#990e27"
-	alpha = 80
-
-/atom/movable/screen/parallax_layer/tint/antag/heretic_echo
-	color = "#9e7943"
-	alpha = 60
-
-/atom/movable/screen/parallax_layer/tint/antag/heretic_sand
-	color = "#b49a68"
-	alpha = 65
-
-/atom/movable/screen/parallax_layer/tint/antag/heretic_wax
-	color = "#807b62"
-	alpha = 70
-
-/atom/movable/screen/parallax_layer/tint/antag/heretic_dance
-	color = "#8f3a2a"
-	alpha = 70
-
-/atom/movable/screen/parallax_layer/tint/antag/heretic_dance_orchestra
-	color = "#9a3324"
-	alpha = 85
-
-/atom/movable/screen/parallax_layer/tint/antag/heretic_dance_finale
-	color = "#b0201c"
-	alpha = 105
-
-/// Призрачные пары кружатся за иллюминаторами по обороту на такт Болеро и медленно проплывают мимо.
-/atom/movable/screen/parallax_layer/heretic_dance_couples
-	icon = 'modular_bluemoon/icons/effects/heretic_dance_bolero_sky.dmi'
-	icon_state = "bolero_couples_far"
-	tile_size = 256
-	speed = 0.6
-	layer = 4.5
-	parallax_intensity = PARALLAX_MED
-	fade_in_time = 6 SECONDS
-	drift_time = 90 SECONDS
-	drift_angle = 90
-
-/atom/movable/screen/parallax_layer/heretic_dance_couples/near
-	icon_state = "bolero_couples_near"
-	speed = 1.4
-	layer = 4.6
-	drift_time = 50 SECONDS
-	drift_angle = 270
-
-/atom/movable/screen/parallax_layer/tint/antag/heretic_spirit
-	color = "#4b9384"
-	alpha = 65

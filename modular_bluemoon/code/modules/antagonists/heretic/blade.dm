@@ -693,7 +693,6 @@
 	spell_to_add = /obj/effect/proc_holder/spell/self/heretic_blade/dance
 
 /datum/eldritch_knowledge/final_eldritch/blade_final
-	parallax_scene = ANTAG_SCENE_HERETIC_BLADE
 	name = "Последний поединок"
 	summary = "Вокруг вас кружат четыре клинка, ваш клинок пьёт кровь, открывается Буря клинков."
 	details = list(
@@ -1004,6 +1003,7 @@
 	if(!length(victims))
 		heretic_revert_cast(user, "Рядом нет видимых врагов на открытой линии, клинкам некуда лететь.")
 		return
+	GLOB.heretic_sky.event(heretic?.get_knowledge(/datum/eldritch_knowledge/final_eldritch/blade_final))
 	var/turf/origin = get_turf(user)
 	var/list/launched = orbit.orbit_blades.Copy(1, length(victims) + 1)
 	for(var/index in 1 to length(victims))

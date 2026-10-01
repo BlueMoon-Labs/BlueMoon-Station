@@ -183,15 +183,6 @@
 	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_dance.dmi'
 	ascension_aura_state = "dance_aura"
 
-/datum/eldritch_knowledge/final_eldritch/dance_final
-	parallax_scene = ANTAG_SCENE_HERETIC_DANCE
-
-/datum/eldritch_knowledge/final_eldritch/sand_final
-	parallax_scene = ANTAG_SCENE_HERETIC_SAND
-
-/datum/eldritch_knowledge/final_eldritch/wax_final
-	parallax_scene = ANTAG_SCENE_HERETIC_WAX
-
 /datum/heretic_path/spirit
 	ascension_title = "Перевозчик Непришедших"
 	ascension_message = "За иллюминаторами загораются бледные огни. Последняя переправа открыта; живые слышат, как называют их имена."
@@ -199,9 +190,6 @@
 	ascension_sound = 'modular_bluemoon/sound/heretic/spirit_ascend.ogg'
 	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_spirit.dmi'
 	ascension_aura_state = "spirit_aura"
-
-/datum/eldritch_knowledge/final_eldritch/spirit_final
-	parallax_scene = ANTAG_SCENE_HERETIC_SPIRIT
 
 /// Объявление появляется только после подбора и резервирования настоящих компонентов.
 /datum/eldritch_knowledge/final_eldritch/proc/begin_ascension_ritual(mob/living/user, obj/effect/eldritch/rune)
@@ -215,6 +203,7 @@
 	if(world.time < heretic.ascension_ready_at)
 		return FALSE
 	COOLDOWN_START(src, ascension_warning, HERETIC_ASCENSION_WARNING_COOLDOWN)
+	GLOB.heretic_sky.begin(src, get_turf(rune), ritual_time * user.cached_multiplicative_actions_slowdown)
 	if(heretic.simulated)
 		to_chat(user, span_notice("Учебный обряд вознесения начался. Удерживайте позицию до его завершения."))
 		return TRUE
@@ -222,6 +211,7 @@
 	return TRUE
 
 /datum/eldritch_knowledge/final_eldritch/proc/abort_ascension_ritual(area/ritual_area, ritual_elapsed)
+	GLOB.heretic_sky.abort(src)
 	if(istype(ritual_area, /area/antag_training))
 		return TRUE
 	if(finished || !isnum(ritual_elapsed) || ritual_elapsed < 0)
@@ -540,6 +530,7 @@
 	user.visible_message(span_danger("[user] завершает такт. Из-под ног расходится белая печать, оттесняя окружающих!"))
 	playsound(user, 'sound/magic/voidblink.ogg', 70, FALSE)
 	heretic_waltz_silence(user)
+	heretic_sky_event_for(user, /datum/eldritch_knowledge/final_eldritch/void_final)
 	heretic_vfx_shockwave(center, HERETIC_WALTZ_INK, HERETIC_WALTZ_WAVE_RADIUS, HERETIC_WALTZ_WAVE_TIME)
 	heretic_vfx_burst(center, /particles/heretic_ascension/void)
 	heretic_vfx_flash(center, HERETIC_WALTZ_INK, HERETIC_WALTZ_FLASH_RANGE, HERETIC_WALTZ_FLASH_POWER, HERETIC_WALTZ_FLASH_TIME)

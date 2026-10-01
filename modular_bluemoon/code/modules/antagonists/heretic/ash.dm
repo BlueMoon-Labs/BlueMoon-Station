@@ -284,6 +284,9 @@
 /obj/effect/proc_holder/spell/aoe_turf/fire_cascade/big/cascade_opening(turf/origin, atom/centre)
 	. = ..()
 	heretic_ash_heat_shimmer(centre)
+	var/mob/living/caster = centre
+	if(istype(caster))
+		heretic_sky_event_for(caster, /datum/eldritch_knowledge/final_eldritch/ash_final)
 	heretic_vfx_shockwave(origin, HERETIC_ASH_INK, HERETIC_ASH_CASCADE_WAVE_RADIUS, HERETIC_ASH_CASCADE_WAVE_TIME)
 	heretic_vfx_burst(origin, /particles/heretic_ascension/ash)
 	heretic_vfx_flash(origin, LIGHT_COLOR_FIRE, HERETIC_ASH_CASCADE_FLASH_RANGE, HERETIC_ASH_CASCADE_FLASH_POWER)

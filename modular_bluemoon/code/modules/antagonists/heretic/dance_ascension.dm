@@ -55,18 +55,20 @@ GLOBAL_LIST_INIT(heretic_dance_voices, list('modular_bluemoon/sound/heretic/danc
 	dance?.stop_bolero()
 	return ..()
 
-/// Небо станции меняется со ступенью Болеро под тем же токеном, что и сцена вознесения.
+/// Небо над местом вознесения меняется со ступенью Болеро: бал, оркестр, Финал.
 /datum/eldritch_knowledge/final_eldritch/dance_final/proc/show_bolero_scene(stage)
 	if(!finished)
 		return
-	var/scene = ANTAG_SCENE_HERETIC_DANCE
+	var/sky_tier = 0
 	if(stage > HERETIC_DANCE_BOLERO_STAGES)
-		scene = ANTAG_SCENE_HERETIC_DANCE_FINALE
+		sky_tier = 3
 	else if(stage >= 3)
-		scene = ANTAG_SCENE_HERETIC_DANCE_ORCHESTRA
+		sky_tier = 2
 	else if(stage >= 1)
-		scene = ANTAG_SCENE_HERETIC_DANCE_BALL
-	set_antag_parallax_scene(scene, "[ANTAG_PARALLAX_TOKEN_HERETIC]-[REF(src)]", 4 SECONDS)
+		sky_tier = 1
+	GLOB.heretic_sky.tier(src, sky_tier)
+	if(sky_tier == 3)
+		GLOB.heretic_sky.event(src)
 
 /datum/eldritch_knowledge/final_eldritch/dance_final/on_ascended_examine(datum/source, mob/examiner, list/examine_list)
 	. = ..()

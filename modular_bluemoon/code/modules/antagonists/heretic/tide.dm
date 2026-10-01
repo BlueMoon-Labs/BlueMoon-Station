@@ -645,6 +645,7 @@
 	var/turf/center = get_turf(user)
 	if(ascended_wave)
 		voice_fx(center, wave_radius)
+		GLOB.heretic_sky.event(heretic?.get_knowledge(/datum/eldritch_knowledge/final_eldritch/tide_final))
 	for(var/mob/living/victim in range(wave_radius, center))
 		if(!isturf(victim.loc) || !line_clear(center, victim, wave_radius) || !heretic_can_affect(user, victim))
 			continue
@@ -1393,7 +1394,6 @@
 	spell_to_add = /obj/effect/proc_holder/spell/pointed/heretic_tide/deluge
 
 /datum/eldritch_knowledge/final_eldritch/tide_final
-	parallax_scene = ANTAG_SCENE_HERETIC_TIDE
 	name = "Владыка Пучины"
 	summary = "Пол вокруг вас заливает чёрная вода, давление растёт, открывается Голос Пучины."
 	details = list(

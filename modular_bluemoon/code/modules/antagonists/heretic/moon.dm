@@ -548,6 +548,7 @@
 /// В миг удара от героя в обе стороны отскакивают отражения, серебряная волна несёт маскарад по залу.
 /datum/eldritch_knowledge/base_moon/proc/masquerade_visuals(mob/living/user)
 	var/turf/center = get_turf(user)
+	heretic_sky_event_for(user, /datum/eldritch_knowledge/final_eldritch/moon_final)
 	new /obj/effect/temp_visual/heretic_moon_mirror(center, user, HERETIC_MOON_MASQUERADE_GHOST_OFFSET)
 	new /obj/effect/temp_visual/heretic_moon_mirror(center, user, -HERETIC_MOON_MASQUERADE_GHOST_OFFSET)
 	heretic_vfx_pulse(user, HERETIC_MOON_SILVER, 2, HERETIC_MOON_MASQUERADE_WAVE_TIME / 2)
@@ -1446,7 +1447,6 @@
 	spell_to_add = /obj/effect/proc_holder/spell/self/heretic_moon/eclipse
 
 /datum/eldritch_knowledge/final_eldritch/moon_final
-	parallax_scene = ANTAG_SCENE_HERETIC_MOON
 	name = "Обратная сторона Луны"
 	summary = "До пяти прочных копий, перехват выстрелов без задержки и Лунный маскарад."
 	details = list(

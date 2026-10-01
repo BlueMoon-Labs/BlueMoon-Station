@@ -1116,6 +1116,7 @@
 	if(!chosen.begin_collection(heretic.get_knowledge(/datum/eldritch_knowledge/final_eldritch/blood_final)))
 		return FALSE
 	verdict_threads_fx(donor_turfs, victim)
+	GLOB.heretic_sky.event(heretic.get_knowledge(/datum/eldritch_knowledge/final_eldritch/blood_final))
 	return TRUE
 
 /// Кровный приговор: нити крови от прочих должников втягиваются в выбранного, вокруг него к удару смыкается кольцо.
@@ -2078,7 +2079,6 @@
 	return ..()
 
 /datum/eldritch_knowledge/final_eldritch/blood_final
-	parallax_scene = ANTAG_SCENE_HERETIC_BLOOD
 	name = "Венценосец Багровой Чаши"
 	summary = "Кровотечение врагов рядом удваивается, чужая кровь с пола лечит, открывается Кровный приговор."
 	details = list(

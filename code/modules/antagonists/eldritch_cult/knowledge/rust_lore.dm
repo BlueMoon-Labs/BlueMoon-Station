@@ -283,7 +283,6 @@
 	sacs_needed = HERETIC_ASCENSION_SACRIFICES
 	required_atoms = list(/mob/living/carbon/human, /mob/living/carbon/human, /mob/living/carbon/human)
 	route = PATH_RUST
-	parallax_scene = ANTAG_SCENE_HERETIC_RUST
 	ascension_traits = list(TRAIT_RESISTHEAT)
 	ascension_spells = list(/obj/effect/proc_holder/spell/self/rust_corrosive_wave)
 	var/datum/rust_spread/spread

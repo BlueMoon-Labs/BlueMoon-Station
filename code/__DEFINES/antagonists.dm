@@ -101,6 +101,27 @@ GLOBAL_LIST_EMPTY(living_heart_cache)	//A list of all living hearts in existance
 #define PATH_SPIRIT "Spirit"
 #define PATH_DANCE "Dance"
 
+#define HERETIC_SKY_OMEN "omen"
+#define HERETIC_SKY_ASCENDED "ascended"
+#define HERETIC_SKY_FALLEN "fallen"
+#define HERETIC_SKY_ENDING "ending"
+
+#define HERETIC_SKY_ROLE_DIM "dim"
+#define HERETIC_SKY_ROLE_TINT "tint"
+#define HERETIC_SKY_ROLE_TEXTURE "texture"
+#define HERETIC_SKY_ROLE_TEXTURE_NEAR "texture_near"
+#define HERETIC_SKY_ROLE_GLOW "glow"
+#define HERETIC_SKY_ROLE_CORONA "corona"
+#define HERETIC_SKY_ROLE_ECLIPSE "eclipse"
+#define HERETIC_SKY_ROLE_FIELD "field"
+#define HERETIC_SKY_ROLE_PRESENCE "presence"
+#define HERETIC_SKY_ROLE_PARTICLES "particles"
+#define HERETIC_SKY_ROLE_FLASH "flash"
+
+#define HERETIC_SKY_TOKEN "heretic_sky"
+#define HERETIC_SKY_GROUP_STATION "station"
+#define HERETIC_SKY_MAX_SLOTS 4
+
 #define HERETIC_ROLE_CRAFT "craft"
 #define HERETIC_ROLE_CAPTURE "capture"
 #define HERETIC_ROLE_ESCAPE "escape"
