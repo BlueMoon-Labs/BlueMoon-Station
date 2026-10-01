@@ -44,6 +44,9 @@
 	return //stops TK fuckery
 
 /obj/item/autosurgeon/attackby(obj/item/I, mob/user, params)
+	if(istype(I, /obj/item/organ/regenerative_core))
+		to_chat(user, "<span class='warning'>[src] cannot hold a [I].</span>")
+		return
 	if(istype(I, organ_type))
 		if(storedorgan)
 			to_chat(user, "<span class='notice'>[src] already has an implant stored.</span>")
