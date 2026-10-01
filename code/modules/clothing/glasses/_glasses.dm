@@ -393,6 +393,10 @@
 	tint = 3			// to make them blind
 	var/blind_mode = BLIND_MODE_NORMAL
 
+/obj/item/clothing/glasses/sunglasses/blindfold/Initialize()
+	. = ..()
+	AddComponent(/datum/component/latex_lockable)
+
 /obj/item/clothing/glasses/sunglasses/blindfold/equipped(mob/living/carbon/human/user, slot)
 	. = ..()
 	if(slot == ITEM_SLOT_EYES)
