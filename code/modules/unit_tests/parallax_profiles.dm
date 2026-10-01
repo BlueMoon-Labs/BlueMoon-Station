@@ -558,3 +558,16 @@
 		weather_checked++
 		TEST_ASSERT_NOTNULL(SSparallax.profiles_by_id[weather_profile], "Погода [weather_type] ссылается на несуществующий профиль '[weather_profile]'")
 	TEST_ASSERT(weather_checked >= 3, "Погод с профилем параллакса нашлось всего [weather_checked]")
+
+/// Косой дрейф идёт по каждой оси своим циклом ровно в тайл: стык бесшовный, направление и скорость сохранены.
+/datum/unit_test/parallax_drift_axis_periods/Run()
+	var/atom/movable/screen/parallax_layer/layer = allocate(/atom/movable/screen/parallax_layer)
+	layer.drift_time = 100
+	for(var/angle in list(0, 15, 45, 90, 135, 250))
+		layer.drift_angle = angle
+		var/list/periods = layer.DriftAxisPeriods()
+		var/speed_x = periods[1] ? layer.tile_size / periods[1] : 0
+		var/speed_y = periods[2] ? layer.tile_size / periods[2] : 0
+		var/expected = layer.tile_size / layer.drift_time
+		TEST_ASSERT(abs(sqrt(speed_x ** 2 + speed_y ** 2) - expected) < 0.01, "Дрейф под [angle] градусов изменил скорость: [sqrt(speed_x ** 2 + speed_y ** 2)] вместо [expected]")
+		TEST_ASSERT(abs(speed_x - abs(sin(angle)) * expected) < 0.01 && abs(speed_y - abs(cos(angle)) * expected) < 0.01, "Дрейф под [angle] градусов ушёл с направления")

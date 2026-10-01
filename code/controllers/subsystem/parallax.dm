@@ -231,6 +231,8 @@ SUBSYSTEM_DEF(parallax)
 
 	template = new /datum/parallax(profile, extra_layers, tint, current_revision, environment_for_z(z))
 	apply_saved_layer_colors(key, template)
+	for(var/datum/parallax_modifier/modifier as anything in modifiers_by_z[key])
+		modifier.on_build?.Invoke(template)
 	parallax_templates_by_z[key] = template
 	return template
 
@@ -306,8 +308,9 @@ SUBSYSTEM_DEF(parallax)
  * @param extra_layers - типпасы слоёв поверх выбранного профиля. Необязательно.
  * @param tint - цвет для слоёв с palette_tinted. Необязательно.
  * @param fade_time - если больше нуля, сцена сменится через затемнение, а не рывком.
+ * @param on_build - callback, получающий каждый новый шаблон z. Необязательно.
  */
-/datum/controller/subsystem/parallax/proc/add_modifier(z, token, profile_or_id, list/extra_layers, tint, priority = 0, fade_time = 0)
+/datum/controller/subsystem/parallax/proc/add_modifier(z, token, profile_or_id, list/extra_layers, tint, priority = 0, fade_time = 0, datum/callback/on_build)
 	RETURN_TYPE(/datum/parallax_modifier)
 	if(!isnum(z) || z < 1 || !token)
 		CRASH("add_modifier: некорректные z ([z]) или токен ([token])")
@@ -325,7 +328,7 @@ SUBSYSTEM_DEF(parallax)
 		stack -= existing
 		qdel(existing)
 		break
-	var/datum/parallax_modifier/modifier = new(token, z, priority, profile, extra_layers, tint)
+	var/datum/parallax_modifier/modifier = new(token, z, priority, profile, extra_layers, tint, on_build)
 	// Вставка с сохранением порядка по приоритету: стек короткий, сортировать нечего.
 	var/inserted = FALSE
 	for(var/i in 1 to length(stack))
@@ -373,8 +376,8 @@ SUBSYSTEM_DEF(parallax)
 	return remove_modifier(z, token, fade_time)
 
 /// Добавляет временные слои поверх текущей сцены z.
-/datum/controller/subsystem/parallax/proc/add_layers(z, token, list/layer_paths, priority = 0, fade_time = 0)
-	return add_modifier(z, token, null, layer_paths, null, priority, fade_time)
+/datum/controller/subsystem/parallax/proc/add_layers(z, token, list/layer_paths, priority = 0, fade_time = 0, datum/callback/on_build)
+	return add_modifier(z, token, null, layer_paths, null, priority, fade_time, on_build)
 
 /// Перекрашивает слои сцены z, помеченные palette_tinted.
 /datum/controller/subsystem/parallax/proc/set_tint(z, token, tint, priority = 0, fade_time = 0)
@@ -488,6 +491,14 @@ SUBSYSTEM_DEF(parallax)
 				animate(layer, alpha = 0, time = time)
 	addtimer(CALLBACK(src, PROC_REF(remove_modifier), z, token, 0), time + 1, TIMER_UNIQUE | TIMER_OVERRIDE)
 	return TRUE
+
+/// Живые слои всех держателей, которые сейчас смотрят на z.
+/datum/controller/subsystem/parallax/proc/live_layers_on_z(z)
+	. = list()
+	for(var/client/viewer as anything in GLOB.clients)
+		var/datum/parallax_holder/holder = viewer.parallax_holder
+		if(holder?.last?.z == z)
+			. += holder.layers
 
 /// Список z, на которых сейчас есть хоть один клиент - чтобы событие не трогало пустые.
 /datum/controller/subsystem/parallax/proc/populated_z_levels()
