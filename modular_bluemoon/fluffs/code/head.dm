@@ -483,7 +483,7 @@
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
 	clothing_flags = ALLOWINTERNALS
-	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR
+	flags_inv = HIDEEARS|HIDEHAIR|HIDEFACIALHAIR
 	unique_reskin = null
 
 ///////////////////////////////////////////////
