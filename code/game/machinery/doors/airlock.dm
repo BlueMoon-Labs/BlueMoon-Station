@@ -52,6 +52,8 @@
 #define NOT_ELECTRIFIED 0
 #define ELECTRIFIED_PERMANENT -1
 #define AI_ELECTRIFY_DOOR_TIME 30
+/// How far an airlock looks for its cyclelink partner
+#define CYCLELINK_SEARCH_DISTANCE 11
 
 /// Пауза перед первой повторной попыткой автозакрытия, когда проём занят плотным объектом
 #define AIRLOCK_OBSTRUCTED_RETRY_DELAY (6 SECONDS)
@@ -185,7 +187,7 @@
 		cyclelinkedairlock = null
 	if (!cyclelinkeddir)
 		return
-	var/limit = world.view
+	var/limit = CYCLELINK_SEARCH_DISTANCE
 	var/turf/T = get_turf(src)
 	var/obj/machinery/door/airlock/FoundDoor
 	do
@@ -1917,6 +1919,7 @@
 #undef NOT_ELECTRIFIED
 #undef ELECTRIFIED_PERMANENT
 #undef AI_ELECTRIFY_DOOR_TIME
+#undef CYCLELINK_SEARCH_DISTANCE
 
 #undef AIRLOCK_OBSTRUCTED_RETRY_DELAY
 #undef AIRLOCK_OBSTRUCTED_RETRY_DELAY_MAX
