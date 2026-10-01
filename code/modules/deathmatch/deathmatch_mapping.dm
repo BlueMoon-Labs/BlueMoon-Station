@@ -19,16 +19,16 @@
 	// used because loadout / cryo / shuttles teleports have to work in an arena.
 
 /// BlueMoon has no area level fullbright (the 516 lighting rework dropped
-/// base_lighting_alpha), so tiles in this subtype are lit by the map template
-/// that loads them: /datum/map_template/deathmatch/turn_on_the_lights() drops
-/// emitters once the map is in place. Only a handful of maps actually use it.
+/// base_lighting_alpha), so an arena is lit by the map template that loads it:
+/// /datum/map_template/deathmatch/turn_on_the_lights() drops emitters over the
+/// freshly loaded bounds. No lighting lives on the area for the reason spelled
+/// out in /area/deathmatch below.
 ///
-/// The lighting is deliberately not done here. An /area in this codebase is one
-/// object shared by every tile of its type in the world, not one per map load,
-/// so a flag or a cache kept on the area would survive the arena it belonged to
-/// and either leave the second game on a map dark or light somebody else's
-/// turfs.
- /area/deathmatch/fullbright
+/// Left declared and unused. No .dmm in this codebase carries an "area" key, so
+/// nothing can land on this subtype; it is kept as the obvious landing spot if
+/// a per area opt-in is ever wanted, and must not be given state that a later
+/// arena would inherit.
+/area/deathmatch/fullbright
 	name = "Deathmatch Arena (Lit)"
 
 /obj/effect/light_emitter/deathmatch

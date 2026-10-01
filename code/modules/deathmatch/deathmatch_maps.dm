@@ -37,19 +37,24 @@
 	/// Loadout every player on this map spawns with. See deathmatch_loadouts.dm.
 	var/loadout = /datum/outfit/deathmatch_loadout/bare
 
-	/// The map is complete by the time this runs, so it is safe to look for
-	/// /area/deathmatch/fullbright in the freshly loaded bounds.
+	/// The map is complete by the time this runs, so the freshly loaded bounds
+	/// can be walked turfs and lit.
 	on_map_loaded(z, list/bounds)
 		. = ..()
 		turn_on_the_lights(bounds)
 
 /datum/map_template/deathmatch/proc/turn_on_the_lights(list/bounds)
-	/// BlueMoon dropped area level fullbright in the 516 lighting rework, so the
-	/// /area/deathmatch/fullbright tiles the maps use have to light themselves
-	/// once the map is in place. Doing it from the template, over the freshly
-	/// loaded bounds, is what keeps two arenas up at the same time from lighting
-	/// each other's turfs: /area is one object shared by every tile of its type,
-	/// so a per area flag would outlive the arena it belonged to.
+	/// BlueMoon dropped area level fullbright (the 516 lighting rework removed
+	/// base_lighting_alpha), so the freshly loaded bounds have to be lit from
+	/// here. Doing it from the template, over the bounds of this load only, is
+	/// what keeps two arenas up at the same time from lighting each other's
+	/// turfs: /area is one object shared by every tile of its type in the world,
+	/// so a per area flag or cache would outlive the arena it belonged to.
+	///
+	/// This lights every turf in the bounds, not a subset. An earlier version
+	/// gated it on /area/deathmatch/fullbright, but no .dmm in this codebase
+	/// carries an "area" key - 0 of them did - so that check could never pass and
+	/// arenas loaded unlit. Do not reintroduce an area based gate here.
 	if(!bounds)
 		return 0
 	var/turf/bottom_left = locate(bounds[MAP_MINX], bounds[MAP_MINY], bounds[MAP_MINZ])
@@ -65,9 +70,6 @@
 	var/turf/last_lit
 	var/counted = 0
 	for(var/turf/turf_to_light as anything in block(bottom_left, top_right))
-		var/area/deathmatch/fullbright/lit_area = turf_to_light.loc
-		if(!lit_area)
-			continue
 		if(last_lit && (abs(turf_to_light.x - last_lit.x) < light_spacing) && (abs(turf_to_light.y - last_lit.y) < light_spacing))
 			continue
 		var/obj/effect/light_emitter/deathmatch/emitter = new(turf_to_light)

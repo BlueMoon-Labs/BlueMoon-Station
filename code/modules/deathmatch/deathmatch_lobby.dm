@@ -182,7 +182,7 @@
 
 	to_chat(vr_body, span_boldnotice(template.display_name))
 	to_chat(vr_body, span_notice("Host: [host_key]"))
-	to_chat(vr_body, span_notice("Players: [player_count()]/[template.max_players]. This game ends on its own in [game_time / 1000] seconds."))
+	to_chat(vr_body, span_notice("Players: [player_count()]/[template.max_players]. This game ends on its own in [DisplayTimeText(game_time)]."))
 	to_chat(vr_body, span_notice("Killing you in here only kills the avatar."))
 	return player
 
