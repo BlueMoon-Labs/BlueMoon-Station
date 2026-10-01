@@ -117,3 +117,7 @@ endmap
 map icemoonstation
 minplayers 30
 endmap
+
+map tramstation
+minplayers 70
+endmap

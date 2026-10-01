@@ -1,0 +1,1082 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/obj/item/stack/ore/gold,
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"e" = (
+/obj/modular_map_connector,
+/turf/open/floor/plating/asteroid,
+/area/maintenance/department/cargo)
+"f" = (
+/obj/structure/closet/crate/miningcar{
+	desc = "A mining cart. This one doesn't work on rails, which is good because we never had rails to begin with.";
+	name = "mining cart"
+	},
+/obj/item/stack/ore/glass{
+	amount = 25
+	},
+/obj/item/stack/ore/iron{
+	amount = 25
+	},
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"i" = (
+/obj/item/stack/ore/iron,
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"k" = (
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"m" = (
+/turf/closed/mineral/asteroid/porous,
+/area/maintenance/department/cargo)
+"n" = (
+/turf/template_noop,
+/area/template_noop)
+"o" = (
+/obj/item/instrument/trombone,
+/obj/item/organ/tongue/bone,
+/turf/open/floor/plating/asteroid{
+	dug = 1;
+	floor_variance = 0;
+	icon_state = "asteroid_dug"
+	},
+/area/asteroid/tramstation)
+"p" = (
+/turf/closed/wall,
+/area/maintenance/department/cargo)
+"r" = (
+/obj/structure/ore_box,
+/obj/effect/turf_decal/weather/sand/plating,
+/turf/open/floor/plating,
+/area/asteroid/tramstation)
+"s" = (
+/obj/item/stack/ore/glass,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plating/asteroid{
+	dug = 1;
+	floor_variance = 0;
+	icon_state = "asteroid_dug"
+	},
+/area/asteroid/tramstation)
+"t" = (
+/turf/open/floor/plating/asteroid,
+/area/maintenance/department/cargo)
+"u" = (
+/obj/structure/barricade/wooden,
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"v" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/asteroid/tramstation)
+"z" = (
+/obj/item/stack/ore/glass,
+/turf/open/floor/plating/asteroid{
+	dug = 1;
+	floor_variance = 0;
+	icon_state = "asteroid_dug"
+	},
+/area/asteroid/tramstation)
+"A" = (
+/obj/structure/ore_box,
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"B" = (
+/obj/effect/decal/remains/human,
+/turf/open/floor/plating/asteroid{
+	dug = 1;
+	floor_variance = 0;
+	icon_state = "asteroid_dug"
+	},
+/area/asteroid/tramstation)
+"G" = (
+/turf/open/floor/plating/asteroid{
+	dug = 1;
+	floor_variance = 0;
+	icon_state = "asteroid_dug"
+	},
+/area/asteroid/tramstation)
+"I" = (
+/obj/item/clothing/head/hardhat,
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"J" = (
+/obj/structure/rack,
+/obj/item/paper{
+	default_raw_text = "Please leave on-site equipment alone as they are on loan from Nanotrasen Mining Co and need returned soon.";
+	name = "NOTICE"
+	},
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"K" = (
+/obj/item/stack/ore/silver,
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"M" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/maintenance/department/cargo)
+"N" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"O" = (
+/obj/item/mining_scanner,
+/turf/open/floor/plating/asteroid{
+	dug = 1;
+	floor_variance = 0;
+	icon_state = "asteroid_dug"
+	},
+/area/asteroid/tramstation)
+"S" = (
+/obj/item/shovel{
+	pixel_x = -5
+	},
+/turf/open/floor/plating/asteroid{
+	dug = 1;
+	floor_variance = 0;
+	icon_state = "asteroid_dug"
+	},
+/area/asteroid/tramstation)
+"T" = (
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"U" = (
+/obj/item/stack/ore/iron,
+/obj/item/stack/ore/iron,
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"V" = (
+/obj/structure/rack,
+/obj/effect/turf_decal/weather/sand/plating,
+/obj/item/shovel{
+	pixel_x = -5
+	},
+/obj/item/pickaxe{
+	pixel_x = 5
+	},
+/turf/open/floor/plating,
+/area/asteroid/tramstation)
+"X" = (
+/obj/item/clothing/suit/hazardvest,
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"Y" = (
+/obj/item/pickaxe/mini,
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"Z" = (
+/obj/item/stack/sheet/mineral/wood,
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+
+(1,1,1) = {"
+p
+p
+M
+t
+e
+m
+p
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+"}
+(2,1,1) = {"
+v
+K
+v
+v
+T
+J
+v
+v
+v
+v
+v
+v
+v
+v
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+"}
+(3,1,1) = {"
+v
+T
+T
+v
+Z
+T
+T
+K
+v
+T
+v
+v
+v
+v
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+"}
+(4,1,1) = {"
+v
+T
+G
+v
+u
+u
+v
+v
+v
+T
+v
+v
+v
+v
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+"}
+(5,1,1) = {"
+v
+T
+G
+v
+m
+N
+T
+v
+v
+T
+T
+v
+v
+v
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+"}
+(6,1,1) = {"
+v
+T
+T
+v
+T
+T
+T
+v
+v
+v
+T
+v
+v
+v
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+"}
+(7,1,1) = {"
+v
+T
+T
+T
+T
+T
+T
+v
+v
+Y
+T
+v
+v
+v
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+"}
+(8,1,1) = {"
+v
+v
+T
+T
+T
+T
+T
+v
+v
+T
+T
+T
+i
+v
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+"}
+(9,1,1) = {"
+v
+v
+v
+v
+r
+V
+T
+T
+v
+T
+T
+v
+v
+v
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+"}
+(10,1,1) = {"
+v
+v
+v
+v
+v
+v
+T
+T
+v
+v
+T
+v
+v
+v
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+"}
+(11,1,1) = {"
+v
+v
+v
+i
+v
+v
+T
+T
+v
+v
+T
+v
+v
+v
+v
+v
+v
+v
+n
+n
+n
+n
+n
+n
+"}
+(12,1,1) = {"
+v
+U
+T
+T
+v
+v
+z
+T
+T
+T
+T
+T
+T
+v
+v
+v
+v
+v
+n
+n
+n
+n
+n
+n
+"}
+(13,1,1) = {"
+v
+v
+v
+T
+v
+v
+v
+T
+T
+f
+T
+v
+v
+v
+v
+v
+v
+v
+n
+n
+n
+n
+n
+n
+"}
+(14,1,1) = {"
+v
+v
+v
+T
+T
+v
+v
+k
+m
+v
+v
+v
+v
+v
+v
+v
+v
+v
+n
+n
+n
+n
+n
+n
+"}
+(15,1,1) = {"
+v
+v
+v
+T
+T
+v
+v
+T
+G
+v
+v
+T
+v
+v
+v
+v
+v
+v
+n
+n
+n
+n
+n
+n
+"}
+(16,1,1) = {"
+v
+v
+v
+T
+T
+v
+I
+z
+O
+v
+v
+T
+T
+T
+v
+v
+v
+v
+n
+n
+n
+n
+n
+n
+"}
+(17,1,1) = {"
+v
+v
+v
+v
+T
+v
+X
+G
+z
+v
+v
+T
+v
+v
+v
+v
+v
+v
+n
+n
+n
+n
+n
+n
+"}
+(18,1,1) = {"
+v
+v
+v
+v
+T
+T
+T
+G
+z
+v
+v
+T
+T
+T
+T
+v
+v
+v
+n
+n
+n
+n
+n
+n
+"}
+(19,1,1) = {"
+v
+v
+v
+v
+v
+T
+v
+v
+G
+G
+v
+v
+v
+T
+T
+v
+v
+v
+n
+n
+n
+n
+n
+n
+"}
+(20,1,1) = {"
+v
+v
+v
+v
+v
+T
+v
+v
+m
+N
+T
+T
+v
+v
+T
+T
+T
+v
+n
+n
+n
+n
+n
+n
+"}
+(21,1,1) = {"
+v
+v
+v
+v
+v
+v
+v
+v
+v
+T
+T
+T
+T
+T
+T
+v
+v
+v
+n
+n
+n
+n
+n
+n
+"}
+(22,1,1) = {"
+n
+v
+v
+v
+v
+v
+v
+i
+T
+T
+T
+T
+v
+v
+v
+v
+v
+v
+n
+n
+n
+n
+n
+n
+"}
+(23,1,1) = {"
+n
+v
+v
+v
+v
+T
+T
+T
+v
+v
+v
+T
+T
+T
+T
+v
+v
+v
+n
+n
+n
+n
+n
+n
+"}
+(24,1,1) = {"
+n
+n
+n
+v
+v
+v
+v
+v
+v
+v
+v
+v
+G
+T
+T
+T
+K
+v
+n
+n
+n
+n
+n
+n
+"}
+(25,1,1) = {"
+n
+n
+n
+v
+v
+v
+v
+v
+v
+v
+v
+T
+z
+G
+c
+v
+v
+v
+n
+n
+n
+n
+n
+n
+"}
+(26,1,1) = {"
+n
+n
+n
+v
+v
+v
+v
+v
+v
+v
+v
+m
+s
+z
+v
+v
+v
+v
+n
+n
+n
+n
+n
+n
+"}
+(27,1,1) = {"
+n
+n
+n
+v
+v
+v
+v
+T
+T
+v
+i
+T
+G
+T
+T
+v
+v
+v
+n
+n
+n
+n
+n
+n
+"}
+(28,1,1) = {"
+n
+n
+n
+n
+n
+v
+v
+v
+G
+v
+v
+v
+v
+v
+T
+T
+T
+v
+n
+n
+n
+n
+n
+n
+"}
+(29,1,1) = {"
+n
+n
+n
+n
+n
+v
+B
+o
+z
+A
+v
+v
+v
+T
+T
+T
+T
+T
+n
+n
+n
+n
+n
+n
+"}
+(30,1,1) = {"
+n
+n
+n
+n
+n
+v
+z
+G
+S
+T
+v
+T
+v
+T
+T
+T
+T
+v
+n
+n
+n
+n
+n
+n
+"}
+(31,1,1) = {"
+n
+n
+n
+n
+n
+v
+v
+v
+G
+T
+T
+T
+T
+T
+k
+m
+T
+v
+n
+n
+n
+n
+n
+n
+"}
+(32,1,1) = {"
+n
+n
+n
+n
+n
+v
+v
+v
+v
+T
+T
+T
+v
+v
+T
+v
+T
+v
+n
+n
+n
+n
+n
+n
+"}
+(33,1,1) = {"
+n
+n
+n
+n
+n
+v
+v
+v
+v
+v
+T
+v
+v
+v
+T
+v
+v
+v
+n
+n
+n
+n
+n
+n
+"}
+(34,1,1) = {"
+n
+n
+n
+n
+n
+v
+v
+v
+v
+v
+T
+v
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+"}
+(35,1,1) = {"
+n
+n
+n
+n
+n
+v
+n
+v
+v
+v
+v
+v
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+n
+"}

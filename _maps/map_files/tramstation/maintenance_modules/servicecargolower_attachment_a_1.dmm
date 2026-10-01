@@ -1,0 +1,378 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop/druggie_pill,
+/turf/open/floor/plating,
+/area/maintenance/starboard/greater)
+"c" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/cobweb,
+/obj/modular_map_connector,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"e" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/machinery/portable_atmospherics/canister/air = 4, /obj/machinery/portable_atmospherics/canister/oxygen = 1)
+	},
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/plating,
+/area/maintenance/starboard/greater)
+"g" = (
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/effect/decal/cleanable/crayon = 1, "" = 1)
+	},
+/turf/closed/wall,
+/area/maintenance/starboard/greater)
+"j" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table/wood/poker,
+/obj/item/reagent_containers/food/drinks/beer{
+	pixel_y = 3;
+	pixel_x = 1
+	},
+/obj/item/reagent_containers/food/drinks/beer{
+	pixel_y = 13;
+	pixel_x = 9
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"k" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table/wood,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/reagent_containers/food/drinks/beer = 75, /obj/item/reagent_containers/food/drinks/ale = 25, /obj/item/reagent_containers/food/drinks/bottle/whiskey = 5, /obj/item/reagent_containers/food/drinks/bottle/gin = 5, /obj/item/reagent_containers/food/drinks/bottle/vodka = 5, /obj/item/reagent_containers/food/drinks/bottle/tequila = 5, /obj/item/reagent_containers/food/drinks/bottle/rum = 5, /obj/item/reagent_containers/food/drinks/bottle/vermouth = 5, /obj/item/reagent_containers/food/drinks/bottle/cognac = 5, /obj/item/reagent_containers/food/drinks/bottle/wine = 5, /obj/item/reagent_containers/food/drinks/bottle/kahlua = 5, /obj/item/reagent_containers/food/drinks/bottle/amaretto = 5, /obj/item/reagent_containers/food/drinks/bottle/hcider = 5, /obj/item/reagent_containers/food/drinks/bottle/absinthe = 5, /obj/item/reagent_containers/food/drinks/bottle/sake = 5, /obj/item/reagent_containers/food/drinks/bottle/grappa = 5, /obj/item/reagent_containers/food/drinks/bottle/applejack = 5, /obj/item/reagent_containers/food/drinks/bottle/fernet = 2, /obj/item/reagent_containers/food/drinks/bottle/champagne = 2, /obj/item/reagent_containers/food/drinks/bottle/goldschlager = 2, /obj/item/reagent_containers/food/drinks/bottle/patron = 1, /obj/item/reagent_containers/food/drinks/bottle/lizardwine = 1, /obj/item/reagent_containers/food/drinks/bottle/trappist = 1)
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/reagent_containers/food/drinks/beer = 75, /obj/item/reagent_containers/food/drinks/ale = 25, /obj/item/reagent_containers/food/drinks/bottle/whiskey = 5, /obj/item/reagent_containers/food/drinks/bottle/gin = 5, /obj/item/reagent_containers/food/drinks/bottle/vodka = 5, /obj/item/reagent_containers/food/drinks/bottle/tequila = 5, /obj/item/reagent_containers/food/drinks/bottle/rum = 5, /obj/item/reagent_containers/food/drinks/bottle/vermouth = 5, /obj/item/reagent_containers/food/drinks/bottle/cognac = 5, /obj/item/reagent_containers/food/drinks/bottle/wine = 5, /obj/item/reagent_containers/food/drinks/bottle/kahlua = 5, /obj/item/reagent_containers/food/drinks/bottle/amaretto = 5, /obj/item/reagent_containers/food/drinks/bottle/hcider = 5, /obj/item/reagent_containers/food/drinks/bottle/absinthe = 5, /obj/item/reagent_containers/food/drinks/bottle/sake = 5, /obj/item/reagent_containers/food/drinks/bottle/grappa = 5, /obj/item/reagent_containers/food/drinks/bottle/applejack = 5, /obj/item/reagent_containers/food/drinks/bottle/fernet = 2, /obj/item/reagent_containers/food/drinks/bottle/champagne = 2, /obj/item/reagent_containers/food/drinks/bottle/goldschlager = 2, /obj/item/reagent_containers/food/drinks/bottle/patron = 1, /obj/item/reagent_containers/food/drinks/bottle/lizardwine = 1, /obj/item/reagent_containers/food/drinks/bottle/trappist = 1)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"l" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table/wood/poker,
+/obj/effect/spawner/lootdrop{
+	lootcount = 3;
+	fan_out_items = 1;
+	loot = list(/obj/item/stack/spacecash/c1 = 5, /obj/item/stack/spacecash/c10 = 3, /obj/item/stack/spacecash/c20 = 2)
+	},
+/obj/effect/spawner/lootdrop/space_cash,
+/obj/item/reagent_containers/food/drinks/beer/almost_empty{
+	pixel_y = 15;
+	pixel_x = -9
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"m" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table/wood/poker,
+/obj/item/toy/cards/deck,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"n" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/stool/directional/south,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"t" = (
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Da Clubbe"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"v" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/stool/directional/east,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"w" = (
+/turf/closed/wall,
+/area/maintenance/starboard/greater)
+"y" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/stool/directional/west,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"B" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table/wood/poker,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/dice/d4 = 1, /obj/item/dice/d6 = 1, /obj/item/dice/d8 = 1, /obj/item/dice/d10 = 1, /obj/item/dice/d12 = 1, /obj/item/dice/d20 = 1)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"C" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/stool/directional/south,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"E" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/asteroid/tramstation)
+"F" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop/trashbin,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"G" = (
+/turf/template_noop,
+/area/template_noop)
+"H" = (
+/obj/effect/spawner/structure/window,
+/turf/open/floor/plating,
+/area/maintenance/starboard/greater)
+"I" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/stack/sheet/mineral/wood/twenty = 1, /obj/item/stack/sheet/cardboard/fifty = 1, /obj/item/stack/sheet/mineral/sandstone/thirty = 1)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"K" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/cigbutt = 25, /obj/item/cigbutt/roach = 25, /obj/effect/decal/cleanable/ash = 25, /obj/item/cigbutt/cigarbutt = 15)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"N" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	lootcount = 3;
+	lootdoubles = 0;
+	loot = list(/obj/structure/bed/matress = 1, /obj/effect/decal/cleanable/dirt = 1, /obj/effect/spawner/lootdrop/druggie_pill = 1)
+	},
+/turf/open/floor/plating,
+/area/maintenance/starboard/greater)
+"O" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Maintenance Hatch"
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"P" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	lootcount = 2;
+	loot = list(/obj/item/clothing/head/cone = 7, /obj/item/clothing/suit/caution = 3, /obj/item/reagent_containers/rag = 2, /obj/item/reagent_containers/glass/bucket = 2, /obj/effect/decal/cleanable/blood/old = 2, /obj/structure/mopbucket = 2)
+	},
+/turf/open/floor/plating,
+/area/maintenance/starboard/greater)
+"Q" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/storage/box/mousetraps = 1, /obj/item/storage/box/lights/tubes = 1, /obj/item/storage/box/lights/mixed = 1, /obj/item/storage/box/lights/bulbs = 1)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"S" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Maintenance Hatch"
+	},
+/turf/open/floor/plating,
+/area/maintenance/starboard/greater)
+"T" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"U" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	lootcount = 2;
+	loot = list(/obj/item/clothing/head/cone = 7, /obj/item/clothing/suit/caution = 3, /obj/item/reagent_containers/rag = 2, /obj/item/reagent_containers/glass/bucket = 2, /obj/effect/decal/cleanable/blood/old = 2, /obj/structure/mopbucket = 2)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"V" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/stool/directional/north,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"X" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/window,
+/obj/structure/closet,
+/obj/effect/spawner/lootdrop/maintenance,
+/obj/effect/spawner/lootdrop/maintenance/three,
+/turf/open/floor/plating,
+/area/maintenance/starboard/greater)
+"Y" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/maintenance/starboard/greater)
+"Z" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/machinery/light/small/directional/north,
+/obj/item/reagent_containers/food/drinks/bottle{
+	pixel_x = 8;
+	pixel_y = 5;
+	name = "moonshine jug";
+	list_reagents = list(/datum/reagent/consumable/ethanol/moonshine = 100)
+	},
+/turf/open/floor/plating,
+/area/maintenance/starboard/greater)
+
+(1,1,1) = {"
+E
+E
+E
+w
+w
+G
+G
+G
+G
+G
+G
+"}
+(2,1,1) = {"
+E
+E
+E
+w
+n
+j
+B
+V
+w
+c
+G
+"}
+(3,1,1) = {"
+E
+E
+E
+w
+C
+m
+l
+V
+w
+v
+G
+"}
+(4,1,1) = {"
+E
+E
+E
+w
+T
+T
+T
+T
+w
+Q
+G
+"}
+(5,1,1) = {"
+E
+E
+E
+w
+k
+T
+T
+K
+w
+y
+G
+"}
+(6,1,1) = {"
+E
+E
+E
+w
+w
+w
+t
+w
+w
+T
+G
+"}
+(7,1,1) = {"
+w
+w
+w
+w
+P
+X
+T
+T
+H
+T
+G
+"}
+(8,1,1) = {"
+w
+I
+T
+O
+T
+T
+T
+T
+O
+U
+G
+"}
+(9,1,1) = {"
+w
+Z
+T
+g
+T
+T
+T
+T
+H
+T
+G
+"}
+(10,1,1) = {"
+w
+Y
+Y
+w
+S
+w
+w
+w
+w
+F
+G
+"}
+(11,1,1) = {"
+w
+N
+a
+w
+e
+w
+E
+E
+w
+T
+G
+"}
+(12,1,1) = {"
+w
+w
+w
+w
+w
+w
+G
+G
+G
+G
+G
+"}

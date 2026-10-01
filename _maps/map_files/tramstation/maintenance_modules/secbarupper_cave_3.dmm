@@ -1,0 +1,318 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/obj/item/stack/rods,
+/turf/open/floor/plating/asteroid,
+/area/maintenance/department/security)
+"e" = (
+/obj/structure/lattice,
+/turf/open/floor/plating/asteroid,
+/area/maintenance/department/security)
+"f" = (
+/turf/template_noop,
+/area/template_noop)
+"j" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/maintenance/department/security)
+"k" = (
+/obj/effect/turf_decal/weather/sand/plating,
+/obj/structure/girder,
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"n" = (
+/obj/item/stack/sheet/metal/ten,
+/obj/effect/turf_decal/weather/sand/plating,
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"q" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/holosign/barrier/engineering,
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"s" = (
+/obj/effect/turf_decal/weather/sand/plating,
+/obj/item/stack/sheet/metal,
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"t" = (
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"u" = (
+/obj/item/storage/toolbox/mechanical,
+/obj/item/stack/cable_coil,
+/obj/effect/turf_decal/weather/sand/plating,
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"w" = (
+/turf/open/floor/plating/asteroid,
+/area/maintenance/department/security)
+"z" = (
+/obj/structure/girder,
+/obj/effect/turf_decal/weather/sand/plating,
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"A" = (
+/obj/item/clothing/suit/hazardvest,
+/obj/item/clothing/head/hardhat{
+	pixel_x = 5;
+	pixel_y = 9
+	},
+/obj/effect/turf_decal/weather/sand/plating,
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"B" = (
+/obj/item/pickaxe/mini,
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"C" = (
+/obj/structure/lattice,
+/obj/structure/table,
+/obj/item/reagent_containers/food/snacks/donkpocket,
+/turf/open/floor/plating/asteroid,
+/area/maintenance/department/security)
+"F" = (
+/obj/structure/chair/stool/directional/west,
+/obj/effect/turf_decal/weather/sand/plating,
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"H" = (
+/obj/item/wallframe/apc,
+/turf/open/floor/plating/asteroid,
+/area/maintenance/department/security)
+"I" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"L" = (
+/obj/structure/lattice,
+/obj/item/stack/tile/plasteel/smooth{
+	amount = 15
+	},
+/turf/open/floor/plating/asteroid,
+/area/maintenance/department/security)
+"N" = (
+/obj/structure/closet/crate/miningcar{
+	desc = "A mining cart. This one doesn't work on rails, which is good because we never had rails to begin with.";
+	name = "mining cart"
+	},
+/obj/item/stack/ore/glass{
+	amount = 15
+	},
+/obj/item/stack/ore/iron{
+	amount = 15
+	},
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"P" = (
+/obj/modular_map_connector,
+/obj/machinery/door/airlock/maintenance_hatch,
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/mapping_helpers/airlock/locked,
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"T" = (
+/turf/closed/wall,
+/area/maintenance/department/security)
+"V" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/asteroid/tramstation)
+"W" = (
+/obj/effect/turf_decal/weather/sand/plating,
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"Y" = (
+/obj/item/wrench,
+/obj/effect/turf_decal/weather/sand/plating,
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+
+(1,1,1) = {"
+T
+P
+T
+T
+j
+j
+f
+f
+f
+f
+f
+f
+f
+f
+f
+f
+f
+"}
+(2,1,1) = {"
+T
+q
+T
+V
+V
+V
+V
+V
+f
+f
+f
+f
+f
+f
+f
+f
+f
+"}
+(3,1,1) = {"
+T
+I
+T
+t
+t
+t
+V
+V
+V
+V
+V
+f
+f
+f
+f
+f
+f
+"}
+(4,1,1) = {"
+T
+W
+T
+T
+z
+W
+w
+t
+V
+V
+V
+f
+f
+f
+f
+f
+f
+"}
+(5,1,1) = {"
+T
+W
+W
+Y
+c
+w
+w
+B
+t
+V
+V
+f
+f
+f
+f
+f
+f
+"}
+(6,1,1) = {"
+T
+n
+L
+e
+w
+w
+e
+t
+N
+V
+V
+f
+f
+f
+f
+f
+f
+"}
+(7,1,1) = {"
+k
+A
+e
+w
+w
+H
+T
+t
+t
+V
+V
+f
+f
+f
+f
+f
+f
+"}
+(8,1,1) = {"
+k
+u
+C
+F
+e
+w
+T
+t
+V
+V
+V
+f
+f
+f
+f
+f
+f
+"}
+(9,1,1) = {"
+T
+T
+T
+z
+s
+T
+T
+V
+V
+V
+V
+f
+f
+f
+f
+f
+f
+"}
+(10,1,1) = {"
+V
+V
+t
+t
+t
+t
+t
+V
+V
+V
+V
+f
+f
+f
+f
+f
+f
+"}

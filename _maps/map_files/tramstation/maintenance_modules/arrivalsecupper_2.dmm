@@ -1,0 +1,386 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/turf/template_noop,
+/area/template_noop)
+"d" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/asteroid/tramstation)
+"f" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/structure/reagent_dispensers/fueltank = 5, /obj/structure/reagent_dispensers/watertank = 4, /obj/structure/reagent_dispensers/watertank/high = 1)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/eva)
+"h" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop/trashbin,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/eva)
+"i" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair{
+	dir = 1
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/eva)
+"j" = (
+/turf/closed/wall,
+/area/maintenance/department/eva)
+"k" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/effect/spawner/lootdrop/gambling,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/eva)
+"l" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/machinery/portable_atmospherics/canister/air = 4, /obj/machinery/portable_atmospherics/canister/oxygen = 1)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/eva)
+"m" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/eva)
+"n" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/eva)
+"p" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/eva)
+"r" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/maintenance/department/eva)
+"u" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/eva)
+"x" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/landmark/event_spawn,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/eva)
+"y" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop/trashbin,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/eva)
+"B" = (
+/turf/open/floor/plating/asteroid/airless,
+/area/asteroid/tramstation)
+"C" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/cigbutt = 25, /obj/item/cigbutt/roach = 25, /obj/effect/decal/cleanable/ash = 25, /obj/item/cigbutt/cigarbutt = 15)
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/eva)
+"D" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "1-8"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/eva)
+"G" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate,
+/obj/effect/spawner/lootdrop/maintenance/three,
+/obj/effect/spawner/lootdrop/druggie_pill,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/reagent_containers/food/snacks/grown/cannabis = 25, /obj/item/reagent_containers/food/snacks/grown/cannabis/white = 25, /obj/item/reagent_containers/food/snacks/grown/cannabis/death = 24, /obj/item/reagent_containers/food/snacks/grown/cannabis/rainbow = 25, /obj/item/reagent_containers/food/snacks/grown/cannabis/ultimate = 1)
+	},
+/obj/effect/spawner/lootdrop/prison_contraband,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/eva)
+"I" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/machinery/space_heater = 8, /obj/machinery/shieldgen = 3, /obj/machinery/portable_atmospherics/pump = 1, /obj/machinery/portable_atmospherics/scrubber = 1)
+	},
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/eva)
+"K" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/girder,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/eva)
+"L" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
+/obj/machinery/power/apc/auto_name/north,
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/eva)
+"P" = (
+/obj/modular_map_connector,
+/turf/closed/wall,
+/area/maintenance/department/eva)
+"V" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/eva)
+
+(1,1,1) = {"
+b
+b
+b
+b
+b
+b
+B
+B
+d
+d
+d
+b
+b
+"}
+(2,1,1) = {"
+b
+b
+b
+b
+b
+b
+B
+B
+B
+d
+d
+b
+b
+"}
+(3,1,1) = {"
+b
+b
+b
+b
+b
+b
+B
+B
+B
+d
+d
+b
+b
+"}
+(4,1,1) = {"
+b
+b
+b
+b
+B
+B
+B
+B
+B
+B
+d
+b
+b
+"}
+(5,1,1) = {"
+b
+b
+B
+B
+B
+B
+B
+B
+B
+B
+d
+j
+u
+"}
+(6,1,1) = {"
+b
+b
+B
+B
+B
+B
+B
+B
+B
+B
+d
+j
+V
+"}
+(7,1,1) = {"
+b
+B
+B
+j
+r
+r
+r
+r
+r
+j
+d
+j
+h
+"}
+(8,1,1) = {"
+B
+B
+B
+j
+m
+p
+k
+i
+m
+j
+d
+j
+V
+"}
+(9,1,1) = {"
+B
+B
+d
+j
+m
+x
+m
+m
+m
+j
+P
+j
+V
+"}
+(10,1,1) = {"
+d
+d
+j
+j
+L
+C
+n
+n
+n
+n
+n
+n
+D
+"}
+(11,1,1) = {"
+b
+d
+j
+I
+m
+m
+m
+m
+b
+b
+b
+b
+b
+"}
+(12,1,1) = {"
+b
+d
+j
+l
+m
+b
+b
+b
+b
+b
+b
+b
+b
+"}
+(13,1,1) = {"
+b
+d
+j
+K
+m
+b
+b
+b
+b
+b
+b
+b
+b
+"}
+(14,1,1) = {"
+b
+d
+j
+f
+m
+b
+b
+b
+b
+b
+b
+b
+b
+"}
+(15,1,1) = {"
+b
+d
+j
+G
+m
+b
+b
+b
+b
+b
+b
+b
+b
+"}
+(16,1,1) = {"
+b
+b
+b
+b
+y
+b
+b
+b
+b
+b
+b
+b
+b
+"}

@@ -1,0 +1,147 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/central)
+"c" = (
+/turf/closed/wall,
+/area/maintenance/starboard/central)
+"i" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/cardboard,
+/obj/effect/spawner/lootdrop/maintenance/four,
+/obj/effect/spawner/lootdrop/minor/kittyears_or_rabbitears,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/central)
+"k" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/grille,
+/obj/structure/window,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/central)
+"q" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/girder,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/central)
+"z" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/asteroid/tramstation)
+"A" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/structure/reagent_dispensers/fueltank = 5, /obj/structure/reagent_dispensers/watertank = 4, /obj/structure/reagent_dispensers/watertank/high = 1)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/central)
+"E" = (
+/turf/template_noop,
+/area/template_noop)
+"I" = (
+/obj/modular_map_connector,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/central)
+"X" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate/freezer{
+	name = "mini-fridge"
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/central)
+"Z" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet,
+/obj/effect/spawner/lootdrop/maintenance/two,
+/obj/effect/spawner/lootdrop/costume,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/central)
+
+(1,1,1) = {"
+E
+E
+E
+E
+E
+E
+"}
+(2,1,1) = {"
+E
+E
+E
+E
+E
+E
+"}
+(3,1,1) = {"
+c
+c
+c
+E
+E
+E
+"}
+(4,1,1) = {"
+Z
+k
+I
+E
+E
+E
+"}
+(5,1,1) = {"
+A
+k
+b
+E
+E
+E
+"}
+(6,1,1) = {"
+q
+q
+b
+E
+E
+E
+"}
+(7,1,1) = {"
+i
+k
+b
+E
+E
+E
+"}
+(8,1,1) = {"
+X
+k
+b
+E
+E
+E
+"}
+(9,1,1) = {"
+c
+c
+E
+E
+E
+E
+"}
+(10,1,1) = {"
+E
+z
+E
+E
+E
+E
+"}
+(11,1,1) = {"
+E
+z
+z
+z
+z
+E
+"}

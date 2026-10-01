@@ -1,0 +1,279 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"d" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+"f" = (
+/obj/effect/turf_decal/weather/sand/plating,
+/turf/open/floor/plating,
+/area/asteroid/tramstation)
+"h" = (
+/obj/item/stack/ore/glass,
+/turf/open/floor/plating/asteroid{
+	dug = 1;
+	floor_variance = 0;
+	icon_state = "asteroid_dug"
+	},
+/area/asteroid/tramstation)
+"n" = (
+/obj/item/stack/ore/iron,
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"q" = (
+/obj/modular_map_connector,
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Maintenance Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+"u" = (
+/obj/effect/turf_decal/weather/sand/plating,
+/turf/open/floor/plating,
+/area/maintenance/port/central)
+"v" = (
+/obj/machinery/door/airlock/external{
+	name = "External Access"
+	},
+/obj/effect/turf_decal/weather/sand/plating,
+/turf/open/floor/plating,
+/area/maintenance/port/central)
+"w" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/maintenance/port/central)
+"x" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate,
+/obj/effect/spawner/lootdrop/maintenance/three,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/flashlight = 20, /obj/item/flashlight/flare = 10, /obj/effect/spawner/lootdrop/glowstick = 10, /obj/item/flashlight/lantern = 5, /obj/item/flashlight/seclite = 4)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+"C" = (
+/obj/item/t_scanner/adv_mining_scanner/lesser,
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"F" = (
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"H" = (
+/turf/closed/wall,
+/area/maintenance/port/central)
+"L" = (
+/turf/open/floor/plating/asteroid{
+	dug = 1;
+	floor_variance = 0;
+	icon_state = "asteroid_dug"
+	},
+/area/asteroid/tramstation)
+"M" = (
+/obj/item/shovel,
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"N" = (
+/obj/structure/ore_box,
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"P" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+"Q" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/asteroid/tramstation)
+"V" = (
+/turf/template_noop,
+/area/template_noop)
+"X" = (
+/obj/structure/rack,
+/obj/item/pickaxe{
+	pixel_x = 5
+	},
+/obj/item/shovel{
+	pixel_x = -5
+	},
+/obj/item/storage/bag/ore,
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"Z" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/secure_closet/miner/unlocked,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+
+(1,1,1) = {"
+Q
+Q
+Q
+Q
+Q
+b
+b
+b
+Q
+Q
+Q
+V
+"}
+(2,1,1) = {"
+Q
+Q
+b
+b
+b
+b
+L
+b
+b
+Q
+Q
+V
+"}
+(3,1,1) = {"
+Q
+b
+b
+b
+b
+L
+h
+L
+b
+b
+Q
+V
+"}
+(4,1,1) = {"
+Q
+b
+b
+C
+L
+h
+h
+M
+b
+b
+Q
+V
+"}
+(5,1,1) = {"
+b
+b
+b
+b
+b
+b
+b
+Q
+Q
+Q
+Q
+V
+"}
+(6,1,1) = {"
+n
+b
+b
+b
+b
+Q
+Q
+Q
+Q
+Q
+Q
+V
+"}
+(7,1,1) = {"
+Q
+X
+b
+b
+b
+H
+H
+H
+H
+H
+Q
+V
+"}
+(8,1,1) = {"
+Q
+N
+b
+b
+F
+H
+u
+P
+P
+V
+V
+V
+"}
+(9,1,1) = {"
+Q
+N
+b
+b
+f
+v
+u
+w
+d
+q
+V
+V
+"}
+(10,1,1) = {"
+Q
+Q
+b
+b
+Q
+H
+u
+d
+d
+V
+V
+V
+"}
+(11,1,1) = {"
+Q
+Q
+b
+Q
+Q
+H
+Z
+x
+d
+V
+V
+V
+"}
+(12,1,1) = {"
+Q
+Q
+b
+Q
+Q
+H
+H
+H
+V
+V
+V
+V
+"}

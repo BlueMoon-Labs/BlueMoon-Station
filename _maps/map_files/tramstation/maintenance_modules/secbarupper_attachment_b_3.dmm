@@ -1,0 +1,177 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/machinery/portable_atmospherics/canister/air = 4, /obj/machinery/portable_atmospherics/canister/oxygen = 1)
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"d" = (
+/turf/closed/wall,
+/area/maintenance/department/security)
+"i" = (
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/machinery/space_heater = 8, /obj/machinery/shieldgen = 3, /obj/machinery/portable_atmospherics/pump = 1, /obj/machinery/portable_atmospherics/scrubber = 1)
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"m" = (
+/obj/structure/table,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/reagent_containers/food/snacks/grown/cannabis = 25, /obj/item/reagent_containers/food/snacks/grown/cannabis/white = 25, /obj/item/reagent_containers/food/snacks/grown/cannabis/death = 24, /obj/item/reagent_containers/food/snacks/grown/cannabis/rainbow = 25, /obj/item/reagent_containers/food/snacks/grown/cannabis/ultimate = 1)
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"n" = (
+/obj/structure/chair/stool/directional/west,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"q" = (
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Closet Access Maintenance Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/obj/effect/decal/cleanable/dirt,
+/obj/modular_map_connector,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"u" = (
+/obj/machinery/door/airlock/maintenance_hatch,
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"x" = (
+/obj/effect/spawner/lootdrop/glowstick,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"D" = (
+/obj/effect/spawner/structure/window,
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"J" = (
+/obj/structure/chair/stool/directional/north,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"M" = (
+/obj/structure/closet/crate,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/wrench = 2, /obj/item/wirecutters = 2, /obj/item/screwdriver = 2, /obj/item/crowbar = 2, /obj/item/weldingtool = 2, /obj/item/stack/cable_coil = 2, /obj/item/analyzer = 2, /obj/item/t_scanner = 2, /obj/item/multitool = 1, /obj/item/clothing/glasses/meson = 1, /obj/item/storage/belt/utility = 1, /obj/item/clothing/head/welding = 1)
+	},
+/obj/effect/spawner/lootdrop/maintenance/three,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/flashlight = 20, /obj/item/flashlight/flare = 10, /obj/effect/spawner/lootdrop/glowstick = 10, /obj/item/flashlight/lantern = 5, /obj/item/flashlight/seclite = 4)
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"O" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"U" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/structure/reagent_dispensers/fueltank = 5, /obj/structure/reagent_dispensers/watertank = 4, /obj/structure/reagent_dispensers/watertank/high = 1)
+	},
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"W" = (
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/obj/machinery/door/airlock/maintenance_hatch,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"Y" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/asteroid/tramstation)
+
+(1,1,1) = {"
+Y
+Y
+d
+d
+d
+q
+d
+d
+"}
+(2,1,1) = {"
+Y
+Y
+d
+i
+O
+O
+O
+O
+"}
+(3,1,1) = {"
+d
+d
+d
+d
+D
+D
+d
+W
+"}
+(4,1,1) = {"
+d
+M
+b
+D
+m
+J
+O
+O
+"}
+(5,1,1) = {"
+d
+O
+O
+D
+n
+O
+x
+O
+"}
+(6,1,1) = {"
+d
+O
+O
+O
+O
+O
+d
+u
+"}
+(7,1,1) = {"
+d
+d
+d
+d
+d
+d
+d
+U
+"}
+(8,1,1) = {"
+Y
+Y
+Y
+Y
+Y
+Y
+d
+d
+"}

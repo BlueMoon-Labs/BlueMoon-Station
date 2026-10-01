@@ -1,0 +1,263 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"j" = (
+/obj/structure/rack,
+/obj/effect/spawner/lootdrop/maintenance/three,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/flashlight = 20, /obj/item/flashlight/flare = 10, /obj/effect/spawner/lootdrop/glowstick = 10, /obj/item/flashlight/lantern = 5, /obj/item/flashlight/seclite = 4)
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"k" = (
+/obj/machinery/door/airlock/maintenance_hatch,
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"o" = (
+/obj/structure/closet/crate/bin,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop/trashbin,
+/obj/effect/spawner/lootdrop/trashbin,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"p" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/plating,
+/area/maintenance/department/crew_quarters/dorms)
+"q" = (
+/turf/closed/wall,
+/area/maintenance/department/crew_quarters/dorms)
+"s" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"t" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"w" = (
+/obj/item/chair/stool,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"A" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/asteroid/tramstation)
+"D" = (
+/obj/structure/closet/cardboard,
+/obj/effect/spawner/lootdrop/maintenance/four,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"J" = (
+/obj/structure/table,
+/obj/effect/spawner/lootdrop/random/bureaucracy/folder,
+/obj/effect/spawner/lootdrop/random/bureaucracy/pen,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"L" = (
+/obj/structure/sink{
+	dir = 8;
+	pixel_x = -12;
+	pixel_y = 6
+	},
+/obj/item/reagent_containers/glass/bucket{
+	pixel_x = -9;
+	pixel_y = -17
+	},
+/obj/effect/decal/cleanable/cobweb,
+/obj/structure/mirror/directional/west,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/maintenance/department/crew_quarters/dorms)
+"P" = (
+/turf/template_noop,
+/area/template_noop)
+"Q" = (
+/obj/machinery/door/airlock/maintenance_hatch,
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/obj/effect/decal/cleanable/dirt,
+/obj/modular_map_connector,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"R" = (
+/obj/effect/spawner/structure/window,
+/turf/open/floor/plating,
+/area/maintenance/department/crew_quarters/dorms)
+"U" = (
+/obj/structure/mopbucket,
+/obj/item/mop,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/maintenance/department/crew_quarters/dorms)
+"V" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/cigbutt = 25, /obj/item/cigbutt/roach = 25, /obj/effect/decal/cleanable/ash = 25, /obj/item/cigbutt/cigarbutt = 15)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"X" = (
+/obj/structure/table,
+/obj/item/paper_bin{
+	pixel_x = 5;
+	pixel_y = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"Z" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sign/poster/official/random{
+	pixel_x = -32
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+
+(1,1,1) = {"
+P
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+"}
+(2,1,1) = {"
+P
+A
+A
+A
+A
+A
+A
+A
+A
+A
+A
+"}
+(3,1,1) = {"
+P
+q
+q
+q
+q
+q
+q
+q
+q
+q
+A
+"}
+(4,1,1) = {"
+P
+t
+t
+Z
+t
+t
+q
+L
+U
+q
+A
+"}
+(5,1,1) = {"
+P
+w
+V
+t
+t
+t
+k
+t
+p
+q
+A
+"}
+(6,1,1) = {"
+P
+J
+X
+o
+t
+t
+q
+q
+q
+q
+A
+"}
+(7,1,1) = {"
+P
+R
+R
+q
+k
+q
+q
+A
+A
+A
+A
+"}
+(8,1,1) = {"
+P
+t
+t
+t
+t
+t
+q
+A
+A
+A
+A
+"}
+(9,1,1) = {"
+Q
+t
+t
+t
+t
+t
+q
+A
+A
+A
+A
+"}
+(10,1,1) = {"
+P
+s
+t
+t
+j
+D
+q
+A
+A
+A
+A
+"}
+(11,1,1) = {"
+P
+P
+P
+P
+q
+q
+q
+A
+A
+A
+A
+"}

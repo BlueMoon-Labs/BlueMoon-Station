@@ -1,0 +1,369 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/trimline/yellow/filled/corner{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/lesser)
+"c" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/button/door/directional/west{
+	id = "securedeeznuts";
+	req_access_txt = "10"
+	},
+/obj/effect/turf_decal/stripes/yellow/corner{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 8
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/lesser)
+"d" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/shieldgen,
+/turf/open/floor/plating,
+/area/maintenance/central/lesser)
+"g" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/corner{
+	dir = 1
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/lesser)
+"j" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/lesser)
+"k" = (
+/turf/template_noop,
+/area/template_noop)
+"m" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 4
+	},
+/obj/item/wrench,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/lesser)
+"o" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/trimline/yellow/filled/line,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/lesser)
+"q" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/lesser)
+"s" = (
+/obj/structure/lattice,
+/turf/open/space/basic,
+/area/space/nearstation)
+"t" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/machinery/cell_charger,
+/obj/item/stock_parts/cell/high/empty,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 4
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/lesser)
+"u" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/machinery/field/generator,
+/turf/open/floor/plating,
+/area/maintenance/central/lesser)
+"w" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/field/generator,
+/turf/open/floor/plating,
+/area/maintenance/central/lesser)
+"y" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/machinery/shieldgen,
+/turf/open/floor/plating,
+/area/maintenance/central/lesser)
+"z" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/trimline/yellow/filled/line,
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/lesser)
+"A" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/delivery,
+/obj/machinery/door/poddoor{
+	id = "securedeeznuts";
+	name = "Secure Storage"
+	},
+/turf/open/floor/plating,
+/area/maintenance/central/lesser)
+"B" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/maintenance/central/lesser)
+"C" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/delivery,
+/obj/machinery/door/poddoor{
+	id = "securedeeznuts";
+	name = "Secure Storage"
+	},
+/turf/open/floor/plating,
+/area/maintenance/central/lesser)
+"D" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/power/port_gen/pacman{
+	sheets = 15
+	},
+/turf/open/floor/plating,
+/area/maintenance/central/lesser)
+"E" = (
+/turf/open/space/basic,
+/area/space/nearstation)
+"H" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 5
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/lesser)
+"L" = (
+/obj/structure/window/reinforced,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/tank_dispenser,
+/turf/open/floor/plating,
+/area/maintenance/central/lesser)
+"M" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/lesser)
+"N" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/trimline/yellow/filled/corner{
+	dir = 4
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/lesser)
+"O" = (
+/turf/closed/wall/r_wall,
+/area/maintenance/central/lesser)
+"Q" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/machinery/power/emitter,
+/turf/open/floor/plating,
+/area/maintenance/central/lesser)
+"R" = (
+/obj/machinery/door/window{
+	req_access_txt = "10"
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/maintenance/central/lesser)
+"S" = (
+/turf/closed/wall,
+/area/maintenance/central/lesser)
+"V" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/asteroid/tramstation)
+"X" = (
+/obj/modular_map_connector,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Engineering Maintenance Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/access/any/engineering/maintenance/departmental,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/lesser)
+"Z" = (
+/obj/structure/window/reinforced,
+/obj/structure/rack,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/clothing/gloves/color/yellow,
+/obj/item/storage/toolbox/electrical{
+	pixel_y = 5
+	},
+/turf/open/floor/plating,
+/area/maintenance/central/lesser)
+
+(1,1,1) = {"
+V
+V
+V
+V
+V
+V
+O
+O
+O
+O
+O
+k
+k
+k
+k
+"}
+(2,1,1) = {"
+V
+V
+V
+V
+V
+V
+O
+d
+w
+D
+O
+k
+k
+k
+k
+"}
+(3,1,1) = {"
+V
+V
+V
+V
+V
+V
+O
+y
+u
+Q
+O
+k
+k
+k
+k
+"}
+(4,1,1) = {"
+V
+V
+V
+V
+S
+S
+O
+C
+A
+A
+O
+k
+k
+k
+k
+"}
+(5,1,1) = {"
+V
+V
+V
+V
+S
+Z
+c
+g
+j
+M
+k
+k
+k
+k
+k
+"}
+(6,1,1) = {"
+V
+V
+V
+V
+S
+R
+q
+q
+q
+o
+k
+k
+k
+k
+k
+"}
+(7,1,1) = {"
+V
+V
+V
+V
+S
+L
+N
+q
+q
+z
+B
+s
+E
+E
+k
+"}
+(8,1,1) = {"
+V
+V
+V
+V
+S
+S
+H
+t
+m
+b
+B
+s
+E
+k
+k
+"}
+(9,1,1) = {"
+k
+k
+k
+k
+k
+k
+k
+k
+k
+X
+k
+k
+k
+k
+k
+"}

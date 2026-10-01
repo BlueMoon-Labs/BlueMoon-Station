@@ -1,0 +1,113 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"h" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+"i" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/wrench = 2, /obj/item/wirecutters = 2, /obj/item/screwdriver = 2, /obj/item/crowbar = 2, /obj/item/weldingtool = 2, /obj/item/stack/cable_coil = 2, /obj/item/analyzer = 2, /obj/item/t_scanner = 2, /obj/item/multitool = 1, /obj/item/clothing/glasses/meson = 1, /obj/item/storage/belt/utility = 1, /obj/item/clothing/head/welding = 1)
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/stack/sheet/mineral/wood/twenty = 1, /obj/item/stack/sheet/cardboard/fifty = 1, /obj/item/stack/sheet/mineral/sandstone/thirty = 1)
+	},
+/obj/effect/spawner/lootdrop/maintenance/three,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+"m" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/structure/reagent_dispensers/fueltank = 5, /obj/structure/reagent_dispensers/watertank = 4, /obj/structure/reagent_dispensers/watertank/high = 1)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+"n" = (
+/obj/modular_map_connector,
+/turf/closed/wall,
+/area/maintenance/port/central)
+"r" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/girder,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+"B" = (
+/turf/template_noop,
+/area/template_noop)
+"F" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/cardboard,
+/obj/effect/spawner/lootdrop/maintenance/four,
+/obj/effect/spawner/lootdrop/maintenance,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/vending_refill/cola = 8, /obj/item/vending_refill/snack = 8, /obj/item/vending_refill/coffee = 8, /obj/item/vending_refill/cigarette = 8, /obj/item/vending_refill/boozeomat = 4, /obj/item/vending_refill/engivend = 4, /obj/item/vending_refill/youtool = 4, /obj/item/vending_refill/medical = 3, /obj/item/vending_refill/clothing = 2, /obj/item/vending_refill/autodrobe = 2, /obj/item/vending_refill/security = 1)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+"G" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/machinery/portable_atmospherics/canister/air = 4, /obj/machinery/portable_atmospherics/canister/oxygen = 1)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+"L" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Maintenance Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+"P" = (
+/turf/closed/wall,
+/area/maintenance/port/central)
+
+(1,1,1) = {"
+P
+P
+P
+P
+P
+P
+"}
+(2,1,1) = {"
+F
+h
+P
+G
+m
+P
+"}
+(3,1,1) = {"
+r
+h
+L
+h
+h
+P
+"}
+(4,1,1) = {"
+i
+h
+P
+h
+h
+P
+"}
+(5,1,1) = {"
+B
+B
+B
+B
+L
+n
+"}
+(6,1,1) = {"
+B
+B
+B
+B
+B
+B
+"}

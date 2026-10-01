@@ -1,0 +1,259 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"e" = (
+/obj/modular_map_connector,
+/obj/structure/barricade/wooden,
+/turf/open/floor/plating/asteroid,
+/area/maintenance/department/security)
+"l" = (
+/obj/structure/ore_box,
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"p" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/asteroid/tramstation)
+"t" = (
+/obj/item/shovel,
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"v" = (
+/obj/item/stack/ore/glass,
+/turf/open/floor/plating/asteroid{
+	dug = 1;
+	floor_variance = 0;
+	icon_state = "asteroid_dug"
+	},
+/area/asteroid/tramstation)
+"x" = (
+/turf/closed/wall,
+/area/maintenance/department/security)
+"y" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/maintenance/department/security)
+"B" = (
+/obj/structure/closet/crate/miningcar{
+	desc = "A mining cart. This one doesn't work on rails, which is good because we never had rails to begin with.";
+	name = "mining cart"
+	},
+/obj/item/stack/ore/glass{
+	amount = 25
+	},
+/obj/item/stack/ore/silver{
+	amount = 5
+	},
+/obj/item/stack/ore/gold{
+	amount = 2
+	},
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"F" = (
+/obj/item/clothing/mask/gas/explorer,
+/obj/item/clothing/head/hardhat{
+	pixel_x = 5;
+	pixel_y = 9
+	},
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"I" = (
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"T" = (
+/turf/template_noop,
+/area/template_noop)
+"Y" = (
+/turf/open/floor/plating/asteroid{
+	dug = 1;
+	floor_variance = 0;
+	icon_state = "asteroid_dug"
+	},
+/area/asteroid/tramstation)
+
+(1,1,1) = {"
+y
+e
+x
+x
+y
+y
+T
+T
+T
+T
+T
+T
+T
+T
+T
+T
+T
+"}
+(2,1,1) = {"
+p
+I
+I
+F
+p
+p
+p
+p
+T
+T
+T
+T
+T
+T
+T
+T
+T
+"}
+(3,1,1) = {"
+p
+l
+I
+I
+I
+I
+I
+p
+p
+p
+p
+T
+T
+T
+T
+T
+T
+"}
+(4,1,1) = {"
+p
+p
+p
+p
+p
+I
+I
+I
+I
+p
+p
+T
+T
+T
+T
+T
+T
+"}
+(5,1,1) = {"
+p
+p
+B
+I
+p
+p
+p
+I
+I
+p
+p
+T
+T
+T
+T
+T
+T
+"}
+(6,1,1) = {"
+p
+Y
+v
+Y
+t
+I
+p
+I
+I
+p
+p
+T
+T
+T
+T
+T
+T
+"}
+(7,1,1) = {"
+p
+v
+Y
+v
+v
+I
+I
+I
+p
+p
+p
+T
+T
+T
+T
+T
+T
+"}
+(8,1,1) = {"
+p
+Y
+p
+p
+p
+p
+p
+p
+p
+I
+p
+T
+T
+T
+T
+T
+T
+"}
+(9,1,1) = {"
+p
+Y
+p
+I
+p
+p
+p
+I
+I
+I
+p
+T
+T
+T
+T
+T
+T
+"}
+(10,1,1) = {"
+p
+I
+I
+I
+I
+I
+I
+I
+I
+p
+p
+T
+T
+T
+T
+T
+T
+"}

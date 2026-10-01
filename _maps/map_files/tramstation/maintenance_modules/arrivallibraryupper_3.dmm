@@ -1,0 +1,545 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/firecloset,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/aft)
+"e" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/directional/north,
+/obj/structure/rack,
+/obj/item/tank/internals/oxygen,
+/obj/item/clothing/mask/gas,
+/turf/open/floor/plating,
+/area/maintenance/port/aft)
+"f" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/asteroid/tramstation)
+"i" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/airlock/external{
+	name = "External Access"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/engineering/external,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper_multi{
+	cycle_id = "dabonthehatersdabdab"
+	},
+/turf/open/floor/plating,
+/area/maintenance/port/aft)
+"j" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/maintenance/port/aft)
+"m" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/effect/landmark/event_spawn,
+/turf/open/floor/catwalk_floor,
+/area/maintenance/port/aft)
+"t" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet,
+/obj/effect/spawner/lootdrop/maintenance/four,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/stack/sheet/mineral/wood/twenty = 1, /obj/item/stack/sheet/cardboard/fifty = 1, /obj/item/stack/sheet/mineral/sandstone/thirty = 1)
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/flashlight = 20, /obj/item/flashlight/flare = 10, /obj/effect/spawner/lootdrop/glowstick = 10, /obj/item/flashlight/lantern = 5, /obj/item/flashlight/seclite = 4)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/aft)
+"w" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
+	},
+/obj/machinery/power/apc/auto_name/south,
+/turf/open/floor/catwalk_floor,
+/area/maintenance/port/aft)
+"y" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/aft)
+"z" = (
+/turf/open/floor/plating/asteroid/airless,
+/area/asteroid/tramstation)
+"A" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate,
+/obj/effect/spawner/lootdrop/maintenance/six,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/wrench = 2, /obj/item/wirecutters = 2, /obj/item/screwdriver = 2, /obj/item/crowbar = 2, /obj/item/weldingtool = 2, /obj/item/stack/cable_coil = 2, /obj/item/analyzer = 2, /obj/item/t_scanner = 2, /obj/item/multitool = 1, /obj/item/clothing/glasses/meson = 1, /obj/item/storage/belt/utility = 1, /obj/item/clothing/head/welding = 1)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/aft)
+"B" = (
+/turf/closed/wall,
+/area/maintenance/port/aft)
+"D" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sign/warning/vacuum/external{
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/aft)
+"G" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/port/aft)
+"L" = (
+/turf/template_noop,
+/area/template_noop)
+"M" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/port/aft)
+"O" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "2-8"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/port/aft)
+"R" = (
+/obj/machinery/door/airlock/external{
+	name = "External Access"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/engineering/external,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper_multi{
+	cycle_id = "dabonthehatersdabdab"
+	},
+/turf/open/floor/plating,
+/area/maintenance/port/aft)
+"U" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/maintenance/port/aft)
+"W" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "1-4"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/port/aft)
+"Y" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/emcloset,
+/turf/open/floor/plating,
+/area/maintenance/port/aft)
+"Z" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/modular_map_connector,
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/port/aft)
+
+(1,1,1) = {"
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+"}
+(2,1,1) = {"
+L
+L
+L
+L
+z
+L
+L
+z
+z
+z
+z
+z
+z
+z
+z
+z
+f
+L
+L
+L
+L
+L
+L
+"}
+(3,1,1) = {"
+B
+B
+B
+B
+z
+z
+z
+z
+f
+f
+f
+z
+z
+z
+z
+z
+z
+z
+L
+L
+L
+L
+L
+"}
+(4,1,1) = {"
+Z
+M
+W
+B
+f
+f
+f
+f
+f
+f
+f
+f
+z
+z
+z
+z
+z
+z
+z
+z
+L
+L
+L
+"}
+(5,1,1) = {"
+L
+L
+G
+B
+B
+B
+B
+B
+B
+B
+B
+B
+z
+z
+z
+z
+z
+z
+z
+z
+z
+L
+L
+"}
+(6,1,1) = {"
+L
+L
+O
+M
+M
+M
+M
+M
+M
+W
+t
+j
+z
+z
+z
+z
+z
+z
+z
+z
+f
+f
+L
+"}
+(7,1,1) = {"
+L
+L
+L
+L
+L
+L
+L
+L
+L
+m
+A
+j
+z
+z
+z
+z
+z
+z
+z
+z
+z
+f
+L
+"}
+(8,1,1) = {"
+L
+L
+L
+L
+L
+L
+L
+L
+L
+G
+a
+j
+z
+z
+z
+z
+z
+z
+z
+z
+z
+f
+L
+"}
+(9,1,1) = {"
+L
+L
+L
+L
+L
+L
+L
+L
+L
+G
+B
+B
+f
+z
+z
+z
+z
+z
+z
+z
+z
+f
+L
+"}
+(10,1,1) = {"
+L
+L
+L
+L
+L
+L
+L
+L
+L
+O
+w
+B
+B
+B
+B
+B
+B
+B
+B
+R
+B
+f
+f
+"}
+(11,1,1) = {"
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+y
+y
+y
+y
+y
+y
+y
+B
+Y
+U
+B
+f
+f
+"}
+(12,1,1) = {"
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+y
+D
+B
+e
+U
+B
+f
+f
+"}
+(13,1,1) = {"
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+y
+i
+U
+U
+B
+f
+f
+"}
+(14,1,1) = {"
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+y
+B
+B
+B
+B
+f
+f
+"}
+(15,1,1) = {"
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+y
+y
+B
+f
+f
+f
+f
+"}
+(16,1,1) = {"
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+L
+"}
