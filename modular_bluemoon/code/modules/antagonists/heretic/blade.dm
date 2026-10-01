@@ -772,7 +772,7 @@
 	var/obj/effect/heretic_orbit_blade/blade = new(null, slot, grown)
 	orbit_blades += blade
 	var/atom/movable/owner = parent
-	owner.vis_contents += blade
+	owner.add_vis_on_floor(blade)
 
 /datum/component/heretic_blade_orbit/proc/remove_blades(list/blades)
 	var/atom/movable/owner = parent

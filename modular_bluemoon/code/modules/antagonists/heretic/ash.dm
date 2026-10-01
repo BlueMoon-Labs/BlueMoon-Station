@@ -201,13 +201,15 @@
 	duration = HERETIC_ASH_TRAIL_DURATION
 	applies_slowdown = FALSE
 	water_douses = FALSE
-	var/static/mutable_appearance/trail_glow
+	/// Свечение следа по смещению этажа
+	var/static/list/trail_glows = list()
 
 /obj/effect/heretic_combat_zone/ash/lord_trail/Initialize(mapload, datum/mind/master)
 	. = ..()
-	if(!trail_glow)
-		trail_glow = emissive_appearance('modular_bluemoon/icons/effects/heretic_vfx.dmi', "ash_trail_glow")
-	add_overlay(trail_glow)
+	var/offset_key = "[GET_TURF_PLANE_OFFSET(src)]"
+	if(!trail_glows[offset_key])
+		trail_glows[offset_key] = emissive_appearance('modular_bluemoon/icons/effects/heretic_vfx.dmi', "ash_trail_glow", offset_spokesman = src)
+	add_overlay(trail_glows[offset_key])
 	alpha = 0
 	transform = matrix(HERETIC_ASH_KINDLE_START, 0, 0, 0, HERETIC_ASH_KINDLE_START, 0)
 	burn_down()
@@ -318,11 +320,11 @@
 		var/angle = index * 360 / HERETIC_ASH_RING_MOTES
 		var/matrix/heading = matrix()
 		heading.Turn(angle)
-		for(var/mutable_appearance/mote as anything in list(mutable_appearance('modular_bluemoon/icons/effects/heretic_particles.dmi', "flame_mote"), emissive_appearance('modular_bluemoon/icons/effects/heretic_particles.dmi', "flame_mote")))
+		for(var/mutable_appearance/mote as anything in list(mutable_appearance('modular_bluemoon/icons/effects/heretic_particles.dmi', "flame_mote"), emissive_appearance('modular_bluemoon/icons/effects/heretic_particles.dmi', "flame_mote", offset_spokesman = src)))
 			mote.pixel_x = round(sin(angle) * HERETIC_ASH_RING_RADIUS) + HERETIC_ASH_MOTE_OFFSET
 			mote.pixel_y = round(cos(angle) * HERETIC_ASH_RING_RADIUS) + HERETIC_ASH_MOTE_OFFSET
 			mote.transform = heading
-			add_overlay(mote)
+			add_floor_overlay(mote)
 	SpinAnimation(HERETIC_ASH_RING_SPIN, -1, TRUE, HERETIC_ASH_RING_SEGMENTS, parallel = FALSE)
 	alpha = 0
 	animate(src, alpha = 255, time = HERETIC_ASH_RING_FADE, easing = SINE_EASING | EASE_OUT, flags = ANIMATION_PARALLEL)

@@ -1041,7 +1041,10 @@
 	var/new_offset = new_z ? GET_Z_PLANE_OFFSET(new_z) : 0
 	if((old_z ? GET_Z_PLANE_OFFSET(old_z) : 0) == new_offset)
 		return
+	set_plane_offset(new_offset)
 
+/// Ставит атом, его оверлеи этажа и вис-детей с TRAIT_VIS_ON_CARRIER_FLOOR на плоскости этажа new_offset.
+/atom/movable/proc/set_plane_offset(new_offset)
 	SET_PLANE_W_SCALAR(src, PLANE_TO_TRUE(plane), new_offset)
 
 	update_appearance()
@@ -1056,6 +1059,21 @@
 		for(var/mutable_appearance/update as anything in update_overlays_on_z)
 			SET_PLANE_W_SCALAR(update, PLANE_TO_TRUE(update.plane), new_offset)
 		add_overlay(update_overlays_on_z)
+	for(var/atom/movable/vis_child in vis_contents)
+		if(HAS_TRAIT(vis_child, TRAIT_VIS_ON_CARRIER_FLOOR))
+			vis_child.set_plane_offset(new_offset)
+
+/// Показывает вис-ребёнка без своего loc на этаже носителя; при смене этажа носителя он переезжает следом.
+/atom/movable/proc/add_vis_on_floor(atom/movable/child)
+	ADD_TRAIT(child, TRAIT_VIS_ON_CARRIER_FLOOR, INNATE_TRAIT)
+	vis_contents += child
+	if(SSmapping.max_plane_offset)
+		child.set_plane_offset(GET_TURF_PLANE_OFFSET(src))
+
+/// Оверлей с явной плоскостью, который переезжает на этаж вместе с атомом без пересборки в update_overlays().
+/atom/movable/proc/add_floor_overlay(mutable_appearance/overlay)
+	LAZYADD(update_overlays_on_z, overlay)
+	add_overlay(overlay)
 
 /**
 * A wrapper for setDir that should only be able to fail by living mobs.

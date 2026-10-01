@@ -58,6 +58,43 @@
 
 	qdel(host)
 
+/// Вис-дети с TRAIT_VIS_ON_CARRIER_FLOOR и их эмиссивы идут за этажом носителя, вис-ребёнок без трейта остаётся на месте.
+/datum/unit_test/emissive_offset_vis_child_follows_carrier
+
+/datum/unit_test/emissive_offset_vis_child_follows_carrier/Run()
+	if(!SSmapping.max_plane_offset)
+		return // Односложный мир: смещений нет.
+
+	var/turf/lower = multiz_test_lower_turf()
+	TEST_ASSERT_NOTNULL(lower, "В мире со стопкой не нашлось этажа со смещением")
+	var/obj/item/carrier = allocate(/obj/item, run_loc_floor_bottom_left)
+	var/obj/effect/abstract/holder = new(null)
+	var/obj/effect/abstract/glow_child = new(null)
+	var/obj/effect/abstract/shared = new(null)
+	allocated += list(holder, glow_child, shared)
+	var/true_plane = PLANE_TO_TRUE(holder.plane)
+	var/shared_plane = shared.plane
+
+	var/mutable_appearance/glow = emissive_appearance(EMISSIVE_OFFSET_TEST_ICON, EMISSIVE_OFFSET_TEST_STATE, offset_spokesman = glow_child)
+	glow_child.add_floor_overlay(glow)
+	holder.add_vis_on_floor(glow_child)
+	carrier.add_vis_on_floor(holder)
+	carrier.vis_contents += shared
+
+	for(var/turf/destination as anything in list(lower, run_loc_floor_bottom_left))
+		carrier.forceMove(destination)
+		var/offset = GET_Z_PLANE_OFFSET(destination.z)
+		TEST_ASSERT_EQUAL(holder.plane, GET_NEW_PLANE(true_plane, offset), "Вис-ребёнок не переехал на этаж носителя")
+		TEST_ASSERT_EQUAL(glow_child.plane, GET_NEW_PLANE(true_plane, offset), "Вложенный вис-ребёнок не переехал вслед за своим носителем")
+		var/glow_plane
+		for(var/mutable_appearance/overlay as anything in glow_child.overlays)
+			if(PLANE_TO_TRUE(overlay.plane) == EMISSIVE_PLANE)
+				glow_plane = overlay.plane
+		TEST_ASSERT_EQUAL(glow_plane, GET_NEW_PLANE(EMISSIVE_PLANE, offset), "Эмиссив вис-ребёнка остался на чужом этаже")
+		TEST_ASSERT_EQUAL(shared.plane, shared_plane, "Вис-ребёнок без трейта, общий для многих носителей, не должен менять плоскость")
+
+	carrier.vis_contents.Cut()
+
 /// Аудит этажа молчит про оверлеи на плоскости своего этажа и ловит оверлей с плоскости чужого.
 /datum/unit_test/emissive_offset_audit_sees_overlays
 

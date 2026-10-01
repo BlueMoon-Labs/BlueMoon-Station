@@ -264,7 +264,8 @@
 	ascension_aura_front = new(null, route, TRUE)
 	ascension_aura.follow(user)
 	ascension_aura_front.follow(user)
-	user.vis_contents += list(ascension_aura, ascension_aura_front)
+	user.add_vis_on_floor(ascension_aura)
+	user.add_vis_on_floor(ascension_aura_front)
 	var/emerge_delay = ascension_climax_at ? max(0, ascension_climax_at + HERETIC_ASCENSION_EMERGE_DELAY - world.time) : 0
 	ascension_aura.manifest(emerge_delay)
 	ascension_aura_front.manifest(emerge_delay)
@@ -322,7 +323,7 @@
 		return
 	vis_flags |= VIS_UNDERLAY
 	// Маска свечения общая на оба слоя: в темноте видно только то, что светится само.
-	add_overlay(emissive_appearance(icon, "[path.ascension_aura_state]_glow"))
+	add_floor_overlay(emissive_appearance(icon, "[path.ascension_aura_state]_glow", offset_spokesman = src))
 
 /// Нимб отстаёт от шага и перекладывает главную деталь за спину при повороте.
 /obj/effect/heretic_ascension_aura/proc/follow(mob/living/body)
@@ -391,7 +392,7 @@
 	icon = path.ascension_aura_icon
 	icon_state = "[path.ascension_aura_state]_back"
 	add_overlay(mutable_appearance(icon, "[path.ascension_aura_state]_front"))
-	add_overlay(emissive_appearance(icon, "[path.ascension_aura_state]_glow"))
+	add_overlay(emissive_appearance(icon, "[path.ascension_aura_state]_glow", offset_spokesman = src))
 	pixel_x = (world.icon_size - HERETIC_ASCENSION_ICON_SIZE) / 2
 	pixel_y = pixel_x
 	animate(src, transform = matrix(3, 0, 0, 0, 3, 0), alpha = 0, pixel_y = pixel_y + 12, time = duration, easing = CUBIC_EASING | EASE_OUT)
@@ -461,7 +462,7 @@
 		var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
 		personal_echo = image(path.ascension_aura_icon, owner, "[path.ascension_aura_state]_back", ABOVE_MOB_LAYER)
 		personal_echo.overlays += mutable_appearance(path.ascension_aura_icon, "[path.ascension_aura_state]_front")
-		personal_echo.overlays += emissive_appearance(path.ascension_aura_icon, "[path.ascension_aura_state]_glow")
+		personal_echo.overlays += emissive_appearance(path.ascension_aura_icon, "[path.ascension_aura_state]_glow", offset_spokesman = owner)
 		personal_echo.appearance_flags = PIXEL_SCALE | RESET_COLOR
 		personal_echo.pixel_x = (world.icon_size - HERETIC_ASCENSION_ICON_SIZE) / 2
 		personal_echo.pixel_y = personal_echo.pixel_x
