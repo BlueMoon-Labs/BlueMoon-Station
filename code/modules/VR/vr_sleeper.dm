@@ -206,12 +206,21 @@
 	// /obj/machinery/occupant is untyped and this codebase is in strict mode.
 	var/mob/deathmatch_host = occupant
 	var/datum/deathmatch_lobby/lobby = get_deathmatch_lobby_of(user.ckey)
-	var/list/modes = list()
-	for(var/map_ref as anything in get_deathmatch_templates())
+	// The mode list is sent as flat "deathmatch_mode_N_field" keys rather than
+	// a list of assoc lists. A list of assoc lists reaches the browser as a
+	// list of *lists*, so every mode.name/mode.id read as undefined and the
+	// mode buttons rendered as bare "()" with nothing to select. Only scalars
+	// directly under ui_data survive as JSON object fields.
+	var/list/all_modes = get_deathmatch_templates()
+	data["deathmatch_mode_count"] = length(all_modes)
+	var/mode_index = 0
+	for(var/map_ref as anything in all_modes)
+		mode_index++
 		var/datum/map_template/deathmatch/mode = map_ref
-		modes += list("id" = mode.name, "name" = mode.display_name, "description" = mode.description, \
-			"players" = "[mode.min_players]-[mode.max_players]")
-	data["deathmatch_modes"] = modes
+		data["deathmatch_mode_[mode_index]_id"] = mode.name
+		data["deathmatch_mode_[mode_index]_name"] = mode.display_name
+		data["deathmatch_mode_[mode_index]_description"] = mode.description
+		data["deathmatch_mode_[mode_index]_players"] = "[mode.min_players]-[mode.max_players]"
 	data["selected_deathmatch_mode"] = selected_deathmatch_mode
 	data["can_start_deathmatch"] = (user == deathmatch_host) && !isnull(deathmatch_host?.mind) \
 		&& allow_creating_vr_mobs
@@ -220,7 +229,7 @@
 	if(data["is_hosting_deathmatch"])
 		data["hosting_deathmatch"] = list("name" = lobby.template.display_name, "players" = lobby.player_count())
 	// TEMP DEBUG
-	log_game("DMDBG isoccupant=[data["isoccupant"]] can_start=[data["can_start_deathmatch"]] sel=[selected_deathmatch_mode] modes=[modes]")
+	log_game("DMDBG ui: modes_n=[data["deathmatch_mode_count"]] first_id=[data["deathmatch_mode_1_id"]] first_name=[data["deathmatch_mode_1_name"]] first_players=[data["deathmatch_mode_1_players"]]")
 	return data
 
 /obj/machinery/vr_sleeper/proc/get_vr_spawnpoint() //proc so it can be overridden for team games or something

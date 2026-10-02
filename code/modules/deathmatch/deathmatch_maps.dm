@@ -43,7 +43,10 @@
 	var/min_players = 2
 	var/max_players = 2
 	/// Loadout every player on this map spawns with. See deathmatch_loadouts.dm.
-	var/loadout = /datum/outfit/deathmatch_loadout/bare
+	/// A type path, not a datum: this is handed to build_virtual_character(),
+	/// which instantiates it, the same way /obj/machinery/vr_sleeper passes
+	/// vr_outfit.
+	var/loadout = /datum/outfit/vr/deathmatch_loadout/bare
 
 	/// The map is complete by the time this runs, so the freshly loaded bounds
 	/// can be walked turfs and lit.
@@ -100,7 +103,7 @@
 	mappath = "_maps/deathmatch/secu_ring.dmm"
 	min_players = 2
 	max_players = 4
-	loadout = /datum/outfit/deathmatch_loadout/disabler
+	loadout = /datum/outfit/vr/deathmatch_loadout/disabler
 
 /datum/map_template/deathmatch/instagib
 	name = "Deathmatch - Instagib"
@@ -109,7 +112,7 @@
 	mappath = "_maps/deathmatch/instagib.dmm"
 	min_players = 2
 	max_players = 8
-	loadout = /datum/outfit/deathmatch_loadout/laser
+	loadout = /datum/outfit/vr/deathmatch_loadout/laser
 
 /datum/map_template/deathmatch/final_destination
 	name = "Deathmatch - Final Destination"
@@ -118,7 +121,7 @@
 	mappath = "_maps/deathmatch/finaldestination.dmm"
 	min_players = 2
 	max_players = 8
-	loadout = /datum/outfit/deathmatch_loadout/sidearm
+	loadout = /datum/outfit/vr/deathmatch_loadout/sidearm
 
 /datum/map_template/deathmatch/sniper_elite
 	name = "Deathmatch - Sniper Elite"
@@ -127,7 +130,7 @@
 	mappath = "_maps/deathmatch/sniper_elite.dmm"
 	min_players = 2
 	max_players = 8
-	loadout = /datum/outfit/deathmatch_loadout/laser
+	loadout = /datum/outfit/vr/deathmatch_loadout/laser
 
 /datum/map_template/deathmatch/shooting_range
 	name = "Deathmatch - Shooting Range"
@@ -136,4 +139,4 @@
 	mappath = "_maps/deathmatch/shooting_range.dmm"
 	min_players = 2
 	max_players = 6
-	loadout = /datum/outfit/deathmatch_loadout/laser
+	loadout = /datum/outfit/vr/deathmatch_loadout/laser

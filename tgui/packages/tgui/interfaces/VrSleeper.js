@@ -4,12 +4,19 @@ import { Window } from '../layouts';
 
 export const VrSleeper = (props) => {
   const { act, data } = useBackend();
-  // TDM cannot tell an empty DM list from an empty assoc list and hands the
-  // first over as {}, so this is not guaranteed to be an array. Normalised once
-  // here instead of guarding each use.
-  const deathmatchModes = Array.isArray(data.deathmatch_modes)
-    ? data.deathmatch_modes
-    : Object.values(data.deathmatch_modes || {});
+  // The modes arrive as flat "deathmatch_mode_N_field" keys. A DM list of assoc
+  // lists reaches the browser as a list of lists, which left every mode.name
+  // and mode.id undefined and rendered the buttons as bare "()".
+  const modeCount = data.deathmatch_mode_count || 0;
+  const deathmatchModes = [];
+  for (let i = 1; i <= modeCount; i++) {
+    deathmatchModes.push({
+      id: data[`deathmatch_mode_${i}_id`],
+      name: data[`deathmatch_mode_${i}_name`],
+      description: data[`deathmatch_mode_${i}_description`],
+      players: data[`deathmatch_mode_${i}_players`],
+    });
+  }
   return (
     <Window
       width={475}

@@ -33,7 +33,7 @@
 	var/mob/host_body
 	var/datum/map_template/deathmatch/template
 	var/datum/deathmatch_arena/arena
-	var/datum/outfit/deathmatch_loadout/loadout
+	var/loadout
 	/// list(/datum/deathmatch_player)
 	var/list/players = list()
 	var/state = DM_LOBBY_WAITING
@@ -44,7 +44,7 @@
 	/// How often dead and abandoned arena bodies are swept up.
 	var/reap_interval = 5 SECONDS
 
-/datum/deathmatch_lobby/New(datum/map_template/deathmatch/map, mob/host, datum/outfit/deathmatch_loadout/loadout = null)
+/datum/deathmatch_lobby/New(datum/map_template/deathmatch/map, mob/host, loadout = null)
 	src.template = map
 	src.loadout = loadout || map?.loadout
 	src.arena = new(map)
@@ -77,6 +77,16 @@
 		keys += player.ckey
 	return keys
 
+/// What to call the host in public. Their avatar name, because a ckey is not
+/// something to broadcast to the whole server, and it is also the name the other
+/// players actually see standing in the arena.
+datum/deathmatch_lobby/proc/host_display_name()
+	for(var/datum/deathmatch_player/player as anything in players)
+		if(!player?.is_host || isnull(player.vr_body) || QDELETED(player.vr_body))
+			continue
+		return player.vr_body.name
+	return host_key || "unknown"
+
 /**
  * Loads the arena and puts the host in it. Returns TRUE once the game is
  * running, FALSE (having cleaned up after itself) if it cannot be.
@@ -95,7 +105,7 @@
 
 	state = DM_LOBBY_RUNNING
 	time_started = world.time
-	GLOB.deathmatch_lobbies[host_key] = src
+	GLOB.deathmatch_lobbies += src
 	if(!add_player(host_body, TRUE))
 		log_game("Deathmatch: [to_string()] could not seat its host.")
 		end_lobby()
@@ -181,7 +191,7 @@
 	players += player
 
 	to_chat(vr_body, span_boldnotice(template.display_name))
-	to_chat(vr_body, span_notice("Host: [host_key]"))
+	to_chat(vr_body, span_notice("РћСЂРіР°РЅРёР·Р°С‚РѕСЂ: [host_display_name()]"))
 	to_chat(vr_body, span_notice("Players: [player_count()]/[template.max_players]. This game ends on its own in [DisplayTimeText(game_time)]."))
 	to_chat(vr_body, span_notice("Killing you in here only kills the avatar."))
 	return player
@@ -254,6 +264,13 @@
 			players -= player
 			evict_body(player, "You left [template.display_name].")
 			continue
+	// Everybody is gone, host included. reap_bodies() strips players straight out
+	// of the list instead of going through remove_player(), so the host leaving
+	// never reaches that proc's end_lobby(), and the game would sit in
+	// GLOB.deathmatch_lobbies forever, locking the host out of starting the next.
+	if(!players.len)
+		end_lobby(reason = "everybody left")
+		return
 	// Re-armed instead of TIMER_LOOP, so a finished lobby has no timer left
 	// running against a deleted datum.
 	if(!is_finished())
@@ -266,7 +283,7 @@
 	end_lobby(reason = "the game ran out of time")
 
 /datum/deathmatch_lobby/proc/announce()
-	priority_announce("[template.display_name] is opening, hosted by [host_key]. Use the Join Deathmatch action to play.", \
+	priority_announce("[template.display_name] РѕС‚РєСЂС‹РІР°РµС‚СЃСЏ! РћСЂРіР°РЅРёР·Р°С‚РѕСЂ вЂ” [host_display_name()]. РќР°Р¶РјРёС‚Рµ В«Join DeathmatchВ», С‡С‚РѕР±С‹ СЃС‹РіСЂР°С‚СЊ.", \
 		"Deathmatch")
 
 /**
@@ -284,8 +301,7 @@
 	for(var/datum/deathmatch_player/player as anything in players)
 		evict_body(player, "Deathmatch is over[reason ? ": [reason]" : ""].")
 	players = list()
-	if(!isnull(host_key))
-		GLOB.deathmatch_lobbies -= host_key
+	GLOB.deathmatch_lobbies -= src
 
 	if(delete_arena && !isnull(arena) && arena.is_loaded() && !arena.unload_arena())
 		log_game("Deathmatch: [to_string()] still has [english_list(arena.occupant_names(), "nobody")] in it, leaving it loaded.")
@@ -343,11 +359,18 @@
 	to_chat(src, span_danger("You are not in a deathmatch game."))
 
 /// The lobby a ckey is in, whether they host it or just play it.
+///
+/// Finished lobbies are skipped, so a game that has already been torn down cannot
+/// lock its host out of starting the next one.
 /proc/get_deathmatch_lobby_of(ckey)
 	if(!ckey)
 		return null
 	for(var/lobby_ref as anything in GLOB.deathmatch_lobbies)
+		if(!istype(lobby_ref, /datum/deathmatch_lobby))
+			continue
 		var/datum/deathmatch_lobby/lobby = lobby_ref
+		if(QDELETED(lobby) || lobby.is_finished())
+			continue
 		if(lobby.host_key == ckey || (ckey in lobby.player_keys()))
 			return lobby
 	return null
@@ -355,8 +378,10 @@
 /// The first running game with room in it.
 /proc/get_joinable_deathmatch_lobby()
 	for(var/lobby_ref as anything in GLOB.deathmatch_lobbies)
+		if(!istype(lobby_ref, /datum/deathmatch_lobby))
+			continue
 		var/datum/deathmatch_lobby/lobby = lobby_ref
-		if(lobby.is_finished() || lobby.is_full())
+		if(QDELETED(lobby) || lobby.is_finished() || lobby.is_full())
 			continue
 		return lobby
 	return null

@@ -7,7 +7,7 @@
 // Note that this /datum/outfit has no `weapon` and no `under` var, so a melee
 // weapon goes in a hand and a mask goes in `mask`.
 
-/datum/outfit/deathmatch_loadout
+/datum/outfit/vr/deathmatch_loadout
 	name = "Deathmatch Loadout"
 
 /**
@@ -16,13 +16,13 @@
  * The default, because it is the only loadout that is fair on every map without
  * the map having to be balanced around it.
  */
-/datum/outfit/deathmatch_loadout/bare
+/datum/outfit/vr/deathmatch_loadout/bare
 	name = "Bystander"
 	uniform = /obj/item/clothing/under/color/random
 	shoes = /obj/item/clothing/shoes/sneakers/black
 
 /// Melee. Cheap, close range, and the only thing that works while sprinting.
-/datum/outfit/deathmatch_loadout/brawler
+/datum/outfit/vr/deathmatch_loadout/brawler
 	name = "Brawler"
 	uniform = /obj/item/clothing/under/color/random
 	shoes = /obj/item/clothing/shoes/sneakers/black
@@ -31,7 +31,7 @@
 	l_hand = /obj/item/melee/baton
 
 /// A sidearm. Low damage, but it does not push people out of cover.
-/datum/outfit/deathmatch_loadout/sidearm
+/datum/outfit/vr/deathmatch_loadout/sidearm
 	name = "Sidearm"
 	uniform = /obj/item/clothing/under/color/random
 	shoes = /obj/item/clothing/shoes/sneakers/black
@@ -45,14 +45,14 @@
 /// that true needs a projectile subtype and an ammo casing to go with it, and
 /// neither exists in this codebase yet, so this loadout is the honest
 /// approximation: lethal, but not instakill.
-/datum/outfit/deathmatch_loadout/laser
+/datum/outfit/vr/deathmatch_loadout/laser
 	name = "Laser"
 	uniform = /obj/item/clothing/under/color/random
 	shoes = /obj/item/clothing/shoes/sneakers/black
 	back = /obj/item/gun/energy/laser/carbine/deathmatch_selfcharge
 
 /// Disabler. The Security Ring, where being shot is the point.
-/datum/outfit/deathmatch_loadout/disabler
+/datum/outfit/vr/deathmatch_loadout/disabler
 	name = "Disabler"
 	uniform = /obj/item/clothing/under/color/random
 	shoes = /obj/item/clothing/shoes/sneakers/black
