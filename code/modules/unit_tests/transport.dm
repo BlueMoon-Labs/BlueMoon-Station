@@ -80,6 +80,16 @@
 		powered_area.contents.Add(track_turf)
 		powered_turfs += track_turf
 
+/// Runs a calculated route to the end right away instead of waiting on SStransport
+/datum/unit_test/tram_travels_to_platform/proc/drive_route()
+	controller.set_active(TRUE)
+	controller.dispatch_transport()
+	STOP_PROCESSING(SStransport, controller)
+	for(var/step in 1 to 10)
+		controller.scheduled_move = world.time
+		if(controller.process(SStransport.wait * 0.1) == PROCESS_KILL)
+			break
+
 /datum/unit_test/tram_travels_to_platform/Destroy()
 	controller = null
 	QDEL_LIST(allocated)
@@ -118,13 +128,7 @@
 
 	TEST_ASSERT(controller.calculate_route(second_platform), "Маршрут до второй платформы не построился")
 	TEST_ASSERT_EQUAL(controller.travel_remaining, 3, "Неверная длина маршрута")
-	controller.set_active(TRUE)
-	controller.dispatch_transport()
-	STOP_PROCESSING(SStransport, controller)
-	for(var/step in 1 to 10)
-		controller.scheduled_move = world.time
-		if(controller.process(SStransport.wait * 0.1) == PROCESS_KILL)
-			break
+	drive_route()
 
 	TEST_ASSERT_EQUAL(lead.loc, destination, "Трамвай не доехал до платформы")
 	TEST_ASSERT_EQUAL(controller.idle_platform, second_platform, "Контроллер не отметил прибытие")
@@ -135,6 +139,34 @@
 	TEST_ASSERT_NULL(locate(/obj/structure/transport/linear/tram) in start, "Трамвай оставил часть себя на старте")
 	TEST_ASSERT(QDELETED(obstacle), "Трамвай проехал сквозь стол, не снеся его")
 	TEST_ASSERT(!QDELETED(track_lattice), "Трамвай разломал решётку под путями в прутья")
+
+/// Объекты освещения тайлов не становятся грузом и остаются на своих тайлах после поездки.
+/datum/unit_test/tram_travels_to_platform/leaves_lighting
+	var/list/atom/movable/lighting_object/created_lighting
+
+/datum/unit_test/tram_travels_to_platform/leaves_lighting/Destroy()
+	for(var/atom/movable/lighting_object/tile_lighting as anything in created_lighting)
+		if(!QDELETED(tile_lighting))
+			qdel(tile_lighting, force = TRUE)
+	created_lighting = null
+	return ..()
+
+/datum/unit_test/tram_travels_to_platform/leaves_lighting/Run()
+	created_lighting = list()
+	var/turf/first_tile = run_loc_floor_bottom_left
+	var/list/turf/tram_tiles = block(first_tile, locate(first_tile.x + 2, first_tile.y + 1, first_tile.z))
+	for(var/turf/tram_tile as anything in tram_tiles)
+		if(!tram_tile.lighting_object)
+			created_lighting += new /atom/movable/lighting_object(tram_tile)
+	build_tram()
+
+	for(var/turf/tram_tile as anything in tram_tiles)
+		TEST_ASSERT(!(tram_tile.lighting_object in lead.transport_contents), "Освещение тайла [COORD(tram_tile)] стало грузом трамвая")
+	TEST_ASSERT(controller.calculate_route(second_platform), "Маршрут до второй платформы не построился")
+	drive_route()
+	TEST_ASSERT_EQUAL(lead.loc, destination, "Трамвай не доехал до платформы")
+	for(var/turf/tram_tile as anything in tram_tiles)
+		TEST_ASSERT_EQUAL(tram_tile.lighting_object.loc, tram_tile, "Освещение тайла [COORD(tram_tile)] уехало с трамваем")
 
 /// Вызов через подсистему закрывает двери, везёт трамвай и открывает их на прибытии.
 /datum/unit_test/tram_travels_to_platform/on_request
