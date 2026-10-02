@@ -90,6 +90,8 @@
 /datum/unit_test/holodeck_copy_isolation/proc/check_turf_atmos_bookkeeping(copy_was_active)
 	var/turf/open/template = run_loc_floor_bottom_left
 	var/turf/open/copy = run_loc_floor_top_right
+	var/template_was_registered = template.excited
+	var/copy_was_registered = copy.excited
 	SSair.remove_from_active(template)
 	if(copy_was_active)
 		SSair.add_to_active(copy)
@@ -109,8 +111,16 @@
 		SSair.drop_active_turf(copy)
 	copy.excited = FALSE
 	copy.active_turf_index = 0
+	restore_active_registration(template, template_was_registered)
+	restore_active_registration(copy, copy_was_registered)
 
 	var/state = copy_was_active ? "активный" : "спящий"
 	TEST_ASSERT(excited_after_copy, "[state] приёмник после копии шаблона не числится активным, хотя его воздух заменён")
 	TEST_ASSERT(hint_valid, "[state] приёмник после копии шаблона потерял свою позицию в SSair.active_turfs")
 	TEST_ASSERT_EQUAL(entries, 1, "[state] приёмник после копии шаблона и пробуждения лежит в SSair.active_turfs [entries] раз")
+
+/datum/unit_test/holodeck_copy_isolation/proc/restore_active_registration(turf/open/target, was_registered)
+	if(was_registered)
+		SSair.add_to_active(target, blockchanges = FALSE, wake_machines = FALSE, reset_stall = FALSE)
+	else if(target.excited)
+		SSair.remove_from_active(target)
