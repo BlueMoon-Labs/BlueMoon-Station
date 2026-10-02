@@ -94,13 +94,13 @@
 	unit_name = "crack"
 	export_types = list(/obj/item/reagent_containers/crack)
 	include_subtypes = FALSE
+	k_elasticity = 0 //Котиков много не бывает
 
 /datum/export/crack/crackbrick
 	cost = 900
 	unit_name = "crack brick"
 	export_types = list(/obj/item/reagent_containers/crackbrick)
 	include_subtypes = FALSE
-	k_elasticity = 0 //Котиков много не бывает
 
 /datum/export/cocaine
 	cost = 150
