@@ -25,9 +25,11 @@
 				turn_off()
 				return
 			if(H.hud_used)
-				hud = H.hud_used.ammo_counter
+				var/atom/movable/screen/ammo_counter/counter = H.hud_used.ammo_counter
 				// SPLURT EDIT START - FIX AMMO COUNTER HUD
-				if(!hud.on) // make sure we're not already turned on
+				// Счётчик уже показывает другое оружие - не держим его без подписки на удаление.
+				if(!counter.on)
+					hud = counter
 					current_hud_owner = WEAKREF(user)
 					RegisterSignal(user, COMSIG_PARENT_QDELETING, PROC_REF(turn_off))
 					turn_on()
