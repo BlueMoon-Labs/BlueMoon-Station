@@ -269,6 +269,7 @@
 #include "reagent_recipe_collisions.dm"
 #include "recursive_hotpaths.dm"
 #include "refactor_changeturf.dm"
+#include "refactor_living.dm"
 #include "resist.dm"
 #include "riot_shield_implant.dm"
 #include "runechat_sanity.dm"
