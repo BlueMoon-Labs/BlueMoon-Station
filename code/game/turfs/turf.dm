@@ -136,6 +136,10 @@ GLOBAL_LIST_EMPTY(station_turfs)
 /turf/proc/Initalize_Atmos(times_fired)
 	CALCULATE_ADJACENT_TURFS(src)
 
+/turf/HandleTurfChange(turf/T)
+	for(var/obj/effect/decal/decal in src)
+		decal.HandleTurfChange(T)
+
 /turf/Destroy(force)
 	. = QDEL_HINT_IWILLGC
 	var/is_changeturf = turf_flags & TURF_CHANGING

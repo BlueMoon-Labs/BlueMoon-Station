@@ -801,10 +801,7 @@ SUBSYSTEM_DEF(garbage)
 			I.failures++
 			PushRecentFailure(type, GC_QUEUE_SOFTCHECK, hint, external_refs)
 
-			var/extra_name = ""
-			if (isatom(D))
-				var/atom/A = D
-				extra_name = " \"[A.name]\""
+			var/extra_name = leaked_display_name(D)
 
 			// SLOWDESTROY types are expected to miss softcheck — skip noisy testing output.
 			#ifdef TESTING
@@ -848,10 +845,7 @@ SUBSYSTEM_DEF(garbage)
 			PushWarnfailTime(I)
 			leak_rate_fail_accumulator++
 			PushRecentFailure(type, GC_QUEUE_WARNFAIL, hint, external_refs)
-			var/extra_name = ""
-			if (isatom(D))
-				var/atom/A = D
-				extra_name = " \"[A.name]\""
+			var/extra_name = leaked_display_name(D)
 			var/prompt_note = ""
 			if (ismob(D))
 				var/mob/leaked_mob = D
@@ -1102,6 +1096,16 @@ SUBSYSTEM_DEF(garbage)
  * забытый STOP_PROCESSING, бакл-связки мобов. Зовётся только на редких warnfail'ах -
  * стоимость не влияет на тик.
  */
+/// Имя в строке утечки: у атома его name, у интерфейса tgui - сам интерфейс, его Destroy не обнуляет.
+/datum/controller/subsystem/garbage/proc/leaked_display_name(datum/D)
+	if (isatom(D))
+		var/atom/A = D
+		return " \"[A.name]\""
+	if (istype(D, /datum/tgui))
+		var/datum/tgui/ui = D
+		return " \"[ui.interface]\""
+	return ""
+
 /datum/controller/subsystem/garbage/proc/build_warnfail_context(datum/D, allow_client_probe = TRUE, list/client_probe_state)
 	var/list/notes = list()
 	// D.active_timers после Destroy всегда null, а таймер чужого датума с D в аргументах
