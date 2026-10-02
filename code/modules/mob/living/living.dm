@@ -19,8 +19,8 @@
 	GLOB.mob_living_list += src
 	if(stat != DEAD)
 		become_ai_targetable()
-	init_unconscious_appearance()
 
+/// Called by subtypes at the end of their own Initialize().
 /mob/living/proc/init_unconscious_appearance()
 	return
 
@@ -30,7 +30,7 @@
 	static_image.name = "unknown humanoid"
 	var/datum/atom_hud/alternate_appearance/basic/unconscious_obscurity/AA = add_alt_appearance(/datum/atom_hud/alternate_appearance/basic/unconscious_obscurity, "[REF(src)]_unconscious", static_image, NONE)
 	if(AA)
-		for(var/mob/living/viewer in GLOB.mob_living_list)
+		for(var/mob/living/viewer as anything in GLOB.mob_living_list)
 			if(viewer.stat == UNCONSCIOUS && viewer != src)
 				AA.add_hud_to(viewer)
 
@@ -39,12 +39,13 @@
 		ADD_TRAIT(src, TRAIT_BLOCK_SECHUD, "unconscious_obscurity")
 		ADD_TRAIT(src, TRAIT_BLOCK_MEDHUD, "unconscious_obscurity")
 		ADD_TRAIT(src, TRAIT_PROSOPAGNOSIA, "unconscious_obscurity")
-		for(var/datum/atom_hud/H in GLOB.all_huds)
-			if(!client || !H.hudusers[src])
-				continue
-			if(istype(H, /datum/atom_hud/data/human/security) || istype(H, /datum/atom_hud/data/human/medical) || istype(H, /datum/atom_hud/data/diagnostic))
-				for(var/atom/movable/A in H.hudatoms)
-					H.remove_from_single_hud(src, A)
+		if(client)
+			var/list/images_to_remove = list()
+			for(var/datum/atom_hud/H as anything in GLOB.all_huds)
+				if(H.hudusers[src] && (istype(H, /datum/atom_hud/data/human/security) || istype(H, /datum/atom_hud/data/human/medical) || istype(H, /datum/atom_hud/data/diagnostic)))
+					H.collect_hud_images_for(src, images_to_remove, check_visibility = FALSE, z_group = HUD_Z_GROUP_ANY)
+			if(length(images_to_remove))
+				client.images -= images_to_remove
 		for(var/datum/atom_hud/alternate_appearance/basic/unconscious_obscurity/AA in GLOB.active_alternate_appearances)
 			if(AA.target == src)
 				continue
@@ -112,11 +113,7 @@
 	end_parry_sequence()
 	stop_active_blocking()
 	if(LAZYLEN(status_effects))
-		// Снимок обязателен: и qdel(S), и be_replaced() делают
-		// LAZYREMOVE(owner.status_effects, src), то есть правят список прямо в обходе
-		// по нему - индекс проматывается и каждый второй эффект пропускается.
-		// Пропущенный остаётся с owner на этом мобе, а моб остаётся с ним в
-		// status_effects: цикл ссылок, который BYOND не соберёт никогда
+		// qdel() и be_replaced() вычёркивают эффект из status_effects - обходим копию
 		for(var/datum/status_effect/S as anything in status_effects.Copy())
 			if(S.on_remove_on_mob_delete) //the status effect calls on_remove when its mob is deleted
 				qdel(S)
@@ -129,21 +126,14 @@
 	QDEL_LIST_ASSOC_VAL(ability_actions)
 	QDEL_LIST(abilities)
 	QDEL_LIST(implants)
-	// Квирки держат владельца жёстко: quirk_holder плюс запись в SSquirks.quirk_objects.
-	// Снимались они только при явном снятии квирка и при переносе на другого моба, поэтому
-	// удаление тела (админская пересадка, госткафе, возврат в лобби) оставляло висеть и
-	// квирк, и моба - это был самый массовый класс харддела прод-раунда.
+	QDEL_NULL(vorePanel)
 	QDEL_LIST(roundstart_quirks)
-	// Тот же случай: /datum/surgery держит и target, и operated_bodypart, а снимался
-	// только при отрыве конечности. Один незакрытый датум операции = труп плюс его грудь.
 	QDEL_LIST(surgeries)
-	remove_from_all_data_huds()
-	cleanse_trait_datums()
+	// Из data-худов моба уже вынул их обработчик COMSIG_PARENT_QDELETING
 	QDEL_NULL(ai_controller)
 	GLOB.mob_living_list -= src
 	GLOB.ssd_mob_list -= src
-	//лейтджойнером может быть не только человек (ИИ, борг) - выписываем здесь,
-	//а не в human/Destroy, иначе список вечно держит удалённого моба
+	// Лейтджойнером бывает и ИИ, и борг - поэтому здесь, а не в human/Destroy
 	GLOB.latejoiners -= src
 	SSmobs.currentrun -= src
 	QDEL_LIST(diseases)
@@ -206,10 +196,7 @@
 	if(now_pushing)
 		return TRUE
 
-	//Two AI mobs of the same faction must not shove or swap through each other.
-	//The push made a mob-blocked step "succeed", hiding it from the movement
-	//layer's is_mob_only_blocked_step queue and leaving two shooters endlessly
-	//trading the same tile. A cleanly failed step lets that queue handle them.
+	//Allied AI mobs neither shove nor swap: a cleanly failed step goes to the is_mob_only_blocked_step queue
 	if(ai_controller && !client && isliving(M))
 		var/mob/living/allied_ai = M
 		if(allied_ai.ai_controller && !allied_ai.client && faction_check_mob(allied_ai))
@@ -379,13 +366,7 @@
 	now_pushing = TRUE
 	SEND_SIGNAL(src, COMSIG_LIVING_PUSHING_MOVABLE, AM)
 	var/dir_to_target = get_dir(src, AM)
-
-	// If there's no dir_to_target then the player is on the same turf as the atom they're trying to push.
-	// This can happen when a player is stood on the same turf as a directional window. All attempts to push
-	// the window will fail as get_dir will return FALSE and the player will be unable to move the window when
-	// it should be pushable.
-	// In this scenario, we will use the facing direction of the /mob/living attempting to push the atom as
-	// a fallback.
+	// Same turf, e.g. a directional window on our tile: push the way we face
 	if(!dir_to_target)
 		dir_to_target = dir
 
@@ -685,7 +666,7 @@
 		to_chat(src, "<span class='notice'>You are already sleeping.</span>")
 		return
 	else
-		if(alert(src, "You sure you want to sleep for a while?", "Sleep", "Yes", "No") == "Yes")
+		if(tgui_alert(src, "Вы уверены, что хотите немного поспать?", "Сон", list("Да", "Нет")) == "Да" && !QDELETED(src))
 			SetSleeping(400) //Short nap
 			voluntary_sleep_until = world.time + 400
 
@@ -878,9 +859,9 @@
 
 /mob/living/Crossed(atom/movable/AM)
 	. = ..()
-	for(var/i in get_equipped_items())
-		var/obj/item/item = i
-		SEND_SIGNAL(item, COMSIG_ITEM_WEARERCROSSED, AM)
+	for(var/obj/item/worn in contents)
+		if((worn.item_flags & IN_INVENTORY) && !(worn in held_items))
+			SEND_SIGNAL(worn, COMSIG_ITEM_WEARERCROSSED, AM)
 
 /mob/living/proc/makeTrail(turf/target_turf, turf/start, direction)
 	if(!has_gravity() || !isturf(start) || !blood_volume)
@@ -1218,9 +1199,7 @@
 
 /// Helper proc that causes the mob to do a jittering animation by jitter_amount.
 /mob/living/proc/do_jitter_animation(jitter_amount = 100)
-	// Целая амплитуда: rand() с дробными границами возвращает дробь, а каждое новое
-	// значение pixel_w/pixel_z - это новая запись в таблице аппирансов у каждого, кто
-	// видит моба, и живёт она у клиента до конца сессии. Целые дают девять пар на всех.
+	// Целая амплитуда: каждая новая пара pixel_w/pixel_z - запись в таблице аппирансов у каждого зрителя до конца сессии
 	var/amplitude = round(min(4, (jitter_amount / 100) + 1))
 	var/pixel_w_diff = rand(-amplitude, amplitude)
 	var/pixel_z_diff = rand(-round(amplitude / 3), round(amplitude / 3))
@@ -1691,10 +1670,7 @@
 	return PAIN_NO
 
 /mob/living/has_pain(obj/item/bodypart/limb)
-	// Труп боли не чувствует. Гейт стоит именно здесь, потому что через has_pain()
-	// проходят все реакции тела на лечение (костный гель, вправление вывиха, наложение
-	// раны): без него мёртвому телу капал стамина-урон и уходили болевые эмоуты с
-	// сообщениями "вы чувствуете боль" - в чат уже отыгравшему смерть игроку.
+	// Через has_pain() идут все болевые реакции тела на лечение - трупу они не положены
 	if(stat == DEAD)
 		return PAIN_NO
 	if(HAS_TRAIT(src, TRAIT_ROBOTIC_ORGANISM) || HAS_TRAIT(src, TRAIT_PAINKILLER))

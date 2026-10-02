@@ -98,7 +98,17 @@
 	for(var/turf/target_tile in range(shield_range, src))
 		if(isspaceturf(target_tile) && !(locate(/obj/structure/emergency_shield) in target_tile))
 			if(!(machine_stat & BROKEN) || prob(33))
-				deployed_shields += new /obj/structure/emergency_shield(target_tile)
+				deploy_shield(target_tile)
+
+/obj/machinery/shieldgen/proc/deploy_shield(turf/target_tile)
+	var/obj/structure/emergency_shield/shield = new(target_tile)
+	deployed_shields += shield
+	RegisterSignal(shield, COMSIG_PARENT_QDELETING, PROC_REF(forget_shield))
+	return shield
+
+/obj/machinery/shieldgen/proc/forget_shield(obj/structure/emergency_shield/shield)
+	SIGNAL_HANDLER
+	deployed_shields -= shield
 
 /obj/machinery/shieldgen/proc/shields_down()
 	active = FALSE

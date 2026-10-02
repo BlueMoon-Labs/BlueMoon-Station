@@ -1092,11 +1092,9 @@
 /atom/proc/handle_atom_del(atom/A)
 	SEND_SIGNAL(src, COMSIG_ATOM_CONTENTS_DEL, A)
 
-//called when the turf the atom resides on is ChangeTurfed
+/// Called by ChangeTurf on the new turf, which passes it on only to decals lying directly on it.
 /atom/proc/HandleTurfChange(turf/T)
-	for(var/a in src)
-		var/atom/A = a
-		A.HandleTurfChange(T)
+	return
 
 //the vision impairment to give to the mob whose perspective is set to that atom (e.g. an unfocused camera giving you an impaired vision when looking through it)
 /atom/proc/get_remote_view_fullscreens(mob/user)
