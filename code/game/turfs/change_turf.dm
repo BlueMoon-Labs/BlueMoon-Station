@@ -16,18 +16,18 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		var/turf/newT = ChangeTurf(turf_type, baseturf_type, flags)
 		CALCULATE_ADJACENT_TURFS(newT)
 
-/turf/proc/copyTurf(turf/T)
+/turf/proc/copyTurf(turf/T, copy_air = FALSE)
 	if(T.type != type)
-		var/obj/O
-		if(underlays.len)
-			O = new()
-			// Don't add closed turfs as underlay - prevents wall overlay ghosting when shuttle leaves
-			if(!istype(T, /turf/closed))
-				O.underlays += T
-		T.ChangeTurf(type)
-		if(underlays.len)
+		var/had_underlays = length(underlays)
+		var/old_appearance
+		// Don't add closed turfs as underlay - prevents wall overlay ghosting when shuttle leaves
+		if(had_underlays && !isclosedturf(T))
+			old_appearance = T.appearance
+		T.ChangeTurf(type, null, copy_air ? CHANGETURF_IGNORE_AIR : NONE)
+		if(had_underlays)
 			T.underlays.Cut()
-			T.underlays += O.underlays
+			if(old_appearance)
+				T.underlays += old_appearance
 	if(T.icon_state != icon_state)
 		T.icon_state = icon_state
 	if(T.icon != icon)
@@ -407,18 +407,20 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 
 //If you modify this function, ensure it works correctly with lateloaded map templates.
 /turf/proc/AfterChange(flags) //called after a turf has been replaced in ChangeTurf()
-	levelupdate()
 	if(flags & CHANGETURF_RECALC_ADJACENT)
 		ImmediateCalculateAdjacentTurfs()
 	else
 		CALCULATE_ADJACENT_TURFS(src)
 
 	//update firedoor adjacency
-	var/list/turfs_to_check = get_adjacent_open_turfs(src) | src
-	for(var/I in turfs_to_check)
-		var/turf/T = I
-		for(var/obj/machinery/door/firedoor/FD in T)
-			FD.CalculateAffectingAreas()
+	for(var/direction in GLOB.cardinals)
+		var/turf/neighbor = get_step(src, direction)
+		if(!isopenturf(neighbor))
+			continue
+		for(var/obj/machinery/door/firedoor/firedoor in neighbor)
+			firedoor.CalculateAffectingAreas()
+	for(var/obj/machinery/door/firedoor/firedoor in src)
+		firedoor.CalculateAffectingAreas()
 
 	queue_smooth_neighbors(src)
 
@@ -436,17 +438,18 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	if(blocks_air || !turf_count) //if there weren't any open turfs, no need to update.
 		return
 
-	var/datum/gas_mixture/total = new//Holders to assimilate air from nearby turfs
+	var/static/datum/gas_mixture/total
+	if(!total)
+		total = new
+	total.clear()
+	total.set_temperature(TCMB)
 
-	for(var/T in atmos_adjacent_turfs)
-		var/turf/open/S = T
-		if(!S.air)
-			continue
-		total.merge(S.air)
+	for(var/turf/open/neighbor as anything in atmos_adjacent_turfs)
+		if(neighbor.air)
+			total.merge(neighbor.air)
 
 	total.multiply(1 / turf_count)
 	air.copy_from(total)
-	qdel(total)
 
 /turf/proc/ReplaceWithLattice()
 	ScrapeAway(flags = CHANGETURF_INHERIT_AIR)
