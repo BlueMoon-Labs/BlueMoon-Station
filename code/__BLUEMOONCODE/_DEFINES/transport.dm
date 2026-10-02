@@ -110,7 +110,8 @@
 #define TRAM_SCREWED_TO_FRAME 2
 
 // Layers. Rails sit on FLOOR_PLANE, the rest on GAME_PLANE.
-#define TRAM_RAIL_LAYER 2.035
+/// Above lattices and catwalks: the tram smashes FLOOR_PLANE structures layered above the rails.
+#define TRAM_RAIL_LAYER 2.466
 #define TRAM_STRUCTURE_LAYER 2.57
 #define TRAM_FLOOR_LAYER 2.58
 #define TRAM_WALL_LAYER 2.59

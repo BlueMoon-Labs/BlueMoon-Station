@@ -22,7 +22,7 @@
 /obj/effect/abstract/elevator_music_zone/unit_test
 	linked_elevator_id = "unit_test_lift"
 
-/// Два модуля сливаются в один трамвай, он едет к платформе, везёт груз и сносит препятствие на пути.
+/// Два модуля сливаются в один трамвай, он едет к платформе, везёт груз и сносит препятствие на пути, но не решётку под путями.
 /datum/unit_test/tram_travels_to_platform
 	var/turf/start
 	var/turf/second_tile
@@ -112,6 +112,7 @@
 	TEST_ASSERT(cargo in lead.transport_contents, "Предмет, попавший на трамвай, не стал его грузом")
 
 	var/obj/structure/table/obstacle = allocate(/obj/structure/table, locate(start.x + 4, start.y + 1, start.z))
+	var/obj/structure/lattice/track_lattice = allocate(/obj/structure/lattice, locate(start.x + 4, start.y, start.z))
 	var/turf/landing_tail = get_step(destination, EAST)
 	var/turf/landing_corner = locate(destination.x + 2, destination.y + 1, destination.z)
 
@@ -133,6 +134,7 @@
 	TEST_ASSERT_NOTNULL(locate(/obj/structure/transport/linear/tram) in landing_corner, "После поездки трамвай занимает не те тайлы")
 	TEST_ASSERT_NULL(locate(/obj/structure/transport/linear/tram) in start, "Трамвай оставил часть себя на старте")
 	TEST_ASSERT(QDELETED(obstacle), "Трамвай проехал сквозь стол, не снеся его")
+	TEST_ASSERT(!QDELETED(track_lattice), "Трамвай разломал решётку под путями в прутья")
 
 /// Вызов через подсистему закрывает двери, везёт трамвай и открывает их на прибытии.
 /datum/unit_test/tram_travels_to_platform/on_request
