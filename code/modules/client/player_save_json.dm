@@ -506,6 +506,20 @@
 			return null
 	return new /datum/player_save_document(src, loaded_tree)
 
+/// Пустой снимок поверх файлов, которые корень не публикует: их содержимое не читается.
+/datum/player_save_json/proc/empty_snapshot()
+	error = null
+	directories = null
+	recovered = FALSE
+	generation = 0
+	active_path = null
+	content_json = null
+	node_json = null
+	recovery_reason = null
+	open_revision = player_save_revision(json_path)
+	loaded_tree = list()
+	return new /datum/player_save_document(src, loaded_tree)
+
 /// Для меню достаточно проверить файл и одно поле, не декодируя всю анкету.
 /datum/player_save_json/proc/read_field(key, required_generation)
 	var/list/tree = loaded_tree

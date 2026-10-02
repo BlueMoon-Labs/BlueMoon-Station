@@ -500,6 +500,34 @@
 	TEST_ASSERT_EQUAL(length(prefs.custom_interactions), 0, "старые взаимодействия повторно скопированы в другой слот")
 	prefs.path = null
 
+/// Перенос старых взаимодействий при загрузке слота разделённого аккаунта не убирает остальные слоты из каталога.
+/datum/unit_test/player_save_json/custom_interactions_split_account/Run()
+	prepare()
+	var/datum/preferences/prefs = new_preferences()
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан аккаунт")
+	prefs.real_name = "First Character"
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не записан первый персонаж")
+	prefs.default_slot = 2
+	prefs.real_name = "Second Character"
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не записан второй персонаж")
+	var/savefile/source = prefs.open_player_save("/character2")
+	source.cd = "/character2"
+	source.dir.Remove("custom_interactions")
+	source.cd = "/"
+	var/datum/interaction/custom/custom = new
+	custom.name = "Test Interaction"
+	custom.message = "Test message."
+	source["custom_interactions"] << list(custom)
+	TEST_ASSERT(prefs.commit_player_save(source, "/character2"), "не записаны старые взаимодействия")
+	var/datum/player_save_json/account/account = prefs.get_player_save_storage()
+	TEST_ASSERT(!isnull(account.directories), "фикстура не разделила аккаунт")
+	TEST_ASSERT(prefs.load_character(2, TRUE), "не загружен слот с переносом взаимодействий")
+	TEST_ASSERT_EQUAL(length(prefs.custom_interactions), 1, "старые взаимодействия не перенесены")
+	TEST_ASSERT(account.directories["character1"], "перенос убрал первый слот из каталога")
+	prefs.player_save_storage = null
+	TEST_ASSERT(prefs.load_character(1, TRUE), "первый слот не загружен после переноса")
+	TEST_ASSERT_EQUAL(prefs.real_name, "First Character", "первый слот подменён после переноса")
+
 /datum/unit_test/player_save_json/portable_character/Run()
 	prepare()
 	var/datum/preferences/prefs = new
@@ -567,6 +595,36 @@
 	root["future_private"] >> balance
 	TEST_ASSERT_EQUAL(balance, "preserve", "импорт потерял неизвестное закрытое поле")
 	prefs.path = null
+
+/// Перенос хранит текст в виде редактора: имена и описания без кодирования, записи и вкус закодированными.
+/datum/unit_test/player_save_json/public_transfer_text_fields/Run()
+	prepare()
+	prepare_transfer_species()
+	var/datum/preferences/prefs = new_preferences()
+	prefs.real_name = "O'Brien Smith"
+	prefs.features["flavor_text"] = "It's \"Tom & Jerry\" <3"
+	prefs.security_records = html_encode_readable("Record's <b>")
+	prefs.vore_taste = html_encode_readable("berries & cream's")
+	var/list/gear = list(LOADOUT_ITEM = /datum/gear/accessory/necklace, LOADOUT_CUSTOM_NAME = html_encode_readable("Bob's coat"))
+	prefs.loadout_data = list("SAVE_1" = list(gear))
+	var/exported = prefs.export_character_json()
+	TEST_ASSERT_NOTNULL(exported, "экспорт не выполнен: [prefs.player_transfer_error]")
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не создан корень")
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не создан слот")
+	TEST_ASSERT(prefs.import_character_json(exported), "импорт не выполнен: [prefs.player_transfer_error]")
+	TEST_ASSERT_EQUAL(prefs.real_name, "O'Brien Smith", "перенос испортил апостроф в имени")
+	TEST_ASSERT_EQUAL(prefs.features["flavor_text"], "It's \"Tom & Jerry\" <3", "перенос закодировал описание")
+	TEST_ASSERT_EQUAL(prefs.security_records, html_encode_readable("Record's <b>"), "перенос изменил запись СБ")
+	TEST_ASSERT_EQUAL(prefs.vore_taste, html_encode_readable("berries & cream's"), "перенос изменил вкус")
+	var/list/imported_gear = prefs.loadout_data["SAVE_1"][1]
+	TEST_ASSERT_EQUAL(imported_gear[LOADOUT_CUSTOM_NAME], html_encode_readable("Bob's coat"), "перенос изменил имя вещи")
+	var/list/document = json_decode(exported)
+	var/list/fields = document["fields"]
+	fields["medical_records"] = "<i>x</i>"
+	fields["summon_nickname"] = "<b>Nick</b>"
+	TEST_ASSERT(prefs.import_character_json(json_encode(document)), "импорт разметки не выполнен: [prefs.player_transfer_error]")
+	TEST_ASSERT_EQUAL(prefs.medical_records, html_encode_readable("<i>x</i>"), "разметка в медзаписи не закодирована")
+	TEST_ASSERT(!findtext(prefs.summon_nickname, "<"), "прозвище обошло фильтр имён")
 
 /datum/unit_test/player_save_json/public_transfer_rejects/Run()
 	var/list/forbidden = list("metadollars", "metadollar_pending_items", "tcg_cards", "unlockable_loadout", "default_slot", "version", "../character2", "headshot", "belly_prefs", "new_unreviewed_field")
@@ -1479,6 +1537,14 @@
 	TEST_ASSERT(!prefs.load_character(2, TRUE), "свободный слот принят за сохранённого персонажа")
 	TEST_ASSERT(!prefs.player_save_blocked, "повреждённый остаток удалённого слота заблокировал аккаунт")
 	TEST_ASSERT_EQUAL(prefs.default_slot, 2, "выбор свободного слота не обновил default_slot")
+	text2file("{", "[orphan.json_path].recovery")
+	prefs.real_name = "Fresh Character"
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "новый персонаж не записан поверх повреждённого остатка")
+	TEST_ASSERT(!prefs.player_save_blocked, "запись поверх повреждённого остатка заблокировала аккаунт")
+	prefs.player_save_storage = null
+	prefs.real_name = "Reset"
+	TEST_ASSERT(prefs.load_character(2, TRUE), "новый персонаж не читается после записи")
+	TEST_ASSERT_EQUAL(prefs.real_name, "Fresh Character", "прочитан не тот персонаж")
 
 /datum/unit_test/player_save_json/metadollar_migration
 	var/balance_ckey = "unittestplayersavebalances"
@@ -1519,6 +1585,8 @@
 	fdel(balance_path)
 	TEST_ASSERT_EQUAL(SSmetadollars.read_metadollar_balance_from_save(balance_ckey, TRUE), 0, "ошибка чтения вернула ненулевой баланс")
 	TEST_ASSERT(!fexists(balance_path), "ошибка чтения закреплена как нулевой баланс")
+	SSmetadollars.metadollar_adjust(5, balance_ckey)
+	TEST_ASSERT(!fexists(balance_path), "начисление при нечитаемом сейве заменило старый баланс")
 
 #ifdef PLAYER_SAVE_BENCHMARK
 /// Одинаковая фикстура для сравнения реализаций; время выводится без порога PASS/FAIL.

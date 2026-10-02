@@ -24,7 +24,7 @@
 		"custom_emote_panel" = "list",
 		"custom_interactions" = "interactions",
 		"custom_laugh" = "scalar",
-		"custom_species" = "text",
+		"custom_species" = "name",
 		"custom_speech_verb" = "scalar",
 		"custom_tongue" = "scalar",
 		"egg_shell" = "scalar",
@@ -78,8 +78,8 @@
 		"feature_cock_taur" = "scalar",
 		"feature_cock_visibility" = "scalar",
 		"feature_color_scheme" = "scalar",
-		"feature_custom_deathgasp" = "text",
-		"feature_custom_deathsound" = "text",
+		"feature_custom_deathgasp" = "emote",
+		"feature_custom_deathsound" = "deathsound",
 		"feature_custom_species_lore" = "text",
 		"feature_deco_wings" = "scalar",
 		"feature_emissive_eyes" = "scalar",
@@ -161,7 +161,7 @@
 		"loadout_enabled" = "scalar",
 		"loadout_slot" = "scalar",
 		"lust_tolerance" = "scalar",
-		"medical_records" = "text",
+		"medical_records" = "encoded",
 		"mobsex_pref" = "scalar",
 		"modified_limbs" = "limbs",
 		"name_is_always_random" = "scalar",
@@ -180,9 +180,9 @@
 		"preferred_ai_core_display" = "scalar",
 		"pregnancy_breast_growth" = "scalar",
 		"pregnancy_inflation" = "scalar",
-		"real_name" = "text",
+		"real_name" = "name",
 		"right_eye_color" = "scalar",
-		"security_records" = "text",
+		"security_records" = "encoded",
 		"sexual_potency" = "scalar",
 		"shirt_color" = "scalar",
 		"shriek_type" = "scalar",
@@ -191,7 +191,7 @@
 		"socks" = "scalar",
 		"socks_color" = "scalar",
 		"species" = "scalar",
-		"summon_nickname" = "text",
+		"summon_nickname" = "name",
 		"tattoo_pref" = "scalar",
 		"undershirt" = "scalar",
 		"underwear" = "scalar",
@@ -203,8 +203,8 @@
 		"virile" = "scalar",
 		"vore_flags" = "scalar",
 		"vore_pref" = "scalar",
-		"vore_smell" = "text",
-		"vore_taste" = "text",
+		"vore_smell" = "encoded",
+		"vore_taste" = "encoded",
 	)
 	return fields
 
@@ -217,7 +217,7 @@
 	if(!dynamic_fields)
 		dynamic_fields = list()
 		for(var/id in GLOB.preferences_custom_names)
-			dynamic_fields["[id]_name"] = "text"
+			dynamic_fields["[id]_name"] = "name"
 		// Только зарегистрированные аксессуары; список строится один раз, а не для каждого поля файла.
 		for(var/feature in GLOB.mutant_reference_list)
 			var/list/accessories = GLOB.mutant_reference_list[feature]
@@ -285,12 +285,22 @@
 	var/value = player_save_decode_value(encoded)
 	if(isnull(value))
 		return null
+	var/static/list/text_modes = list("text", "name", "encoded", "emote", "deathsound")
+	if((mode in text_modes) && !istext(value))
+		throw EXCEPTION("Поле [key] должно быть строкой")
 	switch(mode)
-		if("scalar", "text")
+		if("scalar")
 			if(!istext(value) && !isnum(value))
 				throw EXCEPTION("Поле [key] должно быть строкой или числом")
-			if(mode == "text" && istext(value))
-				value = html_encode(html_decode(value))
+		// Текст приводится к виду, в котором его сохраняет редактор персонажа.
+		if("name")
+			return reject_bad_name(value, TRUE)
+		if("encoded")
+			return html_encode_readable(html_decode(value))
+		if("emote")
+			return strip_html_simple(value, MAX_DEATHGASP_LEN)
+		if("deathsound")
+			return (value in GLOB.deathgasp_sounds) ? value : null
 		if("color")
 			if(!istext(value))
 				throw EXCEPTION("Некорректный дополнительный цвет")
@@ -477,7 +487,8 @@
 		to_chat(user, span_warning("Экспорт не выполнен: [html_encode(player_transfer_error)]"))
 		return
 	var/static/sequence = 0
-	var/temp_path = "data/player_transfer/export_[world.realtime]_[++sequence].json"
+	var/temp_path = "data/player_transfer/export_[num2text(world.realtime, 12)]_[++sequence].json"
+	fdel(temp_path)
 	if(!text2file(text, temp_path))
 		to_chat(user, span_warning("Не удалось создать файл экспорта."))
 		return
@@ -582,7 +593,7 @@
 
 /proc/player_transfer_escape_list(value)
 	if(istext(value))
-		return html_encode(html_decode(value))
+		return html_encode_readable(html_decode(value))
 	if(!islist(value))
 		return value
 	var/list/source = value

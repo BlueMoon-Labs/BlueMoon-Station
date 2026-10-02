@@ -148,7 +148,7 @@
 			S.cd = "/"
 			WRITE_FILE(S["custom_interactions_migrated"], TRUE)
 			// Список и маркер фиксируются вместе, иначе следующий слот снова скопирует корень.
-			if(persist_migration && !commit_player_save(S))
+			if(persist_migration && !commit_player_save(S, current_dir))
 				S.cd = current_dir
 				return FALSE
 		S.cd = current_dir

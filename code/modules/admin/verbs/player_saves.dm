@@ -32,7 +32,8 @@
 	if(copytext(source_path, -5) == ".json" || copytext(source_path, -14) == ".json.recovery")
 		return file2text(source_path)
 	var/static/sequence = 0
-	var/temp_directory = "data/player_save_debug/[world.realtime]_[++sequence]/"
+	var/temp_directory = "data/player_save_debug/[num2text(world.realtime, 12)]_[++sequence]/"
+	fdel(temp_directory)
 	var/temp_path = "[temp_directory]preview.sav"
 	var/result
 	var/savefile/copy

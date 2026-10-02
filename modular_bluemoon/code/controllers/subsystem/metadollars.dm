@@ -178,6 +178,9 @@ SUBSYSTEM_DEF(metadollars)
 	if(!target_ckey || !amt)
 		return
 	get_metadollars(target_ckey)
+	if(!(target_ckey in metadollar_amount_cache))
+		log_game("Metadollars: изменение на [amt] M$ для [target_ckey] пропущено, старый баланс не прочитан.")
+		return
 	metadollar_amount_cache[target_ckey] = max(0, round(metadollar_amount_cache[target_ckey] + amt))
 	metadollar_save(target_ckey)
 	var/display_key = client_key

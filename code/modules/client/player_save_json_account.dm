@@ -91,6 +91,8 @@
 		return null
 	var/datum/player_save_json/child = branch(key)
 	var/datum/player_save_document/character = child.snapshot(root.directories[key])
+	if(!character && !root.directories[key])
+		character = child.empty_snapshot()
 	if(!character)
 		// Повреждённый раздел восстанавливаем вместе с соответствующим корнем.
 		if(allow_recovery && open("/[key]"))
