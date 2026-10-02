@@ -133,3 +133,28 @@
 	TEST_ASSERT(!QDELETED(overlay), "empty() с заменой турфа удалил объект света")
 	TEST_ASSERT_EQUAL(spot.lighting_object, overlay, "Объект света не перешёл на новый турф")
 	TEST_ASSERT(overlay in spot.vis_contents, "Объект света не в vis_contents нового турфа")
+
+/// Открытый турф, заменённый на открытый, получает свою начальную смесь, а не смесь соседей, и знает соседей.
+/datum/unit_test/changeturf_open_takes_initial_air/Run()
+	var/turf/open/center = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	var/list/neighbors = LAZYCOPY(center.atmos_adjacent_turfs)
+	TEST_ASSERT(length(neighbors), "У центра арены нет атмос-соседей")
+	for(var/turf/open/neighbor as anything in neighbors)
+		neighbor.air.set_moles(GAS_PLASMA, 40)
+
+	var/replacement_type = center.type == /turf/open/floor/wood ? /turf/open/floor/carpet : /turf/open/floor/wood
+	var/turf/open/changed = center.ChangeTurf(replacement_type)
+	var/datum/gas_mixture/expected = new
+	expected.copy_from_turf(changed)
+	var/plasma_after = changed.air.get_moles(GAS_PLASMA)
+	var/oxygen_after = changed.air.get_moles(GAS_O2)
+	var/list/adjacent_after = changed.atmos_adjacent_turfs ? changed.atmos_adjacent_turfs.Copy() : list()
+	for(var/turf/open/neighbor as anything in neighbors)
+		neighbor.air.copy_from_turf(neighbor)
+		SSair.remove_from_active(neighbor)
+	SSair.remove_from_active(changed)
+
+	TEST_ASSERT_EQUAL(plasma_after, 0, "Замена турфа взяла плазму соседей")
+	TEST_ASSERT(abs(oxygen_after - expected.get_moles(GAS_O2)) < 0.001, "Кислород после замены [oxygen_after], начальный [expected.get_moles(GAS_O2)]")
+	for(var/turf/open/neighbor as anything in neighbors)
+		TEST_ASSERT(neighbor in adjacent_after, "Сосед [neighbor.x],[neighbor.y] выпал из atmos_adjacent_turfs после замены")

@@ -257,11 +257,13 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 			qdel(turf_fire)
 		if(ispath(path,/turf/closed))
 			return ..()
+		// Initialize нового турфа уже взял начальную смесь, а соседей пересчитает AfterChange.
+		flags |= CHANGETURF_IGNORE_AIR
 		. = ..()
 		if (!.)
 			return
 		var/turf/open/newTurf = .
-		if (newTurf)
+		if (!isopenturf(newTurf) || !newTurf.air)
 			newTurf.Initalize_Atmos(0)
 	else
 		. = ..()
