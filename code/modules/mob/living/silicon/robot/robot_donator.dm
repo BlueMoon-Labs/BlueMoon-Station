@@ -346,6 +346,39 @@
 	hat_offset = TALL_HAT_OFFSET
 	hasrest = TRUE
 
+/datum/borg_donator_skin/syndicatejack/flmekagas
+	name = "Plasma Meka"
+	module_type = /obj/item/robot_module/syndicatejack
+	preview_icon = 'modular_splurt/icons/mob/robots_32x64.dmi'
+	preview_icon_state = "flmekagas"
+	ckey_whitelist = list("foxrtotlimda")
+	cyborg_base_icon = "flmekagas"
+	cyborg_icon_override = 'modular_splurt/icons/mob/robots_32x64.dmi'
+	hat_offset = TALL_HAT_OFFSET
+	hasrest = TRUE
+
+/datum/borg_donator_skin/miner/flmekagas
+	name = "Plasma Meka"
+	module_type = /obj/item/robot_module/miner
+	preview_icon = 'modular_splurt/icons/mob/robots_32x64.dmi'
+	preview_icon_state = "flmekagas"
+	ckey_whitelist = list("foxrtotlimda")
+	cyborg_base_icon = "flmekagas"
+	cyborg_icon_override = 'modular_splurt/icons/mob/robots_32x64.dmi'
+	hat_offset = TALL_HAT_OFFSET
+	hasrest = TRUE
+
+	/datum/borg_donator_skin/security/flmekagas
+	name = "Plasma Meka"
+	module_type = /obj/item/robot_module/security
+	preview_icon = 'modular_splurt/icons/mob/robots_32x64.dmi'
+	preview_icon_state = "flmekagas"
+	ckey_whitelist = list("foxrtotlimda")
+	cyborg_base_icon = "flmekagas"
+	cyborg_icon_override = 'modular_splurt/icons/mob/robots_32x64.dmi'
+	hat_offset = TALL_HAT_OFFSET
+	hasrest = TRUE
+
 /proc/smart_init_borgs_skin()
 	. = list()
 	for(var/datum/borg_donator_skin/donor_skin_type as anything in subtypesof(/datum/borg_donator_skin))
