@@ -176,7 +176,7 @@
   * * rotate_placement_to_orientation - Has no effect if centered. Should we rotate where we load it around the turf we're loading at? Used for stuff like engine submaps when the station is rotated.
   *
   */
-/datum/map_template/proc/load(turf/T, centered = FALSE, orientation = SOUTH, annihilate = default_annihilate, force_cache = FALSE, rotate_placement_to_orientation = FALSE)
+/datum/map_template/proc/load(turf/T, centered = FALSE, orientation = SOUTH, annihilate = default_annihilate, force_cache = FALSE, rotate_placement_to_orientation = FALSE, no_changeturf_override = null)
 	var/old_T = T
 	if(centered)
 		T = locate(T.x - round(((orientation & (NORTH|SOUTH))? width : height) / 2) , T.y - round(((orientation & (NORTH|SOUTH)) ? height : width) / 2) , T.z) // %180 catches East/West (90,270) rotations on true, North/South (0,180) rotations on false
@@ -232,7 +232,7 @@
 		var/cache_started_world_time = world.time
 		parsed.build_cache()
 		record_synchronous_map_phase("map model cache", cache_started_ms, cache_started_world_time)
-	if(!parsed.load(T.x, T.y, T.z, cropMap=TRUE, no_changeturf=(SSatoms.initialized == INITIALIZATION_INSSATOMS), placeOnTop=TRUE, orientation = orientation, annihilate_tiles = (annihilate == MAP_TEMPLATE_ANNIHILATE_LOADING)))
+	if(!parsed.load(T.x, T.y, T.z, cropMap=TRUE, no_changeturf=(no_changeturf_override != null ? no_changeturf_override : (SSatoms.initialized == INITIALIZATION_INSSATOMS)), placeOnTop=TRUE, orientation = orientation, annihilate_tiles = (annihilate == MAP_TEMPLATE_ANNIHILATE_LOADING)))
 		return
 	var/list/bounds = parsed.bounds
 	if(!bounds)

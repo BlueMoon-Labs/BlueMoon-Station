@@ -3,6 +3,8 @@
 	probability = 1
 	start_tick_min = 300
 	start_tick_max = 600
+	end_tick_min = 900
+	end_tick_max = 1200
 	tick_rate = 4
 
 /datum/ruin_event/meteor_storm/post_spawn(list/floor_turfs, z_value)
