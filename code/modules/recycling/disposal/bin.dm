@@ -84,17 +84,13 @@
 		deconstruct()
 
 /obj/machinery/disposal/LateInitialize()
-	// Transfer air directly from turf when possible to avoid creating temporary gas_mixture (GC)
-	var/atom/L = loc
-	if(istype(L, /turf/open))
-		var/turf/open/T = L
-		T.transfer_air(air_contents, SEND_PRESSURE + 1)
-	else
-		// Fallback for closed turfs / non-turfs: copy uses temp mixture
-		var/datum/gas_mixture/env = new
-		env.copy_from(L.return_air())
-		env.transfer_to(air_contents, SEND_PRESSURE + 1)
-		qdel(env)
+	// A copy of the tile air, not a draw from it: a draw leaves an active turf under every bin at roundstart.
+	var/datum/gas_mixture/tile_air = loc.return_air()
+	if(tile_air)
+		air_contents.copy_from(tile_air)
+		var/total_moles = air_contents.total_moles()
+		if(total_moles > SEND_PRESSURE + 1)
+			air_contents.multiply((SEND_PRESSURE + 1) / total_moles)
 	trunk_check()
 
 /obj/machinery/disposal/attackby(obj/item/I, mob/user, params)
