@@ -24,8 +24,15 @@
 	if(!queue_delivery(C))
 		return FALSE
 	SSmetadollars.metadollar_adjust(-cost, C.ckey, C.key)
+	log_purchase(C)
 	to_chat(C.mob, span_notice("[delivery_message()]"))
 	return TRUE
+
+/datum/metadollar_shop_item/proc/log_purchase(client/C)
+	var/msg = "Метамагазин: [key_name_admin(C)] приобрёл [name] за [cost] М$ (баланс: [SSmetadollars.get_metadollars(C.ckey)] М$, каталог: [catalog ? catalog : "нет"])."
+	log_game(msg)
+	send2adminchat("Metadollar", msg)
+	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(send2tgs_adminless_only), "Metadollar", msg, R_ADMIN)
 
 /datum/metadollar_shop_item/proc/queue_delivery(client/C)
 	return FALSE
@@ -156,6 +163,17 @@
 	minimum_players = 50
 	token_spawn_type = /obj/item/coin/antagtoken/metashop/changeling
 
+/datum/metadollar_shop_item/item/heretic_token
+	parent_type = /datum/metadollar_shop_item/item/antag_token
+	name = "Жетон «Еретик»"
+	desc = "Монета с запретным знаком. Alt+ЛКМ — стать еретиком; Ctrl+ЛКМ — вернуть 250 М$ до активации. Недоступна в Extended и на защищённых должностях."
+	cost = METASHOP_TRAITOR_TOKEN_REFUND_COST
+	catalog = METADOLLAR_CATALOG_SMUGGLE
+	minimum_players = 50
+	token_spawn_type = /obj/item/coin/antagtoken/metashop/heretic
+	disallowed_modes = list(/datum/game_mode/extended)
+	disallowed_mode_message = "Жетон «Еретик» недоступен в Extended."
+
 /datum/metadollar_shop_item/item/metadollar_total_burn
 	name = "Протокол «Пепелище»"
 	desc = "100000 М$: обнулить метадоллары у всех игроков. На вашем счёте должно быть не меньше 100000 М$."
@@ -172,6 +190,7 @@
 		to_chat(C.mob, span_warning("Недостаточно метадолларов (нужно [cost] М$)."))
 		return TRUE
 	bm_metadollar_global_burn(C.mob)
+	log_purchase(C)
 	message_admins("[key_name_admin(C.mob)] активировал протокол «Пепелище»: обнулены все балансы метадолларов.")
 	log_game("Metadollar total burn: [key_name(C.mob)] wiped all metadollar balances.")
 	for(var/mob/M in GLOB.player_list)

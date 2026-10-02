@@ -974,7 +974,8 @@
 		var/min_reachable_cost
 		var/list/reachable_names = list()
 		for(var/datum/round_event_control/control as anything in SSdirector.event_controls())
-			if(control.severity != DIRECTOR_SEVERITY_GHOST || !control.enabled || control.admin_only || control.weight <= 0)
+			// Нулевой вес с weight_can_change растит лежащий диск (оперативник, защитник диска)
+			if(control.severity != DIRECTOR_SEVERITY_GHOST || !control.enabled || control.admin_only || (control.weight <= 0 && !control.weight_can_change))
 				continue
 			if(control.antag_heavy && !profile.antag_heavy_enabled)
 				continue
@@ -1945,6 +1946,11 @@
 	TEST_ASSERT(!(ROUNDTYPE_DYNAMIC_LIGHT in changeling_control.required_round_type), "Changeling Meteor должен быть исключён из Dynamic Light")
 	TEST_ASSERT(!(ROUNDTYPE_DYNAMIC_LIGHT in revenant_control.required_round_type), "Spawn Revenant должен быть исключён из Dynamic Light")
 	TEST_ASSERT(!(ROUNDTYPE_DYNAMIC_LIGHT in disease_control.required_round_type), "Spawn Sentient Disease должен быть исключён из Dynamic Light")
+	for(var/heretic_type in list(/datum/dynamic_ruleset/roundstart/heretics, /datum/dynamic_ruleset/midround/crew_conversion/heretic, /datum/dynamic_ruleset/latejoin/heretic_smuggler))
+		var/datum/dynamic_ruleset/heretic_ruleset = new heretic_type
+		TEST_ASSERT(!(ROUNDTYPE_DYNAMIC_LIGHT in heretic_ruleset.required_round_type), "[heretic_ruleset.name] должен быть исключён из Dynamic Light")
+		TEST_ASSERT(ROUNDTYPE_DYNAMIC_MEDIUM in heretic_ruleset.required_round_type, "[heretic_ruleset.name] должен оставаться на Dynamic Medium")
+		qdel(heretic_ruleset)
 	var/datum/dynamic_ruleset/midround/pirates/pirates_ruleset = locate() in SSdirector.actions
 	var/datum/dynamic_ruleset/midround/raiders/raiders_ruleset = locate() in SSdirector.actions
 	var/datum/dynamic_ruleset/midround/swarmers/swarmers_ruleset = locate() in SSdirector.actions
@@ -2014,6 +2020,8 @@
 	TEST_ASSERT(!(ROUNDTYPE_EXTENDED in operative_control.required_round_type), "Боевой Lone Operative не должен входить в пул Extended")
 	TEST_ASSERT_NOTNULL(keeper_control, "Случайный защитник диска должен быть зарегистрирован у директора")
 	TEST_ASSERT(!keeper_control.admin_only, "Защитник диска должен выпадать случайно, а не только через админ-форс")
+	TEST_ASSERT_EQUAL(initial(keeper_control.weight), 0, "Защитник диска не должен иметь шанс до срабатывания условия неподвижного диска")
+	TEST_ASSERT(initial(keeper_control.weight_can_change), "Панель должна знать, что нулевой вес защитника меняется во время раунда")
 	TEST_ASSERT_EQUAL(length(keeper_control.required_round_type), 1, "Самостоятельный защитник диска должен иметь ровно один разрешённый профиль")
 	TEST_ASSERT(ROUNDTYPE_EXTENDED in keeper_control.required_round_type, "Самостоятельный защитник диска должен быть доступен в Extended")
 	TEST_ASSERT(!(ROUNDTYPE_DYNAMIC_LIGHT in keeper_control.required_round_type), "Защитник диска не должен выпадать в Light без Lone Operative")
@@ -2040,6 +2048,63 @@
 				is_allowed = TRUE
 				break
 		TEST_ASSERT(is_allowed, "[control.action_name()]: автоматический гост-антаг не разрешён политикой Dynamic Light")
+
+/// Лежащий диск поднимает вес оперативных событий - ровно тех, что доступны текущему профилю:
+/// в Dynamic это боевой одиночка, в Extended - защитник диска. Оба стартуют с нулевого веса,
+/// поэтому неподвижность диска остаётся единственной причиной оперативника в раунде, а
+/// переноска обязана вес гасить (жалоба прода "оперативник прилетает спустя полчаса, когда
+/// диск давно унесли"). Мёртвый вес недоступного профилю контрола в панели только сбивает.
+/datum/unit_test/director_disk_operative_weights
+
+/datum/unit_test/director_disk_operative_weights/Run()
+	// Мутирует живые контролы директора и GLOB.round_type - восстанавливаем оба даже при падении.
+	var/list/saved = SSdirector.capture_simulation_state()
+	var/saved_round_type = GLOB.round_type
+	var/datum/round_event_control/operative/operative_control = locate() in SSdirector.event_controls()
+	var/datum/round_event_control/operative/keeper/keeper_control = locate() in SSdirector.event_controls()
+	TEST_ASSERT_NOTNULL(operative_control, "Lone Operative должен быть зарегистрирован у директора")
+	TEST_ASSERT_NOTNULL(keeper_control, "Защитник диска должен быть зарегистрирован у директора")
+	// capture_simulation_state снимает occurrences, но не вес - а вес мы здесь и крутим.
+	var/saved_operative_weight = operative_control.weight
+	var/saved_keeper_weight = keeper_control.weight
+	// Настоящий диск встаёт в SSobj.process() и в GLOB.poi_list, а тесту нужен только весовой
+	// счётчик - фейковый диск не трогает ни того, ни другого, а счётчики зовутся напрямую.
+	var/obj/item/disk/nuclear/disk = allocate(/obj/item/disk/nuclear/fake)
+	try
+		GLOB.round_type = ROUNDTYPE_DYNAMIC_MEDIUM
+		var/list/controls = disk.operative_controls()
+		TEST_ASSERT_EQUAL(length(controls), 1, "В Dynamic диск кормит ровно один контрол")
+		TEST_ASSERT_EQUAL(controls[1], operative_control, "В Dynamic диск кормит боевого одиночку")
+
+		GLOB.round_type = ROUNDTYPE_EXTENDED
+		controls = disk.operative_controls()
+		TEST_ASSERT_EQUAL(length(controls), 1, "В Extended диск кормит ровно один контрол")
+		TEST_ASSERT_EQUAL(controls[1], keeper_control, "В Extended диск кормит защитника диска")
+
+		// Диск лежит: вес растёт у профильного контрола и больше ни у кого.
+		operative_control.weight = 0
+		keeper_control.weight = 0
+		disk.grow_operative_weights(run_loc_floor_bottom_left)
+		TEST_ASSERT_EQUAL(keeper_control.weight, 1, "Лежащий диск обязан поднять вес защитника в Extended")
+		TEST_ASSERT_EQUAL(operative_control.weight, 0, "Весу контрола, недоступного профилю, расти не на чем")
+
+		// Диск понесли: вес гаснет (prob от веса, при 100 срабатывает всегда).
+		operative_control.weight = 100
+		keeper_control.weight = 100
+		disk.decay_operative_weights(run_loc_floor_bottom_left)
+		TEST_ASSERT_EQUAL(keeper_control.weight, 99, "Перенесённый диск обязан снять вес оперативника")
+		TEST_ASSERT_EQUAL(operative_control.weight, 100, "Гасить вес контрола, недоступного профилю, незачем")
+	catch(var/exception/e)
+		operative_control.weight = saved_operative_weight
+		keeper_control.weight = saved_keeper_weight
+		GLOB.round_type = saved_round_type
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	operative_control.weight = saved_operative_weight
+	keeper_control.weight = saved_keeper_weight
+	GLOB.round_type = saved_round_type
+	SSdirector.restore_simulation_state(saved)
+
 
 /// Проверяет рефанд провального спавна гост-роли: попытка, кошелёк ступени и вклад intensity
 /// возвращаются сразу (иначе фантомная нагрузка глушила бы клапан давления 30 минут),
@@ -3015,6 +3080,17 @@
 		throw e
 	qdel(heretic_rule)
 	qdel(changeling_rule)
+
+/// Экипажная конверсия не выбирает игрока в крите или без сознания.
+/datum/unit_test/director_crew_conversion_skips_unconscious
+
+/datum/unit_test/director_crew_conversion_skips_unconscious/Run()
+	var/datum/dynamic_ruleset/midround/crew_conversion/heretic/rule = allocate(/datum/dynamic_ruleset/midround/crew_conversion/heretic)
+	var/mob/living/carbon/human/candidate = allocate(/mob/living/carbon/human)
+	TEST_ASSERT(rule.can_convert(candidate), "Член экипажа в сознании подходит для пробуждения")
+	candidate.adjustOxyLoss(160)
+	TEST_ASSERT_NOTEQUAL(candidate.stat, CONSCIOUS, "Удушье должно уронить кандидата в крит")
+	TEST_ASSERT(!rule.can_convert(candidate), "Игрок в крите не получает пробуждение")
 
 /// Гост-команды затухают по возрасту, а вне станции давят вполсилы: улетевшие с лутом
 /// рейдеры (прод-раунд: 45 нагрузки до конца смены) больше не запирают антаг-каналы

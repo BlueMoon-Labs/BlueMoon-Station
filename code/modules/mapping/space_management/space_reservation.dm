@@ -62,7 +62,6 @@
 		return FALSE
 	bottom_left_coords = list(BL.x, BL.y, BL.z)
 	top_right_coords = list(TR.x, TR.y, TR.z)
-	var/list/avail_turfs = SSmapping.unused_turfs["[BL.z]"]
 	for(var/i in final)
 		var/turf/T = i
 		reserved_turfs += T // block() guarantees unique turfs — no dedup needed
@@ -72,7 +71,12 @@
 			T.ChangeTurf(borderturf, borderturf, changeturf_flags)
 		else
 			T.ChangeTurf(turf_type, turf_type, changeturf_flags)
-	avail_turfs -= final // single bulk O(n+m) instead of per-element O(n*m)
+	// `-=` сдвигает хвост пула за каждую выданную клетку; проход с фильтром по флагу линеен.
+	var/list/still_unused = list()
+	for(var/turf/free as anything in avail)
+		if(free.flags_1 & UNUSED_RESERVATION_TURF_1)
+			still_unused += free
+	SSmapping.unused_turfs["[BL.z]"] = still_unused
 	src.width = width
 	src.height = height
 	return TRUE
@@ -82,16 +86,31 @@
 
 /datum/turf_reservation/Destroy()
 	SSmapping.used_turfs -= reserved_turfs
-	for(var/i in reserved_turfs)
-		var/turf/T = i
-		LAZYINITLIST(SSmapping.unused_turfs["[T.z]"])
-		SSmapping.unused_turfs["[T.z]"] += T
-		T.flags_1 |= UNUSED_RESERVATION_TURF_1
-		GLOB.areas_by_type[world.area].contents += T
-		T.ChangeTurf(turf_type, turf_type, changeturf_flags)
+	for(var/turf/reserved as anything in reserved_turfs)
+		free_turf(reserved)
 	reserved_turfs.Cut()
 	LAZYREMOVE(SSmapping.turf_reservations, src)
 	return ..()
+
+/datum/turf_reservation/proc/free_turf(turf/reserved)
+	LAZYINITLIST(SSmapping.unused_turfs["[reserved.z]"])
+	SSmapping.unused_turfs["[reserved.z]"] += reserved
+	reserved.flags_1 |= UNUSED_RESERVATION_TURF_1
+	GLOB.areas_by_type[world.area].contents += reserved
+	reserved.ChangeTurf(turf_type, turf_type, changeturf_flags)
+
+/// Освобождает клетки по частям между тиками и удаляет резервацию, когда отдаст последнюю.
+/datum/turf_reservation/proc/release_gradually()
+	set waitfor = FALSE
+	while(length(reserved_turfs))
+		var/turf/reserved = reserved_turfs[1]
+		reserved_turfs.Cut(1, 2)
+		SSmapping.used_turfs -= reserved
+		free_turf(reserved)
+		CHECK_TICK
+		if(QDELETED(src))
+			return
+	qdel(src)
 
 /datum/turf_reservation/transit/Destroy()
 	for(var/turf/open/space/transit/T in reserved_turfs)

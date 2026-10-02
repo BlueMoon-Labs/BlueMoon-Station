@@ -1016,8 +1016,9 @@
 	TEST_ASSERT(pawn.ai_pursuit_speed_capped, "Санити: обычная фауна обязана быть под полом скорости")
 
 	var/mob_step = movement_quantize_delay(pawn.ai_movement_delay(), world.tick_lag)
-	var/player_step = movement_step_delay(player_run_delay, FALSE, world.tick_lag)
-	TEST_ASSERT(mob_step > player_step, "Обычная фауна обязана быть медленнее бегущего игрока по прямой ([mob_step] против [player_step])")
+	TEST_ASSERT(mob_step > player_run_delay, "Обычная фауна обязана быть медленнее бегущего игрока с дробным шагом ([mob_step] против [player_run_delay])")
+	var/rounded_player_step = movement_step_delay(player_run_delay, FALSE, world.tick_lag)
+	TEST_ASSERT(mob_step > rounded_player_step, "Обычная фауна обязана быть медленнее бегущего игрока на прежнем расписании ([mob_step] против [rounded_player_step])")
 
 ///Мув-луп ИИ платит за диагональ ту же цену, что и игрок. Без этого моб на 1.5 дс
 ///проходил диагональ за 1.5 дс, а игрок за 2.0 - скрытые 1.33x поверх паритета.

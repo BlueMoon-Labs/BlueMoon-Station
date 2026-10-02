@@ -8,7 +8,7 @@
 			Она использует множество датчиков и гироскопов чтобы своевременно перераспределять нагрузку и стабилизировать \
 			её относительно корпуса пользователя для минимизации нагрузки на точки опоры."
 	icon_state = "harness"
-	complexity = 5
+	complexity = 4
 	var/list/allowed_items = list(
 		/obj/item/storage/backpack,
 		/obj/item/gun,

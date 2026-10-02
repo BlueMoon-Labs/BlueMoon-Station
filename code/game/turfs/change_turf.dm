@@ -77,6 +77,8 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 			path = /turf/open/space
 	if(!GLOB.use_preloader && path == type && !(flags & CHANGETURF_FORCEOP) && (baseturfs == new_baseturfs)) // Don't no-op if the map loader requires it to be reconstructed, or if this is a new set of baseturfs
 		return src
+	// Свободная клетка резерва остаётся в SSmapping.unused_turfs; без флага Reserve() её больше не выдаст.
+	var/reservation_flag = flags_1 & UNUSED_RESERVATION_TURF_1
 	if(flags & CHANGETURF_SKIP)
 		// dynamic_lumcount переносим и здесь: оверлейные источники держат ссылку на турф в
 		// affected_turfs, и обнулённый счётчик позже уходит в постоянный минус при
@@ -106,6 +108,7 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		var/skip_dynamic_lumcount = dynamic_lumcount
 		var/turf/skipped_turf = new path(src)
 		skipped_turf.dynamic_lumcount = skip_dynamic_lumcount
+		skipped_turf.flags_1 |= reservation_flag
 		return skipped_turf
 
 	var/old_opacity = opacity
@@ -142,6 +145,7 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	qdel(src)	//Just get the side effects and call Destroy
 
 	var/turf/W = new path(src)
+	W.flags_1 |= reservation_flag
 	for(var/i in transferring_comps)
 		W.TakeComponent(i)
 

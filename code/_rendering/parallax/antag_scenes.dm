@@ -1,9 +1,9 @@
 /**
  * # Сцены за бортом от антагонистов
  *
- * Культ и вознёсшийся еретик меняют вид из иллюминатора. Механика у них одна и та
- * же, поэтому все такие сцены объявлены здесь списком, а не рассыпаны по файлам
- * антагонистов: те только называют нужный ключ в момент своего события.
+ * Культ меняет вид из иллюминатора по ступеням. Все его сцены объявлены здесь списком,
+ * а файлы культа только называют нужный ключ в момент своего события. Небо вознесений
+ * еретика собирает свой координатор (heretic/sky.dm).
  *
  * Сцена НЕ подменяет профиль уровня, а ложится слоями поверх него. Причина не
  * техническая: станционный фон - это ориентир сектора, по нему игрок понимает, где
@@ -20,17 +20,10 @@
 #define ANTAG_SCENE_CULT_ASCENDENT "cult_ascendent"
 /// Нар'Си призвана. Сильнее сцены в игре нет и быть не должно.
 #define ANTAG_SCENE_NARSIE "narsie"
-/// Вознесение еретика по путям.
-#define ANTAG_SCENE_HERETIC_ASH "heretic_ash"
-#define ANTAG_SCENE_HERETIC_RUST "heretic_rust"
-#define ANTAG_SCENE_HERETIC_VOID "heretic_void"
-#define ANTAG_SCENE_HERETIC_FLESH "heretic_flesh"
 
 /// Токен культа. Один на все три ступени: повторный add_modifier с тем же токеном
 /// ЗАМЕНЯЕТ запись, поэтому усиление сцены не складывается с предыдущей ступенью.
 #define ANTAG_PARALLAX_TOKEN_CULT "antag_cult"
-/// Токен вознесения еретика. Двое вознёсшихся - вторая сцена перекрывает первую.
-#define ANTAG_PARALLAX_TOKEN_HERETIC "antag_heretic"
 
 /// Ключ сцены -> слои поверх текущей сцены уровня.
 GLOBAL_LIST_INIT(antag_parallax_scenes, list(
@@ -44,22 +37,6 @@ GLOBAL_LIST_INIT(antag_parallax_scenes, list(
 	ANTAG_SCENE_NARSIE = list(
 		/atom/movable/screen/parallax_layer/tint/antag/cult_narsie,
 		/atom/movable/screen/parallax_layer/goon/void_clouds_2,
-	),
-	ANTAG_SCENE_HERETIC_ASH = list(
-		/atom/movable/screen/parallax_layer/tint/antag/heretic_ash,
-		/atom/movable/screen/parallax_layer/goon/embers_sparse,
-	),
-	ANTAG_SCENE_HERETIC_RUST = list(
-		/atom/movable/screen/parallax_layer/tint/antag/heretic_rust,
-		/atom/movable/screen/parallax_layer/goon/dust_sparse,
-	),
-	ANTAG_SCENE_HERETIC_VOID = list(
-		/atom/movable/screen/parallax_layer/tint/antag/heretic_void,
-		/atom/movable/screen/parallax_layer/goon/void_clouds_2,
-	),
-	ANTAG_SCENE_HERETIC_FLESH = list(
-		/atom/movable/screen/parallax_layer/tint/antag/heretic_flesh,
-		/atom/movable/screen/parallax_layer/goon/blowout_clouds,
 	),
 ))
 
@@ -112,23 +89,3 @@ GLOBAL_LIST_INIT(antag_parallax_scenes, list(
 /atom/movable/screen/parallax_layer/tint/antag/cult_narsie
 	color = "#c0121a"
 	alpha = 120
-
-/// Князь пепла: небо горит оранжевым.
-/atom/movable/screen/parallax_layer/tint/antag/heretic_ash
-	color = "#b34a12"
-	alpha = 70
-
-/// Ржавый всадник: рыжий налёт на всём.
-/atom/movable/screen/parallax_layer/tint/antag/heretic_rust
-	color = "#8a4a1a"
-	alpha = 65
-
-/// Дворянин пустоты: холодная синева.
-/atom/movable/screen/parallax_layer/tint/antag/heretic_void
-	color = "#2a3a7a"
-	alpha = 70
-
-/// Повелитель ночи: густой багрянец.
-/atom/movable/screen/parallax_layer/tint/antag/heretic_flesh
-	color = "#7a1030"
-	alpha = 75

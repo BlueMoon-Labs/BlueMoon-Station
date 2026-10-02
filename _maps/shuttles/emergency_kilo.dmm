@@ -23,9 +23,6 @@
 "af" = (
 /obj/machinery/computer/emergency_shuttle,
 /obj/effect/turf_decal/bot/yellow,
-/obj/effect/fun_balloon/sentience/emergency_shuttle{
-	group_name = "engineers on the Emergency Kilo Shuttle"
-	},
 /turf/open/floor/plasteel/dark,
 /area/shuttle/escape)
 "ag" = (
@@ -62,7 +59,6 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
-/mob/living/simple_animal/hostile/retaliate/nanotrasenpeace/ranged,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/escape)
 "al" = (
@@ -73,7 +69,6 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},
-/mob/living/simple_animal/hostile/retaliate/nanotrasenpeace/ranged,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/escape)
 "am" = (
@@ -84,7 +79,6 @@
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/neutral,
-/mob/living/simple_animal/hostile/retaliate/nanotrasenpeace/ranged,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/escape)
 "an" = (
@@ -950,6 +944,7 @@
 /obj/effect/turf_decal/stripes/white{
 	dir = 3
 	},
+/mob/living/simple_animal/bot/medbot/catmedbot,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/escape)
 "bV" = (
@@ -957,10 +952,12 @@
 /obj/effect/turf_decal/stripes/white/corner{
 	dir = 1
 	},
+/mob/living/simple_animal/bot/medbot/catmedbot,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/escape)
 "bW" = (
 /obj/effect/turf_decal/stripes/white,
+/mob/living/simple_animal/bot/medbot/catmedbot,
 /turf/open/floor/mineral/titanium/blue,
 /area/shuttle/escape)
 "bX" = (
@@ -1118,6 +1115,12 @@
 "dj" = (
 /obj/effect/turf_decal/stripes/yellow/line,
 /turf/open/floor/plating/airless,
+/area/shuttle/escape)
+"rU" = (
+/obj/effect/fun_balloon/sentience/emergency_shuttle{
+	group_name = "engineers on the Emergency Kilo Shuttle"
+	},
+/turf/open/floor/mineral/titanium/blue,
 /area/shuttle/escape)
 "Xo" = (
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -1339,7 +1342,7 @@ bi
 bi
 ac
 bc
-bK
+rU
 bV
 cY
 ab

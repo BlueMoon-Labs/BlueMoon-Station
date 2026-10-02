@@ -37,6 +37,27 @@ GLOBAL_LIST_INIT(huds, alist(
 	ANTAG_HUD_ZOMBIE = new/datum/atom_hud/antag(),
 	))
 
+/// Группы z худов, кэш по номеру уровня (см. get_hud_z_group)
+GLOBAL_LIST_EMPTY(hud_z_groups)
+
+/**
+ * Группа z для атом-худов: значки видны только зрителям той же группы. Группа - нижний уровень
+ * стека, связанного по вертикали, поэтому переход по лестнице группу не меняет. 0 - nullspace.
+ */
+/proc/get_hud_z_group(z)
+	if(!z)
+		return 0
+	var/list/groups = GLOB.hud_z_groups
+	if(length(groups) >= z && groups[z])
+		return groups[z]
+	var/group = min(get_multiz_accessible_levels(z))
+	// До инициализации маппинга связи уровней ещё не прочитаны
+	if(SSmapping.initialized)
+		if(length(groups) < z)
+			groups.len = z
+		groups[z] = group
+	return group
+
 /datum/atom_hud
 	var/list/atom/movable/hudatoms = list() //list of all atoms which display this hud
 	var/list/hudusers = list() //list with all mobs who can see the hud
@@ -70,10 +91,15 @@ GLOBAL_LIST_INIT(huds, alist(
 			next_time_allowed -= M
 		if(queued_to_see[M])
 			queued_to_see -= M
-		else
+		else if(viewer_has_images(M))
+			// Значки атомов, ушедших из группы зрителя, остаются у него до снятия худа - собираем все группы
 			var/list/images_to_remove = list()
-			collect_hud_images_for(M, images_to_remove, check_visibility = FALSE)
+			collect_hud_images_for(M, images_to_remove, check_visibility = FALSE, z_group = HUD_Z_GROUP_ANY)
 			remove_hud_images(M, images_to_remove)
+
+/// Картинки худа живут в client.images: у моба без клиента снимать нечего.
+/datum/atom_hud/proc/viewer_has_images(mob/viewer)
+	return !!viewer.client
 
 /datum/atom_hud/proc/remove_hud_images(mob/viewer, list/images_to_remove)
 	if(viewer?.client && length(images_to_remove))
@@ -85,6 +111,7 @@ GLOBAL_LIST_INIT(huds, alist(
 	for(var/mob/M in hudusers)
 		remove_from_single_hud(M, A)
 	hudatoms -= A
+	LAZYREMOVE(A.hud_memberships, src)
 	if(!hudusers[A]) // сигнал общий на обе роли - снимаем только когда обе кончились
 		UnregisterSignal(A, COMSIG_PARENT_QDELETING)
 	return TRUE
@@ -117,6 +144,10 @@ GLOBAL_LIST_INIT(huds, alist(
 	if(!M)
 		return
 	if(!hudusers[M])
+		if(!GLOB.hud_view_group_watcher)
+			GLOB.hud_view_group_watcher = new
+		// Прочие худы моба переезжают на его текущую группу до того, как этот наберёт по ней значки
+		M.refresh_hud_view_group()
 		hudusers[M] = 1
 		RegisterSignal(M, COMSIG_PARENT_QDELETING, PROC_REF(unregister_mob), override = TRUE)
 		if(next_time_allowed[M] > world.time)
@@ -150,12 +181,18 @@ GLOBAL_LIST_INIT(huds, alist(
 	if(!A)
 		return FALSE
 	hudatoms |= A
+	LAZYOR(A.hud_memberships, src)
 	// override: атом может уже быть зарегистрирован как huduser этим же худом.
 	RegisterSignal(A, COMSIG_PARENT_QDELETING, PROC_REF(unregister_mob), override = TRUE)
-	for(var/mob/M in hudusers)
-		if(!queued_to_see[M])
-			add_to_single_hud(M, A)
+	show_atom_to_its_z_group(A)
 	return TRUE
+
+/// Выдаёт значки атома зрителям его группы z: при входе в худ и при переезде атома на другой уровень
+/datum/atom_hud/proc/show_atom_to_its_z_group(atom/movable/A)
+	var/atom_group = A.get_hud_z_group_cached()
+	for(var/mob/M in hudusers)
+		if(!queued_to_see[M] && M.get_hud_view_group_cached() == atom_group)
+			add_to_single_hud(M, A)
 
 /// Override to gate which atoms of this hud are visible to which mobs.
 /// Returning FALSE skips the atom in BOTH the per-call add_to_single_hud
@@ -198,15 +235,23 @@ GLOBAL_LIST_INIT(huds, alist(
 	else if(first_hud_image)
 		their_client.images |= first_hud_image
 
-/// При снятии HUD проверка видимости отключается: ранее показанные иконки тоже надо убрать.
-/datum/atom_hud/proc/collect_hud_images_for(mob/M, list/out, check_visibility = TRUE)
+/**
+ * Собирает в out значки атомов худа одной группы z.
+ * При снятии HUD проверка видимости отключается: ранее показанные иконки тоже надо убрать.
+ * z_group: null - группа зрителя M (без M - все атомы), HUD_Z_GROUP_ANY - все группы.
+ */
+/datum/atom_hud/proc/collect_hud_images_for(mob/M, list/out, check_visibility = TRUE, z_group = null)
 	if(!islist(out))
 		return
 	var/list/local_hud_icons = hud_icons
 	if(!length(local_hud_icons))
 		return
+	if(isnull(z_group))
+		z_group = M ? M.get_hud_view_group_cached() : HUD_Z_GROUP_ANY
 	for(var/atom/movable/A as anything in hudatoms)
 		if(!A)
+			continue
+		if(z_group != HUD_Z_GROUP_ANY && A.get_hud_z_group_cached() != z_group)
 			continue
 		if(check_visibility && !should_show_to(M, A))
 			continue
@@ -241,6 +286,74 @@ GLOBAL_LIST_INIT(huds, alist(
 		return
 	push_all_atoms_to_image_list(M, their_client.images)
 
+/// Группа z, по которой худы раздают значки атома
+/atom/movable/proc/get_hud_z_group_cached()
+	if(isnull(hud_z_group))
+		var/turf/our_turf = get_turf(src)
+		hud_z_group = get_hud_z_group(our_turf?.z)
+	return hud_z_group
+
+/// Переезд значка на другой уровень: значки получают зрители новой группы. У зрителей старой
+/// они остаются невидимыми до смены группы или снятия худа - снимать их у каждого слишком дорого
+/atom/movable/proc/update_hud_z_group(new_z)
+	var/new_group = get_hud_z_group(new_z)
+	if(new_group == hud_z_group)
+		return
+	hud_z_group = new_group
+	for(var/datum/atom_hud/hud as anything in hud_memberships)
+		hud.show_atom_to_its_z_group(src)
+
+/// Группа z, на которую сейчас смотрит клиент моба: при observe и камерах это не уровень самого моба
+/mob/proc/current_hud_view_group()
+	var/atom/viewpoint = client?.eye || src
+	var/turf/view_turf = get_turf(viewpoint)
+	return get_hud_z_group(view_turf?.z)
+
+/mob/proc/get_hud_view_group_cached()
+	if(isnull(hud_view_group))
+		hud_view_group = current_hud_view_group()
+	return hud_view_group
+
+/**
+ * Переводит значки всех худов моба на группу z, куда сейчас смотрит его клиент.
+ * new_z - уровень, на который моб переезжает: forceMove госта зовёт onTransitZ до смены loc.
+ */
+/mob/proc/refresh_hud_view_group(new_z = null)
+	var/new_group
+	if(!isnull(new_z) && (!client || client.eye == src))
+		new_group = get_hud_z_group(new_z)
+	else
+		new_group = current_hud_view_group()
+	var/old_group = hud_view_group
+	if(new_group == old_group)
+		return
+	hud_view_group = new_group
+	if(isnull(old_group) || !client)
+		return
+	var/list/images_to_remove = list()
+	var/list/images_to_add = list()
+	for(var/datum/atom_hud/hud as anything in GLOB.all_huds)
+		if(!hud.hudusers[src] || hud.queued_to_see[src])
+			continue
+		hud.collect_hud_images_for(src, images_to_remove, check_visibility = FALSE, z_group = old_group)
+		hud.collect_hud_images_for(src, images_to_add, z_group = new_group)
+	if(length(images_to_remove))
+		client.images -= images_to_remove
+	if(length(images_to_add))
+		client.images |= images_to_add
+
+/// Раз в секунду сверяет группу z каждого клиента: observe, камеры и abstract_move меняют взгляд без onTransitZ
+/datum/hud_view_group_watcher
+
+/datum/hud_view_group_watcher/New()
+	START_PROCESSING(SSprocessing, src)
+
+/datum/hud_view_group_watcher/process(seconds_per_tick)
+	for(var/client/viewer as anything in GLOB.clients)
+		viewer?.mob?.refresh_hud_view_group()
+
+GLOBAL_DATUM(hud_view_group_watcher, /datum/hud_view_group_watcher)
+
 //MOB PROCS
 /mob/proc/reload_huds()
 	if(!client)
@@ -262,6 +375,8 @@ GLOBAL_LIST_INIT(huds, alist(
 	SHOULD_NOT_SLEEP(TRUE)
 	if(!islist(target_images))
 		return
+	// Без клиента группа не следила за взглядом
+	hud_view_group = current_hud_view_group()
 	for(var/datum/atom_hud/hud as anything in GLOB.all_huds)
 		if(!hud || !hud.hudusers[src])
 			continue

@@ -58,12 +58,11 @@
 	/// этого значения - его переставил кто-то ещё (захват, отдача, админ), и
 	/// перебазировать его на смене скорости нельзя. См. movement_reschedule_step().
 	var/last_step_target = 0
-	/// Цена последнего шага, уже кратная тику. Нужна, чтобы на смене скорости
-	/// сдвинуть расписание ровно на разницу цен.
 	var/last_step_cost = 0
 	/// Был ли последний шаг диагональным. Диагональ стоит SQRT_2, и пересчёт
 	/// цены обязан знать, по какой ставке шаг оплачивали.
 	var/last_step_diagonal = FALSE
+	var/datum/fractional_movement_schedule/fractional_movement
 	var/area			= null
 
 	/// Timers are now handled by clients, not by doing a mess on the item and multiple people overwriting a single timer on the object, have fun.
@@ -139,8 +138,8 @@
 	/// Почему соединение закрыл САМ сервер. null = рвал клиент или сеть между нами.
 	/// Уходит в строку Logout: без неё в логах наш кик неотличим от обрыва канала.
 	var/disconnect_reason
-	/// Какой это по счёту вход этого ckey за раунд. Циклический реконнект видно сразу.
-	var/round_login_index = 1
+	/// Какой это по счёту вход этого ckey за раунд, 0 - соединение не дошло до Login.
+	var/round_login_index = 0
 
 	var/inprefs = FALSE
 	var/list/topiclimiter
@@ -201,6 +200,11 @@
 
 	/// whether our browser is ready or not yet
 	var/statbrowser_ready = FALSE
+
+	/// Имя персонажа из локального экспорта (client.Import()) уже прочитано в local_storage_name
+	var/local_storage_name_read = FALSE
+	/// Имя персонажа в локальном экспорте клиента, null - экспорта нет
+	var/local_storage_name
 
 	/// whether remove_admin_tabs has been sent (avoids redundant output() every cycle)
 	var/admin_tabs_cleared = FALSE

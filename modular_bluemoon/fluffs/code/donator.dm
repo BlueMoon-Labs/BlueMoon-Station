@@ -640,7 +640,7 @@
 	name = "Upgraded Size Tool"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/melee/sizetool/upgraded
-	ckeywhitelist = list("enotzlodey", "herobrine998")
+	ckeywhitelist = list("enotzlodey", "herobrine998", "nyaaaa", "thevelocipony")
 
 /datum/gear/donator/bm/pet_alta
 	name = "Alta Cat"
@@ -658,7 +658,7 @@
 	name = "Alta's dogtag"
 	slot = ITEM_SLOT_NECK
 	path = /obj/item/clothing/accessory/dogtag
-	ckeywhitelist = list("oni3288", "ghos7ik", "discord980", "mihana964", "romontesque", "enigma418", "smol42", "notlikeluls",  "kladmenuwu", "alexsandoor", "scramblescream", "nai1ten", "devildeadspace", "zetneskov", "hazzi", "definitelynotnesuby", "silverfoxpaws", "pr1zrak", "earthphobia", "wafflemeow", "trora", "kosep", "urfdrf", "mikolaostavkin", "xaeshkavd", "deltarayx", "korinfellori", "troubleneko17th", "dimofon", "lichfail", "gisya", "dimakr", "cupteazee", "nopeingeneer", "silyamg", "lomodno", "valsons", "nyctealust", "abrikos", "spoopyman228", "stasdvrz", "shizalrp", "tblkba", "dragon9090", "avtobuspng", "ninjapikachushka", "ailhate", "kingdeaths", "mentaleater", "lindaastereih", "gevaitrouble", "ivanokio", "blatoff", "regiska", "lander231")
+	ckeywhitelist = list("oni3288", "ghos7ik", "discord980", "mihana964", "romontesque", "enigma418", "smol42", "notlikeluls",  "kladmenuwu", "alexsandoor", "scramblescream", "nai1ten", "devildeadspace", "zetneskov", "hazzi", "definitelynotnesuby", "silverfoxpaws", "pr1zrak", "earthphobia", "wafflemeow", "trora", "kosep", "urfdrf", "mikolaostavkin", "xaeshkavd", "deltarayx", "korinfellori", "troubleneko17th", "dimofon", "lichfail", "gisya", "dimakr", "cupteazee", "nopeingeneer", "silyamg", "lomodno", "valsons", "nyctealust", "abrikos", "spoopyman228", "stasdvrz", "shizalrp", "tblkba", "dragon9090", "avtobuspng", "ninjapikachushka", "ailhate", "kingdeaths", "mentaleater", "lindaastereih", "gevaitrouble", "ivanokio", "blatoff", "regiska", "lander231", "exkessa")
 
 /datum/gear/donator/bm/hateredsoul_dogtag
 	name = "Combat Dogtag"
@@ -1616,6 +1616,18 @@
 	slot = ITEM_SLOT_OCLOTHING
 	ckeywhitelist = list("nyaaaa")
 
+/datum/gear/donator/bm/long_wintercoat
+	name = "Long Winter Coat"
+	path = /obj/item/clothing/suit/hooded/wintercoat/bm/donator/long_wintercoat
+	slot = ITEM_SLOT_OCLOTHING
+	ckeywhitelist = list("herobrine998", "nyaaaa")
+
+/datum/gear/donator/bm/wardrobe_box
+	name = "Wardrobe Box"
+	path = /obj/item/storage/box/wardrobe_box
+	slot = ITEM_SLOT_BACKPACK
+	ckeywhitelist = list("herobrine998", "nyaaaa")
+
 /datum/gear/donator/bm/toggles_poly_evening
 	name = "Polychromic evening gloves"
 	path = /obj/item/clothing/gloves/toggled/hug/poly_evening
@@ -1724,8 +1736,9 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modsuit_modkit/syndicate_sec
 	ckeywhitelist = list("domilion")
-	restricted_desc = "Security, Head of Security, Warden, Detective, Security Officer, Brig Physician, Peacekeeper, Blueshield."
-	restricted_roles = list("Captain", "Head of Security", "Warden", "Detective", "Security Officer", "Brig Physician", "Peacekeeper", "Blueshield")
+	//Это не целая плитка, её не нужно никак ограничивать. Не имея полноценного МОДа, это бесполезная вещь.
+	// restricted_desc = "Security, Head of Security, Warden, Detective, Security Officer, Brig Physician, Peacekeeper, Blueshield."
+	// restricted_roles = list("Captain", "Head of Security", "Warden", "Detective", "Security Officer", "Brig Physician", "Peacekeeper", "Blueshield")
 
 /datum/gear/donator/bm/modsuit_magnate_heavy
 	name = "Heavy Magnete Modsuit Plate"
@@ -2675,6 +2688,12 @@
 	path = /obj/item/storage/box/melatonin_kit
 	ckeywhitelist = list("melatonin1")
 
+/datum/gear/donator/bm/melatonin_bola_kit
+	name = "Entangling Bola Crafting Kit"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/storage/box/melatonin_bola_kit
+	ckeywhitelist = list("melatonin1")
+
 /datum/gear/donator/bm/tau_kit
 	name = "Tau modkits Box"
 	slot = ITEM_SLOT_BACKPACK
@@ -2709,7 +2728,13 @@
 	name = "NCR ranger clothes case"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/box/kumiko_ncr_case
-	ckeywhitelist = list("kumikoshouko", "1hollowknight1", "foxrtotlimda")
+	ckeywhitelist = list("kumikoshouko", "1hollowknight1", "foxrtotlimda", "ottasuka")
+
+/datum/gear/donator/bm/xeno_waller
+	name = "Xeno Wallet"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/storage/wallet/xeno
+	ckeywhitelist = list("kumikoshouko", "foxrtotlimda")
 
 /datum/gear/donator/bm/skeleton_suit
 	name = "Skeleton suit"

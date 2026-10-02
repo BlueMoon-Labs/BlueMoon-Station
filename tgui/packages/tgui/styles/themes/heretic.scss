@@ -1,0 +1,18 @@
+@use 'sass:meta';
+
+@use '../base.scss' with (
+  $color-bg: #181613,
+);
+
+.theme-heretic {
+  @include meta.load-css('../layouts/Layout.scss');
+  @include meta.load-css('../layouts/Window.scss');
+  @include meta.load-css('../layouts/TitleBar.scss', $with: (
+    'background-color': #171411,
+    'text-color': #d5c4a5,
+  ));
+
+  .Layout__content {
+    background: #181613;
+  }
+}

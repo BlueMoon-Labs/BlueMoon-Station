@@ -101,7 +101,7 @@
 	name = "Concord cloak kit"
 	desc = "Тряпки, тряпки и ещё раз тряпки. Ни функционала, ни цели, только стиль."
 	icon_state = "concord-cloak"
-	alternate_worn_layer = ABOVE_HEAD_LAYER
+	alternate_worn_layer = SUIT_STORE_LAYER // попросили сделать так, чтобы он отображался ПОД волосами и оружием одетым на спину, по идее ничего сломать не должно.
 	var/selected_type = "Cloak"
 
 /obj/item/clothing/neck/donator/bm/concord_cloak/equipped(mob/user, slot) //оверрайдим этот прок, дабы у нас вызывалась обнова иконки в момент одевания

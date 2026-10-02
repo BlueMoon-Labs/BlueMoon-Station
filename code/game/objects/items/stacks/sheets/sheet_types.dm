@@ -268,6 +268,9 @@ GLOBAL_LIST_INIT(plasteel_recipes, list ( \
 /obj/item/stack/sheet/plasteel/fifty
 	amount = 50
 
+/obj/item/stack/sheet/rglass/fifty
+	amount = 50
+
 /*
  * Wood
  */

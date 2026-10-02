@@ -37,10 +37,9 @@ GLOBAL_LIST_EMPTY(explosions)
 #define CREAK_DELAY 5 SECONDS //Time taken for the creak to play after explosion, if applicable.
 #define FAR_UPPER 60 //Upper limit for the far_volume, distance, clamped.
 #define FAR_LOWER 40 //lower limit for the far_volume, distance, clamped.
-#define PROB_SOUND 75 //The probability modifier for a sound to be an echo, or a far sound. (0-100)
 #define SHAKE_CLAMP 2.5 //The limit for how much the camera can shake for out of view booms.
-#define FREQ_UPPER 80 //The upper limit for the randomly selected frequency.
-#define FREQ_LOWER 50 //The lower of the above.
+#define VOLUME_UPPER 80 //The upper limit for the randomly selected volume.
+#define VOLUME_LOWER 50 //The lower of the above.
 /// How many on-Z mobs to process in the explosion sound loop before a CHECK_TICK (per-mob was yielding constantly on highpop).
 #define EX_EXPLOSION_SOUND_BATCH 24
 /// How many overloaded ticks to accumulate before stoplag() while applying ex_act (yield-every-turf made maxcaps take 10+ seconds of real time).
@@ -51,7 +50,7 @@ GLOBAL_LIST_EMPTY(explosions)
  */
 /proc/generate_explosion_near_sounds(mob/M, turf/epicenter, dist, range, shake_range = null, frequency = null, max_distance = null, sound/explosion_sound = null)
 	if(!M || !epicenter || range < 0)
-		return
+		return FALSE
 	if(isnull(shake_range))
 		shake_range = range
 	if(isnull(frequency))
@@ -68,6 +67,25 @@ GLOBAL_LIST_EMPTY(explosions)
 	M.playsound_local(epicenter, null, 100, 1, frequency, max_distance = max_distance, S = explosion_sound)
 	if(baseshakeamount > 0)
 		shake_camera(M, 25, clamp(baseshakeamount, 0, 10))
+
+/**
+ * Проверка и санити чек на достягаемость звука взрыва до моба с учётом атмосферы: в космосе взрывы не слышно
+ */
+/proc/explosion_sound_audible(mob/M, turf/epicenter, turf/listener_turf, dist, pressure_affected = TRUE, distance_multiplier = SOUND_DEFAULT_DISTANCE_MULTIPLIER, max_distance = null)
+	if(!M?.client || !M.can_hear() || !listener_turf)
+		return FALSE
+	var/distance = dist * distance_multiplier
+	if(max_distance && distance >= max_distance)
+		return FALSE
+	if(!pressure_affected || distance <= 1)
+		return TRUE
+
+	var/datum/gas_mixture/hearer_env = listener_turf.return_air()
+	var/datum/gas_mixture/source_env = epicenter.return_air()
+	if(!hearer_env || !source_env)
+		return FALSE
+
+	return min(hearer_env.return_pressure(), source_env.return_pressure()) > SOUND_MINIMUM_PRESSURE
 
 /**
  * Generates the nearby explosion sound and camera shake without applying gameplay effects.
@@ -96,32 +114,40 @@ GLOBAL_LIST_EMPTY(explosions)
  */
 /proc/play_explosion_distant_effect(mob/M, turf/epicenter, turf/listener_turf, dist, far_dist, shake_range, devastation_range, heavy_impact_range, frequency, creaking_explosion, sound/far_explosion_sound, sound/creaking_explosion_sound, sound/explosion_echo_sound)
 	if(!M || !epicenter || !listener_turf)
-		return
+		return FALSE
+
+	var/distant_dist = far_dist + world.view
+	if(dist > distant_dist)
+		return FALSE
 
 	var/baseshakeamount
 	if(shake_range - dist > 0)
 		baseshakeamount = sqrt((shake_range - dist) * 0.1)
 
+	var/far_volume = clamp(far_dist/2, FAR_LOWER, FAR_UPPER)
+	var/heard_explosion =  explosion_sound_audible(M, epicenter, listener_turf, dist)
 	if(dist <= far_dist)
-		var/far_volume = clamp(far_dist/2, FAR_LOWER, FAR_UPPER) // Volume is based on explosion size and dist
-		if(creaking_explosion)
-			M.playsound_local(epicenter, null, far_volume, 1, frequency, S = creaking_explosion_sound, distance_multiplier = 0)
-		else if(prob(PROB_SOUND)) // Sound variety during meteor storm/tesloose/other bad event
-			M.playsound_local(epicenter, null, far_volume, 1, frequency, S = far_explosion_sound, distance_multiplier = 0) // Far sound
-		else
-			M.playsound_local(epicenter, null, far_volume, 1, frequency, S = explosion_echo_sound, distance_multiplier = 0) // Echo sound
+		if(heard_explosion)
+			if(istype(get_area(listener_turf), /area/maintenance))
+				M.playsound_local(epicenter, null, far_volume, 1, frequency, S = far_explosion_sound, distance_multiplier = 0) // Sound is muffled in maintenance tunnels.
+			else if(creaking_explosion)
+				M.playsound_local(epicenter, null, far_volume, 1, frequency, S = creaking_explosion_sound, distance_multiplier = 0)
+			else
+				M.playsound_local(epicenter, null, far_volume, 1, frequency, S = explosion_echo_sound, distance_multiplier = 0)
 
 		if(baseshakeamount > 0 || devastation_range)
 			if(!baseshakeamount) // Devastating explosions rock the station and ground
 				baseshakeamount = devastation_range*3
 			shake_camera(M, 10, clamp(baseshakeamount*0.25, 0, SHAKE_CLAMP))
-	else if(!isspaceturf(listener_turf) && heavy_impact_range) // Big enough explosions echo throughout the hull
-		var/echo_volume = 40
-		if(devastation_range)
-			baseshakeamount = devastation_range
+	else
+		if(heard_explosion)
+			M.playsound_local(epicenter, null, far_volume, 1, frequency, S = explosion_echo_sound, distance_multiplier = 0)
+		if(baseshakeamount > 0 || devastation_range)
+			if(!baseshakeamount)
+				baseshakeamount = devastation_range
 			shake_camera(M, 10, clamp(baseshakeamount*0.25, 0, SHAKE_CLAMP))
-			echo_volume = 60
-		M.playsound_local(epicenter, null, echo_volume, 1, frequency, S = explosion_echo_sound, distance_multiplier = 0)
+
+	return heard_explosion
 
 /**
  * Прок скрипа станционной конструкции после сильного взрыва, проигрываемый спустя время по таймеру
@@ -130,7 +156,7 @@ GLOBAL_LIST_EMPTY(explosions)
 	if(!M || !epicenter || !hull_creaking_sound)
 		return
 
-	addtimer(CALLBACK(M, TYPE_PROC_REF(/mob, playsound_local), epicenter, null, rand(FREQ_LOWER, FREQ_UPPER), 1, frequency, null, null, FALSE, hull_creaking_sound, 0), delay)
+	addtimer(CALLBACK(M, TYPE_PROC_REF(/mob, playsound_local), epicenter, null, rand(VOLUME_LOWER, VOLUME_UPPER), 1, frequency, null, null, FALSE, hull_creaking_sound, 0), delay)
 
 /datum/explosion/New(atom/epicenter, devastation_range, heavy_impact_range, light_impact_range, flash_range, adminlog, ignorecap, flame_range, silent, smoke, mob/living/attacker = null)
 	set waitfor = FALSE
@@ -216,8 +242,12 @@ GLOBAL_LIST_EMPTY(explosions)
 		var/sound/hull_creaking_sound = sound(get_sfx("hull_creaking"))
 		var/sound/explosion_echo_sound = sound('sound/effects/explosion_distant.ogg')
 		var/on_station = SSmapping.level_trait(epicenter.z, ZTRAIT_STATION)
+		// The light range is the user-facing bombcap value (the third number in bomb notation).
+		var/cap_explosion = orig_light_range >= GLOB.MAX_EX_LIGHT_RANGE * cap_multiplier
+		var/sound/near_explosion_sound = cap_explosion ? sound('sound/effects/explosion3.ogg') : explosion_sound
 		var/creaking_explosion = FALSE
-		var/near_explosion_range = round(max_range + world.view - 2, 1)
+		var/near_dist = round(max_range + world.view - 2, 1)
+		var/medium_dist = far_dist
 		var/explosion_strength = devastation_range * 30 + heavy_impact_range * 5
 		var/guaranteed_creaking_strength = (2 * 30) + (4 * 5) // Минимум как у бомбы ниндзя
 
@@ -233,12 +263,15 @@ GLOBAL_LIST_EMPTY(explosions)
 			if(!M_turf)
 				continue
 			var/dist = get_dist(M_turf, epicenter)
-			if(dist > near_explosion_range)
-				play_explosion_distant_effect(M, epicenter, M_turf, dist, far_dist, orig_max_distance, devastation_range, heavy_impact_range, frequency, creaking_explosion, far_explosion_sound, creaking_explosion_sound, explosion_echo_sound)
+			var/heard_explosion = FALSE
+			if(dist <= near_dist)
+				generate_explosion_near_sounds(M, epicenter, dist, max_range, orig_max_distance, frequency, explosion_sound = near_explosion_sound)
+				if(creaking_explosion)
+					heard_explosion = explosion_sound_audible(M, epicenter, M_turf, dist, max_distance = orig_max_distance)
 			else
-				generate_explosion_near_sounds(M, epicenter, dist, max_range, orig_max_distance, frequency, explosion_sound = explosion_sound)
+				heard_explosion = play_explosion_distant_effect(M, epicenter, M_turf, dist, medium_dist, orig_max_distance, devastation_range, heavy_impact_range, frequency, creaking_explosion && on_station, far_explosion_sound, creaking_explosion_sound, explosion_echo_sound)
 
-			if(creaking_explosion) // 5 seconds after the bang, the station begins to creak
+			if(creaking_explosion && on_station && heard_explosion) // 5 seconds after the bang, the station begins to creak
 				schedule_explosion_creaking(M, epicenter, frequency, hull_creaking_sound, CREAK_DELAY)
 
 			if(++explosion_sound_batch >= EX_EXPLOSION_SOUND_BATCH)
@@ -425,10 +458,9 @@ GLOBAL_LIST_EMPTY(explosions)
 #undef CREAK_DELAY
 #undef FAR_UPPER
 #undef FAR_LOWER
-#undef PROB_SOUND
 #undef SHAKE_CLAMP
-#undef FREQ_UPPER
-#undef FREQ_LOWER
+#undef VOLUME_UPPER
+#undef VOLUME_LOWER
 #undef EX_EXPLOSION_SOUND_BATCH
 #undef EX_EXPLOSION_TICK_BATCH
 

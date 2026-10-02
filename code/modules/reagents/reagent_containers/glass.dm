@@ -513,7 +513,7 @@
 			to_chat(user, "<span class='notice'>Вы стали перемалывать...</span>")
 			if((do_after(user, 25, target = src)) && grinded)
 				user.adjustStaminaLoss(20)
-				if(grinded.juice_results) //prioritize juicing
+				if(grinded.juice_results && !grinded.prefer_grind) //prioritize juicing
 					grinded.on_juice()
 					reagents.add_reagent_list(grinded.juice_results)
 					to_chat(user, "<span class='notice'>Вы выдавили [grinded] в жидкую форму.</span>")

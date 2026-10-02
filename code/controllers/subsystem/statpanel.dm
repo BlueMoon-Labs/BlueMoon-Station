@@ -216,7 +216,7 @@ SUBSYSTEM_DEF(statpanels)
 	while(length(ping_run))
 		var/client/ping_target = ping_run[length(ping_run)]
 		ping_run.len--
-		if(!ping_target?.statbrowser_ready || !ping_target.ping_updated || ping_target.inactivity >= STATPANEL_AFK_INACTIVITY)
+		if(!ping_target?.statbrowser_ready || !ping_target.ping_updated || world.time - ping_target.last_activity >= STATPANEL_AFK_INACTIVITY)
 			continue
 		ping_target.ping_updated = FALSE
 		// Tidi is only included every Nth fire; saves repeated identical bytes across the client list otherwise.
@@ -238,7 +238,7 @@ SUBSYSTEM_DEF(statpanels)
 
 		// Skip heavy work for AFK clients (5 min inactivity)
 		// Admin clients are also skipped; they self-recover on the first active fire
-		if(target.inactivity >= STATPANEL_AFK_INACTIVITY)
+		if(world.time - target.last_activity >= STATPANEL_AFK_INACTIVITY)
 			if(!target.holder && !target.admin_tabs_cleared)
 				target << output("", "statbrowser:remove_admin_tabs")
 				target.admin_tabs_cleared = TRUE

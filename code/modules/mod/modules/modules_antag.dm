@@ -113,6 +113,20 @@
 	desc = "Свиток защищающий носителя от магии, при условии, что тот вставлен в костюм. Имеет печать Федерации магов."
 	icon_state = "magic_neutralizer"
 
+/obj/item/mod/module/spellcasting
+	name = "Spellcasting MOD enchanting"
+	desc = "Благославляющий свиток, позволяющий колдовать, нося элементы МОДа, словно в робе мага."
+	icon_state = "magic_neutralizer"
+	removable = FALSE
+
+/obj/item/mod/module/spellcasting/on_install()
+	. = ..()
+	var/obj/item/clothing/mod_part/suit/chest  = mod.get_chestplate()
+	var/obj/item/clothing/mod_part/head/helmet = mod.get_helmet()
+
+	chest.AddElement(/datum/element/spellcasting, SPELL_WIZARD_ROBE, ITEM_SLOT_OCLOTHING)
+	helmet.AddElement(/datum/element/spellcasting, SPELL_WIZARD_HAT, ITEM_SLOT_HEAD)
+
 /obj/item/mod/module/energy_shield/syndie
 	name = "Cybersun Energy Shield module"
 	desc = "Одна из совершенных версий модулярных энергощитов, способная выдерживать до 5-ти попаданий. \

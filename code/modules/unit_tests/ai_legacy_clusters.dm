@@ -804,7 +804,7 @@
 	//и легаси-конверсия move_to_delay = 0 (шаг каждый мировой тик)
 	var/datum/ai_behavior/hostile_melee_attack/claws = GET_AI_BEHAVIOR(/datum/ai_behavior/hostile_melee_attack)
 	TEST_ASSERT_EQUAL(claws.get_cooldown(controller), SSnpcpool.wait, "The statue must keep the exact legacy melee cadence")
-	TEST_ASSERT_EQUAL(controller.movement_delay, AI_LEGACY_MOVE_DELAY_DS(0), "The statue must keep its legacy top movement speed")
+	TEST_ASSERT_EQUAL(controller.movement_delay, AI_LEGACY_MOVE_DELAY_DS(0) * GLOB.ai_move_delay_scale, "The statue must keep its legacy top movement speed")
 
 	//клиент-гейт CanAttack через делегацию: манекен без ckey - не цель
 	TEST_ASSERT(!strategy.can_attack(angel, prey), "A clientless mob must not be a statue target")

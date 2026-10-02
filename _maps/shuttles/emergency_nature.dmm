@@ -669,6 +669,15 @@
 	},
 /turf/open/floor/mineral/plastitanium/red/brig,
 /area/shuttle/escape)
+"zO" = (
+/obj/machinery/light/floor,
+/obj/structure/flora/ausbushes/sparsegrass,
+/obj/effect/fun_balloon/sentience/emergency_shuttle{
+	effect_range = 10;
+	group_name = "horrible monkeys"
+	},
+/turf/open/floor/grass/grass0,
+/area/shuttle/escape)
 "Ai" = (
 /obj/effect/turf_decal/weather/dirt{
 	dir = 6
@@ -1680,7 +1689,7 @@ Xm
 Vv
 Fp
 qD
-zs
+zO
 XK
 XK
 PP

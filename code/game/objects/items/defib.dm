@@ -731,8 +731,10 @@
 				else
 					user.visible_message("<span class='warning'>[req_defib ? "[defib]" : "[src]"] buzzes: Resuscitation failed, heart damage detected.</span>")
 				playsound(src, 'sound/machines/defib_zap.ogg', 50, 1, -1)
-
-
+			else if(H.has_status_effect(/datum/status_effect/heretic_dance_earworm))
+				H.remove_status_effect(/datum/status_effect/heretic_dance_earworm)
+				user.visible_message("<span class='notice'>[req_defib ? "[defib]" : "[src]"] pings: Arrhythmia corrected.</span>")
+				playsound(src, 'sound/machines/defib_zap.ogg', 50, 1, -1)
 			else
 				user.visible_message("<span class='warning'>[req_defib ? "[defib]" : "[src]"] buzzes: Patient is not in a valid state. Operation aborted.</span>")
 				playsound(src, 'sound/machines/defib_failed.ogg', 50, 0)

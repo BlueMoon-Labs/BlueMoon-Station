@@ -7,6 +7,12 @@
 	var/metashop_purchaser_ckey
 	var/activation_verb_text = "получить особую роль"
 	var/metashop_round_limit_key = null
+	/// Типы геймодов, в которых жетон метамагазина нельзя активировать.
+	/// istype() ловит и /datum/game_mode/extended, и announced (config_tag "Extended" с большой буквы).
+	var/list/disallowed_game_modes = list(/datum/game_mode/extended)
+	/// Типы раундов, в которых жетон метамагазина нельзя активировать.
+	/// Нужно отдельно от disallowed_game_modes: у динамика нет отдельных датумов на вариацию round_type.
+	var/list/disallowed_round_types = list(ROUNDTYPE_EXTENDED, ROUNDTYPE_DYNAMIC_LIGHT)
 
 /obj/item/coin/antagtoken/metashop/examine(mob/user)
 	. = ..()
@@ -65,6 +71,10 @@
 	if(SSticker.current_state != GAME_STATE_PLAYING || !SSticker.mode)
 		to_chat(H, span_warning("Сейчас нельзя активировать жетон."))
 		return FALSE
+	var/mode_block = game_mode_blocked_reason()
+	if(mode_block)
+		to_chat(H, span_warning(mode_block))
+		return FALSE
 	if(!ispath(antag_type, /datum/antagonist))
 		to_chat(H, span_warning("Жетон мёртвый — тип роли не задан."))
 		return FALSE
@@ -86,6 +96,20 @@
 
 /obj/item/coin/antagtoken/metashop/proc/already_has_antag_message()
 	return "Вы уже связаны с силами, с которыми хотел бы связаться жетон."
+
+/// Текст причины, по которой жетон нельзя активировать в текущем режиме игры, либо null.
+/// Проверяются и тип геймода, и round_type: не каждый режим, помеченный как Extended, выставляется в SSticker.mode.
+/obj/item/coin/antagtoken/metashop/proc/game_mode_blocked_reason()
+	if(disallowed_game_modes)
+		for(var/mode_type in disallowed_game_modes)
+			if(ispath(mode_type) && istype(SSticker?.mode, mode_type))
+				return game_mode_block_message()
+	if(disallowed_round_types && (GLOB.round_type in disallowed_round_types))
+		return game_mode_block_message()
+	return null
+
+/obj/item/coin/antagtoken/metashop/proc/game_mode_block_message()
+	return "Жетон метамагазина недоступен в режимах Extended и Dynamic Light."
 
 /obj/item/coin/antagtoken/metashop/proc/role_unavailable_message()
 	return "Жетон нагревается и остывает — роль недоступна."
@@ -166,4 +190,39 @@
 	log_game("Metashop antag token: [key_name(H)] became changeling via coin.")
 
 /obj/item/coin/antagtoken/metashop/changeling/attack_self(mob/user)
+	return TRUE
+
+/obj/item/coin/antagtoken/metashop/heretic
+	name = "Heretic Token"
+	desc = "Пластиковая монета с запретным знаком. Если прислушаться, из неё доносится едва различимый шёпот."
+	antag_type = /datum/antagonist/heretic
+	metashop_refund_amount = METASHOP_TRAITOR_TOKEN_REFUND_COST
+	activation_verb_text = "стать еретиком"
+
+/obj/item/coin/antagtoken/metashop/heretic/examine(mob/user)
+	. = ..()
+	. += span_notice("Активация: <b>Alt+ЛКМ</b> — [activation_verb_text].")
+	. += span_notice("Возврат: <b>Ctrl+ЛКМ</b> — обменять на [metashop_refund_amount] М$ (пока не активирован).")
+
+/obj/item/coin/antagtoken/metashop/heretic/activation_extra_block_reason(mob/living/carbon/human/user)
+	if(jobban_isbanned(user, ROLE_HERETIC) || jobban_isbanned(user, ROLE_INTEQ))
+		return "Вам запрещена роль еретика."
+	if(istype(SSticker.mode, /datum/game_mode/extended))
+		return "Жетон «Еретик» недоступен в Extended."
+	var/datum/dynamic_ruleset/roundstart/heretics/heretic_rule = new
+	SSdirector.apply_role_protection(heretic_rule)
+	var/is_restricted = (user.job in heretic_rule.restricted_roles)
+	qdel(heretic_rule)
+	if(is_restricted)
+		return "Ваша должность не позволяет активировать жетон еретика."
+	if(HAS_TRAIT(user, TRAIT_MINDSHIELD))
+		return "Щит разума не пускает зов Мансуса: с имплантом защиты разума жетон еретика не активировать."
+	return null
+
+/obj/item/coin/antagtoken/metashop/heretic/on_activation_success(mob/living/carbon/human/user, datum/antagonist/antagonist)
+	to_chat(user, span_bolddanger("Шёпот монеты складывается в слова. Запретное знание открывается вам."))
+	message_admins("[key_name_admin(user)] активировал метамагазинный жетон еретика.")
+	log_game("Metashop antag token: [key_name(user)] became heretic via coin.")
+
+/obj/item/coin/antagtoken/metashop/heretic/attack_self(mob/user)
 	return TRUE

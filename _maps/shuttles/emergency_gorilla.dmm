@@ -286,10 +286,6 @@
 /area/shuttle/escape)
 "be" = (
 /obj/structure/chair/sofa/right/brown,
-/turf/open/floor/plating,
-/area/shuttle/escape)
-"bf" = (
-/obj/structure/chair/sofa/middle/brown,
 /mob/living/simple_animal/hostile/gorilla,
 /turf/open/floor/plating,
 /area/shuttle/escape)
@@ -518,8 +514,8 @@ ad
 ab
 ad
 fV
-bf
-bl
+bg
+ax
 bq
 bs
 bu
@@ -544,7 +540,7 @@ aD
 fV
 Pi
 bm
-ax
+bl
 bs
 bu
 "}

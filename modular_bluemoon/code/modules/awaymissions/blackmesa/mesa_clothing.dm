@@ -32,10 +32,6 @@
 	glass_colour_type = /datum/client_colour/glass_colour/red
 	alternate_worn_layer = ABOVE_HEAD_LAYER
 
-/obj/item/clothing/glasses/night/blackops/update_icon_state()
-	. = ..()
-	icon_state = length(color_cutoffs) ? initial(icon_state) : "night_off"
-
 /obj/item/clothing/suit/blackops
 	name = "Black operative special armor"
 	desc = "Почему нам всегда приходится убирать дерьмо, с которым не могут справиться пехотинцы?"

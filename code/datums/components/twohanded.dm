@@ -144,7 +144,7 @@
 		else
 			to_chat(user, "<span class='warning'>You need your other hand to be empty!</span>")
 		return
-	if(user.get_num_arms() < 2)
+	if(user.calculate_emply_hand_slots() < 1)
 		if(require_twohands)
 			user.dropItemToGround(parent, force=TRUE)
 		to_chat(user, "<span class='warning'>You don't have enough intact hands.</span>")

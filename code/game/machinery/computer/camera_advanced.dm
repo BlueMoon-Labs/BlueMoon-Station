@@ -205,7 +205,7 @@
 
 /mob/camera/aiEye/remote/update_remote_sight(mob/living/user)
 	user.see_invisible = SEE_INVISIBLE_LIVING //can't see ghosts through cameras
-	user.sight = SEE_TURFS | SEE_BLACKNESS
+	// user.sight = SEE_TURFS | SEE_BLACKNESS нет необходимости менять sight. Иначе, при не совсем ясных обстоятельствах показывает белые квадраты вместо черных, в зонах, невидимых игроку
 	user.see_in_dark = 2
 	return TRUE
 

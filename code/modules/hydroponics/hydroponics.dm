@@ -571,6 +571,7 @@
 			investigate_log("planting: [user] planted [O] with traits [english_list(myseed)] and reagents [english_list_assoc(myseed.reagents_add)] and potency [myseed.potency]", INVESTIGATE_BOTANY)
 			TRAY_NAME_UPDATE
 			age = 1
+			lastproduce = 0
 			plant_health = myseed.endurance
 			lastcycle = world.time
 			update_icon()

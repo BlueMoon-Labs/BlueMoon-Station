@@ -96,4 +96,5 @@
 	duffelbag = /obj/item/storage/backpack/duffelbag/syndie
 	box = /obj/item/storage/box/survival/syndie
 	pda_slot = ITEM_SLOT_BELT
+	accessory = list(/obj/item/clothing/accessory/permit/special/syndie_station)
 	backpack_contents = list(/obj/item/syndicate_uplink/station=1)

@@ -86,6 +86,9 @@
 /datum/atom_hud/round_removal_probe/should_show_to(mob/viewer, atom/movable/target)
 	return FALSE
 
+/datum/atom_hud/round_removal_probe/viewer_has_images(mob/viewer)
+	return TRUE
+
 /datum/atom_hud/round_removal_probe/remove_hud_images(mob/viewer, list/images_to_remove)
 	removed_images = images_to_remove.Copy()
 	removal_calls++
