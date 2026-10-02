@@ -961,13 +961,7 @@
 		member.atmos_cooldown = 0
 		SSair.remove_from_active(member)
 
-/// add_turf() appends to turf_list and only then funnels through reset_cooldowns()
-/// -> cancel_breakdown(). A turf joining the group inside the eviction window -
-/// brand new, or just-evicted and re-shared - therefore exists in neither half of
-/// the eviction partition, so a cancel that trusted the partition would drop it
-/// from turf_list while its excited_group still points at the group: breakdowns
-/// and dismantle would never reach it again, and once the group died the turf
-/// would keep a dangling pointer to an unregistered zombie datum.
+/// A turf joining the group inside the eviction window, brand new or just evicted, stays listed exactly once and points back at the group after add_turf() cancels the breakdown.
 /datum/unit_test/atmos_midevict_join_survives_cancel
 	var/list/turf/open/members
 
@@ -1008,10 +1002,7 @@
 	for(var/turf/open/member as anything in members)
 		TEST_ASSERT(istype(member), "test location is not an open turf")
 
-	// Case 1: a just-evicted member is re-added inside the window. It is still
-	// listed in turf_list (the swap has not happened yet), so the |= in add_turf
-	// is a no-op and only the back-pointer changes - the cancel must keep the
-	// turf, and keep it listed exactly once.
+	// Case 1: a just-evicted member, still listed in turf_list, is re-added inside the window.
 	var/datum/excited_group/group = new
 	var/turf/open/evicted = build_group_at_evict_window(group)
 	TEST_ASSERT_NOTNULL(evicted, "no slice left the group partly evicted, so the guarded window was never reached")

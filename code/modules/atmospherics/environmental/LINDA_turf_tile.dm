@@ -143,10 +143,6 @@
 		SSair.add_to_active(src)
 	return removed
 
-/turf/open/proc/copy_air_with_tile(turf/open/T)
-	if(istype(T))
-		air.copy_from(T.air)
-
 /turf/open/proc/copy_air(datum/gas_mixture/copy)
 	if(copy)
 		air.copy_from(copy)
@@ -1206,18 +1202,18 @@
 /datum/excited_group/proc/add_turf(turf/open/T)
 	if(!istype(T))
 		return
-	// The turf leaves this proc awake: count it unless it is already an awake
-	// member of this very group (re-adding one must not double count).
+	// Отмена брейкдауна первой: посреди выселения она убирает отвязанных из turf_list, после чего членство в нём равно обратной ссылке.
+	reset_cooldowns()
 	if(T.excited_group != src || !T.excited)
 		awake_members++
-	turf_list |= T
-	T.excited_group = src
+	if(T.excited_group != src)
+		turf_list += T
+		T.excited_group = src
 	// excited - флаг членства в active_turfs, на нём стоит быстрый путь add_to_active(): поднятый флаг обязан значить запись в списке.
 	if(!T.excited)
 		T.excited = TRUE
 		if(SSair)
 			SSair.list_active_turf(T)
-	reset_cooldowns()
 
 /datum/excited_group/proc/merge_groups(datum/excited_group/E)
 	if(!E || E == src)
