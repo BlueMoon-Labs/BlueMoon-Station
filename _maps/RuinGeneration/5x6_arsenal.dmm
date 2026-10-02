@@ -1,0 +1,198 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/turf/closed/wall/r_wall,
+/area/ruin/unpowered)
+"b" = (
+/obj/effect/abstract/doorway_marker{
+	dir = 1
+	},
+/turf/open/floor/plasteel/catwalk_floor,
+/area/ruin/unpowered)
+"e" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/structure/rack,
+/obj/item/clothing/suit/armor/ussr,
+/obj/item/clothing/head/helmet/ussr,
+/obj/structure/window/reinforced{
+	dir = 1
+	},
+/obj/structure/window/reinforced,
+/obj/machinery/door/window/eastright{
+	base_state = "left";
+	dir = 8;
+	icon_state = "left";
+	name = "арсенальные двери"
+	},
+/turf/open/floor/engine,
+/area/ruin/unpowered)
+"l" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/structure/window/reinforced,
+/obj/structure/window/reinforced{
+	dir = 1
+	},
+/obj/machinery/door/window/eastright{
+	name = "арсенальные двери"
+	},
+/obj/structure/table/reinforced,
+/obj/item/ammo_box/magazine/m9mm{
+	pixel_x = -5
+	},
+/obj/item/ammo_box/magazine/m9mm,
+/obj/item/ammo_box/magazine/m9mm{
+	pixel_x = 5
+	},
+/turf/open/floor/engine,
+/area/ruin/unpowered)
+"q" = (
+/obj/effect/abstract/doorway_marker,
+/turf/open/floor/plasteel/catwalk_floor,
+/area/ruin/unpowered)
+"t" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/item/gun/ballistic/rifle/boltaction/kar98k,
+/obj/structure/window/reinforced{
+	dir = 1
+	},
+/obj/machinery/door/window/eastright{
+	name = "арсенальные двери"
+	},
+/obj/structure/table/reinforced,
+/obj/item/gun/ballistic/rifle/boltaction/kar98k{
+	pixel_y = -5
+	},
+/turf/open/floor/engine,
+/area/ruin/unpowered)
+"v" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/structure/window/reinforced,
+/obj/machinery/door/window/eastright{
+	name = "арсенальные двери"
+	},
+/obj/structure/table/reinforced,
+/obj/item/ammo_box/magazine/a792x57{
+	pixel_x = -5
+	},
+/obj/item/ammo_box/magazine/a792x57,
+/obj/item/ammo_box/magazine/a792x57{
+	pixel_x = 5
+	},
+/turf/open/floor/engine,
+/area/ruin/unpowered)
+"C" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 4
+	},
+/obj/item/gun/ballistic/rifle/boltaction/kar98k/scope,
+/obj/structure/window/reinforced,
+/obj/structure/window/reinforced{
+	dir = 1
+	},
+/obj/machinery/door/window/eastright{
+	name = "арсенальные двери"
+	},
+/obj/structure/table/reinforced,
+/obj/item/gun/ballistic/rifle/boltaction/kar98k/scope{
+	pixel_y = -5
+	},
+/turf/open/floor/engine,
+/area/ruin/unpowered)
+"H" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/structure/rack,
+/obj/item/clothing/suit/armor/ussr,
+/obj/item/clothing/head/helmet/ussr,
+/obj/machinery/light{
+	dir = 4
+	},
+/obj/structure/window/reinforced{
+	dir = 1
+	},
+/obj/machinery/door/window/eastright{
+	base_state = "left";
+	dir = 8;
+	icon_state = "left";
+	name = "арсенальные двери"
+	},
+/turf/open/floor/engine,
+/area/ruin/unpowered)
+"I" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/structure/table/reinforced,
+/obj/item/gun/energy/laser/retro/old,
+/turf/open/floor/engine,
+/area/ruin/unpowered)
+"N" = (
+/turf/open/floor/plasteel/catwalk_floor,
+/area/ruin/unpowered)
+"T" = (
+/obj/effect/turf_decal/stripes/line{
+	dir = 8
+	},
+/obj/machinery/light{
+	dir = 4
+	},
+/obj/structure/table/reinforced,
+/obj/machinery/recharger{
+	pixel_x = -5;
+	pixel_y = 7
+	},
+/obj/machinery/recharger{
+	pixel_x = 6;
+	pixel_y = 7
+	},
+/turf/open/floor/engine,
+/area/ruin/unpowered)
+
+(1,1,1) = {"
+a
+a
+a
+a
+a
+a
+"}
+(2,1,1) = {"
+a
+v
+l
+C
+t
+a
+"}
+(3,1,1) = {"
+b
+N
+N
+N
+N
+q
+"}
+(4,1,1) = {"
+a
+T
+I
+e
+H
+a
+"}
+(5,1,1) = {"
+a
+a
+a
+a
+a
+a
+"}
