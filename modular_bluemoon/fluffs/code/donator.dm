@@ -2037,6 +2037,12 @@
 	path = /obj/item/clothing/head/donator/bm/opssrt
 	ckeywhitelist = list("monolithxxv", "mishanok")
 
+/datum/gear/donator/bm/medaldoblest
+	name = "Медаль"
+	slot = ITEM_SLOT_HEAD
+	path = /obj/item/clothing/accessory/medaldoblest
+	ckeywhitelist = list("monolithxxv", "mishanok")
+
 /datum/gear/donator/bm/opssrtclothes
 	name = "OPS-SRT Clothing"
 	slot = ITEM_SLOT_ICLOTHING
