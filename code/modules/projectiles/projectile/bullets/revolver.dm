@@ -310,6 +310,8 @@
 	name= ".410 rubber shot"
 	desc = "An .41 rubber shot."
 	caliber = ".410cal"
+	icon = 'modular_bluemoon/icons/obj/ammo.dmi'
+	icon_state = "410rubber"
 	pellets = 6
 	variance = 50
 	projectile_type = /obj/item/projectile/bullet/pellet/exorcist_rubber
@@ -336,6 +338,8 @@
 	name= ".410 snakeshot"
 	desc = "An .410 snakeshot."
 	caliber = ".410cal"
+	icon = 'modular_bluemoon/icons/obj/ammo.dmi'
+	icon_state = "410snakeshot"
 	pellets = 6
 	variance = 50
 	projectile_type = /obj/item/projectile/bullet/cal41/lethal
