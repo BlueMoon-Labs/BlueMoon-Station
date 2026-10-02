@@ -116,6 +116,8 @@
 				/obj/item/summon_chalk = 5,
 				/obj/item/qareen_chalk = 5,
 				/obj/item/genital_equipment/sounding = 4,
+				/obj/item/genital_equipment/urethral_plug = 4,
+				/obj/item/reagent_containers/urethral_tube = 4,
 			),
 		),
 

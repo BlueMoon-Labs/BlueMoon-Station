@@ -44,6 +44,9 @@
 	return //stops TK fuckery
 
 /obj/item/autosurgeon/attackby(obj/item/I, mob/user, params)
+	if(istype(I, /obj/item/organ/regenerative_core))
+		to_chat(user, "<span class='warning'>[src] cannot hold a [I].</span>")
+		return
 	if(istype(I, organ_type))
 		if(storedorgan)
 			to_chat(user, "<span class='notice'>[src] already has an implant stored.</span>")
@@ -87,6 +90,12 @@
 	desc = "A single use autosurgeon that contains a set of Luminescent Eyes augments. A screwdriver can be used to remove it, but implants can't be placed back in."
 	uses = 1
 	starting_organ = /obj/item/organ/eyes/robotic/toggled/glow
+
+
+/obj/item/autosurgeon/vanguard
+	uses = 1
+
+
 
 /obj/item/autosurgeon/syndicate
 	name = "Suspicious Autosurgeon"
@@ -133,6 +142,19 @@
 
 /obj/item/autosurgeon/syndicate/inteq/biomorphedlungs
 	starting_organ = /obj/item/organ/lungs/bioaegis/t3/antag
+
+/obj/item/autosurgeon/syndicate/mantis_blade
+	starting_organ = /obj/item/organ/cyberimp/arm/mantis_blade/syndie
+
+/obj/item/autosurgeon/syndicate/mantis_blade/l
+	starting_organ = /obj/item/organ/cyberimp/arm/mantis_blade/syndie/l
+
+/obj/item/autosurgeon/syndicate/inteq/mantis_blade
+	starting_organ = /obj/item/organ/cyberimp/arm/mantis_blade/syndie
+
+/obj/item/autosurgeon/syndicate/inteq/mantis_blade/l
+	starting_organ = /obj/item/organ/cyberimp/arm/mantis_blade/syndie/l
+
 
 //BOX O' IMPLANTS
 

@@ -362,6 +362,7 @@
 			client.perspective = EYE_PERSPECTIVE
 			client.eye = loc
 	SEND_SIGNAL(src, COMSIG_MOB_RESET_PERSPECTIVE, A)
+	refresh_hud_view_group()
 	return TRUE
 
 //view() but with a signal, to allow blacklisting some of the otherwise visible atoms.
@@ -717,6 +718,9 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 /mob/proc/is_muzzled()
 	return FALSE
 
+/mob/proc/get_muzzle_strength()
+	return MUFFLE_NONE
+
 /// Adds this list to the output to the stat browser
 /mob/proc/get_status_tab_items()
 	. = list()
@@ -825,9 +829,13 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 
 /mob/proc/swap_hand()
 	var/obj/item/held_item = get_active_held_item()
-	if(SEND_SIGNAL(src, COMSIG_MOB_SWAP_HANDS, held_item) & COMPONENT_BLOCK_SWAP)
-		to_chat(src, "<span class='warning'>Your other hand is too busy holding [held_item].</span>")
-		return FALSE
+	if(!held_item)
+		return TRUE
+	var/datum/component/two_handed/comp = held_item.GetComponent(/datum/component/two_handed)
+	if(comp)
+		if(comp.require_twohands && !calculate_emply_hand_slots())
+			to_chat(src, "<span class='warning'>Your other hand is too busy holding [held_item].</span>")
+			return FALSE
 	return TRUE
 
 /mob/proc/activate_hand(selhand)
@@ -867,6 +875,9 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 		client << output(null, "statbrowser:check_spells")
 
 /mob/proc/anti_magic_check(magic = TRUE, holy = FALSE, tinfoil = FALSE, chargecost = 1, self = FALSE)
+	return check_magic_resistance(magic, holy, tinfoil, chargecost, self)
+
+/mob/proc/check_magic_resistance(magic = TRUE, holy = FALSE, tinfoil = FALSE, chargecost = 1, self = FALSE)
 	if(!magic && !holy && !tinfoil)
 		return
 	var/list/protection_sources = list()

@@ -964,7 +964,7 @@
 	if(adjusted || !(DIGITIGRADE in wearer.dna.species.species_traits))
 		return
 	var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
-	var/breast_size = clamp(round(breast?.size || 0)-1, 0, 7)
+	var/breast_size = clamp(round(breast?.size || 0), 0, 9)
 	icon_state = "[initial(icon_state)]_[breast_size]"
 	wearer.update_inv_w_uniform()
 	wearer.update_body()
@@ -1044,16 +1044,47 @@
 /obj/item/clothing/under/donator/bm/longshirt
 	name = "Long Shirt"
 	desc = "Just a long shirt, no more"
-	icon_state = "longshirt"
-	item_state = "longshirt"
-	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
-	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
-	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/under_digi.dmi'
-	mutantrace_variation = STYLE_DIGITIGRADE
+	icon_state = "longshirt_0"
 	fitted = NO_FEMALE_UNIFORM
-	body_parts_covered = NONE
-	can_adjust = TRUE
-	alternate_worn_layer = GLOVES_LAYER
+	body_parts_covered = CHEST|GROIN|ARMS
+	always_reskinnable = TRUE
+	can_adjust = FALSE
+	unique_reskin = list(
+		"Buttoned" = list("icon_state" = "longshirt_0"),
+		"Decollete" = list("icon_state" = "longshirt_1"),
+		"Unbuttoned" = list("icon_state" = "longshirt_2"),
+		"Spread out" = list("icon_state" = "longshirt_3"),
+	)
+
+/obj/item/clothing/under/donator/bm/longshirt/reskin_obj(mob/user)
+	switch(current_skin)
+		if("Buttoned")
+			body_parts_covered = CHEST|GROIN|ARMS
+		if("Decollete")
+			body_parts_covered = ARMS
+		if("Unbuttoned")
+			body_parts_covered = ARMS
+		if("Spread out")
+			body_parts_covered = ARMS
+	user.update_inv_w_uniform()
+	user.update_body(TRUE)
+
+/obj/item/clothing/under/donator/bm/longshirt/set_to_maximum_sensor(user)
+	return
+
+/obj/item/clothing/under/donator/bm/longshirt/CtrlClick(mob/user)
+	. = ..()
+	if (!(item_flags & IN_INVENTORY))
+		return
+
+	if(!isliving(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
+		return
+
+	var/desired_layer = tgui_input_number(user, "Выставить слой одежды", "Слой отображения", UNIFORM_LAYER, UNDERWEAR_LAYER, HEAD_LAYER)
+	if(!desired_layer)
+		return
+	alternate_worn_layer = desired_layer
+	user.update_inv_w_uniform()
 
 /obj/item/clothing/under/donator/bm/fulted_plate_armor
 	name = "Fluted Plate Armor"
@@ -1071,4 +1102,95 @@
 	item_state = "the_stylish_one_tracksuit"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	can_adjust = FALSE
+
+/obj/item/clothing/under/donator/bm/melatonin_bodysuit
+	name = "Lycanthrope's Form-Fitting Bodysuit"
+	desc = "Практически новый темно-серый бодисьют в безупречном состоянии, без единого следа износа. Светлые эластичные вставки по бокам и плотные шорты туго облегают тело, выгодно подчеркивая каждый изгиб фигуры — грудь, бедра и ягодицы. Длинные рукава закрывают руки вплоть до самых кистей. Со стороны костюм выглядит настолько утягивающим, будто готов пережать всё что угодно, но на удивление он ощущается невероятно удобным и совершенно не сковывает движения. На левом бедре аккуратно вышит фирменный полумесяц."
+	icon_state = "melatonin-uniform-0"
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	can_adjust = FALSE
+	fitted = NO_FEMALE_UNIFORM
+
+/obj/item/clothing/under/donator/bm/melatonin_bodysuit/equipped(mob/user, slot)
+	. = ..()
+	if(slot != ITEM_SLOT_ICLOTHING)
+		return
+	update_icon()
+
+/obj/item/clothing/under/donator/bm/melatonin_bodysuit/update_icon_state()
+	. = ..()
+	icon_state = "melatonin-uniform-0"
+	if(!istype(loc, /mob/living/carbon/human))
+		return
+	var/mob/living/carbon/human/wearer = loc
+	var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
+	var/breast_size = clamp(round(breast?.size || 0), 0, 8)
+	icon_state = "melatonin-uniform-[breast_size]"
+	wearer.update_inv_w_uniform()
+	wearer.update_body()
+
+/obj/item/clothing/under/donator/bm/melatonin_disco
+	name = "Lycanthrope Disco Shirt"
+	desc = "Модная диско-майка и широкие рваные джинсы. Раньше верх этого наряда явно был чище и опрятнее. Если вы вдруг считаете, что Диско давно осталось в прошлом и мертво, то вы просто не достойны носить шмотки пьяной суперзвезды из Ревашоля. К слову, ткань на редкость удачно скроена — она крайне удобно обтягивает тело и надежно поддерживает вашу тяжеленную грудь."
+	mutantrace_variation = STYLE_DIGITIGRADE
+	icon_state = "melatonin_disco_0"
+	item_state = "melatonin_disco_0"
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/under_digi.dmi'
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	can_adjust = TRUE
+	fitted = NO_FEMALE_UNIFORM
+	alt_covers_chest = FALSE
+
+/obj/item/clothing/under/donator/bm/melatonin_disco/equipped(mob/user, slot) //оверрайдим этот прок, дабы у нас вызывалась обнова иконки в момент одевания
+	. = ..()
+	if(slot != ITEM_SLOT_ICLOTHING)
+		return
+	update_icon()
+
+/obj/item/clothing/under/donator/bm/melatonin_disco/update_icon_state()
+	. = ..()
+	icon_state = initial(icon_state)
+	if(!istype(loc, /mob/living/carbon/human))
+		return
+	var/mob/living/carbon/human/wearer = loc
+	var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
+	var/breast_size = clamp(round(breast?.size || 0), 0, 9)
+	icon_state = "melatonin_disco_[breast_size]"
+	wearer.update_inv_w_uniform()
+	wearer.update_body()
+
+/obj/item/clothing/under/donator/bm/melatonin_disco/toggle_jumpsuit_adjust()
+	. = ..()
+	if(.)
+		if(adjusted)
+			desc = "Модная диско-майка и обтягивающие рваные шорты. Раньше верх этого наряда явно был чище и опрятнее. Если вы вдруг считаете, что Диско давно осталось в прошлом и мертво, то вы просто не достойны носить шмотки пьяной суперзвезды из Ревашоля. К слову, ткань на редкость удачно скроена — она крайне удобно обтягивает тело и надежно поддерживает вашу тяжеленную грудь."
+		else
+			desc = "Модная диско-майка и широкие рваные джинсы. Раньше верх этого наряда явно был чище и опрятнее. Если вы вдруг считаете, что Диско давно осталось в прошлом и мертво, то вы просто не достойны носить шмотки пьяной суперзвезды из Ревашоля. К слову, ткань на редкость удачно скроена — она крайне удобно обтягивает тело и надежно поддерживает вашу тяжеленную грудь."
+		update_icon()
+
+/obj/item/clothing/under/donator/bm/caligram
+	name = "Caligram uniform"
+	desc = "With a suit lined with this many pockets, you are ready to operate." //описание /obj/item/clothing/under/syndicate/combat
+	mutantrace_variation = STYLE_DIGITIGRADE
+	icon_state = "caligram_fatigues_tan"
+	item_state = "caligram_fatigues_tan"
+	can_adjust = TRUE
+	unique_reskin = list(
+		"blue" = list("icon_state" = "caligram_fatigues_blue"),
+		"tan" = list("icon_state" = "caligram_fatigues_tan"),
+	)
+
+/obj/item/clothing/under/donator/bm/skeleton_suit
+	name = "Skeleton suit"
+	desc = "Tight black suit with bone like drawing"
+	icon_state = "skeleton_suit"
+	item_state = "skeleton_suit"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/under_digi.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE
+
 	can_adjust = FALSE

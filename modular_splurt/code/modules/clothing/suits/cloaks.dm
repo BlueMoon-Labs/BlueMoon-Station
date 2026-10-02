@@ -596,6 +596,19 @@
 	body_parts_covered = CHEST|GROIN|ARMS
 	alternate_worn_layer = MOB_UPPER_LAYER
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/toy, /obj/item/storage/fancy/cigarettes, /obj/item/lighter,/obj/item/clothing/gloves/color/yellow)
+	brc_mitigation_bonus = 0  // BLUEMOON ADD
+
+/obj/item/clothing/suit/hooded/teshari/beltcloak/equipped(mob/user, slot)  // BLUEMOON ADD
+	. = ..()
+	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
+		user.brc_mitigation += brc_mitigation_bonus
+		brc_worn = TRUE
+
+/obj/item/clothing/suit/hooded/teshari/beltcloak/dropped(mob/user)  // BLUEMOON ADD
+	. = ..()
+	if(brc_worn && isliving(user))
+		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
+		brc_worn = FALSE
 
 
 
@@ -717,6 +730,7 @@
 	desc = "A premium armor padded Teshari cloak made for Captain."
 	icon_state = "tesh_beltcloak_comm"
 	armor = list(MELEE = 50, BULLET = 40, LASER = 50, ENERGY = 50, BOMB = 25, BIO = 0, RAD = 0, FIRE = 100, ACID = 90, WOUND = 30)
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	allowed = list(/obj/item/tank/internals/emergency_oxygen, /obj/item/flashlight, /obj/item/analyzer, /obj/item/radio, /obj/item/gun, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/reagent_containers/hypospray, /obj/item/hypospray, /obj/item/healthanalyzer, /obj/item/reagent_containers/syringe, /obj/item/reagent_containers/glass/bottle/vial, /obj/item/reagent_containers/glass/beaker, /obj/item/storage/pill_bottle, /obj/item/taperecorder)
 
 /obj/item/clothing/suit/hooded/teshari/beltcloak/jobs/ce
@@ -782,6 +796,7 @@
 	desc = "A armor padded Teshari cloak made for the Security department"
 	icon_state = "tesh_beltcloak_sec"
 	armor = list(MELEE = 35, BULLET = 30, LASER = 30, ENERGY = 40, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 10)
+	brc_mitigation_bonus = 10  // BLUEMOON ADD
 	allowed = list(/obj/item/tank/internals/emergency_oxygen, /obj/item/flashlight, /obj/item/analyzer, /obj/item/radio, /obj/item/gun, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/reagent_containers/hypospray, /obj/item/hypospray, /obj/item/healthanalyzer, /obj/item/reagent_containers/syringe, /obj/item/reagent_containers/glass/bottle/vial, /obj/item/reagent_containers/glass/beaker, /obj/item/storage/pill_bottle, /obj/item/taperecorder)
 
 /obj/item/clothing/suit/hooded/teshari/beltcloak/jobs/medical/qm
@@ -811,6 +826,7 @@
 	desc = "A hard armor padded Teshari cloak made for the Head of Security"
 	icon_state = "tesh_beltcloak_hos"
 	armor = list(MELEE = 40, BULLET = 40, LASER = 40, ENERGY = 50, BOMB = 25, BIO = 0, RAD = 0, FIRE = 70, ACID = 90, WOUND = 20)
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	allowed = list(/obj/item/tank/internals/emergency_oxygen, /obj/item/flashlight, /obj/item/analyzer, /obj/item/radio, /obj/item/gun, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/reagent_containers/hypospray, /obj/item/hypospray, /obj/item/healthanalyzer, /obj/item/reagent_containers/syringe, /obj/item/reagent_containers/glass/bottle/vial, /obj/item/reagent_containers/glass/beaker, /obj/item/storage/pill_bottle, /obj/item/taperecorder)
 
 /obj/item/clothing/suit/hooded/teshari/beltcloak/jobs/service/jani

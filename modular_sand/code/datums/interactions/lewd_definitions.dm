@@ -325,11 +325,15 @@
 	else
 		moans = GLOB.lewd_moans_male
 
+	var/list/preferred_moans = client?.prefs?.use_custom_moan_sounds ? client.prefs.custom_moan_sounds : null
+	if(LAZYLEN(preferred_moans))
+		moans = preferred_moans
+
 	// Pick a sound from the list.
 	var/sound = pick(moans)
 
 	// If the sound is repeated, get a new from a list without it.
-	if (lastmoan == sound)
+	if (lastmoan == sound && length(moans) > 1)
 		sound = pick(LAZYCOPY(moans) - lastmoan)
 
 	if(isalien(src))
@@ -857,9 +861,7 @@
 	if(gender == MALE || (gender == PLURAL && ismasculine(src)))
 		playlewdinteractionsound(get_turf(src), pick('modular_sand/sound/interactions/final_m1.ogg',
 							'modular_sand/sound/interactions/final_m2.ogg',
-							'modular_sand/sound/interactions/final_m3.ogg',
-							'modular_sand/sound/interactions/final_m4.ogg',
-							'modular_sand/sound/interactions/final_m5.ogg'), 90, 1, 0)
+							'modular_sand/sound/interactions/final_m3.ogg'), 90, 1, 0)
 	else if(gender != MALE || (gender == PLURAL && isfeminine(src)))
 		playlewdinteractionsound(get_turf(src), pick('modular_sand/sound/interactions/final_f1.ogg',
 							'modular_sand/sound/interactions/final_f2.ogg',

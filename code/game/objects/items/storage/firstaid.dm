@@ -534,6 +534,10 @@
 	custom_price = PRICE_ABOVE_NORMAL
 	custom_premium_price = PRICE_EXPENSIVE
 
+/obj/item/storage/hypospraykit/examine(mob/user)
+	. = ..()
+	. += span_info("Вы можете заряжать ампулы в гипоспрей прямо из этого набора, поднеся гипоспрей к нужной ампуле.")
+
 /obj/item/storage/hypospraykit/ComponentInitialize()
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
@@ -549,9 +553,17 @@
 /obj/item/storage/hypospraykit/regular/PopulateContents()
 	if(empty)
 		return
-	new /obj/item/hypospray/mkii/tricord(src)
-	new /obj/item/reagent_containers/glass/bottle/vial/small/tricord(src)
-	new /obj/item/reagent_containers/glass/bottle/vial/small/tricord(src)
+	var/static/list/items_inside = list(
+		/obj/item/hypospray/mkii/multi_heal = 1,
+		/obj/item/reagent_containers/glass/bottle/vial/small/multi_heal = 1,
+		/obj/item/reagent_containers/glass/bottle/vial/small/bicaridine = 2,
+		/obj/item/reagent_containers/glass/bottle/vial/small/kelotane = 2,
+		/obj/item/reagent_containers/glass/bottle/vial/small/antitoxin = 2,
+		/obj/item/reagent_containers/glass/bottle/vial/small/dexalin = 2,
+		/obj/item/reagent_containers/glass/bottle/vial/small/tricord = 2,
+	) // 12 max
+
+	generate_items_inside(items_inside, src)
 
 /obj/item/storage/hypospraykit/brute
 	name = "trauma hypospray kit"
@@ -561,10 +573,11 @@
 /obj/item/storage/hypospraykit/brute/PopulateContents()
 	if(empty)
 		return
-	new /obj/item/hypospray/mkii/brute(src)
-	new /obj/item/reagent_containers/glass/bottle/vial/small/bicaridine(src)
-	new /obj/item/reagent_containers/glass/bottle/vial/small/bicaridine(src)
-
+	var/static/list/items_inside = list(
+		/obj/item/hypospray/mkii/brute = 1,
+		/obj/item/reagent_containers/glass/bottle/vial/small/bicaridine = 5,
+	)
+	generate_items_inside(items_inside, src)
 
 /obj/item/storage/hypospraykit/fire
 	name = "burn treatment hypospray kit"
@@ -575,9 +588,11 @@
 /obj/item/storage/hypospraykit/fire/PopulateContents()
 	if(empty)
 		return
-	new /obj/item/hypospray/mkii/burn(src)
-	new /obj/item/reagent_containers/glass/bottle/vial/small/kelotane(src)
-	new /obj/item/reagent_containers/glass/bottle/vial/small/kelotane(src)
+	var/static/list/items_inside = list(
+		/obj/item/hypospray/mkii/burn = 1,
+		/obj/item/reagent_containers/glass/bottle/vial/small/kelotane = 5,
+	)
+	generate_items_inside(items_inside, src)
 
 /obj/item/storage/hypospraykit/toxin
 	name = "toxin treatment hypospray kit"
@@ -587,9 +602,11 @@
 /obj/item/storage/hypospraykit/toxin/PopulateContents()
 	if(empty)
 		return
-	new /obj/item/hypospray/mkii/toxin(src)
-	new /obj/item/reagent_containers/glass/bottle/vial/small/antitoxin(src)
-	new /obj/item/reagent_containers/glass/bottle/vial/small/antitoxin(src)
+	var/static/list/items_inside = list(
+		/obj/item/hypospray/mkii/toxin = 1,
+		/obj/item/reagent_containers/glass/bottle/vial/small/antitoxin = 5,
+	)
+	generate_items_inside(items_inside, src)
 
 /obj/item/storage/hypospraykit/o2
 	name = "oxygen deprivation hypospray kit"
@@ -599,9 +616,11 @@
 /obj/item/storage/hypospraykit/o2/PopulateContents()
 	if(empty)
 		return
-	new /obj/item/hypospray/mkii/oxygen(src)
-	new /obj/item/reagent_containers/glass/bottle/vial/small/dexalin(src)
-	new /obj/item/reagent_containers/glass/bottle/vial/small/dexalin(src)
+	var/static/list/items_inside = list(
+		/obj/item/hypospray/mkii/oxygen = 1,
+		/obj/item/reagent_containers/glass/bottle/vial/small/dexalin = 5,
+	)
+	generate_items_inside(items_inside, src)
 
 /obj/item/storage/hypospraykit/enlarge
 	name = "organomegaly trauma hypospray kit"
@@ -631,12 +650,21 @@
 /obj/item/storage/hypospraykit/cmo/PopulateContents()
 	if(empty)
 		return
-	new /obj/item/hypospray/mkii/CMO(src)
-	new /obj/item/reagent_containers/glass/bottle/vial/large/tricord(src)
-	new /obj/item/reagent_containers/glass/bottle/vial/large/charcoal(src)
-	new /obj/item/reagent_containers/glass/bottle/vial/large/salglu(src)
-	new /obj/item/reagent_containers/glass/bottle/vial/large/dexalin(src)
-	new /obj/item/reagent_containers/glass/bottle/vial/large/synthflesh(src)
+	var/static/list/items_inside = list(
+		/obj/item/hypospray/mkii/CMO = 1,
+		/obj/item/reagent_containers/glass/bottle/vial/large/multi_heal = 1,
+		/obj/item/reagent_containers/glass/bottle/vial/large/bicaridine = 1,
+		/obj/item/reagent_containers/glass/bottle/vial/large/kelotane = 1,
+		/obj/item/reagent_containers/glass/bottle/vial/large/antitoxin = 1,
+		/obj/item/reagent_containers/glass/bottle/vial/large/dexalin = 1,
+		/obj/item/reagent_containers/glass/bottle/vial/large/tricord = 1,
+		/obj/item/reagent_containers/glass/bottle/vial/large/CMO = 1,
+		/obj/item/reagent_containers/glass/bottle/vial/large/charcoal = 1,
+		/obj/item/reagent_containers/glass/bottle/vial/large/salglu = 1,
+		/obj/item/reagent_containers/glass/bottle/vial/large/synthflesh = 1,
+		/obj/item/reagent_containers/glass/bottle/vial/large/mine_salve = 1
+	) // 12 max
+	generate_items_inside(items_inside, src)
 
 /obj/item/storage/hypospraykit/enlarge/PopulateContents()
 	if(empty)

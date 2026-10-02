@@ -17,6 +17,8 @@
 	var/department_tag = "Unidentified"			//used for material distribution among other things.
 	var/datum/techweb/stored_research
 	var/datum/techweb/host_research
+	var/network_id = RND_NETWORK_AUTO			//AUTO: станция — science_tech, иначе — персональная изолированная сеть
+	var/techweb_type = /datum/techweb/isolated	//Тип техвеба нестанционной сети
 	var/last_design_count = 0	// Хранит предшествующее синхронизации количество доступных дизайнов
 
 	var/lathe_prod_time = 0.5
@@ -39,12 +41,18 @@
 	create_reagents(0, OPENCONTAINER | NO_REACT)
 	gen_access()
 	stored_research = new
-	host_research = SSresearch.science_tech
 	INVOKE_ASYNC(src, PROC_REF(update_research))
 	materials = AddComponent(/datum/component/remote_materials, "lathe", mapload, _after_insert=CALLBACK(src, PROC_REF(AfterMaterialInsert)))
 	RefreshParts()
 	RegisterSignal(SSdcs, COMSIG_GLOB_RESEARCH_NODE_UNLOCKED, PROC_REF(on_node_unlocked))
 	RegisterSignal(SSdcs, COMSIG_GLOB_RESEARCH_BATCH_COMPLETE, PROC_REF(on_research_batch_complete))
+
+/obj/machinery/rnd/production/LateInitialize()
+	. = ..()
+	AddComponent(/datum/component/techweb_holder)
+	RegisterSignal(src, COMSIG_ATOM_TECHWEB_CHANGED, PROC_REF(on_techweb_changed))
+	SEND_SIGNAL(src, COMSIG_ATOM_SET_TECHWEB, SSresearch.get_rnd_network_for(src, network_id, techweb_type))
+
 
 /obj/machinery/rnd/production/Destroy()
 	if(deferred_sync_timer)
@@ -56,6 +64,28 @@
 	QDEL_NULL(stored_research)
 	host_research = null
 	return ..()
+
+/obj/machinery/rnd/production/proc/on_techweb_changed(datum/source, datum/techweb/new_web)
+	SIGNAL_HANDLER
+
+	host_research = new_web
+	stored_research = new
+	cached_designs.Cut()
+	_ui_cached_designs.Cut()
+	designs_cache_built = FALSE
+	last_design_count = 0
+	INVOKE_ASYNC(src, PROC_REF(update_research))
+
+//BLUEMOON ADD - переподключение производственной машины к другой сети исследований через мультитул
+/obj/machinery/rnd/production/multitool_act(mob/living/user, obj/item/multitool/tool)
+	. = ..()
+	if(istype(tool.buffer, /obj/machinery/ore_silo) && GetComponent(/datum/component/remote_materials))
+		//BLUEMOON ADD: не перехватываем линковку с ресурсным сило — её обработает remote_materials.OnAttackBy (COMSIG_PARENT_ATTACKBY)
+		return NONE
+	else
+		to_chat(user, span_notice("Буфер мультитула занят посторонним объектом."))
+		return TRUE
+//BLUEMOON ADD END
 
 /obj/machinery/rnd/production/examine(mob/user)
 	. = ..()
@@ -102,7 +132,7 @@
 	// исследует стартовые ноды прямо в New(), так что researched_designs непуст уже
 	// до первого пересбора - и инкрементальный путь навсегда терял базовые рецепты.
 	var/list/previously_known = designs_cache_built ? stored_research.researched_designs.Copy() : null
-	host_research.copy_research_to(stored_research, TRUE)
+	host_research?.copy_research_to(stored_research, TRUE)
 	if(previously_known)
 		update_designs_incremental(previously_known)
 	else
@@ -373,7 +403,7 @@
 			COOLDOWN_START(src, cooldown_say, cooldown_say_time)
 			say("Warning: Printing failed: The request is too big!")
 		return FALSE
-	var/datum/design/D = (linked_console || requires_console)? (linked_console.stored_research.researched_designs[id]? SSresearch.techweb_design_by_id(id) : null) : SSresearch.techweb_design_by_id(id)
+	var/datum/design/D = (linked_console || requires_console)? (linked_console && linked_console.stored_research && linked_console.stored_research.researched_designs[id]? SSresearch.techweb_design_by_id(id) : null) : SSresearch.techweb_design_by_id(id)	//BLUEMOON ADD: проверка на подключённую сеть консоли
 	if(!istype(D))
 		return FALSE
 	if(!(isnull(allowed_department_flags) || (D.departmental_flags & allowed_department_flags)))
@@ -494,3 +524,27 @@
 		return
 	sleep(rand(0, 2 SECONDS)) // Рандомный дилей перед уведомлением о получении дизайнов, уменьшает звуковую нагрузку (надеюсь)
 	say("Синхронизация с базой изучений. Количество новых чертежей: [added]")
+
+/obj/machinery/rnd/production/protolathe/syndicate
+	network_id = RND_NETWORK_SYNDICATE
+	techweb_type = /datum/techweb/syndicate_isolated
+
+/obj/machinery/rnd/production/protolathe/tarkoff
+	network_id = RND_NETWORK_TARKON
+	techweb_type = /datum/techweb/tarkoff
+
+/obj/machinery/rnd/production/protolathe/inteq
+	network_id = RND_NETWORK_INTEQ
+	techweb_type = /datum/techweb/inteq
+
+/obj/machinery/rnd/production/circuit_imprinter/syndicate
+	network_id = RND_NETWORK_SYNDICATE
+	techweb_type = /datum/techweb/syndicate_isolated
+
+/obj/machinery/rnd/production/circuit_imprinter/tarkoff
+	network_id = RND_NETWORK_TARKON
+	techweb_type = /datum/techweb/tarkoff
+
+/obj/machinery/rnd/production/circuit_imprinter/inteq
+	network_id = RND_NETWORK_INTEQ
+	techweb_type = /datum/techweb/inteq

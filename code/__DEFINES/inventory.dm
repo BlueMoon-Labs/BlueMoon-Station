@@ -88,6 +88,8 @@
 //sandstorm edit
 #define HIDEUNDERWEAR	(1<<14) //hides underwear, socks and shirt
 #define HIDEWRISTS		(1<<15) //hides wrists
+//bluemoon add
+#define HIDETAIL		(1<<16) //hides the tail, separate from taur bodies
 //
 
 //bitflags for clothing coverage - also used for limbs
@@ -167,6 +169,7 @@ GLOBAL_LIST_INIT(advanced_hardsuit_allowed, typecacheof(list(
 	/obj/item/melee/baton,
 	/obj/item/reagent_containers/spray/pepper,
 	/obj/item/restraints/handcuffs,
+	/obj/item/electrostaff,
 	/obj/item/device/cooler, //BLUEMOON ADD - ПОУ для бронежилетов СБ,
 	/obj/item/tank/internals)))
 
@@ -178,6 +181,7 @@ GLOBAL_LIST_INIT(security_hardsuit_allowed, typecacheof(list(
 	/obj/item/gun/energy,
 	/obj/item/melee/baton,
 	/obj/item/reagent_containers/spray/pepper,
+	/obj/item/electrostaff,
 	/obj/item/restraints/handcuffs,
 	/obj/item/device/cooler, //BLUEMOON ADD - ПОУ для бронежилетов СБ,
 	/obj/item/tank/internals)))
@@ -192,6 +196,7 @@ GLOBAL_LIST_INIT(detective_vest_allowed, typecacheof(list(
 	/obj/item/gun/energy,
 	/obj/item/lighter,
 	/obj/item/melee/baton,
+	/obj/item/electrostaff,
 	/obj/item/melee/classic_baton,
 	/obj/item/reagent_containers/spray/pepper,
 	/obj/item/restraints/handcuffs,
@@ -212,6 +217,7 @@ GLOBAL_LIST_INIT(security_vest_allowed, typecacheof(list(
 	/obj/item/reagent_containers/spray/pepper,
 	/obj/item/restraints/handcuffs,
 	/obj/item/tank/internals/emergency_oxygen,
+	/obj/item/electrostaff,
 	/obj/item/melee/classic_baton, //BLUEMOON ADD
 	/obj/item/device/cooler, //BLUEMOON ADD - ПОУ для бронежилетов СБ,
 	/obj/item/spear/electrospear, //BLUEMOON ADD тестовый вариант
@@ -224,6 +230,7 @@ GLOBAL_LIST_INIT(security_wintercoat_allowed, typecacheof(list(
 	/obj/item/storage/fancy/cigarettes,
 	/obj/item/gun/ballistic,
 	/obj/item/gun/energy,
+	/obj/item/electrostaff,
 	/obj/item/lighter,
 	/obj/item/melee/baton,
 	/obj/item/melee/classic_baton/telescopic,

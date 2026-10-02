@@ -196,6 +196,11 @@
 /obj/item/bikehorn/ComponentInitialize()
 	. = ..()
 	AddComponent(/datum/component/squeak, honksounds, 50)
+	RegisterSignal(src, COMSIG_ITEM_ATTACK_SELF, PROC_REF(sound_false_note))
+
+/obj/item/bikehorn/proc/sound_false_note(datum/source, mob/user)
+	SIGNAL_HANDLER
+	heretic_dance_false_note(get_turf(src))
 
 /obj/item/bikehorn/attack(mob/living/carbon/M, mob/living/carbon/user)
 	SEND_SIGNAL(M, COMSIG_ADD_MOOD_EVENT, moodlet, /datum/mood_event/honk)

@@ -4,6 +4,8 @@
 #define COMSIG_ITEM_ON_GRIND "on_grind"
 ///from base of obj/item/on_juice(): ()
 #define COMSIG_ITEM_ON_JUICE "on_juice"
+/// Sent from /obj/item/proc/animate_attack() : (atom/movable/attacker, atom/attacked_atom, animation_type, list/image_override, list/animation_override, list/angle_override)
+#define COMSIG_ITEM_ATTACK_ANIMATION "item_attack_animation"
 ///from /obj/machinery/hydroponics/attackby() when an object is used as compost: (mob/user)
 #define COMSIG_ITEM_ON_COMPOSTED "on_composted"
 

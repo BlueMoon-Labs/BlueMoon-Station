@@ -4480,7 +4480,7 @@
 "Aa" = (
 /obj/structure/table/glass,
 /obj/item/clothing/neck/stethoscope,
-/obj/item/gun/medbeam,
+/obj/item/gun/medbeam/syndicate,
 /obj/effect/turf_decal/stripes/yellow/line,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
@@ -6107,18 +6107,6 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/solfed_ship)
-"Jx" = (
-/obj/machinery/door/airlock/grunge{
-	name = "Recreation";
-	req_one_access_txt = "152"
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
-/turf/open/floor/plasteel/dark,
-/area/ruin/space/has_grav/bluemoon/solfed_ship/outpost)
 "Jz" = (
 /obj/structure/cable/yellow{
 	icon_state = "4-8"

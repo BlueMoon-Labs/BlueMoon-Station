@@ -168,6 +168,10 @@
 	item_state = "medical"
 	content_overlays = TRUE
 
+/obj/item/storage/belt/medical/examine(mob/user)
+	. = ..()
+	. += span_info("Вы можете заряжать ампулы в гипоспрей прямо из пояса, поднеся гипоспрей к нужной ампуле.")
+
 /obj/item/storage/belt/medical/ComponentInitialize()
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)

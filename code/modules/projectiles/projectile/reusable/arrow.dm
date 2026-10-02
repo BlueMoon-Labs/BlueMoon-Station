@@ -17,11 +17,11 @@
 	name = "bone arrow"
 	desc = "Arrow made of bone and sinew."
 	damage = 35
-	armour_penetration = BULLET_BR3   // BLUEMOON EDIT: было 40 → BR3(35), без изменений
+	armour_penetration = BULLET_BR7
 	ammo_type = /obj/item/ammo_casing/caseless/arrow/bone
 
 /obj/item/projectile/bullet/reusable/arrow/bronze //Just some AP shots
 	name = "bronze arrow"
 	desc = "Bronze tipped arrow."
-	armour_penetration = BULLET_BR1   // BLUEMOON EDIT: было 10 → BR1(10)
+	armour_penetration = BULLET_BR7
 	ammo_type = /obj/item/ammo_casing/caseless/arrow/bronze

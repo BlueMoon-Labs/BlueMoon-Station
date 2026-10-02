@@ -619,10 +619,10 @@
 		//Splash
 		if(prob(WATER_HEIGH_DIFFERENCE_SOUND_CHANCE))
 			var/sound_to_play = pick(list(
-				'modular_bluemoon/modules/liquids/sound/effects/water_wade1.ogg',
-				'modular_bluemoon/modules/liquids/sound/effects/water_wade2.ogg',
-				'modular_bluemoon/modules/liquids/sound/effects/water_wade3.ogg',
-				'modular_bluemoon/modules/liquids/sound/effects/water_wade4.ogg'
+				'sound/effects/water_wade1.ogg',
+				'sound/effects/water_wade2.ogg',
+				'sound/effects/water_wade3.ogg',
+				'sound/effects/water_wade4.ogg'
 				))
 			playsound(my_turf, sound_to_play, 60, 0)
 		var/obj/splashy = new /obj/effect/temp_visual/liquid_splash(my_turf)
@@ -688,10 +688,10 @@
 	if(liquid_state >= LIQUID_STATE_ANKLES)
 		if(prob(30))
 			var/sound_to_play = pick(list(
-				'modular_bluemoon/modules/liquids/sound/effects/water_wade1.ogg',
-				'modular_bluemoon/modules/liquids/sound/effects/water_wade2.ogg',
-				'modular_bluemoon/modules/liquids/sound/effects/water_wade3.ogg',
-				'modular_bluemoon/modules/liquids/sound/effects/water_wade4.ogg'
+				'sound/effects/water_wade1.ogg',
+				'sound/effects/water_wade2.ogg',
+				'sound/effects/water_wade3.ogg',
+				'sound/effects/water_wade4.ogg'
 				))
 			playsound(T, sound_to_play, 50, 0)
 		if(iscarbon(AM))
@@ -704,10 +704,10 @@
 		if(!(L.movement_type & FLYING))
 			if(prob(18)) // splash when walking through a shallow puddle
 				playsound(T, pick(list(
-					'modular_bluemoon/modules/liquids/sound/effects/water_wade1.ogg',
-					'modular_bluemoon/modules/liquids/sound/effects/water_wade2.ogg',
-					'modular_bluemoon/modules/liquids/sound/effects/water_wade3.ogg',
-					'modular_bluemoon/modules/liquids/sound/effects/water_wade4.ogg'
+					'sound/effects/water_wade1.ogg',
+					'sound/effects/water_wade2.ogg',
+					'sound/effects/water_wade3.ogg',
+					'sound/effects/water_wade4.ogg'
 					)), 35, 0)
 			if(prob(7))
 				L.slip(1 SECONDS, T, NO_SLIP_WHEN_WALKING, 2 SECONDS, TRUE)
@@ -718,7 +718,7 @@
 	SIGNAL_HANDLER
 	var/turf/T = source
 	if(liquid_state >= LIQUID_STATE_ANKLES && T.has_gravity(T))
-		playsound(T, 'modular_bluemoon/modules/liquids/sound/effects/splash.ogg', 50, 0)
+		playsound(T, 'sound/effects/splash.ogg', 50, 0)
 		if(iscarbon(M))
 			var/mob/living/carbon/falling_carbon = M
 

@@ -102,7 +102,7 @@
 	cooldown_time = 1.5 SECONDS
 	required_modpart_index = MOD_PART_GLOVES
 	mod_module_flags = MOD_MODULE_ENGINEERING // BLUEMOON ADD
-	// device = /obj/item/gun/tether_firer
+	have_shortcut_activation = TRUE
 
 /obj/item/mod/module/tether/on_use()
 	if(mod.wearer.has_gravity(get_turf(src)))
@@ -122,23 +122,6 @@
 	INVOKE_ASYNC(tether, TYPE_PROC_REF(/obj/item/projectile, fire))
 	drain_power(use_power_cost)
 
-// /obj/item/gun/ballistic/tether_firer
-// 	name = "Tether gun"
-// 	desc = "Устройство для запуска спасательного гарпуна."
-// 	icon = 'icons/obj/clothing/modsuit/mod_modules.dmi'
-// 	icon_state = "tether"
-// 	mag_type = /obj/item/ammo_box/magazine/m10mm
-// 	no_pin_required = TRUE
-
-// /obj/item/ammo_box/magazine/internal/tether
-// 	name = "Tether cartridge"
-// 	ammo_type = /obj/item/ammo_casing/caseless/tether
-// 	max_ammo = 1
-
-// /obj/item/ammo_casing/caseless/tether
-// 	caliber = "tether"
-// 	projectile_type = /obj/item/projectile/tether
-
 /obj/item/projectile/tether
 	name = "tether"
 	icon_state = "tether_projectile"
@@ -150,7 +133,6 @@
 	hitsound_wall = 'sound/weapons/batonextend.ogg'
 	suppressed = SUPPRESSED_VERY
 	hit_threshhold = LATTICE_LAYER
-	/// Reference to the beam following the projectile.
 	var/line
 
 /obj/item/projectile/tether/fire(setAngle)
@@ -180,20 +162,14 @@
 /obj/item/mod/module/rad_protection/on_suit_activation()
 	mod.armor = mod.armor.modifyRating(rad = 65)
 	mod.rad_flags = RAD_PROTECT_CONTENTS|RAD_NO_CONTAMINATE
-	for(var/index in mod.mod_parts)
-		if(index == MOD_PART_CELL)
-			continue
-		var/obj/item/clothing/mod_part/part = mod.mod_parts[index]
+	for(var/obj/item/clothing/mod_part/part as anything in mod.get_mod_parts(include_cell = FALSE))
 		part.armor = mod.armor
 		part.rad_flags = mod.rad_flags
 
 /obj/item/mod/module/rad_protection/on_suit_deactivation(deleting = FALSE)
 	mod.armor = mod.armor.modifyRating(rad = -65)
 	mod.rad_flags = NONE
-	for(var/index in mod.mod_parts)
-		if(index == MOD_PART_CELL)
-			continue
-		var/obj/item/clothing/mod_part/part = mod.mod_parts[index]
+	for(var/obj/item/clothing/mod_part/part as anything in mod.get_mod_parts(include_cell = FALSE))
 		part.armor = mod.armor
 		part.rad_flags = mod.rad_flags
 
@@ -204,22 +180,56 @@
 		продвинутыми сервоприводами рук, предназначенными для переноски членов экипажа. Однако он содержит \
 		последние инженерные чертежи в сочетании со встроенной памятью для помощи пользователю в строительстве стен."
 	icon_state = "constructor"
-	module_type = MODULE_USABLE
+	module_type = MODULE_ACTIVE
 	complexity = 2
 	idle_power_cost = DEFAULT_CHARGE_DRAIN * 0.2
 	use_power_cost = DEFAULT_CHARGE_DRAIN * 2
 	incompatible_modules = list(/obj/item/mod/module/constructor, /obj/item/mod/module/quick_carry)
 	cooldown_time = 11 SECONDS
 	mod_module_flags = MOD_MODULE_ENGINEERING // BLUEMOON ADD
+	device = /obj/item/construction/rcd/industrial/mod_internal
+	var/obj/item/areaeditor/blueprints/internal_blueprints
 
-/obj/item/mod/module/constructor/on_suit_activation()
+/obj/item/mod/module/constructor/Initialize(mapload)
+	. = ..()
+	internal_blueprints = new(src)
+
+/obj/item/mod/module/constructor/Destroy()
+	. = ..()
+	QDEL_NULL(internal_blueprints)
+
+/obj/item/construction/rcd/industrial/mod_internal
+	name = "MOD Consructor Module"
+	desc = "Этот модуль полностью занимает предплечье носителя, заметно конфликтуя с \
+		продвинутыми сервоприводами рук, предназначенными для переноски членов экипажа. Однако он содержит \
+		последние инженерные чертежи в сочетании со встроенной памятью для помощи пользователю в строительстве стен."
+	icon = 'icons/obj/clothing/modsuit/mod_modules.dmi'
+	icon_state = "constructor"
+	delay_mod = 0.25
+	has_ammobar = FALSE
+
+/obj/item/mod/module/constructor/on_activation()
+	. = ..()
+	to_chat(mod.wearer, span_greenannounce("Вы ощущаете, что можете строить быстрее"))
+	internal_blueprints.set_viewer(mod.wearer)
 	ADD_TRAIT(mod.wearer, TRAIT_QUICK_BUILD, MOD_TRAIT)
 
-/obj/item/mod/module/constructor/on_suit_deactivation(deleting = FALSE)
+/obj/item/mod/module/constructor/on_deactivation()
+	. = ..()
+	to_chat(mod.wearer, span_warning("Скорость вашего строительства вернулась в норму."))
+	internal_blueprints.dropped(mod.wearer)
 	REMOVE_TRAIT(mod.wearer, TRAIT_QUICK_BUILD, MOD_TRAIT)
 
+/obj/item/mod/module/constructor/lesser
+	name = "Fast Build Module"
+	desc = "Модуль для ускорения ручного строительства, полностью занимает предплечье носителя, заметно конфликтуя с \
+		продвинутыми сервоприводами рук. Однако он содержит \
+		последние инженерные чертежи"
+	module_type = MODULE_TOGGLE
+	device = null //не имеет встроенного РЦД.
+
 ///Mister - Sprays water over an area.
-/obj/item/mod/module/mister
+/obj/item/mod/module/mister//Этот отдельно не спавнить!! Он багованный пиздец.
 	name = "MOD water mister module"
 	desc = "Модуль, содержащий опрыскиватель, способный распылять воду на территорию."
 	icon_state = "mister"
@@ -239,6 +249,7 @@
 	tank.volume = volume
 	tank.in_modsuit = TRUE
 	device = tank.noz
+	internal_device = tank
 	return ..()
 
 ///Resin Mister - Sprays resin over an area.
@@ -250,4 +261,3 @@
 
 /obj/item/mod/module/mister/atmos/Initialize(mapload)
 	. = ..()
-

@@ -135,6 +135,8 @@
 	unique_reskin = null
 	var/image/transform_overlay
 
+#define DARK_SABRE_TRANSFORM_TIME (0.5 SECONDS)
+
 /obj/item/melee/transforming/energy/sword/saber/dark_sabre/transform_weapon(mob/living/user, supress_message_text)
 	. = ..()
 	flick("dark_sabre[active ? "1" : "0"]_anim", src)
@@ -145,8 +147,10 @@
 		return
 	transform_overlay = image(H.held_index_to_dir(H.active_hand_index) == "r" ? righthand_file : lefthand_file, H, "dark_sabre[active ? "1" : "0"]_anim")
 	transform_overlay = center_image(transform_overlay, inhand_x_dimension, inhand_y_dimension)
-	flick_overlay(transform_overlay, GLOB.clients, 5)
-	addtimer(CALLBACK(src, PROC_REF(change_state)), 5)
+	H.flick_overlay_view(transform_overlay, DARK_SABRE_TRANSFORM_TIME)
+	addtimer(CALLBACK(src, PROC_REF(change_state)), DARK_SABRE_TRANSFORM_TIME)
+
+#undef DARK_SABRE_TRANSFORM_TIME
 
 /obj/item/melee/transforming/energy/sword/saber/dark_sabre/proc/change_state()
 	icon_state = "dark_sabre[active ? "1" : "0"]"
@@ -358,3 +362,182 @@
 	desc = "Культовый тяжелый тесак, который спустя шесть веков полностью сохранил свою брутальную функциональность. Характерный хищный скос обуха и массивная стальная гарда не расшатались от времени."
 	icon = 'modular_bluemoon/fluffs/icons/obj/kitchen.dmi'
 	icon_state = "buckknife"
+
+/obj/item/melee/baton/stunsword/melatonin
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Dunwall Folding Stun-Sword"
+	desc = "Раритетное оружие, выполненное на заказ по сложной складной схеме, неуловимо напоминающей клинок лорда-защитника Дануолла. Оно оснащено компактной деревянной рукоятью со стальным кольцом на торце для быстрого извлечения из поясных ножен. Внутрь рукояти аккуратно встроены батарея и индикатор заряда. Острое лезвие угрожающе переливается искрами бледно-синей электрической энергии, которая, вопреки хищному и смертоносному виду клинка, предназначена лишь для мгновенного оглушения цели."
+	icon = 'modular_bluemoon/fluffs/icons/obj/melee.dmi'
+	icon_state = "melatonin_stunsword"
+	item_state = "melatonin_stunsword"
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	turn_on_sound = 'modular_bluemoon/fluffs/sound/weapon/stunblade.ogg'
+
+/obj/item/melee/baton/stunsword/melatonin/update_icon_state()
+	. = ..()
+	if(turned_on)
+		icon_state = "melatonin_stunsword_on"
+		item_state = "melatonin_stunsword_on"
+	else if(!cell)
+		icon_state = "melatonin_stunsword_no_cell"
+		item_state = "melatonin_stunsword_no_cell"
+	else
+		icon_state = "melatonin_stunsword"
+		item_state = "melatonin_stunsword"
+
+/obj/item/modkit/melatonin_stunsword_kit
+	name = "Dunwall Folding Stun-Sword Kit"
+	desc = "A modkit for making a stunsword into a Dunwall Folding Stun-Sword."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "melatonin_modkit"
+	product = /obj/item/melee/baton/stunsword/melatonin
+	fromitem = list(/obj/item/melee/baton/stunsword)
+
+/obj/item/modkit/katana_kit
+	name = "Stun-Katana Kit"
+	desc = "A modkit for making a stunsword into a Stun-Katana."
+	icon_state = "stun-katana_kit"
+	product = /obj/item/melee/baton/stunsword/stunkatana
+	fromitem = list(/obj/item/melee/baton/stunsword)
+
+#define STUNKATANA_BASE_STATE "stunkatana"
+
+/obj/item/melee/baton/stunsword/stunkatana
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "\improper Stun-Katana"
+	desc = "Оружие специальных подразделений ЧВК \"Конкорд\", способное одним только ударом разрезать мехов словно раскалённый нож масло... Ах, было бы славно, если бы он и оставался таким. К сожалению, из-за политики ПАКТа, максимальная сила режущей энерго-кромки выставлена на 1-2 процента, а предоставляемые энергоячейки едва ли могут сравниться с боевыми образцами, что делает этот поистинне мощный клинок лишь средством нелетального задержания с ноткой хайтека и напыщенности."
+	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+	icon_state = STUNKATANA_BASE_STATE
+	item_state = STUNKATANA_BASE_STATE
+	turn_on_sound = 'modular_bluemoon/fluffs/sound/weapon/stunblade.ogg'
+
+/obj/item/melee/baton/stunsword/stunkatana/switch_status(new_status, silent)
+	var/old_status = turned_on
+	. = ..()
+	if(turned_on != old_status)
+		switch_light()
+
+/obj/item/melee/baton/stunsword/stunkatana/common_baton_melee(mob/M, mob/living/user, shoving = FALSE)
+	. = ..()
+	// После удара — обновляем иконку и свет по текущему заряду.
+	update_icon_state()
+	switch_light()
+
+/obj/item/melee/baton/stunsword/stunkatana/update_icon_state()
+	if(!cell)
+		icon_state = "[STUNKATANA_BASE_STATE]-nocell"
+		item_state = STUNKATANA_BASE_STATE
+		return
+
+	if(cell.charge <= 0)
+		icon_state = "[STUNKATANA_BASE_STATE]-nocharge"
+		item_state = STUNKATANA_BASE_STATE
+		return
+
+	var/charge_percent = cell.charge / cell.maxcharge
+	if(turned_on)
+		if(charge_percent > 0.5)
+			icon_state = "[STUNKATANA_BASE_STATE]-on"
+			item_state = "[STUNKATANA_BASE_STATE]_active"
+		else
+			icon_state = "[STUNKATANA_BASE_STATE]-on-half"
+			item_state = "[STUNKATANA_BASE_STATE]_half"
+	else
+		icon_state = "[STUNKATANA_BASE_STATE]-off[charge_percent <= 0.5 ? "-half" : ""]"
+		item_state = STUNKATANA_BASE_STATE
+
+/obj/item/melee/baton/stunsword/stunkatana/proc/switch_light()
+	if(!cell)
+		set_light(0)
+		return
+
+	if(turned_on)
+		if(cell.charge <= 0)
+			set_light(3, 0.9, "#ff0000")
+		else
+			var/charge_percent = cell.charge / cell.maxcharge
+			if(charge_percent > 0.5)
+				set_light(3, 0.9, "#B6EEE9")
+			else
+				set_light(3, 0.9, "#D9CD8E")
+	else
+		set_light(0)
+
+#undef STUNKATANA_BASE_STATE
+
+/obj/item/restraints/legcuffs/bola/energy/melatonin
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Entangling Bola"
+	desc = "Грубая самодельная бола, на концах которой вместо грузов закреплены каменные волчьи лапы. Следы ручной работы видны повсюду — неровная обработка камня, потёртая верёвка и крепления, сделанные наспех."
+	icon_state = "melatonin_bola"
+	item_state = "melatonin_bola"
+	hitsound = 'modular_bluemoon/fluffs/sound/Entangling_Bola_hit.ogg'
+	icon = 'modular_bluemoon/fluffs/icons/obj/items.dmi'
+
+/obj/item/restraints/legcuffs/bola/energy/melatonin/Initialize(mapload)
+	. = ..()
+	update_icon()
+
+/obj/item/restraints/legcuffs/bola/energy/melatonin/Moved(atom/oldloc, dir, forced)
+	. = ..()
+	update_icon()
+
+/obj/item/restraints/legcuffs/bola/energy/melatonin/update_icon_state()
+	. = ..()
+	icon_state = "melatonin_bola[isturf(loc) ? "_flying" : ""]"
+
+/obj/item/restraints/legcuffs/bola/energy/melatonin/ensnare(mob/living/carbon/C) // оверрайд для изменения звука, более ничего не изменено
+	if(!C.legcuffed && C.get_num_legs(FALSE) >= 2)
+		visible_message("<span class='danger'>\The [src] опутывает [C]!</span>")
+		C.legcuffed = src
+		forceMove(C)
+		item_state = "melatonin_bola"
+		if(ishuman(C))
+			if(C.dna?.species && (DIGITIGRADE in C.dna.species.species_traits))
+				item_state = "melatonin_bola_digi"
+		C.update_equipment_speed_mods()
+		C.update_inv_legcuffed()
+		SSblackbox.record_feedback("tally", "handcuffs", 1, type)
+		to_chat(C, "<span class='userdanger'>\The [src] опутывает вас!</span>")
+		C.Knockdown(knockdown)
+		playsound(src, 'modular_bluemoon/fluffs/sound/Entangling_Bola_hit.ogg', 50, TRUE)
+		C.apply_status_effect(/datum/status_effect/bola_snared)
+
+/obj/item/restraints/legcuffs/bola/energy/melatonin/throw_at(atom/target, range, speed, mob/thrower, spin=1, diagonals_first = 0, datum/callback/callback, quickstart = TRUE) // оверрайд для изменения звука, более ничего не изменено
+	if(!..())
+		return
+	playsound(src.loc,'modular_bluemoon/fluffs/sound/Entangling_Bola_throwing.ogg', 75, 1)
+
+/obj/item/restraints/legcuffs/bola/energy/melatonin/on_removed() // оверрайд, чтобы убрать искры
+	qdel(src)
+
+/obj/item/modkit/entangling_bola_kit
+	name = "Entangling Bola Kit"
+	desc = "A modkit for making a energy bola into a Entangling Bola."
+	icon = 'modular_bluemoon/fluffs/icons/obj/storage.dmi'
+	icon_state = "melatonin_modkit"
+	product = /obj/item/restraints/legcuffs/bola/energy/melatonin
+	fromitem = list(/obj/item/restraints/legcuffs/bola/energy)
+
+/obj/item/modkit/nul_kit
+	name = "Nul Kit"
+	desc = "A modkit for making an combat knife into a Sword of Nul."
+	product = /obj/item/kitchen/knife/combat/nul
+	fromitem = list(/obj/item/kitchen/knife/combat)
+
+/obj/item/kitchen/knife/combat/nul
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "\improper Sword of Nul"
+	desc = "Короткое прямое бронзовое лезвие, однако оружие слегка позеленело от времени. Он по прежнему острый, очень острый, острее даже тончайшей стали. Фактически, меч острее, чем теоретически возможно для бронзового оружия. На нем отсутствуют какие-либо украшения, за исключение грубо выполненного черепа, вырезанного посередине рукояти. Когда-то рукоять была обернута кожей или тканью, которая со временем сгнила, оставив только голый металл. Поговаривают, его выковал сам Драконскир, могущественный демон, где-то в третьем тысячелетии до нашей эры для защиты города Ур от вторгшихся сил военачальника Урлона из Урука."
+	item_state = "sword-nul"
+	icon_state = "sword-nul"
+	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+
+/obj/item/kitchen/knife/combat/nul/Initialize(mapload)
+	.=..()
+	set_light(3, 0.9, "#1D6416")

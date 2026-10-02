@@ -73,8 +73,13 @@
 	cost = 0 //Vibrators need them anyways
 
 /datum/gear/backpack/sounding
-	name = "Sounding rod"
+	name = "Уретральный стержень"
 	path = /obj/item/genital_equipment/sounding
+	subcategory = LOADOUT_SUBCATEGORY_BACKPACK_TOYS
+
+/datum/gear/backpack/urethral_plug
+	name = "Уретральная пробка"
+	path = /obj/item/genital_equipment/urethral_plug
 	subcategory = LOADOUT_SUBCATEGORY_BACKPACK_TOYS
 
 /datum/gear/backpack/aphrodisiac_pump_plus
@@ -158,3 +163,8 @@
 	path = /obj/item/storage/box/shockcollar
 	subcategory = LOADOUT_SUBCATEGORY_BACKPACK_TOYS
 	cost = 2
+
+/datum/gear/accessory/hippads
+	name = "adjustable hip pads box"
+	path = /obj/item/storage/box/hippads
+	cost = 0

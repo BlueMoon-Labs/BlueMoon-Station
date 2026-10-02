@@ -16,8 +16,8 @@
 
 /obj/structure/bookcase
 	name = "bookcase"
-	icon = 'icons/obj/library.dmi'
-	icon_state = "bookempty"
+	icon = 'icons/obj/bookcase.dmi'
+	icon_state = "caseempty-0"
 	desc = "A great place for storing knowledge."
 	anchored = FALSE
 	density = TRUE
@@ -38,6 +38,8 @@
 	. = ..()
 	if(!anchored)
 		. += "<span class='notice'>The <i>bolts</i> on the bottom are unsecured.</span>"
+		if(!opacity)
+			. += "<span class='notice'>There's space for a <i>wooden</i> back panel.</span>"
 	else
 		. += "<span class='notice'>It's secured in place with <b>bolts</b>.</span>"
 	switch(state)
@@ -84,6 +86,12 @@
 				if(I.use_tool(src, user, 20, volume=50))
 					to_chat(user, "<span class='notice'>You pry the frame apart.</span>")
 					deconstruct(TRUE)
+			else if(istype(I, /obj/item/stack/sheet/mineral/wood) && !opacity)
+				var/obj/item/stack/sheet/mineral/wood/W = I
+				W.use(1)
+				to_chat(user, "<span class='notice'>You add a back panel.</span>")
+				opacity = TRUE
+				update_icon()
 
 		if(BOOKCASE_ANCHORED)
 			if(istype(I, /obj/item/stack/sheet/mineral/wood))
@@ -155,7 +163,7 @@
 
 /obj/structure/bookcase/deconstruct(disassembled = TRUE)
 	var/atom/Tsec = drop_location()
-	new /obj/item/stack/sheet/mineral/wood(Tsec, 4)
+	new /obj/item/stack/sheet/mineral/wood(Tsec, opacity ? 4 : 3)
 	for(var/obj/item/I in contents)
 		if(!isbook(I))
 			continue
@@ -165,16 +173,26 @@
 
 /obj/structure/bookcase/update_icon_state()
 	if(state == BOOKCASE_UNANCHORED || state == BOOKCASE_ANCHORED)
-		icon_state = "bookempty"
+		icon_state = "caseempty-[opacity]"
+		return
+	icon_state = "case-[opacity]"
+
+/obj/structure/bookcase/update_overlays()
+	. = ..()
+	if(state != BOOKCASE_FINISHED)
 		return
 	var/amount = contents.len
 	if(load_random_books)
 		amount += books_to_load
-	icon_state = "book-[clamp(amount, 0, 5)]"
-
+	if(amount)
+		. += "book-[clamp(amount, 1, 6)]"
 
 /obj/structure/bookcase/manuals/engineering
 	name = "engineering manuals bookcase"
+
+/obj/structure/bookcase/manuals/engineering/opacity
+	opacity = TRUE
+	icon_state = "case-1"
 
 /obj/structure/bookcase/manuals/engineering/Initialize(mapload)
 	. = ..()
@@ -189,6 +207,10 @@
 /obj/structure/bookcase/manuals/research_and_development
 	name = "\improper R&D manuals bookcase"
 
+/obj/structure/bookcase/manuals/research_and_development/opacity
+	opacity = TRUE
+	icon_state = "case-1"
+
 /obj/structure/bookcase/manuals/research_and_development/Initialize(mapload)
 	. = ..()
 	new /obj/item/book/manual/wiki/research_and_development(src)
@@ -196,6 +218,10 @@
 
 /obj/structure/bookcase/manuals/medical
 	name = "medical manuals bookcase"
+
+/obj/structure/bookcase/manuals/medical/opacity
+	opacity = TRUE
+	icon_state = "case-1"
 
 /obj/structure/bookcase/manuals/medical/Initialize(mapload)
 	. = ..()

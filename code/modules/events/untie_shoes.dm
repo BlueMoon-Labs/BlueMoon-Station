@@ -2,8 +2,8 @@
 	name = "Untied Shoes"
 	typepath = /datum/round_event/untied_shoes
 	// Роняет игроков на пол: физическая помеха, а не фон - в мягких профилях режется.
-	weight = 50
-	max_occurrences = 25
+	weight = 35
+	max_occurrences = 4
 	alert_observers = TRUE
 	category = EVENT_CATEGORY_FRIENDLY
 	disruption = DIRECTOR_DISRUPTION_MILD

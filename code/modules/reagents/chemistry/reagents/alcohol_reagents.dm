@@ -1156,7 +1156,7 @@ All effects don't start immediately, but rather get worse over time; the rate is
 /datum/reagent/consumable/ethanol/syndicatebomb/on_mob_life(mob/living/carbon/drinker, seconds_per_tick, metabolization_ratio)
 	. = ..()
 	if(SPT_PROB(2.5, seconds_per_tick))
-		playsound(get_turf(drinker), 'sound/effects/explosion/explosionfar.ogg', 100, TRUE)
+		playsound(get_turf(drinker), 'sound/effects/explosionfar.ogg', 100, TRUE)
 
 /datum/reagent/consumable/ethanol/hiveminderaser
 	name = "Hivemind Eraser"

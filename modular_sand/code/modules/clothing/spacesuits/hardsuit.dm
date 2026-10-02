@@ -68,6 +68,7 @@
 	slowdown = -0.1
 	clothing_flags = THICKMATERIAL //Not spaceproof. No, it isn't Spaceproof in Rimworld either.
 	armor = list("melee" = 40, "bullet" = 35, "laser" = 30, "energy" = 20, "bomb" = 40, "bio" = 100, "rad" = 5, "fire" = 75, "acid" = 100) //I was asked to buff this again. Here, fine.
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	resistance_flags = ACID_PROOF
 	var/explodioprobemp = 1
 	var/stamdamageemp = 200

@@ -37,3 +37,13 @@
 	time = 30
 	category = CAT_WEAPONRY
 	subcategory = CAT_WEAPON
+
+/datum/crafting_recipe/jager
+	name = "\improper Jäger Shotgun conversion"
+	result = /obj/item/gun/ballistic/automatic/shotgun/katyusha/jager/empty
+	reqs = list(/obj/item/gun/ballistic/shotgun/automatic/combat= 1,
+				/obj/item/weaponcrafting/gunkit/jager = 1)
+	tools = list(TOOL_SCREWDRIVER)
+	time = 30
+	category = CAT_WEAPONRY
+	subcategory = CAT_WEAPON

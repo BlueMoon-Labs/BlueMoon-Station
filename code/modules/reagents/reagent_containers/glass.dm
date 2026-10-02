@@ -131,7 +131,7 @@
 				playsound(splash_turf, 'sound/effects/slosh.ogg', 25, TRUE)
 				var/image/splash_animation = image('modular_splurt/icons/effects/effects.dmi', splash_turf, "splash_hydroponics")
 				splash_animation.color = mix_color_from_reagents(reagents.reagent_list)
-				flick_overlay(splash_animation, GLOB.clients, 1.1 SECONDS)
+				splash_turf.flick_overlay_view(splash_animation, 1.1 SECONDS)
 			if(isturf(target))
 				var/turf/target_turf = target
 				if(target_turf.can_liquid_spill_on_hit())
@@ -190,7 +190,7 @@
 	if(reagents && reagents.total_volume)
 		var/mutable_appearance/filling = mutable_appearance('icons/obj/reagentfillings.dmi', "[cached_icon]10", color = mix_color_from_reagents(reagents.reagent_list))
 
-		var/percent = round((reagents.total_volume / volume) * 100)
+		var/percent = round((reagents.total_volume / reagents.maximum_volume) * 100)
 		switch(percent)
 			if(0 to 9)
 				filling.icon_state = "[cached_icon]-10"
@@ -513,7 +513,7 @@
 			to_chat(user, "<span class='notice'>Вы стали перемалывать...</span>")
 			if((do_after(user, 25, target = src)) && grinded)
 				user.adjustStaminaLoss(20)
-				if(grinded.juice_results) //prioritize juicing
+				if(grinded.juice_results && !grinded.prefer_grind) //prioritize juicing
 					grinded.on_juice()
 					reagents.add_reagent_list(grinded.juice_results)
 					to_chat(user, "<span class='notice'>Вы выдавили [grinded] в жидкую форму.</span>")

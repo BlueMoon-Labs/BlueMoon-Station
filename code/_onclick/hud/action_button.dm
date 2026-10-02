@@ -48,31 +48,45 @@
 	return TRUE
 
 /atom/movable/screen/movable/action_button/Click(location,control,params)
-	if (!can_use(usr))
+	var/mob/user = usr
+	if(!can_use(user))
 		return
 
 	var/list/modifiers = params2list(params)
+	if(LAZYACCESS(modifiers, CTRL_CLICK))
+		var/datum/hud/our_hud = user.hud_used
+		if(src.location == SCRN_OBJ_IN_PALETTE)
+			our_hud.position_action(src, SCRN_OBJ_IN_LIST)
+		else
+			our_hud.position_action(src, SCRN_OBJ_IN_PALETTE)
+		save_position()
+		return TRUE
 	if(LAZYACCESS(modifiers, SHIFT_CLICK))
-		var/datum/hud/our_hud = usr.hud_used
+		var/datum/hud/our_hud = user.hud_used
 		our_hud.position_action(src, SCRN_OBJ_DEFAULT)
 		return TRUE
 	if(LAZYACCESS(modifiers, ALT_CLICK))
-		begin_creating_bind(usr)
+		begin_creating_bind(user)
 		return TRUE
-	var/mob/clicker = usr
-	if(!clicker.CheckActionCooldown())
+	if(!user.CheckActionCooldown())
 		return
-	clicker.DelayNextAction(1)
+	user.DelayNextAction(1)
 	if(!linked_action)
 		return
 	var/trigger_flags = NONE
 	if(LAZYACCESS(modifiers, RIGHT_CLICK))
 		TOGGLE_BITFIELD(trigger_flags, TRIGGER_RIGHT_CLICK)
+	
+	// SFX
+	if(user.client)
+		if(CHECK_BITFIELD(user.client.prefs.sound_toggles, SOUND_BUTTONS))
+			SEND_SOUND(user, sound(get_sfx(SFX_REMOTE_ACTION) || get_sfx(SFX_TERMINAL_TYPE), volume = 60))
+		transform = turn(matrix() * 0.9, pick(-8, 8))
+		alpha = 200
+		animate(src, transform = matrix(), time = 0.4 SECONDS, alpha = 255)
+
 	linked_action.Trigger(trigger_flags)
-	SEND_SOUND(usr, get_sfx(SFX_TERMINAL_TYPE))
-	transform = turn(matrix() * 0.9, pick(-8, 8))
-	alpha = 200
-	animate(src, transform = matrix(), time = 0.4 SECONDS, alpha = 255)
+
 	return TRUE
 
 /atom/movable/screen/movable/action_button/proc/begin_creating_bind(mob/user)
@@ -113,7 +127,11 @@
 /atom/movable/screen/movable/action_button/MouseEntered(location, control, params)
 	. = ..()
 	if(!QDELETED(src))
-		openToolTip(usr, src, params, title = name, content = desc, theme = actiontooltipstyle)
+		var/extra_desc = desc || ""
+		var/ctrl_hint = (src.location == SCRN_OBJ_IN_PALETTE) ? "<br><b>Ctrl-click</b> to restore to hotbar" : "<br><b>Ctrl-click</b> to hide in Show Buttons"
+		extra_desc = "[extra_desc][ctrl_hint]"
+		var/tooltip = linked_action ? linked_action.format_tooltip(usr, extra_desc) : extra_desc
+		openToolTip(usr, src, params, title = name, content = tooltip, theme = actiontooltipstyle)
 
 /atom/movable/screen/movable/action_button/MouseExited(location, control, params)
 	closeToolTip(usr)
@@ -238,7 +256,7 @@
 	hud_used.palette_actions.refresh_actions()
 
 /atom/movable/screen/button_palette
-	desc = "<b>Drag</b> buttons to move them<br><b>Shift-click</b> any button to reset it<br><b>Alt-click</b> this to reset all buttons"
+	desc = "<b>Drag</b> buttons to move them<br><b>Shift-click</b> any button to reset it<br><b>Ctrl-click</b> button to hide/show in palette<br><b>Alt-click</b> this to reset all buttons"
 	icon = 'icons/hud/64x16_actions.dmi'
 	icon_state = "screen_gen_palette"
 	screen_loc = ui_action_palette

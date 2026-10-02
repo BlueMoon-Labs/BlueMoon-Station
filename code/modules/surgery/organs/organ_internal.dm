@@ -390,8 +390,8 @@
 
 /obj/item/organ/random/Initialize(mapload)
 	. = ..()
-	var/list = list(/obj/item/organ/tongue, /obj/item/organ/brain, /obj/item/organ/heart, /obj/item/organ/liver, /obj/item/organ/ears, /obj/item/organ/eyes, /obj/item/organ/tail, /obj/item/organ/stomach)
-	var/newtype = pick(list)
+	var/static/list/organ_picks = list(/obj/item/organ/tongue, /obj/item/organ/brain, /obj/item/organ/heart, /obj/item/organ/liver, /obj/item/organ/ears, /obj/item/organ/eyes, /obj/item/organ/tail, /obj/item/organ/stomach)
+	var/newtype = pick(organ_picks)
 	new newtype(loc)
 	return INITIALIZE_HINT_QDEL
 
@@ -400,7 +400,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /obj/item/organ
-	// Должен ли орган/имплант работать только с определенного кода
+	// Минимальный код для работы органа/импланта в секторе станции
 	var/active_security_level
 	/// Должен ли орган/имплант автоматически включаться с кода active_security_level (необходимо прописать прок активации code_activate)
 	var/auto_sec_level_toggle = TRUE
@@ -417,11 +417,13 @@
 		RegisterSignal(action, COMSIG_ACTION_ISAVAILABLE, PROC_REF(action_available))
 		action.UpdateButtons(TRUE)
 	if(!isnull(active_security_level))
-		RegisterSignal(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED, PROC_REF(on_sec_level_change))
+		RegisterSignal(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED, PROC_REF(on_activation_conditions_change))
+		RegisterSignal(organ_mob, COMSIG_MOVABLE_Z_CHANGED, PROC_REF(on_activation_conditions_change))
 		if(!activate_allowed(silent = TRUE))
 			deactivate()
 
 /obj/item/organ/Remove(special)
+	UnregisterSignal(owner, COMSIG_MOVABLE_Z_CHANGED)
 	deactivate(TRUE)
 	. = ..()
 	for(var/datum/action/action in actions)
@@ -431,7 +433,7 @@
 /obj/item/organ/examine(mob/user)
 	. = ..()
 	if(!isnull(active_security_level) || !isnull(initial(active_security_level)))
-		. += span_warning("Минимальный уровень тревоги для активации: <b>[isnull(active_security_level) ? SECURITY_LEVEL_COLOR_TEXT(SEC_LEVEL_GREEN,"G&R@EE%N") : SECURITY_LEVEL_COLORED_UPPERTEXT(active_security_level)]</b>")
+		. += span_warning("Минимальный уровень тревоги для активации в секторе станции: <b>[isnull(active_security_level) ? SECURITY_LEVEL_COLOR_TEXT(SEC_LEVEL_GREEN,"G&R@EE%N") : SECURITY_LEVEL_COLORED_UPPERTEXT(active_security_level)]</b>. Вне сектора станции ограничение не действует.")
 
 /obj/item/organ/proc/action_trigger(datum/action/source, obj/item/organ/target, mob/user)
 	SIGNAL_HANDLER
@@ -447,14 +449,20 @@
 /obj/item/organ/proc/activate_allowed(datum/action/action, mob/user, silent = FALSE)
 	. = FALSE
 	if(!isnull(active_security_level) && GLOB.security_level < active_security_level)
+		var/turf/owner_turf = get_turf(owner)
+		if(owner_turf && !(is_station_level(owner_turf.z) || is_mining_level(owner_turf.z) || is_hilbert_hotel_zlevel(owner_turf.z)))
+			return TRUE
 		if(!silent)
 			to_chat(user, span_warning("<b>ОШИБКА:</b> Уровень тревоги для активации: <b>[SECURITY_LEVEL_COLORED_UPPERTEXT(active_security_level)]</b>"))
 		return
 
 	return TRUE
 
-/obj/item/organ/proc/on_sec_level_change(datum/source, new_level)
+// Alert changes and owner z-transitions both affect corporate implant availability.
+/obj/item/organ/proc/on_activation_conditions_change(datum/source)
 	SIGNAL_HANDLER
+	if(QDELETED(owner))
+		return
 	for(var/datum/action/action in actions)
 		action.UpdateButtons(TRUE)
 	if(!activate_allowed(silent = TRUE))
@@ -473,5 +481,6 @@
 	if(active_security_level)
 		active_security_level = null
 		UnregisterSignal(SSsecurity_level, COMSIG_SECURITY_LEVEL_CHANGED)
+		UnregisterSignal(owner, COMSIG_MOVABLE_Z_CHANGED)
 		log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)] and clear sec level restrictions")
 		playsound(get_turf(src), 'sound/effects/light_flicker.ogg', 100, 1)

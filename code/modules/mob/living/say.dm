@@ -276,8 +276,8 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 		message_mode = MODE_WHISPER
 		src.log_talk(message, LOG_WHISPER)
 		if(fullcrit)
-			var/confirm = alert(src, "You are in full crit and can't talk, but you can whisper it in your last breath and succumb to death. Proceed?", "Last Breath", "Yes", "Cancel")
-			if(!confirm || confirm == "Cancel")
+			var/confirm = tgui_alert(src, "Вы при смерти и не можете говорить, но можете прошептать это последним вздохом и умереть. Продолжить?", "Последний вздох", list("Да", "Отмена"))
+			if(confirm != "Да" || QDELETED(src))
 				return
 			var/health_diff = round(-HEALTH_THRESHOLD_DEAD + health)
 			// If we cut our message short, abruptly end it with a-..
@@ -296,6 +296,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 
 	if(length(message) && message[1] != "!")
 		message = treat_message(message, language) // unfortunately we still need this
+
 	var/sigreturn = SEND_SIGNAL(src, COMSIG_MOB_SAY, args)
 	if (sigreturn & COMPONENT_UPPERCASE_SPEECH)
 		message = uppertext(message)
@@ -408,6 +409,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	return message
 
 /mob/living/send_speech(message, message_range = 6, obj/source = src, bubble_type = bubble_icon, list/spans, datum/language/message_language=null, message_mode)
+	SEND_SIGNAL(src, COMSIG_LIVING_SEND_SPEECH, message, message_range, source, bubble_type, spans, message_language, message_mode)
 	var/static/list/eavesdropping_modes = list(MODE_WHISPER = TRUE, MODE_WHISPER_CRIT = TRUE)
 	// Визуальный язык не звучит: его не разносит крик сквозь стены, его не слышно лучше
 	// острым ухом и он не порождает барков. Слушателей набирает get_hearers_in_view,
@@ -433,6 +435,8 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	var/list/the_dead = list()
 	for(var/_M in GLOB.player_list)
 		var/mob/M = _M
+		if(!isobserver(M) && training_origin != M.training_origin && (training_origin || M.training_origin))
+			continue
 		if(M.stat != DEAD) //not dead, not important
 			continue
 		if(!M.client || !client) //client is so that ghosts don't have to listen to mice
@@ -673,6 +677,12 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 			message = machine_slur(message, replace_characters, slurring * 1.5)
 		else
 			message = slur(message,slurring)
+
+	// Обработка искажения речи от масок
+	var/muzzle_strength = get_muzzle_strength()
+	if(!skip_vocal_stutter && muzzle_strength > 0 && !src.is_muzzled())
+		message = muffledspeech(message, muzzle_strength)
+
 	// BLUEMOON EDIT END
 
 	if(cultslurring)
@@ -731,6 +741,8 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 			. = "stammers"
 		else if(derpspeech)
 			. = "gibbers"
+		else if(get_muzzle_strength() > 0 && get_muzzle_strength() != MUFFLE_MUTE)
+			. = "mumbles"
 		// Skyrat edits
 		else if(message_mode == MODE_SING)
 			. = verb_sing

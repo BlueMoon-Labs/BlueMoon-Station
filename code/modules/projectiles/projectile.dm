@@ -201,6 +201,13 @@
 	decayedRange = range
 	if(embedding)
 		updateEmbedding()
+	// LightUp: автосвечение для снарядов — если у типа задан свет, используем собственный спрайт как glow
+	if(!glow_icon_state && icon_state)
+		glow_icon = icon
+		glow_icon_state = icon_state
+		exposure_icon_state = null
+		exposure_icon = null
+		glow_colored = TRUE
 
 /**
   * Artificially modified to be called at around every world.icon_size pixels of movement.
@@ -722,11 +729,22 @@
 	var/seconds_per_step = pixel_increment_amount / pixels_per_second
 	var/allow_animation = elapsed_seconds <= (world.tick_lag * SSprojectiles.wait * 0.2)
 	var/steps_remaining = steps_this_process
+	var/pass_speed = pixels_per_second
+	var/pass_steps_left = FLOOR(SSprojectiles.max_pixels_per_process / pixel_increment_amount, 1)
 	while(steps_remaining > 0 && !QDELETED(src) && loc && trajectory)
 		var/steps_moved = pixel_move(steps_remaining, FALSE, seconds_per_step, SSprojectiles.global_projectile_speed_multiplier, allow_animation)
 		if(!isnum(steps_moved) || steps_moved <= 0)
 			break
 		steps_remaining -= steps_moved
+		pass_steps_left -= steps_moved
+		// Остаток хода был рассчитан по прежней скорости; предел прохода по-прежнему ограничивает трассу.
+		if(pixels_per_second != pass_speed && pixels_per_second > 0)
+			var/speed_ratio = pixels_per_second / pass_speed
+			var/remaining_pixels = steps_remaining * pixel_increment_amount * speed_ratio
+			steps_remaining = clamp(FLOOR(remaining_pixels / pixel_increment_amount, 1), 0, max(pass_steps_left, 0))
+			pixels_tick_leftover = (pixels_tick_leftover * speed_ratio) + remaining_pixels - (steps_remaining * pixel_increment_amount)
+			seconds_per_step = pixel_increment_amount / pixels_per_second
+			pass_speed = pixels_per_second
 	// A forceMove/override may deliberately interrupt the trace. Preserve only
 	// that unconsumed path; ordinary lag never becomes deferred movement debt.
 	if(steps_remaining > 0 && !QDELETED(src))
@@ -765,7 +783,14 @@
 		transform = M
 	trajectory_ignore_forcemove = TRUE
 	forceMove(starting)
-	set_light(fired_light_range, fired_light_intensity, fired_light_color)
+	// LightUp: если у снаряда задан light_* (как у лазерных лучей), используем его как fallback для fired_*
+	var/use_fired_range = fired_light_range || light_range
+	var/use_fired_power = fired_light_intensity || light_power || 1
+	var/use_fired_color = fired_light_color || light_color
+	if(use_fired_range > 0)
+		set_light(use_fired_range, use_fired_power, use_fired_color)
+	else
+		set_light(fired_light_range, fired_light_intensity, fired_light_color)
 	trajectory_ignore_forcemove = FALSE
 	if(isnull(pixel_increment_amount))
 		pixel_increment_amount = SSprojectiles.global_pixel_increment_amount
@@ -903,6 +928,7 @@
 	var/turf/oldloc = loc
 	var/old_px = pixel_x
 	var/old_py = pixel_y
+	var/start_speed = pixels_per_second
 	for(var/i in 1 to times)
 		// HOMING START - Too expensive to proccall at this point.
 		if(homing_target)
@@ -947,6 +973,8 @@
 			if(QDELETED(src))
 				return
 			pixels_range_leftover -= world.icon_size
+		if(pixels_per_second != start_speed)
+			break
 	if(!hitscanning && !forcemoved)
 		var/traj_px = round(trajectory.return_px(), 1)
 		var/traj_py = round(trajectory.return_py(), 1)

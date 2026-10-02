@@ -94,6 +94,7 @@
 /datum/round_event_control/mannequinrise
 	name = "Unknown Mannequin event"
 	typepath = /datum/round_event/mannequinrise
+	min_players = 15
 	max_occurrences = 2
 	weight = 15
 	category = EVENT_CATEGORY_ENTITIES

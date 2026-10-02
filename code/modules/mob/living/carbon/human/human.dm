@@ -30,6 +30,13 @@
 	RegisterSignal(src, COMSIG_COMPONENT_CLEAN_ACT, TYPE_PROC_REF(/atom, clean_blood))
 	GLOB.human_list += src
 	set_jump_component()
+	init_unconscious_appearance()
+
+/mob/living/carbon/human/init_unconscious_appearance()
+	add_generic_humanoid_static_appearance()
+
+/mob/living/carbon/human/dummy/init_unconscious_appearance()
+	return
 
 /mob/living/carbon/human/proc/setup_human_dna()
 	//initialize dna. for spawned humans; overwritten by other code
@@ -132,7 +139,7 @@
 // called when something steps onto a human
 // this could be made more general, but for now just handle mulebot
 /mob/living/carbon/human/Crossed(atom/movable/AM)
-	SEND_SIGNAL(src, COMSIG_MOVABLE_CROSSED, AM)
+	. = ..()
 	var/mob/living/simple_animal/bot/mulebot/MB = AM
 	if(istype(MB))
 		MB.RunOver(src)
@@ -424,6 +431,12 @@
 		target_zone = user.zone_selected
 	if(HAS_TRAIT(src, TRAIT_PIERCEIMMUNE) && !bypass_immunity)
 		. = 0
+		// BLUEMOON ADD START - твёрдая кожа не мешает зашиванию нитью и перевязке бинтом
+		if(user)
+			var/obj/item/active_item = user.get_active_held_item()
+			if(istype(active_item, /obj/item/stack/medical/suture) || istype(active_item, /obj/item/stack/medical/gauze))
+				. = 1
+		// BLUEMOON ADD END
 	// If targeting the head, see if the head item is thin enough.
 	// If targeting anything else, see if the wear suit is thin enough.
 	if(!penetrate_thick)
@@ -659,8 +672,12 @@
 			to_chat(C, "<span class='unconscious'>Вы ощущаете поток свежего воздуха... неизвестно, откуда...</span>")
 
 /mob/living/carbon/human/cuff_resist(obj/item/I)
-	if(dna && dna.check_mutation(HULK) || istype(mind.martial_art, /datum/martial_art/nanosuit))
+	if(dna && dna.check_mutation(HULK) || istype(mind?.martial_art, /datum/martial_art/nanosuit))
 		say(pick(";РАААААААААРГ!", ";ХНННННННГГГГГГГ!", ";ГВААААРРХХ!", "ННННННГГГГГГХ!", ";ААААААРРГГ!" ), forced = "hulk")
+		if(..(I, cuff_break = FAST_CUFFBREAK))
+			dropItemToGround(I)
+	else if(HAS_TRAIT(src, TRAIT_HERETIC_ASCENDED))
+		visible_message(span_warning("[src] начинает рвать путы, будто их тянет сама завеса!"))
 		if(..(I, cuff_break = FAST_CUFFBREAK))
 			dropItemToGround(I)
 	else if(iszombie_infectious(src))
@@ -739,7 +756,7 @@
 		addtimer(CALLBACK(src, PROC_REF(end_electrocution_animation), electrocution_skeleton_anim), anim_duration)
 
 	else //or just do a generic animation
-		flick_overlay_view(image(icon,src,"electrocuted_generic",ABOVE_MOB_LAYER), src, anim_duration)
+		flick_overlay_view_global(image(icon,src,"electrocuted_generic",ABOVE_MOB_LAYER), src, anim_duration)
 
 /mob/living/carbon/human/proc/end_electrocution_animation(mutable_appearance/MA)
 	remove_atom_colour(TEMPORARY_COLOUR_PRIORITY, "#000000")

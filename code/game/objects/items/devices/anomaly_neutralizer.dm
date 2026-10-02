@@ -1,8 +1,8 @@
 /obj/item/anomaly_neutralizer
 	name = "anomaly neutralizer"
-	desc = "A one-use device capable of instantly neutralizing anomalies."
+	desc = "Одноразовое устройство для захвата и стабилизации аномальных образований."
 	icon = 'icons/obj/device.dmi'
-	icon_state = "memorizer2"
+	icon_state = "neutralyzer"
 	item_state = "electronic"
 	lefthand_file = 'icons/mob/inhands/misc/devices_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/misc/devices_righthand.dmi'
@@ -14,8 +14,12 @@
 	..()
 	if(!proximity || !target)
 		return
+	if(istype(target, /obj/effect/broken_illusion))
+		var/obj/effect/broken_illusion/trace = target
+		trace.neutralize(user, src)
+		return
 	if(istype(target, /obj/effect/anomaly))
 		var/obj/effect/anomaly/A = target
-		to_chat(user, "<span class='notice'>The circuitry of [src] fries from the strain of neutralizing [A]!</span>")
-		A.anomalyNeutralize()
+		to_chat(user, span_notice("Электроника устройства поджаривается в процессе нейтрализации [A]!"))
+		A.anomalyNeutralize(FALSE)
 		qdel(src)

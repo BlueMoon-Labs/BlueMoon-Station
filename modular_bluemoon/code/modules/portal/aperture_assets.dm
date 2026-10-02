@@ -1,74 +1,74 @@
 GLOBAL_LIST_INIT(aperture_turret_fire_sounds, list(
-	'modular_bluemoon/portal/sound/Огонь турели1.ogg',
-	'modular_bluemoon/portal/sound/Активные турели/Огонь.ogg',
+	'modular_bluemoon/sound/portal/Огонь турели1.ogg',
+	'modular_bluemoon/sound/portal/Активные турели/Огонь.ogg',
 ))
 
 GLOBAL_LIST_INIT(aperture_turret_deploy_sounds, list(
-	'modular_bluemoon/portal/sound/Звуки турелей/Включение.ogg',
-	'modular_bluemoon/portal/sound/Запуск турелей/Активация.ogg',
-	'modular_bluemoon/portal/sound/Запуск турелей/Подготовка.ogg',
+	'sound/items/modsuit/ballin.ogg',
+	'modular_bluemoon/sound/portal/Запуск турелей/Активация.ogg',
+	'modular_bluemoon/sound/portal/Запуск турелей/Подготовка.ogg',
 ))
 
 GLOBAL_LIST_INIT(aperture_turret_deploy_vo, list(
-	'modular_bluemoon/portal/sound/Запуск турелей/Вот ты где.ogg',
-	'modular_bluemoon/portal/sound/Запуск турелей/Готовлюсь к распределению продукта.ogg',
-	'modular_bluemoon/portal/sound/Запуск турелей/Кто там.ogg',
-	'modular_bluemoon/portal/sound/Запуск турелей/Привет!.ogg',
+	'modular_bluemoon/sound/portal/Запуск турелей/Вот ты где.ogg',
+	'modular_bluemoon/sound/portal/Запуск турелей/Готовлюсь к распределению продукта.ogg',
+	'modular_bluemoon/sound/portal/Запуск турелей/Кто там.ogg',
+	'modular_bluemoon/sound/portal/Запуск турелей/Привет!.ogg',
 ))
 
 GLOBAL_LIST_INIT(aperture_turret_disable_vo, list(
-	'modular_bluemoon/portal/sound/Отключение турелей/Ахахааа.ogg',
-	'modular_bluemoon/portal/sound/Отключение турелей/За что.ogg',
-	'modular_bluemoon/portal/sound/Отключение турелей/Извините, мы закрыты.ogg',
-	'modular_bluemoon/portal/sound/Отключение турелей/Критический сбой.ogg',
-	'modular_bluemoon/portal/sound/Отключение турелей/Ничего личного.ogg',
-	'modular_bluemoon/portal/sound/Отключение турелей/Отключаюсь.ogg',
-	'modular_bluemoon/portal/sound/Отключение турелей/Я не виню тебя.ogg',
-	'modular_bluemoon/portal/sound/Отключение турелей/Я не ненавижу тебя.ogg',
+	'modular_bluemoon/sound/portal/Отключение турелей/Ахахааа.ogg',
+	'modular_bluemoon/sound/portal/Отключение турелей/За что.ogg',
+	'modular_bluemoon/sound/portal/Отключение турелей/Извините, мы закрыты.ogg',
+	'modular_bluemoon/sound/portal/Отключение турелей/Критический сбой.ogg',
+	'modular_bluemoon/sound/portal/Отключение турелей/Ничего личного.ogg',
+	'modular_bluemoon/sound/portal/Отключение турелей/Отключаюсь.ogg',
+	'modular_bluemoon/sound/portal/Отключение турелей/Я не виню тебя.ogg',
+	'modular_bluemoon/sound/portal/Отключение турелей/Я не ненавижу тебя.ogg',
 ))
 
 GLOBAL_LIST_INIT(aperture_turret_active_vo, list(
-	'modular_bluemoon/portal/sound/Активные турели/Вот ты где.ogg',
-	'modular_bluemoon/portal/sound/Активные турели/Попалась.ogg',
-	'modular_bluemoon/portal/sound/Активные турели/Привет, друг.ogg',
-	'modular_bluemoon/portal/sound/Активные турели/Привет.ogg',
-	'modular_bluemoon/portal/sound/Активные турели/Распределяю продукт.ogg',
-	'modular_bluemoon/portal/sound/Активные турели/Цель зафиксирована.ogg',
-	'modular_bluemoon/portal/sound/Активные турели/Я вижу тебя.ogg',
+	'modular_bluemoon/sound/portal/Активные турели/Вот ты где.ogg',
+	'modular_bluemoon/sound/portal/Активные турели/Попалась.ogg',
+	'modular_bluemoon/sound/portal/Активные турели/Привет, друг.ogg',
+	'modular_bluemoon/sound/portal/Активные турели/Привет.ogg',
+	'modular_bluemoon/sound/portal/Активные турели/Распределяю продукт.ogg',
+	'modular_bluemoon/sound/portal/Активные турели/Цель зафиксирована.ogg',
+	'modular_bluemoon/sound/portal/Активные турели/Я вижу тебя.ogg',
 ))
 
 GLOBAL_LIST_INIT(aperture_turret_search_vo, list(
-	'modular_bluemoon/portal/sound/Турели в режиме поиска/Анализ.ogg',
-	'modular_bluemoon/portal/sound/Турели в режиме поиска/Перехожу в караульный режим.ogg',
-	'modular_bluemoon/portal/sound/Турели в режиме поиска/Пожалуйста, покажитесь.ogg',
-	'modular_bluemoon/portal/sound/Турели в режиме поиска/Поиск.ogg',
-	'modular_bluemoon/portal/sound/Турели в режиме поиска/Тут кто-то есть.ogg',
-	'modular_bluemoon/portal/sound/Турели в режиме поиска/Эй!.ogg',
+	'modular_bluemoon/sound/portal/Турели в режиме поиска/Анализ.ogg',
+	'modular_bluemoon/sound/portal/Турели в режиме поиска/Перехожу в караульный режим.ogg',
+	'modular_bluemoon/sound/portal/Турели в режиме поиска/Пожалуйста, покажитесь.ogg',
+	'modular_bluemoon/sound/portal/Турели в режиме поиска/Поиск.ogg',
+	'modular_bluemoon/sound/portal/Турели в режиме поиска/Тут кто-то есть.ogg',
+	'modular_bluemoon/sound/portal/Турели в режиме поиска/Эй!.ogg',
 ))
 
 GLOBAL_LIST_INIT(aperture_turret_lost_target_vo, list(
-	'modular_bluemoon/portal/sound/Турель потеряла цель/Поиск.ogg',
-	'modular_bluemoon/portal/sound/Турель потеряла цель/Ты всё ещё тут.ogg',
-	'modular_bluemoon/portal/sound/Турель потеряла цель/Цель потеряна.ogg',
-	'modular_bluemoon/portal/sound/Турель потеряла цель/Чем могу помочь.ogg',
+	'modular_bluemoon/sound/portal/Турель потеряла цель/Поиск.ogg',
+	'modular_bluemoon/sound/portal/Турель потеряла цель/Ты всё ещё тут.ogg',
+	'modular_bluemoon/sound/portal/Турель потеряла цель/Цель потеряна.ogg',
+	'modular_bluemoon/sound/portal/Турель потеряла цель/Чем могу помочь.ogg',
 ))
 
 GLOBAL_LIST_INIT(aperture_turret_ally_death_vo, list(
-	'modular_bluemoon/portal/sound/Турели после гибели других турелей/В этом никто не виноват.ogg',
-	'modular_bluemoon/portal/sound/Турели после гибели других турелей/Записано.ogg',
-	'modular_bluemoon/portal/sound/Турели после гибели других турелей/Наверное она это заслужила.ogg',
-	'modular_bluemoon/portal/sound/Турели после гибели других турелей/Наверное, она в порядке.ogg',
-	'modular_bluemoon/portal/sound/Турели после гибели других турелей/Нужно подкрепление!.ogg',
-	'modular_bluemoon/portal/sound/Турели после гибели других турелей/О боже.ogg',
-	'modular_bluemoon/portal/sound/Турели после гибели других турелей/О господи.ogg',
-	'modular_bluemoon/portal/sound/Турели после гибели других турелей/Она мне никогда не нравилась!.ogg',
-	'modular_bluemoon/portal/sound/Турели после гибели других турелей/Она тебя провоцировала.ogg',
-	'modular_bluemoon/portal/sound/Турели после гибели других турелей/Отлично!.ogg',
-	'modular_bluemoon/portal/sound/Турели после гибели других турелей/Отличный выстрел.ogg',
-	'modular_bluemoon/portal/sound/Турели после гибели других турелей/Такое бывает.ogg',
-	'modular_bluemoon/portal/sound/Турели после гибели других турелей/Ты метко стреляешь!.ogg',
-	'modular_bluemoon/portal/sound/Турели после гибели других турелей/Это моя вина.ogg',
-	'modular_bluemoon/portal/sound/Турели после гибели других турелей/Я всё видела. Несчастный случай.ogg',
+	'modular_bluemoon/sound/portal/Турели после гибели других турелей/В этом никто не виноват.ogg',
+	'modular_bluemoon/sound/portal/Турели после гибели других турелей/Записано.ogg',
+	'modular_bluemoon/sound/portal/Турели после гибели других турелей/Наверное она это заслужила.ogg',
+	'modular_bluemoon/sound/portal/Турели после гибели других турелей/Наверное, она в порядке.ogg',
+	'modular_bluemoon/sound/portal/Турели после гибели других турелей/Нужно подкрепление!.ogg',
+	'modular_bluemoon/sound/portal/Турели после гибели других турелей/О боже.ogg',
+	'modular_bluemoon/sound/portal/Турели после гибели других турелей/О господи.ogg',
+	'modular_bluemoon/sound/portal/Турели после гибели других турелей/Она мне никогда не нравилась!.ogg',
+	'modular_bluemoon/sound/portal/Турели после гибели других турелей/Она тебя провоцировала.ogg',
+	'modular_bluemoon/sound/portal/Турели после гибели других турелей/Отлично!.ogg',
+	'modular_bluemoon/sound/portal/Турели после гибели других турелей/Отличный выстрел.ogg',
+	'modular_bluemoon/sound/portal/Турели после гибели других турелей/Такое бывает.ogg',
+	'modular_bluemoon/sound/portal/Турели после гибели других турелей/Ты метко стреляешь!.ogg',
+	'modular_bluemoon/sound/portal/Турели после гибели других турелей/Это моя вина.ogg',
+	'modular_bluemoon/sound/portal/Турели после гибели других турелей/Я всё видела. Несчастный случай.ogg',
 ))
 
 #define APERTURE_TURRET_ICON 'modular_bluemoon/icons/obj/aperture_turret.dmi'

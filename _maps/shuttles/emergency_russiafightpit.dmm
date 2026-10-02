@@ -624,6 +624,12 @@
 	},
 /turf/open/floor/plasteel,
 /area/shuttle/escape)
+"BS" = (
+/obj/effect/fun_balloon/sentience/emergency_shuttle{
+	group_name = "medical staff on the shuttle"
+	},
+/turf/closed/wall/r_wall/rust,
+/area/shuttle/escape)
 
 (1,1,1) = {"
 aa
@@ -945,7 +951,7 @@ aa
 ab
 aD
 aM
-aE
+BS
 aU
 aD
 ax

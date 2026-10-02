@@ -48,15 +48,15 @@ GLOBAL_LIST_INIT(all_security_levels_ru, list(
 ))
 
 GLOBAL_LIST_INIT(sec_level_colors, list(
-    "#b2ff59",
-    "#99ccff",
-    "#fc7d15",
+    "#8ecc47",
+    "#7aa3cc",
+    "#cc6510",
     "#a059fe",
-    "#ffae42",
+    "#d99236",
     "#ff3f34",
     "#ffae42",
-    "#7f7f7f",
-    "#ffffff",
+    "#999999",
+    "#cccccc",
     "#aa00ff",
 ))
 

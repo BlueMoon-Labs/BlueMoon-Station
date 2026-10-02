@@ -265,11 +265,20 @@ Turf and target are separate in case you want to teleport some distance from a t
 	return .
 
 //Returns a list of all items of interest with their name
-/proc/getpois(mobs_only = FALSE, skip_mindless = FALSE, specify_dead_role = TRUE)
-	var/list/mobs = sortmobs()
+/// sorted = FALSE - для вызывающих, которые сортируют сами: sortmobs() по всему миру стоит ~20 мс.
+/proc/getpois(mobs_only = FALSE, skip_mindless = FALSE, specify_dead_role = TRUE, sorted = TRUE)
+	// тот же набор типов, что пропускает sortmobs()
+	var/static/list/poi_mob_typecache = typecacheof(list(
+		/mob/living/silicon/ai, /mob/camera, /mob/living/silicon/pai, /mob/living/silicon/robot,
+		/mob/living/carbon/human, /mob/living/brain, /mob/living/carbon/alien, /mob/dead/observer,
+		/mob/dead/new_player, /mob/living/carbon/monkey, /mob/living/simple_animal, /mob/living/carbon/true_devil
+	))
+	var/list/mobs = sorted ? sortmobs() : GLOB.mob_list
 	var/list/namecounts = list()
 	var/list/pois = list()
 	for(var/mob/M in mobs)
+		if(!sorted && !poi_mob_typecache[M.type])
+			continue
 		if(skip_mindless && (!M.mind && !M.ckey))
 			if(!isbot(M) && !iscameramob(M) && !ismegafauna(M))
 				continue
@@ -835,8 +844,8 @@ GLOBAL_LIST_INIT(WALLITEMS_INVERSE, typecacheof(list(
 
 /proc/living_player_count()
 	var/living_player_count = 0
-	for(var/mob in GLOB.player_list)
-		if(mob in GLOB.alive_mob_list)
+	for(var/mob/player as anything in GLOB.player_list)
+		if(!player.training_origin && (player in GLOB.alive_mob_list))
 			living_player_count += 1
 	return living_player_count
 

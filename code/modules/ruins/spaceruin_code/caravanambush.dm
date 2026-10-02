@@ -180,8 +180,8 @@
 	light_color = LIGHT_COLOR_RED
 	circuit = /obj/item/circuitboard/computer/caravan/syndicate4
 	shuttleId = "sbc_corvette"
-	possible_destinations = "sbc_corvette_custom;ds1_syndicate;ds2_syndicate;caravansyndicate1_listeningpost;whiteship_z4"
-
+	possible_destinations = "ds1_syndicate;ds2_syndicate;caravansyndicate1_listeningpost;whiteship_z4"
+/*
 /obj/machinery/computer/camera_advanced/shuttle_docker/caravan/syndicate4
 	name = "Starfury Navigation Computer"
 	desc = "Used to designate a precise transit location for the Syndicate Drop Ship."
@@ -194,7 +194,7 @@
 	view_range = 2.5
 	x_offset = 7
 	y_offset = 1
-
+*/
 /obj/machinery/computer/shuttle/ds_syndicate
 	name = "Starfury Navigation Computer"
 	desc = "A console that controls the Syndicate Drop Ship."

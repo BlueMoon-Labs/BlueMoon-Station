@@ -5,6 +5,7 @@ MOVEMENT_SUBSYSTEM_DEF(ai_movement)
 	priority = FIRE_PRIORITY_NPC_MOVEMENT
 	runlevels = RUNLEVEL_GAME | RUNLEVEL_POSTGAME
 	init_order = INIT_ORDER_AI_MOVEMENT
+	fractional_steps = TRUE
 
 	///an assoc list of all ai_movement types. Assoc type to instance
 	var/list/movement_types

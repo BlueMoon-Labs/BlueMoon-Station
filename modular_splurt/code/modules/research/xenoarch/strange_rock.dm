@@ -12,6 +12,7 @@
 	var/dugdepth = null
 
 	var/tryagain = null
+	var/datum/techweb/linked_techweb //BLUEMOON ADD: привязка к исследовательской сети
 
 /obj/item/strangerock/Initialize()
 	icon_state = pick("strange","strange0","strange1","strange2","strange3")
@@ -33,6 +34,7 @@
 			itemsafedepth = rand(12,14)
 			itemactualdepth = rand(itembasedepth - itemsafedepth,itembasedepth)
 	. = ..()
+	linked_techweb = find_rnd_network_for_object(src) //BLUEMOON ADD: авто-привязка к ближайшей серверной сети
 
 /obj/item/strangerock/attackby(obj/item/W, mob/user, params)
 	if(istype(W,/obj/item/xenoarch/clean/hammer))

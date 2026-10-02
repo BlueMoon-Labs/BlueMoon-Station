@@ -462,6 +462,8 @@
 		data = list("misc" = 1)
 	data["misc"]++
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(M)
+	if(data["misc"] >= 10 && M.remove_status_effect(STATUS_EFFECT_NECROPOLIS_CURSE))
+		to_chat(M, span_notice("Святая вода рассеяла проклятие и преследующие вас тени."))
 	if(!iscultist(M, FALSE, TRUE) && !is_servant_of_ratvar(M) && !heretic && (HAS_TRAIT(M, TRAIT_HALLOWED) || M.mind?.isholy))
 		return ..()
 	if(iscultist(M, FALSE, TRUE))
@@ -2911,7 +2913,8 @@
 	can_synth = FALSE
 	// you know i wouldn't
 	// boiling_point = T0C + 100
-	nutriment_factor = 0.5 * REAGENTS_METABOLISM
+	nutriment_factor = 1 * REAGENTS_METABOLISM
+	metabolization_rate = 2 * REAGENTS_METABOLISM
 	var/decal_path = /obj/effect/decal/cleanable/semen
 	var/list/desc_on_traits = list(
 		TRAIT_GFLUID_DETECT = span_love("Вы узнаете хорошо знакомый вкус свежей спермы~"),
@@ -3043,6 +3046,8 @@
 	glass_desc = "Cloudy, viscous."
 	taste_description = "something with a tang" // wew coders who haven't eaten out a girl.
 	color = "#FFFFFF"
+	nutriment_factor = 0.5 * REAGENTS_METABOLISM
+	metabolization_rate = 0.5 * REAGENTS_METABOLISM
 	decal_path = /obj/effect/decal/cleanable/semen/femcum
 	desc_on_traits = list(
 		TRAIT_GFLUID_DETECT = span_love("Вы узнаете хорошо знакомый вкус свежего сквирта~")
@@ -3064,6 +3069,7 @@
 	glass_name = "chalice of synthcum"
 	taste_description = "something with a silicone"
 	color = "#5cb2cc"
+	nutriment_factor = 0.1 * REAGENTS_METABOLISM
 	decal_path = /obj/effect/decal/cleanable/semen/siliconcum
 	desc_on_traits = list(
 		TRAIT_GFLUID_DETECT = span_love("Вы узнаете хорошо знакомый вкус свежей спермы~ Но отдает синтетикой..."),
@@ -3121,16 +3127,23 @@
 	taste_description = "Ag'hsj'saje'sh"
 //	chemical_flags = REAGENT_ALL_PROCESS (BLUEMOON REMOVAL - роботы не должны получать эффекты реагента)
 	color = "#1f8016"
+	var/last_effect_time = -1
 
 /datum/reagent/eldritch/on_mob_life(mob/living/carbon/M)
+	if(last_effect_time == world.time)
+		holder.remove_reagent(type, 1)
+		return TRUE
+	// Метка на обеих эссенциях исключает двойной эффект даже на последней единице одной из них.
+	for(var/datum/reagent/eldritch/essence in holder.reagent_list)
+		essence.last_effect_time = world.time
 	if(IS_HERETIC(M))
 		M.drowsyness = max(M.drowsyness-10, 0)
 		M.AdjustAllImmobility(-80, FALSE)
 		M.adjustStaminaLoss(-30, FALSE)
 		M.adjustToxLoss(-6, FALSE, TRUE)
 		M.adjustOxyLoss(-6, FALSE)
-		M.adjustBruteLoss(-6, FALSE)
-		M.adjustFireLoss(-6, FALSE)
+		M.adjustBruteLoss(-6, FALSE, only_organic = !(chemical_flags & REAGENT_ROBOTIC_PROCESS))
+		M.adjustFireLoss(-6, FALSE, only_organic = !(chemical_flags & REAGENT_ROBOTIC_PROCESS))
 		if(ishuman(M) && M.blood_volume < BLOOD_VOLUME_NORMAL)
 			M.adjust_integration_blood(6)
 	else

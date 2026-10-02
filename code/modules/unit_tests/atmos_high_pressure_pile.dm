@@ -5,6 +5,14 @@
 
 /// Кап попыток движения за проход: остаток кучи дожуют следующие проходы, пока
 /// ветер держится, но ни один турф больше не съедает треть тика одним куском.
+/datum/unit_test/high_pressure_pile_cap
+	var/saved_ticklimit
+
+/datum/unit_test/high_pressure_pile_cap/Destroy()
+	if(!isnull(saved_ticklimit))
+		Master.current_ticklimit = saved_ticklimit
+	return ..()
+
 /datum/unit_test/high_pressure_pile_cap/Run()
 	TEST_ASSERT(SSair.times_fired > 0, "SSair ещё ни разу не отработал - гейт по циклам не отличит свежие предметы")
 	var/turf/open/origin = run_loc_floor_bottom_left
@@ -20,7 +28,10 @@
 	// поэтому исход детерминирован.
 	pile.pressure_vector_x = 150
 	pile.pressure_vector_y = 0
+	saved_ticklimit = Master.current_ticklimit
+	Master.current_ticklimit = INFINITY
 	pile.high_pressure_movements()
+	Master.current_ticklimit = saved_ticklimit
 
 	var/stayed = 0
 	for(var/obj/item/shard/debris in pile)
@@ -33,6 +44,42 @@
 	pile.pressure_direction = NONE
 	for(var/obj/effect/temp_visual/dir_setting/space_wind/wind in pile)
 		qdel(wind)
+
+/// Кончился тик - турф обязан отдать управление посреди кучи, а не после сорока шагов.
+/datum/unit_test/high_pressure_pile_yields_tick
+	var/saved_ticklimit
+
+/datum/unit_test/high_pressure_pile_yields_tick/Destroy()
+	if(!isnull(saved_ticklimit))
+		Master.current_ticklimit = saved_ticklimit
+	return ..()
+
+/datum/unit_test/high_pressure_pile_yields_tick/Run()
+	TEST_ASSERT(SSair.times_fired > 0, "SSair ещё ни разу не отработал - гейт по циклам не отличит свежие предметы")
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/turf/open/pile = locate(origin.x + 1, origin.y + 2, origin.z)
+	TEST_ASSERT(istype(pile), "нет открытого турфа для кучи")
+
+	var/item_count = 10
+	for(var/i in 1 to item_count)
+		allocate(/obj/item/shard, pile)
+
+	pile.pressure_vector_x = 150
+	pile.pressure_vector_y = 0
+	saved_ticklimit = Master.current_ticklimit
+	Master.current_ticklimit = -1
+	pile.high_pressure_movements()
+	Master.current_ticklimit = saved_ticklimit
+
+	var/stayed = 0
+	for(var/obj/item/shard/debris in pile)
+		stayed++
+	pile.pressure_vector_x = 0
+	pile.pressure_difference = 0
+	pile.pressure_direction = NONE
+	for(var/obj/effect/temp_visual/dir_setting/space_wind/wind in pile)
+		qdel(wind)
+	TEST_ASSERT_EQUAL(item_count - stayed, 1, "при исчерпанном тике сдвинулось [item_count - stayed] предметов вместо одного")
 
 /// Повторный проход в пределах кулдауна не имеет права плодить второй визуал
 /// ветра: живой ещё не отыграл свою анимацию.

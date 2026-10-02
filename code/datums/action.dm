@@ -4,8 +4,8 @@
 #define AB_CHECK_CONSCIOUS 8
 #define AB_CHECK_ALIVE 16
 
-/datum/action
 	/// The name of the action
+/datum/action
 	var/name = "Generic Action"
 	/// The description of what the action does, shown in button tooltips
 	var/desc = null
@@ -182,6 +182,9 @@
 	if(SEND_SIGNAL(src, COMSIG_ACTION_ISAVAILABLE, target, owner, silent) & COMPONENT_ACTION_NOT_AVAILABLE)
 		return FALSE
 	return TRUE
+
+/datum/action/proc/format_tooltip(mob/viewer, base_description)
+	return base_description
 
 /datum/action/proc/UpdateButtons(status_only, force)
 	for(var/datum/hud/hud in viewers)

@@ -40,12 +40,12 @@
 /// Visual effect setup for starting a directional block
 /mob/living/proc/active_block_effect_start()
 	visible_message("<span class='warning'>[src] raises their [active_block_item], dropping into a defensive stance!</span>")
-	animate(src, pixel_x = get_standard_pixel_x_offset(), pixel_y = get_standard_pixel_y_offset(), time = 2.5, FALSE, SINE_EASING | EASE_OUT)
+	animate(src, pixel_x = get_standard_pixel_x_offset(), pixel_y = get_standard_pixel_y_offset(), time = 2.5, FALSE, SINE_EASING | EASE_OUT, flags = ANIMATION_END_NOW, tag = "active_block")
 
 /// Visual effect cleanup for starting a directional block
 /mob/living/proc/active_block_effect_end()
 	visible_message("<span class='warning'>[src] lowers their [active_block_item].</span>")
-	animate(src, pixel_x = get_standard_pixel_x_offset(), pixel_y = get_standard_pixel_y_offset(), time = 2.5, FALSE, SINE_EASING | EASE_IN)
+	animate(src, pixel_x = get_standard_pixel_x_offset(), pixel_y = get_standard_pixel_y_offset(), time = 2.5, FALSE, SINE_EASING | EASE_IN, flags = ANIMATION_END_NOW, tag = "active_block")
 
 /mob/living/proc/continue_starting_active_block()
 	return (combat_flags & COMBAT_FLAG_ACTIVE_BLOCK_STARTING)
@@ -101,11 +101,11 @@
 	var/datum/block_parry_data/data = I.get_block_parry_data()
 	var/delay = data.block_start_delay
 	combat_flags |= COMBAT_FLAG_ACTIVE_BLOCK_STARTING
-	animate(src, pixel_x = get_standard_pixel_x_offset(), pixel_y = get_standard_pixel_y_offset(), time = delay, FALSE, SINE_EASING | EASE_IN)
+	animate(src, pixel_x = get_standard_pixel_x_offset(), pixel_y = get_standard_pixel_y_offset(), time = delay, FALSE, SINE_EASING | EASE_IN, flags = ANIMATION_END_NOW, tag = "active_block")
 	if(!do_after(src, delay, src, (IGNORE_USER_LOC_CHANGE|IGNORE_TARGET_LOC_CHANGE), extra_checks = CALLBACK(src, PROC_REF(continue_starting_active_block))))
 		to_chat(src, "<span class='warning'>You fail to raise [I].</span>")
 		combat_flags &= ~(COMBAT_FLAG_ACTIVE_BLOCK_STARTING)
-		animate(src, pixel_x = get_standard_pixel_x_offset(), pixel_y = get_standard_pixel_y_offset(), time = 2.5, FALSE, SINE_EASING | EASE_IN, ANIMATION_END_NOW)
+		animate(src, pixel_x = get_standard_pixel_x_offset(), pixel_y = get_standard_pixel_y_offset(), time = 2.5, FALSE, SINE_EASING | EASE_IN, ANIMATION_END_NOW, tag = "active_block")
 		return
 	combat_flags &= ~(COMBAT_FLAG_ACTIVE_BLOCK_STARTING)
 	active_block_start(I)

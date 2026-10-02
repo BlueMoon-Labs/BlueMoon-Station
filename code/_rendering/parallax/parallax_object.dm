@@ -198,19 +198,28 @@
 /**
  * Заводит бесконечный дрейф слоя. См. [drift_time].
  *
- * Смещение за цикл - ровно период тайла, поэтому в конце цикла картинка
- * совпадает сама с собой и мгновенный возврат в ноль незаметен.
+ * Каждая ось идёт своим циклом ровно в один тайл, поэтому в конце цикла картинка
+ * совпадает сама с собой при любом угле.
  */
 /atom/movable/screen/parallax_layer/proc/StartDrift()
 	if(drift_time <= 0 || layer_mode != PARALLAX_MODE_TILED)
 		return
 	drifting = TRUE
-	var/base_x = pixel_x
-	var/base_y = pixel_y
-	var/shift_x = -sin(drift_angle) * tile_size
-	var/shift_y = -cos(drift_angle) * tile_size
-	animate(src, pixel_x = base_x + shift_x, pixel_y = base_y + shift_y, time = drift_time, easing = LINEAR_EASING, loop = -1, flags = ANIMATION_PARALLEL)
-	animate(pixel_x = base_x, pixel_y = base_y, time = 0)
+	var/list/periods = DriftAxisPeriods()
+	if(periods[1])
+		var/base_x = pixel_x
+		animate(src, pixel_x = base_x + SIGN(-sin(drift_angle)) * tile_size, time = periods[1], easing = LINEAR_EASING, loop = -1, flags = ANIMATION_PARALLEL)
+		animate(pixel_x = base_x, time = 0)
+	if(periods[2])
+		var/base_y = pixel_y
+		animate(src, pixel_y = base_y + SIGN(-cos(drift_angle)) * tile_size, time = periods[2], easing = LINEAR_EASING, loop = -1, flags = ANIMATION_PARALLEL)
+		animate(pixel_y = base_y, time = 0)
+
+/// Время прохода одного тайла по осям X и Y при дрейфе [drift_angle]; 0 - по этой оси слой стоит.
+/atom/movable/screen/parallax_layer/proc/DriftAxisPeriods()
+	var/share_x = abs(sin(drift_angle))
+	var/share_y = abs(cos(drift_angle))
+	return list(share_x > PARALLAX_DRIFT_AXIS_MIN ? drift_time / share_x : 0, share_y > PARALLAX_DRIFT_AXIS_MIN ? drift_time / share_y : 0)
 
 /**
  * Расстояние, на котором статический объект гарантированно вне кадра.
@@ -379,12 +388,15 @@
 	var/dx = old_visual_x - new_visual_x
 	var/dy = old_visual_y - new_visual_y
 	if(abs(dx) <= 1 && abs(dy) <= 1)
-		// A 1px glide is indistinguishable from the instant screen_loc snap while the
-		// viewport itself glides a full tile - skip the matrix alloc + animate(), which
-		// used to be ~75-80% of this proc's cost.
+		// Для сдвига на один пиксель достаточно обновить screen_loc.
 		return FALSE
-	transform = matrix(1, 0, dx, 0, 1, dy)
-	animate(src, transform = matrix(), time = anim_time, flags = ANIMATION_END_NOW)
+	var/static/matrix/glide_transform = matrix()
+	var/static/matrix/rest_transform = matrix()
+	glide_transform.c = dx
+	glide_transform.f = dy
+	// BYOND копирует матрицу при записи в transform.
+	transform = glide_transform
+	animate(src, transform = rest_transform, time = anim_time, flags = ANIMATION_END_NOW)
 	return TRUE
 
 #if defined(UNIT_TESTS) || defined(SPACEMAN_DMM)
@@ -490,6 +502,10 @@
 
 /atom/movable/screen/parallax_layer/proc/ShouldSee(client/C, atom/location)
 	return TRUE
+
+/// Слой показан клиенту и его проявление заведено: здесь подтипы запускают свои петли.
+/atom/movable/screen/parallax_layer/proc/OnApplied()
+	return
 
 /**
  * Return "natural" overlays, as we're goin to do some fuckery to overlays above.

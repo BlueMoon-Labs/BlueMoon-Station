@@ -1,10 +1,16 @@
-// 12g слаг — BR2
 /obj/item/projectile/bullet/shotgun_slug
 	name = "12g shotgun slug"
 	damage = 45
-	armour_penetration = BULLET_BR3
+	armour_penetration = BULLET_BR7
 	sharpness = SHARP_POINTY
 	wound_bonus = 6
+	spread = 1.5 // BLUEMOON ADD: отклонение слага при вылете из ствола, применяется в fire() один раз на старте
+	var/tile_dropoff = 2.5 // BLUEMOON ADD: потеря урона за каждый пройденный тайл
+
+/obj/item/projectile/bullet/shotgun_slug/Range()
+	..()
+	if(damage > 20)
+		damage = max(20, damage - tile_dropoff)
 
 /obj/item/projectile/bullet/shotgun_slug/executioner
 	name = "executioner slug" // admin only, can dismember limbs
@@ -23,7 +29,7 @@
 	name = "beanbag slug"
 	icon_state = "pellet"
 	damage = 5
-	stamina = 80                      // BLUEMOON EDIT: было 70 → 80
+	stamina = 80
 	armour_penetration = BULLET_BR0
 	wound_bonus = 2
 	sharpness = SHARP_NONE
@@ -33,11 +39,13 @@
 /obj/item/projectile/bullet/incendiary/shotgun
 	name = "incendiary slug"
 	damage = 20
+	armour_penetration = BULLET_BR7 // а тут нейронка не додумалась дописать БР - круто
 
 /obj/item/projectile/bullet/incendiary/shotgun/dragonsbreath
 	name = "dragonsbreath pellet"
 	icon_state = "pellet"
 	damage = 5
+	armour_penetration = BULLET_BR7
 
 /obj/item/projectile/bullet/shotgun_stunslug
 	name = "stunslug"
@@ -67,14 +75,13 @@
 			C.electrocute_act(15, src, 1, SHOCK_NOSTUN)
 			C.apply_status_effect(STATUS_EFFECT_TASED_WEAK, tase_duration)
 
-// Meteorslug — BR0 (нелетальный)
 /obj/item/projectile/bullet/shotgun_meteorslug
 	name = "meteorslug"
 	icon = 'icons/obj/meteor.dmi'
 	icon_state = "dust"
 	damage = 20
 	knockdown = 80
-	armour_penetration = BULLET_BR0
+	armour_penetration = BULLET_BR6 //почему метеорслаг нелетал - я не знаю
 	hitsound = 'sound/effects/meteorimpact.ogg'
 
 /obj/item/projectile/bullet/shotgun_meteorslug/on_hit(atom/target, blocked = FALSE)
@@ -88,12 +95,11 @@
 	. = ..()
 	SpinAnimation()
 
-// frag12 — BR1
 /obj/item/projectile/bullet/shotgun_frag12
 	name ="frag12 slug"
 	damage = 25
 	knockdown = 50
-	armour_penetration = BULLET_BR1
+	armour_penetration = BULLET_BR2
 
 /obj/item/projectile/bullet/shotgun_frag12/on_hit(atom/target, blocked = FALSE)
 	..()
@@ -105,17 +111,18 @@
 	var/tile_dropoff_s = 1.25
 	var/tile_dropoff_ap = 8    // BLUEMOON ADD
 
-// Стандартная дробь 12g — BR1
+
 /obj/item/projectile/bullet/pellet/shotgun_buckshot
 	name = "buckshot pellet"
 	icon_state = "pellet"
-	damage = 12.5                     // BLUEMOON EDIT: было 7.5 → 12.5 (конкретно Bluemoon переопределение)
-	armour_penetration = BULLET_BR4   // BLUEMOON ADD
+	damage = 12.5
+	armour_penetration = BULLET_BR2
+	tile_dropoff_ap = 6
 	wound_bonus = 5
 	bare_wound_bonus = 5
 	wound_falloff_tile = -2.5  // low damage + additional dropoff will already curb wounding potential anything past point blank
 
-// Резиновая дробь 12g — BR0
+
 /obj/item/projectile/bullet/pellet/shotgun_rubbershot
 	name = "rubbershot pellet"
 	icon_state = "pellet"
@@ -124,6 +131,14 @@
 	armour_penetration = BULLET_BR0
 	sharpness = SHARP_NONE
 	embedding = null
+	ricochets_max = 4
+	ricochet_chance = 100
+	ricochet_auto_aim_angle = 45
+	ricochet_auto_aim_range = 8
+	ricochet_incidence_leeway = 50
+	ricochet_decay_chance = 1
+	ricochet_decay_damage = 1 //рикошеты для каждого!
+
 
 /obj/item/projectile/bullet/pellet/Range()
 	..()
@@ -138,10 +153,9 @@
 	if(damage < 0 && stamina < 0)
 		qdel(src)
 
-// Самодельная дробь — BR0 (ненадёжная, слабая)
 /obj/item/projectile/bullet/pellet/shotgun_improvised
 	icon_state = "pellet"
-	armour_penetration = BULLET_BR3
+	armour_penetration = BULLET_BR7
 	tile_dropoff = 0.35
 	damage = 6
 	wound_bonus = 0
@@ -159,7 +173,7 @@
 
 /obj/item/projectile/bullet/scattershot
 	damage = 20
-	armour_penetration = BULLET_BR6
+	armour_penetration = BULLET_BR20 //дробь мехов - я умываю руки
 
 /obj/item/projectile/bullet/seed
 	armour_penetration = BULLET_BR0

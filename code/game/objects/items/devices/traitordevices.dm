@@ -310,7 +310,9 @@ effective or pretty fucking useless.
         // станции: предатель (фракция "Station") должен стрелять по экипажу.
         turret.faction = list("[REF(user)]")
         for(var/placer_faction in user.faction)
-            if(placer_faction != "Station" && placer_faction != "[REF(user)]")
+            // "neutral" стоит у всех людей по умолчанию (mob_defines.dm) и Job.faction = "Station"
+            // на faction моба не применяется, поэтому копируем только реальные фракции союзников.
+            if(placer_faction != "neutral" && placer_faction != "Station" && placer_faction != "[REF(user)]")
                 turret.faction |= placer_faction
         qdel(src)
         return

@@ -574,6 +574,7 @@
 	dir = 6
 	},
 /obj/effect/decal/cleanable/dirt,
+/mob/living/simple_animal/hostile/inteq,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/deepstorage/storage)
 "bq" = (
@@ -613,6 +614,7 @@
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on{
 	dir = 4
 	},
+/mob/living/simple_animal/hostile/inteq/ranged/shotgun,
 /turf/open/floor/plasteel/kitchen,
 /area/ruin/space/has_grav/deepstorage/kitchen)
 "bw" = (
@@ -1731,7 +1733,7 @@
 	dir = 5
 	},
 /obj/effect/decal/cleanable/dirt,
-/mob/living/simple_animal/hostile/syndicate/ranged/anthro,
+/mob/living/simple_animal/hostile/inteq/ranged,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/deepstorage)
 "dE" = (
@@ -1818,7 +1820,7 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 9
 	},
-/mob/living/simple_animal/hostile/syndicate/ranged/space/anthro/cat,
+/mob/living/simple_animal/hostile/inteq/ranged/smg/space,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/deepstorage/armory)
 "dP" = (
@@ -2016,19 +2018,13 @@
 	name = "Armory APC";
 	pixel_x = 24
 	},
-/obj/item/gun/ballistic/automatic/fal{
+/obj/item/gun/ballistic/automatic/wt550/standart{
 	pixel_x = 0;
 	pixel_y = -3
 	},
-/obj/item/ammo_box/magazine/fal{
-	pixel_y = 9;
-	pixel_x = 0
-	},
-/obj/item/ammo_box/magazine/fal{
-	pixel_y = 6;
-	pixel_x = 0
-	},
 /obj/structure/rack/shelf,
+/obj/item/ammo_box/magazine/wt550m9,
+/obj/item/ammo_box/magazine/wt550m9,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/deepstorage/armory)
 "ei" = (
@@ -3688,6 +3684,7 @@
 "wO" = (
 /obj/machinery/iv_drip,
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
+/mob/living/simple_animal/hostile/inteq/ranged/smg/space,
 /turf/open/floor/plasteel/white/smooth/small,
 /area/ruin/space/has_grav/deepstorage/dorm)
 "xq" = (
@@ -3706,6 +3703,10 @@
 /obj/item/stack/ore/diamond,
 /turf/open/floor/plating/asteroid/airless,
 /area/ruin/space)
+"ym" = (
+/mob/living/simple_animal/hostile/inteq/melee/sword/space/stormtrooper,
+/turf/open/floor/plasteel/showroomfloor,
+/area/ruin/space/has_grav/deepstorage/dorm)
 "yQ" = (
 /obj/machinery/hydroponics/constructable,
 /obj/effect/turf_decal/siding/dark{
@@ -3722,6 +3723,10 @@
 	},
 /turf/open/floor/plasteel/dark/smooth/small,
 /area/ruin/space/has_grav/deepstorage/hydroponics)
+"zE" = (
+/mob/living/simple_animal/hostile/inteq/melee,
+/turf/open/floor/wood/wood_large,
+/area/ruin/space/has_grav/deepstorage)
 "AP" = (
 /obj/machinery/power/floodlight/urbanismlight/mesaspec,
 /turf/open/floor/plating/asteroid/airless,
@@ -3842,6 +3847,7 @@
 /area/ruin/space/has_grav/deepstorage)
 "OS" = (
 /obj/effect/turf_decal/tile/dark_blue/fourcorners,
+/mob/living/simple_animal/hostile/inteq/ranged/smg/space,
 /turf/open/floor/plasteel/white/smooth/small,
 /area/ruin/space/has_grav/deepstorage/dorm)
 "RT" = (
@@ -4397,7 +4403,7 @@ ab
 dB
 ZD
 rl
-rl
+ym
 dB
 ab
 aS
@@ -4607,7 +4613,7 @@ cN
 cJ
 oH
 kV
-kV
+OS
 kV
 ij
 dB
@@ -4657,7 +4663,7 @@ ge
 dQ
 BD
 gw
-OS
+kV
 kV
 kV
 kV
@@ -5213,7 +5219,7 @@ bu
 bN
 af
 cr
-cM
+zE
 cY
 dp
 dJ

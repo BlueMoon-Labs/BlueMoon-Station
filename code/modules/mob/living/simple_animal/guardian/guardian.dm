@@ -4,6 +4,11 @@ GLOBAL_LIST_EMPTY(parasites) //all currently existing/living guardians
 #define GUARDIAN_HANDS_LAYER 1
 #define GUARDIAN_TOTAL_LAYERS 1
 
+//BLUEMOON START: как часто перевызывается игрок на брошенного холопаразита
+#define GUARDIAN_VACANCY_POLL_INTERVAL (5 MINUTES)
+#define GUARDIAN_VACANCY_POLL_TIME (10 SECONDS)
+//BLUEMOON END
+
 /mob/living/simple_animal/hostile/guardian
 	name = "Guardian Spirit"
 	real_name = "Guardian Spirit"
@@ -67,6 +72,13 @@ GLOBAL_LIST_EMPTY(parasites) //all currently existing/living guardians
 	var/datum/song/holoparasite/music_datum
 	/// is not null only when it has been created with default "deck of tarot cards"
 	var/was_randomized = null
+
+	//BLUEMOON START: перевызов управляющего, если игрок покинул тело
+	/// когда последний раз запускали опрос среди гостов по поводу этой пустой оболочки
+	var/last_vacancy_poll = 0
+	/// защита от наложения опросов, если предыдущий ещё висит
+	var/vacancy_poll_running = FALSE
+	//BLUEMOON END
 
 /mob/living/simple_animal/hostile/guardian/Initialize(mapload, theme)
 	GLOB.parasites += src
@@ -206,6 +218,39 @@ GLOBAL_LIST_EMPTY(parasites) //all currently existing/living guardians
 	if(HAS_TRAIT(summoner, TRAIT_NODEATH) && (istype(summoner.wear_neck, /obj/item/clothing/neck/necklace/memento_mori)))
 		REMOVE_TRAIT(summoner, TRAIT_NODEATH, "memento_mori")
 		to_chat(summoner,"<span class='danger'>You feel incredibly vulnerable as the memento mori pulls your life force in one too many directions!")
+	check_vacancy() //BLUEMOON ADD
+
+//BLUEMOON START: холопаразит, из которого вышел игрок - не должен оставаться пустой оболочкой навсегда
+//По аналогии с /datum/brain_trauma/severe/split_personality: пока оболочка пуста, раз в
+//GUARDIAN_VACANCY_POLL_INTERVAL среди гостов идёт воут с предложением её занять.
+/mob/living/simple_animal/hostile/guardian/proc/check_vacancy()
+	if(client || vacancy_poll_running)
+		return
+	if(QDELETED(summoner) || summoner.stat == DEAD)
+		return
+	if(world.time < last_vacancy_poll + GUARDIAN_VACANCY_POLL_INTERVAL)
+		return
+	last_vacancy_poll = world.time
+	announce_vacancy()
+
+/mob/living/simple_animal/hostile/guardian/proc/announce_vacancy()
+	set waitfor = FALSE
+	vacancy_poll_running = TRUE
+	var/list/mob/candidates = pollGhostCandidates("Do you want to take over [summoner.real_name]'s abandoned [real_name]?", ROLE_PAI, null, FALSE, GUARDIAN_VACANCY_POLL_TIME, POLL_IGNORE_HOLOPARASITE, poll_header = "[real_name] of [summoner.real_name]")
+	if(QDELETED(src) || client || QDELETED(summoner))
+		vacancy_poll_running = FALSE
+		return
+	if(LAZYLEN(candidates))
+		var/mob/C = pick(candidates)
+		if(!QDELETED(C))
+			log_game("[key_name(C)] took over the abandoned [key_name(src)] holoparasite of [key_name(summoner)].")
+			message_admins("[ADMIN_LOOKUPFLW(C)] has taken control of the abandoned [ADMIN_LOOKUPFLW(src)] (summoner: [ADMIN_LOOKUPFLW(summoner)])")
+			to_chat(summoner, "<span class='holoparasite bold'>Your <font color=\"[guardiancolor]\"><b>[real_name]</b></font> was left behind and has been claimed by another mind!</span>")
+			to_chat(C, "<span class='holoparasite'>You are a <b>[real_name]</b>, bound to serve [summoner.real_name].</span>")
+			to_chat(C, "<span class='holoparasite'>The previous mind abandoned its body and you were picked to finish the job.</span>")
+			C.transfer_ckey(src, FALSE)
+	vacancy_poll_running = FALSE
+//BLUEMOON END
 
 /mob/living/simple_animal/hostile/guardian/get_status_tab_items()
 	. += ..()

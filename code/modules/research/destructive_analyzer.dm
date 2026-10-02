@@ -94,7 +94,7 @@ Note: Must be placed within 3 tiles of the R&D Console
 	return TRUE
 
 /obj/machinery/rnd/destructive_analyzer/proc/user_try_decon_id(id, mob/user)
-	if(!istype(loaded_item) || !istype(linked_console))
+	if(!istype(loaded_item) || !istype(linked_console) || !linked_console.stored_research)	//BLUEMOON ADD: !stored_research — консоль без подключённой сети
 		return FALSE
 
 	if (id && id != RESEARCH_MATERIAL_RECLAMATION_ID)
@@ -123,7 +123,7 @@ Note: Must be placed within 3 tiles of the R&D Console
 
 	else
 		var/list/point_value = techweb_item_point_check(loaded_item)
-		if(linked_console.stored_research.deconstructed_items[loaded_item.type])
+		if(linked_console.stored_research.deconstructed_items[loaded_item.type] && !istype(loaded_item, /obj/item/heretic_veil_crystal))
 			point_value = list()
 		var/user_mode_string = ""
 		if(length(point_value))

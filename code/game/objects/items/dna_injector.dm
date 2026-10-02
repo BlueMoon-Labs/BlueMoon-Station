@@ -14,11 +14,17 @@
 	var/list/add_mutations = list()
 	var/list/remove_mutations = list()
 
-	var/used = 0
+	var/used = FALSE
+	var/sec_level_needed = null
 
 /obj/item/dnainjector/Initialize(mapload)
 	. = ..()
 	register_item_context()
+
+/obj/item/dnainjector/examine(mob/user)
+	. = ..()
+	if(sec_level_needed)
+		. += span_warning("Уровень тревоги для активации: <b>[SECURITY_LEVEL_COLORED_UPPERTEXT(sec_level_needed)]</b>")
 
 /obj/item/dnainjector/add_item_context(obj/item/source, list/context, mob/living/target, mob/living/user)
 	. = ..()
@@ -30,6 +36,8 @@
 	return attack_hand(user)
 
 /obj/item/dnainjector/proc/inject(mob/living/carbon/M, mob/user)
+	if(!(obj_flags & EMAGGED) && sec_level_needed && GLOB.security_level < sec_level_needed)
+		return FALSE
 	if(M.has_dna() && !HAS_TRAIT_NOT_FROM(M, TRAIT_RADIMMUNE,BLOODSUCKER_TRAIT) && !HAS_TRAIT(M, TRAIT_NOCLONE) && !HAS_TRAIT(M, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON ADD - инъекторы не работают на синтетиков
 		M.radiation += rand(20/(damage_coeff  ** 2),50/(damage_coeff  ** 2))
 		var/log_msg = "[key_name(user)] injected [key_name(M)] with the [name]"
@@ -63,6 +71,9 @@
 	if(used)
 		to_chat(user, "<span class='warning'>This injector is used up!</span>")
 		return
+	if(!(obj_flags & EMAGGED) && sec_level_needed && GLOB.security_level < sec_level_needed)
+		to_chat(user, span_warning("<b>ОШИБКА:</b> Уровень тревоги для активации: <b>[SECURITY_LEVEL_COLORED_UPPERTEXT(sec_level_needed)]</b>"))
+		return
 	if(ishuman(target))
 		var/mob/living/carbon/human/humantarget = target
 		if (!humantarget.can_inject(user, 1))
@@ -84,12 +95,22 @@
 	if(!inject(target, user))	//Now we actually do the heavy lifting.
 		to_chat(user, "<span class='notice'>It appears that [target] does not have compatible DNA.</span>")
 
-	used = 1
+	used = TRUE
 	icon_state = "dnainjector0"
 	desc += " This one is used up."
 
-/obj/item/dnainjector/attack_self()
-	inject(usr, usr)
+/obj/item/dnainjector/attack_self(mob/user)
+	attack(user, user)
+
+/obj/item/dnainjector/emag_act()
+	. = ..()
+	if(!sec_level_needed || (obj_flags & EMAGGED))
+		return
+	obj_flags |= EMAGGED
+	sec_level_needed = null
+	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
+	to_chat(usr, span_warning("Вы снимаете ограничение на использование по коду тревоги."))
+	return TRUE
 
 /obj/item/dnainjector/antihulk
 	name = "\improper DNA injector (Anti-Hulk)"

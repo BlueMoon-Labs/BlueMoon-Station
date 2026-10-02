@@ -466,6 +466,9 @@
 		return
 	UnregisterSignal(watched_mob, COMSIG_PARENT_QDELETING)
 	watched_qdel_mobs -= watched_mob
+	// без подписки сказавшего в speech_buffer уже никто не снимет
+	if(length(speech_buffer) && speech_buffer[1] == watched_mob)
+		speech_buffer = list()
 
 /// Общий обработчик удаления: снимает моба сразу со всех трёх причин.
 /mob/living/simple_animal/slime/proc/on_watched_mob_qdeleting(mob/living/gone)

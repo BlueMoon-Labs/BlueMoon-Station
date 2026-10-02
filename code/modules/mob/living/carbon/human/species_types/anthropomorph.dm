@@ -19,7 +19,7 @@
 	ass_image = 'icons/ass/assfluffy.png'
 	species_category = SPECIES_CATEGORY_FURRY
 
-	allowed_limb_ids = list("mammal","aquatic","avian","sergal")
+	allowed_limb_ids = list("mammal","aquatic","avian","sergal","sergal2")
 
 /datum/species/mammal/synthetic
 	name = "Synthetic Anthropomorph"
@@ -63,7 +63,7 @@
 
 	exotic_bloodtype = "HF" // BLUEMOON EDIT - было "S"
 	exotic_blood_color = BLOOD_COLOR_OIL
-	allowed_limb_ids = list("mammal","aquatic","avian","sergal")
+	allowed_limb_ids = list("mammal","aquatic","avian","sergal","sergal2")
 	species_category = SPECIES_CATEGORY_ROBOT
 	wings_icons = SPECIES_WINGS_ROBOT
 

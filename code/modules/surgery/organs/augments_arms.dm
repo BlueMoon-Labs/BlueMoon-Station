@@ -40,7 +40,6 @@
 
 	// Убираем возможность класть предметы на стол и в инвентарь
 	I.item_flags |= ABSTRACT
-	I.w_class = WEIGHT_CLASS_HUGE
 	ADD_TRAIT(I, TRAIT_NODROP, IMPLANT_NODROP)
 
 	items_list += I
@@ -131,18 +130,20 @@
 	holder.slot_flags = null
 	holder.set_custom_materials(null)
 
-	var/obj/item/arm_item = owner.get_active_held_item()
+	var/arm_index = owner.get_empty_held_index_for_side(zone) || owner.get_empty_held_index_for_side("left")
+
+	var/obj/item/arm_item = owner.get_item_for_held_index(arm_index)
 
 	if(arm_item)
 		if(!owner.dropItemToGround(arm_item))
-			to_chat(owner, "<span class='warning'>Your [arm_item] interferes with [src]!</span>")
+			to_chat(owner, span_warning("Your [arm_item] interferes with [src]!"))
 			return
 		else
-			to_chat(owner, "<span class='notice'>You drop [arm_item] to activate [src]!</span>")
+			to_chat(owner, span_notice("You drop [arm_item] to activate [src]!"))
 
-	var/result = (zone == BODY_ZONE_R_ARM ? owner.put_in_r_hand(holder) : owner.put_in_l_hand(holder))
+	var/result = owner.put_in_hand(holder, arm_index)
 	if(!result)
-		to_chat(owner, "<span class='warning'>Your [name] fails to activate!</span>")
+		to_chat(owner, span_warning("Your [name] fails to activate!"))
 		return
 
 	// Activate the hand that now holds our item.
@@ -353,7 +354,7 @@
 	return ..()
 
 /obj/item/organ/cyberimp/arm/shield/proc/on_signal(datum/source, obj/item/blocking_item, list/other_items)
-	if(!blocking_item)		//if they don't have something
+	if(!blocking_item && activate_allowed(silent = TRUE))
 		var/obj/item/shield/S = locate() in contents
 		if(!Extend(S, TRUE))
 			return
@@ -447,6 +448,11 @@
 
 		else if(istype(target, /mob/living/carbon/human))
 			var/mob/living/carbon/human/comrade = target
+			if(comrade.is_wearing_mod())
+				var/obj/item/mod/control/target_mod = comrade.is_wearing_mod()
+				var/obj/item/stock_parts/cell/target_cell = target_mod.get_cell()
+				cell_powershare_loop(target_cell, H)
+				do_sparks(1, FALSE, target_mod.drop_location())
 			if(comrade == H)
 				to_chat(H, span_warning("Вы не можете заряжать самого себя!"))
 				return

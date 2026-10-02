@@ -324,6 +324,8 @@
 
 /obj/machinery/hydroponics/proc/update_icon_plant()
 	var/mutable_appearance/plant_overlay = mutable_appearance(myseed.growing_icon, layer = OBJ_LAYER + 0.01)
+	if(myseed.growing_icon_offset_y)
+		plant_overlay.pixel_y = myseed.growing_icon_offset_y
 	if(dead)
 		plant_overlay.icon_state = myseed.icon_dead
 	else if(harvest)
@@ -533,7 +535,7 @@
 				playsound(loc, 'sound/effects/slosh.ogg', 25, TRUE)
 				var/image/splash_animation = image('modular_splurt/icons/effects/effects.dmi', src, "splash_hydroponics")
 				splash_animation.color = mix_color_from_reagents(reagent_source.reagents.reagent_list)
-				flick_overlay(splash_animation, GLOB.clients, 1.1 SECONDS)
+				flick_overlay_view(splash_animation, 1.1 SECONDS)
 
 		if(visi_msg)
 			visible_message("<span class='notice'>[visi_msg].</span>")
@@ -569,6 +571,7 @@
 			investigate_log("planting: [user] planted [O] with traits [english_list(myseed)] and reagents [english_list_assoc(myseed.reagents_add)] and potency [myseed.potency]", INVESTIGATE_BOTANY)
 			TRAY_NAME_UPDATE
 			age = 1
+			lastproduce = 0
 			plant_health = myseed.endurance
 			lastcycle = world.time
 			update_icon()

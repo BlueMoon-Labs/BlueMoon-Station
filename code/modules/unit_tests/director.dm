@@ -974,7 +974,8 @@
 		var/min_reachable_cost
 		var/list/reachable_names = list()
 		for(var/datum/round_event_control/control as anything in SSdirector.event_controls())
-			if(control.severity != DIRECTOR_SEVERITY_GHOST || !control.enabled || control.admin_only || control.weight <= 0)
+			// Нулевой вес с weight_can_change растит лежащий диск (оперативник, защитник диска)
+			if(control.severity != DIRECTOR_SEVERITY_GHOST || !control.enabled || control.admin_only || (control.weight <= 0 && !control.weight_can_change))
 				continue
 			if(control.antag_heavy && !profile.antag_heavy_enabled)
 				continue
@@ -1945,6 +1946,11 @@
 	TEST_ASSERT(!(ROUNDTYPE_DYNAMIC_LIGHT in changeling_control.required_round_type), "Changeling Meteor должен быть исключён из Dynamic Light")
 	TEST_ASSERT(!(ROUNDTYPE_DYNAMIC_LIGHT in revenant_control.required_round_type), "Spawn Revenant должен быть исключён из Dynamic Light")
 	TEST_ASSERT(!(ROUNDTYPE_DYNAMIC_LIGHT in disease_control.required_round_type), "Spawn Sentient Disease должен быть исключён из Dynamic Light")
+	for(var/heretic_type in list(/datum/dynamic_ruleset/roundstart/heretics, /datum/dynamic_ruleset/midround/crew_conversion/heretic, /datum/dynamic_ruleset/latejoin/heretic_smuggler))
+		var/datum/dynamic_ruleset/heretic_ruleset = new heretic_type
+		TEST_ASSERT(!(ROUNDTYPE_DYNAMIC_LIGHT in heretic_ruleset.required_round_type), "[heretic_ruleset.name] должен быть исключён из Dynamic Light")
+		TEST_ASSERT(ROUNDTYPE_DYNAMIC_MEDIUM in heretic_ruleset.required_round_type, "[heretic_ruleset.name] должен оставаться на Dynamic Medium")
+		qdel(heretic_ruleset)
 	var/datum/dynamic_ruleset/midround/pirates/pirates_ruleset = locate() in SSdirector.actions
 	var/datum/dynamic_ruleset/midround/raiders/raiders_ruleset = locate() in SSdirector.actions
 	var/datum/dynamic_ruleset/midround/swarmers/swarmers_ruleset = locate() in SSdirector.actions
@@ -2014,6 +2020,8 @@
 	TEST_ASSERT(!(ROUNDTYPE_EXTENDED in operative_control.required_round_type), "Боевой Lone Operative не должен входить в пул Extended")
 	TEST_ASSERT_NOTNULL(keeper_control, "Случайный защитник диска должен быть зарегистрирован у директора")
 	TEST_ASSERT(!keeper_control.admin_only, "Защитник диска должен выпадать случайно, а не только через админ-форс")
+	TEST_ASSERT_EQUAL(initial(keeper_control.weight), 0, "Защитник диска не должен иметь шанс до срабатывания условия неподвижного диска")
+	TEST_ASSERT(initial(keeper_control.weight_can_change), "Панель должна знать, что нулевой вес защитника меняется во время раунда")
 	TEST_ASSERT_EQUAL(length(keeper_control.required_round_type), 1, "Самостоятельный защитник диска должен иметь ровно один разрешённый профиль")
 	TEST_ASSERT(ROUNDTYPE_EXTENDED in keeper_control.required_round_type, "Самостоятельный защитник диска должен быть доступен в Extended")
 	TEST_ASSERT(!(ROUNDTYPE_DYNAMIC_LIGHT in keeper_control.required_round_type), "Защитник диска не должен выпадать в Light без Lone Operative")
@@ -2040,6 +2048,63 @@
 				is_allowed = TRUE
 				break
 		TEST_ASSERT(is_allowed, "[control.action_name()]: автоматический гост-антаг не разрешён политикой Dynamic Light")
+
+/// Лежащий диск поднимает вес оперативных событий - ровно тех, что доступны текущему профилю:
+/// в Dynamic это боевой одиночка, в Extended - защитник диска. Оба стартуют с нулевого веса,
+/// поэтому неподвижность диска остаётся единственной причиной оперативника в раунде, а
+/// переноска обязана вес гасить (жалоба прода "оперативник прилетает спустя полчаса, когда
+/// диск давно унесли"). Мёртвый вес недоступного профилю контрола в панели только сбивает.
+/datum/unit_test/director_disk_operative_weights
+
+/datum/unit_test/director_disk_operative_weights/Run()
+	// Мутирует живые контролы директора и GLOB.round_type - восстанавливаем оба даже при падении.
+	var/list/saved = SSdirector.capture_simulation_state()
+	var/saved_round_type = GLOB.round_type
+	var/datum/round_event_control/operative/operative_control = locate() in SSdirector.event_controls()
+	var/datum/round_event_control/operative/keeper/keeper_control = locate() in SSdirector.event_controls()
+	TEST_ASSERT_NOTNULL(operative_control, "Lone Operative должен быть зарегистрирован у директора")
+	TEST_ASSERT_NOTNULL(keeper_control, "Защитник диска должен быть зарегистрирован у директора")
+	// capture_simulation_state снимает occurrences, но не вес - а вес мы здесь и крутим.
+	var/saved_operative_weight = operative_control.weight
+	var/saved_keeper_weight = keeper_control.weight
+	// Настоящий диск встаёт в SSobj.process() и в GLOB.poi_list, а тесту нужен только весовой
+	// счётчик - фейковый диск не трогает ни того, ни другого, а счётчики зовутся напрямую.
+	var/obj/item/disk/nuclear/disk = allocate(/obj/item/disk/nuclear/fake)
+	try
+		GLOB.round_type = ROUNDTYPE_DYNAMIC_MEDIUM
+		var/list/controls = disk.operative_controls()
+		TEST_ASSERT_EQUAL(length(controls), 1, "В Dynamic диск кормит ровно один контрол")
+		TEST_ASSERT_EQUAL(controls[1], operative_control, "В Dynamic диск кормит боевого одиночку")
+
+		GLOB.round_type = ROUNDTYPE_EXTENDED
+		controls = disk.operative_controls()
+		TEST_ASSERT_EQUAL(length(controls), 1, "В Extended диск кормит ровно один контрол")
+		TEST_ASSERT_EQUAL(controls[1], keeper_control, "В Extended диск кормит защитника диска")
+
+		// Диск лежит: вес растёт у профильного контрола и больше ни у кого.
+		operative_control.weight = 0
+		keeper_control.weight = 0
+		disk.grow_operative_weights(run_loc_floor_bottom_left)
+		TEST_ASSERT_EQUAL(keeper_control.weight, 1, "Лежащий диск обязан поднять вес защитника в Extended")
+		TEST_ASSERT_EQUAL(operative_control.weight, 0, "Весу контрола, недоступного профилю, расти не на чем")
+
+		// Диск понесли: вес гаснет (prob от веса, при 100 срабатывает всегда).
+		operative_control.weight = 100
+		keeper_control.weight = 100
+		disk.decay_operative_weights(run_loc_floor_bottom_left)
+		TEST_ASSERT_EQUAL(keeper_control.weight, 99, "Перенесённый диск обязан снять вес оперативника")
+		TEST_ASSERT_EQUAL(operative_control.weight, 100, "Гасить вес контрола, недоступного профилю, незачем")
+	catch(var/exception/e)
+		operative_control.weight = saved_operative_weight
+		keeper_control.weight = saved_keeper_weight
+		GLOB.round_type = saved_round_type
+		SSdirector.restore_simulation_state(saved)
+		throw e
+	operative_control.weight = saved_operative_weight
+	keeper_control.weight = saved_keeper_weight
+	GLOB.round_type = saved_round_type
+	SSdirector.restore_simulation_state(saved)
+
 
 /// Проверяет рефанд провального спавна гост-роли: попытка, кошелёк ступени и вклад intensity
 /// возвращаются сразу (иначе фантомная нагрузка глушила бы клапан давления 30 минут),
@@ -2259,6 +2324,126 @@
 		SSdirector.restore_simulation_state(saved)
 		throw e
 	SSdirector.restore_simulation_state(saved)
+
+/// Серия отказов удлиняет паузу только провалившегося действия, сохраняя бюджет для замены.
+/datum/unit_test/director_failure_backoff
+	var/list/saved
+
+/datum/unit_test/director_failure_backoff/Destroy()
+	if(saved)
+		SSdirector.restore_simulation_state(saved)
+	return ..()
+
+/datum/unit_test/director_failure_backoff/Run()
+	saved = SSdirector.capture_simulation_state()
+	SSdirector.profile = allocate(/datum/director_profile/medium)
+	SSdirector.reset_budgets(10)
+	SSdirector.action_failure_cooldowns = list()
+	SSdirector.action_failure_delays = list()
+	SSdirector.action_attempt_rollbacks = list()
+	SSdirector.time_override = round(world.time, 1) + 1
+	SSdirector.dry_run = FALSE
+	var/datum/director_action/test_stub/fails/failed = allocate(/datum/director_action/test_stub/fails)
+	failed.severity = DIRECTOR_SEVERITY_GHOST
+	failed.cost = 2
+	var/datum/director_action/test_stub/replacement = allocate(/datum/director_action/test_stub)
+	replacement.severity = DIRECTOR_SEVERITY_GHOST
+	SSdirector.actions = list(failed, replacement)
+	var/datum/director_signals/signals = allocate(/datum/director_signals)
+	signals.effective_crew = 40
+	for(var/pause_minutes in list(5, 10, 20, 30, 30))
+		TEST_ASSERT(!SSdirector.spend_and_execute(failed), "Отказ execute_action должен вернуть FALSE")
+		TEST_ASSERT_EQUAL(SSdirector.budgets[failed.severity], 10, "Отказы не должны расходовать бюджет замены")
+		TEST_ASSERT_EQUAL(failed.occurrences, 0, "Отказы не должны расходовать лимит успешных запусков")
+		var/deadline = SSdirector.action_failure_cooldowns[failed]
+		TEST_ASSERT_EQUAL(deadline - SSdirector.now(), pause_minutes MINUTES, "Пауза должна расти до получаса")
+		var/list/options = SSdirector.collect_pool_options(DIRECTOR_SEVERITY_GHOST, signals)
+		TEST_ASSERT(!(failed in options), "Неудачная роль должна выйти из выбора и копилки на время паузы")
+		TEST_ASSERT(replacement in options, "Другая роль должна оставаться доступной")
+		SSdirector.time_override = deadline - 1
+		TEST_ASSERT(SSdirector.action_recently_failed(failed), "До конца паузы повтор недоступен")
+		SSdirector.time_override = deadline
+		TEST_ASSERT(!SSdirector.action_recently_failed(failed), "На границе паузы повтор снова доступен")
+	SSdirector.confirm_action_success(failed)
+	SSdirector.spend_and_execute(failed)
+	TEST_ASSERT_EQUAL(SSdirector.action_failure_cooldowns[failed] - SSdirector.now(), 5 MINUTES, "После успеха серия отказов начинается заново")
+	SSdirector.time_override = SSdirector.action_failure_cooldowns[failed]
+	SSdirector.record_action_failure(replacement)
+	TEST_ASSERT(SSdirector.spend_and_execute(replacement), "Синхронное действие должно успешно запуститься")
+	TEST_ASSERT(isnull(SSdirector.action_failure_delays[replacement]), "Синхронный успех тоже должен сбрасывать серию отказов")
+	var/datum/round_event_control/fugitives/deferred = allocate(/datum/round_event_control/fugitives)
+	SSdirector.record_action_failure(deferred)
+	SSdirector.note_fired(deferred)
+	TEST_ASSERT_EQUAL(SSdirector.action_failure_delays[deferred], 5 MINUTES, "Начало опроса не должно сбрасывать серию до подтверждения спауна")
+	SSdirector.dry_run = TRUE // не создаём таймер замены в тестовом мире
+	SSdirector.note_failed_action(failed, retry_replacement = TRUE)
+	TEST_ASSERT_EQUAL(SSdirector.action_failure_cooldowns[failed] - SSdirector.now(), 10 MINUTES, "Отложенный провал должен учитывать ту же серию отказов")
+
+/// Повторный просмотр веса не должен усиливать штраф за один и тот же запуск.
+/datum/unit_test/director_ruleset_weight_is_read_only/Run()
+	var/datum/game_mode/dynamic/mode = allocate(/datum/game_mode/dynamic)
+	var/datum/dynamic_ruleset/midround/autotraitor/rule = allocate(/datum/dynamic_ruleset/midround/autotraitor)
+	rule.mode = mode
+	rule.weight = 6
+	rule.repeatable_weight_decrease = 2
+	mode.executed_rules = list(rule)
+	for(var/check in 1 to 100)
+		TEST_ASSERT_EQUAL(rule.get_weight(), 4, "Сто проверок одного запуска должны давать один и тот же вес")
+	TEST_ASSERT_EQUAL(rule.weight, 6, "Проверка не должна перезаписывать настроенный базовый вес")
+	mode.executed_rules += rule
+	TEST_ASSERT_EQUAL(rule.get_weight(), 2, "Второе исполнение должно добавить ровно один штраф")
+	rule.weight = 10
+	TEST_ASSERT_EQUAL(rule.get_weight(), 6, "Новый базовый вес должен учитывать прежние исполнения без накопленной порчи")
+	rule.mode = null
+	TEST_ASSERT_EQUAL(rule.get_weight(), 10, "Каталог без игрового режима должен возвращать базовый вес")
+
+/// Даже гарантированный бит не должен присылать боевых NPC экипажу из нескольких человек.
+/datum/unit_test/director_lowpop_hostile_events
+	var/list/saved
+
+/datum/unit_test/director_lowpop_hostile_events/Destroy()
+	if(saved)
+		SSdirector.restore_simulation_state(saved)
+	return ..()
+
+/datum/unit_test/director_lowpop_hostile_events/Run()
+	saved = SSdirector.capture_simulation_state()
+	SSdirector.profile = allocate(/datum/director_profile/extended)
+	SSdirector.actions = list(
+		allocate(/datum/round_event_control/gigachad_inteq),
+		allocate(/datum/round_event_control/space_mosquito),
+		allocate(/datum/round_event_control/headcrabs),
+		allocate(/datum/round_event_control/deathclaw_in_maints),
+		allocate(/datum/round_event_control/sniper),
+		allocate(/datum/round_event_control/mannequinrise),
+	)
+	SSdirector.reset_budgets(100)
+	SSdirector.last_fired_at = list()
+	SSdirector.family_last_fired_at = list()
+	SSdirector.time_override = world.time + 2 HOURS
+	for(var/datum/director_action/action as anything in SSdirector.actions)
+		action.earliest_start = 0
+	CONFIG_SET(flag/allow_random_events, TRUE)
+	var/datum/director_signals/signals = allocate(/datum/director_signals)
+	signals.staffing = list(DIRECTOR_DEPT_SECURITY = 4)
+	for(var/crew in list(3, 11))
+		signals.effective_crew = crew
+		TEST_ASSERT_EQUAL(length(SSdirector.filter_candidates(signals, guaranteed = TRUE)), 0, "Гарантия не должна обходить минимум экипажа для боевых NPC")
+	signals.effective_crew = 20
+	TEST_ASSERT_EQUAL(length(SSdirector.filter_candidates(signals, guaranteed = TRUE)), 6, "При достаточном экипаже все шесть событий должны остаться в пуле")
+
+/// Согласие на беглеца не должно пропадать из-за отдельного ролла размера команды.
+/datum/unit_test/director_fugitive_small_group/Run()
+	var/datum/round_event/ghost_role/fugitives/event = allocate(/datum/round_event/ghost_role/fugitives, FALSE)
+	event.kill()
+	TEST_ASSERT_EQUAL(length(event.get_backstories(0)), 0, "Без желающих спаун невозможен")
+	for(var/candidates in list(1, 2, 3))
+		var/list/backstories = event.get_backstories(candidates)
+		TEST_ASSERT_EQUAL(length(backstories), 1, "Малой группе нужен только одиночный сценарий")
+		TEST_ASSERT("waldo" in backstories, "Один желающий должен получить одиночного беглеца")
+	var/list/group_backstories = event.get_backstories(4)
+	for(var/backstory in list("prisoner", "cultist", "synth"))
+		TEST_ASSERT(backstory in group_backstories, "Для четырёх желающих должны сохраниться командные сценарии")
 
 /// Статический linger Spawn Slaughter Demon раньше держал 30 intensity ещё десятки минут после
 /// смерти. Живая группа должна дать вклад при жизни и исчезнуть сразу после смерти моба.
@@ -2895,6 +3080,17 @@
 		throw e
 	qdel(heretic_rule)
 	qdel(changeling_rule)
+
+/// Экипажная конверсия не выбирает игрока в крите или без сознания.
+/datum/unit_test/director_crew_conversion_skips_unconscious
+
+/datum/unit_test/director_crew_conversion_skips_unconscious/Run()
+	var/datum/dynamic_ruleset/midround/crew_conversion/heretic/rule = allocate(/datum/dynamic_ruleset/midround/crew_conversion/heretic)
+	var/mob/living/carbon/human/candidate = allocate(/mob/living/carbon/human)
+	TEST_ASSERT(rule.can_convert(candidate), "Член экипажа в сознании подходит для пробуждения")
+	candidate.adjustOxyLoss(160)
+	TEST_ASSERT_NOTEQUAL(candidate.stat, CONSCIOUS, "Удушье должно уронить кандидата в крит")
+	TEST_ASSERT(!rule.can_convert(candidate), "Игрок в крите не получает пробуждение")
 
 /// Гост-команды затухают по возрасту, а вне станции давят вполсилы: улетевшие с лутом
 /// рейдеры (прод-раунд: 45 нагрузки до конца смены) больше не запирают антаг-каналы

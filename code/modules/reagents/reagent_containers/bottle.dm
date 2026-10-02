@@ -25,17 +25,17 @@
 	if(reagents && reagents.total_volume)
 		var/mutable_appearance/filling = mutable_appearance('icons/obj/reagentfillings.dmi', "[cached_icon]-10", color = mix_color_from_reagents(reagents.reagent_list))
 
-		var/percent = round((reagents.total_volume / volume) * 100)
+		var/percent = round((reagents.total_volume / reagents.maximum_volume) * 100)
 		switch(percent)
 			if(0 to 9)
 				filling.icon_state = "[cached_icon]-10"
-			if(10 to 29)
+			if(10 to 25)
 				filling.icon_state = "[cached_icon]25"
-			if(30 to 49)
+			if(25 to 50)
 				filling.icon_state = "[cached_icon]50"
-			if(50 to 69)
+			if(50 to 75)
 				filling.icon_state = "[cached_icon]75"
-			if(70 to INFINITY)
+			if(75 to INFINITY)
 				filling.icon_state = "[cached_icon]100"
 
 		. += filling

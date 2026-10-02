@@ -51,10 +51,12 @@
 	.["sound_announcements"] = !!(toggles & SOUND_ANNOUNCEMENTS)
 	.["sound_bark"] = !!(toggles & SOUND_BARK)
 	.["sound_emote"] = !!(toggles & SOUND_EMOTE)
+	.["sound_breathing"] = !!(toggles & SOUND_BREATHING)
 	.["sound_prayers"] = !!(toggles & SOUND_PRAYERS)
 	.["sound_adminhelp"] = !!(toggles & SOUND_ADMINHELP)
 	.["sound_mentorhelp"] = !!(mentor_toggles & SOUND_MENTORHELP)
 	.["sound_fax"] = !!(toggles & SOUND_FAX)
+	.["sound_actions_button"] = !!(sound_toggles & SOUND_BUTTONS)
 
 	// Sound volumes
 	.["sound_volume_midi"] = sound_volume_midi
@@ -70,6 +72,8 @@
 	.["sound_volume_jukeboxes"] = sound_volume_jukeboxes
 	.["sound_volume_emote"] = sound_volume_emote
 	.["sound_volume_personal_jukeboxes"] = sound_volume_personal_jukeboxes
+	.["sound_volume_heretic_dance"] = sound_volume_heretic_dance
+	.["sound_volume_heretic_sky"] = sound_volume_heretic_sky
 
 	// Graphics toggles
 	.["parallax"] = parallax
@@ -121,6 +125,7 @@
 	// Gameplay: combat
 	.["disable_combat_cursor"] = disable_combat_cursor
 	.["disable_combat_mouse_lock"] = disable_combat_mouse_lock
+	.["smartlink"] = smartlink
 
 	// Screenshake
 	.["screenshake"] = screenshake
@@ -187,6 +192,10 @@
 	.["max_chat_length"] = max_chat_length
 	.["view_pixelshift"] = view_pixelshift
 	.["lighting_blur"] = lighting_blur
+	.["lighting_brightness"] = lighting_brightness
+	.["lighting_lamp_brightness"] = lighting_lamp_brightness
+	.["lighting_bloom_intensity"] = lighting_bloom_intensity
+	.["lighting_quality"] = lighting_quality
 	.["hud_toggle_color"] = hud_toggle_color
 	.["tgui_input_mode"] = tgui_input_mode
 	.["tgui_input_verbs"] = tgui_input_verbs
@@ -267,6 +276,9 @@
 							user.client.playtitlemusic()
 					else
 						user.stop_sound_channel(CHANNEL_LOBBYMUSIC)
+				if("sound_actions_button")
+					sound_toggles ^= SOUND_BUTTONS
+					dirty_var = "sound_toggles"
 				if("sound_midi")
 					toggles ^= SOUND_MIDI
 					if(!(toggles & SOUND_MIDI))
@@ -294,6 +306,12 @@
 					toggles ^= SOUND_BARK
 				if("sound_emote")
 					toggles ^= SOUND_EMOTE
+				if("sound_breathing")
+					toggles ^= SOUND_BREATHING
+					if(!(toggles & SOUND_BREATHING))
+						var/mob/living/carbon/carbon_mob = user
+						if(istype(carbon_mob))
+							carbon_mob.breathing_loop?.stop()
 				if("sound_prayers")
 					toggles ^= SOUND_PRAYERS
 				if("sound_adminhelp")
@@ -479,6 +497,11 @@
 				if("disable_combat_mouse_lock")
 					disable_combat_mouse_lock = !disable_combat_mouse_lock
 					dirty_var = "disable_combat_mouse_lock"
+				if("smartlink") //BLUEMOON ADD
+					smartlink = !smartlink
+					dirty_var = "smartlink"
+					if(isliving(user))
+						user.refresh_ammo_hud()
 			save_pref_var(dirty_var)
 			return TRUE
 
@@ -572,7 +595,41 @@
 					dirty_var = "lighting_blur"
 					if(user?.hud_used)
 						var/datum/hud/H = user.hud_used
-						for(var/plane in list(LIGHTING_PLANE, GAME_PLANE, ABOVE_WALL_PLANE, WALL_PLANE, FLOOR_PLANE, EMISSIVE_PLANE))
+						for(var/plane in list(LIGHTING_PLANE, GAME_PLANE, ABOVE_WALL_PLANE, WALL_PLANE, FLOOR_PLANE, EMISSIVE_PLANE, LIGHTING_LAMPS_PLANE, FLOOR_LIGHTING_LAMPS_PLANE, LIGHTING_LAMPS_SELFGLOW, FLOOR_LIGHTING_LAMPS_SELFGLOW, LIGHTING_LAMPS_GLARE, FLOOR_LIGHTING_LAMPS_GLARE, LIGHTING_EXPOSURE_PLANE, O_LIGHTING_VISUAL_PLANE))
+							var/atom/movable/screen/plane_master/PM = H.plane_masters["[plane]"]
+							PM?.backdrop(user)
+				if("lighting_brightness")
+					lighting_brightness = clamp(text2num(value), LIGHTING_BRIGHTNESS_MIN, LIGHTING_BRIGHTNESS_MAX)
+					if(user?.hud_used)
+						var/datum/hud/H = user.hud_used
+						for(var/plane in list(LIGHTING_PLANE, O_LIGHTING_VISUAL_PLANE, EMISSIVE_PLANE))
+							var/atom/movable/screen/plane_master/PM = H.plane_masters["[plane]"]
+							PM?.backdrop(user)
+				if("lighting_lamp_brightness")
+					lighting_lamp_brightness = clamp(text2num(value), LIGHTING_LAMP_BRIGHTNESS_MIN, LIGHTING_LAMP_BRIGHTNESS_MAX)
+					if(user?.hud_used)
+						var/datum/hud/H = user.hud_used
+						for(var/plane in list(LIGHTING_LAMPS_PLANE, FLOOR_LIGHTING_LAMPS_PLANE, LIGHTING_LAMPS_SELFGLOW, FLOOR_LIGHTING_LAMPS_SELFGLOW, LIGHTING_LAMPS_GLARE, FLOOR_LIGHTING_LAMPS_GLARE, LIGHTING_EXPOSURE_PLANE))
+							var/atom/movable/screen/plane_master/PM = H.plane_masters["[plane]"]
+							PM?.backdrop(user)
+				if("lighting_bloom_intensity")
+					lighting_bloom_intensity = clamp(text2num(value), LIGHTING_BLOOM_INTENSITY_MIN, LIGHTING_BLOOM_INTENSITY_MAX)
+					if(user?.hud_used)
+						var/datum/hud/H = user.hud_used
+						for(var/plane in list(LIGHTING_LAMPS_SELFGLOW, FLOOR_LIGHTING_LAMPS_SELFGLOW, EMISSIVE_PLANE))
+							var/atom/movable/screen/plane_master/PM = H.plane_masters["[plane]"]
+							PM?.backdrop(user)
+				if("lighting_quality")
+					lighting_quality = clamp(text2num(value), LIGHTING_QUALITY_FAST, LIGHTING_QUALITY_HIGH)
+					if(lighting_quality == LIGHTING_QUALITY_FAST)
+						// Откат к стандарту до LightUp: сброс всех параметров освещения
+						lighting_blur = 0
+						lighting_brightness = LIGHTING_BRIGHTNESS_DEFAULT
+						lighting_lamp_brightness = LIGHTING_LAMP_BRIGHTNESS_DEFAULT
+						lighting_bloom_intensity = 0
+					if(user?.hud_used)
+						var/datum/hud/H = user.hud_used
+						for(var/plane in list(LIGHTING_PLANE, GAME_PLANE, ABOVE_WALL_PLANE, WALL_PLANE, FLOOR_PLANE, EMISSIVE_PLANE, LIGHTING_LAMPS_PLANE, FLOOR_LIGHTING_LAMPS_PLANE, LIGHTING_LAMPS_SELFGLOW, FLOOR_LIGHTING_LAMPS_SELFGLOW, LIGHTING_LAMPS_GLARE, FLOOR_LIGHTING_LAMPS_GLARE, LIGHTING_EXPOSURE_PLANE, O_LIGHTING_VISUAL_PLANE))
 							var/atom/movable/screen/plane_master/PM = H.plane_masters["[plane]"]
 							PM?.backdrop(user)
 				if("preferred_chaos_level")

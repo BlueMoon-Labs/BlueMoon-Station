@@ -237,11 +237,14 @@
 /// Note: If you don't want repeatable rulesets to decrease their weight use the weight variable directly
 /// Сигнатура с опциональным signals переопределяет базовый director_action/get_weight(); существующие вызовы rule.get_weight() без аргументов не ломаются.
 /datum/dynamic_ruleset/get_weight(datum/director_signals/signals)
-	if(repeatable && weight > 1 && repeatable_weight_decrease > 0)
+	var/effective_weight = weight
+	// Оценка пула и перерисовка панели не являются новыми запусками: базовый вес
+	// сохраняется, а штраф считается только по уже исполненным рулсетам.
+	if(mode && repeatable && effective_weight > 1 && repeatable_weight_decrease > 0)
 		for(var/datum/dynamic_ruleset/DR in mode.executed_rules)
 			if(istype(DR, type))
-				weight = max(weight-repeatable_weight_decrease,1)
-	return weight
+				effective_weight = max(effective_weight-repeatable_weight_decrease,1)
+	return effective_weight
 
 /// Here you can remove candidates that do not meet your requirements.
 /// This means if their job is not correct or they have disconnected you can remove them from candidates here.

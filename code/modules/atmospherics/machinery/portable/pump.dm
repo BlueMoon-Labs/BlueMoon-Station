@@ -56,6 +56,8 @@
 		pump.airs[1] = holding ? air_contents : T.return_air()
 		pump.airs[2] = holding ? holding.air_contents : air_contents
 
+	// The holder decides when to work; the internal pump's own idle backoff would stall it for minutes.
+	pump.atmos_wake()
 	pump.process_atmos() // Pump gas.
 	if(!holding)
 		air_update_turf() // Update the environment if needed.

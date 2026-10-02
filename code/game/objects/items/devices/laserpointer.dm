@@ -186,7 +186,7 @@
 			to_chat(user, "<span class='warning'>[src]'s battery is overused, it needs time to recharge!</span>")
 			recharge_locked = TRUE
 
-	flick_overlay_view(I, targloc, 10)
+	flick_overlay_view_global(I, targloc, 10)
 	icon_state = "pointer"
 
 /obj/item/laser_pointer/process()

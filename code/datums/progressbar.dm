@@ -20,6 +20,8 @@
 
 /datum/progressbar/New(mob/User, goal_number, atom/target)
 	. = ..()
+	if(isnull(target))
+		target = User
 	if (!istype(target))
 		EXCEPTION("Invalid target given")
 	if(QDELETED(User) || !istype(User))
@@ -28,6 +30,13 @@
 		return
 	if(!isnum(goal_number))
 		stack_trace("/datum/progressbar created with [isnull(User) ? "null" : "invalid"] goal_number")
+		qdel(src)
+		return
+	//WHITE-STEEL PORT: цель отсутствует или уже удалена к моменту регистрации полосы.
+	//isnull/istype идут ДО QDELETED, иначе чтение члена у "протухшей" ссылки давало "Cannot read 0.gc_destroyed".
+	//user и bar_loc ставятся только после проверки: Destroy() читает user.progressbars[bar_loc].
+	if(isnull(target) || !istype(target, /atom) || QDELETED(target))
+		stack_trace("/datum/progressbar created with a missing or deleted target ([target])")
 		qdel(src)
 		return
 	goal = goal_number

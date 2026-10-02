@@ -32,6 +32,32 @@
 	saved_images = null
 	human = null
 
+/// Общая картинка переживает снятие одной внешности, но отпускает удаляемого владельца.
+/datum/unit_test/gc_alternate_appearance_shared_image/Run()
+	var/mob/target = allocate(/mob)
+	var/mob/first_viewer = allocate(/mob)
+	var/mob/second_viewer = allocate(/mob)
+	var/image/shared_image = image('icons/mob/hud.dmi', target, "")
+	var/datum/atom_hud/alternate_appearance/basic/first = allocate(/datum/atom_hud/alternate_appearance/basic, "shared_first", shared_image, FALSE)
+	var/datum/atom_hud/alternate_appearance/basic/second = allocate(/datum/atom_hud/alternate_appearance/basic, "shared_second", shared_image, FALSE)
+	first.add_hud_to(first_viewer)
+	second.add_hud_to(second_viewer)
+
+	qdel(first)
+	TEST_ASSERT_NULL(first.target, "Удалённая внешность удерживает владельца")
+	TEST_ASSERT_NULL(first.theImage, "Удалённая внешность удерживает картинку")
+	TEST_ASSERT_EQUAL(shared_image.loc, target, "Снятие одной внешности скрыло общую картинку живого владельца")
+	TEST_ASSERT_EQUAL(second.theImage, shared_image, "Вторая внешность потеряла общую картинку")
+	TEST_ASSERT_EQUAL(target.hud_list["shared_second"], shared_image, "Владелец потерял картинку второй внешности")
+	TEST_ASSERT(second.hudusers[second_viewer], "Вторая внешность потеряла своего зрителя")
+
+	qdel(target)
+	TEST_ASSERT(QDELETED(second), "Удаление владельца не удалило оставшуюся внешность")
+	TEST_ASSERT_NULL(shared_image.loc, "Общая картинка удерживает удалённого владельца")
+	TEST_ASSERT_NULL(second.target, "Удалённая внешность удерживает удалённого владельца")
+	TEST_ASSERT_NULL(second.theImage, "Удалённая внешность удерживает общую картинку")
+	TEST_ASSERT(!length(second.hudusers), "Удалённая внешность удерживает зрителей")
+
 /// Test: Destroy() properly clears last_mind reference
 /datum/unit_test/gc_human_last_mind_cleanup
 	parent_type = /datum/unit_test/gc_rewrite_base
@@ -123,3 +149,13 @@
 
 	// Verify the Destroy chain ran without runtimes
 	// (runtimes during fire cycles would cause test failure)
+
+/// Удаление разума отвязывает даже тело, назначенное без set_current().
+/datum/unit_test/mind_destroy_detaches_body/Run()
+	var/mob/living/carbon/human/body = allocate(/mob/living/carbon/human)
+	var/datum/mind/soul = allocate_mind()
+	soul.current = body
+	body.mind = soul
+	qdel(soul)
+	TEST_ASSERT_NULL(body.mind, "Тело не хранит удалённый разум.")
+	qdel(body)

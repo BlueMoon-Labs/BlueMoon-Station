@@ -43,6 +43,7 @@
 	name = "Thermal Vision"
 	desc = "The user of this genome can visually percieve the unique human thermal signature."
 	quality = POSITIVE
+	mutator_security_level = THERMAL_PRINT_CODE
 	difficulty = 18
 	text_gain_indication = "<span class='notice'>You can see the heat rising off of your skin...</span>"
 	time_coeff = 2
@@ -67,6 +68,7 @@
 /datum/mutation/human/thermal/x_ray
 	name = "X-Ray Vision"
 	desc = "An unstable former X-Ray genome, now simply applying the thermal vision for user." //actual x-ray would mean you'd constantly be blasting rads, wich might be fun for later //hmb
+	mutator_security_level = XRAY_PRINT_CODE
 	text_gain_indication = "<span class='notice'>The walls suddenly disappear!</span>"
 	instability = 50
 	locked = TRUE
@@ -78,6 +80,7 @@
 	name = "Laser Eyes"
 	desc = "Reflects concentrated light back from the eyes."
 	quality = POSITIVE
+	mutator_security_level = LASEREYES_PRINT_CODE
 	locked = TRUE
 	difficulty = 16
 	text_gain_indication = "<span class='notice'>You feel pressure building up behind your eyes.</span>"
@@ -103,6 +106,7 @@
 	name = "Flash Protection"
 	desc = "The host's eyes resist blinding light from flashes and flashbangs."
 	quality = POSITIVE
+	mutator_security_level = FLASHPROTECT_PRINT_CODE
 	difficulty = 12
 	instability = 25
 	locked = TRUE

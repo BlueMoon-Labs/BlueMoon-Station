@@ -19,7 +19,7 @@
 	expire_time = world.time + decay_duration
 	font_size = text_size
 
-	overlay = overlay_target
+	overlay = image(overlay_target)
 	overlay.loc = target_loc_ref
 	overlay.plane = BYOND_LIGHTING_PLANE
 	overlay.alpha = 150
@@ -76,10 +76,8 @@
 	for(var/datum/image_holder_data/entry in image_data_entries)
 		if(entry.overlay && owner?.host_mob?.client)
 			owner?.host_mob?.client.images -= entry.overlay
-	//Снять оверлеи с клиента было мало: у каждой живой записи свой экранный
-	//объект /atom/movable/screen/text, и удалить его умеет только её Destroy.
-	//Снятие HUD-очков оставляло по одному такому экрану на запись.
 	QDEL_LIST(image_data_entries)
+	QDEL_LIST(removed)
 	. = ..()
 
 

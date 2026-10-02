@@ -67,8 +67,6 @@
 
 //Waddle
 
-//Waddling element not yet portee, commented out for now.
-/*
 /obj/item/mod/module/waddle
 	name = "MOD waddle module"
 	desc = "Some of the most primitive technology in use by HonkCo. This module works off an automatic intention system, \
@@ -78,19 +76,21 @@
 		to waddle around, bouncing to and fro with a pep in their step."
 	icon_state = "waddle"
 	idle_power_cost = DEFAULT_CHARGE_DRAIN * 0.2
+	module_type = MODULE_TOGGLE
 	removable = FALSE
 	incompatible_modules = list(/obj/item/mod/module/waddle)
+	required_modpart_index = MOD_PART_FEET
+	startup_with_suit = TRUE
 
-/obj/item/mod/module/waddle/on_suit_activation()
-	mod.AddComponent(/datum/component/squeak, list('sound/effects/clownstep1.ogg'=1,'sound/effects/clownstep2.ogg'=1), 50, falloff_exponent = 20) //die off quick please
-	mod.wearer.AddElement(/datum/element/waddling)
-	if(is_clown_job(mod.wearer.mind?.assigned_role))
-		SEND_SIGNAL(mod.wearer, COMSIG_ADD_MOOD_EVENT, "clownshoes", /datum/mood_event/clownshoes)
+/obj/item/mod/module/waddle/on_activation()
+	var/obj/item/clothing/mod_part/shoes = mod.get_boots()
+	shoes.AddComponent(/datum/component/squeak, list('sound/effects/clownstep1.ogg'=1,'sound/effects/clownstep2.ogg'=1), 50)
+	mod.wearer.LoadComponent(/datum/component/waddling)
+	if(mod.wearer.mind && HAS_TRAIT(mod.wearer.mind, TRAIT_CLOWN_MENTALITY))
+		SEND_SIGNAL(mod.wearer, COMSIG_CLEAR_MOOD_EVENT, "noshoes")
 
-/obj/item/mod/module/waddle/on_suit_deactivation()
-	qdel(mod.GetComponent(/datum/component/squeak))
-	mod.wearer.RemoveElement(/datum/element/waddling)
-	if(is_clown_job(mod.wearer.mind?.assigned_role))
-		SEND_SIGNAL(mod.wearer, COMSIG_CLEAR_MOOD_EVENT, "clownshoes")
-
-*/
+/obj/item/mod/module/waddle/on_deactivation()
+	var/datum/component/waddling/waddle_component = mod.wearer.GetComponent(/datum/component/waddling)
+	waddle_component?.RemoveComponent()
+	if(mod.wearer.mind && HAS_TRAIT(mod.wearer.mind, TRAIT_CLOWN_MENTALITY))
+		SEND_SIGNAL(mod.wearer, COMSIG_ADD_MOOD_EVENT, "noshoes", /datum/mood_event/noshoes)

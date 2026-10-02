@@ -7,6 +7,20 @@
 	item_state = "brigphysicianvest"
 	armor = list("melee" = 30, "bullet" = 30, "laser" = 30, "energy" = 10, "bomb" = 0, "bio" = 40, "rad" = 0, "fire" = 50, "acid" = 40)
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	brc_mitigation_bonus = BRC_MITIGATION_10  // BLUEMOON ADD
+
+/obj/item/clothing/suit/brigdoc/equipped(mob/user, slot)
+	. = ..()
+	if(slot == ITEM_SLOT_OCLOTHING && brc_mitigation_bonus > 0 && isliving(user))
+		user.brc_mitigation += brc_mitigation_bonus
+		brc_worn = TRUE
+
+/obj/item/clothing/suit/brigdoc/dropped(mob/user)
+	. = ..()
+	if(brc_worn && isliving(user))
+		user.brc_mitigation = max(0, user.brc_mitigation - brc_mitigation_bonus)
+		brc_worn = FALSE
+// BLUEMOON ADD END
 
 /obj/item/clothing/suit/armor/brigdoc/labcoat
 	name = "Brig Physician Lab Coat"
@@ -26,6 +40,7 @@
 	mob_overlay_icon = 'modular_splurt/icons/mobs/suits.dmi'
 	icon_state = "secmed_armor"
 	item_state = "secmed_armor"
+	brc_mitigation_bonus = 10  // BLUEMOON ADD
 	unique_reskin = list(
 		"Alt" = list("icon_state" = "secmed_armor_alt")
 	)
@@ -36,7 +51,7 @@
 	icon_state = "guard_armor"
 	item_state = "guard_armor"
 	armor = list("melee" = 35, "bullet" = 35, "laser" = 30, "energy" = 40, "bomb" = 25, "bio" = 0, "rad" = 0, "fire" = 70, "acid" = 90, "wound" = 20)
-	brc_mitigation_bonus = 10
+	brc_mitigation_bonus = 15  // BLUEMOON ADD
 
 /obj/item/clothing/suit/armor/vest/blueshield/spacecoat
 	name = "Blueshield Peacekeeper Spacecoat"

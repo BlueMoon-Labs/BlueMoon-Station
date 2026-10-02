@@ -72,9 +72,7 @@
 	//жертва проклятия не может быть потеряна или подменена
 	if(controller.blackboard[BB_AI_CURRENT_TARGET] != victim)
 		controller.set_blackboard_key(BB_AI_CURRENT_TARGET, victim)
-	//легаси-движение: телепорт-шаги; цикл самоподдерживающийся (waitfor = FALSE),
-	//повторный вызов при живом цикле - no-op. Задержка в легаси-единицах sleep().
-	blob.move_loop(victim, blob.move_to_delay)
+	blob.move_loop()
 	var/atom/attack_origin = blob.targets_from || blob
 	if(victim.Adjacent(attack_origin))
 		blob.in_melee = TRUE

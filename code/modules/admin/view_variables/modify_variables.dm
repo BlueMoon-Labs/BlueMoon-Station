@@ -99,7 +99,11 @@ GLOBAL_PROTECT(VVpixelmovement)
 
 	switch(alert("Would you like to associate a value with the list entry?",,"Да","Нет"))
 		if("Да")
-			L[var_value] = mod_list_add_ass(O) //hehe
+			var/ass_value = mod_list_add_ass(O)
+			if(isnum(var_value) && (var_value < 1 || var_value > L.len)) // числовой ключ вне границ обычного списка упал бы с runtime'ом
+				to_chat(src, "Нельзя связать значение с числовым ключом вне границ списка.", confidential = TRUE)
+			else
+				L[var_value] = ass_value
 	if (O)
 		if (O.vv_edit_var(objectvar, L) == FALSE)
 			to_chat(src, "Your edit was rejected by the object.", confidential = TRUE)

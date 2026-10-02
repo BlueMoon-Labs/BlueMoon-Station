@@ -270,6 +270,21 @@ TOGGLE_CHECKBOX(/datum/verbs/menu/Settings/Sound, toggle_bark)()
 /datum/verbs/menu/Settings/Sound/toggle_bark/Get_checked(client/C)
 	return C.prefs.toggles & SOUND_BARK
 
+TOGGLE_CHECKBOX(/datum/verbs/menu/Settings/Sound, toggle_breathing)()
+	set name = "Hear/Silence Breathing Sounds"
+	set category = "Preferences.Sounds"
+	set desc = "Hear Breathing Sounds"
+	usr.client.prefs.toggles ^= SOUND_BREATHING
+	usr.client.prefs.save_preferences()
+	to_chat(usr, "You will now [(usr.client.prefs.toggles & SOUND_BREATHING) ? "hear" : "no longer hear"] breathing sounds from internals.")
+	if(!(usr.client.prefs.toggles & SOUND_BREATHING))
+		var/mob/living/carbon/carbon_mob = usr
+		if(istype(carbon_mob))
+			carbon_mob.breathing_loop?.stop()
+	SSblackbox.record_feedback("nested tally", "preferences_verb", 1, list("Toggle Breathing Sounds", "[usr.client.prefs.toggles & SOUND_BREATHING ? "Enabled" : "Disabled"]"))
+/datum/verbs/menu/Settings/Sound/toggle_breathing/Get_checked(client/C)
+	return C.prefs.toggles & SOUND_BREATHING
+
 TOGGLE_CHECKBOX(/datum/verbs/menu/Settings/Sound, toggleeatingnoise)()
 	set name = "Toggle Eating Noises"
 	set category = "Preferences.Sounds"

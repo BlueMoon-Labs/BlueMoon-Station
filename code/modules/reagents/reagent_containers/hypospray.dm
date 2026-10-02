@@ -328,18 +328,18 @@
 #define HYPO_SPRAY 0
 #define HYPO_INJECT 1
 
-#define WAIT_SPRAY 25
-#define WAIT_INJECT 25
-#define SELF_SPRAY 15
-#define SELF_INJECT 15
+#define WAIT_SPRAY 1 SECONDS
+#define WAIT_INJECT 2 SECONDS
+#define SELF_SPRAY 0.5 SECONDS
+#define SELF_INJECT 1 SECONDS
 
-#define DELUXE_WAIT_SPRAY 20
-#define DELUXE_WAIT_INJECT 20
-#define DELUXE_SELF_SPRAY 10
-#define DELUXE_SELF_INJECT 10
+#define DELUXE_WAIT_SPRAY 0.7 SECONDS
+#define DELUXE_WAIT_INJECT 1.5 SECONDS
+#define DELUXE_SELF_SPRAY 0.3 SECONDS
+#define DELUXE_SELF_INJECT 0.5 SECONDS
 
-#define COMBAT_WAIT_SPRAY 15
-#define COMBAT_WAIT_INJECT 15
+#define COMBAT_WAIT_SPRAY 0.5 SECONDS
+#define COMBAT_WAIT_INJECT 1 SECONDS
 #define COMBAT_SELF_SPRAY 0
 #define COMBAT_SELF_INJECT 0
 
@@ -347,19 +347,23 @@
 /obj/item/hypospray/mkii
 	name = "hypospray mk.II"
 	icon_state = "hypo2"
+	item_state = "hypo"
 	icon = 'icons/obj/syringe.dmi'
-	desc = "Новая разработка DeForest Medical, этот гипоспрей принимает гипоампулы по 30u и поддерживает функцию быстрой перезарядки."
+	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
+	desc = "Новая разработка DeForest Medical, этот гипоспрей принимает маленькие гипоампулы и поддерживает функцию быстрой перезарядки."
 	w_class = WEIGHT_CLASS_TINY
 	var/list/allowed_containers = list(/obj/item/reagent_containers/glass/bottle/vial/tiny, /obj/item/reagent_containers/glass/bottle/vial/small)
+	var/reagent_overlay_state = "small-r_overlay"
+	var/reagent_overlay_max_stages = 6
 	var/mode = HYPO_INJECT
 	var/obj/item/reagent_containers/glass/bottle/vial/vial
 	var/start_vial = /obj/item/reagent_containers/glass/bottle/vial/small
-	var/spawnwithvial = TRUE
 	var/inject_wait = WAIT_INJECT
 	var/spray_wait = WAIT_SPRAY
 	var/spray_self = SELF_SPRAY
 	var/inject_self = SELF_INJECT
-	var/quickload = FALSE
+	var/quickload = TRUE
 	var/penetrates = FALSE
 
 /obj/item/hypospray/mkii/brute
@@ -377,16 +381,20 @@
 /obj/item/hypospray/mkii/tricord
 	start_vial = /obj/item/reagent_containers/glass/bottle/vial/small/tricord
 
+/obj/item/hypospray/mkii/multi_heal
+	start_vial = /obj/item/reagent_containers/glass/bottle/vial/small/multi_heal
+
 /obj/item/hypospray/mkii/enlarge
-	spawnwithvial = FALSE
+	start_vial = null
 
 /obj/item/hypospray/mkii/CMO
 	name = "hypospray mk.II deluxe"
 	allowed_containers = list(/obj/item/reagent_containers/glass/bottle/vial/tiny, /obj/item/reagent_containers/glass/bottle/vial/small, /obj/item/reagent_containers/glass/bottle/vial/large)
 	icon_state = "cmo2"
+	reagent_overlay_state = "big-r_overlay"
 	desc = "Deluxe-модель гипроспрея, способная принимать ампулы большого размера. Помимо этого, работает быстре и доставляет больше препаратов за раз."
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | ACID_PROOF
-	start_vial = /obj/item/reagent_containers/glass/bottle/vial/large/CMO
+	start_vial = /obj/item/reagent_containers/glass/bottle/vial/large/multi_heal
 	inject_wait = DELUXE_WAIT_INJECT
 	spray_wait = DELUXE_WAIT_SPRAY
 	spray_self = DELUXE_SELF_SPRAY
@@ -407,27 +415,23 @@
 /obj/item/hypospray/mkii/CMO/combat/synthflesh
 	name = "Combat Hypospray with Neosynth"
 	icon = 'icons/obj/syringe.dmi'
-	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
-	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
 	mode = HYPO_SPRAY
+	reagent_overlay_state = "combat-r_overlay"
+	reagent_overlay_max_stages = 5
+	icon_state = "holy_hypo_mk2"
 	item_state = "holy_hypo"
-	icon_state = "holy_hypo"
 	start_vial = /obj/item/reagent_containers/glass/bottle/vial/large/synthflesh/neo
 
 /obj/item/hypospray/mkii/CMO/combat/synthflesh/painkiller
 	name = "Combat Hypospray with Painkiller"
 	icon_state = "combat2"
-	start_vial = /obj/item/reagent_containers/glass/bottle/vial/large/synthflesh/mine_salve
-
-/datum/reagent/medicine/mine_salve
+	start_vial = /obj/item/reagent_containers/glass/bottle/vial/large/mine_salve
 
 /obj/item/hypospray/mkii/Initialize(mapload)
 	. = ..()
-	if(!spawnwithvial)
-		update_icon()
-		return
 	if(start_vial)
 		vial = new start_vial(src)
+		reagents = vial.reagents
 	update_icon()
 	register_context()
 	register_item_context()
@@ -436,7 +440,14 @@
 	. = ..()
 	// Did you know that clicking something while you're holding it is the same as attack_self()?
 	if(vial && (held_item == src))
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Убрать [vial]")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Убрать гипоампулу")
+	else if(istype(held_item, /obj/item/reagent_containers/glass/bottle/vial))
+		if(vial)
+			if(quickload)
+				LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Заменить гипоампулу")
+		else
+			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Вставить гипоампулу")
+
 	LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Режим: [mode ? "спрей" : "инъекция"]")
 	LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Задать объем передачи")
 	return CONTEXTUAL_SCREENTIP_SET
@@ -446,56 +457,33 @@
 	if(iscarbon(target))
 		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, mode ? "Инъекция" : "Спрей")
 		return CONTEXTUAL_SCREENTIP_SET
+	if(check_quik_kit_load(target))
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Заменить гипоампулу")
+		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/item/hypospray/mkii/ComponentInitialize()
 	. = ..()
 	AddElement(/datum/element/update_icon_updates_onmob)
 
 /obj/item/hypospray/mkii/update_icon_state()
-	icon_state = "[initial(icon_state)][vial ? "" : "-e"]"
+	var/bs_vial = vial && (istype(vial, /obj/item/reagent_containers/glass/bottle/vial/small/bluespace) || istype(vial, /obj/item/reagent_containers/glass/bottle/vial/large/bluespace))
+	icon_state = "[initial(icon_state)][vial ? (bs_vial ? "-bs" : null) : "-e"]"
+
+/obj/item/hypospray/mkii/update_overlays()
+	. = ..()
+	if(reagent_overlay_state && vial?.reagents.total_volume)
+		var/overlay_stage = clamp(ceil((vial.reagents.total_volume / vial.reagents.maximum_volume) * reagent_overlay_max_stages), 1, reagent_overlay_max_stages)
+		. += mutable_appearance(icon, "[reagent_overlay_state][overlay_stage]", color = mix_color_from_reagents(vial.reagents.reagent_list))
 
 /obj/item/hypospray/mkii/examine(mob/user)
 	. = ..()
-	if(vial)
-		. += "В [vial] осталось [vial.reagents.total_volume]u."
-	else
-		. += "Внутри нет ампулы."
-	. += span_info("[src] выставлен в режим [mode ? "инъекции" : "спрея тела"] пациента.")
-
-/obj/item/hypospray/mkii/proc/unload_hypo(obj/item/I, mob/user)
-	if((istype(I, /obj/item/reagent_containers/glass/bottle/vial)))
-		var/obj/item/reagent_containers/glass/bottle/vial/V = I
-		V.forceMove(user.loc)
-		user.put_in_hands(V)
-		to_chat(user, "<span class='notice'>Вы извлекли [vial] из [src].</span>")
-		vial = null
-		update_icon()
-		playsound(loc, 'sound/weapons/empty.ogg', 50, 1)
-	else
-		to_chat(user, "<span class='notice'>Этот гипоспрей не заряжен!</span>")
-		return
+	. += span_info("Внутри [vial ? "<b>[vial].</b>" : "нет гипоампулы."]")
+	. += span_info("Установлен режим <b>[mode ? "инъекции" : "спрея"].</b>")
+	. += span_info("Вы можете заряжать ампулы прямо из набора с гипоампулами или медицинского пояса, не беря их в руку.")
+	. += span_notice("<b>Ctrl-Click</b> для переключения режима со спрея на инъекции и наоборот.")
 
 /obj/item/hypospray/mkii/attackby(obj/item/I, mob/living/user)
-	if((istype(I, /obj/item/reagent_containers/glass/bottle/vial) && vial != null))
-		if(!quickload)
-			to_chat(user, "<span class='warning'>[src] не может держать больше одной ампулы!</span>")
-			return FALSE
-		unload_hypo(vial, user)
-	if((istype(I, /obj/item/reagent_containers/glass/bottle/vial)))
-		var/obj/item/reagent_containers/glass/bottle/vial/V = I
-		if(!is_type_in_list(V, allowed_containers))
-			to_chat(user, "<span class='notice'>[src] не принимает этот тип ампул.</span>")
-			return FALSE
-		if(!user.transferItemToLoc(V,src))
-			return FALSE
-		vial = V
-		user.visible_message("<span class='notice'>[user] зарядил ампулу в [src].</span>","<span class='notice'>Вы зарядили [vial] в [src].</span>")
-		update_icon()
-		playsound(loc, 'sound/weapons/autoguninsert.ogg', 35, 1)
-		return TRUE
-	else
-		to_chat(user, "<span class='notice'>Это не поместится в [src].</span>")
-		return FALSE
+	return load_hypo_attempt(I, user)
 
 /obj/item/hypospray/mkii/AltClick(mob/user)
 	. = ..()
@@ -525,16 +513,64 @@
 /obj/item/hypospray/mkii/attack(obj/item/I, mob/user, params)
 	return
 
+/obj/item/hypospray/mkii/proc/check_quik_kit_load(obj/item/reagent_containers/glass/bottle/vial/V)
+	. = FALSE
+	if(!(quickload || !vial) || !istype(V) || !(istype(V.loc, /obj/item/storage/hypospraykit) || istype(V.loc, /obj/item/storage/belt/medical)))
+		return
+	return TRUE
+
+/obj/item/hypospray/mkii/proc/load_hypo_attempt(obj/item/reagent_containers/glass/bottle/vial/V, mob/user, vial_loc_transfer)
+	if(!istype(V))
+		return FALSE
+	if(!is_type_in_list(V, allowed_containers))
+		to_chat(user, span_notice("[src] не принимает этот тип ампул."))
+		return FALSE
+	if(!user.transferItemToLoc(V,src))
+		return FALSE
+	var/obj/item/unloaded_vial
+	if(vial != null)
+		if(!quickload)
+			to_chat(user, span_warning("[src] не может держать больше одной ампулы!"))
+			return FALSE
+		unloaded_vial = vial
+		unload_hypo()
+	vial = V
+	reagents = vial.reagents
+	if(unloaded_vial)
+		if(vial_loc_transfer)
+			unloaded_vial.forceMove(vial_loc_transfer)
+		else
+			user.put_in_hands(unloaded_vial)
+	user.visible_message(span_notice("[user] зарядил ампулу в [src]."),span_notice("Вы зарядили [vial] в [src]."))
+	update_icon()
+	playsound(loc, 'sound/weapons/autoguninsert.ogg', 35, 1)
+	return TRUE
+
+/obj/item/hypospray/mkii/proc/unload_hypo(mob/user)
+	if(vial)
+		vial.forceMove(drop_location())
+		if(user)
+			user.put_in_hands(vial)
+			to_chat(user, span_notice("Вы извлекли [vial] из [src]."))
+		vial = null
+		reagents = null
+		update_icon()
+		playsound(loc, 'sound/weapons/empty.ogg', 50, 1)
+
 /obj/item/hypospray/mkii/afterattack(atom/target, mob/user, proximity)
 	. = ..()
-	INVOKE_ASYNC(src, PROC_REF(attempt_inject), target, user, proximity)
+	if(!proximity)
+		return
+	if(isliving(target))
+		attempt_inject(target, user)
+	else if(check_quik_kit_load(target))
+		load_hypo_attempt(target, user, target.loc)
 
-/obj/item/hypospray/mkii/proc/attempt_inject(atom/target, mob/user, proximity)
-	if(!proximity || !isliving(target))
+/obj/item/hypospray/mkii/proc/attempt_inject(mob/living/L, mob/user)
+	if(!istype(L))
 		return
 	if(!vial?.reagents)
 		return
-	var/mob/living/L = target
 
 	if(!L.reagents || !L.can_inject(user, TRUE, user.zone_selected, penetrates))
 		return
@@ -542,53 +578,50 @@
 	var/obj/item/bodypart/affecting = L.get_bodypart(check_zone(user.zone_selected))
 	if(iscarbon(L))
 		if(!affecting)
-			to_chat(user, "<span class='warning'>Конечность отсутствует!</span>")
+			to_chat(user, span_warning("Конечность отсутствует!"))
 			return
 		if(!affecting.is_organic_limb())
-			to_chat(user, "<span class='notice'>Препараты не работают на роботических конечностях!</span>")
+			to_chat(user, span_notice("Препараты не работают на роботических конечностях!"))
 			return
 		else if(!affecting.is_organic_limb(FALSE) && mode != HYPO_INJECT)
-			to_chat(user, "<span class='notice'>Биомеханические конечности могут быть обслужены только через их интегрированный порт для инъекций, не спреем!</span>")
+			to_chat(user, span_notice("Биомеханические конечности могут быть обслужены только через их интегрированный порт для инъекций, не спреем!"))
 			return
 	//Always log attemped injections for admins
 	var/contained = vial.reagents.log_list()
 	log_combat(user, L, "attemped to inject", src, addition="which had [contained]")
 
 	if(!vial.reagents.total_volume)
-		to_chat(user, "<span class='notice'>Ампула внутри [src] пуста!</span>")
+		to_chat(user, span_notice("Ампула внутри [src] пуста!"))
 		return
 
 	var/fp_verb = mode == HYPO_SPRAY ? "нанести спрей" : "сделать инъекцию"
 	var/method = mode == HYPO_SPRAY ? PATCH : INJECT	//Medsprays use patch when spraying, feels like an inconsistancy here.
 
 	if(L != user)
-		L.visible_message("<span class='danger'>[user] пытается [fp_verb] [L] при помощи [src]!</span>", \
-						"<span class='userdanger'>[user] пытается [fp_verb] вам при помощи [src]!</span>")
+		L.visible_message(span_danger("[user] пытается [fp_verb] [L] при помощи [src]!"), \
+						span_userdanger("[user] пытается [fp_verb] вам при помощи [src]!"))
 	if(!do_mob(user, L, inject_wait, extra_checks = CALLBACK(L, TYPE_PROC_REF(/mob/living, can_inject), user, FALSE, user.zone_selected, penetrates)))
 		return
 	if(!vial?.reagents?.total_volume)
 		return
 	log_attack("<font color='red'>[user.name] ([user.ckey]) applied [src] to [L.name] ([L.ckey]), which had [contained] (INTENT: [uppertext(user.a_intent)]) (MODE: [mode])</font>")
 	if(L != user)
-		L.visible_message("<span class='danger'>[user] использует [src] на [L]!</span>", \
-						"<span class='userdanger'>[user] использует [src] на вас!</span>")
+		L.visible_message(span_danger("[user] использует [src] на [L]!"), \
+						span_userdanger("[user] использует [src] на вас!"))
 
 	var/fraction = min(vial.amount_per_transfer_from_this/vial.reagents.total_volume, 1)
 	vial.reagents.reaction(L, method, fraction, affected_bodypart = affecting)
-	vial.reagents.trans_to(target, vial.amount_per_transfer_from_this, log = "hypospray fill")
+	vial.reagents.trans_to(L, vial.amount_per_transfer_from_this, log = "hypospray fill")
 	var/long_sound = vial.amount_per_transfer_from_this >= 15
 	playsound(loc, long_sound ? 'sound/items/medi/hypospray_long.ogg' : pick('sound/items/medi/hypospray.ogg','sound/items/medi/hypospray2.ogg'), 50, 1, -1)
-	to_chat(user, "<span class='notice'>Вы истратили [vial.amount_per_transfer_from_this]u смеси. Ампула гипоспрея теперь содержит [vial.reagents.total_volume]u.</span>")
+	to_chat(user, span_notice("Вы истратили [vial.amount_per_transfer_from_this]u смеси. Ампула гипоспрея теперь содержит [vial.reagents.total_volume]u."))
 
 /obj/item/hypospray/mkii/attack_self(mob/living/user)
 	if(user)
 		if(user.incapacitated())
 			return
-		else if(!vial)
-			to_chat(user, "Гипоспрей сначала должен быть заряжен!")
-			return
-		else
-			unload_hypo(vial,user)
+		else if(vial)
+			unload_hypo(user)
 
 /obj/item/hypospray/mkii/CtrlClick(mob/living/user)
 	. = ..()
@@ -596,15 +629,11 @@
 		switch(mode)
 			if(HYPO_SPRAY)
 				mode = HYPO_INJECT
-				to_chat(user, "[src] теперь будет производить инъекции пациенту.")
+				user.balloon_alert(user, "Режим инъекции")
 			if(HYPO_INJECT)
 				mode = HYPO_SPRAY
-				to_chat(user, "[src] теперь будет спреить участок тела пациента.")
+				user.balloon_alert(user, "Режим спрея")
 		return TRUE
-
-/obj/item/hypospray/mkii/examine(mob/user)
-	. = ..()
-	. += "<span class='notice'><b>Ctrl-Click</b> для переключения режима со спрея на инъекции и наоборот.</span>"
 
 #undef HYPO_SPRAY
 #undef HYPO_INJECT

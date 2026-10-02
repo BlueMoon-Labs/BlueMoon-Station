@@ -8,6 +8,7 @@
 /datum/round_event_control/headcrabs
 	name = "Headcrabs"
 	typepath = /datum/round_event/headcrabs
+	min_players = 15
 	weight = 10
 	max_occurrences = 1
 	category = EVENT_CATEGORY_ENTITIES

@@ -432,7 +432,7 @@
 
 		user.mob_light(_color = LIGHT_COLOR_BLOOD_MAGIC, _range = 3, _duration = 2)
 
-		var/anti_magic_source = L.anti_magic_check()
+		var/anti_magic_source = L.check_magic_resistance()
 		if(anti_magic_source)
 
 			L.mob_light(_color = LIGHT_COLOR_HOLY_MAGIC, _range = 2, _duration = 100)
@@ -455,6 +455,8 @@
 					if(L.move_resist < MOVE_FORCE_STRONG)
 						var/atom/throw_target = get_edge_target_turf(L, user.dir)
 						L.throw_at(throw_target, 7, 1, user)
+			else if(IS_HERETIC(L))
+				L.apply_heretic_cult_stun()
 			else if(!is_servant_of_ratvar(L))
 				L.DefaultCombatKnockdown(160)
 				L.adjustStaminaLoss(140) //Ensures hard stamcrit

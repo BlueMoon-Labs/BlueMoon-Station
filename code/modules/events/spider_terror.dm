@@ -1,11 +1,10 @@
-#define TS_HIGHPOP_TRIGGER 100
-#define TS_MIDPOP_TRIGGER 80
-#define TS_MINPLAYERS_TRIGGER 50
+#define TS_HIGHPOP_TRIGGER 70
+#define TS_MIDPOP_TRIGGER 50
 
 /datum/round_event_control/spider_terror
 	name = "Terror Spider Infestation"
 	typepath = /datum/round_event/ghost_role/spider_terror
-	weight = 2
+	weight = 3
 	max_occurrences = 1
 	// 40 попа не набиралось ни в одном раунде логов 9766-9775 кроме хард-пиков: гнездо
 	// оставалось контентом никогда. 35 = пиковый медиум и типичный хард; ниже не опускаем -
@@ -51,9 +50,11 @@
 
 	var/spider_type
 	var/infestation_type
-	if((length(GLOB.clients)) >= TS_HIGHPOP_TRIGGER)
+	// Госты и посетители кафе не защищают станцию: сила выводка зависит от экипажа.
+	var/datum/director_signals/signals = SSdirector.collect_signals()
+	if(signals.effective_crew >= TS_HIGHPOP_TRIGGER)
 		infestation_type = pick(5, 6)
-	else if((length(GLOB.clients)) >= TS_MIDPOP_TRIGGER)
+	else if(signals.effective_crew >= TS_MIDPOP_TRIGGER)
 		infestation_type = pick(3, 4)
 	else
 		infestation_type = pick(1, 2)
@@ -90,6 +91,5 @@
 		successSpawn = TRUE
 	return successSpawn ? SUCCESSFUL_SPAWN : NOT_ENOUGH_PLAYERS
 
-#undef TS_MINPLAYERS_TRIGGER
 #undef TS_HIGHPOP_TRIGGER
 #undef TS_MIDPOP_TRIGGER

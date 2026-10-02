@@ -518,6 +518,7 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 4
 	},
+/obj/item/storage/firstaid/brute,
 /turf/open/floor/plasteel/white,
 /area/shuttle/escape)
 "bf" = (
@@ -698,18 +699,29 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/escape)
+"hR" = (
+/obj/effect/fun_balloon/sentience/emergency_shuttle{
+	group_name = "medical staff on the Emergency shuttle"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/escape)
+"if" = (
+/mob/living/simple_animal/bot/medbot/catmedbot,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/escape)
 "sI" = (
 /obj/structure/window/reinforced,
 /obj/structure/window/reinforced{
 	dir = 4
 	},
-/obj/item/storage/backpack/duffelbag/med/surgery,
-/obj/structure/table,
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/blue{
 	dir = 4
+	},
+/obj/machinery/computer/operating{
+	dir = 8
 	},
 /turf/open/floor/plasteel/white,
 /area/shuttle/escape)
@@ -729,6 +741,20 @@
 /obj/effect/turf_decal/tile/blue{
 	dir = 4
 	},
+/obj/machinery/defibrillator_mount/loaded{
+	pixel_x = -32
+	},
+/turf/open/floor/plasteel/white,
+/area/shuttle/escape)
+"NR" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/item/storage/backpack/duffelbag/med/surgery/upgraded,
+/obj/structure/table/reinforced,
 /turf/open/floor/plasteel/white,
 /area/shuttle/escape)
 "Uu" = (
@@ -864,7 +890,7 @@ aa
 ab
 aZ
 bb
-bb
+NR
 bh
 sI
 bg
@@ -912,7 +938,7 @@ xt
 bQ
 au
 au
-au
+hR
 au
 au
 au
@@ -960,7 +986,7 @@ Uu
 bQ
 au
 au
-au
+if
 au
 au
 au

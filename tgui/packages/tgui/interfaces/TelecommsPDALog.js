@@ -72,7 +72,7 @@ export const TelecommsPDALog = (props) => {
   }
 
   return (
-    <Window theme="ntos" resizable>
+    <Window theme="ntos" resizable width={900} height={620}>
       <Window.Content overflow="auto">
         <>
           {!!notice && (

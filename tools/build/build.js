@@ -76,7 +76,9 @@ export const DmTarget = new Juke.Target({
     StatbrowserTarget,
     get(DefineParameter).includes('ALL_MAPS') && DmMapsIncludeTarget,
   ],
-  inputs: [
+  inputs: async () => [
+    'dependencies.sh',
+    await getDmPath(),
     '_maps/map_files/generic/**',
     'code/**',
     'goon/**',
@@ -148,6 +150,7 @@ const getUnitTestLogDirectory = (get) => {
 };
 
 const dmTestInputs = [
+  'dependencies.sh',
   '_maps/map_files/generic/**',
   'code/**',
   'goon/**',
@@ -280,10 +283,12 @@ export const TguiTarget = new Juke.Target({
 
 export const TguiEslintTarget = new Juke.Target({
   dependsOn: [YarnTarget],
-  executes: async ({ args }) => {
+  parameters: [CiParameter],
+  executes: async ({ args, get }) => {
     await yarn(
       'eslint', 'packages',
-      '--fix', '--ext', '.js,.cjs,.ts,.tsx',
+      ...(!get(CiParameter) ? ['--fix'] : []),
+      '--ext', '.js,.cjs,.ts,.tsx',
       ...args
     );
   },

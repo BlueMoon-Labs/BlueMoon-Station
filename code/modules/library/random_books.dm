@@ -67,6 +67,34 @@
 				B.icon_state=	"book[rand(1,8)]"
 	qdel(query_get_random_books)
 
+/obj/structure/bookcase/random/opacity
+	opacity = TRUE
+	icon_state = "random_bookcase_opacity"
+
+/obj/structure/bookcase/random/opacity/fiction
+	name = "bookcase (Fiction)"
+	random_category = "Fiction"
+/obj/structure/bookcase/random/opacity/nonfiction
+	name = "bookcase (Non-Fiction)"
+	random_category = "Non-fiction"
+/obj/structure/bookcase/random/opacity/religion
+	name = "bookcase (Religion)"
+	random_category = "Religion"
+/obj/structure/bookcase/random/opacity/adult
+	name = "bookcase (Adult)"
+	random_category = "Adult"
+
+/obj/structure/bookcase/random/opacity/reference
+	name = "bookcase (Reference)"
+	random_category = "Reference"
+	var/ref_book_prob = 20
+
+/obj/structure/bookcase/random/opacity/reference/Initialize(mapload)
+	. = ..()
+	while(books_to_load > 0 && prob(ref_book_prob))
+		books_to_load--
+		new /obj/item/book/manual/random(src)
+
 /obj/structure/bookcase/random/fiction
 	name = "bookcase (Fiction)"
 	random_category = "Fiction"

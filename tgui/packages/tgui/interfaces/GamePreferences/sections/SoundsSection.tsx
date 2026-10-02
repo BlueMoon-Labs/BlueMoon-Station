@@ -4,6 +4,7 @@ import { PrefRow } from '../components/PrefRow';
 
 type SoundsData = {
   sound_lobby: boolean;
+  sound_actions_button: boolean;
   sound_midi: boolean;
   sound_instruments: boolean;
   sound_jukeboxes: boolean;
@@ -13,6 +14,7 @@ type SoundsData = {
   sound_announcements: boolean;
   sound_bark: boolean;
   sound_emote: boolean;
+  sound_breathing: boolean;
   sound_volume_midi: number;
   sound_volume_ambience: number;
   sound_volume_ship_ambience: number;
@@ -22,7 +24,14 @@ type SoundsData = {
   sound_volume_jukeboxes: number;
   sound_volume_emote: number;
   sound_volume_personal_jukeboxes: number;
+  sound_volume_heretic_dance: number;
+  sound_volume_heretic_sky: number;
 };
+
+const VOLUME_ONLY: { label: string; volKey: string; tooltip?: string }[] = [
+  { label: 'Музыка Пляски', volKey: 'sound_volume_heretic_dance', tooltip: 'Громкость тактов пути Пляски: их слышат еретик, втянутые в танец и зрители рядом. Отключить нельзя: музыка - часть механики. Акценты и барабан идут отдельными звуками' },
+  { label: 'Небо вознесений', volKey: 'sound_volume_heretic_sky', tooltip: 'Звук неба над станцией, пока еретик вознёсся: далёкий гул его пути и отклики неба на его удары' },
+];
 
 const SOUND_WITH_VOL: { key: string; label: string; volKey: string; tooltip?: string }[] = [
   { key: 'sound_midi', label: 'Админские MIDI', volKey: 'sound_volume_midi', tooltip: 'Громкость музыки, проигрываемой администрацией через MIDI-плеер' },
@@ -60,6 +69,18 @@ export const SoundsSection = (props) => {
         checked={data.sound_lobby}
         tooltip="Воспроизводить музыку на экране ожидания (лобби) при подключении к серверу"
         onClick={() => act('toggle_sound', { flag: 'sound_lobby' })}
+      />
+      <PrefRow
+        label="Звук кнопок способностей"
+        checked={data.sound_actions_button}
+        tooltip="Воспроизводить звук при нажатии на кнопки способностей"
+        onClick={() => act('toggle_sound', { flag: 'sound_actions_button' })}
+      />
+      <PrefRow
+        label="Дыхание из баллона"
+        checked={data.sound_breathing}
+        tooltip="Звук дыхания при дыхании из внутреннего баллона (интерналс)"
+        onClick={() => act('toggle_sound', { flag: 'sound_breathing' })}
       />
       {SOUND_WITH_VOL.map(({ key, label, volKey, tooltip }) => {
         const enabled = data[key];
@@ -101,6 +122,37 @@ export const SoundsSection = (props) => {
                   onClick={() => act('toggle_sound', { flag: key })}
                 />
               </Stack.Item>
+            </Stack>
+          </Stack.Item>
+        );
+      })}
+      {VOLUME_ONLY.map(({ label, volKey, tooltip }) => {
+        const sliderEl = (
+          <Slider
+            minValue={0}
+            maxValue={100}
+            step={1}
+            value={data[volKey] ?? 100}
+            unit="%"
+            ranges={{
+              red: [0, 25],
+              orange: [25, 50],
+              yellow: [50, 75],
+              green: [75, 100],
+            }}
+            onChange={(_, value) => act('set_volume', { flag: volKey, value })}
+          />
+        );
+        return (
+          <Stack.Item key={volKey}>
+            <Stack align="center" fill className="GamePreferences__row">
+              <Stack.Item grow basis={0} pr={1}>
+                <div className="GamePreferences__label">{label}</div>
+              </Stack.Item>
+              <Stack.Item shrink={0} basis="180px" mr={1}>
+                {tooltip ? <Tooltip content={tooltip}>{sliderEl}</Tooltip> : sliderEl}
+              </Stack.Item>
+              <Stack.Item style={{ width: '70px' }} />
             </Stack>
           </Stack.Item>
         );

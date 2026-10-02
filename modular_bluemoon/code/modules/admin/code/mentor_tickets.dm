@@ -11,6 +11,11 @@ GLOBAL_DATUM_INIT(mentor_tickets, /datum/mentor_ticket_manager, new)
 	QDEL_LIST(resolved_tickets)
 	return ..()
 
+/datum/mentor_ticket_manager/proc/ClientLogout(client/C)
+	for(var/datum/mentor_ticket/owned_ticket as anything in TicketsByCKey(C.ckey))
+		if(owned_ticket.initiator == C)
+			owned_ticket.initiator = null
+
 /datum/mentor_ticket_manager/proc/CKey2Ticket(ckey)
 	for(var/I in active_tickets)
 		var/datum/mentor_ticket/MT = I
@@ -199,7 +204,7 @@ GLOBAL_DATUM_INIT(mentor_tickets, /datum/mentor_ticket_manager, new)
 /datum/mentor_ticket/proc/Action(action)
 	switch(action)
 		if("reply", "mentorticket")
-			usr.client.cmd_mentor_pm(initiator)
+			usr.client.cmd_mentor_pm(initiator || initiator_ckey)
 		if("close")
 			Close()
 		if("resolve")

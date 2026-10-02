@@ -65,7 +65,7 @@
 
 /// Called when this implant is removed from a specific bodypart. Removes the augment overlay from the body.
 /obj/item/organ/cyberimp/proc/on_bodypart_remove(obj/item/bodypart/limb)
-	if (bodypart_aug)
+	if(limb && bodypart_aug) // конечность может быть уже удалена (гиб)
 		limb.remove_bodypart_overlay(bodypart_aug)
 
 /// Forces the owner's body part overlays to rebuild (e.g. when a dynamic overlay state changes).

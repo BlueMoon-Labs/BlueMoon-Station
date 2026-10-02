@@ -222,7 +222,7 @@
 //Checks if the list is empty
 /// @depricated
 /proc/isemptylist(list/L)
-	if(!L.len)
+	if(isnull(L) || !L.len)
 		return TRUE
 	return FALSE
 
@@ -394,14 +394,19 @@
 		return null
 
 	var/total = 0
-	for(var/item in L)
-		if(!L[item] && (L[item] != 0)) // The weight is set to 0 intentionally. Otherwise the weight is not defined. Almost every time it's just an oversight.
-			L[item] = 1
-		total += L[item]
+	var/positional_numbers = !istype(L, /alist)
+	for(var/item, item_weight in L)
+		// Числа в обычном list обращаются по позиции, в alist — по ключу.
+		if(positional_numbers && isnum(item))
+			item_weight = L[item]
+		if(!item_weight && item_weight != 0)
+			L[item] = item_weight = 1
+		total += item_weight
 
 	total = rand(1, total)
-	for(var/item in L)
-		var/item_weight = L[item]
+	for(var/item, item_weight in L)
+		if(positional_numbers && isnum(item))
+			item_weight = L[item]
 		if(item_weight == 0)
 			continue
 

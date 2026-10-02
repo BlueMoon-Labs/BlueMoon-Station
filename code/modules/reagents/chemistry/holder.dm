@@ -407,16 +407,20 @@
 			reagent.metabolizing = TRUE
 			reagent.on_mob_metabolize(owner)
 		if(can_overdose)
+			var/const/inversed_quant_level = ceil(INVERSE(CHEMICAL_QUANTISATION_LEVEL))
+			var/rounded_volume = round(reagent.volume * inversed_quant_level) / inversed_quant_level
 			if(reagent.overdose_threshold)
-				if(reagent.volume >= reagent.overdose_threshold && !reagent.overdosed)
+				if(rounded_volume > reagent.overdose_threshold && !reagent.overdosed)
 					reagent.overdosed = TRUE
 					need_mob_update += reagent.overdose_start(owner)
-					log_game("[key_name(owner)] has started overdosing on [reagent.name] at [reagent.volume] units.")
+					log_game("[key_name(owner)] has started overdosing on [reagent.name] at [rounded_volume] units.")
+				else if(reagent.overdosed && rounded_volume <= reagent.overdose_threshold)
+					reagent.overdosed = FALSE
 
 			// for(var/addiction in reagent.addiction_types)
 			// 	owner.mind?.add_addiction_points(addiction, reagent.addiction_types[addiction] * REAGENTS_METABOLISM)
 			if(reagent.addiction_threshold)
-				if(reagent.volume > reagent.addiction_threshold && !is_type_in_list(reagent, addiction_list))
+				if(rounded_volume > reagent.addiction_threshold && !is_type_in_list(reagent, addiction_list))
 					var/datum/reagent/new_reagent = new reagent.type()
 					addiction_list.Add(new_reagent)
 			if(is_type_in_list(reagent, addiction_list))

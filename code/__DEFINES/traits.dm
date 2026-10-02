@@ -123,6 +123,8 @@
 #define TRAIT_XENO_HOST			"xeno_host"	//Tracks whether we're gonna be a baby alien's mummy.
 #define TRAIT_STUNIMMUNE		"stun_immunity"
 #define TRAIT_TASED_RESISTANCE	"tased_resistance" //prevents you from suffering most of the effects of being tased
+#define TRAIT_BATON_RESISTANCE	"baton_resistance" //prevents you from suffering most of the effects of being batoned
+#define TRAIT_DISABLER_RESISTANCE "disabler_resistance" //prevents you from suffering stamina damage from disablers
 #define TRAIT_SLEEPIMMUNE		"sleep_immunity"
 #define TRAIT_PUSHIMMUNE		"push_immunity"
 #define TRAIT_SHOCKIMMUNE		"shock_immunity"
@@ -415,6 +417,8 @@
 #define REVERSE_BEAR_TRAP_TRAIT "reverse-bear-trap"
 #define GLUED_ITEM_TRAIT "glued-item"
 #define CURSED_MASK_TRAIT "cursed-mask"
+#define TRAIT_VOID_MASK_IMMUNE "void-mask-immune"
+#define VOID_MASK_TRAIT "void-mask"
 #define HIS_GRACE_TRAIT "his-grace"
 #define HAND_REPLACEMENT_TRAIT "magic-hand"
 #define HOT_POTATO_TRAIT "hot-potato"
@@ -484,6 +488,8 @@
 Remember to update _globalvars/traits.dm if you're adding/removing/renaming traits.
 */
 
+#define TRAIT_BLOCK_SECHUD "block_sechud"
+#define TRAIT_BLOCK_MEDHUD "block_medhud"
 //mob traits
 /// Forces the user to stay unconscious.
 #define TRAIT_KNOCKEDOUT "knockedout"
@@ -493,6 +499,8 @@ Remember to update _globalvars/traits.dm if you're adding/removing/renaming trai
 #define TRAIT_UI_BLOCKED "uiblocked"
 /// Inability to pull things. Turned into a trait from [MOBILITY_PULL] to be able to track sources.
 #define TRAIT_PULL_BLOCKED "pullblocked"
+/// Никто не может схватить или потащить этого моба.
+#define TRAIT_UNPULLABLE "unpullable"
 /// Abstract condition that prevents movement if being pulled and might be resisted against. Handcuffs and straight jackets, basically.
 #define TRAIT_RESTRAINED "restrained"
 /// Reduces chance of breaking a grip
@@ -757,6 +765,12 @@ Remember to update _globalvars/traits.dm if you're adding/removing/renaming trai
 #define TRAIT_ALLOW_HERETIC_CASTING "allow_heretic_casting"
 /// Designates a heart as a living heart for a heretic.
 #define TRAIT_LIVING_HEART "living_heart"
+/// Ascended heretic: breaks cuffs fast and carries the shared ascension base.
+#define TRAIT_HERETIC_ASCENDED "heretic_ascended"
+/// Moon masquerade victim: guns fire with extra spread.
+#define TRAIT_HERETIC_LUNATIC "heretic_lunatic"
+/// Projectile already slowed by an ascended Sand heretic.
+#define TRAIT_HERETIC_SAND_SLOWED "heretic_sand_slowed"
 
 #define TRAIT_FAN_CLOWN "fan_clown"
 #define TRAIT_FAN_MIME "fan_mime"

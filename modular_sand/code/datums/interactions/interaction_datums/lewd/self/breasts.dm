@@ -49,7 +49,7 @@
 					"проводит несколькими пальцами вдоль своей груди",
 					"деликатно сжимает свой сосок",
 					"возбуждённо проводит пальцем вдоль своей груди")
-		playlewdinteractionsound(get_turf(user), 'modular_sand/sound/interactions/champ_fingering.ogg', volume, 1, extrarange)
+		playlewdinteractionsound(get_turf(user), 'modular_sand/sound/lewd/champ_fingering.ogg', volume, 1, extrarange)
 	if(prob(user.get_lust() / user.get_climax_threshold() * 50)) // 50%
 		user.visible_message("<span class='lewd'>[is_hidden ? (picked_hidden) : null]<b>\The [user]</b> [pick("дрожит от возбуждения",
 				"тихо стонет",

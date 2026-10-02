@@ -18,6 +18,7 @@
 	add_movespeed_modifier(/datum/movespeed_modifier/carbon_crawling)
 	register_context()
 	breath_buffer = new
+	breathing_loop = new(src, _direct = TRUE)
 
 /mob/living/carbon/Destroy()
 	//This must be done first, so the mob ghosts correctly before DNA etc is nulled
@@ -32,6 +33,7 @@
 	hand_bodyparts = null		//Just references out bodyparts, don't need to delete twice.
 	QDEL_NULL(breath_buffer)
 	QDEL_NULL(dna)
+	QDEL_NULL(breathing_loop)
 	last_mind = null
 	GLOB.carbon_list -= src
 	//unequip при QDELING(моб) пропускается (см. /obj/item/Destroy), поэтому
@@ -210,6 +212,9 @@
 
 
 /mob/living/carbon/proc/throw_mode_on()
+	if(cancel_prepared_abilities())
+		balloon_alert(src, "режим броска")
+		to_chat(src, span_notice("Подготовленная способность отменена: включён режим броска."))
 	throw_mode = TRUE
 	if(client && hud_used)
 		hud_used.throw_icon.icon_state = "act_throw_on"
@@ -331,7 +336,14 @@
 	loc.handle_fall(src, forced)//it's loc so it doesn't call the mob's handle_fall which does nothing
 
 /mob/living/carbon/is_muzzled()
-	return(istype(src.wear_mask, /obj/item/clothing/mask/muzzle))
+	return get_muzzle_strength() == MUFFLE_MUTE
+
+/mob/living/carbon/get_muzzle_strength()
+	if(src.wear_mask && istype(src.wear_mask, /obj/item/clothing/mask/muzzle))
+		var/obj/item/clothing/mask/muzzle/M = src.wear_mask
+		return M.mute
+
+	return MUFFLE_NONE
 
 /mob/living/carbon/hallucinating()
 	if(hallucination)

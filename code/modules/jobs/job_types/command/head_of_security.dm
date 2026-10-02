@@ -118,7 +118,7 @@
 	box = /obj/item/storage/box/survival/syndie
 	accessory = list(/obj/item/clothing/accessory/permit/special/head_of_sec, /obj/item/clothing/accessory/permit/special/syndie_station)
 	pda_slot = ITEM_SLOT_BELT
-	backpack_contents = list(/obj/item/melee/classic_baton/telescopic=1,/obj/item/syndicate_uplink/station=1, /obj/item/restraints/handcuffs)
+	backpack_contents = list(/obj/item/melee/classic_baton/telescopic=1,/obj/item/syndicate_uplink/station=1, /obj/item/choice_beacon/hos_new_weapon = 1, /obj/item/modular_computer/tablet/preset/advanced/command)
 
 /datum/outfit/job/hos/hardsuit
 	name = "Head of Security (Hardsuit)"

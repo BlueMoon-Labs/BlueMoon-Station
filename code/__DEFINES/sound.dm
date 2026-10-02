@@ -53,6 +53,15 @@
 /// Default range at which sound distance multiplier applies
 #define SOUND_DEFAULT_MULTIPLIER_EFFECT_RANGE 7
 
+#define JUKEBOX_MAX_VOLUME 100
+#define JUKEBOX_MAX_VOLUME_EMAGGED 1000
+/// Громкость джукбокса делится на это число и уходит в SSjukeboxes как falloff
+#define JUKEBOX_VOLUME_TO_FALLOFF 35
+
+/// Треки, залитые в личные шкатулки. Живут один раунд: /world/New() сносит каталог целиком.
+#define PERSONAL_MUSIC_BOX_UPLOAD_DIR "data/personal_music_box/"
+#define PERSONAL_MUSIC_BOX_MAX_FILE_SIZE (6 * 1024 * 1024)
+
 
 #define SOUND_MINIMUM_PRESSURE 10
 /// remove
@@ -468,7 +477,7 @@ GLOBAL_LIST_INIT(otherworld_sounds, list(
 		'modular_bluemoon/sound/effects/re-zero.ogg',
 		'modular_bluemoon/sound/effects/robot_bump.ogg',
 		'modular_bluemoon/sound/effects/robot_sit.ogg',
-		'modular_bluemoon/sound/effects/snap.ogg',
+		'sound/effects/snap.ogg',
 		'modular_bluemoon/sound/effects/soft_ping.ogg',
 		'modular_bluemoon/sound/effects/spook.ogg',
 		'modular_bluemoon/sound/effects/squishy.ogg',
@@ -583,9 +592,9 @@ GLOBAL_LIST_INIT(otherworld_sounds, list(
 		'modular_bluemoon/sound/emotes/laugh_male_7.ogg',
 		'modular_bluemoon/sound/emotes/malf.ogg',
 		'modular_bluemoon/sound/emotes/mar.ogg',
-		'modular_bluemoon/sound/emotes/meow4.ogg',
-		'modular_bluemoon/sound/emotes/meow5.ogg',
-		'modular_bluemoon/sound/emotes/meow6.ogg',
+		'sound/mobs/non-humanoids/cat/cat_meow1.ogg',
+		'sound/mobs/non-humanoids/cat/cat_meow2.ogg',
+		'sound/mobs/non-humanoids/cat/cat_meow3.ogg',
 		'modular_bluemoon/sound/emotes/meow7_1.ogg',
 		'modular_bluemoon/sound/emotes/meow7_2.ogg',
 		'modular_bluemoon/sound/emotes/meow7_3.ogg',
@@ -731,7 +740,7 @@ GLOBAL_LIST_INIT(otherworld_sounds, list(
 		'modular_bluemoon/sound/plush/tiamat_meow1.ogg',
 		'modular_bluemoon/sound/plush/tiamat_meow2.ogg',
 		'modular_bluemoon/sound/plush/tiamat_meow3.ogg',
-		'modular_bluemoon/sound/plush/tiamat_mrrp1.ogg',
+		'modular_splurt/sound/voice/catpeople/cat_mrrp1.ogg',
 		'modular_bluemoon/sound/plush/tiamat_mrrp2.ogg',
 		'modular_bluemoon/sound/plush/vinc_bleh.ogg',
 		'modular_bluemoon/sound/plush/vinc_fahhh.ogg',

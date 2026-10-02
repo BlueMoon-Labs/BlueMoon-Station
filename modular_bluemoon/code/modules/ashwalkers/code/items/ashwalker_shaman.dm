@@ -105,7 +105,7 @@
 	to_chat(living_user, span_warning("[src] отскакивает от вас удовлетворенный и начинает грубо собираться!"))
 	var/type = pick(/obj/structure/spawner/lavaland, /obj/structure/spawner/lavaland/goliath, /obj/structure/spawner/lavaland/legion)
 	new type(user.loc)
-	playsound(get_turf(src), 'sound/effects/magic/demon_attack1.ogg', 50, TRUE)
+	playsound(get_turf(src), 'sound/magic/demon_attack1.ogg', 50, TRUE)
 	qdel(src)
 //DEFAULT NECK ITEMS OVERRIDE//
 /obj/item/clothing/neck

@@ -162,3 +162,9 @@
 #define QDELING(X)    (X.gc_destroyed)
 #define QDELETED(X)   (isnull(X) || QDELING(X))
 #define QDESTROYING(X) (!X || X.gc_destroyed == GC_CURRENTLY_BEING_QDELETED)
+// Удаление через таймер. Возвращаемое значение макроса не использовать,
+// для останова таймера нужен QDEL_IN_STOPPABLE.
+#define QDEL_IN(item, time) ; \
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(qdel_weakref_resolve), (time) > GC_FILTER_QUEUE ? WEAKREF(item) : item), time);
+#define QDEL_IN_STOPPABLE(item, time) addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(qdel_weakref_resolve), (time) > GC_FILTER_QUEUE ? WEAKREF(item) : item), time, TIMER_STOPPABLE)
+#define QDEL_IN_CLIENT_TIME(item, time) addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(qdel_weakref_resolve), (time) > GC_FILTER_QUEUE ? WEAKREF(item) : item), time, TIMER_STOPPABLE | TIMER_CLIENT_TIME)

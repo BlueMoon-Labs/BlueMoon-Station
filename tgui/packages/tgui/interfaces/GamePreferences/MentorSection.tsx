@@ -94,7 +94,7 @@ export const MentorSection = (props) => {
           </Stack.Item>
         </Stack>
       </Stack.Item>
-       <Stack.Item>
+      <Stack.Item>
         <Stack align="center" fill>
           <Stack.Item grow basis={0}>
             <div className="GamePreferences__label">Dementor при Deadmin</div>

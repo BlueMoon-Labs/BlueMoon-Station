@@ -2,11 +2,15 @@
 	Попытка в унификацию внутриигровой помощи админам в проверке, кто помнит свою смерть, а кто не помнит.
 */
 
+/datum/mind/var/death_forget_timer = null
+
 /// Mob forgets its death due to a reason, passed as an argument. Uses DEATH_FORGETFULNESS_REASON_UNKNOWN as a default.
 /datum/mind/proc/forget_death(reason = DEATH_FORGETFULNESS_REASON_UNKNOWN)
 	if(HAS_TRAIT_FROM(src, TRAIT_BLUEMOON_DEATH_FORGETFULNESS, reason))
 		return
 	if(!istype(current))
+		return
+	if(reason == DEATH_FORGETFULNESS_REASON_LATE && current.stat != DEAD)
 		return
 	current.log_message("does not remember its own death anymore. Reason: [reason]", LOG_VICTIM)
 	ADD_TRAIT(src, TRAIT_BLUEMOON_DEATH_FORGETFULNESS, reason)
@@ -16,12 +20,18 @@
 /datum/mind/proc/revival_handle_memory(revival_method = "something")
 	var/forgotten = HAS_TRAIT(src, TRAIT_BLUEMOON_DEATH_FORGETFULNESS)
 
+	if(death_forget_timer)
+		deltimer(death_forget_timer)
+		death_forget_timer = null
+
 	REMOVE_TRAIT(src, TRAIT_BLUEMOON_DEATH_FORGETFULNESS, DEATH_FORGETFULNESS_REASON_IMMEDIATE)
 	REMOVE_TRAIT(src, TRAIT_BLUEMOON_DEATH_FORGETFULNESS, DEATH_FORGETFULNESS_REASON_LATE)
 	REMOVE_TRAIT(src, TRAIT_BLUEMOON_DEATH_FORGETFULNESS, DEATH_FORGETFULNESS_REASON_STRANGE_REAGENT)
 	REMOVE_TRAIT(src, TRAIT_BLUEMOON_DEATH_FORGETFULNESS, DEATH_FORGETFULNESS_REASON_SYNTHTISSUE)
 	REMOVE_TRAIT(src, TRAIT_BLUEMOON_DEATH_FORGETFULNESS, DEATH_FORGETFULNESS_REASON_UNKNOWN)
 
+	if(!istype(current))
+		return
 	var/list/policies = CONFIG_GET(keyed_list/policy)
 	var/policy = forgotten ? policies[POLICYCONFIG_ON_DEFIB_LATE] : policies[POLICYCONFIG_ON_DEFIB_INTACT]
 	if(policy)
@@ -39,7 +49,10 @@
 	var/timelimit = CONFIG_GET(number/defib_cmd_time_limit) * 10
 	if(!timelimit)
 		return
-	addtimer(CALLBACK(src, PROC_REF(forget_death), DEATH_FORGETFULNESS_REASON_LATE), timelimit)
+	if(death_forget_timer)
+		deltimer(death_forget_timer)
+		death_forget_timer = null
+	death_forget_timer = addtimer(CALLBACK(src, PROC_REF(forget_death), DEATH_FORGETFULNESS_REASON_LATE), timelimit, TIMER_STOPPABLE)
 
 
 

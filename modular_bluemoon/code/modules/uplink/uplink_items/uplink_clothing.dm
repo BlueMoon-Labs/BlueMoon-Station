@@ -32,12 +32,19 @@
 	purchasable_from = (UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 	item = /obj/item/mod/control/pre_equipped/traitor
 
-/datum/uplink_item/mod/nanotrasen
-	name = "ERT MOD"
-	desc = "Списанный МОД костюм, побывавший во многих сражений, доказавши свою практичность, но не бронированность. Очень стильный."
-	cost = 10
-	item = /obj/item/mod/control/pre_equipped/responsory
-	purchasable_from = UPLINK_SYNDICATE_PACT_CREW
+// /datum/uplink_item/mod/nanotrasen
+// 	name = "ERT MOD"
+// 	desc = "Списанный МОД костюм, побывавший во многих сражений, доказавши свою практичность, но не бронированность. Очень стильный."
+// 	cost = 10
+// 	item = /obj/item/mod/control/pre_equipped/responsory
+// 	purchasable_from = UPLINK_SYNDICATE_PACT_CREW
+
+/datum/uplink_item/mod/syndie_elite
+	name = "Syndicate Elite MODsuit"
+	desc = "Элитный костюм, модернизированный Cybersun Industries, с улучшенными показателями брони."
+	cost = 12
+	item = /obj/item/mod/control/pre_equipped/elite
+	purchasable_from = UPLINK_SYNDICATE
 
 /datum/uplink_item/mod/syndie_jet
 	name = "MOD Advanced Jetpack"
@@ -46,7 +53,7 @@
 			большего количества двигателей и нанесения красной краски."
 	item = /obj/item/mod/module/jetpack/advanced
 	cost = 4
-	purchasable_from = UPLINK_SYNDICATE_PACT_CREW
+	purchasable_from = (UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/mod/noslip //
 	name = "MOD anti slip module"
@@ -65,7 +72,7 @@
 		но при этом создаёт раздражающий красный фильтр. Говорят, с ним можно видеть даже то, что за спиной."
 	item = /obj/item/mod/module/visor/thermal
 	cost = 3
-	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
+	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_TRAITORS | UPLINK_SYNDICATE)
 
 /datum/uplink_item/mod/emp_shield //
 	name = "MOD advanced EMP shield module"
@@ -73,8 +80,8 @@
 		которые могли бы повредить электронные системы костюма или устройства на владельце, \
 		включая аугментации. Однако для этого расходуется энергия костюма."
 	item = /obj/item/mod/module/emp_shield/advanced
-	cost = 6
-	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)
+	cost = 4
+	purchasable_from = (UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_TRAITORS | UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW)
 
 /datum/uplink_item/mod/storage_upgrader
 	name = "MOD Storage Upgrader"
@@ -84,3 +91,12 @@
 	item = /obj/item/mod/module/storage_upgrader
 	cost = 2
 	purchasable_from = (UPLINK_SYNDICATE_PACT_CREW)
+
+/datum/uplink_item/mod/syndie_shield
+	name = "MOD Syndie Energy Shield"
+	desc = "Одна из совершенных версий модулярных энергощитов, способная выдерживать до 5-ти попаданий. \
+	Является разработкой Синдиката в соответствующем стиле, со встроенным микро-ядерным реактором, почти полностью \
+	покрывающим затраты щита."
+	item = /obj/item/mod/module/energy_shield/syndie
+	cost = 4
+	purchasable_from = (UPLINK_SYNDICATE)

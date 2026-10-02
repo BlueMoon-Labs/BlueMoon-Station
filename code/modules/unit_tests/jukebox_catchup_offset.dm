@@ -101,3 +101,27 @@
 	TEST_ASSERT_NULL(unrestrained, "зона без jukebox_restrain не должна давать ограничения")
 	TEST_ASSERT_EQUAL(restrained, test_area, "зона с jukebox_restrain обязана запирать музыку в себе")
 	TEST_ASSERT_NULL(no_area, "джукбокс без зоны не должен получать ограничения")
+
+/// Состояние слушателя меняется от позиции, громкости и приглушения, а без изменений совпадает с прошлым
+/datum/unit_test/jukebox_listener_state
+
+/datum/unit_test/jukebox_listener_state/Run()
+	var/sound/song = sound()
+	song.status = SOUND_UPDATE
+	song.falloff = 2
+	song.echo = list(0, null, -250, null, null, null, null, null, null, null, null, null, null, 1, 1, 1, null, null)
+	song.x = 3
+	song.y = 5
+	song.z = -2
+	var/idle_state = jukebox_listener_state(song, 70)
+	TEST_ASSERT_EQUAL(jukebox_listener_state(song, 70), idle_state, "без изменений состояние обязано совпадать - повторный SOUND_UPDATE не нужен")
+
+	TEST_ASSERT_NOTEQUAL(jukebox_listener_state(song, 50), idle_state, "смена громкости обязана давать новую отправку")
+	song.x = 4
+	TEST_ASSERT_NOTEQUAL(jukebox_listener_state(song, 70), idle_state, "сдвиг слушателя обязан давать новую отправку")
+	song.x = 3
+	song.status = SOUND_MUTE | SOUND_UPDATE
+	TEST_ASSERT_NOTEQUAL(jukebox_listener_state(song, 70), idle_state, "приглушение обязано давать новую отправку")
+	song.status = SOUND_UPDATE
+	song.echo[1] = -10000
+	TEST_ASSERT_NOTEQUAL(jukebox_listener_state(song, 70), idle_state, "выход из зоны (эхо) обязан давать новую отправку")

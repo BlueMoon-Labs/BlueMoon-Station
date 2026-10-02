@@ -127,7 +127,7 @@
 	l_pocket = /obj/item/pinpointer/nuke/syndicate
 	id = /obj/item/card/id/inteq
 	belt = /obj/item/gun/ballistic/automatic/pistol
-	backpack_contents = list(/obj/item/storage/box/survival/syndie=1,\
+	backpack_contents = list(/obj/item/storage/box/survival/command=1,\
 		/obj/item/kitchen/knife/combat/survival)
 
 	var/tc = 30
@@ -190,20 +190,23 @@
 	glasses = /obj/item/clothing/glasses/night/syndicate
 	mask = /obj/item/clothing/mask/gas/sechailer
 	suit = /obj/item/clothing/suit/space/hardsuit/syndi/elite/inteq
-	r_pocket = /obj/item/tank/internals/emergency_oxygen/engi
+	l_pocket = /obj/item/melee/transforming/plasmasword
+	r_pocket = /obj/item/tank/internals/emergency_oxygen/double
 	internals_slot = ITEM_SLOT_RPOCKET
-	belt = /obj/item/storage/belt/military/inteq
+	belt = /obj/item/storage/belt/military/inteq/full
 	r_hand = /obj/item/gun/ballistic/automatic/ak12
-	backpack_contents = list(/obj/item/storage/box/survival/syndie=1,\
+	backpack_contents = list(/obj/item/storage/box/survival/command=1,\
 		/obj/item/tank/jetpack/oxygen/harness=1,\
-		/obj/item/gun/ballistic/automatic/pistol=1,\
-		/obj/item/kitchen/knife/combat/survival)
+		/obj/item/storage/firstaid/tactical/slaver=1,\
+		/obj/item/reagent_containers/syringe/stimulants=1)
+
+	tc = null
+	uplink_type = null
 
 /datum/outfit/inteq/full/pre_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
 	. = ..()
 	if(visualsOnly)
 		return
-	// Elite InteQ hardsuit neutralizes the wearer in equipped() unless IS_INTEQ — faction is normally set in post_equip, too late for the suit slot.
 	if(!(ROLE_INTEQ in H.faction))
 		H.faction |= ROLE_INTEQ
 
@@ -256,7 +259,7 @@
 	internals_slot = ITEM_SLOT_RPOCKET
 	belt = /obj/item/storage/belt/military/inteq
 	back = /obj/item/storage/backpack/security/inteq
-	backpack_contents = list(/obj/item/storage/box/survival/syndie=1,\
+	backpack_contents = list(/obj/item/storage/box/survival/command=1,\
 	/obj/item/tank/jetpack/oxygen/harness=1,\
 	/obj/item/gun/ballistic/automatic/pistol=1,\
 	/obj/item/kitchen/knife/combat/survival)

@@ -98,3 +98,5 @@
 	/// Timer id of any transformation
 	var/transformation_timer
 
+	///Sound loop for breathing when using internals
+	var/datum/looping_sound/breathing/breathing_loop

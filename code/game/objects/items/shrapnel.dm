@@ -32,8 +32,7 @@
 	name = "flying shrapnel shard"
 	damage = 14
 	range = 20
-	armour_penetration = BULLET_BR1   // BLUEMOON EDIT: было -30 → BR1(10). Шрапнель от гранаты
-	                                   // должна хоть немного пробивать лёгкую броню.
+	armour_penetration = BULLET_BR2
 	dismemberment = 5
 	ricochets_max = 2
 	ricochet_chance = 70
@@ -42,8 +41,6 @@
 	sharpness = SHARP_EDGED
 	wound_bonus = 40
 	hit_prone_targets = TRUE
-
-// mega — наследует BR1 от родителя, без изменений
 
 /obj/item/projectile/bullet/shrapnel/mega
 	name = "flying shrapnel hunk"

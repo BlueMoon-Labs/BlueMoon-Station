@@ -155,6 +155,10 @@
 	// TRAIT_FREE_HYPERSPACE_MOVEMENT and skip/stop hyperspace drift — carp, humans, debris would pile up at the spawn edge.
 	// Meteors/projectiles use anchored or their own motion; use TRAIT_FREE_HYPERSPACE_MOVEMENT there when needed.
 	ADD_TRAIT(spawnee, TRAIT_DEL_ON_SPACE_DUMP, INNATE_TRAIT)
+	// Simple animals spawned by shuttle events are clickable by ghosts (gondola/pet-style possession).
+	if(istype(spawnee, /mob/living/simple_animal))
+		var/mob/living/simple_animal/simple = spawnee
+		simple.playable_by_ghost = TRUE
 	// Defer cling: synchronous AddComponent in the same tick as SSshuttle.fire was stalling MC (DEFCON).
 	if(ismovable(spawnee) && !spawnee.anchored && istype(get_turf(spawnee), /turf/open/space/transit))
 		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(deferred_init_shuttle_cling_for_event), WEAKREF(spawnee)), 1)

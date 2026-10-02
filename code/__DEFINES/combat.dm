@@ -139,6 +139,7 @@
 #define ATTACK_EFFECT_KICK		"kick"
 #define ATTACK_EFFECT_SMASH		"smash"
 #define ATTACK_EFFECT_CLAW		"claw"
+#define ATTACK_EFFECT_SLASH		"slash"
 #define ATTACK_EFFECT_DISARM	"disarm"
 #define ATTACK_EFFECT_ASS_SLAP  "ass_slap"
 #define ATTACK_EFFECT_FACE_SLAP "face_slap"
@@ -146,6 +147,14 @@
 #define ATTACK_EFFECT_MECHFIRE	"mech_fire"
 #define ATTACK_EFFECT_MECHTOXIN	"mech_toxin"
 #define ATTACK_EFFECT_BOOP		"boop" //Honk
+#define ATTACK_EFFECT_VOID		"void"
+
+/// Анимация взмаха для режущего оружия
+#define ATTACK_ANIMATION_SLASH	"slash"
+/// Анимация выпада для колющего оружия
+#define ATTACK_ANIMATION_PIERCE	"pierce"
+/// Анимация удара для дробящего оружия
+#define ATTACK_ANIMATION_BLUNT	"blunt"
 
 //intent defines
 #define INTENT_HELP   "help"
