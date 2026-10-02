@@ -217,7 +217,7 @@
 
 /obj/item/projectile/bullet/cal41/lethal
 	name = ".41 bullet"
-	damage = 35
+	damage = 33
 	shrapnel_type = NONE
 	sharpness = SHARP_NONE
 	embedding = null
@@ -280,7 +280,7 @@
 
 /obj/item/projectile/bullet/cal41/magnum
 	name = ".41 Remington Magnum bullet"
-	damage = 45
+	damage = 40
 	shrapnel_type = NONE
 	sharpness = SHARP_NONE
 	embedding = null
@@ -322,7 +322,7 @@
 	name = "rubbershot pellet"
 	icon_state = "pellet"
 	damage = 1
-	stamina = 20                     
+	stamina = 20                   
 	armour_penetration = BULLET_BR0
 	sharpness = SHARP_NONE
 	embedding = null
