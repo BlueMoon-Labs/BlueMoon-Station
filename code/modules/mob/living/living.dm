@@ -129,6 +129,7 @@
 	QDEL_LIST_ASSOC_VAL(ability_actions)
 	QDEL_LIST(abilities)
 	QDEL_LIST(implants)
+	QDEL_NULL(vorePanel)
 	// Квирки держат владельца жёстко: quirk_holder плюс запись в SSquirks.quirk_objects.
 	// Снимались они только при явном снятии квирка и при переносе на другого моба, поэтому
 	// удаление тела (админская пересадка, госткафе, возврат в лобби) оставляло висеть и

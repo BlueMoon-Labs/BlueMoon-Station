@@ -93,8 +93,10 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 		// SSair.active_turfs, пока новый жилец блока не унаследует её вместе с
 		// протухшей позицией: снятие за O(1) верит своей подсказке, а у свежего
 		// турфа она нулевая, и запись стала бы неудаляемой.
+		// unlist, а не evict: свежая клетка резерва не excited, и evict искал бы её
+		// по всему active_turfs - тысяча клеток транзита стоила полсекунды.
 		if(SSair)
-			SSair.evict_active_turf(src)
+			SSair.unlist_active_turf(src)
 			// SKIP - единственный путь замены, идущий мимо qdel/Destroy, то есть
 			// мимо update_air_ref(-1) -> remove_from_active(), который хоронит
 			// excited-группу заменяемого члена. Ссылки на турф позиционные: запись

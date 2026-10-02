@@ -1082,6 +1082,49 @@
 	SSair.remove_from_active(restored)
 	SSair.remove_from_active(partner)
 
+/// SKIP-замена снимает активный турф с учёта, а турф вне учёта не ищет по active_turfs.
+/datum/unit_test/atmos_changeturf_skip_trusts_excited
+	var/turf/planted_turf
+
+/datum/unit_test/atmos_changeturf_skip_trusts_excited/Destroy()
+	if(planted_turf)
+		SSair.drop_active_turf(planted_turf)
+	return ..()
+
+/datum/unit_test/atmos_changeturf_skip_trusts_excited/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/turf/open/subject = locate(origin.x + 3, origin.y + 3, origin.z)
+	TEST_ASSERT(istype(subject), "test location is not an open turf")
+	var/original_type = subject.type
+	var/list/original_baseturfs = islist(subject.baseturfs) ? subject.baseturfs.Copy() : subject.baseturfs
+	var/replacement_type = original_type == /turf/open/floor/wood ? /turf/open/floor/carpet : /turf/open/floor/wood
+
+	SSair.remove_from_active(subject)
+	SSair.add_to_active(subject, FALSE)
+	var/turf/open/swapped_in = subject.ChangeTurf(replacement_type, null, CHANGETURF_SKIP)
+	TEST_ASSERT_NOTNULL(swapped_in, "CHANGETURF_SKIP replacement did not happen")
+	TEST_ASSERT_EQUAL(!!(swapped_in in SSair.active_turfs), !!swapped_in.excited, "SKIP replacement of an active turf left a listing the new turf does not claim")
+
+	// Ссылка в хвосте без подсказки и без excited: найти её мог только линейный поиск.
+	SSair.remove_from_active(swapped_in)
+	SSair.active_turfs += swapped_in
+	planted_turf = swapped_in
+	var/turf/open/restored = swapped_in.ChangeTurf(original_type, null, CHANGETURF_SKIP)
+	TEST_ASSERT_NOTNULL(restored, "restoring the original turf type did not happen")
+	restored.baseturfs = original_baseturfs
+	restored.air.copy_from_turf(restored)
+	restored.atmos_cooldown = 0
+	var/listings = 0
+	for(var/turf/entry as anything in SSair.active_turfs)
+		if(entry == restored)
+			listings++
+	var/planted_left = listings - (restored.excited ? 1 : 0)
+	SSair.drop_active_turf(restored)
+	planted_turf = null
+	SSair.remove_from_active(restored)
+	TEST_ASSERT_EQUAL(planted_left, 1, "SKIP replacement of a turf outside active_turfs searched the whole list")
+
 /// The awake counter is maintained incrementally; exotic paths (a turf type
 /// change under a live group) can strand it. Every breakdown already walks the
 /// whole membership, so it must recount the counter exactly - drift heals

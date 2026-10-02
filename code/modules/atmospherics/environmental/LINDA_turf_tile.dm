@@ -1474,7 +1474,9 @@
 			if(!M.anchored && !M.pulledby && M.last_high_pressure_movement_air_cycle < SSair.times_fired && (M.flags_1 & INITIALIZED_1) && !QDELETED(M))
 				M.experience_pressure_difference(pressure_difference * multiplier, pressure_direction, 0, pressure_specific_target)
 				budget--
-				if(budget <= 0)
+				// Шаг в соседнюю кучу зовёт Cross/Crossed на каждом её предмете, так что
+				// и сорок шагов бывают дороже тика (раунд 10423, 330 мс на прогон).
+				if(budget <= 0 || TICK_CHECK)
 					break
 
 	if(pressure_difference > 100 && world.time >= next_space_wind_at)
