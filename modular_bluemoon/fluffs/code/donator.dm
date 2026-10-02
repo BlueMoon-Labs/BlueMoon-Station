@@ -2039,7 +2039,7 @@
 
 /datum/gear/donator/bm/medaldoblest
 	name = "Медаль"
-	slot = ITEM_SLOT_HEAD
+	slot = ITEM_SLOT_ACCESSORY
 	path = /obj/item/clothing/accessory/medaldoblest
 	ckeywhitelist = list("monolithxxv", "mishanok")
 
