@@ -35,7 +35,7 @@
 	var/allowed_junctions = ALL
 	var/mutable_appearance/damage_overlay
 	/// Sound when hit without combat mode
-	var/knock_sound = 'sound/effects/glassknock.ogg'
+	var/knock_sound = 'sound/effects/Glassknock.ogg'
 	/// Sound when hit with combat mode
 	var/bash_sound = 'sound/effects/Glasshit.ogg'
 

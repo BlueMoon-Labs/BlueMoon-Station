@@ -91,7 +91,7 @@
 	tool.play_tool_sound(src)
 	if(!tool.use_tool(src, user, 6 SECONDS))
 		return TRUE
-	playsound(loc, 'sound/items/deconstruct.ogg', 50, vary = TRUE)
+	playsound(loc, 'sound/items/Deconstruct.ogg', 50, vary = TRUE)
 	balloon_alert(user, "снято")
 	deconstruct(TRUE)
 	return TRUE

@@ -142,7 +142,7 @@
 		balloon_alert(user, "нет плитки!")
 		return
 
-	playsound(src, 'sound/weapons/genhit.ogg', 50, TRUE)
+	playsound(src, 'sound/weapons/Genhit.ogg', 50, TRUE)
 	new used_tiles.tile_type(src)
 
 /// Very similar to building with rods, this exists to allow building tram girders on the transport module
@@ -158,7 +158,7 @@
 		balloon_alert(user, "нужно два листа титана!")
 		return
 
-	playsound(src, 'sound/weapons/genhit.ogg', 50, TRUE)
+	playsound(src, 'sound/weapons/Genhit.ogg', 50, TRUE)
 	new /obj/structure/girder/tram(src)
 
 /obj/structure/thermoplastic
