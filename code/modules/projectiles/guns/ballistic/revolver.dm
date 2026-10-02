@@ -575,7 +575,7 @@
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/cowboy
 	dual_wield_spread = 1
 	w_class = WEIGHT_CLASS_NORMAL
-	recoil = 1
+	recoil = 0.25
 	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_POCKETS
 
 /obj/item/gun/ballistic/revolver/Salvation
@@ -590,7 +590,7 @@
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/cowboy
 	dual_wield_spread = 1
 	w_class = WEIGHT_CLASS_NORMAL
-	recoil = 1
+	recoil = 0.25
 	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_POCKETS
 
 /obj/item/gun/ballistic/revolver/proc/try_dual_buscadero_reload(mob/living/user)
@@ -700,7 +700,7 @@
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/apostle
 	dual_wield_spread = 25
 	w_class = WEIGHT_CLASS_NORMAL
-	recoil = 1
+	recoil = 0.5
 	slot_flags = ITEM_SLOT_BELT
 
 /obj/item/gun/ballistic/revolver/Dies_Irae //сбухам кит на револьвер для переделки под 308, но КРАЙНЕ МЕДЛЕННАЯ стрельба, плюс с двух рук, считай аналог винтовки с карго, но влезает в сумку ценой скорости стрельбы
@@ -731,7 +731,7 @@
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/liturgy
 	dual_wield_spread = 25
 	w_class = WEIGHT_CLASS_NORMAL
-	recoil = 1
+	recoil = 0.5
 	slot_flags = ITEM_SLOT_BELT 
 
 /obj/item/gun/ballistic/revolver/Passing_Bell //тупа секвоя из нью вегаса антагам, калибр 45 70 давно в игре, но его нахуй никто не использует
