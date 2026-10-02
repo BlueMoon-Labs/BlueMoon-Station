@@ -2031,6 +2031,12 @@
 	path = /obj/item/clothing/head/donator/bm/mark40k_helmet
 	ckeywhitelist = list("monolithxxv")
 
+/datum/gear/donator/bm/saibasan
+	name = "Cybersun Surplus"
+	slot = ITEM_SLOT_HEAD
+	path = /obj/item/clothing/head/donator/bm/saibasan
+	ckeywhitelist = list("monolithxxv")
+
 /datum/gear/donator/bm/opssrt
 	name = "OPS-SRT Helmet"
 	slot = ITEM_SLOT_HEAD
