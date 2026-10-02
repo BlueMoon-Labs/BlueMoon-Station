@@ -119,11 +119,6 @@
 		return dat_sorted.Join(" ; ")
 //BLUEMOON CHANGE END
 
-/mob/living/proc/cleanse_trait_datums() //removes all trait datums
-	for(var/V in roundstart_quirks)
-		var/datum/quirk/T = V
-		qdel(T)
-
 /mob/living/proc/transfer_trait_datums(mob/living/to_mob)
 	for(var/V in roundstart_quirks)
 		var/datum/quirk/T = V

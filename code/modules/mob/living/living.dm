@@ -660,7 +660,7 @@
 		to_chat(src, "<span class='notice'>You are already sleeping.</span>")
 		return
 	else
-		if(alert(src, "You sure you want to sleep for a while?", "Sleep", "Yes", "No") == "Yes")
+		if(tgui_alert(src, "You sure you want to sleep for a while?", "Sleep", list("Yes", "No")) == "Yes" && !QDELETED(src))
 			SetSleeping(400) //Short nap
 			voluntary_sleep_until = world.time + 400
 
@@ -853,9 +853,9 @@
 
 /mob/living/Crossed(atom/movable/AM)
 	. = ..()
-	for(var/i in get_equipped_items())
-		var/obj/item/item = i
-		SEND_SIGNAL(item, COMSIG_ITEM_WEARERCROSSED, AM)
+	for(var/obj/item/worn in contents)
+		if((worn.item_flags & IN_INVENTORY) && !(worn in held_items))
+			SEND_SIGNAL(worn, COMSIG_ITEM_WEARERCROSSED, AM)
 
 /mob/living/proc/makeTrail(turf/target_turf, turf/start, direction)
 	if(!has_gravity() || !isturf(start) || !blood_volume)

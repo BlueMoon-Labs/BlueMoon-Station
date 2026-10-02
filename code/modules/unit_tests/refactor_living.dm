@@ -108,3 +108,22 @@
 	for(var/datum/atom_hud/data/hud in GLOB.all_huds)
 		TEST_ASSERT(!(body in hud.hudatoms), "[hud.type] держит удалённого моба в hudatoms")
 	TEST_ASSERT(!LAZYLEN(body.hud_memberships), "У удалённого моба остались hud_memberships")
+
+/// Надетый предмет узнаёт, что через владельца прошли, а предмет в руке - нет.
+/datum/unit_test/human_crossed_notifies_worn_items
+	var/notified = 0
+
+/datum/unit_test/human_crossed_notifies_worn_items/Run()
+	var/mob/living/carbon/human/wearer = allocate(/mob/living/carbon/human)
+	var/obj/item/clothing/shoes/sneakers/black/shoes = allocate(/obj/item/clothing/shoes/sneakers/black)
+	TEST_ASSERT(wearer.equip_to_slot_if_possible(shoes, ITEM_SLOT_FEET), "обувь не наделась")
+	var/obj/item/held = allocate(/obj/item)
+	TEST_ASSERT(wearer.put_in_hands(held), "предмет не лёг в руку")
+	RegisterSignal(shoes, COMSIG_ITEM_WEARERCROSSED, PROC_REF(on_wearer_crossed))
+	RegisterSignal(held, COMSIG_ITEM_WEARERCROSSED, PROC_REF(on_wearer_crossed))
+	wearer.Crossed(allocate(/obj/item))
+	TEST_ASSERT_EQUAL(notified, 1, "сигнал о проходе через владельца получили [notified] предметов вместо одного надетого")
+
+/datum/unit_test/human_crossed_notifies_worn_items/proc/on_wearer_crossed(datum/source, atom/movable/crosser)
+	SIGNAL_HANDLER
+	notified++
