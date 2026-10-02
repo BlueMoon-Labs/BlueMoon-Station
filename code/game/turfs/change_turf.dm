@@ -79,33 +79,17 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	// Свободная клетка резерва остаётся в SSmapping.unused_turfs; без флага Reserve() её больше не выдаст.
 	var/reservation_flag = flags_1 & UNUSED_RESERVATION_TURF_1
 	if(flags & CHANGETURF_SKIP)
-		// dynamic_lumcount переносим и здесь: оверлейные источники держат ссылку на турф в
-		// affected_turfs, и обнулённый счётчик позже уходит в постоянный минус при
-		// clean_old_turfs() (свет ушёл - вычли из нуля).
-		// Оверлей света гасим явно: SKIP идёт мимо qdel/Destroy, замена турфа лишь обнуляет
-		// переменную, а сам мувабл остаётся в contents призраком с протухшей матрицей и
-		// рендерит её следующему жильцу блока (освобождение/выдача резерваций).
+		// SKIP идёт мимо qdel/Destroy: оверлей света, запись в active_turfs и excited-группу
+		// снимаем сами, иначе их унаследует новый турф (ссылки на турф позиционные).
 		if(lighting_object)
 			lighting_clear_overlay()
-		// По той же причине снимаем турф с атмоса. Резервации освобождаются
-		// именно этой веткой, и активный транзитный турф оставался бы записью в
-		// SSair.active_turfs, пока новый жилец блока не унаследует её вместе с
-		// протухшей позицией: снятие за O(1) верит своей подсказке, а у свежего
-		// турфа она нулевая, и запись стала бы неудаляемой.
-		// unlist, а не evict: свежая клетка резерва не excited, и evict искал бы её
-		// по всему active_turfs - тысяча клеток транзита стоила полсекунды.
 		if(SSair)
+			// unlist, а не evict: evict искал бы не-excited клетку по всему active_turfs.
 			SSair.unlist_active_turf(src)
-			// SKIP - единственный путь замены, идущий мимо qdel/Destroy, то есть
-			// мимо update_air_ref(-1) -> remove_from_active(), который хоронит
-			// excited-группу заменяемого члена. Ссылки на турф позиционные: запись
-			// в turf_list группы молча стала бы ссылкой на новый турф с нулевым
-			// обратным указателем, а merge_groups() доверяет спискам групп как
-			// непересекающимся и склеивает их без проверки вхождения. Хороним
-			// группу явно - живые соседи пересоберут её следующим циклом.
 			var/turf/open/open_self = src
 			if(istype(open_self) && open_self.excited_group)
 				open_self.excited_group.garbage_collect()
+		// Оверлейные источники держат турф в affected_turfs: обнулённый счётчик ушёл бы в минус.
 		var/skip_dynamic_lumcount = dynamic_lumcount
 		var/turf/skipped_turf = new path(src)
 		skipped_turf.dynamic_lumcount = skip_dynamic_lumcount
@@ -128,8 +112,7 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	var/old_bp = blueprint_data
 	blueprint_data = null
 
-// Exposure listeners survive turf replacement: qdel below cleanly severs
-	// every signal registration, so each listener re-registers on the new datum.
+	// qdel below drops every signal registration, so exposure listeners re-register on the new turf.
 	var/list/old_exposure_listeners = atmos_exposure_listeners
 	//LIQUIDS ADD - cache liquids so we can move them to the new turf
 	var/obj/effect/abstract/liquid_turf/old_liquids = liquids
@@ -160,10 +143,7 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 
 	if(old_exposure_listeners)
 		W.atmos_exposure_listeners = old_exposure_listeners
-		// Хард-делит обнуляет запись списка на месте, а Destroy слушателя до неё
-		// уже не доберётся - в ассоциативном списке остаётся ключ null. Обход
-		// идёт с конца по индексу: вырезать запись во время прямого прохода
-		// значит пропустить каждую вторую.
+		// Хард-делит слушателя оставляет в списке ключ null; обход с конца, чтобы Cut() не пропускал записи.
 		for(var/i in length(old_exposure_listeners) to 1 step -1)
 			var/datum/listener = old_exposure_listeners[i]
 			if(QDELETED(listener))
@@ -378,7 +358,7 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 			baseturfs += new_baseturfs
 	else
 		change_type = new_baseturfs
-	air_update_turf(TRUE) 						// Почему.
+	air_update_turf(TRUE)
 	return ChangeTurf(change_type, null, flags)
 
 // Copy an existing turf and put it on top
