@@ -173,6 +173,22 @@
 						qdel(src)
 					return
 
+		if(istype(S, /obj/item/stack/sheet/mineral/plastitanium))
+			if(state == GIRDER_REINF)
+				if(S.get_amount() < 2)
+					return
+				to_chat(user, "<span class='notice'>You start finalizing the reinforced plastitanium wall...</span>")
+				if(do_after(user, 60 * platingmodifier, target = src))
+					if(S.get_amount() < 2)
+						return
+					S.use(2)
+					to_chat(user, "<span class='notice'>You fully reinforce the wall.</span>")
+					var/turf/T = get_turf(src)
+					T.PlaceOnTop(/turf/closed/wall/r_wall/r_plastitanium)
+					transfer_fingerprints_to(T)
+					qdel(src)
+				return
+
 		if(S.sheettype != "runed")
 			var/M = S.sheettype
 			if(state == GIRDER_DISPLACED)
