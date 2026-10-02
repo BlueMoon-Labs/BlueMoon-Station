@@ -329,7 +329,7 @@
 		"arousable", "sexknotting",
 		"sound_volume_midi", "sound_volume_ambience", "sound_volume_ship_ambience", "sound_volume_announcements",
 		"sound_volume_bark", "sound_volume_prayers", "sound_volume_adminhelp", "sound_volume_instruments",
-		"sound_volume_jukeboxes", "sound_volume_personal_jukeboxes", "sound_volume_emote",
+		"sound_volume_jukeboxes", "sound_volume_personal_jukeboxes", "sound_volume_emote", "sound_volume_heretic_dance", "sound_volume_heretic_sky",
 		"sound_volume_mentorhelp", "sound_volume_fax",
 		"modern_button_shape", "modern_ui_language", "ui_decoration_level", "collapse_empty_character_slots",
 		"enable_tips", "tip_delay", "lastchangelog", "menuoptions", "inquisitive_ghost",

@@ -70,7 +70,7 @@
 
 /obj/item/clothing/glasses/meson
 	name = "optical meson scanner"
-	desc = "Used by engineering and mining staff to see basic structural and terrain layouts through walls, regardless of lighting conditions."
+	desc = "Используются инженерным и шахтёрским персоналом для сквозной видимости структур и рельефа местности, независимо от освещения."
 	icon_state = "meson"
 	item_state = "meson"
 	darkness_view = 2
@@ -81,17 +81,17 @@
 	glasses_type = "meson"
 
 /obj/item/clothing/glasses/meson/suicide_act(mob/living/carbon/user)
-	user.visible_message("<span class='suicide'>[user] is putting \the [src] to [user.ru_ego()] eyes and overloading the brightness! It looks like [user.p_theyre()] trying to commit suicide!</span>")
+	user.visible_message(span_suicide("[user] надевает \the [src] на свои глаза и пытается выкрутить яркость на максимум! Похоже, что [user.ru_who()] пытается совершить самоубийство!"))
 	return BRUTELOSS
 
 /obj/item/clothing/glasses/meson/prescription
 	name = "prescription optical meson scanner"
-	desc = "Used by engineering and mining staff to see basic structural and terrain layouts through walls, regardless of lighting conditions. This one has prescription lens fitted in."
+	desc = "Используются инженерным и шахтёрским персоналом для сквозной видимости структур и рельефа местности, независимо от освещения. Эти имеют линзы для коррекции зрения."
 	vision_correction = 1
 
 /obj/item/clothing/glasses/meson/night
 	name = "night vision meson scanner"
-	desc = "An optical meson scanner fitted with an amplified visible light spectrum overlay, providing greater visual clarity in darkness."
+	desc = "Оптические мезонные сканеры со встроенным усилителем видимого спектра света, дающего лучшую видимость в темноте."
 	icon_state = "nvgmeson"
 	item_state = "nvgmeson"
 	darkness_view = 8
@@ -103,18 +103,12 @@
 
 /obj/item/clothing/glasses/meson/night/update_icon_state()
 	. = ..()
+	icon_state = length(color_cutoffs) ? initial(icon_state) : "nvgmeson_off"
 
 /obj/item/clothing/glasses/meson/night/ert
-	name = "night vision meson scanner"
-	desc = "An optical meson scanner fitted with an amplified visible light spectrum overlay, providing greater visual clarity in darkness."
-	icon_state = "nvgmeson"
-	item_state = "nvgmeson"
 	darkness_view = 8
 	flash_protect = 1
 	vision_correction = 1
-	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
-	color_cutoffs = list(10, 35, 10)
-	glass_colour_type = /datum/client_colour/glass_colour/green
 
 /obj/item/clothing/glasses/meson/gar
 	name = "gar mesons"
@@ -146,8 +140,8 @@
 
 /obj/item/clothing/glasses/night
 	name = "night vision goggles"
-	desc = "You can totally see in the dark now! Just don't look too closely at bright lights. This lacks any flash correction."
-	icon_state = "night"
+	desc = "Теперь вы можете полностью видеть в темноте! Просто не смотрите на яркие источники света слишком пристально. У этой пары очков нет никакого экранирования от вспышек."
+	icon_state = "base_night"
 	item_state = "glasses"
 	darkness_view = 8
 	flash_protect = -2
@@ -158,6 +152,7 @@
 
 /obj/item/clothing/glasses/night/update_icon_state()
 	. = ..()
+	icon_state = length(color_cutoffs) ? initial(icon_state) : "base_night_off"
 
 /obj/item/clothing/glasses/night/prescription/Initialize(mapload)
 	. = ..()
@@ -165,12 +160,16 @@
 
 /obj/item/clothing/glasses/night/syndicate
 	name = "combat night vision goggles"
-	desc = "See everything, without fear."
+	desc = "Видь всё. Без страха. Без сожалений."
+	icon_state = "combat_night"
 	flash_protect = 1
 	vision_correction = 1
 
+/obj/item/clothing/glasses/night/syndicate/update_icon_state()
+	icon_state = length(color_cutoffs) ? initial(icon_state) : "combat_night_off"
+
 /obj/item/clothing/glasses/night/syndicate/red
-	icon_state = "securityhudnight"
+	icon_state = "combat_securityhudnight"
 
 /obj/item/clothing/glasses/science/suicide_act(mob/living/carbon/user)
 	user.visible_message("<span class='suicide'>[user] is tightening \the [src]'s straps around [user.ru_ego()] neck! It looks like [user.p_theyre()] trying to commit suicide!</span>")

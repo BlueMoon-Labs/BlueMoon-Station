@@ -137,23 +137,29 @@
 		for(var/obj/effect/mob_spawn/human/raider/spawner in A)
 			spawners_list += spawner
 
-	var/list/candidates = pollGhostCandidates("Вы желаете стать рейдером InteQ?", ROLE_TRAITOR, minimum_required = spawners_list.len)
-	var/list/spawned_raiders = list()
 	var/spawner_count = length(spawners_list)
 	var/intensity_share = spawner_count ? control.intensity / spawner_count : 0
 	var/refund_share = triggered_randomly && spawner_count ? control.cost / spawner_count : 0
+	// Armed before the poll: a sleeper claimed through attack_ghost meanwhile tracks itself in create().
+	for(var/obj/effect/mob_spawn/human/spawner as anything in spawners_list)
+		spawner.director_source_action = control
+		spawner.director_intensity = intensity_share
+		spawner.director_refund_cost = refund_share
+	var/list/candidates = pollGhostCandidates("Вы желаете стать рейдером InteQ?", ROLE_TRAITOR, minimum_required = spawners_list.len)
+	var/list/spawned_raiders = list()
 
 	for(var/obj/effect/mob_spawn/human/spawner in spawners_list)
+		// Already claimed through attack_ghost during the poll and tracked by create().
+		if(QDELETED(spawner))
+			continue
 		if(LAZYLEN(candidates))
 			var/mob/our_candidate = pick_n_take(candidates)
+			spawner.director_source_action = null // counted by the batch tracking below
 			var/mob/living/spawned_raider = spawner.create(our_candidate.ckey)
 			if(spawned_raider)
 				spawned_raiders += spawned_raider
 			notify_ghosts("The InteQ ship has an object of interest: [our_candidate]!", source=our_candidate, action=NOTIFY_ORBIT, header="Something's Interesting!")
 		else
-			spawner.director_source_action = control
-			spawner.director_intensity = intensity_share
-			spawner.director_refund_cost = refund_share
 			notify_ghosts("The InteQ ship has an object of interest: [spawner]!", source=spawner, action=NOTIFY_ORBIT, header="Something's Interesting!")
 	if(length(spawned_raiders))
 		var/spawned_fraction = length(spawned_raiders) / max(1, spawner_count)

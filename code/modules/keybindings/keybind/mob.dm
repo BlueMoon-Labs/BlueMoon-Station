@@ -70,6 +70,8 @@
 	if(iscyborg(user.mob)) //cyborgs can't drop items
 		return FALSE
 	var/mob/M = user.mob
+	if(M.cancel_prepared_abilities())
+		return TRUE
 	var/obj/item/I = M.get_active_held_item()
 	if(!I)
 		to_chat(user, "<span class='warning'>You have nothing to drop in your hand!</span>")

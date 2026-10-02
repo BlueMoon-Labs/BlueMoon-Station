@@ -134,7 +134,7 @@
 /datum/atom_hud/unit_test_collect_counter
 	var/collect_calls = 0
 
-/datum/atom_hud/unit_test_collect_counter/collect_hud_images_for(mob/M, list/out, check_visibility = TRUE)
+/datum/atom_hud/unit_test_collect_counter/collect_hud_images_for(mob/M, list/out, check_visibility = TRUE, z_group = null)
 	collect_calls++
 	return ..()
 

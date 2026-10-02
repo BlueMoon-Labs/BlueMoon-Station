@@ -494,10 +494,14 @@
 	return busy_action || firing || ((last_fire + fire_delay) > world.time)
 
 /obj/item/gun/proc/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0, stam_cost = 0)
+	if(user && !CHECK_MOBILITY(user, MOBILITY_USE))
+		return FALSE
 	add_fingerprint(user)
 
 	if(on_cooldown())
 		return
+	if(user && HAS_TRAIT(user, TRAIT_HERETIC_LUNATIC))
+		bonus_spread += HERETIC_MOON_LUNATIC_SPREAD
 	firing = TRUE
 	. = do_fire(target, user, message, params, zone_override, bonus_spread, stam_cost)
 	firing = FALSE
@@ -551,7 +555,7 @@
 	return TRUE
 
 /obj/item/gun/proc/do_burst_shot(mob/living/user, atom/target, message = TRUE, params=null, zone_override = "", sprd = 0, randomized_gun_spread = 0, randomized_bonus_spread = 0, rand_spr = 0, iteration = 0, stam_cost = 0)
-	if(!user || !firing)
+	if(!user || !firing || !CHECK_MOBILITY(user, MOBILITY_USE))
 		firing = FALSE
 		return FALSE
 	if(!issilicon(user))

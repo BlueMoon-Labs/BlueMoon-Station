@@ -17,7 +17,6 @@ GLOBAL_LIST_EMPTY(attackby_recipes)
 /datum/crafting_recipe/stack_wrap
 	var/datum/stack_recipe/stack_ref
 	var/stack_type
-	name = "stack recipe"
 
 /proc/is_craftable_item(datum/crafting_recipe/R)
 	if(isnull(R?.result))

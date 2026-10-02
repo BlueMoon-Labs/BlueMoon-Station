@@ -20,6 +20,10 @@
 	var/list/image/hud_list = null
 	///HUD images that this atom can provide.
 	var/list/hud_possible
+	/// Атом-худы, в которых атом числится значком
+	var/list/datum/atom_hud/hud_memberships
+	/// Группа z, по которой худы раздают значки атома (get_hud_z_group). null - ещё не считали
+	var/hud_z_group
 	///Proximity monitor associated with this atom
 	var/datum/proximity_monitor/proximity_monitor
 	/// Датумы связных кластеров, в которые входит этот атом. Стоят на движимом, а не на /atom:
@@ -138,6 +142,8 @@
 
 /atom/movable/Initialize(mapload)
 	. = ..()
+	if(length(GLOB.antag_training_arenas))
+		register_training_atom()
 	switch(blocks_emissive)
 		if(EMISSIVE_BLOCK_GENERIC)
 			var/mutable_appearance/gen_emissive_blocker = mutable_appearance(icon, icon_state, plane = EMISSIVE_PLANE, alpha = src.alpha)
@@ -166,6 +172,11 @@
 
 
 /atom/movable/Destroy(force)
+	if(training_origin)
+		var/datum/antag_training_arena/origin = training_origin.resolve()
+		if(origin)
+			origin.created_atoms -= weak_reference
+		training_origin = null
 	//вычищаем свои ссылки из ячеек грида; записи в important_recursive_contents
 	//вложенных locs вычистит Exited при moveToNullspace ниже
 	if(spatial_grid_key)

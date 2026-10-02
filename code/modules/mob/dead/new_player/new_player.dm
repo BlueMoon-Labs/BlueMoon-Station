@@ -720,12 +720,14 @@
 	client.prefs.apply_tattoos_to_human(H)
 	// BLUEMOON ADD END
 	H.dna.update_dna_identity()
-	if(mind)
+	var/datum/mind/player_mind = mind
+	if(player_mind)
 		if(transfer_after)
-			mind.late_joiner = TRUE
-		mind.active = 0					//we wish to transfer the key manually
-		mind.transfer_to(H)					//won't transfer key since the mind is not active
-		mind.set_original_character(H)
+			player_mind.late_joiner = TRUE
+		player_mind.active = 0					//we wish to transfer the key manually
+		player_mind.transfer_to(H)					//won't transfer key since the mind is not active
+		// transfer_to() обнуляет src.mind: дальше только через локальную ссылку
+		player_mind.set_original_character(H)
 
 	H.name = real_name
 	client.init_verbs()

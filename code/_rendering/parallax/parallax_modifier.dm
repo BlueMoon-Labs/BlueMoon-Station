@@ -28,17 +28,21 @@
 	/// инвалидации z, и без этого фазовая подсветка сбрасывалась бы на исходный цвет
 	/// слоя посреди явления - до следующего вызова, которого на плато пика не будет.
 	var/list/layer_colors
+	/// Зовётся с новым шаблоном z после каждой его сборки: источник настраивает свои слои сам.
+	var/datum/callback/on_build
 
-/datum/parallax_modifier/New(token, z, priority = 0, datum/parallax_profile/profile, list/extra_layers, tint)
+/datum/parallax_modifier/New(token, z, priority = 0, datum/parallax_profile/profile, list/extra_layers, tint, datum/callback/on_build)
 	src.token = token
 	src.z = z
 	src.priority = priority
 	src.profile = profile
 	src.extra_layers = extra_layers?.Copy()
 	src.tint = tint
+	src.on_build = on_build
 
 /datum/parallax_modifier/Destroy(force)
 	profile = null
 	extra_layers = null
 	layer_colors = null
+	on_build = null
 	return ..()

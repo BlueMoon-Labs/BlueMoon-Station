@@ -22,13 +22,13 @@
 	var/new_z = z_list.len + 1
 	if (world.maxz < new_z)
 		world.incrementMaxZ()
-		CHECK_TICK
 	// TODO: sleep here if the Z level needs to be cleared
 	var/datum/space_level/S = new z_type(new_z, name, traits)
 	z_list += S
 	calculate_z_level_gravity(new_z)
 	//z-уровни, созданные до инита грида, разложит SSspatial_grid/Initialize сам
 	SSspatial_grid.propogate_spatial_grid_to_new_z(S)
+	CHECK_TICK
 	return S
 
 /datum/controller/subsystem/mapping/proc/get_level(z) as /datum/space_level

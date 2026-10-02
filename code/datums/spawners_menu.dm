@@ -16,6 +16,9 @@
 		ui.open()
 
 /datum/spawners_menu/ui_data(mob/user)
+	if(QDELETED(GLOB.antag_training_spawner))
+		GLOB.antag_training_spawner = new /obj/effect/mob_spawn/antag_training(null)
+	var/datum/antag_training_arena/shared = GLOB.antag_training_arenas["shared"]
 	var/list/data = list()
 	data["spawners"] = list()
 	for(var/spawner in GLOB.mob_spawners)
@@ -26,7 +29,10 @@
 		this["important_warning"] = ""
 		this["category"] = ""
 		this["refs"] = list()
+		this["can_jump"] = FALSE
 		for(var/spawner_obj in GLOB.mob_spawners[spawner])
+			if(get_turf(spawner_obj) || (istype(spawner_obj, /obj/effect/mob_spawn/antag_training) && shared?.ready))
+				this["can_jump"] = TRUE
 			this["refs"] += "[REF(spawner_obj)]"
 			if(!this["desc"])
 				if(istype(spawner_obj, /obj/effect/mob_spawn))
@@ -59,8 +65,12 @@
 		return
 	switch(action)
 		if("jump")
-			if(MS)
-				owner.forceMove(get_turf(MS))
+			var/turf/destination = get_turf(MS)
+			if(istype(MS, /obj/effect/mob_spawn/antag_training))
+				var/datum/antag_training_arena/shared = GLOB.antag_training_arenas["shared"]
+				destination = shared?.ready ? shared.entry_turf : null
+			if(destination)
+				owner.forceMove(destination)
 				. = TRUE
 		if("spawn")
 			if(MS)

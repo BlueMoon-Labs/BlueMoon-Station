@@ -16,7 +16,7 @@
 	var/volume = 5
 	var/ckey = null
 	var/realName = null
-	var/datum/mind/mind = null
+	var/datum/weakref/mind_ref
 	var/blood_gender = null
 	var/blood_type = null
 	var/list/features = null
@@ -36,6 +36,7 @@
 	return ..()
 
 /obj/item/seeds/replicapod/proc/check_mind_orbiting(atom/movable/A)
+	var/datum/mind/mind = mind_ref?.resolve()
 	for(var/mob/M in A.orbiters?.orbiters)
 		if(mind && M.mind && ckey(M.mind.key) == ckey(mind.key) && M.ckey && M.client && M.stat == DEAD && !M.suiciding && isobserver(M))
 			return TRUE
@@ -54,9 +55,10 @@
 /obj/item/seeds/replicapod/on_reagent_change(changetype)
 	if(changetype == ADD_REAGENT)
 		for(var/datum/reagent/R as anything in reagents.reagent_list)
-			if(R.data["mind"])
+			var/datum/weakref/sample_mind = R.data?["mind"]
+			if(istype(sample_mind) && sample_mind.resolve())
 				if(R.data["cloneable"])
-					mind = R.data["mind"]
+					mind_ref = sample_mind
 					ckey = R.data["ckey"]
 					realName = R.data["real_name"]
 					blood_gender = R.data["gender"]
@@ -81,10 +83,11 @@
 
 /obj/item/seeds/replicapod/harvest(mob/user) //now that one is fun -- Urist
 	var/obj/machinery/hydroponics/parent = loc
+	var/datum/mind/mind = mind_ref?.resolve()
 	var/make_podman = 0
 	var/ckey_holder = null
 	var/list/result = list()
-	if(CONFIG_GET(flag/revival_pod_plants))
+	if(CONFIG_GET(flag/revival_pod_plants) && mind)
 		if(ckey)
 			for(var/mob/M in GLOB.player_list)
 				if(isobserver(M))

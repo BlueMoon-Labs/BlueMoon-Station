@@ -52989,13 +52989,17 @@
 /obj/item/gun/energy/modular_laser_rifle/carbine,
 /obj/item/gun/energy/modular_laser_rifle/carbine,
 /obj/item/gun/energy/modular_laser_rifle/carbine,
-/obj/item/storage/firstaid,
 /obj/item/storage/firstaid/brute,
 /obj/item/storage/firstaid/toxin,
 /obj/item/storage/firstaid/fire,
 /obj/item/ammo_box/magazine/wt550m9/wttx,
 /obj/item/ammo_box/magazine/wt550m9/wttx,
 /obj/item/ammo_box/magazine/wt550m9/wttx,
+/obj/item/stack/sheet/rglass/fifty,
+/obj/item/stack/sheet/rglass/fifty,
+/obj/item/stack/sheet/plasteel/fifty,
+/obj/item/stack/sheet/plasteel/fifty,
+/obj/item/storage/firstaid/regular,
 /turf/open/floor/mineral/plastitanium/red,
 /area/ai_monitored/security/armory)
 "iql" = (

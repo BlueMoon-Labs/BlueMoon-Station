@@ -130,7 +130,8 @@
 		var/extra_desc = desc || ""
 		var/ctrl_hint = (src.location == SCRN_OBJ_IN_PALETTE) ? "<br><b>Ctrl-click</b> to restore to hotbar" : "<br><b>Ctrl-click</b> to hide in Show Buttons"
 		extra_desc = "[extra_desc][ctrl_hint]"
-		openToolTip(usr, src, params, title = name, content = extra_desc, theme = actiontooltipstyle)
+		var/tooltip = linked_action ? linked_action.format_tooltip(usr, extra_desc) : extra_desc
+		openToolTip(usr, src, params, title = name, content = tooltip, theme = actiontooltipstyle)
 
 /atom/movable/screen/movable/action_button/MouseExited(location, control, params)
 	closeToolTip(usr)

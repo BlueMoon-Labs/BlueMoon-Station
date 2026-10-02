@@ -72,7 +72,7 @@
 
 ///Adds the cliented mob reference to either the list of dead player-mobs or to the list of observers, depending on how they joined the game.
 /mob/proc/add_to_current_dead_players()
-	if(!SSticker?.mode)
+	if(training_origin || !SSticker?.mode)
 		return
 	SSticker.mode.current_players[CURRENT_DEAD_PLAYERS] |= src
 
@@ -104,7 +104,7 @@
 
 ///Adds the cliented mob reference to the list of living player-mobs. If the mob is an antag, it adds it to the list of living antag player-mobs.
 /mob/proc/add_to_current_living_players()
-	if(!SSticker?.mode)
+	if(training_origin || !SSticker?.mode)
 		return
 	SSticker.mode.current_players[CURRENT_LIVING_PLAYERS] |= src
 	if(mind && (mind.special_role || length(mind.antag_datums)))
@@ -121,7 +121,7 @@
 
 ///Adds the cliented mob reference to the list of living antag player-mobs.
 /mob/proc/add_to_current_living_antags()
-	if(!SSticker?.mode)
+	if(training_origin || !SSticker?.mode)
 		return
 	SSticker.mode.current_players[CURRENT_LIVING_ANTAGS] |= src
 

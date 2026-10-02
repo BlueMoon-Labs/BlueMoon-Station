@@ -368,6 +368,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/sound_volume_instruments = 100
 	var/sound_volume_jukeboxes = 100
 	var/sound_volume_personal_jukeboxes = 100
+	var/sound_volume_heretic_dance = 100
+	var/sound_volume_heretic_sky = 100
 	var/sound_volume_emote = 100
 	var/sound_volume_mentorhelp = 100
 	var/sound_volume_fax = 100
@@ -827,6 +829,16 @@ GLOBAL_LIST_EMPTY(preferences_datums)
  * и категории, внешность персонажа не трогают, и платить за неё им незачем.
  * По умолчанию TRUE: пропускаем только там, где точно знаем, что ничего не поехало.
  */
+/// Во сколько раз больше MAX_FLAVOR_PREVIEW_LEN символов текста разбирается ради превью: запас на теги разметки
+#define FLAVOR_PREVIEW_PARSE_SLACK 4
+
+/// Начало описания персонажа для превью в окне настройки: полный текст до 4096 символов не кодируется
+/proc/flavor_text_preview(text)
+	var/text_head = copytext_char(text, 1, MAX_FLAVOR_PREVIEW_LEN * FLAVOR_PREVIEW_PARSE_SLACK)
+	return replacetext(parsemarkdown_basic(html_encode(text_head), hyperlink = FALSE), "\n", " ")
+
+#undef FLAVOR_PREVIEW_PARSE_SLACK
+
 /datum/preferences/proc/ShowChoices(mob/user, rebuild_preview = TRUE)
 	if(!user || !user.client)
 		return
@@ -1365,11 +1377,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							ai_core_icon_state = "ai-random"
 						else
 							ai_core_icon_state = resolve_ai_icon(preferred_ai_core_display, TRUE)
-						var/icon/ai_core_preview_icon = icon('icons/mob/AI.dmi', ai_core_icon_state, SOUTH, 1, FALSE)
-						var/ai_core_preview_html = icon2base64html(ai_core_preview_icon)
-						if(!ai_core_preview_html)
-							ai_core_preview_html = ""
-						dat += "<div class='csetup-ai-core-preview'>" + ai_core_preview_html + "</div>"
+						var/static/list/ai_core_preview_cache = list()
+						var/ai_core_preview_html = ai_core_preview_cache["[ai_core_icon_state]"]
+						if(isnull(ai_core_preview_html))
+							ai_core_preview_html = icon2base64html(icon('icons/mob/AI.dmi', ai_core_icon_state, SOUTH, 1, FALSE)) || ""
+							ai_core_preview_cache["[ai_core_icon_state]"] = ai_core_preview_html
+						dat += "<div class='csetup-ai-core-preview'>"
+						dat += ai_core_preview_html
+						dat += "</div>"
 					dat += "</td>"
 
 					dat += "<td valign='top'>"
@@ -1438,8 +1453,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 					dat += "<h2>[flavor_text_label]</h2>"
 					dat += "<a href='?_src_=prefs;preference=flavor_text;task=input'><b>[set_flavor_text_label]</b></a> <a href='?_src_=prefs;preference=format_help;task=input'>(?)</a><br>"
-					var/flavor_preview = parsemarkdown_basic(html_encode(features["flavor_text"]), hyperlink=FALSE)
-					flavor_preview = replacetext(flavor_preview, "\n", " ")
+					var/flavor_preview = flavor_text_preview(features["flavor_text"])
 					if(!length(features["flavor_text"]))
 						dat += "\[...\]"
 					else if(length_char(features["flavor_text"]) <= MAX_FLAVOR_PREVIEW_LEN)
@@ -1449,8 +1463,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					//SPLURT edit - naked flavor text
 					dat += "<h2>[naked_flavor_text_label]</h2>"
 					dat += "<a href='?_src_=prefs;preference=naked_flavor_text;task=input'><b>[set_naked_flavor_text_label]</b></a> <a href='?_src_=prefs;preference=format_help;task=input'>(?)</a><br>"
-					var/naked_preview = parsemarkdown_basic(html_encode(features["naked_flavor_text"]), hyperlink=FALSE)
-					naked_preview = replacetext(naked_preview, "\n", " ")
+					var/naked_preview = flavor_text_preview(features["naked_flavor_text"])
 					if(!length(features["naked_flavor_text"]))
 						dat += "\[...\]<BR>"
 					else if(length_char(features["naked_flavor_text"]) <= MAX_FLAVOR_PREVIEW_LEN)
@@ -1475,8 +1488,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					// BLUEMOON ADD END
 					dat += "<h2>[silicon_flavor_text_label]</h2>"
 					dat += "<a href='?_src_=prefs;preference=silicon_flavor_text;task=input'><b>[set_silicon_flavor_text_label]</b></a> <a href='?_src_=prefs;preference=format_help;task=input'>(?)</a><br>"
-					var/silicon_preview = parsemarkdown_basic(html_encode(features["silicon_flavor_text"]), hyperlink=FALSE)
-					silicon_preview = replacetext(silicon_preview, "\n", " ")
+					var/silicon_preview = flavor_text_preview(features["silicon_flavor_text"])
 					if(!length(features["silicon_flavor_text"]))
 						dat += "\[...\]"
 					else if(length_char(features["silicon_flavor_text"]) <= MAX_FLAVOR_PREVIEW_LEN)
@@ -1486,8 +1498,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					if(!is_modern_theme)
 						dat += "<h2>[custom_species_lore_label]</h2>"
 						dat += "<a href='?_src_=prefs;preference=custom_species_lore;task=input'><b>[set_custom_species_lore_label]</b></a> <a href='?_src_=prefs;preference=format_help;task=input'>(?)</a><br>"
-						var/lore_preview = parsemarkdown_basic(html_encode(features["custom_species_lore"]), hyperlink=FALSE)
-						lore_preview = replacetext(lore_preview, "\n", " ")
+						var/lore_preview = flavor_text_preview(features["custom_species_lore"])
 						if(!length(features["custom_species_lore"]))
 							dat += "\[...\]<BR>"
 						else if(length_char(features["custom_species_lore"]) <= MAX_FLAVOR_PREVIEW_LEN)
@@ -1496,8 +1507,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							dat += "[copytext_char(lore_preview, 1, MAX_FLAVOR_PREVIEW_LEN)]...<BR>"
 						dat += "<h2>[ooc_notes_label]</h2>"
 						dat += "<a href='?_src_=prefs;preference=ooc_notes;task=input'><b>[set_ooc_notes_label]</b></a> <a href='?_src_=prefs;preference=format_help;task=input'>(?)</a><br>"
-						var/ooc_preview = parsemarkdown_basic(html_encode(features["ooc_notes"]), hyperlink=FALSE)
-						ooc_preview = replacetext(ooc_preview, "\n", " ")
+						var/ooc_preview = flavor_text_preview(features["ooc_notes"])
 						if(!length(features["ooc_notes"]))
 							dat += "\[...\]"
 						else if(length_char(features["ooc_notes"]) <= MAX_FLAVOR_PREVIEW_LEN)
@@ -1532,8 +1542,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					if(is_modern_theme)
 						dat += "<br><h2>[custom_species_lore_label]</h2>"
 						dat += "<a href='?_src_=prefs;preference=custom_species_lore;task=input'><b>[set_custom_species_lore_label]</b></a> <a href='?_src_=prefs;preference=format_help;task=input'>(?)</a><br>"
-						var/lore_preview2 = parsemarkdown_basic(html_encode(features["custom_species_lore"]), hyperlink=FALSE)
-						lore_preview2 = replacetext(lore_preview2, "\n", " ")
+						var/lore_preview2 = flavor_text_preview(features["custom_species_lore"])
 						if(!length(features["custom_species_lore"]))
 							dat += "\[...\]<BR>"
 						else if(length_char(features["custom_species_lore"]) <= MAX_FLAVOR_PREVIEW_LEN)
@@ -1542,8 +1551,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							dat += "[copytext_char(lore_preview2, 1, MAX_FLAVOR_PREVIEW_LEN)]...<BR>"
 						dat += "<h2>[ooc_notes_label]</h2>"
 						dat += "<a href='?_src_=prefs;preference=ooc_notes;task=input'><b>[set_ooc_notes_label]</b></a> <a href='?_src_=prefs;preference=format_help;task=input'>(?)</a><br>"
-						var/ooc_preview2 = parsemarkdown_basic(html_encode(features["ooc_notes"]), hyperlink=FALSE)
-						ooc_preview2 = replacetext(ooc_preview2, "\n", " ")
+						var/ooc_preview2 = flavor_text_preview(features["ooc_notes"])
 						if(!length(features["ooc_notes"]))
 							dat += "\[...\]"
 						else if(length_char(features["ooc_notes"]) <= MAX_FLAVOR_PREVIEW_LEN)
@@ -2454,10 +2462,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 									var/datum/gear/gear = subcategory_items[name]
 									if(!gear)
 										continue
-									var/display_name = html_encode(name)
 									var/donoritem = gear.donoritem
 									if(donoritem && !gear.donator_ckey_check(user.ckey))
 										continue
+									var/display_name = html_encode(name)
 									var/background_cl = "#23273C"
 									if(even)
 										background_cl = "#17191C"
@@ -2465,9 +2473,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 									var/class_link = ""
 									var/list/loadout_item = has_loadout_gear(loadout_slot, "[gear.type]")
 									var/extra_loadout_data = ""
-									var/gear_preview = gear.get_base64icon()
-									if(gear_preview)
-										extra_loadout_data += "<center><img src='data:image/png;base64,[gear_preview]'></center>"
 									if(loadout_item)
 										var/loadout_color_display = "#FFFFFF"
 										var/loadout_color_label = "#FFFFFF"
@@ -2518,7 +2523,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 										class_link = "style='white-space:normal;' href='?_src_=prefs;preference=gear;toggle_gear_path=[url_encode(name)];toggle_gear=1'"
 									else
 										class_link = "style='white-space:normal;background:#eb2e2e;' class='linkOff'"
-									dat += "<tr style='vertical-align:top; background-color: [background_cl];'><td width=15%><a [class_link]>[display_name]</a>[extra_loadout_data]</td>"
+									dat += "<tr style='vertical-align:top; background-color: [background_cl];'><td width=15%><a [class_link]>[display_name]</a>"
+									dat += gear.get_preview_html()
+									dat += "[extra_loadout_data]</td>"
 									dat += "<td width = 5% style='vertical-align:top'>[gear.cost]</td><td>"
 									if(islist(gear.restricted_roles))
 										if(gear.restricted_roles.len)
@@ -6802,7 +6809,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/static/video_regex = regex("\\.(webm|mp4)(\[?#]|$)", "i")
 	if(findtext(link, video_regex))
 		return "<video src='[link]' autoplay loop muted playsinline style='border: 1px solid black; object-fit: contain;' width='[width]' height='[height]'></video>"
-	return "<img src='[link]' style='border: 1px solid black; object-fit: contain;' width='[width]' height='[height]'>"
+	return "<img src='[link]' referrerpolicy='no-referrer' style='border: 1px solid black; object-fit: contain;' width='[width]' height='[height]'>"
 
 /datum/preferences/proc/mob_size_name_to_num(body_weight_name)
 	switch(body_weight_name)
