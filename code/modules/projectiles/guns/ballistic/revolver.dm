@@ -699,6 +699,7 @@
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/apostle
 	dual_wield_spread = 25
+	fire_delay = 5
 	w_class = WEIGHT_CLASS_NORMAL
 	recoil = 0.5
 	slot_flags = ITEM_SLOT_BELT
@@ -730,6 +731,7 @@
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/liturgy
 	dual_wield_spread = 25
+	fire_delay = 5
 	w_class = WEIGHT_CLASS_NORMAL
 	recoil = 0.5
 	slot_flags = ITEM_SLOT_BELT 
@@ -760,6 +762,7 @@
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/exorcist 
 	dual_wield_spread = 25
+	fire_delay = 5
 	w_class = WEIGHT_CLASS_NORMAL
 	recoil = 3
 	slot_flags = ITEM_SLOT_BELT

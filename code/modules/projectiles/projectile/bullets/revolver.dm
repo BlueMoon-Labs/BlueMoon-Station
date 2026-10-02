@@ -217,7 +217,7 @@
 
 /obj/item/projectile/bullet/cal41/lethal
 	name = ".41 bullet"
-	damage = 28
+	damage = 35
 	shrapnel_type = NONE
 	sharpness = SHARP_NONE
 	embedding = null
@@ -234,7 +234,7 @@
 
 /obj/item/projectile/bullet/cal41/incendiary
 	name = ".41 bullet"
-	damage = 25
+	damage = 30
 	shrapnel_type = NONE
 	sharpness = SHARP_NONE
 	embedding = null
@@ -259,7 +259,7 @@
 
 /obj/item/projectile/bullet/cal41/dumdum
 	name = ".38 DumDum bullet"
-	damage = 15
+	damage = 20
 	armour_penetration = BULLET_BR0 - 30
 	ricochets_max = 0
 	sharpness = SHARP_EDGED
@@ -280,11 +280,11 @@
 
 /obj/item/projectile/bullet/cal41/magnum
 	name = ".41 Remington Magnum bullet"
-	damage = 35
+	damage = 45
 	shrapnel_type = NONE
 	sharpness = SHARP_NONE
 	embedding = null
-	armour_penetration = BULLET_BR3
+	armour_penetration = BULLET_BR4
 	wound_bonus = 3
 
 /obj/item/ammo_casing/cal41/fmj
@@ -298,7 +298,7 @@
 
 /obj/item/projectile/bullet/cal41/fmj
 	name = ".41 Remington fmj bullet"
-	damage = 20
+	damage = 30
 	shrapnel_type = NONE
 	sharpness = SHARP_NONE
 	embedding = null
@@ -320,7 +320,7 @@
 	name = "rubbershot pellet"
 	icon_state = "pellet"
 	damage = 1
-	stamina = 20                      // BLUEMOON EDIT: было 15 → 25
+	stamina = 20                     
 	armour_penetration = BULLET_BR0
 	sharpness = SHARP_NONE
 	embedding = null
