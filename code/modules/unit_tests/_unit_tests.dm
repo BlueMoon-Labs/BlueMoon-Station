@@ -351,6 +351,7 @@
 #include "director_beat_cost.dm"
 #include "disposal_bin.dm"
 #include "disposal_holder.dm"
+#include "drink_icon_states.dm"
 #include "effect_system_cleanup.dm"
 #include "fov_hearers.dm"
 #include "gc_refcount.dm"
