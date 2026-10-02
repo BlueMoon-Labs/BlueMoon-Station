@@ -37,12 +37,20 @@ GLOBAL_LIST_INIT(duplicate_forbidden_vars_by_type, typecacheof_assoc_list(list(
 //на source[ключ] с "bad index" (273 рантайма за раунд 10137: ключом там сырой аппиранс).
 //Оверлеи и подложки при этом на копию не переезжали вовсе - их переносит
 //copy_template_vars() отдельно, значением.
+//Атмос-учёт (членство в SSair.active_turfs, циклы, архив, ветер, подписки) SSair ведёт по
+//самому приёмнику, шаблонный ему чужой.
 GLOBAL_LIST_INIT(turf_copy_forbidden_vars, list(
 	"light", "light_sources", "lighting_object", "lighting_flags",
 	"lc_topleft", "lc_topright", "lc_bottomleft", "lc_bottomright",
 	"shadow_weight_sum", "cached_lumcount", "dynamic_lumcount",
 	"luminosity",
-	"overlays", "underlays", "filters", "vis_contents", "vis_locs"
+	"overlays", "underlays", "filters", "vis_contents", "vis_locs",
+	"excited", "active_turf_index", "current_cycle", "archived_cycle", "equalize_cycle",
+	"temperature_archived", "atmos_cooldown", "conductivity_blocked_directions",
+	"pressure_difference", "pressure_direction", "pressure_vector_x", "pressure_vector_y",
+	"high_pressure_queued", "next_space_wind_at",
+	"atmos_overlay_types", "atmos_visual_rev", "atmos_wake_machines", "atmos_exposure_listeners",
+	"settled_edge_revs"
 	))
 
 /proc/DuplicateObject(atom/original, perfectcopy = TRUE, sameloc = FALSE, atom/newloc = null, nerf = FALSE, holoitem=FALSE)
@@ -242,6 +250,7 @@ GLOBAL_LIST_INIT(turf_copy_forbidden_vars, list(
 			var/turf/open/open_template = template
 			if(istype(open_copy) && istype(open_template))
 				open_copy.air.copy_from(open_template.return_air())
+				open_copy.air_update_turf()
 			continue
 		var/template_value = template.vars[varname]
 		if(islist(template_value))

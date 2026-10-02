@@ -171,6 +171,10 @@
 		return .
 
 	I.forceMove(loc)
+	if(I.recycle_result)
+		new I.recycle_result(src.loc)
+		qdel(I)
+		return
 	var/obj/item/grown/log/L = I
 	if(istype(L))
 		var/seed_modifier = 0
