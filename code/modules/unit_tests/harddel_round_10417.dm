@@ -61,6 +61,9 @@
 	TEST_ASSERT(user.put_in_hands(second), "второй предмет не лёг в руку")
 	var/datum/component/ammo_hud/second_hud = second.GetComponent(/datum/component/ammo_hud)
 	TEST_ASSERT_NULL(second_hud.hud, "второй предмет держит чужой счётчик без подписки на его удаление")
+	TEST_ASSERT(user.dropItemToGround(first), "первый предмет не выпал из руки")
+	TEST_ASSERT_EQUAL(second_hud.hud, user.hud_used.ammo_counter, "счётчик не перешёл к предмету, оставшемуся в руке")
+	TEST_ASSERT(second_hud.hud.on, "перешедший счётчик не включён")
 
 /// В строке утечки интерфейс tgui называется по имени окна.
 /datum/unit_test/gc_leak_line_names_tgui_interface/Run()

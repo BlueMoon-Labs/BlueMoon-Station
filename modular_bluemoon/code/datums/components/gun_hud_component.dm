@@ -64,11 +64,19 @@
 	SIGNAL_HANDLER
 
 	RegisterSignal(hud, COMSIG_PARENT_QDELETING, PROC_REF(turn_off)) // SPLURT EDIT - FIX AMMO COUNTER HUD
-	RegisterSignals(parent, list(COMSIG_PARENT_PREQDELETED, COMSIG_ITEM_DROPPED), PROC_REF(turn_off))
+	RegisterSignal(parent, COMSIG_PARENT_PREQDELETED, PROC_REF(turn_off))
+	RegisterSignal(parent, COMSIG_ITEM_DROPPED, PROC_REF(on_dropped))
 	RegisterSignal(parent, COMSIG_UPDATE_AMMO_HUD, PROC_REF(update_hud))
 
 	hud.turn_on()
 	update_hud()
+
+/// Счётчик освобождается - его подхватывает оружие, оставшееся в другой руке.
+/datum/component/ammo_hud/proc/on_dropped(datum/source, mob/user)
+	SIGNAL_HANDLER
+	var/mob/owner = current_hud_owner?.resolve()
+	turn_off()
+	owner?.refresh_ammo_hud()
 
 /datum/component/ammo_hud/proc/turn_off()
 	SIGNAL_HANDLER

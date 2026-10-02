@@ -660,7 +660,7 @@
 		to_chat(src, "<span class='notice'>You are already sleeping.</span>")
 		return
 	else
-		if(tgui_alert(src, "You sure you want to sleep for a while?", "Sleep", list("Yes", "No")) == "Yes" && !QDELETED(src))
+		if(tgui_alert(src, "Вы уверены, что хотите немного поспать?", "Сон", list("Да", "Нет")) == "Да" && !QDELETED(src))
 			SetSleeping(400) //Short nap
 			voluntary_sleep_until = world.time + 400
 

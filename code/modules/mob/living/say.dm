@@ -276,8 +276,8 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 		message_mode = MODE_WHISPER
 		src.log_talk(message, LOG_WHISPER)
 		if(fullcrit)
-			var/confirm = tgui_alert(src, "You are in full crit and can't talk, but you can whisper it in your last breath and succumb to death. Proceed?", "Last Breath", list("Yes", "Cancel"))
-			if(confirm != "Yes" || QDELETED(src))
+			var/confirm = tgui_alert(src, "Вы при смерти и не можете говорить, но можете прошептать это последним вздохом и умереть. Продолжить?", "Последний вздох", list("Да", "Отмена"))
+			if(confirm != "Да" || QDELETED(src))
 				return
 			var/health_diff = round(-HEALTH_THRESHOLD_DEAD + health)
 			// If we cut our message short, abruptly end it with a-..
