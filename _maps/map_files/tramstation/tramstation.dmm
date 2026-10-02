@@ -1018,7 +1018,8 @@
 /area/hallway/primary/tram/right)
 "anq" = (
 /turf/open/floor/plating/dirt/jungle{
-	baseturfs = /turf/open/floor/plating
+	baseturfs = /turf/open/floor/plating;
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/science/explab)
 "anC" = (
@@ -41254,7 +41255,8 @@
 "lyO" = (
 /obj/structure/flora/junglebush/c,
 /turf/open/floor/plating/dirt/jungle{
-	baseturfs = /turf/open/floor/plating
+	baseturfs = /turf/open/floor/plating;
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/science/explab)
 "lyS" = (
@@ -42108,7 +42110,8 @@
 /obj/structure/flora/ausbushes/fullgrass,
 /obj/effect/landmark/event_spawn,
 /turf/open/floor/plating/dirt/jungle{
-	baseturfs = /turf/open/floor/plating
+	baseturfs = /turf/open/floor/plating;
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/science/explab)
 "lJN" = (
@@ -46523,7 +46526,8 @@
 "mZp" = (
 /obj/structure/flora/ausbushes/fullgrass,
 /turf/open/floor/plating/dirt/jungle{
-	baseturfs = /turf/open/floor/plating
+	baseturfs = /turf/open/floor/plating;
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/science/explab)
 "mZq" = (
@@ -64295,7 +64299,8 @@
 "rVr" = (
 /mob/living/carbon/monkey,
 /turf/open/floor/plating/dirt/jungle{
-	baseturfs = /turf/open/floor/plating
+	baseturfs = /turf/open/floor/plating;
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/science/explab)
 "rVv" = (
@@ -87810,7 +87815,8 @@
 	},
 /obj/machinery/light/warm/directional/north,
 /turf/open/floor/plating/dirt/jungle{
-	baseturfs = /turf/open/floor/plating
+	baseturfs = /turf/open/floor/plating;
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15"
 	},
 /area/science/explab)
 "yhq" = (
