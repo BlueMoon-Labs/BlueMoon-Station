@@ -261,6 +261,40 @@
 	TEST_ASSERT(prefs.load_preferences(TRUE), "не прочитан JSON после одиночной записи")
 	TEST_ASSERT_EQUAL(prefs.sound_toggles, NONE, "одиночная запись не сохранила отключение звука кнопок")
 
+/// Громкости звуков еретиков переносятся из SAV и переживают полную и одиночную запись JSON.
+/datum/unit_test/player_save_json/heretic_volumes_roundtrip/Run()
+	prepare()
+	var/savefile/legacy = new(test_path)
+	legacy["version"] << 80
+	legacy["sound_volume_heretic_dance"] << 40
+	legacy["sound_volume_heretic_sky"] << 60
+	legacy.Flush()
+	legacy = null
+	var/legacy_hash = rustg_hash_file(RUSTG_HASH_MD5, test_path)
+	var/datum/preferences/prefs = new_preferences()
+	TEST_ASSERT(prefs.load_preferences(TRUE), "не прочитаны настройки SAV")
+	TEST_ASSERT_EQUAL(prefs.sound_volume_heretic_dance, 40, "из SAV не загружена громкость Пляски")
+	TEST_ASSERT_EQUAL(prefs.sound_volume_heretic_sky, 60, "из SAV не загружена громкость неба")
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "настройки не перенесены в JSON")
+	TEST_ASSERT_EQUAL(rustg_hash_file(RUSTG_HASH_MD5, test_path), legacy_hash, "перенос изменил исходный SAV")
+	prefs.player_save_storage = null
+	prefs.sound_volume_heretic_dance = 100
+	prefs.sound_volume_heretic_sky = 100
+	TEST_ASSERT(prefs.load_preferences(TRUE), "не прочитаны настройки JSON")
+	TEST_ASSERT_EQUAL(prefs.sound_volume_heretic_dance, 40, "полная запись JSON потеряла громкость Пляски")
+	TEST_ASSERT_EQUAL(prefs.sound_volume_heretic_sky, 60, "полная запись JSON потеряла громкость неба")
+	prefs.sound_volume_heretic_dance = 15
+	prefs.sound_volume_heretic_sky = 25
+	prefs.save_pref_var("sound_volume_heretic_dance")
+	prefs.save_pref_var("sound_volume_heretic_sky")
+	TEST_ASSERT(prefs.flush_single_prefs(), "не записаны громкости еретиков")
+	prefs.player_save_storage = null
+	prefs.sound_volume_heretic_dance = 100
+	prefs.sound_volume_heretic_sky = 100
+	TEST_ASSERT(prefs.load_preferences(TRUE), "не прочитан JSON после одиночной записи")
+	TEST_ASSERT_EQUAL(prefs.sound_volume_heretic_dance, 15, "одиночная запись не сохранила громкость Пляски")
+	TEST_ASSERT_EQUAL(prefs.sound_volume_heretic_sky, 25, "одиночная запись не сохранила громкость неба")
+
 /datum/unit_test/player_save_json/preferences_modules_and_delete/Run()
 	prepare()
 	var/datum/preferences/prefs = new
