@@ -14,7 +14,7 @@ export const SmokeMachine = (props) => {
     maxSetting = 1,
     open,
     hasPowercell,
-    powerLevel
+    powerLevel,
   } = data;
   return (
     <Window
