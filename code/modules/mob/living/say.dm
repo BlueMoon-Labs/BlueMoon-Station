@@ -456,6 +456,20 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	play_fov_effect(src, 6, "talk", ignore_self = TRUE, override_list = listening)
 	for(var/_AM in listening)
 		var/atom/movable/AM = _AM
+
+		// Если есть TRAIT_HEARING_DEPRIVED, скрамблим текст как для виспера
+		// Так как это lewd trait, дальнейшая обрботка не нужна
+		if(!is_visual && ishuman(AM) && HAS_TRAIT(AM, TRAIT_HEARING_DEPRIVED) && !(the_dead[AM]))
+			var/hearing_deprived_message
+			var/hearing_deprived_rendered
+			var/mob/living/carbon/human/H = AM
+			var/hearing_level = H.get_hearing_deprivation_strength()
+			if(hearing_level > 0)
+				hearing_deprived_message = stars(message, hearing_level)
+				hearing_deprived_rendered = compose_message(src, message_language, hearing_deprived_message, null, spans, message_mode, FALSE, source)
+				AM.Hear(hearing_deprived_rendered, src, message_language, hearing_deprived_message, null, spans, MODE_WHISPER, source)
+				continue
+
 		// ПАТЧ ТЕШАРИ - проверяем дистанцию для чёткого слуха
 		var/is_teshari_listener = FALSE
 		if(ishuman(AM))

@@ -870,6 +870,7 @@ Remember to update _globalvars/traits.dm if you're adding/removing/renaming trai
 #define IMPURE_OCULINE "impure_oculine"
 #define TRAIT_BLINDFOLD "blindfolded"
 #define TRAIT_BLINDFOLD_HARD "blindfolded_hard"
+#define TRAIT_HEARING_DEPRIVED "hearing_deprived"
 #define TRAIT_SANTA "santa"
 #define SCRYING_ORB "scrying-orb"
 #define JUNGLE_FEVER_TRAIT "jungle_fever"

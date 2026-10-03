@@ -255,6 +255,7 @@
 		/obj/item/lewd_spellbook = 1,
 		/obj/item/clothing/mask/muzzle/mouthring = 5,
 		/obj/item/clothing/mask/muzzle/ballgag = 3,
+		/obj/item/clothing/ears/earmuffs/kink = 3,
 		/obj/item/storage/belt/cummerbund = 3
 	)
 	refill_canister = /obj/item/vending_refill/kink

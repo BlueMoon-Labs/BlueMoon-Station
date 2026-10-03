@@ -453,3 +453,9 @@
 
 // Специальная константа для полной немоты
 #define MUFFLE_MUTE 255 // Запрещает издавать любые звуки
+
+// Уровни сенсорной депривации слуха
+#define HEARING_DEPRIV_NONE 0
+#define HEARING_DEPRIV_LOW 25 // Стандарт для виспера
+#define HEARING_DEPRIV_MEDIUM 50
+#define HEARING_DEPRIV_HIGH 75

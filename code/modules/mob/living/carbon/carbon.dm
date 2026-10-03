@@ -342,6 +342,16 @@
 
 	return MUFFLE_NONE
 
+/// Уровень сенсорной депривации слуха на основе TRAIT_HEARING_DEPRIVED
+/mob/living/carbon/get_hearing_deprivation_strength()
+	if(HAS_TRAIT(src, TRAIT_HEARING_DEPRIVED))
+		var/obj/item/clothing/ears/earmuffs/kink/E = src.ears
+		if(E)
+			return E.deprive_percent
+		else
+			return HEARING_DEPRIV_LOW
+	return HEARING_DEPRIV_NONE
+
 /mob/living/carbon/hallucinating()
 	if(hallucination)
 		return TRUE
