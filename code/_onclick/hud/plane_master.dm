@@ -776,24 +776,15 @@ GLOBAL_LIST_INIT(singularity_filter_names, list("singularity_0", "singularity_1"
 	/// Слои параллакса лежат в client.screen на несмещённой плоскости: их собирает нулевой этаж и раздаёт остальным.
 	mirrors_to_all_floors = TRUE
 
+/// Зеркало от нулевого этажа заводит сам построенный этаж: реле на плоскость без мастера рисуется сырым под плитами и проступает в невидимых и тёмных клетках.
+/// BLEND_OVERLAY: умножит мастер этажа-получателя, второе умножение выжгло бы звёзды.
 /atom/movable/screen/plane_master/parallax/Initialize(mapload, datum/hud/hud_owner, datum/plane_master_group/home, offset = 0)
 	. = ..()
-	//Раздаёт только источник основного окна: у вторичной карты своих слоёв нет.
-	if(offset || home?.map)
+	//У вторичной карты своих слоёв нет.
+	if(!offset || home?.map)
 		return
-	RegisterSignal(SSmapping, COMSIG_PLANE_OFFSET_INCREASE, PROC_REF(on_plane_increase))
-	mirror_to_offsets(0, SSmapping.max_plane_offset)
-
-/atom/movable/screen/plane_master/parallax/proc/on_plane_increase(datum/source, old_max_offset, new_max_offset)
-	SIGNAL_HANDLER
-	mirror_to_offsets(old_max_offset, new_max_offset)
-
-/// BLEND_OVERLAY, а не наш BLEND_MULTIPLY: умножит мастер этажа-получателя, второе умножение выжгло бы звёзды.
-/atom/movable/screen/plane_master/parallax/proc/mirror_to_offsets(from_offset, to_offset)
-	for(var/mirror_offset in from_offset to to_offset)
-		if(!mirror_offset)
-			continue
-		add_relay_to(GET_NEW_PLANE(PLANE_SPACE_PARALLAX, mirror_offset), BLEND_OVERLAY)
+	var/atom/movable/screen/plane_master/parallax/source = home?.plane_masters["[PLANE_SPACE_PARALLAX]"]
+	source?.add_relay_to(plane, BLEND_OVERLAY)
 
 /atom/movable/screen/plane_master/parallax_white
 	name = "parallax backdrop/space turf plane master"

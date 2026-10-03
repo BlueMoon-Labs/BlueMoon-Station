@@ -23,6 +23,33 @@
 
 	qdel(group)
 
+/// На любой глубине стопки ни одно реле не смотрит на плоскость без мастера: такое реле рисуется сырым под плитами.
+/datum/unit_test/render_relays_target_built_planes
+
+/datum/unit_test/render_relays_target_built_planes/Run()
+	var/datum/plane_master_group/group = new /datum/plane_master_group/main(RENDER_GRAPH_TEST_KEY)
+	for(var/depth in 0 to SSmapping.max_plane_offset)
+		group.ensure_depth(depth)
+		for(var/plane_key in group.plane_masters)
+			var/atom/movable/screen/plane_master/master = group.plane_masters[plane_key]
+			for(var/atom/movable/screen/render_plane_relay/relay as anything in master.relays)
+				TEST_ASSERT_NOTNULL(group.plane_masters["[relay.plane]"], "На глубине [depth] [master.name] сдаёт реле на плоскость [relay.plane] без мастера")
+	qdel(group)
+
+/// Каждый построенный этаж получает зеркало параллакса от нулевого.
+/datum/unit_test/parallax_mirrors_to_built_floors
+
+/datum/unit_test/parallax_mirrors_to_built_floors/Run()
+	var/datum/plane_master_group/group = new /datum/plane_master_group/main(RENDER_GRAPH_TEST_KEY)
+	group.ensure_depth(SSmapping.max_plane_offset)
+	var/atom/movable/screen/plane_master/source = group.plane_masters["[PLANE_SPACE_PARALLAX]"]
+	TEST_ASSERT_NOTNULL(source, "Нет мастера параллакса нулевого этажа")
+	for(var/offset in 1 to SSmapping.max_plane_offset)
+		var/mirror_plane = GET_NEW_PLANE(PLANE_SPACE_PARALLAX, offset)
+		TEST_ASSERT_NOTNULL(group.plane_masters["[mirror_plane]"], "Нет мастера параллакса этажа [offset]")
+		TEST_ASSERT_NOTNULL(source.get_relay_to(mirror_plane), "Этаж [offset] не получает зеркало параллакса")
+	qdel(group)
+
 /// Два мастера на одном номере плоскости - до клиента доедет только один.
 /datum/unit_test/plane_master_numbers_are_unique
 
