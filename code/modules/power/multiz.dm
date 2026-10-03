@@ -1,12 +1,19 @@
 /obj/machinery/power/deck_relay //This bridges powernets
 	name = "Multi-deck power adapter"
-	desc = "A huge bundle of double insulated cabling which seems to run up into the ceiling."
+	desc = "Толстый жгут кабеля с двойной изоляцией, уходящий сквозь перекрытие. Связывает электросеть этажа с адаптером прямо над или под ним; обоим нужен узел кабеля под собой."
 	icon = 'icons/obj/power.dmi'
 	icon_state = "cablerelay-off"
 	var/obj/machinery/power/deck_relay/below ///The relay that's below us (for bridging powernets)
 	var/obj/machinery/power/deck_relay/above ///The relay that's above us (for bridging powernets)
 	anchored = TRUE
 	density = FALSE
+
+/obj/machinery/power/deck_relay/examine(mob/user)
+	. = ..()
+	var/turf/our_turf = get_turf(src)
+	if(!our_turf?.get_cable_node())
+		. += span_warning("Под адаптером нет узла кабеля - к сети этажа он не подключён.")
+	. += span_notice("Адаптер сверху: [above ? "найден" : "нет"]. Адаптер снизу: [below ? "найден" : "нет"].")
 
 /obj/machinery/power/deck_relay/attackby(obj/item/I,mob/user)
 	if(default_unfasten_wrench(user, I))
@@ -26,7 +33,7 @@
 		icon_state = "cablerelay-off"
 	else
 		icon_state = "cablerelay-on"
-	if(!below || QDELETED(below) || !above || QDELETED(above))
+	if(QDELETED(below) && QDELETED(above))
 		icon_state = "cablerelay-off"
 		find_relays()
 
@@ -34,7 +41,8 @@
 /obj/machinery/power/deck_relay/multitool_act(mob/user, obj/item/I)
 	if(powernet && (powernet.avail > 0))		// is it powered?
 		to_chat(user, "<span class='danger'>Total power: [DisplayPower(powernet.avail)]\nLoad: [DisplayPower(powernet.load)]\nExcess power: [DisplayPower(surplus())]</span>")
-	if(!powernet || below.powernet != powernet)
+	var/obj/machinery/power/deck_relay/partner = below || above
+	if(!powernet || !partner || partner.powernet != powernet)
 		icon_state = "cablerelay-off"
 		to_chat(user, "<span class='danger'>Powernet connection lost. Attempting to re-establish. Ensure the relays below this one are connected too.</span>")
 		find_relays()
@@ -74,7 +82,11 @@
 		C.powernet.add_machine(src) //Nice we're in.
 		powernet = C.powernet
 	below = locate(/obj/machinery/power/deck_relay) in(SSmapping.get_turf_below(T))
+	if(below && !below.anchored)
+		below = null
 	above = locate(/obj/machinery/power/deck_relay) in(SSmapping.get_turf_above(T))
+	if(above && !above.anchored)
+		above = null
 	if(below || above)
 		icon_state = "cablerelay-on"
 	return TRUE
