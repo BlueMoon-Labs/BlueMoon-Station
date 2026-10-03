@@ -129,6 +129,7 @@
 #include "custom_emote_panel.dm"
 // #include "designs.dm"
 #include "director.dm"
+#include "door_timer_airlock.dm"
 #include "dynamic_ruleset_sanity.dm"
 // #include "egg_glands.dm"
 // #include "dynamic_ruleset_sanity.dm"
