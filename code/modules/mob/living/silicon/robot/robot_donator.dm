@@ -368,7 +368,7 @@
 	hat_offset = TALL_HAT_OFFSET
 	hasrest = TRUE
 
-	/datum/borg_donator_skin/security/flmekagas
+/datum/borg_donator_skin/security/flmekagas
 	name = "Plasma Meka"
 	module_type = /obj/item/robot_module/security
 	preview_icon = 'modular_splurt/icons/mob/robots_32x64.dmi'
