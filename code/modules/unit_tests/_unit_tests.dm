@@ -285,6 +285,7 @@
 #include "refactor_living.dm"
 #include "refactor_linda.dm"
 #include "refactor_turfside.dm"
+#include "reinforced_plating.dm"
 #include "resist.dm"
 #include "riot_shield_implant.dm"
 #include "runechat_sanity.dm"

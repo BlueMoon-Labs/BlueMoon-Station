@@ -4775,6 +4775,7 @@
 #include "modular_bluemoon\code\game\turfs\open.dm"
 #include "modular_bluemoon\code\game\turfs\space.dm"
 #include "modular_bluemoon\code\game\turfs\simulated\floor\plasteel_floor.dm"
+#include "modular_bluemoon\code\game\turfs\simulated\floor\reinforced_plating.dm"
 #include "modular_bluemoon\code\game\turfs\simulated\floor\shuttle.dm"
 #include "modular_bluemoon\code\modules\antag_training.dm"
 #include "modular_bluemoon\code\modules\antag_training_duel.dm"
