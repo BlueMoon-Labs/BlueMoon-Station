@@ -2033,8 +2033,8 @@
 
 /datum/gear/donator/bm/saibasan
 	name = "Cybersun Surplus"
-	slot = ITEM_SLOT_HEAD
-	path = /obj/item/clothing/head/donator/bm/saibasan
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/donator/saibasan
 	ckeywhitelist = list("monolithxxv")
 
 /datum/gear/donator/bm/opssrt
