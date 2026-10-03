@@ -75,7 +75,10 @@
 	efficiency = max(efficiency, 1)
 	max_range = 1
 	for(var/obj/item/stock_parts/manipulator/M in component_parts)
-		max_range += M.rating
+		if(M.rating == 6)
+			max_range += 8
+		else
+			max_range += M.rating
 	max_range = max(max_range, 2)
 
 	setting = min(setting, max_range)
