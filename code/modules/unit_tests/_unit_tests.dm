@@ -253,6 +253,7 @@
 #include "multiz_crew_monitor.dm"
 #include "multiz_hud_eye_signal.dm"
 #include "multiz_item_plane.dm"
+#include "multiz_lower_floor_fullbright.dm"
 #include "multiz_movement.dm"
 #include "multiz_new_level_planes.dm"
 #include "multiz_observer_eye.dm"

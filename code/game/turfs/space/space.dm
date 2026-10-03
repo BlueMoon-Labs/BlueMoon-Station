@@ -74,8 +74,8 @@
 	// 	SET_BITFLAG_LIST(canSmoothWith)
 
 	var/area/A = loc
-	if(!TURF_IS_DYNAMIC_LIGHTING(src) && IS_DYNAMIC_LIGHTING(A))
-		add_overlay(fullbright_turf_overlay(src))
+	if(TURF_NEEDS_OWN_FULLBRIGHT(src, A))
+		update_fullbright_overlay(A)
 
 	if (light_power && light_range)
 		update_light()

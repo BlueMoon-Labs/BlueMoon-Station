@@ -356,10 +356,10 @@
 			return FALSE
 	return TRUE
 
-/// Пол связки с пустым полом под ним: дыру для теста открываем на живой карте, резервация уровня снизу не имеет.
+/// Пол станционной связки с пустым полом под ним: дыру для теста открываем на живой карте, резервация уровня снизу не имеет.
 /datum/unit_test/multiz_jump_landing_falls/proc/find_floor_over_floor()
-	for(var/z in 1 to world.maxz)
-		if(z > length(SSmapping.z_level_to_lowest_plane_offset) || !GET_LOWEST_STACK_OFFSET(z))
+	for(var/z in SSmapping.levels_by_trait(ZTRAIT_STATION))
+		if(!GET_LOWEST_STACK_OFFSET(z))
 			continue
 		for(var/turf/open/floor/candidate in block(locate(1, 1, z), locate(world.maxx, world.maxy, z)))
 			if(!turf_is_bare(candidate) || !candidate.has_gravity(candidate))
@@ -371,8 +371,13 @@
 	return null
 
 /datum/unit_test/multiz_jump_landing_falls/Run()
-	if(!SSmapping.max_plane_offset)
-		return // Односложный мир: падать некуда.
+	var/station_stacked = FALSE
+	for(var/station_z in SSmapping.levels_by_trait(ZTRAIT_STATION))
+		if(GET_LOWEST_STACK_OFFSET(station_z))
+			station_stacked = TRUE
+			break
+	if(!station_stacked)
+		return // Одноэтажная станция: связки, поднятые другими тестами, пусты и без гравитации.
 
 	var/turf/open/floor/spot = find_floor_over_floor()
 	TEST_ASSERT_NOTNULL(spot, "В связке не нашлось пола с пустым полом под ним")

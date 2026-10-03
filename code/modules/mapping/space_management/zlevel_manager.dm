@@ -160,6 +160,7 @@
 		if(level_turf.plane == GET_NEW_PLANE(PLANE_TO_TRUE(level_turf.plane), offset))
 			continue
 		SET_PLANE_W_SCALAR(level_turf, PLANE_TO_TRUE(level_turf.plane), offset)
+		level_turf.update_fullbright_overlay(level_turf.loc)
 		.++
 		CHECK_TICK
 

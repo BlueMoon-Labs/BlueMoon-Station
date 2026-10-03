@@ -516,6 +516,8 @@ GLOBAL_VAR_INIT(current_starlight_power, STARLIGHT_POWER_NIGHT) // Current solar
 #define IS_DYNAMIC_LIGHTING(A) A.dynamic_lighting
 /// Динамический свет ТУРФА: переехал в битовую укладку turf_flags ради адресного пространства.
 #define TURF_IS_DYNAMIC_LIGHTING(T) (T.turf_flags & TURF_DYNAMIC_LIGHTING)
+/// Турфу нужна своя засветка: оверлей неосвещаемой зоны лежит на плоскости света верхнего этажа и ниже не светит.
+#define TURF_NEEDS_OWN_FULLBRIGHT(T, A) (IS_DYNAMIC_LIGHTING(A) ? !TURF_IS_DYNAMIC_LIGHTING(T) : GET_TURF_PLANE_OFFSET(T))
 
 
 //code assumes higher numbers override lower numbers.
