@@ -687,6 +687,13 @@
 	taped = TRUE
 	processes = TRUE
 
+/// Пока наногель уже работает на гидравлике, не перехватываем его — иначе он не достанется
+/// другой ране (например, ожогу проводки) или штатной обработке внутренних порогов.
+/datum/wound/blunt/try_treating(obj/item/I, mob/user)
+	if(limb.is_robotic_limb() && istype(I, /obj/item/stack/medical/nanogel) && nano_gelled)
+		return FALSE
+	return ..()
+
 /datum/wound/blunt/treat(obj/item/I, mob/user)
 	if(istype(I, /obj/item/stack/medical/bone_gel))
 		gel(I, user)
