@@ -339,13 +339,10 @@ SUBSYSTEM_DEF(mapping)
 
 /datum/controller/subsystem/mapping/proc/setup_station_z_index()
 	z_to_station_z_index = list()
-	var/sz = 1
-	var/cz = station_start
-	if(islist(config.map_file))
-		for(var/map in config.map_file)
-			z_to_station_z_index["[cz++]"] = sz++
-	else
-		z_to_station_z_index["[station_start]"] = 1
+	//Один файл карты может нести несколько этажей: номер нужен каждому станционному z, а не каждому файлу.
+	var/station_index = 1
+	for(var/station_z in levels_by_trait(ZTRAIT_STATION))
+		z_to_station_z_index["[station_z]"] = station_index++
 
 /datum/controller/subsystem/mapping/proc/loadWorld()
 	//if any of these fail, something has gone horribly, HORRIBLY, wrong

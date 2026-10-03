@@ -84,3 +84,15 @@
 		if(!mounted)
 			hanging += "[camera.c_tag || camera.name] ([camera.x],[camera.y],[camera.z]) dir [camera.dir]"
 	TEST_ASSERT(!length(hanging), "Камеры без стены за спиной: [hanging.Join(", ")]")
+
+/// Каждый станционный z получает свой номер в персистенсе мусора, в том числе этажи многоэтажной карты одним файлом.
+/datum/unit_test/station_z_index_covers_station_levels
+	requires_full_map = TRUE
+
+/datum/unit_test/station_z_index_covers_station_levels/Run()
+	var/list/seen_indexes = list()
+	for(var/station_z in SSmapping.levels_by_trait(ZTRAIT_STATION))
+		var/index = SSmapping.z_to_station_z_index["[station_z]"]
+		TEST_ASSERT_NOTNULL(index, "Станционный z=[station_z] без номера в персистенсе: мусор этажа сохраняется без ключа и теряется")
+		TEST_ASSERT(!seen_indexes["[index]"], "Номер [index] выдан двум станционным z")
+		seen_indexes["[index]"] = TRUE
