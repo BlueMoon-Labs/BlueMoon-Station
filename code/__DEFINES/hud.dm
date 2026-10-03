@@ -37,6 +37,9 @@
 // Центр для уи
 #define around_player "CENTER-1,CENTER-1"
 
+/// Картинка 15x15 с центром на тайле CENTER. Тайл якоря - сам CENTER, а не CENTER-7: якорь вне вьюпорта раздувает экран, и плиты рендера съезжают.
+#define ui_fullscreen "CENTER:-224,CENTER:-224"
+
 /proc/ui_hand_position(i, pixel_x = 0, pixel_y = 0) //values based on old hand ui positions (CENTER:-/+16,SOUTH:5)
 	var/x_off = -(!(i % 2))
 	var/y_off = round((i-1) / 2)

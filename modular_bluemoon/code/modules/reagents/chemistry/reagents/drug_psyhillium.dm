@@ -84,13 +84,13 @@
 
 /atom/movable/screen/fullscreen/wakeup
 	icon = 'modular_bluemoon/icons/screen/drug_fullscreen.dmi'
-	screen_loc = "CENTER-7,SOUTH"
+	screen_loc = "CENTER:-224,SOUTH"
 	icon_state = "wake_up"
 
 
 /atom/movable/screen/fullscreen/staticeffect
 	icon = 'modular_bluemoon/icons/screen/drug_fullscreen.dmi'
-	screen_loc = "CENTER-7,SOUTH"
+	screen_loc = "CENTER:-224,SOUTH"
 	icon_state = "wake_up1"
 	var/size_x = 15
 	var/size_y = 15

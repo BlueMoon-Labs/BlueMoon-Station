@@ -50,6 +50,19 @@
 		TEST_ASSERT_NOTNULL(source.get_relay_to(mirror_plane), "Этаж [offset] не получает зеркало параллакса")
 	qdel(group)
 
+/// Полноэкранные оверлеи не выносят якорь за край обзора 15x11 и не раздувают экран картинкой: иначе реле плит от "1,1" сдвигают весь мир.
+/datum/unit_test/fullscreen_anchor_inside_small_view
+
+/datum/unit_test/fullscreen_anchor_inside_small_view/Run()
+	var/regex/center_offset = regex(@"CENTER([+-]\d+)")
+	for(var/atom/movable/screen/fullscreen/fullscreen_type as anything in typesof(/atom/movable/screen/fullscreen))
+		TEST_ASSERT(initial(fullscreen_type.appearance_flags) & TILE_BOUND, "[fullscreen_type] без TILE_BOUND")
+		var/anchor = initial(fullscreen_type.screen_loc)
+		var/position = 1
+		while(center_offset.Find(anchor, position))
+			TEST_ASSERT(abs(text2num(center_offset.group[1])) <= 5, "[fullscreen_type] ставит якорь [anchor] за край обзора 15x11")
+			position = center_offset.next
+
 /// Два мастера на одном номере плоскости - до клиента доедет только один.
 /datum/unit_test/plane_master_numbers_are_unique
 

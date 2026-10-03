@@ -116,7 +116,8 @@
 	icon = null
 	icon_state = null
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	screen_loc = "CENTER-7,CENTER-7"
+	screen_loc = ui_fullscreen
+	appearance_flags = APPEARANCE_UI | TILE_BOUND
 	maptext_height = 480
 	maptext_width = 480
 
@@ -597,7 +598,8 @@
 	icon_state = "oxydamageoverlay0"
 	name = "dmg"
 	blend_mode = BLEND_MULTIPLY
-	screen_loc = "CENTER-7,CENTER-7"
+	screen_loc = ui_fullscreen
+	appearance_flags = APPEARANCE_UI | TILE_BOUND
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	layer = UI_DAMAGE_LAYER
 	plane = FULLSCREEN_PLANE

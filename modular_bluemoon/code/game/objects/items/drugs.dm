@@ -475,7 +475,7 @@
 /atom/movable/screen/fullscreen/labeb
 	icon = 'modular_bluemoon/icons/misc/ruzone_went_up.dmi'
 	plane = SPLASHSCREEN_PLANE
-	screen_loc = "CENTER-7,SOUTH"
+	screen_loc = "CENTER:-224,SOUTH"
 	icon_state = ""
 
 /obj/item/reagent_containers/pill/labebium
