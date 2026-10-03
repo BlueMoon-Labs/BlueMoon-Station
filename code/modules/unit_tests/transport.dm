@@ -185,6 +185,23 @@
 	TEST_ASSERT(wait_for_var(door, "density", FALSE, 10 SECONDS), "Дверь не открылась на прибытии")
 	TEST_ASSERT(wait_for_var(controller, "controller_active", FALSE, 10 SECONDS), "Контроллер не освободился после поездки")
 
+/// Аварийный рычаг обесточенной двери трамвая срабатывает, даже если трамвай сдвинул дверь и пассажира посреди рывка.
+/datum/unit_test/tram_door_lever_survives_movement
+
+/datum/unit_test/tram_door_lever_survives_movement/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	var/obj/machinery/door/airlock/tram/unit_test/door = allocate(/obj/machinery/door/airlock/tram/unit_test, start)
+	var/mob/living/carbon/human/passenger = allocate(/mob/living/carbon/human, start)
+	TEST_ASSERT(!door.hasPower(), "Резерв обесточен: проверяется ручной рычаг")
+	TEST_ASSERT(door.density, "Дверь должна начинать закрытой")
+
+	INVOKE_ASYNC(door, TYPE_PROC_REF(/obj/machinery/door/airlock/tram, try_safety_unlock), passenger)
+	sleep(world.tick_lag)
+	var/turf/next = get_step(start, NORTH)
+	door.forceMove(next)
+	passenger.forceMove(next)
+	TEST_ASSERT(wait_for_var(door, "density", FALSE, 5 SECONDS), "Рычаг сорвался, когда трамвай сдвинул дверь вместе с пассажиром")
+
 /// Несвязанные платформы лифта едут вбок вместе, без слияния и без потери груза.
 /datum/unit_test/lift_platforms_move_together
 

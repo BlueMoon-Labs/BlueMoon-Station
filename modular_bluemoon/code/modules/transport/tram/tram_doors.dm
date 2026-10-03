@@ -202,11 +202,16 @@
 /obj/machinery/door/airlock/tram/proc/try_safety_unlock(mob/user)
 	if(!COOLDOWN_FINISHED(src, release_cooldown))
 		return
+	if(locked || welded)
+		COOLDOWN_START(src, release_cooldown, 1.2 SECONDS)
+		balloon_alert(user, locked ? "болты опущены!" : "заварено!")
+		return
 
 	COOLDOWN_START(src, release_cooldown, 1.2 SECONDS)
 	playsound(src, 'sound/machines/airlockforced.ogg', 40, FALSE)
 	balloon_alert_to_viewers("дёргает аварийный рычаг!", vision_distance = COMBAT_MESSAGE_RANGE)
-	if(do_after(user, 1.2 SECONDS, target = src))
+	// Дверь едет вместе с трамваем: без IGNORE_TARGET_LOC_CHANGE рычаг срывается на первом же шаге.
+	if(do_after(user, 1.2 SECONDS, target = src, timed_action_flags = IGNORE_USER_LOC_CHANGE | IGNORE_TARGET_LOC_CHANGE))
 		open(BYPASS_DOOR_CHECKS)
 
 /// If you pry (bump) the doors open midtravel, open quickly so you can jump out and make a daring escape.
@@ -220,6 +225,10 @@
 
 	if(!COOLDOWN_FINISHED(src, release_cooldown))
 		return
+	if(locked || welded)
+		COOLDOWN_START(src, release_cooldown, 1.2 SECONDS)
+		balloon_alert(user, locked ? "болты опущены!" : "заварено!")
+		return
 
 	var/datum/transport_controller/linear/tram/tram_part = transport_ref?.resolve()
 	add_fingerprint(user)
@@ -230,7 +239,7 @@
 	COOLDOWN_START(src, release_cooldown, 1.2 SECONDS)
 	playsound(src, 'sound/machines/airlockforced.ogg', 40, FALSE)
 	balloon_alert_to_viewers("дёргает аварийный рычаг!", vision_distance = COMBAT_MESSAGE_RANGE)
-	if(do_after(user, 0.6 SECONDS, target = src, timed_action_flags = IGNORE_USER_LOC_CHANGE))
+	if(do_after(user, 0.6 SECONDS, target = src, timed_action_flags = IGNORE_USER_LOC_CHANGE | IGNORE_TARGET_LOC_CHANGE))
 		open(BYPASS_DOOR_CHECKS)
 
 /obj/structure/door_assembly/multi_tile/door_assembly_tram

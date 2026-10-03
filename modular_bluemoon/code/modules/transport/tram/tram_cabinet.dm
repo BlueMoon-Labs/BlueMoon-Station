@@ -331,6 +331,7 @@
 			update_appearance()
 
 		if("estop")
+			log_transport("TC: [controller_datum.specific_transport_id] emergency stop by [key_name(usr)].")
 			controller_datum.estop()
 
 		if("reset")
