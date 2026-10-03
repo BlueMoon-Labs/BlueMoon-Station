@@ -279,3 +279,29 @@
 					/obj/item/clothing/shoes/galoshes)
 	crate_name = "janitorial cart crate"
 	crate_type = /obj/structure/closet/crate/large
+
+/datum/supply_pack/service/skill_station
+	name = "Skill Station Crate"
+	desc = "The latest in direct-to-brain education. Contains one Skill Station, a machine capable of \
+		injecting and extracting skillchips. Brains and skillchips sold separately."
+	cost = 3000
+	contains = list(/obj/machinery/skill_station)
+	crate_name = "skill station crate"
+	crate_type = /obj/structure/closet/crate/science
+
+/datum/supply_pack/service/skillchips
+	name = "Skillsoft Distribution Kit"
+	desc = "A selection of certified skillchips covering culinary combat, balloon artistry, wiring \
+		techniques, mining, botany of the mind and more. Note: Nanotrasen is not liable for any head-related surprises."
+	cost = 2500
+	contains = list(/obj/item/skillchip/job/chef,
+					/obj/item/skillchip/job/clown,
+					/obj/item/skillchip/job/engineer,
+					/obj/item/skillchip/job/roboticist,
+					/obj/item/skillchip/job/miner,
+					/obj/item/skillchip/job/janitor,
+					/obj/item/skillchip/job/psychology,
+					/obj/item/skillchip/job/detectives_taste,
+					/obj/item/skillchip/research_director)
+	crate_name = "skillsoft distribution kit"
+	crate_type = /obj/structure/closet/crate/science

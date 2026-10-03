@@ -42,6 +42,14 @@
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_ENGINEERING
 	category = list ("Medical Machinery")
 
+/datum/design/board/skill_station
+	name = "Machine Design (Skill Station Board)"
+	desc = "The circuit board for a skill station."
+	id = "skill_station"
+	build_path = /obj/item/circuitboard/machine/skill_station
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SCIENCE
+	category = list("Medical Machinery")
+
 /datum/design/board/chem_dispenser
 	name = "Machine Design (Portable Chem Dispenser Board)"
 	desc = "The circuit board for a portable chem dispenser."
