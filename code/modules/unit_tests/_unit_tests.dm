@@ -255,6 +255,7 @@
 #include "multiz_new_level_planes.dm"
 #include "multiz_observer_eye.dm"
 #include "multiz_popup_group.dm"
+#include "multiz_radio_levels.dm"
 #include "multiz_render_graph.dm"
 #include "mod_suit_fixes.dm"
 #include "modular_map_loader.dm" //SPLURT EDIT
