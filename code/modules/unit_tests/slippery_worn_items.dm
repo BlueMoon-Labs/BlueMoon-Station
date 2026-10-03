@@ -1,7 +1,17 @@
 /// Скользкий предмет в кармане не роняет прохожих, надетый роняет только через лежащего носителя.
+/datum/unit_test/slippery_worn_items
+	var/area/test_area
+	var/saved_gravity
+
+/datum/unit_test/slippery_worn_items/Destroy()
+	if(test_area)
+		test_area.has_gravity = saved_gravity
+		test_area = null
+	return ..()
+
 /datum/unit_test/slippery_worn_items/Run()
-	var/area/test_area = get_area(run_loc_floor_bottom_left)
-	var/saved_gravity = test_area.has_gravity
+	test_area = get_area(run_loc_floor_bottom_left)
+	saved_gravity = test_area.has_gravity
 	test_area.has_gravity = STANDARD_GRAVITY
 
 	var/mob/living/carbon/human/wearer = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
@@ -27,5 +37,3 @@
 	var/mob/living/carbon/human/lying_passer = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
 	wearer.Crossed(lying_passer)
 	TEST_ASSERT_EQUAL(lying_passer.body_position, LYING_DOWN, "лежащий в скользкой шапке должен ронять перешагнувших")
-
-	test_area.has_gravity = saved_gravity

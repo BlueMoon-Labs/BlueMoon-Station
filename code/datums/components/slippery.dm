@@ -15,6 +15,7 @@
 	RegisterSignal(parent, COMSIG_ITEM_WEARERCROSSED, PROC_REF(slip_on_wearer))
 
 /datum/component/slippery/proc/slip_on_wearer(obj/item/source, atom/movable/crosser)
+	SIGNAL_HANDLER
 	if(!(source.current_equipped_slot & slot_whitelist))
 		return
 	var/mob/living/wearer = source.loc
