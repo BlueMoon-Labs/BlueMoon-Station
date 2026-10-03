@@ -661,3 +661,21 @@
 	new /obj/item/paper(src)
 
 //Bluemoon ADD end
+
+/obj/item/storage/box/inteq_kit/cowboy_kit
+
+/obj/item/storage/box/inteq_kit/cowboy_kit/PopulateContents()
+	new /obj/item/gun/ballistic/revolver/Salvation(src)
+	new /obj/item/gun/ballistic/revolver/Condemnation(src)
+	new /obj/item/storage/belt/buscadero(src)
+	new /obj/item/ammo_box/g45l/lethal(src)
+	new /obj/item/ammo_box/g45l/lethal(src)
+
+/obj/item/storage/box/inteq_kit/ncr_kit
+
+/obj/item/storage/box/inteq_kit/ncr_kit/PopulateContents()
+	new /obj/item/gun/ballistic/revolver/Passing_Bell(src)
+	new /obj/item/ammo_box/g4570(src)
+	new /obj/item/ammo_box/g4570(src)
+	new /obj/item/ammo_box/g4570(src)
+

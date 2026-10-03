@@ -323,3 +323,27 @@
 	for(var/i in 1 to num_contained)
 		var/item = pick_n_take(L)
 		new item(C)
+
+/datum/supply_pack/security/armory/revolvers
+	name = "41 Revolvers Crate"
+	desc = "Набор офицерских револьверов 41 калибра. Требуется доступ к оружейной"
+	cost = 2000
+	contains = list(/obj/item/gun/ballistic/revolver/Apostle,
+					/obj/item/gun/ballistic/revolver/Apostle,
+					/obj/item/gun/ballistic/revolver/Apostle,
+					/obj/item/ammo_box/cal41,
+					/obj/item/ammo_box/cal41,
+					/obj/item/ammo_box/cal41,
+					/obj/item/ammo_box/cal41,
+					/obj/item/ammo_box/cal41,
+					/obj/item/ammo_box/cal41)
+	crate_name = "Security revolvers crate"
+
+/datum/supply_pack/security/armory/shotgun_revolvers
+	name = "410 Revolvers Crate"
+	desc = "Набор офицерских револьверов 410 калибра. Требуется доступ к оружейной"
+	cost = 2000
+	contains = list(/obj/item/gun/ballistic/revolver/Exorcist,
+					/obj/item/gun/ballistic/revolver/Exorcist,
+					/obj/item/gun/ballistic/revolver/Exorcist)
+	crate_name = "Security shotgun revolvers crate"

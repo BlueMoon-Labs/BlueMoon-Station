@@ -558,3 +558,211 @@
 		var/mutable_appearance/charge_bar = mutable_appearance(icon,  "[initial(icon_state)]_charge", color = batt_color)
 		charge_bar.pixel_x = i
 		. += charge_bar
+
+/////////////////////////////
+//    Новые револьверы     //
+/////////////////////////////
+
+/obj/item/gun/ballistic/revolver/Condemnation
+	name = "\improper Condemnation"
+	desc = "A grim harbinger clad in blackened steel and intricate gold engravings. Condemnation does not seek repentance; it seeks an end. It is designed to look into the darkness of the Bayou, weigh the sins of the wicked, and deliver a heavy .45 caliber verdict that sends them straight to the abyss."
+	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
+	fire_sound = "modular_bluemoon/fluffs/sound/weapon/Apostle.ogg"
+	icon_state = "condemnation"
+	item_state = "condemnation"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/requiem_revolver_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/requiem_revolver_righthand.dmi'
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/cowboy
+	dual_wield_spread = 1
+	w_class = WEIGHT_CLASS_NORMAL
+	recoil = 0.25
+	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_POCKETS
+
+/obj/item/gun/ballistic/revolver/Salvation
+	name = "\improper Salvation"
+	desc = "The pristine mirror to its darker twin, forged from cold silver and adorned with gold filigree. Salvation represents the final mercy of the Order. It fires not out of malice, but to cleanse the flesh and release the corrupted souls from their earthly torment, granting peace through blood and fire."
+	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
+	fire_sound = "modular_bluemoon/fluffs/sound/weapon/Apostle.ogg"
+	icon_state = "salvation"
+	item_state = "salvation"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/requiem_revolver_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/requiem_revolver_righthand.dmi'
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/cowboy
+	dual_wield_spread = 1
+	w_class = WEIGHT_CLASS_NORMAL
+	recoil = 0.25
+	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_POCKETS
+
+/obj/item/gun/ballistic/revolver/proc/try_dual_buscadero_reload(mob/living/user)
+	// 1. Проверка пояса buscadero на талии
+	var/obj/item/storage/belt/buscadero/belt = user.get_item_by_slot(ITEM_SLOT_BELT)
+	if(!istype(belt))
+		return FALSE 
+
+	// 2. Проверка наличия второго револьвера в неактивной руке
+	var/obj/item/gun/ballistic/revolver/offhand_rev = user.get_inactive_held_item()
+	if(!istype(offhand_rev))
+		return FALSE
+
+	var/reloaded_any = FALSE
+
+	// 3. Полностью вытряхивает старые гильзы из основного револьвера на пол
+	src.chambered = null
+	if(src.magazine && src.magazine.stored_ammo && src.magazine.stored_ammo.len)
+		for(var/i = src.magazine.stored_ammo.len; i > 0; i--)
+			var/obj/item/ammo_casing/CB = src.magazine.stored_ammo[i]
+			if(CB)
+				src.magazine.stored_ammo -= CB
+				CB.forceMove(src.drop_location())
+				CB.bounce_away(FALSE, NONE)
+				reloaded_any = TRUE 
+
+	// 4. Полностью вытряхивает старые гильзы из второго револьвера на пол
+	if(offhand_rev && offhand_rev.magazine && offhand_rev.magazine.stored_ammo && offhand_rev.magazine.stored_ammo.len)
+		offhand_rev.chambered = null
+		for(var/i = offhand_rev.magazine.stored_ammo.len; i > 0; i--)
+			var/obj/item/ammo_casing/CB = offhand_rev.magazine.stored_ammo[i]
+			if(CB)
+				offhand_rev.magazine.stored_ammo -= CB
+				CB.forceMove(offhand_rev.drop_location())
+				CB.bounce_away(FALSE, NONE)
+				reloaded_any = TRUE
+
+	// Собирает все рассыпные патроны из пояса в отдельный список
+	var/list/bullets_in_belt = list()
+	for(var/obj/item/ammo_casing/B in belt.contents)
+		bullets_in_belt += B
+
+	// 5. ЗАРЯЖАЕТ ПАТРОНЫ ПОШТУЧНО ПРЯМО ИЗ ПОЯСА
+	var/actual_reload_success = FALSE
+
+	// Перебирает найденные на поясе патроны
+	for(var/obj/item/ammo_casing/bullet in bullets_in_belt)
+		
+		// Заряжает основной револьвер, пока в барабане есть место
+		if(src.magazine && src.magazine.stored_ammo.len < src.magazine.max_ammo)
+			// Физически переносим патрон с пояса внутрь магазина револьвера
+			bullet.forceMove(src.magazine)
+			if(src.magazine.stored_ammo)
+				src.magazine.stored_ammo.Add(bullet) // Добавляем патрон в список Сплюрта
+			actual_reload_success = TRUE
+			continue // Берем следующий патрон из пояса
+
+		// Если основной полный, заряжаем левый револьвер
+		if(offhand_rev && offhand_rev.magazine && offhand_rev.magazine.stored_ammo.len < offhand_rev.magazine.max_ammo)
+			bullet.forceMove(offhand_rev.magazine)
+			if(offhand_rev.magazine.stored_ammo)
+				offhand_rev.magazine.stored_ammo.Add(bullet)
+			actual_reload_success = TRUE
+			continue
+
+	// --- 6. ОБНОВЛЯЕМ КАМОРЫ И ИНТЕРФЕЙС, ЕСЛИ ХОТЬ ЧТО-ТО ЗАРЯДИЛОСЬ ---
+	if(actual_reload_success)
+		if(src.magazine)
+			src.magazine.update_icon()
+			src.chamber_round(1) // Досылаем первый патрон (spin = 1 по вашему коду)
+		if(offhand_rev && offhand_rev.magazine)
+			offhand_rev.magazine.update_icon()
+			offhand_rev.chamber_round(1)
+
+	// --- 7. ИТОГИ ---
+	if(actual_reload_success || reloaded_any)
+		playsound(user, 'sound/weapons/bulletinsert.ogg', 60, 1) 
+		user.visible_message(
+			"<span class='danger'>[user] ловким движением откидывает барабаны, с треском высыпая гильзы на пол, и вслепую забивает новые патроны из пояса [belt.name] прямо в каморы!</span>",
+			"<span class='notice'>Вы ловко очистили каморы револьверов и зарядили их патронами из пояса.</span>"
+		)
+		src.update_icon()
+		offhand_rev.update_icon()
+		return TRUE
+
+	return FALSE
+
+/obj/item/gun/ballistic/revolver/Salvation/attack_self(mob/living/user)
+	if(try_dual_buscadero_reload(user))
+		return 
+	return ..() 
+
+/obj/item/gun/ballistic/revolver/Condemnation/attack_self(mob/living/user)
+	if(try_dual_buscadero_reload(user))
+		return
+	return ..()
+
+/obj/item/gun/ballistic/revolver/Apostle //сбухам новый револьвер, урон чуть больше чем енфорсер, меньше, чем у дека, лучше енфорсера разнообразием патрон
+	name = "\improper Apostle"
+	desc = "A precise tool of holy law crafted for the parish enforcers. Its heavy .41 caliber rounds deliver steady, unforgiving judgement, turning every standard patrol into a righteous crusade through the blighted swamps."
+	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
+	fire_sound = "modular_bluemoon/fluffs/sound/weapon/Apostle.ogg"
+	icon_state = "apostle"
+	item_state = "apostle"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/apostle
+	dual_wield_spread = 25
+	fire_delay = 5
+	w_class = WEIGHT_CLASS_NORMAL
+	recoil = 0.5
+	slot_flags = ITEM_SLOT_BELT
+
+/obj/item/gun/ballistic/revolver/Dies_Irae //сбухам кит на револьвер для переделки под 308, но КРАЙНЕ МЕДЛЕННАЯ стрельба, плюс с двух рук, считай аналог винтовки с карго, но влезает в сумку ценой скорости стрельбы
+	name = "\improper Dies Iraen"
+	desc = "The Day of Wrath made manifest in cold, weathered iron. Re-engineered with an elongated frame to chamber devastating rifle cartridges, this hand-cannon shatters bone and banishes monstrosities with the thunderous roar of the final judgement."
+	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
+	fire_sound = "modular_bluemoon/fluffs/sound/weapon/Dies_Irae.ogg"
+	icon_state = "dies_irae"
+	item_state = "apostle"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/dies_irae
+	dual_wield_spread = 25
+	fire_delay = 20
+	w_class = WEIGHT_CLASS_NORMAL
+	recoil = 5
+	slot_flags = ITEM_SLOT_BELT
+
+/obj/item/gun/ballistic/revolver/Liturgy //Апгрейд на ревик сбух, чтоб было 18 патрон, енфорсеру всунули 28, ревику можно 18
+	name = "\improper Liturgy"
+	desc = "A mechanical sin born of desperate zealotry. Its massive, cathedral-like cylinder feeds a relentless stream of fire, ensuring the sermon of lead never falters and the final service does not end until the streets are cleansed in blood and ash."
+	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
+	icon_state = "liturgy"
+	item_state = "apostle"
+	fire_sound = "modular_bluemoon/fluffs/sound/weapon/Apostle.ogg"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/liturgy
+	dual_wield_spread = 25
+	fire_delay = 5
+	w_class = WEIGHT_CLASS_NORMAL
+	recoil = 0.5
+	slot_flags = ITEM_SLOT_BELT 
+
+/obj/item/gun/ballistic/revolver/Passing_Bell //тупа секвоя из нью вегаса антагам, калибр 45 70 давно в игре, но его нахуй никто не использует
+	name = "\improper Passing Bell"
+	desc = "A five-shot titan forged for the grim task of final rites. Its immense weight stabilizes the violent kick of full-sized rifle ammunition, ensuring that when this bell tolls, its thunderous echo signals the immediate and absolute end of whatever stands in its path."
+	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
+	icon_state = "passing_bell"
+	item_state = "passing_bell"
+	fire_sound = "modular_bluemoon/fluffs/sound/weapon/Dies_Irae.ogg"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/passing_bell
+	dual_wield_spread = 25
+	w_class = WEIGHT_CLASS_NORMAL
+	recoil = 3
+	slot_flags = ITEM_SLOT_BELT
+
+/obj/item/gun/ballistic/revolver/Exorcist  //Сделал тот самый револьвер судья, но для баланса ввел новый калибр, лор аккурейт 410
+	name = "\improper Exorcist"
+	desc = "The ultimate tool of spatial cleansing. Its elongated, heavy cylinder turns the classic revolver silhouette into a monstrous hybrid capable of firing dense clusters of buckshot. No curse can withstand its blast, and no demon can run from the spread of its holy wrath."
+	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
+	icon_state = "exorcist"
+	item_state = "exorcist"
+	fire_sound = "modular_bluemoon/fluffs/sound/weapon/Exorcist.ogg"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/exorcist 
+	dual_wield_spread = 25
+	fire_delay = 5
+	w_class = WEIGHT_CLASS_NORMAL
+	recoil = 3
+	slot_flags = ITEM_SLOT_BELT

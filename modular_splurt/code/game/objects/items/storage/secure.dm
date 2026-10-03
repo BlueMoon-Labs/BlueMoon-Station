@@ -33,6 +33,13 @@
 	new /obj/item/ammo_box/magazine/e45/taser(src)
 	new /obj/item/ammo_box/magazine/e45/taser(src)
 
+/obj/item/storage/secure/briefcase/cop/r41_box/PopulateContents()
+	new /obj/item/gun/ballistic/revolver/Apostle(src)
+	new /obj/item/ammo_box/cal41(src)
+	new /obj/item/ammo_box/cal41(src)
+	new /obj/item/ammo_box/cal41(src)
+	new /obj/item/ammo_box/cal41(src)
+
 //Blueshield melee options
 
 /obj/item/storage/secure/briefcase/bsbaton/stunbaton
