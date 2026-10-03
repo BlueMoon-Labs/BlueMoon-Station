@@ -13,7 +13,6 @@
 	var/datum/beepsky_fashion/beepsky_fashion //the associated datum for applying this to a secbot
 	var/face_hide_capable = FALSE	// выставляется при инцилизации, смотри /obj/item/clothing/mask/Initialize()
 	// BLUEMOON ADD - hailer in any mask (using SecTech device/hailer)
-	var/has_hailer = FALSE
 	var/hailer_aggressiveness = 2
 	var/hailer_cooldown = 0
 	var/hailer_cooldown_special = 0
@@ -27,9 +26,6 @@
 	var/hailer_last_dispatch = 0
 
 /obj/item/clothing/mask/attack_self(mob/user)
-	if(has_hailer)
-		hailer_halt(user)
-		return
 	if((clothing_flags & VOICEBOX_TOGGLABLE))
 		(clothing_flags ^= VOICEBOX_DISABLED)
 		var/status = !(clothing_flags & VOICEBOX_DISABLED)
@@ -111,7 +107,7 @@
 	. = ..()
 	if(face_hide_capable)
 		. += span_notice("Ctrl-Shift-клик по маске — [flags_inv & HIDEFACE ? "показать" : "скрыть"] лицо/описание персонажа (сейчас: [flags_inv & HIDEFACE ? "скрыто" : "видно"]).")
-	if(has_hailer)
+	if(get_action_of_type(src, /datum/action/item_action/halt))
 		. += span_notice("В маску установлен Compli-o-Nator модуль (агрессивность [hailer_aggressiveness]). Отвёртка — снять модуль.")
 	else
 		. += span_notice("В эту маску можно установить hailer-модуль из СБТеха (используй hailer на маске).")
@@ -157,18 +153,17 @@
 
 // BLUEMOON ADD - hailer in any mask via SecTech device/hailer
 /obj/item/clothing/mask/Destroy()
-	if(has_hailer)
+	if(get_action_of_type(src, /datum/action/item_action/halt))
 		GLOB.sechailers -= src
 		QDEL_NULL(hailer_radio)
 	return ..()
 
 /obj/item/clothing/mask/attackby(obj/item/I, mob/user, params)
-	if(istype(I, /obj/item/device/hailer) && !has_hailer && !istype(src, /obj/item/clothing/mask/gas/sechailer))
+	if(istype(I, /obj/item/device/hailer) && !get_action_of_type(src, /datum/action/item_action/halt))
 		var/obj/item/device/hailer/H = I
 		if(!user.transferItemToLoc(H, src) && !user.dropItemToGround(H))
 			return ..()
 		// переносим состояние эмага: если hailer взломан (insults не null), то safety = FALSE
-		has_hailer = TRUE
 		hailer_aggressiveness = 2
 		hailer_safety = isnull(H.insults) ? TRUE : FALSE
 		qdel(H)
@@ -194,13 +189,12 @@
 	return ..()
 
 /obj/item/clothing/mask/screwdriver_act(mob/living/user, obj/item/I)
-	if(has_hailer)
+	if(get_action_of_type(src, /datum/action/item_action/halt))
 		var/obj/item/device/hailer/H = new(get_turf(src))
 		// переносим состояние взлома
 		if(!hailer_safety)
 			H.insults = rand(1,3)
 		user.put_in_hands(H)
-		has_hailer = FALSE
 		hailer_broken = FALSE
 		GLOB.sechailers -= src
 		QDEL_NULL(hailer_radio)
@@ -215,7 +209,7 @@
 	return ..()
 
 /obj/item/clothing/mask/emag_act(mob/user)
-	if(has_hailer && hailer_safety)
+	if(get_action_of_type(src, /datum/action/item_action/halt) && hailer_safety)
 		hailer_safety = FALSE
 		to_chat(user, span_warning("Вы взламываете vocal circuit [src] эмагом!"))
 		log_admin("[key_name(user)] emagged hailer mask [src] at [AREACOORD(src)]")
@@ -223,18 +217,15 @@
 	. = ..()
 
 /obj/item/clothing/mask/ui_action_click(mob/user, action)
-	if(has_hailer)
-		if(istype(action, /datum/action/item_action/halt))
-			hailer_halt(user)
-			return
-		if(istype(action, /datum/action/item_action/dispatch))
-			hailer_dispatch(user)
-			return
+	if(istype(action, /datum/action/item_action/halt))
+		hailer_halt(user)
+		return
+	else if(istype(action, /datum/action/item_action/dispatch))
+		hailer_dispatch(user)
+		return
 	return ..()
 
 /obj/item/clothing/mask/proc/hailer_halt(mob/user)
-	if(!has_hailer || !can_use(user))
-		return
 	if(hailer_broken)
 		to_chat(user, span_warning("Hailing system is broken."))
 		return
@@ -406,8 +397,6 @@
 		hailer_cooldown_special = world.time
 
 /obj/item/clothing/mask/proc/hailer_dispatch(mob/user)
-	if(!has_hailer)
-		return FALSE
 	var/area/A = get_area(src)
 	if(world.time < hailer_last_dispatch + hailer_dispatch_cooldown)
 		to_chat(user, span_notice("Система Уведомления на перезарядке."))
