@@ -311,6 +311,7 @@
 #include "spritesheet_batched.dm"
 #include "startup_bootstrap.dm"
 #include "station_incidents.dm"
+#include "station_map_equipment.dm"
 // #include "species_whitelists.dm"
 // #include "stomach.dm"
 #include "storage_plane.dm"

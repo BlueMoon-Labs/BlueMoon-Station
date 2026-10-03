@@ -88,7 +88,7 @@
 "R" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/turf_decal/bot/white,
-/obj/structure/weightmachine,
+/obj/structure/weightmachine/stacklifter,
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/department/crew_quarters/dorms)
 "S" = (
