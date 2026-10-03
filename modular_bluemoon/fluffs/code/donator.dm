@@ -2031,6 +2031,36 @@
 	path = /obj/item/clothing/head/donator/bm/mark40k_helmet
 	ckeywhitelist = list("monolithxxv")
 
+/datum/gear/donator/bm/saibasan
+	name = "Cybersun Surplus"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/donator/saibasan
+	ckeywhitelist = list("monolithxxv")
+
+/datum/gear/donator/bm/opssrt
+	name = "OPS-SRT Helmet"
+	slot = ITEM_SLOT_HEAD
+	path = /obj/item/clothing/head/donator/bm/opssrt
+	ckeywhitelist = list("monolithxxv", "mishanok")
+
+/datum/gear/donator/bm/medaldoblest
+	name = "Медаль"
+	slot = ITEM_SLOT_ACCESSORY
+	path = /obj/item/clothing/accessory/medaldoblest
+	ckeywhitelist = list("monolithxxv", "mishanok")
+
+/datum/gear/donator/bm/opssrtclothes
+	name = "OPS-SRT Clothing"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/donator/opssrtclothes
+	ckeywhitelist = list("monolithxxv", "mishanok")
+
+/datum/gear/donator/bm/opssrtarmor
+	name = "OPS-SRT Plate Carrier"
+	slot = ITEM_SLOT_OCLOTHING
+	path = /obj/item/clothing/suit/donator/bm/opssrtarmor
+	ckeywhitelist = list("monolithxxv", "mishanok")
+
 /datum/gear/donator/bm/mark50k_helmet
 	name = "Mark50k Armored Head plates"
 	slot = ITEM_SLOT_HEAD
