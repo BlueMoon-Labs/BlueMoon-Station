@@ -10,6 +10,17 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
 /area/maintenance/department/science)
+"f" = (
+/obj/modular_map_connector,
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Creature Containment Maintenance Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/science/xenobio,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/science)
 "g" = (
 /turf/closed/mineral/random/stationside/asteroid/porus,
 /area/maintenance/department/science)
@@ -85,17 +96,6 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/item/wrench,
 /turf/open/floor/plasteel/white,
-/area/maintenance/department/science)
-"Q" = (
-/obj/modular_map_connector,
-/obj/machinery/door/airlock/maintenance_hatch{
-	name = "Creature Containment Maintenance Hatch"
-	},
-/obj/effect/mapping_helpers/airlock/access/all/science/xenobio,
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
-/turf/open/floor/catwalk_floor,
 /area/maintenance/department/science)
 "R" = (
 /obj/effect/decal/cleanable/dirt,
@@ -207,7 +207,7 @@ S
 "}
 (6,1,1) = {"
 S
-Q
+f
 R
 L
 G

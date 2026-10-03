@@ -20,9 +20,6 @@
 /area/maintenance/port/central)
 "cc" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/plumbing/synthesizer{
-	reagent_id = /datum/reagent/water
-	},
 /turf/open/floor/catwalk_floor,
 /area/maintenance/central/greater)
 "dh" = (
@@ -60,11 +57,6 @@
 	},
 /turf/open/floor/catwalk_floor,
 /area/maintenance/port/central)
-"ek" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/duct,
-/turf/open/floor/catwalk_floor,
-/area/maintenance/central/greater)
 "ex" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/rack,
@@ -405,7 +397,6 @@
 	name = "Maintenance Hatch"
 	},
 /obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
-/obj/machinery/duct,
 /obj/effect/mapping_helpers/airlock/unres{
 	dir = 8
 	},
@@ -647,7 +638,6 @@
 	},
 /obj/effect/mapping_helpers/airlock/access/all/service/janitor,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/central/greater)
 "Jl" = (
@@ -750,20 +740,6 @@
 /obj/structure/disposalpipe/segment,
 /turf/template_noop,
 /area/template_noop)
-"PW" = (
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/machinery/duct,
-/turf/open/floor/catwalk_floor,
-/area/maintenance/central/greater)
 "Ra" = (
 /obj/structure/disposalpipe/segment,
 /obj/structure/cable/yellow{
@@ -3791,7 +3767,7 @@ Da
 Da
 fZ
 cc
-ek
+cc
 fZ
 jW
 Da
@@ -3841,7 +3817,7 @@ Da
 Da
 fZ
 ON
-ek
+cc
 fZ
 jW
 Da
@@ -3891,7 +3867,7 @@ Da
 Da
 fZ
 oD
-ek
+cc
 fZ
 jW
 Da
@@ -3941,9 +3917,9 @@ Da
 Da
 fZ
 yo
-ek
+cc
 Iq
-PW
+jW
 Da
 Da
 Da
@@ -3993,7 +3969,7 @@ Da
 Da
 Da
 Da
-PW
+jW
 Da
 Da
 Da
@@ -4043,7 +4019,7 @@ Da
 Da
 Da
 Da
-PW
+jW
 Da
 Da
 Da

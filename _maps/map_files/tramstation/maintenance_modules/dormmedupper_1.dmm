@@ -198,19 +198,6 @@
 /obj/machinery/light/small/directional/south,
 /turf/open/floor/grass,
 /area/asteroid/tramstation)
-"sS" = (
-/obj/structure/cable/yellow{
-	icon_state = "0-8"
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/turf/open/floor/catwalk_floor,
-/area/maintenance/department/crew_quarters/dorms)
 "up" = (
 /obj/structure/flora/ausbushes/sparsegrass,
 /turf/open/floor/grass,
@@ -359,6 +346,18 @@
 	},
 /turf/open/floor/plating,
 /area/maintenance/department/crew_quarters/dorms)
+"Lh" = (
+/obj/structure/cable/yellow{
+	icon_state = "2-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/crew_quarters/dorms)
 "LS" = (
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
@@ -446,15 +445,6 @@
 "VU" = (
 /turf/closed/wall,
 /area/hallway/primary/tram/center)
-"Xf" = (
-/obj/structure/cable/yellow{
-	icon_state = "2-8"
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/turf/open/floor/catwalk_floor,
-/area/maintenance/department/crew_quarters/dorms)
 "XV" = (
 /obj/structure/lattice/catwalk,
 /obj/structure/railing/corner{
@@ -554,7 +544,7 @@ bw
 bw
 bw
 MN
-Xf
+Lh
 jY
 np
 Ve
@@ -1745,7 +1735,7 @@ bw
 bw
 bw
 bw
-sS
+jc
 bw
 bw
 bw

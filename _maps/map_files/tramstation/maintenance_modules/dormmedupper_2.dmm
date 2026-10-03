@@ -142,16 +142,6 @@
 "nD" = (
 /turf/closed/wall,
 /area/asteroid/tramstation)
-"oV" = (
-/obj/structure/cable/yellow{
-	icon_state = "2-8"
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/obj/effect/spawner/lootdrop/trashbin,
-/turf/open/floor/catwalk_floor,
-/area/maintenance/department/crew_quarters/dorms)
 "pE" = (
 /obj/effect/turf_decal/trimline/yellow/warning{
 	dir = 6
@@ -304,19 +294,6 @@
 	key = "dormmedupper_attachment_a"
 	},
 /turf/open/floor/plating,
-/area/maintenance/department/crew_quarters/dorms)
-"yq" = (
-/obj/structure/cable/yellow{
-	icon_state = "0-8"
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "zz" = (
 /obj/effect/decal/cleanable/dirt,
@@ -515,6 +492,19 @@
 /obj/structure/flora/ausbushes/ywflowers,
 /turf/open/floor/grass,
 /area/asteroid/tramstation)
+"WR" = (
+/obj/structure/cable/yellow{
+	icon_state = "2-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
+/obj/effect/spawner/lootdrop/trashbin,
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/crew_quarters/dorms)
 "Xp" = (
 /obj/structure/flora/ausbushes/grassybush,
 /turf/open/floor/grass,
@@ -610,7 +600,7 @@ LF
 LF
 LF
 RT
-oV
+WR
 BR
 Nm
 pE
@@ -1801,7 +1791,7 @@ LF
 LF
 LF
 LF
-yq
+Dy
 LF
 LF
 LF

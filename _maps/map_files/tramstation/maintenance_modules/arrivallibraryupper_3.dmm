@@ -30,6 +30,14 @@
 /obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/plating,
 /area/maintenance/port/aft)
+"k" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/modular_map_connector,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/port/aft)
 "m" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/cable/yellow{
@@ -134,14 +142,6 @@
 /obj/structure/closet/emcloset,
 /turf/open/floor/plating,
 /area/maintenance/port/aft)
-"Z" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/modular_map_connector,
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
-/turf/open/floor/catwalk_floor,
-/area/maintenance/port/aft)
 
 (1,1,1) = {"
 L
@@ -219,7 +219,7 @@ L
 L
 "}
 (4,1,1) = {"
-Z
+k
 M
 W
 B

@@ -21,14 +21,6 @@
 /obj/effect/spawner/lootdrop/gloves,
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/port/aft)
-"g" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/modular_map_connector,
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
-/turf/open/floor/catwalk_floor,
-/area/maintenance/port/aft)
 "k" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/table,
@@ -47,6 +39,14 @@
 	loot = list(/obj/item/stack/sheet/mineral/wood/twenty = 1, /obj/item/stack/sheet/cardboard/fifty = 1, /obj/item/stack/sheet/mineral/sandstone/thirty = 1)
 	},
 /turf/open/floor/plasteel/rivets,
+/area/maintenance/port/aft)
+"p" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/modular_map_connector,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/turf/open/floor/catwalk_floor,
 /area/maintenance/port/aft)
 "s" = (
 /obj/effect/decal/cleanable/dirt,
@@ -225,7 +225,7 @@ H
 H
 "}
 (4,1,1) = {"
-g
+p
 D
 R
 c

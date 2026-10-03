@@ -63,13 +63,6 @@
 /obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/plating,
 /area/maintenance/department/eva)
-"u" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/cable/yellow{
-	icon_state = "0-4"
-	},
-/turf/open/floor/catwalk_floor,
-/area/maintenance/department/eva)
 "x" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/landmark/event_spawn,
@@ -118,6 +111,13 @@
 	},
 /obj/effect/decal/cleanable/cobweb,
 /turf/open/floor/plasteel/rivets,
+/area/maintenance/department/eva)
+"J" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "2-4"
+	},
+/turf/open/floor/catwalk_floor,
 /area/maintenance/department/eva)
 "K" = (
 /obj/effect/decal/cleanable/dirt,
@@ -217,7 +217,7 @@ B
 B
 d
 j
-u
+J
 "}
 (6,1,1) = {"
 b

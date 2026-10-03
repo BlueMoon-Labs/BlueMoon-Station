@@ -24,43 +24,9 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/central/lesser)
-"bl" = (
-/obj/effect/turf_decal/weather/sand/plating,
-/obj/structure/cable{
-	icon_state = "0-4"
-	},
-/turf/open/floor/plating/airless,
-/area/asteroid/tramstation)
 "bT" = (
 /obj/effect/spawner/structure/window,
 /turf/open/floor/plating,
-/area/maintenance/central/lesser)
-"bX" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/disposalpipe/segment,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
-/turf/open/floor/catwalk_floor,
-/area/maintenance/department/crew_quarters/dorms)
-"cv" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/obj/machinery/duct,
-/turf/open/floor/catwalk_floor,
 /area/maintenance/central/lesser)
 "cQ" = (
 /obj/machinery/door/airlock/maintenance_hatch{
@@ -154,7 +120,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "gq" = (
@@ -180,7 +145,6 @@
 /turf/open/floor/plating/airless,
 /area/asteroid/tramstation)
 "hm" = (
-/obj/machinery/duct,
 /obj/machinery/door/airlock/maintenance_hatch{
 	name = "Water Access Maintenance Hatch"
 	},
@@ -282,7 +246,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "mW" = (
@@ -299,25 +262,8 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
-"nq" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/obj/structure/cable/yellow{
-	icon_state = "2-8"
-	},
-/turf/open/floor/catwalk_floor,
-/area/maintenance/central/lesser)
 "nr" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/disposalpipe/sorting/mail{
@@ -392,25 +338,6 @@
 /obj/item/clothing/mask/gas,
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/central/lesser)
-"sw" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
-/obj/effect/turf_decal/trimline/white/warning{
-	dir = 4
-	},
-/obj/effect/turf_decal/trimline/white/warning{
-	dir = 8
-	},
-/obj/structure/window/reinforced{
-	dir = 8
-	},
-/obj/machinery/duct,
-/turf/open/floor/plating,
-/area/maintenance/department/crew_quarters/dorms)
 "tZ" = (
 /obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
 /obj/effect/decal/cleanable/dirt,
@@ -437,19 +364,6 @@
 	},
 /turf/open/floor/plating,
 /area/maintenance/central/lesser)
-"vx" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-8"
-	},
-/turf/open/floor/catwalk_floor,
-/area/maintenance/department/crew_quarters/dorms)
 "vB" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/power/apc/auto_name/south,
@@ -474,12 +388,12 @@
 	},
 /turf/open/floor/catwalk_floor,
 /area/maintenance/central/lesser)
-"wg" = (
+"xt" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /obj/structure/cable/yellow{
-	icon_state = "0-2"
+	icon_state = "1-2"
 	},
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
@@ -498,7 +412,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "yH" = (
@@ -526,7 +439,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "Ca" = (
@@ -540,20 +452,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
 	},
-/turf/open/floor/catwalk_floor,
-/area/maintenance/department/crew_quarters/dorms)
-"CG" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "Dh" = (
@@ -583,7 +481,6 @@
 /obj/structure/window/reinforced{
 	dir = 8
 	},
-/obj/machinery/duct,
 /turf/open/floor/plating,
 /area/maintenance/department/crew_quarters/dorms)
 "Dx" = (
@@ -606,13 +503,6 @@
 	},
 /obj/structure/cable/yellow{
 	icon_state = "0-4"
-	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/catwalk_floor,
-/area/maintenance/central/lesser)
-"En" = (
-/obj/machinery/plumbing/synthesizer{
-	reagent_id = /datum/reagent/water
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/catwalk_floor,
@@ -643,7 +533,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "Fm" = (
@@ -669,16 +558,6 @@
 	},
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
-"Gn" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/disposalpipe/segment,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
-/turf/open/floor/catwalk_floor,
-/area/maintenance/central/lesser)
 "GF" = (
 /obj/machinery/door/airlock/maintenance_hatch,
 /obj/effect/decal/cleanable/dirt,
@@ -704,6 +583,25 @@
 	},
 /turf/open/space/basic,
 /area/space/nearstation)
+"Ic" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "2-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "2-4"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/central/lesser)
 "II" = (
 /obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
 /obj/effect/decal/cleanable/dirt,
@@ -722,7 +620,6 @@
 /obj/machinery/door/airlock/maintenance_hatch{
 	name = "Maintenance Hatch"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/central/lesser)
 "IZ" = (
@@ -878,6 +775,18 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/central/lesser)
+"Rc" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/turf/closed/wall,
+/area/maintenance/department/crew_quarters/dorms)
 "Rg" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/disposalpipe/segment{
@@ -892,7 +801,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "Rl" = (
@@ -917,7 +825,6 @@
 	initialized_button = "trammaintlmaobro";
 	name = "Glass Walkway Emergency Seal Toggle"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "Rq" = (
@@ -926,11 +833,6 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
-/area/maintenance/central/lesser)
-"RB" = (
-/obj/machinery/duct,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/catwalk_floor,
 /area/maintenance/central/lesser)
 "RG" = (
 /obj/effect/decal/cleanable/dirt,
@@ -1007,7 +909,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-8"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "TB" = (
@@ -1021,7 +922,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-8"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "TF" = (
@@ -1058,19 +958,6 @@
 /obj/item/mop,
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/central/lesser)
-"Wh" = (
-/obj/machinery/duct,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-8"
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/turf/closed/wall,
-/area/maintenance/department/crew_quarters/dorms)
 "Wm" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/rivets,
@@ -1116,20 +1003,8 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
-"XC" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/disposalpipe/segment,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
-/obj/machinery/duct,
-/turf/open/floor/catwalk_floor,
-/area/maintenance/central/lesser)
 "Yb" = (
 /obj/modular_map_root/tramstation{
 	key = "dormenginelower_attachment_a";
@@ -1144,26 +1019,8 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
-"YL" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/disposalpipe/segment{
-	dir = 9
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 9
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 9
-	},
-/obj/structure/cable/yellow{
-	icon_state = "1-8"
-	},
-/obj/machinery/duct,
-/turf/open/floor/catwalk_floor,
-/area/maintenance/central/lesser)
 "Zi" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/rivets,
@@ -1382,11 +1239,11 @@ Mq
 Mq
 Mq
 Dr
-sw
-sw
-sw
-sw
-sw
+Mq
+Mq
+Mq
+Mq
+Mq
 Rl
 mS
 SX
@@ -1417,14 +1274,14 @@ is
 is
 is
 is
-Wh
+Rc
 is
 is
 is
 is
 is
 is
-CG
+FY
 SX
 yH
 yH
@@ -1460,7 +1317,7 @@ is
 is
 is
 is
-CG
+FY
 SX
 yH
 yH
@@ -1496,7 +1353,7 @@ is
 is
 is
 is
-CG
+FY
 SX
 yH
 yH
@@ -1532,7 +1389,7 @@ is
 is
 is
 is
-CG
+FY
 SX
 yH
 yH
@@ -1568,7 +1425,7 @@ is
 is
 is
 is
-CG
+FY
 SX
 yH
 yH
@@ -1604,7 +1461,7 @@ is
 is
 is
 is
-CG
+FY
 SX
 yH
 yH
@@ -1640,7 +1497,7 @@ is
 is
 is
 is
-CG
+FY
 SX
 yH
 yH
@@ -1676,7 +1533,7 @@ is
 is
 Xb
 Zi
-CG
+FY
 SX
 yH
 yH
@@ -1712,7 +1569,7 @@ is
 is
 iG
 Zi
-CG
+FY
 Yb
 yH
 yH
@@ -1748,7 +1605,7 @@ is
 is
 hZ
 Zi
-CG
+FY
 SX
 yH
 yH
@@ -1784,7 +1641,7 @@ is
 is
 ZB
 Zi
-CG
+FY
 SX
 SX
 SX
@@ -1803,7 +1660,7 @@ is
 is
 is
 pA
-vx
+Xh
 Zi
 aa
 is
@@ -1898,7 +1755,7 @@ is
 is
 is
 is
-CG
+FY
 SX
 "}
 (21,1,1) = {"
@@ -1934,7 +1791,7 @@ is
 is
 is
 is
-CG
+FY
 SX
 "}
 (22,1,1) = {"
@@ -1970,7 +1827,7 @@ is
 is
 is
 is
-CG
+FY
 SX
 "}
 (23,1,1) = {"
@@ -2006,7 +1863,7 @@ is
 is
 is
 is
-CG
+FY
 SX
 "}
 (24,1,1) = {"
@@ -2042,7 +1899,7 @@ is
 is
 is
 is
-CG
+FY
 SX
 "}
 (25,1,1) = {"
@@ -2075,7 +1932,7 @@ is
 is
 is
 is
-wg
+xt
 mW
 Yo
 Xh
@@ -2112,7 +1969,7 @@ is
 is
 is
 li
-CG
+FY
 SX
 SX
 SX
@@ -2148,7 +2005,7 @@ is
 is
 is
 is
-CG
+FY
 Zi
 SX
 Ww
@@ -2184,7 +2041,7 @@ is
 is
 is
 is
-CG
+FY
 Zi
 SX
 Ww
@@ -2220,7 +2077,7 @@ is
 is
 is
 is
-CG
+FY
 Zi
 SX
 yH
@@ -2256,7 +2113,7 @@ is
 is
 is
 is
-CG
+FY
 Zi
 SX
 yH
@@ -2292,7 +2149,7 @@ is
 is
 is
 is
-CG
+FY
 Zi
 SX
 yH
@@ -2364,7 +2221,7 @@ is
 is
 is
 is
-CG
+FY
 Zi
 SX
 yH
@@ -2400,7 +2257,7 @@ is
 is
 is
 is
-CG
+FY
 Zi
 SX
 yH
@@ -2436,7 +2293,7 @@ is
 is
 is
 is
-CG
+FY
 Zi
 SX
 yH
@@ -2472,7 +2329,7 @@ is
 is
 is
 is
-CG
+FY
 Zi
 SX
 yH
@@ -2508,7 +2365,7 @@ is
 is
 is
 is
-CG
+FY
 sn
 SX
 yH
@@ -2579,7 +2436,7 @@ is
 is
 is
 is
-bX
+yb
 BW
 yb
 fb
@@ -2726,7 +2583,7 @@ is
 is
 is
 is
-cv
+qe
 jx
 "}
 (44,1,1) = {"
@@ -2762,7 +2619,7 @@ is
 is
 is
 is
-cv
+qe
 jx
 "}
 (45,1,1) = {"
@@ -2797,8 +2654,8 @@ is
 wb
 ub
 ub
-XC
-YL
+ub
+LQ
 jx
 "}
 (46,1,1) = {"
@@ -2868,8 +2725,8 @@ qe
 jx
 jx
 jx
-En
-RB
+rn
+rn
 MO
 jx
 "}
@@ -3051,7 +2908,7 @@ yH
 Ww
 Ww
 Ww
-bl
+Wq
 "}
 (53,1,1) = {"
 is
@@ -3651,7 +3508,7 @@ is
 is
 is
 eO
-nq
+Ic
 vB
 is
 is
@@ -4063,7 +3920,7 @@ is
 "}
 (81,1,1) = {"
 is
-Gn
+ub
 ub
 LQ
 is

@@ -10,7 +10,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/obj/machinery/duct,
 /turf/open/floor/plating/airless{
 	icon_state = "platingdmg3"
 	},
@@ -27,7 +26,6 @@
 	icon_state = "2-8"
 	},
 /obj/item/stack/ore/glass,
-/obj/machinery/duct,
 /turf/open/floor/plating/airless,
 /area/maintenance/department/crew_quarters/dorms)
 "av" = (
@@ -36,7 +34,6 @@
 	},
 /obj/effect/mapping_helpers/airlock/access/all/service/janitor,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/central/lesser)
 "aN" = (
@@ -56,16 +53,6 @@
 "aW" = (
 /obj/effect/spawner/lootdrop/random/bureaucracy/folder,
 /turf/open/floor/plating/asteroid/airless,
-/area/maintenance/department/crew_quarters/dorms)
-"bU" = (
-/obj/effect/turf_decal/weather/sand/plating,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
-/obj/machinery/duct,
-/turf/open/floor/plating/airless,
 /area/maintenance/department/crew_quarters/dorms)
 "cn" = (
 /turf/closed/wall,
@@ -104,20 +91,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/central/lesser)
-"dl" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/obj/machinery/duct,
-/turf/open/floor/catwalk_floor,
-/area/maintenance/department/crew_quarters/dorms)
 "eO" = (
 /turf/closed/wall,
 /area/maintenance/central/lesser)
@@ -175,7 +148,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-8"
 	},
-/obj/machinery/duct,
 /turf/open/floor/plating/airless,
 /area/maintenance/department/crew_quarters/dorms)
 "fQ" = (
@@ -193,7 +165,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "fU" = (
@@ -211,28 +182,6 @@
 	},
 /turf/open/floor/catwalk_floor,
 /area/maintenance/central/lesser)
-"gd" = (
-/obj/machinery/door/airlock/maintenance_hatch{
-	name = "Restroom Maintenance Access"
-	},
-/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-8"
-	},
-/obj/effect/mapping_helpers/airlock_note_placer{
-	note_name = "breach notice";
-	note_info = "Due to recent hull damage suffered to this section of the station, the maintenance hall has been deemed unsafe for crew travel and has been blocked off until further notice for station repairs."
-	},
-/obj/effect/mapping_helpers/airlock/locked,
-/obj/machinery/duct,
-/turf/open/floor/plasteel/rivets,
-/area/maintenance/department/crew_quarters/dorms)
 "gr" = (
 /obj/structure/sink{
 	pixel_y = 26
@@ -244,23 +193,27 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
 /area/template_noop)
-"gZ" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/disposalpipe/segment{
-	dir = 9
+"gv" = (
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Restroom Maintenance Access"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 9
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 9
+	dir = 4
 	},
 /obj/structure/cable/yellow{
-	icon_state = "1-8"
+	icon_state = "4-8"
 	},
-/obj/machinery/duct,
-/turf/open/floor/catwalk_floor,
-/area/maintenance/central/lesser)
+/obj/effect/mapping_helpers/airlock_note_placer{
+	note_name = "breach notice";
+	note_info = "Due to recent hull damage suffered to this section of the station, the maintenance hall has been deemed unsafe for crew travel and has been blocked off until further notice for station repairs."
+	},
+/obj/effect/mapping_helpers/airlock/locked,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
 "hv" = (
 /obj/effect/turf_decal/weather/sand/plating,
 /obj/structure/closet/crate{
@@ -297,13 +250,6 @@
 /obj/item/chair,
 /turf/open/floor/plating/airless,
 /area/maintenance/department/crew_quarters/dorms)
-"hS" = (
-/obj/effect/turf_decal/weather/sand/plating,
-/obj/structure/cable{
-	icon_state = "0-4"
-	},
-/turf/open/floor/plating/airless,
-/area/asteroid/tramstation)
 "ip" = (
 /obj/effect/turf_decal/weather/sand/plating,
 /obj/item/stack/sheet/metal{
@@ -318,7 +264,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/obj/machinery/duct,
 /turf/open/floor/plating/airless,
 /area/maintenance/department/crew_quarters/dorms)
 "iF" = (
@@ -440,7 +385,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
-/obj/machinery/duct,
 /turf/open/floor/plating/airless,
 /area/maintenance/department/crew_quarters/dorms)
 "mX" = (
@@ -461,7 +405,6 @@
 /obj/machinery/door/airlock/maintenance_hatch{
 	name = "Maintenance Hatch"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/central/lesser)
 "ng" = (
@@ -493,7 +436,6 @@
 	icon_state = "1-2"
 	},
 /obj/item/stack/ore/gold,
-/obj/machinery/duct,
 /turf/open/floor/plating/airless{
 	icon_state = "platingdmg1"
 	},
@@ -576,7 +518,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/obj/machinery/duct,
 /turf/open/floor/plating/airless{
 	icon_state = "platingdmg1"
 	},
@@ -667,7 +608,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/obj/machinery/duct,
 /turf/open/floor/plating/airless{
 	icon_state = "platingdmg2"
 	},
@@ -689,7 +629,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "wU" = (
@@ -730,6 +669,25 @@
 	},
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/central/lesser)
+"yO" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "2-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "2-4"
 	},
 /turf/open/floor/catwalk_floor,
 /area/maintenance/central/lesser)
@@ -816,7 +774,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "BD" = (
@@ -896,7 +853,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "Dz" = (
@@ -913,7 +869,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "DX" = (
@@ -923,7 +878,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/obj/machinery/duct,
 /turf/open/floor/plating/airless{
 	icon_state = "platingdmg2"
 	},
@@ -961,6 +915,15 @@
 	icon_state = "platingdmg2"
 	},
 /area/maintenance/department/crew_quarters/dorms)
+"EV" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/crew_quarters/dorms)
 "Fb" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/closet/firecloset,
@@ -980,7 +943,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-8"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "FG" = (
@@ -1034,7 +996,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "GX" = (
@@ -1093,29 +1054,6 @@
 /obj/structure/holosign/barrier/engineering,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
-"Lg" = (
-/obj/machinery/plumbing/synthesizer{
-	reagent_id = /datum/reagent/water
-	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/catwalk_floor,
-/area/maintenance/central/lesser)
-"Li" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/obj/structure/cable/yellow{
-	icon_state = "2-8"
-	},
-/turf/open/floor/catwalk_floor,
-/area/maintenance/central/lesser)
 "Lj" = (
 /obj/effect/spawner/lootdrop/maintenance,
 /turf/open/floor/plating/asteroid/airless,
@@ -1146,33 +1084,8 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/department/crew_quarters/dorms)
-"MV" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/obj/structure/holosign/barrier/engineering,
-/obj/machinery/duct,
-/turf/open/floor/catwalk_floor,
-/area/maintenance/department/crew_quarters/dorms)
 "Ni" = (
 /turf/open/floor/plating/asteroid/airless,
-/area/maintenance/department/crew_quarters/dorms)
-"No" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/disposalpipe/segment,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
-/turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "NZ" = (
 /obj/effect/decal/cleanable/dirt,
@@ -1187,7 +1100,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "Oi" = (
@@ -1223,7 +1135,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/obj/machinery/duct,
 /turf/open/floor/plating/airless,
 /area/maintenance/department/crew_quarters/dorms)
 "PG" = (
@@ -1250,21 +1161,9 @@
 	icon_state = "1-4"
 	},
 /obj/item/stack/ore/iron,
-/obj/machinery/duct,
 /turf/open/floor/plating/airless{
 	icon_state = "platingdmg2"
 	},
-/area/maintenance/department/crew_quarters/dorms)
-"QH" = (
-/obj/effect/turf_decal/weather/sand/plating,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
-/obj/item/stack/ore/glass,
-/obj/machinery/duct,
-/turf/open/floor/plating/airless,
 /area/maintenance/department/crew_quarters/dorms)
 "Rm" = (
 /obj/effect/decal/cleanable/dirt,
@@ -1284,7 +1183,6 @@
 	},
 /obj/item/stack/ore/iron,
 /obj/item/stack/ore/glass,
-/obj/machinery/duct,
 /turf/open/floor/plating/airless,
 /area/maintenance/department/crew_quarters/dorms)
 "Rz" = (
@@ -1328,7 +1226,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "SR" = (
@@ -1343,7 +1240,6 @@
 	icon_state = "4-8"
 	},
 /obj/item/stack/ore/iron,
-/obj/machinery/duct,
 /turf/open/floor/plating/airless{
 	icon_state = "platingdmg3"
 	},
@@ -1393,7 +1289,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "TO" = (
@@ -1405,19 +1300,6 @@
 	},
 /obj/item/stack/ore/glass,
 /turf/open/floor/plating/airless,
-/area/maintenance/department/crew_quarters/dorms)
-"TQ" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-8"
-	},
-/turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "TZ" = (
 /obj/effect/decal/cleanable/dirt,
@@ -1442,7 +1324,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "Um" = (
@@ -1480,16 +1361,6 @@
 /obj/item/soap/nanotrasen,
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/department/crew_quarters/dorms)
-"Vc" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/disposalpipe/segment,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
-/turf/open/floor/catwalk_floor,
-/area/maintenance/central/lesser)
 "VK" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/disposalpipe/segment{
@@ -1507,26 +1378,6 @@
 /obj/effect/decal/cleanable/cobweb,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/central/lesser)
-"VN" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/disposalpipe/segment,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
-/obj/machinery/duct,
-/turf/open/floor/catwalk_floor,
-/area/maintenance/central/lesser)
-"VU" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
-/turf/open/floor/catwalk_floor,
-/area/maintenance/department/crew_quarters/dorms)
 "We" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/cobweb,
@@ -1541,28 +1392,6 @@
 	loot = list(/obj/item/flashlight = 20, /obj/item/flashlight/flare = 10, /obj/effect/spawner/lootdrop/glowstick = 10, /obj/item/flashlight/lantern = 5, /obj/item/flashlight/seclite = 4)
 	},
 /turf/open/floor/plasteel/rivets,
-/area/maintenance/central/lesser)
-"Wn" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/obj/machinery/duct,
-/turf/open/floor/catwalk_floor,
-/area/maintenance/central/lesser)
-"XR" = (
-/obj/machinery/duct,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/catwalk_floor,
 /area/maintenance/central/lesser)
 "XV" = (
 /obj/effect/decal/cleanable/dirt,
@@ -1822,11 +1651,11 @@ HK
 HK
 Mq
 Qj
-QH
+TO
 DX
-bU
-bU
-bU
+HK
+HK
+HK
 DX
 mP
 Ni
@@ -1857,7 +1686,7 @@ Oi
 Oi
 Oi
 Oi
-gd
+gv
 Oi
 Oi
 Oi
@@ -2243,7 +2072,7 @@ Oi
 Oi
 Oi
 BD
-TQ
+TL
 CR
 ML
 Oi
@@ -2261,7 +2090,7 @@ Oi
 fB
 xw
 fP
-bU
+HK
 mP
 GX
 ER
@@ -2300,7 +2129,7 @@ Oi
 Oi
 an
 ok
-QH
+TO
 wz
 GQ
 cn
@@ -2338,7 +2167,7 @@ Oi
 Oi
 Oi
 Oi
-dl
+Ek
 cn
 "}
 (21,1,1) = {"
@@ -2374,7 +2203,7 @@ Oi
 Oi
 Oi
 Oi
-MV
+KI
 cn
 "}
 (22,1,1) = {"
@@ -2410,7 +2239,7 @@ Oi
 Oi
 Oi
 Oi
-dl
+Ek
 cn
 "}
 (23,1,1) = {"
@@ -2446,7 +2275,7 @@ Oi
 Oi
 Oi
 Oi
-dl
+Ek
 cn
 "}
 (24,1,1) = {"
@@ -2482,7 +2311,7 @@ Oi
 Oi
 Oi
 Oi
-dl
+Ek
 cn
 "}
 (25,1,1) = {"
@@ -2515,7 +2344,7 @@ Oi
 Oi
 Oi
 Oi
-VU
+EV
 Dr
 SF
 TL
@@ -2552,7 +2381,7 @@ Oi
 Oi
 Oi
 BT
-dl
+Ek
 cn
 cn
 cn
@@ -2588,7 +2417,7 @@ Oi
 Oi
 Oi
 Oi
-dl
+Ek
 cn
 eY
 cn
@@ -2624,7 +2453,7 @@ Oi
 Oi
 Oi
 Oi
-dl
+Ek
 Dh
 Kx
 cn
@@ -2660,7 +2489,7 @@ Oi
 Oi
 Oi
 Oi
-dl
+Ek
 cn
 CR
 cn
@@ -2696,7 +2525,7 @@ Oi
 Oi
 Oi
 Oi
-dl
+Ek
 cn
 UV
 cn
@@ -2732,7 +2561,7 @@ Oi
 Oi
 Oi
 Oi
-dl
+Ek
 cn
 cn
 cn
@@ -2804,7 +2633,7 @@ Oi
 Oi
 Oi
 Oi
-dl
+Ek
 CR
 cn
 nA
@@ -2840,7 +2669,7 @@ Oi
 Oi
 Oi
 Oi
-dl
+Ek
 mG
 cn
 nA
@@ -2876,7 +2705,7 @@ Oi
 Oi
 Oi
 Oi
-dl
+Ek
 Bd
 cn
 nA
@@ -2912,7 +2741,7 @@ Oi
 Oi
 Oi
 Oi
-dl
+Ek
 ML
 cn
 nA
@@ -2948,7 +2777,7 @@ Oi
 Oi
 Oi
 Oi
-dl
+Ek
 ML
 cn
 nA
@@ -3019,7 +2848,7 @@ Oi
 Oi
 Oi
 Oi
-No
+Ob
 fQ
 Ob
 Dz
@@ -3166,7 +2995,7 @@ Oi
 Oi
 Oi
 Oi
-Wn
+Tx
 eO
 "}
 (44,1,1) = {"
@@ -3202,7 +3031,7 @@ Oi
 Oi
 Oi
 Oi
-Wn
+Tx
 eO
 "}
 (45,1,1) = {"
@@ -3237,8 +3066,8 @@ Oi
 pW
 Bm
 Bm
-VN
-gZ
+Bm
+cZ
 eO
 "}
 (46,1,1) = {"
@@ -3308,8 +3137,8 @@ Tx
 eO
 eO
 eO
-Lg
-XR
+jL
+jL
 cw
 eO
 "}
@@ -3491,7 +3320,7 @@ nA
 Ok
 Ok
 Ok
-hS
+lf
 "}
 (53,1,1) = {"
 Oi
@@ -4091,7 +3920,7 @@ Oi
 Oi
 Oi
 ED
-Li
+yO
 aP
 Oi
 Oi
@@ -4503,7 +4332,7 @@ Oi
 "}
 (81,1,1) = {"
 Oi
-Vc
+Bm
 Bm
 cZ
 Oi

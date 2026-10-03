@@ -35,16 +35,15 @@
 /obj/effect/turf_decal/stripes/white,
 /turf/open/floor/plating,
 /area/maintenance/starboard/lesser)
-"e" = (
+"d" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer2,
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-4"
 	},
 /obj/structure/disposalpipe/junction{
 	dir = 8
@@ -57,18 +56,6 @@
 	name = "atmoscilower_attachment_a"
 	},
 /turf/open/floor/plating,
-/area/maintenance/starboard/lesser)
-"g" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/obj/structure/cable/yellow{
-	icon_state = "0-1"
-	},
-/obj/structure/disposalpipe/segment{
-	dir = 5
-	},
-/turf/open/floor/catwalk_floor,
 /area/maintenance/starboard/lesser)
 "h" = (
 /obj/effect/decal/cleanable/dirt,
@@ -156,22 +143,6 @@
 	icon_state = "1-2"
 	},
 /obj/structure/disposalpipe/segment,
-/turf/open/floor/catwalk_floor,
-/area/maintenance/starboard/lesser)
-"p" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/disposalpipe/segment{
-	dir = 8
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-4"
-	},
 /turf/open/floor/catwalk_floor,
 /area/maintenance/starboard/lesser)
 "q" = (
@@ -385,6 +356,22 @@
 /obj/effect/spawner/lootdrop/maintenance/five,
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/starboard/lesser)
+"J" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 5
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 5
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-4"
+	},
+/obj/structure/disposalpipe/segment{
+	dir = 5
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/starboard/lesser)
 "K" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/components/unary/portables_connector/visible/layer2{
@@ -426,20 +413,6 @@
 	},
 /turf/open/floor/catwalk_floor,
 /area/maintenance/starboard/lesser)
-"O" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/machinery/power/apc/auto_name/north,
-/obj/structure/cable/yellow{
-	icon_state = "0-4"
-	},
-/turf/open/floor/catwalk_floor,
-/area/maintenance/starboard/lesser)
 "P" = (
 /obj/effect/turf_decal/stripes/yellow/end{
 	dir = 1
@@ -468,6 +441,20 @@
 	icon_state = "4-8"
 	},
 /obj/effect/spawner/lootdrop/trashbin,
+/turf/open/floor/catwalk_floor,
+/area/maintenance/starboard/lesser)
+"R" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 6
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 6
+	},
+/obj/machinery/power/apc/auto_name/north,
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
 /turf/open/floor/catwalk_floor,
 /area/maintenance/starboard/lesser)
 "S" = (
@@ -552,7 +539,7 @@ T
 T
 T
 T
-p
+D
 T
 T
 T
@@ -861,7 +848,7 @@ v
 v
 v
 v
-O
+R
 T
 T
 "}
@@ -1092,7 +1079,7 @@ T
 T
 T
 B
-e
+d
 v
 Z
 Z
@@ -1159,7 +1146,7 @@ o
 o
 o
 o
-g
+J
 v
 Z
 Z

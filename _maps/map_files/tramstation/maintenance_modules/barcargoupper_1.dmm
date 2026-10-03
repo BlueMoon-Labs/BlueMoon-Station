@@ -364,34 +364,12 @@
 "BB" = (
 /turf/template_noop,
 /area/template_noop)
-"Cd" = (
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/catwalk_floor,
-/area/maintenance/department/cargo)
 "Cm" = (
 /obj/structure/plasticflaps/opaque{
 	name = "airtight delivery flaps"
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/rivets,
-/area/maintenance/department/cargo)
-"Dh" = (
-/obj/structure/cable/yellow{
-	icon_state = "0-4"
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/catwalk_floor,
 /area/maintenance/department/cargo)
 "Dk" = (
 /obj/structure/cable/yellow{
@@ -402,6 +380,19 @@
 	},
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer4{
 	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/cargo)
+"Ec" = (
+/obj/structure/cable/yellow{
+	icon_state = "2-4"
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 6
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 6
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/catwalk_floor,
@@ -1137,7 +1128,7 @@ Ad
 Ad
 lz
 kk
-Dh
+Fz
 Cm
 Rz
 Rz
@@ -2133,7 +2124,7 @@ BB
 BB
 BB
 BB
-Cd
+Ec
 Xl
 Xl
 Dk

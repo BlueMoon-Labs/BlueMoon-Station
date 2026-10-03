@@ -1,4 +1,11 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "2-4"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/eva)
 "c" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/rivets,
@@ -82,13 +89,6 @@
 	},
 /obj/effect/spawner/lootdrop/maintenance/three,
 /turf/open/floor/plasteel/rivets,
-/area/maintenance/department/eva)
-"y" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/cable/yellow{
-	icon_state = "0-4"
-	},
-/turf/open/floor/catwalk_floor,
 /area/maintenance/department/eva)
 "z" = (
 /obj/effect/decal/cleanable/dirt,
@@ -243,7 +243,7 @@ A
 A
 A
 T
-y
+a
 "}
 (6,1,1) = {"
 X

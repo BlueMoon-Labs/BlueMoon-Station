@@ -185,22 +185,6 @@
 	},
 /turf/open/floor/catwalk_floor,
 /area/maintenance/starboard/lesser)
-"yu" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/disposalpipe/segment{
-	dir = 8
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-4"
-	},
-/turf/open/floor/catwalk_floor,
-/area/maintenance/starboard/lesser)
 "yM" = (
 /obj/machinery/atmospherics/pipe/simple/multiz/scrubbers/hidden/layer2{
 	dir = 4
@@ -247,23 +231,6 @@
 	},
 /obj/structure/holosign/barrier/engineering,
 /turf/open/floor/catwalk_floor,
-/area/maintenance/starboard/lesser)
-"Ah" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/obj/structure/disposalpipe/junction{
-	dir = 8
-	},
-/obj/effect/turf_decal/weather/sand/plating,
-/turf/open/floor/plating,
 /area/maintenance/starboard/lesser)
 "Bi" = (
 /obj/structure/railing/corner{
@@ -455,6 +422,22 @@
 /obj/item/stack/ore/iron,
 /turf/open/floor/plating/asteroid,
 /area/asteroid/tramstation)
+"LP" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer2,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-4"
+	},
+/obj/structure/disposalpipe/junction{
+	dir = 8
+	},
+/obj/effect/turf_decal/weather/sand/plating,
+/turf/open/floor/plating,
+/area/maintenance/starboard/lesser)
 "Md" = (
 /obj/effect/turf_decal/weather/sand/plating,
 /obj/item/stack/tile/plasteel/smooth{
@@ -463,6 +446,22 @@
 /turf/open/floor/plating,
 /area/maintenance/starboard/lesser)
 "Mn" = (
+/turf/open/floor/catwalk_floor,
+/area/maintenance/starboard/lesser)
+"Ol" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 5
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 5
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-4"
+	},
+/obj/structure/disposalpipe/segment{
+	dir = 5
+	},
 /turf/open/floor/catwalk_floor,
 /area/maintenance/starboard/lesser)
 "OC" = (
@@ -490,18 +489,6 @@
 	dir = 4
 	},
 /obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
-/turf/open/floor/catwalk_floor,
-/area/maintenance/starboard/lesser)
-"Py" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/obj/structure/cable/yellow{
-	icon_state = "0-1"
-	},
-/obj/structure/disposalpipe/segment{
-	dir = 5
-	},
 /turf/open/floor/catwalk_floor,
 /area/maintenance/starboard/lesser)
 "Pz" = (
@@ -536,6 +523,19 @@
 	},
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/starboard/lesser)
+"QT" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 6
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 6
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-4"
 	},
 /turf/open/floor/catwalk_floor,
 /area/maintenance/starboard/lesser)
@@ -626,19 +626,6 @@
 /obj/item/storage/bag/ore,
 /turf/open/floor/plating/asteroid,
 /area/asteroid/tramstation)
-"VD" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/structure/cable/yellow{
-	icon_state = "1-4"
-	},
-/turf/open/floor/catwalk_floor,
-/area/maintenance/starboard/lesser)
 "Xe" = (
 /obj/structure/chair/stool/directional/east,
 /mob/living/simple_animal/hostile/lizard{
@@ -706,7 +693,7 @@ vE
 vE
 vE
 vE
-yu
+Es
 vE
 vE
 vE
@@ -1015,7 +1002,7 @@ zh
 Pz
 xC
 DT
-VD
+QT
 vE
 vE
 "}
@@ -1246,7 +1233,7 @@ vE
 vE
 vE
 Mn
-Ah
+LP
 Xy
 fF
 Pz
@@ -1313,7 +1300,7 @@ Qo
 Qo
 Qo
 Qo
-Py
+Ol
 Qu
 oc
 oc

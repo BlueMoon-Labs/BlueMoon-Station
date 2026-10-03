@@ -26,13 +26,6 @@
 /obj/structure/falsewall,
 /turf/open/floor/plating,
 /area/maintenance/department/eva)
-"k" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/cable/yellow{
-	icon_state = "0-4"
-	},
-/turf/open/floor/catwalk_floor,
-/area/maintenance/department/eva)
 "m" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/closet/emcloset,
@@ -81,6 +74,13 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/eva)
+"A" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "2-4"
 	},
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/eva)
@@ -257,7 +257,7 @@ t
 t
 G
 D
-k
+A
 "}
 (6,1,1) = {"
 Y

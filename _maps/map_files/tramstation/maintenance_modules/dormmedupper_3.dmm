@@ -11,15 +11,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/department/crew_quarters/dorms)
-"bA" = (
-/obj/structure/cable/yellow{
-	icon_state = "2-8"
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/turf/open/floor/catwalk_floor,
-/area/maintenance/department/crew_quarters/dorms)
 "ck" = (
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
@@ -107,19 +98,6 @@
 	icon_state = "0-4"
 	},
 /obj/effect/decal/cleanable/dirt,
-/turf/open/floor/catwalk_floor,
-/area/maintenance/department/crew_quarters/dorms)
-"kt" = (
-/obj/structure/cable/yellow{
-	icon_state = "0-8"
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "la" = (
@@ -520,6 +498,18 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/department/crew_quarters/dorms)
+"Ul" = (
+/obj/structure/cable/yellow{
+	icon_state = "2-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/crew_quarters/dorms)
 "Uo" = (
 /obj/structure/chair/pew/left{
 	dir = 8
@@ -622,7 +612,7 @@ ZF
 ZF
 ZF
 rE
-bA
+Ul
 gu
 GI
 oC
@@ -1813,7 +1803,7 @@ ZF
 ZF
 ZF
 ZF
-kt
+qu
 ZF
 ZF
 ZF

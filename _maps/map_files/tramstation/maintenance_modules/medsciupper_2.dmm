@@ -95,6 +95,22 @@
 /obj/structure/flora/ausbushes/sparsegrass,
 /turf/open/floor/grass,
 /area/asteroid/tramstation)
+"kd" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer4{
+	dir = 1
+	},
+/obj/structure/cable/yellow{
+	icon_state = "2-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "2-4"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/science)
 "ke" = (
 /obj/structure/flora/ausbushes/sparsegrass,
 /obj/structure/flora/ausbushes/brflowers,
@@ -107,19 +123,6 @@
 	loot = list(/obj/item/clothing/head/cone = 7, /obj/item/clothing/suit/caution = 3, /obj/item/reagent_containers/rag = 2, /obj/item/reagent_containers/glass/bucket = 2, /obj/effect/decal/cleanable/blood/old = 2, /obj/structure/mopbucket = 2)
 	},
 /turf/open/floor/plating,
-/area/maintenance/department/science)
-"km" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-8"
-	},
-/turf/open/floor/catwalk_floor,
 /area/maintenance/department/science)
 "kv" = (
 /obj/structure/railing,
@@ -148,6 +151,19 @@
 	},
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/science)
+"lp" = (
+/obj/structure/cable/yellow{
+	icon_state = "2-8"
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 10
+	},
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer4{
+	dir = 1
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/medical)
 "lJ" = (
 /obj/machinery/door/airlock/maintenance_hatch{
 	name = "Science Maintenance Hatch"
@@ -180,6 +196,22 @@
 "mp" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/rivets,
+/area/maintenance/department/science)
+"np" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 5
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 5
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-4"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/turf/open/floor/catwalk_floor,
 /area/maintenance/department/science)
 "ox" = (
 /obj/effect/decal/cleanable/dirt,
@@ -246,6 +278,19 @@
 /obj/effect/landmark/blobstart,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/medical)
+"tF" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 6
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 6
+	},
+/obj/structure/cable/yellow{
+	icon_state = "2-4"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/science)
 "tV" = (
 /turf/closed/wall,
 /area/maintenance/department/science)
@@ -483,15 +528,6 @@
 /obj/effect/spawner/lootdrop/glowstick,
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/department/medical)
-"PY" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
-/turf/open/floor/catwalk_floor,
-/area/maintenance/department/science)
 "Rx" = (
 /turf/open/floor/grass,
 /area/asteroid/tramstation)
@@ -662,17 +698,6 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/spawner/lootdrop/trashbin,
 /turf/open/floor/plasteel/rivets,
-/area/maintenance/department/medical)
-"ZQ" = (
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 6
-	},
-/turf/open/floor/catwalk_floor,
 /area/maintenance/department/medical)
 
 (1,1,1) = {"
@@ -1286,7 +1311,7 @@ bD
 bD
 bD
 bD
-ZQ
+lp
 JS
 JS
 JS
@@ -1847,7 +1872,7 @@ mp
 mp
 mp
 mp
-PY
+tF
 OB
 OB
 OB
@@ -1897,7 +1922,7 @@ Mu
 mp
 mp
 kQ
-Tj
+np
 Mb
 AZ
 AZ
@@ -2242,7 +2267,7 @@ Fi
 Fi
 Fa
 tV
-dl
+kd
 SQ
 SQ
 SQ
@@ -2435,6 +2460,6 @@ Fi
 Fi
 Fi
 Fi
-km
+rY
 tV
 "}

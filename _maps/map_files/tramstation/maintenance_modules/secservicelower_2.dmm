@@ -537,7 +537,6 @@
 	name = "Maintenance Hatch"
 	},
 /obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
-/obj/machinery/duct,
 /obj/effect/mapping_helpers/airlock/unres{
 	dir = 8
 	},
@@ -727,20 +726,6 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/central/greater)
-"Bj" = (
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/machinery/duct,
-/turf/open/floor/catwalk_floor,
-/area/maintenance/central/greater)
 "Ct" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/landmark/blobstart,
@@ -886,7 +871,6 @@
 /area/maintenance/port/central)
 "Nu" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/central/greater)
 "Px" = (
@@ -1010,7 +994,6 @@
 	},
 /obj/effect/mapping_helpers/airlock/access/all/service/janitor,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/central/greater)
 "TV" = (
@@ -1030,13 +1013,6 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/item/wrench,
 /turf/open/floor/plasteel/rivets,
-/area/maintenance/central/greater)
-"VV" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/plumbing/synthesizer{
-	reagent_id = /datum/reagent/water
-	},
-/turf/open/floor/catwalk_floor,
 /area/maintenance/central/greater)
 "Ws" = (
 /obj/structure/disposalpipe/segment{
@@ -3945,7 +3921,7 @@ oJ
 oJ
 oJ
 px
-VV
+Nu
 Nu
 px
 eS
@@ -4098,7 +4074,7 @@ px
 el
 Nu
 Tm
-Bj
+eS
 oJ
 oJ
 oJ
@@ -4148,7 +4124,7 @@ oJ
 oJ
 oJ
 oJ
-Bj
+eS
 oJ
 oJ
 oJ
@@ -4198,7 +4174,7 @@ oJ
 oJ
 oJ
 oJ
-Bj
+eS
 oJ
 oJ
 oJ

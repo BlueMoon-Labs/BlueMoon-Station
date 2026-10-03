@@ -146,6 +146,19 @@
 	},
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/medical)
+"lR" = (
+/obj/structure/cable/yellow{
+	icon_state = "2-8"
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 10
+	},
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer4{
+	dir = 1
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/medical)
 "mL" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/closet/firecloset,
@@ -240,19 +253,6 @@
 "pU" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/rivets,
-/area/maintenance/department/science)
-"pZ" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-8"
-	},
-/turf/open/floor/catwalk_floor,
 /area/maintenance/department/science)
 "qQ" = (
 /obj/effect/decal/cleanable/dirt,
@@ -417,20 +417,6 @@
 /obj/machinery/light/small/directional/south,
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/department/science)
-"Hc" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-8"
-	},
-/obj/structure/railing,
-/turf/open/floor/catwalk_floor,
-/area/maintenance/department/science)
 "He" = (
 /obj/machinery/door/airlock/maintenance_hatch{
 	name = "Science Maintenance Hatch"
@@ -548,6 +534,22 @@
 /obj/machinery/light/small/directional/south,
 /turf/open/floor/grass,
 /area/asteroid/tramstation)
+"NF" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 5
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 5
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-4"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/science)
 "OG" = (
 /obj/structure/flora/ausbushes/brflowers,
 /turf/open/floor/grass,
@@ -578,6 +580,20 @@
 "RG" = (
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/science)
+"Si" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/structure/railing,
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/science)
 "Tq" = (
 /obj/modular_map_root/tramstation{
 	key = "medsciupper_attachment_a";
@@ -588,15 +604,6 @@
 "TG" = (
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/medical)
-"TJ" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
-/turf/open/floor/catwalk_floor,
-/area/maintenance/department/science)
 "TR" = (
 /obj/structure/cable/yellow{
 	icon_state = "0-2"
@@ -623,6 +630,19 @@
 	},
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/science)
+"UZ" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 6
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 6
+	},
+/obj/structure/cable/yellow{
+	icon_state = "2-4"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/science)
 "Vk" = (
 /obj/structure/flora/ausbushes/brflowers,
 /obj/structure/flora/ausbushes/grassybush,
@@ -632,17 +652,6 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/grille,
 /turf/open/floor/plasteel/rivets,
-/area/maintenance/department/medical)
-"Wn" = (
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 6
-	},
-/turf/open/floor/catwalk_floor,
 /area/maintenance/department/medical)
 "Yd" = (
 /obj/machinery/door/airlock/external{
@@ -1295,7 +1304,7 @@ LX
 LX
 LX
 LX
-Wn
+lR
 Bi
 kc
 kc
@@ -1856,7 +1865,7 @@ pU
 pU
 pU
 pU
-TJ
+UZ
 Uy
 Uy
 Uy
@@ -1906,7 +1915,7 @@ pU
 pU
 pU
 pa
-vt
+NF
 Tq
 im
 im
@@ -2251,7 +2260,7 @@ Lc
 Lc
 Gy
 wB
-Hc
+Si
 oj
 oj
 oj
@@ -2444,6 +2453,6 @@ Lc
 Lc
 Lc
 Lc
-pZ
+FJ
 wB
 "}

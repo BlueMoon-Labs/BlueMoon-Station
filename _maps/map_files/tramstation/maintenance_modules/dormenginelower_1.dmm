@@ -9,11 +9,6 @@
 /obj/effect/turf_decal/weather/sand/plating,
 /turf/open/floor/plating/airless,
 /area/asteroid/tramstation)
-"aX" = (
-/obj/machinery/duct,
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/catwalk_floor,
-/area/maintenance/central/lesser)
 "cz" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/railing,
@@ -43,7 +38,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "ef" = (
@@ -129,7 +123,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "iL" = (
@@ -147,7 +140,6 @@
 	icon_state = "1-4"
 	},
 /obj/effect/spawner/lootdrop/trashbin,
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "iN" = (
@@ -157,15 +149,6 @@
 	},
 /turf/open/floor/plating/airless,
 /area/asteroid/tramstation)
-"iS" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
-/turf/open/floor/catwalk_floor,
-/area/maintenance/department/crew_quarters/dorms)
 "je" = (
 /obj/effect/turf_decal/weather/sand/plating,
 /obj/structure/cable{
@@ -231,7 +214,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/central/lesser)
 "mu" = (
@@ -251,7 +233,6 @@
 	icon_state = "4-8"
 	},
 /obj/effect/spawner/lootdrop/trashbin,
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "mD" = (
@@ -301,7 +282,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/central/lesser)
 "pv" = (
@@ -428,7 +408,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-8"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "tt" = (
@@ -471,16 +450,6 @@
 "wn" = (
 /turf/template_noop,
 /area/maintenance/central/lesser)
-"ws" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/disposalpipe/segment,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
-/turf/open/floor/catwalk_floor,
-/area/maintenance/central/lesser)
 "yz" = (
 /obj/effect/turf_decal/stripes/yellow/end,
 /obj/machinery/power/deck_relay,
@@ -492,52 +461,6 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
-/area/maintenance/central/lesser)
-"yB" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/obj/structure/cable/yellow{
-	icon_state = "2-8"
-	},
-/turf/open/floor/catwalk_floor,
-/area/maintenance/central/lesser)
-"yL" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-8"
-	},
-/turf/open/floor/catwalk_floor,
-/area/maintenance/department/crew_quarters/dorms)
-"yQ" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/disposalpipe/segment{
-	dir = 9
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 9
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 9
-	},
-/obj/structure/cable/yellow{
-	icon_state = "1-8"
-	},
-/obj/machinery/duct,
-/turf/open/floor/catwalk_floor,
 /area/maintenance/central/lesser)
 "zf" = (
 /obj/effect/decal/cleanable/dirt,
@@ -596,7 +519,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/central/lesser)
 "Cw" = (
@@ -609,6 +531,15 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/central/lesser)
+"CF" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/crew_quarters/dorms)
 "CG" = (
 /obj/machinery/light/small/directional/east,
 /obj/effect/decal/cleanable/dirt,
@@ -712,17 +643,6 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/central/lesser)
-"GU" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/disposalpipe/segment,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
-/obj/machinery/duct,
-/turf/open/floor/catwalk_floor,
-/area/maintenance/central/lesser)
 "Hm" = (
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
@@ -814,7 +734,6 @@
 	name = "Maintenance Hatch"
 	},
 /obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "Jt" = (
@@ -890,23 +809,6 @@
 /obj/effect/mapping_helpers/airlock/access/all/engineering/external,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/central/lesser)
-"LI" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/obj/machinery/duct,
-/turf/open/floor/catwalk_floor,
-/area/maintenance/central/lesser)
 "Mo" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/power/apc/auto_name/south,
@@ -922,16 +824,6 @@
 /obj/effect/decal/cleanable/cobweb/cobweb2,
 /turf/open/floor/plating,
 /area/template_noop)
-"MO" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
-/obj/machinery/duct,
-/turf/open/floor/catwalk_floor,
-/area/maintenance/department/crew_quarters/dorms)
 "Nb" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/table,
@@ -963,13 +855,6 @@
 	},
 /turf/open/floor/catwalk_floor,
 /area/maintenance/central/lesser)
-"NS" = (
-/obj/effect/turf_decal/weather/sand/plating,
-/obj/structure/cable{
-	icon_state = "0-4"
-	},
-/turf/open/floor/plating/airless,
-/area/asteroid/tramstation)
 "NU" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/spawner/lootdrop/trashbin,
@@ -1019,7 +904,6 @@
 	lootcount = 2;
 	loot = list(/obj/item/clothing/head/cone = 7, /obj/item/clothing/suit/caution = 3, /obj/item/reagent_containers/rag = 2, /obj/item/reagent_containers/glass/bucket = 2, /obj/effect/decal/cleanable/blood/old = 2, /obj/structure/mopbucket = 2)
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "Pc" = (
@@ -1032,7 +916,6 @@
 	},
 /obj/effect/mapping_helpers/airlock/access/all/service/janitor,
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/central/lesser)
 "Pm" = (
@@ -1041,11 +924,17 @@
 /obj/structure/window,
 /turf/open/floor/plating,
 /area/maintenance/central/lesser)
-"Px" = (
+"PJ" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/power/port_gen/pacman{
+	sheets = 15
+	},
+/turf/open/floor/plating,
+/area/maintenance/central/lesser)
+"QI" = (
 /obj/machinery/door/airlock/maintenance_hatch{
 	name = "Restroom Maintenance Access"
 	},
-/obj/machinery/duct,
 /obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 4
@@ -1054,17 +943,10 @@
 	dir = 4
 	},
 /obj/structure/cable/yellow{
-	icon_state = "0-8"
+	icon_state = "4-8"
 	},
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/department/crew_quarters/dorms)
-"PJ" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/power/port_gen/pacman{
-	sheets = 15
-	},
-/turf/open/floor/plating,
-/area/maintenance/central/lesser)
 "QN" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
@@ -1080,7 +962,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/crew_quarters/dorms)
 "Rx" = (
@@ -1088,13 +969,6 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
-	},
-/obj/effect/decal/cleanable/dirt,
-/turf/open/floor/catwalk_floor,
-/area/maintenance/central/lesser)
-"Sa" = (
-/obj/machinery/plumbing/synthesizer{
-	reagent_id = /datum/reagent/water
 	},
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/catwalk_floor,
@@ -1126,20 +1000,6 @@
 	},
 /turf/open/floor/catwalk_floor,
 /area/maintenance/central/lesser)
-"TH" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/obj/machinery/duct,
-/turf/open/floor/catwalk_floor,
-/area/maintenance/department/crew_quarters/dorms)
 "TX" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/decal/cleanable/cobweb,
@@ -1158,6 +1018,25 @@
 	},
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/central/lesser)
+"UJ" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "2-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "2-4"
 	},
 /turf/open/floor/catwalk_floor,
 /area/maintenance/central/lesser)
@@ -1491,12 +1370,12 @@ dm
 dm
 dm
 iL
-MO
-MO
-MO
-MO
-MO
-MO
+dm
+dm
+dm
+dm
+dm
+dm
 Rh
 er
 AR
@@ -1526,14 +1405,14 @@ sx
 sx
 sx
 sx
-Px
+QI
 sx
 sx
 sx
 sx
 sx
 sx
-TH
+go
 er
 AR
 AR
@@ -1569,7 +1448,7 @@ sx
 sx
 sx
 sx
-TH
+go
 er
 AR
 AR
@@ -1605,7 +1484,7 @@ sx
 sx
 sx
 sx
-TH
+go
 er
 AR
 AR
@@ -1641,7 +1520,7 @@ sx
 sx
 sx
 sx
-TH
+go
 er
 AR
 AR
@@ -1677,7 +1556,7 @@ sx
 sx
 sx
 sx
-TH
+go
 er
 AR
 AR
@@ -1713,7 +1592,7 @@ sx
 sx
 sx
 sx
-TH
+go
 er
 AR
 AR
@@ -1749,7 +1628,7 @@ sx
 sx
 sx
 sx
-TH
+go
 er
 AR
 AR
@@ -1785,7 +1664,7 @@ sx
 sx
 lM
 tt
-TH
+go
 er
 AR
 AR
@@ -1821,7 +1700,7 @@ sx
 sx
 Zd
 tt
-TH
+go
 Bk
 AR
 AR
@@ -1893,7 +1772,7 @@ sx
 sx
 Ve
 tt
-TH
+go
 er
 er
 er
@@ -1912,7 +1791,7 @@ sx
 sx
 sx
 lG
-yL
+dt
 tt
 hX
 sx
@@ -1930,7 +1809,7 @@ sx
 qS
 tt
 ts
-MO
+dm
 Rh
 er
 er
@@ -1968,9 +1847,9 @@ sx
 sx
 sx
 ts
-MO
-MO
-MO
+dm
+dm
+dm
 Rh
 er
 "}
@@ -2007,7 +1886,7 @@ sx
 sx
 sx
 sx
-TH
+go
 er
 "}
 (21,1,1) = {"
@@ -2043,7 +1922,7 @@ sx
 sx
 sx
 sx
-TH
+go
 er
 "}
 (22,1,1) = {"
@@ -2079,7 +1958,7 @@ sx
 sx
 sx
 sx
-TH
+go
 er
 "}
 (23,1,1) = {"
@@ -2115,7 +1994,7 @@ sx
 sx
 sx
 sx
-TH
+go
 er
 "}
 (24,1,1) = {"
@@ -2151,7 +2030,7 @@ sx
 sx
 sx
 sx
-TH
+go
 er
 "}
 (25,1,1) = {"
@@ -2184,7 +2063,7 @@ sx
 sx
 sx
 sx
-iS
+CF
 dm
 OO
 dt
@@ -2222,7 +2101,7 @@ sx
 sx
 JJ
 tt
-TH
+go
 tt
 er
 "}
@@ -2294,7 +2173,7 @@ sx
 sx
 sx
 tt
-TH
+go
 tt
 er
 "}
@@ -2330,7 +2209,7 @@ sx
 sx
 sx
 tt
-TH
+go
 Nb
 er
 "}
@@ -2366,7 +2245,7 @@ sx
 sx
 sx
 tt
-TH
+go
 mD
 er
 "}
@@ -2402,7 +2281,7 @@ sx
 sx
 sx
 tt
-TH
+go
 Wu
 er
 "}
@@ -2474,7 +2353,7 @@ sx
 sx
 sx
 tt
-TH
+go
 tt
 er
 "}
@@ -2510,7 +2389,7 @@ sx
 sx
 sx
 tt
-TH
+go
 tt
 er
 "}
@@ -2546,7 +2425,7 @@ sx
 sx
 sx
 tt
-TH
+go
 tt
 er
 "}
@@ -2582,7 +2461,7 @@ sx
 sx
 sx
 NU
-TH
+go
 Os
 er
 "}
@@ -2688,7 +2567,7 @@ sx
 sx
 sx
 wn
-ws
+Nt
 Nt
 ms
 BN
@@ -2727,7 +2606,7 @@ wn
 wn
 wn
 wn
-LI
+Uj
 WY
 "}
 (41,1,1) = {"
@@ -2763,7 +2642,7 @@ sx
 sx
 sx
 wn
-LI
+Uj
 WY
 "}
 (42,1,1) = {"
@@ -2799,7 +2678,7 @@ sx
 sx
 sx
 sx
-LI
+Uj
 WY
 "}
 (43,1,1) = {"
@@ -2835,7 +2714,7 @@ sx
 sx
 sx
 sx
-LI
+Uj
 WY
 "}
 (44,1,1) = {"
@@ -2871,7 +2750,7 @@ sx
 sx
 sx
 sx
-LI
+Uj
 WY
 "}
 (45,1,1) = {"
@@ -2906,8 +2785,8 @@ sx
 DC
 Nt
 Nt
-GU
-yQ
+Nt
+pb
 WY
 "}
 (46,1,1) = {"
@@ -2977,8 +2856,8 @@ Uj
 WY
 WY
 WY
-Sa
-aX
+ni
+ni
 sD
 WY
 "}
@@ -3160,7 +3039,7 @@ AR
 Ic
 Ic
 Ic
-NS
+je
 "}
 (53,1,1) = {"
 sx
@@ -3760,7 +3639,7 @@ sx
 sx
 sx
 XD
-yB
+UJ
 Mo
 sx
 sx
@@ -4172,7 +4051,7 @@ sx
 "}
 (81,1,1) = {"
 sx
-ws
+Nt
 Nt
 pb
 sx

@@ -396,4 +396,30 @@
 	for(var/map_path in map_paths)
 		TEST_ASSERT_NOTNULL(text2path(map_path), "Нет типа [map_path], на который ссылается карта")
 
+/// На Трамстанции каждый станционный APC стоит в одной сети со SMES или солнечными панелями: стыки модулей карты не рвут магистраль.
+/datum/unit_test/tramstation_apcs_reach_power
+	requires_full_map = TRUE
+
+/datum/unit_test/tramstation_apcs_reach_power/Run()
+	if(SSmapping.config.map_name != "Tramstation")
+		return
+	var/list/relays = SSmachines.get_machines_by_type(/obj/machinery/power/deck_relay)
+	for(var/obj/machinery/power/deck_relay/relay as anything in relays)
+		relay.find_relays()
+	for(var/obj/machinery/power/deck_relay/relay as anything in relays)
+		relay.refresh()
+
+	var/list/unfed = list()
+	for(var/obj/machinery/power/apc/apc as anything in GLOB.apcs_list)
+		if(!is_station_level(apc.z))
+			continue
+		var/fed = FALSE
+		for(var/obj/machinery/power/node as anything in apc.terminal?.powernet?.nodes)
+			if(istype(node, /obj/machinery/power/smes) || istype(node, /obj/machinery/power/solar))
+				fed = TRUE
+				break
+		if(!fed)
+			unfed += "[get_area_name(apc, TRUE)] ([apc.x],[apc.y],[apc.z])"
+	TEST_ASSERT(!length(unfed), "APC без источника в своей сети ([length(unfed)]): [unfed.Join(", ")]")
+
 #undef TEST_TRAM_ID

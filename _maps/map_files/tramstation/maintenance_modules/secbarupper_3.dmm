@@ -1,25 +1,4 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-"ax" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/door/airlock/maintenance_hatch{
-	name = "Security Maintenance Hatch"
-	},
-/obj/effect/mapping_helpers/airlock/unres{
-	dir = 4
-	},
-/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
-/obj/structure/cable/yellow{
-	icon_state = "0-4"
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/obj/modular_map_connector,
-/turf/open/floor/catwalk_floor,
-/area/maintenance/department/security)
 "bq" = (
 /obj/structure/lattice,
 /turf/open/openspace,
@@ -69,9 +48,6 @@
 /area/maintenance/department/security)
 "fH" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/plumbing/synthesizer{
-	reagent_id = /datum/reagent/water
-	},
 /obj/effect/decal/cleanable/cobweb,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/security)
@@ -98,7 +74,6 @@
 	name = "MULE CROSSING - LOOK BOTH WAYS";
 	pixel_y = 32
 	},
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/security)
 "jE" = (
@@ -256,20 +231,6 @@
 "BE" = (
 /turf/open/floor/plating,
 /area/maintenance/department/security)
-"BU" = (
-/obj/structure/cable/yellow{
-	icon_state = "0-8"
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/obj/machinery/duct,
-/turf/open/floor/catwalk_floor,
-/area/maintenance/department/security)
 "BV" = (
 /turf/open/floor/plating/asteroid,
 /area/asteroid/tramstation)
@@ -291,7 +252,6 @@
 /area/asteroid/tramstation)
 "Ds" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/security)
 "DH" = (
@@ -322,6 +282,27 @@
 /obj/structure/flora/ausbushes/grassybush,
 /turf/open/floor/grass,
 /area/asteroid/tramstation)
+"EZ" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Security Maintenance Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/unres{
+	dir = 4
+	},
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/modular_map_connector,
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/security)
 "Fe" = (
 /turf/open/openspace,
 /area/maintenance/department/security)
@@ -484,20 +465,6 @@
 "LZ" = (
 /turf/closed/wall/r_wall,
 /area/maintenance/department/security)
-"Mf" = (
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/obj/machinery/duct,
-/turf/open/floor/catwalk_floor,
-/area/maintenance/department/security)
 "MS" = (
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
@@ -639,7 +606,6 @@
 	dir = 4
 	},
 /obj/effect/spawner/lootdrop/trashbin,
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/security)
 "Vh" = (
@@ -669,7 +635,6 @@
 	name = "Water Access Maintenance Hatch"
 	},
 /obj/effect/mapping_helpers/airlock/access/all/service/janitor,
-/obj/machinery/duct,
 /turf/open/floor/catwalk_floor,
 /area/maintenance/department/security)
 "Yt" = (
@@ -725,7 +690,7 @@ LZ
 LZ
 LZ
 LZ
-ax
+EZ
 Yy
 Yy
 Yy
@@ -2011,7 +1976,7 @@ Sv
 Yv
 Ds
 Yp
-Mf
+MS
 QV
 Yy
 Yy
@@ -2051,7 +2016,7 @@ Sv
 xV
 lY
 Sv
-Mf
+MS
 Yy
 Yy
 Yy
@@ -2171,7 +2136,7 @@ Sv
 Sv
 Sv
 Sv
-BU
+MS
 Yy
 Yy
 Yy
