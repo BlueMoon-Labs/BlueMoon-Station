@@ -328,6 +328,7 @@
 #include "turf_flags.dm"
 #include "turf_reservation_flag.dm"
 #include "unit_test.dm"
+#include "vanguard_start_landmark.dm"
 #include "vending_product_enumeration.dm"
 #include "vending_stock_keys.dm"
 #include "verb_manager.dm"
