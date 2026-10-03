@@ -152,7 +152,7 @@
 
 /obj/structure/bed/dildo_machine/process(delta_time)
 	timer -= delta_time
-	if(timer >= 0) // chech interval
+	if(timer > 0)
 		return
 	else
 		timer = speed_delay[mode]
