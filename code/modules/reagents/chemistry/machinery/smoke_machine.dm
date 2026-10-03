@@ -1,4 +1,4 @@
-#define REAGENTS_BASE_VOLUME 100 // actual volume is REAGENTS_BASE_VOLUME plus REAGENTS_BASE_VOLUME * rating for each matterbin
+#define REAGENTS_BASE_VOLUME 50 // actual volume is REAGENTS_BASE_VOLUME plus REAGENTS_BASE_VOLUME * rating for each matterbin
 
 /obj/machinery/smoke_machine
 	name = "smoke machine"
@@ -8,18 +8,18 @@
 	density = TRUE
 	circuit = /obj/item/circuitboard/machine/smoke_machine
 
-	var/efficiency = 10
+	var/efficiency = 1
 	var/on = FALSE
-	var/cooldown = 0
+	//var/cooldown = 0
 	var/screen = "home"
-	var/useramount = 30 // Last used amount
-	var/setting = 1 // displayed range is 3 * setting
-	var/max_range = 3 // displayed max range is 3 * max range
+	//var/useramount = 30 // Last used amount
+	var/setting = 1 // displayed range is 2 * setting
+	var/max_range = 1 // displayed max range
 
-/datum/effect_system/smoke_spread/chem/smoke_machine/set_up(datum/reagents/carry, setting=1, efficiency=10, loc, silent=FALSE)
+/datum/effect_system/smoke_spread/chem/smoke_machine/set_up(datum/reagents/carry, setting=1, efficiency=1, loc, silent=FALSE)
 	amount = setting
-	carry.copy_to(chemholder, 20)
-	carry.remove_any(amount * 16 / efficiency)
+	carry.copy_to(chemholder, 12)
+	carry.remove_any((amount ** 2) * 8 / efficiency)
 	location = loc
 
 /datum/effect_system/smoke_spread/chem/smoke_machine
@@ -32,8 +32,7 @@
 /obj/machinery/smoke_machine/Initialize(mapload)
 	. = ..()
 	create_reagents(REAGENTS_BASE_VOLUME)
-	for(var/obj/item/stock_parts/matter_bin/B in component_parts)
-		reagents.maximum_volume += REAGENTS_BASE_VOLUME * B.rating
+	RefreshParts()
 	AddComponent(/datum/component/plumbing/simple_demand)
 
 /obj/machinery/smoke_machine/ComponentInitialize()
@@ -53,22 +52,26 @@
 		icon_state = "smoke1"
 
 /obj/machinery/smoke_machine/RefreshParts()
-	var/new_volume = REAGENTS_BASE_VOLUME
+	var/new_volume = 0
 	for(var/obj/item/stock_parts/matter_bin/B in component_parts)
 		new_volume += REAGENTS_BASE_VOLUME * B.rating
+	new_volume = max(new_volume, REAGENTS_BASE_VOLUME)
 	if(!reagents)
 		create_reagents(new_volume)
 	reagents.maximum_volume = new_volume
 	if(new_volume < reagents.total_volume)
 		reagents.reaction(loc, TOUCH) // if someone manages to downgrade it without deconstructing
 		reagents.clear_reagents()
-	efficiency = 9
+	efficiency = 0
 	for(var/obj/item/stock_parts/capacitor/C in component_parts)
 		efficiency += C.rating
-	max_range = 1
+	efficiency = max(efficiency, 1)
+	max_range = 0
 	for(var/obj/item/stock_parts/manipulator/M in component_parts)
 		max_range += M.rating
-	max_range = max(3, max_range)
+	max_range = max(1, max_range)
+	setting = min(setting, max_range)
+	SStgui.update_uis(src)
 
 /obj/machinery/smoke_machine/process()
 	..()
@@ -81,9 +84,16 @@
 	var/turf/T = get_turf(src)
 	var/smoke_test = locate(/obj/effect/particle_effect/smoke) in T
 	if(on && !smoke_test)
+		var/required = ((setting * 2) ** 2) * 8 / max(efficiency, 1)
+		if(reagents.total_volume < required)
+			on = FALSE
+			visible_message("<span class='warning'>[src] гаснет - недостаточно реагентов.</span>")
+			playsound(src, 'sound/machines/buzz-sigh.ogg', 30, TRUE)
+			update_icon()
+			return
 		update_icon()
 		var/datum/effect_system/smoke_spread/chem/smoke_machine/smoke = new()
-		smoke.set_up(reagents, setting*3, efficiency, T)
+		smoke.set_up(reagents, setting*2, efficiency, T)
 		smoke.start()
 
 /obj/machinery/smoke_machine/attackby(obj/item/I, mob/user, params)
@@ -123,7 +133,7 @@
 		TankCurrentVolume += R.volume
 	data["TankContents"] = TankContents
 	data["isTankLoaded"] = reagents.total_volume ? TRUE : FALSE
-	data["TankCurrentVolume"] = reagents.total_volume ? reagents.total_volume : null
+	data["TankCurrentVolume"] = TankCurrentVolume || null
 	data["TankMaxVolume"] = reagents.maximum_volume
 	data["active"] = on
 	data["setting"] = setting
