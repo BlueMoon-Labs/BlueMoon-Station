@@ -102,6 +102,7 @@
 #include "window_airbag.dm"
 #include "bespoke_id.dm"
 #include "binary_insert.dm"
+#include "blob_multiz.dm"
 #include "blood_mind_reference.dm"
 #include "bodybag_open_sprite.dm"
 // #include "bloody_footprints.dm"

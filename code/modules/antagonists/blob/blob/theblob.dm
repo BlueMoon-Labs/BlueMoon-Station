@@ -150,10 +150,14 @@
 /obj/structure/blob/proc/expand(turf/T = null, controller = null, expand_reaction = 1)
 	if(!T)
 		var/list/dirs = list(1,2,4,8)
-		for(var/i = 1 to 4)
+		if(get_vertical_expand_turf(UP))
+			dirs += UP
+		if(get_vertical_expand_turf(DOWN))
+			dirs += DOWN
+		while(length(dirs))
 			var/dirn = pick(dirs)
 			dirs.Remove(dirn)
-			T = get_step(src, dirn)
+			T = get_step_multiz(src, dirn)
 			if(!(locate(/obj/structure/blob) in T))
 				break
 			else
@@ -192,6 +196,37 @@
 			return null
 	else
 		blob_attack_animation(T, controller) //if we can't, animate that we attacked
+	return null
+
+/// Турф соседнего этажа, куда блоб прорастает сквозь дыру в полу: вниз из своей дыры, вверх в дыру над собой.
+/obj/structure/blob/proc/get_vertical_expand_turf(direction)
+	var/turf/our_turf = loc
+	if(!isturf(our_turf))
+		return null
+	var/turf/target = get_step_multiz(our_turf, direction)
+	if(!target)
+		return null
+	var/turf/hole = (direction == DOWN) ? our_turf : target
+	if(!isopenspaceturf(hole))
+		return null
+	//Не zPassOut(): он не выпускает прикрученное, а блоб прикручен.
+	var/blocker_flag = (direction == DOWN) ? BLOCK_Z_OUT_DOWN : BLOCK_Z_OUT_UP
+	for(var/obj/blocker in our_turf)
+		if(blocker.obj_flags & blocker_flag)
+			return null
+	if(!target.zPassIn(src, direction, our_turf))
+		return null
+	return target
+
+/// Блоб соседнего этажа, который прорастает в target сквозь дыру в полу.
+/proc/get_vertical_blob_expander(turf/target)
+	for(var/direction in list(UP, DOWN))
+		var/turf/neighbour = get_step_multiz(target, direction)
+		if(!neighbour)
+			continue
+		var/obj/structure/blob/neighbour_blob = locate() in neighbour
+		if(neighbour_blob?.get_vertical_expand_turf(REVERSE_DIR(direction)) == target)
+			return neighbour_blob
 	return null
 
 /obj/structure/blob/emp_act(severity)
