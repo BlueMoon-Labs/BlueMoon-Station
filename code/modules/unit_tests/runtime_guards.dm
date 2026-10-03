@@ -127,3 +127,13 @@
 	weapon.force = 5
 	car.attacked_by(weapon, attacker)
 	TEST_ASSERT_NULL(LAZYACCESS(car.occupants, attacker), "Атакующий не должен был оказаться в occupants")
+
+/// Решётка на космосе уровня с грунтом в базовом турфе не рантаймит: ScrapeAway меняет космос на грунт посреди прока.
+/datum/unit_test/space_lattice_on_ground_baseturf/Run()
+	var/turf/spot = run_loc_floor_bottom_left
+	spot.ChangeTurf(/turf/open/space, list(/turf/open/floor/plating/asteroid/airless))
+	TEST_ASSERT(isspaceturf(spot), "Не удалось положить космос для проверки")
+	spot.ReplaceWithLattice()
+	TEST_ASSERT(istype(spot, /turf/open/floor/plating/asteroid/airless), "Под решёткой должен остаться грунт базового турфа")
+	TEST_ASSERT_NOTNULL(locate(/obj/structure/lattice) in spot, "Решётка не появилась")
+	spot.ChangeTurf(/turf/open/floor/plasteel)

@@ -361,6 +361,9 @@
 	var/dest_y = destination_y
 	var/dest_z = destination_z
 	..()
+	// На уровне с грунтом в базовом турфе ScrapeAway уже превратил src в грунт, а у него этих переменных нет.
+	if(!isspaceturf(src))
+		return
 	destination_x = dest_x
 	destination_y = dest_y
 	destination_z = dest_z
