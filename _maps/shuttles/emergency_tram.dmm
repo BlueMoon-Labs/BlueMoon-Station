@@ -27,13 +27,13 @@
 	pixel_y = 27
 	},
 /obj/machinery/camera/autoname{
-	dir = 4
+	dir = 8
 	},
 /turf/open/floor/mineral/titanium,
 /area/shuttle/escape)
 "fl" = (
 /obj/machinery/camera/autoname{
-	dir = 4
+	dir = 8
 	},
 /turf/open/floor/mineral/titanium/tiled/white,
 /area/shuttle/escape)
@@ -275,7 +275,9 @@
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/escape)
 "Dn" = (
-/obj/machinery/camera/autoname,
+/obj/machinery/camera/autoname{
+	dir = 1
+	},
 /turf/open/floor/mineral/titanium/white,
 /area/shuttle/escape)
 "Fh" = (

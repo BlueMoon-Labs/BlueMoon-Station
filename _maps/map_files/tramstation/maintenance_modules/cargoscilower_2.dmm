@@ -602,7 +602,7 @@
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/camera{
 	c_tag = "Maintenance - Escape Pod";
-	dir = 9
+	dir = 6
 	},
 /obj/effect/turf_decal/trimline/neutral/filled/corner{
 	dir = 8

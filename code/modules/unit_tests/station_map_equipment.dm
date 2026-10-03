@@ -62,3 +62,25 @@
 				has_alarm = TRUE
 				break
 		TEST_ASSERT(has_alarm, "У камеры [chamber_type] нет своей алармы")
+
+/// Камеры портированных карт висят на стене: у tg dir камеры - сторона стены, у нас - сторона взгляда.
+/datum/unit_test/ported_map_cameras_on_walls
+	requires_full_map = TRUE
+
+/datum/unit_test/ported_map_cameras_on_walls/Run()
+	if(!(SSmapping.config.map_name in list("Tramstation", "NorthStar")))
+		return
+	var/list/mount_side = list("[NORTH]" = SOUTH, "[SOUTH]" = NORTH, "[EAST]" = WEST, "[WEST]" = EAST, "[SOUTHEAST]" = NORTH, "[SOUTHWEST]" = SOUTH, "[NORTHEAST]" = WEST, "[NORTHWEST]" = EAST)
+	var/list/hanging = list()
+	for(var/obj/machinery/camera/camera as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/camera))
+		if(!is_station_level(camera.z) || camera.pixel_x || camera.pixel_y)
+			continue
+		var/turf/mount = get_step(camera, mount_side["[camera.dir]"])
+		var/mounted = isclosedturf(mount)
+		for(var/obj/support in mount)
+			if(support.density || istype(support, /obj/machinery/door))
+				mounted = TRUE
+				break
+		if(!mounted)
+			hanging += "[camera.c_tag || camera.name] ([camera.x],[camera.y],[camera.z]) dir [camera.dir]"
+	TEST_ASSERT(!length(hanging), "Камеры без стены за спиной: [hanging.Join(", ")]")

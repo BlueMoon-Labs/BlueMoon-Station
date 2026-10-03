@@ -1,4 +1,11 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aaa" = (
+/obj/item/hilbertshotel/ghostdojo,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/turf/open/floor/carpet,
+/area/hallway/secondary/entry)
 "aab" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 4
@@ -321,7 +328,7 @@
 	c_tag = "Medbay - Treatment Center";
 	name = "medbay camera";
 	network = list("ss13","medbay");
-	dir = 2
+	dir = 1
 	},
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 9
@@ -728,7 +735,7 @@
 /obj/machinery/atmospherics/pipe/simple/orange/visible,
 /obj/machinery/camera{
 	c_tag = "Supermatter Foyer Cam #2";
-	dir = 8;
+	dir = 4;
 	network = list("ss13","engine")
 	},
 /obj/machinery/meter,
@@ -2503,7 +2510,7 @@
 /obj/effect/turf_decal/tile/purple/opposingcorners{
 	dir = 4
 	},
-/obj/structure/chair/sofa/corp/right,
+/obj/structure/chair/sofa/corp/left,
 /turf/open/floor/plasteel/dark,
 /area/service/barbershop)
 "azA" = (
@@ -2752,12 +2759,6 @@
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel/dark,
 /area/security/office)
-"aCC" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/turf/open/floor/carpet,
-/area/hallway/secondary/entry)
 "aCJ" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/turf_decal/trimline/brown/filled/line{
@@ -4055,7 +4056,7 @@
 	c_tag = "Medbay - Treatment Center";
 	name = "medbay camera";
 	network = list("ss13","medbay");
-	dir = 2
+	dir = 1
 	},
 /obj/machinery/firealarm/directional/south,
 /obj/machinery/self_actualization_device,
@@ -4199,7 +4200,7 @@
 	},
 /obj/machinery/camera{
 	c_tag = "Engineering Foyer #2";
-	dir = 4;
+	dir = 8;
 	network = list("ss13","engine")
 	},
 /turf/open/floor/plasteel/dark/textured/large,
@@ -5429,7 +5430,7 @@
 /turf/open/floor/pod/light,
 /area/maintenance/floor4/port/fore)
 "bdx" = (
-/obj/structure/chair/sofa/corp/left,
+/obj/structure/chair/sofa/corp/right,
 /turf/open/floor/carpet,
 /area/command/heads_quarters/captain)
 "bdz" = (
@@ -7064,7 +7065,7 @@
 "buJ" = (
 /obj/machinery/camera{
 	c_tag = "Atmospherics Cam #9";
-	dir = 4;
+	dir = 8;
 	network = list("ss13","engine")
 	},
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
@@ -8504,7 +8505,7 @@
 /obj/structure/closet/radiation,
 /obj/machinery/camera{
 	c_tag = "Atmospherics Cam #8";
-	dir = 4;
+	dir = 8;
 	network = list("ss13","engine")
 	},
 /turf/open/floor/plasteel/dark,
@@ -12573,7 +12574,7 @@
 /turf/open/floor/plasteel,
 /area/engineering/atmos/hfr_room)
 "cve" = (
-/obj/structure/chair/sofa/corp/right,
+/obj/structure/chair/sofa/corp/left,
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer2{
 	dir = 8
 	},
@@ -20319,7 +20320,7 @@
 /obj/effect/turf_decal/box,
 /obj/machinery/camera{
 	c_tag = "Atmospherics Office Cam #2";
-	dir = 8;
+	dir = 4;
 	network = list("ss13","engine")
 	},
 /turf/open/floor/plasteel/dark/textured/large,
@@ -21338,7 +21339,7 @@
 	},
 /area/hallway/secondary/exit/departure_lounge)
 "ejg" = (
-/obj/structure/chair/sofa/corp/left{
+/obj/structure/chair/sofa/corp/right{
 	dir = 4
 	},
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
@@ -26740,7 +26741,7 @@
 	},
 /area/engineering/lobby)
 "flw" = (
-/obj/structure/chair/sofa/corp/right,
+/obj/structure/chair/sofa/corp/left,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 4
 	},
@@ -28573,7 +28574,7 @@
 /turf/open/floor/plasteel,
 /area/security/prison)
 "fCB" = (
-/obj/structure/chair/sofa/corp/left{
+/obj/structure/chair/sofa/corp/right{
 	dir = 8
 	},
 /obj/effect/turf_decal/siding/white{
@@ -40996,7 +40997,7 @@
 /turf/open/floor/plasteel,
 /area/commons/fitness/recreation)
 "hVn" = (
-/obj/structure/chair/sofa/corp/left{
+/obj/structure/chair/sofa/corp/right{
 	desc = "Looks like someone threw it out. Covered in donut crumbs.";
 	name = "couch"
 	},
@@ -47968,6 +47969,7 @@
 	dir = 9
 	},
 /obj/machinery/camera/preset/toxins{
+	dir = 1;
 	c_tag = "Supermatter Waste";
 	light_range = 0;
 	network = list("waste","engine")
@@ -48216,7 +48218,7 @@
 /area/maintenance/floor1/starboard/fore)
 "jlY" = (
 /obj/machinery/light_switch/directional/west,
-/obj/structure/chair/sofa/corp/right{
+/obj/structure/chair/sofa/corp/left{
 	dir = 4
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
@@ -49017,7 +49019,7 @@
 "jts" = (
 /obj/machinery/camera{
 	c_tag = "Atmos Tank #3 - Mixed Air";
-	dir = 1;
+	dir = 2;
 	network = list("ss13","engine")
 	},
 /turf/open/floor/engine/air,
@@ -51544,7 +51546,7 @@
 	c_tag = "Medbay - Treatment Center";
 	name = "medbay camera";
 	network = list("ss13","medbay");
-	dir = 2
+	dir = 1
 	},
 /turf/open/floor/plasteel/white,
 /area/medical/treatment_center)
@@ -52116,7 +52118,7 @@
 "jWh" = (
 /obj/machinery/camera{
 	c_tag = "Technical Storage";
-	dir = 1;
+	dir = 2;
 	network = list("ss13","engine")
 	},
 /obj/effect/turf_decal/stripes/white,
@@ -54054,7 +54056,7 @@
 /turf/open/floor/wood,
 /area/service/theater)
 "kpA" = (
-/obj/structure/chair/sofa/corp/right{
+/obj/structure/chair/sofa/corp/left{
 	dir = 8
 	},
 /obj/effect/turf_decal/siding/white/corner{
@@ -55324,7 +55326,7 @@
 /obj/machinery/firealarm/directional/west,
 /obj/machinery/camera{
 	c_tag = "Atmospherics Cam #4";
-	dir = 8;
+	dir = 4;
 	network = list("ss13","engine")
 	},
 /turf/open/floor/plasteel,
@@ -62687,6 +62689,7 @@
 	dir = 8
 	},
 /obj/machinery/camera{
+	dir = 1;
 	c_tag = "Incinerator Camera North";
 	network = list("ss13","engine")
 	},
@@ -63487,7 +63490,7 @@
 "meV" = (
 /obj/machinery/camera{
 	c_tag = "Engineering Foyer #3";
-	dir = 8;
+	dir = 4;
 	network = list("ss13","engine")
 	},
 /obj/effect/turf_decal/trimline/yellow/line{
@@ -70249,7 +70252,7 @@
 "nrQ" = (
 /obj/machinery/camera{
 	c_tag = "Atmos Tank #6 - N2O";
-	dir = 1;
+	dir = 2;
 	network = list("ss13","engine")
 	},
 /turf/open/floor/engine/n2o,
@@ -71162,7 +71165,7 @@
 	},
 /obj/machinery/camera{
 	c_tag = "Atmospherics Cam #6";
-	dir = 5;
+	dir = 10;
 	network = list("ss13","engine")
 	},
 /obj/effect/turf_decal/tile/brown/fourcorners,
@@ -74710,7 +74713,7 @@
 "ojL" = (
 /obj/machinery/camera{
 	c_tag = "Power Storage";
-	dir = 1;
+	dir = 2;
 	network = list("ss13","engine")
 	},
 /obj/structure/cable/yellow{
@@ -76490,7 +76493,7 @@
 /obj/machinery/atmospherics/pipe/simple/orange/visible,
 /obj/machinery/camera{
 	c_tag = "Supermatter Foyer Cam #3";
-	dir = 8;
+	dir = 4;
 	network = list("ss13","engine")
 	},
 /obj/structure/cable/yellow{
@@ -84126,7 +84129,7 @@
 "pYB" = (
 /obj/machinery/camera{
 	c_tag = "Construction Camera #1, North";
-	dir = 1;
+	dir = 2;
 	network = list("ss13","engine")
 	},
 /obj/structure/table,
@@ -84882,6 +84885,7 @@
 	dir = 1
 	},
 /obj/machinery/camera{
+	dir = 1;
 	c_tag = "Atmospherics Cam #2";
 	network = list("ss13","engine")
 	},
@@ -86548,7 +86552,7 @@
 "qxO" = (
 /obj/machinery/camera{
 	c_tag = "Atmos Tank #7 - Mixing Chamber";
-	dir = 1;
+	dir = 2;
 	network = list("ss13","engine")
 	},
 /turf/open/floor/engine/vacuum,
@@ -87220,7 +87224,7 @@
 /obj/effect/turf_decal/tile/purple/opposingcorners{
 	dir = 4
 	},
-/obj/structure/chair/sofa/corp/left,
+/obj/structure/chair/sofa/corp/right,
 /obj/item/radio/intercom{
 	pixel_y = 27
 	},
@@ -89675,7 +89679,7 @@
 "rdU" = (
 /obj/machinery/camera{
 	c_tag = "Atmos Tank #5 - Plasma";
-	dir = 1;
+	dir = 2;
 	network = list("ss13","engine")
 	},
 /turf/open/floor/engine/plasma,
@@ -91236,7 +91240,7 @@
 "rrs" = (
 /obj/machinery/camera{
 	c_tag = "Supermatter Foyer Cam #1";
-	dir = 1;
+	dir = 2;
 	network = list("ss13","engine")
 	},
 /obj/item/radio/intercom{
@@ -93272,7 +93276,7 @@
 /obj/machinery/suit_storage_unit/radsuit,
 /obj/machinery/camera{
 	c_tag = "Shared Engineering Storage #1";
-	dir = 8;
+	dir = 4;
 	network = list("ss13","engine")
 	},
 /turf/open/floor/catwalk_floor/iron_dark,
@@ -96117,7 +96121,7 @@
 	},
 /obj/machinery/camera{
 	c_tag = "Shared Engineering Storage #2";
-	dir = 9;
+	dir = 6;
 	network = list("ss13","engine")
 	},
 /obj/structure/disposalpipe/segment{
@@ -99558,7 +99562,7 @@
 	},
 /obj/machinery/camera{
 	c_tag = "Supermatter Engine Camera";
-	dir = 8;
+	dir = 4;
 	network = list("ss13","engine")
 	},
 /turf/open/floor/plating,
@@ -101159,7 +101163,7 @@
 /turf/open/floor/plating,
 /area/maintenance/floor1/starboard/aft)
 "tiu" = (
-/obj/structure/chair/sofa/corp/left{
+/obj/structure/chair/sofa/corp/right{
 	desc = "Looks like someone threw it out. Covered in donut crumbs.";
 	name = "couch"
 	},
@@ -104772,7 +104776,7 @@
 	},
 /obj/machinery/camera{
 	c_tag = "Atmos Tank #4 - CO2";
-	dir = 1;
+	dir = 2;
 	network = list("ss13","engine")
 	},
 /turf/open/floor/engine/co2,
@@ -105091,7 +105095,7 @@
 	},
 /obj/machinery/camera{
 	c_tag = "Atmospherics Cam #1";
-	dir = 8;
+	dir = 4;
 	network = list("ss13","engine")
 	},
 /obj/machinery/atmospherics/components/unary/thermomachine/freezer{
@@ -105354,7 +105358,7 @@
 /obj/machinery/light/directional/north,
 /obj/machinery/camera{
 	c_tag = "Atmospherics Cam #3";
-	dir = 4;
+	dir = 8;
 	network = list("ss13","engine")
 	},
 /turf/open/floor/plasteel,
@@ -108034,7 +108038,7 @@
 /turf/open/floor/plasteel/white,
 /area/science/research/lobby)
 "uAN" = (
-/obj/structure/chair/sofa/corp/right,
+/obj/structure/chair/sofa/corp/left,
 /obj/machinery/light/directional/north,
 /obj/structure/extinguisher_cabinet/directional/north,
 /turf/open/floor/carpet,
@@ -114565,6 +114569,7 @@
 	dir = 4
 	},
 /obj/machinery/camera{
+	dir = 1;
 	c_tag = "Shared Engineering Storage #4";
 	network = list("ss13","engine")
 	},
@@ -115216,7 +115221,7 @@
 "vXv" = (
 /obj/machinery/camera{
 	c_tag = "Atmos Tank #1 - N2";
-	dir = 1;
+	dir = 2;
 	network = list("ss13","engine")
 	},
 /turf/open/floor/engine/n2,
@@ -115234,7 +115239,7 @@
 	},
 /obj/machinery/camera{
 	c_tag = "Atmospherics Cam #7";
-	dir = 1;
+	dir = 2;
 	network = list("ss13","engine")
 	},
 /turf/open/floor/plasteel/dark,
@@ -118880,7 +118885,7 @@
 "wCw" = (
 /obj/machinery/camera{
 	c_tag = "Shared Engineering Storage #3";
-	dir = 4;
+	dir = 8;
 	network = list("ss13","engine")
 	},
 /obj/machinery/shower{
@@ -121653,7 +121658,7 @@
 /area/hallway/floor1/aft)
 "xey" = (
 /obj/machinery/camera/preset/toxins{
-	dir = 1
+	dir = 2
 	},
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 1
@@ -123200,6 +123205,7 @@
 /area/maintenance/floor2/starboard/aft)
 "xtu" = (
 /obj/machinery/camera{
+	dir = 1;
 	c_tag = "Supermatter Foyer Cam #4";
 	network = list("ss13","engine")
 	},
@@ -124110,7 +124116,7 @@
 "xDo" = (
 /obj/machinery/camera{
 	c_tag = "Atmos Tank #2 - O2";
-	dir = 1;
+	dir = 2;
 	network = list("ss13","engine")
 	},
 /turf/open/floor/engine/o2,
@@ -124935,7 +124941,7 @@
 /obj/machinery/power/emitter,
 /obj/machinery/camera{
 	c_tag = "Secure Storage";
-	dir = 1;
+	dir = 2;
 	network = list("ss13","engine")
 	},
 /turf/open/floor/plasteel/textured/large,
@@ -150981,7 +150987,7 @@ hHO
 tDF
 tMj
 txP
-aCC
+aaa
 nYf
 wiy
 fmo
