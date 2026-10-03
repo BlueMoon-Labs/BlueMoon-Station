@@ -86,8 +86,12 @@
 
 /datum/effect_system/smoke_spread/chem/smoke_machine/set_up(datum/reagents/carry, setting=1, efficiency=1, loc, silent=FALSE)
 	amount = setting * 2
-	carry.copy_to(chemholder, 12)
-	carry.remove_any(SMOKE_COST(setting, efficiency))
+	var/cost = SMOKE_COST(setting, efficiency)
+	if (cost < 12)
+		carry.copy_to(chemholder, cost)
+	else
+		carry.copy_to(chemholder, 12)
+	carry.remove_any(cost)
 	location = loc
 
 /datum/effect_system/smoke_spread/chem/smoke_machine
@@ -229,8 +233,10 @@
 			. = TRUE
 		if("eject")
 			if(panel_open && !QDELETED(cell))
+				on = FALSE
 				cell.forceMove(drop_location())
 				cell = null
+				update_icon()
 				. = TRUE
 
 /obj/machinery/smoke_machine/emp_act(severity)
