@@ -12,6 +12,7 @@
 /datum/unit_test/species_prefs_load_reuses_matching_datum
 	/// Путь сейвфайла фикстуры: сносится в Destroy(), чтобы прогоны не копили мусор в data/.
 	var/fixture_path
+	var/datum/preferences/fixture_preferences
 
 /datum/unit_test/species_prefs_load_reuses_matching_datum/Run()
 	// Без записи в GLOB.species_list load_character вообще не трогает pref_species, и обе
@@ -20,28 +21,37 @@
 	TEST_ASSERT_EQUAL(GLOB.species_list[SPECIES_HUMAN], /datum/species/human, "Ключ human в GLOB.species_list обязан указывать на /datum/species/human")
 
 	var/datum/preferences/prefs = new
+	fixture_preferences = prefs
+	allocated += prefs
 	prefs.load_path("unittestspeciesprefs")
 	fixture_path = prefs.path
 	TEST_ASSERT_NOTNULL(fixture_path, "Фикстуре нужен путь сейвфайла")
+	for(var/suffix in list("", ".json", ".json.recovery", ".json.d/"))
+		fdel("[fixture_path][suffix]")
+	// В JSON корень аккаунта создаётся перед первым слотом, как при входе клиента.
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "Не создан корень аккаунта фикстуры")
 
 	var/datum/species/default_species = prefs.pref_species
 	TEST_ASSERT_NOTNULL(default_species, "Свежий /datum/preferences обязан иметь вид по умолчанию")
 	TEST_ASSERT_EQUAL(default_species.type, /datum/species/human, "Вид по умолчанию в prefs - человек")
 
 	TEST_ASSERT(istype(prefs.save_character(bypass_cooldown = TRUE, silent = TRUE), /savefile), "Сейв фикстуры должен пройти")
-	TEST_ASSERT(istype(prefs.load_character(bypass_cooldown = TRUE), /savefile), "Загрузка фикстуры должна пройти")
+	TEST_ASSERT(prefs.load_character(bypass_cooldown = TRUE), "Загрузка фикстуры должна пройти")
 	TEST_ASSERT(prefs.pref_species == default_species, "Загрузка того же вида не должна заводить второй датум вида")
 
 	// Обратная сторона инварианта: чужой тип обязан быть вытеснен. Без этой проверки первая
 	// выродилась бы в "load_character просто не трогает pref_species".
 	var/datum/species/lizard/stale = new
 	prefs.pref_species = stale
-	TEST_ASSERT(istype(prefs.load_character(bypass_cooldown = TRUE), /savefile), "Повторная загрузка фикстуры должна пройти")
+	TEST_ASSERT(prefs.load_character(bypass_cooldown = TRUE), "Повторная загрузка фикстуры должна пройти")
 	TEST_ASSERT(prefs.pref_species != stale, "Сохранённый вид обязан вытеснить чужой экземпляр")
 	TEST_ASSERT_EQUAL(prefs.pref_species.type, /datum/species/human, "После загрузки в prefs должен стоять сохранённый вид")
 
 /datum/unit_test/species_prefs_load_reuses_matching_datum/Destroy()
+	if(fixture_preferences)
+		fixture_preferences.path = null
 	if(fixture_path)
-		fdel(fixture_path)
+		for(var/suffix in list("", ".json", ".json.recovery", ".json.d/"))
+			fdel("[fixture_path][suffix]")
 		fixture_path = null
 	return ..()

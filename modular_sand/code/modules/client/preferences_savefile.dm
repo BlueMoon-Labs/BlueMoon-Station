@@ -33,7 +33,7 @@
 
 	. = ..()
 
-/datum/preferences/save_preferences(bypass_cooldown, silent)
+/datum/preferences/write_preferences(bypass_cooldown, silent, list/patch_context)
 	. = ..()
 	if(!istype(., /savefile))
 		return FALSE
@@ -62,18 +62,20 @@
 	WRITE_FILE(.["metadollar_pending_items"], metadollar_pending_items)
 	return .
 
-/datum/preferences/load_preferences(bypass_cooldown)
+/datum/preferences/read_preferences(bypass_cooldown)
 	. = ..()
-	if(!istype(., /savefile))
+	if(!istype(., /savefile) && !istype(., /datum/player_save_document))
 		return FALSE
-	.["favorite_interactions"] >>	favorite_interactions
+	var/datum/player_save_document/document = istype(., /datum/player_save_document) ? . : null
+	var/savefile/S = document ? null : .
+	READ_PLAYER_SAVE(S, document, "favorite_interactions", favorite_interactions)
 
-	.["use_arousal_multiplier"] >>	use_arousal_multiplier
-	.["arousal_multiplier"] >>		arousal_multiplier
-	.["use_moaning_multiplier"] >>	use_moaning_multiplier
-	.["moaning_multiplier"] >>		moaning_multiplier
-	.["use_custom_moan_sounds"] >>	use_custom_moan_sounds
-	.["custom_moan_sounds"] >>		custom_moan_sounds
+	READ_PLAYER_SAVE(S, document, "use_arousal_multiplier", use_arousal_multiplier)
+	READ_PLAYER_SAVE(S, document, "arousal_multiplier", arousal_multiplier)
+	READ_PLAYER_SAVE(S, document, "use_moaning_multiplier", use_moaning_multiplier)
+	READ_PLAYER_SAVE(S, document, "moaning_multiplier", moaning_multiplier)
+	READ_PLAYER_SAVE(S, document, "use_custom_moan_sounds", use_custom_moan_sounds)
+	READ_PLAYER_SAVE(S, document, "custom_moan_sounds", custom_moan_sounds)
 
 	favorite_interactions = SANITIZE_LIST(favorite_interactions)
 
@@ -88,23 +90,23 @@
 			LAZYREMOVE(favorite_interactions, interaction)
 			continue
 
-	.["custom_verb_consent"] >> custom_verb_consent
+	READ_PLAYER_SAVE(S, document, "custom_verb_consent", custom_verb_consent)
 	custom_verb_consent = sanitize_integer(custom_verb_consent, 0, 1, TRUE)
 
-	.["show_heart_over_self"] >> show_heart_over_self
+	READ_PLAYER_SAVE(S, document, "show_heart_over_self", show_heart_over_self)
 	show_heart_over_self = sanitize_integer(show_heart_over_self, 0, 1, initial(show_heart_over_self))
 
-	.["interaction_effect"] >> interaction_effect
+	READ_PLAYER_SAVE(S, document, "interaction_effect", interaction_effect)
 	if(!(interaction_effect in GLOB.interaction_effects_list))
 		interaction_effect = initial(interaction_effect)
-	.["block_partner_pixel_shift"] >> block_partner_pixel_shift
+	READ_PLAYER_SAVE(S, document, "block_partner_pixel_shift", block_partner_pixel_shift)
 	block_partner_pixel_shift = sanitize_integer(block_partner_pixel_shift, 0, 1, initial(block_partner_pixel_shift))
 
-	.["panel_tab_toggles"] >> panel_tab_toggles
+	READ_PLAYER_SAVE(S, document, "panel_tab_toggles", panel_tab_toggles)
 	panel_tab_toggles = sanitize_integer(panel_tab_toggles, 0, ALL_INTERACTION_MENU_TABS, initial(panel_tab_toggles))
-	.["dynamic_window_size"] >> dynamic_window_size
+	READ_PLAYER_SAVE(S, document, "dynamic_window_size", dynamic_window_size)
 	dynamic_window_size = sanitize_integer(dynamic_window_size, 0, 1, initial(dynamic_window_size))
-	.["compact_custom_tab"] >> compact_custom_tab
+	READ_PLAYER_SAVE(S, document, "compact_custom_tab", compact_custom_tab)
 	compact_custom_tab = sanitize_integer(compact_custom_tab, 0, 1, initial(compact_custom_tab))
 
 	use_arousal_multiplier = sanitize_integer(use_arousal_multiplier, 0, 1, initial(use_arousal_multiplier))
@@ -116,21 +118,21 @@
 	for(var/name in GLOB.lewd_other_animal_sounds)
 		valid_moan_paths += GLOB.lewd_other_animal_sounds[name]
 	custom_moan_sounds = SANITIZE_LIST(custom_moan_sounds) & valid_moan_paths
-	.["favorite_tracks"] >> favorite_tracks
+	READ_PLAYER_SAVE(S, document, "favorite_tracks", favorite_tracks)
 	favorite_tracks = sanitize_jukebox_track_list(favorite_tracks)
-	.["favorite_paintings_md5"] >> favorite_paintings_md5
+	READ_PLAYER_SAVE(S, document, "favorite_paintings_md5", favorite_paintings_md5)
 	favorite_paintings_md5 = SANITIZE_LIST(favorite_paintings_md5)
-	.["playlists"] >> playlists
+	READ_PLAYER_SAVE(S, document, "playlists", playlists)
 	playlists = sanitize_jukebox_playlists(playlists)
-	.["metadollar_minute_pool"] >> metadollar_minute_pool
+	READ_PLAYER_SAVE(S, document, "metadollar_minute_pool", metadollar_minute_pool)
 	metadollar_minute_pool = isnum(metadollar_minute_pool) ? clamp(round(metadollar_minute_pool), 0, 500) : 0
-	.["metadollar_pending_items"] >> metadollar_pending_items
+	READ_PLAYER_SAVE(S, document, "metadollar_pending_items", metadollar_pending_items)
 	metadollar_pending_items = SANITIZE_LIST(metadollar_pending_items)
 	return .
 
-/datum/preferences/proc/sand_character_pref_load(savefile/S)
-	S["custom_interactions"] >> custom_interactions
-	if(isnull(custom_interactions))
+/datum/preferences/proc/sand_character_pref_load(savefile/S, persist_migration = TRUE, datum/player_save_document/document)
+	READ_PLAYER_SAVE(S, document, "custom_interactions", custom_interactions)
+	if(!document && isnull(custom_interactions))
 		// Legacy-данные лежали в корне сейвфайла — переносим их в текущий слот персонажа.
 		// Миграция выполняется один раз: маркер в корне запрещает копировать список в новые слоты.
 		var/current_dir = S.cd
@@ -145,6 +147,10 @@
 			WRITE_FILE(S["custom_interactions"], custom_interactions)
 			S.cd = "/"
 			WRITE_FILE(S["custom_interactions_migrated"], TRUE)
+			// Список и маркер фиксируются вместе, иначе следующий слот снова скопирует корень.
+			if(persist_migration && !commit_player_save(S, current_dir))
+				S.cd = current_dir
+				return FALSE
 		S.cd = current_dir
 	custom_interactions = SANITIZE_LIST(custom_interactions)
 	for(var/i in length(custom_interactions) to 1 step -1)
@@ -159,6 +165,7 @@
 	var/max_customs = get_custom_interaction_limit()
 	if(length(custom_interactions) > max_customs)
 		custom_interactions.Cut(max_customs + 1)
+	return TRUE
 
 /datum/preferences/proc/sand_character_pref_save(savefile/S)
 	WRITE_FILE(S["custom_interactions"], custom_interactions)

@@ -1,21 +1,21 @@
-/datum/preferences/proc/splurt_character_pref_load(savefile/S) //TODO: modularize our other savefile edits... maybe?
+/datum/preferences/proc/splurt_character_pref_load(savefile/S, datum/player_save_document/document) //TODO: modularize our other savefile edits... maybe?
 	//Character directory
-	S["show_in_directory"]		>> show_in_directory
-	S["directory_tag"]			>> directory_tag
-	S["directory_erptag"]		>> directory_erptag
-	S["directory_gendertag"]		>> directory_gendertag
-	S["directory_ad"]			>> directory_ad
-	S["directory_noncon"]		>> directory_noncon
+	READ_PLAYER_SAVE(S, document, "show_in_directory", show_in_directory)
+	READ_PLAYER_SAVE(S, document, "directory_tag", directory_tag)
+	READ_PLAYER_SAVE(S, document, "directory_erptag", directory_erptag)
+	READ_PLAYER_SAVE(S, document, "directory_gendertag", directory_gendertag)
+	READ_PLAYER_SAVE(S, document, "directory_ad", directory_ad)
+	READ_PLAYER_SAVE(S, document, "directory_noncon", directory_noncon)
 
 	// Get stomping preferences.
-//	S["stomp_pref"] >> stomppref
+//	PLAYER_SAVE_VALUE(S, document, "stomp_pref") >> stomppref
 
 	// Fuzzy scaling
-	S["feature_fuzzy"] >> fuzzy
+	READ_PLAYER_SAVE(S, document, "feature_fuzzy", fuzzy)
 
 	// Custom blood color
-	S["custom_blood_color"] >> custom_blood_color // TRUE/FALSE - If custom blood color is enabled
-	S["blood_color"] >> blood_color // The custom blood color itself
+	READ_PLAYER_SAVE(S, document, "custom_blood_color", custom_blood_color) // TRUE/FALSE - If custom blood color is enabled
+	READ_PLAYER_SAVE(S, document, "blood_color", blood_color) // The custom blood color itself
 
 	//sanitize data
 	show_in_directory		= sanitize_integer(show_in_directory, 0, 1, initial(show_in_directory))

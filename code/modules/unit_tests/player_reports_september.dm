@@ -78,7 +78,9 @@
 
 /datum/unit_test/insect_accessory_colors/Destroy()
 	if(fixture_path)
-		fdel(fixture_path)
+		for(var/suffix in list("", ".json", ".json.recovery"))
+			fdel("[fixture_path][suffix]")
+		fdel("[fixture_path].json.d/")
 	return ..()
 
 /datum/unit_test/insect_accessory_colors/Run()
@@ -86,6 +88,7 @@
 	allocated += prefs
 	fixture_path = "data/unit_tests/insect_accessory_colors.sav"
 	prefs.path = fixture_path
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "Корень сохранения не создан")
 	prefs.features["wings_color"] = "112233"
 	prefs.features["insect_fluff_color"] = "445566"
 	prefs.features["insect_markings_color"] = "778899"
@@ -113,9 +116,12 @@
 					TEST_ASSERT_EQUAL(overlay.color, "#[colors[part]]", "У [part] неверный цвет")
 					seen |= part
 	TEST_ASSERT_EQUAL(length(seen), length(colors), "Не все части тела отрисованы")
-	var/savefile/legacy = new(fixture_path)
-	legacy.cd = "/character[prefs.default_slot]"
+	var/slot_scope = "/character[prefs.default_slot]"
+	var/savefile/legacy = prefs.open_player_save(slot_scope)
+	TEST_ASSERT_NOTNULL(legacy, "Слот не открыт для правки")
+	legacy.cd = slot_scope
 	legacy.dir.Remove("feature_insect_fluff_color", "feature_insect_markings_color")
+	TEST_ASSERT(prefs.commit_player_save(legacy, slot_scope), "Слот без раздельных цветов не записан")
 	legacy = null
 	TEST_ASSERT(prefs.load_character(bypass_cooldown = TRUE), "Старые настройки не загружены")
 	TEST_ASSERT_EQUAL(prefs.features["insect_fluff_color"], "112233", "Старый цвет пуха изменился")

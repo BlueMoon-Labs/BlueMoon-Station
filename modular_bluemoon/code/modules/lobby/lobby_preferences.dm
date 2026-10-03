@@ -13,7 +13,7 @@
 	if(SStitle_bm && player.bm_lobby_ready)
 		SStitle_bm.update_character_name(player, real_name)
 
-/datum/preferences/save_character(bypass_cooldown = FALSE, silent = FALSE, export = FALSE)
+/datum/preferences/write_character(bypass_cooldown = FALSE, silent = FALSE, export = FALSE, list/patch_context)
 	. = ..()
 	if(!istype(., /savefile))
 		return
@@ -27,7 +27,7 @@
 		return
 	_bm_push_name_to_lobby()
 
-/datum/preferences/save_preferences(bypass_cooldown = FALSE, silent = FALSE)
+/datum/preferences/write_preferences(bypass_cooldown = FALSE, silent = FALSE, list/patch_context)
 	. = ..()
 	if(!istype(., /savefile))
 		return FALSE
@@ -36,19 +36,21 @@
 	WRITE_FILE(.["bm_disclaimer_accepted"], bm_disclaimer_accepted)
 	return .
 
-/datum/preferences/load_preferences(bypass_cooldown = FALSE)
+/datum/preferences/read_preferences(bypass_cooldown = FALSE)
 	. = ..()
-	if(!istype(., /savefile))
+	if(!istype(., /savefile) && !istype(., /datum/player_save_document))
 		return FALSE
-	.["bm_lobby_show_nsfw"] >> bm_lobby_show_nsfw
+	var/datum/player_save_document/document = istype(., /datum/player_save_document) ? . : null
+	var/savefile/S = document ? null : .
+	READ_PLAYER_SAVE(S, document, "bm_lobby_show_nsfw", bm_lobby_show_nsfw)
 	if(isnull(bm_lobby_show_nsfw))
 		bm_lobby_show_nsfw = FALSE
 	bm_lobby_show_nsfw = !!bm_lobby_show_nsfw
-	.["bm_lobby_show_admin_bg"] >> bm_lobby_show_admin_bg
+	READ_PLAYER_SAVE(S, document, "bm_lobby_show_admin_bg", bm_lobby_show_admin_bg)
 	if(isnull(bm_lobby_show_admin_bg))
 		bm_lobby_show_admin_bg = TRUE
 	bm_lobby_show_admin_bg = !!bm_lobby_show_admin_bg
-	.["bm_disclaimer_accepted"] >> bm_disclaimer_accepted
+	READ_PLAYER_SAVE(S, document, "bm_disclaimer_accepted", bm_disclaimer_accepted)
 	if(isnull(bm_disclaimer_accepted))
 		bm_disclaimer_accepted = FALSE
 	bm_disclaimer_accepted = !!bm_disclaimer_accepted

@@ -201,11 +201,6 @@
 	/// whether our browser is ready or not yet
 	var/statbrowser_ready = FALSE
 
-	/// Имя персонажа из локального экспорта (client.Import()) уже прочитано в local_storage_name
-	var/local_storage_name_read = FALSE
-	/// Имя персонажа в локальном экспорте клиента, null - экспорта нет
-	var/local_storage_name
-
 	/// whether remove_admin_tabs has been sent (avoids redundant output() every cycle)
 	var/admin_tabs_cleared = FALSE
 
