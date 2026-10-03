@@ -56,6 +56,19 @@
 	}\
 	while (FALSE)
 
+/// Штатная плоскость типа thing на этаже source. В отличие от SET_PLANE_EXPLICIT без турфа не оставляет прежнюю (HUD) плоскость, а ставит несмещённую.
+#define RESET_PLANE_EXPLICIT(thing, source) \
+	do {\
+		var/turf/_reset_turf = get_turf(source);\
+		if(_reset_turf && SSmapping.max_plane_offset) {\
+			thing.plane = GET_NEW_PLANE(initial(thing.plane), GET_Z_PLANE_OFFSET(_reset_turf.z));\
+		}\
+		else {\
+			thing.plane = initial(thing.plane);\
+		}\
+	}\
+	while (FALSE)
+
 // Now for macros that exist to get info from SSmapping
 // Mostly about details of planes, or z levels
 

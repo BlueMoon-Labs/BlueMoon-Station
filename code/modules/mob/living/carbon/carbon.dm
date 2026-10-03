@@ -451,7 +451,7 @@
 			W.dropped(src)
 			if (W)
 				W.layer = initial(W.layer)
-				W.plane = initial(W.plane)
+				RESET_PLANE_EXPLICIT(W, W)
 		SetNextAction(0)
 	if (legcuffed)
 		var/obj/item/W = legcuffed
@@ -463,7 +463,7 @@
 			W.dropped(src)
 			if (W)
 				W.layer = initial(W.layer)
-				W.plane = initial(W.plane)
+				RESET_PLANE_EXPLICIT(W, W)
 		SetNextAction(0)
 	update_equipment_speed_mods() // In case cuffs ever change speed
 
