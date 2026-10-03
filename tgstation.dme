@@ -4641,6 +4641,7 @@
 #include "modular_bluemoon\code\datums\wires\big_manipulator.dm"
 #include "modular_bluemoon\code\game\area\areas.dm"
 #include "modular_bluemoon\code\game\area\areas\antag_areas.dm"
+#include "modular_bluemoon\code\game\area\areas\northstar.dm"
 #include "modular_bluemoon\code\game\area\areas\tramstation.dm"
 #include "modular_bluemoon\code\game\area\areas\ruins\icemoon.dm"
 #include "modular_bluemoon\code\game\area\areas\ruins\space.dm"

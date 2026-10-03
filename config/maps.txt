@@ -121,3 +121,7 @@ endmap
 map tramstation
 minplayers 70
 endmap
+
+map northstar
+minplayers 70
+endmap

@@ -396,12 +396,12 @@
 	for(var/map_path in map_paths)
 		TEST_ASSERT_NOTNULL(text2path(map_path), "Нет типа [map_path], на который ссылается карта")
 
-/// На Трамстанции каждый станционный APC стоит в одной сети со SMES или солнечными панелями: стыки модулей карты не рвут магистраль.
-/datum/unit_test/tramstation_apcs_reach_power
+/// На портированных картах каждый станционный APC стоит в одной сети с источником (SMES, солнечные панели, генераторы двигателя): стыки модулей и палуб не рвут магистраль.
+/datum/unit_test/ported_station_apcs_reach_power
 	requires_full_map = TRUE
 
-/datum/unit_test/tramstation_apcs_reach_power/Run()
-	if(SSmapping.config.map_name != "Tramstation")
+/datum/unit_test/ported_station_apcs_reach_power/Run()
+	if(!(SSmapping.config.map_name in list("Tramstation", "NorthStar")))
 		return
 	var/list/relays = SSmachines.get_machines_by_type(/obj/machinery/power/deck_relay)
 	for(var/obj/machinery/power/deck_relay/relay as anything in relays)
@@ -409,13 +409,20 @@
 	for(var/obj/machinery/power/deck_relay/relay as anything in relays)
 		relay.refresh()
 
+	var/list/sources = typecacheof(list(
+		/obj/machinery/power/smes,
+		/obj/machinery/power/solar,
+		/obj/machinery/power/rad_collector,
+		/obj/machinery/power/generator,
+		/obj/machinery/power/port_gen,
+	))
 	var/list/unfed = list()
 	for(var/obj/machinery/power/apc/apc as anything in GLOB.apcs_list)
 		if(!is_station_level(apc.z))
 			continue
 		var/fed = FALSE
 		for(var/obj/machinery/power/node as anything in apc.terminal?.powernet?.nodes)
-			if(istype(node, /obj/machinery/power/smes) || istype(node, /obj/machinery/power/solar))
+			if(is_type_in_typecache(node, sources))
 				fed = TRUE
 				break
 		if(!fed)

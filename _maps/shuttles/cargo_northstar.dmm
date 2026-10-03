@@ -1,0 +1,305 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/turf/closed/wall/mineral/titanium/survival/nodiagonal,
+/area/shuttle/supply)
+"e" = (
+/obj/machinery/conveyor{
+	dir = 4;
+	id = "QMLoad"
+	},
+/turf/open/floor/catwalk_floor/iron_smooth,
+/area/shuttle/supply)
+"h" = (
+/obj/machinery/button/door/directional/east{
+	id = "QMLoaddoor";
+	name = "Loading Doors";
+	pixel_y = -8
+	},
+/obj/machinery/button/door/directional/east{
+	id = "QMLoaddoor2";
+	name = "Loading Doors";
+	pixel_y = 8
+	},
+/obj/effect/turf_decal/tile/yellow,
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/yellow{
+	dir = 1
+	},
+/obj/machinery/conveyor_switch/oneway{
+	id = "QMLoad"
+	},
+/turf/open/floor/plasteel/rivets,
+/area/shuttle/supply)
+"i" = (
+/obj/structure/shuttle/engine/heater,
+/obj/structure/window/reinforced/survival_pod{
+	dir = 1
+	},
+/turf/open/floor/plating/airless,
+/area/shuttle/supply)
+"j" = (
+/turf/template_noop,
+/area/template_noop)
+"k" = (
+/turf/closed/wall/mineral/titanium/survival,
+/area/shuttle/supply)
+"o" = (
+/turf/open/floor/catwalk_floor/iron_smooth,
+/area/shuttle/supply)
+"r" = (
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/yellow{
+	dir = 1
+	},
+/turf/open/floor/plasteel/rivets,
+/area/shuttle/supply)
+"s" = (
+/obj/effect/mapping_helpers/airlock/access/all/supply/general,
+/obj/machinery/door/airlock/survival_pod/glass{
+	name = "Supply Shuttle Airlock"
+	},
+/obj/docking_port/mobile/supply,
+/turf/open/floor/catwalk_floor/iron,
+/area/shuttle/supply)
+"u" = (
+/obj/machinery/door/poddoor{
+	id = "QMLoaddoor2";
+	name = "Supply Dock Loading Door"
+	},
+/obj/machinery/conveyor{
+	dir = 4;
+	id = "QMLoad"
+	},
+/turf/open/floor/catwalk_floor/iron_smooth,
+/area/shuttle/supply)
+"w" = (
+/obj/machinery/conveyor{
+	dir = 5;
+	id = "QMLoad"
+	},
+/turf/open/floor/catwalk_floor/iron_smooth,
+/area/shuttle/supply)
+"x" = (
+/obj/machinery/conveyor{
+	dir = 8;
+	id = "QMLoad"
+	},
+/obj/machinery/door/poddoor{
+	id = "QMLoaddoor";
+	name = "Supply Dock Loading Door"
+	},
+/turf/open/floor/catwalk_floor/iron_smooth,
+/area/shuttle/supply)
+"y" = (
+/obj/effect/spawner/structure/window/survival_pod,
+/turf/open/floor/plating,
+/area/shuttle/supply)
+"C" = (
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/plasteel/rivets,
+/area/shuttle/supply)
+"H" = (
+/obj/structure/shuttle/engine/heater{
+	icon_state = "router"
+	},
+/turf/open/floor/plating/airless,
+/area/shuttle/supply)
+"I" = (
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/yellow,
+/obj/effect/turf_decal/tile/yellow{
+	dir = 1
+	},
+/turf/open/floor/plasteel/rivets,
+/area/shuttle/supply)
+"L" = (
+/obj/structure/shuttle/engine/heater,
+/obj/structure/window/reinforced/survival_pod{
+	dir = 4
+	},
+/obj/structure/window/reinforced/survival_pod{
+	dir = 1
+	},
+/turf/open/floor/plating/airless,
+/area/shuttle/supply)
+"M" = (
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/yellow{
+	dir = 1
+	},
+/obj/machinery/light/red/directional/west,
+/turf/open/floor/plasteel/rivets,
+/area/shuttle/supply)
+"N" = (
+/obj/structure/shuttle/engine/propulsion,
+/turf/open/floor/plating/airless,
+/area/shuttle/supply)
+"O" = (
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/yellow,
+/turf/open/floor/plasteel/rivets,
+/area/shuttle/supply)
+"P" = (
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/yellow{
+	dir = 1
+	},
+/turf/open/floor/plasteel/rivets,
+/area/shuttle/supply)
+"Q" = (
+/obj/structure/shuttle/engine/heater,
+/obj/structure/window/reinforced/survival_pod{
+	dir = 8
+	},
+/obj/structure/window/reinforced/survival_pod{
+	dir = 1
+	},
+/turf/open/floor/plating/airless,
+/area/shuttle/supply)
+"R" = (
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plasteel/rivets,
+/area/shuttle/supply)
+"T" = (
+/obj/effect/turf_decal/tile/yellow,
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/turf/open/floor/plasteel/rivets,
+/area/shuttle/supply)
+"U" = (
+/obj/machinery/conveyor{
+	dir = 9;
+	id = "QMLoad"
+	},
+/turf/open/floor/catwalk_floor/iron_smooth,
+/area/shuttle/supply)
+"V" = (
+/obj/structure/shuttle/engine/propulsion/burst/right,
+/turf/open/floor/plating/airless,
+/area/shuttle/supply)
+"W" = (
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/yellow{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/brown{
+	dir = 8
+	},
+/obj/machinery/light/red/directional/west,
+/turf/open/floor/plasteel/rivets,
+/area/shuttle/supply)
+"X" = (
+/obj/effect/turf_decal/tile/yellow,
+/obj/effect/turf_decal/tile/brown{
+	dir = 4
+	},
+/turf/open/floor/plasteel/rivets,
+/area/shuttle/supply)
+"Y" = (
+/obj/structure/shuttle/engine/propulsion/burst/left,
+/turf/open/floor/plating/airless,
+/area/shuttle/supply)
+"Z" = (
+/obj/machinery/conveyor{
+	dir = 8;
+	id = "QMLoad"
+	},
+/turf/open/floor/catwalk_floor/iron_smooth,
+/area/shuttle/supply)
+
+(1,1,1) = {"
+c
+c
+k
+k
+k
+k
+k
+k
+k
+k
+j
+"}
+(2,1,1) = {"
+c
+w
+U
+W
+r
+r
+M
+I
+o
+i
+Y
+"}
+(3,1,1) = {"
+y
+e
+Z
+P
+R
+C
+R
+O
+Q
+H
+N
+"}
+(4,1,1) = {"
+y
+e
+Z
+P
+C
+R
+C
+O
+L
+H
+N
+"}
+(5,1,1) = {"
+c
+e
+Z
+h
+X
+X
+X
+T
+o
+i
+V
+"}
+(6,1,1) = {"
+c
+u
+x
+c
+s
+y
+y
+c
+c
+k
+j
+"}
