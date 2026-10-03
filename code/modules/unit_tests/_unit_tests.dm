@@ -263,6 +263,7 @@
 #include "modular_map_loader.dm" //SPLURT EDIT
 #include "nightshift.dm"
 #include "northstar.dm"
+#include "ntnet_responses.dm"
 // #include "ntnetwork_tests.dm"
 // #include "outfit_sanity.dm"
 // #include "pills.dm"

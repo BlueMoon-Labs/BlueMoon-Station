@@ -189,7 +189,7 @@
 	var/successful_breath = check_breath(breath)
 	if(successful_breath && is_on_internals)
 		// Дышим из баллона и вдох удался - включаем/поддерживаем звук дыхания.
-		if(client?.prefs?.toggles & SOUND_BREATHING && !HAS_TRAIT(src, TRAIT_DEAF))
+		if(!HAS_TRAIT(src, TRAIT_DEAF))
 			breathing_loop.start()
 		else
 			breathing_loop.stop()
