@@ -4,10 +4,23 @@ import { Window } from '../layouts';
 
 export const VrSleeper = (props) => {
   const { act, data } = useBackend();
+  // The modes arrive as flat "deathmatch_mode_N_field" keys. A DM list of assoc
+  // lists reaches the browser as a list of lists, which left every mode.name
+  // and mode.id undefined and rendered the buttons as bare "()".
+  const modeCount = data.deathmatch_mode_count || 0;
+  const deathmatchModes = [];
+  for (let i = 1; i <= modeCount; i++) {
+    deathmatchModes.push({
+      id: data[`deathmatch_mode_${i}_id`],
+      name: data[`deathmatch_mode_${i}_name`],
+      description: data[`deathmatch_mode_${i}_description`],
+      players: data[`deathmatch_mode_${i}_players`],
+    });
+  }
   return (
     <Window
       width={475}
-      height={340}>
+      height={620}>
       <Window.Content>
         {!!data.emagged && (
           <Section>
@@ -77,6 +90,56 @@ export const VrSleeper = (props) => {
               }}>
               Delete VR avatar
             </Button>
+          )}
+        </Section>
+        <Section title="Deathmatch">
+          {data.is_hosting_deathmatch ? (
+            <Box>
+              <Box color="good">
+                Hosting {data.hosting_deathmatch.name} with{' '}
+                {data.hosting_deathmatch.players} player(s).
+              </Box>
+              <Button.Confirm
+                color={'red'}
+                icon={'stop'}
+                onClick={() => act('end_deathmatch')}>
+                End game
+              </Button.Confirm>
+            </Box>
+          ) : (
+            <Box>
+              {deathmatchModes.length === 0 ? (
+                <Box color="bad">No deathmatch modes are compiled in.</Box>
+              ) : (
+                deathmatchModes.map((mode) => (
+                  <Button
+                    key={mode.id}
+                    icon={mode.id === data.selected_deathmatch_mode
+                      ? 'check'
+                      : 'play'}
+                    color={mode.id === data.selected_deathmatch_mode
+                      ? 'green'
+                      : 'blue'}
+                    tooltip={mode.description}
+                    onClick={() => act('select_deathmatch_mode', { mode: mode.id })}>
+                    {mode.name} ({mode.players})
+                  </Button>
+                ))
+              )}
+              <Button.Confirm
+                color={'good'}
+                icon={'play'}
+                disabled={!data.can_start_deathmatch
+                  || !data.selected_deathmatch_mode}
+                onClick={() => act('start_deathmatch')}>
+                Start deathmatch
+              </Button.Confirm>
+              {!data.isoccupant && (
+                <Box color="bad">
+                  Lie in the sleeper to host a game.
+                </Box>
+              )}
+            </Box>
           )}
         </Section>
       </Window.Content>

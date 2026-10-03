@@ -24,6 +24,8 @@
 	var/session_paused = TRUE
 	//Used to stop unwarranted behaviour from happening in cases where the master mind transference is unsupported. Set on Initialize().
 	var/allow_mastermind_transfer = FALSE
+	/// Whether dead observers (ghosts) are allowed to connect to this virtual reality body. Used for minigames like deathmatch.
+	var/allow_ghost_connect = FALSE
 
 /datum/component/virtual_reality/Initialize(yolo = FALSE, _allow_mastermind_transfer = FALSE)
 	var/mob/M = parent
@@ -78,7 +80,7 @@
   */
 /datum/component/virtual_reality/proc/connect(mob/M)
 	var/mob/vr_M = parent
-	if(!M.mind || M.stat == DEAD || !vr_M.mind || vr_M.stat == DEAD)
+	if(!M.mind || (M.stat == DEAD && !allow_ghost_connect) || !vr_M.mind || vr_M.stat == DEAD)
 		return FALSE
 	var/datum/component/virtual_reality/VR = M.GetComponent(/datum/component/virtual_reality)
 	if(VR)

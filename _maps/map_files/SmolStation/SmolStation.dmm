@@ -21971,6 +21971,10 @@
 	},
 /turf/open/floor/circuit/green,
 /area/ai_monitored/command/nuke_storage)
+"pXs" = (
+/obj/effect/landmark/vr_spawn,
+/turf/open/floor/plasteel/dark,
+/area/security/prison)
 "pXV" = (
 /obj/structure/lattice/catwalk,
 /obj/structure/cable{
@@ -39784,7 +39788,7 @@ hJM
 hVK
 tiz
 tiz
-tiz
+pXs
 xev
 iLg
 qFd
@@ -40042,7 +40046,7 @@ tiz
 tiz
 tiz
 tiz
-tiz
+pXs
 xev
 iLg
 qFd
@@ -40300,7 +40304,7 @@ gGv
 gGv
 tiz
 tiz
-tiz
+pXs
 xev
 jQB
 tQf
@@ -41585,7 +41589,7 @@ gGv
 gGv
 tiz
 tiz
-tiz
+pXs
 qsT
 hrN
 tQf

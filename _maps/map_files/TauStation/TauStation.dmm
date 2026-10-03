@@ -1451,16 +1451,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/security/prison/garden)
-"aAT" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/neutral,
-/obj/effect/turf_decal/tile/neutral{
-	dir = 4
-	},
-/turf/open/floor/plasteel,
-/area/security/prison/rec)
 "aAW" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
@@ -11849,6 +11839,17 @@
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel,
 /area/commons/dorms)
+"dYE" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/landmark/vr_spawn,
+/turf/open/floor/plasteel,
+/area/security/prison/rec)
 "dZj" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 10
@@ -12440,6 +12441,7 @@
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
+	
 	},
 /obj/machinery/button/door{
 	id = "permacells2";
@@ -13848,6 +13850,7 @@
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
+	
 	},
 /obj/item/pen{
 	pixel_x = 4;
@@ -15191,6 +15194,7 @@
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
+	
 	},
 /obj/machinery/light/small{
 	dir = 8
@@ -15963,6 +15967,16 @@
 	},
 /turf/open/floor/plasteel,
 /area/command/heads_quarters/ce)
+"fvC" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/effect/landmark/vr_spawn,
+/turf/open/floor/plasteel,
+/area/security/prison/rec)
 "fvE" = (
 /obj/effect/turf_decal/tile/yellow{
 	dir = 8
@@ -17062,11 +17076,6 @@
 /obj/item/reagent_containers/food/snacks/salad/validsalad,
 /turf/open/floor/plasteel,
 /area/commons/dorms)
-"fOP" = (
-/obj/structure/window/spawner/east,
-/obj/structure/window/spawner/north,
-/turf/open/floor/carpet/arcade,
-/area/commons/fitness/recreation)
 "fOR" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 5
@@ -20307,6 +20316,10 @@
 	},
 /turf/open/floor/plasteel,
 /area/science/xenobiology)
+"gXs" = (
+/obj/effect/landmark/vr_spawn,
+/turf/open/floor/carpet/arcade,
+/area/commons/fitness/recreation)
 "gXC" = (
 /obj/structure/sign/warning/electricshock,
 /turf/closed/wall/r_wall,
@@ -23211,6 +23224,12 @@
 	},
 /turf/open/floor/plating,
 /area/maintenance/department/security/brig)
+"hTr" = (
+/obj/structure/window/spawner/east,
+/obj/structure/window/spawner/north,
+/obj/effect/landmark/vr_spawn,
+/turf/open/floor/carpet/arcade,
+/area/commons/fitness/recreation)
 "hTx" = (
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden,
 /obj/structure/cable{
@@ -27274,9 +27293,6 @@
 	},
 /turf/open/floor/plating,
 /area/command/heads_quarters/hos)
-"jsz" = (
-/turf/open/pool/water,
-/area/commons/fitness/pool)
 "jsH" = (
 /obj/structure/table/wood,
 /obj/machinery/firealarm{
@@ -32228,13 +32244,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/service/chapel/main)
-"ljB" = (
-/obj/effect/turf_decal/tile/blue{
-	dir = 1
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
-/turf/open/floor/plasteel,
-/area/hallway/primary/aft)
 "ljD" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
@@ -36318,6 +36327,16 @@
 	dir = 4
 	},
 /area/commons/fitness/pool)
+"mAv" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 5
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/landmark/vr_spawn,
+/turf/open/floor/plasteel,
+/area/security/prison/rec)
 "mAC" = (
 /obj/machinery/clonepod,
 /obj/effect/turf_decal/tile/blue{
@@ -37908,11 +37927,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/engineering/lobby)
-"nan" = (
-/turf/open/floor/plasteel/yellowsiding{
-	dir = 4
-	},
-/area/commons/fitness/pool)
 "nav" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
@@ -38373,15 +38387,6 @@
 /obj/structure/closet/crate,
 /turf/open/floor/plating,
 /area/construction)
-"nhw" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on{
-	dir = 1
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
-	dir = 4
-	},
-/turf/open/floor/plasteel,
-/area/security/prison/rec)
 "nid" = (
 /obj/structure/table/wood,
 /obj/item/export/bottle/gin{
@@ -58185,6 +58190,7 @@
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
+	
 	},
 /obj/machinery/button/door{
 	id = "permacells3";
@@ -58579,15 +58585,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/cargo/miningoffice)
-"uiM" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
-	dir = 5
-	},
-/obj/effect/turf_decal/tile/neutral{
-	dir = 8
-	},
-/turf/open/floor/plasteel,
-/area/security/prison/rec)
 "uiQ" = (
 /turf/closed/wall,
 /area/maintenance/starboard/aft)
@@ -60990,9 +60987,6 @@
 	},
 /turf/open/floor/plating,
 /area/science/lab)
-"vbB" = (
-/turf/open/pool/water,
-/area/commons/fitness/pool)
 "vbF" = (
 /obj/machinery/atmospherics/pipe/manifold/supply/visible{
 	dir = 1
@@ -89008,7 +89002,7 @@ tNk
 tNk
 yls
 vDY
-uiM
+mAv
 apQ
 vut
 vut
@@ -89779,7 +89773,7 @@ mhJ
 qis
 dQG
 wnn
-nhw
+fvC
 qvV
 vut
 qcJ
@@ -90036,7 +90030,7 @@ vut
 vut
 wDE
 apU
-aAT
+dYE
 aEV
 vut
 aLs
@@ -102441,7 +102435,7 @@ xmJ
 tGd
 gzq
 rqA
-ljB
+kkl
 kkl
 fHN
 tPs
@@ -122194,7 +122188,7 @@ gvH
 gvH
 gvH
 gvH
-nan
+gvH
 gvH
 gvH
 gvH
@@ -122447,16 +122441,16 @@ xkZ
 vUt
 nyQ
 iDj
-vbB
-vbB
+iSX
+iSX
 jHQ
-vbB
-vbB
-vbB
-vbB
+iSX
+iSX
+iSX
+iSX
 jHQ
-vbB
-vbB
+iSX
+iSX
 mCp
 mXF
 vUt
@@ -122704,16 +122698,16 @@ xkZ
 vUt
 nyQ
 iDj
-vbB
-vbB
-vbB
-vbB
-vbB
-vbB
-vbB
-vbB
-vbB
-vbB
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
 mCp
 mZk
 vUt
@@ -122961,16 +122955,16 @@ xkZ
 vUt
 rjF
 iDj
-vbB
-vbB
-vbB
-vbB
-vbB
-jsz
-vbB
-vbB
-vbB
-vbB
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
 mCp
 mZy
 vUt
@@ -123211,22 +123205,22 @@ dJJ
 fOo
 idj
 frR
-uWA
+gXs
 eIC
 wKE
 aIs
 vUt
 nyQ
 iDj
-vbB
-vbB
-vbB
-vbB
-vbB
-vbB
-vbB
-vbB
-vbB
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
 lXO
 mCp
 nav
@@ -123468,23 +123462,23 @@ uWA
 kQY
 uWA
 uWA
-uWA
+gXs
 igO
 wKE
 gXF
 hwx
 hXv
 iDj
-vbB
-vbB
-vbB
-vbB
-vbB
-vbB
-vbB
-vbB
-vbB
-vbB
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
+iSX
 mCp
 nbu
 vUt
@@ -123725,7 +123719,7 @@ ihB
 pCf
 uWA
 uWA
-uWA
+gXs
 mts
 wKE
 dmY
@@ -123733,15 +123727,15 @@ vUt
 tPU
 iDj
 iSX
-vbB
+iSX
 jIV
-vbB
-vbB
-vbB
-vbB
+iSX
+iSX
+iSX
+iSX
 jIV
 lIh
-vbB
+iSX
 mCp
 nav
 vUt
@@ -123982,7 +123976,7 @@ jaJ
 eIK
 pta
 pta
-fOP
+hTr
 oxo
 wKE
 dmY

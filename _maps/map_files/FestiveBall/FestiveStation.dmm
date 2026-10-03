@@ -5554,6 +5554,7 @@
 /obj/item/radio/intercom/prison{
 	name = "Prison Intercom (General)";
 	pixel_y = 24;
+	
 	},
 /turf/open/floor/wood,
 /area/security/prison)
@@ -10424,6 +10425,7 @@
 	name = "Prison Intercom (General)";
 	pixel_x = -25;
 	pixel_y = -2;
+	
 	},
 /obj/machinery/light{
 	dir = 8
@@ -15453,14 +15455,6 @@
 /obj/machinery/vending/cigarette/beach,
 /turf/open/floor/plasteel/freezer,
 /area/maintenance/bar)
-"aMe" = (
-/obj/effect/turf_decal/tile/bar,
-/obj/effect/turf_decal/tile/bar{
-	dir = 1
-	},
-/obj/machinery/vending/snack/teal,
-/turf/open/floor/plasteel,
-/area/commons/fitness/recreation)
 "aMf" = (
 /obj/machinery/reagentgrinder,
 /obj/structure/table/wood,
@@ -24967,9 +24961,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/commons/fitness/recreation)
-"bko" = (
-/turf/open/floor/plasteel/vaporwave,
-/area/commons/fitness/recreation)
 "bkp" = (
 /obj/machinery/door/airlock/public/glass,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
@@ -33493,12 +33484,6 @@
 	},
 /turf/open/floor/festive/sidewalk,
 /area/edina/street/intersection/princessprogress)
-"bDM" = (
-/obj/machinery/requests_console{
-	pixel_x = 30
-	},
-/turf/open/floor/carpet/red,
-/area/commons/arcade)
 "bDN" = (
 /obj/effect/turf_decal/weather/snow/corner{
 	dir = 1
@@ -46216,9 +46201,6 @@
 "cfs" = (
 /turf/open/pool/water,
 /area/commons/fitness/pool)
-"cft" = (
-/turf/open/pool/water,
-/area/commons/fitness/pool)
 "cfu" = (
 /obj/structure/pool/ladder{
 	dir = 2;
@@ -46408,9 +46390,6 @@
 /obj/structure/pool/ladder{
 	pixel_x = -4
 	},
-/turf/open/pool/water,
-/area/commons/fitness/pool)
-"cfW" = (
 /turf/open/pool/water,
 /area/commons/fitness/pool)
 "cfX" = (
@@ -57644,6 +57623,12 @@
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
 /turf/open/floor/wood,
 /area/command/meeting_room/council)
+"jtl" = (
+/obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
+/obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
+/obj/effect/landmark/vr_spawn,
+/turf/open/floor/wood,
+/area/security/prison)
 "jtx" = (
 /obj/effect/festive/street/streetlinene,
 /obj/structure/disposalpipe/segment{
@@ -57967,6 +57952,13 @@
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
 /turf/open/floor/festive/cobblestone,
 /area/security)
+"kgm" = (
+/obj/machinery/requests_console{
+	pixel_x = 30
+	},
+/obj/effect/landmark/vr_spawn,
+/turf/open/floor/carpet/red,
+/area/commons/arcade)
 "kgO" = (
 /obj/structure/chair/office/light{
 	dir = 1;
@@ -59429,10 +59421,6 @@
 	},
 /turf/open/floor/wood,
 /area/security/office)
-"nho" = (
-/obj/effect/turf_decal/siding/yellow,
-/turf/open/floor/plasteel,
-/area/commons/fitness/pool)
 "nij" = (
 /obj/effect/turf_decal/stripes/white{
 	dir = 8
@@ -63660,6 +63648,10 @@
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel,
 /area/command/corporate_showroom)
+"vGz" = (
+/obj/effect/landmark/vr_spawn,
+/turf/open/floor/plasteel/vaporwave,
+/area/commons/fitness/recreation)
 "vGB" = (
 /obj/structure/sign/directions/evac,
 /turf/closed/festive/whitebrick,
@@ -64483,6 +64475,15 @@
 	color = "#555555"
 	},
 /area/science/robotics/mechbay)
+"xhI" = (
+/obj/effect/turf_decal/tile/bar,
+/obj/effect/turf_decal/tile/bar{
+	dir = 1
+	},
+/obj/machinery/vending/snack/teal,
+/obj/effect/landmark/vr_spawn,
+/turf/open/floor/plasteel,
+/area/commons/fitness/recreation)
 "xhZ" = (
 /obj/structure/cable/white{
 	icon_state = "1-8"
@@ -65059,6 +65060,10 @@
 /obj/item/phone,
 /turf/open/floor/carpet/red,
 /area/maintenance/bar)
+"yiQ" = (
+/obj/effect/landmark/vr_spawn,
+/turf/open/floor/carpet/red,
+/area/commons/arcade)
 "yiY" = (
 /obj/structure/table/glass,
 /obj/item/reagent_containers/food/drinks/bottle/patron{
@@ -82537,10 +82542,10 @@ bUJ
 bVR
 cfh
 cfs
-cft
+cfs
 cfV
-cft
-cft
+cfs
+cfs
 cgs
 bUJ
 cnH
@@ -82793,11 +82798,11 @@ bHZ
 bUJ
 bVS
 cfh
-cft
-cft
-cft
-cft
-cft
+cfs
+cfs
+cfs
+cfs
+cfs
 cgt
 cgA
 cnH
@@ -83050,11 +83055,11 @@ cqc
 bUJ
 bVT
 cfh
-cft
-cft
-cft
-cft
-cft
+cfs
+cfs
+cfs
+cfs
+cfs
 cgt
 cgA
 cnH
@@ -83275,7 +83280,7 @@ biN
 bjv
 ckk
 bkh
-bko
+vGz
 bkD
 iSD
 blq
@@ -83308,10 +83313,10 @@ bUJ
 xDT
 cfh
 cfu
-cft
-cft
-cft
-cft
+cfs
+cfs
+cfs
+cfs
 cgt
 cgA
 cnH
@@ -83532,7 +83537,7 @@ biT
 bjw
 enO
 bki
-bko
+vGz
 blk
 xyK
 blo
@@ -83564,11 +83569,11 @@ cqi
 bUJ
 bWP
 cfh
-cft
-cft
-cfW
-cft
-cft
+cfs
+cfs
+cfs
+cfs
+cfs
 cgt
 cgA
 cnH
@@ -83789,7 +83794,7 @@ bjk
 bjx
 aEF
 bki
-bko
+vGz
 blk
 blm
 blo
@@ -83810,7 +83815,7 @@ bFs
 bHZ
 bWy
 bJJ
-bMs
+yiQ
 bMu
 bWy
 bPi
@@ -83821,11 +83826,11 @@ hHE
 bUJ
 bYw
 cfh
-cft
-cft
-cft
-cft
-cft
+cfs
+cfs
+cfs
+cfs
+cfs
 cgt
 cgA
 cnH
@@ -84046,7 +84051,7 @@ bjl
 bjv
 aEF
 bkj
-bko
+vGz
 bll
 blm
 blr
@@ -84067,7 +84072,7 @@ bFs
 bHZ
 bWy
 bJK
-bMs
+yiQ
 bMv
 bWy
 dJR
@@ -84078,11 +84083,11 @@ hHE
 bUJ
 bZR
 cfh
-cft
-cft
-cft
-cft
-cft
+cfs
+cfs
+cfs
+cfs
+cfs
 cgt
 bUJ
 cnH
@@ -84324,7 +84329,7 @@ bFs
 bHZ
 bWy
 bJL
-bDM
+kgm
 bMu
 bWy
 bPj
@@ -84335,11 +84340,11 @@ pea
 bVO
 bZS
 cfh
-cft
-cft
-cft
-cft
-cft
+cfs
+cfs
+cfs
+cfs
+cfs
 cgu
 bUJ
 cnH
@@ -84591,12 +84596,12 @@ cjY
 bHZ
 bUJ
 bZT
-nho
-cft
-cft
-cft
+cfh
+cfs
+cfs
+cfs
 cgb
-cft
+cfs
 cgs
 bUJ
 cnH
@@ -90049,7 +90054,7 @@ aDs
 bgy
 bhu
 biq
-aMe
+xhI
 bkk
 alt
 alv
@@ -106073,7 +106078,7 @@ amh
 amR
 anm
 anK
-xCP
+jtl
 xCP
 xCP
 aza
@@ -106330,7 +106335,7 @@ amj
 amS
 anl
 anK
-xCP
+jtl
 apw
 anD
 xCP

@@ -2136,6 +2136,10 @@
 	},
 /turf/open/floor/plasteel,
 /area/hallway/primary/central)
+"me" = (
+/obj/effect/landmark/vr_spawn,
+/turf/open/floor/plasteel,
+/area/commons/storage/primary)
 "mp" = (
 /obj/effect/landmark/observer_start,
 /obj/effect/turf_decal/misc/plaque,
@@ -2153,6 +2157,7 @@
 	name = "Prison Intercom (General)";
 	pixel_x = -27;
 	pixel_y = -27;
+	
 	},
 /obj/machinery/flasher{
 	id = "Cell 4";
@@ -8524,7 +8529,7 @@ dJ
 dJ
 dJ
 dJ
-dJ
+me
 eD
 cS
 Ae
@@ -9260,7 +9265,7 @@ dJ
 dJ
 dJ
 dJ
-dJ
+me
 eD
 cS
 fS

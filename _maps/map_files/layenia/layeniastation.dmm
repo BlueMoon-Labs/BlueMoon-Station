@@ -12439,6 +12439,18 @@
 	dir = 8
 	},
 /area/hallway/primary/port/fore)
+"bTp" = (
+/obj/effect/turf_decal/loading_area{
+	dir = 8;
+	icon_state = "drain";
+	name = "drain"
+	},
+/obj/effect/landmark/vr_spawn,
+/turf/open/floor/plasteel/grimy{
+	icon_state = "eighties";
+	name = "retro floor"
+	},
+/area/commons/arcade)
 "bTr" = (
 /obj/machinery/door/firedoor,
 /obj/effect/turf_decal/tile/yellow{
@@ -38867,9 +38879,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
 /area/maintenance/fore)
-"fMe" = (
-/turf/open/pool/water,
-/area/security/prison)
 "fMs" = (
 /obj/effect/turf_decal/tile/neutral{
 	color = "#ffffff"
@@ -56486,6 +56495,13 @@
 	icon_state = "floor_trim"
 	},
 /area/hallway/secondary/exit)
+"iqR" = (
+/obj/effect/landmark/vr_spawn,
+/turf/open/floor/plasteel/grimy{
+	icon_state = "eighties";
+	name = "retro floor"
+	},
+/area/commons/arcade)
 "iqU" = (
 /obj/structure/railing{
 	dir = 4
@@ -64344,18 +64360,6 @@
 "jwT" = (
 /turf/open/pool/water,
 /area/commons/fitness/pool)
-"jwU" = (
-/obj/structure/cable/yellow{
-	icon_state = "1-4"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "1-8"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/turf/open/floor/engine,
-/area/engineering/main/reactor_core)
 "jwW" = (
 /obj/machinery/atmospherics/components/binary/pump{
 	dir = 1;
@@ -76649,17 +76653,6 @@
 /obj/structure/closet/crate,
 /turf/open/floor/plating,
 /area/maintenance/fore)
-"lji" = (
-/obj/effect/turf_decal/loading_area{
-	dir = 8;
-	icon_state = "drain";
-	name = "drain"
-	},
-/turf/open/floor/plasteel/grimy{
-	icon_state = "eighties";
-	name = "retro floor"
-	},
-/area/commons/arcade)
 "ljl" = (
 /obj/machinery/door/airlock/command/glass{
 	name = "Chief Engineer";
@@ -77281,9 +77274,6 @@
 	icon_state = "floor_plate"
 	},
 /area/cargo/sorting)
-"lnU" = (
-/turf/open/pool/water,
-/area/commons/fitness/pool)
 "lnW" = (
 /obj/structure/chair/comfy/black,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
@@ -131672,12 +131662,6 @@
 	icon_state = "wood-broken"
 	},
 /area/maintenance/fore)
-"thL" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/decal/cleanable/dirt,
-/obj/effect/turf_decal/siding/yellow,
-/turf/open/floor/plasteel,
-/area/commons/fitness/pool)
 "tid" = (
 /obj/machinery/light{
 	dir = 8
@@ -146798,15 +146782,6 @@
 	icon_state = "darkfull_whole_alt"
 	},
 /area/commons/fitness)
-"vvP" = (
-/obj/effect/turf_decal/loading_area{
-	icon_state = "drain";
-	name = "drain"
-	},
-/turf/open/floor/plating/layeniaredder{
-	initial_gas_mix = "TEMP=2.7"
-	},
-/area/security/prison)
 "vvX" = (
 /obj/machinery/light{
 	pixel_y = -1
@@ -157648,10 +157623,6 @@
 	},
 /turf/open/floor/plating,
 /area/maintenance/fore/secondary)
-"wUK" = (
-/obj/effect/turf_decal/siding/yellow,
-/turf/open/floor/plasteel,
-/area/commons/fitness/pool)
 "wUL" = (
 /obj/structure/table/wood/fancy,
 /obj/item/flashlight/lamp/green{
@@ -166161,6 +166132,7 @@
 	name = "Prison Intercom (General)";
 	pixel_x = -25;
 	pixel_y = -2;
+	
 	},
 /turf/open/floor/plasteel{
 	icon_state = "floor_trim"
@@ -193245,7 +193217,7 @@ iHi
 rFt
 iHi
 qBh
-lji
+bTp
 aNj
 xFf
 cMx
@@ -193502,7 +193474,7 @@ vbh
 kTJ
 vbh
 bMy
-ePW
+iqR
 yeE
 yeE
 ePW
@@ -193759,7 +193731,7 @@ vbh
 oBe
 vbh
 bMy
-ePW
+iqR
 oeL
 ePW
 ePW
@@ -194016,7 +193988,7 @@ vbh
 rFt
 vbh
 bMy
-ePW
+iqR
 hLQ
 hLQ
 ePW
@@ -194273,7 +194245,7 @@ iHi
 vbh
 iHi
 pOb
-ePW
+iqR
 kbM
 kZL
 ePW
@@ -205761,10 +205733,10 @@ hzG
 lLK
 oog
 oog
-vvP
+saL
 wXk
-fMe
-fMe
+dtQ
+dtQ
 dpW
 hzG
 fvU
@@ -206018,10 +205990,10 @@ hzG
 tyM
 oog
 oog
-vvP
+saL
 qIN
-fMe
-fMe
+dtQ
+dtQ
 fvU
 fvU
 fvU
@@ -206278,7 +206250,7 @@ dAW
 saL
 oeg
 dtQ
-fMe
+dtQ
 fvU
 uRl
 kji
@@ -206534,8 +206506,8 @@ pnL
 dAW
 and
 fSi
-fMe
-fMe
+dtQ
+dtQ
 fvU
 tXP
 otI
@@ -206789,10 +206761,10 @@ hzG
 hzG
 nPG
 hzG
-vvP
+saL
 lSn
 xdl
-fMe
+dtQ
 fvU
 hPk
 clw
@@ -214020,7 +213992,7 @@ oJo
 npy
 svp
 fMD
-jwU
+dqZ
 wGd
 nKs
 sWc
@@ -247195,10 +247167,10 @@ bby
 aRx
 cCO
 kmj
-lnU
+jwT
 nXz
-lnU
-lnU
+jwT
+jwT
 eEn
 aRx
 pME
@@ -247452,10 +247424,10 @@ xMZ
 aRx
 gRW
 exy
-lnU
-lnU
-lnU
-lnU
+jwT
+jwT
+jwT
+jwT
 eEn
 aRx
 vEt
@@ -247709,10 +247681,10 @@ vJn
 aZD
 lGS
 rMH
-lnU
-lnU
-lnU
-lnU
+jwT
+jwT
+jwT
+jwT
 bxN
 xPM
 rwy
@@ -247964,11 +247936,11 @@ ahg
 mDJ
 bby
 iyB
-wUK
+cCO
 lcs
-lnU
 jwT
-lnU
+jwT
+jwT
 tMA
 uaX
 pqW
@@ -248223,10 +248195,10 @@ bby
 ukn
 mWA
 rMH
-lnU
-lnU
-lnU
-lnU
+jwT
+jwT
+jwT
+jwT
 vmp
 wfQ
 pME
@@ -248480,10 +248452,10 @@ bby
 oLM
 gRW
 hQL
-lnU
-lnU
+jwT
+jwT
 dHQ
-lnU
+jwT
 eEn
 vDi
 vEt
@@ -248737,10 +248709,10 @@ uUB
 oLM
 cCO
 gCq
-lnU
+jwT
 qEi
-lnU
-lnU
+jwT
+jwT
 eEn
 vDi
 rwy
@@ -277959,9 +277931,9 @@ iyB
 cCO
 kmj
 nXz
-lnU
-lnU
-lnU
+jwT
+jwT
+jwT
 elb
 nQT
 doZ
@@ -278215,10 +278187,10 @@ haa
 iyB
 wan
 chm
-lnU
-lnU
-lnU
-lnU
+jwT
+jwT
+jwT
+jwT
 elb
 fSr
 pOX
@@ -278470,12 +278442,12 @@ hqx
 elb
 tbj
 iyB
-thL
+crh
 lkL
-lnU
 jwT
-lnU
-lnU
+jwT
+jwT
+jwT
 elb
 pOX
 pOX
@@ -278729,10 +278701,10 @@ xQC
 mWe
 crh
 lkL
-lnU
-lnU
-lnU
-lnU
+jwT
+jwT
+jwT
+jwT
 elb
 lyO
 lyO
@@ -278987,9 +278959,9 @@ iyB
 cCO
 wmn
 fLc
-lnU
-lnU
-lnU
+jwT
+jwT
+jwT
 elb
 nLS
 nLS
