@@ -1073,7 +1073,6 @@
 	icon_state = "longshirt_0"
 	fitted = NO_FEMALE_UNIFORM
 	body_parts_covered = CHEST|GROIN|ARMS
-	alternate_worn_layer = GLOVES_LAYER
 	always_reskinnable = TRUE
 	can_adjust = FALSE
 	unique_reskin = list(
@@ -1087,16 +1086,12 @@
 	switch(current_skin)
 		if("Buttoned")
 			body_parts_covered = CHEST|GROIN|ARMS
-			mutantrace_variation = STYLE_DIGITIGRADE|USE_TAUR_CLIP_MASK
 		if("Decollete")
 			body_parts_covered = ARMS
-			mutantrace_variation = USE_TAUR_CLIP_MASK
 		if("Unbuttoned")
 			body_parts_covered = ARMS
-			mutantrace_variation = STYLE_DIGITIGRADE|USE_TAUR_CLIP_MASK
 		if("Spread out")
 			body_parts_covered = ARMS
-			mutantrace_variation = USE_TAUR_CLIP_MASK
 	user.update_inv_w_uniform()
 	user.update_body(TRUE)
 
@@ -1111,7 +1106,7 @@
 	if(!isliving(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
 		return
 
-	var/desired_layer = tgui_input_number(user, "Выставить слой одежды", "Слой отображения", GLOVES_LAYER, UNDERWEAR_LAYER, HEAD_LAYER)
+	var/desired_layer = tgui_input_number(user, "Выставить слой одежды", "Слой отображения", UNIFORM_LAYER, UNDERWEAR_LAYER, HEAD_LAYER)
 	if(!desired_layer)
 		return
 	alternate_worn_layer = desired_layer

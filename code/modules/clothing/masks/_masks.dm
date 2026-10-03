@@ -6,14 +6,12 @@
 	strip_delay = 40
 	equip_delay_other = 40
 	var/modifies_speech = FALSE
-	var/mask_adjusted = 0
+	var/mask_adjusted = FALSE
 	var/adjusted_flags = null
 	var/firstpickup = TRUE
 	var/pickupsound = TRUE
 	var/datum/beepsky_fashion/beepsky_fashion //the associated datum for applying this to a secbot
-	var/face_hidden = FALSE
-	var/face_hide_capable = FALSE
-	var/face_base_flags = null
+	var/face_hide_capable = FALSE	// выставляется при инцилизации, смотри /obj/item/clothing/mask/Initialize()
 	// BLUEMOON ADD - hailer in any mask (using SecTech device/hailer)
 	var/has_hailer = FALSE
 	var/hailer_aggressiveness = 2
@@ -69,70 +67,63 @@
   * Proc that moves gas/breath masks out of the way, disabling them and allowing pill/food consumption
   * The flavor_details variable is for masks that use this function only to toggle HIDEFACE for identity.
   */
-/obj/item/clothing/mask/proc/adjustmask(mob/living/user, just_flavor = FALSE)
+/obj/item/clothing/mask/proc/adjustmask(mob/living/user)
 	if(user && user.incapacitated())
 		return FALSE
 	if(src.reinforced)
 		to_chat(user, "<span class='warning'>Набор бронепластин сделал [src] слишком плотным, чтобы изменить его стиль ношения.</span>")
 		return FALSE
+
 	mask_adjusted = !mask_adjusted
-	if(!mask_adjusted)
-		if(!just_flavor)
-			src.icon_state = initial(icon_state)
-			gas_transfer_coefficient = initial(gas_transfer_coefficient)
-			permeability_coefficient = initial(permeability_coefficient)
-			slot_flags = initial(slot_flags)
-			flags_cover |= visor_flags_cover
-			clothing_flags |= visor_flags
-		flags_inv |= visor_flags_inv
-	else
-		if(!just_flavor)
-			icon_state += "_up"
-			gas_transfer_coefficient = null
-			permeability_coefficient = null
-			clothing_flags &= ~visor_flags
-			flags_cover &= ~visor_flags_cover
-			if(adjusted_flags)
-				slot_flags = adjusted_flags
+	if(mask_adjusted)
+		icon_state = "[icon_state]_up"
+		gas_transfer_coefficient = null
+		permeability_coefficient = null
+		clothing_flags &= ~visor_flags
+		flags_cover &= ~visor_flags_cover
 		flags_inv &= ~visor_flags_inv
-	if(user)
-		if(!just_flavor)
-			to_chat(user, "<span class='notice'>You push \the [src] [mask_adjusted ? "out of the way" : "back into place"].</span>")
-			user.wear_mask_update(src, toggle_off = mask_adjusted)
-			user.update_action_buttons_icon() //when mask is adjusted out, we update all buttons icon so the user's potential internal tank correctly shows as off.
-		else
-			to_chat(usr, "<span class='notice'>You adjust [src], it will now [mask_adjusted ? "not" : ""] obscure your identity while worn.</span>")
+		if(adjusted_flags)
+			slot_flags = adjusted_flags
+	else
+		icon_state = initial(icon_state)
+		gas_transfer_coefficient = initial(gas_transfer_coefficient)
+		permeability_coefficient = initial(permeability_coefficient)
+		slot_flags = initial(slot_flags)
+		flags_cover |= visor_flags_cover
+		clothing_flags |= visor_flags
+		flags_inv |= visor_flags_inv
+
+	if(!user)
+		return TRUE
+
+	to_chat(user, span_notice("Вы сдвигаете \the [src] [mask_adjusted ? "в сторону" : "обратно на место"]."))
+	user.wear_mask_update(src, toggle_off = mask_adjusted)
+	user.update_action_buttons_icon() //when mask is adjusted out, we update all buttons icon so the user's potential internal tank correctly shows as off.
 	return TRUE
 
 /obj/item/clothing/mask/Initialize(mapload)
 	. = ..()
-	face_base_flags = flags_inv
 	face_hide_capable = (flags_inv & HIDEFACE) ? TRUE : FALSE
-	face_hidden = face_hide_capable // по умолчанию — как задумано маской (лицо скрыто)
 	if(face_hide_capable)
 		register_context()
 
 /obj/item/clothing/mask/examine(mob/user)
 	. = ..()
 	if(face_hide_capable)
-		. += span_notice("Alt-клик по маске — [face_hidden ? "показать" : "скрыть"] лицо/описание персонажа (сейчас: [face_hidden ? "скрыто" : "видно"]).")
+		. += span_notice("Ctrl-Shift-клик по маске — [flags_inv & HIDEFACE ? "показать" : "скрыть"] лицо/описание персонажа (сейчас: [flags_inv & HIDEFACE ? "скрыто" : "видно"]).")
 	if(has_hailer)
 		. += span_notice("В маску установлен Compli-o-Nator модуль (агрессивность [hailer_aggressiveness]). Отвёртка — снять модуль.")
 	else
 		. += span_notice("В эту маску можно установить hailer-модуль из СБТеха (используй hailer на маске).")
 
 /obj/item/clothing/mask/proc/toggle_face_hiding(mob/user)
-	if(isnull(face_base_flags))
-		face_base_flags = initial(flags_inv)
-		face_hide_capable = (face_base_flags & HIDEFACE) ? TRUE : FALSE
-	if(!face_hide_capable)
+	if(!face_hide_capable || mask_adjusted)
 		return
-	face_hidden = !face_hidden
 	// Только HIDEFACE тогглим, остальное (HIDEEARS/HIDEHAIR/HIDEEYES) не трогаем
-	if(face_hidden)
-		flags_inv |= HIDEFACE
-	else
+	if(flags_inv & HIDEFACE)
 		flags_inv &= ~HIDEFACE
+	else
+		flags_inv |= HIDEFACE
 	if(isliving(loc))
 		var/mob/living/L = loc
 		L.update_inv_wear_mask()
@@ -145,15 +136,15 @@
 			if(H.profile)
 				SStgui.update_uis(H.profile)
 	if(user)
-		to_chat(user, span_notice("Маска теперь [face_hidden ? "" : "не "]будет скрывать ваше лицо и описание персонажа."))
+		to_chat(user, span_notice("Маска теперь [flags_inv & HIDEFACE ? "" : "не "]будет скрывать ваше лицо и описание персонажа."))
 
-/obj/item/clothing/mask/AltClick(mob/user)
+/obj/item/clothing/mask/CtrlShiftClick(mob/user)
+	. = ..()
 	if(face_hide_capable)
 		if(!user.canUseTopic(src, BE_CLOSE))
-			return ..()
+			return
 		toggle_face_hiding(user)
 		return TRUE
-	return ..()
 
 /obj/item/clothing/mask/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
@@ -161,7 +152,7 @@
 		return
 	if(!((item_flags & IN_INVENTORY) || loc == user))
 		return
-	LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, face_hidden ? "Показать лицо" : "Скрыть лицо")
+	LAZYSET(context[SCREENTIP_CONTEXT_CTRL_SHIFT_LMB], INTENT_ANY, flags_inv & HIDEFACE ? "Показать лицо" : "Скрыть лицо")
 	return CONTEXTUAL_SCREENTIP_SET
 
 // BLUEMOON ADD - hailer in any mask via SecTech device/hailer

@@ -1704,25 +1704,25 @@
 /datum/gear/donator/bm/legion_mask_frank
 	name = "Frank mask"
 	slot = ITEM_SLOT_MASK
-	path = /obj/item/clothing/mask/gas/syndicate/legion_mask_frank
+	path = /obj/item/clothing/mask/gas/syndicate/legion
 	ckeywhitelist = list("dimofon", "devildeadspace", "dimakr", "oroshimuraiori", "troubleneko17th", "dcp9371", "oni3288", "misteran")
 
 /datum/gear/donator/bm/legion_mask_julie
 	name = "Julie mask"
 	slot = ITEM_SLOT_MASK
-	path = /obj/item/clothing/mask/gas/syndicate/legion_mask_julie
+	path = /obj/item/clothing/mask/gas/syndicate/legion/julie
 	ckeywhitelist = list("dimofon", "devildeadspace", "dimakr", "oroshimuraiori", "troubleneko17th", "dcp9371", "oni3288", "misteran")
 
 /datum/gear/donator/bm/legion_mask_joey
 	name = "Joey mask"
 	slot = ITEM_SLOT_MASK
-	path = /obj/item/clothing/mask/gas/syndicate/legion_mask_joey
+	path = /obj/item/clothing/mask/gas/syndicate/legion/joey
 	ckeywhitelist = list("dimofon", "devildeadspace", "dimakr", "oroshimuraiori", "troubleneko17th", "dcp9371", "oni3288", "misteran")
 
 /datum/gear/donator/bm/legion_mask_susie
 	name = "Susie mask"
 	slot = ITEM_SLOT_MASK
-	path = /obj/item/clothing/mask/gas/syndicate/legion_mask_susie
+	path = /obj/item/clothing/mask/gas/syndicate/legion/susie
 	ckeywhitelist = list("dimofon", "devildeadspace", "dimakr", "oroshimuraiori", "troubleneko17th", "dcp9371", "oni3288", "misteran")
 
 /datum/gear/donator/bm/kladmen_dress
@@ -1940,7 +1940,7 @@
 /datum/gear/donator/bm/lsweater
 	name = "Sweater"
 	slot = ITEM_SLOT_OCLOTHING
-	path = /obj/item/clothing/suit/toggle/lsweater
+	path = /obj/item/clothing/suit/donator/bm/lsweater
 	ckeywhitelist = list("lindaastereih")
 
 /datum/gear/donator/bm/longtie

@@ -98,7 +98,7 @@
 
 
 /obj/item/storage/box/inteq_kit/new_heroes/PopulateContents()
-	switch (pickweight(list("bloodyspai" = 3, "hacker" = 3,"sabotage" = 3, "death_quin" = 3, "stealth" = 2, "bond" = 2, "screwed" = 2,  "guns" = 2, "murder" = 2, "launchman" = 2, "baseball" = 1, "implant" = 1, "darklord" = 1, "sniper" = 1, "metaops" = 1, "ninja" = 1, "ancient" = 1, "spacemarine" = 1)))
+	switch (pickweight(list("bloodyspai" = 3, "hacker" = 3,"sabotage" = 3, "death_quin" = 3, "stealth" = 2, "bond" = 2, "guns" = 2, "murder" = 2, "launchman" = 2, "baseball" = 1, "implant" = 1, "darklord" = 1, "sniper" = 1, "metaops" = 1, "ninja" = 1, "ancient" = 1, "spacemarine" = 1)))
 		if("bloodyspai") // 30 tc now this is more right
 			new /obj/item/storage/box/syndie_kit/chameleon(src) // 2 tc since it's not the full set /теперь полный
 			new /obj/item/card/id/inteq(src) // 2 tc
