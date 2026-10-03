@@ -266,6 +266,7 @@
 // #include "plantgrowth_tests.dm"
 #include "perf_log_columns.dm"
 #include "player_report_regressions.dm"
+#include "plumbing_ducts.dm"
 #include "process_memory.dm"
 #include "progressbar_deleted_target.dm"
 #include "projectiles.dm"
