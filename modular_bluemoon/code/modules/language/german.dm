@@ -3,7 +3,7 @@
 	desc = "Modernised version of the German language, combined with Austrian, Swiss, Neo Berlin and many other various dialects. Usually used by the inhabitants of the Earth. (Используйте русскую букву для префикса)"
 	icon = 'modular_bluemoon/icons/misc/language.dmi'
 	icon_state = "german"
-	speech_verb = "says"
+	speech_verb = "говорит"
 	ask_verb = "queries"
 	exclaim_verb = "declares"
 	whisper_verb = "hushes"
