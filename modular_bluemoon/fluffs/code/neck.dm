@@ -102,7 +102,7 @@
 	desc = "Тряпки, тряпки и ещё раз тряпки. Ни функционала, ни цели, только стиль."
 	icon_state = "concord-cloak"
 	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/neck.dmi'
-	alternate_worn_layer = HORNS_LAYER // опять меняем слой... надо чтоб был над волосами
+	alternate_worn_layer = HANDCUFF_LAYER // опять меняем слой... надо чтоб был над тем, что надето на голову(берет, шляпа и тд.)
 	var/selected_type = "Cloak"
 
 /obj/item/clothing/neck/donator/bm/concord_cloak/equipped(mob/user, slot) //оверрайдим этот прок, дабы у нас вызывалась обнова иконки в момент одевания

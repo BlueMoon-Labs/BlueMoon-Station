@@ -1,6 +1,7 @@
 /datum/round_event_control/scrubber_overflow/cope_and_seethe
 	name = "Copium Flood"
 	typepath = /datum/round_event/scrubber_overflow/cope_and_seethe
+	admin_setup = list()
 	enabled = FALSE
 
 /datum/round_event/scrubber_overflow/cope_and_seethe/announce()
@@ -27,6 +28,7 @@
 /datum/round_event_control/scrubber_overflow/female
 	name = "Clogged Vents: Girlcum"
 	typepath = /datum/round_event/scrubber_overflow/female
+	admin_setup = list()
 	// Компромисс с прода: кам-ивенты живут только в эксте и лайте, в боевых динамиках их нет.
 	// Целевая частота "раз в 5-8 экст" задана явным весом и гейтом типов раундов напрямую,
 	// поэтому метка mild: профильный множитель disruptive задавил бы её ниже согласованной.
@@ -61,6 +63,7 @@
 /datum/round_event_control/scrubber_overflow/male
 	name = "Clogged Vents: Semen"
 	typepath = /datum/round_event/scrubber_overflow/male
+	admin_setup = list()
 	// Компромисс с прода: см. комментарий у Girlcum выше - только экста/лайт, "раз в 5-8 экст".
 	weight = 8
 	max_occurrences = 1
@@ -148,24 +151,22 @@
 /datum/round_event_control/scrubber_overflow/beer
 	name = "Clogged Vents: Beer"
 	typepath = /datum/round_event/scrubber_overflow/beer
+	admin_setup = list()
 	enabled = FALSE
 	description = "Spits out beer through the scrubber system."
 
 /datum/round_event/scrubber_overflow/beer
-	reagents_amount = 100
+	reagents_amount = 500
 
 /datum/round_event/scrubber_overflow/beer/announce()
 	priority_announce("Сеть скрубберов испытывает противодавление из-за пива. Возможен некоторый выброс содержимого.", "Центральное Командование", 'sound/announcer/classic/ventclog.ogg')
 
 /datum/round_event/scrubber_overflow/beer/start()
+	// Ровно тот же путь, что и у админ-верба Spawn Liquid: пиво кладётся в liquids турфа, откуда
+	// SSliquids сам растекает его по станции и держит в виде луж. Раньше здесь был foam_spread -
+	// тот растекался мгновенно и высыхал за несколько секунд, оставляя мокрый след.
 	for(var/obj/machinery/atmospherics/components/unary/vent in scrubbers)
 		if(vent && vent.loc && !vent.welded)
-			var/datum/reagents/R = new/datum/reagents(1000)
-			R.my_atom = vent
-			R.add_reagent(/datum/reagent/consumable/ethanol/beer, reagents_amount)
-
-			var/datum/effect_system/foam_spread/foam = new
-			foam.set_up(200, get_turf(vent), R)
-			foam.start()
-			qdel(R)
+			var/turf/spill_turf = get_turf(vent)
+			spill_turf.add_liquid(/datum/reagent/consumable/ethanol/beer, reagents_amount)
 		CHECK_TICK
