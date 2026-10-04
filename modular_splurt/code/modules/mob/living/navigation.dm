@@ -93,7 +93,7 @@
 	for(var/i in 1 to length(path))
 		var/turf/current_turf = path[i]
 		var/image/path_image = image(icon = 'icons/obj/power_cond/cables.dmi', layer = SIGIL_LAYER, loc = current_turf)
-		path_image.plane = GAME_PLANE
+		SET_PLANE_EXPLICIT(path_image, GAME_PLANE, current_turf)
 		path_image.color = COLOR_CYAN
 		path_image.alpha = 0
 		var/dir_1 = 0

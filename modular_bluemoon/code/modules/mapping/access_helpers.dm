@@ -272,6 +272,11 @@
 /obj/effect/mapping_helpers/airlock/access/any/service
 	icon_state = "access_helper_serv"
 
+/obj/effect/mapping_helpers/airlock/access/any/service/general/get_access()
+	var/list/access_list = ..()
+	access_list += list(ACCESS_BAR, ACCESS_KITCHEN, ACCESS_HYDROPONICS, ACCESS_JANITOR, ACCESS_THEATRE, ACCESS_LIBRARY)
+	return access_list
+
 /obj/effect/mapping_helpers/airlock/access/any/service/kitchen/get_access()
 	var/list/access_list = ..()
 	access_list += ACCESS_KITCHEN
@@ -687,6 +692,11 @@
 /obj/effect/mapping_helpers/airlock/access/all/security/brig/get_access()
 	var/list/access_list = ..()
 	access_list += ACCESS_BRIG
+	return access_list
+
+/obj/effect/mapping_helpers/airlock/access/all/security/entrance/get_access()
+	var/list/access_list = ..()
+	access_list += ACCESS_SEC_DOORS
 	return access_list
 
 /obj/effect/mapping_helpers/airlock/access/all/security/armory/get_access()

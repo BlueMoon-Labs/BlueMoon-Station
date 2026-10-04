@@ -303,24 +303,12 @@ GLOBAL_LIST_EMPTY(ash_storm_sounds)
 // ---- sound management (unit-test contract) ---------------------------------
 
 /datum/weather/ash_storm/telegraph()
-	// Base telegraph() resolves an area to a single z via area.z (weather.dm),
-	// which is unreliable for areas covering several z-levels at once - e.g.
-	// /area/lavaland/surface/outdoors spans both lavaland zs, so base would drop
-	// it from impacted_areas on the storm's own z. Rebuild the set from the actual
-	// turfs on the impacted z-levels; base telegraph() then only merges duplicates.
-	var/list/protected_typecache = LAZYLEN(protected_areas) ? typecacheof(protected_areas) : null
+	var/list/eligible_areas = list()
 	for(var/z in impacted_z_levels)
-		for(var/turf/environment as anything in block(locate(1, 1, z), locate(world.maxx, world.maxy, z)))
-			var/area/environment_area = environment.loc
-			if(isnull(environment_area))
-				continue
-			if(protect_indoors && !environment_area.outdoors)
-				continue
-			if(protected_typecache && is_type_in_typecache(environment_area, protected_typecache))
-				continue
-			impacted_areas[environment_area] = TRUE
-	// Sound spots follow the same robust set so every affected area is audible.
-	for(var/area/place as anything in impacted_areas)
+		var/list/on_z = SSmapping.areas_in_z["[z]"]
+		if(on_z)
+			eligible_areas |= on_z
+	for(var/area/place as anything in eligible_areas)
 		if(place.outdoors)
 			weak_sounds[place] = /datum/looping_sound/weak_outside_ashstorm
 			strong_sounds[place] = /datum/looping_sound/active_outside_ashstorm

@@ -27,6 +27,9 @@
 	TEST_ASSERT_NULL(initial(probe_path.color), "у /atom/movable/lighting_object снова типовой дефолт color - он форсит личный atom_colours на каждом инстансе, ставить матрицу надо в New() после ..()")
 
 	var/atom/movable/lighting_object/live = run_loc_floor_bottom_left.lighting_object
+	if(!live) //объект света мог снести предыдущий тест зоны
+		live = new(run_loc_floor_bottom_left)
+		allocated_force_qdel += live
 	TEST_ASSERT_NOTNULL(live, "на тестовом турфе нет объекта освещения - проверять нечего")
 	TEST_ASSERT_NULL(live.atom_colours, "живой объект освещения завёл atom_colours на [length(live.atom_colours)] слотов")
 	TEST_ASSERT_NOTNULL(live.color, "объект освещения остался без цветовой матрицы")

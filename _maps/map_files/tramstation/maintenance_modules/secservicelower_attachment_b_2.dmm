@@ -1,0 +1,130 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+"d" = (
+/obj/modular_map_connector,
+/turf/closed/wall,
+/area/maintenance/port/central)
+"e" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/dice/d4 = 1, /obj/item/dice/d6 = 1, /obj/item/dice/d8 = 1, /obj/item/dice/d10 = 1, /obj/item/dice/d12 = 1, /obj/item/dice/d20 = 1)
+	},
+/obj/item/toy/cards/deck,
+/obj/effect/spawner/lootdrop/costume,
+/obj/effect/spawner/lootdrop/costume,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+"w" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Maintenance Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+"z" = (
+/turf/closed/wall,
+/area/maintenance/port/central)
+"A" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/structure/extinguisher_cabinet/directional/north,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/clothing/head/hardhat,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+"G" = (
+/turf/template_noop,
+/area/template_noop)
+"I" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Storage Maintenance Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+"N" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/reagent_containers/food/drinks/beer = 75, /obj/item/reagent_containers/food/drinks/ale = 25, /obj/item/reagent_containers/food/drinks/bottle/whiskey = 5, /obj/item/reagent_containers/food/drinks/bottle/gin = 5, /obj/item/reagent_containers/food/drinks/bottle/vodka = 5, /obj/item/reagent_containers/food/drinks/bottle/tequila = 5, /obj/item/reagent_containers/food/drinks/bottle/rum = 5, /obj/item/reagent_containers/food/drinks/bottle/vermouth = 5, /obj/item/reagent_containers/food/drinks/bottle/cognac = 5, /obj/item/reagent_containers/food/drinks/bottle/wine = 5, /obj/item/reagent_containers/food/drinks/bottle/kahlua = 5, /obj/item/reagent_containers/food/drinks/bottle/amaretto = 5, /obj/item/reagent_containers/food/drinks/bottle/hcider = 5, /obj/item/reagent_containers/food/drinks/bottle/absinthe = 5, /obj/item/reagent_containers/food/drinks/bottle/sake = 5, /obj/item/reagent_containers/food/drinks/bottle/grappa = 5, /obj/item/reagent_containers/food/drinks/bottle/applejack = 5, /obj/item/reagent_containers/food/drinks/bottle/fernet = 2, /obj/item/reagent_containers/food/drinks/bottle/champagne = 2, /obj/item/reagent_containers/food/drinks/bottle/goldschlager = 2, /obj/item/reagent_containers/food/drinks/bottle/patron = 1, /obj/item/reagent_containers/food/drinks/bottle/lizardwine = 1, /obj/item/reagent_containers/food/drinks/bottle/trappist = 1)
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/reagent_containers/food/drinks/beer = 75, /obj/item/reagent_containers/food/drinks/ale = 25, /obj/item/reagent_containers/food/drinks/bottle/whiskey = 5, /obj/item/reagent_containers/food/drinks/bottle/gin = 5, /obj/item/reagent_containers/food/drinks/bottle/vodka = 5, /obj/item/reagent_containers/food/drinks/bottle/tequila = 5, /obj/item/reagent_containers/food/drinks/bottle/rum = 5, /obj/item/reagent_containers/food/drinks/bottle/vermouth = 5, /obj/item/reagent_containers/food/drinks/bottle/cognac = 5, /obj/item/reagent_containers/food/drinks/bottle/wine = 5, /obj/item/reagent_containers/food/drinks/bottle/kahlua = 5, /obj/item/reagent_containers/food/drinks/bottle/amaretto = 5, /obj/item/reagent_containers/food/drinks/bottle/hcider = 5, /obj/item/reagent_containers/food/drinks/bottle/absinthe = 5, /obj/item/reagent_containers/food/drinks/bottle/sake = 5, /obj/item/reagent_containers/food/drinks/bottle/grappa = 5, /obj/item/reagent_containers/food/drinks/bottle/applejack = 5, /obj/item/reagent_containers/food/drinks/bottle/fernet = 2, /obj/item/reagent_containers/food/drinks/bottle/champagne = 2, /obj/item/reagent_containers/food/drinks/bottle/goldschlager = 2, /obj/item/reagent_containers/food/drinks/bottle/patron = 1, /obj/item/reagent_containers/food/drinks/bottle/lizardwine = 1, /obj/item/reagent_containers/food/drinks/bottle/trappist = 1)
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/reagent_containers/food/drinks/soda_cans/grey_bull = 3, /obj/item/reagent_containers/food/drinks/soda_cans/monkey_energy = 2, /obj/item/reagent_containers/food/drinks/soda_cans/thirteenloko = 2, /obj/item/reagent_containers/food/drinks/soda_cans/shamblers = 1, /obj/item/reagent_containers/food/drinks/soda_cans/pwr_game = 1, /obj/item/reagent_containers/food/drinks/soda_cans/dr_gibb = 1, /obj/item/reagent_containers/food/drinks/soda_cans/space_mountain_wind = 1, /obj/item/reagent_containers/food/drinks/soda_cans/starkist = 1, /obj/item/reagent_containers/food/drinks/soda_cans/space_up = 1, /obj/item/reagent_containers/food/drinks/soda_cans/sol_dry = 1, /obj/item/reagent_containers/food/drinks/soda_cans/cola = 1)
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/reagent_containers/food/drinks/soda_cans/grey_bull = 3, /obj/item/reagent_containers/food/drinks/soda_cans/monkey_energy = 2, /obj/item/reagent_containers/food/drinks/soda_cans/thirteenloko = 2, /obj/item/reagent_containers/food/drinks/soda_cans/shamblers = 1, /obj/item/reagent_containers/food/drinks/soda_cans/pwr_game = 1, /obj/item/reagent_containers/food/drinks/soda_cans/dr_gibb = 1, /obj/item/reagent_containers/food/drinks/soda_cans/space_mountain_wind = 1, /obj/item/reagent_containers/food/drinks/soda_cans/starkist = 1, /obj/item/reagent_containers/food/drinks/soda_cans/space_up = 1, /obj/item/reagent_containers/food/drinks/soda_cans/sol_dry = 1, /obj/item/reagent_containers/food/drinks/soda_cans/cola = 1)
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/clothing/mask/cigarette/cigar = 3, /obj/item/clothing/mask/cigarette/cigar/havana = 2, /obj/item/clothing/mask/cigarette/cigar/cohiba = 1)
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/clothing/mask/cigarette/cigar = 3, /obj/item/clothing/mask/cigarette/cigar/havana = 2, /obj/item/clothing/mask/cigarette/cigar/cohiba = 1)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+"U" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Storage Maintenance Hatch"
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+
+(1,1,1) = {"
+z
+z
+z
+z
+z
+z
+"}
+(2,1,1) = {"
+z
+e
+U
+c
+c
+z
+"}
+(3,1,1) = {"
+z
+z
+z
+A
+c
+z
+"}
+(4,1,1) = {"
+z
+N
+I
+c
+c
+z
+"}
+(5,1,1) = {"
+G
+G
+G
+G
+w
+d
+"}
+(6,1,1) = {"
+G
+G
+G
+G
+G
+G
+"}

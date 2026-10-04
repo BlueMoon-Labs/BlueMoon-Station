@@ -981,7 +981,7 @@
 		deleted = loc
 	forceMove(get_turf(loc))
 	dropped(deleted) // Act like we've been dropped
-	plane = initial(plane)
+	RESET_PLANE_EXPLICIT(src, src)
 	layer = initial(layer)
 	update_portal()
 

@@ -118,6 +118,7 @@
 
 /obj/effect/dummy/chameleon/proc/activate(mob/M, saved_appearance, obj/item/chameleon/C)
 	appearance = saved_appearance
+	SET_PLANE_IMPLICIT(src, PLANE_TO_TRUE(plane))
 	if(istype(M.buckled, /obj/vehicle))
 		var/obj/vehicle/V = M.buckled
 		var/datum/component/riding/VRD = V.GetComponent(/datum/component/riding)

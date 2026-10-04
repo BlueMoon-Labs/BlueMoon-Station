@@ -288,7 +288,7 @@
 		return FALSE
 	I.forceMove(drop_location())
 	I.layer = initial(I.layer)
-	I.plane = initial(I.plane)
+	RESET_PLANE_EXPLICIT(I, I)
 	I.dropped(src)
 	return FALSE
 
@@ -371,7 +371,7 @@
 	if(!QDELETED(I))
 		I.screen_loc = null
 		I.layer = initial(I.layer)
-		I.plane = initial(I.plane)
+		RESET_PLANE_EXPLICIT(I, newloc)
 		I.appearance_flags &= ~NO_CLIENT_COLOR
 		if(!no_move && !(I.item_flags & DROPDEL))	//item may be moved/qdel'd immedietely, don't bother moving it
 			if (isnull(newloc))

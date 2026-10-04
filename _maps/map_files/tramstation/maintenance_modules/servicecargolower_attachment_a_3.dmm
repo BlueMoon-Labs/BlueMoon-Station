@@ -1,0 +1,333 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/cardboard,
+/obj/effect/spawner/lootdrop/maintenance/four,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/stack/sheet/mineral/wood/twenty = 1, /obj/item/stack/sheet/cardboard/fifty = 1, /obj/item/stack/sheet/mineral/sandstone/thirty = 1)
+	},
+/turf/open/floor/plating,
+/area/maintenance/starboard/greater)
+"d" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/extinguisher_cabinet/directional/east,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"e" = (
+/obj/effect/turf_decal/weather/sand/floor,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"f" = (
+/obj/item/stack/ore/glass,
+/turf/open/floor/plating/asteroid{
+	dug = 1;
+	floor_variance = 0;
+	icon_state = "asteroid_dug"
+	},
+/area/asteroid/tramstation)
+"g" = (
+/obj/effect/decal/remains/xeno,
+/turf/open/floor/plating/asteroid{
+	dug = 1;
+	floor_variance = 0;
+	icon_state = "asteroid_dug"
+	},
+/area/asteroid/tramstation)
+"i" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"l" = (
+/obj/item/stack/sheet/bone{
+	amount = 5
+	},
+/turf/open/floor/plating/asteroid{
+	dug = 1;
+	floor_variance = 0;
+	icon_state = "asteroid_dug"
+	},
+/area/asteroid/tramstation)
+"n" = (
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Maintenance Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/obj/effect/decal/cleanable/dirt,
+/obj/modular_map_connector,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"o" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/asteroid/tramstation)
+"q" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/structure/reagent_dispensers/fueltank = 5, /obj/structure/reagent_dispensers/watertank = 4, /obj/structure/reagent_dispensers/watertank/high = 1)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"t" = (
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"v" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/maintenance/starboard/greater)
+"w" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/structure/reagent_dispensers/fueltank = 5, /obj/structure/reagent_dispensers/watertank = 4, /obj/structure/reagent_dispensers/watertank/high = 1)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"y" = (
+/obj/effect/spawner/lootdrop/trashbin,
+/turf/open/floor/plating/asteroid{
+	dug = 1;
+	floor_variance = 0;
+	icon_state = "asteroid_dug"
+	},
+/area/asteroid/tramstation)
+"A" = (
+/obj/structure/falsewall,
+/obj/effect/turf_decal/weather/sand/plating,
+/turf/open/floor/plating,
+/area/maintenance/starboard/greater)
+"B" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/machinery/portable_atmospherics/canister/air = 4, /obj/machinery/portable_atmospherics/canister/oxygen = 1)
+	},
+/turf/open/floor/plating,
+/area/maintenance/starboard/greater)
+"C" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/effect/spawner/lootdrop/minor/beret_or_rabbitears,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"D" = (
+/obj/item/shovel,
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"E" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/effect/spawner/lootdrop/random/bureaucracy/folder,
+/obj/effect/spawner/lootdrop/random/bureaucracy/pen,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"G" = (
+/turf/template_noop,
+/area/template_noop)
+"H" = (
+/turf/closed/wall,
+/area/maintenance/starboard/greater)
+"J" = (
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Maintenance Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"K" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/cobweb,
+/obj/structure/closet/crate,
+/obj/effect/spawner/lootdrop/maintenance/three,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/wrench = 2, /obj/item/wirecutters = 2, /obj/item/screwdriver = 2, /obj/item/crowbar = 2, /obj/item/weldingtool = 2, /obj/item/stack/cable_coil = 2, /obj/item/analyzer = 2, /obj/item/t_scanner = 2, /obj/item/multitool = 1, /obj/item/clothing/glasses/meson = 1, /obj/item/storage/belt/utility = 1, /obj/item/clothing/head/welding = 1)
+	},
+/turf/open/floor/plating,
+/area/maintenance/starboard/greater)
+"N" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/stool/directional/west,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"Q" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/window{
+	dir = 1
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"R" = (
+/obj/structure/lattice,
+/turf/open/space/basic,
+/area/maintenance/starboard/greater)
+"S" = (
+/turf/open/floor/plating/asteroid{
+	dug = 1;
+	floor_variance = 0;
+	icon_state = "asteroid_dug"
+	},
+/area/asteroid/tramstation)
+"T" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/maintenance/starboard/greater)
+"W" = (
+/obj/structure/girder,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/maintenance/starboard/greater)
+
+(1,1,1) = {"
+o
+o
+o
+o
+o
+G
+G
+G
+G
+G
+G
+"}
+(2,1,1) = {"
+o
+o
+t
+t
+o
+H
+K
+Q
+i
+n
+G
+"}
+(3,1,1) = {"
+o
+t
+S
+f
+o
+H
+B
+Q
+i
+G
+G
+"}
+(4,1,1) = {"
+o
+S
+y
+g
+f
+H
+a
+Q
+d
+G
+G
+"}
+(5,1,1) = {"
+o
+t
+f
+l
+D
+H
+W
+H
+H
+G
+G
+"}
+(6,1,1) = {"
+o
+t
+t
+S
+t
+H
+T
+v
+R
+G
+G
+"}
+(7,1,1) = {"
+o
+o
+t
+t
+t
+H
+W
+H
+H
+G
+G
+"}
+(8,1,1) = {"
+o
+o
+o
+t
+t
+H
+C
+E
+i
+G
+G
+"}
+(9,1,1) = {"
+o
+o
+H
+H
+A
+H
+N
+i
+i
+G
+G
+"}
+(10,1,1) = {"
+o
+o
+H
+q
+e
+H
+i
+i
+i
+G
+G
+"}
+(11,1,1) = {"
+o
+o
+H
+w
+i
+J
+i
+i
+i
+J
+G
+"}
+(12,1,1) = {"
+H
+H
+H
+H
+H
+H
+G
+G
+G
+G
+G
+"}

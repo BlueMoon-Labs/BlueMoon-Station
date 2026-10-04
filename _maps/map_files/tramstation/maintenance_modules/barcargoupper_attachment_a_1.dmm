@@ -1,0 +1,213 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/template_noop)
+"d" = (
+/obj/effect/turf_decal/siding/thinplating_new{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/confetti,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"i" = (
+/obj/effect/turf_decal/siding/thinplating_new{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/confetti,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"k" = (
+/obj/effect/turf_decal/siding/thinplating_new/corner{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/wood{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/confetti,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"m" = (
+/obj/modular_map_connector,
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Theatre Storage Maintenance Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/service/theatre,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"n" = (
+/turf/closed/wall,
+/area/maintenance/department/cargo)
+"o" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/siding/thinplating_new{
+	dir = 1
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"v" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/secure_closet/freezer/cream_pie,
+/turf/open/floor/plasteel/white,
+/area/maintenance/department/cargo)
+"w" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/pie_smudge,
+/turf/open/floor/plasteel/white,
+/area/maintenance/department/cargo)
+"x" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate/wooden{
+	name = "costume crate"
+	},
+/obj/effect/spawner/lootdrop/costume,
+/obj/effect/spawner/lootdrop/costume,
+/obj/item/vending_refill/autodrobe,
+/obj/item/bedsheet/mime,
+/obj/item/clothing/mask/gas/mime,
+/obj/item/clothing/mask/gas/clown_hat,
+/obj/item/bedsheet/clown,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"z" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table/wood,
+/obj/structure/mirror/directional/east,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"C" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plasteel/white,
+/area/maintenance/department/cargo)
+"L" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/confetti,
+/turf/open/floor/plasteel/white,
+/area/maintenance/department/cargo)
+"O" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate/wooden/toy,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"P" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/siding/thinplating_new{
+	dir = 8
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"Q" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/confetti,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"S" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/secure_closet/freezer{
+	name = "prop fridge"
+	},
+/obj/item/reagent_containers/food/snacks/grown/banana,
+/obj/item/reagent_containers/food/snacks/grown/banana,
+/obj/item/reagent_containers/food/snacks/grown/banana,
+/obj/item/grown/sunflower,
+/turf/open/floor/plasteel/white,
+/area/maintenance/department/cargo)
+"W" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"X" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table/wood,
+/obj/item/lipstick/random{
+	pixel_x = 2;
+	pixel_y = 2
+	},
+/obj/effect/spawner/lootdrop/minor/kittyears_or_rabbitears,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"Z" = (
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+Z
+"}
+(2,1,1) = {"
+c
+c
+c
+n
+v
+w
+o
+Q
+Z
+"}
+(3,1,1) = {"
+c
+c
+c
+n
+S
+L
+o
+W
+m
+"}
+(4,1,1) = {"
+c
+c
+c
+n
+C
+L
+i
+W
+Z
+"}
+(5,1,1) = {"
+c
+c
+c
+n
+P
+d
+k
+W
+Z
+"}
+(6,1,1) = {"
+c
+c
+c
+n
+x
+O
+z
+X
+Z
+"}
+(7,1,1) = {"
+c
+c
+c
+n
+n
+n
+n
+n
+Z
+"}

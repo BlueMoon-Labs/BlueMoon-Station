@@ -188,9 +188,9 @@ GLOBAL_LIST_INIT(heretic_capture_latch_sounds, list(
 	path_id = new_path_id
 	ink = path_id ? heretic_path_ink(path_id) : HERETIC_FX_GRIP_INK
 	color = ink
-	add_overlay(emissive_appearance(icon, "[icon_state]_glow"))
+	add_floor_overlay(emissive_appearance(icon, "[icon_state]_glow", offset_spokesman = src))
 	host_ref = WEAKREF(host)
-	host.vis_contents += src
+	host.add_vis_on_floor(src)
 	alpha = 0
 	animate(src, alpha = 255, time = HERETIC_FX_HOLD_FADE_IN, easing = SINE_EASING | EASE_OUT)
 
@@ -249,7 +249,7 @@ GLOBAL_LIST_INIT(heretic_capture_latch_sounds, list(
 	var/mutable_appearance/edge = mutable_appearance(rift.icon, "[state]_glow")
 	edge.color = ink
 	rift.add_overlay(edge)
-	rift.add_overlay(emissive_appearance(rift.icon, "[state]_glow"))
+	rift.add_overlay(emissive_appearance(rift.icon, "[state]_glow", offset_spokesman = rift))
 
 /obj/effect/heretic_pocket_rift/proc/settle()
 	heretic_rift_show(src, rift_state, heretic_path_ink(pocket?.owner?.selected_path))
@@ -461,7 +461,7 @@ GLOBAL_LIST_INIT(heretic_capture_latch_sounds, list(
 
 /obj/effect/temp_visual/heretic_large_fx/Initialize(mapload)
 	. = ..()
-	add_overlay(emissive_appearance(icon, "[icon_state]_glow"))
+	add_overlay(emissive_appearance(icon, "[icon_state]_glow", offset_spokesman = src))
 
 /// Когти из лужи под прижатой целью.
 /obj/effect/temp_visual/heretic_large_fx/door_grip

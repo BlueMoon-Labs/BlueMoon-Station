@@ -502,7 +502,7 @@
 
 /obj/effect/temp_visual/heretic_sand_sun/Initialize(mapload)
 	. = ..()
-	add_overlay(emissive_appearance(icon, icon_state))
+	add_overlay(emissive_appearance(icon, icon_state, offset_spokesman = src))
 	transform = matrix(HERETIC_SAND_SUN_START, 0, 0, 0, HERETIC_SAND_SUN_START, 0)
 	animate(src, transform = matrix(HERETIC_SAND_SUN_PEAK, 0, 0, 0, HERETIC_SAND_SUN_PEAK, 0), time = HERETIC_SAND_SUN_RISE, easing = BACK_EASING | EASE_OUT)
 	animate(transform = matrix(HERETIC_SAND_SUN_END, 0, 0, 0, HERETIC_SAND_SUN_END, 0), alpha = 0, time = HERETIC_SAND_SUN_TIME - HERETIC_SAND_SUN_RISE, easing = SINE_EASING | EASE_IN)

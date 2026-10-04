@@ -22,6 +22,8 @@
 		#include "map_files\CogStation\CogStation.dmm"
 		#include "map_files\TauStation\TauStation.dmm"
 		#include "map_files\bluemoon_maps\icemoonstation.dmm"
+		#include "map_files\tramstation\tramstation.dmm"
+		#include "map_files\NorthStar\north_star.dmm"
 		// #include "modular_bluemoon\_maps\PrisonStation\PrisonStation.dmm"
 		#ifdef CIBUILDING
 			#include "templates.dm"

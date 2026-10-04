@@ -1,0 +1,412 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "2-4"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/eva)
+"c" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/eva)
+"d" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/extinguisher_cabinet/directional/north,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/eva)
+"e" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "1-8"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/eva)
+"f" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "2-8"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/eva)
+"g" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/eva)
+"h" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/eva)
+"l" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair{
+	dir = 8
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/eva)
+"m" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/eva)
+"o" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/eva)
+"p" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/landmark/event_spawn,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/eva)
+"t" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/firecloset,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/eva)
+"u" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/landmark/blobstart,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/eva)
+"x" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/flashlight = 20, /obj/item/flashlight/flare = 10, /obj/effect/spawner/lootdrop/glowstick = 10, /obj/item/flashlight/lantern = 5, /obj/item/flashlight/seclite = 4)
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/wrench = 2, /obj/item/wirecutters = 2, /obj/item/screwdriver = 2, /obj/item/crowbar = 2, /obj/item/weldingtool = 2, /obj/item/stack/cable_coil = 2, /obj/item/analyzer = 2, /obj/item/t_scanner = 2, /obj/item/multitool = 1, /obj/item/clothing/glasses/meson = 1, /obj/item/storage/belt/utility = 1, /obj/item/clothing/head/welding = 1)
+	},
+/obj/effect/spawner/lootdrop/maintenance/three,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/eva)
+"z" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
+/obj/machinery/power/apc/auto_name/north,
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/eva)
+"A" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/asteroid/tramstation)
+"B" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop/trashbin,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/eva)
+"H" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/machinery/space_heater = 8, /obj/machinery/shieldgen = 3, /obj/machinery/portable_atmospherics/pump = 1, /obj/machinery/portable_atmospherics/scrubber = 1)
+	},
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/eva)
+"K" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate,
+/obj/effect/spawner/lootdrop/maintenance/four,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/stack/sheet/mineral/wood/twenty = 1, /obj/item/stack/sheet/cardboard/fifty = 1, /obj/item/stack/sheet/mineral/sandstone/thirty = 1)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/eva)
+"L" = (
+/obj/modular_map_connector,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/girder,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/eva)
+"M" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/girder,
+/obj/structure/grille,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/eva)
+"P" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/reagent_dispensers/watertank,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/eva)
+"Q" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/girder,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/eva)
+"S" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate,
+/obj/effect/spawner/lootdrop/maintenance/six,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/eva)
+"T" = (
+/turf/closed/wall,
+/area/maintenance/department/eva)
+"V" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Maintenance Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/eva)
+"X" = (
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+X
+X
+X
+X
+X
+X
+A
+A
+A
+A
+A
+X
+X
+"}
+(2,1,1) = {"
+X
+X
+X
+X
+X
+X
+A
+A
+A
+A
+A
+X
+X
+"}
+(3,1,1) = {"
+X
+X
+X
+X
+X
+X
+A
+A
+A
+A
+A
+X
+X
+"}
+(4,1,1) = {"
+X
+X
+X
+X
+A
+A
+A
+A
+A
+A
+A
+X
+X
+"}
+(5,1,1) = {"
+X
+X
+A
+A
+A
+A
+A
+A
+A
+A
+A
+T
+a
+"}
+(6,1,1) = {"
+X
+X
+T
+T
+T
+T
+T
+A
+A
+A
+A
+T
+g
+"}
+(7,1,1) = {"
+X
+A
+T
+S
+c
+m
+T
+T
+T
+T
+T
+T
+d
+"}
+(8,1,1) = {"
+A
+A
+T
+M
+u
+l
+T
+H
+P
+o
+Q
+t
+g
+"}
+(9,1,1) = {"
+A
+A
+T
+K
+c
+c
+T
+z
+p
+c
+L
+x
+g
+"}
+(10,1,1) = {"
+A
+A
+T
+T
+T
+V
+T
+f
+h
+B
+h
+h
+e
+"}
+(11,1,1) = {"
+X
+A
+A
+T
+c
+c
+c
+c
+X
+X
+X
+X
+X
+"}
+(12,1,1) = {"
+X
+A
+A
+T
+c
+X
+X
+X
+X
+X
+X
+X
+X
+"}
+(13,1,1) = {"
+X
+A
+A
+T
+c
+X
+X
+X
+X
+X
+X
+X
+X
+"}
+(14,1,1) = {"
+X
+A
+A
+T
+c
+X
+X
+X
+X
+X
+X
+X
+X
+"}
+(15,1,1) = {"
+X
+A
+A
+T
+c
+X
+X
+X
+X
+X
+X
+X
+X
+"}
+(16,1,1) = {"
+X
+X
+X
+X
+c
+X
+X
+X
+X
+X
+X
+X
+X
+"}

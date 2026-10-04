@@ -268,7 +268,7 @@ GLOBAL_LIST_INIT(heretic_rust_wave_sounds, list(
 	veins.alpha = HERETIC_RUST_HEART_VEINS
 	veins.appearance_flags = RESET_COLOR
 	add_overlay(veins)
-	add_overlay(emissive_appearance(icon, "tumor_glow", alpha = HERETIC_RUST_HEART_GLOW))
+	add_overlay(emissive_appearance(icon, "tumor_glow", alpha = HERETIC_RUST_HEART_GLOW, offset_spokesman = src))
 	flakes = heretic_vfx_attach_particles(src, /particles/heretic_ascension/rust/heart, FALSE)
 	if(flakes)
 		flakes.pixel_x = -pixel_x

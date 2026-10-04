@@ -187,7 +187,7 @@ INITIALIZE_IMMEDIATE(/obj/effect/landmark)
 	icon_state = "Research Director"
 
 /obj/effect/landmark/start/expeditor
-	name = "Expeditor"
+	name = "Vanguard Operative"
 	icon_state = "Research Director"
 
 /obj/effect/landmark/start/geneticist

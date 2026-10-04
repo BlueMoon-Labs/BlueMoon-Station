@@ -1,0 +1,233 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/chair/stool,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"i" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/reagent_containers/food/snacks/grown/cannabis = 25, /obj/item/reagent_containers/food/snacks/grown/cannabis/white = 25, /obj/item/reagent_containers/food/snacks/grown/cannabis/death = 24, /obj/item/reagent_containers/food/snacks/grown/cannabis/rainbow = 25, /obj/item/reagent_containers/food/snacks/grown/cannabis/ultimate = 1)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"j" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/cigbutt = 25, /obj/item/cigbutt/roach = 25, /obj/effect/decal/cleanable/ash = 25, /obj/item/cigbutt/cigarbutt = 15)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"l" = (
+/obj/structure/closet/crate,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/stack/medical/suture = 1, /obj/item/stack/medical/mesh = 1, /obj/item/stack/medical/gauze = 1)
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/vending_refill/cola = 8, /obj/item/vending_refill/snack = 8, /obj/item/vending_refill/coffee = 8, /obj/item/vending_refill/cigarette = 8, /obj/item/vending_refill/boozeomat = 4, /obj/item/vending_refill/engivend = 4, /obj/item/vending_refill/youtool = 4, /obj/item/vending_refill/medical = 3, /obj/item/vending_refill/clothing = 2, /obj/item/vending_refill/autodrobe = 2, /obj/item/vending_refill/security = 1)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"t" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/asteroid/tramstation)
+"C" = (
+/obj/structure/rack,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop/maintenance/three,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/wrench = 2, /obj/item/wirecutters = 2, /obj/item/screwdriver = 2, /obj/item/crowbar = 2, /obj/item/weldingtool = 2, /obj/item/stack/cable_coil = 2, /obj/item/analyzer = 2, /obj/item/t_scanner = 2, /obj/item/multitool = 1, /obj/item/clothing/glasses/meson = 1, /obj/item/storage/belt/utility = 1, /obj/item/clothing/head/welding = 1)
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/storage/toolbox/emergency = 4, /obj/item/storage/toolbox/electrical = 2, /obj/item/storage/toolbox/mechanical = 2)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"D" = (
+/obj/structure/closet/cardboard,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop/costume,
+/obj/effect/spawner/lootdrop/costume,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"F" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/stool/directional/east,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"L" = (
+/obj/structure/girder,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/grille,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"R" = (
+/obj/structure/closet,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/stack/sheet/mineral/wood/twenty = 1, /obj/item/stack/sheet/cardboard/fifty = 1, /obj/item/stack/sheet/mineral/sandstone/thirty = 1)
+	},
+/obj/effect/spawner/lootdrop/maintenance/two,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/flashlight = 20, /obj/item/flashlight/flare = 10, /obj/effect/spawner/lootdrop/glowstick = 10, /obj/item/flashlight/lantern = 5, /obj/item/flashlight/seclite = 4)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"T" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/modular_map_connector,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"V" = (
+/turf/closed/wall,
+/area/maintenance/department/crew_quarters/dorms)
+"Y" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+
+(1,1,1) = {"
+V
+V
+V
+t
+t
+t
+t
+t
+t
+t
+t
+"}
+(2,1,1) = {"
+Y
+D
+V
+t
+t
+t
+t
+t
+t
+t
+t
+"}
+(3,1,1) = {"
+Y
+C
+V
+t
+t
+t
+t
+t
+t
+t
+t
+"}
+(4,1,1) = {"
+Y
+L
+V
+t
+t
+t
+t
+t
+t
+t
+t
+"}
+(5,1,1) = {"
+Y
+F
+V
+t
+t
+t
+t
+t
+t
+t
+t
+"}
+(6,1,1) = {"
+Y
+i
+V
+t
+t
+t
+t
+t
+t
+t
+t
+"}
+(7,1,1) = {"
+j
+a
+V
+t
+t
+t
+t
+t
+t
+t
+t
+"}
+(8,1,1) = {"
+Y
+L
+V
+t
+t
+t
+t
+t
+t
+t
+t
+"}
+(9,1,1) = {"
+T
+R
+V
+t
+t
+t
+t
+t
+t
+t
+t
+"}
+(10,1,1) = {"
+Y
+l
+V
+t
+t
+t
+t
+t
+t
+t
+t
+"}
+(11,1,1) = {"
+V
+V
+V
+t
+t
+t
+t
+t
+t
+t
+t
+"}

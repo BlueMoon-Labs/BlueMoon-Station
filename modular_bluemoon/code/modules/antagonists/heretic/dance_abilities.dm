@@ -412,7 +412,7 @@
 	var/list/image/shown = list()
 	for(var/mob/living/victim as anything in hearts)
 		var/image/heart = image('modular_bluemoon/icons/obj/heretic_dance_marks.dmi', victim, "dance_note", ABOVE_LIGHTING_LAYER)
-		heart.plane = ABOVE_LIGHTING_PLANE
+		SET_PLANE_EXPLICIT(heart, ABOVE_LIGHTING_PLANE, victim)
 		heart.appearance_flags = RESET_COLOR | RESET_TRANSFORM | KEEP_APART
 		shown += heart
 	user.client.images |= shown

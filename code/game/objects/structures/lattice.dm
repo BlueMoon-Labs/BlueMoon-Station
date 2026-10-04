@@ -30,6 +30,24 @@
 		if(LAT != src)
 			QDEL_IN(LAT, 0)
 
+/obj/structure/lattice/Destroy()
+	var/turf/our_turf = get_turf(src)
+	var/drop_everything = (obj_flags & BLOCK_Z_OUT_DOWN) && our_turf && isopenspaceturf(our_turf)
+	. = ..()
+	if(!drop_everything)
+		return
+	//Опора могла остаться: решётку заменяют на другую, а пол над дырой строят через qdel решётки до PlaceOnTop().
+	for(var/obj/other_support in our_turf)
+		if(other_support == src)
+			continue
+		if(other_support.obj_flags & BLOCK_Z_OUT_DOWN)
+			return
+	//Снимок: zFall правит contents по ходу и уводит вниз всю группу.
+	for(var/atom/movable/thing as anything in our_turf.contents.Copy())
+		if(QDELETED(thing) || thing.loc != our_turf)
+			continue
+		our_turf.zFall(thing)
+
 /obj/structure/lattice/blob_act(obj/structure/blob/B)
 	return
 

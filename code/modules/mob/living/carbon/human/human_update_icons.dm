@@ -84,6 +84,13 @@ There are several things that need to be remembered:
 		if(update_genitals)
 			update_genitals()
 
+/mob/living/carbon/human/update_plane_offset(old_z, new_z)
+	var/new_offset = new_z ? GET_Z_PLANE_OFFSET(new_z) : 0
+	if((old_z ? GET_Z_PLANE_OFFSET(old_z) : 0) == new_offset)
+		return ..()
+	. = ..()
+	update_genitals()
+
 /mob/living/carbon/human/update_fire()
 	..((fire_stacks > 3) ? "Standing" : "Generic_mob_burning")
 
@@ -1043,8 +1050,10 @@ use_mob_overlay_icon: if FALSE, it will always use the default_icon_file even if
 
 
 //produces a key based on the human's limbs
-/mob/living/carbon/human/generate_icon_render_key()
+/mob/living/carbon/human/generate_icon_render_key(plane_offset = LIMB_PLANE_OFFSET(src))
 	. = "[dna.species.mutant_bodyparts["limbs_id"]]"
+	if(plane_offset)
+		. += "-floor[plane_offset]"
 	. += "[dna.features["color_scheme"]]"
 
 	if(dna.check_mutation(HULK))

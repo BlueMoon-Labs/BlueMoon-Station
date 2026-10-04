@@ -178,7 +178,7 @@
 	src.source = source
 	src.data = data
 	var/turf/T = get_turf(source)
-	levels = list(T.z)
+	levels = SSmapping.get_connected_levels(T).Copy()
 
 /datum/signal/subspace/pda/copy()
 	var/datum/signal/subspace/pda/copy = new(source, data.Copy())
@@ -215,7 +215,7 @@
 	data = init_data
 	var/turf/origin_turf = get_turf(source)
 	if(origin_turf)
-		levels = list(origin_turf.z)
+		levels = SSmapping.get_connected_levels(origin_turf).Copy()
 	if(!("reject" in data))
 		data["reject"] = TRUE
 

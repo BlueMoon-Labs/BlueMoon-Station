@@ -8,8 +8,8 @@
 	icon = 'icons/turf/areas.dmi'
 	icon_state = "unknown"
 	layer = AREA_LAYER
-	//Keeping this on the default plane, GAME_PLANE, will make area overlays fail to render on FLOOR_PLANE.
-	plane = BLACKNESS_PLANE
+	//Своя плоскость с мастером: без него область лежала под собранной картинкой мира.
+	plane = AREA_PLANE
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	invisibility = INVISIBILITY_LIGHTING
 
@@ -38,6 +38,8 @@
 
 	/// Size of the area in open turfs, only calculated for indoors areas.
 	var/areasize = 0
+	/// z-уровни, где у области есть турфы. area.z у BYOND - только z нижнего турфа. Заполняет reg_in_areas_in_z().
+	var/list/z_levels
 
 	/// Bonus mood for being in this area
 	var/mood_bonus = 0
@@ -329,21 +331,43 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 		map_generator.generate_terrain(turfs)
 
 /**
- * Register this area as belonging to a z level
+ * Register this area as belonging to its z levels
  *
- * Ensures the item is added to the SSmapping.areas_in_z list for this z
+ * Ensures the item is added to the SSmapping.areas_in_z list for every z where it has turfs
  */
 /area/proc/reg_in_areas_in_z()
 	if(!length(contents))
 		return
-	var/list/areas_in_z = SSmapping.areas_in_z
+	unreg_from_areas_in_z()
 	update_areasize()
-	if(!z)
+	update_z_levels()
+	if(!length(z_levels))
 		WARNING("No z found for [src]")
 		return
-	if(!areas_in_z["[z]"])
-		areas_in_z["[z]"] = list()
-	areas_in_z["[z]"] += src
+	var/list/areas_in_z = SSmapping.areas_in_z
+	for(var/floor_z in z_levels)
+		var/list/on_z = areas_in_z["[floor_z]"]
+		if(!on_z)
+			on_z = list()
+			areas_in_z["[floor_z]"] = on_z
+		on_z |= src
+
+/// Снимает область из SSmapping.areas_in_z под всеми z, где она стояла.
+/area/proc/unreg_from_areas_in_z()
+	if(!z_levels)
+		return
+	var/list/areas_in_z = SSmapping.areas_in_z
+	for(var/floor_z in z_levels)
+		var/list/on_z = areas_in_z["[floor_z]"]
+		if(on_z)
+			on_z -= src
+	z_levels = null
+
+/area/proc/update_z_levels()
+	var/list/found = list()
+	for(var/turf/area_turf in contents)
+		found |= area_turf.z
+	z_levels = found
 
 /**
  * Destroy an area and clean it up
@@ -362,6 +386,7 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 	GLOB.sortedAreas -= src
 	if(istype(src, /area/maintenance))
 		GLOB.maintenance_areas -= src
+	unreg_from_areas_in_z()
 	power_apc = null
 	if(base_area)
 		LAZYREMOVE(base_area, src)

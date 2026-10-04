@@ -151,7 +151,7 @@
 
 /obj/effect/temp_visual/heretic_wax_column/Initialize(mapload)
 	. = ..()
-	add_overlay(emissive_appearance(icon, "wax_column_glow"))
+	add_overlay(emissive_appearance(icon, "wax_column_glow", offset_spokesman = src))
 
 /// Снимок свечи оплывает лужицей; вспышка сначала раздувает его холодным светом.
 /obj/effect/temp_visual/heretic_wax_melt

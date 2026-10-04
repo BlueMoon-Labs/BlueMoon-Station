@@ -1,0 +1,247 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"d" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/bot/white,
+/obj/structure/target_stake,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"f" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/bot/white,
+/obj/structure/closet/crate,
+/obj/item/target,
+/obj/item/target/clown,
+/obj/item/target/syndicate,
+/obj/item/target/alien,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"g" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/lasertag/blue,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"h" = (
+/turf/closed/wall,
+/area/maintenance/department/crew_quarters/dorms)
+"n" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"o" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/item/storage/toolbox/gold_fake,
+/obj/item/storage/toolbox/gold_fake{
+	pixel_x = 5;
+	pixel_y = 4
+	},
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"p" = (
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = " Gym Storage Maintenance Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"s" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/boxinggloves,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"v" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/lasertag/red,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"z" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/athletic_mixed,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"D" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/asteroid/tramstation)
+"F" = (
+/obj/structure/rack,
+/obj/item/clothing/under/color/blue,
+/obj/item/clothing/under/color/blue,
+/obj/item/clothing/under/color/blue,
+/obj/item/clothing/head/soft/blue,
+/obj/item/clothing/head/soft/blue,
+/obj/item/clothing/head/soft/blue,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"H" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/bot/white,
+/obj/structure/weightmachine/weightlifter,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"N" = (
+/turf/template_noop,
+/area/template_noop)
+"R" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/bot/white,
+/obj/structure/weightmachine/stacklifter,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"S" = (
+/obj/modular_map_connector,
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = " Gym Storage Maintenance Hatch"
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"T" = (
+/turf/open/floor/plating/asteroid/airless,
+/area/asteroid/tramstation)
+"U" = (
+/obj/structure/rack,
+/obj/item/clothing/under/color/red,
+/obj/item/clothing/under/color/red,
+/obj/item/clothing/under/color/red,
+/obj/item/clothing/head/soft/red,
+/obj/item/clothing/head/soft/red,
+/obj/item/clothing/head/soft/red,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"Y" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+
+(1,1,1) = {"
+N
+D
+D
+D
+D
+D
+D
+"}
+(2,1,1) = {"
+N
+D
+D
+D
+D
+T
+T
+"}
+(3,1,1) = {"
+N
+h
+h
+h
+h
+T
+T
+"}
+(4,1,1) = {"
+N
+z
+o
+s
+h
+h
+T
+"}
+(5,1,1) = {"
+N
+Y
+Y
+Y
+Y
+h
+T
+"}
+(6,1,1) = {"
+N
+Y
+Y
+Y
+Y
+h
+T
+"}
+(7,1,1) = {"
+N
+Y
+d
+R
+H
+h
+T
+"}
+(8,1,1) = {"
+N
+Y
+f
+R
+H
+h
+D
+"}
+(9,1,1) = {"
+N
+p
+h
+h
+h
+h
+D
+"}
+(10,1,1) = {"
+N
+Y
+g
+F
+h
+D
+D
+"}
+(11,1,1) = {"
+S
+Y
+Y
+n
+h
+D
+D
+"}
+(12,1,1) = {"
+N
+Y
+v
+U
+h
+D
+D
+"}
+(13,1,1) = {"
+N
+N
+N
+h
+h
+D
+D
+"}
+(14,1,1) = {"
+N
+N
+N
+N
+N
+N
+N
+"}

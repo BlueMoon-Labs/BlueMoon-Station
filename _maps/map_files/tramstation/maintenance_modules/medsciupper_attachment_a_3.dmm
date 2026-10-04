@@ -1,0 +1,347 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/purple/filled/corner{
+	dir = 4
+	},
+/turf/open/floor/plasteel/white,
+/area/maintenance/department/science)
+"b" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/maintenance/department/science)
+"c" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/landmark/blobstart,
+/turf/open/floor/engine,
+/area/maintenance/department/science)
+"f" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/white,
+/area/maintenance/department/science)
+"h" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/stool/directional/east,
+/turf/open/floor/plasteel/white{
+	icon_state = "damaged1"
+	},
+/area/maintenance/department/science)
+"k" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/trimline/purple/filled/line,
+/turf/open/floor/plasteel/white,
+/area/maintenance/department/science)
+"l" = (
+/obj/structure/table,
+/obj/item/target/syndicate,
+/obj/effect/turf_decal/stripes/yellow/corner,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/target/clown,
+/obj/structure/sign/warning/securearea{
+	pixel_x = 32;
+	name = "TESTING RANGE sign";
+	desc = "A warning sign which reads 'TESTING RANGE'."
+	},
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 5
+	},
+/turf/open/floor/plasteel/white,
+/area/maintenance/department/science)
+"m" = (
+/obj/structure/table,
+/obj/effect/turf_decal/stripes/yellow/corner{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/storage/box/syringes,
+/obj/structure/sign/warning/securearea{
+	pixel_x = 32;
+	name = "TESTING RANGE sign";
+	desc = "A warning sign which reads 'TESTING RANGE'."
+	},
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 6
+	},
+/obj/effect/landmark/xeno_spawn,
+/turf/open/floor/plasteel/white,
+/area/maintenance/department/science)
+"n" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/plating,
+/area/maintenance/department/science)
+"p" = (
+/turf/template_noop,
+/area/template_noop)
+"q" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/engine,
+/area/maintenance/department/science)
+"r" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/mob_spawn{
+	mob_type = /mob/living/carbon/monkey;
+	random = 1;
+	name = "dead monkey"
+	},
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/engine,
+/area/maintenance/department/science)
+"z" = (
+/obj/structure/target_stake,
+/obj/item/target/syndicate,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/engine,
+/area/maintenance/department/science)
+"B" = (
+/obj/modular_map_connector,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Testing Range Maintenance Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/science/research,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 4
+	},
+/turf/open/floor/plasteel/white,
+/area/maintenance/department/science)
+"E" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel/white,
+/area/maintenance/department/science)
+"G" = (
+/obj/structure/rack,
+/obj/item/storage/toolbox/mechanical{
+	pixel_x = -3;
+	pixel_y = 3
+	},
+/obj/item/gun/syringe{
+	pixel_y = -3;
+	pixel_x = -1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 10
+	},
+/turf/open/floor/plasteel/white{
+	icon_state = "damaged4"
+	},
+/area/maintenance/department/science)
+"J" = (
+/obj/structure/table,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/reagent_containers/glass/beaker{
+	pixel_y = 10;
+	pixel_x = 8
+	},
+/obj/item/reagent_containers/glass/beaker{
+	pixel_x = -5;
+	pixel_y = 3
+	},
+/obj/effect/turf_decal/trimline/purple/filled/corner,
+/turf/open/floor/plasteel/white,
+/area/maintenance/department/science)
+"K" = (
+/turf/closed/wall,
+/area/maintenance/department/science)
+"N" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 8
+	},
+/turf/open/floor/plasteel/white,
+/area/maintenance/department/science)
+"S" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/white,
+/area/maintenance/department/science)
+"U" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/stool/directional/east,
+/turf/open/floor/plasteel/white,
+/area/maintenance/department/science)
+"V" = (
+/obj/structure/table,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/firing_pin/test_range,
+/obj/item/firing_pin/test_range{
+	pixel_x = 3;
+	pixel_y = 6
+	},
+/obj/effect/turf_decal/trimline/purple/filled/corner{
+	dir = 4
+	},
+/turf/open/floor/plasteel/white,
+/area/maintenance/department/science)
+"W" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/white{
+	icon_state = "damaged2"
+	},
+/area/maintenance/department/science)
+"X" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/asteroid/tramstation)
+"Z" = (
+/obj/structure/rack,
+/obj/item/gun/energy/laser/redtag,
+/obj/item/gun/energy/laser/bluetag{
+	pixel_x = 4;
+	pixel_y = -3
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 8
+	},
+/turf/open/floor/plasteel/white,
+/area/maintenance/department/science)
+
+(1,1,1) = {"
+p
+p
+p
+p
+p
+p
+p
+p
+"}
+(2,1,1) = {"
+p
+X
+X
+X
+X
+X
+X
+X
+"}
+(3,1,1) = {"
+p
+X
+X
+X
+X
+X
+X
+X
+"}
+(4,1,1) = {"
+p
+X
+X
+X
+X
+X
+X
+X
+"}
+(5,1,1) = {"
+p
+p
+K
+K
+K
+K
+K
+K
+"}
+(6,1,1) = {"
+p
+B
+a
+N
+N
+Z
+G
+K
+"}
+(7,1,1) = {"
+p
+p
+E
+W
+f
+f
+k
+K
+"}
+(8,1,1) = {"
+p
+p
+E
+U
+f
+h
+k
+K
+"}
+(9,1,1) = {"
+p
+p
+l
+V
+S
+J
+m
+K
+"}
+(10,1,1) = {"
+p
+p
+p
+n
+c
+b
+K
+K
+"}
+(11,1,1) = {"
+p
+p
+p
+r
+z
+q
+K
+p
+"}
+(12,1,1) = {"
+p
+p
+p
+K
+K
+K
+K
+p
+"}
+(13,1,1) = {"
+p
+p
+p
+p
+p
+p
+p
+p
+"}

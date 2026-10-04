@@ -271,8 +271,9 @@ GLOBAL_LIST_EMPTY(blob_nodes)
 /mob/camera/blob/Move(NewLoc, Dir = 0)
 	if(placed)
 		var/obj/structure/blob/B = locate() in range("3x3", NewLoc)
-		if(B)
+		if(B || get_vertical_blob_expander(NewLoc))
 			forceMove(NewLoc)
+			return TRUE
 		else
 			return FALSE
 	else
@@ -281,6 +282,20 @@ GLOBAL_LIST_EMPTY(blob_nodes)
 			return FALSE
 		forceMove(NewLoc)
 		return TRUE
+
+//forceMove() у /mob/camera не зовёт onTransitZ(): худ разума остался бы на плоскостях прежнего этажа.
+/mob/camera/blob/forceMove(atom/destination)
+	abstract_move(destination)
+
+/mob/camera/blob/move_vertically(direction)
+	var/turf/destination = can_z_move(direction, get_turf(src), null, ZMOVE_IGNORE_OBSTACLES|ZMOVE_FEEDBACK)
+	if(!destination)
+		return FALSE
+	if(Move(destination))
+		return TRUE
+	var/refusal = placed ? "Рядом с этой клеткой нет вашего блоба." : "Туда не пройти!"
+	to_chat(src, span_warning(refusal))
+	return FALSE
 
 /mob/camera/blob/mind_initialize()
 	. = ..()
