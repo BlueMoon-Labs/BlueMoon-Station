@@ -1,4 +1,4 @@
-#define SMOKE_COST(set, eff) (((((set) * 2) ** 2) * 2) / ((eff)))
+#define SMOKE_COST(set, eff) (((((set) * 2) ** 2) + (((set) * 2) + 1) ** 2) / ((eff) * (5 / 4)))
 #define POWER_COST(set, eff) (400 * (set) / (eff))
 
 /obj/machinery/smoke_machine
