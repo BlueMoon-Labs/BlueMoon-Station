@@ -292,7 +292,7 @@
 		location = loca
 	else
 		location = get_turf(loca)
-	amount = radius * 2
+	amount = radius
 	carry.copy_to(chemholder, carry.total_volume)
 
 	if(!silent)
