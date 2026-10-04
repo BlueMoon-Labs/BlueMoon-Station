@@ -27,6 +27,15 @@
 
 /obj/structure/bed/dildo_machine/Destroy()
 	STOP_PROCESSING(SSobjlw,src)
+	if(attached_portallight)
+		attached_portallight.forceMove(get_turf(src))
+		attached_portallight = null
+	if(dual_mode_attached_dildo)
+		dual_mode_attached_dildo.forceMove(get_turf(src))
+		dual_mode_attached_dildo = null
+	if(attached_dildo)
+		attached_dildo.forceMove(get_turf(src))
+		attached_dildo = null
 	. = ..()
 
 /obj/structure/bed/dildo_machine/examine(mob/user)
@@ -172,17 +181,22 @@
 
 	else if(attached_portallight)
 		var/mob/living/carbon/human/portal_target
-		if(ishuman(attached_portallight.portalunderwear.loc) && (attached_portallight.portalunderwear.current_equipped_slot & (ITEM_SLOT_UNDERWEAR | ITEM_SLOT_MASK)))
-			portal_target = attached_portallight.portalunderwear.loc
-		else
-			var/datum/component/genital_equipment/equipment = attached_portallight.portalunderwear.GetComponent(/datum/component/genital_equipment)
-			if(equipment?.holder_genital)
-				portal_target = equipment.get_wearer()
+		if(attached_portallight.portalunderwear)
+			if(ishuman(attached_portallight.portalunderwear.loc) && (attached_portallight.portalunderwear.current_equipped_slot & (ITEM_SLOT_UNDERWEAR | ITEM_SLOT_MASK)))
+				portal_target = attached_portallight.portalunderwear.loc
+			else
+				var/datum/component/genital_equipment/equipment = attached_portallight.portalunderwear.GetComponent(/datum/component/genital_equipment)
+				if(equipment?.holder_genital)
+					portal_target = equipment.get_wearer()
 		if(portal_target)
 			var/hole_target = attached_portallight.portalunderwear.targetting
 			if(hole_target == CUM_TARGET_VAGINA || hole_target == CUM_TARGET_ANUS || hole_target == CUM_TARGET_MOUTH)
 				hole = hole_target
-				dual_mode = FALSE
+				if(dual_mode)
+					dual_mode = FALSE
+					if(dual_mode_attached_dildo)
+						dual_mode_attached_dildo.forceMove(get_turf(src))
+						dual_mode_attached_dildo = null
 				portal_error = FALSE
 				fuck_target(portal_target, hole, TRUE)
 				return
@@ -278,6 +292,9 @@
 				attached_dildo.forceMove(kit)
 				kit.attached_dildo = attached_dildo
 				attached_dildo = null
+			if(attached_portallight)
+				attached_portallight.forceMove(get_turf(src))
+				attached_portallight = null
 			qdel(src)
 	else if(istype(used_item, /obj/item/dildo) && !(used_item.item_flags & ABSTRACT))
 		if(!attached_dildo)

@@ -396,7 +396,7 @@
 							'modular_sand/sound/interactions/bang5.ogg',
 							'modular_sand/sound/interactions/bang6.ogg'), 70, 1, -1)
 		M.try_play_interaction_effect()
-		M.handle_post_sex( vibration ? lust_amount * 2 : lust_amount, null, M , organ)
+		M.handle_post_sex(vibration ? lust_amount * 2 : lust_amount, null, user, organ)
 		messy = TRUE
 
 
