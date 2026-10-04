@@ -1,6 +1,6 @@
 #define REAGENTS_BASE_VOLUME 75 // actual volume is REAGENTS_BASE_VOLUME plus REAGENTS_BASE_VOLUME * rating for each matterbin
-#define SMOKE_COST(set, eff) ((((set) * 2) ** 2) * 3 / (eff))
-#define POWER_COST(set, eff) (800 * (set) / (eff))
+#define SMOKE_COST(set, eff) ((((set) ** 2) + ((set) + 1) ** 2) / ((eff) * (5 / 4)))
+#define POWER_COST(set, eff) (400 * (set) / (eff))
 
 /obj/machinery/smoke_machine
 	name = "smoke machine"
@@ -87,10 +87,10 @@
 /datum/effect_system/smoke_spread/chem/smoke_machine/set_up(datum/reagents/carry, setting=1, efficiency=1, loc, silent=FALSE)
 	amount = setting * 2
 	var/cost = SMOKE_COST(setting, efficiency)
-	if (cost < 12)
+	if (cost < 16)
 		carry.copy_to(chemholder, cost)
 	else
-		carry.copy_to(chemholder, 12)
+		carry.copy_to(chemholder, 16)
 	carry.remove_any(cost)
 	location = loc
 
