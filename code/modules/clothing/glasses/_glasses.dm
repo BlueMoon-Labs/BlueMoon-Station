@@ -401,15 +401,16 @@
 	. = ..()
 	if(slot == ITEM_SLOT_EYES)
 		var/trait_type = (blind_mode == BLIND_MODE_HARD) ? TRAIT_BLINDFOLD_HARD : TRAIT_BLINDFOLD
-		ADD_TRAIT(user, trait_type, "blindfold")
+		ADD_TRAIT(user, trait_type, "blindfold_[REF(src)]")
 		user.become_blind("blindfold_[REF(src)]")
 		user.update_blindness()
 
 /obj/item/clothing/glasses/sunglasses/blindfold/dropped(mob/living/carbon/human/user)
 	var/trait_type = (blind_mode == BLIND_MODE_HARD) ? TRAIT_BLINDFOLD_HARD : TRAIT_BLINDFOLD
-	REMOVE_TRAIT(user, trait_type, "blindfold")
+	REMOVE_TRAIT(user, trait_type, "blindfold_[REF(src)]")
 	..()
 	user.cure_blind("blindfold_[REF(src)]")
+	user.update_blindness()
 
 /obj/item/clothing/glasses/sunglasses/blindfold/attack_self(mob/user)
 	. = ..()

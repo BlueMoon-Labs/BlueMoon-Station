@@ -30,12 +30,12 @@
 /obj/item/clothing/ears/earmuffs/kink/equipped(mob/user, slot)
 	. = ..()
 	if(slot & ITEM_SLOT_EARS)
-		ADD_TRAIT(user, TRAIT_HEARING_DEPRIVED, "hearing_deprived")
+		ADD_TRAIT(user, TRAIT_HEARING_DEPRIVED, "hearing_deprived_[REF(src)]")
 		to_chat(user, span_purple("Ты почти ничего не слышишь! Твои другие чувства обострились..."))
 
 /obj/item/clothing/ears/earmuffs/kink/dropped(mob/user, slot)
 	. = ..()
-	REMOVE_TRAIT(user, TRAIT_HEARING_DEPRIVED, "hearing_deprived")
+	REMOVE_TRAIT(user, TRAIT_HEARING_DEPRIVED, "hearing_deprived_[REF(src)]")
 	to_chat(user, span_purple("Теперь ты снова можешь слышать мир вокруг себя."))
 
 /obj/item/clothing/ears/headphones

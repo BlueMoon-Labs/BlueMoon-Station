@@ -62,6 +62,9 @@
 			overlay_fullscreen("blind_blindfold", /atom/movable/screen/fullscreen/scaled/blind_blindfold)
 			overlay_fullscreen("blind_frame", /atom/movable/screen/fullscreen/scaled/blind_frame)
 		else
+			clear_fullscreen("blind_blindfold_hard", 0)
+			clear_fullscreen("blind_blindfold", 0)
+			clear_fullscreen("blind_frame", 0)
 			overlay_fullscreen("blind", /atom/movable/screen/fullscreen/scaled/blind)
 		// You are blind why should you be able to make out details like color, only shapes near you
 		// add_client_colour(/datum/client_colour/monochrome/blind)

@@ -81,11 +81,11 @@
 		return FALSE
 
 	if(user == G.owner)
-		G.owner.visible_message(span_warning("<b>[user]</b> пытается вставить вибратор внутрь себя!"),\
-			span_notice("Вы пытаетесь вставить вибратор внутрь себя!"))
+		G.owner.visible_message(span_warning("<b>[user]</b> пытается [style == "long" ? "вставить вибратор внутрь себя" : "прикрепить вибратор к себе"]!"),\
+			span_notice("Вы пытаетесь [style == "long" ? "вставить вибратор внутрь себя" : "прикрепить вибратор к себе"]!"))
 	else
-		G.owner.visible_message(span_warning("<b>[user]</b> пытается вставить вибратор внутрь <b>[G.owner]</b>!"),\
-			span_notice("[user] пытается вставить вибратор внутрь вас!"))
+		G.owner.visible_message(span_warning("<b>[user]</b> пытается [style == "long" ? "вставить вибратор внутрь" : "прикрепить вибратор к"] <b>[G.owner]</b>!"),\
+			span_notice("[user] пытается [style == "long" ? "вставить вибратор внутрь вас" : "прикрепить вибратор к вам"]!"))
 
 	if(!do_mob(user, G.owner, 5 SECONDS))
 		return FALSE
