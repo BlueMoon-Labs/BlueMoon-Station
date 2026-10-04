@@ -86,7 +86,7 @@
 /datum/effect_system/smoke_spread/chem/smoke_machine/set_up(datum/reagents/carry, setting=1, efficiency=1, loc, silent=FALSE)
 	amount = setting * 2
 	var/cost = SMOKE_COST(setting, efficiency)
-	carry.copy_to(chemholder, (cost / amount)
+	carry.copy_to(chemholder, (cost / amount))
 	carry.remove_any(cost)
 	location = loc
 
