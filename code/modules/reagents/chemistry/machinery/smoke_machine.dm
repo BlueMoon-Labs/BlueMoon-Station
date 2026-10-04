@@ -1,5 +1,5 @@
 #define REAGENTS_BASE_VOLUME 75 // actual volume is REAGENTS_BASE_VOLUME plus REAGENTS_BASE_VOLUME * rating for each matterbin
-#define SMOKE_COST(set, eff) ((((set) ** 2) + ((set) + 1) ** 2) / ((eff) * (5 / 4)))
+#define SMOKE_COST(set, eff) ((((set) ** 2) + (((set) + 1) ** 2)) / ((eff) * (5 / 4)))
 #define POWER_COST(set, eff) (400 * (set) / (eff))
 
 /obj/machinery/smoke_machine
