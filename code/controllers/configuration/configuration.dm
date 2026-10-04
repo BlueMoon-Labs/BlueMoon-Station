@@ -440,6 +440,10 @@ Example config:
 				currentmap.voteweight = text2num(data)
 			if ("default","defaultmap")
 				defaultmap = currentmap
+			if ("max_round_search_span")
+				currentmap.max_round_search_span = text2num(data)
+			if ("max_rounds_played")
+				currentmap.max_rounds_played = text2num(data)
 			//if ("votable")
 			//	currentmap.votable = TRUE
 			if ("endmap")
