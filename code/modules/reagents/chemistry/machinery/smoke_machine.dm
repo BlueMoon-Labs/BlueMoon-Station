@@ -21,7 +21,7 @@
 
 /obj/machinery/smoke_machine/Initialize(mapload)
 	. = ..()
-	create_reagents(0, OPENCONTAINER | NO_REACT)
+	create_reagents(0)
 	RefreshParts()
 	AddComponent(/datum/component/plumbing/simple_demand)
 
@@ -62,7 +62,7 @@
 	for(var/obj/item/reagent_containers/glass/beaker/G in component_parts)
 		new_volume += G.volume
 	if(!reagents)
-		create_reagents(0, OPENCONTAINER | NO_REACT)
+		create_reagents(0)
 	new_volume = max(new_volume, 1)
 	reagents.maximum_volume = new_volume
 	if(new_volume < reagents.total_volume)
