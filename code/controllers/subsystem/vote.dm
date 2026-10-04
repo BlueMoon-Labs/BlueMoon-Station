@@ -25,6 +25,9 @@ SUBSYSTEM_DEF(vote)
 	var/list/saved = list()
 	var/list/generated_actions = list()
 	var/roundtype_prime_runoff_ballot = FALSE
+	// BLUEMOON MAP VOTE RUNOFF ADD
+	var/map_runoff_active = FALSE
+	var/map_runoff_initiated = FALSE
 
 	var/setting_up_custom = FALSE
 	var/custom_question = ""
@@ -94,6 +97,8 @@ SUBSYSTEM_DEF(vote)
 	_clear_custom_setup()
 	remove_action_buttons()
 	roundtype_prime_runoff_ballot = FALSE
+	map_runoff_active = FALSE
+	map_runoff_initiated = FALSE
 
 /datum/controller/subsystem/vote/proc/_clear_custom_setup()
 	setting_up_custom = FALSE
@@ -185,6 +190,10 @@ SUBSYSTEM_DEF(vote)
 	var/votes = choices[option]
 	if(mode == "roundtype" && option == ROUNDTYPE_DYNAMIC_LIGHT)
 		votes *= CONFIG_GET(number/dynamic_light_vote_multiplier)
+	if(mode == "map")
+		var/datum/map_config/MC = config.maplist[option]
+		if(MC && MC.voteweight > 0)
+			votes *= MC.voteweight
 	return votes
 
 /datum/controller/subsystem/vote/proc/calculate_condorcet_votes(var/blackbox_text)
@@ -493,6 +502,19 @@ SUBSYSTEM_DEF(vote)
 						SSticker.SetTimeLeft(2400)
 					return .
 
+				// Map runoff logic: if first vote picked boxstation_variants_rand and players > 100, do second vote including syndicatestation
+				var/syn_players_req = 100
+				var/datum/map_config/syn_check = config.maplist["syndicatestation"] || config.maplist["Syndicate Station"]
+				if(syn_check && syn_check.config_min_users > 0)
+					syn_players_req = syn_check.config_min_users
+				if(!map_runoff_initiated && ( . == "boxstation_variants_rand" || . == "Box Stations" ) && GLOB.clients.len >= syn_players_req)
+					map_runoff_active = TRUE
+					map_runoff_initiated = TRUE
+					message_admins("Map vote runoff triggered: boxstation variants won first round with >= [syn_players_req] players, starting second round including syndicatestation.")
+					log_admin("Map vote runoff triggered for boxstation variants with syndicatestation option.")
+					SSvote.initiate_vote("map", "server", display = SHOW_RESULTS|SHOW_WINNER, votesystem = vote_system, forced = TRUE)
+					return .
+
 				var/datum/map_config/VM = config.maplist[.]
 				message_admins("The map has been voted for and will change to: [VM.map_name]")
 				log_admin("The map has been voted for and will change to: [VM.map_name]")
@@ -662,7 +684,29 @@ SUBSYSTEM_DEF(vote)
 						continue
 					if(targetmap.max_round_search_span && count_occurences_of_value(lastmaps, M, targetmap.max_round_search_span) >= targetmap.max_rounds_played)
 						continue
+					// BLUEMOON MAP RUNOFF: if this is a second round of voting for boxstation_variants_rand context,
+					// allow syndicatestation to appear when players > 100
+					var/syn_players_req2 = 100
+					var/datum/map_config/syn_check2 = config.maplist["syndicatestation"] || config.maplist["Syndicate Station"]
+					if(syn_check2 && syn_check2.config_min_users > 0)
+						syn_players_req2 = syn_check2.config_min_users
+					if(M == "syndicatestation" || M == "Syndicate Station")
+						if(map_runoff_active && players >= syn_players_req2)
+							choices |= M
+						continue  // never add syndicatestation as a separate option outside of runoff
 					choices |= M
+				// If it's a map runoff and syndicatestation wasn't added normally but should be, ensure it's added
+				var/syn_players_req3 = 100
+				var/datum/map_config/syn_check3 = config.maplist["syndicatestation"] || config.maplist["Syndicate Station"]
+				if(syn_check3 && syn_check3.config_min_users > 0)
+					syn_players_req3 = syn_check3.config_min_users
+				if(map_runoff_active && players >= syn_players_req3 && !("syndicatestation" in choices) && !("Syndicate Station" in choices))
+					// check if it's valid - try both keys
+					var/datum/map_config/syn = config.maplist["syndicatestation"] || config.maplist["Syndicate Station"]
+					var/syn_key = config.maplist["syndicatestation"] ? "syndicatestation" : (config.maplist["Syndicate Station"] ? "Syndicate Station" : null)
+					if(syn && syn_key && istype(syn) && syn.voteweight && !(syn.config_max_users && players > syn.config_max_users) && !(syn.config_min_users && players < syn.config_min_users))
+						if(!(syn.max_round_search_span && count_occurences_of_value(lastmaps, syn_key, syn.max_round_search_span) >= syn.max_rounds_played))
+							choices |= syn_key
 				shuffle_inplace(choices)
 			if("transfer") // austation begin -- Crew autotranfer vote
 				choices.Add(VOTE_TRANSFER,VOTE_CONTINUE) // austation end

@@ -187,6 +187,11 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 	//Grinder vars
 	var/list/grind_results //A reagent list containing the reagents this item produces when ground up in a grinder - this can be an empty list to allow for reagent transferring only
 	var/list/juice_results //A reagent list containing blah blah... but when JUICED in a grinder!
+	///If TRUE, the mortar and pestle (and the plumbing grinder) grind this item instead of juicing it, even when it has juice_results.
+	var/prefer_grind = FALSE
+
+	///Path to an atom this item turns into when fed into a recycler. When set, the item is consumed and the atom is spawned instead of any material sheets.
+	var/recycle_result
 
 	/* Our block parry data. Should be set in init, or something if you are using it.
 	 * This won't be accessed without ITEM_CAN_BLOCK or ITEM_CAN_PARRY so do not set it unless you have to to save memory.
