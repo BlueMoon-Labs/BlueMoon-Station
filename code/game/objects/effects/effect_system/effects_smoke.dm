@@ -326,7 +326,7 @@
 	var/obj/effect/particle_effect/smoke/chem/S = new effect_type(location)
 
 	if(chemholder.reagents.total_volume > 1) // can't split 1 very well
-		chemholder.reagents.copy_to(S, (chemholder.reagents.total_volume / amount))
+		chemholder.reagents.copy_to(S, (chemholder.reagents.total_volume / (max(amount, 1))))
 
 	if(mixcolor)
 		S.add_atom_colour(mixcolor, FIXED_COLOUR_PRIORITY) // give the smoke color, if it has any to begin with
