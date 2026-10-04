@@ -147,6 +147,8 @@
 
 	to_chat(src, "<B>You are playing the station's AI. The AI cannot move, but can interact with many objects while viewing them (through cameras).</B>")
 	to_chat(src, "<B>To look at other parts of the station, click on yourself to get a camera menu.</B>")
+	if(length(SSmapping.get_connected_levels(get_turf(src))) > 1)
+		to_chat(src, "<B>Станция многоэтажная: этаж камеры меняют красные стрелки в правом нижнем углу экрана или команды Move Upwards и Move Down.</B>")
 	to_chat(src, "<B>While observing through a camera, you can use most (networked) devices which you can see, such as computers, APCs, intercoms, doors, etc.</B>")
 	to_chat(src, "To use something, simply click on it.")
 	to_chat(src, "Use say :b to speak to your cyborgs through binary.")

@@ -69,6 +69,7 @@
 	else if(old_turf?.z != new_turf?.z)
 		onTransitZ(old_turf?.z, new_turf?.z)
 	Moved(old_loc)
+	return TRUE
 
 /atom/movable/Move(atom/newloc, direct, glide_size_override = 0)
 	var/atom/movable/pullee = pulling

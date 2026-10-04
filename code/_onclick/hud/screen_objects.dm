@@ -831,24 +831,38 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/splash)
 	mouse_over_pointer = MOUSE_HAND_POINTER
 
 /atom/movable/screen/floor_changer/Click(location, control, params)
+	var/mob/user = get_mob()
+	if(!user || usr != user)
+		return
+	var/direction = clicked_direction(params)
+	pressed(direction)
+	user.move_vertically(direction)
+
+/// Верхняя половина кнопки ведёт вверх, нижняя вниз.
+/atom/movable/screen/floor_changer/proc/clicked_direction(params)
 	var/list/modifiers = params2list(params)
-	var/mouse_y = text2num(LAZYACCESS(modifiers, "icon-y"))
+	return text2num(LAZYACCESS(modifiers, ICON_Y)) > world.icon_size / 2 ? UP : DOWN
+
+/atom/movable/screen/floor_changer/proc/pressed(direction)
+	return
+
+/atom/movable/screen/floor_changer/ghost
+	icon = 'icons/mob/screen_ghost.dmi'
+
+/atom/movable/screen/floor_changer/ghost/Click(location, control, params)
 	var/mob/dead/observer/ghost = usr
 	if(!isobserver(ghost))
 		return
 	var/turf/current = get_turf(ghost)
 	if(!current)
 		return
-	var/target_z = (mouse_y > 16) ? current.z + 1 : current.z - 1
+	var/target_z = (clicked_direction(params) == UP) ? current.z + 1 : current.z - 1
 	if(target_z < 1 || target_z > world.maxz)
 		return
 	var/turf/target = locate(current.x, current.y, target_z)
 	if(!target)
 		return
 	ghost.forceMove(target)
-
-/atom/movable/screen/floor_changer/ghost
-	icon = 'icons/mob/screen_ghost.dmi'
 
 /atom/movable/screen/hunger
 	name = "hunger"

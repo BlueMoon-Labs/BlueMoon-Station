@@ -251,6 +251,7 @@
 #include "merge_type.dm"
 // #include "metabolizing.dm"
 #include "mob_elements.dm"
+#include "multiz_ai_floor_controls.dm"
 #include "multiz_crew_monitor.dm"
 #include "multiz_hud_eye_signal.dm"
 #include "multiz_item_plane.dm"

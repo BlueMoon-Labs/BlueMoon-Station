@@ -178,6 +178,8 @@
 #define ui_ai_pda_log "BOTTOM:6,RIGHT"
 #define ui_ai_pda_send "BOTTOM+1:6,RIGHT"
 #define ui_ai_language_menu "BOTTOM+1:8,RIGHT-2:30"
+#define ui_ai_floor_indicator "BOTTOM+2:6,RIGHT"
+#define ui_ai_floor_changer "BOTTOM+2:6,RIGHT-1"
 
 #define ui_ai_crew_monitor "BOTTOM:6,CENTER-1"
 #define ui_ai_crew_manifest "BOTTOM:6,CENTER"
