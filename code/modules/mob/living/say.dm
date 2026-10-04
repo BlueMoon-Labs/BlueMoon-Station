@@ -469,6 +469,15 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 				hearing_deprived_rendered = compose_message(src, message_language, hearing_deprived_message, null, spans, message_mode, FALSE, source)
 				AM.Hear(hearing_deprived_rendered, src, message_language, hearing_deprived_message, null, spans, MODE_WHISPER, source)
 				continue
+				/*
+					Для справки: в AM.Hear указан message_mode как MODE_WHISPER принудительно.
+					По дефолту, если это обычный says, там будет null.
+					По коду идет проверка:
+					../code/modules/mob/say.dm#L171-L176 (/mob/say_mod)
+					которая зачем-то делит текст по звездочкам, нежели по специальному magickword, которого нет.
+					В итоге, так как мы скрамблим текст то все, что до первой звездочки, определяется как customsayverb.
+					Сейчас если написать предложение и воткнуть звездочку, оно сломается, к счастью косметически.
+				*/
 
 		// ПАТЧ ТЕШАРИ - проверяем дистанцию для чёткого слуха
 		var/is_teshari_listener = FALSE

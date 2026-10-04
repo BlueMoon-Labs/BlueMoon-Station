@@ -344,13 +344,23 @@
 
 /// Уровень сенсорной депривации слуха на основе TRAIT_HEARING_DEPRIVED
 /mob/living/carbon/get_hearing_deprivation_strength()
-	if(HAS_TRAIT(src, TRAIT_HEARING_DEPRIVED))
+	if(!HAS_TRAIT(src, TRAIT_HEARING_DEPRIVED))
+		return HEARING_DEPRIV_NONE
+
+	var/max_deprive = 0
+
+	if(src.ears && istype(src.ears, /obj/item/clothing/ears/earmuffs/kink))
 		var/obj/item/clothing/ears/earmuffs/kink/E = src.ears
-		if(E)
-			return E.deprive_percent
-		else
-			return HEARING_DEPRIV_LOW
-	return HEARING_DEPRIV_NONE
+		max_deprive = E.deprive_percent
+
+	if(ishuman(src))
+		var/mob/living/carbon/human/H = src
+		if(H.ears_extra && istype(H.ears_extra, /obj/item/clothing/ears/earmuffs/kink))
+			var/obj/item/clothing/ears/earmuffs/kink/E = H.ears_extra
+			if(E.deprive_percent > max_deprive)
+				max_deprive = E.deprive_percent
+
+	return max_deprive > 0 ? max_deprive : HEARING_DEPRIV_LOW
 
 /mob/living/carbon/hallucinating()
 	if(hallucination)
