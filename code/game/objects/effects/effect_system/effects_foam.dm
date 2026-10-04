@@ -347,7 +347,7 @@
 	else
 		location = get_turf(loca)
 
-	amount = round(sqrt(amt / 2), 1)
+	amount = amt
 	carry.copy_to(chemholder, carry.total_volume)
 
 /datum/effect_system/foam_spread/metal/set_up(amt=5, loca, datum/reagents/carry = null, metaltype)
