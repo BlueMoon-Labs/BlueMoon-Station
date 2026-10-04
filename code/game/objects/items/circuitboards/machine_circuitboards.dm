@@ -984,7 +984,7 @@
 	icon_state = "medical"
 	build_path = /obj/machinery/smoke_machine
 	req_components = list(
-		/obj/item/stock_parts/matter_bin = 2,
+		/obj/item/reagent_containers/glass/beaker = 2,
 		/obj/item/stock_parts/capacitor = 1,
 		/obj/item/stock_parts/manipulator = 1,
 		/obj/item/stack/sheet/glass = 1)

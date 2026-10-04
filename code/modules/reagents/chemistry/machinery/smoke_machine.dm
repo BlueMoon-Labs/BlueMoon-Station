@@ -1,5 +1,4 @@
-#define REAGENTS_BASE_VOLUME 75 // actual volume is REAGENTS_BASE_VOLUME plus REAGENTS_BASE_VOLUME * rating for each matterbin
-#define SMOKE_COST(set, eff) ((((set) ** 2) + (((set) + 1) ** 2)) / ((eff) * (5 / 4)))
+#define SMOKE_COST(set, eff) ((((set) ** 2) * 2) / ((eff)))
 #define POWER_COST(set, eff) (400 * (set) / (eff))
 
 /obj/machinery/smoke_machine
@@ -22,7 +21,7 @@
 
 /obj/machinery/smoke_machine/Initialize(mapload)
 	. = ..()
-	create_reagents(REAGENTS_BASE_VOLUME)
+	create_reagents(0, OPENCONTAINER | NO_REACT)
 	RefreshParts()
 	AddComponent(/datum/component/plumbing/simple_demand)
 
@@ -60,11 +59,11 @@
 
 /obj/machinery/smoke_machine/RefreshParts()
 	var/new_volume = 0
-	for(var/obj/item/stock_parts/matter_bin/B in component_parts)
-		new_volume += REAGENTS_BASE_VOLUME * B.rating
-	new_volume = max(new_volume, REAGENTS_BASE_VOLUME)
+	for(var/obj/item/reagent_containers/glass/beaker/G in component_parts)
+		new_volume += G.volume
 	if(!reagents)
-		create_reagents(new_volume)
+		create_reagents(0, OPENCONTAINER | NO_REACT)
+	new_volume = max(new_volume, 1)
 	reagents.maximum_volume = new_volume
 	if(new_volume < reagents.total_volume)
 		reagents.reaction(loc, TOUCH) // if someone manages to downgrade it without deconstructing
@@ -86,7 +85,8 @@
 
 /datum/effect_system/smoke_spread/chem/smoke_machine/set_up(datum/reagents/carry, setting=1, efficiency=1, loc, silent=FALSE)
 	amount = setting * 2
-	carry.copy_to(chemholder, (SMOKE_COST(setting, efficiency) / amount))
+	var/cost = SMOKE_COST(setting, efficiency)
+	carry.copy_to(chemholder, (cost / (round(sqrt(setting), 1))))
 	carry.remove_any(cost)
 	location = loc
 
@@ -242,6 +242,5 @@
 	if(!QDELETED(cell))
 		cell.emp_act(severity)
 
-#undef REAGENTS_BASE_VOLUME
 #undef SMOKE_COST
 #undef POWER_COST
