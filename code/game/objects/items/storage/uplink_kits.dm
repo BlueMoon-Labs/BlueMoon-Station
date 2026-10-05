@@ -670,6 +670,7 @@
 	new /obj/item/storage/belt/buscadero(src)
 	new /obj/item/ammo_box/g45l/lethal(src)
 	new /obj/item/ammo_box/g45l/lethal(src)
+	new /obj/item/ammo_box/g45l/lethal(src)
 
 /obj/item/storage/box/inteq_kit/ncr_kit
 
