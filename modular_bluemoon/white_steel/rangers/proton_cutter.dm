@@ -260,3 +260,9 @@
 	new /obj/item/melee/sabre/proton_cutter(src)
 	new /obj/item/melee/tomahawk(src)
 	update_appearance()
+
+/// Версия пояса без снаряжения: всё поведение наследуется, но изначально внутри ничего нет.
+/obj/item/storage/belt/avangard_belt/empty
+
+/obj/item/storage/belt/avangard_belt/empty/PopulateContents()
+	return

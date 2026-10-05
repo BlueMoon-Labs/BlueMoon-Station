@@ -205,7 +205,10 @@
 	if(!no_pin_required)
 		if(pin)
 			. += "Внутри установлен \a [pin]."
-			. += "<span class='info'>Похоже, что [pin] может быть извлечён с помощью <b>инструментов</b>.</span>"
+			if(pin.emag_removeable && !(obj_flags & EMAGGED))
+				. += "<span class='info'>Похоже, что [pin] невозможно извлечь, не взломав электронику оружия.</span>"
+			else
+				. += "<span class='info'>Похоже, что [pin] может быть извлечён с помощью <b>инструментов</b>.</span>"
 		else
 			. += "Внутри нет бойка-пина, из-за чего стрельба невозможна."
 
@@ -487,6 +490,14 @@
 		to_chat(user, "<span class='warning'>Спусковой крючок [src] не поддаётся. У оружия нет бойка-пина для стрельбы!</span>")
 	return FALSE
 
+/obj/item/gun/emag_act(mob/user)
+	if(obj_flags & EMAGGED)
+		return
+	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
+	obj_flags |= EMAGGED
+	to_chat(user, span_notice("Взламываю защиту оружия [src]..."))
+	return TRUE
+
 /obj/item/gun/proc/recharge_newshot()
 	return
 
@@ -658,6 +669,8 @@
 		return remove_gun_attachment(user, I, bayonet, "unfix")
 
 	else if(pin && user.is_holding(src))
+		if(!pin.can_be_extracted(src, user))
+			return TRUE
 		user.visible_message(span_warning("[user] пытается извлечь [pin] из [src], используя [I]."),
 		span_notice("Вы пытаетесь убрать [pin] из [src]. (Это займёт время, [DisplayTimeText(FIRING_PIN_REMOVAL_DELAY)].)"), null, 3)
 		if(I.use_tool(src, user, FIRING_PIN_REMOVAL_DELAY, volume = 50))
@@ -675,6 +688,8 @@
 	if(!user.canUseTopic(src, BE_CLOSE, FALSE, NO_TK))
 		return
 	if(pin && user.is_holding(src))
+		if(!pin.can_be_extracted(src, user))
+			return TRUE
 		user.visible_message(span_warning("[user] пытается извлечь [pin] из [src], используя [I]."),
 		span_notice("Вы пытаетесь убрать [pin] из [src]. (Это займёт время, [DisplayTimeText(FIRING_PIN_REMOVAL_DELAY)].)"), null, 3)
 		if(I.use_tool(src, user, FIRING_PIN_REMOVAL_DELAY, 5, volume = 50))
@@ -692,6 +707,8 @@
 	if(!user.canUseTopic(src, BE_CLOSE, FALSE, NO_TK))
 		return
 	if(pin && user.is_holding(src))
+		if(!pin.can_be_extracted(src, user))
+			return TRUE
 		user.visible_message(span_warning("[user] пытается извлечь [pin] из [src], используя [I]."),
 		span_notice("Вы пытаетесь убрать [pin] из [src]. (Это займёт время, [DisplayTimeText(FIRING_PIN_REMOVAL_DELAY)].)"), null, 3)
 		if(I.use_tool(src, user, FIRING_PIN_REMOVAL_DELAY, volume = 50))

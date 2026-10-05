@@ -147,6 +147,13 @@
 	subcategory = CAT_MELEE
 	tools = list(TOOL_WELDER)
 
+/obj/item/gun/ballistic/revolver/r45l/vanguard
+	name = "Vanguard Service Revolver"
+	desc = "A standard revolver chambered in the .45 long caliber, marked with vanguard marks on the cylinder. "
+	pin = /obj/item/firing_pin/explorer
+	icon = 'modular_bluemoon/icons/obj/guns/projectile.dmi'
+	icon_state = "45revolvervanguard"
+
 /obj/item/melee/tomahawk
 	name = "Vanguard magnetic tomahawk"
 	desc = "A somewhat dulled axe blade upon a short fibremetal handle. \
