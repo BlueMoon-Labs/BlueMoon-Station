@@ -162,10 +162,8 @@
 /obj/item/clothing/glasses/cover/tac_veil
 	name = "Veil (adaptive)"
 	desc = "Furui's company have brought this from far lands using culture of Jingdai."
-	icon_state = "veil"
-	base_icon_state = "veil"
-	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
-	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
+	icon_state = "aveil"
+	base_icon_state = "aveil"
 	can_switch_eye = FALSE
 	has_adapt_icon_states = FALSE
 
