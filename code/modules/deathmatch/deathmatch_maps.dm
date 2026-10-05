@@ -35,6 +35,36 @@
 	return GLOB.deathmatch_maps
 
 /**
+ * Every loadout in the module, as type paths, ordered by their display name.
+ *
+ * This is the `any_loadout` modifier's list: the modes themselves pick from
+ * /datum/map_template/deathmatch/proc/get_loadouts() so that an arena is balanced
+ * around two or three kits, and this is everything else in the game.
+ *
+ * Sorted because a list built from subtypesof() comes back in definition order,
+ * which puts a new loadout wherever its file happened to sit. Hosts pick kits out
+ * of a dropdown, and a dropdown that reorders itself every time somebody adds a
+ * kit is unusable.
+ */
+proc/get_deathmatch_loadout_paths()
+	var/list/paths = list()
+	for(var/item in subtypesof(/datum/outfit/vr/deathmatch_loadout))
+		if(item == /datum/outfit/vr/deathmatch_loadout)
+			continue
+		paths += item
+	return sort_list(paths, GLOBAL_PROC_REF(cmp_deathmatch_loadout_path))
+
+/// Display name for a loadout type path, for sorting a list of them. Both sides
+/// are compared on the name the player sees, not on the path, or the picker would be
+/// ordered by /datum/outfit/vr/deathmatch_loadout/brawler rather than by "Brawler".
+proc/cmp_deathmatch_loadout_path(path_a, path_b)
+	var/datum/outfit/vr/deathmatch_loadout/kit_a = get_deathmatch_loadout(path_a)
+	var/datum/outfit/vr/deathmatch_loadout/kit_b = get_deathmatch_loadout(path_b)
+	var/name_a = isnull(kit_a) ? "zzzz" : kit_a.get_display_name()
+	var/name_b = isnull(kit_b) ? "zzzz" : kit_b.get_display_name()
+	return name_a == name_b ? 0 : (name_a < name_b ? -1 : 1)
+
+/**
  * A deathmatch loadout by its type path.
  *
  * Deliberately not cached and not read out of a list of live /datum/outfit

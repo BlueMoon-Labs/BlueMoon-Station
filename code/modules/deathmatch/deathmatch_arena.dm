@@ -130,7 +130,7 @@ var/list/claimed_spawns = list()
  * Returns the landmark itself, not its turf, because the caller needs the
  * reference to hold the claim and to give it back later.
  */
-datum/deathmatch_arena/proc/claim_spawn_point()
+/datum/deathmatch_arena/proc/claim_spawn_point()
 	var/list/free_spawns = list()
 	for(var/spawn_ref as anything in spawns)
 		var/obj/effect/landmark/deathmatch_player_spawn/landmark = spawn_ref
@@ -147,7 +147,7 @@ datum/deathmatch_arena/proc/claim_spawn_point()
 
 /// Gives a spawn back, so a player who left does not hold a landmark hostage for
 /// the rest of the game.
-datum/deathmatch_arena/proc/release_spawn_point(obj/effect/landmark/deathmatch_player_spawn/landmark)
+/datum/deathmatch_arena/proc/release_spawn_point(obj/effect/landmark/deathmatch_player_spawn/landmark)
 	if(isnull(landmark) || !(landmark in claimed_spawns))
 		return
 	claimed_spawns -= landmark
@@ -158,7 +158,7 @@ datum/deathmatch_arena/proc/release_spawn_point(obj/effect/landmark/deathmatch_p
  * Picked at random among the unclaimed ones rather than first free, so a full
  * lobby does not funnel everybody into the same corner of the map.
  */
-datum/deathmatch_arena/proc/get_spawn_point()
+/datum/deathmatch_arena/proc/get_spawn_point()
 	if(length(spawns))
 		return claim_spawn_point()
 	return null
@@ -172,7 +172,7 @@ datum/deathmatch_arena/proc/get_spawn_point()
  * lands in open space instead of inside somebody. Falls back to the far corner,
  * because returning NULL would drop the player from the game entirely.
  */
-datum/deathmatch_arena/proc/get_fallback_spawn_point()
+/datum/deathmatch_arena/proc/get_fallback_spawn_point()
 	if(isnull(bounds))
 		return null
 	if(!isnull(reservation))

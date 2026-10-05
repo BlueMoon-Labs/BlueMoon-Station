@@ -9,6 +9,22 @@
 
 /datum/outfit/vr/deathmatch_loadout
 	name = "Deathmatch Loadout"
+	/// Name shown in the deathmatch picker. Separate from `name` because `name` is
+	/// what the outfit system itself prints in admin logs and debug output, and the
+	/// picker wants something a player would recognise in a list. Falls back to
+	/// `name`, so a loadout that only set the old var still reads correctly.
+	var/display_name = ""
+	/// One line describing what the kit is for, shown beside the picker so a
+	/// player can tell Sniper from Sniper Elite without opening the loadout screen.
+	var/desc = ""
+
+/**
+ * What the picker calls this loadout.
+ *
+ * display_name when somebody bothered to write one, name otherwise.
+ */
+/datum/outfit/vr/deathmatch_loadout/proc/get_display_name()
+	return display_name || name
 
 /**
  * No weapon at all. Fists.
@@ -18,6 +34,8 @@
  */
 /datum/outfit/vr/deathmatch_loadout/bare
 	name = "Bystander"
+	display_name = "Bystander"
+	desc = "Grey sweats and nothing else. Fists only."
 	uniform = /obj/item/clothing/under/color/random
 	shoes = /obj/item/clothing/shoes/sneakers/black
 
@@ -25,6 +43,8 @@
 /// Melee. Cheap, close range, and the only thing that works while sprinting.
 /datum/outfit/vr/deathmatch_loadout/brawler
 	name = "Brawler"
+	display_name = "Brawler"
+	desc = "A baton and a balaclava. Cheap, and the only thing that works while sprinting."
 	uniform = /obj/item/clothing/under/color/random
 	shoes = /obj/item/clothing/shoes/sneakers/black
 	gloves = /obj/item/clothing/gloves/color/black
@@ -34,6 +54,8 @@
 /// A sidearm. Low damage, but it does not push people out of cover.
 /datum/outfit/vr/deathmatch_loadout/sidearm
 	name = "Sidearm"
+	display_name = "Sidearm"
+	desc = "One pistol and a magazine. Low damage, but it will not push anyone out of cover."
 	uniform = /obj/item/clothing/under/color/random
 	shoes = /obj/item/clothing/shoes/sneakers/black
 	belt = /obj/item/gun/ballistic/automatic/pistol
@@ -48,6 +70,8 @@
 /// approximation: lethal, but not instakill.
 /datum/outfit/vr/deathmatch_loadout/laser
 	name = "Laser"
+	display_name = "Laser Carbine"
+	desc = "A self-charging laser carbine, so the round never becomes a race for the nearest ammo pile."
 	uniform = /obj/item/clothing/under/color/random
 	shoes = /obj/item/clothing/shoes/sneakers/black
 	back = /obj/item/gun/energy/laser/carbine/deathmatch_selfcharge
@@ -63,6 +87,8 @@
  */
 /datum/outfit/vr/deathmatch_loadout/disabler
 	name = "Disabler (Security)"
+	display_name = "Disabler (Security)"
+	desc = "The Security Ring kit: helmet, vest, webbing, and a taser instead of a gun."
 	uniform = /obj/item/clothing/under/rank/security/officer
 	shoes = /obj/item/clothing/shoes/jackboots
 	head = /obj/item/clothing/head/helmet
@@ -76,15 +102,19 @@
 /// mean something: a Security Ring where both the officer in the vest and the
 /// civilian in grey are worth the same number of points is an arena about not
 /// having armour, which the disabler loadout is otherwise all about.
-datum/outfit/vr/deathmatch_loadout/butt_naked
+/datum/outfit/vr/deathmatch_loadout/butt_naked
 	name = "Butt Naked"
+	display_name = "Butt Naked"
+	desc = "A grey jumpsuit and nothing else. The option that gives the other kits something to be worth."
 	uniform = /obj/item/clothing/under/color/grey
 	shoes = /obj/item/clothing/shoes/sneakers/black
 
 /// Sniper rifle and one magazine. Sniper Elite, which is about the shot rather
 /// than the trade.
-datum/outfit/vr/deathmatch_loadout/sniper
+/datum/outfit/vr/deathmatch_loadout/sniper
 	name = "Sniper"
+	display_name = "Sniper"
+	desc = "A sniper rifle, one magazine and sunglasses. All about the shot."
 	uniform = /obj/item/clothing/under/suit/black
 	shoes = /obj/item/clothing/shoes/sneakers/black
 	gloves = /obj/item/clothing/gloves/color/black

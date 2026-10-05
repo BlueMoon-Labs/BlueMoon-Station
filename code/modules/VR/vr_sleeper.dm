@@ -41,24 +41,21 @@
  * being in contents and their own Leave button goes dead too. Deciding per press
  * instead of per window avoids that.
  *
- * observer_state would hand a ghost the panel unconditionally, but that skips the
- * range check and would let them drive any sleeper on the map from anywhere.
+ * observer_state would hand a ghost the panel unconditionally, but it is not used
+ * because it also says nothing about anybody else, and the occupant still needs
+ * the shared interaction check so a body that cannot act does not get full
+ * control of the machine it is lying in.
  */
 GLOBAL_DATUM_INIT(sleeper_guest_state, /datum/ui_state/sleeper_guest_state, new)
 
 /datum/ui_state/sleeper_guest_state/can_use_topic(src_object, mob/user)
 	if(!user)
 		return UI_CLOSE
-	// A guest has no hands to reach anything with, so the only sensible test is
-	// whether the machine is on their screen. Out of view keeps the window open
-	// so they can walk over to it, which is what the observer branch of the shared
-	// access check does for them.
+	// A guest has no hands to reach anything with, so nothing physical to test: the
+	// panel is theirs wherever they are on the map. Gating this on view distance
+	// only produced a window that opened and then went inert the moment the ghost
+	// drifted, which reads as a broken button rather than as a refused one.
 	if(isobserver(user))
-		if(isnull(user.client))
-			return UI_CLOSE
-		var/list/view = getviewsize(user.client.view)
-		if(isnull(view) || get_dist(src_object, user) >= max(view[1], view[2]))
-			return UI_UPDATE
 		return UI_INTERACTIVE
 	// In the sleeper, they own it. Delegated to the same shared check contained_state
 	// would use, so an occupant who cannot act does not get full control.
@@ -161,9 +158,14 @@ GLOBAL_DATUM_INIT(sleeper_guest_state, /datum/ui_state/sleeper_guest_state, new)
 	return ..()
 
 /obj/machinery/vr_sleeper/ui_interact(mob/user, datum/tgui/ui)
+	// One window for the whole machine now. It used to be "VrSleeper", which
+	// carried the machine's own VR controls *and* a half-written deathmatch browser
+	// in the same payload, and every button in it was fighting for the same space.
+	// DeathmatchPanel keeps the machine controls and replaces that browser with the
+	// real one: a list of open lobbies, and a Create button per mode.
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
-		ui = new(user, src, "VrSleeper", "VR Sleeper")
+		ui = new(user, src, "DeathmatchPanel", "VR Sleeper")
 		ui.open()
 
 /obj/machinery/vr_sleeper/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
@@ -204,7 +206,7 @@ GLOBAL_DATUM_INIT(sleeper_guest_state, /datum/ui_state/sleeper_guest_state, new)
 			else if ((!occupant || usr == occupant) || !only_current_user_can_interact)
 				open_machine()
 			. = TRUE
-		if("select_deathmatch_mode")
+		if("create_lobby")
 			var/mode_name = params["mode"]
 			var/datum/map_template/deathmatch/mode = get_deathmatch_map(mode_name)
 			// Never swallow this. A button that returns without a word reads as a
@@ -212,27 +214,25 @@ GLOBAL_DATUM_INIT(sleeper_guest_state, /datum/ui_state/sleeper_guest_state, new)
 			if(isnull(mode))
 				feedback(usr, span_warning("Unknown deathmatch mode \"[mode_name]\"."))
 				return TRUE
+			// Already on a roster. The Create buttons are how somebody opens a game,
+			// not how they leave the one they are in.
 			var/datum/deathmatch_lobby/mine = get_deathmatch_lobby_of(usr.ckey)
 			if(!isnull(mine))
-				// Already on a roster. The mode buttons are how a player picks
-				// which game to walk into, not how they leave the one they are in.
-				// Said either way. Returning quietly here is what made a guest who
-				// was already in a lobby think the button was broken.
 				if(mine.template?.name == mode_name)
 					feedback(usr, "<span class='notice'>You are already in the [mode.display_name] roster.</span>")
 				else
 					feedback(usr, "<span class='warning'>You are already in [mine.template.display_name].</span>")
 				return TRUE
-			// Somebody already recruiting for this mode? Walk in on them rather
-			// than opening a second lobby for the same map.
+			// Somebody already recruiting for this mode? Walk in on them rather than
+			// opening a second lobby for the same map. A guest can only ever join one,
+			// never open one, so this is the only door they have.
 			var/datum/deathmatch_lobby/lobby = get_deathmatch_lobby_of_mode(mode_name)
 			if(!isnull(lobby))
-				// join() reports its own refusal in chat, with the detail. Say it here
-				// too, so a guest watching the panel finds out at all.
 				if(lobby.join(usr))
 					feedback(usr, "<span class='notice'>Joined the [mode.display_name] lobby.</span>")
 				else
 					feedback(usr, "<span class='warning'>[mode.display_name] would not take you. The chat says why.</span>")
+				open_lobby_window(usr, lobby)
 				return TRUE
 			// No lobby for this mode. A guest can only ever join one, never open
 			// one, so saying "lie in the sleeper" to somebody standing next to a
@@ -250,72 +250,92 @@ GLOBAL_DATUM_INIT(sleeper_guest_state, /datum/ui_state/sleeper_guest_state, new)
 				feedback(usr, "<span class='warning'>This sleeper does not open new virtual worlds.</span>")
 				return TRUE
 			feedback(usr, "<span class='notice'>Opening a [mode.display_name] lobby...</span>")
-			start_deathmatch_lobby(host, mode_name)
+			var/datum/deathmatch_lobby/started = start_deathmatch_lobby(host, mode_name)
+			if(!isnull(started))
+				open_lobby_window(usr, started)
 			return TRUE
-		if("select_deathmatch_loadout")
-			var/datum/deathmatch_lobby/lobby = get_deathmatch_lobby_of(usr.ckey)
+		if("join_lobby")
+			var/datum/deathmatch_lobby/lobby = get_deathmatch_lobby_of_mode(params["map"])
 			if(isnull(lobby))
-				feedback(usr, span_warning("You are not in a deathmatch lobby."))
+				feedback(usr, span_warning("That lobby is gone."))
 				return TRUE
-			// An index into the mode's own list, not a type path. See the matching
-			// comment in ui_data() for why the path is not trusted back from here.
-			var/list/options = lobby.template.get_loadouts()
-			var/choice = params["loadout"]
-			// The picker sends a JSON number, but a round trip through a URL can
-			// leave it as a string, and text2num() on a real number is a no-op
-			// that warns. Accept both.
-			if(!isnum(choice))
-				choice = text2num(choice)
-			if(isnum(choice))
-				choice = round(choice)
-			if(!isnum(choice) || choice < 1 || choice > length(options))
-				feedback(usr, span_warning("\"[params["loadout"]]\" is not one of the [lobby.template.display_name] loadouts."))
-				return TRUE
-			var/datum/outfit/vr/deathmatch_loadout/loadout = options[choice]
-			for(var/deathmatch_player_ref as anything in lobby.players)
-				var/datum/deathmatch_player/entry = deathmatch_player_ref
-				if(entry.ckey != usr.ckey)
-					continue
-				entry.loadout = loadout.type
-				feedback(usr, "<span class='notice'>Loadout set to [lobby.loadout_name(entry.loadout)].</span>")
-				break
-			. = TRUE
-		if("leave_deathmatch")
-			var/datum/deathmatch_lobby/lobby = get_deathmatch_lobby_of(usr.ckey)
+			if(lobby.join(usr))
+				feedback(usr, "<span class='notice'>Joined [lobby.template.display_name].</span>")
+				open_lobby_window(usr, lobby)
+			return TRUE
+		if("spectate_lobby")
+			var/datum/deathmatch_lobby/lobby = get_deathmatch_lobby_of_mode(params["map"])
 			if(isnull(lobby))
+				feedback(usr, span_warning("That lobby is gone."))
 				return TRUE
-			for(var/deathmatch_player_ref as anything in lobby.players.Copy())
-				var/datum/deathmatch_player/entry = deathmatch_player_ref
-				if(entry.ckey != usr.ckey)
-					continue
-				lobby.remove_player(entry, "you left")
-				break
-			. = TRUE
-		if("start_deathmatch")
-			var/datum/deathmatch_lobby/lobby = get_deathmatch_lobby_of(usr.ckey)
+			// join()'s fourth argument seats them as a watcher: a spot at the table and
+			// a landmark in the arena, but out of the player count and out of the win.
+			if(lobby.join(usr, null, FALSE, TRUE))
+				feedback(usr, "<span class='notice'>Watching [lobby.template.display_name].</span>")
+				open_lobby_window(usr, lobby)
+			return TRUE
+		if("view_lobby")
+			// Looking does not join. The lobby window opens on the roster, and its
+			// state proc closes it again for anybody not at the table, so "View" on
+			// somebody else's game shows a roster for as long as the window is open and
+			// no longer.
+			var/datum/deathmatch_lobby/lobby = get_open_deathmatch_lobby(params["map"])
 			if(isnull(lobby))
-				feedback(usr, "<span class='warning'>You are not in a deathmatch lobby.</span>")
+				feedback(usr, span_warning("That lobby is gone."))
 				return TRUE
-			if(lobby.host_key != usr.ckey)
-				feedback(usr, "<span class='warning'>Only the host can start the game.</span>")
-				return TRUE
-			if(lobby.state != DM_LOBBY_WAITING)
-				return TRUE
-			if(lobby.players_needed() > 0)
-				feedback(usr, "<span class='warning'>[lobby.players_needed()] more player(s) needed.</span>")
-				return TRUE
-			feedback(usr, "<span class='notice'>Loading [lobby.template.display_name]...</span>")
-			if(lobby.begin_match())
-				SStgui.close_user_uis(usr, src)
-			. = TRUE
-		if("end_deathmatch")
-			var/datum/deathmatch_lobby/lobby = get_deathmatch_lobby_of(usr.ckey)
-			if(isnull(lobby) || lobby.host_key != usr.ckey)
-				feedback(usr, "<span class='warning'>You are not hosting a deathmatch game.</span>")
-				return TRUE
-			lobby.end_lobby(reason = "the host ended the game")
-			. = TRUE
+			lobby.show_roster(usr)
+			return TRUE
 
+/**
+ * Puts a player's own lobby window in front of them.
+ *
+ * ui_interact() rather than an explicit UI object, because the lobby is a datum the
+ * player does not necessarily own: hand-building a UI here would leave a window that
+ * outlives the lobby and one that the state proc then refuses to talk to.
+ */
+proc/open_lobby_window(mob/user, datum/deathmatch_lobby/lobby)
+	if(isnull(user) || isnull(lobby) || lobby.is_finished())
+		return
+	lobby.ui_interact(user)
+
+/**
+ * Puts the browser back in front of somebody who has just left a lobby.
+ *
+ * Searches for a sleeper the way the ghost button does, because a guest who left a
+ * game is usually standing next to the machine they joined it from and would
+ * otherwise have to find it again to join the next one.
+ */
+proc/open_sleeper_browser(mob/user)
+	if(isnull(user))
+		return
+	// A fixed radius: a ghost has no `range()` of its own, and 7 tiles is what they
+	// can click a machine from anyway.
+	for(var/atom/A as anything in view(7, user))
+		if(istype(A, /obj/machinery/vr_sleeper))
+			A.ui_interact(user)
+			return
+	to_chat(user, span_danger("No VR sleeper in sight. Stand next to one to open its panel."))
+
+/**
+ * The mode catalogue, sent once.
+ *
+ * The list of arenas cannot change while the server is up - it is compiled into the
+ * dmb - so it belongs in static data rather than riding along on every status
+ * update, where it would be re-sent roughly once a second per client.
+ */
+/obj/machinery/vr_sleeper/ui_static_data(mob/user)
+	. = list()
+	var/list/modes = list()
+	for(var/map_ref as anything in get_deathmatch_templates())
+		var/datum/map_template/deathmatch/mode = map_ref
+		var/list/row = list()
+		UNTYPED_LIST_ADD(row, mode.name)
+		UNTYPED_LIST_ADD(row, mode.display_name)
+		UNTYPED_LIST_ADD(row, mode.description)
+		UNTYPED_LIST_ADD(row, mode.min_players)
+		UNTYPED_LIST_ADD(row, mode.max_players)
+		UNTYPED_LIST_ADD(modes, row)
+	.["modes"] = modes
 /obj/machinery/vr_sleeper/ui_data(mob/user)
 	var/list/data = list()
 	var/is_living
@@ -349,94 +369,55 @@ GLOBAL_DATUM_INIT(sleeper_guest_state, /datum/ui_state/sleeper_guest_state, new)
 	data["sleeper_notice"] = sleeper_notices[user.ckey]
 	sleeper_notices[user.ckey] = null
 
-	// Deathmatch: only the occupant may open a lobby, because the machine is
-	// where their real body ends up when the game is over. Typed, because
-	// /obj/machinery/occupant is untyped and this codebase is in strict mode.
+	//
+	// Deathmatch: the browser.
+	//
+	// Every lobby that is open right now, whoever is hosting it. Not just the ones
+	// with room: a running game's roster is the thing a guest standing next to a
+	// sleeper most wants to look at, and the Join button on it greys itself out
+	// through `joinable` rather than by the row being quietly missing.
+	//
+	// Rows are plain lists built with UNTYPED_LIST_ADD. The old payload sent flat
+	// "deathmatch_lobby_1_name" keys instead, on the theory that a DM list of assoc
+	// lists does not survive the trip to the browser; it does, and the flat version
+	// was the reason every field had to be read out of a string index.
+	//
+	var/list/lobbies = list()
+	for(var/lobby_ref as anything in GLOB.deathmatch_lobbies)
+		if(!istype(lobby_ref, /datum/deathmatch_lobby))
+			continue
+		var/datum/deathmatch_lobby/lobby = lobby_ref
+		if(QDELETED(lobby) || lobby.is_finished())
+			continue
+		var/list/row = list()
+		UNTYPED_LIST_ADD(row, lobby.template?.name)
+		UNTYPED_LIST_ADD(row, lobby.template?.display_name)
+		UNTYPED_LIST_ADD(row, lobby.template?.description)
+		UNTYPED_LIST_ADD(row, lobby.host_display_name())
+		UNTYPED_LIST_ADD(row, lobby.state == DM_LOBBY_RUNNING)
+		UNTYPED_LIST_ADD(row, lobby.combatant_count())
+		UNTYPED_LIST_ADD(row, lobby.observer_count())
+		UNTYPED_LIST_ADD(row, lobby.template?.max_players)
+		UNTYPED_LIST_ADD(row, lobby.template?.min_players)
+		// Two refusals, reported separately, because they are two different things a
+		// player might want to do. A full arena cannot be joined but can be watched;
+		// a running one cannot be joined at all, because the roster closed.
+		UNTYPED_LIST_ADD(row, !lobby.is_full() && lobby.state == DM_LOBBY_WAITING)
+		UNTYPED_LIST_ADD(row, !get_deathmatch_lobby_of(user.ckey))
+		UNTYPED_LIST_ADD(lobbies, row)
+	data["lobbies"] = lobbies
+	var/datum/deathmatch_lobby/mine = get_deathmatch_lobby_of(user.ckey)
+	data["in_lobby"] = !isnull(mine)
+	data["lobby_map"] = mine?.template?.name
+	data["lobby_name"] = mine?.template?.display_name
+	data["lobby_running"] = mine?.state == DM_LOBBY_RUNNING
+	data["lobby_is_host"] = mine?.is_host(user.ckey) || FALSE
+	// Only the occupant may open a lobby, because the machine is where their real
+	// body ends up when the game is over. occupant is untyped on /obj/machinery and
+	// this codebase is in strict mode.
 	var/mob/deathmatch_host = occupant
-	var/datum/deathmatch_lobby/lobby = get_deathmatch_lobby_of(user.ckey)
-	// Everything below is sent as flat "deathmatch_*_N_field" keys rather than
-	// lists of assoc lists. A DM list of assoc lists reaches the browser as a
-	// list of *lists*, so every mode.name/mode.id read as undefined and the mode
-	// buttons rendered as bare "()" with nothing to select. Only scalars directly
-	// under ui_data survive as JSON object fields.
-	var/list/all_modes = get_deathmatch_templates()
-	data["deathmatch_mode_count"] = length(all_modes)
-	var/mode_index = 0
-	for(var/map_ref as anything in all_modes)
-		mode_index++
-		var/datum/map_template/deathmatch/mode = map_ref
-		data["deathmatch_mode_[mode_index]_id"] = mode.name
-		data["deathmatch_mode_[mode_index]_name"] = mode.display_name
-		data["deathmatch_mode_[mode_index]_description"] = mode.description
-		data["deathmatch_mode_[mode_index]_players"] = "[mode.min_players]-[mode.max_players]"
-		data["deathmatch_mode_[mode_index]_waiting"] = get_deathmatch_lobby_of_mode(mode.name)?.player_count()
-
-	// Only the mode this player is actually in. Sending every loadout in the game
-	// put a sniper rifle one click away from the Security Ring, where the map is
-	// balanced around disablers.
-	var/list/all_loadouts = lobby?.template?.get_loadouts() || list()
-	data["deathmatch_loadout_count"] = length(all_loadouts)
-	// The browser gets an index, never a type path. A path is a long string that
-	// has to survive a JSON round trip to come back as the same string, and when
-	// it did not the picker reported every loadout as unknown. An index into a
-	// list DM is holding cannot drift like that, and the list is regenerated in
-	// the same order for every player.
-	var/loadout_index = 0
-	for(var/loadout_ref as anything in all_loadouts)
-		loadout_index++
-		var/datum/outfit/vr/deathmatch_loadout/loadout = loadout_ref
-		data["deathmatch_loadout_[loadout_index]_id"] = loadout_index
-		data["deathmatch_loadout_[loadout_index]_name"] = loadout.name
-
-	// This player's own roster entry, which is what the loadout picker writes to.
-	var/datum/deathmatch_player/self_entry
-	if(!isnull(lobby))
-		for(var/player_ref as anything in lobby.players)
-			var/datum/deathmatch_player/entry = player_ref
-			if(entry.ckey == user.ckey)
-				self_entry = entry
-				break
-
-	data["in_deathmatch_lobby"] = !isnull(lobby)
-	data["deathmatch_lobby_mode"] = lobby?.template?.name
-	data["deathmatch_lobby_name"] = lobby?.template?.display_name
-	data["deathmatch_lobby_running"] = lobby?.state == DM_LOBBY_RUNNING
-	data["deathmatch_player_count"] = lobby?.player_count() || 0
-	data["deathmatch_min_players"] = lobby?.template?.min_players || 2
-	data["deathmatch_players_needed"] = lobby?.players_needed() || 0
-	data["deathmatch_selected_loadout"] = null
-	if(!isnull(self_entry))
-		// The player's own kit, reported as the index the picker uses, so the
-		// button can highlight what they are actually going to spawn in. Matched
-		// on the type path by hand: all_loadouts holds datums and self_entry.loadout
-		// holds a path, so list.Find() would never equate them.
-		var/self_index = 0
-		for(var/option_ref as anything in all_loadouts)
-			self_index++
-			var/datum/outfit/vr/deathmatch_loadout/option = option_ref
-			if(option.type == self_entry.loadout)
-				data["deathmatch_selected_loadout"] = self_index
-				break
-	data["deathmatch_roster_count"] = length(lobby?.players)
-	var/roster_index = 0
-	if(!isnull(lobby))
-		for(var/player_ref as anything in lobby.players)
-			roster_index++
-			var/datum/deathmatch_player/entry = player_ref
-			data["deathmatch_roster_[roster_index]_name"] = entry.display_name
-			data["deathmatch_roster_[roster_index]_host"] = entry.is_host
-			data["deathmatch_roster_[roster_index]_loadout"] = lobby.loadout_name(entry.loadout)
-			data["deathmatch_roster_[roster_index]_self"] = (entry == self_entry)
-
-	// The Start button greys itself out on the same number begin_match() refuses
-	// on, so the two can never disagree about who may start.
-	data["can_start_deathmatch"] = (user == deathmatch_host) && !isnull(deathmatch_host?.mind) \
-		&& allow_creating_vr_mobs && !isnull(lobby) && (lobby.host_key == user.ckey) \
-		&& (lobby.state == DM_LOBBY_WAITING) && (lobby.players_needed() <= 0)
-	data["is_hosting_deathmatch"] = !isnull(lobby) && (lobby.host_key == user.ckey)
-	data["hosting_deathmatch"] = null
-	if(data["is_hosting_deathmatch"])
-		data["hosting_deathmatch"] = list("name" = lobby.template.display_name, "players" = lobby.player_count())
+	data["can_create_lobby"] = (user == deathmatch_host) && !isnull(deathmatch_host?.mind) \
+		&& allow_creating_vr_mobs && isnull(mine)
 	return data
 
 /obj/machinery/vr_sleeper/proc/get_vr_spawnpoint() //proc so it can be overridden for team games or something
