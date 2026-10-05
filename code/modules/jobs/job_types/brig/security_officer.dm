@@ -180,9 +180,7 @@ GLOBAL_LIST_INIT(available_depts, list(SEC_DEPT_ENGINEERING, SEC_DEPT_MEDICAL, S
 	backpack_contents = list(/obj/item/storage/ifak, /obj/item/storage/box/sec_kit,
 						/obj/item/choice_beacon/copgun
 						)
-
-	suit_store = /obj/item/gun/energy/e_gun/advtaser
-
+						
 	backpack = /obj/item/storage/backpack/security
 	satchel = /obj/item/storage/backpack/satchel/sec
 	duffelbag = /obj/item/storage/backpack/duffelbag/sec
