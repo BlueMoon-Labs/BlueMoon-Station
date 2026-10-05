@@ -33,6 +33,10 @@
 	new /obj/item/ammo_box/magazine/e45/taser(src)
 	new /obj/item/ammo_box/magazine/e45/taser(src)
 
+/obj/item/storage/secure/briefcase/cop/r41_box
+	name = "\improper Revolver handgun box"
+	desc = "A storage case for a .41 revolver. Peace maker!"
+
 /obj/item/storage/secure/briefcase/cop/r41_box/PopulateContents()
 	new /obj/item/gun/ballistic/revolver/Apostle(src)
 	new /obj/item/ammo_box/cal41(src)
