@@ -279,27 +279,6 @@
 "iq" = (
 /turf/open/floor/plasteel/grimy,
 /area/hilbertshotel)
-"ir" = (
-/obj/structure/closet/crate/hydroponics,
-/obj/item/paper/guides/jobs/hydroponics,
-/obj/item/seeds/onion,
-/obj/item/seeds/garlic,
-/obj/item/seeds/potato,
-/obj/item/seeds/tomato,
-/obj/item/seeds/carrot,
-/obj/item/seeds/grass,
-/obj/item/seeds/ambrosia,
-/obj/item/seeds/wheat,
-/obj/item/seeds/pumpkin,
-/obj/item/seeds/wheat,
-/obj/effect/spawner/lootdrop/prison_contraband,
-/obj/item/seeds/wheat,
-/obj/item/reagent_containers/glass/bottle/ammonia,
-/obj/effect/spawner/lootdrop/prison_contraband,
-/obj/structure/window/reinforced/tinted,
-/obj/effect/landmark/vr_spawn,
-/turf/open/floor/plasteel/dark,
-/area/hilbertshotel)
 "iV" = (
 /obj/effect/turf_decal/tile/yellow,
 /obj/effect/turf_decal/tile/yellow,
@@ -1255,6 +1234,26 @@
 	},
 /turf/open/floor/plasteel,
 /area/hilbertshotel)
+"Na" = (
+/obj/structure/closet/crate/hydroponics,
+/obj/item/paper/guides/jobs/hydroponics,
+/obj/item/seeds/onion,
+/obj/item/seeds/garlic,
+/obj/item/seeds/potato,
+/obj/item/seeds/tomato,
+/obj/item/seeds/carrot,
+/obj/item/seeds/grass,
+/obj/item/seeds/ambrosia,
+/obj/item/seeds/wheat,
+/obj/item/seeds/pumpkin,
+/obj/item/seeds/wheat,
+/obj/effect/spawner/lootdrop/prison_contraband,
+/obj/item/seeds/wheat,
+/obj/item/reagent_containers/glass/bottle/ammonia,
+/obj/effect/spawner/lootdrop/prison_contraband,
+/obj/structure/window/reinforced/tinted,
+/turf/open/floor/plasteel/dark,
+/area/hilbertshotel)
 "NI" = (
 /turf/open/floor/padded,
 /area/hilbertshotel)
@@ -1967,7 +1966,7 @@ oL
 RH
 HY
 ue
-ir
+Na
 VI
 ZL
 oL

@@ -33970,6 +33970,10 @@
 	dir = 1
 	},
 /area/engineering/atmos)
+"ciM" = (
+/obj/structure/dresser,
+/turf/open/floor/plasteel,
+/area/security/prison)
 "ciV" = (
 /obj/structure/chair{
 	dir = 8
@@ -36719,6 +36723,9 @@
 	},
 /turf/closed/wall/r_wall,
 /area/science/mixing)
+"lcW" = (
+/turf/open/floor/wood,
+/area/maintenance/starboard/aft)
 "lix" = (
 /obj/effect/turf_decal/tile/red{
 	dir = 1
@@ -37163,11 +37170,6 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /turf/open/floor/plasteel,
 /area/science/mixing)
-"mvP" = (
-/obj/structure/dresser,
-/obj/effect/landmark/vr_spawn,
-/turf/open/floor/plasteel,
-/area/security/prison)
 "myQ" = (
 /turf/closed/wall/mineral/titanium,
 /area/maintenance/starboard/aft)
@@ -37527,6 +37529,9 @@
 	},
 /turf/open/floor/plasteel/dark/corner,
 /area/maintenance/disposal/incinerator)
+"nXb" = (
+/turf/open/pool/water,
+/area/maintenance/starboard/aft)
 "oaV" = (
 /obj/structure/grille,
 /obj/machinery/meter,
@@ -41278,10 +41283,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/science/xenobiology)
-"uaf" = (
-/obj/effect/landmark/vr_spawn,
-/turf/open/floor/plasteel,
-/area/service/bar/atrium)
 "ucd" = (
 /obj/machinery/door/airlock/research{
 	name = "Toxins Storage";
@@ -41531,6 +41532,9 @@
 /obj/machinery/power/tracker,
 /turf/open/floor/plasteel/airless/solarpanel,
 /area/solars/starboard/fore)
+"uCY" = (
+/turf/open/pool/water,
+/area/maintenance/starboard/aft)
 "uDp" = (
 /obj/machinery/atmospherics/pipe/simple/dark/visible{
 	dir = 5
@@ -76795,7 +76799,7 @@ acH
 abR
 afh
 azi
-mvP
+ciM
 aiS
 acH
 aAw
@@ -84542,7 +84546,7 @@ aGO
 aHT
 gPY
 dQC
-uaf
+hRi
 axP
 ard
 aOo
@@ -89718,7 +89722,7 @@ aRy
 hYy
 nIf
 nIf
-cGA
+lcW
 myQ
 ogx
 bvg
@@ -89973,9 +89977,9 @@ kUu
 kUu
 kUu
 jMP
-cGA
+lcW
 fWh
-cGA
+lcW
 hsR
 kKr
 tfP
@@ -90231,7 +90235,7 @@ krX
 ekG
 nBu
 nvk
-cGA
+lcW
 twy
 myQ
 tjk
@@ -90480,15 +90484,15 @@ aae
 mgV
 aRy
 bhm
-bhX
-bhX
-bhX
-bhX
+uCY
+uCY
+uCY
+uCY
 jeI
-cGA
+lcW
 foP
 uqZ
-cGA
+lcW
 qUQ
 myQ
 tjk
@@ -90738,8 +90742,8 @@ lMu
 aRy
 bhm
 bhX
-bhX
-bhX
+uCY
+nXb
 nio
 jeI
 juY
@@ -90994,15 +90998,15 @@ tin
 vxf
 aRy
 bhm
-bhX
-bhX
-bhX
-bhX
+uCY
+uCY
+uCY
+uCY
 jeI
-cGA
+lcW
 rmZ
 sdk
-cGA
+lcW
 sYi
 myQ
 tjk
@@ -91256,10 +91260,10 @@ gSu
 gSu
 gSu
 oIA
-cGA
+lcW
 ykL
 loX
-cGA
+lcW
 pjh
 myQ
 tjk
@@ -91512,12 +91516,12 @@ cGA
 puc
 puc
 puc
-cGA
-cGA
-cGA
-cGA
+lcW
+lcW
+lcW
+lcW
 isT
-cGA
+lcW
 hsR
 jkc
 fRe
@@ -91771,10 +91775,10 @@ aRy
 aRy
 aRy
 aRy
-cGA
-cGA
+lcW
+lcW
 uDz
-cGA
+lcW
 myQ
 kKr
 qab

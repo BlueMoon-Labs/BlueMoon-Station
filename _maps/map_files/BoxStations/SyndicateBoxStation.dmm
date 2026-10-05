@@ -40356,16 +40356,6 @@
 	},
 /turf/open/floor/catwalk_floor/iron_smooth,
 /area/engineering/main)
-"cyS" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
-	dir = 4
-	},
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
-	dir = 4
-	},
-/obj/effect/landmark/vr_spawn,
-/turf/open/floor/mineral/plastitanium,
-/area/commons/fitness)
 "cyT" = (
 /obj/docking_port/stationary{
 	dir = 8;
@@ -46329,11 +46319,6 @@
 /obj/effect/spawner/structure/window/plastitanium,
 /turf/open/floor/plating,
 /area/commons/cryopod)
-"eVS" = (
-/obj/effect/spawner/structure/window/plastitanium,
-/obj/effect/landmark/vr_spawn,
-/turf/open/floor/plating,
-/area/security/prison/workout)
 "eVU" = (
 /obj/structure/sink{
 	pixel_x = -12;
@@ -66895,16 +66880,6 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/engineering/main)
-"pwH" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
-	dir = 4
-	},
-/obj/machinery/light/small{
-	dir = 8
-	},
-/obj/effect/landmark/vr_spawn,
-/turf/open/floor/mineral/plastitanium,
-/area/commons/fitness)
 "pxh" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
@@ -69362,6 +69337,15 @@
 	},
 /turf/open/floor/plasteel/kitchen,
 /area/service/kitchen)
+"qLR" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
+	dir = 4
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/commons/fitness)
 "qLV" = (
 /obj/structure/chair{
 	dir = 4
@@ -74471,6 +74455,15 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/hallway/primary/central)
+"tzQ" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+	dir = 4
+	},
+/obj/machinery/light/small{
+	dir = 8
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/commons/fitness)
 "tAb" = (
 /obj/effect/turf_decal/tile/red/anticorner{
 	dir = 1
@@ -107545,7 +107538,7 @@ rfx
 eIe
 cnV
 vbT
-eVS
+mXX
 mXX
 sWe
 upc
@@ -118630,7 +118623,7 @@ kTy
 aqp
 jhe
 jve
-pwH
+tzQ
 pgf
 ctq
 mKT
@@ -118887,7 +118880,7 @@ aoL
 apy
 jhe
 jve
-cyS
+qLR
 oIW
 ctq
 ths

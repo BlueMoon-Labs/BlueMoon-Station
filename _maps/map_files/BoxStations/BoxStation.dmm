@@ -37761,6 +37761,15 @@
 	},
 /turf/open/floor/engine,
 /area/security/execution)
+"dYc" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
+	dir = 4
+	},
+/obj/machinery/light/small{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/commons/fitness)
 "dYg" = (
 /obj/structure/table,
 /obj/item/storage/box/donkpockets{
@@ -50199,6 +50208,15 @@
 	dir = 4
 	},
 /area/maintenance/aft)
+"iSO" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/commons/fitness)
 "iTW" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 4
@@ -50817,11 +50835,6 @@
 	dir = 4
 	},
 /area/hallway/primary/starboard)
-"jfN" = (
-/obj/effect/spawner/structure/window/reinforced,
-/obj/effect/landmark/vr_spawn,
-/turf/open/floor/plating,
-/area/security/prison/workout)
 "jfZ" = (
 /obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer2{
@@ -85852,16 +85865,6 @@
 	},
 /turf/open/floor/plasteel/textured/large,
 /area/security/prison/workout)
-"xvf" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
-	dir = 4
-	},
-/obj/machinery/light/small{
-	dir = 8
-	},
-/obj/effect/landmark/vr_spawn,
-/turf/open/floor/plasteel/dark/textured/large,
-/area/commons/fitness)
 "xvB" = (
 /obj/machinery/suit_storage_unit/standard_unit,
 /obj/machinery/light{
@@ -86349,16 +86352,6 @@
 	},
 /turf/open/floor/carpet/green,
 /area/security/prison/rec)
-"xHc" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
-	dir = 4
-	},
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
-	dir = 4
-	},
-/obj/effect/landmark/vr_spawn,
-/turf/open/floor/plasteel/dark/textured/large,
-/area/commons/fitness)
 "xHO" = (
 /obj/machinery/computer/crew{
 	dir = 4;
@@ -111661,7 +111654,7 @@ icO
 ipw
 fwp
 vgG
-jfN
+cZo
 cZo
 cxk
 hwc
@@ -122746,7 +122739,7 @@ oyX
 aqp
 arj
 gzn
-xvf
+dYc
 nfH
 arf
 fJu
@@ -123003,7 +122996,7 @@ apy
 aqq
 arj
 gzn
-xHc
+iSO
 aDQ
 arf
 pHE

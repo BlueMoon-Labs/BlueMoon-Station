@@ -8976,25 +8976,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/hallway/primary/starboard)
-"bmo" = (
-/obj/structure/cable/white{
-	icon_state = "4-8"
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
-	dir = 10
-	},
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/neutral{
-	dir = 1
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
-	dir = 10
-	},
-/obj/effect/landmark/vr_spawn,
-/turf/open/floor/plasteel,
-/area/commons/fitness/recreation)
 "bmv" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4,
@@ -55146,13 +55127,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/engineering/main)
-"isR" = (
-/obj/effect/turf_decal/tile/neutral{
-	dir = 4
-	},
-/obj/effect/landmark/vr_spawn,
-/turf/open/floor/plasteel,
-/area/commons/fitness/recreation)
 "isW" = (
 /obj/machinery/shower{
 	dir = 4
@@ -83056,19 +83030,6 @@
 /obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/plating,
 /area/engineering/break_room)
-"onu" = (
-/obj/machinery/light{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
-	dir = 10
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
-	dir = 9
-	},
-/obj/effect/landmark/vr_spawn,
-/turf/open/floor/plasteel/dark/textured,
-/area/security/prison/upper)
 "onJ" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 4
@@ -84093,16 +84054,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/cargo/storage)
-"ozK" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
-	dir = 4
-	},
-/obj/effect/landmark/vr_spawn,
-/turf/open/floor/plasteel/dark/textured,
-/area/security/prison/upper)
 "ozV" = (
 /obj/structure/cable/white,
 /obj/structure/cable/white{
@@ -84873,20 +84824,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/security/brig)
-"oJf" = (
-/obj/effect/turf_decal/tile/neutral{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/neutral,
-/obj/effect/turf_decal/tile/neutral{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/neutral{
-	dir = 8
-	},
-/obj/effect/landmark/vr_spawn,
-/turf/open/floor/plasteel,
-/area/commons/fitness/recreation)
 "oJv" = (
 /obj/structure/disposalpipe/segment{
 	dir = 4
@@ -125283,11 +125220,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/hallway/primary/central)
-"xnT" = (
-/obj/effect/spawner/structure/window/reinforced,
-/obj/effect/landmark/vr_spawn,
-/turf/open/floor/plating,
-/area/commons/fitness/recreation)
 "xoa" = (
 /obj/item/kirbyplants/random,
 /turf/open/floor/plasteel/dark,
@@ -126872,6 +126804,24 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/aisat/exterior)
+"xFg" = (
+/obj/structure/cable/white{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 10
+	},
+/obj/structure/disposalpipe/segment{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 10
+	},
+/turf/open/floor/plasteel,
+/area/commons/fitness/recreation)
 "xFm" = (
 /obj/structure/cable/white{
 	icon_state = "4-8"
@@ -129453,6 +129403,18 @@
 /obj/item/wrench/medical,
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/central)
+"yiP" = (
+/obj/machinery/light{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 10
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 9
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/security/prison/upper)
 "yiW" = (
 /obj/machinery/door/window/brigdoor{
 	dir = 4;
@@ -183078,7 +183040,7 @@ aaa
 aaa
 oza
 paP
-bmo
+xFg
 exQ
 vrV
 fWA
@@ -183333,7 +183295,7 @@ coW
 clA
 aad
 aad
-xnT
+rNM
 paP
 jqq
 pWL
@@ -183592,7 +183554,7 @@ aaa
 aaa
 rNM
 paP
-oJf
+vTr
 fKs
 qMu
 rbK
@@ -184620,7 +184582,7 @@ aad
 aad
 rNM
 kTU
-oJf
+vTr
 lnY
 mqa
 eGD
@@ -184877,7 +184839,7 @@ aaa
 aaa
 rNM
 kTU
-oJf
+vTr
 vTr
 kGi
 nrF
@@ -185134,7 +185096,7 @@ ajr
 aad
 rNM
 kTU
-isR
+xlW
 xlW
 rhX
 bWn
@@ -189693,7 +189655,7 @@ taB
 uBm
 jwp
 muv
-ozK
+ruH
 krq
 jwp
 oJA
@@ -190207,7 +190169,7 @@ qXi
 aBh
 jwp
 ifA
-onu
+yiP
 eZx
 jwp
 gbz

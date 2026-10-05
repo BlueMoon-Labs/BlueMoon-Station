@@ -3903,6 +3903,16 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel,
 /area/maintenance/fore)
+"alZ" = (
+/obj/machinery/light_switch{
+	pixel_x = -24
+	},
+/obj/machinery/camera{
+	c_tag = "Arcade";
+	dir = 4
+	},
+/turf/open/floor/carpet/arcade,
+/area/commons/arcade)
 "ama" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable,
@@ -4343,6 +4353,12 @@
 	icon_state = "chapel"
 	},
 /area/service/chapel/main)
+"anh" = (
+/obj/structure/sign/poster/official/nanomichi_ad{
+	pixel_x = 32
+	},
+/turf/open/floor/carpet/arcade,
+/area/commons/arcade)
 "anj" = (
 /obj/structure/table,
 /obj/structure/disposalpipe/segment,
@@ -39662,13 +39678,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/science/research)
-"cna" = (
-/obj/structure/sign/poster/official/nanomichi_ad{
-	pixel_x = 32
-	},
-/obj/effect/landmark/vr_spawn,
-/turf/open/floor/carpet/arcade,
-/area/commons/arcade)
 "cnb" = (
 /obj/structure/window/reinforced{
 	dir = 8;
@@ -94992,21 +95001,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/command/bridge)
-"tmr" = (
-/obj/item/clothing/under/rank/prisoner,
-/obj/item/clothing/under/rank/prisoner,
-/obj/item/clothing/under/rank/prisoner,
-/obj/item/clothing/under/rank/prisoner/skirt,
-/obj/item/clothing/under/rank/prisoner/skirt,
-/obj/item/clothing/under/rank/prisoner/skirt,
-/obj/item/clothing/shoes/sneakers/orange,
-/obj/item/clothing/shoes/sneakers/orange,
-/obj/item/clothing/shoes/sneakers/orange,
-/obj/effect/turf_decal/delivery,
-/obj/structure/closet,
-/obj/effect/landmark/vr_spawn,
-/turf/open/floor/plasteel,
-/area/security/office)
 "tnr" = (
 /obj/structure/cable{
 	icon_state = "1-2"
@@ -97618,6 +97612,15 @@
 	dir = 8
 	},
 /turf/open/floor/plasteel/dark,
+/area/security/prison/rec)
+"uhD" = (
+/obj/machinery/door/airlock/maintenance{
+	name = "Permabrig Maintenance"
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plating,
 /area/security/prison/rec)
 "uhF" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
@@ -100449,16 +100452,6 @@
 /obj/machinery/vending/coffee,
 /turf/open/floor/carpet/red,
 /area/maintenance/central)
-"vkN" = (
-/obj/machinery/door/airlock/maintenance{
-	name = "Permabrig Maintenance"
-	},
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
-/obj/effect/landmark/vr_spawn,
-/turf/open/floor/plating,
-/area/security/prison/rec)
 "vkY" = (
 /obj/effect/turf_decal/delivery,
 /obj/machinery/door/poddoor/shutters{
@@ -100951,17 +100944,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/cargo/miningdock)
-"vuQ" = (
-/obj/machinery/light_switch{
-	pixel_x = -24
-	},
-/obj/machinery/camera{
-	c_tag = "Arcade";
-	dir = 4
-	},
-/obj/effect/landmark/vr_spawn,
-/turf/open/floor/carpet/arcade,
-/area/commons/arcade)
 "vvd" = (
 /obj/structure/sign/warning/biohazard{
 	pixel_x = -32
@@ -130131,7 +130113,7 @@ lrh
 lrh
 lrh
 lrh
-vkN
+uhD
 lrh
 uNL
 uNL
@@ -134014,7 +133996,7 @@ mQL
 eEI
 asz
 aoF
-tmr
+aSZ
 qEt
 aLv
 rgx
@@ -140696,7 +140678,7 @@ kQS
 aej
 agC
 dPi
-vuQ
+alZ
 anq
 abF
 bID
@@ -141981,7 +141963,7 @@ adR
 agc
 agT
 agc
-cna
+anh
 anE
 abF
 bRF

@@ -10542,6 +10542,13 @@
 	},
 /turf/open/floor/wood/wood_large,
 /area/command/heads_quarters/hos/private)
+"bYQ" = (
+/obj/effect/turf_decal/trimline/white/end{
+	dir = 8
+	},
+/obj/structure/marker_beacon/bronze,
+/turf/open/floor/plasteel,
+/area/commons/dorms)
 "bYR" = (
 /obj/effect/landmark/event_spawn,
 /obj/effect/decal/cleanable/dirt/dust,
@@ -22787,15 +22794,6 @@
 	},
 /turf/open/floor/wood,
 /area/service/bar)
-"efN" = (
-/obj/effect/turf_decal/trimline/green/filled/line{
-	dir = 8
-	},
-/obj/effect/landmark/vr_spawn,
-/turf/open/floor/plasteel/smooth/edge{
-	dir = 4
-	},
-/area/service/hydroponics)
 "efP" = (
 /obj/structure/table,
 /obj/structure/mirror{
@@ -57180,6 +57178,11 @@
 	dir = 4
 	},
 /area/hallway/primary/fore)
+"krk" = (
+/turf/open/pool/water{
+	icon_state = "drained"
+	},
+/area/commons/fitness/pool)
 "krl" = (
 /obj/effect/spawner/structure/window/plastitanium,
 /turf/open/floor/plating,
@@ -60259,14 +60262,6 @@
 /obj/machinery/door/firedoor/heavy,
 /turf/open/floor/plating,
 /area/medical/storage)
-"kVN" = (
-/obj/effect/turf_decal/trimline/white/end{
-	dir = 8
-	},
-/obj/structure/marker_beacon/bronze,
-/obj/effect/landmark/vr_spawn,
-/turf/open/floor/plasteel,
-/area/commons/dorms)
 "kVU" = (
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 1
@@ -65802,6 +65797,14 @@
 	dir = 9
 	},
 /area/science)
+"lVO" = (
+/obj/effect/turf_decal/bot/yellow,
+/obj/effect/turf_decal/loading_area{
+	icon_state = "drain";
+	name = "drain"
+	},
+/turf/open/floor/plasteel/smooth/small,
+/area/commons/fitness/pool)
 "lVW" = (
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/carpet/royalblack,
@@ -82282,6 +82285,9 @@
 /obj/effect/mapping_helpers/airlock/access/all/medical/morgue,
 /turf/open/floor/plating,
 /area/medical/morgue)
+"oVu" = (
+/turf/open/floor/engine,
+/area/engineering/main/reactor_core)
 "oVz" = (
 /obj/effect/turf_decal/bot/white{
 	name = "storage marker"
@@ -95685,6 +95691,11 @@
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4,
 /turf/open/floor/plasteel/white/textured,
 /area/medical/virology)
+"rlP" = (
+/turf/open/pool/water{
+	icon_state = "drained"
+	},
+/area/commons/fitness/pool)
 "rlQ" = (
 /obj/structure/cable{
 	icon_state = "1-2"
@@ -132104,6 +132115,18 @@
 	dir = 8
 	},
 /area/security/prison)
+"xSs" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/obj/structure/disposalpipe/segment,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/effect/turf_decal/tile/neutral,
+/turf/open/floor/plasteel/smooth/edge{
+	dir = 8
+	},
+/area/hallway/primary/starboard)
 "xSz" = (
 /turf/closed/wall,
 /area/medical/psychology)
@@ -231585,13 +231608,13 @@ lgT
 qly
 uYD
 huJ
-fLR
+rlP
 cgp
-fLR
+rlP
 cgp
-fLR
+rlP
 cgp
-fLR
+rlP
 xha
 mJq
 rwg
@@ -231844,9 +231867,9 @@ heG
 huJ
 yat
 maZ
-fLR
+rlP
 maZ
-fLR
+rlP
 maZ
 iYd
 xha
@@ -232098,14 +232121,14 @@ bXo
 jBW
 wEk
 heG
-cJj
-fLR
+lVO
+rlP
 agW
-fLR
+rlP
 fBE
-fLR
+rlP
 agW
-fLR
+rlP
 xha
 jZe
 hrb
@@ -232347,7 +232370,7 @@ kbB
 tIm
 qEs
 ceZ
-fLR
+rlP
 tFf
 hKz
 vWC
@@ -232358,11 +232381,11 @@ sWy
 cJj
 fLR
 maZ
-fLR
+rlP
 maZ
-fLR
+rlP
 maZ
-fLR
+rlP
 xha
 mJq
 gtE
@@ -232603,7 +232626,7 @@ gAV
 kbB
 xZf
 qEs
-fLR
+krk
 kqV
 tFf
 tsr
@@ -232613,13 +232636,13 @@ tZv
 aon
 eNe
 huJ
-fLR
+rlP
 maZ
-fLR
+rlP
 maZ
-fLR
+rlP
 maZ
-fLR
+rlP
 xha
 mJq
 xJP
@@ -232861,7 +232884,7 @@ kbB
 xZf
 qEs
 ceZ
-fLR
+rlP
 tFf
 lxG
 ibT
@@ -232870,13 +232893,13 @@ ngC
 mEY
 ioI
 huJ
-fLR
+rlP
 maZ
-fLR
+rlP
 maZ
-fLR
+rlP
 maZ
-fLR
+rlP
 xha
 mJq
 vCb
@@ -233127,13 +233150,13 @@ rYG
 wEk
 aFk
 huJ
-fLR
+rlP
 maZ
-fLR
+rlP
 maZ
-fLR
+rlP
 maZ
-fLR
+rlP
 xha
 jZe
 hrb
@@ -233384,13 +233407,13 @@ wEk
 wEk
 aFk
 huJ
-fLR
+rlP
 agW
-fLR
+rlP
 fBE
-fLR
+rlP
 agW
-fLR
+rlP
 xha
 jZe
 hrb
@@ -233643,9 +233666,9 @@ eNe
 huJ
 yat
 hAe
-fLR
+rlP
 sMO
-fLR
+rlP
 etn
 kqV
 xha
@@ -233898,13 +233921,13 @@ hBU
 qYF
 dOD
 huJ
-fLR
+rlP
 rqd
-fLR
+rlP
 rqd
-fLR
+rlP
 kHZ
-fLR
+rlP
 xha
 mJq
 wwP
@@ -240836,7 +240859,7 @@ pHB
 odc
 rfd
 jBq
-kVN
+bYQ
 iHM
 nyr
 tjB
@@ -305848,7 +305871,7 @@ rqz
 rOT
 nJy
 alR
-alR
+xSs
 mFy
 kEU
 lYk
@@ -306631,7 +306654,7 @@ bym
 bym
 bym
 bym
-efN
+bym
 gDS
 uPD
 irM
@@ -325420,7 +325443,7 @@ hnm
 hnm
 hnm
 hnm
-hnm
+oVu
 dRW
 sWF
 rvw

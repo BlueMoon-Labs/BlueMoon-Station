@@ -5795,10 +5795,6 @@
 /obj/structure/flora/ausbushes/lavendergrass,
 /turf/open/floor/grass/grass0,
 /area/awaymission/academy/academygate)
-"yR" = (
-/obj/effect/landmark/vr_spawn,
-/turf/open/floor/wood,
-/area/awaymission/academy/headmaster)
 "yT" = (
 /obj/structure/flora/junglebush/large,
 /turf/open/floor/grass/grass0,
@@ -7794,10 +7790,6 @@
 /obj/structure/table/wood/poker,
 /turf/open/floor/carpet/royalblack,
 /area/awaymission/academy/academyengine)
-"PS" = (
-/obj/effect/landmark/vr_spawn,
-/turf/open/floor/plasteel,
-/area/awaymission/academy/classrooms)
 "PU" = (
 /obj/structure/closet/crate/mail/preopen,
 /turf/open/floor/wood,
@@ -15384,7 +15376,7 @@ Ev
 KN
 bs
 OJ
-PS
+bz
 ZT
 fZ
 Zp
@@ -15514,7 +15506,7 @@ so
 LG
 bE
 pr
-PS
+bz
 zG
 ga
 bV
@@ -17811,7 +17803,7 @@ ah
 nb
 as
 aO
-yR
+aF
 ab
 Sa
 aF
@@ -17941,7 +17933,7 @@ ah
 bS
 as
 Jc
-yR
+aF
 ab
 Sa
 aF

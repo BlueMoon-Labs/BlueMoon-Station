@@ -180,10 +180,6 @@
 "zv" = (
 /turf/open/space/basic,
 /area/space)
-"Aj" = (
-/obj/effect/landmark/vr_spawn,
-/turf/open/floor/plasteel,
-/area/ruin/space/has_grav/ancientstation/atmo)
 "BV" = (
 /obj/machinery/computer/secure_data{
 	dir = 8
@@ -551,7 +547,7 @@ bC
 bC
 bC
 bC
-Aj
+bC
 eh
 gf
 zv
