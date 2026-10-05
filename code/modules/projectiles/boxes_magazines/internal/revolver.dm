@@ -47,7 +47,7 @@
 /obj/item/ammo_box/magazine/internal/cylinder/passing_bell
 	name = "Passing Bell cylinder"
 	ammo_type = /obj/item/ammo_casing/g4570
-	caliber = list("45-70")
+	caliber = list("45-70g")
 	max_ammo = 6
 	multiload = 1
 
@@ -68,7 +68,7 @@
 /obj/item/ammo_box/magazine/internal/cylinder/dies_irae
 	name = "Dies irae cylinder"
 	ammo_type = /obj/item/ammo_casing/a308
-	caliber = list("308")
+	caliber = list(".308")
 	max_ammo = 6
 	multiload = 1
 

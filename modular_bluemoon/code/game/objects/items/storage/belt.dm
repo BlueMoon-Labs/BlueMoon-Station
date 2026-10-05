@@ -46,7 +46,7 @@
 		))
 
 /obj/item/storage/belt/buscadero/attackby(obj/item/A, mob/user, params)
-	// Проверяем, что по поясу кликнули именно коробкой патронов .45
+	// 1. Проверяем, что по поясу кликнули именно коробкой патронов .45
 	if(istype(A, /obj/item/ammo_box/g45l))
 		var/obj/item/ammo_box/g45l/box = A
 		
@@ -60,37 +60,47 @@
 		if(!STR)
 			return ..()
 
+		// РУЧНОЙ ПОДСЧЕТ: Считаем, сколько патронов УЖЕ лежит в поясе прямо сейчас
+		var/current_bullet_count = 0
+		for(var/obj/item/ammo_casing/B in src.contents)
+			current_bullet_count++
+
+		// Если в поясе уже есть 36 или больше патронов — сразу выходим
+		if(current_bullet_count >= 36)
+			to_chat(user, "<span class='warning'>[src.name] уже заполнен до предела (36/36 патронов), больше не влезает!</span>")
+			return TRUE
+
 		var/transferred_count = 0
 
-		// Цикл переноса перебираем патроны в коробке с конца списка
+		// 2. Цикл переноса: перебираем патроны в коробке с конца списка
 		for(var/i = box.stored_ammo.len; i > 0; i--)
+			// Проверяем жесткий лимит в 36 штук прямо во время засыпания очередного патрона
+			if(current_bullet_count >= 36)
+				break
+
 			var/obj/item/ammo_casing/bullet = box.stored_ammo[i]
 			if(!bullet)
 				continue
 
-			// Встроенный метод компонента хранилища Splurt.
-			// Сам проверит лимит в 36 патронов и тип /obj/item/ammo_casing/g45l.
+			// Просим компонент принять патрон
 			if(STR.handle_item_insertion(bullet, TRUE, user))
 				// Если пояс успешно принял патрон, удаляем его из списка коробки
 				box.stored_ammo -= bullet
 				transferred_count++
+				current_bullet_count++ // Увеличиваем счетчик патронов в поясе
 			else
-				// Если handle_item_insertion вернул FALSE, значит пояс полностью забит (достиг 36 штук)
 				break
 
-		// Выводим итоги
+		// 3. Выводим итоги
 		if(transferred_count > 0)
-			// Воспроизводим фирменный звук засыпания патронов
 			playsound(src.loc, 'sound/weapons/bulletinsert.ogg', 50, TRUE)
-			to_chat(user, "<span class='notice'>Вы быстро высыпали [transferred_count] патрон\\ов из [box.name] прямо в [src.name].</span>")
+			to_chat(user, "<span class='notice'>Вы быстро высыпали [transferred_count] патрон\\ов из [box.name] прямо в [src.name] ([current_bullet_count]/36).</span>")
 			
-			// Обновляем спрайты коробки и пояса
 			box.update_icon()
 			src.update_icon()
 		else
-			to_chat(user, "<span class='warning'>[src.name] уже заполнен до предела, патроны не влезают!</span>")
+			to_chat(user, "<span class='warning'>[src.name] полон, патроны не влезают!</span>")
 		
-		return TRUE // Блокируем дефолтный attackby
+		return TRUE 
 
-	// Если кликнули чем-то другим — пусть работает стандартная логика
 	return ..()

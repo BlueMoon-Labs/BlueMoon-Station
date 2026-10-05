@@ -853,7 +853,7 @@
 	min_security_level = SEC_LEVEL_GREEN 
 
 /datum/design/exorcist_lethal
-name = "410 lethal"
+	name = "410 lethal"
 	id = "exorcist_lethal"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 1000)
