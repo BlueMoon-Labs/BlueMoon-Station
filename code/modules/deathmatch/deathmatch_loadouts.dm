@@ -51,13 +51,43 @@
 	shoes = /obj/item/clothing/shoes/sneakers/black
 	back = /obj/item/gun/energy/laser/carbine/deathmatch_selfcharge
 
-/// Disabler. The Security Ring, where being shot is the point.
+/**
+ * Disabler, Security Ring kit. Being shot is the whole point of that arena, so
+ * this is what a security officer actually walks onto the ring in: the jumpsuit,
+ * boots, helmet, webbing and vest, and a taser instead of a sidearm.
+ *
+ * KNOWN GAP: the loadout this was ported from handed out a hybrid taser. There is
+ * no hybrid taser in this codebase, so it gets the plain taser: the same
+ * non-lethal tradeoff, minus the ballistic half.
+ */
 /datum/outfit/vr/deathmatch_loadout/disabler
-	name = "Disabler"
+	name = "Disabler (Security)"
+	uniform = /obj/item/clothing/under/rank/security/officer
+	shoes = /obj/item/clothing/shoes/jackboots
+	head = /obj/item/clothing/head/helmet
+	belt = /obj/item/storage/belt/security/full
+	// /datum/outfit has no `armor` slot; the vest is the outer suit slot.
+	suit = /obj/item/clothing/suit/armor/vest
+	r_hand = /obj/item/gun/energy/taser
+
+/// A grey jumpsuit and nothing else. No boots, no helmet, no gun.
+///
+/// Offered on every arena, because it is the option that makes the other ones
+/// mean something: a Security Ring where both the officer in the vest and the
+/// civilian in grey are worth the same number of points is an arena about not
+/// having armour, which the disabler loadout is otherwise all about.
+datum/outfit/vr/deathmatch_loadout/butt_naked
+	name = "Butt Naked"
+	uniform = /obj/item/clothing/under/color/grey
+
+/// Sniper rifle and one magazine. Sniper Elite, which is about the shot rather
+/// than the trade.
+datum/outfit/vr/deathmatch_loadout/sniper
+	name = "Sniper"
 	uniform = /obj/item/clothing/under/color/random
 	shoes = /obj/item/clothing/shoes/sneakers/black
-	mask = /obj/item/clothing/mask/balaclava
-	back = /obj/item/gun/energy/disabler
+	back = /obj/item/gun/ballistic/automatic/sniper_rifle
+	l_pocket = /obj/item/ammo_box/magazine/sniper_rounds
 
 /// A laser carbine that never runs dry, for arena modes where the round is
 /// decided by positioning rather than by who found the ammo first.

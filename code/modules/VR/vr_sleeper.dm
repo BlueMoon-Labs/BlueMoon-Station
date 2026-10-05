@@ -15,8 +15,6 @@
 	var/vr_category = "default" //Specific category of spawn points to pick from
 	var/allow_creating_vr_mobs = TRUE //So you can have vr_sleepers that always spawn you as a specific person or 1 life/chance vr games
 	var/only_current_user_can_interact = FALSE
-	/// /datum/map_template/deathmatch name the occupant last picked in the TGUI.
-	var/selected_deathmatch_mode
 
 /obj/machinery/vr_sleeper/Initialize(mapload)
 	. = ..()
@@ -89,6 +87,18 @@
 		return GLOB.contained_state
 	return GLOB.default_state
 
+/obj/machinery/vr_sleeper/attack_hand(mob/user)
+	// A guest opens this panel from the floor next to the sleeper. The stock
+	// machinery path gates the click on canUseTopic, which a ghost sitting on the
+	// other side of the room never passes, and the panel is the only place a
+	// loadout can be picked - which is the only way into a game as a guest. Left
+	// alone, a guest reaches for the Join Deathmatch verb instead and gets
+	// dropped into whichever lobby happens to be first.
+	if(istype(user, /mob/dead))
+		ui_interact(user)
+		return TRUE
+	return ..()
+
 /obj/machinery/vr_sleeper/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
@@ -134,35 +144,82 @@
 				open_machine()
 			. = TRUE
 		if("select_deathmatch_mode")
-			// TEMP DEBUG
-			log_game("DMDBG select mode=[params["mode"]] found=[get_deathmatch_map(params["mode"])]")
-			if(get_deathmatch_map(params["mode"]))
-				selected_deathmatch_mode = params["mode"]
-			. = TRUE
-		if("start_deathmatch")
-			// TEMP DEBUG
-			log_game("DMDBG start usr=[usr] occupant=[occupant] sel=[selected_deathmatch_mode]")
-			// The host has to be the one lying in the machine: it is what their
-			// real body is, and where they get put back to when the game ends.
-			// Typed, because /obj/machinery/occupant is untyped and this codebase
-			// compiles in strict mode.
+			var/datum/map_template/deathmatch/mode = get_deathmatch_map(params["mode"])
+			if(isnull(mode))
+				return TRUE
+			var/datum/deathmatch_lobby/mine = get_deathmatch_lobby_of(usr.ckey)
+			if(!isnull(mine))
+				// Already on a roster. The mode buttons are how a player picks
+				// which game to walk into, not how they leave the one they are in.
+				if(mine.template?.name != params["mode"])
+					to_chat(usr, "<span class='warning'>You are already in [mine.template.display_name].</span>")
+				return TRUE
+			// Somebody already recruiting for this mode? Walk in on them rather
+			// than opening a second lobby for the same map.
+			var/datum/deathmatch_lobby/lobby = get_deathmatch_lobby_of_mode(params["mode"])
+			if(!isnull(lobby))
+				if(lobby.join(usr))
+					to_chat(usr, "<span class='notice'>Joined the [mode.display_name] lobby.</span>")
+				return TRUE
+			// Nobody recruiting, so this player is opening one. That takes the
+			// sleeper they are lying in, because that machine is where their real
+			// body ends up when the game is over.
 			var/mob/host_mob = occupant
 			if(usr != host_mob || !host_mob?.mind)
-				to_chat(usr, "<span class='warning'>You need to be inside the VR sleeper to start a deathmatch.</span>")
-				return TRUE
-			if(get_deathmatch_lobby_of(usr.ckey))
-				to_chat(usr, "<span class='warning'>You are already in a deathmatch game.</span>")
+				to_chat(usr, "<span class='warning'>Lie in the sleeper to open a deathmatch lobby.</span>")
 				return TRUE
 			if(!allow_creating_vr_mobs)
 				to_chat(usr, "<span class='warning'>This sleeper does not open new virtual worlds.</span>")
 				return TRUE
-			var/datum/map_template/deathmatch/mode = get_deathmatch_map(selected_deathmatch_mode)
-			if(isnull(mode))
-				to_chat(usr, "<span class='warning'>No deathmatch mode is compiled in.</span>")
+			to_chat(usr, "<span class='notice'>Opening a [mode.display_name] lobby...</span>")
+			start_deathmatch_lobby(host_mob, params["mode"])
+			. = TRUE
+		if("select_deathmatch_loadout")
+			var/datum/deathmatch_lobby/lobby = get_deathmatch_lobby_of(usr.ckey)
+			if(isnull(lobby))
 				return TRUE
-			to_chat(usr, "<span class='notice'>Loading [mode.display_name]...</span>")
-			if(start_deathmatch_lobby(host_mob, mode.name))
-				SStgui.close_user_uis(host_mob, src)
+			var/datum/outfit/vr/deathmatch_loadout/loadout = get_deathmatch_loadout(params["loadout"])
+			if(isnull(loadout))
+				return TRUE
+			// Refuse anything this mode does not offer, so a stale window or a
+			// hand-rolled packet cannot equip a kit the arena was not balanced for.
+			if(!(loadout in lobby.template.get_loadouts()))
+				return TRUE
+			for(var/deathmatch_player_ref as anything in lobby.players)
+				var/datum/deathmatch_player/entry = deathmatch_player_ref
+				if(entry.ckey != usr.ckey)
+					continue
+				entry.loadout = loadout.type
+				to_chat(usr, "<span class='notice'>Loadout set to [lobby.loadout_name(entry.loadout)].</span>")
+				break
+			. = TRUE
+		if("leave_deathmatch")
+			var/datum/deathmatch_lobby/lobby = get_deathmatch_lobby_of(usr.ckey)
+			if(isnull(lobby))
+				return TRUE
+			for(var/deathmatch_player_ref as anything in lobby.players.Copy())
+				var/datum/deathmatch_player/entry = deathmatch_player_ref
+				if(entry.ckey != usr.ckey)
+					continue
+				lobby.remove_player(entry, "you left")
+				break
+			. = TRUE
+		if("start_deathmatch")
+			var/datum/deathmatch_lobby/lobby = get_deathmatch_lobby_of(usr.ckey)
+			if(isnull(lobby))
+				to_chat(usr, "<span class='warning'>You are not in a deathmatch lobby.</span>")
+				return TRUE
+			if(lobby.host_key != usr.ckey)
+				to_chat(usr, "<span class='warning'>Only the host can start the game.</span>")
+				return TRUE
+			if(lobby.state != DM_LOBBY_WAITING)
+				return TRUE
+			if(lobby.players_needed() > 0)
+				to_chat(usr, "<span class='warning'>[lobby.players_needed()] more player(s) needed.</span>")
+				return TRUE
+			to_chat(usr, "<span class='notice'>Loading [lobby.template.display_name]...</span>")
+			if(lobby.begin_match())
+				SStgui.close_user_uis(usr, src)
 			. = TRUE
 		if("end_deathmatch")
 			var/datum/deathmatch_lobby/lobby = get_deathmatch_lobby_of(usr.ckey)
@@ -201,16 +258,16 @@
 	data["emagged"] = you_die_in_the_game_you_die_for_real
 	data["isoccupant"] = (user == occupant)
 
-	// Deathmatch: only the occupant may host, because the machine is where their
-	// real body ends up when the game is over. Typed, because
+	// Deathmatch: only the occupant may open a lobby, because the machine is
+	// where their real body ends up when the game is over. Typed, because
 	// /obj/machinery/occupant is untyped and this codebase is in strict mode.
 	var/mob/deathmatch_host = occupant
 	var/datum/deathmatch_lobby/lobby = get_deathmatch_lobby_of(user.ckey)
-	// The mode list is sent as flat "deathmatch_mode_N_field" keys rather than
-	// a list of assoc lists. A list of assoc lists reaches the browser as a
-	// list of *lists*, so every mode.name/mode.id read as undefined and the
-	// mode buttons rendered as bare "()" with nothing to select. Only scalars
-	// directly under ui_data survive as JSON object fields.
+	// Everything below is sent as flat "deathmatch_*_N_field" keys rather than
+	// lists of assoc lists. A DM list of assoc lists reaches the browser as a
+	// list of *lists*, so every mode.name/mode.id read as undefined and the mode
+	// buttons rendered as bare "()" with nothing to select. Only scalars directly
+	// under ui_data survive as JSON object fields.
 	var/list/all_modes = get_deathmatch_templates()
 	data["deathmatch_mode_count"] = length(all_modes)
 	var/mode_index = 0
@@ -221,15 +278,57 @@
 		data["deathmatch_mode_[mode_index]_name"] = mode.display_name
 		data["deathmatch_mode_[mode_index]_description"] = mode.description
 		data["deathmatch_mode_[mode_index]_players"] = "[mode.min_players]-[mode.max_players]"
-	data["selected_deathmatch_mode"] = selected_deathmatch_mode
+		data["deathmatch_mode_[mode_index]_waiting"] = get_deathmatch_lobby_of_mode(mode.name)?.player_count()
+
+	// Only the mode this player is actually in. Sending every loadout in the game
+	// put a sniper rifle one click away from the Security Ring, where the map is
+	// balanced around disablers.
+	var/list/all_loadouts = lobby?.template?.get_loadouts() || list()
+	data["deathmatch_loadout_count"] = length(all_loadouts)
+	var/loadout_index = 0
+	for(var/loadout_ref as anything in all_loadouts)
+		loadout_index++
+		var/datum/outfit/vr/deathmatch_loadout/loadout = loadout_ref
+		data["deathmatch_loadout_[loadout_index]_id"] = loadout.type
+		data["deathmatch_loadout_[loadout_index]_name"] = loadout.name
+
+	// This player's own roster entry, which is what the loadout picker writes to.
+	var/datum/deathmatch_player/self_entry
+	if(!isnull(lobby))
+		for(var/player_ref as anything in lobby.players)
+			var/datum/deathmatch_player/entry = player_ref
+			if(entry.ckey == user.ckey)
+				self_entry = entry
+				break
+
+	data["in_deathmatch_lobby"] = !isnull(lobby)
+	data["deathmatch_lobby_mode"] = lobby?.template?.name
+	data["deathmatch_lobby_name"] = lobby?.template?.display_name
+	data["deathmatch_lobby_running"] = lobby?.state == DM_LOBBY_RUNNING
+	data["deathmatch_player_count"] = lobby?.player_count() || 0
+	data["deathmatch_min_players"] = lobby?.template?.min_players || 2
+	data["deathmatch_players_needed"] = lobby?.players_needed() || 0
+	data["deathmatch_selected_loadout"] = self_entry?.loadout
+	data["deathmatch_roster_count"] = length(lobby?.players)
+	var/roster_index = 0
+	if(!isnull(lobby))
+		for(var/player_ref as anything in lobby.players)
+			roster_index++
+			var/datum/deathmatch_player/entry = player_ref
+			data["deathmatch_roster_[roster_index]_name"] = entry.display_name
+			data["deathmatch_roster_[roster_index]_host"] = entry.is_host
+			data["deathmatch_roster_[roster_index]_loadout"] = lobby.loadout_name(entry.loadout)
+			data["deathmatch_roster_[roster_index]_self"] = (entry == self_entry)
+
+	// The Start button greys itself out on the same number begin_match() refuses
+	// on, so the two can never disagree about who may start.
 	data["can_start_deathmatch"] = (user == deathmatch_host) && !isnull(deathmatch_host?.mind) \
-		&& allow_creating_vr_mobs
+		&& allow_creating_vr_mobs && !isnull(lobby) && (lobby.host_key == user.ckey) \
+		&& (lobby.state == DM_LOBBY_WAITING) && (lobby.players_needed() <= 0)
 	data["is_hosting_deathmatch"] = !isnull(lobby) && (lobby.host_key == user.ckey)
 	data["hosting_deathmatch"] = null
 	if(data["is_hosting_deathmatch"])
 		data["hosting_deathmatch"] = list("name" = lobby.template.display_name, "players" = lobby.player_count())
-	// TEMP DEBUG
-	log_game("DMDBG ui: modes_n=[data["deathmatch_mode_count"]] first_id=[data["deathmatch_mode_1_id"]] first_name=[data["deathmatch_mode_1_name"]] first_players=[data["deathmatch_mode_1_players"]]")
 	return data
 
 /obj/machinery/vr_sleeper/proc/get_vr_spawnpoint() //proc so it can be overridden for team games or something

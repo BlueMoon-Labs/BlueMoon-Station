@@ -34,6 +34,28 @@
 			log_game("Deathmatch: could not instantiate the arena map [item].")
 	return GLOB.deathmatch_maps
 
+/**
+ * Every deathmatch loadout, instanced on first call, so the sleeper TGUI can
+ * offer a choice instead of leaving players on whatever the mode came with.
+ *
+ * Enumerated and cached the same way get_deathmatch_templates() does, so a new
+ * loadout needs no bookkeeping here. The abstract base type is skipped on
+ * initial(name), which only the concrete subtypes set.
+ */
+/proc/get_deathmatch_loadouts()
+	if(length(GLOB.deathmatch_loadouts))
+		return GLOB.deathmatch_loadouts
+	for(var/item in subtypesof(/datum/outfit/vr/deathmatch_loadout))
+		var/datum/outfit/vr/deathmatch_loadout/loadout_type = item
+		if(isnull(initial(loadout_type.name)))
+			continue
+		var/datum/outfit/vr/deathmatch_loadout/loadout = new loadout_type()
+		if(isnull(loadout))
+			log_game("Deathmatch: could not instantiate the loadout [item].")
+			continue
+		GLOB.deathmatch_loadouts += loadout
+	return GLOB.deathmatch_loadouts
+
 /datum/map_template/deathmatch
 	/// Name shown in the mode selection list.
 	var/display_name = "Deathmatch"
@@ -47,6 +69,35 @@
 	/// which instantiates it, the same way /obj/machinery/vr_sleeper passes
 	/// vr_outfit.
 	var/loadout = /datum/outfit/vr/deathmatch_loadout/bare
+	/// The other loadouts a player may pick for this map, as type paths.
+	///
+	/// Deliberately per map and not one global list. Offering the sniper rifle on
+	/// the Security Ring lets a player walk into an arena balanced around
+	/// disablers holding the one weapon in the game that punishes cover, and the
+	/// map cannot be balanced for five kits at once. The mode's own `loadout` is
+	/// always offered on top of these, so it does not have to be repeated here.
+	var/list/loadout_options = list()
+
+	/**
+	 * The loadouts this mode offers, in picker order, as datums.
+	 *
+	 * The map's default kit first, then loadout_options, with the default
+	 * dropped from the tail if a map lists it redundantly. Resolved through
+	 * get_deathmatch_loadout(), so an option naming a path that does not exist is
+	 * skipped instead of handing the outfit code a null to equip.
+	 */
+	proc/get_loadouts()
+		get_deathmatch_loadouts()	// Builds and caches the master list.
+		var/list/result = list()
+		var/datum/outfit/vr/deathmatch_loadout/default = get_deathmatch_loadout(loadout)
+		if(!isnull(default))
+			result += default
+		for(var/option_path in loadout_options)
+			var/datum/outfit/vr/deathmatch_loadout/option = get_deathmatch_loadout(option_path)
+			if(isnull(option) || (option in result))
+				continue
+			result += option
+		return result
 
 	/// The map is complete by the time this runs, so the freshly loaded bounds
 	/// can be walked turfs and lit.
@@ -104,6 +155,7 @@
 	min_players = 2
 	max_players = 4
 	loadout = /datum/outfit/vr/deathmatch_loadout/disabler
+	loadout_options = list(/datum/outfit/vr/deathmatch_loadout/butt_naked)
 
 /datum/map_template/deathmatch/instagib
 	name = "Deathmatch - Instagib"
@@ -113,6 +165,7 @@
 	min_players = 2
 	max_players = 8
 	loadout = /datum/outfit/vr/deathmatch_loadout/laser
+	loadout_options = list(/datum/outfit/vr/deathmatch_loadout/butt_naked)
 
 /datum/map_template/deathmatch/final_destination
 	name = "Deathmatch - Final Destination"
@@ -122,6 +175,7 @@
 	min_players = 2
 	max_players = 8
 	loadout = /datum/outfit/vr/deathmatch_loadout/sidearm
+	loadout_options = list(/datum/outfit/vr/deathmatch_loadout/butt_naked)
 
 /datum/map_template/deathmatch/sniper_elite
 	name = "Deathmatch - Sniper Elite"
@@ -130,7 +184,8 @@
 	mappath = "_maps/deathmatch/sniper_elite.dmm"
 	min_players = 2
 	max_players = 8
-	loadout = /datum/outfit/vr/deathmatch_loadout/laser
+	loadout = /datum/outfit/vr/deathmatch_loadout/sniper
+	loadout_options = list(/datum/outfit/vr/deathmatch_loadout/butt_naked)
 
 /datum/map_template/deathmatch/shooting_range
 	name = "Deathmatch - Shooting Range"
@@ -140,3 +195,7 @@
 	min_players = 2
 	max_players = 6
 	loadout = /datum/outfit/vr/deathmatch_loadout/laser
+	loadout_options = list(
+		/datum/outfit/vr/deathmatch_loadout/butt_naked,
+		/datum/outfit/vr/deathmatch_loadout/brawler,
+	)

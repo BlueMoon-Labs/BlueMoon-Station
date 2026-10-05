@@ -45,23 +45,30 @@
 	var/mob/dead/observer/G = usr
 	G.open_spawners_menu()
 
-/// Guests are usually ghosts, and the Join Deathmatch verb is easy to miss in
-/// the verb list, so it gets a button. Uses the sleeper icon because the ghost
-/// icon file has nothing that reads as a game.
+/// Guests are usually ghosts, and the sleeper panel is a walk away, so it gets a
+/// button. Uses the sleeper icon because the ghost icon file has nothing that
+/// reads as a game.
 /atom/movable/screen/ghost/deathmatch
-	name = "Join Deathmatch"
+	name = "Deathmatch"
 	icon = 'icons/obj/machines/sleeper.dmi'
 	icon_state = "sleeper"
 
+/// Opens the panel on a nearby sleeper instead of dropping the guest into a game.
+///
+/// This used to grab whichever lobby had room and seat them there, which took
+/// away the two choices a guest is supposed to make: which mode to play, and what
+/// to spawn wearing. The loadout in particular cannot be picked anywhere else,
+/// since the roster closes the moment the host starts the match.
 /atom/movable/screen/ghost/deathmatch/Click()
 	var/mob/dead/observer/G = usr
-	if(isnull(get_joinable_deathmatch_lobby()))
-		to_chat(G, span_danger("No deathmatch game is open right now."))
+	// A fixed radius: a ghost has no `range()` of its own, and 7 tiles is what
+	// they can click a machine from anyway.
+	for(var/atom/A as anything in view(7, G))
+		if(!istype(A, /obj/machinery/vr_sleeper))
+			continue
+		A.ui_interact(G)
 		return
-	G.deathmatch_join_game()
-
-/atom/movable/screen/ghost/deathmatch/MouseEntered()
-	return
+	to_chat(G, span_danger("No VR sleeper in sight. Stand next to one to open its panel."))
 
 /datum/hud/ghost/New(mob/owner)
 	..()
