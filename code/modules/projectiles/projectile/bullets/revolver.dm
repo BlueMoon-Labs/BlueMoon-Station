@@ -308,7 +308,7 @@
 
 /obj/item/ammo_casing/cal410
 	name= ".410 rubber shot"
-	desc = "An .41 rubber shot."
+	desc = "An .410 rubber shot."
 	caliber = ".410cal"
 	icon = 'modular_bluemoon/icons/obj/ammo.dmi'
 	icon_state = "410rubber"

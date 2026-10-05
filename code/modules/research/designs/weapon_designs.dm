@@ -838,12 +838,13 @@
 	build_path = /obj/item/weaponcrafting/gunkit/dies_irae
 	category = list("Weapons")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = SEC_LEVEL_RED
+	min_security_level = SEC_LEVEL_BLUE
 
 // 410 cal дробь
 
 /datum/design/exorcist_rubber
 	id = "exorcist_rubber"
+	name = "410 rubber"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/glass = 1000)
 	build_path = /obj/item/ammo_casing/cal410
@@ -852,6 +853,7 @@
 	min_security_level = SEC_LEVEL_GREEN 
 
 /datum/design/exorcist_lethal
+name = "410 lethal"
 	id = "exorcist_lethal"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 1000)
