@@ -159,6 +159,21 @@
 	can_switch_eye = FALSE
 	has_adapt_icon_states = FALSE
 
+/obj/item/clothing/glasses/cover/tac_veil
+	name = "Veil (adaptive)"
+	desc = "Furui's company have brought this from far lands using culture of Jingdai."
+	icon_state = "veil"
+	base_icon_state = "veil"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
+	can_switch_eye = FALSE
+	has_adapt_icon_states = FALSE
+	var/list/poly_colors = list("#FFFFFF","#C5302D")
+
+	/obj/item/clothing/glasses/cover/tac_veil/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, poly_colors, 1)
+
 #undef DATA_ICON
 #undef DATA_ICON_STATE
 #undef DATA_ICON_WORN_OVERLAY
