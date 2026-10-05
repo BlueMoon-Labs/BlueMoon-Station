@@ -107,7 +107,7 @@
 		new /datum/data/bounty_equipment("Budget tactical first aid",		/obj/item/storage/firstaid/tactical/vanguard,					5000,		"Elite Equipment"),
 		new /datum/data/bounty_equipment("ACR-5m26 spare mag (empty)",		/obj/item/ammo_box/magazine/acr5m30/empty,						2500,		"Elite Equipment"),
 		new /datum/data/bounty_equipment("Hoshi modular laser",				/obj/item/gun/energy/modular_laser_rifle/carbine/pinvanguard,	25000,		"Elite Equipment"),
-		new /datum/data/bounty_equipment("С-02 Permit",						/obj/item/clothing/accessory/permit/special/c_02,				15000,		"Elite Equipment"),
+		new /datum/data/bounty_equipment("С-02 Permit",						/obj/item/clothing/accessory/permit/special/c_02,				5000,		"Elite Equipment"),
 //		new /datum/data/bounty_equipment("ERT MOD Suit",					/obj/item/mod/control/pre_equipped/responsory,					50000,		"Elite Equipment"),
 		new /datum/data/bounty_equipment("Department Prototlathe beacon",	/obj/item/choice_beacon/departmental_protholate,				20000,		"Elite Equipment"),
 		new /datum/data/bounty_equipment("Syndicate Baloon",				/obj/item/toy/syndicateballoon,									1000000,	"Elite Equipment"),
