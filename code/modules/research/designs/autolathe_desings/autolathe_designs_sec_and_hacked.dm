@@ -291,6 +291,14 @@
 	build_path = /obj/item/ammo_box/a308
 	category = list("hacked", "Security")
 
+/datum/design/g4570
+	name = "45-70 ammo"
+	id = "g4570"
+	build_type = AUTOLATHE | NO_PUBLIC_LATHE
+	materials = list(/datum/material/iron = 1000)
+	build_path = /obj/item/ammo_casing/g4570
+	category = list("hacked", "Security")
+
 //////////////////////////////////////////////////////////
 
 /datum/design/electropack
