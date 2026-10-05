@@ -68,7 +68,7 @@
 	build_path = /obj/item/circuitboard/mecha/durand/main
 	category = list("Exosuit Modules")
 	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
-	min_security_level = SEC_LEVEL_AMBER
+	min_security_level = SEC_LEVEL_RED
 
 /datum/design/board/durand_peri
 	name = "\"Durand\" Peripherals Control module"
@@ -77,7 +77,7 @@
 	build_path = /obj/item/circuitboard/mecha/durand/peripherals
 	category = list("Exosuit Modules")
 	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
-	min_security_level = SEC_LEVEL_AMBER
+	min_security_level = SEC_LEVEL_RED
 
 /datum/design/board/durand_targ
 	name = "\"Durand\" Weapons & Targeting Control module"
@@ -86,7 +86,7 @@
 	build_path = /obj/item/circuitboard/mecha/durand/targeting
 	category = list("Exosuit Modules")
 	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
-	min_security_level = SEC_LEVEL_AMBER
+	min_security_level = SEC_LEVEL_RED
 
 /datum/design/board/honker_main
 	name = "\"H.O.N.K\" Central Control module"

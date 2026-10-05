@@ -23,3 +23,9 @@
 	foodtype = FRUIT
 	tastes = list("leaves" = 1)
 	distill_reagent = /datum/reagent/consumable/ethanol/sins_delight
+	recycle_result = /obj/item/reagent_containers/cocaine
+	prefer_grind = TRUE // пестик по умолчанию давит предмет в жидкость, а нам нужен порошок
+
+/obj/item/reagent_containers/food/snacks/grown/cocaleaf/on_grind()
+	..()
+	new /obj/item/reagent_containers/cocaine(drop_location())

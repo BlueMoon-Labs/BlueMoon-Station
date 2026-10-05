@@ -2,8 +2,8 @@
 /datum/language/common
 	name = "Galactic Common"
 	desc = "The common galactic tongue."
-	speech_verb = "says"
-	whisper_verb = "whispers"
+	speech_verb = "говорит"
+	whisper_verb = "шепчет"
 	key = "0"
 	flags = LANGUAGE_HIDE_ICON_IF_UNDERSTOOD // bluemoon change  flags = TONGUELESS_SPEECH
 	default_priority = 100

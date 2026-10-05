@@ -105,6 +105,30 @@
 				sounding_rod.forceMove(get_turf(src))
 			to_chat(src, message)
 
+	if(istype(sender, /obj/item/organ/genital/vagina))
+		var/obj/item/genital_equipment/urethral_plug/plug = locate(/obj/item/genital_equipment/urethral_plug) in sender.contents
+		if(plug)
+			var/message = "Ты чувствуешь, как уретра сжимается и толкает пробку наружу "
+			var/obj/item/clothing/underwear/chastity_belt/belt = get_item_by_slot(ITEM_SLOT_UNDERWEAR)
+			if(prob(90)) // the flow of liquid is not that strong, so we'll add a chance
+				message += ", но пробка не поддалась! Твоя уретра распирается от давления, ты чувствуешь тяжёлую болезненную пульсацию, отдающую в клитор!"
+				if(HAS_TRAIT(src, TRAIT_MASO))
+					message = span_userlove(message)
+				else
+					message = span_alertwarning(message)
+			else if(belt && istype(belt.bepis, /obj/item/organ/genital/vagina))
+				message += "но пробка упирается в пояс и не может выйти, поток жидкости обтекает её, раздувая уретру и вызывая болезненную пульсацию, отдающую в клитор!"
+				if(HAS_TRAIT(src, TRAIT_MASO))
+					message = span_userlove(message)
+				else
+					message = span_alertwarning(message)
+			else
+				spill = TRUE
+				message += "выбрасывая её под напором жидкости!"
+				message = span_userlove(message)
+				plug.forceMove(get_turf(src))
+			to_chat(src, message)
+
 	if(cover == TRUE)
 		if(istype(sender, /obj/item/organ/genital/penis) || HAS_TRAIT(src, TRAIT_MESSY))
 			var/overlay_color

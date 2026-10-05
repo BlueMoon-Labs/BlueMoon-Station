@@ -20,3 +20,5 @@
 #define SKIN_MACROSET_CLASSIC_INPUT "oldinput"
 
 #define COMSIG_KB_CLIENT_FULLSCREEN "keybinding_client_fullscreen"
+
+#define ABILITY_HOTKEY_SLOTS 10

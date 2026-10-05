@@ -7,6 +7,8 @@
 	var/mode = "low"
 	var/on = 0
 	var/hole = CUM_TARGET_VAGINA
+	var/obj/item/portallight/attached_portallight = null
+	var/portal_error = FALSE
 	var/obj/item/dildo/attached_dildo = new /obj/item/dildo/custom
 	var/dual_mode = FALSE
 	var/obj/item/dildo/dual_mode_attached_dildo
@@ -25,10 +27,22 @@
 
 /obj/structure/bed/dildo_machine/Destroy()
 	STOP_PROCESSING(SSobjlw,src)
+	if(attached_portallight)
+		attached_portallight.forceMove(get_turf(src))
+		attached_portallight = null
+	if(dual_mode_attached_dildo)
+		dual_mode_attached_dildo.forceMove(get_turf(src))
+		dual_mode_attached_dildo = null
+	if(attached_dildo)
+		attached_dildo.forceMove(get_turf(src))
+		attached_dildo = null
 	. = ..()
 
 /obj/structure/bed/dildo_machine/examine(mob/user)
 	. = ..()
+
+	if(attached_portallight)
+		. += "There is attached [span_lewd(attached_portallight.name)]."
 
 	if(dual_mode)
 		. += span_alert("\the [src.name] in dual mode.")
@@ -73,12 +87,22 @@
 			attached_dildo.forceMove(get_turf(src))
 		attached_dildo = null
 
+/obj/structure/bed/dildo_machine/proc/detach_portallight(mob/living/carbon/user)
+	if(on)
+		to_chat(user, span_warning("You can't detach the portal light from the machine while it's on."))
+		return
+	if(attached_portallight)
+		attached_portallight.forceMove(get_turf(src))
+		attached_portallight = null
+		hole = CUM_TARGET_VAGINA
+		can_buckle = TRUE
+
 /obj/structure/bed/dildo_machine/AltClick(mob/user)
 	. = ..()
 	if(!iscarbon(user) || !in_range(src, user))
 		return
 
-	var/static/list/INTERACTIONS = list("Toggle machine", "Change hole", "Change speed mode", "Detach dildo")
+	var/static/list/INTERACTIONS = list("Toggle machine", "Change hole", "Change speed mode", "Detach dildo", "Detach portallight")
 	var/static/list/HOLE_CHOICES = list("Vagina", "Anus", "Dual mode")
 	var/static/list/HOLE_MAP = list(
 		"Vagina" = CUM_TARGET_VAGINA,
@@ -112,6 +136,8 @@
 				mode = lowertext(m)
 		if("Detach dildo")
 			detach_dildo(user)
+		if("Detach portallight")
+			detach_portallight(user)
 
 /obj/structure/bed/dildo_machine/proc/toggle(mob/living/carbon/user)
 	if(!on)
@@ -126,6 +152,7 @@
 
 	on = !on
 	if(on)
+		portal_error = FALSE
 		START_PROCESSING(SSobjlw,src)
 	if(!on)
 		STOP_PROCESSING(SSobjlw,src)
@@ -134,27 +161,65 @@
 
 /obj/structure/bed/dildo_machine/process(delta_time)
 	timer -= delta_time
-	if(timer >= 0) // chech interval
+	if(timer > 0)
 		return
 	else
 		timer = speed_delay[mode]
 	fuck()
 
 /obj/structure/bed/dildo_machine/proc/fuck()
-	if(!on || !attached_dildo || (dual_mode && !dual_mode_attached_dildo) || !hole || !has_buckled_mobs())
+	if(!on || !attached_dildo || (dual_mode && !dual_mode_attached_dildo) || !hole || !(has_buckled_mobs() || attached_portallight))
 		visible_message(span_alert("The machine warning: the subject or dildo is missing."))
 		on = FALSE
 		STOP_PROCESSING(SSobjlw,src)
 		return
 
-	for(var/mob/living/carbon/human/M in buckled_mobs)
+	if(has_buckled_mobs())
+		for(var/mob/living/carbon/human/M in buckled_mobs)
+			fuck_target(M , hole)
+			return
 
-		var/list/organ_slots = list()
-		if(dual_mode)
-			organ_slots = list(CUM_TARGET_VAGINA, CUM_TARGET_ANUS)
+	else if(attached_portallight)
+		var/mob/living/carbon/human/portal_target
+		if(attached_portallight.portalunderwear)
+			if(ishuman(attached_portallight.portalunderwear.loc) && (attached_portallight.portalunderwear.current_equipped_slot & (ITEM_SLOT_UNDERWEAR | ITEM_SLOT_MASK)))
+				portal_target = attached_portallight.portalunderwear.loc
+			else
+				var/datum/component/genital_equipment/equipment = attached_portallight.portalunderwear.GetComponent(/datum/component/genital_equipment)
+				if(equipment?.holder_genital)
+					portal_target = equipment.get_wearer()
+		if(portal_target)
+			var/hole_target = attached_portallight.portalunderwear.targetting
+			if(hole_target == CUM_TARGET_VAGINA || hole_target == CUM_TARGET_ANUS || hole_target == CUM_TARGET_MOUTH)
+				hole = hole_target
+				if(dual_mode)
+					dual_mode = FALSE
+					if(dual_mode_attached_dildo)
+						dual_mode_attached_dildo.forceMove(get_turf(src))
+						dual_mode_attached_dildo = null
+				portal_error = FALSE
+				fuck_target(portal_target, hole, TRUE)
+				return
+		// keep machine on while the portal is empty or has unsopported organ
+			else
+				if(!portal_error)
+					portal_error = TRUE
+					visible_message(span_alert("The machine warning: attached portal not supported."))
+				return
 		else
-			organ_slots += hole
+			if(!portal_error)
+				portal_error = TRUE
+				visible_message(span_alert("The machine warning: attached portal empty."))
+			return
 
+/obj/structure/bed/dildo_machine/proc/fuck_target(mob/living/carbon/human/M, target_hole, isPortal = FALSE)
+	var/list/organ_slots = list()
+	if(dual_mode)
+		organ_slots = list(CUM_TARGET_VAGINA, CUM_TARGET_ANUS)
+	else
+		organ_slots += target_hole
+
+	if(!isPortal)
 		for(var/organ_slot in organ_slots)
 			var/obj/item/organ/genital/organ = M.getorganslot(organ_slot)
 			if(!organ || !(organ.is_exposed() || organ.always_accessible))
@@ -162,24 +227,43 @@
 				on = FALSE
 				return
 
-		var/i = 1
-		for(var/organ_slot in organ_slots)
-			var/gained_lust = attached_dildo.target_reaction(M,null, i>1 ? 0 : 1, organ_slot,null,FALSE,TRUE,TRUE,FALSE)
-			M.client?.plug13.send_emote(organ_slot == CUM_TARGET_ANUS ? PLUG13_EMOTE_ANUS : PLUG13_EMOTE_GROIN, min(gained_lust * 5, 100), PLUG13_DURATION_NORMAL)
-			i += 1
+	var/i = 1
+	for(var/organ_slot in organ_slots)
+		var/gained_lust = attached_dildo.target_reaction(M,null, i>1 ? 0 : 1, organ_slot,null,FALSE,TRUE,TRUE,FALSE)
+		M.client?.plug13.send_emote(organ_slot == CUM_TARGET_ANUS ? PLUG13_EMOTE_ANUS : PLUG13_EMOTE_GROIN, min(gained_lust * 5, 100), PLUG13_DURATION_NORMAL)
+		i += 1
 
+	if(M.client?.prefs.cit_toggles & SEX_JITTER)
 		M.Jitter(3)
 
-		var/message_end = "[dual_mode ? "обе дырочки" : (hole == CUM_TARGET_VAGINA ? "вагину" : "попку")] [M]"
-		var/message = "[pick("вгоняет дилдо в", "трахает", "разрабатывает")] [message_end]" // normal mode
-		switch(mode)
-			if("high")
-				message = "[pick("активно","безжалостно","жестоко")] [pick("трахает", "насилует", "долбит")] [message_end]"
-			if("low")
-				message = "[pick("медленно","плавно","мягко")] [pick("вводит дилдо в", "погружает дилдо в")] [message_end]"
+	if(mode == "high" && target_hole == CUM_TARGET_MOUTH)
+		target_hole = CUM_TARGET_THROAT
+	if(mode == "low" && target_hole == CUM_TARGET_THROAT)
+		target_hole = CUM_TARGET_MOUTH
 
-		playsound(loc, "modular_sand/sound/interactions/bang[rand(1, 6)].ogg", 30, 1)
-		visible_message(span_lewd("\the [src] [message]"))
+	var/message_end = ""
+	if(dual_mode)
+		message_end = "обе дырочки"
+	else
+		switch(target_hole)
+			if(CUM_TARGET_VAGINA)
+				message_end = "вагину"
+			if(CUM_TARGET_ANUS)
+				message_end = "попку"
+			if(CUM_TARGET_MOUTH)
+				message_end = "ротик"
+			if(CUM_TARGET_THROAT)
+				message_end = "горло"
+
+	var/message = "[pick("вгоняет дилдо в", "трахает", "разрабатывает")] [message_end]" // normal mode
+	switch(mode)
+		if("high")
+			message = "[pick("активно","безжалостно","жестоко")] [pick("трахает", "насилует", "долбит")] [message_end]"
+		if("low")
+			message = "[pick("медленно","плавно","мягко")] [pick("вводит дилдо в", "погружает дилдо в")] [message_end]"
+
+	playsound(loc, "modular_sand/sound/interactions/bang[rand(1, 6)].ogg", 30, 1)
+	visible_message(span_lewd("\the [src] [message]"))
 
 
 /obj/structure/bed/dildo_machine/attackby(obj/item/used_item, mob/user, params)
@@ -208,6 +292,9 @@
 				attached_dildo.forceMove(kit)
 				kit.attached_dildo = attached_dildo
 				attached_dildo = null
+			if(attached_portallight)
+				attached_portallight.forceMove(get_turf(src))
+				attached_portallight = null
 			qdel(src)
 	else if(istype(used_item, /obj/item/dildo) && !(used_item.item_flags & ABSTRACT))
 		if(!attached_dildo)
@@ -217,6 +304,13 @@
 		else if(dual_mode && !dual_mode_attached_dildo)
 			if(user.transferItemToLoc(used_item, src))
 				dual_mode_attached_dildo = used_item
+				return TRUE
+	// вот бы еще оверлей добавить с прикрепленным фонариком
+	else if(istype(used_item, /obj/item/portallight))
+		if(!attached_portallight && (!buckled_mobs || buckled_mobs.len == 0))
+			if(user.transferItemToLoc(used_item, src))
+				attached_portallight = used_item
+				can_buckle = FALSE
 				return TRUE
 	else
 		return ..()

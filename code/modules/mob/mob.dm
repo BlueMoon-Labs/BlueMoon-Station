@@ -721,6 +721,12 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 /mob/proc/get_muzzle_strength()
 	return MUFFLE_NONE
 
+/// Уровень сенсорной депривации слуха на основе TRAIT_HEARING_DEPRIVED
+/mob/proc/get_hearing_deprivation_strength()
+	if(HAS_TRAIT(src, TRAIT_HEARING_DEPRIVED))
+		return HEARING_DEPRIV_LOW
+	return HEARING_DEPRIV_NONE
+
 /// Adds this list to the output to the stat browser
 /mob/proc/get_status_tab_items()
 	. = list()
@@ -875,6 +881,9 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 		client << output(null, "statbrowser:check_spells")
 
 /mob/proc/anti_magic_check(magic = TRUE, holy = FALSE, tinfoil = FALSE, chargecost = 1, self = FALSE)
+	return check_magic_resistance(magic, holy, tinfoil, chargecost, self)
+
+/mob/proc/check_magic_resistance(magic = TRUE, holy = FALSE, tinfoil = FALSE, chargecost = 1, self = FALSE)
 	if(!magic && !holy && !tinfoil)
 		return
 	var/list/protection_sources = list()

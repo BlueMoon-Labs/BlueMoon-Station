@@ -1,8 +1,15 @@
 /mob/living/carbon
 	var/list/overlays_standing[TOTAL_LAYERS]
+	/// Зеркальные копии части [var/overlays_standing] на эмиссивном плане. Хранятся отдельно,
+	/// чтобы в кэше оставалось только настоящее изображение персонажа (по нему ходят тесты и
+	/// код, который считает свечение).
+	var/list/overlays_emissive_blockers[TOTAL_LAYERS]
 
 /mob/living/carbon/proc/apply_overlay(cache_index)
 	if((. = overlays_standing[cache_index]))
+		refresh_emissive_blockers(cache_index)
+		if(overlays_emissive_blockers[cache_index])
+			add_overlay(overlays_emissive_blockers[cache_index])
 		add_overlay(.)
 	update_small_sprite()
 
@@ -11,7 +18,33 @@
 	if(I)
 		cut_overlay(I)
 		overlays_standing[cache_index] = null
+	remove_emissive_blockers(cache_index)
 	update_small_sprite()
+
+/// Пересобирает блокеры для слоя. На эмиссивном плане блокер стоит на своём слое (например,
+/// волосы на [HAIR_LAYER]), а свечение глаз глубже ([BODY_LAYER]) — поэтому волосы гасят
+/// свечение глаз и своё, и чужое, ровно так же, как на игровом плане. Порядок внутри слоя
+/// не важен: блокеры ничего не подсвечивают, они только стирают уже нарисованное свечение.
+/mob/living/carbon/proc/refresh_emissive_blockers(cache_index)
+	remove_emissive_blockers(cache_index)
+	if(!(cache_index in GLOB.emissive_blocked_layers))
+		return
+	var/images = overlays_standing[cache_index]
+	if(!islist(images))
+		return
+	var/list/blockers
+	for(var/image/im in images)
+		var/blocker = emissive_blocker_copy(im)
+		if(blocker)
+			LAZYADD(blockers, blocker)
+	if(blockers)
+		overlays_emissive_blockers[cache_index] = blockers
+
+/mob/living/carbon/proc/remove_emissive_blockers(cache_index)
+	var/blockers = overlays_emissive_blockers[cache_index]
+	if(blockers)
+		cut_overlay(blockers)
+		overlays_emissive_blockers[cache_index] = null
 
 /mob/living/carbon/regenerate_icons()
 	if(mob_transforming)

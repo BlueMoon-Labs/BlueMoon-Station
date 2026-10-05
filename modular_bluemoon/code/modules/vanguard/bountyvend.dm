@@ -75,7 +75,7 @@
 		new /datum/data/bounty_equipment("Lazarus injector",				/obj/item/lazarus_injector,										500,	"Tools"),
 		new /datum/data/bounty_equipment("Fulton pack",						/obj/item/extraction_pack,										500,	"Tools"),
 		new /datum/data/bounty_equipment("Auto surgeon",					/obj/item/autosurgeon/vanguard,									750,	"Tools"),
-		new /datum/data/bounty_equipment("Illegal technology disk",			/obj/item/disk/tech_disk/illegal,								5000,	"Tools"),
+		new /datum/data/bounty_equipment("Illegal technology disk",			/obj/item/disk/tech_disk/illegal,								50000,	"Tools"),
 		new /datum/data/bounty_equipment("Fulton beacon",					/obj/item/fulton_core,											200,	"Tools"),
 		new /datum/data/bounty_equipment("BEPIS technology disk",			/obj/item/disk/tech_disk/major,									1000,	"Tools"),
 		new /datum/data/bounty_equipment("Vanguard basic kit",				/obj/item/storage/backpack/duffelbag/vanguard/conscript,		1500,	"Tools"),
@@ -96,9 +96,8 @@
 
 		// ============ MOD DESIGNS ============
 		new /datum/data/bounty_equipment("Extended MOD storage module",				/obj/item/mod/module/storage/extended,					2000,		"MOD Designs"),
-		new /datum/data/bounty_equipment("MOD advanced ion jetpack module",			/obj/item/mod/module/jetpack/advanced,					5000,		"MOD Designs"),
+		new /datum/data/bounty_equipment("MOD ion jetpack module",					/obj/item/mod/module/jetpack,							5000,		"MOD Designs"),
 		new /datum/data/bounty_equipment("MOD DNA lock module",						/obj/item/mod/module/dna_lock,							7500,		"MOD Designs"),
-		new /datum/data/bounty_equipment("MOD Storage Upgrader",					/obj/item/mod/module/storage_upgrader,					15000,		"MOD Designs"),
 		new /datum/data/bounty_equipment("MOD Magnetic Harness",					/obj/item/mod/module/magnetic_harness,					5000,		"MOD Designs"),
 
 		// ============ ELITE EQUIPMENT =========
@@ -346,7 +345,7 @@
 	desc += "\nIt seems a few selections have been added."
 	prize_list += list(
 		// ============ MISCELLANEOUS ============
-		new /datum/data/bounty_equipment("1 Metadollar",            		/obj/item/stack/metadollar, 									50000, 	"Miscellaneous"),
+		new /datum/data/bounty_equipment("1 Metadollar",            		/obj/item/stack/metadollar, 									100000, 	"Miscellaneous"),
 		new /datum/data/bounty_equipment("space cash",						/obj/item/stack/spacecash/c1000,								1500,	"Miscellaneous")
 		)
 	build_inventory()

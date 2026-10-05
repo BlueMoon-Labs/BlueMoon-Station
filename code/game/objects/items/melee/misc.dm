@@ -455,7 +455,13 @@
 		if(cooldown_check < world.time)
 			if(!UseStaminaBufferStandard(user, STAM_COST_BATON_MOB_MULT, warn = TRUE))
 				return DISCARD_LAST_ACTION
-			var/list/block_return = list()
+			var/final_stun_damage = stam_dmg
+			var/size_countered = FALSE
+			if(target.mob_weight > MOB_WEIGHT_HEAVY && !full_effect_on_superheavy_characters)
+				var/target_size_mod = 1 / max(1, get_size(target))
+				final_stun_damage *= target_size_mod
+				size_countered = target_size_mod <= 0.6
+			var/list/block_return = list(BLOCK_CONTEXT_DAMAGE = final_stun_damage, BLOCK_CONTEXT_DAMAGE_TYPE = STAMINA)
 			if(target.mob_run_block(src, 0, "[user]'s [name]", ATTACK_TYPE_MELEE, 0, user, null, block_return) & BLOCK_SUCCESS)
 				playsound(target, 'sound/weapons/genhit.ogg', 50, 1)
 				return
@@ -471,18 +477,9 @@
 			if(stun_animation)
 				user.do_attack_animation(target)
 			playsound(get_turf(src), on_stun_sound, 75, 1, -1)
-			var/countered = block_return[BLOCK_RETURN_MITIGATION_PERCENT] > block_percent_to_counter
-			// BLUEMOON ADD START - больших и тяжёлых существ проблематично нормально оглушить
-			var/final_stun_damage = stam_dmg
-			if(target.mob_weight > MOB_WEIGHT_HEAVY)
-				if(!full_effect_on_superheavy_characters)
-					var/target_size_mod = 1
-					if(get_size(target) > 1)
-						target_size_mod = 1 / get_size(target) // я за час не придумал, как из 1 получить 1 и из 2 получить 0.5 - сделайте вы
-					final_stun_damage *= target_size_mod
-					countered = target_size_mod <= 0.6 ? 1 : 0 // если модификатор стана 0.6 или менее, то считается законтренным от падения
-			// BLUEMOON ADD END
-			target.DefaultCombatKnockdown(softstun_ds, TRUE, FALSE, countered? 0 : hardstun_ds, final_stun_damage, !countered) // BLUEMOON EDIT - заменено stam_dmg на final_stun_damage
+			var/countered = size_countered || block_return[BLOCK_RETURN_MITIGATION_PERCENT] > block_percent_to_counter
+			final_stun_damage = block_calculate_resultant_damage(final_stun_damage, block_return)
+			target.DefaultCombatKnockdown(softstun_ds, TRUE, FALSE, countered? 0 : hardstun_ds, final_stun_damage, !countered)
 			additional_effects_carbon(target, user)
 			log_combat(user, target, "stunned", src)
 			add_fingerprint(user)

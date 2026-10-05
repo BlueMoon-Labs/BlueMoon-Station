@@ -89,7 +89,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 	var/blacklisted = 0 //Flag to exclude from green slime core species.
 	var/dangerous_existence //A flag for transformation spells that tells them "hey if you turn a person into one of these without preperation, they'll probably die!"
 	///Affects the speech message, for example: Motharula flutters, "My speech message is flutters!"
-	var/say_mod = "says"
+	var/say_mod = "говорит"
 	/// What languages this species can understand and say.
 	/// Use a [language holder datum][/datum/language_holder] typepath in this var.
 	/// Should never be null.
@@ -928,14 +928,8 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 				// Свечение глаз — pixel-accurate glow copying the eye's exact icon/state/pixels
 				// via emissive_copy (BlueMoon white emissive convention against the lighting mask)
 				if(has_emissive_part(H.dna?.features, "eyes"))
-					// Don't glow eyes that are visually covered by hair (e.g. "Bedhead (Long)" hides
-					// the right eye): a hidden eye shouldn't punch a bright glow through the hairstyle.
-					// Left and right eyes are handled independently via the hair's per-side flags.
-					var/datum/sprite_accessory/hair/hairstyle = GLOB.hair_styles_list[H.hair_style]
-					if(!istype(hairstyle) || !hairstyle.hides_left_eye)
-						standing += emissive_copy(left_eye)
-					if(!istype(hairstyle) || !hairstyle.hides_right_eye)
-						standing += emissive_copy(right_eye)
+					standing += emissive_copy(left_eye)
+					standing += emissive_copy(right_eye)
 
 	if(H.nail_style)
 		var/mutable_appearance/nail_overlay = mutable_appearance('modular_splurt/icons/mobs/nails.dmi', "nails", -HANDS_PART_LAYER)
@@ -2418,7 +2412,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 		if(BRUTE)
 			H.damageoverlaytemp = 20
 			// BLUEMOON EDIT START
-			var/damage_amount = forced ? damage : damage * hit_percent * brutemod * H.physiology.brute_mod
+			var/damage_amount = forced ? damage : damage * hit_percent * brutemod * H.physiology.brute_mod * H.physiology.heretic_ascension_mod
 			// Да, проверка специально написана, до проверки на прочную кожу
 			if(HAS_TRAIT(H, TRAIT_MASO))
 				if(!(H.IsSleeping() || H.stat >= UNCONSCIOUS || H.IsUnconscious())) // BLUEMOON ADD - персонаж не спит, не без сознания и не мертв
@@ -2436,7 +2430,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 			//BLUEMOON EDIT END
 		if(BURN)
 			H.damageoverlaytemp = 20
-			var/damage_amount = forced ? damage : damage * hit_percent * burnmod * H.physiology.burn_mod
+			var/damage_amount = forced ? damage : damage * hit_percent * burnmod * H.physiology.burn_mod * H.physiology.heretic_ascension_mod
 			if(BP)
 				if(BP.receive_damage(0, damage_amount, wound_bonus = wound_bonus, bare_wound_bonus = bare_wound_bonus, sharpness = sharpness, can_dismember = can_dismember))
 					H.update_damage_overlays()
@@ -2452,9 +2446,9 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 			var/damage_amount = forced ? damage : damage * hit_percent * H.physiology.clone_mod
 			H.adjustCloneLoss(damage_amount)
 		if(STAMINA)
-			var/damage_amount = forced ? damage : damage * hit_percent * H.physiology.stamina_mod
+			var/damage_amount = forced ? damage : damage * hit_percent * H.physiology.stamina_mod * H.physiology.heretic_stamina_mod
 			if(BP)
-				if(damage > 0 ? BP.receive_damage(0, 0, damage_amount) : BP.heal_damage(0, 0, abs(damage * hit_percent * H.physiology.stamina_mod), only_robotic = FALSE, only_organic = FALSE))
+				if(damage > 0 ? BP.receive_damage(0, 0, damage_amount) : BP.heal_damage(0, 0, abs(damage * hit_percent * H.physiology.stamina_mod * H.physiology.heretic_stamina_mod), only_robotic = FALSE, only_organic = FALSE))
 					H.update_stamina()
 			else
 				H.adjustStaminaLoss(damage_amount)

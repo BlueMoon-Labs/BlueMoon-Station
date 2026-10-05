@@ -536,7 +536,11 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	var/list/filtered = list()
 	for(var/V in GLOB.sortedAreas)
 		var/area/A = V
-		if(!A.hidden)
+		if(istype(A, /area/antag_training))
+			var/area/antag_training/training = A
+			if(training.arena?.ready)
+				filtered += A
+		else if(!A.hidden)
 			filtered += A
 	var/area/thearea = tgui_input_list(src, "Area to jump to", "BOOYEA", filtered)
 

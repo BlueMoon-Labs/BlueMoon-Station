@@ -233,6 +233,7 @@
 			animate(alpha = base_alpha, time = L.twinkle_time, easing = SINE_EASING)
 		if(L.drift_time > 0 && !L.drifting)
 			L.StartDrift()
+		L.OnApplied()
 		. |= L
 	C.screen |= .
 	if(!secondary_map && (effective_parallax != PARALLAX_DISABLE))

@@ -39,7 +39,7 @@ Difficulty: Medium
 	attack_verb_continuous = "chomps"
 	attack_verb_simple = "chomp"
 	attack_sound = 'sound/magic/demon_attack1.ogg'
-	icon = 'icons/mob/lavaland/64x64megafauna.dmi'
+	icon = 'icons/mob/lavaland/96x96megafauna.dmi'
 	icon_state = "dragon"
 	icon_living = "dragon"
 	icon_dead = "dragon_dead"

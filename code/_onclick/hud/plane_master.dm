@@ -389,6 +389,13 @@
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	render_target = LIGHTING_LAMPS_RENDER_TARGET
 
+// Свечение ламп не должно просвечивать сквозь мобов/объекты: гасим его там, где непрозрачен
+// игровой план. Фильтр один на весь тип, поэтому и обычные, и floor-варианты (/floor вызывают
+// ..()) получают его бесплатно.
+/atom/movable/screen/plane_master/lamps/Initialize(mapload, datum/hud/hud_owner)
+	. = ..()
+	add_filter("lamps_game_mask", 1, alpha_mask_filter(render_source = GAME_PLANE_RENDER_TARGET, flags = MASK_INVERSE))
+
 /atom/movable/screen/plane_master/lamps/backdrop(mob/mymob)
 	remove_filter("user_brightness")
 	if(mymob?.client?.prefs?.lighting_quality == LIGHTING_QUALITY_FAST)
@@ -413,10 +420,6 @@
 	name = "floor lamps plane master"
 	plane = FLOOR_LIGHTING_LAMPS_PLANE
 	render_target = FLOOR_LIGHTING_LAMPS_RENDER_TARGET
-
-/atom/movable/screen/plane_master/lamps/floor/Initialize(mapload, datum/hud/hud_owner)
-	. = ..()
-	add_filter("floor_game_mask", 1, alpha_mask_filter(render_source = GAME_PLANE_RENDER_TARGET, flags = MASK_INVERSE))
 
 /atom/movable/screen/plane_master/exposure
 	name = "exposure plane master"
@@ -475,9 +478,9 @@
 	plane = FLOOR_LIGHTING_LAMPS_SELFGLOW
 	target_rendering = FLOOR_LIGHTING_LAMPS_RENDER_TARGET
 
-/atom/movable/screen/plane_master/lamps_selfglow/floor/Initialize(mapload, datum/hud/hud_owner)
+/atom/movable/screen/plane_master/lamps_selfglow/Initialize(mapload, datum/hud/hud_owner)
 	. = ..()
-	add_filter("floor_selfglow_game_mask", 1, alpha_mask_filter(render_source = GAME_PLANE_RENDER_TARGET, flags = MASK_INVERSE))
+	add_filter("selfglow_game_mask", 1, alpha_mask_filter(render_source = GAME_PLANE_RENDER_TARGET, flags = MASK_INVERSE))
 
 /atom/movable/screen/plane_master/lamps_selfglow/backdrop(mob/mymob)
 	remove_filter("add_lamps_to_selfglow")
@@ -558,9 +561,9 @@
 	plane = FLOOR_LIGHTING_LAMPS_GLARE
 	target_rendering = FLOOR_LIGHTING_LAMPS_RENDER_TARGET
 
-/atom/movable/screen/plane_master/lamps_glare/floor/Initialize(mapload, datum/hud/hud_owner)
+/atom/movable/screen/plane_master/lamps_glare/Initialize(mapload, datum/hud/hud_owner)
 	. = ..()
-	add_filter("floor_glare_game_mask", 1, alpha_mask_filter(render_source = GAME_PLANE_RENDER_TARGET, flags = MASK_INVERSE))
+	add_filter("glare_game_mask", 1, alpha_mask_filter(render_source = GAME_PLANE_RENDER_TARGET, flags = MASK_INVERSE))
 
 /atom/movable/screen/plane_master/lamps_glare/backdrop(mob/mymob)
 	remove_filter("add_lamps_to_glare")

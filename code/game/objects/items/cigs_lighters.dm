@@ -139,6 +139,7 @@ GLOBAL_LIST_INIT(smoke_flavor_emotes, list(
 /obj/item/clothing/mask/cigarette
 	name = "cigarette"
 	desc = "A roll of tobacco and nicotine."
+	icon = 'icons/obj/clothing/masks/cig.dmi'
 	icon_state = "cigoff"
 	throw_speed = 0.5
 	item_state = "cigoff"
@@ -453,7 +454,7 @@ GLOBAL_LIST_INIT(smoke_flavor_emotes, list(
 /obj/item/cigbutt
 	name = "cigarette butt"
 	desc = "A manky old cigarette butt."
-	icon = 'icons/obj/clothing/masks.dmi'
+	icon = 'icons/obj/clothing/masks/cig.dmi'
 	icon_state = "cigbutt"
 	w_class = WEIGHT_CLASS_TINY
 	throwforce = 0
@@ -939,7 +940,7 @@ GLOBAL_LIST_INIT(smoke_flavor_emotes, list(
 /obj/item/clothing/mask/vape
 	name = "\improper E-Cigarette"
 	desc = "A classy and highly sophisticated electronic cigarette, for classy and dignified gentlemen. A warning label reads \"Warning: Do not fill with flammable materials.\""//<<< i'd vape to that.
-	icon = 'icons/obj/clothing/masks.dmi'
+	icon = 'icons/obj/clothing/masks/vape.dmi'
 	icon_state = "black_vape"
 	item_state = "black_vape"
 	w_class = WEIGHT_CLASS_TINY

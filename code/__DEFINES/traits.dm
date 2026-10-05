@@ -499,6 +499,8 @@ Remember to update _globalvars/traits.dm if you're adding/removing/renaming trai
 #define TRAIT_UI_BLOCKED "uiblocked"
 /// Inability to pull things. Turned into a trait from [MOBILITY_PULL] to be able to track sources.
 #define TRAIT_PULL_BLOCKED "pullblocked"
+/// Никто не может схватить или потащить этого моба.
+#define TRAIT_UNPULLABLE "unpullable"
 /// Abstract condition that prevents movement if being pulled and might be resisted against. Handcuffs and straight jackets, basically.
 #define TRAIT_RESTRAINED "restrained"
 /// Reduces chance of breaking a grip
@@ -763,6 +765,12 @@ Remember to update _globalvars/traits.dm if you're adding/removing/renaming trai
 #define TRAIT_ALLOW_HERETIC_CASTING "allow_heretic_casting"
 /// Designates a heart as a living heart for a heretic.
 #define TRAIT_LIVING_HEART "living_heart"
+/// Ascended heretic: breaks cuffs fast and carries the shared ascension base.
+#define TRAIT_HERETIC_ASCENDED "heretic_ascended"
+/// Moon masquerade victim: guns fire with extra spread.
+#define TRAIT_HERETIC_LUNATIC "heretic_lunatic"
+/// Projectile already slowed by an ascended Sand heretic.
+#define TRAIT_HERETIC_SAND_SLOWED "heretic_sand_slowed"
 
 #define TRAIT_FAN_CLOWN "fan_clown"
 #define TRAIT_FAN_MIME "fan_mime"
@@ -868,7 +876,9 @@ Remember to update _globalvars/traits.dm if you're adding/removing/renaming trai
 #define HYPNOCHAIR_TRAIT "hypnochair"
 #define FLASHLIGHT_EYES "flashlight_eyes"
 #define IMPURE_OCULINE "impure_oculine"
-#define BLINDFOLD_TRAIT "blindfolded"
+#define TRAIT_BLINDFOLD "blindfolded"
+#define TRAIT_BLINDFOLD_HARD "blindfolded_hard"
+#define TRAIT_HEARING_DEPRIVED "hearing_deprived"
 #define TRAIT_SANTA "santa"
 #define SCRYING_ORB "scrying-orb"
 #define JUNGLE_FEVER_TRAIT "jungle_fever"

@@ -66,12 +66,12 @@
 	/// Holds all languages this mob can speak and understand
 	VAR_PRIVATE/datum/language_holder/language_holder
 
-	var/verb_say = "says"
-	var/verb_ask = "asks"
-	var/verb_exclaim = "exclaims"
-	var/verb_whisper = "whispers"
-	var/verb_sing = "sings" // Skyrat edit
-	var/verb_yell = "yells"
+	var/verb_say = "говорит"
+	var/verb_ask = "спрашивает"
+	var/verb_exclaim = "восклицает"
+	var/verb_whisper = "шепчет"
+	var/verb_sing = "поёт" // Skyrat edit
+	var/verb_yell = "кричит"
 	var/speech_span
 	var/inertia_dir = 0
 	var/atom/inertia_last_loc
@@ -142,6 +142,8 @@
 
 /atom/movable/Initialize(mapload)
 	. = ..()
+	if(length(GLOB.antag_training_arenas))
+		register_training_atom()
 	switch(blocks_emissive)
 		if(EMISSIVE_BLOCK_GENERIC)
 			var/mutable_appearance/gen_emissive_blocker = mutable_appearance(icon, icon_state, plane = EMISSIVE_PLANE, alpha = src.alpha)
@@ -170,6 +172,11 @@
 
 
 /atom/movable/Destroy(force)
+	if(training_origin)
+		var/datum/antag_training_arena/origin = training_origin.resolve()
+		if(origin)
+			origin.created_atoms -= weak_reference
+		training_origin = null
 	//вычищаем свои ссылки из ячеек грида; записи в important_recursive_contents
 	//вложенных locs вычистит Exited при moveToNullspace ниже
 	if(spatial_grid_key)
