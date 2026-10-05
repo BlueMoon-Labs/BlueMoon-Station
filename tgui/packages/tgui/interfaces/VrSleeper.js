@@ -24,6 +24,8 @@ export const VrSleeper = (props) => {
   const deathmatchLoadouts = [];
   for (let i = 1; i <= loadoutCount; i++) {
     deathmatchLoadouts.push({
+      // A number, not a type path: DM rebuilds this list in the same order for
+      // every player, so the index round trips exactly.
       id: data[`deathmatch_loadout_${i}_id`],
       name: data[`deathmatch_loadout_${i}_name`],
     });
@@ -107,6 +109,11 @@ export const VrSleeper = (props) => {
           )}
         </Section>
         <Section title="Deathmatch">
+          {!!data.sleeper_notice && (
+            <Box
+              color="good"
+              dangerouslySetInnerHTML={{ __html: data.sleeper_notice }} />
+          )}
           {inLobby ? (
             <Box>
               <Box color="good">
@@ -200,8 +207,9 @@ export const VrSleeper = (props) => {
               )}
               {!data.isoccupant && (
                 <Box color="bad">
-                  Lie in the sleeper to open a lobby. You can join an open one
-                  from here.
+                  Opening a lobby needs the sleeper, since that machine is where
+                  your body ends up afterwards. Use the buttons above to join one
+                  that is already open.
                 </Box>
               )}
             </Box>

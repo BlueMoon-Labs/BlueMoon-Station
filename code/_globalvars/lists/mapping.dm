@@ -51,8 +51,6 @@ GLOBAL_LIST_EMPTY(bar_areas)
 GLOBAL_LIST_EMPTY(vr_spawnpoints)
 /// Deathmatch machines and their lobbies (machine = lobby)
 GLOBAL_LIST_EMPTY(deathmatch_lobbies)
-/// Every /datum/outfit/vr/deathmatch_loadout, populated by get_deathmatch_loadouts()
-GLOBAL_LIST_EMPTY(deathmatch_loadouts)
 /// All deathmatch arena player spawns, added by /obj/effect/landmark/deathmatch_player_spawn
 GLOBAL_LIST_EMPTY(deathmatch_player_spawns)
 /// Every loaded /datum/map_template/deathmatch, added by /datum/map_template/deathmatch/New()

@@ -21,6 +21,7 @@
 	uniform = /obj/item/clothing/under/color/random
 	shoes = /obj/item/clothing/shoes/sneakers/black
 
+
 /// Melee. Cheap, close range, and the only thing that works while sprinting.
 /datum/outfit/vr/deathmatch_loadout/brawler
 	name = "Brawler"
@@ -66,9 +67,8 @@
 	shoes = /obj/item/clothing/shoes/jackboots
 	head = /obj/item/clothing/head/helmet
 	belt = /obj/item/storage/belt/security/full
-	// /datum/outfit has no `armor` slot; the vest is the outer suit slot.
 	suit = /obj/item/clothing/suit/armor/vest
-	r_hand = /obj/item/gun/energy/taser
+	r_hand = /obj/item/gun/energy/e_gun/advtaser
 
 /// A grey jumpsuit and nothing else. No boots, no helmet, no gun.
 ///
@@ -79,15 +79,19 @@
 datum/outfit/vr/deathmatch_loadout/butt_naked
 	name = "Butt Naked"
 	uniform = /obj/item/clothing/under/color/grey
+	shoes = /obj/item/clothing/shoes/sneakers/black
 
 /// Sniper rifle and one magazine. Sniper Elite, which is about the shot rather
 /// than the trade.
 datum/outfit/vr/deathmatch_loadout/sniper
 	name = "Sniper"
-	uniform = /obj/item/clothing/under/color/random
+	uniform = /obj/item/clothing/under/suit/black
 	shoes = /obj/item/clothing/shoes/sneakers/black
+	gloves = /obj/item/clothing/gloves/color/black
 	back = /obj/item/gun/ballistic/automatic/sniper_rifle
 	l_pocket = /obj/item/ammo_box/magazine/sniper_rounds
+	glasses = /obj/item/clothing/glasses/sunglasses
+	accessory = list(/obj/item/clothing/accessory/waistcoat)
 
 /// A laser carbine that never runs dry, for arena modes where the round is
 /// decided by positioning rather than by who found the ammo first.

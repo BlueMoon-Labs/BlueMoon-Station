@@ -25,6 +25,10 @@
 	/// The arena body the mind is driving, NULL until the match starts, and again
 	/// once they are back.
 	var/mob/living/vr_body
+	/// The /obj/effect/landmark/deathmatch_player_spawn held for them, so two
+	/// players are never sent in through the same door. See
+	/// /datum/deathmatch_arena/proc/claim_spawn_point.
+	var/spawn_landmark
 	var/is_host = FALSE
 	/// Loadout type path this player fights with, picked in the TGUI. NULL means
 	/// the one the mode comes with. See deathmatch_loadouts.dm.
@@ -247,10 +251,15 @@ datum/deathmatch_lobby/proc/loadout_name(loadout_path)
 		real_body.mind.active = TRUE
 		real_body.mind.set_current(real_body)
 
-	var/turf/spawn_turf = get_turf(arena.get_spawn_point())
+	var/obj/effect/landmark/deathmatch_player_spawn/spawn_landmark = arena.get_spawn_point()
+	var/turf/spawn_turf = get_turf(isnull(spawn_landmark) ? arena.get_fallback_spawn_point() : spawn_landmark)
 	if(isnull(spawn_turf))
 		to_chat(real_body, span_danger("[arena.get_name()] has nowhere to put you."))
 		return FALSE
+
+	// A landmark has to be given back, or a player who leaves holds it for the
+	// rest of the game and the last arrivals stack up in the corner.
+	player.spawn_landmark = isobj(spawn_landmark) ? spawn_landmark : null
 
 	var/mob/living/carbon/human/vr_body = new(spawn_turf)
 	// build_virtual_character() is what gives the body a mind, and
@@ -317,6 +326,11 @@ datum/deathmatch_lobby/proc/loadout_name(loadout_path)
 		return FALSE
 	var/mob/living/vr_body = player.vr_body
 	player.vr_body = null
+	// Handed back before the qdel() so a player leaving mid game does not keep
+	// their landmark claimed against the people still arriving.
+	if(!isnull(arena))
+		arena.release_spawn_point(player.spawn_landmark)
+		player.spawn_landmark = null
 	if(isnull(vr_body) || QDELETED(vr_body))
 		return FALSE
 
@@ -368,6 +382,14 @@ datum/deathmatch_lobby/proc/loadout_name(loadout_path)
 	if(!players.len)
 		end_lobby(reason = "everybody left")
 		return
+	// One left standing. A running game with a single survivor left in it is
+	// over whether or not anybody asked for it to be, and the survivor is told so
+	// by name rather than finding out the game went on without them.
+	if(state == DM_LOBBY_RUNNING && players.len == 1)
+		var/datum/deathmatch_player/winner = players[1]
+		announce_victory(winner)
+		end_lobby(reason = "[winner_name(winner)] was the last one standing")
+		return
 	// Re-armed instead of TIMER_LOOP, so a finished lobby has no timer left
 	// running against a deleted datum.
 	if(!is_finished())
@@ -392,6 +414,27 @@ datum/deathmatch_lobby/proc/loadout_name(loadout_path)
 /// The game actually starting, as opposed to the lobby opening.
 datum/deathmatch_lobby/proc/announce_start()
 	priority_announce("[template.display_name] has begun with [player_count()] player(s)!", "Deathmatch")
+
+/// A player's name for a chat message: their character name, their ckey, or a
+/// marker, in that order. A dead or disconnected player has no arena body left to
+/// read a name off, so this never depends on one.
+datum/deathmatch_lobby/proc/winner_name(datum/deathmatch_player/player)
+	if(isnull(player))
+		return "somebody"
+	return player.display_name || player.ckey || "somebody"
+
+/**
+ * The last one standing.
+ *
+ * The winner is told personally, in the body they are standing in, and everyone
+ * else hears who won. to_chat(world, ...) rather than priority_announce(): this is
+ * the end of a game people opted into, not station business.
+ */
+datum/deathmatch_lobby/proc/announce_victory(datum/deathmatch_player/winner)
+	var/who = winner_name(winner)
+	if(!isnull(winner) && !isnull(winner.vr_body) && !QDELETED(winner.vr_body))
+		to_chat(winner.vr_body, span_boldnotice("You are the last one standing in [template.display_name]."))
+	to_chat(world, span_boldnotice("[who] wins [template.display_name]!"))
 
 /**
  * Tears the lobby down: everybody home, arena deleted, entry unregistered.
@@ -473,16 +516,6 @@ datum/deathmatch_lobby/proc/announce_start()
 		var/datum/map_template/deathmatch/template = map_ref
 		if(template.name == name)
 			return template
-	return null
-
-/// A deathmatch loadout by its type path, for the sleeper UI.
-/proc/get_deathmatch_loadout(path)
-	if(!path)
-		return null
-	for(var/loadout_ref as anything in get_deathmatch_loadouts())
-		var/datum/outfit/vr/deathmatch_loadout/loadout = loadout_ref
-		if(loadout.type == path)
-			return loadout
 	return null
 
 /**

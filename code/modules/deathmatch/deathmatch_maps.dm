@@ -35,26 +35,33 @@
 	return GLOB.deathmatch_maps
 
 /**
- * Every deathmatch loadout, instanced on first call, so the sleeper TGUI can
- * offer a choice instead of leaving players on whatever the mode came with.
+ * A deathmatch loadout by its type path.
  *
- * Enumerated and cached the same way get_deathmatch_templates() does, so a new
- * loadout needs no bookkeeping here. The abstract base type is skipped on
- * initial(name), which only the concrete subtypes set.
+ * Deliberately not cached and not read out of a list of live /datum/outfit
+ * instances. Comparing a path the browser sent back against loadout.type in such
+ * a list came up empty for every single loadout, which is why picking one reported
+ * it as unknown no matter which one it was. Comparing against subtypesof() has no
+ * such indirection: the string either is one of these paths or it is not.
+ *
+ * The base type is rejected as well as NULL. It is the abstract parent every
+ * subtype inherits `name` from, so on its own it is not a kit anybody can equip,
+ * and instantiating it would hand build_virtual_character() an outfit with
+ * nothing in it.
  */
-/proc/get_deathmatch_loadouts()
-	if(length(GLOB.deathmatch_loadouts))
-		return GLOB.deathmatch_loadouts
-	for(var/item in subtypesof(/datum/outfit/vr/deathmatch_loadout))
-		var/datum/outfit/vr/deathmatch_loadout/loadout_type = item
-		if(isnull(initial(loadout_type.name)))
-			continue
-		var/datum/outfit/vr/deathmatch_loadout/loadout = new loadout_type()
-		if(isnull(loadout))
-			log_game("Deathmatch: could not instantiate the loadout [item].")
-			continue
-		GLOB.deathmatch_loadouts += loadout
-	return GLOB.deathmatch_loadouts
+proc/get_deathmatch_loadout(path)
+	if(!ispath(path))
+		return null
+	if(path == /datum/outfit/vr/deathmatch_loadout)
+		return null
+	if(!(path in subtypesof(/datum/outfit/vr/deathmatch_loadout)))
+		return null
+	// new <var>() with a space, never new(<var>). The parenthesised form builds
+	// the declared type of the assignment instead of the type the variable holds.
+	var/loadout_type = path
+	var/datum/outfit/vr/deathmatch_loadout/loadout = new loadout_type()
+	if(isnull(loadout))
+		return null
+	return loadout
 
 /datum/map_template/deathmatch
 	/// Name shown in the mode selection list.
@@ -87,7 +94,6 @@
 	 * skipped instead of handing the outfit code a null to equip.
 	 */
 	proc/get_loadouts()
-		get_deathmatch_loadouts()	// Builds and caches the master list.
 		var/list/result = list()
 		var/datum/outfit/vr/deathmatch_loadout/default = get_deathmatch_loadout(loadout)
 		if(!isnull(default))

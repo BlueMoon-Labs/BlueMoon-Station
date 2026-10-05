@@ -116,13 +116,69 @@
 		spawns += spawn_point
 	return spawns
 
-/// A free spawn inside this arena, or the arena's own turf if the map somehow
-/// has no landmarks, so that a game can always be started.
-/datum/deathmatch_arena/proc/get_spawn_point()
+/// Spawn landmarks already handed out in this arena.
+///
+/// Reserved at spawn time rather than checked for a mob standing on them: a mob
+/// is not on the landmark until the transfer lands, and begin_match() walks
+/// everybody in one pass, so a "is anybody there yet" test lets the whole lobby
+/// through the same door.
+var/list/claimed_spawns = list()
+
+/**
+ * An unclaimed spawn landmark inside this arena, or NULL if they are all taken.
+ *
+ * Returns the landmark itself, not its turf, because the caller needs the
+ * reference to hold the claim and to give it back later.
+ */
+datum/deathmatch_arena/proc/claim_spawn_point()
+	var/list/free_spawns = list()
+	for(var/spawn_ref as anything in spawns)
+		var/obj/effect/landmark/deathmatch_player_spawn/landmark = spawn_ref
+		if(isnull(landmark) || QDELETED(landmark))
+			continue
+		if(landmark in claimed_spawns)
+			continue
+		free_spawns += landmark
+	if(!length(free_spawns))
+		return null
+	var/obj/effect/landmark/deathmatch_player_spawn/chosen = pick(free_spawns)
+	claimed_spawns += chosen
+	return chosen
+
+/// Gives a spawn back, so a player who left does not hold a landmark hostage for
+/// the rest of the game.
+datum/deathmatch_arena/proc/release_spawn_point(obj/effect/landmark/deathmatch_player_spawn/landmark)
+	if(isnull(landmark) || !(landmark in claimed_spawns))
+		return
+	claimed_spawns -= landmark
+
+/**
+ * A spawn landmark in this arena, claiming it, or NULL when they are all taken.
+ *
+ * Picked at random among the unclaimed ones rather than first free, so a full
+ * lobby does not funnel everybody into the same corner of the map.
+ */
+datum/deathmatch_arena/proc/get_spawn_point()
 	if(length(spawns))
-		return pick(spawns)
+		return claim_spawn_point()
+	return null
+
+/**
+ * Somewhere to put a player when every landmark is claimed, which means more
+ * players than spawns: a map with no landmarks at all, or a mode whose
+ * max_players is set above its landmark count.
+ *
+ * Walks the arena's own turfs for one with nobody standing on it, so the overflow
+ * lands in open space instead of inside somebody. Falls back to the far corner,
+ * because returning NULL would drop the player from the game entirely.
+ */
+datum/deathmatch_arena/proc/get_fallback_spawn_point()
 	if(isnull(bounds))
 		return null
+	if(!isnull(reservation))
+		for(var/turf/arena_turf as anything in reservation.reserved_turfs)
+			if(!arena_turf.density && !locate(/mob, arena_turf))
+				return arena_turf
 	return locate(bounds[MAP_MINX], bounds[MAP_MINY], z)
 
 /// True if somebody is standing in the arena right now. Unloading under a
@@ -160,6 +216,7 @@
 	reservation = null
 	bounds = null
 	spawns = list()
+	claimed_spawns = list()
 	GLOB.deathmatch_arenas -= src
 	log_game("Deathmatch: [to_string()] unloaded.")
 	return TRUE
