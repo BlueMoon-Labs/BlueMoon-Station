@@ -254,7 +254,15 @@
 		return FALSE
 	// Only people still gathering can be added. Once the arena is loaded the
 	// roster closes and the game plays itself out.
-	if(state != DM_LOBBY_WAITING)
+	//
+	// A watcher is the exception, and it is the whole reason: the roster closing is
+	// what stops people joining a game in progress, but watching one in progress is
+	// the ordinary thing to want and there is nothing for a watcher to disrupt. They
+	// are seated as a ghost in an arena that is already loaded and they are out of the
+	// player count and out of the win, so nothing below has to care that the game is
+	// running. This check used to come first and refuse them too, which is why the
+	// panel's Spectate button was a dead button on any game that had already started.
+	if(state != DM_LOBBY_WAITING && !observe)
 		to_chat(real_body, span_danger("[template.display_name] has already started."))
 		return FALSE
 	// A mob with no client cannot be moved into an avatar, and cannot read the
@@ -290,6 +298,12 @@
 	if(observe)
 		to_chat(real_body, span_boldnotice("You are watching [template.display_name]."))
 		to_chat(real_body, span_notice("Spectators are put into the arena as ghosts and do not count as players."))
+		// Joining a game that is already running: nothing is going to walk them in
+		// later, because begin_match() only fires once and it has been and gone.
+		// Without this they sit on the roster with no body and never see the arena.
+		if(state == DM_LOBBY_RUNNING && !spawn_player(player))
+			remove_player(player, "There was nowhere to put you.")
+			return FALSE
 		return player
 
 	to_chat(real_body, span_boldnotice(template.display_name))
@@ -325,6 +339,13 @@
 	// Already in: begin_match() can be reached twice if the host double clicks.
 	if(!isnull(player.vr_body) && !QDELETED(player.vr_body))
 		return TRUE
+	// Checked before the observer branch below, which walks them onto the arena:
+	// join() can now reach spawn_player() mid game, where the arena is loaded by
+	// definition, and a lobby that has been torn down underneath is the one case
+	// where it might not be.
+	if(isnull(arena) || !arena.is_loaded())
+		to_chat(real_body, span_danger("The arena is not loaded."))
+		return FALSE
 	// Observers arrive as ghosts, usually, and are simply walked into the arena.
 	// No mind transfer and no avatar means nothing here that can strand a ckey on
 	// a body about to be deleted, and nothing for evict_body() to give back - only
@@ -341,9 +362,6 @@
 		real_body.forceMove(observe_turf)
 		to_chat(real_body, span_notice("The game is running with [combatant_count()] fighter(s). You are watching."))
 		return TRUE
-	if(isnull(arena) || !arena.is_loaded())
-		to_chat(real_body, span_danger("The arena is not loaded."))
-		return FALSE
 	// A guest with no mind of their own still needs one: virtual_reality moves a
 	// mind between the two bodies, and quit() hands the ckey back to whatever
 	// mind.current is. For a guest that is their ghost, which is where they
@@ -802,16 +820,25 @@ proc/get_open_deathmatch_lobby(mode)
 		this_users_ui.open()
 	return TRUE
 
-/// Closes the browser on whatever sleeper is within reach of the player.
+/// Closes the browser on whatever is showing it, wherever it was opened from.
+///
+/// Two src_objects can put this window in front of somebody - the sleeper they are
+/// standing at, and /datum/deathmatch_browser, which is how a guest in the afterlife
+/// opens it - so both have to be shut, or the stale one stays on top and the player
+/// keeps clicking a Join button for a window that is no longer the live one.
 proc/close_sleeper_panels(mob/user)
 	if(isnull(user))
 		return
-	// A fixed radius, matching the ghost button: a ghost has no `range()` of its own
-	// and 7 tiles is what they can click a machine from anyway.
+	// Standing next to a machine. A fixed radius, because that is what they can click
+	// one from. Not a restriction on joining - only on which of the two browser
+	// windows is the one in front of them.
 	for(var/atom/A as anything in view(7, user))
 		if(istype(A, /obj/machinery/vr_sleeper))
 			A.ui_close(user)
-			return
+			break
+	var/datum/tgui/browser_ui = SStgui.get_open_ui(user, GLOB.deathmatch_browser)
+	if(!isnull(browser_ui))
+		browser_ui.close(can_be_suspended = FALSE)
 
 /// The browser's View button. Same window, and ui_interact() works out by itself
 /// whether the viewer is on the roster or just looking.

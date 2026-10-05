@@ -61,14 +61,10 @@
 /// since the roster closes the moment the host starts the match.
 /atom/movable/screen/ghost/deathmatch/Click()
 	var/mob/dead/observer/G = usr
-	// A fixed radius: a ghost has no `range()` of its own, and 7 tiles is what
-	// they can click a machine from anyway.
-	for(var/atom/A as anything in view(7, G))
-		if(!istype(A, /obj/machinery/vr_sleeper))
-			continue
-		A.ui_interact(G)
-		return
-	to_chat(G, span_danger("No VR sleeper in sight. Stand next to one to open its panel."))
+	// Anywhere on the map, not next to a machine. A guest has no hands and no body
+	// to put in a sleeper, so demanding they stand next to one was a dead end: the
+	// whole point of the browser is that anybody can join from the afterlife.
+	open_deathmatch_browser(G)
 
 /datum/hud/ghost/New(mob/owner)
 	..()

@@ -27,6 +27,12 @@ import { Window } from '../layouts';
  * deathmatch_maps.dm ever reorders a row, these move with it.
  */
 type PanelData = {
+  // FALSE when the window was opened from the guest browser rather than from a
+  // sleeper, which is how somebody in the afterlife reaches it. The machine fields
+  // below are still sent so a panel built against an older payload renders greyed
+  // out rather than reaching into undefined.
+  has_machine?: BooleanLike;
+
   // Machine, from vr_sleeper.dm.
   toggle_open: BooleanLike;
   emagged: BooleanLike;
@@ -85,10 +91,14 @@ const MODE_MAX = 4;
 
 export function DeathmatchPanel(props) {
   const { act, data } = useBackend<PanelData>();
-  const { in_lobby, sleeper_notice } = data;
+  const { has_machine, in_lobby, sleeper_notice } = data;
 
   return (
-    <Window title="VR Sleeper" width={420} height={560}>
+    <Window
+      title={has_machine ? 'VR Sleeper' : 'Deathmatch'}
+      width={420}
+      height={560}
+    >
       <Window.Content>
         <Stack fill vertical>
           {sleeper_notice && (
@@ -97,13 +107,17 @@ export function DeathmatchPanel(props) {
             </Stack.Item>
           )}
 
-          <Stack.Item>
-            <MachinePane />
-          </Stack.Item>
+          {!!data.has_machine && (
+            <>
+              <Stack.Item>
+                <MachinePane />
+              </Stack.Item>
 
-          <Stack.Item>
-            <Divider />
-          </Stack.Item>
+              <Stack.Item>
+                <Divider />
+              </Stack.Item>
+            </>
+          )}
 
           <Stack.Item grow>
             <LobbyPane />
@@ -117,13 +131,20 @@ export function DeathmatchPanel(props) {
             </Stack.Item>
           )}
 
-          <Stack.Item>
-            <Divider />
-          </Stack.Item>
+          {/* Opening a game means lying in a sleeper, because that is where the
+              host's real body ends up when it is over. A guest opens no game, so
+              the whole pane is the machine's and goes away with it. */}
+          {!!data.has_machine && (
+            <>
+              <Stack.Item>
+                <Divider />
+              </Stack.Item>
 
-          <Stack.Item>
-            <ModePane />
-          </Stack.Item>
+              <Stack.Item>
+                <ModePane />
+              </Stack.Item>
+            </>
+          )}
         </Stack>
       </Window.Content>
     </Window>
@@ -255,6 +276,81 @@ function LobbyDisplay(props) {
   // questions and the panel has to answer both.
   const isThis = lobby_map === map;
   const blocked = !!in_lobby && !isThis;
+  // Two different questions, so two different answers. A full arena cannot be joined
+  // but can still be watched, and a running one cannot be joined at all because the
+  // roster closed - neither of which is a reason to hide Spectate. Hiding both
+  // behind `joinable` is what left a guest with a row of dead buttons.
+  const joinable = !!lobby[JOINABLE] && !blocked;
+  const spectatable = !blocked;
+
+  let buttons;
+  if (isThis) {
+    buttons = (
+      <Button
+        color="average"
+        width="100%"
+        textAlign="center"
+        onClick={() => act('view_lobby', { map })}
+      >
+        View
+      </Button>
+    );
+  } else if (joinable) {
+    buttons = (
+      <Stack spacing="0">
+        <Button
+          color="good"
+          width="100%"
+          textAlign="center"
+          onClick={() => act('join_lobby', { map })}
+        >
+          Join
+        </Button>
+        <Button
+          color="average"
+          width="100%"
+          textAlign="center"
+          onClick={() => act('spectate_lobby', { map })}
+        >
+          Spectate
+        </Button>
+      </Stack>
+    );
+  } else if (spectatable) {
+    buttons = (
+      <Stack spacing="0">
+        <Button
+          color="good"
+          width="100%"
+          textAlign="center"
+          disabled
+          onClick={() => act('join_lobby', { map })}
+        >
+          {lobby[RUNNING] ? 'Started' : 'Full'}
+        </Button>
+        <Button
+          color="average"
+          width="100%"
+          textAlign="center"
+          onClick={() => act('spectate_lobby', { map })}
+        >
+          Spectate
+        </Button>
+      </Stack>
+    );
+  } else {
+    buttons = (
+      <Button
+        color="good"
+        width="100%"
+        textAlign="center"
+        disabled
+        onClick={() => act('view_lobby', { map })}
+      >
+        In a game
+      </Button>
+    );
+  }
 
   return (
     <Table.Row className="candystripe">
@@ -278,45 +374,7 @@ function LobbyDisplay(props) {
         )}
       </Table.Cell>
       <Table.Cell align="center" collapsing>
-        {isThis ? (
-          <Button
-            color="average"
-            width="100%"
-            textAlign="center"
-            onClick={() => act('view_lobby', { map })}
-          >
-            View
-          </Button>
-        ) : !!lobby[JOINABLE] && !blocked ? (
-          <Stack spacing="0">
-            <Button
-              color="good"
-              width="100%"
-              textAlign="center"
-              onClick={() => act('join_lobby', { map })}
-            >
-              Join
-            </Button>
-            <Button
-              color="average"
-              width="100%"
-              textAlign="center"
-              onClick={() => act('spectate_lobby', { map })}
-            >
-              Spectate
-            </Button>
-          </Stack>
-        ) : (
-          <Button
-            color="good"
-            width="100%"
-            textAlign="center"
-            disabled
-            onClick={() => act('view_lobby', { map })}
-          >
-            {blocked ? 'In a game' : 'Full'}
-          </Button>
-        )}
+        {buttons}
       </Table.Cell>
     </Table.Row>
   );

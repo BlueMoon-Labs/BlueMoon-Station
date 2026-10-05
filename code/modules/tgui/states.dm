@@ -28,7 +28,18 @@
 			. = max(., UI_INTERACTIVE)
 
 		// Regular ghosts can always at least view if in range.
-		if(user.client)
+		//
+		// The isatom() guard is not optional. A src_object that is a plain /datum has
+		// no turf and no map, and get_dist() on one is a runtime error rather than a
+		// distance, so the whole status check aborts and the window is dead on open -
+		// with no log line anywhere pointing at this line. Plenty of legitimate UIs
+		// are datums, not atoms: /datum/preferences, /datum/crew_manifest,
+		// /datum/deathmatch_browser and /datum/deathmatch_lobby among them.
+		//
+		// A non-atom src_object has nowhere to stand, so there is no range to check
+		// and nothing to keep out. The state proc below is what decides access, and
+		// for those datums it is already the only thing that can refuse anybody.
+		if(user.client && isatom(src_object))
 			var/clientviewlist = getviewsize(user.client.view)
 			if(get_dist(src_object, user) < max(clientviewlist[1], clientviewlist[2]))
 				. = max(., UI_UPDATE)

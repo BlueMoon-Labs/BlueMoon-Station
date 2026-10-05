@@ -41,37 +41,40 @@ proc/get_deathmatch_modifiers()
 /**
  * Whether the host may turn this on right now.
  *
- * src is the /datum/deathmatch_lobby. The base refuses nothing; subtypes that
+ * lobby is the /datum/deathmatch_lobby. The base refuses nothing; subtypes that
  * depend on the map check it here rather than failing later at game start, so the
  * checkbox greys out instead of the game breaking.
+ *
+ * The argument is called `lobby` and not `src` on purpose. `src` is a BYOND keyword
+ * meaning the datum the proc was called on, and using it as an argument name is
+ * accepted by the compiler but produces a proc with an empty argument list - so the
+ * call site, which passes the lobby, dies at runtime with "Cannot execute
+ * /datum/deathmatch_modifier/....selectable()".
  */
-/datum/deathmatch_modifier/proc/selectable(src)
-	// Cast: the base proc takes src untyped so modifiers can be tested without a
-	// lobby, but the map check needs the real type.
-	var/datum/deathmatch_lobby/lobby = src
+/datum/deathmatch_modifier/proc/selectable(datum/deathmatch_lobby/lobby)
 	if(length(blacklisted_maps) && lobby?.template in blacklisted_maps)
 		return FALSE
 	return TRUE
 
 /// Called on the lobby when this modifier is switched on.
-/datum/deathmatch_modifier/proc/on_select(src)
+/datum/deathmatch_modifier/proc/on_select(lobby)
 
 /// Called on the lobby when this modifier is switched off.
-/datum/deathmatch_modifier/proc/on_unselect(src)
+/datum/deathmatch_modifier/proc/on_unselect(lobby)
 
 /// Called on the lobby if the host changes the arena while this is on, so a
 /// modifier the new map forbids can step itself out instead of surviving onto an
 /// arena it was never balanced for.
-/datum/deathmatch_modifier/proc/on_map_changed(src)
-	if(!selectable(src))
-		on_unselect(src)
+/datum/deathmatch_modifier/proc/on_map_changed(lobby)
+	if(!selectable(lobby))
+		on_unselect(lobby)
 
 /// Called on the lobby as the arena finishes loading. Lobby-wide work belongs
 /// here; per-player work belongs in apply().
-/datum/deathmatch_modifier/proc/on_start_game(src)
+/datum/deathmatch_modifier/proc/on_start_game(lobby)
 
 /// Called on the lobby as the game ends, before the arena is deleted.
-/datum/deathmatch_modifier/proc/on_end_game(src)
+/datum/deathmatch_modifier/proc/on_end_game(lobby)
 
 /**
  * Applies to one player, once, as their arena body is built.
@@ -83,7 +86,7 @@ proc/get_deathmatch_modifiers()
  * target is typed /mob/living because a deathmatch player is always a body, never
  * a ghost, by the time this is reached.
  */
-/datum/deathmatch_modifier/proc/apply(mob/living/target, datum/deathmatch_lobby/src)
+/datum/deathmatch_modifier/proc/apply(mob/living/target, datum/deathmatch_lobby/lobby)
 
 //
 // Health. The cheapest thing to add and the reason most hosts reach for a
@@ -95,7 +98,7 @@ proc/get_deathmatch_modifiers()
 	description = "Two hearts instead of one."
 	var/multiplier = 2
 
-/datum/deathmatch_modifier/health/apply(mob/living/target, datum/deathmatch_lobby/src)
+/datum/deathmatch_modifier/health/apply(mob/living/target, datum/deathmatch_lobby/lobby)
 	if(isnull(target) || QDELETED(target))
 		return
 	target.maxHealth = target.maxHealth * multiplier
@@ -123,7 +126,7 @@ proc/get_deathmatch_modifiers()
 	description = "You are slow. Deliberately, unendurably slow."
 	var/extra_slowdown = 1
 
-/datum/deathmatch_modifier/snail_crawl/apply(mob/living/target, datum/deathmatch_lobby/src)
+/datum/deathmatch_modifier/snail_crawl/apply(mob/living/target, datum/deathmatch_lobby/lobby)
 	if(isnull(target) || QDELETED(target))
 		return
 	target.add_movespeed_modifier(/datum/movespeed_modifier/deathmatch_snail)
@@ -136,7 +139,7 @@ proc/get_deathmatch_modifiers()
 	description = "You move as though the floor were lava."
 	var/boost = 5
 
-/datum/deathmatch_modifier/speed_demon/apply(mob/living/target, datum/deathmatch_lobby/src)
+/datum/deathmatch_modifier/speed_demon/apply(mob/living/target, datum/deathmatch_lobby/lobby)
 	if(isnull(target) || QDELETED(target))
 		return
 	target.add_movespeed_modifier(/datum/movespeed_modifier/deathmatch_speed_demon)
@@ -174,8 +177,7 @@ proc/get_deathmatch_modifiers()
 	var/least = 3
 	var/most = 5
 
-/datum/deathmatch_modifier/random/on_start_game(src)
-	var/datum/deathmatch_lobby/lobby = src
+/datum/deathmatch_modifier/random/on_start_game(datum/deathmatch_lobby/lobby)
 	if(isnull(lobby))
 		return
 	// Built from the catalogue rather than a hand-written list, so a modifier added
