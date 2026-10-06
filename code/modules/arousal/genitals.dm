@@ -14,7 +14,7 @@
 	var/size = 2 //can vary between num or text, just used in icon_state strings
 	var/datum/reagent/fluid_id = null
 	var/fluid_max_volume = 50
-	var/fluid_efficiency = 1
+	var/fluid_efficiency = 1 // not being used. consider deleting or implementing it.
 	var/fluid_rate = CUM_RATE
 	var/fluid_mult = 1
 	var/last_orgasmed = 0
@@ -241,10 +241,11 @@
 /obj/item/organ/genital/proc/generate_fluid(datum/reagents/R)
 	var/amount = get_fluid()
 	R.clear_reagents()
-	R.maximum_volume = fluid_max_volume
 	if(fluid_id)
+		R.maximum_volume = fluid_max_volume
 		R.add_reagent(fluid_id,amount, owner.get_blood_data())
 	else if(linked_organ?.fluid_id)
+		R.maximum_volume = linked_organ.fluid_max_volume
 		R.add_reagent(linked_organ.fluid_id,amount, owner.get_blood_data())
 	return TRUE
 

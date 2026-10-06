@@ -1740,6 +1740,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["feature_balls_size"] >> features["balls_size"]
 	S["feature_balls_visibility"] >> features["balls_visibility"]
 	S["feature_balls_fluid"] >> features["balls_fluid"]
+	if(S["feature_balls_cum_rate"])
+		S["feature_balls_cum_rate"] >> features["balls_cum_rate"]
+	if(S["feature_balls_cum_max"])
+		S["feature_balls_cum_max"] >> features["balls_cum_max"]
 	S["feature_balls_accessible"] >> features["balls_accessible"]
 	//breasts features
 	S["feature_has_breasts"] >> features["has_breasts"]
@@ -2444,6 +2448,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["feature_balls_accessible"], features["balls_accessible"])
 	WRITE_FILE(S["feature_balls_stuffing"], features["balls_stuffing"])
 	WRITE_FILE(S["feature_balls_fluid"], features["balls_fluid"])
+	WRITE_FILE(S["feature_balls_cum_rate"], features["balls_cum_rate"])
+	WRITE_FILE(S["feature_balls_cum_max"], features["balls_cum_max"])
+
 	WRITE_FILE(S["feature_balls_accessible"], features["balls_accessible"])
 
 	WRITE_FILE(S["feature_has_breasts"], features["has_breasts"])

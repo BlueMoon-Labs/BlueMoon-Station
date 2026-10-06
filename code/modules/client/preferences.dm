@@ -2087,6 +2087,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 								dat += "<a style='display:block;width:50px' href='?_src_=prefs;preference=balls_fluid;task=input'>[balls_fluid.name]</a>"
 							else
 								dat += "<a style='display:block;width:50px' href='?_src_=prefs;preference=balls_fluid;task=input'>Nothing?</a>"
+							dat += "<b>Max Cum Output:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=balls_cum_max;task=input'>[features["balls_cum_max"] ? features["balls_cum_max"] : "Default"]</a>"
+							dat += "<b>Fluid Restoration Rate:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=balls_cum_rate;task=input'>[features["balls_cum_rate"] != CUM_RATE ? features["balls_cum_rate"] : "Default"]</a>"
 							//SPLURT Edit end
 
 						dat += "</td>"
@@ -4716,6 +4718,20 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					new_fluid = tgui_input_list(user, "Balls Fluid", "Character Preference", full_options)
 					if(new_fluid)
 						features["balls_fluid"] = new_fluid.type
+
+				if("balls_cum_max")
+					var/new_max = tgui_input_number(user, "Testicles Maximum Cum Output:\n(1 - 150)(Default depends on size)\n(Cancel to restore defaults)", "Character Preference", features["balls_cum_max"], 150, 1)
+					if(new_max)
+						features["balls_cum_max"] = clamp(round(new_max), 1, 150)
+					else
+						features -= "balls_cum_max"
+
+				if("balls_cum_rate")
+					var/new_rate = tgui_input_number(user, "Testicles Cum Restoration Rate:\n(0.1 - 20)(Default = [CUM_RATE])\n(Cancel to restore defaults)", "Character Preference", features["balls_cum_rate"], 20, 0.1)
+					if(new_rate)
+						features["balls_cum_rate"] = clamp(round(new_rate), 0.1, 20)
+					else
+						features["balls_cum_rate"] = CUM_RATE
 
 				if("breasts_size")
 					var/new_size = tgui_input_list(user, "Breast Size", "Character Preference", CONFIG_GET(keyed_list/breasts_cups_prefs))
