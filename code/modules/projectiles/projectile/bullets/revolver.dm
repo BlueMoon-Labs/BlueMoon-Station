@@ -322,7 +322,7 @@
 	name = "rubbershot pellet"
 	icon_state = "pellet"
 	damage = 1
-	stamina = 10  
+	stamina = 5
 	armour_penetration = BULLET_BR0
 	sharpness = SHARP_NONE
 	embedding = null
@@ -349,8 +349,8 @@
 /obj/item/projectile/bullet/pellet/exorcist_snakeshot
 	name = "snakeshot pellet"
 	icon_state = "pellet"
-	armour_penetration = BULLET_BR2
-	damage = 6
+	armour_penetration = BULLET_BR1
+	damage = 5
 	tile_dropoff_ap = 6
 	wound_bonus = 1
 	bare_wound_bonus = 5
