@@ -487,7 +487,7 @@
 	TEST_ASSERT_EQUAL(dance.style_id, HERETIC_DANCE_STYLE_WALTZ, "Танцуется Вальс.")
 	var/before = victim.getBruteLoss()
 	dance.register_strike(user, victim, HERETIC_DANCE_ON_BEAT, FALSE, TRUE)
-	TEST_ASSERT_EQUAL(victim.getBruteLoss() - before, HERETIC_DANCE_TANGO_BONUS, "Удержанная Болеро пассивка Танго добавляет урон в Вальсе.")
+	TEST_ASSERT_EQUAL(round(victim.getBruteLoss() - before, 0.01), HERETIC_DANCE_TANGO_BONUS, "Удержанная Болеро пассивка Танго добавляет урон в Вальсе.")
 	dance.stop_bolero()
 	TEST_ASSERT_EQUAL(dance.beat_ds, 8.5, "Конец Болеро возвращает темп стиля.")
 
@@ -1013,7 +1013,7 @@
 	var/datum/status_effect/heretic_dance/frenzy/frenzy = victim.has_status_effect(/datum/status_effect/heretic_dance/frenzy)
 	TEST_ASSERT(frenzy?.duration - world.time >= 6 SECONDS - 1, "Укусы номера срывают цель в пляску на 6 секунд.")
 	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/heretic_dance/tarantism), "Номер взорвал тарантизм.")
-	TEST_ASSERT_EQUAL(victim.getBruteLoss() - brute_before, 32, "Взрыв тарантизма номера - 32 ушиба.")
+	TEST_ASSERT_EQUAL(round(victim.getBruteLoss() - brute_before, 0.01), 32, "Взрыв тарантизма номера - 32 ушиба.")
 
 /// Номер «Исчезновение»: после процессии связка в Канкан и линия надевают маску и дают рывок со скоростью.
 /datum/unit_test/heretic_dance_routine_vanishing/Run()
