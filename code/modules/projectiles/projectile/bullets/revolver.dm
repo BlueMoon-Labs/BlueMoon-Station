@@ -313,7 +313,7 @@
 	icon = 'modular_bluemoon/icons/obj/ammo.dmi'
 	icon_state = "410rubber"
 	pellets = 6
-	variance = 50
+	variance = 100
 	projectile_type = /obj/item/projectile/bullet/pellet/exorcist_rubber
 	can_be_printed = TRUE
 	custom_materials = list(/datum/material/glass = 800)
@@ -327,7 +327,7 @@
 	sharpness = SHARP_NONE
 	embedding = null
 	ricochets_max = 4
-	ricochet_chance = 100
+	ricochet_chance = 50
 	ricochet_auto_aim_angle = 45
 	ricochet_auto_aim_range = 8
 	ricochet_incidence_leeway = 50
