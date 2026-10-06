@@ -4835,6 +4835,7 @@
 #include "modular_bluemoon\code\modules\antagonists\heretic\dance_effects.dm"
 #include "modular_bluemoon\code\modules\antagonists\heretic\dance_hud.dm"
 #include "modular_bluemoon\code\modules\antagonists\heretic\dance_lesson.dm"
+#include "modular_bluemoon\code\modules\antagonists\heretic\dance_routines.dm"
 #include "modular_bluemoon\code\modules\antagonists\heretic\dance_style_fx.dm"
 #include "modular_bluemoon\code\modules\antagonists\heretic\deeds.dm"
 #include "modular_bluemoon\code\modules\antagonists\heretic\dread.dm"

@@ -206,7 +206,7 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 	if(victim.stat == DEAD)
 		return "Мёртвого сердце не принимает: новой целью может стать только живой."
 	if(!hunt_target_ready(victim))
-		return "Цель ещё сопротивляется. Сердце принимает поверженного: в крите, без сознания, связанного, оглушённого или сбитого с ног. Добровольно лёгший или уснувший не считается."
+		return hunt_not_ready_reason("Цель ещё сопротивляется. Сердце принимает поверженного: в крите, без сознания, связанного, оглушённого или сбитого с ног. Добровольно лёгший или уснувший не считается.")
 	if(!claim_is_crew_player(victim))
 		return "Сердце принимает только членов экипажа станции с игроком в теле."
 	return null
@@ -269,7 +269,7 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 	if(victim.mind != hunt_target)
 		return "Обряд сердцем проводится только над назначенной целью охоты."
 	if(!hunt_target_ready(victim))
-		return "Цель ещё сопротивляется: свяжите её наручниками, оглушите или сбейте с ног. Цель в крите принимается без наручников."
+		return hunt_not_ready_reason()
 	var/turf/rite_turf = get_turf(victim)
 	if(!isturf(victim.loc) || !isopenturf(rite_turf) || isspaceturf(rite_turf))
 		return "Под целью нужен пол: в шкафу или в космосе круг не проступит."
@@ -306,6 +306,11 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 	. = ..()
 	if(!resting)
 		knocked_to_floor = FALSE
+
+/// Отказ по несломленной цели с напоминанием, как её берёт свой путь.
+/datum/antagonist/heretic/proc/hunt_not_ready_reason(reason = "Цель ещё сопротивляется: свяжите её наручниками, оглушите или сбейте с ног. Цель в крите принимается без наручников.")
+	var/datum/heretic_path/path = GLOB.heretic_paths[selected_path]
+	return path?.capture_summary ? "[reason] Способ вашего пути: [path.capture_summary]" : reason
 
 /datum/antagonist/heretic/proc/hunt_target_ready(mob/living/carbon/human/victim)
 	if(!istype(victim) || QDELETED(victim))
