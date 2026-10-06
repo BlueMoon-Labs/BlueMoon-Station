@@ -755,7 +755,7 @@
 	desc = "Designed to quickly reload revolvers."
 	id = "41_rubber_sp"
 	build_type = PROTOLATHE
-	materials = list(/datum/material/glass = 10000)
+	materials = list(/datum/material/iron = 1000)
 	build_path = /obj/item/ammo_box/cal41
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
@@ -766,7 +766,7 @@
 	desc = "Designed to quickly reload revolvers."
 	id = "41_lethal_sp"
 	build_type = PROTOLATHE
-	materials = list(/datum/material/iron = 20000)
+	materials = list(/datum/material/iron = 10000)
 	build_path = /obj/item/ammo_box/cal41/lethal
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
@@ -846,7 +846,7 @@
 	id = "exorcist_rubber"
 	name = "410 rubber"
 	build_type = PROTOLATHE
-	materials = list(/datum/material/glass = 1000)
+	materials = list(/datum/material/iron = 500)
 	build_path = /obj/item/ammo_casing/cal410
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
