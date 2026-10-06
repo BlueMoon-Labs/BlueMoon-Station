@@ -764,5 +764,6 @@
 	dual_wield_spread = 25
 	fire_delay = 15
 	w_class = WEIGHT_CLASS_NORMAL
+	weapon_weight = WEAPON_MEDIUM //чтоб не стреляли с 2 рук, но не требовал вторую руку
 	recoil = 5
 	slot_flags = ITEM_SLOT_BELT
