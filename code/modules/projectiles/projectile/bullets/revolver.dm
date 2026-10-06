@@ -350,7 +350,7 @@
 	name = "snakeshot pellet"
 	icon_state = "pellet"
 	armour_penetration = BULLET_BR1
-	damage = 5
+	damage = 3
 	tile_dropoff_ap = 6
 	wound_bonus = 1
 	bare_wound_bonus = 5
