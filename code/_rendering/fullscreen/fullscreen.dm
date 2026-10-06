@@ -164,6 +164,8 @@
 	var/size_x = 15
 	/// size of sprite in tiles
 	var/size_y = 15
+	/// scale multiplier for transform (if used)
+	var/scale = 1
 
 /atom/movable/screen/fullscreen/scaled/SetView(client_view)
 	if(view_current != client_view)
@@ -313,6 +315,30 @@
 /atom/movable/screen/fullscreen/scaled/blind
 	icon = 'icons/screen/fullscreen/blind.dmi'
 	icon_state = "blackimageoverlay"
+	layer = BLIND_LAYER
+	plane = FULLSCREEN_PLANE
+
+/atom/movable/screen/fullscreen/scaled/blind_blindfold
+	icon = 'icons/screen/fullscreen/blind_blindfold.dmi'
+	icon_state = "blind_blindfold"
+	layer = BLIND_LAYER
+	plane = FULLSCREEN_PLANE
+	scale = 1.0
+
+/atom/movable/screen/fullscreen/scaled/blind_blindfold/SetView(client_view)
+	if(view_current != client_view)
+		var/list/actualview = getviewsize(client_view)
+		view_current = client_view
+		transform = matrix(min(actualview[1], actualview[2]) / size_x * scale, 0, 0, 0, min(actualview[1], actualview[2]) / size_y * scale, 0)
+	return ..()
+
+/atom/movable/screen/fullscreen/scaled/blind_blindfold/hard
+	icon_state = "blind_blindfold"
+	scale = 0.4
+
+/atom/movable/screen/fullscreen/scaled/blind_frame
+	icon = 'icons/screen/fullscreen/blind_blindfold.dmi'
+	icon_state = "blind_frame"
 	layer = BLIND_LAYER
 	plane = FULLSCREEN_PLANE
 

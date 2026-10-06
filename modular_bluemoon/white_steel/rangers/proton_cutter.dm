@@ -260,3 +260,8 @@
 	new /obj/item/melee/sabre/proton_cutter(src)
 	new /obj/item/melee/tomahawk(src)
 	update_appearance()
+
+/obj/item/storage/belt/avangard_belt/empty
+
+/obj/item/storage/belt/avangard_belt/empty/PopulateContents()
+	return

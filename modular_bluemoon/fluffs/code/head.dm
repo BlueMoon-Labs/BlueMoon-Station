@@ -473,6 +473,19 @@
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR
 	unique_reskin = null
 
+/obj/item/clothing/head/donator/bm/opssrt
+	name = "OPS-SRT Helmet"
+	desc = "Given to those, who served well"
+	icon_state = "opssrt"
+	item_state = "opssrt"
+	icon = 'modular_bluemoon/icons/obj/clothing/hats.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/hats.dmi'
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
+	clothing_flags = ALLOWINTERNALS
+	flags_inv = HIDEEARS|HIDEHAIR|HIDEFACIALHAIR
+	unique_reskin = null
+
 ///////////////////////////////////////////////
 
 /obj/item/clothing/head/donator/bm/chetky_cap

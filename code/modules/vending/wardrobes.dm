@@ -487,8 +487,8 @@
 					/obj/item/clothing/suit/chaplain/clownpriest = 3, //BlueMoon changes,
 					/obj/item/clothing/suit/chaplain/shrinehand = 3, //BlueMoon changes,
 					/obj/item/clothing/suit/hooded/chaplain_hoodie/monk_robe = 2, //BlueMoon changes,
-					/obj/item/clothing/neck/oldcross = 6,  //BlueMoon changes,
-					/obj/item/clothing/neck/epitrachelion = 1, //BlueMoon changes,
+					/obj/item/clothing/neck/bm/oldcross = 6,  //BlueMoon changes,
+					/obj/item/clothing/neck/bm/epitrachelion = 1, //BlueMoon changes,
 					/obj/item/clothing/neck/cloak/bishop = 1, //BlueMoon changes,
 					/obj/item/clothing/neck/cloak/bishopblack= 1) //BlueMoon changes
 

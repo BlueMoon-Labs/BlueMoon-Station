@@ -200,7 +200,7 @@
 /datum/gear/donator/bm/baron
 	name = "Terrifying Cloak"
 	slot = ITEM_SLOT_NECK
-	path = /obj/item/clothing/neck/baron
+	path = /obj/item/clothing/neck/donator/bm/baron
 	ckeywhitelist = list("snacksman", "krashly")
 
 /datum/gear/donator/bm/syndiecloak
@@ -622,13 +622,11 @@
 	name = "Doctor K plushie"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/toy/plush/bm/doctor_k
-	ckeywhitelist = list("sanecman")
 
 /datum/gear/donator/bm/legax_kit
 	name = "Legax Gravpulser Kit"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/legax
-	ckeywhitelist = list("sanecman")
 
 /datum/gear/donator/bm/emagged_jukebox
 	name = "Emagged Jukebox"
@@ -2030,6 +2028,36 @@
 	slot = ITEM_SLOT_HEAD
 	path = /obj/item/clothing/head/donator/bm/mark40k_helmet
 	ckeywhitelist = list("monolithxxv")
+
+/datum/gear/donator/bm/saibasan
+	name = "Cybersun Surplus"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/donator/saibasan
+	ckeywhitelist = list("monolithxxv")
+
+/datum/gear/donator/bm/opssrt
+	name = "OPS-SRT Helmet"
+	slot = ITEM_SLOT_HEAD
+	path = /obj/item/clothing/head/donator/bm/opssrt
+	ckeywhitelist = list("monolithxxv", "mishanok")
+
+/datum/gear/donator/bm/medaldoblest
+	name = "Медаль"
+	slot = ITEM_SLOT_ACCESSORY
+	path = /obj/item/clothing/accessory/medaldoblest
+	ckeywhitelist = list("monolithxxv", "mishanok")
+
+/datum/gear/donator/bm/opssrtclothes
+	name = "OPS-SRT Clothing"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/donator/opssrtclothes
+	ckeywhitelist = list("monolithxxv", "mishanok")
+
+/datum/gear/donator/bm/opssrtarmor
+	name = "OPS-SRT Plate Carrier"
+	slot = ITEM_SLOT_OCLOTHING
+	path = /obj/item/clothing/suit/donator/bm/opssrtarmor
+	ckeywhitelist = list("monolithxxv", "mishanok")
 
 /datum/gear/donator/bm/mark50k_helmet
 	name = "Mark50k Armored Head plates"

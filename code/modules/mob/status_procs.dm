@@ -53,12 +53,27 @@
 	if(eye_blind) // UNCONSCIOUS or has blind trait, or has temporary blindness
 		if(stat == CONSCIOUS || stat == SOFT_CRIT)
 			throw_alert("blind", /atom/movable/screen/alert/blind)
-		overlay_fullscreen("blind", /atom/movable/screen/fullscreen/scaled/blind)
+
+		// Проверяем, надо ли накладывать Blindfold.
+		if(HAS_TRAIT(src, TRAIT_BLINDFOLD_HARD))
+			overlay_fullscreen("blind_blindfold_hard", /atom/movable/screen/fullscreen/scaled/blind_blindfold/hard)
+			overlay_fullscreen("blind_frame", /atom/movable/screen/fullscreen/scaled/blind_frame)
+		else if(HAS_TRAIT(src, TRAIT_BLINDFOLD))
+			overlay_fullscreen("blind_blindfold", /atom/movable/screen/fullscreen/scaled/blind_blindfold)
+			overlay_fullscreen("blind_frame", /atom/movable/screen/fullscreen/scaled/blind_frame)
+		else
+			clear_fullscreen("blind_blindfold_hard", 0)
+			clear_fullscreen("blind_blindfold", 0)
+			clear_fullscreen("blind_frame", 0)
+			overlay_fullscreen("blind", /atom/movable/screen/fullscreen/scaled/blind)
 		// You are blind why should you be able to make out details like color, only shapes near you
 		// add_client_colour(/datum/client_colour/monochrome/blind)
 	else // CONSCIOUS no blind trait, no blindness
+		clear_fullscreen("blind_frame", 0) // Мгновенно убрать
 		clear_alert("blind")
 		clear_fullscreen("blind")
+		clear_fullscreen("blind_blindfold_hard", 0) // Мгновенно убрать
+		clear_fullscreen("blind_blindfold", 0) // Мгновенно убрать
 		// remove_client_colour(/datum/client_colour/monochrome/blind)
 /**
   * Make the mobs vision blurry

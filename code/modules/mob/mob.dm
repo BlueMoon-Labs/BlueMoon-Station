@@ -721,6 +721,12 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 /mob/proc/get_muzzle_strength()
 	return MUFFLE_NONE
 
+/// Уровень сенсорной депривации слуха на основе TRAIT_HEARING_DEPRIVED
+/mob/proc/get_hearing_deprivation_strength()
+	if(HAS_TRAIT(src, TRAIT_HEARING_DEPRIVED))
+		return HEARING_DEPRIV_LOW
+	return HEARING_DEPRIV_NONE
+
 /// Adds this list to the output to the stat browser
 /mob/proc/get_status_tab_items()
 	. = list()

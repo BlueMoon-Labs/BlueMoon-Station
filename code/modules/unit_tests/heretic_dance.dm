@@ -14,6 +14,9 @@
 	dance.sync_bar()
 	dance.lag_grace_until = -1
 
+/datum/unit_test/proc/start_dance_music(datum/eldritch_knowledge/base_dance/dance)
+	dance.last_combat_at = world.time
+
 /// Точность по доле: точно, в долю, мимо и сильная доля такта.
 /datum/unit_test/heretic_dance_timing/Run()
 	var/datum/antagonist/heretic/heretic = allocate_dance_heretic()
@@ -82,6 +85,7 @@
 	var/mob/living/user = heretic.owner.current
 	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
 	var/mob/living/carbon/human/partner = allocate_dance_victim(get_step(user, WEST))
+	start_dance_music(dance)
 	var/index = 1
 	for(var/direction in list(NORTH, EAST, SOUTH))
 		set_dance_beat(dance, index++)
@@ -95,20 +99,63 @@
 	TEST_ASSERT_EQUAL(get_turf(partner), before, "Ведомый заходит на прежнюю клетку ведущего.")
 	TEST_ASSERT(dance.door_holds(user, partner), "Ведомый открывает дверь в изнанку.")
 
-/// Шаг мимо доли и два шага в одну долю рвут рисунок фигуры.
+/// Пропущенная доля начинает рисунок заново, а брошенная на две доли фигура гаснет сама.
 /datum/unit_test/heretic_dance_figure_reset/Run()
 	var/datum/antagonist/heretic/heretic = allocate_dance_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
 	var/mob/living/user = heretic.owner.current
 	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	start_dance_music(dance)
 	set_dance_beat(dance, 1)
 	dance.on_dance_step(user, NORTH)
+	set_dance_beat(dance, 3)
 	dance.on_dance_step(user, EAST)
-	TEST_ASSERT_EQUAL(length(dance.figure_steps), 0, "Два шага в одну долю рвут рисунок.")
+	TEST_ASSERT_EQUAL(length(dance.figure_steps), 1, "После пропущенной доли рисунок начат заново.")
+	set_dance_beat(dance, 6)
+	dance.on_beat()
+	TEST_ASSERT_EQUAL(length(dance.figure_steps), 0, "Фигура без шагов две доли подряд погасла.")
+
+/// Ходьба с зажатой клавишей: лишние шаги в долю и шаги между долями не рвут рисунок, в долю засчитывается шаг по рисунку.
+/datum/unit_test/heretic_dance_figure_walk/Run()
+	var/datum/antagonist/heretic/heretic = allocate_dance_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	var/mob/living/carbon/human/partner = allocate_dance_victim(get_step(user, WEST))
+	start_dance_music(dance)
+	for(var/offset in list(-2, 0, 2, 4))
+		set_dance_beat(dance, 1, offset)
+		dance.on_dance_step(user, NORTH)
+	TEST_ASSERT_EQUAL(dance.figure_progress(), 1, "Четыре шага вокруг одной доли - один шаг фигуры.")
+	set_dance_beat(dance, 2, -4)
+	dance.on_dance_step(user, EAST)
+	set_dance_beat(dance, 2, -2)
+	dance.on_dance_step(user, NORTH)
+	TEST_ASSERT_EQUAL(dance.figure_progress(), 1, "Шаг не по рисунку в окне доли пока не засчитан как сбой.")
+	set_dance_beat(dance, 2, 1)
+	dance.on_dance_step(user, EAST)
+	TEST_ASSERT_EQUAL(dance.figure_progress(), 2, "Поворот в нужную сторону внутри окна доли засчитан.")
+	set_dance_beat(dance, 2, 2)
+	dance.on_dance_step(user, SOUTH)
+	TEST_ASSERT_EQUAL(dance.figure_progress(), 2, "Ранний поворот к следующему шагу не портит засчитанную долю.")
+	set_dance_beat(dance, 3, -2)
+	dance.on_dance_step(user, SOUTH)
+	set_dance_beat(dance, 4, 2)
+	dance.on_dance_step(user, WEST)
+	TEST_ASSERT(partner.has_status_effect(/datum/status_effect/heretic_dance/lead), "Квадрат собран ходьбой с зажатой клавишей.")
+
+/// Без музыки (ни боя, ни Такта) шаги не складываются в фигуру.
+/datum/unit_test/heretic_dance_figure_silent/Run()
+	var/datum/antagonist/heretic/heretic = allocate_dance_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	TEST_ASSERT(dance.music_silent(), "Без боя и Такта музыка молчит.")
+	set_dance_beat(dance, 1)
+	dance.on_dance_step(user, NORTH)
+	TEST_ASSERT_EQUAL(length(dance.figure_steps), 0, "Шаг в тишине не начинает фигуру.")
+	dance.combat_resource = 1
+	TEST_ASSERT(!dance.music_silent(), "С Тактом музыка звучит.")
 	set_dance_beat(dance, 2)
 	dance.on_dance_step(user, NORTH)
-	set_dance_beat(dance, 3, 4)
-	dance.on_dance_step(user, EAST)
-	TEST_ASSERT_EQUAL(length(dance.figure_steps), 0, "Шаг мимо доли рвёт рисунок.")
+	TEST_ASSERT_EQUAL(length(dance.figure_steps), 1, "Под музыку шаг начинает фигуру.")
 
 /// Хватка в «Помощи» заражает человека; дефибриллятор, святая вода, сон и жезл лечат, заражённых не больше шести.
 /datum/unit_test/heretic_dance_earworm/Run()
@@ -413,6 +460,7 @@
 	var/datum/antagonist/heretic/heretic = allocate_dance_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
 	var/mob/living/user = heretic.owner.current
 	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	start_dance_music(dance)
 	set_dance_beat(dance, 1, 4)
 	TEST_ASSERT_EQUAL(dance.timing(user), HERETIC_DANCE_MISS, "Без лага между долями - мимо.")
 	set_dance_beat(dance, 1, 4)
@@ -521,37 +569,39 @@
 	dance.on_dance_step(user, NORTH, from)
 	TEST_ASSERT_NOTNULL(locate(/obj/effect/temp_visual/heretic_dance_bone_steps) in from, "Шаг в долю оставил костяной след.")
 
-/// После двух верных шагов один сбой прощается, второй рвёт рисунок; следующий шаг подсказан.
+/// После двух верных шагов прощается один сбой - пропущенная доля или шаг не по рисунку; следующий шаг подсказан.
 /datum/unit_test/heretic_dance_figure_slip/Run()
 	var/datum/antagonist/heretic/heretic = allocate_dance_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
 	var/mob/living/user = heretic.owner.current
 	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	start_dance_music(dance)
 	set_dance_beat(dance, 1)
 	dance.on_dance_step(user, NORTH)
 	set_dance_beat(dance, 2)
 	dance.on_dance_step(user, EAST)
 	TEST_ASSERT_EQUAL(dance.next_figure_dir(), SOUTH, "Следующий шаг квадрата - назад.")
-	dance.on_dance_step(user, WEST)
-	TEST_ASSERT_EQUAL(dance.figure_progress(), 2, "Второй шаг в ту же долю прощён.")
-	set_dance_beat(dance, 3)
+	set_dance_beat(dance, 4)
 	dance.on_dance_step(user, SOUTH)
-	TEST_ASSERT_EQUAL(dance.figure_progress(), 3, "Квадрат продолжается после прощённого сбоя.")
-	set_dance_beat(dance, 3, 4)
-	dance.on_dance_step(user, WEST)
-	TEST_ASSERT_EQUAL(length(dance.figure_steps), 0, "Второй сбой рвёт рисунок.")
-	set_dance_beat(dance, 5)
-	dance.on_dance_step(user, NORTH)
+	TEST_ASSERT_EQUAL(dance.figure_progress(), 3, "Пропущенная доля после двух верных шагов прощена.")
 	set_dance_beat(dance, 6)
+	dance.on_dance_step(user, WEST)
+	TEST_ASSERT_EQUAL(length(dance.figure_steps), 1, "Второй сбой начинает рисунок заново.")
+	set_dance_beat(dance, 11)
+	dance.on_dance_step(user, NORTH)
+	set_dance_beat(dance, 12)
 	dance.on_dance_step(user, EAST)
-	set_dance_beat(dance, 7)
+	set_dance_beat(dance, 13)
 	dance.on_dance_step(user, NORTH)
 	TEST_ASSERT_EQUAL(dance.figure_progress(), 2, "Шаг не по рисунку прощён и не сбивает начатую фигуру.")
+	dance.on_dance_step(user, SOUTH)
+	TEST_ASSERT_EQUAL(dance.figure_progress(), 3, "После прощённого шага верный в ту же долю продолжает фигуру.")
 
 /// Квадрат без цели ждёт 4 доли и подхватывает врага, как только тот рядом; предпочитает последнего, по кому ударили.
 /datum/unit_test/heretic_dance_figure_held/Run()
 	var/datum/antagonist/heretic/heretic = allocate_dance_heretic(get_step(get_step(run_loc_floor_bottom_left, NORTHEAST), NORTHEAST))
 	var/mob/living/user = heretic.owner.current
 	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	start_dance_music(dance)
 	var/index = 1
 	for(var/direction in list(NORTH, EAST, SOUTH, WEST))
 		set_dance_beat(dance, index++)
@@ -570,6 +620,7 @@
 	var/datum/antagonist/heretic/heretic = allocate_dance_heretic(get_step(get_step(run_loc_floor_bottom_left, NORTHEAST), NORTHEAST))
 	var/mob/living/user = heretic.owner.current
 	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	start_dance_music(dance)
 	var/index = 1
 	for(var/direction in list(NORTH, EAST, SOUTH, WEST))
 		set_dance_beat(dance, index++)
@@ -611,37 +662,12 @@
 	TEST_ASSERT(length(heard) > 1, "Такты Болеро не повторяют одну фразу.")
 	dance.stop_bolero()
 
-/// Прощённый шаг мимо доли не съедает следующую долю: квадрат продолжается и после позднего, и после раннего шага.
-/datum/unit_test/heretic_dance_figure_slip_timing/Run()
-	var/datum/antagonist/heretic/heretic = allocate_dance_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
-	var/mob/living/user = heretic.owner.current
-	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
-	set_dance_beat(dance, 1)
-	dance.on_dance_step(user, NORTH)
-	set_dance_beat(dance, 2)
-	dance.on_dance_step(user, EAST)
-	set_dance_beat(dance, 3, 4)
-	dance.on_dance_step(user, WEST)
-	TEST_ASSERT_EQUAL(dance.figure_progress(), 2, "Поздний шаг мимо доли прощён.")
-	set_dance_beat(dance, 4)
-	dance.on_dance_step(user, SOUTH)
-	TEST_ASSERT_EQUAL(dance.figure_progress(), 3, "После позднего сбоя квадрат продолжается на следующей доле.")
-	dance.lose_figure(user, "тест")
-	set_dance_beat(dance, 11)
-	dance.on_dance_step(user, NORTH)
-	set_dance_beat(dance, 12)
-	dance.on_dance_step(user, EAST)
-	set_dance_beat(dance, 13, -4)
-	dance.on_dance_step(user, WEST)
-	set_dance_beat(dance, 13)
-	dance.on_dance_step(user, SOUTH)
-	TEST_ASSERT_EQUAL(dance.figure_progress(), 3, "Ранний сбой не отнимает долю, к которой спешили.")
-
 /// Сработавшая новая фигура забирает ждущую: второй раз старая не сработает.
 /datum/unit_test/heretic_dance_figure_held_consumed/Run()
 	var/datum/antagonist/heretic/heretic = allocate_dance_heretic(get_step(get_step(run_loc_floor_bottom_left, NORTHEAST), NORTHEAST))
 	var/mob/living/user = heretic.owner.current
 	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	start_dance_music(dance)
 	var/index = 1
 	for(var/direction in list(NORTH, EAST, SOUTH, WEST))
 		set_dance_beat(dance, index++)
@@ -688,6 +714,7 @@
 	var/datum/antagonist/heretic/heretic = allocate_dance_heretic(get_step(get_step(run_loc_floor_bottom_left, NORTHEAST), NORTHEAST))
 	var/mob/living/user = heretic.owner.current
 	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	start_dance_music(dance)
 	allocate_dance_victim(get_step(user, EAST))
 	var/index = 1
 	for(var/direction in list(NORTH, EAST, SOUTH, WEST))
@@ -829,7 +856,7 @@
 	tango.accent(dance, user, victim, 1)
 	var/datum/status_effect/heretic_dance_dipped/dipped = victim.has_status_effect(/datum/status_effect/heretic_dance_dipped)
 	TEST_ASSERT_NOTNULL(dipped, "Кортэ Танго запоминает цель.")
-	TEST_ASSERT(dipped.duration - world.time <= HERETIC_DANCE_ACCENT_LOCK, "Замок кортэ - 6 секунд.")
+	TEST_ASSERT(round(dipped.duration - world.time, 0.1) <= HERETIC_DANCE_ACCENT_LOCK, "Замок кортэ - 6 секунд: [dipped.duration - world.time] дс.")
 	victim.SetKnockdown(0)
 	victim.setStaminaLoss(0)
 	victim.forceMove(get_step(user, EAST))
@@ -883,3 +910,156 @@
 	effect.process()
 	TEST_ASSERT(QDELETED(effect), "Без хватки двери танец кончается в срок.")
 	TEST_ASSERT(!partner.IsParalyzed(), "Конец танца отпускает партнёра.")
+
+/// В меню стиля каждый выученный танец подписан своей ролью.
+/datum/unit_test/heretic_dance_style_roles/Run()
+	var/datum/antagonist/heretic/heretic = allocate_dance_heretic()
+	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	for(var/id in GLOB.heretic_dance_styles)
+		var/datum/heretic_dance_style/style = GLOB.heretic_dance_styles[id]
+		TEST_ASSERT(length(style.role), "У стиля [style.name] есть роль.")
+	var/datum/heretic_dance_style/waltz = GLOB.heretic_dance_styles[HERETIC_DANCE_STYLE_WALTZ]
+	var/list/choices = dance.style_choices()
+	TEST_ASSERT_EQUAL(choices["[waltz.name] - [waltz.role]"], HERETIC_DANCE_STYLE_WALTZ, "Вальс в меню подписан ролью.")
+	TEST_ASSERT_EQUAL(length(choices), 1, "В меню только выученные стили.")
+
+/// Отказ сердца по несломленной цели напоминает способ захвата своего пути.
+/datum/unit_test/heretic_dance_capture_hint/Run()
+	var/datum/antagonist/heretic/heretic = allocate_dance_heretic()
+	var/datum/heretic_path/path = GLOB.heretic_paths[PATH_DANCE]
+	TEST_ASSERT(findtext(heretic.hunt_not_ready_reason(), path.capture_summary), "Отказ называет способ захвата Пляски.")
+
+/datum/unit_test/proc/dance_figure(datum/eldritch_knowledge/base_dance/dance, mob/living/user, list/directions)
+	var/index = 1
+	for(var/direction in directions)
+		set_dance_beat(dance, index++)
+		dance.on_dance_step(user, direction)
+
+/datum/unit_test/proc/dance_link(datum/eldritch_knowledge/base_dance/dance, mob/living/user, style_id)
+	set_dance_beat(dance, dance.meter)
+	dance.switch_style(user, style_id)
+
+/// Номер «Па-де-де»: после квадрата связка в Танго и очо делают ведомого партнёром на 3 секунды, цель охоты - на 6.
+/datum/unit_test/heretic_dance_routine_pas_de_deux/Run()
+	var/datum/antagonist/heretic/heretic = allocate_dance_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/dance_grasp)
+	var/mob/living/carbon/human/victim = allocate_dance_victim(get_step(user, WEST))
+	start_dance_music(dance)
+	dance_figure(dance, user, list(NORTH, EAST, SOUTH, WEST))
+	dance_link(dance, user, HERETIC_DANCE_STYLE_TANGO)
+	TEST_ASSERT_EQUAL(dance.armed_routine?.id, "pas_de_deux", "Связка в Танго после квадрата открыла номер.")
+	var/datum/status_effect/heretic_dance/lead/lead = victim.has_status_effect(/datum/status_effect/heretic_dance/lead)
+	TEST_ASSERT(lead?.duration >= dance.routine_until, "Ведение держится до конца номера.")
+	dance_figure(dance, user, list(EAST, WEST, EAST))
+	var/datum/status_effect/heretic_dance/partner/partner = victim.has_status_effect(/datum/status_effect/heretic_dance/partner)
+	TEST_ASSERT_NOTNULL(partner, "Очо опрокинуло ведомого в кортэ: он партнёр.")
+	TEST_ASSERT(round(partner.duration - world.time, 0.1) <= 3 SECONDS, "Не цель охоты держится партнёром 3 секунды: [partner.duration - world.time] дс.")
+	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/heretic_dance/lead), "Ведение сменилось партнёрством.")
+	TEST_ASSERT(dance.door_holds(user, victim), "Партнёра из номера сердце уводит в изнанку.")
+	TEST_ASSERT_NULL(dance.armed_routine, "Исполненный номер закрыт.")
+	var/mob/living/carbon/human/target = allocate_dance_victim(get_step(user, NORTH))
+	heretic.hunt_target = target.mind
+	dance.routine_ready_at = 0
+	victim.remove_status_effect(/datum/status_effect/heretic_dance/partner)
+	victim.forceMove(run_loc_floor_top_right)
+	dance_link(dance, user, HERETIC_DANCE_STYLE_WALTZ)
+	dance.figure_ready_beat = 0
+	dance_figure(dance, user, list(NORTH, EAST, SOUTH, WEST))
+	TEST_ASSERT(target.has_status_effect(/datum/status_effect/heretic_dance/lead), "Квадрат повёл цель охоты.")
+	dance_link(dance, user, HERETIC_DANCE_STYLE_TANGO)
+	dance_figure(dance, user, list(EAST, WEST, EAST))
+	partner = target.has_status_effect(/datum/status_effect/heretic_dance/partner)
+	TEST_ASSERT(partner && round(partner.duration - world.time, 0.1) >= HERETIC_DANCE_PARTNER_TIME, "Цель охоты держится партнёром [HERETIC_DANCE_PARTNER_TIME / (1 SECONDS)] секунд.")
+
+/// Номер «Пляска мертвецов»: после линии Канкана связка в Пляску смерти и процессия тянут в хоровод на 6 секунд из 4 клеток.
+/datum/unit_test/heretic_dance_routine_danse_macabre/Run()
+	var/datum/antagonist/heretic/heretic = allocate_dance_heretic(run_loc_floor_bottom_left)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/dance_masquerade)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/dance_bell)
+	user.setDir(SOUTH)
+	var/mob/living/carbon/human/far = allocate_dance_victim(locate(run_loc_floor_bottom_left.x + 4, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z))
+	start_dance_music(dance)
+	dance_link(dance, user, HERETIC_DANCE_STYLE_CANCAN)
+	dance_figure(dance, user, list(NORTH, NORTH, SOUTH, SOUTH))
+	dance_link(dance, user, HERETIC_DANCE_STYLE_MACABRE)
+	TEST_ASSERT_EQUAL(dance.armed_routine?.id, "danse_macabre", "Связка в Пляску смерти после линии открыла номер.")
+	dance_figure(dance, user, list(NORTH, NORTH, NORTH, NORTH))
+	var/datum/status_effect/heretic_dance/horovod/horovod = far.has_status_effect(/datum/status_effect/heretic_dance/horovod)
+	TEST_ASSERT_NOTNULL(horovod, "Хоровод номера достал врага в [get_dist(user, far)] клетках.")
+	TEST_ASSERT(horovod?.duration - world.time >= 6 SECONDS - 1, "Хоровод номера длится 6 секунд.")
+
+/// Номер «Танго смерти»: после очо связка в Тарантеллу и четыре точных укуса срывают цель в долгую пляску и взрывают тарантизм на 32 ушиба.
+/datum/unit_test/heretic_dance_routine_death_tango/Run()
+	var/datum/antagonist/heretic/heretic = allocate_dance_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/dance_grasp)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/dance_drum)
+	var/mob/living/carbon/human/victim = allocate_dance_victim(get_step(user, EAST))
+	start_dance_music(dance)
+	dance_link(dance, user, HERETIC_DANCE_STYLE_TANGO)
+	dance_figure(dance, user, list(EAST, WEST, EAST))
+	dance_link(dance, user, HERETIC_DANCE_STYLE_TARANTELLA)
+	TEST_ASSERT_EQUAL(dance.armed_routine?.id, "death_tango", "Связка в Тарантеллу после очо открыла номер.")
+	var/brute_before = 0
+	for(var/bite in 1 to HERETIC_DANCE_BITE_HITS)
+		dance.combat_resource = 0
+		brute_before = victim.getBruteLoss()
+		dance.register_strike(user, victim, HERETIC_DANCE_PERFECT, FALSE, TRUE)
+	var/datum/status_effect/heretic_dance/frenzy/frenzy = victim.has_status_effect(/datum/status_effect/heretic_dance/frenzy)
+	TEST_ASSERT(frenzy?.duration - world.time >= 6 SECONDS - 1, "Укусы номера срывают цель в пляску на 6 секунд.")
+	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/heretic_dance/tarantism), "Номер взорвал тарантизм.")
+	TEST_ASSERT_EQUAL(victim.getBruteLoss() - brute_before, 32, "Взрыв тарантизма номера - 32 ушиба.")
+
+/// Номер «Исчезновение»: после процессии связка в Канкан и линия надевают маску и дают рывок со скоростью.
+/datum/unit_test/heretic_dance_routine_vanishing/Run()
+	var/datum/antagonist/heretic/heretic = allocate_dance_heretic(run_loc_floor_bottom_left)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/dance_masquerade)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/dance_bell)
+	user.setDir(SOUTH)
+	allocate_dance_victim(get_step(user, NORTHEAST))
+	start_dance_music(dance)
+	dance_link(dance, user, HERETIC_DANCE_STYLE_MACABRE)
+	dance_figure(dance, user, list(NORTH, NORTH, NORTH, NORTH))
+	dance_link(dance, user, HERETIC_DANCE_STYLE_CANCAN)
+	TEST_ASSERT_EQUAL(dance.armed_routine?.id, "vanishing", "Связка в Канкан после процессии открыла номер.")
+	dance_figure(dance, user, list(NORTH, NORTH, SOUTH, SOUTH))
+	TEST_ASSERT(user.has_status_effect(/datum/status_effect/heretic_dance/masquerade), "Номер надел маску.")
+	TEST_ASSERT(user.has_status_effect(/datum/status_effect/heretic_dance_glide), "Номер разогнал танцора.")
+
+/// Смена стиля мимо сильной доли номер не открывает.
+/datum/unit_test/heretic_dance_routine_needs_link/Run()
+	var/datum/antagonist/heretic/heretic = allocate_dance_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/dance_grasp)
+	allocate_dance_victim(get_step(user, WEST))
+	start_dance_music(dance)
+	dance_figure(dance, user, list(NORTH, EAST, SOUTH, WEST))
+	set_dance_beat(dance, 1)
+	dance.switch_style(user, HERETIC_DANCE_STYLE_TANGO)
+	dance.switch_style(user, HERETIC_DANCE_STYLE_TANGO)
+	TEST_ASSERT_EQUAL(dance.style_id, HERETIC_DANCE_STYLE_TANGO, "Повторный выбор сменил стиль сразу.")
+	TEST_ASSERT_NULL(dance.armed_routine, "Торопливая смена номер не открыла.")
+
+/// У каждого номера своя кульминация в иконке и свой звук; кульминация остаётся там, где номер начался.
+/datum/unit_test/heretic_dance_routine_assets/Run()
+	var/datum/antagonist/heretic/heretic = allocate_dance_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	for(var/id in GLOB.heretic_dance_routines)
+		var/datum/heretic_dance_routine/routine = GLOB.heretic_dance_routines[id]
+		TEST_ASSERT("dance_routine_[id]" in icon_states('modular_bluemoon/icons/obj/heretic_dance_effects.dmi'), "У номера [routine.name] есть кульминация.")
+		TEST_ASSERT(isfile(routine.sound), "У номера [routine.name] есть свой звук.")
+	var/turf/stage = get_turf(user)
+	var/datum/heretic_dance_routine/vanishing = GLOB.heretic_dance_routines["vanishing"]
+	user.forceMove(get_step(stage, NORTH))
+	dance.routine_fx(user, vanishing, stage)
+	var/obj/effect/temp_visual/heretic_dance/routine/culmination = locate() in stage
+	TEST_ASSERT_EQUAL(culmination?.icon_state, "dance_routine_vanishing", "Кульминация Исчезновения осталась на месте рывка.")
