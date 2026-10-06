@@ -30,6 +30,7 @@
 	pin = /obj/item/firing_pin/explorer
 	gunlight_state = "mini-light"
 	can_flashlight = 0 // Can't attach or detach the flashlight, and override it's icon update
+	projectile_simple_mob_damage_multiplier = 1.25
 
 /obj/item/gun/ballistic/automatic/laser/vanguard/Initialize(mapload)
 	gun_light = new /obj/item/flashlight/seclite(src)
@@ -68,6 +69,7 @@
 	can_flashlight = 0
 	can_suppress = FALSE
 	pin = /obj/item/firing_pin/explorer
+	projectile_simple_mob_damage_multiplier = 1.5
 
 /obj/item/gun/ballistic/automatic/pistol/sigsauer/Initialize(mapload)
 	gun_light = new /obj/item/flashlight/seclite(src)
@@ -153,6 +155,7 @@
 	pin = /obj/item/firing_pin/explorer
 	icon = 'modular_bluemoon/icons/obj/guns/projectile.dmi'
 	icon_state = "45revolvervanguard"
+	projectile_simple_mob_damage_multiplier = 1.75
 
 /obj/item/melee/tomahawk
 	name = "Vanguard magnetic tomahawk"

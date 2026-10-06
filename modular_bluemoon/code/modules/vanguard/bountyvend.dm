@@ -86,6 +86,7 @@
 		new /datum/data/bounty_equipment("B&R kit",							/obj/item/storage/box/demolition,								1200,	"Tools"),
 		new /datum/data/bounty_equipment("Spare breaching charge",			/obj/item/grenade/exploration,									300,	"Tools"),
 		new /datum/data/bounty_equipment("Spare detonation device",			/obj/item/exploration_detonator,								200,	"Tools"),
+		new /datum/data/bounty_equipment("Strange object",					/obj/item/relic,												2500,	"Tools"),
 
 		// ============ RECREATIONAL ============
 		new /datum/data/bounty_equipment("Whiskey",							/obj/item/reagent_containers/food/drinks/bottle/whiskey,		50,		"Recreational"),

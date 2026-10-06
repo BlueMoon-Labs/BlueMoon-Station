@@ -11,7 +11,7 @@
 	var/selfdestruct = FALSE // Explode when user check is failed.
 	var/force_replace = FALSE // Can forcefully replace other pins.
 	var/pin_removeable = FALSE // Can be replaced by any pin.
-	var/emag_removeable = FALSE // Cannot be taken out until emag_act has been performed on the gun.
+	var/emag_removeable = FALSE
 	var/obj/item/gun/gun
 
 /obj/item/firing_pin/Initialize(mapload, newloc)
@@ -74,10 +74,6 @@
 	gun = null
 	return
 
-/**
- * Проверка, разрешено ли извлекать боек из оружия - инструментом или заменой на другой боек.
- * Если извлечение заблокировано, пользователю отправляется сообщение.
- */
 /obj/item/firing_pin/proc/can_be_extracted(obj/item/gun/G, mob/living/user)
 	if(emag_removeable && !(G.obj_flags & EMAGGED))
 		to_chat(user, span_warning("[src] зафиксирован в [G] намертво. Сначала взломайте электронику оружия."))
@@ -367,7 +363,7 @@
 	icon_state = "firing_pin_explorer"
 	fail_message = "<span class='warning'>CANNOT FIRE WHILE ON STATION, MATE!</span>"
 	pin_removeable = FALSE
-	emag_removeable = TRUE // Пока по пушке не пройдёт emag_act - боек из неё не выкрутить.
+	emag_removeable = TRUE
 
 // This checks that the user isn't on the station Z-level.
 /obj/item/firing_pin/explorer/pin_auth(mob/living/user)

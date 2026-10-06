@@ -109,6 +109,8 @@
 	/// Just 'slightly' snowflakey way to modify projectile damage for projectiles fired from this gun.
 	var/projectile_damage_multiplier = 1
 
+	var/projectile_simple_mob_damage_multiplier = 1
+
 	/// directional recoil multiplier
 	var/dir_recoil_amp = 10
 
