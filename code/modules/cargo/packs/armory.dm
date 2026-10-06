@@ -342,7 +342,7 @@
 /datum/supply_pack/security/armory/shotgun_revolvers
 	name = "410 Revolvers Crate"
 	desc = "Набор офицерских револьверов 410 калибра. Требуется доступ к оружейной"
-	cost = 2000
+	cost = 15000
 	contains = list(/obj/item/gun/ballistic/revolver/Exorcist,
 					/obj/item/gun/ballistic/revolver/Exorcist,
 					/obj/item/gun/ballistic/revolver/Exorcist)

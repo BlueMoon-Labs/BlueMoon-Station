@@ -322,7 +322,7 @@
 	name = "rubbershot pellet"
 	icon_state = "pellet"
 	damage = 1
-	stamina = 5
+	stamina = 4
 	armour_penetration = BULLET_BR0
 	sharpness = SHARP_NONE
 	embedding = null
