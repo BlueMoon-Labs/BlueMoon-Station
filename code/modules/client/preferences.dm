@@ -4729,7 +4729,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				if("balls_cum_rate")
 					var/new_rate = tgui_input_number(user, "Testicles Cum Restoration Rate:\n(0.1 - 20)(Default = [CUM_RATE])\n(Cancel to restore defaults)", "Character Preference", features["balls_cum_rate"], 20, 0.1)
 					if(new_rate)
-						features["balls_cum_rate"] = clamp(round(new_rate), 0.1, 20)
+						features["balls_cum_rate"] = clamp(round(new_rate, 0.1), 0.1, 20)
 					else
 						features["balls_cum_rate"] = CUM_RATE
 

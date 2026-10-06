@@ -318,7 +318,10 @@
 					balls.size = features["balls_size"]
 					balls.fluid_rate = features["balls_cum_rate"]
 					balls.fluid_mult = features["balls_cum_mult"]
-					balls.fluid_max_volume = features["balls_cum_max"] || BALLS_VOLUME_BASE
+					if(features["balls_cum_max"])
+						balls.fluid_max_volume = features["balls_cum_max"]
+					else if(balls.size)
+						balls.fluid_max_volume = initial(balls.fluid_max_volume) * balls.size
 					balls.fluid_efficiency = features["balls_efficiency"]
 					balls.update()
 			if(/obj/item/organ/genital/vagina)
