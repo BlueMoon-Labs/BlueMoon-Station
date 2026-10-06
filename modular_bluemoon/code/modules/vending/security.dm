@@ -32,6 +32,8 @@
 		/obj/item/armorkit/security = 5,
 		/obj/item/armorkit/security/helmet = 5,
 		/obj/item/storage/box/forensic_cards = 1,
+		/obj/item/storage/belt/cowboy_holster = 5,
+		/obj/item/ammo_box/cal41 = 10,
 	)
 	contraband = list(
 		/obj/item/clothing/glasses/sunglasses = 2,

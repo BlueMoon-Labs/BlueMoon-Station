@@ -104,3 +104,22 @@
 		return TRUE 
 
 	return ..()
+
+/obj/item/storage/belt/cowboy_holster
+	name = "Cowboy holster"
+	desc = "A holster to carry a speedloaders and revolvers	. WARNING: Badasses only."
+	icon = 'modular_bluemoon/icons/obj/clothing/belts.dmi'
+	icon_state = "cowboy"
+	item_state = "utility"
+	lefthand_file = 'icons/mob/inhands/equipment/belt_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/equipment/belt_righthand.dmi'
+
+obj/item/storage/belt/cowboy_holster/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.max_items = 6
+	STR.max_w_class = WEIGHT_CLASS_NORMAL
+	STR.can_hold = typecacheof(list(
+		/obj/item/gun/ballistic/revolver,
+		/obj/item/ammo_box
+		))
