@@ -2781,3 +2781,9 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/light_plate_carrier
 	ckeywhitelist = list("hartty", "spoopyman228", "dalphy12", "leony24", "rockymed", "hateredsoul")
+
+/datum/gear/donator/bm/honorable_coat
+	name = "Honoroble coat"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/clothing/suit/donator/bm/honorable_coat
+	ckeywhitelist = list("kumikoshouko")
