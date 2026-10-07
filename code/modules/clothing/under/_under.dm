@@ -294,15 +294,14 @@
 		to_chat(usr, "На униформе нет сенсоров.")
 		return FALSE
 
-	// BLUEMOON EDIT — перевод меню сенсоров на TGUI + русификация (было input() in modes)
 	var/list/modes = list("Выключены", "Бинарные показатели", "Точные показатели", "Маяк слежения")
-	var/switchMode = tgui_input_list(usr, "Выберите режим сенсоров:", "Режим сенсоров униформы", modes, modes[sensor_mode + 1])
-	if(!switchMode)
+	var/switch_mode = tgui_input_list(usr, "Выберите режим сенсоров:", "Режим сенсоров униформы", modes, modes[sensor_mode + 1])
+	if(!switch_mode)
 		return
 	if(get_dist(usr, src) > 1)
 		to_chat(usr, "<span class='warning'>Вы отошли слишком далеко!</span>")
 		return
-	sensor_mode_intended = modes.Find(switchMode) - 1
+	sensor_mode_intended = modes.Find(switch_mode) - 1
 
 	if (src.loc == usr)
 		switch(sensor_mode_intended)
