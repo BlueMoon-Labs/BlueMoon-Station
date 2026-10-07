@@ -1244,3 +1244,12 @@
 	icon_state = "sec_armor_kit"
 	product = /obj/item/clothing/suit/armor/vest/alt/tau
 	fromitem = list(/obj/item/clothing/suit/armor/vest/alt)
+
+/obj/item/clothing/suit/donator/bm/honorable_coat
+	name = "Honorable coat"
+	desc = "Old honoroble coat, pretty expensive"
+	icon_state = "honorable_coat"
+	item_state = "honorable_coat"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON

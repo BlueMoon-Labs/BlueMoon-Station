@@ -773,7 +773,8 @@
 /obj/item/gun/ballistic/revolver/process_fire(atom/target, mob/living/user, triggered_by_gun, params)
 	// Вызываем базовый выстрел (пуля/дробь вылетает во врага)
 	. = ..()
-	
+	if(!.)
+		return
 	// Проверяем, что стрелок — живой человек
 	if(!ishuman(user))
 		return
@@ -798,7 +799,8 @@
 	var/obj/item/bodypart/r_arm = H.get_bodypart(BODY_ZONE_R_ARM)
 	if(r_arm)
 		r_arm.receive_damage(brute = 15, burn = 0, wound_bonus = 0)
-		r_arm.vars["dislocated"] = TRUE
+		var/datum/wound/blunt/moderate/right_dislocation = new
+		right_dislocation.apply_wound(r_arm)
 		if(hasvar(r_arm, "enabled"))
 			r_arm.vars["enabled"] = FALSE
 		r_arm.update_appearance()
@@ -807,6 +809,8 @@
 	var/obj/item/bodypart/l_arm = H.get_bodypart(BODY_ZONE_L_ARM)
 	if(l_arm)
 		l_arm.receive_damage(brute = 15, burn = 0, wound_bonus = 0)
+		var/datum/wound/blunt/moderate/left_dislocation = new
+		left_dislocation.apply_wound(l_arm)
 		l_arm.vars["dislocated"] = TRUE
 		if(hasvar(l_arm, "enabled"))
 			l_arm.vars["enabled"] = FALSE
