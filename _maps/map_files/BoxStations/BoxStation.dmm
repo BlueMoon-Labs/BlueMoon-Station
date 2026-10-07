@@ -23923,7 +23923,6 @@
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
 "bVW" = (
-/obj/item/kirbyplants/random,
 /turf/open/floor/plasteel/textured/corner{
 	dir = 4
 	},
@@ -80571,11 +80570,6 @@
 /turf/open/space,
 /area/space/nearstation)
 "vgx" = (
-/obj/structure/table,
-/obj/item/flashlight,
-/obj/item/storage/toolbox/mechanical{
-	pixel_y = 6
-	},
 /turf/open/floor/plasteel/textured/half{
 	dir = 8
 	},
