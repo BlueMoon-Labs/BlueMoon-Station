@@ -33,6 +33,14 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	var/mob/observetarget = null	//The target mob that the ghost is observing. Used as a reference in logout()
 	var/data_huds_on = 0 //Are data HUDs currently enabled?
 	var/health_scan = FALSE //Are health scans currently enabled?
+	var/ghost_reagent_scan = FALSE //Do we reagent-scan living beings on click?
+	var/ghost_gas_scan = FALSE //Do we gas-scan turfs on click?
+	var/ghost_t_ray = FALSE //Is the ghost t-ray toggle on?
+	var/ghost_t_ray_timer //Timer ID of the periodic t-ray flick loop, if any.
+	/// Set while a virtual reality session (deathmatch) keeps this ghost as its
+	/// return body. The key transfer that starts the session calls Logout() on the
+	/// ghost, whose Logout() qdels any keyless observer out from under the session.
+	var/keep_while_keyless = FALSE
 	var/list/datahuds = list(DATA_HUD_SECURITY_ADVANCED, DATA_HUD_MEDICAL_ADVANCED, DATA_HUD_DIAGNOSTIC_ADVANCED) //list of data HUDs shown to ghosts.
 	var/ghost_orbit = GHOST_ORBIT_CIRCLE
 
@@ -907,6 +915,29 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	else
 		to_chat(src, "<span class='notice'>Health scan enabled.</span>")
 		health_scan = TRUE
+
+/// Turns the ghost t-ray scanner on or off, managing the periodic flick loop
+/// that keeps hidden items visible while the toggle is up.
+/mob/dead/observer/proc/set_ghost_t_ray(on)
+	ghost_t_ray = on
+	if(on)
+		t_ray_scan(src, 8, 3)
+		ghost_t_ray_timer = addtimer(CALLBACK(src, TYPE_PROC_REF(/mob/dead/observer, ghost_t_ray_tick)), 1 SECONDS, TIMER_STOPPABLE)
+		to_chat(src, "<span class='notice'>T-Ray enabled. Hidden items below you are being exposed.</span>")
+	else
+		if(ghost_t_ray_timer)
+			deltimer(ghost_t_ray_timer)
+		ghost_t_ray_timer = null
+		to_chat(src, "<span class='notice'>T-Ray disabled.</span>")
+
+/// The t-ray loop: re-flick the overlay around the ghost every second so items
+/// exposed earlier get hidden again and newly-hidden ones get caught.
+/mob/dead/observer/proc/ghost_t_ray_tick()
+	if(!ghost_t_ray || !client)
+		ghost_t_ray_timer = null
+		return
+	t_ray_scan(src, 8, 3)
+	ghost_t_ray_timer = addtimer(CALLBACK(src, TYPE_PROC_REF(/mob/dead/observer, ghost_t_ray_tick)), 1 SECONDS, TIMER_STOPPABLE)
 
 /mob/dead/observer/verb/restore_ghost_appearance()
 	set name = "Restore Ghost Character"

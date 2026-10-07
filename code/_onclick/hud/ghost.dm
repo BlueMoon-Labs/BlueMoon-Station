@@ -45,26 +45,30 @@
 	var/mob/dead/observer/G = usr
 	G.open_spawners_menu()
 
-/// Guests are usually ghosts, and the sleeper panel is a walk away, so it gets a
-/// button. Uses the sleeper icon because the ghost icon file has nothing that
-/// reads as a game.
-/atom/movable/screen/ghost/deathmatch
-	name = "Deathmatch"
-	icon = 'icons/obj/machines/sleeper.dmi'
-	icon_state = "sleeper"
+/atom/movable/screen/ghost/dnr
+	name = "Do Not Resuscitate"
+	icon = 'icons/mob/screen_ghost_extra.dmi'
+	icon_state = "dnr"
 
-/// Opens the panel on a nearby sleeper instead of dropping the guest into a game.
-///
-/// This used to grab whichever lobby had room and seat them there, which took
-/// away the two choices a guest is supposed to make: which mode to play, and what
-/// to spawn wearing. The loadout in particular cannot be picked anywhere else,
-/// since the roster closes the moment the host starts the match.
-/atom/movable/screen/ghost/deathmatch/Click()
+/atom/movable/screen/ghost/dnr/Click()
 	var/mob/dead/observer/G = usr
-	// Anywhere on the map, not next to a machine. A guest has no hands and no body
-	// to put in a sleeper, so demanding they stand next to one was a dead end: the
-	// whole point of the browser is that anybody can join from the afterlife.
-	open_deathmatch_browser(G)
+	G.stay_dead()
+
+/atom/movable/screen/ghost/options
+	name = "Ghost Settings"
+	icon = 'icons/mob/screen_ghost_extra.dmi'
+	icon_state = "settings"
+
+/atom/movable/screen/ghost/options/Click()
+	GLOB.ghost_menu.ui_interact(usr)
+
+/atom/movable/screen/ghost/minigames
+	name = "Minigames"
+	icon = 'icons/mob/screen_ghost_extra.dmi'
+	icon_state = "minigames"
+
+/atom/movable/screen/ghost/minigames/Click()
+	GLOB.minigames_menu.ui_interact(usr)
 
 /datum/hud/ghost/New(mob/owner)
 	..()
@@ -90,8 +94,16 @@
 	using.screen_loc = ui_ghost_spawners
 	static_inventory += using
 
-	using = new /atom/movable/screen/ghost/deathmatch(null, src)
-	using.screen_loc = ui_ghost_deathmatch
+	using = new /atom/movable/screen/ghost/dnr(null, src)
+	using.screen_loc = ui_ghost_dnr
+	static_inventory += using
+
+	using = new /atom/movable/screen/ghost/options(null, src)
+	using.screen_loc = ui_ghost_options
+	static_inventory += using
+
+	using = new /atom/movable/screen/ghost/minigames(null, src)
+	using.screen_loc = ui_ghost_minigames
 	static_inventory += using
 
 	// Z

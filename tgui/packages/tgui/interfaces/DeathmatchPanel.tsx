@@ -50,12 +50,13 @@ type PanelData = {
   lobby_name: string;
   lobby_running: BooleanLike;
   lobby_is_host: BooleanLike;
+  your_balance: number;
   // ui_static_data is merged into data by backend.ts, not kept apart.
   modes?: ModeRow[];
 };
 
 // [map, display name, description, host, running, players, spectators, max, min,
-//  joinable, free to join something]
+//  joinable, free to join something, stake M$]
 type LobbyRow = [
   string,
   string,
@@ -68,6 +69,7 @@ type LobbyRow = [
   number,
   BooleanLike,
   BooleanLike,
+  number,
 ];
 
 // [name, display name, description, min players, max players]
@@ -82,6 +84,7 @@ const SPECTATORS = 6;
 const MAX = 7;
 const JOINABLE = 9;
 const FREE_TO_JOIN = 10;
+const STAKE = 11;
 
 const MODE_NAME = 0;
 const MODE_DISPLAY = 1;
@@ -227,10 +230,19 @@ function MachinePane(props) {
 
 function LobbyPane(props) {
   const { data } = useBackend<PanelData>();
-  const { lobbies = [] } = data;
+  const { lobbies = [], your_balance = 0 } = data;
 
   return (
-    <Section fill scrollable title="Open Lobbies">
+    <Section
+      fill
+      scrollable
+      title="Open Lobbies"
+      buttons={
+        <Box color="gold">
+          {your_balance} M$
+        </Box>
+      }
+    >
       <Table>
         <Table.Row header>
           <Table.Cell>Host</Table.Cell>
@@ -268,7 +280,7 @@ function LobbyPane(props) {
 function LobbyDisplay(props) {
   const { act, data } = useBackend<PanelData>();
   const { lobby } = props;
-  const { in_lobby, lobby_map } = data;
+  const { in_lobby, lobby_map, your_balance = 0 } = data;
 
   const map = lobby[MAP];
   // Already in this one: the button becomes View rather than being greyed out,
@@ -276,11 +288,14 @@ function LobbyDisplay(props) {
   // questions and the panel has to answer both.
   const isThis = lobby_map === map;
   const blocked = !!in_lobby && !isThis;
+  // A competitive lobby costs stake M$ to enter. The server does the real check on
+  // join; this just tells the player why the button is dead before they click.
+  const tooPoor = !!lobby[STAKE] && your_balance < lobby[STAKE];
   // Two different questions, so two different answers. A full arena cannot be joined
   // but can still be watched, and a running one cannot be joined at all because the
   // roster closed - neither of which is a reason to hide Spectate. Hiding both
   // behind `joinable` is what left a guest with a row of dead buttons.
-  const joinable = !!lobby[JOINABLE] && !blocked;
+  const joinable = !!lobby[JOINABLE] && !blocked && !tooPoor;
   const spectatable = !blocked;
 
   let buttons;
@@ -294,6 +309,28 @@ function LobbyDisplay(props) {
       >
         View
       </Button>
+    );
+  } else if (tooPoor && !!lobby[JOINABLE] && !blocked) {
+    buttons = (
+      <Stack spacing="0">
+        <Button
+          color="good"
+          width="100%"
+          textAlign="center"
+          disabled
+          tooltip="Entry costs stake. You need more M$."
+        >
+          {lobby[STAKE]} M$
+        </Button>
+        <Button
+          color="average"
+          width="100%"
+          textAlign="center"
+          onClick={() => act('spectate_lobby', { map })}
+        >
+          Spectate
+        </Button>
+      </Stack>
     );
   } else if (joinable) {
     buttons = (
@@ -361,6 +398,12 @@ function LobbyDisplay(props) {
           <Box as="span" color="average">
             {' '}
             (running)
+          </Box>
+        )}
+        {!!lobby[STAKE] && (
+          <Box as="span" color="gold">
+            {' '}
+            {lobby[STAKE]} M$
           </Box>
         )}
       </Table.Cell>

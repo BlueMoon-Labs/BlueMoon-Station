@@ -26,6 +26,22 @@ proc/get_deathmatch_modifiers()
 		GLOB.deathmatch_modifiers += item
 	return GLOB.deathmatch_modifiers
 
+/**
+ * Resolves a catalogue entry to a live instance, or null.
+ *
+ * The catalogue is built from subtypesof(), which hands out type paths, and the
+ * window sends those paths back through TGUI as plain strings. Both a raw path
+ * and a string can end up cast into a /datum var, and calling a proc on that
+ * mixed value dies at runtime with "Cannot execute /datum/... (...).selectable()".
+ * So the path is resolved with text2path() and instantiated by hand; only a real
+ * instance ever leaves here.
+ */
+proc/get_deathmatch_modifier_instance(modifier_path)
+	var/modifier_type = ispath(modifier_path) ? modifier_path : text2path(modifier_path)
+	if(!(modifier_type in subtypesof(/datum/deathmatch_modifier)))
+		return null
+	return new modifier_type()
+
 /datum/deathmatch_modifier
 	/// Shown in the modifier list.
 	var/name = "Modifier"
@@ -184,9 +200,9 @@ proc/get_deathmatch_modifiers()
 	// to this file is eligible for the roll the day it is written.
 	var/list/pool = list()
 	for(var/modifier_path as anything in get_deathmatch_modifiers())
-		var/datum/deathmatch_modifier/modifier = modifier_path
+		var/datum/deathmatch_modifier/modifier = get_deathmatch_modifier_instance(modifier_path)
 		// Never roll another randomiser: that is a loop, not a surprise.
-		if(modifier_path == /datum/deathmatch_modifier/random)
+		if(modifier?.type == /datum/deathmatch_modifier/random)
 			continue
 		// Already on, so rolling it again changes nothing and wastes a slot.
 		if(modifier_path in lobby.selected_modifiers)

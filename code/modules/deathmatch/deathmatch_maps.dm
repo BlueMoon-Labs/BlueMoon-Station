@@ -190,7 +190,7 @@ proc/get_deathmatch_loadout(path)
 	mappath = "_maps/deathmatch/secu_ring.dmm"
 	min_players = 2
 	max_players = 4
-	loadout = /datum/outfit/vr/deathmatch_loadout/disabler
+	loadout = /datum/outfit/vr/deathmatch_loadout/officer
 	loadout_options = list(/datum/outfit/vr/deathmatch_loadout/butt_naked)
 
 /datum/map_template/deathmatch/instagib
@@ -210,8 +210,18 @@ proc/get_deathmatch_loadout(path)
 	mappath = "_maps/deathmatch/finaldestination.dmm"
 	min_players = 2
 	max_players = 8
-	loadout = /datum/outfit/vr/deathmatch_loadout/sidearm
-	loadout_options = list(/datum/outfit/vr/deathmatch_loadout/butt_naked)
+	loadout = /datum/outfit/vr/deathmatch_loadout/captain
+	loadout_options = list(
+		/datum/outfit/vr/deathmatch_loadout/head_of_security,
+		/datum/outfit/vr/deathmatch_loadout/traitor,
+		/datum/outfit/vr/deathmatch_loadout/nukie,
+		/datum/outfit/vr/deathmatch_loadout/tider,
+		/datum/outfit/vr/deathmatch_loadout/abductor,
+		/datum/outfit/vr/deathmatch_loadout/master_chef,
+		/datum/outfit/vr/deathmatch_loadout/clown_commando,
+		/datum/outfit/vr/deathmatch_loadout/mime,
+		/datum/outfit/vr/deathmatch_loadout/pete,
+	)
 
 /datum/map_template/deathmatch/sniper_elite
 	name = "Deathmatch - Sniper Elite"
@@ -234,4 +244,5 @@ proc/get_deathmatch_loadout(path)
 	loadout_options = list(
 		/datum/outfit/vr/deathmatch_loadout/butt_naked,
 		/datum/outfit/vr/deathmatch_loadout/brawler,
+		/datum/outfit/vr/deathmatch_loadout/sidearm,
 	)

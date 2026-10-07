@@ -148,6 +148,7 @@ GLOBAL_DATUM_INIT(deathmatch_browser_state, /datum/ui_state/deathmatch_browser_s
 		// and a running one cannot be joined at all because the roster closed.
 		UNTYPED_LIST_ADD(row, !lobby.is_full() && lobby.state == DM_LOBBY_WAITING)
 		UNTYPED_LIST_ADD(row, !get_deathmatch_lobby_of(user?.ckey))
+		UNTYPED_LIST_ADD(row, lobby.stake)
 		UNTYPED_LIST_ADD(lobbies, row)
 	return lobbies
 
@@ -162,6 +163,7 @@ GLOBAL_DATUM_INIT(deathmatch_browser_state, /datum/ui_state/deathmatch_browser_s
 	data["lobby_name"] = mine?.template?.display_name
 	data["lobby_running"] = mine?.state == DM_LOBBY_RUNNING
 	data["lobby_is_host"] = mine?.is_host(user?.ckey) || FALSE
+	data["your_balance"] = user?.ckey ? SSmetadollars.get_metadollars(user.ckey) : 0
 	return data
 
 /**

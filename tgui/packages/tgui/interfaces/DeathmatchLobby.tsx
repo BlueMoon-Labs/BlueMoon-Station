@@ -11,6 +11,7 @@ import {
   LabeledList,
   Modal,
   NoticeBox,
+  NumberInput,
   Section,
   Stack,
   Table,
@@ -63,6 +64,13 @@ type Data = {
   time_left: string;
   can_start: BooleanLike;
   start_refusal: string;
+  stake: number;
+  stake_locked: BooleanLike;
+  pot: number;
+  dm_min_stake: number;
+  dm_max_stake: number;
+  dm_stake_step: number;
+  your_balance: number;
   players?: PlayerRow[];
   selected_modifiers?: string[];
   your_loadout: string;
@@ -410,8 +418,21 @@ function AdminDropdown(props) {
 }
 
 function SideColumn(props) {
-  const { data } = useBackend<Data>();
-  const { is_host, player_count, selected_modifiers = [], state } = data;
+  const { act, data } = useBackend<Data>();
+  const {
+    is_host,
+    player_count,
+    selected_modifiers = [],
+    state,
+    stake,
+    stake_locked,
+    pot,
+    dm_min_stake,
+    dm_max_stake,
+    dm_stake_step,
+    your_balance,
+  } = data;
+  const [stakeInput, setStakeInput] = useState(stake || 0);
 
   return (
     <Section fill scrollable title="Arena">
@@ -430,6 +451,65 @@ function SideColumn(props) {
           <Button textAlign="center" fluid onClick={props.onOpenMods}>
             Modifiers
           </Button>
+        </>
+      )}
+      <Divider />
+      <Box bold mb={1}>
+        Competitive Stake
+      </Box>
+      {stake > 0 ? (
+        <LabeledList>
+          <LabeledList.Item label="Entry cost">{stake} M$</LabeledList.Item>
+          <LabeledList.Item label="Pot">
+            <Box color="good" bold>
+              {pot} M$
+            </Box>
+          </LabeledList.Item>
+          <LabeledList.Item label="Your balance">
+            <Box color={your_balance >= stake ? 'good' : 'bad'}>
+              {your_balance} M$
+            </Box>
+          </LabeledList.Item>
+        </LabeledList>
+      ) : (
+        <Box color="label" mb={1}>
+          Free entry
+        </Box>
+      )}
+      {!!is_host && state !== 'running' && (
+        <>
+          <Stack mt={1} align="center">
+            <Stack.Item grow>
+              <NumberInput
+                value={stakeInput}
+                minValue={0}
+                maxValue={dm_max_stake}
+                step={dm_stake_step}
+                stepPixelSize={5}
+                width="100%"
+                disabled={!!stake_locked}
+                onChange={(event, value) => setStakeInput(value)}
+              />
+            </Stack.Item>
+            <Stack.Item>
+              <Button
+                color={stakeInput > 0 ? 'caution' : 'green'}
+                disabled={!!stake_locked}
+                tooltip={stake_locked ? 'Locked while other players are seated.' : null}
+                onClick={() => {
+                  act('set_stake', { stake: stakeInput });
+                  setStakeInput(0);
+                }}
+              >
+                Set
+              </Button>
+            </Stack.Item>
+          </Stack>
+          {!!stake_locked && (
+            <Box color="label" mt={1}>
+              The stake is locked once another player has seated.
+            </Box>
+          )}
         </>
       )}
       <Divider />

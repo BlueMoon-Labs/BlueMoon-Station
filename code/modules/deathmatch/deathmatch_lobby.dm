@@ -44,6 +44,11 @@
 	/// spot in the player table, but they never count as combatants: not towards
 	/// the player minimum, not towards the cap, and not towards the win.
 	var/is_observer = FALSE
+	/// Whether this fighter has paid the lobby's stake. Observers never pay.
+	var/bet_paid = FALSE
+	/// The stake this fighter actually paid, captured at join time so a refund
+	/// after the host changes the lobby stake still returns the right amount.
+	var/paid_stake = 0
 
 /datum/deathmatch_lobby
 	/// ckey of the player who opened this lobby. Key into GLOB.deathmatch_lobbies.
@@ -67,6 +72,16 @@
 	var/game_time = 8 MINUTES
 	/// How often dead and abandoned arena bodies are swept up.
 	var/reap_interval = 5 SECONDS
+	/// Competitive stake in metadollars. 0 means the game is free to enter.
+	/// Set by the host before the match starts; fighters pay it on join.
+	var/stake = 0
+	/// Total metadollars currently in the pot (sum of all paid stakes).
+	/// Reset to 0 once the pot is paid out or refunded.
+	var/pot = 0
+	/// Minimum / maximum stake the host may set. Step is 5 M$.
+	var/static/const/DM_MIN_STAKE = 10
+	var/static/const/DM_MAX_STAKE = 1000
+	var/static/const/DM_STAKE_STEP = 5
 
 	// No cached /datum/tgui/ui here on purpose. There used to be one, and it was a
 	// bug waiting for a second player: try_update_ui() never checks that the UI it is
@@ -210,7 +225,7 @@
 	// Lobby-wide modifiers get their one chance to rewrite the game before the
 	// bodies go in, so that anything they add is in place for spawn_player().
 	for(var/modifier_path as anything in selected_modifiers)
-		var/datum/deathmatch_modifier/modifier = modifier_path
+		var/datum/deathmatch_modifier/modifier = get_deathmatch_modifier_instance(modifier_path)
 		if(isnull(modifier) || !modifier.selectable(src))
 			continue
 		try
@@ -284,11 +299,25 @@
 		to_chat(real_body, span_danger("You are already in this game."))
 		return FALSE
 
+	// Competitive stake: fighters pay on entry, spectators never do. Checked
+	// before the player datum is created so a refusal does not leave a half-seated
+	// row behind.
+	if(stake > 0 && !observe && player_key)
+		var/balance = SSmetadollars.get_metadollars(player_key)
+		if(balance < stake)
+			to_chat(real_body, span_danger("Entry to [template.display_name] costs [stake] M$. You have [balance] M$."))
+			return FALSE
+		SSmetadollars.metadollar_adjust(-stake, player_key, real_body.key)
+
 	var/datum/deathmatch_player/player = new()
 	player.ckey = player_key
 	player.real_body = real_body
 	player.is_host = is_host
 	player.is_observer = observe
+	player.bet_paid = (stake > 0 && !observe)
+	player.paid_stake = player.bet_paid ? stake : 0
+	if(player.bet_paid)
+		pot += stake
 	// NULL means "whatever the mode came with", resolved here so the TGUI can
 	// show the player what they will actually spawn with.
 	player.loadout = loadout || src.loadout
@@ -308,6 +337,8 @@
 
 	to_chat(real_body, span_boldnotice(template.display_name))
 	to_chat(real_body, span_notice("Loadout: [loadout_name(player.loadout)]."))
+	if(stake > 0)
+		to_chat(real_body, span_notice("Entry stake: [stake] M$. The winner takes the pot."))
 	if(is_host)
 		to_chat(real_body, span_notice("[players_needed()] more player(s) needed before you can start."))
 	else
@@ -333,9 +364,26 @@
  * Returns TRUE if they are in, FALSE with a reason sent to them if they are not.
  */
 /datum/deathmatch_lobby/proc/spawn_player(datum/deathmatch_player/player)
-	if(isnull(player) || isnull(player.real_body) || QDELETED(player.real_body))
+	if(isnull(player))
+		log_game("Deathmatch: [to_string()] could not seat unknown ckey: no player datum.")
 		return FALSE
+	// The body captured at join time can be destroyed while the lobby waits for
+	// players - an admin deleting it, the round cleaning a body up, the player
+	// ghosting away from a dying one. Never refuse a seat off a stale reference
+	// when its owner is demonstrably still here: their key now sits on another
+	// mob (usually their ghost), and that is the body they are going to come back
+	// out as. Look it up again before giving up.
+	if(isnull(player.real_body) || QDELETED(player.real_body))
+		var/mob/live = get_mob_by_key(player.ckey)
+		if(isnull(live) || QDELETED(live))
+			log_game("Deathmatch: [to_string()] could not seat [player.ckey || "unknown ckey"]: real body is missing or was deleted.")
+			return FALSE
+		player.real_body = live
 	var/mob/real_body = player.real_body
+	// One diagnostic line for every seat, however it ends: every failure below
+	// sounds the same in chat - "You left [game]: Your avatar could not be built."
+	// - and this pins down which one actually fired, and for what kind of body.
+	log_game("Deathmatch: seating [player.ckey] in [to_string()]: body=[real_body.type], mind=[real_body.mind ? "present" : "none"], stat=[real_body.stat], key=[real_body.key || "none"], observer=[player.is_observer]")
 	// Already in: begin_match() can be reached twice if the host double clicks.
 	if(!isnull(player.vr_body) && !QDELETED(player.vr_body))
 		return TRUE
@@ -344,6 +392,7 @@
 	// definition, and a lobby that has been torn down underneath is the one case
 	// where it might not be.
 	if(isnull(arena) || !arena.is_loaded())
+		log_game("Deathmatch: [to_string()] could not seat [player.ckey]: arena is not loaded.")
 		to_chat(real_body, span_danger("The arena is not loaded."))
 		return FALSE
 	// Observers arrive as ghosts, usually, and are simply walked into the arena.
@@ -356,6 +405,7 @@
 		var/obj/effect/landmark/deathmatch_player_spawn/observe_landmark = arena.get_spawn_point()
 		var/turf/observe_turf = get_turf(isnull(observe_landmark) ? arena.get_fallback_spawn_point() : observe_landmark)
 		if(isnull(observe_turf))
+			log_game("Deathmatch: [to_string()] could not seat observer [player.ckey]: no turf on the arena.")
 			to_chat(real_body, span_danger("[arena.get_name()] has nowhere to put you."))
 			return FALSE
 		player.spawn_landmark = isobj(observe_landmark) ? observe_landmark : null
@@ -374,6 +424,7 @@
 	var/obj/effect/landmark/deathmatch_player_spawn/spawn_landmark = arena.get_spawn_point()
 	var/turf/spawn_turf = get_turf(isnull(spawn_landmark) ? arena.get_fallback_spawn_point() : spawn_landmark)
 	if(isnull(spawn_turf))
+		log_game("Deathmatch: [to_string()] could not seat [player.ckey]: no spawn turf on the arena.")
 		to_chat(real_body, span_danger("[arena.get_name()] has nowhere to put you."))
 		return FALSE
 
@@ -381,31 +432,58 @@
 	// rest of the game and the last arrivals stack up in the corner.
 	player.spawn_landmark = isobj(spawn_landmark) ? spawn_landmark : null
 
-	var/mob/living/carbon/human/vr_body = new(spawn_turf)
-	// build_virtual_character() is what gives the body a mind, and
-	// virtual_reality/Initialize() refuses a mob without one, so the character
-	// has to be built before the component is added. It also equips the loadout.
-	if(isnull(vr_body) || !vr_body.build_virtual_character(real_body, player.loadout))
-		QDEL_NULL(vr_body)
-		to_chat(real_body, span_danger("Your virtual avatar could not be built."))
-		return FALSE
-	vr_body.updateappearance(TRUE, TRUE, TRUE)
+	var/mob/living/carbon/human/vr_body
+	var/datum/component/virtual_reality/VR
+	// The whole seat is fenced: a runtime anywhere in it would otherwise unwind
+	// spawn_player() with a null return, and begin_match() reads exactly that as
+	// "could not be built" and boots the player without telling them why. Logged
+	// with the line it died on here instead, and the player hears a distinct
+	// message so the error is not mistaken for a refusal.
+	try
+		vr_body = new(spawn_turf)
+		// build_virtual_character() is what gives the body a mind, and
+		// virtual_reality/Initialize() refuses a mob without one, so the character
+		// has to be built before the component is added. It also equips the loadout.
+		if(isnull(vr_body) || !vr_body.build_virtual_character(real_body, player.loadout))
+			log_game("Deathmatch: [to_string()] could not seat [player.ckey]: virtual avatar failed to build ([isnull(vr_body) ? "no body" : "build_virtual_character returned FALSE"]).")
+			QDEL_NULL(vr_body)
+			to_chat(real_body, span_danger("Your virtual avatar could not be built."))
+			return FALSE
+		vr_body.updateappearance(TRUE, TRUE, TRUE)
 
-	var/datum/component/virtual_reality/VR = vr_body.AddComponent(/datum/component/virtual_reality, FALSE)
-	if(isnull(VR))
-		QDEL_NULL(vr_body)
-		to_chat(real_body, span_danger("Virtual reality is unavailable on this avatar."))
-		return FALSE
-	// Guests are very often ghosts, and connect() turns away a dead mob without
-	// this. Cheap way of keeping the guest list from filling with people who then
-	// get bussed out of the arena.
-	VR.allow_ghost_connect = TRUE
-	if(!VR.connect(real_body))
-		// quit(cleanup = TRUE) hands the half finished session back before
-		// deleting the body, so the ckey is not left on a mob about to be qdel'd.
-		VR.quit(FALSE, TRUE)
-		QDEL_NULL(vr_body)
-		to_chat(real_body, span_danger("Transfer to [template.display_name] failed."))
+		VR = vr_body.AddComponent(/datum/component/virtual_reality, FALSE)
+		if(isnull(VR))
+			log_game("Deathmatch: [to_string()] could not seat [player.ckey]: AddComponent(virtual_reality) returned null.")
+			QDEL_NULL(vr_body)
+			to_chat(real_body, span_danger("Virtual reality is unavailable on this avatar."))
+			return FALSE
+		// Guests are very often ghosts, and connect() turns away a dead mob without
+		// this. Cheap way of keeping the guest list from filling with people who then
+		// get bussed out of the arena.
+		VR.allow_ghost_connect = TRUE
+		// A ghost real body sits in a deletion trap: the key transfer inside
+		// connect() calls Logout() on it, and observer/Logout() qdels any keyless
+		// ghost. Left alone, the ghost that is this player's ticket back out of the
+		// arena is deleted under the session before it can return to it.
+		if(isobserver(real_body))
+			var/mob/dead/observer/ghost_body = real_body
+			ghost_body.keep_while_keyless = TRUE
+		if(!VR.connect(real_body))
+			log_game("Deathmatch: [to_string()] could not seat [player.ckey]: virtual_reality.connect() refused.")
+			// quit(cleanup = TRUE) hands the half finished session back before
+			// deleting the body, so the ckey is not left on a mob about to be qdel'd.
+			VR.quit(FALSE, TRUE)
+			QDEL_NULL(vr_body)
+			if(isobserver(real_body))
+				var/mob/dead/observer/ghost_body = real_body
+				ghost_body.keep_while_keyless = FALSE
+			to_chat(real_body, span_danger("Transfer to [template.display_name] failed."))
+			return FALSE
+	catch(var/exception/seating_error)
+		log_game("Deathmatch: [to_string()] could not seat [player.ckey]: runtime while seating them - [seating_error.name] / [seating_error.desc]")
+		if(!isnull(vr_body) && !QDELETED(vr_body))
+			QDEL_NULL(vr_body)
+		to_chat(real_body, span_danger("An error stopped you being put into [template.display_name]. Tell an admin."))
 		return FALSE
 
 	player.vr_body = vr_body
@@ -414,7 +492,7 @@
 	// modifier that throws here is logged and skipped rather than taking the game
 	// down with it: the other players are already in the arena by now.
 	for(var/modifier_path as anything in selected_modifiers)
-		var/datum/deathmatch_modifier/modifier = modifier_path
+		var/datum/deathmatch_modifier/modifier = get_deathmatch_modifier_instance(modifier_path)
 		if(isnull(modifier) || !modifier.selectable(src))
 			continue
 		try
@@ -428,12 +506,34 @@
 
 /// Takes one player out of the arena and puts them back on the station. The arena
 /// body is deleted either way, so nothing is left behind to sweep up.
+/**
+ * Returns a fighter's stake to them and takes it back out of the pot.
+ *
+ * Called when a fighter leaves before the match starts, when the host changes
+ * the stake, and when a game ends with no winner. Once the match is running the
+ * stake is at risk and nobody gets it back.
+ */
+/datum/deathmatch_lobby/proc/refund_bet(datum/deathmatch_player/player)
+	if(isnull(player) || !player.bet_paid || player.paid_stake <= 0)
+		return
+	if(player.ckey)
+		SSmetadollars.metadollar_adjust(player.paid_stake, player.ckey, player.real_body?.key)
+		to_chat(player.real_body, span_notice("Your [player.paid_stake] M$ entry stake has been refunded."))
+	pot = max(0, pot - player.paid_stake)
+	player.bet_paid = FALSE
+	player.paid_stake = 0
+
 /datum/deathmatch_lobby/proc/remove_player(datum/deathmatch_player/player, reason = "")
 	if(isnull(player))
 		return FALSE
 	// A player still on the waiting roster has no arena body to hand anybody
 	// back to, so evict_body() has nothing to say to them and this does.
 	var/had_body = !isnull(player.vr_body) && !QDELETED(player.vr_body)
+	// Leaving before the match starts gets the stake back. Leaving mid-match does
+	// not: the pot is already committed and the remaining players are playing for
+	// it.
+	if(state == DM_LOBBY_WAITING)
+		refund_bet(player)
 	players -= player
 	var/message = reason ? "You left [template.display_name]: [reason]" : "You left [template.display_name]."
 	evict_body(player, message)
@@ -454,6 +554,22 @@
  * component's game_over() hook fires on COMSIG_PARENT_QDELETING, but
  * session_paused is already TRUE, so the transfer is not attempted twice.
  */
+/**
+ * The turf deathmatch participants go back to when a match ends.
+ *
+ * The observer_start landmark is where every ghost spawns at round start, so it
+ * is the one place on the station a returning player is guaranteed to recognise.
+ * Falls back to a random station turf if the landmark is missing (some maps do
+ * not have one).
+ */
+/datum/deathmatch_lobby/proc/get_deathmatch_return_turf()
+	var/obj/effect/landmark/observer_start/dropzone = locate(/obj/effect/landmark/observer_start) in GLOB.landmarks_list
+	if(dropzone)
+		var/turf/T = get_turf(dropzone)
+		if(T)
+			return T
+	return get_random_station_turf()
+
 /datum/deathmatch_lobby/proc/evict_body(datum/deathmatch_player/player, message = null)
 	if(isnull(player))
 		return FALSE
@@ -468,11 +584,18 @@
 	// in on, so they have to be walked back out: end_lobby() unloads the map right
 	// after this, and whatever is standing on it when that happens goes with it.
 	if(player.is_observer && !isnull(player.real_body) && !QDELETED(player.real_body))
-		var/turf/safe_turf = get_random_station_turf()
+		var/turf/safe_turf = get_deathmatch_return_turf()
 		if(!isnull(safe_turf))
 			player.real_body.forceMove(safe_turf)
 		return TRUE
 	if(isnull(vr_body) || QDELETED(vr_body))
+		// Even without a VR body, if the real body is an observer, park it at the
+		// station ghost spawn so it does not linger wherever the player happened
+		// to be when the game was torn down.
+		if(!isnull(player.real_body) && !QDELETED(player.real_body) && isobserver(player.real_body))
+			var/turf/safe_turf = get_deathmatch_return_turf()
+			if(!isnull(safe_turf))
+				player.real_body.forceMove(safe_turf)
 		return FALSE
 
 	var/datum/component/virtual_reality/VR = vr_body.GetComponent(/datum/component/virtual_reality)
@@ -480,6 +603,17 @@
 		VR.quit(FALSE, FALSE)
 		if(!isnull(message) && !isnull(player.real_body))
 			to_chat(player.real_body, span_notice(message))
+		// Fighters who died mid-match are back in their real body by now, which is
+		// an observer. Park it at the station ghost spawn instead of wherever it
+		// was before the game started, and lift the deletion guard spawn_player()
+		// put up for the session: the ghost is a real body again the moment its
+		// key comes back, and should live and die as any other ghost would.
+		if(!isnull(player.real_body) && !QDELETED(player.real_body) && isobserver(player.real_body))
+			var/mob/dead/observer/ghost_body = player.real_body
+			ghost_body.keep_while_keyless = FALSE
+			var/turf/safe_turf = get_deathmatch_return_turf()
+			if(!isnull(safe_turf))
+				player.real_body.forceMove(safe_turf)
 	qdel(vr_body)
 	return TRUE
 
@@ -593,11 +727,42 @@
 	// the winner of a game they sat out would not be.
 	if(isnull(winner))
 		to_chat(world, span_boldnotice("Nobody wins [template.display_name]."))
+		// No winner means no payout: the pot goes back to whoever paid in.
+		refund_all_bets()
 		return
 	var/who = winner_name(winner)
 	if(!isnull(winner) && !isnull(winner.vr_body) && !QDELETED(winner.vr_body))
 		to_chat(winner.vr_body, span_boldnotice("You are the last one standing in [template.display_name]."))
 	to_chat(world, span_boldnotice("[who] wins [template.display_name]!"))
+	// Competitive stake: the winner takes the whole pot.
+	if(pot > 0)
+		var/payout = pot
+		pot = 0
+		if(winner.ckey)
+			SSmetadollars.metadollar_adjust(payout, winner.ckey, winner.real_body?.key)
+			to_chat(world, span_boldnotice("[who] takes the [payout] M$ pot!"))
+		else
+			to_chat(world, span_boldnotice("The [payout] M$ pot evaporated: the winner has no ckey."))
+
+/**
+ * Refunds every fighter who is still holding a paid stake.
+ *
+ * Used when a game ends with no winner and when the host changes the stake.
+ * Already-dead fighters were reaped out of the players list before this runs,
+ * so their stake stays in the pot and is not refunded here: they died, the
+ * remaining players are playing for it.
+ */
+/datum/deathmatch_lobby/proc/refund_all_bets()
+	if(pot <= 0)
+		return
+	var/refunded = 0
+	for(var/datum/deathmatch_player/player as anything in players)
+		if(!player.bet_paid || player.paid_stake <= 0)
+			continue
+		refund_bet(player)
+		refunded++
+	if(refunded)
+		to_chat(world, span_notice("The [refunded] entry stake(s) for [template.display_name] have been refunded."))
 
 /**
  * Tears the lobby down: everybody home, arena deleted, entry unregistered.
@@ -611,10 +776,15 @@
 		return FALSE
 	state = DM_LOBBY_FINISHED
 
+	// If the pot was not paid out (host ended early, time ran out, nobody won),
+	// it goes back to the fighters who put money in. announce_victory() already
+	// zeroed the pot when somebody did win, so this is a no-op in that case.
+	refund_all_bets()
+
 	// Modifiers get told first, while the arena still exists: anything they clean
 	// up has to happen before the map is handed back to SSmapping.
 	for(var/modifier_path as anything in selected_modifiers)
-		var/datum/deathmatch_modifier/modifier = modifier_path
+		var/datum/deathmatch_modifier/modifier = get_deathmatch_modifier_instance(modifier_path)
 		if(isnull(modifier))
 			continue
 		try
@@ -912,6 +1082,19 @@ proc/close_sleeper_panels(mob/user)
 	if(!observe && is_full())
 		to_chat(player.real_body, span_danger("[template.display_name] is full ([template.max_players] players)."))
 		return FALSE
+	// Switching from fighter to observer: refund the stake they already paid.
+	// Switching from observer to fighter: charge the current stake.
+	if(observe && player.bet_paid)
+		refund_bet(player)
+	if(!observe && stake > 0 && player.ckey)
+		var/balance = SSmetadollars.get_metadollars(player.ckey)
+		if(balance < stake)
+			to_chat(player.real_body, span_danger("Entry to [template.display_name] costs [stake] M$. You have [balance] M$."))
+			return FALSE
+		SSmetadollars.metadollar_adjust(-stake, player.ckey, player.real_body?.key)
+		player.bet_paid = TRUE
+		player.paid_stake = stake
+		pot += stake
 	player.is_observer = observe
 	// Ready is a promise to fight. Handing it back on the way out means a
 	// spectator cannot sit on the host's "everyone said yes" count.
@@ -921,6 +1104,8 @@ proc/close_sleeper_panels(mob/user)
 		to_chat(player.real_body, span_notice("You are now watching [template.display_name]."))
 	else
 		to_chat(player.real_body, span_notice("You are fighting in [template.display_name]. Loadout: [loadout_name(player.loadout)]."))
+		if(stake > 0)
+			to_chat(player.real_body, span_notice("Entry stake: [stake] M$. The winner takes the pot."))
 	return TRUE
 
 /datum/deathmatch_lobby/proc/set_ready(datum/deathmatch_player/player, ready)
@@ -1029,7 +1214,7 @@ proc/close_sleeper_panels(mob/user)
 		if(!player.is_observer && !isnull(player.real_body) && !QDELETED(player.real_body))
 			to_chat(player.real_body, span_notice("[new_map.display_name] does not allow [loadout_name(rejected)], so you are on the default now."))
 	for(var/modifier_path as anything in selected_modifiers.Copy())
-		var/datum/deathmatch_modifier/modifier = modifier_path
+		var/datum/deathmatch_modifier/modifier = get_deathmatch_modifier_instance(modifier_path)
 		if(isnull(modifier))
 			selected_modifiers -= modifier_path
 			continue
@@ -1049,14 +1234,10 @@ proc/close_sleeper_panels(mob/user)
  * forbids cannot be switched on in the first place.
  */
 /datum/deathmatch_lobby/proc/set_modifier(modifier_path, enabled)
-	if(isnull(modifier_path) || !ispath(modifier_path))
+	var/datum/deathmatch_modifier/modifier = get_deathmatch_modifier_instance(modifier_path)
+	if(isnull(modifier) || !modifier.selectable(src))
 		return FALSE
-	var/modifier_type = modifier_path
-	if(!(modifier_type in subtypesof(/datum/deathmatch_modifier)))
-		return FALSE
-	var/datum/deathmatch_modifier/modifier = modifier_type
-	if(!modifier.selectable(src))
-		return FALSE
+	var/modifier_type = modifier.type
 	if(enabled)
 		if(modifier_type in selected_modifiers)
 			return FALSE
@@ -1121,12 +1302,11 @@ proc/close_sleeper_panels(mob/user)
 	.["loadouts"] = loadouts
 	var/list/modifiers = list()
 	for(var/modifier_path as anything in get_deathmatch_modifiers())
-		var/datum/deathmatch_modifier/modifier = modifier_path
-		var/datum/deathmatch_modifier/instance = modifier
+		var/datum/deathmatch_modifier/instance = get_deathmatch_modifier_instance(modifier_path)
 		if(isnull(instance) || !instance.selectable(src))
 			continue
 		var/list/modifier_row = list()
-		UNTYPED_LIST_ADD(modifier_row, modifier_path)
+		UNTYPED_LIST_ADD(modifier_row, instance.type)
 		UNTYPED_LIST_ADD(modifier_row, instance.name)
 		UNTYPED_LIST_ADD(modifier_row, instance.description)
 		UNTYPED_LIST_ADD(modifier_row, instance.lobby_wide)
@@ -1155,6 +1335,12 @@ proc/close_sleeper_panels(mob/user)
 	.["is_host"] = hosting
 	.["are_you_in"] = !isnull(you)
 	.["you_are_observer"] = you?.is_observer || FALSE
+	.["stake"] = stake
+	.["pot"] = pot
+	.["dm_min_stake"] = DM_MIN_STAKE
+	.["dm_max_stake"] = DM_MAX_STAKE
+	.["dm_stake_step"] = DM_STAKE_STEP
+	.["stake_locked"] = seat_count() > 1
 	var/time_left = 0
 	if(state == DM_LOBBY_RUNNING && !isnull(time_started))
 		time_left = max(0, game_time - (world.time - time_started))
@@ -1294,7 +1480,43 @@ proc/close_sleeper_panels(mob/user)
 		if("toggle_modifier")
 			if(!hosting || state != DM_LOBBY_WAITING)
 				return FALSE
-			set_modifier(params["modifier"], !(params["modifier"] in selected_modifiers))
+			// text2path() before the membership test. The window sends the path
+			// back as plain text, and `in` against a list of stored type paths
+			// never matches that text - the exact trap the loadout picker fell
+			// into. Compared path against path, a selector that is already on
+			// reads as on, so the second click turns it off instead of silently
+			// re-enabling it and making the box impossible to uncheck.
+			var/modifier_type = text2path(params["modifier"])
+			if(modifier_type in subtypesof(/datum/deathmatch_modifier))
+				set_modifier(modifier_type, !(modifier_type in selected_modifiers))
+
+		if("set_stake")
+			// Host only, and only while the roster is still open: once the match
+			// starts the pot is committed and changing the entry fee would refund
+			// some players and not others. Also frozen as soon as anybody else is
+			// at the table: a fighter who already paid the old rate joined under
+			// one deal, and refunding everybody to re-cut the stake under them is
+			// the same churn as the mid-game version, smaller table.
+			if(!hosting || state != DM_LOBBY_WAITING || seat_count() > 1)
+				return FALSE
+			var/new_stake = text2num(params["stake"])
+			if(!isnum(new_stake))
+				return FALSE
+			// 0 disables the stake entirely; anything else snaps to the step.
+			if(new_stake <= 0)
+				new_stake = 0
+			else
+				new_stake = clamp(round(new_stake / DM_STAKE_STEP) * DM_STAKE_STEP, DM_MIN_STAKE, DM_MAX_STAKE)
+			if(new_stake == stake)
+				return FALSE
+			// Changing the stake refunds everybody who already paid at the old
+			// rate, so the new number applies cleanly to the next fighter in.
+			refund_all_bets()
+			stake = new_stake
+			if(stake > 0)
+				to_chat(world, span_notice("[host_display_name()] set the [template.display_name] entry stake to [stake] M$."))
+			else
+				to_chat(world, span_notice("[host_display_name()] disabled the entry stake for [template.display_name]."))
 
 		if("leave_game")
 			remove_player(you, "you left")
