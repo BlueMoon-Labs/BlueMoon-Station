@@ -52,12 +52,11 @@
 	var/datum/still_alive = locate(target["ref"])
 	TEST_ASSERT(isnull(still_alive) || !QDELING(still_alive), "[label] пережил qdel и не собран (внешних держателей: [recorded_holders(target["type_path"])])")
 
-/// ДИАГНОСТИКА: если цель ещё жива после qdel, пишет полный скан держателей
-/// в data/logs/<раунд>/harddels.log. Вызывать строго между qdel и GC-прогоном.
-/datum/unit_test/harddel_9813_base/proc/scan_holders(list/target, stage = "после qdel")
+/// ДИАГНОСТИКА: если цель пережила GC-прогон, пишет полный скан держателей
+/// в data/logs/<раунд>/harddels.log. Скан обходит весь мир, поэтому только на провале.
+/datum/unit_test/harddel_9813_base/proc/scan_holders(list/target, stage = "после GC-прогона")
 	var/datum/leaked = locate(target["ref"])
-	if(!leaked)
-		log_reftracker("=== ТЕСТ [target["label"]] ([stage]): цель уже собрана ===")
+	if(!leaked || !QDELING(leaked))
 		return
 	// EXTERNAL_REFCOUNT уже вычитает локалку этого фрейма.
 	var/holders = EXTERNAL_REFCOUNT(leaked)
@@ -140,7 +139,6 @@
 
 	begin_isolated_gc()
 	var/list/record = qdel_backseat_directly()
-	scan_holders(record)
 	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	scan_holders(record, "после GC-прогона")
 	assert_soft_collected(record)
@@ -352,14 +350,12 @@
 /datum/unit_test/gc_cryo_despawn_releases_occupant/Run()
 	begin_isolated_gc()
 	var/list/record = despawn_via_cryo()
-	scan_holders(record)
 	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	scan_holders(record, "после GC-прогона")
 	assert_soft_collected(record)
 
 	begin_isolated_gc()
 	var/list/pod_record = despawn_via_pod()
-	scan_holders(pod_record)
 	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	scan_holders(pod_record, "после GC-прогона (под)")
 	assert_soft_collected(pod_record)

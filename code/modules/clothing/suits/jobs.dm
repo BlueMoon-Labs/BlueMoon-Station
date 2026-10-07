@@ -9,6 +9,9 @@
 	icon_state = "apron"
 	item_state = "apron"
 	blood_overlay_type = "armor"
+	icon = 'icons/obj/clothing/suits/apron.dmi'
+	mob_overlay_icon = 'icons/mob/clothing/suit/apron/apron.dmi'
+	anthro_mob_worn_overlay = 'icons/mob/clothing/suit/apron/apron_digi.dmi'
 	body_parts_covered = CHEST|GROIN
 	allowed = list(/obj/item/reagent_containers/spray/plantbgone, /obj/item/plant_analyzer, /obj/item/seeds, /obj/item/reagent_containers/glass/bottle, /obj/item/reagent_containers/glass/beaker, /obj/item/cultivator, /obj/item/reagent_containers/spray/pestspray, /obj/item/hatchet, /obj/item/storage/bag/plants)
 
@@ -91,7 +94,7 @@
 /obj/item/clothing/suit/apron/chef
 	name = "cook's apron"
 	desc = "A basic, dull, white chef's apron."
-	icon_state = "apronchef"
+	icon_state = "chef"
 	item_state = "apronchef"
 	blood_overlay_type = "armor"
 	body_parts_covered = CHEST|GROIN

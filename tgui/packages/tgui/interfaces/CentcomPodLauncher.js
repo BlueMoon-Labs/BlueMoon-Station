@@ -209,6 +209,7 @@ const STYLES = [
   { title: 'Syndicate' },
   { title: 'Deathsquad' },
   { title: 'Cultist' },
+  { title: 'Combine Canister' },
   { title: 'Missile' },
   { title: 'Syndie Missile' },
   { title: 'Supply Box' },

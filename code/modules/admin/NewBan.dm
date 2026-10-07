@@ -64,7 +64,12 @@ GLOBAL_PROTECT(Banlist)
 	if(!CONFIG_GET(flag/ban_legacy_system))
 		return
 
+#ifdef UNIT_TESTS
+	// The world holds this savefile open all round: parallel test shards each need their own.
+	var/banlist_path = "data/unit_tests/[unit_test_shard_subdir()]banlist.bdb"
+#else
 	var/banlist_path = "data/banlist.bdb"
+#endif
 	var/banlist_lock_path = "[banlist_path].lk"
 	if(fexists(banlist_lock_path))
 		fdel(banlist_lock_path)

@@ -104,7 +104,7 @@
 	description = "NT default research technologies."
 	// Default research tech, prevents bricking
 	design_ids = list("cable_coil_30", "basic_matter_bin", "basic_cell", "basic_scanning", "basic_capacitor", "basic_micro_laser", "micro_mani", "desttagger", "handlabel", "packagewrap",
-	"destructive_analyzer", "circuit_imprinter", "circuit_imprinter_science", "circuit_imprinter_robotic", "experimentor", "rdconsole", "bepis", "design_disk", "tech_disk", "rdserver", "rdservercontrol", "mechfab", "paystand",
+	"destructive_analyzer", "circuit_imprinter", "circuit_imprinter_science", "circuit_imprinter_robotic", "experimentor", "rdconsole", "bepis", "design_disk", "tech_disk", "rdserver", "rdservercontrol", "mechfab", "paystand", "cell_charger",
 	"vendatray", "space_heater", "electrolyzer", "beaker", "large_beaker","sec_shellclip", "xlarge_beaker", "spray_bottle", "mop", "bucket", "broom", "hypovial", "large_hypovial", "syringe", "pillbottle",
 	"sec_beanbag", "sec_rshot", "sec_bshot", "sec_slug", "sec_islug", "sec_dart", "sec_38", "sec_38lethal", "sec_missiles",
 	"rglass","plasteel","plastitanium","plasmaglass","plasmareinforcedglass","titaniumglass","plastitaniumglass", "salestagger",
