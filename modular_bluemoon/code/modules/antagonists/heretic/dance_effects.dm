@@ -347,6 +347,15 @@
 		return "святая вода смыла мелодию"
 	return null
 
+/datum/eldritch_knowledge/base_dance/proc/announce_partner(mob/living/user, mob/living/partner, time)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(heretic?.hunt_target && heretic.hunt_target == partner.mind)
+		to_chat(user, span_eldritch("[partner] - ваш партнёр на [DisplayTimeText(time)]. Коснитесь партнёра живым сердцем: пока вы выбираете дверь, танец держит цель."))
+		user.balloon_alert(user, "сердцем - в изнанку!")
+	else
+		to_chat(user, span_eldritch("[partner] - ваш партнёр на [DisplayTimeText(time)]. Это не цель охоты: в изнанку не увести, но фигура Вальса поведёт партнёра за собой."))
+	SEND_SIGNAL(src, COMSIG_HERETIC_DANCE_EVENT, "partner", partner, null)
+
 /datum/status_effect/heretic_dance/invited/proc/complete()
 	if(QDELETED(src))
 		return
@@ -358,13 +367,7 @@
 		heretic_dance_combat_deed(user, owner)
 		owner.apply_status_effect(/datum/status_effect/heretic_dance/partner, dance)
 		owner.visible_message(span_danger("[owner] в последнем па оказывается в руках [user]."), span_userdanger("Танец приводит вас прямо в руки [user]!"))
-		var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-		if(heretic?.hunt_target && heretic.hunt_target == owner.mind)
-			to_chat(user, span_eldritch("[owner] - ваш партнёр на [DisplayTimeText(HERETIC_DANCE_PARTNER_TIME)]. Коснитесь партнёра живым сердцем: пока вы выбираете дверь, танец держит цель."))
-			user.balloon_alert(user, "сердцем - в изнанку!")
-		else
-			to_chat(user, span_eldritch("[owner] - ваш партнёр на [DisplayTimeText(HERETIC_DANCE_PARTNER_TIME)]. Это не цель охоты: в изнанку не увести, но фигура Вальса поведёт партнёра за собой."))
-		SEND_SIGNAL(dance, COMSIG_HERETIC_DANCE_EVENT, "partner", owner, null)
+		dance.announce_partner(user, owner, HERETIC_DANCE_PARTNER_TIME)
 	held_since = world.time - held
 	qdel(src)
 
@@ -442,6 +445,11 @@
 	opens_door = TRUE
 	var/held_since = 0
 	var/datum/status_effect/incapacitating/paralyzed/heretic_ritual/restraint
+
+/datum/status_effect/heretic_dance/partner/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_dance/dance, time)
+	if(time)
+		duration = time
+	return ..()
 
 /datum/status_effect/heretic_dance/partner/on_apply()
 	. = ..()

@@ -1,3 +1,5 @@
+#define ANTAG_TRAINING_PATH_PARTS 4
+
 /datum/unit_test/proc/allocate_training_session(program_type = /datum/antag_training_program/heretic, datum/preferences/selected_preferences)
 	for(var/code in GLOB.antag_training_arenas.Copy())
 		var/datum/antag_training_arena/closing = GLOB.antag_training_arenas[code]
@@ -247,9 +249,25 @@
 	TEST_ASSERT(wait_for_qdeleted(session), "После удаления тела освобождается сеанс.")
 
 /// Все пути проходят исследование и вознесение без изменения общей угрозы станции.
+/// Пути поделены на части через один, чтобы шарды прогоняли их параллельно.
+/datum/unit_test/antag_training_all_paths
+	var/part = 1
+
+/datum/unit_test/antag_training_all_paths/part2
+	part = 2
+
+/datum/unit_test/antag_training_all_paths/part3
+	part = 3
+
+/datum/unit_test/antag_training_all_paths/part4
+	part = 4
+
 /datum/unit_test/antag_training_all_paths/Run()
 	var/old_warning = GLOB.heretic_threat_warning_until
+	var/path_index = 0
 	for(var/path_id in GLOB.heretic_paths)
+		if(path_index++ % ANTAG_TRAINING_PATH_PARTS != part - 1)
+			continue
 		var/datum/antag_training_session/session = allocate_training_session()
 		TEST_ASSERT(session.prepare(), "Полигон пути [path_id] должен подготовиться.")
 		var/datum/antagonist/heretic/heretic = IS_HERETIC(session.avatar)
@@ -978,3 +996,5 @@
 	TEST_ASSERT_EQUAL(length(bodies), HERETIC_ASCENSION_BODIES, "Выдано нужное число тел.")
 	for(var/mob/living/body as anything in bodies)
 		TEST_ASSERT(get_dist(body, session.current_body) <= ANTAG_TRAINING_SPAWN_RADIUS && arena.match_zone(body) == "pve", "Тело лежит рядом с еретиком в его секторе.")
+
+#undef ANTAG_TRAINING_PATH_PARTS

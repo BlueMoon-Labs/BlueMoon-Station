@@ -564,6 +564,12 @@ GLOBAL_LIST_INIT(payed_ert, list(
 #define NO_INIT_PARAMETER "no-init"
 //Force the config directory to be something other than "config"
 #define OVERRIDE_CONFIG_DIRECTORY_PARAMETER "config-directory"
+//Run only the unit tests listed in this file, one type path per line
+#define UNIT_TEST_LIST_PARAMETER "unit-test-list"
+//Run only part K of N of the unit tests ("K/N")
+#define UNIT_TEST_SHARD_PARAMETER "unit-test-shard"
+//JSON of past wall times per test, used to balance the shards
+#define UNIT_TEST_DURATIONS_PARAMETER "unit-test-durations"
 
 #define EGG_LAYING_MESSAGES list("lays an egg.","squats down and croons.","begins making a huge racket.","begins clucking raucously.")
 

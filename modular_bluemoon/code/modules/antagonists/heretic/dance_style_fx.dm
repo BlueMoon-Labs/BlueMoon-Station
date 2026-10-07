@@ -186,7 +186,7 @@
 	linked_alert.icon_state = "dance_style_[style.id]"
 	linked_alert.name = "Стиль: [style.name]"
 	var/medley = dance.medley_count()
-	linked_alert.desc = "С 4 Такта: [style.passive_text]. Акцент в сильную долю: [style.accent_text]. Фигура «[style.figure_name]»: [style.figure_text]. Вход связкой в бою: [style.entrance_text()]. Разных стилей за 20 секунд боя: [medley] из [DANCE_MEDLEY_STYLES][medley >= DANCE_MEDLEY_STYLES ? " - Попурри удваивает входы" : ""]."
+	linked_alert.desc = "[capitalize(style.role)]. С 4 Такта: [style.passive_text]. Акцент в сильную долю: [style.accent_text]. Фигура «[style.figure_name]»: [style.figure_text]. Вход связкой в бою: [style.entrance_text()]. Разных стилей за 20 секунд боя: [medley] из [DANCE_MEDLEY_STYLES][medley >= DANCE_MEDLEY_STYLES ? " - Попурри удваивает входы" : ""]."
 
 /atom/movable/screen/alert/status_effect/heretic_dance_style
 	name = "Стиль"

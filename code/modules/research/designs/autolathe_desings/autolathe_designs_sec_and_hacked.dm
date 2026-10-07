@@ -14,6 +14,15 @@
 	build_path = /obj/item/ammo_casing/shotgun/beanbag
 	category = list("initial", "Security")
 
+/datum/design/beanbag_slug
+	name = "Beanbag Slug"
+	id = "beanbag_slug"
+	build_type = AUTOLATHE
+	materials = list(/datum/material/iron = 250)
+	materials = list(/datum/material/iron = 1000)
+	build_path = /obj/item/ammo_casing/shotgun/beanbag
+	category = list("initial", "Security")
+
 /datum/design/rubbershot
 	name = "Rubber Shot"
 	id = "rubber_shot"
@@ -28,6 +37,42 @@
 	build_type = AUTOLATHE
 	materials = list(/datum/material/iron = 20000)
 	build_path = /obj/item/ammo_box/c38
+	category = list("initial", "Security")
+
+/datum/design/cal410
+	name = ".410 rubber"
+	id = "410_rubber"
+	build_type = AUTOLATHE
+	materials = list(/datum/material/iron = 250)
+	materials = list(/datum/material/iron = 1000)
+	build_path = /obj/item/ammo_casing/cal410
+	category = list("initial", "Security")
+
+/datum/design/cal410_lethal
+	name = ".410"
+	id = "410_lethal"
+	build_type = AUTOLATHE
+	materials = list(/datum/material/iron = 250)
+	materials = list(/datum/material/iron = 1000)
+	build_path = /obj/item/ammo_casing/cal410/lethal
+	category = list("hacked", "Security")
+
+/datum/design/cal41
+	name = ".41"
+	id = "41_lethal"
+	build_type = AUTOLATHE
+	materials = list(/datum/material/iron = 250)
+	materials = list(/datum/material/iron = 1000)
+	build_path = /obj/item/ammo_casing/cal41/lethal
+	category = list("hacked", "Security")
+
+/datum/design/cal41_rubber
+	name = ".41 rubber"
+	id = "41_rubber"
+	build_type = AUTOLATHE
+	materials = list(/datum/material/iron = 250)
+	materials = list(/datum/material/iron = 1000)
+	build_path = /obj/item/ammo_casing/cal41/rubber
 	category = list("initial", "Security")
 
 /////////////////
@@ -244,6 +289,14 @@
 	build_type = AUTOLATHE | NO_PUBLIC_LATHE
 	materials = list(/datum/material/iron = 5600)
 	build_path = /obj/item/ammo_box/a308
+	category = list("hacked", "Security")
+
+/datum/design/g4570
+	name = "45-70 ammo"
+	id = "g4570"
+	build_type = AUTOLATHE | NO_PUBLIC_LATHE
+	materials = list(/datum/material/iron = 1000)
+	build_path = /obj/item/ammo_casing/g4570
 	category = list("hacked", "Security")
 
 //////////////////////////////////////////////////////////

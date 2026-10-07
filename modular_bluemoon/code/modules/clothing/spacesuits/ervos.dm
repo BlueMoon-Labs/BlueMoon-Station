@@ -3,7 +3,7 @@
 	desc = "Emergency Rescue VOid Suit helmet"
 	icon_state = "ervos"
 	item_state = "ervos_head"
-	flags_inv = null // нацепил аквариум на голову и довольный
+	flags_inv = HIDEHAIR // нацепил аквариум на голову и довольный
 	repairable_by = /obj/item/stack/sheet/glass
 	mutantrace_variation = NONE
 	icon = 'modular_bluemoon/icons/obj/clothing/head/ervos.dmi'

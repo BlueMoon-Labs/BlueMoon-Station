@@ -5,6 +5,7 @@
 #define DANCE_LESSON_RESCUE 5
 #define DANCE_LESSON_DONE 6
 #define DANCE_LESSON_HITS_NEEDED 3
+#define DANCE_LESSON_SILENT_HINT_COOLDOWN (6 SECONDS)
 
 /// Урок Пляски на полигоне: пять шагов по порядку, каждая ошибка объясняется сразу.
 /datum/heretic_dance_lesson
@@ -17,6 +18,7 @@
 	var/hits = 0
 	var/infected = FALSE
 	var/hint
+	COOLDOWN_DECLARE(silent_hint)
 
 /datum/heretic_dance_lesson/New(datum/antag_training_session/session, datum/eldritch_knowledge/base_dance/dance, mob/living/student, mob/living/target)
 	src.session = session
@@ -65,7 +67,7 @@
 		if(DANCE_LESSON_HITS)
 			hint = "Шаг 1 из 5. Встаньте вплотную к мишени и ударьте её [DANCE_LESSON_HITS_NEEDED] раза в долю: бейте, когда кольцо у ваших ног сомкнётся: двойное кольцо - сильная доля. Засчитано: [hits] из [DANCE_LESSON_HITS_NEEDED]."
 		if(DANCE_LESSON_SQUARE)
-			hint = "Шаг 2 из 5. Квадрат Вальса: стоя вплотную к мишени, шагните вперёд, вправо, назад и влево, каждый шаг в свою долю. Первый шаг - в любую сторону, дальше медный след покажет, куда шагнуть, а ромбы под ногами - сколько шагов сделано. Один сбой после двух верных шагов прощается."
+			hint = "Шаг 2 из 5. Квадрат Вальса: у мишени пройдите вперёд, вправо, назад и влево, по стороне на долю. Можно не отпускать клавишу: в каждую долю засчитывается шаг в нужную сторону, медный след покажет её, ромбы под ногами считают шаги. Фигуры собираются, пока играет музыка: в бою или пока есть Такт."
 		if(DANCE_LESSON_SWITCH)
 			hint = "Шаг 3 из 5. Нажмите на барабан и выберите Танго. Попадёте в сильную долю - связка сохранит Такт и удвоит акцент; мимо - Танго вступит на следующей сильной доле."
 		if(DANCE_LESSON_INVITE)
@@ -116,6 +118,10 @@
 						say("квадрат рассыпался, не дождавшись мишени. Встаньте рядом с ней и повторите.")
 				if("figure_cooldown")
 					say("квадрат собран, но фигура ещё остывает: подождите [value] долей.")
+				if("step_silent")
+					if(COOLDOWN_FINISHED(src, silent_hint))
+						COOLDOWN_START(src, silent_hint, DANCE_LESSON_SILENT_HINT_COOLDOWN)
+						say("музыка стихла, и шаги не складываются в фигуру. Ударьте мишень, чтобы она зазвучала снова.")
 		if(DANCE_LESSON_SWITCH)
 			switch(event)
 				if("switch_queued")
@@ -140,7 +146,7 @@
 						say("приглашение сорвалось: [value].")
 				if("partner")
 					if(subject == target)
-						say("мишень дошла до вас и стала партнёром на 4 секунды.")
+						say("мишень дошла до вас и стала партнёром на [HERETIC_DANCE_PARTNER_TIME / (1 SECONDS)] секунд.")
 						set_stage(DANCE_LESSON_RESCUE)
 		if(DANCE_LESSON_RESCUE)
 			if(event == "rescued" && subject == target)
@@ -182,3 +188,4 @@
 #undef DANCE_LESSON_RESCUE
 #undef DANCE_LESSON_DONE
 #undef DANCE_LESSON_HITS_NEEDED
+#undef DANCE_LESSON_SILENT_HINT_COOLDOWN
