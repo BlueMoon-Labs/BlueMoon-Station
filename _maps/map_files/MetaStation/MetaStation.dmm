@@ -17346,7 +17346,9 @@
 /turf/open/floor/plasteel,
 /area/hallway/primary/starboard)
 "btz" = (
-/obj/effect/spawner/lootdrop/maintenance,
+/obj/machinery/atmospherics/pipe/simple/orange/hidden{
+	dir = 9
+	},
 /turf/open/floor/plating,
 /area/maintenance/starboard)
 "btB" = (
@@ -45025,7 +45027,9 @@
 	},
 /area/engineering/break_room)
 "dgd" = (
-/obj/effect/spawner/lootdrop/syndicate_present,
+/obj/machinery/atmospherics/pipe/simple/orange/hidden{
+	dir = 6
+	},
 /turf/open/floor/plating,
 /area/maintenance/starboard)
 "dge" = (
@@ -54616,9 +54620,9 @@
 	dir = 1;
 	network = list("ss13","engine")
 	},
-/obj/machinery/firealarm{
+/obj/machinery/atmospherics/components/binary/pump{
 	dir = 1;
-	pixel_y = -24
+	name = "Atmos to Loop"
 	},
 /turf/open/floor/engine,
 /area/engineering/main)
@@ -58903,6 +58907,18 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/command/nuke_storage)
+"iHE" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/machinery/door/airlock/engineering{
+	name = "Supermatter Engine";
+	req_access_txt = "10"
+	},
+/obj/machinery/door/firedoor,
+/obj/machinery/atmospherics/pipe/simple/orange/visible,
+/turf/open/floor/plating,
+/area/engineering/main)
 "iHF" = (
 /obj/effect/turf_decal/stripes/yellow/line,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
@@ -63574,10 +63590,7 @@
 	icon_state = "4-8"
 	},
 /obj/effect/turf_decal/stripes/yellow/line,
-/obj/machinery/atmospherics/components/binary/pump{
-	dir = 1;
-	name = "Atmos to Loop"
-	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on,
 /turf/open/floor/engine,
 /area/engineering/main)
 "kRO" = (
@@ -81286,13 +81299,7 @@
 /area/engineering/atmos)
 "sKz" = (
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden,
-/obj/machinery/door/firedoor,
-/obj/machinery/atmospherics/pipe/simple/orange/visible,
-/obj/machinery/door/airlock/engineering{
-	name = "Supermatter Engine";
-	req_access_txt = "10"
-	},
-/turf/open/floor/plating,
+/turf/closed/wall/r_wall,
 /area/engineering/main)
 "sKR" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
@@ -92807,6 +92814,17 @@
 /obj/structure/dresser,
 /turf/open/floor/plasteel,
 /area/security/prison/upper)
+"xST" = (
+/obj/structure/cable/white{
+	icon_state = "4-8"
+	},
+/obj/effect/turf_decal/stripes/yellow/line,
+/obj/machinery/firealarm{
+	dir = 1;
+	pixel_y = -24
+	},
+/turf/open/floor/engine,
+/area/engineering/main)
 "xSU" = (
 /obj/machinery/door/airlock/hatch{
 	name = "MiniSat Space Access Airlock";
@@ -136567,7 +136585,7 @@ ubO
 rkx
 dZC
 jVR
-eYH
+xST
 mzH
 atm
 atm
@@ -136823,12 +136841,12 @@ rxM
 ruP
 rGV
 jfY
-dgA
+lJc
 kRI
 sKz
-dgi
-dgi
-dgi
+dgp
+cXI
+dgd
 dgi
 dgi
 nHn
@@ -137080,12 +137098,12 @@ rxM
 ruP
 rSx
 okX
-lJc
+dgA
 gPs
-mzH
-dgd
+iHE
+dgi
+dgi
 btz
-dgp
 cXI
 cYj
 atm
