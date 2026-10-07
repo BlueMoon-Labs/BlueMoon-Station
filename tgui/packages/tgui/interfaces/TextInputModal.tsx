@@ -36,11 +36,16 @@ export const TextInputModal = (_) => {
     setInput(value);
   };
   // Dynamically changes the window height based on the message.
+  // Base 165 (not 140): message + singleline TextArea (3em) + large
+  // buttons + Section padding need ~150px; at 140 the content overflows
+  // and the buttons end up flush with the window edge (see Character
+  // Preference name prompt vs NumberInputModal, which computes ~155).
   const windowHeight
-    = 140
+    = 165
     + (message.length > 30 ? Math.ceil(message.length * 0.45) : 0)
     + (multiline ? 195 : 0)
-    + (message.length && large_buttons ? 5 : 0);
+    + (message.length && large_buttons ? 5 : 0)
+    + (message.split('\n').length - 1) * 12;
 
   // Window width based multiline.
   const windowWidth
@@ -63,7 +68,7 @@ export const TextInputModal = (_) => {
         <Section fill>
           <Stack fill vertical>
             <Stack.Item>
-              <Box color="label">{message}</Box>
+              <Box color="label" preserveWhitespace>{message}</Box>
             </Stack.Item>
             <Stack.Item grow>
               <InputArea input={input} onType={onType} />
@@ -106,7 +111,7 @@ const InputArea = (props) => {
           event.preventDefault();
       } }}
       onInput={(_, value) => onType(value)}
-      placeholder="Type something..."
+      placeholder="Введите текст..."
       value={input}
     />
   );
