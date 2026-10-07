@@ -845,14 +845,23 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 /// Строгий парсинг числа из текстового TGUI-ввода.
 /// text2num в одиночку ест числовой префикс ("0abc" -> 0), поэтому сначала
 /// проверяем строку целиком посимвольно: цифры, необязательный ведущий
-/// минус и (для дробей) одна точка. Пробелы и мусор -> null.
+/// минус и (для дробей) одна точка. Запятая меняется на точку (русская
+/// локаль), ведущие ".5"/"-.5" дописываются до "0.5"/"-0.5".
+/// Пробелы и мусор -> null.
 /// Возвращает число или null (отмена, пусто, мусор).
 /proc/parse_strict_number(text, allow_float = FALSE)
 	if(isnull(text))
 		return null
+	text = replacetext(text, ",", ".")
 	var/len = length_char(text)
 	if(len == 0)
 		return null
+	if(allow_float && copytext_char(text, 1, 2) == ".")
+		text = "0[text]"
+		len += 1
+	else if(allow_float && copytext_char(text, 1, 3) == "-.")
+		text = "-0[copytext_char(text, 2)]"
+		len += 1
 	var/seen_dot = FALSE
 	for(var/i in 1 to len)
 		var/code = text2ascii(text, i)

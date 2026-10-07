@@ -11,7 +11,7 @@
 	if(isnull(query))
 		return
 	if(query)
-		var/output = wikiurl + "/index.php?title=Служебная:Поиск&search=" + query
+		var/output = wikiurl + "/index.php?title=Служебная:Поиск&search=" + url_encode(query)
 		src << link(output)
 	else
 		src << link(wikiurl)
