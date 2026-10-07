@@ -842,6 +842,30 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 #undef FLAVOR_PREVIEW_PARSE_SLACK
 
+/// Строгий парсинг числа из текстового TGUI-ввода.
+/// text2num в одиночку ест числовой префикс ("0abc" -> 0), поэтому сначала
+/// проверяем строку целиком посимвольно: цифры, необязательный ведущий
+/// минус и (для дробей) одна точка. Пробелы и мусор -> null.
+/// Возвращает число или null (отмена, пусто, мусор).
+/proc/parse_strict_number(text, allow_float = FALSE)
+	if(isnull(text))
+		return null
+	var/len = length_char(text)
+	if(len == 0)
+		return null
+	var/seen_dot = FALSE
+	for(var/i in 1 to len)
+		var/code = text2ascii(text, i)
+		if(code >= 48 && code <= 57)
+			continue
+		if(code == 45 && i == 1)
+			continue
+		if(allow_float && code == 46 && !seen_dot && i > 1)
+			seen_dot = TRUE
+			continue
+		return null
+	return text2num(text)
+
 /datum/preferences/proc/ShowChoices(mob/user, rebuild_preview = TRUE)
 	if(!user || !user.client)
 		return
@@ -3850,12 +3874,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				//SPLURT EDIT BEGIN - gregnancy
 				if("virility")
-					var/viri = tgui_input_number(user, "Set the chance of you impregnating something (set to 0 to disable). \n(0 = minimum, 100 = maximum)", "Character Preference", virility, 100, 0)
+					var/viri = tgui_input_number(user, "Установите шанс, с которым вы оплодотворите кого-либо (0 — отключить). \n(0 — минимум, 100 — максимум)", "Character Preference", virility, 100, 0)
 					if(!isnull(viri))
 						virility = clamp(viri, 0, 100)
 
 				if("fertility")
-					var/fert = tgui_input_number(user, "Set the chance of you getting impregnated (set to 0 to disable). \n(0 = minimum, 100 = maximum)", "Character Preference", fertility, 100, 0)
+					var/fert = tgui_input_number(user, "Установите шанс, с которым оплодотворят вас (0 — отключить). \n(0 — минимум, 100 — максимум)", "Character Preference", fertility, 100, 0)
 					if(!isnull(fert))
 						fertility = clamp(fert, 0, 100)
 
@@ -4627,12 +4651,11 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				//Genital code
 				if("lust_tolerance")
-					var/lust_tol = tgui_input_number(user, "Set how long you can last without climaxing. \n(25 = minimum, 200 = maximum.)", "Character Preference", lust_tolerance, 200, 25)
+					var/lust_tol = tgui_input_number(user, "Установите, как долго вы можете продержаться без кульминации. \n(25 — минимум, 200 — максимум.)", "Character Preference", lust_tolerance, 200, 25)
 					if(!isnull(lust_tol))
 						lust_tolerance = clamp(lust_tol, 25, 200)
 				if("sexual_potency")
-					var/sexual_pot_text = tgui_input_text(user, "Set your sexual potency. \n(-1 = minimum, 25 = maximum.) This determines the number of times your character can orgasm before becoming impotent, use -1 for no impotency.", "Character Preference", "[sexual_potency]", 16)
-					var/sexual_pot = isnull(sexual_pot_text) ? null : text2num(sexual_pot_text)
+					var/sexual_pot = parse_strict_number(tgui_input_text(user, "Установите свою сексуальную потенцию. \n(-1 — минимум, 25 — максимум.) Определяет, сколько раз ваш персонаж может достичь оргазма до импотенции, -1 — без импотенции.", "Character Preference", "[sexual_potency]", 16))
 					if(!isnull(sexual_pot))
 						sexual_potency = clamp(sexual_pot, -1, 25)
 
@@ -4650,7 +4673,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				if("cock_length")
 					var/min_D = CONFIG_GET(number/penis_min_inches_prefs)
 					var/max_D = CONFIG_GET(number/penis_max_inches_prefs)
-					var/new_length = tgui_input_number(user, "Penis length in centimeters:\n([min_D]-[max_D])\nReminder that your sprite size will affect this.", "Character Preference", features["cock_length"], max_D, min_D)
+					var/new_length = tgui_input_number(user, "Длина пениса в сантиметрах:\n([min_D]-[max_D])\nНапоминаем: размер вашего спрайта повлияет на это.", "Character Preference", features["cock_length"], max_D, min_D)
 					if(!isnull(new_length))
 						features["cock_length"] = clamp(round(new_length), min_D, max_D)
 
@@ -4674,8 +4697,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				if("cock_diameter_ratio")
 					var/min_diameter_ratio = CONFIG_GET(number/diameter_ratio_min_size_prefs)
 					var/max_diameter_ratio = CONFIG_GET(number/diameter_ratio_max_size_prefs)
-					var/new_ratio_text = tgui_input_text(user, "Penis diameter ratio:\n([min_diameter_ratio]-[max_diameter_ratio])\nReminder that your sprite size will affect this.", "Character Preference", "[features["cock_diameter_ratio"]]", 16)
-					var/new_ratio = isnull(new_ratio_text) ? null : text2num(new_ratio_text)
+					var/new_ratio = parse_strict_number(tgui_input_text(user, "Коэффициент диаметра пениса:\n([min_diameter_ratio]-[max_diameter_ratio])\nНапоминаем: размер вашего спрайта повлияет на это.", "Character Preference", "[features["cock_diameter_ratio"]]", 16), TRUE)
 					if(!isnull(new_ratio))
 						features["cock_diameter_ratio"] = clamp(round(new_ratio, 0.01), min_diameter_ratio, max_diameter_ratio)
 
@@ -4832,14 +4854,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				if("belly_size")
 					var/min_belly = CONFIG_GET(number/belly_min_size_prefs)
 					var/max_belly = CONFIG_GET(number/belly_max_size_prefs)
-					var/new_bellysize = tgui_input_number(user, "Belly size :\n([min_belly]-[max_belly])", "Character Preference", features["belly_size"], max_belly, min_belly)
+					var/new_bellysize = tgui_input_number(user, "Размер живота:\n([min_belly]-[max_belly])", "Character Preference", features["belly_size"], max_belly, min_belly)
 					if(!isnull(new_bellysize))
 						features["belly_size"] = clamp(new_bellysize, min_belly, max_belly)
 
 				if("butt_size")
 					var/min_B = CONFIG_GET(number/butt_min_size_prefs)
 					var/max_B = CONFIG_GET(number/butt_max_size_prefs)
-					var/new_length = tgui_input_number(user, "Butt size:\n([min_B]-[max_B])", "Character Preference", features["butt_size"], max_B, min_B)
+					var/new_length = tgui_input_number(user, "Размер ягодиц:\n([min_B]-[max_B])", "Character Preference", features["butt_size"], max_B, min_B)
 					if(!isnull(new_length))
 						features["butt_size"] = clamp(round(new_length), min_B, max_B)
 
@@ -4860,14 +4882,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("cock_max_length")
 					var/max_B = CONFIG_GET(number/penis_max_inches_prefs)
-					var/new_size = tgui_input_number(user, "Max size:\n([features["cock_length"]]-[max_B]) (0 = disabled)", "Character Preference", min(features["cock_max_length"] || 0, max_B), max_B, 0)
+					var/new_size = tgui_input_number(user, "Максимальный размер:\n([features["cock_length"]]-[max_B]) (0 — отключено)", "Character Preference", min(features["cock_max_length"] || 0, max_B), max_B, 0)
 					if(new_size)
 						features["cock_max_length"] = clamp(round(new_size), features["cock_length"], max_B)
 					else
 						features -= "cock_max_length"
 
 				if("balls_max_size")
-					var/new_size = tgui_input_number(user, "Max size:\n([BALLS_SIZE_MIN]-[BALLS_SIZE_MAX]) (0 = disabled)", "Character Preference", min(features["balls_max_size"] || 0, BALLS_SIZE_MAX), BALLS_SIZE_MAX, 0)
+					var/new_size = tgui_input_number(user, "Максимальный размер:\n([BALLS_SIZE_MIN]-[BALLS_SIZE_MAX]) (0 — отключено)", "Character Preference", min(features["balls_max_size"] || 0, BALLS_SIZE_MAX), BALLS_SIZE_MAX, 0)
 					if(new_size)
 						features["balls_max_size"] = clamp(round(new_size), BALLS_SIZE_MIN, BALLS_SIZE_MAX)
 					else
@@ -4882,7 +4904,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("belly_max_size")
 					var/max_B = CONFIG_GET(number/belly_max_size_prefs)
-					var/new_size = tgui_input_number(user, "Max size:\n([features["belly_size"]]-[max_B]) (0 = disabled)", "Character Preference", min(features["belly_max_size"] || 0, max_B), max_B, 0)
+					var/new_size = tgui_input_number(user, "Максимальный размер:\n([features["belly_size"]]-[max_B]) (0 — отключено)", "Character Preference", min(features["belly_max_size"] || 0, max_B), max_B, 0)
 					if(new_size)
 						features["belly_max_size"] = clamp(round(new_size), features["belly_size"], max_B)
 					else
@@ -4890,7 +4912,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("butt_max_size")
 					var/max_B = CONFIG_GET(number/butt_max_size_prefs)
-					var/new_size = tgui_input_number(user, "Max size:\n([features["butt_size"]]-[max_B]) (0 = disabled)", "Character Preference", min(features["butt_max_size"] || 0, max_B), max_B, 0)
+					var/new_size = tgui_input_number(user, "Максимальный размер:\n([features["butt_size"]]-[max_B]) (0 — отключено)", "Character Preference", min(features["butt_max_size"] || 0, max_B), max_B, 0)
 					if(new_size)
 						features["butt_max_size"] = clamp(round(new_size), features["butt_size"], max_B)
 					else
@@ -4898,14 +4920,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("cock_min_length")
 					var/min_B = CONFIG_GET(number/penis_min_inches_prefs)
-					var/new_size = tgui_input_number(user, "Min size:\n([min_B]-[features["cock_length"]]) (0 = disabled)", "Character Preference", min(features["cock_min_length"] || 0, features["cock_length"]), features["cock_length"], 0)
+					var/new_size = tgui_input_number(user, "Минимальный размер:\n([min_B]-[features["cock_length"]]) (0 — отключено)", "Character Preference", min(features["cock_min_length"] || 0, features["cock_length"]), features["cock_length"], 0)
 					if(new_size)
 						features["cock_min_length"] = clamp(round(new_size), min_B, features["cock_length"])
 					else
 						features -= "cock_min_length"
 
 				if("balls_min_size")
-					var/new_size = tgui_input_number(user, "Min size:\n([BALLS_SIZE_MIN]-[BALLS_SIZE_MAX]) (0 = disabled)", "Character Preference", min(features["balls_min_size"] || 0, BALLS_SIZE_MAX), BALLS_SIZE_MAX, 0)
+					var/new_size = tgui_input_number(user, "Минимальный размер:\n([BALLS_SIZE_MIN]-[BALLS_SIZE_MAX]) (0 — отключено)", "Character Preference", min(features["balls_min_size"] || 0, BALLS_SIZE_MAX), BALLS_SIZE_MAX, 0)
 					if(new_size)
 						features["balls_min_size"] = clamp(round(new_size), BALLS_SIZE_MIN, BALLS_SIZE_MAX)
 					else
@@ -4920,7 +4942,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("belly_min_size")
 					var/min_B = CONFIG_GET(number/belly_min_size_prefs)
-					var/new_size = tgui_input_number(user, "Min size:\n([min_B]-[features["belly_size"]]) (0 = disabled)", "Character Preference", min(features["belly_min_size"] || 0, features["belly_size"]), features["belly_size"], 0)
+					var/new_size = tgui_input_number(user, "Минимальный размер:\n([min_B]-[features["belly_size"]]) (0 — отключено)", "Character Preference", min(features["belly_min_size"] || 0, features["belly_size"]), features["belly_size"], 0)
 					if(new_size)
 						features["belly_min_size"] = clamp(round(new_size), min_B, features["belly_size"])
 					else
@@ -4928,7 +4950,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("butt_min_size")
 					var/min_B = CONFIG_GET(number/butt_min_size_prefs)
-					var/new_size = tgui_input_number(user, "Min size:\n([min_B]-[features["butt_size"]]) (0 = disabled)", "Character Preference", min(features["butt_min_size"] || 0, features["butt_size"]), features["butt_size"], 0)
+					var/new_size = tgui_input_number(user, "Минимальный размер:\n([min_B]-[features["butt_size"]]) (0 — отключено)", "Character Preference", min(features["butt_min_size"] || 0, features["butt_size"]), features["butt_size"], 0)
 					if(new_size)
 						features["butt_min_size"] = clamp(round(new_size), min_B, features["butt_size"])
 					else
@@ -5056,7 +5078,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							picked_lawset = null
 						silicon_lawset = picked_lawset
 				if ("max_chat_length")
-					var/desiredlength = tgui_input_number(user, "Choose the max character length of shown Runechat messages. Valid range is 1 to [CHAT_MESSAGE_MAX_LENGTH] (default: [initial(max_chat_length)]))", "Character Preference", max_chat_length, CHAT_MESSAGE_MAX_LENGTH, 1)
+					var/desiredlength = tgui_input_number(user, "Выберите максимальную длину отображаемых сообщений Runechat. Допустимо от 1 до [CHAT_MESSAGE_MAX_LENGTH] (по умолчанию: [initial(max_chat_length)]))", "Character Preference", max_chat_length, CHAT_MESSAGE_MAX_LENGTH, 1)
 					if (!isnull(desiredlength))
 						max_chat_length = clamp(desiredlength, 1, CHAT_MESSAGE_MAX_LENGTH)
 				//Sandstorm changes begin
@@ -5090,8 +5112,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					gender = chosengender
 
 				if("body_size")
-					var/new_body_size_text = tgui_input_text(user, "Choose your desired sprite size: ([CONFIG_GET(number/body_size_min)*100]-[CONFIG_GET(number/body_size_max)*100]%)\nWarning: This may make your character look distorted. Additionally, any size affects speed and max health", "Character Preference", "[features["body_size"]*100]", 16)
-					var/new_body_size = isnull(new_body_size_text) ? null : text2num(new_body_size_text)
+					var/new_body_size = parse_strict_number(tgui_input_text(user, "Выберите желаемый размер спрайта: ([CONFIG_GET(number/body_size_min)*100]-[CONFIG_GET(number/body_size_max)*100]%)\nВнимание: персонаж может выглядеть искажённо. Размер также влияет на скорость и максимальное здоровье", "Character Preference", "[features["body_size"]*100]", 16), TRUE)
 					if(!isnull(new_body_size))
 						features["body_size"] = clamp(new_body_size * 0.01, CONFIG_GET(number/body_size_min), CONFIG_GET(number/body_size_max))
 
@@ -5116,8 +5137,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				if("normalized_size")
 					var/max_size = 	min(CONFIG_GET(number/body_size_max), 1.2)	// Магическая цифра (предел MOB_SIZE_HUMAN по proc/adjust_mobsize)
 					var/min_size =	max(CONFIG_GET(number/body_size_min), 0.81)	// Магическая цифра (предел MOB_SIZE_HUMAN по proc/adjust_mobsize)
-					var/new_normialzed_size_text = tgui_input_text(user, "Choose your desired normalized size: ([min_size * 100]-[max_size * 100]%)\nUsed with normalizer stuff", "Character Preference", "[features["normalized_size"]*100]", 16)
-					var/new_normialzed_size = isnull(new_normialzed_size_text) ? null : text2num(new_normialzed_size_text)
+					var/new_normialzed_size = parse_strict_number(tgui_input_text(user, "Выберите желаемый нормализованный размер: ([min_size * 100]-[max_size * 100]%)\nИспользуется нормализатором", "Character Preference", "[features["normalized_size"]*100]", 16), TRUE)
 					if(!isnull(new_normialzed_size))
 						features["normalized_size"] = clamp(new_normialzed_size * 0.01, min_size, max_size)
 
@@ -5182,22 +5202,19 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("barkspeed")
 					var/datum/bark/B = GLOB.bark_list[bark_id]
-					var/borkset_text = tgui_input_text(user, "Выберите желаемую скорость речи (Значение выше – медленная речь, ниже – быстрая). Мин: [initial(B.minspeed)]. Макс: [initial(B.maxspeed)]", "Настройка персонажа", "[bark_speed]", 16)
-					var/borkset = isnull(borkset_text) ? null : text2num(borkset_text)
+					var/borkset = parse_strict_number(tgui_input_text(user, "Выберите желаемую скорость речи (Значение выше – медленная речь, ниже – быстрая). Мин: [initial(B.minspeed)]. Макс: [initial(B.maxspeed)]", "Настройка персонажа", "[bark_speed]", 16), TRUE)
 					if(!isnull(borkset))
 						bark_speed = round(clamp(borkset, initial(B.minspeed), initial(B.maxspeed)), 1)
 
 				if("barkpitch")
 					var/datum/bark/B = GLOB.bark_list[bark_id]
-					var/borkset_text = tgui_input_text(user, "Выберите желаемую высоту тона голоса. Мин: [initial(B.minpitch)].\nМакс: [initial(B.maxpitch)]", "Настройка персонажа", "[bark_pitch]", 16)
-					var/borkset = isnull(borkset_text) ? null : text2num(borkset_text)
+					var/borkset = parse_strict_number(tgui_input_text(user, "Выберите желаемую высоту тона голоса. Мин: [initial(B.minpitch)].\nМакс: [initial(B.maxpitch)]", "Настройка персонажа", "[bark_pitch]", 16), TRUE)
 					if(!isnull(borkset))
 						bark_pitch = clamp(borkset, initial(B.minpitch), initial(B.maxpitch))
 
 				if("barkvary")
 					var/datum/bark/B = GLOB.bark_list[bark_id]
-					var/borkset_text = tgui_input_text(user, "Выберите желаемую случайность звучания речи. Мин: [initial(B.minvariance)].\nМакс: [initial(B.maxvariance)]", "Настройка персонажа", "[bark_variance]", 16)
-					var/borkset = isnull(borkset_text) ? null : text2num(borkset_text)
+					var/borkset = parse_strict_number(tgui_input_text(user, "Выберите желаемую случайность звучания речи. Мин: [initial(B.minvariance)].\nМакс: [initial(B.maxvariance)]", "Настройка персонажа", "[bark_variance]", 16), TRUE)
 					if(!isnull(borkset))
 						bark_variance = clamp(borkset, initial(B.minvariance), initial(B.maxvariance))
 
@@ -5542,7 +5559,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				if("no_tetris_storage")
 					no_tetris_storage = !no_tetris_storage
 				if ("screenshake")
-					var/desiredshake = tgui_input_number(user, "Set the amount of screenshake you want. \n(0 = disabled, 100 = full, no maximum (at your own risk).)", "Character Preference", screenshake, INFINITY, 0)
+					var/desiredshake = tgui_input_number(user, "Установите желаемую тряску экрана. \n(0 — отключено, 100 — полная, максимума нет (на ваш риск).)", "Character Preference", screenshake, INFINITY, 0)
 					if (!isnull(desiredshake))
 						screenshake = desiredshake
 				if("damagescreenshake")
@@ -5556,7 +5573,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						else
 							damagescreenshake = 1
 				if ("recoil_screenshake")
-					var/desiredshake = tgui_input_number(user, "Set the amount of recoil screenshake/push you want. \n(0 = disabled, 100 = full, no maximum (at your own risk).)", "Character Preference", recoil_screenshake, INFINITY, 0)
+					var/desiredshake = tgui_input_number(user, "Установите желаемую тряску и толчок от отдачи. \n(0 — отключено, 100 — полная, максимума нет (на ваш риск).)", "Character Preference", recoil_screenshake, INFINITY, 0)
 					if (!isnull(desiredshake))
 						recoil_screenshake = desiredshake
 				if("nameless")
@@ -6350,13 +6367,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 			//renaming is only allowed if it has the flag for it
 			if(href_list["loadout_rename"] && (G.loadout_flags & LOADOUT_CAN_NAME))
-				var/new_name = tgui_input_text(user, "Enter new name for item. Maximum [MAX_NAME_LEN] characters.", "Loadout Item Naming", null, MAX_NAME_LEN, FALSE, TRUE)
+				var/new_name = tgui_input_text(user, "Введите новое имя предмета. Максимум [MAX_NAME_LEN] символов.", "Loadout Item Naming", null, MAX_NAME_LEN, FALSE, TRUE)
 				if(new_name)
 					user_gear[LOADOUT_CUSTOM_NAME] = new_name
 
 			//redescribing is only allowed if it has the flag for it
 			if(href_list["loadout_redescribe"] && (G.loadout_flags & LOADOUT_CAN_DESCRIPTION)) //redescribe isnt a real word but i can't think of the right term to use
-				var/new_description = tgui_input_text(user, "Enter new description for item. Maximum 500 characters.", "Loadout Item Redescribing", null, 500, TRUE, TRUE)
+				var/new_description = tgui_input_text(user, "Введите новое описание предмета. Максимум 500 символов.", "Loadout Item Redescribing", null, 500, TRUE, TRUE)
 				if(new_description)
 					user_gear[LOADOUT_CUSTOM_DESCRIPTION] = new_description
 			// BLUEMOON ADD START - выбор вещей из лодаута как family heirloom
@@ -6388,7 +6405,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 			//for collars with tagnames
 			if(href_list["loadout_tagname"])
-				var/new_tagname = tgui_input_text(user, "Would you like to change the name on the tag?", "Name your new pet", null, MAX_NAME_LEN, FALSE, TRUE)
+				var/new_tagname = tgui_input_text(user, "Хотите изменить имя на бирке?", "Name your new pet", null, MAX_NAME_LEN, FALSE, TRUE)
 				if(new_tagname)
 					user_gear["loadout_custom_tagname"] = new_tagname
 			if(href_list["loadout_examtooltip"])
@@ -6897,7 +6914,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			links_list[link_index] = headshot_link
 
 /datum/preferences/proc/get_headshot_link(mob/user, old_link)
-	var/usr_input = tgui_input_text(user, "Input the image link: (For Discord links, try putting the file's type at the end of the link, after the '&'. for example '&.jpg/.png/.jpeg/.gif/.webm/.mp4')", "Headshot Image", old_link, HEADSHOT_LINK_MAX_LENGTH)
+	var/usr_input = tgui_input_text(user, "Вставьте ссылку на изображение: (для ссылок Discord попробуйте дописать тип файла в конец ссылки после '&', например '&.jpg/.png/.jpeg/.gif/.webm/.mp4')", "Headshot Image", old_link, HEADSHOT_LINK_MAX_LENGTH)
 	if(isnull(usr_input))
 		return ACTION_HEADSHOT_LINK_NOOP
 
