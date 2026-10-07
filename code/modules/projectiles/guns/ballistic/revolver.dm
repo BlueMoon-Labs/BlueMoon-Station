@@ -770,7 +770,7 @@
 	recoil = 5
 	slot_flags = ITEM_SLOT_BELT
 
-/obj/item/gun/ballistic/revolver/process_fire(atom/target, mob/living/user, triggered_by_gun, params)
+/obj/item/gun/ballistic/revolver/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0, stam_cost = 0)
 	// Вызываем базовый выстрел (пуля/дробь вылетает во врага)
 	. = ..()
 	if(!.)
