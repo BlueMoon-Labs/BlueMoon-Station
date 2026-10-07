@@ -59,10 +59,10 @@
 	gloves = /obj/item/clothing/gloves/color/black
 	suit = /obj/item/clothing/suit/armor/vest
 	l_hand = /obj/item/kitchen/knife/combat
-	r_pocket = /obj/item/kitchen/knife/combat
+	r_pocket = /obj/item/kitchen/knife/combat/marksman
 	back = /obj/item/storage/backpack
 	backpack_contents = list(
-		/obj/item/kitchen/knife/combat = 4,
+		/obj/item/kitchen/knife/combat/marksman = 4,
 	)
 
 /// A sidearm. Low damage, but it does not push people out of cover.
@@ -72,23 +72,18 @@
 	desc = "A cheap pistol and a spare magazine. Low damage, but it will not push anyone out of cover."
 	uniform = /obj/item/clothing/under/color/random
 	shoes = /obj/item/clothing/shoes/sneakers/black
-	belt = /obj/item/gun/ballistic/automatic/pistol
-	l_pocket = /obj/item/ammo_box/magazine/m10mm
+	belt = /obj/item/gun/ballistic/automatic/pistol/m9mmpistol
+	l_pocket = /obj/item/ammo_box/magazine/m9/inc
 
-/// Laser carbine with a self charger, so the mode never turns into a race to
-/// the nearest ammo pile.
-///
-/// KNOWN GAP: the mode is called Instagib and promises a one shot kill. Making
-/// that true needs a projectile subtype and an ammo casing to go with it, and
-/// neither exists in this codebase yet, so this loadout is the honest
-/// approximation: lethal, but not instakill.
-/datum/outfit/vr/deathmatch_loadout/laser
-	name = "Laser"
-	display_name = "Laser Carbine"
-	desc = "A self-charging laser carbine, so the round never becomes a race for the nearest ammo pile."
+/// The one-shot rifle every instagib round runs on. One touch, one kill: the
+/// arena is the whole loadout, and the loadout is just the rifle.
+/datum/outfit/vr/deathmatch_loadout/instakill
+	name = "Instakill"
+	display_name = "Instakill"
+	desc = "A one-shot laser rifle. Instagib, as advertised."
 	uniform = /obj/item/clothing/under/color/random
 	shoes = /obj/item/clothing/shoes/sneakers/black
-	back = /obj/item/gun/energy/laser/carbine/deathmatch_selfcharge
+	r_hand = /obj/item/gun/energy/laser/instakill
 
 /**
  * Disabler, Security Ring kit. Being shot is the whole point of that arena, so
@@ -193,7 +188,7 @@
 	glasses = /obj/item/clothing/glasses/thermal/syndi
 	gloves = /obj/item/clothing/gloves/combat
 	suit_store = /obj/item/gun/energy/kinetic_accelerator/crossbow
-	l_hand = /obj/item/melee/transforming/energy/sword
+	l_hand = /obj/item/melee/transforming/energy/sword/saber
 	r_pocket = /obj/item/reagent_containers/hypospray/medipen/stimulants
 	l_pocket = /obj/item/soap/syndie
 	belt = /obj/item/gun/ballistic/revolver
@@ -217,6 +212,15 @@
 		/obj/item/pen/edagger,
 		/obj/item/reagent_containers/hypospray/medipen/atropine,
 	)
+
+/datum/outfit/vr/deathmatch_loadout/nukie/post_equip(mob/living/carbon/human/H, visuals_only = FALSE, client/preference_source)
+	..()
+	if(visuals_only || !H.mind)
+		return
+	var/obj/item/mod/control/MOD = H.back
+	if(!istype(MOD))
+		return
+	MOD.quick_activation()
 
 /datum/outfit/vr/deathmatch_loadout/tider
 	name = "Tider"
@@ -274,10 +278,9 @@
 	desc = "They were bound to show up sooner or later."
 
 	uniform = /obj/item/clothing/under/rank/civilian/clown
-	belt = /obj/item/melee/transforming/energy/sword/bananium
 	shoes = /obj/item/clothing/shoes/clown_shoes/combat
-	r_hand = /obj/item/pneumatic_cannon/pie/selfcharge
-	l_hand = /obj/item/bikehorn/golden
+	r_hand = /obj/item/melee/transforming/energy/sword/bananium/deathmatch_sword
+	l_hand = /obj/item/shield/energy/bananium
 	box = /obj/item/storage/box/hug/reverse_revolver
 	back = /obj/item/storage/backpack/clown
 
@@ -289,6 +292,8 @@
 		/obj/item/reagent_containers/food/snacks/pie/cream = 1,
 		/obj/item/dnainjector/clumsymut,
 		/obj/item/sbeacondrop/clownbomb,
+		/obj/item/pneumatic_cannon/pie/selfcharge = 1,
+		/obj/item/bikehorn/golden = 1,
 	)
 
 /datum/outfit/vr/deathmatch_loadout/mime
@@ -297,7 +302,7 @@
 	desc = "..."
 
 	uniform = /obj/item/clothing/under/rank/civilian/mime
-	belt = /obj/item/reagent_containers/food/snacks/baguette/combat
+	belt = /obj/item/reagent_containers/food/snacks/baguette/combat/deathmatch
 	head = /obj/item/clothing/head/beret
 	shoes = /obj/item/clothing/shoes/sneakers/mime
 	mask = /obj/item/clothing/mask/gas/mime
@@ -311,12 +316,14 @@
 		/obj/item/reagent_containers/food/drinks/bottle/bottleofnothing,
 		/obj/item/gun/ballistic/automatic/pistol,
 		/obj/item/ammo_box/magazine/m10mm,
+		/obj/item/suppressor,
 	)
 
 /datum/outfit/vr/deathmatch_loadout/mime/post_equip(mob/living/carbon/human/H, visuals_only = FALSE, client/preference_source)
 	..()
 	if(visuals_only || !H.mind)
 		return
+	H.mind.miming = 1
 	H.mind.AddSpell(new /obj/effect/proc_holder/spell/aoe_turf/conjure/mime_wall(null))
 	H.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/mime/speak(null))
 	H.mind.AddSpell(new /obj/effect/proc_holder/spell/targeted/forcewall/mime(null))
@@ -343,12 +350,32 @@
 		/obj/item/assembly/signaler = 10,
 	)
 
-/// A laser carbine that never runs dry, for arena modes where the round is
-/// decided by positioning rather than by who found the ammo first.
-/obj/item/gun/energy/laser/carbine/deathmatch_selfcharge
-	name = "self-charging laser carbine"
-	desc = "A laser carbine with its cell wired straight into the recharge coil. Point and click, forever."
-	selfcharge = EGUN_SELFCHARGE
+/// The clown commando's sword, unfolded before anyone ever holds it: the arena
+/// version of the trick is that the blade is out and slippery the moment the
+/// clown spawns, not after a manual toggle nobody reads about.
+/obj/item/melee/transforming/energy/sword/bananium/deathmatch_sword
+	name = "bananium sword"
+	desc = "An elegant weapon, for a more civilized age."
+
+/obj/item/melee/transforming/energy/sword/bananium/deathmatch_sword/Initialize(mapload)
+	. = ..()
+	transform_weapon(null, TRUE)
+
+/// The mime's baguette, already battle-ready: the arena is no place for toggling
+/// swordplay behind a vow check, so it is a sword with or without a mind that
+/// honours the mime's silence, and the toggle still works for anyone with an
+/// obet of their own.
+/obj/item/reagent_containers/food/snacks/baguette/combat/deathmatch
+	name = "combat baguette"
+	desc = "Deadly bread, already wielded like a sword."
+	force = 20
+	block_chance = 50
+
+/obj/item/reagent_containers/food/snacks/baguette/combat/deathmatch/attack_self(mob/user, modifiers)
+	if(fake_swordplay)
+		end_swordplay(user)
+	else
+		begin_swordplay(user)
 
 /// Gloves that teach the wearer the art of the sleeping carp. The art sticks only
 /// while the gloves are on, so dropping them mid-round quietly reverts the

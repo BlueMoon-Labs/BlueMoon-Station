@@ -191,7 +191,6 @@ proc/get_deathmatch_loadout(path)
 	min_players = 2
 	max_players = 4
 	loadout = /datum/outfit/vr/deathmatch_loadout/officer
-	loadout_options = list(/datum/outfit/vr/deathmatch_loadout/butt_naked)
 
 /datum/map_template/deathmatch/instagib
 	name = "Deathmatch - Instagib"
@@ -200,8 +199,7 @@ proc/get_deathmatch_loadout(path)
 	mappath = "_maps/deathmatch/instagib.dmm"
 	min_players = 2
 	max_players = 8
-	loadout = /datum/outfit/vr/deathmatch_loadout/laser
-	loadout_options = list(/datum/outfit/vr/deathmatch_loadout/butt_naked)
+	loadout = /datum/outfit/vr/deathmatch_loadout/instakill
 
 /datum/map_template/deathmatch/final_destination
 	name = "Deathmatch - Final Destination"
@@ -231,7 +229,6 @@ proc/get_deathmatch_loadout(path)
 	min_players = 2
 	max_players = 8
 	loadout = /datum/outfit/vr/deathmatch_loadout/sniper
-	loadout_options = list(/datum/outfit/vr/deathmatch_loadout/butt_naked)
 
 /datum/map_template/deathmatch/shooting_range
 	name = "Deathmatch - Shooting Range"
@@ -240,9 +237,8 @@ proc/get_deathmatch_loadout(path)
 	mappath = "_maps/deathmatch/shooting_range.dmm"
 	min_players = 2
 	max_players = 6
-	loadout = /datum/outfit/vr/deathmatch_loadout/laser
+	loadout = /datum/outfit/vr/deathmatch_loadout/sidearm
 	loadout_options = list(
 		/datum/outfit/vr/deathmatch_loadout/butt_naked,
 		/datum/outfit/vr/deathmatch_loadout/brawler,
-		/datum/outfit/vr/deathmatch_loadout/sidearm,
 	)

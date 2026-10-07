@@ -1,5 +1,4 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
-//Ported to Bluemoon (pre-2020 tg codebase). Source: C:/rep/New-shitcode/_maps/minigame/deathmatch/shooting_range.dmm
 "a" = (
 /obj/machinery/light/directional/east,
 /turf/open/floor/wood,
@@ -19,7 +18,7 @@
 /turf/open/floor/wood/wood_large,
 /area/deathmatch)
 "d" = (
-/obj/item/ammo_box/magazine/smgm9mm/ap,
+/obj/item/ammo_box/magazine/m9/inc,
 /turf/open/floor/wood,
 /area/deathmatch)
 "e" = (
@@ -54,7 +53,7 @@
 /area/deathmatch)
 "k" = (
 /obj/structure/table/reinforced,
-/obj/item/ammo_box/magazine/smgm9mm/fire,
+/obj/item/ammo_box/magazine/m9/inc,
 /turf/open/floor/wood/wood_large,
 /area/deathmatch)
 "l" = (
@@ -83,13 +82,13 @@
 /turf/open/floor/wood,
 /area/deathmatch)
 "o" = (
-/obj/item/ammo_box/magazine/smgm9mm/ap,
 /obj/structure/closet/crate/secure/weapon{
 	locked = 0
 	},
 /obj/effect/turf_decal/siding/wood/corner{
 	dir = 4
 	},
+/obj/item/ammo_box/magazine/m9/inc,
 /turf/open/floor/wood/wood_tiled,
 /area/deathmatch)
 "p" = (
@@ -129,17 +128,20 @@
 /turf/open/floor/wood,
 /area/deathmatch)
 "x" = (
-/obj/item/ammo_box/magazine/smgm9mm/fire,
-/turf/open/floor/wood,
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/obj/item/kitchen/knife/combat/marksman,
+/turf/open/floor/wood/wood_tiled,
 /area/deathmatch)
 "y" = (
-/obj/item/ammo_box/magazine/smgm9mm/fire,
 /obj/structure/closet/crate/secure/weapon{
 	locked = 0
 	},
 /obj/effect/turf_decal/siding/wood/corner{
 	dir = 8
 	},
+/obj/item/ammo_box/magazine/m9/inc,
 /turf/open/floor/wood/wood_tiled,
 /area/deathmatch)
 "z" = (
@@ -169,12 +171,17 @@
 /area/deathmatch)
 "E" = (
 /obj/effect/turf_decal/siding/wood/corner,
+/obj/item/kitchen/knife/combat/marksman,
 /turf/open/floor/wood/wood_tiled,
 /area/deathmatch)
 "F" = (
 /obj/structure/barricade/wooden,
 /obj/effect/turf_decal/siding/wood,
 /turf/open/floor/wood/wood_tiled,
+/area/deathmatch)
+"G" = (
+/obj/item/kitchen/knife/combat/marksman,
+/turf/open/floor/wood,
 /area/deathmatch)
 "I" = (
 /obj/effect/turf_decal/siding/wood,
@@ -200,6 +207,10 @@
 	dir = 4
 	},
 /turf/open/floor/wood/wood_tiled,
+/area/deathmatch)
+"R" = (
+/obj/item/kitchen/knife/combat/marksman,
+/turf/open/floor/wood/wood_large,
 /area/deathmatch)
 "T" = (
 /obj/effect/landmark/deathmatch_player_spawn,
@@ -263,7 +274,7 @@ q
 q
 q
 j
-q
+x
 q
 q
 o
@@ -280,7 +291,7 @@ z
 z
 M
 z
-z
+G
 z
 z
 z
@@ -425,7 +436,7 @@ K
 U
 l
 b
-U
+R
 X
 z
 O
@@ -478,9 +489,9 @@ O
 e
 v
 z
-z
+G
 M
-x
+d
 z
 m
 g
@@ -491,7 +502,7 @@ I
 z
 M
 M
-z
+G
 z
 K
 O
@@ -592,7 +603,7 @@ O
 z
 K
 K
-z
+G
 K
 O
 z
@@ -623,7 +634,7 @@ z
 z
 O
 e
-z
+G
 z
 K
 m
