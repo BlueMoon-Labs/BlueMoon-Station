@@ -759,7 +759,7 @@
 	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
 	icon_state = "exorcist"
 	item_state = "exorcist"
-	fire_sound = "modular_bluemoon/fluffs/sound/weapon/Exorcist.ogg"
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/winchester1897_shot.ogg'
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/exorcist 
