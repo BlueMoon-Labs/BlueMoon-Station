@@ -1,17 +1,20 @@
 //Please use mob or src (not usr) in these procs. This way they can be called in the same fashion as procs.
-/client/verb/wiki(query as text)
+/client/verb/wiki()
 	set name = "wiki"
 	set desc = "Type what you want to know about.  This will open the wiki in your web browser. Type nothing to go to the main page."
 	set hidden = 1
 	var/wikiurl = CONFIG_GET(string/wikiurl)
-	if(wikiurl)
-		if(query)
-			var/output = wikiurl + "/index.php?title=Служебная:Поиск&search=" + query
-			src << link(output)
-		else if (query != null)
-			src << link(wikiurl)
-	else
+	if(!wikiurl)
 		to_chat(src, "<span class='danger'>The wiki URL is not set in the server configuration.</span>")
+		return
+	var/query = tgui_input_text(src, "Введите, о чём хотите узнать. Откроется вики в вашем браузере. Пустое поле — главная страница.", "wiki")
+	if(isnull(query))
+		return
+	if(query)
+		var/output = wikiurl + "/index.php?title=Служебная:Поиск&search=" + query
+		src << link(output)
+	else
+		src << link(wikiurl)
 	return
 
 /client/verb/discord()
@@ -20,7 +23,7 @@
 	set hidden = 1
 	var/discordurl = CONFIG_GET(string/discordurl)
 	if(discordurl)
-		if(alert(src, "This will open the discord invite in your browser. Are you sure?",,"Да","Нет")!="Да")
+		if(tgui_alert(src, "Это откроет приглашение Discord в вашем браузере. Вы уверены?", "Discord", list("Да", "Нет")) != "Да")
 			return
 		src << link(discordurl)
 	else
@@ -33,7 +36,7 @@
 	set hidden = 1
 	var/rulesurl = CONFIG_GET(string/rulesurl)
 	if(rulesurl)
-		if(alert("This will open the rules in your browser. Are you sure?",,"Да","Нет")!="Да")
+		if(tgui_alert(src, "Это откроет правила в вашем браузере. Вы уверены?", "Rules", list("Да", "Нет")) != "Да")
 			return
 		src << link(rulesurl)
 	else
@@ -46,7 +49,7 @@
 	set hidden = 1
 	var/githuburl = CONFIG_GET(string/githuburl)
 	if(githuburl)
-		if(alert("This will open the Github repository in your browser. Are you sure?",,"Да","Нет")!="Да")
+		if(tgui_alert(src, "Это откроет репозиторий Github в вашем браузере. Вы уверены?", "Github", list("Да", "Нет")) != "Да")
 			return
 		src << link(githuburl)
 	else
@@ -60,22 +63,22 @@
 	var/reportissue = CONFIG_GET(string/reportissue)
 	var/message
 	if(reportissue)
-		message = "This will open the issue reporter in your browser. Are you sure?"
+		message = "Это откроет репортер проблем в вашем браузере. Вы уверены?"
 		if(GLOB.revdata.testmerge.len)
-			message += "<br>The following experimental changes are active and are probably the cause of any new or sudden issues you may experience. If possible, please try to find a specific thread for your issue instead of posting to the general issue tracker:<br>"
-			message += GLOB.revdata.GetTestMergeInfo(FALSE)
-		if(tgalert(src, message, "Report Issue","Да","Нет")!="Да")
+			message += "\nАктивные экспериментальные изменения (тест-мерджи) — возможная причина новых проблем. По возможности найдите конкретный тред вместо общего трекера:\n"
+			message += strip_html_simple(replacetext(GLOB.revdata.GetTestMergeInfo(FALSE), "<br>", "\n"))
+		if(tgui_alert(src, message, "Report Issue", list("Да", "Нет")) != "Да")
 			return
 		src << link(reportissue)
 		return
 
 	var/githuburl = CONFIG_GET(string/githuburl)
 	if(githuburl)
-		message = "This will open the Github issue reporter in your browser. Are you sure?"
+		message = "Это откроет репортер проблем Github в вашем браузере. Вы уверены?"
 		if(GLOB.revdata.testmerge.len)
-			message += "<br>The following experimental changes are active and are probably the cause of any new or sudden issues you may experience. If possible, please try to find a specific thread for your issue instead of posting to the general issue tracker:<br>"
-			message += GLOB.revdata.GetTestMergeInfo(FALSE)
-		if(tgalert(src, message, "Report Issue","Да","Нет")!="Да")
+			message += "\nАктивные экспериментальные изменения (тест-мерджи) — возможная причина новых проблем. По возможности найдите конкретный тред вместо общего трекера:\n"
+			message += strip_html_simple(replacetext(GLOB.revdata.GetTestMergeInfo(FALSE), "<br>", "\n"))
+		if(tgui_alert(src, message, "Report Issue", list("Да", "Нет")) != "Да")
 			return
 		var/static/issue_template = file2text(".github/ISSUE_TEMPLATE.md")
 		var/servername = CONFIG_GET(string/servername)
