@@ -3580,7 +3580,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			if("lewd_summon_nickname")
 				var/client/C = usr.client
 				if(C)
-					var/new_summon_nickname = tgui_input_text(user, "Задайте прозвище во время призыва вашего персонажа:", "Character Preference", summon_nickname, MAX_NAME_LEN) // BLUEMOON EDIT - tgui input
+					var/new_summon_nickname = tgui_input_text(user, "Задайте прозвище во время призыва вашего персонажа:", "Character Preference", summon_nickname, MAX_NAME_LEN)
 					if(new_summon_nickname)
 						new_summon_nickname = reject_bad_name(new_summon_nickname, allow_numbers = TRUE)
 						if(new_summon_nickname)
@@ -3595,7 +3595,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				var/list/phobia_choices = list("Случайная")
 				if(SStraumas && SStraumas.phobia_types)
 					phobia_choices += SStraumas.phobia_types
-				var/new_choice = tgui_input_list(user, "Выберите вашу фобию. Если не выберете - будет случайная.", "Настройка фобии", phobia_choices) // BLUEMOON EDIT - tgui input
+				var/new_choice = tgui_input_list(user, "Выберите вашу фобию. Если не выберете - будет случайная.", "Настройка фобии", phobia_choices)
 				if(new_choice)
 					if(new_choice == "Случайная")
 						phobia_type = null
@@ -3608,7 +3608,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			if("change_onelife_option") // BLUEMOON ADD - форма рассыпания для Одной Жизни
 				var/client/C = usr.client
 				if(C)
-					var/new_form = tgui_input_list(user, "Выберите, во что ваш персонаж рассыплется после смерти.", "Настройка Одной Жизни", GLOB.onelife_death_forms) // BLUEMOON EDIT - tgui input
+					var/new_form = tgui_input_list(user, "Выберите, во что ваш персонаж рассыплется после смерти.", "Настройка Одной Жизни", GLOB.onelife_death_forms)
 					if(new_form)
 						onelife_death_type = new_form
 					if(is_inline_quirks)
@@ -3746,7 +3746,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							ghost_others = GHOST_OTHERS_SIMPLE
 
 				if("name")
-					var/new_name = tgui_input_text(user, "Задайте имя вашего персонажа:", "Character Preference", real_name, MAX_NAME_LEN) // BLUEMOON EDIT - tgui input
+					var/new_name = tgui_input_text(user, "Задайте имя вашего персонажа:", "Character Preference", real_name, MAX_NAME_LEN)
 					if(new_name)
 						new_name = reject_bad_name(new_name, allow_numbers = TRUE)
 						if(new_name)
@@ -3760,39 +3760,39 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						age = max(min( round(text2num(new_age)), AGE_MAX_INPUT),AGE_MIN)
 
 				if("security_records")
-					var/rec = tgui_input_text(usr, "Напишите заметки службы безопасности о вашем персонаже.", "Security Records", html_decode(security_records), MAX_FLAVOR_LEN, TRUE, FALSE) // BLUEMOON EDIT - tgui input
+					var/rec = tgui_input_text(usr, "Напишите заметки службы безопасности о вашем персонаже.", "Security Records", html_decode(security_records), MAX_FLAVOR_LEN, TRUE, TRUE)
 					if(!isnull(rec))
 						security_records = rec
 
 				if("medical_records")
-					var/rec = tgui_input_text(usr, "Напишите медицинские заметки о вашем персонаже.", "Medical Records", html_decode(medical_records), MAX_FLAVOR_LEN, TRUE, FALSE) // BLUEMOON EDIT - tgui input
+					var/rec = tgui_input_text(usr, "Напишите медицинские заметки о вашем персонаже.", "Medical Records", html_decode(medical_records), MAX_FLAVOR_LEN, TRUE, TRUE)
 					if(!isnull(rec))
 						medical_records = rec
 
 				if("flavor_text")
-					var/msg = tgui_input_text(usr, "Задайте внешнее описание вашего персонажа.\nПоддерживается форматирование:\n*курсив* _курсив_ !жирный! ^крупный^ |центр| ((мелкий))\n-=RRGGBB цветной текст =-  (например -=ff0000 красный=-)\n# Заголовок, ## Подзаголовок\nЭкранируйте спецсимволы обратным слешем \\* \\! \\_ и т.д.", "Описание Bнешности Персонажа", features["flavor_text"], MAX_FLAVOR_LEN, TRUE, FALSE) // BLUEMOON EDIT - tgui input
+					var/msg = tgui_input_text(usr, "Задайте внешнее описание вашего персонажа.\nПоддерживается форматирование:\n*курсив* _курсив_ !жирный! ^крупный^ |центр| ((мелкий))\n-=RRGGBB цветной текст =-  (например -=ff0000 красный=-)\n# Заголовок, ## Подзаголовок\nЭкранируйте спецсимволы обратным слешем \\* \\! \\_ и т.д.", "Описание Bнешности Персонажа", features["flavor_text"], MAX_FLAVOR_LEN, TRUE, FALSE)
 					if(!isnull(msg))
 						features["flavor_text"] = copytext_char(msg, 1, MAX_FLAVOR_LEN)
 
 				//SPLURT edit
 				if("naked_flavor_text")
-					var/msg = tgui_input_text(usr, "Задайте описание вашего персонажа без одежды.\nПоддерживается форматирование:\n*курсив* !жирный! -=цвет=- и т.д.", "Описание Bнешности Голого Персонажа", features["naked_flavor_text"], MAX_FLAVOR_LEN, TRUE, FALSE) // BLUEMOON EDIT - tgui input
+					var/msg = tgui_input_text(usr, "Задайте описание вашего персонажа без одежды.\nПоддерживается форматирование:\n*курсив* !жирный! -=цвет=- и т.д.", "Описание Bнешности Голого Персонажа", features["naked_flavor_text"], MAX_FLAVOR_LEN, TRUE, FALSE)
 					if(!isnull(msg))
 						features["naked_flavor_text"] = copytext_char(msg, 1, MAX_FLAVOR_LEN)
 
 				//SPLURT edit end
 				if("silicon_flavor_text")
-					var/msg = tgui_input_text(usr, "Задайте особые признаки внешности своего синтетического (борга) персонажа!\nПоддерживается форматирование: *курсив* !жирный! -=цвет=-", "Описание Борга", features["silicon_flavor_text"], MAX_FLAVOR_LEN, TRUE, FALSE) // BLUEMOON EDIT - tgui input
+					var/msg = tgui_input_text(usr, "Задайте особые признаки внешности своего синтетического (борга) персонажа!\nПоддерживается форматирование: *курсив* !жирный! -=цвет=-", "Описание Борга", features["silicon_flavor_text"], MAX_FLAVOR_LEN, TRUE, FALSE)
 					if(!isnull(msg))
 						features["silicon_flavor_text"] = copytext_char(msg, 1, MAX_FLAVOR_LEN)
 
 				if("custom_species_lore")
-					var/msg = tgui_input_text(usr, "Задайте особую предысторию расы своего персонажа!\nПоддерживается форматирование: *курсив* !жирный! -=цвет=-", "Предыстория Расы Bашего Персонажа", features["custom_species_lore"], MAX_FLAVOR_LEN, TRUE, FALSE) // BLUEMOON EDIT - tgui input
+					var/msg = tgui_input_text(usr, "Задайте особую предысторию расы своего персонажа!\nПоддерживается форматирование: *курсив* !жирный! -=цвет=-", "Предыстория Расы Bашего Персонажа", features["custom_species_lore"], MAX_FLAVOR_LEN, TRUE, FALSE)
 					if(!isnull(msg))
 						features["custom_species_lore"] = copytext_char(msg, 1, MAX_FLAVOR_LEN)
 				// BLUEMOON ADD START - пользовательский эмоут смерти
 				if("custom_deathgasp")
-					var/msg = tgui_input_text(usr, "Задайте эмоцию, которая будет проигрываться при смерти вашего персонажа!", "Сообщение О Смерти", features["custom_deathgasp"], MAX_DEATHGASP_LEN, TRUE, FALSE) // BLUEMOON EDIT - tgui input
+					var/msg = tgui_input_text(usr, "Задайте эмоцию, которая будет проигрываться при смерти вашего персонажа!", "Сообщение О Смерти", features["custom_deathgasp"], MAX_DEATHGASP_LEN, TRUE, FALSE)
 					if(!isnull(msg))
 						features["custom_deathgasp"] = strip_html_simple(msg, MAX_DEATHGASP_LEN, TRUE)
 				if("custom_deathsound")
@@ -3823,7 +3823,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						to_chat(user, "<span class='warning'>Вы выбрали беззвучный deathgasp или выбранный вами звук отсутствует!</span>")
 				// BLUEMOON ADD END
 				if("ooc_notes")
-					var/msg = tgui_input_text(usr, "Установите всегда видимые OOC-заметки, связанные с вашими предпочтениями.\nПоддерживается форматирование: *курсив* !жирный! -=цвет=-", "ООС-Заметки", features["ooc_notes"], MAX_FLAVOR_LEN, TRUE, FALSE) // BLUEMOON EDIT - tgui input
+					var/msg = tgui_input_text(usr, "Установите всегда видимые OOC-заметки, связанные с вашими предпочтениями.\nПоддерживается форматирование: *курсив* !жирный! -=цвет=-", "ООС-Заметки", features["ooc_notes"], MAX_FLAVOR_LEN, TRUE, FALSE)
 					if(!isnull(msg))
 						features["ooc_notes"] = copytext_char(msg, 1, MAX_FLAVOR_LEN)
 
@@ -3850,14 +3850,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				//SPLURT EDIT BEGIN - gregnancy
 				if("virility")
-					var/viri = tgui_input_number(user, "Set the chance of you impregnating something (set to 0 to disable). \n(0 = minimum, 100 = maximum)", "Character Preference", virility, 100, 0) // BLUEMOON EDIT - tgui input
+					var/viri = tgui_input_number(user, "Set the chance of you impregnating something (set to 0 to disable). \n(0 = minimum, 100 = maximum)", "Character Preference", virility, 100, 0)
 					if(!isnull(viri))
-						virility = clamp(viri, 0, 100) // BLUEMOON EDIT - tgui input null-guard
+						virility = clamp(viri, 0, 100)
 
 				if("fertility")
-					var/fert = tgui_input_number(user, "Set the chance of you getting impregnated (set to 0 to disable). \n(0 = minimum, 100 = maximum)", "Character Preference", fertility, 100, 0) // BLUEMOON EDIT - tgui input
+					var/fert = tgui_input_number(user, "Set the chance of you getting impregnated (set to 0 to disable). \n(0 = minimum, 100 = maximum)", "Character Preference", fertility, 100, 0)
 					if(!isnull(fert))
-						fertility = clamp(fert, 0, 100) // BLUEMOON EDIT - tgui input null-guard
+						fertility = clamp(fert, 0, 100)
 
 				if("egg_shell")
 					var/shell = tgui_input_list(user, "Pick a shell for your eggs", "Character Preferences", GLOB.egg_skins)
@@ -4129,7 +4129,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				/*
 				if("underwear")
-					var/new_underwear = tgui_input_list(user, "Choose your character's underwear:", "Character Preference", GLOB.underwear_list) // BLUEMOON EDIT - tgui input
+					var/new_underwear = tgui_input_list(user, "Choose your character's underwear:", "Character Preference", GLOB.underwear_list)
 					if(new_underwear)
 						underwear = new_underwear
 
@@ -4139,7 +4139,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						undie_color = sanitize_hexcolor(n_undie_color, 6)
 
 				if("undershirt")
-					var/new_undershirt = tgui_input_list(user, "Choose your character's undershirt:", "Character Preference", GLOB.undershirt_list) // BLUEMOON EDIT - tgui input
+					var/new_undershirt = tgui_input_list(user, "Choose your character's undershirt:", "Character Preference", GLOB.undershirt_list)
 					if(new_undershirt)
 						undershirt = new_undershirt
 
@@ -4149,7 +4149,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						shirt_color = sanitize_hexcolor(n_shirt_color, 6)
 
 				if("socks")
-					var/new_socks = tgui_input_list(user, "Choose your character's socks:", "Character Preference", GLOB.socks_list) // BLUEMOON EDIT - tgui input
+					var/new_socks = tgui_input_list(user, "Choose your character's socks:", "Character Preference", GLOB.socks_list)
 					if(new_socks)
 						socks = new_socks
 
@@ -4230,7 +4230,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						eye_type = pref_species.eye_type
 
 				if("custom_species")
-					var/new_species = reject_bad_name(tgui_input_text(user, "Выберите особую расу персонажа, если он уникален. Это будет отображаться при осмотре и сканировании здоровья. Не злоупотребляйте этим:", "Character Preference", custom_species, MAX_NAME_LEN), TRUE) // BLUEMOON EDIT - tgui input
+					var/new_species = reject_bad_name(tgui_input_text(user, "Выберите особую расу персонажа, если он уникален. Это будет отображаться при осмотре и сканировании здоровья. Не злоупотребляйте этим:", "Character Preference", custom_species, MAX_NAME_LEN), TRUE)
 					if(new_species)
 						custom_species = new_species
 					else
@@ -4627,12 +4627,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				//Genital code
 				if("lust_tolerance")
-					var/lust_tol = tgui_input_number(user, "Set how long you can last without climaxing. \n(25 = minimum, 200 = maximum.)", "Character Preference", lust_tolerance, 200, 25) // BLUEMOON EDIT - tgui input
-					if(!isnull(lust_tol)) // BLUEMOON EDIT - tgui input null-guard
+					var/lust_tol = tgui_input_number(user, "Set how long you can last without climaxing. \n(25 = minimum, 200 = maximum.)", "Character Preference", lust_tolerance, 200, 25)
+					if(!isnull(lust_tol))
 						lust_tolerance = clamp(lust_tol, 25, 200)
 				if("sexual_potency")
-					var/sexual_pot = tgui_input_number(user, "Set your sexual potency. \n(-1 = minimum, 25 = maximum.) This determines the number of times your character can orgasm before becoming impotent, use -1 for no impotency.", "Character Preference", sexual_potency, 25, -1) // BLUEMOON EDIT - tgui input
-					if(!isnull(sexual_pot)) // BLUEMOON EDIT - tgui input null-guard
+					var/sexual_pot_text = tgui_input_text(user, "Set your sexual potency. \n(-1 = minimum, 25 = maximum.) This determines the number of times your character can orgasm before becoming impotent, use -1 for no impotency.", "Character Preference", "[sexual_potency]", 16)
+					var/sexual_pot = isnull(sexual_pot_text) ? null : text2num(sexual_pot_text)
+					if(!isnull(sexual_pot))
 						sexual_potency = clamp(sexual_pot, -1, 25)
 
 				if("cock_color")
@@ -4649,8 +4650,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				if("cock_length")
 					var/min_D = CONFIG_GET(number/penis_min_inches_prefs)
 					var/max_D = CONFIG_GET(number/penis_max_inches_prefs)
-					var/new_length = tgui_input_number(user, "Penis length in centimeters:\n([min_D]-[max_D])\nReminder that your sprite size will affect this.", "Character Preference", features["cock_length"], max_D, min_D) // BLUEMOON EDIT - tgui input
-					if(!isnull(new_length)) // BLUEMOON EDIT - tgui input null-guard
+					var/new_length = tgui_input_number(user, "Penis length in centimeters:\n([min_D]-[max_D])\nReminder that your sprite size will affect this.", "Character Preference", features["cock_length"], max_D, min_D)
+					if(!isnull(new_length))
 						features["cock_length"] = clamp(round(new_length), min_D, max_D)
 
 				if("cock_shape")
@@ -4673,8 +4674,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				if("cock_diameter_ratio")
 					var/min_diameter_ratio = CONFIG_GET(number/diameter_ratio_min_size_prefs)
 					var/max_diameter_ratio = CONFIG_GET(number/diameter_ratio_max_size_prefs)
-					var/new_ratio = tgui_input_number(user, "Penis diameter ratio:\n([min_diameter_ratio]-[max_diameter_ratio])\nReminder that your sprite size will affect this.", "Character Preference", features["cock_diameter_ratio"], max_diameter_ratio, min_diameter_ratio) // BLUEMOON EDIT - tgui input
-					if(!isnull(new_ratio)) // BLUEMOON EDIT - tgui input null-guard
+					var/new_ratio_text = tgui_input_text(user, "Penis diameter ratio:\n([min_diameter_ratio]-[max_diameter_ratio])\nReminder that your sprite size will affect this.", "Character Preference", "[features["cock_diameter_ratio"]]", 16)
+					var/new_ratio = isnull(new_ratio_text) ? null : text2num(new_ratio_text)
+					if(!isnull(new_ratio))
 						features["cock_diameter_ratio"] = clamp(round(new_ratio, 0.01), min_diameter_ratio, max_diameter_ratio)
 
 				if("cock_visibility")
@@ -4830,15 +4832,15 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				if("belly_size")
 					var/min_belly = CONFIG_GET(number/belly_min_size_prefs)
 					var/max_belly = CONFIG_GET(number/belly_max_size_prefs)
-					var/new_bellysize = tgui_input_number(user, "Belly size :\n([min_belly]-[max_belly])", "Character Preference", features["belly_size"], max_belly, min_belly) // BLUEMOON EDIT - tgui input
+					var/new_bellysize = tgui_input_number(user, "Belly size :\n([min_belly]-[max_belly])", "Character Preference", features["belly_size"], max_belly, min_belly)
 					if(!isnull(new_bellysize))
 						features["belly_size"] = clamp(new_bellysize, min_belly, max_belly)
 
 				if("butt_size")
 					var/min_B = CONFIG_GET(number/butt_min_size_prefs)
 					var/max_B = CONFIG_GET(number/butt_max_size_prefs)
-					var/new_length = tgui_input_number(user, "Butt size:\n([min_B]-[max_B])", "Character Preference", features["butt_size"], max_B, min_B) // BLUEMOON EDIT - tgui input
-					if(!isnull(new_length)) // BLUEMOON EDIT - tgui input null-guard
+					var/new_length = tgui_input_number(user, "Butt size:\n([min_B]-[max_B])", "Character Preference", features["butt_size"], max_B, min_B)
+					if(!isnull(new_length))
 						features["butt_size"] = clamp(round(new_length), min_B, max_B)
 
 				if("butt_visibility")
@@ -4858,14 +4860,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("cock_max_length")
 					var/max_B = CONFIG_GET(number/penis_max_inches_prefs)
-					var/new_size = tgui_input_number(user, "Max size:\n([features["cock_length"]]-[max_B]) (0 = disabled)", "Character Preference", min(features["cock_max_length"] || 0, max_B), max_B, 0) // BLUEMOON EDIT - tgui input
+					var/new_size = tgui_input_number(user, "Max size:\n([features["cock_length"]]-[max_B]) (0 = disabled)", "Character Preference", min(features["cock_max_length"] || 0, max_B), max_B, 0)
 					if(new_size)
 						features["cock_max_length"] = clamp(round(new_size), features["cock_length"], max_B)
 					else
 						features -= "cock_max_length"
 
 				if("balls_max_size")
-					var/new_size = tgui_input_number(user, "Max size:\n([BALLS_SIZE_MIN]-[BALLS_SIZE_MAX]) (0 = disabled)", "Character Preference", min(features["balls_max_size"] || 0, BALLS_SIZE_MAX), BALLS_SIZE_MAX, 0) // BLUEMOON EDIT - tgui input
+					var/new_size = tgui_input_number(user, "Max size:\n([BALLS_SIZE_MIN]-[BALLS_SIZE_MAX]) (0 = disabled)", "Character Preference", min(features["balls_max_size"] || 0, BALLS_SIZE_MAX), BALLS_SIZE_MAX, 0)
 					if(new_size)
 						features["balls_max_size"] = clamp(round(new_size), BALLS_SIZE_MIN, BALLS_SIZE_MAX)
 					else
@@ -4880,7 +4882,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("belly_max_size")
 					var/max_B = CONFIG_GET(number/belly_max_size_prefs)
-					var/new_size = tgui_input_number(user, "Max size:\n([features["belly_size"]]-[max_B]) (0 = disabled)", "Character Preference", min(features["belly_max_size"] || 0, max_B), max_B, 0) // BLUEMOON EDIT - tgui input
+					var/new_size = tgui_input_number(user, "Max size:\n([features["belly_size"]]-[max_B]) (0 = disabled)", "Character Preference", min(features["belly_max_size"] || 0, max_B), max_B, 0)
 					if(new_size)
 						features["belly_max_size"] = clamp(round(new_size), features["belly_size"], max_B)
 					else
@@ -4888,7 +4890,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("butt_max_size")
 					var/max_B = CONFIG_GET(number/butt_max_size_prefs)
-					var/new_size = tgui_input_number(user, "Max size:\n([features["butt_size"]]-[max_B]) (0 = disabled)", "Character Preference", min(features["butt_max_size"] || 0, max_B), max_B, 0) // BLUEMOON EDIT - tgui input
+					var/new_size = tgui_input_number(user, "Max size:\n([features["butt_size"]]-[max_B]) (0 = disabled)", "Character Preference", min(features["butt_max_size"] || 0, max_B), max_B, 0)
 					if(new_size)
 						features["butt_max_size"] = clamp(round(new_size), features["butt_size"], max_B)
 					else
@@ -4896,14 +4898,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("cock_min_length")
 					var/min_B = CONFIG_GET(number/penis_min_inches_prefs)
-					var/new_size = tgui_input_number(user, "Min size:\n([min_B]-[features["cock_length"]]) (0 = disabled)", "Character Preference", min(features["cock_min_length"] || 0, features["cock_length"]), features["cock_length"], 0) // BLUEMOON EDIT - tgui input
+					var/new_size = tgui_input_number(user, "Min size:\n([min_B]-[features["cock_length"]]) (0 = disabled)", "Character Preference", min(features["cock_min_length"] || 0, features["cock_length"]), features["cock_length"], 0)
 					if(new_size)
 						features["cock_min_length"] = clamp(round(new_size), min_B, features["cock_length"])
 					else
 						features -= "cock_min_length"
 
 				if("balls_min_size")
-					var/new_size = tgui_input_number(user, "Min size:\n([BALLS_SIZE_MIN]-[BALLS_SIZE_MAX]) (0 = disabled)", "Character Preference", min(features["balls_min_size"] || 0, BALLS_SIZE_MAX), BALLS_SIZE_MAX, 0) // BLUEMOON EDIT - tgui input
+					var/new_size = tgui_input_number(user, "Min size:\n([BALLS_SIZE_MIN]-[BALLS_SIZE_MAX]) (0 = disabled)", "Character Preference", min(features["balls_min_size"] || 0, BALLS_SIZE_MAX), BALLS_SIZE_MAX, 0)
 					if(new_size)
 						features["balls_min_size"] = clamp(round(new_size), BALLS_SIZE_MIN, BALLS_SIZE_MAX)
 					else
@@ -4918,7 +4920,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("belly_min_size")
 					var/min_B = CONFIG_GET(number/belly_min_size_prefs)
-					var/new_size = tgui_input_number(user, "Min size:\n([min_B]-[features["belly_size"]]) (0 = disabled)", "Character Preference", min(features["belly_min_size"] || 0, features["belly_size"]), features["belly_size"], 0) // BLUEMOON EDIT - tgui input
+					var/new_size = tgui_input_number(user, "Min size:\n([min_B]-[features["belly_size"]]) (0 = disabled)", "Character Preference", min(features["belly_min_size"] || 0, features["belly_size"]), features["belly_size"], 0)
 					if(new_size)
 						features["belly_min_size"] = clamp(round(new_size), min_B, features["belly_size"])
 					else
@@ -4926,7 +4928,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("butt_min_size")
 					var/min_B = CONFIG_GET(number/butt_min_size_prefs)
-					var/new_size = tgui_input_number(user, "Min size:\n([min_B]-[features["butt_size"]]) (0 = disabled)", "Character Preference", min(features["butt_min_size"] || 0, features["butt_size"]), features["butt_size"], 0) // BLUEMOON EDIT - tgui input
+					var/new_size = tgui_input_number(user, "Min size:\n([min_B]-[features["butt_size"]]) (0 = disabled)", "Character Preference", min(features["butt_min_size"] || 0, features["butt_size"]), features["butt_size"], 0)
 					if(new_size)
 						features["butt_min_size"] = clamp(round(new_size), min_B, features["butt_size"])
 					else
@@ -5040,7 +5042,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					if(pickedPDASkin)
 						pda_skin = pickedPDASkin
 				if("pda_ringtone")
-					var/pickedPDARingtone = reject_bad_name(tgui_input_text(user, "Выберите рингтон своего КПК.", "Character Preference", pda_ringtone, MAX_MESSAGE_LEN), TRUE) // BLUEMOON EDIT - tgui input
+					var/pickedPDARingtone = reject_bad_name(tgui_input_text(user, "Выберите рингтон своего КПК.", "Character Preference", pda_ringtone, MAX_MESSAGE_LEN), TRUE)
 					if(pickedPDARingtone)
 						pda_ringtone = pickedPDARingtone
 				if("pda_theme")
@@ -5054,7 +5056,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							picked_lawset = null
 						silicon_lawset = picked_lawset
 				if ("max_chat_length")
-					var/desiredlength = tgui_input_number(user, "Choose the max character length of shown Runechat messages. Valid range is 1 to [CHAT_MESSAGE_MAX_LENGTH] (default: [initial(max_chat_length)]))", "Character Preference", max_chat_length, CHAT_MESSAGE_MAX_LENGTH, 1) // BLUEMOON EDIT - tgui input
+					var/desiredlength = tgui_input_number(user, "Choose the max character length of shown Runechat messages. Valid range is 1 to [CHAT_MESSAGE_MAX_LENGTH] (default: [initial(max_chat_length)]))", "Character Preference", max_chat_length, CHAT_MESSAGE_MAX_LENGTH, 1)
 					if (!isnull(desiredlength))
 						max_chat_length = clamp(desiredlength, 1, CHAT_MESSAGE_MAX_LENGTH)
 				//Sandstorm changes begin
@@ -5088,8 +5090,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					gender = chosengender
 
 				if("body_size")
-					var/new_body_size = tgui_input_number(user, "Choose your desired sprite size: ([CONFIG_GET(number/body_size_min)*100]-[CONFIG_GET(number/body_size_max)*100]%)\nWarning: This may make your character look distorted. Additionally, any size affects speed and max health", "Character Preference", clamp(features["body_size"]*100, CONFIG_GET(number/body_size_min)*100, CONFIG_GET(number/body_size_max)*100), CONFIG_GET(number/body_size_max)*100, CONFIG_GET(number/body_size_min)*100) // BLUEMOON EDIT - tgui input
-					if(!isnull(new_body_size)) // BLUEMOON EDIT - tgui input null-guard
+					var/new_body_size_text = tgui_input_text(user, "Choose your desired sprite size: ([CONFIG_GET(number/body_size_min)*100]-[CONFIG_GET(number/body_size_max)*100]%)\nWarning: This may make your character look distorted. Additionally, any size affects speed and max health", "Character Preference", "[features["body_size"]*100]", 16)
+					var/new_body_size = isnull(new_body_size_text) ? null : text2num(new_body_size_text)
+					if(!isnull(new_body_size))
 						features["body_size"] = clamp(new_body_size * 0.01, CONFIG_GET(number/body_size_min), CONFIG_GET(number/body_size_max))
 
 				if("toggle_fuzzy")
@@ -5113,8 +5116,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				if("normalized_size")
 					var/max_size = 	min(CONFIG_GET(number/body_size_max), 1.2)	// Магическая цифра (предел MOB_SIZE_HUMAN по proc/adjust_mobsize)
 					var/min_size =	max(CONFIG_GET(number/body_size_min), 0.81)	// Магическая цифра (предел MOB_SIZE_HUMAN по proc/adjust_mobsize)
-					var/new_normialzed_size = tgui_input_number(user, "Choose your desired normalized size: ([min_size * 100]-[max_size * 100]%)\nUsed with normalizer stuff", "Character Preference", clamp(features["normalized_size"]*100, min_size*100, max_size*100), max_size*100, min_size*100) // BLUEMOON EDIT - tgui input
-					if(!isnull(new_normialzed_size)) // BLUEMOON EDIT - tgui input null-guard
+					var/new_normialzed_size_text = tgui_input_text(user, "Choose your desired normalized size: ([min_size * 100]-[max_size * 100]%)\nUsed with normalizer stuff", "Character Preference", "[features["normalized_size"]*100]", 16)
+					var/new_normialzed_size = isnull(new_normialzed_size_text) ? null : text2num(new_normialzed_size_text)
+					if(!isnull(new_normialzed_size))
 						features["normalized_size"] = clamp(new_normialzed_size * 0.01, min_size, max_size)
 
 				// Выбор смеха
@@ -5178,19 +5182,22 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("barkspeed")
 					var/datum/bark/B = GLOB.bark_list[bark_id]
-					var/borkset = tgui_input_number(user, "Выберите желаемую скорость речи (Значение выше – медленная речь, ниже – быстрая). Мин: [initial(B.minspeed)]. Макс: [initial(B.maxspeed)]", "Настройка персонажа", bark_speed, initial(B.maxspeed), initial(B.minspeed)) // BLUEMOON EDIT - tgui input
+					var/borkset_text = tgui_input_text(user, "Выберите желаемую скорость речи (Значение выше – медленная речь, ниже – быстрая). Мин: [initial(B.minspeed)]. Макс: [initial(B.maxspeed)]", "Настройка персонажа", "[bark_speed]", 16)
+					var/borkset = isnull(borkset_text) ? null : text2num(borkset_text)
 					if(!isnull(borkset))
 						bark_speed = round(clamp(borkset, initial(B.minspeed), initial(B.maxspeed)), 1)
 
 				if("barkpitch")
 					var/datum/bark/B = GLOB.bark_list[bark_id]
-					var/borkset = tgui_input_number(user, "Выберите желаемую высоту тона голоса. Мин: [initial(B.minpitch)].\nМакс: [initial(B.maxpitch)]", "Настройка персонажа", bark_pitch, initial(B.maxpitch), initial(B.minpitch)) // BLUEMOON EDIT - tgui input
+					var/borkset_text = tgui_input_text(user, "Выберите желаемую высоту тона голоса. Мин: [initial(B.minpitch)].\nМакс: [initial(B.maxpitch)]", "Настройка персонажа", "[bark_pitch]", 16)
+					var/borkset = isnull(borkset_text) ? null : text2num(borkset_text)
 					if(!isnull(borkset))
 						bark_pitch = clamp(borkset, initial(B.minpitch), initial(B.maxpitch))
 
 				if("barkvary")
 					var/datum/bark/B = GLOB.bark_list[bark_id]
-					var/borkset = tgui_input_number(user, "Выберите желаемую случайность звучания речи. Мин: [initial(B.minvariance)].\nМакс: [initial(B.maxvariance)]", "Настройка персонажа", bark_variance, initial(B.maxvariance), initial(B.minvariance)) // BLUEMOON EDIT - tgui input
+					var/borkset_text = tgui_input_text(user, "Выберите желаемую случайность звучания речи. Мин: [initial(B.minvariance)].\nМакс: [initial(B.maxvariance)]", "Настройка персонажа", "[bark_variance]", 16)
+					var/borkset = isnull(borkset_text) ? null : text2num(borkset_text)
 					if(!isnull(borkset))
 						bark_variance = clamp(borkset, initial(B.minvariance), initial(B.maxvariance))
 
@@ -5535,7 +5542,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				if("no_tetris_storage")
 					no_tetris_storage = !no_tetris_storage
 				if ("screenshake")
-					var/desiredshake = tgui_input_number(user, "Set the amount of screenshake you want. \n(0 = disabled, 100 = full, no maximum (at your own risk).)", "Character Preference", screenshake, INFINITY, 0) // BLUEMOON EDIT - tgui input
+					var/desiredshake = tgui_input_number(user, "Set the amount of screenshake you want. \n(0 = disabled, 100 = full, no maximum (at your own risk).)", "Character Preference", screenshake, INFINITY, 0)
 					if (!isnull(desiredshake))
 						screenshake = desiredshake
 				if("damagescreenshake")
@@ -5549,7 +5556,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						else
 							damagescreenshake = 1
 				if ("recoil_screenshake")
-					var/desiredshake = tgui_input_number(user, "Set the amount of recoil screenshake/push you want. \n(0 = disabled, 100 = full, no maximum (at your own risk).)", "Character Preference", recoil_screenshake, INFINITY, 0) // BLUEMOON EDIT - tgui input (fixed default: was screenshake)
+					var/desiredshake = tgui_input_number(user, "Set the amount of recoil screenshake/push you want. \n(0 = disabled, 100 = full, no maximum (at your own risk).)", "Character Preference", recoil_screenshake, INFINITY, 0)
 					if (!isnull(desiredshake))
 						recoil_screenshake = desiredshake
 				if("nameless")
@@ -6343,13 +6350,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 			//renaming is only allowed if it has the flag for it
 			if(href_list["loadout_rename"] && (G.loadout_flags & LOADOUT_CAN_NAME))
-				var/new_name = tgui_input_text(user, "Enter new name for item. Maximum [MAX_NAME_LEN] characters.", "Loadout Item Naming", null, MAX_NAME_LEN) // BLUEMOON EDIT - tgui input
+				var/new_name = tgui_input_text(user, "Enter new name for item. Maximum [MAX_NAME_LEN] characters.", "Loadout Item Naming", null, MAX_NAME_LEN, FALSE, TRUE)
 				if(new_name)
 					user_gear[LOADOUT_CUSTOM_NAME] = new_name
 
 			//redescribing is only allowed if it has the flag for it
 			if(href_list["loadout_redescribe"] && (G.loadout_flags & LOADOUT_CAN_DESCRIPTION)) //redescribe isnt a real word but i can't think of the right term to use
-				var/new_description = tgui_input_text(user, "Enter new description for item. Maximum 500 characters.", "Loadout Item Redescribing", null, 500, TRUE) // BLUEMOON EDIT - tgui input
+				var/new_description = tgui_input_text(user, "Enter new description for item. Maximum 500 characters.", "Loadout Item Redescribing", null, 500, TRUE, TRUE)
 				if(new_description)
 					user_gear[LOADOUT_CUSTOM_DESCRIPTION] = new_description
 			// BLUEMOON ADD START - выбор вещей из лодаута как family heirloom
@@ -6381,12 +6388,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 			//for collars with tagnames
 			if(href_list["loadout_tagname"])
-				var/new_tagname = tgui_input_text(user, "Would you like to change the name on the tag?", "Name your new pet", null, MAX_NAME_LEN) // BLUEMOON EDIT - tgui input
+				var/new_tagname = tgui_input_text(user, "Would you like to change the name on the tag?", "Name your new pet", null, MAX_NAME_LEN, FALSE, TRUE)
 				if(new_tagname)
 					user_gear["loadout_custom_tagname"] = new_tagname
 			if(href_list["loadout_examtooltip"])
 				var/defaultinput = (islist(user_gear["loadout_examtooltip"])) ? user_gear["loadout_examtooltip"][1] : null
-				var/examtooltip_usrinput = tgui_input_text(user, "Это описание предмета будет видно при осмотре персонажа, носящего предмет. Cancel - очистить.", "Дополнительное описание", defaultinput, MAX_MESSAGE_LEN, TRUE) // BLUEMOON EDIT - tgui input
+				var/examtooltip_usrinput = tgui_input_text(user, "Это описание предмета будет видно при осмотре персонажа, носящего предмет. Cancel - очистить.", "Дополнительное описание", defaultinput, MAX_MESSAGE_LEN, TRUE, TRUE)
 				if(examtooltip_usrinput)
 					user_gear["loadout_examtooltip"] = list(examtooltip_usrinput, TRUE)
 					examtooltip_usrinput = alert(usr, "Оставлять описание даже после снятия предмета с персонажа?", "Постоянное описание", "Да", "Нет")
@@ -6626,7 +6633,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	if(!namedata)
 		return
 
-	var/raw_name = tgui_input_text(user, "Выберите своему персонажу [namedata["qdesc"]]:", "Настройка персонажа", custom_names[name_id], MAX_NAME_LEN) // BLUEMOON EDIT - tgui input
+	var/raw_name = tgui_input_text(user, "Выберите своему персонажу [namedata["qdesc"]]:", "Настройка персонажа", custom_names[name_id], MAX_NAME_LEN)
 	if(!raw_name)
 		if(namedata["allow_null"])
 			custom_names[name_id] = get_default_name(name_id)
@@ -6890,7 +6897,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			links_list[link_index] = headshot_link
 
 /datum/preferences/proc/get_headshot_link(mob/user, old_link)
-	var/usr_input = tgui_input_text(user, "Input the image link: (For Discord links, try putting the file's type at the end of the link, after the '&'. for example '&.jpg/.png/.jpeg/.gif/.webm/.mp4')", "Headshot Image", old_link, HEADSHOT_LINK_MAX_LENGTH) // BLUEMOON EDIT - tgui input
+	var/usr_input = tgui_input_text(user, "Input the image link: (For Discord links, try putting the file's type at the end of the link, after the '&'. for example '&.jpg/.png/.jpeg/.gif/.webm/.mp4')", "Headshot Image", old_link, HEADSHOT_LINK_MAX_LENGTH)
 	if(isnull(usr_input))
 		return ACTION_HEADSHOT_LINK_NOOP
 

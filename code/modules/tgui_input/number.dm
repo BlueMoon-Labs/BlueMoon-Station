@@ -29,6 +29,8 @@
 		var/mob/prompt_mob = begin_native_prompt(user)
 		var/input_number = input(user, message, title, default) as null|num
 		end_native_prompt(prompt_mob)
+		if(isnull(input_number))
+			return null
 		return clamp(round_value ? round(input_number) : input_number, min_value, max_value)
 	var/datum/tgui_input_number/number_input = new(user, message, title, default, max_value, min_value, timeout, round_value)
 	number_input.ui_interact(user)

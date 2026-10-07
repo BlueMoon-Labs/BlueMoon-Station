@@ -30,11 +30,7 @@ export const AlertModal = (_) => {
     title,
   } = data;
   const [selected, setSelected] = useState<number>(0);
-  // Long labels (e.g. "ПРОШУ ВРЕМЕННО ОТКЛЮЧИТЬ") don't fit two-in-a-row
-  // at the default 325px width: Flex wraps them into two rows and the
-  // second row gets clipped by the fixed height. Widen the window and add
-  // a height buffer only in that case; short "Ok/Yes/No" alerts compute
-  // exactly as before.
+  // Widen only for <=2 long labels so stock alerts keep stock dimensions.
   const longestButton = buttons.reduce(
     (max, button) => Math.max(max, button?.length || 0),
     0

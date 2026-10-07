@@ -36,12 +36,10 @@ export const TextInputModal = (_) => {
     setInput(value);
   };
   // Dynamically changes the window height based on the message.
-  // Base 165 (not 140): message + singleline TextArea (3em) + large
-  // buttons + Section padding need ~150px; at 140 the content overflows
-  // and the buttons end up flush with the window edge (see Character
-  // Preference name prompt vs NumberInputModal, which computes ~155).
+  // Base 150 fits a short prompt + singleline input + large buttons;
+  // 140 clipped the buttons against the window edge.
   const windowHeight
-    = 165
+    = 150
     + (message.length > 30 ? Math.ceil(message.length * 0.45) : 0)
     + (multiline ? 195 : 0)
     + (message.length && large_buttons ? 5 : 0)
