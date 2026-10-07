@@ -1796,7 +1796,7 @@
 /obj/item/storage/box/coffeepack/PopulateContents()
 	for(var/i in 1 to 5)
 		var/obj/item/reagent_containers/food/snacks/grown/coffee/bean = new beantype(src)
-		bean.add_atom_colour(COLOR_DRIED_TAN, FIXED_COLOUR_PRIORITY) //give them the tan just like from the drying rack
+		SEND_SIGNAL(bean, COMSIG_ITEM_DRIED)
 
 /obj/item/storage/box/coffeepack/robusta
 	name = "Robusta Beans"
