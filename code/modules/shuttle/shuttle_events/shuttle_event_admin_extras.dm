@@ -51,3 +51,20 @@
 	human.equipOutfit(/datum/outfit/inteq/full)
 	if(human.internal)
 		human.update_action_buttons_icon()
+
+/datum/shuttle_event/simple_spawner/player_controlled/human/hitchhiker/inteq/spawn_movable()
+	. = ..()
+	if(!.)
+		return
+	if(!port)
+		return
+	var/area/A = get_area(port)
+	if(!A)
+		return
+	var/obj/docking_port/mobile/S = SSshuttle.get_containing_shuttle(A)
+	if(!S)
+		return
+	if(S.mode == SHUTTLE_ESCAPE)
+		S.setTimer(S.timeLeft(1) + 120 SECONDS)
+	else
+		S.setTimer(S.timeLeft(1) + 120 SECONDS)

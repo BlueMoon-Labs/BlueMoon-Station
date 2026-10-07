@@ -704,6 +704,8 @@
 	recoil = 0.5
 	slot_flags = ITEM_SLOT_BELT
 
+
+
 /obj/item/gun/ballistic/revolver/Dies_Irae //сбухам кит на револьвер для переделки под 308, но КРАЙНЕ МЕДЛЕННАЯ стрельба, плюс с двух рук, считай аналог винтовки с карго, но влезает в сумку ценой скорости стрельбы
 	name = "\improper Dies Iraen"
 	desc = "The Day of Wrath made manifest in cold, weathered iron. Re-engineered with an elongated frame to chamber devastating rifle cartridges, this hand-cannon shatters bone and banishes monstrosities with the thunderous roar of the final judgement."
@@ -762,8 +764,65 @@
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/exorcist 
 	dual_wield_spread = 25
-	fire_delay = 15
+	fire_delay = 10
 	w_class = WEIGHT_CLASS_NORMAL
 	weapon_weight = WEAPON_MEDIUM //чтоб не стреляли с 2 рук, но не требовал вторую руку
 	recoil = 5
 	slot_flags = ITEM_SLOT_BELT
+
+/obj/item/gun/ballistic/revolver/process_fire(atom/target, mob/living/user, triggered_by_gun, params)
+	// Вызываем базовый выстрел (пуля/дробь вылетает во врага)
+	. = ..()
+	if(!.)
+		return
+	// Проверяем, что стрелок — живой человек
+	if(!ishuman(user))
+		return
+
+	var/mob/living/carbon/human/H = user
+
+	// СТРОГАЯ ПРОВЕРКА АКТИВНОГО ОРУЖИЯ: Стреляем ли мы сейчас из Dies_Irae или Exorcist?
+	var/is_main_heavy = (istype(src, /obj/item/gun/ballistic/revolver/Dies_Irae) || istype(src, /obj/item/gun/ballistic/revolver/Exorcist))
+	if(!is_main_heavy)
+		return // Если в активной руке другой револьвер, ничего не делаем
+
+	// СТРОГАЯ ПРОВЕРКА ВТОРОЙ РУКИ: Ищем тяжелое оружие во второй руке
+	var/obj/item/offhand_item = H.get_inactive_held_item()
+	
+	// Проверяем, является ли предмет во второй руке тоже одним из этих двух револьверов
+	var/is_offhand_heavy = (istype(offhand_item, /obj/item/gun/ballistic/revolver/Dies_Irae) || istype(offhand_item, /obj/item/gun/ballistic/revolver/Exorcist))
+	
+	if(!is_offhand_heavy)
+		return // Если вторая рука пуста или там любой другой предмет (нож, фонарик, легкий пистолет) — вывиха НЕТ!
+
+	// ВЫВИХ ПРАВОГО ПЛЕЧА (срабатывает только при стрельбе из двух тяжелых револьверов)
+	var/obj/item/bodypart/r_arm = H.get_bodypart(BODY_ZONE_R_ARM)
+	if(r_arm)
+		r_arm.receive_damage(brute = 15, burn = 0, wound_bonus = 0)
+		var/datum/wound/blunt/moderate/right_dislocation = new
+		right_dislocation.apply_wound(r_arm)
+		if(hasvar(r_arm, "enabled"))
+			r_arm.vars["enabled"] = FALSE
+		r_arm.update_appearance()
+
+	//  ВЫВИХ ЛЕВЕГО ПЛЕЧА
+	var/obj/item/bodypart/l_arm = H.get_bodypart(BODY_ZONE_L_ARM)
+	if(l_arm)
+		l_arm.receive_damage(brute = 15, burn = 0, wound_bonus = 0)
+		var/datum/wound/blunt/moderate/left_dislocation = new
+		left_dislocation.apply_wound(l_arm)
+		l_arm.vars["dislocated"] = TRUE
+		if(hasvar(l_arm, "enabled"))
+			l_arm.vars["enabled"] = FALSE
+		l_arm.update_appearance()
+
+	// БОЛЕВОЙ ШОК, ЭФФЕКТЫ И ПАДЕНИЕ ОРУЖИЯ
+	to_chat(H, "<span class='userdanger'>Попытка выстрелить из двух тяжелых револьверов одновременно сокрушительной отдачей выбивает вам оба плеча!</span>")
+	
+	playsound(H.loc, 'sound/effects/wounds/crack1.ogg', 70, TRUE) 
+	
+	// Персонаж роняет оба револьвера на пол
+	H.drop_all_held_items()
+	
+	// Болевой ступор/паралич на 3.5 секунды
+	H.Paralyze(35) 

@@ -2799,8 +2799,17 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 /datum/species/proc/can_wag_tail(mob/living/carbon/human/H)
 	if(!tail_type || !wagging_type)
 		return FALSE
-	else
-		return mutant_bodyparts[tail_type] || mutant_bodyparts[wagging_type]
+	// BLUEMOON ADD START - проверка наличия wag-спрайта, иначе хвост без анимации (напр. Shadekin Big and Fluffy) пропадает при вилянии
+	if(is_wagging_tail())
+		return TRUE
+	if(H && H.dna && H.dna.features)
+		var/tail_name = H.dna.features[tail_type]
+		if(tail_name && tail_name != "None")
+			var/list/animated_list = GLOB.mutant_reference_list[wagging_type]
+			if(!animated_list || !(tail_name in animated_list))
+				return FALSE
+	// BLUEMOON ADD END
+	return mutant_bodyparts[tail_type] || mutant_bodyparts[wagging_type]
 
 /datum/species/proc/is_wagging_tail(mob/living/carbon/human/H)
 	return mutant_bodyparts[wagging_type]
@@ -2825,6 +2834,14 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 
 /datum/species/proc/start_wagging_tail(mob/living/carbon/human/H)
 	if(tail_type && wagging_type)
+		// BLUEMOON ADD START - не начинаем виляние без wag-спрайта, иначе хвост исчезнет до остановки через эмоут
+		if(H && H.dna && H.dna.features)
+			var/tail_name = H.dna.features[tail_type]
+			if(tail_name && tail_name != "None")
+				var/list/animated_list = GLOB.mutant_reference_list[wagging_type]
+				if(!animated_list || !(tail_name in animated_list))
+					return
+		// BLUEMOON ADD END
 		if(mutant_bodyparts[tail_type])
 			swap_mutant_bodypart_key(tail_type, wagging_type)
 			if(tail_type == "tail_lizard") //special lizard thing

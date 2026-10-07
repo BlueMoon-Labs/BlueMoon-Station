@@ -2642,7 +2642,7 @@
 	name = "Kumiko Weapon Case"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/box/kumikoshouko_case
-	ckeywhitelist = list("kumikoshouko")
+	ckeywhitelist = list("kumikoshouko", "ottasuka")
 
 /datum/gear/donator/bm/skull_half_mask
 	name = "Skull Gaiter"
@@ -2756,7 +2756,7 @@
 	name = "NCR ranger clothes case"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/box/kumiko_ncr_case
-	ckeywhitelist = list("kumikoshouko", "1hollowknight1", "foxrtotlimda", "ottasuka")
+	ckeywhitelist = list("kumikoshouko", "1hollowknight1", "foxrtotlimda")
 
 /datum/gear/donator/bm/xeno_waller
 	name = "Xeno Wallet"
@@ -2781,3 +2781,9 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/light_plate_carrier
 	ckeywhitelist = list("hartty", "spoopyman228", "dalphy12", "leony24", "rockymed", "hateredsoul")
+
+/datum/gear/donator/bm/honorable_coat
+	name = "Honorable coa"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/clothing/suit/donator/bm/honorable_coat
+	ckeywhitelist = list("kumikoshouko")

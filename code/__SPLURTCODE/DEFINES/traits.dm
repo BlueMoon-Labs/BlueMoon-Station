@@ -51,6 +51,7 @@
 #define TRAIT_KISS_SLUT					"kiss_slut"
 #define TRAIT_HYDRA_HEADS				"hydrahead" //Hydra head port.
 #define TRAIT_WADDLING					"trait_waddling"
+#define TRAIT_MODULAR_LIMBS				"modular_limbs"
 
 // Chastity traits
 #define TRAIT_CHASTENED_ANUS "chastened_anus"

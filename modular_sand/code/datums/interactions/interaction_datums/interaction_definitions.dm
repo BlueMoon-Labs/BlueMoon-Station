@@ -40,26 +40,12 @@
 //BLUEMOON ADD START
 /datum/interaction/headpat/post_interaction(mob/living/user, mob/living/target, apply_cooldown, is_hidden)
 	. = ..()
-
 	if(HAS_TRAIT(target, TRAIT_DISTANT))
 		to_chat(user, span_warning("[capitalize(target.name)] отстраняется от тебя, не желая таких прикосновений."))
 		to_chat(target, span_warning("Ты чувствуешь раздражение, когда [user] трогает тебя за голову."))
-
-		if(prob(20) && !HAS_TRAIT(target, TRAIT_PACIFISM) && !HAS_TRAIT(user, TRAIT_PACIFISM))
-			user.visible_message(
-				span_warning("<b>[target]</b> внезапно выкручивает руку <b>[user]</b>!"),
-				span_boldwarning("Ты чувствуешь, как <b>[target]</b> резко выкручивает тебе руку! Лучше не трогать его!"),
-				target_message = span_warning("Ты ловко выкручиваешь руку <b>[user]</b> за попытку прикоснуться к тебе.")
-			)
-			user.emote("realagony")
-			user.dropItemToGround(user.get_active_held_item())
-
-			var/hand = pick(BODY_ZONE_PRECISE_L_HAND, BODY_ZONE_PRECISE_R_HAND)
-			user.apply_damage(50, STAMINA, hand)
-			user.apply_damage(5, BRUTE, hand)
-			user.Knockdown(60) // STOP TOUCHING ME!
-
-		return
+		var/mob/living/carbon/carbon_target = astype(target, /mob/living/carbon)
+		if(carbon_target && carbon_target.distant_punishment_interaction(user))
+			return TRUE
 
 	if(HAS_TRAIT(target, TRAIT_HEADPAT_SLUT))
 		SEND_SIGNAL(target, COMSIG_ADD_MOOD_EVENT, "lewd_headpat", /datum/mood_event/lewd_headpat)
@@ -67,7 +53,6 @@
 		new /obj/effect/temp_visual/heart(target.loc)
 	else
 		SEND_SIGNAL(target, COMSIG_ADD_MOOD_EVENT, "headpat", /datum/mood_event/headpat)
-
 
 /datum/interaction/headpat/display_interaction(mob/living/user, mob/living/target, is_hidden)
 	. = ..()
@@ -77,11 +62,11 @@
 		distance = 1
 	if(HAS_TRAIT(target, TRAIT_DISTANT))
 		user.visible_message(
-			span_warning("[is_hidden ? (picked_hidden) : null]<b>[user]</b> тянется, чтобы погладить <b>[target]</b> по голове, но тот раздражённо отстраняется."),
-			span_warning("[is_hidden ? (picked_hidden) : null]Ты пытаешься погладить <b>[target]</b> по голове, но он отстраняется и выглядит недовольным."),
+			span_warning("[is_hidden ? (picked_hidden) : null]<b>[user]</b> тянется, чтобы погладить <b>[target]</b> по голове, но он[target.ru_a()] раздражённо отстраняется."),
+			span_warning("[is_hidden ? (picked_hidden) : null]Вы пытаетесь погладить <b>[target]</b> по голове, но он[target.ru_a()] отстраняется и выглядит недовольно."),
 			target_message = span_warning("[is_hidden ? (picked_hidden) : null]<b>[user]</b> тянется к твоей голове, но ты раздражённо отстраняешься.")
 		, vision_distance = distance)
-		return
+		return TRUE
 
 	if(!is_hidden && HAS_TRAIT(target, TRAIT_HEADPAT_SLUT))
 		new /obj/effect/temp_visual/heart(target.loc)
