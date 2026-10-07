@@ -3841,7 +3841,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 -=RRGGBB текст =- — цвет (hex, например -=ff0000 красный=- , -=00ff00 зелёный=-)
 Экранирование: \\* \\! \\_ \\^ \\| \\( \\)
 "}
-					alert(usr, help_text, "Помощь по форматированию")
+					tgui_alert(usr, help_text, "Помощь по форматированию", list("OK"))
 
 				if("hide_ckey")
 					hide_ckey = !hide_ckey
