@@ -30,12 +30,27 @@ export const AlertModal = (_) => {
     title,
   } = data;
   const [selected, setSelected] = useState<number>(0);
+  // Long labels (e.g. "ПРОШУ ВРЕМЕННО ОТКЛЮЧИТЬ") don't fit two-in-a-row
+  // at the default 325px width: Flex wraps them into two rows and the
+  // second row gets clipped by the fixed height. Widen the window and add
+  // a height buffer only in that case; short "Ok/Yes/No" alerts compute
+  // exactly as before.
+  const longestButton = buttons.reduce(
+    (max, button) => Math.max(max, button?.length || 0),
+    0
+  );
+  const longLabel = buttons.length <= 2 && longestButton > 12;
   // Dynamically sets window dimensions
   const windowHeight
     = 115
     + (message.length > 30 ? Math.ceil(message.length / 4) : 0)
-    + (message.length && large_buttons ? 5 : 0);
-  const windowWidth = 325 + (buttons.length > 2 ? 55 : 0);
+    + (message.length && large_buttons ? 5 : 0)
+    + (message.split('\n').length - 1) * 12
+    + (longLabel ? (large_buttons ? 15 : 45) : 0);
+  const windowWidth
+    = 325
+    + (buttons.length > 2 ? 55 : 0)
+    + (longLabel ? (longestButton - 12) * 16 : 0);
   const onKey = (direction: number) => {
     if (selected === 0 && direction === KEY_DECREMENT) {
       setSelected(buttons.length - 1);
@@ -66,7 +81,7 @@ export const AlertModal = (_) => {
         <Section fill>
           <Stack fill vertical>
             <Stack.Item grow m={1}>
-              <Box color="label" overflow="hidden">
+              <Box color="label" overflow="hidden" preserveWhitespace>
                 {message}
               </Box>
             </Stack.Item>
