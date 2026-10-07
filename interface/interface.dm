@@ -66,7 +66,7 @@
 		message = "Это откроет репортер проблем в вашем браузере. Вы уверены?"
 		if(GLOB.revdata.testmerge.len)
 			message += "\nАктивные экспериментальные изменения (тест-мерджи) — возможная причина новых проблем. По возможности найдите конкретный тред вместо общего трекера:\n"
-			message += strip_html_simple(replacetext(GLOB.revdata.GetTestMergeInfo(FALSE), "<br>", "\n"))
+			message += strip_html_tags(replacetext(GLOB.revdata.GetTestMergeInfo(FALSE), "<br>", "\n"))
 		if(tgui_alert(src, message, "Report Issue", list("Да", "Нет")) != "Да")
 			return
 		src << link(reportissue)
@@ -77,7 +77,7 @@
 		message = "Это откроет репортер проблем Github в вашем браузере. Вы уверены?"
 		if(GLOB.revdata.testmerge.len)
 			message += "\nАктивные экспериментальные изменения (тест-мерджи) — возможная причина новых проблем. По возможности найдите конкретный тред вместо общего трекера:\n"
-			message += strip_html_simple(replacetext(GLOB.revdata.GetTestMergeInfo(FALSE), "<br>", "\n"))
+			message += strip_html_tags(replacetext(GLOB.revdata.GetTestMergeInfo(FALSE), "<br>", "\n"))
 		if(tgui_alert(src, message, "Report Issue", list("Да", "Нет")) != "Да")
 			return
 		var/static/issue_template = file2text(".github/ISSUE_TEMPLATE.md")
