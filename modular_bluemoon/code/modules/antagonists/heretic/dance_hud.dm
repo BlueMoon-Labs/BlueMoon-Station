@@ -77,7 +77,7 @@
 	var/client/viewer = hint_viewer()
 	var/datum/heretic_dance_style/style = current_style()
 	var/total = length(style.figure) || (style.id == HERETIC_DANCE_STYLE_TARANTELLA ? HERETIC_DANCE_BITE_HITS : 0)
-	if(!viewer || !total)
+	if(!viewer || !total || music_silent())
 		drop_hint(figure_hud)
 		return
 	var/done = length(style.figure) ? figure_progress() : bite_chain

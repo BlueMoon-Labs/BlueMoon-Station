@@ -185,7 +185,6 @@
 	r_hand = /obj/item/melee/transforming/energy/sword/saber
 	uniform = /obj/item/clothing/under/syndicate
 	suit = /obj/item/clothing/suit/armor/vest
-	//neck = /obj/item/clothing/neck/baron
 	shoes = /obj/item/clothing/shoes/combat
 	gloves = /obj/item/clothing/gloves/tackler/combat/insulated
 	ears = /obj/item/radio/headset/ds1

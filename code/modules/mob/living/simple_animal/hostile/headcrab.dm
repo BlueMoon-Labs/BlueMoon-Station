@@ -7,8 +7,8 @@
 	icon_dead = "headcrab_dead"
 	health = 60
 	maxHealth = 60
-	melee_damage_lower = 5
-	melee_damage_upper = 10
+	melee_damage_lower = 10
+	melee_damage_upper = 15
 	ranged = 1
 	ranged_message = "leaps"
 	ranged_cooldown_time = 40
@@ -20,6 +20,13 @@
 	speak_emote = list("hisses")
 	var/is_zombie = 0
 	robust_searching = 1
+	// софткрит (UNCONSCIOUS) остаётся валидной целью: краб догоняет и прыгает на
+	// лежащую жертву, после чего BiologicalLife захватывает её без проверки статуса.
+	stat_attack = UNCONSCIOUS
+	/// Шанс (0-100) того, что краб отцепится от павшего зомби живым и удерёт
+	var/detach_chance = 25
+	/// Труп носителя, с которого краб только что сорвался: обратно не перепрыгиваем
+	var/mob/living/carbon/human/ex_host
 	var/host_species = ""
 	var/list/human_overlays = list()
 
@@ -27,7 +34,9 @@
 	if(..() && !stat)
 		if(!is_zombie && isturf(src.loc))
 			for(var/mob/living/carbon/human/H in oview(src, 1)) //Only for corpse right next to/on same tile
-				if(!H.get_item_by_slot(ITEM_SLOT_HEAD) && prob(50)) // BLUEMOON EDIT - убрана зомбификация, она идёт дальше
+				if(H == ex_host) // со свежесорвавшегося трупа не захватываемся повторно
+					continue
+				if(!H.get_item_by_slot(ITEM_SLOT_HEAD) && prob(50) || H.IsUnconscious())
 					visible_message("<span class='danger'>[src] запрыгивает на голову [H], вгрызясь своими лапками в затылок жертвы!</span>", "<span class='danger'>[src] запрыгивает на голову [H], вгрызясь своими лапками в затылок жертвы!</span>")
 					H.death(FALSE)
 					Zombify(H)
@@ -56,6 +65,7 @@
 
 /mob/living/simple_animal/hostile/headcrab/proc/Zombify(mob/living/carbon/human/H)
 	is_zombie = TRUE
+	ex_host = H
 	if(H.wear_suit)
 		var/obj/item/clothing/suit/armor/A = H.wear_suit
 		if(A.armor && A.armor.getRating("melee"))
@@ -66,6 +76,7 @@
 	desc = "A corpse animated by the alien being on its head."
 	melee_damage_lower += 10
 	melee_damage_upper += 15
+	AddComponent(/datum/component/lifesteal, 10) // зомби восстанавливает ОЗ за каждый укус
 	ranged = 0
 	stat_attack = CONSCIOUS // Disables their targeting of dead mobs once they're already a zombie
 	icon = H.icon
@@ -84,9 +95,17 @@
 	H.forceMove(src)
 	visible_message("<span class='warning'>[H.name] восстаёт из мёртвых!</span>")
 
-/mob/living/simple_animal/hostile/headcrab/death()
-	..()
+/mob/living/simple_animal/hostile/headcrab/death(gibbed)
+	..(gibbed)
 	if(is_zombie)
+		// С шансом detach_chance краб срывается с павшего зомби живым и удирает
+		// искать нового носителя, а не погибает вместе с ним (на труп вывалится
+		// тело бывшего хозяина - см. Destroy ниже).
+		if(!gibbed && prob(detach_chance) && isturf(loc))
+			var/mob/living/carbon/human/previous_host = locate(/mob/living/carbon/human) in contents
+			var/mob/living/simple_animal/hostile/headcrab/hatchling = new(loc)
+			hatchling.ex_host = previous_host
+			visible_message("<span class='danger'>[src] выпрыгивает из павшего тела, отряхивается и шустро удирает искать новую жертву!</span>")
 		qdel(src)
 
 /mob/living/simple_animal/hostile/headcrab/handle_automated_speech() // This way they have different screams when attacking, sometimes. Might be seen as sphagetthi code though.
@@ -166,7 +185,7 @@
 	ranged_cooldown_time = 50
 	jumpdistance = 3
 	jumpspeed = 1
-	melee_damage_lower = 8
+	melee_damage_lower = 10
 	melee_damage_upper = 20
 	attack_sound = 'sound/creatures/ph_scream1.ogg'
 	speak_emote = list("screech")

@@ -23,6 +23,10 @@
 	name = "overalls"
 	path = /obj/item/clothing/suit/apron/overalls
 
+/datum/gear/suit/plain_apron
+	name = "apron"
+	path = /obj/item/clothing/suit/apron/chef/plain
+
 // Fixes "Fed (Modern) uniform, White" being in general suit loadout section.
 /datum/gear/suit/trekcmdcapmod
 	subcategory = LOADOUT_SUBCATEGORY_SUIT_JOBS

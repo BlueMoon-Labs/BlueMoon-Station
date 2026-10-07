@@ -118,7 +118,7 @@
 	facial_hair_style = "Shaved"
 
 /datum/outfit/russiancorpse
-	name = "Russian Corpse"
+	name = "Bear Like Russian"
 	uniform = /obj/item/clothing/under/costume/soviet
 	shoes = /obj/item/clothing/shoes/jackboots
 	head = /obj/item/clothing/head/bearpelt
@@ -126,38 +126,40 @@
 	mask = /obj/item/clothing/mask/gas
 
 /obj/effect/mob_spawn/human/corpse/russian/ranged
+	name = "Ranged Russian"
 	outfit = /datum/outfit/russiancorpse/ranged
 
 /datum/outfit/russiancorpse/ranged
-	name = "Ranged Russian Corpse"
+	name = "Ranged Russian"
 	head = /obj/item/clothing/head/ushanka
-
+	r_hand = /obj/item/gun/ballistic/shotgun/boltaction
 
 /obj/effect/mob_spawn/human/corpse/russian/ranged/trooper
 	outfit = /datum/outfit/russiancorpse/ranged/trooper
 
 /datum/outfit/russiancorpse/ranged/trooper
-	name = "Ranged Russian Trooper Corpse"
+	name = "Ranged Russian Trooper"
 	uniform = /obj/item/clothing/under/syndicate/camo
-	suit = /obj/item/clothing/suit/armor/bulletproof
+	suit = /obj/item/clothing/suit/armor/bulletproof/wm
 	shoes = /obj/item/clothing/shoes/combat
 	gloves = /obj/item/clothing/gloves/tackler/combat
 	ears = /obj/item/radio/headset
 	head = /obj/item/clothing/head/helmet/alt
 	mask = /obj/item/clothing/mask/balaclava
-
+	r_hand = /obj/item/gun/ballistic/shotgun/boltaction
 
 /obj/effect/mob_spawn/human/corpse/russian/ranged/officer
 	name = "Russian Officer"
 	outfit = /datum/outfit/russiancorpse/officer
 
 /datum/outfit/russiancorpse/officer
-	name = "Russian Officer Corpse"
+	name = "Russian Officer"
 	uniform = /obj/item/clothing/under/costume/russian_officer
 	suit = /obj/item/clothing/suit/armor/navyblue/russian
 	shoes = /obj/item/clothing/shoes/combat
 	ears = /obj/item/radio/headset
 	head = /obj/item/clothing/head/ushanka
+	r_hand = /obj/item/gun/ballistic/revolver/nagant
 
 /obj/effect/mob_spawn/human/corpse/wizard
 	name = "Space Wizard Corpse"
@@ -229,3 +231,23 @@
 	id = /obj/item/card/id
 	l_pocket = /obj/item/paper/fluff/bee_objectives
 	mask = /obj/item/clothing/mask/rat/bee
+
+/obj/effect/mob_spawn/human/corpse/nanotrasenassaultsoldier
+	name = "Nanotrasen Private Security Officer"
+	id_job = "Nanotrasen Assault Force"
+	id_access = "Security Officer"
+	outfit = /datum/outfit/nanotrasenassaultsoldiercorpse
+	hair_style = "Bald"
+	facial_hair_style = "Shaved"
+
+/datum/outfit/nanotrasenassaultsoldiercorpse
+	name = "NT Assault Officer Corpse"
+	uniform = /obj/item/clothing/under/syndicate
+	suit = /obj/item/clothing/suit/armor/vest
+	shoes = /obj/item/clothing/shoes/combat
+	gloves = /obj/item/clothing/gloves/combat
+	ears = /obj/item/radio/headset
+	mask = /obj/item/clothing/mask/gas/sechailer/swat
+	head = /obj/item/clothing/head/helmet/swat/nanotrasen
+	back = /obj/item/storage/backpack/security
+	id = /obj/item/card/id

@@ -167,3 +167,9 @@
 	wearer.update_inv_neck()
 	wearer.update_body()
 	wearer.update_hair()
+
+/obj/item/clothing/neck/donator/bm/baron
+	name = "terrifying cloak"
+	desc = "A black cloak of expensive fabric with loose hair from some strange creature around the neck."
+	icon_state = "baron"
+	w_class = WEIGHT_CLASS_NORMAL

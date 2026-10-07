@@ -200,7 +200,7 @@
 /datum/gear/donator/bm/baron
 	name = "Terrifying Cloak"
 	slot = ITEM_SLOT_NECK
-	path = /obj/item/clothing/neck/baron
+	path = /obj/item/clothing/neck/donator/bm/baron
 	ckeywhitelist = list("snacksman", "krashly")
 
 /datum/gear/donator/bm/syndiecloak

@@ -45,6 +45,8 @@
 #define UNIT_TEST_PASSED 0
 #define UNIT_TEST_FAILED 1
 #define UNIT_TEST_SKIPPED 2
+/// Shard weight of a test with no recorded wall time, in seconds
+#define UNIT_TEST_DEFAULT_WALL 0.1
 
 #define TEST_PRE 0
 #define TEST_DEFAULT 1
