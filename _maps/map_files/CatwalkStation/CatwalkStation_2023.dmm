@@ -78470,7 +78470,7 @@
 	pixel_x = 3
 	},
 /obj/item/storage/firstaid/emergency{
-	pixel_z = 8
+	pixel_y = 8
 	},
 /turf/open/floor/plasteel/dark,
 /area/medical/medbay/lobby)
@@ -91270,8 +91270,8 @@
 	},
 /obj/structure/mirror/directional/west,
 /obj/item/razor{
-	pixel_z = 7;
-	pixel_w = -7
+	pixel_y = 7;
+	pixel_x = -7
 	},
 /turf/open/floor/plasteel/freezer,
 /area/commons/dorms)
