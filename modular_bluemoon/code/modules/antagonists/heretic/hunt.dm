@@ -112,6 +112,8 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 		return "Назначенная цель сама служит Мансусу и не подходит для подношения. Выберите новую цель через живое сердце или кодекс: ждать перезарядки не нужно."
 	if(candidate.is_ghost_role())
 		return "Назначенная душа перешла в роль вне экипажа станции. Выберите новую цель."
+	if(selecting && !antag_opt_in_allows(candidate, ANTAG_OPT_IN_HERETIC_HUNT))
+		return "Этот член экипажа не согласен быть целью охоты: в его настройках выбрано «[antag_opt_in_level_name(candidate.get_effective_antag_opt_in_level())]», а охоте нужно «[antag_opt_in_level_name(ANTAG_OPT_IN_HERETIC_HUNT)]». Выберите другую цель."
 	var/turf/body_turf = heretic_pocket_anchor(get_turf(body))
 	if(!body_turf || !is_station_level(body_turf.z))
 		return "Тело назначенной цели находится вне станции: [get_area_name(body_turf || body, TRUE) || "неизвестно где"]. Подношение принимается только на станции, шахта, Лаваленд и шаттлы вне станции не в счёт. Верните тело на станцию или выберите другую цель."
@@ -381,7 +383,7 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 			return FALSE
 	var/list/choices = prepare_hunt_choices()
 	if(!length(choices))
-		to_chat(user, span_warning("Покровители не находят новой доступной цели на станции. Попробуйте позднее."))
+		to_chat(user, span_warning("Покровители не находят новой доступной цели на станции: годятся только живые члены экипажа с игроком, согласные быть целью охоты. Попробуйте позднее."))
 		return FALSE
 	hunt_selection_open = TRUE
 	var/choice = prompt_hunt_target(user, choices)
@@ -392,7 +394,12 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 		return FALSE
 	var/datum/weakref/chosen_ref = choices[choice]
 	var/datum/mind/chosen = chosen_ref?.resolve()
-	if(!(chosen_ref in hunt_candidates) || !hunt_target_available(chosen, selecting = TRUE))
+	if(!(chosen_ref in hunt_candidates))
+		return FALSE
+	if(!hunt_target_available(chosen, selecting = TRUE))
+		var/chosen_refusal = hunt_target_unavailable_reason(chosen, selecting = TRUE)
+		if(chosen_refusal)
+			to_chat(user, span_warning(chosen_refusal))
 		return FALSE
 	var/replacing_target = hunt_target_available(hunt_target)
 	if(replacing_target)

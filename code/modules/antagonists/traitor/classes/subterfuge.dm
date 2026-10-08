@@ -10,16 +10,8 @@
 	if(!effective_prob || !prob(effective_prob))
 		return FALSE
 	if(prob(25))
-		var/datum/objective/assassinate/internal/kill_objective = new
-		kill_objective.owner = T.owner
-		kill_objective.find_target()
-		T.add_objective(kill_objective)
-	else
-		var/datum/objective/assassinate/once/kill_objective = new
-		kill_objective.owner = T.owner
-		kill_objective.find_target()
-		T.add_objective(kill_objective)
-	return TRUE
+		return add_targeted_objective(T, new /datum/objective/assassinate/internal)
+	return add_targeted_objective(T, new /datum/objective/assassinate/once)
 
 /datum/traitor_class/human/subterfuge/forge_single_objective(datum/antagonist/traitor/T)
 	var/datum/game_mode/dynamic/mode

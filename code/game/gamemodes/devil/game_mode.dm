@@ -9,11 +9,17 @@
 		var/type = pick(validtypes)
 		var/datum/objective/devil/objective = new type(null)
 		objective.owner = devil_mind
+		if(istype(objective, /datum/objective/devil/buy_target))
+			objective.find_target()
+			if(!objective.target)
+				qdel(objective)
+				validtypes -= type
+				type = pick(validtypes)
+				objective = new type(null)
+				objective.owner = devil_mind
 		D.objectives += objective
 		if(!istype(objective, /datum/objective/devil/buy_target))
 			validtypes -= type //prevent duplicate objectives, EXCEPT for buy_target.
-		else
-			objective.find_target()
 
 /datum/game_mode/proc/update_devil_icons_added(datum/mind/devil_mind)
 	var/datum/atom_hud/antag/hud = GLOB.huds[ANTAG_HUD_DEVIL]

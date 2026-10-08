@@ -48,19 +48,21 @@ GLOBAL_LIST_EMPTY(objectives)
 	var/def_value
 	for(var/datum/mind/possible_target in SSticker.minds)
 		if ((possible_target != src) && ishuman(possible_target.current))
-			possible_targets += possible_target.current
+			var/choice_name = "[possible_target.current] - [antag_opt_in_level_name(possible_target.get_effective_antag_opt_in_level())]"
+			while(choice_name in possible_targets)
+				choice_name += "*"
+			possible_targets[choice_name] = possible_target.current
+			if(possible_target == target)
+				def_value = choice_name
 
-
-	if(target && target.current)
-		def_value = target.current
-
-	var/mob/new_target = input(admin,"Select target:", "Objective target", def_value) as null|anything in possible_targets
-	if (!new_target)
+	var/choice = input(admin, "Цель задания. После имени - согласие быть целью антагонистов, этому заданию нужно не ниже «[antag_opt_in_level_name(required_opt_in_level)]».", "Objective target", def_value) as null|anything in possible_targets
+	if (!choice)
 		return
 
-	if (new_target == "Свободная Задача")
+	if (choice == "Свободная Задача")
 		target = null
 	else
+		var/mob/new_target = possible_targets[choice]
 		target = new_target.mind
 
 	update_explanation_text()
@@ -144,7 +146,7 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 		if(O.late_joiner)
 			try_target_late_joiners = TRUE
 	for(var/datum/mind/possible_target in get_crewmember_minds())
-		if(!(possible_target in owners) && ishuman(possible_target.current) && (possible_target.current.stat != DEAD) && is_unique_objective(possible_target) && !possible_target.is_ghost_role())
+		if(!(possible_target in owners) && ishuman(possible_target.current) && (possible_target.current.stat != DEAD) && is_unique_objective(possible_target) && !possible_target.is_ghost_role() && opt_in_valid(possible_target))
 			if(!(possible_target in blacklist))
 				// BLUEMOON ADD START - если персонаж сверхтяжёлый и установлена настройка, что сверхтяжёлые персонажи не могут быть по заданию, персонажа не добавляет в пулл
 				if(!(!include_superheavy_character && possible_target.current.mob_weight > MOB_WEIGHT_HEAVY))
@@ -168,7 +170,7 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 /datum/objective/proc/find_target_by_role(role, role_type=0, invert=0)//Option sets either to check assigned role or special role. Default to assigned., invert inverts the check, eg: "Don't choose a Ling"
 	var/list/datum/mind/owners = get_owners()
 	for(var/datum/mind/possible_target in get_crewmember_minds())
-		if(!(possible_target in owners) && ishuman(possible_target.current) && !possible_target.is_ghost_role())
+		if(!(possible_target in owners) && ishuman(possible_target.current) && !possible_target.is_ghost_role() && opt_in_valid(possible_target))
 			var/is_role = 0
 			if(role_type)
 				if(possible_target.special_role == role)
@@ -408,7 +410,7 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 		if(!antag?.owner || (antag.owner in owners))
 			continue
 		for(var/datum/objective/objective in antag.objectives)
-			if(istype(objective, /datum/objective/assassinate) && objective.get_target())
+			if(istype(objective, /datum/objective/assassinate) && objective.get_target() && objective.opt_in_valid(objective.get_target()))
 				kill_targets |= objective.get_target()
 	if(!kill_targets.len)
 		return null
@@ -603,7 +605,7 @@ If not set, defaults to check_completion instead. Set it. It's used by cryo.
 	for(var/datum/mind/possible_target in get_crewmember_minds())
 		if(!(possible_target.assigned_role in prisoner_titles))
 			continue
-		if(!(possible_target in owners) && ishuman(possible_target.current) && (possible_target.current.stat != DEAD) && is_unique_objective(possible_target))
+		if(!(possible_target in owners) && ishuman(possible_target.current) && (possible_target.current.stat != DEAD) && is_unique_objective(possible_target) && opt_in_valid(possible_target))
 			if(!(possible_target in blacklist))
 				if(!(!include_superheavy_character && possible_target.current.mob_weight > MOB_WEIGHT_HEAVY))
 					possible_targets += possible_target
@@ -1077,9 +1079,12 @@ GLOBAL_LIST_EMPTY(possible_items_special)
 	martyr_compatible = 1
 
 /datum/objective/destroy/find_target(dupe_search_range, blacklist)
-	var/list/possible_targets = active_ais(1)
-	var/mob/living/silicon/ai/target_ai = pick(possible_targets)
-	target = target_ai.mind
+	var/list/possible_targets = list()
+	for(var/mob/living/silicon/ai/possible_ai as anything in active_ais(1))
+		if(opt_in_valid(possible_ai.mind))
+			possible_targets += possible_ai
+	var/mob/living/silicon/ai/target_ai = safepick(possible_targets)
+	target = target_ai?.mind
 	update_explanation_text()
 	return target
 
@@ -1516,7 +1521,7 @@ GLOBAL_LIST_EMPTY(possible_sabotages)
 			continue
 
 	for(var/datum/mind/possible_target in SSticker.minds)
-		if(possible_target != owners && ishuman(possible_target.current) && (possible_target.current.stat != DEAD) && (possible_target.assigned_role != possible_target.special_role))
+		if(!(possible_target in owners) && ishuman(possible_target.current) && (possible_target.current.stat != DEAD) && (possible_target.assigned_role != possible_target.special_role) && opt_in_valid(possible_target))
 			possible_targets += possible_target
 			for(var/role in roles)
 				if(possible_target.assigned_role == role)
@@ -1577,6 +1582,8 @@ GLOBAL_LIST_EMPTY(possible_sabotages)
 		if(possible_target.has_antag_datum(/datum/antagonist/ghost_role)) // BLUEMOON ADD - гостроли (хермит и т.п.) не берутся в оборот
 			continue
 		if(!is_unique_objective(possible_target)) // на одного и того же игрока подстава не выдаётся одному и тому же владельцу дважды
+			continue
+		if(!opt_in_valid(possible_target))
 			continue
 		possible_targets += possible_target
 	if(!length(possible_targets))

@@ -74,6 +74,7 @@
 #include "action_button_positions.dm"
 #include "advanced_locator.dm"
 #include "anchored_mobs.dm"
+#include "antag_opt_in.dm"
 #include "airalarm_mode_cutoff.dm"
 #include "airalarm_thresholds.dm"
 #include "atmos_engineering_fixes.dm"

@@ -4,22 +4,24 @@
 
 /datum/traitor_class/ai/forge_objectives(datum/antagonist/traitor/T)
 	if(GLOB.round_type == ROUNDTYPE_DYNAMIC_LIGHT)
-		var/datum/objective/protect/protect_objective = new
-		protect_objective.owner = T.owner
-		protect_objective.find_target()
-		T.add_objective(protect_objective)
+		if(!add_targeted_objective(T, new /datum/objective/protect))
+			var/datum/objective/survive/exist/light_exist_objective = new
+			light_exist_objective.owner = T.owner
+			T.add_objective(light_exist_objective)
 		return
 
 	var/objective_count = 0
 
 	if(prob(30))
-		objective_count += forge_single_objective()
+		objective_count += forge_single_objective(T)
 
 	for(var/i = objective_count, i < CONFIG_GET(number/traitor_objectives_amount), i++)
-		var/datum/objective/assassinate/once/kill_objective = new
-		kill_objective.owner = T.owner
-		kill_objective.find_target()
-		T.add_objective(kill_objective)
+		if(add_targeted_objective(T, new /datum/objective/assassinate/once))
+			continue
+		if(!(locate(/datum/objective/robot_army) in T.objectives))
+			var/datum/objective/robot_army/robot_objective = new
+			robot_objective.owner = T.owner
+			T.add_objective(robot_objective)
 
 	var/datum/objective/survive/exist/exist_objective = new
 	exist_objective.owner = T.owner
@@ -42,15 +44,19 @@
 			robot_objective.owner = T.owner
 			T.add_objective(robot_objective)
 		if(4) //Protect and strand a target
+			var/datum/objective/maroon/yandere_two = new
+			if(!add_targeted_objective(T, yandere_two))
+				if(locate(/datum/objective/robot_army) in T.objectives)
+					return 0
+				var/datum/objective/robot_army/robot_objective = new
+				robot_objective.owner = T.owner
+				T.add_objective(robot_objective)
+				return
 			var/datum/objective/protect/yandere_one = new
 			yandere_one.owner = T.owner
+			yandere_one.target = yandere_two.target
+			yandere_one.update_explanation_text()
 			T.add_objective(yandere_one)
-			yandere_one.find_target()
-			var/datum/objective/maroon/yandere_two = new
-			yandere_two.owner = T.owner
-			yandere_two.target = yandere_one.target
-			yandere_two.update_explanation_text() // normally called in find_target()
-			T.add_objective(yandere_two)
 			.=2
 
 /datum/traitor_class/ai/on_removal(datum/antagonist/traitor/T)

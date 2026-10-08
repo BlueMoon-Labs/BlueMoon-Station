@@ -55,10 +55,8 @@
 				return FALSE
 			T.add_objective(frame_objective)
 		else if(prob(30) && GLOB.roundstart_prisoners.len)
-			var/datum/objective/rescue_prisoner/rescue = new
-			rescue.owner = T.owner
-			rescue.find_target()
-			T.add_objective(rescue)
+			if(!add_targeted_objective(T, new /datum/objective/rescue_prisoner))
+				return FALSE
 		else if(prob(18) && has_manifest_prisoner())
 			var/datum/objective/breakout/breakout_obj = new
 			breakout_obj.owner = T.owner

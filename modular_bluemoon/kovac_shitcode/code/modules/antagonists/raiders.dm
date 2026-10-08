@@ -52,13 +52,17 @@
 
 	//if(prob(45)) // BlueMoon. Тестируем цель на похищение. Первое время она будет гарантированно выдаваться рейдерам.
 	kidnap_objective.team = src
-	kidnap_objective.find_target()
-	objectives += kidnap_objective
+	if(kidnap_objective.find_target())
+		objectives += kidnap_objective
+	else
+		qdel(kidnap_objective)
 
 	if(prob(25)) // Дополнительная цель
 		kidnap_objective_additional.team = src
-		kidnap_objective_additional.find_target()
-		objectives += kidnap_objective_additional
+		if(kidnap_objective_additional.find_target())
+			objectives += kidnap_objective_additional
+		else
+			qdel(kidnap_objective_additional)
 
 	return
 
