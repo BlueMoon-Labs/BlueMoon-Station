@@ -356,6 +356,7 @@
 	brothers.add_member(brother_mind)
 	for(var/objective_number in 1 to 6)
 		brothers.forge_single_objective()
+	allocated += brothers.objectives
 	antag_opt_in_check_objectives(brothers.objectives, "Братья")
 
 	var/datum/antagonist/traitor/malf = new
