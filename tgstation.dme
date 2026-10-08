@@ -1198,6 +1198,7 @@
 #include "code\game\director\director_profile.dm"
 #include "code\game\director\director_signals.dm"
 #include "code\game\director\director_simulator.dm"
+#include "code\game\director\director_vacancies.dm"
 #include "code\game\gamemodes\events.dm"
 #include "code\game\gamemodes\game_mode.dm"
 #include "code\game\gamemodes\objective.dm"

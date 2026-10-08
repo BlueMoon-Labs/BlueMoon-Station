@@ -95,6 +95,8 @@ SUBSYSTEM_DEF(director)
 	var/holiday_forced_done = FALSE
 	/// Сигналы последнего бита (для панели)
 	var/datum/director_signals/last_signals
+	/// Учёт пустых критичных отделов для приглашений в смену
+	var/datum/director_vacancies/vacancies = new
 	/// Кэш дефицита антаг-нагрузки (0..1): antag_load() обходит все действия, а капля тикает каждые
 	/// 2 секунды - дефицит пересчитывается раз в бит (collect_signals), между битами стабилен.
 	var/last_antag_deficit = 1
@@ -229,6 +231,7 @@ SUBSYSTEM_DEF(director)
 			else if(fires_until_beat <= 0)
 				fires_until_beat = DIRECTOR_BEAT_EVERY
 				var/datum/director_signals/signals = collect_signals()
+				update_vacancies(signals)
 				run_beat(signals)
 		// Бит уже отработал, потребителей кэша до следующего не будет - не держим гостов.
 		drop_eligible_ghosts_cache()
