@@ -8,7 +8,7 @@
 	gloves = /obj/item/clothing/gloves/tackler/combat/insulated
 	mask = /obj/item/clothing/mask/gas/atmos/lfwb
 	glasses = /obj/item/clothing/glasses/hud/security/lfwb
-	back = /obj/item/storage/backpack/rucksack
+	back = /obj/item/storage/backpack/rucksack/ert
 	l_pocket = /obj/item/ammo_box/magazine/fal
 	r_pocket = /obj/item/flashlight/lantern
 	suit_store = /obj/item/gun/ballistic/automatic/fal
@@ -124,7 +124,7 @@
 	suit = /obj/item/clothing/suit/space/hardsuit/ert/alert/sec/fire
 	suit_store = /obj/item/gun/energy/laser/hellgun/immolator/multi
 	glasses = /obj/item/clothing/glasses/thermal/eyepatch
-	back = /obj/item/storage/backpack/rucksack
+	back = /obj/item/storage/backpack/rucksack/ert
 	belt = /obj/item/storage/belt/grenade/fire_grenade
 	shoes = /obj/item/clothing/shoes/magboots/syndie/advance
 	r_hand = /obj/item/gun/energy/laser/hellgun
@@ -161,7 +161,7 @@
 	suit = /obj/item/clothing/suit/space/hardsuit/ert/alert/sec/fire
 	suit_store = /obj/item/gun/energy/laser/hellgun/immolator/multi
 	glasses = /obj/item/clothing/glasses/thermal/eyepatch
-	back = /obj/item/storage/backpack/rucksack
+	back = /obj/item/storage/backpack/rucksack/ert
 	belt = /obj/item/storage/belt/grenade/fire_grenade
 	l_hand = /obj/item/gun/energy/laser/hellgun
 	shoes = /obj/item/clothing/shoes/magboots/syndie/advance
@@ -279,7 +279,7 @@
 	gloves = /obj/item/clothing/gloves/tackler/combat/insulated
 	mask = /obj/item/clothing/mask/gas/sechailer/swat
 	glasses = /obj/item/clothing/glasses/hud/toggle/thermal
-	back = /obj/item/storage/backpack/rucksack
+	back = /obj/item/storage/backpack/rucksack/ert
 	l_pocket = /obj/item/melee/transforming/energy/sword/saber
 	r_pocket = /obj/item/tank/internals/emergency_oxygen/double
 	belt = /obj/item/storage/belt/grenade/full
@@ -334,15 +334,15 @@
 	uniform = /obj/item/clothing/under/rank/security/officer/nri_military
 	mask = /obj/item/clothing/mask/gas/syndicate/ds/mouth
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses
-	back = /obj/item/storage/backpack/hecu/black
+	back = /obj/item/storage/backpack/hecu/black/ert
 	belt = /obj/item/storage/belt/military/russianweb
 	ears = /obj/item/radio/headset/nri/bowman
 	r_hand = /obj/item/gun/ballistic/automatic/l6_saw/pkmp
-	backpack_contents = list(/obj/item/storage/box/survival/engineer=1,\
+	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
 		/obj/item/clothing/mask/gas/sechailer=1,\
 		/obj/item/gun/ballistic/revolver/mateba=1,
 		/obj/item/storage/ifak=1,\
-		/obj/item/ammo_box/magazine/mm712x82=2)
+		/obj/item/ammo_box/magazine/mm712x82=3)
 
 /datum/outfit/ert/ert_russian_soldier/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
 	..()
@@ -371,15 +371,15 @@
 	uniform = /obj/item/clothing/under/rank/security/officer/nri_military
 	mask = /obj/item/clothing/mask/gas/syndicate/ds/mouth
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses
-	back = /obj/item/storage/backpack/rucksack/green
+	back = /obj/item/storage/backpack/rucksack/ert/green
 	belt = /obj/item/storage/belt/military/russianweb
 	ears = /obj/item/radio/headset/nri/bowman
 	r_hand = /obj/item/gun/ballistic/automatic/ak12
-	backpack_contents = list(/obj/item/storage/box/survival/engineer=1,\
+	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
 		/obj/item/gun/medbeam=1,
 		/obj/item/storage/firstaid/tactical=1,\
 		/obj/item/storage/barricade=1,\
-		/obj/item/ammo_box/magazine/ak12=4)
+		/obj/item/ammo_box/magazine/ak12=6)
 
 /datum/outfit/ert/ert_russian_support/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
 	..()
@@ -408,16 +408,16 @@
 	uniform = /obj/item/clothing/under/rank/security/officer/nri_military
 	mask = /obj/item/clothing/mask/gas/syndicate/ds/mouth
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses
-	back = /obj/item/storage/backpack/hecu
+	back = /obj/item/storage/backpack/hecu/black/ert
 	belt = /obj/item/storage/belt/grenade/full
 	l_pocket = /obj/item/melee/transforming/energy/sword/saber
 	ears = /obj/item/radio/headset/nri/bowman/command
 	r_hand = /obj/item/gun/ballistic/automatic/vss
-	backpack_contents = list(/obj/item/storage/box/survival/engineer=1,\
+	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
 		/obj/item/choice_beacon/vehicle/misc_mech/nri=1,\
 		/obj/item/storage/box/syndie_kit/revolver=1,\
 		/obj/item/storage/ifak=1,\
-		/obj/item/ammo_box/magazine/vss_mag=4)
+		/obj/item/ammo_box/magazine/vss_mag=7)
 
 // BLUEMOON ADD START - командная коробочка для командира
 /datum/outfit/ert/ert_russian_leader/pre_equip(mob/living/carbon/human/H, visualsOnly, client/preference_source)
@@ -456,13 +456,13 @@
 	uniform = /obj/item/clothing/under/rank/security/officer/solfed_military
 	mask = /obj/item/clothing/mask/gas/syndicate/ds/coif
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses
-	back = /obj/item/storage/backpack/hecu/black
+	back = /obj/item/storage/backpack/hecu/black/ert
 	belt = /obj/item/storage/belt/military/inteq
 	ears = /obj/item/radio/headset/sol/bowman
 	r_hand = /obj/item/gun/ballistic/automatic/m16a4
-	backpack_contents = list(/obj/item/storage/box/survival/engineer=1,\
+	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
 		/obj/item/storage/ifak=1,\
-		/obj/item/ammo_box/magazine/m16=4)
+		/obj/item/ammo_box/magazine/m16=6)
 
 /datum/outfit/ert/sol_soldier/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
 	..()
@@ -491,15 +491,14 @@
 	uniform = /obj/item/clothing/under/rank/security/officer/solfed_military
 	mask = /obj/item/clothing/mask/gas/syndicate/ds/coif
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses
-	back = /obj/item/storage/backpack/rucksack
-	belt = /obj/item/storage/belt/military/inteq
+	back = /obj/item/storage/backpack/rucksack/ert
+	belt = /obj/item/storage/belt/military
 	ears = /obj/item/radio/headset/sol/bowman
 	r_hand = /obj/item/gun/ballistic/automatic/laser
-	backpack_contents = list(/obj/item/storage/box/survival/engineer=1,\
+	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
 		/obj/item/gun/medbeam=1,
 		/obj/item/storage/firstaid/tactical=1,\
-		/obj/item/ammo_box/magazine/recharge = 4,\
-		/obj/item/storage/barricade=1)
+		/obj/item/ammo_box/magazine/recharge = 6)
 
 /datum/outfit/ert/sol_soldier_support/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
 	..()
@@ -529,11 +528,11 @@
 	uniform = /obj/item/clothing/under/rank/security/officer/solfed_military
 	mask = /obj/item/clothing/mask/gas/syndicate/ds/coif
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses
-	back = /obj/item/storage/backpack/hecu/black
+	back = /obj/item/storage/backpack/hecu/black/ert
 	belt = /obj/item/storage/belt/grenade/full
 	r_hand = /obj/item/gun/ballistic/rocketlauncher/unrestricted
 	ears = /obj/item/radio/headset/sol/bowman
-	backpack_contents = list(/obj/item/storage/box/survival/engineer=1,\
+	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
 		/obj/item/storage/ifak=1,\
 		/obj/item/grenade/plastic/c4=3,\
 		/obj/item/ammo_casing/caseless/rocket=3)
@@ -564,15 +563,15 @@
 	uniform = /obj/item/clothing/under/rank/captain/sol
 	mask = /obj/item/clothing/mask/gas/syndicate/ds/coif
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses
-	back = /obj/item/storage/backpack/hecu/black
+	back = /obj/item/storage/backpack/hecu/black/ert
 	belt = /obj/item/storage/belt/military/inteq
 	ears = /obj/item/radio/headset/sol/bowman/command
 	l_pocket = /obj/item/melee/transforming/energy/sword/saber
 	r_hand = /obj/item/gun/ballistic/automatic/shotgun/bulldog/unrestricted
-	backpack_contents = list(/obj/item/storage/box/survival/engineer=1,\
+	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
 		/obj/item/storage/ifak=1,\
 		/obj/item/gun/ballistic/automatic/pistol/deagle=1,\
-        /obj/item/ammo_box/magazine/m50=2,\
+        /obj/item/ammo_box/magazine/m50=3,\
 		/obj/item/choice_beacon/vehicle/misc_mech/sol=1,\
 		/obj/item/ammo_box/magazine/m12g/slug=4)
 
@@ -676,11 +675,11 @@
 	head = /obj/item/clothing/head/maid/syndicate
 	shoes = /obj/item/clothing/shoes/sneakers/noslip
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses
-	back = /obj/item/storage/backpack/hecu/black
+	back = /obj/item/storage/backpack/hecu/black/ert
 	belt = /obj/item/storage/belt/janitor/ert_maid
 	mask = /obj/item/clothing/mask/gas/sechailer/syndicate
 	r_hand = /obj/item/mop/advanced
-	backpack_contents = list(/obj/item/storage/box/survival/engineer=1,\
+	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
 		/obj/item/storage/ifak=1)
 	l_pocket = /obj/item/dualsaber
 
@@ -714,11 +713,11 @@
 	shoes = /obj/item/clothing/shoes/sneakers/noslip
 	head = /obj/item/clothing/head/maid/syndicate
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses
-	back = /obj/item/storage/backpack/hecu/black
+	back = /obj/item/storage/backpack/hecu/black/ert
 	belt = /obj/item/storage/belt/janitor/ert_maid
 	r_hand = /obj/item/mop/advanced
 	mask = /obj/item/clothing/mask/gas/sechailer/syndicate
-	backpack_contents = list(/obj/item/storage/box/survival/engineer=1,\
+	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
 		/obj/item/storage/ifak=1)
 
 /datum/outfit/ert/maid/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
