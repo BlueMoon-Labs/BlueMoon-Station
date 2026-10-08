@@ -330,7 +330,7 @@
 		"chem_dispenser_classic_view", "chem_dispenser_use_reagent_color", "chem_dispenser_show_icons",
 		"chem_dispenser_alphabetical_sort",
 		"tgui_panel_state", "tgui_panel_theme",
-		"bm_lobby_show_nsfw", "bm_lobby_show_admin_bg", "bm_disclaimer_accepted",
+		"bm_lobby_show_nsfw", "bm_lobby_show_admin_bg", "bm_disclaimer_accepted", "antag_opt_in_notice_seen",
 		"use_arousal_multiplier", "arousal_multiplier", "use_moaning_multiplier", "moaning_multiplier",
 		"custom_verb_consent", "show_heart_over_self", "interaction_effect", "block_partner_pixel_shift",
 	)

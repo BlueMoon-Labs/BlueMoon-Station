@@ -259,6 +259,8 @@
 			L.client.prefs.chat_toggles &= ~(CHAT_OOC)
 
 	hide_ckey = current.client?.prefs?.hide_ckey
+	if(isnewplayer(old_character) && isliving(new_character))
+		apply_antag_opt_in_prefs(GLOB.preferences_datums[ckey(key)])
 
 	SEND_SIGNAL(src, COMSIG_MIND_TRANSFER, new_character, old_character)
 	SEND_SIGNAL(new_character, COMSIG_MOB_ON_NEW_MIND)

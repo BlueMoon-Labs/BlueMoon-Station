@@ -167,6 +167,16 @@ SECURITY_SCALING_COEFF 8
 TRAITOR_OBJECTIVES_AMOUNT 2
 BROTHER_OBJECTIVES_AMOUNT 2
 
+## Antag opt-in: how far a character agrees to be an antagonist objective target.
+## 0 - not a target, 1 - temporary inconvenience, 2 - can be killed, 3 - can be removed from the round.
+## Level for characters that never chose one.
+ANTAG_OPT_IN_DEFAULT_LEVEL 3
+## Minimum level for security and command on their own job.
+ANTAG_OPT_IN_SECURITY_MIN 2
+ANTAG_OPT_IN_COMMAND_MIN 2
+## Minimum level for a player who left the lobby with a crew antagonist role enabled.
+ANTAG_OPT_IN_ANTAG_ENABLED_MIN 2
+
 ## Uncomment to prohibit jobs that start with loyalty
 ## implants from being most antagonists.
 PROTECT_ROLES_FROM_ANTAGONIST

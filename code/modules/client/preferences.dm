@@ -1930,6 +1930,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					dat += "<b>Uplink Location:</b><a style='display:block;width:100px' href ='?_src_=prefs;preference=uplink_loc;task=input'>[uplink_spawn_loc]</a>"
 
 					dat += "<h2>Consent preferences</h2>"
+					dat += antag_opt_in_pref_html()
 					dat += "<span title='Эротические взаимодействия'>ERP : <a href='?_src_=prefs;preference=erp_pref'>[erppref]</a></span><br>"
 					dat += "<span title='Принудительные сцены без согласия вашего'>Non-Con : <a href='?_src_=prefs;preference=noncon_pref'>[nonconpref]</a></span><br>"
 					dat += "<span title='Пожирание и переваривание'>Vore : <a href='?_src_=prefs;preference=vore_pref'>[vorepref]</a></span><br>"
@@ -3240,7 +3241,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			allowed_keys = list("_src_", "preference", "action")
 		if("headshot", "headshot_naked")
 			allowed_keys = list("_src_", "preference", "select_slot")
-		if("security_records", "medical_records", "flavor_text", "naked_flavor_text", "silicon_flavor_text", "custom_species_lore", "ooc_notes", "format_help", "hide_ckey", "custom_deathgasp", "custom_deathsound", "deathsoundpreview", "laugh", "laughpreview", "speech_verb", "speech_verb_ru", "barksound", "barkspeed", "barkpitch", "barkvary")
+		if("security_records", "medical_records", "flavor_text", "naked_flavor_text", "silicon_flavor_text", "custom_species_lore", "ooc_notes", "antag_opt_in_level", "format_help", "hide_ckey", "custom_deathgasp", "custom_deathsound", "deathsoundpreview", "laugh", "laughpreview", "speech_verb", "speech_verb_ru", "barksound", "barkspeed", "barkpitch", "barkvary")
 			if(href_list["task"] != "input")
 				return FALSE
 			allowed_keys = list("_src_", "preference", "task")
@@ -3822,6 +3823,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					else
 						to_chat(user, "<span class='warning'>Вы выбрали беззвучный deathgasp или выбранный вами звук отсутствует!</span>")
 				// BLUEMOON ADD END
+				if("antag_opt_in_level")
+					choose_antag_opt_in_level(user)
 				if("ooc_notes")
 					var/msg = input(usr, "Установите всегда видимые OOC-заметки, связанные с вашими предпочтениями.\nПоддерживается форматирование: *курсив* !жирный! -=цвет=-", "ООС-Заметки", features["ooc_notes"]) as message|null
 					if(!isnull(msg))
