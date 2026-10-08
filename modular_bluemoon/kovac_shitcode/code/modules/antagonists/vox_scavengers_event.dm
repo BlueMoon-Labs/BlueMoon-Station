@@ -87,7 +87,11 @@
 			var/mob/living/spawned_scavenger = spawner.create(our_candidate.ckey)
 			if(spawned_scavenger)
 				spawned_scavengers += spawned_scavenger
-			notify_ghosts("Skipjack has an object of interest: [our_candidate]!", source=spawner, action=NOTIFY_ORBIT, header="Something's Interesting!")
+				notify_ghosts("Skipjack has an object of interest: [spawned_scavenger]!", source=spawned_scavenger, action=NOTIFY_ORBIT, header="Something's Interesting!")
+			else if(!QDELETED(spawner))
+				notify_ghosts("Skipjack ship has an object of interest: [spawner]!", source=spawner, action=NOTIFY_ORBIT, header="Something's Interesting!")
+			else
+				notify_ghosts("Skipjack ship has an object of interest: [our_candidate]!", source=our_candidate, action=NOTIFY_ORBIT, header="Something's Interesting!")
 		else
 			notify_ghosts("Skipjack ship has an object of interest: [spawner]!", source=spawner, action=NOTIFY_ORBIT, header="Something's Interesting!")
 	if(source_action && length(spawned_scavengers))
