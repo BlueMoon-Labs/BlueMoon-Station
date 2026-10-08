@@ -22,7 +22,7 @@
 /datum/techweb_node/advanced_weaponry
 	id = "advanced_weaponry"
 	display_name = "advanced weaponry theory"
-	description = "Impresive new technoligies, just in theory."
+	description = "Невероятные новые технологии, только в теории"
 	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
 	prereq_ids = list("adv_weaponry")
 	design_ids = list("mk60")
@@ -57,7 +57,7 @@
 /datum/techweb_node/mk62
 	id = "mk62"
 	display_name = "Advanced guidance systems."
-	description = "Replacing the receiver, which converts the enforcer from a pistol to a submachine gun."
+	description = "Замена затворной рамы на усовершенствованную с предустановленным коллиматорным прицелом"
 	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
 	design_ids = list("mk62")
 	prereq_ids = list("advanced_weaponry")
@@ -66,7 +66,7 @@
 /datum/techweb_node/vector
 	id = "vector"
 	display_name = "Advanced gas extraction system."
-	description = "A gift from Ligt Gear & Balistic Tech. Mostly - just whole new gun in a pack."
+	description = "Подарок от Ligt Gear & Balistic Tech. В основном - просто совершенно другая пушка в упаковке."
 	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
 	design_ids = list("vector")
 	prereq_ids = list("advanced_weaponry")
