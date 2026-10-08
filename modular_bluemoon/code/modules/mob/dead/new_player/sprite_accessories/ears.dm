@@ -63,3 +63,101 @@
 /datum/sprite_accessory/ears/mam_ears/bm_ears/vevisian/short
 	name = "Vevisian (Short)"
 	icon_state = "vevisianshort"
+
+/datum/sprite_accessory/ears/mam_ears/bm_shadekin
+	icon = 'modular_bluemoon/icons/mob/shadekin_ears.dmi'
+
+/datum/sprite_accessory/ears/mam_ears/bm_shadekin/bands
+	name = "Shadekin Bandaged"
+	icon_state = "shadekinbands"
+	matrixed_sections = MATRIX_ALL
+
+/datum/sprite_accessory/ears/mam_ears/bm_shadekin/band_left
+	name = "Shadekin Bandaged (Left)"
+	icon_state = "shadekinbandleft"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/ears/mam_ears/bm_shadekin/band_right
+	name = "Shadekin Bandaged (Right)"
+	icon_state = "shadekinbandright"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/ears/mam_ears/bm_shadekin/gradient
+	name = "Shadekin Gradient"
+	icon_state = "shadekingradient"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/ears/mam_ears/bm_shadekin/rings
+	name = "Shadekin Rings"
+	icon_state = "shadekinrings"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/ears/mam_ears/bm_shadekin/rings_left
+	name = "Shadekin Rings (Left)"
+	icon_state = "shadekinringsleft"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/ears/mam_ears/bm_shadekin/rings_right
+	name = "Shadekin Rings (Right)"
+	icon_state = "shadekinringsright"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/ears/mam_ears/bm_shadekin/smooth
+	name = "Shadekin Smooth"
+	icon_state = "shadekinsmooth"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/ears/mam_ears/bm_shadekin/fluffy
+	name = "Shadekin Fluffy"
+	icon_state = "shadekinfluffy"
+	color_src = MUTCOLORS
+
+/datum/sprite_accessory/ears/mam_ears/bm_shadekin/fluffy_gradient
+	name = "Shadekin Fluffy Gradient"
+	icon_state = "shadekinfluffygradient"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/ears/mam_ears/bm_shadekin/fluffy_rings
+	name = "Shadekin Fluffy Rings"
+	icon_state = "shadekinfluffyrings"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/ears/mam_ears/bm_shadekin/fluffy_rings_left
+	name = "Shadekin Fluffy Rings (Left)"
+	icon_state = "shadekinfluffyringsleft"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/ears/mam_ears/bm_shadekin/fluffy_rings_right
+	name = "Shadekin Fluffy Rings (Right)"
+	icon_state = "shadekinfluffyringsright"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/ears/mam_ears/bm_shadekin/saggy
+	name = "Shadekin Saggy"
+	icon_state = "shadekinsaggy"
+	color_src = MUTCOLORS
+
+/datum/sprite_accessory/ears/mam_ears/bm_shadekin/saggy_gradient
+	name = "Shadekin Saggy Gradient"
+	icon_state = "shadekinsaggygradient"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/ears/mam_ears/bm_shadekin/short
+	name = "Shadekin Short"
+	icon_state = "shadekinshort"
+	color_src = MUTCOLORS
+
+/datum/sprite_accessory/ears/mam_ears/bm_shadekin/short_rings
+	name = "Shadekin Short Rings"
+	icon_state = "shadekinshortrings"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/ears/mam_ears/bm_shadekin/short_rings_left
+	name = "Shadekin Short Rings (Left)"
+	icon_state = "shadekinshortringsleft"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/ears/mam_ears/bm_shadekin/short_rings_right
+	name = "Shadekin Short Rings (Right)"
+	icon_state = "shadekinshortringsright"
+	matrixed_sections = MATRIX_RED_GREEN
