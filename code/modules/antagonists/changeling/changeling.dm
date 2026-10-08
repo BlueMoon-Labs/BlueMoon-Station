@@ -445,7 +445,7 @@
 		absorb_objective.gen_amount_goal(6, 8)
 		objectives += absorb_objective
 
-	if(prob(60))
+	if(prob(60) && !(prob(CHANGELING_FRAME_PROB) && forge_frame_objective()))
 		if(prob(85))
 			var/datum/objective/steal/steal_objective = new
 			steal_objective.owner = owner
@@ -514,6 +514,15 @@
 				escape_objective.owner = owner
 				objectives += escape_objective
 		escape_objective_possible = FALSE
+
+/datum/antagonist/changeling/proc/forge_frame_objective()
+	var/datum/objective/frame/frame_objective = new
+	frame_objective.owner = owner
+	if(!frame_objective.find_target())
+		qdel(frame_objective)
+		return FALSE
+	objectives += frame_objective
+	return TRUE
 
 /datum/antagonist/changeling/proc/update_changeling_icons_added()
 	var/datum/atom_hud/antag/hud = GLOB.huds[ANTAG_HUD_CHANGELING]

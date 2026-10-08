@@ -30,7 +30,16 @@
 	QDEL_LIST(traitor.objectives)
 	qdel(traitor)
 
-/// При целях только уровня «Временные неудобства» предатель в Medium и Hard получает подставу, но не убийство.
+/datum/unit_test/proc/antag_frame_forge_changeling(datum/mind/owner, seed)
+	var/datum/antagonist/changeling/ling = new
+	ling.owner = owner
+	rand_seed(seed)
+	ling.forge_objectives()
+	. = antag_frame_outcome(ling.objectives)
+	QDEL_LIST(ling.objectives)
+	qdel(ling)
+
+/// При целях только уровня «Временные неудобства» предатель и генокрад в Medium и Hard получают подставу, но не убийство.
 /datum/unit_test/antag_frame_level_one_targets/Run()
 	var/datum/antag_opt_in_test_world/world_state = allocate(/datum/antag_opt_in_test_world)
 	world_state.set_hard_round(src)
@@ -49,6 +58,13 @@
 				TEST_ASSERT(outcome != "kill", "[round_type], [class_type]: убийство без согласной цели")
 				frames += outcome == "frame"
 			TEST_ASSERT(frames, "[round_type], [class_type]: подставы нет ни в одном из [ANTAG_FRAME_TEST_TRIES] заданий")
+
+		var/ling_frames = 0
+		for(var/seed in 1 to ANTAG_FRAME_TEST_TRIES)
+			var/outcome = antag_frame_forge_changeling(owner, seed)
+			TEST_ASSERT(outcome != "kill", "[round_type], генокрад: убийство без согласной цели")
+			ling_frames += outcome == "frame"
+		TEST_ASSERT(ling_frames, "[round_type], генокрад: подставы нет ни в одном из [ANTAG_FRAME_TEST_TRIES] наборов")
 
 /// Одному предателю выпадает не больше одной подставы.
 /datum/unit_test/antag_frame_one_per_traitor/Run()
@@ -101,5 +117,14 @@
 			kills += outcome == "kill"
 		TEST_ASSERT(kills > 0 && kills < ANTAG_FRAME_TEST_TRIES, "[class_type]: убийств [kills] из [ANTAG_FRAME_TEST_TRIES], сравнивать нечего")
 		TEST_ASSERT("frame" in with_frame, "[class_type]: подстава не выпала, сравнивать нечего")
+
+	var/list/ling_with_frame = list()
+	world_state.set_crew(framable_crew)
+	for(var/seed in 1 to ANTAG_FRAME_TEST_TRIES)
+		ling_with_frame += antag_frame_forge_changeling(owner, seed)
+	world_state.set_crew(security_crew)
+	for(var/seed in 1 to ANTAG_FRAME_TEST_TRIES)
+		var/without_frame = antag_frame_forge_changeling(owner, seed)
+		TEST_ASSERT_EQUAL(without_frame == "kill", ling_with_frame[seed] == "kill", "генокрад, зерно [seed]")
 
 #undef ANTAG_FRAME_TEST_TRIES
