@@ -33,12 +33,10 @@
 		protect_objective.owner = T.owner
 		if(protect_objective.find_kill_target() && GLOB.round_type != ROUNDTYPE_DYNAMIC_LIGHT)	// BLUEMOON CHANGE - в Лайт-Динамик протекта не даём: защищать не от кого
 			weights["protect"] = length(subtypesof(/datum/objective_item/steal))
-		// BLUEMOON ADD - цель «Подстава»
 		var/datum/objective/frame/frame_objective = new
 		frame_objective.owner = T.owner
-		if(frame_objective.find_target() && GLOB.round_type == ROUNDTYPE_DYNAMIC_LIGHT)	// BLUEMOON CHANGE - «Подстава» выпадает только в Лайт-Динамик
-			weights["frame"] = length(subtypesof(/datum/objective_item/steal))
-		// BLUEMOON ADD END
+		if(!(locate(/datum/objective/frame) in T.objectives) && frame_objective.find_target())
+			weights["frame"] = length(subtypesof(/datum/objective_item/steal)) * TRAITOR_FRAME_WEIGHT_FACTOR
 		var/datum/objective/breakout/breakout_objective = null
 		if(has_manifest_prisoner())
 			breakout_objective = new

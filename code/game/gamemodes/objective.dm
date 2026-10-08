@@ -1594,7 +1594,7 @@ GLOBAL_LIST_EMPTY(possible_sabotages)
 
 /datum/objective/frame/update_explanation_text()
 	if(target?.current)
-		explanation_text = "Сделай так, чтобы [target.current.real_name], [target.assigned_role], угодил(а) за решётку — в бриг, перма-бриг или на гулаг. Подбрось улики, подай ложный донос или сфабрикуй доказательства. Действуй осторожно и не спались."
+		explanation_text = "Сделай так, чтобы [target.current.real_name], [target.assigned_role], к концу смены сидел(а) за решёткой: в камере брига под таймером, в перма-бриге или на гулаге. Подбрось улики, подай ложный донос или натвори дел в облике цели. Действуй осторожно и не спались."
 	else
 		explanation_text = "Свободная Задача"
 
