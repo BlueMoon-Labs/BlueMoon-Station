@@ -35,7 +35,7 @@
 	. = ..()
 	if(.)
 		return
-	if(default_unfasten_wrench(user, I, 40))
+	if(default_unfasten_wrench(user, I, 40) == SUCCESSFUL_UNFASTEN)
 		if(on)
 			on = FALSE
 			visible_message("<span class='notice'>[src] гаснет при смене крепления.</span>")
