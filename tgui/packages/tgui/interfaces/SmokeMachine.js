@@ -36,7 +36,6 @@ export const SmokeMachine = (props) => {
                 icon={active ? 'power-off' : 'times'}
                 content={active ? 'Включено' : 'Выключено'}
                 selected={active}
-                //disabled={!hasPowercell}
                 onClick={() => act('power')} />
             </>
           )}>
