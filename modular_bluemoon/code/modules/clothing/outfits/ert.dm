@@ -371,7 +371,7 @@
 	uniform = /obj/item/clothing/under/rank/security/officer/nri_military
 	mask = /obj/item/clothing/mask/gas/syndicate/ds/mouth
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses
-	back = /obj/item/storage/backpack/rucksack/ert/green
+	back = /obj/item/storage/backpack/rucksack/ert
 	belt = /obj/item/storage/belt/military/russianweb
 	ears = /obj/item/radio/headset/nri/bowman
 	r_hand = /obj/item/gun/ballistic/automatic/ak12
