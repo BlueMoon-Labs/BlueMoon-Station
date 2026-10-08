@@ -112,6 +112,7 @@
 	var/mask_type = /obj/item/clothing/mask/breath
 	var/internal_type = /obj/item/tank/internals/emergency_oxygen
 	var/medipen_type = /obj/item/reagent_containers/hypospray/medipen
+	var/give_hook = TRUE
 
 /obj/item/storage/box/survival/PopulateContents()
 	// BLUEMOON ADD - у робототов особый набор для выживания
@@ -136,6 +137,13 @@
 	if(HAS_TRAIT(SSstation, STATION_TRAIT_PREMIUM_INTERNALS))
 		new /obj/item/flashlight/flare(src)
 		new /obj/item/radio/off(src)
+
+	if(give_hook && SSmapping.config?.give_players_hooks && length(SSmapping.levels_by_trait(ZTRAIT_STATION)) > 1)
+		new /obj/item/climbing_hook/emergency(src)
+
+/// Заключённым крюк для побега через дыры не положен.
+/obj/item/storage/box/survival/prisoner
+	give_hook = FALSE
 
 /obj/item/storage/box/survival/radio/PopulateContents()
 	..() // we want the survival stuff too.

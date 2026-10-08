@@ -473,6 +473,9 @@ RLD
 	GLOB.rcd_list -= src
 	. = ..()
 
+/obj/item/construction/rcd/builds_over_openspace()
+	return TRUE
+
 /obj/item/construction/rcd/attack_self(mob/user)
 	..()
 	var/list/choices = list(

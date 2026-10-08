@@ -64,3 +64,5 @@
 #define TRAIT_WEAK_INVISIBILITY "internal_invisibility"
 /// Запрет попиксельного смещения
 #define TRAIT_NO_PIXEL_SHIFT "no_pixel_shift"
+/// Дыра в полу: сквозь неё падают и по ней не ходят. Лежит здесь, потому что is_helpers.dm подключается раньше __DEFINES/traits.dm.
+#define TURF_Z_OPENSPACE_TRAIT "turf_z_openspace"
