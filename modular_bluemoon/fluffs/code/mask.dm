@@ -129,6 +129,8 @@
 	var/mob/living/carbon/human/wearer = loc
 	var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
 	var/breast_size = clamp(round(breast?.size || 0), 0, 9)
+	if(mask_adjusted)
+		breast_size -= 1
 	icon_state = "stardust-[breast_size][mask_adjusted ? "_up" : ""]"
 	wearer.update_inv_wear_mask()
 	wearer.update_body()
