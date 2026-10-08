@@ -1,0 +1,218 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"k" = (
+/obj/modular_map_connector,
+/obj/effect/turf_decal/bot,
+/obj/machinery/portable_atmospherics/canister,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"o" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/bot,
+/obj/machinery/portable_atmospherics/canister,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"s" = (
+/turf/template_noop,
+/area/template_noop)
+"w" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/components/trinary/mixer/flipped{
+	dir = 8
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"y" = (
+/turf/open/floor/plating/asteroid/airless,
+/area/asteroid/tramstation)
+"z" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop/syndicate_present,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"B" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/components/unary/portables_connector{
+	dir = 4
+	},
+/obj/machinery/portable_atmospherics/canister/nitrogen,
+/obj/effect/turf_decal/bot/yellow/left,
+/turf/open/floor/plating,
+/area/maintenance/department/crew_quarters/dorms)
+"F" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/maintenance/department/crew_quarters/dorms)
+"J" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/components/unary/portables_connector,
+/obj/effect/turf_decal/box,
+/turf/open/floor/plating,
+/area/maintenance/department/crew_quarters/dorms)
+"L" = (
+/turf/closed/wall,
+/area/maintenance/department/crew_quarters/dorms)
+"P" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"R" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/components/trinary/filter/flipped{
+	dir = 8
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"S" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/asteroid/tramstation)
+"V" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/components/unary/portables_connector{
+	dir = 8
+	},
+/obj/effect/turf_decal/bot/yellow/right,
+/turf/open/floor/plating,
+/area/maintenance/department/crew_quarters/dorms)
+"W" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/components/unary/portables_connector,
+/obj/machinery/portable_atmospherics/canister/oxygen,
+/obj/effect/turf_decal/box,
+/turf/open/floor/plating,
+/area/maintenance/department/crew_quarters/dorms)
+"X" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/components/unary/portables_connector{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot/yellow/left,
+/turf/open/floor/plating,
+/area/maintenance/department/crew_quarters/dorms)
+
+(1,1,1) = {"
+s
+L
+L
+S
+S
+y
+S
+"}
+(2,1,1) = {"
+P
+P
+L
+S
+y
+y
+y
+"}
+(3,1,1) = {"
+P
+B
+L
+y
+y
+y
+y
+"}
+(4,1,1) = {"
+W
+w
+F
+y
+y
+y
+y
+"}
+(5,1,1) = {"
+P
+V
+F
+y
+y
+y
+y
+"}
+(6,1,1) = {"
+P
+z
+F
+y
+y
+y
+y
+"}
+(7,1,1) = {"
+P
+X
+F
+y
+y
+y
+y
+"}
+(8,1,1) = {"
+J
+R
+F
+y
+y
+y
+y
+"}
+(9,1,1) = {"
+P
+V
+F
+y
+y
+y
+y
+"}
+(10,1,1) = {"
+P
+P
+F
+y
+y
+y
+y
+"}
+(11,1,1) = {"
+k
+o
+L
+y
+y
+y
+y
+"}
+(12,1,1) = {"
+o
+o
+L
+S
+y
+y
+y
+"}
+(13,1,1) = {"
+s
+s
+s
+S
+S
+S
+S
+"}
+(14,1,1) = {"
+s
+s
+s
+s
+s
+s
+s
+"}

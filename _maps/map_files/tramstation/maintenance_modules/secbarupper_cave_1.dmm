@@ -1,0 +1,261 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"e" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/maintenance/department/security)
+"m" = (
+/turf/closed/mineral/asteroid/porous,
+/area/maintenance/department/security)
+"n" = (
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"t" = (
+/obj/item/stack/ore/glass,
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"y" = (
+/turf/closed/mineral/asteroid/porous,
+/area/asteroid/tramstation)
+"C" = (
+/obj/item/stack/ore/glass,
+/turf/open/floor/plating/asteroid{
+	dug = 1;
+	floor_variance = 0;
+	icon_state = "asteroid_dug"
+	},
+/area/asteroid/tramstation)
+"E" = (
+/turf/open/floor/plating/asteroid{
+	dug = 1;
+	floor_variance = 0;
+	icon_state = "asteroid_dug"
+	},
+/area/asteroid/tramstation)
+"F" = (
+/obj/item/relic,
+/turf/open/floor/plating/asteroid{
+	dug = 1;
+	floor_variance = 0;
+	icon_state = "asteroid_dug"
+	},
+/area/asteroid/tramstation)
+"K" = (
+/turf/template_noop,
+/area/template_noop)
+"N" = (
+/obj/structure/rack,
+/obj/item/pickaxe{
+	pixel_x = 5
+	},
+/obj/item/shovel{
+	pixel_x = -5
+	},
+/obj/item/storage/bag/ore{
+	pixel_x = 6
+	},
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"O" = (
+/obj/modular_map_connector,
+/turf/open/floor/plating/asteroid,
+/area/maintenance/department/security)
+"R" = (
+/obj/structure/ore_box,
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"T" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/asteroid/tramstation)
+"U" = (
+/turf/closed/wall,
+/area/maintenance/department/security)
+
+(1,1,1) = {"
+e
+O
+m
+U
+e
+e
+K
+K
+K
+K
+K
+K
+K
+K
+K
+K
+K
+"}
+(2,1,1) = {"
+T
+n
+n
+T
+T
+T
+T
+T
+K
+K
+K
+K
+K
+K
+K
+K
+K
+"}
+(3,1,1) = {"
+n
+n
+n
+n
+T
+T
+T
+T
+T
+T
+T
+K
+K
+K
+K
+K
+K
+"}
+(4,1,1) = {"
+n
+E
+E
+n
+n
+n
+T
+T
+T
+T
+T
+K
+K
+K
+K
+K
+K
+"}
+(5,1,1) = {"
+t
+F
+C
+n
+n
+n
+T
+T
+T
+T
+T
+K
+K
+K
+K
+K
+K
+"}
+(6,1,1) = {"
+n
+C
+n
+n
+n
+T
+T
+T
+T
+T
+T
+K
+K
+K
+K
+K
+K
+"}
+(7,1,1) = {"
+y
+n
+n
+n
+n
+y
+T
+T
+T
+T
+T
+K
+K
+K
+K
+K
+K
+"}
+(8,1,1) = {"
+T
+R
+R
+N
+T
+T
+T
+T
+T
+T
+T
+K
+K
+K
+K
+K
+K
+"}
+(9,1,1) = {"
+T
+T
+T
+T
+T
+T
+T
+T
+T
+T
+T
+K
+K
+K
+K
+K
+K
+"}
+(10,1,1) = {"
+T
+T
+T
+T
+T
+T
+T
+T
+T
+T
+T
+K
+K
+K
+K
+K
+K
+"}

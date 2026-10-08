@@ -233,6 +233,7 @@
 	icon_state = "redrock"
 	icon = 'modular_citadel/code/modules/festive/red_brick_wall.dmi'
 	base_icon_state = "red_brick"
+	stops_meteors = TRUE
 
 /turf/closed/mineral/random/stationside/asteroid
 	name = "iron rock"
@@ -244,7 +245,41 @@
 	desc = "This rock is filled with pockets of breathable air."
 	baseturfs = /turf/open/floor/plating/asteroid
 
+#define POROUS_STRUTS_MESSAGE_COOLDOWN (2 SECONDS)
+
 /turf/closed/mineral/asteroid/porous
-	name = "porous rock"
-	desc = "This rock is filled with pockets of breathable air."
+	name = "reinforced porous rock"
+	desc = "Порода с карманами воздуха. Металлические распорки не дают её копать, пока их не срежут сваркой."
 	baseturfs = /turf/open/floor/plating/asteroid
+	/// Распорки держат кирку, бур и КА; взрыв, мех и трамвай ломают породу вместе с ними.
+	var/struts = TRUE
+
+/turf/closed/mineral/asteroid/porous/attackby(obj/item/tool, mob/user, params)
+	if(!struts)
+		return ..()
+	if(tool.tool_behaviour == TOOL_MINING)
+		if(last_act + POROUS_STRUTS_MESSAGE_COOLDOWN > world.time)
+			return
+		last_act = world.time
+		to_chat(user, span_warning("Распорки не дают копать породу: сначала срежьте их сваркой."))
+		return
+	if(tool.tool_behaviour != TOOL_WELDER)
+		return ..()
+	to_chat(user, span_notice("Вы начинаете срезать распорки..."))
+	if(!tool.use_tool(src, user, 5 SECONDS, amount = 1, volume = 50) || !struts)
+		return
+	cut_struts()
+	to_chat(user, span_notice("Распорки срезаны, породу можно копать."))
+
+/turf/closed/mineral/asteroid/porous/proc/cut_struts()
+	struts = FALSE
+	name = "porous rock"
+	desc = "Порода с карманами воздуха."
+
+/turf/closed/mineral/asteroid/porous/gets_drilled(user, give_exp = FALSE)
+	if(struts && ismob(user))
+		to_chat(user, span_warning("Распорки не дают копать породу: сначала срежьте их сваркой."))
+		return
+	return ..()
+
+#undef POROUS_STRUTS_MESSAGE_COOLDOWN

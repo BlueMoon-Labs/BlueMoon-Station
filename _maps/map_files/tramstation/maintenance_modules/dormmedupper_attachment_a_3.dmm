@@ -1,0 +1,182 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/turf/template_noop,
+/area/template_noop)
+"c" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop/syndicate_present,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"f" = (
+/obj/structure/rack,
+/obj/structure/window{
+	dir = 8
+	},
+/obj/item/modular_computer/laptop/preset/civilian{
+	pixel_y = 4;
+	pixel_x = 4
+	},
+/obj/item/modular_computer/laptop/preset/civilian,
+/obj/structure/window,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"k" = (
+/obj/structure/rack,
+/obj/structure/window{
+	dir = 4
+	},
+/obj/item/storage/book/bible{
+	pixel_x = -4;
+	pixel_y = -4
+	},
+/obj/item/storage/book/bible,
+/obj/item/storage/book/bible{
+	pixel_x = 4;
+	pixel_y = 4
+	},
+/obj/structure/window,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"u" = (
+/obj/structure/closet/cabinet,
+/obj/item/clothing/suit/chaplain/papal,
+/obj/item/clothing/suit/chaplain/clownpriest,
+/obj/item/clothing/suit/chaplain/holidaypriest,
+/obj/item/clothing/suit/hooded/chaplain_hoodie,
+/obj/item/clothing/suit/chaplain/shrinehand,
+/obj/item/clothing/suit/chaplain/nun,
+/obj/item/clothing/suit/hooded/chaplain_hoodie/monk_robe,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"z" = (
+/obj/structure/rack,
+/obj/structure/window{
+	dir = 4
+	},
+/obj/item/storage/dice,
+/obj/item/storage/dice{
+	pixel_x = 4;
+	pixel_y = 3
+	},
+/obj/item/toy/cards/deck,
+/obj/structure/window,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"C" = (
+/obj/structure/rack,
+/obj/item/storage/fancy/candle_box,
+/obj/item/storage/fancy/candle_box{
+	pixel_x = 3;
+	pixel_y = 4
+	},
+/obj/machinery/door/window/northright{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"D" = (
+/obj/structure/table/wood,
+/obj/item/taperecorder,
+/obj/item/tape{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/obj/item/tape{
+	pixel_x = -3;
+	pixel_y = -5
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"H" = (
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Public Services Storage Maintenance Hatch"
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/modular_map_connector,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"O" = (
+/obj/structure/rack,
+/obj/structure/window{
+	dir = 8
+	},
+/obj/item/storage/crayons,
+/obj/structure/window,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"T" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"X" = (
+/obj/structure/rack,
+/obj/item/camera_film,
+/obj/item/camera_film{
+	pixel_x = 4;
+	pixel_y = 5
+	},
+/obj/item/camera{
+	pixel_y = -2;
+	pixel_x = -7
+	},
+/obj/machinery/door/window,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+
+(1,1,1) = {"
+f
+T
+T
+D
+a
+"}
+(2,1,1) = {"
+X
+T
+T
+T
+H
+"}
+(3,1,1) = {"
+z
+T
+T
+T
+a
+"}
+(4,1,1) = {"
+O
+T
+T
+T
+a
+"}
+(5,1,1) = {"
+C
+T
+c
+T
+a
+"}
+(6,1,1) = {"
+k
+T
+T
+u
+a
+"}
+(7,1,1) = {"
+a
+a
+a
+a
+a
+"}

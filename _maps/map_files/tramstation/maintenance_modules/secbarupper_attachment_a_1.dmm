@@ -1,0 +1,175 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"f" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"q" = (
+/obj/structure/table,
+/obj/machinery/fax{
+	fax_name = "Head of Personnel's Office";
+	name = "Head of Personnel's Fax Machine"
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"w" = (
+/turf/template_noop,
+/area/template_noop)
+"B" = (
+/obj/structure/rack,
+/obj/item/pen/fourcolor,
+/obj/item/pen/invisible,
+/obj/item/pen/blue,
+/obj/item/pen/red,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/folder/yellow,
+/obj/item/folder/white{
+	pixel_y = 4
+	},
+/obj/item/folder/blue{
+	pixel_y = 2
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"D" = (
+/obj/structure/table,
+/obj/item/paper_bin{
+	pixel_x = -5;
+	pixel_y = 4
+	},
+/obj/item/pen{
+	pixel_x = -4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/folder/red{
+	pixel_x = 3
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"E" = (
+/obj/structure/filingcabinet/chestdrawer{
+	pixel_y = 2
+	},
+/obj/item/paper/secretrecipe,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"M" = (
+/turf/closed/wall,
+/area/maintenance/department/security)
+"N" = (
+/obj/structure/rack,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/storage/secure/briefcase{
+	pixel_x = -2;
+	pixel_y = 6
+	},
+/obj/item/storage/secure/briefcase,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"O" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/photocopier,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"R" = (
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Bureaucracy Storage Maintenance Hatch"
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/obj/modular_map_connector,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"S" = (
+/obj/structure/table,
+/obj/item/papercutter,
+/obj/item/paper/paperslip,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"W" = (
+/obj/structure/table,
+/obj/item/paper_bin/carbon,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+
+(1,1,1) = {"
+w
+w
+w
+w
+w
+"}
+(2,1,1) = {"
+R
+f
+f
+S
+M
+"}
+(3,1,1) = {"
+w
+f
+f
+W
+M
+"}
+(4,1,1) = {"
+w
+D
+f
+O
+M
+"}
+(5,1,1) = {"
+w
+q
+f
+N
+M
+"}
+(6,1,1) = {"
+w
+E
+f
+B
+M
+"}
+(7,1,1) = {"
+w
+M
+M
+M
+M
+"}
+(8,1,1) = {"
+w
+w
+w
+w
+w
+"}
+(9,1,1) = {"
+w
+w
+w
+w
+w
+"}
+(10,1,1) = {"
+w
+w
+w
+w
+w
+"}
+(11,1,1) = {"
+w
+w
+w
+w
+w
+"}
