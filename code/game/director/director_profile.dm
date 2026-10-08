@@ -134,6 +134,8 @@
 	/// Затухание повторов: вес действия делится на (1 + occurrences * repeat_penalty),
 	/// чтобы директор не крутил одно и то же. 0 выключает; переопределяется per-action.
 	var/repeat_penalty = 0.5
+	/// Множитель веса ролей помощи экипажу (семейство crew_relief); 0 выключает их в профиле
+	var/crew_relief_weight_mult = 1
 
 /// Множитель веса действия по его навязчивости. Неизвестная метка не штрафуется.
 /datum/director_profile/proc/disruption_mult(datum/director_action/action)
@@ -359,6 +361,7 @@
 	antag_initial_grant = 0 // штучный темп гост-спавнеров эксты аванс не ускоряет
 	roundstart_budget_min = 0
 	roundstart_budget_max = 0
+	crew_relief_weight_mult = 0.5
 
 /// Профиль для типа раунда; ROUNDTYPE_DYNAMIC (рандом) отдаёт medium как основу.
 /proc/director_profile_for(round_type)

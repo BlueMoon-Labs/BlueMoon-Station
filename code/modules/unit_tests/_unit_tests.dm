@@ -348,6 +348,7 @@
 #include "camera_photo_probe.dm"
 #include "can_inject_clothing.dm"
 #include "director_beat_cost.dm"
+#include "director_crew_relief.dm"
 #include "disposal_holder.dm"
 #include "effect_system_cleanup.dm"
 #include "fov_hearers.dm"

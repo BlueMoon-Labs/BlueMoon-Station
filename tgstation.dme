@@ -5008,6 +5008,7 @@
 #include "modular_bluemoon\code\modules\death_memory\death_memory.dm"
 #include "modular_bluemoon\code\modules\decay_subsystem\decay_turf_handling.dm"
 #include "modular_bluemoon\code\modules\decay_subsystem\decaySS.dm"
+#include "modular_bluemoon\code\modules\events\crew_relief.dm"
 #include "modular_bluemoon\code\modules\events\medival_warmongers_event.dm"
 #include "modular_bluemoon\code\modules\events\psi_wave.dm"
 #include "modular_bluemoon\code\modules\events\spacebattle.dm"
