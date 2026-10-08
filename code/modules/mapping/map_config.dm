@@ -34,6 +34,8 @@
 	/// зависимости от карты. Карта может переопределить ключом space_ruin_levels в своём JSON.
 	var/space_ruin_levels = 5
 	var/space_empty_levels = 1
+	/// Имя набора объявленных секторов космоса (sector_set у /datum/space_sector). null - космос целиком случайный.
+	var/space_sector_set = null
 	// BLUEMOON EDIT START: Invalid Space Turfs
 	/// Boolean that tells us if this is a planetary station. (like IceBoxStation)
 	var/planetary = FALSE
@@ -45,6 +47,8 @@
 	var/maptype = MAP_TYPE_STATION //This should be used to adjust ingame behavior depending on the specific type of map being played. For instance, if an overmap were added, it'd be appropriate for it to only generate with a MAP_TYPE_SHIP
 
 	var/allow_custom_shuttles = TRUE
+	/// Коробки выживания экипажа получают аварийный крюк: карта из нескольких станционных этажей с провалами между ними.
+	var/give_players_hooks = FALSE
 	var/shuttles = list(
 		"cargo" = "cargo_box",
 		"ferry" = "ferry_fancy",
@@ -190,6 +194,13 @@
 		log_world("map_config space_empty_levels is not a number!")
 		return
 
+	temp = json["space_sectors"]
+	if (istext(temp))
+		space_sector_set = temp
+	else if (!isnull(temp))
+		log_world("map_config space_sectors is not a text!")
+		return
+
 	if("station_ruin_budget" in json)
 		station_ruin_budget = json["station_ruin_budget"]
 
@@ -217,6 +228,7 @@
 			orientation = SOUTH
 
 	allow_custom_shuttles = json["allow_custom_shuttles"] != FALSE
+	give_players_hooks = json["give_players_hooks"] == TRUE
 
 	if("job_whitelist" in json)
 		job_whitelist = list()
@@ -305,6 +317,7 @@
 	jsonlist["shuttles"] = shuttles
 	jsonlist["traits"] = traits
 	jsonlist["space_ruin_levels"] = space_ruin_levels
+	jsonlist["space_sectors"] = space_sector_set
 	jsonlist["year_offset"] = year_offset
 	jsonlist["minetype"] = minetype
 	jsonlist["maptype"] = maptype
