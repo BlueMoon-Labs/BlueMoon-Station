@@ -1063,3 +1063,22 @@
 	dance.routine_fx(user, vanishing, stage)
 	var/obj/effect/temp_visual/heretic_dance/routine/culmination = locate() in stage
 	TEST_ASSERT_EQUAL(culmination?.icon_state, "dance_routine_vanishing", "Кульминация Исчезновения осталась на месте рывка.")
+
+/// Кольцо доли и ромбы фигуры висят на прозрачной для мыши опоре в vis_contents танцора, а не на нём самом.
+/datum/unit_test/heretic_dance_hints_click_through/Run()
+	var/datum/antagonist/heretic/heretic = allocate_dance_heretic()
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	dance.cue_ring = dance.body_hint_image('modular_bluemoon/icons/obj/heretic_dance_effects.dmi', "dance_cue_ring")
+	dance.figure_hud = dance.body_hint_image('modular_bluemoon/icons/obj/heretic_dance_marks.dmi')
+	var/image/ring = dance.cue_ring
+	var/obj/effect/abstract/heretic_vfx_image_anchor/anchor = ring.loc
+	TEST_ASSERT(istype(anchor), "Кольцо доли висит на опоре, а не на танцоре.")
+	TEST_ASSERT_EQUAL(dance.figure_hud.loc, anchor, "Подсказки на теле делят одну опору.")
+	TEST_ASSERT(anchor in user.vis_contents, "Опора в vis_contents танцора и ходит вместе с ним.")
+	TEST_ASSERT_EQUAL(anchor.mouse_opacity, MOUSE_OPACITY_TRANSPARENT, "Опора не ловит клики.")
+	TEST_ASSERT(!(anchor.vis_flags & VIS_INHERIT_ID), "Опора не выдаёт себя за танцора.")
+	dance.clear_hints()
+	TEST_ASSERT(QDELETED(anchor), "Снятые подсказки удаляют опору.")
+	TEST_ASSERT(!(anchor in user.vis_contents), "Удалённая опора уходит из vis_contents танцора.")
+	TEST_ASSERT_NULL(ring.loc, "Снятое кольцо не держит удалённую опору.")

@@ -429,6 +429,7 @@
 	var/surge_key
 	var/image/personal_echo
 	var/echo_viewer_ref
+	var/obj/effect/abstract/heretic_vfx_image_anchor/echo_anchor
 
 /datum/status_effect/heretic_ascension_omen/on_creation(mob/living/new_owner, chosen_path)
 	path_id = chosen_path
@@ -458,17 +459,21 @@
 /datum/status_effect/heretic_ascension_omen/tick()
 	clear_echo()
 	if(owner.client && owner.stat != DEAD)
-		var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
-		personal_echo = image(path.ascension_aura_icon, owner, "[path.ascension_aura_state]_back", ABOVE_MOB_LAYER)
-		personal_echo.overlays += mutable_appearance(path.ascension_aura_icon, "[path.ascension_aura_state]_front")
-		personal_echo.overlays += emissive_appearance(path.ascension_aura_icon, "[path.ascension_aura_state]_glow")
-		personal_echo.appearance_flags = PIXEL_SCALE | RESET_COLOR
-		personal_echo.pixel_x = (world.icon_size - HERETIC_ASCENSION_ICON_SIZE) / 2
-		personal_echo.pixel_y = personal_echo.pixel_x
-		personal_echo.alpha = 200
 		echo_viewer_ref = REF(owner.client)
-		owner.client.images += personal_echo
+		owner.client.images += build_echo()
 		animate(personal_echo, transform = matrix(3, 0, 0, 0, 3, 0), alpha = 0, pixel_y = personal_echo.pixel_y + 12, time = 3 SECONDS)
+
+/datum/status_effect/heretic_ascension_omen/proc/build_echo()
+	var/datum/heretic_path/path = GLOB.heretic_paths[path_id]
+	echo_anchor ||= heretic_vfx_image_anchor(owner)
+	personal_echo = image(path.ascension_aura_icon, echo_anchor, "[path.ascension_aura_state]_back", ABOVE_MOB_LAYER)
+	personal_echo.overlays += mutable_appearance(path.ascension_aura_icon, "[path.ascension_aura_state]_front")
+	personal_echo.overlays += emissive_appearance(path.ascension_aura_icon, "[path.ascension_aura_state]_glow")
+	personal_echo.appearance_flags = PIXEL_SCALE | RESET_COLOR
+	personal_echo.pixel_x = (world.icon_size - HERETIC_ASCENSION_ICON_SIZE) / 2
+	personal_echo.pixel_y = personal_echo.pixel_x
+	personal_echo.alpha = 200
+	return personal_echo
 
 /datum/status_effect/heretic_ascension_omen/proc/clear_echo()
 	var/client/echo_viewer = locate(echo_viewer_ref)
@@ -479,6 +484,7 @@
 
 /datum/status_effect/heretic_ascension_omen/on_remove()
 	clear_echo()
+	QDEL_NULL(echo_anchor)
 	owner.clear_fullscreen(fullscreen_key, 0)
 	owner.clear_fullscreen(surge_key, 0)
 	return ..()

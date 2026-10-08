@@ -455,3 +455,9 @@
 	matrixed_sections = MATRIX_RED_GREEN
 
 /*******************************************/
+
+/datum/sprite_accessory/tails/mam_tails/bm_tails/chemalt
+	name = "RadFox"
+	icon_state = "radfox"
+	matrixed_sections = MATRIX_ALL
+	ckeys_allowed = list("lindaastereih", "silverfoxpaws")

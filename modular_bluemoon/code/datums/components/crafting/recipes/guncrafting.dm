@@ -4,7 +4,7 @@
 	icon = 'modular_bluemoon/icons/obj/guns/gunkit.dmi'
 	icon_state = "kitsuitcase"
 
-/obj/item/disk/weapon_blueprint
+/* /obj/item/disk/weapon_blueprint
 	name = "Advanced weaponry blueprints"
 	desc = "Some fancy schematics for R&D minds, that will improve sec efficiency to shot each other."
 	icon = 'modular_bluemoon/icons/obj/items_and_weapons.dmi'
@@ -13,7 +13,7 @@
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_righthand.dmi'
 	w_class = WEIGHT_CLASS_SMALL
-
+ */
 /////////////////////////////
 //Enforcer MK59-MK62 design//
 /////////////////////////////
