@@ -259,6 +259,9 @@
 	var/list/possibleblobs = list()
 	for(var/obj/structure/blob/AB in range(T, 1))
 		possibleblobs += AB
+	var/obj/structure/blob/vertical_blob = get_vertical_blob_expander(T)
+	if(vertical_blob)
+		possibleblobs += vertical_blob
 	if(!possibleblobs.len)
 		to_chat(src, "<span class='warning'>There is no blob adjacent to the target tile!</span>")
 		return
@@ -284,7 +287,7 @@
 		var/list/diagonalblobs = list()
 		for(var/I in possibleblobs)
 			var/obj/structure/blob/IB = I
-			if(get_dir(IB, T) in GLOB.cardinals)
+			if(IB.z != T.z || (get_dir(IB, T) in GLOB.cardinals))
 				cardinalblobs += IB
 			else
 				diagonalblobs += IB
@@ -376,6 +379,8 @@
 	to_chat(src, "<i>Node Blobs</i> are blobs which grow, like the core. Like the core it can activate resource and factory blobs.")
 	to_chat(src, "<b>In addition to the buttons on your HUD, there are a few click shortcuts to speed up expansion and defense.</b>")
 	to_chat(src, "<b>Shortcuts:</b> Click = Expand Blob <b>|</b> Middle Mouse Click = Rally Spores <b>|</b> Ctrl Click = Create Shield Blob <b>|</b> Alt Click = Remove Blob")
+	if(length(SSmapping.get_connected_levels(get_turf(src))) > 1)
+		to_chat(src, "<b>Этажи:</b> блоб прорастает сквозь дыры в полу - вниз из занятой дыры и вверх в дыру над собой. Сменить этаж разум может командами Move Upwards и Move Down, если там рядом ваш блоб или клетка, куда он прорастёт.")
 	to_chat(src, "Attempting to talk will send a message to all other overminds, allowing you to coordinate with them.")
 	if(!placed && autoplace_max_time <= world.time)
 		to_chat(src, "<span class='big'><font color=\"#EE4000\">You will automatically place your blob core in [DisplayTimeText(autoplace_max_time - world.time)].</font></span>")

@@ -1307,7 +1307,7 @@
 		segment.transform = facing
 		segment.pixel_x = round(offset_x - tiles_x * world.icon_size)
 		segment.pixel_y = round(offset_y - tiles_y * world.icon_size)
-		segment.add_overlay(emissive_appearance(look))
+		segment.add_overlay(emissive_appearance(look, offset_spokesman = segment))
 		elements += segment
 
 /obj/effect/ebeam/heretic_spirit_thread
@@ -2294,10 +2294,10 @@
 	if(QDELETED(host) || !isturf(from) || !host_turf || host_turf.z != from.z)
 		return INITIALIZE_HINT_QDEL
 	host_ref = WEAKREF(host)
-	add_overlay(emissive_appearance(icon, icon_state))
+	add_floor_overlay(emissive_appearance(icon, icon_state, offset_spokesman = src))
 	from_x = (from.x - host_turf.x) * world.icon_size
 	from_y = (from.y - host_turf.y) * world.icon_size
-	host.vis_contents += src
+	host.add_vis_on_floor(src)
 	fly()
 	addtimer(CALLBACK(src, PROC_REF(arrive)), HERETIC_SPIRIT_TOLL_FLIGHT)
 

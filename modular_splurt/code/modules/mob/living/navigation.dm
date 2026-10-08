@@ -35,19 +35,7 @@
 	//взводит первый из них, второй разворачиваем уже здесь
 	if(navigate_choosing_destination)
 		return
-	var/list/destination_list = list()
-	for(var/atom/destination in GLOB.navigate_destinations)
-		if(!isatom(destination) || destination.z != z || get_dist(destination, src) > MAX_NAVIGATE_RANGE)
-			continue
-		var/destination_name = GLOB.navigate_destinations[destination]
-		destination_list[destination_name] = destination
-
-	if(!is_reserved_level(z)) //don't let us path to nearest staircase or ladder on shuttles in transit
-		if(z > 1)
-			destination_list["Nearest Way Down"] = DOWN
-		if(z < world.maxz)
-			destination_list["Nearest Way Up"] = UP
-
+	var/list/destination_list = get_navigation_destinations()
 	if(!length(destination_list))
 		balloon_alert(src, "no navigation signals!")
 		return
@@ -65,13 +53,13 @@
 		return
 	COOLDOWN_START(src, navigate_cooldown, 15 SECONDS)
 
-	if(navigate_target == UP || navigate_target == DOWN)
-		var/new_target = find_nearest_stair_or_ladder(navigate_target)
-
+	var/vertical_dir = navigate_target == UP || navigate_target == DOWN ? navigate_target : navigation_vertical_dir(navigate_target)
+	if(vertical_dir)
+		COOLDOWN_START(src, navigate_cooldown, 5 SECONDS)
+		var/new_target = find_nearest_stair_or_ladder(vertical_dir)
 		if(!new_target)
-			balloon_alert(src, "can't find ladder or staircase going [navigate_target == UP ? "up" : "down"]!")
+			balloon_alert(src, vertical_dir == UP ? "нет лестницы наверх!" : "нет лестницы вниз!")
 			return
-
 		navigate_target = new_target
 
 	if(!isatom(navigate_target))
@@ -93,7 +81,7 @@
 	for(var/i in 1 to length(path))
 		var/turf/current_turf = path[i]
 		var/image/path_image = image(icon = 'icons/obj/power_cond/cables.dmi', layer = SIGIL_LAYER, loc = current_turf)
-		path_image.plane = GAME_PLANE
+		SET_PLANE_EXPLICIT(path_image, GAME_PLANE, current_turf)
 		path_image.color = COLOR_CYAN
 		path_image.alpha = 0
 		var/dir_1 = 0
@@ -114,7 +102,41 @@
 		animate(path_image, 0.5 SECONDS, alpha = 150)
 	addtimer(CALLBACK(src, PROC_REF(shine_navigation)), 0.5 SECONDS)
 	RegisterSignal(src, COMSIG_MOB_DEATH, PROC_REF(cut_navigation))
-	balloon_alert(src, "navigation path created")
+	if(vertical_dir)
+		RegisterSignal(src, COMSIG_MOVABLE_Z_CHANGED, PROC_REF(cut_navigation))
+	balloon_alert(src, vertical_dir ? "маршрут до лестницы" : "navigation path created")
+
+/// Точки навигации со всей связки этажей по имени; у точек с других этажей в имени этаж.
+/mob/living/proc/get_navigation_destinations()
+	var/list/destination_list = list()
+	var/turf/our_turf = get_turf(src)
+	if(!our_turf)
+		return destination_list
+	var/list/levels = SSmapping.get_connected_levels(our_turf)
+	var/our_index = levels.Find(our_turf.z)
+	for(var/turf/destination as anything in GLOB.navigate_destinations)
+		var/destination_index = levels.Find(destination.z)
+		if(!destination_index || max(abs(destination.x - our_turf.x), abs(destination.y - our_turf.y)) > MAX_NAVIGATE_RANGE)
+			continue
+		var/destination_name = GLOB.navigate_destinations[destination]
+		if(destination_index != our_index)
+			destination_name += destination_index > our_index ? " (выше)" : " (ниже)"
+		destination_list[destination_name] = destination
+
+	if(GET_TURF_BELOW(our_turf))
+		destination_list["Nearest Way Down"] = DOWN
+	if(GET_TURF_ABOVE(our_turf))
+		destination_list["Nearest Way Up"] = UP
+	return destination_list
+
+/// UP или DOWN, если цель на другом этаже связки; NONE, если на нашем.
+/mob/living/proc/navigation_vertical_dir(atom/target)
+	var/turf/our_turf = get_turf(src)
+	var/turf/target_turf = get_turf(target)
+	if(!our_turf || !target_turf || our_turf.z == target_turf.z)
+		return NONE
+	var/list/levels = SSmapping.get_connected_levels(our_turf)
+	return levels.Find(target_turf.z) > levels.Find(our_turf.z) ? UP : DOWN
 
 /mob/living/proc/shine_navigation()
 	if(!client)
@@ -130,7 +152,7 @@
 	SIGNAL_HANDLER
 	//подписку снимаем первой: у разлогиненного моба клиента нет, а падение на
 	//client.navigation_images оставляло бы висеть обработчик COMSIG_MOB_DEATH
-	UnregisterSignal(src, COMSIG_MOB_DEATH)
+	UnregisterSignal(src, list(COMSIG_MOB_DEATH, COMSIG_MOVABLE_Z_CHANGED))
 	if(!client)
 		return
 	for(var/image/navigation_path in client.navigation_images)
@@ -149,32 +171,26 @@
 	if(direction != UP && direction != DOWN)
 		return
 
-	var/target
-	for(var/obj/structure/ladder/lad in GLOB.ladders)
-		if(lad.z != z)
+	var/turf/our_turf = get_turf(src)
+	if(!our_turf)
+		return
+	var/atom/target
+	for(var/obj/structure/ladder/ladder as anything in GLOB.ladders)
+		if(ladder.z != our_turf.z || !(direction == UP ? ladder.up : ladder.down))
 			continue
-		if(direction == UP && !lad.up)
-			continue
-		if(direction == DOWN && !lad.down)
-			continue
-		if(!target)
-			target = lad
-			continue
-		if(get_dist_euclidian(lad, src) > get_dist_euclidian(target, src))
-			continue
-		target = lad
+		if(!target || get_dist_euclidian(ladder, src) < get_dist_euclidian(target, src))
+			target = ladder
 
-	for(var/obj/structure/stairs/stairs_bro in GLOB.stairs)
-		if(direction == UP && stairs_bro.z != z) //if we're going up, we need to find stairs on our z level
+	for(var/obj/structure/stairs/stairs as anything in GLOB.stairs)
+		var/turf/stairs_turf = get_turf(stairs)
+		if(!stairs_turf)
 			continue
-		if(direction == DOWN && stairs_bro.z != z - 1) //if we're going down, we need to find stairs on the z level beneath us
+		//вниз ведёт клетка над лестницей нижнего этажа
+		var/atom/entrance = direction == UP ? stairs : GET_TURF_ABOVE(stairs_turf)
+		if(entrance?.z != our_turf.z)
 			continue
-		if(!target)
-			target = stairs_bro.z == z ? stairs_bro : get_step_multiz(stairs_bro, UP) //if the stairs aren't on our z level, get the turf above them (on our zlevel) to path to instead
-			continue
-		if(get_dist_euclidian(stairs_bro, src) > get_dist_euclidian(target, src))
-			continue
-		target = stairs_bro.z == z ? stairs_bro : get_step_multiz(stairs_bro, UP)
+		if(!target || get_dist_euclidian(entrance, src) < get_dist_euclidian(target, src))
+			target = entrance
 
 	return target
 

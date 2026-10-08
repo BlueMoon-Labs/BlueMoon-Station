@@ -168,6 +168,7 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 	var/pos_x
 	var/pos_y
 	var/life_status
+	var/list/monitored_levels = SSmapping.get_connected_levels(z)
 
 	for(var/mob/living/carbon/human/H in GLOB.carbon_list)
 		var/nanite_sensors = FALSE
@@ -175,7 +176,7 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 			nanite_sensors = TRUE
 		// Check if their z-level is correct and if they are wearing a uniform.
 		// Accept H.z==0 as well in case the mob is inside an object.
-		if ((H.z == 0 || H.z == z) && istype(H.w_uniform, /obj/item/clothing/under) || nanite_sensors)
+		if ((H.z == 0 || (H.z in monitored_levels)) && istype(H.w_uniform, /obj/item/clothing/under) || nanite_sensors)
 			U = H.w_uniform
 
 			// Are the suit sensors on?
@@ -183,7 +184,7 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 				pos = H.z == 0 || (nanite_sensors || U.sensor_mode == SENSOR_COORDS) ? get_turf(H) : null
 
 				// Special case: If the mob is inside an object confirm the z-level on turf level.
-				if (H.z == 0 && (!pos || pos.z != z))
+				if (H.z == 0 && (!pos || !(pos.z in monitored_levels)))
 					continue
 
 				I = H.wear_id ? H.wear_id.GetID() : null
@@ -254,7 +255,7 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 							// Найдём все crew мониторы на этом Z и заставим их пикнуть + сказать сообщение
 							var/obj/machinery/computer/crew/working_terminal
 							for(var/obj/machinery/computer/crew/C in GLOB.crew_sensor_monitors)
-								if(C.z == z && C.is_operational())
+								if((C.z in monitored_levels) && C.is_operational())
 									playsound(C, 'sound/machines/twobeep.ogg', 80, FALSE)
 									C.say("Обнаружен пациент в критическом состоянии!")
 									if(!working_terminal && C.radio)
@@ -336,11 +337,12 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 	var/pos_x
 	var/pos_y
 	var/life_status
+	var/list/monitored_levels = SSmapping.get_connected_levels(z)
 
 	for(var/mob/living/carbon/human/H in GLOB.carbon_list)
 		if(!HAS_TRAIT(H, TRAIT_PACT_SIEGE_DEFENDER))
 			continue
-		if(H.z != 0 && H.z != z)
+		if(H.z != 0 && !(H.z in monitored_levels))
 			continue
 		if(!istype(H.w_uniform, /obj/item/clothing/under))
 			continue
@@ -349,7 +351,7 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 			continue
 
 		pos = U.sensor_mode == SENSOR_COORDS ? get_turf(H) : null
-		if(H.z == 0 && (!pos || pos.z != z))
+		if(H.z == 0 && (!pos || !(pos.z in monitored_levels)))
 			continue
 
 		name = H.name || "Unknown"

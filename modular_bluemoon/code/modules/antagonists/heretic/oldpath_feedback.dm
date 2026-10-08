@@ -42,7 +42,7 @@
 /// Язык огня вырастает из пола, горит и опадает, а не мигает целиком.
 /obj/effect/temp_visual/heretic_ash_flame/Initialize(mapload)
 	. = ..()
-	add_overlay(emissive_appearance(icon, icon_state))
+	add_overlay(emissive_appearance(icon, icon_state, offset_spokesman = src))
 	alpha = 0
 	transform = matrix(HERETIC_ASH_FLAME_BUD_WIDTH, 0, 0, 0, HERETIC_ASH_FLAME_BUD_HEIGHT, -HERETIC_ASH_FLAME_BUD_SINK)
 	animate(src, alpha = 255, transform = matrix(), time = HERETIC_ASH_FLAME_RISE, easing = CUBIC_EASING | EASE_OUT)
@@ -143,4 +143,4 @@
 	for(var/direction in GLOB.cardinals)
 		if(edge_directions & direction)
 			add_overlay(edge_states["[direction]"])
-			add_overlay(emissive_appearance(icon, edge_states["[direction]"]))
+			add_overlay(emissive_appearance(icon, edge_states["[direction]"], offset_spokesman = src))

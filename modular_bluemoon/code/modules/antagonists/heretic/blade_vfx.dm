@@ -92,7 +92,7 @@
 	transform = heretic_blade_orbit_matrix(orbit_angle())
 	SpinAnimation(HERETIC_BLADE_ORBIT_SPIN, -1, TRUE, HERETIC_BLADE_ORBIT_SEGMENTS, parallel = FALSE)
 	steel = new(null, slot, grown)
-	vis_contents += steel
+	add_vis_on_floor(steel)
 
 /// Фаза считается от world.time, поэтому клинки, выросшие в разное время, идут ровным кругом.
 /obj/effect/heretic_orbit_blade/proc/orbit_angle()
@@ -114,8 +114,8 @@
 /obj/effect/abstract/heretic_orbit_steel/Initialize(mapload, slot = 0, grown = FALSE)
 	. = ..()
 	add_overlay(mutable_appearance(icon, "blade_orbit_glint"))
-	add_overlay(emissive_appearance(icon, "blade_orbit_glow", alpha = HERETIC_BLADE_EDGE_GLOW))
-	add_overlay(emissive_appearance(icon, "blade_orbit_glint"))
+	add_floor_overlay(emissive_appearance(icon, "blade_orbit_glow", alpha = HERETIC_BLADE_EDGE_GLOW, offset_spokesman = src))
+	add_floor_overlay(emissive_appearance(icon, "blade_orbit_glint", offset_spokesman = src))
 	var/lift_period = HERETIC_BLADE_HOVER_PERIOD + slot * HERETIC_BLADE_HOVER_SPREAD
 	var/sway_period = HERETIC_BLADE_SWAY_PERIOD - slot * HERETIC_BLADE_HOVER_SPREAD
 	animate(src, pixel_y = HERETIC_BLADE_HOVER_LIFT, time = lift_period / 2, easing = SINE_EASING, loop = -1, flags = ANIMATION_PARALLEL)
@@ -145,7 +145,7 @@
 	var/matrix/placement = heretic_blade_orbit_matrix(angle)
 	transform = placement
 	color = heretic_blade_flare_matrix()
-	add_overlay(emissive_appearance(icon, icon_state))
+	add_overlay(emissive_appearance(icon, icon_state, offset_spokesman = src))
 	var/matrix/burst = matrix(placement)
 	burst.Scale(HERETIC_BLADE_SHATTER_SCALE)
 	animate(src, transform = burst, alpha = 0, time = duration, easing = CUBIC_EASING | EASE_OUT)
@@ -199,7 +199,7 @@
 	pixel_y = end_y
 	transform = heretic_blade_facing(final_heading, HERETIC_BLADE_STREAK_FLARE)
 	color = heretic_blade_flare_matrix()
-	add_overlay(emissive_appearance(icon, icon_state))
+	add_overlay(emissive_appearance(icon, icon_state, offset_spokesman = src))
 	add_filter("streak_blur", 1, motion_blur_filter(sin(final_heading) * HERETIC_BLADE_STREAK_BLUR, cos(final_heading) * HERETIC_BLADE_STREAK_BLUR))
 	animate(src, transform = heretic_blade_facing(final_heading), color = color_matrix_identity(), time = HERETIC_BLADE_STREAK_SETTLE, easing = SINE_EASING | EASE_OUT)
 	animate(alpha = 0, time = HERETIC_BLADE_STREAK_FADE, easing = SINE_EASING | EASE_IN)
