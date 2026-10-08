@@ -1048,9 +1048,6 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 	for(var/atom/movable/screen/plane_master/lighting/L as anything in hud_used.get_true_plane_masters(LIGHTING_PLANE))
 		L.set_alpha(lighting_alpha)
 		L.apply_light_cutoff(lighting_cutoff, lighting_color_cutoffs)
-	// Оверлейный свет гаснет синхронно с тьмой: при прозрачной lighting plane цветной множитель без тьмы под ним - мусор.
-	for(var/atom/movable/screen/plane_master/o_light_visual/O as anything in hud_used.get_true_plane_masters(O_LIGHTING_VISUAL_PLANE))
-		O.set_alpha(lighting_alpha)
 
 /mob/proc/update_mouse_pointer()
 	if (!client)

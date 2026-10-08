@@ -572,7 +572,8 @@ GLOBAL_LIST_INIT(singularity_filter_names, list("singularity_0", "singularity_1"
 	. = ..()
 	add_filter("emissives", 2, alpha_mask_filter(render_source = OFFSET_RENDER_TARGET(EMISSIVE_RENDER_TARGET, offset), flags = MASK_INVERSE))
 	apply_light_cutoff(0)
-	add_filter("object_lighting", 3, alpha_mask_filter(render_source = OFFSET_RENDER_TARGET(O_LIGHTING_VISUAL_RENDER_TARGET, offset), flags = MASK_INVERSE))
+	if(!home?.use_render_plates)
+		add_filter("object_lighting", 3, alpha_mask_filter(render_source = OFFSET_RENDER_TARGET(O_LIGHTING_VISUAL_RENDER_TARGET, offset), flags = MASK_INVERSE))
 
 /// Маски эмиссива и оверлейного света ложатся раньше искажений, иначе линза сингулярности размажет вырезанные ими дырки.
 /atom/movable/screen/plane_master/lighting/apply_world_distortion()
@@ -606,19 +607,32 @@ GLOBAL_LIST_INIT(singularity_filter_names, list("singularity_0", "singularity_1"
 		rgb_add[1], rgb_add[2], rgb_add[3], 0
 	)))
 
-///Оверлейный свет (/datum/component/overlay_lighting): BLEND_ADD-маски источников собираются здесь.
-///Плоскость тонирует игру цветом света (BLEND_MULTIPLY), а её рендер-таргет прорезает тьму
-///lighting plane через фильтр "object_lighting" (см. Initialize lighting plane master выше).
+///Оверлейный свет (/datum/component/overlay_lighting): BLEND_ADD-маски источников этажа.
+///Альфа масок высветляет тьму, цвет тонирует картинку умножением. В плитах оба шага делают реле в освещение своего этажа,
+///без плит - фильтр "object_lighting" плоскости освещения и сама плоскость.
 /atom/movable/screen/plane_master/o_light_visual
 	name = "overlight light visual plane master"
 	plane = O_LIGHTING_VISUAL_PLANE
 	render_target = O_LIGHTING_VISUAL_RENDER_TARGET
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	/// Не сдаётся в плиту: BLEND_MULTIPLY без подложки даёт чёрный круг на месте каждого источника.
-	/// Маска при этом одна на всю стопку, и фонарь снизу прорезает темноту этажом выше.
-	render_relay_planes = list()
-	offsetting_flags = BLOCKS_PLANE_OFFSETTING
+	render_relay_planes = list(LIGHTING_PLANE)
 	blend_mode = BLEND_MULTIPLY
+	/// Масштаб этажа даёт плоскость освещения, в которую уходят реле.
+	multiz_scaled = FALSE
+
+/atom/movable/screen/plane_master/o_light_visual/update_offset()
+	. = ..()
+	if(home?.use_render_plates)
+		render_target = "*[render_target]"
+
+/atom/movable/screen/plane_master/o_light_visual/Initialize(mapload, datum/hud/hud_owner, datum/plane_master_group/home, offset = 0)
+	. = ..()
+	var/atom/movable/screen/render_plane_relay/tint = get_relay_to(GET_NEW_PLANE(LIGHTING_PLANE, offset))
+	if(!tint)
+		return
+	//Высветление обязано лечь до умножения на цвет, поэтому слой реле ниже.
+	var/atom/movable/screen/render_plane_relay/brighten = generate_relay_to(tint.plane, BLEND_OVERLAY, tint.layer - 1)
+	brighten.color = list(0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,1, 1,1,1,0)
 
 /**
  * Handles emissive overlays and emissive blockers.

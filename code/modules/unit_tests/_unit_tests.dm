@@ -296,6 +296,7 @@
 // #include "ntnetwork_tests.dm"
 // #include "outfit_sanity.dm"
 #include "outfit_stack_pockets.dm"
+#include "overlay_lighting_floor.dm"
 // #include "pills.dm"
 // #include "plantgrowth_tests.dm"
 #include "perf_log_columns.dm"

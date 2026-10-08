@@ -160,7 +160,6 @@
 #define LIGHTING_RENDER_TARGET "LIGHT_PLANE"
 
 #define O_LIGHTING_VISUAL_PLANE 9
-/// Без звёздочки: плоскость рисуется на месте и служит подложкой самой себе, иначе остаётся чёрный круг под фонариком.
 #define O_LIGHTING_VISUAL_RENDER_TARGET "O_LIGHT_VISUAL_PLANE"
 
 #define FLOOR_LIGHTING_LAMPS_PLANE 1
