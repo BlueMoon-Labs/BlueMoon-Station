@@ -92,3 +92,43 @@
 	mission = "уничтожить все угрозы Активам ПАКТа."
 	polldesc = "an Nanotrasen Tribunal Ordinator"
 	ertphrase = "modular_bluemoon/sound/ert/ert_tribunal.ogg"
+
+/// Собирает отряд из уже опрошенных кандидатов на точках спауна ОБР; последний заспауненный - лидер.
+/// Взятые кандидаты вынимаются из списка. Возвращает созданных бойцов.
+/datum/ert/proc/spawn_members(list/mob/candidates, max_members = null)
+	var/list/mob/living/carbon/human/members = list()
+	var/agents_left = min(isnull(max_members) ? maxteamsize : max_members, length(candidates))
+	if(agents_left <= 0)
+		return members
+	var/datum/team/ert/ert_team = new team
+	if(rename_team)
+		ert_team.name = rename_team
+	var/datum/objective/mission_objective = new
+	mission_objective.team = ert_team
+	mission_objective.explanation_text = mission
+	mission_objective.completed = TRUE
+	ert_team.objectives += mission_objective
+	ert_team.mission = mission_objective
+	var/list/spawnpoints = GLOB.emergencyresponseteamspawn
+	while(agents_left && length(candidates))
+		if(agents_left > length(spawnpoints))
+			agents_left--
+			continue
+		var/mob/chosen_candidate = pick_n_take(candidates)
+		if(!chosen_candidate.key || !chosen_candidate.client)
+			continue
+		var/mob/living/carbon/human/operative = new mobtype(spawnpoints[agents_left])
+		chosen_candidate.client.prefs.copy_to(operative)
+		chosen_candidate.transfer_ckey(operative)
+		if(enforce_human || operative.dna.species.dangerous_existence)
+			operative.set_species(/datum/species/human)
+		var/role_type = (agents_left == 1) ? leader_role : roles[WRAP(agents_left, 1, length(roles) + 1)]
+		var/datum/antagonist/ert/ert_antag = new role_type
+		operative.mind.add_antag_datum(ert_antag, ert_team)
+		operative.mind.assigned_role = ert_antag.name
+		log_game("[key_name(operative)] has been selected as an [ert_antag.name]")
+		members += operative
+		agents_left--
+	if(!length(members))
+		qdel(ert_team)
+	return members
