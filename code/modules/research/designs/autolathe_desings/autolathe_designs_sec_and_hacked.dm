@@ -291,6 +291,14 @@
 	build_path = /obj/item/ammo_box/a308
 	category = list("hacked", "Security")
 
+/datum/design/a308/rubber
+	name = "Stripper clip (.308 rubber)"
+	id = "a308_r"
+	build_type = AUTOLATHE | NO_PUBLIC_LATHE
+	materials = list(/datum/material/iron = 3100)
+	build_path = /obj/item/ammo_box/a308
+	category = list("hacked", "Security")
+
 /datum/design/g4570
 	name = "45-70 ammo"
 	id = "g4570"
