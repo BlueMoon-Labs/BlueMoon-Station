@@ -132,41 +132,40 @@
 	set name = "Respawn"
 	set category = "OOC"
 
-	if(!CONFIG_GET(flag/respawns_enabled))
-		to_chat(src, "<span class='warning'>Respawns are disabled in configuration.</span>")
-		return
-
-	//if(client.prefs.dnr_triggered) // Ну не хочет чел вставать, зачем ему респавн то резать -_-
-		//to_chat(src, "<span class='danger'>You cannot respawn as you have enabled DNR.</span>")
-		//return
-
-	// BLUEMOON ADD я не знаю почему бан респавна не банил респавн
-	if(jobban_isbanned(src, ROLE_RESPAWN))
-		to_chat(src, "You cannot respawn (banned).")
-		return
-	// BLUEMOON ADD END
-	var/roundstart_timeleft = (SSticker.round_start_time + (CONFIG_GET(number/respawn_minimum_delay_roundstart) * 600)) - world.time
-	if(roundstart_timeleft > 0)
-		to_chat(src, "<span class='warning'>It's been too short of a time since the round started! Please wait [CEILING(roundstart_timeleft / 600, 0.1)] more minutes.</span>")
-		return
-
-	var/list/banned_modes = CONFIG_GET(keyed_list/respawn_chaos_gamemodes)
-	if(SSticker.mode && banned_modes[lowertext(SSticker.mode.config_tag)])
-		to_chat(src, "<span class='warning'>The current mode tag, [SSticker.mode.config_tag], is not eligible for respawn.</span>")
-		return
-
-	var/timeleft = time_left_to_respawn()
-	if(timeleft)
-		to_chat(src, "<span class='warning'>It's been too short of a time since you died/observed! Please wait [round(timeleft / 600, 0.1)] more minutes.</span>")
+	var/block_reason = respawn_block_reason(src, client?.prefs)
+	if(block_reason)
+		to_chat(src, span_warning(block_reason))
 		return
 	do_respawn(TRUE)
+
+/// Почему игрок сейчас не может вернуться в лобби, или null. Общая проверка для Respawn и "Войти в смену".
+/proc/respawn_block_reason(mob/user, datum/preferences/prefs)
+	if(!CONFIG_GET(flag/respawns_enabled))
+		return "Respawns are disabled in configuration."
+	if(jobban_isbanned(user, ROLE_RESPAWN))
+		return "You cannot respawn (banned)."
+	var/roundstart_timeleft = (SSticker.round_start_time + (CONFIG_GET(number/respawn_minimum_delay_roundstart) * 600)) - world.time
+	if(roundstart_timeleft > 0)
+		return "It's been too short of a time since the round started! Please wait [CEILING(roundstart_timeleft / 600, 0.1)] more minutes."
+	var/list/banned_modes = CONFIG_GET(keyed_list/respawn_chaos_gamemodes)
+	if(SSticker.mode && banned_modes[lowertext(SSticker.mode.config_tag)])
+		return "The current mode tag, [SSticker.mode.config_tag], is not eligible for respawn."
+	var/timeleft = respawn_time_left(prefs)
+	if(timeleft)
+		return "It's been too short of a time since you died/observed! Please wait [round(timeleft / 600, 0.1)] more minutes."
+	return null
+
+/proc/respawn_time_left(datum/preferences/prefs)
+	if(!prefs)
+		return 0
+	return max(0, ((prefs.respawn_did_cryo ? CONFIG_GET(number/respawn_delay_cryo) : CONFIG_GET(number/respawn_delay)) MINUTES + prefs.respawn_time_of_death) - world.time)
 
 /**
  * Gets time left until we can respawn. Returns 0 if we can respawn now.
  */
 /mob/dead/observer/verb/time_left_to_respawn()
 	ASSERT(client)
-	return max(0, ((client.prefs.respawn_did_cryo? CONFIG_GET(number/respawn_delay_cryo) : CONFIG_GET(number/respawn_delay)) MINUTES + client.prefs.respawn_time_of_death) - world.time)
+	return respawn_time_left(client.prefs)
 
 /**
  * Handles respawning

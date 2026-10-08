@@ -5280,6 +5280,7 @@
 #include "modular_bluemoon\code\modules\security_rocket_launcher\fake_explosion.dm"
 #include "modular_bluemoon\code\modules\security_rocket_launcher\projectile.dm"
 #include "modular_bluemoon\code\modules\security_rocket_launcher\weapon.dm"
+#include "modular_bluemoon\code\modules\shift_invites\shift_invites.dm"
 #include "modular_bluemoon\code\modules\smithing\coiled_sword.dm"
 #include "modular_bluemoon\code\modules\station_goals\bfl.dm"
 #include "modular_bluemoon\code\modules\surgery\amputation_robotic.dm"

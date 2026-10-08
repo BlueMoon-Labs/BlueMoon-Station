@@ -120,6 +120,7 @@
 	.["action_buttons_hide"] = action_buttons_hide_on_spawn
 	.["autostand"] = autostand
 	.["long_strip_menu"] = long_strip_menu
+	.["shift_invites"] = shift_invites
 
 	// Gameplay: combat
 	.["disable_combat_cursor"] = disable_combat_cursor
@@ -484,6 +485,9 @@
 				if("long_strip_menu")
 					long_strip_menu = !long_strip_menu
 					dirty_var = "long_strip_menu"
+				if("shift_invites")
+					shift_invites = !shift_invites
+					dirty_var = "shift_invites"
 				if("disable_combat_cursor")
 					disable_combat_cursor = !disable_combat_cursor
 					dirty_var = "disable_combat_cursor"

@@ -61,7 +61,7 @@ document.addEventListener('click', function(e) {
 });
 
 // === ТОСТЫ ===
-function bm_show_toast(text, type, duration) {
+function bm_show_toast(text, type, duration, onClick) {
   var container = document.getElementById('bm-toasts');
   if (!container) return;
   var existing = container.querySelectorAll('.bm-toast:not(.dismiss)');
@@ -71,7 +71,10 @@ function bm_show_toast(text, type, duration) {
   var toast = document.createElement('div');
   toast.className = 'bm-toast ' + (type || 'info');
   toast.textContent = text;
-  toast.addEventListener('click', function() { _bm_dismiss(toast); });
+  toast.addEventListener('click', function() {
+    if (onClick) onClick();
+    _bm_dismiss(toast);
+  });
   container.appendChild(toast);
   while (container.children.length > 4) _bm_dismiss(container.firstChild);
   setTimeout(function() { _bm_dismiss(toast); }, duration || 4000);
@@ -211,6 +214,13 @@ function bm_show_notice(text, type) {
     if (_m) { text = _m[1]; type = _m[2] || ''; }
   }
   if (text) bm_show_toast(text, type || 'error', 8000);
+}
+
+function bm_show_invite(text) {
+  if (!text) return;
+  bm_show_toast(text, 'warning', 20000, function() {
+    location.href = '?src=' + (window._BM_SRC || '') + ';bm_lobby_action=late_join';
+  });
 }
 
 function bm_set_background(data) {

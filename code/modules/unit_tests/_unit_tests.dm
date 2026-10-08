@@ -401,6 +401,7 @@
 #include "memory_leak_limits.dm"
 #include "human_mob_gc.dm"
 #include "observer_reenter_race.dm"
+#include "join_shift.dm"
 #include "jukebox_catchup_offset.dm"
 #include "jukebox_component_fixes.dm"
 #include "jukebox_import.dm"
