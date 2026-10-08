@@ -248,6 +248,26 @@
 	holder.forceMove(place)
 	QDEL_IN(holder, holder.particles.lifespan)
 
+/// Опора для image, видимых одному клиенту. Image на самом атоме входит в его хитбокс при любом mouse_opacity, а у объекта в vis_contents mouse_opacity соблюдается.
+/proc/heretic_vfx_image_anchor(atom/movable/host)
+	if(QDELETED(host))
+		return null
+	var/obj/effect/abstract/heretic_vfx_image_anchor/anchor = new
+	host.vis_contents += anchor
+	return anchor
+
+/obj/effect/abstract/heretic_vfx_image_anchor
+	icon = null
+	layer = FLOAT_LAYER
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	appearance_flags = KEEP_APART
+	vis_flags = VIS_INHERIT_PLANE
+
+/obj/effect/abstract/heretic_vfx_image_anchor/Destroy()
+	for(var/atom/movable/host in vis_locs)
+		host.vis_contents -= src
+	return ..()
+
 /// Рисунок на носителе: проступает за fade_in и держится, пока его не погасят fade_out или удалением. upright не даёт ему лечь вместе с носителем.
 /proc/heretic_vfx_attach(atom/movable/host, visual_icon, visual_state, target_alpha = 255, fade_in = HERETIC_VFX_ATTACH_FADE, glow = TRUE, upright = TRUE)
 	if(QDELETED(host))
