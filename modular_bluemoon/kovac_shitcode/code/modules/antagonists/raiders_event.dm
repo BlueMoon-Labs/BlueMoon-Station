@@ -48,23 +48,23 @@
 		payoff = max(payoff_min, FLOOR(D.account_balance * 0.9, 1000))
 	else
 		payoff = payoff_min
-	threat_msg.content = "Джамбо, уроды. Мы тут пролетали неподалеку, и заметили красно-синих голубков. Расклад прост. Гоните [payoff] кредитов, в противном случае мы не поленимся проложить курс нашего крейсера напрямую через вашу станцию."
+	threat_msg.content = "Джамбо, уроды. Мы тут пролетали неподалеку, и заметили красно-синих голубков. Расклад прост. Гоните [payoff] кредитов, в противном случае мы не поленимся проложить курс нашего крейсера напрямую через вашу станцию. Пять минут на размышление, больше не дам."
 
 	threat_msg.answer_callback = CALLBACK(src, PROC_REF(raiders_answered), threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
 	SScommunications.send_message(threat_msg,unique = TRUE)
 	spawn_timer_id = addtimer(CALLBACK(src, PROC_REF(spawn_raiders), threat_msg, ship_template), response_max_time, TIMER_STOPPABLE)
 
 /datum/round_event/raiders/proc/raiders_answered(datum/comm_message/threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
-	if(world.time > initial_send_time + response_max_time)
+	if(world.time >= initial_send_time + response_max_time)
 		priority_announce("Поговорим на языке силы.", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_raiders(threat_msg, ship_template, TRUE)
 		return
 	if(threat_msg && threat_msg.answered == 1)
 		var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
 		if(D && D.adjust_money(-payoff))
+			resolve_threat_peacefully()
 			priority_announce("Удачного дня, рабы пакта.", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_yespeacedecision.ogg', "Priority")
 			SSdirector.complete_deferred_action_without_roles(control, "угроза снята выкупом; назначено ролей: 0")
-			resolve_threat_peacefully()
 			return
 		priority_announce("Здесь не хватает кредитов, козлы. Молитесь.", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_raiders(threat_msg, ship_template, TRUE)
