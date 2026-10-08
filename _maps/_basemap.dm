@@ -32,6 +32,7 @@
 		#include "map_files\wawastation\wawastation.dmm"
 		#include "map_files\biodome\biodome.dmm"
 		#include "map_files\Ouroboros\Ouroboros.dmm"
+		#include "map_files\KiloStation\KiloStation.dmm"
 		// #include "modular_bluemoon\_maps\PrisonStation\PrisonStation.dmm"
 	#endif
 	#ifdef ALL_TEMPLATES

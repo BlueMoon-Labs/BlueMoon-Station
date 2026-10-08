@@ -1,4 +1,4 @@
-// Areas used by Blueshift, NebulaStation, Catwalk, Wawastation, Biodome and Ouroboros.
+// Areas used by Blueshift, NebulaStation, Catwalk, Wawastation, Biodome, Ouroboros and KiloStation.
 
 /area/service/park/biodome
 	name = "Station Biodome"
@@ -62,3 +62,11 @@
 
 /area/service/sauna/barber
 	name = "Barbershop Spa"
+
+/area/service/chapel/storage
+	name = "Chapel Storage"
+	icon_state = "chapeloffice"
+
+/area/engineering/hallway
+	name = "Engineering Hallway"
+	icon_state = "engine_hallway"

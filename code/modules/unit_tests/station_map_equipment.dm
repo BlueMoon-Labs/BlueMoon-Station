@@ -681,7 +681,7 @@
 	TEST_ASSERT(!length(found), "Живые враждебные мобы внутри станции: [found.Join(", ")]")
 
 /// Карты, где у Navigate нет точек (или нет Research): долг родных карт и отладочные карты.
-#define MAPS_WITHOUT_NAVIGATION list("Kilo Station", "Lambda Station", "OmegaStation", "Smol Station", "FestiveStation", "Runtime Station", "Minimal Runtime Station", "MultiZ Debug")
+#define MAPS_WITHOUT_NAVIGATION list("Lambda Station", "OmegaStation", "Smol Station", "FestiveStation", "Runtime Station", "Minimal Runtime Station", "MultiZ Debug")
 
 /// Navigate знает ключевые отделы станции, а на портированных картах к каждой точке можно подойти по полу станции.
 /datum/unit_test/station_navigation_destinations

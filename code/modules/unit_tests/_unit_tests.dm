@@ -72,7 +72,7 @@
 #define TRAIT_SOURCE_UNIT_TESTS "unit_tests"
 
 /// Карты, перенесённые из tg и его форков: на них идут проверки снаряжения BlueMoon
-#define PORTED_STATION_MAPS list("Tramstation", "NorthStar", "Void Raptor", "Ice Box Station", "Blueshift", "NebulaStation", "Catwalk Station", "Wawastation", "Biodome", "Ouroboros")
+#define PORTED_STATION_MAPS list("Tramstation", "NorthStar", "Void Raptor", "Ice Box Station", "Blueshift", "NebulaStation", "Catwalk Station", "Wawastation", "Biodome", "Ouroboros", "Kilo Station")
 
 #include "action_button_positions.dm"
 #include "advanced_locator.dm"
