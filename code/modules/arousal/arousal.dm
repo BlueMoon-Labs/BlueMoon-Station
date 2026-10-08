@@ -290,6 +290,8 @@
 			genitals_list[listed] = new /mutable_appearance(listed)
 		var/obj/item/organ/genital/ret_organ = genitals_list.len == 1 ? genitals_list[1] : show_radial_menu(src, src, genitals_list)
 		// BLUEMOON EDIT END
+		if(!ret_organ)
+			return
 		//SPLURT edit
 		if(CHECK_BITFIELD(ret_organ.genital_flags, GENITAL_CHASTENED))
 			visible_message("<span class='userlove'><b>\The [src]</b> fumbles with their cage with a whine!</span>",

@@ -225,6 +225,10 @@
 			if(ispath(prize.equipment_path, /obj/item/stack/metadollar) && !bm_bounty_vendor_can_buy_metadollar(usr))
 				flick(icon_deny, src)
 				return
+			if(ispath(prize.equipment_path, /obj/item/disk/tech_disk/major) && !length(SSresearch.techweb_nodes_experimental))
+				to_chat(usr, span_alert("Error: No experimental technology left to record on [prize.equipment_name]!"))
+				flick(icon_deny, src)
+				return
 			if(prize.cost > I.contraband_points)
 				to_chat(usr, "<span class='alert'>Error: Insufficient points for [prize.equipment_name] on [I]!</span>")
 				flick(icon_deny, src)

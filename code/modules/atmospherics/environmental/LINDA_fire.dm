@@ -13,22 +13,23 @@
 /// неё, два процента на глаз неразличимы даже на одиночном пламени.
 #define HOTSPOT_RECOLOR_TEMPERATURE_RATIO 0.02
 
-/// Lavaland/mining Z: auxmos get_fuel_amount() still counts N2 — block air-only fuel so N2+O2 cannot sustain hotspots (matches genericfire N2 skip in reactions.dm).
-/proc/turf_has_fire_fuel(datum/gas_mixture/air, temp, z_level)
+/// get_fuel_amount() без азота: он горит с нулевой энтальпией, очаг на одном воздухе держал бы температуру сам, а под планетарным небом кислород не кончается.
+/proc/turf_has_fire_fuel(datum/gas_mixture/air, temp)
 	if(!air)
 		return FALSE
 	if(air.get_moles(GAS_PLASMA) > HOTSPOT_MINIMUM_FIRE_REAGENTS || air.get_moles(GAS_TRITIUM) > HOTSPOT_MINIMUM_FIRE_REAGENTS)
 		return TRUE
-	if(air.get_fuel_amount(temp, HOTSPOT_MINIMUM_FIRE_REAGENTS) < HOTSPOT_MINIMUM_FIRE_REAGENTS)
-		return FALSE
-	if(!is_mining_level(z_level))
-		return TRUE
-	for(var/gas_id in GLOB.gas_data.fire_temperatures)
+	var/list/fuel_temperatures = GLOB.gas_data.fire_temperatures
+	var/list/fuel_rates = GLOB.gas_data.fire_burn_rates
+	var/fuel = 0
+	for(var/gas_id, gas_moles in air.gases)
 		if(gas_id == GAS_N2)
 			continue
-		if(!GLOB.gas_data.fire_temperatures[gas_id])
+		var/ignition_temperature = fuel_temperatures[gas_id]
+		if(!ignition_temperature || temp < ignition_temperature)
 			continue
-		if(air.get_moles(gas_id) > HOTSPOT_MINIMUM_FIRE_REAGENTS)
+		fuel += (gas_moles / max(fuel_rates[gas_id], 0.01)) * max(0, 1 - (ignition_temperature / max(temp, TCMB)))
+		if(fuel >= HOTSPOT_MINIMUM_FIRE_REAGENTS)
 			return TRUE
 	return FALSE
 
@@ -81,7 +82,7 @@
 
 	if (air.get_oxidation_power(exposed_temperature, HOTSPOT_MINIMUM_FIRE_REAGENTS) < HOTSPOT_MINIMUM_FIRE_REAGENTS || air.get_moles(GAS_HYPERNOB) > 5)
 		return
-	var/has_fuel = turf_has_fire_fuel(air, exposed_temperature, z)
+	var/has_fuel = turf_has_fire_fuel(air, exposed_temperature)
 	if(current_hotspot)
 		if(has_fuel)
 			if(current_hotspot.temperature < exposed_temperature)
@@ -297,7 +298,7 @@
 		ATMOS_TPROF_COUNT("hs_died")
 		qdel(src)
 		return
-	if(!location.air || location.air.get_moles(GAS_HYPERNOB) > 5 || location.air.get_oxidation_power(null, HOTSPOT_MINIMUM_FIRE_REAGENTS) < HOTSPOT_MINIMUM_FIRE_REAGENTS || !turf_has_fire_fuel(location.air, temperature, location.z))
+	if(!location.air || location.air.get_moles(GAS_HYPERNOB) > 5 || location.air.get_oxidation_power(null, HOTSPOT_MINIMUM_FIRE_REAGENTS) < HOTSPOT_MINIMUM_FIRE_REAGENTS || !turf_has_fire_fuel(location.air, temperature))
 		ATMOS_TPROF_ADD("hs_gate")
 		ATMOS_TPROF_COUNT("hs_died")
 		qdel(src)

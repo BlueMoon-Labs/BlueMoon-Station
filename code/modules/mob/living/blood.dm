@@ -168,8 +168,7 @@
 
 /mob/living/carbon/restore_blood()
 	blood_volume = (BLOOD_VOLUME_NORMAL * blood_ratio)
-	for(var/i in bodyparts)
-		var/obj/item/bodypart/BP = i
+	for(var/obj/item/bodypart/BP in bodyparts)
 		BP.generic_bleedstacks = 0
 
 /****************************************************

@@ -130,24 +130,19 @@
 	insert_fuel(item_in_active_hand, user)
 
 /obj/item/mod/module/power/proc/insert_fuel(obj/item/stack/sheet/mineral/fuel, user)
-	if(current_fuel_amount == max_fuel_amount)
-		can_generate_power()
+	var/amount_to_load = min(fuel.amount, max_fuel_amount - current_fuel_amount)
+	if(amount_to_load <= 0)
 		return
-	var/amount_fuel_can_be_used = max_fuel_amount
-
-	if(fuel.amount > max_fuel_amount || (fuel.amount - max_fuel_amount) <= 0)
-		amount_fuel_can_be_used = fuel.amount
-
-	fuel.use(amount_fuel_can_be_used)
-	current_fuel_amount = amount_fuel_can_be_used
-
-	can_generate_power()
+	fuel.use(amount_to_load)
+	current_fuel_amount += amount_to_load
 
 /obj/item/mod/module/power/proc/can_generate_power()
+	if(QDELETED(mod) || !mod.wearer || !COOLDOWN_FINISHED(src, power_generation_cooldown))
+		return FALSE
 	//пробуем найти батарейку, если она вдруг пропала(замена, вставка модуля в мод без батарейки)
 	if(!mod_cell)
 		mod_cell = mod.get_cell()
-	if(!COOLDOWN_FINISHED(src, power_generation_cooldown) || !mod || !mod.wearer || !mod_cell || QDELETED(mod))
+	if(!mod_cell)
 		return FALSE
 
 	if(have_tesla_relay)

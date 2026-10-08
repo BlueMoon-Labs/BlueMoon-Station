@@ -842,6 +842,7 @@ SUBSYSTEM_DEF(time_track)
 				type_reference_lists[atom_type] = reference_lists
 			else
 				sample_instance_lists(thing, atom_type, type_reference_lists[atom_type], type_list_slots, type_shared_slots, counted_shared_lists, sampled == 1)
+			CHECK_TICK
 		if(isturf(thing))
 			turf_count++
 			turf_slots += slots
@@ -859,16 +860,15 @@ SUBSYSTEM_DEF(time_track)
 		if(level && level <= length(movables_per_z))
 			movables_per_z[level] += 1
 
-	var/list/report = memory_census_previous ? instance_census_growth(counts, memory_census_previous) : counts.Copy()
+	CHECK_TICK
+	var/list/report = memory_census_previous ? instance_census_growth(counts, memory_census_previous) : counts
 	var/growth_report = !isnull(memory_census_previous)
 	memory_census_previous = counts
 
-	sortTim(report, GLOBAL_PROC_REF(cmp_numeric_dsc), TRUE)
+	var/list/leaders = census_top_entries(report, MEMORY_CENSUS_TOP)
 	var/list/top = list()
-	for(var/type_path in report)
-		if(length(top) >= MEMORY_CENSUS_TOP)
-			break
-		top += "[type_path] x[num2text(report[type_path], 12)]"
+	for(var/type_path in leaders)
+		top += "[type_path] x[num2text(leaders[type_path], 12)]"
 
 	// num2text здесь по той же причине, что и в соседней строке про вес: турфов в мире
 	// больше миллиона, и без него в лог попадает "1.17045e+006" вместо числа.
@@ -880,13 +880,20 @@ SUBSYSTEM_DEF(time_track)
 		[growth_report ? "прирост с прошлой переписи" : "самые многочисленные типы"]: \
 		[length(top) ? top.Join(", ") : "пусто"]")
 
+	CHECK_TICK
 	log_instance_weights(weights, counts, type_var_slots, turf_slots, area_slots, movable_slots)
+	CHECK_TICK
 	log_list_slots(all_counts, type_list_samples, type_list_slots, type_first_slots)
+	CHECK_TICK
 	log_shared_list_slots(type_shared_slots)
+	CHECK_TICK
 	log_global_list_slots()
+	CHECK_TICK
 	log_lighting_graph_slots()
+	CHECK_TICK
 	log_movables_per_z(movables_per_z)
 	#ifdef DATUM_CENSUS
+	CHECK_TICK
 	for(var/line in datum_census_lines(MEMORY_CENSUS_TOP))
 		log_world(line)
 	#endif
@@ -927,11 +934,34 @@ SUBSYSTEM_DEF(time_track)
  * отсеиваются типовые дефолты: список-дефолт в DM до первой записи один на всех
  * инстансов, и стоит он тоже один раз.
  */
+/// contents зоны BYOND собирает обходом карты на каждое чтение, а её турфы перепись и так считает.
+/// Первые top_n ключей values по убыванию значения, при равенстве - в порядке списка. Полная сортировка десятков тысяч типов держала тик целиком.
+/proc/census_top_entries(list/values, top_n)
+	var/list/top = list()
+	var/scanned = 0
+	for(var/key in values)
+		if(!(++scanned % MEMORY_CENSUS_TICK_EVERY))
+			CHECK_TICK
+		var/value = values[key]
+		if(length(top) >= top_n && value <= top[top[length(top)]])
+			continue
+		var/position = length(top) + 1
+		while(position > 1 && value > top[top[position - 1]])
+			position--
+		top.Insert(position, key)
+		top[key] = value
+		if(length(top) > top_n)
+			top.Cut(top_n + 1)
+	return top
+
+/datum/controller/subsystem/time_track/proc/skip_census_var(datum/thing, var_name)
+	return var_name == "vars" || (var_name == "contents" && isarea(thing))
+
 /datum/controller/subsystem/time_track/proc/collect_instance_lists(datum/thing, list/reference_lists)
 	var/slots = 0
 	var/list/instance_vars = thing.vars
 	for(var/var_name in instance_vars)
-		if(var_name == "vars")
+		if(skip_census_var(thing, var_name))
 			continue
 		var/value = instance_vars[var_name]
 		if(!islist(value))
@@ -959,7 +989,7 @@ SUBSYSTEM_DEF(time_track)
 	var/slots = 0
 	var/list/instance_vars = thing.vars
 	for(var/var_name in instance_vars)
-		if(var_name == "vars")
+		if(skip_census_var(thing, var_name))
 			continue
 		var/value = instance_vars[var_name]
 		if(!islist(value))
@@ -1092,13 +1122,13 @@ SUBSYSTEM_DEF(time_track)
  * оба растут весь раунд, оба держат иконки.
  */
 /datum/controller/subsystem/time_track/proc/log_shared_list_slots(list/type_shared_slots)
-	sortTim(type_shared_slots, GLOBAL_PROC_REF(cmp_numeric_dsc), TRUE)
-	var/list/top = list()
 	var/total = 0
 	for(var/type_path in type_shared_slots)
 		total += type_shared_slots[type_path]
-		if(length(top) < MEMORY_CENSUS_TOP)
-			top += "[type_path] [num2text(type_shared_slots[type_path], 12)]"
+	var/list/leaders = census_top_entries(type_shared_slots, MEMORY_CENSUS_TOP)
+	var/list/top = list()
+	for(var/type_path in leaders)
+		top += "[type_path] [num2text(leaders[type_path], 12)]"
 	if(!length(top))
 		return
 	log_world("## MEMORY: элементы ОБЩИХ на тип списков (статики и типовые дефолты, каждый список \
@@ -1255,11 +1285,8 @@ SUBSYSTEM_DEF(time_track)
 		// строк и ничего больше, и свести баланс памяти по переписи было нечем.
 		census_personal_slots_total += estimated[type_path]
 
-	sortTim(estimated, GLOBAL_PROC_REF(cmp_numeric_dsc), TRUE)
 	var/list/top = list()
-	for(var/type_path in estimated)
-		if(length(top) >= MEMORY_CENSUS_TOP)
-			break
+	for(var/type_path in census_top_entries(estimated, MEMORY_CENSUS_TOP))
 		top += "[type_path] [num2text(estimated[type_path], 12)] (по [round(per_instance_slots[type_path], 0.1)] на штуку)"
 	return top
 
@@ -1311,10 +1338,7 @@ SUBSYSTEM_DEF(time_track)
 	if(total_slots <= 0)
 		return top
 
-	sortTim(weights, GLOBAL_PROC_REF(cmp_numeric_dsc), TRUE)
-	for(var/type_path in weights)
-		if(length(top) >= MEMORY_CENSUS_TOP)
-			break
+	for(var/type_path in census_top_entries(weights, MEMORY_CENSUS_TOP))
 		var/slots_each = type_var_slots[type_path]
 		if(!slots_each)
 			continue
@@ -1367,7 +1391,10 @@ SUBSYSTEM_DEF(time_track)
  */
 /datum/controller/subsystem/time_track/proc/instance_census_growth(list/current, list/previous)
 	var/list/growth = list()
+	var/scanned = 0
 	for(var/type_path in current)
+		if(!(++scanned % MEMORY_CENSUS_TICK_EVERY))
+			CHECK_TICK
 		// previous[type_path] отсутствующего ключа даёт null, а null в арифметике DM - ноль,
 		// то есть новый тип честно считается выросшим на всё своё количество.
 		var/delta = current[type_path] - previous[type_path]

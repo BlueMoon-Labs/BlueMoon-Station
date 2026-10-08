@@ -122,12 +122,14 @@
 		return
 
 	var/choice = tgui_input_list(owner, "Выберите действие.", "Вторая личность", options)
-	if(!choice)
+	if(!choice || QDELETED(trauma))
 		return
 
 	switch(choice)
 		if("Отправить сообщение")
 			var/message = tgui_input_text(owner, "Ваше сообщение услышит только другая личность.", "Внутренний голос", max_length = MAX_MESSAGE_LEN)
+			if(QDELETED(trauma))
+				return
 			trauma.send_inner_message(owner, message)
 		if("Передать / забрать управление")
 			trauma.request_voluntary_switch(owner)

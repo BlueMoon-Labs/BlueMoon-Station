@@ -23,10 +23,12 @@
 	range_modifier = _range_modifier
 	can_contaminate = _can_contaminate
 
+	SSradiation.active_waves++
 	START_PROCESSING(SSradiation, src)
 
 /datum/radiation_wave/Destroy()
 	. = QDEL_HINT_IWILLGC
+	SSradiation.active_waves--
 	STOP_PROCESSING(SSradiation, src)
 	..()
 

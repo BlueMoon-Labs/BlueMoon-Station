@@ -39,6 +39,11 @@
 /obj/structure/ai_unit_test_barrier/expensive
 	max_integrity = 200
 
+/obj/structure/ai_unit_test_barrier/stubborn
+
+/obj/structure/ai_unit_test_barrier/stubborn/attack_animal(mob/living/simple_animal/user)
+	return FALSE
+
 /// Non-dense blocker whose pathing proc must opt into evaluation explicitly.
 /obj/structure/ai_unit_test_path_probe
 	density = FALSE
@@ -908,6 +913,78 @@
 	TEST_ASSERT(length(path), "The weighted breach pathfinder must find a corridor")
 	TEST_ASSERT(cheap_turf in path, "The route must cross the cheap barrier")
 	TEST_ASSERT(!(expensive_turf in path), "The route must avoid the more expensive barrier")
+	qdel(controller)
+
+///Раунд 10466: хедкрабы ломали SMES и консоли как преграды пути и грызли собственное гнездо.
+/datum/unit_test/ai_obstacle_policy_spares_machinery_and_nest/Run()
+	var/turf/pawn_turf = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/headcrab/crab = allocate(/mob/living/simple_animal/hostile/headcrab, pawn_turf)
+	var/datum/ai_controller/unit_test_mover/controller = new(crab)
+	var/datum/obstacle_policy/policy = GET_OBSTACLE_POLICY(/datum/obstacle_policy)
+	var/obj/machinery/power/smes/smes = allocate(/obj/machinery/power/smes, locate(pawn_turf.x + 1, pawn_turf.y, pawn_turf.z))
+	var/obj/structure/spawner/headcrab/nest = allocate(/obj/structure/spawner/headcrab, locate(pawn_turf.x, pawn_turf.y + 1, pawn_turf.z))
+	var/datum/component/spawner/nest_spawner = nest.GetComponent(/datum/component/spawner)
+	nest_spawner.spawn_delay = INFINITY
+	var/obj/structure/grille/grille = allocate(/obj/structure/grille, locate(pawn_turf.x + 2, pawn_turf.y, pawn_turf.z))
+
+	var/smes_integrity = smes.obj_integrity
+	TEST_ASSERT(!policy.can_smash_blocker(crab, controller, smes), "SMES не преграда пути для моба, не ломающего армированные стены")
+	TEST_ASSERT_EQUAL(policy.get_blocker_breach_cost(crab, controller, smes), 0, "Маршрут не должен планироваться сквозь SMES")
+	TEST_ASSERT(!policy.try_smash(crab, controller, smes), "Хедкраб не должен бить SMES")
+	TEST_ASSERT_EQUAL(smes.obj_integrity, smes_integrity, "SMES должен остаться целым")
+	TEST_ASSERT(!policy.can_smash_blocker(crab, controller, nest), "Своё гнездо не преграда пути")
+	TEST_ASSERT(policy.can_smash_blocker(crab, controller, grille), "Решётка остаётся законной преградой")
+
+	crab.faction = list("unit_test_outsider")
+	TEST_ASSERT(policy.can_smash_blocker(crab, controller, nest), "Чужое гнездо ломать можно")
+	crab.environment_smash |= ENVIRONMENT_SMASH_RWALLS
+	TEST_ASSERT(policy.can_smash_blocker(crab, controller, smes), "Моб уровня босса пробивает и машинерию")
+	qdel(controller)
+
+///Раунд 10466: медведь Миша с фракцией экипажа выламывал дверь и шкафы офиса ГСБ и дверь оружейной.
+/datum/unit_test/ai_obstacle_policy_crew_pet_spares_station/Run()
+	var/turf/pawn_turf = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/bear/snow/misha = allocate(/mob/living/simple_animal/hostile/bear/snow, pawn_turf)
+	misha.faction = list("neutral")
+	var/datum/ai_controller/unit_test_mover/controller = new(misha)
+	var/datum/obstacle_policy/policy = GET_OBSTACLE_POLICY(/datum/obstacle_policy)
+	var/obj/structure/closet/secure_closet/locker = allocate(/obj/structure/closet/secure_closet, locate(pawn_turf.x + 1, pawn_turf.y, pawn_turf.z))
+	var/obj/machinery/door/airlock/door = allocate(/obj/machinery/door/airlock, locate(pawn_turf.x + 2, pawn_turf.y, pawn_turf.z))
+
+	var/door_integrity = door.obj_integrity
+	TEST_ASSERT(!policy.can_smash_blocker(misha, controller, locker), "Союзный экипажу моб не ломает шкафы")
+	TEST_ASSERT(!policy.can_smash_blocker(misha, controller, door), "Союзный экипажу моб не ломает двери")
+	TEST_ASSERT(!policy.try_smash(misha, controller, door), "Союзный экипажу моб не должен бить дверь")
+	TEST_ASSERT_EQUAL(door.obj_integrity, door_integrity, "Дверь должна остаться целой")
+
+	misha.faction = list("hostile")
+	TEST_ASSERT(policy.can_smash_blocker(misha, controller, locker), "Дикий медведь ломает шкаф")
+	TEST_ASSERT(policy.can_smash_blocker(misha, controller, door), "Дикий медведь ломает дверь")
+	qdel(controller)
+
+///Раунд 10466: белые волки по 10 ударов подряд бились в забор, которому нужно 20.
+/datum/unit_test/ai_obstacle_policy_gives_up_on_tough_blocker/Run()
+	var/turf/pawn_turf = run_loc_floor_bottom_left
+	var/mob/living/simple_animal/hostile/asteroid/wolf/wolf = allocate(/mob/living/simple_animal/hostile/asteroid/wolf, pawn_turf)
+	var/datum/ai_controller/unit_test_mover/controller = new(wolf)
+	var/datum/obstacle_policy/policy = GET_OBSTACLE_POLICY(/datum/obstacle_policy)
+	var/obj/structure/fence/fence = allocate(/obj/structure/fence, locate(pawn_turf.x + 1, pawn_turf.y, pawn_turf.z))
+	var/obj/structure/ai_unit_test_barrier/stubborn/stubborn = allocate(/obj/structure/ai_unit_test_barrier/stubborn, locate(pawn_turf.x, pawn_turf.y + 1, pawn_turf.z))
+
+	TEST_ASSERT(!policy.can_smash_blocker(wolf, controller, fence), "Целый забор волку не по силам - путь ищется в обход")
+	TEST_ASSERT_EQUAL(policy.get_blocker_breach_cost(wolf, controller, fence), 0, "Маршрут не должен планироваться сквозь целый забор")
+	fence.obj_integrity = wolf.obj_damage * AI_OBSTACLE_MAX_SMASH_HITS
+	TEST_ASSERT(policy.can_smash_blocker(wolf, controller, fence), "Подбитый забор в пределах лимита ударов ломать можно")
+
+	for(var/attempt in 1 to AI_OBSTACLE_SMASH_ATTEMPT_LIMIT)
+		TEST_ASSERT(policy.try_smash(wolf, controller, stubborn), "До лимита моб продолжает бить преграду")
+	TEST_ASSERT(!policy.try_smash(wolf, controller, stubborn), "После лимита ударов без результата моб сдаётся")
+	TEST_ASSERT(!policy.can_smash_blocker(wolf, controller, stubborn), "Брошенная преграда выпадает и из маршрута")
+	TEST_ASSERT(policy.can_smash_blocker(wolf, controller, fence), "Отказ адресный: другие преграды не помечены")
+
+	var/list/abandoned = controller.blackboard[BB_AI_ABANDONED_OBSTACLES]
+	abandoned[WEAKREF(stubborn)] = world.time
+	TEST_ASSERT(policy.can_smash_blocker(wolf, controller, stubborn), "Отказ от преграды протухает")
 	qdel(controller)
 
 ///JPS получает персональный бюджет контроллера, а не общий жёсткий лимит.

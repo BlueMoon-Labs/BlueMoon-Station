@@ -6,11 +6,13 @@
 /obj/item/stack/tile/plasteel/lowered
 	name = "lowered floor tile"
 	singular_name = "lowered floor tile"
+	desc = "Плитка утопленного пола. Укладка занимает несколько секунд, и под кем-то другим её не уложить."
 	turf_type = /turf/open/floor/plasteel/lowered
 
 /obj/item/stack/tile/plasteel/pool
 	name = "pool floor tile"
 	singular_name = "pool floor tile"
+	desc = "Плитка для дна бассейна. Укладка занимает несколько секунд, и под кем-то другим её не уложить."
 	turf_type = /turf/open/pool/pool_floor
 	tile_reskin_types = list(
 		/obj/item/stack/tile/plasteel/pool,

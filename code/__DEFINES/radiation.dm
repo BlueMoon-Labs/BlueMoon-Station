@@ -54,4 +54,4 @@ Ask ninjanomnom if they're around
 
 #define RAD_HALF_LIFE 90							// The half-life of contaminated objects
 
-#define RAD_MAX_PROCESSING 200						// Safety cap on SSradiation processing list size. Wave creation is suppressed when exceeded
+#define RAD_MAX_PROCESSING 200						// Safety cap on active radiation waves. Contaminated objects stop spawning waves above it, direct sources (engines, grenades) never do

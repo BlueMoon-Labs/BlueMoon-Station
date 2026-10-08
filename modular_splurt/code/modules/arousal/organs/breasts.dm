@@ -32,7 +32,7 @@
 	if(!(owner.client?.prefs.cit_toggles & BREAST_ENLARGEMENT))
 		return
 
-	var/datum/reagents/fluid_source = source_gen.climaxable(partner)
+	var/datum/reagents/fluid_source = source_gen?.climaxable(partner)
 	if(!fluid_source)
 		return
 

@@ -183,14 +183,22 @@
 /datum/element/polychromic/proc/on_examine(atom/source, mob/user, list/examine_list)
 	examine_list += "<span class='notice'>Alt-click to recolor it.</span>"
 
-/datum/element/polychromic/proc/connect_helmet(atom/I, var/applycolor)
-	if(isitem(I))
-		if(istype(I,/obj/item/clothing/suit/hooded))
-			var/obj/item/clothing/suit/hooded/Isuit = I
-			colors_by_atom[Isuit.hood] = applycolor
-		else if(istype(I,/obj/item/clothing/suit/space/hardsuit))
-			var/obj/item/clothing/suit/space/hardsuit/Isuit = I
-			colors_by_atom[Isuit.helmet] = applycolor
+/// Copies valid colors from a saved list onto the layers of target. Missing or invalid entries keep the current color.
+/datum/element/polychromic/proc/load_colors(atom/target, list/colors)
+	var/list/layer_colors = colors_by_atom[target]
+	if(!layer_colors)
+		return
+	for(var/index in 1 to min(length(colors), length(layer_colors)))
+		var/new_color = colors[index]
+		if(!istext(new_color))
+			continue
+		var/current = layer_colors[index]
+		if(istype(current, /mutable_appearance))
+			var/mutable_appearance/layer = current
+			layer.color = sanitize_hexcolor(new_color, 6, TRUE, layer.color)
+		else
+			layer_colors[index] = sanitize_hexcolor(new_color, 6, TRUE, current)
+	target.update_icon()
 
 /datum/element/polychromic/proc/register_helmet(atom/source, obj/item/clothing/head/H)
 	if(!isitem(H)) //backup in case if it messes up somehow

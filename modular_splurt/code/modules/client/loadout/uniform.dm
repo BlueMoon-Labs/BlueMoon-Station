@@ -380,7 +380,7 @@
 	path = /obj/item/clothing/under/misc/sheer
 	subcategory = LOADOUT_SUBCATEGORY_UNIFORM_DRESSES
 	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
-	loadout_initial_colors = list("#3e769cc5")
+	loadout_initial_colors = list("#3e769c")
 
 /datum/gear/uniform/corsetdress
 	name = "corset dress"

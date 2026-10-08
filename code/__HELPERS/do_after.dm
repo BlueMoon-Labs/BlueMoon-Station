@@ -80,6 +80,9 @@
 /proc/do_after(mob/user, delay, atom/target, timed_action_flags = NONE, progress = TRUE, datum/callback/extra_checks, resume_time = 0 SECONDS, progress_loc, cog_icon = 'icons/effects/progressbar.dmi', cog_iconstate = "cog", show_cog = TRUE)
 	if(!user)
 		return FALSE
+	// Destroy() цели уже прошёл и не вынет её из do_afters пользователя.
+	if(target && QDELETED(target))
+		return FALSE
 	var/atom/target_loc = null
 	if(target && !isturf(target))
 		target_loc = target.loc
@@ -163,6 +166,9 @@
 		return FALSE
 	if(!islist(targets))
 		targets = list(targets)
+	for(var/atom/target as anything in targets)
+		if(QDELETED(target))
+			return FALSE
 	var/user_loc = user.loc
 
 	var/drifting = FALSE
@@ -205,7 +211,7 @@
 			user_loc = user.loc
 
 		if(
-			!((timed_action_flags & IGNORE_USER_LOC_CHANGE) && !drifting && user_loc != user.loc) \
+			(!(timed_action_flags & IGNORE_USER_LOC_CHANGE) && !drifting && user_loc != user.loc) \
 			|| (!(timed_action_flags & IGNORE_HELD_ITEM) && user.get_active_held_item() != holding) \
 			|| (!(timed_action_flags & IGNORE_INCAPACITATED) && user.incapacitated()) \
 			|| (extra_checks && !extra_checks.Invoke()) \

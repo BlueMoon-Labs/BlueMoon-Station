@@ -6,7 +6,7 @@
 	item_state = "urethral_tube"
 	icon_state = "urethral_tube"
 	amount_per_transfer_from_this = 5
-	possible_transfer_amounts = null
+	possible_transfer_amounts = list()
 	volume = 30
 	reagent_flags = TRANSPARENT
 	var/busy = FALSE
