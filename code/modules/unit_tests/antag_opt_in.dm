@@ -373,15 +373,21 @@
 
 /datum/unit_test/antag_opt_in_pref_saving/Destroy()
 	if(prefs)
-		fdel(prefs.path)
+		delete_save_files()
 		qdel(prefs)
 		prefs = null
 	return ..()
 
+/// Вместе с .sav удаляются и файлы JSON-хранилища, если оно есть в сборке.
+/datum/unit_test/antag_opt_in_pref_saving/proc/delete_save_files()
+	for(var/suffix in list("", ".json", ".json.recovery", ".json.import", ".json.d/"))
+		fdel("[prefs.path][suffix]")
+
 /datum/unit_test/antag_opt_in_pref_saving/Run()
 	prefs = new
 	prefs.load_path("unit_test_antag_opt_in")
-	fdel(prefs.path)
+	delete_save_files()
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "Корень настроек записан")
 	prefs.antag_opt_in_level = ANTAG_OPT_IN_TEMPORARY
 	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "Персонаж записан")
 	sleep(1)
@@ -389,10 +395,8 @@
 	TEST_ASSERT(prefs.load_character(null, TRUE), "Персонаж прочитан")
 	TEST_ASSERT_EQUAL(prefs.antag_opt_in_level, ANTAG_OPT_IN_TEMPORARY, "Уровень согласия пережил сохранение")
 
-	var/savefile/save = new /savefile(prefs.path)
-	save.cd = "/character[prefs.default_slot]"
-	WRITE_FILE(save["antag_opt_in_level"], 7)
-	save = null
+	prefs.antag_opt_in_level = 7
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "Персонаж с мусором записан")
 	sleep(1)
 	TEST_ASSERT(prefs.load_character(null, TRUE), "Персонаж с мусором прочитан")
 	TEST_ASSERT_NULL(prefs.antag_opt_in_level, "Мусорный уровень сброшен к значению по умолчанию")
