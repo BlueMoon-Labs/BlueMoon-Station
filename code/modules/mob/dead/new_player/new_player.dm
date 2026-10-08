@@ -592,6 +592,11 @@
 	for(var/datum/job/prioritized_job in SSjob.prioritized_jobs)
 		if(prioritized_job.current_positions >= prioritized_job.total_positions)
 			SSjob.prioritized_jobs -= prioritized_job
+	var/datum/director_vacancies/vacancies = SSdirector.vacancies
+	for(var/dept in GLOB.director_vacancy_departments)
+		if(vacancies?.is_vacant(dept))
+			dat += "<div class='notice'>Отделы с пометкой <span class='priority'>нужны</span> сейчас пусты. Вход туда принесёт [METADOLLARS_RELIEF_BONUS] М$ в конце раунда, если продержитесь в смене [METADOLLARS_RELIEF_MIN_TIME / (1 MINUTES)] минут или до эвакуации.</div>"
+			break
 	dat += "<center><table><tr><td valign='top'>"
 	var/column_counter = 0
 	var/free_space = 0
@@ -601,7 +606,9 @@
 		var/department_title = GLOB.exp_type_department_ru[department_type] || department_type
 		cat_color = SSjob.name_occupations[category[1]].selection_color //use the color of the first job in the category (the department head) as the category color
 		dat += "<fieldset style='width: 185px; border: 2px solid [cat_color]; display: inline'>"
-		dat += "<legend align='center' style='color: [cat_color]'>[department_title]</legend>"
+		var/vacancy_dept = director_dept_of_job(category[1])
+		var/needed_mark = (vacancy_dept && vacancies?.is_vacant(vacancy_dept)) ? " <span class='priority'>нужны</span>" : ""
+		dat += "<legend align='center' style='color: [cat_color]'>[department_title][needed_mark]</legend>"
 
 		var/list/dept_dat = list()
 		for(var/job in category)
