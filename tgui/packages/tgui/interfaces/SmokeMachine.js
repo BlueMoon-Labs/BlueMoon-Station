@@ -12,13 +12,15 @@ export const SmokeMachine = (props) => {
     active,
     setting,
     maxSetting = 1,
+    modifier,
+    maxModifier = 1,
     open,
     hasPowercell,
     powerLevel,
   } = data;
   return (
     <Window
-      width={400}
+      width={450}
       height={350}>
       <Window.Content>
         <Section
@@ -34,7 +36,7 @@ export const SmokeMachine = (props) => {
                 icon={active ? 'power-off' : 'times'}
                 content={active ? 'Включено' : 'Выключено'}
                 selected={active}
-                disabled={!hasPowercell}
+                //disabled={!hasPowercell}
                 onClick={() => act('power')} />
             </>
           )}>
@@ -67,7 +69,7 @@ export const SmokeMachine = (props) => {
           </ProgressBar>
           <Box mt={1}>
             <LabeledList>
-              <LabeledList.Item label="Радиус">
+              <LabeledList.Item label="Радиус облака" textAlign="right">
                 {[1, 2, 3, 4, 5, 6, 9].map(amount => (
                   <Button
                     key={amount}
@@ -76,6 +78,18 @@ export const SmokeMachine = (props) => {
                     content={amount * 2}
                     disabled={maxSetting < amount}
                     onClick={() => act('setting', { amount })} />
+                ))}
+              </LabeledList.Item>
+            </LabeledList>
+            <LabeledList>
+              <LabeledList.Item label="Модификатор потребления" textAlign="right">
+                {[0.25, 0.5, 1, 2, 3, 4, 5, 6].map(multiplier => (
+                  <Button
+                    key={multiplier}
+                    selected={modifier === multiplier}
+                    content={Number.isInteger(1 / multiplier) ? 1 / multiplier : `1/${multiplier}`}
+                    disabled={maxModifier < multiplier || (setting >= 2 && multiplier === 0.25) || (setting >= 3 && multiplier === 0.5)}
+                    onClick={() => act('modifier', { multiplier })} />
                 ))}
               </LabeledList.Item>
             </LabeledList>
