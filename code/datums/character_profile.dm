@@ -126,8 +126,15 @@ GLOBAL_LIST_EMPTY(cached_previews)
 	data["extreme_tag"] = M?.client?.prefs?.extremepref || "No"
 	data["very_extreme_tag"] = M?.client?.prefs?.extremeharm || "No"
 	data["tattoo_tag"] = M?.client?.prefs?.tattoopref || "No"
+	add_antag_opt_in_data(data, M)
 
 	return data
+
+/datum/description_profile/proc/add_antag_opt_in_data(list/data, mob/living/target)
+	var/level = target?.mind ? target.mind.get_effective_antag_opt_in_level() : antag_opt_in_default_level()
+	data["antag_opt_in"] = antag_opt_in_level_name(level)
+	data["antag_opt_in_color"] = antag_opt_in_level_color(level)
+	data["antag_opt_in_desc"] = GLOB.antag_opt_in_descriptions["[level]"]
 
 /proc/format_flavor_for_tgui(text)
 	if(!text)
@@ -280,5 +287,6 @@ GLOBAL_LIST_EMPTY(cached_previews)
 		data["tattoo_tag"] = prefs.tattoopref
 	else for(var/i in list("vore_tag", "erp_tag", "mob_tag", "nc_tag", "unholy_tag", "unholy_hard_tag", "extreme_tag", "very_extreme_tag", "tattoo_tag"))
 		data[i] = "No"
+	add_antag_opt_in_data(data, M)
 
 	return data

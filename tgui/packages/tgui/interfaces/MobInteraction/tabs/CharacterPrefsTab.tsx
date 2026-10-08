@@ -1,7 +1,22 @@
 import { useBackend, useLocalState } from '../../../backend';
 import { Box, Button, Flex, LabeledList, Modal, Stack, Tooltip } from '../../../components';
 
+type AntagOptInLevel = {
+  value: number,
+  name: string,
+  color: string,
+  description: string,
+}
+
+type AntagOptInInfo = {
+  level: number,
+  effective: number,
+  levels: AntagOptInLevel[],
+  thresholds: string,
+}
+
 type CharacterPrefsInfo = {
+  antag_opt_in?: AntagOptInInfo,
   erp_pref: number,
   noncon_pref: number,
   vore_pref: number,
@@ -29,6 +44,7 @@ const CONFIRM_DESCRIPTIONS: Record<string, string> = {
 export const CharacterPrefsTab = (props) => {
   const { act, data } = useBackend<CharacterPrefsInfo>();
   const {
+    antag_opt_in,
     erp_pref,
     noncon_pref,
     vore_pref,
@@ -85,6 +101,27 @@ export const CharacterPrefsTab = (props) => {
         </Modal>
       )}
       <LabeledList>
+        {antag_opt_in ? (
+          <LabeledList.Item label={<Tooltip content={`Кем персонаж может стать в заданиях антагонистов. Ограничивает только выбор целей заданий, а не насилие в игре. Новый уровень действует на следующие выборы целей. ${antag_opt_in.thresholds}`}><span>Цель антагонистов</span></Tooltip>}>
+            <Stack vertical>
+              {antag_opt_in.levels.map((level) => (
+                <Stack.Item key={level.value}>
+                  <Button
+                    fluid
+                    content={level.name}
+                    tooltip={level.description}
+                    color={antag_opt_in.level === level.value ? "green" : "default"}
+                    onClick={() => act('antag_opt_in', { level: level.value })} />
+                </Stack.Item>
+              ))}
+            </Stack>
+            {antag_opt_in.effective !== antag_opt_in.level ? (
+              <Box mt={0.5} color={antag_opt_in.levels[antag_opt_in.effective]?.color}>
+                Итоговый уровень с учётом порога: {antag_opt_in.levels[antag_opt_in.effective]?.name}
+              </Box>
+            ) : null}
+          </LabeledList.Item>
+        ) : null}
         <LabeledList.Item label={<Tooltip content="Эротические взаимодействия"><span>ERP Preference</span></Tooltip>}>
           <Stack textAlign="center">
             <Stack.Item grow>

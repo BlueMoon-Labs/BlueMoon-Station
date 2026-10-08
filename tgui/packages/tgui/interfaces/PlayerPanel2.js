@@ -1486,11 +1486,18 @@ const SmiteActions = (props) => {
 
 const OtherActions = (props) => {
   const { act, data } = useBackend();
-  const { mob_type, client_ckey } = data;
+  const { mob_type, client_ckey, antag_opt_in, antag_opt_in_color, antag_opt_in_detail } = data;
 
   return (
     <Section fill>
       <Section title="Антагонизм">
+        {!!antag_opt_in && (
+          <Box mb=".5rem">
+            <Box inline color="label">Цель антагонистов: </Box>
+            <Box inline bold color={antag_opt_in_color}>{antag_opt_in}</Box>
+            <Box inline color="label"> ({antag_opt_in_detail})</Box>
+          </Box>
+        )}
         <Button
           width="100%"
           content="Панель антагониста (TP)"
