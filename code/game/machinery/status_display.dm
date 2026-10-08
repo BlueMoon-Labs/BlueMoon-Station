@@ -224,7 +224,7 @@
 			if(message1 == "" && message2 == "")
 				return
 
-	. += emissive_appearance(icon, "outline", alpha = src.alpha)
+	. += emissive_appearance(icon, "outline", alpha = src.alpha, offset_spokesman = src)
 
 // Timed process - performs nothing in the base class
 /obj/machinery/status_display/process()
@@ -492,6 +492,9 @@
 		// No power, no processing.
 		update_appearance()
 		return PROCESS_KILL
+	// Шаблоны шаттлов грузятся после атомов: до этого табло прибытия спрашивает несуществующий шаттл.
+	if(!SSshuttle.initialized)
+		return
 
 	return display_shuttle_status(SSshuttle.getShuttle(shuttle_id))
 

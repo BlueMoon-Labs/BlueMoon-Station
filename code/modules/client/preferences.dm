@@ -381,6 +381,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	var/ambientocclusion = TRUE
 	var/lighting_blur = LIGHTING_BLUR_DEFAULT
+	var/multiz_performance = MULTIZ_PERFORMANCE_DISABLE
+	var/multiz_parallax = TRUE
 	var/lighting_brightness = LIGHTING_BRIGHTNESS_DEFAULT
 	var/lighting_lamp_brightness = LIGHTING_LAMP_BRIGHTNESS_DEFAULT
 	var/lighting_bloom_intensity = LIGHTING_BLOOM_INTENSITY_DEFAULT
@@ -5918,35 +5920,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					ambientocclusion = !ambientocclusion
 					if(parent?.mob?.hud_used && parent.screen?.len)
 						var/datum/hud/H = parent.mob.hud_used
-						var/atom/movable/screen/plane_master/G = H.plane_masters["[GAME_PLANE]"]
-						var/atom/movable/screen/plane_master/A = H.plane_masters["[ABOVE_WALL_PLANE]"]
-						var/atom/movable/screen/plane_master/W = H.plane_masters["[WALL_PLANE]"]
-						var/atom/movable/screen/plane_master/F = H.plane_masters["[FLOOR_PLANE]"]
-						var/atom/movable/screen/plane_master/L = H.plane_masters["[LIGHTING_PLANE]"]
-						var/atom/movable/screen/plane_master/C = H.plane_masters["[CHAT_PLANE]"]
-						G?.backdrop(parent.mob)
-						A?.backdrop(parent.mob)
-						W?.backdrop(parent.mob)
-						F?.backdrop(parent.mob)
-						L?.backdrop(parent.mob)
-						C?.backdrop(parent.mob)
+						H.refresh_plane_backdrops(parent.mob, list(GAME_PLANE, ABOVE_WALL_PLANE, WALL_PLANE, FLOOR_PLANE, LIGHTING_PLANE, CHAT_PLANE))
 
 				if("lighting_blur")
 					lighting_blur = (lighting_blur + 1) % (LIGHTING_BLUR_MAX + 1)
 					if(parent?.mob?.hud_used && parent.screen?.len)
 						var/datum/hud/H = parent.mob.hud_used
-						var/atom/movable/screen/plane_master/L = H.plane_masters["[LIGHTING_PLANE]"]
-						var/atom/movable/screen/plane_master/G = H.plane_masters["[GAME_PLANE]"]
-						var/atom/movable/screen/plane_master/A = H.plane_masters["[ABOVE_WALL_PLANE]"]
-						var/atom/movable/screen/plane_master/W = H.plane_masters["[WALL_PLANE]"]
-						var/atom/movable/screen/plane_master/F = H.plane_masters["[FLOOR_PLANE]"]
-						var/atom/movable/screen/plane_master/E = H.plane_masters["[EMISSIVE_PLANE]"]
-						L?.backdrop(parent.mob)
-						G?.backdrop(parent.mob)
-						A?.backdrop(parent.mob)
-						W?.backdrop(parent.mob)
-						F?.backdrop(parent.mob)
-						E?.backdrop(parent.mob)
+						H.refresh_plane_backdrops(parent.mob, list(LIGHTING_PLANE, GAME_PLANE, ABOVE_WALL_PLANE, WALL_PLANE, FLOOR_PLANE, EMISSIVE_PLANE, LIGHTING_LAMPS_PLANE, FLOOR_LIGHTING_LAMPS_PLANE, LIGHTING_LAMPS_SELFGLOW, FLOOR_LIGHTING_LAMPS_SELFGLOW, LIGHTING_LAMPS_GLARE, FLOOR_LIGHTING_LAMPS_GLARE, LIGHTING_EXPOSURE_PLANE, O_LIGHTING_VISUAL_PLANE))
 
 				if("auto_fit_viewport")
 					auto_fit_viewport = !auto_fit_viewport
@@ -6039,8 +6019,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				if("export_slot")
 					var/savefile/S = save_character(export = TRUE)
 					if(istype(S, /savefile))
-						user.client.Export(S)
 						user.client.local_storage_name_read = FALSE
+						user.client.Export(S)
 						tgui_alert_async(user, "Successfully saved character slot")
 					else
 						tgui_alert_async(user, "Failed saving character slot")
@@ -6060,8 +6040,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						return
 
 				if("delete_local_copy")
-					user.client.clear_export()
 					user.client.local_storage_name_read = FALSE
+					user.client.clear_export()
 					tgui_alert_async(user, "Local save data erased.")
 
 				if("give_slot")
@@ -6330,6 +6310,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				var/color_to_change = tgui_input_list(user, "Polychromic options", "Recolor [name]", color_options)
 				if(color_to_change)
 					var/color_index = text2num(copytext(color_to_change, 7))
+					G.pad_polychromic_colors(user_gear)
 					var/current_color = user_gear[LOADOUT_COLOR][color_index]
 					if(!istext(current_color))
 						current_color = "#FFFFFF"

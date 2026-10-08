@@ -730,7 +730,6 @@
 		player_mind.set_original_character(H)
 
 	H.name = real_name
-	client.init_verbs()
 	. = H
 	new_character = .
 	if(transfer_after)

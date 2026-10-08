@@ -34,7 +34,7 @@
 		return
 	var/list/blockers
 	for(var/image/im in images)
-		var/blocker = emissive_blocker_copy(im)
+		var/blocker = emissive_blocker_copy(im, src)
 		if(blocker)
 			LAZYADD(blockers, blocker)
 	if(blockers)
@@ -342,7 +342,9 @@
 
 //produces a key based on the mob's limbs
 
-/mob/living/carbon/proc/generate_icon_render_key()
+/mob/living/carbon/proc/generate_icon_render_key(plane_offset = LIMB_PLANE_OFFSET(src))
+	if(plane_offset)
+		. += "-floor[plane_offset]"
 	for(var/X in bodyparts)
 		var/obj/item/bodypart/BP = X
 		. += "-[BP.body_zone]"
@@ -398,3 +400,14 @@
 	update_damage_overlays()
 	update_wound_overlays()
 	update_bandage_overlays()
+
+//Ключ кэша частей тела несёт смещение этажа носителя: на новом этаже набор конечностей другой.
+/mob/living/carbon/set_plane_offset(new_offset)
+	. = ..()
+	update_body()
+	for(var/cache_index in GLOB.emissive_blocked_layers)
+		if(!overlays_emissive_blockers[cache_index])
+			continue
+		refresh_emissive_blockers(cache_index)
+		if(overlays_emissive_blockers[cache_index])
+			add_overlay(overlays_emissive_blockers[cache_index])

@@ -928,8 +928,8 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 				// Свечение глаз — pixel-accurate glow copying the eye's exact icon/state/pixels
 				// via emissive_copy (BlueMoon white emissive convention against the lighting mask)
 				if(has_emissive_part(H.dna?.features, "eyes"))
-					standing += emissive_copy(left_eye)
-					standing += emissive_copy(right_eye)
+					standing += emissive_copy(left_eye, offset_spokesman = H)
+					standing += emissive_copy(right_eye, offset_spokesman = H)
 
 	if(H.nail_style)
 		var/mutable_appearance/nail_overlay = mutable_appearance('modular_splurt/icons/mobs/nails.dmi', "nails", -HANDS_PART_LAYER)
