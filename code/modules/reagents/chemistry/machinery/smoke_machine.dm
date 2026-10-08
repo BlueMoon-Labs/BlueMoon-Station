@@ -271,9 +271,14 @@
 				. = TRUE
 		if("modifier")
 			var/mod = text2num(params["multiplier"])
-			if((mod in 1 to max_modifier) || (mod in list(0.25, 0.5)))
-				modifier = mod
-				. = TRUE
+			if(!(mod in 1 to max_modifier) && !(mod in list(0.25, 0.5)))
+				return
+			if(mod == 0.25 && setting >= 2)
+				return
+			if(mod == 0.5 && setting >= 3)
+				return
+			modifier = mod
+			. = TRUE
 		if("power")
 			if(!on)
 				if(!get_power_source(1))
