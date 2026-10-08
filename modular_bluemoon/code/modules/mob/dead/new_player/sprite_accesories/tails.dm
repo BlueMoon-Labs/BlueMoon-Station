@@ -406,3 +406,52 @@
 	matrixed_sections = MATRIX_RED_GREEN
 
 /*******************************************/
+//Shade tails - порт с Bubber/Skyrat (modular_skyrat tails_big.dmi)
+/datum/sprite_accessory/tails/mam_tails/bm_tails/shade_tails
+	icon = 'modular_bluemoon/icons/mob/shade_tails64x32.dmi'
+	dimension_x = 64
+	dimension_y = 32
+	center = TRUE
+
+/datum/sprite_accessory/tails/human/bm_tails/shade_tails
+	icon = 'modular_bluemoon/icons/mob/shade_tails64x32.dmi'
+	dimension_x = 64
+	dimension_y = 32
+	center = TRUE
+	color_src = MATRIXED
+	matrixed_sections = MATRIX_ALL
+
+/*******************************************/
+/datum/sprite_accessory/tails/mam_tails/bm_tails/shade_tails/shade
+	name = "Shade"
+	icon_state = "shade"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails/human/bm_tails/shade_tails/shade
+	name = "Shade"
+	icon_state = "shade"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/*******************************************/
+/datum/sprite_accessory/tails/mam_tails/bm_tails/shade_tails/long
+	name = "Shade (Long)"
+	icon_state = "shade_long"
+	matrixed_sections = MATRIX_RED
+
+/datum/sprite_accessory/tails/human/bm_tails/shade_tails/long
+	name = "Shade (Long)"
+	icon_state = "shade_long"
+	matrixed_sections = MATRIX_RED
+
+/*******************************************/
+/datum/sprite_accessory/tails/mam_tails/bm_tails/shade_tails/striped
+	name = "Shade (Striped)"
+	icon_state = "shade_striped"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/datum/sprite_accessory/tails/human/bm_tails/shade_tails/striped
+	name = "Shade (Striped)"
+	icon_state = "shade_striped"
+	matrixed_sections = MATRIX_RED_GREEN
+
+/*******************************************/
