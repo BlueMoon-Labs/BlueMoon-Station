@@ -277,6 +277,7 @@
 #include "refactor_turfside.dm"
 #include "resist.dm"
 #include "riot_shield_implant.dm"
+#include "roundtype_rotation.dm"
 #include "runechat_sanity.dm"
 #include "runtime_null_guards.dm"
 // #include "say.dm"
