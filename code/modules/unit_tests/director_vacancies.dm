@@ -1,6 +1,7 @@
 #define VACANCY_PROBE_CKEY "unittestreliefjoin"
 #define VACANCY_PROBE_DEAD_CKEY "unittestreliefdead"
 #define VACANCY_PROBE_EVAC_CKEY "unittestreliefevac"
+#define VACANCY_PROBE_LATE_CKEY "unittestrelieflate"
 
 /// Приглашение уходит после 5 минут пустоты и не раньше 10-й минуты раунда, повторяется раз в 15 минут и молчит при эвакуации.
 /datum/unit_test/director_vacancy_invite_timing
@@ -71,6 +72,7 @@
 /datum/unit_test/metadollars_relief_bonus
 	var/list/saved_joins
 	var/datum/director_vacancies/saved_vacancies
+	var/datum/director_signals/saved_signals
 
 /datum/unit_test/metadollars_relief_bonus/Destroy()
 	for(var/joined_ckey in SSmetadollars.relief_joins)
@@ -80,12 +82,14 @@
 		SSmetadollars.relief_joins = saved_joins
 	if(saved_vacancies)
 		SSdirector.vacancies = saved_vacancies
+	SSdirector.last_signals = saved_signals
 	return ..()
 
 /datum/unit_test/metadollars_relief_bonus/Run()
 	saved_joins = SSmetadollars.relief_joins
 	SSmetadollars.relief_joins = list()
 	saved_vacancies = SSdirector.vacancies
+	saved_signals = SSdirector.last_signals
 	SSdirector.vacancies = allocate(/datum/director_vacancies)
 	SSdirector.vacancies.empty_since[DIRECTOR_DEPT_MEDICAL] = world.time
 
@@ -125,6 +129,16 @@
 	TEST_ASSERT_EQUAL(paid.Join(","), VACANCY_PROBE_EVAC_CKEY, "Доживший до эвакуации получает бонус, уже оплаченный - нет")
 	TEST_ASSERT_EQUAL(length(SSmetadollars.collect_relief_bonuses(TRUE)), 0, "Второй выплаты за раунд нет")
 
+	var/mob/living/carbon/human/evac_joiner = allocate(/mob/living/carbon/human)
+	evac_joiner.ckey = VACANCY_PROBE_LATE_CKEY
+	SSdirector.vacancies.empty_since[DIRECTOR_DEPT_ENGINEERING] = world.time
+	var/datum/director_signals/evac_signals = new
+	evac_signals.evac_state = DIRECTOR_EVAC_CALLED
+	SSdirector.last_signals = evac_signals
+	SSdirector.on_job_latejoin(null, SSjob.GetJob("Station Engineer"), evac_joiner)
+	TEST_ASSERT(!(VACANCY_PROBE_LATE_CKEY in SSmetadollars.relief_joins), "Вход после вызова эвакуации не даёт отметки")
+
 #undef VACANCY_PROBE_CKEY
 #undef VACANCY_PROBE_DEAD_CKEY
 #undef VACANCY_PROBE_EVAC_CKEY
+#undef VACANCY_PROBE_LATE_CKEY

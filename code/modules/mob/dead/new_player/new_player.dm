@@ -595,7 +595,7 @@
 	var/datum/director_vacancies/vacancies = SSdirector.vacancies
 	for(var/dept in GLOB.director_vacancy_departments)
 		if(vacancies?.is_vacant(dept))
-			dat += "<div class='notice'>Отделы с пометкой <span class='priority'>нужны</span> сейчас пусты. Вход туда принесёт [METADOLLARS_RELIEF_BONUS] М$ в конце раунда, если продержитесь в смене [METADOLLARS_RELIEF_MIN_TIME / (1 MINUTES)] минут или до эвакуации.</div>"
+			dat += "<div class='notice'>Отделы с пометкой <span class='priority'>нужны</span> сейчас пусты. Вход туда до вызова эвакуации принесёт [METADOLLARS_RELIEF_BONUS] М$ в конце раунда, если продержитесь в смене [METADOLLARS_RELIEF_MIN_TIME / (1 MINUTES)] минут или до эвакуации.</div>"
 			break
 	dat += "<center><table><tr><td valign='top'>"
 	var/column_counter = 0
