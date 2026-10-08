@@ -88,3 +88,13 @@ GLOBAL_LIST_INIT(director_vacancy_departments, list(
 			continue
 		invited++
 	log_game("DIRECTOR VACANCY: отдел [dept] пуст, приглашение получили [invited]")
+
+/// Летджойн в пустой критичный отдел снимает вакансию и ставит отметку бонуса.
+/datum/controller/subsystem/director/proc/on_job_latejoin(datum/source, datum/job/job, mob/living/spawning)
+	SIGNAL_HANDLER
+	var/dept = director_dept_of_job(job?.title)
+	if(isnull(dept) || !vacancies.is_vacant(dept))
+		return
+	vacancies.note_filled(dept)
+	log_game("DIRECTOR VACANCY: [key_name(spawning)] занял пустой отдел [dept] ([job.title])")
+	SSmetadollars.note_relief_join(spawning)

@@ -1,3 +1,7 @@
+#define VACANCY_PROBE_CKEY "unittestreliefjoin"
+#define VACANCY_PROBE_DEAD_CKEY "unittestreliefdead"
+#define VACANCY_PROBE_EVAC_CKEY "unittestreliefevac"
+
 /// Приглашение уходит после 5 минут пустоты и не раньше 10-й минуты раунда, повторяется раз в 15 минут и молчит при эвакуации.
 /datum/unit_test/director_vacancy_invite_timing
 
@@ -62,3 +66,65 @@
 	TEST_ASSERT(shift_invite_wanted(prefs, jobbans, DIRECTOR_DEPT_SECURITY), "Бан медотдела не закрывает СБ")
 	jobbans -= "Paramedic"
 	TEST_ASSERT(shift_invite_wanted(prefs, jobbans, DIRECTOR_DEPT_MEDICAL), "Одна доступная должность - приглашение уходит")
+
+/// Бонус за вход в пустой отдел ставится при летджойне, начисляется один раз и только при выполненных условиях.
+/datum/unit_test/metadollars_relief_bonus
+	var/list/saved_joins
+	var/datum/director_vacancies/saved_vacancies
+
+/datum/unit_test/metadollars_relief_bonus/Destroy()
+	for(var/joined_ckey in SSmetadollars.relief_joins)
+		var/datum/relief_join/join = SSmetadollars.relief_joins[joined_ckey]
+		deltimer(join.check_timer)
+	if(saved_joins)
+		SSmetadollars.relief_joins = saved_joins
+	if(saved_vacancies)
+		SSdirector.vacancies = saved_vacancies
+	return ..()
+
+/datum/unit_test/metadollars_relief_bonus/Run()
+	saved_joins = SSmetadollars.relief_joins
+	SSmetadollars.relief_joins = list()
+	saved_vacancies = SSdirector.vacancies
+	SSdirector.vacancies = allocate(/datum/director_vacancies)
+	SSdirector.vacancies.empty_since[DIRECTOR_DEPT_MEDICAL] = world.time
+
+	var/mob/living/carbon/human/sec_joiner = allocate(/mob/living/carbon/human)
+	sec_joiner.ckey = VACANCY_PROBE_DEAD_CKEY
+	SSdirector.on_job_latejoin(null, SSjob.GetJob("Security Officer"), sec_joiner)
+	TEST_ASSERT(!(VACANCY_PROBE_DEAD_CKEY in SSmetadollars.relief_joins), "Вход в занятый отдел не даёт отметки")
+
+	var/mob/living/carbon/human/joiner = allocate(/mob/living/carbon/human)
+	joiner.ckey = VACANCY_PROBE_CKEY
+	SSdirector.on_job_latejoin(null, SSjob.GetJob("Medical Doctor"), joiner)
+	var/datum/relief_join/join = SSmetadollars.relief_joins[VACANCY_PROBE_CKEY]
+	TEST_ASSERT_NOTNULL(join, "Вход в пустой медотдел ставит отметку")
+	TEST_ASSERT(join.check_timer, "Проверка 30 минут должна стоять в таймере")
+	TEST_ASSERT(!SSdirector.vacancies.is_vacant(DIRECTOR_DEPT_MEDICAL), "Вход снимает вакансию сразу")
+
+	var/mob/living/carbon/human/second_joiner = allocate(/mob/living/carbon/human)
+	second_joiner.ckey = VACANCY_PROBE_EVAC_CKEY
+	SSdirector.on_job_latejoin(null, SSjob.GetJob("Paramedic"), second_joiner)
+	TEST_ASSERT(!(VACANCY_PROBE_EVAC_CKEY in SSmetadollars.relief_joins), "Второй вошедший в тот же отдел уже не первый")
+
+	TEST_ASSERT_EQUAL(length(SSmetadollars.collect_relief_bonuses(FALSE)), 0, "До 30 минут без эвакуации бонуса нет")
+	SSmetadollars.check_relief_join(VACANCY_PROBE_CKEY)
+	TEST_ASSERT(join.earned, "Живой и в игре через 30 минут - бонус заработан")
+	SSmetadollars.note_relief_join(joiner)
+	TEST_ASSERT_EQUAL(SSmetadollars.relief_joins[VACANCY_PROBE_CKEY], join, "Повторный вход не заводит вторую отметку")
+
+	SSmetadollars.note_relief_join(sec_joiner)
+	sec_joiner.death()
+	SSmetadollars.check_relief_join(VACANCY_PROBE_DEAD_CKEY)
+	TEST_ASSERT(!(VACANCY_PROBE_DEAD_CKEY in SSmetadollars.relief_joins), "Погибший до 30 минут теряет отметку")
+
+	SSmetadollars.note_relief_join(second_joiner)
+	var/list/paid = SSmetadollars.collect_relief_bonuses(FALSE)
+	TEST_ASSERT_EQUAL(paid.Join(","), VACANCY_PROBE_CKEY, "Без эвакуации платится только заработанный бонус")
+	paid = SSmetadollars.collect_relief_bonuses(TRUE)
+	TEST_ASSERT_EQUAL(paid.Join(","), VACANCY_PROBE_EVAC_CKEY, "Доживший до эвакуации получает бонус, уже оплаченный - нет")
+	TEST_ASSERT_EQUAL(length(SSmetadollars.collect_relief_bonuses(TRUE)), 0, "Второй выплаты за раунд нет")
+
+#undef VACANCY_PROBE_CKEY
+#undef VACANCY_PROBE_DEAD_CKEY
+#undef VACANCY_PROBE_EVAC_CKEY

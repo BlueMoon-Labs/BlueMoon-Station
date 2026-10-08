@@ -168,6 +168,7 @@ SUBSYSTEM_DEF(director)
 
 /datum/controller/subsystem/director/Initialize(start_timeofday)
 	register_event_actions()
+	RegisterSignal(SSdcs, COMSIG_GLOB_JOB_AFTER_LATEJOIN_SPAWN, PROC_REF(on_job_latejoin))
 	last_any_fired_at = now()
 	last_real_fired_at = now()
 	return ..()
