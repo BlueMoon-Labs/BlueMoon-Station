@@ -97,6 +97,50 @@ describe('RestrictedInput', () => {
     expect(onEnter).toHaveBeenCalledTimes(1);
   });
 
+  test('floats keep their decimal separator (dot and comma)', () => {
+    const onChange = jest.fn();
+    const { container } = render(
+      <RestrictedInput
+        value={2}
+        minValue={0.1}
+        maxValue={20}
+        onChange={onChange}
+        onEnter={() => {}}
+      />,
+    );
+    const input = getInput(container);
+    expect(input.value).toBe('2');
+    fireEvent.focus(input);
+    // Bug class: parseInt(value.replace(/\D/g, '')) turned "0.1" into 1
+    // and "7.7" into 77 by stripping "." / "," / "-".
+    fireEvent.input(input, { target: { value: '0.1' } });
+    fireEvent.blur(input);
+    expect(input.value).toBe('0.1');
+    expect(onChange).toHaveBeenLastCalledWith(expect.anything(), 0.1);
+    fireEvent.focus(input);
+    fireEvent.input(input, { target: { value: '7,7' } });
+    fireEvent.keyDown(input, { key: 'Enter' });
+    expect(input.value).toBe('7.7');
+  });
+
+  test('negative values and float clamping work', () => {
+    const onChange = jest.fn();
+    const { container } = render(
+      <RestrictedInput
+        value={5}
+        minValue={-1}
+        maxValue={25}
+        onChange={onChange}
+      />,
+    );
+    const input = getInput(container);
+    fireEvent.focus(input);
+    fireEvent.input(input, { target: { value: '-1' } });
+    fireEvent.blur(input);
+    expect(input.value).toBe('-1');
+    expect(onChange).toHaveBeenLastCalledWith(expect.anything(), -1);
+  });
+
   test('component-only props do not leak to the DOM', () => {
     // onEscape is not exercised by the other tests, so render it here;
     // the afterEach spy assertion catches any leak warning.

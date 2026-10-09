@@ -842,39 +842,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 #undef FLAVOR_PREVIEW_PARSE_SLACK
 
-/// Строгий парсинг числа из текстового TGUI-ввода.
-/// text2num в одиночку ест числовой префикс ("0abc" -> 0), поэтому сначала
-/// проверяем строку целиком посимвольно: цифры, необязательный ведущий
-/// минус и (для дробей) одна точка. Запятая меняется на точку (русская
-/// локаль), ведущие ".5"/"-.5" дописываются до "0.5"/"-0.5".
-/// Пробелы и мусор -> null.
-/// Возвращает число или null (отмена, пусто, мусор).
-/proc/parse_strict_number(text, allow_float = FALSE)
-	if(isnull(text))
-		return null
-	text = replacetext(text, ",", ".")
-	var/len = length_char(text)
-	if(len == 0)
-		return null
-	if(allow_float && copytext_char(text, 1, 2) == ".")
-		text = "0[text]"
-		len += 1
-	else if(allow_float && copytext_char(text, 1, 3) == "-.")
-		text = "-0[copytext_char(text, 2)]"
-		len += 1
-	var/seen_dot = FALSE
-	for(var/i in 1 to len)
-		var/code = text2ascii(text, i)
-		if(code >= 48 && code <= 57)
-			continue
-		if(code == 45 && i == 1)
-			continue
-		if(allow_float && code == 46 && !seen_dot && i > 1)
-			seen_dot = TRUE
-			continue
-		return null
-	return text2num(text)
-
 /datum/preferences/proc/ShowChoices(mob/user, rebuild_preview = TRUE)
 	if(!user || !user.client)
 		return
@@ -4664,7 +4631,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					if(!isnull(lust_tol))
 						lust_tolerance = clamp(lust_tol, 25, 200)
 				if("sexual_potency")
-					var/sexual_pot = parse_strict_number(tgui_input_text(user, "Установите свою сексуальную потенцию. \n(-1 — минимум, 25 — максимум.) Определяет, сколько раз ваш персонаж может достичь оргазма до импотенции, -1 — без импотенции.", "Character Preference", "[sexual_potency]", 16))
+					var/sexual_pot = tgui_input_number(user, "Установите свою сексуальную потенцию. \n(-1 — минимум, 25 — максимум.) Определяет, сколько раз ваш персонаж может достичь оргазма до импотенции, -1 — без импотенции.", "Character Preference", clamp(sexual_potency, -1, 25), 25, -1)
 					if(!isnull(sexual_pot))
 						sexual_potency = clamp(sexual_pot, -1, 25)
 
@@ -4706,7 +4673,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				if("cock_diameter_ratio")
 					var/min_diameter_ratio = CONFIG_GET(number/diameter_ratio_min_size_prefs)
 					var/max_diameter_ratio = CONFIG_GET(number/diameter_ratio_max_size_prefs)
-					var/new_ratio = parse_strict_number(tgui_input_text(user, "Коэффициент диаметра пениса:\n([min_diameter_ratio]-[max_diameter_ratio])\nНапоминаем: размер вашего спрайта повлияет на это.", "Character Preference", "[features["cock_diameter_ratio"]]", 16), TRUE)
+					var/new_ratio = tgui_input_number(user, "Коэффициент диаметра пениса:\n([min_diameter_ratio]-[max_diameter_ratio])\nНапоминаем: размер вашего спрайта повлияет на это.", "Character Preference", clamp(features["cock_diameter_ratio"], min_diameter_ratio, max_diameter_ratio), max_diameter_ratio, min_diameter_ratio)
 					if(!isnull(new_ratio))
 						features["cock_diameter_ratio"] = clamp(round(new_ratio, 0.01), min_diameter_ratio, max_diameter_ratio)
 
@@ -5121,7 +5088,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					gender = chosengender
 
 				if("body_size")
-					var/new_body_size = parse_strict_number(tgui_input_text(user, "Выберите желаемый размер спрайта: ([CONFIG_GET(number/body_size_min)*100]-[CONFIG_GET(number/body_size_max)*100]%)\nВнимание: персонаж может выглядеть искажённо. Размер также влияет на скорость и максимальное здоровье", "Character Preference", "[features["body_size"]*100]", 16), TRUE)
+					var/new_body_size = tgui_input_number(user, "Выберите желаемый размер спрайта: ([CONFIG_GET(number/body_size_min)*100]-[CONFIG_GET(number/body_size_max)*100]%)\nВнимание: персонаж может выглядеть искажённо. Размер также влияет на скорость и максимальное здоровье", "Character Preference", clamp(features["body_size"]*100, CONFIG_GET(number/body_size_min)*100, CONFIG_GET(number/body_size_max)*100), CONFIG_GET(number/body_size_max)*100, CONFIG_GET(number/body_size_min)*100)
 					if(!isnull(new_body_size))
 						features["body_size"] = clamp(new_body_size * 0.01, CONFIG_GET(number/body_size_min), CONFIG_GET(number/body_size_max))
 
@@ -5146,7 +5113,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				if("normalized_size")
 					var/max_size = 	min(CONFIG_GET(number/body_size_max), 1.2)	// Магическая цифра (предел MOB_SIZE_HUMAN по proc/adjust_mobsize)
 					var/min_size =	max(CONFIG_GET(number/body_size_min), 0.81)	// Магическая цифра (предел MOB_SIZE_HUMAN по proc/adjust_mobsize)
-					var/new_normialzed_size = parse_strict_number(tgui_input_text(user, "Выберите желаемый нормализованный размер: ([min_size * 100]-[max_size * 100]%)\nИспользуется нормализатором", "Character Preference", "[features["normalized_size"]*100]", 16), TRUE)
+					var/new_normialzed_size = tgui_input_number(user, "Выберите желаемый нормализованный размер: ([min_size * 100]-[max_size * 100]%)\nИспользуется нормализатором", "Character Preference", clamp(features["normalized_size"]*100, min_size*100, max_size*100), max_size*100, min_size*100)
 					if(!isnull(new_normialzed_size))
 						features["normalized_size"] = clamp(new_normialzed_size * 0.01, min_size, max_size)
 
@@ -5211,19 +5178,19 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("barkspeed")
 					var/datum/bark/B = GLOB.bark_list[bark_id]
-					var/borkset = parse_strict_number(tgui_input_text(user, "Выберите желаемую скорость речи (Значение выше – медленная речь, ниже – быстрая). Мин: [initial(B.minspeed)]. Макс: [initial(B.maxspeed)]", "Настройка персонажа", "[bark_speed]", 16), TRUE)
+					var/borkset = tgui_input_number(user, "Выберите желаемую скорость речи (Значение выше – медленная речь, ниже – быстрая). Мин: [initial(B.minspeed)]. Макс: [initial(B.maxspeed)]", "Настройка персонажа", clamp(bark_speed, initial(B.minspeed), initial(B.maxspeed)), initial(B.maxspeed), initial(B.minspeed))
 					if(!isnull(borkset))
 						bark_speed = round(clamp(borkset, initial(B.minspeed), initial(B.maxspeed)), 1)
 
 				if("barkpitch")
 					var/datum/bark/B = GLOB.bark_list[bark_id]
-					var/borkset = parse_strict_number(tgui_input_text(user, "Выберите желаемую высоту тона голоса. Мин: [initial(B.minpitch)].\nМакс: [initial(B.maxpitch)]", "Настройка персонажа", "[bark_pitch]", 16), TRUE)
+					var/borkset = tgui_input_number(user, "Выберите желаемую высоту тона голоса. Мин: [initial(B.minpitch)].\nМакс: [initial(B.maxpitch)]", "Настройка персонажа", clamp(bark_pitch, initial(B.minpitch), initial(B.maxpitch)), initial(B.maxpitch), initial(B.minpitch))
 					if(!isnull(borkset))
 						bark_pitch = clamp(borkset, initial(B.minpitch), initial(B.maxpitch))
 
 				if("barkvary")
 					var/datum/bark/B = GLOB.bark_list[bark_id]
-					var/borkset = parse_strict_number(tgui_input_text(user, "Выберите желаемую случайность звучания речи. Мин: [initial(B.minvariance)].\nМакс: [initial(B.maxvariance)]", "Настройка персонажа", "[bark_variance]", 16), TRUE)
+					var/borkset = tgui_input_number(user, "Выберите желаемую случайность звучания речи. Мин: [initial(B.minvariance)].\nМакс: [initial(B.maxvariance)]", "Настройка персонажа", clamp(bark_variance, initial(B.minvariance), initial(B.maxvariance)), initial(B.maxvariance), initial(B.minvariance))
 					if(!isnull(borkset))
 						bark_variance = clamp(borkset, initial(B.minvariance), initial(B.maxvariance))
 
