@@ -17179,6 +17179,15 @@
 	dir = 8
 	},
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
+"mDz" = (
+/obj/item/spear/bonespear{
+	dir = 1
+	},
+/obj/item/bodypart/head{
+	pixel_y = 15
+	},
+/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
+/area/ruin/lavaland/unpowered/ash_walkers)
 "mDK" = (
 /obj/structure/closet/crate/grave,
 /obj/item/pickaxe,
@@ -22243,6 +22252,13 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
+"qfo" = (
+/obj/item/spear/bonespear{
+	dir = 8;
+	pixel_x = -6
+	},
+/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
+/area/ruin/lavaland/unpowered/ash_walkers)
 "qfS" = (
 /obj/structure/stone_tile/surrounding_tile/cracked,
 /obj/structure/stone_tile/surrounding_tile/cracked{
@@ -104197,7 +104213,7 @@ hvb
 hvb
 hvb
 uTZ
-nBA
+qfo
 nBA
 fqi
 qJx
@@ -104462,7 +104478,7 @@ nBA
 nBA
 nBA
 nBA
-nBA
+mDz
 vAU
 wfT
 gIl
