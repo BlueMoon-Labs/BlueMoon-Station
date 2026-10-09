@@ -39361,6 +39361,7 @@
 /area/engineering/atmos)
 "iRj" = (
 /obj/machinery/power/smes/engineering{
+	charge = 2.7e+006;
 	output_level = 90000
 	},
 /obj/structure/cable/yellow{
@@ -43695,6 +43696,7 @@
 /area/maintenance/department/electrical)
 "jRB" = (
 /obj/machinery/power/smes/engineering{
+	charge = 2.7e+006;
 	output_level = 90000
 	},
 /obj/structure/cable/yellow{
@@ -51182,6 +51184,7 @@
 /area/engineering/main)
 "lDP" = (
 /obj/machinery/power/smes/engineering{
+	charge = 2.7e+006;
 	output_level = 90000
 	},
 /obj/structure/cable/yellow{
@@ -91257,6 +91260,7 @@
 /area/science/robotics/lab)
 "uKw" = (
 /obj/machinery/power/smes/engineering{
+	charge = 2.7e+006;
 	output_level = 90000
 	},
 /obj/structure/cable/yellow{
