@@ -295,6 +295,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 "custom_deathgasp" = "застывает и падает без сил, глаза мертвы и безжизненны...", // BLUEMOON ADD - пользовательский эмоут смерти
 "custom_deathsound" = "По умолчанию", // BLUEMOON ADD - пользовательский эмоут смерти
 "ooc_notes" = "",
+"ass_photo" = "",
 "meat_type" = "Mammalian",
 "body_model" = MALE,
 "body_size" = RESIZE_DEFAULT_SIZE,
@@ -1539,6 +1540,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							dat += ooc_preview
 						else
 							dat += "[copytext_char(ooc_preview, 1, MAX_FLAVOR_PREVIEW_LEN)]..."
+						dat += get_ass_photo_markup()
 					dat += "</td>"
 
 					if(is_modern_theme)
@@ -1583,6 +1585,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							dat += ooc_preview2
 						else
 							dat += "[copytext_char(ooc_preview2, 1, MAX_FLAVOR_PREVIEW_LEN)]..."
+						dat += get_ass_photo_markup()
 
 					if(is_modern_theme)
 						dat += "</td>"
@@ -3071,6 +3074,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			allowed_keys = list("_src_", "preference", "action")
 		if("headshot", "headshot_naked")
 			allowed_keys = list("_src_", "preference", "select_slot")
+		if("ass_photo")
+			allowed_keys = list("_src_", "preference", "clear")
 		if("security_records", "medical_records", "flavor_text", "naked_flavor_text", "silicon_flavor_text", "custom_species_lore", "ooc_notes", "format_help", "hide_ckey", "custom_deathgasp", "custom_deathsound", "deathsoundpreview", "laugh", "laughpreview", "speech_verb", "speech_verb_ru", "barksound", "barkspeed", "barkpitch", "barkvary")
 			if(href_list["task"] != "input")
 				return FALSE
@@ -3454,6 +3459,14 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			i = text2num(i)
 		i = clamp(i, 1, MAX_HEADSHOTS_NAKED)
 		set_headshot_link(user, i, features["headshot_naked_links"])
+		ShowChoices(user, rebuild_preview = !preview_unchanged)
+		return TRUE
+
+	else if(href_list["preference"] == "ass_photo")
+		if(href_list["clear"])
+			features["ass_photo"] = ""
+		else
+			set_ass_photo_link(user)
 		ShowChoices(user, rebuild_preview = !preview_unchanged)
 		return TRUE
 
@@ -6702,6 +6715,32 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	if(findtext(link, video_regex))
 		return "<video src='[link]' autoplay loop muted playsinline style='border: 1px solid black; object-fit: contain;' width='[width]' height='[height]'></video>"
 	return "<img src='[link]' referrerpolicy='no-referrer' style='border: 1px solid black; object-fit: contain;' width='[width]' height='[height]'>"
+
+/datum/preferences/proc/get_ass_photo_markup()
+	var/ass_photo_label = use_modern_translations ? get_modern_text("ass_photo", src) : "Butt photo"
+	var/set_ass_photo_label = use_modern_translations ? get_modern_text("set_ass_photo", src) : "Set photo"
+	var/list/markup = list()
+	markup += "<h2>[ass_photo_label]</h2>"
+	markup += "<a href='?_src_=prefs;preference=ass_photo'><b>[set_ass_photo_label]</b></a>"
+	if(features["ass_photo"])
+		markup += " <a href='?_src_=prefs;preference=ass_photo;clear=1'>\[X\]</a><br>"
+		markup += headshot_preview_html(features["ass_photo"])
+	else
+		markup += "<br>\[...\]"
+	return markup.Join()
+
+/datum/preferences/proc/set_ass_photo_link(mob/user)
+	var/ass_photo_link = get_headshot_link(user, features["ass_photo"])
+	switch(ass_photo_link)
+		if(ACTION_HEADSHOT_LINK_REMOVE)
+			features["ass_photo"] = ""
+			return
+		if(ACTION_HEADSHOT_LINK_NOOP)
+			return
+		else
+			if(features["ass_photo"] == ass_photo_link)
+				return
+			features["ass_photo"] = ass_photo_link
 
 /datum/preferences/proc/mob_size_name_to_num(body_weight_name)
 	switch(body_weight_name)

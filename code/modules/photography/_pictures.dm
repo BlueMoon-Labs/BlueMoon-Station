@@ -4,6 +4,7 @@
 	var/caption
 	var/icon/picture_image
 	var/icon/picture_icon
+	var/picture_url
 	var/psize_x = 96
 	var/psize_y = 96
 	var/has_blueprints = FALSE
@@ -172,6 +173,7 @@
 		P.picture_image = icon(picture_image)	//Copy, not reference.
 	if(picture_icon)
 		P.picture_icon = icon(picture_icon)
+	P.picture_url = picture_url
 	P.psize_x = psize_x - cropx * 2
 	P.psize_y = psize_y - cropy * 2
 	P.has_blueprints = has_blueprints

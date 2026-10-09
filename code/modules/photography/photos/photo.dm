@@ -77,15 +77,20 @@
 		. += "<span class='warning'>You need to get closer to get a good look at this photo!</span>"
 
 /obj/item/photo/proc/show(mob/user)
-	if(!istype(picture) || !picture.picture_image)
+	if(!istype(picture) || (!picture.picture_image && !picture.picture_url))
 		to_chat(user, "<span class='warning'>[src] seems to be blank...</span>")
 		return
-	var/rsc_name = "tmp_photo[REF(src)].png"
-	user << browse_rsc(icon(picture.picture_image, dir = SOUTH, frame = 1), rsc_name)
 	var/zoom_head = user.client?.legacy_zoom_head("photo_showing") || ""
+	var/img_body
+	if(picture.picture_url)
+		img_body = headshot_preview_html(picture.picture_url, 480, 480)
+	else
+		var/rsc_name = "tmp_photo[REF(src)].png"
+		user << browse_rsc(icon(picture.picture_image, dir = SOUTH, frame = 1), rsc_name)
+		img_body = "<img src='[rsc_name]' width='480' style='image-rendering:pixelated' />"
 	user << browse("<html><head><meta http-equiv='Content-Type' content='text/html; charset=utf-8'><title>[name]</title>[zoom_head]</head>" \
 		+ "<body style='overflow:hidden;margin:0;text-align:center'>" \
-		+ "<img src='[rsc_name]' width='480' style='image-rendering:pixelated' />" \
+		+ "[img_body]" \
 		+ "[scribble ? "<br>Written on the back:<br><i>[scribble]</i>" : ""]"\
 		+ "</body></html>", "window=photo_showing;size=480x608")
 	onclose(user, "[name]")

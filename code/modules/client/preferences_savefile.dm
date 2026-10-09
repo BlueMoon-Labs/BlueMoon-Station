@@ -1550,6 +1550,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 "flavor_text" = "",
 "silicon_flavor_text" = "",
 "ooc_notes" = "",
+"ass_photo" = "",
 "meat_type" = "Mammalian",
 "body_model" = MALE,
 "body_size" = RESIZE_DEFAULT_SIZE,
@@ -1801,6 +1802,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["feature_flavor_text"] >> features["flavor_text"]
 	S["feature_silicon_flavor_text"] >> features["silicon_flavor_text"]
 	S["feature_ooc_notes"] >> features["ooc_notes"]
+	S["feature_ass_photo"] >> features["ass_photo"]
 
 	//SPLURT edit
 	S["feature_naked_flavor_text"] >> features["naked_flavor_text"]
@@ -2126,6 +2128,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	features["silicon_flavor_text"] = copytext_char(features["silicon_flavor_text"], 1, MAX_FLAVOR_LEN)
 	features["custom_species_lore"] = copytext_char(features["custom_species_lore"], 1, MAX_FLAVOR_LEN) //SPLURT edit
 	features["ooc_notes"] = copytext_char(features["ooc_notes"], 1, MAX_FLAVOR_LEN)
+	features["ass_photo"] = sanitize_text(features["ass_photo"])
 
 	//Headshots
 	features["headshot_links"] = sanitize_islist(features["headshot_links"], list())
@@ -2534,6 +2537,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["alt_titles_preferences"], alt_titles_preferences)
 
 	WRITE_FILE(S["feature_ooc_notes"], features["ooc_notes"])
+	WRITE_FILE(S["feature_ass_photo"], features["ass_photo"])
 
 	WRITE_FILE(S["feature_color_scheme"], features["color_scheme"])
 
