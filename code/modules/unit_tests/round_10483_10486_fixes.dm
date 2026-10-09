@@ -48,6 +48,37 @@
 	TEST_ASSERT(beast.health < health_before, "test premise: выстрел не нанёс урона")
 	TEST_ASSERT_EQUAL(tracker.total_damage, health_before - beast.health, "Урон выстрела не попал в счётчик крашера")
 
+/// SMES, заряжающийся из сети эмиттеров, берёт только остаток и не гасит эмиттер, даже обрабатываясь раньше него.
+/datum/unit_test/smes_input_leaves_emitter_powered/Run()
+	var/turf/smes_turf = run_loc_floor_bottom_left
+	var/obj/machinery/power/terminal/terminal = allocate(/obj/machinery/power/terminal, get_step(smes_turf, EAST))
+	terminal.setDir(WEST)
+	var/obj/machinery/power/smes/storage = allocate(/obj/machinery/power/smes, smes_turf)
+	TEST_ASSERT_EQUAL(storage.terminal, terminal, "test premise: SMES не нашёл терминал")
+	storage.charge = 0
+	storage.input_attempt = TRUE
+	storage.inputting = TRUE
+	storage.input_level = 200000
+	storage.output_attempt = FALSE
+	var/obj/machinery/power/emitter/welded/emitter = allocate(/obj/machinery/power/emitter/welded, run_loc_floor_top_right)
+	emitter.active = TRUE
+	emitter.powered = TRUE
+	emitter.manual = TRUE
+
+	var/datum/powernet/net = new
+	SSmachines.powernets -= net
+	net.add_machine(terminal)
+	net.add_machine(emitter)
+	net.newavail = 50000
+	for(var/cycle in 1 to 4)
+		net.reset()
+		net.newavail = 50000
+		storage.process()
+		emitter.process()
+		TEST_ASSERT(emitter.powered, "Эмиттер потерял питание на цикле [cycle]: зарядка SMES забрала излишек сети")
+	TEST_ASSERT(storage.charge > 0, "SMES не заряжается из остатка сети")
+	qdel(net)
+
 /// Кофеварка Impressa заводит и гасит пар без рантайма.
 /datum/unit_test/impressa_steam_toggle/Run()
 	var/obj/machinery/coffeemaker/impressa/maker = allocate(/obj/machinery/coffeemaker/impressa)

@@ -292,12 +292,8 @@
 
 		if(inputting)
 			if(input_available > 0)		// if there's power available, try to charge
-
-				var/load = min(min((capacity-charge)/SMESRATE, input_level), input_available)		// charge at set rate, limited to spare capacity
-
-				charge += load * SMESRATE	// increase the charge
-
-				terminal.add_load(load) // add the load to the terminal side network
+				// Charged in the net's reset(), after every consumer on it: emitters and APCs come first.
+				LAZYOR(terminal.powernet.smes_inputs, src)
 
 			else					// if not enough capcity
 				inputting = FALSE		// stop inputting
@@ -334,6 +330,20 @@
 	// создаём радиоактивный фон, если внутри есть радиоактивные батареи.
 	if(rad_strg > 0)
 		AddComponent(/datum/component/radioactive, rad_strg, src)
+
+/// Charges from what the terminal side net has left once all its consumers have drawn this cycle.
+/obj/machinery/power/smes/proc/charge_from_excess(datum/powernet/input_net)
+	if((machine_stat & BROKEN) || !input_attempt || !inputting || terminal?.powernet != input_net)
+		return
+	var/spare = input_net.avail - input_net.load
+	if(spare <= 0)
+		return
+	var/clev = chargedisplay()
+	var/load = min(min((capacity-charge)/SMESRATE, input_level), spare)
+	charge += load * SMESRATE
+	input_net.load += load
+	if(clev != chargedisplay())
+		update_icon()
 
 // called after all power processes are finished
 // restores charge level to smes if there was excess this ptick
