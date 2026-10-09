@@ -83,7 +83,7 @@
 	qdel(I)
 
 
-/proc/play_fov_effect(atom/center, range, icon_state, dir = SOUTH, ignore_self = FALSE, angle = 0, time = 1.5 SECONDS, list/override_list)
+/proc/play_fov_effect(atom/center, range, icon_state, dir = SOUTH, ignore_self = FALSE, angle = 0, time = 1.5 SECONDS, list/override_list, indicator_kind)
 	var/turf/anchor_point = get_turf(center)
 	if(!anchor_point) // hearers() would default to usr on a null center
 		return
@@ -101,6 +101,9 @@
 		if(!M.client)
 			continue
 		if(HAS_TRAIT(M, TRAIT_DEAF))
+			continue
+		// Typing shares the ordinary talk icon, but listeners may give it a persistent marker.
+		if(SEND_SIGNAL(M, COMSIG_MOB_SOUND_INDICATOR, center, indicator_kind || icon_state, dir, time) & COMPONENT_SOUND_INDICATOR_HANDLED)
 			continue
 		if(M.in_fov(center, ignore_self))
 			continue

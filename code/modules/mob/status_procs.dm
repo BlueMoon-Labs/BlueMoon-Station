@@ -60,6 +60,7 @@
 		clear_alert("blind")
 		clear_fullscreen("blind")
 		// remove_client_colour(/datum/client_colour/monochrome/blind)
+	SEND_SIGNAL(src, COMSIG_MOB_BLINDNESS_CHANGED)
 /**
   * Make the mobs vision blurry
   */
