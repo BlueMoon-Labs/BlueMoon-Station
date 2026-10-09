@@ -499,6 +499,19 @@ GLOBAL_LIST_EMPTY(genital_slot_dna_features)
 
 			genital_overlay.icon_state = "[G.slot]_[S.icon_state]_[size][(dna.species.use_skintones && !dna.skin_tone_override) ? "_s" : ""]_[aroused_state]_[layertext]"
 
+			// BLUEMOON ADD
+			var/mutable_appearance/nipples_overlay
+			if(istype(G, /obj/item/organ/genital/breasts) \
+				&& dna.features["breasts_nipples"] \
+				&& S.icon_state == "pair" \
+				&& size != "плоского")
+				nipples_overlay = mutable_appearance(accessory_icon, layer = -layer)
+				if(do_center)
+					nipples_overlay = center_image(nipples_overlay, dim_x, dim_y)
+				nipples_overlay.color = "#[dna.features["breasts_nipples_color"]]"
+				nipples_overlay.icon_state = "nipples_[S.icon_state]_[size]_[aroused_state]_[layertext]"
+			// BLUEMOON ADD
+
 			// Check if the flag is on, or the genitals are exposed with no uniform on (except for gear harness)
 			var/should_promote = (G.genital_flags & GENITAL_THROUGH_CLOTHES) || forced_by_hardlight || (G.is_exposed() && !(w_uniform && !istype(w_uniform, /obj/item/clothing/under/misc/gear_harness)))
 			// Keep the genital rendered but hidden if player is wearing underwear that got a keep_genitals_below flag on a specific genital
@@ -528,10 +541,19 @@ GLOBAL_LIST_EMPTY(genital_slot_dna_features)
 				LAZYADD(fully_exposed, genital_overlay)
 				if(has_emissive_part(dna.features, G.slot))
 					LAZYADD(fully_exposed, emissive_copy(genital_overlay))
+				// BLUEMOON ADD
+				if(nipples_overlay)
+					nipples_overlay.layer = -GENITALS_EXPOSED_LAYER
+					LAZYADD(fully_exposed, nipples_overlay)
 			else
 				genital_overlay.layer = -layers_num[layer]
 				standing += genital_overlay
 				if(has_emissive_part(dna.features, G.slot))
+					standing += emissive_copy(genital_overlay)
+				// BLUEMOON ADD
+				if(nipples_overlay)
+					nipples_overlay.layer = -layers_num[layer]
+					standing += nipples_overlay
 					standing += emissive_copy(genital_overlay)
 
 		if(LAZYLEN(standing))

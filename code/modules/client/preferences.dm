@@ -246,6 +246,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 "balls_efficiency" = CUM_EFFICIENCY,
 "has_breasts" = FALSE,
 "breasts_color" = "ffffff",
+"breasts_nipples" = FALSE,
+"breasts_nipples_color" = "ffffff",
 "breasts_size" = BREASTS_SIZE_DEF,
 "breasts_shape" = DEF_BREASTS_SHAPE,
 "breasts_fluid" = /datum/reagent/consumable/milk,
@@ -2007,6 +2009,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						var/womb_fluid_label = src.use_modern_translations ? get_modern_text("womb_fluid", src) : "Produces"
 						var/has_breasts_label = src.use_modern_translations ? get_modern_text("has_breasts", src) : "Has Breasts"
 						var/breasts_color_label = src.use_modern_translations ? get_modern_text("breast_color", src) : "Color"
+						var/has_colorized_nipples_label = src.use_modern_translations ? get_modern_text("has_colorized_nipples", src) : "Colorized Nipples"
+						var/nipples_color_label = src.use_modern_translations ? get_modern_text("nipples_color", src) : "Nipples Color"
 						var/breasts_size_label = src.use_modern_translations ? get_modern_text("breast_cup_size", src) : "Cup Size"
 						var/breasts_shape_label = src.use_modern_translations ? get_modern_text("breast_shape", src) : "Breasts Shape"
 						var/breasts_visibility_label = src.use_modern_translations ? get_modern_text("breast_visibility", src) : "Breasts Visibility"
@@ -2132,6 +2136,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							else
 								dat += "<b>[breasts_color_label]:</b></a><BR>"
 								dat += "<span style='border: 1px solid #161616; background-color: #[features["breasts_color"]];'><font color='[color_hex2num(features["breasts_color"]) < 200 ? "FFFFFF" : "000000"]'>#[features["breasts_color"]]</font></span> <a href='?_src_=prefs;preference=breasts_color;task=input'>Change</a><br>"
+							dat += "<b>[has_colorized_nipples_label]:</b> <a style='display:block;width:50px' href='?_src_=prefs;preference=breasts_nipples'>[features["breasts_nipples"] ? "Yes" : "No"]</a>"
+							if(features["breasts_nipples"])
+								dat += "<b>[nipples_color_label]:</b> </a><BR>"
+								dat += "<span style='border: 1px solid #161616; background-color: #[features["breasts_nipples_color"]];'><font color='[color_hex2num(features["breasts_nipples_color"]) < 200 ? "FFFFFF" : "000000"]'>#[features["breasts_nipples_color"]]</font></span> <a href='?_src_=prefs;preference=breasts_nipples_color;task=input'>Change</a><br>"
 							dat += "<b>[breasts_size_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=breasts_size;task=input'>[features["breasts_size"]]</a>"
 							dat += "<b>[breasts_shape_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=breasts_shape;task=input'>[features["breasts_shape"]]</a>"
 							dat += "<b>[breasts_visibility_label]:</b><a style='display:block;width:100px' href='?_src_=prefs;preference=breasts_visibility;task=input'>[features["breasts_visibility"]]</a>"
@@ -4545,6 +4553,17 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						else
 							to_chat(user,"<span class='danger'>Invalid color. Your color is not bright enough.</span>")
 
+				if("breasts_nipples_color")
+					var/new_nipples_color = input(user, "Nipples Color:", "Character Preference", "#" + features["breasts_nipples_color"]) as color|null
+					if(new_nipples_color)
+						var/temp_hsv = RGBtoHSV(new_nipples_color)
+						if(new_nipples_color == "#000000" && features["breasts_nipples_color"] != pref_species.default_color)
+							features["breasts_nipples_color"] = pref_species.default_color
+						else if(ReadHSV(temp_hsv)[3] >= ReadHSV(MINIMUM_MUTANT_COLOR)[3] || !CONFIG_GET(flag/character_color_limits))
+							features["breasts_nipples_color"] = sanitize_hexcolor(new_nipples_color, 6)
+						else
+							to_chat(user, "<span class='danger'>Invalid color. Your color is not bright enough.</span>")
+
 				if("breasts_visibility")
 					var/n_vis = tgui_input_list(user, "Breasts Visibility", "Character Preference", CONFIG_GET(str_list/safe_visibility_toggles))
 					if(n_vis)
@@ -5256,6 +5275,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					features["has_breasts"] = !features["has_breasts"]
 					if(features["has_breasts"] == FALSE)
 						features["breasts_producing"] = FALSE
+				if("breasts_nipples")
+					features["breasts_nipples"] = !features["breasts_nipples"]
 				if("breasts_producing")
 					features["breasts_producing"] = !features["breasts_producing"]
 				if("breasts_accessible")
