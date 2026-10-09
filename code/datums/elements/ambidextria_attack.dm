@@ -35,11 +35,21 @@
 	var/obj/item/second_blade = get_second_blade(source, user)
 	if(!second_blade)
 		return
-	addtimer(CALLBACK(second_blade, TYPE_PROC_REF(/obj/item, attack), M, user, NONE, damage_multiplier), 0.2 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(second_attack), second_blade, M, user, damage_multiplier), 0.2 SECONDS)
 
 /datum/element/ambidextria_attack/proc/attack_obj(obj/item/source, obj/O, mob/living/user)
 	SIGNAL_HANDLER
 	var/obj/item/second_blade = get_second_blade(source, user)
 	if(!second_blade)
 		return
-	addtimer(CALLBACK(second_blade, TYPE_PROC_REF(/obj/item, attack_obj), O, user), 0.2 SECONDS)
+	addtimer(CALLBACK(src, PROC_REF(second_attack_obj), second_blade, O, user), 0.2 SECONDS)
+
+/datum/element/ambidextria_attack/proc/second_attack(obj/item/second_blade, mob/living/target, mob/living/user, damage_multiplier)
+	if(QDELETED(second_blade) || QDELETED(target) || QDELETED(user))
+		return
+	second_blade.attack(target, user, NONE, damage_multiplier)
+
+/datum/element/ambidextria_attack/proc/second_attack_obj(obj/item/second_blade, obj/target, mob/living/user)
+	if(QDELETED(second_blade) || QDELETED(target) || QDELETED(user))
+		return
+	second_blade.attack_obj(target, user)

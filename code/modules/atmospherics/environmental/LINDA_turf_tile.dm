@@ -341,7 +341,7 @@
 		ATMOS_TPROF_COUNT("vis_clean_air")
 		atmos_visual_rev = memo_rev
 		return
-	var/list/gas_overlays = GLOB.gas_data.overlays
+	var/list/gas_overlays = SSmapping.max_plane_offset ? GLOB.gas_data.get_overlays_for_offset(GET_Z_PLANE_OFFSET(z)) : GLOB.gas_data.overlays
 	var/list/gas_visibility = GLOB.gas_data.visibility
 	// Один оверлей на турф - от доминирующего газа: смешение цветов стёрло бы газы без color (плазма, тритий, пар, N2O).
 	var/visible_moles = 0
@@ -469,6 +469,8 @@
 	var/list/turf/open/zone_turfs = list()
 	/// Ассоциативно (для проверки за O(1)): члены зоны, граничащие с космосом.
 	var/list/turf/open/space_edge_turfs = list()
+	/// Пары "член зоны, сосед за проёмом с файрлоком" подряд: граница зоны, закрываемая, если зона стравливается в космос.
+	var/list/turf/open/firelock_seams = list()
 	/// Стек BFS.
 	var/list/turf/open/pending = list()
 	/// Ассоциативно: турфы, уже попавшие в стек.
@@ -499,6 +501,7 @@
 	did_work = FALSE
 	zone_turfs.Cut()
 	space_edge_turfs.Cut()
+	firelock_seams.Cut()
 	pending.Cut()
 	seen.Cut()
 	moles_before.Cut()
@@ -536,6 +539,7 @@
 	// did_work переживает finish(): его читает equalize_pressure_in_zone().
 	zone_turfs.Cut()
 	space_edge_turfs.Cut()
+	firelock_seams.Cut()
 	pending.Cut()
 	seen.Cut()
 	moles_before.Cut()
@@ -587,6 +591,11 @@
 						// Граница с небом - стена для обхода (см. begin()), её обслуживает sky-ветка process_cell.
 						if(open_neighbor.planetary_atmos)
 							continue
+						// Сведение через открытый файрлок уравнивало отсеки без перепада, на который створка закрывается.
+						if(current_turf.atmos_adjacent_turfs[open_neighbor] & ATMOS_ADJACENT_FIRELOCK)
+							firelock_seams += current_turf
+							firelock_seams += open_neighbor
+							continue
 						if(seen[open_neighbor])
 							continue
 						seen[open_neighbor] = TRUE
@@ -614,6 +623,7 @@
 			if(EQ_WALK_MIX)
 				// Единственная неделимая стадия (см. EQ_WALK_*), фаза заходит сюда только с запасом тика.
 				vent_space_edges()
+				seal_firelock_seams()
 				mix_zone()
 				remaining -= zone_turfs.len
 				cursor = 1
@@ -704,6 +714,14 @@
 		total_pressure_drop += pressure_drop
 		if(pressure_drop > 0 && first_space)
 			edge_turf.consider_pressure_difference(first_space, pressure_drop)
+
+/// Отсек, стравливаемый в космос, закрывает файрлоки на своей границе: вне зоны его соседи держат давление.
+/datum/atmos_zone_walk/proc/seal_firelock_seams()
+	if(!space_edge_turfs.len)
+		return
+	for(var/index in 1 to firelock_seams.len step 2)
+		var/turf/seam_turf = firelock_seams[index]
+		seam_turf?.consider_firelocks(firelock_seams[index + 1])
 
 /// Сведение газа зоны к среднему и снимок молей/температуры для фильтра активации. Специализация equalize_all_gases_in_list() без промежуточных списков.
 /datum/atmos_zone_walk/proc/mix_zone()
@@ -961,6 +979,11 @@
 				// Опасный перепад через проём с файрлоком (бит в значении соседства) захлопывает створку сразу.
 				if(abs(difference) >= DECOMPRESSION_FIRELOCK_PRESSURE_DELTA && (adjacent_turfs[enemy_tile] & ATMOS_ADJACENT_FIRELOCK))
 					consider_firelocks(enemy_tile)
+				else if(enemy_tile.loc != loc && air_controller && !(adjacent_turfs[enemy_tile] & ATMOS_ADJACENT_FIRELOCK))
+					if(difference > 0)
+						air_controller.spread_decompression(src, enemy_tile)
+					else
+						air_controller.spread_decompression(enemy_tile, src)
 			LAST_SHARE_CHECK
 
 	ATMOS_TPROF_ADD("neighbors")

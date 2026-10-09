@@ -36,7 +36,12 @@
 			for(var/mob/living/carbon/human/H in oview(src, 1)) //Only for corpse right next to/on same tile
 				if(H == ex_host) // со свежесорвавшегося трупа не захватываемся повторно
 					continue
-				if(!H.get_item_by_slot(ITEM_SLOT_HEAD) && prob(50) || H.IsUnconscious())
+				// IsUnconscious() смотрит только на статус-эффект, а крит ставит stat
+				// напрямую в update_stat(): хардкрит - это stat == UNCONSCIOUS, труп -
+				// DEAD, и статус-эффекта у них нет. Раньше шлемовая жертва в крите
+				// вообще не захватывалась, а без шлема срабатывал лишь prob(50).
+				var/incapacitated = (H.stat != CONSCIOUS) || H.IsUnconscious()
+				if(incapacitated || (!H.get_item_by_slot(ITEM_SLOT_HEAD) && prob(50)))
 					visible_message("<span class='danger'>[src] запрыгивает на голову [H], вгрызясь своими лапками в затылок жертвы!</span>", "<span class='danger'>[src] запрыгивает на голову [H], вгрызясь своими лапками в затылок жертвы!</span>")
 					H.death(FALSE)
 					Zombify(H)
@@ -98,15 +103,31 @@
 /mob/living/simple_animal/hostile/headcrab/death(gibbed)
 	..(gibbed)
 	if(is_zombie)
+		// Тело хозяина выкладываем прямо здесь, а не ждём Destroy(): труп
+		// пропадал вместе с удаляемым крабом, когда qdel() не доходил до
+		// Destroy(). previous_host ловим ДО выкладки - иначе locate() в
+		// пустом contents вернёт null и крабик снова прыгнул бы на труп.
+		var/mob/living/carbon/human/previous_host = locate(/mob/living/carbon/human) in contents
+		release_host()
 		// С шансом detach_chance краб срывается с павшего зомби живым и удирает
-		// искать нового носителя, а не погибает вместе с ним (на труп вывалится
-		// тело бывшего хозяина - см. Destroy ниже).
+		// искать нового носителя (тело бывшего хозяина уже лежит рядом).
 		if(!gibbed && prob(detach_chance) && isturf(loc))
-			var/mob/living/carbon/human/previous_host = locate(/mob/living/carbon/human) in contents
 			var/mob/living/simple_animal/hostile/headcrab/hatchling = new(loc)
 			hatchling.ex_host = previous_host
 			visible_message("<span class='danger'>[src] выпрыгивает из павшего тела, отряхивается и шустро удирает искать новую жертву!</span>")
 		qdel(src)
+
+/// Выкладывает носителя из краба на его турф. Дёрется и из death(), и из Destroy():
+/// труп хозяина не должен зависеть от того, дошёл ли qdel() до Destroy().
+/mob/living/simple_animal/hostile/headcrab/proc/release_host()
+	var/turf/drop_to = get_turf(src)
+	if(!drop_to)
+		return // краб в nullspace: forceMove(null) увёл бы труп в небытие насовсем
+	for(var/mob/M in contents)
+		//именно forceMove: голое присваивание loc не зовёт Exited/Moved,
+		//и наш же force_remove_from_grid ниже по ..() снёс бы жертву из
+		//ячеек спатиал-грида (слух/радио) до пересечения границы 17х17
+		M.forceMove(drop_to)
 
 /mob/living/simple_animal/hostile/headcrab/handle_automated_speech() // This way they have different screams when attacking, sometimes. Might be seen as sphagetthi code though.
 	if(speak_chance)
@@ -115,12 +136,8 @@
 				playsound(get_turf(src), pick(speak), 200, 1)
 
 /mob/living/simple_animal/hostile/headcrab/Destroy()
-	if(contents)
-		for(var/mob/M in contents)
-			//именно forceMove: голое присваивание loc не зовёт Exited/Moved,
-			//и наш же force_remove_from_grid ниже по ..() снёс бы жертву из
-			//ячеек спатиал-грида (слух/радио) до пересечения границы 17х17
-			M.forceMove(get_turf(src))
+	// и сюда: прямой qdel (мимо death()) тоже обязан вернуть труп на пол
+	release_host()
 	return ..()
 
 /mob/living/simple_animal/hostile/headcrab/update_icons()

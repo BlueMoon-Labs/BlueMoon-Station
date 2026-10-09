@@ -715,7 +715,7 @@
 		var/image/I = image('icons/mob/hud.dmi', null, "")
 		hud_atom.hud_list[key] = I
 		expected_images += I
-	test_hud.hudatoms += hud_atom
+	test_hud.add_to_hud(hud_atom)
 
 	var/list/target_images = list()
 	var/time_before = world.time

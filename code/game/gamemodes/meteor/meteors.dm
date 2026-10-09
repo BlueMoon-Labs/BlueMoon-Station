@@ -137,10 +137,18 @@ GLOBAL_LIST_INIT(meteorsC, list(/obj/effect/meteor/dust)) //for space dust event
 
 /obj/effect/meteor/Bump(atom/A)
 	if(A)
+		// Решение до тарана: пробитая скала становится полом астероида, который удара не отнимает.
+		var/spends_hit = !ignores_path_wear && !passes_through(A)
 		ram_turf(get_turf(A))
 		playsound(src.loc, meteorsound, 40, TRUE)
-		if(!ignores_path_wear && !istype(A, /turf/closed/mineral) && !istype(A, /turf/open/floor/plating/asteroid)) // ignore localstation ruins
+		if(spends_hit)
 			get_hit()
+
+/obj/effect/meteor/proc/passes_through(atom/obstacle)
+	if(istype(obstacle, /turf/closed/mineral))
+		var/turf/closed/mineral/rock = obstacle
+		return !rock.stops_meteors
+	return istype(obstacle, /turf/open/floor/plating/asteroid)
 
 /obj/effect/meteor/proc/ram_turf(turf/T)
 	//first bust whatever is in the turf

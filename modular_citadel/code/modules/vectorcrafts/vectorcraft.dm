@@ -98,7 +98,7 @@
 	acceleration = initial(acceleration)
 
 /obj/vehicle/sealed/vectorcraft/proc/dead_check()
-	if(driver.stat > 0)
+	if(!driver || driver.stat > CONSCIOUS)
 		mob_exit(driver)
 		stop_engine()
 		return TRUE
@@ -168,8 +168,15 @@
 
 //I got over messy process procs
 /obj/vehicle/sealed/vectorcraft/process()
+	if(dead_check())
+		return
 	hover_loop()
-	dead_check()
+
+/obj/vehicle/sealed/vectorcraft/handle_atom_del(atom/deleted_atom)
+	if(deleted_atom == driver)
+		driver = null
+		stop_engine()
+	return ..()
 
 //////////////////////////////////////////////////////////////
 //					Movement procs						   	//
@@ -211,6 +218,8 @@
 			return FALSE
 		for(var/atom/A in T.contents)
 			Bump(A)
+			if(QDELETED(src))
+				return FALSE
 			if(A.density)
 				ricochet()
 				tile_loc = cached_tile
@@ -331,6 +340,8 @@
 
 //Heals/damages the car
 /obj/vehicle/sealed/vectorcraft/proc/apply_damage(damage)
+	if(QDELETED(src))
+		return
 	obj_integrity -= damage
 	if(obj_integrity <= 0)
 		mob_exit(driver)
@@ -383,6 +394,8 @@
 		var/obj/O = M
 		if(O.density)
 			O.take_damage(speed*2.5)
+			if(QDELETED(O))
+				return
 	return ..()
 
 //////////////////////////////////////////////////////////////

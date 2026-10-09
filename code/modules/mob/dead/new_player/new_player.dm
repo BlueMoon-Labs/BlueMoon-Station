@@ -35,6 +35,8 @@
 	GLOB.new_player_list += src
 
 /mob/dead/new_player/Destroy()
+	// Меню выбора професий привязано к мобу лобби, при переходе в раунд оно дестроится
+	QDEL_NULL(job_menu)
 	GLOB.new_player_list -= src
 	//очередь распределения ролей сбрасывается только в ResetOccupations, которого
 	//в нормальном раунде не бывает: ушедший из лобби игрок оставался в ней до конца
@@ -225,71 +227,6 @@
 		LateChoices()
 		return
 
-	if(href_list["SelectedJob"])
-		if(!SSticker || !SSticker.IsRoundInProgress())
-			var/msg = "[key_name(usr)] attempted to join the round using a href that shouldn't be available at this moment!"
-			log_admin(msg)
-			message_admins(msg)
-			to_chat(usr, "<span class='danger'>The round is either not ready, or has already finished...</span>")
-			return
-
-		if(!GLOB.enter_allowed)
-			to_chat(usr, "<span class='notice'>There is an administrative lock on entering the game!</span>")
-			return
-
-		//Determines Relevent Population Cap
-		var/relevant_cap
-		var/hpc = CONFIG_GET(number/hard_popcap)
-		var/epc = CONFIG_GET(number/extreme_popcap)
-		if(hpc && epc)
-			relevant_cap = min(hpc, epc)
-		else
-			relevant_cap = max(hpc, epc)
-
-
-
-		if(SSticker.queued_players.len && !(ckey(key) in GLOB.admin_datums))
-			if((living_player_count() >= relevant_cap) || (src != SSticker.queued_players[1]))
-				to_chat(usr, "<span class='warning'>Server is full.</span>")
-				return
-
-		AttemptLateSpawn(href_list["SelectedJob"])
-		return
-
-	if(href_list["JoinAsGhostRole"])
-		if(!GLOB.enter_allowed)
-			to_chat(usr, "<span class='notice'> There is an administrative lock on entering the game!</span>")
-			return
-
-		//Determines Relevent Population Cap
-		var/relevant_cap
-		var/hpc = CONFIG_GET(number/hard_popcap)
-		var/epc = CONFIG_GET(number/extreme_popcap)
-		if(hpc && epc)
-			relevant_cap = min(hpc, epc)
-		else
-			relevant_cap = max(hpc, epc)
-
-		if(SSticker.queued_players.len && !(ckey(key) in GLOB.admin_datums))
-			if((living_player_count() >= relevant_cap) || (src != SSticker.queued_players[1]))
-				to_chat(usr, "<span class='warning'>Server is full.</span>")
-				return
-
-		var/list/spawner_list = GLOB.mob_spawners[href_list["JoinAsGhostRole"]]
-		if(!length(spawner_list))
-			// Молчаливый выход отсюда выглядел как "кнопка не работает": игрок кликал по
-			// живой роли, а ключ до сервера не доезжал (см. url_encode в LateChoices()).
-			to_chat(usr, "<span class='warning'>Эта роль больше недоступна.</span>")
-			return
-		var/obj/effect/mob_spawn/MS = pick(spawner_list)
-		if(!MS || !istype(MS, /obj/effect/mob_spawn))
-			to_chat(usr, "<span class='warning'>Эта роль больше недоступна.</span>")
-			return
-		if(MS.attack_ghost(src, latejoinercalling = TRUE))
-			SSticker.queued_players -= src
-			SSticker.queue_delay = 4
-			qdel(src)
-
 	if(href_list["pollid"])
 		var/pollid = href_list["pollid"]
 		if(istext(pollid))
@@ -419,23 +356,24 @@
 	qdel(src)
 	return TRUE
 
+/// Причина, по которой профессия недоступна. Тексты для окна выбора профессии.
 /proc/get_job_unavailable_error_message(retval, jobtitle)
 	switch(retval)
 		if(JOB_AVAILABLE)
-			return "[jobtitle] is available."
+			return "[jobtitle] доступна."
 		if(JOB_UNAVAILABLE_GENERIC)
-			return "[jobtitle] is unavailable."
+			return "[jobtitle] сейчас недоступна."
 		if(JOB_UNAVAILABLE_BANNED)
-			return "You are currently banned from [jobtitle]."
+			return "У вас есть бан на профессию [jobtitle]."
 		if(JOB_UNAVAILABLE_PLAYTIME)
-			return "You do not have enough relevant playtime for [jobtitle]."
+			return "Недостаточно наиграно для профессии [jobtitle]."
 		if(JOB_UNAVAILABLE_ACCOUNTAGE)
-			return "Your account is not old enough for [jobtitle]."
+			return "Аккаунт слишком новый для профессии [jobtitle]."
 		if(JOB_UNAVAILABLE_SLOTFULL)
-			return "[jobtitle] is already filled to capacity."
+			return "Все места на профессии [jobtitle] заняты."
 		if(JOB_UNAVAILABLE_SPECIESLOCK)
-			return "Your species cannot play as a [jobtitle]."
-	return "Error: Unknown job availability."
+			return "Ваша раса не может играть за [jobtitle]."
+	return "Ошибка: неизвестный статус профессии."
 
 /mob/dead/new_player/proc/IsJobUnavailable(rank, latejoin = FALSE)
 	var/datum/job/job = SSjob.GetJob(rank)
@@ -473,7 +411,7 @@
 		return FALSE
 
 	if(SSticker.late_join_disabled)
-		alert(src, "An administrator has disabled late join spawning.")
+		alert(src, "Администратор отключил поздний вход в раунд.")
 		return FALSE
 
 	if(!respawn_latejoin_check(notify = TRUE))
@@ -581,120 +519,7 @@
 			to_chat(src, "<span class='redtext'>На этот раунд, у вас отключена возможность стать антагонистом посреди раунда (её можно настроить в Параметрах Игры > Антагонисты).</span>")
 	// BLUEMOON ADD END
 
-	var/dat = "<div class='notice'>Длительность раунда: [DisplayTimeText(world.time - SSticker.round_start_time)]<br>Уровень тревоги: <b>[capitalize(SECURITY_LEVEL_COLORED(GLOB.security_level) || SECURITY_LEVEL_COLORED(SEC_LEVEL_GREEN))]</b></div>"
-	if(SSshuttle.emergency)
-		switch(SSshuttle.emergency.mode)
-			if(SHUTTLE_ESCAPE)
-				dat += "<div class='notice red'>Экипаж станции эвакуировался.</div><br>"
-			if(SHUTTLE_CALL)
-				if(!SSshuttle.canRecall())
-					dat += "<div class='notice red'>Станция сейчас проводит процедуру эвакуации экипажа.</div><br>"
-	for(var/datum/job/prioritized_job in SSjob.prioritized_jobs)
-		if(prioritized_job.current_positions >= prioritized_job.total_positions)
-			SSjob.prioritized_jobs -= prioritized_job
-	var/datum/director_vacancies/vacancies = SSdirector.vacancies
-	for(var/dept in GLOB.director_vacancy_departments)
-		if(vacancies?.is_vacant(dept))
-			dat += "<div class='notice'>Отделы с пометкой <span class='priority'>нужны</span> сейчас пусты. Вход туда до вызова эвакуации принесёт [METADOLLARS_RELIEF_BONUS] М$ в конце раунда, если продержитесь в смене [METADOLLARS_RELIEF_MIN_TIME / (1 MINUTES)] минут или до эвакуации.</div>"
-			break
-	dat += "<center><table><tr><td valign='top'>"
-	var/column_counter = 0
-	var/free_space = 0
-	for(var/list/category in list(GLOB.command_positions) + list(GLOB.supply_positions) + list(GLOB.engineering_positions) + list(GLOB.nonhuman_positions - "pAI") + list(GLOB.civilian_positions) + list(GLOB.law_positions) + list(GLOB.medical_positions) + list(GLOB.science_positions) + list(GLOB.security_positions))
-		var/cat_color = "fff" //random default
-		var/department_type = SSjob.name_occupations[category[1]].exp_type_department
-		var/department_title = GLOB.exp_type_department_ru[department_type] || department_type
-		cat_color = SSjob.name_occupations[category[1]].selection_color //use the color of the first job in the category (the department head) as the category color
-		dat += "<fieldset style='width: 185px; border: 2px solid [cat_color]; display: inline'>"
-		var/vacancy_dept = director_dept_of_job(category[1])
-		var/needed_mark = (vacancy_dept && vacancies?.is_vacant(vacancy_dept)) ? " <span class='priority'>нужны</span>" : ""
-		dat += "<legend align='center' style='color: [cat_color]'>[department_title][needed_mark]</legend>"
-
-		var/list/dept_dat = list()
-		for(var/job in category)
-			var/datum/job/job_datum = SSjob.name_occupations[job]
-			if(job_datum && IsJobUnavailable(job_datum.title, TRUE) == JOB_AVAILABLE)
-				// Get currently occupied slots
-				var/num_positions_current = job_datum.current_positions
-
-				// Get total slots that can be occupied
-				var/num_positions_total = job_datum.total_positions
-
-				// Change to lemniscate for infinite-slot jobs
-				// This variable should only used to display text!
-				num_positions_total = (num_positions_total == -1 ? "∞" : num_positions_total)
-
-				var/command_bold = ""
-				if(job in GLOB.command_positions)
-					command_bold = " command"
-				if(job_datum in SSjob.prioritized_jobs)
-					dept_dat += "<a class='job[command_bold]' style='display:block;width:170px' href='byond://?src=[REF(src)];SelectedJob=[job_datum.title]'><span class='priority'>[job_datum.title] ([num_positions_current]/[num_positions_total])</span>"
-				else
-					dept_dat += "<a class='job[command_bold]' style='display:block;width:170px' href='byond://?src=[REF(src)];SelectedJob=[job_datum.title]'>[job_datum.title] ([num_positions_current]/[num_positions_total])"
-				if(client && client.prefs && client?.prefs?.alt_titles_preferences[job_datum.title])
-					dept_dat += "<br><span style='color:#BBBBBB; font-style: italic;'>как [client?.prefs?.alt_titles_preferences[job_datum.title]]</span>"
-				dept_dat += "</a>"
-
-		if(!dept_dat.len)
-			dept_dat += "<span class='nopositions'>Нет доступных вакансий.</span>"
-		dat += jointext(dept_dat, "")
-		dat += "</fieldset><br>"
-		column_counter++
-		if(free_space <=4)
-			free_space++
-			if(column_counter > 0 && (column_counter % 4 == 0))
-				dat += "</td><td valign='top'>"
-		if(free_space >= 5 && (free_space % 5 == 0) && (column_counter % 4 != 0))
-			free_space = 0
-			column_counter = 0
-			dat += "</td><td valign='top'>"
-
-	dat += "</td></tr></table></center></center>"
-
-	var/available_ghosts = 0
-	for(var/spawner in GLOB.mob_spawners)
-		if(!LAZYLEN(spawner))
-			continue
-		var/obj/effect/mob_spawn/S = pick(GLOB.mob_spawners[spawner])
-		if(!istype(S) || !S.can_latejoin())
-			continue
-		available_ghosts++
-		break
-
-	if(!available_ghosts)
-		dat += "<div class='notice red'>В настоящее время нет гост-спавнеров.</div>"
-	else
-		var/list/categorizedJobs = list("Ghost Role" = list(jobs = list(), titles = GLOB.mob_spawners, color = "#ffffff"))
-		for(var/spawner in GLOB.mob_spawners)
-			if(!LAZYLEN(spawner))
-				continue
-			var/obj/effect/mob_spawn/S = pick(GLOB.mob_spawners[spawner])
-			if(!istype(S) || !S.can_latejoin())
-				continue
-			categorizedJobs["Ghost Role"]["jobs"] += spawner
-
-		dat += "<center><table><tr><td valign='top'>"
-		for(var/jobcat in categorizedJobs)
-			if(!length(categorizedJobs[jobcat]["jobs"]))
-				continue
-			var/color = categorizedJobs[jobcat]["color"]
-			dat += "<fieldset style='border: 2px solid [color]; display: inline'>"
-			dat += "<legend align='center' style='color: [color]'>[jobcat]</legend>"
-			for(var/spawner in categorizedJobs[jobcat]["jobs"])
-				// url_encode обязателен: ключ спавнера - это его job_description, и апостроф
-				// внутри него закрывал одинарную кавычку атрибута href. Браузер обрезал ссылку
-				// по апострофу, сервер получал усечённый ключ, GLOB.mob_spawners[...] давал null,
-				// и роль была недоступна из лобби весь раунд.
-				dat += "<a class='otherPosition' style='display:block;width:170px' href='byond://?src=[REF(src)];JoinAsGhostRole=[url_encode(spawner)]'>[spawner]</a>"
-
-			dat += "</fieldset><br>"
-		dat += "</td></tr></table></center>"
-		dat += "</div></div>"
-
-	var/datum/browser/popup = new(src, "latechoices", "Выберите профессию", 720, 600)
-	popup.add_stylesheet("playeroptions", 'html/browser/playeroptions.css')
-	popup.set_content(jointext(dat, ""))
-	popup.open(FALSE) // FALSE is passed to open so that it doesn't use the onclose() proc
+	open_job_menu()
 
 /mob/dead/new_player/proc/create_character(transfer_after)
 	spawning = 1
@@ -737,7 +562,6 @@
 		player_mind.set_original_character(H)
 
 	H.name = real_name
-	client.init_verbs()
 	. = H
 	new_character = .
 	if(transfer_after)
@@ -781,6 +605,8 @@
 
 /mob/dead/new_player/proc/close_spawn_windows()
 	client?.clear_character_previews()
+	if(job_menu)
+		SStgui.close_uis(job_menu)
 	src << browse(null, "window=latechoices") //closes late choices window
 	src << browse(null, "window=playersetup") //closes the player setup window
 	src << browse(null, "window=preferences") //closes job selection

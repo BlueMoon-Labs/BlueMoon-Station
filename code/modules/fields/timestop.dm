@@ -220,7 +220,7 @@
 	timestop_effect.pixel_y = -64
 	timestop_effect.transform = matrix().Scale(resize, resize)
 	if(use_plane)
-		timestop_effect.plane = GRAVITY_PULSE_PLANE
+		SET_PLANE_EXPLICIT(timestop_effect, GRAVITY_PULSE_PLANE, timestop_effect.loc)
 
 /datum/proximity_monitor/advanced/timestop/proc/unfreeze_mob(mob/living/L)
 	L.AdjustStun(-20, ignore_canstun = TRUE)

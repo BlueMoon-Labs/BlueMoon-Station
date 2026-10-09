@@ -188,7 +188,7 @@
 
 /obj/effect/temp_visual/heretic_stargazer_rift/Initialize(mapload)
 	. = ..()
-	add_overlay(emissive_appearance(icon, icon_state))
+	add_overlay(emissive_appearance(icon, icon_state, offset_spokesman = src))
 
 /// Снимок Звездочёта сжимается и рассыпается там, где его уже нет.
 /obj/effect/temp_visual/heretic_stargazer_remnant
@@ -228,7 +228,7 @@
 
 /obj/effect/temp_visual/heretic_cosmic_twinkle/Initialize(mapload)
 	. = ..()
-	add_overlay(emissive_appearance(icon, icon_state))
+	add_overlay(emissive_appearance(icon, icon_state, offset_spokesman = src))
 
 /// Космос: звёзды разлетаются из точки удара луча.
 /particles/heretic_ascension/cosmic/impact

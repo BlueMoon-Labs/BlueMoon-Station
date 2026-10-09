@@ -30,11 +30,20 @@
 	if(!(cache_index in GLOB.emissive_blocked_layers))
 		return
 	var/images = overlays_standing[cache_index]
-	if(!islist(images))
+	if(!images)
 		return
+	// Большинство слоёв (униформа, голова, обувь...) хранят один mutable_appearance, а не список.
+	// Оборачиваем его, иначе блокеры строились бы только для списка волос и одежда
+	// пропускала бы свечение тела насквозь.
+	if(!islist(images))
+		images = list(images)
 	var/list/blockers
 	for(var/image/im in images)
-		var/blocker = emissive_blocker_copy(im)
+		// Эмиссивную копию гасить бессмысленно: она и так на эмиссивном плане.
+		var/true_plane = PLANE_TO_TRUE(im.plane)
+		if(true_plane == EMISSIVE_PLANE || true_plane == EMISSIVE_UNBLOCKABLE_PLANE)
+			continue
+		var/blocker = emissive_blocker_copy(im, src)
 		if(blocker)
 			LAZYADD(blockers, blocker)
 	if(blockers)
@@ -342,7 +351,9 @@
 
 //produces a key based on the mob's limbs
 
-/mob/living/carbon/proc/generate_icon_render_key()
+/mob/living/carbon/proc/generate_icon_render_key(plane_offset = LIMB_PLANE_OFFSET(src))
+	if(plane_offset)
+		. += "-floor[plane_offset]"
 	for(var/X in bodyparts)
 		var/obj/item/bodypart/BP = X
 		. += "-[BP.body_zone]"
@@ -398,3 +409,14 @@
 	update_damage_overlays()
 	update_wound_overlays()
 	update_bandage_overlays()
+
+//Ключ кэша частей тела несёт смещение этажа носителя: на новом этаже набор конечностей другой.
+/mob/living/carbon/set_plane_offset(new_offset)
+	. = ..()
+	update_body()
+	for(var/cache_index in GLOB.emissive_blocked_layers)
+		if(!overlays_emissive_blockers[cache_index])
+			continue
+		refresh_emissive_blockers(cache_index)
+		if(overlays_emissive_blockers[cache_index])
+			add_overlay(overlays_emissive_blockers[cache_index])

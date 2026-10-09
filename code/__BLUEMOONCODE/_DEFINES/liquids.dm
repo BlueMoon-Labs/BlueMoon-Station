@@ -27,6 +27,9 @@
 //Threshold at which the difference of height makes us need to climb/blocks movement/allows to fall down
 #define TURF_HEIGHT_BLOCK_THRESHOLD 20
 
+/// Укладка и выламывание плитки, которая утапливает пол ниже порога: из такой ямы не выйти шагом.
+#define SUNKEN_TILE_WORK_TIME (3 SECONDS)
+
 #define LIQUID_HEIGHT_DIVISOR 10
 
 #define ONE_LIQUIDS_HEIGHT LIQUID_HEIGHT_DIVISOR

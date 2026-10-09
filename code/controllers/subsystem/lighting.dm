@@ -183,11 +183,13 @@ SUBSYSTEM_DEF(lighting)
 	/// Снимок GLOB.all_light_sources для фазы 0 и курсор по нему.
 	var/list/teardown_sources
 	var/teardown_source_index = 0
-	/// Множество уже запаркованных атомов на время фазы 0: дедуп парковки за O(1).
-	var/list/teardown_parked_lookup
+	/// Множество уже запаркованных атомов на время фазы 0. alist: обычный list с атомами-ключами на 260k записей строится 11 с, alist - 42 мс.
+	var/alist/teardown_parked_lookup
 	/// Кэш турфов уровня для фаз 1-2 и курсор по нему.
 	var/list/teardown_turfs
 	var/teardown_turf_index = 0
+	/// TRUE на время qdel объекта света сносом: объект уходит мимо очереди GC (см. LIGHTING_TEARDOWN_GC_SAMPLE).
+	var/teardown_skip_gc_queue = FALSE
 	/// Счётчики для итоговой строки в лог.
 	var/teardown_parked = 0
 	var/teardown_objects = 0
@@ -472,7 +474,12 @@ SUBSYSTEM_DEF(lighting)
 		var/_cbz_len = length(clients_by_z)
 		z_has_clients = new /list(_cbz_len)
 		for(var/_zz in 1 to _cbz_len)
-			z_has_clients[_zz] = !!length(clients_by_z[_zz])
+			if(!length(clients_by_z[_zz]))
+				continue
+			//Этажи под клиентом видны сквозь дыры: их объекты света обновляются как видимые.
+			for(var/visible_z in SSmapping.get_levels_visible_from(_zz))
+				if(visible_z <= _cbz_len)
+					z_has_clients[visible_z] = TRUE
 	if(!init_tick_checks)
 		objects_cap = clamp(max(LIGHTING_OBJECTS_MIN_CAP, corners_done * LIGHTING_OBJECTS_CAP_MULT), LIGHTING_OBJECTS_MIN_CAP, LIGHTING_OBJECTS_HARD_CEILING)
 		// Proactive budget check: reduce cap if previous phases consumed most of the tick
@@ -898,7 +905,7 @@ SUBSYSTEM_DEF(lighting)
 			teardown_sources = GLOB.all_light_sources.Copy()
 			teardown_source_index = 1
 			// Дедуп через |= по самой отложке квадратичен: индекс строится один раз за снос.
-			teardown_parked_lookup = list()
+			teardown_parked_lookup = alist()
 			for(var/atom/parked as anything in GLOB.lighting_deferred_atoms)
 				teardown_parked_lookup[parked] = TRUE
 		// Снимок держит источники всего мира, поэтому тик-чек на каждой итерации, не только на снятом.
@@ -928,7 +935,9 @@ SUBSYSTEM_DEF(lighting)
 			var/turf/tile = teardown_turfs[teardown_turf_index++]
 			var/area/tile_area = tile.loc
 			if(tile.lighting_object && IS_DYNAMIC_LIGHTING(tile_area) && TURF_IS_DYNAMIC_LIGHTING(tile))
+				teardown_skip_gc_queue = (teardown_objects % LIGHTING_TEARDOWN_GC_SAMPLE) != 0
 				qdel(tile.lighting_object, force = TRUE)
+				teardown_skip_gc_queue = FALSE
 				tile.cached_lumcount = null
 				teardown_objects++
 			if(MC_TICK_CHECK)
@@ -1074,9 +1083,16 @@ SUBSYSTEM_DEF(lighting)
 		count++
 	return count
 
-/// Есть ли на z кто-то, ради кого свет уровня строят и держат: живой клиент - всегда,
-/// наблюдатель - только с включённой темнотой (см. ghost_holds_zlevel_lighting).
+/// Жилец этажа выше видит z сквозь дыры, поэтому держит его свет так же, как свой.
 /datum/controller/subsystem/lighting/proc/zlevel_has_occupant(z)
+	for(var/viewing_z in SSmapping.get_levels_viewing(z))
+		if(zlevel_has_own_occupant(viewing_z))
+			return TRUE
+	return FALSE
+
+/// Есть ли на самом z кто-то, ради кого свет уровня строят и держат: живой клиент - всегда,
+/// наблюдатель - только с включённой темнотой (см. ghost_holds_zlevel_lighting).
+/datum/controller/subsystem/lighting/proc/zlevel_has_own_occupant(z)
 	for(var/mob/occupant as anything in SSmobs.clients_on_zlevel(z))
 		if(!QDELETED(occupant))
 			return TRUE

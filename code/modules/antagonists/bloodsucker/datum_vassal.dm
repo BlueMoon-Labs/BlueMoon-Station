@@ -74,7 +74,7 @@
 		if(owner.enslaved_to == master.owner.current)
 			owner.set_enslaved_to(null)
 	// Master Pinpointer
-	owner.current.remove_status_effect(/datum/status_effect/agent_pinpointer/vassal_edition)
+	owner.current?.remove_status_effect(/datum/status_effect/agent_pinpointer/vassal_edition)
 	// Powers
 	while(powers.len)
 		var/datum/action/power = pick(powers)
@@ -85,8 +85,9 @@
 		objectives -= O
 		qdel(O)
 	objectives_given = list()
-	remove_thrall_eyes()
-	owner.current.remove_language(/datum/language/vampiric, source = LANGUAGE_VASSAL)
+	if(owner.current)
+		remove_thrall_eyes()
+		owner.current.remove_language(/datum/language/vampiric, source = LANGUAGE_VASSAL)
 	// Clear Antag HUD
 	update_vassal_icons_removed(owner.current)
 	owner.special_role = null // BLUEMOON ADD

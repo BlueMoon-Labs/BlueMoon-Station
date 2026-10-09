@@ -160,6 +160,38 @@
 	L.default_toggle_sprint()
 	return TRUE
 
+/datum/keybinding/living/look_vertically
+	category = CATEGORY_MOVEMENT
+	var/look_direction
+
+/// Без проверки сознания: отпускание клавиши должно доходить и до потерявшего сознание.
+/datum/keybinding/living/look_vertically/can_use(client/user)
+	return isliving(user.mob)
+
+/datum/keybinding/living/look_vertically/down(client/user)
+	var/mob/living/looker = user.mob
+	looker.look_vertically(look_direction)
+	return TRUE
+
+/datum/keybinding/living/look_vertically/up(client/user)
+	var/mob/living/looker = user.mob
+	looker.end_look()
+	return TRUE
+
+/datum/keybinding/living/look_vertically/up_level
+	hotkey_keys = list("P")
+	name = "look_up"
+	full_name = "Посмотреть вверх"
+	description = "Пока клавиша зажата, вы смотрите на этаж выше сквозь дыру в потолке над собой или рядом."
+	look_direction = UP
+
+/datum/keybinding/living/look_vertically/down_level
+	hotkey_keys = list(";")
+	name = "look_down"
+	full_name = "Посмотреть вниз"
+	description = "Пока клавиша зажата, вы смотрите на этаж ниже сквозь дыру в полу под собой или рядом."
+	look_direction = DOWN
+
 /datum/keybinding/mob/toggle_move_intent
 	hotkey_keys = list("Alt")
 	name = "toggle_move_intent"

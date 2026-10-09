@@ -448,6 +448,8 @@
 #define CORRUPTED_SYSTEM "corrupted-system"
 ///Turf trait for when a turf is transparent
 #define TURF_Z_TRANSPARENT_TRAIT "turf_z_transparent"
+/// Вис-ребёнок без своего loc живёт на этаже носителя, см. /atom/movable/proc/add_vis_on_floor()
+#define TRAIT_VIS_ON_CARRIER_FLOOR "vis_on_carrier_floor"
 /// This trait is added by the active directional block system.
 #define ACTIVE_BLOCK_TRAIT				"active_block"
 /// This trait is added by the parry system.

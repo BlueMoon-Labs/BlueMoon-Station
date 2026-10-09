@@ -17,8 +17,12 @@
 	if(autopasskey)
 		if(data["encrypted_passkey"] && !passkey)
 			var/result = XorEncrypt(hextostr(data["encrypted_passkey"], TRUE), SScircuit.cipherkey)
+			// Пин схемы несёт то, что ввёл игрок: мусорный ключ - обычный ввод, а не ошибка.
 			if(length(result) > 1)
-				passkey = json_decode(XorEncrypt(hextostr(data["encrypted_passkey"], TRUE), SScircuit.cipherkey))
+				try
+					passkey = json_decode(result)
+				catch
+					passkey = null
 
 			// Encrypt the passkey.
 			if(!data["encrypted_passkey"] && passkey)

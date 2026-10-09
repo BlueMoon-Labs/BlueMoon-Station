@@ -18,7 +18,10 @@
 	add_movespeed_modifier(/datum/movespeed_modifier/carbon_crawling)
 	register_context()
 	breath_buffer = new
-	breathing_loop = new(src, _direct = TRUE)
+	// _direct = FALSE: звук идёт через playsound() от моба, а не SEND_SOUND'ом напрямую
+	// в его клиент — иначе дышащего в баллоне слышит только он сам. vary/pressure_affected
+	// из /datum/looping_sound/breathing в прямом пути вообще не работают.
+	breathing_loop = new(src, _direct = FALSE)
 
 /mob/living/carbon/Destroy()
 	//This must be done first, so the mob ghosts correctly before DNA etc is nulled
@@ -471,7 +474,7 @@
 			W.dropped(src)
 			if (W)
 				W.layer = initial(W.layer)
-				W.plane = initial(W.plane)
+				RESET_PLANE_EXPLICIT(W, W)
 		SetNextAction(0)
 	if (legcuffed)
 		var/obj/item/W = legcuffed
@@ -483,7 +486,7 @@
 			W.dropped(src)
 			if (W)
 				W.layer = initial(W.layer)
-				W.plane = initial(W.plane)
+				RESET_PLANE_EXPLICIT(W, W)
 		SetNextAction(0)
 	update_equipment_speed_mods() // In case cuffs ever change speed
 
@@ -1254,10 +1257,6 @@
  * возвращается из конструктора уже qdel-нутой. Вычищать её было некому:
  * handle_stomach() перебирал только /mob/living. Раунд 9813 - 20 конфетти
  * одним тиком, каждое с одной внешней ссылкой.
- *
- * Подписки на COMSIG_PARENT_QDELETING тут быть не может: ключ (цель, сигнал,
- * слушатель) уже занят clear_from_recent_examines, и override молча выбил бы
- * чужой обработчик у только что осмотренного и съеденного моба.
  */
 /mob/living/carbon/proc/add_to_stomach(atom/movable/swallowed)
 	if(QDELETED(swallowed) || (swallowed in stomach_contents))

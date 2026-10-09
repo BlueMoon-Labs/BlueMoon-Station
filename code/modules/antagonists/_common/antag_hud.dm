@@ -30,6 +30,8 @@
 //GAME_MODE PROCS
 //called to set a mob's antag icon state
 /proc/set_antag_hud(mob/M, new_icon_state)
+	if(!M)
+		return
 	if(!istype(M))
 		CRASH("set_antag_hud(): [M] ([M.type]) is not a mob!")
 	var/image/holder = M.hud_list[ANTAG_HUD]

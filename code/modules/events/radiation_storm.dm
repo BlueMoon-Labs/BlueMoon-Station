@@ -15,7 +15,10 @@
 	announce_when	= 1
 
 /datum/round_event/radiation_storm/announce(fake)
-	priority_announce("Вблизи станции обнаружены высокие уровни радиации. Технические тоннели лучше всего защищены от излучения.", "ВНИМАНИЕ: АНОМАЛИЯ", "radiation", has_important_message = TRUE)
+	var/shelter_hint = "Технические тоннели лучше всего защищены от излучения."
+	if(locate(/area/icemoon/underground) in GLOB.sortedAreas)
+		shelter_hint += " Подземные пещеры планеты тоже укрывают от излучения."
+	priority_announce("Вблизи станции обнаружены высокие уровни радиации. [shelter_hint]", "ВНИМАНИЕ: АНОМАЛИЯ", "radiation", has_important_message = TRUE)
 	//sound not longer matches the text, but an audible warning is probably good
 
 /datum/round_event/radiation_storm/start()

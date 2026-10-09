@@ -34,7 +34,7 @@
 	name = ".45 ACP"
 	damage = 22
 	stamina = 0
-	armour_penetration = BULLET_BR5 //чуть выше стандартной НЕ ап втшки
+	armour_penetration = BULLET_BR6 //чуть выше стандартной НЕ ап втшки
 	sharpness = SHARP_EDGED
 
 /obj/item/projectile/bullet/c45/trac

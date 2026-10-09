@@ -1,0 +1,117 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/machinery/light/warm/directional/south,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 5
+	},
+/turf/open/floor/plating/ashplanet/wateryrock{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15";
+	planetary_atmos = 0
+	},
+/area/maintenance/aft/upper)
+"b" = (
+/mob/living/simple_animal/hostile/lizard{
+	name = "axolotl";
+	real_name = "axolotl";
+	desc = "Quite the colorful amphibian!";
+	color = list(0.57,0.35,0.41, 1.12,0.69,0.81, 0.21,0.13,0.15, 0.12,0.07,0.08)
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
+/turf/open/floor/plating/ashplanet/wateryrock{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15";
+	planetary_atmos = 0
+	},
+/area/maintenance/aft/upper)
+"h" = (
+/obj/structure/flora/rock/jungle,
+/turf/open/water/safe,
+/area/maintenance/aft/upper)
+"o" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 9
+	},
+/turf/open/floor/plating/ashplanet/wateryrock{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15";
+	planetary_atmos = 0
+	},
+/area/maintenance/aft/upper)
+"x" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 10
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 6
+	},
+/obj/modular_map_connector,
+/turf/open/floor/plating/ashplanet/wateryrock{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15";
+	planetary_atmos = 0
+	},
+/area/maintenance/aft/upper)
+"C" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/plating/ashplanet/wateryrock{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15";
+	planetary_atmos = 0
+	},
+/area/maintenance/aft/upper)
+"O" = (
+/turf/open/water/safe,
+/area/maintenance/aft/upper)
+"P" = (
+/mob/living/simple_animal/hostile/lizard{
+	name = "axolotl";
+	real_name = "axolotl";
+	desc = "Quite the colorful amphibian!";
+	color = list(0.57,0.35,0.41, 1.12,0.69,0.81, 0.21,0.13,0.15, 0.12,0.07,0.08)
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/plating/ashplanet/wateryrock{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15";
+	planetary_atmos = 0
+	},
+/area/maintenance/aft/upper)
+"Q" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
+/obj/structure/flora/rock/jungle,
+/turf/open/water/safe,
+/area/maintenance/aft/upper)
+"S" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/turf/open/floor/plating/ashplanet/wateryrock{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15";
+	planetary_atmos = 0
+	},
+/area/maintenance/aft/upper)
+"W" = (
+/mob/living/simple_animal/hostile/lizard{
+	name = "axolotl";
+	real_name = "axolotl";
+	desc = "Quite the colorful amphibian!";
+	color = list(0.57,0.35,0.41, 1.12,0.69,0.81, 0.21,0.13,0.15, 0.12,0.07,0.08)
+	},
+/turf/open/water/safe,
+/area/maintenance/aft/upper)
+
+(1,1,1) = {"
+S
+b
+a
+"}
+(2,1,1) = {"
+h
+O
+x
+"}
+(3,1,1) = {"
+O
+W
+C
+"}
+(4,1,1) = {"
+P
+Q
+o
+"}

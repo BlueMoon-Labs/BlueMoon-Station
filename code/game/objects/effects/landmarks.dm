@@ -47,6 +47,11 @@ INITIALIZE_IMMEDIATE(/obj/effect/landmark)
 /obj/effect/landmark/start/Initialize(mapload)
 	. = ..()
 	GLOB.start_landmarks_list += src
+#ifdef UNIT_TESTS
+	if(!SSticker.HasRoundStarted())
+		LAZYORASSOCLIST(GLOB.unit_test_start_landmark_areas, type, get_area(src))
+		LAZYADDASSOCLIST(GLOB.unit_test_start_landmark_turfs, type, get_turf(src))
+#endif
 	if(jobspawn_override)
 		if(!GLOB.jobspawn_overrides[name])
 			GLOB.jobspawn_overrides[name] = list()
@@ -187,7 +192,7 @@ INITIALIZE_IMMEDIATE(/obj/effect/landmark)
 	icon_state = "Research Director"
 
 /obj/effect/landmark/start/expeditor
-	name = "Expeditor"
+	name = "Vanguard Operative"
 	icon_state = "Research Director"
 
 /obj/effect/landmark/start/geneticist
@@ -596,7 +601,7 @@ INITIALIZE_IMMEDIATE(/obj/effect/landmark/start/new_player)
 	name = "hangover spawn"
 	icon_state = "hangover_spawn"
 
-	/// A list of everything this hangover spawn created
+	/// Weakref на разложенный точкой мусор: персистенс сносит его ещё до раунда, пока точка жива.
 	var/list/debris = list()
 
 /obj/effect/landmark/start/hangover/Initialize(mapload)
@@ -612,7 +617,7 @@ INITIALIZE_IMMEDIATE(/obj/effect/landmark/start/new_player)
 	if(!HAS_TRAIT(SSstation, STATION_TRAIT_HANGOVER))
 		return
 	if(prob(60))
-		debris += new /obj/effect/decal/cleanable/vomit(get_turf(src))
+		debris += WEAKREF(new /obj/effect/decal/cleanable/vomit(get_turf(src)))
 	if(prob(70))
 		var/bottle_count = rand(1, 3)
 		for(var/index in 1 to bottle_count)
@@ -626,7 +631,7 @@ INITIALIZE_IMMEDIATE(/obj/effect/landmark/start/new_player)
 					break
 			if(dense_object)
 				continue
-			debris += new /obj/item/reagent_containers/food/drinks/beer/almost_empty(turf_to_spawn_on)
+			debris += WEAKREF(new /obj/item/reagent_containers/food/drinks/beer/almost_empty(turf_to_spawn_on))
 
 ///Spawns the mob with some drugginess/drunkeness, and some disgust.
 /obj/effect/landmark/start/hangover/proc/make_hungover(mob/hangover_mob)

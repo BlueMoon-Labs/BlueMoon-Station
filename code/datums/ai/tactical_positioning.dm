@@ -94,6 +94,7 @@
 		threats |= current
 	blackboard[BB_AI_THREAT_CACHE] = threats
 	blackboard[BB_AI_THREAT_CACHE_AT] = world.time
+	queue_tactical_cache_flush()
 	return threats
 
 ///Ближние союзники (свои AI-мобы одной фракции) для разноса огневых позиций:
@@ -118,7 +119,25 @@
 	blackboard[BB_AI_ALLY_CACHE] = allies
 	blackboard[BB_AI_ALLY_CACHE_AT] = world.time
 	blackboard[BB_AI_ALLY_CACHE_RANGE] = radius
+	queue_tactical_cache_flush()
 	return allies
+
+/// Кэши угроз и союзников блэкборд не отслеживает, поэтому они живут не дольше тика
+GLOBAL_LIST_EMPTY(ai_tactical_cache_owners)
+GLOBAL_VAR_INIT(ai_tactical_cache_flush_queued, FALSE)
+
+/datum/ai_controller/proc/queue_tactical_cache_flush()
+	GLOB.ai_tactical_cache_owners[src] = TRUE
+	if(GLOB.ai_tactical_cache_flush_queued)
+		return
+	GLOB.ai_tactical_cache_flush_queued = TRUE
+	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(flush_ai_tactical_caches)), world.tick_lag)
+
+/proc/flush_ai_tactical_caches()
+	GLOB.ai_tactical_cache_flush_queued = FALSE
+	for(var/datum/ai_controller/controller as anything in GLOB.ai_tactical_cache_owners)
+		controller.blackboard -= list(BB_AI_THREAT_CACHE, BB_AI_ALLY_CACHE)
+	GLOB.ai_tactical_cache_owners.Cut()
 
 ///Лучший огневой тайл среди 8 соседей плюс текущий; текущий держится, если
 ///проигрывает лидеру меньше AI_HOLD_TOLERANCE (анти-джиттер / удержание позиции).

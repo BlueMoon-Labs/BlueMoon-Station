@@ -612,7 +612,7 @@
 		for(var/i = src.magazine.stored_ammo.len; i > 0; i--)
 			var/obj/item/ammo_casing/CB = src.magazine.stored_ammo[i]
 			if(CB)
-				src.magazine.stored_ammo -= CB
+				src.magazine.stored_ammo[i] = null
 				CB.forceMove(src.drop_location())
 				CB.bounce_away(FALSE, NONE)
 				reloaded_any = TRUE 
@@ -623,7 +623,7 @@
 		for(var/i = offhand_rev.magazine.stored_ammo.len; i > 0; i--)
 			var/obj/item/ammo_casing/CB = offhand_rev.magazine.stored_ammo[i]
 			if(CB)
-				offhand_rev.magazine.stored_ammo -= CB
+				offhand_rev.magazine.stored_ammo[i] = null
 				CB.forceMove(offhand_rev.drop_location())
 				CB.bounce_away(FALSE, NONE)
 				reloaded_any = TRUE
@@ -640,19 +640,12 @@
 	for(var/obj/item/ammo_casing/bullet in bullets_in_belt)
 		
 		// Заряжает основной револьвер, пока в барабане есть место
-		if(src.magazine && src.magazine.stored_ammo.len < src.magazine.max_ammo)
-			// Физически переносим патрон с пояса внутрь магазина револьвера
-			bullet.forceMove(src.magazine)
-			if(src.magazine.stored_ammo)
-				src.magazine.stored_ammo.Add(bullet) // Добавляем патрон в список Сплюрта
+		if(src.magazine?.give_round(bullet))
 			actual_reload_success = TRUE
 			continue // Берем следующий патрон из пояса
 
 		// Если основной полный, заряжаем левый револьвер
-		if(offhand_rev && offhand_rev.magazine && offhand_rev.magazine.stored_ammo.len < offhand_rev.magazine.max_ammo)
-			bullet.forceMove(offhand_rev.magazine)
-			if(offhand_rev.magazine.stored_ammo)
-				offhand_rev.magazine.stored_ammo.Add(bullet)
+		if(offhand_rev.magazine?.give_round(bullet))
 			actual_reload_success = TRUE
 			continue
 
@@ -811,7 +804,6 @@
 		l_arm.receive_damage(brute = 15, burn = 0, wound_bonus = 0)
 		var/datum/wound/blunt/moderate/left_dislocation = new
 		left_dislocation.apply_wound(l_arm)
-		l_arm.vars["dislocated"] = TRUE
 		if(hasvar(l_arm, "enabled"))
 			l_arm.vars["enabled"] = FALSE
 		l_arm.update_appearance()

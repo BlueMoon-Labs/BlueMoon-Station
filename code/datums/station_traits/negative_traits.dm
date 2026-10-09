@@ -59,7 +59,9 @@
 
 /datum/station_trait/hangover/revert()
 	for (var/obj/effect/landmark/start/hangover/hangover_spot in GLOB.start_landmarks_list)
-		QDEL_LIST(hangover_spot.debris)
+		for(var/datum/weakref/debris_ref as anything in hangover_spot.debris)
+			qdel(debris_ref.resolve())
+		hangover_spot.debris.Cut()
 
 	return ..()
 

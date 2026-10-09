@@ -307,6 +307,18 @@
 #define BB_AI_OBSTACLE_POLICY "BB_ai_obstacle_policy"
 ///Типкэш объектов, которые МОЖНО ломать на пути (null = любые плотные)
 #define BB_AI_OBSTACLE_WHITELIST "BB_ai_obstacle_whitelist"
+///Слабая ссылка на преграду, по которой моб бьёт сейчас
+#define BB_AI_SMASH_BLOCKER "BB_ai_smash_blocker"
+///Сколько ударов подряд ушло в эту преграду
+#define BB_AI_SMASH_ATTEMPTS "BB_ai_smash_attempts"
+///Брошенные преграды: слабая ссылка -> world.time, до которого их не трогать
+#define BB_AI_ABANDONED_OBSTACLES "BB_ai_abandoned_obstacles"
+///Преграду, на которую нужно больше ударов, моб не ломает, а ищет другой путь
+#define AI_OBSTACLE_MAX_SMASH_HITS 15
+///Столько ударов подряд по одной преграде - и моб сдаётся: её урон не виден оценке (иммунитет, ремонт)
+#define AI_OBSTACLE_SMASH_ATTEMPT_LIMIT 20
+///Сколько брошенная преграда не рассматривается ни маршрутом, ни ударом
+#define AI_OBSTACLE_ABANDON_TIME (2 MINUTES)
 
 // ===== Тактические сабтри =====
 

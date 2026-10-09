@@ -22,16 +22,17 @@
 /datum/techweb_node/advanced_weaponry
 	id = "advanced_weaponry"
 	display_name = "advanced weaponry theory"
-	description = "Impresive new technoligies, just in theory."
+	description = "Невероятные новые технологии, только в теории"
 	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
 	prereq_ids = list("adv_weaponry")
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
-	hidden = TRUE // Оставляю пустую ноду на будущие, буду использовать эту отправную точку для всех новых улучшений
+	design_ids = list("mk60")
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
+/* 	hidden = TRUE // Оставляю пустую ноду на будущие, буду использовать эту отправную точку для всех новых улучшений
 
 /datum/techweb_node/advanced_weaponry/New()
 	. = ..()
 	boost_item_paths = typesof(/obj/item/disk/weapon_blueprint)
-
+ */
 /////////////////////////////
 //Enforcer MK59-MK62 design//
 /////////////////////////////
@@ -44,31 +45,31 @@
 //	prereq_ids = list("advanced_weaponry", "adv_weaponry")
 //	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
 
-/datum/techweb_node/mk60
+/* /datum/techweb_node/mk60
 	id = "mk60"
 	display_name = "Advanced guidance systems."
 	description = "Replacing the bolt carrier with an improved one with a pre-installed collimator sight."
 	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
 	design_ids = list("mk60")
 	prereq_ids = list("advanced_weaponry", "adv_weaponry")
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 7500)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 7500) */
 
 /datum/techweb_node/mk62
 	id = "mk62"
-	display_name = "Advanced gas extraction system."
-	description = "Replacing the receiver, which converts the enforcer from a pistol to a submachine gun."
+	display_name = "Advanced guidance systems."
+	description = "Замена затворной рамы на усовершенствованную с предустановленным коллиматорным прицелом"
 	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
 	design_ids = list("mk62")
-	prereq_ids = list("mk60")
+	prereq_ids = list("advanced_weaponry")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 10000)
 
 /datum/techweb_node/vector
 	id = "vector"
 	display_name = "Advanced gas extraction system."
-	description = "A gift from Ligt Gear & Balistic Tech. Mostly - just whole new gun in a pack."
+	description = "Подарок от Ligt Gear & Balistic Tech. В основном - просто совершенно другая пушка в упаковке."
 	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
 	design_ids = list("vector")
-	prereq_ids = list("mk60")
+	prereq_ids = list("advanced_weaponry")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 10000)
 
 /datum/techweb_node/jager
@@ -77,7 +78,7 @@
 	description = "Kill some maintcrowlers with that bad boy!."
 	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
 	design_ids = list("jager", "jaeger_mag")
-	prereq_ids = list("advanced_weaponry", "adv_weaponry")
+	prereq_ids = list("advanced_weaponry")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 7500)
 //////////////////
 //MWS-01 design//

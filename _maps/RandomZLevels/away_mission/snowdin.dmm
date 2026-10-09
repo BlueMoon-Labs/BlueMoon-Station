@@ -1857,7 +1857,7 @@
 "em" = (
 /obj/machinery/power/apc{
 	name = "Gateway APC";
-	pixel_y = -24;
+	pixel_y = -23;
 	req_access = 150
 	},
 /obj/structure/cable/yellow{

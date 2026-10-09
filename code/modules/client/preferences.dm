@@ -381,6 +381,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	var/ambientocclusion = TRUE
 	var/lighting_blur = LIGHTING_BLUR_DEFAULT
+	var/multiz_performance = MULTIZ_PERFORMANCE_DISABLE
+	var/multiz_parallax = TRUE
 	var/lighting_brightness = LIGHTING_BRIGHTNESS_DEFAULT
 	var/lighting_lamp_brightness = LIGHTING_LAMP_BRIGHTNESS_DEFAULT
 	var/lighting_bloom_intensity = LIGHTING_BLOOM_INTENSITY_DEFAULT
@@ -627,6 +629,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	// ссылку на префы - живой хендлер превращает наш снос в харддел.
 	QDEL_NULL(offer)
 	QDEL_NULL(loadout_color_handler)
+	QDEL_NULL(job_menu)
 	// GLOB.preferences_datums держит датум по ckey: удалённый, но не вычеркнутый оттуда
 	// датум ушёл бы в харддел, а следующий вход этого ckey получил бы труп.
 	for(var/registered_ckey in GLOB.preferences_datums)
@@ -2088,6 +2091,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 								dat += "<a style='display:block;width:50px' href='?_src_=prefs;preference=balls_fluid;task=input'>[balls_fluid.name]</a>"
 							else
 								dat += "<a style='display:block;width:50px' href='?_src_=prefs;preference=balls_fluid;task=input'>Nothing?</a>"
+							dat += "<b>Max Cum Output:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=balls_cum_max;task=input'>[features["balls_cum_max"] ? features["balls_cum_max"] : "Default"]</a>"
+							dat += "<b>Fluid Restoration Rate:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=balls_cum_rate;task=input'>[features["balls_cum_rate"] != CUM_RATE ? features["balls_cum_rate"] : "Default"]</a>"
 							//SPLURT Edit end
 
 						dat += "</td>"
@@ -2774,150 +2779,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	popup.open(FALSE)
 	onclose(user, "capturekeypress", src)
 
-/datum/preferences/proc/SetChoices(mob/user, limit = 17, list/splitJobs = list("Research Director", "Head of Personnel"), widthPerColumn = 295, height = 620) // BLUEMOON CHANGES - splitjob
+/datum/preferences/proc/SetChoices(mob/user)
 	if(!SSjob)
 		return
 	if(!ismob(user) || !user.client?.prefs)
 		return
-
-	//limit - The amount of jobs allowed per column. Defaults to 17 to make it look nice.
-	//splitJobs - Allows you split the table by job. You can make different tables for each department by including their heads. Defaults to CE to make it look nice.
-	//widthPerColumn - Screen's width for every column.
-	//height - Screen's height.
-
-	var/width = widthPerColumn
-
-	var/HTML = "<center>"
-	if(SSjob.occupations.len <= 0)
-		HTML += "The job SSticker is not yet finished creating jobs, please try again later"
-		HTML += "<center><a href='?_src_=prefs;preference=job;task=close'>Done</a></center><br>" // Easier to press up here.
-
-	else
-		HTML += "<b>Choose occupation chances</b><br>"
-		HTML += "<div align='center'>Left-click to raise an occupation preference, right-click to lower it.<br></div>"
-		HTML += "<center><a href='?_src_=prefs;preference=job;task=close'>Done</a></center><br>" // Easier to press up here.
-		HTML += "<script type='text/javascript'>function setJobPrefRedirect(level, rank) { window.location.href='?_src_=prefs;preference=job;task=setJobLevel;level=' + level + ';text=' + encodeURIComponent(rank); return false; }</script>"
-		HTML += "<table width='100%' cellpadding='1' cellspacing='0'><tr><td width='20%'>" // Table within a table for alignment, also allows you to easily add more colomns.
-		HTML += "<table width='100%' cellpadding='1' cellspacing='0'>"
-		var/index = -1
-
-		//The job before the current job. I only use this to get the previous jobs color when I'm filling in blank rows.
-		var/datum/job/lastJob
-
-		for(var/datum/job/job in sort_list(SSjob.occupations, GLOBAL_PROC_REF(cmp_job_display_asc)))
-
-			index += 1
-			if((index >= limit) || (job.title in splitJobs))
-				width += widthPerColumn
-				if((index < limit) && (lastJob != null))
-					//If the cells were broken up by a job in the splitJob list then it will fill in the rest of the cells with
-					//the last job's selection color. Creating a rather nice effect.
-					for(var/i = 0, i < (limit - index), i += 1)
-						HTML += "<tr bgcolor='[lastJob.selection_color]'><td width='60%' align='right'>&nbsp</td><td>&nbsp</td></tr>"
-				HTML += "</table></td><td width='20%'><table width='100%' cellpadding='1' cellspacing='0'>"
-				index = 0
-
-			HTML += "<tr bgcolor='[job.selection_color]'><td width='60%' align='right'>"
-			var/rank = job.title
-			var/displayed_rank = rank
-			if(job.alt_titles.len && (rank in alt_titles_preferences))
-				displayed_rank = alt_titles_preferences[rank]
-			lastJob = job
-			if(jobban_isbanned(user, rank))
-				HTML += "<font color=\"#000000\">[rank]</font></td><td><a href='?_src_=prefs;bancheck=[rank]'> BANNED</a></td></tr>"
-				continue
-			var/required_playtime_remaining = job.required_playtime_remaining(user.client)
-			if(required_playtime_remaining)
-				HTML += "<font color=\"#000000\">[rank]</font></td><td><font color=\"#000000\"> \[ [get_exp_format(required_playtime_remaining)] as [job.get_exp_req_type()] \] </font></td></tr>"
-				continue
-			if(!job.player_old_enough(user.client))
-				var/available_in_days = job.available_in_days(user.client)
-				HTML += "<font color=\"#000000\">[rank]</font></td><td><font color=\"#000000\"> \[IN [(available_in_days)] DAYS\]</font></td></tr>"
-				continue
-			if(!user.client.prefs.pref_species.qualifies_for_rank(rank, user.client.prefs.features))
-				if(user.client.prefs.pref_species.id == "human")
-					HTML += "<font color=\"#000000\">[rank]</font></td><td><font color=\"#000000\"><b> \[MUTANT\]</b></font></td></tr>"
-				else
-					HTML += "<font color=\"#000000\">[rank]</font></td><td><font color=\"#000000\"><b> \[NON-HUMAN\]</b></font></td></tr>"
-				continue
-			//BLUE MOON ADDITION - XENO SUPREMACY - START
-			if(job.is_species_blacklisted(user.client))
-				HTML += "<font color=\"#000000\">[rank]</font></td><td><font color=\"#000000\"><b> \[SPECIES BLACKLISTED\]</b></font></td></tr>"
-				continue
-			//BLUE MOON ADDITION - XENO SUPREMACY - END
-			if((job_preferences["[SSjob.overflow_role]"] == JP_LOW) && (rank != SSjob.overflow_role) && !jobban_isbanned(user, SSjob.overflow_role))
-				HTML += "<font color=\"#000000\">[rank]</font></td><td></td></tr>"
-				continue
-			var/rank_title_line = "[displayed_rank]"
-			if((rank in GLOB.command_positions) || (rank == "AI"))//Bold head jobs
-				rank_title_line = "<b>[rank_title_line]</b>"
-			if(job.alt_titles.len)
-				rank_title_line = "<a href='?_src_=prefs;preference=job;task=alt_title;job_title=[job.title]'>[rank_title_line]</a>"
-
-			else
-				rank_title_line = "<span class='dark'>[rank_title_line]</span>" //Make it dark if we're not adding a button for alt titles
-			HTML += rank_title_line
-
-			HTML += "</td><td width='40%'>"
-
-			var/prefLevelLabel = "ERROR"
-			var/prefLevelColor = "pink"
-			var/prefUpperLevel = -1 // level to assign on left click
-			var/prefLowerLevel = -1 // level to assign on right click
-
-			switch(job_preferences["[job.title]"])
-				if(JP_HIGH)
-					prefLevelLabel = "High"
-					prefLevelColor = "slateblue"
-					prefUpperLevel = 4
-					prefLowerLevel = 2
-				if(JP_MEDIUM)
-					prefLevelLabel = "Medium"
-					prefLevelColor = "green"
-					prefUpperLevel = 1
-					prefLowerLevel = 3
-				if(JP_LOW)
-					prefLevelLabel = "Low"
-					prefLevelColor = "orange"
-					prefUpperLevel = 2
-					prefLowerLevel = 4
-				else
-					prefLevelLabel = "NEVER"
-					prefLevelColor = "red"
-					prefUpperLevel = 3
-					prefLowerLevel = 1
-
-			HTML += "<a class='white' href='?_src_=prefs;preference=job;task=setJobLevel;level=[prefUpperLevel];text=[rank]' oncontextmenu='javascript:return setJobPrefRedirect([prefLowerLevel], \"[rank]\");'>"
-
-			if(rank == SSjob.overflow_role)//Overflow is special
-				if(job_preferences["[SSjob.overflow_role]"] == JP_LOW)
-					HTML += "<font color=green>Yes</font>"
-				else
-					HTML += "<font color=red>No</font>"
-				HTML += "</a></td></tr>"
-				continue
-
-			HTML += "<font color=[prefLevelColor]>[prefLevelLabel]</font>"
-			HTML += "</a></td></tr>"
-
-		for(var/i = 1, i < (limit - index), i += 1) // Finish the column so it is even
-			HTML += "<tr bgcolor='[lastJob.selection_color]'><td width='60%' align='right'>&nbsp</td><td>&nbsp</td></tr>"
-
-		HTML += "</td'></tr></table>"
-		HTML += "</center></table>"
-
-		var/message = "Be an [SSjob.overflow_role] if preferences unavailable"
-		if(joblessrole == BERANDOMJOB)
-			message = "Get random job if preferences unavailable"
-		else if(joblessrole == RETURNTOLOBBY)
-			message = "Return to lobby if preferences unavailable"
-		HTML += "<center><br><a href='?_src_=prefs;preference=job;task=random'>[message]</a></center>"
-		HTML += "<center><a href='?_src_=prefs;preference=job;task=reset'>Reset Preferences</a></center>"
-
-	var/datum/browser/popup = new(user, "mob_occupation", "<div align='center'>Occupation Preferences</div>", width, height)
-	popup.set_window_options("can_close=0")
-	popup.set_content(HTML)
-	popup.open(FALSE)
+	open_job_menu(user) // думаем
 
 /datum/preferences/proc/SetJobPreferenceLevel(datum/job/job, level)
 	if (!job)
@@ -2932,42 +2799,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	job_preferences["[job.title]"] = level
 	return TRUE
-
-/datum/preferences/proc/UpdateJobPreference(mob/user, role, desiredLvl)
-	if(!SSjob || SSjob.occupations.len <= 0)
-		return
-	var/datum/job/job = SSjob.GetJob(role)
-
-	if(!job)
-		user << browse(null, "window=mob_occupation")
-		ShowChoices(user)
-		return
-
-	if (!isnum(desiredLvl))
-		to_chat(user, "<span class='danger'>UpdateJobPreference - desired level was not a number. Please notify coders!</span>")
-		ShowChoices(user)
-		return
-
-	var/jpval = null
-	switch(desiredLvl)
-		if(3)
-			jpval = JP_LOW
-		if(2)
-			jpval = JP_MEDIUM
-		if(1)
-			jpval = JP_HIGH
-
-	if(role == SSjob.overflow_role)
-		if(job_preferences["[job.title]"] == JP_LOW)
-			jpval = null
-		else
-			jpval = JP_LOW
-
-	SetJobPreferenceLevel(job, jpval)
-	SetChoices(user)
-
-	return TRUE
-
 
 /datum/preferences/proc/ResetJobs()
 	job_preferences = list()
@@ -3478,44 +3309,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		return TRUE
 
 	if(href_list["preference"] == "job")
-		switch(href_list["task"])
-			if("close")
-				user << browse(null, "window=mob_occupation")
-				ShowChoices(user)
-			if("reset")
-				ResetJobs()
-				SetChoices(user)
-			if("random")
-				switch(joblessrole)
-					if(RETURNTOLOBBY)
-						if(jobban_isbanned(user, SSjob.overflow_role))
-							joblessrole = BERANDOMJOB
-						else
-							joblessrole = BEOVERFLOW
-					if(BEOVERFLOW)
-						joblessrole = BERANDOMJOB
-					if(BERANDOMJOB)
-						joblessrole = RETURNTOLOBBY
-				SetChoices(user)
-			if("setJobLevel")
-				UpdateJobPreference(user, href_list["text"], text2num(href_list["level"]))
-			if("alt_title")
-				var/job_title = href_list["job_title"]
-				var/titles_list = list(job_title)
-				var/datum/job/J = SSjob.GetJob(job_title)
-				for(var/i in J.alt_titles)
-					titles_list += i
-				var/chosen_title
-				chosen_title = tgui_input_list(user, "Choose your job's title:", "Job Preference", titles_list)
-				if(chosen_title)
-					if(chosen_title == job_title)
-						if(alt_titles_preferences[job_title])
-							alt_titles_preferences.Remove(job_title)
-					else
-						alt_titles_preferences[job_title] = chosen_title
-				SetChoices(user)
-			else
-				SetChoices(user)
+		SetChoices(user)
 		return TRUE
 
 	else if(href_list["preference"] == "trait")
@@ -3880,7 +3674,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("hair_style")
 					var/new_hair_style
-					new_hair_style = tgui_input_list(user, "Choose your character's hair style:", "Character Preference", GLOB.hair_styles_list)
+					new_hair_style = tgui_input_list(user, "Choose your character's hair style:", "Character Preference", filter_accessories_by_ckey(GLOB.hair_styles_list, user.client.ckey))
 					if(new_hair_style)
 						hair_style = new_hair_style
 
@@ -3897,7 +3691,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("facial_hair_style")
 					var/new_facial_hair_style
-					new_facial_hair_style = tgui_input_list(user, "Choose your character's facial-hair style:", "Character Preference", GLOB.facial_hair_styles_list)
+					new_facial_hair_style = tgui_input_list(user, "Choose your character's facial-hair style:", "Character Preference", filter_accessories_by_ckey(GLOB.facial_hair_styles_list, user.client.ckey))
 					if(new_facial_hair_style)
 						facial_hair_style = new_facial_hair_style
 
@@ -3914,7 +3708,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("grad_style")
 					var/new_grad_style
-					new_grad_style = tgui_input_list(user, "Choose your character's hair gradient style:", "Character Preference", GLOB.hair_gradients_list)
+					new_grad_style = tgui_input_list(user, "Choose your character's hair gradient style:", "Character Preference", filter_accessories_by_ckey(GLOB.hair_gradients_list, user.client.ckey))
 					if(new_grad_style)
 						grad_style = new_grad_style
 
@@ -4291,7 +4085,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("ipc_screen")
 					var/new_ipc_screen
-					new_ipc_screen = tgui_input_list(user, "Choose your character's screen:", "Character Preference", GLOB.ipc_screens_list)
+					new_ipc_screen = tgui_input_list(user, "Choose your character's screen:", "Character Preference", filter_accessories_by_ckey(GLOB.ipc_screens_list, user.client.ckey))
 					if(new_ipc_screen)
 						features["ipc_screen"] = new_ipc_screen
 
@@ -4304,7 +4098,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							var/datum/sprite_accessory/S = instance
 							if(!show_mismatched_markings && S.recommended_species && !S.recommended_species.Find(pref_species.id))
 								continue
-							if((!S.ckeys_allowed) || (S.ckeys_allowed.Find(user.client.ckey)))
+							if(S.is_allowed_for(user.client.ckey))
 								snowflake_antenna_list[S.name] = path
 					var/new_ipc_antenna
 					new_ipc_antenna = tgui_input_list(user, "Choose your character's antenna:", "Character Preference", snowflake_antenna_list)
@@ -4313,25 +4107,25 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("arachnid_legs")
 					var/new_arachnid_legs
-					new_arachnid_legs = tgui_input_list(user, "Choose your character's variant of arachnid legs:", "Character Preference", GLOB.arachnid_legs_list)
+					new_arachnid_legs = tgui_input_list(user, "Choose your character's variant of arachnid legs:", "Character Preference", filter_accessories_by_ckey(GLOB.arachnid_legs_list, user.client.ckey))
 					if(new_arachnid_legs)
 						features["arachnid_legs"] = new_arachnid_legs
 
 				if("arachnid_spinneret")
 					var/new_arachnid_spinneret
-					new_arachnid_spinneret = tgui_input_list(user, "Choose your character's spinneret markings:", "Character Preference", GLOB.arachnid_spinneret_list)
+					new_arachnid_spinneret = tgui_input_list(user, "Choose your character's spinneret markings:", "Character Preference", filter_accessories_by_ckey(GLOB.arachnid_spinneret_list, user.client.ckey))
 					if(new_arachnid_spinneret)
 						features["arachnid_spinneret"] = new_arachnid_spinneret
 
 				if("arachnid_mandibles")
 					var/new_arachnid_mandibles
-					new_arachnid_mandibles = tgui_input_list(user, "Choose your character's variant of mandibles:", "Character Preference", GLOB.arachnid_mandibles_list)
+					new_arachnid_mandibles = tgui_input_list(user, "Choose your character's variant of mandibles:", "Character Preference", filter_accessories_by_ckey(GLOB.arachnid_mandibles_list, user.client.ckey))
 					if (new_arachnid_mandibles)
 						features["arachnid_mandibles"] = new_arachnid_mandibles
 
 				if("tail_lizard")
 					var/new_tail
-					new_tail = tgui_input_list(user, "Choose your character's tail:", "Character Preference", GLOB.tails_list_lizard)
+					new_tail = tgui_input_list(user, "Choose your character's tail:", "Character Preference", filter_accessories_by_ckey(GLOB.tails_list_lizard, user.client.ckey))
 					if(new_tail)
 						features["tail_lizard"] = new_tail
 						if(new_tail != "None")
@@ -4347,7 +4141,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							var/datum/sprite_accessory/S = instance
 							if(!show_mismatched_markings && S.recommended_species && !S.recommended_species.Find(pref_species.id))
 								continue
-							if((!S.ckeys_allowed) || (S.ckeys_allowed.Find(user.client.ckey)))
+							if(S.is_allowed_for(user.client.ckey))
 								snowflake_tails_list[S.name] = path
 					var/new_tail
 					new_tail = tgui_input_list(user, "Choose your character's tail:", "Character Preference", snowflake_tails_list)
@@ -4366,7 +4160,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							var/datum/sprite_accessory/S = instance
 							if(!show_mismatched_markings && S.recommended_species && !S.recommended_species.Find(pref_species.id))
 								continue
-							if((!S.ckeys_allowed) || (S.ckeys_allowed.Find(user.client.ckey)))
+							if(S.is_allowed_for(user.client.ckey))
 								snowflake_tails_list[S.name] = path
 					var/new_tail
 					new_tail = tgui_input_list(user, "Choose your character's tail:", "Character Preference", snowflake_tails_list)
@@ -4391,7 +4185,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							var/datum/sprite_accessory/S = instance
 							if(!show_mismatched_markings && S.recommended_species && !S.recommended_species.Find(pref_species.id))
 								continue
-							if((!S.ckeys_allowed) || (S.ckeys_allowed.Find(user.client.ckey)))
+							if(S.is_allowed_for(user.client.ckey))
 								snowflake_snouts_list[S.name] = path
 					var/new_snout
 					new_snout = tgui_input_list(user, "Choose your character's snout:", "Character Preference", snowflake_snouts_list)
@@ -4408,7 +4202,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							var/datum/sprite_accessory/S = instance
 							if(!show_mismatched_markings && S.recommended_species && !S.recommended_species.Find(pref_species.id))
 								continue
-							if((!S.ckeys_allowed) || (S.ckeys_allowed.Find(user.client.ckey)))
+							if(S.is_allowed_for(user.client.ckey))
 								snowflake_mam_snouts_list[S.name] = path
 					var/new_mam_snouts
 					new_mam_snouts = tgui_input_list(user, "Choose your character's snout:", "Character Preference", snowflake_mam_snouts_list)
@@ -4418,7 +4212,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("horns")
 					var/new_horns
-					new_horns = tgui_input_list(user, "Choose your character's horns:", "Character Preference", GLOB.horns_list)
+					new_horns = tgui_input_list(user, "Choose your character's horns:", "Character Preference", filter_accessories_by_ckey(GLOB.horns_list, user.client.ckey))
 					if(new_horns)
 						features["horns"] = new_horns
 
@@ -4432,7 +4226,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("wings")
 					var/new_wings
-					new_wings = tgui_input_list(user, "Choose your character's wings:", "Character Preference", GLOB.r_wings_list)
+					new_wings = tgui_input_list(user, "Choose your character's wings:", "Character Preference", filter_accessories_by_ckey(GLOB.r_wings_list, user.client.ckey))
 					if(new_wings)
 						features["wings"] = new_wings
 
@@ -4447,61 +4241,61 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("frills")
 					var/new_frills
-					new_frills = tgui_input_list(user, "Choose your character's frills:", "Character Preference", GLOB.frills_list)
+					new_frills = tgui_input_list(user, "Choose your character's frills:", "Character Preference", filter_accessories_by_ckey(GLOB.frills_list, user.client.ckey))
 					if(new_frills)
 						features["frills"] = new_frills
 
 				if("spines")
 					var/new_spines
-					new_spines = tgui_input_list(user, "Choose your character's spines:", "Character Preference", GLOB.spines_list)
+					new_spines = tgui_input_list(user, "Choose your character's spines:", "Character Preference", filter_accessories_by_ckey(GLOB.spines_list, user.client.ckey))
 					if(new_spines)
 						features["spines"] = new_spines
 
 				if("legs")
 					var/new_legs
-					new_legs = tgui_input_list(user, "Choose your character's legs:", "Character Preference", GLOB.legs_list)
+					new_legs = tgui_input_list(user, "Choose your character's legs:", "Character Preference", filter_accessories_by_ckey(GLOB.legs_list, user.client.ckey))
 					if(new_legs)
 						features["legs"] = new_legs
 
 				if("insect_wings")
 					var/new_insect_wings
-					new_insect_wings = tgui_input_list(user, "Choose your character's wings:", "Character Preference", GLOB.insect_wings_list)
+					new_insect_wings = tgui_input_list(user, "Choose your character's wings:", "Character Preference", filter_accessories_by_ckey(GLOB.insect_wings_list, user.client.ckey))
 					if(new_insect_wings)
 						features["insect_wings"] = new_insect_wings
 
 				if("deco_wings")
 					var/new_deco_wings
-					new_deco_wings = tgui_input_list(user, "Choose your character's wings:", "Character Preference", GLOB.deco_wings_list)
+					new_deco_wings = tgui_input_list(user, "Choose your character's wings:", "Character Preference", filter_accessories_by_ckey(GLOB.deco_wings_list, user.client.ckey))
 					if(new_deco_wings)
 						features["deco_wings"] = new_deco_wings
 
 				if("insect_fluff")
 					var/new_insect_fluff
-					new_insect_fluff = tgui_input_list(user, "Choose your character's wings:", "Character Preference", GLOB.insect_fluffs_list)
+					new_insect_fluff = tgui_input_list(user, "Choose your character's wings:", "Character Preference", filter_accessories_by_ckey(GLOB.insect_fluffs_list, user.client.ckey))
 					if(new_insect_fluff)
 						features["insect_fluff"] = new_insect_fluff
 
 				if("insect_markings")
 					var/new_insect_markings
-					new_insect_markings = tgui_input_list(user, "Choose your character's markings:", "Character Preference", GLOB.insect_markings_list)
+					new_insect_markings = tgui_input_list(user, "Choose your character's markings:", "Character Preference", filter_accessories_by_ckey(GLOB.insect_markings_list, user.client.ckey))
 					if(new_insect_markings)
 						features["insect_markings"] = new_insect_markings
 
 				if("arachnid_legs")
 					var/new_arachnid_legs
-					new_arachnid_legs = tgui_input_list(user, "Choose your character's variant of arachnid legs:", "Character Preference", GLOB.arachnid_legs_list)
+					new_arachnid_legs = tgui_input_list(user, "Choose your character's variant of arachnid legs:", "Character Preference", filter_accessories_by_ckey(GLOB.arachnid_legs_list, user.client.ckey))
 					if(new_arachnid_legs)
 						features["arachnid_legs"] = new_arachnid_legs
 
 				if("arachnid_spinneret")
 					var/new_arachnid_spinneret
-					new_arachnid_spinneret = tgui_input_list(user, "Choose your character's spinneret markings:", "Character Preference", GLOB.arachnid_spinneret_list)
+					new_arachnid_spinneret = tgui_input_list(user, "Choose your character's spinneret markings:", "Character Preference", filter_accessories_by_ckey(GLOB.arachnid_spinneret_list, user.client.ckey))
 					if(new_arachnid_spinneret)
 						features["arachnid_spinneret"] = new_arachnid_spinneret
 
 				if("arachnid_mandibles")
 					var/new_arachnid_mandibles
-					new_arachnid_mandibles = tgui_input_list(user, "Choose your character's variant of mandibles:", "Character Preference", GLOB.arachnid_mandibles_list)
+					new_arachnid_mandibles = tgui_input_list(user, "Choose your character's variant of mandibles:", "Character Preference", filter_accessories_by_ckey(GLOB.arachnid_mandibles_list, user.client.ckey))
 					if (new_arachnid_mandibles)
 						features["arachnid_mandibles"] = new_arachnid_mandibles
 
@@ -4535,7 +4329,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 								continue
 							if(S.ignore)
 								continue
-							if((!S.ckeys_allowed) || (S.ckeys_allowed.Find(user.client.ckey)))
+							if(S.is_allowed_for(user.client.ckey))
 								snowflake_taur_list[S.name] = path
 					var/new_taur
 					new_taur = tgui_input_list(user, "Choose your character's tauric body:", "Character Preference", snowflake_taur_list)
@@ -4556,7 +4350,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							var/datum/sprite_accessory/S = instance
 							if(!show_mismatched_markings && S.recommended_species && !S.recommended_species.Find(pref_species.id))
 								continue
-							if((!S.ckeys_allowed) || (S.ckeys_allowed.Find(user.client.ckey)))
+							if(S.is_allowed_for(user.client.ckey))
 								snowflake_ears_list[S.name] = path
 					var/new_ears
 					new_ears = tgui_input_list(user, "Choose your character's ears:", "Character Preference", snowflake_ears_list)
@@ -4571,7 +4365,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							var/datum/sprite_accessory/S = instance
 							if(!show_mismatched_markings && S.recommended_species && !S.recommended_species.Find(pref_species.id))
 								continue
-							if((!S.ckeys_allowed) || (S.ckeys_allowed.Find(user.client.ckey)))
+							if(S.is_allowed_for(user.client.ckey))
 								snowflake_ears_list[S.name] = path
 					var/new_ears
 					new_ears = tgui_input_list(user, "Choose your character's ears:", "Character Preference", snowflake_ears_list)
@@ -4581,13 +4375,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				//Xeno Bodyparts
 				if("xenohead")//Head or caste type
 					var/new_head
-					new_head = tgui_input_list(user, "Choose your character's caste:", "Character Preference", GLOB.xeno_head_list)
+					new_head = tgui_input_list(user, "Choose your character's caste:", "Character Preference", filter_accessories_by_ckey(GLOB.xeno_head_list, user.client.ckey))
 					if(new_head)
 						features["xenohead"] = new_head
 
 				if("xenotail")//Currently one one type, more maybe later if someone sprites them. Might include animated variants in the future.
 					var/new_tail
-					new_tail = tgui_input_list(user, "Choose your character's tail:", "Character Preference", GLOB.xeno_tail_list)
+					new_tail = tgui_input_list(user, "Choose your character's tail:", "Character Preference", filter_accessories_by_ckey(GLOB.xeno_tail_list, user.client.ckey))
 					if(new_tail)
 						features["xenotail"] = new_tail
 						if(new_tail != "None")
@@ -4598,7 +4392,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("xenodorsal")
 					var/new_dors
-					new_dors = tgui_input_list(user, "Choose your character's dorsal tube type:", "Character Preference", GLOB.xeno_dorsal_list)
+					new_dors = tgui_input_list(user, "Choose your character's dorsal tube type:", "Character Preference", filter_accessories_by_ckey(GLOB.xeno_dorsal_list, user.client.ckey))
 					if(new_dors)
 						features["xenodorsal"] = new_dors
 
@@ -4719,6 +4513,20 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					new_fluid = tgui_input_list(user, "Balls Fluid", "Character Preference", full_options)
 					if(new_fluid)
 						features["balls_fluid"] = new_fluid.type
+
+				if("balls_cum_max")
+					var/new_max = tgui_input_number(user, "Testicles Maximum Cum Output:\n(1 - 150)(Default depends on size)\n(Cancel to restore defaults)", "Character Preference", features["balls_cum_max"], 150, 1)
+					if(new_max)
+						features["balls_cum_max"] = clamp(round(new_max), 1, 150)
+					else
+						features -= "balls_cum_max"
+
+				if("balls_cum_rate")
+					var/new_rate = tgui_input_number(user, "Testicles Cum Restoration Rate:\n(0.1 - 20)(Default = [CUM_RATE])\n(Cancel to restore defaults)", "Character Preference", features["balls_cum_rate"], 20, 0.1)
+					if(new_rate)
+						features["balls_cum_rate"] = clamp(round(new_rate, 0.1), 0.1, 20)
+					else
+						features["balls_cum_rate"] = CUM_RATE
 
 				if("breasts_size")
 					var/new_size = tgui_input_list(user, "Breast Size", "Character Preference", CONFIG_GET(keyed_list/breasts_cups_prefs))
@@ -5270,7 +5078,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 									var/datum/sprite_accessory/mam_body_markings/marking = S
 									if(!(actual_name in marking.covered_limbs))
 										continue
-									if((!S.ckeys_allowed) || (S.ckeys_allowed.Find(user.client.ckey)))
+									if(S.is_allowed_for(user.client.ckey))
 										available += name
 								if(length(available))
 									var/current_pos = available.Find(entry[2])
@@ -5327,7 +5135,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 										if(!(selected_limb in marking.covered_limbs) && selected_limb != "All")
 											continue
 
-									if((!S.ckeys_allowed) || (S.ckeys_allowed.Find(user.client.ckey)))
+									if(S.is_allowed_for(user.client.ckey))
 										snowflake_markings_list[S.name] = path
 							var/selected_marking = tgui_input_list(user, "Select the marking to apply to the limb.", "Character Preference", snowflake_markings_list)
 							if(selected_marking)
@@ -5921,35 +5729,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					ambientocclusion = !ambientocclusion
 					if(parent?.mob?.hud_used && parent.screen?.len)
 						var/datum/hud/H = parent.mob.hud_used
-						var/atom/movable/screen/plane_master/G = H.plane_masters["[GAME_PLANE]"]
-						var/atom/movable/screen/plane_master/A = H.plane_masters["[ABOVE_WALL_PLANE]"]
-						var/atom/movable/screen/plane_master/W = H.plane_masters["[WALL_PLANE]"]
-						var/atom/movable/screen/plane_master/F = H.plane_masters["[FLOOR_PLANE]"]
-						var/atom/movable/screen/plane_master/L = H.plane_masters["[LIGHTING_PLANE]"]
-						var/atom/movable/screen/plane_master/C = H.plane_masters["[CHAT_PLANE]"]
-						G?.backdrop(parent.mob)
-						A?.backdrop(parent.mob)
-						W?.backdrop(parent.mob)
-						F?.backdrop(parent.mob)
-						L?.backdrop(parent.mob)
-						C?.backdrop(parent.mob)
+						H.refresh_plane_backdrops(parent.mob, list(GAME_PLANE, ABOVE_WALL_PLANE, WALL_PLANE, FLOOR_PLANE, LIGHTING_PLANE, CHAT_PLANE))
 
 				if("lighting_blur")
 					lighting_blur = (lighting_blur + 1) % (LIGHTING_BLUR_MAX + 1)
 					if(parent?.mob?.hud_used && parent.screen?.len)
 						var/datum/hud/H = parent.mob.hud_used
-						var/atom/movable/screen/plane_master/L = H.plane_masters["[LIGHTING_PLANE]"]
-						var/atom/movable/screen/plane_master/G = H.plane_masters["[GAME_PLANE]"]
-						var/atom/movable/screen/plane_master/A = H.plane_masters["[ABOVE_WALL_PLANE]"]
-						var/atom/movable/screen/plane_master/W = H.plane_masters["[WALL_PLANE]"]
-						var/atom/movable/screen/plane_master/F = H.plane_masters["[FLOOR_PLANE]"]
-						var/atom/movable/screen/plane_master/E = H.plane_masters["[EMISSIVE_PLANE]"]
-						L?.backdrop(parent.mob)
-						G?.backdrop(parent.mob)
-						A?.backdrop(parent.mob)
-						W?.backdrop(parent.mob)
-						F?.backdrop(parent.mob)
-						E?.backdrop(parent.mob)
+						H.refresh_plane_backdrops(parent.mob, list(LIGHTING_PLANE, GAME_PLANE, ABOVE_WALL_PLANE, WALL_PLANE, FLOOR_PLANE, EMISSIVE_PLANE, LIGHTING_LAMPS_PLANE, FLOOR_LIGHTING_LAMPS_PLANE, LIGHTING_LAMPS_SELFGLOW, FLOOR_LIGHTING_LAMPS_SELFGLOW, LIGHTING_LAMPS_GLARE, FLOOR_LIGHTING_LAMPS_GLARE, LIGHTING_EXPOSURE_PLANE, O_LIGHTING_VISUAL_PLANE))
 
 				if("auto_fit_viewport")
 					auto_fit_viewport = !auto_fit_viewport
@@ -6042,8 +5828,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				if("export_slot")
 					var/savefile/S = save_character(export = TRUE)
 					if(istype(S, /savefile))
-						user.client.Export(S)
 						user.client.local_storage_name_read = FALSE
+						user.client.Export(S)
 						tgui_alert_async(user, "Successfully saved character slot")
 					else
 						tgui_alert_async(user, "Failed saving character slot")
@@ -6063,8 +5849,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						return
 
 				if("delete_local_copy")
-					user.client.clear_export()
 					user.client.local_storage_name_read = FALSE
+					user.client.clear_export()
 					tgui_alert_async(user, "Local save data erased.")
 
 				if("give_slot")
@@ -6333,6 +6119,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				var/color_to_change = tgui_input_list(user, "Polychromic options", "Recolor [name]", color_options)
 				if(color_to_change)
 					var/color_index = text2num(copytext(color_to_change, 7))
+					G.pad_polychromic_colors(user_gear)
 					var/current_color = user_gear[LOADOUT_COLOR][color_index]
 					if(!istext(current_color))
 						current_color = "#FFFFFF"
@@ -6940,6 +6727,23 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			return 2
 		else
 			return 0
+
+/**
+ * Возвращает копию списка "имя -> аксессуар" без аксессуаров, недоступных для user_ckey.
+ * Значения, не являющиеся аксессуарами, и элементы обычных (не ассоциативных) списков остаются как есть.
+ */
+/datum/preferences/proc/filter_accessories_by_ckey(list/accessories, user_ckey)
+	. = list()
+	for(var/name in accessories)
+		var/value = accessories[name]
+		if(istype(value, /datum/sprite_accessory))
+			var/datum/sprite_accessory/accessory = value
+			if(!accessory.is_allowed_for(user_ckey))
+				continue
+		if(isnull(value))
+			. += name
+		else
+			.[name] = value
 
 #undef HEADSHOT_LINK_MAX_LENGTH
 #undef ACTION_HEADSHOT_LINK_NOOP

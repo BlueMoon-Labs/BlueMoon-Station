@@ -133,6 +133,8 @@
 	ranged_cooldown = world.time + cooldown_time
 	var/turf/T = get_turf(target)
 	var/turf/source = get_turf(src)
+	if(!T || !source || T.z != source.z)
+		return
 	new /obj/effect/temp_visual/hierophant/telegraph(T, src)
 	new /obj/effect/temp_visual/hierophant/telegraph(source, src)
 	playsound(source,'sound/machines/airlockopen.ogg', 200, 1)

@@ -1,4 +1,11 @@
 /datum/player_ticket_panel
+	/// Вкладка, с которой открывается окно: "admin" или "mentor".
+	var/initial_tab = "admin"
+
+/datum/player_ticket_panel/New(client/owner, initial_tab)
+	. = ..()
+	if(initial_tab)
+		src.initial_tab = initial_tab
 
 /datum/player_ticket_panel/Destroy(force, ...)
 	SStgui.close_uis(src)
@@ -13,6 +20,9 @@
 
 /datum/player_ticket_panel/ui_state(mob/user)
 	return GLOB.always_state
+
+/datum/player_ticket_panel/ui_static_data(mob/user)
+	return list("initial_tab" = initial_tab)
 
 /datum/player_ticket_panel/ui_data(mob/user)
 	. = list()

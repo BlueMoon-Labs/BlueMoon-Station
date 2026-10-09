@@ -13,8 +13,12 @@
 	else
 		var/list/default = DEFAULT_MAP_TRAITS
 		if (z > default.len)
+			#ifdef ABSOLUTE_MINIMUM_MODE
+			return list()
+			#else
 			stack_trace("Unmanaged z-level [z]! maxz = [world.maxz], default.len = [default.len]")
 			return list()
+			#endif
 		return default[z][DL_TRAITS][trait]
 
 /// Check if levels[z] has any of the specified traits
@@ -76,16 +80,13 @@
 	if (!T)
 		return
 	var/turf_z = T.z
-	var/list/levels = z_list
-	var/offset
-	if(levels && turf_z >= 1 && turf_z <= levels.len)
-		var/datum/space_level/level = levels[turf_z]
-		offset = level.traits[ZTRAIT_DOWN]
-	else
-		offset = level_trait(turf_z, ZTRAIT_DOWN)
-	if (!isnum(offset) || !offset)
+	var/list/neighbours = z_level_below
+	if(turf_z < 1 || turf_z > length(neighbours))
 		return
-	return locate(T.x, T.y, turf_z + offset)
+	var/below_z = neighbours[turf_z]
+	if(!below_z)
+		return
+	return locate(T.x, T.y, below_z)
 
 /// Attempt to get the turf above the provided one according to Z traits.
 /// Быстрый путь такой же, как в [/datum/controller/subsystem/mapping/proc/get_turf_below].
@@ -93,16 +94,13 @@
 	if (!T)
 		return
 	var/turf_z = T.z
-	var/list/levels = z_list
-	var/offset
-	if(levels && turf_z >= 1 && turf_z <= levels.len)
-		var/datum/space_level/level = levels[turf_z]
-		offset = level.traits[ZTRAIT_UP]
-	else
-		offset = level_trait(turf_z, ZTRAIT_UP)
-	if (!isnum(offset) || !offset)
+	var/list/neighbours = z_level_above
+	if(turf_z < 1 || turf_z > length(neighbours))
 		return
-	return locate(T.x, T.y, turf_z + offset)
+	var/above_z = neighbours[turf_z]
+	if(!above_z)
+		return
+	return locate(T.x, T.y, above_z)
 
 /// Prefer not to use this one too often
 /datum/controller/subsystem/mapping/proc/get_station_center()

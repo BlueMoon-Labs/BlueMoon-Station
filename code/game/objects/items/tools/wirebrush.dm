@@ -8,3 +8,4 @@
 	icon_state = "wirebrush"
 	tool_behaviour = TOOL_RUSTSCRAPER
 	toolspeed = 1
+	custom_materials = list(/datum/material/iron = 30)

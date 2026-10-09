@@ -28,7 +28,7 @@
 	var/obj/item/clothing/underwear/briefs/panties/portalpanties/other_panties = allocate(/obj/item/clothing/underwear/briefs/panties/portalpanties)
 	var/obj/item/portallight/other_light = allocate(/obj/item/portallight)
 	other_light.set_private_pair(other_panties)
-	LAZYADD(other_panties.portallight, other_light)
+	other_panties.portallight += other_light
 	qdel(other_light)
 	TEST_ASSERT_NULL(other_panties.private_pair, "трусики держат удалённый фонарик как пару")
 	TEST_ASSERT(!(other_light in other_panties.portallight), "трусики держат удалённый фонарик в списке подключений")

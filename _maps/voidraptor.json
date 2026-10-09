@@ -1,0 +1,12 @@
+{
+	"version": 1,
+	"map_name": "Void Raptor",
+	"map_path": "map_files/VoidRaptor",
+	"map_file": "VoidRaptor.dmm",
+	"shuttles": {
+		"cargo": "cargo_delta",
+		"ferry": "ferry_fancy",
+		"whiteship": "whiteship_delta",
+		"emergency": "emergency_delta"
+	}
+}

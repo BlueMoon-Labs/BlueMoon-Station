@@ -1,0 +1,107 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"d" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+"g" = (
+/mob/living/simple_animal/hostile/poison/giant_spider/pet_spider{
+	faction = list("neutral");
+	vision_range = 0;
+	aggro_vision_range = 0
+	},
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+"m" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 10
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 6
+	},
+/obj/modular_map_connector,
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+"n" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 9
+	},
+/obj/structure/spider/cocoon,
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+"x" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+"y" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
+/mob/living/simple_animal/hostile/poison/giant_spider/pet_spider{
+	faction = list("neutral");
+	vision_range = 0;
+	aggro_vision_range = 0
+	},
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+"J" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
+/obj/structure/fluff{
+	name = "egg cluster";
+	desc = "Муляжи яиц успокаивают обитателей вольера.";
+	icon = 'icons/effects/effects.dmi';
+	icon_state = "eggs";
+	deconstructible = 0
+	},
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+"L" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/mob/living/simple_animal/hostile/poison/giant_spider/pet_spider{
+	faction = list("neutral");
+	vision_range = 0;
+	aggro_vision_range = 0
+	},
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+"Q" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 5
+	},
+/obj/machinery/light/warm/directional/south,
+/obj/structure/fluff{
+	name = "egg cluster";
+	desc = "Муляжи яиц успокаивают обитателей вольера.";
+	icon = 'icons/effects/effects.dmi';
+	icon_state = "eggs";
+	deconstructible = 0
+	},
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+"R" = (
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+"S" = (
+/obj/structure/spider/cocoon,
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+
+(1,1,1) = {"
+x
+y
+Q
+"}
+(2,1,1) = {"
+S
+R
+m
+"}
+(3,1,1) = {"
+g
+R
+L
+"}
+(4,1,1) = {"
+d
+J
+n
+"}

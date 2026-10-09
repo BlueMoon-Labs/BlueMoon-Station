@@ -61,6 +61,8 @@
 
 /datum/traitor_class/ai/on_removal(datum/antagonist/traitor/T)
 	var/mob/living/silicon/ai/A = T.owner.current
+	if(!istype(A))
+		return
 	A.set_zeroth_law("")
 	remove_verb(A, /mob/living/silicon/ai/proc/choose_modules)
 	A.malf_picker.remove_malf_verbs(A)

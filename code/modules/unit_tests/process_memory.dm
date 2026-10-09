@@ -958,3 +958,13 @@ bfd8b000-bfdac000 rw-p 00000000 00:00 0 \[stack]
 	TEST_ASSERT_NOTNULL(GLOB.all_light_sources, "список источников света обязан существовать")
 	SStime_track.log_lighting_graph_slots()
 
+/// Топ переписи без полной сортировки: по убыванию, равные в порядке списка, не длиннее top_n.
+/datum/unit_test/census_top_entries
+
+/datum/unit_test/census_top_entries/Run()
+	var/list/values = list("a" = 3, "b" = 7, "c" = 3, "d" = 10, "e" = 1, "f" = 7)
+	var/list/top = census_top_entries(values, 4)
+	TEST_ASSERT_EQUAL(top.Join(","), "d,b,f,a", "Топ переписи собран не по убыванию или не в порядке списка при равенстве")
+	TEST_ASSERT_EQUAL(top["b"], 7, "Топ переписи потерял значение ключа")
+	TEST_ASSERT_EQUAL(length(census_top_entries(values, 10)), 6, "Короткий список обязан войти в топ целиком")
+	TEST_ASSERT_EQUAL(length(census_top_entries(list(), 5)), 0, "Пустой список обязан дать пустой топ")

@@ -1,0 +1,90 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"d" = (
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+"g" = (
+/obj/item/reagent_containers/food/snacks/pizza/margherita,
+/mob/living/simple_animal/mouse/white,
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+"i" = (
+/obj/machinery/light/warm/directional/south,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 5
+	},
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+"l" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 10
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 6
+	},
+/obj/modular_map_connector,
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+"p" = (
+/mob/living/simple_animal/mouse/brown{
+	name = "Rat King";
+	desc = "A rather well-fed rat lording it over a pizza."
+	},
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+"q" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/mob/living/simple_animal/mouse/gray{
+	name = "rat"
+	},
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+"w" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/mob/living/simple_animal/mouse/brown,
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+"I" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 9
+	},
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+"O" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
+/mob/living/simple_animal/mouse/gray{
+	name = "rat"
+	},
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+"Q" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+"U" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/mob/living/simple_animal/mouse,
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+
+(1,1,1) = {"
+U
+O
+i
+"}
+(2,1,1) = {"
+d
+g
+l
+"}
+(3,1,1) = {"
+p
+d
+q
+"}
+(4,1,1) = {"
+w
+Q
+I
+"}

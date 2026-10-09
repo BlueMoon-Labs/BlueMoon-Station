@@ -932,7 +932,7 @@ GLOBAL_VAR_INIT(portal_telecomms_cache_expire, 0)
 			PL.portal_settings?.add_to_history(user, "стоп-слово")
 	portal_settings.add_to_history(user, "активировал стоп-слово")
 	// Disconnect
-	LAZYCLEARLIST(portallight)
+	portallight.Cut()
 	LAZYCLEARLIST(remote_vibrations)  // Clear remote vibrations to stop all incoming effects
 	private_pair = null
 	stop_vibration()
@@ -1255,7 +1255,7 @@ GLOBAL_VAR_INIT(portal_telecomms_cache_expire, 0)
 	// Connection info
 	data["connection_mode"] = portal_settings?.connection_mode || PORTAL_MODE_DISABLED
 	data["telecomms_available"] = can_portal_telecomms()
-	data["connected_count"] = portallight?.len || 0
+	data["connected_count"] = portallight.len
 	data["has_private_pair"] = !!private_pair
 	// List of connected fleshlights with details
 	var/list/connected_devices = list()
@@ -1404,7 +1404,7 @@ GLOBAL_VAR_INIT(portal_telecomms_cache_expire, 0)
 					// Unregister all remote vibrations before clearing
 					for(var/obj/item/portallight/PL in portallight)
 						unregister_remote_vibration(PL)
-					LAZYCLEARLIST(portallight)
+					portallight.Cut()
 					LAZYCLEARLIST(remote_vibrations)  // Clear any orphaned remote vibrations
 			// Update network GROUP mode index when mode changes
 			if(portal_settings.network && (old_mode == PORTAL_MODE_GROUP || mode == PORTAL_MODE_GROUP))
@@ -1549,7 +1549,7 @@ GLOBAL_VAR_INIT(portal_telecomms_cache_expire, 0)
 				PL.portalunderwear = null
 				PL.icon_state = "unpaired"
 				PL.update_appearance()
-			LAZYCLEARLIST(portallight)
+			portallight.Cut()
 			LAZYCLEARLIST(remote_vibrations)  // Clear any orphaned remote vibrations
 			private_pair = null
 			return TRUE
@@ -1700,10 +1700,10 @@ GLOBAL_VAR_INIT(portal_telecomms_cache_expire, 0)
 	to_chat(user, "  connection_mode: [portal_settings?.connection_mode || "NULL"]")
 	to_chat(user, "  telecomms_available: [can_portal_telecomms()]")
 	to_chat(user, "  public_privacy_mode: [portal_settings?.public_privacy_mode || "NULL"]")
-	to_chat(user, "  portallight list length: [LAZYLEN(portallight)]")
-	if(LAZYLEN(portallight))
+	to_chat(user, "  portallight list length: [portallight.len]")
+	if(portallight.len)
 		var/idx = 1
-		for(var/obj/item/portallight/PL as anything in portallight)
+		for(var/obj/item/portallight/PL in portallight)
 			var/mob/living/carbon/human/holder = get_fleshlight_holder(PL)
 			to_chat(user, "    #[idx]: ref=[REF(PL)] holder=[holder?.fleshlight_nickname || "NONE"] mood=[PL.portal_settings?.current_mood || "?"]")
 			idx++
@@ -1841,7 +1841,7 @@ GLOBAL_VAR_INIT(portal_telecomms_cache_expire, 0)
 	data["partner_mood_text"] = target_panties?.portal_settings?.get_mood_text() || "Неизвестно"
 	// Info about other connected devices
 	if(portalunderwear)
-		data["target_connected_count"] = LAZYLEN(portalunderwear.portallight)
+		data["target_connected_count"] = portalunderwear.portallight.len
 		// Show names only if privacy allows
 		if(portalunderwear.portal_settings?.public_privacy_mode == PORTAL_PRIVACY_SHOW_NAMES)
 			data["target_connected_names"] = portalunderwear.get_connected_nicknames()
@@ -1899,7 +1899,7 @@ GLOBAL_VAR_INIT(portal_telecomms_cache_expire, 0)
 		available += list(list("name" = display_name, "ref" = pp_ref))
 	// Add panties in GROUP mode from the network's indexed list (no global scan needed)
 	if(portal_settings?.network)
-		for(var/obj/item/clothing/underwear/briefs/panties/portalpanties/PP as anything in portal_settings.network.group_mode_panties)
+		for(var/obj/item/clothing/underwear/briefs/panties/portalpanties/PP in portal_settings.network.group_mode_panties)
 			var/pp_ref = REF(PP)
 			if(pp_ref in added_refs)
 				continue
@@ -2289,19 +2289,19 @@ GLOBAL_VAR_INIT(portal_telecomms_cache_expire, 0)
 			to_chat(user, "  our_remote_pattern: [our_remote_active["pattern"]]")
 
 		// Other connections to same panties
-		to_chat(user, "  target_connected_count: [LAZYLEN(portalunderwear.portallight)]")
-		if(LAZYLEN(portalunderwear.portallight) > 1)
+		to_chat(user, "  target_connected_count: [portalunderwear.portallight.len]")
+		if(portalunderwear.portallight.len > 1)
 			to_chat(user, "  other_connections:")
-			for(var/obj/item/portallight/PL as anything in portalunderwear.portallight)
+			for(var/obj/item/portallight/PL in portalunderwear.portallight)
 				if(PL != src)
 					var/mob/living/carbon/human/other_holder = portalunderwear.get_fleshlight_holder(PL)
 					to_chat(user, "    - [REF(PL)] holder=[other_holder?.fleshlight_nickname || "NONE"]")
 
 	// Available panties (for connection)
 	to_chat(user, span_notice("<b>--- Available Panties ---</b>"))
-	to_chat(user, "  available_panties count: [LAZYLEN(available_panties)]")
-	if(LAZYLEN(available_panties))
-		for(var/obj/item/clothing/underwear/briefs/panties/portalpanties/PP as anything in available_panties)
+	to_chat(user, "  available_panties count: [available_panties.len]")
+	if(available_panties.len)
+		for(var/obj/item/clothing/underwear/briefs/panties/portalpanties/PP in available_panties)
 			var/mob/living/carbon/human/pp_owner = PP.portal_settings?.owner
 			to_chat(user, "    - [REF(PP)] owner=[pp_owner?.fleshlight_nickname || "?"] mode=[PP.portal_settings?.connection_mode || "?"]")
 
