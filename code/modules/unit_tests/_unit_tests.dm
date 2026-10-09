@@ -143,6 +143,7 @@
 #include "director.dm"
 #include "door_timer_airlock.dm"
 #include "dynamic_ruleset_sanity.dm"
+#include "echolocation.dm"
 // #include "egg_glands.dm"
 // #include "dynamic_ruleset_sanity.dm"
 #include "emergency_shuttle_registration.dm"
@@ -611,4 +612,28 @@ TEST_FOCUS(/datum/unit_test/floorbot_failed_path_search_has_cooldown)
 #undef TEST_ASSERT_EQUAL
 #undef TEST_ASSERT_NOTEQUAL
 //#undef TEST_FOCUS - This define is used by vscode unit test extension to pick specific unit tests to run and appended later so needs to be used out of scope here
+
+#ifdef ECHOLOCATION_TESTS
+TEST_FOCUS(/datum/unit_test/echolocation_saved_name_migration)
+TEST_FOCUS(/datum/unit_test/echolocation_value)
+TEST_FOCUS(/datum/unit_test/echolocation_actions_and_blindness)
+TEST_FOCUS(/datum/unit_test/echolocation_can_snap_gates)
+TEST_FOCUS(/datum/unit_test/echolocation_restrained_action_fallbacks)
+TEST_FOCUS(/datum/unit_test/echolocation_mouth_fallbacks_and_hearing)
+TEST_FOCUS(/datum/unit_test/echolocation_manual_mouth_emotes)
+TEST_FOCUS(/datum/unit_test/echolocation_remove_and_transfer)
+TEST_FOCUS(/datum/unit_test/echolocation_emote_signal)
+TEST_FOCUS(/datum/unit_test/echolocation_generated_icons)
+TEST_FOCUS(/datum/unit_test/echolocation_hazard_surfaces)
+TEST_FOCUS(/datum/unit_test/echolocation_hazard_contours)
+TEST_FOCUS(/datum/unit_test/echolocation_echo_boundaries)
+TEST_FOCUS(/datum/unit_test/echolocation_snapshot_is_static)
+TEST_FOCUS(/datum/unit_test/echolocation_directional_shape_snapshots)
+TEST_FOCUS(/datum/unit_test/echolocation_monochrome_shape_grouping)
+TEST_FOCUS(/datum/unit_test/echolocation_lighting_shape_filtering)
+TEST_FOCUS(/datum/unit_test/echolocation_lit_fixtures)
+TEST_FOCUS(/datum/unit_test/echolocation_item_echo_visibility)
+TEST_FOCUS(/datum/unit_test/echolocation_typing_echo_lifecycle)
+#endif
+
 #endif

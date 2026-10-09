@@ -75,6 +75,7 @@
 		clear_fullscreen("blind_blindfold_hard", 0) // Мгновенно убрать
 		clear_fullscreen("blind_blindfold", 0) // Мгновенно убрать
 		// remove_client_colour(/datum/client_colour/monochrome/blind)
+	SEND_SIGNAL(src, COMSIG_MOB_BLINDNESS_CHANGED)
 /**
   * Make the mobs vision blurry
   */
