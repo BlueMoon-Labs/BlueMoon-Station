@@ -6,6 +6,8 @@
 	var/list/validtypes = list(/datum/objective/devil/soulquantity, /datum/objective/devil/soulquality, /datum/objective/devil/sintouch, /datum/objective/devil/buy_target)
 	var/datum/antagonist/devil/D = devil_mind.has_antag_datum(/datum/antagonist/devil)
 	for(var/i = 1 to quantity)
+		if(!length(validtypes))
+			break
 		var/type = pick(validtypes)
 		var/datum/objective/devil/objective = new type(null)
 		objective.owner = devil_mind
@@ -14,6 +16,8 @@
 			if(!objective.target)
 				qdel(objective)
 				validtypes -= type
+				if(!length(validtypes))
+					break
 				type = pick(validtypes)
 				objective = new type(null)
 				objective.owner = devil_mind

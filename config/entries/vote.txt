@@ -24,11 +24,11 @@ DYNAMIC_LIGHT_ROUNDTYPE_VOTE_END_HOUR 0
 ## Rounds below this online or inside the night window neither force the rotation nor count towards it.
 ROUNDTYPE_ROTATION_MIN_PLAYERS 60
 
-## Server hour when the night window without roundtype rotation starts. The window may cross midnight.
+## First server hour (0-23) of the night window without roundtype rotation. The window may cross midnight.
 ## Equal start and end hours make the whole day night, which turns the rotation off.
 ROUNDTYPE_ROTATION_NIGHT_START_HOUR 22
 
-## Server hour when the night window without roundtype rotation ends.
+## Server hour when the night window ends, exclusive: with 9 the hour 9 is already day. 24 works like 0.
 ROUNDTYPE_ROTATION_NIGHT_END_HOUR 9
 
 ## Multiplies votes cast specifically for Dynamic Light in roundtype votes.

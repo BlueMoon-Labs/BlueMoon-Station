@@ -714,14 +714,8 @@ SUBSYSTEM_DEF(vote)
 				if(roundtype_prime_runoff_ballot)
 					choices |= list(ROUNDTYPE_DYNAMIC_LIGHT, ROUNDTYPE_EXTENDED)
 				else
-					var/player_count = get_total_player_count()
-					var/current_hour = text2num(time2text(world.timeofday, "hh"))
-					var/rotation_applies = roundtype_rotation_applies(player_count, current_hour)
-					if(!SSticker.HasRoundStarted())
-						GLOB.round_counts_for_rotation = rotation_applies
-					var/combo = check_combo()
-					log_vote("Ротация режимов [rotation_applies ? "применяется" : "не применяется"]: онлайн [player_count], час [current_hour], серия [combo || "нет"].")
-					choices |= roundtype_ballot_choices(combo, rotation_applies)
+					var/rotation_applies = update_round_rotation_eligibility()
+					choices |= roundtype_ballot_choices(check_combo(), rotation_applies)
 				sanitize_roundtype_vote_choices()
 			if("custom")
 				question = saved_custom_question
@@ -813,6 +807,15 @@ SUBSYSTEM_DEF(vote)
 		CONFIG_GET(number/roundtype_rotation_night_start_hour),
 		CONFIG_GET(number/roundtype_rotation_night_end_hour)
 	)
+
+/// Засчитывается ли будущий раунд в ротацию, по онлайну и часу на момент выбора режима: голосованием или админом.
+/datum/controller/subsystem/vote/proc/update_round_rotation_eligibility()
+	var/player_count = get_total_player_count()
+	var/current_hour = text2num(time2text(world.timeofday, "hh"))
+	. = roundtype_rotation_applies(player_count, current_hour)
+	if(!SSticker.HasRoundStarted())
+		GLOB.round_counts_for_rotation = .
+	log_vote("Ротация режимов [. ? "применяется" : "не применяется"]: онлайн [player_count], час [current_hour], серия [check_combo() || "нет"].")
 
 /datum/controller/subsystem/vote/proc/roundtype_ballot_choices(combo, rotation_applies)
 	var/secondary_roundtype = use_dynamic_light_roundtype_vote_window() ? ROUNDTYPE_EXTENDED : get_roundtype_vote_secondary_choice()

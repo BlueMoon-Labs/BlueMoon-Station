@@ -122,3 +122,48 @@
 	SSpersistence.saved_round_types = saved_round_types
 	GLOB.round_counts_for_rotation = saved_counts_for_rotation
 	return ..()
+
+/// Выбор режима в лобби записывает, засчитается ли раунд в ротацию; после старта раунда признак не меняется
+/datum/unit_test/roundtype_rotation_eligibility
+	requires_full_map = FALSE
+	var/list/saved_config
+	var/saved_counts_for_rotation
+	var/saved_game_state
+
+/datum/unit_test/roundtype_rotation_eligibility/Run()
+	saved_config = list(
+		"min_players" = CONFIG_GET(number/roundtype_rotation_min_players),
+		"night_start" = CONFIG_GET(number/roundtype_rotation_night_start_hour),
+		"night_end" = CONFIG_GET(number/roundtype_rotation_night_end_hour),
+	)
+	saved_counts_for_rotation = GLOB.round_counts_for_rotation
+	saved_game_state = SSticker.current_state
+	var/current_hour = text2num(time2text(world.timeofday, "hh"))
+	CONFIG_SET(number/roundtype_rotation_night_start_hour, (current_hour + 2) % 24)
+	CONFIG_SET(number/roundtype_rotation_night_end_hour, (current_hour + 3) % 24)
+
+	SSticker.current_state = GAME_STATE_PREGAME
+	CONFIG_SET(number/roundtype_rotation_min_players, 0)
+	GLOB.round_counts_for_rotation = FALSE
+	var/applies = SSvote.update_round_rotation_eligibility()
+	var/counted_day = GLOB.round_counts_for_rotation
+	CONFIG_SET(number/roundtype_rotation_min_players, 1000)
+	SSvote.update_round_rotation_eligibility()
+	var/counted_low_pop = GLOB.round_counts_for_rotation
+	SSticker.current_state = saved_game_state
+	CONFIG_SET(number/roundtype_rotation_min_players, 0)
+	SSvote.update_round_rotation_eligibility()
+
+	TEST_ASSERT(applies, "Днём без порога онлайна ротация не применилась")
+	TEST_ASSERT(counted_day, "Выбор режима в лобби не засчитал раунд в ротацию")
+	TEST_ASSERT(!counted_low_pop, "Раунд с онлайном ниже порога засчитался в ротацию")
+	TEST_ASSERT(!GLOB.round_counts_for_rotation, "Признак ротации поменялся после старта раунда")
+
+/datum/unit_test/roundtype_rotation_eligibility/Destroy()
+	if(saved_config)
+		CONFIG_SET(number/roundtype_rotation_min_players, saved_config["min_players"])
+		CONFIG_SET(number/roundtype_rotation_night_start_hour, saved_config["night_start"])
+		CONFIG_SET(number/roundtype_rotation_night_end_hour, saved_config["night_end"])
+		GLOB.round_counts_for_rotation = saved_counts_for_rotation
+		SSticker.current_state = saved_game_state
+	return ..()

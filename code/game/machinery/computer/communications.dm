@@ -823,23 +823,22 @@
 
 	var/list/mob/candidates = pollGhostCandidates("Do you wish to be considered for [ertemplate.polldesc]?", "Deathsquad", null, minimum_required = ertemplate.teamsize, poll_header = "[ertemplate.polldesc]", poll_alert_pic = /obj/item/card/id/centcom)
 
-	if(candidates.len > 0)
-		if(length(ertemplate.spawn_members(candidates)))
-			message_admins("[ertemplate.polldesc] были отправлены на станцию со следующей миссией: [ertemplate.mission]")
-			priority_announce("Внимание, [station_name()]. Мы отправляем подразделение - [ertemplate.polldesc]. Вам следует приготовиться.", "Подготовка Отряда Быстрого Реагирования", ertemplate.ertphrase) //BlueMoon sound
-
-		//Open the Armory doors
-		if(ertemplate.opendoors)
-			for(var/obj/machinery/door/poddoor/ert/door in GLOB.airlocks)
-				door.open()
-				CHECK_TICK
-		return TRUE
-	else
+	if(!length(candidates) || !length(ertemplate.spawn_members(candidates)))
 		priority_announce("[station_name()], мы не можем выслать [ertemplate.polldesc] ввиду занятости всех действующих оперативников. Средства были возвращены.", "Отряд Быстрого Реагирования недоступен", 'modular_bluemoon/sound/ert/ert_no.ogg') //BlueMoon sound
 		var/datum/bank_account/bank_account = SSeconomy.get_dep_account(ACCOUNT_CAR)
 		GLOB.payed_ert[id]["available"] = TRUE
 		bank_account.adjust_money(GLOB.payed_ert[id]["price"])
 		return FALSE
+
+	message_admins("[ertemplate.polldesc] были отправлены на станцию со следующей миссией: [ertemplate.mission]")
+	priority_announce("Внимание, [station_name()]. Мы отправляем подразделение - [ertemplate.polldesc]. Вам следует приготовиться.", "Подготовка Отряда Быстрого Реагирования", ertemplate.ertphrase) //BlueMoon sound
+
+	//Open the Armory doors
+	if(ertemplate.opendoors)
+		for(var/obj/machinery/door/poddoor/ert/door in GLOB.airlocks)
+			door.open()
+			CHECK_TICK
+	return TRUE
 
 /**
  * Call an emergency meeting

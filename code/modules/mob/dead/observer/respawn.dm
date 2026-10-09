@@ -141,18 +141,18 @@
 /// Почему игрок сейчас не может вернуться в лобби, или null. Общая проверка для Respawn и "Войти в смену".
 /proc/respawn_block_reason(mob/user, datum/preferences/prefs)
 	if(!CONFIG_GET(flag/respawns_enabled))
-		return "Respawns are disabled in configuration."
+		return "Респавн отключён в настройках сервера."
 	if(jobban_isbanned(user, ROLE_RESPAWN))
-		return "You cannot respawn (banned)."
+		return "Вам запрещён респавн (бан)."
 	var/roundstart_timeleft = (SSticker.round_start_time + (CONFIG_GET(number/respawn_minimum_delay_roundstart) * 600)) - world.time
 	if(roundstart_timeleft > 0)
-		return "It's been too short of a time since the round started! Please wait [CEILING(roundstart_timeleft / 600, 0.1)] more minutes."
+		return "С начала раунда прошло слишком мало времени. Подождите ещё [CEILING(roundstart_timeleft / 600, 0.1)] мин."
 	var/list/banned_modes = CONFIG_GET(keyed_list/respawn_chaos_gamemodes)
 	if(SSticker.mode && banned_modes[lowertext(SSticker.mode.config_tag)])
-		return "The current mode tag, [SSticker.mode.config_tag], is not eligible for respawn."
+		return "В текущем режиме ([SSticker.mode.config_tag]) респавн недоступен."
 	var/timeleft = respawn_time_left(prefs)
 	if(timeleft)
-		return "It's been too short of a time since you died/observed! Please wait [round(timeleft / 600, 0.1)] more minutes."
+		return "С вашей смерти или выхода в наблюдатели прошло слишком мало времени. Подождите ещё [round(timeleft / 600, 0.1)] мин."
 	return null
 
 /proc/respawn_time_left(datum/preferences/prefs)

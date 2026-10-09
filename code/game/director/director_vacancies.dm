@@ -97,6 +97,6 @@ GLOBAL_LIST_INIT(director_vacancy_departments, list(
 		return
 	vacancies.note_filled(dept)
 	log_game("DIRECTOR VACANCY: [key_name(spawning)] занял пустой отдел [dept] ([job.title])")
-	if(last_signals && last_signals.evac_state != DIRECTOR_EVAC_NONE)
+	if(director_evac_state() != DIRECTOR_EVAC_NONE)
 		return
 	SSmetadollars.note_relief_join(spawning)

@@ -73,8 +73,11 @@
 	var/list/saved_joins
 	var/datum/director_vacancies/saved_vacancies
 	var/datum/director_signals/saved_signals
+	var/saved_emergency_mode
 
 /datum/unit_test/metadollars_relief_bonus/Destroy()
+	if(!isnull(saved_emergency_mode) && SSshuttle.emergency)
+		SSshuttle.emergency.mode = saved_emergency_mode
 	for(var/joined_ckey in SSmetadollars.relief_joins)
 		var/datum/relief_join/join = SSmetadollars.relief_joins[joined_ckey]
 		deltimer(join.check_timer)
@@ -132,11 +135,13 @@
 	var/mob/living/carbon/human/evac_joiner = allocate(/mob/living/carbon/human)
 	evac_joiner.ckey = VACANCY_PROBE_LATE_CKEY
 	SSdirector.vacancies.empty_since[DIRECTOR_DEPT_ENGINEERING] = world.time
-	var/datum/director_signals/evac_signals = new
-	evac_signals.evac_state = DIRECTOR_EVAC_CALLED
-	SSdirector.last_signals = evac_signals
+	SSdirector.last_signals = allocate(/datum/director_signals)
+	TEST_ASSERT_NOTNULL(SSshuttle.emergency, "Нужен эвакуационный шаттл")
+	saved_emergency_mode = SSshuttle.emergency.mode
+	SSshuttle.emergency.mode = SHUTTLE_CALL
 	SSdirector.on_job_latejoin(null, SSjob.GetJob("Station Engineer"), evac_joiner)
-	TEST_ASSERT(!(VACANCY_PROBE_LATE_CKEY in SSmetadollars.relief_joins), "Вход после вызова эвакуации не даёт отметки")
+	SSshuttle.emergency.mode = saved_emergency_mode
+	TEST_ASSERT(!(VACANCY_PROBE_LATE_CKEY in SSmetadollars.relief_joins), "Вход после вызова эвакуации не даёт отметки, даже если сигналы директора ещё не обновились")
 
 #undef VACANCY_PROBE_CKEY
 #undef VACANCY_PROBE_DEAD_CKEY
