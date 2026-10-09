@@ -325,17 +325,12 @@
 /**
  * Проверяет, блокирует ли броня лечение данным предметом.
  * Продвинутые предметы (bypass_armor = TRUE) проходят сквозь обычную броню, но не сквозь скафандры.
- * Синтетические раны (synthetic_mode = TRUE) не блокируются бронёй — ремонт инструментами не зависит от брони.
  */
 /datum/wound/proc/check_armor_for_treatment(obj/item/I, mob/user)
 	if(!ishuman(victim))
 		return TRUE
 
 	var/bypass_armor = FALSE
-	if(istype(src, /datum/wound/burn))
-		var/datum/wound/burn/burn_wound = src
-		if(burn_wound.synthetic_mode)
-			bypass_armor = TRUE
 	if(istype(I, /obj/item/stack/medical))
 		var/obj/item/stack/medical/med = I
 		bypass_armor = med.bypass_armor
