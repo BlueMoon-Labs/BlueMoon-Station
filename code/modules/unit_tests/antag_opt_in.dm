@@ -98,11 +98,11 @@
 	var/datum/mind/officer = allocate_mind()
 	officer.assigned_role = "Security Officer"
 	officer.antag_opt_in_level = ANTAG_OPT_IN_NOT_TARGET
-	TEST_ASSERT_EQUAL(officer.get_effective_antag_opt_in_level(), ANTAG_OPT_IN_KILL, "СБ на своей работе не ниже \"Можно убить\"")
+	TEST_ASSERT_EQUAL(officer.get_effective_antag_opt_in_level(), ANTAG_OPT_IN_KILL, "СБ на своей работе не ниже \"Цель убийства\"")
 	var/datum/mind/captain = allocate_mind()
 	captain.assigned_role = "Captain"
 	captain.antag_opt_in_level = ANTAG_OPT_IN_NOT_TARGET
-	TEST_ASSERT_EQUAL(captain.get_effective_antag_opt_in_level(), ANTAG_OPT_IN_KILL, "Командование на своей работе не ниже \"Можно убить\"")
+	TEST_ASSERT_EQUAL(captain.get_effective_antag_opt_in_level(), ANTAG_OPT_IN_KILL, "Командование на своей работе не ниже \"Цель убийства\"")
 	var/datum/mind/assistant = allocate_mind()
 	assistant.assigned_role = "Assistant"
 	assistant.antag_opt_in_level = ANTAG_OPT_IN_TEMPORARY
@@ -120,7 +120,7 @@
 	traitor_fan.assigned_role = "Assistant"
 	traitor_fan.apply_antag_opt_in_prefs(prefs)
 	TEST_ASSERT_EQUAL(traitor_fan.antag_opt_in_level, ANTAG_OPT_IN_NOT_TARGET, "Настройка персонажа переносится в разум")
-	TEST_ASSERT_EQUAL(traitor_fan.get_effective_antag_opt_in_level(), ANTAG_OPT_IN_KILL, "Включённый предатель поднимает уровень до \"Можно убить\"")
+	TEST_ASSERT_EQUAL(traitor_fan.get_effective_antag_opt_in_level(), ANTAG_OPT_IN_KILL, "Включённый предатель поднимает уровень до \"Цель убийства\"")
 	prefs.be_special = list()
 	TEST_ASSERT_EQUAL(traitor_fan.get_effective_antag_opt_in_level(), ANTAG_OPT_IN_KILL, "Порог антаг-настроек фиксируется на спавне")
 
@@ -136,6 +136,28 @@
 	no_antag.assigned_role = "Assistant"
 	no_antag.apply_antag_opt_in_prefs(prefs)
 	TEST_ASSERT_EQUAL(no_antag.get_effective_antag_opt_in_level(), ANTAG_OPT_IN_NOT_TARGET, "Выключенные антаги порог не поднимают")
+
+/// Игрок, зашедший в тело мимо лобби (гост-роль, ОБР), приносит в новый разум свою настройку согласия.
+/datum/unit_test/antag_opt_in_fresh_mind
+	var/probe_ckey = "unittestoptinfreshmind"
+
+/datum/unit_test/antag_opt_in_fresh_mind/Destroy()
+	GLOB.preferences_datums -= probe_ckey
+	return ..()
+
+/datum/unit_test/antag_opt_in_fresh_mind/Run()
+	var/datum/preferences/prefs = new
+	allocated += prefs
+	prefs.antag_opt_in_level = ANTAG_OPT_IN_NOT_TARGET
+	prefs.toggles &= ~NO_ANTAG
+	prefs.be_special = list(ROLE_TRAITOR = ANTAG_PRIORITY_HIGH)
+	GLOB.preferences_datums[probe_ckey] = prefs
+	var/mob/living/carbon/human/body = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	body.ckey = probe_ckey
+	body.mind_initialize()
+	SSticker.minds -= body.mind
+	TEST_ASSERT_EQUAL(body.mind.antag_opt_in_level, ANTAG_OPT_IN_NOT_TARGET, "Новый разум не получил уровень из настроек игрока")
+	TEST_ASSERT_EQUAL(body.mind.get_effective_antag_opt_in_level(), CONFIG_GET(number/antag_opt_in_antag_enabled_min), "Включённый предатель не поднял порог нового разума")
 
 /// Требуемый уровень каждого задания соответствует тому, что задание делает с целью.
 /datum/unit_test/antag_opt_in_objective_levels/Run()
@@ -175,15 +197,15 @@
 
 	world_state.set_crew(list(owner, killable))
 	var/datum/objective/assassinate/assassinate = antag_opt_in_objective(/datum/objective/assassinate, owner)
-	TEST_ASSERT_NULL(assassinate.find_target(), "Уничтожение не выбирает уровень \"Можно убить\"")
+	TEST_ASSERT_NULL(assassinate.find_target(), "Уничтожение не выбирает уровень \"Цель убийства\"")
 	world_state.set_crew(list(owner, killable, removable))
-	TEST_ASSERT_EQUAL(assassinate.find_target(), removable, "Уничтожение выбирает уровень \"Можно вывести из раунда\"")
+	TEST_ASSERT_EQUAL(assassinate.find_target(), removable, "Уничтожение выбирает уровень \"Цель любых заданий\"")
 
 	world_state.set_crew(list(owner, not_target))
 	var/datum/objective/kidnap/kidnap = antag_opt_in_objective(/datum/objective/kidnap, owner)
-	TEST_ASSERT_NULL(kidnap.find_target(), "Похищение не выбирает \"Не цель\"")
+	TEST_ASSERT_NULL(kidnap.find_target(), "Похищение не выбирает \"Не цель заданий\"")
 	world_state.set_crew(list(owner, not_target, temporary))
-	TEST_ASSERT_EQUAL(kidnap.find_target(), temporary, "Похищение выбирает \"Временные неудобства\"")
+	TEST_ASSERT_EQUAL(kidnap.find_target(), temporary, "Похищение выбирает \"Цель без убийства\"")
 
 	world_state.set_crew(list(owner, not_target))
 	var/datum/objective/protect/protect = antag_opt_in_objective(/datum/objective/protect, owner)
@@ -229,7 +251,7 @@
 
 	world_state.set_crew(list(owner, killable))
 	var/datum/objective/maroon/maroon = antag_opt_in_objective(/datum/objective/maroon, owner)
-	TEST_ASSERT_NULL(maroon.find_target_by_role("Assistant"), "Выбор по роли не берёт \"Можно убить\" для оставления")
+	TEST_ASSERT_NULL(maroon.find_target_by_role("Assistant"), "Выбор по роли не берёт \"Цель убийства\" для оставления")
 	world_state.set_crew(list(owner, killable, removable))
 	TEST_ASSERT_EQUAL(maroon.find_target_by_role("Assistant"), removable, "Выбор по роли берёт согласную цель")
 
@@ -250,13 +272,13 @@
 	var/datum/mind/prisoner_in = antag_opt_in_crew(ANTAG_OPT_IN_TEMPORARY, "Prisoner")
 	world_state.set_crew(list(owner, prisoner_out))
 	var/datum/objective/breakout/breakout = antag_opt_in_objective(/datum/objective/breakout, owner)
-	TEST_ASSERT_NULL(breakout.find_target(), "Побег не выбирает \"Не цель\"")
+	TEST_ASSERT_NULL(breakout.find_target(), "Побег не выбирает \"Не цель заданий\"")
 	world_state.set_crew(list(owner, prisoner_out, prisoner_in))
 	TEST_ASSERT_EQUAL(breakout.find_target(), prisoner_in, "Побег выбирает согласного заключённого")
 
 	GLOB.roundstart_prisoners = list(WEAKREF(prisoner_out.current))
 	var/datum/objective/rescue_prisoner/rescue = antag_opt_in_objective(/datum/objective/rescue_prisoner, owner)
-	TEST_ASSERT(!rescue.find_target(), "Спасение не выбирает \"Не цель\"")
+	TEST_ASSERT(!rescue.find_target(), "Спасение не выбирает \"Не цель заданий\"")
 	TEST_ASSERT(!QDELETED(rescue), "Неудачный выбор цели не удаляет задание из-под генератора")
 	GLOB.roundstart_prisoners += WEAKREF(prisoner_in.current)
 	TEST_ASSERT_EQUAL(rescue.find_target(), prisoner_in, "Спасение выбирает согласного заключённого")
@@ -264,9 +286,9 @@
 
 	world_state.set_crew(list(owner, not_target))
 	var/datum/objective/frame/frame = antag_opt_in_objective(/datum/objective/frame, owner)
-	TEST_ASSERT_NULL(frame.find_target(), "Подстава не выбирает \"Не цель\"")
+	TEST_ASSERT_NULL(frame.find_target(), "Подстава не выбирает \"Не цель заданий\"")
 	world_state.set_crew(list(owner, not_target, temporary))
-	TEST_ASSERT_EQUAL(frame.find_target(), temporary, "Подстава выбирает \"Временные неудобства\"")
+	TEST_ASSERT_EQUAL(frame.find_target(), temporary, "Подстава выбирает \"Цель без убийства\"")
 
 	world_state.set_crew(list(owner, killable))
 	var/datum/objective/bloodsucker/lair/bloodsucker = antag_opt_in_objective(/datum/objective/bloodsucker/lair, owner)
@@ -316,7 +338,7 @@
 	var/refusal = heretic.hunt_target_unavailable_reason(temporary, selecting = TRUE)
 	TEST_ASSERT(findtext(refusal, "не согласен"), "Отказ по согласию назван прямо: [refusal]")
 	var/other_reason = heretic.hunt_target_unavailable_reason(killable, selecting = TRUE)
-	TEST_ASSERT(!findtext(other_reason, "не согласен"), "Цель \"Можно убить\" подходит для охоты: [other_reason]")
+	TEST_ASSERT(!findtext(other_reason, "не согласен"), "Цель \"Цель убийства\" подходит для охоты: [other_reason]")
 	TEST_ASSERT_NULL(heretic.hunt_target_unavailable_reason(temporary), "Уже назначенная цель не снимается после смены настройки")
 
 /// Без согласных целей генераторы выдают задания без цели, а не пустые.

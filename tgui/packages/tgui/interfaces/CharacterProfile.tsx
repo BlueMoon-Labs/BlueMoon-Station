@@ -129,7 +129,7 @@ export const CharacterProfile = (props) => {
                 ))}
                 <LabeledList.Item
                   color={data.antag_opt_in_color}
-                  label="Цель антагонистов">
+                  label="Задания антагов">
                   <Tooltip content={data.antag_opt_in_desc}>{data.antag_opt_in}</Tooltip>
                 </LabeledList.Item>
               </LabeledList>

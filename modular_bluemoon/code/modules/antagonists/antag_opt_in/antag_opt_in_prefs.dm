@@ -19,7 +19,7 @@
 /datum/preferences/proc/antag_opt_in_pref_html()
 	var/level = get_antag_opt_in_pref_level()
 	var/default_suffix = isnull(antag_opt_in_level) ? " (по умолчанию)" : ""
-	return "<span title='Кем персонаж может стать в заданиях антагонистов. [GLOB.antag_opt_in_descriptions["[level]"]]'>Цель антагонистов : <a href='?_src_=prefs;preference=antag_opt_in_level;task=input'><font color='[antag_opt_in_level_color(level)]'>[antag_opt_in_level_name(level)][default_suffix]</font></a></span><br>"
+	return "<span title='Может ли персонаж выпасть целью в заданиях антагонистов. [GLOB.antag_opt_in_descriptions["[level]"]] [GLOB.antag_opt_in_disclaimer]'>Задания антагов : <a href='?_src_=prefs;preference=antag_opt_in_level;task=input'><font color='[antag_opt_in_level_color(level)]'>[antag_opt_in_level_name(level)][default_suffix]</font></a></span><br>"
 
 /datum/preferences/proc/choose_antag_opt_in_level(mob/user)
 	var/list/choices = list()
@@ -28,8 +28,8 @@
 		var/level_name = antag_opt_in_level_name(level)
 		choices[level_name] = level
 		explanation += "[level_name]: [GLOB.antag_opt_in_descriptions["[level]"]]"
-	var/message = "Кем ваш персонаж может стать в заданиях антагонистов?\n\n[jointext(explanation, "\n")]\n\nНастройка ограничивает только выбор целей заданий, а не насилие в игре. [antag_opt_in_thresholds_text()]"
-	var/choice = tgui_input_list(user, message, "Цель антагонистов", choices, antag_opt_in_level_name(get_antag_opt_in_pref_level()))
+	var/message = "Может ли ваш персонаж выпасть целью в заданиях антагонистов?\n\n[jointext(explanation, "\n")]\n\n[GLOB.antag_opt_in_disclaimer] [antag_opt_in_thresholds_text()]"
+	var/choice = tgui_input_list(user, message, "Задания антагов", choices, antag_opt_in_level_name(get_antag_opt_in_pref_level()))
 	if(isnull(choice) || !(choice in choices))
 		return
 	antag_opt_in_level = choices[choice]
@@ -42,10 +42,10 @@
 	var/list/level_names = list()
 	for(var/level in ANTAG_OPT_IN_NOT_TARGET to ANTAG_OPT_IN_ROUND_REMOVE)
 		level_names += "\"[antag_opt_in_level_name(level)]\""
-	to_chat(parent, examine_block("<span class='notice'><b>Новая настройка: согласие быть целью антагонистов.</b><br>\
-		В редакторе персонажа, в блоке Consent preferences, можно выбрать, кем персонаж может стать в заданиях антагонистов: [english_list(level_names, and_text = " или ")]. \
+	to_chat(parent, examine_block("<span class='notice'><b>Новая настройка: цель заданий антагонистов.</b><br>\
+		В редакторе персонажа, в блоке Consent preferences, можно выбрать, может ли персонаж выпасть целью в заданиях антагонистов: [english_list(level_names, and_text = " или ")]. \
 		Сейчас у текущего персонажа: \"[antag_opt_in_level_name(get_antag_opt_in_pref_level())]\".<br>\
-		Настройка ограничивает только выбор целей заданий, а не насилие в игре. [antag_opt_in_thresholds_text()] \
+		<b>[GLOB.antag_opt_in_disclaimer]</b> [antag_opt_in_thresholds_text()] \
 		В раунде уровень меняется в меню взаимодействий, на вкладке настроек персонажа.<br>\
 		<a href='?_src_=prefs;preference=antag_opt_in_level;task=input'>Выбрать уровень</a> (после выбора сохраните персонажа). Подробности - в вики, раздел \"Политика антагонистов\".</span>"))
 
@@ -68,6 +68,7 @@
 		"effective" = self_mind ? self_mind.get_effective_antag_opt_in_level() : chosen,
 		"levels" = levels,
 		"thresholds" = antag_opt_in_thresholds_text(),
+		"disclaimer" = GLOB.antag_opt_in_disclaimer,
 	)
 
 /datum/component/interaction_menu_granter/proc/set_antag_opt_in_level(mob/living/self, level)
@@ -82,7 +83,7 @@
 		self.mind.antag_opt_in_level = level
 	log_game("[key_name(self)] меняет согласие быть целью антагонистов на \"[antag_opt_in_level_name(level)]\".")
 	var/effective = self.mind ? self.mind.get_effective_antag_opt_in_level() : level
-	to_chat(self, span_notice("Согласие быть целью антагонистов: \"[antag_opt_in_level_name(level)]\", итоговый уровень \"[antag_opt_in_level_name(effective)]\". Действует на новые выборы целей, уже выданные задания не меняются."))
+	to_chat(self, span_notice("Цель заданий антагонистов: \"[antag_opt_in_level_name(level)]\", итоговый уровень \"[antag_opt_in_level_name(effective)]\". Действует на новые выборы целей, уже выданные задания не меняются."))
 	return TRUE
 
 /mob/dead/new_player/Login()

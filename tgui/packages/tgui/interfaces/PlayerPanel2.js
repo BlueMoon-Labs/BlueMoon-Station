@@ -1493,7 +1493,7 @@ const OtherActions = (props) => {
       <Section title="Антагонизм">
         {!!antag_opt_in && (
           <Box mb=".5rem">
-            <Box inline color="label">Цель антагонистов: </Box>
+            <Box inline color="label">Задания антагов: </Box>
             <Box inline bold color={antag_opt_in_color}>{antag_opt_in}</Box>
             <Box inline color="label"> ({antag_opt_in_detail})</Box>
           </Box>

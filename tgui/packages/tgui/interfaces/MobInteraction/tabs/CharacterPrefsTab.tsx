@@ -13,6 +13,7 @@ type AntagOptInInfo = {
   effective: number,
   levels: AntagOptInLevel[],
   thresholds: string,
+  disclaimer: string,
 }
 
 type CharacterPrefsInfo = {
@@ -102,7 +103,10 @@ export const CharacterPrefsTab = (props) => {
       )}
       <LabeledList>
         {antag_opt_in ? (
-          <LabeledList.Item label={<Tooltip content={`Кем персонаж может стать в заданиях антагонистов. Ограничивает только выбор целей заданий, а не насилие в игре. Новый уровень действует на следующие выборы целей. ${antag_opt_in.thresholds}`}><span>Цель антагонистов</span></Tooltip>}>
+          <LabeledList.Item label={<Tooltip content={`Может ли персонаж выпасть целью в заданиях антагонистов. Новый уровень действует на следующие выборы целей. ${antag_opt_in.thresholds}`}><span>Задания антагов</span></Tooltip>}>
+            <Box mb={0.5} color="average">
+              {antag_opt_in.disclaimer}
+            </Box>
             <Stack vertical>
               {antag_opt_in.levels.map((level) => (
                 <Stack.Item key={level.value}>

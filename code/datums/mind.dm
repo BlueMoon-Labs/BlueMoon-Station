@@ -1958,6 +1958,8 @@ GLOBAL_LIST(objective_choices)
 		mind = new /datum/mind(key)
 		SSticker.minds += mind
 		fresh_mind = TRUE
+		if(ckey && isliving(src))
+			mind.apply_antag_opt_in_prefs(GLOB.preferences_datums[ckey])
 	if(!mind.name)
 		mind.name = real_name
 	mind.set_current(src)
