@@ -1257,10 +1257,6 @@
  * возвращается из конструктора уже qdel-нутой. Вычищать её было некому:
  * handle_stomach() перебирал только /mob/living. Раунд 9813 - 20 конфетти
  * одним тиком, каждое с одной внешней ссылкой.
- *
- * Подписки на COMSIG_PARENT_QDELETING тут быть не может: ключ (цель, сигнал,
- * слушатель) уже занят clear_from_recent_examines, и override молча выбил бы
- * чужой обработчик у только что осмотренного и съеденного моба.
  */
 /mob/living/carbon/proc/add_to_stomach(atom/movable/swallowed)
 	if(QDELETED(swallowed) || (swallowed in stomach_contents))

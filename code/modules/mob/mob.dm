@@ -399,13 +399,15 @@
 	var/examine_more = FALSE
 	if(client)
 		LAZYINITLIST(client.recent_examines)
-		if(isnull(client.recent_examines[A]) || client.recent_examines[A] < world.time)
+		// Keyed by ref, not by the atom: a COMSIG_PARENT_QDELETING subscription here would
+		// replace any handler this mob already holds on the target (hostile enemy tracking).
+		var/examined_ref = REF(A)
+		if(isnull(client.recent_examines[examined_ref]) || client.recent_examines[examined_ref] < world.time)
 			result = A.examine(src)
 			if(!client)
 				return
-			client.recent_examines[A] = world.time + EXAMINE_MORE_TIME // set the value to when the examine cooldown ends
-			RegisterSignal(A, COMSIG_PARENT_QDELETING, PROC_REF(clear_from_recent_examines), override=TRUE) // to flush the value if deleted early
-			addtimer(CALLBACK(src, PROC_REF(clear_from_recent_examines), A), EXAMINE_MORE_TIME)
+			client.recent_examines[examined_ref] = world.time + EXAMINE_MORE_TIME // set the value to when the examine cooldown ends
+			addtimer(CALLBACK(src, PROC_REF(clear_from_recent_examines), examined_ref), EXAMINE_MORE_TIME)
 			handle_eye_contact(A)
 		else
 			examine_more = TRUE
@@ -482,11 +484,10 @@
 
 // BLINDNESS CHECK END
 
-/mob/proc/clear_from_recent_examines(atom/A)
+/mob/proc/clear_from_recent_examines(examined_ref)
 	if(!client)
 		return
-	UnregisterSignal(A, COMSIG_PARENT_QDELETING)
-	LAZYREMOVE(client.recent_examines, A)
+	LAZYREMOVE(client.recent_examines, examined_ref)
 
 /**
   * handle_eye_contact() is called when we examine() something. If we examine an alive mob with a mind who has examined us in the last second within 5 tiles, we make eye contact!
@@ -499,7 +500,7 @@
 	return
 
 /mob/living/handle_eye_contact(mob/living/examined_mob)
-	if(!istype(examined_mob) || src == examined_mob || examined_mob.stat >= UNCONSCIOUS || !client || !examined_mob.client?.recent_examines || !(src in examined_mob.client.recent_examines))
+	if(!istype(examined_mob) || src == examined_mob || examined_mob.stat >= UNCONSCIOUS || !client || !examined_mob.client?.recent_examines || !(REF(src) in examined_mob.client.recent_examines))
 		return
 
 	if(get_dist(src, examined_mob) > EYE_CONTACT_RANGE)
