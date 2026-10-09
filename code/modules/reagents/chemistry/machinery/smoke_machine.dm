@@ -1,5 +1,5 @@
-#define SMOKE_COST(set, eff) (((((set) * 2) ** 2) + (((set) * 2) + 1) ** 2) / ((eff) * (5 / 4)))
-#define POWER_COST(set, eff) (400 * (set) / (eff))
+#define SMOKE_COST(set, mod) (((((set) * 2) ** 2) + (((set) * 2) + 1) ** 2) / ((mod) * (5 / 4)))
+#define POWER_COST(set, eff, mult) (400 * (set) * (1/(mult)) / (eff))
 
 /obj/machinery/smoke_machine
 	name = "smoke machine"
@@ -15,6 +15,8 @@
 	var/efficiency = 1
 	var/setting = 1 // displayed range is 2 * setting
 	var/max_range = 1 // displayed max range
+	var/modifier = 1
+	var/max_modifier = 1
 
 /obj/machinery/smoke_machine/get_cell()
 	return cell
@@ -29,8 +31,61 @@
 	. = ..()
 	AddComponent(/datum/component/simple_rotation, ROTATION_ALTCLICK | ROTATION_CLOCKWISE | ROTATION_COUNTERCLOCKWISE | ROTATION_VERBS, null, CALLBACK(src, PROC_REF(can_be_rotated)))
 
+/obj/machinery/smoke_machine/wrench_act(mob/living/user, obj/item/I)
+	. = ..()
+	if(.)
+		return
+	if(default_unfasten_wrench(user, I, 40) == SUCCESSFUL_UNFASTEN)
+		if(on)
+			on = FALSE
+			visible_message("<span class='notice'>[src] гаснет при смене крепления.</span>")
+		update_icon()
+		SStgui.update_uis(src)
+		return TRUE
+	return FALSE
+
 /obj/machinery/smoke_machine/proc/can_be_rotated(mob/user, rotation_type)
 	return !anchored
+
+/obj/machinery/smoke_machine/proc/get_power_source(cost)
+	if(anchored)
+		var/area/our_area = get_area(src)
+		var/obj/machinery/power/apc/our_apc = our_area?.get_apc()
+		if(our_apc?.operating && !QDELETED(our_apc.cell) && our_apc.cell.charge >= cost)
+			return "apc_cell"
+		var/obj/machinery/power/terminal/our_terminal = our_apc?.terminal
+		if(our_terminal?.powernet && our_terminal.delayed_surplus() >= cost)
+			return "apc"
+	if(!QDELETED(cell) && cell.charge >= cost)
+		return "cell"
+	return null
+
+/obj/machinery/smoke_machine/proc/consume_power(cost, source)
+	switch(source)
+		if("apc_cell")
+			var/area/our_area = get_area(src)
+			var/obj/machinery/power/apc/our_apc = our_area?.get_apc()
+			if(!our_apc?.operating || QDELETED(our_apc.cell))
+				return FALSE
+			if(!our_apc.cell.use(cost))
+				return FALSE
+			if(our_apc.charging == 2)
+				our_apc.charging = 1
+			return TRUE
+		if("apc")
+			var/area/our_area = get_area(src)
+			var/obj/machinery/power/apc/our_apc = our_area?.get_apc()
+			var/obj/machinery/power/terminal/our_terminal = our_apc?.terminal
+			if(!our_terminal?.powernet)
+				return FALSE
+			our_terminal.add_delayedload(cost)
+			return TRUE
+		if("cell")
+			if(QDELETED(cell) || cell.charge < cost)
+				return FALSE
+			cell.use(cost)
+			return TRUE
+	return FALSE
 
 /obj/machinery/smoke_machine/on_construction()
 	panel_open = TRUE
@@ -49,11 +104,9 @@
 	return ..()
 
 /obj/machinery/smoke_machine/update_icon_state()
-	if(!is_operational() || !on || reagents.total_volume == 0 || QDELETED(cell) || cell.charge <= 1)
-		if(panel_open)
-			icon_state = "smoke0-o"
-		else
-			icon_state = "smoke0"
+	var/no_power = (anchored ? !get_power_source(1) : (QDELETED(cell) || cell.charge <= 1))
+	if(!is_operational() || !on || reagents.total_volume == 0 || no_power)
+		icon_state = panel_open ? "smoke0-o" : "smoke0"
 	else
 		icon_state = "smoke1"
 
@@ -73,19 +126,22 @@
 		efficiency += C.rating
 	efficiency = max(efficiency, 1)
 	max_range = 1
+	max_modifier = 0
 	for(var/obj/item/stock_parts/manipulator/M in component_parts)
+		max_modifier += M.rating
 		if(M.rating == 6)
 			max_range += 8
 		else
 			max_range += M.rating
 	max_range = max(max_range, 2)
+	max_modifier = max(max_modifier, 1)
 
 	setting = min(setting, max_range)
 	SStgui.update_uis(src)
 
-/datum/effect_system/smoke_spread/chem/smoke_machine/set_up(datum/reagents/carry, setting=1, efficiency=1, loc, silent=FALSE)
+/datum/effect_system/smoke_spread/chem/smoke_machine/set_up(datum/reagents/carry, setting=1, modifier=1, loc, silent=FALSE)
 	amount = setting * 2
-	var/cost = SMOKE_COST(setting, efficiency)
+	var/cost = SMOKE_COST(setting, modifier)
 	carry.copy_to(chemholder, cost)
 	carry.remove_any(cost)
 	location = loc
@@ -102,36 +158,37 @@
 
 	if(!is_operational())
 		return
-	if(QDELETED(cell) || cell.charge <= 1)
-		if(on)
-			on = FALSE
-			update_icon()
-		return
 	if(reagents.total_volume == 0)
 		on = FALSE
 		update_icon()
 		return
 	var/turf/T = get_turf(src)
 	var/smoke_test = locate(/obj/effect/particle_effect/smoke) in T
+	var/mult = (modifier == 0.25 || modifier == 0.5) ? modifier : 1
+	var/cost = POWER_COST(setting, efficiency, mult)
 	if(on && !smoke_test)
-		if(reagents.total_volume < SMOKE_COST(setting, efficiency))
+		if(reagents.total_volume < SMOKE_COST(setting, modifier))
 			on = FALSE
 			visible_message("<span class='warning'>[src] гаснет - недостаточно реагентов.</span>")
 			playsound(src, 'sound/machines/buzz-sigh.ogg', 30, TRUE)
 			update_icon()
 			return
-		if(cell.charge < POWER_COST(setting, efficiency))
+		var/source = get_power_source(cost)
+		if(!source)
 			on = FALSE
-			visible_message("<span class='warning'>[src] гаснет — разряжена батарея.</span>")
+			if(anchored)
+				visible_message("<span class='warning'>[src] гаснет — нет нагрузки в сети и батарея разряжена.</span>")
+			else
+				visible_message("<span class='warning'>[src] гаснет — разряжена батарея.</span>")
 			playsound(src, 'sound/machines/buzz-sigh.ogg', 30, TRUE)
 			update_icon()
 			return
 
 		update_icon()
 		var/datum/effect_system/smoke_spread/chem/smoke_machine/smoke = new()
-		smoke.set_up(reagents, setting, efficiency, T)
+		smoke.set_up(reagents, setting, modifier, T)
 		smoke.start()
-		cell.use(POWER_COST(setting, efficiency))
+		consume_power(cost, source)
 
 /obj/machinery/smoke_machine/attackby(obj/item/I, mob/user, params)
 	add_fingerprint(user)
@@ -160,9 +217,6 @@
 		if(units)
 			to_chat(user, "<span class='notice'>Вы залили [units] u раствора внутрь [src].</span>")
 			return
-	if(default_unfasten_wrench(user, I, 40))
-		on = FALSE
-		return
 	if(default_deconstruction_screwdriver(user, "smoke0-o", "smoke0", I))
 		return
 	if(default_deconstruction_crowbar(I))
@@ -189,6 +243,8 @@
 	data["active"] = on
 	data["setting"] = setting
 	data["maxSetting"] = max_range
+	data["modifier"] = modifier
+	data["maxModifier"] = max_modifier
 
 	data["open"] = panel_open
 	data["hasPowercell"] = !QDELETED(cell)
@@ -207,15 +263,26 @@
 		if("setting")
 			var/amount = text2num(params["amount"])
 			if(amount in 1 to max_range)
+				if(amount >= 3 && (modifier == 0.25 || modifier == 0.5))
+					modifier = 1
+				if(amount >= 2 && modifier == 0.25)
+					modifier = 0.5
 				setting = amount
 				. = TRUE
+		if("modifier")
+			var/mod = text2num(params["multiplier"])
+			if(!(mod in 1 to max_modifier) && !(mod in list(0.25, 0.5)))
+				return
+			if(mod == 0.25 && setting >= 2)
+				return
+			if(mod == 0.5 && setting >= 3)
+				return
+			modifier = mod
+			. = TRUE
 		if("power")
 			if(!on)
-				if(QDELETED(cell))
-					to_chat(usr, "<span class='warning'>Нет батареи.</span>")
-					return TRUE
-				if(cell.charge <= 1)
-					to_chat(usr, "<span class='warning'>Батарея разряжена.</span>")
+				if(!get_power_source(1))
+					to_chat(usr, "<span class='warning'>Нет доступного источника питания.</span>")
 					return TRUE
 				if(reagents.total_volume == 0)
 					to_chat(usr, "<span class='warning'>Отсутствуют реагенты.</span>")
@@ -234,6 +301,7 @@
 				cell = null
 				update_icon()
 				. = TRUE
+	SStgui.update_uis(src)
 
 /obj/machinery/smoke_machine/emp_act(severity)
 	. = ..()
