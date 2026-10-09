@@ -45,3 +45,14 @@
 /datum/sprite_accessory/insect_fluff/acradors_neckfluff/sixth
 	name = "Neckfluff (Acradors 6)"
 	icon_state = "neckfluff_acradors_6"
+
+/datum/sprite_accessory/mam_body_markings/splotches
+	name = "Splotches"
+	icon_state = "splotches"
+	icon = 'modular_bluemoon/icons/mob/body_markings/splotches.dmi'
+	covered_limbs = list("Head" = MATRIX_RED, "Chest" = MATRIX_RED, "Left Leg" = MATRIX_RED, "Right Leg" = MATRIX_RED, "Left Arm" = MATRIX_RED, "Right Arm" = MATRIX_RED)
+
+/datum/sprite_accessory/mam_body_markings/splotches/swap
+	name = "Splotches Swap"
+	icon_state = "splotcheswap"
+	covered_limbs = list("Head" = MATRIX_RED)

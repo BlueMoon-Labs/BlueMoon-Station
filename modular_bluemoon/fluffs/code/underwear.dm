@@ -1,3 +1,8 @@
+/obj/item/clothing/underwear/shirt/bm
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/underwear.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear_anthro.dmi' // nah вот нет-бы общему формату соответствовать, нужно своё придумать с _anthro
+
 /obj/item/clothing/underwear/briefs/bongepop
 	name = "Bongepop Boxers"
 	desc = "Потешные боксеры, выполненные в стиле одноименного Банч Попа, сидят идеально вокруг мужских и женских попий."
@@ -67,4 +72,9 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/underwear.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'
 	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear_anthro.dmi'
+	body_parts_covered = CHEST | GROIN
+
+/obj/item/clothing/underwear/shirt/bm/kladmen_bodysuit
+	name = "Bodysuit"
+	icon_state = "kladmen_bodysuit"
 	body_parts_covered = CHEST | GROIN

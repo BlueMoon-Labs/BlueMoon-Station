@@ -1076,6 +1076,18 @@
 	path = /obj/item/clothing/underwear/shirt/bra/kladmen_bra
 	ckeywhitelist = list("kladmenuwu", "scramblescream")
 
+/datum/gear/donator/bm/kladmen_jacket
+	name = "Jacket"
+	slot = ITEM_SLOT_OCLOTHING
+	path = /obj/item/clothing/suit/donator/bm/kladmenuwu_jacket
+	ckeywhitelist = list("kladmenuwu")
+
+/datum/gear/donator/bm/kladmen_bodysuit
+	name = "Bodysuit"
+	slot = ITEM_SLOT_SHIRT
+	path = /obj/item/clothing/underwear/shirt/bm/kladmen_bodysuit
+	ckeywhitelist = list("kladmenuwu")
+
 /datum/gear/donator/bm/troubleneko_bra
 	name = "Laced lingerie bra"
 	slot = ITEM_SLOT_OCLOTHING
