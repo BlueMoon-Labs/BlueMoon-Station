@@ -29,7 +29,7 @@
 			return sphere_turf
 	var/list/arrival_turfs = list()
 	for(var/turf/open/arrival_turf in get_area_turfs(/area/hallway/secondary/entry))
-		if(is_station_level(arrival_turf.z) && !arrival_turf.is_blocked_turf(TRUE))
+		if(is_station_level(arrival_turf.z) && !isgroundlessturf(arrival_turf) && !arrival_turf.is_blocked_turf(TRUE))
 			arrival_turfs += arrival_turf
 	if(length(arrival_turfs))
 		return pick(arrival_turfs)

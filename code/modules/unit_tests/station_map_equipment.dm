@@ -551,7 +551,8 @@
 	var/list/problems = list()
 	var/list/supply = list()
 	for(var/obj/machinery/power/smes/smes as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/power/smes))
-		if(!is_station_level(smes.z) || smes.charge < STATION_SMES_STORAGE_CHARGE)
+		// Стартовый заряд инженерных SMES задан типом, к середине прогона тестов они уже разряжены ниже порога.
+		if(!is_station_level(smes.z) || max(smes.charge, initial(smes.charge)) < STATION_SMES_STORAGE_CHARGE)
 			continue
 		if(!smes.powernet)
 			problems += "заряженный SMES без сети ([smes.x],[smes.y],[smes.z])"

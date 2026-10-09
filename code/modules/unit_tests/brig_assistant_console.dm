@@ -12,11 +12,13 @@
 	TEST_ASSERT_NOTNULL(node, "Нет узла Computerized Recordkeeping")
 	TEST_ASSERT(node.design_ids["brig_assistant_console"], "Узел с консолями записей СБ не открывает плату консоли заданий брига")
 
-/// На станции есть консоль заданий брига: через неё оплачивают штрафы.
+/// На станции есть консоль заданий брига: через неё оплачивают штрафы. Отладочные карты без брига не в счёт.
 /datum/unit_test/station_has_brig_assistant_console
 	requires_full_map = TRUE
 
 /datum/unit_test/station_has_brig_assistant_console/Run()
+	if(SSmapping.config.map_path == "map_files/debug")
+		return
 	for(var/obj/machinery/computer/brig_assistant_console/console as anything in SSmachines.get_machines_by_type(/obj/machinery/computer/brig_assistant_console))
 		if(is_station_level(console.z))
 			return

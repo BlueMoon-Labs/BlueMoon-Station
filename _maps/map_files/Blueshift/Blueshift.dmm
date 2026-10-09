@@ -98867,7 +98867,14 @@
 /obj/effect/decal/cleanable/dirt{
 	icon_state = "dirt-flat-1"
 	},
-/obj/structure/spider/spiderling,
+/mob/living/simple_animal/hostile/poison/giant_spider/hunter{
+	name = "scrawny spider";
+	desc = "Furry and black, it makes you shudder to look at it. This one has sparkling purple eyes, and looks abnormally thin and frail.";
+	health = 60;
+	maxHealth = 60;
+	melee_damage_lower = 5;
+	melee_damage_upper = 10
+	},
 /turf/open/floor/plating,
 /area/maintenance/department/medical/central)
 "oPB" = (
@@ -151418,7 +151425,14 @@
 /obj/effect/decal/cleanable/dirt{
 	icon_state = "dirt-flat-1"
 	},
-/obj/structure/spider/spiderling,
+/mob/living/simple_animal/hostile/poison/giant_spider/hunter{
+	name = "scrawny spider";
+	desc = "Furry and black, it makes you shudder to look at it. This one has sparkling purple eyes, and looks abnormally thin and frail.";
+	health = 60;
+	maxHealth = 60;
+	melee_damage_lower = 5;
+	melee_damage_upper = 10
+	},
 /turf/open/floor/plasteel/cafeteria,
 /area/maintenance/department/medical/central)
 "wKE" = (
@@ -154486,7 +154500,14 @@
 /area/maintenance/department/eva)
 "xiS" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/structure/spider/spiderling,
+/mob/living/simple_animal/hostile/poison/giant_spider/hunter{
+	name = "scrawny spider";
+	desc = "Furry and black, it makes you shudder to look at it. This one has sparkling purple eyes, and looks abnormally thin and frail.";
+	health = 60;
+	maxHealth = 60;
+	melee_damage_lower = 5;
+	melee_damage_upper = 10
+	},
 /turf/open/floor/plating,
 /area/maintenance/department/medical/central)
 "xiU" = (
