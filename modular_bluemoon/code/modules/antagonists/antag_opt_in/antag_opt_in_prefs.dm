@@ -9,9 +9,9 @@
 	return value
 
 /proc/antag_opt_in_thresholds_text()
-	return "СБ на своей работе не опускается ниже «[antag_opt_in_level_name(CONFIG_GET(number/antag_opt_in_security_min))]», \
-		командование на своей работе - ниже «[antag_opt_in_level_name(CONFIG_GET(number/antag_opt_in_command_min))]», \
-		игрок с включённой антаг-ролью экипажа - ниже «[antag_opt_in_level_name(CONFIG_GET(number/antag_opt_in_antag_enabled_min))]»."
+	return "СБ на своей работе не опускается ниже \"[antag_opt_in_level_name(CONFIG_GET(number/antag_opt_in_security_min))]\", \
+		командование на своей работе - ниже \"[antag_opt_in_level_name(CONFIG_GET(number/antag_opt_in_command_min))]\", \
+		игрок с включённой антаг-ролью экипажа - ниже \"[antag_opt_in_level_name(CONFIG_GET(number/antag_opt_in_antag_enabled_min))]\"."
 
 /datum/preferences/proc/get_antag_opt_in_pref_level()
 	return isnull(antag_opt_in_level) ? antag_opt_in_default_level() : antag_opt_in_level
@@ -41,13 +41,13 @@
 	save_pref_var("antag_opt_in_notice_seen")
 	var/list/level_names = list()
 	for(var/level in ANTAG_OPT_IN_NOT_TARGET to ANTAG_OPT_IN_ROUND_REMOVE)
-		level_names += "«[antag_opt_in_level_name(level)]»"
+		level_names += "\"[antag_opt_in_level_name(level)]\""
 	to_chat(parent, examine_block("<span class='notice'><b>Новая настройка: согласие быть целью антагонистов.</b><br>\
 		В редакторе персонажа, в блоке Consent preferences, можно выбрать, кем персонаж может стать в заданиях антагонистов: [english_list(level_names, and_text = " или ")]. \
-		Сейчас у текущего персонажа: «[antag_opt_in_level_name(get_antag_opt_in_pref_level())]».<br>\
+		Сейчас у текущего персонажа: \"[antag_opt_in_level_name(get_antag_opt_in_pref_level())]\".<br>\
 		Настройка ограничивает только выбор целей заданий, а не насилие в игре. [antag_opt_in_thresholds_text()] \
 		В раунде уровень меняется в меню взаимодействий, на вкладке настроек персонажа.<br>\
-		<a href='?_src_=prefs;preference=antag_opt_in_level;task=input'>Выбрать уровень</a> (после выбора сохраните персонажа). Подробности - в вики, раздел «Политика антагонистов».</span>"))
+		<a href='?_src_=prefs;preference=antag_opt_in_level;task=input'>Выбрать уровень</a> (после выбора сохраните персонажа). Подробности - в вики, раздел \"Политика антагонистов\".</span>"))
 
 /datum/component/interaction_menu_granter/proc/antag_opt_in_ui_data(mob/living/self)
 	var/datum/mind/self_mind = self?.mind
@@ -80,9 +80,9 @@
 		prefs.save_character()
 	if(self.mind)
 		self.mind.antag_opt_in_level = level
-	log_game("[key_name(self)] меняет согласие быть целью антагонистов на «[antag_opt_in_level_name(level)]».")
+	log_game("[key_name(self)] меняет согласие быть целью антагонистов на \"[antag_opt_in_level_name(level)]\".")
 	var/effective = self.mind ? self.mind.get_effective_antag_opt_in_level() : level
-	to_chat(self, span_notice("Согласие быть целью антагонистов: «[antag_opt_in_level_name(level)]», итоговый уровень «[antag_opt_in_level_name(effective)]». Действует на новые выборы целей, уже выданные задания не меняются."))
+	to_chat(self, span_notice("Согласие быть целью антагонистов: \"[antag_opt_in_level_name(level)]\", итоговый уровень \"[antag_opt_in_level_name(effective)]\". Действует на новые выборы целей, уже выданные задания не меняются."))
 	return TRUE
 
 /mob/dead/new_player/Login()

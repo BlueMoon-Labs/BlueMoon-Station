@@ -55,7 +55,7 @@ GLOBAL_LIST_EMPTY(objectives)
 			if(possible_target == target)
 				def_value = choice_name
 
-	var/choice = input(admin, "Цель задания. После имени - согласие быть целью антагонистов, этому заданию нужно не ниже «[antag_opt_in_level_name(required_opt_in_level)]».", "Objective target", def_value) as null|anything in possible_targets
+	var/choice = input(admin, "Цель задания. После имени - согласие быть целью антагонистов, этому заданию нужно не ниже \"[antag_opt_in_level_name(required_opt_in_level)]\".", "Objective target", def_value) as null|anything in possible_targets
 	if (!choice)
 		return
 

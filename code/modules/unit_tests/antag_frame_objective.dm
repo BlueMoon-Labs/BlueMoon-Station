@@ -39,7 +39,7 @@
 	QDEL_LIST(ling.objectives)
 	qdel(ling)
 
-/// При целях только уровня «Временные неудобства» предатель и генокрад в Medium и Hard получают подставу, но не убийство.
+/// При целях только уровня "Временные неудобства" предатель и генокрад в Medium и Hard получают подставу, но не убийство.
 /datum/unit_test/antag_frame_level_one_targets/Run()
 	var/datum/antag_opt_in_test_world/world_state = allocate(/datum/antag_opt_in_test_world)
 	world_state.set_hard_round(src)

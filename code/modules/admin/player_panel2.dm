@@ -183,7 +183,7 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 		var/chosen_level = isnull(opt_in_mind.antag_opt_in_level) ? antag_opt_in_default_level() : opt_in_mind.antag_opt_in_level
 		.["antag_opt_in"] = antag_opt_in_level_name(opt_in_level)
 		.["antag_opt_in_color"] = antag_opt_in_level_color(opt_in_level)
-		.["antag_opt_in_detail"] = "настройка «[antag_opt_in_level_name(chosen_level)]», порог «[antag_opt_in_level_name(opt_in_mind.get_antag_opt_in_minimum())]»"
+		.["antag_opt_in_detail"] = "настройка \"[antag_opt_in_level_name(chosen_level)]\", порог \"[antag_opt_in_level_name(opt_in_mind.get_antag_opt_in_minimum())]\""
 	else
 		.["antag_opt_in"] = null
 
