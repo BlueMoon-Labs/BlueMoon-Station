@@ -33,7 +33,7 @@
 /obj/item/assembly/flash/DoRevenantThrowEffects(atom/target)
 	AOE_flash()
 
-/obj/item/assembly/flash/update_icon(flash = FALSE)
+/obj/item/assembly/flash/update_icon(updates = ALL, flash = FALSE)
 	cut_overlays()
 	attached_overlays = list()
 	if(crit_fail)
@@ -76,7 +76,7 @@
 
 //BYPASS CHECKS ALSO PREVENTS BURNOUT!
 /obj/item/assembly/flash/proc/AOE_flash(bypass_checks = FALSE, range = 3, power = 5, targeted = FALSE, mob/user)
-	if(!bypass_checks && !try_use_flash())
+	if(!bypass_checks && !try_use_flash(flasher = user))
 		return FALSE
 	var/list/mob/targets = get_flash_targets(get_turf(src), range, FALSE)
 	if(user)
@@ -95,7 +95,8 @@
 	else
 		return typecache_filter_list(target_loc.GetAllContents(), GLOB.typecache_living)
 
-/obj/item/assembly/flash/proc/try_use_flash(mob/user = null)
+/// flasher - кто устроил вспышку, без clown_check; у ЭМИ и сигнала сборки его нет.
+/obj/item/assembly/flash/proc/try_use_flash(mob/user = null, mob/flasher)
 	if(crit_fail || (world.time < last_trigger + cooldown))
 		return FALSE
 	last_trigger = world.time
@@ -106,6 +107,7 @@
 	update_icon()
 	if(user && !clown_check(user))
 		return FALSE
+	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_BRIGHT_FLASH, get_turf(src), flasher || user)
 	return TRUE
 
 /obj/item/assembly/flash/proc/flash_carbon(mob/living/carbon/M, mob/user, power = 15, targeted = TRUE, generic_message = FALSE)
@@ -150,7 +152,7 @@
 		var/mob/living/silicon/robot/R = M
 		if(!R.flash_protect)
 			log_combat(user, R, "flashed", src)
-			update_icon(1)
+			update_icon(ALL, TRUE)
 			R.DefaultCombatKnockdown(rand(80,120))
 			R.AdjustConfused(10 SECONDS, 0, 20 SECONDS)
 			R.flash_act(affect_silicon = 1)
@@ -235,7 +237,7 @@
 	overheat = TRUE
 	addtimer(CALLBACK(src, PROC_REF(cooldown)), flashcd * 2)
 
-/obj/item/assembly/flash/armimplant/try_use_flash(mob/user = null)
+/obj/item/assembly/flash/armimplant/try_use_flash(mob/user = null, mob/flasher)
 	if(overheat)
 		if(I && I.owner)
 			to_chat(I.owner, "<span class='warning'>Your photon projector is running too hot to be used again so quickly!</span>")
@@ -243,7 +245,8 @@
 	overheat = TRUE
 	addtimer(CALLBACK(src, PROC_REF(cooldown)), flashcd)
 	playsound(src, 'sound/weapons/flash.ogg', 100, TRUE)
-	update_icon(1)
+	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_BRIGHT_FLASH, get_turf(src), flasher || user)
+	update_icon(ALL, TRUE)
 	return TRUE
 
 /obj/item/assembly/flash/armimplant/Moved(oldLoc, dir)

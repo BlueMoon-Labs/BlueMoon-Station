@@ -117,6 +117,9 @@
 						to_chat(user, "<span class='warning'>Someone is buckled to \the [O]! Unbuckle [M] to move \him out of the way.</span>")
 						return
 			var/obj/item/stack/tile/W = C
+			var/turf/tile_turf_type = W.turf_type
+			if(tile_turf_type && initial(tile_turf_type.turf_height) <= -TURF_HEIGHT_BLOCK_THRESHOLD && !lay_sunken_tile(W, user))
+				return
 			if(!W.use(1))
 				return
 			for(var/obj/effect/decal/cleanable/decal in src)
@@ -139,6 +142,25 @@
 		else
 			to_chat(user, "<span class='warning'>This section is too damaged to support a tile! Use a welder to fix the damage.</span>")
 
+/// Из утопленного пола не выйти шагом, поэтому его кладут с прогресс-баром и не под чужими ногами.
+/turf/open/floor/plating/proc/lay_sunken_tile(obj/item/stack/tile/tiles, mob/user)
+	if(refuse_sunken_tile(tiles, user))
+		return FALSE
+	user.visible_message(span_notice("[user] начинает укладывать [tiles] на [src]."), span_notice("Вы начинаете укладывать [tiles]..."))
+	if(!do_after(user, SUNKEN_TILE_WORK_TIME, target = src))
+		return FALSE
+	if(!istype(src, /turf/open/floor/plating) || broken || burnt)
+		return FALSE
+	return !refuse_sunken_tile(tiles, user)
+
+/turf/open/floor/plating/proc/refuse_sunken_tile(obj/item/stack/tile/tiles, mob/user)
+	for(var/mob/living/occupant in src)
+		if(occupant == user)
+			continue
+		to_chat(user, span_warning("Нельзя уложить [tiles] под [occupant]."))
+		return TRUE
+	return FALSE
+
 /turf/open/floor/plating/welder_act(mob/living/user, obj/item/I)
 	if((broken || burnt) && I.use_tool(src, user, 0, volume=80))
 		to_chat(user, "<span class='danger'>You fix some dents on the broken plating.</span>")
@@ -148,12 +170,6 @@
 		update_appearance()
 
 	return TRUE
-
-/turf/open/floor/plating/rust_heretic_act()
-	if(prob(70))
-		new /obj/effect/temp_visual/glowing_rune(src)
-	var/turf/after = ChangeTurf(/turf/open/floor/plating/rust)
-	after?.AddElement(/datum/element/heretic_rust)
 
 /turf/open/floor/plating/make_plating()
 	return

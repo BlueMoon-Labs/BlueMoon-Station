@@ -901,7 +901,7 @@
 	blob.set_target = victim
 	blob.GiveTarget()
 	TEST_ASSERT_EQUAL(controller.blackboard[BB_AI_CURRENT_TARGET], victim, "GiveTarget must pin the cursed victim into the blackboard")
-	TEST_ASSERT(blob.doing_move_loop, "GiveTarget must start the legacy teleport-step loop")
+	TEST_ASSERT(blob.move_timer, "GiveTarget должен запускать таймер преследования.")
 	TEST_ASSERT_EQUAL(get_dist(blob, victim), 2, "The legacy loop must have teleport-stepped towards the victim")
 
 	//стратегия закреплённой цели: никого, кроме собственной жертвы

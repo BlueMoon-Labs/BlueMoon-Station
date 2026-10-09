@@ -30,8 +30,12 @@
 	// не привязанные к времени жизни события.
 	var/list/station_doors = list()
 	for(var/obj/machinery/door/door in GLOB.airlocks)
-		if(!is_station_level(door.z))
+		if(!is_station_level(door.z) || door.machine_stat)
 			continue
+		if(istype(door, /obj/machinery/door/airlock))
+			var/obj/machinery/door/airlock/airlock = door
+			if(!airlock.canAIControl())
+				continue
 		station_doors += door
 	door_runtime_set_lockdown(station_doors, TRUE)
 	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(door_runtime_set_lockdown), station_doors, FALSE), 90 SECONDS)
@@ -50,7 +54,8 @@
 		if(lock)
 			INVOKE_ASYNC(door, TYPE_PROC_REF(/obj/machinery/door, hostile_lockdown))
 		else
-			INVOKE_ASYNC(door, TYPE_PROC_REF(/obj/machinery/door, disable_lockdown))
+			// Снимаем без проверки питания: дверь, обесточенная за эти 90с, иначе остаётся под болтами и током до конца раунда.
+			INVOKE_ASYNC(door, TYPE_PROC_REF(/obj/machinery/door, disable_lockdown), FALSE)
 		CHECK_TICK
 
 /datum/round_event/door_runtime/proc/reboot()

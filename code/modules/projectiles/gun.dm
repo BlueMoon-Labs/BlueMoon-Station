@@ -109,6 +109,8 @@
 	/// Just 'slightly' snowflakey way to modify projectile damage for projectiles fired from this gun.
 	var/projectile_damage_multiplier = 1
 
+	var/projectile_simple_mob_damage_multiplier = 1
+
 	/// directional recoil multiplier
 	var/dir_recoil_amp = 10
 
@@ -204,10 +206,13 @@
 	. = ..()
 	if(!no_pin_required)
 		if(pin)
-			. += "Внутри установлен \a [pin]."
-			. += "<span class='info'>Похоже, что [pin] может быть извлечён с помощью <b>инструментов</b>.</span>"
+			. += span_info("Внутри установлен \a <b>[pin]</b>.")
+			if(pin.emag_removeable && !(obj_flags & EMAGGED))
+				. += span_info("Похоже, что [pin] невозможно извлечь, не взломав электронику оружия.")
+			else
+				. += span_info("Похоже, что [pin] может быть извлечён с помощью <b>инструментов</b>.")
 		else
-			. += "Внутри нет бойка-пина, из-за чего стрельба невозможна."
+			. += span_warning("<b>Внутри нет бойка-пина, из-за чего стрельба невозможна.</b>")
 
 	if(gun_light)
 		. += "Фонарик \a [gun_light] [can_flashlight ? "" : "намертво"] прицеплен."
@@ -487,6 +492,14 @@
 		to_chat(user, "<span class='warning'>Спусковой крючок [src] не поддаётся. У оружия нет бойка-пина для стрельбы!</span>")
 	return FALSE
 
+/obj/item/gun/emag_act(mob/user)
+	if(obj_flags & EMAGGED)
+		return
+	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
+	obj_flags |= EMAGGED
+	to_chat(user, span_notice("Взламываю защиту оружия [src]..."))
+	return TRUE
+
 /obj/item/gun/proc/recharge_newshot()
 	return
 
@@ -494,10 +507,14 @@
 	return busy_action || firing || ((last_fire + fire_delay) > world.time)
 
 /obj/item/gun/proc/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0, stam_cost = 0)
+	if(user && !CHECK_MOBILITY(user, MOBILITY_USE))
+		return FALSE
 	add_fingerprint(user)
 
 	if(on_cooldown())
 		return
+	if(user && HAS_TRAIT(user, TRAIT_HERETIC_LUNATIC))
+		bonus_spread += HERETIC_MOON_LUNATIC_SPREAD
 	firing = TRUE
 	. = do_fire(target, user, message, params, zone_override, bonus_spread, stam_cost)
 	firing = FALSE
@@ -551,7 +568,7 @@
 	return TRUE
 
 /obj/item/gun/proc/do_burst_shot(mob/living/user, atom/target, message = TRUE, params=null, zone_override = "", sprd = 0, randomized_gun_spread = 0, randomized_bonus_spread = 0, rand_spr = 0, iteration = 0, stam_cost = 0)
-	if(!user || !firing)
+	if(!user || !firing || !CHECK_MOBILITY(user, MOBILITY_USE))
 		firing = FALSE
 		return FALSE
 	if(!issilicon(user))
@@ -654,6 +671,8 @@
 		return remove_gun_attachment(user, I, bayonet, "unfix")
 
 	else if(pin && user.is_holding(src))
+		if(!pin.can_be_extracted(src, user))
+			return TRUE
 		user.visible_message(span_warning("[user] пытается извлечь [pin] из [src], используя [I]."),
 		span_notice("Вы пытаетесь убрать [pin] из [src]. (Это займёт время, [DisplayTimeText(FIRING_PIN_REMOVAL_DELAY)].)"), null, 3)
 		if(I.use_tool(src, user, FIRING_PIN_REMOVAL_DELAY, volume = 50))
@@ -671,6 +690,8 @@
 	if(!user.canUseTopic(src, BE_CLOSE, FALSE, NO_TK))
 		return
 	if(pin && user.is_holding(src))
+		if(!pin.can_be_extracted(src, user))
+			return TRUE
 		user.visible_message(span_warning("[user] пытается извлечь [pin] из [src], используя [I]."),
 		span_notice("Вы пытаетесь убрать [pin] из [src]. (Это займёт время, [DisplayTimeText(FIRING_PIN_REMOVAL_DELAY)].)"), null, 3)
 		if(I.use_tool(src, user, FIRING_PIN_REMOVAL_DELAY, 5, volume = 50))
@@ -688,6 +709,8 @@
 	if(!user.canUseTopic(src, BE_CLOSE, FALSE, NO_TK))
 		return
 	if(pin && user.is_holding(src))
+		if(!pin.can_be_extracted(src, user))
+			return TRUE
 		user.visible_message(span_warning("[user] пытается извлечь [pin] из [src], используя [I]."),
 		span_notice("Вы пытаетесь убрать [pin] из [src]. (Это займёт время, [DisplayTimeText(FIRING_PIN_REMOVAL_DELAY)].)"), null, 3)
 		if(I.use_tool(src, user, FIRING_PIN_REMOVAL_DELAY, volume = 50))

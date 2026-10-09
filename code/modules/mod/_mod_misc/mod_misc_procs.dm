@@ -193,7 +193,7 @@
 		return TRUE
 
 /obj/item/mod/control/proc/handle_change_access(obj/item/attacking_item, mob/user)
-	update_access(user, attacking_item)
+	update_access(user, attacking_item.GetID())
 	return TRUE
 
 /mob/living/carbon/human/proc/is_wearing_mod()

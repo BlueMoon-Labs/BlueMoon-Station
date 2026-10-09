@@ -276,11 +276,28 @@
 	obj_flags = UNIQUE_RENAME
 	wound_bonus = -10
 	var/chaplain_spawnable = TRUE
+	var/antimagic_slots = ~ITEM_SLOT_BACKPACK
 	total_mass = TOTAL_MASS_MEDIEVAL_WEAPON
 
 /obj/item/nullrod/Initialize(mapload)
 	. = ..()
-	AddComponent(/datum/component/anti_magic, TRUE, TRUE, FALSE, null, null, FALSE)
+	AddComponent(/datum/component/anti_magic, TRUE, TRUE, FALSE, antimagic_slots, null, FALSE)
+
+/obj/item/nullrod/examine(mob/user)
+	. = ..()
+	if(antimagic_slots != ITEM_SLOT_HANDS)
+		return
+	var/mob/holder = loc
+	if(ismob(holder) && holder.is_holding(src))
+		. += span_notice("В руке защищает от магии.")
+	else
+		. += span_warning("Сейчас не защищает: от магии защищает только в руке.")
+
+/obj/item/nullrod/equipped(mob/user, slot, initial = FALSE)
+	. = ..()
+	if(!(slot & antimagic_slots) && (slot & (ITEM_SLOT_BELT | ITEM_SLOT_BACK)))
+		to_chat(user, span_warning("[src] защищает от магии только в руке: на [slot == ITEM_SLOT_BELT ? "поясе" : "спине"] защиты нет."))
+		balloon_alert(user, "защита только в руке")
 
 /obj/item/nullrod/suicide_act(mob/user)
 	user.visible_message("<span class='suicide'>[user] is killing себя with [src]! It looks like [user.ru_who()] trying to get closer to god!</span>")
@@ -393,7 +410,8 @@
 	lefthand_file = 'icons/mob/inhands/weapons/swords_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/swords_righthand.dmi'
 	name = "holy claymore"
-	desc = "A weapon fit for a crusade!"
+	desc = "Оружие для священного похода. Защищает от магии, только пока вы держите его в руке. На поясе или спине защита не действует."
+	antimagic_slots = ITEM_SLOT_HANDS
 	w_class = WEIGHT_CLASS_HUGE
 	slot_flags = ITEM_SLOT_BACK|ITEM_SLOT_BELT
 	block_chance = 30

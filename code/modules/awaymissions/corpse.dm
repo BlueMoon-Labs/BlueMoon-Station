@@ -127,6 +127,8 @@
  * переписать общий вар спавнера, и первый спавнил "объект типа null".
  */
 /obj/effect/mob_spawn/proc/create(ckey, name, load_character, spawn_type)
+	if(QDELETED(src))
+		return
 	var/mob_path = spawn_type || mob_type
 	var/mob/living/M = new mob_path(get_turf(src)) //living mobs only
 	if(!random)

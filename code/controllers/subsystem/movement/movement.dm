@@ -18,6 +18,8 @@ SUBSYSTEM_DEF(movement)
 	var/canonical_time = 0
 	///The visual delay of the subsystem
 	var/visual_delay = 1
+	///Лупы планируют интервал с переносом дробного остатка (plan_fractional_interval), а не по выровненной задержке
+	var/fractional_steps = FALSE
 
 /datum/controller/subsystem/movement/stat_entry(msg)
 	var/total_len = 0

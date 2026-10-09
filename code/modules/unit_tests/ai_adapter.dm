@@ -130,7 +130,7 @@
 	var/mob/living/simple_animal/hostile/standard = allocate(/mob/living/simple_animal/hostile, get_step(run_loc_floor_bottom_left, WEST))
 	standard.move_to_delay = AI_PURSUIT_BASELINE_MOVE_TO_DELAY
 	var/saved_pursuit_min_move_delay = GLOB.ai_pursuit_min_move_delay
-	var/standard_pursuit_floor = max(saved_pursuit_min_move_delay, AI_LEGACY_MOVE_DELAY_DS(AI_PURSUIT_BASELINE_MOVE_TO_DELAY))
+	var/standard_pursuit_floor = max(saved_pursuit_min_move_delay, AI_LEGACY_MOVE_DELAY_DS(AI_PURSUIT_BASELINE_MOVE_TO_DELAY) * GLOB.ai_move_delay_scale)
 	GLOB.ai_pursuit_min_move_delay = standard_pursuit_floor
 	var/standard_delay = standard.ai_movement_delay()
 	GLOB.ai_pursuit_min_move_delay = saved_pursuit_min_move_delay
@@ -138,12 +138,12 @@
 
 	var/mob/living/simple_animal/hostile/plodder = allocate(/mob/living/simple_animal/hostile, get_step(run_loc_floor_bottom_left, EAST))
 	plodder.move_to_delay = 6
-	TEST_ASSERT_EQUAL(plodder.ai_movement_delay(), AI_LEGACY_MOVE_DELAY_DS(6), "A mob already slower than the cap keeps its legacy delay")
+	TEST_ASSERT_EQUAL(plodder.ai_movement_delay(), AI_LEGACY_MOVE_DELAY_DS(6) * GLOB.ai_move_delay_scale, "A mob already slower than the cap keeps its legacy delay")
 
 	var/mob/living/simple_animal/hostile/boss = allocate(/mob/living/simple_animal/hostile, get_step(run_loc_floor_bottom_left, NORTH))
 	boss.move_to_delay = 1
 	boss.ai_pursuit_speed_capped = FALSE
-	TEST_ASSERT_EQUAL(boss.ai_movement_delay(), AI_LEGACY_MOVE_DELAY_DS(1), "A speed-cap opt-out (boss) keeps its full legacy speed")
+	TEST_ASSERT_EQUAL(boss.ai_movement_delay(), AI_LEGACY_MOVE_DELAY_DS(1) * GLOB.ai_move_delay_scale, "A speed-cap opt-out (boss) keeps its full legacy speed")
 
 ///Милишное поведение наносит урон через легаси AttackingTarget
 /datum/unit_test/ai_adapter_melee_lands/Run()
@@ -225,18 +225,18 @@
 	var/datum/ai_controller/hostile_adapter/controller = goliath.ai_controller
 
 	TEST_ASSERT_NOTNULL(controller, "Sanity: the goliath must start with a hostile adapter")
-	TEST_ASSERT_EQUAL(controller.movement_delay, AI_LEGACY_MOVE_DELAY_DS(goliath.move_to_delay), "The adapter must inherit the pawn's legacy movement delay in deciseconds")
+	TEST_ASSERT_EQUAL(controller.movement_delay, AI_LEGACY_MOVE_DELAY_DS(goliath.move_to_delay) * GLOB.ai_move_delay_scale, "The adapter must inherit the pawn's legacy movement delay in deciseconds")
 
 	controller.set_ai_status(AI_STATUS_ON)
 	controller.ai_movement.start_moving_towards(controller, prey, 1)
 	var/datum/move_loop/loop = goliath.move_packet?.existing_loops[SSai_movement]
 	TEST_ASSERT_NOTNULL(loop, "The hostile movement datum must create a movement loop")
-	TEST_ASSERT_EQUAL(loop.delay, AI_LEGACY_MOVE_DELAY_DS(goliath.move_to_delay), "The movement loop must start with the legacy movement delay in deciseconds")
+	TEST_ASSERT_EQUAL(loop.delay, AI_LEGACY_MOVE_DELAY_DS(goliath.move_to_delay) * GLOB.ai_move_delay_scale, "The movement loop must start with the legacy movement delay in deciseconds")
 
 	goliath.move_to_delay = CEILING(GLOB.ai_pursuit_min_move_delay / world.tick_lag, 1) + 1
 	SEND_SIGNAL(loop, COMSIG_MOVELOOP_PREPROCESS_CHECK)
-	TEST_ASSERT_EQUAL(controller.movement_delay, AI_LEGACY_MOVE_DELAY_DS(goliath.move_to_delay), "Runtime phase speed changes must update the adapter")
-	TEST_ASSERT_EQUAL(loop.delay, AI_LEGACY_MOVE_DELAY_DS(goliath.move_to_delay), "Runtime phase speed changes must update the active movement loop")
+	TEST_ASSERT_EQUAL(controller.movement_delay, AI_LEGACY_MOVE_DELAY_DS(goliath.move_to_delay) * GLOB.ai_move_delay_scale, "Runtime phase speed changes must update the adapter")
+	TEST_ASSERT_EQUAL(loop.delay, AI_LEGACY_MOVE_DELAY_DS(goliath.move_to_delay) * GLOB.ai_move_delay_scale, "Runtime phase speed changes must update the active movement loop")
 	controller.ai_movement.stop_moving_towards(controller)
 
 ///The adapter must expose a simple animal's internal access card to JPS.
@@ -372,11 +372,17 @@
 	TEST_ASSERT(controller.able_to_run, "A resumed controller must be able to run")
 
 	ADD_TRAIT(hunter, TRAIT_AI_PAUSED, "unit_test_pause")
+	TEST_ASSERT(!controller.able_to_run, "Добавление паузы через trait сразу останавливает контроллер.")
 	hunter.toggle_ai(AI_OFF)
 	hunter.toggle_ai(AI_ON)
 	TEST_ASSERT(HAS_TRAIT(hunter, TRAIT_AI_PAUSED), "toggle_ai(AI_ON) must not remove another pause source")
 	TEST_ASSERT(!controller.able_to_run, "Another pause source must keep the controller stopped")
 	REMOVE_TRAIT(hunter, TRAIT_AI_PAUSED, "unit_test_pause")
+	TEST_ASSERT(controller.able_to_run, "Снятие последнего источника trait сразу возобновляет контроллер.")
+	ADD_TRAIT(hunter, TRAIT_AI_PAUSED, "unit_test_pause")
+	TEST_ASSERT(!controller.able_to_run, "Повторное добавление trait снова останавливает контроллер.")
+	REMOVE_TRAITS_IN(hunter, "unit_test_pause")
+	TEST_ASSERT(controller.able_to_run, "Массовое снятие источника через прежний сигнал тоже возобновляет контроллер.")
 
 ///Типы, изначально выключенные для сценария/игрока, не активируются адаптером.
 /datum/unit_test/ai_adapter_respects_initial_ai_off/Run()
@@ -446,7 +452,7 @@
 	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, run_loc_floor_bottom_left)
 	pawn.move_to_delay = 10 //легаси-голиаф: шаг каждые 10 тиков = 5дс
 	var/datum/ai_controller/hostile_adapter/melee_chaser/controller = new(pawn)
-	TEST_ASSERT_EQUAL(controller.movement_delay, 10 * world.tick_lag, "The adapter must convert move_to_delay world ticks into move-loop deciseconds")
+	TEST_ASSERT_EQUAL(controller.movement_delay, 10 * world.tick_lag * GLOB.ai_move_delay_scale, "The adapter must convert move_to_delay world ticks into move-loop deciseconds")
 	qdel(controller)
 
 ///Фазовые смены move_to_delay (боссы, ускорения) синхронизируются в тех же единицах
@@ -463,7 +469,7 @@
 	TEST_ASSERT_NOTNULL(loop, "Sanity: the test must obtain a live move loop")
 	pawn.move_to_delay = 2 //фаза ускорения
 	mover.shared_pre_move_checks(loop)
-	TEST_ASSERT_EQUAL(loop.delay, 2 * world.tick_lag, "A runtime move_to_delay change must sync into the loop in deciseconds")
+	TEST_ASSERT_EQUAL(loop.delay, 2 * world.tick_lag * GLOB.ai_move_delay_scale, "A runtime move_to_delay change must sync into the loop in deciseconds")
 	if(!QDELETED(loop))
 		qdel(loop)
 	qdel(controller)

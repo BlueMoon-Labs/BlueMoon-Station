@@ -1003,6 +1003,7 @@ NOTE: there are two lists of areas in the end of this file: centcom and station 
 	nightshift_public_area = NIGHTSHIFT_AREA_NONE
 
 /area/service/chapel
+	name = "Chapel"
 	icon_state = "chapel"
 	// mood_bonus = 5
 	// mood_message = "<span class='nicegreen'>Being in the chapel brings me peace.</span>\n"

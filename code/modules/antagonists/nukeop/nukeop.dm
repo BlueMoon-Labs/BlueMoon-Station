@@ -39,6 +39,10 @@
 /datum/antagonist/nukeop/proc/equip_op()
 	var/mob/living/carbon/human/H = owner.current
 	title = pick("Царь", "Босс", "Лидер", "Шеф", "Король", "Пингвин", "Директор", "Лорд", "Оверлорд", "Глав", "Альфа", "Первый", "Bождь", "Бонза", "Айко", "Русич", "Сек", "Мёртвый")
+	if(is_syndicate) // Syndicate
+		owner.current?.grant_language(/datum/language/codespeak, source = LANGUAGE_MIND)
+	else // InteQ
+		owner.current?.grant_language(/datum/language/old_codes, source = LANGUAGE_MIND)
 	if(!ishuman(owner.current))
 		return
 	if(!istype(H))
@@ -48,11 +52,6 @@
 
 	if(is_lone && tgui_alert(H.client, "Желаете загрузить текущего своего выбранного персонажа?", "Играть своим персонажем!", list("Да", "Нет"), 15 SECONDS, TRUE) == "Да")
 		H.load_client_appearance(H.client, FALSE)
-
-	if(is_syndicate) // Syndicate
-		H.grant_language(/datum/language/codespeak, source = LANGUAGE_MIND)
-	else // InteQ
-		H.grant_language(/datum/language/old_codes, source = LANGUAGE_MIND)
 
 	give_alias()
 

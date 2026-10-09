@@ -259,7 +259,7 @@
 	TEST_ASSERT_EQUAL(subject.active_hotspot, burning, "premise: the tile must own the hotspot we just built")
 	// The fixture has to be able to sustain a fire, or both branches below would
 	// bail out on the fuel check and the test would prove nothing.
-	TEST_ASSERT(turf_has_fire_fuel(subject.air, burning.temperature, subject.z), "premise: the fixture tile must hold burnable fuel")
+	TEST_ASSERT(turf_has_fire_fuel(subject.air, burning.temperature), "premise: the fixture tile must hold burnable fuel")
 	TEST_ASSERT(subject.air.get_oxidation_power(burning.temperature) >= 0.5, "premise: the fixture tile must hold an oxidiser")
 
 	var/temperature_before = burning.temperature

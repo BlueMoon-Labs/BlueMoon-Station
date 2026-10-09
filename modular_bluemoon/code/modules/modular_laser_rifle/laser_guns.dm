@@ -351,6 +351,7 @@
 
 /obj/item/gun/energy/modular_laser_rifle/carbine/pinvanguard
 	pin = /obj/item/firing_pin/explorer
+	projectile_simple_mob_damage_multiplier = 1.5
 
 #undef LONG_MOD_LASER_SPEECH
 #undef SHORT_MOD_LASER_SPEECH

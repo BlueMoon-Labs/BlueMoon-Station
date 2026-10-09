@@ -60,6 +60,15 @@
 	sheet_type = /obj/item/stack/sheet/mineral/uranium
 	canSmoothWith = list(/turf/closed/wall/mineral/uranium, /obj/structure/falsewall/uranium)
 
+/turf/closed/wall/mineral/uranium/explosive/ex_act(severity, target, origin)
+	var/datum/explosion/acted_explosion = null
+	if(istype(origin, /datum/explosion))
+		acted_explosion = origin
+	if(acted_explosion && istype(acted_explosion.explosion_source, /obj/item/bombcore))
+		var/obj/item/bombcore/large/bombcore = new(get_turf(src))
+		bombcore.detonate()
+	..()
+
 /turf/closed/wall/mineral/uranium/proc/radiate()
 	if(!active)
 		if(world.time > last_event+15)
@@ -139,7 +148,10 @@
 		if(istype(W, /obj/item/hatchet) || istype(W, /obj/item/fireaxe))
 			duration /= 4 //Much better with hatchets and axes.
 		var/src_type = type
-		if(do_after(user, duration*10, target=src) && type == src_type) //Into deciseconds.
+		var/chopped = do_after(user, duration*10, target=src) //Into deciseconds.
+		if(type != src_type)
+			return
+		if(chopped)
 			dismantle_wall(FALSE,FALSE)
 			return
 	return ..()
@@ -190,7 +202,7 @@
 	desc = "A light-weight titanium wall used in shuttles."
 	icon = 'icons/turf/walls/shuttle_wall.dmi'
 	icon_state = "map-shuttle"
-	explosion_block = 3
+	explosion_block = 2
 	flags_1 = CAN_BE_DIRTY_1 | DEFAULT_RICOCHET_1
 	flags_ricochet = RICOCHET_SHINY | RICOCHET_HARD
 	sheet_type = /obj/item/stack/sheet/mineral/titanium
@@ -250,18 +262,18 @@
 /////////////////////Plastitanium walls/////////////////////
 
 /turf/closed/wall/mineral/plastitanium
-	name = "wall"
+	name = "plastitanium wall"
 	desc = "An evil wall of plasma and titanium."
 	icon = 'icons/turf/walls/plastitanium_wall.dmi'
-	icon_state = "map-shuttle"
-	explosion_block = 4
+	icon_state = "box"
+	explosion_block = 3
 	sheet_type = /obj/item/stack/sheet/mineral/plastitanium
 	smooth = SMOOTH_MORE|SMOOTH_DIAGONAL
-	canSmoothWith = list(/turf/closed/wall/mineral/plastitanium, /turf/closed/wall/r_wall/syndicate, /obj/machinery/door/airlock/shuttle, /obj/machinery/door/airlock, /obj/structure/window/plastitanium, /obj/structure/shuttle/engine, /obj/structure/falsewall/plastitanium)
+	canSmoothWith = list(/turf/closed/wall/mineral/plastitanium, /turf/closed/wall/r_wall/r_plastitanium, /turf/closed/wall/r_wall/syndicate, /obj/machinery/door/airlock/shuttle, /obj/machinery/door/airlock, /obj/structure/window/plastitanium, /obj/structure/shuttle/engine, /obj/structure/falsewall/plastitanium)
 
 /turf/closed/wall/mineral/plastitanium/nodiagonal
 	smooth = SMOOTH_MORE
-	icon_state = "map-shuttle_nd"
+	icon_state = "nd"
 
 /turf/closed/wall/mineral/plastitanium/nosmooth
 	icon = 'icons/turf/shuttle.dmi'
@@ -269,17 +281,8 @@
 	smooth = SMOOTH_FALSE
 
 /turf/closed/wall/mineral/plastitanium/overspace
-	icon_state = "map-overspace"
+	icon_state = "overspace"
 	fixed_underlay = list("space"=1)
-
-/turf/closed/wall/mineral/plastitanium/explosive/ex_act(severity, target, origin)
-	var/datum/explosion/acted_explosion = null
-	if(istype(origin, /datum/explosion))
-		acted_explosion = origin
-	if(acted_explosion && istype(acted_explosion.explosion_source, /obj/item/bombcore))
-		var/obj/item/bombcore/large/bombcore = new(get_turf(src))
-		bombcore.detonate()
-	..()
 
 //have to copypaste this code
 /turf/closed/wall/mineral/plastitanium/interior/copyTurf(turf/T)

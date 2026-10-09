@@ -28,6 +28,8 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 #define CHURN_REPORT_THRESHOLD 10
 /// Сколько РАЗНЫХ ckey должны переподключиться за окно, чтобы это считалось штормом.
 #define CHURN_ALERT_DISTINCT_CKEYS 5
+/// Доля онлайна, с которой начинается шторм: при сотне игроков фон - около двух реконнектов за окно.
+#define CHURN_ALERT_ONLINE_FRACTION 0.1
 /// Окно наблюдения за переподключениями.
 #define CHURN_ALERT_WINDOW (2 MINUTES)
 /// Не чаще одного крика в эфир за этот срок.
@@ -51,7 +53,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 			stale += key
 	GLOB.recent_reconnects -= stale
 	var/distinct = length(GLOB.recent_reconnects)
-	if(distinct < CHURN_ALERT_DISTINCT_CKEYS)
+	if(distinct < max(CHURN_ALERT_DISTINCT_CKEYS, round(length(GLOB.clients) * CHURN_ALERT_ONLINE_FRACTION)))
 		return
 	GLOB.last_churn_alert = world.time
 	var/list/who = list()
@@ -97,6 +99,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 
 #undef CHURN_REPORT_THRESHOLD
 #undef CHURN_ALERT_DISTINCT_CKEYS
+#undef CHURN_ALERT_ONLINE_FRACTION
 #undef CHURN_ALERT_WINDOW
 #undef CHURN_ALERT_COOLDOWN
 
@@ -1310,7 +1313,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	return max(REALTIMEOFDAY - connection_realtimeofday, 0) / 10
 
 /client/proc/connection_forensics()
-	var/list/parts = list("вход №[round_login_index]")
+	var/list/parts = list(round_login_index ? "вход №[round_login_index]" : "не дошёл до входа")
 	if(connection_realtimeofday)
 		parts += "жил [round(connection_lifetime_seconds(), 0.1)]с"
 	if(connection_time)
@@ -1319,7 +1322,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		parts += "последний пинг [round((world.time - lastping_at) / 10, 0.1)]с назад, rtt [round(lastping_rtt_raw, 1)]мс (сред [round(avgping_rtt || 0, 1)], джиттер [round(avgping_jitter || 0, 1)])"
 	else
 		parts += "пинга не было ни разу"
-	parts += "без ввода [round(inactivity / 10, 0.1)]с"
+	parts += "без ввода [round((world.time - last_activity) / 10, 0.1)]с"
 	parts += "моб [mob ? "[mob.type]" : "нет"]"
 	parts += "инициатор: [disconnect_reason || "клиент/сеть"]"
 	return parts.Join(" | ")
@@ -1630,6 +1633,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	. = token
 	log_access("Failed Login: [key] [computer_id] [address] - CID randomizer check")
 	var/url = tracked_winget(src, null, "url")
+	disconnect_reason = "сервер: CID-проверка, редирект на реконнект с токеном"
 	//special javascript to make them reconnect under a new window.
 	src << browse({"<a id='link' href="byond://[url]?token=[token]">byond://[url]?token=[token]</a><script type="text/javascript">document.getElementById("link").click();window.location="byond://winset?command=.quit"</script>"}, "border=0;titlebar=0;size=1x1;window=redirect")
 	to_chat(src, {"<a href="byond://[url]?token=[token]">You will be automatically taken to the game, if not, click here to be taken manually</a>"})
@@ -1868,7 +1872,8 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	view = new_size
 	var/list/actualview = getviewsize(view)
 	update_clickcatcher()
-	parallax_holder?.Reset()
+	if(old_view[1] != actualview[1] || old_view[2] != actualview[2])
+		parallax_holder?.Reset()
 	mob?.hud_used?.screentip_text?.update_view()
 	// Гарды на mob здесь и на SEND_SIGNAL ниже: change_view зовётся из /datum/view_data/New()
 	// (view.dm:86 apply -> chief.change_view) ещё внутри /client/New() - client_procs.dm:826,
@@ -1911,26 +1916,21 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 
 /client/proc/show_character_previews(mutable_appearance/source)
 	LAZYINITLIST(char_render_holders)
-	if(!LAZYLEN(char_render_holders))
-		for(var/plane_master_path as anything in subtypesof(/atom/movable/screen/plane_master))
-			var/atom/movable/screen/plane_master/plane_master = new plane_master_path()
-			var/holder_key = "plane_master-[plane_master.plane]"
-			//WALL_PLANE, ABOVE_WALL_PLANE и GAME_PLANE - одно и то же число (-3),
-			//поэтому ключа по плоскости на всех не хватает: два плейн-мастера из
-			//трёх затирались в списке, но оставались в client.screen. Найти их
-			//clear_character_previews() уже не мог, и каждая пересборка превью
-			//оставляла по два бессмертных экранных объекта.
-			if(char_render_holders[holder_key])
-				holder_key = "plane_master-[plane_master.type]"
-			char_render_holders[holder_key] = plane_master
-			plane_master.backdrop(mob)
-			screen |= plane_master
+	if(!char_preview_planes)
+		//Через попап-группу: мастера без худа плодят реле на основной карте и заявляют те же имена render_target, что и худ игрока.
+		char_preview_planes = new /datum/plane_master_group/popup/on_demand(PLANE_GROUP_POPUP_WINDOW("character_preview"), "character_preview_map")
+		for(var/plane_key in char_preview_planes.plane_masters)
+			var/atom/movable/screen/plane_master/plane_master = char_preview_planes.plane_masters[plane_key]
+			plane_master.refresh_backdrop(mob)
 			plane_master.screen_loc = "character_preview_map:0,CENTER"
+		char_preview_planes.register_to_client(src)
 		// Disable lighting on the preview — no lighting objects exist there,
 		// and the blur edge-fix filter would force the empty plane opaque black
-		var/atom/movable/screen/plane_master/lighting_pm = char_render_holders["plane_master-[LIGHTING_PLANE]"]
-		if(lighting_pm)
-			lighting_pm.alpha = LIGHTING_PLANE_ALPHA_INVISIBLE
+		for(var/plane_key in char_preview_planes.plane_masters)
+			var/atom/movable/screen/plane_master/lighting/lighting_pm = char_preview_planes.plane_masters[plane_key]
+			if(!istype(lighting_pm))
+				continue
+			lighting_pm.set_alpha(LIGHTING_PLANE_ALPHA_INVISIBLE)
 			lighting_pm.filters = null
 		// The emissive plane only exists to feed the lighting plane's alpha mask, which is disabled
 		// above. Without that mask the raw white emissive overlays would blow out the whole preview,
@@ -1953,6 +1953,8 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		preview.screen_loc = "character_preview_map:0,[pos]"
 
 /client/proc/clear_character_previews()
+	char_preview_planes?.unregister_from_client(src)
+	QDEL_NULL(char_preview_planes)
 	if(!LAZYLEN(char_render_holders))
 		char_render_holders = null
 		return
@@ -1978,6 +1980,8 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 
 ///Redirect proc that makes it easier to call the unlock achievement proc. Achievement type is the typepath to the award, user is the mob getting the award, and value is an optional variable used for leaderboard value increments
 /client/proc/give_award(achievement_type, mob/user, value = 1)
+	if(user?.training_origin)
+		return FALSE
 	return	player_details.achievements.unlock(achievement_type, user, value)
 
 ///Redirect proc that makes it easier to get the status of an achievement. Achievement type is the typepath to the award.
@@ -2066,6 +2070,15 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 
 	var/mob/dead/observer/observer = mob
 	observer.ManualFollow(target)
+
+/// Единственный путь смены client.eye: худ узнаёт о новом глазе по сигналу.
+/client/proc/set_eye(atom/new_eye)
+	if(new_eye == eye)
+		return
+	var/atom/old_eye = eye
+	eye = new_eye
+	SEND_SIGNAL(src, COMSIG_CLIENT_SET_EYE, old_eye, new_eye)
+	mob?.refresh_hud_view_group()
 
 /// Clears the client's screen, aside from ones that opt out
 /client/proc/clear_screen()

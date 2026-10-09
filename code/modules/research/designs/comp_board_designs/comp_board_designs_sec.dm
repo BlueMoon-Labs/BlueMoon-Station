@@ -34,6 +34,14 @@
 	category = list("Computer Boards")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 
+/datum/design/board/brig_assistant_console
+	name = "Computer Design (Brig Assistant Tasks Console)"
+	desc = "Плата консоли заданий брига, через которую оплачивают штрафы."
+	id = "brig_assistant_console"
+	build_path = /obj/item/circuitboard/computer/brig_assistant_console
+	category = list("Computer Boards")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+
 /*
 
 /datum/design/board/comconsole

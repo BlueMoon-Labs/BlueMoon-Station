@@ -105,8 +105,8 @@ SUBSYSTEM_DEF(jukeboxes)
 	// SEND_SOUND тянет клиенту весь файл трека: стартовая рассылка только тем, кому он слышен,
 	// остальным fire() дошлёт по факту входа в радиус.
 	var/turf/juke_turf = get_turf(jukebox)
-	var/list/audible_zlevels = juke_turf ? get_multiz_accessible_levels(juke_turf.z) : list()
-	var/list/hearerscache = hearers(JUKEBOX_HEARING_RANGE, jukebox)
+	var/list/audible_zlevels = juke_turf ? SSmapping.get_connected_levels(juke_turf.z) : list()
+	var/list/hearerscache = jukebox_hearers(jukebox)
 	for(var/mob/M in GLOB.player_list)
 		if(!M.client)
 			continue
@@ -121,6 +121,18 @@ SUBSYSTEM_DEF(jukeboxes)
 		SEND_SOUND(M, song_to_init)
 		sent_to[M.ckey] = TRUE
 	return activejukeboxes.len
+
+/// Кто слышит джукбокс напрямую. От турфа, а не от самого предмета: hearers() от вещи в руках
+/// или в рюкзаке смотрит изнутри контейнера и не видит никого вокруг.
+/proc/jukebox_hearers(obj/jukebox)
+	var/turf/jukebox_turf = get_turf(jukebox)
+	return jukebox_turf ? hearers(JUKEBOX_HEARING_RANGE, jukebox_turf) : list()
+
+/// Громкость трека при давлении pressure: полная от одной атмосферы, ноль на SOUND_MINIMUM_PRESSURE
+/proc/jukebox_pressure_volume(base_volume, pressure)
+	if(pressure >= ONE_ATMOSPHERE)
+		return base_volume
+	return base_volume * clamp((pressure - SOUND_MINIMUM_PRESSURE) / (ONE_ATMOSPHERE - SOUND_MINIMUM_PRESSURE), 0, 1)
 
 /// Слышен ли прямой звук трека с такой громкостью на таком удалении (координаты - единицы BYOND,
 /// как в /sound.x/y/z).
@@ -316,11 +328,7 @@ SUBSYSTEM_DEF(jukeboxes)
 		stack_trace("Track [track]'s beat value is not a number")
 		return FALSE
 	track_datum.song_beat = track_beat
-	var/track_id = LAZYACCESS(track_data, TRACK_ID)
-	if(!track_id)
-		stack_trace("Track [track] lacks an unique identifier.")
-		return FALSE
-	track_datum.song_associated_id = track_id
+	track_datum.song_associated_id = LAZYACCESS(track_data, TRACK_ID) || track_name
 	return track_datum
 
 
@@ -336,21 +344,20 @@ SUBSYSTEM_DEF(jukeboxes)
 			stack_trace("Invalid jukebox track datum.")
 			continue
 		var/obj/jukebox = jukeinfo[JUKE_BOX]
-		var/turf/jukebox_loc = jukebox.loc
 		if(!istype(jukebox))
 			stack_trace("Nonexistant or invalid object associated with jukebox.")
 			continue
+		var/turf/currentturf = get_turf(jukebox)
+		if(!currentturf)
+			continue
 
-		if(!jukebox_loc)
-			return
+		var/list/audible_zlevels = SSmapping.get_connected_levels(currentturf.z) //кэш связки, только на чтение
 
-		var/list/audible_zlevels = get_multiz_accessible_levels(jukebox_loc.z) //TODO - for multiz refresh, this should use the cached zlevel connections var in SSMapping. For now this is fine!
 
 		var/personal = jukeinfo[JUKE_PERSONAL]
 		var/sound/song_played = jukeinfo[JUKE_SOUND]
-		var/turf/currentturf = get_turf(jukebox)
 		var/area/currentarea = get_area(jukebox)
-		var/list/hearerscache = hearers(JUKEBOX_HEARING_RANGE, jukebox)
+		var/list/hearerscache = jukebox_hearers(jukebox)
 		var/list/sent_to = jukeinfo[JUKE_SENT]
 		// Ограничение зоны берётся по ТЕКУЩЕЙ зоне, а не по той, где трек включили: переносную
 		// шкатулку выносят из номера отеля в руках, и застывшее ограничение навсегда запирало
@@ -362,6 +369,7 @@ SUBSYSTEM_DEF(jukeboxes)
 		var/real_start_time = jukeinfo[JUKE_START_REAL]
 		var/targetfalloff = jukeinfo[JUKE_FALLOFF]
 		var/mixes = ((targetfalloff*250)-750)
+		var/base_volume = min((targetfalloff * 50), 100)
 		var/inrange
 		var/audible
 		var/pressure_factor
@@ -374,7 +382,6 @@ SUBSYSTEM_DEF(jukeboxes)
 		var/source_pressure = (istype(source_env) ? source_env.return_pressure() : 0)
 
 		song_played.falloff = targetfalloff
-		song_played.volume = min((targetfalloff * 50), 100)
 
 		for(var/mob/M in GLOB.player_list)
 			CHECK_TICK
@@ -400,6 +407,8 @@ SUBSYSTEM_DEF(jukeboxes)
 
 			inrange = FALSE
 			audible = FALSE
+			pressure_factor = 0
+			song_played.volume = base_volume
 			song_played.status = SOUND_MUTE | SOUND_UPDATE
 
 			if(source_pressure)
@@ -418,8 +427,7 @@ SUBSYSTEM_DEF(jukeboxes)
 					song_played.y = JUKEBOX_SOUND_Y(currentturf, hearerturf)
 					audible = personal ? jukebox_audible_at(targetfalloff, song_played.x, song_played.y, song_played.z) : TRUE
 
-					if(pressure_factor < ONE_ATMOSPHERE)
-						song_played.volume = (min((targetfalloff * 50), 100) * max((pressure_factor - SOUND_MINIMUM_PRESSURE)/(ONE_ATMOSPHERE - SOUND_MINIMUM_PRESSURE), 1))
+					song_played.volume = jukebox_pressure_volume(base_volume, pressure_factor)
 
 					song_played.echo[1] = (inrange ? 0 : -10000)
 					song_played.echo[3] = (inrange ? mixes : max(mixes, 0))

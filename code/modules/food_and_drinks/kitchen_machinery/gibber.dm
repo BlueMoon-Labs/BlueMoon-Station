@@ -66,15 +66,15 @@
 		return
 	if(operating)
 		. += "grinder_active"
-		. += emissive_appearance(icon, "grinder_active", src, alpha = src.alpha)
+		. += emissive_appearance(icon, "grinder_active", alpha = src.alpha, offset_spokesman = src)
 		. += "grinder_jaws_active"
 		return
 	if(!occupant)
 		. += "grinder_empty"
-		. += emissive_appearance(icon, "grinder_empty", src, alpha = src.alpha)
+		. += emissive_appearance(icon, "grinder_empty", alpha = src.alpha, offset_spokesman = src)
 		return
 	. += "grinder_loaded"
-	. += emissive_appearance(icon, "grinder_loaded", src, alpha = src.alpha)
+	. += emissive_appearance(icon, "grinder_loaded", alpha = src.alpha, offset_spokesman = src)
 
 /obj/machinery/gibber/attack_paw(mob/user)
 	return attack_hand(user)

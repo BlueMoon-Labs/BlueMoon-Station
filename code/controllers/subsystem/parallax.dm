@@ -20,6 +20,8 @@ SUBSYSTEM_DEF(parallax)
 	/// Счётчик изменений сцены на z. Шаблон с чужой ревизией считается протухшим -
 	/// это страховка на случай, если инвалидацию где-то забыли позвать явно.
 	var/list/revision_by_z = list()
+	/// Ревизия z, при которой его ключ получил сцену: общую сцену стопки нельзя мерить ревизией этажа, который её собрал.
+	var/list/template_revision_by_z = list()
 	/// id внестанционного профиля, на который откатываемся, если ничего не подошло.
 	/// Станционный Лаваленд не годится как общий fallback: иначе любой новый z без
 	/// подходящего профиля снова покажет ориентир станции вдали от самой станции.
@@ -149,8 +151,8 @@ SUBSYSTEM_DEF(parallax)
 
 /**
  * Базовый профиль z-уровня. Выбирается один раз и запоминается, поэтому у всех
- * клиентов на z сцена одна и та же, она не меняется в течение раунда, а разные
- * z получают свои независимые броски.
+ * клиентов на z сцена одна и та же, она не меняется в течение раунда. Этажи одной
+ * стопки делят бросок, остальные z получают свои независимые.
  */
 /datum/controller/subsystem/parallax/proc/get_base_profile(z)
 	RETURN_TYPE(/datum/parallax_profile)
@@ -160,7 +162,14 @@ SUBSYSTEM_DEF(parallax)
 	var/datum/parallax_profile/cached = base_profile_by_z[key]
 	if(cached)
 		return cached
-	var/datum/parallax_profile/picked = pick_profile_for_z(z)
+	var/datum/parallax_profile/picked
+	if(!SSmapping.level_trait(z, ZTRAIT_PARALLAX))
+		for(var/other_z in SSmapping.get_connected_levels(z))
+			picked = base_profile_by_z["[other_z]"]
+			if(picked)
+				break
+	if(!picked)
+		picked = pick_profile_for_z(z)
 	base_profile_by_z[key] = picked
 	return picked
 
@@ -213,7 +222,13 @@ SUBSYSTEM_DEF(parallax)
 	var/key = "[z]"
 	var/current_revision = revision_by_z[key] || 0
 	var/datum/parallax/template = parallax_templates_by_z[key]
-	if(template && !QDELETED(template) && template.revision == current_revision)
+	if(template && !QDELETED(template) && template_revision_by_z[key] == current_revision)
+		return template
+
+	template = stack_template(z)
+	if(template)
+		parallax_templates_by_z[key] = template
+		template_revision_by_z[key] = current_revision
 		return template
 
 	var/datum/parallax_profile/profile = get_base_profile(z)
@@ -231,8 +246,31 @@ SUBSYSTEM_DEF(parallax)
 
 	template = new /datum/parallax(profile, extra_layers, tint, current_revision, environment_for_z(z))
 	apply_saved_layer_colors(key, template)
+	for(var/datum/parallax_modifier/modifier as anything in modifiers_by_z[key])
+		modifier.on_build?.Invoke(template)
 	parallax_templates_by_z[key] = template
+	template_revision_by_z[key] = current_revision
 	return template
+
+/// Сцена соседнего этажа стопки, если этажам нечем различаться: небо над станцией одно на все этажи.
+/datum/controller/subsystem/parallax/proc/stack_template(z)
+	RETURN_TYPE(/datum/parallax)
+	if(length(modifiers_by_z["[z]"]))
+		return null
+	var/datum/parallax_profile/profile = get_base_profile(z)
+	var/environment = environment_for_z(z)
+	for(var/other_z in SSmapping.get_connected_levels(z))
+		if(other_z == z)
+			continue
+		var/other_key = "[other_z]"
+		var/datum/parallax/other = parallax_templates_by_z[other_key]
+		if(!other || QDELETED(other) || length(modifiers_by_z[other_key]))
+			continue
+		if(template_revision_by_z[other_key] != (revision_by_z[other_key] || 0))
+			continue
+		if(other.profile == profile && other.environment == environment)
+			return other
+	return null
 
 /// Возвращает на пересобранную сцену цвета, выставленные animate_layer_type().
 /// Идёт по стеку снизу вверх, поэтому старший модификатор перебивает младшего - тем же
@@ -258,6 +296,10 @@ SUBSYSTEM_DEF(parallax)
 	revision_by_z[key] = (revision_by_z[key] || 0) + 1
 	var/datum/parallax/stale = parallax_templates_by_z[key]
 	parallax_templates_by_z -= key
+	if(stale)
+		for(var/other_key in parallax_templates_by_z.Copy())
+			if(parallax_templates_by_z[other_key] == stale)
+				parallax_templates_by_z -= other_key
 	if(refresh)
 		refresh_clients(z, stale, fade_time)
 	if(!stale)
@@ -306,8 +348,9 @@ SUBSYSTEM_DEF(parallax)
  * @param extra_layers - типпасы слоёв поверх выбранного профиля. Необязательно.
  * @param tint - цвет для слоёв с palette_tinted. Необязательно.
  * @param fade_time - если больше нуля, сцена сменится через затемнение, а не рывком.
+ * @param on_build - callback, получающий каждый новый шаблон z. Необязательно.
  */
-/datum/controller/subsystem/parallax/proc/add_modifier(z, token, profile_or_id, list/extra_layers, tint, priority = 0, fade_time = 0)
+/datum/controller/subsystem/parallax/proc/add_modifier(z, token, profile_or_id, list/extra_layers, tint, priority = 0, fade_time = 0, datum/callback/on_build)
 	RETURN_TYPE(/datum/parallax_modifier)
 	if(!isnum(z) || z < 1 || !token)
 		CRASH("add_modifier: некорректные z ([z]) или токен ([token])")
@@ -325,7 +368,7 @@ SUBSYSTEM_DEF(parallax)
 		stack -= existing
 		qdel(existing)
 		break
-	var/datum/parallax_modifier/modifier = new(token, z, priority, profile, extra_layers, tint)
+	var/datum/parallax_modifier/modifier = new(token, z, priority, profile, extra_layers, tint, on_build)
 	// Вставка с сохранением порядка по приоритету: стек короткий, сортировать нечего.
 	var/inserted = FALSE
 	for(var/i in 1 to length(stack))
@@ -373,8 +416,8 @@ SUBSYSTEM_DEF(parallax)
 	return remove_modifier(z, token, fade_time)
 
 /// Добавляет временные слои поверх текущей сцены z.
-/datum/controller/subsystem/parallax/proc/add_layers(z, token, list/layer_paths, priority = 0, fade_time = 0)
-	return add_modifier(z, token, null, layer_paths, null, priority, fade_time)
+/datum/controller/subsystem/parallax/proc/add_layers(z, token, list/layer_paths, priority = 0, fade_time = 0, datum/callback/on_build)
+	return add_modifier(z, token, null, layer_paths, null, priority, fade_time, on_build)
 
 /// Перекрашивает слои сцены z, помеченные palette_tinted.
 /datum/controller/subsystem/parallax/proc/set_tint(z, token, tint, priority = 0, fade_time = 0)
@@ -488,6 +531,14 @@ SUBSYSTEM_DEF(parallax)
 				animate(layer, alpha = 0, time = time)
 	addtimer(CALLBACK(src, PROC_REF(remove_modifier), z, token, 0), time + 1, TIMER_UNIQUE | TIMER_OVERRIDE)
 	return TRUE
+
+/// Живые слои всех держателей, которые сейчас смотрят на z.
+/datum/controller/subsystem/parallax/proc/live_layers_on_z(z)
+	. = list()
+	for(var/client/viewer as anything in GLOB.clients)
+		var/datum/parallax_holder/holder = viewer.parallax_holder
+		if(holder?.last?.z == z)
+			. += holder.layers
 
 /// Список z, на которых сейчас есть хоть один клиент - чтобы событие не трогало пустые.
 /datum/controller/subsystem/parallax/proc/populated_z_levels()

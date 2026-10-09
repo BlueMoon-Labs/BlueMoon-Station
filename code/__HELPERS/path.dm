@@ -77,13 +77,10 @@
 		path.Cut(1,2)
 	return path
 
-/**
- * A helper macro to see if it's possible to step from the first turf into the second one, minding things like door access and directional windows.
- * Note that this can only be used inside the [datum/pathfind][pathfind datum] since it uses variables from said datum.
- * If you really want to optimize things, optimize this, cuz this gets called a lot.
- */
-/// Another helper macro for JPS, for telling when a node has forced neighbors that need expanding
-#define STEP_NOT_HERE_BUT_THERE(cur_turf, dirA, dirB) ((!can_step(cur_turf, get_step(cur_turf, dirA), dirA) && can_step(cur_turf, get_step(cur_turf, dirB), dirB)))
+/// JPS forced neighbour of a lateral step: the diagonal ahead is reachable here but not from the side tile, which a wall or a railing can stop.
+#define LATERAL_FORCED(cur_turf, side, forward_diagonal, heading) (!(can_step(cur_turf, get_step(cur_turf, side), side) && can_step(get_step(cur_turf, side), get_step(cur_turf, forward_diagonal), heading)) && can_step(cur_turf, get_step(cur_turf, forward_diagonal), forward_diagonal))
+/// JPS forced neighbour of a diagonal step: the back tile and the diagonal past it are covered only if the subscan from lag_turf along parent_heading reaches them.
+#define DIAGONAL_FORCED(lag_turf, cur_turf, back_side, forward_diagonal, parent_heading) (can_step(lag_turf, get_step(cur_turf, back_side), parent_heading) ? (!can_step(get_step(cur_turf, back_side), get_step(cur_turf, forward_diagonal), parent_heading) && can_step(cur_turf, get_step(cur_turf, forward_diagonal), forward_diagonal)) : (can_step(cur_turf, get_step(cur_turf, back_side), back_side) || can_step(cur_turf, get_step(cur_turf, forward_diagonal), forward_diagonal)))
 
 // Direction values top out at SOUTHWEST (10), so the second eleven bits can
 // hold the pass result alongside the first eleven checked bits.
@@ -381,7 +378,7 @@
 		if(parent_node && max_distance && parent_node.number_tiles + steps_taken > max_distance)
 			return
 
-		if(STEP_NOT_HERE_BUT_THERE(current_turf, blocked_side_a, forced_diagonal_a) || STEP_NOT_HERE_BUT_THERE(current_turf, blocked_side_b, forced_diagonal_b))
+		if(LATERAL_FORCED(current_turf, blocked_side_a, forced_diagonal_a, heading) || LATERAL_FORCED(current_turf, blocked_side_b, forced_diagonal_b, heading))
 			var/datum/jps_node/newnode = new(current_turf, parent_node, steps_taken)
 			if(parent_node) // if we're a diagonal subscan, we'll handle adding ourselves to the heap in the diag
 				open.insert(newnode)
@@ -437,6 +434,8 @@
 			forced_diagonal_b = NORTHEAST
 			lateral_heading_a = SOUTH
 			lateral_heading_b = EAST
+	var/vertical_heading = heading & (NORTH|SOUTH)
+	var/horizontal_heading = heading & (EAST|WEST)
 
 	if(path)
 		return
@@ -460,7 +459,7 @@
 		if(max_distance && parent_node.number_tiles + steps_taken > max_distance)
 			return
 
-		var/interesting = STEP_NOT_HERE_BUT_THERE(current_turf, blocked_side_a, forced_diagonal_a) || STEP_NOT_HERE_BUT_THERE(current_turf, blocked_side_b, forced_diagonal_b)
+		var/interesting = DIAGONAL_FORCED(lag_turf, current_turf, blocked_side_a, forced_diagonal_a, vertical_heading) || DIAGONAL_FORCED(lag_turf, current_turf, blocked_side_b, forced_diagonal_b, horizontal_heading)
 		var/datum/jps_node/possible_child_node // otherwise, did one of our lateral subscans turn up something?
 		if(!interesting)
 			possible_child_node = lateral_scan_spec(current_turf, lateral_heading_a) || lateral_scan_spec(current_turf, lateral_heading_b)
@@ -542,5 +541,6 @@
 
 	return FALSE
 
-#undef STEP_NOT_HERE_BUT_THERE
+#undef LATERAL_FORCED
+#undef DIAGONAL_FORCED
 #undef JPS_EDGE_PASS_SHIFT

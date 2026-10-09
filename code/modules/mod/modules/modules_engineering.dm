@@ -162,20 +162,14 @@
 /obj/item/mod/module/rad_protection/on_suit_activation()
 	mod.armor = mod.armor.modifyRating(rad = 65)
 	mod.rad_flags = RAD_PROTECT_CONTENTS|RAD_NO_CONTAMINATE
-	for(var/index in mod.mod_parts)
-		if(index == MOD_PART_CELL)
-			continue
-		var/obj/item/clothing/mod_part/part = mod.mod_parts[index]
+	for(var/obj/item/clothing/mod_part/part as anything in mod.get_mod_parts(include_cell = FALSE))
 		part.armor = mod.armor
 		part.rad_flags = mod.rad_flags
 
 /obj/item/mod/module/rad_protection/on_suit_deactivation(deleting = FALSE)
 	mod.armor = mod.armor.modifyRating(rad = -65)
 	mod.rad_flags = NONE
-	for(var/index in mod.mod_parts)
-		if(index == MOD_PART_CELL)
-			continue
-		var/obj/item/clothing/mod_part/part = mod.mod_parts[index]
+	for(var/obj/item/clothing/mod_part/part as anything in mod.get_mod_parts(include_cell = FALSE))
 		part.armor = mod.armor
 		part.rad_flags = mod.rad_flags
 

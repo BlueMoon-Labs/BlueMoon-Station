@@ -152,22 +152,15 @@ GLOBAL_REAL_VAR(list/datum_census_snapshot_residue)
 		total_residue += residue[type_path]
 
 	var/growth_report = !isnull(previous_created)
-	var/list/created_delta = growth_report ? datum_census_growth(created, previous_created) : created.Copy()
-	var/list/residue_delta = growth_report ? datum_census_growth(residue, previous_residue) : residue.Copy()
-
-	sortTim(created_delta, GLOBAL_PROC_REF(cmp_numeric_dsc), TRUE)
-	sortTim(residue_delta, GLOBAL_PROC_REF(cmp_numeric_dsc), TRUE)
+	var/list/created_delta = growth_report ? datum_census_growth(created, previous_created) : created
+	var/list/residue_delta = growth_report ? datum_census_growth(residue, previous_residue) : residue
 
 	var/list/top_created = list()
-	for(var/type_path in created_delta)
-		if(length(top_created) >= top_n)
-			break
+	for(var/type_path in census_top_entries(created_delta, top_n))
 		top_created += "[type_path] x[num2text(created_delta[type_path], 12)]"
 
 	var/list/top_residue = list()
-	for(var/type_path in residue_delta)
-		if(length(top_residue) >= top_n)
-			break
+	for(var/type_path in census_top_entries(residue_delta, top_n))
 		top_residue += "[type_path] x[num2text(residue_delta[type_path], 12)]"
 
 	// num2text по всему файлу по одной причине: обороты тут шестизначные, а BYOND

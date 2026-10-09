@@ -5,30 +5,29 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	)))
 
 /turf/proc/empty(turf_type=/turf/open/space, baseturf_type, list/ignore_typecache, flags)
-	// Remove all atoms except observers, landmarks, docking ports
+	// Our lighting object is carried over by ChangeTurf(); nothing rebuilds it if it is deleted here.
 	var/static/list/ignored_atoms = typecacheof(list(/mob/dead, /obj/effect/landmark, /obj/docking_port))
-	var/list/allowed_contents = typecache_filter_list_reverse(GetAllContentsIgnoring(ignore_typecache), ignored_atoms)
-	allowed_contents -= src
-	for(var/i in 1 to allowed_contents.len)
-		var/thing = allowed_contents[i]
-		qdel(thing, force=TRUE)
+	if(length(contents))
+		for(var/atom/thing as anything in GetAllContentsIgnoring(ignore_typecache))
+			if(thing != src && thing != lighting_object && !ignored_atoms[thing.type])
+				qdel(thing, force = TRUE)
 
 	if(turf_type)
 		var/turf/newT = ChangeTurf(turf_type, baseturf_type, flags)
 		CALCULATE_ADJACENT_TURFS(newT)
 
-/turf/proc/copyTurf(turf/T)
+/turf/proc/copyTurf(turf/T, copy_air = FALSE)
 	if(T.type != type)
-		var/obj/O
-		if(underlays.len)
-			O = new()
-			// Don't add closed turfs as underlay - prevents wall overlay ghosting when shuttle leaves
-			if(!istype(T, /turf/closed))
-				O.underlays += T
-		T.ChangeTurf(type)
-		if(underlays.len)
+		var/had_underlays = length(underlays)
+		var/old_appearance
+		// Don't add closed turfs as underlay - prevents wall overlay ghosting when shuttle leaves
+		if(had_underlays && !isclosedturf(T))
+			old_appearance = T.appearance
+		T.ChangeTurf(type, null, copy_air ? CHANGETURF_IGNORE_AIR : NONE)
+		if(had_underlays)
 			T.underlays.Cut()
-			T.underlays += O.underlays
+			if(old_appearance)
+				T.underlays += old_appearance
 	if(T.icon_state != icon_state)
 		T.icon_state = icon_state
 	if(T.icon != icon)
@@ -77,35 +76,24 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 			path = /turf/open/space
 	if(!GLOB.use_preloader && path == type && !(flags & CHANGETURF_FORCEOP) && (baseturfs == new_baseturfs)) // Don't no-op if the map loader requires it to be reconstructed, or if this is a new set of baseturfs
 		return src
+	// Свободная клетка резерва остаётся в SSmapping.unused_turfs; без флага Reserve() её больше не выдаст.
+	var/reservation_flag = flags_1 & UNUSED_RESERVATION_TURF_1
 	if(flags & CHANGETURF_SKIP)
-		// dynamic_lumcount переносим и здесь: оверлейные источники держат ссылку на турф в
-		// affected_turfs, и обнулённый счётчик позже уходит в постоянный минус при
-		// clean_old_turfs() (свет ушёл - вычли из нуля).
-		// Оверлей света гасим явно: SKIP идёт мимо qdel/Destroy, замена турфа лишь обнуляет
-		// переменную, а сам мувабл остаётся в contents призраком с протухшей матрицей и
-		// рендерит её следующему жильцу блока (освобождение/выдача резерваций).
+		// SKIP идёт мимо qdel/Destroy: оверлей света, запись в active_turfs и excited-группу
+		// снимаем сами, иначе их унаследует новый турф (ссылки на турф позиционные).
 		if(lighting_object)
 			lighting_clear_overlay()
-		// По той же причине снимаем турф с атмоса. Резервации освобождаются
-		// именно этой веткой, и активный транзитный турф оставался бы записью в
-		// SSair.active_turfs, пока новый жилец блока не унаследует её вместе с
-		// протухшей позицией: снятие за O(1) верит своей подсказке, а у свежего
-		// турфа она нулевая, и запись стала бы неудаляемой.
 		if(SSair)
-			SSair.evict_active_turf(src)
-			// SKIP - единственный путь замены, идущий мимо qdel/Destroy, то есть
-			// мимо update_air_ref(-1) -> remove_from_active(), который хоронит
-			// excited-группу заменяемого члена. Ссылки на турф позиционные: запись
-			// в turf_list группы молча стала бы ссылкой на новый турф с нулевым
-			// обратным указателем, а merge_groups() доверяет спискам групп как
-			// непересекающимся и склеивает их без проверки вхождения. Хороним
-			// группу явно - живые соседи пересоберут её следующим циклом.
+			// unlist, а не evict: evict искал бы не-excited клетку по всему active_turfs.
+			SSair.unlist_active_turf(src)
 			var/turf/open/open_self = src
 			if(istype(open_self) && open_self.excited_group)
 				open_self.excited_group.garbage_collect()
+		// Оверлейные источники держат турф в affected_turfs: обнулённый счётчик ушёл бы в минус.
 		var/skip_dynamic_lumcount = dynamic_lumcount
 		var/turf/skipped_turf = new path(src)
 		skipped_turf.dynamic_lumcount = skip_dynamic_lumcount
+		skipped_turf.flags_1 |= reservation_flag
 		return skipped_turf
 
 	var/old_opacity = opacity
@@ -124,8 +112,7 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	var/old_bp = blueprint_data
 	blueprint_data = null
 
-// Exposure listeners survive turf replacement: qdel below cleanly severs
-	// every signal registration, so each listener re-registers on the new datum.
+	// qdel below drops every signal registration, so exposure listeners re-register on the new turf.
 	var/list/old_exposure_listeners = atmos_exposure_listeners
 	//LIQUIDS ADD - cache liquids so we can move them to the new turf
 	var/obj/effect/abstract/liquid_turf/old_liquids = liquids
@@ -142,6 +129,7 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	qdel(src)	//Just get the side effects and call Destroy
 
 	var/turf/W = new path(src)
+	W.flags_1 |= reservation_flag
 	for(var/i in transferring_comps)
 		W.TakeComponent(i)
 
@@ -155,10 +143,7 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 
 	if(old_exposure_listeners)
 		W.atmos_exposure_listeners = old_exposure_listeners
-		// Хард-делит обнуляет запись списка на месте, а Destroy слушателя до неё
-		// уже не доберётся - в ассоциативном списке остаётся ключ null. Обход
-		// идёт с конца по индексу: вырезать запись во время прямого прохода
-		// значит пропустить каждую вторую.
+		// Хард-делит слушателя оставляет в списке ключ null; обход с конца, чтобы Cut() не пропускал записи.
 		for(var/i in length(old_exposure_listeners) to 1 step -1)
 			var/datum/listener = old_exposure_listeners[i]
 			if(QDELETED(listener))
@@ -272,11 +257,13 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 			qdel(turf_fire)
 		if(ispath(path,/turf/closed))
 			return ..()
+		// Initialize нового турфа уже взял начальную смесь, а соседей пересчитает AfterChange.
+		flags |= CHANGETURF_IGNORE_AIR
 		. = ..()
 		if (!.)
 			return
 		var/turf/open/newTurf = .
-		if (newTurf)
+		if (!isopenturf(newTurf) || !newTurf.air)
 			newTurf.Initalize_Atmos(0)
 	else
 		. = ..()
@@ -373,7 +360,7 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 			baseturfs += new_baseturfs
 	else
 		change_type = new_baseturfs
-	air_update_turf(TRUE) 						// Почему.
+	air_update_turf(TRUE)
 	return ChangeTurf(change_type, null, flags)
 
 // Copy an existing turf and put it on top
@@ -402,18 +389,20 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 
 //If you modify this function, ensure it works correctly with lateloaded map templates.
 /turf/proc/AfterChange(flags) //called after a turf has been replaced in ChangeTurf()
-	levelupdate()
 	if(flags & CHANGETURF_RECALC_ADJACENT)
 		ImmediateCalculateAdjacentTurfs()
 	else
 		CALCULATE_ADJACENT_TURFS(src)
 
 	//update firedoor adjacency
-	var/list/turfs_to_check = get_adjacent_open_turfs(src) | src
-	for(var/I in turfs_to_check)
-		var/turf/T = I
-		for(var/obj/machinery/door/firedoor/FD in T)
-			FD.CalculateAffectingAreas()
+	for(var/direction in GLOB.cardinals)
+		var/turf/neighbor = get_step(src, direction)
+		if(!isopenturf(neighbor))
+			continue
+		for(var/obj/machinery/door/firedoor/firedoor in neighbor)
+			firedoor.CalculateAffectingAreas()
+	for(var/obj/machinery/door/firedoor/firedoor in src)
+		firedoor.CalculateAffectingAreas()
 
 	queue_smooth_neighbors(src)
 
@@ -431,17 +420,18 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	if(blocks_air || !turf_count) //if there weren't any open turfs, no need to update.
 		return
 
-	var/datum/gas_mixture/total = new//Holders to assimilate air from nearby turfs
+	var/static/datum/gas_mixture/total
+	if(!total)
+		total = new
+	total.clear()
+	total.set_temperature(TCMB)
 
-	for(var/T in atmos_adjacent_turfs)
-		var/turf/open/S = T
-		if(!S.air)
-			continue
-		total.merge(S.air)
+	for(var/turf/open/neighbor as anything in atmos_adjacent_turfs)
+		if(neighbor.air)
+			total.merge(neighbor.air)
 
 	total.multiply(1 / turf_count)
 	air.copy_from(total)
-	qdel(total)
 
 /turf/proc/ReplaceWithLattice()
 	ScrapeAway(flags = CHANGETURF_INHERIT_AIR)

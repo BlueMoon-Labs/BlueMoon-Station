@@ -37,13 +37,13 @@ GLOBAL_LIST_EMPTY(monkey_recyclers)
 
 	if(stored_matter >= 1)
 		. += "grinder_active"
-		. += emissive_appearance(icon, "grinder_active", src, alpha = src.alpha)
+		. += emissive_appearance(icon, "grinder_active", alpha = src.alpha, offset_spokesman = src)
 	else if(cube_production >= 6)
 		. += "grinder_loaded"
-		. += emissive_appearance(icon, "grinder_loaded", src, alpha = src.alpha)
+		. += emissive_appearance(icon, "grinder_loaded", alpha = src.alpha, offset_spokesman = src)
 	else
 		. += "grinder_empty"
-		. += emissive_appearance(icon, "grinder_empty", src, alpha = src.alpha)
+		. += emissive_appearance(icon, "grinder_empty", alpha = src.alpha, offset_spokesman = src)
 
 /obj/machinery/monkey_recycler/proc/locate_camera_console()
 	if(length(connected))

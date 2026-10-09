@@ -213,15 +213,8 @@
 		L.visible_message(span_warning("[L] barely reacts to [src]!"), span_notice("You barely feel the sting of [src]."))
 		playsound(L, 'sound/weapons/genhit.ogg', 50, 1)
 		return FALSE
-	var/list/return_list = list()
-	if(L.mob_run_block(src, 0, "[user]'s [name]", ATTACK_TYPE_MELEE, 0, user, null, return_list) & BLOCK_SUCCESS) //No message; check_shields() handles that
-		playsound(L, 'sound/weapons/genhit.ogg', 50, 1)
-		return FALSE
 	var/final_stamina_loss_amount = stamina_loss_amount //Our stunning power for the baton
 	var/shoved = FALSE //Did we succeed on knocking our target over?
-	var/zap_penetration = armor_pen
-	var/zap_block = L.run_armor_check(BODY_ZONE_CHEST, MELEE, null, null, zap_penetration) //armor check, including calculation for armor penetration, for our attack
-	final_stamina_loss_amount = block_calculate_resultant_damage(final_stamina_loss_amount, return_list)
 
 	var/obj/item/stock_parts/cell/our_cell = get_cell()
 
@@ -229,28 +222,33 @@
 		switch_status(FALSE)
 		return FALSE
 	var/stuncharge = our_cell.charge
-	deductcharge(hitcost, FALSE)
-	if(QDELETED(src) || QDELETED(our_cell)) //it was rigged
-		return FALSE
 	if(stuncharge < hitcost)
 		if(stuncharge < (hitcost * STUNBATON_CHARGE_LENIENCY))
 			L.visible_message("<span class='warning'>[user] has prodded [L] with [src]. Luckily it was out of charge.</span>", \
 							"<span class='warning'>[user] has prodded you with [src]. Luckily it was out of charge.</span>")
+			switch_status(FALSE)
 			return FALSE
 		final_stamina_loss_amount *= round(stuncharge/hitcost, 0.1)
+	var/can_shove = shoving && COOLDOWN_FINISHED(src, shove_cooldown) && !HAS_TRAIT(L, TRAIT_IWASBATONED)
+	if(can_shove && L.mob_weight >= MOB_WEIGHT_HEAVY_SUPER && get_size(L) > 1)
+		final_stamina_loss_amount /= get_size(L)
+	var/list/return_list = list(BLOCK_CONTEXT_DAMAGE = final_stamina_loss_amount, BLOCK_CONTEXT_DAMAGE_TYPE = STAMINA)
+	if(L.mob_run_block(src, 0, "[user]'s [name]", ATTACK_TYPE_MELEE, 0, user, null, return_list) & BLOCK_SUCCESS)
+		playsound(L, 'sound/weapons/genhit.ogg', 50, 1)
+		return FALSE
+	final_stamina_loss_amount = block_calculate_resultant_damage(final_stamina_loss_amount, return_list)
+	var/zap_block = L.run_armor_check(BODY_ZONE_CHEST, MELEE, null, null, armor_pen)
+	deductcharge(hitcost, FALSE)
+	if(QDELETED(src) || QDELETED(our_cell))
+		return FALSE
 
 	if(user && !user.UseStaminaBuffer(getweight(user, STAM_COST_BATON_MOB_MULT), warn = TRUE))
 		return FALSE
 
-	if(shoving && COOLDOWN_FINISHED(src, shove_cooldown) && !HAS_TRAIT(L, TRAIT_IWASBATONED)) //Rightclicking applies a knockdown, but only once every couple of seconds, based on the cooldown_duration var. If they were recently knocked down, they can't be knocked down again by a baton.
+	if(can_shove)
 		if(L.mob_weight < MOB_WEIGHT_HEAVY_SUPER) // BLUEMOON ADD - больших и тяжёлых существ проблематично нормально оглушить
 			L.DefaultCombatKnockdown(50, override_stamdmg = 0)
 			L.apply_status_effect(STATUS_EFFECT_TASED_WEAK_NODMG, status_duration) //Even if they shove themselves up, they're still slowed.
-		// BLUEMOON ADD START - больших и тяжёлых существ проблематично нормально оглушить
-		else
-			if(get_size(L) > 1)
-				final_stamina_loss_amount *= 1 / get_size(L) // я за час не придумал, как из 1 получить 1 и из 2 получить 0.5 - сделайте вы
-		// BLUEMOON ADD END
 		L.apply_status_effect(STATUS_EFFECT_OFF_BALANCE, status_duration) //They're very likely to drop items if shoved briefly after a knockdown.
 		shoved = TRUE
 		COOLDOWN_START(src, shove_cooldown, cooldown_duration)

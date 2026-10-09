@@ -55,6 +55,11 @@
 	var/health_frac = boss.health / boss.maxHealth
 	if(health_frac > max_health_frac || health_frac < min_health_frac)
 		return FALSE
+	var/turf/boss_turf = get_turf(boss)
+	var/turf/target_turf = get_turf(target)
+	//get_dist() не видит z: цель на другом этаже читалась бы как стоящая рядом
+	if(!boss_turf || !target_turf || boss_turf.z != target_turf.z)
+		return FALSE
 	var/distance = get_dist(boss, target)
 	if(distance < min_range || distance > max_range)
 		return FALSE

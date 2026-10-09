@@ -4,7 +4,7 @@
 	icon = 'modular_bluemoon/icons/obj/guns/gunkit.dmi'
 	icon_state = "kitsuitcase"
 
-/obj/item/disk/weapon_blueprint
+/* /obj/item/disk/weapon_blueprint
 	name = "Advanced weaponry blueprints"
 	desc = "Some fancy schematics for R&D minds, that will improve sec efficiency to shot each other."
 	icon = 'modular_bluemoon/icons/obj/items_and_weapons.dmi'
@@ -13,7 +13,7 @@
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/equipment/tools_righthand.dmi'
 	w_class = WEIGHT_CLASS_SMALL
-
+ */
 /////////////////////////////
 //Enforcer MK59-MK62 design//
 /////////////////////////////
@@ -37,3 +37,15 @@
 /obj/item/weaponcrafting/gunkit/jager
 	name = "\improper jager Shotgun conversion kit"
 	desc = "A set of spare parts for converting a combat shotgun into the jager mag-fed shotgun. Can be used only on empty gun"
+
+/////////////////////////////
+//Сбушные конверсии ревиков //
+/////////////////////////////
+
+/obj/item/weaponcrafting/gunkit/liturgy
+	name = "Liturgy gun conversion kit"
+	desc = "A set of spare parts for upgrading the Apostle pistol to the Liturgy version. Can be used only on empty gun"
+
+/obj/item/weaponcrafting/gunkit/dies_irae
+	name = "Dies Irae gun conversion kit"
+	desc = "A set of spare parts for upgrading the Apostle to the Dies Irae version. Can be used only on empty gun"

@@ -11,6 +11,7 @@
 	attack_verb = list("licked", "slobbered", "slapped", "frenched", "tongued")
 	var/list/languages_possible
 	var/say_mod = null
+	var/say_mod_ru = null
 	var/taste_sensitivity = 15 // lower is more sensitive.
 	maxHealth = TONGUE_MAX_HEALTH
 	var/list/initial_accents //the ones the tongue starts with, not what it currently has
@@ -55,8 +56,8 @@
 		/datum/language/arachnid, // BLUEMOON ADD - рахнидский
 		/datum/language/voltaic, // BLUEMOON ADD - язык эфириалов
 		/datum/language/mushroom, // BLUEMOON ADD - язык гриболюдов
-		/datum/language/terrorspiders, // BLUEMOON ADD - язык террор-пауков 
-		/datum/language/xenocommon, // BLUEMOON ADD - ксенокоммон 
+		/datum/language/terrorspiders, // BLUEMOON ADD - язык террор-пауков
+		/datum/language/xenocommon, // BLUEMOON ADD - ксенокоммон
 		/datum/language/drone, // BLUEMOON ADD - язык дронов
 		/datum/language/swarmer, // BLUEMOON ADD - язык свормеров
 		/datum/language/rootsong, // BLUEMOON ADD - язык дион
@@ -87,12 +88,24 @@
 		SSblackbox.record_feedback("tally", "fermi_chem", 1, "Tongues lost to Fermi")
 		qdel(src)
 
-/obj/item/organ/tongue/Insert(mob/living/carbon/M, special = 0, drop_if_replaced = TRUE)
+/**
+ * custom_speech_verb_ru – аргумент следует передавать, если наша цель потенциально имеет русское имя или должен использоваться
+ * русский глагол, можно передать булевым TRUE/FALSE. Вызов в preferences.dm сразу передаёт булевый выбор русских глаголов у клиента, например,
+ * в то время как неявно указанные пройдут нулл проверку, удобно при смене языка внутри раунда.
+ */
+/obj/item/organ/tongue/Insert(mob/living/carbon/M, special = 0, drop_if_replaced = TRUE, custom_speech_verb_ru)
 	. = ..()
 	if(!.)
 		return
 	if(say_mod && M.dna && M.dna.species)
-		M.dna.species.say_mod = say_mod
+		var/use_ru_verb = custom_speech_verb_ru
+		if(isnull(use_ru_verb))
+			var/datum/preferences/prefs = M.client?.ckey ? GLOB.preferences_datums[M.client.ckey] : null
+			use_ru_verb = prefs?.custom_speech_verb_ru
+		if(say_mod_ru)
+			M.dna.species.say_mod = use_ru_verb ? say_mod_ru : say_mod
+		else
+			M.dna.species.say_mod = say_mod
 	if(length(initial_accents) || length(accents))
 		RegisterSignal(M, COMSIG_MOB_SAY, PROC_REF(handle_speech))
 	M.UnregisterSignal(M, COMSIG_MOB_SAY)
@@ -115,6 +128,7 @@
 	desc = "A thin and long muscle typically found in reptilian races, apparently moonlights as a nose."
 	icon_state = "tonguelizard"
 	say_mod = "hisses"
+	say_mod_ru = "шипит"
 	taste_sensitivity = 10 // combined nose extra sensitive
 	maxHealth = 40 //extra sensitivity means tongue is more susceptible to damage
 	initial_accents = list(/datum/accent/lizard)
@@ -124,6 +138,7 @@
 	desc = "A flat and broad muscle commonly found in canine."
 	icon_state = "tonguefluffy"
 	say_mod = "rawrs"
+	say_mod_ru = "рычит"
 	taste_sensitivity = 10 // nose extra sensitive
 	maxHealth = 50 //extra sensitivity means tongue is more susceptible to damage
 	initial_accents = list(/datum/accent/canine)
@@ -133,6 +148,7 @@
 	desc = "A flat and broad muscle commonly found in feline races."
 	icon_state = "tonguefluffy"
 	say_mod = "mewels"
+	say_mod_ru = "мяукает"
 	taste_sensitivity = 10 // nose extra sensitive
 	maxHealth = 50 //extra sensitivity means tongue is more susceptible to damage
 	initial_accents = list(/datum/accent/feline)
@@ -142,6 +158,7 @@
 	desc = "A thin tongue whith fringed tip and the root of the tongue have backward-facing barbs"
 	icon_state = "tonguenormal"  // Сделайте иконку плиз
 	say_mod = "chirps"
+	say_mod_ru = "чирикает"
 	taste_sensitivity = 50 // nose extra sensitive
 	maxHealth = 70 //extra sensitivity means tongue is more susceptible to damage
 	initial_accents = list(/datum/accent/bird)
@@ -151,6 +168,7 @@
 	desc = "A freakish looking meat tube that apparently can take in liquids."
 	icon_state = "tonguefly"
 	say_mod = "buzzes"
+	say_mod_ru = "жужжит"
 	taste_sensitivity = 25 // you eat vomit, this is a mercy
 	maxHealth = 80 //years of eatting trash has made your tongue strong
 	initial_accents = list(/datum/accent/fly)
@@ -165,6 +183,7 @@
 	desc = "A mysterious structure that allows for instant communication between users. Pretty impressive until you need to eat something."
 	icon_state = "tongueayylmao"
 	say_mod = "gibbers"
+	say_mod_ru = "лопочет"
 	taste_sensitivity = 101 // ayys cannot taste anything.
 	maxHealth = 120 //Ayys probe a lot
 	initial_accents = list(/datum/accent/abductor)
@@ -200,6 +219,7 @@
 	desc = "Between the decay and the fact that it's just lying there you doubt a tongue has ever seemed less sexy."
 	icon_state = "tonguezombie"
 	say_mod = "moans"
+	say_mod_ru = "мычит"
 	taste_sensitivity = 32
 	maxHealth = 65 //Stop! It's already dead...!
 	initial_accents = list(/datum/accent/zombie)
@@ -209,6 +229,7 @@
 	desc = "According to leading xenobiologists the evolutionary benefit of having a second mouth in your mouth is \"that it looks badass\"."
 	icon_state = "tonguexeno"
 	say_mod = "hisses"
+	say_mod_ru = "шипит"
 	taste_sensitivity = 10 // LIZARDS ARE ALIENS CONFIRMED
 	maxHealth = 500 //They've a little mouth for a tongue, so it's pretty robust
 	initial_accents = list(/datum/accent/alien)
@@ -238,6 +259,7 @@
 	desc = "Apparently skeletons alter the sounds they produce through oscillation of their teeth, hence their characteristic rattling."
 	icon_state = "tonguebone"
 	say_mod = "rattles"
+	say_mod_ru = "трещит"
 	organ_flags = ORGAN_NO_SPOIL
 	attack_verb = list("bitten", "chattered", "chomped", "enamelled", "boned")
 	taste_sensitivity = 101 // skeletons cannot taste anything
@@ -267,7 +289,7 @@
 		chatter(speech_args[SPEECH_MESSAGE], phomeme_type, source)
 	..()
 
-/obj/item/organ/tongue/bone/Insert(mob/living/carbon/M, special, drop_if_replaced)
+/obj/item/organ/tongue/bone/Insert(mob/living/carbon/M, special, drop_if_replaced, custom_speech_verb_ru = FALSE)
 	. = ..()
 	if(!.)
 		return
@@ -300,6 +322,7 @@
 	organ_flags = ORGAN_NO_SPOIL
 	icon_state = "tonguerobot"
 	say_mod = "states"
+	say_mod_ru = "констатирует"
 	attack_verb = list("beeped", "booped")
 	initial_accents = list(/datum/accent/span/robot)
 	taste_sensitivity = 25 // not as good as an organic tongue
@@ -336,6 +359,7 @@
 /obj/item/organ/tongue/robot/ipc
 	name = "positronic voicebox"
 	say_mod = "beeps"
+	say_mod_ru = "гудит"
 	desc = "A voice synthesizer used by IPCs to smoothly interface with organic lifeforms."
 	electronics_magic = FALSE
 	organ_flags = ORGAN_SYNTHETIC
@@ -345,6 +369,7 @@
 	desc = "A sophisticated ethereal organ, capable of synthesising speech via electrical discharge."
 	icon_state = "electrotongue"
 	say_mod = "crackles"
+	say_mod_ru = "потрескивает"
 	attack_verb = list("shocked", "jolted", "zapped")
 	taste_sensitivity = 101 // Not a tongue, they can't taste shit
 	var/static/list/languages_possible_ethereal = typecacheof(list(
@@ -370,6 +395,7 @@
 	name = "inner mandible"
 	desc = "A set of soft, spoon-esque mandibles closer to the mouth opening, that allow for basic speech, and the ability to speak Rachnidian."
 	say_mod = "chitters"
+	say_mod_ru = "стрекочет"
 	var/static/list/languages_possible_arachnid = typecacheof(list(
 		/datum/language/common,
 		/datum/language/machine,

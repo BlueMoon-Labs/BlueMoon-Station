@@ -1,0 +1,91 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/obj/structure/flora/rock/jungle,
+/turf/open/floor/plating/asteroid/snow/atmosphere{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15";
+	baseturfs = /turf/open/floor/plating
+	},
+/area/maintenance/aft/upper)
+"e" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/plating/asteroid/snow/atmosphere{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15";
+	baseturfs = /turf/open/floor/plating
+	},
+/area/maintenance/aft/upper)
+"h" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 8
+	},
+/obj/machinery/light/cold/directional/south,
+/turf/open/floor/plating/asteroid/snow/atmosphere{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15";
+	baseturfs = /turf/open/floor/plating
+	},
+/area/maintenance/aft/upper)
+"j" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 10
+	},
+/obj/modular_map_connector,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 6
+	},
+/turf/open/floor/plating/asteroid/snow/atmosphere{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15";
+	baseturfs = /turf/open/floor/plating
+	},
+/area/maintenance/aft/upper)
+"t" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/obj/machinery/light/cold/directional/south,
+/turf/open/floor/plating/asteroid/snow/atmosphere{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15";
+	baseturfs = /turf/open/floor/plating
+	},
+/area/maintenance/aft/upper)
+"A" = (
+/mob/living/simple_animal/hostile/retaliate/goat,
+/turf/open/floor/plating/asteroid/snow/atmosphere{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15";
+	baseturfs = /turf/open/floor/plating
+	},
+/area/maintenance/aft/upper)
+"H" = (
+/obj/structure/flora/rock,
+/turf/open/floor/plating/asteroid/snow/atmosphere{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15";
+	baseturfs = /turf/open/floor/plating
+	},
+/area/maintenance/aft/upper)
+"Q" = (
+/turf/open/floor/plating/asteroid/snow/atmosphere{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=293.15";
+	baseturfs = /turf/open/floor/plating
+	},
+/area/maintenance/aft/upper)
+
+(1,1,1) = {"
+c
+Q
+t
+"}
+(2,1,1) = {"
+Q
+A
+j
+"}
+(3,1,1) = {"
+H
+Q
+e
+"}
+(4,1,1) = {"
+Q
+c
+h
+"}

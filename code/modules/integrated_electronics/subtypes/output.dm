@@ -324,7 +324,7 @@
 		"camera fast mode" = IC_PINTYPE_BOOLEAN,
 		"camera network" = IC_PINTYPE_LIST
 		)
-	inputs_default = list("1" = "video camera circuit", "4" = list("rd"))
+	inputs_default = list("1" = "video camera circuit", "4" = list("rd", "integrated"))
 	outputs = list()
 	activators = list()
 	spawn_flags = IC_SPAWN_DEFAULT|IC_SPAWN_RESEARCH
@@ -338,7 +338,7 @@
 /obj/item/integrated_circuit/output/video_camera/New()
 	..()
 	camera = new(src)
-	camera.network = list("rd")
+	camera.network = list("rd", "integrated")
 	on_data_written()
 
 /obj/item/integrated_circuit/output/video_camera/Destroy()

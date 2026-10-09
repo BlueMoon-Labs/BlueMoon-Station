@@ -39,6 +39,7 @@ jobs:
       - name: Run Linters
         run: |
           bash tools/ci/check_filedirs.sh tgstation.dme
+          python3 tools/ci/check_dme_order.py tgstation.dme
           bash tools/ci/check_changelogs.sh
           bash tools/ci/check_grep.sh
           find . -name "*.php" -print0 | xargs -0 -n1 php -l
@@ -67,6 +68,22 @@ jobs:
           bash tools/ci/install_byond.sh
           source $HOME/BYOND/byond/bin/byondsetup
           tools/build/build --ci dm -DCIBUILDING -DCITESTING -DALL_MAPS
+  compile_all_templates:
+    if: ( !contains(github.event.head_commit.message, '[ci skip]') )
+    name: Compile Templates
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore BYOND cache
+        uses: actions/cache@v4
+        with:
+          path: ~/BYOND
+          key: ${{ runner.os }}-byond-${{ secrets.CACHE_PURGE_KEY }}-${{ hashFiles('dependencies.sh') }}
+      - name: Compile All Templates
+        run: |
+          bash tools/ci/install_byond.sh
+          source $HOME/BYOND/byond/bin/byondsetup
+          tools/build/build --ci dm -DCIBUILDING -DCITESTING -DALL_TEMPLATES
   find_all_maps:
     if: ( !contains(github.event.head_commit.message, '[ci skip]') )
     name: Find Maps to Test

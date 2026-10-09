@@ -106,12 +106,8 @@
 	. += span_notice("[src] can be disassembled by using Ctrl+Shift+Click.")
 
 /obj/structure/chair/milking_machine/Destroy()
-	if(current_mob)
-		if(current_mob.handcuffed)
-			current_mob.handcuffed.dropped(current_mob)
-		current_mob.handcuffed = null
-		current_mob.update_handcuffed()
-		current_mob.layer = initial(current_mob.layer)
+	STOP_PROCESSING(SSobj, src)
+	unbuckle_all_mobs()
 
 	if(beaker)
 		qdel(beaker)
@@ -122,9 +118,6 @@
 	current_breasts = null
 	current_testicles = null
 	current_vagina = null
-
-	STOP_PROCESSING(SSobj, src)
-	unbuckle_all_mobs()
 	return ..()
 
 // formerly NO_DECONSTRUCTION

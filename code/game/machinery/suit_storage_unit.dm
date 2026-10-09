@@ -359,11 +359,14 @@
 		suit_to_delete = mod
 	if(user_choice) //если пользователь хоть что-то выбрал, то можно удалять.
 		QDEL_NULL(suit_to_delete)
+		return suit_to_delete
 
 /obj/machinery/suit_storage_unit/interact(mob/living/user)
 	var/static/list/items
 	if(suit && mod)
-		choice_type_of_suit(user)
+		var/choice_confirm = choice_type_of_suit(user)
+		if(!choice_confirm)
+			return
 	if (!items)
 		items = list(
 			"suit" = create_silhouette_of(/obj/item/clothing/suit/space/eva),

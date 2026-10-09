@@ -50,23 +50,23 @@
 		payoff = max(payoff_min, FLOOR(D.account_balance * 0.85, 1000))
 	else
 		payoff = payoff_min
-	threat_msg.content = "ПРИВЕТСТВУЮ ВАС, ЭТО [ship_name] И МЫ СОБИРАЕМ ДЕНЬГИ ИЗ ВАССАЛОВ НА НАШЕЙ ТЕРРИТОРИИ, ТАК УЖ СЛУЧИЛОСЬ, ЧТО ВЫ ТОЖЕ ТАМ ОКАЗАЛИСЬ!! ОБЫЧНО МЫ УБИВАЕМ ТАКИХ СЛАБАКОВ, КАК ВЫ, ЗА ТО, ЧТО ОНИ ВТОРГЛИСЬ НА НАШУ ЗЕМЛЮ, НО МЫ ГОТОВЫ ПРИВЕТСТВОВАТЬ ВАС В НАШЕМ ПРОСТРАНСТВЕ, ЕСЛИ ВЫ ЗАПЛАТИТЕ [payoff] В ЗНАК УВАЖЕНИЯ К НАШЕМУ ЗАКОНУ. БУДЬТЕ МУДРЫ В СВОЕМ ВЫБОРЕ!! (отправить сообщение. отправить сообщение. почему сообщение не отправлено?)."
+	threat_msg.content = "ПРИВЕТСТВУЮ ВАС, ЭТО [ship_name] И МЫ СОБИРАЕМ ДЕНЬГИ ИЗ ВАССАЛОВ НА НАШЕЙ ТЕРРИТОРИИ, ТАК УЖ СЛУЧИЛОСЬ, ЧТО ВЫ ТОЖЕ ТАМ ОКАЗАЛИСЬ!! ОБЫЧНО МЫ УБИВАЕМ ТАКИХ СЛАБАКОВ, КАК ВЫ, ЗА ТО, ЧТО ОНИ ВТОРГЛИСЬ НА НАШУ ЗЕМЛЮ, НО МЫ ГОТОВЫ ПРИВЕТСТВОВАТЬ ВАС В НАШЕМ ПРОСТРАНСТВЕ, ЕСЛИ ВЫ ЗАПЛАТИТЕ [payoff] В ЗНАК УВАЖЕНИЯ К НАШЕМУ ЗАКОНУ. БУДЬТЕ МУДРЫ В СВОЕМ ВЫБОРЕ!! У ВАС ЕСТЬ РОВНО ПЯТЬ МИНУТ С МОМЕНТА ПОЛУЧЕНИЯ СООБЩЕНИЯ. (отправить сообщение. отправить сообщение. почему сообщение не отправлено?)."
 
 	threat_msg.answer_callback = CALLBACK(src, PROC_REF(warmongers_answered), threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
 	SScommunications.send_message(threat_msg, unique = TRUE)
 	spawn_timer_id = addtimer(CALLBACK(src, PROC_REF(spawn_warmongers), threat_msg, ship_template), response_max_time, TIMER_STOPPABLE)
 
 /datum/round_event/medieval_warmongers/proc/warmongers_answered(datum/comm_message/threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
-	if(world.time > initial_send_time + response_max_time)
+	if(world.time >= initial_send_time + response_max_time)
 		priority_announce("ВЫ УЖЕ ПОД ОСАДОЙ ОСТОЛОПЫ, ВЫ ЛИБО ТУПЫЕ ЛИБО НЕВЕЖЕСТВЕННЫЕ?!!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_warmongers(threat_msg, ship_template, TRUE)
 		return
 	if(threat_msg && threat_msg.answered == 1)
 		var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
 		if(D && D.adjust_money(-payoff))
+			resolve_threat_peacefully()
 			priority_announce("ЭТОГО БУДЕТ ДОСТАТОЧНО, ПОМНИ, КОМУ ТЫ ПРИНАДЛЕЖИШЬ!!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_yespeacedecision.ogg', "Priority")
 			SSdirector.complete_deferred_action_without_roles(control, "угроза снята выкупом; назначено ролей: 0")
-			resolve_threat_peacefully()
 			return
 		priority_announce("ТЫ СЧИТАЕШЬ МЕНЯ ШУТОМ? ТЕБЕ КОНЕЦ!!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_warmongers(threat_msg, ship_template, TRUE)
@@ -139,23 +139,29 @@
 		for(var/obj/effect/mob_spawn/human/medieval/spawner in A)
 			spawners_list += spawner
 
-	var/list/candidates = pollGhostCandidates("Вы желаете стать средневековым пиратом?", ROLE_TRAITOR, minimum_required = spawners_list.len)
-	var/list/spawned_warmongers = list()
 	var/spawner_count = length(spawners_list)
 	var/intensity_share = spawner_count ? control.intensity / spawner_count : 0
 	var/refund_share = triggered_randomly && spawner_count ? control.cost / spawner_count : 0
+	// Armed before the poll: a sleeper claimed through attack_ghost meanwhile tracks itself in create().
+	for(var/obj/effect/mob_spawn/human/spawner as anything in spawners_list)
+		spawner.director_source_action = control
+		spawner.director_intensity = intensity_share
+		spawner.director_refund_cost = refund_share
+	var/list/candidates = pollGhostCandidates("Вы желаете стать средневековым пиратом?", ROLE_TRAITOR, minimum_required = spawners_list.len)
+	var/list/spawned_warmongers = list()
 
 	for(var/obj/effect/mob_spawn/human/spawner in spawners_list)
+		// Already claimed through attack_ghost during the poll and tracked by create().
+		if(QDELETED(spawner))
+			continue
 		if(LAZYLEN(candidates))
 			var/mob/our_candidate = pick_n_take(candidates)
+			spawner.director_source_action = null // counted by the batch tracking below
 			var/mob/living/spawned_warmonger = spawner.create(our_candidate.ckey)
 			if(spawned_warmonger)
 				spawned_warmongers += spawned_warmonger
 			notify_ghosts("The Medieval Warmongers ship has an object of interest: [our_candidate]!", source = our_candidate, action = NOTIFY_ORBIT, header = "Something's Interesting!")
 		else
-			spawner.director_source_action = control
-			spawner.director_intensity = intensity_share
-			spawner.director_refund_cost = refund_share
 			notify_ghosts("The Medieval Warmongers ship has an object of interest: [spawner]!", source = spawner, action = NOTIFY_ORBIT, header = "Something's Interesting!")
 	if(length(spawned_warmongers))
 		var/spawned_fraction = length(spawned_warmongers) / max(1, spawner_count)

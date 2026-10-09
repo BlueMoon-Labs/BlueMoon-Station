@@ -1,0 +1,107 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"e" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/effect/spawner/lootdrop/costume,
+/turf/open/floor/plating,
+/area/maintenance/starboard/greater)
+"g" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/asteroid/tramstation)
+"l" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/girder,
+/obj/structure/grille,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"D" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/maintenance/starboard/greater)
+"H" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/modular_map_connector,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"P" = (
+/turf/closed/wall,
+/area/maintenance/starboard/greater)
+"Q" = (
+/turf/template_noop,
+/area/template_noop)
+"U" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"Y" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/structure/closet/wardrobe/mixed = 1, /obj/structure/closet/wardrobe = 1, /obj/structure/closet/wardrobe/pink = 1, /obj/structure/closet/wardrobe/black = 1, /obj/structure/closet/wardrobe/green = 1, /obj/structure/closet/wardrobe/orange = 1, /obj/structure/closet/wardrobe/yellow = 1, /obj/structure/closet/wardrobe/white = 1, /obj/structure/closet/wardrobe/grey = 1)
+	},
+/turf/open/floor/plating,
+/area/maintenance/starboard/greater)
+
+(1,1,1) = {"
+Q
+Q
+Q
+Q
+g
+g
+"}
+(2,1,1) = {"
+Q
+Q
+Q
+Q
+g
+g
+"}
+(3,1,1) = {"
+Q
+P
+P
+P
+g
+g
+"}
+(4,1,1) = {"
+Q
+U
+e
+P
+g
+g
+"}
+(5,1,1) = {"
+Q
+U
+Y
+P
+g
+g
+"}
+(6,1,1) = {"
+Q
+H
+l
+P
+g
+g
+"}
+(7,1,1) = {"
+Q
+U
+D
+P
+g
+g
+"}
+(8,1,1) = {"
+Q
+U
+D
+P
+g
+g
+"}

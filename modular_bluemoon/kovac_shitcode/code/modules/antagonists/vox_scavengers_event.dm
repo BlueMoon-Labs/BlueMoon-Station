@@ -66,23 +66,33 @@
 		for(var/obj/effect/mob_spawn/human/vox_scavenger/spawner in A)
 			spawners_list += spawner
 
-	var/list/candidates = pollGhostCandidates("Do you wish to be considered for Vox Scavengers?", ROLE_TRAITOR, minimum_required = spawners_list.len)
-	var/list/spawned_scavengers = list()
 	var/spawner_count = length(spawners_list)
 	var/intensity_share = source_action && spawner_count ? source_action.intensity / spawner_count : 0
 	var/refund_share = spawner_count ? refund_cost / spawner_count : 0
+	// Armed before the poll: a sleeper claimed through attack_ghost meanwhile tracks itself in create().
+	for(var/obj/effect/mob_spawn/human/spawner as anything in spawners_list)
+		spawner.director_source_action = source_action
+		spawner.director_intensity = intensity_share
+		spawner.director_refund_cost = refund_share
+	var/list/candidates = pollGhostCandidates("Do you wish to be considered for Vox Scavengers?", ROLE_TRAITOR, minimum_required = spawners_list.len)
+	var/list/spawned_scavengers = list()
 
 	for(var/obj/effect/mob_spawn/human/spawner in spawners_list)
+		// Already claimed through attack_ghost during the poll and tracked by create().
+		if(QDELETED(spawner))
+			continue
 		if(LAZYLEN(candidates))
 			var/mob/our_candidate = pick_n_take(candidates)
+			spawner.director_source_action = null // counted by the batch tracking below
 			var/mob/living/spawned_scavenger = spawner.create(our_candidate.ckey)
 			if(spawned_scavenger)
 				spawned_scavengers += spawned_scavenger
-			notify_ghosts("Skipjack has an object of interest: [our_candidate]!", source=our_candidate, action=NOTIFY_ORBIT, header="Something's Interesting!")
+				notify_ghosts("Skipjack has an object of interest: [spawned_scavenger]!", source=spawned_scavenger, action=NOTIFY_ORBIT, header="Something's Interesting!")
+			else if(!QDELETED(spawner))
+				notify_ghosts("Skipjack ship has an object of interest: [spawner]!", source=spawner, action=NOTIFY_ORBIT, header="Something's Interesting!")
+			else
+				notify_ghosts("Skipjack ship has an object of interest: [our_candidate]!", source=our_candidate, action=NOTIFY_ORBIT, header="Something's Interesting!")
 		else
-			spawner.director_source_action = source_action
-			spawner.director_intensity = intensity_share
-			spawner.director_refund_cost = refund_share
 			notify_ghosts("Skipjack ship has an object of interest: [spawner]!", source=spawner, action=NOTIFY_ORBIT, header="Something's Interesting!")
 	if(source_action && length(spawned_scavengers))
 		var/spawned_fraction = length(spawned_scavengers) / max(1, spawner_count)

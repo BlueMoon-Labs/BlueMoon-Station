@@ -1,0 +1,324 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/obj/effect/turf_decal/weather/sand/plating,
+/turf/open/floor/plating,
+/area/maintenance/department/science)
+"e" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/maintenance/department/science)
+"f" = (
+/obj/modular_map_connector,
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Creature Containment Maintenance Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/science/xenobio,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/turf/open/floor/catwalk_floor,
+/area/maintenance/department/science)
+"g" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/maintenance/department/science)
+"i" = (
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
+	},
+/obj/machinery/shieldwallgen/xenobiologyaccess,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/maintenance/department/science)
+"j" = (
+/turf/closed/mineral/asteroid/porous,
+/area/maintenance/department/science)
+"n" = (
+/obj/effect/landmark/blobstart,
+/turf/open/floor/plating/asteroid,
+/area/maintenance/department/science)
+"t" = (
+/turf/closed/wall/r_wall,
+/area/maintenance/department/science)
+"w" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-4"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-8"
+	},
+/obj/effect/turf_decal/weather/sand/plating,
+/obj/machinery/door/window{
+	name = "Containment Pen";
+	req_access_txt = "55";
+	dir = 1
+	},
+/obj/machinery/door/window{
+	name = "Containment Pen";
+	req_access_txt = "55"
+	},
+/turf/open/floor/plating,
+/area/maintenance/department/science)
+"z" = (
+/obj/structure/table/reinforced,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/directional/west,
+/obj/item/electropack,
+/obj/item/assembly/signaler,
+/turf/open/floor/plasteel/white,
+/area/maintenance/department/science)
+"E" = (
+/turf/open/floor/plating/asteroid,
+/area/maintenance/department/science)
+"F" = (
+/obj/effect/landmark/xeno_spawn,
+/turf/open/floor/plating/asteroid,
+/area/maintenance/department/science)
+"G" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/maintenance/department/science)
+"H" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/white,
+/area/maintenance/department/science)
+"J" = (
+/obj/effect/turf_decal/weather/sand/plating,
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/plating,
+/area/maintenance/department/science)
+"L" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/wrench,
+/turf/open/floor/plasteel/white,
+/area/maintenance/department/science)
+"R" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "1-4"
+	},
+/turf/open/floor/plating,
+/area/maintenance/department/science)
+"S" = (
+/turf/template_noop,
+/area/template_noop)
+"T" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/extinguisher_cabinet/directional/east,
+/turf/open/floor/plasteel/white,
+/area/maintenance/department/science)
+"U" = (
+/mob/living/simple_animal/crab{
+	name = "la creatura";
+	desc = "ay dios mios..."
+	},
+/turf/open/floor/plating/asteroid,
+/area/maintenance/department/science)
+"W" = (
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
+/obj/machinery/shieldwallgen/xenobiologyaccess,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/maintenance/department/science)
+"X" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop/syndicate_present,
+/turf/open/floor/plasteel/white,
+/area/maintenance/department/science)
+"Y" = (
+/obj/structure/cable/yellow{
+	icon_state = "2-8"
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/maintenance/department/science)
+
+(1,1,1) = {"
+S
+S
+S
+S
+S
+S
+S
+S
+S
+S
+S
+S
+"}
+(2,1,1) = {"
+S
+S
+S
+S
+S
+S
+S
+S
+S
+S
+S
+S
+"}
+(3,1,1) = {"
+S
+S
+S
+S
+S
+S
+S
+S
+S
+S
+S
+S
+"}
+(4,1,1) = {"
+S
+t
+t
+t
+t
+t
+j
+g
+g
+S
+S
+S
+"}
+(5,1,1) = {"
+S
+t
+z
+X
+W
+t
+b
+E
+g
+g
+S
+S
+"}
+(6,1,1) = {"
+S
+f
+R
+L
+G
+b
+E
+F
+E
+g
+S
+S
+"}
+(7,1,1) = {"
+S
+t
+Y
+e
+w
+b
+U
+E
+J
+j
+S
+S
+"}
+(8,1,1) = {"
+S
+t
+H
+H
+G
+b
+b
+n
+g
+g
+S
+S
+"}
+(9,1,1) = {"
+S
+t
+H
+T
+i
+t
+E
+b
+g
+S
+S
+S
+"}
+(10,1,1) = {"
+S
+t
+t
+t
+t
+t
+E
+j
+g
+S
+S
+S
+"}
+(11,1,1) = {"
+S
+S
+S
+S
+S
+S
+g
+S
+S
+S
+S
+S
+"}
+(12,1,1) = {"
+S
+S
+S
+S
+S
+S
+S
+S
+S
+S
+S
+S
+"}
+(13,1,1) = {"
+S
+S
+S
+S
+S
+S
+S
+S
+S
+S
+S
+S
+"}

@@ -79,11 +79,13 @@
 
 /obj/item/reagent_containers/food/snacks/grown/holymelon/proc/block_magic(mob/user, major)
 	if(major)
-		to_chat(user, span_warning("[src] hums slightly, and seems to decay a bit."))
+		to_chat(user, span_warning("[src] тихо гудит и чуть подгнивает."))
 
 /obj/item/reagent_containers/food/snacks/grown/holymelon/proc/expire(mob/user)
+	if(!istype(user))
+		user = loc
 	if(istype(user))
-		to_chat(user, span_warning("[src] rapidly turns into ash!"))
+		to_chat(user, span_warning("[src] стремительно рассыпается пеплом!"))
 	new /obj/effect/decal/cleanable/ash(drop_location())
 	qdel(src)
 

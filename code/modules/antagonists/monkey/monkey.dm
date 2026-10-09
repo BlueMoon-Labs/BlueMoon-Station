@@ -42,9 +42,10 @@
 	owner.special_role = null
 	SSticker.mode.ape_infectees -= owner
 
-	var/datum/disease/transformation/jungle_fever/D =  locate() in owner.current.diseases
-	if(D)
-		qdel(D)
+	if(owner.current)
+		var/datum/disease/transformation/jungle_fever/D = locate() in owner.current.diseases
+		if(D)
+			qdel(D)
 
 	. = ..()
 
@@ -112,8 +113,9 @@
 
 /datum/antagonist/monkey/leader/on_removal()
 	SSticker.mode.ape_leaders -= owner
-	var/obj/item/organ/heart/H = new
-	H.Insert(owner.current, drop_if_replaced = FALSE) //replace freedom heart with normal heart
+	if(owner.current)
+		var/obj/item/organ/heart/H = new
+		H.Insert(owner.current, drop_if_replaced = FALSE) //replace freedom heart with normal heart
 
 	. = ..()
 

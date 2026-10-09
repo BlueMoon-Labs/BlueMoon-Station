@@ -433,6 +433,8 @@ GENETICS SCANNER
 			msg += "<span class='alert'><b>У субъекта отсутствует печень!</b></span>\n"
 		if(blooded && !M.getorganslot(ORGAN_SLOT_HEART))
 			msg += "<span class='alert'><b>У субъекта отсутствует сердце!</b></span>\n"
+		if(M.has_status_effect(/datum/status_effect/heretic_dance_earworm))
+			msg += "<span class='alert'>Сердцебиение подстроилось под чужой ритм: пульс бьёт ровными тактами, как метроном. Сбить ритм может разряд дефибриллятора.</span>\n"
 		if(breathes && !M.getorganslot(ORGAN_SLOT_LUNGS))
 			msg += "<span class='alert'><b>Лёгкие пациента разорвались из-за травмы!</b></span>\n"
 		if(has_stomach && !M.getorganslot(ORGAN_SLOT_STOMACH))

@@ -234,7 +234,8 @@
 	if(foes)
 		foes -= old_character
 
-	if(QDELETED(new_character))
+	// A brainmob lives inside a severed head or brain item; chasing it means chasing a thrown object.
+	if(QDELETED(new_character) || isbrain(new_character))
 		if(was_current_target)
 			LoseTarget()
 		return
@@ -536,22 +537,26 @@
 ///RUN_DELAY при загрузке конфига и при его правке в рантайме, поэтому больше
 ///не может разойтись с реальной скоростью игрока (см. AI_PURSUIT_SPEED_RATIO).
 GLOBAL_VAR_INIT(ai_pursuit_min_move_delay, AI_PURSUIT_MIN_MOVE_DELAY)
+///Множитель всех задержек шага ИИ: RUN_DELAY / AI_SPEED_REFERENCE_RUN_DELAY.
+GLOBAL_VAR_INIT(ai_move_delay_scale, 1)
 
-///Пересчитать пол скорости погони. Зовётся из ValidateAndSet конфига RUN_DELAY.
+///Пересчитать пол и множитель скорости погони. Зовётся из ValidateAndSet конфига RUN_DELAY.
 /proc/update_ai_pursuit_speed_floor()
 	var/player_run_delay = CONFIG_GET(number/movedelay/run_delay)
 	if(!player_run_delay)
 		GLOB.ai_pursuit_min_move_delay = AI_PURSUIT_MIN_MOVE_DELAY
+		GLOB.ai_move_delay_scale = 1
 		return GLOB.ai_pursuit_min_move_delay
+	GLOB.ai_move_delay_scale = player_run_delay / AI_SPEED_REFERENCE_RUN_DELAY
 	GLOB.ai_pursuit_min_move_delay = max(world.tick_lag, player_run_delay * AI_PURSUIT_SPEED_RATIO)
 	return GLOB.ai_pursuit_min_move_delay
 
 ///Задержка шага AI-погони (дс) из легаси move_to_delay. Небоссовые мобы
 ///клампятся снизу полом, который считается от скорости бегущего игрока: уйти по
 ///прямой можно, но без права на ошибку. Боссы (megafauna) от пола отписаны -
-///их скорость это дизайн, а не недосмотр.
+///их скорость это дизайн, а не недосмотр. Всё умножается на ai_move_delay_scale.
 /mob/living/simple_animal/hostile/proc/ai_movement_delay()
-	var/delay = AI_LEGACY_MOVE_DELAY_DS(move_to_delay)
+	var/delay = AI_LEGACY_MOVE_DELAY_DS(move_to_delay) * GLOB.ai_move_delay_scale
 	if(ai_pursuit_speed_capped)
 		return max(delay, GLOB.ai_pursuit_min_move_delay)
 	return delay

@@ -51,6 +51,7 @@
 
 	data_out["pda_msgs_trimmed"] = linkedServer.pda_msgs_trimmed
 	data_out["rc_msgs_trimmed"] = linkedServer.rc_msgs_trimmed
+	data_out["remote_msgs_trimmed"] = linkedServer.remote_msgs_trimmed
 
 	data_out["recon_logs"] = list()
 	var/i1 = 0
@@ -80,9 +81,26 @@
 			recipient = pda.recipient,
 			message = pda.message,
 			picture = pda.picture ? TRUE : FALSE,
+			coords = pda.coords,
 			ref = REF(pda)
 		)
 		data_out["message_logs"] += list(data)
+
+	data_out["remote_logs"] = list()
+	var/i3 = 0
+	for(var/datum/data_remote_msg/rm in linkedServer.remote_msgs)
+		i3++
+		if(i3 > 3000)
+			break
+		var/list/data = list(
+			sender = rm.sender,
+			message = rm.message,
+			coords = rm.coords,
+			stamp = rm.stamp,
+			device = rm.device,
+			ref = REF(rm)
+		)
+		data_out["remote_logs"] += list(data)
 
 	return data_out
 
@@ -236,6 +254,9 @@
 			else if(istype(data_ref, /datum/data_pda_msg))
 				LAZYREMOVE(linkedServer.pda_msgs, data_ref)
 				message = "NOTICE: Log Deleted!"
+			else if(istype(data_ref, /datum/data_remote_msg))
+				LAZYREMOVE(linkedServer.remote_msgs, data_ref)
+				message = "NOTICE: Log Deleted!"
 			else
 				message = "NOTICE: Log not found! It may have already been deleted"
 			update_static_data(usr)
@@ -253,6 +274,8 @@
 				linkedServer.pda_msgs = list()
 			if(what == "rc_msgs")
 				linkedServer.rc_msgs = list()
+			if(what == "remote_msgs")
+				linkedServer.remote_msgs = list()
 			update_static_data(usr)
 		if("fake")
 			if(!auth)

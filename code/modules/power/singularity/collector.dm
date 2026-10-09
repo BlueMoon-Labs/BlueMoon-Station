@@ -28,6 +28,7 @@
 	var/bitcoinproduction_drain = 0.15
 	var/bitcoinmining = FALSE
 	rad_insulation = RAD_EXTREME_INSULATION
+	rad_flags = RAD_PROTECT_CONTENTS
 	var/obj/item/radio/Radio
 
 /obj/machinery/power/rad_collector/anchored
@@ -211,7 +212,7 @@
 		return
 	Z.forceMove(drop_location())
 	Z.layer = initial(Z.layer)
-	Z.plane = initial(Z.plane)
+	RESET_PLANE_EXPLICIT(Z, Z)
 	src.loaded_tank = null
 	if(active)
 		toggle_power()

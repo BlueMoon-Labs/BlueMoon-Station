@@ -138,8 +138,8 @@
 	/// Почему соединение закрыл САМ сервер. null = рвал клиент или сеть между нами.
 	/// Уходит в строку Logout: без неё в логах наш кик неотличим от обрыва канала.
 	var/disconnect_reason
-	/// Какой это по счёту вход этого ckey за раунд. Циклический реконнект видно сразу.
-	var/round_login_index = 1
+	/// Какой это по счёту вход этого ckey за раунд, 0 - соединение не дошло до Login.
+	var/round_login_index = 0
 
 	var/inprefs = FALSE
 	var/list/topiclimiter
@@ -153,6 +153,7 @@
 	var/datum/player_details/player_details //these persist between logins/logouts during the same round.
 
 	var/list/char_render_holders			//Should only be a key-value list of north/south/east/west = atom/movable/screen.
+	var/datum/plane_master_group/popup/char_preview_planes
 
 	/// Last time they used fix macros
 	var/last_macro_fix = 0

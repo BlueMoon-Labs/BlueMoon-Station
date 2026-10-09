@@ -185,9 +185,50 @@
 	var/mob/living/silicon/ai/AI = usr
 	AI.drop_new_multicam()
 
+/atom/movable/screen/floor_changer/ai
+	name = "Этаж выше / этаж ниже"
+	icon = 'icons/mob/screen_ai.dmi'
+
+/atom/movable/screen/floor_changer/ai/pressed(direction)
+	flick(direction == UP ? "floor_change_v_up" : "floor_change_v_down", src)
+
+/atom/movable/screen/ai/floor_indicator
+	name = "Этаж"
+	icon_state = "zindicator"
+	mouse_over_pointer = MOUSE_INACTIVE_POINTER
+
+/atom/movable/screen/ai/floor_indicator/proc/set_floor(floor, floor_count)
+	name = "Этаж [floor] из [floor_count]"
+	maptext = MAPTEXT_TINY_UNICODE("<div align='center' valign='middle'>[floor]/[floor_count]</div>")
+
 
 /datum/hud/ai
 	ui_style = 'icons/mob/screen_ai.dmi'
+	var/atom/movable/screen/floor_changer/ai/floor_changer
+	var/atom/movable/screen/ai/floor_indicator/floor_indicator
+
+/datum/hud/ai/Destroy()
+	floor_changer = null
+	floor_indicator = null
+	return ..()
+
+/datum/hud/ai/eye_z_changed(force = FALSE)
+	. = ..()
+	update_floor_controls()
+
+/// Кнопки этажей видны, только пока камера стоит в связке из нескольких уровней.
+/datum/hud/ai/proc/update_floor_controls()
+	if(!floor_changer)
+		return
+	var/turf/eye_turf = get_turf(tracked_eye)
+	var/list/levels = eye_turf ? SSmapping.get_connected_levels(eye_turf.z) : null
+	if(length(levels) < 2)
+		floor_changer.clear()
+		floor_indicator.clear()
+		return
+	floor_changer.show()
+	floor_indicator.show()
+	floor_indicator.set_floor(levels.Find(eye_turf.z), length(levels))
 
 /datum/hud/ai/New(mob/owner)
 	..()
@@ -282,3 +323,13 @@
 	using = new /atom/movable/screen/ai/add_multicam(null, src)
 	using.screen_loc = ui_ai_add_multicam
 	static_inventory += using
+
+//Floors
+	floor_changer = new(null, src)
+	floor_changer.screen_loc = ui_ai_floor_changer
+	static_inventory += floor_changer
+
+	floor_indicator = new(null, src)
+	floor_indicator.screen_loc = ui_ai_floor_indicator
+	static_inventory += floor_indicator
+	update_floor_controls()

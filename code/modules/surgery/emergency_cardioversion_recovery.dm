@@ -58,10 +58,10 @@
 		"")
 	H.adjustBruteLoss(10)
 	var/obj/item/organ/heart = H.getorgan(/obj/item/organ/heart)
-	if(heart.organ_flags & ORGAN_FAILING)
+	if(heart?.organ_flags & ORGAN_FAILING)
 		H.adjustOrganLoss(ORGAN_SLOT_HEART, -15)
 	var/obj/item/organ/brain/BR = H.getorgan(/obj/item/organ/brain)
-	if(BR.organ_flags & ORGAN_FAILING)
+	if(BR?.organ_flags & ORGAN_FAILING)
 		H.adjustOrganLoss(ORGAN_SLOT_BRAIN, -5)
 	H.electrocute_act(0, (tool), 1, SHOCK_ILLUSION)
 	//If we're using a defib, let the defib handle the revive.

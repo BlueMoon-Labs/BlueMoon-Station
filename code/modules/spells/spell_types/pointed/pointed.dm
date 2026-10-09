@@ -10,6 +10,10 @@
 	var/self_castable = FALSE
 	/// Variable dictating if the spell will use turf based aim assist
 	var/aim_assist = TRUE
+	/// A rejected click falls back to the nearest valid living target within this many tiles of the clicked turf
+	var/aim_assist_radius = 0
+	/// A rejected click on a movable falls back to the turf under it
+	var/aim_assist_turf = FALSE
 
 /obj/effect/proc_holder/spell/pointed/Trigger(mob/user, skip_can_cast = TRUE)
 	if(!istype(user))
@@ -61,7 +65,8 @@
 	if(!action)
 		return
 	if(active)
-		action.button_icon_state = "[action_icon_state]1"
+		var/active_state = "[action_icon_state]1"
+		action.button_icon_state = (active_state in icon_states(action_icon)) ? active_state : action_icon_state
 	else
 		action.button_icon_state = "[action_icon_state]"
 	action.UpdateButtons()
@@ -76,6 +81,7 @@
 				possible_targets += A
 		if(possible_targets.len == 1)
 			target = possible_targets[1]
+	target = assisted_target(caller, target)
 	if(!intercept_check(caller, target))
 		return TRUE
 	if(!cast_check(FALSE, caller))
@@ -83,6 +89,39 @@
 	perform(list(target), user = caller)
 	remove_ranged_ability()
 	return TRUE // Do not do any underlying actions after the spell cast
+
+/**
+  * assisted_target: Forgiving target resolution for a click that missed.
+  *
+  * Returns the clicked atom when it is valid, otherwise the turf under it (if aim_assist_turf)
+  * or the nearest valid living mob around the clicked turf (if aim_assist_radius), falling back to the clicked atom.
+  */
+/obj/effect/proc_holder/spell/pointed/proc/assisted_target(mob/user, atom/target)
+	if((!aim_assist_radius && !aim_assist_turf) || intercept_check(user, target, TRUE))
+		return target
+	if(aim_assist_radius && isliving(target))
+		return target
+	var/turf/clicked_turf = get_turf(target)
+	if(!clicked_turf)
+		return target
+	if(aim_assist_turf && clicked_turf != target && intercept_check(user, clicked_turf, TRUE))
+		return clicked_turf
+	var/mob/living/best_target
+	var/best_distance
+	var/mob/living/rejected_target
+	var/rejected_distance
+	for(var/mob/living/candidate in range(aim_assist_radius, clicked_turf))
+		var/distance = get_dist(candidate, clicked_turf)
+		if(best_target && distance >= best_distance)
+			continue
+		if(!intercept_check(user, candidate, TRUE))
+			if(aim_assist_radius && candidate != user && candidate.stat != DEAD && (candidate in view_or_range(range, user, selection_type)) && (!rejected_target || distance < rejected_distance))
+				rejected_target = candidate
+				rejected_distance = distance
+			continue
+		best_target = candidate
+		best_distance = distance
+	return best_target || rejected_target || target
 
 /**
   * intercept_check: Specific spell checks for InterceptClickOn() targets.

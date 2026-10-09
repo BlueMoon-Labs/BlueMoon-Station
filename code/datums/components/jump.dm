@@ -21,6 +21,8 @@
 	var/jump_flags
 	///allow_pass_flags flags applied to the jumper on jump
 	var/jumper_allow_pass_flags
+	///Сколько клеток пролетает прыжок с разбега
+	var/leap_distance = 2
 
 /datum/component/jump/Initialize(_jump_duration, _jump_cooldown, _stamina_cost, _jump_height, _jump_sound, _jump_flags, _jumper_allow_pass_flags)
 	. = ..()
@@ -46,8 +48,8 @@
 	jump_flags = _jump_flags
 	jumper_allow_pass_flags = _jumper_allow_pass_flags
 
-///Performs the jump
-/datum/component/jump/proc/do_jump(mob/living/jumper)
+///Performs the jump, a running leap when leap_dir is set
+/datum/component/jump/proc/do_jump(mob/living/jumper, leap_dir)
 	SIGNAL_HANDLER
 	if(TIMER_COOLDOWN_CHECK(jumper, JUMP_COMPONENT_COOLDOWN))
 		return
@@ -56,8 +58,9 @@
 	if(jumper.incapacitated())
 		return
 
+	var/has_gravity = jumper.has_gravity()
 	var/adjusted_stamina_cost = stamina_cost
-	if(!jumper.has_gravity())
+	if(!has_gravity)
 		adjusted_stamina_cost = round(adjusted_stamina_cost*0.4)
 
 	if(adjusted_stamina_cost && (jumper.getStaminaLoss() < -adjusted_stamina_cost))
@@ -94,6 +97,26 @@
 
 	TIMER_COOLDOWN_START(jumper, JUMP_COMPONENT_COOLDOWN, jump_cooldown)
 
+	if(leap_dir && has_gravity)
+		start_leap(jumper, leap_dir)
+
+///Несёт прыгуна по дуге прыжка на leap_distance клеток, рулить в полёте нельзя
+/datum/component/jump/proc/start_leap(mob/living/jumper, leap_dir)
+	var/step_delay = jump_duration / leap_distance
+	if(jumper.client)
+		jumper.client.move_delay = max(jumper.client.move_delay, world.time + jump_duration)
+	jumper.set_glide_size(DELAY_TO_GLIDE_SIZE(step_delay))
+	INVOKE_ASYNC(src, PROC_REF(leap_step), jumper, leap_dir, leap_distance, step_delay)
+
+///Шаг прыжка с разбега; упёрся - дальше летит вертикально и приземляется на месте
+/datum/component/jump/proc/leap_step(mob/living/jumper, leap_dir, steps_left, step_delay)
+	if(QDELETED(jumper) || !HAS_TRAIT(jumper, TRAIT_JUMPING) || !isturf(jumper.loc))
+		return
+	if(!step(jumper, leap_dir))
+		return
+	if(--steps_left > 0)
+		addtimer(CALLBACK(src, PROC_REF(leap_step), jumper, leap_dir, steps_left, step_delay), step_delay)
+
 ///Ends the jump
 /datum/component/jump/proc/end_jump(mob/living/jumper)
 	jumper.remove_filter(JUMP_COMPONENT)
@@ -104,6 +127,9 @@
 	SEND_SIGNAL(jumper, COMSIG_ELEMENT_JUMP_ENDED, TRUE, 1.5, 2)
 	SEND_SIGNAL(jumper.loc, COMSIG_TURF_JUMP_ENDED_HERE, jumper)
 	UnregisterSignal(parent, COMSIG_MOB_THROW)
+	//В полёте can_z_move() падение отбивает по TRAIT_JUMPING, так что дыру под ногами проверяем заново.
+	var/turf/landing = get_turf(jumper)
+	landing?.zfall_if_on_turf(jumper)
 
 	if(!HAS_TRAIT(jumper, TRAIT_FREERUNNING) && jumper.stat == CONSCIOUS && jumper.body_position == STANDING_UP)
 		if(prob(rand(5, 10)))

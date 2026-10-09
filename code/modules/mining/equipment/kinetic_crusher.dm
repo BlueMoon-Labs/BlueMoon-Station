@@ -346,14 +346,26 @@
 	range = 6
 	log_override = TRUE
 	var/obj/item/kinetic_crusher/hammer_synced
+	/// Target health right before bullet_act(): trophy shots deal damage that must count toward crusher loot.
+	var/target_health_before_hit
 
 /obj/item/projectile/destabilizer/Destroy()
 	hammer_synced = null
 	return ..()
 
+/obj/item/projectile/destabilizer/prehit_pierce(atom/target)
+	. = ..()
+	if(isliving(target))
+		var/mob/living/living_target = target
+		target_health_before_hit = living_target.health
+
 /obj/item/projectile/destabilizer/on_hit(atom/target, blocked = FALSE)
 	if(isliving(target))
 		var/mob/living/L = target
+		var/datum/status_effect/crusher_damage/tracker = L.has_status_effect(STATUS_EFFECT_CRUSHERDAMAGETRACKING)
+		if(tracker && !QDELING(tracker) && !isnull(target_health_before_hit))
+			tracker.total_damage += max(0, target_health_before_hit - L.health)
+		target_health_before_hit = null
 		var/had_effect = (L.has_status_effect(STATUS_EFFECT_CRUSHERMARK)) //used as a boolean
 		var/datum/status_effect/crusher_mark/CM = L.apply_status_effect(STATUS_EFFECT_CRUSHERMARK, hammer_synced)
 		if(hammer_synced)

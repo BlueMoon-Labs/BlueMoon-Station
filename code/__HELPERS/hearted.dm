@@ -28,6 +28,11 @@
 		keyname = "<font color='[C.prefs.ooccolor && (C.prefs.custom_colors & CUSTOM_OOC) ? C.prefs.ooccolor : GLOB.normal_ooc_colour]'>[icon2html('icons/obj/plushes.dmi', world, "plushie_nuke")][keyname]</font>"
 	return keyname
 
+/// ckey() drops every non-ASCII letter, so Cyrillic names need their own key.
+/proc/heart_name_key(text)
+	var/static/regex/separators = regex(@"[\s.,!?:;'()\[\]\-_]", "g")
+	return lowertext(separators.Replace(text, ""))
+
 /// Returns mobs whose real_name / mind name matches words in text (same rules as adminhelp keyword scan, without HTML).
 /proc/heart_nominee_lookup(text)
 	var/list/adminhelp_ignored_words = list("unknown", "the", "a", "an", "of", "monkey", "alien", "as", "i")
@@ -43,13 +48,13 @@
 			var/list/L = splittext(string, " ")
 			var/surname_found = 0
 			for(var/i = L.len, i >= 1, i--)
-				var/word = ckey(L[i])
+				var/word = heart_name_key(L[i])
 				if(word)
 					surnames[word] = M
 					surname_found = i
 					break
 			for(var/i = 1, i < surname_found, i++)
-				var/word = ckey(L[i])
+				var/word = heart_name_key(L[i])
 				if(word)
 					forenames[word] = M
 		if(M.ckey)
@@ -57,13 +62,13 @@
 	var/ai_found = 0
 	var/list/mobs_found = list()
 	for(var/original_word in msglist)
-		var/word = ckey(original_word)
+		var/word = heart_name_key(original_word)
 		if(!word || (word in adminhelp_ignored_words))
 			continue
 		if(word == "ai")
 			ai_found = 1
 			continue
-		var/mob/found = ckeys[word]
+		var/mob/found = ckeys[ckey(original_word)]
 		if(!found)
 			found = surnames[word]
 		if(!found)
@@ -119,11 +124,12 @@
 	var/new_duration = world.realtime + duration
 	if(prefs.hearted_until > new_duration)
 		return
-	tgui_alert(src, "Кто-то поблагодарил меня за прошлый раунд!", "<3!", list("Лан"))
 	prefs.hearted_until = new_duration
 	prefs.hearted = TRUE
 	sync_hearted_pref(prefs)
 	prefs.save_preferences()
+	// Зовётся из declare_completion: алерт не должен ждать ответа игрока.
+	tgui_alert_async(src, "Кто-то поблагодарил меня за прошлый раунд!", "<3!", list("Лан"))
 
 /// Ask someone if they'd like to award a commendation for the round, 3 tries to get the name they want before we give up
 /mob/proc/query_heart(attempt=1)

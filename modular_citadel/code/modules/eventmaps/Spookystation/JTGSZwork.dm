@@ -497,7 +497,7 @@ GLOBAL_LIST_EMPTY(rain_sounds)
 	. = ..()
 	var/list/eligible_areas = list()
 	for(var/z in impacted_z_levels) //We check the Z level
-		eligible_areas += SSmapping.areas_in_z["[z]"] //And append them to eligible areas list
+		eligible_areas |= SSmapping.areas_in_z["[z]"] //And append them to eligible areas list
 
 
 	for(var/i in 1 to eligible_areas.len)

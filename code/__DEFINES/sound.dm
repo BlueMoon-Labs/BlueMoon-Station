@@ -25,6 +25,7 @@
 #define CHANNEL_JUKEBOX_START 993
 // Tetris arcade music для работы лимита канала.
 #define CHANNEL_TETRIS_MUSIC 992
+#define CHANNEL_ELEVATOR 991
 
 //THIS SHOULD ALWAYS BE THE LOWEST ONE!
 //KEEP IT UPDATED
@@ -52,6 +53,15 @@
 #define SOUND_DEFAULT_DISTANCE_MULTIPLIER 2.5
 /// Default range at which sound distance multiplier applies
 #define SOUND_DEFAULT_MULTIPLIER_EFFECT_RANGE 7
+
+#define JUKEBOX_MAX_VOLUME 100
+#define JUKEBOX_MAX_VOLUME_EMAGGED 1000
+/// Громкость джукбокса делится на это число и уходит в SSjukeboxes как falloff
+#define JUKEBOX_VOLUME_TO_FALLOFF 35
+
+/// Треки, залитые в личные шкатулки. Живут один раунд: /world/New() сносит каталог целиком.
+#define PERSONAL_MUSIC_BOX_UPLOAD_DIR "data/personal_music_box/"
+#define PERSONAL_MUSIC_BOX_MAX_FILE_SIZE (6 * 1024 * 1024)
 
 
 #define SOUND_MINIMUM_PRESSURE 10

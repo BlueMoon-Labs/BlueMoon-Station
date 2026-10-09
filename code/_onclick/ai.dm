@@ -137,7 +137,10 @@
 	if(obj_flags & EMAGGED)
 		return
 
+	var/was_locked = locked
 	toggle_bolt(usr)
+	if(locked != was_locked)
+		log_remote_use(usr, locked ? "bolted" : "unbolted", "airlock interface")
 
 /obj/machinery/door/airlock/AIAltClick() // Eletrifies doors.
 	if(obj_flags & EMAGGED)
@@ -145,21 +148,32 @@
 
 	if(!secondsElectrified)
 		shock_perm(usr)
+		if(!wires.is_cut(WIRE_SHOCK))
+			log_remote_use(usr, "electrified", "airlock interface")
 	else
+		var/was_electrified = isElectrified()
 		shock_restore(usr)
+		if(was_electrified && !wires.is_cut(WIRE_SHOCK))
+			log_remote_use(usr, "removed electrification from", "airlock interface")
 	return TRUE
 
 /obj/machinery/door/airlock/AIShiftClick()  // Opens and closes doors!
 	if(obj_flags & EMAGGED)
 		return
 
+	var/was_closed = density
 	user_toggle_open(usr)
+	if(density != was_closed)
+		log_remote_use(usr, was_closed ? "opened" : "closed", "airlock interface")
 
 /obj/machinery/door/airlock/AICtrlShiftClick()  // Sets/Unsets Emergency Access Override
 	if(obj_flags & EMAGGED)
 		return
 
+	var/was_emergency = emergency
 	toggle_emergency(usr)
+	if(emergency != was_emergency)
+		log_remote_use(usr, emergency ? "enabled emergency access on" : "disabled emergency access on", "airlock interface")
 
 /* APC */
 /obj/machinery/power/apc/AICtrlClick() // turns off/on APCs.

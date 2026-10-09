@@ -61,3 +61,26 @@
 	TEST_ASSERT(isnull(assoc_clean["good[ascii2text(14)]"]), "the original dirty key must not survive")
 	TEST_ASSERT_EQUAL(assoc_clean[/obj/item], "typepath-key-stays", "non-text keys must pass through untouched")
 	TEST_ASSERT_EQUAL(length(assoc_clean), 2, "the all-control-character key should have been dropped")
+/mob/living/carbon/human/rps_fixture
+	var/games_started = 0
+
+/mob/living/carbon/human/rps_fixture/beginRockPaperScissors(chosen_move)
+	games_started++
+
+/// Рошамбо проверяет тип тела, состояние и выбранный жест до запуска игры.
+/datum/unit_test/rockpaperscissors_body_safety/Run()
+	var/mob/living/carbon/human/rps_fixture/human = allocate(/mob/living/carbon/human/rps_fixture)
+	var/mob/living/monster = allocate(/mob/living/simple_animal/hostile/eldritch/armsy/prime)
+	for(var/emote_type in typesof(/datum/emote/sound/human/carbon/human/rockpaperscissors))
+		var/datum/emote/emote = new emote_type
+		allocated += emote
+		TEST_ASSERT(!emote.can_run_emote(monster), "Форма Плоти не получает человеческое рошамбо.")
+		TEST_ASSERT(!emote.run_emote(monster), "Прямой вызов на форме Плоти безопасно отклоняется.")
+		human.stat = DEAD
+		TEST_ASSERT(!emote.run_emote(human), "Мёртвое тело не начинает игру.")
+		human.stat = CONSCIOUS
+		human.nextsoundemote = 0
+		var/previous_games = human.games_started
+		var/valid_gesture = emote.key != "rps"
+		TEST_ASSERT_EQUAL(emote.run_emote(human), valid_gesture, "Игра начинается только с конкретного жеста.")
+		TEST_ASSERT_EQUAL(human.games_started, previous_games + valid_gesture, "Доступный жест начинает ровно одну игру.")

@@ -60,6 +60,7 @@
 		RegisterSignal(imp_in, COMSIG_MOVABLE_MOVED, PROC_REF(update_position))
 
 /obj/item/implant/warp/removed(mob/living/source, silent, special)
+	UnregisterSignal(source, COMSIG_MOVABLE_MOVED)
 	. = ..()
 	clear_positions()
 
@@ -75,6 +76,8 @@
 
 /obj/item/implant/warp/proc/get_tele_position()
 	prune()
+	if(!length(positions))
+		return null
 	return positions[positions[1]]
 
 /obj/item/implant/warp/proc/do_teleport_effects()
@@ -97,12 +100,14 @@
 /obj/item/implant/warp/activate()
 	. = ..()
 	if(last_use + cooldown > world.time)
-		to_chat(imp_in, "<span class=warning'>[src] is still recharging!</span>")
+		to_chat(imp_in, span_warning("[src] is still recharging!"))
+		return
+	var/destination = get_tele_position()
+	if(!destination)
 		return
 	last_use = world.time
-	prune()
 	do_teleport_effects()		//first.
-	do_teleport(imp_in, get_tele_position(), 0, TRUE, null, null, null, null, null, TELEPORT_CHANNEL_QUANTUM, TRUE)
+	do_teleport(imp_in, destination, 0, TRUE, null, null, null, null, null, TELEPORT_CHANNEL_QUANTUM, TRUE)
 
 /obj/item/implant/warp/proc/prune()
 	var/minimum_time = world.time - total_delay

@@ -49,11 +49,13 @@
 	var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
 	if(D)
 		payoff = max(payoff_min, FLOOR(D.account_balance * 0.80, 1000))
+	else
+		payoff = payoff_min
 	switch(pirate_type)
 		if(PIRATES_ROGUES)
 			ship_template = /datum/map_template/shuttle/pirate/default
 			threat_msg.title = "Предложение о Защите Сектора"
-			threat_msg.content = "Приветствуем вас с корабля [ship_name]. Ваш сектор нуждается в защите, заплатите нам [payoff] кредитов или на вас наверняка кто-то нападёт."
+			threat_msg.content = "Приветствуем вас с корабля [ship_name]. Ваш сектор нуждается в защите, заплатите нам [payoff] кредитов или на вас наверняка кто-то нападёт. У вас есть ровно пять минут с момента получения сообщения."
 			threat_msg.possible_answers = list("Мы заплатим.","Мы заплатим, но на самом деле нет.")
 
 	threat_msg.answer_callback = CALLBACK(src, PROC_REF(pirates_answered), threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
@@ -61,16 +63,16 @@
 	spawn_timer_id = addtimer(CALLBACK(src, PROC_REF(spawn_pirates), threat_msg, ship_template), response_max_time, TIMER_STOPPABLE)
 
 /datum/round_event/pirates/proc/pirates_answered(datum/comm_message/threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
-	if(world.time > initial_send_time + response_max_time)
+	if(world.time >= initial_send_time + response_max_time)
 		priority_announce("Слишком поздно умолять о пощаде!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_pirates(threat_msg, ship_template, TRUE)
 		return
 	if(threat_msg && threat_msg.answered == 1)
 		var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
 		if(D && D.adjust_money(-payoff))
+			resolve_threat_peacefully()
 			priority_announce("Спасибо за кредиты, сухопутные крысы!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_yespeacedecision.ogg', "Priority")
 			SSdirector.complete_deferred_action_without_roles(control, "угроза снята выкупом; назначено ролей: 0")
-			resolve_threat_peacefully()
 			return
 		priority_announce("Пытаешься нас обмануть? Ты пожалеешь об этом!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_pirates(threat_msg, ship_template, TRUE)
@@ -143,23 +145,29 @@
 		for(var/obj/effect/mob_spawn/human/pirate/spawner in A)
 			spawners_list += spawner
 
-	var/list/candidates = pollGhostCandidates("Вы желаете стать пиратом?", ROLE_TRAITOR, minimum_required = spawners_list.len)
-	var/list/spawned_pirates = list()
 	var/spawner_count = length(spawners_list)
 	var/intensity_share = spawner_count ? control.intensity / spawner_count : 0
 	var/refund_share = triggered_randomly && spawner_count ? control.cost / spawner_count : 0
+	// Armed before the poll: a sleeper claimed through attack_ghost meanwhile tracks itself in create().
+	for(var/obj/effect/mob_spawn/human/spawner as anything in spawners_list)
+		spawner.director_source_action = control
+		spawner.director_intensity = intensity_share
+		spawner.director_refund_cost = refund_share
+	var/list/candidates = pollGhostCandidates("Вы желаете стать пиратом?", ROLE_TRAITOR, minimum_required = spawners_list.len)
+	var/list/spawned_pirates = list()
 
 	for(var/obj/effect/mob_spawn/human/spawner in spawners_list)
+		// Already claimed through attack_ghost during the poll and tracked by create().
+		if(QDELETED(spawner))
+			continue
 		if(LAZYLEN(candidates))
 			var/mob/our_candidate = pick_n_take(candidates)
+			spawner.director_source_action = null // counted by the batch tracking below
 			var/mob/living/spawned_pirate = spawner.create(our_candidate.ckey)
 			if(spawned_pirate)
 				spawned_pirates += spawned_pirate
 			notify_ghosts("The pirate ship has an object of interest: [our_candidate]!", source=our_candidate, action=NOTIFY_ORBIT, header="Something's Interesting!")
 		else
-			spawner.director_source_action = control
-			spawner.director_intensity = intensity_share
-			spawner.director_refund_cost = refund_share
 			notify_ghosts("The pirate ship has an object of interest: [spawner]!", source=spawner, action=NOTIFY_ORBIT, header="Something's Interesting!")
 	if(length(spawned_pirates))
 		var/spawned_fraction = length(spawned_pirates) / max(1, spawner_count)

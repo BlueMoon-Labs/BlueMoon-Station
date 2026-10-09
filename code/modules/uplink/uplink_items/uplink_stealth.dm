@@ -98,7 +98,7 @@
 	desc = "Этот свиток содержит секреты древнего боевого искусства. Вы станете мастером побега \
 	и уклонения от любого дальнего огня, но откажетесь от бесчестного дальнего оружия."
 	item = /obj/item/book/granter/martial/bass
-	cost = 20
+	cost = 16
 	player_minimum = 25
 	surplus = 0
 	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE_PACT_CREW)

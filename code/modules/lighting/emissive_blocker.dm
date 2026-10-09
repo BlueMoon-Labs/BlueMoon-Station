@@ -38,8 +38,9 @@
 /atom/movable/emissive_blocker/blob_act()
 	return
 
-/atom/movable/emissive_blocker/onTransitZ()
-	return
+/atom/movable/emissive_blocker/onTransitZ(old_z, new_z)
+	if(SSmapping.max_plane_offset)
+		SET_PLANE_W_SCALAR(src, EMISSIVE_PLANE, new_z ? GET_Z_PLANE_OFFSET(new_z) : 0)
 
 //Prevents people from moving these after creation, because they shouldn't be.
 /atom/movable/emissive_blocker/forceMove(atom/destination, no_tp=FALSE, harderforce = FALSE)

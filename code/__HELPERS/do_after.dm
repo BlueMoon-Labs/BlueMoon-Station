@@ -13,13 +13,18 @@
 	LAZYADD(target.targeted_by, user)
 
 	var/holding = user.get_active_held_item()
-	var/datum/progressbar/progbar
-	if (progress)
-		progbar = new(user, time, target)
 
 	var/datum/cogbar/cog
 	if (progress && time >= 1 SECONDS)
 		cog = new(user)
+
+	var/datum/actionspeed_modifier/drought = user.has_actionspeed_modifier(/datum/actionspeed_modifier/heretic_sand_drought)
+	if(drought)
+		time *= 1 + drought.multiplicative_slowdown
+
+	var/datum/progressbar/progbar
+	if (progress)
+		progbar = new(user, time, target)
 
 	var/endtime = world.time+time
 	var/starttime = world.time
@@ -74,6 +79,9 @@
 
 /proc/do_after(mob/user, delay, atom/target, timed_action_flags = NONE, progress = TRUE, datum/callback/extra_checks, resume_time = 0 SECONDS, progress_loc, cog_icon = 'icons/effects/progressbar.dmi', cog_iconstate = "cog", show_cog = TRUE)
 	if(!user)
+		return FALSE
+	// Destroy() цели уже прошёл и не вынет её из do_afters пользователя.
+	if(target && QDELETED(target))
 		return FALSE
 	var/atom/target_loc = null
 	if(target && !isturf(target))
@@ -158,6 +166,9 @@
 		return FALSE
 	if(!islist(targets))
 		targets = list(targets)
+	for(var/atom/target as anything in targets)
+		if(QDELETED(target))
+			return FALSE
 	var/user_loc = user.loc
 
 	var/drifting = FALSE
@@ -200,7 +211,7 @@
 			user_loc = user.loc
 
 		if(
-			!((timed_action_flags & IGNORE_USER_LOC_CHANGE) && !drifting && user_loc != user.loc) \
+			(!(timed_action_flags & IGNORE_USER_LOC_CHANGE) && !drifting && user_loc != user.loc) \
 			|| (!(timed_action_flags & IGNORE_HELD_ITEM) && user.get_active_held_item() != holding) \
 			|| (!(timed_action_flags & IGNORE_INCAPACITATED) && user.incapacitated()) \
 			|| (extra_checks && !extra_checks.Invoke()) \

@@ -125,6 +125,17 @@
 	icon_state = "rucksack_tan"
 	item_state = "rucksack_tan"
 
+/obj/item/storage/backpack/rucksack/ert
+
+/obj/item/storage/backpack/rucksack/ert/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.max_volume = STORAGE_VOLUME_BAG_OF_HOLDING
+
+/obj/item/storage/backpack/rucksack/ert/green
+	icon_state = "rucksack_green"
+	item_state = "rucksack_green"
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //// Vox suits and weapons (tau ceti). Sprites by deadmodo and coiscin /////////////////////

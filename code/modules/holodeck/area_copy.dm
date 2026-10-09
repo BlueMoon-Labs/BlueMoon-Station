@@ -9,11 +9,12 @@
 //Свои экшены клон и так создаёт в Initialize по actions_types, копия их только затирала.
 //Общий случай шире этих трёх: цикл ниже проверяет islist() РАНЬШЕ istype(/datum), поэтому
 //отдельная ссылка на датум отсеивается, а список таких же ссылок - нет
+//light_sources/affected_dynamic_lights: учёт источников света шаблона, свои копия ведёт сама.
 GLOBAL_LIST_INIT(duplicate_forbidden_vars,list(
 	"tag", "datum_components", "area", "type", "loc", "locs", "vars", "parent", "parent_type", "verbs", "ckey", "key",
 	"power_supply", "contents", "reagents", "stat", "x", "y", "z", "group", "atmos_adjacent_turfs", "comp_lookup",
 	"pixloc", "signal_procs", "signal_enabled", "active_timers", "important_recursive_contents", "spatial_grid_key",
-	"component_parts", "debris", "actions"
+	"component_parts", "debris", "actions", "light_sources", "affected_dynamic_lights"
 	))
 
 GLOBAL_LIST_INIT(duplicate_forbidden_vars_by_type, typecacheof_assoc_list(list(
@@ -37,12 +38,20 @@ GLOBAL_LIST_INIT(duplicate_forbidden_vars_by_type, typecacheof_assoc_list(list(
 //на source[ключ] с "bad index" (273 рантайма за раунд 10137: ключом там сырой аппиранс).
 //Оверлеи и подложки при этом на копию не переезжали вовсе - их переносит
 //copy_template_vars() отдельно, значением.
+//Атмос-учёт (членство в SSair.active_turfs, циклы, архив, ветер, подписки) SSair ведёт по
+//самому приёмнику, шаблонный ему чужой.
 GLOBAL_LIST_INIT(turf_copy_forbidden_vars, list(
 	"light", "light_sources", "lighting_object", "lighting_flags",
 	"lc_topleft", "lc_topright", "lc_bottomleft", "lc_bottomright",
 	"shadow_weight_sum", "cached_lumcount", "dynamic_lumcount",
 	"luminosity",
-	"overlays", "underlays", "filters", "vis_contents", "vis_locs"
+	"overlays", "underlays", "filters", "vis_contents", "vis_locs",
+	"excited", "active_turf_index", "current_cycle", "archived_cycle", "equalize_cycle",
+	"temperature_archived", "atmos_cooldown", "conductivity_blocked_directions",
+	"pressure_difference", "pressure_direction", "pressure_vector_x", "pressure_vector_y",
+	"high_pressure_queued", "next_space_wind_at",
+	"atmos_overlay_types", "atmos_visual_rev", "atmos_wake_machines", "atmos_exposure_listeners",
+	"settled_edge_revs"
 	))
 
 /proc/DuplicateObject(atom/original, perfectcopy = TRUE, sameloc = FALSE, atom/newloc = null, nerf = FALSE, holoitem=FALSE)
@@ -58,13 +67,18 @@ GLOBAL_LIST_INIT(turf_copy_forbidden_vars, list(
 
 	if(perfectcopy && O && original)
 		for(var/V in original.vars - GLOB.duplicate_forbidden_vars - GLOB.duplicate_forbidden_vars_by_type[O.type])
-			if(islist(original.vars[V]))
-				var/list/L = original.vars[V]
+			var/original_value = original.vars[V]
+			if(islist(original_value))
+				var/list/L = original_value
 				O.vars[V] = L.Copy()
-			else if(istype(original.vars[V], /datum))
-				continue	// this would reference the original's object, that will break when it is used or deleted.
+			else if(isdatum(original_value) || isdatum(O.vars[V]))
+				continue	//датум принадлежит своему атому: чужой сломается вместе с оригиналом, а свой копия бы осиротила
 			else
-				O.vars[V] = original.vars[V]
+				O.vars[V] = original_value
+		//Вместе с appearance приехала плоскость этажа оригинала: копия рисуется на своём.
+		SET_PLANE_IMPLICIT(O, PLANE_TO_TRUE(O.plane))
+		if(O.light || O.light_range)
+			O.update_light()
 
 	if(isobj(O))
 		var/obj/N = O
@@ -240,6 +254,7 @@ GLOBAL_LIST_INIT(turf_copy_forbidden_vars, list(
 			var/turf/open/open_template = template
 			if(istype(open_copy) && istype(open_template))
 				open_copy.air.copy_from(open_template.return_air())
+				open_copy.air_update_turf()
 			continue
 		var/template_value = template.vars[varname]
 		if(islist(template_value))
@@ -258,6 +273,7 @@ GLOBAL_LIST_INIT(turf_copy_forbidden_vars, list(
 	//filters тоже исключены из общего цикла и не переезжали ни с чем: присваиваем значением,
 	//как это делает mass_apply в filterrific. filter_data (обычный список) везёт общий цикл
 	filters = template.filters
+	SET_PLANE_IMPLICIT(src, PLANE_TO_TRUE(plane))
 	//светящиеся вары шаблона доехали, а источник света остался у шаблона:
 	//заводим/гасим собственный по свежим light_range/light_power/light_on.
 	//Обычный тёмный пол сюда не заходит - это горячий цикл на сотни турфов

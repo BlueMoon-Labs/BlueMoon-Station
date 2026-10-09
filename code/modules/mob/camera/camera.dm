@@ -17,9 +17,7 @@
 	return
 
 /mob/camera/forceMove(atom/destination)
-	var/oldloc = loc
-	loc = destination
-	Moved(oldloc, NONE, TRUE)
+	return abstract_move(destination)
 
 /mob/camera/canUseStorage()
 	return FALSE

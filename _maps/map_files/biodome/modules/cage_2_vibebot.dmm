@@ -1,0 +1,94 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/turf/open/floor/bronze{
+	icon = 'icons/turf/floors.dmi';
+	icon_state = "clockwork_floor_filled"
+	},
+/area/maintenance/aft/upper)
+"j" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 9
+	},
+/obj/machinery/light/warm/directional/south,
+/turf/open/floor/circuit,
+/area/maintenance/aft/upper)
+"l" = (
+/obj/machinery/light/warm/directional/south,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 5
+	},
+/turf/open/floor/circuit,
+/area/maintenance/aft/upper)
+"p" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
+/turf/open/floor/bronze{
+	icon = 'icons/turf/floors.dmi';
+	icon_state = "clockwork_floor_filled"
+	},
+/area/maintenance/aft/upper)
+"q" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
+/turf/open/floor/bronze{
+	icon = 'icons/turf/floors.dmi';
+	icon_state = "clockwork_floor_filled"
+	},
+/area/maintenance/aft/upper)
+"v" = (
+/mob/living/simple_animal/bot/secbot/grievous/toy,
+/turf/open/floor/circuit,
+/area/maintenance/aft/upper)
+"w" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/turf/open/floor/circuit,
+/area/maintenance/aft/upper)
+"E" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 10
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 6
+	},
+/obj/modular_map_connector,
+/turf/open/floor/bronze{
+	icon = 'icons/turf/floors.dmi';
+	icon_state = "clockwork_floor_filled"
+	},
+/area/maintenance/aft/upper)
+"G" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/mob/living/simple_animal/bot/hugbot,
+/turf/open/floor/circuit,
+/area/maintenance/aft/upper)
+"K" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/bronze{
+	icon = 'icons/turf/floors.dmi';
+	icon_state = "clockwork_floor_filled"
+	},
+/area/maintenance/aft/upper)
+"P" = (
+/turf/open/floor/circuit,
+/area/maintenance/aft/upper)
+
+(1,1,1) = {"
+w
+q
+l
+"}
+(2,1,1) = {"
+b
+v
+E
+"}
+(3,1,1) = {"
+b
+P
+K
+"}
+(4,1,1) = {"
+G
+p
+j
+"}

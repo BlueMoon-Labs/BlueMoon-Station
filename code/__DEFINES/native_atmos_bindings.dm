@@ -260,10 +260,19 @@
 	var/area/base = get_base_area(source)
 	// Space can span an entire z-level; treating a mis-mapped pressurized turf
 	// there as one compartment would close every registered firedoor on the
-	// level instead of localizing the breach.
-	if(!base || istype(base, /area/space))
+	// level instead of localizing the breach. Outdoor areas are the same open
+	// field: their firelocks still close one by one on the pressure drop.
+	if(!base || istype(base, /area/space) || base.outdoors)
 		return
 	queue_decompression_base(base)
+
+/// Ареал, который через проём без файрлока кормит стравливаемый ареал, течёт вместе с ним: этаж над тоннелем, зал без дверей между зонами.
+/datum/controller/subsystem/air/proc/spread_decompression(turf/open/feeding, turf/open/drained)
+	if(!decompression_handled_at[get_base_area(drained)])
+		return
+	if(drained.air.return_pressure() >= WARNING_LOW_PRESSURE)
+		return
+	queue_decompression_area(feeding)
 
 /// Леджерная часть постановки зоны в декомп-очередь, отдельно от гарда космоса
 /// выше: тестам нужна ровно она - зона юнит-тестовой резервации это /area/space.

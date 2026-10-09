@@ -122,6 +122,7 @@ multiple modular subtrees with behaviors
 		PossessPawn(new_pawn)
 
 /datum/ai_controller/Destroy(force)
+	GLOB.ai_tactical_cache_owners -= src
 	release_ai_target_reservation()
 	release_pack_focus()
 	UnpossessPawn(FALSE)
@@ -158,7 +159,7 @@ multiple modular subtrees with behaviors
 	var/mob/mob_pawn = pawn
 	if(islava(candidate))
 		return istype(mob_pawn) && ((mob_pawn.movement_type & (FLYING | FLOATING)) || HAS_TRAIT(mob_pawn, TRAIT_LAVA_IMMUNE))
-	if(istype(candidate, /turf/open/chasm) || istype(candidate, /turf/open/openspace))
+	if(istype(candidate, /turf/open/chasm) || isopenspaceturf(candidate))
 		return istype(mob_pawn) && (mob_pawn.movement_type & (FLYING | FLOATING))
 	return isspaceturf(candidate) && can_path_through_space()
 
@@ -469,11 +470,12 @@ multiple modular subtrees with behaviors
 
 /datum/ai_controller/proc/setup_able_to_run()
 	//paused_until обрабатывается вручную в PauseAi()
+	RegisterSignal(pawn, SIGNAL_TRAIT(TRAIT_AI_PAUSED), PROC_REF(update_able_to_run))
 	RegisterSignal(pawn, SIGNAL_ADDTRAIT(TRAIT_AI_PAUSED), PROC_REF(update_able_to_run))
 	RegisterSignal(pawn, SIGNAL_REMOVETRAIT(TRAIT_AI_PAUSED), PROC_REF(update_able_to_run))
 
 /datum/ai_controller/proc/clear_able_to_run()
-	UnregisterSignal(pawn, list(SIGNAL_ADDTRAIT(TRAIT_AI_PAUSED), SIGNAL_REMOVETRAIT(TRAIT_AI_PAUSED)))
+	UnregisterSignal(pawn, list(SIGNAL_TRAIT(TRAIT_AI_PAUSED), SIGNAL_ADDTRAIT(TRAIT_AI_PAUSED), SIGNAL_REMOVETRAIT(TRAIT_AI_PAUSED)))
 
 /datum/ai_controller/proc/update_able_to_run()
 	SIGNAL_HANDLER

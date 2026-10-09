@@ -111,6 +111,7 @@
 						TR.dead = 0
 						TR.myseed = O
 						TR.age = 1
+						TR.lastproduce = 0
 						TR.plant_health = TR.myseed.endurance
 						TR.lastcycle = world.time
 						O.forceMove(TR)

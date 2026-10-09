@@ -104,7 +104,7 @@
 			B.decoy_override = FALSE
 	remove_changeling_powers()
 	owner.special_role = null
-	owner.current.hud_used?.lingchemdisplay?.invisibility = INVISIBILITY_ABSTRACT
+	owner.current?.hud_used?.lingchemdisplay?.invisibility = INVISIBILITY_ABSTRACT
 	. = ..()
 
 /datum/antagonist/changeling/proc/remove_clownmut()
@@ -142,7 +142,7 @@
 			p.Remove(owner.current)
 
 	//MOVE THIS
-	if(owner.current.hud_used)
+	if(owner.current?.hud_used)
 		owner.current.hud_used.lingstingdisplay.icon_state = null
 		owner.current.hud_used.lingstingdisplay.invisibility = INVISIBILITY_ABSTRACT
 
