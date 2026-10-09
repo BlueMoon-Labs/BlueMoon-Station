@@ -8,7 +8,7 @@
 	var/localized_name = /datum/quirk/echolocation::name
 	var/other_quirk = /datum/quirk/blindness::name
 	prefs.all_quirks = list(other_quirk, "Echolocation")
-	prefs.update_character(82, character_save)
+	prefs.update_character(83, character_save)
 	TEST_ASSERT(localized_name in prefs.all_quirks, "Renaming echolocation must preserve an existing selection")
 	TEST_ASSERT(other_quirk in prefs.all_quirks, "Renaming echolocation must preserve unrelated selections")
 	TEST_ASSERT(!("Echolocation" in prefs.all_quirks), "The obsolete English name must not remain in saved selections")
@@ -16,17 +16,17 @@
 	TEST_ASSERT_EQUAL(SSquirks.quirks[localized_name], /datum/quirk/echolocation, "The migrated selection must resolve through the real quirk registry")
 
 	prefs.all_quirks += "Echolocation"
-	prefs.update_character(82, character_save)
+	prefs.update_character(83, character_save)
 	TEST_ASSERT_EQUAL(length(prefs.all_quirks), 2, "A save containing both names must not produce duplicate selections")
-	prefs.update_character(82, character_save)
+	prefs.update_character(83, character_save)
 	TEST_ASSERT_EQUAL(length(prefs.all_quirks), 2, "Repeating the migration must be harmless")
 
 	prefs.all_quirks = list(other_quirk)
-	prefs.update_character(82, character_save)
+	prefs.update_character(83, character_save)
 	TEST_ASSERT_EQUAL(length(prefs.all_quirks), 1, "Migration must not grant echolocation to a character who never selected it")
 	TEST_ASSERT(other_quirk in prefs.all_quirks, "An unrelated selection must survive migration unchanged")
 	prefs.all_quirks = null
-	prefs.update_character(82, character_save)
+	prefs.update_character(83, character_save)
 	TEST_ASSERT_NULL(prefs.all_quirks, "A missing quirk list must remain safe for the normal savefile sanitizer")
 
 /datum/unit_test/echolocation_value

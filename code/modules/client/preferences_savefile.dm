@@ -5,7 +5,7 @@
 //	You do not need to raise this if you are adding new values that have sane defaults.
 //	Only raise this value when changing the meaning/format/name/layout of an existing value
 //	where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX	83
+#define SAVEFILE_VERSION_MAX	84
 
 /// Upper bound for character slot indices during savefile migration (loop over S.dir).
 /// Prevents corrupted or garbage directory names (e.g. huge slot numbers) from inflating max_save_slots
@@ -541,7 +541,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 			features["xenotail"] = "None"
 
 	// Quirk selections are saved by display name. Preserve the localized selection.
-	if(current_version < 83 && islist(all_quirks) && ("Echolocation" in all_quirks))
+	if(current_version < 84 && islist(all_quirks) && ("Echolocation" in all_quirks))
 		all_quirks -= "Echolocation"
 		all_quirks |= /datum/quirk/echolocation::name
 
