@@ -64415,7 +64415,6 @@
 /area/maintenance/port/fore)
 "jHz" = (
 /obj/effect/turf_decal/tile/blue/half/contrasted,
-/obj/machinery/incident_display/tram/directional/south,
 /turf/open/floor/plasteel/dark/side,
 /area/hallway/secondary/command)
 "jHA" = (

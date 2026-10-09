@@ -30824,7 +30824,6 @@
 /turf/open/floor/plating,
 /area/maintenance/department/bridge)
 "hYr" = (
-/obj/machinery/incident_display/tram/directional/north,
 /turf/open/floor/plasteel/dark,
 /area/command/bridge)
 "hYw" = (
@@ -90814,7 +90813,6 @@
 /turf/open/floor/plating/reinforced,
 /area/maintenance/aft)
 "xUU" = (
-/obj/machinery/incident_display/tram/directional/north,
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},

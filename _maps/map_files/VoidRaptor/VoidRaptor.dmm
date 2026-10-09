@@ -58570,7 +58570,6 @@
 	pixel_x = -32;
 	pixel_y = 27
 	},
-/obj/machinery/incident_display/tram/directional/south,
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/command/bridge)
 "nnN" = (

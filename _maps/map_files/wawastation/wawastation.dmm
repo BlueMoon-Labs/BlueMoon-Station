@@ -79680,7 +79680,6 @@
 /area/maintenance/solars/starboard/fore)
 "vcv" = (
 /obj/effect/turf_decal/tile/dark_blue/half/contrasted,
-/obj/machinery/incident_display/tram/directional/south,
 /turf/open/floor/plasteel,
 /area/command/bridge)
 "vcE" = (
