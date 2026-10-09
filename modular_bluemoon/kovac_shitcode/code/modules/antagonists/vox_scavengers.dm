@@ -57,8 +57,10 @@
 
 	if(prob(45))
 		kidnap_objective.team = src
-		kidnap_objective.find_target()
-		objectives += kidnap_objective
+		if(kidnap_objective.find_target())
+			objectives += kidnap_objective
+		else
+			qdel(kidnap_objective)
 
 	return
 

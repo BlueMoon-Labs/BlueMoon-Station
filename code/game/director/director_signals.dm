@@ -47,6 +47,14 @@
 		return "other"
 	return null
 
+/// DIRECTOR_EVAC_* по текущему режиму эвакуационного шаттла.
+/proc/director_evac_state()
+	if(EMERGENCY_ESCAPED_OR_ENDGAMED)
+		return DIRECTOR_EVAC_GONE
+	if(SSshuttle.emergency && SSshuttle.emergency.mode != SHUTTLE_IDLE)
+		return DIRECTOR_EVAC_CALLED
+	return DIRECTOR_EVAC_NONE
+
 /// Есть ли живой персонаж с одной из перечисленных должностей. Обход SSticker.minds
 /// (записей - по числу заходивших игроков), а не GLOB.alive_mob_list (тысячи, почти всё -
 /// фауна без mind): гейты "есть ли живой врач" зовутся битом директора по несколько раз в минуту.
@@ -98,9 +106,4 @@
 		var/datum/mind/antag_mind = A.owner
 		if(antag_mind?.current && !antag_mind.current.training_origin && antag_mind.current.stat != DEAD)
 			living_antags++
-	if(EMERGENCY_ESCAPED_OR_ENDGAMED)
-		evac_state = DIRECTOR_EVAC_GONE
-	else if(SSshuttle.emergency && SSshuttle.emergency.mode != SHUTTLE_IDLE)
-		evac_state = DIRECTOR_EVAC_CALLED
-	else
-		evac_state = DIRECTOR_EVAC_NONE
+	evac_state = director_evac_state()

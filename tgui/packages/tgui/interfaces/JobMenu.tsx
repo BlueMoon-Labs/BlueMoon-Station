@@ -58,6 +58,8 @@ type Department = {
   name: string;
   color: string;
   command?: BooleanLike;
+  /** Отдел пуст, вход даёт бонус метадолларов */
+  needed?: BooleanLike;
   jobs: JobEntry[];
 };
 
@@ -66,6 +68,7 @@ type RoundInfo = {
   alert?: string;
   alertColor?: string;
   shuttle?: string;
+  relief?: string;
 };
 
 type JobMenuData = {
@@ -364,9 +367,10 @@ const Group = (props: {
   color: string;
   title: string;
   icon?: string;
+  badge?: string;
   children?: ReactNode;
 }) => {
-  const { color, title, icon, children } = props;
+  const { color, title, icon, badge, children } = props;
   return (
     <Box
       as="fieldset"
@@ -394,6 +398,11 @@ const Group = (props: {
           />
         )}
         {title}
+        {!!badge && (
+          <Box as="span" color="orange" ml={1}>
+            {badge}
+          </Box>
+        )}
       </Box>
       {children}
     </Box>
@@ -588,6 +597,9 @@ export const JobMenu = () => {
                       <Box color="red" bold>
                         {round.shuttle}
                       </Box>
+                    )}
+                    {!!round.relief && (
+                      <Box color="orange">{round.relief}</Box>
                     )}
                   </Stack.Item>
                   <Stack.Item shrink={0}>
@@ -1285,7 +1297,11 @@ const JobColumns = (props: {
         <Stack.Item key={index} grow basis={0} style={{ minWidth: 0 }}>
           {column.map((dept) =>
             dept.jobs.length ? (
-              <Group key={dept.name} color={dept.color} title={dept.name}>
+              <Group
+                key={dept.name}
+                color={dept.color}
+                title={dept.name}
+                badge={dept.needed ? 'нужны' : undefined}>
                 {dept.jobs.map((job, jobIndex) => (
                   <Fragment key={job.title}>
                     {jobIndex > 0 && <RowDivider />}

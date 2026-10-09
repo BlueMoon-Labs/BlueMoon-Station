@@ -146,9 +146,9 @@
 		message_admins("<span class='boldannounce'>ПАМЯТЬ: [reason]. Эвакуационного шаттла нет - уводите раунд вручную, иначе процесс умрёт молча.</span>")
 		return
 
+	SSticker.midround_record_check()
 	// Отзыв запрещается ДО вызова: между request() и следующей строкой мир успевает
 	// прокрутить тик, и экипаж, увидевший вызов, технически успевает нажать отзыв.
-	GLOB.midround_recorded = TRUE
 	SSshuttle.emergencyNoRecall = TRUE
 	SSshuttle.emergency.request(null, null, "Автоматическая эвакуация: критическое состояние систем станции.", FALSE, MEMORY_EVAC_CALL_COEFFICIENT)
 

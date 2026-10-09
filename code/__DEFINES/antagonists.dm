@@ -1,6 +1,13 @@
 #define TRAITOR_HUMAN /datum/traitor_class/human/freeform
 #define TRAITOR_AI /datum/traitor_class/ai
 
+/// Шанс подставы в цепочке заданий без убийства у базового агента InteQ.
+#define TRAITOR_FRAME_PROB 20
+/// Вес подставы у оперативника InteQ в долях веса кражи и саботажа.
+#define TRAITOR_FRAME_WEIGHT_FACTOR 1
+/// Шанс генокрада получить подставу вместо необязательной кражи или загрузки данных.
+#define CHANGELING_FRAME_PROB 35
+
 #define NUKE_RESULT_FLUKE 0
 #define NUKE_RESULT_NUKE_WIN 1
 #define NUKE_RESULT_CREW_WIN 2

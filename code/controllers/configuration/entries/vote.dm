@@ -20,6 +20,20 @@
 	min_val = 0
 	max_val = 24
 
+/datum/config_entry/number/roundtype_rotation_min_players // online needed for the roundtype rotation to apply and count
+	default = 60
+	min_val = 0
+
+/datum/config_entry/number/roundtype_rotation_night_start_hour // first server hour (0-23) of the night window without roundtype rotation; equal start and end make the whole day night
+	default = 22
+	min_val = 0
+	max_val = 23
+
+/datum/config_entry/number/roundtype_rotation_night_end_hour // exclusive end hour of the night window; 24 is the same as 0, the window then runs through hour 23
+	default = 9
+	min_val = 0
+	max_val = 24
+
 /datum/config_entry/number/dynamic_light_vote_multiplier
 	default = 1
 	min_val = 0

@@ -445,7 +445,7 @@
 		absorb_objective.gen_amount_goal(6, 8)
 		objectives += absorb_objective
 
-	if(prob(60))
+	if(prob(60) && !(prob(CHANGELING_FRAME_PROB) && forge_frame_objective()))
 		if(prob(85))
 			var/datum/objective/steal/steal_objective = new
 			steal_objective.owner = owner
@@ -464,7 +464,10 @@
 			var/datum/objective/destroy/destroy_objective = new
 			destroy_objective.owner = owner
 			destroy_objective.find_target()
-			objectives += destroy_objective
+			if(destroy_objective.target)
+				objectives += destroy_objective
+			else
+				qdel(destroy_objective)
 		else
 			var/datum/objective/assassinate/once/kill_objective = new
 			kill_objective.owner = owner
@@ -472,9 +475,18 @@
 				kill_objective.find_target_by_role(role = ROLE_CHANGELING, role_type = 1, invert = 1)
 			else
 				kill_objective.find_target()
-			objectives += kill_objective
+			if(kill_objective.target)
+				objectives += kill_objective
+			else
+				qdel(kill_objective)
+				kill_objective = null
+				if(!(locate(/datum/objective/steal) in objectives))
+					var/datum/objective/steal/steal_objective = new
+					steal_objective.owner = owner
+					steal_objective.find_target()
+					objectives += steal_objective
 
-			if(!(locate(/datum/objective/escape) in objectives) && escape_objective_possible && prob(50))
+			if(kill_objective && !(locate(/datum/objective/escape) in objectives) && escape_objective_possible && prob(50))
 				var/datum/objective/escape/escape_with_identity/identity_theft = new
 				identity_theft.owner = owner
 				identity_theft.target = kill_objective.target
@@ -494,8 +506,23 @@
 				identity_theft.find_target_by_role(role = ROLE_CHANGELING, role_type = 1, invert = 1)
 			else
 				identity_theft.find_target()
-			objectives += identity_theft
+			if(identity_theft.target)
+				objectives += identity_theft
+			else
+				qdel(identity_theft)
+				var/datum/objective/escape/escape_objective = new
+				escape_objective.owner = owner
+				objectives += escape_objective
 		escape_objective_possible = FALSE
+
+/datum/antagonist/changeling/proc/forge_frame_objective()
+	var/datum/objective/frame/frame_objective = new
+	frame_objective.owner = owner
+	if(!frame_objective.find_target())
+		qdel(frame_objective)
+		return FALSE
+	objectives += frame_objective
+	return TRUE
 
 /datum/antagonist/changeling/proc/update_changeling_icons_added()
 	var/datum/atom_hud/antag/hud = GLOB.huds[ANTAG_HUD_CHANGELING]

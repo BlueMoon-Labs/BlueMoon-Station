@@ -262,6 +262,8 @@
 			L.client.prefs.chat_toggles &= ~(CHAT_OOC)
 
 	hide_ckey = current.client?.prefs?.hide_ckey
+	if(isnewplayer(old_character) && isliving(new_character))
+		apply_antag_opt_in_prefs(GLOB.preferences_datums[ckey(key)])
 
 	SEND_SIGNAL(src, COMSIG_MIND_TRANSFER, new_character, old_character)
 	SEND_SIGNAL(new_character, COMSIG_MOB_ON_NEW_MIND)
@@ -1959,6 +1961,8 @@ GLOBAL_LIST(objective_choices)
 		mind = new /datum/mind(key)
 		SSticker.minds += mind
 		fresh_mind = TRUE
+		if(ckey && isliving(src))
+			mind.apply_antag_opt_in_prefs(GLOB.preferences_datums[ckey])
 	if(!mind.name)
 		mind.name = real_name
 	mind.set_current(src)

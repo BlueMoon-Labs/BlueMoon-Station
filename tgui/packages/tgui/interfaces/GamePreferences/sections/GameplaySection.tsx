@@ -17,6 +17,7 @@ type GameplayData = {
   action_buttons_hide: boolean;
   autostand: boolean;
   long_strip_menu: boolean;
+  shift_invites: boolean;
 };
 
 const DAMAGE_SHAKE_OPTIONS = [
@@ -37,6 +38,7 @@ const GAMEPLAY_TOGGLES: { key: string; label: string; flag: string; invert?: boo
   { key: 'smartlink', label: 'Смартлинк (боевой HUD)', flag: 'smartlink', tooltip: 'Показывать боевой HUD со счётчиком патронов и зарядом энергии при удержании оружия в руках' },
   { key: 'autostand', label: 'Автоматическое вставание', flag: 'autostand', tooltip: 'Автоматически вставать после падения или когда вас поднимают' },
   { key: 'long_strip_menu', label: 'Длинное меню раздевания', flag: 'long_strip_menu', tooltip: 'Показывать расширенное меню взаимодействия с одеждой' },
+  { key: 'shift_invites', label: 'Приглашения в смену', flag: 'shift_invites', tooltip: 'Если на станции не осталось ни одного сотрудника СБ, медика или инженера, наблюдатели, гости гост-кафе и игроки в лобби получают приглашение со ссылкой "Войти в смену". Вход в пустой отдел приносит 3 М$ в конце раунда, если продержаться в смене 30 минут или до эвакуации' },
 ];
 
 export const GameplaySection = (props) => {

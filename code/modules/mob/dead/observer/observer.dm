@@ -132,6 +132,8 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 
 	. = ..()
 	AddElement(/datum/element/ghost_role_eligibility)
+	var/datum/action/join_shift/join_action = new(src)
+	join_action.Grant(src)
 	grant_all_languages()
 	show_data_huds()
 	data_huds_on = 1

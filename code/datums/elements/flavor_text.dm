@@ -122,6 +122,9 @@ GLOBAL_LIST_EMPTY(mobs_with_editable_flavor_text) //et tu, hacky code
 				if(L.client.prefs.extremepref == "Yes")
 					content += "<br><b>Extreme content:</b> [L.client.prefs.extremepref] <b>| Extreme content harm:</b> [L.client.prefs.extremeharm]\n"
 
+				var/opt_in_level = L.mind ? L.mind.get_effective_antag_opt_in_level() : antag_opt_in_default_level()
+				content += "<br><b>Задания антагов:</b> <font color='[antag_opt_in_level_color(opt_in_level)]'>[antag_opt_in_level_name(opt_in_level)]</font>\n"
+
 			content += "\n"
 
 			content += text

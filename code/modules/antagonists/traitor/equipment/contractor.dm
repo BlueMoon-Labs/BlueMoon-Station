@@ -69,6 +69,10 @@
 	// Generate contracts, and find the lowest paying.
 	for (var/i = 1; i <= to_generate.len; i++)
 		var/datum/syndicate_contract/contract_to_add = new(owner, assigned_targets, to_generate[i])
+		if(!contract_to_add.contract.target)
+			qdel(contract_to_add.contract)
+			qdel(contract_to_add)
+			continue
 		var/contract_payout_total = contract_to_add.contract.payout + contract_to_add.contract.payout_bonus
 		assigned_targets.Add(contract_to_add.contract.target)
 		if (!lowest_paying_contract || (contract_payout_total < lowest_paying_sum))
@@ -80,7 +84,7 @@
 		start_index++
 
 	// If the threshold for TC payouts isn't reached, boost the lowest paying contract
-	if (total < lowest_TC_threshold)
+	if (lowest_paying_contract && total < lowest_TC_threshold)
 		lowest_paying_contract.contract.payout_bonus += (lowest_TC_threshold - total)
 
 /datum/contractor_item

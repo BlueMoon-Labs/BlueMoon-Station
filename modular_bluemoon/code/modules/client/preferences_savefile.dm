@@ -9,6 +9,7 @@
 	S["body_weight"] >> body_weight
 	S["normalized_size"] >> features["normalized_size"]
 	S["custom_laugh"] >> custom_laugh
+	S["antag_opt_in_level"] >> antag_opt_in_level
 
 	pda_style = sanitize_inlist(pda_style, GLOB.pda_styles, initial(pda_style))
 	pda_color = sanitize_hexcolor(pda_color, 6, 1, initial(pda_color))
@@ -23,6 +24,7 @@
 	body_weight = sanitize_inlist(body_weight, GLOB.mob_sizes, NAME_WEIGHT_NORMAL)
 	features["normalized_size"] = sanitize_num_clamp(features["normalized_size"], 0.81, 1.2, 1)
 	custom_laugh = sanitize_inlist(custom_laugh, GLOB.mob_laughs, "Default")
+	antag_opt_in_level = sanitize_antag_opt_in_level(antag_opt_in_level)
 
 /datum/preferences/proc/bluemoon_character_pref_save(savefile/S) //TODO: modularize our other savefile edits... maybe?
 	WRITE_FILE(S["pda_style"], pda_style)
@@ -35,6 +37,7 @@
 	WRITE_FILE(S["body_weight"], body_weight)
 	WRITE_FILE(S["normalized_size"], features["normalized_size"])
 	WRITE_FILE(S["custom_laugh"], custom_laugh)
+	WRITE_FILE(S["antag_opt_in_level"], antag_opt_in_level)
 
 /obj/item/modular_computer/pda/proc/update_style(client/C)
 	// pda_color, update_ringtone(), skin_data, pda_style, device_theme все передаются через update_pda_prefs()

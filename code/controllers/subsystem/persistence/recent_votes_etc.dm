@@ -32,7 +32,7 @@
 		saved_modes[3] = saved_modes[2]
 		saved_modes[2] = saved_modes[1]
 		saved_modes[1] = SSticker.mode.config_tag
-		RecordRecentRoundType(GLOB.round_type)
+		RecordRecentRoundType(GLOB.round_type, GLOB.round_counts_for_rotation)
 		json_file = file("data/RecentModes.json")
 		file_data["data"] = saved_modes
 		fdel(json_file)
@@ -119,20 +119,25 @@
 		return
 	saved_modes = json["data"]
 
-/datum/controller/subsystem/persistence/proc/RecordRecentRoundType(roundtype)
-	if(!roundtype)
+/datum/controller/subsystem/persistence/proc/RecordRecentRoundType(roundtype, counts_for_rotation)
+	if(!roundtype || !counts_for_rotation)
 		return
-	LAZYINITLIST(saved_round_types)
-	while(saved_round_types.len < 3)
-		saved_round_types += ""
-	saved_round_types[3] = saved_round_types[2]
-	saved_round_types[2] = saved_round_types[1]
-	saved_round_types[1] = roundtype
+	saved_round_types = next_recent_round_types(saved_round_types, roundtype)
 	var/json_file = file("data/RecentRoundTypes.json")
 	var/list/file_data = list()
 	file_data["data"] = saved_round_types
 	fdel(json_file)
 	WRITE_FILE(json_file, json_encode(file_data))
+
+/// Новая история типов раундов: этот раунд первым, длина не меньше трёх. Исходный список не меняется.
+/datum/controller/subsystem/persistence/proc/next_recent_round_types(list/round_types, roundtype)
+	var/list/next_types = islist(round_types) ? round_types.Copy() : list()
+	while(length(next_types) < 3)
+		next_types += ""
+	next_types[3] = next_types[2]
+	next_types[2] = next_types[1]
+	next_types[1] = roundtype
+	return next_types
 
 /datum/controller/subsystem/persistence/proc/LoadRecentRoundTypes()
 	var/json_file = file("data/RecentRoundTypes.json")

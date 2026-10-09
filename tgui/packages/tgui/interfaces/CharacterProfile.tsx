@@ -47,6 +47,9 @@ interface CharacterProfileContext {
   extreme_tag: string;
   very_extreme_tag: string;
   tattoo_tag: string;
+  antag_opt_in: string;
+  antag_opt_in_color: string;
+  antag_opt_in_desc: string;
 }
 
 export const CharacterProfile = (props) => {
@@ -124,6 +127,11 @@ export const CharacterProfile = (props) => {
                     <Tooltip content={tag.name}>{tag.value}</Tooltip>
                   </LabeledList.Item>
                 ))}
+                <LabeledList.Item
+                  color={data.antag_opt_in_color}
+                  label="Задания антагов">
+                  <Tooltip content={data.antag_opt_in_desc}>{data.antag_opt_in}</Tooltip>
+                </LabeledList.Item>
               </LabeledList>
             </Section>
           </Flex.Item>

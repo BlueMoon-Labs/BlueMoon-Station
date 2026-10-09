@@ -177,6 +177,16 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 	else
 		.["active_martial_art"] = null
 
+	var/datum/mind/opt_in_mind = targetMob.mind
+	if(opt_in_mind)
+		var/opt_in_level = opt_in_mind.get_effective_antag_opt_in_level()
+		var/chosen_level = isnull(opt_in_mind.antag_opt_in_level) ? antag_opt_in_default_level() : opt_in_mind.antag_opt_in_level
+		.["antag_opt_in"] = antag_opt_in_level_name(opt_in_level)
+		.["antag_opt_in_color"] = antag_opt_in_level_color(opt_in_level)
+		.["antag_opt_in_detail"] = "настройка \"[antag_opt_in_level_name(chosen_level)]\", порог \"[antag_opt_in_level_name(opt_in_mind.get_antag_opt_in_minimum())]\""
+	else
+		.["antag_opt_in"] = null
+
 	// Active quirks
 	var/list/active_quirks = list()
 	if(isliving(targetMob))

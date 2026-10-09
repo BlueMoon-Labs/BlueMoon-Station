@@ -274,7 +274,19 @@ const CustomVoteSetup = (props) => {
 
 const ChoicesPanel = (props) => {
   const { act, data } = useBackend();
-  const { choices = [], vote_system, score_options = [], last_modes, combo_threshold, mode, roundtype_descs } = data;
+  const {
+    choices = [],
+    vote_system,
+    score_options = [],
+    last_modes,
+    combo_threshold,
+    rotation_min_players,
+    rotation_night_start,
+    rotation_night_end,
+    rotation_applies,
+    mode,
+    roundtype_descs,
+  } = data;
 
   if (!mode) {
     return (
@@ -310,8 +322,15 @@ const ChoicesPanel = (props) => {
       }>
       {!!(last_modes) && (
         <Box mb={1} color="label" fontSize="0.85em">
-          Последние режимы: <b>{last_modes}</b>
-          {!!(combo_threshold) && ` (форс при ${combo_threshold} подряд)`}
+          Последние засчитанные режимы: <b>{last_modes}</b>
+          {!!(combo_threshold) && ` (форс при ${combo_threshold} подряд, если онлайн ≥${rotation_min_players} и не ночь (${rotation_night_start}:00-${rotation_night_end}:00))`}
+        </Box>
+      )}
+      {mode === 'roundtype' && !!(combo_threshold) && (
+        <Box mb={1} color={rotation_applies ? 'good' : 'average'} fontSize="0.85em">
+          {rotation_applies
+            ? 'Серия учитывается: раунд засчитается в ротацию режимов.'
+            : 'Серия не учитывается: онлайн ниже порога или ночь, раунд не засчитается в ротацию режимов.'}
         </Box>
       )}
       {!!(roundtype_descs && roundtype_descs.length) && (

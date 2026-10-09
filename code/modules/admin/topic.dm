@@ -1613,8 +1613,11 @@
 			return
 
 		var/chosen_type = input("Выберите вариацию динамика","Round Type Choose") as null|anything in list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT, ROUNDTYPE_EXTENDED)
+		if(!chosen_type)
+			return
 		GLOB.round_type = chosen_type
 		GLOB.master_mode = chosen_type
+		SSvote.update_round_rotation_eligibility()
 
 		log_admin("[key_name(usr)] изменяет режим игры на [chosen_type].")
 		to_chat(world, "<span class='adminnotice'><b>Выставлен режим [GLOB.master_mode].</b></span>")

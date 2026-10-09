@@ -314,7 +314,7 @@
 		"screentip_pref", "screentip_images", "tgui_fancy", "tgui_lock", "chat_on_map", "chat_on_map_looc",
 		"see_chat_non_mob", "see_chat_emotes", "hud_toggle_flash", "mood_vignette", "view_pixelshift",
 		"parallax", "clientfps", "runechat_anim", "windowflash", "windownoise", "auto_capitalize_enabled",
-		"action_buttons_hide_on_spawn", "autostand", "long_strip_menu", "disable_combat_cursor",
+		"action_buttons_hide_on_spawn", "autostand", "long_strip_menu", "shift_invites", "disable_combat_cursor",
 		"disable_combat_mouse_lock", "ticket_nickname", "adminhelp_windowflash",
 		"screenshake", "damagescreenshake", "recoil_screenshake",
 		"outline_color", "screentip_color", "hud_toggle_color", "max_chat_length", "lighting_blur",
@@ -330,7 +330,7 @@
 		"chem_dispenser_classic_view", "chem_dispenser_use_reagent_color", "chem_dispenser_show_icons",
 		"chem_dispenser_alphabetical_sort",
 		"tgui_panel_state", "tgui_panel_theme",
-		"bm_lobby_show_nsfw", "bm_lobby_show_admin_bg", "bm_disclaimer_accepted",
+		"bm_lobby_show_nsfw", "bm_lobby_show_admin_bg", "bm_disclaimer_accepted", "antag_opt_in_notice_seen",
 		"use_arousal_multiplier", "arousal_multiplier", "use_moaning_multiplier", "moaning_multiplier",
 		"custom_verb_consent", "show_heart_over_self", "interaction_effect", "block_partner_pixel_shift",
 	)
