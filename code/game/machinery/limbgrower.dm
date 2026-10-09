@@ -414,13 +414,14 @@
 /obj/machinery/limbgrower/examine(mob/user)
 	. = ..()
 	if(!panel_open)
-		. += "<span class='notice'>При открытой панели техобслуживания, машину можно было бы повернуть <b>гаечным ключом</b>.</span>"
+		. += span_notice("При открытой панели техобслуживания, машину можно было бы повернуть <b>гаечным ключом</b>.")
 	else
-		. += "<span class='notice'>Панель техобслуживания открыта.</span>"
-	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>Статус-дисплей сообщает: \n\
-		- Хранится до <b>[reagents.maximum_volume]u</b> реагентов.\n\
-		- Затраты реагентов: <b>[production_coefficient * 100]%</b>.</span>"
+		. += span_notice("Панель техобслуживания открыта.")
+
+/obj/machinery/limbgrower/examine_display_content(mob/user)
+	. += "\
+	– Хранится до <b>[reagents.maximum_volume]u</b> реагентов.\n\
+	– Затраты реагентов: <b>[production_coefficient * 100]%</b>."
 
 /*
  * Checks our reagent list to see if a design can be built.

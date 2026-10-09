@@ -310,6 +310,18 @@ GLOBAL_LIST_INIT(mat_ru_genitive, list(
 	"rigid material" = "твёрдого материала",
 ))
 
+/// Лист-словарь для существительных сплавов, в рудной печи, ИЩЕТ ПО АЙДИ
+GLOBAL_LIST_INIT(alloys_ru_nominative, list(
+	"reinforced glass" = "Укреплённое стекло",
+    "plasma + iron alloy" = "Плазма + железо",
+    "plasma + titanium alloy" = "Плазма + титан",
+    "plasma + glass alloy" = "Плазма + стекло",
+    "plasma + metal + glass alloy" = "Плазма + железо + стекло",
+    "titanium + glass alloy" = "Титан + стекло",
+    "plasma + titanium + glass alloy" = "Плазма + титан + стекло",
+    "alien alloy" = "Инопланетный сплав",
+))
+
 /// Лист-словарь для examine string'а бюджетов
 
 GLOBAL_LIST_INIT(budget_ru_nominative, list(

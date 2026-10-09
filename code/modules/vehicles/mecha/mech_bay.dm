@@ -10,7 +10,7 @@
 */
 /obj/machinery/mech_bay_recharge_port
 	name = "mech bay power port"
-	desc = "Этот порт перезаряжает внутреннюю батарею меха."
+	desc = "Эта станция перезаряжает внутреннюю батарею меха."
 	density = TRUE
 	dir = EAST
 	icon = 'icons/mecha/mech_bay.dmi'
@@ -41,10 +41,8 @@
 		MC += C.rating
 	max_charge = MC * 25
 
-/obj/machinery/mech_bay_recharge_port/examine(mob/user)
-	. = ..()
-	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>The status display reads: Base recharge rate at <b>[max_charge]J</b> per cycle.</span>"
+/obj/machinery/mech_bay_recharge_port/examine_display_content(mob/user)
+	. += "– Скорость зарядки: <b>[max_charge]J</b> за цикл."
 
 /obj/machinery/mech_bay_recharge_port/process()
 	if(machine_stat & NOPOWER || !recharge_console)
@@ -79,7 +77,7 @@
 
 /obj/machinery/computer/mech_bay_power_console
 	name = "mech bay power control console"
-	desc = "Отображает состояние мехов, подключённых к зарядной станции."
+	desc = "Сканирует состояние меха, подключённого к зарядной станции."
 	icon_screen = "recharge_comp"
 	icon_keyboard = "rd_key"
 	circuit = /obj/item/circuitboard/computer/mech_bay_power_console

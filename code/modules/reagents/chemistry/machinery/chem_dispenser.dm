@@ -538,11 +538,12 @@
 /obj/machinery/chem_dispenser/examine(mob/user)
 	. = ..()
 	if(panel_open)
-		. += "<span class='notice'>Технический люк [src] открыт!</span>"
-	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>Статус-дисплей сообщает:\n\
-		- Перезаряжается <b>[recharge_amount]</b> ед. заряда в цикл.\n\
-		- Энергоэффективность повышена на <b>[round((powerefficiency*1000)-100, 1)]%</b>.</span>"
+		. += span_notice("Люк техобслуживания [src] открыт!")
+
+/obj/machinery/chem_dispenser/examine_display_content(mob/user)
+	. += "\
+	– Перезаряжается <b>[recharge_amount]</b> ед. заряда в цикл.\n\
+	– Энергоэффективность повышена на <b>[round((powerefficiency*1000)-100, 1)]%</b>."
 
 /obj/machinery/chem_dispenser/process()
 	if (recharge_counter >= CHEM_DISPENSER_RECHARGE_INTERVAL)

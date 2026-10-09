@@ -44,7 +44,7 @@ GLOBAL_VAR_INIT(bsminers_lock, FALSE)
 
 /obj/machinery/mineral/bluespace_miner
 	name = "bluespace mining machine"
-	desc = "Машина, что используя Bluespace медленно добывает ресурсы из других миров и помещает их в привязанное хранилище материалов."
+	desc = "Машина, использующая блюспейс-технологии для медленной добычи ресурсов из других миров и помещения их в привязанное хранилище материалов."
 	icon = 'modular_sand/icons/obj/machines/mining_machines.dmi'
 	icon_state = "bsminer"
 	density = TRUE
@@ -116,50 +116,40 @@ GLOBAL_VAR_INIT(bsminers_lock, FALSE)
 
 /obj/machinery/mineral/bluespace_miner/examine(mob/user)
 	. = ..()
-	if(in_range(user, src) || isobserver(user))
-
-		var/list/display_list = list("Статус дисплей показывает:")
-		display_list += "Эффективность: <b>[PERCENT(multiplier)]%</b>. \
-		Добыча блюспейс-кристаллов: <b>[multiplier >= BLUESPACE_MINER_CRYSTAL_TIER ? span_green("Активна") : span_danger("Неактивна")]</b>"
-		if(no_core_damage)
-			display_list += "Установлен [span_bold(span_green("стабилизатор"))], ядро [span_bold(span_green("не будет"))] повреждаться при работе."
-		else
-			display_list += "Ожидаемое время работы целого ядра <b>~[TIME_TO_CORE_DESTROY_MINUTES]</b> минут."
-			display_list += "Рекомендуемая температура вокруг майнера: от <b>−10°C</b> до <b>+10°C</b>. Ниже или выше — ядро изнашивается <b>в два раза быстрее</b>."
-			display_list += "Рекомендуемое давление: около <b>[BSM_CORE_PRESSURE_NOMINAL_KPA] кПа</b> (±<b>[BSM_CORE_PRESSURE_TOLERANCE_KPA] кПа</b>). Сильнее отклонение — ядро изнашивается <b>в два раза быстрее</b> (умножается с температурой)."
-		if(bs_core)
-			var/list/inst_pattern = LAZYACCESS(instability_settings, get_instability_level())
-			var/percent_core_integrity_text = span_bold("[CORE_INTEGRITY_PERCENT]%")
-			if(inst_pattern)
-				percent_core_integrity_text = "<span style='color:[inst_pattern[INSTABILITY_SETTINGS_EXAMINE_COLOR]]'>[percent_core_integrity_text]</span>"
-			else
-				percent_core_integrity_text = span_green(percent_core_integrity_text)
-
-			display_list += "Состояние Bluespace ядра: [percent_core_integrity_text]"
-			var/core_level = get_instability_level()
-			switch(core_level)
-				if(0)
-					display_list += span_notice("Случайные блюспейс-эффекты от майнера маловероятны — ядро ещё в норме.")
-				if(1)
-					display_list += span_notice("Ожидаются в основном безвредные проявления (игрушки, свет, звук).")
-				if(2)
-					display_list += span_warning("Возможны малые угрозы: газы, давление и т.п.")
-				if(3)
-					display_list += span_boldwarning("Критическое состояние ядра: возможны аномалии, порталы, спавнеры и метеоритные удары!")
-
-		. += span_notice(jointext(display_list, "\n- "))
-	else
-		. += span_notice("На машине есть небольшой дисплей, но вам нужно подойти ближе, чтобы разглядеть его.")
 	if(!bs_core)
-		. += span_warning("Bluespace ядро не установлено, без него машина не будет работать.")
+		. += span_warning("Bluespace ядро не установлено.")
 	if(on_hold())
 		. += span_warning("Все майнеры на станции отключены; пожалуйста, свяжитесь с командованием.")
 	if(!anchored)
-		. += span_warning("Машина не будет работать, пока не будет надежно прикреплена к полу.")
+		. += span_warning("Машина не прикреплена к полу.")
 	if(!materials?.silo)
-		. += span_warning("Хранилище материалов не подключено. Свяжите хранилище с машиной, используя мультитул.")
+		. += span_warning("Хранилище материалов не подключено.")
 	else if(materials?.on_hold())
-		. += span_warning("Доступ к материалам приостановлен, пожалуйста свяжитесь с квартирмейстером.")
+		. += span_warning("Доступ к материалам приостановлен, пожалуйста, свяжитесь с квартирмейстером.")
+
+/obj/machinery/mineral/bluespace_miner/examine_display_content(mob/user)
+	var/list/display_list = list()
+	display_list += "Эффективность выработки: <b>[PERCENT(multiplier)]%</b>."
+	display_list += "Добыча блюспейс-кристаллов: <b>[multiplier >= BLUESPACE_MINER_CRYSTAL_TIER ? span_green("активна") : span_danger("неактивна")]</b>."
+
+	if(no_core_damage)
+		display_list += "Установлен [span_bold(span_green("стабилизатор"))], ядро [span_bold(span_green("не будет"))] повреждаться при работе."
+	else
+		display_list += "Ожидаемое время работы ядра <b>~[TIME_TO_CORE_DESTROY_MINUTES]</b> минут."
+
+	if(bs_core)
+		var/list/inst_pattern = LAZYACCESS(instability_settings, get_instability_level())
+		var/percent_core_integrity_text = span_bold("[CORE_INTEGRITY_PERCENT]%")
+		if(inst_pattern)
+			percent_core_integrity_text = "<span style='color:[inst_pattern[INSTABILITY_SETTINGS_EXAMINE_COLOR]]'>[percent_core_integrity_text]</span>"
+		else
+			percent_core_integrity_text = span_green(percent_core_integrity_text)
+		display_list += "Состояние ядра: [percent_core_integrity_text]"
+
+	display_list += "Термостат машины горит <b>[get_bs_core_temp_damage_multiplier() > 1 ? span_danger("красным") : span_notice("синим")]</b> цветом."
+	display_list += "Барометр машины горит <b>[get_bs_core_pressure_damage_multiplier() > 1 ? span_red("красным") : span_green("зелёным")]</b> цветом."
+
+	. += "– [jointext(display_list, "\n– ")]"
 
 /obj/machinery/mineral/bluespace_miner/RefreshParts()
 	multiplier = 0

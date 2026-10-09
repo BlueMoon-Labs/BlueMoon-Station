@@ -420,8 +420,8 @@ GLOBAL_LIST_EMPTY(vending_products)
 
 /obj/machinery/vending/proc/build_inventories(start_empty)
 	build_inventory(products, product_records, product_categories, start_empty)
-	build_inventory(contraband, hidden_records, create_categories_from(contraband, "mask", "Contraband"), start_empty)
-	build_inventory(premium, coin_records, create_categories_from(premium, "coins", "Premium"), start_empty)
+	build_inventory(contraband, hidden_records, create_categories_from(contraband, "mask", "Контрабанда"), start_empty)
+	build_inventory(premium, coin_records, create_categories_from(premium, "coins", "Премиум"), start_empty)
 
 /obj/machinery/vending/proc/create_categories_from(products, icon, name)
 	return list(list(
@@ -973,7 +973,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 
 /obj/machinery/vending/proc/collect_records_for_static_data(list/records, list/categories, premium)
 	var/static/list/default_category = list(
-		"name" = "Products",
+		"name" = "Ассортимент",
 		"icon" = "cart-shopping",
 	)
 
@@ -1044,7 +1044,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 			.["user"]["job"] = C.registered_account.account_job.title
 			.["user"]["department"] = C.registered_account.account_job.paycheck_department
 		else
-			.["user"]["job"] = "No Job"
+			.["user"]["job"] = "БЕЗ РАБОТЫ"
 			.["user"]["department"] = DEPARTMENT_UNASSIGNED
 	// Ключ - REF записи (он же ref в статик-данных): имена товаров не уникальны,
 	// и запись с совпадающим именем перекрывала чужой остаток - цифра в UI замирала.

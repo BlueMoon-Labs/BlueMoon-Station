@@ -47,20 +47,19 @@
 
 /obj/machinery/autodoc/examine(mob/user)
 	. = ..()
-	if(get_dist(src, user) <= 1 || isobserver(user))
-		. += span_notice("Статус-дисплей сообщает: \n\
-		- Время операции: [DisplayTimeText(surgery_time)].")
-		if(speed_up_percent)
-			. += span_notice("- Машина работает на [span_nicegreen("[speed_up_percent]%")] быстрее.")
-		if(processing)
-			. += span_notice("- В процессе имплантации [icon2html(stored_organ, user)] [stored_organ.name] в [occupant].")
-		else if(stored_organ)
-			. += span_notice("- Внутрь загружен и подготовлен к установке [icon2html(stored_organ, user)] [stored_organ.name].")
-			. += span_notice("Alt-click для извлечения органа/имплантата.")
-		if((obj_flags & EMAGGED) && panel_open)
-			. += span_boldwarning("Протоколы работы повреждены, выставлен режим РАСЧЛЕНЕНИЕ!")
-	else
-		. += span_warning("Нужно подойти ближе, чтобы получить больше информации.")
+	if(processing && in_range(user, src) && !(obj_flags & EMAGGED))
+		. += span_notice("В процессе имплантации [icon2html(stored_organ, usr)] [stored_organ.name] в [occupant].")
+	else if(stored_organ && in_range(user, src))
+		. += span_notice("Внутрь загружен и подготовлен к установке [icon2html(stored_organ, usr)] [stored_organ.name].")
+		. += "Alt-click для извлечения органа или имплантата."
+
+/obj/machinery/autodoc/examine_display_content(mob/user)
+	. += span_notice("\
+	– Время операции: [DisplayTimeText(surgery_time)].\n")
+	if(speed_up_percent)
+		. += "– Машина работает на [span_nicegreen("[speed_up_percent]%")] быстрее.\n"
+	if((obj_flags & EMAGGED) && panel_open)
+		. += span_boldwarning("Протоколы работы повреждены, выставлен режим РАСЧЛЕНЕНИЕ!")
 
 /obj/machinery/autodoc/close_machine(mob/user)
 	..()

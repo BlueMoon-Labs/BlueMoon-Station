@@ -5,7 +5,7 @@
 
 /obj/machinery/power/emitter
 	name = "emitter"
-	desc = "A heavy-duty industrial laser, often used in containment fields and power generation."
+	desc = "Мощный промышленный лазер, часто используемый в сдерживающих полях и производстве энергии."
 	icon = 'icons/obj/singularity.dmi'
 	icon_state = "emitter"
 
@@ -75,10 +75,10 @@
 	sparks.attach(src)
 	sparks.set_up(1, TRUE, src)
 
-/obj/machinery/power/emitter/examine(mob/user)
-	. = ..()
-	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>The status display reads: Emitting one beam each <b>[fire_delay*0.1]</b> seconds.<br>Power consumption at <b>[active_power_usage]W</b>.</span>"
+/obj/machinery/power/emitter/examine_display_content(mob/user)
+	. += "\
+	– Излучается один луч каждые  <b>[fire_delay / (1 SECONDS)]</b> сек.\n\
+	– Затраты электроэнергии: <b>[active_power_usage]W</b>."
 
 /obj/machinery/power/emitter/ComponentInitialize()
 	. = ..()
@@ -106,7 +106,7 @@
 
 /obj/machinery/power/emitter/proc/can_be_rotated(mob/user,rotation_type)
 	if (anchored)
-		to_chat(user, "<span class='warning'>It is fastened to the floor!</span>")
+		to_chat(user, span_warning("Прикручено к полу!"))
 		return FALSE
 	return TRUE
 
@@ -132,16 +132,16 @@
 	add_fingerprint(user)
 	if(state == EMITTER_WELDED)
 		if(!powernet)
-			to_chat(user, "<span class='warning'>\The [src] isn't connected to a wire!</span>")
+			to_chat(user, span_warning("\The [src] не имеет подключения кабелем!"))
 			return TRUE
 		if(!locked && allow_switch_interact)
 			if(active == TRUE)
 				active = FALSE
 				clear_supermatter_beam_registrations()
-				to_chat(user, "<span class='notice'>You turn off [src].</span>")
+				to_chat(user, span_notice("Вы выключили [src]."))
 			else
 				active = TRUE
-				to_chat(user, "<span class='notice'>You turn on [src].</span>")
+				to_chat(user, span_notice("Вы включили [src]."))
 				shot_number = 0
 				fire_delay = maximum_fire_delay
 
@@ -152,16 +152,16 @@
 			update_icon()
 
 		else
-			to_chat(user, "<span class='warning'>The controls are locked!</span>")
+			to_chat(user, span_warning("Панель управления заблокирована!"))
 	else
-		to_chat(user, "<span class='warning'>[src] needs to be firmly secured to the floor first!</span>")
+		to_chat(user, span_warning("[src] требует надёжной фиксации к поверхности!"))
 		return TRUE
 
 /obj/machinery/power/emitter/attack_animal(mob/living/simple_animal/M)
 	if(ismegafauna(M) && anchored)
 		state = EMITTER_UNWRENCHED
 		anchored = FALSE
-		M.visible_message("<span class='warning'>[M] rips [src] free from its moorings!</span>")
+		M.visible_message(span_warning("[M] вырывает [src] со швартовочного места!"))
 	else
 		..()
 	if(!anchored)
@@ -270,12 +270,12 @@
 /obj/machinery/power/emitter/can_be_unfasten_wrench(mob/user, silent)
 	if(active)
 		if(!silent)
-			to_chat(user, "<span class='warning'>Turn \the [src] off first!</span>")
+			to_chat(user, span_warning("Для начала выключите [src]!"))
 		return FAILED_UNFASTEN
 
 	else if(state == EMITTER_WELDED)
 		if(!silent)
-			to_chat(user, "<span class='warning'>[src] is welded to the floor!</span>")
+			to_chat(user, span_warning("[src] надёжно приварили к полу!"))
 		return FAILED_UNFASTEN
 
 	return ..()
@@ -299,26 +299,26 @@
 
 	switch(state)
 		if(EMITTER_UNWRENCHED)
-			to_chat(user, "<span class='warning'>The [src.name] needs to be wrenched to the floor!</span>")
+			to_chat(user, span_warning("[src.name] сначала нужно прикрутить к полу!"))
 		if(EMITTER_WRENCHED)
 			if(!I.tool_start_check(user, amount=0))
 				return TRUE
-			user.visible_message("[user.name] starts to weld the [name] to the floor.", \
-				"<span class='notice'>You start to weld \the [src] to the floor...</span>", \
-				"<span class='italics'>You hear welding.</span>")
+			user.visible_message("[user.name] начинает приваривать [name] к полу.", \
+				span_notice("Вы начали приваривать [src] к поверхности пола..."), \
+				span_italics("Вы слышите звук сварки."))
 			if(I.use_tool(src, user, 20, volume=50))
 				state = EMITTER_WELDED
-				to_chat(user, "<span class='notice'>You weld \the [src] to the floor.</span>")
+				to_chat(user, span_notice("Вы приварили [src] к полу."))
 				connect_to_network()
 		if(EMITTER_WELDED)
 			if(!I.tool_start_check(user, amount=0))
 				return TRUE
-			user.visible_message("[user.name] starts to cut the [name] free from the floor.", \
-				"<span class='notice'>You start to cut \the [src] free from the floor...</span>", \
-				"<span class='italics'>You hear welding.</span>")
+			user.visible_message("[user.name] начинает отваривать [name] от пола.", \
+				span_notice("Вы начали отваривать [src] от поверхности пола..."), \
+				span_italics("Вы слышите звук сварки."))
 			if(I.use_tool(src, user, 20, volume=50))
 				state = EMITTER_WRENCHED
-				to_chat(user, "<span class='notice'>You cut \the [src] free from the floor.</span>")
+				to_chat(user, span_notice("Вы отварили [src] от пола."))
 				disconnect_from_network()
 
 	return TRUE
@@ -339,16 +339,16 @@
 /obj/machinery/power/emitter/attackby(obj/item/I, mob/user, params)
 	if(I.GetID())
 		if(obj_flags & EMAGGED)
-			to_chat(user, "<span class='warning'>The lock seems to be broken!</span>")
+			to_chat(user, span_warning("Электронный замок выглядит сломанным!"))
 			return
 		if(allowed(user))
 			if(active)
 				locked = !locked
-				to_chat(user, "<span class='notice'>You [src.locked ? "lock" : "unlock"] the controls.</span>")
+				to_chat(user, span_notice("Вы [src.locked ? "за" : "раз"]блокировали управление."))
 			else
-				to_chat(user, "<span class='warning'>The controls can only be locked when \the [src] is online!</span>")
+				to_chat(user, span_warning("Управление может быть заблкировано только во время работы [src]!"))
 		else
-			to_chat(user, "<span class='danger'>Доступ запрещён.</span>")
+			to_chat(user, span_danger("Доступ запрещён."))
 		return
 
 	else if(is_wire_tool(I) && panel_open)
@@ -362,7 +362,7 @@
 /obj/machinery/power/emitter/proc/integrate(obj/item/gun/energy/E,mob/user)
 	if(istype(E, /obj/item/gun/energy))
 		if(!E.can_emitter)
-			to_chat(user, "<span class='warning'>[E] cannot fit into emitters.</span>")
+			to_chat(user, span_warning("[E] не поместится в излучатель."))
 			return
 		if(!user.transferItemToLoc(E, src))
 			return
@@ -400,7 +400,7 @@
 	log_admin("[key_name(usr)] emagged [src] at [AREACOORD(src)]")
 	locked = FALSE
 	obj_flags |= EMAGGED
-	user?.visible_message("[user.name] emags [src].","<span class='notice'>You short out the lock.</span>")
+	user?.visible_message("[user.name] провёл е-магом по[src].", span_notice("Вы сожгли электронный замок."))
 	return TRUE
 
 
@@ -460,7 +460,7 @@
 
 /datum/action/innate/protoemitter/firing
 	name = "Switch to Manual Firing"
-	desc = "The emitter will only fire on your command and at your designated target"
+	desc = "Излучатель выстрелит только по вашей команде по указанной цели."
 	button_icon_state = "mech_zoom_on"
 
 /datum/action/innate/protoemitter/firing/Activate()
@@ -468,7 +468,7 @@
 		playsound(PE,'sound/mecha/mechmove01.ogg', 50, TRUE)
 		PE.manual = FALSE
 		name = "Switch to Manual Firing"
-		desc = "The emitter will only fire on your command and at your designated target"
+		desc = "Излучатель выстрелит только по вашей команде по указанной цели."
 		button_icon_state = "mech_zoom_on"
 		for(var/obj/item/I in U.held_items)
 			if(istype(I, /obj/item/turret_control))
@@ -478,7 +478,7 @@
 	else
 		playsound(PE,'sound/mecha/mechmove01.ogg', 50, TRUE)
 		name = "Switch to Automatic Firing"
-		desc = "Emitters will switch to periodic firing at your last target"
+		desc = "Излучатель переключится к периодическим выстрелам по вашей последней цели"
 		button_icon_state = "mech_zoom_off"
 		PE.manual = TRUE
 		for(var/V in U.held_items)

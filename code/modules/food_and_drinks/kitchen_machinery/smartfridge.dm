@@ -3,7 +3,7 @@
 // -------------------------
 /obj/machinery/smartfridge
 	name = "smartfridge"
-	desc = "Хранит холодные вещи холодными и горячие вещи холодными."
+	desc = "Сохраняет холодные вещи холодными и горячие вещи холодными."
 	icon = 'icons/obj/vending.dmi'
 	icon_state = "smartfridge"
 	layer = BELOW_OBJ_LAYER
@@ -35,11 +35,9 @@
 	for(var/obj/item/stock_parts/matter_bin/B in component_parts)
 		max_n_of_items = 1500 * B.rating
 
-/obj/machinery/smartfridge/examine(mob/user)
-	. = ..()
-	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>Статус-дисплей сообщает:\n\
-		- Поместится максимум <b>[max_n_of_items]</b> шт. предметов.</span>"
+/obj/machinery/smartfridge/examine_display_content(mob/user)
+	. += "\
+	– Поместится максимум <b>[max_n_of_items]</b> шт. предметов."
 
 /obj/machinery/smartfridge/update_icon_state()
 	SSvis_overlays.remove_vis_overlay(src, managed_vis_overlays)

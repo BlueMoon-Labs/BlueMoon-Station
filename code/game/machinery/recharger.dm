@@ -3,7 +3,7 @@
 	icon = 'icons/obj/stationobjs.dmi'
 	icon_state = "recharger"
 	base_icon_state = "recharger"
-	desc = "A charging dock for energy based weaponry."
+	desc = "Зарядная станция для энерговооружения."
 	use_power = IDLE_POWER_USE
 	idle_power_usage = 4
 	active_power_usage = 250
@@ -34,23 +34,24 @@
 /obj/machinery/recharger/examine(mob/user)
 	. = ..()
 	if(!in_range(user, src) && !issilicon(user) && !isobserver(user))
-		. += "<span class='warning'>You're too far away to examine [src]'s contents and display!</span>"
+		. += span_warning("Вы слишком далеко от [src] для проверки содержимого и дисплея!</span>")
 		return
 
 	if(charging)
-		. += {"<span class='notice'>\The [src] contains:</span>
-		<span class='notice'>- \A [charging].</span>"}
+		. += span_notice("\The [src] содержит: \n\
+		– \A [charging].")
 
 	if(!(machine_stat & (NOPOWER|BROKEN)))
-		. += "<span class='notice'>The status display reads:</span>"
-		. += "<span class='notice'>- Recharging <b>[recharge_coeff*10]%</b> cell charge per cycle.</span>"
 		if(charging)
 			// Часть заряжаемого (например, самозарядные энергопушки) вовсе не имеет ячейки.
 			var/obj/item/stock_parts/cell/charging_cell = charging.get_cell()
 			if(charging_cell)
-				. += "<span class='notice'>- \The [charging]'s cell is at <b>[charging_cell.percent()]%</b>.</span>"
+				. += span_notice("– Батарея [charging] заряжена на <b>[charging_cell.percent()]%</b>.")
 			else
-				. += "<span class='notice'>- \The [charging] has no readable cell.</span>"
+				. += span_notice("– \The [charging] не имеет считываемой батареи.")
+
+/obj/machinery/recharger/examine_display_content()
+	. += "– Заряжается <b>[recharge_coeff*10]%</b> заряда батареи за цикл."
 
 /obj/machinery/recharger/proc/setCharging(new_charging)
 	// Уведомляем старый айтем если это talking gun
@@ -81,16 +82,6 @@
 		setCharging()
 
 /obj/machinery/recharger/attackby(obj/item/G, mob/user, params)
-	if(G.tool_behaviour == TOOL_WRENCH)
-		if(charging)
-			to_chat(user, "<span class='notice'>Remove the charging item first!</span>")
-			return
-		setAnchored(!anchored)
-		power_change()
-		to_chat(user, "<span class='notice'>You [anchored ? "attached" : "detached"] [src].</span>")
-		G.play_tool_sound(src)
-		return
-
 	var/allowed = is_type_in_typecache(G, allowed_devices)
 
 	if(allowed)
@@ -101,13 +92,13 @@
 			//Checks to make sure he's not in space doing it, and that the area got proper power.
 			var/area/a = get_area(src)
 			if(!a || !a.powered(EQUIP))
-				to_chat(user, "<span class='notice'>[src] blinks red as you try to insert [G].</span>")
+				to_chat(user, span_notice("[src] мигает красным при попытке вставить [G]."))
 				return TRUE
 
 			if (istype(G, /obj/item/gun/energy))
 				var/obj/item/gun/energy/E = G
 				if(!E.can_charge)
-					to_chat(user, "<span class='notice'>Your gun has no external power connector.</span>")
+					to_chat(user, span_notice("Ваше оружие не имеет внешнего зарядного разъёма."))
 					return TRUE
 
 			if(!user.transferItemToLoc(G, src))
@@ -115,7 +106,7 @@
 			setCharging(G)
 
 		else
-			to_chat(user, "<span class='notice'>[src] isn't connected to anything!</span>")
+			to_chat(user, span_notice("[src] не имеет подключения!"))
 		return TRUE
 
 	if(anchored && !charging)
@@ -128,6 +119,17 @@
 			return
 
 	return ..()
+
+/obj/machinery/recharger/wrench_act(mob/living/user, obj/item/tool)
+	if(charging)
+		to_chat(user, span_notice("Сначала извлеките заряжаемый предмет!"))
+		return FALSE
+
+	setAnchored(!anchored)
+	power_change()
+	to_chat(user, span_notice("Вы [anchored ? "прикрепили" : "открепили"] [src]."))
+	tool.play_tool_sound(src)
+	return TOOL_ACT_TOOLTYPE_SUCCESS
 
 /obj/machinery/recharger/on_attack_hand(mob/user, act_intent = user.a_intent, unarmed_attack_flags)
 
@@ -189,7 +191,7 @@
 		if(!using_power && !finished_recharging) //Inserted thing is at max charge/ammo, notify those around us
 			finished_recharging = TRUE
 			playsound(src, 'sound/machines/ping.ogg', 30, TRUE)
-			say("[charging] has finished recharging!")
+			say("Зарядка [charging] завершена!")
 
 	else
 		return PROCESS_KILL

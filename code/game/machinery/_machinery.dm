@@ -587,7 +587,7 @@ Class Procs:
 	else
 		user.DelayNextAction(CLICK_CD_MELEE)
 		user.do_attack_animation(src, ATTACK_EFFECT_PUNCH)
-		user.visible_message("<span class='danger'>[user.name] бьёт \the [src.name] своими лапами.</span>", null, null, COMBAT_MESSAGE_RANGE)
+		user.visible_message("<span class='danger'>[user.name] бьёт [src.name] своими лапами.</span>", null, null, COMBAT_MESSAGE_RANGE)
 		take_damage(4, BRUTE, MELEE, 1)
 
 /obj/machinery/attack_robot(mob/user)
@@ -619,7 +619,7 @@ Class Procs:
 	. = !(state_open || panel_open || is_operational() || (flags_1 & NODECONSTRUCT_1)) && I.tool_behaviour == TOOL_CROWBAR
 	if(.)
 		I.play_tool_sound(src, 50)
-		visible_message("<span class='notice'>[usr] вскрывает \the [src].</span>", "<span class='notice'>Вы вскрыли \the [src].</span>")
+		visible_message(span_notice("[usr] вскрывает \the [src]."), span_notice("Вы вскрыли \the [src]."))
 		open_machine()
 
 /obj/machinery/proc/default_deconstruction_crowbar(obj/item/I, ignore_panel = 0)
@@ -706,10 +706,10 @@ Class Procs:
 	panel_open = !panel_open
 	if(panel_open)
 		icon_state = icon_state_open
-		to_chat(user, "<span class='notice'>Вы скручиваете винты панели обслуживания [src].</span>")
+		to_chat(user, span_notice("Вы скручиваете винты панели обслуживания [src]."))
 	else
 		icon_state = icon_state_closed
-		to_chat(user, "<span class='notice'>Вы вкручиваете панель обслуживания [src] обратно.</span>")
+		to_chat(user, span_notice("Вы вкручиваете панель обслуживания [src] обратно."))
 	update_icon()
 	return TRUE
 
@@ -717,14 +717,14 @@ Class Procs:
 	if(panel_open && I.tool_behaviour == TOOL_WRENCH)
 		I.play_tool_sound(src, 50)
 		setDir(turn(dir,-90))
-		to_chat(user, "<span class='notice'>Вы поворачиваете [src].</span>")
+		to_chat(user, span_notice("Вы поворачиваете [src]."))
 		return TRUE
 	return FALSE
 
 /obj/proc/can_be_unfasten_wrench(mob/user, silent) //if we can unwrench this object; returns SUCCESSFUL_UNFASTEN and FAILED_UNFASTEN, which are both TRUE, or CANT_UNFASTEN, which isn't.
 	if(!(isfloorturf(loc) || istype(loc, /turf/open/indestructible)) && !anchored)
 		if(!silent)
-			to_chat(user, "<span class='warning'>[src] должен находится на полу, чтобы закрутить!</span>")
+			to_chat(user, span_warning("[src] должен находится на полу, чтобы закрутить!"))
 		return FAILED_UNFASTEN
 	return SUCCESSFUL_UNFASTEN
 
@@ -734,12 +734,12 @@ Class Procs:
 		if(!can_be_unfasten || can_be_unfasten == FAILED_UNFASTEN)
 			return can_be_unfasten
 		if(time)
-			to_chat(user, "<span class='notice'>Вы начинаете [anchored ? "откручивать" : "вкручивать"] [src]...</span>")
+			to_chat(user, span_notice("Вы начинаете [anchored ? "откручивать" : "вкручивать"] [src]..."))
 		I.play_tool_sound(src, 50)
 		var/prev_anchored = anchored
 		//as long as we're the same anchored state and we're either on a floor or are anchored, toggle our anchored state
 		if(I.use_tool(src, user, time, extra_checks = CALLBACK(src, PROC_REF(unfasten_wrench_check), prev_anchored, user)))
-			to_chat(user, "<span class='notice'>Вы начинаете [anchored ? "откручивать" : "вкручивать"] [src].</span>")
+			to_chat(user, span_notice("Вы [anchored ? "открутили" : "вкрутили"] [src] к поверхности пола."))
 			setAnchored(!anchored)
 			check_on_table()
 			playsound(src, 'sound/items/deconstruct.ogg', 50, 1)
@@ -808,28 +808,70 @@ Class Procs:
 
 /obj/machinery/proc/display_parts(mob/user)
 	. = list()
-	. += "<span class='notice'>Содержит следующие детали:</span>"
+	. += span_notice("Содержит следующие детали:")
 	for(var/obj/item/C in component_parts)
-		. += "<span class='notice'>[icon2html(C, user)] \A [C].</span>"
+		. += span_notice("[icon2html(C, user)] [C].")
 	. = jointext(., "")
 
 /obj/machinery/examine(mob/user)
 	. = ..()
 	if(machine_stat & BROKEN)
-		. += "<span class='notice'>Выглядит сломанным и не рабочим.</span>"
+		. += span_notice("Выглядит сломанным и нерабочим.")
 	if(!(resistance_flags & INDESTRUCTIBLE))
 		if(resistance_flags & ON_FIRE)
-			. += "<span class='warning'>Оно горит!</span>"
-		var/healthpercent = (obj_integrity/max_integrity) * 100
+			. += span_warning("Оно горит!")
+		var/healthpercent = max_integrity ? round((obj_integrity / max_integrity) * 100) : 100
 		switch(healthpercent)
-			if(50 to 99)
+			if(51 to 99)
 				. += span_warning("Выглядит слегка поврежденным.")
-			if(25 to 50)
+			if(26 to 50)
 				. += span_warning("Выглядит крайне поврежденным.")
 			if(0 to 25)
 				. += span_warning("Вот-вот развалится!")
+	var/status_display = examine_display(user)
+	if(status_display)
+		. += status_display
 	if(user.research_scanner && component_parts)
 		. += display_parts(user, TRUE)
+
+/**
+ * Прок выведения экзамайн строки машины с гиперссылкой на статы, получаемые от деталей
+ */
+/obj/machinery/proc/examine_display(mob/user)
+	if(!examine_display_content(user))
+		return null
+	if(is_blind(user))
+		return span_warning("Вы ничего не можете разглядеть!")
+	if(!isobserver(user) && (!isAI(user) && !iscyborg(user)) && !in_range(user, src))
+		return span_warning("Издалека видно небольшой дисплей.")
+	if(!isobserver(user) && !is_operational())
+		return span_warning("Статус-дисплей потух чёрным экраном.")
+
+	return span_notice("Вы видите работающий <a href='?src=[REF(src)];display_stats=1'>статус-дисплей</a>.")
+
+/**
+ * Прок содержимого гиперссылки со статами машины, вызывать его как родителя нельзя
+ */
+/obj/machinery/proc/examine_display_content(mob/user)
+	return FALSE
+
+/obj/machinery/Topic(href, href_list)
+	. = ..()
+	if(.)
+		return .
+	if(href_list["display_stats"])
+		if(!isobserver(usr) && (!isAI(usr) && !iscyborg(usr)) && !in_range(usr, src) && !is_blind(usr)) // Да, здесь понадобится usr - это по сути верб-вызов гиперссылки из чата.
+			to_chat(usr, span_warning("Вы не можете разглядеть статус-дисплей у [src] с этого расстояния!"))
+			return TRUE
+		if(!isobserver(usr) && !is_operational()) // И я не хочу, чтобы описание дёргалось по предварительно экзамайнатой машине
+			to_chat(usr, span_warning("Статус-дисплей у [src] потух!"))
+			return TRUE
+
+		var/readout = span_notice("<b>Статус-дисплей [src]</b>\n")
+		readout += examine_display_content(usr)
+		if(readout)
+			to_chat(usr, examine_block(readout))
+		return TRUE
 
 //called on machinery construction (i.e from frame to machinery) but not on initialization
 /obj/machinery/proc/on_construction()
@@ -888,7 +930,7 @@ Class Procs:
  * However, the proc may also be used elsewhere.
  */
 /obj/machinery/proc/AI_notify_hack()
-	var/alertstr = "<span class='userdanger'>Network Alert: Замечена попытка взлома[get_area(src)?" в [get_area_name(src, TRUE)]":". Невозможно отследить местоположение"].</span>"
+	var/alertstr = span_userdanger("Network Alert: Замечена попытка взлома[get_area(src)?" в [get_area_name(src, TRUE)]":". Невозможно отследить местоположение"].")
 	for(var/mob/living/silicon/ai/AI in GLOB.player_list)
 		to_chat(AI, alertstr)
 

@@ -370,13 +370,11 @@
 	efficiency = round(efficiency, 0.01)
 	creation_efficiency = max(0.15, efficiency) // creation_efficiency goes 1 -> 0.91 -> 0.82 -> 0.73 per level of manipulator efficiency
 
-/obj/machinery/autolathe/examine(mob/user)
-	. += ..()
+/obj/machinery/autolathe/examine_display_content(mob/user)
 	var/datum/component/material_container/materials = GetComponent(/datum/component/material_container)
-	if(in_range(user, src) || isobserver(user))
-		. += span_notice("Статус-дисплей сообщает: \n\
-		- Хранится до <b>[materials.max_amount]</b> m/u.\n\
-		- Затраты материалов: <b>[creation_efficiency*100]%</b>.")
+	. += "\
+	– Хранится до <b>[materials.max_amount]</b> m/u.\n\
+	– Затраты материалов: <b>[creation_efficiency*100]%</b>."
 
 /obj/machinery/autolathe/proc/can_build(datum/design/D, amount = 1)
 	if(length(D.make_reagents))

@@ -48,14 +48,12 @@
 	for(var/obj/item/stock_parts/micro_laser/P in component_parts)
 		damage_coeff = P.rating
 
-/obj/machinery/dna_scannernew/examine(mob/user)
-	. = ..()
-	if(in_range(user, src) || isobserver(user))
-		. += span_notice("Статус-дисплей сообщает: \n\
-		- Точность импульса увеличена в <b>[precision_coeff**2]</b> раз(а). \n\
-		- Объём облучения уменьшен в <b>[damage_coeff**2]</b> раз(а).")
-		if(scan_level >= 3)
-			. += span_notice("- Сканер улучшен и поддерживает автообработку.")
+/obj/machinery/dna_scannernew/examine_display_content(mob/user)
+	. += "\
+	- Точность импульса увеличена в <b>[precision_coeff**2]</b> раз(а). \n\
+	- Объём облучения уменьшен в <b>[damage_coeff**2]</b> раз(а)."
+	if(scan_level >= 3)
+		. += "– Сканер улучшен и поддерживает автообработку."
 
 /obj/machinery/dna_scannernew/update_icon_state()
 	//no power or maintenance

@@ -14,25 +14,25 @@ export const TurbineComputer = (props) => {
       height={150}>
       <Window.Content>
         <Section
-          title="Status"
+          title="Статус"
           buttons={(
             <>
               <Button
                 icon={data.online ? 'power-off' : 'times'}
-                content={data.online ? 'Online' : 'Offline'}
+                content={data.online ? 'Включено' : 'Отключено'}
                 selected={data.online}
                 disabled={!operational}
                 onClick={() => act('toggle_power')} />
               <Button
                 icon="sync"
-                content="Reconnect"
+                content="Переподключить"
                 onClick={() => act('reconnect')} />
             </>
           )}>
           {!operational && (
             <LabeledList>
               <LabeledList.Item
-                label="Compressor Status"
+                label="Статус компрессора"
                 color={(!data.compressor || data.compressor_broke)
                   ? 'bad'
                   : 'good'}>
@@ -41,7 +41,7 @@ export const TurbineComputer = (props) => {
                   : 'Online'}
               </LabeledList.Item>
               <LabeledList.Item
-                label="Turbine Status"
+                label="Статус турбины"
                 color={(!data.turbine || data.turbine_broke)
                   ? 'bad'
                   : 'good'}>
@@ -52,13 +52,13 @@ export const TurbineComputer = (props) => {
             </LabeledList>
           ) || (
             <LabeledList>
-              <LabeledList.Item label="Turbine Speed">
-                {data.rpm} RPM
+              <LabeledList.Item label="Скорость турбины">
+                {data.rpm} ОВМ
               </LabeledList.Item>
-              <LabeledList.Item label="Internal Temp">
-                {data.temp} K
+              <LabeledList.Item label="Внутренняя темп.">
+                {data.temp} К
               </LabeledList.Item>
-              <LabeledList.Item label="Generated Power">
+              <LabeledList.Item label="Выработка энергии">
                 {data.power}
               </LabeledList.Item>
             </LabeledList>

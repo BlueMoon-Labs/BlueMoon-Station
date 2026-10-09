@@ -6383,7 +6383,6 @@
 #include "modular_splurt\code\modules\mentor\mentor_mouse.dm"
 #include "modular_splurt\code\modules\mentor\mentor_verbs.dm"
 #include "modular_splurt\code\modules\mining\equipment\kinetic_crusher.dm"
-#include "modular_splurt\code\modules\mining\equipment\machine_vending.dm"
 #include "modular_splurt\code\modules\mining\lavaland\necropolis_chests.dm"
 #include "modular_splurt\code\modules\mob\femclaw.dm"
 #include "modular_splurt\code\modules\mob\mob.dm"

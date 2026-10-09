@@ -1,7 +1,7 @@
 //Baseline portable generator. Has all the default handling. Not intended to be used on it's own (since it generates unlimited power).
 /obj/machinery/power/port_gen
 	name = "portable generator"
-	desc = "A portable generator for emergency backup power."
+	desc = "Переносной генератор для запасного питания в экстренных ситуациях."
 	icon = 'icons/obj/power.dmi'
 	icon_state = "portgen0_0"
 	density = TRUE
@@ -69,7 +69,7 @@
 
 /obj/machinery/power/port_gen/examine(mob/user)
 	. = ..()
-	. += "It is[!active?"n't":""] running."
+	. += "Он[!active? " не " :""]работает."
 
 /////////////////
 // P.A.C.M.A.N //
@@ -115,11 +115,12 @@
 
 /obj/machinery/power/port_gen/pacman/examine(mob/user)
 	. = ..()
-	. += "<span class='notice'>The generator has [sheets] units of [sheet_name] fuel left, producing [DisplayPower(power_gen)] per cycle.</span>"
+	. += span_notice("В генераторе есть [sheets] u  [sheet_name] остатка топлива, производя [DisplayPower(power_gen)] в цикл.")
 	if(anchored)
-		. += "<span class='notice'>It is anchored to the ground.</span>"
-	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>The status display reads: Fuel efficiency increased by <b>[(consumption*100)-100]%</b>.</span>"
+		. += span_notice("Оно прикреплено к поверхности пола.")
+
+/obj/machinery/power/port_gen/pacman/examine_display_content(mob/user)
+	. += "– Эффективность использования топлива увеличена на <b>[(consumption*100)-100]%</b>."
 
 /obj/machinery/power/port_gen/pacman/HasFuel()
 	if(sheets >= 1 / (time_per_sheet / power_output) - sheet_left)

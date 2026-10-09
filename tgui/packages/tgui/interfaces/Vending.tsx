@@ -144,7 +144,7 @@ export const UserDetails = (props) => {
 
   if (!user) {
     return (
-      <NoticeBox>No ID detected! Contact the Head of Personnel.</NoticeBox>
+      <NoticeBox>Не обнаружена ID-карта! Свяжитесь с Главой Персонала.</NoticeBox>
     );
   } else {
     return (
@@ -155,9 +155,9 @@ export const UserDetails = (props) => {
           </Stack.Item>
           <Stack.Item>
             <LabeledList>
-              <LabeledList.Item label="User">{user.name}</LabeledList.Item>
-              <LabeledList.Item label="Occupation">
-                {user.job || 'Unemployed'}
+              <LabeledList.Item label="Пользователь">{user.name}</LabeledList.Item>
+              <LabeledList.Item label="Должность">
+                {user.job || 'БЕЗ РАБОТЫ'}
               </LabeledList.Item>
             </LabeledList>
           </Stack.Item>
@@ -205,7 +205,7 @@ const ProductDisplay = (
     <Section
       fill
       scrollable
-      title="Products"
+      title="Ассортимент"
       buttons={
         <Stack>
           {!!onstation && user && (
@@ -218,7 +218,7 @@ const ProductDisplay = (
           <Stack.Item>
             <Input
               onInput={(_, value) => setStockSearch(value)}
-              placeholder="Search..."
+              placeholder="Поиск..."
               value={stockSearch}
             />
           </Stack.Item>
@@ -337,7 +337,7 @@ const ProductStock = (props) => {
         (!custom && remaining <= product.max_amount / 2 && 'average') ||
         'good'
       }>
-      {remaining} left
+      {remaining} шт.
     </Box>
   );
 };
@@ -347,12 +347,12 @@ const ProductButton = (props) => {
   const { act, data } = useBackend<VendingData>();
   const { access } = data;
   const { custom, discount, disabled, free, product, redPrice } = props;
-  const customPrice = access ? 'FREE' : product.price + ' cr';
-  let standardPrice = product.price + ' cr';
+  const customPrice = access ? 'НОЛЬ' : product.price + ' кр.';
+  let standardPrice = product.price + ' кр.';
   if (free) {
     standardPrice = 'FREE';
   } else if (discount) {
-    standardPrice = redPrice + ' cr';
+    standardPrice = redPrice + ' кр.';
   }
   return custom ? (
     <Button
@@ -380,8 +380,8 @@ const ProductButton = (props) => {
 };
 
 const CATEGORY_COLORS = {
-  'Contraband': 'red',
-  'Premium': 'yellow',
+  'Контрабанда': 'red',
+  'Премиум': 'yellow',
 };
 
 const CategorySelector = (props: {

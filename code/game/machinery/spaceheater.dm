@@ -10,7 +10,7 @@
 	icon = 'icons/obj/atmos.dmi'
 	icon_state = "sheater-off"
 	name = "space heater"
-	desc = "Made by Space Amish using traditional space techniques, this heater/cooler is guaranteed not to set the station on fire. Warranty void if used in engines."
+	desc = "Созданные космическими амишами при помощи традиционных космических методов, этот нагреватель/охладитель гарантированно не подожжёт станцию. Гарантия утрачивается при использовании в реакторах."
 	max_integrity = 250
 	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 100, RAD = 100, FIRE = 80, ACID = 10)
 	circuit = /obj/item/circuitboard/machine/space_heater
@@ -54,13 +54,17 @@
 
 /obj/machinery/space_heater/examine(mob/user)
 	. = ..()
-	. += "\The [src] is [on ? "on" : "off"], and the hatch is [panel_open ? "open" : "closed"]."
+	. += "\The [src] сейчас [on ? "работает" : "выключен"], и люк [panel_open ? "открыт" : "закрыт"]."
 	if(cell)
-		. += "The charge meter reads [cell ? round(cell.percent(), 1) : 0]%."
+		. += "На индикаторе заряда пишется [cell ? round(cell.percent(), 1) : 0]%."
 	else
-		. += "There is no power cell installed."
-	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>The status display reads: Temperature range at <b>[settableTemperatureRange]°C</b>.<br>Heating power at <b>[heatingPower*0.001]kJ</b>.<br>Power consumption at <b>[(100/(1/30000))*(1/efficiency)]%</b>.<span>" //initial efficiency is actually 30.000 due to RefreshParts()
+		. += span_warning("Нет установленна батарея.")
+
+/obj/machinery/space_heater/examine_display_content()
+	. += "– Температурный диапазон: <b>[settableTemperatureRange]°C</b>.\n\
+	– Нагревательная мощность: <b>[heatingPower*0.001]kJ</b>.\n\
+	- Потребление энергии: <b>[(100/(1/30000))*(1/efficiency)]%</b>." //initial efficiency is actually 30.000 due to RefreshParts()
+
 
 /obj/machinery/space_heater/update_icon_state()
 	if(on)
@@ -154,33 +158,37 @@
 	if(istype(I, /obj/item/stock_parts/cell))
 		if(panel_open)
 			if(cell)
-				to_chat(user, "<span class='warning'>There is already a power cell inside!</span>")
+				to_chat(user, span_warning("Внутри уже есть батарея!"))
 				return
 			else if(!user.transferItemToLoc(I, src))
 				return
 			cell = I
 			I.add_fingerprint(usr)
 
-			user.visible_message("\The [user] inserts a power cell into \the [src].", "<span class='notice'>You insert the power cell into \the [src].</span>")
+			user.visible_message("\The [user] вставляет батарею в разъём \the [src].", span_notice("Вы вставляете батарею в \the [src]."))
 			SStgui.update_uis(src)
 		else
-			to_chat(user, "<span class='warning'>The hatch must be open to insert a power cell!</span>")
+			to_chat(user, span_warning("Люк техобслуживания должен быть открыт для того, чтобы вставить батарею!"))
 			return
-	else if(I.tool_behaviour == TOOL_SCREWDRIVER)
-		panel_open = !panel_open
-		user.visible_message("\The [user] [panel_open ? "opens" : "closes"] the hatch on \the [src].", "<span class='notice'>You [panel_open ? "open" : "close"] the hatch on \the [src].</span>")
-		update_icon()
-		if(panel_open)
-			interact(user)
 	else if(default_deconstruction_crowbar(I))
 		return
 	else
 		return ..()
 
+/obj/machinery/space_heater/screwdriver_act(mob/living/user, obj/item/tool)
+	..()
+	panel_open = !panel_open
+	user.visible_message("\The [user] [panel_open ? "открывает" : "закрывает"] люк техобслуживания \the [src].", span_notice("Вы [panel_open ? "открываете" : "закрываете"] люк техобслуживания \the [src]."))
+	update_icon()
+	if(panel_open)
+		interact(user)
+	return TOOL_ACT_TOOLTYPE_SUCCESS
+
 /obj/machinery/space_heater/wrench_act(mob/living/user, obj/item/I)
 	..()
 	default_unfasten_wrench(user, I, 5)
 	return TRUE
+
 /obj/machinery/space_heater/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
@@ -244,7 +252,7 @@
 /obj/machinery/space_heater/proc/toggle_power()
 	on = !on
 	mode = HEATER_MODE_STANDBY
-	usr.visible_message("<span class='notice'>[usr] switches [on ? "on" : "off"] \the [src].</span>", "<span class='notice'>You switch [on ? "on" : "off"] \the [src].</span>")
+	usr.visible_message(span_notice("[usr] [on ? "включает" : "выключает"] \the [src]."), span_notice("Вы [on ? "включаете" : "выключаете"] \the [src]."))
 	update_appearance()
 	if(on)
 		SSair.start_processing_machine(src)

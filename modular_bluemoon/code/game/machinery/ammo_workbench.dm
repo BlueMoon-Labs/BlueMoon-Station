@@ -6,7 +6,7 @@
 
 /obj/machinery/ammo_workbench
 	name = "ammunitions workbench"
-	desc = "A machine, somewhat akin to a lathe, made specifically for manufacturing ammunition. It has a slot for magazines, ammo boxes, clips... anything that holds ammo."
+	desc = "Станок, отдалённо напоминающий токарный, специальный для производства боеприпасов. Имеет разъём для магазинов, коробок с патронами, обойм... Всего, что вмещает боеприпасы."
 	icon = 'modular_bluemoon/icons/obj/machines/ammo_workbench.dmi'
 	icon_state = "ammobench"
 	density = TRUE
@@ -101,11 +101,10 @@
 	. = ..()
 	set_wires(new /datum/wires/ammo_workbench(src))
 
-/obj/machinery/ammo_workbench/examine(mob/user)
-	. += ..()
+/obj/machinery/ammo_workbench/examine_display_content(mob/user)
 	var/datum/component/material_container/materials = GetComponent(/datum/component/material_container)
-	if(in_range(user, src) || isobserver(user))
-		. += span_notice("The status display reads: Storing up to <b>[materials.max_amount]</b> material units.<br>Material consumption at <b>[creation_efficiency*100]%</b>.")
+	. += "– Хранится до <b>[materials.max_amount]</b> m/u локально.\n\
+	– Затраты материалов: <b>[creation_efficiency*100]%</b>."
 
 /obj/machinery/ammo_workbench/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
@@ -161,10 +160,10 @@
 		for(var/material in efficient_casing_mats)
 			i++
 			var/datum/material/our_material = material
-			mat_string += "[efficient_casing_mats[our_material]] cm³ [our_material.name]"
+			mat_string += "[efficient_casing_mats[our_material]] см³ [our_material.name]"
 			if(i < length(efficient_casing_mats))
 				mat_string += ", "
-		mat_string += " per cartridge"
+		mat_string += " на патрон"
 
 		valid_casings += our_casing
 		valid_casings[our_casing] = initial(our_casing.name)
@@ -214,11 +213,11 @@
 		data["error"] = error_message
 		data["error_type"] = error_type
 	else if(busy)
-		data["error"] = "SYSTEM IS BUSY"
+		data["error"] = "СИСТЕМА ЗАНЯТА"
 		data["error_type"] = ""
 
 	if(!loaded_magazine)
-		data["error"] = "NO MAGAZINE IS INSERTED"
+		data["error"] = "МАГАЗИН НЕ ВСТАВЛЕН"
 		data["error_type"] = ""
 		return data
 	else
@@ -333,25 +332,25 @@
 		error_type = ""
 
 	if(!(casing_type in valid_casings))
-		error_message = "AMMUNITION MISMATCH"
+		error_message = "НЕСООТВЕТСТВИЕ БОЕПРИПАСОВ"
 		error_type = "bad"
 		return
 
 	var/obj/item/ammo_casing/our_casing = casing_type
 
 	if(initial(our_casing.harmful) && !allowed_harmful)
-		error_message = "SYSTEM CORRUPTION DETECTED, PLEASE EJECT CONTAINER AND SUBMIT SUPPORT TICKET"
+		error_message = "ОБНАРУЖЕНО ПОВРЕЖДЕНИЕ СИСТЕМЫ, ИЗВЛЕКИТЕ КОНТЕЙНЕР И ОТПРАВЬТЕ ЗАПРОС В ПОДДЕРЖКУ"
 		error_type = "bad"
 		if(!hacked)
 			return
 
 	if(!loaded_magazine)
-		error_message = "NO MAGAZINE INSERTED"
+		error_message = "МАГАЗИН НЕ ВСТАВЛЕН"
 		error_type = ""
 		return
 
 	if(loaded_magazine.stored_ammo.len >= loaded_magazine.max_ammo)
-		error_message = "MAGAZINE IS FULL"
+		error_message = "МАГАЗИН ЗАПОЛНЕН"
 		error_type = "good"
 		return
 
@@ -389,7 +388,7 @@
 		efficient_materials[material] = required_materials[material] * creation_efficiency
 
 	if(!materials.has_materials(efficient_materials))
-		error_message = "INSUFFICIENT MATERIALS"
+		error_message = "НЕДОСТАТОЧНО МАТЕРИАЛОВ"
 		error_type = "bad"
 		ammo_fill_finish(FALSE)
 		qdel(new_casing)
@@ -397,7 +396,7 @@
 
 	if(new_casing.type in possible_ammo_types)
 		if(!loaded_magazine.give_round(new_casing))
-			error_message = "AMMUNITION MISMATCH"
+			error_message = "НЕСООТВЕТСТВИЕ БОЕПРИПАСОВ"
 			error_type = "bad"
 			ammo_fill_finish(FALSE)
 			qdel(new_casing)
@@ -415,7 +414,7 @@
 
 	if(loaded_magazine.stored_ammo.len >= loaded_magazine.max_ammo)
 		ammo_fill_finish()
-		error_message = "CONTAINER IS FULL"
+		error_message = "КОНТЕЙНЕР ЗАПОЛНЕН"
 		error_type = "good"
 		return
 
@@ -441,10 +440,10 @@
 	if(!loaded_datadisk)
 		return FALSE
 	if(loaded_datadisk.type in loaded_datadisks)
-		disk_error = "ERROR: DISK DATA ALREADY IN SYSTEM MEMORY"
+		disk_error = "ОШИБКА: ДАННЫЕ ДИСКА УЖЕ ЕСТЬ В ПАМЯТИ СИСТЕМЫ"
 		return FALSE
 
-	disk_error = "DISK LOADED SUCCESSFULLY"
+	disk_error = "ДИСК УСПЕШНО ЗАГРУЖЕН"
 	disk_error_type = "good"
 	loaded_datadisk.on_bench_install(src)
 	loaded_datadisks += loaded_datadisk.type
@@ -532,10 +531,10 @@
 		var/obj/item/stack/S = O
 		var/datum/component/material_container/materials = GetComponent(/datum/component/material_container)
 		if(!materials)
-			to_chat(user, span_warning("No material storage component!"))
+			to_chat(user, span_warning("Отсутствует хранилище материалов!"))
 			return TRUE
 		if(!S.custom_materials || !length(S.custom_materials))
-			to_chat(user, span_warning("This stack has no defined materials!"))
+			to_chat(user, span_warning("У этой стопки нет заданных материалов!"))
 			return TRUE
 		var/list/mats_to_add = list()
 		var/total_to_add = 0
@@ -544,13 +543,13 @@
 			mats_to_add[mat_type] = total_amount
 			total_to_add += total_amount
 		if(materials.total_amount + total_to_add > materials.max_amount)
-			to_chat(user, span_warning("Not enough space in [src]!"))
+			to_chat(user, span_warning("В [src] недостаточно места!"))
 			return TRUE
 		for(var/mat_type in mats_to_add)
 			materials.materials[mat_type] += mats_to_add[mat_type]
 			materials.total_amount += mats_to_add[mat_type]
 		qdel(S)
-		to_chat(user, span_notice("You insert [O] into [src]."))
+		to_chat(user, span_notice("Вы помещаете [O] в [src]."))
 		SStgui.update_uis(src)
 		return TRUE
 
@@ -558,7 +557,7 @@
 		return TRUE
 
 	if(O.force > 0)
-		user.visible_message(span_danger("[user] hits [src] with [O]!"), span_danger("You hit [src] with [O]!"))
+		user.visible_message(span_danger("[user] бьёт [src] с помощью [O]!"), span_danger("Вы бьёте [src] с помощью [O]!"))
 		take_damage(O.force, BRUTE, MELEE, 1)
 		return TRUE
 
@@ -573,7 +572,7 @@
 		if(!user.transferItemToLoc(O, src))
 			return FALSE
 		if(loaded_magazine)
-			to_chat(user, span_notice("You quickly swap [loaded_magazine] for [O]."))
+			to_chat(user, span_notice("Вы быстро меняете [loaded_magazine] на [O]."))
 			loaded_magazine.forceMove(drop_location())
 			user.put_in_hands(loaded_magazine)
 			loaded_magazine = null
@@ -584,7 +583,7 @@
 				deltimer(timer_id)
 				timer_id = null
 		loaded_magazine = O
-		to_chat(user, span_notice("You insert [O] to into [src]'s reciprocal."))
+		to_chat(user, span_notice("Вы вставляете [O] в приёмник [src]."))
 		flick("h_lathe_load", src)
 		update_appearance()
 		update_ammotypes()
@@ -594,7 +593,7 @@
 		if(!user.transferItemToLoc(O, src))
 			return FALSE
 		loaded_datadisk = O
-		to_chat(user, span_notice("You insert [O] to into [src]'s floppydisk port."))
+		to_chat(user, span_notice("Вы вставляете [O] в дисковод [src]."))
 		flick("h_lathe_load", src)
 		update_appearance()
 		playsound(loc, 'sound/machines/terminal_insert_disc.ogg', 35, 1)
@@ -603,19 +602,19 @@
 
 /obj/machinery/ammo_workbench/proc/is_insertion_ready(mob/user, obj/item/O)
 	if(panel_open)
-		to_chat(user, span_warning("You can't load [src] while it's opened!"))
+		to_chat(user, span_warning("Нельзя загружать [src], пока открыта панель!"))
 		return FALSE
 	if(disabled)
-		to_chat(user, span_warning("The insertion belts of [src] won't engage!"))
+		to_chat(user, span_warning("Загрузочные ленты [src] не включаются!"))
 		return FALSE
 	if(machine_stat & BROKEN)
-		to_chat(user, span_warning("[src] is broken."))
+		to_chat(user, span_warning("[src] в нерабочем состоянии."))
 		return FALSE
 	if(machine_stat & NOPOWER)
-		to_chat(user, span_warning("[src] has no power."))
+		to_chat(user, span_warning("[src] не получает питания."))
 		return FALSE
 	if(istype(O, /obj/item/disk/ammo_workbench) && loaded_datadisk)
-		to_chat(user, span_warning("[src] already has a disk inserted."))
+		to_chat(user, span_warning("В [src] уже вставлен диск."))
 		return FALSE
 	return TRUE
 
@@ -658,8 +657,8 @@
 /datum/wires/ammo_workbench/get_status()
 	var/obj/machinery/ammo_workbench/A = holder
 	var/list/status = list()
-	status += "The red light is [A.disabled ? "on" : "off"]."
-	status += "The blue light is [A.hacked ? "on" : "off"]."
+	status += "Красная лампочка [A.disabled ? "горит" : "не горит"]."
+	status += "Синяя лампочка [A.hacked ? "горит" : "не горит"]."
 	return status
 
 /datum/wires/ammo_workbench/on_pulse(wire)
@@ -692,7 +691,7 @@
 
 /obj/item/disk/ammo_workbench
 	name = "munitions blueprint datadisk"
-	desc = "You shouldn't be seeing this!"
+	desc = "Вы не должны этого видеть!"
 
 /// For doing things when installed/downloaded onto an ammo bench.
 /// Really only used for setting variables, but if someone expands the system to have disks per ammo type, I guess this could be more useful.
@@ -701,7 +700,7 @@
 
 /obj/item/disk/ammo_workbench/advanced
 	name = "advanced munitions datadisk"
-	desc = "An datadisk filled with advanced munition fabrication data for the ammunition workbench, including lethal ammotypes if not previously enabled. No parties are liable for any incidents that occur if safeties were circumvented beforehand."
+	desc = "Дата-диск с данными о производстве продвинутых боеприпасов для верстака боеприпасов, включая смертоносные типы, если они ещё не были разблокированы. Никто не несёт ответственности за любые происшествия, если защита была обойдена ранее."
 
 /obj/item/disk/ammo_workbench/advanced/on_bench_install(obj/machinery/ammo_workbench/ammobench)
 	ammobench.allowed_harmful = TRUE

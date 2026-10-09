@@ -45,10 +45,8 @@
 		diag_hud.remove_from_hud(src)
 	return ..()
 
-/obj/machinery/launchpad/examine(mob/user)
-	. = ..()
-	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>The status display reads: Maximum range: <b>[range]</b> units.</span>"
+/obj/machinery/launchpad/examine_display_content()
+	. += "– Максимальная дальность: <b>[range]</b> метров.</span>"
 
 /obj/machinery/launchpad/attackby(obj/item/I, mob/user, params)
 	if(stationary)

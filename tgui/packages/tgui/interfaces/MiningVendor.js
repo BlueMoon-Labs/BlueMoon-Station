@@ -7,7 +7,7 @@ import { Window } from '../layouts';
 
 export const MiningVendor = (props) => {
   const { act, data } = useBackend();
-  const [selectedCategory, setCategory] = useState('Mining Gear');
+  const [selectedCategory, setCategory] = useState('Общее снаряжение');
 
   const allProducts = data?.product_records || [];
   const dataCategories = data?.categories || [];
@@ -29,28 +29,28 @@ export const MiningVendor = (props) => {
       width={620}
       height={550}>
       <Window.Content scrollable>
-        <Section title="User">
+        <Section title="Пользователь">
           {data.user && (
             <Box>
-              Welcome, <b>{data.user.name || "Unknown"}</b>,
+              Добро пожаловать, <b>{data.user.name || "Неизвестный"}</b>,
               {' '}
-              <b>{data.user.job || "Unemployed"}</b>!
+              <b>{data.user.job || "БЕЗ РАБОТЫ"}</b>!
               <br />
-              Your balance is <b>{data.user.points} mining points</b>.
+              Ваш баланс: <b>{data.user.points} шахтёрских очков</b>.
               <br />
               <Box color="good">
-                Current discount is: <b>{data.discount * 100}%</b>
-                {data.discount === 0 && ' What a shame...'}
+                Текущая скидка: <b>{data.discount * 100}%</b>
+                {data.discount === 0 && ' Какая жалость...'}
               </Box>
             </Box>
           ) || (
             <Box color="light-gray">
-              No registered ID card!<br />
-              Please contact your local HoP!
+              Не обнаружено зарегистрированной ID-карты!<br />
+              Пожалуйста, обратитесь к местному Главе Персонала!
             </Box>
           )}
         </Section>
-        <Section title="Equipment">
+        <Section title="Ассортимент">
             <Flex>
               {/* Левые вкладки, содержащие категории */}
               <Flex.Item
@@ -102,7 +102,7 @@ export const MiningVendor = (props) => {
                           onClick={() => act('purchase', {
                             ref: product.ref,
                           })} >
-                          {product.price} points
+                          {product.price} очков
                         </Button>
                       </Table.Cell>
                     </Table.Row>

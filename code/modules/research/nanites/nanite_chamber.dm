@@ -1,6 +1,6 @@
 /obj/machinery/nanite_chamber
 	name = "nanite chamber"
-	desc = "A device that can scan, reprogram, and inject nanites."
+	desc = "Устройство сканирования, репрограммирования и инъекции нанитов."
 	circuit = /obj/item/circuitboard/machine/nanite_chamber
 	icon = 'icons/obj/machines/nanite_chamber.dmi'
 	icon_state = "nanite_chamber"
@@ -29,10 +29,8 @@
 	for(var/obj/item/stock_parts/scanning_module/P in component_parts)
 		scan_level += P.rating
 
-/obj/machinery/nanite_chamber/examine(mob/user)
-	. = ..()
-	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>The status display reads: Scanning module has been upgraded to level <b>[scan_level]</b>.</span>"
+/obj/machinery/nanite_chamber/examine_display_content(mob/user)
+	. += "– Сканирующий модуль был улучшен до уровня <b>[scan_level]</b>."
 
 /obj/machinery/nanite_chamber/proc/set_busy(status, message, working_icon)
 	busy = status
@@ -62,11 +60,11 @@
 	locked = TRUE
 
 	//TODO OMINOUS MACHINE SOUNDS
-	set_busy(TRUE, "Initializing injection protocol...", "[initial(icon_state)]_raising")
-	addtimer(CALLBACK(src, PROC_REF(set_busy), TRUE, "Analyzing host bio-structure...", "[initial(icon_state)]_active"),20)
-	addtimer(CALLBACK(src, PROC_REF(set_busy), TRUE, "Priming nanites...", "[initial(icon_state)]_active"),40)
-	addtimer(CALLBACK(src, PROC_REF(set_busy), TRUE, "Injecting...", "[initial(icon_state)]_active"),70)
-	addtimer(CALLBACK(src, PROC_REF(set_busy), TRUE, "Activating nanites...", "[initial(icon_state)]_falling"),110)
+	set_busy(TRUE, "Инициализация протокола инъекции...", "[initial(icon_state)]_raising")
+	addtimer(CALLBACK(src, PROC_REF(set_busy), TRUE, "Анализ биоструктуры носителя...", "[initial(icon_state)]_active"),20)
+	addtimer(CALLBACK(src, PROC_REF(set_busy), TRUE, "Взвод нанитов...", "[initial(icon_state)]_active"),40)
+	addtimer(CALLBACK(src, PROC_REF(set_busy), TRUE, "Инъекция...", "[initial(icon_state)]_active"),70)
+	addtimer(CALLBACK(src, PROC_REF(set_busy), TRUE, "Активация нанитов...", "[initial(icon_state)]_falling"),110)
 	addtimer(CALLBACK(src, PROC_REF(complete_injection), locked_state),130)
 
 /obj/machinery/nanite_chamber/proc/complete_injection(locked_state)
@@ -89,11 +87,11 @@
 	locked = TRUE
 
 	//TODO OMINOUS MACHINE SOUNDS
-	set_busy(TRUE, "Initializing cleanup protocol...", "[initial(icon_state)]_raising")
-	addtimer(CALLBACK(src, PROC_REF(set_busy), TRUE, "Analyzing host bio-structure...", "[initial(icon_state)]_active"),20)
-	addtimer(CALLBACK(src, PROC_REF(set_busy), TRUE, "Pinging nanites...", "[initial(icon_state)]_active"),40)
-	addtimer(CALLBACK(src, PROC_REF(set_busy), TRUE, "Initiating graceful self-destruct sequence...", "[initial(icon_state)]_active"),70)
-	addtimer(CALLBACK(src, PROC_REF(set_busy), TRUE, "Removing debris...", "[initial(icon_state)]_falling"),110)
+	set_busy(TRUE, "Инициализация протокола очистки...", "[initial(icon_state)]_raising")
+	addtimer(CALLBACK(src, PROC_REF(set_busy), TRUE, "Анализ биоструктуры носителя...", "[initial(icon_state)]_active"),20)
+	addtimer(CALLBACK(src, PROC_REF(set_busy), TRUE, "Уведомление нанитов...", "[initial(icon_state)]_active"),40)
+	addtimer(CALLBACK(src, PROC_REF(set_busy), TRUE, "Иниациация глубокого алгоритма самоуничтожения...", "[initial(icon_state)]_active"),70)
+	addtimer(CALLBACK(src, PROC_REF(set_busy), TRUE, "Зачистка остатков нанитов...", "[initial(icon_state)]_falling"),110)
 	addtimer(CALLBACK(src, PROC_REF(complete_removal), locked_state),130)
 
 /obj/machinery/nanite_chamber/proc/complete_removal(locked_state)
@@ -137,7 +135,7 @@
 
 /obj/machinery/nanite_chamber/proc/toggle_open(mob/user)
 	if(panel_open)
-		to_chat(user, "<span class='notice'>Close the maintenance panel first.</span>")
+		to_chat(user, span_notice("Для начала закройте люк техобслуживания."))
 		return
 
 	if(state_open)
@@ -145,7 +143,7 @@
 		return
 
 	else if(locked)
-		to_chat(user, "<span class='notice'>The bolts are locked down, securing the door shut.</span>")
+		to_chat(user, span_notice("Болты опускаются, надёжно закрывая створки."))
 		return
 
 	open_machine()
@@ -156,18 +154,18 @@
 		return
 	if(busy)
 		return
-	user.visible_message("<span class='notice'>You see [user] kicking against the door of [src]!</span>", \
-		"<span class='notice'>You lean on the back of [src] and start pushing the door open... (this will take about [DisplayTimeText(breakout_time)].)</span>", \
-		"<span class='hear'>You hear a metallic creaking from [src].</span>")
+	user.visible_message(span_notice("Вы видите как [user] пинает створки внутри [src]!"), \
+		span_notice("Вы отклонились к задней стенке [src] и начинаете продавливать себе путь наружу... (это займёт примерно [DisplayTimeText(breakout_time)].)"), \
+		span_hear("Вы слышите металлический лязг, исходящий от [src]."))
 	if(INTERACTING_WITH(user, src))
-		to_chat(user, span_warning("You're already interacting with [src]!"))
+		to_chat(user, span_warning("Вы уже взаимодействуете с [src]!"))
 		return
 	if(do_after(user,(breakout_time), target = src))
 		if(!user || user.stat != CONSCIOUS || user.loc != src || state_open || !locked || busy)
 			return
 		locked = FALSE
-		user.visible_message("<span class='warning'>[user] successfully broke out of [src]!</span>", \
-			"<span class='notice'>You successfully break out of [src]!</span>")
+		user.visible_message(span_warning("[user] успешно выбирается из [src]!"), \
+			span_notice("Вы успешно выбираетесь из [src]!</span>"))
 		open_machine()
 
 /obj/machinery/nanite_chamber/close_machine(mob/living/carbon/user)
@@ -188,7 +186,7 @@
 	if(user.stat || locked)
 		if(message_cooldown <= world.time)
 			message_cooldown = world.time + 50
-			to_chat(user, "<span class='warning'>[src]'s door won't budge!</span>")
+			to_chat(user, span_warning("Створки [src] не поддаются!"))
 		return
 	open_machine()
 

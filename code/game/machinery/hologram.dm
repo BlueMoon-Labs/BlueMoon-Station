@@ -29,7 +29,7 @@ Possible to do for anyone motivated enough:
 
 /obj/machinery/holopad
 	name = "holopad"
-	desc = "It's a floor-mounted device for projecting holographic images."
+	desc = "Это напольное устройство для проецирования голографических изображений."
 	icon_state = "holopad0"
 	base_icon_state = "holopad"
 	layer = LOW_OBJ_LAYER
@@ -95,7 +95,7 @@ Possible to do for anyone motivated enough:
 
 /obj/machinery/holopad/secure
 	name = "secure holopad"
-	desc = "It's a floor-mounted device for projecting holographic images. This one will refuse to auto-connect incoming calls."
+	desc = "Это напольное устройство для проецирования голографических изображений. Оно отклонит автоподключение входящих вызовов."
 	secure = TRUE
 
 /obj/machinery/holopad/secure/Initialize(mapload)
@@ -207,9 +207,11 @@ Possible to do for anyone motivated enough:
 /obj/machinery/holopad/examine(mob/user)
 	. = ..()
 	if(isAI(user))
-		. += span_notice("The status display reads: Current projection range: <b>[holo_range]</b> units. Use :h to speak through the projection. Right-click to project or cancel a projection. Alt-click to hangup all active and incomming calls. Ctrl-click to end projection without jumping to your last location.")
-	else if(in_range(user, src) || isobserver(user))
-		. += span_notice("The status display reads: Current projection range: <b>[holo_range]</b> units.")
+		. += span_notice("– Максимальная дальность проекции: <b>[holo_range]</b> метров. Используйте :h для общения через проекцию. Кликните правой кнопкой мыши для начала проекции или её отмены. \
+		Alt-клик, чтобы повесить все входящие вызовы. Ctrl-клик, чтобы закончить проецирование без прыжка в вашу последнюю локацию.")
+
+/obj/machinery/holopad/examine_display_content(mob/user)
+	. += "– Максимальная дальность проекции: <b>[holo_range]</b> метров."
 
 /obj/machinery/holopad/attackby(obj/item/P, mob/user, params)
 	if(default_deconstruction_screwdriver(user, "holopad_open", "holopad0", P))
@@ -226,11 +228,11 @@ Possible to do for anyone motivated enough:
 
 	if(istype(P,/obj/item/disk/holodisk))
 		if(disk)
-			to_chat(user,span_warning("There's already a disk inside [src]!"))
+			to_chat(user,span_warning("Уже есть диск внутри [src]!"))
 			return
 		if (!user.transferItemToLoc(P,src))
 			return
-		to_chat(user,span_notice("You insert [P] into [src]."))
+		to_chat(user,span_notice("Вы вставили [P] внутрь [src]."))
 		disk = P
 		return
 
@@ -290,10 +292,10 @@ Possible to do for anyone motivated enough:
 				for(var/mob/living/silicon/ai/AI in GLOB.silicon_mobs)
 					if(!AI.client)
 						continue
-					to_chat(AI, span_info("Your presence is requested at <a href='?src=[REF(AI)];jumptoholopad=[REF(src)]'>\the [area]</a>.</span>")) // <a href='?src=[REF(AI)];project_to_holopad=[REF(src)]'>Project Hologram?</a>"))
+					to_chat(AI, span_info("Ваше присутствие было запрошено в: <a href='?src=[REF(AI)];jumptoholopad=[REF(src)]'>\the [area]</a>.</span>")) // <a href='?src=[REF(AI)];project_to_holopad=[REF(src)]'>Project Hologram?</a>"))
 				return TRUE
 			else
-				to_chat(usr, span_info("A request for AI presence was already sent recently."))
+				to_chat(usr, span_info("Запрос на присутствие ИИ был уже послан."))
 				return
 		if("holocall")
 			if(outgoing_call)
@@ -305,7 +307,7 @@ Possible to do for anyone motivated enough:
 					if(A)
 						LAZYADD(callnames[A], I)
 				callnames -= get_area(src)
-				var/result = tgui_input_list(usr, "Choose an area to call", "Holocall", sortNames(callnames))
+				var/result = tgui_input_list(usr, "Вызовите зону звонка", "Голозвонок", sortNames(callnames))
 				if(QDELETED(usr) || !result || outgoing_call)
 					return
 				if(usr.loc == loc)
@@ -315,7 +317,7 @@ Possible to do for anyone motivated enough:
 					calling = TRUE
 					return TRUE
 			else
-				to_chat(usr, span_warning("You must stand on the holopad to make a call!"))
+				to_chat(usr, span_warning("Вы должны стоять на голопаде для вызова!"))
 		if("connectcall")
 			var/datum/holocall/call_to_connect = locate(params["holopad"]) in holo_calls
 			if(!QDELETED(call_to_connect))
@@ -454,7 +456,7 @@ Possible to do for anyone motivated enough:
 
 	if(is_operational())//If the projector has power
 		if(AI && istype(AI.current, /obj/machinery/holopad))
-			to_chat(user, "[span_danger("ERROR:")] \black Image feed in progress.")
+			to_chat(user, "[span_danger("ОШИБКА:")] передаётся чёрное изображение.")
 			return
 
 		var/obj/effect/overlay/holo_pad_hologram/Hologram = new(loc)//Spawn a blank effect at the location.
@@ -478,11 +480,11 @@ Possible to do for anyone motivated enough:
 		move_hologram()
 
 		set_holo(user, Hologram)
-		visible_message(span_notice("A holographic image of [user] flickers to life before your eyes!"))
+		visible_message(span_notice("[user] в форме голограммы приходит в движение перед вашими глазами!"))
 
 		return Hologram
 	else
-		to_chat(user, "[span_danger("ERROR:")] Unable to project hologram.")
+		to_chat(user, "[span_danger("ОШИБКА:")] невозможно создать проекцию голограммы.")
 
 /*This is the proc for special two-way communication between AI and holopad/people talking near holopad.
 For the other part of the code, check silicon say.dm. Particularly robot talk.*/
@@ -642,7 +644,7 @@ For the other part of the code, check silicon say.dm. Particularly robot talk.*/
 	Hologram.set_anchored(TRUE)//So space wind cannot drag it.
 	Hologram.name = "[record.caller_name] (Hologram)"//If someone decides to right click.
 	Hologram.set_light(2) //hologram lighting
-	visible_message(span_notice("A holographic image of [record.caller_name] flickers to life before your eyes!"))
+	visible_message(span_notice("[record.caller_name] в форме голограммы приходит в движение перед вашими глазами!"))
 	return Hologram
 
 /obj/machinery/holopad/proc/replay_start()
@@ -726,7 +728,7 @@ For the other part of the code, check silicon say.dm. Particularly robot talk.*/
 			replay_holo.cut_overlays()
 			replay_holo.add_overlay(H.build_image())
 		if(HOLORECORD_RENAME)
-			replay_holo.name = entry[2] + " (Hologram)"
+			replay_holo.name = entry[2] + " (Голограмма)"
 	.(entry_number+1)
 
 /obj/machinery/holopad/proc/record_stop()

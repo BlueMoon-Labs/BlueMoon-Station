@@ -72,14 +72,15 @@
 
 /obj/machinery/self_actualization_device/examine(mob/user)
 	. = ..()
-	. += span_notice("Статус-дисплей сообщает: \n\
-					- Время процедуры: [DisplayTimeText(processing_time)]")
+	. += span_notice("Alt-Click для <b>включения</b> машины с пациентом внутри.")
+
+/obj/machinery/self_actualization_device/examine_display_content(mob/user)
+	. += span_notice("– Время процедуры: [DisplayTimeText(processing_time)]")
 	var/static/init_processing_time
 	if(isnull(init_processing_time))
 		init_processing_time = initial(processing_time)
 	if(init_processing_time > processing_time)
-		. += span_notice("- Машина работает на [span_nicegreen("[100-(processing_time/init_processing_time*100)]%")] быстрее.")
-	. += span_notice("Alt-Click для <b>включения</b> машины с пациентом внутри.")
+		. += span_notice("– Машина работает на [span_nicegreen("[100-(processing_time/init_processing_time*100)]%")] быстрее.")
 
 /obj/machinery/self_actualization_device/open_machine(mob/user)
 	playsound(src, 'sound/machines/click.ogg', 50)

@@ -1,6 +1,6 @@
 /obj/machinery/recharge_station
 	name = "recharging station"
-	desc = "This device recharges energy dependent lifeforms, like cyborgs, ethereals and MODsuit users."
+	desc = "Устройство перезарядки энергии для зависимых форм жизни, вроде киборгов, этериалов, и пользователей MOD-устройств."
 	icon = 'icons/obj/objects.dmi'
 	icon_state = "borgcharger0"
 	density = FALSE
@@ -55,12 +55,10 @@
 		else
 			qdel(GetComponent(/datum/component/radioactive))
 
-/obj/machinery/recharge_station/examine(mob/user)
-	. = ..()
-	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>The status display reads: Recharging <b>[recharge_speed]J</b> per cycle.</span>"
-		if(repairs)
-			to_chat(user, "<span class='notice'>[src] has been upgraded to support automatic repairs.<span>")
+/obj/machinery/recharge_station/examine_display_content()
+	. += "– Заряжается <b>[recharge_speed]J</b> заряда за цикл."
+	if(repairs)
+		. += "[src] имеет улучшения, поддеривающие авторемонт."
 
 /obj/machinery/recharge_station/process()
 	if(!is_operational())

@@ -16,23 +16,23 @@ export const OreRedemptionMachine = (props) => {
   } = data;
   return (
     <Window
-      title="Ore Redemption Machine"
+      title="Рудоплавильная печь"
       width={440}
-      height={550}>
+      height={625}>
       <Window.Content overflow="auto">
         <Section>
           <BlockQuote mb={1}>
-            This machine only accepts ore.<br />
-            Gibtonite and Slag are not accepted.
+            Машина принимает только руду.<br />
+            Гибтонит и шлак не принимаются.
           </BlockQuote>
           <Box>
             <Box inline color="label" mr={1}>
-              Unclaimed points:
+              Незачисленные очки:
             </Box>
             {unclaimedPoints}
             <Button
               ml={2}
-              content="Claim"
+              content="Зачислить"
               disabled={unclaimedPoints === 0}
               onClick={() => act('Claim')} />
           </Box>
@@ -43,7 +43,7 @@ export const OreRedemptionMachine = (props) => {
               <Box mb={1}>
                 <Button
                   icon="eject"
-                  content="Eject design disk"
+                  content="Извлечь диск"
                   onClick={() => act('diskEject')} />
               </Box>
               <Table>
@@ -55,7 +55,7 @@ export const OreRedemptionMachine = (props) => {
                     <Table.Cell collapsing>
                       <Button
                         disabled={!design.canupload}
-                        content="Upload"
+                        content="Загрузить"
                         onClick={() => act('diskUpload', {
                           design: design.index,
                         })} />
@@ -67,11 +67,11 @@ export const OreRedemptionMachine = (props) => {
           ) || (
             <Button
               icon="save"
-              content="Insert design disk"
+              content="Вставить диск"
               onClick={() => act('diskInsert')} />
           )}
         </Section>
-        <Section title="Materials">
+        <Section title="Материалы и сырьё">
           <Table>
             {materials.map(material => (
               <MaterialRow
@@ -84,7 +84,7 @@ export const OreRedemptionMachine = (props) => {
             ))}
           </Table>
         </Section>
-        <Section title="Alloys">
+        <Section title="Сплавы">
           <Table>
             {alloys.map(material => (
               <MaterialRow
@@ -119,12 +119,12 @@ const MaterialRow = (props) => {
       </Table.Cell>
       <Table.Cell collapsing textAlign="right">
         <Box mr={2} color="label" inline>
-          {material.value && material.value + ' cr'}
+          {material.value && material.value + ' очков'}
         </Box>
       </Table.Cell>
       <Table.Cell collapsing textAlign="right">
         <Box mr={2} color="label" inline>
-          {amountAvailable} sheets
+          {amountAvailable} листов
         </Box>
       </Table.Cell>
       <Table.Cell collapsing>
@@ -138,7 +138,7 @@ const MaterialRow = (props) => {
           onChange={(e, value) => setAmount(value)} />
         <Button
           disabled={amountAvailable < 1}
-          content="Release"
+          content="Извлечь"
           onClick={() => onRelease(amount)} />
       </Table.Cell>
     </Table.Row>

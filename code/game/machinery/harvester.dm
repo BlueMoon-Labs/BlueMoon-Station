@@ -206,5 +206,6 @@
 		. += "<span class='notice'>[src] must be closed before harvesting.</span>"
 	else if(!harvesting)
 		. += "<span class='notice'>Alt-click [src] to start harvesting.</span>"
-	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>The status display reads: Harvest speed at <b>[interval*0.1]</b> seconds per organ.<span>"
+
+/obj/machinery/harvester/examine_display_content()
+	. += "– Скорость сбора: <b>[interval*0.1]</b> сек. на орган.<span>"
