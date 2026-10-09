@@ -625,7 +625,7 @@
 /// После хоровода ноги не поддаются следующему ещё немного.
 /datum/status_effect/heretic_dance_horovod_rest
 	id = "heretic_dance_horovod_rest"
-	duration = 20 SECONDS
+	duration = HERETIC_DANCE_HOROVOD_REST
 	alert_type = null
 	status_type = STATUS_EFFECT_REFRESH
 

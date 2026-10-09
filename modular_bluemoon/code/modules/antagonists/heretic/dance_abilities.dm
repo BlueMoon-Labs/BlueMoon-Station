@@ -344,6 +344,12 @@
 		new /obj/effect/temp_visual/heretic_dance/horovod(get_turf(user), user, time)
 	return count > 0
 
+/datum/eldritch_knowledge/base_dance/proc/horovod_failure_reason(mob/living/user, range)
+	for(var/mob/living/carbon/victim in range(range, user))
+		if(victim != user && victim.has_status_effect(/datum/status_effect/heretic_dance_horovod_rest) && heretic_edge_line_clear(user, victim))
+			return "Прошлый хоровод отпустил [victim] меньше [DisplayTimeText(HERETIC_DANCE_HOROVOD_REST)] назад: новый пока не возьмёт."
+	return "Рядом нет никого, кого хоровод мог бы подхватить: лежачие, схваченные и глухие не пляшут."
+
 /datum/eldritch_knowledge/base_dance/proc/toll_bell(mob/living/user, steps = 1)
 	new /obj/effect/temp_visual/heretic_dance/bell(get_turf(user))
 	playsound(user, HERETIC_DANCE_BELL_SOUND, 70, TRUE)
@@ -363,7 +369,7 @@
 		dance_failure = "Колоколу нужно [HERETIC_DANCE_BELL_COST] Такта, сейчас [combat_resource]."
 		return FALSE
 	if(!start_horovod(user, HERETIC_DANCE_HOROVOD_TIME, INFINITY, HERETIC_DANCE_HOROVOD_RANGE))
-		dance_failure = "Рядом нет никого, кого хоровод мог бы подхватить: лежачие, схваченные и глухие не пляшут."
+		dance_failure = horovod_failure_reason(user, HERETIC_DANCE_HOROVOD_RANGE)
 		return FALSE
 	spend_combat_resource(HERETIC_DANCE_BELL_COST)
 	update_passive()

@@ -269,6 +269,12 @@
 			return soul.anchor
 	return own_soul_at(target)
 
+/datum/eldritch_knowledge/base_spirit/proc/refresh_soul_buttons()
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(spirit_body)
+	for(var/knowledge_type in list(/datum/eldritch_knowledge/spirit_grasp, /datum/eldritch_knowledge/spell/spirit_hold))
+		var/datum/eldritch_knowledge/spell/knowledge = heretic?.get_knowledge(knowledge_type)
+		knowledge?.granted_spell?.action?.UpdateButtons()
+
 /datum/eldritch_knowledge/base_spirit/combat_resource_state()
 	return "Душ: [length(souls)] из [ascension_active ? HERETIC_SPIRIT_ASCENDED_SOUL_LIMIT : HERETIC_SPIRIT_SOUL_LIMIT]. Оболов на глазах: [length(obols)] из [HERETIC_SPIRIT_OBOL_LIMIT]."
 
@@ -807,6 +813,7 @@
 	if(QDELETED(spirit) || QDELETED(required) || !spirit.can_use(spirit.spirit_body) || !isturf(owner.loc))
 		return FALSE
 	spirit.souls += src
+	spirit.refresh_soul_buttons()
 	RegisterSignal(required, COMSIG_PARENT_QDELETING, PROC_REF(on_knowledge_deleted))
 	RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(on_owner_moved))
 	RegisterSignal(owner, COMSIG_MOB_DEATH, PROC_REF(on_owner_dead))
@@ -957,6 +964,7 @@
 		to_chat(user, span_notice("Жатва не сработала: [reap_end_reason]."))
 	reap_at = 0
 	spirit?.souls.Remove(src)
+	spirit?.refresh_soul_buttons()
 	var/datum/eldritch_knowledge/required = knowledge_ref?.resolve()
 	if(required)
 		UnregisterSignal(required, COMSIG_PARENT_QDELETING)
@@ -1621,6 +1629,11 @@
 		return FALSE
 	return heretic_check(user, heretic_can_affect(user, victim, chargecost = 0), silent, "Цель защищена от магии.", target = victim)
 
+/obj/effect/proc_holder/spell/pointed/heretic_spirit/proc/separated_soul_check(mob/user, silent)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic?.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	return heretic_check(user, length(spirit?.souls), silent, "Сейчас нет отделённой вами души: её отделяют Хватка, Разлучение, Жатва и звон.")
+
 /obj/effect/proc_holder/spell/pointed/heretic_spirit/sever
 	name = "Разлучение"
 	desc = "За один обол нанесите 20 ушибов и 15 выносливости цели в пяти клетках и отделите её душу на 10 секунд."
@@ -1667,6 +1680,9 @@
 	charge_max = 6 SECONDS
 	aim_assist = FALSE
 
+/obj/effect/proc_holder/spell/pointed/heretic_spirit/shift/can_cast(mob/user, skipcharge, silent)
+	return ..() && separated_soul_check(user, silent)
+
 /obj/effect/proc_holder/spell/pointed/heretic_spirit/shift/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_spirit/spirit = heretic?.get_knowledge(/datum/eldritch_knowledge/base_spirit)
@@ -1687,6 +1703,9 @@
 	summary = "Берёт в руку отделённую душу рядом: тело до 12 секунд стоит пустым и готово к обряду."
 	action_icon_state = "spirit_hold"
 	charge_max = HERETIC_SPIRIT_HOLD_COOLDOWN
+
+/obj/effect/proc_holder/spell/pointed/heretic_spirit/hold/can_cast(mob/user, skipcharge, silent)
+	return ..() && separated_soul_check(user, silent)
 
 /obj/effect/proc_holder/spell/pointed/heretic_spirit/hold/can_target(atom/target, mob/user, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)

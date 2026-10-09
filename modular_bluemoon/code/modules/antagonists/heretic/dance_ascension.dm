@@ -7,6 +7,9 @@
 #define DANCE_FALSE_NOTE_COOLDOWN (15 SECONDS)
 #define DANCE_FINALE_WARNING (8 SECONDS)
 #define DANCE_GHOST_LIMIT 6
+#define DANCE_GREAT_HOROVOD_LIMIT 6
+#define DANCE_GREAT_HOROVOD_RANGE 7
+#define DANCE_GREAT_HOROVOD_TIME (6 SECONDS)
 
 GLOBAL_LIST_EMPTY(heretic_dance_boleros)
 GLOBAL_LIST_INIT(heretic_dance_bolero_phrases, list(
@@ -28,9 +31,9 @@ GLOBAL_LIST_INIT(heretic_dance_voices, list('modular_bluemoon/sound/heretic/danc
 		"Малый барабан Болеро слышат все на уровне, всё громче. Пока оно играет, любой стиль идёт в его темпе: 0,7 с, 3 в такте.",
 		"Каждые 30 секунд к вам навсегда добавляется пассивка следующего стиля: Вальс, Танго, Тарантелла, Канкан, Пляска смерти.",
 		"Финал: каждая сильная доля бьёт врагов в 3 клетках на 10 ушибов и 15 выносливости и тянет до 4 из них в хоровод.",
-		"Ступени зовут призрачные пары и бал за иллюминаторы; перед каждым ударом Финала пары стягиваются, а рампа вспыхивает.",
-		"Большой хоровод бесплатно тянет до 6 врагов в 4 клетках, перезарядка 45 секунд. Номера идут без перезарядки.",
-		"Фальшивая нота (светошумовая, клаксон, горн в 7 клетках) сбивает ступень и глушит Болеро на 7 с, не чаще раза в 15 с.",
+		"Пока Болеро звучит, каждая сильная доля сбрасывает с ваших ног болу и путы.",
+		"Большой хоровод бесплатно тянет до 6 врагов на виду в 7 клетках, перезарядка 45 секунд. Номера идут без перезарядки.",
+		"Фальшивая нота (светошумовая, клаксон, горн в 7 клетках) сбивает ступень и глушит Болеро на 7 с: путы тогда держат.",
 	)
 	role = HERETIC_ROLE_ASCENSION
 	gain_text = "Оркестр начал с одного барабана. Когда вступили все инструменты, на станции не осталось никого, кто стоял бы на месте."
@@ -75,7 +78,7 @@ GLOBAL_LIST_INIT(heretic_dance_voices, list('modular_bluemoon/sound/heretic/danc
 	var/datum/eldritch_knowledge/base_dance/dance = dance_knowledge_ref?.resolve()
 	if(!dance?.bolero_on)
 		return
-	examine_list += span_warning("Вокруг гремит Болеро: ступень [dance.bolero_stage] из [DANCE_BOLERO_FINALE_STAGE]. Светошумовая, клаксон или воздушный горн рядом собьют музыку фальшивой нотой.")
+	examine_list += span_warning("Вокруг гремит Болеро: ступень [dance.bolero_stage] из [DANCE_BOLERO_FINALE_STAGE]. Бола на нём не держится, пока светошумовая, клаксон или воздушный горн рядом не собьют музыку фальшивой нотой.")
 
 /datum/eldritch_knowledge/base_dance
 	var/bolero_on = FALSE
@@ -179,6 +182,7 @@ GLOBAL_LIST_INIT(heretic_dance_voices, list('modular_bluemoon/sound/heretic/danc
 		return
 	broadcast_bolero()
 	heretic_dance_hop(dance_body, TRUE)
+	bolero_shake_fetters()
 	if(finale_near)
 		mark_finale_zone(TRUE)
 	if(bolero_stage >= DANCE_BOLERO_FINALE_STAGE)
@@ -206,6 +210,25 @@ GLOBAL_LIST_INIT(heretic_dance_voices, list('modular_bluemoon/sound/heretic/danc
 	if(bolero_stage > 0)
 		var/datum/heretic_dance_style/joined = order[order[bolero_stage]]
 		to_chat(dance_body, span_eldritch("В Болеро вступает [lowertext(joined.name)]: его пассивка теперь с вами."))
+
+/datum/eldritch_knowledge/base_dance/proc/bolero_shake_fetters()
+	var/mob/living/carbon/dancer = dance_body
+	if(!iscarbon(dancer) || !dancer.legcuffed)
+		return FALSE
+	var/obj/item/fetters = dancer.legcuffed
+	var/fetters_name = fetters.name
+	dancer.legcuffed = null
+	fetters.forceMove(dancer.drop_location())
+	fetters.dropped(dancer)
+	if(istype(fetters, /obj/item/restraints/legcuffs))
+		var/obj/item/restraints/legcuffs/legcuffs = fetters
+		legcuffs.on_removed()
+	dancer.remove_status_effect(/datum/status_effect/bola_snared)
+	dancer.update_inv_legcuffed()
+	dancer.update_equipment_speed_mods()
+	dancer.visible_message(span_danger("[dancer] в сильную долю стряхивает с ног [fetters_name] и пляшет дальше!"), span_eldritch("Болеро не даёт стоять на месте: вы стряхиваете [fetters_name]."))
+	log_combat(dancer, dancer, "стряхивает [fetters_name] в Болеро")
+	return TRUE
 
 /// Барабан Болеро слышен всему уровню, чем выше ступень, тем громче.
 /datum/eldritch_knowledge/base_dance/proc/broadcast_bolero()
@@ -321,8 +344,8 @@ GLOBAL_LIST_INIT(heretic_dance_voices, list('modular_bluemoon/sound/heretic/danc
 
 /obj/effect/proc_holder/spell/self/heretic_dance/great_horovod
 	name = "Большой хоровод"
-	desc = "Бесплатно тянет до 6 врагов в 4 клетках в хоровод на 6 секунд. Лежачих, сидящих, пристёгнутых, схваченных, глухих и защищённых от магии хоровод не берёт. Перезарядка 45 секунд."
-	summary = "Бесплатно тянет до 6 врагов в 4 клетках в хоровод на 6 секунд."
+	desc = "Бесплатно тянет до 6 врагов на виду в 7 клетках в хоровод на 6 секунд. Лежачих, сидящих, пристёгнутых, схваченных, глухих, защищённых от магии и отплясавших хоровод последние 20 секунд он не берёт. Перезарядка 45 секунд."
+	summary = "Бесплатно тянет до 6 врагов на виду в 7 клетках в хоровод на 6 секунд."
 	action_icon_state = "dance_bolero"
 	charge_max = 45 SECONDS
 
@@ -332,8 +355,8 @@ GLOBAL_LIST_INIT(heretic_dance_voices, list('modular_bluemoon/sound/heretic/danc
 
 /obj/effect/proc_holder/spell/self/heretic_dance/great_horovod/cast(list/targets, mob/living/user)
 	var/datum/eldritch_knowledge/base_dance/dance = dance_of(user)
-	if(!dance?.start_horovod(user, 6 SECONDS, 6, 4))
-		heretic_revert_cast(user, "Рядом нет никого, кого хоровод мог бы подхватить.")
+	if(!dance?.start_horovod(user, DANCE_GREAT_HOROVOD_TIME, DANCE_GREAT_HOROVOD_LIMIT, DANCE_GREAT_HOROVOD_RANGE))
+		heretic_revert_cast(user, dance?.horovod_failure_reason(user, DANCE_GREAT_HOROVOD_RANGE))
 		return
 	playsound(user, HERETIC_DANCE_BELL_SOUND, 80, TRUE)
 
@@ -346,6 +369,9 @@ GLOBAL_LIST_INIT(heretic_dance_voices, list('modular_bluemoon/sound/heretic/danc
 #undef DANCE_FALSE_NOTE_COOLDOWN
 #undef DANCE_FINALE_WARNING
 #undef DANCE_GHOST_LIMIT
+#undef DANCE_GREAT_HOROVOD_LIMIT
+#undef DANCE_GREAT_HOROVOD_RANGE
+#undef DANCE_GREAT_HOROVOD_TIME
 
 /obj/effect/temp_visual/heretic_dance_finale_edge
 	icon = 'modular_bluemoon/icons/obj/heretic_dance_marks.dmi'

@@ -761,6 +761,44 @@
 	TEST_ASSERT_EQUAL(ghost.alpha, initial(ghost.alpha), "Пары вернулись.")
 	dance.stop_bolero()
 
+/// Под Болеро сильная доля сбрасывает болу с ног, слабая доля и тишина после фальшивой ноты - нет.
+/datum/unit_test/heretic_dance_bolero_fetters/Run()
+	var/datum/antagonist/heretic/heretic = allocate_dance_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	dance.start_bolero()
+	var/obj/item/restraints/legcuffs/bola/bola = allocate(/obj/item/restraints/legcuffs/bola)
+	bola.ensnare(user)
+	TEST_ASSERT_EQUAL(user.legcuffed, bola, "Бола опутала танцора.")
+	dance.bolero_silent_until = world.time + 10 SECONDS
+	dance.bolero_beat(TRUE)
+	TEST_ASSERT_EQUAL(user.legcuffed, bola, "Пока Болеро молчит, бола держит.")
+	dance.bolero_silent_until = 0
+	dance.bolero_beat(FALSE)
+	TEST_ASSERT_EQUAL(user.legcuffed, bola, "Слабая доля болу не сбрасывает.")
+	dance.bolero_beat(TRUE)
+	TEST_ASSERT_NULL(user.legcuffed, "Сильная доля сбросила болу.")
+	TEST_ASSERT_EQUAL(bola.loc, get_turf(user), "Бола лежит под ногами.")
+	TEST_ASSERT_NULL(user.has_status_effect(/datum/status_effect/bola_snared), "Подножка болы снята.")
+	dance.stop_bolero()
+
+/// Большой хоровод не берёт только что отплясавшего и называет это в отказе.
+/datum/unit_test/heretic_dance_great_horovod_rest/Run()
+	var/datum/antagonist/heretic/heretic = allocate_dance_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_dance/dance = heretic.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	dance.start_bolero()
+	var/mob/living/carbon/human/victim = allocate_dance_victim(get_step(get_step(user, EAST), EAST))
+	var/obj/effect/proc_holder/spell/self/heretic_dance/great_horovod/spell = allocate(/obj/effect/proc_holder/spell/self/heretic_dance/great_horovod)
+	victim.apply_status_effect(/datum/status_effect/heretic_dance_horovod_rest)
+	spell.cast(list(user), user)
+	TEST_ASSERT_NULL(victim.has_status_effect(/datum/status_effect/heretic_dance/horovod), "Только что отплясавшего хоровод не берёт.")
+	TEST_ASSERT(findtext(spell.heretic_failure_reason, "Прошлый хоровод"), "Отказ называет недавний хоровод: [spell.heretic_failure_reason]")
+	victim.remove_status_effect(/datum/status_effect/heretic_dance_horovod_rest)
+	spell.cast(list(user), user)
+	TEST_ASSERT_NOTNULL(victim.has_status_effect(/datum/status_effect/heretic_dance/horovod), "Отдохнувшего хоровод берёт.")
+	dance.stop_bolero()
+
 /// Перед ударом Финала пары стягиваются к вознёсшемуся, на ударе разлетаются обратно.
 /datum/unit_test/heretic_dance_finale_breath/Run()
 	var/datum/antagonist/heretic/heretic = allocate_dance_heretic()
