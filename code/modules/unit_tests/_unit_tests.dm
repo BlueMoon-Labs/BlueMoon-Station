@@ -332,6 +332,7 @@
 #include "round_10469_10474_fixes.dm"
 #include "round_10471_runtimes.dm"
 #include "round_10476_fixes.dm"
+#include "round_10483_10486_fixes.dm"
 #include "runechat_sanity.dm"
 #include "runtime_null_guards.dm"
 // #include "say.dm"

@@ -808,11 +808,12 @@
 /proc/power_fail(duration_min, duration_max)
 	for(var/P in GLOB.apcs_list)
 		var/obj/machinery/power/apc/C = P
-		if(C.cell && SSmapping.level_trait(C.z, ZTRAIT_STATION))
+		if(!QDELETED(C) && C.cell && SSmapping.level_trait(C.z, ZTRAIT_STATION))
 			var/area/A = C.area
 			if(GLOB.typecache_powerfailure_safe_areas[A.type])
 				continue
 			C.energy_fail(rand(duration_min,duration_max))
+			CHECK_TICK
 
 /// Finds vent pumps on large atmos networks suitable for vent-spawn antagonists.
 /proc/find_vent_spawns()

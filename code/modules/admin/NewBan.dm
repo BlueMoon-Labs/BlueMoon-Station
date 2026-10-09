@@ -129,6 +129,10 @@ GLOBAL_PROTECT(Banlist)
 
 
 /proc/AddBan(key, computerid, reason, bannedby, temp, minutes, address)
+	if(!GLOB.Banlist)
+		LoadBans()
+		if(!GLOB.Banlist)
+			return FALSE
 
 	var/bantimestamp
 	var/ban_ckey = ckey(key)

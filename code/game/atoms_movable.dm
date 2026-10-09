@@ -860,6 +860,9 @@
 /atom/movable/proc/get_language_holder(get_minds = TRUE)
 	RETURN_TYPE(/datum/language_holder)
 	if(QDELING(src))
+		// Destroy() can still hand its holder on (a bot ejecting its pAI moves the mind languages).
+		if(language_holder)
+			return language_holder
 		CRASH("get_language_holder() called on a QDELing atom, \
 			this will try to re-instantiate the language holder that's about to be deleted, which is bad.")
 

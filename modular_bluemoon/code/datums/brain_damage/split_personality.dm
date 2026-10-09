@@ -1,6 +1,7 @@
 #define OWNER 0
 #define STRANGER 1
 #define TAKE_CONTROL_COOLDOWN 5 MINUTES
+#define GHOST_REPOLL_DELAY (2 MINUTES)
 
 /datum/brain_trauma/severe/split_personality
 	desc = "Мозг пациента разделён на две личности, которые могут передавать друг другу управление телом по желанию."
@@ -20,7 +21,7 @@
 		if(!inactive?.ckey && current_controller == OWNER)
 			got_ghost = FALSE
 			setup_personality_actions()
-	else if(last_attempt + 100 < world.time)
+	else if(last_attempt + GHOST_REPOLL_DELAY < world.time)
 		get_ghost()
 		last_attempt = world.time
 	return ..()
@@ -137,3 +138,4 @@
 #undef OWNER
 #undef STRANGER
 #undef TAKE_CONTROL_COOLDOWN
+#undef GHOST_REPOLL_DELAY
