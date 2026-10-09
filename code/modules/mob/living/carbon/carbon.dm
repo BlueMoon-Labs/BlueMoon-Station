@@ -18,7 +18,10 @@
 	add_movespeed_modifier(/datum/movespeed_modifier/carbon_crawling)
 	register_context()
 	breath_buffer = new
-	breathing_loop = new(src, _direct = TRUE)
+	// _direct = FALSE: звук идёт через playsound() от моба, а не SEND_SOUND'ом напрямую
+	// в его клиент — иначе дышащего в баллоне слышит только он сам. vary/pressure_affected
+	// из /datum/looping_sound/breathing в прямом пути вообще не работают.
+	breathing_loop = new(src, _direct = FALSE)
 
 /mob/living/carbon/Destroy()
 	//This must be done first, so the mob ghosts correctly before DNA etc is nulled

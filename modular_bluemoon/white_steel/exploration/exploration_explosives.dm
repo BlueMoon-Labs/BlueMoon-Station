@@ -56,7 +56,7 @@
 		message_admins("[ADMIN_LOOKUPFLW(user)] planted [name] on [target.name] at [ADMIN_VERBOSEJMP(target)]")
 		log_game("[key_name(user)] planted [name] on [target.name] at [AREACOORD(user)]")
 
-		notify_ghosts("[user] устанавливает [src] на [target]!", source = target, action = NOTIFY_ORBIT, flashwindow = FALSE, header = "Щас бахнет")
+		notify_ghosts("[user] устанавливает [src] на [target]!", source = user, action = NOTIFY_ORBIT, flashwindow = FALSE, header = "Щас бахнет")
 
 		moveToNullspace()	//Yep
 

@@ -30,10 +30,18 @@
 	if(!(cache_index in GLOB.emissive_blocked_layers))
 		return
 	var/images = overlays_standing[cache_index]
-	if(!islist(images))
+	if(!images)
 		return
+	// Большинство слоёв (униформа, голова, обувь...) хранят один mutable_appearance, а не список.
+	// Оборачиваем его, иначе блокеры строились бы только для списка волос и одежда
+	// пропускала бы свечение тела насквозь.
+	if(!islist(images))
+		images = list(images)
 	var/list/blockers
 	for(var/image/im in images)
+		// Эмиссивную копию гасить бессмысленно: она и так на эмиссивном плане.
+		if(im.plane == EMISSIVE_PLANE || im.plane == EMISSIVE_UNBLOCKABLE_PLANE)
+			continue
 		var/blocker = emissive_blocker_copy(im)
 		if(blocker)
 			LAZYADD(blockers, blocker)
