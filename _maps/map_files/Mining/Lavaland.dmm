@@ -578,10 +578,7 @@
 /turf/open/indestructible/boss,
 /area/lavaland/necropolis)
 "ayf" = (
-/obj/structure/statue/boney/ashwalker{
-	anchored = 1;
-	desc = ""ЗарраКринтар,защитникразума" - выгрировано на подножье статуи"
-	},
+/obj/structure/statue/boney/ashwalker,
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/lavaland/surface/outdoors)
 "ayj" = (
