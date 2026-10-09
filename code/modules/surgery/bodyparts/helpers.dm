@@ -35,7 +35,7 @@
 		if(arm && arm.is_disabled() == BODYPART_DISABLED_WOUND)
 			to_chat(src, span_warning("Ваша [arm.ru_name] слишком повреждена, чтобы удержать [I]!"))
 			if(has_pain(arm))
-				emote("agony")
+				emote("realagony")
 			return FALSE
 	return ..()
 

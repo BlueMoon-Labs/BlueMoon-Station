@@ -667,7 +667,7 @@ To add randomization to your emote, copy and paste this line of code:
 	sound = 'modular_splurt/sound/voice/choir.ogg'
 	emote_cooldown = 6 SECONDS
 
-/datum/emote/sound/human/agony
+/datum/emote/sound/human/agony // не использовать как агонию, настоящая агония это realagony, конкретно agony это мемный звук
 	key = "agony"
 	key_third_person = "agonys"
 	message = "издаёт хор агонии!"

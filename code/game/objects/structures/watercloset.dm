@@ -466,7 +466,7 @@
 						H.AdjustUnconscious(20)
 						H.AdjustConfused(40 SECONDS)
 						H.Jitter(30)
-						H.emote("real_agony")
+						H.emote("realagony")
 
 			if(H.wear_suit)
 				washgloves = !(H.wear_suit.flags_inv & HIDEGLOVES)
