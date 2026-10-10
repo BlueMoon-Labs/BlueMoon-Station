@@ -24,6 +24,8 @@
 	var/session_paused = TRUE
 	//Used to stop unwarranted behaviour from happening in cases where the master mind transference is unsupported. Set on Initialize().
 	var/allow_mastermind_transfer = FALSE
+	/// Whether dead observers (ghosts) are allowed to connect to this virtual reality body. Used for minigames like deathmatch.
+	var/allow_ghost_connect = FALSE
 
 /datum/component/virtual_reality/Initialize(yolo = FALSE, _allow_mastermind_transfer = FALSE)
 	var/mob/M = parent
@@ -78,14 +80,19 @@
   */
 /datum/component/virtual_reality/proc/connect(mob/M)
 	var/mob/vr_M = parent
-	if(!M.mind || M.stat == DEAD || !vr_M.mind || vr_M.stat == DEAD)
+	if(!M.mind || (M.stat == DEAD && !allow_ghost_connect) || !vr_M.mind || vr_M.stat == DEAD)
 		return FALSE
 	var/datum/component/virtual_reality/VR = M.GetComponent(/datum/component/virtual_reality)
 	if(VR)
 		VR.level_below = src
 		level_above = VR
 	mastermind = M.mind
-	mastermind.current.audiovisual_redirect = parent
+	// A mobile mind that lost its current - a ghost whose body was destroyed, most
+	// commonly - would otherwise leave current null here, and both the redirect
+	// line below and the session's quit() need a real mob to stand in for it.
+	if(!mastermind.current)
+		mastermind.set_current(M)
+	mastermind.current?.audiovisual_redirect = parent
 	M.transfer_ckey(vr_M, FALSE)
 	RegisterSignal(mastermind, COMSIG_PRE_MIND_TRANSFER, PROC_REF(switch_player))
 	RegisterSignal(M, list(COMSIG_MOB_DEATH, COMSIG_PARENT_QDELETING), PROC_REF(game_over))
@@ -209,7 +216,7 @@
 	var/mob/M = parent
 	if(!session_paused)
 		session_paused = TRUE
-		var/mob/dreamer = override || mastermind.current
+		var/mob/dreamer = override || mastermind?.current
 		if(!dreamer) //This shouldn't happen.
 			stack_trace("virtual reality component quit() called without a mob to transfer the parent ckey to.")
 			to_chat(M, "<span class='warning'>You feel a dreadful sensation, something terrible happened. You try to wake up, but you find yourself unable to...</span>")
@@ -222,7 +229,7 @@
 			if(deathcheck)
 				to_chat(dreamer, "<span class='warning'>You feel everything fading away...</span>")
 				dreamer.death(FALSE)
-		mastermind.current.audiovisual_redirect = null
+		mastermind?.current?.audiovisual_redirect = null
 		if(!cleanup)
 			if(level_above)
 				level_above.level_below = null
