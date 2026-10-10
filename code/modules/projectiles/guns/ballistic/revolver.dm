@@ -710,7 +710,7 @@
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/dies_irae
 	dual_wield_spread = 25
-	fire_delay = 20
+	fire_delay = 15
 	w_class = WEIGHT_CLASS_NORMAL
 	recoil = 5
 	slot_flags = ITEM_SLOT_BELT
