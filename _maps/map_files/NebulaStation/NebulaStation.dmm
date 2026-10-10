@@ -12718,19 +12718,10 @@
 /turf/open/floor/plasteel/dark,
 /area/medical/chemistry)
 "bGC" = (
-/obj/structure/table/reinforced,
-/obj/machinery/door/firedoor/border_only{
-	dir = 1
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 8
 	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
-	},
-/obj/item/clothing/head/cowboyhat,
-/obj/machinery/door/poddoor/shutters/preopen{
-	name = "Clothes Shop Shutters";
-	id = "arrivalclothes"
-	},
-/turf/open/floor/wood/wood_tiled,
+/turf/open/floor/carpet/red,
 /area/service/shop)
 "bGG" = (
 /obj/effect/turf_decal/trimline/red,
@@ -25671,10 +25662,17 @@
 /area/engineering/atmos/project)
 "dkD" = (
 /obj/structure/chair/stool/directional/south{
-	pixel_y = 21
+	pixel_y = 0;
+	pixel_x = 0
 	},
 /obj/structure/mirror/directional/west,
-/obj/machinery/light/small/dim/directional/south,
+/obj/structure/chair/noose{
+	pixel_y = 16
+	},
+/obj/structure/curtain{
+	color = "#A01010";
+	alpha = 255
+	},
 /turf/open/floor/carpet/red,
 /area/service/shop)
 "dkG" = (
@@ -37491,11 +37489,10 @@
 /turf/open/floor/plasteel/dark/textured,
 /area/commons/fitness/recreation)
 "eKI" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 10
 	},
-/obj/machinery/holopad,
-/turf/open/floor/wood/wood_tiled,
+/turf/open/floor/carpet/red,
 /area/service/shop)
 "eKJ" = (
 /obj/effect/turf_decal/siding/wood{
@@ -40364,12 +40361,16 @@
 /turf/open/floor/wood/wood_large,
 /area/maintenance/department/bridge)
 "fdk" = (
-/obj/machinery/vending/clothing,
 /obj/machinery/newscaster{
 	pixel_y = -30
 	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 10
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 5
+	},
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp/green{
+	pixel_x = 1;
+	pixel_y = 5
 	},
 /turf/open/floor/wood/wood_tiled,
 /area/service/shop)
@@ -40945,9 +40946,6 @@
 /area/engineering/atmos/project)
 "fif" = (
 /obj/machinery/firealarm/directional/west,
-/obj/effect/turf_decal/siding/wood{
-	dir = 8
-	},
 /turf/open/floor/wood/wood_tiled,
 /area/service/shop)
 "fik" = (
@@ -44541,14 +44539,9 @@
 /turf/open/floor/plasteel/dark,
 /area/security/checkpoint/customs)
 "fDn" = (
-/obj/effect/turf_decal/siding/wood/corner{
-	dir = 4
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 10
-	},
 /obj/machinery/light_switch/directional/west,
 /obj/machinery/airalarm/directional/south,
+/obj/machinery/vending/clothing,
 /turf/open/floor/wood/wood_tiled,
 /area/service/shop)
 "fDo" = (
@@ -45420,7 +45413,7 @@
 /area/science/mixing/testlab)
 "fIT" = (
 /obj/machinery/door/airlock/multi_tile/glass{
-	name = "Boutique"
+	name = "Infinity Hotel"
 	},
 /obj/machinery/door/firedoor,
 /obj/machinery/door/poddoor/shutters/preopen{
@@ -49334,6 +49327,9 @@
 /obj/effect/turf_decal/bot/yellow/right,
 /obj/effect/turf_decal/trimline/purple,
 /obj/machinery/airalarm/directional/east,
+/obj/structure/reagent_dispensers/spacecleanertank{
+	pixel_y = -30
+	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/service/janitor)
 "ghS" = (
@@ -53136,11 +53132,8 @@
 /turf/open/floor/plasteel/dark/smooth/herringbone,
 /area/ai_monitored/turret_protected/aisat/atmos)
 "gGO" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
-	},
-/obj/effect/turf_decal/siding/wood/corner{
-	dir = 8
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 10
 	},
 /turf/open/floor/wood/wood_tiled,
 /area/service/shop)
@@ -54630,9 +54623,6 @@
 /obj/item/paper_bin{
 	pixel_x = 4;
 	pixel_y = 4
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 6
 	},
 /obj/machinery/door/poddoor/shutters/preopen{
 	name = "Barber Shop Shutters";
@@ -64161,9 +64151,14 @@
 /turf/open/floor/glass,
 /area/service/library/upper)
 "hYI" = (
-/obj/effect/turf_decal/siding/wood,
 /obj/structure/sign/poster/random{
 	pixel_y = -32
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/obj/structure/chair/comfy/beige{
+	dir = 1
 	},
 /turf/open/floor/wood/wood_tiled,
 /area/service/shop)
@@ -65806,9 +65801,6 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
 /turf/open/floor/wood/wood_tiled,
 /area/service/barbershop)
 "iig" = (
@@ -66566,16 +66558,15 @@
 /turf/open/floor/plasteel/dark/textured,
 /area/ai_monitored/security/armory)
 "ina" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
-	},
-/obj/effect/turf_decal/siding/wood,
 /obj/structure/cable/yellow{
 	icon_state = "0-1"
 	},
 /obj/machinery/power/apc/auto_name/south,
 /obj/machinery/camera/autoname{
 	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 5
 	},
 /turf/open/floor/wood/wood_tiled,
 /area/service/shop)
@@ -66719,12 +66710,6 @@
 	},
 /area/hallway/secondary/exit/departure_lounge)
 "inV" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 8
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 4
-	},
 /turf/open/floor/wood/wood_tiled,
 /area/service/shop)
 "ioa" = (
@@ -71975,9 +71960,6 @@
 /turf/open/floor/plasteel/dark/smooth/herringbone,
 /area/service/janitor)
 "iWg" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 4
-	},
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
@@ -73730,13 +73712,13 @@
 /turf/open/floor/wood/wood_large,
 /area/commons/lounge)
 "jgs" = (
-/obj/structure/rack,
-/obj/effect/spawner/lootdrop/costume,
 /obj/machinery/status_display/evac{
 	pixel_y = -32
 	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 6
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp/green{
+	pixel_x = 1;
+	pixel_y = 5
 	},
 /turf/open/floor/wood/wood_tiled,
 /area/service/shop)
@@ -80135,23 +80117,6 @@
 	dir = 8
 	},
 /area/security/brig/entrance)
-"jVB" = (
-/obj/structure/table/reinforced,
-/obj/machinery/door/firedoor/border_only{
-	dir = 1
-	},
-/obj/item/flashlight/lamp{
-	pixel_y = 5
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 9
-	},
-/obj/machinery/door/poddoor/shutters/preopen{
-	name = "Clothes Shop Shutters";
-	id = "arrivalclothes"
-	},
-/turf/open/floor/wood/wood_tiled,
-/area/service/shop)
 "jVF" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark,
 /obj/structure/railing,
@@ -83381,9 +83346,6 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
-	},
 /turf/open/floor/wood/wood_tiled,
 /area/service/barbershop)
 "kpJ" = (
@@ -83897,17 +83859,10 @@
 /turf/open/floor/plasteel/white,
 /area/security/prison/mess)
 "ktr" = (
-/obj/effect/turf_decal/siding/wood,
-/obj/effect/turf_decal/siding/wood/corner{
-	dir = 1
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 9
 	},
-/obj/structure/chair/office/light{
-	dir = 1
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/turf/open/floor/wood/wood_tiled,
+/turf/open/floor/carpet/red,
 /area/service/shop)
 "ktx" = (
 /obj/effect/turf_decal/siding/wood{
@@ -86766,17 +86721,6 @@
 /obj/effect/landmark/start/stowaway,
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/maintenance/department/bridge)
-"kNr" = (
-/obj/structure/rack,
-/obj/effect/spawner/lootdrop/costume,
-/obj/effect/turf_decal/siding/wood/corner{
-	dir = 1
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 4
-	},
-/turf/open/floor/wood/wood_tiled,
-/area/service/shop)
 "kNt" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 9
@@ -89435,21 +89379,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/engineering/atmos)
-"led" = (
-/obj/structure/table/reinforced,
-/obj/structure/desk_bell,
-/obj/machinery/door/firedoor/border_only{
-	dir = 1
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
-	},
-/obj/machinery/door/poddoor/shutters/preopen{
-	name = "Clothes Shop Shutters";
-	id = "arrivalclothes"
-	},
-/turf/open/floor/wood/wood_tiled,
-/area/service/shop)
 "lee" = (
 /obj/effect/turf_decal/tile/blue/half/contrasted{
 	dir = 1
@@ -99168,12 +99097,7 @@
 /turf/open/floor/plasteel/dark/textured,
 /area/security/warden)
 "mqn" = (
-/obj/effect/turf_decal/siding/wood/corner{
-	dir = 8
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 4
-	},
+/obj/item/kirbyplants/random,
 /turf/open/floor/wood/wood_tiled,
 /area/service/shop)
 "mqo" = (
@@ -99857,15 +99781,7 @@
 /turf/open/floor/plasteel/dark/textured,
 /area/hallway/primary/aft)
 "muG" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 4
-	},
-/obj/effect/turf_decal/siding/wood/corner{
-	dir = 1
-	},
-/obj/effect/turf_decal/siding/wood/corner{
-	dir = 8
-	},
+/obj/machinery/vending/autodrobe,
 /turf/open/floor/wood/wood_tiled,
 /area/service/shop)
 "muL" = (
@@ -105327,10 +105243,6 @@
 /obj/structure/sign/poster/official/ue_no{
 	pixel_y = -32
 	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
-	},
-/obj/effect/turf_decal/siding/wood,
 /turf/open/floor/wood/wood_tiled,
 /area/service/shop)
 "ney" = (
@@ -107315,13 +107227,7 @@
 /turf/open/floor/engine/hull/reinforced,
 /area/space/nearstation)
 "nsf" = (
-/obj/structure/curtain{
-	color = "#A01010";
-	alpha = 255
-	},
-/obj/effect/turf_decal/siding/wood/end{
-	dir = 8
-	},
+/obj/effect/landmark/event_spawn,
 /turf/open/floor/wood/wood_tiled,
 /area/service/shop)
 "nsk" = (
@@ -107458,22 +107364,8 @@
 /turf/open/floor/plating/asteroid/airless,
 /area/space/nearstation)
 "nsM" = (
-/obj/structure/table/reinforced,
-/obj/machinery/door/firedoor/border_only{
-	dir = 1
-	},
-/obj/item/paper_bin{
-	pixel_x = 4;
-	pixel_y = 4
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 5
-	},
-/obj/machinery/door/poddoor/shutters/preopen{
-	name = "Clothes Shop Shutters";
-	id = "arrivalclothes"
-	},
-/turf/open/floor/wood/wood_tiled,
+/obj/effect/spawner/structure/window,
+/turf/open/floor/plating,
 /area/service/shop)
 "nsQ" = (
 /obj/structure/railing,
@@ -109021,19 +108913,11 @@
 /turf/open/floor/plasteel/dark/textured,
 /area/security/lockers)
 "nDj" = (
-/obj/effect/turf_decal/siding/wood,
 /obj/structure/sign/basic{
 	icon_state = "clock";
 	name = "wall clock";
 	desc = "It's your run-of-the-mill wall clock. Perfect for staring at instead of working.";
 	pixel_y = 32
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
-	},
-/obj/item/kirbyplants/random,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
 	},
 /turf/open/floor/wood/wood_tiled,
 /area/service/shop)
@@ -110426,8 +110310,12 @@
 /turf/open/floor/plasteel/dark/textured,
 /area/security/execution/transfer)
 "nME" = (
-/obj/effect/turf_decal/siding/wood,
-/obj/machinery/vending/autodrobe,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/structure/chair/comfy/beige{
+	dir = 1
+	},
 /turf/open/floor/wood/wood_tiled,
 /area/service/shop)
 "nMG" = (
@@ -115719,9 +115607,6 @@
 /obj/item/flashlight/lamp{
 	pixel_y = 5
 	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 9
-	},
 /obj/machinery/door/poddoor/shutters/preopen{
 	name = "Barber Shop Shutters";
 	id = "arrivalbarber"
@@ -119470,15 +119355,10 @@
 /obj/structure/hedge{
 	density = 1
 	},
-/obj/effect/turf_decal/siding/wood/corner,
-/obj/effect/turf_decal/siding/wood{
-	dir = 9
-	},
-/obj/machinery/button/door/directional/west{
-	id = "arrivalclothes";
-	name = "Clothes Shop Shutters Control"
-	},
 /obj/machinery/light/small/directional/north,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 4
+	},
 /turf/open/floor/wood/wood_tiled,
 /area/service/shop)
 "oRq" = (
@@ -121077,13 +120957,12 @@
 /turf/open/floor/plasteel/dark,
 /area/hallway/primary/port)
 "pdx" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 1
-	},
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/turf/open/floor/carpet/red,
+/obj/machinery/holopad,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
+/turf/open/floor/wood/wood_tiled,
 /area/service/shop)
 "pdB" = (
 /obj/effect/turf_decal/trimline/blue/filled/line{
@@ -139881,11 +139760,10 @@
 /turf/open/floor/plasteel/dark/smooth/small,
 /area/engineering/lobby)
 "rzh" = (
-/obj/effect/turf_decal/siding/wood,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 10
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
 	},
-/turf/open/floor/wood/wood_tiled,
+/turf/open/floor/carpet/red,
 /area/service/shop)
 "rzk" = (
 /obj/effect/turf_decal/siding/thinplating_new/dark{
@@ -149849,9 +149727,6 @@
 /obj/effect/turf_decal/siding/wood,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 6
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
 	},
 /turf/open/floor/wood/wood_tiled,
 /area/service/barbershop)
@@ -165608,15 +165483,8 @@
 /turf/open/floor/plasteel/grimy,
 /area/maintenance/port/central)
 "uCM" = (
-/obj/structure/rack,
-/obj/effect/spawner/lootdrop/costume,
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
-	},
-/obj/structure/railing{
-	dir = 8
-	},
-/turf/open/floor/wood/wood_tiled,
+/obj/effect/turf_decal/siding/wood/thin,
+/turf/open/floor/carpet/red,
 /area/service/shop)
 "uCN" = (
 /obj/effect/turf_decal/siding/wood{
@@ -165681,17 +165549,13 @@
 /turf/open/floor/plasteel,
 /area/cargo/lobby)
 "uCZ" = (
-/obj/structure/rack,
-/obj/structure/rack,
-/obj/effect/spawner/lootdrop/random/bureaucracy/briefcase,
 /obj/item/radio/intercom{
 	pixel_y = -27
 	},
-/obj/effect/turf_decal/siding/wood,
-/obj/structure/railing{
-	dir = 8
-	},
 /obj/machinery/light/directional/south,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
 /turf/open/floor/wood/wood_tiled,
 /area/service/shop)
 "uDc" = (
@@ -173105,10 +172969,7 @@
 /turf/open/floor/plasteel/dark/corner,
 /area/engineering/atmos)
 "vzb" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 1
-	},
-/obj/effect/landmark/event_spawn,
+/obj/item/hilbertshotel/ghostdojo,
 /turf/open/floor/carpet/red,
 /area/service/shop)
 "vzd" = (
@@ -185171,9 +185032,8 @@
 /turf/open/floor/plasteel/white,
 /area/science/research/lobby)
 "xdd" = (
-/obj/effect/turf_decal/siding/wood,
-/obj/effect/turf_decal/siding/wood/corner{
-	dir = 1
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 4
 	},
 /turf/open/floor/wood/wood_tiled,
 /area/service/shop)
@@ -187336,6 +187196,9 @@
 	},
 /area/hallway/secondary/command)
 "xqS" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
+	},
 /turf/open/floor/carpet/red,
 /area/service/shop)
 "xqW" = (
@@ -187534,10 +187397,10 @@
 /turf/open/floor/plasteel/dark/smooth/small,
 /area/engineering/supermatter_room)
 "xsp" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 6
 	},
-/turf/open/floor/wood/wood_tiled,
+/turf/open/floor/carpet/red,
 /area/service/shop)
 "xsw" = (
 /obj/structure/rack,
@@ -188867,9 +188730,7 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 9
 	},
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer4{
-	dir = 4
-	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
 /turf/open/floor/wood/wood_tiled,
 /area/service/barbershop)
 "xAr" = (
@@ -192219,11 +192080,10 @@
 	},
 /area/service/kitchen)
 "xWa" = (
-/obj/effect/turf_decal/siding/wood,
-/obj/structure/chair/office/light{
-	dir = 1
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 5
 	},
-/turf/open/floor/wood/wood_tiled,
+/turf/open/floor/carpet/red,
 /area/service/shop)
 "xWb" = (
 /obj/machinery/door/airlock/hatch{
@@ -194876,17 +194736,13 @@
 	},
 /area/commons/dorms)
 "ykU" = (
-/obj/effect/turf_decal/siding/wood,
-/obj/effect/turf_decal/siding/wood/corner{
-	dir = 4
-	},
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 5
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 9
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /turf/open/floor/wood/wood_tiled,
 /area/service/shop)
 "ykW" = (
@@ -291056,7 +290912,7 @@ aHi
 ukD
 wZk
 gaR
-nsf
+gaR
 tZj
 tZj
 tiE
@@ -291570,7 +291426,7 @@ xav
 fIT
 fif
 xdd
-xqS
+nsf
 nex
 tZj
 wZe
@@ -292084,7 +291940,7 @@ vhs
 gaR
 gaR
 nDj
-xqS
+inV
 gGO
 fdk
 tZj
@@ -292339,9 +292195,9 @@ gem
 uZr
 hAl
 mBX
-jVB
+nsM
 ktr
-xqS
+bGC
 eKI
 nME
 tZj
@@ -292596,7 +292452,7 @@ tcV
 uZr
 uZr
 uXL
-led
+nsM
 rzh
 vzb
 uCM
@@ -292853,7 +292709,7 @@ wzQ
 wUq
 gWI
 uXL
-bGC
+nsM
 xWa
 xqS
 xsp
@@ -293113,7 +292969,7 @@ qVr
 nsM
 mqn
 inV
-kNr
+inV
 jgs
 tZj
 tlO

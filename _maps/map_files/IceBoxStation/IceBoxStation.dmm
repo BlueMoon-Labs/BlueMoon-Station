@@ -13120,14 +13120,14 @@
 /area/commons/dorms/laundry)
 "cYP" = (
 /obj/effect/turf_decal/tile/blue,
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer4{
-	dir = 1
-	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 4
 	},
 /turf/open/floor/plasteel/white/corner{
 	dir = 8
@@ -20711,6 +20711,7 @@
 /area/security/brig)
 "eDM" = (
 /obj/machinery/firealarm/directional/west,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /turf/open/floor/plasteel/grimy,
 /area/hallway/secondary/entry)
 "eDN" = (
@@ -35265,6 +35266,9 @@
 /obj/item/flashlight/lamp/green{
 	pixel_y = 5
 	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
 /turf/open/floor/plasteel/grimy,
 /area/hallway/secondary/entry)
 "hNO" = (
@@ -35466,12 +35470,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
 /area/maintenance/port/lesser)
-"hQp" = (
-/obj/structure/chair/comfy/beige{
-	dir = 4
-	},
-/turf/open/floor/carpet/blue,
-/area/hallway/secondary/entry)
 "hQA" = (
 /obj/machinery/status_display/evac{
 	pixel_y = 32
@@ -35793,6 +35791,7 @@
 /obj/machinery/status_display/ai{
 	pixel_x = 32
 	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
 /turf/open/floor/plasteel/grimy,
 /area/hallway/secondary/entry)
 "hUX" = (
@@ -51804,8 +51803,8 @@
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/maintenance/starboard/fore)
 "lzg" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 1
+/obj/structure/chair/comfy/beige{
+	dir = 8
 	},
 /turf/open/floor/plasteel/grimy,
 /area/hallway/secondary/entry)
@@ -52332,11 +52331,19 @@
 /turf/open/floor/plasteel/grimy,
 /area/security/detectives_office)
 "lFQ" = (
-/obj/structure/chair/comfy/beige{
+/obj/effect/turf_decal/tile/blue,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer4{
+	dir = 1
+	},
+/turf/open/floor/plasteel/white/corner{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
-/turf/open/floor/carpet/blue,
 /area/hallway/secondary/entry)
 "lFS" = (
 /obj/structure/disposalpipe/segment,
@@ -52724,13 +52731,21 @@
 /turf/open/floor/plasteel,
 /area/hallway/primary/central)
 "lKl" = (
-/obj/structure/chair/comfy/beige{
-	dir = 4
+/obj/structure/table/wood,
+/obj/item/toy/cards/deck{
+	pixel_x = -6;
+	pixel_y = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 10
+/obj/effect/spawner/lootdrop{
+	pixel_x = 5;
+	pixel_y = 6;
+	loot = list(/obj/item/reagent_containers/food/snacks/spacetwinkie = 5, /obj/item/reagent_containers/food/snacks/cheesiehonkers = 5, /obj/item/reagent_containers/food/snacks/candy = 5, /obj/item/reagent_containers/food/snacks/chips = 5, /obj/item/reagent_containers/food/snacks/sosjerky = 5, /obj/item/reagent_containers/food/snacks/no_raisin = 5, /obj/item/reagent_containers/food/snacks/energybar = 5, /obj/item/reagent_containers/food/snacks/syndicake = 1)
 	},
-/turf/open/floor/carpet/blue,
+/obj/item/flashlight/lamp/green{
+	pixel_y = 14;
+	pixel_x = -6
+	},
+/turf/open/floor/plasteel/grimy,
 /area/hallway/secondary/entry)
 "lKp" = (
 /obj/effect/turf_decal/tile/brown/anticorner/contrasted{
@@ -72895,6 +72910,7 @@
 /obj/machinery/computer/security/telescreen/entertainment{
 	pixel_x = 32
 	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
 /turf/open/floor/plasteel/grimy,
 /area/hallway/secondary/entry)
 "qew" = (
@@ -85244,6 +85260,9 @@
 /obj/item/flashlight/lamp/green{
 	pixel_y = 5
 	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
 /turf/open/floor/plasteel/grimy,
 /area/hallway/secondary/entry)
 "sPt" = (
@@ -91248,6 +91267,9 @@
 /obj/effect/turf_decal/tile/purple{
 	dir = 8
 	},
+/obj/structure/reagent_dispensers/spacecleanertank{
+	pixel_y = -30
+	},
 /turf/open/floor/plasteel,
 /area/service/janitor)
 "ueY" = (
@@ -96519,7 +96541,9 @@
 /area/engineering/lobby)
 "vnU" = (
 /obj/machinery/airalarm/directional/north,
-/obj/item/kirbyplants/random,
+/obj/structure/chair/comfy/beige{
+	dir = 4
+	},
 /turf/open/floor/plasteel/grimy,
 /area/hallway/secondary/entry)
 "voa" = (
@@ -96802,10 +96826,7 @@
 	},
 /area/icemoon/underground/explored)
 "vqW" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 1
-	},
-/turf/open/floor/plasteel/grimy,
+/turf/open/floor/carpet/blue,
 /area/hallway/secondary/entry)
 "vrb" = (
 /obj/structure/table,
@@ -101393,7 +101414,7 @@
 /area/mine/production)
 "wqm" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
+	dir = 10
 	},
 /turf/open/floor/plasteel/grimy,
 /area/hallway/secondary/entry)
@@ -105699,16 +105720,7 @@
 /turf/open/floor/plasteel,
 /area/cargo/qm)
 "xmM" = (
-/obj/structure/table/wood,
-/obj/item/toy/cards/deck{
-	pixel_x = -2;
-	pixel_y = 15
-	},
-/obj/effect/spawner/lootdrop{
-	pixel_x = 5;
-	pixel_y = 6;
-	loot = list(/obj/item/reagent_containers/food/snacks/spacetwinkie = 5, /obj/item/reagent_containers/food/snacks/cheesiehonkers = 5, /obj/item/reagent_containers/food/snacks/candy = 5, /obj/item/reagent_containers/food/snacks/chips = 5, /obj/item/reagent_containers/food/snacks/sosjerky = 5, /obj/item/reagent_containers/food/snacks/no_raisin = 5, /obj/item/reagent_containers/food/snacks/energybar = 5, /obj/item/reagent_containers/food/snacks/syndicake = 1)
-	},
+/obj/item/hilbertshotel/ghostdojo,
 /turf/open/floor/carpet/blue,
 /area/hallway/secondary/entry)
 "xmP" = (
@@ -106397,13 +106409,6 @@
 /obj/machinery/firealarm/directional/south,
 /turf/open/floor/plasteel/rivets/large,
 /area/science/cytology)
-"xtK" = (
-/obj/structure/table/wood,
-/obj/item/flashlight/lamp/green{
-	pixel_y = 5
-	},
-/turf/open/floor/carpet/blue,
-/area/hallway/secondary/entry)
 "xtN" = (
 /obj/effect/turf_decal/siding/yellow/end{
 	dir = 8
@@ -255106,10 +255111,10 @@ oIo
 qeV
 jKK
 vGI
-oai
-hQp
 lKl
-lzg
+vqW
+vqW
+vqW
 xiW
 vGI
 jon
@@ -255363,10 +255368,10 @@ oIo
 qeV
 nLD
 vGI
-oai
-xtK
+lzg
+vqW
 xmM
-oai
+vqW
 gAo
 vGI
 xsT
@@ -255618,11 +255623,11 @@ srz
 cyA
 oIo
 cYP
-gLW
-nYn
-fui
-lFQ
-lFQ
+hOd
+flL
+oai
+vqW
+vqW
 vqW
 xiW
 vGI
@@ -255874,13 +255879,13 @@ srz
 srz
 cyA
 oIo
-qeV
-hOd
-flL
-oai
+lFQ
+gLW
+nYn
+fui
 qep
 hUW
-oai
+fui
 hNE
 vGI
 wSg

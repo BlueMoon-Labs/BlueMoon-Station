@@ -1,6 +1,9 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "aaa" = (
-/obj/item/hilbertshotel/ghostdojo,
+/obj/item/hilbertshotel/ghostdojo{
+	pixel_x = -16;
+	pixel_y = 0
+	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 4
 	},
@@ -12279,8 +12282,10 @@
 	dir = 4
 	},
 /obj/effect/landmark/start/janitor,
-/obj/machinery/light_switch/directional/south,
 /obj/effect/decal/cleanable/dirt,
+/obj/structure/reagent_dispensers/spacecleanertank{
+	pixel_y = -30
+	},
 /turf/open/floor/plasteel,
 /area/service/janitor)
 "cre" = (
@@ -25080,6 +25085,7 @@
 "eTI" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/grille/broken,
+/obj/effect/spawner/lootdrop/crate_spawner,
 /turf/open/floor/pod/light,
 /area/maintenance/floor1/port/fore)
 "eTJ" = (
@@ -71449,6 +71455,10 @@
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
+/obj/machinery/light_switch/directional/south{
+	pixel_x = 3;
+	pixel_y = -26
+	},
 /turf/open/floor/plasteel,
 /area/service/janitor)
 "nCt" = (
@@ -72270,10 +72280,6 @@
 /obj/structure/grille,
 /turf/open/floor/plating,
 /area/maintenance/floor1/starboard/fore)
-"nJo" = (
-/obj/effect/spawner/lootdrop/crate_spawner,
-/turf/open/floor/pod/light,
-/area/maintenance/floor1/port/fore)
 "nJB" = (
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
@@ -150633,7 +150639,7 @@ tDF
 tDF
 tDF
 tDF
-nJo
+tDF
 hsP
 bJp
 wvf

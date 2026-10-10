@@ -4343,7 +4343,11 @@
 "beq" = (
 /obj/structure/railing,
 /obj/machinery/door/firedoor/border_only,
-/turf/open/floor/glass/reinforced,
+/obj/effect/turf_decal/siding/wood/thin,
+/obj/structure/chair/comfy/beige{
+	dir = 1
+	},
+/turf/open/floor/carpet,
 /area/service/bar)
 "beW" = (
 /obj/structure/chair/stool/directional/north,
@@ -5594,14 +5598,14 @@
 /turf/open/floor/plasteel/freezer,
 /area/commons/toilet/restrooms)
 "bvc" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/bar/opposingcorners,
 /obj/structure/disposalpipe/trunk/multiz/down{
 	dir = 8
 	},
-/turf/open/floor/plasteel,
+/obj/item/hilbertshotel/ghostdojo{
+	pixel_y = 16;
+	pixel_x = 16
+	},
+/turf/open/floor/carpet,
 /area/service/bar)
 "bvn" = (
 /obj/effect/turf_decal/tile/red/anticorner/contrasted{
@@ -6677,11 +6681,10 @@
 /turf/open/floor/wood/wood_parquet,
 /area/service/theater)
 "bKd" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
 	},
-/obj/effect/turf_decal/tile/bar/opposingcorners,
-/turf/open/floor/plasteel,
+/turf/open/floor/carpet,
 /area/service/bar)
 "bKm" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
@@ -13179,8 +13182,15 @@
 "dqo" = (
 /obj/structure/railing,
 /obj/machinery/door/firedoor/border_only,
-/obj/structure/displaycase/trophy,
-/turf/open/floor/glass/reinforced,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 10
+	},
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp/green{
+	pixel_x = 1;
+	pixel_y = 5
+	},
+/turf/open/floor/carpet,
 /area/service/bar)
 "dqq" = (
 /obj/structure/rack,
@@ -14046,6 +14056,9 @@
 /obj/effect/decal/cleanable/glass,
 /turf/open/floor/plating,
 /area/maintenance/department/engine)
+"dCB" = (
+/turf/open/floor/carpet,
+/area/service/bar)
 "dCC" = (
 /obj/structure/lattice/catwalk,
 /obj/structure/cable/yellow{
@@ -21680,6 +21693,12 @@
 /obj/effect/mapping_helpers/airlock/access/any/engineering/construction,
 /turf/open/floor/plasteel,
 /area/engineering/break_room)
+"fEx" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 5
+	},
+/turf/open/floor/carpet,
+/area/service/bar)
 "fEB" = (
 /obj/machinery/computer/shuttle/labor{
 	dir = 8
@@ -38525,6 +38544,10 @@
 	},
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/light/directional/west,
+/obj/structure/reagent_dispensers/spacecleanertank{
+	pixel_x = -29;
+	pixel_y = 0
+	},
 /turf/open/floor/plasteel,
 /area/service/janitor)
 "kcr" = (
@@ -41439,6 +41462,12 @@
 	dir = 5
 	},
 /area/commons/storage/emergency)
+"kPV" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/turf/open/floor/carpet,
+/area/service/bar)
 "kQb" = (
 /turf/open/floor/plasteel{
 	dir = 4;
@@ -42171,11 +42200,11 @@
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/security/armory)
 "kZc" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
-	},
 /obj/machinery/light/warm/directional/south,
 /obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
 /turf/open/floor/plasteel,
 /area/service/bar)
 "kZy" = (
@@ -46371,13 +46400,13 @@
 /turf/open/floor/wood,
 /area/service/theater)
 "mbn" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
-	},
 /obj/machinery/door/firedoor/border_only,
 /obj/effect/turf_decal/tile/bar/opposingcorners,
 /obj/structure/disposalpipe/segment{
 	dir = 5
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
 	},
 /turf/open/floor/plasteel,
 /area/service/bar)
@@ -47675,11 +47704,11 @@
 /turf/open/floor/plasteel/white,
 /area/medical/surgery/room_c)
 "msp" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
-	},
 /obj/machinery/door/firedoor/border_only,
 /obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
 /turf/open/floor/plasteel,
 /area/service/bar)
 "msB" = (
@@ -48339,8 +48368,12 @@
 /obj/machinery/camera/autoname{
 	dir = 8
 	},
-/obj/structure/displaycase/trophy,
-/turf/open/floor/glass/reinforced,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 6
+	},
+/obj/structure/table/wood,
+/obj/item/paicard,
+/turf/open/floor/carpet,
 /area/service/bar)
 "mDx" = (
 /obj/item/reagent_containers/food/condiment{
@@ -50820,13 +50853,13 @@
 /turf/open/openspace,
 /area/engineering/lobby)
 "nkw" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
-	},
 /obj/machinery/light/warm/directional/south,
 /obj/effect/turf_decal/tile/bar/opposingcorners,
 /obj/structure/disposalpipe/segment{
 	dir = 8
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
 	},
 /turf/open/floor/plasteel,
 /area/service/bar)
@@ -77730,10 +77763,10 @@
 /turf/open/floor/plasteel/dark,
 /area/engineering/supermatter_room)
 "uza" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 9
 	},
-/turf/closed/wall,
+/turf/open/floor/carpet,
 /area/service/bar)
 "uzb" = (
 /obj/effect/turf_decal/trimline/blue/filled/line{
@@ -91412,14 +91445,13 @@
 /turf/open/floor/plasteel,
 /area/hallway/primary/central)
 "yhE" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/bar/opposingcorners,
 /obj/structure/disposalpipe/segment{
 	dir = 8
 	},
-/turf/open/floor/plasteel,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 8
+	},
+/turf/open/floor/carpet,
 /area/service/bar)
 "yhF" = (
 /obj/effect/turf_decal/tile/brown/half/contrasted{
@@ -183175,7 +183207,7 @@ kaV
 kaV
 kaV
 mgB
-iKC
+uza
 yhE
 dqo
 jDj
@@ -183432,7 +183464,7 @@ kaV
 kaV
 kaV
 kUy
-iKC
+kPV
 bvc
 beq
 jDj
@@ -183689,8 +183721,8 @@ kaV
 kaV
 kaV
 kUy
-iKC
-bKd
+kPV
+dCB
 beq
 jDj
 jDj
@@ -183946,7 +183978,7 @@ kaV
 kaV
 kaV
 kUy
-iKC
+fEx
 bKd
 mDv
 jDj
@@ -184975,7 +185007,7 @@ kaV
 kaV
 gSk
 sZg
-uza
+svO
 svO
 jDj
 jDj
