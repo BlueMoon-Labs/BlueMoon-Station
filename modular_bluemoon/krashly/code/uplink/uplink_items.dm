@@ -34,7 +34,7 @@
 	purchasable_from = ~(UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS)
 
 /datum/uplink_item/inteq/ak12
-	name = "AK-12 Automatic Assault Rifle"
+	name = "AK-2566 Automatic Assault Rifle"
 	desc = "Чертежи, что мы выкрали у НРИ, помогли создать нам свою собственную небольшую модификацию АК-12. Пользуйся."
 	item = /obj/item/gun/ballistic/automatic/ak12
 	cost = 22

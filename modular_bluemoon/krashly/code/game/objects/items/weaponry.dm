@@ -258,7 +258,7 @@
 // Встроенный подствольный лазер AK-12. Собственная энергоячейка и самозарядка.
 /obj/item/gun/energy/laser/ak12_underbarrel
 	name = "\improper AK-2566 underbarrel laser"
-	desc = "Подствольный лазер, встроенный в автомат AK-12. Оснащён компактным реактором, обеспечивающим самозарядку."
+	desc = "Подствольный лазер, встроенный в автомат AK-2566. Оснащён компактным реактором, обеспечивающим самозарядку."
 	ammo_type = list(/obj/item/ammo_casing/energy/lasergun)
 	burst_size = 1
 	fire_select_modes = list(SELECT_SEMI_AUTOMATIC)
