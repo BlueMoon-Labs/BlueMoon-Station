@@ -1220,3 +1220,12 @@
 	mutantrace_variation = STYLE_DIGITIGRADE
 
 	can_adjust = FALSE
+
+/obj/item/clothing/under/donator/bm/mall_cop_chic
+	name = "Mall Cop Chic"
+	desc = "Pants from a secondhand shop that someone resewed, added straps from an old backpack, and called it 'style.' Someone clearly wanted to look like an elite mercenary, but it turned out like a shopping mall security guard. They cover your ass. Thx for that."
+	icon_state = "mall_cop_chic"
+	item_state = "mall_cop_chic"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	can_adjust = FALSE
