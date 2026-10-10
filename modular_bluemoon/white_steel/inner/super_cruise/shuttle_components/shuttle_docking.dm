@@ -168,6 +168,8 @@
 
 	if(!my_port)
 		my_port = new()
+		if(my_port.registered)
+			my_port.unregister()
 		my_port.name = shuttlePortName
 		my_port.shuttle_id = shuttlePortId
 		my_port.height = shuttle_port.height
@@ -175,6 +177,7 @@
 		my_port.dheight = shuttle_port.dheight
 		my_port.dwidth = shuttle_port.dwidth
 		my_port.hidden = shuttle_port.hidden
+		my_port.register(TRUE)
 	my_port.setDir(the_eye.dir)
 	my_port.forceMove(locate(eyeobj.x, eyeobj.y, eyeobj.z))
 

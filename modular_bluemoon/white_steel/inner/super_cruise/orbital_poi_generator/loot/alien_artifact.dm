@@ -1,6 +1,6 @@
 
 /obj/item/alienartifact
-	name = "артефакт"
+	name = "alien artifact"
 	desc = "Что же это такое?"
 	icon = 'icons/obj/artifact.dmi'
 	icon_state = "artifact"
@@ -50,6 +50,27 @@
 /obj/item/alienartifact/Destroy()
 	. = ..()
 	QDEL_LIST(effects)
+
+//WHITE-STEEL PORT: исследование инопланетного артефакта должно давать 7500 научных очков.
+/obj/item/alienartifact/attackby(obj/item/W, mob/user, params)
+	if(!istype(W, /obj/item/xenoarch/help/research))
+		return ..()
+	if(!do_after(user, 100, target = src))
+		to_chat(user, "You must stand still to analyze.")
+		return
+	var/datum/techweb/web = find_rnd_network_for_object(src)
+	if(web)
+		web.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = 7500))
+		to_chat(user, "You successfully researched the artifact. You have gained 7500 research points.")
+		qdel(src)
+	return TRUE
+
+//WHITE-STEEL PORT: инопланетный артефакт продаётся в карго за 12500 без снижения цены от объёма.
+/datum/export/alienartifact
+	cost = 12500
+	k_elasticity = 0
+	unit_name = "alien artifact"
+	export_types = list(/obj/item/alienartifact)
 
 /area/tear_in_reality
 	name = "???"

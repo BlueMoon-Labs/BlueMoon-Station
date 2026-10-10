@@ -1,5 +1,5 @@
 /obj/structure/alien_artifact
-	name = "чужеродная структура"
+	name = "alien structure"
 	icon = 'icons/obj/artifact.dmi'
 	max_integrity = 200
 	resistance_flags = LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
@@ -11,7 +11,7 @@
 //Watcher
 //Triggers nearby defenses when motion is detected
 /obj/structure/alien_artifact/watcher
-	name = "надзиратель"
+	name = "watcher"
 	desc = "Ууух."
 	icon_state = "watcher"
 	var/cooldown = 0
@@ -43,7 +43,7 @@
 
 //Protectors
 /obj/structure/alien_artifact/protector
-	name = "защитник"
+	name = "protector"
 	desc = "Что-то действительно странное и не очень дружелюбное."
 	icon_state = "protector"
 	max_integrity = 500

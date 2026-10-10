@@ -35,15 +35,15 @@
 //WHITE-STEEL PORT - Зоны рейнджеров
 
 /area/cargo/exploration_prep
-	name = "Подготовка рейнджеров"
+	name = "Ranger Prep"
 	icon_state = "rangers_prep"
 
 /area/cargo/exploration_dock
-	name = "Док рейнджеров"
+	name = "Ranger Dock"
 	icon_state = "rangers_dock"
 
 /area/cargo/exploration_mission
-	name = "Поле действий рейнджеров"
+	name = "Ranger Field"
 	icon_state = "rangers_mission"
 
 /area/shuttle/exploration

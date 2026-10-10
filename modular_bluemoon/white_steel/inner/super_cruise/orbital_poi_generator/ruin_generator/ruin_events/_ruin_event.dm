@@ -20,6 +20,11 @@
 /datum/ruin_event/proc/update()
 	if(QDELETED(linked_z))
 		return FALSE
+	//WHITE-STEEL PORT: linked_z_level заполняется только после стыковки с объектом.
+	//До этого список пуст, и обращение к [1] роняло рантайм "cannot read from list" (см. _ruin_event.dm,30).
+	//Пропускаем тик, сохраняя событие живым, вместо падения.
+	if(!LAZYLEN(linked_z.linked_z_level))
+		return TRUE
 	//Events only work on the first Z, multi-z linkage currently is for stations only.
 	if(ticks == start_tick)
 		event_start(linked_z.linked_z_level[1].z_value)

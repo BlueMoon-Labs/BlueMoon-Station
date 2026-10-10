@@ -49,7 +49,7 @@
 //==============
 
 /obj/item/disk/nuclear/decommission
-	name = "устаревший диск ядерной аутентификации"
+	name = "obsolete nuclear authentication disk"
 	desc = "Старый, изношенный диск, используемый в устаревшей термоядерной боеголовке X-7. NanoTrasen больше не использует эту модель аутентификации из-за ее плохой безопасности."
 	fake = TRUE
 
@@ -88,11 +88,19 @@
 	GLOB.decomission_bombs += src
 	r_code = "[rand(10000, 99999)]"
 	print_command_report("Код взрыва ядерной бомбы: [r_code]")
+	//WHITE-STEEL PORT: бомба приезжала в обычной капсуле и при посадке калечила шаттл экспедиторов.
+	//Доставляем в блюспейс-капсуле (безопасная посадка, без взрыва).
 	var/obj/structure/closet/supplypod/pod = podspawn(list(
 		"target" = get_turf(src),
-		"path" = /obj/structure/closet/supplypod
+		"path" = /obj/structure/closet/supplypod/bluespacepod
 	))
-	forceMove(pod)
+	if(pod)
+		//WHITE-STEEL PORT: код взрыва должен приезжать вместе с бомбой, а не только в отчёте командования.
+		var/obj/item/paper/code_paper = new(pod)
+		code_paper.name = "Код взрыва ядерной бомбы"
+		code_paper.add_raw_text("Код взрыва ядерной бомбы: [r_code]")
+		code_paper.update_icon()
+		forceMove(pod)
 
 /obj/machinery/nuclearbomb/decomission/Destroy()
 	. = ..()

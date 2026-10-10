@@ -28,7 +28,7 @@
  * from completing their objective and recover invaluable data.
  */
 /obj/item/blackbox/objective
-	name = "повреждённый чёрный ящик"
+	name = "damaged black box"
 	w_class = WEIGHT_CLASS_BULKY
 	resistance_flags = LAVA_PROOF | FIRE_PROOF | ACID_PROOF
 

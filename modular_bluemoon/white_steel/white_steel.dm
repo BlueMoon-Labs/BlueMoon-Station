@@ -12,7 +12,6 @@
 #include "_support\circuits.dm"
 #include "_support\tactical.dm"
 #include "_support\mre.dm"
-#include "_support\feline_chem.dm"
 #include "_support\ruin_stubs.dm"
 
 

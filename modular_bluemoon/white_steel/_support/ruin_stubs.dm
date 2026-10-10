@@ -1,17 +1,17 @@
 //WHITE-STEEL PORT - заглушки отсутствующих в bluemoon типов руин
 
 /obj/structure/destructible/clockwork/trap/delay
-	name = "задерживающая ловушка Ратвара"
+	name = "Ratvar delaying trap"
 
 /obj/structure/destructible/clockwork/trap/flipper
-	name = "переворачивающая ловушка Ратвара"
+	name = "Ratvar flipping trap"
 
 /obj/structure/destructible/clockwork/gear_base
-	name = "шестерённая база"
+	name = "gear base"
 	density = TRUE
 
 /obj/structure/destructible/clockwork/gear_base/interdiction_lens
-	name = "линза интердикции"
+	name = "interdiction lens"
 
 // ===== Area stubs (_maps/RuinGeneration/*.dmm reference these) =====
 
@@ -19,36 +19,36 @@
 	always_unpowered = FALSE
 
 /area/ruin/space/has_grav/powered/telepadovo
-	name = "Телепадово"
+	name = "Telepadovo"
 
 /area/ruin/space/has_grav/austation
-	name = "Аутизм"
+	name = "Austation"
 
 /area/ruin/space/has_grav/austation/med
-	name = "Аутизм: Медбей"
+	name = "Austation: Medbay"
 
 /area/ruin/space/has_grav/austation/vault
-	name = "Аутизм: Хранилище"
+	name = "Austation: Vault"
 
 /area/ruin/space/has_grav/austation/rnd
-	name = "Аутизм: Исследования"
+	name = "Austation: Research"
 
 /area/ruin/space/has_grav/austation/xeno
-	name = "Аутизм: Ксено"
+	name = "Austation: Xeno"
 
 /area/ruin/space/has_grav/austation/station
-	name = "Аутизм: Станция"
+	name = "Austation: Station"
 
 /area/ruin/space/has_grav/austation/eng
-	name = "Аутизм: Инженерный"
+	name = "Austation: Engineering"
 
 /area/ruin/space/has_grav/austation/maint
-	name = "Аутизм: Техи"
+	name = "Austation: Maintenance"
 
 // ===== Turf stubs (missing from bluemoon, referenced by RuinGeneration maps) =====
 
 /turf/open/floor/partyhard
-	name = "древний пол"
+	name = "ancient floor"
 	baseturfs = /turf/open/openspace
 
 /turf/open/floor/partyhard/steel
@@ -62,7 +62,7 @@
 		icon_state = "[base_icon_state]-[rand(1, max_random_states)]"
 
 /turf/open/floor/resin
-	name = "резиновый пол"
+	name = "resin floor"
 	desc = "Мягкий, но в то же время весьма крепкий."
 	bullet_bounce_sound = null
 	footstep = FOOTSTEP_CARPET
@@ -71,7 +71,7 @@
 	heavyfootstep = FOOTSTEP_GENERIC_HEAVY
 
 /turf/open/floor/plasteel/catwalk_floor
-	name = "настил"
+	name = "catwalk"
 	icon = 'icons/turf/floors/catwalk_plating.dmi'
 	icon_state = "catwalk_below"
 	baseturfs = /turf/open/floor/plating
@@ -81,7 +81,7 @@
 	heavyfootstep = FOOTSTEP_CATWALK
 
 /turf/open/floor/plasteel/durasteel
-	name = "дюрасталевый пол"
+	name = "durasteel floor"
 
 /turf/open/floor/plasteel/monofloor
 	icon_state = "monofloor"
@@ -94,5 +94,5 @@
 /turf/open/floor/plating/asteroid/no_generation
 
 /turf/closed/wall/partyhard
-	name = "стена"
+	name = "wall"
 	desc = "Очень крепкая."

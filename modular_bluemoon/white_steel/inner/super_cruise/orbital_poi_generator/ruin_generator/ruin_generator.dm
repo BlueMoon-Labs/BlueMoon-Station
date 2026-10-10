@@ -210,6 +210,12 @@
 			ruin_part.load(locate(ruin_offset_x + 1, ruin_offset_y + 1, center_z), FALSE, FALSE, no_changeturf_override = FALSE)
 		catch(var/exception/e)
 			log_runtime("Run time in space ruin generation ([ruin_part.name]) [e] on [e.file]:[e.line]")
+			// Если exception выпал внутри build_coordinate между map_loader_begin/stop,
+			// SSatoms.initialized остаётся INSSATOMS(0) и все последующие атомы перестают
+			// инициализироваться. Восстанавливаем маплоадер, чтобы один битый шаблон
+			// не рушил генерацию всей карты
+			if(SSatoms.initialized == INITIALIZATION_INSSATOMS)
+				SSatoms.map_loader_stop()
 		CHECK_TICK
 		SSmapping.loading_ruins = FALSE
 		//Simulate spawning

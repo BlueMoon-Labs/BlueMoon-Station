@@ -116,8 +116,8 @@ PROCESSING_SUBSYSTEM_DEF(orbits)
 			tgui?.send_update()
 
 /mob/dead/observer/verb/open_orbit_ui()
-	set name = "Показать орбиты"
-	set category = "Призрак"
+	set name = "Show orbit"
+	set category = "Ghost"
 	SSorbits.orbital_map_tgui.ui_interact(src)
 
 /datum/controller/subsystem/processing/orbits/proc/create_objective()
