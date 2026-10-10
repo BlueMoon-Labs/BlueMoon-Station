@@ -20,7 +20,7 @@
 	)
 	. += get_broken_stuff()
 	for(var/trash in subtypesof(/obj/item/trash))
-		.[trash] = 1
+		.[trash] = 0.33
 
 /datum/generator_settings/abandoned/get_directional_walltrash()
 	return list(

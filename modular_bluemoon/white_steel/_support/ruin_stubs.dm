@@ -72,13 +72,25 @@
 
 /turf/open/floor/plasteel/catwalk_floor
 	name = "catwalk"
-	icon = 'icons/turf/floors/catwalk_plating.dmi'
-	icon_state = "catwalk_below"
+	icon = 'modular_bluemoon/icons/turf/floors/catwalk_plating.dmi'
+	icon_state = "maint_below"
 	baseturfs = /turf/open/floor/plating
 	footstep = FOOTSTEP_CATWALK
 	barefootstep = FOOTSTEP_CATWALK
 	clawfootstep = FOOTSTEP_CATWALK
 	heavyfootstep = FOOTSTEP_CATWALK
+
+//WHITE-STEEL PORT: у старого стаба icon_state был "catwalk_below" - такого кадра в .dmi нет,
+//из-за чего рисовалась первая (яркая) картинка. Теперь как у настоящего /turf/open/floor/catwalk_floor:
+//нижний слой maint_below + решётка maint_above сверху.
+/turf/open/floor/plasteel/catwalk_floor/Initialize(mapload)
+	. = ..()
+	var/image/catwalk_overlay = new()
+	catwalk_overlay.icon = icon
+	catwalk_overlay.icon_state = "maint_above"
+	SET_PLANE_EXPLICIT(catwalk_overlay, FLOOR_PLANE, src)
+	catwalk_overlay.layer = CATWALK_LAYER
+	add_overlay(catwalk_overlay)
 
 /turf/open/floor/plasteel/durasteel
 	name = "durasteel floor"
