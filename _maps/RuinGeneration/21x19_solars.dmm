@@ -1,0 +1,837 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/item/stack/cable_coil,
+/turf/open/floor/plating/asteroid/no_generation,
+/area/template_noop)
+"b" = (
+/turf/closed/wall/r_wall,
+/area/ruin/unpowered)
+"e" = (
+/obj/machinery/door/airlock/external,
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"f" = (
+/obj/effect/spawner/structure/window/reinforced,
+/obj/machinery/door/firedoor/window,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"i" = (
+/obj/structure/grille,
+/obj/structure/lattice,
+/turf/open/floor/plating/asteroid/no_generation,
+/area/template_noop)
+"j" = (
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"k" = (
+/obj/structure/cable,
+/obj/structure/lattice/catwalk,
+/turf/open/floor/plating/asteroid/no_generation,
+/area/template_noop)
+"l" = (
+/obj/effect/abstract/doorway_marker,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"o" = (
+/obj/structure/lattice,
+/obj/structure/grille/broken,
+/turf/template_noop,
+/area/template_noop)
+"p" = (
+/obj/machinery/power/terminal,
+/obj/machinery/light/small{
+	dir = 4
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"q" = (
+/turf/template_noop,
+/area/template_noop)
+"t" = (
+/obj/structure/grille,
+/obj/structure/lattice,
+/turf/open/floor/plating/asteroid/airless,
+/area/template_noop)
+"u" = (
+/turf/closed/wall,
+/area/ruin/unpowered)
+"w" = (
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/obj/machinery/power/solar{
+	id = "auxsolareast";
+	name = "Port Auxiliary Solar Array"
+	},
+/turf/open/floor/plasteel/airless/solarpanel,
+/area/template_noop)
+"y" = (
+/obj/item/stack/rods,
+/turf/open/floor/plating/asteroid/no_generation,
+/area/template_noop)
+"z" = (
+/obj/structure/lattice,
+/turf/template_noop,
+/area/template_noop)
+"B" = (
+/obj/effect/mapping_helpers/airlock/cyclelink_helper,
+/obj/machinery/door/airlock/external,
+/obj/structure/cable,
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"E" = (
+/turf/open/floor/plating/asteroid/airless,
+/area/template_noop)
+"F" = (
+/obj/structure/rack,
+/obj/item/clothing/mask/gas,
+/obj/structure/sign/warning/vacuum/external{
+	pixel_y = 32
+	},
+/obj/item/multitool,
+/obj/structure/cable,
+/obj/item/stack/cable_coil,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"G" = (
+/obj/structure/lattice,
+/turf/open/floor/plating/asteroid/no_generation,
+/area/template_noop)
+"I" = (
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 1
+	},
+/obj/machinery/door/airlock/external,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"J" = (
+/obj/structure/lattice/catwalk,
+/turf/open/floor/plating/asteroid/no_generation,
+/area/template_noop)
+"K" = (
+/obj/machinery/power/solar_control{
+	id = "auxsolareast";
+	name = "Starboard Bow Solar Control"
+	},
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"L" = (
+/obj/structure/cable,
+/obj/machinery/power/solar{
+	id = "auxsolareast";
+	name = "Port Auxiliary Solar Array"
+	},
+/turf/open/floor/plasteel/airless/solarpanel,
+/area/template_noop)
+"M" = (
+/obj/machinery/power/solar{
+	id = "auxsolareast";
+	name = "Port Auxiliary Solar Array"
+	},
+/obj/structure/cable,
+/turf/open/floor/plasteel/airless/solarpanel,
+/area/template_noop)
+"N" = (
+/obj/structure/cable,
+/obj/structure/lattice/catwalk,
+/turf/open/floor/plating/asteroid/airless,
+/area/template_noop)
+"O" = (
+/obj/structure/sign/warning/electricshock,
+/turf/closed/wall/r_wall,
+/area/ruin/unpowered)
+"P" = (
+/obj/machinery/power/tracker,
+/obj/structure/cable,
+/turf/open/floor/plating/asteroid/no_generation,
+/area/template_noop)
+"Q" = (
+/obj/structure/lattice,
+/obj/structure/grille/broken,
+/turf/open/floor/plating/asteroid/no_generation,
+/area/template_noop)
+"S" = (
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/obj/machinery/power/smes,
+/obj/machinery/camera/autoname{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"U" = (
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+"V" = (
+/turf/open/floor/plating/asteroid/no_generation,
+/area/template_noop)
+"W" = (
+/obj/structure/grille,
+/obj/structure/lattice,
+/turf/template_noop,
+/area/template_noop)
+"Z" = (
+/obj/structure/chair/stool{
+	pixel_y = 8
+	},
+/turf/open/floor/plating,
+/area/ruin/unpowered)
+
+(1,1,1) = {"
+q
+q
+q
+q
+q
+q
+q
+q
+q
+q
+V
+q
+q
+q
+q
+q
+q
+q
+q
+q
+q
+q
+q
+z
+z
+q
+q
+q
+q
+"}
+(2,1,1) = {"
+q
+q
+q
+q
+q
+q
+q
+q
+q
+V
+V
+V
+q
+q
+q
+q
+V
+V
+q
+q
+q
+q
+z
+z
+q
+q
+q
+q
+q
+"}
+(3,1,1) = {"
+q
+q
+q
+q
+q
+W
+o
+W
+i
+i
+i
+i
+i
+W
+W
+t
+i
+i
+i
+W
+q
+z
+z
+q
+q
+q
+q
+q
+q
+"}
+(4,1,1) = {"
+q
+q
+q
+q
+q
+W
+q
+G
+V
+G
+V
+G
+V
+z
+q
+G
+V
+G
+V
+W
+z
+z
+q
+q
+q
+q
+q
+q
+q
+"}
+(5,1,1) = {"
+q
+q
+q
+q
+q
+i
+V
+M
+J
+M
+V
+M
+J
+M
+V
+w
+J
+M
+V
+W
+z
+q
+q
+q
+q
+q
+q
+q
+q
+"}
+(6,1,1) = {"
+q
+q
+q
+q
+q
+i
+G
+M
+J
+M
+V
+M
+J
+M
+V
+w
+J
+M
+G
+G
+V
+q
+q
+q
+q
+q
+q
+q
+q
+"}
+(7,1,1) = {"
+q
+q
+q
+q
+V
+i
+V
+M
+J
+M
+G
+M
+J
+M
+G
+w
+J
+M
+V
+G
+V
+V
+V
+V
+q
+q
+q
+q
+q
+"}
+(8,1,1) = {"
+q
+q
+q
+V
+V
+G
+G
+M
+J
+M
+V
+M
+J
+M
+V
+w
+J
+M
+G
+G
+G
+G
+G
+G
+G
+G
+z
+q
+q
+"}
+(9,1,1) = {"
+q
+q
+i
+i
+i
+G
+V
+M
+k
+M
+V
+M
+k
+M
+V
+w
+k
+M
+V
+G
+V
+V
+V
+V
+f
+b
+b
+b
+b
+"}
+(10,1,1) = {"
+q
+q
+i
+V
+G
+V
+V
+V
+k
+V
+V
+V
+k
+E
+V
+V
+k
+E
+V
+G
+V
+V
+f
+f
+f
+K
+Z
+j
+b
+"}
+(11,1,1) = {"
+q
+q
+i
+G
+P
+k
+k
+k
+k
+k
+k
+k
+k
+N
+k
+k
+k
+N
+k
+k
+k
+k
+B
+U
+I
+U
+j
+j
+l
+"}
+(12,1,1) = {"
+q
+q
+i
+V
+G
+a
+V
+V
+k
+V
+V
+V
+k
+E
+V
+V
+k
+E
+V
+G
+V
+V
+f
+b
+b
+F
+p
+S
+O
+"}
+(13,1,1) = {"
+q
+q
+i
+Q
+i
+z
+q
+M
+k
+L
+V
+M
+k
+L
+V
+M
+k
+M
+V
+G
+V
+V
+V
+V
+b
+b
+b
+b
+b
+"}
+(14,1,1) = {"
+q
+q
+q
+q
+q
+z
+G
+M
+J
+L
+V
+M
+J
+L
+V
+M
+J
+M
+G
+G
+G
+G
+G
+G
+G
+G
+G
+b
+q
+"}
+(15,1,1) = {"
+q
+q
+q
+q
+q
+i
+V
+M
+J
+L
+G
+M
+J
+L
+G
+M
+J
+M
+V
+G
+V
+q
+q
+z
+V
+V
+V
+b
+q
+"}
+(16,1,1) = {"
+q
+q
+q
+q
+q
+i
+G
+M
+J
+L
+V
+M
+J
+L
+V
+M
+J
+M
+G
+z
+q
+q
+q
+z
+q
+V
+V
+b
+q
+"}
+(17,1,1) = {"
+q
+q
+q
+q
+V
+i
+V
+M
+J
+L
+q
+M
+J
+L
+V
+M
+J
+M
+V
+i
+z
+z
+z
+z
+u
+u
+u
+u
+u
+"}
+(18,1,1) = {"
+q
+q
+q
+q
+V
+i
+V
+G
+V
+G
+q
+z
+V
+G
+V
+G
+y
+q
+V
+i
+V
+q
+q
+q
+f
+j
+j
+j
+u
+"}
+(19,1,1) = {"
+q
+q
+q
+V
+V
+i
+i
+i
+W
+W
+W
+W
+W
+i
+i
+i
+W
+o
+W
+i
+G
+V
+q
+G
+e
+j
+j
+j
+l
+"}
+(20,1,1) = {"
+q
+q
+q
+V
+V
+V
+V
+q
+q
+q
+q
+q
+q
+V
+V
+V
+q
+q
+q
+z
+G
+V
+V
+V
+f
+j
+j
+j
+u
+"}
+(21,1,1) = {"
+q
+q
+q
+q
+V
+V
+q
+q
+q
+q
+q
+q
+q
+q
+V
+q
+q
+q
+q
+q
+z
+G
+V
+V
+u
+u
+u
+u
+u
+"}
