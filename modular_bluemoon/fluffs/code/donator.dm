@@ -2787,3 +2787,9 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/clothing/suit/donator/bm/honorable_coat
 	ckeywhitelist = list("kumikoshouko")
+
+/datum/gear/donator/bm/mall_cop_chic
+	name = "Mall Cop Chic"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/donator/bm/mall_cop_chic
+	ckeywhitelist = list("sawwarrr")
