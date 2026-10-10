@@ -12,22 +12,23 @@
 	return list()
 
 //Сломанная контробанда из мондуля vanguard (broken_stuff.dm).
-//Добавляется во все темы, вес ниже, чем у работающего оружия/брони.
+//WHITE-STEEL PORT: дробный вес 0.1 работает благодаря фиксу pickweight() (float-ролл),
+//т.е. сломанное оружие спавнится всем разнообразием, но в 10 раз реже нормы.
 /datum/generator_settings/proc/get_broken_stuff()
 	return list(
-		/obj/item/broken/inteq_sledgehammer = 0.11,
-		/obj/item/broken/dualsaber = 0.11,
-		/obj/item/broken/energy_sword = 0.11,
-		/obj/item/broken/inteq_elite = 0.11,
-		/obj/item/broken/makarov = 0.11,
-		/obj/item/broken/c20r = 0.11,
-		/obj/item/broken/bulldog = 0.11,
-		/obj/item/broken/ushm = 0.11,
-		/obj/item/broken/sniper_rifle = 0.11,
-		/obj/item/broken/m1garand = 0.11,
-		/obj/item/broken/homemadeak = 0.11,
-		/obj/item/broken/vss = 0.11,
-		/obj/item/broken/hmg = 0.11,
+		/obj/item/broken/inteq_sledgehammer = 0.1,
+		/obj/item/broken/dualsaber = 0.1,
+		/obj/item/broken/energy_sword = 0.1,
+		/obj/item/broken/inteq_elite = 0.1,
+		/obj/item/broken/makarov = 0.1,
+		/obj/item/broken/c20r = 0.1,
+		/obj/item/broken/bulldog = 0.1,
+		/obj/item/broken/ushm = 0.1,
+		/obj/item/broken/sniper_rifle = 0.1,
+		/obj/item/broken/m1garand = 0.1,
+		/obj/item/broken/homemadeak = 0.1,
+		/obj/item/broken/vss = 0.1,
+		/obj/item/broken/hmg = 0.1,
 	)
 
 //Get directional stuff that goes on walls.
