@@ -160,6 +160,7 @@
 	recoil = 0.05
 	automatic_burst_overlay = FALSE
 	var/magtype = "flechettegun"
+	projectile_damage_multiplier = 1.65
 
 /obj/item/gun/ballistic/automatic/flechette/update_overlays()
 	. = ..()
