@@ -44,21 +44,21 @@
 	name = "AK-12 Magazine"
 	desc = "30 кусков свинца с порохом. Сделано с любовью."
 	item = /obj/item/ammo_box/magazine/ak12
-	cost = 4
+	cost = 3
 	purchasable_from = (UPLINK_NUKE_OPS)
 
 /datum/uplink_item/inteq/ak12_mag_hp
 	name = "AK-12 Hollow Point Magazine"
 	desc = "30 кусков свинца с порохом и разрывным механизмом. Сделано с любовью."
 	item = /obj/item/ammo_box/magazine/ak12/hp
-	cost = 6
+	cost = 4
 	purchasable_from = (UPLINK_NUKE_OPS)
 
 /datum/uplink_item/inteq/ak12_mag_ap
 	name = "AK-12 Armor Piercing Magazine"
 	desc = "30 кусков свинца с порохом и заострённым наконечником. Сделано с любовью."
 	item = /obj/item/ammo_box/magazine/ak12/ap
-	cost = 6
+	cost = 4
 	purchasable_from = (UPLINK_NUKE_OPS)
 
 /datum/uplink_item/suits/hardsuit
