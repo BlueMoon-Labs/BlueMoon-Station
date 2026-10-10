@@ -357,7 +357,7 @@ function bm_set_loading_progress(p){p=Math.max(0,Math.min(100,parseInt(p)||0));v
 				client << output(FALSE, "bm_lobby_browser:bm_toggle_ready")
 				return FALSE
 			if(!ready && client.prefs && !(client.prefs.toggles & NO_ANTAG))
-				if(alert(src, "У вас включена возможность стать антагонистом. Вы уверены, что не хотите выключить её?", "...Клянусь, что не сдам роль...", "Я готов", "Прошу временно отключить") == "Прошу временно отключить")
+				if(tgui_alert(src, "У вас включена возможность стать антагонистом. Вы уверены, что не хотите выключить её?", "...Клянусь, что не сдам роль...", list("Я готов", "Прошу временно отключить")) == "Прошу временно отключить")
 					if(QDELETED(src) || !client)
 						return
 					client.prefs.toggles ^= NO_ANTAG
