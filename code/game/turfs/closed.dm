@@ -139,7 +139,7 @@ INITIALIZE_IMMEDIATE(/turf/closed/indestructible/splashscreen)
 
 /turf/closed/indestructible/syndicate
 	icon = 'icons/turf/walls/plastitanium_wall.dmi'
-	icon_state = "map-shuttle"
+	icon_state = "box"
 	smooth = SMOOTH_TRUE
 
 /turf/closed/indestructible/riveted/uranium
