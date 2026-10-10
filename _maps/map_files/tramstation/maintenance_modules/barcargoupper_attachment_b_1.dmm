@@ -1,0 +1,80 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"m" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"n" = (
+/obj/modular_map_connector,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Cargo Storage Maintenance Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/supply/general,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"p" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/structure/closet/crate = 20, /obj/structure/closet/crate/wooden = 1, /obj/structure/closet/crate/internals = 1, /obj/structure/closet/crate/medical = 1, /obj/structure/closet/crate/freezer = 1, /obj/structure/closet/crate/radiation = 1, /obj/structure/closet/crate/hydroponics = 1, /obj/structure/closet/crate/engineering = 1, /obj/structure/closet/crate/science = 1)
+	},
+/obj/effect/spawner/lootdrop/maintenance/three,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"w" = (
+/turf/closed/wall,
+/area/maintenance/department/cargo)
+"x" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/structure/closet/crate = 20, /obj/structure/closet/crate/wooden = 1, /obj/structure/closet/crate/internals = 1, /obj/structure/closet/crate/medical = 1, /obj/structure/closet/crate/freezer = 1, /obj/structure/closet/crate/radiation = 1, /obj/structure/closet/crate/hydroponics = 1, /obj/structure/closet/crate/engineering = 1, /obj/structure/closet/crate/science = 1)
+	},
+/obj/effect/spawner/lootdrop/maintenance/two,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"y" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"z" = (
+/turf/template_noop,
+/area/template_noop)
+"Z" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/structure/closet/crate = 20, /obj/structure/closet/crate/wooden = 1, /obj/structure/closet/crate/internals = 1, /obj/structure/closet/crate/medical = 1, /obj/structure/closet/crate/freezer = 1, /obj/structure/closet/crate/radiation = 1, /obj/structure/closet/crate/hydroponics = 1, /obj/structure/closet/crate/engineering = 1, /obj/structure/closet/crate/science = 1)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+
+(1,1,1) = {"
+w
+w
+w
+w
+w
+"}
+(2,1,1) = {"
+z
+Z
+x
+Z
+w
+"}
+(3,1,1) = {"
+z
+y
+m
+p
+w
+"}
+(4,1,1) = {"
+z
+n
+z
+z
+z
+"}

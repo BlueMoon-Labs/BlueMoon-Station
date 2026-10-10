@@ -40,7 +40,7 @@
 
 /datum/component/chasm/proc/is_safe()
 	//if anything matching this typecache is found in the chasm, we don't drop things
-	var/static/list/chasm_safeties_typecache = typecacheof(list(/obj/structure/lattice/catwalk, /obj/structure/stone_tile))
+	var/static/list/chasm_safeties_typecache = typecacheof(list(/obj/structure/lattice/catwalk, /obj/structure/stone_tile, /obj/structure/transport/linear))
 
 	var/atom/parent = src.parent
 	var/list/found_safeties = typecache_filter_list(parent.contents, chasm_safeties_typecache)
@@ -105,7 +105,7 @@
 			L.DefaultCombatKnockdown(100)
 			L.adjustBruteLoss(30)
 		if(isobj(AM))
-			AM.onZImpact(T)
+			AM.onZImpact(T, 1, ZIMPACT_NO_MESSAGE)
 		falling_atoms -= AM
 
 	else

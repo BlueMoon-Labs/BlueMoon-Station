@@ -62,6 +62,9 @@
 	name = "Mining Station EVA"
 	icon_state = "mining_eva"
 
+/area/mine/eva/lower
+	name = "Mining Station Lower EVA"
+
 /area/mine/maintenance
 	name = "Mining Station Communications"
 
@@ -178,6 +181,15 @@
 	name = "Icemoon Wastes"
 	outdoors = TRUE
 
+/// Погода есть, генерации и спавна нет.
+/area/icemoon/surface/outdoors/nospawn
+
+/area/icemoon/surface/outdoors/less_spawns
+
+/area/icemoon/surface/outdoors/noruins
+	area_flags = UNIQUE_AREA | FLORA_ALLOWED | MOB_SPAWN_ALLOWED | CAVES_ALLOWED | NO_ALERTS
+	map_generator = /datum/map_generator/cave_generator/icemoon/surface
+
 /area/icemoon/surface/outdoors/labor_camp
 	name = "Icemoon Labor Camp"
 	area_flags = UNIQUE_AREA | NO_ALERTS
@@ -212,6 +224,10 @@
 	icon_state = "unexplored"
 	area_flags = CAVES_ALLOWED | FLORA_ALLOWED | MOB_SPAWN_ALLOWED | MEGAFAUNA_SPAWN_ALLOWED | NO_ALERTS
 
+/area/icemoon/underground/unexplored/no_rivers
+	area_flags = CAVES_ALLOWED | FLORA_ALLOWED | NO_ALERTS
+	map_generator = /datum/map_generator/cave_generator/icemoon
+
 /area/icemoon/underground/unexplored/rivers // rivers spawn here
 	icon_state = "danger"
 	map_generator = /datum/map_generator/cave_generator/icemoon
@@ -219,6 +235,14 @@
 /area/icemoon/underground/unexplored/rivers/deep
 	map_generator = /datum/map_generator/cave_generator/icemoon/deep
 
+/// Пещеры без мобов у рек и построек станции.
+/area/icemoon/underground/unexplored/rivers/deep/shoreline
+	area_flags = UNIQUE_AREA | FLORA_ALLOWED | CAVES_ALLOWED | NO_ALERTS
+
 /area/icemoon/underground/explored // ruins can't spawn here
 	name = "Icemoon Underground"
 	area_flags = UNIQUE_AREA | NO_ALERTS
+
+/area/icemoon/underground/explored/graveyard
+	name = "Graveyard"
+	ambientsounds = SPOOKY

@@ -30,7 +30,7 @@
 			new /obj/item/ammo_box/magazine/m10mm(src)
 			new /obj/item/clothing/under/chameleon(src)
 			new /obj/item/card/id/syndicate(src)
-			new /obj/item/reagent_containers/syringe/stimulants(src)
+			new /obj/item/reagent_containers/hypospray/medipen/stimulants(src)
 			new /obj/item/clothing/neck/tie/red(src)
 
 		if("screwed") // 29 tc
@@ -60,7 +60,7 @@
 			new /obj/item/encryptionkey/syndicate(src)
 			new /obj/item/grenade/syndieminibomb(src)
 			new /obj/item/clothing/glasses/phantomthief/syndicate(src)
-			new /obj/item/reagent_containers/syringe/stimulants(src)
+			new /obj/item/reagent_containers/hypospray/medipen/stimulants(src)
 
 		if("baseball") // 44~ tc
 			new /obj/item/melee/baseball_bat/ablative/syndi(src) //Lets say 12 tc, lesser sleeping carp
@@ -661,3 +661,21 @@
 	new /obj/item/paper(src)
 
 //Bluemoon ADD end
+
+/obj/item/storage/box/inteq_kit/cowboy_kit
+
+/obj/item/storage/box/inteq_kit/cowboy_kit/PopulateContents()
+	new /obj/item/gun/ballistic/revolver/Salvation(src)
+	new /obj/item/gun/ballistic/revolver/Condemnation(src)
+	new /obj/item/storage/belt/buscadero(src)
+	new /obj/item/ammo_box/g45l/lethal(src)
+	new /obj/item/ammo_box/g45l/lethal(src)
+	new /obj/item/ammo_box/g45l/lethal(src)
+
+/obj/item/storage/box/inteq_kit/ncr_kit
+
+/obj/item/storage/box/inteq_kit/ncr_kit/PopulateContents()
+	new /obj/item/gun/ballistic/revolver/Passing_Bell(src)
+	new /obj/item/ammo_box/g4570(src)
+	new /obj/item/ammo_box/g4570(src)
+

@@ -1084,12 +1084,16 @@
 	var/datum/action/ordinary = allocate(/datum/action)
 	TEST_ASSERT_EQUAL(ordinary.format_tooltip(user, "Обычная кнопка"), "Обычная кнопка", "Другие действия сохраняют прежний текст.")
 
-/// Новый еретик не появляется под эвак и сверх одного на двадцать живых.
+/// Новый еретик не появляется под эвак, при живом вознёсшемся и сверх одного на двадцать живых.
 /datum/unit_test/heretic_injection_pacing/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	TEST_ASSERT(heretic_injection_block_reason(HERETIC_CREW_PER_HERETIC - 1), "Живой еретик закрывает второго на малом онлайне.")
 	TEST_ASSERT_NULL(heretic_injection_block_reason(HERETIC_CREW_PER_HERETIC * 2), "Двойной онлайн допускает второго.")
+	heretic.ascended = TRUE
+	TEST_ASSERT(heretic_injection_block_reason(HERETIC_CREW_PER_HERETIC * 4), "Живой вознёсшийся закрывает появление еретика при любом онлайне.")
 	heretic.owner.current.death()
+	TEST_ASSERT_NULL(heretic_injection_block_reason(HERETIC_CREW_PER_HERETIC * 4), "Погибший вознёсшийся больше не держит место.")
+	heretic.ascended = FALSE
 	TEST_ASSERT_NULL(heretic_injection_block_reason(HERETIC_CREW_PER_HERETIC - 1), "Погибший еретик не занимает место.")
 	if(!SSshuttle.emergency)
 		return

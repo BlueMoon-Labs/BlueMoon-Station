@@ -108,7 +108,6 @@
 		else
 			to_chat(user, "<span class='warning'>You fail to unbuckle [buckled_mob].</span>")
 		return
-	UnregisterSignal(buckled_mob, COMSIG_MOB_POST_CAME)
 	say("User left, resetting scanners.")
 	return ..()
 
@@ -120,10 +119,14 @@
 			return FALSE
 	return TRUE
 
-/obj/machinery/research_table/buckle_mob(mob/living/buckled_mob, force, check_loc)
+/obj/machinery/research_table/post_buckle_mob(mob/living/buckled_mob)
+	. = ..()
 	RegisterSignal(buckled_mob, COMSIG_MOB_POST_CAME, PROC_REF(on_cum))
 	say("New user detected, tracking data.")
+
+/obj/machinery/research_table/post_unbuckle_mob(mob/living/buckled_mob)
 	. = ..()
+	UnregisterSignal(buckled_mob, COMSIG_MOB_POST_CAME)
 
 /obj/machinery/research_table/RefreshParts()
 	var/parts = 0

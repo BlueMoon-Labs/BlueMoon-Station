@@ -837,6 +837,32 @@
 	. = ..()
 	AddElement(/datum/element/polychromic, list("#FFFFFF", "#dbdbdb", "#dbdbdb", "#dbdbdb", "#dbdbdb"), 5)
 
+/obj/item/clothing/under/donator/opssrtclothes
+	name = "OPS-SRT clothes"
+	icon_state = "opssrtclothes"
+	item_state = "opssrtclothes"
+	icon = 'modular_bluemoon/icons/obj/clothing/uniforms.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/uniforms.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/icons/mob/clothing/uniforms_digi.dmi'
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE
+
+/obj/item/clothing/under/donator/saibasan
+	name = "Cybersun Surplus"
+	icon_state = "saibasan"
+	item_state = "saibasan"
+	icon = 'modular_bluemoon/icons/obj/clothing/uniforms.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/uniforms.dmi'
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	var/list/poly_colors = list("#FFFFFF", "#dbdbdb", "#dbdbdb",)
+
+/obj/item/clothing/under/donator/saibasan/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, list("#FFFFFF", "#dbdbdb", "#dbdbdb"), 3)
+
 /obj/item/clothing/under/poly_unia
 	name = "Poly Pants"
 	desc = "Brought by Gosei, too lazy for digi version, suck it Catcrins!"
@@ -1047,7 +1073,6 @@
 	icon_state = "longshirt_0"
 	fitted = NO_FEMALE_UNIFORM
 	body_parts_covered = CHEST|GROIN|ARMS
-	alternate_worn_layer = GLOVES_LAYER
 	always_reskinnable = TRUE
 	can_adjust = FALSE
 	unique_reskin = list(
@@ -1061,16 +1086,12 @@
 	switch(current_skin)
 		if("Buttoned")
 			body_parts_covered = CHEST|GROIN|ARMS
-			mutantrace_variation = STYLE_DIGITIGRADE|USE_TAUR_CLIP_MASK
 		if("Decollete")
 			body_parts_covered = ARMS
-			mutantrace_variation = USE_TAUR_CLIP_MASK
 		if("Unbuttoned")
 			body_parts_covered = ARMS
-			mutantrace_variation = STYLE_DIGITIGRADE|USE_TAUR_CLIP_MASK
 		if("Spread out")
 			body_parts_covered = ARMS
-			mutantrace_variation = USE_TAUR_CLIP_MASK
 	user.update_inv_w_uniform()
 	user.update_body(TRUE)
 
@@ -1085,7 +1106,7 @@
 	if(!isliving(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
 		return
 
-	var/desired_layer = tgui_input_number(user, "Выставить слой одежды", "Слой отображения", GLOVES_LAYER, UNDERWEAR_LAYER, HEAD_LAYER)
+	var/desired_layer = tgui_input_number(user, "Выставить слой одежды", "Слой отображения", UNIFORM_LAYER, UNDERWEAR_LAYER, HEAD_LAYER)
 	if(!desired_layer)
 		return
 	alternate_worn_layer = desired_layer

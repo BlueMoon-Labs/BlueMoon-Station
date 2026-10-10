@@ -273,6 +273,19 @@
 	body_parts_covered = CHEST
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
+/obj/item/clothing/suit/donator/bm/opssrtarmor
+	name = "OPS-SRT Armor"
+	desc = "Plate carrier system"
+	icon_state = "opssrtarmor"
+	item_state = "opssrtarmor"
+	icon = 'modular_bluemoon/icons/obj/clothing/suits/armor.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/suits/armor.dmi'
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
+	blood_overlay_type = "armor"
+	body_parts_covered = CHEST
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+
 /obj/item/clothing/suit/armor/hos/dread_armor
 	name = "Броня Судьи"
 	desc = "Стандартный  бронежилет судьи из Мега-Города Солнечной Федерации. Броня покрывает плечи и большую часть тела. На наплечниках красуются орлы из скорее всего золота как и на левой части груди с ремнём где красуется значок с потертым именем Дредд. Вам кажется это имя знакомым. Эта броня так и веет чуством что вас защищает Закон."
@@ -695,17 +708,46 @@
 
 ///////////////////////////////////////////////
 
-/obj/item/clothing/suit/toggle/lsweater
+/obj/item/clothing/suit/donator/bm/lsweater
 	name = "Sweater"
 	desc = "A sweater belonging to some fox"
-	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
-	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
-	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
-	body_parts_covered = GROIN|ARMS
-	icon_state = "lsweater"
-	item_state = "lsweater"
-	togglename = "buttons"
-	alternate_worn_layer = SUIT_STORE_LAYER
+	icon_state = "lsweater_0"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	body_parts_covered = CHEST|GROIN|ARMS
+	always_reskinnable = TRUE
+	unique_reskin = list(
+		"Buttoned" = list("icon_state" = "lsweater_0"),
+		"Decollete" = list("icon_state" = "lsweater_1"),
+		"Unbuttoned" = list("icon_state" = "lsweater_2"),
+		"Knot on the waist" = list("icon_state" = "lsweater_3")
+	)
+
+/obj/item/clothing/suit/donator/bm/lsweater/reskin_obj(mob/user)
+	switch(current_skin)
+		if("Buttoned")
+			body_parts_covered = CHEST|GROIN|ARMS
+		if("Decollete")
+			body_parts_covered = GROIN|ARMS
+		if("Unbuttoned")
+			body_parts_covered = ARMS
+		if("Knot on the waist")
+			body_parts_covered = GROIN
+	user.update_inv_wear_suit()
+	user.update_body(TRUE)
+
+/obj/item/clothing/suit/donator/bm/lsweater/CtrlClick(mob/user)
+	. = ..()
+	if (!(item_flags & IN_INVENTORY))
+		return
+
+	if(!isliving(user) || !user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
+		return
+
+	var/desired_layer = tgui_input_number(user, "Выставить слой одежды", "Слой отображения", SUIT_LAYER, UNDERWEAR_LAYER, HEAD_LAYER)
+	if(!desired_layer)
+		return
+	alternate_worn_layer = desired_layer
+	user.update_inv_wear_suit()
 
 ///////////////////////////////////////////////
 
@@ -1132,8 +1174,8 @@
 	return TRUE
 
 /obj/item/modkit/lapkee_carrier_kit
-	name = "Concord armored top Kit"
-	desc = "A modkit for making a plate carrier into a Concord armored top."
+	name = "Modified concord armored coat Kit"
+	desc = "A modkit for making a plate carrier into a Modified concord armored coat."
 	icon_state = "plate-carrier_kit"
 	product = /obj/item/clothing/suit/armor/hos/platecarrier/lapkee_carrier
 	fromitem = list(/obj/item/clothing/suit/armor/hos/platecarrier)
@@ -1160,16 +1202,13 @@
 
 /obj/item/clothing/suit/armor/hos/platecarrier/lapkee_carrier
 	DONATE_ITEM_TOOLTIP_PARENT
-	name = "Concord armored top"
-	desc = "Проектно сложилось так, что в животе у представителей вида касари почти нет жизненно-важных органов, посему подобный жилет (созданный как правло из списанных полноценных жилетов и скафандров) используется повсеместно на пусть и плохо, но оснащаемых гарнизонах конкорда, а так же в некоторых их подразделениях, предоставляя фокусированную защиту груди и всех внутренностей под ней, бонусом вмещая в себя и дополнительное снаряжение, такое как патроны."
+	name = "Modified concord armored coat"
+	desc = "Часть линейки защитного снаряжения для оперативных групп касари, активно работающих в зонах повышенной аномальной активности, радиологических, бактериологических или химических угроз. Применяется там, где невозможно выполнение, например, исследований без физического присутствия представителей вида, или где использование иных средств защиты невозможно. В связи с посредственными отношениями между расой касари и многими другими видами, этот халат оснащён качественными бронепластинами в области груди, системами отслеживания жизненных показателей и, в полной комплектации - системами жизнеобеспечения, бункером, манипулятором и экстренными химическими запасами."
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit_digi.dmi'
 	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/suit_digi.dmi'
 	icon_state = "lapkee-carrier-top"
-	unique_reskin = list(
-		"Top" = list("icon_state" = "lapkee-carrier-top", "desc" = "Проектно сложилось так, что в животе у представителей вида касари почти нет жизненно-важных органов, посему подобный жилет (созданный как правло из списанных полноценных жилетов и скафандров) используется повсеместно на пусть и плохо, но оснащаемых гарнизонах конкорда, а так же в некоторых их подразделениях, предоставляя фокусированную защиту груди и всех внутренностей под ней, бонусом вмещая в себя и дополнительное снаряжение, такое как патроны.", "name" = "Concord armored top"),
-		"Coat" = list("icon_state" = "lapkee-carrier-coat", "desc" = " Альтернативный стильный вариант переработанных бронежилетов, оформленный на манер бронехалата. Обычно - используется научными и медицинскими бригадами, служа цели защиты конечностей от биологических, бактериологических, радиационных угроз. В меньшей степени от вражеского огня, но как повезло, что это именно вариант с повышенной защитой, да? В комплекте два смешных подсумка для мелочёвки.", "name" = "Concord armored coat")
-	)
+	unique_reskin = list()
 
 /obj/item/clothing/suit/armor/hos/platecarrier/lapkee_carrier/equipped(mob/user, slot) //оверрайдим этот прок, дабы у нас вызывалась обнова иконки в момент одевания
 	. = ..()
@@ -1177,13 +1216,12 @@
 
 /obj/item/clothing/suit/armor/hos/platecarrier/lapkee_carrier/update_icon_state()
 	. = ..()
-	var/base_state = current_skin == "Coat" ? "lapkee-carrier-coat" : "lapkee-carrier-top"
-	icon_state = base_state
-	if(base_state != "lapkee-carrier-coat" || !istype(loc, /mob/living/carbon/human))
+	icon_state = "lapkee-carrier-top"
+	if(!istype(loc, /mob/living/carbon/human))
 		return
 	var/mob/living/carbon/human/wearer = loc
 	var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
-	var/breast_size = clamp(round(breast?.size || 0)-1, 0, 7)
+	var/breast_size = clamp(round(breast?.size || 0), 0, 9)
 	icon_state = "lapkee-carrier-coat-[breast_size]"
 	wearer.update_inv_wear_suit()
 	wearer.update_body()
@@ -1206,3 +1244,12 @@
 	icon_state = "sec_armor_kit"
 	product = /obj/item/clothing/suit/armor/vest/alt/tau
 	fromitem = list(/obj/item/clothing/suit/armor/vest/alt)
+
+/obj/item/clothing/suit/donator/bm/honorable_coat
+	name = "Honorable coat"
+	desc = "Old honoroble coat, pretty expensive"
+	icon_state = "honorable_coat"
+	item_state = "honorable_coat"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON

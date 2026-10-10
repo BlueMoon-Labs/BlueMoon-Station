@@ -1,0 +1,205 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark/side{
+	dir = 4
+	},
+/area/maintenance/department/security)
+"d" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/obj/structure/window/reinforced{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/side{
+	dir = 4
+	},
+/area/maintenance/department/security)
+"f" = (
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Security Storage Maintenance Hatch"
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/mapping_helpers/airlock/access/all/security/entrance,
+/obj/modular_map_connector,
+/turf/open/floor/plasteel,
+/area/maintenance/department/security)
+"g" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel,
+/area/maintenance/department/security)
+"m" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/vehicle/ridden/secway,
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plasteel/dark,
+/area/maintenance/department/security)
+"n" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/trimline/red/filled/line,
+/turf/open/floor/plasteel/dark,
+/area/maintenance/department/security)
+"q" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/trimline/red/filled/corner{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/maintenance/department/security)
+"w" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/trimline/red/filled/line,
+/obj/structure/rack,
+/obj/item/key/security{
+	pixel_x = 4;
+	pixel_y = 4
+	},
+/obj/item/key/security,
+/obj/item/assembly/flash/handheld,
+/turf/open/floor/plasteel,
+/area/maintenance/department/security)
+"y" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/maintenance/department/security)
+"D" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/trimline/red/filled/line,
+/obj/structure/rack,
+/obj/item/storage/backpack/duffelbag/sec{
+	pixel_y = 7
+	},
+/obj/item/clothing/mask/gas/sechailer{
+	pixel_x = 3;
+	pixel_y = -3
+	},
+/turf/open/floor/plasteel,
+/area/maintenance/department/security)
+"E" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/trimline/red/filled/line,
+/obj/structure/window/reinforced{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/side{
+	dir = 4
+	},
+/area/maintenance/department/security)
+"F" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/trimline/red/filled/line,
+/obj/effect/turf_decal/bot,
+/obj/vehicle/ridden/secway,
+/turf/open/floor/plasteel/dark,
+/area/maintenance/department/security)
+"H" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/maintenance/department/security)
+"I" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/item/clothing/suit/armor/vest/old,
+/obj/item/clothing/head/helmet/old,
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/maintenance/department/security)
+"L" = (
+/turf/closed/wall,
+/area/maintenance/department/security)
+"N" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/maintenance/department/security)
+"X" = (
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+X
+X
+X
+X
+X
+"}
+(2,1,1) = {"
+f
+q
+g
+w
+L
+"}
+(3,1,1) = {"
+X
+H
+g
+D
+L
+"}
+(4,1,1) = {"
+X
+d
+b
+E
+L
+"}
+(5,1,1) = {"
+X
+N
+y
+n
+L
+"}
+(6,1,1) = {"
+X
+m
+I
+F
+L
+"}
+(7,1,1) = {"
+X
+L
+L
+L
+L
+"}
+(8,1,1) = {"
+X
+X
+X
+X
+X
+"}
+(9,1,1) = {"
+X
+X
+X
+X
+X
+"}
+(10,1,1) = {"
+X
+X
+X
+X
+X
+"}
+(11,1,1) = {"
+X
+X
+X
+X
+X
+"}

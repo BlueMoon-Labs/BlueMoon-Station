@@ -60,27 +60,27 @@
 			total_quality += S.food_quality
 			food_quality = total_quality / length(ingredients)
 			to_chat(user, "<span class='notice'>You add the [I.name] to the [name].</span>")
-			update_name(S)
+			update_custom_name(S)
 	else
 		. = ..()
 
 
-/obj/item/reagent_containers/food/snacks/customizable/update_name(obj/item/reagent_containers/food/snacks/S)
-	for(var/obj/item/I in ingredients)
-		if(!istype(S, I.type))
+/obj/item/reagent_containers/food/snacks/customizable/proc/update_custom_name(obj/item/reagent_containers/food/snacks/ingredient)
+	for(var/obj/item/added in ingredients)
+		if(!istype(ingredient, added.type))
 			customname = "custom"
 			break
 	if(ingredients.len == 1) //first ingredient
-		if(istype(S, /obj/item/reagent_containers/food/snacks/meat))
-			var/obj/item/reagent_containers/food/snacks/meat/M = S
-			if(M.subjectname)
-				customname = "[M.subjectname]"
-			else if(M.subjectjob)
-				customname = "[M.subjectjob]"
+		if(istype(ingredient, /obj/item/reagent_containers/food/snacks/meat))
+			var/obj/item/reagent_containers/food/snacks/meat/meat = ingredient
+			if(meat.subjectname)
+				customname = "[meat.subjectname]"
+			else if(meat.subjectjob)
+				customname = "[meat.subjectjob]"
 			else
-				customname = S.name
+				customname = ingredient.name
 		else
-			customname = S.name
+			customname = ingredient.name
 	name = "[customname] [initial(name)]"
 
 /obj/item/reagent_containers/food/snacks/customizable/proc/initialize_custom_food(obj/item/BASE, obj/item/I, mob/user)

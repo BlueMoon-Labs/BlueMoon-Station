@@ -17,11 +17,7 @@
 	return
 
 /mob/camera/forceMove(atom/destination)
-	if((training_origin || length(GLOB.antag_training_arenas)) && !training_move_allowed(destination))
-		return FALSE
-	var/oldloc = loc
-	loc = destination
-	Moved(oldloc, NONE, TRUE)
+	return abstract_move(destination)
 
 /mob/camera/canUseStorage()
 	return FALSE

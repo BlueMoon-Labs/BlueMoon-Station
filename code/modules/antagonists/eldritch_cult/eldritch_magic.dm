@@ -892,7 +892,7 @@
 	has_fire_ring = TRUE
 	drop_ring_visual()
 	ring_visual = new(null)
-	user.vis_contents += ring_visual
+	user.add_vis_on_floor(ring_visual)
 	START_PROCESSING(SSfastprocess, src)
 	addtimer(CALLBACK(src, PROC_REF(remove), user), duration, TIMER_OVERRIDE|TIMER_UNIQUE)
 

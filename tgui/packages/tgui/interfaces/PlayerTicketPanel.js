@@ -33,9 +33,10 @@ export const PlayerTicketPanel = (props) => {
     ticket = null,
     has_mentor_ticket = false,
     mentor_ticket = null,
+    initial_tab = 'admin',
   } = data;
 
-  const [tab, setTab] = useState(1);
+  const [tab, setTab] = useState(initial_tab === 'mentor' ? 2 : 1);
 
   return (
     <Window
@@ -115,8 +116,6 @@ const NewTicketPanel = (props) => {
           </Box>
           <Input
             fluid
-            multiline
-            rows={6}
             placeholder={
               isAdmin
                 ? 'Опишите проблему...'

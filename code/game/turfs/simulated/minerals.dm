@@ -37,6 +37,8 @@ GLOBAL_LIST_INIT(closed_turf_smooth_targets, list(/turf/closed))
 	var/turf/open/floor/plating/turf_type = /turf/open/floor/plating/asteroid/airless
 	var/obj/item/stack/ore/mineralType = null
 	var/mineralAmt = 3
+	/// Метеор теряет удар о такую скалу. Камни руин у станции его пропускают, иначе заслоняли бы её.
+	var/stops_meteors = FALSE
 	var/last_act = 0
 	var/scan_state = "" //Holder for the image we display when we're pinged by a mining scanner
 	var/defer_change = 0
@@ -267,6 +269,14 @@ GLOBAL_LIST_INIT(closed_turf_smooth_targets, list(/turf/closed))
 	turf_type = /turf/open/floor/plating/asteroid/basalt/lava_land_surface
 	baseturfs = /turf/open/floor/plating/asteroid/basalt/lava_land_surface
 	initial_gas_mix = LAVALAND_DEFAULT_ATMOS
+
+/// Скала, в которую врезана сама станция: руды мало, гибтонита нет.
+/turf/closed/mineral/random/stationside
+	mineralChance = 1
+	mineralSpawnChanceList = list(
+		/obj/item/stack/ore/uranium = 1, /obj/item/stack/ore/diamond = 1, /obj/item/stack/ore/gold = 3, /obj/item/stack/ore/titanium = 5,
+		/obj/item/stack/ore/silver = 4, /obj/item/stack/ore/plasma = 3, /obj/item/stack/ore/iron = 30)
+	stops_meteors = TRUE
 
 /turf/closed/mineral/random/volcanic
 	turf_type = /turf/open/floor/plating/asteroid/basalt/lava_land_surface

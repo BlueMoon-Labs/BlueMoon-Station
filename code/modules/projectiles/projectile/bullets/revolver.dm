@@ -188,3 +188,170 @@
 	armour_penetration = BULLET_BR8
 	wound_bonus = 10
 
+//.41 cal сб ревик
+
+/obj/item/ammo_casing/cal41/rubber
+	name= ".41 rubber bullet casing"
+	desc = "An .41 rubber casing."
+	caliber = ".41cal"
+	projectile_type = /obj/item/projectile/bullet/cal41/rubber
+	can_be_printed = TRUE
+	custom_materials = list(/datum/material/glass = 800)
+
+/obj/item/projectile/bullet/cal41/rubber
+	name = ".41 rubber bullet"
+	damage = 2
+	stamina = 50
+	shrapnel_type = NONE
+	sharpness = SHARP_NONE
+	embedding = null
+	armour_penetration = BULLET_BR0
+
+/obj/item/ammo_casing/cal41/lethal
+	name= ".41 bullet casing"
+	desc = "An .41 casing."
+	caliber = ".41cal"
+	projectile_type = /obj/item/projectile/bullet/cal41/lethal
+	can_be_printed = TRUE
+	custom_materials = list(/datum/material/iron = 800)
+
+/obj/item/projectile/bullet/cal41/lethal
+	name = ".41 bullet"
+	damage = 33
+	shrapnel_type = NONE
+	sharpness = SHARP_NONE
+	embedding = null
+	armour_penetration = BULLET_BR2
+
+/obj/item/ammo_casing/cal41/incendiary
+	name= ".41 bullet casing"
+	desc = "An .41 casing."
+	caliber = ".41cal"
+	projectile_type = /obj/item/projectile/bullet/cal41/incendiary
+	can_be_printed = TRUE
+	advanced_print_req = TRUE
+	custom_materials = list(/datum/material/glass = 800)
+
+/obj/item/projectile/bullet/cal41/incendiary
+	name = ".41 bullet"
+	damage = 30
+	shrapnel_type = NONE
+	sharpness = SHARP_NONE
+	embedding = null
+	armour_penetration = BULLET_BR1
+	
+
+/obj/item/projectile/bullet/cal41/incendiary/on_hit(atom/target, blocked = FALSE)
+	. = ..()
+	if(iscarbon(target))
+		var/mob/living/carbon/M = target
+		M.adjust_fire_stacks(6)
+		M.IgniteMob()
+
+/obj/item/ammo_casing/cal41/dumdum
+	name= ".41 incendiary dumdum casing"
+	desc = "An .41 dumdum casing."
+	caliber = ".41cal"
+	projectile_type = /obj/item/projectile/bullet/cal41/dumdum
+	can_be_printed = TRUE
+	advanced_print_req = TRUE
+	custom_materials = list(/datum/material/iron = 800, /datum/material/plastic = 200)
+
+/obj/item/projectile/bullet/cal41/dumdum
+	name = ".38 DumDum bullet"
+	damage = 20
+	armour_penetration = BULLET_BR0 - 30
+	ricochets_max = 0
+	sharpness = SHARP_EDGED
+	wound_bonus = 20
+	bare_wound_bonus = 20
+	embedding = list(embed_chance=75, fall_chance=3, jostle_chance=4, ignore_throwspeed_threshold=TRUE, pain_stam_pct=0.4, pain_mult=5, jostle_pain_mult=6, rip_time=10)
+	wound_falloff_tile = -5
+	embed_falloff_tile = -15
+
+/obj/item/ammo_casing/cal41/magnum
+	name= ".41 Remington Magnum casing"
+	desc = "An .41 Remington Magnum"
+	caliber = ".41cal"
+	projectile_type = /obj/item/projectile/bullet/cal41/magnum
+	can_be_printed = TRUE
+	advanced_print_req = TRUE
+	custom_materials = list(/datum/material/iron = 800, /datum/material/plastic = 200)
+
+/obj/item/projectile/bullet/cal41/magnum
+	name = ".41 Remington Magnum bullet"
+	damage = 40
+	shrapnel_type = NONE
+	sharpness = SHARP_NONE
+	embedding = null
+	armour_penetration = BULLET_BR4
+	wound_bonus = 3
+
+/obj/item/ammo_casing/cal41/fmj
+	name= ".41 FMJ casing"
+	desc = "An .41 FMJ bullet"
+	caliber = ".41cal"
+	projectile_type = /obj/item/projectile/bullet/cal41/fmj
+	can_be_printed = TRUE
+	advanced_print_req = TRUE
+	custom_materials = list(/datum/material/iron = 800, /datum/material/plastic = 200)
+
+/obj/item/projectile/bullet/cal41/fmj
+	name = ".41 Remington fmj bullet"
+	damage = 30
+	shrapnel_type = NONE
+	sharpness = SHARP_NONE
+	embedding = null
+	armour_penetration = BULLET_BR5
+
+//410 револьвер дробовик
+
+/obj/item/ammo_casing/cal410
+	name= ".410 rubber shot"
+	desc = "An .410 rubber shot."
+	caliber = ".410cal"
+	icon = 'modular_bluemoon/icons/obj/ammo.dmi'
+	icon_state = "410rubber"
+	pellets = 6
+	variance = 100
+	projectile_type = /obj/item/projectile/bullet/pellet/exorcist_rubber
+	can_be_printed = TRUE
+	custom_materials = list(/datum/material/glass = 800)
+
+/obj/item/projectile/bullet/pellet/exorcist_rubber
+	name = "rubbershot pellet"
+	icon_state = "pellet"
+	damage = 1
+	stamina = 4
+	armour_penetration = BULLET_BR0
+	sharpness = SHARP_NONE
+	embedding = null
+	ricochets_max = 4
+	ricochet_chance = 50
+	ricochet_auto_aim_angle = 45
+	ricochet_auto_aim_range = 8
+	ricochet_incidence_leeway = 50
+	ricochet_decay_chance = 1
+	ricochet_decay_damage = 1
+
+/obj/item/ammo_casing/cal410/lethal
+	name= ".410 snakeshot"
+	desc = "An .410 snakeshot."
+	caliber = ".410cal"
+	icon = 'modular_bluemoon/icons/obj/ammo.dmi'
+	icon_state = "410snakeshot"
+	pellets = 6
+	variance = 50
+	projectile_type = /obj/item/projectile/bullet/cal41/lethal
+	can_be_printed = TRUE
+	custom_materials = list(/datum/material/iron = 800)
+
+/obj/item/projectile/bullet/pellet/exorcist_snakeshot
+	name = "snakeshot pellet"
+	icon_state = "pellet"
+	armour_penetration = BULLET_BR1
+	damage = 3
+	tile_dropoff_ap = 6
+	wound_bonus = 1
+	bare_wound_bonus = 5
+	wound_falloff_tile = -2.5

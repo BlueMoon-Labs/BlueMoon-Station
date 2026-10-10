@@ -579,10 +579,13 @@
 		return TRUE
 	// Ручное управление, пусть и силиконовое: автоматика в его решение не лезет.
 	auto_closed = FALSE
+	var/was_closed = density
 	if(density)
 		open()
 	else
 		close()
+	if(density != was_closed)
+		log_remote_use(user, was_closed ? "opened" : "closed", "firelock interface")
 	return TRUE
 
 /obj/machinery/door/firedoor/attack_robot(mob/user)

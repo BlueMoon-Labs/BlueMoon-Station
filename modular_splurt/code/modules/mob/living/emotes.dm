@@ -900,7 +900,7 @@ To add randomization to your emote, copy and paste this line of code:
 
 /datum/emote/sound/human/snore/snore2/run_emote(mob/user, params)
 	var/datum/dna/D = user.has_dna()
-	var/say_mod = (D ? D.species.say_mod : "says")
+	var/say_mod = (D ? D.species.say_mod : "говорит")
 	var/list/aaauughh = list(
 		"издаёт <b>зубодробительный</b> храп.",
 		"издаёт что-то похожее на <b>болезненный</b> храп.",
@@ -1039,7 +1039,7 @@ To add randomization to your emote, copy and paste this line of code:
 
 /datum/emote/sound/human/poyo/run_emote(mob/user, params)
 	var/datum/dna/D = user.has_dna()
-	var/say_mod = (D ? D.species.say_mod : "says")
+	var/say_mod = (D ? D.species.say_mod : "говорит")
 	message = replacetextEx(message, "%SAYS", say_mod)
 
 	// Return normally

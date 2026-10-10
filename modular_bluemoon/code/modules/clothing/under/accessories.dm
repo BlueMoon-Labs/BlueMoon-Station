@@ -13,6 +13,13 @@
 	icon = 'modular_bluemoon/icons/obj/clothing/accessories.dmi'
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/accessories.dmi'
 
+/obj/item/clothing/accessory/medaldoblest
+	name = "For Military Valor, 2nd Class"
+	desc = "Made of nickel silver; it is circular in shape, with a diameter of 32 mm and a raised rim on both sides."
+	icon_state = "medaldoblest"
+	icon = 'modular_bluemoon/icons/obj/clothing/accessories.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/accessories.dmi'
+
 /obj/item/clothing/accessory/armband/hcaarmband
 	name = "HCA armband"
 	desc = "A black and white armband depicting two swords crossed around the fascia within wreaths representing prosperity. This flag refers to the political party of the Human Commonwealth."

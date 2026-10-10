@@ -1319,6 +1319,26 @@
 	TEST_ASSERT(!(whisper_verb in ghost.verbs), "Снятый обол закрывает шёпот.")
 	TEST_ASSERT(!spirit.deliver_whisper(ghost, "После"), "Без обола шёпот не доходит.")
 
+/// Кнопки «Сместить душу» и «Удержать душу» активны, только пока есть отделённая вами душа.
+/datum/unit_test/heretic_spirit_soul_buttons/Run()
+	var/datum/antagonist/heretic/heretic = spirit_hold_heretic()
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spirit_grasp)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/datum/eldritch_knowledge/spell/spirit_hold/hold_knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spell/spirit_hold)
+	var/datum/eldritch_knowledge/spirit_grasp/grasp = heretic.get_knowledge(/datum/eldritch_knowledge/spirit_grasp)
+	var/obj/effect/proc_holder/spell/hold = hold_knowledge.granted_spell
+	var/obj/effect/proc_holder/spell/shift = grasp.granted_spell
+	TEST_ASSERT(!hold.can_cast(user, FALSE, TRUE), "Без отделённой души Удержание неактивно.")
+	TEST_ASSERT(!shift.can_cast(user, FALSE, TRUE), "Без отделённой души смещение неактивно.")
+	TEST_ASSERT(findtext(shift.heretic_failure_reason, "нет отделённой"), "Отказ объясняет, откуда берётся душа: [shift.heretic_failure_reason]")
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	var/datum/status_effect/heretic_spirit/separated/soul = spirit.separate(victim, spirit)
+	TEST_ASSERT(hold.can_cast(user, FALSE, TRUE), "С отделённой душой Удержание активно.")
+	TEST_ASSERT(shift.can_cast(user, FALSE, TRUE), "С отделённой душой смещение активно.")
+	qdel(soul)
+	TEST_ASSERT(!hold.can_cast(user, FALSE, TRUE), "Вернувшаяся душа снова гасит кнопку.")
+
 /datum/unit_test/proc/spirit_hold_heretic()
 	var/datum/antagonist/heretic/heretic = allocate_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
 	heretic.selected_path = PATH_SPIRIT

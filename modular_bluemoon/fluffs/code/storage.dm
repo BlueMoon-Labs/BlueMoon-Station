@@ -435,6 +435,7 @@
 	new /obj/item/modkit/melatonin_stunsword_kit(src)
 	new /obj/item/modkit/melatonin_carrier_kit(src)
 	new /obj/item/modkit/melatonin_shotgun_hair_of_dog_kit(src)
+	new /obj/item/modsuit_modkit/melatonin(src)
 
 /obj/item/storage/box/tau_box
 	name = "Tau modkits box"

@@ -628,9 +628,9 @@
 
 /obj/effect/temp_visual/heretic_lock_portal/Initialize(mapload)
 	. = ..()
-	add_overlay(emissive_appearance(icon, icon_state))
+	add_overlay(emissive_appearance(icon, icon_state, offset_spokesman = src))
 	ring = new(null)
-	vis_contents += ring
+	add_vis_on_floor(ring)
 	transform = matrix(HERETIC_LOCK_PORTAL_START, 0, 0, 0, HERETIC_LOCK_PORTAL_START, 0)
 	alpha = 0
 	animate(src, transform = matrix(), alpha = 255, time = HERETIC_LOCK_PORTAL_OPEN, easing = BACK_EASING | EASE_OUT)
@@ -665,7 +665,7 @@
 
 /obj/effect/abstract/heretic_lock_portal_ring/Initialize(mapload)
 	. = ..()
-	add_overlay(emissive_appearance(icon, icon_state))
+	add_floor_overlay(emissive_appearance(icon, icon_state, offset_spokesman = src))
 	spun_at = world.time
 	for(var/tooth in 1 to HERETIC_LOCK_PORTAL_TEETH)
 		var/matrix/notch = matrix()
@@ -718,7 +718,7 @@
 
 /obj/effect/temp_visual/heretic_lock_click/Initialize(mapload)
 	. = ..()
-	add_overlay(emissive_appearance(icon, icon_state))
+	add_overlay(emissive_appearance(icon, icon_state, offset_spokesman = src))
 
 /// Ключ Дома над героем: проворачивается по щелчку за время подготовки, затем уходит в героя или гаснет.
 /obj/effect/temp_visual/heretic_lock_house_key
@@ -732,7 +732,7 @@
 
 /obj/effect/temp_visual/heretic_lock_house_key/Initialize(mapload)
 	. = ..()
-	add_overlay(emissive_appearance(icon, icon_state))
+	add_overlay(emissive_appearance(icon, icon_state, offset_spokesman = src))
 	alpha = 0
 	transform = matrix(HERETIC_LOCK_KEY_START, 0, 0, 0, HERETIC_LOCK_KEY_START, 0)
 	animate(src, alpha = 255, transform = matrix(), time = HERETIC_LOCK_KEY_APPEAR, easing = BACK_EASING | EASE_OUT)

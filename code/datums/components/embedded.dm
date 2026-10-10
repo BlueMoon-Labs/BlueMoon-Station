@@ -440,8 +440,11 @@
 		if(do_after(us, 30, target = parent))
 			if(QDELETED(weapon)) // Предмет могли убрать параллельно
 				return
-			us.put_in_hands(weapon)
-			weapon.unembedded()
+			var/obj/item/pulled_out = weapon
+			UnregisterSignal(pulled_out, COMSIG_MOVABLE_MOVED)
+			pulled_out.invisibility = initial(pulled_out.invisibility)
+			us.put_in_hands(pulled_out)
+			pulled_out.unembedded()
 			qdel(src)
 
 

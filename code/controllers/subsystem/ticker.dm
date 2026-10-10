@@ -470,11 +470,22 @@ SUBSYSTEM_DEF(ticker)
 		LAZYADD(round_end_events, cb)
 
 /datum/controller/subsystem/ticker/proc/station_explosion_detonation(atom/bomb)
-	if(bomb)	//BOOM
-		var/turf/epi = bomb.loc
-		qdel(bomb)
-		if(epi)
-			explosion(epi, 512, 0, 0, 0, TRUE, TRUE, 0, TRUE)
+	if(!bomb)
+		return
+	var/turf/epi = get_turf(bomb)
+	qdel(bomb)
+	if(!epi)
+		return
+	for(var/turf/level_epicenter as anything in station_explosion_epicenters(epi))
+		explosion(level_epicenter, 512, 0, 0, 0, TRUE, TRUE, 0, TRUE)
+
+/// Взрыв идёт по своему z, поэтому боеголовка взрывается в той же точке на каждом этаже связки.
+/proc/station_explosion_epicenters(turf/epicenter)
+	. = list()
+	for(var/z_level in SSmapping.get_connected_levels(epicenter))
+		var/turf/level_turf = locate(epicenter.x, epicenter.y, z_level)
+		if(level_turf)
+			. += level_turf
 
 // Все четыре стадии ниже уступают тик после каждого игрока. Обход списка в DM идёт
 // по снапшоту, снятому на входе в цикл, и снапшот переживает сон - выпавший из

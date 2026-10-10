@@ -900,7 +900,7 @@
 	. = ..()
 	if(!.)
 		return
-	if(!istype(user))
+	if(!iscarbon(user))
 		return FALSE
 
 /datum/interaction/lewd/clothesplosion/display_interaction(mob/living/carbon/user, mob/living/carbon/target, is_hidden)

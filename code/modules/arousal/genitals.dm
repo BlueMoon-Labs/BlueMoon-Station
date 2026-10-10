@@ -14,7 +14,7 @@
 	var/size = 2 //can vary between num or text, just used in icon_state strings
 	var/datum/reagent/fluid_id = null
 	var/fluid_max_volume = 50
-	var/fluid_efficiency = 1
+	var/fluid_efficiency = 1 // not being used. consider deleting or implementing it.
 	var/fluid_rate = CUM_RATE
 	var/fluid_mult = 1
 	var/last_orgasmed = 0
@@ -241,10 +241,11 @@
 /obj/item/organ/genital/proc/generate_fluid(datum/reagents/R)
 	var/amount = get_fluid()
 	R.clear_reagents()
-	R.maximum_volume = fluid_max_volume
 	if(fluid_id)
+		R.maximum_volume = fluid_max_volume
 		R.add_reagent(fluid_id,amount, owner.get_blood_data())
 	else if(linked_organ?.fluid_id)
+		R.maximum_volume = linked_organ.fluid_max_volume
 		R.add_reagent(linked_organ.fluid_id,amount, owner.get_blood_data())
 	return TRUE
 
@@ -417,6 +418,8 @@ GLOBAL_LIST_EMPTY(genital_slot_dna_features)
 		for(var/A in genitals_to_add)
 			if(istype(A, /obj/item/clothing/underwear/briefs/strapon))
 				var/obj/item/clothing/underwear/briefs/strapon/strapon = A
+				if(!strapon.attached_dildo)
+					continue
 				//BLUEMOON EDIT START
 				var/datum/sprite_accessory/S = GLOB.cock_shapes_list[GLOB.dildo_shape_to_cock_shape[strapon.attached_dildo.dildo_shape]]
 				mutant_string = S.mutant_part_string
@@ -526,12 +529,14 @@ GLOBAL_LIST_EMPTY(genital_slot_dna_features)
 				dna.species.update_overlay_by_key(mutant_string, src, genital_overlay)
 				LAZYADD(fully_exposed, genital_overlay)
 				if(has_emissive_part(dna.features, G.slot))
-					LAZYADD(fully_exposed, emissive_copy(genital_overlay))
+					var/mutable_appearance/genital_emissive = emissive_copy(genital_overlay, offset_spokesman = src)
+					LAZYADD(fully_exposed, genital_emissive)
 			else
 				genital_overlay.layer = -layers_num[layer]
 				standing += genital_overlay
 				if(has_emissive_part(dna.features, G.slot))
-					standing += emissive_copy(genital_overlay)
+					var/mutable_appearance/genital_emissive = emissive_copy(genital_overlay, offset_spokesman = src)
+					standing += genital_emissive
 
 		if(LAZYLEN(standing))
 			overlays_standing[layers_num[layer]] = standing

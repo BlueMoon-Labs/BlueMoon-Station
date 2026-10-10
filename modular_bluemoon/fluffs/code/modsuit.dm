@@ -241,3 +241,48 @@
 )
 
 //////////////////////////////////////////////////////////
+
+/obj/item/modsuit_modkit/melatonin
+	name = "Fairweather MODsuit theme Kit"
+	new_theme = /datum/mod_theme/station_combat/security/melatonin
+	from_theme = /datum/mod_theme/station_combat/security
+
+/obj/item/mod/control/pre_equipped/melatonin
+	theme = /datum/mod_theme/station_combat/security/melatonin
+
+/obj/item/mod/construction/armor/melatonin
+	theme = /datum/mod_theme/station_combat/security/melatonin
+
+/datum/mod_theme/station_combat/security/melatonin
+	name = "Fairweather"
+	desc = "Лёгкий экспериментальный прототип, никогда не предназначавшийся для публики. Сильно повреждён и восстановлен кустарным образом вдали от лабораторий Fairweather. Бывшая белая окраска скрыта под матовым чёрным покрытием, потемневшим вместе с неокрашиваемыми элементами. На броне — потёртости, следы когтей и старого ремонта. Поверх новой окраски нанесены едва различимые галогеновые знаки Ревашольской Гражданской Милиции."
+	overwrite_desc = TRUE
+	default_skin = "luna"
+	skins = list(
+		"luna" = list(
+			HELMET_LAYER = null,
+			HELMET_FLAGS = list(
+				UNSEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
+				UNSEALED_INVISIBILITY = HIDEFACIALHAIR,
+				SEALED_INVISIBILITY = HIDEMASK|HIDEEYES|HIDEHAIR,
+				UNSEALED_COVER = HEADCOVERSMOUTH,
+				SEALED_COVER = HEADCOVERSEYES,
+			),
+			CHESTPLATE_FLAGS = list(
+				UNSEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
+				SEALED_INVISIBILITY = HIDEJUMPSUIT,
+			),
+			GAUNTLETS_FLAGS = list(
+				UNSEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
+			),
+			BOOTS_FLAGS = list(
+				UNSEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
+			),
+		),
+)
+
+//////////////////////////////////////////////////////////

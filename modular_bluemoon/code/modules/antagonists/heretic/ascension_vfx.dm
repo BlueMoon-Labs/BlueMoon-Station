@@ -228,7 +228,7 @@
 	var/obj/effect/abstract/heretic_particle_holder/holder = new(null, particles_type, glow)
 	if(QDELETED(holder))
 		return null
-	host.vis_contents += holder
+	host.add_vis_on_floor(holder)
 	return holder
 
 /// Снятый эмиттер больше не порождает частиц, уже летящие догорают на месте носителя.
@@ -247,6 +247,26 @@
 	holder.layer = ABOVE_MOB_LAYER
 	holder.forceMove(place)
 	QDEL_IN(holder, holder.particles.lifespan)
+
+/// Опора для image, видимых одному клиенту. Image на самом атоме входит в его хитбокс при любом mouse_opacity, а у объекта в vis_contents mouse_opacity соблюдается.
+/proc/heretic_vfx_image_anchor(atom/movable/host)
+	if(QDELETED(host))
+		return null
+	var/obj/effect/abstract/heretic_vfx_image_anchor/anchor = new
+	host.vis_contents += anchor
+	return anchor
+
+/obj/effect/abstract/heretic_vfx_image_anchor
+	icon = null
+	layer = FLOAT_LAYER
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	appearance_flags = KEEP_APART
+	vis_flags = VIS_INHERIT_PLANE
+
+/obj/effect/abstract/heretic_vfx_image_anchor/Destroy()
+	for(var/atom/movable/host in vis_locs)
+		host.vis_contents -= src
+	return ..()
 
 /// Рисунок на носителе: проступает за fade_in и держится, пока его не погасят fade_out или удалением. upright не даёт ему лечь вместе с носителем.
 /proc/heretic_vfx_attach(atom/movable/host, visual_icon, visual_state, target_alpha = 255, fade_in = HERETIC_VFX_ATTACH_FADE, glow = TRUE, upright = TRUE)
@@ -326,7 +346,7 @@
 	if(!source.render_target)
 		source.render_target = REF(source)
 	var/obj/effect/abstract/heretic_vfx_glow/glow = new(null, source.render_target)
-	source.vis_contents += glow
+	source.add_vis_on_floor(glow)
 	return glow
 
 /obj/effect/abstract/heretic_vfx_glow
@@ -385,7 +405,7 @@
 	icon = visual_icon
 	icon_state = visual_state
 	host_ref = WEAKREF(host)
-	host.vis_contents += src
+	host.add_vis_on_floor(src)
 	if(add_glow)
 		glow = heretic_vfx_attach_glow(src)
 	alpha = 0
@@ -434,7 +454,7 @@
 	duration = lifetime
 	. = ..()
 	color = heretic_vfx_ink_ramp(ink || COLOR_WHITE)
-	add_overlay(emissive_appearance(icon, icon_state))
+	add_overlay(emissive_appearance(icon, icon_state, offset_spokesman = src))
 	add_filter(HERETIC_VFX_RIPPLE_FILTER, 1, ripple_filter(radius = HERETIC_VFX_RING_INNER, size = HERETIC_VFX_RIPPLE_SIZE, repeat = HERETIC_VFX_RIPPLE_REPEAT))
 	// Анимация фильтра запоминает облик на момент вызова: сдвиг и масштаб кольца задаются до неё.
 	expand(radius, offset_x, offset_y)
@@ -464,7 +484,7 @@
 	duration = lifetime
 	. = ..()
 	color = heretic_vfx_ink_ramp(ink || COLOR_WHITE)
-	add_overlay(emissive_appearance(icon, icon_state))
+	add_overlay(emissive_appearance(icon, icon_state, offset_spokesman = src))
 	pixel_x = (world.icon_size - HERETIC_VFX_RING_ICON_SIZE) / 2
 	pixel_y = pixel_x
 	var/start_scale = radius * world.icon_size / HERETIC_VFX_RING_RADIUS
@@ -513,7 +533,7 @@
 	for(var/index in 1 to arm_count)
 		var/obj/effect/abstract/heretic_vfx_converge_arm/arm = new(null, particles_type, index * 360 / arm_count, radius, travel, swirl)
 		arms += arm
-		vis_contents += arm
+		add_vis_on_floor(arm)
 	glow = heretic_vfx_attach_glow(src)
 	addtimer(CALLBACK(src, PROC_REF(stop_emitting)), emit_time)
 
@@ -579,7 +599,7 @@
 	if(!isturf(finish) || !isturf(loc) || finish == loc)
 		return INITIALIZE_HINT_QDEL
 	color = heretic_vfx_ink_ramp(ink || COLOR_WHITE)
-	add_overlay(emissive_appearance(icon, icon_state))
+	add_overlay(emissive_appearance(icon, icon_state, offset_spokesman = src))
 	width = thread_width
 	var/delta_x = (finish.x - x) * world.icon_size
 	var/delta_y = (finish.y - y) * world.icon_size
@@ -862,7 +882,7 @@
 	for(var/index in 1 to HERETIC_CRESCENDO_EMITTERS)
 		var/obj/effect/abstract/heretic_vfx_emitter/emitter = new(null, path.vfx_particles, index * 360 / HERETIC_CRESCENDO_EMITTERS)
 		emitters += emitter
-		vis_contents += emitter
+		add_vis_on_floor(emitter)
 	glow = heretic_vfx_attach_glow(src)
 	warp = new(loc)
 	set_stage(1)
@@ -939,7 +959,7 @@
 	color = ink
 	if(rune_transform)
 		transform = rune_transform
-	add_overlay(emissive_appearance(icon, icon_state, layer = HIGH_SIGIL_LAYER))
+	add_overlay(emissive_appearance(icon, icon_state, layer = HIGH_SIGIL_LAYER, offset_spokesman = src))
 
 /// Частицы пути появляются на краю круга и с разгоном втягиваются в центр руны, уменьшаясь.
 /obj/effect/abstract/heretic_vfx_emitter

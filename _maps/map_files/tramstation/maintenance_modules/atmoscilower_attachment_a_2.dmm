@@ -1,0 +1,394 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/turf/template_noop,
+/area/template_noop)
+"d" = (
+/obj/structure/girder,
+/obj/effect/turf_decal/weather/sand/plating,
+/turf/open/floor/plating/airless,
+/area/maintenance/starboard/lesser)
+"f" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop/syndicate_present,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"g" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/loading_area{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/maintenance/starboard/lesser)
+"i" = (
+/obj/modular_map_connector,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"j" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/loading_area{
+	dir = 1
+	},
+/obj/item/wallframe/button,
+/turf/open/floor/plating,
+/area/maintenance/starboard/lesser)
+"l" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"m" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/loading_area,
+/turf/open/floor/plating,
+/area/maintenance/starboard/lesser)
+"n" = (
+/obj/structure/grille,
+/obj/structure/window{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"r" = (
+/obj/effect/turf_decal/weather/sand/plating,
+/obj/effect/turf_decal/loading_area,
+/turf/open/floor/plating/airless,
+/area/maintenance/starboard/lesser)
+"s" = (
+/obj/structure/rack,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/wrench = 2, /obj/item/wirecutters = 2, /obj/item/screwdriver = 2, /obj/item/crowbar = 2, /obj/item/weldingtool = 2, /obj/item/stack/cable_coil = 2, /obj/item/analyzer = 2, /obj/item/t_scanner = 2, /obj/item/multitool = 1, /obj/item/clothing/glasses/meson = 1, /obj/item/storage/belt/utility = 1, /obj/item/clothing/head/welding = 1)
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/wrench = 2, /obj/item/wirecutters = 2, /obj/item/screwdriver = 2, /obj/item/crowbar = 2, /obj/item/weldingtool = 2, /obj/item/stack/cable_coil = 2, /obj/item/analyzer = 2, /obj/item/t_scanner = 2, /obj/item/multitool = 1, /obj/item/clothing/glasses/meson = 1, /obj/item/storage/belt/utility = 1, /obj/item/clothing/head/welding = 1)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"t" = (
+/obj/effect/turf_decal/delivery,
+/obj/machinery/door/poddoor/shutters,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"u" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/poddoor/shutters{
+	id = "weirdpodthing1"
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"v" = (
+/obj/structure/rack,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/stack/sheet/mineral/wood/twenty = 25, /obj/item/stack/sheet/bronze/thirty = 20, /obj/item/stack/tile/noslip/thirty = 10, /obj/item/stack/sheet/plastic/twenty = 10, /obj/item/stack/sheet/mineral/sandstone/thirty = 25)
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/stack/sheet/mineral/wood/twenty = 25, /obj/item/stack/sheet/bronze/thirty = 20, /obj/item/stack/tile/noslip/thirty = 10, /obj/item/stack/sheet/plastic/twenty = 10, /obj/item/stack/sheet/mineral/sandstone/thirty = 25)
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/stack/sheet/metal/fifty = 5, /obj/item/stack/sheet/glass/fifty = 5, /obj/item/stack/rods/fifty = 3, /obj/item/stack/sheet/rglass/fifty = 2)
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/stack/sheet/metal/fifty = 5, /obj/item/stack/sheet/glass/fifty = 5, /obj/item/stack/rods/fifty = 3, /obj/item/stack/sheet/rglass/fifty = 2)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"y" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/structure/reagent_dispensers/fueltank = 5, /obj/structure/reagent_dispensers/watertank = 4, /obj/structure/reagent_dispensers/watertank/high = 1)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"A" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/poddoor/shutters{
+	id = "weirdpodthing2"
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"C" = (
+/obj/structure/rack,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/stack/sheet/mineral/wood/twenty = 1, /obj/item/stack/sheet/cardboard/fifty = 1, /obj/item/stack/sheet/mineral/sandstone/thirty = 1)
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/stack/sheet/mineral/wood/twenty = 1, /obj/item/stack/sheet/cardboard/fifty = 1, /obj/item/stack/sheet/mineral/sandstone/thirty = 1)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"F" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/maintenance/starboard/lesser)
+"G" = (
+/obj/structure/rack,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop/maintenance/three,
+/obj/machinery/button/door/directional/north{
+	id = "weirdpodthing1"
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"I" = (
+/obj/structure/grille,
+/obj/structure/window{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"J" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/poddoor/shutters{
+	id = "weirdpodthing2"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"M" = (
+/obj/effect/turf_decal/weather/sand/plating,
+/turf/open/floor/plating/airless,
+/area/maintenance/starboard/lesser)
+"Q" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/button/door/directional/north{
+	id = "weirdpodthing2"
+	},
+/obj/machinery/portable_atmospherics/canister/water_vapor,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"R" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/maintenance/starboard/lesser)
+"S" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/machinery/portable_atmospherics/canister/air = 4, /obj/machinery/portable_atmospherics/canister/oxygen = 1)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"T" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/turf_decal/weather/sand/floor,
+/obj/machinery/door/poddoor/shutters{
+	id = "weirdpodthing2"
+	},
+/obj/structure/fans/tiny,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"Y" = (
+/turf/closed/wall,
+/area/maintenance/starboard/lesser)
+"Z" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/button/door/directional/east{
+	id = "weirdpodthing1"
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+
+(1,1,1) = {"
+a
+a
+Y
+Y
+Y
+Y
+Y
+a
+a
+a
+Y
+Y
+Y
+Y
+Y
+a
+"}
+(2,1,1) = {"
+a
+Y
+Y
+G
+I
+C
+Y
+Y
+R
+Y
+Y
+Q
+I
+S
+Y
+Y
+"}
+(3,1,1) = {"
+i
+g
+t
+f
+l
+l
+u
+m
+F
+j
+A
+l
+l
+l
+J
+r
+"}
+(4,1,1) = {"
+Z
+g
+u
+l
+l
+l
+u
+m
+F
+g
+A
+l
+l
+l
+T
+r
+"}
+(5,1,1) = {"
+a
+Y
+Y
+v
+n
+s
+Y
+Y
+R
+Y
+Y
+y
+n
+y
+Y
+M
+"}
+(6,1,1) = {"
+a
+a
+Y
+Y
+Y
+Y
+Y
+a
+a
+a
+Y
+Y
+Y
+Y
+Y
+d
+"}
+(7,1,1) = {"
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+"}
+(8,1,1) = {"
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+"}
+(9,1,1) = {"
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+"}
+(10,1,1) = {"
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+"}
+(11,1,1) = {"
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+"}

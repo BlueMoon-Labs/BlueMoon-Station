@@ -1,0 +1,180 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"e" = (
+/obj/modular_map_connector,
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Maintenance Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/greater)
+"h" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sink{
+	dir = 4;
+	pixel_x = 12;
+	pixel_y = 6
+	},
+/obj/structure/mirror/directional/east,
+/obj/item/reagent_containers/glass/bucket{
+	pixel_x = 9;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/greater)
+"i" = (
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Maintenance Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/greater)
+"k" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/toy/prizeball/figure = 1, /obj/item/toy/prize/ripley = 1, /obj/item/toy/prize/gygax = 1, /obj/item/toy/prize/honk = 1, /obj/item/toy/prize/odysseus = 1)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/greater)
+"l" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/effect/spawner/lootdrop/maintenance/three,
+/obj/structure/window{
+	dir = 8
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/greater)
+"m" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/asteroid/tramstation)
+"s" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/effect/spawner/lootdrop/cig_packs,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/storage/box/matches = 10, /obj/item/lighter/greyscale = 10, /obj/item/lighter = 1)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/greater)
+"t" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/janitorialcart{
+	dir = 8
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/greater)
+"y" = (
+/turf/closed/wall,
+/area/maintenance/central/greater)
+"A" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/greater)
+"D" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/greater)
+"O" = (
+/turf/template_noop,
+/area/template_noop)
+"T" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/stool/directional/east,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/greater)
+
+(1,1,1) = {"
+O
+O
+O
+O
+O
+O
+O
+O
+O
+O
+O
+"}
+(2,1,1) = {"
+O
+O
+O
+O
+O
+O
+O
+O
+O
+O
+O
+"}
+(3,1,1) = {"
+m
+y
+A
+D
+i
+D
+D
+D
+e
+O
+O
+"}
+(4,1,1) = {"
+m
+y
+t
+h
+y
+D
+D
+D
+O
+O
+O
+"}
+(5,1,1) = {"
+m
+y
+y
+y
+y
+l
+D
+T
+O
+O
+O
+"}
+(6,1,1) = {"
+m
+m
+m
+m
+y
+y
+s
+k
+O
+O
+O
+"}
+(7,1,1) = {"
+m
+m
+m
+m
+m
+y
+y
+y
+O
+O
+O
+"}

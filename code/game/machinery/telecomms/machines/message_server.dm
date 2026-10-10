@@ -74,6 +74,12 @@
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | ACID_PROOF
 
 // The message server itself.
+
+/// XYZ-координаты атома в виде "(x, y, z)" для записей логов монитора сообщений.
+/proc/xyz_coords(atom/A)
+	var/turf/T = get_turf(A)
+	return T ? "([T.x], [T.y], [T.z])" : "N/A"
+
 /obj/machinery/telecomms/message_server
 	icon = 'icons/obj/machines/research.dmi'
 	icon_state = "server"
@@ -91,8 +97,10 @@
 
 	var/list/datum/data_pda_msg/pda_msgs = list()
 	var/list/datum/data_rc_msg/rc_msgs = list()
+	var/list/datum/data_remote_msg/remote_msgs = list()
 	var/pda_msgs_trimmed = 0
 	var/rc_msgs_trimmed = 0
+	var/remote_msgs_trimmed = 0
 	var/decryptkey
 
 /obj/machinery/telecomms/message_server/Initialize(mapload)
@@ -102,11 +110,9 @@
 	pda_msgs += new /datum/data_pda_msg("System Administrator", "system", "This is an automated message. The messaging system is functioning correctly.")
 
 /obj/machinery/telecomms/message_server/Destroy()
-	for(var/obj/machinery/computer/message_monitor/monitor in GLOB.telecomms_list)
-		if(monitor.linkedServer && monitor.linkedServer == src)
-			monitor.linkedServer = null
 	pda_msgs.Cut()
 	rc_msgs.Cut()
+	remote_msgs.Cut()
 	. = ..()
 
 /obj/machinery/telecomms/message_server/proc/GenerateKey()
@@ -131,7 +137,7 @@
 		if(!tablet_signal.data["message"] && !tablet_signal.data["photo"])
 			tablet_signal.mark_done()
 			return
-		var/datum/data_pda_msg/M = new(tablet_signal.format_target(), tablet_signal.format_sender(), tablet_signal.format_message())
+		var/datum/data_pda_msg/M = new(tablet_signal.format_target(), tablet_signal.format_sender(), tablet_signal.format_message(), null, xyz_coords(tablet_signal.source))
 		pda_msgs += M
 		trim_pda_msgs()
 		tablet_signal.data["reject"] = FALSE
@@ -145,7 +151,7 @@
 		return
 
 	// log the signal
-	var/datum/data_pda_msg/M = new(signal.format_target(), "[signal.data["name"]] ([signal.data["job"]])", signal.data["message"], signal.data["photo"])
+	var/datum/data_pda_msg/M = new(signal.format_target(), "[signal.data["name"]] ([signal.data["job"]])", signal.data["message"], signal.data["photo"], xyz_coords(signal.source))
 	pda_msgs += M
 	signal.logged = M
 
@@ -161,6 +167,21 @@
 		var/trim_count = length(pda_msgs) - 400
 		pda_msgs.Cut(1, trim_count + 1)
 		pda_msgs_trimmed += trim_count
+
+/// Trims remote_msgs list to prevent unbounded memory growth
+/obj/machinery/telecomms/message_server/proc/trim_remote_msgs()
+	if(length(remote_msgs) > 500)
+		var/trim_count = length(remote_msgs) - 400
+		remote_msgs.Cut(1, trim_count + 1)
+		remote_msgs_trimmed += trim_count
+
+/// Пишет дистанционное управление дверью (пульты, ИИ, борги, NTOS) во все серверы
+/// сообщений — для вкладки "Remote Logs" в Message Monitor Console.
+/obj/machinery/telecomms/message_server/proc/log_remote_door(mob/user, obj/machinery/door/door, action, device)
+	if(!toggled)
+		return
+	remote_msgs += new /datum/data_remote_msg(user?.real_name || user?.name || "Unspecified", "[action] [door.name]", xyz_coords(user), TIME_STAMP("hh:mm:ss", FALSE), device)
+	trim_remote_msgs()
 
 /obj/machinery/telecomms/message_server/update_icon_state()
 	if((machine_stat & (BROKEN|NOPOWER)))
@@ -181,7 +202,7 @@
 	src.source = source
 	src.data = data
 	var/turf/T = get_turf(source)
-	levels = list(T.z)
+	levels = SSmapping.get_connected_levels(T).Copy()
 
 /datum/signal/subspace/pda/copy()
 	var/datum/signal/subspace/pda/copy = new(source, data.Copy())
@@ -218,7 +239,7 @@
 	data = init_data
 	var/turf/origin_turf = get_turf(source)
 	if(origin_turf)
-		levels = list(origin_turf.z)
+		levels = SSmapping.get_connected_levels(origin_turf).Copy()
 	if(!("reject" in data))
 		data["reject"] = TRUE
 
@@ -257,8 +278,9 @@
 	var/recipient = "Unspecified"
 	var/message = "Blank"  // transferred message
 	var/datum/picture/picture  // attached photo
+	var/coords = "N/A"  // XYZ-координаты отправителя на момент отправки
 
-/datum/data_pda_msg/New(param_rec, param_sender, param_message, param_photo)
+/datum/data_pda_msg/New(param_rec, param_sender, param_message, param_photo, param_coords)
 	if(param_rec)
 		recipient = param_rec
 	if(param_sender)
@@ -267,6 +289,8 @@
 		message = param_message
 	if(param_photo)
 		picture = param_photo
+	if(param_coords)
+		coords = param_coords
 
 /datum/data_pda_msg/Topic(href,href_list)
 	..()
@@ -283,6 +307,26 @@
 		popup.set_content(dat)
 		popup.open()
 		onclose(M, "pdaphoto")
+
+// Запись Remote Logs: дистанционное управление дверьми (пульт, ИИ, борги, NTOS).
+/datum/data_remote_msg
+	var/sender = "Unspecified"
+	var/message = "Blank"
+	var/coords = "N/A"
+	var/stamp = "Unstamped"
+	var/device = "N/A"
+
+/datum/data_remote_msg/New(param_sender, param_message, param_coords, param_stamp, param_device)
+	if(param_sender)
+		sender = param_sender
+	if(param_message)
+		message = param_message
+	if(param_coords)
+		coords = param_coords
+	if(param_stamp)
+		stamp = param_stamp
+	if(param_device)
+		device = param_device
 
 /datum/data_rc_msg
 	var/rec_dpt = "Unspecified"  // receiving department

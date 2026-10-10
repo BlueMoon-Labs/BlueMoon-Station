@@ -984,7 +984,8 @@ GLOBAL_LIST_INIT(binary, list("0","1"))
 		if(!replace_whitespace && (char in whitespace))
 			out += char
 			continue
-		if(replace_letters_only && (!ISINRANGE(char, 65, 90) && !ISINRANGE(char, 97, 122)))
+		var/code = text2ascii(char)
+		if(replace_letters_only && (!ISINRANGE(code, 65, 90) && !ISINRANGE(code, 97, 122)))
 			out += char
 			continue
 		out += prob(replaceprob)? pick(replacementchars) : char

@@ -59,3 +59,10 @@
 	anthro_mob_worn_overlay = 'modular_bluemoon/icons/mob/clothing/hecu/hecumob_digi.dmi'
 	icon_state = "hecu_pack_black"
 	item_state = "hecu_pack_black"
+
+/obj/item/storage/backpack/hecu/black/ert
+
+/obj/item/storage/backpack/hecu/black/ert/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
+	STR.max_volume = STORAGE_VOLUME_BAG_OF_HOLDING

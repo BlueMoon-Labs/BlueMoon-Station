@@ -165,7 +165,13 @@
 	for(var/obj/item/I in OldRune.contents)
 		listed_items += I
 		I.forceMove(src)
+	for(var/obj/item/listed as anything in listed_items)
+		RegisterSignal(listed, COMSIG_PARENT_QDELETING, PROC_REF(forget_item))
 	START_PROCESSING(SSobj, src)
+
+/obj/effect/summon_rune/return_rune/proc/forget_item(obj/item/source)
+	SIGNAL_HANDLER
+	listed_items -= source
 
 /obj/effect/summon_rune/return_rune/process()
 	if(!returner)
@@ -202,7 +208,7 @@
 	//а вещи из руны уезжали в qdel вместе с ней
 	var/mob/living/carbon/returning = returner
 	returner = null
-	if(returning)
+	if(!QDELETED(returning))
 		teleport_summoned(returning, return_pos, TRUE)
 	return_pos = null
 	listed_items = null

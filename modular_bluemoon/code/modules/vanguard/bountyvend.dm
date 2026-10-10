@@ -37,6 +37,7 @@
 		new /datum/data/bounty_equipment("Premium KA",					/obj/item/gun/energy/kinetic_accelerator/premiumka,					1250,	"Weaponry"),
 		new /datum/data/bounty_equipment("Combat knife",				/obj/item/kitchen/knife/combat,					        			100,	"Weaponry"),
 		new /datum/data/bounty_equipment("Supressor",               	/obj/item/suppressor,                                   			500, 	"Weaponry"),
+		new /datum/data/bounty_equipment(".45 long lethal box",			/obj/item/ammo_box/g45l/lethal,										500,	"Weaponry"),
 		new /datum/data/bounty_equipment("Amunitions datadisk",      	/obj/item/disk/ammo_workbench/advanced,                     		1000, 	"Weaponry"),
 		new /datum/data/bounty_equipment("Vanguard specialization",		/obj/item/vanguard_voucher_class,									7500,	"Weaponry"),
 		new /datum/data/bounty_equipment("Sig Suaer extended mag",		/obj/item/ammo_box/magazine/sig/sig_ext,							500,	"Weaponry"),
@@ -47,7 +48,8 @@
 		new /datum/data/bounty_equipment("Spare Shield",				/obj/item/shield/riot/pointman,										4500,	"Weaponry"),
 		new /datum/data/bounty_equipment("Spare lasbattery",			/obj/item/ammo_box/magazine/recharge/vanguard,						500,	"Weaponry"),
 		new /datum/data/bounty_equipment("Spare P320 standart mag",		/obj/item/ammo_box/magazine/sig,									250,	"Weaponry"),
-		new /datum/data/bounty_equipment("Spare Proton cutter",			/obj/item/melee/sabre/proton_cutter,								2500,	"Weaponry"),
+		new /datum/data/bounty_equipment("Spare Proton cutter",			/obj/item/melee/sabre/proton_cutter,								5000,	"Weaponry"),
+		new /datum/data/bounty_equipment("Vanguard Service revolver",	/obj/item/gun/ballistic/revolver/r45l/vanguard,						5000,	"Weaponry"),
 
 		// ============ ARMOR ============
 		new /datum/data/bounty_equipment("Vanguard armor",					/obj/item/vanguard_voucher_suit,								1500,	"Armor"),
@@ -61,7 +63,7 @@
 		new /datum/data/bounty_equipment("Guerrilla Gloves",				/obj/item/clothing/gloves/tackler/combat/insulated,				3000,	"Armor"),
 		new /datum/data/bounty_equipment("Empty marksman pouch",			/obj/item/storage/bag/marksman/empty,							750,	"Armor"),
 		new /datum/data/bounty_equipment("Empty combatant pouch",			/obj/item/storage/bag/medpen/combatant/empty,					750,	"Armor"),
-		new /datum/data/bounty_equipment("Vanguard belt",					/obj/item/storage/belt/avangard_belt,							1500,	"Armor"),
+		new /datum/data/bounty_equipment("Empty Vanguard belt",				/obj/item/storage/belt/avangard_belt/empty,						1500,	"Armor"),
 
 		// ============ MEDICAL ============
 		new /datum/data/bounty_equipment("First-Aid Kit",					/obj/item/storage/firstaid/regular,								100,	"Medical"),
@@ -75,16 +77,15 @@
 		new /datum/data/bounty_equipment("Lazarus injector",				/obj/item/lazarus_injector,										500,	"Tools"),
 		new /datum/data/bounty_equipment("Fulton pack",						/obj/item/extraction_pack,										500,	"Tools"),
 		new /datum/data/bounty_equipment("Auto surgeon",					/obj/item/autosurgeon/vanguard,									750,	"Tools"),
-		new /datum/data/bounty_equipment("Illegal technology disk",			/obj/item/disk/tech_disk/illegal,								5000,	"Tools"),
+		new /datum/data/bounty_equipment("Illegal technology disk",			/obj/item/disk/tech_disk/illegal,								100000,	"Tools"),
 		new /datum/data/bounty_equipment("Fulton beacon",					/obj/item/fulton_core,											200,	"Tools"),
 		new /datum/data/bounty_equipment("BEPIS technology disk",			/obj/item/disk/tech_disk/major,									1000,	"Tools"),
 		new /datum/data/bounty_equipment("Vanguard basic kit",				/obj/item/storage/backpack/duffelbag/vanguard/conscript,		1500,	"Tools"),
 		new /datum/data/bounty_equipment("Vanguard points transfer card",	/obj/item/card/contraband_point_card,							100,	"Tools"),
-		new /datum/data/bounty_equipment("Strange object",					/obj/item/relic,												4000,	"Tools"),
-		new /datum/data/bounty_equipment("Weapon blueprints",				/obj/item/disk/weapon_blueprint,								7500,	"Tools"),
 		new /datum/data/bounty_equipment("B&R kit",							/obj/item/storage/box/demolition,								1200,	"Tools"),
 		new /datum/data/bounty_equipment("Spare breaching charge",			/obj/item/grenade/exploration,									300,	"Tools"),
 		new /datum/data/bounty_equipment("Spare detonation device",			/obj/item/exploration_detonator,								200,	"Tools"),
+		new /datum/data/bounty_equipment("Strange object",					/obj/item/relic,												2500,	"Tools"),
 
 		// ============ RECREATIONAL ============
 		new /datum/data/bounty_equipment("Whiskey",							/obj/item/reagent_containers/food/drinks/bottle/whiskey,		50,		"Recreational"),
@@ -97,9 +98,8 @@
 
 		// ============ MOD DESIGNS ============
 		new /datum/data/bounty_equipment("Extended MOD storage module",				/obj/item/mod/module/storage/extended,					2000,		"MOD Designs"),
-		new /datum/data/bounty_equipment("MOD advanced ion jetpack module",			/obj/item/mod/module/jetpack/advanced,					5000,		"MOD Designs"),
+		new /datum/data/bounty_equipment("MOD ion jetpack module",					/obj/item/mod/module/jetpack,							5000,		"MOD Designs"),
 		new /datum/data/bounty_equipment("MOD DNA lock module",						/obj/item/mod/module/dna_lock,							7500,		"MOD Designs"),
-		new /datum/data/bounty_equipment("MOD Storage Upgrader",					/obj/item/mod/module/storage_upgrader,					15000,		"MOD Designs"),
 		new /datum/data/bounty_equipment("MOD Magnetic Harness",					/obj/item/mod/module/magnetic_harness,					5000,		"MOD Designs"),
 
 		// ============ ELITE EQUIPMENT =========
@@ -107,8 +107,8 @@
 		new /datum/data/bounty_equipment("Budget tactical first aid",		/obj/item/storage/firstaid/tactical/vanguard,					5000,		"Elite Equipment"),
 		new /datum/data/bounty_equipment("ACR-5m26 spare mag (empty)",		/obj/item/ammo_box/magazine/acr5m30/empty,						2500,		"Elite Equipment"),
 		new /datum/data/bounty_equipment("Hoshi modular laser",				/obj/item/gun/energy/modular_laser_rifle/carbine/pinvanguard,	25000,		"Elite Equipment"),
-		new /datum/data/bounty_equipment("С-02 Permit",						/obj/item/clothing/accessory/permit/special/c_02,				10000,		"Elite Equipment"),
-		new /datum/data/bounty_equipment("ERT MOD Suit",					/obj/item/mod/control/pre_equipped/responsory,					50000,		"Elite Equipment"),
+		new /datum/data/bounty_equipment("С-02 Permit",						/obj/item/clothing/accessory/permit/special/c_02,				5000,		"Elite Equipment"),
+//		new /datum/data/bounty_equipment("ERT MOD Suit",					/obj/item/mod/control/pre_equipped/responsory,					50000,		"Elite Equipment"),
 		new /datum/data/bounty_equipment("Department Prototlathe beacon",	/obj/item/choice_beacon/departmental_protholate,				20000,		"Elite Equipment"),
 		new /datum/data/bounty_equipment("Syndicate Baloon",				/obj/item/toy/syndicateballoon,									1000000,	"Elite Equipment"),
 		new /datum/data/bounty_equipment("Medbeam Gun",						/obj/item/gun/medbeam,											30000,		"Elite Equipment"),
@@ -225,6 +225,10 @@
 			if(ispath(prize.equipment_path, /obj/item/stack/metadollar) && !bm_bounty_vendor_can_buy_metadollar(usr))
 				flick(icon_deny, src)
 				return
+			if(ispath(prize.equipment_path, /obj/item/disk/tech_disk/major) && !length(SSresearch.techweb_nodes_experimental))
+				to_chat(usr, span_alert("Error: No experimental technology left to record on [prize.equipment_name]!"))
+				flick(icon_deny, src)
+				return
 			if(prize.cost > I.contraband_points)
 				to_chat(usr, "<span class='alert'>Error: Insufficient points for [prize.equipment_name] on [I]!</span>")
 				flick(icon_deny, src)
@@ -264,6 +268,8 @@
 			new /obj/item/storage/belt/military/assault/demolition(drop_location)
 			new /obj/item/extinguisher/mini(drop_location)
 			new /obj/item/storage/box/demolition(drop_location)
+			new /obj/item/clothing/glasses/meson/night(drop_location)
+			new /obj/item/clothing/gloves/combat(drop_location)
 		if("Field Surgeon")
 			new /obj/item/stack/medical/fracture_kit/cms(drop_location)
 			new /obj/item/storage/firstaid/frontier(drop_location)
@@ -271,11 +277,15 @@
 			new /obj/item/storage/firstaid/vanguard(drop_location)
 			new /obj/item/shield/riot/pointman(drop_location)
 			new /obj/item/defibrillator/compact/loaded(drop_location)
+			new /obj/item/clothing/glasses/hud/health/night(drop_location)
+			new /obj/item/clothing/gloves/color/latex/nitrile(drop_location)
 		if("Combatant")
 			new /obj/item/storage/secure/briefcase/vanguard/p320(drop_location)
 			new /obj/item/storage/belt/military/assault(drop_location)
 			new /obj/item/storage/bag/medpen/combatant(drop_location)
 			new /obj/item/storage/bag/marksman(drop_location)
+			new /obj/item/clothing/glasses/night(drop_location)
+			new /obj/item/clothing/gloves/color/black(drop_location)
 	playsound(src, 'sound/machines/machine_vend.ogg', 50, TRUE, extrarange = -3)
 	SSblackbox.record_feedback("tally", "vanguard_voucher_redeemed", 1, selection)
 	qdel(voucher)
@@ -347,7 +357,7 @@
 	desc += "\nIt seems a few selections have been added."
 	prize_list += list(
 		// ============ MISCELLANEOUS ============
-		new /datum/data/bounty_equipment("1 Metadollar",            		/obj/item/stack/metadollar, 									50000, 	"Miscellaneous"),
+		new /datum/data/bounty_equipment("1 Metadollar",            		/obj/item/stack/metadollar, 									100000, 	"Miscellaneous"),
 		new /datum/data/bounty_equipment("space cash",						/obj/item/stack/spacecash/c1000,								1500,	"Miscellaneous")
 		)
 	build_inventory()

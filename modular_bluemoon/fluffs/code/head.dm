@@ -473,6 +473,19 @@
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR
 	unique_reskin = null
 
+/obj/item/clothing/head/donator/bm/opssrt
+	name = "OPS-SRT Helmet"
+	desc = "Given to those, who served well"
+	icon_state = "opssrt"
+	item_state = "opssrt"
+	icon = 'modular_bluemoon/icons/obj/clothing/hats.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/hats.dmi'
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
+	clothing_flags = ALLOWINTERNALS
+	flags_inv = HIDEEARS|HIDEHAIR|HIDEFACIALHAIR
+	unique_reskin = null
+
 ///////////////////////////////////////////////
 
 /obj/item/clothing/head/donator/bm/chetky_cap
@@ -584,21 +597,21 @@
 	item_state = "stupid_cap"
 
 /obj/item/modkit/concord_riot_helmet_kit
-	name = "Concord light riot helmet Kit"
-	desc = "A modkit for making a riot helmet into a Concord light riot helmet."
+	name = "Concord Riot Helmet Kit"
+	desc = "A modkit for making a riot helmet into a Concord Riot Helmet."
 	icon_state = "riot-helmet_kit"
 	product = /obj/item/clothing/head/helmet/riot/concord_riot_helmet
 	fromitem = list(/obj/item/clothing/head/helmet/riot)
 
 /obj/item/clothing/head/helmet/riot/concord_riot_helmet
 	DONATE_ITEM_TOOLTIP_PARENT
-	name = "Concord light riot helmet"
-	desc = "Котелок для защиты пустой и не очень балды от летящих в неё камней, бит, клинков и прочей гадости, с которой только можно столкнуться при подавлении беспорядков. Прочное забрало-визор обеспечивает защиту глупой головы владельца не только от внешних факторов, не только подавляет лучи глупенькости из миниатюрного мозга, но ещё и излучает ауру стиля, на зависть окружающим."
+	name = "Concord Riot Helmet"
+	desc = "Настоящий тактический комплекс, установленный в скромном корпусе. Не смотря на то, что шлем призван защищать голову, в первую очередь помогает избежать получения урона - встроенные системы этого шлема не только расширяют угол обзора владельца, но и заранее просчитывают траектории летящих предметов, и, в идеале - может сам нивелировать урон, используя внутреннюю систему физического противодействия, уменьшая урон по голове и следующие из него травмы шейных отделов позвонка. Вопреки укоренившемуся мнению, такой шлем почти не используется расой производителем, преимущественно уходя на экспорт."
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
-	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/large-worn-icons/32x64/head.dmi'
-	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/large-worn-icons/32x64/head.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
 	icon_state = "lapkee-helmet"
-	flags_inv = HIDEEARS|HIDEFACE|HIDESNOUT
+	flags_inv = HIDEFACE|HIDESNOUT
 	visor_flags_inv = HIDEFACE|HIDESNOUT
 
 /obj/item/clothing/head/donator/bm/custom_helmet

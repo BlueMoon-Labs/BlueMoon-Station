@@ -5,7 +5,7 @@
 //	You do not need to raise this if you are adding new values that have sane defaults.
 //	Only raise this value when changing the meaning/format/name/layout of an existing value
 //	where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX	82
+#define SAVEFILE_VERSION_MAX	83
 
 /// Upper bound for character slot indices during savefile migration (loop over S.dir).
 /// Prevents corrupted or garbage directory names (e.g. huge slot numbers) from inflating max_save_slots
@@ -173,11 +173,17 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 			ENABLE_BITFIELD(mentor_toggles, DEMENTOR_ON_LOGIN)
 			DISABLE_BITFIELD(mentor_toggles, (1<<6))
 
-	if(current_version < 81) // BLUEMOON ADD - звук дыхания из баллона
-		toggles |= SOUND_BREATHING
-
 	if(current_version < 82) // BLUEMOON ADD - звук кнопок способностей включён по умолчанию
 		sound_toggles |= SOUND_BUTTONS
+
+	if(current_version < 83) // Переносим часики экспедиторов
+		var/playtime_summ = (exp["Expeditor"] || 0) + (exp["Vanguard operative"] || 0)
+
+		if(playtime_summ > 0)
+			exp["Vanguard Operative"] = (exp["Vanguard Operative"] || 0) + playtime_summ
+
+		exp -= "Expeditor"
+		exp -= "Vanguard operative"
 
 /datum/preferences/proc/update_character(current_version, savefile/S)
 	if(current_version < 19)
@@ -657,6 +663,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["parallax"] >> parallax
 	S["ambientocclusion"] >> ambientocclusion
 	S["lighting_blur"] >> lighting_blur
+	S["multiz_performance"] >> multiz_performance
+	S["multiz_parallax"] >> multiz_parallax
 	S["lighting_brightness"] >> lighting_brightness
 	S["lighting_lamp_brightness"] >> lighting_lamp_brightness
 	S["lighting_bloom_intensity"] >> lighting_bloom_intensity
@@ -815,6 +823,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	parallax = sanitize_integer(parallax, PARALLAX_DISABLE, PARALLAX_INSANE, null)
 	ambientocclusion = sanitize_integer(ambientocclusion, 0, 1, initial(ambientocclusion))
 	lighting_blur = sanitize_integer(lighting_blur, LIGHTING_BLUR_MIN, LIGHTING_BLUR_MAX, LIGHTING_BLUR_DEFAULT)
+	multiz_performance = sanitize_integer(multiz_performance, MULTIZ_PERFORMANCE_DISABLE, MAX_EXPECTED_Z_DEPTH - 1, initial(multiz_performance))
+	multiz_parallax = sanitize_integer(multiz_parallax, 0, 1, initial(multiz_parallax))
 	lighting_brightness = sanitize_integer(lighting_brightness, LIGHTING_BRIGHTNESS_MIN, LIGHTING_BRIGHTNESS_MAX, LIGHTING_BRIGHTNESS_DEFAULT)
 	lighting_lamp_brightness = sanitize_integer(lighting_lamp_brightness, LIGHTING_LAMP_BRIGHTNESS_MIN, LIGHTING_LAMP_BRIGHTNESS_MAX, LIGHTING_LAMP_BRIGHTNESS_DEFAULT)
 	lighting_bloom_intensity = sanitize_integer(lighting_bloom_intensity, LIGHTING_BLOOM_INTENSITY_MIN, LIGHTING_BLOOM_INTENSITY_MAX, LIGHTING_BLOOM_INTENSITY_DEFAULT)
@@ -1302,6 +1312,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["parallax"], parallax)
 	WRITE_FILE(S["ambientocclusion"], ambientocclusion)
 	WRITE_FILE(S["lighting_blur"], lighting_blur)
+	WRITE_FILE(S["multiz_performance"], multiz_performance)
+	WRITE_FILE(S["multiz_parallax"], multiz_parallax)
 	WRITE_FILE(S["lighting_brightness"], lighting_brightness)
 	WRITE_FILE(S["lighting_lamp_brightness"], lighting_lamp_brightness)
 	WRITE_FILE(S["lighting_bloom_intensity"], lighting_bloom_intensity)
@@ -1604,6 +1616,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["jumpsuit_style"] 					>> jumpsuit_style
 	S["uplink_loc"] 						>> uplink_spawn_loc
 	S["custom_speech_verb"] 				>> custom_speech_verb
+	S["custom_speech_verb_ru"]				>> custom_speech_verb_ru
 	S["custom_tongue"] 						>> custom_tongue
 	S["feature_mcolor"] 					>> features["mcolor"]
 	S["feature_lizard_tail"] 				>> features["tail_lizard"]
@@ -1742,6 +1755,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["feature_balls_size"] >> features["balls_size"]
 	S["feature_balls_visibility"] >> features["balls_visibility"]
 	S["feature_balls_fluid"] >> features["balls_fluid"]
+	if(S["feature_balls_cum_rate"])
+		S["feature_balls_cum_rate"] >> features["balls_cum_rate"]
+	if(S["feature_balls_cum_max"])
+		S["feature_balls_cum_max"] >> features["balls_cum_max"]
 	S["feature_balls_accessible"] >> features["balls_accessible"]
 	//breasts features
 	S["feature_has_breasts"] >> features["has_breasts"]
@@ -2094,7 +2111,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	features["belly_visibility"] = sanitize_inlist(features["belly_visibility"], safe_visibilities, GEN_VISIBLE_NO_UNDIES)
 	features["anus_visibility"] = sanitize_inlist(features["anus_visibility"], safe_visibilities, GEN_VISIBLE_NO_UNDIES)
 
-	custom_speech_verb = sanitize_inlist(custom_speech_verb, GLOB.speech_verbs, "default")
+	custom_speech_verb_ru = sanitize_integer(custom_speech_verb_ru, 0, 1, initial(custom_speech_verb_ru))
+	if(!(custom_speech_verb in GLOB.speech_verbs) && !(custom_speech_verb in GLOB.speech_verbs_ru))
+		custom_speech_verb = GLOB.speech_verbs[1]
 	custom_tongue = sanitize_inlist(custom_tongue, GLOB.roundstart_tongues, "default")
 
 	security_records = copytext_char(security_records, 1, MAX_FLAVOR_LEN)
@@ -2390,6 +2409,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["uplink_loc"]							, uplink_spawn_loc)
 	WRITE_FILE(S["species"]								, pref_species.id)
 	WRITE_FILE(S["custom_speech_verb"]					, custom_speech_verb)
+	WRITE_FILE(S["custom_speech_verb_ru"]				, custom_speech_verb_ru)
 	WRITE_FILE(S["custom_tongue"]						, custom_tongue)
 	WRITE_FILE(S["bark_id"]								, bark_id)
 	WRITE_FILE(S["bark_speed"]							, bark_speed)
@@ -2414,8 +2434,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["feature_deco_wings"]					, features["deco_wings"])
 	WRITE_FILE(S["feature_horns_color"]					, features["horns_color"])
 	WRITE_FILE(S["feature_wings_color"]					, features["wings_color"])
-	WRITE_FILE(S["feature_insect_fluff_color"], features["insect_fluff_color"])
-	WRITE_FILE(S["feature_insect_markings_color"], features["insect_markings_color"])
+	WRITE_FILE(S["feature_insect_fluff_color"]			, features["insect_fluff_color"])
+	WRITE_FILE(S["feature_insect_markings_color"]		, features["insect_markings_color"])
 	WRITE_FILE(S["feature_insect_wings"]				, features["insect_wings"])
 	WRITE_FILE(S["feature_insect_fluff"]				, features["insect_fluff"])
 	WRITE_FILE(S["feature_insect_markings"]				, features["insect_markings"])
@@ -2443,6 +2463,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["feature_balls_accessible"], features["balls_accessible"])
 	WRITE_FILE(S["feature_balls_stuffing"], features["balls_stuffing"])
 	WRITE_FILE(S["feature_balls_fluid"], features["balls_fluid"])
+	WRITE_FILE(S["feature_balls_cum_rate"], features["balls_cum_rate"])
+	WRITE_FILE(S["feature_balls_cum_max"], features["balls_cum_max"])
+
 	WRITE_FILE(S["feature_balls_accessible"], features["balls_accessible"])
 
 	WRITE_FILE(S["feature_has_breasts"], features["has_breasts"])

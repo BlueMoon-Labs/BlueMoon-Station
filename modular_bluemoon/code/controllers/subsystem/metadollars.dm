@@ -355,6 +355,9 @@ SUBSYSTEM_DEF(metadollars)
 	if(C.mob.key != C.ckey)
 		return
 	var/mult = metadollar_living_multiplier(C.mob)
+	// Приоритетная роль
+	if(C.mob?.mind?.job_priority_boost)
+		mult *= 2
 	var/old_living = 0
 	if(C.prefs.exp)
 		old_living = text2num(C.prefs.exp[EXP_TYPE_LIVING])
@@ -510,6 +513,8 @@ SUBSYSTEM_DEF(metadollars)
 			lines += "Получено обменом: <b>[E["voucher"]]</b> М$"
 		if(E["pact_siege"])
 			lines += "Протокол осады InteQ/ПАКТ: <b>[E["pact_siege"]]</b> М$"
+		if(C.mob?.mind?.job_priority_boost)
+			lines += "Роль была приоритетной на момент входа: ставка М$ за время на станции <b>×2</b>"
 		chunks += "<div class='panel stationborder'><span class='header'>Метадоллары за раунд</span><br>Всего начислено: <b>[total] М$</b>.<br><small>[lines.Join("<br>")]</small><br>Текущий баланс: <b>[balance] М$</b>.</div>"
 	var/missed_block = metadollar_roundend_missed_html(C, C.mob, E)
 	if(missed_block)

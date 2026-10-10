@@ -18,7 +18,13 @@
 	TEST_ASSERT_EQUAL(bag.icon_state, "bodybag", "открытый мешок потерял корпус: зев уехал в icon_state вместо оверлея")
 	TEST_ASSERT("bodybag_open" in bag.update_overlays(), "у открытого мешка нет оверлея зева - он выглядит закрытым")
 
-	TEST_ASSERT(bag.close(), "мешок не закрылся")
+	if(!bag.close())
+		var/list/neighbours = list()
+		for(var/atom/movable/thing in get_turf(bag))
+			if(thing != bag)
+				neighbours += "[thing.type][QDELETED(thing) ? " (qdel)" : ""][thing.anchored ? " (anchored)" : ""]"
+		TEST_FAIL("мешок не закрылся, на клетке: [neighbours.Join(", ")]")
+		return
 	TEST_ASSERT_EQUAL(bag.icon_state, "bodybag", "закрытый мешок стоит не на базовом стейте")
 	TEST_ASSERT(!("bodybag_open" in bag.update_overlays()), "закрытый мешок рисует зев")
 

@@ -348,9 +348,8 @@ It's fairly easy to fix if dealing with single letters but not so much with comp
 	var/roundedduration = -round(-duration) // round() with only one arg will always round down. so uh. this is Something all right
 
 	for(var/i in 0 to roundedduration-1)
-		duration--
 		if (i == 0)
-			animate(C, pixel_x=(rand(min,max)*duration), pixel_y=(rand(min,max)*duration), time=1, flags=ANIMATION_END_NOW, tag="camera_shake")
+			animate(C, pixel_x=rand(min,max), pixel_y=rand(min,max), time=1, flags=ANIMATION_END_NOW, tag="camera_shake")
 		else
 			animate(pixel_x=rand(min,max), pixel_y=rand(min,max), time=1)
 	animate(pixel_x=oldx, pixel_y=oldy, time=1)

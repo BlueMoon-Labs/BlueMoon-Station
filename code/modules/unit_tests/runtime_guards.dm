@@ -19,6 +19,19 @@
 	door_runtime_set_lockdown(doors, FALSE)
 	TEST_ASSERT(!door.locked, "Удалённая дверь не должна была получить локдаун")
 
+/// Door Runtime снимает болты и ток и с двери, обесточенной за время локдауна.
+/datum/unit_test/door_runtime_releases_depowered_door/Run()
+	var/obj/machinery/door/airlock/door = allocate(/obj/machinery/door/airlock)
+	door.set_machine_stat(door.machine_stat & ~NOPOWER)
+	door_runtime_set_lockdown(list(door), TRUE)
+	TEST_ASSERT(wait_for_var(door, "locked", TRUE, 5 SECONDS), "Локдаун не опустил болты на запитанной двери")
+	TEST_ASSERT(door.isElectrified(), "Локдаун не пустил ток в запитанную дверь")
+
+	door.set_machine_stat(door.machine_stat | NOPOWER)
+	door_runtime_set_lockdown(list(door), FALSE)
+	TEST_ASSERT(wait_for_var(door, "locked", FALSE, 5 SECONDS), "Обесточенная за локдаун дверь осталась под болтами")
+	TEST_ASSERT(!door.isElectrified(), "Обесточенная за локдаун дверь осталась под током")
+
 /// qdel-нутый мувер не должен возвращаться в мир: гард в doMove отказывает
 /// и трассирует виновника (класс "post-qdel forceMove" из улик раунда 9746).
 /datum/unit_test/no_post_qdel_move
@@ -114,3 +127,13 @@
 	weapon.force = 5
 	car.attacked_by(weapon, attacker)
 	TEST_ASSERT_NULL(LAZYACCESS(car.occupants, attacker), "Атакующий не должен был оказаться в occupants")
+
+/// Решётка на космосе уровня с грунтом в базовом турфе не рантаймит: ScrapeAway меняет космос на грунт посреди прока.
+/datum/unit_test/space_lattice_on_ground_baseturf/Run()
+	var/turf/spot = run_loc_floor_bottom_left
+	spot.ChangeTurf(/turf/open/space, list(/turf/open/floor/plating/asteroid/airless))
+	TEST_ASSERT(isspaceturf(spot), "Не удалось положить космос для проверки")
+	spot.ReplaceWithLattice()
+	TEST_ASSERT(istype(spot, /turf/open/floor/plating/asteroid/airless), "Под решёткой должен остаться грунт базового турфа")
+	TEST_ASSERT_NOTNULL(locate(/obj/structure/lattice) in spot, "Решётка не появилась")
+	spot.ChangeTurf(/turf/open/floor/plasteel)

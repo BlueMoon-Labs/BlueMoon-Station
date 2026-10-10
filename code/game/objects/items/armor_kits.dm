@@ -48,15 +48,16 @@
 			return	// Prevents people from bypassing clothing slot lock by equipping it in advance.
 
 	var/obj/item/clothing/P = new parent_armor_type(src)
-	C.set_armor(P.armor)
-	C.body_parts_covered = P.body_parts_covered
-	C.cold_protection = P.cold_protection
-	C.heat_protection = P.heat_protection
-	C.resistance_flags = P.resistance_flags
-	C.clothing_flags = P.clothing_flags
-	C.min_cold_protection_temperature = P.min_cold_protection_temperature
-	C.max_heat_protection_temperature = P.max_heat_protection_temperature
-	C.allowed = P.allowed
+
+	C.set_armor(C.armor.upgradeArmor(P.armor))
+	ENABLE_BITFIELD(C.body_parts_covered, P.body_parts_covered)
+	ENABLE_BITFIELD(C.cold_protection, P.cold_protection)
+	ENABLE_BITFIELD(C.heat_protection, P.heat_protection)
+	ENABLE_BITFIELD(C.resistance_flags, P.resistance_flags)
+	ENABLE_BITFIELD(C.clothing_flags, P.clothing_flags)
+	C.min_cold_protection_temperature = min(C.min_cold_protection_temperature, P.min_cold_protection_temperature)
+	C.max_heat_protection_temperature = max(C.max_heat_protection_temperature, P.max_heat_protection_temperature)
+	C.allowed = LAZYCOPY(C.allowed) + P.allowed
 
 	user.visible_message("<span class = 'notice'>[user] укрепляет [C] с помощью [src].</span>", \
 	"<span class = 'notice'>Вы усиливаете [C] с помощью [src], делая его уровень защиты идентичным [P.name].</span>")

@@ -1,0 +1,90 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"i" = (
+/turf/open/floor/plasteel/cult,
+/area/maintenance/aft/upper)
+"j" = (
+/obj/machinery/light/warm/directional/south,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 5
+	},
+/obj/effect/decal/remains/human,
+/turf/open/floor/plasteel/cult,
+/area/maintenance/aft/upper)
+"m" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/plasteel/cult,
+/area/maintenance/aft/upper)
+"p" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/cult,
+/area/maintenance/aft/upper)
+"v" = (
+/obj/effect/decal/cleanable/ash/large,
+/obj/effect/decal/cleanable/ash/large,
+/mob/living/simple_animal/hostile/retaliate/ghost{
+	faction = list("neutral");
+	vision_range = 0;
+	aggro_vision_range = 0
+	},
+/turf/open/floor/plasteel/cult,
+/area/maintenance/aft/upper)
+"B" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 9
+	},
+/turf/open/floor/plasteel/cult,
+/area/maintenance/aft/upper)
+"E" = (
+/mob/living/simple_animal/hostile/retaliate/ghost{
+	faction = list("neutral");
+	vision_range = 0;
+	aggro_vision_range = 0
+	},
+/turf/open/floor/plasteel/cult,
+/area/maintenance/aft/upper)
+"G" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/turf/open/floor/plasteel/cult,
+/area/maintenance/aft/upper)
+"I" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 10
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 6
+	},
+/obj/modular_map_connector,
+/turf/open/floor/plasteel/cult,
+/area/maintenance/aft/upper)
+"N" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
+/turf/open/floor/plasteel/cult,
+/area/maintenance/aft/upper)
+"V" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
+/obj/effect/decal/remains/human,
+/turf/open/floor/plasteel/cult,
+/area/maintenance/aft/upper)
+
+(1,1,1) = {"
+G
+N
+j
+"}
+(2,1,1) = {"
+i
+v
+I
+"}
+(3,1,1) = {"
+i
+E
+p
+"}
+(4,1,1) = {"
+m
+V
+B
+"}

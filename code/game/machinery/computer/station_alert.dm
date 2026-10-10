@@ -9,7 +9,7 @@
 	var/datum/station_alert/alert_control
 
 /obj/machinery/computer/station_alert/Initialize(mapload)
-	alert_control = new(src, list(ALARM_ATMOS, ALARM_FIRE, ALARM_POWER), list(z), title = name)
+	alert_control = new(src, list(ALARM_ATMOS, ALARM_FIRE, ALARM_POWER), SSmapping.get_connected_levels(z).Copy(), title = name)
 	return ..()
 
 /obj/machinery/computer/station_alert/Destroy()

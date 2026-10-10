@@ -15,6 +15,7 @@
 	var/figure_hud_key
 	var/image/next_step_hint
 	var/image/lead_hint
+	var/obj/effect/abstract/heretic_vfx_image_anchor/hint_anchor
 
 /datum/eldritch_knowledge/base_dance/proc/hint_viewer()
 	if(!beat_hints || QDELETED(dance_body) || dance_body.stat == DEAD)
@@ -26,15 +27,22 @@
 		dance_body?.client?.images -= hint
 
 /datum/eldritch_knowledge/base_dance/proc/clear_hints()
-	drop_hint(cue_ring)
-	drop_hint(figure_hud)
-	drop_hint(next_step_hint)
-	drop_hint(lead_hint)
+	for(var/image/hint in list(cue_ring, figure_hud, next_step_hint, lead_hint))
+		drop_hint(hint)
+		// Если клиент уже ушёл из тела, картинка осталась у него и не должна держать удалённую опору.
+		hint.loc = null
 	cue_ring = null
 	figure_hud = null
 	figure_hud_key = null
 	next_step_hint = null
 	lead_hint = null
+	QDEL_NULL(hint_anchor)
+
+/datum/eldritch_knowledge/base_dance/proc/body_hint_image(icon, icon_state)
+	hint_anchor ||= heretic_vfx_image_anchor(dance_body)
+	var/image/hint = image(icon, hint_anchor, icon_state, BELOW_MOB_LAYER)
+	hint.appearance_flags = DANCE_HINT_FLAGS
+	return hint
 
 /datum/eldritch_knowledge/base_dance/proc/refresh_hints()
 	update_figure_hud()
@@ -57,11 +65,9 @@
 		drop_hint(cue_ring)
 		return
 	if(!cue_ring)
-		cue_ring = image('modular_bluemoon/icons/obj/heretic_dance_effects.dmi', dance_body, "dance_cue_ring", BELOW_MOB_LAYER)
+		cue_ring = body_hint_image('modular_bluemoon/icons/obj/heretic_dance_effects.dmi', "dance_cue_ring")
 		cue_ring.pixel_x = -16
 		cue_ring.pixel_y = DANCE_CUE_PIXEL_Y
-		cue_ring.appearance_flags = DANCE_HINT_FLAGS
-		cue_ring.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	viewer.images |= cue_ring
 	var/datum/heretic_dance_style/style = current_style()
 	var/next_strong = ((beat_index + 1) % meter) == 0
@@ -77,7 +83,7 @@
 	var/client/viewer = hint_viewer()
 	var/datum/heretic_dance_style/style = current_style()
 	var/total = length(style.figure) || (style.id == HERETIC_DANCE_STYLE_TARANTELLA ? HERETIC_DANCE_BITE_HITS : 0)
-	if(!viewer || !total)
+	if(!viewer || !total || music_silent())
 		drop_hint(figure_hud)
 		return
 	var/done = length(style.figure) ? figure_progress() : bite_chain
@@ -90,10 +96,8 @@
 		return
 	figure_hud_key = key
 	if(!figure_hud)
-		figure_hud = image('modular_bluemoon/icons/obj/heretic_dance_marks.dmi', dance_body, null, BELOW_MOB_LAYER)
+		figure_hud = body_hint_image('modular_bluemoon/icons/obj/heretic_dance_marks.dmi')
 		figure_hud.pixel_y = DANCE_PIP_PIXEL_Y
-		figure_hud.appearance_flags = DANCE_HINT_FLAGS
-		figure_hud.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	var/list/pips = list()
 	var/start = -(total - 1) * DANCE_PIP_SPACING / 2
 	for(var/index in 1 to total)

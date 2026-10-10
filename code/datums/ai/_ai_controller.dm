@@ -122,6 +122,7 @@ multiple modular subtrees with behaviors
 		PossessPawn(new_pawn)
 
 /datum/ai_controller/Destroy(force)
+	GLOB.ai_tactical_cache_owners -= src
 	release_ai_target_reservation()
 	release_pack_focus()
 	UnpossessPawn(FALSE)
@@ -158,7 +159,7 @@ multiple modular subtrees with behaviors
 	var/mob/mob_pawn = pawn
 	if(islava(candidate))
 		return istype(mob_pawn) && ((mob_pawn.movement_type & (FLYING | FLOATING)) || HAS_TRAIT(mob_pawn, TRAIT_LAVA_IMMUNE))
-	if(istype(candidate, /turf/open/chasm) || istype(candidate, /turf/open/openspace))
+	if(istype(candidate, /turf/open/chasm) || isopenspaceturf(candidate))
 		return istype(mob_pawn) && (mob_pawn.movement_type & (FLYING | FLOATING))
 	return isspaceturf(candidate) && can_path_through_space()
 

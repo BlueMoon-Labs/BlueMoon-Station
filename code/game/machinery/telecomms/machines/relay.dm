@@ -28,7 +28,7 @@
 	// Add our level and send it back
 	var/turf/T = get_turf(src)
 	if(can_send(signal) && T)
-		signal.levels |= T.z
+		signal.levels |= SSmapping.get_connected_levels(T)
 
 // Checks to see if it can send/receive.
 

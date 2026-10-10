@@ -148,6 +148,13 @@
 	icon_state = "c20r46-16"
 	ammo_type = /obj/item/ammo_casing/c10mm/soporific
 
+/obj/item/ammo_box/magazine/m10mm_large/rubber
+	name = "enlarged pistol magazine (10mm rubber)"
+	desc = "An extra ammo gun magazine. Loaded with rounds which inject the target with a variety of substances to induce sleep in the target."
+	icon_state = "c20r47-16"
+	ammo_type = /obj/item/ammo_casing/c10mm/rubber
+
+
 /obj/item/ammo_box/magazine/m10mm_large/update_icon()
 	..()
 	icon_state = "c20r45-[round(ammo_count(),2)]"
@@ -155,6 +162,10 @@
 /obj/item/ammo_box/magazine/m10mm_large/soporific/update_icon()
 	..()
 	icon_state = "c20r46-[round(ammo_count(),2)]"
+
+/obj/item/ammo_box/magazine/m10mm_large/rubber/update_icon()
+	..()
+	icon_state = "c20r47-[round(ammo_count(),2)]"
 ///
 
 /datum/design/m10mm_large
@@ -198,9 +209,9 @@
 	new /obj/item/ammo_box/magazine/m10mm_large(src)
 	new /obj/item/ammo_box/magazine/m10mm_large(src)
 	new /obj/item/ammo_box/magazine/m10mm_large(src)
-	new /obj/item/ammo_box/magazine/m10mm_large/soporific(src)
-	new /obj/item/ammo_box/magazine/m10mm_large/soporific(src)
-	new /obj/item/ammo_box/magazine/m10mm_large/soporific(src)
+	new /obj/item/ammo_box/magazine/m10mm_large/rubber(src)
+	new /obj/item/ammo_box/magazine/m10mm_large/rubber(src)
+	new /obj/item/ammo_box/magazine/m10mm_large/rubber(src)
 
 /obj/item/choice_beacon/hos_new_weapon
 	name = "personal weapon beacon"

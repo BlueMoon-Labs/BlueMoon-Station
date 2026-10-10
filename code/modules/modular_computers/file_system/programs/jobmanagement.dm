@@ -159,7 +159,7 @@ GLOBAL_VAR_INIT(time_last_changed_position, 0)
 				if(length(SSjob.prioritized_jobs) < MAX_PRIORITY_JOB)
 					SSjob.prioritized_jobs += j
 				else
-					computer.say("Error: CentCom employment protocols restrict prioritising more than [MAX_PRIORITY_JOB] jobs.")
+					computer.say("Ошибка: по протоколам ЦК нельзя держать больше [MAX_PRIORITY_JOB] приоритетных вакансий.")
 			playsound(computer, 'sound/machines/terminal_prompt_confirm.ogg', 50, FALSE)
 			return TRUE
 
@@ -222,6 +222,7 @@ GLOBAL_VAR_INIT(time_last_changed_position, 0)
 		var/datum/job/job = j
 		priority += job.title
 	data["prioritized"] = priority
+	data["priorityLimit"] = MAX_PRIORITY_JOB
 
 #undef CARDCON_DEPARTMENT_SERVICE
 #undef CARDCON_DEPARTMENT_SECURITY

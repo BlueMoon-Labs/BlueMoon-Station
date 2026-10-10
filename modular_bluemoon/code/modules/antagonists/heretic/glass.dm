@@ -1704,7 +1704,7 @@
 
 /obj/effect/temp_visual/heretic_glass/facet/Initialize(mapload, datum/eldritch_knowledge/base_glass/glass, lifetime)
 	. = ..()
-	add_overlay(emissive_appearance(icon, icon_state))
+	add_overlay(emissive_appearance(icon, icon_state, offset_spokesman = src))
 
 /// Отрезок луча от центра клетки: спрайт растягивается вдоль, до залпа тонкой линией копит свет, в залп вспыхивает во всю ширину.
 /obj/effect/temp_visual/heretic_glass/beam
@@ -1722,7 +1722,7 @@
 
 /obj/effect/temp_visual/heretic_glass/beam/Initialize(mapload, datum/eldritch_knowledge/base_glass/glass, lifetime)
 	. = ..()
-	add_overlay(emissive_appearance(icon, icon_state))
+	add_overlay(emissive_appearance(icon, icon_state, offset_spokesman = src))
 
 /obj/effect/temp_visual/heretic_glass/beam/Destroy()
 	end_tile = null

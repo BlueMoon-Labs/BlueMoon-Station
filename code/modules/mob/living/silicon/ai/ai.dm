@@ -147,6 +147,8 @@
 
 	to_chat(src, "<B>You are playing the station's AI. The AI cannot move, but can interact with many objects while viewing them (through cameras).</B>")
 	to_chat(src, "<B>To look at other parts of the station, click on yourself to get a camera menu.</B>")
+	if(length(SSmapping.get_connected_levels(get_turf(src))) > 1)
+		to_chat(src, "<B>Станция многоэтажная: этаж камеры меняют красные стрелки в правом нижнем углу экрана или команды Move Upwards и Move Down.</B>")
 	to_chat(src, "<B>While observing through a camera, you can use most (networked) devices which you can see, such as computers, APCs, intercoms, doors, etc.</B>")
 	to_chat(src, "To use something, simply click on it.")
 	to_chat(src, "Use say :b to speak to your cyborgs through binary.")
@@ -193,7 +195,7 @@
 	builtInCamera = new (src)
 	builtInCamera.network = list("ss13")
 
-	alert_control = new(src, list(ALARM_ATMOS, ALARM_FIRE, ALARM_POWER, ALARM_CAMERA, ALARM_BURGLAR, ALARM_MOTION), list(z), camera_view = TRUE)
+	alert_control = new(src, list(ALARM_ATMOS, ALARM_FIRE, ALARM_POWER, ALARM_CAMERA, ALARM_BURGLAR, ALARM_MOTION), SSmapping.get_connected_levels(z).Copy(), camera_view = TRUE)
 	RegisterSignal(alert_control.listener, COMSIG_ALARM_TRIGGERED, PROC_REF(alarm_triggered))
 	RegisterSignal(alert_control.listener, COMSIG_ALARM_CLEARED, PROC_REF(alarm_cleared))
 	src.overlay_fullscreen("boot_blind", /atom/movable/screen/fullscreen/scaled/blind)
@@ -1078,19 +1080,19 @@
 		if(A != GLOB.ai_camera_room_landmark)
 			end_multicam()
 		client.perspective = EYE_PERSPECTIVE
-		client.eye = A
+		client.set_eye(A)
 	else
 		end_multicam()
 		if(isturf(loc))
 			if(eyeobj)
-				client.eye = eyeobj
+				client.set_eye(eyeobj)
 				client.perspective = EYE_PERSPECTIVE
 			else
-				client.eye = client.mob
+				client.set_eye(client.mob)
 				client.perspective = MOB_PERSPECTIVE
 		else
 			client.perspective = EYE_PERSPECTIVE
-			client.eye = loc
+			client.set_eye(loc)
 	update_sight()
 	if(client.eye != src)
 		var/atom/AT = client.eye
@@ -1281,8 +1283,16 @@
 		return eyeobj.emote(act, m_type, message, intentional, forced = TRUE)
 	return ..()
 
-/mob/living/silicon/ai/zMove(dir, feedback = FALSE)
-	. = eyeobj.zMove(dir, feedback)
+//Верб уводит камеру, а падение и лестницы приходят с целью и двигают само ядро.
+/mob/living/silicon/ai/zMove(dir, turf/target, z_move_flags = ZMOVE_FLIGHT_FLAGS)
+	if(target || !eyeobj)
+		return ..()
+	return eyeobj.zMove(dir, target, z_move_flags)
+
+/mob/living/silicon/ai/move_vertically(direction)
+	if(!eyeobj)
+		return FALSE
+	return zMove(direction, null, ZMOVE_FLIGHT_FLAGS|ZMOVE_FEEDBACK)
 
 /mob/living/silicon/ai/proc/stop_controlling_display()
 	if(!controlled_display)

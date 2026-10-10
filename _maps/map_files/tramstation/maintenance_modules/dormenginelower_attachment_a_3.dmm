@@ -1,0 +1,288 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/turf/open/floor/plating/asteroid/airless,
+/area/asteroid/tramstation)
+"l" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/button/door/directional/north{
+	name = "Privacy Shutter Toggle";
+	id = "dabonthehatersdabonthefakers"
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"n" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/effect/spawner/lootdrop/costume,
+/obj/item/clothing/shoes/cowboyboots,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"s" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop/syndicate_present,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"v" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Maintenance Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"y" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/item/clothing/head/wig,
+/obj/item/clothing/head/wig{
+	pixel_x = -3;
+	pixel_y = -7
+	},
+/obj/item/clothing/head/wig{
+	pixel_x = 8;
+	pixel_y = -7
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"z" = (
+/turf/closed/wall,
+/area/maintenance/department/crew_quarters/dorms)
+"A" = (
+/obj/effect/spawner/structure/window,
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "dabonthehatersdabonthefakers";
+	name = "Privacy Shutters"
+	},
+/turf/open/floor/plating,
+/area/maintenance/department/crew_quarters/dorms)
+"C" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/effect/spawner/lootdrop/costume,
+/obj/effect/spawner/lootdrop/minor/kittyears_or_rabbitears,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"D" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/extinguisher_cabinet/directional/east,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"F" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/window{
+	dir = 8
+	},
+/obj/structure/rack,
+/obj/effect/spawner/lootdrop/gloves,
+/obj/effect/spawner/lootdrop/gloves,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/storage/backpack = 1, /obj/item/storage/backpack/clown = 1, /obj/item/storage/backpack/explorer = 1, /obj/item/storage/backpack/mime = 1, /obj/item/storage/backpack/medic = 1, /obj/item/storage/backpack/security = 1, /obj/item/storage/backpack/industrial = 1, /obj/item/storage/backpack/botany = 1, /obj/item/storage/backpack/chemistry = 1, /obj/item/storage/backpack/genetics = 1, /obj/item/storage/backpack/science = 1, /obj/item/storage/backpack/virology = 1, /obj/item/storage/backpack/satchel = 1, /obj/item/storage/backpack/satchel/leather = 1, /obj/item/storage/backpack/satchel/eng = 1, /obj/item/storage/backpack/satchel/med = 1, /obj/item/storage/backpack/satchel/hyd = 1, /obj/item/storage/backpack/satchel/sec = 1, /obj/item/storage/backpack/satchel/explorer = 1, /obj/item/storage/backpack/duffelbag = 1, /obj/item/storage/backpack/duffelbag/med = 1, /obj/item/storage/backpack/duffelbag/sec = 1, /obj/item/storage/backpack/duffelbag/engineering = 1, /obj/item/storage/backpack/duffelbag/clown = 1)
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/storage/backpack = 1, /obj/item/storage/backpack/clown = 1, /obj/item/storage/backpack/explorer = 1, /obj/item/storage/backpack/mime = 1, /obj/item/storage/backpack/medic = 1, /obj/item/storage/backpack/security = 1, /obj/item/storage/backpack/industrial = 1, /obj/item/storage/backpack/botany = 1, /obj/item/storage/backpack/chemistry = 1, /obj/item/storage/backpack/genetics = 1, /obj/item/storage/backpack/science = 1, /obj/item/storage/backpack/virology = 1, /obj/item/storage/backpack/satchel = 1, /obj/item/storage/backpack/satchel/leather = 1, /obj/item/storage/backpack/satchel/eng = 1, /obj/item/storage/backpack/satchel/med = 1, /obj/item/storage/backpack/satchel/hyd = 1, /obj/item/storage/backpack/satchel/sec = 1, /obj/item/storage/backpack/satchel/explorer = 1, /obj/item/storage/backpack/duffelbag = 1, /obj/item/storage/backpack/duffelbag/med = 1, /obj/item/storage/backpack/duffelbag/sec = 1, /obj/item/storage/backpack/duffelbag/engineering = 1, /obj/item/storage/backpack/duffelbag/clown = 1)
+	},
+/turf/open/floor/plating,
+/area/maintenance/department/crew_quarters/dorms)
+"I" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/item/lipstick/random,
+/obj/item/lipstick/random{
+	pixel_x = 4;
+	pixel_y = 5
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"J" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"M" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/effect/spawner/lootdrop/costume,
+/obj/effect/spawner/lootdrop/minor/beret_or_rabbitears,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"O" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/item/clothing/glasses/monocle,
+/obj/item/clothing/glasses/cover/eyepatch,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"P" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/effect/spawner/lootdrop/costume,
+/obj/effect/spawner/lootdrop/minor/bowler_or_that,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"S" = (
+/obj/modular_map_connector,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Maintenance Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"T" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/item/clothing/under/suit/tuxedo{
+	pixel_x = 1;
+	pixel_y = 6
+	},
+/obj/item/clothing/glasses/regular/hipster{
+	pixel_y = 1;
+	pixel_x = 2
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"V" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/asteroid/tramstation)
+"X" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/window{
+	dir = 8
+	},
+/obj/structure/closet/cardboard{
+	name = "surplus clothing"
+	},
+/obj/effect/spawner/lootdrop/costume,
+/obj/effect/spawner/lootdrop/costume,
+/obj/effect/spawner/lootdrop/minor/kittyears_or_rabbitears,
+/turf/open/floor/plating,
+/area/maintenance/department/crew_quarters/dorms)
+"Y" = (
+/turf/template_noop,
+/area/template_noop)
+
+(1,1,1) = {"
+Y
+z
+z
+z
+z
+V
+V
+"}
+(2,1,1) = {"
+Y
+J
+J
+J
+z
+c
+c
+"}
+(3,1,1) = {"
+A
+J
+J
+J
+z
+c
+c
+"}
+(4,1,1) = {"
+A
+P
+J
+C
+z
+c
+c
+"}
+(5,1,1) = {"
+A
+I
+J
+T
+z
+c
+c
+"}
+(6,1,1) = {"
+A
+y
+J
+O
+z
+c
+c
+"}
+(7,1,1) = {"
+A
+M
+J
+n
+z
+c
+c
+"}
+(8,1,1) = {"
+A
+J
+s
+J
+z
+c
+V
+"}
+(9,1,1) = {"
+Y
+l
+D
+J
+z
+V
+V
+"}
+(10,1,1) = {"
+Y
+z
+z
+v
+z
+z
+V
+"}
+(11,1,1) = {"
+S
+J
+J
+J
+J
+z
+V
+"}
+(12,1,1) = {"
+Y
+J
+J
+J
+J
+z
+V
+"}
+(13,1,1) = {"
+Y
+Y
+Y
+X
+F
+z
+V
+"}
+(14,1,1) = {"
+Y
+Y
+Y
+Y
+Y
+Y
+Y
+"}

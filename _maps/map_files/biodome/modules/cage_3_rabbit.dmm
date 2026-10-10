@@ -1,0 +1,88 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"g" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+"k" = (
+/obj/structure/flora/ausbushes/pointybush,
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+"m" = (
+/obj/structure/flora/ausbushes/leafybush,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 9
+	},
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+"p" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 10
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 6
+	},
+/obj/modular_map_connector,
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+"v" = (
+/obj/structure/flora/ausbushes/leafybush,
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+"w" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+"z" = (
+/mob/living/simple_animal/chicken/rabbit/normal,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+"A" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/obj/item/storage/bag/easterbasket,
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+"L" = (
+/mob/living/simple_animal/chicken/rabbit/normal,
+/obj/structure/flora/ausbushes/leafybush,
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+"M" = (
+/obj/structure/flora/ausbushes/leafybush,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+"P" = (
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+"S" = (
+/obj/machinery/light/warm/directional/south,
+/mob/living/simple_animal/chicken/rabbit/normal,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 5
+	},
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+
+(1,1,1) = {"
+A
+g
+S
+"}
+(2,1,1) = {"
+k
+L
+p
+"}
+(3,1,1) = {"
+v
+P
+w
+"}
+(4,1,1) = {"
+z
+M
+m
+"}

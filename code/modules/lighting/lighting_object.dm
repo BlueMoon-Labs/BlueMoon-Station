@@ -119,7 +119,9 @@
 	// animates color, so the "new target == current target" short-circuit BYOND uses for fresh
 	// LIGHTING_DARK_MATRIX vs in-flight-to-LIGHTING_DARK_MATRIX cannot apply here.
 	animate(src, alpha = 0, time = 0, flags = ANIMATION_END_NOW)
-	return ..()
+	. = ..()
+	if(SSlighting.teardown_skip_gc_queue)
+		return QDEL_HINT_IWILLGC
 
 /// Computes blended area lighting profile by averaging this turf's area with 4 cardinal neighbors.
 /// Produces soft transitions at zone boundaries instead of hard color jumps.

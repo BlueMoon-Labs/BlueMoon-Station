@@ -1,3 +1,6 @@
+#define BLIND_MODE_NORMAL 0
+#define BLIND_MODE_HARD   1
+
 //Glasses
 /obj/item/clothing/glasses
 	name = "glasses"
@@ -387,15 +390,38 @@
 	item_state = "blindfold"
 	flash_protect = 2
 	tint = 3			// to make them blind
+	var/blind_mode = BLIND_MODE_NORMAL
+
+/obj/item/clothing/glasses/sunglasses/blindfold/Initialize()
+	. = ..()
+	AddComponent(/datum/component/latex_lockable)
 
 /obj/item/clothing/glasses/sunglasses/blindfold/equipped(mob/living/carbon/human/user, slot)
 	. = ..()
 	if(slot == ITEM_SLOT_EYES)
+		var/trait_type = (blind_mode == BLIND_MODE_HARD) ? TRAIT_BLINDFOLD_HARD : TRAIT_BLINDFOLD
+		ADD_TRAIT(user, trait_type, "blindfold_[REF(src)]")
 		user.become_blind("blindfold_[REF(src)]")
+		user.update_blindness()
 
 /obj/item/clothing/glasses/sunglasses/blindfold/dropped(mob/living/carbon/human/user)
+	var/trait_type = (blind_mode == BLIND_MODE_HARD) ? TRAIT_BLINDFOLD_HARD : TRAIT_BLINDFOLD
+	REMOVE_TRAIT(user, trait_type, "blindfold_[REF(src)]")
 	..()
 	user.cure_blind("blindfold_[REF(src)]")
+	user.update_blindness()
+
+/obj/item/clothing/glasses/sunglasses/blindfold/attack_self(mob/user)
+	. = ..()
+	if(!istype(user))
+		return
+	switch(blind_mode)
+		if(BLIND_MODE_NORMAL)
+			blind_mode = BLIND_MODE_HARD
+			to_chat(user, span_notice("Вы затягиваете ремешки повязки сильнее. Зрение сильно ограничено."))
+		if(BLIND_MODE_HARD)
+			blind_mode = BLIND_MODE_NORMAL
+			to_chat(user, span_notice("Вы ослабляете ремешки повязки. Доступно периферийное зрение."))
 
 /obj/item/clothing/glasses/sunglasses/blindfold/white
 	name = "blind personnel blindfold"
@@ -720,3 +746,6 @@
 	data.recipient_ids = adresses
 	data.data = list(source, target)
 	ntnet_send(data)
+
+#undef BLIND_MODE_NORMAL
+#undef BLIND_MODE_HARD

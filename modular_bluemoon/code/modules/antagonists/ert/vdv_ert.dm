@@ -56,8 +56,8 @@
 	glasses = /obj/item/clothing/glasses/hud/security/sunglasses
 	belt = /obj/item/storage/belt/security/vdv
 	id = /obj/item/card/id/nri
-	back = /obj/item/storage/backpack/rucksack
-	backpack_contents = list(/obj/item/storage/box/survival/engineer=1,\
+	back = /obj/item/storage/backpack/rucksack/ert
+	backpack_contents = list(/obj/item/storage/box/survival/centcom=1,\
 							/obj/item/ammo_box/magazine/m10mm=3)
 
 	l_hand = /obj/item/gun/ballistic/automatic/pistol
@@ -70,7 +70,7 @@
 	else
 		back = /obj/item/storage/backpack
 		backpack_contents = list(
-			/obj/item/storage/box/survival/engineer=1,
+			/obj/item/storage/box/survival/centcom=1,
 			/obj/item/storage/pill_bottle/zvezdochka=1,
 			/obj/item/ammo_box/magazine/m10mm,
 			)

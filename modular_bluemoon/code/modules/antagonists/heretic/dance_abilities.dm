@@ -11,6 +11,7 @@
 	details = list(
 		"Украденная выносливость восстанавливает вашу на столько же.",
 		"Танго: доля 0,75 с, удары в долю +6 ушибов, акцент валит цель на 1,5 секунды, фигура - выпад с 2 клеток.",
+		"Номер «Па-де-де»: квадрат Вальса, связка в Танго и очо - ведомый 3 с ваш партнёр, цель охоты 6 с, сердце уведёт её.",
 	)
 	role = HERETIC_ROLE_GRASP
 	gain_text = "Я взял чужую руку, и её сила перешла ко мне вместе с ритмом."
@@ -83,6 +84,7 @@
 		"Заражённые в 7 клетках, которые слышат, получают ослабленный акцент, а вы 3 секунды видите их сердца сквозь стены.",
 		"Тарантелла: доля 0,5 с, самый трудный темп; точные действия лечат 2, удары в долю копят тарантизм.",
 		"Стак отнимает 4 выносливости в сильную долю; пять стаков срывают цель в пляску на 3 секунды. Фигура - 4 точных удара.",
+		"Номер «Танго смерти»: очо, связка в Тарантеллу и 4 точных укуса - 6 секунд пляски и взрыв тарантизма на 32 ушиба.",
 	)
 	role = HERETIC_ROLE_RELIC
 	ritual_hint = "Кожу даёт кожевенный станок или шкура животного; сердце - любое извлечённое сердце."
@@ -210,6 +212,8 @@
 		"Стиль Пляска смерти: доля 1,2 с, заражённые видят вместо вас скелет, враги в 5 клетках вязнут на каждой доле.",
 		"Акцент - колокол: каждый заражённый в 7 клетках делает шаг к вам; фигура - 4 шага прямо, хоровод на 3 секунды.",
 		"Без 4 Такта колокол не звонит. Перезарядка 40 секунд.",
+		"Номер «Пляска мертвецов»: линия Канкана, связка в Пляску смерти и процессия - хоровод до 6 врагов из 4 клеток на 6 с.",
+		"Номер «Исчезновение»: процессия, связка в Канкан и линия - рывок на 6 клеток, маска на 4 секунды и скорость.",
 	)
 	role = HERETIC_ROLE_ATTACK
 	gain_text = "Колокол ударил один раз, и все, кто его слышал, взялись за руки."
@@ -307,14 +311,14 @@
 	return TRUE
 
 /// Фигура Канкана: ленты слепят соседей, еретик рывком проходит сквозь толпу.
-/datum/eldritch_knowledge/base_dance/proc/cancan_dash(mob/living/user)
+/datum/eldritch_knowledge/base_dance/proc/cancan_dash(mob/living/user, distance = 3)
 	for(var/mob/living/carbon/victim in orange(2, user))
 		if(heretic_can_affect(user, victim, chargecost = 0, notify = FALSE))
 			victim.blur_eyes(4)
 			victim.confused = max(victim.confused, 2)
 	new /obj/effect/temp_visual/heretic_dance/confetti(get_turf(user))
 	user.pulledby?.stop_pulling()
-	for(var/step_index in 1 to 3)
+	for(var/step_index in 1 to distance)
 		var/turf/next = get_step(user, user.dir)
 		if(!next || isgroundlessturf(next) || !heretic_tile_passable(next) || !heretic_step_open(get_turf(user), next))
 			break
@@ -340,6 +344,12 @@
 		new /obj/effect/temp_visual/heretic_dance/horovod(get_turf(user), user, time)
 	return count > 0
 
+/datum/eldritch_knowledge/base_dance/proc/horovod_failure_reason(mob/living/user, range)
+	for(var/mob/living/carbon/victim in range(range, user))
+		if(victim != user && victim.has_status_effect(/datum/status_effect/heretic_dance_horovod_rest) && heretic_edge_line_clear(user, victim))
+			return "Прошлый хоровод отпустил [victim] меньше [DisplayTimeText(HERETIC_DANCE_HOROVOD_REST)] назад: новый пока не возьмёт."
+	return "Рядом нет никого, кого хоровод мог бы подхватить: лежачие, схваченные и глухие не пляшут."
+
 /datum/eldritch_knowledge/base_dance/proc/toll_bell(mob/living/user, steps = 1)
 	new /obj/effect/temp_visual/heretic_dance/bell(get_turf(user))
 	playsound(user, HERETIC_DANCE_BELL_SOUND, 70, TRUE)
@@ -359,7 +369,7 @@
 		dance_failure = "Колоколу нужно [HERETIC_DANCE_BELL_COST] Такта, сейчас [combat_resource]."
 		return FALSE
 	if(!start_horovod(user, HERETIC_DANCE_HOROVOD_TIME, INFINITY, HERETIC_DANCE_HOROVOD_RANGE))
-		dance_failure = "Рядом нет никого, кого хоровод мог бы подхватить: лежачие, схваченные и глухие не пляшут."
+		dance_failure = horovod_failure_reason(user, HERETIC_DANCE_HOROVOD_RANGE)
 		return FALSE
 	spend_combat_resource(HERETIC_DANCE_BELL_COST)
 	update_passive()
@@ -412,7 +422,7 @@
 	var/list/image/shown = list()
 	for(var/mob/living/victim as anything in hearts)
 		var/image/heart = image('modular_bluemoon/icons/obj/heretic_dance_marks.dmi', victim, "dance_note", ABOVE_LIGHTING_LAYER)
-		heart.plane = ABOVE_LIGHTING_PLANE
+		SET_PLANE_EXPLICIT(heart, ABOVE_LIGHTING_PLANE, victim)
 		heart.appearance_flags = RESET_COLOR | RESET_TRANSFORM | KEEP_APART
 		shown += heart
 	user.client.images |= shown

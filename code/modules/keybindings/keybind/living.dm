@@ -63,7 +63,7 @@
 	hotkey_keys = list("Space")
 	name = "Jump"
 	full_name = "Jump"
-	description = "Jumps, if your mob is capable of doing so."
+	description = "Прыжок на месте. С зажатой клавишей движения - прыжок с разбега на две клетки, через дыру в полу или стол."
 	keybind_signal = COMSIG_KB_LIVING_JUMP
 
 /datum/keybinding/living/jump/down(client/user)
@@ -71,5 +71,5 @@
 	if(L.resting || L.buckled)
 		return FALSE
 	L.emote("jump")
-	SEND_SIGNAL(L, COMSIG_KB_LIVING_JUMP)
+	SEND_SIGNAL(L, COMSIG_KB_LIVING_JUMP, keybindings_calculate_movement_dir(user.keys_held, user.movement_keys))
 	return TRUE

@@ -88,11 +88,20 @@
 		last = cached_eye = last_area = null
 		SetParallax(null, null, auto_z_change)
 		return
+	var/datum/parallax/template = SSparallax.get_parallax_template(T.z)
+	//Этаж той же стопки с той же сценой: слоям хватает новой позиции без пересборки.
+	if(!force && parallax_is_template && template && template == parallax && last && last.z != T.z)
+		last = T
+		last_area = T.loc
+		for(var/atom/movable/screen/parallax_layer/L in layers)
+			L.ResetPosition(T.x, T.y)
+		UpdateMotion(auto_z_change)
+		return
 	// set last loc and eye
 	last = T
 	last_area = T.loc
 	// rebuild parallax
-	SetParallax(SSparallax.get_parallax_template(T.z), null, auto_z_change, force, TRUE)
+	SetParallax(template, null, auto_z_change, force, TRUE)
 	// hard reset positions to correct positions
 	for(var/atom/movable/screen/parallax_layer/L in layers)
 		L.ResetPosition(T.x, T.y)
@@ -148,7 +157,7 @@
  * Gets the base parallax planemaster for things like turning
  */
 /datum/parallax_holder/proc/GetPlaneMaster()
-	return planemaster_override || (owner && (locate(/atom/movable/screen/plane_master/parallax) in owner?.screen))
+	return planemaster_override || owner?.mob?.hud_used?.get_plane_master(PLANE_SPACE_PARALLAX)
 
 /**
  * Syncs us to our parallax objects. Does NOT check if we should have those objects, that's Reset()'s job.
@@ -237,8 +246,7 @@
 		. |= L
 	C.screen |= .
 	if(!secondary_map && (effective_parallax != PARALLAX_DISABLE))
-		var/atom/movable/screen/plane_master/parallax_white/PM = locate() in C.screen
-		if(PM)
+		for(var/atom/movable/screen/plane_master/PM as anything in C.mob?.hud_used?.get_true_plane_masters(PLANE_SPACE))
 			PM.color =  list(
 				0, 0, 0, 0,
 				0, 0, 0, 0,
@@ -252,8 +260,7 @@
 		return
 	C.screen -= layers
 	if(!secondary_map)
-		var/atom/movable/screen/plane_master/parallax_white/PM = locate() in C.screen
-		if(PM)
+		for(var/atom/movable/screen/plane_master/PM as anything in C.mob?.hud_used?.get_true_plane_masters(PLANE_SPACE))
 			PM.color =  initial(PM.color)
 
 /**

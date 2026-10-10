@@ -201,6 +201,13 @@ export const TelecommsPDALog = (props) => {
             </Tabs.Tab>
             <Tabs.Tab
               disabled={!valid}
+              icon="file"
+              selected={tab === "pdalog-remotelog"}
+              onClick={() => setTab("pdalog-remotelog")}>
+              Remote Logs
+            </Tabs.Tab>
+            <Tabs.Tab
+              disabled={!valid}
               icon="server"
               selected={tab === "pdalog-custommsg"}
               onClick={() => setTab("pdalog-custommsg")}>
@@ -241,6 +248,9 @@ export const TelecommsPDALog = (props) => {
               {(tab === "pdalog-reqmsg" && authenticated) && (
                 <TeleLogs msgs_log />
               )}
+              {(tab === "pdalog-remotelog" && authenticated) && (
+                <TeleLogs remote_log />
+              )}
               {(tab === "pdalog-custommsg" && authenticated) && (
                 <CustomMsg />
               )}
@@ -256,21 +266,33 @@ export const TelecommsPDALog = (props) => {
 export const TeleLogs = (props) => {
   const {
     msgs_log = false, // <TeleLogs msgs_log/>
+    remote_log = false, // <TeleLogs remote_log/>
   } = props;
   const { act, data } = useBackend();
   const {
     message_logs = [],
     recon_logs = [],
+    remote_logs = [],
     pda_msgs_trimmed = 0,
     rc_msgs_trimmed = 0,
+    remote_msgs_trimmed = 0,
   } = data;
   const prioritycolorMap = {
     'Normal': 'warning',
     'High': 'bad',
     'Extreme': 'bad',
   };
-  const log_to_use = (msgs_log ? recon_logs : message_logs) || [];
-  const trimmed_count = msgs_log ? rc_msgs_trimmed : pda_msgs_trimmed;
+  const log_to_use = (
+    remote_log
+      ? remote_logs
+      : (msgs_log ? recon_logs : message_logs)
+  ) || [];
+  const trimmed_count = remote_log
+    ? remote_msgs_trimmed
+    : (msgs_log ? rc_msgs_trimmed : pda_msgs_trimmed);
+  const clear_value = remote_log
+    ? 'remote_msgs'
+    : (msgs_log ? 'rc_msgs' : 'pda_logs');
   return (
     <Section title="Logs">
       <Button
@@ -282,7 +304,7 @@ export const TeleLogs = (props) => {
         icon="trash"
         disabled={!log_to_use || !(log_to_use && log_to_use.length)}
         onClick={() => act('clear_log', {
-          'value': msgs_log ? 'rc_msgs' : 'pda_logs',
+          'value': clear_value,
         })}>
         Delete All Logs
       </Button.Confirm>
@@ -298,7 +320,9 @@ export const TeleLogs = (props) => {
           <Section key={message.ref}>
             <LabeledList>
               <LabeledList.Item
-                label={msgs_log ? "Sending Dep." : "Sender"}
+                label={remote_log ? "Operator" : (
+                  msgs_log ? "Sending Dep." : "Sender"
+                )}
                 buttons={(
                   <Button
                     onClick={() => act('del_log', {
@@ -309,61 +333,85 @@ export const TeleLogs = (props) => {
                 )}>
                 {message.sender}
               </LabeledList.Item>
-              <LabeledList.Item
-                label={msgs_log ? "Receiving Dep." : "Recipient"}>
-                {message.recipient}
-              </LabeledList.Item>
-              <LabeledList.Item
-                label="Message"
-                buttons={(
-                  !!message.picture && ( // don't send img over req
-                    <Button
-                      icon="image"
-                      onClick={() => Byond.topic({
-                        'src': message.ref,
-                        'photo': 1,
-                      })}>
-                      Image
-                    </Button>
-                  )
-                )}>
-                {message.message}
-              </LabeledList.Item>
-              {!!msgs_log && (
+              {remote_log ? (
                 <>
-                  <LabeledList.Item
-                    label="Stamp"
-                    color={message.stamp !== "Unstamped" ? (
-                      'label'
-                    ) : (
-                      'bad'
-                    )}
-                    bold={message.stamp !== 'Unstamped'}>
+                  <LabeledList.Item label="Interface" color="label">
+                    {message.device}
+                  </LabeledList.Item>
+                  <LabeledList.Item label="Action">
+                    {message.message}
+                  </LabeledList.Item>
+                  <LabeledList.Item label="Location" color="label">
+                    {message.coords}
+                  </LabeledList.Item>
+                  <LabeledList.Item label="Time" color="label">
                     {message.stamp}
                   </LabeledList.Item>
+                </>
+              ) : (
+                <>
                   <LabeledList.Item
-                    label="ID Authentication"
-                    color={message.auth !== "Unauthenticated" ? (
-                      'good'
-                    ) : (
-                      'bad'
+                    label={msgs_log ? "Receiving Dep." : "Recipient"}>
+                    {message.recipient}
+                  </LabeledList.Item>
+                  <LabeledList.Item
+                    label="Message"
+                    buttons={(
+                      !!message.picture && ( // don't send img over req
+                        <Button
+                          icon="image"
+                          onClick={() => Byond.topic({
+                            'src': message.ref,
+                            'photo': 1,
+                          })}>
+                          Image
+                        </Button>
+                      )
                     )}>
-                    {message.auth}
+                    {message.message}
                   </LabeledList.Item>
-                  <LabeledList.Item
-                    label="Priority"
-                    color={(message.priority in prioritycolorMap) ? (
-                      prioritycolorMap[message.priority]
-                    ) : (
-                      'good'
-                    )}
-                    bold={message.priority === 'Extreme'}>
-                    {message.priority === 'Extreme' ? (
-                      `!!${message.priority}!!`
-                    ) : (
-                      message.priority
-                    )}
-                  </LabeledList.Item>
+                  {!!message.coords && (
+                    <LabeledList.Item label="Location" color="label">
+                      {message.coords}
+                    </LabeledList.Item>
+                  )}
+                  {!!msgs_log && (
+                    <>
+                      <LabeledList.Item
+                        label="Stamp"
+                        color={message.stamp !== "Unstamped" ? (
+                          'label'
+                        ) : (
+                          'bad'
+                        )}
+                        bold={message.stamp !== 'Unstamped'}>
+                        {message.stamp}
+                      </LabeledList.Item>
+                      <LabeledList.Item
+                        label="ID Authentication"
+                        color={message.auth !== "Unauthenticated" ? (
+                          'good'
+                        ) : (
+                          'bad'
+                        )}>
+                        {message.auth}
+                      </LabeledList.Item>
+                      <LabeledList.Item
+                        label="Priority"
+                        color={(message.priority in prioritycolorMap) ? (
+                          prioritycolorMap[message.priority]
+                        ) : (
+                          'good'
+                        )}
+                        bold={message.priority === 'Extreme'}>
+                        {message.priority === 'Extreme' ? (
+                          `!!${message.priority}!!`
+                        ) : (
+                          message.priority
+                        )}
+                      </LabeledList.Item>
+                    </>
+                  )}
                 </>
               )}
             </LabeledList>

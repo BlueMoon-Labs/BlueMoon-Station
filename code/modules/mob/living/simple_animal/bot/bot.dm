@@ -185,7 +185,6 @@
 	bot_core = new bot_core_type(src)
 
 	//Adds bot to the diagnostic HUD system
-	prepare_huds()
 	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.all_huds)
 		diag_hud.add_to_hud(src)
 	diag_hud_set_bothealth()
@@ -1089,7 +1088,7 @@ Pass a positive integer as an argument to override a bot's default speed.
 			MA.icon = path_image_icon
 			MA.icon_state = path_image_icon_state
 			MA.layer = ABOVE_OPEN_TURF_LAYER
-			MA.plane = 0
+			SET_PLANE(MA, GAME_PLANE, T)
 			MA.appearance_flags = RESET_COLOR|RESET_TRANSFORM
 			MA.color = path_image_color
 			MA.dir = direction

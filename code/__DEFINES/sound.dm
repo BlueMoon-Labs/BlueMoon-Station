@@ -25,6 +25,7 @@
 #define CHANNEL_JUKEBOX_START 993
 // Tetris arcade music для работы лимита канала.
 #define CHANNEL_TETRIS_MUSIC 992
+#define CHANNEL_ELEVATOR 991
 
 //THIS SHOULD ALWAYS BE THE LOWEST ONE!
 //KEEP IT UPDATED

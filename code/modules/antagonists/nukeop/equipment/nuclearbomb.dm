@@ -548,8 +548,10 @@
 	revert_syndicate_nuke_pinpointers_disk()
 
 /obj/machinery/nuclearbomb/proc/really_actually_explode(off_station)
+	// Cinematic спит, а его колбек удаляет бомбу: этажи берутся до него.
+	var/list/doomed_levels = SSmapping.get_connected_levels(get_turf(src))
 	Cinematic(get_cinematic_type(off_station),world,CALLBACK(SSticker, TYPE_PROC_REF(/datum/controller/subsystem/ticker, station_explosion_detonation),src))
-	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(KillEveryoneOnZLevel), z)
+	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(KillEveryoneOnZLevels), doomed_levels)
 
 /obj/machinery/nuclearbomb/proc/get_cinematic_type(off_station)
 	if(off_station < 2)
@@ -623,12 +625,13 @@
 /obj/machinery/nuclearbomb/beer/really_actually_explode()
 	disarm()
 
-/proc/KillEveryoneOnZLevel(z)
-	if(!z)
-		return
-	for(var/mob/M in GLOB.mob_list)
-		if(M.stat != DEAD && M.z == z)
-			M.gib()
+/proc/KillEveryoneOnZLevels(list/z_levels)
+	for(var/mob/victim as anything in GLOB.mob_list)
+		if(victim.stat == DEAD)
+			continue
+		var/turf/victim_turf = get_turf(victim)
+		if(victim_turf && (victim_turf.z in z_levels))
+			victim.gib()
 
 /*
 This is here to make the tiles around the station mininuke change when it's armed.

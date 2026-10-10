@@ -150,12 +150,8 @@ GLOBAL_LIST_EMPTY(escape_menus)
 /datum/escape_menu/proc/blur_plane_masters(datum/hud/target_hud)
 	PRIVATE_PROC(TRUE)
 
-	var/list/planes = list()
-	for(var/plane_key in list("[GAME_PLANE]", "[FLOOR_PLANE]", "[WALL_PLANE]", "[ABOVE_WALL_PLANE]"))
-		var/atom/movable/screen/plane_master/plane = target_hud.plane_masters[plane_key]
-		if (!isnull(plane))
-			planes += plane
-	return planes
+	var/atom/movable/screen/plane_master/screen_plate = target_hud.get_game_screen_plate()
+	return screen_plate ? list(screen_plate) : list()
 
 /atom/movable/screen/escape_menu
 	plane = ESCAPE_MENU_PLANE

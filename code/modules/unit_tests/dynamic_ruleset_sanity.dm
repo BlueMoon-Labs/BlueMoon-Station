@@ -63,3 +63,15 @@
 		TEST_ASSERT_EQUAL(length(rule.assigned), expected_count, "Должно выдаваться ожидаемое число еретиков")
 		for(var/datum/mind/assigned_mind as anything in rule.assigned)
 			TEST_ASSERT_EQUAL(assigned_mind.special_role, ROLE_HERETIC, "Каждый выбранный кандидат должен получить роль еретика")
+
+/// Проверяет, что малф проходит пороги Medium при 15 готовых игроках и минимальной угрозе профиля.
+/datum/unit_test/dynamic_malf_medium_reachable/Run()
+	var/datum/game_mode/dynamic/test_mode = allocate(/datum/game_mode/dynamic)
+	var/datum/director_profile/medium/profile = allocate(/datum/director_profile/medium)
+	var/datum/dynamic_ruleset/roundstart/malf/rule = allocate(/datum/dynamic_ruleset/roundstart/malf)
+	rule.mode = test_mode
+	var/medium_min_threat = test_mode.estimate_display_threat(profile.roundstart_budget_min, profile.base_drip)
+	TEST_ASSERT(ROUNDTYPE_DYNAMIC_MEDIUM in rule.required_round_type, "Малф должен быть разрешён в Medium")
+	TEST_ASSERT(profile.roundstart_budget_min >= rule.cost, "Минимальный roundstart-бюджет Medium должен покрывать цену малфа")
+	TEST_ASSERT(rule.acceptable(15, medium_min_threat), "Малф должен проходить порог при 15 готовых и угрозе [medium_min_threat]")
+	TEST_ASSERT(!rule.acceptable(14, 100), "Ниже 15 готовых малф выпадать не должен")
