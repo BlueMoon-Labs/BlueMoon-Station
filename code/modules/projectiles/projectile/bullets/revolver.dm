@@ -313,7 +313,7 @@
 	icon = 'modular_bluemoon/icons/obj/ammo.dmi'
 	icon_state = "410rubber"
 	pellets = 6
-	variance = 100
+	variance = 50
 	projectile_type = /obj/item/projectile/bullet/pellet/exorcist_rubber
 	can_be_printed = TRUE
 	custom_materials = list(/datum/material/glass = 800)
