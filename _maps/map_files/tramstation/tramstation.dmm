@@ -33657,23 +33657,23 @@
 /turf/open/floor/carpet,
 /area/service/library)
 "jyK" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 4
 	},
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/obj/structure/disposalpipe/segment{
-	dir = 4
+/obj/machinery/door/firedoor,
+/obj/effect/mapping_helpers/airlock/access/any/command/eva,
+/obj/effect/mapping_helpers/airlock/access/any/command/gateway,
+/obj/effect/mapping_helpers/airlock/access/any/command/teleporter,
+/obj/machinery/door/airlock/external{
+	name = "Secure External Operations"
 	},
-/obj/machinery/door/airlock/maintenance_hatch{
-	name = "Science Maintenance Hatch"
-	},
-/obj/effect/mapping_helpers/airlock/access/all/science/general,
-/turf/open/floor/catwalk_floor,
+/turf/open/floor/plasteel,
 /area/science/lower)
 "jyN" = (
 /obj/machinery/atmospherics/components/binary/pump{
@@ -36647,6 +36647,12 @@
 	},
 /turf/open/floor/plasteel,
 /area/hallway/primary/tram/left)
+"knu" = (
+/obj/docking_port/stationary/exploration{
+	dir = 8
+	},
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
 "knx" = (
 /obj/machinery/door/airlock/engineering/glass{
 	name = "Power Storage"
@@ -129943,19 +129949,19 @@ whD
 rxq
 rxq
 rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
 whD
-whD
-whD
-whD
-whD
-whD
-whD
-whD
-whD
-whD
-whD
-whD
-oWj
 lCh
 lCh
 rVD
@@ -130200,19 +130206,19 @@ whD
 rxq
 rxq
 rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
 whD
 whD
-whD
-whD
-whD
-whD
-whD
-whD
-whD
-whD
-whD
-whD
-oWj
 lCh
 lCh
 lCh
@@ -130457,19 +130463,19 @@ rxq
 rxq
 rxq
 rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
 whD
-whD
-whD
-whD
-whD
-whD
-whD
-whD
-whD
-whD
-whD
-whD
-oWj
 dqR
 moW
 kBw
@@ -130714,20 +130720,20 @@ rxq
 joZ
 rxq
 rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
 whD
 whD
 whD
-whD
-whD
-whD
-whD
-whD
-whD
-whD
-whD
-oWj
-oWj
-oWj
 qCU
 oWj
 whD
@@ -130971,17 +130977,17 @@ lFq
 lFq
 rxq
 rxq
-whD
-whD
-whD
-whD
-whD
-whD
-whD
-whD
-whD
-whD
-whD
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
+rxq
 whD
 whD
 whD
@@ -131235,10 +131241,10 @@ rxq
 rxq
 rxq
 rxq
-whD
-whD
-whD
-whD
+rxq
+rxq
+rxq
+rxq
 whD
 whD
 oWj
@@ -131490,15 +131496,15 @@ rxq
 rxq
 rxq
 rxq
+knu
 rxq
 rxq
+rxq
+rxq
+rxq
 whD
 whD
 whD
-whD
-whD
-whD
-oWj
 daC
 kCw
 pdQ

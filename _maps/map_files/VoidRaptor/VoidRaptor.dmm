@@ -2915,10 +2915,8 @@
 /area/maintenance/aft)
 "aJo" = (
 /obj/effect/turf_decal/stripes/yellow/line{
-	dir = 6
+	dir = 4
 	},
-/obj/machinery/light/floor,
-/obj/effect/turf_decal/bot,
 /turf/open/floor/plasteel/rivets/large,
 /area/hallway/secondary/entry/ferry_dock)
 "aJr" = (
@@ -13402,9 +13400,6 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
 	dir = 4
 	},
-/obj/structure/railing{
-	dir = 8
-	},
 /obj/item/radio/intercom{
 	pixel_y = 27
 	},
@@ -18364,13 +18359,8 @@
 	},
 /area/cargo/office)
 "emS" = (
-/obj/docking_port/stationary{
-	dir = 8;
-	dwidth = 2;
-	height = 13;
-	shuttle_id = "ferry_home";
-	name = "Port Bay 2";
-	width = 5
+/obj/docking_port/stationary/exploration{
+	dir = 4
 	},
 /turf/open/floor/plasteel/rivets/large,
 /area/hallway/secondary/entry/ferry_dock)
@@ -35020,13 +35010,14 @@
 /turf/open/floor/engine,
 /area/engineering/supermatter_room)
 "hUl" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
+/obj/docking_port/stationary{
+	dwidth = 2;
+	height = 13;
+	shuttle_id = "ferry_home";
+	name = "Port Bay 2";
+	width = 5
 	},
-/obj/structure/railing{
-	dir = 4
-	},
-/turf/open/floor/plasteel/rivets,
+/turf/open/floor/plasteel/rivets/large,
 /area/hallway/secondary/entry/ferry_dock)
 "hUm" = (
 /obj/structure/cable/yellow{
@@ -66182,9 +66173,6 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
 	dir = 4
 	},
-/obj/structure/railing{
-	dir = 8
-	},
 /obj/machinery/firealarm/directional/south,
 /turf/open/floor/plasteel/rivets,
 /area/hallway/secondary/entry/ferry_dock)
@@ -68322,9 +68310,6 @@
 	icon_state = "4-8"
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/obj/structure/railing{
 	dir = 4
 	},
 /obj/structure/disposalpipe/segment{
@@ -96898,14 +96883,6 @@
 /obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/plating,
 /area/science/mixing/office)
-"vRQ" = (
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 5
-	},
-/obj/machinery/light/floor,
-/obj/effect/turf_decal/bot,
-/turf/open/floor/plasteel/rivets/large,
-/area/hallway/secondary/entry/ferry_dock)
 "vRT" = (
 /obj/machinery/airalarm/directional/north,
 /obj/effect/turf_decal/tile/blue/diagonal_centre,
@@ -130846,15 +130823,15 @@ nkw
 dRI
 upX
 upX
+jHe
 upX
 upX
 upX
-lPS
-xTv
-jaf
+jHe
 upX
 upX
 upX
+jHe
 upX
 upX
 eEF
@@ -131104,13 +131081,13 @@ dRI
 upX
 upX
 upX
-lPS
+upX
+upX
+emS
 upX
 upX
 upX
 upX
-upX
-jaf
 upX
 upX
 upX
@@ -131360,15 +131337,15 @@ dEy
 uCZ
 upX
 upX
-jHe
 upX
 upX
 upX
-jHe
 upX
 upX
 upX
-jHe
+upX
+upX
+upX
 upX
 upX
 lRc
@@ -131617,7 +131594,6 @@ dEy
 fhM
 upX
 upX
-lPS
 upX
 upX
 upX
@@ -131625,7 +131601,8 @@ upX
 upX
 upX
 upX
-jaf
+upX
+upX
 upX
 upX
 eNL
@@ -132388,15 +132365,15 @@ dEy
 dRI
 upX
 upX
-wec
 upX
 upX
 upX
-jHe
 upX
 upX
 upX
-iFr
+upX
+upX
+upX
 upX
 upX
 pTS
@@ -132645,7 +132622,6 @@ dEy
 vNL
 upX
 upX
-jHe
 upX
 upX
 upX
@@ -132653,7 +132629,8 @@ upX
 upX
 upX
 upX
-jHe
+upX
+upX
 upX
 upX
 rXZ
@@ -132902,15 +132879,15 @@ dEy
 djk
 cIl
 lzf
-upX
-wec
-upX
+jHe
 upX
 upX
 upX
+jHe
 upX
-iFr
 upX
+upX
+jHe
 xOb
 eUw
 oYY
@@ -134189,11 +134166,11 @@ krg
 lHw
 upX
 upX
-wec
 upX
 upX
 upX
-iFr
+upX
+upX
 upX
 upX
 jKC
@@ -134712,7 +134689,7 @@ upX
 upX
 baL
 ncN
-hUl
+rvr
 qCQ
 fdI
 hns
@@ -134956,19 +134933,19 @@ sza
 cpc
 wlH
 jLb
+jHe
 upX
 upX
-upX
-upX
+jHe
 lPS
+xTv
+xTv
+xTv
 upX
-emS
-upX
+xTv
+xTv
+xTv
 jaf
-upX
-upX
-upX
-upX
 bwf
 gsl
 hah
@@ -135213,9 +135190,10 @@ lyJ
 pas
 pbC
 cPH
-upX
-upX
+aJo
 lPS
+xTv
+xTv
 upX
 upX
 upX
@@ -135223,9 +135201,8 @@ upX
 upX
 upX
 upX
-jaf
 upX
-upX
+vSk
 kog
 gsl
 fdI
@@ -135471,18 +135448,18 @@ fQU
 lyJ
 syN
 upX
-lPS
 upX
 upX
 upX
 upX
-jHe
 upX
 upX
 upX
 upX
-jaf
 upX
+upX
+upX
+hUl
 dxg
 gsl
 fdI
@@ -135727,19 +135704,19 @@ vBP
 gXd
 rSW
 syN
-upX
-vRQ
-upX
-upX
-iFr
-upX
-upX
-upX
+xTv
 wec
-upX
-upX
+aJo
 aJo
 upX
+upX
+upX
+upX
+upX
+upX
+upX
+upX
+vSk
 dxg
 gsl
 hah
@@ -135984,19 +135961,19 @@ fQU
 qyk
 pas
 syN
+jHe
 upX
 upX
+jHe
+wec
+aJo
+aJo
+aJo
 upX
-upX
-upX
-upX
-upX
-upX
-upX
-upX
-upX
-upX
-upX
+aJo
+aJo
+aJo
+iFr
 dxg
 gsl
 fdI
