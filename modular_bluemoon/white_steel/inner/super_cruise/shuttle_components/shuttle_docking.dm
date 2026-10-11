@@ -5,7 +5,7 @@
 	var/list/actions = list()
 	var/datum/action/innate/camera_off/off_action = new
 	var/datum/action/innate/supercruise_docker_rotate/rotate_action = new
-	var/datum/action/innate/shuttledocker_place/place_action = new
+	var/datum/action/innate/supercruise_docker_place/place_action = new
 	var/shuttlePortId = ""
 	var/shuttlePortName = "Выбрать место стыковки"
 	var/obj/docking_port/stationary/my_port //the custom docking port placed by this console
@@ -14,7 +14,7 @@
 	var/list/whitelist_turfs = list(/turf/open/space, /turf/open/openspace, /turf/open/floor/plating/lavaland_baseturf, /turf/open/floor/plating/asteroid, /turf/open/lava)
 	var/designate_time = 50
 	var/turf/designating_target_loc
-	var/datum/action/innate/camera_jump/shuttle_docker/docker_action = new
+	var/datum/action/innate/camera_jump/supercruise_shuttle_docker/docker_action = new
 
 /obj/machinery/computer/shuttle_flight/Initialize(mapload, obj/item/circuitboard/C)
 	. = ..()
@@ -337,12 +337,14 @@
 	var/obj/machinery/computer/shuttle_flight/origin = remote_eye.origin
 	origin.rotateLandingSpot()
 
-/datum/action/innate/shuttledocker_place
+//WHITE-STEEL PORT: уникальный путь - нельзя переиспользовать /datum/action/innate/shuttledocker_place,
+//иначе мы затирали рабочее действие базовой консоли навигации (navigation_computer.dm) и обычные шаттлы переставали стыковаться.
+/datum/action/innate/supercruise_docker_place
 	name = "Установка"
 	icon_icon = 'icons/mob/actions/actions_mecha.dmi'
 	button_icon_state = "mech_zoom_off"
 
-/datum/action/innate/shuttledocker_place/Activate()
+/datum/action/innate/supercruise_docker_place/Activate()
 	if(QDELETED(target) || !isliving(target))
 		return
 	var/mob/living/C = target
@@ -350,11 +352,13 @@
 	var/obj/machinery/computer/shuttle_flight/origin = remote_eye.origin
 	origin.placeLandingSpot(target)
 
-/datum/action/innate/camera_jump/shuttle_docker
+//WHITE-STEEL PORT: уникальный путь - нельзя переиспользовать /datum/action/innate/camera_jump/shuttle_docker,
+//иначе мы затирали рабочее действие базовой консоли навигации (navigation_computer.dm).
+/datum/action/innate/camera_jump/supercruise_shuttle_docker
 	name = "Прыгнуть к зоне"
 	button_icon_state = "camera_jump"
 
-/datum/action/innate/camera_jump/shuttle_docker/Activate()
+/datum/action/innate/camera_jump/supercruise_shuttle_docker/Activate()
 	if(QDELETED(target) || !isliving(target))
 		return
 	var/mob/living/C = target

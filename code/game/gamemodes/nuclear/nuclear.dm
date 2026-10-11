@@ -133,6 +133,7 @@
 	var/tc = 30
 	var/command_radio = FALSE
 	var/uplink_type = /obj/item/inteq/uplink/radio/nuclear
+	var/give_explosive_implant = TRUE //WHITE-STEEL PORT: экспедиционная версия может не получать взрывной имплант.
 
 	give_space_cooler_if_synth = TRUE // BLUEMOON ADD
 
@@ -177,7 +178,7 @@
 		if(!LAZYLEN(H.implants) || !(locate(/obj/item/implant/weapons_auth) in H.implants))
 			var/obj/item/implant/weapons_auth/W = new
 			W.implant(H)
-		if(!LAZYLEN(H.implants) || !(locate(/obj/item/implant/explosive) in H.implants))
+		if(give_explosive_implant && (!LAZYLEN(H.implants) || !(locate(/obj/item/implant/explosive) in H.implants)))
 			var/obj/item/implant/explosive/E = new
 			E.implant(H)
 

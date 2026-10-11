@@ -100,8 +100,8 @@
 	base_icon_state = "monofloor"
 
 /turf/open/floor/plasteel/monofloor/dark
-	icon_state = "monodarkfull"
-	base_icon_state = "monodarkfull"
+	icon_state = "darkfull"
+	base_icon_state = "darkfull"
 
 /turf/open/floor/plating/asteroid/no_generation
 

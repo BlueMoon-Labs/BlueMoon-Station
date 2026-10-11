@@ -42,6 +42,10 @@ PROCESSING_SUBSYSTEM_DEF(orbits)
 	//Research disks
 	var/list/research_disks = list()
 
+	//WHITE-STEEL PORT: node_id исследовательских дисков, которые уже выпадали.
+	//Нужен, чтобы один и тот же диск не генерировался повторно на других миссиях (без дубликатов).
+	var/list/generated_research_nodes = list()
+
 	var/list/datum/tgui/open_orbital_maps = list()
 
 	//The station

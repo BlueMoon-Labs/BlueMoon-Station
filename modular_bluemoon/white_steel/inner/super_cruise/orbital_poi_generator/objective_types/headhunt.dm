@@ -16,12 +16,16 @@
 			Задание будет провалено в случае побега преступника со станции живым и без наручников, или в случае уничтожения его тела!"
 
 /datum/orbital_objective/headhunt/on_assign(obj/machinery/computer/objective/objective_computer)
-	var/area/A = GLOB.areas_by_type[/area/command]
-	if(!A)
-		return
-	var/turf/open/T = pick(A.get_unobstructed_turfs())
+	//WHITE-STEEL PORT: капсула должна прибывать на мостик шаттла к консоли заданий,
+	//а не на мостик станции (/area/command). Повторяем логику nuke_ruin.
+	var/turf/open/T
+	var/area/A = get_area(objective_computer)
+	if(A)
+		var/list/pickable_turfs = A.get_unobstructed_turfs()
+		if(length(pickable_turfs))
+			T = pick(pickable_turfs)
 	if(!T)
-		T = locate() in shuffle(A.contents)
+		T = get_turf(objective_computer)
 	if(!T)
 		return
 	extraction_pod = new()
@@ -61,15 +65,14 @@
 	objective_z_level = created_human.z
 	created_human.mind_initialize()
 	mob_to_recover = created_human
+	//WHITE-STEEL PORT: объявляем призракам, что они могут занять роль преступника.
+	LAZYADD(GLOB.mob_spawners[created_human.real_name], created_human)
+	notify_ghosts("Охота за головами: преступник может быть занят.", source = created_human, action = NOTIFY_ORBIT, flashwindow = FALSE, ignore_key = POLL_IGNORE_HEADHUNT, ignore_dnr_observers = FALSE)
+	created_human.AddElement(/datum/element/point_of_interest)
 	for(var/mob/living/simple_animal/hostile/SA in range(10, created_human))
 		qdel(SA)
-	var/turf/open/T = locate() in shuffle(view(1, created_human))
-	if(T)
-		new /obj/item/clothing/suit/space/hardsuit/ancient(T)
-		new /obj/item/tank/internals/oxygen(T)
-		new /obj/item/clothing/mask/gas(T)
-		new /obj/item/storage/belt/utility/full(T)
-	created_human.equipOutfit(/datum/outfit/job/assistant)
+	//Экипируем преступника набором InteQ Operative - Full Kit (без взрывного импланта).
+	created_human.equipOutfit(/datum/outfit/inteq/full/expedition)
 	generated = TRUE
 
 /datum/orbital_objective/headhunt/check_failed()
@@ -85,3 +88,7 @@
 	if(.) 
 		if(extraction_pod)
 			extraction_pod.startExitSequence(extraction_pod)
+
+//WHITE-STEEL PORT: экспедиционный вариант полного набора InteQ без взрывного импланта.
+/datum/outfit/inteq/full/expedition
+	give_explosive_implant = FALSE

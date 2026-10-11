@@ -19,12 +19,16 @@
 	for(var/obj/item/disk/tech_disk/research/disk as() in subtypesof(/obj/item/disk/tech_disk/research))
 		if(!initial(disk.node_id))
 			continue
+		//WHITE-STEEL PORT: уже выпадавший диск не генерируется повторно.
+		if(SSorbits.generated_research_nodes[initial(disk.node_id)])
+			continue
 		if(!SSresearch.science_tech.isNodeResearchedID(initial(disk.node_id)))
 			valid_nodes += initial(disk.node_id)
 	if(!length(valid_nodes))
 		new /obj/effect/spawner/lootdrop/ruinloot/basic(get_turf(src))
 		return INITIALIZE_HINT_QDEL
 	node_id = pick(valid_nodes)
+	SSorbits.generated_research_nodes[node_id] = TRUE
 	. = ..()
 
 /obj/item/disk/tech_disk/research/boh
