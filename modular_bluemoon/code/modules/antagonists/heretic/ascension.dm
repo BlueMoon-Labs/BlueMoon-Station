@@ -14,7 +14,8 @@
 #define HERETIC_ASCENSION_CLIMAX_RAYS_TIME (1.5 SECONDS)
 #define HERETIC_ASCENSION_CLIMAX_QUAKE 0.15
 #define HERETIC_ASCENSION_CLIMAX_QUAKE_TIME (0.3 SECONDS)
-#define HERETIC_ASCENSION_CLIMAX_VOLUME 70
+#define HERETIC_ASCENSION_CLIMAX_VOLUME 80
+#define HERETIC_ASCENSION_OMEN_VOLUME 40
 #define HERETIC_ASCENSION_EMERGE_DELAY (0.4 SECONDS)
 #define HERETIC_ASCENSION_SURGE_ALPHA 200
 #define HERETIC_ASCENSION_SURGE_RISE (0.25 SECONDS)
@@ -43,6 +44,7 @@
 	var/ascension_message
 	var/ascension_omen
 	var/ascension_sound
+	var/ascension_climax_sound
 	/// Лист 64x64: слои `_back` (за телом), `_front` (перед ногами) и маска свечения `_glow`.
 	var/ascension_aura_icon
 	var/ascension_aura_state
@@ -54,6 +56,7 @@
 	ascension_message = "Пепел поднимается к потолку. Последний фонарь вновь зажжён."
 	ascension_omen = "Свет на мгновение кажется пламенем. Запах пепла проникает даже под герметичный шлем."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_ash.ogg'
+	ascension_climax_sound = 'modular_bluemoon/sound/heretic/ascend_ash_climax.ogg'
 	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_ash.dmi'
 	ascension_aura_state = "ash_aura"
 
@@ -62,6 +65,7 @@
 	ascension_message = "Сталь отзывается протяжным стоном. Ржавые холмы приняли нового хозяина."
 	ascension_omen = "На языке появляется привкус железа. Кажется, за каждой стеной скребутся корни."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_rust.ogg'
+	ascension_climax_sound = 'modular_bluemoon/sound/heretic/ascend_rust_climax.ogg'
 	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_rust.dmi'
 	ascension_aura_state = "rust_aura"
 
@@ -70,6 +74,7 @@
 	ascension_message = "Под обшивкой бьётся чужое сердце. Процессия Плоти встречает своего повелителя."
 	ascension_omen = "Чужой пульс на мгновение совпадает с вашим. В тёмном стекле открывается красный глаз."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_flesh.ogg'
+	ascension_climax_sound = 'modular_bluemoon/sound/heretic/ascend_flesh_climax.ogg'
 	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_flesh.dmi'
 	ascension_aura_state = "flesh_aura"
 	ascension_aura_side = -1
@@ -79,6 +84,7 @@
 	ascension_message = "Зимняя буря проходит сквозь завесу. Начинается последний вальс."
 	ascension_omen = "Каждый звук приходит будто издалека. Снег мерещится даже там, где ему неоткуда взяться."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_void.ogg'
+	ascension_climax_sound = 'modular_bluemoon/sound/heretic/ascend_void_climax.ogg'
 	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_void.dmi'
 	ascension_aura_state = "void_aura"
 	ascension_aura_side = -1
@@ -88,6 +94,7 @@
 	ascension_message = "В воздухе звенит сталь. Последний поединок окончен, и его победитель выходит за пределы человеческого."
 	ascension_omen = "На краю зрения смыкаются лезвия. Слышен звон удара, который ещё никто не нанёс."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_blade.ogg'
+	ascension_climax_sound = 'modular_bluemoon/sound/heretic/ascend_blade_climax.ogg'
 	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_blade.dmi'
 	ascension_aura_state = "blade_aura"
 	ascension_aura_side = -1
@@ -97,6 +104,7 @@
 	ascension_message = "Отражения поворачиваются к невидимой луне. По ту сторону зеркала больше нет пустого места."
 	ascension_omen = "Ваше отражение запаздывает на один вдох. Кажется, оно смотрит на кого-то за вашей спиной."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_moon.ogg'
+	ascension_climax_sound = 'modular_bluemoon/sound/heretic/ascend_moon_climax.ogg'
 	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_moon.dmi'
 	ascension_aura_state = "moon_aura"
 	ascension_aura_side = -1
@@ -106,6 +114,7 @@
 	ascension_message = "Звёздные карты утратили смысл. Новое небо раскрылось внутри станции."
 	ascension_omen = "Между знакомыми предметами проступают незнакомые звёзды. Расстояние до потолка кажется бесконечным."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_cosmic.ogg'
+	ascension_climax_sound = 'modular_bluemoon/sound/heretic/ascend_cosmic_climax.ogg'
 	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_cosmic.dmi'
 	ascension_aura_state = "cosmic_presence"
 
@@ -114,6 +123,7 @@
 	ascension_message = "Все замки отвечают одним щелчком. За знакомыми дверями проступает дом без выхода."
 	ascension_omen = "Вы на мгновение забываете, с какой стороны двери стоите. Из замочной скважины доносится чужой вдох."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_lock.ogg'
+	ascension_climax_sound = 'modular_bluemoon/sound/heretic/ascend_lock_climax.ogg'
 	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_lock.dmi'
 	ascension_aura_state = "lock_presence"
 	ascension_aura_side = 1
@@ -123,6 +133,7 @@
 	ascension_message = "За стенами звучит погребальный колокол. Невидимое море достигло станции, и его глубина больше не имеет дна."
 	ascension_omen = "Уши закладывает от чужой глубины. Сквозь пол на мгновение видны тёмные волны."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_tide.ogg'
+	ascension_climax_sound = 'modular_bluemoon/sound/heretic/ascend_tide_climax.ogg'
 	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_tide.dmi'
 	ascension_aura_state = "tide_aura"
 	ascension_aura_side = 1
@@ -138,6 +149,7 @@
 	ascension_message = "Каждый витраж раскололся в другом мире. Здесь слышен только звон: разбитый свет обрёл своего хозяина."
 	ascension_omen = "Свет распадается на острые полосы. Вы слышите, как трескается стекло, хотя всё вокруг цело."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_glass.ogg'
+	ascension_climax_sound = 'modular_bluemoon/sound/heretic/ascend_glass_climax.ogg'
 	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_glass.dmi'
 	ascension_aura_state = "glass_aura"
 	ascension_aura_side = -1
@@ -147,6 +159,7 @@
 	ascension_message = "Алая печать проступает за закрытыми веками. Десятина уплачена; её сборщик больше не принадлежит этому миру."
 	ascension_omen = "На языке остаётся вкус железа. На мгновение кажется, что под кожей начертаны незнакомые письмена."
 	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_blood.ogg'
+	ascension_climax_sound = 'modular_bluemoon/sound/heretic/ascend_blood_climax.ogg'
 	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_blood.dmi'
 	ascension_aura_state = "blood_aura"
 
@@ -154,7 +167,8 @@
 	ascension_title = "Регент Последнего Хора"
 	ascension_message = "Оборванные голоса возвращаются погребальным хором. Тот, кто задал им тон, поднимает руку для последнего такта."
 	ascension_omen = "Ваш последний шаг звучит снова. Из стен отвечает многоголосый шёпот, и на мгновение вы узнаёте в нём собственный голос."
-	ascension_sound = 'modular_bluemoon/sound/heretic/echo_ascend.ogg'
+	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_echo.ogg'
+	ascension_climax_sound = 'modular_bluemoon/sound/heretic/ascend_echo_climax.ogg'
 	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_echo.dmi'
 	ascension_aura_state = "echo_ascend"
 
@@ -162,7 +176,8 @@
 	ascension_title = "Хранитель Истёкшего Часа"
 	ascension_message = "Звёзды осыпаются за стеклом. Последний час уже истёк, но его хранитель перевернул часы."
 	ascension_omen = "Сквозь пальцы сыплется невидимый песок. Часы на мгновение идут назад; следующий шаг звучит раньше, чем вы его делаете."
-	ascension_sound = 'modular_bluemoon/sound/heretic/sand_ascend.ogg'
+	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_sand.ogg'
+	ascension_climax_sound = 'modular_bluemoon/sound/heretic/ascend_sand_climax.ogg'
 	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_sand.dmi'
 	ascension_aura_state = "sand_aura"
 	ascension_aura_side = 1
@@ -171,7 +186,8 @@
 	ascension_title = "Святитель Негаснущей Свечи"
 	ascension_message = "За иллюминаторами проступает погребальная процессия. Свечи горят без воздуха; ни одна не погаснет, пока идёт их святитель."
 	ascension_omen = "Воздух пахнет воском. Тени склоняют головы перед бледным огоньком, которого никто не зажигал."
-	ascension_sound = 'modular_bluemoon/sound/heretic/wax_ascend.ogg'
+	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_wax.ogg'
+	ascension_climax_sound = 'modular_bluemoon/sound/heretic/ascend_wax_climax.ogg'
 	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_wax.dmi'
 	ascension_aura_state = "wax_aura"
 
@@ -180,6 +196,7 @@
 	ascension_message = "За иллюминаторами кружатся пары без лиц. Оркестр настроился: бал начнётся, как только все возьмутся за руки."
 	ascension_omen = "Где-то далеко бьёт малый барабан, и ноги сами пытаются попасть в такт."
 	ascension_sound = 'modular_bluemoon/sound/heretic/dance_ascend.ogg'
+	ascension_climax_sound = 'modular_bluemoon/sound/heretic/ascend_dance_climax.ogg'
 	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_dance.dmi'
 	ascension_aura_state = "dance_aura"
 
@@ -187,7 +204,8 @@
 	ascension_title = "Перевозчик Непришедших"
 	ascension_message = "За иллюминаторами загораются бледные огни. Последняя переправа открыта; живые слышат, как называют их имена."
 	ascension_omen = "В груди остаётся пустота от пропущенного удара сердца. Вдалеке качается фонарь, хотя коридор пуст."
-	ascension_sound = 'modular_bluemoon/sound/heretic/spirit_ascend.ogg'
+	ascension_sound = 'modular_bluemoon/sound/heretic/ascend_spirit.ogg'
+	ascension_climax_sound = 'modular_bluemoon/sound/heretic/ascend_spirit_climax.ogg'
 	ascension_aura_icon = 'modular_bluemoon/icons/obj/heretic_ascension_spirit.dmi'
 	ascension_aura_state = "spirit_aura"
 
@@ -254,7 +272,7 @@
 	heretic_vfx_burst(center, path.vfx_particles)
 	heretic_vfx_rays(user, path.book_ink, HERETIC_ASCENSION_CLIMAX_RAYS_TIME)
 	heretic_vfx_quake(center, HERETIC_ASCENSION_CLIMAX_RADIUS, HERETIC_ASCENSION_CLIMAX_QUAKE, HERETIC_ASCENSION_CLIMAX_QUAKE_TIME)
-	playsound(center, 'sound/magic/Repulse.ogg', HERETIC_ASCENSION_CLIMAX_VOLUME, TRUE)
+	playsound(center, path.ascension_climax_sound, HERETIC_ASCENSION_CLIMAX_VOLUME, FALSE)
 
 /datum/eldritch_knowledge/final_eldritch/proc/apply_ascension_presence(mob/living/user)
 	var/datum/heretic_path/path = GLOB.heretic_paths[route]
@@ -425,6 +443,7 @@
 	tick_interval = 10 SECONDS
 	alert_type = null
 	on_remove_on_mob_delete = TRUE
+	var/omen_sound = 'modular_bluemoon/sound/heretic/ascend_omen.ogg'
 	var/path_id
 	var/fullscreen_key
 	var/surge_key
@@ -444,7 +463,7 @@
 	if(!iscarbon(owner) || !path)
 		return FALSE
 	to_chat(owner, span_eldritch(path.ascension_omen))
-	owner.playsound_local(get_turf(owner), 'sound/effects/ghost2.ogg', 25, FALSE)
+	owner.playsound_local(get_turf(owner), omen_sound, HERETIC_ASCENSION_OMEN_VOLUME, FALSE)
 	var/atom/movable/screen/fullscreen/surge = owner.overlay_fullscreen(surge_key, /atom/movable/screen/fullscreen/scaled/heretic_omen_surge)
 	surge.color = heretic_vfx_ink_fill(path.book_ink)
 	animate(surge, alpha = HERETIC_ASCENSION_SURGE_ALPHA, time = HERETIC_ASCENSION_SURGE_RISE, easing = SINE_EASING | EASE_OUT)
@@ -535,7 +554,7 @@
 	winter_circle = new(center, user.mind)
 	RegisterSignal(winter_circle, COMSIG_PARENT_QDELETING, PROC_REF(on_circle_deleted))
 	user.visible_message(span_danger("[user] завершает такт. Из-под ног расходится белая печать, оттесняя окружающих!"))
-	playsound(user, 'sound/magic/voidblink.ogg', 70, FALSE)
+	playsound(user, HERETIC_VOID_WALTZ_SOUND, 70, FALSE)
 	heretic_waltz_silence(user)
 	heretic_sky_event_for(user, /datum/eldritch_knowledge/final_eldritch/void_final)
 	heretic_vfx_shockwave(center, HERETIC_WALTZ_INK, HERETIC_WALTZ_WAVE_RADIUS, HERETIC_WALTZ_WAVE_TIME)
@@ -549,7 +568,7 @@
 		victim.adjustFireLoss(burst_damage)
 		victim.adjust_bodytemperature(-35)
 		victim.apply_status_effect(/datum/status_effect/heretic_void_chill)
-		new /obj/effect/temp_visual/voidpush(get_turf(victim), get_dir(user, victim))
+		new /obj/effect/temp_visual/heretic_void_push(get_turf(victim), get_dir(user, victim))
 		heretic_vfx_spray(victim, /particles/heretic_ascension/void/frost, Get_Angle(center, get_turf(victim)))
 		if(victim.anchored || victim.buckled || !isturf(victim.loc))
 			continue
@@ -675,6 +694,7 @@
 #undef HERETIC_ASCENSION_CLIMAX_QUAKE
 #undef HERETIC_ASCENSION_CLIMAX_QUAKE_TIME
 #undef HERETIC_ASCENSION_CLIMAX_VOLUME
+#undef HERETIC_ASCENSION_OMEN_VOLUME
 #undef HERETIC_ASCENSION_EMERGE_DELAY
 #undef HERETIC_ASCENSION_SURGE_ALPHA
 #undef HERETIC_ASCENSION_SURGE_RISE
