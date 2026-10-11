@@ -1,7 +1,7 @@
 /datum/supply_pack/security/armory/ak12r
-	name = "Pink AK-12 Rifle Crate"
+	name = "AK-12 Rifle Crate"
 	desc = "Contains one high-powered, fully automatic rifle, and three mags. Requires Armory access to open."
-	cost = 12000 // АК-12 для сбух всегда было рофлом за 35 тысяч. за эти деньги можно купить 4 ящика ВТ и 4 ящика патрон к ним, вооружив ВООБЩЕ всех
+	cost = 15000 // АК-12 для сбух всегда было рофлом за 35 тысяч. за эти деньги можно купить 4 ящика ВТ и 4 ящика патрон к ним, вооружив ВООБЩЕ всех. EDIT 2 - повысил цену на 3 за перекрас
 	contains = list(/obj/item/gun/ballistic/automatic/ak12/r,
 					/obj/item/ammo_box/magazine/ak12/r,
 					/obj/item/ammo_box/magazine/ak12/r,

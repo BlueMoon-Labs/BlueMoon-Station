@@ -136,6 +136,7 @@
 	burst_shot_delay = 2
 	fire_delay = 2
 	pin = /obj/item/firing_pin/implant/pindicate
+	projectile_damage_multiplier = 1.25
 
 /obj/item/gun/ballistic/automatic/m90/unrestricted
 	pin = /obj/item/firing_pin
@@ -224,6 +225,7 @@
 	fire_delay = 5 // BLUEMOON EDIT - was NOTHING
 	pin = /obj/item/firing_pin/implant/pindicate
 	actions_types = list()
+	projectile_damage_multiplier = 1.35
 
 /obj/item/gun/ballistic/automatic/shotgun/bulldog/unrestricted
 	pin = /obj/item/firing_pin

@@ -284,7 +284,7 @@
 		list(initial(corrosive_wave.desc), "[HERETIC_RUST_WAVE_CORROSION] урона коррозией", "перезарядка [HERETIC_RUST_WAVE_COOLDOWN / (1 SECONDS)] секунд"),
 		list(heretic_codex_text(/datum/eldritch_knowledge/base_flesh), "Перезарядка [initial(mend.charge_max) / (1 SECONDS)] секунд"),
 		list(heretic_codex_text(/datum/eldritch_knowledge/flesh_grasp), "роль [HERETIC_SERVANT_POLL_DURATION / (1 SECONDS)] секунд", "Живой шов на [initial(stitch.range)] клеток", "Перезарядка [initial(stitch.charge_max) / (1 SECONDS)] секунд"),
-		list(heretic_codex_text(/datum/eldritch_knowledge/spell/touch_of_madness), "Перезарядка [initial(madness.charge_max) / (1 MINUTES)] минуты"),
+		list(heretic_codex_text(/datum/eldritch_knowledge/spell/touch_of_madness), "Перезарядка [initial(madness.charge_max) / (1 SECONDS)] секунд", "до [HERETIC_FLESH_LATCH_DURATION / (1 SECONDS)] секунд", "в [HERETIC_FLESH_LATCH_REACH] клетках"),
 		list(heretic_codex_text(/datum/eldritch_knowledge/spell/blood_siphon), "в [initial(siphon.range)] клетках", "Перезарядка [initial(siphon.charge_max) / (1 SECONDS)] секунд"),
 		list(heretic_codex_text(/datum/eldritch_knowledge/final_eldritch/flesh_final), "перезарядка [initial(shed.charge_max) / (1 SECONDS)] секунд", "за [HERETIC_FLESH_WORM_FEED_TIME / (1 SECONDS)] секунды", "+[HERETIC_FLESH_WORM_FEED_HEAL] здоровья", "до [HERETIC_FLESH_WORM_MAX_LENGTH] сегментов", "через [HERETIC_FLESH_WORM_DEATH_COOLDOWN / (1 MINUTES)] минуты"),
 		list(jointext(flesh_path.strength_points, " "), "до [HERETIC_FLESH_WORM_MAX_LENGTH] сегментов"),

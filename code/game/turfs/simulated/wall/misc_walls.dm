@@ -112,12 +112,13 @@
 		animate(src, color = previouscolor, time = 8)
 		addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_atom_colour)), 8)
 
-/turf/closed/wall/clockwork/dismantle_wall(devastated=0, explode=0)
+/turf/closed/wall/clockwork/dismantle_wall(devastated=0, explode=0, silent = FALSE)
 	if(devastated || explode)
 		devastate_wall()
 		ScrapeAway()
 	else
-		playsound(src, 'sound/items/welder.ogg', 100, 1)
+		if(!silent)
+			playsound(src, 'sound/items/welder.ogg', 100, 1)
 		var/newgirder = break_wall()
 		if(newgirder) //maybe we want a gear!
 			transfer_fingerprints_to(newgirder)

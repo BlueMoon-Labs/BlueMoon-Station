@@ -202,8 +202,8 @@
 //Ballistic
 
 /obj/item/gun/ballistic/automatic/ak12
-	name = "\improper AK-12 rifle"
-	desc = "Простая в использовании Автоматическая Винтовка. Её придумали ещё столетия назад, а популярна она и по сей день."
+	name = "\improper AK-2566 rifle"
+	desc = "Простая в использовании Автоматическая Винтовка. Её придумали ещё столетия назад, а популярна она и по сей день. Данная модификация с подствольным самозарядным лазером!"
 	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi'
 	icon_state = "ak12"
 	item_state = "ak12"
@@ -211,16 +211,63 @@
 	righthand_file = 'modular_bluemoon/krashly/icons/mob/inhands/weapons/righthand.dmi'
 	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_BACK
 	w_class = WEIGHT_CLASS_BULKY
-	mag_type = /obj/item/ammo_box/magazine/ak12/ap
+	mag_type = /obj/item/ammo_box/magazine/ak12
 	can_suppress = FALSE
 	weapon_weight = WEAPON_HEAVY
 	burst_size = 3
 	fire_delay = 2
 	fire_sound = 'modular_bluemoon/krashly/sound/ak12_fire.ogg'
+	/// Встроенный подствольный лазер с самоперезарядкой.
+	var/obj/item/gun/energy/laser/ak12_underbarrel/underbarrel
+	/// Спавнить ли автомат с подствольным лазером. У версии /r его нет.
+	var/has_underbarrel_laser = TRUE
+	projectile_damage_multiplier = 1.25
 
 /obj/item/gun/ballistic/automatic/ak12/update_icon_state()
 	icon_state = "[initial(icon_state)][!magazine ? "_e" : ""]"
 	item_state = "[initial(item_state)][!magazine ? "_e" : ""]"
+
+/obj/item/gun/ballistic/automatic/ak12/Initialize(mapload)
+	if(mag_type == /obj/item/ammo_box/magazine/ak12 && !magazine)
+		magazine = new /obj/item/ammo_box/magazine/ak12/ap(src)
+	. = ..()
+	if(has_underbarrel_laser)
+		underbarrel = new /obj/item/gun/energy/laser/ak12_underbarrel(src)
+		if(pin)
+			var/pin_type = pin.type
+			QDEL_NULL(underbarrel.pin)
+			underbarrel.pin = new pin_type(underbarrel)
+			underbarrel.pin.gun = underbarrel
+	update_icon()
+
+/obj/item/gun/ballistic/automatic/ak12/Destroy()
+	QDEL_NULL(underbarrel)
+	return ..()
+
+/obj/item/gun/ballistic/automatic/ak12/examine(mob/user)
+	. = ..()
+	if(underbarrel)
+		. += span_notice("Включите боевой режим и нажмите ПКМ, чтобы выстрелить из подствольного лазера.")
+
+/obj/item/gun/ballistic/automatic/ak12/altafterattack(atom/target, mob/living/user, proximity_flag, params)
+	if(!underbarrel || !istype(user) || !SEND_SIGNAL(user, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE))
+		return ..()
+	underbarrel.afterattack(target, user, proximity_flag, params)
+	return TRUE
+
+// Встроенный подствольный лазер AK-12. Собственная энергоячейка и самозарядка.
+/obj/item/gun/energy/laser/ak12_underbarrel
+	name = "\improper AK-2566 underbarrel laser"
+	desc = "Подствольный лазер, встроенный в автомат AK-2566. Оснащён компактным реактором, обеспечивающим самозарядку."
+	ammo_type = list(/obj/item/ammo_casing/energy/lasergun)
+	burst_size = 1
+	fire_select_modes = list(SELECT_SEMI_AUTOMATIC)
+	selfcharge = EGUN_SELFCHARGE
+	charge_delay = 4
+	selfcharge_amount = 100
+	right_click_overridden = TRUE
+
+	projectile_damage_multiplier = 1.5
 
 /obj/item/ammo_box/magazine/ak12
 	name = "\improper AK-12 magazine"
@@ -248,23 +295,25 @@
 
 ////////////////////////////////////////////////////////////////////////////////////
 /obj/item/gun/ballistic/automatic/ak12/r
-	name = "\improper Pink AK-12 rifle"
-	icon_state = "akr12"
-	item_state = "akr12"
-	fire_delay = 3
+	name = "\improper AK-12 rifle"
+	icon_state = "akr12secret"
+	item_state = "akr12secret"
+	fire_delay = 2.75
 	mag_type = /obj/item/ammo_box/magazine/ak12/r
+	has_underbarrel_laser = FALSE
 	//fire_sound = 'modular_bluemoon/krashly/sound/ak12_fire.ogg'
+	projectile_damage_multiplier = 1
 
 /obj/item/gun/ballistic/automatic/ak12/r/update_icon_state()
 	if(magazine)
-		icon_state = "akr12"
-		item_state = "akr12"
+		icon_state = "akr12secret"
+		item_state = "akr12secret"
 	else
-		icon_state = "akr12_e"
-		item_state = "akr12_e"
+		icon_state = "akr12secret_e"
+		item_state = "akr12secret_e"
 
 /obj/item/ammo_box/magazine/ak12/r
-	name = "\improper Pink AK-12 magazine"
+	name = "\improper AK-12 magazine"
 	icon_state = "ak12_mag"
 	item_state = "ak12_mag"
 

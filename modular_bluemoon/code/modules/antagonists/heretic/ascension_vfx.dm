@@ -867,7 +867,7 @@
 	var/static/list/stage_light_power = list(0.5, 0.9, 1.3, 1.8)
 	var/static/list/stage_warp_scale = list(0.3, 0.45, 0.65, 0.85)
 	var/static/list/stage_quake = list(0, 0, 0.06, 0.1)
-	var/static/list/stage_sound = list(null, 'modular_bluemoon/sound/heretic/ritual_begin.ogg', 'sound/magic/curse.ogg', 'sound/magic/lightning_chargeup.ogg')
+	var/static/list/stage_sound = list(null, 'modular_bluemoon/sound/heretic/ascend_stage_1.ogg', 'modular_bluemoon/sound/heretic/ascend_stage_2.ogg', 'modular_bluemoon/sound/heretic/ascend_stage_3.ogg')
 	var/static/list/stage_volume = list(0, 45, 55, 65)
 
 /obj/effect/heretic_ritual_crescendo/Initialize(mapload, path_id, duration, atom/movable/rune, mob/living/performer)
@@ -907,7 +907,7 @@
 	if(stage_quake[stage])
 		heretic_vfx_quake(src, HERETIC_CRESCENDO_QUAKE_RADIUS, stage_quake[stage], HERETIC_CRESCENDO_QUAKE_TIME)
 	if(stage_sound[stage])
-		playsound(src, stage_sound[stage], stage_volume[stage], TRUE)
+		playsound(src, stage_sound[stage], stage_volume[stage], FALSE)
 
 /// Обряд закончился или сорван: поток частиц встаёт, долетевшие гаснут, свет и пульс затухают ступенями, затем всё удаляется.
 /obj/effect/heretic_ritual_crescendo/proc/dissipate()

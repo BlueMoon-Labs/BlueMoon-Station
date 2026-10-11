@@ -206,7 +206,8 @@
 /datum/action/heretic_monster_briefing
 	name = "Кто я такой?"
 	desc = "Напоминает, кем ты стал, кому служишь и что тебе теперь доступно."
-	button_icon_state = "round_end"
+	icon_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
+	button_icon_state = "monster_briefing"
 	background_icon_state = "bg_ecult"
 	var/datum/antagonist/heretic_monster/monster_datum
 

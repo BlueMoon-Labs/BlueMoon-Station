@@ -227,6 +227,7 @@ GLOBAL_LIST_INIT(heretic_dance_voices, list('modular_bluemoon/sound/heretic/danc
 	dancer.update_inv_legcuffed()
 	dancer.update_equipment_speed_mods()
 	dancer.visible_message(span_danger("[dancer] в сильную долю стряхивает с ног [fetters_name] и пляшет дальше!"), span_eldritch("Болеро не даёт стоять на месте: вы стряхиваете [fetters_name]."))
+	playsound(dancer, 'modular_bluemoon/sound/heretic/dance/fetters.ogg', 60, FALSE)
 	log_combat(dancer, dancer, "стряхивает [fetters_name] в Болеро")
 	return TRUE
 
@@ -358,7 +359,7 @@ GLOBAL_LIST_INIT(heretic_dance_voices, list('modular_bluemoon/sound/heretic/danc
 	if(!dance?.start_horovod(user, DANCE_GREAT_HOROVOD_TIME, DANCE_GREAT_HOROVOD_LIMIT, DANCE_GREAT_HOROVOD_RANGE))
 		heretic_revert_cast(user, dance?.horovod_failure_reason(user, DANCE_GREAT_HOROVOD_RANGE))
 		return
-	playsound(user, HERETIC_DANCE_BELL_SOUND, 80, TRUE)
+	playsound(user, HERETIC_DANCE_BELL_SOUND, 80, FALSE)
 
 #undef DANCE_BOLERO_FINALE_STAGE
 #undef DANCE_BOLERO_PULSE_RANGE

@@ -3,6 +3,13 @@
 
 GLOBAL_LIST_EMPTY(heretic_ritual_reservations)
 GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
+/// Сердце говорит разными голосами: указание, новая цель, цель повержена, цель погибла.
+GLOBAL_LIST_INIT(heretic_heart_sounds, list(
+	"track" = 'modular_bluemoon/sound/heretic/heart_track.ogg',
+	"claim" = 'modular_bluemoon/sound/heretic/heart_claim.ogg',
+	"downed" = 'modular_bluemoon/sound/heretic/heart_downed.ogg',
+	"dead" = 'modular_bluemoon/sound/heretic/heart_dead.ogg',
+))
 
 /obj/effect/proc_holder/spell/self/heretic_summon/heart
 	desc = "Призывает или прячет своё живое сердце. Потерянное сердце возвращается, если 5 секунд стоять на месте."
@@ -170,7 +177,7 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 	if(!COOLDOWN_FINISHED(src, hunt_downed_alert_cooldown))
 		return
 	COOLDOWN_START(src, hunt_downed_alert_cooldown, HERETIC_HUNT_DOWNED_ALERT_COOLDOWN)
-	SEND_SOUND(user, sound('modular_bluemoon/sound/heretic/heart_track.ogg', volume = 50))
+	SEND_SOUND(user, sound(GLOB.heretic_heart_sounds[new_stat == DEAD ? "dead" : "downed"], volume = 50))
 	source.balloon_alert(user, new_stat == DEAD ? "цель погибла" : "цель повержена")
 	if(new_stat == DEAD)
 		to_chat(user, span_boldwarning("Цель охоты [source.real_name] погибла. Труп ещё примут, но лишь за 1 очко знаний без побочного: коснитесь его живым сердцем или принесите на руну."))
@@ -228,7 +235,7 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 		return FALSE
 	COOLDOWN_START(src, hunt_refresh_cooldown, HERETIC_HUNT_REFRESH_COOLDOWN)
 	set_hunt_target(victim.mind)
-	playsound(user, 'modular_bluemoon/sound/heretic/heart_track.ogg', 40, FALSE, extrarange = SILENCED_SOUND_EXTRARANGE)
+	playsound(user, GLOB.heretic_heart_sounds["claim"], 40, FALSE, extrarange = SILENCED_SOUND_EXTRARANGE)
 	victim.balloon_alert(user, "новая цель")
 	to_chat(user, span_boldnotice("Сердце принимает [victim.real_name]. Коснитесь цели сердцем ещё раз, чтобы провести обряд прямо здесь, или перенесите её на руну. Следующая смена цели - через [DisplayTimeText(HERETIC_HUNT_REFRESH_COOLDOWN)]."))
 	return TRUE
@@ -579,28 +586,28 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 		return destination
 	return null
 
-/// После неудачной случайной выборки проверяем оставшиеся зоны без повторений.
+/// После неудачной случайной выборки проверяем оставшиеся зоны без повторений. С полигона поиск не уходит, из любого другого места ведёт на станцию.
 /proc/find_heretic_escape_fallback(turf/origin)
 	if(!origin)
 		return null
-	var/on_station = is_station_level(origin.z)
+	var/to_station = !SSmapping.level_trait(origin.z, ZTRAIT_ANTAG_TRAINING)
 	var/list/areas = GLOB.sortedAreas.Copy()
 	while(length(areas))
 		CHECK_TICK
 		var/area/destination_area = pick_n_take(areas)
 		if(!is_heretic_escape_area(destination_area))
 			continue
-		if(on_station && (!(destination_area.type in GLOB.the_station_areas) || !(destination_area.area_flags & VALID_TERRITORY)))
+		if(to_station && (!(destination_area.type in GLOB.the_station_areas) || !(destination_area.area_flags & VALID_TERRITORY)))
 			continue
 		var/list/turfs = list()
 		for(var/turf/open/floor/floor in destination_area)
 			CHECK_TICK
-			if(on_station ? is_station_level(floor.z) : floor.z == origin.z)
+			if(to_station ? is_station_level(floor.z) : floor.z == origin.z)
 				turfs += floor
 		while(length(turfs))
 			CHECK_TICK
 			var/turf/destination = pick_n_take(turfs)
-			if(destination == origin || destination.density || destination.is_transition_turf() || (on_station && !is_station_level(destination.z)))
+			if(destination == origin || destination.density || destination.is_transition_turf() || (to_station && !is_station_level(destination.z)))
 				continue
 			if(is_heretic_escape_area(get_area(destination)) && is_safe_turf(destination))
 				return destination
