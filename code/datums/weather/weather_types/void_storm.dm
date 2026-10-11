@@ -6,7 +6,7 @@
 	telegraph_duration = 2 SECONDS
 	telegraph_overlay = "void"
 
-	weather_message = "<span class='danger'><i>You feel air around you getting colder... and void's sweet embrace...</i></span>"
+	weather_message = "<span class='danger'><i>Воздух вокруг стынет на глазах... и пустота мягко обнимает вас за плечи.</i></span>"
 	weather_overlay = "void_storm"
 	weather_duration_lower = 60 SECONDS
 	weather_duration_upper = 120 SECONDS

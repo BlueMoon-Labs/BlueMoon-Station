@@ -175,7 +175,7 @@
 		spell.cast(list(victim), user)
 		TEST_ASSERT(abs(victim.getBruteLoss() - 22) <= DAMAGE_PRECISION, "Жатва полезна сразу без прежней души.")
 		var/datum/status_effect/heretic_spirit/separated/soul = victim.has_status_effect(/datum/status_effect/heretic_spirit/separated)
-		TEST_ASSERT_EQUAL(soul.anchor.icon_state, "spirit_reap", "Силуэт показывает предупреждение.")
+		TEST_ASSERT(soul.anchor.reaping && soul.anchor.reap_hook, "Над душой занесён крюк.")
 		TEST_ASSERT(abs(soul.reap_at - world.time - 2 SECONDS) <= world.tick_lag, "Жертва получает две секунды на ответ.")
 		TEST_ASSERT(!soul.finish_reap(), "Ранний вызов не обходит предупреждение.")
 		TEST_ASSERT(!soul.arm(knowledge, 100), "Повторная подготовка не меняет урон и срок.")
@@ -190,7 +190,7 @@
 		TEST_ASSERT(!QDELETED(soul) && !QDELETED(anchor), "После Жатвы остаётся душа для продолжения боя.")
 		TEST_ASSERT_EQUAL(soul.duration, expiry, "Долгая связь сохраняет прежний срок.")
 		TEST_ASSERT_EQUAL(soul.drained, soul.drain_limit, "Жатва не восстанавливает запас истощения.")
-		TEST_ASSERT_EQUAL(anchor.icon_state, "spirit_soul", "Предупреждение о Жатве погасло.")
+		TEST_ASSERT(!anchor.reaping && !anchor.reap_hook, "Предупреждение о Жатве погасло.")
 		TEST_ASSERT(!soul.finish_reap(), "Завершённый удар нельзя повторить.")
 		soul.tick()
 		TEST_ASSERT(abs(victim.getBruteLoss() - (retreat ? 47 : 37)) <= DAMAGE_PRECISION, "Следующая обработка не повторяет удар.")
@@ -675,7 +675,7 @@
 	var/obj/effect/decal/cleanable/heretic_trace/trace = locate() in get_turf(corpse)
 	TEST_ASSERT_NOTNULL(trace, "На полу остаётся видимый след.")
 	allocated += trace
-	TEST_ASSERT_EQUAL(trace.icon_state, "sigil_spirit", "След использует символ пути духа.")
+	TEST_ASSERT_EQUAL(trace.icon_state, "trace_spirit", "След рисует отпечаток ладьи Духа.")
 	var/mob/living/carbon/human/neighbour = allocate(/mob/living/carbon/human, get_step(get_step(user, EAST), EAST))
 	neighbour.death()
 	TEST_ASSERT(spirit.on_mansus_grasp(neighbour, user, TRUE), "В зачтённом отделе пауза оболу не мешает.")
@@ -1028,9 +1028,12 @@
 	TEST_ASSERT_NOTNULL(soul, "Душа летит к перевозчику.")
 	TEST_ASSERT_EQUAL(soul.from_x, 3 * world.icon_size, "Душа вылетает из тела умершего.")
 	TEST_ASSERT_EQUAL(soul.from_y, world.icon_size, "Душа вылетает из тела умершего.")
-	TEST_ASSERT(length(soul.overlays), "Душа светится в темноте.")
+	TEST_ASSERT(soul.glow && (soul.glow in soul.vis_contents), "Душа светится в темноте.")
+	TEST_ASSERT_EQUAL(soul.icon, crew.icon, "Летит бледная копия умершего.")
+	var/obj/effect/abstract/heretic_vfx_glow/glow = soul.glow
 	TEST_ASSERT(wait_for_qdeleted(soul, 2 SECONDS), "Душа долетает и гаснет.")
 	TEST_ASSERT(!(soul in user.vis_contents), "Долетевшая душа не остаётся на герое.")
+	TEST_ASSERT(QDELETED(glow), "Свечение души гаснет вместе с ней.")
 	var/flashes = 0
 	for(var/obj/effect/dummy/lighting_obj/light in start)
 		if(!(light in lights_before))
@@ -1062,7 +1065,7 @@
 	TEST_ASSERT(wait_for_qdeleted(wave) && wait_for_qdeleted(spiral, 3 SECONDS), "Волна и спираль гаснут.")
 
 /datum/unit_test/heretic_spirit_visual_types_create_and_destroy/Run()
-	for(var/thing_type in list(/obj/effect/abstract/heretic_spirit_toll_soul, /obj/effect/temp_visual/heretic_spirit/soul_return, /obj/effect/temp_visual/heretic_spirit/thread_snap, /obj/effect/ebeam/heretic_spirit_thread))
+	for(var/thing_type in list(/obj/effect/abstract/heretic_spirit_toll_soul, /obj/effect/temp_visual/heretic_spirit/soul_return, /obj/effect/temp_visual/heretic_spirit/thread_snap, /obj/effect/ebeam/heretic_spirit_thread, /obj/effect/abstract/heretic_spirit_echo))
 		var/atom/movable/thing = new thing_type(run_loc_floor_bottom_left)
 		qdel(thing)
 		TEST_ASSERT(QDELETED(thing), "[thing_type] удаляется без ошибок.")
@@ -1319,12 +1322,40 @@
 	TEST_ASSERT(!(whisper_verb in ghost.verbs), "Снятый обол закрывает шёпот.")
 	TEST_ASSERT(!spirit.deliver_whisper(ghost, "После"), "Без обола шёпот не доходит.")
 
+/// Одна кнопка «Притянуть душу» вместо смещения и удержания: её даёт «Душа на ладони», а «Удержать душу» своей кнопки не даёт; кнопка активна, только пока есть отделённая вами душа.
+/datum/unit_test/heretic_spirit_soul_buttons/Run()
+	var/datum/antagonist/heretic/heretic = spirit_hold_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/datum/eldritch_knowledge/spell/spirit_hold/hold_knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spell/spirit_hold)
+	var/datum/eldritch_knowledge/spirit_grasp/grasp = heretic.get_knowledge(/datum/eldritch_knowledge/spirit_grasp)
+	var/obj/effect/proc_holder/spell/pull = grasp.granted_spell
+	TEST_ASSERT(istype(pull, /obj/effect/proc_holder/spell/pointed/heretic_spirit/hold), "«Душа на ладони» даёт «Притянуть душу».")
+	TEST_ASSERT_NULL(hold_knowledge.granted_spell, "«Удержать душу» не добавляет вторую кнопку.")
+	var/buttons = 0
+	for(var/obj/effect/proc_holder/spell/spell as anything in user.mind.spell_list)
+		if(istype(spell, /obj/effect/proc_holder/spell/pointed/heretic_spirit/hold))
+			buttons++
+	TEST_ASSERT_EQUAL(buttons, 1, "У души одна кнопка.")
+	TEST_ASSERT(!pull.can_cast(user, FALSE, TRUE), "Без отделённой души кнопка неактивна.")
+	TEST_ASSERT(findtext(pull.heretic_failure_reason, "нет отделённой"), "Отказ объясняет, откуда берётся душа: [pull.heretic_failure_reason]")
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	var/datum/status_effect/heretic_spirit/separated/soul = spirit.separate(victim, spirit)
+	TEST_ASSERT(pull.can_cast(user, FALSE, TRUE), "С отделённой душой кнопка активна.")
+	qdel(soul)
+	TEST_ASSERT(!pull.can_cast(user, FALSE, TRUE), "Вернувшаяся душа снова гасит кнопку.")
+
 /datum/unit_test/proc/spirit_hold_heretic()
 	var/datum/antagonist/heretic/heretic = allocate_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
 	heretic.selected_path = PATH_SPIRIT
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_spirit)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spirit_grasp)
 	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/spirit_hold)
 	return heretic
+
+/datum/unit_test/proc/spirit_pull_spell(datum/antagonist/heretic/heretic) as /obj/effect/proc_holder/spell/pointed/heretic_spirit/hold
+	var/datum/eldritch_knowledge/spirit_grasp/grasp = heretic.get_knowledge(/datum/eldritch_knowledge/spirit_grasp)
+	return grasp?.granted_spell
 
 /datum/unit_test/proc/seize_spirit_soul(datum/eldritch_knowledge/base_spirit/spirit, mob/living/user, mob/living/victim)
 	spirit.separate(victim, spirit)
@@ -1337,10 +1368,9 @@
 	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/spirit_incorporeal)
 	var/mob/living/carbon/human/user = heretic.owner.current
 	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
-	var/datum/eldritch_knowledge/spell/spirit_hold/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/spell/spirit_hold)
-	var/obj/effect/proc_holder/spell/pointed/heretic_spirit/hold/spell = knowledge.granted_spell
-	TEST_ASSERT(istype(spell), "Знание выдаёт Удержать душу.")
-	TEST_ASSERT_EQUAL(spell.charge_max, HERETIC_SPIRIT_HOLD_COOLDOWN, "Перезарядка 40 секунд.")
+	var/obj/effect/proc_holder/spell/pointed/heretic_spirit/hold/spell = spirit_pull_spell(heretic)
+	TEST_ASSERT(istype(spell), "Знание выдаёт «Притянуть душу».")
+	TEST_ASSERT_EQUAL(spell.charge_max, HERETIC_SPIRIT_PULL_COOLDOWN, "Рывок души перезаряжается 6 секунд.")
 	var/turf/origin = get_turf(user)
 	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
 	TEST_ASSERT(findtext(spirit.hold_block_reason(user, victim), "отделённ"), "Без отделённой души захвата нет: [spirit.hold_block_reason(user, victim)]")
@@ -1380,6 +1410,7 @@
 	TEST_ASSERT(remaining <= HERETIC_SPIRIT_HOLD_DURATION + 1 && remaining > HERETIC_SPIRIT_HOLD_DURATION - 2 SECONDS, "Удержание до 12 секунд: осталось [remaining] дс.")
 	TEST_ASSERT(QDELETED(soul), "Отделённая душа ушла в руку.")
 	TEST_ASSERT(istype(hold.soul_item) && (hold.soul_item in user.held_items), "Душа лежит в руке еретика.")
+	TEST_ASSERT_EQUAL(spell.charge_max, HERETIC_SPIRIT_HOLD_COOLDOWN, "После захвата кнопка перезаряжается 40 секунд.")
 	TEST_ASSERT(victim.IsParalyzed(), "Пустое тело не двигается.")
 	TEST_ASSERT(heretic.hunt_target_ready(victim), "Пустое тело готово к обряду.")
 	var/mob/living/carbon/human/crew = allocate(/mob/living/carbon/human, get_step(origin, NORTH))
@@ -1616,7 +1647,7 @@
 	TEST_ASSERT_NOTNULL(user.has_status_effect(/datum/status_effect/heretic_spirit_incorporeal), "В захвате хоткей делает еретика бесплотным.")
 	TEST_ASSERT_NULL(user.pulledby, "Бесплотность разрывает захват.")
 
-/// Дверь Духа: своя удержанная душа цели охоты в руке и живое сердце во второй переправляют пустое тело рядом в изнанку за секунду, душа остаётся в руке; без удержания, с чужой душой, с занятой второй рукой и вдали от тела - нет; одна «Помощь» душу не возвращает, 2 секунды растолкать - возвращают.
+/// Дверь Духа: своя удержанная душа цели охоты в руке сама уводит пустое тело рядом в изнанку за секунду, что бы ни лежало во второй руке, и остаётся в руке; без удержания, с чужой душой и вдали от тела - нет; сердце по-прежнему предлагает ту же дверь; одна «Помощь» душу не возвращает, 2 секунды растолкать - возвращают.
 /datum/unit_test/heretic_spirit_pocket_door/Run()
 	allocated += new /datum/heretic_test_station_level(run_loc_floor_bottom_left.z)
 	var/datum/antagonist/heretic/heretic = spirit_hold_heretic()
@@ -1626,31 +1657,25 @@
 	var/turf/spot = get_step(user, EAST)
 	var/mob/living/carbon/human/victim = allocate_hunt_victim(heretic, spot)
 	var/mob/living/carbon/human/other = allocate(/mob/living/carbon/human, get_step(user, NORTH))
-	var/obj/item/living_heart/heart = allocate(/obj/item/living_heart, origin)
 	var/obj/item/storage/toolbox/toolbox = allocate(/obj/item/storage/toolbox, origin)
-	TEST_ASSERT(user.put_in_hands(heart), "Сердце в руке.")
 	TEST_ASSERT_NULL(spirit.pocket_door(user, victim), "Без удержанной души двери нет.")
 	var/datum/status_effect/heretic_spirit_hold/hold = seize_spirit_soul(spirit, user, other)
 	TEST_ASSERT_NOTNULL(hold, "В руке душа другого человека.")
 	TEST_ASSERT_NULL(spirit.pocket_door(user, victim), "Чужая душа в руке цель не переправляет.")
+	TEST_ASSERT(!spirit.ferry_body(user, victim), "Чужой душой тело цели не увести.")
 	hold.release("проверка")
-	user.dropItemToGround(heart)
 	TEST_ASSERT(user.put_in_hands(toolbox), "Вторая рука занята ящиком.")
 	hold = seize_spirit_soul(spirit, user, victim)
 	TEST_ASSERT_NOTNULL(hold, "Душа цели охоты в руке.")
-	TEST_ASSERT(findtext(spirit.ferry_hands_reason(user), "живое сердце"), "Отказ просит сердце во второй руке: [spirit.ferry_hands_reason(user)]")
-	TEST_ASSERT_NULL(spirit.pocket_door(user, victim), "С занятой второй рукой двери нет.")
-	user.dropItemToGround(toolbox)
-	TEST_ASSERT_NULL(spirit.ferry_hands_reason(user), "Пустая вторая рука готова принять сердце.")
-	TEST_ASSERT(user.put_in_hands(heart), "Сердце во второй руке.")
 	var/list/door = spirit.pocket_door(user, victim)
-	TEST_ASSERT_NOTNULL(door, "Душа в руке и сердце во второй переправляют тело.")
+	TEST_ASSERT_NOTNULL(door, "Душа в руке открывает дверь и с занятой второй рукой: сердце коснётся тела той же дверью.")
 	TEST_ASSERT_EQUAL(door["name"], "за реку", "Дверь подписана.")
 	TEST_ASSERT_EQUAL(door["time"], HERETIC_POCKET_PULL_TIME, "Переправа занимает [HERETIC_POCKET_PULL_TIME / (1 SECONDS)] с.")
 	user.forceMove(get_step(origin, WEST))
 	TEST_ASSERT_NULL(spirit.pocket_door(user, victim), "Вдали от тела двери нет.")
+	TEST_ASSERT(!spirit.ferry_body(user, victim), "Вдали от тела душой его не увести.")
 	user.forceMove(origin)
-	TEST_ASSERT(heretic.pocket_pull(user, victim, spot, door["time"], door["check"], door["text"]), "Дверь Духа уводит тело в изнанку.")
+	TEST_ASSERT(spirit.ferry_body(user, victim), "Душа в руке уводит своё тело в изнанку.")
 	TEST_ASSERT(heretic.pocket_holds(victim), "Тело в изнанке.")
 	TEST_ASSERT(!QDELETED(hold) && (hold.soul_item in user.held_items), "Душа остаётся в руке и в изнанке.")
 	heretic.pocket.collapse("проверка")
@@ -1835,3 +1860,286 @@
 	TEST_ASSERT(!victim.can_speak_vocal(), "Пустое тело не может говорить.")
 	qdel(hold)
 	TEST_ASSERT(!HAS_TRAIT(victim, TRAIT_MUTE), "Вернувшаяся душа снова говорит.")
+
+/datum/unit_test/proc/spirit_has_overlay_state(atom/target, state)
+	for(var/mutable_appearance/overlay as anything in target.overlays)
+		if(overlay.icon_state == state)
+			return TRUE
+	return FALSE
+
+/// Душа - бледная копия жертвы без глаз и губ: тот же облик и одежда, полупрозрачна, колышется, ноги тают, светится в темноте.
+/datum/unit_test/heretic_spirit_soul_look/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
+	heretic.selected_path = PATH_SPIRIT
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	var/face = 0
+	for(var/mutable_appearance/overlay as anything in victim.overlays)
+		if(overlay.layer == -BODY_LAYER)
+			face++
+	TEST_ASSERT(face, "У жертвы на лице есть глаза.")
+	var/datum/status_effect/heretic_spirit/separated/soul = spirit.separate(victim, spirit)
+	var/obj/structure/heretic_spirit_soul/anchor = soul.anchor
+	TEST_ASSERT_EQUAL(anchor.icon, victim.icon, "Душа повторяет облик тела.")
+	TEST_ASSERT(length(anchor.overlays), "Душа одета, как тело.")
+	for(var/mutable_appearance/overlay as anything in anchor.overlays)
+		TEST_ASSERT(overlay.layer != -BODY_LAYER, "У души стёрто лицо.")
+	TEST_ASSERT(findtext(anchor.name, victim.real_name), "Душа подписана именем хозяина.")
+	TEST_ASSERT(anchor.alpha < 255, "Душа полупрозрачная: [anchor.alpha].")
+	TEST_ASSERT(!isnull(anchor.color), "Душа выкрашена бледными чернилами: [json_encode(anchor.color)], у тела [json_encode(victim.color)].")
+	TEST_ASSERT(!anchor.density, "Душа не загораживает проход.")
+	TEST_ASSERT_EQUAL(PLANE_TO_TRUE(anchor.plane), GAME_PLANE, "Душа рисуется на игровой плоскости, а не под полом.")
+	var/matrix/shape = anchor.transform
+	TEST_ASSERT(shape.e > 1, "Душа вытянута вверх.")
+	TEST_ASSERT(anchor.get_filter("heretic_spirit_soul_wave") && anchor.get_filter("heretic_spirit_soul_fade"), "Душа колышется, а ноги тают в туман.")
+	TEST_ASSERT(anchor.glow && (anchor.glow in anchor.vis_contents), "Душа светится в темноте.")
+	TEST_ASSERT_NOTEQUAL(anchor.render_target, victim.render_target, "Душа не перехватывает цель отрисовки тела.")
+	TEST_ASSERT("spirit_soul_fade" in icon_states('modular_bluemoon/icons/obj/heretic_spirit_effects.dmi'), "Маска тающих ног нарисована.")
+	var/obj/effect/abstract/heretic_vfx_glow/glow = anchor.glow
+	qdel(soul)
+	TEST_ASSERT(QDELETED(anchor) && QDELETED(glow), "Погасшая душа уносит свечение.")
+
+/// Подсказки жертве Духа короткие: значки состояний и предупреждения не длиннее 250 знаков.
+/datum/unit_test/heretic_spirit_victim_hints/Run()
+	for(var/alert_type in list(/atom/movable/screen/alert/status_effect/heretic_spirit, /atom/movable/screen/alert/status_effect/heretic_spirit_hold))
+		var/atom/movable/screen/alert/alert = alert_type
+		TEST_ASSERT(length_char(initial(alert.desc)) <= 250, "[alert_type]: подсказка [length_char(initial(alert.desc))] знаков.")
+	var/datum/antagonist/heretic/heretic = allocate_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
+	heretic.selected_path = PATH_SPIRIT
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_spirit)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/spirit_reap)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	victim.logging[num2text(LOG_ATTACK)] = list()
+	TEST_ASSERT(spirit.reap(user, victim), "Жатва ударила.")
+	for(var/obj/structure/heretic_spirit_soul/anchor in get_turf(victim))
+		TEST_ASSERT(length_char(anchor.desc) <= 250, "Осмотр души короткий: [length_char(anchor.desc)] знаков.")
+
+/// Обол кладёт серебряные монеты на глаза трупа; нулевой жезл снимает их вместе с оболом.
+/datum/unit_test/heretic_spirit_obol_coins/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_SPIRIT)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/mob/living/carbon/human/corpse = spirit_corpse(get_step(user, EAST))
+	TEST_ASSERT("spirit_obol_eyes" in icon_states('modular_bluemoon/icons/obj/heretic_spirit_effects.dmi'), "Монеты нарисованы.")
+	TEST_ASSERT(!spirit_has_overlay_state(corpse, "spirit_obol_eyes"), "До обола глаза открыты.")
+	TEST_ASSERT(spirit.place_obol(user, corpse), "Обол лёг: [spirit.grasp_failure_reason]")
+	TEST_ASSERT(spirit_has_overlay_state(corpse, "spirit_obol_eyes"), "На глазах трупа лежат монеты.")
+	var/mob/living/carbon/human/crew = allocate(/mob/living/carbon/human, get_step(user, NORTH))
+	var/obj/item/nullrod/rod = allocate(/obj/item/nullrod)
+	crew.put_in_hands(rod)
+	rod.melee_attack_chain(crew, corpse)
+	TEST_ASSERT_NULL(heretic_craft_on(corpse, "spirit_obol"), "Нулевой жезл снял обол.")
+	TEST_ASSERT(!spirit_has_overlay_state(corpse, "spirit_obol_eyes"), "Монеты сняты вместе с оболом.")
+
+/// «Притянуть душу» тянет дальнюю душу к вам, но не на вашу клетку, а соседнюю берёт в руку; рывок перезаряжается 6 секунд, захват - 40.
+/datum/unit_test/heretic_spirit_pull_button/Run()
+	var/datum/antagonist/heretic/heretic = spirit_hold_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/obj/effect/proc_holder/spell/pointed/heretic_spirit/hold/spell = spirit_pull_spell(heretic)
+	var/turf/origin = get_turf(user)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, locate(origin.x + 2, origin.y, origin.z))
+	var/datum/status_effect/heretic_spirit/separated/soul = spirit.separate(victim, spirit)
+	var/turf/soul_spot = get_turf(soul.anchor)
+	TEST_ASSERT(spell.can_target(soul.anchor, user, TRUE), "Душу в двух клетках можно притянуть: [spell.heretic_failure_reason]")
+	spell.cast(list(soul.anchor), user)
+	TEST_ASSERT(soul.shifted, "Душа притянута.")
+	TEST_ASSERT_EQUAL(get_dist(user, soul.anchor), 1, "Душа встала рядом, а не на клетку перевозчика.")
+	TEST_ASSERT_EQUAL(get_dist(soul_spot, soul.anchor), 1, "Из двух клеток душа сдвинулась на одну.")
+	TEST_ASSERT_EQUAL(spell.charge_max, HERETIC_SPIRIT_PULL_COOLDOWN, "Рывок перезаряжается 6 секунд.")
+	TEST_ASSERT(spell.can_target(soul.anchor, user, TRUE), "Соседнюю душу та же кнопка берёт в руку: [spell.heretic_failure_reason]")
+	spell.cast(list(soul.anchor), user)
+	var/list/budget = new_wait_budget(3 SECONDS, "душа в руке")
+	while(!victim.has_status_effect(/datum/status_effect/heretic_spirit_hold))
+		if(!wait_budget_tick(budget))
+			break
+	var/datum/status_effect/heretic_spirit_hold/hold = victim.has_status_effect(/datum/status_effect/heretic_spirit_hold)
+	TEST_ASSERT_NOTNULL(hold, "Притянутая душа взята в руку.")
+	TEST_ASSERT_EQUAL(spell.charge_max, HERETIC_SPIRIT_HOLD_COOLDOWN, "После захвата кнопка перезаряжается 40 секунд.")
+	hold?.release("проверка")
+
+/// Пустое тело: стеклянные глаза, блёклые краски и нить от руки перевозчика к телу, которая тянется за ним; в руке видно, чья душа; возврат снимает всё.
+/datum/unit_test/heretic_spirit_empty_body/Run()
+	var/datum/antagonist/heretic/heretic = spirit_hold_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	TEST_ASSERT("spirit_hollow_eyes" in icon_states('modular_bluemoon/icons/obj/heretic_spirit_effects.dmi'), "Стеклянные глаза нарисованы.")
+	var/datum/status_effect/heretic_spirit_hold/hold = seize_spirit_soul(spirit, user, victim)
+	TEST_ASSERT_NOTNULL(hold, "Душа в руке.")
+	TEST_ASSERT(spirit_has_overlay_state(victim, "spirit_hollow_eyes"), "Глаза пустого тела стеклянные.")
+	TEST_ASSERT_NOTNULL(victim.get_filter("heretic_spirit_hollow"), "Краски уходят из тела.")
+	var/datum/beam/heretic_spirit_thread/thread = hold.thread
+	TEST_ASSERT(thread?.origin == user && thread.target == victim, "Нить тянется от руки перевозчика к телу.")
+	TEST_ASSERT(findtext(hold.soul_item.name, victim.real_name), "В руке видно, чья это душа.")
+	TEST_ASSERT_EQUAL(hold.soul_item.icon, victim.icon, "Душа в руке - копия хозяина.")
+	user.forceMove(get_step(get_step(user, WEST), WEST))
+	TEST_ASSERT(length(thread.elements) >= 2, "Нить тянется за перевозчиком.")
+	hold.release("проверка")
+	TEST_ASSERT(QDELETED(thread), "Возврат души убирает нить.")
+	TEST_ASSERT(!spirit_has_overlay_state(victim, "spirit_hollow_eyes"), "Глаза снова живые.")
+	TEST_ASSERT_NULL(victim.get_filter("heretic_spirit_hollow"), "Краски вернулись.")
+
+/// Призрак под оболом указывает живого рядом с собой: перевозчик чует направление 30 секунд, цель охоты - минуту; раз в минуту; защищённого от магии след не выдаёт; без обола указывать нельзя.
+/datum/unit_test/heretic_spirit_ghost_point/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_SPIRIT)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/turf/origin = get_turf(user)
+	var/mob/living/carbon/human/corpse = spirit_corpse(get_step(user, EAST), with_mind = TRUE)
+	var/mob/dead/observer/ghost = allocate(/mob/dead/observer, get_turf(corpse))
+	ghost.mind = corpse.mind
+	var/point_verb = /mob/dead/observer/proc/heretic_spirit_point
+	TEST_ASSERT(spirit.place_obol(user, corpse), "Обол лёг: [spirit.grasp_failure_reason]")
+	spirit.open_whisper(corpse, ghost)
+	TEST_ASSERT(point_verb in ghost.verbs, "Призрак под оболом может указывать.")
+	var/mob/living/carbon/human/stranger = spirit_ferry_victim(locate(origin.x + 3, origin.y, origin.z))
+	var/list/choices = spirit.point_choices(ghost)
+	var/listed = FALSE
+	for(var/label in choices)
+		TEST_ASSERT(choices[label] != user, "Перевозчика самому себе не указывают.")
+		if(choices[label] == stranger)
+			listed = TRUE
+	TEST_ASSERT(listed, "Живой рядом с призраком есть в списке.")
+	TEST_ASSERT(spirit.deliver_point(ghost, stranger), "Указание дошло: [spirit.point_failure]")
+	var/datum/status_effect/heretic_spirit_lead/lead = user.has_status_effect(/datum/status_effect/heretic_spirit_lead)
+	TEST_ASSERT_NOTNULL(lead, "Перевозчик чует указанного.")
+	TEST_ASSERT(abs(lead.duration - world.time - HERETIC_SPIRIT_LEAD_TIME) < 1, "След держится 30 секунд.")
+	TEST_ASSERT_EQUAL(lead.linked_alert?.icon_state, "spirit_lead_close", "Значок показывает близкого человека.")
+	TEST_ASSERT_EQUAL(lead.linked_alert?.dir, EAST, "Значок смотрит в его сторону.")
+	TEST_ASSERT(lead.linked_alert?.icon_state in icon_states(lead.linked_alert.icon), "Значок указания нарисован.")
+	TEST_ASSERT(!spirit.deliver_point(ghost, stranger), "Сразу второй раз указать нельзя.")
+	TEST_ASSERT(findtext(spirit.point_failure, "через"), "Отказ называет паузу: [spirit.point_failure]")
+	heretic.set_hunt_target(stranger.mind)
+	spirit.point_ready[corpse] = world.time
+	TEST_ASSERT(spirit.deliver_point(ghost, stranger), "Цель охоты тоже указывается.")
+	lead = user.has_status_effect(/datum/status_effect/heretic_spirit_lead)
+	TEST_ASSERT(abs(lead.duration - world.time - HERETIC_SPIRIT_LEAD_HUNT_TIME) < 1, "Цель охоты перевозчик чует минуту.")
+	user.remove_status_effect(/datum/status_effect/heretic_spirit_lead)
+	var/datum/component/anti_magic/ward = stranger.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 5)
+	spirit.point_ready[corpse] = world.time
+	TEST_ASSERT(spirit.deliver_point(ghost, stranger), "Указание на защищённого тратит попытку.")
+	TEST_ASSERT_NULL(user.has_status_effect(/datum/status_effect/heretic_spirit_lead), "Защита от магии прячет след.")
+	TEST_ASSERT_EQUAL(ward.charges, 5, "Проверка защиты не тратит заряды.")
+	qdel(ward)
+	qdel(heretic_craft_on(corpse, "spirit_obol"))
+	TEST_ASSERT(!(point_verb in ghost.verbs), "Снятый обол закрывает указания.")
+	spirit.point_ready -= corpse
+	TEST_ASSERT(!spirit.deliver_point(ghost, stranger), "Без обола указать нельзя.")
+
+/// Заупокойный звон расходится одной бледной волной от перевозчика: вспыхивают только задетые враги, пустые клетки нет.
+/datum/unit_test/heretic_spirit_toll_wave/Run()
+	var/turf/start = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y + 2, run_loc_floor_bottom_left.z)
+	var/datum/antagonist/heretic/heretic = allocate_heretic(start)
+	heretic.selected_path = PATH_SPIRIT
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_spirit)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/spirit_bell)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/turf/victim_turf = locate(start.x + 2, start.y, start.z)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, victim_turf)
+	spirit.combat_resource = 3
+	TEST_ASSERT(spirit.ring(user), "Звон звучит.")
+	TEST_ASSERT(abs(victim.getBruteLoss() - 20) <= DAMAGE_PRECISION, "Урон звона прежний: 20 ушибов.")
+	var/waves = 0
+	for(var/obj/effect/temp_visual/heretic_vfx/shockwave/wave in start)
+		waves++
+	TEST_ASSERT_EQUAL(waves, 1, "От перевозчика идёт одна волна.")
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/temp_visual/heretic_spirit/burst) in victim_turf, "Задетый враг вспыхивает.")
+	var/bursts = 0
+	for(var/turf/tile in range(3, start))
+		if(tile != victim_turf && (locate(/obj/effect/temp_visual/heretic_spirit/burst) in tile))
+			bursts++
+	TEST_ASSERT_EQUAL(bursts, 0, "Пустые клетки не вспыхивают.")
+
+/// Бесплотный колышется туманом, пока длится Бесплотность; вернувшаяся плоть снимает это.
+/datum/unit_test/heretic_spirit_incorporeal_haze/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic(run_loc_floor_bottom_left)
+	heretic.selected_path = PATH_SPIRIT
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_spirit)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/spirit_incorporeal)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	TEST_ASSERT(spirit.become_incorporeal(user), "Еретик бесплотен.")
+	TEST_ASSERT_NOTNULL(user.get_filter("heretic_spirit_phase"), "Бесплотный колышется.")
+	var/datum/status_effect/heretic_spirit_incorporeal/effect = user.has_status_effect(/datum/status_effect/heretic_spirit_incorporeal)
+	effect.end("проверка")
+	TEST_ASSERT_NULL(user.get_filter("heretic_spirit_phase"), "Плоть вернулась.")
+
+/// Урок Духа проходит шесть шагов по настоящим действиям: разлучение, рывок, жатва, душа в руке, спасение, обол.
+/datum/unit_test/heretic_spirit_lesson/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_SPIRIT)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/turf/origin = get_turf(user)
+	var/mob/living/carbon/human/target = allocate(/mob/living/carbon/human, locate(origin.x + 2, origin.y, origin.z))
+	var/datum/heretic_spirit_lesson/lesson = new(null, spirit, user, target)
+	allocated += lesson
+	TEST_ASSERT(heretic.get_knowledge(/datum/eldritch_knowledge/spell/spirit_hold) && heretic.get_knowledge(/datum/eldritch_knowledge/spell/spirit_reap), "Урок открывает Удержание и Жатву.")
+	TEST_ASSERT(spirit.sever(user, target), "Разлучение по мишени.")
+	TEST_ASSERT_EQUAL(lesson.stage, 2, "Разлучение открывает рывок.")
+	var/datum/status_effect/heretic_spirit/separated/soul = target.has_status_effect(/datum/status_effect/heretic_spirit/separated)
+	TEST_ASSERT(spirit.shift_soul(user, soul.anchor), "Душа притянута: [spirit.shift_failure]")
+	TEST_ASSERT_EQUAL(lesson.stage, 3, "Рывок открывает Жатву.")
+	TEST_ASSERT(soul.arm(heretic.get_knowledge(/datum/eldritch_knowledge/spell/spirit_reap), 25), "Жатва занесена.")
+	soul.reap_at = world.time
+	TEST_ASSERT(soul.finish_reap(), "Второй удар Жатвы.")
+	TEST_ASSERT_EQUAL(lesson.stage, 4, "Жатва открывает захват.")
+	TEST_ASSERT(spirit.seize_soul(user, target), "Душа в руке: [spirit.hold_block_reason(user, target)]")
+	TEST_ASSERT_EQUAL(lesson.stage, 6, "Без полигона спасение пропускается, захват открывает обол.")
+	var/datum/status_effect/heretic_spirit_hold/hold = target.has_status_effect(/datum/status_effect/heretic_spirit_hold)
+	hold.release("проверка")
+	TEST_ASSERT_EQUAL(lesson.stage, 6, "Возврат души не пропускает обол.")
+	var/mob/living/carbon/human/corpse = spirit_corpse(get_step(user, NORTH))
+	TEST_ASSERT(spirit.place_obol(user, corpse), "Обол лёг: [spirit.grasp_failure_reason]")
+	TEST_ASSERT(lesson.finished(), "Урок пройден.")
+	TEST_ASSERT_EQUAL(length(lesson.steps()), 6, "В уроке шесть шагов.")
+
+/// Метка Духа лежит поверх тела, а не под ним.
+/datum/unit_test/heretic_spirit_mark_over_body/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic(get_step(run_loc_floor_bottom_left, NORTHEAST))
+	heretic.selected_path = PATH_SPIRIT
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_spirit)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spirit_mark)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	var/datum/status_effect/eldritch/spirit/mark = victim.apply_status_effect(/datum/status_effect/eldritch/spirit, spirit)
+	TEST_ASSERT_NOTNULL(mark, "Метка Духа легла.")
+	TEST_ASSERT(mark.marked_underlay.layer > MOB_LAYER, "Метка Духа рисуется поверх тела: слой [mark.marked_underlay.layer].")
+	TEST_ASSERT(mark.effect_sprite in icon_states(mark.effect_sprite_icon), "Рисунок метки есть в листе.")
+
+/// Душа в руке перевозчика видна в руке: у неё есть рисунок для обеих рук.
+/datum/unit_test/heretic_spirit_soul_inhand/Run()
+	var/datum/antagonist/heretic/heretic = spirit_hold_heretic()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	var/datum/status_effect/heretic_spirit_hold/hold = seize_spirit_soul(spirit, user, victim)
+	TEST_ASSERT_NOTNULL(hold, "Душа в руке.")
+	var/obj/item/heretic_spirit_soul/soul = hold.soul_item
+	TEST_ASSERT(soul.item_state in icon_states(soul.lefthand_file), "Душа видна в левой руке.")
+	TEST_ASSERT(soul.item_state in icon_states(soul.righthand_file), "Душа видна в правой руке.")
+	hold.release("проверка")
+
+/// Пока перевозчик тянет душу, от него к ней натянута своя леска; рывок её убирает, а не рисует Переправу.
+/datum/unit_test/heretic_spirit_pull_line/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_SPIRIT)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spirit_grasp)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
+	var/turf/origin = get_turf(user)
+	var/mob/living/carbon/human/target = allocate(/mob/living/carbon/human, locate(origin.x + 3, origin.y, origin.z))
+	var/datum/status_effect/heretic_spirit/separated/soul = spirit.separate(target, spirit)
+	TEST_ASSERT_NOTNULL(soul, "Душа отделена.")
+	INVOKE_ASYNC(spirit, TYPE_PROC_REF(/datum/eldritch_knowledge/base_spirit, shift_soul), user, soul.anchor)
+	TEST_ASSERT_NOTNULL(soul.pull_line, "Перевозчик натянул леску к душе.")
+	TEST_ASSERT_EQUAL(soul.pull_line.icon_state, "spirit_pull_line", "Леска рисуется своим стейтом.")
+	TEST_ASSERT("spirit_pull_line" in icon_states('modular_bluemoon/icons/obj/heretic_spirit_effects.dmi'), "Рисунок лески есть в листе.")
+	TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/heretic_spirit/step) in range(HERETIC_SPIRIT_HOLD_REACH + 2, user), "Рывок души не рисует Переправу.")
+	TEST_ASSERT(wait_for_var(soul, NAMEOF(soul, shifted), TRUE, 3 SECONDS), "Душа притянута: [spirit.shift_failure]")
+	TEST_ASSERT_NULL(soul.pull_line, "После рывка леска убрана.")

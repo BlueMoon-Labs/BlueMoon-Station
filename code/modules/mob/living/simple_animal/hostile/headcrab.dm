@@ -79,9 +79,9 @@
 	health = maxHealth
 	name = "zombie"
 	desc = "A corpse animated by the alien being on its head."
-	melee_damage_lower += 10
-	melee_damage_upper += 15
-	AddComponent(/datum/component/lifesteal, 10) // зомби восстанавливает ОЗ за каждый укус
+	melee_damage_lower += 15
+	melee_damage_upper += 20
+	AddComponent(/datum/component/lifesteal, 25) // зомби восстанавливает ОЗ за каждый укус
 	ranged = 0
 	stat_attack = CONSCIOUS // Disables their targeting of dead mobs once they're already a zombie
 	icon = H.icon

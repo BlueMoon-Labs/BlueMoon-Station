@@ -4,6 +4,7 @@
 #define HERETIC_ASCENDED_FLESH_SERVANT_LIMIT 8
 #define HERETIC_FLESH_KIND_LIMIT 2
 #define HERETIC_ASCENDED_FLESH_KIND_LIMIT 4
+#define HERETIC_FLESH_FLAY_VOLUME 40
 
 /mob/living/carbon/human
 	var/heretic_flesh_raised = FALSE
@@ -25,11 +26,11 @@
 
 /datum/eldritch_knowledge/base_flesh
 	name = "Принцип голода"
-	summary = "Хватка поглощает извлечённые органы ради биомассы, Сшивание за неё лечит вас и свиту."
+	summary = "Хватка поглощает и вынимает органы ради биомассы, Сшивание за неё лечит вас и свиту."
 	details = list(
 		"Нож и лужа крови на руне дают клинок плоти.",
 		"Хватка по извлечённому органу на полу поглощает его: +1 биомасса, новый вид органа идёт в дело пути.",
-		"Взрыв Метки Плоти клинком тоже даёт биомассу.",
+		"Хватка на «Разоружении» за 2 секунды вскрывает труп и вынимает один орган; вскрытое тело - улика.",
 		"Сшивание за 1 биомассу лечит вам 10 ушибов, своим слугам в 5 клетках - по 25 ушибов и ожогов. Перезарядка 15 секунд.",
 		"Кровотечение ран у слуг слабеет вдвое; вся свита - не больше 4 слуг, как бы они ни были призваны.",
 		"Готовую цель у своего гуля, мертвеца или ползуна сжатое сердце уводит в изнанку из 7 клеток за 1,5 секунды.",
@@ -38,7 +39,7 @@
 	role = HERETIC_ROLE_CRAFT
 	resource_rules = list(
 		"Запас до 4 биомассы.",
-		"Поглощённый хваткой орган и взрыв Метки Плоти дают по 1 биомассе.",
+		"Поглощённый хваткой орган, взрыв Метки Плоти и лоскут Иссекающей стали дают по 1 биомассе.",
 		"Сшивание, шов по слуге, гуль и игла стоят 1, ползун и Безмолвный мертвец - 2.",
 	)
 	gain_text = "Голод оказался не недостатком, а инструментом."
@@ -88,10 +89,10 @@
 	summary = "Хватка поднимает гулей и шьёт ползунов, Живой шов бьёт врага издали или спасает слугу."
 	details = list(
 		"Хватка по мёртвому человеку за 1 биомассу поднимает гуля с 50 здоровья, до 2 гулей; скелеты и истощённые не встают.",
-		"Без души роль 10 секунд ждёт призрака, без отклика пауза 90 секунд; щит разума и синтетики не встают.",
+		"Без души роль 10 секунд ждёт призрака; без отклика гуль встаёт пустым, и 90 секунд новые тела встают так же сразу.",
 		"Хватка в «Разоружении» по органу на полу за 2 биомассы шьёт ползуна: 40 здоровья, 6 урона раз в 2 секунды.",
 		"Ползун один, живёт 90 секунд и распадается дальше 9 клеток от вас; «Помощь» зовёт его, «Разоружение» велит ждать.",
-		"Живой шов на 5 клеток: враг получает 15 ушибов, замедление на 3 секунды и становится целью ползуна.",
+		"Живой шов на 5 клеток: враг получает 15 ушибов, замедление на 3 секунды, а ползун и пустые слуги бросаются на него.",
 		"Шов по слуге за 1 биомассу лечит 15 ушибов и ожогов и тянет к вам; здоровому ползуну он доступен через 30 секунд.",
 		"Пристёгнутого слугу шов лечит, но не тянет; стены и двери рвут шов. Перезарядка 15 секунд.",
 	)
@@ -103,7 +104,7 @@
 	var/ghoul_poll_pending = FALSE
 
 /datum/eldritch_knowledge/flesh_grasp/on_mansus_grasp(atom/target, mob/user, proximity_flag, click_parameters)
-	if(!ishuman(target) || target == user)
+	if(!ishuman(target) || target == user || user.a_intent == INTENT_DISARM)
 		return FALSE
 	var/mob/living/carbon/human/victim = target
 	if(!can_raise_ghoul(user, victim))
@@ -119,10 +120,9 @@
 	if(ghoul_poll_pending)
 		to_chat(user, span_warning("Мансус уже зовёт блуждающих духов. Дождитесь ответа."))
 		return FALSE
-	var/wait_reason = servant_poll_wait_reason()
-	if(wait_reason)
-		to_chat(user, span_warning(wait_reason))
-		return FALSE
+	if(servant_poll_wait_reason())
+		to_chat(user, span_notice("Духи недавно молчали, и Мансус не зовёт их снова: тело встаёт пустым, им правит голод."))
+		return raise_ghoul(user, victim, soulless = TRUE)
 	to_chat(user, span_notice("Душа этого тела не возвращается. Мансус зовёт блуждающих духов: ответ придёт через [DisplayTimeText(HERETIC_SERVANT_POLL_DURATION)]."))
 	INVOKE_ASYNC(src, PROC_REF(call_ghoul_spirit), user, victim)
 	return TRUE
@@ -147,30 +147,38 @@
 	ghoul_poll_pending = FALSE
 	if(QDELETED(src) || QDELETED(user) || !can_raise_ghoul(user, victim))
 		return FALSE
-	if(!victim.client)
+	if(victim.client)
+		return raise_ghoul(user, victim)
+	var/mob/dead/observer/chosen = length(candidates) ? pick(candidates) : null
+	if(!chosen?.key)
 		if(!length(candidates))
-			to_chat(user, span_warning(servant_poll_came_back_empty("Ни один дух не откликнулся: тело остаётся мёртвым, биомасса сохранена.")))
-			return FALSE
-		var/mob/dead/observer/chosen = pick(candidates)
-		if(!chosen?.key)
-			to_chat(user, span_warning("Откликнувшийся дух ушёл до вселения: тело остаётся мёртвым, биомасса сохранена."))
-			return FALSE
-		victim.ghostize(FALSE)
-		victim.key = chosen.key
+			servant_poll_came_back_empty()
+		to_chat(user, span_notice("Ни один дух не вселился: тело встаёт пустым, им правит голод Мансуса."))
+		return raise_ghoul(user, victim, soulless = TRUE)
+	victim.ghostize(FALSE)
+	victim.key = chosen.key
 	return raise_ghoul(user, victim)
 
-/datum/eldritch_knowledge/flesh_grasp/proc/raise_ghoul(mob/living/user, mob/living/carbon/human/victim)
+/datum/eldritch_knowledge/flesh_grasp/proc/raise_ghoul(mob/living/user, mob/living/carbon/human/victim, soulless = FALSE)
 	var/datum/antagonist/heretic/heretic = user.mind?.has_antag_datum(/datum/antagonist/heretic)
 	var/datum/eldritch_knowledge/base_flesh/path = heretic?.get_knowledge(/datum/eldritch_knowledge/base_flesh)
+	if(soulless && !victim.mind)
+		victim.mind_initialize()
 	if(!victim.mind || !path?.spend_combat_resource())
 		return FALSE
+	var/corpse_look = victim.appearance
 	victim.revive(full_heal = TRUE, admin_revive = TRUE)
 	var/datum/antagonist/heretic_monster/ghoul/servant = new
 	servant.health_cap = GHOUL_MAX_HEALTH
+	if(soulless)
+		servant.show_in_roundend = FALSE
 	servant.set_master(heretic)
 	victim.mind.add_antag_datum(servant)
 	track_flesh_servant(servant)
-	log_game("[key_name(user)] поднял [key_name(victim)] как гуля еретика.")
+	if(soulless)
+		heretic_flesh_make_puppet(victim, heretic)
+	heretic_flesh_rise_fx(victim, corpse_look)
+	log_game("[key_name(user)] поднял [key_name(victim)] как [soulless ? "пустого " : ""]гуля еретика.")
 	return TRUE
 
 /datum/eldritch_knowledge/flesh_grasp/on_lose(mob/user)
@@ -182,7 +190,8 @@
 	summary = "Мёртвый человек, мак и 2 биомассы дают Безмолвного мертвеца с 90 здоровья."
 	details = list(
 		"Безмолвный мертвец подчиняется вам и не может говорить; держится до 2.",
-		"Если душа не вернётся, роль ждёт призраков; без отклика компоненты сохранятся, а позвать снова можно через 90 секунд.",
+		"Если душа не вернётся, роль ждёт призраков; без отклика мертвец встаёт пустым и сам идёт за вами.",
+		"Пока духи молчат, следующий мертвец 90 секунд встаёт пустым сразу, без опроса.",
 		"Щит разума, синтетики, скелеты, истощённые и уже поднятые тела не подходят.",
 		"Мертвец занимает место в общей свите.",
 	)
@@ -203,7 +212,7 @@
 		return "Вы уже удерживаете предельное число Безмолвных мертвецов: [heretic.flesh_kind_limit()]."
 	if(!heretic.can_add_servant())
 		return "Свита заполнена: новый слуга не поместится, пока вы не потеряете одного из прежних."
-	return servant_poll_wait_reason()
+	return null
 
 /datum/eldritch_knowledge/flesh_ghoul/recipe_snowflake_check(list/atoms, loc, list/selected_atoms, mob/living/user)
 	return ..() && !recipe_block_reason(user)
@@ -215,39 +224,50 @@
 	finish_failure_reason = voiceless_dead_failure_reason(user, victim)
 	if(finish_failure_reason)
 		return FALSE
+	var/soulless = FALSE
 	if(heretic.simulated)
 		if(!victim.mind)
 			victim.mind_initialize()
 	else
 		victim.grab_ghost()
 	if(!heretic.simulated && (!victim.mind || !victim.client))
-		to_chat(user, span_notice("Мансус ищет душу для тела. Пока идёт отклик, не отходите от руны и не трогайте компоненты."))
-		var/list/mob/dead/observer/candidates = poll_servant_candidates("Хотите стать Безмолвным мертвецом, слугой [user.real_name]?", victim, HERETIC_SERVANT_POLL_DURATION)
-		if(!length(candidates))
-			finish_failure_reason = servant_poll_came_back_empty("Ни одна душа не откликнулась, и тело осталось пустым.")
-			return FALSE
-		finish_failure_reason = ritual_invalid_reason(user, atoms, get_turf(loc)) || voiceless_dead_failure_reason(user, victim)
-		if(finish_failure_reason)
-			return FALSE
-		var/mob/dead/observer/chosen = pick(candidates)
-		if(!chosen?.key || victim.client)
-			finish_failure_reason = "Откликнувшаяся душа ушла до вселения."
-			return FALSE
-		victim.ghostize(FALSE)
-		victim.key = chosen.key
+		var/list/mob/dead/observer/candidates
+		if(!servant_poll_wait_reason())
+			to_chat(user, span_notice("Мансус ищет душу для тела. Пока идёт отклик, не отходите от руны и не трогайте компоненты."))
+			candidates = poll_servant_candidates("Хотите стать Безмолвным мертвецом, слугой [user.real_name]?", victim, HERETIC_SERVANT_POLL_DURATION)
+			finish_failure_reason = ritual_invalid_reason(user, atoms, get_turf(loc)) || voiceless_dead_failure_reason(user, victim)
+			if(finish_failure_reason)
+				return FALSE
+			if(!length(candidates))
+				servant_poll_came_back_empty()
+		var/mob/dead/observer/chosen = length(candidates) ? pick(candidates) : null
+		if(!victim.client)
+			if(chosen?.key)
+				victim.ghostize(FALSE)
+				victim.key = chosen.key
+			else
+				soulless = TRUE
+				if(!victim.mind)
+					victim.mind_initialize()
+				to_chat(user, span_notice("Ни одна душа не вселилась: мертвец встаёт пустым, им правит голод Мансуса."))
 	if(!path.spend_combat_resource(2))
 		return FALSE
+	var/corpse_look = victim.appearance
 	victim.revive(full_heal = TRUE, admin_revive = TRUE)
 	var/datum/antagonist/heretic_monster/voiceless_dead/servant = new
-	if(heretic.simulated)
+	if(heretic.simulated || soulless)
 		servant.show_in_roundend = FALSE
+	if(heretic.simulated)
 		servant.soft_antag = TRUE
 	servant.health_cap = VOICELESS_DEAD_MAX_HEALTH
 	servant.set_master(heretic)
 	victim.mind.add_antag_datum(servant)
 	track_flesh_servant(servant)
+	if(soulless)
+		heretic_flesh_make_puppet(victim, heretic)
+	heretic_flesh_rise_fx(victim, corpse_look)
 	atoms -= victim
-	log_game("[key_name(user)] raised [key_name(victim)] as a voiceless dead.")
+	log_game("[key_name(user)] raised [key_name(victim)] as a [soulless ? "soulless " : ""]voiceless dead.")
 	return TRUE
 
 /datum/eldritch_knowledge/flesh_ghoul/proc/voiceless_dead_failure_reason(mob/living/user, mob/living/carbon/human/victim)
@@ -304,6 +324,7 @@
 	name = "Метка Плоти"
 	summary = "Хватка ставит метку на 15 секунд, удар клинком плоти её взрывает."
 	details = list(
+		"Метка - бьющееся сердце в швах у ног цели.",
 		"Взрыв открывает на случайной конечности среднюю резаную рану и усиливает кровотечение.",
 		"Взрыв даёт биомассу для гулей, ползуна и Сшивания.",
 		"Без удара клинком метка спадает через 15 секунд.",
@@ -322,16 +343,17 @@
 
 /datum/eldritch_knowledge/flesh_blade_upgrade
 	name = "Иссекающая сталь"
-	summary = "Клинок плоти добавляет 2 ушиба и поддерживает кровотечение."
+	summary = "Клинок плоти добавляет 2 ушиба, поддерживает кровотечение и срезает с поверженных лоскуты биомассы."
 	details = list(
 		"Улучшения: 2 / 3 / 4 ушиба и столько же тиков кровотечения за удар.",
-		"Кровь течёт дольше, но не быстрее.",
-		"Бескровные тела получают прямой урон.",
+		"Кровь течёт дольше, но не быстрее; бескровные тела получают прямой урон.",
+		"Удар по сбитой или удержанной слугой цели срезает лоскут: +1 биомасса, не чаще раза в 20 секунд.",
 	)
 	role = HERETIC_ROLE_PASSIVE
 	gain_text = "Маршал показал мне разницу между раной и разрезом."
 	cost = 2
 	route = PATH_FLESH
+	COOLDOWN_DECLARE(flay_cooldown)
 
 /datum/eldritch_knowledge/flesh_blade_upgrade/on_eldritch_blade(atom/target, mob/user, proximity_flag, click_parameters)
 	if(!iscarbon(target))
@@ -342,15 +364,38 @@
 	victim.adjustBruteLoss(passive_values[passive_level])
 	var/obj/item/bodypart/limb = pick(victim.bodyparts)
 	limb.generic_bleedstacks += passive_values[passive_level]
+	flay(user, victim)
+
+/// Лоскут с поверженной цели кормит запас биомассы.
+/datum/eldritch_knowledge/flesh_blade_upgrade/proc/flay(mob/living/user, mob/living/carbon/victim)
+	if(!COOLDOWN_FINISHED(src, flay_cooldown) || QDELETED(victim) || victim.stat == DEAD)
+		return FALSE
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_flesh/path = heretic?.get_knowledge(/datum/eldritch_knowledge/base_flesh)
+	if(!path || path.combat_resource >= path.combat_resource_max)
+		return FALSE
+	if(!heretic_capture_downed(victim) && !victim.has_status_effect(/datum/status_effect/heretic_flesh_latch))
+		return FALSE
+	COOLDOWN_START(src, flay_cooldown, HERETIC_FLESH_FLAY_COOLDOWN)
+	path.gain_combat_resource()
+	heretic_vfx_stream(victim, user, /particles/heretic_ascension/flesh/flay)
+	playsound(victim, 'modular_bluemoon/sound/heretic/flesh_excise.ogg', HERETIC_FLESH_FLAY_VOLUME, TRUE)
+	to_chat(user, span_notice("Клинок срезает с [victim] лоскут плоти: +1 биомасса."))
+	return TRUE
 
 /datum/eldritch_knowledge/summon/raw_prophet
 	name = "Нечестивый ритуал"
 	summary = "Глаза, левая рука и кровь призывают сырого пророка - хрупкого разведчика на 50 здоровья."
 	details = list(
-		"Пророк видит сквозь стены и дальше обычного, пеплом проходит сквозь стены на 7,5 секунды.",
+		"Пророк видит сквозь стены и дальше обычного, клубком жил проползает сквозь стены на 7,5 секунды.",
 		"Связь Мансуса подключает к мысленной речи живых без щита разума и защиты от магии.",
 		"Пророк умеет ослеплять врагов и говорить мысленно.",
-		"Нужен призрак-доброволец, без него компоненты сохранятся; таких слуг держится до 2.",
+		"Без призрака-добровольца пророк встаёт пустым: идёт за вами и бьёт цель шва. Таких слуг держится до 2.",
+	)
+	ritual_hints = list(
+		"После обряда Мансус зовёт игрока-призрака стать вашим слугой.",
+		"Если никто не откликнется, слуга встаёт пустым: идёт за вами и бьёт цель Живого шва и тех, кто ранит вас.",
+		"Учитываются предел этого призыва и общий предел свиты.",
 	)
 	role = HERETIC_ROLE_RITUAL
 	gain_text = "Я попросил глаза, способные увидеть больше моего голода."
@@ -359,13 +404,24 @@
 	mob_to_summon = /mob/living/simple_animal/hostile/eldritch/raw_prophet
 	route = PATH_FLESH
 
+/datum/eldritch_knowledge/summon/raw_prophet/recipe_block_reason(mob/living/user)
+	return null
+
+/datum/eldritch_knowledge/summon/raw_prophet/summon_soulless(mob/living/user, list/atoms, loc, mob/living/summoned)
+	return raise_soulless_summon(user, atoms, loc, summoned)
+
 /datum/eldritch_knowledge/summon/stalker
 	name = "Одинокий ритуал"
 	summary = "Нож, свеча, ручка и бумага призывают преследователя на 300 здоровья."
 	details = list(
-		"Преследователь бьёт на 15-20, пеплом проходит сквозь стены и меняет облик.",
+		"Преследователь бьёт на 15-20, клубком жил проползает сквозь стены и меняет облик.",
 		"Его импульс ЭМИ выводит из строя технику вокруг.",
-		"Нужен призрак-доброволец, без него компоненты сохранятся; таких слуг держится до 2.",
+		"Без призрака-добровольца преследователь встаёт пустым: идёт за вами и бьёт цель шва; держится до 2.",
+	)
+	ritual_hints = list(
+		"После обряда Мансус зовёт игрока-призрака стать вашим слугой.",
+		"Если никто не откликнется, слуга встаёт пустым: идёт за вами и бьёт цель Живого шва и тех, кто ранит вас.",
+		"Учитываются предел этого призыва и общий предел свиты.",
 	)
 	role = HERETIC_ROLE_RITUAL
 	gain_text = "На пустой странице уже стояла подпись того, кто придёт."
@@ -373,6 +429,34 @@
 	required_atoms = list(/obj/item/kitchen/knife, /obj/item/candle, /obj/item/pen, /obj/item/paper)
 	mob_to_summon = /mob/living/simple_animal/hostile/eldritch/stalker
 	route = PATH_FLESH
+
+/datum/eldritch_knowledge/summon/stalker/recipe_block_reason(mob/living/user)
+	return null
+
+/datum/eldritch_knowledge/summon/stalker/summon_soulless(mob/living/user, list/atoms, loc, mob/living/summoned)
+	return raise_soulless_summon(user, atoms, loc, summoned)
+
+/// Призыв без отклика: тело остаётся пустым слугой, если руна и свита всё ещё позволяют.
+/datum/eldritch_knowledge/summon/proc/summon_soulless(mob/living/user, list/atoms, loc, mob/living/summoned)
+	return FALSE
+
+/datum/eldritch_knowledge/summon/proc/raise_soulless_summon(mob/living/user, list/atoms, loc, mob/living/summoned)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(!heretic || QDELETED(summoned) || summoned.stat == DEAD || ritual_invalid_reason(user, atoms, get_turf(loc)) || length(flesh_servants) >= summon_limit || !heretic.can_add_servant())
+		return FALSE
+	if(COOLDOWN_FINISHED(src, servant_poll_cooldown))
+		servant_poll_came_back_empty()
+	summoned.forceMove(get_turf(loc))
+	summoned.mind_initialize()
+	var/datum/antagonist/heretic_monster/servant = new
+	servant.show_in_roundend = FALSE
+	servant.set_master(heretic)
+	summoned.mind.add_antag_datum(servant)
+	track_flesh_servant(servant)
+	heretic_flesh_make_puppet(summoned, heretic)
+	to_chat(user, span_notice("Ни одна душа не вселилась: [summoned.name] встаёт пустым и пойдёт за вами, бить цель Живого шва."))
+	log_game("[key_name(user)] призвал пустого [summoned.type] в [AREACOORD(summoned)].")
+	return TRUE
 
 /datum/eldritch_knowledge/summon/ashy
 	name = "Пепельный ритуал"
@@ -430,6 +514,7 @@
 	result_atoms = list(/obj/item/heretic_relic/suture_needle)
 	gain_text = "Кость помнит форму. Я могу предложить ей другую."
 	cost = 2
+	sacs_needed = HERETIC_PENULTIMATE_SACRIFICES
 	route = PATH_FLESH
 	COOLDOWN_DECLARE(fracture_cooldown)
 
@@ -446,17 +531,18 @@
 
 /datum/eldritch_knowledge/spell/touch_of_madness
 	name = "Касание безумия"
-	summary = "Касание: падение на 3 секунды, спутанность и фобия на 5 минут."
+	summary = "Касание валит на 3 секунды, а ваш слуга рядом вцепляется в цель и держит её до 10 секунд."
 	details = list(
-		"Подготовьте руку и коснитесь врага: он падает на 3 секунды и 20 секунд путается в шагах.",
-		"Цель получает случайную фобию на 5 минут; лекарства от травм мозга снимают её раньше.",
-		"Пока цель лежит, она готова к обряду живым сердцем.",
-		"Защита от магии отражает касание, заряд тратится. Перезарядка 3 минуты.",
+		"Коснитесь врага: он падает на 3 секунды, 20 секунд путается в шагах и 5 минут страдает фобией.",
+		"Свой гуль, мертвец или ползун в 3 клетках от цели бросается на неё и держит в сухожилиях до 10 секунд.",
+		"Удержанная цель не двигается, тянуть её может только слуга; готовую цель уводите в изнанку из 7 клеток.",
+		"Хватку рвут: сбитый, скованный или оттащенный слуга, нулевой жезл, острое на «Помощи» и «растолкать» за 2 секунды.",
+		"Повторное касание продлевает фобию, а не даёт новую; лекарства от травм мозга снимают её раньше.",
+		"Защита от магии отражает касание. Перезарядка 45 секунд, сорванная хватка вернёт касание через 10 секунд.",
 	)
 	role = HERETIC_ROLE_CAPTURE
 	gain_text = "Мой голод смотрит на них изнутри."
 	cost = 2
-	sacs_needed = HERETIC_PENULTIMATE_SACRIFICES
 	spell_to_add = /obj/effect/proc_holder/spell/targeted/touch/mad_touch
 	route = PATH_FLESH
 
@@ -514,3 +600,4 @@
 #undef HERETIC_ASCENDED_FLESH_SERVANT_LIMIT
 #undef HERETIC_FLESH_KIND_LIMIT
 #undef HERETIC_ASCENDED_FLESH_KIND_LIMIT
+#undef HERETIC_FLESH_FLAY_VOLUME

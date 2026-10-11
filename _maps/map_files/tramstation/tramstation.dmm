@@ -1,6 +1,9 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
 "aaa" = (
-/obj/item/hilbertshotel/ghostdojo,
+/obj/item/hilbertshotel/ghostdojo{
+	pixel_x = 0;
+	pixel_y = 0
+	},
 /turf/open/floor/carpet,
 /area/hallway/secondary/entry)
 "aab" = (
@@ -6436,6 +6439,12 @@
 	},
 /turf/open/floor/plasteel,
 /area/security/brig)
+"bLA" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
+	},
+/turf/open/floor/carpet,
+/area/hallway/secondary/entry)
 "bLP" = (
 /obj/effect/turf_decal/trimline/yellow/arrow_cw,
 /obj/effect/turf_decal/trimline/yellow/arrow_ccw{
@@ -8548,8 +8557,11 @@
 /turf/open/floor/carpet,
 /area/command/heads_quarters/hos)
 "csY" = (
-/obj/structure/chair/stool/directional/south,
-/turf/open/floor/carpet,
+/obj/structure/chair/comfy/beige{
+	dir = 1
+	},
+/obj/effect/landmark/start/hangover,
+/turf/open/floor/plasteel/grimy,
 /area/hallway/secondary/entry)
 "cte" = (
 /obj/structure/disposalpipe/segment,
@@ -12313,6 +12325,11 @@
 /obj/structure/table/wood,
 /obj/machinery/airalarm/directional/west,
 /obj/machinery/light/directional/west,
+/obj/effect/spawner/lootdrop/cig_packs,
+/obj/effect/spawner/lootdrop{
+	pixel_x = 9;
+	loot = list(/obj/item/storage/box/matches = 10, /obj/item/lighter/greyscale = 10, /obj/item/lighter = 1)
+	},
 /turf/open/floor/plasteel/grimy,
 /area/hallway/secondary/entry)
 "dxn" = (
@@ -17111,6 +17128,12 @@
 	},
 /turf/open/floor/plasteel,
 /area/hallway/primary/tram/right)
+"eQK" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/turf/open/floor/carpet,
+/area/hallway/secondary/entry)
 "eQM" = (
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
@@ -32229,15 +32252,6 @@
 /obj/machinery/light/small/directional/north,
 /turf/open/floor/plasteel,
 /area/security/checkpoint/medical)
-"jdY" = (
-/obj/structure/table/wood,
-/obj/effect/spawner/lootdrop/cig_packs,
-/obj/effect/spawner/lootdrop{
-	pixel_x = 9;
-	loot = list(/obj/item/storage/box/matches = 10, /obj/item/lighter/greyscale = 10, /obj/item/lighter = 1)
-	},
-/turf/open/floor/carpet,
-/area/hallway/secondary/entry)
 "jee" = (
 /obj/effect/turf_decal/trimline/blue/filled/line{
 	dir = 4
@@ -35293,7 +35307,7 @@
 /area/command/heads_quarters/hop)
 "jVI" = (
 /obj/effect/landmark/transport/nav_beacon/tram/nav/immovable_rod,
-/turf/open/floor/carpet,
+/turf/open/floor/plasteel/grimy,
 /area/hallway/secondary/entry)
 "jVJ" = (
 /obj/effect/decal/cleanable/dirt,
@@ -36176,8 +36190,9 @@
 /turf/open/floor/plasteel,
 /area/hallway/primary/tram/right)
 "kia" = (
-/obj/structure/chair/stool/directional/south,
-/obj/effect/landmark/start/hangover,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 10
+	},
 /turf/open/floor/carpet,
 /area/hallway/secondary/entry)
 "kiz" = (
@@ -38574,6 +38589,12 @@
 	outbound = 2
 	},
 /area/hallway/primary/tram/left)
+"kPz" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 6
+	},
+/turf/open/floor/carpet,
+/area/hallway/secondary/entry)
 "kPB" = (
 /obj/effect/turf_decal/tile/neutral/fourcorners,
 /obj/structure/reagent_dispensers/watertank,
@@ -60914,6 +60935,12 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/syndicate_outpost)
+"qXz" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 8
+	},
+/turf/open/floor/carpet,
+/area/hallway/secondary/entry)
 "qXD" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
@@ -62542,6 +62569,12 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/science/research/lobby)
+"rtP" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 5
+	},
+/turf/open/floor/carpet,
+/area/hallway/secondary/entry)
 "rtS" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
 	dir = 10
@@ -66204,6 +66237,12 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/command/gateway)
+"stk" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 9
+	},
+/turf/open/floor/carpet,
+/area/hallway/secondary/entry)
 "stw" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/machinery/door/poddoor/preopen{
@@ -70835,6 +70874,10 @@
 	},
 /obj/effect/turf_decal/trimline/neutral/filled/line,
 /obj/effect/turf_decal/trimline/purple/filled/warning,
+/obj/structure/reagent_dispensers/spacecleanertank{
+	pixel_x = 0;
+	pixel_y = -30
+	},
 /turf/open/floor/plasteel,
 /area/service/janitor)
 "tFv" = (
@@ -74376,10 +74419,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
-"uDx" = (
-/obj/structure/table/wood,
-/turf/open/floor/carpet,
-/area/hallway/secondary/entry)
 "uDA" = (
 /obj/effect/turf_decal/trimline/red/filled/line{
 	dir = 4
@@ -82732,6 +82771,10 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/science/xenobiology)
+"wNg" = (
+/obj/effect/turf_decal/siding/wood/thin,
+/turf/open/floor/carpet,
+/area/hallway/secondary/entry)
 "wNw" = (
 /obj/effect/turf_decal/weather/sand/plating,
 /obj/docking_port/stationary/escape_pod{
@@ -165857,9 +165900,9 @@ eQM
 hdZ
 uTt
 gnV
-aaa
 gnV
-aqY
+gnV
+csY
 gNA
 xob
 gVj
@@ -166113,8 +166156,8 @@ nAg
 eQM
 hdZ
 gnV
-csY
-uDx
+stk
+qXz
 kia
 gnV
 gNA
@@ -166370,9 +166413,9 @@ hqd
 ohK
 dFj
 ldM
-uDx
-jdY
-uDx
+eQK
+aaa
+wNg
 glH
 bpa
 wbk
@@ -166627,9 +166670,9 @@ fsw
 mLz
 npw
 gnV
-kia
-uDx
-csY
+rtP
+bLA
+kPz
 gnV
 gNA
 uhy

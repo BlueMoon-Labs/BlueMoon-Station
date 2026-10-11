@@ -929,8 +929,9 @@ based on whether the value lands in the range between `from` and `to`.
 
 ### `RestrictedInput`
 
-An integer-only input field that strips non-numeric characters and clamps
-the value to a given range. Supports Enter to commit, Escape to cancel,
+A numeric input field (floats supported, comma accepted as decimal
+separator) that clamps the value to a given range on commit.
+Supports Enter to commit, Escape to cancel,
 and auto-focus/auto-select on mount.
 
 **Props:**

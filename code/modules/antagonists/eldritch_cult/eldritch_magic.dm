@@ -22,17 +22,18 @@
 	jaunt_duration = 75
 
 /obj/effect/proc_holder/spell/targeted/ethereal_jaunt/shift/ash/play_sound(type, mob/living/target)
-	playsound(target, 'sound/effects/wounds/sizzle2.ogg', 55, TRUE)
+	playsound(target, type == "enter" ? 'modular_bluemoon/sound/heretic/ash_shift_in.ogg' : 'modular_bluemoon/sound/heretic/ash_shift_out.ogg', 55, TRUE)
 	new /obj/effect/temp_visual/heretic_oldpath/ash/trail(get_turf(target))
 
 /obj/effect/temp_visual/dir_setting/ash_shift
 	name = "ash trail"
 	icon = 'modular_bluemoon/icons/obj/heretic_effects.dmi'
 	icon_state = "ash_shift_out"
-	duration = 12
+	duration = 20
 
 /obj/effect/temp_visual/dir_setting/ash_shift/out
 	icon_state = "ash_shift_in"
+	duration = 12
 
 /obj/effect/proc_holder/spell/targeted/touch/mansus_grasp
 	name = "Хватка Мансуса"
@@ -449,7 +450,7 @@
 	action_background_icon_state = "bg_ecult"
 
 /obj/effect/proc_holder/spell/aoe_turf/rust_conversion/cast(list/targets, mob/user = usr)
-	playsound(user, 'sound/effects/clangsmall1.ogg', 75, TRUE)
+	playsound(user, pick(GLOB.heretic_rust_root_sounds), 75, TRUE)
 	var/changed_surfaces = 0
 	for(var/turf/T in targets)
 		///What we want is the 3 tiles around the user and the tile under him to be rusted, so min(dist,1)-1 causes us to get 0 for these tiles, rest of the tiles are based on chance
@@ -500,7 +501,7 @@
 		return
 	var/mob/living/victim = targets[1]
 	playsound(user, 'sound/effects/wounds/blood3.ogg', 65, TRUE)
-	victim.Beam(user, icon_state = "drainbeam", time = 10)
+	victim.Beam(user, icon_state = "siphon_vein", icon = 'modular_bluemoon/icons/obj/heretic_effects.dmi', time = 10)
 	new /obj/effect/temp_visual/heretic_oldpath/flesh(get_turf(victim))
 	new /obj/effect/temp_visual/heretic_oldpath/flesh/mend(get_turf(user))
 	victim.adjustBruteLoss(20)
@@ -540,7 +541,7 @@
 	base_icon_state = "rust_wave"
 	action_icon_state = "rust_wave"
 	action_background_icon_state = "bg_ecult"
-	sound = 'sound/effects/curse5.ogg'
+	sound = HERETIC_RUST_PATRON_CAST_SOUND
 	active_msg = "Вы протягиваете руку, готовясь выпустить волну ржавчины."
 	deactive_msg = "Вы позволяете собранной силе угаснуть."
 	invocation = "RUD'ZI VAR'ZTAS"
@@ -550,11 +551,10 @@
 	name = "rust bolt"
 	icon = 'modular_bluemoon/icons/obj/heretic_effects.dmi'
 	icon_state = "rust_bolt"
-	alpha = 180
 	damage = 50
 	damage_type = TOX
 	nodamage = 0
-	hitsound = 'sound/effects/curseattack.ogg'
+	hitsound = HERETIC_RUST_PATRON_HIT_SOUND
 	range = 15
 
 /obj/item/projectile/magic/spell/rust_wave/prehit_pierce(atom/target)
@@ -568,7 +568,6 @@
 
 /obj/item/projectile/magic/spell/rust_wave/Moved(atom/OldLoc, Dir)
 	. = ..()
-	playsound(src, 'sound/items/welder.ogg', 75, TRUE)
 	var/list/turflist = list()
 	var/turf/T1
 	turflist += get_turf(src)
@@ -642,11 +641,11 @@
 /obj/effect/proc_holder/spell/targeted/touch/mad_touch
 	heretic_stun_check = TRUE
 	name = "Касание безумия"
-	desc = "Коснитесь врага: падение на 3 секунды, 20 секунд спутанных шагов и случайная фобия на 5 минут. Перезарядка 3 минуты."
-	summary = "Касание: падение на 3 секунды, спутанность и фобия на 5 минут."
+	desc = "Коснитесь врага: падение на 3 секунды, 20 секунд спутанных шагов и фобия на 5 минут. Ваш гуль, мертвец или ползун в 3 клетках вцепится в цель и продержит её до 10 секунд. Перезарядка 45 секунд."
+	summary = "Касание валит на 3 секунды, а слуга рядом держит цель до 10 секунд."
 	hand_path = /obj/item/melee/touch_attack/mad_touch
 	school = "evocation"
-	charge_max = 1800
+	charge_max = HERETIC_FLESH_MADNESS_COOLDOWN
 	clothes_req = FALSE
 	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
 	action_icon_state = "mad_touch"
@@ -671,36 +670,41 @@
 			return ..()
 
 	if(iscarbon(target))
-		playsound(user, 'sound/effects/curseattack.ogg', 75, TRUE)
+		playsound(user, 'modular_bluemoon/sound/heretic/flesh_madness.ogg', 60, TRUE)
 		var/mob/living/carbon/C = target
 		C.Knockdown(HERETIC_FLESH_MADNESS_KNOCKDOWN)
 		C.confused = max(C.confused, HERETIC_FLESH_MADNESS_CONFUSION)
-		var/datum/brain_trauma/phobia = C.gain_trauma(/datum/brain_trauma/mild/phobia)
-		if(phobia)
-			QDEL_IN(phobia, HERETIC_FLESH_MADNESS_PHOBIA_TIME)
+		C.apply_status_effect(/datum/status_effect/heretic_flesh_phobia)
+		heretic_flesh_madness_fx(C)
+		C.visible_message(span_danger("[user] касается [C], и над головой [C] вспыхивает пурпурный надлом безумия!"), span_userdanger("Касание [user] надламывает рассудок: перед глазами вспыхивает пурпур, пол уходит из-под ног!"), ignored_mobs = user)
 		to_chat(user, span_warning("На [target.name] наложено проклятие!"))
 		SEND_SIGNAL(target, COMSIG_ADD_MOOD_EVENT, "gates_of_mansus", /datum/mood_event/gates_of_mansus)
+		var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+		var/datum/eldritch_knowledge/base_flesh/flesh = heretic?.get_knowledge(/datum/eldritch_knowledge/base_flesh)
+		flesh?.start_latch(user, C)
 		return ..()
 
 /obj/effect/proc_holder/spell/targeted/touch/grasp_of_decay
 	heretic_stun_check = TRUE
 	name = "Хватка распада"
-	desc = "Коснитесь врага: 2 секунды на земле и 20 секунд распада, повреждающего тело и органы. Перезарядка 2 минуты."
+	desc = "Коснитесь врага: 2 секунды на земле и 20 секунд распада, повреждающего тело и органы. Сбитого на ржавчине своего очага можно оплести Ржавыми корнями. Перезарядка 2 минуты."
 	summary = "Касание: 2 секунды на полу и 20 секунд распада."
 	hand_path = /obj/item/melee/touch_attack/grasp_of_decay
 	school = "evocation"
 	charge_max = 1200
 	clothes_req = FALSE
-	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
-	action_icon_state = "mansus_grasp"
+	action_icon = 'modular_bluemoon/icons/obj/heretic_rust_fx.dmi'
+	action_icon_state = "decay_grasp_action"
 	action_background_icon_state = "bg_ecult"
 
 /obj/item/melee/touch_attack/grasp_of_decay
 	name = "Grasp of Decay"
-	desc = "Зловещая аура, разлагающая чужую плоть изнутри."
-	icon = 'modular_bluemoon/icons/obj/heretic_oldpath_items.dmi'
-	icon_state = "mansus_grasp"
-	item_state = "mansus"
+	desc = "Ржавая гниющая ладонь, разлагающая чужую плоть изнутри."
+	icon = 'modular_bluemoon/icons/obj/heretic_rust_fx.dmi'
+	icon_state = "decay_grasp"
+	item_state = "decay_grasp"
+	lefthand_file = 'modular_bluemoon/icons/obj/heretic_rust_fx_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/obj/heretic_rust_fx_righthand.dmi'
 	catchphrase = "SKILI'EDUONIS"
 
 /obj/item/melee/touch_attack/grasp_of_decay/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
@@ -713,7 +717,8 @@
 		return
 	if(!heretic_can_affect(user, target))
 		return ..()
-	playsound(user, 'sound/effects/curseattack.ogg', 75, TRUE)
+	playsound(user, 'modular_bluemoon/sound/heretic/rust_decay.ogg', 70, TRUE)
+	new /obj/effect/temp_visual/heretic_oldpath/rust(get_turf(victim))
 	victim.Knockdown(2 SECONDS)
 	victim.apply_status_effect(/datum/status_effect/corrosion_curse/lesser)
 	log_combat(user, victim, "коснулся хваткой распада")
@@ -735,7 +740,7 @@
 	action_background_icon_state = "bg_ecult"
 
 /obj/effect/proc_holder/spell/pointed/nightwatchers_rite/cast(list/targets, mob/user)
-	playsound(user, 'modular_bluemoon/sound/heretic/ash_burst.ogg', 80, TRUE)
+	playsound(user, 'modular_bluemoon/sound/heretic/ash_rite.ogg', 80, TRUE)
 	var/list/magic_checks = list()
 	for(var/X in targets)
 		var/T
@@ -781,7 +786,7 @@
 			L.adjust_fire_stacks(1)
 			L.IgniteMob()
 
-		new /obj/effect/hotspot(T)
+		new /obj/effect/temp_visual/heretic_ash_flame(T)
 		T.hotspot_expose(700,50,1)
 		// deals damage to mechs
 		for(var/obj/vehicle/sealed/mecha/M in T.contents)
@@ -792,8 +797,12 @@
 		sleep(1.5)
 
 /obj/effect/proc_holder/spell/targeted/shapeshift/eldritch
+	name = "Сменить облик"
+	desc = "Примите облик мыши, корги, карпа, секбота, лисы или кошки и пользуйтесь его природными способностями. Выбор делается один раз."
 	invocation_type = "none"
 	clothes_req = FALSE
+	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
+	action_icon_state = "flesh_shapeshift"
 	action_background_icon_state = "bg_ecult"
 	sound = 'sound/magic/enter_blood.ogg'
 	possible_shapes = list(/mob/living/simple_animal/mouse,\
@@ -805,8 +814,11 @@
 
 /obj/effect/proc_holder/spell/targeted/emplosion/eldritch
 	name = "Энергетический импульс"
+	desc = "Визг сшитой плоти бьёт электромагнитным импульсом по технике в 4 клетках вокруг выбранной цели."
 	invocation_type = "none"
 	clothes_req = FALSE
+	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
+	action_icon_state = "flesh_emp"
 	action_background_icon_state = "bg_ecult"
 	range = -1
 	include_user = TRUE
@@ -851,7 +863,7 @@
 		sleep(0.3 SECONDS)
 
 /obj/effect/proc_holder/spell/aoe_turf/fire_cascade/proc/cascade_opening(turf/origin, atom/centre)
-	playsound(origin, 'sound/items/welder.ogg', 75, TRUE)
+	playsound(origin, 'modular_bluemoon/sound/heretic/ash_burst.ogg', 75, TRUE)
 
 /obj/effect/proc_holder/spell/aoe_turf/fire_cascade/big
 	desc = "Выпустите волну пламени на 10 клеток вокруг себя: она поджигает врагов и наносит им 15 ожогов. Перезарядка 30 секунд."
@@ -859,9 +871,13 @@
 	range = HERETIC_ASH_CASCADE_RANGE
 
 /obj/effect/proc_holder/spell/targeted/telepathy/eldritch
+	name = "Телепатия"
+	desc = "Мысленно передайте сообщение выбранному существу в 7 клетках."
 	invocation = ""
 	invocation_type = "whisper"
 	clothes_req = FALSE
+	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
+	action_icon_state = "flesh_telepathy"
 	action_background_icon_state = "bg_ecult"
 
 /obj/effect/proc_holder/spell/targeted/fire_sworn
@@ -876,7 +892,7 @@
 	include_user = TRUE
 	charge_max = HERETIC_ASH_FIRE_SWORN_COOLDOWN
 	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
-	action_icon_state = "fire_ring"
+	action_icon_state = "fire_oath"
 	///how long it lasts
 	var/duration = HERETIC_ASH_FIRE_SWORN_DURATION
 	///who casted it right now
@@ -893,6 +909,7 @@
 	drop_ring_visual()
 	ring_visual = new(null)
 	user.add_vis_on_floor(ring_visual)
+	playsound(user, HERETIC_ASH_OATH_SOUND, 60, TRUE)
 	START_PROCESSING(SSfastprocess, src)
 	addtimer(CALLBACK(src, PROC_REF(remove), user), duration, TIMER_OVERRIDE|TIMER_UNIQUE)
 
@@ -956,14 +973,13 @@
 /obj/effect/temp_visual/cleave
 	icon = 'modular_bluemoon/icons/obj/heretic_feedback.dmi'
 	icon_state = "cleave"
-	color = "#ff7a4a"
 	duration = 12
 
 /obj/effect/temp_visual/eldritch_smoke
 	icon = 'modular_bluemoon/icons/obj/heretic_feedback.dmi'
-	icon_state = "smoke"
-	color = "#b5a38e"
-	duration = 12
+	icon_state = "blade_shatter"
+	duration = 9
+	randomdir = FALSE
 
 /obj/effect/proc_holder/spell/targeted/fiery_rebirth
 	heretic_stun_check = TRUE
@@ -991,6 +1007,7 @@
 		if(!heretic_can_affect(user, victim, chargecost = 0))
 			continue
 		victim.adjustFireLoss(15)
+		heretic_ash_drain(victim, living_user)
 		victims_drained++
 		if(victims_drained >= 4)
 			break
@@ -998,7 +1015,8 @@
 		heretic_revert_cast(user, "Рядом нет доступного пламени, из которого можно вытянуть жар.")
 		return
 	heretic_heal_damage(living_user, 10 * victims_drained, 10 * victims_drained)
-	playsound(user, 'modular_bluemoon/sound/heretic/ash_burst.ogg', 60, TRUE)
+	heretic_ash_rebirth_flare(living_user)
+	playsound(user, 'modular_bluemoon/sound/heretic/ash_rebirth.ogg', 60, TRUE)
 
 /obj/effect/proc_holder/spell/pointed/manse_link
 	name = "Связь Мансуса"
@@ -1037,8 +1055,8 @@
 /datum/action/innate/mansus_speech
 	name = "Связь Мансуса"
 	desc = "Отправьте мысленное сообщение всем участникам вашей связи Мансуса."
-	button_icon_state = "link_speech"
-	icon_icon = 'icons/mob/actions/actions_slime.dmi'
+	button_icon_state = "mansus_speech"
+	icon_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
 	background_icon_state = "bg_ecult"
 	var/mob/living/simple_animal/hostile/eldritch/raw_prophet/originator
 
@@ -1074,8 +1092,15 @@
 			to_chat(dead_mob, "[link] [msg]")
 
 /obj/effect/proc_holder/spell/pointed/trigger/blind/eldritch
+	name = "Ослепление"
+	desc = "Ненадолго ослепляет выбранную цель в 10 клетках."
+	message = "<span class='notice'>Глаза пронзает боль!</span>"
+	active_msg = "Вы готовитесь ослепить цель..."
+	deactive_msg = "Вы опускаете взгляд."
 	range = 10
 	invocation = "AK'LIS"
+	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
+	action_icon_state = "flesh_blind"
 	action_background_icon_state = "bg_ecult"
 
 /obj/effect/proc_holder/spell/pointed/trigger/mute/eldritch
@@ -1116,23 +1141,26 @@
 /obj/effect/temp_visual/dir_setting/entropic
 	icon = 'modular_bluemoon/icons/obj/heretic_plume.dmi'
 	icon_state = "entropic_plume"
-	duration = 2.8 SECONDS
+	duration = 1.6 SECONDS
 
+/// Холст 160x128 нарисован на юг и поворачивается вокруг своего центра, поэтому смещения у сторон разные.
 /obj/effect/temp_visual/dir_setting/entropic/setDir(dir)
 	. = ..()
 	switch(dir)
 		if(NORTH)
 			pixel_x = -64
+			pixel_y = 8
 			transform = matrix(180, MATRIX_ROTATE)
 		if(SOUTH)
 			pixel_x = -64
-			pixel_y = -128
+			pixel_y = -104
 		if(EAST)
-			pixel_y = -64
+			pixel_x = -8
+			pixel_y = -48
 			transform = matrix(-90, MATRIX_ROTATE)
 		if(WEST)
-			pixel_y = -64
-			pixel_x = -128
+			pixel_x = -120
+			pixel_y = -48
 			transform = matrix(90, MATRIX_ROTATE)
 
 /obj/effect/temp_visual/glowing_rune
@@ -1165,6 +1193,10 @@
 	charge_max = 300
 	cone_levels = 5
 	respect_density = TRUE
+	sound = HERETIC_RUST_PLUME_SOUND
+
+/obj/effect/proc_holder/spell/cone/staggered/entropic_plume/playMagSound()
+	playsound(get_turf(usr), sound, 60, TRUE)
 
 /obj/effect/proc_holder/spell/cone/staggered/entropic_plume/cast(list/targets,mob/user = usr)
 	. = ..()
@@ -1219,16 +1251,18 @@
 		var/mob/living/simple_animal/hostile/eldritch/armsy/prime/outside = new(user.loc, !length(knowledge.shed_form_health), segment_length)
 		outside.allow_pulling = TRUE
 		var/mob/living/simple_animal/hostile/eldritch/armsy/previous
+		var/index = 0
 		for(var/saved_health in knowledge.shed_form_health)
 			var/mob/living/simple_animal/hostile/eldritch/armsy/segment = outside
 			if(previous)
 				segment = new /mob/living/simple_animal/hostile/eldritch/armsy/prime(user.loc, FALSE)
 				segment.front = previous
 				previous.back = segment
-				segment.icon_state = "armsy_mid"
+				segment.icon_state = segment.mid_phases[index % length(segment.mid_phases) + 1]
 				segment.icon_living = segment.icon_state
 			segment.adjustBruteLoss(max(0, segment.maxHealth - saved_health))
 			previous = segment
+			index++
 		if(previous?.front)
 			previous.icon_state = "armsy_end"
 			previous.icon_living = previous.icon_state
@@ -1313,7 +1347,6 @@
 /obj/effect/temp_visual/voidin
 	icon = 'modular_bluemoon/icons/obj/heretic_void.dmi'
 	icon_state = "void_blink_in"
-	alpha = 150
 	duration = 6
 	pixel_x = -32
 	pixel_y = -32
@@ -1321,7 +1354,6 @@
 /obj/effect/temp_visual/voidout
 	icon = 'modular_bluemoon/icons/obj/heretic_void.dmi'
 	icon_state = "void_blink_out"
-	alpha = 150
 	duration = 6
 	pixel_x = -32
 	pixel_y = -32
@@ -1342,7 +1374,7 @@
 	action_icon_state = "voidpull"
 
 /obj/effect/proc_holder/spell/targeted/void_pull/cast(list/targets, mob/user)
-	playsound(user, 'sound/magic/voidpull.ogg', 75, TRUE)
+	playsound(user, HERETIC_VOID_PULL_SOUND, 55, TRUE)
 	new /obj/effect/temp_visual/voidin(user.drop_location())
 	for(var/mob/living/victim in view(3, user))
 		if(!isturf(victim.loc) || victim.anchored || victim.buckled || !heretic_can_affect(user, victim))
@@ -1368,12 +1400,11 @@
 	school = "transmutation"
 	charge_max = 100
 	clothes_req = FALSE
-	invocation = "BOOGIE WOOGIE"
 	invocation_type = "none"
 	range = 15
 	message = "Мир вокруг вас внезапно меняется!"
 	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
-	action_icon_state = "mansus_link"
+	action_icon_state = "void_applause"
 	action_background_icon_state = "bg_ecult"
 
 /obj/effect/proc_holder/spell/pointed/boogie_woogie/cast(list/targets, mob/user)
@@ -1391,9 +1422,10 @@
 		heretic_revert_cast(user, "Пространство здесь закреплено: телепортация не работает.")
 		return
 	user.emote("clap1")
-	playsound(user, 'sound/magic/voidblink.ogg', 75, TRUE)
-	new /obj/effect/temp_visual/voidswap(user_turf)
-	new /obj/effect/temp_visual/voidswap(victim_turf)
+	playsound(user, HERETIC_VOID_APPLAUSE_SOUND, 60, TRUE)
+	playsound(victim, HERETIC_VOID_APPLAUSE_SOUND, 40, TRUE)
+	new /obj/effect/temp_visual/heretic_void_swap(user_turf)
+	new /obj/effect/temp_visual/heretic_void_swap(victim_turf)
 	if(heretic_can_affect(user, victim, chargecost = 0))
 		victim.apply_status_effect(/datum/status_effect/heretic_void_chill)
 
@@ -1422,23 +1454,22 @@
 	clothes_req = FALSE
 	invocation_type = "none"
 	range = 0
-	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
-	action_icon_state = "voidpull"
+	action_icon = 'modular_bluemoon/icons/obj/heretic_void_fx.dmi'
+	action_icon_state = "void_domain"
 	action_background_icon_state = "bg_ecult"
 	var/obj/effect/domain_expansion/active_domain
 
 /obj/effect/proc_holder/spell/aoe_turf/domain_expansion/cast(list/targets, mob/user = usr)
-	var/mutable_appearance/halo = mutable_appearance('icons/effects/effects.dmi', "at_shield2", EFFECTS_LAYER)
-	user.add_overlay(halo)
+	var/obj/effect/temp_visual/heretic_void_gather/gather = new(get_turf(user))
 	var/completed = do_mob(user, user, 3 SECONDS)
-	user.cut_overlay(halo)
 	if(!completed || QDELETED(src) || !IS_HERETIC(user))
+		gather.dissolve()
 		if(!QDELETED(src))
 			heretic_revert_cast(user, "Сосредоточение прервано: 3 секунды нужно стоять на месте, не получая оглушения.")
 		return
 	QDEL_NULL(active_domain)
 	user.emote("clap1")
-	playsound(user, 'sound/magic/domain.ogg', 85, TRUE)
+	playsound(user, HERETIC_VOID_DOMAIN_SOUND, 75, TRUE)
 	active_domain = new(get_turf(user), 3, 20 SECONDS, list(user))
 	RegisterSignal(active_domain, COMSIG_PARENT_QDELETING, PROC_REF(on_domain_deleted))
 

@@ -201,8 +201,8 @@
 	book_tint = "#ffffff"
 	book_rune = "sigil_echo"
 	rune_inscription = "echo_bell"
-	book_open_sound = 'modular_bluemoon/sound/heretic/echo_cast.ogg'
-	book_page_sound = 'modular_bluemoon/sound/heretic/echo_grasp.ogg'
+	book_open_sound = 'modular_bluemoon/sound/heretic/book_echo_open.ogg'
+	book_page_sound = 'modular_bluemoon/sound/heretic/book_echo_page.ogg'
 
 /obj/item/forbidden_book/echo
 	book_path = PATH_ECHO
@@ -219,8 +219,8 @@
 	book_ink = "#c8a66c"
 	book_rune = "sigil_sand"
 	rune_inscription = "sand_hourglass"
-	book_open_sound = 'modular_bluemoon/sound/heretic/sand_cast.ogg'
-	book_page_sound = 'modular_bluemoon/sound/heretic/sand_grasp.ogg'
+	book_open_sound = 'modular_bluemoon/sound/heretic/book_sand_open.ogg'
+	book_page_sound = 'modular_bluemoon/sound/heretic/book_sand_page.ogg'
 
 /datum/heretic_path/wax
 	rune_inscription_icon = 'modular_bluemoon/icons/obj/ritual_inscriptions_extended.dmi'
@@ -234,8 +234,8 @@
 	book_ink = "#d8c9a6"
 	book_rune = "sigil_wax"
 	rune_inscription = "wax_seal"
-	book_open_sound = 'modular_bluemoon/sound/heretic/wax_cast.ogg'
-	book_page_sound = 'modular_bluemoon/sound/heretic/wax_grasp.ogg'
+	book_open_sound = 'modular_bluemoon/sound/heretic/book_wax_open.ogg'
+	book_page_sound = 'modular_bluemoon/sound/heretic/book_wax_page.ogg'
 
 /obj/item/forbidden_book/sand
 	book_path = PATH_SAND
@@ -372,11 +372,13 @@
 	var/datum/heretic_path/path = GLOB.heretic_paths[book_path]
 	if(!book_open || !path)
 		return
-	var/mutable_appearance/seal = mutable_appearance('modular_bluemoon/icons/obj/heretic_alerts.dmi', path.book_rune, ABOVE_OBJ_LAYER)
+	var/mutable_appearance/seal = mutable_appearance('modular_bluemoon/icons/obj/heretic_books.dmi', "[path.book_cover]_seal", ABOVE_OBJ_LAYER)
 	seal.appearance_flags = RESET_COLOR
-	seal.transform = matrix() * 0.6
-	seal.pixel_y = 7
 	. += seal
+	var/mutable_appearance/shine = mutable_appearance('modular_bluemoon/icons/obj/heretic_books.dmi', "seal_shine", ABOVE_OBJ_LAYER)
+	shine.appearance_flags = RESET_COLOR
+	shine.color = path.book_ink
+	. += shine
 	if(book_path == PATH_COSMIC)
 		var/mutable_appearance/orbit = mutable_appearance('modular_bluemoon/icons/obj/heretic_feedback.dmi', "cosmic_ring", ABOVE_OBJ_LAYER)
 		orbit.pixel_y = 10
