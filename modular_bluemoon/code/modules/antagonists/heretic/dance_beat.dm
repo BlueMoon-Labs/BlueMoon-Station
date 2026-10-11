@@ -39,6 +39,8 @@ GLOBAL_LIST_INIT(heretic_dance_phrase_period, list(1, 2, 3, 4, 5, 6, 7))
 	/// Шаги фигуры поворотами от направления первого шага; null - фигура не из шагов.
 	var/list/figure
 	var/figure_name
+	/// Что фигура сделала - коротко для зрителей; на Тарантелле - над укушенным.
+	var/crowd_text
 	var/passive_text
 	var/accent_text
 	var/figure_text
@@ -104,6 +106,7 @@ GLOBAL_LIST_INIT(heretic_dance_phrase_period, list(1, 2, 3, 4, 5, 6, 7))
 	color = "#e0b27a"
 	figure = list(0, -90, 180, 90)
 	figure_name = "квадрат"
+	crowd_text = "уводит соседа в вальс"
 	passive_text = "шаги скользят: вы быстрее"
 	accent_text = "цель перелетает на другую сторону от вас, теряет ориентацию на 2-4 секунды и 15 выносливости"
 	figure_text = "шаг вперёд, вправо, назад, влево - 4 секунды ведёте соседнего врага: он повторяет каждый ваш шаг"
@@ -144,6 +147,7 @@ GLOBAL_LIST_INIT(heretic_dance_phrase_period, list(1, 2, 3, 4, 5, 6, 7))
 	color = "#d13b3b"
 	figure = list(0, 180, 0)
 	figure_name = "очо"
+	crowd_text = "готовит выпад клинком"
 	passive_text = "удары в долю +6 ушибов, точные ещё и 12 урона выносливости"
 	accent_text = "кортэ: цель падает на 1,5 секунды, не чаще раза в 6 секунд, иначе теряет 15 выносливости"
 	figure_text = "шаг в сторону, обратно, снова в сторону - следующий удар клинком выпадом с 2 клеток"
@@ -195,6 +199,7 @@ GLOBAL_LIST_INIT(heretic_dance_phrase_period, list(1, 2, 3, 4, 5, 6, 7))
 	meter = 6
 	color = "#8f1d21"
 	figure_name = "укус"
+	crowd_text = "срывается в пляску"
 	passive_text = "каждое точное действие лечит 2"
 	accent_text = "5 ушибов за стак тарантизма, стаки остаются; двойной акцент бьёт вдвое и сжигает их"
 	figure_text = "4 точных удара подряд по одной цели - она 4 секунды пляшет, не владея ногами"
@@ -250,6 +255,7 @@ GLOBAL_LIST_INIT(heretic_dance_phrase_period, list(1, 2, 3, 4, 5, 6, 7))
 	color = "#f07a3a"
 	figure = list(0, 0, 180, 180)
 	figure_name = "линия"
+	crowd_text = "слепит лентами и прорывается"
 	passive_text = "столы и лежачие не задерживают вас"
 	accent_text = "мах ногой: 20 выносливости и отброс на 2 клетки, одну цель не чаще раза в 6 секунд"
 	figure_text = "два шага вперёд, два назад - медные ленты слепят всех в 2 клетках, а вы рывком проходите 3 клетки сквозь толпу"
@@ -292,6 +298,7 @@ GLOBAL_LIST_INIT(heretic_dance_phrase_period, list(1, 2, 3, 4, 5, 6, 7))
 	color = "#e8dccb"
 	figure = list(0, 0, 0, 0)
 	figure_name = "процессия"
+	crowd_text = "тянет соседей в хоровод"
 	passive_text = "заражённые видят вместо вас скелет, враги в 5 клетках вязнут на каждой доле"
 	accent_text = "колокол: цель теряет 15 выносливости, она и каждый заражённый в 7 клетках делают шаг к вам"
 	figure_text = "четыре шага по прямой - хоровод на 3 секунды"
@@ -545,6 +552,7 @@ GLOBAL_LIST_INIT(heretic_dance_phrase_period, list(1, 2, 3, 4, 5, 6, 7))
 
 /datum/eldritch_knowledge/base_dance/proc/apply_style(mob/living/user, new_style_id, mode)
 	pending_style_id = null
+	passive_held_to_bar = FALSE
 	set_passive(FALSE)
 	if(style_id != new_style_id)
 		previous_style_id = style_id
@@ -569,7 +577,7 @@ GLOBAL_LIST_INIT(heretic_dance_phrase_period, list(1, 2, 3, 4, 5, 6, 7))
 	update_style_status()
 	notify_resource_changed()
 	refresh_hints()
-	playsound(user, style.switch_sound, 45, TRUE)
+	playsound(user, style.switch_sound, 45, FALSE)
 	switch(mode)
 		if(DANCE_SWITCH_LINKED)
 			to_chat(user, span_eldritch("Стиль: [style.name]. Связка в сильную долю: Такт сохранён, следующий акцент удвоен."))
@@ -586,12 +594,31 @@ GLOBAL_LIST_INIT(heretic_dance_phrase_period, list(1, 2, 3, 4, 5, 6, 7))
 	beat_ds = bolero_on ? HERETIC_DANCE_BOLERO_BEAT : style.beat_ds
 	meter = bolero_on ? HERETIC_DANCE_BOLERO_METER : style.meter
 
-/// Подпись стиля в меню -> его id: имя и роль.
+/// Подпись стиля в меню -> его id: имя, роль и то, что в нём меняется по времени и дальности.
 /datum/eldritch_knowledge/base_dance/proc/style_choices()
 	. = list()
 	for(var/id in known_styles())
-		var/datum/heretic_dance_style/style = GLOB.heretic_dance_styles[id]
-		.["[style.name] - [style.role]"] = id
+		.[style_label(id)] = id
+
+/datum/eldritch_knowledge/base_dance/proc/style_label(id)
+	var/datum/heretic_dance_style/style = GLOB.heretic_dance_styles[id]
+	. = "[style.name] - [style.role]. Приглашение [invite_reach_text(id)]"
+	if(length(style.figure))
+		. += ", фигура раз в [heretic_dance_seconds(figure_cooldown_ds(id))] с"
+
+/// Фигура остывает одинаковое число долей, поэтому в секундах это время у каждого стиля своё.
+/datum/eldritch_knowledge/base_dance/proc/figure_cooldown_ds(id = style_id)
+	return DANCE_FIGURE_COOLDOWN_BEATS * style_beat_ds(id)
+
+/datum/eldritch_knowledge/base_dance/proc/style_beat_ds(id = style_id)
+	if(bolero_on)
+		return HERETIC_DANCE_BOLERO_BEAT
+	var/datum/heretic_dance_style/style = GLOB.heretic_dance_styles[id]
+	return style.beat_ds
+
+/// Секунды для подсказок: одна цифра после запятой.
+/proc/heretic_dance_seconds(ds)
+	return replacetext("[round(ds / (1 SECONDS), 0.1)]", ".", ",")
 
 /// Ни боя, ни Такта, ни партнёров, ни Болеро: звучит только сердце, шаги не складываются в фигуры.
 /datum/eldritch_knowledge/base_dance/proc/music_silent()
@@ -653,6 +680,9 @@ GLOBAL_LIST_INIT(heretic_dance_phrase_period, list(1, 2, 3, 4, 5, 6, 7))
 	if(strong)
 		beat_origin = world.time - beat_index * beat_ds
 		sync_bar()
+		if(passive_held_to_bar)
+			passive_held_to_bar = FALSE
+			update_passive()
 	var/datum/heretic_dance_style/style = current_style()
 	if(dance_body.stat != DEAD)
 		decay_takt()
@@ -800,7 +830,7 @@ GLOBAL_LIST_INIT(heretic_dance_phrase_period, list(1, 2, 3, 4, 5, 6, 7))
 	update_passive()
 
 /datum/eldritch_knowledge/base_dance/proc/update_passive()
-	set_passive(combat_resource >= HERETIC_DANCE_PASSIVE_TAKT || bolero_keeps_passive(style_id))
+	set_passive(combat_resource >= HERETIC_DANCE_PASSIVE_TAKT || passive_held_to_bar || bolero_keeps_passive(style_id))
 
 /datum/eldritch_knowledge/base_dance/proc/set_passive(active)
 	if(passive_active == active || QDELETED(dance_body))
@@ -942,7 +972,7 @@ GLOBAL_LIST_INIT(heretic_dance_phrase_period, list(1, 2, 3, 4, 5, 6, 7))
 		return TRUE
 	var/step_beat = timed_beat_total(HERETIC_DANCE_ON_BEAT)
 	if(step_beat < figure_ready_beat)
-		user.balloon_alert(user, "до фигуры долей: [figure_ready_beat - step_beat]")
+		user.balloon_alert(user, "фигура через [heretic_dance_seconds((figure_ready_beat - step_beat) * beat_ds)] с")
 		SEND_SIGNAL(src, COMSIG_HERETIC_DANCE_EVENT, "figure_cooldown", user, figure_ready_beat - step_beat)
 		return FALSE
 	if(!style.flourish(src, user))
@@ -1004,7 +1034,7 @@ GLOBAL_LIST_INIT(heretic_dance_phrase_period, list(1, 2, 3, 4, 5, 6, 7))
 	if(!place)
 		return
 	new /obj/effect/temp_visual/heretic_dance/accent(place, style.id)
-	playsound(place, pick(style.accent_sounds), 55, TRUE)
+	playsound(place, pick(style.accent_sounds), 55, FALSE)
 
 /// Кульминация фигуры видна и слышна всем рядом: свой рисунок, свой инструмент и движение тела; focus - на ком она случилась.
 /datum/eldritch_knowledge/base_dance/proc/flourish_fx(mob/living/user, datum/heretic_dance_style/style, atom/focus)
@@ -1015,6 +1045,15 @@ GLOBAL_LIST_INIT(heretic_dance_phrase_period, list(1, 2, 3, 4, 5, 6, 7))
 	playsound(place, style.figure_sound, 60, FALSE)
 	style.figure_pose(src, user)
 	user.visible_message(span_danger("[user] завершает фигуру «[style.figure_name]»!"), span_eldritch("Фигура «[style.figure_name]»!"))
+	announce_to_crowd(user, style.crowd_text, focus)
+
+/// Зрители видят над танцором или его целью, что сделала фигура или номер; танцору хватает своих подсказок.
+/datum/eldritch_knowledge/base_dance/proc/announce_to_crowd(mob/living/user, text, atom/focus)
+	var/atom/speaker = focus || user
+	if(!text || QDELETED(speaker))
+		return
+	speaker.balloon_alert_to_viewers(text, ignored_mobs = list(user))
+	SEND_SIGNAL(src, COMSIG_HERETIC_DANCE_EVENT, "crowd", speaker, text)
 
 /// pulse - удар барабана в долю; без него только обновляются подписи.
 /datum/eldritch_knowledge/base_dance/proc/pulse_hud(strong, pulse = TRUE)
@@ -1042,7 +1081,7 @@ GLOBAL_LIST_INIT(heretic_dance_phrase_period, list(1, 2, 3, 4, 5, 6, 7))
 	var/datum/heretic_dance_routine/offered = dance.offered_routine()
 	var/datum/heretic_dance_style/offered_style = offered && GLOB.heretic_dance_styles[offered.to_style]
 	color = style.color
-	desc = "[style.name], доля [dance.beat_ds / 10] с, [dance.meter] в такте, сейчас [count]-я. Такт [dance.combat_resource] из [HERETIC_DANCE_TAKT_MAX].[pending ? " С сильной доли вступит [pending.name]." : ""][length(style.figure) ? " Фигура [figure_wait ? "готова через [figure_wait]" : "готова"]." : ""][offered ? " Номер «[offered.name]»: связка в [offered_style.name]." : ""] Нажмите, чтобы сменить стиль; Ctrl+клик - прошлый стиль."
+	desc = "[style.name], доля [heretic_dance_seconds(dance.beat_ds)] с, [dance.meter] в такте, сейчас [count]-я. Такт [dance.combat_resource] из [HERETIC_DANCE_TAKT_MAX].[pending ? " С сильной доли вступит [pending.name]." : ""][length(style.figure) ? " Фигура [figure_wait ? "готова через [heretic_dance_seconds(figure_wait * dance.beat_ds)] с" : "готова"]." : ""] Приглашение [dance.invite_reach_text()].[offered ? " Номер «[offered.name]»: связка в [offered_style.name]." : ""] Нажмите, чтобы сменить стиль; Ctrl+клик - прошлый стиль."
 	cut_overlays()
 	var/mutable_appearance/counter = mutable_appearance(appearance_flags = RESET_COLOR | RESET_TRANSFORM | KEEP_APART)
 	counter.maptext = MAPTEXT("<span style='color:[on_strong ? "#ffe9b0" : "#d8c8b8"]'>[on_strong ? "<b>[count]</b>" : count]/[dance.meter]</span>")
