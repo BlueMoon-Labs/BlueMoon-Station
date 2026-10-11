@@ -12,21 +12,19 @@
 
 /obj/effect/temp_visual/heretic_oldpath/ash
 	icon_state = "cloud_swirl"
-	color = "#ff8b3d"
 	duration = 10
 	light_range = 2
 	light_color = "#ff762e"
 
 /obj/effect/temp_visual/heretic_oldpath/ash/trail
 	icon_state = "smoke"
-	color = "#b5a38e"
 	duration = 15
 	layer = BELOW_MOB_LAYER
 	light_range = 0
 
 /obj/effect/temp_visual/heretic_ash_flame
-	icon = 'icons/effects/turf_fire.dmi'
-	icon_state = "red_big"
+	icon = 'modular_bluemoon/icons/obj/heretic_effects.dmi'
+	icon_state = "ash_flame"
 	duration = 0.6 SECONDS
 	randomdir = FALSE
 
@@ -59,31 +57,67 @@
 #undef HERETIC_ASH_FLAME_EBB_SINK
 
 /obj/effect/temp_visual/heretic_oldpath/rust
-	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
-	icon_state = "sigil_rust"
-	duration = 12
+	icon = 'modular_bluemoon/icons/obj/heretic_rust_fx.dmi'
+	icon_state = "rust_bloom"
+	duration = 10
 	layer = BELOW_MOB_LAYER
 
 /obj/effect/temp_visual/heretic_oldpath/flesh
-	icon_state = "cleave"
-	color = "#ff4067"
+	icon_state = "flesh_rend"
 
 /obj/effect/temp_visual/heretic_oldpath/flesh/mend
-	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
-	icon_state = "sigil_flesh"
+	icon = 'modular_bluemoon/icons/obj/heretic_oldpath_effects.dmi'
+	icon_state = "flesh_mend"
 	color = null
 	duration = 15
 	layer = BELOW_MOB_LAYER
 
+#define HERETIC_VOID_GRASP_HOLD (0.8 SECONDS)
+#define HERETIC_VOID_GRASP_FADE (0.3 SECONDS)
+
+/// Ледяная звезда прорастает, обрастает инеем и раскалывается; рисунок в родном пикселе, без масштаба.
 /obj/effect/temp_visual/heretic_oldpath/void
-	icon_state = "ring_leader_effect"
-	color = "#abedff"
-	duration = 15
+	icon_state = "void_grasp"
+	duration = HERETIC_VOID_GRASP_HOLD + HERETIC_VOID_GRASP_FADE
+	light_range = 1
+	light_color = "#abedff"
 
 /obj/effect/temp_visual/heretic_oldpath/void/Initialize(mapload)
 	. = ..()
-	transform = matrix() * 1.8
-	animate(src, transform = matrix() * 0.2, alpha = 0, time = duration)
+	animate(src, alpha = 255, time = HERETIC_VOID_GRASP_HOLD)
+	animate(alpha = 0, time = HERETIC_VOID_GRASP_FADE, easing = SINE_EASING | EASE_IN)
+
+#undef HERETIC_VOID_GRASP_HOLD
+#undef HERETIC_VOID_GRASP_FADE
+
+GLOBAL_LIST_INIT(heretic_void_mark_burst_sounds, list(
+	'modular_bluemoon/sound/heretic/void_mark_burst_1.ogg',
+	'modular_bluemoon/sound/heretic/void_mark_burst_2.ogg',
+))
+
+/// Взрыв метки старого пути: свой рисунок у каждого пути, не повторяет вспышку хватки.
+/obj/effect/temp_visual/heretic_mark_burst
+	icon = 'modular_bluemoon/icons/obj/heretic_feedback.dmi'
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	layer = ABOVE_MOB_LAYER
+	randomdir = FALSE
+	duration = 0.8 SECONDS
+
+/obj/effect/temp_visual/heretic_mark_burst/ash
+	icon_state = "ash_mark_burst"
+	light_range = 2
+	light_color = "#ff762e"
+
+/obj/effect/temp_visual/heretic_mark_burst/rust
+	icon_state = "rust_mark_burst"
+
+/obj/effect/temp_visual/heretic_mark_burst/flesh
+	icon_state = "flesh_mark_burst"
+
+/obj/effect/temp_visual/heretic_mark_burst/void
+	icon_state = "void_mark_burst"
+	light_range = 1
+	light_color = "#abedff"
 
 /// Новые пути различаются силуэтом: лезвия, расколотое зеркало и звёздная вспышка.
 /obj/effect/temp_visual/heretic_grasp
@@ -98,12 +132,6 @@
 /obj/effect/temp_visual/heretic_grasp/moon
 	icon_state = "moon_grasp"
 	duration = 0.8 SECONDS
-
-/obj/effect/temp_visual/heretic_grasp/moon/Initialize(mapload)
-	. = ..()
-	color = color_matrix_multiply(color_matrix_saturation(0), color_hex2color_matrix("#d9d5ff"))
-	transform = matrix() * 1.35
-	animate(src, alpha = 0, time = duration)
 
 /obj/effect/temp_visual/heretic_grasp/cosmic
 	icon = 'modular_bluemoon/icons/obj/heretic_grasp_large.dmi'
