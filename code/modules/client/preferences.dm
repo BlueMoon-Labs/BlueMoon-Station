@@ -2141,10 +2141,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							else
 								dat += "<b>[breasts_color_label]:</b></a><BR>"
 								dat += "<span style='border: 1px solid #161616; background-color: #[features["breasts_color"]];'><font color='[color_hex2num(features["breasts_color"]) < 200 ? "FFFFFF" : "000000"]'>#[features["breasts_color"]]</font></span> <a href='?_src_=prefs;preference=breasts_color;task=input'>Change</a><br>"
-							dat += "<b>[has_colorized_nipples_label]:</b> <a style='display:block;width:50px' href='?_src_=prefs;preference=breasts_nipples'>[features["breasts_nipples"] ? "Yes" : "No"]</a>"
+							dat += "<b>[has_colorized_nipples_label]:</b> <a style='display:block;width:50px' href='?_src_=prefs;preference=breasts_nipples'>[features["breasts_nipples"] ? yes_label : no_label]</a>"
 							if(features["breasts_nipples"])
 								dat += "<b>[nipples_color_label]:</b> </a><BR>"
-								dat += "<span style='border: 1px solid #161616; background-color: #[features["breasts_nipples_color"]];'><font color='[color_hex2num(features["breasts_nipples_color"]) < 200 ? "FFFFFF" : "000000"]'>#[features["breasts_nipples_color"]]</font></span> <a href='?_src_=prefs;preference=breasts_nipples_color;task=input'>Change</a><br>"
+								dat += "<span style='border: 1px solid #161616; background-color: #[features["breasts_nipples_color"]];'><font color='[color_hex2num(features["breasts_nipples_color"]) < 200 ? "FFFFFF" : "000000"]'>#[features["breasts_nipples_color"]]</font></span> <a href='?_src_=prefs;preference=breasts_nipples_color;task=input'>[change_label]</a><br>"
 							dat += "<b>[breasts_size_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=breasts_size;task=input'>[features["breasts_size"]]</a>"
 							dat += "<b>[breasts_shape_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=breasts_shape;task=input'>[features["breasts_shape"]]</a>"
 							dat += "<b>[breasts_visibility_label]:</b><a style='display:block;width:100px' href='?_src_=prefs;preference=breasts_visibility;task=input'>[features["breasts_visibility"]]</a>"
