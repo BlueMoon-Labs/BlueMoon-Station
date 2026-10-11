@@ -434,3 +434,40 @@
 		if(throw_target)
 			L.throw_at(throw_target, 2, 1)
 			to_chat(L, "<span class='userdanger'>Тяжелый кинетический импульс пули сбивает вас с ног и отбрасывает назад!</span>")
+
+/obj/item/gps/embed_gps/judgement_beacon_bomb
+	name = "Маячок-детонатор"
+	desc = "Миниатюрный скрытый заряд, внедренный под кожу. Дистанционно взрывается по радиосигналу револьвера или автоматически через 2 минуты."
+	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
+	icon_state = "bomb_beacon" 
+	
+	var/obj/item/gun/ballistic/revolver/judgement/my_gun 
+	var/mob/living/carbon/my_target 
+
+/obj/item/gps/embed_gps/judgement_beacon_bomb/Initialize(mapload)
+	. = ..()
+	src.lifespan = 2 MINUTES 
+	addtimer(CALLBACK(src, PROC_REF(auto_detonate)), src.lifespan)
+
+/obj/item/gps/embed_gps/judgement_beacon_bomb/proc/auto_detonate()
+	if(QDELETED(src))
+		return
+
+	if(my_target && !QDELETED(my_target))
+		to_chat(my_target, "<span class='userdanger'>Вживленный внутри вас маячок издает критический писк и детонирует!</span>")
+		
+		var/turf/T = get_turf(my_target)
+		if(T)
+			new /obj/effect/temp_visual/kinetic_blast(T)
+			playsound(T, 'sound/weapons/resonator_blast.ogg', 50, 1)
+		
+		my_target.ex_act(EXPLODE_LIGHT)
+		
+		if(my_gun && !QDELETED(my_gun))
+			my_gun.active_beacons -= my_target
+	else
+		var/turf/T = get_turf(src)
+		if(T)
+			new /obj/effect/particle_effect/smoke(T)
+	
+	qdel(src)
