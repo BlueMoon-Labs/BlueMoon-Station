@@ -13,14 +13,12 @@
 /obj/item/organ/genital/penis/get_features(mob/living/carbon/human/H)
 	. = ..()
 	original_fluid_id = fluid_id
-	fluid_max_volume += ((length - initial(length))*2.5)*(owner ? get_size(owner) : 1)
-	fluid_rate += ((length - initial(length))/10)*(owner ? get_size(owner) : 1)
 
 /obj/item/organ/genital/penis/climax_modify_size(mob/living/partner, obj/item/organ/genital/source_gen)
 	if(!(owner.client?.prefs.cit_toggles & PENIS_ENLARGEMENT))
 		return
 
-	var/datum/reagents/fluid_source = source_gen.climaxable(partner)
+	var/datum/reagents/fluid_source = source_gen?.climaxable(partner)
 	if(!fluid_source)
 		return
 
@@ -52,7 +50,8 @@
 	. = ..()
 	if(!. || !linked_organ)
 		return
-
+	if(locate(/obj/item/genital_equipment/condom) in contents)
+		return
 	// determine size stage
 	var/length_multiplier = 0
 	if(HAS_TRAIT(owner,TRAIT_MESSY))
@@ -81,6 +80,8 @@
 				if(!(H.client?.prefs.cit_toggles & CUM_ONTO))
 					continue
 				if(H != partner)
+					continue
+				if(H == owner && !HAS_TRAIT(owner,TRAIT_MESSY))
 					continue
 				LAZYADD(cumsplashed_items, object)	//у нас все равно сейчас только на хуманов накладывается оверлей
 		target_turf = get_step(target_turf, owner.dir)

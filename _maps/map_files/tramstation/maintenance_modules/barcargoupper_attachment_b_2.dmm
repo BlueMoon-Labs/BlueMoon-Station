@@ -1,0 +1,89 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"q" = (
+/turf/closed/wall,
+/area/maintenance/department/cargo)
+"z" = (
+/obj/effect/turf_decal/delivery,
+/obj/structure/ore_box,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"F" = (
+/obj/structure/rack,
+/obj/item/pickaxe{
+	pixel_x = -5
+	},
+/obj/item/pickaxe,
+/obj/item/shovel{
+	pixel_x = 4;
+	pixel_y = -3
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/mining_voucher,
+/obj/item/mining_voucher,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"L" = (
+/turf/template_noop,
+/area/template_noop)
+"M" = (
+/obj/modular_map_connector,
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Mining Maintenance Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/supply/mining,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"X" = (
+/obj/structure/rack,
+/obj/item/stack/ore/silver{
+	pixel_y = -5;
+	pixel_x = 5
+	},
+/obj/item/stack/ore/gold{
+	pixel_x = -8;
+	pixel_y = 5
+	},
+/obj/item/stack/ore/silver,
+/obj/item/storage/bag/ore,
+/obj/item/storage/bag/ore{
+	pixel_x = 3;
+	pixel_y = -1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+
+(1,1,1) = {"
+q
+q
+q
+q
+q
+"}
+(2,1,1) = {"
+L
+X
+z
+F
+q
+"}
+(3,1,1) = {"
+L
+b
+b
+b
+q
+"}
+(4,1,1) = {"
+L
+M
+L
+L
+L
+"}

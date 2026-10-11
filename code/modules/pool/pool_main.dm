@@ -172,7 +172,7 @@
 	if(user.a_intent != INTENT_HELP)
 		return FALSE
 	to_chat(user, "<span class='notice'>Вы начинаете выламывать [src]...</span>")
-	if(!I.use_tool(src, user, 3 SECONDS, volume = 80))
+	if(!I.use_tool(src, user, SUNKEN_TILE_WORK_TIME, volume = 80))
 		return FALSE
 	// BLUEMOON: the pool might have been replaced while we were working
 	if(!istype(src, /turf/open/pool))

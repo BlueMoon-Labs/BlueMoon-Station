@@ -520,6 +520,15 @@
 	if(!istype(parent))
 		return INITIALIZE_HINT_QDEL
 
+/obj/effect/abstract/eye_lighting/Destroy()
+	if(parent)
+		if(parent.eye_lighting)
+			parent.eye_lighting -= src
+		if(parent.on_mob == src)
+			parent.on_mob = null
+		parent = null
+	return ..()
+
 /obj/item/organ/eyes/insect
 	name = "insect eyes"
 	desc = "These eyes seem to have increased sensitivity to bright light, with no improvement to low light vision."

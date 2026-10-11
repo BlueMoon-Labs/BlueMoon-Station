@@ -72,7 +72,7 @@
 	var/turf/T = get_turf(parent)
 	if(!prob(20) || is_radiation_blocked(parent) || !T) // Кроме 20%-ного шанса, проверяем или есть защита на радиацию
 		return
-	radiation_pulse(T, strength, RAD_DISTANCE_COEFFICIENT*2, FALSE, can_contaminate)
+	radiation_pulse(T, strength, RAD_DISTANCE_COEFFICIENT*2, FALSE, can_contaminate, from_contamination = TRUE)
 
 /datum/component/radioactive/proc/check_dissipate()
 	if(strength <= RAD_BACKGROUND_RADIATION)

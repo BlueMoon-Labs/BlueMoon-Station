@@ -33,7 +33,7 @@
 /obj/item/assembly/flash/DoRevenantThrowEffects(atom/target)
 	AOE_flash()
 
-/obj/item/assembly/flash/update_icon(flash = FALSE)
+/obj/item/assembly/flash/update_icon(updates = ALL, flash = FALSE)
 	cut_overlays()
 	attached_overlays = list()
 	if(crit_fail)
@@ -152,7 +152,7 @@
 		var/mob/living/silicon/robot/R = M
 		if(!R.flash_protect)
 			log_combat(user, R, "flashed", src)
-			update_icon(1)
+			update_icon(ALL, TRUE)
 			R.DefaultCombatKnockdown(rand(80,120))
 			R.AdjustConfused(10 SECONDS, 0, 20 SECONDS)
 			R.flash_act(affect_silicon = 1)
@@ -246,7 +246,7 @@
 	addtimer(CALLBACK(src, PROC_REF(cooldown)), flashcd)
 	playsound(src, 'sound/weapons/flash.ogg', 100, TRUE)
 	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_BRIGHT_FLASH, get_turf(src), flasher || user)
-	update_icon(1)
+	update_icon(ALL, TRUE)
 	return TRUE
 
 /obj/item/assembly/flash/armimplant/Moved(oldLoc, dir)

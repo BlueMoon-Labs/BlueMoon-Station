@@ -78,6 +78,12 @@
 /obj/effect/anomaly/proc/detonate()
 	return
 
+///Аномалия - поле, а не предмет: этажом ниже она не падает, независимо от якоря и гравитации.
+/obj/effect/anomaly/can_z_move(direction, turf/start, turf/destination, z_move_flags = ZMOVE_FLIGHT_FLAGS, mob/living/rider)
+	if(z_move_flags & ZMOVE_FALL_CHECKS)
+		return FALSE
+	return ..()
+
 /obj/effect/anomaly/ex_act(severity, target)
 	if(severity >= EXPLODE_DEVASTATE)
 		qdel(src)

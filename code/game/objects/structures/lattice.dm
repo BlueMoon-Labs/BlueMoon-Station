@@ -1,3 +1,5 @@
+#define LATTICE_TRIP_KNOCKDOWN 40
+
 /obj/structure/lattice
 	name = "lattice"
 	desc = "A lightweight support lattice. These hold our station together."
@@ -9,7 +11,12 @@
 	max_integrity = 50
 	layer = LATTICE_LAYER //under pipes
 	plane = FLOOR_PLANE
+	obj_flags = CAN_BE_HIT | BLOCK_Z_OUT_DOWN
 	var/number_of_rods = 1
+	/// Замедление шага, когда решётка лежит над провалом.
+	var/footing_slowdown = 1
+	/// Шанс оступиться за шаг спринта, когда решётка лежит над провалом.
+	var/sprint_stumble_chance = 20
 	canSmoothWith = list(/obj/structure/lattice,
 	/turf/open/floor,
 	/turf/closed/wall,
@@ -17,9 +24,28 @@
 	smooth = SMOOTH_MORE
 	//	flags = CONDUCT_1
 
+/// Решётка над провалом, по которой шаг неуверенный; null, если её нет или настил надёжный.
+/proc/get_unsteady_lattice(turf/spot)
+	if(!spot || !isopenspaceturf(spot))
+		return null
+	for(var/obj/structure/lattice/lattice in spot)
+		if(lattice.footing_slowdown || lattice.sprint_stumble_chance)
+			return lattice
+	return null
+
 /obj/structure/lattice/examine(mob/user)
 	. = ..()
 	. += deconstruction_hints(user)
+	var/turf/our_turf = loc
+	if(isturf(our_turf) && isopenspaceturf(our_turf))
+		. += span_notice("Держит вес: по ней можно ходить над провалом. Срезанная, она уронит вниз всё, что на ней стоит.")
+		if(footing_slowdown || sprint_stumble_chance)
+			. += span_warning("По голым прутьям идти медленно, а на спринте легко оступиться и упасть. Катуок сверху (ещё один прут) сделает настил надёжным.")
+
+/obj/structure/lattice/proc/trip(mob/living/carbon/human/sprinter)
+	sprinter.visible_message(span_warning("[sprinter] оступается на решётке и падает!"), span_userdanger("Нога соскальзывает с прутьев решётки, и вы падаете!"))
+	playsound(sprinter, 'sound/effects/clang.ogg', 40, TRUE)
+	sprinter.DefaultCombatKnockdown(LATTICE_TRIP_KNOCKDOWN)
 
 /obj/structure/lattice/proc/deconstruction_hints(mob/user)
 	return "<span class='notice'>The rods look like they could be <b>cut</b>. There's space for more <i>rods</i> or a <i>tile</i>.</span>"
@@ -29,6 +55,24 @@
 	for(var/obj/structure/lattice/LAT in loc)
 		if(LAT != src)
 			QDEL_IN(LAT, 0)
+
+/obj/structure/lattice/Destroy()
+	var/turf/our_turf = get_turf(src)
+	var/drop_everything = (obj_flags & BLOCK_Z_OUT_DOWN) && our_turf && isopenspaceturf(our_turf)
+	. = ..()
+	if(!drop_everything)
+		return
+	//Опора могла остаться: решётку заменяют на другую, а пол над дырой строят через qdel решётки до PlaceOnTop().
+	for(var/obj/other_support in our_turf)
+		if(other_support == src)
+			continue
+		if(other_support.obj_flags & BLOCK_Z_OUT_DOWN)
+			return
+	//Снимок: zFall правит contents по ходу и уводит вниз всю группу.
+	for(var/atom/movable/thing as anything in our_turf.contents.Copy())
+		if(QDELETED(thing) || thing.loc != our_turf)
+			continue
+		our_turf.zFall(thing)
 
 /obj/structure/lattice/blob_act(obj/structure/blob/B)
 	return
@@ -99,6 +143,8 @@
 	icon = 'icons/obj/smooth_structures/catwalk.dmi'
 	icon_state = "catwalk"
 	number_of_rods = 2
+	footing_slowdown = 0
+	sprint_stumble_chance = 0
 	smooth = SMOOTH_TRUE
 	canSmoothWith = null
 	obj_flags = CAN_BE_HIT | BLOCK_Z_OUT_DOWN | BLOCK_Z_IN_UP
@@ -158,6 +204,8 @@
 	icon_state = "catwalk"
 	number_of_rods = 1
 	color = "#5286b9ff"
+	footing_slowdown = 0
+	sprint_stumble_chance = 0
 	smooth = SMOOTH_TRUE
 	canSmoothWith = null
 	obj_flags = CAN_BE_HIT | BLOCK_Z_OUT_DOWN | BLOCK_Z_IN_UP
@@ -178,3 +226,5 @@
 		var/turf/turf_we_place_on = get_turf(src)
 		turf_we_place_on.PlaceOnTop(/turf/open/floor/plating, flags = CHANGETURF_INHERIT_AIR)
 		qdel(src)
+
+#undef LATTICE_TRIP_KNOCKDOWN

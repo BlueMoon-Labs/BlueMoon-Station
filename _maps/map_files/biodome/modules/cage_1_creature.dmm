@@ -1,0 +1,116 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"f" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 10
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 6
+	},
+/obj/modular_map_connector,
+/obj/effect/decal/cleanable/blood,
+/turf/open/floor/wood/wood_large,
+/area/maintenance/aft/upper)
+"i" = (
+/obj/machinery/light/warm/directional/south,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 5
+	},
+/turf/open/floor/wood/wood_large,
+/area/maintenance/aft/upper)
+"l" = (
+/obj/structure/railing{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/blood/tracks,
+/turf/open/floor/wood{
+	icon_state = "stairs_wood";
+	dir = 1
+	},
+/area/maintenance/aft/upper)
+"n" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/structure/railing,
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/maintenance/aft/upper)
+"p" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_large,
+/area/maintenance/aft/upper)
+"s" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/obj/structure/railing,
+/turf/open/floor/wood,
+/area/maintenance/aft/upper)
+"t" = (
+/obj/structure/railing{
+	dir = 4
+	},
+/mob/living/simple_animal/hostile/netherworld{
+	AIStatus = 3;
+	faction = list("neutral");
+	vision_range = 0;
+	aggro_vision_range = 0
+	},
+/turf/open/floor/wood{
+	icon_state = "stairs_wood";
+	dir = 1
+	},
+/area/maintenance/aft/upper)
+"x" = (
+/obj/structure/railing/corner,
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/maintenance/aft/upper)
+"J" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
+/obj/structure/bookcase/random,
+/turf/open/floor/wood/wood_large,
+/area/maintenance/aft/upper)
+"K" = (
+/obj/structure/railing/corner{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 9
+	},
+/turf/open/floor/wood,
+/area/maintenance/aft/upper)
+"Q" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
+/obj/structure/bookcase/random,
+/turf/open/floor/wood/wood_large,
+/area/maintenance/aft/upper)
+"W" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 9
+	},
+/turf/open/floor/wood/wood_large,
+/area/maintenance/aft/upper)
+
+(1,1,1) = {"
+s
+Q
+i
+"}
+(2,1,1) = {"
+K
+l
+f
+"}
+(3,1,1) = {"
+x
+t
+p
+"}
+(4,1,1) = {"
+n
+J
+W
+"}

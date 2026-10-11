@@ -60,6 +60,8 @@ GLOBAL_LIST_EMPTY(hud_z_groups)
 
 /datum/atom_hud
 	var/list/atom/movable/hudatoms = list() //list of all atoms which display this hud
+	/// Атомы из add_to_hud по группе z (hud_z_group): группа -> alist(атом = TRUE)
+	var/alist/hudatoms_by_z_group
 	var/list/hudusers = list() //list with all mobs who can see the hud
 	var/list/hud_icons = list() //these will be the indexes for the atom's hud_list
 
@@ -112,6 +114,7 @@ GLOBAL_LIST_EMPTY(hud_z_groups)
 		remove_from_single_hud(M, A)
 	hudatoms -= A
 	LAZYREMOVE(A.hud_memberships, src)
+	unindex_hud_atom(A, A.hud_z_group)
 	if(!hudusers[A]) // сигнал общий на обе роли - снимаем только когда обе кончились
 		UnregisterSignal(A, COMSIG_PARENT_QDELETING)
 	return TRUE
@@ -181,11 +184,34 @@ GLOBAL_LIST_EMPTY(hud_z_groups)
 	if(!A)
 		return FALSE
 	hudatoms |= A
+	// Вне худов группа не следит за переездами: на первом членстве считаем заново
+	if(!A.hud_memberships)
+		A.hud_z_group = null
 	LAZYOR(A.hud_memberships, src)
+	index_hud_atom(A, A.get_hud_z_group_cached())
 	// override: атом может уже быть зарегистрирован как huduser этим же худом.
 	RegisterSignal(A, COMSIG_PARENT_QDELETING, PROC_REF(unregister_mob), override = TRUE)
 	show_atom_to_its_z_group(A)
 	return TRUE
+
+/datum/atom_hud/proc/index_hud_atom(atom/movable/A, group)
+	if(!hudatoms_by_z_group)
+		hudatoms_by_z_group = alist()
+	var/alist/group_atoms = hudatoms_by_z_group[group]
+	if(!group_atoms)
+		group_atoms = alist()
+		hudatoms_by_z_group[group] = group_atoms
+	group_atoms[A] = TRUE
+
+/datum/atom_hud/proc/unindex_hud_atom(atom/movable/A, group)
+	if(isnull(group) || !hudatoms_by_z_group)
+		return
+	var/alist/group_atoms = hudatoms_by_z_group[group]
+	if(!group_atoms)
+		return
+	group_atoms -= A
+	if(!length(group_atoms))
+		hudatoms_by_z_group -= group
 
 /// Выдаёт значки атома зрителям его группы z: при входе в худ и при переезде атома на другой уровень
 /datum/atom_hud/proc/show_atom_to_its_z_group(atom/movable/A)
@@ -239,6 +265,7 @@ GLOBAL_LIST_EMPTY(hud_z_groups)
  * Собирает в out значки атомов худа одной группы z.
  * При снятии HUD проверка видимости отключается: ранее показанные иконки тоже надо убрать.
  * z_group: null - группа зрителя M (без M - все атомы), HUD_Z_GROUP_ANY - все группы.
+ * Одна группа берётся из hudatoms_by_z_group: атомы, вписанные в hudatoms мимо add_to_hud, в неё не входят.
  */
 /datum/atom_hud/proc/collect_hud_images_for(mob/M, list/out, check_visibility = TRUE, z_group = null)
 	if(!islist(out))
@@ -248,10 +275,13 @@ GLOBAL_LIST_EMPTY(hud_z_groups)
 		return
 	if(isnull(z_group))
 		z_group = M ? M.get_hud_view_group_cached() : HUD_Z_GROUP_ANY
-	for(var/atom/movable/A as anything in hudatoms)
+	var/atoms_to_scan = hudatoms
+	if(z_group != HUD_Z_GROUP_ANY)
+		atoms_to_scan = hudatoms_by_z_group ? hudatoms_by_z_group[z_group] : null
+		if(!atoms_to_scan)
+			return
+	for(var/atom/movable/A as anything in atoms_to_scan)
 		if(!A)
-			continue
-		if(z_group != HUD_Z_GROUP_ANY && A.get_hud_z_group_cached() != z_group)
 			continue
 		if(check_visibility && !should_show_to(M, A))
 			continue
@@ -299,8 +329,11 @@ GLOBAL_LIST_EMPTY(hud_z_groups)
 	var/new_group = get_hud_z_group(new_z)
 	if(new_group == hud_z_group)
 		return
+	var/old_group = hud_z_group
 	hud_z_group = new_group
 	for(var/datum/atom_hud/hud as anything in hud_memberships)
+		hud.unindex_hud_atom(src, old_group)
+		hud.index_hud_atom(src, new_group)
 		hud.show_atom_to_its_z_group(src)
 
 /// Группа z, на которую сейчас смотрит клиент моба: при observe и камерах это не уровень самого моба

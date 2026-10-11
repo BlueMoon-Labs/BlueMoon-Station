@@ -13,6 +13,7 @@
 		"mod_plating_standard",
 		"mod_paint_kit",
 		"mod_storage",
+		"mod_longfall",
 		"mod_welding",
 		"mod_mouthhole",
 		"mod_flashlight",

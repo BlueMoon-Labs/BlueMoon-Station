@@ -8,13 +8,13 @@
 /mob/living/simple_animal/heretic_stargazer
 	name = "stargazer"
 	real_name = "stargazer"
-	desc = "Пустая парящая мантия, внутри которой вместо тела ночное небо; из-под куколя смотрит один глаз. Раз в 3 секунды бьёт лучом в 20 ожогов ближайшего врага своего хозяина в семи клетках; стены, окна и закрытые двери закрывают линию. Это крупная отдельная цель: 400 здоровья, выносливости у него нет, поэтому свалить его можно только летальным оружием. Новый Звездочёт откликнется хозяину лишь через 3 минуты после гибели этого."
+	desc = "Пустая парящая мантия, внутри которой вместо тела ночное небо; из-под куколя смотрит один глаз. Раз в 3 секунды бьёт лучом в 20 ожогов ближайшего врага своего хозяина в семи клетках или того, на кого хозяин укажет; стены, окна и закрытые двери закрывают линию. В двух клетках от него движения вязнут. Это крупная отдельная цель: 400 здоровья, выносливости у него нет, поэтому свалить его можно только летальным оружием. Новый Звездочёт откликнется хозяину лишь через 3 минуты после гибели этого."
 	icon = 'modular_bluemoon/icons/mob/heretic_stargazer.dmi'
 	icon_state = "stargazer"
 	icon_living = "stargazer"
 	icon_dead = "stargazer_dead"
-	pixel_x = -32
-	base_pixel_x = -32
+	pixel_x = -16
+	base_pixel_x = -16
 	maxHealth = HERETIC_STARGAZER_HEALTH
 	health = HERETIC_STARGAZER_HEALTH
 	mob_biotypes = NONE
@@ -49,6 +49,10 @@
 	vore_active = FALSE
 	vore_flags = NONE
 	var/datum/weakref/finale_ref
+	/// Враг, на которого указал герой: его луч бьёт первым.
+	var/datum/weakref/focus_ref
+	/// Место, которое Звездочёт держит по приказу вместо следования за героем.
+	var/turf/hold_turf
 	COOLDOWN_DECLARE(beam_cooldown)
 
 /mob/living/simple_animal/heretic_stargazer/Initialize(mapload, datum/eldritch_knowledge/final_eldritch/cosmic_final/finale)
@@ -65,6 +69,8 @@
 	QDEL_NULL(hand_glow)
 	report_loss()
 	finale_ref = null
+	focus_ref = null
+	hold_turf = null
 	if(mind && !mind.key)
 		QDEL_NULL(mind)
 	return ..()
@@ -82,7 +88,7 @@
 	report_loss()
 	if(QDELETED(src))
 		return
-	playsound(src, 'modular_bluemoon/sound/heretic/cosmic_expansion.ogg', 50, TRUE)
+	playsound(src, 'modular_bluemoon/sound/heretic/cosmic_collapse.ogg', 50, TRUE)
 	QDEL_IN(src, HERETIC_STARGAZER_FADE_TIME)
 	collapse(HERETIC_STARGAZER_FADE_TIME)
 
@@ -107,6 +113,7 @@
 	if(client || stat != CONSCIOUS)
 		return
 	keep_up(master)
+	radiate(master)
 	if(!try_fire(master))
 		plan_charge()
 
@@ -116,12 +123,21 @@
 		return
 	if(z != master_turf.z || get_dist(src, master_turf) > HERETIC_STARGAZER_LEASH)
 		SSmove_manager.stop_looping(src)
+		hold_turf = null
 		var/turf/from = get_turf(src)
 		var/look = appearance
 		new /obj/effect/temp_visual/heretic_path_feedback(from, "cosmic_cloud", "#7fabc9", 8)
 		forceMove(master_turf)
 		new /obj/effect/temp_visual/heretic_path_feedback(master_turf, "cosmic_ring", "#b7e4ff", 8)
 		leap(from, look)
+		return
+	if(hold_turf && (hold_turf.z != z || get_dist(hold_turf, master_turf) > HERETIC_STARGAZER_LEASH))
+		hold_turf = null
+	if(hold_turf)
+		if(loc == hold_turf)
+			SSmove_manager.stop_looping(src)
+		else
+			SSmove_manager.jps_move(src, hold_turf, HERETIC_STARGAZER_MOVE_DELAY, repath_delay = HERETIC_STARGAZER_REPATH_DELAY, max_path_length = HERETIC_STARGAZER_LEASH * 2)
 		return
 	if(get_dist(src, master_turf) <= HERETIC_STARGAZER_FOLLOW_DISTANCE)
 		SSmove_manager.stop_looping(src)
@@ -139,19 +155,51 @@
 		previous = tile
 	return TRUE
 
+/mob/living/simple_animal/heretic_stargazer/proc/hostile_to(mob/living/master, mob/living/candidate)
+	if(candidate.stat != CONSCIOUS || !(iscarbon(candidate) || issilicon(candidate) || candidate.client || (ishostile(candidate) && !master.faction_check_mob(candidate))))
+		return FALSE
+	return heretic_can_affect(master, candidate, chargecost = 0, notify = FALSE) && line_clear(candidate)
+
 /mob/living/simple_animal/heretic_stargazer/proc/pick_target(mob/living/master)
+	var/mob/living/focus = focus_ref?.resolve()
+	if(focus && (focus.stat == DEAD || focus.z != z))
+		focus_ref = null
+	else if(focus && get_dist_euclidian(src, focus) <= HERETIC_STARGAZER_RANGE && hostile_to(master, focus))
+		return focus
 	var/mob/living/chosen
 	var/best_distance
 	for(var/mob/living/candidate in range(HERETIC_STARGAZER_RANGE, src))
 		// range() - квадрат, луч летит по кругу: углы квадрата ему недоступны.
 		var/distance = get_dist_euclidian(src, candidate)
-		if(distance > HERETIC_STARGAZER_RANGE || (chosen && distance >= best_distance) || candidate.stat != CONSCIOUS || !(iscarbon(candidate) || issilicon(candidate) || candidate.client || (ishostile(candidate) && !master.faction_check_mob(candidate))))
-			continue
-		if(!heretic_can_affect(master, candidate, chargecost = 0, notify = FALSE) || !line_clear(candidate))
+		if(distance > HERETIC_STARGAZER_RANGE || (chosen && distance >= best_distance) || !hostile_to(master, candidate))
 			continue
 		chosen = candidate
 		best_distance = distance
 	return chosen
+
+/mob/living/simple_animal/heretic_stargazer/proc/command_attack(mob/living/target)
+	focus_ref = WEAKREF(target)
+
+/mob/living/simple_animal/heretic_stargazer/proc/command_hold(turf/spot)
+	hold_turf = spot
+
+/mob/living/simple_animal/heretic_stargazer/proc/command_follow()
+	hold_turf = null
+	focus_ref = null
+
+/mob/living/simple_animal/heretic_stargazer/proc/radiate(mob/living/master)
+	var/datum/eldritch_knowledge/final_eldritch/cosmic_final/finale = finale_ref?.resolve()
+	var/datum/eldritch_knowledge/base_cosmic/cosmic = finale?.cosmic_knowledge_ref?.resolve()
+	if(!cosmic || stat != CONSCIOUS || !isturf(loc))
+		return 0
+	. = 0
+	for(var/mob/living/candidate in range(HERETIC_STARGAZER_AURA_RANGE, src))
+		if(candidate == master || !hostile_to(master, candidate))
+			continue
+		if(!candidate.has_status_effect(/datum/status_effect/cosmic_tether))
+			new /obj/effect/temp_visual/heretic_path_feedback(get_turf(candidate), "cosmic_ring", light_color, 6)
+		cosmic.tether(candidate)
+		.++
 
 /mob/living/simple_animal/heretic_stargazer/proc/try_fire(mob/living/master)
 	if(stat != CONSCIOUS || !isturf(loc) || !COOLDOWN_FINISHED(src, beam_cooldown))
@@ -160,12 +208,13 @@
 	if(!victim)
 		return FALSE
 	COOLDOWN_START(src, beam_cooldown, HERETIC_STARGAZER_BEAM_COOLDOWN)
+	face_atom(victim)
 	var/obj/item/projectile/heretic_stargazer_ray/ray = new(get_turf(src))
 	ray.firer = src
 	ray.fired_from = src
 	ray.preparePixelProjectile(victim, src)
 	ray.fire()
-	playsound(src, 'modular_bluemoon/sound/heretic/cosmic_energy.ogg', 40, TRUE)
+	playsound(src, 'modular_bluemoon/sound/heretic/cosmic_gaze.ogg', 45, TRUE)
 	discharge()
 	return TRUE
 

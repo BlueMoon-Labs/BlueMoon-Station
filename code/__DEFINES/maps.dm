@@ -58,6 +58,8 @@ require only minor tweaks.
 // numeric offsets - e.g. {"Down": -1} means that chasms will fall to z - 1 rather than oblivion
 #define ZTRAIT_UP "Up"
 #define ZTRAIT_DOWN "Down"
+#define ZTRAIT_NO_PLANE_STACK "No Plane Stack" //уровни связаны вертикально, но плоскостной куб на них не строится
+#define ZTRAIT_TRANSPARENT_SPACE "Transparent Space" //весь обычный космос уровня показывает этаж под ним вместо звёздной подложки
 
 // enum - how space transitions should affect this level
 #define ZTRAIT_LINKAGE "Linkage"
@@ -78,20 +80,24 @@ require only minor tweaks.
 // default trait definitions, used by SSmapping
 #define ZTRAITS_CENTCOM list(\
 	ZTRAIT_CENTCOM = TRUE, \
+	ZTRAIT_NO_PLANE_STACK = TRUE, \
 	ZTRAIT_DOWN = 0, \
 	ZTRAIT_UP = 1)
 #define ZTRAITS_CENTCOM_EVENT1 list(\
 	ZTRAIT_CENTCOM = TRUE, \
+	ZTRAIT_NO_PLANE_STACK = TRUE, \
 	ZTRAIT_LINKAGE = SELFLOOPING, \
 	ZTRAIT_DOWN = -1, \
 	ZTRAIT_UP = 1)
 #define ZTRAITS_CENTCOM_EVENT2 list(\
 	ZTRAIT_CENTCOM = TRUE, \
+	ZTRAIT_NO_PLANE_STACK = TRUE, \
 	ZTRAIT_LINKAGE = SELFLOOPING, \
 	ZTRAIT_DOWN = -1, \
 	ZTRAIT_UP = 1)
 #define ZTRAITS_CENTCOM_EVENT3 list(\
 	ZTRAIT_CENTCOM = TRUE, \
+	ZTRAIT_NO_PLANE_STACK = TRUE, \
 	ZTRAIT_LINKAGE = SELFLOOPING, \
 	ZTRAIT_DOWN = -1, \
 	ZTRAIT_UP = 0)

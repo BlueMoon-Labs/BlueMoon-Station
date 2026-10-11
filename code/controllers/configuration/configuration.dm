@@ -348,11 +348,13 @@
 			if(!(M.config_tag in modes))		// ensure each mode is added only once
 				modes += M.config_tag
 				mode_names[M.config_tag] = M.name
-				mode_reports[M.config_tag] = M.generate_report()
-				if(probabilities[M.config_tag]>0)
-					mode_false_report_weight[M.config_tag] = M.false_report_weight
-				else
-					mode_false_report_weight[M.config_tag] = 1
+				var/report = M.generate_report()
+				if(report)
+					mode_reports[M.config_tag] = report
+					if(probabilities[M.config_tag]>0)
+						mode_false_report_weight[M.config_tag] = M.false_report_weight
+					else
+						mode_false_report_weight[M.config_tag] = 1
 				if(M.votable)
 					votable_modes += M.config_tag
 		qdel(M)

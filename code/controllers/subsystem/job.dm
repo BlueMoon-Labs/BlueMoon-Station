@@ -490,6 +490,9 @@ SUBSYSTEM_DEF(job)
 
 	if(H.mind)
 		H.mind.assigned_role = rank
+		// Приоритет роли
+		if(job && (job in SSjob.prioritized_jobs))
+			H.mind.job_priority_boost = TRUE
 
 	if(job)
 		if(!job.dresscodecompliant)// CIT CHANGE - dress code compliance
@@ -526,6 +529,8 @@ SUBSYSTEM_DEF(job)
 			flavor_display_text += "\n<li>Ввиду критической нехватки персонала, ваша ID-карта имеет дополнительный доступ.</li>"
 		if(job.custom_spawn_text)
 			flavor_display_text += "\n<li>[capitalize(job.custom_spawn_text)]</li>"
+		if(H.mind?.job_priority_boost)
+			flavor_display_text += "\n<li><span class='notice'>Роль объявлена приоритетной: за час игры на ней начисляется <b>удвоенное</b> количество метадолларов.</span></li>"
 	if(ishuman(H))
 		var/mob/living/carbon/human/wageslave = H
 		flavor_display_text += "\n<li>Номер вашего банковского аккаунта - [wageslave.account_id].</li>"
@@ -723,39 +728,8 @@ SUBSYSTEM_DEF(job)
 		destination.JoinPlayerHere(M, buckle)
 		return
 
-	//bad mojo
-	var/area/shuttle/arrival/A = GLOB.areas_by_type[/area/shuttle/arrival]
-	if(A)
-		//first check if we can find a chair
-		var/obj/structure/chair/C = locate() in A
-		if(C)
-			C.JoinPlayerHere(M, buckle)
-			return
-
-		//last hurrah
-		var/list/avail = list()
-		for(var/turf/T in A)
-			if(!is_blocked_turf(T, TRUE))
-				avail += T
-		if(avail.len)
-			destination = pick(avail)
-			destination.JoinPlayerHere(M, FALSE)
-			return
-
-	//pick an open spot on arrivals and dump em
-	var/list/arrivals_turfs = shuffle(get_area_turfs(/area/shuttle/arrival))
-	if(arrivals_turfs.len)
-		for(var/turf/T in arrivals_turfs)
-			if(!is_blocked_turf(T, TRUE))
-				T.JoinPlayerHere(M, FALSE)
-				return
-		//last chance, pick ANY spot on arrivals and dump em
-		destination = arrivals_turfs[1]
-		destination.JoinPlayerHere(M, FALSE)
-	else
-		var/msg = "Unable to send mob [M] to late join!"
-		message_admins(msg)
-		CRASH(msg)
+	destination = get_last_resort_spawn_points()
+	destination.JoinPlayerHere(M, buckle)
 
 /datum/controller/subsystem/job/proc/equip_loadout(mob/dead/new_player/N, mob/living/M, bypass_prereqs = FALSE, can_drop = TRUE, is_dummy = FALSE)
 	var/mob/the_mob = N
@@ -809,21 +783,7 @@ SUBSYSTEM_DEF(job)
 		var/obj/item/I = new G.path
 		if(QDELETED(I))
 			continue
-		if(islist(i[LOADOUT_COLOR]) && length(i[LOADOUT_COLOR])) //handle loadout colors
-			//handle polychromic items
-			if((G.loadout_flags & LOADOUT_CAN_COLOR_POLYCHROMIC) && length(G.loadout_initial_colors))
-				var/datum/element/polychromic/polychromic = LAZYACCESS(I.comp_lookup, "item_worn_overlays") //stupid way to do it but GetElement does not work for this
-				if(polychromic && istype(polychromic))
-					var/list/polychromic_entry = polychromic.colors_by_atom[I]
-					if(polychromic_entry)
-						if(polychromic.suits_with_helmet_typecache[I.type]) //is this one of those toggleable hood/helmet things?
-							polychromic.connect_helmet(I,i[LOADOUT_COLOR])
-						polychromic.colors_by_atom[I] = i[LOADOUT_COLOR]
-						I.update_icon()
-			else
-				//handle non-polychromic items (they only have one color)
-				I.add_atom_colour(i[LOADOUT_COLOR][1], FIXED_COLOUR_PRIORITY)
-				I.update_icon()
+		apply_loadout_colors(I, G, i[LOADOUT_COLOR])
 		//when inputting the data it's already sanitized
 		if(i[LOADOUT_CUSTOM_NAME])
 			I.name = i[LOADOUT_CUSTOM_NAME]
@@ -919,6 +879,18 @@ SUBSYSTEM_DEF(job)
 		// BLUEMOON ADD END
 
 
+/datum/controller/subsystem/job/proc/apply_loadout_colors(obj/item/item, datum/gear/gear, list/colors)
+	if(!islist(colors) || !length(colors))
+		return
+	if((gear.loadout_flags & LOADOUT_CAN_COLOR_POLYCHROMIC) && length(gear.loadout_initial_colors))
+		//GetElement() cannot find a bespoke element without its exact arguments
+		var/datum/element/polychromic/polychromic = LAZYACCESS(item.comp_lookup, COMSIG_ITEM_WORN_OVERLAYS)
+		if(istype(polychromic))
+			polychromic.load_colors(item, colors)
+		return
+	item.add_atom_colour(colors[1], FIXED_COLOUR_PRIORITY)
+	item.update_icon()
+
 /datum/controller/subsystem/job/proc/post_equip_loadout(mob/dead/new_player/N, mob/living/M, bypass_prereqs = FALSE, can_drop = TRUE, is_dummy = FALSE)
 	var/mob/the_mob = N
 	if(!the_mob)
@@ -971,21 +943,7 @@ SUBSYSTEM_DEF(job)
 		var/obj/item/I = new G.path
 		if(QDELETED(I))
 			continue
-		if(islist(i[LOADOUT_COLOR]) && length(i[LOADOUT_COLOR])) //handle loadout colors
-			//handle polychromic items
-			if((G.loadout_flags & LOADOUT_CAN_COLOR_POLYCHROMIC) && length(G.loadout_initial_colors))
-				var/datum/element/polychromic/polychromic = LAZYACCESS(I.comp_lookup, "item_worn_overlays") //stupid way to do it but GetElement does not work for this
-				if(polychromic && istype(polychromic))
-					var/list/polychromic_entry = polychromic.colors_by_atom[I]
-					if(polychromic_entry)
-						if(polychromic.suits_with_helmet_typecache[I.type]) //is this one of those toggleable hood/helmet things?
-							polychromic.connect_helmet(I,i[LOADOUT_COLOR])
-						polychromic.colors_by_atom[I] = i[LOADOUT_COLOR]
-						I.update_icon()
-			else
-				//handle non-polychromic items (they only have one color)
-				I.add_atom_colour(i[LOADOUT_COLOR][1], FIXED_COLOUR_PRIORITY)
-				I.update_icon()
+		apply_loadout_colors(I, G, i[LOADOUT_COLOR])
 		//when inputting the data it's already sanitized
 		if(i[LOADOUT_CUSTOM_NAME])
 			I.name = i[LOADOUT_CUSTOM_NAME]
@@ -1114,6 +1072,7 @@ SUBSYSTEM_DEF(job)
 		//last chance, pick ANY spot on arrivals and dump em
 		return pick(arrivals_turfs)
 
+	message_admins("Латеджойну некуда спавнить: нет ни кресел, ни зоны шаттла прибытия. Игрок отправлен в комнату ошибок ЦК.")
 	stack_trace("Unable to find last resort spawn point.")
 	return GET_ERROR_ROOM
 

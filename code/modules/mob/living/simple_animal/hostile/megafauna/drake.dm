@@ -163,7 +163,8 @@ Difficulty: Medium
 		return
 	if(manual_target)
 		GiveTarget(manual_target)
-	if(!target)
+	var/turf/target_turf = get_turf(target)
+	if(!target_turf || target_turf.z != z)
 		return
 	swoop_cooldown = world.time + 200
 	stop_automated_movement = TRUE
@@ -201,11 +202,13 @@ Difficulty: Medium
 	sleep(7)
 	var/list/flame_hit = list()
 	while(swoop_duration > 0)
-		if(!target)
-			break //we lost our target while chasing it down; the controller reacquires after the swoop
+		target_turf = get_turf(target)
+		//get_dir() ignores z: a target on another floor would be chased to the tile under it
+		if(!target_turf || target_turf.z != z)
+			break
 		if(swoop_duration < 7)
 			fire_rain = FALSE //stop raining fire near the end of the swoop
-		if(loc == get_turf(target))
+		if(loc == target_turf)
 			if(!fire_rain)
 				break //we're not spewing fire at our target, slam they
 			if(isliving(target))
@@ -214,7 +217,7 @@ Difficulty: Medium
 					break //target is dead and we're on em, slam they
 		if(fire_rain)
 			new /obj/effect/temp_visual/target(loc, flame_hit)
-		forceMove(get_step(src, get_dir(src, target)))
+		forceMove(get_step(src, get_dir(src, target_turf)))
 		if(loc == get_turf(target))
 			if(!fire_rain)
 				break

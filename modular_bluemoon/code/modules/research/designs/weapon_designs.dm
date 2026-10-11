@@ -258,6 +258,16 @@
 	materials = list(/datum/material/iron = 35000, /datum/material/uranium = 1650)
 	build_path = /obj/item/ammo_box/magazine/e45/e45_drum/laser
 
+
+/datum/design/m10mm_large/rubber
+	name = "enlarged pistol magazine (10mm rubber)"
+	desc = "An extra ammo gun magazine. Loaded with rounds which punch guts out of target."
+	id = "enlarged_rubber"
+	materials = list(/datum/material/iron = 5000, /datum/material/glass=1500)
+	build_path = /obj/item/ammo_box/magazine/m10mm_large/rubber
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_BLUE
+
 /////////////////////////////
 //Enforcer MK59-MK62 design//
 /////////////////////////////

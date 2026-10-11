@@ -151,6 +151,12 @@
 	var/obj/item/mod/module/module = build_path
 	desc = "[initial(module.desc)] It uses [initial(module.complexity)] complexity."
 
+/datum/design/module/mod_longfall
+	name = "Longfall Module"
+	id = "mod_longfall"
+	materials = list(/datum/material/iron = 1000)
+	build_path = /obj/item/mod/module/longfall
+
 /datum/design/module/mod_storage
 	name = "Storage Module"
 	id = "mod_storage"

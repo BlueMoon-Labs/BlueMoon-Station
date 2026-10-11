@@ -96,7 +96,7 @@
 	description = "They won't know what hit em."
 	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
 	prereq_ids = list("weaponry", "ballistic_weapons")
-	design_ids = list("techshotshell", "c38_hotshot", "c38_iceblox")
+	design_ids = list("techshotshell", "c38_hotshot", "c38_iceblox", "enlarged_rubber")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 3500)
 
 /datum/techweb_node/gravity_gun

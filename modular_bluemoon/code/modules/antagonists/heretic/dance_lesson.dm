@@ -107,7 +107,7 @@
 				if("figure_slip")
 					say("сбой прощён: продолжайте квадрат со следующей доли. Второй сбой собьёт фигуру.")
 				if("figure_held")
-					say("квадрат собран, но вплотную к вам нет мишени: фигура подождёт [value] доли. Подойдите к мишени, над ней загорится нота.")
+					say("квадрат собран, но вплотную к вам нет мишени: фигура подождёт [heretic_dance_seconds(value * dance.beat_ds)] с. Подойдите к мишени, над ней загорится нота.")
 				if("figure")
 					if(dance.style_id != HERETIC_DANCE_STYLE_WALTZ)
 						return
@@ -117,7 +117,7 @@
 					else
 						say("квадрат рассыпался, не дождавшись мишени. Встаньте рядом с ней и повторите.")
 				if("figure_cooldown")
-					say("квадрат собран, но фигура ещё остывает: подождите [value] долей.")
+					say("квадрат собран, но фигура ещё остывает: подождите [heretic_dance_seconds(value * dance.beat_ds)] с.")
 				if("step_silent")
 					if(COOLDOWN_FINISHED(src, silent_hint))
 						COOLDOWN_START(src, silent_hint, DANCE_LESSON_SILENT_HINT_COOLDOWN)

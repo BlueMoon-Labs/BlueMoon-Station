@@ -49,11 +49,13 @@
 	var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
 	if(D)
 		payoff = max(payoff_min, FLOOR(D.account_balance * 0.80, 1000))
+	else
+		payoff = payoff_min
 	switch(pirate_type)
 		if(PIRATES_ROGUES)
 			ship_template = /datum/map_template/shuttle/pirate/default
 			threat_msg.title = "Предложение о Защите Сектора"
-			threat_msg.content = "Приветствуем вас с корабля [ship_name]. Ваш сектор нуждается в защите, заплатите нам [payoff] кредитов или на вас наверняка кто-то нападёт."
+			threat_msg.content = "Приветствуем вас с корабля [ship_name]. Ваш сектор нуждается в защите, заплатите нам [payoff] кредитов или на вас наверняка кто-то нападёт. У вас есть ровно пять минут с момента получения сообщения."
 			threat_msg.possible_answers = list("Мы заплатим.","Мы заплатим, но на самом деле нет.")
 
 	threat_msg.answer_callback = CALLBACK(src, PROC_REF(pirates_answered), threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
@@ -61,16 +63,16 @@
 	spawn_timer_id = addtimer(CALLBACK(src, PROC_REF(spawn_pirates), threat_msg, ship_template), response_max_time, TIMER_STOPPABLE)
 
 /datum/round_event/pirates/proc/pirates_answered(datum/comm_message/threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
-	if(world.time > initial_send_time + response_max_time)
+	if(world.time >= initial_send_time + response_max_time)
 		priority_announce("Слишком поздно умолять о пощаде!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_pirates(threat_msg, ship_template, TRUE)
 		return
 	if(threat_msg && threat_msg.answered == 1)
 		var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
 		if(D && D.adjust_money(-payoff))
+			resolve_threat_peacefully()
 			priority_announce("Спасибо за кредиты, сухопутные крысы!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_yespeacedecision.ogg', "Priority")
 			SSdirector.complete_deferred_action_without_roles(control, "угроза снята выкупом; назначено ролей: 0")
-			resolve_threat_peacefully()
 			return
 		priority_announce("Пытаешься нас обмануть? Ты пожалеешь об этом!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_pirates(threat_msg, ship_template, TRUE)

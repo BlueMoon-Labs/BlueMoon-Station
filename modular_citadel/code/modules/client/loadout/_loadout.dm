@@ -119,6 +119,15 @@ GLOBAL_LIST_EMPTY(loadout_whitelist_ids)
 	//меню лодаута рендерит одну подкатегорию за раз - первый показ дешёвый
 	// BLUEMOON EDIT END
 
+/// Добивает цвета полихромного предмета до числа его слоёв начальными цветами.
+/datum/gear/proc/pad_polychromic_colors(list/user_gear)
+	var/list/colors = user_gear[LOADOUT_COLOR]
+	if(!islist(colors))
+		colors = list()
+		user_gear[LOADOUT_COLOR] = colors
+	for(var/index in length(colors) + 1 to length(loadout_initial_colors))
+		colors += loadout_initial_colors[index]
+
 ///Ленивая генерация base64-превью с общим кэшем по паре иконка:стейт.
 ///Возвращает null, если у предмета нет иконки или энкод упал.
 /datum/gear/proc/get_base64icon()

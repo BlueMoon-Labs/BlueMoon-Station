@@ -1,0 +1,112 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"e" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/window,
+/obj/structure/closet/emcloset,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/maintenance/department/crew_quarters/dorms)
+"h" = (
+/turf/template_noop,
+/area/template_noop)
+"n" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/asteroid/tramstation)
+"o" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"x" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/girder,
+/obj/structure/grille,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"y" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/window,
+/obj/effect/turf_decal/bot,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/machinery/portable_atmospherics/canister/air = 4, /obj/machinery/portable_atmospherics/canister/oxygen = 1)
+	},
+/turf/open/floor/plating,
+/area/maintenance/department/crew_quarters/dorms)
+"B" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/modular_map_connector,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+"F" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/window,
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/crate,
+/obj/effect/spawner/lootdrop/maintenance/six,
+/turf/open/floor/plating,
+/area/maintenance/department/crew_quarters/dorms)
+"G" = (
+/turf/closed/wall,
+/area/maintenance/department/crew_quarters/dorms)
+"Q" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/cobweb,
+/obj/structure/rack,
+/obj/effect/spawner/lootdrop/maintenance/three,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/stack/sheet/mineral/wood/twenty = 1, /obj/item/stack/sheet/cardboard/fifty = 1, /obj/item/stack/sheet/mineral/sandstone/thirty = 1)
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/flashlight = 20, /obj/item/flashlight/flare = 10, /obj/effect/spawner/lootdrop/glowstick = 10, /obj/item/flashlight/lantern = 5, /obj/item/flashlight/seclite = 4)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/crew_quarters/dorms)
+
+(1,1,1) = {"
+n
+n
+G
+Q
+o
+"}
+(2,1,1) = {"
+n
+n
+G
+x
+B
+"}
+(3,1,1) = {"
+n
+n
+G
+e
+o
+"}
+(4,1,1) = {"
+n
+n
+G
+F
+o
+"}
+(5,1,1) = {"
+n
+n
+G
+y
+o
+"}
+(6,1,1) = {"
+n
+n
+G
+x
+o
+"}
+(7,1,1) = {"
+h
+h
+G
+o
+o
+"}

@@ -84,7 +84,7 @@
 	if(current_mass >= max_mass)
 		to_chat(user, span_notice("Тигель полон!"))
 		return FALSE
-	playsound(src, 'sound/items/eatfood.ogg', 100, TRUE)
+	playsound(src, HERETIC_FLESH_ABSORB_SFX, 50, TRUE)
 	to_chat(user, span_notice("Тигель поглощает [fuel.name] и наполняется небольшим количеством вязкой жидкости!"))
 	qdel(fuel)
 	set_mass(current_mass + 1)
@@ -160,7 +160,7 @@
 	var/obj/item/bodypart/arm = user.get_active_hand()
 	if(!arm || !arm.dismember())
 		return
-	playsound(src, 'sound/items/eatfood.ogg', 100, TRUE)
+	playsound(src, HERETIC_FLESH_ABSORB_SFX, 60, TRUE)
 	to_chat(user, span_danger("Тигель хватает вашу руку и пожирает её целиком!"))
 	qdel(arm)
 	set_mass(current_mass + 1)

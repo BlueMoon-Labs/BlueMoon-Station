@@ -707,12 +707,6 @@
 	coffee_cups--
 	update_appearance(UPDATE_OVERLAYS)
 
-/obj/machinery/coffeemaker/impressa/toggle_steam()
-	QDEL_NULL(particles)
-	if(brewing)
-		particles = new /obj/effect/particle_effect/steam()
-		particles.position = list(-2, 1, 0)
-
 /obj/machinery/coffeemaker/impressa/brew()
 	power_change()
 	if(!try_brew())

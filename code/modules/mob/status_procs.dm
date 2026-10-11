@@ -99,9 +99,14 @@
 	if(!hud_used)
 		return
 	var/atom/movable/plane_master_controller/game_plane_master_controller = hud_used.plane_master_controllers[PLANE_MASTERS_GAME]
+	// Life зовёт это каждый тик, а смена фильтра пересобирает фильтры всех игровых плоскостей
+	var/list/current_blur = LAZYACCESS(game_plane_master_controller.filter_data, "eye_blur")
 	if(eye_blurry)
-		game_plane_master_controller.add_filter("eye_blur", 1, gauss_blur_filter(clamp(eye_blurry * 0.1, 0.6, 3)))
-	else
+		var/blur_size = clamp(eye_blurry * 0.1, 0.6, 3)
+		if(current_blur && current_blur["size"] == blur_size)
+			return
+		game_plane_master_controller.add_filter("eye_blur", 1, gauss_blur_filter(blur_size))
+	else if(current_blur)
 		game_plane_master_controller.remove_filter("eye_blur")
 
 ///Adjust the drugginess of a mob

@@ -91,6 +91,11 @@
 	dump_mobs()
 	return ..()
 
+/obj/vehicle/sealed/handle_atom_del(atom/deleted_atom)
+	if(is_occupant(deleted_atom))
+		remove_occupant(deleted_atom)
+	return ..()
+
 /obj/vehicle/sealed/proc/dump_mobs(randomstep = TRUE)
 	for(var/i in occupants)
 		mob_exit(i, null, randomstep)

@@ -461,6 +461,33 @@
 	return dispensed
 
 ///Longfall
+/obj/item/mod/module/longfall
+	name = "MOD longfall module"
+	desc = "Гироскопы и демпферы в ботинках костюма гасят удар при падении с высоты, переводя его в заряд батареи. \
+		Пригодится в шахте, на мостках над пустотой и при прыжке с этажа на этаж."
+	icon_state = "longfall"
+	complexity = 1
+	use_power_cost = DEFAULT_CHARGE_DRAIN * 5
+	incompatible_modules = list(/obj/item/mod/module/longfall)
+	mod_module_flags = MOD_MODULE_GENERAL
+
+/obj/item/mod/module/longfall/on_suit_activation()
+	RegisterSignal(mod.wearer, COMSIG_LIVING_Z_IMPACT, PROC_REF(z_impact_react))
+
+/obj/item/mod/module/longfall/on_suit_deactivation()
+	UnregisterSignal(mod.wearer, COMSIG_LIVING_Z_IMPACT)
+
+/obj/item/mod/module/longfall/proc/z_impact_react(datum/source, levels, turf/fell_on)
+	SIGNAL_HANDLER
+	if(!drain_power(use_power_cost * levels))
+		return NONE
+	new /obj/effect/temp_visual/mook_dust(fell_on)
+	if(levels >= 2)
+		mod.wearer.Knockdown(levels SECONDS)
+		mod.wearer.visible_message(span_notice("[mod.wearer] приземляется на [fell_on] и едва удерживается на ногах."), span_notice("[src] гасит удар!"))
+	else
+		mod.wearer.visible_message(span_notice("[mod.wearer] мягко приземляется на [fell_on]."), span_notice("[src] гасит удар!"))
+	return ZIMPACT_CANCEL_DAMAGE | ZIMPACT_NO_MESSAGE | ZIMPACT_NO_SPIN
 
 ///Thermal Regulator - Naw.
 

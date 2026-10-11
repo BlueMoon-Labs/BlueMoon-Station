@@ -533,7 +533,7 @@
 			update_static_data_for_all_viewers()
 			if(!is_silent)
 				say("Successfully synchronized with R&D server.")
-			return
+			return TRUE
 
 	if(!is_silent)
 		say("Unable to connect to local R&D server.")

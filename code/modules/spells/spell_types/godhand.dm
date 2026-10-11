@@ -35,7 +35,7 @@
 	return TRUE
 
 /obj/item/melee/touch_attack/proc/charges_check()
-	if(charges > 0)
+	if(charges > 0 || QDELETED(src))
 		return
 	attached_spell?.on_hand_destroy(src)
 	qdel(src)

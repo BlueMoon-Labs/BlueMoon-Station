@@ -104,7 +104,7 @@
 	. = TRUE
 	var/turf/target_turf = get_turf(target)
 	var/turf/user_turf = get_turf(user)
-	playsound(src, 'modular_bluemoon/sound/heretic/heart_track.ogg', 25, FALSE, extrarange = SILENCED_SOUND_EXTRARANGE)
+	playsound(src, GLOB.heretic_heart_sounds["track"], 25, FALSE, extrarange = SILENCED_SOUND_EXTRARANGE)
 	if(!target_turf || !user_turf || target_turf.z != user_turf.z)
 		balloon_alert(user, "на другом уровне")
 		to_chat(user, span_notice("[target.real_name] находится на другом уровне станции."))
@@ -237,11 +237,11 @@
 			return
 		if(safe_turf && do_teleport(user, safe_turf, forceMove = TRUE, channel = TELEPORT_CHANNEL_MAGIC))
 			user.mind.heretic_escape_ready_at = world.time + HERETIC_BLADE_ESCAPE_COOLDOWN
-			origin.visible_message(span_warning("Клинок в руке [user] разлетается осколками, и [user] исчезает в клубах дыма."))
+			origin.visible_message(span_warning("Клинок в руке [user] разлетается осколками, воздух расходится тёмным швом, и [user] исчезает в нём."))
 			new /obj/effect/temp_visual/eldritch_smoke(origin)
 			playsound(origin, "shatter", 70, TRUE)
 			new /obj/effect/temp_visual/eldritch_smoke(safe_turf)
-			user.visible_message(span_warning("Из клубов дыма появляется [user], сжимая осколки клинка."))
+			user.visible_message(span_warning("Воздух расходится тёмным швом, и из него шагает [user], сжимая осколки клинка."))
 			to_chat(user,"<span class='warning'>Вы разбиваете [src], и чужая сила подхватывает ваше тело. Ржавые холмы услышали зов.</span>")
 			log_game("HERETIC ESCAPE: [key_name(user)] escaped using [src] from [AREACOORD(origin)] to [AREACOORD(user)].")
 		else
@@ -254,7 +254,7 @@
 	qdel(src)
 
 /obj/item/melee/sickly_blade/proc/find_escape_turf(turf/origin)
-	var/turf/destination = is_station_level(origin.z) ? find_heretic_station_turf(for_escape = TRUE) : find_safe_turf(zlevels = list(origin.z), extended_safety_checks = TRUE, dense_atoms = FALSE)
+	var/turf/destination = SSmapping.level_trait(origin.z, ZTRAIT_ANTAG_TRAINING) ? find_safe_turf(zlevels = list(origin.z), extended_safety_checks = TRUE, dense_atoms = FALSE) : find_heretic_station_turf(for_escape = TRUE)
 	if(destination && destination != origin && !destination.is_transition_turf() && is_heretic_escape_area(get_area(destination)))
 		return destination
 	return find_heretic_escape_fallback(origin)
@@ -275,7 +275,7 @@
 /obj/item/melee/sickly_blade/examine(mob/user)
 	. = ..()
 	if(IS_HERETIC(user) || IS_HERETIC_MONSTER(user))
-		. += span_notice("Возьмите клинок в руку и нажмите «Разбить клинок и отступить» или активируйте его в руке: вы переместитесь в случайное безопасное место, потеряв оружие. Успейте до оглушения или потери сознания. Следующий побег возможен только через [DisplayTimeText(HERETIC_BLADE_ESCAPE_COOLDOWN)]. Наручники, смирительная рубашка и щит разума не дают разбить клинок. После вознесения побег клинком закрыт. При неудаче клинок сохранится.")
+		. += span_notice("Возьмите клинок в руку и нажмите «Разбить клинок и отступить» или активируйте его в руке: вы переместитесь в случайное безопасное место станции, потеряв оружие. Успейте до оглушения или потери сознания. Следующий побег возможен только через [DisplayTimeText(HERETIC_BLADE_ESCAPE_COOLDOWN)]. Наручники, смирительная рубашка и щит разума не дают разбить клинок. После вознесения побег клинком закрыт. При неудаче клинок сохранится.")
 
 /obj/item/melee/sickly_blade/rust
 	name = "rusted blade"
@@ -608,8 +608,8 @@
 	name = "Разрушение рун"
 	desc = "Уничтожает все руны, привязанные к этому клинку."
 	background_icon_state = "bg_ecult"
-	button_icon_state = "rune_break"
-	icon_icon = 'icons/mob/actions/actions_ecult.dmi'
+	button_icon_state = "rune_shatter"
+	icon_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
 	check_flags = AB_CHECK_CONSCIOUS
 
 /datum/action/innate/rune_shatter/Activate()

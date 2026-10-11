@@ -37,6 +37,14 @@
 	projectile_type = /obj/item/projectile/bullet/c10mm/soporific
 	can_be_printed = FALSE
 
+/obj/item/ammo_casing/c10mm/rubber
+	name = "10mm rubber bullet casing"
+	desc = "A 10mm rubber bullet casing."
+	projectile_type = /obj/item/projectile/bullet/c10mm/rubber
+	can_be_printed = TRUE
+	advanced_print_req = FALSE
+	custom_materials = list(/datum/material/glass = 400)
+
 // 9mm (Stechkin APS)
 
 /obj/item/ammo_casing/c9mm

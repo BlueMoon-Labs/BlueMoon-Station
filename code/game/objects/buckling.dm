@@ -19,7 +19,7 @@
 				return
 		if(buckled_mobs.len > 1)
 			var/unbuckled = input(user, "Кого вы хотите отстегнуть?","Отстегнуть кого?") as null|mob in buckled_mobs
-			if(user_unbuckle_mob(unbuckled,user))
+			if(unbuckled && user_unbuckle_mob(unbuckled,user))
 				return TRUE
 		else
 			if(user_unbuckle_mob(buckled_mobs[1],user))
@@ -238,5 +238,7 @@
 		return user_unbuckle_mob(buckled_mobs[1], user)
 	else
 		var/unbuckled = input(user, "Кого вы хотите отстегнуть?","Отстегнуть кого?") as null|mob in buckled_mobs
+		if(!unbuckled)
+			return
 		return user_unbuckle_mob(unbuckled, user)
 

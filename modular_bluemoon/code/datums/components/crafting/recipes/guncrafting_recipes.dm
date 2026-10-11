@@ -31,7 +31,7 @@
 /datum/crafting_recipe/vector
 	name = "Vector SMG convertion"
 	result = /obj/item/gun/ballistic/automatic/mk60/vector
-	reqs = list(/obj/item/gun/ballistic/automatic/mk60/mk62 = 1,
+	reqs = list(/obj/item/gun/ballistic/automatic/mk60 = 1,
 				/obj/item/weaponcrafting/gunkit/vector = 1)
 	tools = list(TOOL_SCREWDRIVER)
 	time = 30

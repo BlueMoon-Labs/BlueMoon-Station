@@ -32,6 +32,8 @@ SUBSYSTEM_DEF(input)
 	var/list/slow_keyloop_total = list()
 	/// ckey -> число дорогих keyLoop с прошлого отчёта
 	var/list/slow_keyloop_count = list()
+	/// ckey -> сколько дорогих keyLoop сменили этаж моба.
+	var/list/slow_keyloop_z_changes = list()
 	var/next_slow_keyloop_report = 0
 	var/last_slow_keyloop_report
 
@@ -110,17 +112,21 @@ SUBSYSTEM_DEF(input)
 		var/client/C = clients[i]
 		if(!C)
 			continue
+		var/turf/old_turf = get_turf(C.mob)
 		var/loop_started = TICK_USAGE
 		C.keyLoop()
 		var/loop_cost_ms = TICK_DELTA_TO_MS(TICK_USAGE - loop_started)
 		if(loop_cost_ms >= SLOW_KEYLOOP_MS)
-			note_slow_keyloop(C, loop_cost_ms)
+			var/turf/new_turf = get_turf(C?.mob)
+			note_slow_keyloop(C, loop_cost_ms, old_turf?.z != new_turf?.z)
 
 /// Копит дорогие keyLoop по клиенту и раз в SLOW_KEYLOOP_REPORT_INTERVAL пишет худшего в tick_spikes.log.
-/datum/controller/subsystem/input/proc/note_slow_keyloop(client/slow_client, cost_ms)
+/datum/controller/subsystem/input/proc/note_slow_keyloop(client/slow_client, cost_ms, z_changed = FALSE)
 	var/ckey = slow_client.ckey
 	slow_keyloop_total[ckey] += cost_ms
 	slow_keyloop_count[ckey] += 1
+	if(z_changed)
+		slow_keyloop_z_changes[ckey] += 1
 	if(world.time < next_slow_keyloop_report)
 		return
 	next_slow_keyloop_report = world.time + SLOW_KEYLOOP_REPORT_INTERVAL
@@ -132,10 +138,11 @@ SUBSYSTEM_DEF(input)
 	var/mob/worst_mob = worst_client?.mob
 	var/atom/worst_loc = worst_mob?.loc
 	var/atom/movable/relay = worst_mob?.remote_control || worst_mob?.buckled
-	last_slow_keyloop_report = "медленный keyLoop: [worst_ckey], [slow_keyloop_count[worst_ckey]] шт на [round(slow_keyloop_total[worst_ckey], 0.1)]мс, моб [worst_mob?.type || "нет"], loc [worst_loc?.type || "нет"][relay ? ", управляет/пристёгнут: [relay.type]" : ""], клавиши: [worst_client ? jointext(worst_client.keys_held, "+") : "?"]; всего клиентов с дорогим keyLoop: [length(slow_keyloop_total)]"
+	last_slow_keyloop_report = "медленный keyLoop: [worst_ckey], [slow_keyloop_count[worst_ckey]] шт на [round(slow_keyloop_total[worst_ckey], 0.1)]мс, со сменой этажа [slow_keyloop_z_changes[worst_ckey] || 0], моб [worst_mob?.type || "нет"], loc [worst_loc?.type || "нет"][relay ? ", управляет/пристёгнут: [relay.type]" : ""], клавиши: [worst_client ? jointext(worst_client.keys_held, "+") : "?"]; всего клиентов с дорогим keyLoop: [length(slow_keyloop_total)]"
 	SStick_spikes?.write_to_log("[SStick_spikes.time_stamp_from_world(world.time)] [last_slow_keyloop_report]")
 	slow_keyloop_total.Cut()
 	slow_keyloop_count.Cut()
+	slow_keyloop_z_changes.Cut()
 
 #define NONSENSICAL_VERB "NONSENSICAL_VERB_THAT_DOES_NOTHING"
 /// *sigh

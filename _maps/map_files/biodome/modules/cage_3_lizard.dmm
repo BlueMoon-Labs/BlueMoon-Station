@@ -1,0 +1,109 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/mob/living/simple_animal/hostile/lizard,
+/obj/structure/railing/corner/end{
+	name = "stone wall";
+	desc = "Стенка из булыжника.";
+	color = "#8C8C8C"
+	},
+/turf/open/floor/plating/beach/sand,
+/area/maintenance/aft/upper)
+"e" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/mob/living/simple_animal/hostile/lizard,
+/turf/open/floor/plating/beach/sand,
+/area/maintenance/aft/upper)
+"g" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 5
+	},
+/obj/machinery/light/warm/no_nightlight/directional/south,
+/obj/structure/railing{
+	name = "stone wall";
+	desc = "Стенка из булыжника. Довольно прочная.";
+	color = "#8C8C8C"
+	},
+/turf/open/floor/plating/cobblestone,
+/area/maintenance/aft/upper)
+"k" = (
+/obj/structure/flora/ausbushes/leafybush,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 9
+	},
+/obj/machinery/light/warm/no_nightlight/directional/south,
+/turf/open/floor/plating/beach/sand,
+/area/maintenance/aft/upper)
+"l" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 10
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 6
+	},
+/obj/modular_map_connector,
+/obj/structure/railing/corner/end/flip{
+	name = "stone wall";
+	desc = "Стенка из булыжника.";
+	color = "#8C8C8C"
+	},
+/turf/open/floor/plating/beach/sand,
+/area/maintenance/aft/upper)
+"p" = (
+/turf/open/floor/plating/beach/sand,
+/area/maintenance/aft/upper)
+"z" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/mob/living/simple_animal/hostile/lizard,
+/turf/open/floor/plating/beach/sand,
+/area/maintenance/aft/upper)
+"G" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/plating/beach/sand,
+/area/maintenance/aft/upper)
+"M" = (
+/mob/living/simple_animal/hostile/lizard,
+/obj/item/stack/sheet/mineral/sandstone,
+/obj/structure/railing{
+	name = "stone wall";
+	desc = "Стенка из булыжника. Довольно прочная.";
+	color = "#8C8C8C"
+	},
+/turf/open/floor/plating/beach/sand,
+/area/maintenance/aft/upper)
+"N" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
+/obj/item/stack/sheet/mineral/sandstone,
+/obj/structure/railing/corner/end/flip{
+	name = "stone wall";
+	desc = "Стенка из булыжника.";
+	color = "#8C8C8C"
+	},
+/turf/open/floor/plating/beach/sand,
+/area/maintenance/aft/upper)
+"Q" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
+/turf/open/floor/plating/beach/sand,
+/area/maintenance/aft/upper)
+
+(1,1,1) = {"
+z
+Q
+g
+"}
+(2,1,1) = {"
+p
+c
+l
+"}
+(3,1,1) = {"
+p
+M
+G
+"}
+(4,1,1) = {"
+e
+N
+k
+"}

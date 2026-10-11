@@ -1,0 +1,184 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"e" = (
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Closet Access Maintenance Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"i" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/effect/spawner/lootdrop/maintenance/eight,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"p" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/asteroid/tramstation)
+"x" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"y" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/window{
+	dir = 4
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/machinery/space_heater = 8, /obj/machinery/shieldgen = 3, /obj/machinery/portable_atmospherics/pump = 1, /obj/machinery/portable_atmospherics/scrubber = 1)
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"A" = (
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Closet Access Maintenance Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/obj/effect/mapping_helpers/airlock/locked,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"F" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/directional/north,
+/obj/structure/table,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"G" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/wardrobe/mixed,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"K" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/stack/sheet/mineral/wood/twenty = 1, /obj/item/stack/sheet/cardboard/fifty = 1, /obj/item/stack/sheet/mineral/sandstone/thirty = 1)
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/wrench = 2, /obj/item/wirecutters = 2, /obj/item/screwdriver = 2, /obj/item/crowbar = 2, /obj/item/weldingtool = 2, /obj/item/stack/cable_coil = 2, /obj/item/analyzer = 2, /obj/item/t_scanner = 2, /obj/item/multitool = 1, /obj/item/clothing/glasses/meson = 1, /obj/item/storage/belt/utility = 1, /obj/item/clothing/head/welding = 1)
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/wrench = 2, /obj/item/wirecutters = 2, /obj/item/screwdriver = 2, /obj/item/crowbar = 2, /obj/item/weldingtool = 2, /obj/item/stack/cable_coil = 2, /obj/item/analyzer = 2, /obj/item/t_scanner = 2, /obj/item/multitool = 1, /obj/item/clothing/glasses/meson = 1, /obj/item/storage/belt/utility = 1, /obj/item/clothing/head/welding = 1)
+	},
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"N" = (
+/turf/closed/wall,
+/area/maintenance/department/security)
+"P" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/structure/reagent_dispensers/fueltank = 5, /obj/structure/reagent_dispensers/watertank = 4, /obj/structure/reagent_dispensers/watertank/high = 1)
+	},
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"R" = (
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Closet Access Maintenance Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/obj/effect/decal/cleanable/dirt,
+/obj/modular_map_connector,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"W" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/extinguisher_cabinet/directional/east,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"X" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/storage/toolbox/emergency = 4, /obj/item/storage/toolbox/electrical = 2, /obj/item/storage/toolbox/mechanical = 2)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+
+(1,1,1) = {"
+p
+p
+N
+N
+N
+R
+N
+N
+"}
+(2,1,1) = {"
+p
+p
+N
+X
+x
+x
+x
+G
+"}
+(3,1,1) = {"
+p
+p
+N
+F
+x
+x
+x
+y
+"}
+(4,1,1) = {"
+p
+p
+N
+x
+x
+x
+W
+x
+"}
+(5,1,1) = {"
+p
+p
+N
+e
+N
+e
+N
+A
+"}
+(6,1,1) = {"
+p
+p
+N
+P
+N
+K
+N
+i
+"}
+(7,1,1) = {"
+p
+p
+N
+N
+N
+N
+N
+N
+"}
+(8,1,1) = {"
+p
+p
+p
+p
+p
+p
+p
+p
+"}
