@@ -31,12 +31,18 @@
 #define HERETIC_ASH_CASCADE_FLASH_POWER 2
 #define HERETIC_ASH_CASCADE_QUAKE 0.12
 #define HERETIC_ASH_CASCADE_QUAKE_TIME (0.3 SECONDS)
-#define HERETIC_ASH_CASCADE_VOLUME 60
 #define HERETIC_ASH_RING_RADIUS 26
 #define HERETIC_ASH_RING_SPIN (2.4 SECONDS)
 #define HERETIC_ASH_RING_SEGMENTS 12
 #define HERETIC_ASH_RING_FADE (0.4 SECONDS)
 #define HERETIC_ASH_MOTE_OFFSET 8
+#define HERETIC_ASH_FIELD_RIPPLE (0.08 SECONDS)
+#define HERETIC_ASH_FIELD_DIE_DOWN (0.4 SECONDS)
+#define HERETIC_ASH_FIELD_EMBERS (0.8 SECONDS)
+#define HERETIC_ASH_FIELD_FADE (0.3 SECONDS)
+#define HERETIC_ASH_ARC_TIME (0.6 SECONDS)
+#define HERETIC_ASH_DRAIN_TIME (1.2 SECONDS)
+#define HERETIC_ASH_DRAIN_RANGE 6
 
 /datum/eldritch_knowledge/final_eldritch/ash_final/on_body_gain(mob/living/user)
 	. = ..()
@@ -125,7 +131,7 @@
 	animate(transform = matrix(), time = HERETIC_ASH_FLARE_SETTLE, easing = SINE_EASING)
 	heretic_vfx_burst(owner, /particles/heretic_ascension/ash)
 	heretic_vfx_flash(owner, LIGHT_COLOR_FIRE, HERETIC_ASH_FLARE_RANGE, HERETIC_ASH_FLARE_POWER, HERETIC_ASH_FLARE_TIME)
-	playsound(owner, 'modular_bluemoon/sound/heretic/ash_burst.ogg', HERETIC_ASH_FLARE_VOLUME, TRUE)
+	playsound(owner, HERETIC_ASH_REKINDLE_SOUND, HERETIC_ASH_FLARE_VOLUME, TRUE)
 
 /// Сбитое водой пламя шипит паром и опадает к ногам; сам нимб огня уходит сразу.
 /datum/component/heretic_ash_lord/proc/quench()
@@ -170,16 +176,16 @@
 
 /obj/effect/heretic_ash_aura
 	name = "ashen flame"
-	icon = 'icons/mob/OnFire.dmi'
-	icon_state = "Standing"
+	icon = 'modular_bluemoon/icons/obj/heretic_effects.dmi'
+	icon_state = "ash_lord_aura"
 	appearance_flags = RESET_COLOR | PIXEL_SCALE
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	vis_flags = VIS_INHERIT_PLANE | VIS_INHERIT_LAYER
+	vis_flags = VIS_INHERIT_PLANE | VIS_INHERIT_LAYER | VIS_INHERIT_DIR
 
 /// Погасшее пламя владыки опадает к ногам и тает.
 /obj/effect/temp_visual/heretic_ash_quench
-	icon = 'icons/mob/OnFire.dmi'
-	icon_state = "Standing"
+	icon = 'modular_bluemoon/icons/obj/heretic_effects.dmi'
+	icon_state = "ash_lord_quench"
 	randomdir = FALSE
 	appearance_flags = RESET_COLOR | PIXEL_SCALE
 	vis_flags = VIS_INHERIT_PLANE | VIS_INHERIT_LAYER
@@ -187,14 +193,14 @@
 
 /obj/effect/temp_visual/heretic_ash_quench/Initialize(mapload)
 	. = ..()
-	animate(src, alpha = 0, transform = matrix(HERETIC_ASH_QUENCH_WIDTH, 0, 0, 0, HERETIC_ASH_QUENCH_HEIGHT, -HERETIC_ASH_QUENCH_SINK), time = duration, easing = SINE_EASING | EASE_IN)
+	animate(src, alpha = 0, time = duration, easing = SINE_EASING | EASE_IN)
 
 /// Одна клетка огня без атмосферы: поджигает так же, как печать Угасания, но только на своей клетке.
 /obj/effect/heretic_combat_zone/ash/lord_trail
 	name = "burning footprints"
 	desc = "Угли тлеют на полу без всякого топлива и поджигают любого, кто на них встанет. Через несколько секунд гаснут сами."
-	icon = 'icons/effects/turf_fire.dmi'
-	icon_state = "red_small"
+	icon = 'modular_bluemoon/icons/effects/heretic_vfx.dmi'
+	icon_state = "ash_trail_flame"
 	layer = BELOW_MOB_LAYER
 	appearance_flags = PIXEL_SCALE
 	radius = 0
@@ -218,7 +224,7 @@
 /obj/effect/heretic_combat_zone/ash/lord_trail/proc/burn_down()
 	var/rest_alpha = initial(alpha)
 	var/hold = max(0, duration - HERETIC_ASH_TRAIL_KINDLE - HERETIC_ASH_TRAIL_DIE_DOWN - HERETIC_ASH_TRAIL_EMBERS)
-	animate(src, alpha = rest_alpha, transform = matrix(), icon = 'icons/effects/turf_fire.dmi', icon_state = "red_small", time = HERETIC_ASH_TRAIL_KINDLE, easing = SINE_EASING | EASE_OUT)
+	animate(src, alpha = rest_alpha, transform = matrix(), icon = 'modular_bluemoon/icons/effects/heretic_vfx.dmi', icon_state = "ash_trail_flame", time = HERETIC_ASH_TRAIL_KINDLE, easing = SINE_EASING | EASE_OUT)
 	animate(alpha = rest_alpha, time = hold)
 	animate(alpha = HERETIC_ASH_TRAIL_LOW_ALPHA, transform = matrix(HERETIC_ASH_TRAIL_LOW_SCALE, 0, 0, 0, HERETIC_ASH_TRAIL_LOW_SCALE, -HERETIC_ASH_TRAIL_LOW_SINK), time = HERETIC_ASH_TRAIL_DIE_DOWN, easing = SINE_EASING | EASE_IN)
 	animate(icon = 'modular_bluemoon/icons/effects/heretic_vfx.dmi', icon_state = "ash_embers", alpha = HERETIC_ASH_TRAIL_EMBER_ALPHA, transform = matrix(), time = 0)
@@ -248,11 +254,40 @@
 /obj/effect/heretic_combat_zone/ash
 	/// Вода и пена гасят огонь целиком; след вознёсшегося им не поддаётся.
 	var/water_douses = TRUE
+	/// Клетка поля -> язык огня на ней.
+	var/list/field_flames
+	var/doused = FALSE
 
 /obj/effect/heretic_combat_zone/ash/Initialize(mapload, datum/mind/master)
 	. = ..()
 	if(water_douses)
 		RegisterSignal(src, COMSIG_ATOM_EXPOSE_REAGENTS, PROC_REF(on_exposed))
+
+/obj/effect/heretic_combat_zone/ash/Destroy()
+	for(var/turf/place as anything in field_flames)
+		var/obj/effect/heretic_ash_field_flame/flame = field_flames[place]
+		flame?.go_out(doused)
+	field_flames = null
+	return ..()
+
+/obj/effect/heretic_combat_zone/ash/refresh_boundary(list/visible)
+	. = ..()
+	sync_field_flames()
+
+/// На каждой клетке поля свой огонь: новые клетки загораются, выпавшие гаснут.
+/obj/effect/heretic_combat_zone/ash/proc/sync_field_flames()
+	LAZYINITLIST(field_flames)
+	for(var/turf/place as anything in field_flames.Copy())
+		if(place in field_turfs)
+			continue
+		var/obj/effect/heretic_ash_field_flame/flame = field_flames[place]
+		field_flames -= place
+		flame?.go_out(FALSE)
+	var/lifetime = expires_at ? max(0, expires_at - world.time) : duration
+	for(var/turf/place as anything in field_turfs)
+		var/obj/effect/heretic_ash_field_flame/flame = field_flames[place]
+		if(QDELETED(flame))
+			field_flames[place] = new /obj/effect/heretic_ash_field_flame(place, lifetime, max(0, get_dist(place, loc)))
 
 /obj/effect/heretic_combat_zone/ash/style_edge(obj/effect/heretic_field_edge/edge, reused = FALSE)
 	. = ..()
@@ -265,19 +300,26 @@
 	for(var/datum/reagent/reagent as anything in reagents)
 		if(istype(reagent, /datum/reagent/water) || istype(reagent, /datum/reagent/firefighting_foam))
 			playsound(get_turf(src), 'sound/effects/extinguish.ogg', HERETIC_ASH_HISS_VOLUME, TRUE)
+			heretic_vfx_burst(get_turf(src), /particles/heretic_ascension/steam)
+			doused = TRUE
 			qdel(src)
 			return
 
 /datum/eldritch_knowledge/base_ash/pocket_door(mob/living/user, mob/living/victim)
 	if(!door_holds(user, victim))
 		return null
-	return list("name" = "в пепельный круг", "text" = "Пепел вокруг [victim] смыкается кругом и проваливается.", "time" = HERETIC_POCKET_PULL_TIME, "check" = CALLBACK(src, PROC_REF(door_holds), user, victim))
+	var/list/door = list("name" = "в пепельный круг", "text" = "Пепел вокруг [victim] смыкается кругом и проваливается.", "time" = HERETIC_POCKET_PULL_TIME, "check" = CALLBACK(src, PROC_REF(door_holds), user, victim))
+	if(shroud_on(victim))
+		door["remote"] = TRUE
+	return door
 
-/// Готовая цель на своём огне Угасания, еретик рядом; след вознёсшегося владыки дверью не служит.
+/// Цель в своём саване в 3 клетках или готовая цель на своём огне Угасания рядом; след вознёсшегося владыки дверью не служит.
 /datum/eldritch_knowledge/base_ash/proc/door_holds(mob/living/user, mob/living/victim)
-	if(!door_user_ready(user) || QDELETED(victim) || !isturf(victim.loc) || victim.z != user.z || get_dist(user, victim) > 1)
+	if(!door_user_ready(user) || QDELETED(victim) || !isturf(victim.loc) || victim.z != user.z)
 		return FALSE
-	if(!door_zone_under(victim, /obj/effect/heretic_combat_zone/ash))
+	if(shroud_on(victim))
+		return get_dist(user, victim) <= HERETIC_ASH_SHROUD_DOOR_RANGE && can_see(user, victim, HERETIC_ASH_SHROUD_DOOR_RANGE)
+	if(get_dist(user, victim) > 1 || !door_zone_under(victim, /obj/effect/heretic_combat_zone/ash))
 		return FALSE
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	return heretic.hunt_target_ready(victim)
@@ -293,7 +335,6 @@
 	heretic_vfx_burst(origin, /particles/heretic_ascension/ash)
 	heretic_vfx_flash(origin, LIGHT_COLOR_FIRE, HERETIC_ASH_CASCADE_FLASH_RANGE, HERETIC_ASH_CASCADE_FLASH_POWER)
 	heretic_vfx_quake(origin, HERETIC_ASH_CASCADE_RANGE, HERETIC_ASH_CASCADE_QUAKE, HERETIC_ASH_CASCADE_QUAKE_TIME)
-	playsound(origin, 'modular_bluemoon/sound/heretic/ash_burst.ogg', HERETIC_ASH_CASCADE_VOLUME, TRUE)
 
 /// Марево жара: волна по фигуре набегает и спадает, затем фильтр снимается.
 /proc/heretic_ash_heat_shimmer(atom/target)
@@ -332,6 +373,106 @@
 /obj/effect/abstract/heretic_fire_ring/proc/fade_out()
 	animate(src, alpha = 0, time = HERETIC_ASH_RING_FADE, easing = SINE_EASING | EASE_IN, flags = ANIMATION_PARALLEL)
 	QDEL_IN(src, HERETIC_ASH_RING_FADE)
+
+/// Язык огня Угасания: разгорается волной от центра, горит почти весь срок и опадает углями.
+/obj/effect/heretic_ash_field_flame
+	name = "ashen fire"
+	desc = "Огонь горит на голом полу без всякого топлива."
+	icon = 'modular_bluemoon/icons/obj/heretic_effects.dmi'
+	icon_state = "ash_flame_low"
+	anchored = TRUE
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	layer = BELOW_MOB_LAYER
+	appearance_flags = PIXEL_SCALE
+	var/going_out = FALSE
+	/// Высота языка: animate() сразу ставит конечный стейт углей, поэтому выбор хранится отдельно.
+	var/flame_state
+
+/obj/effect/heretic_ash_field_flame/Initialize(mapload, lifetime = HERETIC_ASH_TRAIL_DURATION, ring = 0)
+	. = ..()
+	flame_state = ring ? "ash_flame_low" : "ash_flame"
+	icon_state = flame_state
+	add_overlay(emissive_appearance(icon, flame_state, offset_spokesman = src))
+	alpha = 0
+	transform = matrix(HERETIC_ASH_KINDLE_START, 0, 0, 0, HERETIC_ASH_KINDLE_START, 0)
+	var/delay = ring * HERETIC_ASH_FIELD_RIPPLE
+	var/hold = max(0, lifetime - delay - HERETIC_ASH_TRAIL_KINDLE - HERETIC_ASH_FIELD_DIE_DOWN - HERETIC_ASH_FIELD_EMBERS)
+	animate(src, alpha = 0, time = delay)
+	animate(alpha = 255, transform = matrix(), time = HERETIC_ASH_TRAIL_KINDLE, easing = SINE_EASING | EASE_OUT)
+	animate(alpha = 255, time = hold)
+	animate(alpha = HERETIC_ASH_TRAIL_LOW_ALPHA, transform = matrix(HERETIC_ASH_TRAIL_LOW_SCALE, 0, 0, 0, HERETIC_ASH_TRAIL_LOW_SCALE, -HERETIC_ASH_TRAIL_LOW_SINK), time = HERETIC_ASH_FIELD_DIE_DOWN, easing = SINE_EASING | EASE_IN)
+	animate(icon = 'modular_bluemoon/icons/effects/heretic_vfx.dmi', icon_state = "ash_embers", alpha = HERETIC_ASH_TRAIL_EMBER_ALPHA, transform = matrix(), time = 0)
+	animate(alpha = 0, time = HERETIC_ASH_FIELD_EMBERS, easing = SINE_EASING | EASE_IN)
+
+/// Сбитый водой огонь приседает и тает паром, догоревший просто уходит.
+/obj/effect/heretic_ash_field_flame/proc/go_out(quenched)
+	if(going_out || QDELETED(src))
+		return
+	going_out = TRUE
+	var/fade = quenched ? HERETIC_ASH_QUENCH_TIME : HERETIC_ASH_FIELD_FADE
+	if(quenched)
+		animate(src, alpha = 0, transform = matrix(HERETIC_ASH_QUENCH_WIDTH, 0, 0, 0, HERETIC_ASH_QUENCH_HEIGHT, -HERETIC_ASH_QUENCH_SINK), time = fade, easing = SINE_EASING | EASE_IN)
+	else
+		animate(src, alpha = 0, time = fade, easing = SINE_EASING | EASE_IN)
+	QDEL_IN(src, fade)
+
+/// Искра Метки перескакивает дугой на соседа; на нём вспыхивают угли.
+/proc/heretic_ash_mark_arc(atom/source, atom/target)
+	var/turf/start = get_turf(source)
+	var/turf/finish = get_turf(target)
+	if(!start || !finish || start == finish || start.z != finish.z)
+		return null
+	if(heretic_vfx_watched(finish))
+		heretic_vfx_burst(finish, /particles/heretic_ascension/ash, HERETIC_VFX_BURST_TIME / 2)
+	return new /obj/effect/temp_visual/heretic_ash_arc(start, finish)
+
+/// Дуга рисуется вертикально и тянется поворотом от клетки к клетке, как песчаная нить.
+/obj/effect/temp_visual/heretic_ash_arc
+	icon = 'modular_bluemoon/icons/obj/heretic_ash_fx.dmi'
+	icon_state = "ash_arc"
+	duration = HERETIC_ASH_ARC_TIME
+	randomdir = FALSE
+	layer = ABOVE_MOB_LAYER
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	appearance_flags = PIXEL_SCALE
+
+/obj/effect/temp_visual/heretic_ash_arc/Initialize(mapload, turf/finish)
+	. = ..()
+	add_overlay(emissive_appearance(icon, "ash_arc_glow", offset_spokesman = src))
+	if(!isturf(finish))
+		return
+	var/span_x = (finish.x - x) * world.icon_size
+	var/span_y = (finish.y - y) * world.icon_size
+	var/span = sqrt(span_x * span_x + span_y * span_y)
+	var/matrix/line = matrix()
+	line.Scale(1, span / world.icon_size)
+	line.Translate(0, span / 2)
+	line.Turn(Get_Angle(loc, finish))
+	transform = line
+
+/// Жар уходит от горящего врага к еретику по огненной нити.
+/proc/heretic_ash_drain(mob/living/victim, mob/living/user)
+	if(QDELETED(victim) || QDELETED(user) || victim.z != user.z)
+		return null
+	new /obj/effect/temp_visual/heretic_oldpath/ash(get_turf(victim))
+	return victim.Beam(user, icon_state = "ash_drain", icon = 'modular_bluemoon/icons/obj/heretic_ash_fx.dmi', time = HERETIC_ASH_DRAIN_TIME, maxdistance = HERETIC_ASH_DRAIN_RANGE)
+
+/// Втянутый жар вспыхивает на еретике языком пламени и светом.
+/proc/heretic_ash_rebirth_flare(mob/living/user)
+	var/turf/place = get_turf(user)
+	if(!place)
+		return
+	new /obj/effect/temp_visual/heretic_ash_flame(place)
+	heretic_vfx_flash(place, LIGHT_COLOR_FIRE, HERETIC_ASH_FLARE_RANGE, HERETIC_ASH_FLARE_POWER, HERETIC_ASH_DRAIN_TIME / 2)
+	heretic_vfx_pulse(user, HERETIC_ASH_INK, HERETIC_ASH_SHIMMER_SIZE, HERETIC_ASH_DRAIN_TIME / 2)
+
+/datum/sound_effect/heretic_ash_grasp
+	key = HERETIC_ASH_GRASP_SFX
+	file_paths = list(
+		'modular_bluemoon/sound/heretic/ash_grasp1.ogg',
+		'modular_bluemoon/sound/heretic/ash_grasp2.ogg',
+		'modular_bluemoon/sound/heretic/ash_grasp3.ogg',
+	)
 
 /// Пепел: угли, взлетающие от горящего владыки.
 /particles/heretic_ascension/ash/lord_embers
@@ -407,9 +548,15 @@
 #undef HERETIC_ASH_CASCADE_FLASH_POWER
 #undef HERETIC_ASH_CASCADE_QUAKE
 #undef HERETIC_ASH_CASCADE_QUAKE_TIME
-#undef HERETIC_ASH_CASCADE_VOLUME
 #undef HERETIC_ASH_RING_RADIUS
 #undef HERETIC_ASH_RING_SPIN
 #undef HERETIC_ASH_RING_SEGMENTS
 #undef HERETIC_ASH_RING_FADE
 #undef HERETIC_ASH_MOTE_OFFSET
+#undef HERETIC_ASH_FIELD_RIPPLE
+#undef HERETIC_ASH_FIELD_DIE_DOWN
+#undef HERETIC_ASH_FIELD_EMBERS
+#undef HERETIC_ASH_FIELD_FADE
+#undef HERETIC_ASH_ARC_TIME
+#undef HERETIC_ASH_DRAIN_TIME
+#undef HERETIC_ASH_DRAIN_RANGE
