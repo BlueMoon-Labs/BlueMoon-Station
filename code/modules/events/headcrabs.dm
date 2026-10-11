@@ -133,7 +133,7 @@
 	if(prob(90))
 		priority_announce("Биосканеры фиксируют размножение хедкрабов на борту станции. Избавьтесь от них, прежде чем это начнет влиять на продуктивность станции", "ВНИМАНИЕ: НЕОПОЗНАННЫЕ ФОРМЫ ЖИЗНИ.")
 	else
-		priority_announce("ХЕДКРАБЫ!!!", "ВНИМАНИЕ: НЕОПОЗНАННЫЕ ФОРМЫ ЖИЗНИ.", sound = 'sound/misc/headcrabs01.wav')
+		priority_announce("ХЕДКРАБЫ!!!", "ВНИМАНИЕ: НЕОПОЗНАННЫЕ ФОРМЫ ЖИЗНИ.", sound = 'sound/misc/headcrabs01.ogg')
 
 #undef HEADCRAB_NORMAL
 #undef HEADCRAB_FASTMIX

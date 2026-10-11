@@ -85,7 +85,7 @@ export const StatbrowserTarget = new Juke.Target({
 export const DmTarget = new Juke.Target({
   dependsOn: ({ get }) => [
     StatbrowserTarget,
-    get(DefineParameter).includes('ALL_MAPS') && DmMapsIncludeTarget,
+    get(DefineParameter).includes('ALL_TEMPLATES') && DmMapsIncludeTarget,
   ],
   inputs: async () => [
     'dependencies.sh',
@@ -183,7 +183,7 @@ const dmTestInputs = [
 export const DmTestBuildTarget = new Juke.Target({
   parameters: [DefineParameter, UnitTestProfileParameter],
   dependsOn: ({ get }) => [
-    get(DefineParameter).includes('ALL_MAPS') && DmMapsIncludeTarget,
+    get(DefineParameter).includes('ALL_TEMPLATES') && DmMapsIncludeTarget,
   ],
   inputs: async () => [
     ...dmTestInputs,

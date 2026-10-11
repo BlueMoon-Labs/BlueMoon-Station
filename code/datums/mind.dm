@@ -52,6 +52,9 @@
 	var/special_role
 	var/list/restricted_roles = list()
 
+	/// Приоритет роли, метадоллары удваиваются при игре на ней. Выставляется в HR CORE
+	var/job_priority_boost = FALSE
+
 	var/hide_ckey = FALSE //hide ckey from round-end report
 
 	var/list/spell_list = list() // Wizard mode & "Give Spell" badmin button.

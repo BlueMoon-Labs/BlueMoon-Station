@@ -3,6 +3,8 @@
 	// BLUEMOON OPTIMIZATION: stagger organ processing for clientless mobs (every other fire)
 	if(client || ((times_fired + life_periodic_phase) % 2 == 0))
 		handle_organs(client ? delta_time : delta_time * 2, times_fired)
+	if(QDELETED(src)) // reagents can transform the mob, e.g. mutadone on a monkey
+		return FALSE
 	. = ..()		// if . is false, we are dead.
 	if(stat == DEAD)
 		stop_sound_channel(CHANNEL_HEARTBEAT)

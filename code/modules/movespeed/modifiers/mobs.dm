@@ -87,6 +87,11 @@
 	blacklisted_movetypes = (FLYING|FLOATING)
 	variable = TRUE
 
+/datum/movespeed_modifier/lattice_footing
+	movetypes = GROUND
+	blacklisted_movetypes = (FLYING|FLOATING)
+	variable = TRUE
+
 /datum/movespeed_modifier/bulky_drag
 	variable = TRUE
 

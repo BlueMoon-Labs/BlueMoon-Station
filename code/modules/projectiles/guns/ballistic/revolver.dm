@@ -612,7 +612,7 @@
 		for(var/i = src.magazine.stored_ammo.len; i > 0; i--)
 			var/obj/item/ammo_casing/CB = src.magazine.stored_ammo[i]
 			if(CB)
-				src.magazine.stored_ammo -= CB
+				src.magazine.stored_ammo[i] = null
 				CB.forceMove(src.drop_location())
 				CB.bounce_away(FALSE, NONE)
 				reloaded_any = TRUE 
@@ -623,7 +623,7 @@
 		for(var/i = offhand_rev.magazine.stored_ammo.len; i > 0; i--)
 			var/obj/item/ammo_casing/CB = offhand_rev.magazine.stored_ammo[i]
 			if(CB)
-				offhand_rev.magazine.stored_ammo -= CB
+				offhand_rev.magazine.stored_ammo[i] = null
 				CB.forceMove(offhand_rev.drop_location())
 				CB.bounce_away(FALSE, NONE)
 				reloaded_any = TRUE
@@ -640,19 +640,12 @@
 	for(var/obj/item/ammo_casing/bullet in bullets_in_belt)
 		
 		// Заряжает основной револьвер, пока в барабане есть место
-		if(src.magazine && src.magazine.stored_ammo.len < src.magazine.max_ammo)
-			// Физически переносим патрон с пояса внутрь магазина револьвера
-			bullet.forceMove(src.magazine)
-			if(src.magazine.stored_ammo)
-				src.magazine.stored_ammo.Add(bullet) // Добавляем патрон в список Сплюрта
+		if(src.magazine?.give_round(bullet))
 			actual_reload_success = TRUE
 			continue // Берем следующий патрон из пояса
 
 		// Если основной полный, заряжаем левый револьвер
-		if(offhand_rev && offhand_rev.magazine && offhand_rev.magazine.stored_ammo.len < offhand_rev.magazine.max_ammo)
-			bullet.forceMove(offhand_rev.magazine)
-			if(offhand_rev.magazine.stored_ammo)
-				offhand_rev.magazine.stored_ammo.Add(bullet)
+		if(offhand_rev.magazine?.give_round(bullet))
 			actual_reload_success = TRUE
 			continue
 
@@ -703,6 +696,11 @@
 	w_class = WEIGHT_CLASS_NORMAL
 	recoil = 0.5
 	slot_flags = ITEM_SLOT_BELT
+	unique_reskin = list(
+		"Police" = list(
+			"icon_state" = "apostle police"
+		))
+
 
 /obj/item/gun/ballistic/revolver/Dies_Irae //сбухам кит на револьвер для переделки под 308, но КРАЙНЕ МЕДЛЕННАЯ стрельба, плюс с двух рук, считай аналог винтовки с карго, но влезает в сумку ценой скорости стрельбы
 	name = "\improper Dies Iraen"
@@ -715,10 +713,14 @@
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/dies_irae
 	dual_wield_spread = 25
-	fire_delay = 20
+	fire_delay = 15
 	w_class = WEIGHT_CLASS_NORMAL
 	recoil = 5
 	slot_flags = ITEM_SLOT_BELT
+	unique_reskin = list(
+		"Police" = list(
+			"icon_state" = "dies_irae  police"
+		))
 
 /obj/item/gun/ballistic/revolver/Liturgy //Апгрейд на ревик сбух, чтоб было 18 патрон, енфорсеру всунули 28, ревику можно 18
 	name = "\improper Liturgy"
@@ -735,6 +737,10 @@
 	w_class = WEIGHT_CLASS_NORMAL
 	recoil = 0.5
 	slot_flags = ITEM_SLOT_BELT 
+	unique_reskin = list(
+		"Police" = list(
+			"icon_state" = "liturgy police"
+		))
 
 /obj/item/gun/ballistic/revolver/Passing_Bell //тупа секвоя из нью вегаса антагам, калибр 45 70 давно в игре, но его нахуй никто не использует
 	name = "\improper Passing Bell"
@@ -757,13 +763,263 @@
 	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
 	icon_state = "exorcist"
 	item_state = "exorcist"
-	fire_sound = "modular_bluemoon/fluffs/sound/weapon/Exorcist.ogg"
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/winchester1897_shot.ogg'
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/exorcist 
 	dual_wield_spread = 25
-	fire_delay = 15
+	fire_delay = 10
 	w_class = WEIGHT_CLASS_NORMAL
 	weapon_weight = WEAPON_MEDIUM //чтоб не стреляли с 2 рук, но не требовал вторую руку
 	recoil = 5
 	slot_flags = ITEM_SLOT_BELT
+
+/obj/item/gun/ballistic/revolver/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0, stam_cost = 0)
+	// Вызываем базовый выстрел (пуля/дробь вылетает во врага)
+	. = ..()
+	if(!.)
+		return
+	// Проверяем, что стрелок — живой человек
+	if(!ishuman(user))
+		return
+
+	var/mob/living/carbon/human/H = user
+
+	// СТРОГАЯ ПРОВЕРКА АКТИВНОГО ОРУЖИЯ: Стреляем ли мы сейчас из Dies_Irae или Exorcist?
+	var/is_main_heavy = (istype(src, /obj/item/gun/ballistic/revolver/Dies_Irae) || istype(src, /obj/item/gun/ballistic/revolver/Exorcist))
+	if(!is_main_heavy)
+		return // Если в активной руке другой револьвер, ничего не делаем
+
+	// СТРОГАЯ ПРОВЕРКА ВТОРОЙ РУКИ: Ищем тяжелое оружие во второй руке
+	var/obj/item/offhand_item = H.get_inactive_held_item()
+	
+	// Проверяем, является ли предмет во второй руке тоже одним из этих двух револьверов
+	var/is_offhand_heavy = (istype(offhand_item, /obj/item/gun/ballistic/revolver/Dies_Irae) || istype(offhand_item, /obj/item/gun/ballistic/revolver/Exorcist))
+	
+	if(!is_offhand_heavy)
+		return // Если вторая рука пуста или там любой другой предмет (нож, фонарик, легкий пистолет) — вывиха НЕТ!
+
+	// ВЫВИХ ПРАВОГО ПЛЕЧА (срабатывает только при стрельбе из двух тяжелых револьверов)
+	var/obj/item/bodypart/r_arm = H.get_bodypart(BODY_ZONE_R_ARM)
+	if(r_arm)
+		r_arm.receive_damage(brute = 15, burn = 0, wound_bonus = 0)
+		var/datum/wound/blunt/moderate/right_dislocation = new
+		right_dislocation.apply_wound(r_arm)
+		if(hasvar(r_arm, "enabled"))
+			r_arm.vars["enabled"] = FALSE
+		r_arm.update_appearance()
+
+	//  ВЫВИХ ЛЕВЕГО ПЛЕЧА
+	var/obj/item/bodypart/l_arm = H.get_bodypart(BODY_ZONE_L_ARM)
+	if(l_arm)
+		l_arm.receive_damage(brute = 15, burn = 0, wound_bonus = 0)
+		var/datum/wound/blunt/moderate/left_dislocation = new
+		left_dislocation.apply_wound(l_arm)
+		if(hasvar(l_arm, "enabled"))
+			l_arm.vars["enabled"] = FALSE
+		l_arm.update_appearance()
+
+	// БОЛЕВОЙ ШОК, ЭФФЕКТЫ И ПАДЕНИЕ ОРУЖИЯ
+	to_chat(H, "<span class='userdanger'>Попытка выстрелить из двух тяжелых револьверов одновременно сокрушительной отдачей выбивает вам оба плеча!</span>")
+	
+	playsound(H.loc, 'sound/effects/wounds/crack1.ogg', 70, TRUE) 
+	
+	// Персонаж роняет оба револьвера на пол
+	H.drop_all_held_items()
+	
+	// Болевой ступор/паралич на 3.5 секунды
+	H.Paralyze(35) 
+
+
+
+
+
+// ==========================================
+// НОВЫЕ РЕВИКИ 2
+// ==========================================
+/obj/item/gps/embed_gps/judgement_beacon_bomb
+	name = "Маячок-детонатор"
+	desc = "Миниатюрный скрытый заряд, внедренный под кожу. Дистанционно взрывается по радиосигналу револьвера или автоматически через 2 минуты."
+	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
+	icon_state = "bomb_beacon" 
+	
+	var/obj/item/gun/ballistic/revolver/judgement/my_gun 
+	var/mob/living/carbon/my_target 
+
+/obj/item/gps/embed_gps/judgement_beacon_bomb/Initialize(mapload)
+	. = ..()
+	src.lifespan = 2 MINUTES 
+	addtimer(CALLBACK(src, PROC_REF(auto_detonate)), src.lifespan)
+
+/obj/item/gps/embed_gps/judgement_beacon_bomb/proc/auto_detonate()
+	if(QDELETED(src))
+		return
+
+	if(my_target && !QDELETED(my_target))
+		to_chat(my_target, "<span class='userdanger'>Вживленный внутри вас маячок издает критический писк и детонирует!</span>")
+		
+		var/turf/T = get_turf(my_target)
+		if(T)
+			new /obj/effect/temp_visual/kinetic_blast(T)
+			playsound(T, 'sound/weapons/resonator_blast.ogg', 50, 1)
+		
+		my_target.ex_act(EXPLODE_LIGHT)
+		
+		if(my_gun && !QDELETED(my_gun))
+			my_gun.active_beacons -= my_target
+	else
+		var/turf/T = get_turf(src)
+		if(T)
+			new /obj/effect/particle_effect/smoke(T)
+	
+	qdel(src)
+
+// ==========================================
+// ПАТРОНЫ ПОКА ТУТ, ТЕСТИРУЮ, ПОТОМ ЗАКИНУ В НОРМАЛЬНОЕ МЕСТО
+// ==========================================
+
+// Маячок (10 урона + МНОЖЕСТВЕННОЕ вживление имплантов)
+/obj/item/projectile/bullet/judgement_beacon
+	name = ".44 Magnum glycerine rounds"
+	damage = 10 
+
+/obj/item/projectile/bullet/judgement_beacon/on_hit(atom/target, blocked = FALSE)
+	. = ..()
+	if(!iscarbon(target))
+		return
+
+	var/mob/living/carbon/C = target
+	
+	if(!firer || !istype(firer.get_active_held_item(), /obj/item/gun/ballistic/revolver/judgement))
+		return
+
+	var/obj/item/gun/ballistic/revolver/judgement/J = firer.get_active_held_item()
+
+	var/obj/item/gps/embed_gps/judgement_beacon_bomb/bomb = new(target)
+	bomb.my_gun = J
+	bomb.my_target = C
+	bomb.tryEmbed(C, forced = TRUE, silent = TRUE)
+	
+	J.active_beacons.Add(C)
+	
+	to_chat(firer, "<span class='notice'>Револьвер издает писк</span>")
+
+
+// ==========================================
+// ЖЕЛТЫЙ КВАДРАТ ПРИ ПОПАДАНИИ, ПОТОМ может ЧЕ НИТЬ ДРУГОЕ БУДЕТ
+// ==========================================
+/obj/effect/temp_visual/judgement_kinetic_blast
+	name = "кинетическая вспышка"
+	desc = "Визуальный эффект кинетического удара."
+	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi' // Твой файл иконок
+	icon_state = "boom" // Сюда впишешь название своего спрайта взрыва, когда нарисуешь!
+	duration = 5 // Длительность анимации в тиках (0.5 секунды), после чего игра сама удалит эффект
+
+// ==========================================
+// ОТКИДЫВАЕТ, ПЛЮС РИКОШЕТ
+// ==========================================
+/obj/item/projectile/bullet/judgement_kinetic_ricochet
+	name = ".44 Magnum round"
+	damage = 70
+	ricochets_max = 4
+	ricochet_chance = 100
+	ricochet_auto_aim_angle = 90
+	ricochet_auto_aim_range = 10
+	ricochet_incidence_leeway = 50
+	ricochet_decay_chance = 1
+	ricochet_decay_damage = 1
+
+/obj/item/projectile/bullet/judgement_kinetic_ricochet/on_hit(atom/target, blocked = 0)
+	. = ..()
+	
+	// СПАВН ВИЗУАЛЬНОГО МИНИ-ВЗРЫВА ПРИ ЛЮБОМ ПОПАДАНИИ (в стену, пол или моба)
+	var/turf/hit_turf = get_turf(target)
+	if(hit_turf)
+		// Создаем твой кастомный эффект взрыва точно на тайле попадания
+		new /obj/effect/temp_visual/judgement_kinetic_blast(hit_turf)
+		// Воспроизводим сочный звук удара из примера с перчаткой
+		playsound(hit_turf, 'sound/weapons/genhit2.ogg', 40, 1)
+
+	// КРИВО СПИЗДИЛ КОД С ПАУВЕР ФИСТА
+	if(isliving(target))
+		var/mob/living/L = target
+		
+		if(hasvar(L, "move_resist") && L.vars["move_resist"] >= INFINITY)
+			return
+
+		var/atom/throw_target = get_edge_target_turf(L, get_dir(src, get_step_away(L, starting)))
+		
+		if(throw_target)
+			L.throw_at(throw_target, 2, 1)
+			to_chat(L, "<span class='userdanger'>Тяжелый кинетический импульс пули сбивает вас с ног и отбрасывает назад!</span>")
+
+
+// ==========================================
+// Патрончики
+// ==========================================
+/obj/item/ammo_casing/a357/judgement_beacon
+	name = ".44 Magnum glycerine rounds"
+	desc = "Особый патрон. Пуля наносит легкий урон и вживляет дистанционную взрывчатку под кожу."
+	projectile_type = /obj/item/projectile/bullet/judgement_beacon
+
+/obj/item/ammo_casing/a357/judgement_kinetic
+	name = ".44 magnum kinetic rounds"
+	desc = "Особый патрон. Пуля наносит огромный урон, отскакивает от стен и откидывает цели назад."
+	projectile_type = /obj/item/projectile/bullet/judgement_kinetic_ricochet
+
+
+// ==========================================
+// Барабанчик
+// ==========================================
+/obj/item/ammo_box/magazine/internal/cylinder/judgement
+	name = "барабан Judgement"
+	ammo_type = /obj/item/ammo_casing/a357/judgement_beacon 
+	max_ammo = 6
+
+
+// ==========================================
+// САМ РЕВОЛЬВЕР 
+// ==========================================
+/obj/item/gun/ballistic/revolver/judgement
+	name = "\improper Judgement"
+	desc = "The High Explosive .44 Magnum fires kinetic or glycerine rounds useful for close-quarter combat scenarios. It is the only weapon in the SRPA arsenal certified for use with glycerin rounds. Each slug carries a small, explosive charge that can be remote-detonated from a switch near the trigger guard."
+	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
+	icon_state = "judgement"
+	item_state = "gun"
+	fire_sound = "modular_bluemoon/fluffs/sound/weapon/Judgement.ogg"
+	lefthand_file = 'icons/mob/inhands/weapons/guns_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/weapons/guns_righthand.dmi'
+	
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/judgement
+	
+	var/list/active_beacons = list()
+
+// бум на Z
+/obj/item/gun/ballistic/revolver/judgement/attack_self(mob/living/user)
+	if(!active_beacons || !active_beacons.len)
+		to_chat(user, "<span class='warning'>Нет активных вживленных маячков в радиусе действия сети детонации.</span>")
+		return TRUE
+
+	to_chat(user, "<span class='userdanger'>Детонационный сигнал отправлен! Все заряды активированы!</span>")
+
+	// Перебираем каждую запись в списке (если моб добавлен 3 раза, он бабахнет 3 раза)
+	for(var/mob/living/carbon/C in active_beacons)
+		if(C && !QDELETED(C))
+			to_chat(C, "<span class='userdanger'>Вживленный внутри вас маячок детонирует по радиосигналу!</span>")
+			
+			var/turf/T = get_turf(C)
+			if(T)
+				new /obj/effect/temp_visual/kinetic_blast(T)
+				playsound(T, 'sound/weapons/resonator_blast.ogg', 50, 1)
+				playsound(T, 'sound/weapons/genhit2.ogg', 50, 1)
+			
+			C.ex_act(EXPLODE_LIGHT)
+			
+			// Поочередно удаляем по одному импланту-детонатору из его тела
+			var/obj/item/gps/embed_gps/judgement_beacon_bomb/B = locate(/obj/item/gps/embed_gps/judgement_beacon_bomb) in C
+			if(B)
+				qdel(B)
+
+	// Полностью очищаем память пушки
+	active_beacons.Cut()
+	return TRUE

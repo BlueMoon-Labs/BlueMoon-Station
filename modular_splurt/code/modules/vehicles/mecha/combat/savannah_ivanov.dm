@@ -164,7 +164,7 @@
 	chassis.movedelay = initial(chassis.movedelay)
 	chassis.density = TRUE
 	chassis.layer = initial(chassis.layer)
-	chassis.plane = initial(chassis.plane)
+	RESET_PLANE_EXPLICIT(chassis, chassis)
 	skyfall_charge_level = 0
 	chassis.update_appearance(UPDATE_ICON_STATE)
 	for(var/mob/living/shaken in range(7, chassis))

@@ -4,6 +4,8 @@ PROCESSING_SUBSYSTEM_DEF(radiation)
 	wait = 1 SECONDS
 
 	var/list/warned_atoms = list()
+	/// Живые волны: в processing лежат и компоненты заражения, поэтому кап считает волны отдельно.
+	var/active_waves = 0
 
 /datum/controller/subsystem/processing/radiation/proc/warn(datum/component/radioactive/contamination)
 	if(!contamination || QDELETED(contamination))

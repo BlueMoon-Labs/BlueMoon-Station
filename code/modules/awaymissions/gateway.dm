@@ -298,7 +298,7 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 		var/mutable_appearance/glow = mutable_appearance(icon, "portal_light")
 		glow.color = "#ff2525"
 		. += glow
-		. += emissive_appearance(icon, "portal_light", src)
+		. += emissive_appearance(icon, "portal_light", offset_spokesman = src)
 		if(pact_siege_visual == "calibrating")
 			/// Drawn last so it sits in front of the frame / red light
 			var/mutable_appearance/loading = mutable_appearance(icon, "portal_loading")
@@ -392,6 +392,7 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	if(!target)
 		if(!GLOB.the_gateway)
 			to_chat(user,span_warning("Home gateway is not responding!"))
+			return
 		if(GLOB.the_gateway.target)
 			GLOB.the_gateway.deactivate() //this will turn the home gateway off so that it's free for us to connect to
 		activate(GLOB.the_gateway.destination)
@@ -418,14 +419,14 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	if(!ui)
 		ui = new(user, src, "Gateway", name)
 		ui.open()
-		G.portal_visuals.display_to(user, ui.window)
+		G?.portal_visuals.display_to(user, ui.window)
 
 /obj/machinery/computer/gateway_control/ui_data(mob/user)
 	. = ..()
 	.["gateway_present"] = G
 	.["gateway_status"] = G ? G.powered() : FALSE
 	.["current_target"] = G?.target?.get_ui_data()
-	.["gateway_mapkey"] = G.portal_visuals.assigned_map
+	.["gateway_mapkey"] = G?.portal_visuals.assigned_map
 	var/list/destinations = list()
 	if(G)
 		for(var/datum/gateway_destination/possible_destination in GLOB.gateway_destinations)

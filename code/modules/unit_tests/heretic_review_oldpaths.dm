@@ -136,7 +136,7 @@
 	qdel(knowledge)
 	TEST_ASSERT(QDELETED(new_spell), "Удаление знания отзывает заклинание.")
 
-/// Путь Аристократа лечит в холодном воздухе и в своём Зимнем пределе; в холоде осколки копятся выше двух.
+/// Ледяная темница лечит в холодном воздухе и в своём Зимнем пределе; в холоде осколки копятся выше двух.
 /datum/unit_test/heretic_void_winter_healing
 	var/turf/open/floor/cold_floor
 	var/original_temperature
@@ -150,9 +150,9 @@
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	var/mob/living/user = heretic.owner.current
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_void)
-	heretic.gain_knowledge(/datum/eldritch_knowledge/cold_snap)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/void_prison)
 	var/datum/eldritch_knowledge/base_void/path = heretic.get_knowledge(/datum/eldritch_knowledge/base_void)
-	var/datum/eldritch_knowledge/cold_snap/aristocrat = heretic.get_knowledge(/datum/eldritch_knowledge/cold_snap)
+	var/datum/eldritch_knowledge/spell/void_prison/aristocrat = heretic.get_knowledge(/datum/eldritch_knowledge/spell/void_prison)
 	cold_floor = get_turf(user)
 	original_temperature = cold_floor.GetTemperature()
 	cold_floor.air.set_temperature(T0C + 20)

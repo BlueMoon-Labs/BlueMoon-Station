@@ -34,7 +34,7 @@
 /mob/camera/imaginary_friend/reset_perspective(atom/A)
 	if(!client)
 		return
-	client.eye = owner
+	client.set_eye(owner)
 	client.perspective = EYE_PERSPECTIVE
 	SEND_SIGNAL(src, COMSIG_MOB_RESET_PERSPECTIVE, A)
 	return TRUE

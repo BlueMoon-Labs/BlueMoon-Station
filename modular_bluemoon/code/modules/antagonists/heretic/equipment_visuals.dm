@@ -33,11 +33,14 @@
 	var/robe_worn_icon
 	var/hood_worn_icon
 	var/robe_tint = "#ffffff"
+	/// В листе мантии на теле есть отдельный стейт `_t` под поднятый капюшон.
+	var/robe_raised_state = TRUE
 
 /datum/heretic_path/ash
 	robe_state = "ash_armor"
 	robe_worn_icon = 'modular_bluemoon/icons/obj/heretic_robes_ash_worn.dmi'
 	hood_worn_icon = 'modular_bluemoon/icons/obj/heretic_hoods_ash_worn.dmi'
+	robe_raised_state = FALSE
 
 /datum/heretic_path/rust
 	robe_state = "rust_armor"
@@ -48,21 +51,25 @@
 	robe_state = "flesh_armor"
 	robe_worn_icon = 'modular_bluemoon/icons/obj/heretic_robes_flesh_worn.dmi'
 	hood_worn_icon = 'modular_bluemoon/icons/obj/heretic_hoods_flesh_worn.dmi'
+	robe_raised_state = FALSE
 
 /datum/heretic_path/void
 	robe_state = "void_armor"
 	robe_worn_icon = 'modular_bluemoon/icons/obj/heretic_robes_void_worn.dmi'
 	hood_worn_icon = 'modular_bluemoon/icons/obj/heretic_hoods_void_worn.dmi'
+	robe_raised_state = FALSE
 
 /datum/heretic_path/blade
 	robe_state = "blade_armor"
 	robe_worn_icon = 'modular_bluemoon/icons/obj/heretic_robes_blade_worn.dmi'
 	hood_worn_icon = 'modular_bluemoon/icons/obj/heretic_hoods_blade_worn.dmi'
+	robe_raised_state = FALSE
 
 /datum/heretic_path/moon
 	robe_state = "moon_armor"
 	robe_worn_icon = 'modular_bluemoon/icons/obj/heretic_robes_moon_worn.dmi'
 	hood_worn_icon = 'modular_bluemoon/icons/obj/heretic_hoods_moon_worn.dmi'
+	robe_raised_state = FALSE
 
 /datum/heretic_path/cosmic
 	robe_state = "cosmic_armor"
@@ -73,6 +80,7 @@
 	robe_state = "lock_armor"
 	robe_worn_icon = 'modular_bluemoon/icons/obj/heretic_robes_lock_worn.dmi'
 	hood_worn_icon = 'modular_bluemoon/icons/obj/heretic_hoods_lock_worn.dmi'
+	robe_raised_state = FALSE
 
 /datum/heretic_path/tide
 	robe_state = "tide_armor"
@@ -80,7 +88,17 @@
 	hood_worn_icon = 'modular_bluemoon/icons/obj/heretic_hoods_tide_worn.dmi'
 
 /obj/item/clothing/suit/hooded/cultrobes/eldritch
+	lefthand_file = 'modular_bluemoon/icons/obj/heretic_robes_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/obj/heretic_robes_righthand.dmi'
 	var/robe_path
+
+/obj/item/clothing/suit/hooded/cultrobes/void
+	lefthand_file = 'modular_bluemoon/icons/obj/heretic_robes_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/obj/heretic_robes_righthand.dmi'
+
+/obj/item/clothing/mask/gas/void_mask
+	lefthand_file = 'modular_bluemoon/icons/obj/heretic_mad_mask_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/obj/heretic_mad_mask_righthand.dmi'
 
 /datum/heretic_path/glass
 	robe_state = "glass_armor"
@@ -204,12 +222,14 @@
 	if(!path?.robe_state)
 		return ..()
 	icon_state = path.robe_state
-	if(ishuman(hood?.loc))
-		var/mob/living/carbon/human/wearer = hood.loc
-		if(wearer.head == hood)
-			icon_state += "_t"
-	// В руках сохраняется существующий спрайт свёрнутой мантии.
-	item_state = initial(item_state)
+	item_state = path.robe_state
+
+/// Поднятый капюшон меняет только рисунок на теле: значок в слоте костюма остаётся анимированным.
+/obj/item/clothing/suit/hooded/cultrobes/eldritch/build_worn_icon(default_layer = 0, default_icon_file = null, isinhands = FALSE, femaleuniform = NO_FEMALE_UNIFORM, override_state, style_flags = NONE, use_mob_overlay_icon = TRUE, alpha_mask)
+	var/datum/heretic_path/path = GLOB.heretic_paths[robe_path]
+	if(!isinhands && suittoggled && path?.robe_raised_state)
+		override_state = "[path.robe_state]_t"
+	return ..()
 
 /datum/eldritch_knowledge/armor/on_finished_recipe(mob/living/user, list/atoms, loc)
 	var/obj/item/clothing/suit/hooded/cultrobes/eldritch/robes = new(loc)

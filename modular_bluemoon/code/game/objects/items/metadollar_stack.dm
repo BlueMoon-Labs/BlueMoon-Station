@@ -29,7 +29,7 @@
 /obj/item/stack/metadollar/Initialize(mapload, new_amount, merge = TRUE)
 	. = ..()
 	update_metadollar_icon()
-	if(!mapload)
+	if(!mapload && !QDELETED(src))
 		addtimer(CALLBACK(src, PROC_REF(bm_log_admin_spawn_if_needed)), 1)
 
 /obj/item/stack/metadollar/proc/bm_log_admin_spawn_if_needed()

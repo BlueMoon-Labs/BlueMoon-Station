@@ -58,7 +58,7 @@
 
 /mob/living/simple_animal/hostile/cat_butcherer/AttackingTarget()
 	if(iscarbon(target))
-		var/mob/living/carbon/human/L = target
+		var/mob/living/carbon/L = target
 		if(!L.getorgan(/obj/item/organ/ears/cat) && L.stat) //target doesnt have cat ears
 			if(L.getorgan(/obj/item/organ/ears)) //slice off the old ears
 				var/obj/item/organ/ears/ears = L.getorgan(/obj/item/organ/ears)
@@ -95,13 +95,16 @@
 			L.SetSleeping(0, FALSE)
 			L.SetUnconscious(0, FALSE)
 			L.adjustOxyLoss(-50)// do CPR first
+			var/mob/living/carbon/human/human_patient = ishuman(L) ? L : null
 			if(L.blood_volume <= 500) //bandage them up and give em some blood if they're bleeding
 				L.adjust_integration_blood(30)
-				L.bleedsuppress = 0
+				if(human_patient)
+					human_patient.bleedsuppress = 0
 			if(L.getBruteLoss() >= 50)// first, did we beat them into crit? if so, heal that
 				var/healing = min(L.getBruteLoss(), 120)
 				L.adjustBruteLoss(-healing)
-				L.bleedsuppress = 0 //bandage their ass
+				if(human_patient)
+					human_patient.bleedsuppress = 0 //bandage their ass
 				return
 			else if(L.getFireLoss() >= 50) // are they still down from other damage? fix it, but not as fast as the burns
 				var/healing = min(L.getFireLoss(), 50)

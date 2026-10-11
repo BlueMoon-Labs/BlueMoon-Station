@@ -352,6 +352,21 @@
 	TEST_ASSERT_EQUAL(witness.fullscreens["independent_omen_test"], other_overlay, "Независимый слой остаётся нетронутым.")
 	witness.clear_fullscreen("independent_omen_test", 0)
 
+/// Отголосок нимба у свидетеля висит на прозрачной для мыши опоре и уходит вместе со знамением.
+/datum/unit_test/heretic_ascension_omen_echo_click_through/Run()
+	var/mob/living/carbon/human/witness = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/datum/status_effect/heretic_ascension_omen/omen = witness.apply_status_effect(/datum/status_effect/heretic_ascension_omen, PATH_MOON)
+	var/image/echo = omen.build_echo()
+	var/obj/effect/abstract/heretic_vfx_image_anchor/anchor = echo.loc
+	TEST_ASSERT(istype(anchor), "Отголосок висит на опоре, а не на свидетеле.")
+	TEST_ASSERT(anchor in witness.vis_contents, "Опора в vis_contents свидетеля.")
+	TEST_ASSERT_EQUAL(anchor.mouse_opacity, MOUSE_OPACITY_TRANSPARENT, "Опора не ловит клики.")
+	omen.build_echo()
+	TEST_ASSERT_EQUAL(omen.personal_echo.loc, anchor, "Следующий отголосок берёт ту же опору.")
+	qdel(omen)
+	TEST_ASSERT(QDELETED(anchor), "Конец знамения удаляет опору.")
+	TEST_ASSERT(!(anchor in witness.vis_contents), "Удалённая опора уходит из vis_contents свидетеля.")
+
 /// Оповещение доступно машине, но телесное знамение и его полноэкранный слой — нет.
 /datum/unit_test/heretic_ascension_omen_carbon_only/Run()
 	var/mob/living/silicon/robot/borg = allocate(/mob/living/silicon/robot, run_loc_floor_bottom_left)

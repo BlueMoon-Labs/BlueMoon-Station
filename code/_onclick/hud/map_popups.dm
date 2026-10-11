@@ -9,18 +9,13 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/map_view)
 	plane = GAME_PLANE
 	del_on_map_removal = FALSE
 
-	/// Plane masters popup map
-	var/list/atom/movable/screen/plane_master/popup_plane_masters
+	var/datum/plane_master_group/popup/popup_plane_group
 	/// Client this map_view was displayed to, for cleanup on Destroy
 	var/client/registered_client
 
 /atom/movable/screen/map_view/Destroy()
-	if(registered_client)
-		registered_client.clear_map(assigned_map)
-		registered_client = null
-	for(var/atom/movable/screen/plane_master/pm as anything in popup_plane_masters)
-		pm.screen_loc = null
-	QDEL_LIST(popup_plane_masters)
+	hide_from()
+	QDEL_NULL(popup_plane_group)
 	return ..()
 
 /atom/movable/screen/map_view/proc/generate_view(map_key)
@@ -44,24 +39,22 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/map_view)
 		return
 	registered_client = show_to
 	show_to.register_map_obj(src)
-	if(!LAZYLEN(popup_plane_masters))
-		popup_plane_masters = list()
-		for(var/plane_master_type in subtypesof(/atom/movable/screen/plane_master))
-			var/atom/movable/screen/plane_master/pm = new plane_master_type()
-			pm.assigned_map = assigned_map
-			pm.del_on_map_removal = FALSE
-			pm.screen_loc = "[assigned_map]:CENTER"
-			popup_plane_masters += pm
-	for(var/atom/movable/screen/plane_master/pm as anything in popup_plane_masters)
-		show_to.register_map_obj(pm)
+	var/datum/plane_master_group/popup/group = ensure_plane_group()
+	group.register_to_client(show_to)
+
+/// Стопка строится при первом показе: большинство карт за раунд не открывают.
+/atom/movable/screen/map_view/proc/ensure_plane_group()
+	if(!popup_plane_group)
+		popup_plane_group = new /datum/plane_master_group/popup(PLANE_GROUP_POPUP_WINDOW(src), assigned_map)
+	return popup_plane_group
 
 /atom/movable/screen/map_view/proc/hide_from(mob/hide_from)
 	var/client/target_client = hide_from?.client || registered_client
-	if(!target_client)
-		registered_client = null
-		return
-	target_client.clear_map(assigned_map)
 	registered_client = null
+	if(!target_client)
+		return
+	popup_plane_group?.unregister_from_client(target_client)
+	target_client.clear_map(assigned_map)
 
 /**
  * A generic background object.

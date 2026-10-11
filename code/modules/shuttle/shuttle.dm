@@ -280,8 +280,8 @@
 		if(!roundstart_template)
 			CRASH("Invalid path ([sid]/[roundstart_template]) passed to docking port.")
 
-	if(roundstart_template)
-		SSshuttle.action_load(roundstart_template, src)
+	if(roundstart_template && !SSshuttle.action_load(roundstart_template, src))
+		stack_trace("Шаттл [roundstart_template.name] не встал в док [shuttle_id] ([x],[y],[z])")
 
 //returns first-found touching shuttleport
 /obj/docking_port/stationary/get_docked()

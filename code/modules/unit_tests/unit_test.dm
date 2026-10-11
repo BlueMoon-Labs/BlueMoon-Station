@@ -20,6 +20,11 @@ GLOBAL_VAR(test_log)
 GLOBAL_LIST_EMPTY(unit_test_mapping_logs)
 // BLUEMOON EDIT END: Invalid Space Turfs
 
+/// Areas of map-loaded start landmarks by landmark type: roundstart deletes the landmarks before the tests run.
+GLOBAL_LIST_EMPTY(unit_test_start_landmark_areas)
+/// Turfs of the same landmarks, by landmark type.
+GLOBAL_LIST_EMPTY(unit_test_start_landmark_turfs)
+
 /// Parallel dm-test shards write their asset caches into separate directories.
 GLOBAL_VAR_INIT(unit_test_spritesheet_dir, "data/spritesheets_unit_tests/[unit_test_shard_subdir()]")
 GLOBAL_VAR_INIT(unit_test_asset_json_dir, "data/asset_cache/[unit_test_shard_subdir()]")

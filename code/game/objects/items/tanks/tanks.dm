@@ -63,7 +63,6 @@
 		H.internal = src
 	H.update_action_buttons_icon()
 
-
 /obj/item/tank/Initialize(mapload)
 	. = ..()
 

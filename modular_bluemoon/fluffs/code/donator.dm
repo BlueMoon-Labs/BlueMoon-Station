@@ -1076,6 +1076,18 @@
 	path = /obj/item/clothing/underwear/shirt/bra/kladmen_bra
 	ckeywhitelist = list("kladmenuwu", "scramblescream")
 
+/datum/gear/donator/bm/kladmen_jacket
+	name = "Jacket"
+	slot = ITEM_SLOT_OCLOTHING
+	path = /obj/item/clothing/suit/donator/bm/kladmenuwu_jacket
+	ckeywhitelist = list("kladmenuwu")
+
+/datum/gear/donator/bm/kladmen_bodysuit
+	name = "Bodysuit"
+	slot = ITEM_SLOT_SHIRT
+	path = /obj/item/clothing/underwear/shirt/bm/kladmen_bodysuit
+	ckeywhitelist = list("kladmenuwu")
+
 /datum/gear/donator/bm/troubleneko_bra
 	name = "Laced lingerie bra"
 	slot = ITEM_SLOT_OCLOTHING
@@ -2642,7 +2654,7 @@
 	name = "Kumiko Weapon Case"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/box/kumikoshouko_case
-	ckeywhitelist = list("kumikoshouko")
+	ckeywhitelist = list("kumikoshouko", "ottasuka")
 
 /datum/gear/donator/bm/skull_half_mask
 	name = "Skull Gaiter"
@@ -2756,7 +2768,7 @@
 	name = "NCR ranger clothes case"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/box/kumiko_ncr_case
-	ckeywhitelist = list("kumikoshouko", "1hollowknight1", "foxrtotlimda", "ottasuka")
+	ckeywhitelist = list("kumikoshouko", "1hollowknight1", "foxrtotlimda")
 
 /datum/gear/donator/bm/xeno_waller
 	name = "Xeno Wallet"
@@ -2781,3 +2793,15 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/light_plate_carrier
 	ckeywhitelist = list("hartty", "spoopyman228", "dalphy12", "leony24", "rockymed", "hateredsoul")
+
+/datum/gear/donator/bm/honorable_coat
+	name = "Honorable coa"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/clothing/suit/donator/bm/honorable_coat
+	ckeywhitelist = list("kumikoshouko")
+
+/datum/gear/donator/bm/mall_cop_chic
+	name = "Mall Cop Chic"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/donator/bm/mall_cop_chic
+	ckeywhitelist = list("sawwarrr")

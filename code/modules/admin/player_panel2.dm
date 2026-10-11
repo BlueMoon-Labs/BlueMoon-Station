@@ -350,10 +350,10 @@ GLOBAL_LIST_INIT(pp_implants, init_pp_implants())
 			if(!isliving(targetMob))
 				return
 			var/mob/living/L = targetMob
-			L.adjustBruteLoss(-20)
-			L.adjustFireLoss(-20)
-			L.adjustToxLoss(-20)
-			L.adjustOxyLoss(-20)
+			L.adjustToxLoss(-20, FALSE, TRUE)
+			L.adjustOxyLoss(-20, FALSE, TRUE)
+			L.adjustFireLoss(-20, FALSE, TRUE)
+			L.adjustBruteLoss(-20, TRUE, TRUE)
 			log_admin("[key_name(admin)] слегка вылечил [key_name(targetMob)] (20 HP все типы).")
 			message_admins("<span class='notice'>[key_name_admin(admin)] слегка вылечил [key_name_admin(targetMob)] (20 HP все типы).</span>")
 

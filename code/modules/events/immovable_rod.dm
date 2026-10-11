@@ -201,6 +201,11 @@ The rod will spawn at some location outside the station, and travel in a straigh
 			catch_rod(clong)
 			return ..()
 
+		// A rod hitting the tram end-on pushes the tram instead of smashing it
+		if(istramwall(clong) && !special_target)
+			rod_vs_tram_battle()
+			return ..()
+
 		var/obj/clong_obj = clong
 		clong_obj.take_damage(INFINITY, BRUTE, NONE, TRUE, dir, INFINITY)
 		return ..()
@@ -332,6 +337,25 @@ The rod will spawn at some location outside the station, and travel in a straigh
 		return
 
 	complete_trajectory()
+
+/**
+ * Rod will push the tram to a landmark if it hits the tram from the front/back
+ * while flying parallel.
+ */
+/obj/effect/immovablerod/proc/rod_vs_tram_battle()
+	var/obj/structure/transport/linear/tram/transport_module = locate() in loc
+	if(isnull(transport_module))
+		return
+
+	var/datum/transport_controller/linear/tram/tram_controller = transport_module.transport_controller_datum
+	if(isnull(tram_controller))
+		return
+
+	var/push_target = tram_controller.rod_collision(src)
+	if(!push_target)
+		return
+
+	go_for_a_walk(push_target)
 
 /**
  * Rod will walk towards edge turf in the specified direction.

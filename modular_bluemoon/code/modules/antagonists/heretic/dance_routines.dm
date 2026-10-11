@@ -26,6 +26,8 @@ GLOBAL_LIST_INIT(heretic_dance_routines, init_heretic_dance_routines())
 	var/from_style
 	var/to_style
 	var/sound
+	/// Что номер сделал - коротко для зрителей над танцором.
+	var/crowd_text
 
 /datum/heretic_dance_routine/proc/can_arm(datum/eldritch_knowledge/base_dance/dance, mob/living/user)
 	return TRUE
@@ -41,6 +43,7 @@ GLOBAL_LIST_INIT(heretic_dance_routines, init_heretic_dance_routines())
 	id = "pas_de_deux"
 	sound = 'modular_bluemoon/sound/heretic/dance/routine_pas_de_deux.ogg'
 	name = "Па-де-де"
+	crowd_text = "опрокидывает партнёра в кортэ"
 	from_style = HERETIC_DANCE_STYLE_WALTZ
 	to_style = HERETIC_DANCE_STYLE_TANGO
 
@@ -58,9 +61,9 @@ GLOBAL_LIST_INIT(heretic_dance_routines, init_heretic_dance_routines())
 		return FALSE
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/time = heretic?.hunt_target && heretic.hunt_target == partner.mind ? HERETIC_DANCE_PARTNER_TIME : DANCE_ROUTINE_PARTNER_TIME
-	partner.remove_status_effect(/datum/status_effect/heretic_dance/lead)
 	if(!partner.apply_status_effect(/datum/status_effect/heretic_dance/partner, dance, time))
 		return FALSE
+	partner.remove_status_effect(/datum/status_effect/heretic_dance/lead)
 	heretic_dance_lunge(user, partner)
 	heretic_dance_dip(partner, user)
 	partner.visible_message(span_danger("[user] опрокидывает [partner] в кортэ, и [partner] застывает в чужих руках!"), span_userdanger("Вас опрокинули в кортэ: вы застыли в чужих руках!"))
@@ -72,6 +75,7 @@ GLOBAL_LIST_INIT(heretic_dance_routines, init_heretic_dance_routines())
 	id = "death_tango"
 	sound = 'modular_bluemoon/sound/heretic/dance/routine_death_tango.ogg'
 	name = "Танго смерти"
+	crowd_text = "взрывает яд тарантеллы"
 	from_style = HERETIC_DANCE_STYLE_TANGO
 	to_style = HERETIC_DANCE_STYLE_TARANTELLA
 
@@ -91,6 +95,7 @@ GLOBAL_LIST_INIT(heretic_dance_routines, init_heretic_dance_routines())
 	id = "danse_macabre"
 	sound = 'modular_bluemoon/sound/heretic/dance/routine_danse_macabre.ogg'
 	name = "Пляска мертвецов"
+	crowd_text = "тянет толпу в хоровод"
 	from_style = HERETIC_DANCE_STYLE_CANCAN
 	to_style = HERETIC_DANCE_STYLE_MACABRE
 
@@ -101,6 +106,7 @@ GLOBAL_LIST_INIT(heretic_dance_routines, init_heretic_dance_routines())
 	id = "vanishing"
 	sound = 'modular_bluemoon/sound/heretic/dance/routine_vanishing.ogg'
 	name = "Исчезновение"
+	crowd_text = "растворяется среди масок"
 	from_style = HERETIC_DANCE_STYLE_MACABRE
 	to_style = HERETIC_DANCE_STYLE_CANCAN
 
@@ -187,6 +193,7 @@ GLOBAL_LIST_INIT(heretic_dance_routines, init_heretic_dance_routines())
 	playsound(stage, routine.sound, 70, FALSE)
 	style.figure_pose(src, user)
 	user.visible_message(span_danger("[user] исполняет номер «[routine.name]»!"), span_eldritch("Номер «[routine.name]»!"))
+	announce_to_crowd(user, routine.crowd_text)
 
 /obj/effect/temp_visual/heretic_dance/routine
 	duration = 1.3 SECONDS

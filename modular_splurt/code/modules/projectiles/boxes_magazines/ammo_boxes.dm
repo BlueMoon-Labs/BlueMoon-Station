@@ -105,6 +105,16 @@
 	multiple_sprites = 1
 	w_class = WEIGHT_CLASS_TINY
 
+/obj/item/ammo_box/a308/rubber
+	name = "stripper clip (.308 rubber)"
+	desc = "A stripper clip."
+	icon_state = "762"
+	ammo_type = /obj/item/ammo_casing/a308/rubber
+	custom_materials = list(/datum/material/iron = 3100) // 2500 bullets + 600 clip (10%)
+	max_ammo = 5
+	multiple_sprites = 1
+	w_class = WEIGHT_CLASS_TINY
+
 /obj/item/ammo_box/c308
 	name = "ammo box (.308)"
 	icon_state = "308box"

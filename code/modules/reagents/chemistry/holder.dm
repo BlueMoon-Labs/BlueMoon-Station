@@ -485,6 +485,8 @@
 	var/datum/cached_my_atom = my_atom
 
 	var/reaction_occurred = 0 // checks if reaction, binary variable
+	/// Жидкости по возврату решают, пересобрать ли лужу после реакции.
+	var/any_reaction = FALSE
 	var/continue_reacting = FALSE //Helps keep track what kind of reaction is occuring; standard or fermi.
 
 	do
@@ -643,11 +645,12 @@
 
 				selected_reaction.on_reaction(src, multiplier, special_react_result)
 				reaction_occurred = 1
+				any_reaction = TRUE
 				continue_reacting = TRUE
 
 	while(reaction_occurred)
 	update_total()
-	return FALSE
+	return any_reaction
 
 /datum/reagents/process()
 	var/datum/chemical_reaction/C = fermiReactID

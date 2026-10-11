@@ -112,6 +112,9 @@
 		return . || mover.throwing || mover.movement_type & checking || (mover.pass_flags & PASSJUMP)
 	return TRUE
 
+/obj/structure/railing/CanAStarPass(obj/item/card/id/ID, to_dir, atom/movable/caller)
+	return !density || !(to_dir & dir)
+
 /obj/structure/railing/corner/CanPass()
 	..()
 	return TRUE

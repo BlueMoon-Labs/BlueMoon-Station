@@ -105,7 +105,7 @@
 	name = "Medipen pouch"
 	desc = "Simmilar to ammo pouch - this one designed to contain variety of autoinjectors."
 	icon = 'icons/obj/storage.dmi'
-	icon_state = "medpen_pouch"
+	icon_state = "firstaid_pouch"
 	slot_flags = ITEM_SLOT_POCKETS
 	w_class = WEIGHT_CLASS_NORMAL
 	resistance_flags = FLAMMABLE
@@ -113,16 +113,14 @@
 /obj/item/storage/bag/medpen/ComponentInitialize()
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
-	STR.max_w_class = WEIGHT_CLASS_NORMAL
 	STR.max_combined_w_class = INFINITY
-	STR.max_items = 7
+	STR.max_items = 12
 	STR.display_numerical_stacking = TRUE
 	STR.can_hold = typecacheof(list(/obj/item/reagent_containers/hypospray/medipen))
 
 /obj/item/storage/bag/medpen/combatant
 	name = "Stay alive pouch"
 	desc = "A pouch that contains variety of auto injectors to fix most unfixable situations."
-	icon_state = "firstaid_pouch"
 	slot_flags = ITEM_SLOT_POCKETS
 	w_class = WEIGHT_CLASS_NORMAL
 	resistance_flags = FLAMMABLE

@@ -57,6 +57,8 @@
 	desc = "Друза тёмных кристаллов в бронзовом когте, в которую схлопнулся разрыв реальности. Изнутри время от времени открывается золотой зрачок. Учёным она интересна как образец."
 	icon = 'modular_bluemoon/icons/obj/heretic_veil_crystal.dmi'
 	icon_state = "veil_crystal"
+	lefthand_file = 'modular_bluemoon/icons/obj/heretic_veil_crystal_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/obj/heretic_veil_crystal_righthand.dmi'
 	w_class = WEIGHT_CLASS_TINY
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 

@@ -1,0 +1,206 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/obj/structure/chair/stool/directional/east,
+/obj/effect/turf_decal/weather/sand/plating,
+/turf/open/floor/plating,
+/area/asteroid/tramstation)
+"h" = (
+/obj/structure/table,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/reagent_containers/food/drinks/beer = 75, /obj/item/reagent_containers/food/drinks/ale = 25, /obj/item/reagent_containers/food/drinks/bottle/whiskey = 5, /obj/item/reagent_containers/food/drinks/bottle/gin = 5, /obj/item/reagent_containers/food/drinks/bottle/vodka = 5, /obj/item/reagent_containers/food/drinks/bottle/tequila = 5, /obj/item/reagent_containers/food/drinks/bottle/rum = 5, /obj/item/reagent_containers/food/drinks/bottle/vermouth = 5, /obj/item/reagent_containers/food/drinks/bottle/cognac = 5, /obj/item/reagent_containers/food/drinks/bottle/wine = 5, /obj/item/reagent_containers/food/drinks/bottle/kahlua = 5, /obj/item/reagent_containers/food/drinks/bottle/amaretto = 5, /obj/item/reagent_containers/food/drinks/bottle/hcider = 5, /obj/item/reagent_containers/food/drinks/bottle/absinthe = 5, /obj/item/reagent_containers/food/drinks/bottle/sake = 5, /obj/item/reagent_containers/food/drinks/bottle/grappa = 5, /obj/item/reagent_containers/food/drinks/bottle/applejack = 5, /obj/item/reagent_containers/food/drinks/bottle/fernet = 2, /obj/item/reagent_containers/food/drinks/bottle/champagne = 2, /obj/item/reagent_containers/food/drinks/bottle/goldschlager = 2, /obj/item/reagent_containers/food/drinks/bottle/patron = 1, /obj/item/reagent_containers/food/drinks/bottle/lizardwine = 1, /obj/item/reagent_containers/food/drinks/bottle/trappist = 1)
+	},
+/obj/effect/spawner/lootdrop/cig_packs,
+/obj/effect/turf_decal/weather/sand/plating,
+/obj/item/toy/cards/deck,
+/turf/open/floor/plating,
+/area/asteroid/tramstation)
+"k" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/window{
+	dir = 1
+	},
+/obj/structure/closet/wardrobe/mixed,
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"l" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/window{
+	dir = 1
+	},
+/obj/structure/grille,
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"m" = (
+/obj/structure/falsewall,
+/obj/effect/turf_decal/weather/sand/plating,
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"o" = (
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/storage/box/matches = 10, /obj/item/lighter/greyscale = 10, /obj/item/lighter = 1)
+	},
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"p" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/extinguisher_cabinet/directional/south,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"r" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/window,
+/obj/structure/closet,
+/obj/effect/spawner/lootdrop/maintenance/three,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/stack/sheet/mineral/wood/twenty = 1, /obj/item/stack/sheet/cardboard/fifty = 1, /obj/item/stack/sheet/mineral/sandstone/thirty = 1)
+	},
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"v" = (
+/turf/open/floor/plating/asteroid,
+/area/asteroid/tramstation)
+"w" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/flashlight = 20, /obj/item/flashlight/flare = 10, /obj/effect/spawner/lootdrop/glowstick = 10, /obj/item/flashlight/lantern = 5, /obj/item/flashlight/seclite = 4)
+	},
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"C" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/effect/spawner/lootdrop/maintenance/two,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/wrench = 2, /obj/item/wirecutters = 2, /obj/item/screwdriver = 2, /obj/item/crowbar = 2, /obj/item/weldingtool = 2, /obj/item/stack/cable_coil = 2, /obj/item/analyzer = 2, /obj/item/t_scanner = 2, /obj/item/multitool = 1, /obj/item/clothing/glasses/meson = 1, /obj/item/storage/belt/utility = 1, /obj/item/clothing/head/welding = 1)
+	},
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"H" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/machinery/space_heater = 8, /obj/machinery/shieldgen = 3, /obj/machinery/portable_atmospherics/pump = 1, /obj/machinery/portable_atmospherics/scrubber = 1)
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"K" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"M" = (
+/turf/closed/wall,
+/area/maintenance/department/security)
+"N" = (
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/structure/reagent_dispensers/fueltank = 5, /obj/structure/reagent_dispensers/watertank = 4, /obj/structure/reagent_dispensers/watertank/high = 1)
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/weather/sand/floor,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"O" = (
+/obj/structure/chair/stool/directional/north,
+/obj/effect/turf_decal/weather/sand/plating,
+/turf/open/floor/plating,
+/area/asteroid/tramstation)
+"T" = (
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Closet Access Maintenance Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/obj/effect/decal/cleanable/dirt,
+/obj/modular_map_connector,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"V" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate,
+/obj/item/relic,
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"W" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/asteroid/tramstation)
+
+(1,1,1) = {"
+W
+W
+M
+M
+M
+T
+M
+M
+"}
+(2,1,1) = {"
+W
+W
+M
+K
+K
+K
+l
+V
+"}
+(3,1,1) = {"
+W
+W
+M
+H
+p
+M
+M
+M
+"}
+(4,1,1) = {"
+W
+v
+m
+N
+K
+K
+K
+K
+"}
+(5,1,1) = {"
+v
+v
+M
+w
+K
+K
+K
+K
+"}
+(6,1,1) = {"
+v
+v
+M
+M
+r
+C
+k
+M
+"}
+(7,1,1) = {"
+W
+b
+o
+M
+M
+M
+M
+M
+"}
+(8,1,1) = {"
+W
+h
+O
+v
+v
+W
+W
+W
+"}
