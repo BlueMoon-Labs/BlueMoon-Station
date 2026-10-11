@@ -355,3 +355,81 @@
 	wound_bonus = 1
 	bare_wound_bonus = 5
 	wound_falloff_tile = -2.5
+
+//взрывной револьвер/кинетик
+
+/obj/item/ammo_casing/magnum44
+	name = ".44 Magnum glycerine rounds"
+	desc = "Особый патрон. Пуля наносит легкий урон и вживляет дистанционную взрывчатку под кожу."
+	caliber = ".44 magnum"
+	projectile_type = /obj/item/projectile/bullet/judgement_beacon
+
+/obj/item/ammo_casing/magnum44_kinetic
+	name = ".44 magnum kinetic rounds"
+	desc = "Особый патрон. Пуля наносит огромный урон, отскакивает от стен и откидывает цели назад."
+	projectile_type = /obj/item/projectile/bullet/judgement_kinetic_ricochet
+
+// Маячок (10 урона + МНОЖЕСТВЕННОЕ вживление имплантов)
+/obj/item/projectile/bullet/judgement_beacon
+	name = ".44 Magnum glycerine rounds"
+	damage = 10 
+
+/obj/item/projectile/bullet/judgement_beacon/on_hit(atom/target, blocked = FALSE)
+	. = ..()
+	if(!iscarbon(target))
+		return
+
+	var/mob/living/carbon/C = target
+	
+	if(!firer || !istype(firer.get_active_held_item(), /obj/item/gun/ballistic/revolver/judgement))
+		return
+
+	var/obj/item/gun/ballistic/revolver/judgement/J = firer.get_active_held_item()
+
+	var/obj/item/gps/embed_gps/judgement_beacon_bomb/bomb = new(target)
+	bomb.my_gun = J
+	bomb.my_target = C
+	bomb.tryEmbed(C, forced = TRUE, silent = TRUE)
+	
+	J.active_beacons.Add(C)
+	
+	to_chat(firer, "<span class='notice'>Револьвер издает писк</span>")
+
+/obj/effect/temp_visual/judgement_kinetic_blast
+	name = "кинетическая вспышка"
+	desc = "Визуальный эффект кинетического удара."
+	icon = 'modular_bluemoon/icons/obj/effect/projectiles/generic.dmi' 
+	icon_state = "fire" 
+	duration = 5 // Длительность анимации в тиках (0.5 секунды), после чего игра сама удалит эффект
+
+/obj/item/projectile/bullet/judgement_kinetic_ricochet
+	name = ".44 Magnum round"
+	damage = 70
+	ricochets_max = 4
+	ricochet_chance = 100
+	ricochet_auto_aim_angle = 90
+	ricochet_auto_aim_range = 10
+	ricochet_incidence_leeway = 50
+	ricochet_decay_chance = 1
+	ricochet_decay_damage = 1
+
+/obj/item/projectile/bullet/judgement_kinetic_ricochet/on_hit(atom/target, blocked = 0)
+	. = ..()
+	
+	var/turf/hit_turf = get_turf(target)
+	if(hit_turf)
+		new /obj/effect/temp_visual/judgement_kinetic_blast(hit_turf)
+		playsound(hit_turf, 'sound/weapons/genhit2.ogg', 40, 1)
+
+	// КРИВО СПИЗДИЛ КОД С ПАУВЕР ФИСТА
+	if(isliving(target))
+		var/mob/living/L = target
+		
+		if(hasvar(L, "move_resist") && L.vars["move_resist"] >= INFINITY)
+			return
+
+		var/atom/throw_target = get_edge_target_turf(L, get_dir(src, get_step_away(L, starting)))
+		
+		if(throw_target)
+			L.throw_at(throw_target, 2, 1)
+			to_chat(L, "<span class='userdanger'>Тяжелый кинетический импульс пули сбивает вас с ног и отбрасывает назад!</span>")
