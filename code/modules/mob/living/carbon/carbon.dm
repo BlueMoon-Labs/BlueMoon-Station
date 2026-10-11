@@ -1135,7 +1135,10 @@
 	if(handcuffed)
 		drop_all_held_items()
 		stop_pulling()
-		throw_alert("handcuffed", /atom/movable/screen/alert/restrained/handcuffed, new_master = src.handcuffed)
+		if(handcuffed.restrained_alert)
+			throw_alert("handcuffed", handcuffed.restrained_alert)
+		else
+			throw_alert("handcuffed", /atom/movable/screen/alert/restrained/handcuffed, new_master = src.handcuffed)
 		if(HAS_TRAIT(src, "bondaged"))
 			SEND_SIGNAL(src, COMSIG_ADD_MOOD_EVENT, QMOOD_BONDAGE, /datum/mood_event/bondage)	 //For bondage enjoyer quirk. - Gardelin0
 		if(handcuffed.demoralize_criminals)
