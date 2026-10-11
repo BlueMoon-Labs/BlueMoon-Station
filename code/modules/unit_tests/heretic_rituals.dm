@@ -65,7 +65,7 @@
 		TEST_ASSERT(rune.select_recipe_atoms(recipe, list(variant), selected, list(), user), "Рецепт должен принимать [knife_type].")
 		TEST_ASSERT(variant in selected, "Подходящий вариант выбран компонентом.")
 
-/// Рецепт брони открывается со второй ступени и расходует готовый стол рядом с руной и выложенный противогаз.
+/// Руна чертится только на станции (учебному еретику - и на полигоне); рецепт брони открывается со второй ступени и расходует готовый стол и выложенный противогаз.
 /datum/unit_test/heretic_armor_recipe/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	var/mob/living/user = heretic.owner.current
@@ -78,6 +78,11 @@
 	var/obj/item/forbidden_book/book = allocate(/obj/item/forbidden_book)
 	TEST_ASSERT(user.put_in_hands(book), "Для рисования нужно держать книгу.")
 	var/obj/structure/table/table = allocate(/obj/structure/table, get_step(center, NORTH))
+	TEST_ASSERT(!book.can_draw_rune(center, user), "Вне станции руна не чертится.")
+	heretic.simulated = TRUE
+	TEST_ASSERT(book.can_draw_rune(center, user), "Учебный еретик чертит руну на полигоне вне станции.")
+	heretic.simulated = FALSE
+	allocated += new /datum/heretic_test_station_level(center.z)
 	TEST_ASSERT(book.can_draw_rune(center, user), "Готовый стол в области 3×3 не мешает рисованию.")
 	var/obj/effect/eldritch/rune = allocate(/obj/effect/eldritch/big, center)
 	var/obj/item/clothing/mask/gas/mask = allocate(/obj/item/clothing/mask/gas)
@@ -730,10 +735,17 @@
 	TEST_ASSERT_NULL(find_heretic_station_turf(), "Одного имени области недостаточно вне станции.")
 	previous_sorted_areas = GLOB.sortedAreas
 	GLOB.sortedAreas = list(station_area)
-	TEST_ASSERT_EQUAL(find_heretic_escape_fallback(origin), destination, "Вне станции полный поиск находит безопасный пол на исходном z-уровне.")
+	TEST_ASSERT_NULL(find_heretic_escape_fallback(origin), "Вне станции полный поиск не берёт пол на исходном уровне.")
+	test_level.traits[ZTRAIT_ANTAG_TRAINING] = TRUE
+	TEST_ASSERT_EQUAL(find_heretic_escape_fallback(origin), destination, "На полигоне полный поиск остаётся на его уровне.")
+	var/turf/training_escape = blade.find_escape_turf(origin)
+	TEST_ASSERT_EQUAL(training_escape?.z, origin.z, "Учебный побег не уводит с полигона.")
+	test_level.traits -= ZTRAIT_ANTAG_TRAINING
+	test_level.traits[ZTRAIT_STATION] = TRUE
+	var/turf/remote_origin = locate(1, 1, SSmapping.levels_by_trait(ZTRAIT_CENTCOM)[1])
+	TEST_ASSERT_EQUAL(blade.find_escape_turf(remote_origin), destination, "Побег вне станции ведёт на станцию.")
 	GLOB.sortedAreas = previous_sorted_areas
 	previous_sorted_areas = null
-	test_level.traits[ZTRAIT_STATION] = TRUE
 	for(var/area_type in list(/area/security/heretic_escape_fixture, /area/command/heads_quarters/hos/heretic_escape_fixture, /area/ai_monitored/heretic_escape_fixture, /area/maintenance/prison/heretic_escape_fixture, /area/maintenance/department/security/heretic_escape_fixture))
 		var/area/secure_area = new area_type
 		allocated += secure_area

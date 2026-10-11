@@ -29,7 +29,7 @@
 	TEST_ASSERT(heretic.research_knowledge(/datum/eldritch_knowledge/spell/void_phase, user), "Второе очко открывает атакующий сдвиг без разломов и подношений.")
 	var/datum/eldritch_knowledge/spell/void_phase/phase = heretic.get_knowledge(/datum/eldritch_knowledge/spell/void_phase)
 	TEST_ASSERT(istype(phase.granted_spell, /obj/effect/proc_holder/spell/pointed/void_blink), "Покупка выдаёт настоящее заклинание сдвига.")
-	TEST_ASSERT(!heretic.get_knowledge(/datum/eldritch_knowledge/cold_snap), "Пассивная защита не предшествует атакующему сдвигу.")
+	TEST_ASSERT(!heretic.get_knowledge(/datum/eldritch_knowledge/spell/void_prison), "Ледяная темница не предшествует атакующему сдвигу.")
 
 /// Побочная награда оплачивает эксперименты, но не позволяет обходить основную линию.
 /datum/unit_test/heretic_side_knowledge_budget/Run()

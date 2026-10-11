@@ -108,7 +108,7 @@
 	place = locate(target_x, target_y, target_z)
 	TEST_ASSERT(isopenturf(place), "Второе касание обрушает обычную стену.")
 	TEST_ASSERT_EQUAL(rust.combat_resource, 1, "Повторное касание не выдаёт ещё один нарост.")
-	heretic.gain_knowledge(/datum/eldritch_knowledge/rust_fist)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/rust_formation)
 	place = place.ChangeTurf(/turf/closed/wall)
 	COOLDOWN_RESET(rust, resource_harvest)
 	fist = allocate(/obj/item/melee/touch_attack/mansus_fist)
@@ -281,7 +281,7 @@
 	var/datum/mind/soul = heretic.owner
 	var/mob/living/old_body = soul.current
 	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/basic)
-	heretic.gain_knowledge(/datum/eldritch_knowledge/cold_snap)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/void_prison)
 	heretic.gain_knowledge(/datum/eldritch_knowledge/flame_immunity)
 	var/datum/eldritch_knowledge/spell/basic/grasp = heretic.get_knowledge(/datum/eldritch_knowledge/spell/basic)
 	var/obj/effect/proc_holder/spell/old_grasp = grasp.granted_spell
