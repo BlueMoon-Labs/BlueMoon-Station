@@ -102,7 +102,7 @@
 		tired -= 1
 
 	timer -= delta_time
-	if(timer >= 0) // chech interval
+	if(timer > 0)
 	else
 		timer = rand(5,20)
 		if(target != null)

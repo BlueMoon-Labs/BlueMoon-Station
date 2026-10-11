@@ -448,6 +448,8 @@
 #define CORRUPTED_SYSTEM "corrupted-system"
 ///Turf trait for when a turf is transparent
 #define TURF_Z_TRANSPARENT_TRAIT "turf_z_transparent"
+/// Вис-ребёнок без своего loc живёт на этаже носителя, см. /atom/movable/proc/add_vis_on_floor()
+#define TRAIT_VIS_ON_CARRIER_FLOOR "vis_on_carrier_floor"
 /// This trait is added by the active directional block system.
 #define ACTIVE_BLOCK_TRAIT				"active_block"
 /// This trait is added by the parry system.
@@ -876,7 +878,9 @@ Remember to update _globalvars/traits.dm if you're adding/removing/renaming trai
 #define HYPNOCHAIR_TRAIT "hypnochair"
 #define FLASHLIGHT_EYES "flashlight_eyes"
 #define IMPURE_OCULINE "impure_oculine"
-#define BLINDFOLD_TRAIT "blindfolded"
+#define TRAIT_BLINDFOLD "blindfolded"
+#define TRAIT_BLINDFOLD_HARD "blindfolded_hard"
+#define TRAIT_HEARING_DEPRIVED "hearing_deprived"
 #define TRAIT_SANTA "santa"
 #define SCRYING_ORB "scrying-orb"
 #define JUNGLE_FEVER_TRAIT "jungle_fever"

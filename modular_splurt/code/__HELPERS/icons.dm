@@ -41,6 +41,14 @@ GLOBAL_LIST_EMPTY(transformation_animation_objects)
 		vis_contents += A
 	addtimer(CALLBACK(src,PROC_REF(_reset_transformation_animation),filter_index, !reset_after),time)
 
+/// Таймер сброса анимации умирает вместе с атомом, поэтому удаляемый атом выписывается сам
+/atom/movable/proc/drop_transformation_animation()
+	var/list/transformation_objects = GLOB.transformation_animation_objects[src]
+	GLOB.transformation_animation_objects -= src
+	for(var/atom/movable/helper as anything in transformation_objects)
+		vis_contents -= helper
+		qdel(helper)
+
 /*
  * Resets filters and removes transformation animations helper objects from vis contents.
 */

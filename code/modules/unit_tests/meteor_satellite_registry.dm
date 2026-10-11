@@ -2,9 +2,10 @@
 /// покидать список при удалении. Родительский и дочерний Initialize оба добавляли его,
 /// а Destroy снимал одну запись - дубль держал спутник до харддела.
 /datum/unit_test/meteor_satellite_registry/Run()
-	// Спутник заводится в нулевом пространстве: его Destroy взрывает свой loc, а взрыв
-	// в резервации теста разлетелся бы по чужим объектам уже после конца проверки.
-	var/obj/machinery/satellite/meteor_shield/satellite = allocate(/obj/machinery/satellite/meteor_shield)
+	// Спутник заводится в нулевом пространстве через new (allocate() поставил бы его в резервацию):
+	// его Destroy взрывает свой loc, а взрыв в резервации доходит до следующих тестов.
+	var/obj/machinery/satellite/meteor_shield/satellite = new
+	allocated += satellite
 	var/entries = 0
 	for(var/obj/machinery/satellite/listed in GLOB.meteor_satellites)
 		if(listed == satellite)

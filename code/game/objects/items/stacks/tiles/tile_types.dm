@@ -24,6 +24,9 @@
 	pixel_y = rand(-3, 3) //randomize a little
 	air_update_turf(TRUE) // Почему.
 
+/obj/item/stack/tile/builds_over_openspace()
+	return TRUE
+
 /obj/item/stack/tile/examine(mob/user)
 	. = ..()
 	if(throwforce && !is_cyborg) //do not want to divide by zero or show the message to borgs who can't throw

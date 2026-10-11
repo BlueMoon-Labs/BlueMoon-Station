@@ -5,7 +5,7 @@
 //	You do not need to raise this if you are adding new values that have sane defaults.
 //	Only raise this value when changing the meaning/format/name/layout of an existing value
 //	where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX	82
+#define SAVEFILE_VERSION_MAX	83
 
 /// Обычная запись идёт прямо в документ; экспорт и миграции сохраняют путь через savefile.
 #define WRITE_PLAYER_SAVE(target, document, key, value) if(document) { document.write(key, value); } else { WRITE_FILE(target[key], value); }
@@ -154,11 +154,17 @@
 			ENABLE_BITFIELD(mentor_toggles, DEMENTOR_ON_LOGIN)
 			DISABLE_BITFIELD(mentor_toggles, (1<<6))
 
-	if(current_version < 81) // BLUEMOON ADD - звук дыхания из баллона
-		toggles |= SOUND_BREATHING
-
 	if(current_version < 82) // BLUEMOON ADD - звук кнопок способностей включён по умолчанию
 		sound_toggles |= SOUND_BUTTONS
+
+	if(current_version < 83) // Переносим часики экспедиторов
+		var/playtime_summ = (exp["Expeditor"] || 0) + (exp["Vanguard operative"] || 0)
+
+		if(playtime_summ > 0)
+			exp["Vanguard Operative"] = (exp["Vanguard Operative"] || 0) + playtime_summ
+
+		exp -= "Expeditor"
+		exp -= "Vanguard operative"
 
 /datum/preferences/proc/update_character(current_version, savefile/S)
 	if(current_version < 19)
@@ -639,6 +645,8 @@
 	READ_PLAYER_SAVE(S, document, "parallax", parallax)
 	READ_PLAYER_SAVE(S, document, "ambientocclusion", ambientocclusion)
 	READ_PLAYER_SAVE(S, document, "lighting_blur", lighting_blur)
+	READ_PLAYER_SAVE(S, document, "multiz_performance", multiz_performance)
+	READ_PLAYER_SAVE(S, document, "multiz_parallax", multiz_parallax)
 	READ_PLAYER_SAVE(S, document, "lighting_brightness", lighting_brightness)
 	READ_PLAYER_SAVE(S, document, "lighting_lamp_brightness", lighting_lamp_brightness)
 	READ_PLAYER_SAVE(S, document, "lighting_bloom_intensity", lighting_bloom_intensity)
@@ -791,6 +799,8 @@
 	parallax = sanitize_integer(parallax, PARALLAX_DISABLE, PARALLAX_INSANE, null)
 	ambientocclusion = sanitize_integer(ambientocclusion, 0, 1, initial(ambientocclusion))
 	lighting_blur = sanitize_integer(lighting_blur, LIGHTING_BLUR_MIN, LIGHTING_BLUR_MAX, LIGHTING_BLUR_DEFAULT)
+	multiz_performance = sanitize_integer(multiz_performance, MULTIZ_PERFORMANCE_DISABLE, MAX_EXPECTED_Z_DEPTH - 1, initial(multiz_performance))
+	multiz_parallax = sanitize_integer(multiz_parallax, 0, 1, initial(multiz_parallax))
 	lighting_brightness = sanitize_integer(lighting_brightness, LIGHTING_BRIGHTNESS_MIN, LIGHTING_BRIGHTNESS_MAX, LIGHTING_BRIGHTNESS_DEFAULT)
 	lighting_lamp_brightness = sanitize_integer(lighting_lamp_brightness, LIGHTING_LAMP_BRIGHTNESS_MIN, LIGHTING_LAMP_BRIGHTNESS_MAX, LIGHTING_LAMP_BRIGHTNESS_DEFAULT)
 	lighting_bloom_intensity = sanitize_integer(lighting_bloom_intensity, LIGHTING_BLOOM_INTENSITY_MIN, LIGHTING_BLOOM_INTENSITY_MAX, LIGHTING_BLOOM_INTENSITY_DEFAULT)
@@ -1248,6 +1258,8 @@
 	WRITE_PLAYER_SAVE(S, document, "parallax", parallax)
 	WRITE_PLAYER_SAVE(S, document, "ambientocclusion", ambientocclusion)
 	WRITE_PLAYER_SAVE(S, document, "lighting_blur", lighting_blur)
+	WRITE_PLAYER_SAVE(S, document, "multiz_performance", multiz_performance)
+	WRITE_PLAYER_SAVE(S, document, "multiz_parallax", multiz_parallax)
 	WRITE_PLAYER_SAVE(S, document, "lighting_brightness", lighting_brightness)
 	WRITE_PLAYER_SAVE(S, document, "lighting_lamp_brightness", lighting_lamp_brightness)
 	WRITE_PLAYER_SAVE(S, document, "lighting_bloom_intensity", lighting_bloom_intensity)
@@ -1492,6 +1504,7 @@
 "flavor_text" = "",
 "silicon_flavor_text" = "",
 "ooc_notes" = "",
+"ass_photo" = "",
 "meat_type" = "Mammalian",
 "body_model" = MALE,
 "body_size" = RESIZE_DEFAULT_SIZE,
@@ -1558,6 +1571,7 @@
 	READ_PLAYER_SAVE(S, document, "jumpsuit_style", jumpsuit_style)
 	READ_PLAYER_SAVE(S, document, "uplink_loc", uplink_spawn_loc)
 	READ_PLAYER_SAVE(S, document, "custom_speech_verb", custom_speech_verb)
+	READ_PLAYER_SAVE(S, document, "custom_speech_verb_ru", custom_speech_verb_ru)
 	READ_PLAYER_SAVE(S, document, "custom_tongue", custom_tongue)
 	READ_PLAYER_SAVE(S, document, "feature_mcolor", features["mcolor"])
 	READ_PLAYER_SAVE(S, document, "feature_lizard_tail", features["tail_lizard"])
@@ -1696,6 +1710,14 @@
 	READ_PLAYER_SAVE(S, document, "feature_balls_size", features["balls_size"])
 	READ_PLAYER_SAVE(S, document, "feature_balls_visibility", features["balls_visibility"])
 	READ_PLAYER_SAVE(S, document, "feature_balls_fluid", features["balls_fluid"])
+	var/saved_balls_cum_rate
+	READ_PLAYER_SAVE(S, document, "feature_balls_cum_rate", saved_balls_cum_rate)
+	if(saved_balls_cum_rate)
+		features["balls_cum_rate"] = saved_balls_cum_rate
+	var/saved_balls_cum_max
+	READ_PLAYER_SAVE(S, document, "feature_balls_cum_max", saved_balls_cum_max)
+	if(saved_balls_cum_max)
+		features["balls_cum_max"] = saved_balls_cum_max
 	READ_PLAYER_SAVE(S, document, "feature_balls_accessible", features["balls_accessible"])
 	//breasts features
 	READ_PLAYER_SAVE(S, document, "feature_has_breasts", features["has_breasts"])
@@ -1738,6 +1760,7 @@
 	READ_PLAYER_SAVE(S, document, "feature_flavor_text", features["flavor_text"])
 	READ_PLAYER_SAVE(S, document, "feature_silicon_flavor_text", features["silicon_flavor_text"])
 	READ_PLAYER_SAVE(S, document, "feature_ooc_notes", features["ooc_notes"])
+	READ_PLAYER_SAVE(S, document, "feature_ass_photo", features["ass_photo"])
 
 	//SPLURT edit
 	READ_PLAYER_SAVE(S, document, "feature_naked_flavor_text", features["naked_flavor_text"])
@@ -2057,7 +2080,9 @@
 	features["belly_visibility"] = sanitize_inlist(features["belly_visibility"], safe_visibilities, GEN_VISIBLE_NO_UNDIES)
 	features["anus_visibility"] = sanitize_inlist(features["anus_visibility"], safe_visibilities, GEN_VISIBLE_NO_UNDIES)
 
-	custom_speech_verb = sanitize_inlist(custom_speech_verb, GLOB.speech_verbs, "default")
+	custom_speech_verb_ru = sanitize_integer(custom_speech_verb_ru, 0, 1, initial(custom_speech_verb_ru))
+	if(!(custom_speech_verb in GLOB.speech_verbs) && !(custom_speech_verb in GLOB.speech_verbs_ru))
+		custom_speech_verb = GLOB.speech_verbs[1]
 	custom_tongue = sanitize_inlist(custom_tongue, GLOB.roundstart_tongues, "default")
 
 	security_records = copytext_char(security_records, 1, MAX_FLAVOR_LEN)
@@ -2070,6 +2095,7 @@
 	features["silicon_flavor_text"] = copytext_char(features["silicon_flavor_text"], 1, MAX_FLAVOR_LEN)
 	features["custom_species_lore"] = copytext_char(features["custom_species_lore"], 1, MAX_FLAVOR_LEN) //SPLURT edit
 	features["ooc_notes"] = copytext_char(features["ooc_notes"], 1, MAX_FLAVOR_LEN)
+	features["ass_photo"] = sanitize_text(features["ass_photo"])
 
 	//Headshots
 	features["headshot_links"] = sanitize_islist(features["headshot_links"], list())
@@ -2360,6 +2386,7 @@
 	WRITE_PLAYER_SAVE(S, document, "uplink_loc"							, uplink_spawn_loc)
 	WRITE_PLAYER_SAVE(S, document, "species"								, pref_species.id)
 	WRITE_PLAYER_SAVE(S, document, "custom_speech_verb"					, custom_speech_verb)
+	WRITE_PLAYER_SAVE(S, document, "custom_speech_verb_ru"				, custom_speech_verb_ru)
 	WRITE_PLAYER_SAVE(S, document, "custom_tongue"						, custom_tongue)
 	WRITE_PLAYER_SAVE(S, document, "bark_id"								, bark_id)
 	WRITE_PLAYER_SAVE(S, document, "bark_speed"							, bark_speed)
@@ -2413,6 +2440,8 @@
 	WRITE_PLAYER_SAVE(S, document, "feature_balls_accessible", features["balls_accessible"])
 	WRITE_PLAYER_SAVE(S, document, "feature_balls_stuffing", features["balls_stuffing"])
 	WRITE_PLAYER_SAVE(S, document, "feature_balls_fluid", features["balls_fluid"])
+	WRITE_PLAYER_SAVE(S, document, "feature_balls_cum_rate", features["balls_cum_rate"])
+	WRITE_PLAYER_SAVE(S, document, "feature_balls_cum_max", features["balls_cum_max"])
 	WRITE_PLAYER_SAVE(S, document, "feature_balls_accessible", features["balls_accessible"])
 
 	WRITE_PLAYER_SAVE(S, document, "feature_has_breasts", features["has_breasts"])
@@ -2481,6 +2510,7 @@
 	WRITE_PLAYER_SAVE(S, document, "alt_titles_preferences", alt_titles_preferences)
 
 	WRITE_PLAYER_SAVE(S, document, "feature_ooc_notes", features["ooc_notes"])
+	WRITE_PLAYER_SAVE(S, document, "feature_ass_photo", features["ass_photo"])
 
 	WRITE_PLAYER_SAVE(S, document, "feature_color_scheme", features["color_scheme"])
 

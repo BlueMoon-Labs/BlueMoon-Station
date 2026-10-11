@@ -142,3 +142,20 @@
 	kit.afterattack(coat, user, TRUE)
 
 	TEST_ASSERT(coat.reinforced, "An armor kit must still reinforce ordinary outer clothing")
+
+/// Модуль longfall гасит урон от падения, пока костюм включён, и не гасит после выключения.
+/datum/unit_test/mod_longfall_cancels_fall_damage/Run()
+	var/mob/living/carbon/human/wearer = allocate(/mob/living/carbon/human)
+	var/obj/item/mod/control/pre_equipped/standard/mod = allocate(/obj/item/mod/control/pre_equipped/standard)
+	var/obj/item/mod/module/longfall/module = allocate(/obj/item/mod/module/longfall)
+	mod.install(module)
+	mod.wearer = wearer
+	module.on_suit_activation()
+
+	wearer.ZImpactDamage(get_turf(wearer), 1)
+	TEST_ASSERT_EQUAL(wearer.getBruteLoss(), 0, "A fall with an active longfall module must deal no damage")
+
+	module.on_suit_deactivation()
+	wearer.ZImpactDamage(get_turf(wearer), 1)
+	TEST_ASSERT(wearer.getBruteLoss() > 0, "A fall after the suit is off must hurt again")
+	mod.wearer = null

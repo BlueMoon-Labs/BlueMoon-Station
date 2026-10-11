@@ -329,8 +329,9 @@
 	var/glow_brightness = CONFIG_GET(number/glow_brightness_base) + CONFIG_GET(number/glow_brightness_power) * light_power
 	var/exposure_contrast = (CONFIG_GET(number/exposure_contrast_base) + CONFIG_GET(number/exposure_contrast_power) * light_power) * (is_painted_lamp ? PAINTED_LAMP_EXPOSURE_CONTRAST_MULTIPLIER : 1)
 	var/exposure_brightness = CONFIG_GET(number/exposure_brightness_base) + CONFIG_GET(number/exposure_brightness_power) * light_power
-	var/glow_plane = layer <= LOW_OBJ_LAYER ? FLOOR_LIGHTING_LAMPS_PLANE : LIGHTING_LAMPS_PLANE
-	var/list/current_parameters = list(glow_icon, glow_icon_state, glow_colored, exposure_icon, exposure_icon_state, exposure_colored, dir, glow_plane, safe_color, glow_contrast, glow_brightness, exposure_contrast, exposure_brightness)
+	var/plane_offset = GET_TURF_PLANE_OFFSET(src)
+	var/glow_plane = GET_NEW_PLANE(layer <= LOW_OBJ_LAYER ? FLOOR_LIGHTING_LAMPS_PLANE : LIGHTING_LAMPS_PLANE, plane_offset)
+	var/list/current_parameters = list(glow_icon, glow_icon_state, glow_colored, exposure_icon, exposure_icon_state, exposure_colored, dir, glow_plane, plane_offset, safe_color, glow_contrast, glow_brightness, exposure_contrast, exposure_brightness)
 	var/unchanged = length(bloom_parameters) == length(current_parameters)
 	if(unchanged)
 		for(var/index in 1 to length(current_parameters))
@@ -360,7 +361,7 @@
 		add_overlay(glow_overlay)
 	if(exposure_icon && exposure_icon_state)
 		exposure_overlay = image(icon = exposure_icon, icon_state = exposure_icon_state, dir = dir, layer = -1)
-		exposure_overlay.plane = LIGHTING_EXPOSURE_PLANE
+		SET_PLANE_W_SCALAR(exposure_overlay, LIGHTING_EXPOSURE_PLANE, plane_offset)
 		exposure_overlay.blend_mode = BLEND_ADD
 		exposure_overlay.appearance_flags = RESET_ALPHA | RESET_COLOR | KEEP_APART
 		var/datum/color_matrix/matrix = new(exposure_colored ? safe_color : 1, exposure_contrast, exposure_brightness)

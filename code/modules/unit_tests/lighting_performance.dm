@@ -193,11 +193,11 @@
 			test_objects += T.lighting_object
 			if(!(T.lighting_flags & TURF_LIGHTING_CORNERS_INITIALISED))
 				T.generate_missing_corners()
-			// Queue corners
-			if(T.lc_topright && !T.lc_topright.needs_update)
+			// Queue corners; a corner still pending from an earlier test sits in saved_corners and is flagged already
+			if(T.lc_topright)
 				T.lc_topright.needs_update = TRUE
-				GLOB.lighting_update_corners += T.lc_topright
-				test_corners += T.lc_topright
+				GLOB.lighting_update_corners |= T.lc_topright
+				test_corners |= T.lc_topright
 
 	var/queued_corners = GLOB.lighting_update_corners.len
 	TEST_ASSERT(queued_corners >= 10, "Should have queued at least 10 corners, got [queued_corners]")
@@ -601,9 +601,7 @@
 			var/turf/T = locate(base.x + dx, base.y + dy, base.z)
 			if(!T || !isturf(T))
 				continue
-			if(!T.lighting_object)
-				new /atom/movable/lighting_object(T)
-			var/atom/movable/lighting_object/lo = T.lighting_object
+			var/atom/movable/lighting_object/lo = ensure_lighting_object(T)
 			lo.prev_was_dark = TRUE
 			// Ensure corners report dark
 			if(T.lc_topright) T.lc_topright.cache_mx = 0

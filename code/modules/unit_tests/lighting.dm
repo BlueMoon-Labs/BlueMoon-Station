@@ -200,9 +200,14 @@
 /// Helper: ensure test turf has a lighting_object, creating one if needed.
 /// Returns the lighting_object. Handles the case where a previous test left one.
 /datum/unit_test/proc/ensure_lighting_object(turf/T)
-	if(T.lighting_object)
-		return T.lighting_object
-	return allocate_lighting_object(T)
+	var/atom/movable/lighting_object/lo = T.lighting_object || allocate_lighting_object(T)
+	// A z whose lighting was torn down and relit may have no corners yet, or corners built before
+	// the object existed: a bare new() neither creates nor wakes them.
+	if(!(T.lighting_flags & TURF_LIGHTING_CORNERS_INITIALISED))
+		T.generate_missing_corners()
+	for(var/datum/lighting_corner/corner in list(T.lc_topright, T.lc_bottomright, T.lc_bottomleft, T.lc_topleft))
+		corner.update_active()
+	return lo
 
 /// Helper: create a lighting_object the canonical way (new(turf) - loc на турфе, гибридный
 /// рендер loc+vis_contents) with end-of-test cleanup. allocate() itself can't be used - its

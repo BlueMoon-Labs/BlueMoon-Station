@@ -130,6 +130,9 @@
 		if(istype(L, /obj/item/organ/lungs))
 			var/obj/item/organ/lungs/lun = L
 			lun.check_breath(breath,src)
+		// Лёгкие не возвращают результат, поэтому процедура замалчивалась null'ом и
+		// breathe() считала каждый вдох проваленным — breathing_loop гас на каждом такте.
+		return !failed_last_breath
 
 /mob/living/carbon/human/handle_environment(datum/gas_mixture/environment)
 	if(dna?.species)

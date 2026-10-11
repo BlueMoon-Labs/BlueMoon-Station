@@ -295,6 +295,34 @@
 	TEST_ASSERT_EQUAL(prefs.sound_volume_heretic_dance, 15, "одиночная запись не сохранила громкость Пляски")
 	TEST_ASSERT_EQUAL(prefs.sound_volume_heretic_sky, 25, "одиночная запись не сохранила громкость неба")
 
+/// Поля мульти-Z, русских глаголов, фото и семенников из master переживают запись и чтение JSON.
+/datum/unit_test/player_save_json/master_fields_roundtrip/Run()
+	prepare()
+	var/datum/preferences/prefs = new_preferences()
+	prefs.multiz_performance = 1
+	prefs.multiz_parallax = FALSE
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "не записаны настройки")
+	prefs.custom_speech_verb_ru = TRUE
+	prefs.features["ass_photo"] = "photo"
+	prefs.features["balls_cum_rate"] = 5
+	prefs.features["balls_cum_max"] = 50
+	TEST_ASSERT(prefs.save_character(TRUE, TRUE), "не записан персонаж")
+	prefs.player_save_storage = null
+	prefs.multiz_performance = MULTIZ_PERFORMANCE_DISABLE
+	prefs.multiz_parallax = TRUE
+	prefs.custom_speech_verb_ru = FALSE
+	prefs.features["ass_photo"] = ""
+	prefs.features["balls_cum_rate"] = CUM_RATE
+	prefs.features["balls_cum_max"] = 0
+	TEST_ASSERT(prefs.load_preferences(TRUE), "не прочитаны настройки JSON")
+	TEST_ASSERT_EQUAL(prefs.multiz_performance, 1, "JSON потерял multiz_performance")
+	TEST_ASSERT_EQUAL(prefs.multiz_parallax, FALSE, "JSON потерял multiz_parallax")
+	TEST_ASSERT(prefs.load_character(1, TRUE), "не прочитан персонаж JSON")
+	TEST_ASSERT_EQUAL(prefs.custom_speech_verb_ru, TRUE, "JSON потерял custom_speech_verb_ru")
+	TEST_ASSERT_EQUAL(prefs.features["ass_photo"], "photo", "JSON потерял ass_photo")
+	TEST_ASSERT_EQUAL(prefs.features["balls_cum_rate"], 5, "JSON потерял balls_cum_rate")
+	TEST_ASSERT_EQUAL(prefs.features["balls_cum_max"], 50, "JSON потерял balls_cum_max")
+
 /datum/unit_test/player_save_json/preferences_modules_and_delete/Run()
 	prepare()
 	var/datum/preferences/prefs = new

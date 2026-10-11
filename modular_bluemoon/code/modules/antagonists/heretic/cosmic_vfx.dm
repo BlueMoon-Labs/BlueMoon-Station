@@ -1,6 +1,9 @@
 #define HERETIC_STARGAZER_CENTER_Y 32
-#define HERETIC_STARGAZER_HAND_X 9
-#define HERETIC_STARGAZER_HAND_Y 68
+#define HERETIC_STARGAZER_HAND_SOUTH_X -4
+#define HERETIC_STARGAZER_HAND_NORTH_X 37
+#define HERETIC_STARGAZER_HAND_EAST_X 34
+#define HERETIC_STARGAZER_HAND_WEST_X -1
+#define HERETIC_STARGAZER_HAND_Y 71
 #define HERETIC_STARGAZER_RIFT_TIME (1.1 SECONDS)
 #define HERETIC_STARGAZER_ASSEMBLE_DELAY (0.25 SECONDS)
 #define HERETIC_STARGAZER_ASSEMBLE_TIME (0.7 SECONDS)
@@ -100,9 +103,25 @@
 /mob/living/simple_animal/heretic_stargazer/proc/attach_hand_star(fade_in)
 	var/obj/effect/abstract/heretic_vfx_attached/star = heretic_vfx_attach(src, 'modular_bluemoon/icons/effects/heretic_vfx.dmi', "stargazer_charge", 255, fade_in, TRUE, FALSE)
 	if(star)
-		star.pixel_x = HERETIC_STARGAZER_HAND_X
-		star.pixel_y = HERETIC_STARGAZER_HAND_Y
+		place_hand_star(star)
 	return star
+
+/// Звезда садится в поднятую кисть того направления, куда Звездочёт смотрит; у диагоналей спрайт боковой.
+/mob/living/simple_animal/heretic_stargazer/proc/place_hand_star(obj/effect/abstract/heretic_vfx_attached/star)
+	star.pixel_y = HERETIC_STARGAZER_HAND_Y
+	if(dir & EAST)
+		star.pixel_x = HERETIC_STARGAZER_HAND_EAST_X
+	else if(dir & WEST)
+		star.pixel_x = HERETIC_STARGAZER_HAND_WEST_X
+	else if(dir == NORTH)
+		star.pixel_x = HERETIC_STARGAZER_HAND_NORTH_X
+	else
+		star.pixel_x = HERETIC_STARGAZER_HAND_SOUTH_X
+
+/mob/living/simple_animal/heretic_stargazer/setDir(newdir, ismousemovement)
+	. = ..()
+	if(!QDELETED(hand_glow))
+		place_hand_star(hand_glow)
 
 /// Луч так и не вышел: накопленный свет гаснет.
 /mob/living/simple_animal/heretic_stargazer/proc/drop_charge()
@@ -183,12 +202,12 @@
 	icon_state = "stargazer_rift"
 	duration = HERETIC_STARGAZER_RIFT_TIME
 	randomdir = FALSE
-	pixel_x = -32
+	pixel_x = -16
 	layer = BELOW_MOB_LAYER
 
 /obj/effect/temp_visual/heretic_stargazer_rift/Initialize(mapload)
 	. = ..()
-	add_overlay(emissive_appearance(icon, icon_state))
+	add_overlay(emissive_appearance(icon, icon_state, offset_spokesman = src))
 
 /// Снимок Звездочёта сжимается и рассыпается там, где его уже нет.
 /obj/effect/temp_visual/heretic_stargazer_remnant
@@ -228,7 +247,7 @@
 
 /obj/effect/temp_visual/heretic_cosmic_twinkle/Initialize(mapload)
 	. = ..()
-	add_overlay(emissive_appearance(icon, icon_state))
+	add_overlay(emissive_appearance(icon, icon_state, offset_spokesman = src))
 
 /// Космос: звёзды разлетаются из точки удара луча.
 /particles/heretic_ascension/cosmic/impact
@@ -252,7 +271,10 @@
 	fadein = 0.1 SECONDS
 
 #undef HERETIC_STARGAZER_CENTER_Y
-#undef HERETIC_STARGAZER_HAND_X
+#undef HERETIC_STARGAZER_HAND_SOUTH_X
+#undef HERETIC_STARGAZER_HAND_NORTH_X
+#undef HERETIC_STARGAZER_HAND_EAST_X
+#undef HERETIC_STARGAZER_HAND_WEST_X
 #undef HERETIC_STARGAZER_HAND_Y
 #undef HERETIC_STARGAZER_RIFT_TIME
 #undef HERETIC_STARGAZER_ASSEMBLE_DELAY

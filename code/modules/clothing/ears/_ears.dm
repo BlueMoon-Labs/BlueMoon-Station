@@ -22,6 +22,22 @@
 	AddElement(/datum/element/earhealing)
 	AddComponent(/datum/component/wearertargeting/earprotection, list(ITEM_SLOT_EARS_LEFT, ITEM_SLOT_EARS_RIGHT))
 
+/obj/item/clothing/ears/earmuffs/kink
+	name = "kinky earmuffs"
+	desc = "Protects your hearing from loud noises, and quiet ones as well. Also deprives hearing based on setting."
+	var/deprive_percent = 50
+
+/obj/item/clothing/ears/earmuffs/kink/equipped(mob/user, slot)
+	. = ..()
+	if(slot & ITEM_SLOT_EARS)
+		ADD_TRAIT(user, TRAIT_HEARING_DEPRIVED, "hearing_deprived_[REF(src)]")
+		to_chat(user, span_purple("Ты почти ничего не слышишь! Твои другие чувства обострились..."))
+
+/obj/item/clothing/ears/earmuffs/kink/dropped(mob/user, slot)
+	. = ..()
+	REMOVE_TRAIT(user, TRAIT_HEARING_DEPRIVED, "hearing_deprived_[REF(src)]")
+	to_chat(user, span_purple("Теперь ты снова можешь слышать мир вокруг себя."))
+
 /obj/item/clothing/ears/headphones
 	name = "Headphones"
 	desc = "Unce unce unce unce. Boop!"

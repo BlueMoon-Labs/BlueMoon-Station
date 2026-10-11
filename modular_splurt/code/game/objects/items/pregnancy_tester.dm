@@ -46,10 +46,11 @@
 
 	results = "negative"
 
-	for(var/obj/item/thing as anything in container.contents)
-		if(thing?.GetComponent(/datum/component/pregnancy))
-			results = "positive"
-			break
+	if(container)
+		for(var/obj/item/thing as anything in container.contents)
+			if(thing?.GetComponent(/datum/component/pregnancy))
+				results = "positive"
+				break
 
 	to_chat(user, span_notice("You use the tester."))
 

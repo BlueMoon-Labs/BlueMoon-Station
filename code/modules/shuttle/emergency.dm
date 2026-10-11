@@ -311,6 +311,10 @@
 
 /obj/docking_port/mobile/emergency/register()
 	. = ..()
+	// Живой шаттл отдаёт роль только через снятие (action_load с replace), иначе прежний продолжает свой цикл эвакуации вторым.
+	var/obj/docking_port/mobile/emergency/current = SSshuttle.emergency
+	if(current && current != src && current != SSshuttle.backup_shuttle)
+		return
 	SSshuttle.emergency = src
 
 /obj/docking_port/mobile/emergency/Destroy(force)

@@ -1,7 +1,7 @@
 /datum/heretic_path
 	/// Лист неба пути: `presence` (Знак 1:1, фигура в круге около 200) и свои фактуры из [sky_texture_states].
 	var/sky_icon
-	/// Сторона кадра листа неба: у Пляски лист делят пары Болеро в 256.
+	/// Сторона кадра листа неба: у Пляски лист делят пары Болеро в 224.
 	var/sky_icon_size = 240
 	var/sky_tint
 	var/sky_tint_alpha = 65
@@ -180,7 +180,7 @@
 	sky_dim = 60
 	sky_particles = /particles/heretic_sky/dance
 	sky_texture_states = list("bolero_couples_far", "bolero_couples_near")
-	sky_icon_size = 256
+	sky_icon_size = 224
 
 /datum/heretic_path/dance/sky_texture_params(index)
 	if(index == 2)

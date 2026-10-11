@@ -485,7 +485,7 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 
 	if(!centcom_cancast && !(magic_flags & SPELL_SKIP_CENTCOM)) //Certain spells are not allowed on the centcom zlevel
 		var/turf/T = get_turf(user)
-		if(is_centcom_level(T.z))
+		if(!T || is_centcom_level(T.z))
 			if(!silent)
 				to_chat(user, "<span class='notice'>You can't cast this spell here.</span>")
 			return FALSE

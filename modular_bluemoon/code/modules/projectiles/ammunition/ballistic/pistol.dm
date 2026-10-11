@@ -12,4 +12,7 @@
 /obj/item/ammo_casing/c10mm/soporific
 	icon_state = "10mm_soporific"
 
+/obj/item/ammo_casing/c10mm/rubber
+	icon_state = "10mm_rub"
+
 ////////////////////////////////////////////////////////////////////

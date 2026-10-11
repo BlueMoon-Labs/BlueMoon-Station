@@ -55,7 +55,11 @@
 		var/obj/machinery/duct/M = A
 		M.duct = src //forget your old master
 
-	destroy_network()
+	// D's destroy_network() would null the ducts and plumbers that now belong to us.
+	D.ducts.Cut()
+	D.suppliers.Cut()
+	D.demanders.Cut()
+	qdel(D)
 ///destroy the network and tell all our ducts and plumbers we are gone
 /datum/ductnet/proc/destroy_network(delete=TRUE)
 	for(var/A in suppliers + demanders)

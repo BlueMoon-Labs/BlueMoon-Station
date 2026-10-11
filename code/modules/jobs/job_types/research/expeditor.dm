@@ -43,12 +43,12 @@
 	jobtype = /datum/job/expeditor
 	id = /obj/item/card/id
 //	belt = /obj/item/storage/belt/military/assault
-	ears = /obj/item/radio/headset/headset_exp/bowman
+	ears = /obj/item/radio/headset/headset_exp
 	uniform = /obj/item/clothing/under/syndicate/combat/exp
 //	suit = /obj/item/clothing/suit/armor/vest/exp
 //	head = /obj/item/clothing/head/helmet/exp
-	gloves = /obj/item/clothing/gloves/combat // раундстартовые горилки ВСЁ
-	glasses = /obj/item/clothing/glasses/sunglasses
+//	gloves = /obj/item/clothing/gloves/combat // раундстартовые горилки ВСЁ
+//	glasses = /obj/item/clothing/glasses/sunglasses
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
 //	suit_store = /obj/item/gun/energy/e_gun/mini/expeditor
 	r_pocket = /obj/item/kitchen/knife/combat

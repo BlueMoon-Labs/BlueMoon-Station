@@ -1500,7 +1500,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 9
 	},
-/obj/structure/industrial_lift,
+/obj/structure/transport/linear,
 /turf/open/floor/plating,
 /area/commons/storage/primary)
 "gK" = (
@@ -1572,7 +1572,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 5
 	},
-/obj/structure/industrial_lift,
+/obj/structure/transport/linear,
 /turf/open/floor/plating,
 /area/commons/storage/primary)
 "kg" = (
@@ -1597,7 +1597,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
 	},
-/obj/structure/industrial_lift,
+/obj/structure/transport/linear,
 /turf/open/floor/plating,
 /area/commons/storage/primary)
 "mZ" = (
@@ -1609,7 +1609,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 8
 	},
-/obj/structure/industrial_lift,
+/obj/structure/transport/linear,
 /turf/open/floor/plating,
 /area/commons/storage/primary)
 "nx" = (
@@ -1764,7 +1764,7 @@
 /turf/open/floor/plating,
 /area/construction)
 "zP" = (
-/obj/structure/industrial_lift,
+/obj/structure/transport/linear,
 /turf/open/floor/plating,
 /area/commons/storage/primary)
 "zZ" = (
@@ -1799,7 +1799,7 @@
 /area/space/nearstation)
 "Ct" = (
 /obj/effect/turf_decal/stripes/yellow/line,
-/obj/structure/industrial_lift,
+/obj/structure/transport/linear,
 /turf/open/floor/plating,
 /area/commons/storage/primary)
 "CK" = (
@@ -1817,7 +1817,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 10
 	},
-/obj/structure/industrial_lift,
+/obj/structure/transport/linear,
 /turf/open/floor/plating,
 /area/commons/storage/primary)
 "DG" = (
@@ -1925,7 +1925,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 1
 	},
-/obj/structure/industrial_lift,
+/obj/structure/transport/linear,
 /turf/open/floor/plating,
 /area/commons/storage/primary)
 "ME" = (
@@ -1945,7 +1945,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 6
 	},
-/obj/structure/industrial_lift,
+/obj/structure/transport/linear,
 /turf/open/floor/plating,
 /area/commons/storage/primary)
 "Pu" = (

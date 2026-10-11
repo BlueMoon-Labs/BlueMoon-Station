@@ -118,7 +118,7 @@
 		"spans" = spans
 	)
 	var/turf/T = get_turf(source)
-	levels = T ? list(T.z) : list(0)
+	levels = T ? SSmapping.get_connected_levels(T).Copy() : list(0)
 
 /datum/signal/subspace/vocal/copy()
 	var/datum/signal/subspace/vocal/copy = new(source, frequency, virt, language)

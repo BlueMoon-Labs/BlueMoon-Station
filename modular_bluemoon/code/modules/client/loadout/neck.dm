@@ -37,7 +37,8 @@
 
 /datum/gear/neck/windy_scarf
 	name = "A windy scarf"
-	path = /obj/item/clothing/neck/windy_scarf
+	path = /obj/item/clothing/neck/bm/windy_scarf
+	loadout_initial_colors = list("#AF3D3D")
 
 /datum/gear/neck/scarf/cow
 	name = "Holly's Scarf"

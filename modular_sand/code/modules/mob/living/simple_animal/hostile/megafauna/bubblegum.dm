@@ -47,7 +47,7 @@ Removes slaughterlings (because they are bullshit), instead replacing them with 
 /mob/living/simple_animal/hostile/megafauna/bubblegum/charge()
 	bloodsmacks()
 	var/turf/T = get_turf(target)
-	if(!T || T == loc)
+	if(!T || T == loc || T.z != z)
 		return
 	new /obj/effect/temp_visual/dragon_swoop(T)
 	charging = 1
@@ -87,6 +87,9 @@ Removes slaughterlings (because they are bullshit), instead replacing them with 
 	sleep(3)
 
 /mob/living/simple_animal/hostile/megafauna/bubblegum/blood_warp()
+	var/turf/target_turf = get_turf(target)
+	if(!target_turf || target_turf.z != z)
+		return
 	var/obj/effect/decal/cleanable/blood/found_bloodpool
 	var/list/pools = list()
 	var/can_jaunt = FALSE
@@ -96,7 +99,7 @@ Removes slaughterlings (because they are bullshit), instead replacing them with 
 		break
 	if(!can_jaunt)
 		return
-	for(var/obj/effect/decal/cleanable/blood/nearby in view(get_turf(target),2))
+	for(var/obj/effect/decal/cleanable/blood/nearby in view(target_turf, 2))
 		if(nearby.bloodiness >= 20)
 			pools += nearby
 	if(pools.len)

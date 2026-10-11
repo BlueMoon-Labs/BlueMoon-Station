@@ -19,6 +19,8 @@
 	var/standby_load = 0
 	/// APCs currently parked on this powernet; unparked in reset() the moment the grid stops covering them.
 	var/list/standby_apcs
+	/// SMES charging from this net this cycle; they take the leftover in reset().
+	var/list/smes_inputs
 	/// world.time создания: отложенные auto_propogate_cut_cable по нему понимают,
 	/// что их фрагмент уже перестроил другой колбек этого же тика (см. cable.dm)
 	var/created_at = 0
@@ -96,6 +98,12 @@
 //handles the power changes in the powernet
 //called every ticks by the powernet controller
 /datum/powernet/proc/reset()
+	if(smes_inputs)
+		for(var/obj/machinery/power/smes/charging as anything in smes_inputs)
+			if(!QDELETED(charging))
+				charging.charge_from_excess(src)
+		smes_inputs = null
+
 	//see if there's a surplus of power remaining in the powernet and stores unused power in the SMES
 	netexcess = avail - load
 

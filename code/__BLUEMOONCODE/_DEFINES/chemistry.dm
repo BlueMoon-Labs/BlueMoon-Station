@@ -32,3 +32,6 @@
 #define DISPENSER_TYPE_BOOZE  (1<<2)
 /// Both drink dispensers combined
 #define DISPENSER_TYPE_DRINKS (DISPENSER_TYPE_SODA | DISPENSER_TYPE_BOOZE)
+
+/// Every Nth destroyed foam goes through the GC queue for harddel detection; the rest skip it (first REF of a fresh atom stalls).
+#define FOAM_GC_SAMPLE 64

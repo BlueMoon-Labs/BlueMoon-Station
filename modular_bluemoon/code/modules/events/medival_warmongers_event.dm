@@ -50,23 +50,23 @@
 		payoff = max(payoff_min, FLOOR(D.account_balance * 0.85, 1000))
 	else
 		payoff = payoff_min
-	threat_msg.content = "ПРИВЕТСТВУЮ ВАС, ЭТО [ship_name] И МЫ СОБИРАЕМ ДЕНЬГИ ИЗ ВАССАЛОВ НА НАШЕЙ ТЕРРИТОРИИ, ТАК УЖ СЛУЧИЛОСЬ, ЧТО ВЫ ТОЖЕ ТАМ ОКАЗАЛИСЬ!! ОБЫЧНО МЫ УБИВАЕМ ТАКИХ СЛАБАКОВ, КАК ВЫ, ЗА ТО, ЧТО ОНИ ВТОРГЛИСЬ НА НАШУ ЗЕМЛЮ, НО МЫ ГОТОВЫ ПРИВЕТСТВОВАТЬ ВАС В НАШЕМ ПРОСТРАНСТВЕ, ЕСЛИ ВЫ ЗАПЛАТИТЕ [payoff] В ЗНАК УВАЖЕНИЯ К НАШЕМУ ЗАКОНУ. БУДЬТЕ МУДРЫ В СВОЕМ ВЫБОРЕ!! (отправить сообщение. отправить сообщение. почему сообщение не отправлено?)."
+	threat_msg.content = "ПРИВЕТСТВУЮ ВАС, ЭТО [ship_name] И МЫ СОБИРАЕМ ДЕНЬГИ ИЗ ВАССАЛОВ НА НАШЕЙ ТЕРРИТОРИИ, ТАК УЖ СЛУЧИЛОСЬ, ЧТО ВЫ ТОЖЕ ТАМ ОКАЗАЛИСЬ!! ОБЫЧНО МЫ УБИВАЕМ ТАКИХ СЛАБАКОВ, КАК ВЫ, ЗА ТО, ЧТО ОНИ ВТОРГЛИСЬ НА НАШУ ЗЕМЛЮ, НО МЫ ГОТОВЫ ПРИВЕТСТВОВАТЬ ВАС В НАШЕМ ПРОСТРАНСТВЕ, ЕСЛИ ВЫ ЗАПЛАТИТЕ [payoff] В ЗНАК УВАЖЕНИЯ К НАШЕМУ ЗАКОНУ. БУДЬТЕ МУДРЫ В СВОЕМ ВЫБОРЕ!! У ВАС ЕСТЬ РОВНО ПЯТЬ МИНУТ С МОМЕНТА ПОЛУЧЕНИЯ СООБЩЕНИЯ. (отправить сообщение. отправить сообщение. почему сообщение не отправлено?)."
 
 	threat_msg.answer_callback = CALLBACK(src, PROC_REF(warmongers_answered), threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
 	SScommunications.send_message(threat_msg, unique = TRUE)
 	spawn_timer_id = addtimer(CALLBACK(src, PROC_REF(spawn_warmongers), threat_msg, ship_template), response_max_time, TIMER_STOPPABLE)
 
 /datum/round_event/medieval_warmongers/proc/warmongers_answered(datum/comm_message/threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
-	if(world.time > initial_send_time + response_max_time)
+	if(world.time >= initial_send_time + response_max_time)
 		priority_announce("ВЫ УЖЕ ПОД ОСАДОЙ ОСТОЛОПЫ, ВЫ ЛИБО ТУПЫЕ ЛИБО НЕВЕЖЕСТВЕННЫЕ?!!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_warmongers(threat_msg, ship_template, TRUE)
 		return
 	if(threat_msg && threat_msg.answered == 1)
 		var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
 		if(D && D.adjust_money(-payoff))
+			resolve_threat_peacefully()
 			priority_announce("ЭТОГО БУДЕТ ДОСТАТОЧНО, ПОМНИ, КОМУ ТЫ ПРИНАДЛЕЖИШЬ!!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_yespeacedecision.ogg', "Priority")
 			SSdirector.complete_deferred_action_without_roles(control, "угроза снята выкупом; назначено ролей: 0")
-			resolve_threat_peacefully()
 			return
 		priority_announce("ТЫ СЧИТАЕШЬ МЕНЯ ШУТОМ? ТЕБЕ КОНЕЦ!!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_warmongers(threat_msg, ship_template, TRUE)

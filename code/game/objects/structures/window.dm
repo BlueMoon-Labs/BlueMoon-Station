@@ -974,7 +974,7 @@
 	heat_resistance = 1600
 	armor = list(MELEE = 50, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 50, BIO = 100, RAD = 100, FIRE = 80, ACID = 100)
 	smooth = SMOOTH_MORE|SMOOTH_TRUE
-	canSmoothWith = list(/turf/closed/wall/r_wall/syndicate, /turf/closed/wall/mineral/plastitanium, /obj/machinery/door/airlock/shuttle, /obj/machinery/door/airlock, /obj/structure/window/plastitanium, /obj/structure/shuttle/engine, /obj/structure/falsewall/plastitanium, /turf/closed/indestructible/riveted)
+	canSmoothWith = list(/turf/closed/wall/r_wall/syndicate, /turf/closed/wall/r_wall/r_plastitanium, /turf/closed/wall/mineral/plastitanium, /obj/machinery/door/airlock/shuttle, /obj/machinery/door/airlock, /obj/structure/window/plastitanium, /obj/structure/shuttle/engine, /obj/structure/falsewall/plastitanium, /turf/closed/indestructible/riveted)
 	explosion_block = 3
 	level = 3
 	glass_type = /obj/item/stack/sheet/plastitaniumglass

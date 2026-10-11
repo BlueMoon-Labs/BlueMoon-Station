@@ -1,3 +1,9 @@
+#define HERETIC_DEMON_REMAINS_VOLUME 50
+#define HERETIC_DEMON_REMAINS_TIME (1.2 SECONDS)
+#define HERETIC_ARMSY_DEATH_SOUND 'modular_bluemoon/sound/heretic/demons/armsy_death.ogg'
+#define HERETIC_ARMSY_DEATH_VOLUME 70
+#define HERETIC_ARMSY_DEATH_EXTRARANGE 10
+
 /mob/living/simple_animal/hostile/eldritch
 	name = "demon"
 	real_name = "demon"
@@ -12,7 +18,7 @@
 	response_harm_continuous = "reaps"
 	response_harm_simple = "tears"
 	speak_chance = 1
-	icon = 'icons/mob/eldritch_mobs.dmi'
+	icon = 'modular_bluemoon/icons/mob/heretic_demons.dmi'
 	speed = 0
 	a_intent = INTENT_HARM
 	stop_automated_movement = 1
@@ -21,7 +27,7 @@
 	//на ai_controller - см. hostile_adapter/MIGRATION_EXCEPTIONS.md и пин
 	//ai_eldritch_stays_player_vessel.
 	AIStatus = AI_OFF
-	attack_sound = 'sound/weapons/punch1.ogg'
+	attack_sound = HERETIC_DEMON_FLESH_SFX
 	see_in_dark = 7
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
 	damage_coeff = list(BRUTE = 1, BURN = 1, TOX = 0, CLONE = 0, STAMINA = 0, OXY = 0)
@@ -32,15 +38,33 @@
 	movement_type = GROUND
 	pressure_resistance = 100
 	del_on_death = TRUE
-	deathmessage = "implodes into itself"
+	deathmessage = "распадается и исчезает."
 	faction = list("heretics")
 	simple_mob_flags = SILENCE_RANGED_MESSAGE
 	///Innate spells that are supposed to be added when a beast is created
 	var/list/spells_to_add
+	/// Одноразовый распад в heretic_demons.dmi: тело удаляется сразу, видимую гибель играет эффект.
+	var/remains_state
+	var/remains_sound
+	var/remains_volume = HERETIC_DEMON_REMAINS_VOLUME
 
 /mob/living/simple_animal/hostile/eldritch/Initialize(mapload)
 	. = ..()
 	add_spells()
+
+/mob/living/simple_animal/hostile/eldritch/death(gibbed)
+	if(!gibbed)
+		leave_remains()
+	return ..()
+
+/mob/living/simple_animal/hostile/eldritch/proc/leave_remains()
+	if(!remains_state || !isturf(loc))
+		return null
+	var/obj/effect/temp_visual/heretic_demon_remains/remains = new(loc, remains_state, dir)
+	remains.transform = transform
+	if(remains_sound)
+		playsound(loc, remains_sound, remains_volume, TRUE)
+	return remains
 
 /**
   * Add_spells
@@ -64,7 +88,10 @@
 	maxHealth = 50
 	health = 50
 	sight = SEE_MOBS|SEE_OBJS|SEE_TURFS
-	spells_to_add = list(/obj/effect/proc_holder/spell/targeted/ethereal_jaunt/shift/ash/long,/obj/effect/proc_holder/spell/pointed/manse_link,/obj/effect/proc_holder/spell/targeted/telepathy/eldritch,/obj/effect/proc_holder/spell/pointed/trigger/blind/eldritch)
+	deathmessage = "расходится по швам, и сшитые руки осыпаются грудой мёртвой плоти."
+	remains_state = "raw_prophet_dead"
+	remains_sound = 'modular_bluemoon/sound/heretic/flesh_latch_tear.ogg'
+	spells_to_add = list(/obj/effect/proc_holder/spell/targeted/ethereal_jaunt/shift/flesh/long,/obj/effect/proc_holder/spell/pointed/manse_link,/obj/effect/proc_holder/spell/targeted/telepathy/eldritch,/obj/effect/proc_holder/spell/pointed/trigger/blind/eldritch)
 
 	var/list/linked_mobs = list()
 
@@ -138,6 +165,9 @@
 	sight = SEE_MOBS
 	spells_to_add = list(/obj/effect/proc_holder/spell/targeted/worm_contract)
 	ranged = TRUE
+	attack_sound = HERETIC_ARMSY_BITE_SFX
+	deathmessage = "лопается, и кольца тела расползаются клубками жил."
+	remains_state = "armsy_dead"
 	///Previous segment in the chain
 	var/mob/living/simple_animal/hostile/eldritch/armsy/back
 	///Next segment in the chain
@@ -150,6 +180,8 @@
 	var/stacks_to_grow = 2
 	///Currently eaten arms
 	var/current_stacks = 0
+	///Фазы волны сокращения: середина берёт свою по номеру от головы, соседи отстают на треть цикла
+	var/static/list/mid_phases = list("armsy_mid_a", "armsy_mid_b", "armsy_mid_c")
 
 //I tried Initalize but it didnt work, like at all. This proc just wouldnt fire if it was Initalize instead of New
 /mob/living/simple_animal/hostile/eldritch/armsy/Initialize(mapload,spawn_more = TRUE,len = 6)
@@ -166,7 +198,7 @@
 		var/mob/living/simple_animal/hostile/eldritch/armsy/segment = new type(drop_location(), FALSE)
 		previous.back = segment
 		segment.front = previous
-		segment.icon_state = index == len ? "armsy_end" : "armsy_mid"
+		segment.icon_state = index == len ? "armsy_end" : mid_phases[(index - 1) % length(mid_phases) + 1]
 		segment.icon_living = segment.icon_state
 		previous = segment
 
@@ -222,6 +254,16 @@
 		for(var/mob/living/inside as anything in released)
 			heretic_flesh_expel_fx(inside, worm_shape)
 
+/mob/living/simple_animal/hostile/eldritch/armsy/death(gibbed)
+	if(!gibbed)
+		for(var/mob/living/simple_animal/hostile/eldritch/armsy/segment = back, segment, segment = segment.back)
+			segment.leave_remains()
+		if(front)
+			playsound(src, 'modular_bluemoon/sound/heretic/flesh_latch_tear.ogg', HERETIC_DEMON_REMAINS_VOLUME, TRUE)
+		else
+			playsound(src, HERETIC_ARMSY_DEATH_SOUND, HERETIC_ARMSY_DEATH_VOLUME, FALSE, HERETIC_ARMSY_DEATH_EXTRARANGE)
+	return ..()
+
 /mob/living/simple_animal/hostile/eldritch/armsy/Destroy()
 	if(front)
 		front.icon_state = "armsy_end"
@@ -251,12 +293,14 @@
 
 /mob/living/simple_animal/hostile/eldritch/armsy/proc/grow_tail()
 	var/mob/living/simple_animal/hostile/eldritch/armsy/head = src
+	var/index = 0
 	while(head.front)
 		head = head.front
+		index++
 	if(head.get_length() >= HERETIC_FLESH_WORM_MAX_LENGTH)
 		return null
 	var/mob/living/simple_animal/hostile/eldritch/armsy/segment = new type(drop_location(), FALSE)
-	icon_state = front ? "armsy_mid" : "armsy_start"
+	icon_state = front ? mid_phases[index % length(mid_phases) + 1] : "armsy_start"
 	icon_living = icon_state
 	back = segment
 	segment.icon_state = "armsy_end"
@@ -371,7 +415,7 @@
 		return FALSE
 	var/turf/gore_spot = get_turf(corpse)
 	visible_message(span_danger("[src] пожирает [corpse]!"), span_notice("Вы пожираете [corpse]."))
-	playsound(src, 'sound/magic/Demon_consume.ogg', 50, TRUE)
+	playsound(src, HERETIC_FLESH_ABSORB_SFX, HERETIC_DEMON_REMAINS_VOLUME, TRUE)
 	log_combat(src, corpse, "devoured")
 	corpse.gib(no_bodyparts = TRUE, drop_items = TRUE)
 	heal_chain(HERETIC_FLESH_WORM_FEED_HEAL)
@@ -392,27 +436,27 @@
 	name = "rust walker"
 	real_name = "rust walker"
 	desc = "Непостижимое чудовище, вытягивающее жизнь из всего вокруг."
-	icon_state = "rust_walker_s"
+	icon_state = "rust_walker"
 	status_flags = CANPUSH
-	icon_living = "rust_walker_s"
+	icon_living = "rust_walker"
 	maxHealth = 200
 	health = 200
 	melee_damage_lower = 25
 	melee_damage_upper = 35
 	sight = SEE_TURFS
+	attack_sound = HERETIC_DEMON_RUST_SFX
+	deathmessage = "трескается, и ржавая скорлупа осыпается трухой."
+	remains_state = "rust_walker_dead"
+	remains_sound = 'modular_bluemoon/sound/heretic/rust_heart_break_1.ogg'
 	spells_to_add = list(/obj/effect/proc_holder/spell/aoe_turf/rust_conversion/small,/obj/effect/proc_holder/spell/aimed/rust_wave/short)
-
-/mob/living/simple_animal/hostile/eldritch/rust_spirit/setDir(newdir, ismousemovement)
-    . = ..()
-    if(newdir == NORTH)
-        icon_state = "rust_walker_n"
-    else if(newdir == SOUTH)
-        icon_state = "rust_walker_s"
-    update_icon()
+	var/step_volume = 30
+	var/step_sound_toggle = FALSE
 
 /mob/living/simple_animal/hostile/eldritch/rust_spirit/Moved()
 	. = ..()
-	playsound(src, 'sound/effects/footstep/rustystep1.ogg', 100, TRUE)
+	step_sound_toggle = !step_sound_toggle
+	if(step_sound_toggle)
+		playsound(src, 'sound/effects/footstep/rustystep1.ogg', step_volume, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
 
 /mob/living/simple_animal/hostile/eldritch/rust_spirit/Life()
 	if(stat == DEAD)
@@ -436,6 +480,10 @@
 	melee_damage_lower = 15
 	melee_damage_upper = 20
 	sight = SEE_TURFS
+	attack_sound = HERETIC_ASH_GRASP_SFX
+	deathmessage = "вспыхивает изнутри и осыпается пеплом."
+	remains_state = "ash_walker_dead"
+	remains_sound = 'modular_bluemoon/sound/heretic/ash_crumble.ogg'
 	spells_to_add = list(/obj/effect/proc_holder/spell/targeted/ethereal_jaunt/shift/ash,/obj/effect/proc_holder/spell/pointed/cleave/long,/obj/effect/proc_holder/spell/aoe_turf/fire_cascade)
 
 /mob/living/simple_animal/hostile/eldritch/stalker
@@ -451,4 +499,56 @@
 	melee_damage_lower = 15
 	melee_damage_upper = 20
 	sight = SEE_MOBS
-	spells_to_add = list(/obj/effect/proc_holder/spell/targeted/ethereal_jaunt/shift/ash,/obj/effect/proc_holder/spell/targeted/shapeshift/eldritch,/obj/effect/proc_holder/spell/targeted/emplosion/eldritch)
+	deathmessage = "рвётся по швам и стекает на пол лужей сукровицы."
+	remains_state = "stalker_dead"
+	remains_sound = 'modular_bluemoon/sound/heretic/flesh_latch_tear.ogg'
+	spells_to_add = list(/obj/effect/proc_holder/spell/targeted/ethereal_jaunt/shift/flesh,/obj/effect/proc_holder/spell/targeted/shapeshift/eldritch,/obj/effect/proc_holder/spell/targeted/emplosion/eldritch)
+
+/obj/effect/temp_visual/heretic_demon_remains
+	icon = 'modular_bluemoon/icons/mob/heretic_demons.dmi'
+	duration = HERETIC_DEMON_REMAINS_TIME
+	randomdir = FALSE
+
+/obj/effect/temp_visual/heretic_demon_remains/Initialize(mapload, new_state, new_dir)
+	icon_state = new_state
+	if(new_dir)
+		setDir(new_dir)
+	return ..()
+
+/datum/sound_effect/heretic_flesh_absorb
+	key = HERETIC_FLESH_ABSORB_SFX
+	file_paths = list(
+		'modular_bluemoon/sound/heretic/flesh_absorb_1.ogg',
+		'modular_bluemoon/sound/heretic/flesh_absorb_2.ogg',
+		'modular_bluemoon/sound/heretic/flesh_absorb_3.ogg',
+	)
+
+/datum/sound_effect/heretic_demon_flesh
+	key = HERETIC_DEMON_FLESH_SFX
+	file_paths = list(
+		'modular_bluemoon/sound/heretic/flesh_stitch_1.ogg',
+		'modular_bluemoon/sound/heretic/flesh_stitch_2.ogg',
+		'modular_bluemoon/sound/heretic/flesh_latch_tear.ogg',
+	)
+
+/datum/sound_effect/heretic_armsy_bite
+	key = HERETIC_ARMSY_BITE_SFX
+	file_paths = list(
+		'modular_bluemoon/sound/heretic/demons/armsy_bite_1.ogg',
+		'modular_bluemoon/sound/heretic/demons/armsy_bite_2.ogg',
+		'modular_bluemoon/sound/heretic/demons/armsy_bite_3.ogg',
+	)
+
+/datum/sound_effect/heretic_demon_rust
+	key = HERETIC_DEMON_RUST_SFX
+	file_paths = list(
+		'modular_bluemoon/sound/heretic/rust_grasp_1.ogg',
+		'modular_bluemoon/sound/heretic/rust_grasp_2.ogg',
+		'modular_bluemoon/sound/heretic/rust_grasp_3.ogg',
+	)
+
+#undef HERETIC_DEMON_REMAINS_VOLUME
+#undef HERETIC_DEMON_REMAINS_TIME
+#undef HERETIC_ARMSY_DEATH_SOUND
+#undef HERETIC_ARMSY_DEATH_VOLUME
+#undef HERETIC_ARMSY_DEATH_EXTRARANGE

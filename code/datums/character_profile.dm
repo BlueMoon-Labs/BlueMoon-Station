@@ -77,6 +77,14 @@ GLOBAL_LIST_EMPTY(cached_previews)
 	icon = 'icons/turf/floors.dmi'
 	icon_state = "plating"
 	var/cached_target_appearance
+	/// Этаж, на плоскостях которого нарисована показанная внешность.
+	var/shown_offset = 0
+
+/atom/movable/screen/map_view/examine_panel_screen/ensure_plane_group()
+	if(!popup_plane_group)
+		popup_plane_group = new /datum/plane_master_group/popup/on_demand(PLANE_GROUP_POPUP_WINDOW(src), assigned_map)
+	popup_plane_group.ensure_popup_depth(shown_offset)
+	return popup_plane_group
 
 /atom/movable/screen/map_view/examine_panel_screen/Destroy()
 	cached_target_appearance = null
@@ -94,6 +102,8 @@ GLOBAL_LIST_EMPTY(cached_previews)
 	cut_overlays()
 	add_overlay(current_mob_appearance)
 	cached_target_appearance = target_appearance
+	shown_offset = PLANE_TO_OFFSET(target.plane)
+	popup_plane_group?.ensure_popup_depth(shown_offset)
 
 /datum/description_profile/ui_static_data(mob/user, datum/tgui/ui, datum/ui_state/state)
 	. = ..()

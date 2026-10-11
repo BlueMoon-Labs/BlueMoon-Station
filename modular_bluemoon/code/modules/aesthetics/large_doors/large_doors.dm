@@ -1,6 +1,10 @@
 /obj/machinery/door/airlock
 	var/obj/airlock_filler_object/filler
 
+/// Lays the airlock over two tiles and keeps its filler object on the second one
+/obj/machinery/door/airlock/proc/SetBounds()
+	return
+
 
 /obj/machinery/door/airlock/multi_tile/Initialize(mapload)
 	. = ..()
@@ -47,7 +51,7 @@
 			return TRUE
 
 
-/obj/machinery/door/airlock/multi_tile/proc/SetBounds()
+/obj/machinery/door/airlock/multi_tile/SetBounds()
 	if(dir in list(NORTH, SOUTH))
 		bound_width = 2 * world.icon_size
 		bound_height = world.icon_size
@@ -94,7 +98,7 @@
 	density = TRUE
 	opacity = TRUE
 	anchored = TRUE
-	var/obj/machinery/door/airlock/multi_tile/parent_airlock
+	var/obj/machinery/door/airlock/parent_airlock
 
 
 /obj/airlock_filler_object/Initialize(mapload, obj/machinery/door/airlock/parent_airlock)

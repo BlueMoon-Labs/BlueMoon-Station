@@ -11,6 +11,7 @@
 	var/selfdestruct = FALSE // Explode when user check is failed.
 	var/force_replace = FALSE // Can forcefully replace other pins.
 	var/pin_removeable = FALSE // Can be replaced by any pin.
+	var/emag_removeable = FALSE
 	var/obj/item/gun/gun
 
 /obj/item/firing_pin/Initialize(mapload, newloc)
@@ -29,6 +30,8 @@
 		if(istype(target, /obj/item/gun))
 			var/obj/item/gun/G = target
 			var/obj/item/firing_pin/old_pin = G.pin
+			if(old_pin && !old_pin.can_be_extracted(G, user))
+				return
 			if(old_pin && (force_replace || old_pin.pin_removeable))
 				to_chat(user, span_notice("Убираю [old_pin] из [G]."))
 				if(Adjacent(user))
@@ -70,6 +73,12 @@
 	gun.pin = null
 	gun = null
 	return
+
+/obj/item/firing_pin/proc/can_be_extracted(obj/item/gun/G, mob/living/user)
+	if(emag_removeable && !(G.obj_flags & EMAGGED))
+		to_chat(user, span_warning("[src] зафиксирован в [G] намертво. Сначала взломайте электронику оружия."))
+		return FALSE
+	return TRUE
 
 /obj/item/firing_pin/proc/pin_auth(mob/living/user)
 	return TRUE
@@ -354,6 +363,7 @@
 	icon_state = "firing_pin_explorer"
 	fail_message = "<span class='warning'>CANNOT FIRE WHILE ON STATION, MATE!</span>"
 	pin_removeable = FALSE
+	emag_removeable = TRUE
 
 // This checks that the user isn't on the station Z-level.
 /obj/item/firing_pin/explorer/pin_auth(mob/living/user)

@@ -16,10 +16,14 @@
 
 /datum/disease/dnaspread/stage_act()
 	..()
+	if(QDELETED(src) || !affected_mob)
+		return
 	if(!affected_mob.dna)
 		cure()
+		return
 	if((NOTRANSSTING in affected_mob.dna.species.species_traits) || (NO_DNA_COPY in affected_mob.dna.species.species_traits)) //Only species that can be spread by transformation sting can be spread by the retrovirus
 		cure()
+		return
 
 	if(!strain_data["dna"])
 		//Absorbs the target DNA.

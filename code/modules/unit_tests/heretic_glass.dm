@@ -698,9 +698,8 @@
 	var/mob/living/second_lane = allocate(/mob/living/carbon/human, locate(user.x + 2, user.y + 3, user.z))
 	TEST_ASSERT(glass.release(user, victim), "Выбор цели запускает всю сеть без ручного поворота.")
 	var/datum/heretic_glass_attack/attack = glass.attacks[1]
-	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 0, "Общий залп сначала показывает предупреждение.")
-	TEST_ASSERT(locate(/obj/effect/temp_visual/heretic_glass/warning) in get_turf(first_lane), "Первая боковая линия предупреждена.")
-	TEST_ASSERT(locate(/obj/effect/temp_visual/heretic_glass/warning) in get_turf(second_lane), "Вторая боковая линия тоже предупреждена.")
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 0, "Общий залп сначала копит свет.")
+	TEST_ASSERT_NOTNULL(attack.sight, "Залп по живой цели виден по прицелу.")
 	attack.resolve()
 	TEST_ASSERT(abs(victim.getBruteLoss() - 36) <= DAMAGE_PRECISION, "Три пересекающихся луча наносят один усиленный удар.")
 	TEST_ASSERT(abs(first_lane.getBruteLoss() - 36) <= DAMAGE_PRECISION, "Первая призма действительно стреляет в цель.")
@@ -749,7 +748,7 @@
 	attack.resolve()
 	TEST_ASSERT(abs(far_victim.getBruteLoss() - 36) <= DAMAGE_PRECISION, "Разрушение входной призмы отменяет зависимый залп.")
 
-/// Прицельная сеть сохраняет отмеченные клетки и теряет только луч разрушенного узла.
+/// Залп по клетке сохраняет отмеченные клетки и теряет только луч разрушенного узла.
 /datum/unit_test/heretic_glass_volley_snapshot/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_GLASS
@@ -762,12 +761,12 @@
 	var/mob/living/victim = allocate(/mob/living/carbon/human, locate(user.x + 4, user.y + 2, user.z))
 	var/mob/living/first_lane = allocate(/mob/living/carbon/human, locate(user.x + 1, user.y + 2, user.z))
 	var/mob/living/second_lane = allocate(/mob/living/carbon/human, locate(user.x + 2, user.y + 3, user.z))
-	TEST_ASSERT(glass.release(user, victim), "Подготовлен прицельный залп.")
+	TEST_ASSERT(glass.release(user, get_turf(victim)), "Подготовлен залп по клетке цели.")
 	var/datum/heretic_glass_attack/attack = glass.attacks[1]
 	victim.forceMove(get_step(user, WEST))
 	qdel(glass.prisms[1])
 	attack.resolve()
-	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 0, "Сеть не доворачивает вслед за убежавшей целью.")
+	TEST_ASSERT_EQUAL(victim.getBruteLoss(), 0, "Залп по клетке не доворачивает вслед за ушедшей целью.")
 	TEST_ASSERT_EQUAL(first_lane.getBruteLoss(), 0, "Уничтоженная призма не исполняет старое предупреждение.")
 	TEST_ASSERT(abs(second_lane.getBruteLoss() - 36) <= DAMAGE_PRECISION, "Независимая призма сохраняет свой залп.")
 
@@ -1221,7 +1220,7 @@
 	qdel(protection)
 	TEST_ASSERT(glass.casket(user, victim), "Треснувшая цель запирается.")
 	TEST_ASSERT_EQUAL(glass.combat_resource, 2, "Витраж стоит две грани.")
-	TEST_ASSERT(!victim.IsParalyzed(), "Во время нарастания стекла цель ещё свободна.")
+	TEST_ASSERT(victim.IsImmobilized() && !victim.IsParalyzed(), "Нарастающее стекло приковывает цель к месту, но не парализует.")
 	TEST_ASSERT(wait_for_var(victim, NAMEOF(victim, anchored), TRUE, 3 SECONDS), "После секунды нарастания саркофаг смыкается.")
 	var/obj/structure/heretic_glass_casket/casket = locate() in get_turf(victim)
 	TEST_ASSERT_NOTNULL(casket, "На клетке цели стоит саркофаг.")
@@ -1664,6 +1663,9 @@
 	victim.forceMove(far_spot)
 	user.forceMove(get_step(far_spot, WEST))
 	TEST_ASSERT_NULL(glass.pocket_door(user, victim), "Вдали от своих стёкол готовую цель не увести.")
+	var/obj/structure/heretic_glass_casket/far_casket = new(far_spot, glass, victim)
+	TEST_ASSERT_NOTNULL(glass.pocket_door(user, victim), "Саркофаг сам служит стеклом: запертую цель уводят и вдали от окон.")
+	qdel(far_casket)
 	user.forceMove(origin)
 	victim.forceMove(spot)
 	var/obj/structure/mirror/mirror = allocate(/obj/structure/mirror, locate(spot.x + 3, spot.y, spot.z))
@@ -1826,3 +1828,183 @@
 	TEST_ASSERT(glass.steal_through(user, near_pane, label), "Треснувшую цель без чужих рук утягивает сквозь стекло при свидетеле рядом.")
 	TEST_ASSERT(heretic.pocket_holds(victim), "Цель в изнанке.")
 	heretic.pocket.collapse("проверка")
+
+/// Луч по живой цели бьёт туда, где она стоит к выстрелу, прицел тянется за ней; укрытие между ними гасит луч.
+/datum/unit_test/heretic_glass_tracking_beam/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/mob/living/carbon/human/runner = allocate(/mob/living/carbon/human, locate(user.x + 3, user.y, user.z))
+	TEST_ASSERT(glass.release(user, runner), "Луч наводится на живую цель.")
+	var/datum/heretic_glass_attack/attack = glass.attacks[1]
+	TEST_ASSERT_NOTNULL(attack.sight, "Прицел тянется к цели.")
+	TEST_ASSERT_EQUAL(length(attack.warnings), 0, "Клетки под прицелом по живой цели не подсвечиваются.")
+	runner.forceMove(locate(user.x + 3, user.y + 2, user.z))
+	TEST_ASSERT_EQUAL(get_turf(attack.sight), get_turf(user), "Прицел остаётся у еретика.")
+	TEST_ASSERT(abs(attack.sight.angle - Get_Angle(user, runner)) < 1, "Прицел поворачивается за целью: [attack.sight.angle].")
+	attack.resolve()
+	TEST_ASSERT(abs(runner.getBruteLoss() - 30) < 0.01, "Луч догоняет сместившуюся цель: [runner.getBruteLoss()].")
+	TEST_ASSERT(glass.release(user, runner), "Второй луч наводится.")
+	attack = glass.attacks[1]
+	var/obj/cover = allocate(/obj, get_step(user, NORTHEAST))
+	cover.density = TRUE
+	TEST_ASSERT(!glass.line_clear(user, runner), "Укрытие закрывает линию.")
+	attack.resolve()
+	TEST_ASSERT(abs(runner.getBruteLoss() - 30) < 0.01, "Цель за укрытием луч не достаёт: [runner.getBruteLoss()].")
+	TEST_ASSERT(QDELETED(attack), "Погасший луч завершается.")
+
+/// Трещины копятся до трёх и раскалывают цель: она падает, счёт начинается заново, повторный раскол ждёт передышки; луч оставляет трещину, только если путь знает Стеклянную ладонь.
+/datum/unit_test/heretic_glass_shatter/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	TEST_ASSERT(glass.release(user, victim), "Первый луч.")
+	var/datum/heretic_glass_attack/attack = glass.attacks[1]
+	attack.resolve()
+	TEST_ASSERT_NULL(victim.has_status_effect(/datum/status_effect/heretic_glass_fracture), "Без Стеклянной ладони луч трещин не оставляет.")
+	heretic.gain_knowledge(/datum/eldritch_knowledge/glass_grasp)
+	TEST_ASSERT(glass.release(user, victim), "Второй луч.")
+	attack = glass.attacks[1]
+	attack.resolve()
+	var/datum/status_effect/heretic_glass_fracture/fracture = victim.has_status_effect(/datum/status_effect/heretic_glass_fracture)
+	TEST_ASSERT_NOTNULL(fracture, "Луч оставляет трещину.")
+	TEST_ASSERT_EQUAL(fracture.stacks, 1, "Одна трещина.")
+	TEST_ASSERT_EQUAL(fracture.fracture_overlay.icon_state, "glass_crack_1", "Под ногами одна трещина.")
+	TEST_ASSERT_EQUAL(glass.fracture(victim), fracture, "Новая трещина ложится на тот же эффект.")
+	TEST_ASSERT_EQUAL(fracture.stacks, 2, "Трещины копятся.")
+	TEST_ASSERT_EQUAL(fracture.fracture_overlay.icon_state, "glass_crack_2", "Под ногами разрастается вторая трещина.")
+	TEST_ASSERT(!victim.IsKnockdown(), "Две трещины не валят.")
+	glass.fracture(victim)
+	TEST_ASSERT(victim.IsKnockdown(), "Третья трещина раскалывает цель и сбивает с ног.")
+	TEST_ASSERT_EQUAL(fracture.stacks, 1, "После раскола остаётся одна трещина.")
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/temp_visual/heretic_glass/shatter) in get_turf(victim), "Раскол вспыхивает сеткой трещин на цели.")
+	TEST_ASSERT_EQUAL(fracture.fracture_overlay.icon_state, "glass_crack_1", "После раскола под ногами снова одна трещина.")
+	victim.SetKnockdown(0)
+	glass.fracture(victim)
+	glass.fracture(victim)
+	TEST_ASSERT(!victim.IsKnockdown(), "Во время передышки цель не раскалывается снова.")
+	TEST_ASSERT_EQUAL(fracture.stacks, HERETIC_GLASS_SHATTER_STACKS - 1, "В передышку трещин не больше двух.")
+	fracture.shatter_ready_at = world.time
+	glass.fracture(victim)
+	TEST_ASSERT(victim.IsKnockdown(), "После передышки раскол снова валит.")
+
+/// Витраж дотягивается до цели в четырёх клетках.
+/datum/unit_test/heretic_glass_casket_reach/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_casket)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	glass.combat_resource = 4
+	var/mob/living/carbon/human/far = allocate(/mob/living/carbon/human, locate(user.x + HERETIC_GLASS_CASKET_REACH, user.y, user.z))
+	glass.fracture(far)
+	TEST_ASSERT_NULL(glass.casket_block_reason(user, far), "Треснувшая цель в [HERETIC_GLASS_CASKET_REACH] клетках доступна Витражу.")
+	var/obj/effect/proc_holder/spell/pointed/heretic_glass/casket/spell = new
+	TEST_ASSERT_EQUAL(spell.range, HERETIC_GLASS_CASKET_REACH, "Заклинание Витража целится на [HERETIC_GLASS_CASKET_REACH] клетки.")
+	qdel(spell)
+
+/// Касание своего стекла переносит к другому своему стеклу за грань; без знания шага, без граней, в наручниках и в перезарядке перехода нет.
+/datum/unit_test/heretic_glass_travel/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	allocated += new /datum/heretic_test_station_level(start.z)
+	var/datum/antagonist/heretic/heretic = allocate_heretic(start)
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/obj/structure/window/fulltile/near_pane = allocate(/obj/structure/window/fulltile, locate(start.x + 1, start.y, start.z))
+	var/obj/structure/mirror/far_pane = allocate(/obj/structure/mirror, locate(start.x + 4, start.y + 4, start.z))
+	TEST_ASSERT(glass.attune(near_pane, user), "Ближнее стекло настроено.")
+	TEST_ASSERT(glass.attune(far_pane, user), "Дальнее стекло настроено.")
+	user.a_intent = INTENT_HELP
+	TEST_ASSERT_EQUAL(length(glass.travel_choices(user, near_pane)), 0, "Без знания шага переходов нет.")
+	TEST_ASSERT_EQUAL(glass.on_pane_hand(near_pane, user), NONE, "Без переходов и кражи рука по стеклу работает как обычно.")
+	heretic.gain_knowledge(/datum/eldritch_knowledge/glass_passage)
+	var/list/choices = glass.travel_choices(user, near_pane)
+	TEST_ASSERT_EQUAL(length(choices), 1, "Переход ведёт к другому своему стеклу.")
+	TEST_ASSERT_EQUAL(choices[choices[1]], far_pane, "Выбор указывает на дальнее стекло.")
+	TEST_ASSERT_EQUAL(glass.on_pane_hand(near_pane, user), COMPONENT_NO_ATTACK_HAND, "Рука по своему стеклу открывает переходы.")
+	glass.combat_resource = 0
+	TEST_ASSERT(!glass.travel(user, near_pane, far_pane), "Без граней не перейти.")
+	TEST_ASSERT(findtext(glass.glass_failure, "грань"), "Отказ называет грань: [glass.glass_failure]")
+	glass.combat_resource = 2
+	user.handcuffed = allocate(/obj/item/restraints/handcuffs, user)
+	user.update_handcuffed()
+	TEST_ASSERT(!glass.travel(user, near_pane, far_pane), "В наручниках стекло не пускает.")
+	user.uncuff()
+	TEST_ASSERT(glass.travel(user, near_pane, far_pane), "Еретик переходит к дальнему стеклу.")
+	TEST_ASSERT(get_dist(user, far_pane) <= 1, "Выход у дальнего стекла.")
+	TEST_ASSERT_EQUAL(glass.combat_resource, 1, "Переход стоит одну грань.")
+	TEST_ASSERT_NOTNULL(near_pane.GetComponent(/datum/component/heretic_glass_passage_trace), "На стекле входа остаётся трещина-след.")
+	TEST_ASSERT_NOTNULL(far_pane.GetComponent(/datum/component/heretic_glass_passage_trace), "На стекле выхода остаётся трещина-след.")
+	TEST_ASSERT(!glass.travel(user, far_pane, near_pane), "Сразу обратно не перейти.")
+	TEST_ASSERT(findtext(glass.glass_failure, "осталось"), "Отказ называет перезарядку: [glass.glass_failure]")
+
+/// Звуки Стекла разведены по событиям без пересечений, частые звучат вариантами; залп Перекрёстного света и Вечного витража звучит бурей, одиночный луч - выстрелом.
+/datum/unit_test/heretic_glass_sounds/Run()
+	var/list/seen = list()
+	for(var/kind in GLOB.heretic_glass_sounds)
+		var/list/files = GLOB.heretic_glass_sounds[kind]
+		TEST_ASSERT(length(files), "У события [kind] есть звук.")
+		for(var/sound_file in files)
+			TEST_ASSERT(isfile(sound_file), "[kind]: [sound_file] - ресурс сборки.")
+			TEST_ASSERT(!seen["[sound_file]"], "[sound_file] звучит и в [kind], и в [seen["[sound_file]"]].")
+			seen["[sound_file]"] = kind
+	for(var/kind in list("charge", "crack", "shatter", "prism", "reflect"))
+		TEST_ASSERT(length(GLOB.heretic_glass_sounds[kind]) > 1, "Частое событие [kind] звучит вариантами.")
+	var/datum/status_effect/eldritch/glass/mark = /datum/status_effect/eldritch/glass
+	TEST_ASSERT(initial(mark.detonation_sound) in GLOB.heretic_glass_sounds["mark"], "Взрыв метки звучит своим звуком.")
+	TEST_ASSERT(heretic_glass_sound(run_loc_floor_bottom_left, "crack", 0) in GLOB.heretic_glass_sounds["crack"], "Звук события берётся из его набора.")
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/glass_storm)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	TEST_ASSERT(glass.grasp_sound in GLOB.heretic_glass_sounds["grasp"], "Хватка звучит из своего набора.")
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	TEST_ASSERT(glass.release(user, victim), "Луч выпущен.")
+	var/datum/heretic_glass_attack/attack = glass.attacks[1]
+	TEST_ASSERT(attack.release_sound() in GLOB.heretic_glass_sounds["beam"], "Одиночный луч звучит выстрелом.")
+	qdel(attack)
+	TEST_ASSERT(glass.storm(user), "Перекрёстный свет выпущен.")
+	attack = glass.attacks[1]
+	TEST_ASSERT(attack.release_sound() in GLOB.heretic_glass_sounds["volley"], "Залп Перекрёстного света звучит бурей.")
+	qdel(attack)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/final_eldritch/glass_final)
+	var/datum/eldritch_knowledge/final_eldritch/glass_final/final_knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/final_eldritch/glass_final)
+	final_knowledge.finished = TRUE
+	heretic.ascended = TRUE
+	final_knowledge.on_body_gain(user)
+	TEST_ASSERT(glass.crown(user), "Вечный витраж выпущен.")
+	attack = glass.attacks[1]
+	TEST_ASSERT(attack.release_sound() in GLOB.heretic_glass_sounds["volley"], "Волна Вечного витража по-прежнему звучит бурей.")
+
+/// Метка Стекла и трещины видны поверх фигуры; трещины ещё и под ногами, вторая стадия рисуется своими стейтами.
+/datum/unit_test/heretic_glass_marks_on_body/Run()
+	var/datum/status_effect/eldritch/glass/mark = /datum/status_effect/eldritch/glass
+	TEST_ASSERT_EQUAL(initial(mark.effect_sprite_layer), ABOVE_MOB_LAYER, "Метка Стекла лежит поверх тела.")
+	var/list/states = icon_states('modular_bluemoon/icons/obj/heretic_glass_effects.dmi')
+	for(var/state in list(initial(mark.effect_sprite), "glass_crack_1", "glass_crack_2", "glass_crack_body_1", "glass_crack_body_2"))
+		TEST_ASSERT(state in states, "В листе эффектов Стекла есть [state].")
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_GLASS
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_glass/glass = heretic.get_knowledge(/datum/eldritch_knowledge/base_glass)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	var/datum/status_effect/heretic_glass_fracture/fracture = glass.fracture(victim)
+	TEST_ASSERT_NOTNULL(fracture, "Первая трещина.")
+	TEST_ASSERT(fracture.fracture_overlay.layer < MOB_LAYER, "Трещина на полу лежит под ногами.")
+	TEST_ASSERT_EQUAL(fracture.body_overlay.layer, ABOVE_MOB_LAYER, "Трещина на теле лежит поверх фигуры.")
+	TEST_ASSERT_EQUAL(fracture.body_overlay.icon_state, "glass_crack_body_1", "На теле одна трещина.")
+	glass.fracture(victim)
+	TEST_ASSERT_EQUAL(fracture.body_overlay.icon_state, "glass_crack_body_2", "Вторая трещина расходится по телу.")
+	glass.fracture(victim)
+	TEST_ASSERT_EQUAL(fracture.body_overlay.icon_state, "glass_crack_body_1", "После раскола на теле снова одна трещина.")

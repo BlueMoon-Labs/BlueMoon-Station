@@ -609,6 +609,7 @@
 /obj/item/clothing/mask/gas/syndicate/cool_version/ui_action_click(mob/user, action)
 	if(istype(action, /datum/action/item_action/maskhalt))
 		maskhalt()
+	..()
 
 /obj/item/clothing/mask/gas/syndicate/cool_version/verb/maskhalt()
 	set category = "Object"

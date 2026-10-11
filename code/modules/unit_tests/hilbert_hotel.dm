@@ -95,3 +95,43 @@
 
 	// Убираем мобов из комнаты до teardown, иначе qdel зоны с резервацией зашумит другие тесты
 	exit_room(sphere, guest, partner, home)
+
+/// Визуал ветра, удалённый уже в стоке законсервированной комнаты, не держится её списками.
+/datum/unit_test/hilbert_hotel_storage_releases_deleted
+	priority = TEST_LONGER
+
+/datum/unit_test/hilbert_hotel_storage_releases_deleted/Run()
+	if(!length(SShilbertshotel.hotel_map_list))
+		SShilbertshotel.prepare_rooms()
+	if(!SShilbertshotel.storageTurf)
+		SShilbertshotel.setup_storage_turf()
+	var/turf/home = run_loc_floor_bottom_left
+	var/obj/item/hilbertshotel/sphere = allocate(/obj/item/hilbertshotel, home)
+	sphere.anchored = TRUE
+	var/mob/living/carbon/human/guest = allocate(/mob/living/carbon/human, home)
+	guest.mind_initialize()
+	SShilbertshotel.user_data[guest.ckey] = list("room_number" = 6113, "template" = "Hotel Room", "status" = "idle")
+	TEST_ASSERT(sphere.sendToNewRoom(6113, guest, "Hotel Room"), "sendToNewRoom вернул FALSE")
+
+	var/datum/turf_reservation/room = sphere.activeRooms["6113"]
+	var/turf/open/catwalk = locate(room.bottom_left_coords[1] + 2, room.top_right_coords[2] - 1, room.bottom_left_coords[3])
+	TEST_ASSERT(istype(catwalk, /turf/open/floor/catwalk_floor), "над комнатой нет внешнего мостика, а [catwalk?.type]")
+	catwalk.next_space_wind_at = 0
+	catwalk.pressure_vector_y = 150
+	catwalk.high_pressure_movements()
+	catwalk.pressure_vector_y = 0
+	var/obj/effect/temp_visual/dir_setting/space_wind/wind = catwalk.space_wind_visual
+	TEST_ASSERT_NOTNULL(wind, "порыв не создал визуал ветра")
+
+	sphere.MobTransfer(guest, home)
+	TEST_ASSERT_NOTNULL(sphere.storedRooms["6113"], "комната не законсервировалась после выхода гостя")
+	TEST_ASSERT(istype(wind.loc, /obj/item/abstracthotelstorage), "визуал ветра не ушёл в сток, а лежит в [wind.loc]")
+
+	qdel(wind)
+	for(var/list/turf_contents in sphere.storedRooms["6113"])
+		TEST_ASSERT(!(wind in turf_contents), "удалённый в стоке визуал ветра остался в списках storedRooms")
+	for(var/i in 1 to 20)
+		if(!EXTERNAL_REFCOUNT(wind))
+			break
+		sleep(1)
+	TEST_ASSERT_EQUAL(EXTERNAL_REFCOUNT(wind), 0, "удалённый в стоке визуал ветра не собирается")

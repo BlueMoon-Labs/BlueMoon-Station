@@ -127,6 +127,13 @@ GLOBAL_LIST_INIT(metal_recipes, list ( \
 	null, \
 	new/datum/stack_recipe("apc frame", /obj/item/wallframe/apc, 2), \
 	new/datum/stack_recipe("air alarm frame", /obj/item/wallframe/airalarm, 2), \
+	new/datum/stack_recipe("tram controller frame", /obj/item/wallframe/tram, 20), \
+	new/datum/stack_recipe("tram display frame", /obj/item/wallframe/indicator_display, 7), \
+	new/datum/stack_recipe("tram bench", /obj/structure/chair/sofa/bench/tram, 2, one_per_turf = TRUE, on_floor = TRUE), \
+	new/datum/stack_recipe("tram bench (left)", /obj/structure/chair/sofa/bench/tram/left, 2, one_per_turf = TRUE, on_floor = TRUE), \
+	new/datum/stack_recipe("tram bench (right)", /obj/structure/chair/sofa/bench/tram/right, 2, one_per_turf = TRUE, on_floor = TRUE), \
+	new/datum/stack_recipe("tram bench (corner)", /obj/structure/chair/sofa/bench/tram/corner, 2, one_per_turf = TRUE, on_floor = TRUE), \
+	new/datum/stack_recipe("tram bench (solo)", /obj/structure/chair/sofa/bench/tram/solo, 2, one_per_turf = TRUE, on_floor = TRUE), \
 	new/datum/stack_recipe("fire alarm frame", /obj/item/wallframe/firealarm, 2), \
 	new/datum/stack_recipe("extinguisher cabinet frame", /obj/item/wallframe/extinguisher_cabinet, 2), \
 	new/datum/stack_recipe("button frame", /obj/item/wallframe/button, 1), \
@@ -901,6 +908,8 @@ GLOBAL_LIST_INIT(plastic_recipes, list(
 	new /datum/stack_recipe("duct", /obj/item/stack/ducts, 1, 5, 50), \
 	new /datum/stack_recipe("laser pointer case", /obj/item/glasswork/glass_base/laserpointer_shell, 3, 1, 1, 30 SECONDS), \
 	new /datum/stack_recipe("wet floor sign", /obj/item/clothing/suit/caution, 2), \
+	new /datum/stack_recipe("light tram tile", /obj/item/stack/thermoplastic/light, 1, 4, 20, time = 2 SECONDS), \
+	new /datum/stack_recipe("dark tram tile", /obj/item/stack/thermoplastic, 1, 4, 20, time = 2 SECONDS), \
 	new/datum/stack_recipe("ashtray", /obj/item/ashtray/plastic, 1), \
 	new /datum/stack_recipe("micro bricks", /obj/item/stack/sheet/micro_bricks, 1, 5, 15,)))
 

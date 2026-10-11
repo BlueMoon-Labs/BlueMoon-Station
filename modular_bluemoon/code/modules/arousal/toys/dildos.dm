@@ -159,7 +159,7 @@
 //Dildo
 /obj/item/dildo/process(delta_time)
 	timer -= delta_time
-	if(timer >= 0) // chech interval
+	if(timer > 0)
 		return
 	else
 		timer = rand(50,350)
@@ -312,3 +312,101 @@
 /obj/item/pneumatic_cannon/dildo/Initialize(mapload)
 	. = ..()
 	allowed_typecache = dildo_typecache
+
+
+
+/obj/item/screwdriver/dildo
+	//name = "screwdriver"
+	//desc = "You can be totally screwy with this."
+	// я не понимаю почему спрайт отвертки тут смещается, а в оригинальной центруется
+	// так что я просто центрирую спрайт
+	icon = 'icons/obj/genitals/dildo.dmi'
+	hitsound = 'sound/weapons/tap.ogg'
+	icon_state = "dildo_screwdriver"
+	item_state = "dildo_screwdriver"
+	toolspeed = 1.5
+	random_color = FALSE
+	var/datum/looping_sound/lewd/vibrator/low/soundloop
+	var/hole = CUM_TARGET_VAGINA
+	var/lust_amount = NORMAL_LUST
+	var/vibration = FALSE
+	var/messy = FALSE
+
+/obj/item/screwdriver/dildo/Initialize(mapload)
+	. = ..()
+	soundloop = new(src, FALSE)
+
+/obj/item/screwdriver/dildo/Destroy()
+	QDEL_NULL(soundloop)
+	. = ..()
+
+/obj/item/screwdriver/dildo/examine(mob/user)
+	. = ..()
+	if(messy)
+		. += "Почему она липкая?"
+	. += span_notice("Alt-Click - Что делает эта кнопка?")
+
+/obj/item/screwdriver/dildo/AltClick(mob/user)
+	. = ..()
+	toggle(user)
+
+/obj/item/screwdriver/dildo/attack_self(mob/living/carbon/human/user as mob)
+	hole = hole == CUM_TARGET_VAGINA ? CUM_TARGET_ANUS : CUM_TARGET_VAGINA
+	to_chat(user, "<span class='notice'>Я целюсь в... [hole].</span>")
+
+/obj/item/screwdriver/dildo/attack(mob/living/carbon/M, mob/living/carbon/user)
+	// just copy dildo proc
+	var/message = ""
+	var/organ
+
+	if(!user.canUseTopic(user, BE_CLOSE, FALSE, FALSE, FALSE))
+		return
+	user.DelayNextAction(CLICK_CD_RANGE)
+
+	if(ishuman(M) && (M?.client?.prefs?.toggles & VERB_CONSENT))
+		switch(user.zone_selected)
+			if(BODY_ZONE_PRECISE_GROIN)
+				switch(hole)
+					if(CUM_TARGET_VAGINA)
+						if(M.has_vagina() == HAS_EXPOSED_GENITAL)
+							message = (user == M) ? pick("крепко обхватывает '\the [src]' и начинает пихать это прямо в свою киску.", "запихивает '\the [src]' в свою киску", "постанывает и садится на '\the [src]'.") : pick("трахает <b>[M]</b> прямо в киску с помощью '\the [src]'", "засовывает '\the [src]' прямо в киску <b>[M]</b>.")
+							organ = CUM_TARGET_VAGINA
+					if(CUM_TARGET_ANUS)
+						if(M.has_anus() == HAS_EXPOSED_GENITAL)
+							message = (user == M) ? pick("крепко обхватывает '\the [src]' и начинает пихать это прямо в свою попку.","запихивает '\the [src]' прямо в свою собственную попку.", "постанывает и садится на '\the [src]'.") : pick("трахает <b>[M]</b> прямо в попку '\the [src]'", "активно суёт '\the [src]' прямо в попку <b>[M]</b>.")
+							organ = CUM_TARGET_ANUS
+			if(BODY_ZONE_PRECISE_MOUTH)
+				if(M.has_mouth() && !M.is_mouth_covered())
+					message = (user == M) ? pick("крепко обхватывает '\the [src]' и начинает пихать это прямо в свой ротик.", "запихивает '\the [src]' прямо в свой собственный ротик.", "втыкает '\the [src]' прямо в свой ротик.") : pick("трахает <b>[M]</b> прямо в ротик при помощи '\the [src]'", "активно суёт '\the [src]' прямо в ротик <b>[M]</b>.")
+					organ = CUM_TARGET_MOUTH
+	if(message)
+		user.visible_message(span_lewd("<b>[user]</b> [message]."))
+
+		switch(user.zone_selected)
+			if(BODY_ZONE_PRECISE_GROIN)
+				switch (hole)
+					if (CUM_TARGET_VAGINA)
+						user.client?.plug13.send_emote(PLUG13_EMOTE_VAGINA, min(lust_amount * 3, 100), PLUG13_DURATION_NORMAL)
+					if (CUM_TARGET_ANUS)
+						user.client?.plug13.send_emote(PLUG13_EMOTE_ANUS, min(lust_amount * 3, 100), PLUG13_DURATION_NORMAL)
+			if (BODY_ZONE_PRECISE_MOUTH)
+				user.client?.plug13.send_emote(PLUG13_EMOTE_MOUTH, 35, PLUG13_DURATION_NORMAL)
+
+		playsound(loc, pick('modular_sand/sound/interactions/bang4.ogg',
+							'modular_sand/sound/interactions/bang5.ogg',
+							'modular_sand/sound/interactions/bang6.ogg'), 70, 1, -1)
+		M.try_play_interaction_effect()
+		M.handle_post_sex(vibration ? lust_amount * 2 : lust_amount, null, user, organ)
+		messy = TRUE
+
+
+	else if(user.a_intent == INTENT_HARM)
+		return ..()
+
+/obj/item/screwdriver/dildo/proc/toggle(mob/user)
+	vibration = !vibration
+	if(vibration)
+		soundloop.start()
+	else
+		soundloop.stop()
+	to_chat(user, span_info("Вибратор в отвертке [vibration ? "включен" : "выключен"]"))

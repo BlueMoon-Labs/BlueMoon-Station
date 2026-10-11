@@ -5,6 +5,50 @@
 /datum/antagonist/ghost_role/inteq/comms
 	name = "InteQ Comms"
 
+/datum/antagonist/ghost_role/inteq/comms/greet()
+	. = ..()
+	give_codewords()
+
+/// Выдаёт офицеру прослушки кодовые слова раунда, чтобы он мог опознать полевых агентов в эфире.
+/datum/antagonist/ghost_role/inteq/comms/proc/give_codewords()
+	if(!owner?.current || !length(GLOB.syndicate_code_phrase))
+		return
+
+	var/mob/officer_mob = owner.current
+	var/phrases = jointext(GLOB.syndicate_code_phrase, ", ")
+	var/responses = jointext(GLOB.syndicate_code_response, ", ")
+
+	to_chat(officer_mob, "<U><B>InteQ предоставили вам кодовые слова для опознания полевых агентов:</B></U>")
+	to_chat(officer_mob, "<B>Кодовая фраза</B>: [span_blue("[phrases]")]")
+	to_chat(officer_mob, "<B>Кодовый ответ</B>: [span_red("[responses]")]")
+
+	antag_memory += "<b>Кодовая фраза</b>: [span_blue("[phrases]")]<br>"
+	antag_memory += "<b>Кодовый ответ</b>: [span_red("[responses]")]<br>"
+
+	to_chat(officer_mob, "Произносите кодовые слова в обычном разговоре, чтобы опознать агентов. Слыша их в эфире, вы увидите подсветку.")
+	to_chat(officer_mob, span_alertwarning("Вы запомнили кодовые слова, теперь узнаёте их на слух."))
+
+/datum/antagonist/ghost_role/inteq/comms/apply_innate_effects(mob/living/mob_override)
+	. = ..()
+	var/mob/M = mob_override || owner.current
+	if(M)
+		RegisterSignal(M, COMSIG_MOVABLE_HEAR, PROC_REF(handle_hearing))
+
+/datum/antagonist/ghost_role/inteq/comms/remove_innate_effects(mob/living/mob_override)
+	var/mob/M = mob_override || owner.current
+	if(M)
+		UnregisterSignal(M, COMSIG_MOVABLE_HEAR)
+	return ..()
+
+/datum/antagonist/ghost_role/inteq/comms/proc/handle_hearing(datum/source, list/hearing_args)
+	SIGNAL_HANDLER
+	if(!GLOB.syndicate_code_phrase_regex || !GLOB.syndicate_code_response_regex)
+		return
+	var/message = hearing_args[HEARING_RAW_MESSAGE]
+	message = GLOB.syndicate_code_phrase_regex.Replace(message, "<span class='blue'>$1</span>")
+	message = GLOB.syndicate_code_response_regex.Replace(message, "<span class='red'>$1</span>")
+	hearing_args[HEARING_RAW_MESSAGE] = message
+
 /datum/antagonist/ghost_role/inteq/is_banned(mob/M)
 	. = ..()
 	if(.)

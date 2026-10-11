@@ -1,0 +1,97 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/obj/structure/flora/ausbushes/leafybush,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+"k" = (
+/obj/effect/turf_decal/siding/thinplating/terracotta{
+	dir = 6
+	},
+/turf/open/floor/plasteel/terracotta/herringbone,
+/area/maintenance/aft/upper)
+"x" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+"z" = (
+/obj/machinery/light/warm/directional/south,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 5
+	},
+/obj/structure/flora/ausbushes/leafybush,
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+"A" = (
+/obj/effect/turf_decal/siding/thinplating/terracotta{
+	dir = 6
+	},
+/obj/item/kirbyplants/random,
+/turf/open/floor/plasteel/terracotta/herringbone,
+/area/maintenance/aft/upper)
+"B" = (
+/obj/structure/sink/puddle,
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+"C" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/obj/item/kirbyplants/random,
+/turf/open/floor/plasteel/terracotta/herringbone,
+/area/maintenance/aft/upper)
+"G" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
+/obj/effect/turf_decal/siding/thinplating/terracotta,
+/mob/living/simple_animal/diona_nymph,
+/turf/open/floor/plasteel/terracotta/herringbone,
+/area/maintenance/aft/upper)
+"J" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 10
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 6
+	},
+/obj/modular_map_connector,
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+"K" = (
+/obj/effect/turf_decal/siding/thinplating_new/terracotta/corner,
+/mob/living/simple_animal/diona_nymph,
+/turf/open/floor/plasteel/terracotta/herringbone,
+/area/maintenance/aft/upper)
+"M" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/structure/flora/ausbushes/leafybush,
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+"N" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 9
+	},
+/mob/living/simple_animal/diona_nymph,
+/obj/structure/flora/ausbushes/pointybush,
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+
+(1,1,1) = {"
+C
+G
+z
+"}
+(2,1,1) = {"
+K
+k
+J
+"}
+(3,1,1) = {"
+A
+B
+M
+"}
+(4,1,1) = {"
+x
+c
+N
+"}

@@ -186,7 +186,7 @@
 	linked_alert.icon_state = "dance_style_[style.id]"
 	linked_alert.name = "Стиль: [style.name]"
 	var/medley = dance.medley_count()
-	linked_alert.desc = "С 4 Такта: [style.passive_text]. Акцент в сильную долю: [style.accent_text]. Фигура «[style.figure_name]»: [style.figure_text]. Вход связкой в бою: [style.entrance_text()]. Разных стилей за 20 секунд боя: [medley] из [DANCE_MEDLEY_STYLES][medley >= DANCE_MEDLEY_STYLES ? " - Попурри удваивает входы" : ""]."
+	linked_alert.desc = "[capitalize(style.role)]. С 4 Такта: [style.passive_text]. Акцент в сильную долю: [style.accent_text]. Фигура «[style.figure_name]»: [style.figure_text][length(style.figure) ? "; остывает [heretic_dance_seconds(dance.figure_cooldown_ds())] с" : ""]. Приглашение [dance.invite_reach_text()]. Вход связкой в бою: [style.entrance_text()]. Разных стилей за 20 секунд боя: [medley] из [DANCE_MEDLEY_STYLES][medley >= DANCE_MEDLEY_STYLES ? " - Попурри удваивает входы" : ""]."
 
 /atom/movable/screen/alert/status_effect/heretic_dance_style
 	name = "Стиль"
@@ -216,7 +216,7 @@
 
 /datum/status_effect/heretic_dance_dirge
 	id = "heretic_dance_dirge"
-	alert_type = null
+	alert_type = /atom/movable/screen/alert/status_effect/heretic_dance_mired/dirge
 	status_type = STATUS_EFFECT_REPLACE
 
 /datum/status_effect/heretic_dance_dirge/on_creation(mob/living/new_owner, time)
@@ -226,9 +226,11 @@
 /datum/status_effect/heretic_dance_dirge/on_apply()
 	. = ..()
 	owner.add_movespeed_modifier(/datum/movespeed_modifier/heretic_dance_dread)
+	heretic_dance_grip(owner, "Погребальный колокол бьёт, и костяные руки на миг держат вас за лодыжки.")
 
 /datum/status_effect/heretic_dance_dirge/on_remove()
 	owner.remove_movespeed_modifier(/datum/movespeed_modifier/heretic_dance_dread)
+	heretic_dance_ungrip(owner)
 	return ..()
 
 #undef DANCE_ENTRANCE_COOLDOWN

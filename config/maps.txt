@@ -117,3 +117,43 @@ endmap
 map icemoonstation
 minplayers 30
 endmap
+
+map tramstation
+minplayers 70
+endmap
+
+map northstar
+minplayers 70
+endmap
+
+map voidraptor
+minplayers 40
+endmap
+
+map icebox
+minplayers 50
+endmap
+
+map blueshift
+minplayers 80
+endmap
+
+map nebulastation
+minplayers 70
+endmap
+
+map catwalkstation
+minplayers 50
+endmap
+
+map wawastation
+minplayers 20
+endmap
+
+map biodome
+minplayers 50
+endmap
+
+map ouroboros
+minplayers 40
+endmap

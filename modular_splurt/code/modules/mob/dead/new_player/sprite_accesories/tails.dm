@@ -37,6 +37,12 @@
 	icon = 'modular_splurt/icons/mob/mam_tails.dmi'
 	matrixed_sections = MATRIX_RED
 
+/datum/sprite_accessory/tails/mam_tails/handytail
+	name = "Handy Tail"
+	icon_state = "handytail"
+	icon = 'modular_splurt/icons/mob/mam_tails.dmi'
+	matrixed_sections = MATRIX_ALL
+
 /datum/sprite_accessory/tails/mam_tails/snaketail
 	name = "Snake tail"
 	icon_state = "snaketail"

@@ -120,7 +120,13 @@
 	desc = "A set of denim overalls."
 	icon_state = "overalls"
 	item_state = "overalls"
+	color = "#2D3866"
 	body_parts_covered = CHEST|GROIN|LEGS
+
+/obj/item/clothing/suit/apron/chef/plain
+	name = "apron"
+	desc = "A basic apron."
+	icon_state = "plain"
 
 /obj/item/clothing/suit/apron/purple_bartender
 	name = "purple bartender apron"

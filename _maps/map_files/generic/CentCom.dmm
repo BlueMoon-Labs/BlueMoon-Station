@@ -5590,7 +5590,10 @@
 /area/centcom/control)
 "aHX" = (
 /obj/effect/decal/cleanable/robot_debris/down,
-/turf/open/floor/plating/rust,
+/turf/open/floor/plating/rust{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=255";
+	planetary_atmos = 1
+	},
 /area/syndicate_mothership)
 "aIk" = (
 /obj/effect/spawner/structure/window/reinforced/indestructable,
@@ -9996,7 +9999,10 @@
 /area/centcom/holding)
 "cmj" = (
 /obj/effect/turf_decal/stripes/asteroid,
-/turf/open/floor/plating,
+/turf/open/floor/plating{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=255";
+	planetary_atmos = 1
+	},
 /area/syndicate_mothership)
 "cmu" = (
 /turf/closed/indestructible/fakeglass,
@@ -15552,7 +15558,9 @@
 "hpp" = (
 /obj/effect/decal/cleanable/oil,
 /turf/open/floor/plating{
-	icon_state = "platingdmg1"
+	icon_state = "platingdmg1";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=255";
+	planetary_atmos = 1
 	},
 /area/syndicate_mothership)
 "hpv" = (
@@ -27424,7 +27432,9 @@
 /area/shuttle/inteq/collosus)
 "rVP" = (
 /turf/open/floor/plating{
-	icon_state = "platingdmg2"
+	icon_state = "platingdmg2";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=255";
+	planetary_atmos = 1
 	},
 /area/syndicate_mothership)
 "rVS" = (
@@ -30387,7 +30397,10 @@
 /turf/open/floor/plasteel/dark,
 /area/centcom/control)
 "uBY" = (
-/turf/open/floor/plating/rust,
+/turf/open/floor/plating/rust{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=255";
+	planetary_atmos = 1
+	},
 /area/syndicate_mothership)
 "uCv" = (
 /obj/structure/table/wood,
@@ -32511,6 +32524,12 @@
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /turf/open/floor/plasteel/dark,
 /area/syndicate_mothership/control)
+"wAm" = (
+/turf/open/floor/plating{
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=255";
+	planetary_atmos = 1
+	},
+/area/syndicate_mothership)
 "wAM" = (
 /turf/open/floor/holofloor/plating,
 /area/holodeck/rec_center/wildlife)
@@ -33873,7 +33892,9 @@
 "xNN" = (
 /obj/effect/decal/cleanable/plasma,
 /turf/open/floor/plating{
-	icon_state = "platingdmg3"
+	icon_state = "platingdmg3";
+	initial_gas_mix = "o2=21.78;n2=82.36;TEMP=255";
+	planetary_atmos = 1
 	},
 /area/syndicate_mothership)
 "xOk" = (
@@ -57241,7 +57262,7 @@ rkl
 udd
 lwr
 jeO
-aMI
+wAm
 mhf
 mhf
 oNj
@@ -58014,7 +58035,7 @@ iXE
 wTt
 qrv
 ega
-aMI
+wAm
 oQc
 mhf
 mhf
@@ -58271,7 +58292,7 @@ iXE
 aIk
 aIk
 aIk
-aMI
+wAm
 cmj
 mhf
 mhf
@@ -60827,8 +60848,8 @@ tTV
 brC
 mhf
 mhf
-aMI
-aMI
+wAm
+wAm
 mhf
 brC
 brC
@@ -61085,7 +61106,7 @@ brC
 brC
 mhf
 mhf
-aMI
+wAm
 mhf
 brC
 brC
@@ -61343,7 +61364,7 @@ brC
 brC
 mhf
 mhf
-aMI
+wAm
 mhf
 brC
 brC
@@ -61603,7 +61624,7 @@ mhf
 mhf
 mhf
 mhf
-aMI
+wAm
 brC
 brC
 brC

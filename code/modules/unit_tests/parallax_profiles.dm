@@ -311,12 +311,18 @@
 	TEST_ASSERT_NOTEQUAL(second_template, first_template, "Шаблон не пересобрался после смены профиля")
 	TEST_ASSERT_EQUAL(second_template.profile_id, "unit_test_scene_alt", "Пересобранный шаблон помнит старый профиль")
 
-	// Инвалидация одного z не имеет права трогать соседний: сцены независимы,
-	// и переключение обязано доходить только до своего уровня.
-	var/datum/parallax/z2_template = SSparallax.get_parallax_template(2)
-	TEST_ASSERT_NOTNULL(z2_template, "Шаблон z 2 не собрался")
+	// Этажи одной стопки делят небо, а уровень другой стопки инвалидация z 1 не трогает.
+	var/list/first_stack = SSmapping.get_connected_levels(1)
+	var/other_z
+	for(var/candidate in 1 to world.maxz)
+		if(!(candidate in first_stack))
+			other_z = candidate
+			break
+	TEST_ASSERT_NOTNULL(other_z, "В тестовом мире нет уровня вне стопки z 1")
+	var/datum/parallax/other_template = SSparallax.get_parallax_template(other_z)
+	TEST_ASSERT_NOTNULL(other_template, "Шаблон z [other_z] не собрался")
 	SSparallax.invalidate_z(1)
-	TEST_ASSERT_EQUAL(SSparallax.get_parallax_template(2), z2_template, "Инвалидация z 1 пересобрала шаблон z 2")
+	TEST_ASSERT_EQUAL(SSparallax.get_parallax_template(other_z), other_template, "Инвалидация z 1 пересобрала шаблон z [other_z] другой стопки")
 
 	SSparallax.base_profile_by_z["1"] = original
 	SSparallax.invalidate_z(1)

@@ -63,3 +63,7 @@
 /datum/gear/glasses/contact
 	name = "Contact Lenses"
 	path = /obj/item/clothing/glasses/contact
+
+/datum/gear/glasses/tac_veil
+	name = "Veil (adaptive)"
+	path = /obj/item/clothing/glasses/cover/tac_veil

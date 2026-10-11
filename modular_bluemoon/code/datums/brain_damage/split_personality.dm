@@ -1,6 +1,7 @@
 #define OWNER 0
 #define STRANGER 1
 #define TAKE_CONTROL_COOLDOWN 5 MINUTES
+#define GHOST_REPOLL_DELAY (2 MINUTES)
 
 /datum/brain_trauma/severe/split_personality
 	desc = "Мозг пациента разделён на две личности, которые могут передавать друг другу управление телом по желанию."
@@ -20,7 +21,7 @@
 		if(!inactive?.ckey && current_controller == OWNER)
 			got_ghost = FALSE
 			setup_personality_actions()
-	else if(last_attempt + 100 < world.time)
+	else if(last_attempt + GHOST_REPOLL_DELAY < world.time)
 		get_ghost()
 		last_attempt = world.time
 	return ..()
@@ -122,12 +123,14 @@
 		return
 
 	var/choice = tgui_input_list(owner, "Выберите действие.", "Вторая личность", options)
-	if(!choice)
+	if(!choice || QDELETED(trauma))
 		return
 
 	switch(choice)
 		if("Отправить сообщение")
 			var/message = tgui_input_text(owner, "Ваше сообщение услышит только другая личность.", "Внутренний голос", max_length = MAX_MESSAGE_LEN)
+			if(QDELETED(trauma))
+				return
 			trauma.send_inner_message(owner, message)
 		if("Передать / забрать управление")
 			trauma.request_voluntary_switch(owner)
@@ -135,3 +138,4 @@
 #undef OWNER
 #undef STRANGER
 #undef TAKE_CONTROL_COOLDOWN
+#undef GHOST_REPOLL_DELAY

@@ -132,6 +132,9 @@ GLOBAL_LIST_INIT(armor_by_type, generate_armor_type_cache())
 /datum/armor/proc/detachArmor(datum/armor/AA)
  	return getArmor(melee-AA.melee, bullet-AA.bullet, laser-AA.laser, energy-AA.energy, bomb-AA.bomb, bio-AA.bio, rad-AA.rad, fire-AA.fire, acid-AA.acid, magic-AA.magic, wound-AA.wound)
 
+/datum/armor/proc/upgradeArmor(datum/armor/AA)
+ 	return getArmor(max(melee,AA.melee), max(bullet,AA.bullet), max(laser,AA.laser), max(energy,AA.energy), max(bomb,AA.bomb), max(bio,AA.bio), max(rad,AA.rad), max(fire,AA.fire), max(acid,AA.acid), max(magic,AA.magic), max(wound,AA.wound))
+
 /datum/armor/vv_edit_var(var_name, var_value)
 	if (var_name == NAMEOF(src, tag))
 		return FALSE

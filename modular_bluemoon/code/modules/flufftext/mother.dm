@@ -81,7 +81,7 @@
 	name = "Твоя мать"
 
 	uniform = /obj/item/clothing/under/color/jumpskirt/red
-	neck = /obj/item/clothing/neck/oldcross
+	neck = /obj/item/clothing/neck/bm/oldcross
 	shoes = /obj/item/clothing/shoes/sandal
 
 /datum/outfit/yourmother/post_equip(mob/living/carbon/human/user, visuals_only = FALSE)

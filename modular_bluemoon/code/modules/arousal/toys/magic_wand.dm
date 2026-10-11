@@ -168,7 +168,7 @@
 		return
 
 	timer -= delta_time
-	if(timer >= 0) // chech interval
+	if(timer > 0)
 		return
 	else
 		timer = interval

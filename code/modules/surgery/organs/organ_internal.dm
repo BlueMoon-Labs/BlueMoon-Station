@@ -152,9 +152,8 @@
 			if(!(organ_flags & ORGAN_FROZEN))
 				organ_flags |= ORGAN_FROZEN
 			return TRUE
-		var/turf/T = M.loc
-		var/datum/gas_mixture/enviro = T.return_air()
-		local_temp = enviro.return_temperature()
+		var/datum/gas_mixture/enviro = M.loc?.return_air()
+		local_temp = enviro?.return_temperature()
 
 	if(owner)
 		//Don't interfere with bodies frozen by structures.
