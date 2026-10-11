@@ -366,6 +366,7 @@
 
 /obj/item/ammo_casing/magnum44_kinetic
 	name = ".44 magnum kinetic rounds"
+	caliber = ".44 magnum"
 	desc = "Особый патрон. Пуля наносит огромный урон, отскакивает от стен и откидывает цели назад."
 	projectile_type = /obj/item/projectile/bullet/judgement_kinetic_ricochet
 
