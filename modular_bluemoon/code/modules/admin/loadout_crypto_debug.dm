@@ -21,5 +21,5 @@
 			to_chat(usr, span_notice("Зашифрованный ID: <code>[html_encode(result)]</code>"), confidential = TRUE)
 		else
 			to_chat(usr, span_warning("Не удалось зашифровать текст: проверьте Node.js и ключ в donator.txt."), confidential = TRUE)
-	log_admin("[key_name(usr)] used Loadout crypto debug ([is_decryption ? "decrypt [result]" : "encrypt [input]"]).")
-	message_admins("[key_name_admin(usr)] used Loadout crypto debug ([is_decryption ? "decrypt [result]" : "encrypt [input]"]).")
+	log_admin("[key_name(usr)] used Loadout crypto debug ([is_decryption ? "decrypt [input]" : "encrypt [result]"]).")
+	message_admins("[key_name_admin(usr)] used Loadout crypto debug ([is_decryption ? "decrypt [input]" : "encrypt [result]"]).")
