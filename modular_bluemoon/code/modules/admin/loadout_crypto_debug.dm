@@ -18,4 +18,4 @@
 		if(encrypted)
 			to_chat(usr, span_notice("Зашифрованный ID: <code>[html_encode(encrypted)]</code>"), confidential = TRUE)
 		else
-			to_chat(usr, span_warning("Не удалось зашифровать текст: проверьте Node.js и loadout_secret.txt."), confidential = TRUE)
+			to_chat(usr, span_warning("Не удалось зашифровать текст: проверьте Node.js и ключ в donator.txt."), confidential = TRUE)
