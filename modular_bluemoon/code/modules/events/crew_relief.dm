@@ -1,4 +1,4 @@
-#define CREW_RELIEF_MIN_MEMBERS 2
+#define CREW_RELIEF_MIN_MEMBERS 1
 #define CREW_RELIEF_MAX_MEMBERS 3
 
 /// Роли помощи экипажу: директор присылает из призраков отряд ЦК в опустевший отдел.
