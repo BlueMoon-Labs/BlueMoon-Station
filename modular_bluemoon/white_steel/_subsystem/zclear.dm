@@ -160,10 +160,29 @@ SUBSYSTEM_DEF(zclear)
 			return picked_level
 	//Create a new z-level
 	var/datum/space_level/picked_level = SSmapping.add_new_zlevel("Dynamic free level [LAZYLEN(free_levels)]", ZTRAITS_SPACE, orbital_body_type = null)
+	//Новый уровень BYOND заполнен world.turf (/turf/open/space/basic) без Initialize - вокруг
+	//руины оставался «мёртвый» космос без параллакса. Заменяем на полноценный /turf/open/space.
+	initialize_space_level(picked_level.z_value)
 	addtimer(CALLBACK(src, .proc/begin_tracking, picked_level), 60 SECONDS)
 	message_admins("SSORBITS: Created a new dynamic free level ([LAZYLEN(free_levels)] now created) as none were available at the time.")
 
 	return picked_level
+
+/*
+ * Приводит космос свежесозданного динамического z-уровня к полноценному /turf/open/space.
+ * BYOND заполняет новый уровень world.turf = /turf/open/space/basic, у которого пустой New()
+ * намеренно пропускает Initialize (оптимизация маплоадера): нет SPACE_ICON_STATE, нет
+ * visibilityChanged() и регистрации в атмосе. Из-за этого пространство вокруг сгенерированной
+ * руины выглядит как второй тип турфа «space» - без параллакса и без нормального взаимодействия.
+ * ChangeTurf(/turf/open/space) сам пересоздаёт турф с корректным Initialize.
+ */
+/datum/controller/subsystem/zclear/proc/initialize_space_level(z_level)
+	if(!z_level)
+		return
+	for(var/turf/T as() in block(locate(1, 1, z_level), locate(world.maxx, world.maxy, z_level)))
+		if(istype(T, /turf/open/space/basic))
+			T.ChangeTurf(/turf/open/space, flags = CHANGETURF_IGNORE_AIR | CHANGETURF_DEFER_CHANGE)
+		CHECK_TICK
 
 /datum/controller/subsystem/zclear/proc/begin_tracking(datum/space_level/sl)
 	LAZYOR(autowipe, sl)
@@ -338,7 +357,9 @@ SUBSYSTEM_DEF(zclear)
 	for(var/turf/T as() in turfs)
 		//TODO: This doesn't update turfs around it.
 		var/turf/newT
-		if(istype(T, /turf/open/space))
+		//basic - подтип /turf/open/space, но без Initialize: его тоже надо пересоздать,
+		//иначе после вайпа уровень снова вернётся в пул с «мёртвым» космосом.
+		if(istype(T, /turf/open/space) && !istype(T, /turf/open/space/basic))
 			newT = T
 		else
 			newT = T.ChangeTurf(/turf/open/space, flags = CHANGETURF_IGNORE_AIR | CHANGETURF_DEFER_CHANGE)

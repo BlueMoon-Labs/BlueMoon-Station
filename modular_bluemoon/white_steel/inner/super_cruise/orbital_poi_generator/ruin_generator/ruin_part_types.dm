@@ -19,18 +19,22 @@
 /datum/map_template/ruin_part/room_dorm
 	file_name = "5x5_4_room-dorm"
 	weight = 3
+	max_occurances = 2
 
 /datum/map_template/ruin_part/room_janitor
 	file_name = "5x5_4_room-janitor_closet"
 	weight = 3
+	max_occurances = 2
 
 /datum/map_template/ruin_part/room_storage
 	file_name = "5x5_4_room-storage"
 	weight = 3
+	max_occurances = 2
 
 /datum/map_template/ruin_part/room_toilet
 	file_name = "5x5_4_room-toilet"
 	weight = 3
+	max_occurances = 2
 
 /datum/map_template/ruin_part/hallwayroom_east
 	file_name = "5x5_5_hallwayroom_east"
@@ -104,18 +108,22 @@
 /datum/map_template/ruin_part/corgrobotics
 	file_name = "13x13_corgrobotics"
 	weight = 4
+	max_occurances = 2
 
 /datum/map_template/ruin_part/windowroom
 	file_name = "5x9_windowroom"
 	weight = 5
+	max_occurances = 2
 
 /datum/map_template/ruin_part/cargoroom
 	file_name = "17x13_cargo"
 	weight = 2
+	max_occurances = 1
 
 /datum/map_template/ruin_part/donutroom
 	file_name = "13x13_donutroom"
 	weight = 4
+	max_occurances = 2
 
 /datum/map_template/ruin_part/singularity
 	file_name = "21x21_singularity"
@@ -125,6 +133,7 @@
 /datum/map_template/ruin_part/maintroom
 	file_name = "9x5_maintroom"
 	weight = 4
+	max_occurances = 2
 
 /datum/map_template/ruin_part/shuttledock
 	file_name = "13x18_shuttledock"
@@ -134,14 +143,17 @@
 /datum/map_template/ruin_part/kitchen
 	file_name = "9x13_kitchen"
 	weight = 6
+	max_occurances = 2
 
 /datum/map_template/ruin_part/sleeproom
 	file_name = "9x13_sleeproom"
 	weight = 4
+	max_occurances = 2
 
 /datum/map_template/ruin_part/cryo
 	file_name = "5x5_cryo"
 	weight = 2
+	max_occurances = 2
 
 /datum/map_template/ruin_part/solars
 	file_name = "21x19_solars"
@@ -156,6 +168,7 @@
 /datum/map_template/ruin_part/shotelroom
 	file_name = "13x13_shotelroom"
 	weight = 2
+	max_occurances = 2
 
 /datum/map_template/ruin_part/supermattercontainment
 	file_name = "13x13_supermatter_containment"
@@ -170,6 +183,7 @@
 /datum/map_template/ruin_part/shower
 	file_name = "5x5_shower"
 	weight = 2
+	max_occurances = 2
 
 //its 13x13 lol
 // !! Map file uses broken turbo-lift components !!
@@ -184,6 +198,7 @@
 /datum/map_template/ruin_part/toxinroom
 	file_name = "9x9_toxinstorage"
 	weight = 2
+	max_occurances = 2
 
 /datum/map_template/ruin_part/josito
 	file_name = "13x9_josito"
@@ -193,6 +208,7 @@
 /datum/map_template/ruin_part/pizzaguard
 	file_name = "13x17_pizzaroom"
 	weight = 3
+	max_occurances = 1
 	loot_room = TRUE
 
 //Damaged halls
@@ -403,6 +419,7 @@
 /datum/map_template/ruin_part/lounge
 	file_name = "5x9_lounge"
 	weight = 4
+	max_occurances = 2
 
 /datum/map_template/ruin_part/researchlab
 	file_name = "13x9_researchlab"
@@ -423,22 +440,27 @@
 
 /datum/map_template/ruin_part/medstorage
 	file_name = "9x13_medstorage"
+	max_occurances = 2
 
 /datum/map_template/ruin_part/room_arsenal
 	file_name = "5x6_arsenal"
 	weight = 1
+	max_occurances = 1
 	loot_room = TRUE
 
 /datum/map_template/ruin_part/hallwaystrange
 	file_name = "7x7_hallwaystrange"
 	weight = 3
+	max_occurances = 2
 
 /datum/map_template/ruin_part/morgue
 	file_name = "9x5_morgue"
 	weight = 4
+	max_occurances = 2
 /datum/map_template/ruin_part/teleporter_two
 	file_name = "9x9_teleporter"
 	weight = 1
+	max_occurances = 1
 
 /datum/map_template/ruin_part/charliestation_mini
 	file_name = "17x17_charliecrew"
@@ -447,14 +469,17 @@
 /datum/map_template/ruin_part/vaporwave
 	file_name = "11x8_vaporwave"
 	weight = 1
+	max_occurances = 2
 
 /datum/map_template/ruin_part/abandonedzoo
 	file_name = "19x19_abandonedzoo"
 	weight = 3
+	max_occurances = 2
 
 /datum/map_template/ruin_part/bigderelict
 	file_name = "40x34_bigderelict"
 	weight = 3
+	max_occurances = 1
 
 /datum/map_template/ruin_part/corgasteroid
 	file_name = "41x41_corgasteroid"
@@ -469,18 +494,22 @@
 /datum/map_template/ruin_part/medicalroom
 	file_name = "13x9_medical"
 	weight = 3
+	max_occurances = 2
 
 /datum/map_template/ruin_part/genetics
 	file_name = "9x9_genetics"
 	weight = 3
+	max_occurances = 2
 
 /datum/map_template/ruin_part/northairlock
 	file_name = "5x9_northernairlock"
 	weight = 4
+	max_occurances = 2
 
 /datum/map_template/ruin_part/southairlock
 	file_name = "5x9_southernairlock"
 	weight = 4
+	max_occurances = 2
 
 /datum/map_template/ruin_part/shuttledock_inside
 	file_name = "21x17_shuttledock"
