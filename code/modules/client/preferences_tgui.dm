@@ -153,6 +153,8 @@
 			"status" = (role in be_special) ? be_special[role] : ANTAG_PRIORITY_DISABLED
 		))
 	.["antag_roles"] = antag_roles
+	.["antag_objective_style"] = antag_objective_style
+	.["antag_objective_styles"] = antag_objective_style_options()
 
 	// Content toggles
 	.["verb_consent"] = !!(toggles & VERB_CONSENT)
@@ -510,6 +512,14 @@
 			if(!set_antag_preference(params["role"], text2num(params["value"])))
 				return
 			save_preferences()
+			return TRUE
+
+		if("set_antag_objective_style")
+			var/style = params["value"]
+			if(!(style in GLOB.antag_objective_styles) || style == antag_objective_style)
+				return
+			antag_objective_style = style
+			save_pref_var("antag_objective_style")
 			return TRUE
 
 		if("ticket_nickname")

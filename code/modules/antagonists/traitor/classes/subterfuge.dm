@@ -6,7 +6,7 @@
 	assassin_prob = 25
 
 /datum/traitor_class/human/subterfuge/try_forge_assassinate_objective(datum/antagonist/traitor/T, datum/game_mode/dynamic/mode)
-	var/effective_prob = get_effective_assassin_prob(mode)
+	var/effective_prob = get_effective_assassin_prob(mode, T.owner)
 	if(!effective_prob || !prob(effective_prob))
 		return FALSE
 	if(prob(25))

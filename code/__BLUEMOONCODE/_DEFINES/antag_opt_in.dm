@@ -8,3 +8,10 @@
 #define ANTAG_OPT_IN_HERETIC_HUNT ANTAG_OPT_IN_TEMPORARY
 /// Труп в жертву принимается только от согласных на убийство.
 #define ANTAG_OPT_IN_HERETIC_HUNT_CORPSE ANTAG_OPT_IN_KILL
+
+// Стиль заданий, который игрок выбирает себе как антагонисту.
+#define ANTAG_OBJECTIVE_STYLE_QUIET "quiet"
+#define ANTAG_OBJECTIVE_STYLE_NORMAL "normal"
+#define ANTAG_OBJECTIVE_STYLE_VIOLENT "violent"
+/// Во сколько раз стиль "Больше убийств" поднимает шанс задания на убийство там, где режим не ограничивает его потолком.
+#define ANTAG_OBJECTIVE_VIOLENT_KILL_MULT 1.5

@@ -114,8 +114,11 @@ GLOBAL_LIST_EMPTY(traitor_classes)
 /datum/traitor_class/human
 	var/assassin_prob = 50
 
-/datum/traitor_class/human/proc/get_effective_assassin_prob(datum/game_mode/dynamic/mode)
+/datum/traitor_class/human/proc/get_effective_assassin_prob(datum/game_mode/dynamic/mode, datum/mind/owner)
 	if(GLOB.round_type == ROUNDTYPE_DYNAMIC_LIGHT)
+		return 0
+	var/style = owner ? owner.get_antag_objective_style() : ANTAG_OBJECTIVE_STYLE_NORMAL
+	if(style == ANTAG_OBJECTIVE_STYLE_QUIET)
 		return 0
 	var/tier = bm_traitor_violence_tier()
 	switch(tier)
@@ -126,10 +129,12 @@ GLOBAL_LIST_EMPTY(traitor_classes)
 	var/effective_prob = assassin_prob
 	if(istype(mode))
 		effective_prob = max(assassin_prob, mode.threat_level - 20)
+	if(style == ANTAG_OBJECTIVE_STYLE_VIOLENT)
+		effective_prob = min(100, effective_prob * ANTAG_OBJECTIVE_VIOLENT_KILL_MULT)
 	return max(0, effective_prob)
 
 /datum/traitor_class/human/proc/try_forge_assassinate_objective(datum/antagonist/traitor/T, datum/game_mode/dynamic/mode)
-	var/effective_prob = get_effective_assassin_prob(mode)
+	var/effective_prob = get_effective_assassin_prob(mode, T.owner)
 	if(!effective_prob || !prob(effective_prob))
 		return FALSE
 	var/tier = bm_traitor_violence_tier()

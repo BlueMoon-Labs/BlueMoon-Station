@@ -459,8 +459,9 @@
 
 	var/list/active_ais = active_ais()
 	var/tier = bm_traitor_violence_tier()
+	var/quiet = owner.get_antag_objective_style() == ANTAG_OBJECTIVE_STYLE_QUIET
 	if(tier != BM_TRAITOR_VIOLENCE_NONE)
-		if(active_ais.len && prob(100/GLOB.joined_player_list.len) && tier == BM_TRAITOR_VIOLENCE_FULL)
+		if(!quiet && active_ais.len && prob(100/GLOB.joined_player_list.len) && tier == BM_TRAITOR_VIOLENCE_FULL)
 			var/datum/objective/destroy/destroy_objective = new
 			destroy_objective.owner = owner
 			destroy_objective.find_target()
@@ -471,10 +472,11 @@
 		else
 			var/datum/objective/assassinate/once/kill_objective = new
 			kill_objective.owner = owner
-			if(team_mode) //No backstabbing while in a team
-				kill_objective.find_target_by_role(role = ROLE_CHANGELING, role_type = 1, invert = 1)
-			else
-				kill_objective.find_target()
+			if(!quiet)
+				if(team_mode) //No backstabbing while in a team
+					kill_objective.find_target_by_role(role = ROLE_CHANGELING, role_type = 1, invert = 1)
+				else
+					kill_objective.find_target()
 			if(kill_objective.target)
 				objectives += kill_objective
 			else

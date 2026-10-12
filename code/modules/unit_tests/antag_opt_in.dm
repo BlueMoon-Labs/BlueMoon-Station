@@ -435,6 +435,18 @@
 	TEST_ASSERT(prefs.load_character(null, TRUE), "Персонаж с мусором прочитан")
 	TEST_ASSERT_NULL(prefs.antag_opt_in_level, "Мусорный уровень сброшен к значению по умолчанию")
 
+	prefs.antag_objective_style = ANTAG_OBJECTIVE_STYLE_QUIET
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "Корень настроек со стилем заданий записан")
+	sleep(1)
+	prefs.antag_objective_style = ANTAG_OBJECTIVE_STYLE_NORMAL
+	TEST_ASSERT(prefs.load_preferences(TRUE), "Корень настроек прочитан")
+	TEST_ASSERT_EQUAL(prefs.antag_objective_style, ANTAG_OBJECTIVE_STYLE_QUIET, "Стиль заданий пережил сохранение")
+	prefs.antag_objective_style = "garbage"
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "Корень настроек с мусорным стилем записан")
+	sleep(1)
+	TEST_ASSERT(prefs.load_preferences(TRUE), "Корень настроек с мусорным стилем прочитан")
+	TEST_ASSERT_EQUAL(prefs.antag_objective_style, ANTAG_OBJECTIVE_STYLE_NORMAL, "Мусорный стиль сброшен к обычному")
+
 /// Повторный выбор того же уровня в меню взаимодействий ничего не делает: ни лога, ни сохранения.
 /datum/unit_test/antag_opt_in_menu_same_level/Run()
 	var/datum/mind/crew_mind = antag_opt_in_crew(ANTAG_OPT_IN_KILL)
@@ -468,3 +480,57 @@
 	TEST_ASSERT(opt_in_hud.hudusers[heretic_body], "Еретик не видит значки согласия")
 	heretic.remove_innate_effects(heretic_body)
 	TEST_ASSERT(!opt_in_hud.hudusers[heretic_body], "Значки согласия остались у бывшего еретика")
+
+/// Стиль "Без убийств" убирает убийства у предателя и генокрада, "Больше убийств" поднимает шанс только без потолка режима.
+/datum/unit_test/antag_objective_style
+	var/datum/preferences/style_prefs
+
+/datum/unit_test/antag_objective_style/Destroy()
+	GLOB.preferences_datums -= "unittestobjectivestyle"
+	QDEL_NULL(style_prefs)
+	return ..()
+
+/datum/unit_test/antag_objective_style/Run()
+	var/datum/antag_opt_in_test_world/world_state = allocate(/datum/antag_opt_in_test_world)
+	world_state.set_hard_round(src)
+	var/datum/game_mode/dynamic/mode = SSticker.mode
+	mode.threat_level = 40
+	var/datum/mind/victim = antag_opt_in_crew(ANTAG_OPT_IN_ROUND_REMOVE)
+	world_state.set_crew(list(victim))
+	var/datum/mind/antag_mind = antag_opt_in_crew(ANTAG_OPT_IN_ROUND_REMOVE)
+	antag_mind.key = "UnitTestObjectiveStyle"
+	style_prefs = new
+	GLOB.preferences_datums["unittestobjectivestyle"] = style_prefs
+	var/datum/antagonist/traitor/traitor = new
+	allocated += traitor
+	traitor.owner = antag_mind
+	var/datum/traitor_class/human/human_class = GLOB.traitor_classes[/datum/traitor_class/human]
+
+	var/normal_prob = human_class.get_effective_assassin_prob(mode, antag_mind)
+	TEST_ASSERT(normal_prob > 0 && normal_prob < 100, "В Харде без стиля шанс убийства должен быть между 0 и 100, а он [normal_prob]")
+	style_prefs.antag_objective_style = ANTAG_OBJECTIVE_STYLE_VIOLENT
+	TEST_ASSERT_EQUAL(human_class.get_effective_assassin_prob(mode, antag_mind), min(100, normal_prob * ANTAG_OBJECTIVE_VIOLENT_KILL_MULT), "\"Больше убийств\" не поднял шанс в Харде")
+	GLOB.round_type = ROUNDTYPE_DYNAMIC_MEDIUM
+	TEST_ASSERT(human_class.get_effective_assassin_prob(mode, antag_mind) <= 25, "\"Больше убийств\" пробил потолок Медиума")
+	GLOB.round_type = ROUNDTYPE_DYNAMIC_HARD
+
+	style_prefs.antag_objective_style = ANTAG_OBJECTIVE_STYLE_QUIET
+	TEST_ASSERT_EQUAL(human_class.get_effective_assassin_prob(mode, antag_mind), 0, "\"Без убийств\" оставил предателю шанс убийства")
+	var/datum/antagonist/changeling/ling = new
+	allocated += ling
+	ling.owner = antag_mind
+	ling.forge_objectives()
+	for(var/datum/objective/objective as anything in ling.objectives)
+		TEST_ASSERT(!istype(objective, /datum/objective/assassinate) && !istype(objective, /datum/objective/destroy), "Генокрад \"Без убийств\" получил [objective.type]")
+	TEST_ASSERT(locate(/datum/objective/steal) in ling.objectives, "Генокрад \"Без убийств\" остался без кражи вместо убийства")
+
+/// Сводка согласия для логов считает итоговые уровни, свой выбор и подъём порогом работы.
+/datum/unit_test/antag_opt_in_distribution_log/Run()
+	var/datum/antag_opt_in_test_world/world_state = allocate(/datum/antag_opt_in_test_world)
+	var/datum/mind/shy = antag_opt_in_crew(ANTAG_OPT_IN_NOT_TARGET)
+	var/datum/mind/temporary = antag_opt_in_crew(ANTAG_OPT_IN_TEMPORARY)
+	var/datum/mind/default_level = antag_opt_in_crew(null)
+	var/datum/mind/officer = antag_opt_in_crew(ANTAG_OPT_IN_NOT_TARGET, "Security Officer")
+	world_state.set_crew(list(shy, temporary, default_level, officer))
+	var/expected = "экипаж 4; \"[antag_opt_in_level_name(ANTAG_OPT_IN_NOT_TARGET)]\" 1, \"[antag_opt_in_level_name(ANTAG_OPT_IN_TEMPORARY)]\" 1, \"[antag_opt_in_level_name(ANTAG_OPT_IN_KILL)]\" 1, \"[antag_opt_in_level_name(ANTAG_OPT_IN_ROUND_REMOVE)]\" 1; выбрали сами 3, подняты порогом 1"
+	TEST_ASSERT_EQUAL(antag_opt_in_distribution_text(), expected, "Сводка согласия посчитана неверно")
