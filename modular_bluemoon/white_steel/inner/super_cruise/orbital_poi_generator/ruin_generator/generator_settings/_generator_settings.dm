@@ -11,25 +11,9 @@
 /datum/generator_settings/proc/get_floortrash()
 	return list()
 
-//Сломанная контробанда из мондуля vanguard (broken_stuff.dm).
-//WHITE-STEEL PORT: дробный вес 0.05 работает благодаря фиксу pickweight() (float-ролл),
-//т.е. сломанное оружие спавнится всем разнообразием, но в 20 раз реже нормы.
+//Сломанное оружие больше не спавнится в мусоре руин.
 /datum/generator_settings/proc/get_broken_stuff()
-	return list(
-		/obj/item/broken/inteq_sledgehammer = 0.05,
-		/obj/item/broken/dualsaber = 0.05,
-		/obj/item/broken/energy_sword = 0.05,
-		/obj/item/broken/inteq_elite = 0.05,
-		/obj/item/broken/makarov = 0.05,
-		/obj/item/broken/c20r = 0.05,
-		/obj/item/broken/bulldog = 0.05,
-		/obj/item/broken/ushm = 0.05,
-		/obj/item/broken/sniper_rifle = 0.05,
-		/obj/item/broken/m1garand = 0.05,
-		/obj/item/broken/homemadeak = 0.05,
-		/obj/item/broken/vss = 0.05,
-		/obj/item/broken/hmg = 0.05,
-	)
+	return list()
 
 //Get directional stuff that goes on walls.
 /datum/generator_settings/proc/get_directional_walltrash()
