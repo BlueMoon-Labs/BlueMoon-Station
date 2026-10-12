@@ -8,17 +8,18 @@
 	if(isnull(input) || !length(input) || !check_rights(R_DEBUG))
 		return
 	var/is_decryption = findtextEx(input, "enc1:", 1, 6)
-	log_admin("[key_name(usr)] used Loadout crypto debug ([is_decryption ? "decrypt" : "encrypt"] [input]).")
-	message_admins("[key_name_admin(usr)] used Loadout crypto debug ([is_decryption ? "decrypt" : "encrypt"] [input]).")
+	var/result = ""
 	if(is_decryption)
-		var/decrypted = gear_decrypt_text(input)
+		result = gear_decrypt_text(input)
 		if(decrypted)
-			to_chat(usr, span_notice("Расшифрованный текст: <code>[html_encode(decrypted)]</code>"), confidential = TRUE)
+			to_chat(usr, span_notice("Расшифрованный текст: <code>[html_encode(result)]</code>"), confidential = TRUE)
 		else
 			to_chat(usr, span_warning("Не удалось расшифровать ID: неверный формат, ключ или повреждённые данные."), confidential = TRUE)
 	else
-		var/encrypted = gear_encrypt_text(input)
+		result = gear_encrypt_text(input)
 		if(encrypted)
-			to_chat(usr, span_notice("Зашифрованный ID: <code>[html_encode(encrypted)]</code>"), confidential = TRUE)
+			to_chat(usr, span_notice("Зашифрованный ID: <code>[html_encode(result)]</code>"), confidential = TRUE)
 		else
 			to_chat(usr, span_warning("Не удалось зашифровать текст: проверьте Node.js и ключ в donator.txt."), confidential = TRUE)
+	log_admin("[key_name(usr)] used Loadout crypto debug ([is_decryption ? "decrypt [result]" : "encrypt [input]"]).")
+	message_admins("[key_name_admin(usr)] used Loadout crypto debug ([is_decryption ? "decrypt [result]" : "encrypt [input]"]).")
