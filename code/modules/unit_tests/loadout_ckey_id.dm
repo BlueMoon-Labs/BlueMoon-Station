@@ -1,6 +1,10 @@
 /// Reversible IDs preserve spelling and normalize only during access checks.
+
+/datum/unit_test/loadout_ckey_id
+	var/saved_secret
+
 /datum/unit_test/loadout_ckey_id/Run()
-	var/saved_secret = CONFIG_GET(string/loadout_ckey_secret)
+	saved_secret = CONFIG_GET(string/loadout_ckey_secret)
 	CONFIG_SET(string/loadout_ckey_secret, "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f")
 	var/id = gear_ckey_id("AA-BB-ab...")
 	TEST_ASSERT(id && findtextEx(id, "enc1:", 1, 6), "IDs must use reversible enc1 format")
@@ -8,7 +12,11 @@
 	TEST_ASSERT_NOTEQUAL(gear_ckey_id("AABBAB"), id, "Different exact keys must receive different randomized IDs")
 	TEST_ASSERT_NULL(gear_ckey_id(null), "Missing keys must not receive an ID")
 	TEST_ASSERT_NULL(gear_ckey_id("..."), "Keys that normalize to an empty string must not receive an ID")
-	CONFIG_SET(string/loadout_ckey_secret, saved_secret)
+
+/datum/unit_test/loadout_ckey_id/Destroy()
+	if(!isnull(saved_secret))
+		CONFIG_SET(string/loadout_ckey_secret, saved_secret)
+	return ..()
 
 /// Mixed whitelists must preserve legacy access and still require donor group membership.
 /datum/unit_test/loadout_ckey_whitelist

@@ -71,7 +71,9 @@
 		result = null
 	fdel(request_file)
 	fdel(response_file)
-	if(!islist(result) || !result["ok"])
+	if(!islist(result))
+		return null
+	if(!result["ok"])
 		if(operation == "decrypt" || operation == "decrypt_text")
 			decrypted[value] = null
 		return null

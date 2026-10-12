@@ -22,7 +22,10 @@ Node.js executable name or a full path without quotes or extra arguments.
 The DM bridge reads the key through `CONFIG_GET` and sends it to the local helper
 through a short-lived request file. The request and response files are deleted
 after each operation and must be protected with the server's normal filesystem
-permissions. The key is never printed to game logs or returned to clients.
+permissions. If the server process is terminated between writing and cleanup,
+the request file may remain in `tmp/` and contain the key; remove leftover
+`loadout_crypto_*.json` files before sharing or backing up the directory. The key
+is never printed to game logs or returned to clients.
 
 `[SHOW]` now returns an encrypted ID; absent/broken config produces an error,
 never an unencrypted fallback. In DM, `gear_ckey_id(key)` encrypts the original
