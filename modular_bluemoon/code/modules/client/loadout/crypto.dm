@@ -27,7 +27,7 @@
 	if(!length(secret))
 		return null
 	var/node_executable = CONFIG_GET(string/loadout_crypto_node)
-	var/static/regex/unsafe_executable = regex("\[^A-Za-z0-9_ ./\\\\:\\-]")
+	var/static/regex/unsafe_executable = regex("\[^A-Za-zА-Яа-яЁё0-9_ ./\\\\:\\-]")
 	if(!length(node_executable) || unsafe_executable.Find(node_executable))
 		return null
 	var/state = "[secret]|[node_executable]"
