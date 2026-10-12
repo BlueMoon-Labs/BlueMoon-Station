@@ -14,8 +14,8 @@
 		/obj/effect/decal/cleanable/greenglow = 1,
 		/obj/effect/spawner/lootdrop/glowstick = 4,
 		/obj/effect/spawner/lootdrop/maintenance = 3,
-		/mob/living/simple_animal/hostile/poison/giant_spider/hunter = 1,
-		/mob/living/simple_animal/hostile/poison/giant_spider/nurse = 1,
+		/mob/living/simple_animal/hostile/poison/giant_spider/hunter = 1.5,
+		/mob/living/simple_animal/hostile/poison/giant_spider/nurse = 1.5,
 		null = 110,
 	)
 	. += get_broken_stuff()

@@ -64,6 +64,7 @@
 		new /datum/data/bounty_equipment("Empty marksman pouch",			/obj/item/storage/bag/marksman/empty,							750,	"Armor"),
 		new /datum/data/bounty_equipment("Empty combatant pouch",			/obj/item/storage/bag/medpen/combatant/empty,					750,	"Armor"),
 		new /datum/data/bounty_equipment("Empty Vanguard belt",				/obj/item/storage/belt/avangard_belt/empty,						1500,	"Armor"),
+		new /datum/data/bounty_equipment("Tactical Oxygen tank",			/obj/item/tank/internals/tactical,								5000,	"Armor"),
 
 		// ============ MEDICAL ============
 		new /datum/data/bounty_equipment("First-Aid Kit",					/obj/item/storage/firstaid/regular,								100,	"Medical"),

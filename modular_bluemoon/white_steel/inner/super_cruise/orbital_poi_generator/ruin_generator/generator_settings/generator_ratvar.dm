@@ -19,10 +19,10 @@
 		/obj/effect/clockwork/sigil/transgression = 2,
 		/obj/structure/destructible/clockwork/wall_gear/displaced = 10,
 		//WHITE-STEEL PORT: вместо ловушек спавним настоящих врагов-культистов Ратвара (было мало врагов).
-		/mob/living/simple_animal/hostile/clockcultistmelee = 4,
-		/mob/living/simple_animal/hostile/clockcultistranged = 3,
-		/mob/living/simple_animal/hostile/clockwork/clocktank = 2,
-		/mob/living/simple_animal/hostile/boss/clockcultistboss = 1,
+		/mob/living/simple_animal/hostile/clockcultistmelee = 6,
+		/mob/living/simple_animal/hostile/clockcultistranged = 4.5,
+		/mob/living/simple_animal/hostile/clockwork/clocktank = 3,
+		/mob/living/simple_animal/hostile/boss/clockcultistboss = 1.5,
 	)
 	. += get_broken_stuff()
 	for(var/trash in subtypesof(/obj/item/trash))

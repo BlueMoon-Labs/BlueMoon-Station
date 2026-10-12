@@ -14,8 +14,8 @@
 		/obj/effect/decal/cleanable/greenglow = 1,
 		/obj/effect/spawner/lootdrop/glowstick = 4,
 		/obj/effect/spawner/lootdrop/maintenance = 3,
-		/mob/living/simple_animal/hostile/blob/blobspore = 2,
-		/mob/living/simple_animal/hostile/blob/blobbernaut/independent = 1,
+		/mob/living/simple_animal/hostile/blob/blobspore = 3,
+		/mob/living/simple_animal/hostile/blob/blobbernaut/independent = 1.5,
 		null = 90,
 	)
 	. += get_broken_stuff()

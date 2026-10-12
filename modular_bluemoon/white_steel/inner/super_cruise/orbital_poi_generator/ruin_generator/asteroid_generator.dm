@@ -56,7 +56,7 @@
 			T.ChangeTurf(/turf/open/floor/plating/asteroid/airless, flags = CHANGETURF_IGNORE_AIR)
 		CHECK_TICK
 	//Spawn tendrils and other cave stuff
-	for(var/i in 1 to min(length(high_value_turfs), rand(0, 3)))
+	for(var/i in 1 to min(length(high_value_turfs), rand(0, 4)))
 		var/turf/T = pick_n_take(high_value_turfs)
 		if(locate(/obj/structure/spawner/lavaland) in range(3, T))
 			continue
