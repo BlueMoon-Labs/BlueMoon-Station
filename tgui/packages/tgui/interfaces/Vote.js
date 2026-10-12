@@ -323,7 +323,7 @@ const ChoicesPanel = (props) => {
       {!!(last_modes) && (
         <Box mb={1} color="label" fontSize="0.85em">
           Последние засчитанные режимы: <b>{last_modes}</b>
-          {!!(combo_threshold) && ` (форс при ${combo_threshold} подряд, если онлайн ≥${rotation_min_players} и не ночь (${rotation_night_start}:00-${rotation_night_end}:00))`}
+          {!!(combo_threshold) && ` (форс при ${combo_threshold} подряд, если онлайн ≥${rotation_min_players} и не ночь (${rotation_night_start}:00-${rotation_night_end}:00 МСК))`}
         </Box>
       )}
       {mode === 'roundtype' && !!(combo_threshold) && (

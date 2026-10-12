@@ -167,3 +167,23 @@
 		GLOB.round_counts_for_rotation = saved_counts_for_rotation
 		SSticker.current_state = saved_game_state
 	return ..()
+
+/// Часы ночного окна показываются игрокам по МСК при любом поясе сервера.
+/datum/unit_test/roundtype_rotation_msk_hours
+	var/saved_offset
+
+/datum/unit_test/roundtype_rotation_msk_hours/Run()
+	saved_offset = GLOB.timezoneOffset
+	GLOB.timezoneOffset = 0
+	TEST_ASSERT_EQUAL(server_hour_to_msk(22), 1, "22 по UTC это 1 по МСК")
+	TEST_ASSERT_EQUAL(server_hour_to_msk(9), 12, "9 по UTC это 12 по МСК")
+	GLOB.timezoneOffset = MSK_UTC_OFFSET_HOURS HOURS
+	TEST_ASSERT_EQUAL(server_hour_to_msk(22), 22, "Сервер в МСК не должен сдвигать часы")
+	TEST_ASSERT_EQUAL(server_hour_to_msk(0), 0, "Сервер в МСК не должен сдвигать полночь")
+	GLOB.timezoneOffset = 5 HOURS
+	TEST_ASSERT_EQUAL(server_hour_to_msk(1), 23, "1 по UTC+5 это 23 по МСК предыдущих суток")
+
+/datum/unit_test/roundtype_rotation_msk_hours/Destroy()
+	if(!isnull(saved_offset))
+		GLOB.timezoneOffset = saved_offset
+	return ..()

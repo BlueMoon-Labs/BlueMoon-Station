@@ -1019,8 +1019,8 @@ SUBSYSTEM_DEF(vote)
 		data["last_modes"] = length(SSpersistence.saved_round_types) ? jointext(SSpersistence.saved_round_types, ", ") : (length(SSpersistence.saved_modes) ? jointext(SSpersistence.saved_modes, ", ") : null)
 		data["combo_threshold"] = ROUNDTYPE_MAX_COMBO
 		data["rotation_min_players"] = CONFIG_GET(number/roundtype_rotation_min_players)
-		data["rotation_night_start"] = CONFIG_GET(number/roundtype_rotation_night_start_hour)
-		data["rotation_night_end"] = CONFIG_GET(number/roundtype_rotation_night_end_hour)
+		data["rotation_night_start"] = server_hour_to_msk(CONFIG_GET(number/roundtype_rotation_night_start_hour))
+		data["rotation_night_end"] = server_hour_to_msk(CONFIG_GET(number/roundtype_rotation_night_end_hour))
 		data["rotation_applies"] = GLOB.round_counts_for_rotation
 		// Пояснения о вариантах динамика
 		var/list/roundtype_descs = list()
