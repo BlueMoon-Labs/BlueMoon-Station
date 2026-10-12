@@ -623,11 +623,6 @@
 	path = /obj/item/modkit/Anabel_kit
 	ckeywhitelist = list("kalifasun", "dofalt")
 
-/datum/gear/donator/bm/legax_kit
-	name = "Legax Gravpulser Kit"
-	slot = ITEM_SLOT_BACKPACK
-	path = /obj/item/modkit/legax
-
 /datum/gear/donator/bm/emagged_jukebox
 	name = "Emagged Jukebox"
 	slot = ITEM_SLOT_BACKPACK
