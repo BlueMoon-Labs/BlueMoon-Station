@@ -14,5 +14,5 @@
 #define DONATE_ITEM_TOOLTIP_PARENT _DONATE_ITEM_TOOLTIP_PARENT(FALSE)
 #define DONATE_ITEM_TOOLTIP_PARENT_HIGHRISK _DONATE_ITEM_TOOLTIP_PARENT(TRUE)
 
-// Название временныз файлов для /proc/gear_crypto
+// Название временных файлов для /proc/gear_crypto
 #define LOADOUT_CRYPTO_TMP_FILENAME "loadout_crypto"
