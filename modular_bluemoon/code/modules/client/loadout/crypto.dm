@@ -76,25 +76,44 @@
 		return gear_crypto_failure(diagnostics, "rustg_rng_failed")
 	var/request_file = "tmp/[LOADOUT_CRYPTO_TMP_FILENAME]_[request_id].json"
 	var/response_file = "[request_file].out"
-	if(!text2file(json_encode(list("operation" = operation, "value" = value, "secret" = secret)), request_file))
+	var/error_file = "[response_file].err"
+	if(!text2file(json_encode(list("operation" = operation, "value" = value, "secret" = secret, "diagnostic" = islist(diagnostics))), request_file))
 		fdel(request_file)
 		return gear_crypto_failure(diagnostics, "request_write_failed")
 	var/list/result
 	var/failure = "shell_failed"
 	try
 		var/null_output = world.system_type == MS_WINDOWS ? "NUL" : "/dev/null"
-		var/command = "\"[node_executable]\" tools/loadout_crypto/crypto.cjs request [request_file] > [null_output] 2>&1"
+		var/command = "\"[node_executable]\" tools/loadout_crypto/crypto.cjs request [request_file] > [null_output] 2> [error_file]"
 		var/exit_code = world.system_type == MS_WINDOWS ? shell("cmd /c \"[command]\"") : shell("sh -c \"[replacetext(command, "\"", "\\\"")]\"")
 		if(islist(diagnostics))
 			diagnostics["exit_code"] = exit_code
-		failure = exit_code ? "node_exit_failed" : "response_missing"
-		if(!exit_code && fexists(response_file))
+		if(isnull(exit_code))
+			failure = "shell_failed"
+		else if(exit_code)
+			failure = "node_exit_failed"
+		else if(!fexists(response_file))
+			failure = "response_missing"
+		if(!isnull(exit_code) && !exit_code && fexists(response_file))
 			failure = "invalid_response"
 			result = json_decode(file2text(response_file))
+		if(islist(diagnostics) && fexists(error_file))
+			var/stderr = lowertext(file2text(error_file))
+			// Debug-only callers explicitly requested the original process output.
+			diagnostics["stderr"] = file2text(error_file)
+			if(findtext(stderr, "not found") || findtext(stderr, "no such file"))
+				diagnostics["stderr_code"] = "node_not_found"
+			else if(findtext(stderr, "permission denied") || findtext(stderr, "operation not permitted"))
+				diagnostics["stderr_code"] = "permission_denied"
+			else if(findtext(stderr, "cannot execute") || findtext(stderr, "exec format"))
+				diagnostics["stderr_code"] = "node_not_executable"
+			else if(length(stderr))
+				diagnostics["stderr_code"] = "process_stderr"
 	catch
 		result = null
 	fdel(request_file)
 	fdel(response_file)
+	fdel(error_file)
 	if(!islist(result))
 		return gear_crypto_failure(diagnostics, failure)
 	if(islist(diagnostics))
@@ -104,6 +123,9 @@
 			diagnostics["node_version"] = version
 	if(!result["ok"])
 		var/error_code = result["error"]
+		if(islist(diagnostics))
+			if(istext(result["error_detail"]))
+				diagnostics["error_detail"] = result["error_detail"]
 		var/static/list/allowed_errors = list("invalid_secret_config", "invalid_text", "invalid_token", "invalid_request", "authentication_failed", "invalid_account", "helper_failed")
 		if(!(error_code in allowed_errors))
 			error_code = "helper_failed"

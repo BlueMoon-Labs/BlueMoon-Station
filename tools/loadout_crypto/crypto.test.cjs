@@ -111,6 +111,19 @@ test('request diagnostics expose only fixed codes and the runtime version', (t) 
   }
 });
 
+test('diagnostic requests include the original helper error detail', (t) => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'loadout-crypto-detail-'));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  const filename = path.join(directory, 'request.json');
+  fs.writeFileSync(filename, JSON.stringify({
+    operation: 'decrypt', value: 'enc1:bad', secret: secret.toString('hex'), diagnostic: true,
+  }));
+  request(filename);
+  assert.deepEqual(JSON.parse(fs.readFileSync(filename + '.out', 'utf8')), {
+    ok: false, error: 'invalid_token', error_detail: 'invalid_token', node_version: process.version,
+  });
+});
+
 test('batch runtime failures are reported instead of becoming cached invalid IDs', (t) => {
   const original = crypto.createDecipheriv;
   t.after(() => { crypto.createDecipheriv = original; });

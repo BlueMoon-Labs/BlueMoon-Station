@@ -46,10 +46,12 @@ All encrypted whitelist entries are decrypted in one batch at loadout initializa
 
 After deploying this build, use **Debug.2) Info → Loadout crypto** with debug rights.
 Enter a short test string, then decrypt the returned ID. Both operations bypass
-the cache and privately report safe diagnostics, including `node_version` when
-the helper responds and `exit_code` when the shell returns. No key, plaintext,
-or raw exception is included in diagnostics. Ordinary callers still receive
-the value or null. Temporary helper failures are not cached as invalid IDs.
+the cache and privately report diagnostics, including `node_version` when the
+helper responds and `exit_code` when the shell returns. The debug request also
+includes the original helper `error_detail` and shell `stderr`; ordinary callers
+never request or receive these fields. Treat the debug output as private because
+it can contain local paths or runtime messages. Temporary helper failures are not
+cached as invalid IDs.
 
 | Error | Meaning / next check |
 | --- | --- |
@@ -59,9 +61,13 @@ the value or null. Temporary helper failures are not cached as invalid IDs.
 | `helper_missing` | `tools/loadout_crypto/crypto.cjs` is absent from the running server's working directory. Include it in deployment. |
 | `rustg_rng_failed` | The installed rust-g cannot generate a request ID. Working SHA-256 alone does not verify the RNG export. |
 | `request_write_failed` | The game cannot write the request under `tmp/`. |
-| `shell_failed` | BYOND raised an error launching the shell; check execution permissions/security mode. |
+| `shell_failed` | BYOND returned `null` and could not launch the shell. On a Linux TGS deployment, check that the security level is `Trusted`; also check that `/bin/sh` exists and the server process is allowed to execute it. |
 | `node_exit_failed` | Nonzero shell status. On Linux, 127 usually means command not found; 126 usually means it cannot be executed. Other codes can indicate an incompatible runtime or response write failure. |
 | `response_missing` / `invalid_response` | No valid JSON response; check shell permissions, working directory and write access. |
+| `stderr_code=node_not_found` | The shell started, but could not find the configured Node executable. Set `LOADOUT_CRYPTO_NODE` to an absolute executable path. |
+| `stderr_code=permission_denied` | The shell or Node executable is not permitted to run. Check TGS security level and executable permissions. |
+| `stderr_code=node_not_executable` | The configured file is not a runnable Linux Node binary (wrong architecture or missing execute permission). |
+| `stderr_code=process_stderr` | The process wrote an unclassified error; the raw text is intentionally hidden. |
 | `authentication_failed` | The ID was changed or encrypted with another key. |
 | `invalid_token` / `invalid_text` / `invalid_account` / `invalid_request` | The input is invalid for the requested operation. |
 | `helper_failed` | The helper started but failed internally; native errors are intentionally not exposed. |

@@ -96,8 +96,10 @@ function request(filename) {
   // The DM side supplies only a generated filename, never shell-interpolated player input.
   // DM requests contain the configured secret and are removed by the caller.
   let result;
+  let diagnostic = false;
   try {
     const data = JSON.parse(fs.readFileSync(filename, 'utf8'));
+    diagnostic = data.diagnostic === true;
     const secret = data.secret ? parseSecret(data.secret) : readSecret(data.secret_file);
     let value;
     if (data.operation === 'encrypt') value = encrypt(data.value, secret);
@@ -108,6 +110,7 @@ function request(filename) {
     // Never serialize native errors, input values, filenames or the secret into game logs.
     result = { ok: false, error: ERROR_CODES.has(error.message) ? error.message : 'helper_failed',
       node_version: process.version };
+    if (diagnostic) result.error_detail = String(error && error.message ? error.message : error);
   }
   fs.writeFileSync(filename + '.out', JSON.stringify(result), { encoding: 'utf8', mode: 0o600, flag: 'wx' });
 }
