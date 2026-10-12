@@ -16,3 +16,5 @@
 
 // Название временных файлов для /proc/gear_crypto
 #define LOADOUT_CRYPTO_TMP_FILENAME "loadout_crypto"
+#define LOADOUT_CRYPTO_REQUEST_ID_BYTES 16
+#define LOADOUT_CRYPTO_REQUEST_ID_HEX_LENGTH (LOADOUT_CRYPTO_REQUEST_ID_BYTES * 2)
