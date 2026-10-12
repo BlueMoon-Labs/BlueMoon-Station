@@ -415,22 +415,6 @@
 
 ///////////////////////////////////////////////
 
-/obj/item/clothing/head/officerian_cap
-	name = "Officerian Cap"
-	desc = "Головной убор ветеранов и действующих офицеров"
-	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
-	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
-	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
-	icon_state = "officerian_cap"
-	item_state = "officerian_cap"
-	var/list/poly_colors = list("#2A2A2A","#303030","#575757","#d4d4d4")
-
-/obj/item/clothing/head/officerian_cap/ComponentInitialize()
-	. = ..()
-	AddElement(/datum/element/polychromic, list("#2A2A2A","#303030","#575757","#d4d4d4"), 4)
-
-///////////////////////////////////////////////
-
 /obj/item/clothing/head/helmet/sec/gosei
 	name = "Gosei.H.mk27"
 	desc = "Безымянный шлем покрывающий лицо, предназначенный для защиты от внешних био-химических угроз, оснащённый внутривстроенным интерфейсом, съёмными батарейками, IFF опознавательными знаками"
