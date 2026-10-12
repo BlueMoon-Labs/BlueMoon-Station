@@ -2,6 +2,7 @@
 	probability = 2
 	floor_break_prob = 8
 	structure_damage_prob = 6
+	signal_name = "Окультный сигнал"
 
 /datum/generator_settings/ratvar/get_floortrash()
 	. = list(
@@ -27,6 +28,23 @@
 	. += get_broken_stuff()
 	for(var/trash in subtypesof(/obj/item/trash))
 		.[trash] = 0.33
+	//WHITE-STEEL PORT: детали Ратвара (stock_parts с rating = 6) — крайне редко,
+	//одна сотая процента (0.01%) на появление любой из них.
+	var/list/ratvar_parts = list()
+	for(var/obj/item/stock_parts/part as() in subtypesof(/obj/item/stock_parts))
+		if(initial(part.rating) != 6)
+			continue
+		//Вортекс-батарейку в спавн деталей не кладём.
+		if(ispath(part, /obj/item/stock_parts/cell))
+			continue
+		ratvar_parts += part
+	if(length(ratvar_parts))
+		var/total_weight = 0
+		for(var/key in .)
+			total_weight += .[key]
+		var/per_part = total_weight * 0.0001 / length(ratvar_parts)
+		for(var/part in ratvar_parts)
+			.[part] = per_part
 
 /datum/generator_settings/ratvar/get_directional_walltrash()
 	return list(

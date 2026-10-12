@@ -10,10 +10,19 @@
 	return "Кто-то, представляющий особый интерес, находится по адресу [station_name]. Мы требуем его немедленно спасти. \
 		Мы предполагаем, что эта VIP-персона всё ещё жива, однако, если мертва, то диск-дневник с историей личной жизни был бы \
 		тем, что нам могло бы понадобиться. Также, возможно вам понадобится помощь местного отряда службы безопасности, так как \
-		вероятно вы встретите неприятеля. Верните этого человека на станции и задание будет выполнено."
+		вероятно вы встретите неприятеля. Доставьте этого человека на транспортный фёрри у дока «port bay 2»: как только он окажется \
+		на борту, фёрри сам отправится на Центральное Командование и задание будет выполнено."
 
 /datum/orbital_objective/vip_recovery/get_target()
 	return mob_to_recover
+
+//WHITE-STEEL PORT: при выдаче задания фёрри пригоняется к дока «port bay 2» (ferry_home),
+//чтобы VIP было куда садиться.
+/datum/orbital_objective/vip_recovery/on_assign(obj/machinery/computer/objective/objective_computer)
+	. = ..()
+	var/obj/docking_port/mobile/ferry = SSshuttle.getShuttle("ferry")
+	if(ferry && ferry.mode == SHUTTLE_IDLE && ferry.getDockedId() != "ferry_home")
+		SSshuttle.moveShuttle("ferry", "ferry_home", 1)
 
 //If nobody takes up the ghost role, then we dont care if they died.
 //I know, its a bit sad.
@@ -25,10 +34,23 @@
 		//Left behind
 		if(mob_to_recover in SSzclear.nullspaced_mobs)
 			return TRUE
-		//Recovered and alive
-		if(is_station_level(mob_to_recover.z) && mob_to_recover.stat == CONSCIOUS)
+		//WHITE-STEEL PORT: как только VIP оказывается на борту фёрри — фёрри сам стартует на ЦК.
+		send_ferry_if_loaded()
+		//WHITE-STEEL PORT: VIP доставлен на ЦК на фёрри — задание выполнено.
+		if(is_centcom_level(mob_to_recover.z) && mob_to_recover.stat == CONSCIOUS)
 			complete_objective()
 	return FALSE
+
+//WHITE-STEEL PORT: если VIP на борту фёрри, запускаем фёрри на ЦК-док ferry_away.
+/datum/orbital_objective/vip_recovery/proc/send_ferry_if_loaded()
+	var/obj/docking_port/mobile/ferry = SSshuttle.getShuttle("ferry")
+	if(!ferry || ferry.mode != SHUTTLE_IDLE)
+		return
+	if(ferry.getDockedId() == "ferry_away")
+		return
+	if(!ferry.is_in_shuttle_bounds(mob_to_recover))
+		return
+	SSshuttle.moveShuttle("ferry", "ferry_away", 1)
 
 /datum/orbital_objective/vip_recovery/generate_objective_stuff(turf/chosen_turf)
 	var/mob/living/carbon/human/created_human = new(chosen_turf)
@@ -47,29 +69,19 @@
 		new /obj/item/tank/internals/oxygen(T)
 		new /obj/item/clothing/mask/gas(T)
 		new /obj/item/storage/belt/utility/full(T)
-	var/antag_elligable = FALSE
-	switch(pickweight(list("centcom_official" = 4, "dictator" = 1, "greytide" = 3)))
-		if("centcom_official")
-			//created_human.flavor_text = "You are centcom official on board a badly damaged station. Making your way back to the station to uncover the secrets you hold is
-			//	your top priority as far as Nanotrasen is concerned, but just surviving 1 more day is all you can ask for."
-			created_human.equipOutfit(/datum/outfit/centcom_official_vip)
-			antag_elligable = TRUE
-		if("dictator")
-			//created_human.flavor_text = "It has been months since your regime fell. Once a hero, now just someone wishing that they will see the next sunrise. You know those
-			//	Nanotrasen pigs are after you, and will stop at nothing to capture you. All you want at this point is to get out and survive, however it is likely you will never leave
-			//	without being captured."
-			created_human.equipOutfit(/datum/outfit/vip_dictator)
-			created_human.mind.add_antag_datum(/datum/antagonist/vip_dictator)
-		if("greytide")
-			//created_human.flavor_text = "You are just a lonely assistant, on a lonely derelict station. You dream of going home,
-			//	but it would take another one of the miracles that kept you alive to get you home."
-			created_human.equipOutfit(/datum/outfit/greytide)
-			antag_elligable = TRUE
-	if(antag_elligable)
-		if(prob(7))
-			created_human.mind.make_Traitor()
-		else if(prob(8))
-			created_human.mind.make_Changeling()
+	//WHITE-STEEL PORT: VIP экипируется одним из боевых лодаутов — 4 ERT-MOPP или 3 HSC (урезанные VIP-копии).
+	var/static/list/vip_outfits = list(
+		/datum/outfit/ert/commander/mopp,
+		/datum/outfit/ert/security/mopp,
+		/datum/outfit/ert/medic/mopp,
+		/datum/outfit/ert/engineer/mopp,
+		/datum/outfit/hsc/vip,
+		/datum/outfit/hsc/vip/medic,
+		/datum/outfit/hsc/vip/assistant,
+	)
+	created_human.equipOutfit(pick(vip_outfits))
+	//WHITE-STEEL PORT: у VIP настоящая цель в mind — выжить и вернуться на ЦК.
+	created_human.mind.add_antag_datum(/datum/antagonist/vip_recovery)
 	mob_to_recover = created_human
 	generated = TRUE
 
@@ -148,3 +160,87 @@
 	var/static/items_inside = list(
 		/obj/item/ammo_casing/shotgun/improvised = 12)
 	generate_items_inside(items_inside,src)
+
+//=====================
+// VIP: цель и роль
+//=====================
+//WHITE-STEEL PORT: настоящая цель VIP — выжить и вернуться на Центральное Командование.
+/datum/objective/vip_return
+	name = "Возвращение на ЦК"
+	explanation_text = "Выжить и вернуться на Центральное Командование."
+	completable = TRUE
+
+/datum/objective/vip_return/check_completion()
+	var/mob/living/L = owner?.current
+	if(!L || L.stat == DEAD)
+		return FALSE
+	return is_centcom_level(L.z)
+
+/datum/antagonist/vip_recovery
+	name = "Very Important Person"
+	show_in_antagpanel = FALSE
+	antagpanel_category = "Other"
+	roundend_category = "Ruin VIPs"
+	greentext_reward = 25
+	antag_memory = "Вы — VIP-персона с объекта. Держитесь живыми: авангард должен доставить вас на \
+		транспортный фёрри у дока «port bay 2», после чего он сам стартует на Центральное Командование."
+
+/datum/antagonist/vip_recovery/on_gain()
+	var/datum/objective/vip_return/return_objective = new
+	return_objective.owner = owner
+	objectives += return_objective
+	. = ..()
+
+/datum/antagonist/vip_recovery/greet()
+	to_chat(owner, span_boldnotice("[antag_memory]"))
+	owner.announce_objectives()
+
+//=====================
+// VIP: урезанные копии HSC-лодаутов
+//=====================
+//WHITE-STEEL PORT: отдельные копии HSC-лодаутов для VIP (свой post_equip, без пост-эффектов ERT),
+//с оружием, урезанным до уровня MOPP (глушёный пистолет + карабин + патроны).
+/datum/outfit/hsc/vip
+	name = "VIP HSC Security"
+	belt = /obj/item/gun/ballistic/automatic/pistol/suppressed
+	l_pocket = null
+	backpack_contents = list(
+		/obj/item/storage/box/survival/centcom = 1,
+		/obj/item/storage/box/handcuffs = 1,
+		/obj/item/storage/firstaid/regular = 1,
+		/obj/item/gun/energy/modular_laser_rifle/carbine = 1,
+		/obj/item/storage/box/ammo/m10mm = 1,
+	)
+
+/datum/outfit/hsc/vip/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
+	return
+
+/datum/outfit/hsc/vip/medic
+	name = "VIP HSC Medic"
+	gloves = /obj/item/clothing/gloves/color/latex/nitrile/hsc
+	suit = /obj/item/clothing/suit/space/hardsuit/ert/alert/hsc/medical
+	id = /obj/item/card/id/ert/hsc/medic
+	backpack_contents = list(
+		/obj/item/storage/box/survival/centcom = 1,
+		/obj/item/storage/firstaid/tactical/ert_first = 1,
+		/obj/item/storage/firstaid/tactical/ert_second = 1,
+		/obj/item/reagent_containers/hypospray/combat = 1,
+		/obj/item/roller = 1,
+		/obj/item/gun/energy/modular_laser_rifle/carbine = 1,
+		/obj/item/storage/box/ammo/m10mm = 1,
+	)
+
+/datum/outfit/hsc/vip/assistant
+	name = "VIP HSC Assistant"
+	gloves = /obj/item/clothing/gloves/color/latex/nitrile/hsc
+	suit = /obj/item/clothing/suit/space/hardsuit/ert/alert/hsc/assistant
+	id = /obj/item/card/id/ert/hsc/assistant
+	backpack_contents = list(
+		/obj/item/storage/box/survival/centcom = 1,
+		/obj/item/storage/firstaid/tactical/ert_first = 1,
+		/obj/item/storage/firstaid/tactical/ert_second = 1,
+		/obj/item/roller = 1,
+		/obj/item/bodybag/bluespace = 1,
+		/obj/item/gun/energy/modular_laser_rifle/carbine = 1,
+		/obj/item/storage/box/ammo/m10mm = 1,
+	)

@@ -2,6 +2,7 @@
 	probability = 6
 	floor_break_prob = 8
 	structure_damage_prob = 10
+	signal_name = "Вражеский сигнал"
 
 /datum/generator_settings/inteq/get_floortrash()
 	. = list(
@@ -18,6 +19,16 @@
 		/mob/living/simple_animal/hostile/inteq/ranged/shotgun = 1.5,
 		/mob/living/simple_animal/hostile/inteq/melee = 3,
 		/mob/living/simple_animal/hostile/inteq/melee/sword = 1.5,
+		//WHITE-STEEL PORT: усиленные вариации ИнтеКа (скафандр и элитный штурмовик).
+		//Каждая базовая группа получает свои space и space/stormtrooper версии.
+		/mob/living/simple_animal/hostile/inteq/melee/space = 2,
+		/mob/living/simple_animal/hostile/inteq/melee/space/stormtrooper = 1,
+		/mob/living/simple_animal/hostile/inteq/melee/sword/space = 1,
+		/mob/living/simple_animal/hostile/inteq/melee/sword/space/stormtrooper = 0.5,
+		/mob/living/simple_animal/hostile/inteq/ranged/smg/space = 2,
+		/mob/living/simple_animal/hostile/inteq/ranged/smg/space/stormtrooper = 1,
+		/mob/living/simple_animal/hostile/inteq/ranged/shotgun/space = 1,
+		/mob/living/simple_animal/hostile/inteq/ranged/shotgun/space/stormtrooper = 0.5,
 		/obj/effect/mob_spawn/human/corpse/inteq_dead = 2,
 		/obj/item/storage/fancy/cigarettes/cigpack_inteq = 2,
 		/obj/item/storage/box/inteq_box = 1,
@@ -27,11 +38,16 @@
 		/obj/item/clothing/under/inteq = 1,
 		/obj/item/storage/toolbox/inteq = 1,
 		/obj/item/gun/ballistic/revolver/inteq = 0.1,
-		null = 110,
+		null = 150,
 	)
 	. += get_broken_stuff()
 	for(var/trash in subtypesof(/obj/item/trash))
 		.[trash] = 0.33
+	//WHITE-STEEL PORT: одноразовый эмаг — крайне редко, ровно одна сотая процента (0.01%) от общего веса.
+	var/total_weight = 0
+	for(var/key in .)
+		total_weight += .[key]
+	.[/obj/item/card/emag/oneuse] = total_weight * 0.0001
 
 /datum/generator_settings/inteq/get_directional_walltrash()
 	return list(

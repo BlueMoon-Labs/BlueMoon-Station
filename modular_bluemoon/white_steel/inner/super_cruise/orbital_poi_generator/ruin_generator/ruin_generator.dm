@@ -25,6 +25,23 @@
 		SSair.unpause_z(center_z)
 	space_level.generating = FALSE
 
+//WHITE-STEEL PORT: кэш доступных тем генерации руин с их весами.
+/proc/get_generator_settings_weighted_list()
+	var/static/list/datum/generator_settings/generator_settings_cache
+	if(!generator_settings_cache)
+		generator_settings_cache = list()
+		for(var/generator_type in subtypesof(/datum/generator_settings))
+			var/datum/generator_settings/instance = new generator_type()
+			if(instance.probability != 0)
+				generator_settings_cache[instance] = instance.probability
+		if(!length(generator_settings_cache))
+			generator_settings_cache[new /datum/generator_settings()] = 1
+	return generator_settings_cache
+
+//WHITE-STEEL PORT: заранее выбрать генератор руины (для подписи сигнала в консоли шаттла).
+/proc/pick_generator_settings()
+	return pickweight(get_generator_settings_weighted_list())
+
 /proc/_generate_space_ruin(center_x, center_y, center_z, border_x, border_y, datum/orbital_objective/linked_objective, forced_decoration, datum/ruin_event/ruin_event, allowed_flags = RUIN_PART_DEFAULT)
 
 	SSair.pause_z(center_z)
@@ -39,19 +56,7 @@
 	var/datum/generator_settings/generator_settings = forced_decoration
 	if(!istype(generator_settings))
 		//Select one randomly
-		var/static/list/datum/generator_settings/generator_settings_cache
-		if(!generator_settings_cache)
-			generator_settings_cache = list()
-			for(var/generator_type in subtypesof(/datum/generator_settings))
-				var/datum/generator_settings/instance = new generator_type()
-				if(instance.probability != 0)
-					generator_settings_cache[instance] = instance.probability
-			//BLUEMOON ADAPTATION: темы генерации (generator_settings/*) переносятся
-			//отдельным ПР; чтобы не падать на pickweight(пустой список), используем
-			//базовые настройки.
-			if(!length(generator_settings_cache))
-				generator_settings_cache[new /datum/generator_settings()] = 1
-		generator_settings = pickweight(generator_settings_cache)
+		generator_settings = pick_generator_settings()
 
 	//We need doors
 	var/list/placed_room_entrances = list()
@@ -310,6 +315,7 @@
 
 	//Fill with shit
 	var/list/floortrash = generator_settings.get_floortrash()
+	generator_settings.add_rare_salvage(floortrash)
 	var/list/directional_walltrash = generator_settings.get_directional_walltrash()
 	var/list/nondirectional_walltrash = generator_settings.get_non_directional_walltrash()
 	var/structure_damage_prob = generator_settings.structure_damage_prob

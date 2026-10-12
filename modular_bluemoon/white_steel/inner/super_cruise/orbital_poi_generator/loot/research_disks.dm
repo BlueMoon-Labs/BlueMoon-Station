@@ -6,24 +6,31 @@
 	. = ..()
 	SSorbits.research_disks += src
 	if(node_id)
-		stored_research.hidden_nodes[node_id] = FALSE
+		//Диск содержит узел как «изученный», чтобы copy_research_to() при аплоаде в консоль
+		//реально выдал узел (research_node с force), а не только возился с hidden_nodes.
+		stored_research.researched_nodes[node_id] = TRUE
 		var/datum/techweb_node/node = SSresearch.techweb_node_by_id(node_id)
-		name = "research disk ([node.display_name])"
+		if(node)
+			name = "research disk ([node.display_name])"
 
 /obj/item/disk/tech_disk/research/Destroy()
 	SSorbits.research_disks -= src
 	. = ..()
 
 /obj/item/disk/tech_disk/research/random/Initialize()
+	//Пул — ВСЕ узлы игры, кроме стартовых и BEPIS (experimental).
 	var/list/valid_nodes = list()
-	for(var/obj/item/disk/tech_disk/research/disk as() in subtypesof(/obj/item/disk/tech_disk/research))
-		if(!initial(disk.node_id))
+	for(var/node_id in SSresearch.techweb_nodes)
+		if(SSresearch.techweb_nodes_starting[node_id])
+			continue
+		if(SSresearch.techweb_nodes_experimental[node_id])
 			continue
 		//WHITE-STEEL PORT: уже выпадавший диск не генерируется повторно.
-		if(SSorbits.generated_research_nodes[initial(disk.node_id)])
+		if(SSorbits.generated_research_nodes[node_id])
 			continue
-		if(!SSresearch.science_tech.isNodeResearchedID(initial(disk.node_id)))
-			valid_nodes += initial(disk.node_id)
+		if(SSresearch.science_tech.isNodeResearchedID(node_id))
+			continue
+		valid_nodes += node_id
 	if(!length(valid_nodes))
 		new /obj/effect/spawner/lootdrop/ruinloot/basic(get_turf(src))
 		return INITIALIZE_HINT_QDEL

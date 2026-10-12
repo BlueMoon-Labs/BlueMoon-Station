@@ -2,6 +2,7 @@
 	probability = 1
 	floor_break_prob = 30
 	structure_damage_prob = 40
+	signal_name = "Сигнал преисподней"
 
 /datum/generator_settings/netherworld/get_floortrash()
 	. = list(

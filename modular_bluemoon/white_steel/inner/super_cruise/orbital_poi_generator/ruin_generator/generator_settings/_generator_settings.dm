@@ -6,10 +6,31 @@
 	var/floor_break_prob = 0
 	//Probability of applying damage to structures
 	var/structure_damage_prob = 0
+	//WHITE-STEEL PORT: как руина этого генератора подписана как «сигнал» в консоли шаттла.
+	var/signal_name = "Неопознанный сигнал"
 
 //Gets shit to place on floors
 /datum/generator_settings/proc/get_floortrash()
 	return list()
+
+//WHITE-STEEL PORT: на ЛЮБОМ типе карт крайне редко (одна сотая процента, 0.01%)
+//вместо мусора появляется один случайный обломок /obj/structure/salvage (без родителя).
+/datum/generator_settings/proc/add_rare_salvage(list/floortrash)
+	if(!islist(floortrash))
+		return
+	var/list/salvage_types = list()
+	for(var/obj/structure/salvage/S as() in subtypesof(/obj/structure/salvage))
+		salvage_types += S
+	if(!length(salvage_types))
+		return
+	var/total_weight = 0
+	for(var/key in floortrash)
+		total_weight += floortrash[key]
+	if(total_weight <= 0)
+		return
+	var/per_type = total_weight * 0.0001 / length(salvage_types)
+	for(var/salvage_type in salvage_types)
+		floortrash[salvage_type] = (floortrash[salvage_type] || 0) + per_type
 
 //Сломанное оружие больше не спавнится в мусоре руин.
 /datum/generator_settings/proc/get_broken_stuff()

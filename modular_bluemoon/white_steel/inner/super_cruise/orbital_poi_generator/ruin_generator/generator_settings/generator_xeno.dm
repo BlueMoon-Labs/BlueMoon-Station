@@ -2,6 +2,7 @@
 	probability = 2
 	floor_break_prob = 4
 	structure_damage_prob = 20
+	signal_name = "Сигнал улья"
 
 /datum/generator_settings/xeno/get_floortrash()
 	. = list(

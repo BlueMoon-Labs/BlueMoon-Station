@@ -2,6 +2,7 @@
 	probability = 7
 	floor_break_prob = 12
 	structure_damage_prob = 6
+	signal_name = "Сигнал заражения"
 
 /datum/generator_settings/city/get_floortrash()
 	. = list(

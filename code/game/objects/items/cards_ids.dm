@@ -148,6 +148,9 @@
 /obj/item/card/emag/empty
 	uses = 0
 
+/obj/item/card/emag/oneuse
+	uses = 1
+
 /obj/item/emagrecharge
 	name = "electromagnet charging device"
 	desc = "Небольшой аккумулятор двумя лениво воткнутыми штырями. Похоже, она нужна для заряжения небольших батарей в электромагнитных устройствах и, к несчастью, без возможности нормальной зарядки."

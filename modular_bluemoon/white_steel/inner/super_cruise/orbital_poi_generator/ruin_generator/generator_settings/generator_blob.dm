@@ -2,6 +2,7 @@
 	probability = 2
 	floor_break_prob = 8
 	structure_damage_prob = 6
+	signal_name = "Сигнал био-угрозы"
 
 /datum/generator_settings/blob/get_floortrash()
 	. = list(

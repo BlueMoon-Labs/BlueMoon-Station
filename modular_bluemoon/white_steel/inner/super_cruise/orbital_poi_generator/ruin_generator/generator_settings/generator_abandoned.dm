@@ -2,6 +2,7 @@
 	probability = 6
 	floor_break_prob = 4
 	structure_damage_prob = 2
+	signal_name = "Шипящий сигнал"
 
 /datum/generator_settings/abandoned/get_floortrash()
 	. = list(
