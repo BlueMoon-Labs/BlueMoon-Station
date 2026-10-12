@@ -4553,6 +4553,7 @@
 #include "modular_bluemoon\code\controllers\configuration\entries\silicon.dm"
 #include "modular_bluemoon\code\controllers\subsystem\autotransfer.dm"
 #include "modular_bluemoon\code\controllers\subsystem\hilbertshotel.dm"
+#include "modular_bluemoon\code\controllers\subsystem\loadout_crypto_cleanup.dm"
 #include "modular_bluemoon\code\controllers\subsystem\metadollars.dm"
 #include "modular_bluemoon\code\controllers\subsystem\tetris_weekly_rewards.dm"
 #include "modular_bluemoon\code\controllers\subsystem\tick_spikes.dm"
