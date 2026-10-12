@@ -15,3 +15,5 @@
 #define ANTAG_OBJECTIVE_STYLE_VIOLENT "violent"
 /// Во сколько раз стиль "Больше убийств" поднимает шанс задания на убийство там, где режим не ограничивает его потолком.
 #define ANTAG_OBJECTIVE_VIOLENT_KILL_MULT 1.5
+/// На сколько процентных пунктов "Больше убийств" поднимает мягкий потолок (Медиум): убийство там остаётся разовым.
+#define ANTAG_OBJECTIVE_VIOLENT_SOFT_BONUS 10

@@ -481,13 +481,16 @@
 	heretic.remove_innate_effects(heretic_body)
 	TEST_ASSERT(!opt_in_hud.hudusers[heretic_body], "Значки согласия остались у бывшего еретика")
 
-/// Стиль "Без убийств" убирает убийства у предателя и генокрада, "Больше убийств" поднимает шанс только без потолка режима.
+/// Стиль "Без убийств" убирает убийства у предателя и генокрада, "Больше убийств" поднимает шанс в Харде и немного в Медиуме.
 /datum/unit_test/antag_objective_style
 	var/datum/preferences/style_prefs
+	var/saved_medium_chaos
 
 /datum/unit_test/antag_objective_style/Destroy()
 	GLOB.preferences_datums -= "unittestobjectivestyle"
 	QDEL_NULL(style_prefs)
+	if(!isnull(saved_medium_chaos))
+		CONFIG_SET(number/chaos_for_a_medium_dynamic, saved_medium_chaos)
 	return ..()
 
 /datum/unit_test/antag_objective_style/Run()
@@ -511,7 +514,13 @@
 	style_prefs.antag_objective_style = ANTAG_OBJECTIVE_STYLE_VIOLENT
 	TEST_ASSERT_EQUAL(human_class.get_effective_assassin_prob(mode, antag_mind), min(100, normal_prob * ANTAG_OBJECTIVE_VIOLENT_KILL_MULT), "\"Больше убийств\" не поднял шанс в Харде")
 	GLOB.round_type = ROUNDTYPE_DYNAMIC_MEDIUM
-	TEST_ASSERT(human_class.get_effective_assassin_prob(mode, antag_mind) <= 25, "\"Больше убийств\" пробил потолок Медиума")
+	saved_medium_chaos = CONFIG_GET(number/chaos_for_a_medium_dynamic)
+	CONFIG_SET(number/chaos_for_a_medium_dynamic, 0)
+	style_prefs.antag_objective_style = ANTAG_OBJECTIVE_STYLE_NORMAL
+	var/medium_prob = human_class.get_effective_assassin_prob(mode, antag_mind)
+	TEST_ASSERT(medium_prob > 0, "В Медиуме с хаосом выше порога у предателя нет шанса убийства")
+	style_prefs.antag_objective_style = ANTAG_OBJECTIVE_STYLE_VIOLENT
+	TEST_ASSERT_EQUAL(human_class.get_effective_assassin_prob(mode, antag_mind), medium_prob + ANTAG_OBJECTIVE_VIOLENT_SOFT_BONUS, "\"Больше убийств\" в Медиуме поднял шанс не на мягкую надбавку")
 	GLOB.round_type = ROUNDTYPE_DYNAMIC_HARD
 
 	style_prefs.antag_objective_style = ANTAG_OBJECTIVE_STYLE_QUIET

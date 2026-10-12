@@ -125,7 +125,8 @@ GLOBAL_LIST_EMPTY(traitor_classes)
 		if(BM_TRAITOR_VIOLENCE_NONE)
 			return 0
 		if(BM_TRAITOR_VIOLENCE_SOFT)
-			return min(assassin_prob, 25)
+			var/soft_prob = min(assassin_prob, 25)
+			return style == ANTAG_OBJECTIVE_STYLE_VIOLENT ? soft_prob + ANTAG_OBJECTIVE_VIOLENT_SOFT_BONUS : soft_prob
 	var/effective_prob = assassin_prob
 	if(istype(mode))
 		effective_prob = max(assassin_prob, mode.threat_level - 20)
