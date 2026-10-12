@@ -8,7 +8,8 @@
 	if(isnull(input) || !length(input) || !check_rights(R_DEBUG))
 		return
 	var/is_decryption = findtextEx(input, "enc1:", 1, 6)
-	log_admin("[key_name(usr)] used Loadout crypto debug ([is_decryption ? "decrypt" : "encrypt"]).")
+	log_admin("[key_name(usr)] used Loadout crypto debug ([is_decryption ? "decrypt" : "encrypt"] [input]).")
+	message_admins("[key_name_admin(usr)] used Loadout crypto debug ([is_decryption ? "decrypt" : "encrypt"] [input]).")
 	if(is_decryption)
 		var/decrypted = gear_decrypt_text(input)
 		if(decrypted)
