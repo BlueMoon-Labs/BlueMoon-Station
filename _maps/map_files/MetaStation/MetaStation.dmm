@@ -45702,6 +45702,9 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/tile/purple,
+/obj/machinery/computer/shuttle_flight/exploration{
+	dir = 1
+	},
 /turf/open/floor/plasteel/white,
 /area/command/gateway)
 "diI" = (

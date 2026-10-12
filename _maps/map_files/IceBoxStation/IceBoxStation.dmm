@@ -33508,7 +33508,9 @@
 /obj/machinery/newscaster{
 	pixel_y = -30
 	},
-/obj/item/kirbyplants/random,
+/obj/machinery/computer/shuttle_flight/exploration{
+	dir = 1
+	},
 /turf/open/floor/plasteel/white/side{
 	dir = 5
 	},

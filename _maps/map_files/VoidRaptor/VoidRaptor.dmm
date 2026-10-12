@@ -60957,6 +60957,9 @@
 /obj/machinery/status_display/evac{
 	pixel_y = -32
 	},
+/obj/machinery/computer/shuttle_flight/exploration{
+	dir = 1
+	},
 /turf/open/floor/plasteel/white/smooth/edge{
 	dir = 1
 	},

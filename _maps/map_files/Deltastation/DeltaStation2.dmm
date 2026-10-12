@@ -23179,18 +23179,14 @@
 /turf/open/floor/plasteel,
 /area/science/research)
 "dcE" = (
-/obj/structure/table/reinforced,
-/obj/item/stock_parts/matter_bin{
-	pixel_x = 3;
-	pixel_y = 3
-	},
-/obj/item/stock_parts/matter_bin,
-/obj/item/stock_parts/micro_laser,
 /obj/machinery/airalarm{
 	dir = 4;
 	pixel_x = -23
 	},
 /obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/machinery/computer/shuttle_flight/exploration{
 	dir = 4
 	},
 /turf/open/floor/plasteel,

@@ -23328,6 +23328,9 @@
 /obj/machinery/light{
 	dir = 8
 	},
+/obj/machinery/computer/shuttle_flight/exploration{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/science/misc_lab)
 "bUk" = (

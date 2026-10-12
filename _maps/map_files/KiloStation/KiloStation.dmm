@@ -29288,6 +29288,9 @@
 /obj/effect/turf_decal/trimline/brown/filled/end{
 	dir = 4
 	},
+/obj/machinery/modular_computer/console/preset/cargochat/science{
+	dir = 1
+	},
 /turf/open/floor/plasteel/dark,
 /area/science/research)
 "bgk" = (
@@ -74981,11 +74984,11 @@
 /obj/structure/disposalpipe/segment{
 	dir = 4
 	},
-/obj/machinery/modular_computer/console/preset/cargochat/science{
-	dir = 1
-	},
 /obj/effect/turf_decal/trimline/brown/filled/end{
 	dir = 8
+	},
+/obj/machinery/computer/shuttle_flight/exploration{
+	dir = 1
 	},
 /turf/open/floor/plasteel/dark,
 /area/science/research)
