@@ -6,7 +6,13 @@
 // - mob.get_ghost() takes a single arg in bluemoon.
 
 #define CLEAR_TURF_PROCESSING_TIME (120 SECONDS)	//Time it takes to clear all turfs
+#define CLEAR_TURF_ATOMS_PROCESSING_TIME (120 SECONDS)	//Time it takes to clear all atoms (отдельно от пересоздания турфов)
 #define CHECK_ZLEVEL_TICKS (10 SECONDS)			//Every 10 seconds check if a tracked z-level is free.
+//WHITE-STEEL FIX (bluemoon): пул готовых уровней на старт раунда и лимит динамических z-уровней.
+//Без этого каждый новый маяк/объект при пустом пуле плодил новый пустой z-уровень (world.maxz
+//растёт навсегда), что давало взрывы TD (перф CSVs: 17->32->34, starlight очередь 10.6M).
+#define ZCLEAR_SEEDED_POOL_LEVELS 4
+#define ZCLEAR_MAX_NEW_DYNAMIC_LEVELS 4
 
 GLOBAL_LIST_EMPTY(zclear_atoms)
 GLOBAL_LIST_EMPTY(zclear_blockers)
@@ -24,6 +30,15 @@ SUBSYSTEM_DEF(zclear)
 
 	//List of free, empty z-levels.
 	var/list/datum/space_level/free_levels
+
+	//WHITE-STEEL FIX: количество готовых z-уровней, создаваемых в пул на старте раунда.
+	var/seeded_pool_levels = ZCLEAR_SEEDED_POOL_LEVELS
+	//WHITE-STEEL FIX: лимит вновь создаваемых z-уровней сверх пула за раунд.
+	var/max_dynamic_levels = ZCLEAR_MAX_NEW_DYNAMIC_LEVELS
+	//WHITE-STEEL FIX: сколько уровней уже создано динамически в этом раунде.
+	var/dynamic_levels_created = 0
+	//WHITE-STEEL FIX: анти-спам для предупреждения о переполнении пула.
+	var/last_deferred_announce = 0
 
 	//List of processing Z-Levels
 	var/list/datum/zclear_data/processing_levels
@@ -136,9 +151,23 @@ SUBSYSTEM_DEF(zclear)
 	docking_levels -= z_level
 
 /*
+ * Создаёт на старте раунда пул готовых пустых z-уровней.
+ * Каждый уровень полностью инициализируется (Initialize/параллакс) при создании,
+ * а не при выдаче, поэтому выдача из пула ничего не стоит и не сажает тик.
+ * Уровни возвращаются в пул после автозатирки, пока их не заняли снова.
+ */
+/datum/controller/subsystem/zclear/proc/seed_initial_pool()
+	if(!LAZYLEN(free_levels) && seeded_pool_levels > 0)
+		for(var/i in 1 to seeded_pool_levels)
+			var/datum/space_level/picked_level = SSmapping.add_new_zlevel("Dynamic free level [i]", ZTRAITS_SPACE, orbital_body_type = null)
+			initialize_space_level(picked_level.z_value)
+			LAZYADD(free_levels, picked_level)
+
+/*
  * Returns a free space level.
  * After a 60 second grace period of allocation, the z-level will be put back into the pool of z-levels to clear.
- * Will create a new z-level if none are available.
+ * Will create a new z-level if none are available, but only up to a hard cap.
+ *	Returns null when no level is available and the cap is reached - the caller should retry later.
 */
 /datum/controller/subsystem/zclear/proc/get_free_z_level()
 	while(LAZYLEN(free_levels))
@@ -158,15 +187,20 @@ SUBSYSTEM_DEF(zclear)
 				break
 		if(free)
 			return picked_level
-	//Create a new z-level
-	var/datum/space_level/picked_level = SSmapping.add_new_zlevel("Dynamic free level [LAZYLEN(free_levels)]", ZTRAITS_SPACE, orbital_body_type = null)
-	//Новый уровень BYOND заполнен world.turf (/turf/open/space/basic) без Initialize - вокруг
-	//руины оставался «мёртвый» космос без параллакса. Заменяем на полноценный /turf/open/space.
-	initialize_space_level(picked_level.z_value)
-	addtimer(CALLBACK(src, .proc/begin_tracking, picked_level), 60 SECONDS)
-	message_admins("SSORBITS: Created a new dynamic free level ([LAZYLEN(free_levels)] now created) as none were available at the time.")
-
-	return picked_level
+	//Создаём новый z-уровень только пока не упёрлись в лимит.
+	if(dynamic_levels_created < max_dynamic_levels)
+		dynamic_levels_created++
+		var/datum/space_level/picked_level = SSmapping.add_new_zlevel("Dynamic free level [seeded_pool_levels + dynamic_levels_created]", ZTRAITS_SPACE, orbital_body_type = null)
+		//Новый уровень BYOND заполнен world.turf (/turf/open/space/basic) без Initialize - вокруг
+		//руины оставался «мёртвый» космос без параллакса. Заменяем на полноценный /turf/open/space.
+		initialize_space_level(picked_level.z_value)
+		addtimer(CALLBACK(src, .proc/begin_tracking, picked_level), 60 SECONDS)
+		message_admins("SSORBITS: Created a new dynamic free level ([dynamic_levels_created] now created) as none were available at the time.")
+		return picked_level
+	if(world.time > last_deferred_announce)
+		last_deferred_announce = world.time + 1 MINUTES
+		message_admins("SSORBITS: All free z-levels are in use, POI generation deferred until one clears.")
+	return null
 
 /*
  * Приводит космос свежесозданного динамического z-уровня к полноценному /turf/open/space.
@@ -199,11 +233,17 @@ SUBSYSTEM_DEF(zclear)
 	SSair.pause_z(z_level)
 
 	var/list/turfs = block(locate(1, 1, z_level), locate(world.maxx, world.maxy, z_level))
-	var/list/divided_turfs = list()
-	var/section_process_time = CLEAR_TURF_PROCESSING_TIME * 0.5 //There are 3 processes, cleaing atoms, cleaing turfs and then reseting atmos
 
-	//Divide the turfs into groups
-	var/group_size = CEILING(turfs.len / section_process_time, 1)
+	//WHITE-STEEL FIX: раньше обе фазы считались с CLEAR_TURF_PROCESSING_TIME * 0.5, т.е. каждая
+	//длилась всего 60 секунд при 1084 турфов/тик - массовые qdel/ChangeTurf давали спайки в
+	//Garbage (576-929% в логах). Теперь пересоздание турфов и очистка атомов идут отдельными
+	//фазами по 120 секунд каждая (~542 турфа/тик), суммарно - заявленные 120 секунд.
+	var/reset_process_time = CLEAR_TURF_PROCESSING_TIME
+	var/atom_process_time = CLEAR_TURF_ATOMS_PROCESSING_TIME
+
+	//Divide the turfs into groups for the turf-resetting phase
+	var/group_size = CEILING(turfs.len / reset_process_time, 1)
+	var/list/divided_turfs = list()
 	var/list/current_group = list()
 	for(var/i in 1 to turfs.len)
 		var/turf/T = turfs[i]
@@ -213,10 +253,23 @@ SUBSYSTEM_DEF(zclear)
 			current_group = list()
 	divided_turfs += list(current_group)
 
+	//Divide the turfs into (finer) groups for the atom-clearing phase.
+	var/atom_group_size = CEILING(turfs.len / atom_process_time, 1)
+	var/list/divided_atom_turfs = list()
+	var/list/current_atom_group = list()
+	for(var/i in 1 to turfs.len)
+		var/turf/T = turfs[i]
+		current_atom_group += T
+		if(i % atom_group_size == 0)
+			divided_atom_turfs += list(current_atom_group)
+			current_atom_group = list()
+	divided_atom_turfs += list(current_atom_group)
+
 	//Create the wipe data datum
 	var/datum/zclear_data/data = new()
 	data.zvalue = z_level
 	data.divided_turfs = divided_turfs
+	data.divided_atom_turfs = divided_atom_turfs
 	data.process_num = 0
 	data.completion_callback = completion_callback
 	data.tracking = tracking
@@ -238,14 +291,15 @@ SUBSYSTEM_DEF(zclear)
  * Continues the process of wiping a z-level.
 */
 /datum/controller/subsystem/zclear/proc/continue_wipe(datum/zclear_data/cleardata)
-	var/list_element = (cleardata.process_num % (CLEAR_TURF_PROCESSING_TIME * 0.5)) + 1
+	var/list_element = (cleardata.process_num % CLEAR_TURF_PROCESSING_TIME) + 1
+	var/atom_list_element = ((cleardata.process_num - CLEAR_TURF_PROCESSING_TIME) % CLEAR_TURF_ATOMS_PROCESSING_TIME) + 1
 	switch(cleardata.process_num)
-		if(0 to (CLEAR_TURF_PROCESSING_TIME*0.5)-1)
+		if(0 to CLEAR_TURF_PROCESSING_TIME-1)
 			if(list_element <= length(cleardata.divided_turfs))
 				reset_turfs(cleardata.divided_turfs[list_element])
-		if((CLEAR_TURF_PROCESSING_TIME*0.5) to (CLEAR_TURF_PROCESSING_TIME-1))
-			if(list_element <= length(cleardata.divided_turfs))
-				clear_turf_atoms(cleardata.divided_turfs[list_element])
+		if(CLEAR_TURF_PROCESSING_TIME to CLEAR_TURF_PROCESSING_TIME + CLEAR_TURF_ATOMS_PROCESSING_TIME - 1)
+			if(atom_list_element <= length(cleardata.divided_atom_turfs))
+				clear_turf_atoms(cleardata.divided_atom_turfs[atom_list_element])
 		else
 			//Done
 			LAZYREMOVE(processing_levels, cleardata)
@@ -377,6 +431,7 @@ SUBSYSTEM_DEF(zclear)
 /datum/zclear_data
 	var/zvalue
 	var/list/divided_turfs
+	var/list/divided_atom_turfs
 	var/process_num
 	var/tracking
 	//Callback when completed, z value passed as parameters

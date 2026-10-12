@@ -22,6 +22,37 @@
 	if(inherit_name)
 		name = level.name
 
+/*
+ * WHITE-STEEL FIX: выделение Z-уровня с защитой от исчерпания пула.
+ * Раньше SSzclear.get_free_z_level() синхронно плодил новый пустой z-уровень при пустом пуле
+ * (world.maxz рос навсегда, TD взлетала до 400%, в чат сыпались оповещения о создании уровня).
+ * Теперь пул засевается на старте раунда и имеет лимит; при упоре в лимит присваивание
+ * откладывается с повтором (консоль уже умеет ждать: is_generating / "Цель стыковки ещё не готова").
+ */
+/datum/orbital_object/z_linked/proc/assign_z_level()
+	if(LAZYLEN(linked_z_level))
+		return
+	if(is_generating)
+		return
+	var/datum/space_level/assigned_space_level = SSzclear.get_free_z_level()
+	if(!assigned_space_level)
+		//Пул исчерпан и лимит достигнут: повторяем, пока автозатирка не освободит уровень.
+		is_generating = TRUE
+		addtimer(CALLBACK(src, .proc/retry_z_level_assignment), 5 SECONDS)
+		return
+	finish_z_level_assignment(assigned_space_level)
+
+/datum/orbital_object/z_linked/proc/retry_z_level_assignment()
+	if(QDELETED(src))
+		return
+	is_generating = FALSE
+	assign_z_level()
+
+/datum/orbital_object/z_linked/proc/finish_z_level_assignment(datum/space_level/assigned_space_level)
+	linked_z_level = list(assigned_space_level)
+	assigned_space_level.orbital_body = src
+	is_generating = FALSE
+
 /datum/orbital_object/z_linked/explode()
 	message_admins("ORBITAL BODY [name] WAS DESTROYED.")
 	log_game("Orbital body [name] was destroyed.")
