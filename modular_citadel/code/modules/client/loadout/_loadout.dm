@@ -7,6 +7,17 @@
 GLOBAL_LIST_EMPTY(loadout_items)
 GLOBAL_LIST_EMPTY(loadout_whitelist_ids)
 
+/// Hash the exact key supplied. Pass ckey(key) explicitly for a normalized ID; both forms work in whitelists.
+/// Store the returned string in source, never a call containing the original key.
+/proc/gear_ckey_id(key)
+	if(!istext(key) || !length(ckey(key)))
+		return null
+	// The same account is checked against many items whenever the loadout menu is rendered.
+	var/static/list/cached_ids = list()
+	if(!cached_ids[key])
+		cached_ids[key] = "sha256:[rustg_hash_string(RUSTG_HASH_SHA256, key)]"
+	return cached_ids[key]
+
 /// Fixes gear_category/gear_subcategory after navigation (same display name e.g. "Jobs" under Uniform/Suit/Head; empty item tables).
 /proc/sanitize_loadout_navigation(datum/preferences/prefs)
 	if(!prefs || !length(GLOB.loadout_items))
@@ -89,7 +100,7 @@ GLOBAL_LIST_EMPTY(loadout_whitelist_ids)
 
 	var/list/restricted_roles
 
-	//Old donator system/snowflake ckey whitelist, used for single ckeys/exceptions
+	// Display keys, normalized ckeys, and/or precomputed sha256: IDs of either form from gear_ckey_id().
 	var/list/ckeywhitelist
 	//END
 
@@ -160,10 +171,21 @@ GLOBAL_LIST_EMPTY(loadout_whitelist_ids)
 
 //a comprehensive donator check proc is intentionally not implemented due to the fact that we (((might))) have job-whitelists for donator items in the future and I like to stay on the safe side.
 
-//ckey only check
+/// Pass the original account key: normalization cannot be reversed when checking a display-key hash.
 /datum/gear/proc/donator_ckey_check(key)
-	. = TRUE
-	if(donator_group_id)
-		. = IS_CKEY_DONATOR_GROUP(key, donator_group_id)
-	if(LAZYLEN(ckeywhitelist))
-		. = . && !!ckeywhitelist.Find(key)
+	if(donator_group_id && !IS_CKEY_DONATOR_GROUP(key, donator_group_id))
+		return FALSE
+	if(!LAZYLEN(ckeywhitelist))
+		return TRUE
+	var/normalized_key = ckey(key)
+	if(!length(normalized_key))
+		return FALSE
+	if(ckeywhitelist.Find(gear_ckey_id(key)) || ckeywhitelist.Find(gear_ckey_id(normalized_key)))
+		return TRUE
+	for(var/entry in ckeywhitelist)
+		// Only plain account names may be normalized; a hash is never a plaintext account entry.
+		if(!istext(entry) || findtext(entry, "sha256:", 1, 8))
+			continue
+		if(ckey(entry) == normalized_key)
+			return TRUE
+	return FALSE
