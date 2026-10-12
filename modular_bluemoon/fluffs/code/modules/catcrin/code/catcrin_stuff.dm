@@ -515,14 +515,14 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /obj/item/modkit/bwal2572_kit
-	name = "B-Wal-2572"
+	name = "B-Wal-2542"
 	desc = "A modkit for making an Enforcer into a B-Wal-2542."
 	product = /obj/item/gun/ballistic/automatic/pistol/enforcer/bwal2572
 	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag, /obj/item/gun/ballistic/automatic/pistol/enforcer, /obj/item/gun/ballistic/automatic/pistol/enforcergold)
 
 /obj/item/gun/ballistic/automatic/pistol/enforcer/bwal2572
 	DONATE_ITEM_TOOLTIP_PARENT
-	name = "\improper B-Wal-2572"
+	name = "\improper B-Wal-2542"
 	desc = "A one-handed pistol used in the regular Catcrin Army."
 	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/icons/bwal.dmi'
 	icon_state = "bwal"
@@ -535,14 +535,14 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /obj/item/modkit/bwal2570_kit
-	name = "B-Wal-2570"
+	name = "B-Wal-2540"
 	desc = "A modkit for making an Apostle into a B-Wal-2540."
 	product = /obj/item/gun/ballistic/revolver/Apostle/bwal2570
 	fromitem = list(/obj/item/gun/ballistic/revolver/Apostle)
 
 /obj/item/gun/ballistic/revolver/Apostle/bwal2570
 	DONATE_ITEM_TOOLTIP_PARENT
-	name = "\improper B-Wal-2570"
+	name = "\improper B-Wal-2540"
 	desc = "A standart issue Catctin police revolver. Despite its weight, it is still popular among some military units of the Catctrin army due to its ease of use."
 	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/icons/rwal.dmi'
 	icon_state = "rwal"
