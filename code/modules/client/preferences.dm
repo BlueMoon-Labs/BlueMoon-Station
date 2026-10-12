@@ -2488,6 +2488,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							dat += "</b></center></td></tr>"
 
 							var/even = FALSE
+							if(gear_category == LOADOUT_CATEGORY_DONATOR && gear_subcategory == LOADOUT_SUBCATEGORIES_DON03)
+								dat += "<tr><td colspan=4><center>Получить ваш ckey ID <a href='?_src_=prefs;preference=gear;show_ckey_id=1'>\[SHOW\]</a></center></td></tr>"
 							if(gear_category != LOADOUT_CATEGORY_ERROR)
 								dat += "<table align='center'; width='100%'; height='100%'; style='background-color:#13171C'>"
 								dat += "<center>"
@@ -2511,7 +2513,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 									if(!gear)
 										continue
 									var/donoritem = gear.donoritem
-									if(donoritem && !gear.donator_ckey_check(user.ckey))
+									if(donoritem && !gear.donator_ckey_check(user.key))
 										continue
 									var/display_name = html_encode(name)
 									var/background_cl = "#23273C"
@@ -5926,6 +5928,11 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					qdel(offer_datum)
 
 	if(href_list["preference"] == "gear")
+		if(href_list["show_ckey_id"])
+			var/ckey_id = gear_ckey_id(user.key)
+			if(ckey_id)
+				to_chat(user, span_notice("При добавлении персональной вещи, вы можете отправить этот ID разработчику, вместо вашего ckey: <b>«<code>[ckey_id]</code>»</b>"), confidential = TRUE)
+			return
 		if(href_list["select_slot"])
 			var/chosen = text2num(href_list["select_slot"])
 			if(!chosen)
@@ -5990,7 +5997,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				if(!is_loadout_slot_available(G.category))
 					to_chat(user, "<span class='danger'>You cannot take this loadout, as you've already chosen too many of the same category!</span>")
 					return
-				if(G.donoritem && !G.donator_ckey_check(user.ckey))
+				if(G.donoritem && !G.donator_ckey_check(user.key))
 					to_chat(user, "<span class='danger'>This is an item intended for donator use only. You are not authorized to use this item.</span>")
 					return
 				if(istype(G, /datum/gear/unlockable) && !can_use_unlockable(G))
@@ -6028,7 +6035,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			if(!is_loadout_slot_available(G2.category))
 				to_chat(user, "<span class='danger'>You cannot take this loadout, as you've already chosen too many of the same category!</span>")
 				return
-			if(G2.donoritem && !G2.donator_ckey_check(user.ckey))
+			if(G2.donoritem && !G2.donator_ckey_check(user.key))
 				to_chat(user, "<span class='danger'>This is an item intended for donator use only. You are not authorized to use this item.</span>")
 				return
 			if(istype(G2, /datum/gear/unlockable) && !can_use_unlockable(G2))
