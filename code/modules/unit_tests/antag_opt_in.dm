@@ -423,3 +423,11 @@
 	sleep(1)
 	TEST_ASSERT(prefs.load_character(null, TRUE), "Персонаж с мусором прочитан")
 	TEST_ASSERT_NULL(prefs.antag_opt_in_level, "Мусорный уровень сброшен к значению по умолчанию")
+
+/// Повторный выбор того же уровня в меню взаимодействий ничего не делает: ни лога, ни сохранения.
+/datum/unit_test/antag_opt_in_menu_same_level/Run()
+	var/datum/mind/crew_mind = antag_opt_in_crew(ANTAG_OPT_IN_KILL)
+	var/set_level = /datum/component/interaction_menu_granter/proc/set_antag_opt_in_level
+	TEST_ASSERT(call(set_level)(crew_mind.current, ANTAG_OPT_IN_NOT_TARGET), "Новый уровень из меню не применился")
+	TEST_ASSERT_EQUAL(crew_mind.antag_opt_in_level, ANTAG_OPT_IN_NOT_TARGET, "Меню не записало уровень в разум")
+	TEST_ASSERT(!call(set_level)(crew_mind.current, ANTAG_OPT_IN_NOT_TARGET), "Повторный выбор того же уровня снова записался")

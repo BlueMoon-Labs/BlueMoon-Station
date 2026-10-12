@@ -76,6 +76,8 @@
 	if(isnull(level) || !self)
 		return FALSE
 	var/datum/preferences/prefs = self.client?.prefs
+	if((!self.mind || self.mind.antag_opt_in_level == level) && (!prefs || prefs.antag_opt_in_level == level))
+		return FALSE
 	if(prefs)
 		prefs.antag_opt_in_level = level
 		prefs.save_character()
