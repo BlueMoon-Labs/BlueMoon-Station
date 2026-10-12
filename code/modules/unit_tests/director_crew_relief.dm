@@ -14,7 +14,8 @@
 		TEST_ASSERT(control.enabled && !control.admin_only && control.weight > 0, "[control.name]: роль помощи должна выбираться естественно")
 		TEST_ASSERT(ispath(control.typepath, /datum/round_event/ghost_role/crew_relief), "[control.name]: отряд набирается штатным гост-опросом")
 		TEST_ASSERT_EQUAL(initial(relief_type.earliest_start), 20 MINUTES, "[control.name]: помощь не раньше 20-й минуты")
-		TEST_ASSERT_EQUAL(initial(relief_type.min_players), 20, "[control.name]: помощь только при экипаже от 20")
+	TEST_ASSERT_EQUAL(initial((/datum/round_event_control/crew_relief/repair)::min_players), 12, "Ремонтная бригада нужна и ночному экипажу от 12")
+	TEST_ASSERT_EQUAL(initial((/datum/round_event_control/crew_relief/medical)::min_players), 20, "Санитары только при экипаже от 20")
 
 /// can_fire открыт только при нехватке своего отдела, вне эвакуации и пока прошлый отряд не жив.
 /datum/unit_test/director_crew_relief_gates
@@ -47,7 +48,10 @@
 	TEST_ASSERT(medical.can_fire(signals), "Пустой медотдел - повод прислать санитаров")
 
 	signals.effective_crew = 15
-	TEST_ASSERT(!repair.can_fire(signals) && !medical.can_fire(signals), "Малому экипажу отряд помощи не положен")
+	TEST_ASSERT(repair.can_fire(signals), "Ночной экипаж из 15 человек без инженеров должен получить ремонтную бригаду")
+	TEST_ASSERT(!medical.can_fire(signals), "Санитары экипажу меньше 20 не положены")
+	signals.effective_crew = 10
+	TEST_ASSERT(!repair.can_fire(signals), "Совсем малому экипажу ремонтная бригада не положена")
 	signals.effective_crew = 25
 
 	signals.evac_state = DIRECTOR_EVAC_CALLED

@@ -6,7 +6,7 @@
 	category = EVENT_CATEGORY_FRIENDLY
 	severity = DIRECTOR_SEVERITY_FLAVOR
 	family = "crew_relief"
-	weight = 40
+	weight = 120
 	min_players = 20
 	earliest_start = 20 MINUTES
 	max_occurrences = 2
@@ -50,6 +50,7 @@
 	name = "Emergency Repair Crew"
 	typepath = /datum/round_event/ghost_role/crew_relief/repair
 	description = "Ремонтная бригада ЦК из призраков, когда на станции не больше одного инженера."
+	min_players = 12
 	relief_department = DIRECTOR_DEPT_ENGINEERING
 	relief_staff_max = 1
 
