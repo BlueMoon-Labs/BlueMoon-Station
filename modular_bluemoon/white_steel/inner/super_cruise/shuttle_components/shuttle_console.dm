@@ -375,6 +375,17 @@
 					if(current_user)
 						to_chat(usr, span_warning("Кто-то уже стыкуется."))
 						return
+					//WHITE-STEEL PORT: у маяка-руины Z-уровень выделяется только при
+					//генерации (assign_z_level). Если он ещё не выделен, linked_z_level
+					//равен null и строка ниже падает ("cannot read from list"), намертво
+					//ломая консоль навигации (2/3 неудачных посадок).
+					if(!LAZYLEN(shuttleObject.docking_target.linked_z_level))
+						var/datum/orbital_object/z_linked/beacon/ruin/ruin_target = shuttleObject.docking_target
+						if(istype(ruin_target))
+							ruin_target.assign_z_level()
+						if(!LAZYLEN(shuttleObject.docking_target.linked_z_level))
+							say("Цель стыковки ещё не готова, подождите...")
+							return
 					view_range = max(mobile_port.width, mobile_port.height) + 4
 					give_eye_control(usr)
 					eyeobj.forceMove(locate(world.maxx * 0.5, world.maxy * 0.5, shuttleObject.docking_target.linked_z_level[1].z_value))
@@ -463,7 +474,7 @@
 
 /obj/machinery/computer/shuttle_flight/proc/random_drop(datum/orbital_object/shuttle/_shuttleObject = shuttleObject, _shuttleId = shuttleId)
 	//Find a random place to drop in at.
-	if(!(_shuttleObject?.docking_target?.linked_z_level))
+	if(!LAZYLEN(_shuttleObject?.docking_target?.linked_z_level))
 		return FALSE
 	//Get shuttle dock
 	var/obj/docking_port/mobile/shuttle_dock = SSshuttle.getShuttle(_shuttleId)

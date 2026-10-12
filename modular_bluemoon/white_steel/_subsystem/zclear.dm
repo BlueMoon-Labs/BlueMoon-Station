@@ -280,10 +280,14 @@ SUBSYSTEM_DEF(zclear)
 			var/thing = allowed_contents[i]
 			if(is_type_in_typecache(thing, ignored_atoms))
 				continue
-			//Remove powernet to prevent massive amounts of propagate networks, everythings getting deleted so who cares.
+			//Отвязываем кабель от powernet без дорогого propagate: remove_cable убирает его из
+			//powernet.cables, обнуляет cable.powernet и qdel-ит опустевшую сеть. Просто обнулять
+			//cable.powernet нельзя: кабель остаётся в Datums -> /datum/powernet -> cables, из-за
+			//чего последующий qdel/hard-delete идёт через поиск ссылок (~190-450 мс на кабель).
 			if(istype(thing, /obj/structure/cable))
 				var/obj/structure/cable/cable = thing
-				cable.powernet = null
+				if(cable.powernet)
+					cable.powernet.remove_cable(cable)
 			if(ismob(thing))
 				if(!isliving(thing))
 					continue

@@ -212,10 +212,10 @@
 			log_runtime("Run time in space ruin generation ([ruin_part.name]) [e] on [e.file]:[e.line]")
 			// Если exception выпал внутри build_coordinate между map_loader_begin/stop,
 			// SSatoms.initialized остаётся INSSATOMS(0) и все последующие атомы перестают
-			// инициализироваться. Восстанавливаем маплоадер, чтобы один битый шаблон
-			// не рушил генерацию всей карты
-			if(SSatoms.initialized == INITIALIZATION_INSSATOMS)
-				SSatoms.map_loader_stop()
+			// инициализироваться. Полностью сбрасываем маплоадер, чтобы один битый шаблон
+			// не рушил генерацию всей карты (двери/стёкла через раз пропадали).
+			if(length(SSatoms.map_loader_initialized) || SSatoms.initialized == INITIALIZATION_INSSATOMS)
+				SSatoms.map_loader_abort()
 		CHECK_TICK
 		SSmapping.loading_ruins = FALSE
 		//Simulate spawning
@@ -405,7 +405,15 @@
 
 	SSzclear.nullspaced_mobs.Cut()
 
-	SSair.unpause_z(center_z)
+	//WHITE-STEEL PORT: возвращаем атмосферу только на полах руины, а не на всём Z.
+	//unpause_z без списка гонял Initalize_Atmos по ~65k турфов уровня.
+	var/list/reinit_turfs = list()
+	for(var/place in floor_turfs)
+		var/splitplace = splittext(place, "_")
+		var/turf/T = locate(text2num(splitplace[1]), text2num(splitplace[2]), center_z)
+		if(istype(T, /turf/open))
+			reinit_turfs += T
+	SSair.unpause_z(center_z, reinit_turfs)
 
 	log_mapping("Finished generating ruin at [center_x], [center_y], [center_z]")
 
