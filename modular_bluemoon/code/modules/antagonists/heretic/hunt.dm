@@ -119,8 +119,10 @@ GLOBAL_LIST_INIT(heretic_heart_sounds, list(
 		return "Назначенная цель сама служит Мансусу и не подходит для подношения. Выберите новую цель через живое сердце или кодекс: ждать перезарядки не нужно."
 	if(candidate.is_ghost_role())
 		return "Назначенная душа перешла в роль вне экипажа станции. Выберите новую цель."
-	if(selecting && !antag_opt_in_allows(candidate, ANTAG_OPT_IN_HERETIC_HUNT))
-		return "Этот член экипажа не согласен быть целью охоты: в его настройках выбрано \"[antag_opt_in_level_name(candidate.get_effective_antag_opt_in_level())]\", а охоте нужно \"[antag_opt_in_level_name(ANTAG_OPT_IN_HERETIC_HUNT)]\". Выберите другую цель."
+	if(selecting)
+		var/opt_in_refusal = hunt_opt_in_refusal_reason(candidate)
+		if(opt_in_refusal)
+			return opt_in_refusal
 	var/turf/body_turf = heretic_pocket_anchor(get_turf(body))
 	if(!body_turf || !is_station_level(body_turf.z))
 		return "Тело назначенной цели находится вне станции: [get_area_name(body_turf || body, TRUE) || "неизвестно где"]. Подношение принимается только на станции, шахта, Лаваленд и шаттлы вне станции не в счёт. Верните тело на станцию или выберите другую цель."
@@ -129,6 +131,11 @@ GLOBAL_LIST_INIT(heretic_heart_sounds, list(
 	if(selecting && !body.client)
 		return "Для нового назначения нужен игрок в теле цели. Уже назначенная цель сохраняется после выхода в призрака."
 	return null
+
+/datum/antagonist/heretic/proc/hunt_opt_in_refusal_reason(datum/mind/candidate)
+	if(antag_opt_in_allows(candidate, ANTAG_OPT_IN_HERETIC_HUNT))
+		return null
+	return "Этот член экипажа не согласен быть целью охоты: в его настройках выбрано \"[antag_opt_in_level_name(candidate.get_effective_antag_opt_in_level())]\", а охоте нужно \"[antag_opt_in_level_name(ANTAG_OPT_IN_HERETIC_HUNT)]\". Выберите другую цель."
 
 /datum/antagonist/heretic/proc/set_hunt_target(datum/mind/new_target)
 	if(hunt_target)
@@ -209,7 +216,7 @@ GLOBAL_LIST_INIT(heretic_heart_sounds, list(
 	var/datum/mind/soul = victim.mind
 	if(!soul)
 		return "В этом теле нет души, которую мог бы принять Мансус."
-	var/reason = hunt_target_unavailable_reason(soul)
+	var/reason = hunt_target_unavailable_reason(soul) || hunt_opt_in_refusal_reason(soul)
 	if(reason)
 		return reason
 	if(victim.stat == DEAD)
