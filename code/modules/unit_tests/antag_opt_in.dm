@@ -329,17 +329,28 @@
 	allocated += sacrifice
 	TEST_ASSERT_EQUAL(sacrifice?.target, removable, "Жертва выбирается из согласных")
 
-/// Охота еретика не назначает несогласную цель и объясняет отказ; уже назначенная цель сохраняется.
+/// Охота не назначает "Не цель заданий", "Цель без убийства" принимает только живой; согласие на труп фиксируется при назначении.
 /datum/unit_test/antag_opt_in_heretic_hunt/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	allocate(/datum/heretic_test_station_level, run_loc_floor_bottom_left.z)
+	var/datum/mind/not_target = antag_opt_in_crew(ANTAG_OPT_IN_NOT_TARGET)
 	var/datum/mind/temporary = antag_opt_in_crew(ANTAG_OPT_IN_TEMPORARY)
 	var/datum/mind/killable = antag_opt_in_crew(ANTAG_OPT_IN_KILL)
-	var/refusal = heretic.hunt_target_unavailable_reason(temporary, selecting = TRUE)
+	var/refusal = heretic.hunt_target_unavailable_reason(not_target, selecting = TRUE)
 	TEST_ASSERT(findtext(refusal, "не согласен"), "Отказ по согласию назван прямо: [refusal]")
-	var/other_reason = heretic.hunt_target_unavailable_reason(killable, selecting = TRUE)
-	TEST_ASSERT(!findtext(other_reason, "не согласен"), "Цель \"Цель убийства\" подходит для охоты: [other_reason]")
-	TEST_ASSERT_NULL(heretic.hunt_target_unavailable_reason(temporary), "Уже назначенная цель не снимается после смены настройки")
+	var/temporary_reason = heretic.hunt_target_unavailable_reason(temporary, selecting = TRUE)
+	TEST_ASSERT(!findtext(temporary_reason, "не согласен"), "\"Цель без убийства\" подходит для охоты живьём: [temporary_reason]")
+	TEST_ASSERT_NULL(heretic.hunt_target_unavailable_reason(not_target), "Уже назначенная цель не снимается после смены настройки")
+
+	heretic.set_hunt_target(temporary)
+	TEST_ASSERT_NULL(heretic.hunt_target_unavailable_reason(temporary), "Живая \"Цель без убийства\" годится для обряда")
+	temporary.current.death()
+	TEST_ASSERT(findtext(heretic.hunt_target_unavailable_reason(temporary), "только живой"), "Труп \"Цели без убийства\" не принимается")
+
+	heretic.set_hunt_target(killable)
+	killable.antag_opt_in_level = ANTAG_OPT_IN_TEMPORARY
+	killable.current.death()
+	TEST_ASSERT_NULL(heretic.hunt_target_unavailable_reason(killable), "Смена настройки после назначения не отбирает труп согласной на убийство цели")
 
 /// Без согласных целей генераторы выдают задания без цели, а не пустые.
 /datum/unit_test/antag_opt_in_generators/Run()
@@ -431,3 +442,29 @@
 	TEST_ASSERT(call(set_level)(crew_mind.current, ANTAG_OPT_IN_NOT_TARGET), "Новый уровень из меню не применился")
 	TEST_ASSERT_EQUAL(crew_mind.antag_opt_in_level, ANTAG_OPT_IN_NOT_TARGET, "Меню не записало уровень в разум")
 	TEST_ASSERT(!call(set_level)(crew_mind.current, ANTAG_OPT_IN_NOT_TARGET), "Повторный выбор того же уровня снова записался")
+
+/// Значок согласия показывает итоговый уровень и переезжает с разумом; еретик видит значки, пока остаётся еретиком.
+/datum/unit_test/antag_opt_in_hud/Run()
+	var/datum/mind/crew_mind = antag_opt_in_crew(ANTAG_OPT_IN_TEMPORARY)
+	var/mob/living/carbon/human/old_body = crew_mind.current
+	var/image/old_holder = old_body.hud_list[ANTAG_OPT_IN_HUD]
+	var/set_level = /datum/component/interaction_menu_granter/proc/set_antag_opt_in_level
+	call(set_level)(old_body, ANTAG_OPT_IN_KILL)
+	TEST_ASSERT_EQUAL(old_holder.icon_state, "opt_in_[ANTAG_OPT_IN_KILL]", "Значок не сменился вместе с уровнем из меню")
+	crew_mind.assigned_role = "Security Officer"
+	call(set_level)(old_body, ANTAG_OPT_IN_NOT_TARGET)
+	TEST_ASSERT_EQUAL(old_holder.icon_state, "opt_in_[ANTAG_OPT_IN_KILL]", "Значок СБ не учитывает порог работы")
+
+	var/mob/living/carbon/human/new_body = allocate(/mob/living/carbon/human, get_step(run_loc_floor_bottom_left, EAST))
+	crew_mind.transfer_to(new_body)
+	TEST_ASSERT(!old_holder.icon_state, "Тело без разума сохранило значок")
+	var/image/new_holder = new_body.hud_list[ANTAG_OPT_IN_HUD]
+	TEST_ASSERT_EQUAL(new_holder.icon_state, "opt_in_[ANTAG_OPT_IN_KILL]", "Значок не переехал в новое тело")
+
+	var/datum/antagonist/heretic/heretic = allocate_heretic(get_step(run_loc_floor_bottom_left, NORTH))
+	var/mob/living/heretic_body = heretic.owner.current
+	var/datum/atom_hud/opt_in_hud = GLOB.huds[DATA_HUD_ANTAG_OPT_IN]
+	heretic.apply_innate_effects(heretic_body)
+	TEST_ASSERT(opt_in_hud.hudusers[heretic_body], "Еретик не видит значки согласия")
+	heretic.remove_innate_effects(heretic_body)
+	TEST_ASSERT(!opt_in_hud.hudusers[heretic_body], "Значки согласия остались у бывшего еретика")

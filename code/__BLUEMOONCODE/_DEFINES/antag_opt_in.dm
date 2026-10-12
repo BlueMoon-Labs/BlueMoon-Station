@@ -4,5 +4,7 @@
 #define ANTAG_OPT_IN_KILL 2
 #define ANTAG_OPT_IN_ROUND_REMOVE 3
 
-/// Жертва охоты еретика возвращается в раунд, поэтому хватает согласия на убийство.
-#define ANTAG_OPT_IN_HERETIC_HUNT ANTAG_OPT_IN_KILL
+/// Живая жертва охоты еретика возвращается из Мансуса невредимой: это похищение, а не убийство.
+#define ANTAG_OPT_IN_HERETIC_HUNT ANTAG_OPT_IN_TEMPORARY
+/// Труп в жертву принимается только от согласных на убийство.
+#define ANTAG_OPT_IN_HERETIC_HUNT_CORPSE ANTAG_OPT_IN_KILL

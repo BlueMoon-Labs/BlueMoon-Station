@@ -4822,6 +4822,7 @@
 #include "modular_bluemoon\code\modules\antagonists\bloodsucker_crypt.dm"
 #include "modular_bluemoon\code\modules\antagonists\_common\monkey_antag_spawner.dm"
 #include "modular_bluemoon\code\modules\antagonists\antag_opt_in\antag_opt_in.dm"
+#include "modular_bluemoon\code\modules\antagonists\antag_opt_in\antag_opt_in_hud.dm"
 #include "modular_bluemoon\code\modules\antagonists\antag_opt_in\antag_opt_in_prefs.dm"
 #include "modular_bluemoon\code\modules\antagonists\bloodsucker\bloodsucker_flaws.dm"
 #include "modular_bluemoon\code\modules\antagonists\bloodsucker\bloodsucker_objectives.dm"

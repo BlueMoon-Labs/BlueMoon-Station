@@ -83,6 +83,7 @@
 		prefs.save_character()
 	if(self.mind)
 		self.mind.antag_opt_in_level = level
+		self.mind.update_antag_opt_in_hud()
 	log_game("[key_name(self)] меняет согласие быть целью антагонистов на \"[antag_opt_in_level_name(level)]\".")
 	var/effective = self.mind ? self.mind.get_effective_antag_opt_in_level() : level
 	to_chat(self, span_notice("Цель заданий антагонистов: \"[antag_opt_in_level_name(level)]\", итоговый уровень \"[antag_opt_in_level_name(effective)]\". Действует на новые выборы целей, уже выданные задания не меняются."))

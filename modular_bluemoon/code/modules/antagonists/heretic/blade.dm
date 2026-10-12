@@ -1896,7 +1896,7 @@
 	heretic.set_hunt_target(owner.mind)
 	playsound(user, GLOB.heretic_heart_sounds["claim"], HERETIC_BLADE_QUIET_VOLUME, FALSE, SILENCED_SOUND_EXTRARANGE)
 	owner.balloon_alert(user, "новая цель")
-	to_chat(user, span_boldnotice("Сердце принимает [owner.real_name]: вызов был принят добровольно, ждать смены цели не нужно. Коснитесь сердцем ещё раз, пока держит клятва, и обряд пройдёт здесь же."))
+	to_chat(user, span_boldnotice("Сердце принимает [owner.real_name]: вызов был принят добровольно, ждать смены цели не нужно. Коснитесь сердцем ещё раз, пока держит клятва, и обряд пройдёт здесь же. [heretic.hunt_corpse_note()]"))
 	log_game("[key_name(user)] делает проигравшего дуэль [key_name(owner)] целью охоты в [AREACOORD(owner)].")
 	return TRUE
 

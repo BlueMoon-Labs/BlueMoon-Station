@@ -16,8 +16,8 @@ GLOBAL_LIST_INIT(antag_opt_in_colors, list(
 
 GLOBAL_LIST_INIT(antag_opt_in_descriptions, list(
 	"[ANTAG_OPT_IN_NOT_TARGET]" = "Персонаж не выпадает целью заданий антагонистов, кроме задания на защиту: защищаемому оно ничем не грозит. Убить персонажа вне задания всё равно могут.",
-	"[ANTAG_OPT_IN_TEMPORARY]" = "Персонаж может стать целью кражи, похищения, подставы, помощи в побеге и выкупа души, но не задания на убийство. Убить персонажа вне задания всё равно могут.",
-	"[ANTAG_OPT_IN_KILL]" = "Персонаж может стать целью убийства, после которого его можно вернуть в раунд: разовое убийство, контракт, охота еретика.",
+	"[ANTAG_OPT_IN_TEMPORARY]" = "Персонаж может стать целью кражи, похищения, подставы, помощи в побеге, выкупа души и охоты еретика (только живым: из Мансуса возвращаются невредимыми), но не задания на убийство. Убить персонажа вне задания всё равно могут.",
+	"[ANTAG_OPT_IN_KILL]" = "Персонаж может стать целью убийства, после которого его можно вернуть в раунд: разовое убийство, контракт, охота еретика с приёмом трупа.",
 	"[ANTAG_OPT_IN_ROUND_REMOVE]" = "Персонаж может стать целью любого задания, включая окончательное устранение: уничтожение, кража мозга, жертва культа.",
 ))
 
@@ -76,6 +76,7 @@ GLOBAL_LIST_INIT(antag_opt_in_forcing_roles, list(
 		return
 	antag_opt_in_level = prefs.antag_opt_in_level
 	antag_opt_in_spawn_minimum = antag_opt_in_prefs_force_minimum(prefs) ? CONFIG_GET(number/antag_opt_in_antag_enabled_min) : ANTAG_OPT_IN_NOT_TARGET
+	update_antag_opt_in_hud()
 
 /datum/mind/proc/get_antag_opt_in_job_minimum()
 	. = ANTAG_OPT_IN_NOT_TARGET
