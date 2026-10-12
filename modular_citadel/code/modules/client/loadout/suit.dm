@@ -54,6 +54,12 @@
 	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#2A2A2A","#e42929")
 
+/datum/gear/suit/poly_poncho
+	name = "Poly Poncho"
+	path = /obj/item/clothing/suit/poly_poncho
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
+	loadout_initial_colors = list("#2A2A2A")
+
 /datum/gear/suit/ponchored
 	name = "Red poncho"
 	path = /obj/item/clothing/suit/poncho/red
