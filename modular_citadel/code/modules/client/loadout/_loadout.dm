@@ -72,7 +72,7 @@ GLOBAL_LIST_EMPTY(loadout_whitelist_ids)
 			if(istext(id) && findtextEx(id, "enc1:", 1, 6))
 				encrypted_ids |= id
 	if(length(encrypted_ids))
-		gear_crypto("decrypt_many", encrypted_ids)
+		gear_crypto("decrypt", encrypted_ids)
 
 
 /datum/gear
@@ -173,7 +173,7 @@ GLOBAL_LIST_EMPTY(loadout_whitelist_ids)
 	if(!LAZYLEN(ckeywhitelist))
 		return TRUE
 	var/normalized_key = ckey(key)
-	if(!length(normalized_key))
+	if(!length_char(normalized_key))
 		return FALSE
 	for(var/entry in ckeywhitelist)
 		if(!istext(entry))

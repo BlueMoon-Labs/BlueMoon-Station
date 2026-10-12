@@ -6,7 +6,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
-const { encrypt, decrypt, decryptMany, readSecret, initSecret, request } = require('./crypto.cjs');
+const { encrypt, decrypt, readSecret, initSecret, request } = require('./crypto.cjs');
 
 const secret = Buffer.from(Array.from({ length: 32 }, (_, i) => i));
 // Independent fixture produced with .NET AesGcm, nonce 000102030405060708090a0b.
@@ -17,7 +17,7 @@ test('decrypt an independent AES-GCM fixture with the exact original spelling', 
 });
 
 test('randomized round trips preserve original and normalized names', () => {
-  for (const account of ['AA-BB-ab...', 'aabbab', 'A B C', 'X'.repeat(256)]) {
+  for (const account of ['AA-BB-ab...', 'aabbab', 'A B C', 'X'.repeat(256), 'Я'.repeat(256), '😀'.repeat(256), 'Привет\n<&>...', '...']) {
     const first = encrypt(account, secret);
     const second = encrypt(account, secret);
     assert.notEqual(first, second);
@@ -40,11 +40,11 @@ test('wrong keys, tampering with every payload byte, truncation and unknown vers
   }
 });
 
-test('reject invalid account inputs; batch decrypt preserves positions for invalid IDs', () => {
-  for (const invalid of ['', null, {}, '\naccount', 'X'.repeat(257), '...']) {
+test('reject invalid text inputs; batch decrypt preserves positions for invalid IDs', () => {
+  for (const invalid of ['', null, {}, 'X'.repeat(257), 'Я'.repeat(257), '😀'.repeat(257)]) {
     assert.throws(() => encrypt(invalid, secret));
   }
-  assert.deepEqual(decryptMany([fixture, 'enc1:bad', fixture], secret), ['AA-BB-ab...', null, 'AA-BB-ab...']);
+  assert.deepEqual(decrypt([fixture, 'enc1:bad', fixture], secret), ['AA-BB-ab...', null, 'AA-BB-ab...']);
 });
 
 test('private config, request protocol and CLI inspection; initialization never overwrites a key', (t) => {
@@ -64,6 +64,14 @@ test('private config, request protocol and CLI inspection; initialization never 
   const response = JSON.parse(fs.readFileSync(filename + '.out', 'utf8'));
   assert.equal(response.ok, true);
   assert.equal(decrypt(response.value, readSecret(config)), 'AA-BB-ab...');
+  const batchRequest = path.join(directory, 'batch.json');
+  const unicodeText = 'Я'.repeat(256);
+  const unicodeToken = encrypt(unicodeText, readSecret(config));
+  fs.writeFileSync(batchRequest, JSON.stringify({ operation: 'decrypt', value: [unicodeToken, 'enc1:bad', response.value], secret: readSecret(config).toString('hex') }));
+  request(batchRequest);
+  assert.deepEqual(JSON.parse(fs.readFileSync(batchRequest + '.out', 'utf8')), {
+    ok: true, value: [unicodeText, null, 'AA-BB-ab...'],
+  });
   const source = path.join(directory, 'items.dm');
   fs.writeFileSync(source, `list("${response.value}", "sha256:${'a'.repeat(64)}")`);
   fs.writeFileSync(source, response.value);

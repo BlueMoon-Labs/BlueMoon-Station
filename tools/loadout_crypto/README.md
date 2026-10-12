@@ -7,6 +7,10 @@ The implementation uses [Node.js crypto](https://nodejs.org/api/crypto.html).
 Node.js 18+ must be available to the **running game server**, as well as during development.
 No npm packages are required.
 
+Both accounts and arbitrary text use the same `encrypt` and `decrypt` operations.
+Text is limited to 256 Unicode characters, not UTF-8 bytes. A `decrypt` request
+with an array of IDs decrypts them in a batch, returning null for invalid entries.
+
 The server-only key is configured in `config/entries/donator.txt`:
 
 ```text

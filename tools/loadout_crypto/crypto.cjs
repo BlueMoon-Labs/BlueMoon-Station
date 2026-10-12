@@ -7,7 +7,9 @@ const path = require('node:path');
 
 const PREFIX = 'enc1:';
 const AAD = Buffer.from('bluemoon/loadout/enc1', 'utf8');
-const MAX_KEY_BYTES = 256;
+const MAX_TEXT_CHARS = 256;
+const MAX_TEXT_BYTES = MAX_TEXT_CHARS * 4;
+const MAX_TOKEN_CHARS = 5 + Math.ceil((28 + MAX_TEXT_BYTES) * 4 / 3);
 
 function readSecret(filename) {
   const contents = fs.readFileSync(filename, 'utf8');
@@ -28,23 +30,8 @@ function parseSecret(value) {
   return Buffer.from(hex, 'hex');
 }
 
-function validAccount(value) {
-  // BYOND account keys are ASCII; keep their original case, spacing and punctuation.
-  return typeof value === 'string' && Buffer.byteLength(value, 'utf8') <= MAX_KEY_BYTES
-    && /^[\x20-\x7e]+$/.test(value) && /[a-zA-Z0-9]/.test(value);
-}
-
-function encrypt(key, secret) {
-  if (!validAccount(key)) throw new Error('invalid_account');
-  const nonce = crypto.randomBytes(12);
-  const cipher = crypto.createCipheriv('aes-256-gcm', secret, nonce, { authTagLength: 16 });
-  cipher.setAAD(AAD);
-  const ciphertext = Buffer.concat([cipher.update(key, 'utf8'), cipher.final()]);
-  return PREFIX + Buffer.concat([nonce, ciphertext, cipher.getAuthTag()]).toString('base64url');
-}
-
-function encryptText(value, secret) {
-  if (typeof value !== 'string' || !value.length || Buffer.byteLength(value, 'utf8') > MAX_KEY_BYTES) {
+function encrypt(value, secret) {
+  if (typeof value !== 'string' || !value.length || Array.from(value).length > MAX_TEXT_CHARS) {
     throw new Error('invalid_text');
   }
   const nonce = crypto.randomBytes(12);
@@ -55,12 +42,19 @@ function encryptText(value, secret) {
 }
 
 function decrypt(token, secret) {
-  if (typeof token !== 'string' || !/^enc1:[A-Za-z0-9_-]+$/.test(token) || token.length > 384) {
+  if (Array.isArray(token)) {
+    if (token.length > 10000) throw new Error('invalid_request');
+    return token.map((item) => {
+      if (Array.isArray(item)) return null;
+      try { return decrypt(item, secret); } catch { return null; }
+    });
+  }
+  if (typeof token !== 'string' || !/^enc1:[A-Za-z0-9_-]+$/.test(token) || token.length > MAX_TOKEN_CHARS) {
     throw new Error('invalid_token');
   }
   const encoded = token.slice(PREFIX.length);
   const payload = Buffer.from(encoded, 'base64url');
-  if (payload.length < 29 || payload.length > 28 + MAX_KEY_BYTES
+  if (payload.length < 29 || payload.length > 28 + MAX_TEXT_BYTES
       || payload.toString('base64url') !== encoded) throw new Error('invalid_token');
   const decipher = crypto.createDecipheriv('aes-256-gcm', secret, payload.subarray(0, 12), { authTagLength: 16 });
   decipher.setAAD(AAD);
@@ -73,33 +67,8 @@ function decrypt(token, secret) {
     throw new Error('authentication_failed');
   }
   const key = plaintext.toString('utf8');
-  if (!validAccount(key) || !Buffer.from(key, 'utf8').equals(plaintext)) throw new Error('invalid_account');
+  if (!key.length || Array.from(key).length > MAX_TEXT_CHARS || !Buffer.from(key, 'utf8').equals(plaintext)) throw new Error('invalid_account');
   return key;
-}
-
-function decryptText(token, secret) {
-  if (typeof token !== 'string' || !/^enc1:[A-Za-z0-9_-]+$/.test(token) || token.length > 384) {
-    throw new Error('invalid_token');
-  }
-  const encoded = token.slice(PREFIX.length);
-  const payload = Buffer.from(encoded, 'base64url');
-  if (payload.length < 29 || payload.length > 28 + MAX_KEY_BYTES
-      || payload.toString('base64url') !== encoded) throw new Error('invalid_token');
-  const decipher = crypto.createDecipheriv('aes-256-gcm', secret, payload.subarray(0, 12), { authTagLength: 16 });
-  decipher.setAAD(AAD);
-  decipher.setAuthTag(payload.subarray(-16));
-  try {
-    return Buffer.concat([decipher.update(payload.subarray(12, -16)), decipher.final()]).toString('utf8');
-  } catch {
-    throw new Error('authentication_failed');
-  }
-}
-
-function decryptMany(tokens, secret) {
-  if (!Array.isArray(tokens) || tokens.length > 10000) throw new Error('invalid_request');
-  return tokens.map((token) => {
-    try { return decrypt(token, secret); } catch { return null; }
-  });
 }
 
 function initSecret(filename) {
@@ -112,7 +81,7 @@ function initSecret(filename) {
 
 function request(filename) {
   // The DM side supplies only a generated filename, never shell-interpolated player input.
-  // This file contains the secret FILE PATH, not a copy of the secret.
+  // DM requests contain the configured secret and are removed by the caller.
   let result;
   try {
     const data = JSON.parse(fs.readFileSync(filename, 'utf8'));
@@ -120,9 +89,6 @@ function request(filename) {
     let value;
     if (data.operation === 'encrypt') value = encrypt(data.value, secret);
     else if (data.operation === 'decrypt') value = decrypt(data.value, secret);
-    else if (data.operation === 'encrypt_text') value = encryptText(data.value, secret);
-    else if (data.operation === 'decrypt_text') value = decryptText(data.value, secret);
-    else if (data.operation === 'decrypt_many') value = decryptMany(data.value, secret);
     else throw new Error('invalid_request');
     result = { ok: true, value };
   } catch {
@@ -167,4 +133,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { encrypt, decrypt, encryptText, decryptText, decryptMany, readSecret, initSecret, request };
+module.exports = { encrypt, decrypt, readSecret, initSecret, request };

@@ -78,7 +78,7 @@
 	CONFIG_SET(string/loadout_ckey_secret, "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f")
 	var/fixture = "enc1:AAECAwQFBgcICQoLBkP7WYfIo3mjb7lYYwet3PW22BiBfjL-G3kJ"
 	var/other_fixture = "enc1:AAECAwQFBgcICQoLBkP7WYfIo3mjb7lYYwet3PW22BiBfjL-G3kA"
-	gear_crypto("decrypt_many", list(fixture, other_fixture))
+	gear_crypto("decrypt", list(fixture, other_fixture))
 	TEST_ASSERT_EQUAL(gear_ckey_from_id(fixture), "AA-BB-ab...", "Batch decryption must accept an independent AES-GCM fixture")
 	TEST_ASSERT_NULL(gear_ckey_from_id(other_fixture), "An altered authentication tag must fail")
 	var/id = gear_ckey_id("AA-BB-ab...")
