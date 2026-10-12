@@ -1,17 +1,23 @@
 /// Reversible IDs preserve spelling and normalize only during access checks.
 /datum/unit_test/loadout_ckey_id/Run()
+	var/saved_secret = CONFIG_GET(string/loadout_ckey_secret)
+	CONFIG_SET(string/loadout_ckey_secret, "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f")
 	var/id = gear_ckey_id("AA-BB-ab...")
 	TEST_ASSERT(id && findtextEx(id, "enc1:", 1, 6), "IDs must use reversible enc1 format")
 	TEST_ASSERT_EQUAL(gear_ckey_from_id(id), "AA-BB-ab...", "IDs must preserve original spelling")
 	TEST_ASSERT_NOTEQUAL(gear_ckey_id("AABBAB"), id, "Different exact keys must receive different randomized IDs")
 	TEST_ASSERT_NULL(gear_ckey_id(null), "Missing keys must not receive an ID")
 	TEST_ASSERT_NULL(gear_ckey_id("..."), "Keys that normalize to an empty string must not receive an ID")
+	CONFIG_SET(string/loadout_ckey_secret, saved_secret)
 
 /// Mixed whitelists must preserve legacy access and still require donor group membership.
 /datum/unit_test/loadout_ckey_whitelist
 	var/list/original_donator_groups
+	var/saved_secret
 
 /datum/unit_test/loadout_ckey_whitelist/Run()
+	saved_secret = CONFIG_GET(string/loadout_ckey_secret)
+	CONFIG_SET(string/loadout_ckey_secret, "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f")
 	var/datum/gear/gear = allocate(/datum/gear)
 	TEST_ASSERT(gear.donator_ckey_check("stranger"), "A null whitelist must remain unrestricted")
 	gear.ckeywhitelist = list()
@@ -25,7 +31,7 @@
 	TEST_ASSERT(gear.donator_ckey_check("Aa.Bb-Ab"), "Plaintext spellings of the same account must compare after normalization")
 	TEST_ASSERT(!gear.donator_ckey_check("stranger"), "Display-key entries must reject other accounts")
 	var/id = gear_ckey_id("AA-BB-ab...")
-	gear.ckeywhitelist = list(id)
+	gear.ckeywhitelist = list(id, "legacyaccount")
 	TEST_ASSERT(gear.donator_ckey_check("Legacy-Account"), "Mixed whitelists must accept legacy entries")
 	TEST_ASSERT(gear.donator_ckey_check("aabbab"), "Mixed whitelists must accept encrypted entries")
 	TEST_ASSERT(!gear.donator_ckey_check("stranger"), "Mixed whitelists must reject other accounts")
@@ -47,6 +53,8 @@
 		TEST_ASSERT(!gear.donator_ckey_check("stranger"), "Group membership must not bypass the whitelist")
 
 /datum/unit_test/loadout_ckey_whitelist/Destroy()
+	if(!isnull(saved_secret))
+		CONFIG_SET(string/loadout_ckey_secret, saved_secret)
 	if(!isnull(original_donator_groups))
 		GLOB.donators_by_group = original_donator_groups
 		original_donator_groups = null
