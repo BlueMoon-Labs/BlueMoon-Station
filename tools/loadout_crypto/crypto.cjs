@@ -1,15 +1,24 @@
 'use strict';
 
 // Node.js built-ins only. No account name, token or secret is interpolated into a shell command.
-const crypto = require('node:crypto');
-const fs = require('node:fs');
-const path = require('node:path');
+const crypto = require('crypto');
+const fs = require('fs');
+const path = require('path');
 
 const PREFIX = 'enc1:';
 const AAD = Buffer.from('bluemoon/loadout/enc1', 'utf8');
 const MAX_TEXT_CHARS = 256;
 const MAX_TEXT_BYTES = MAX_TEXT_CHARS * 4;
 const MAX_TOKEN_CHARS = 5 + Math.ceil((28 + MAX_TEXT_BYTES) * 4 / 3);
+
+// Keep the enc1 wire format without requiring Node's newer base64url encoding.
+function base64url(value) {
+  return value.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+// Only these application-defined codes may cross the process boundary.
+const ERROR_CODES = new Set(['invalid_secret_config', 'invalid_text', 'invalid_token',
+  'invalid_request', 'authentication_failed', 'invalid_account']);
 
 function readSecret(filename) {
   const contents = fs.readFileSync(filename, 'utf8');
@@ -38,7 +47,7 @@ function encrypt(value, secret) {
   const cipher = crypto.createCipheriv('aes-256-gcm', secret, nonce, { authTagLength: 16 });
   cipher.setAAD(AAD);
   const ciphertext = Buffer.concat([cipher.update(value, 'utf8'), cipher.final()]);
-  return PREFIX + Buffer.concat([nonce, ciphertext, cipher.getAuthTag()]).toString('base64url');
+  return PREFIX + base64url(Buffer.concat([nonce, ciphertext, cipher.getAuthTag()]));
 }
 
 function decrypt(token, secret) {
@@ -46,16 +55,20 @@ function decrypt(token, secret) {
     if (token.length > 10000) throw new Error('invalid_request');
     return token.map((item) => {
       if (Array.isArray(item)) return null;
-      try { return decrypt(item, secret); } catch { return null; }
+      try { return decrypt(item, secret); } catch (error) {
+        if (ERROR_CODES.has(error.message)) return null;
+        // A runtime failure must not poison the DM cache for every ID in a batch.
+        throw error;
+      }
     });
   }
   if (typeof token !== 'string' || !/^enc1:[A-Za-z0-9_-]+$/.test(token) || token.length > MAX_TOKEN_CHARS) {
     throw new Error('invalid_token');
   }
   const encoded = token.slice(PREFIX.length);
-  const payload = Buffer.from(encoded, 'base64url');
+  const payload = Buffer.from(encoded.replace(/-/g, '+').replace(/_/g, '/'), 'base64');
   if (payload.length < 29 || payload.length > 28 + MAX_TEXT_BYTES
-      || payload.toString('base64url') !== encoded) throw new Error('invalid_token');
+      || base64url(payload) !== encoded) throw new Error('invalid_token');
   const decipher = crypto.createDecipheriv('aes-256-gcm', secret, payload.subarray(0, 12), { authTagLength: 16 });
   decipher.setAAD(AAD);
   decipher.setAuthTag(payload.subarray(-16));
@@ -90,10 +103,11 @@ function request(filename) {
     if (data.operation === 'encrypt') value = encrypt(data.value, secret);
     else if (data.operation === 'decrypt') value = decrypt(data.value, secret);
     else throw new Error('invalid_request');
-    result = { ok: true, value };
-  } catch {
+    result = { ok: true, value, node_version: process.version };
+  } catch (error) {
     // Never serialize native errors, input values, filenames or the secret into game logs.
-    result = { ok: false };
+    result = { ok: false, error: ERROR_CODES.has(error.message) ? error.message : 'helper_failed',
+      node_version: process.version };
   }
   fs.writeFileSync(filename + '.out', JSON.stringify(result), { encoding: 'utf8', mode: 0o600, flag: 'wx' });
 }

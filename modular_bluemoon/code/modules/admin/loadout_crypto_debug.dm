@@ -9,17 +9,19 @@
 		return
 	var/is_decryption = findtextEx(input, "enc1:", 1, 6)
 	var/result = ""
+	var/list/diagnostics = list()
 	if(is_decryption)
-		result = gear_crypto("decrypt", input)
+		result = gear_crypto("decrypt", input, FALSE, diagnostics)
 		if(result)
 			to_chat(usr, span_notice("Расшифрованный текст: <code>[html_encode(result)]</code>"), confidential = TRUE)
 		else
-			to_chat(usr, span_warning("Не удалось расшифровать ID: неверный формат, ключ или повреждённые данные."), confidential = TRUE)
+			to_chat(usr, span_warning("Не удалось расшифровать ID. Причина указана в диагностике ниже."), confidential = TRUE)
 	else
-		result = gear_crypto("encrypt", input, FALSE)
+		result = gear_crypto("encrypt", input, FALSE, diagnostics)
 		if(result)
 			to_chat(usr, span_notice("Зашифрованный ID: <code>[html_encode(result)]</code>"), confidential = TRUE)
 		else
-			to_chat(usr, span_warning("Не удалось зашифровать текст: проверьте Node.js и ключ в donator.txt."), confidential = TRUE)
+			to_chat(usr, span_warning("Не удалось зашифровать текст. Причина указана в диагностике ниже."), confidential = TRUE)
+	to_chat(usr, span_notice("Loadout crypto: <code>[html_encode(json_encode(diagnostics))]</code>. Расшифровка кодов: tools/loadout_crypto/README.md."), confidential = TRUE)
 	log_admin("[key_name(usr)] used Loadout crypto debug ([is_decryption ? "decrypt [input]" : "encrypt [result]"]).")
 	message_admins("[key_name_admin(usr)] used Loadout crypto debug ([is_decryption ? "decrypt [input]" : "encrypt [result]"]).")

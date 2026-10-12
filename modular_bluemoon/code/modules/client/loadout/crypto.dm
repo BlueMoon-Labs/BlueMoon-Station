@@ -7,17 +7,28 @@
 /proc/gear_ckey_from_id(id)
 	return gear_crypto("decrypt", id)
 
-/// Cached bridge to Node's authenticated encryption. The secret is read directly from config.
-/proc/gear_crypto(operation, value, use_cache = TRUE)
+/// Diagnostic codes only: never include the secret, plaintext or native exception text.
+/proc/gear_crypto_failure(list/diagnostics, error_code)
+	if(islist(diagnostics))
+		diagnostics["error"] = error_code
+	return null
+
+/// Cached bridge to Node's authenticated encryption. Optional diagnostics are caller-owned.
+/proc/gear_crypto(operation, value, use_cache = TRUE, list/diagnostics)
+	if(islist(diagnostics))
+		diagnostics.Cut()
 	if(!config)
-		return
+		return gear_crypto_failure(diagnostics, "config_unavailable")
 	var/secret = CONFIG_GET(string/loadout_ckey_secret)
 	if(!length_char(secret))
-		return
+		return gear_crypto_failure(diagnostics, "secret_missing")
+	var/static/regex/valid_secret = regex("^\[a-fA-F0-9]{64}$")
+	if(!valid_secret.Find(secret))
+		return gear_crypto_failure(diagnostics, "invalid_secret_config")
 	var/node_executable = CONFIG_GET(string/loadout_crypto_node)
 	var/static/regex/unsafe_executable = regex(@"[^A-Za-zА-Яа-яЁё0-9_ ./\\:\-]")
 	if(!length_char(node_executable) || unsafe_executable.Find(node_executable))
-		return
+		return gear_crypto_failure(diagnostics, "invalid_node_executable")
 	var/state = "[secret]|[node_executable]"
 	var/static/cached_state
 	var/static/list/encrypted = list()
@@ -27,11 +38,11 @@
 		decrypted = list()
 		cached_state = state
 	if(operation != "encrypt" && operation != "decrypt")
-		return
+		return gear_crypto_failure(diagnostics, "invalid_request")
 	var/is_batch = islist(value)
 	if(is_batch)
 		if(operation != "decrypt")
-			return
+			return gear_crypto_failure(diagnostics, "invalid_request")
 		if(use_cache)
 			var/list/pending = list()
 			for(var/id in value)
@@ -42,42 +53,63 @@
 			value = pending
 	else
 		if(!istext(value) || !length_char(value))
-			return
+			return gear_crypto_failure(diagnostics, "invalid_text")
 		if(operation == "encrypt")
 			if(length_char(value) > 256)
-				return
+				return gear_crypto_failure(diagnostics, "invalid_text")
 			if(use_cache && encrypted[value])
 				return encrypted[value]
 		else
 			if(length_char(value) > 1408 || !findtextEx(value, "enc1:", 1, 6))
-				return
+				return gear_crypto_failure(diagnostics, "invalid_token")
 			if(use_cache && (value in decrypted))
 				return decrypted[value]
-	var/request_id = rustg_csprng_chacha20(RUSTG_RNG_FORMAT_HEX, LOADOUT_CRYPTO_REQUEST_ID_BYTES)
+	if(!fexists("tools/loadout_crypto/crypto.cjs"))
+		return gear_crypto_failure(diagnostics, "helper_missing")
+	var/request_id
+	try
+		request_id = rustg_csprng_chacha20(RUSTG_RNG_FORMAT_HEX, LOADOUT_CRYPTO_REQUEST_ID_BYTES)
+	catch
+		return gear_crypto_failure(diagnostics, "rustg_rng_failed")
 	var/static/regex/valid_request_id = regex("^\[a-f0-9]{[LOADOUT_CRYPTO_REQUEST_ID_HEX_LENGTH]}$")
-	if(!valid_request_id.Find(request_id))
-		return
+	if(!istext(request_id) || !valid_request_id.Find(request_id))
+		return gear_crypto_failure(diagnostics, "rustg_rng_failed")
 	var/request_file = "tmp/[LOADOUT_CRYPTO_TMP_FILENAME]_[request_id].json"
 	var/response_file = "[request_file].out"
 	if(!text2file(json_encode(list("operation" = operation, "value" = value, "secret" = secret)), request_file))
-		return
+		fdel(request_file)
+		return gear_crypto_failure(diagnostics, "request_write_failed")
 	var/list/result
+	var/failure = "shell_failed"
 	try
 		var/null_output = world.system_type == MS_WINDOWS ? "NUL" : "/dev/null"
 		var/command = "\"[node_executable]\" tools/loadout_crypto/crypto.cjs request [request_file] > [null_output] 2>&1"
 		var/exit_code = world.system_type == MS_WINDOWS ? shell("cmd /c \"[command]\"") : shell("sh -c \"[replacetext(command, "\"", "\\\"")]\"")
+		if(islist(diagnostics))
+			diagnostics["exit_code"] = exit_code
+		failure = exit_code ? "node_exit_failed" : "response_missing"
 		if(!exit_code && fexists(response_file))
+			failure = "invalid_response"
 			result = json_decode(file2text(response_file))
 	catch
 		result = null
 	fdel(request_file)
 	fdel(response_file)
 	if(!islist(result))
-		return
+		return gear_crypto_failure(diagnostics, failure)
+	if(islist(diagnostics))
+		var/version = result["node_version"]
+		var/static/regex/valid_version = regex("^v\[0-9]+\\.\[0-9]+\\.\[0-9]+$")
+		if(istext(version) && valid_version.Find(version))
+			diagnostics["node_version"] = version
 	if(!result["ok"])
-		if(use_cache && operation == "decrypt" && !is_batch)
+		var/error_code = result["error"]
+		var/static/list/allowed_errors = list("invalid_secret_config", "invalid_text", "invalid_token", "invalid_request", "authentication_failed", "invalid_account", "helper_failed")
+		if(!(error_code in allowed_errors))
+			error_code = "helper_failed"
+		if(use_cache && operation == "decrypt" && !is_batch && (error_code in list("invalid_token", "authentication_failed", "invalid_account")))
 			decrypted[value] = null
-		return
+		return gear_crypto_failure(diagnostics, error_code)
 	if(use_cache && operation == "encrypt")
 		encrypted[value] = result["value"]
 	else if(use_cache && operation == "decrypt" && !is_batch)

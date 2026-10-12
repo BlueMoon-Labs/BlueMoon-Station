@@ -4,7 +4,10 @@ New IDs use `enc1:` with AES-256-GCM (32-byte key, random 12-byte nonce,
 16-byte authentication tag). The encoded payload is nonce + ciphertext + tag,
 in canonical unpadded base64url. AAD is the UTF-8 string `bluemoon/loadout/enc1`.
 The implementation uses [Node.js crypto](https://nodejs.org/api/crypto.html).
-Node.js 18+ must be available to the **running game server**, as well as during development.
+Node.js must be available to the **running game server**, as well as during development.
+Use a supported LTS release. The helper avoids `node:` imports and the newer
+`base64url` Buffer encoding to tolerate older server installations; this does
+not change the encryption or the token format. The test runner needs Node.js 18+.
 No npm packages are required.
 
 Both accounts and arbitrary text use the same `encrypt` and `decrypt` operations.
@@ -38,6 +41,39 @@ Whitelist checks normalize the decrypted key, preserving account identity across
 case/punctuation changes. Keep the complete `enc1:` prefix when copying an ID.
 Results are cached and the cache is discarded when the configured secret changes.
 All encrypted whitelist entries are decrypted in one batch at loadout initialization.
+
+## In-round diagnostics
+
+After deploying this build, use **Debug.2) Info → Loadout crypto** with debug rights.
+Enter a short test string, then decrypt the returned ID. Both operations bypass
+the cache and privately report safe diagnostics, including `node_version` when
+the helper responds and `exit_code` when the shell returns. No key, plaintext,
+or raw exception is included in diagnostics. Ordinary callers still receive
+the value or null. Temporary helper failures are not cached as invalid IDs.
+
+| Error | Meaning / next check |
+| --- | --- |
+| `config_unavailable` | Configuration has not been initialized. |
+| `secret_missing` / `invalid_secret_config` | The loaded `LOADOUT_CKEY_SECRET` must contain exactly 64 hex characters. |
+| `invalid_node_executable` | Empty or unsupported executable path in `LOADOUT_CRYPTO_NODE`. |
+| `helper_missing` | `tools/loadout_crypto/crypto.cjs` is absent from the running server's working directory. Include it in deployment. |
+| `rustg_rng_failed` | The installed rust-g cannot generate a request ID. Working SHA-256 alone does not verify the RNG export. |
+| `request_write_failed` | The game cannot write the request under `tmp/`. |
+| `shell_failed` | BYOND raised an error launching the shell; check execution permissions/security mode. |
+| `node_exit_failed` | Nonzero shell status. On Linux, 127 usually means command not found; 126 usually means it cannot be executed. Other codes can indicate an incompatible runtime or response write failure. |
+| `response_missing` / `invalid_response` | No valid JSON response; check shell permissions, working directory and write access. |
+| `authentication_failed` | The ID was changed or encrypted with another key. |
+| `invalid_token` / `invalid_text` / `invalid_account` / `invalid_request` | The input is invalid for the requested operation. |
+| `helper_failed` | The helper started but failed internally; native errors are intentionally not exposed. |
+
+The TGS build uses `tools/bootstrap/node` with a separate cache. A successful
+TGUI build does **not** prove `node` is on the game process's PATH. Configure
+`LOADOUT_CRYPTO_NODE` with an executable available in the runtime environment.
+
+`rustg_hash_string` is a one-way hash API, not reversible encryption. Replacing
+this bridge with a native macro requires an AES-GCM export in the installed
+rust-g (or a separate native library) and deployment of that binary. A DM macro
+alone cannot add an export to the server's existing `.so`.
 
 Server-side inspection, with access to the private config:
 

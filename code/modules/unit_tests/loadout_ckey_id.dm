@@ -78,6 +78,12 @@
 	CONFIG_SET(string/loadout_ckey_secret, "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f")
 	var/fixture = "enc1:AAECAwQFBgcICQoLBkP7WYfIo3mjb7lYYwet3PW22BiBfjL-G3kJ"
 	var/other_fixture = "enc1:AAECAwQFBgcICQoLBkP7WYfIo3mjb7lYYwet3PW22BiBfjL-G3kA"
+	var/list/diagnostics = list("error" = "previous_error")
+	TEST_ASSERT_EQUAL(gear_crypto("decrypt", fixture, FALSE, diagnostics), "AA-BB-ab...", "Uncached diagnostic requests must preserve existing IDs")
+	TEST_ASSERT_NULL(diagnostics["error"], "Successful requests must clear previous diagnostics")
+	TEST_ASSERT(diagnostics["node_version"], "Diagnostics must identify the running Node version")
+	TEST_ASSERT_NULL(gear_crypto("decrypt", other_fixture, FALSE, diagnostics), "Diagnostics must not bypass authentication")
+	TEST_ASSERT_EQUAL(diagnostics["error"], "authentication_failed", "Authentication errors must be distinguishable from process failures")
 	gear_crypto("decrypt", list(fixture, other_fixture))
 	TEST_ASSERT_EQUAL(gear_ckey_from_id(fixture), "AA-BB-ab...", "Batch decryption must accept an independent AES-GCM fixture")
 	TEST_ASSERT_NULL(gear_ckey_from_id(other_fixture), "An altered authentication tag must fail")
@@ -109,6 +115,9 @@
 	TEST_ASSERT_EQUAL(gear_ckey_from_id(new_id), "AA-BB-ab...", "The new secret must work for newly issued IDs")
 	TEST_ASSERT(!gear.donator_ckey_check("aabbab"), "Wrong keys must deny encrypted whitelist access")
 	CONFIG_SET(string/loadout_ckey_secret, "")
+	TEST_ASSERT_NULL(gear_crypto("encrypt", "PRIVATE_TEXT", FALSE, diagnostics), "Missing secrets must fail diagnostic requests")
+	TEST_ASSERT_EQUAL(diagnostics["error"], "secret_missing", "Missing config must be diagnosable in-round")
+	TEST_ASSERT_EQUAL(length(diagnostics), 1, "Early failures must clear stale process diagnostics")
 	TEST_ASSERT_NULL(gear_ckey_id("AA-BB-ab..."), "Missing secret must not silently fall back to SHA or plaintext")
 	TEST_ASSERT_NULL(gear_ckey_from_id(new_id), "Missing secret must not use cached plaintext")
 	TEST_ASSERT(!gear.donator_ckey_check("aabbab"), "Missing secret must deny encrypted whitelist access")

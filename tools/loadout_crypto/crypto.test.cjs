@@ -70,7 +70,7 @@ test('private config, request protocol and CLI inspection; initialization never 
   fs.writeFileSync(batchRequest, JSON.stringify({ operation: 'decrypt', value: [unicodeToken, 'enc1:bad', response.value], secret: readSecret(config).toString('hex') }));
   request(batchRequest);
   assert.deepEqual(JSON.parse(fs.readFileSync(batchRequest + '.out', 'utf8')), {
-    ok: true, value: [unicodeText, null, 'AA-BB-ab...'],
+    ok: true, value: [unicodeText, null, 'AA-BB-ab...'], node_version: process.version,
   });
   const source = path.join(directory, 'items.dm');
   fs.writeFileSync(source, `list("${response.value}", "sha256:${'a'.repeat(64)}")`);
@@ -84,7 +84,43 @@ test('private config, request protocol and CLI inspection; initialization never 
   const badRequest = path.join(directory, 'bad.json');
   fs.writeFileSync(badRequest, JSON.stringify({ operation: 'decrypt', value: fixture, secret_file: config }));
   request(badRequest);
-  assert.deepEqual(JSON.parse(fs.readFileSync(badRequest + '.out', 'utf8')), { ok: false });
+  assert.deepEqual(JSON.parse(fs.readFileSync(badRequest + '.out', 'utf8')), {
+    ok: false, error: 'authentication_failed', node_version: process.version,
+  });
   fs.writeFileSync(config, 'LOADOUT_CKEY_SECRET invalid\n');
   assert.throws(() => readSecret(config));
+});
+
+test('request diagnostics expose only fixed codes and the runtime version', (t) => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'loadout-crypto-errors-'));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  const cases = [
+    [{ operation: 'encrypt', secret: 'PRIVATE_INVALID_SECRET', value: 'PRIVATE_TEXT' }, 'invalid_secret_config'],
+    [{ operation: 'encrypt', secret: secret.toString('hex'), value: '' }, 'invalid_text'],
+    [{ operation: 'decrypt', secret: secret.toString('hex'), value: 'enc1:bad' }, 'invalid_token'],
+    [{ operation: 'encrypt', secret_file: path.join(directory, 'PRIVATE_MISSING_PATH') }, 'helper_failed'],
+    [{ operation: 'unknown', secret: secret.toString('hex') }, 'invalid_request'],
+  ];
+  for (const [index, [data, error]] of cases.entries()) {
+    const filename = path.join(directory, `${index}.json`);
+    fs.writeFileSync(filename, JSON.stringify(data));
+    request(filename);
+    assert.deepEqual(JSON.parse(fs.readFileSync(filename + '.out', 'utf8')), {
+      ok: false, error, node_version: process.version,
+    });
+  }
+});
+
+test('batch runtime failures are reported instead of becoming cached invalid IDs', (t) => {
+  const original = crypto.createDecipheriv;
+  t.after(() => { crypto.createDecipheriv = original; });
+  crypto.createDecipheriv = () => { throw new Error('PRIVATE_NATIVE_ERROR'); };
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'loadout-crypto-runtime-'));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  const filename = path.join(directory, 'request.json');
+  fs.writeFileSync(filename, JSON.stringify({ operation: 'decrypt', value: [fixture], secret: secret.toString('hex') }));
+  request(filename);
+  assert.deepEqual(JSON.parse(fs.readFileSync(filename + '.out', 'utf8')), {
+    ok: false, error: 'helper_failed', node_version: process.version,
+  });
 });
