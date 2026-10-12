@@ -44,6 +44,7 @@
 #include "inner\super_cruise\orbital_poi_generator\objective_types\vip_extraction.dm"
 #include "inner\super_cruise\orbital_poi_generator\objective_types\headhunt.dm"
 #include "inner\super_cruise\orbital_poi_generator\objective_computer.dm"
+#include "inner\super_cruise\orbital_poi_generator\objective_pinpointer.dm"
 #include "inner\super_cruise\orbital_poi_generator\loot\alien_artifact.dm"
 #include "inner\super_cruise\orbital_poi_generator\loot\artifact_defenses.dm"
 #include "inner\super_cruise\orbital_poi_generator\loot\research_disks.dm"

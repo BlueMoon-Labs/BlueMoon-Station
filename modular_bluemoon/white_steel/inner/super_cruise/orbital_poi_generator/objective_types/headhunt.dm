@@ -15,6 +15,9 @@
 			Возможно, может потребоваться помощь сотрудников службы безопасности. \
 			Задание будет провалено в случае побега преступника со станции живым и без наручников, или в случае уничтожения его тела!"
 
+/datum/orbital_objective/headhunt/get_target()
+	return mob_to_recover
+
 /datum/orbital_objective/headhunt/on_assign(obj/machinery/computer/objective/objective_computer)
 	//WHITE-STEEL PORT: капсула должна прибывать на мостик шаттла к консоли заданий,
 	//а не на мостик станции (/area/command). Повторяем логику nuke_ruin.

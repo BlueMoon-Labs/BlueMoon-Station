@@ -30,6 +30,9 @@
 	if(linked_beacon)
 		. += " Станция находится у маяка [linked_beacon.name]. Вперёд!"
 
+/datum/orbital_objective/artifact/get_target()
+	return linked_artifact
+
 /datum/orbital_objective/artifact/check_failed()
 	if(!generated)
 		return FALSE

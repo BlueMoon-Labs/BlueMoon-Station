@@ -87,6 +87,7 @@
 		new /datum/data/bounty_equipment("Spare breaching charge",			/obj/item/grenade/exploration,									300,	"Tools"),
 		new /datum/data/bounty_equipment("Spare detonation device",			/obj/item/exploration_detonator,								200,	"Tools"),
 		new /datum/data/bounty_equipment("Strange object",					/obj/item/relic,												2500,	"Tools"),
+		new /datum/data/bounty_equipment("Vanguard objective pinpointer",	/obj/item/pinpointer/objective,									10000,	"Tools"),
 
 		// ============ RECREATIONAL ============
 		new /datum/data/bounty_equipment("Whiskey",							/obj/item/reagent_containers/food/drinks/bottle/whiskey,		50,		"Recreational"),

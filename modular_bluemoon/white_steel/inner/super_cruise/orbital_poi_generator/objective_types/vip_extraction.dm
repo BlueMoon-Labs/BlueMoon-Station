@@ -12,6 +12,9 @@
 		тем, что нам могло бы понадобиться. Также, возможно вам понадобится помощь местного отряда службы безопасности, так как \
 		вероятно вы встретите неприятеля. Верните этого человека на станции и задание будет выполнено."
 
+/datum/orbital_objective/vip_recovery/get_target()
+	return mob_to_recover
+
 //If nobody takes up the ghost role, then we dont care if they died.
 //I know, its a bit sad.
 /datum/orbital_objective/vip_recovery/check_failed()

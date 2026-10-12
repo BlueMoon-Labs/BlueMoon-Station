@@ -96,6 +96,7 @@
 /obj/item/wrench,
 /obj/item/radio/headset/headset_exp,
 /obj/item/radio/headset/headset_exp,
+/obj/item/pinpointer/objective,
 /obj/effect/turf_decal/bot,
 /turf/open/floor/plating,
 /area/shuttle/exploration)

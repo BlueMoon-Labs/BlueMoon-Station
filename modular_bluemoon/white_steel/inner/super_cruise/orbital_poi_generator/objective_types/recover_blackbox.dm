@@ -17,6 +17,9 @@
 	if(linked_beacon)
 		. += " Станция находится в точке [linked_beacon.name]. Успехов."
 
+/datum/orbital_objective/recover_blackbox/get_target()
+	return linked_blackbox
+
 /datum/orbital_objective/recover_blackbox/check_failed()
 	if(!QDELETED(linked_blackbox) || !generated)
 		return FALSE

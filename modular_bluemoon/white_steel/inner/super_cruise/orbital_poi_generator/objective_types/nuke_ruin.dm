@@ -21,6 +21,9 @@
 	if(linked_beacon)
 		. += " Станция находится в локации [linked_beacon.name]. Успехов."
 
+/datum/orbital_objective/nuclear_bomb/get_target()
+	return nuclear_disk
+
 /datum/orbital_objective/nuclear_bomb/on_assign(obj/machinery/computer/objective/objective_computer)
 	var/turf/open/T
 	//WHITE-STEEL PORT: зона /area/cargo/exploration_mission может отсутствовать на карте.

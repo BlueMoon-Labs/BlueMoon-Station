@@ -26,6 +26,11 @@
 /datum/orbital_objective/proc/get_text()
 	return ""
 
+//WHITE-STEEL PORT: атом-цель задания, на который наводится пинпоинтер задания.
+//null, пока цель не создана (руина ещё не сгенерирована).
+/datum/orbital_objective/proc/get_target()
+	return null
+
 /datum/orbital_objective/proc/generate_payout()
 	payout = rand(min_payout, max_payout)
 
