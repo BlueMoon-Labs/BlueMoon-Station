@@ -5932,6 +5932,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			var/ckey_id = gear_ckey_id(user.key)
 			if(ckey_id)
 				to_chat(user, span_notice("При добавлении персональной вещи, вы можете отправить этот ID разработчику, вместо вашего ckey: <b>«<code>[ckey_id]</code>»</b>"), confidential = TRUE)
+			else
+				to_chat(user, span_warning("Не удалось получить ckey ID. Сообщите администрации: шифрование лодаута недоступно."), confidential = TRUE)
 			return
 		if(href_list["select_slot"])
 			var/chosen = text2num(href_list["select_slot"])

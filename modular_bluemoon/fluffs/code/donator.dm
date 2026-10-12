@@ -1,10 +1,10 @@
 //Файл для выдачи предметов донатерам по сикею
-// ckeywhitelist поддерживает 4 формата: исходный key "AA-BB-ab...", нормализованный ckey "aabbab", SHA-256 исходного key и SHA-256 ckey.
-// Открытые имена сравниваются через ckey(), поэтому регистр и знаки в них не влияют на доступ; старые записи работают без изменений.
-// gear_ckey_id(key) возвращает "sha256:<хеш>" точной строки, с учётом регистра и знаков; gear_ckey_id(ckey(key)) даёт нормализованный ID.
-// Игрок получает хеш своего исходного key через [SHOW] во вкладке "Приватные Вещи" лодаута. Ранее выданные нормализованные ID тоже работают.
-// Хеш исходного key зависит от точного написания имени: если оно изменится, потребуется новый ID. Нормализованный ID не зависит от регистра и знаков.
-// Все 4 формата можно смешивать в одном списке. Вставляйте готовый ID, а не вызов gear_ckey_id("сикей"), раскрывающий владельца.
+// ckeywhitelist поддерживает исходный key "AA-BB-ab...", ckey "aabbab" и обратимые ID "enc1:...".
+// Открытые имена сравниваются через ckey(), поэтому регистр и знаки в них не влияют на доступ.
+// gear_ckey_id(key) шифрует исходное имя AES-256-GCM с секретом из config/loadout_secret.txt. [SHOW] выдаёт этот ID игроку.
+// gear_ckey_from_id(id) возвращает исходное имя; при проверке доступа оно нормализуется через ckey().
+// Проверка ID и файлов вне игры: tools/loadout_crypto/README.md. Ключ нельзя публиковать или терять.
+// Все форматы можно смешивать. Вставляйте готовый ID, а не вызов gear_ckey_id("сикей"), раскрывающий владельца.
 
 
 /datum/gear/donator/bm
@@ -2810,3 +2810,9 @@
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/donator/bm/mall_cop_chic
 	ckeywhitelist = list("sawwarrr")
+
+/datum/gear/donator/bm/test_screwdriver
+	name = "Crypto test item"
+	path = /obj/item/screwdriver
+	slot = ITEM_SLOT_BACKPACK
+	ckeywhitelist = list("enc1:bdWWgObtc7vqD3botT13LuHJKA607o5T3ImYB0HdsV75sa9V_YYahA")

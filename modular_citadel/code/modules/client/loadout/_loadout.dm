@@ -7,16 +7,103 @@
 GLOBAL_LIST_EMPTY(loadout_items)
 GLOBAL_LIST_EMPTY(loadout_whitelist_ids)
 
-/// Hash the exact key supplied. Pass ckey(key) explicitly for a normalized ID; both forms work in whitelists.
-/// Store the returned string in source, never a call containing the original key.
+/// Reversible ID of the original spelling. A missing secret/helper fails closed.
 /proc/gear_ckey_id(key)
-	if(!istext(key) || !length(ckey(key)))
+	if(!istext(key) || !length(ckey(key)) || length(key) > 256)
 		return null
-	// The same account is checked against many items whenever the loadout menu is rendered.
-	var/static/list/cached_ids = list()
-	if(!cached_ids[key])
-		cached_ids[key] = "sha256:[rustg_hash_string(RUSTG_HASH_SHA256, key)]"
-	return cached_ids[key]
+	return gear_crypto("encrypt", key)
+
+/// Server-side inspection: return the original key, or null for invalid IDs / wrong or missing keys.
+/proc/gear_ckey_from_id(id)
+	if(!istext(id) || length(id) > 384 || !findtextEx(id, "enc1:", 1, 6))
+		return null
+	return gear_crypto("decrypt", id)
+
+/proc/gear_encrypt_text(text)
+	if(!istext(text) || !length(text) || length(text) > 256)
+		return null
+	return gear_crypto("encrypt_text", text)
+
+/proc/gear_decrypt_text(id)
+	if(!istext(id) || length(id) > 384 || !findtextEx(id, "enc1:", 1, 6))
+		return null
+	return gear_crypto("decrypt_text", id)
+
+/// Cached bridge to Node's authenticated encryption. Never send account input or secrets through the shell.
+/proc/gear_crypto(operation, value)
+	if(!config)
+		return null
+	var/secret = CONFIG_GET(string/loadout_ckey_secret)
+	if(!length(secret))
+		return null
+	var/node_executable = CONFIG_GET(string/loadout_crypto_node)
+	var/static/regex/unsafe_executable = regex("\[^A-Za-z0-9_ ./\\\\:\\-]")
+	if(!length(node_executable) || unsafe_executable.Find(node_executable))
+		return null
+	var/state = "[secret]|[node_executable]"
+	var/static/cached_state
+	var/static/list/encrypted = list()
+	var/static/list/decrypted = list()
+	if(state != cached_state)
+		encrypted = list()
+		decrypted = list()
+		cached_state = state
+	if((operation == "encrypt" || operation == "encrypt_text") && encrypted[value])
+		return encrypted[value]
+	if((operation == "decrypt" || operation == "decrypt_text") && (value in decrypted))
+		return decrypted[value]
+	if(operation == "decrypt_many")
+		var/list/pending = list()
+		for(var/id in value)
+			if(!(id in decrypted))
+				pending |= id
+		if(!length(pending))
+			return null
+		value = pending
+	else if(operation != "encrypt" && operation != "decrypt" && operation != "encrypt_text" && operation != "decrypt_text")
+		return null
+	var/request_id = rustg_csprng_chacha20(RUSTG_RNG_FORMAT_HEX, 16)
+	var/static/regex/valid_request_id = regex("^\[a-f0-9]{32}$")
+	if(!valid_request_id.Find(request_id))
+		return null
+	var/request_file = "tmp/loadout_crypto_[request_id].json"
+	var/response_file = "[request_file].out"
+	if(!text2file(json_encode(list("operation" = operation, "value" = value, "secret" = secret)), request_file))
+		return null
+	var/list/result
+	try
+		// Do not use shelleo(): it logs stdout, which could contain decrypted account names.
+		var/null_output = world.system_type == MS_WINDOWS ? "NUL" : "/dev/null"
+		var/command = "\"[node_executable]\" tools/loadout_crypto/crypto.cjs request [request_file] > [null_output] 2>&1"
+		var/exit_code
+		if(world.system_type == MS_WINDOWS)
+			exit_code = shell("cmd /c \"[command]\"")
+		else
+			exit_code = shell("sh -c \"[replacetext(command, "\"", "\\\"")]\"")
+		if(!exit_code && fexists(response_file))
+			result = json_decode(file2text(response_file))
+	catch
+		result = null
+	fdel(request_file)
+	fdel(response_file)
+	if(!islist(result))
+		return null
+	if(!result["ok"])
+		if(operation == "decrypt")
+			decrypted[value] = null
+		return null
+	if(operation == "encrypt" || operation == "encrypt_text")
+		encrypted[value] = result["value"]
+	else if(operation == "decrypt" || operation == "decrypt_text")
+		decrypted[value] = result["value"]
+	else
+		var/list/ids = value
+		var/list/keys = result["value"]
+		if(!islist(keys) || length(keys) != length(ids))
+			return null
+		for(var/index in 1 to length(ids))
+			decrypted[ids[index]] = keys[index]
+	return result["value"]
 
 /// Fixes gear_category/gear_subcategory after navigation (same display name e.g. "Jobs" under Uniform/Suit/Head; empty item tables).
 /proc/sanitize_loadout_navigation(datum/preferences/prefs)
@@ -62,6 +149,7 @@ GLOBAL_LIST_EMPTY(loadout_whitelist_ids)
 
 /proc/initialize_global_loadout_items()
 	load_loadout_config()
+	var/list/encrypted_ids = list()
 	for(var/item in subtypesof(/datum/gear))
 		var/datum/gear/I = item
 		if(!initial(I.name))
@@ -78,6 +166,11 @@ GLOBAL_LIST_EMPTY(loadout_whitelist_ids)
 					I.ckeywhitelist |= GLOB.loadout_whitelist_ids["[entry]"]
 		else if(I.geargroupID in GLOB.loadout_whitelist_ids)
 			I.ckeywhitelist = GLOB.loadout_whitelist_ids["[I.geargroupID]"]
+		for(var/id in I.ckeywhitelist)
+			if(istext(id) && findtextEx(id, "enc1:", 1, 6))
+				encrypted_ids |= id
+	if(length(encrypted_ids))
+		gear_crypto("decrypt_many", encrypted_ids)
 
 
 /datum/gear
@@ -100,7 +193,7 @@ GLOBAL_LIST_EMPTY(loadout_whitelist_ids)
 
 	var/list/restricted_roles
 
-	// Display keys, normalized ckeys, and/or precomputed sha256: IDs of either form from gear_ckey_id().
+	// Display keys, normalized ckeys and reversible enc1: IDs.
 	var/list/ckeywhitelist
 	//END
 
@@ -180,11 +273,13 @@ GLOBAL_LIST_EMPTY(loadout_whitelist_ids)
 	var/normalized_key = ckey(key)
 	if(!length(normalized_key))
 		return FALSE
-	if(ckeywhitelist.Find(gear_ckey_id(key)) || ckeywhitelist.Find(gear_ckey_id(normalized_key)))
-		return TRUE
 	for(var/entry in ckeywhitelist)
-		// Only plain account names may be normalized; a hash is never a plaintext account entry.
-		if(!istext(entry) || findtext(entry, "sha256:", 1, 8))
+		if(!istext(entry))
+			continue
+		if(findtext(entry, ":"))
+			var/decrypted_key = gear_ckey_from_id(entry)
+			if(decrypted_key && ckey(decrypted_key) == normalized_key)
+				return TRUE
 			continue
 		if(ckey(entry) == normalized_key)
 			return TRUE
