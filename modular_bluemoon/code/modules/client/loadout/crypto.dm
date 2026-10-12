@@ -15,7 +15,7 @@
 	if(!length_char(secret))
 		return
 	var/node_executable = CONFIG_GET(string/loadout_crypto_node)
-	var/static/regex/unsafe_executable = regex("\[^A-Za-zА-Яа-яЁё0-9_ ./\\\\:\\-]")
+	var/static/regex/unsafe_executable = regex(@"[^A-Za-zА-Яа-яЁё0-9_ ./\\:\-]")
 	if(!length_char(node_executable) || unsafe_executable.Find(node_executable))
 		return
 	var/state = "[secret]|[node_executable]"
@@ -54,7 +54,7 @@
 			if(use_cache && (value in decrypted))
 				return decrypted[value]
 	var/request_id = rustg_csprng_chacha20(RUSTG_RNG_FORMAT_HEX, LOADOUT_CRYPTO_REQUEST_ID_BYTES)
-	var/static/regex/valid_request_id = regex("^\[a-f0-9]{" + LOADOUT_CRYPTO_REQUEST_ID_HEX_LENGTH + "}$")
+	var/static/regex/valid_request_id = regex("^\[a-f0-9]{[LOADOUT_CRYPTO_REQUEST_ID_HEX_LENGTH]}$")
 	if(!valid_request_id.Find(request_id))
 		return
 	var/request_file = "tmp/[LOADOUT_CRYPTO_TMP_FILENAME]_[request_id].json"
