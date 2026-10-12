@@ -62,7 +62,7 @@ GLOBAL_LIST_INIT(director_vacancy_departments, list(
 		INVOKE_ASYNC(src, PROC_REF(send_vacancy_invite), dept)
 
 /datum/controller/subsystem/director/proc/send_vacancy_invite(dept)
-	var/missing_text = "На станции нет ни одного [GLOB.director_vacancy_departments[dept]]. Нужна помощь"
+	var/missing_text = "Приглашение в смену: на станции нет ни одного [GLOB.director_vacancy_departments[dept]]. За вход в этот отдел - [METADOLLARS_RELIEF_BONUS] М$, если продержитесь [METADOLLARS_RELIEF_MIN_TIME / (1 MINUTES)] минут или до эвакуации."
 	var/join_link = "<a href='byond://?src=[REF(GLOB.shift_invite_link)];join_shift=1'>Войти в смену</a>"
 	var/invited = 0
 	for(var/mob/player as anything in GLOB.player_list)
@@ -73,17 +73,18 @@ GLOBAL_LIST_INIT(director_vacancy_departments, list(
 			var/mob/dead/new_player/lobby_player = player
 			if(!lobby_player.bm_lobby_ready || lobby_player.spawning)
 				continue
-			player_client << output(url_encode("[missing_text]: нажмите, чтобы войти в смену."), "bm_lobby_browser:bm_show_invite")
+			player_client << output(url_encode("[missing_text] Нажмите, чтобы войти в смену."), "bm_lobby_browser:bm_show_invite")
 		else if(isobserver(player))
 			if(respawn_block_reason(player, player_client.prefs))
 				continue
-			to_chat(player, span_ghostalert("[missing_text]: [join_link]"))
+			to_chat(player, span_ghostalert("[missing_text] [join_link]"))
 			SEND_SOUND(player, sound('sound/misc/notice2.ogg'))
 			window_flash(player_client)
 		else if(is_ghost_cafe_visitor(player))
 			if(respawn_block_reason(player, player_client.prefs))
 				continue
-			to_chat(player, span_boldnotice("[missing_text]: [join_link]"))
+			to_chat(player, span_ghostalert("[missing_text] [join_link]"))
+			SEND_SOUND(player, sound('sound/misc/notice2.ogg'))
 		else
 			continue
 		invited++
