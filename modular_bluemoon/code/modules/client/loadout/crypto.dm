@@ -56,7 +56,7 @@
 	var/static/regex/valid_request_id = regex("^\[a-f0-9]{32}$")
 	if(!valid_request_id.Find(request_id))
 		return null
-	var/request_file = "tmp/loadout_crypto_[request_id].json"
+	var/request_file = "tmp/[LOADOUT_CRYPTO_TMP_FILENAME]_[request_id].json"
 	var/response_file = "[request_file].out"
 	if(!text2file(json_encode(list("operation" = operation, "value" = value, "secret" = secret)), request_file))
 		return null

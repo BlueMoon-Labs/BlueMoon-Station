@@ -11,13 +11,13 @@
 	var/result = ""
 	if(is_decryption)
 		result = gear_decrypt_text(input)
-		if(decrypted)
+		if(result)
 			to_chat(usr, span_notice("Расшифрованный текст: <code>[html_encode(result)]</code>"), confidential = TRUE)
 		else
 			to_chat(usr, span_warning("Не удалось расшифровать ID: неверный формат, ключ или повреждённые данные."), confidential = TRUE)
 	else
 		result = gear_encrypt_text(input)
-		if(encrypted)
+		if(result)
 			to_chat(usr, span_notice("Зашифрованный ID: <code>[html_encode(result)]</code>"), confidential = TRUE)
 		else
 			to_chat(usr, span_warning("Не удалось зашифровать текст: проверьте Node.js и ключ в donator.txt."), confidential = TRUE)
