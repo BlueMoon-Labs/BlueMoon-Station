@@ -5323,12 +5323,6 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
 /turf/open/floor/plasteel/dark,
 /area/medical/paramedic)
-"boh" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 6
-	},
-/turf/open/floor/plasteel/white,
-/area/science/xenobiology)
 "bov" = (
 /obj/structure/disposalpipe/segment{
 	dir = 4
@@ -6373,6 +6367,12 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
 /turf/open/floor/plasteel,
 /area/hallway/primary/central)
+"bzN" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 6
+	},
+/turf/open/floor/plasteel/white,
+/area/science/xenobiology)
 "bzY" = (
 /obj/structure/sign/poster/official/here_for_your_safety{
 	pixel_y = 32
@@ -11887,6 +11887,13 @@
 /obj/machinery/air_sensor/atmos/incinerator_tank,
 /turf/open/floor/engine/vacuum,
 /area/maintenance/disposal/incinerator)
+"cJR" = (
+/mob/living/simple_animal/slime,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/science/xenobiology)
 "cJS" = (
 /obj/effect/turf_decal/tile/blue{
 	dir = 8
@@ -31696,10 +31703,8 @@
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/command/nuke_storage)
 "gZy" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 8
-	},
-/turf/open/floor/engine,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plasteel/white,
 /area/science/xenobiology)
 "gZA" = (
 /obj/structure/table/wood,
@@ -35607,6 +35612,12 @@
 "hPZ" = (
 /turf/open/floor/wood,
 /area/maintenance/fore)
+"hQe" = (
+/obj/effect/turf_decal/stripes/yellow/corner{
+	dir = 1
+	},
+/turf/open/floor/engine,
+/area/engineering/supermatter_room)
 "hQj" = (
 /obj/machinery/portable_atmospherics/canister/carbon_dioxide,
 /turf/open/floor/plasteel/dark,
@@ -38032,6 +38043,12 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/mine/eva)
+"isu" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/science/xenobiology)
 "isC" = (
 /obj/machinery/camera{
 	c_tag = "Solar Maintenance - North East Access";
@@ -44449,13 +44466,6 @@
 /obj/machinery/holopad,
 /turf/open/floor/plasteel/white,
 /area/science/xenobiology)
-"jPy" = (
-/mob/living/simple_animal/slime,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 8
-	},
-/turf/open/floor/engine,
-/area/science/xenobiology)
 "jPz" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
@@ -48163,7 +48173,7 @@
 "kHA" = (
 /mob/living/simple_animal/slime,
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 4
+	dir = 8
 	},
 /turf/open/floor/engine,
 /area/science/xenobiology)
@@ -53246,10 +53256,6 @@
 /obj/effect/mapping_helpers/airlock/unres,
 /turf/open/floor/plating,
 /area/maintenance/starboard/fore)
-"lMm" = (
-/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
-/turf/open/floor/plasteel/white,
-/area/science/xenobiology)
 "lMq" = (
 /obj/machinery/door/firedoor,
 /obj/structure/cable/yellow{
@@ -55857,6 +55863,12 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/medical/surgery/room_b)
+"mnm" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/science/xenobiology)
 "mnv" = (
 /obj/structure/window/reinforced{
 	dir = 1
@@ -56865,15 +56877,6 @@
 	},
 /turf/open/floor/engine,
 /area/science/explab)
-"mzf" = (
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 8
-	},
-/turf/open/floor/plasteel/white,
-/area/science/xenobiology)
 "mzl" = (
 /obj/effect/turf_decal/tile/blue/half/contrasted{
 	dir = 8
@@ -61433,6 +61436,12 @@
 	},
 /turf/open/floor/plasteel,
 /area/security/brig/upper)
+"nxZ" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/science/xenobiology)
 "nyh" = (
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
@@ -65833,12 +65842,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
-"owU" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 4
-	},
-/turf/open/floor/engine,
-/area/science/xenobiology)
 "oxc" = (
 /obj/effect/turf_decal/bot,
 /obj/structure/ore_box,
@@ -71565,6 +71568,15 @@
 /obj/machinery/light/small/directional/west,
 /turf/open/floor/plasteel/dark,
 /area/service/chapel)
+"pJO" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/turf/open/floor/plasteel/white,
+/area/science/xenobiology)
 "pJU" = (
 /obj/structure/table,
 /obj/item/storage/fancy/donut_box,
@@ -89847,12 +89859,6 @@
 /obj/effect/turf_decal/siding/white,
 /turf/open/floor/plasteel/white/smooth/large,
 /area/service/kitchen)
-"tKG" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/turf/open/floor/engine,
-/area/science/xenobiology)
 "tKH" = (
 /obj/structure/closet/secure_closet/engineering_electrical,
 /obj/machinery/status_display/evac{
@@ -102055,12 +102061,6 @@
 	},
 /turf/open/floor/plasteel/stairs/medium,
 /area/cargo/storage)
-"wrq" = (
-/obj/effect/turf_decal/stripes/yellow/corner{
-	dir = 1
-	},
-/turf/open/floor/engine,
-/area/engineering/supermatter_room)
 "wrA" = (
 /obj/machinery/door/firedoor,
 /obj/machinery/door/airlock/hatch{
@@ -219494,19 +219494,19 @@ tRA
 nen
 hnK
 ohU
-kHA
+cJR
 djm
 hMz
-kHA
+cJR
 djm
 hMz
-owU
+mnm
 djm
 hMz
-owU
+mnm
 djm
 hMz
-owU
+mnm
 djm
 kEr
 pmE
@@ -219751,19 +219751,19 @@ rtI
 nQZ
 hnK
 qpZ
-tKG
+nxZ
 djm
 fIx
-tKG
+nxZ
 djm
 fIx
-tKG
+nxZ
 djm
 fIx
-tKG
+nxZ
 djm
 fIx
-tKG
+nxZ
 djm
 wUv
 xli
@@ -220515,23 +220515,23 @@ hZq
 hMg
 tFz
 wAz
-boh
+bzN
 yco
 pJd
 eZR
 xMi
 kRR
 iHG
-lMm
+gZy
 ntT
 lBR
-lMm
+gZy
 xye
 imY
 tsJ
 gry
 vrF
-lMm
+gZy
 iXu
 qHE
 qXA
@@ -221029,7 +221029,7 @@ euN
 ner
 jPs
 wtT
-mzf
+pJO
 kMq
 hnK
 wCC
@@ -221290,22 +221290,22 @@ mce
 ahq
 hnK
 djm
-tKG
+nxZ
 qfw
 djm
-tKG
+nxZ
 qfw
 djm
-tKG
+nxZ
 qfw
 djm
-tKG
+nxZ
 qfw
 djm
-tKG
+nxZ
 qfw
 djm
-tKG
+nxZ
 qUm
 wSx
 jli
@@ -221547,22 +221547,22 @@ hnK
 hnK
 hnK
 ohU
-gZy
+isu
 eSq
 ohU
-jPy
+kHA
 eSq
 ohU
-gZy
+isu
 eSq
 ohU
-gZy
+isu
 eSq
 ohU
-gZy
+isu
 eSq
 ohU
-gZy
+isu
 djm
 mKx
 uuf
@@ -269642,7 +269642,7 @@ nPa
 nPa
 xBh
 nPa
-wrq
+hQe
 wXH
 bBy
 mdC

@@ -17413,7 +17413,7 @@
 /area/hallway/primary/tram/right)
 "eUo" = (
 /obj/effect/turf_decal/stripes/yellow/corner{
-	dir = 8
+	dir = 1
 	},
 /obj/machinery/atmospherics/pipe/manifold/cyan/visible{
 	dir = 1
@@ -27541,6 +27541,9 @@
 	dir = 1
 	},
 /obj/machinery/atmospherics/pipe/simple/cyan/visible,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
 /turf/open/floor/engine,
 /area/engineering/supermatter_room)
 "hNu" = (
@@ -36367,6 +36370,9 @@
 /obj/effect/turf_decal/trimline/yellow/arrow_ccw{
 	dir = 4
 	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
 /turf/open/floor/engine,
 /area/engineering/supermatter_room)
 "kiG" = (
@@ -41939,6 +41945,9 @@
 	dir = 1;
 	name = "Mix Bypass"
 	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
 /turf/open/floor/engine,
 /area/engineering/supermatter_room)
 "lEP" = (
@@ -43156,10 +43165,6 @@
 /obj/machinery/airalarm/directional/west,
 /obj/effect/turf_decal/stripes/yellow/line,
 /obj/structure/reagent_dispensers/fueltank,
-/obj/machinery/camera{
-	c_tag = "Secure - Teleporter";
-	dir = 4
-	},
 /turf/open/floor/plasteel/dark,
 /area/command/teleporter)
 "lVD" = (
@@ -56495,7 +56500,7 @@
 /area/engineering/engine_smes)
 "pJN" = (
 /obj/effect/turf_decal/stripes/yellow/corner{
-	dir = 4
+	dir = 8
 	},
 /obj/machinery/atmospherics/pipe/simple/orange/visible,
 /turf/open/floor/engine,
@@ -67002,6 +67007,9 @@
 	},
 /obj/machinery/firealarm/directional/south,
 /obj/structure/ladder,
+/obj/machinery/camera/autoname{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/command/gateway)
 "szp" = (
@@ -68634,7 +68642,7 @@
 /area/hallway/secondary/entry)
 "sWk" = (
 /obj/effect/turf_decal/stripes/yellow/corner{
-	dir = 1
+	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/cyan/visible{
 	dir = 9
@@ -76755,7 +76763,7 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/stripes/yellow/corner{
-	dir = 4
+	dir = 8
 	},
 /turf/open/floor/engine,
 /area/engineering/supermatter_room)
@@ -80098,6 +80106,9 @@
 /obj/machinery/status_display/ai{
 	pixel_x = -32
 	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
 /turf/open/floor/engine,
 /area/engineering/supermatter_room)
 "vXc" = (
@@ -80478,6 +80489,9 @@
 "wbV" = (
 /obj/structure/table,
 /obj/item/hand_tele,
+/obj/machinery/camera/autoname{
+	dir = 4
+	},
 /turf/open/floor/catwalk_floor,
 /area/command/teleporter)
 "wbY" = (

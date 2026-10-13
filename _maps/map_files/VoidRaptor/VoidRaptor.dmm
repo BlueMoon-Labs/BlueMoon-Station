@@ -743,16 +743,6 @@
 	},
 /turf/open/space/basic,
 /area/space/nearstation)
-"ahc" = (
-/obj/effect/spawner/structure/window/reinforced,
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-4"
-	},
-/turf/open/floor/plating,
-/area/ai_monitored/turret_protected/aisat/foyer)
 "ahC" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 4
@@ -12231,19 +12221,6 @@
 /obj/machinery/cell_charger,
 /turf/open/floor/plasteel/rivets,
 /area/security/checkpoint/engineering)
-"cUX" = (
-/obj/effect/spawner/structure/window/reinforced,
-/obj/structure/cable/yellow{
-	icon_state = "1-4"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "1-8"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-1"
-	},
-/turf/open/floor/plating,
-/area/ai_monitored/turret_protected/aisat/foyer)
 "cVe" = (
 /obj/effect/turf_decal/trimline/brown/filled/warning,
 /obj/effect/turf_decal/arrows,
@@ -26792,6 +26769,20 @@
 	},
 /turf/open/floor/plasteel/grimy,
 /area/service/library)
+"gbe" = (
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/turf/open/floor/plasteel/white/smooth/edge{
+	dir = 8
+	},
+/area/science/xenobiology)
 "gbg" = (
 /obj/effect/turf_decal/trimline/yellow/filled/warning{
 	dir = 4
@@ -30406,6 +30397,19 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /turf/open/floor/wood/wood_large,
 /area/service/theater)
+"gQR" = (
+/obj/effect/spawner/structure/window/reinforced,
+/obj/structure/cable/yellow{
+	icon_state = "1-4"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
+	},
+/turf/open/floor/plating,
+/area/ai_monitored/turret_protected/aisat/foyer)
 "gQT" = (
 /obj/structure/closet/firecloset/wall{
 	pixel_x = -32
@@ -40243,13 +40247,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/department/science/xenobiology)
-"iZI" = (
-/mob/living/simple_animal/slime,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 8
-	},
-/turf/open/floor/circuit/green,
-/area/science/xenobiology)
 "iZL" = (
 /obj/effect/turf_decal/siding/thinplating_new/terracotta/corner{
 	dir = 4
@@ -42107,20 +42104,6 @@
 	},
 /turf/open/floor/plasteel/dark/smooth/small,
 /area/security/prison/work)
-"jvM" = (
-/obj/effect/turf_decal/trimline/purple/filled/line{
-	dir = 4
-	},
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 4
-	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 1
-	},
-/turf/open/floor/plasteel/white/smooth/edge{
-	dir = 8
-	},
-/area/science/xenobiology)
 "jvN" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
 	dir = 6
@@ -48596,6 +48579,12 @@
 	},
 /turf/open/floor/plasteel/rivets/large,
 /area/science/mixing/testlab)
+"kWI" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/turf/open/floor/circuit/green,
+/area/science/xenobiology)
 "kWO" = (
 /obj/machinery/duct,
 /obj/effect/mapping_helpers/airlock/access/all/science/genetics,
@@ -60192,6 +60181,20 @@
 /obj/effect/landmark/navigate_destination/lawyer,
 /turf/open/floor/plasteel/smooth/large,
 /area/service/lawoffice)
+"nBi" = (
+/obj/effect/turf_decal/trimline/purple/filled/warning{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/turf/open/floor/plasteel/white/smooth/edge{
+	dir = 8
+	},
+/area/science/xenobiology)
 "nBt" = (
 /obj/effect/turf_decal/tile/yellow/opposingcorners,
 /obj/effect/turf_decal/tile/red/opposingcorners{
@@ -66028,20 +66031,6 @@
 /obj/effect/turf_decal/bot,
 /turf/open/floor/wood/wood_large,
 /area/commons/fitness/recreation)
-"oTF" = (
-/obj/effect/turf_decal/trimline/purple/filled/warning{
-	dir = 4
-	},
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer2{
-	dir = 1
-	},
-/turf/open/floor/plasteel/white/smooth/edge{
-	dir = 8
-	},
-/area/science/xenobiology)
 "oTP" = (
 /obj/effect/turf_decal/delivery,
 /obj/effect/landmark/event_spawn,
@@ -79021,6 +79010,16 @@
 /obj/effect/turf_decal/bot,
 /turf/open/floor/carpet/blue,
 /area/command/heads_quarters/hop)
+"rPp" = (
+/obj/effect/spawner/structure/window/reinforced,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
+/turf/open/floor/plating,
+/area/ai_monitored/turret_protected/aisat/foyer)
 "rPu" = (
 /obj/effect/turf_decal/trimline/blue/filled/warning{
 	dir = 1
@@ -91503,7 +91502,7 @@
 /area/command/heads_quarters/captain/private)
 "uIM" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 8
+	dir = 4
 	},
 /turf/open/floor/circuit/green,
 /area/science/xenobiology)
@@ -95617,12 +95616,6 @@
 /obj/effect/turf_decal/bot,
 /turf/open/floor/circuit/red,
 /area/science/robotics/mechbay)
-"vAp" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 4
-	},
-/turf/open/floor/circuit/green,
-/area/science/xenobiology)
 "vAv" = (
 /obj/machinery/conveyor{
 	dir = 10;
@@ -103447,7 +103440,7 @@
 "xpN" = (
 /mob/living/simple_animal/slime,
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 4
+	dir = 8
 	},
 /turf/open/floor/circuit/green,
 /area/science/xenobiology)
@@ -105624,6 +105617,13 @@
 /obj/effect/turf_decal/bot,
 /turf/open/floor/wood/wood_large,
 /area/medical/psychology)
+"xOa" = (
+/mob/living/simple_animal/slime,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/turf/open/floor/circuit/green,
+/area/science/xenobiology)
 "xOb" = (
 /obj/structure/railing{
 	dir = 9
@@ -121108,7 +121108,7 @@ jgG
 jgG
 mqK
 mqK
-ahc
+rPp
 xLf
 xLf
 uwf
@@ -121621,7 +121621,7 @@ rRq
 jgG
 mqK
 mtO
-cUX
+gQR
 azA
 jij
 oGx
@@ -127303,16 +127303,16 @@ cqA
 etS
 xfL
 elQ
-xpN
+xOa
 elQ
 wOJ
-vAp
+uIM
 elQ
 wOJ
-vAp
+uIM
 elQ
 wOJ
-xpN
+xOa
 elQ
 tlT
 dOB
@@ -128594,8 +128594,8 @@ ucQ
 mJo
 bQi
 ktS
-oTF
-jvM
+nBi
+gbe
 kMe
 mJo
 rin
@@ -129359,16 +129359,16 @@ bCy
 eqR
 xfL
 elQ
-uIM
+kWI
 elQ
 wOJ
-iZI
+xpN
 elQ
 wOJ
 jxS
 elQ
 wOJ
-uIM
+kWI
 elQ
 tlT
 kJB
