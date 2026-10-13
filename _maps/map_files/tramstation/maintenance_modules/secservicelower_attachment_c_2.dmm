@@ -18,6 +18,14 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/port/central)
+"d" = (
+/obj/effect/turf_decal/delivery,
+/obj/machinery/door/poddoor/preopen{
+	id = "tomatotown"
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/maintenance/port/central)
 "e" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/closet,
@@ -28,17 +36,39 @@
 /turf/open/floor/plating,
 /area/maintenance/port/central)
 "f" = (
+/obj/structure/closet/secure_closet/vanguard,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line,
+/turf/open/floor/plasteel,
+/area/command/gateway)
+"g" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/structure/table,
-/turf/open/floor/plasteel/rivets,
-/area/maintenance/port/central)
-"i" = (
 /obj/machinery/door/airlock/maintenance_hatch{
 	name = "Maintenance Hatch"
 	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+"h" = (
+/obj/effect/turf_decal/trimline/yellow/warning,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/port/central)
+"i" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/closed/wall,
+/area/maintenance/port/central)
+"j" = (
+/turf/open/floor/plasteel/dark/textured/half{
+	dir = 1
+	},
+/area/command/gateway)
+"k" = (
+/obj/machinery/ammo_workbench,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/command/gateway)
 "l" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/chair/stool/directional/north,
@@ -54,10 +84,10 @@
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/port/central)
 "o" = (
+/obj/effect/decal/cleanable/dirt,
 /obj/machinery/door/airlock/maintenance_hatch{
 	name = "Maintenance Hatch"
 	},
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
 /area/maintenance/port/central)
 "p" = (
@@ -66,39 +96,80 @@
 /turf/open/floor/plating,
 /area/maintenance/port/central)
 "q" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/machinery/button/door/directional/west{
-	id = "tomatotown";
-	name = "Blast Door Toggle"
+/turf/closed/wall/r_wall,
+/area/command/gateway)
+"r" = (
+/obj/machinery/computer/vanguard_control/contraband,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 1
 	},
-/turf/open/floor/plasteel/rivets,
-/area/maintenance/port/central)
+/turf/open/floor/plasteel,
+/area/command/gateway)
 "s" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/rack,
-/obj/effect/spawner/lootdrop{
-	loot = list(/obj/item/stack/sheet/mineral/wood/twenty = 1, /obj/item/stack/sheet/cardboard/fifty = 1, /obj/item/stack/sheet/mineral/sandstone/thirty = 1)
+/obj/structure/closet/secure_closet/vanguard,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 10
 	},
-/obj/effect/spawner/lootdrop{
-	loot = list(/obj/item/stack/sheet/metal/fifty = 5, /obj/item/stack/sheet/glass/fifty = 5, /obj/item/stack/rods/fifty = 3, /obj/item/stack/sheet/rglass/fifty = 2)
+/turf/open/floor/plasteel,
+/area/command/gateway)
+"t" = (
+/turf/open/floor/plasteel/dark/textured/large,
+/area/command/gateway)
+"u" = (
+/obj/structure/table,
+/obj/item/storage/firstaid/regular{
+	pixel_x = 3;
+	pixel_y = 3
 	},
-/turf/open/floor/plasteel/rivets,
-/area/maintenance/port/central)
+/obj/machinery/recharger,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/command/gateway)
+"v" = (
+/obj/structure/bed/roller,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/command/gateway)
 "w" = (
-/obj/effect/decal/cleanable/dirt,
 /obj/effect/spawner/lootdrop{
 	loot = list(/obj/structure/reagent_dispensers/fueltank = 5, /obj/structure/reagent_dispensers/watertank = 4, /obj/structure/reagent_dispensers/watertank/high = 1)
 	},
-/turf/open/floor/plating,
-/area/maintenance/port/central)
-"z" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/machinery/door/poddoor/preopen{
-	id = "tomatotown"
-	},
-/obj/effect/turf_decal/delivery,
 /turf/open/floor/plating,
 /area/maintenance/port/central)
+"x" = (
+/obj/structure/closet/crate/freezer/blood,
+/obj/machinery/iv_drip,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 6
+	},
+/turf/open/floor/plasteel,
+/area/command/gateway)
+"z" = (
+/obj/effect/landmark/start/expeditor,
+/turf/open/floor/plasteel/dark/textured/corner{
+	dir = 4
+	},
+/area/command/gateway)
+"A" = (
+/obj/machinery/vanguard/contraband,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/command/gateway)
+"B" = (
+/obj/effect/landmark/start/expeditor,
+/turf/open/floor/plasteel/dark/textured/half{
+	dir = 4
+	},
+/area/command/gateway)
 "C" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/window{
@@ -108,6 +179,18 @@
 /obj/effect/spawner/lootdrop/maintenance/five,
 /turf/open/floor/plating,
 /area/maintenance/port/central)
+"D" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 8
+	},
+/obj/machinery/recharge_station,
+/obj/effect/turf_decal/bot,
+/obj/machinery/light/cold/directional/west,
+/turf/open/floor/plasteel,
+/area/command/gateway)
+"E" = (
+/turf/open/floor/plasteel/dark/textured/corner,
+/area/command/gateway)
 "F" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/closet/crate,
@@ -118,6 +201,13 @@
 	},
 /turf/open/floor/plating,
 /area/maintenance/port/central)
+"G" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 8
+	},
+/obj/effect/landmark/start/expeditor,
+/turf/open/floor/plasteel,
+/area/command/gateway)
 "H" = (
 /turf/template_noop,
 /area/template_noop)
@@ -145,22 +235,85 @@
 /obj/structure/chair/stool/directional/south,
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/port/central)
+"L" = (
+/obj/machinery/bountyvend/plus,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 4
+	},
+/obj/machinery/light/cold/directional/east,
+/turf/open/floor/plasteel,
+/area/command/gateway)
 "M" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/spawner/lootdrop/syndicate_present,
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/port/central)
+"N" = (
+/obj/structure/table,
+/obj/item/radio/off,
+/obj/item/radio/off{
+	pixel_x = 6;
+	pixel_y = 4
+	},
+/obj/item/radio/off{
+	pixel_x = -6;
+	pixel_y = 4
+	},
+/obj/item/radio/off{
+	pixel_y = 6
+	},
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 5
+	},
+/turf/open/floor/plasteel,
+/area/command/gateway)
 "P" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/closet/firecloset,
 /turf/open/floor/plating,
 /area/maintenance/port/central)
+"Q" = (
+/obj/structure/ladder,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 9
+	},
+/turf/open/floor/plasteel,
+/area/command/gateway)
+"R" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/command/gateway)
+"S" = (
+/turf/open/floor/plasteel/dark/textured/half{
+	dir = 4
+	},
+/area/command/gateway)
+"T" = (
+/turf/open/floor/plasteel/dark/textured/corner{
+	dir = 8
+	},
+/area/command/gateway)
 "U" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
 /area/maintenance/port/central)
 "V" = (
 /turf/closed/wall,
+/area/maintenance/port/central)
+"W" = (
+/turf/open/floor/plasteel/dark/textured/corner{
+	dir = 1
+	},
+/area/command/gateway)
+"X" = (
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Maintenance Hatch"
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/space/basic,
 /area/maintenance/port/central)
 "Y" = (
 /obj/effect/decal/cleanable/dirt,
@@ -178,97 +331,104 @@
 /area/maintenance/port/central)
 
 (1,1,1) = {"
-H
-H
-H
+q
+q
+q
+q
+q
+q
+q
 V
 V
 V
 V
-V
-H
-H
 H
 H
 "}
 (2,1,1) = {"
-H
-H
-H
-V
+q
+Q
+R
+D
+G
 s
+q
 n
 n
-V
-H
+n
 V
 V
 H
 "}
 (3,1,1) = {"
-H
-H
-H
-V
+q
+A
+E
+j
+z
 f
+q
 n
 n
-V
-H
+n
 V
 Y
 n
 "}
 (4,1,1) = {"
-H
-H
-V
-V
-V
-V
+q
+r
+S
+t
+B
+f
+q
 i
-V
+g
 V
 V
 C
 M
 "}
 (5,1,1) = {"
-H
-H
-V
-n
-n
 q
-m
-z
-c
+u
+T
+j
+W
+f
+q
+h
 n
+d
+c
 n
 n
 "}
 (6,1,1) = {"
-H
-H
-V
-n
-n
-n
+q
+N
+k
+L
+v
+x
+q
 m
-z
-c
 n
+d
+c
 n
 n
 "}
 (7,1,1) = {"
-V
-V
-V
-n
-V
-V
-i
+q
+q
+q
+q
+q
+q
+q
+g
 V
 V
 K
@@ -276,6 +436,7 @@ I
 l
 "}
 (8,1,1) = {"
+H
 V
 P
 V
@@ -290,11 +451,12 @@ n
 n
 "}
 (9,1,1) = {"
+H
 V
 U
 o
 n
-V
+X
 J
 J
 V
@@ -304,6 +466,7 @@ H
 H
 "}
 (10,1,1) = {"
+H
 V
 p
 V
@@ -318,6 +481,7 @@ H
 H
 "}
 (11,1,1) = {"
+H
 V
 V
 V
@@ -332,6 +496,7 @@ H
 H
 "}
 (12,1,1) = {"
+H
 H
 H
 H
