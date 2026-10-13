@@ -27,6 +27,12 @@
 		return gear_crypto_failure(diagnostics, "invalid_secret_config")
 	var/node_executable = CONFIG_GET(string/loadout_crypto_node)
 	var/static/regex/unsafe_executable = regex(@"[^A-Za-zА-Яа-яЁё0-9_ ./\\:\-]")
+	// TGS bootstraps Node only for its build shell. Its hook writes the actual
+	// persistent-cache path here so the game process can use that same runtime.
+	if(node_executable == "node" && fexists("tools/loadout_crypto/node_path.txt"))
+		var/bootstrap_node = trim(file2text("tools/loadout_crypto/node_path.txt"))
+		if(length_char(bootstrap_node) && !unsafe_executable.Find(bootstrap_node))
+			node_executable = bootstrap_node
 	if(!length_char(node_executable) || unsafe_executable.Find(node_executable))
 		return gear_crypto_failure(diagnostics, "invalid_node_executable")
 	var/state = "[secret]|[node_executable]"

@@ -71,6 +71,7 @@ htmlcov/
 .coverage
 .coverage.*
 .cache
+tools/loadout_crypto/node_path.txt
 nosetests.xml
 coverage.xml
 .hypothesis/

@@ -73,8 +73,12 @@ cached as invalid IDs.
 | `helper_failed` | The helper started but failed internally; native errors are intentionally not exposed. |
 
 The TGS build uses `tools/bootstrap/node` with a separate cache. A successful
-TGUI build does **not** prove `node` is on the game process's PATH. Configure
-`LOADOUT_CRYPTO_NODE` with an executable available in the runtime environment.
+TGUI build does **not** put Node on the game process's PATH. The Linux TGS
+precompile hooks now record the cached executable path in the generated
+`tools/loadout_crypto/node_path.txt`. When `LOADOUT_CRYPTO_NODE` is left at its
+default `node`, the game uses this generated path. An explicit config value
+continues to override it. Deploy the build output and repository files together
+so the generated path file is available to the game.
 
 `rustg_hash_string` is a one-way hash API, not reversible encryption. Replacing
 this bridge with a native macro requires an AES-GCM export in the installed

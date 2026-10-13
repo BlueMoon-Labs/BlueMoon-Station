@@ -90,3 +90,13 @@ echo "Compiling tgui..."
 cd "$1"
 chmod +x tools/bootstrap/node  # Workaround for https://github.com/tgstation/tgstation-server/issues/1167
 env TG_BOOTSTRAP_CACHE="$original_dir" TG_BOOTSTRAP_NODE_LINUX=1 CBT_BUILD_MODE="TGS" tools/bootstrap/node tools/build/build.js
+
+# The bootstrap script exposes its cached Node only to the build subprocess.
+# Record the persistent cache path for the running game process as well.
+loadout_crypto_node="$original_dir/node-v$NODE_VERSION_LTS-linux-x64/bin/node"
+if [ ! -x "$loadout_crypto_node" ]; then
+	echo "Bootstrapped Node was not found at $loadout_crypto_node"
+	exit 1
+fi
+printf '%s\n' "$loadout_crypto_node" > tools/loadout_crypto/node_path.txt.tmp
+mv tools/loadout_crypto/node_path.txt.tmp tools/loadout_crypto/node_path.txt
