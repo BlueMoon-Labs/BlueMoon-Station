@@ -19211,7 +19211,9 @@
 /obj/effect/turf_decal/trimline/blue/filled/warning{
 	dir = 6
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 9
+	},
 /obj/machinery/dna_scannernew,
 /turf/open/floor/plasteel/white,
 /area/medical/exam_room)
@@ -21289,6 +21291,9 @@
 	},
 /obj/structure/disposalpipe/segment{
 	dir = 10
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 6
 	},
 /turf/open/floor/plasteel/white/smooth/edge{
 	dir = 1
@@ -85632,9 +85637,6 @@
 	},
 /area/engineering/storage/tcomms)
 "trR" = (
-/obj/machinery/door/airlock/maintenance{
-	name = "Exam Room Maintenance"
-	},
 /obj/effect/mapping_helpers/airlock/access/any/medical/general,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
@@ -85642,6 +85644,9 @@
 	icon_state = "1-2"
 	},
 /obj/structure/disposalpipe/segment,
+/obj/machinery/door/airlock/maintenance{
+	name = "Exam Room Maintenance"
+	},
 /turf/open/floor/catwalk_floor/iron_smooth,
 /area/maintenance/department/medical/central)
 "tsG" = (
