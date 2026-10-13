@@ -23509,6 +23509,12 @@
 /obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
 /turf/open/floor/plating,
 /area/maintenance/port/fore)
+"fjC" = (
+/obj/effect/turf_decal/tile/red{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark/textured/edge,
+/area/security/prison)
 "fjI" = (
 /obj/item/radio/intercom{
 	pixel_x = 27
@@ -34302,7 +34308,6 @@
 /obj/effect/turf_decal/tile/red/half/contrasted{
 	dir = 1
 	},
-/obj/structure/closet/secure_closet/genpop,
 /turf/open/floor/plasteel/dark/textured,
 /area/security/prison)
 "hDn" = (
@@ -42040,11 +42045,14 @@
 /turf/open/floor/plasteel,
 /area/maintenance/disposal/incinerator)
 "jno" = (
-/obj/effect/turf_decal/tile/red{
+/obj/structure/railing{
 	dir = 1
 	},
-/turf/open/floor/plasteel/dark/textured/edge,
-/area/security/prison)
+/obj/machinery/vr_sleeper,
+/turf/open/floor/plasteel/dark/side{
+	dir = 1
+	},
+/area/security/prison/workout)
 "jnq" = (
 /obj/structure/chair/pew{
 	dir = 1
@@ -77823,10 +77831,9 @@
 /turf/open/floor/plasteel/dark/textured,
 /area/medical/cryo)
 "reg" = (
-/obj/effect/turf_decal/siding/red{
-	dir = 4
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
 	},
-/obj/structure/closet/secure_closet/genpop,
 /turf/open/floor/plasteel/dark/textured,
 /area/security/prison)
 "rel" = (
@@ -97326,14 +97333,18 @@
 /turf/closed/wall,
 /area/medical/cryo)
 "vrW" = (
-/obj/structure/railing{
-	dir = 1
+/obj/effect/turf_decal/trimline/red/filled/line{
+	dir = 9
 	},
-/obj/machinery/vr_sleeper,
+/obj/machinery/light/small/directional/north,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 4
+	},
+/obj/structure/closet/secure_closet/genpop,
 /turf/open/floor/plasteel/dark/side{
-	dir = 1
+	dir = 9
 	},
-/area/security/prison/workout)
+/area/security/prison/safe)
 "vse" = (
 /obj/machinery/vending/cola/random,
 /obj/effect/turf_decal/tile/neutral/fourcorners,
@@ -104619,12 +104630,6 @@
 /obj/effect/landmark/event_spawn,
 /turf/open/floor/plasteel/rivets,
 /area/security/brig/upper)
-"wUR" = (
-/obj/effect/turf_decal/tile/red/half/contrasted{
-	dir = 1
-	},
-/turf/open/floor/plasteel/dark/textured,
-/area/security/prison)
 "wUW" = (
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 8
@@ -140075,7 +140080,7 @@ saG
 nbL
 clk
 foc
-vrW
+jno
 tiF
 gyS
 tRF
@@ -140332,7 +140337,7 @@ saG
 sfw
 rAZ
 vKR
-vrW
+jno
 ljL
 qFE
 qiw
@@ -140589,7 +140594,7 @@ saG
 nbL
 dJM
 foc
-vrW
+jno
 tiF
 gyS
 tRF
@@ -202781,7 +202786,7 @@ tqY
 tSu
 tSu
 mzY
-jgK
+vrW
 sPt
 hhh
 sRK
@@ -203552,7 +203557,7 @@ xQg
 qoX
 tSu
 mzY
-jgK
+vrW
 sPt
 mzY
 jEP
@@ -204326,7 +204331,7 @@ mzY
 ubf
 she
 maN
-jno
+fjC
 mAa
 bWc
 qec
@@ -204580,7 +204585,7 @@ xQg
 xQg
 xQg
 mvv
-wUR
+reg
 iAl
 kVr
 ycB
@@ -205095,8 +205100,8 @@ xQg
 xQg
 jTC
 hDh
-reg
-reg
+usY
+usY
 usY
 jdC
 jdC
