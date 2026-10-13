@@ -57962,7 +57962,7 @@
 	},
 /obj/machinery/button/door{
 	id = "teleportcommand";
-	name = "Telepor Access Shutter Control";
+	name = "Teleport Access Shutter Control";
 	pixel_x = -26;
 	req_access_txt = "17";
 	pixel_y = 7
