@@ -31179,6 +31179,16 @@
 "gFJ" = (
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/hallway/secondary/command)
+"gFR" = (
+/obj/item/hilbertshotel/ghostdojo{
+	pixel_y = 16;
+	pixel_x = -16
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 6
+	},
+/turf/open/floor/carpet,
+/area/hallway/primary/central)
 "gFW" = (
 /obj/machinery/portable_atmospherics/canister/water_vapor,
 /obj/machinery/firealarm/directional/south,
@@ -32335,6 +32345,12 @@
 	},
 /turf/open/floor/plasteel,
 /area/engineering/lobby)
+"gTy" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 9
+	},
+/turf/open/floor/carpet,
+/area/hallway/primary/central)
 "gTz" = (
 /obj/effect/turf_decal/trimline/yellow/filled/line{
 	dir = 8
@@ -34273,6 +34289,12 @@
 /obj/effect/turf_decal/tile/yellow/full,
 /turf/open/floor/plasteel/smooth/large,
 /area/maintenance/starboard/central)
+"hou" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 5
+	},
+/turf/open/floor/carpet,
+/area/hallway/primary/central)
 "hox" = (
 /obj/machinery/door/firedoor,
 /obj/structure/cable/yellow{
@@ -37049,12 +37071,12 @@
 	pixel_y = 14
 	},
 /obj/item/storage/box/mousetraps{
-	pixel_x = -9;
+	pixel_x = -8;
 	pixel_y = 14
 	},
 /obj/item/storage/box/mousetraps{
-	pixel_x = 5;
-	pixel_y = 27
+	pixel_x = 7;
+	pixel_y = 20
 	},
 /obj/item/restraints/legcuffs/beartrap{
 	pixel_x = -11;
@@ -37067,6 +37089,10 @@
 /obj/effect/landmark/start/janitor,
 /obj/effect/turf_decal/tile/purple{
 	dir = 8
+	},
+/obj/structure/reagent_dispensers/spacecleanertank{
+	pixel_y = 30;
+	pixel_x = 0
 	},
 /turf/open/floor/plasteel/checker,
 /area/service/janitor)
@@ -56170,6 +56196,12 @@
 /obj/effect/landmark/start/hangover,
 /turf/open/floor/glass/reinforced,
 /area/hallway/secondary/construction)
+"lOS" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 10
+	},
+/turf/open/floor/carpet,
+/area/hallway/primary/central)
 "lPj" = (
 /obj/machinery/door/airlock/command{
 	name = "Teleport Access"
@@ -149042,8 +149074,8 @@ lPB
 rzn
 aEl
 wYz
-pKo
-pKo
+gTy
+lOS
 pKo
 jdw
 sTH
@@ -149299,8 +149331,8 @@ uMN
 rzn
 mwC
 wYz
-pKo
-pKo
+hou
+gFR
 pKo
 jdw
 sTH

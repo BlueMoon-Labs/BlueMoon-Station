@@ -305,6 +305,8 @@ var/list/ru_strings = list(
 	"set_custom_species_lore" = "Изменить",
 	"ooc_notes" = "OOC заметки",
 	"set_ooc_notes" = "Изменить",
+	"ass_photo" = "Скан задницы",
+	"set_ass_photo" = "Установить скан задницы",
 	"records" = "Записи",
 	"records_header" = "Записи",
 	"security_records" = "Записи безопасности",
@@ -1159,6 +1161,8 @@ var/list/en_strings = list(
 	"set_species_lore" = "Set Custom Species Lore Text",
 	"ooc_notes" = "OOC notes",
 	"set_ooc_notes" = "Set OOC notes",
+	"ass_photo" = "Butt Scan",
+	"set_ass_photo" = "Set Butt Scan",
 
 	"records" = "Records",
 	"records_header" = "Records",

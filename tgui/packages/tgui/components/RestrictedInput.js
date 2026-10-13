@@ -9,17 +9,30 @@ const DEFAULT_MIN = 0;
 const DEFAULT_MAX = 10000;
 
 /**
- * Takes a string input and parses integers from it.
+ * Takes a string input and parses a number from it (floats supported).
  * If none: Minimum is set.
  * Else: Clamps it to the given range.
+ * Comma is accepted as a decimal separator (RU locale) and normalized
+ * to a dot. A leading minus is preserved so negative ranges keep working.
  */
 const getClampedNumber = (value, minValue, maxValue) => {
-  const minimum = minValue || DEFAULT_MIN;
-  const maximum = maxValue || maxValue === 0 ? maxValue : DEFAULT_MAX;
-  if (!value || !value.length) {
+  const minimum = minValue ?? DEFAULT_MIN;
+  const maximum = maxValue ?? DEFAULT_MAX;
+  if (value === null || value === undefined || !String(value).length) {
     return String(minimum);
   }
-  let parsedValue = parseInt(value.replace(/\D/g, ''), 10);
+  const normalized = String(value).replace(/,/g, '.').trim();
+  let parsedValue;
+  if (/^-?(\d+\.?\d*|\.\d+)$/.test(normalized)) {
+    parsedValue = parseFloat(normalized);
+  } else {
+    // Tolerant fallback for pasted garbage ("12abc34"): extract the first
+    // number-like chunk instead of dropping the separators entirely.
+    // NOTE: parseInt(value.replace(/\D/g, '')) used to live here — it stripped
+    // "." / "," / "-" so "0.1" became 1, "7.7" became 77 and "-1" became 1.
+    const match = normalized.match(/-?\d*\.?\d+/);
+    parsedValue = match ? parseFloat(match[0]) : NaN;
+  }
   if (isNaN(parsedValue)) {
     return String(minimum);
   } else {
@@ -62,7 +75,9 @@ export class RestrictedInput extends Component {
         this.setEditing(true);
       }
       if (onInput) {
-        onInput(e, +e.target.value);
+        const raw = String(e.target.value).replace(/,/g, '.');
+        const parsed = raw.trim().length ? +raw : NaN;
+        onInput(e, parsed);
       }
     };
     this.handleKeyDown = (e) => {
@@ -191,7 +206,7 @@ export class RestrictedInput extends Component {
           onKeyDown={this.handleKeyDown}
           ref={this.inputRef}
           type="text"
-          inputMode="numeric"
+          inputMode="decimal"
         />
       </Box>
     );

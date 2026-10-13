@@ -69,7 +69,7 @@
 	TEST_ASSERT_NOTNULL(trace, "След появляется на указанной клетке.")
 	allocated += trace
 	TEST_ASSERT_EQUAL(trace.name, heretic.deed.trace_name, "След носит имя из дела.")
-	TEST_ASSERT_EQUAL(trace.icon_state, "sigil_ash", "След использует печать пути.")
+	TEST_ASSERT_EQUAL(trace.icon_state, "trace_ash", "След рисует выжженную ладонь Пепла.")
 	TEST_ASSERT_EQUAL(knowledge.combat_resource, 1, "Действие даёт единицу запаса силы.")
 	var/obj/item/forbidden_book/book = allocate(/obj/item/forbidden_book, user)
 	var/list/data = book.ui_data(user)
@@ -117,3 +117,15 @@
 		var/datum/heretic_deed/craft_deed = new deed_type
 		allocated += craft_deed
 		TEST_ASSERT(findtext(craft_deed.desc, "Между зачётами Мансусу нужно [HERETIC_DEED_COOLDOWN / (1 SECONDS)] с"), "Дело [deed_type] называет паузу между зачётами: [craft_deed.desc]")
+
+/// Каждое дело оставляет свой непрозрачный рисунок следа из листа следов.
+/datum/unit_test/heretic_deed_trace_states/Run()
+	var/obj/effect/decal/cleanable/heretic_trace/trace_type = /obj/effect/decal/cleanable/heretic_trace
+	TEST_ASSERT_EQUAL(initial(trace_type.alpha), 255, "След дела не полупрозрачный.")
+	var/list/trace_states = icon_states(initial(trace_type.icon))
+	var/list/used = list()
+	for(var/datum/heretic_deed/deed_type as anything in subtypesof(/datum/heretic_deed))
+		var/state = initial(deed_type.trace_state)
+		TEST_ASSERT(state in trace_states, "Рисунка [state] для [deed_type] нет в листе следов.")
+		TEST_ASSERT(!(state in used), "[deed_type] повторяет чужой рисунок [state].")
+		used += state

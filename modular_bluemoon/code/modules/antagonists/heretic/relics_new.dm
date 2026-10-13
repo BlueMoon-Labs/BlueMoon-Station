@@ -14,8 +14,7 @@
 	return ..()
 
 /obj/effect/temp_visual/heretic_path_feedback/blade_mark
-	icon_state = "cleave"
-	color = "#c5b5f4"
+	icon_state = "blade_mark_burst"
 
 /obj/effect/temp_visual/heretic_path_feedback/moon_mark
 	icon_state = "moon_insanity_overlay"
@@ -105,18 +104,19 @@
 		return FALSE
 	busy = TRUE
 	user.visible_message(span_warning("[user] прижимает звенящий камертон к ладони. Лезвия медленно входят в кожу."))
-	playsound(user, 'sound/effects/clangsmall1.ogg', 40, FALSE)
-	new /obj/effect/temp_visual/heretic_path_feedback(get_turf(user), "ring_leader_effect", "#95c5e8", tuning_time)
+	playsound(user, 'modular_bluemoon/sound/heretic/blade_guard.ogg', 35, TRUE)
+	var/obj/effect/temp_visual/heretic_fork_hum/hum = new(get_turf(user), tuning_time)
 	var/completed = do_after(user, tuning_time, target = user, extra_checks = CALLBACK(src, PROC_REF(can_tune), user))
 	busy = FALSE
 	if(!completed || !can_tune(user))
+		qdel(hum)
 		return FALSE
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blade/knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/base_blade)
 	user.adjustBruteLoss(8)
 	knowledge.gain_combat_resource()
 	COOLDOWN_START(src, relic_cooldown, 25 SECONDS)
-	playsound(user, 'sound/block_parry/sfx-parry.ogg', 45, FALSE)
+	playsound(user, 'modular_bluemoon/sound/heretic/parry.ogg', 45, TRUE)
 	return TRUE
 
 /datum/eldritch_knowledge/blade_guard/recipe_snowflake_check(list/atoms, loc, list/selected_atoms, mob/living/user)
@@ -144,7 +144,7 @@
 		var/mob/living/simple_animal/hostile/illusion/heretic_moon/reflection = target
 		reflection.hold_position(user.a_intent != INTENT_HARM)
 		to_chat(user, span_notice((reflection.holding_position ? "Отражение ждёт на месте. Укажите врага для погони или свободный пол для перестановки." : "Отражение снова преследует врагов. Укажите конкретную цель или свободный пол для перестановки.")))
-		new /obj/effect/temp_visual/heretic_path_feedback(get_turf(target), "cosmic_ring", "#d9e8ff", 8)
+		new /obj/effect/temp_visual/heretic_moon_fx/frame(get_turf(target))
 	else if(isturf(target))
 		redirect(user, target)
 	else if(isliving(target))
@@ -183,8 +183,8 @@
 		return FALSE
 	busy = TRUE
 	var/mob/living/simple_animal/hostile/illusion/heretic_moon/reflection = selected_reflection.resolve()
-	new /obj/effect/temp_visual/heretic_path_feedback(target, "cosmic_ring", "#d9e8ff", focusing_time)
-	playsound(target, 'modular_bluemoon/sound/heretic/moon_reflection.ogg', 35, TRUE)
+	new /obj/effect/temp_visual/heretic_moon_fx/pool(target, focusing_time)
+	playsound(target, heretic_moon_reflection_sound(), 35, TRUE)
 	var/completed = do_after(user, focusing_time, target = user, extra_checks = CALLBACK(src, PROC_REF(can_redirect), user, target))
 	busy = FALSE
 	if(!completed || !can_redirect(user, target))
@@ -193,7 +193,7 @@
 	new /obj/effect/temp_visual/heretic_afterimage(origin, reflection, "#b7c9ee")
 	reflection.forceMove(target)
 	reflection.hold_position(TRUE)
-	new /obj/effect/temp_visual/heretic_path_feedback(target, "cosmic_ring", "#d9e8ff", 8)
+	new /obj/effect/temp_visual/heretic_moon_fx/rise(target)
 	COOLDOWN_START(src, relic_cooldown, 15 SECONDS)
 	return TRUE
 

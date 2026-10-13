@@ -5,12 +5,12 @@
 	if(!canSuicide())
 		return
 	var/oldkey = ckey
-	var/confirm = alert("Are you sure you want to commit suicide?", "Confirm Suicide", "Yes", "No")
+	var/confirm = tgui_alert(src, "Вы уверены, что хотите совершить суицид?", "Подтверждение суицида", list("Да", "Нет"))
 	if(ckey != oldkey)
 		return
 	if(!canSuicide())
 		return
-	if(confirm == "Yes")
+	if(confirm == "Да")
 		suiciding = TRUE
 		var/obj/item/held_item = get_active_held_item()
 		if(held_item)
@@ -84,10 +84,10 @@
 	set hidden = 1
 	if(!canSuicide())
 		return
-	var/confirm = alert("Are you sure you want to commit suicide?", "Confirm Suicide", "Yes", "No")
+	var/confirm = tgui_alert(src, "Вы уверены, что хотите совершить суицид?", "Подтверждение суицида", list("Да", "Нет"))
 	if(!canSuicide())
 		return
-	if(confirm == "Yes")
+	if(confirm == "Да")
 		suiciding = 1
 		visible_message("<span class='danger'>[src]'s brain is growing dull and lifeless. [ru_who(TRUE)] look[p_s()] like [ru_who()] lost the will to live.</span>", \
 						"<span class='userdanger'>[src]'s brain is growing dull and lifeless. [ru_who(TRUE)] look[p_s()] like [ru_who()] lost the will to live.</span>")
@@ -100,10 +100,10 @@
 	set hidden = 1
 	if(!canSuicide())
 		return
-	var/confirm = alert("Are you sure you want to commit suicide?", "Confirm Suicide", "Yes", "No")
+	var/confirm = tgui_alert(src, "Вы уверены, что хотите совершить суицид?", "Подтверждение суицида", list("Да", "Нет"))
 	if(!canSuicide())
 		return
-	if(confirm == "Yes")
+	if(confirm == "Да")
 		suiciding = 1
 		visible_message("<span class='danger'>[src] is attempting to bite [ru_ego()] tongue. It looks like [p_theyre()] trying to commit suicide.</span>", \
 				"<span class='userdanger'>[src] is attempting to bite [ru_ego()] tongue. It looks like [p_theyre()] trying to commit suicide.</span>")
@@ -117,10 +117,10 @@
 	set hidden = 1
 	if(!canSuicide())
 		return
-	var/confirm = alert("Are you sure you want to commit suicide?", "Confirm Suicide", "Yes", "No")
+	var/confirm = tgui_alert(src, "Вы уверены, что хотите совершить суицид?", "Подтверждение суицида", list("Да", "Нет"))
 	if(!canSuicide())
 		return
-	if(confirm == "Yes")
+	if(confirm == "Да")
 		suiciding = 1
 		visible_message("<span class='danger'>[src] is powering down. It looks like [p_theyre()] trying to commit suicide.</span>", \
 				"<span class='userdanger'>[src] is powering down. It looks like [p_theyre()] trying to commit suicide.</span>")
@@ -135,10 +135,10 @@
 	set hidden = 1
 	if(!canSuicide())
 		return
-	var/confirm = alert("Are you sure you want to commit suicide?", "Confirm Suicide", "Yes", "No")
+	var/confirm = tgui_alert(src, "Вы уверены, что хотите совершить суицид?", "Подтверждение суицида", list("Да", "Нет"))
 	if(!canSuicide())
 		return
-	if(confirm == "Yes")
+	if(confirm == "Да")
 		suiciding = 1
 		visible_message("<span class='danger'>[src] is powering down. It looks like [p_theyre()] trying to commit suicide.</span>", \
 				"<span class='userdanger'>[src] is powering down. It looks like [p_theyre()] trying to commit suicide.</span>")
@@ -151,8 +151,8 @@
 
 /mob/living/silicon/pai/verb/suicide()
 	set hidden = 1
-	var/confirm = alert("Are you sure you want to commit suicide?", "Confirm Suicide", "Yes", "No")
-	if(confirm == "Yes")
+	var/confirm = tgui_alert(src, "Вы уверены, что хотите совершить суицид?", "Подтверждение суицида", list("Да", "Нет"))
+	if(confirm == "Да")
 		var/turf/T = get_turf(src.loc)
 		T.visible_message("<span class='notice'>[src] flashes a message across its screen, \"Wiping core files. Please acquire a new personality to continue using pAI device functions.\"</span>", null, \
 		 "<span class='notice'>[src] bleeps electronically.</span>")
@@ -161,16 +161,16 @@
 
 		death(0)
 	else
-		to_chat(src, "Aborting suicide attempt.")
+		to_chat(src, "Попытка суицида отменена.")
 
 /mob/living/carbon/alien/humanoid/verb/suicide()
 	set hidden = 1
 	if(!canSuicide())
 		return
-	var/confirm = alert("Are you sure you want to commit suicide?", "Confirm Suicide", "Yes", "No")
+	var/confirm = tgui_alert(src, "Вы уверены, что хотите совершить суицид?", "Подтверждение суицида", list("Да", "Нет"))
 	if(!canSuicide())
 		return
-	if(confirm == "Yes")
+	if(confirm == "Да")
 		suiciding = 1
 		visible_message("<span class='danger'>[src] is thrashing wildly! It looks like [p_theyre()] trying to commit suicide.</span>", \
 				"<span class='userdanger'>[src] is thrashing wildly! It looks like [p_theyre()] trying to commit suicide.</span>", \
@@ -186,10 +186,10 @@
 	set hidden = 1
 	if(!canSuicide())
 		return
-	var/confirm = alert("Are you sure you want to commit suicide?", "Confirm Suicide", "Yes", "No")
+	var/confirm = tgui_alert(src, "Вы уверены, что хотите совершить суицид?", "Подтверждение суицида", list("Да", "Нет"))
 	if(!canSuicide())
 		return
-	if(confirm == "Yes")
+	if(confirm == "Да")
 		suiciding = 1
 		visible_message("<span class='danger'>[src] begins to fall down. It looks like [ru_who()] lost the will to live.</span>", \
 						"<span class='userdanger'>[src] begins to fall down. It looks like [ru_who()] lost the will to live.</span>")

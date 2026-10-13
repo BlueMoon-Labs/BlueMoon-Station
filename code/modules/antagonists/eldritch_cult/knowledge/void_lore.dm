@@ -2,28 +2,28 @@
 
 /datum/eldritch_knowledge/base_void
 	name = "Мерцание зимы"
-	summary = "В холоде копятся осколки зимы, а Зимний предел за осколок сковывает и глушит врагов на поле 5×5."
+	summary = "В холоде и у своих ламп в инее копятся осколки зимы, Зимний предел за осколок сковывает врагов на поле 5×5."
 	details = list(
-		"Нож на руне в холоде до 0 °C или в своём Зимнем пределе даёт клинок Пустоты.",
-		"На полу с воздухом холоднее 0 °C осколок приходит раз в 20 секунд; открытый космос не годится.",
-		"В тепле осколки копятся только до 2, второй - через 30 секунд после первого.",
-		"Готовую цель в своём поле сердце уводит в изнанку за 1 секунду; увод сорвётся, если цель встанет или выйдет из поля.",
+		"Нож на руне не теплее 0 °C, в своём Зимнем пределе или у своей лампы в инее даёт клинок Пустоты.",
+		"Осколок раз в 20 секунд на полу не теплее 0 °C или у своей лампы в инее; в тепле - не больше 2 раз в 30 секунд.",
+		"Хватка гасит работающую лампу и покрывает её инеем, новый отдел идёт в дело пути; в инее до 5 ламп.",
+		"У лампы в инее вы как на холоде, из изнанки можно выйти к ней; новая лампа или нулевой жезл снимают иней.",
 		"Зимний предел за 1 осколок: одно поле 5×5 на 15 секунд замедляет, охлаждает и глушит врагов.",
 		"Скованность спадает через 4 секунды после последнего воздействия; воздух поле не охлаждает.",
-		"Хватка по работающему светильнику гасит его, новый отдел идёт в дело пути.",
+		"Цель в своём шаре или готовую в поле сердце уводит в изнанку за 1 секунду; из поля увод сорвётся, если цель встанет.",
 	)
 	role = HERETIC_ROLE_CRAFT
 	ritual_hints = list(
 		"Подойдут кухонные и боевые ножи, тесаки и заточки.",
-		"Воздух на клетке руны должен быть не теплее 0 °C.",
+		"Воздух на клетке руны должен быть не теплее 0 °C, либо руна у своей лампы в инее.",
 		"Вместо охлаждения комнаты накройте руну своим Зимним пределом до конца обряда.",
 	)
 	resource_rules = list(
 		"Запас до 4 осколков.",
-		"Пол с воздухом холоднее 0 °C даёт осколок раз в 20 секунд; открытый космос не подходит.",
+		"Пол не теплее 0 °C или у своей лампы в инее даёт осколок раз в 20 секунд; открытый космос не подходит.",
 		"В тепле копится до 2 осколков, второй - через 30 секунд после первого.",
 		"Взрыв Метки Пустоты клинком даёт осколок.",
-		"Зимний предел и фонарь тишины тратят по 1 осколку.",
+		"Зимний предел, фонарь тишины и Ледяная темница тратят по 1 осколку.",
 	)
 	gain_text = "В тишине между ударами сердца я услышал снег."
 	required_atoms = list(/obj/item/kitchen/knife)
@@ -35,14 +35,14 @@
 	var/turf/open/floor/floor = get_turf(loc)
 	if(!istype(floor))
 		return FALSE
-	if(floor.GetTemperature() <= T0C)
+	if(cold_floor(floor))
 		return TRUE
 	var/obj/effect/heretic_combat_zone/void/winter = combat_zone
 	return user?.mind && istype(winter) && !QDELETED(winter) && winter.master_mind?.resolve() == user.mind && (floor in winter.field_turfs)
 
 /datum/eldritch_knowledge/base_void/ritual_start_reason(mob/living/user, turf/location, duration)
 	var/turf/open/floor = location
-	if(!istype(floor) || floor.GetTemperature() <= T0C)
+	if(!istype(floor) || cold_floor(floor))
 		return null
 	var/obj/effect/heretic_combat_zone/void/winter = combat_zone
 	if(!istype(winter) || QDELETED(winter) || !winter.expires_at)
@@ -77,46 +77,61 @@
 	victim.silent = max(victim.silent, 3)
 	return TRUE
 
-/datum/eldritch_knowledge/cold_snap
-	name = "Путь Аристократа"
-	summary = "Вы не дышите и не мёрзнете, а в холоде и своих полях лечитесь каждую секунду."
+/datum/eldritch_knowledge/spell/void_prison
+	name = "Ледяная темница"
+	summary = "За осколок сбитый или скованный враг рядом или в вашем поле на 10 секунд вмерзает в ледяной шар."
 	details = list(
-		"Дышать не нужно, холод не вредит; вакуум опасен из-за давления.",
-		"На полу с воздухом до 0 °C, в Зимнем пределе или поле фонаря - 1 ушиб и 1 ожог в секунду.",
-		"В тепле вне своих полей лечения нет.",
+		"Цель до 4 клеток по открытой линии: сбита с ног, обессилена или скована холодом.",
+		"Она должна стоять рядом с вами или в вашем Зимнем пределе, поле фонаря, домене или зимнем круге.",
+		"Секунду лёд нарастает: ушла с клетки - осколок и перезарядка вернутся.",
+		"В шаре цель немая, неуязвимая, не истекает кровью; тянуть её можете только вы, сердце уводит её в изнанку.",
+		"Шар растапливают огонь на цели, сварка или зажигалка за 2 секунды, нулевой жезл и «растолкать» за 2 секунды.",
+		"Из шара цель выходит скованной; темница не возьмёт её до минуты, другие захваты - 15 секунд. Перезарядка 40 секунд.",
+		"Вы не дышите и не мёрзнете; на холоде, у своей заиндевевшей лампы и в своих полях лечитесь каждую секунду.",
 	)
-	role = HERETIC_ROLE_PASSIVE
-	gain_text = "Аристократ стоял среди снега, не оставляя в воздухе ни облачка пара."
+	role = HERETIC_ROLE_CAPTURE
+	gain_text = "Аристократ стоял среди снега, не оставляя в воздухе ни облачка пара, и снег смыкался вокруг его гостей."
 	cost = 1
 	route = PATH_VOID
+	spell_to_add = /obj/effect/proc_holder/spell/pointed/heretic_void/prison
 
-/datum/eldritch_knowledge/cold_snap/on_body_gain(mob/living/user)
+/datum/eldritch_knowledge/spell/void_prison/on_body_gain(mob/living/user)
+	. = ..()
 	if(!user)
 		return
 	ADD_TRAIT(user, TRAIT_RESISTCOLD, REF(src))
 	ADD_TRAIT(user, TRAIT_NOBREATH, REF(src))
 
-/datum/eldritch_knowledge/cold_snap/on_body_lose(mob/living/user)
-	if(!user)
-		return
-	REMOVE_TRAIT(user, TRAIT_RESISTCOLD, REF(src))
-	REMOVE_TRAIT(user, TRAIT_NOBREATH, REF(src))
+/datum/eldritch_knowledge/spell/void_prison/on_body_lose(mob/living/user)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_void/path = heretic?.get_knowledge(/datum/eldritch_knowledge/base_void)
+	path?.break_prisons()
+	if(user)
+		REMOVE_TRAIT(user, TRAIT_RESISTCOLD, REF(src))
+		REMOVE_TRAIT(user, TRAIT_NOBREATH, REF(src))
+	return ..()
 
-/datum/eldritch_knowledge/cold_snap/on_life(mob/user)
+/datum/eldritch_knowledge/spell/void_prison/on_death(mob/user)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_void/path = heretic?.get_knowledge(/datum/eldritch_knowledge/base_void)
+	path?.break_prisons()
+	return ..()
+
+/datum/eldritch_knowledge/spell/void_prison/on_life(mob/user)
 	if(!isliving(user) || user.stat == DEAD || !in_winter(user))
 		return
 	heretic_heal_damage(user, HERETIC_VOID_WINTER_HEALING, HERETIC_VOID_WINTER_HEALING)
 
-/datum/eldritch_knowledge/cold_snap/proc/in_winter(mob/living/user)
+/datum/eldritch_knowledge/spell/void_prison/proc/in_winter(mob/living/user)
 	var/turf/open/floor/floor = get_turf(user)
 	if(!istype(floor))
 		return FALSE
-	if(floor.GetTemperature() <= T0C)
-		return TRUE
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_void/path = heretic?.get_knowledge(/datum/eldritch_knowledge/base_void)
 	if(!path)
-		return FALSE
+		return floor.GetTemperature() <= T0C
+	if(path.cold_floor(floor))
+		return TRUE
 	for(var/obj/effect/heretic_combat_zone/void/winter in list(path.combat_zone, path.relic_zone))
 		if(!QDELETED(winter) && (floor in winter.field_turfs))
 			return TRUE
@@ -278,8 +293,13 @@
 			break
 	if(!destination)
 		return reject_blink(user, "Возле цели нет клетки без препятствий.")
+	var/turf/departure = get_turf(user)
 	if(!do_teleport(user, destination, channel = TELEPORT_CHANNEL_MAGIC))
 		return reject_blink(user, "Перемещение заблокировано: покиньте зону запрета телепортации или снимите удерживающий эффект.")
+	playsound(departure, 'sound/magic/voidblink.ogg', 50, TRUE)
+	playsound(destination, 'sound/magic/voidblink.ogg', 50, TRUE)
+	new /obj/effect/temp_visual/voidin(departure)
+	new /obj/effect/temp_visual/voidout(destination)
 	COOLDOWN_START(src, blink_cooldown, in_own_domain(user, victim) ? HERETIC_VOID_DOMAIN_BLINK_COOLDOWN : HERETIC_VOID_BLINK_COOLDOWN)
 	blade.melee_attack_chain(user, victim, attackchain_flags = ATTACK_IGNORE_CLICKDELAY)
 	return TRUE

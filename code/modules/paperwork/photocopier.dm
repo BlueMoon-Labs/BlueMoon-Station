@@ -459,9 +459,12 @@ GLOBAL_LIST_INIT(paper_blanks, init_paper_blanks())
 	if(!check_ass())
 		return null
 	var/icon/temp_img
+	var/custom_photo_url
 	if(ishuman(ass))
 		var/mob/living/carbon/human/H = ass
 		var/datum/species/spec = H.dna.species
+		if(H.dna && islist(H.dna.features))
+			custom_photo_url = H.dna.features["ass_photo"]
 		if(spec.ass_image)
 			temp_img = icon(spec.ass_image)
 		else
@@ -477,6 +480,8 @@ GLOBAL_LIST_INIT(paper_blanks, init_paper_blanks())
 	var/datum/picture/toEmbed = new(name = "[ass]'s Ass", desc = "You see [ass]'s ass on the photo.", image = temp_img)
 	toEmbed.psize_x = 128
 	toEmbed.psize_y = 128
+	if(custom_photo_url)
+		toEmbed.picture_url = custom_photo_url
 	copied_ass.set_picture(toEmbed, TRUE, TRUE)
 	delete_paper(ASS_PAPER_USE)
 	toner_cartridge.charges -= ASS_TONER_USE

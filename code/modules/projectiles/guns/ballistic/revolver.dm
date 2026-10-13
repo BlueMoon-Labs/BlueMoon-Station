@@ -696,7 +696,10 @@
 	w_class = WEIGHT_CLASS_NORMAL
 	recoil = 0.5
 	slot_flags = ITEM_SLOT_BELT
-
+	unique_reskin = list(
+		"Police" = list(
+			"icon_state" = "apostle police"
+		))
 
 
 /obj/item/gun/ballistic/revolver/Dies_Irae //сбухам кит на револьвер для переделки под 308, но КРАЙНЕ МЕДЛЕННАЯ стрельба, плюс с двух рук, считай аналог винтовки с карго, но влезает в сумку ценой скорости стрельбы
@@ -710,10 +713,14 @@
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/dies_irae
 	dual_wield_spread = 25
-	fire_delay = 20
+	fire_delay = 15
 	w_class = WEIGHT_CLASS_NORMAL
 	recoil = 5
 	slot_flags = ITEM_SLOT_BELT
+	unique_reskin = list(
+		"Police" = list(
+			"icon_state" = "dies_irae  police"
+		))
 
 /obj/item/gun/ballistic/revolver/Liturgy //Апгрейд на ревик сбух, чтоб было 18 патрон, енфорсеру всунули 28, ревику можно 18
 	name = "\improper Liturgy"
@@ -730,6 +737,10 @@
 	w_class = WEIGHT_CLASS_NORMAL
 	recoil = 0.5
 	slot_flags = ITEM_SLOT_BELT 
+	unique_reskin = list(
+		"Police" = list(
+			"icon_state" = "liturgy police"
+		))
 
 /obj/item/gun/ballistic/revolver/Passing_Bell //тупа секвоя из нью вегаса антагам, калибр 45 70 давно в игре, но его нахуй никто не использует
 	name = "\improper Passing Bell"
@@ -818,3 +829,48 @@
 	
 	// Болевой ступор/паралич на 3.5 секунды
 	H.Paralyze(35) 
+
+
+/obj/item/gun/ballistic/revolver/judgement
+	name = "\improper Judgement"
+	desc = "The High Explosive .44 Magnum fires kinetic or glycerine rounds useful for close-quarter combat scenarios. It is the only weapon in the SRPA arsenal certified for use with glycerin rounds. Each slug carries a small, explosive charge that can be remote-detonated from a switch near the trigger guard."
+	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
+	icon_state = "judgement"
+	item_state = "gun"
+	fire_sound = "modular_bluemoon/fluffs/sound/weapon/Judgement.ogg"
+	lefthand_file = 'icons/mob/inhands/weapons/guns_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/weapons/guns_righthand.dmi'
+	
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/judgement
+	
+	var/list/active_beacons = list()
+
+// бум на Z
+/obj/item/gun/ballistic/revolver/judgement/attack_self(mob/living/user)
+	if(!active_beacons || !active_beacons.len)
+		to_chat(user, "<span class='warning'>Нет активных вживленных маячков в радиусе действия сети детонации.</span>")
+		return TRUE
+
+	to_chat(user, "<span class='userdanger'>Детонационный сигнал отправлен! Все заряды активированы!</span>")
+
+	// Перебираем каждую запись в списке (если моб добавлен 3 раза, он бабахнет 3 раза)
+	for(var/mob/living/carbon/C in active_beacons)
+		if(C && !QDELETED(C))
+			to_chat(C, "<span class='userdanger'>Вживленный внутри вас маячок детонирует по радиосигналу!</span>")
+			
+			var/turf/T = get_turf(C)
+			if(T)
+				new /obj/effect/temp_visual/kinetic_blast(T)
+				playsound(T, 'sound/weapons/resonator_blast.ogg', 50, 1)
+				playsound(T, 'sound/weapons/genhit2.ogg', 50, 1)
+			
+			C.ex_act(EXPLODE_LIGHT)
+			
+			// Поочередно удаляем по одному импланту-детонатору из его тела
+			var/obj/item/gps/embed_gps/judgement_beacon_bomb/B = locate(/obj/item/gps/embed_gps/judgement_beacon_bomb) in C
+			if(B)
+				qdel(B)
+
+	// Полностью очищаем память пушки
+	active_beacons.Cut()
+	return TRUE

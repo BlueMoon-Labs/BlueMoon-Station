@@ -619,6 +619,7 @@
 	var/effect_sprite = ""
 	var/effect_sprite_icon = 'modular_bluemoon/icons/obj/heretic_feedback.dmi'
 	var/effect_sprite_layer = BELOW_MOB_LAYER
+	var/effect_sprite_pixel_y = 0
 	var/mark_name = "Метка еретика"
 	var/mark_alert_state
 	var/detonation_sound = 'sound/magic/repulse.ogg'
@@ -626,6 +627,7 @@
 
 /datum/status_effect/eldritch/on_creation(mob/living/new_owner, ...)
 	marked_underlay = mutable_appearance(effect_sprite_icon, effect_sprite, effect_sprite_layer)
+	marked_underlay.pixel_y = effect_sprite_pixel_y
 	. = ..()
 	if(linked_alert)
 		linked_alert.name = mark_name
@@ -676,11 +678,13 @@
 //Each mark has diffrent effects when it is destroyed that combine with the mansus grasp effect.
 /datum/status_effect/eldritch/flesh
 	id = "flesh_mark"
-	effect_sprite = "emark1"
+	effect_sprite_icon = 'modular_bluemoon/icons/obj/heretic_flesh_fx.dmi'
+	effect_sprite = "flesh_mark"
+	effect_sprite_layer = ABOVE_MOB_LAYER
 	mark_name = "Метка Плоти"
 	mark_alert_state = "sigil_flesh"
-	detonation_sound = 'sound/effects/wounds/crackandbleed.ogg'
-	detonation_visual = /obj/effect/temp_visual/heretic_oldpath/flesh
+	detonation_sound = 'modular_bluemoon/sound/heretic/flesh_mark.ogg'
+	detonation_visual = /obj/effect/temp_visual/heretic_mark_burst/flesh
 
 /datum/status_effect/eldritch/flesh/on_effect()
 	if(ishuman(owner))
@@ -688,17 +692,20 @@
 		if(length(H.bodyparts))
 			var/obj/item/bodypart/bodypart = pick(H.bodyparts)
 			var/datum/wound/slash/moderate/wound = new
-			wound.apply_wound(bodypart)
+			wound.apply_wound(bodypart, silent = TRUE)
 			bodypart.generic_bleedstacks += 4
+			if(!QDELETED(wound) && wound.limb == bodypart)
+				H.visible_message(span_danger("Метка Плоти на [H] лопается: [bodypart.ru_name] раскрывается рваной раной!"), span_userdanger("Метка Плоти лопается: [bodypart.ru_name] раскрывается рваной раной!"), vision_distance = COMBAT_MESSAGE_RANGE)
 	return ..()
 
 /datum/status_effect/eldritch/ash
 	id = "ash_mark"
 	effect_sprite = "emark4"
+	effect_sprite_layer = ABOVE_MOB_LAYER
 	mark_name = "Метка Пепла"
 	mark_alert_state = "sigil_ash"
-	detonation_sound = 'sound/effects/wounds/sizzle2.ogg'
-	detonation_visual = /obj/effect/temp_visual/heretic_oldpath/ash
+	detonation_sound = 'modular_bluemoon/sound/heretic/ash_mark.ogg'
+	detonation_visual = /obj/effect/temp_visual/heretic_mark_burst/ash
 	///Dictates how much damage and stamina loss this mark will cause.
 	var/repetitions = 1
 
@@ -716,20 +723,23 @@
 				if(victim.mob_size < MOB_SIZE_HUMAN || victim.has_status_effect(type) || !heretic_can_affect(carbon_owner, victim, chargecost = 0))
 					continue
 				victim.apply_status_effect(type, repetitions - 1)
+				heretic_ash_mark_arc(carbon_owner, victim)
 				break
 	return ..()
 
 /datum/status_effect/eldritch/rust
 	id = "rust_mark"
-	effect_sprite_icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
-	effect_sprite = "sigil_rust"
+	effect_sprite_icon = 'modular_bluemoon/icons/obj/heretic_rust_fx.dmi'
+	effect_sprite = "rust_mark"
 	effect_sprite_layer = ABOVE_MOB_LAYER
+	effect_sprite_pixel_y = -6
 	mark_name = "Метка Ржавчины"
 	mark_alert_state = "sigil_rust"
-	detonation_sound = 'sound/effects/clangsmall2.ogg'
-	detonation_visual = /obj/effect/temp_visual/heretic_oldpath/rust
+	detonation_sound = 'modular_bluemoon/sound/heretic/rust_mark_1.ogg'
+	detonation_visual = /obj/effect/temp_visual/heretic_mark_burst/rust
 
 /datum/status_effect/eldritch/rust/on_effect()
+	detonation_sound = pick(GLOB.heretic_rust_mark_sounds)
 	heretic_corrosion(owner, 15)
 	var/list/equipment = owner.held_items.Copy()
 	if(ishuman(owner))
@@ -748,13 +758,15 @@
 /datum/status_effect/eldritch/void
 	id = "void_mark"
 	effect_sprite = "emark2"
+	effect_sprite_layer = ABOVE_MOB_LAYER
 	mark_name = "Метка Пустоты"
 	mark_alert_state = "sigil_void"
-	detonation_sound = 'modular_bluemoon/sound/heretic/void_deflect3.ogg'
-	detonation_visual = /obj/effect/temp_visual/heretic_oldpath/void
+	detonation_sound = 'modular_bluemoon/sound/heretic/void_mark_burst_1.ogg'
+	detonation_visual = /obj/effect/temp_visual/heretic_mark_burst/void
 	var/detonation_damage = 15
 
 /datum/status_effect/eldritch/void/on_effect()
+	detonation_sound = pick(GLOB.heretic_void_mark_burst_sounds)
 	owner.adjustFireLoss(detonation_damage)
 	owner.adjust_bodytemperature(-45)
 	owner.apply_status_effect(/datum/status_effect/heretic_void_chill)
@@ -785,12 +797,18 @@
 /datum/status_effect/corrosion_curse
 	id = "corrosion_curse"
 	status_type = STATUS_EFFECT_REPLACE
-	alert_type = null
+	alert_type = /atom/movable/screen/alert/status_effect/heretic_corrosion_curse
 	tick_interval = 1 SECONDS
+
+/atom/movable/screen/alert/status_effect/heretic_corrosion_curse
+	name = "Проклятие коррозии"
+	desc = "Еретик проклял вас через отпечатки рук: тело гниёт изнутри - тошнит, кружится голова, отказывают органы. Проклятие спадёт само через 2 минуты, до тех пор лечитесь у врача."
+	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
+	icon_state = "rust_decay"
 
 /datum/status_effect/corrosion_curse/on_creation(mob/living/new_owner, ...)
 	. = ..()
-	to_chat(owner, "<span class='danger'>You feel your body starting to break apart...</span>")
+	to_chat(owner, span_danger("Ваше тело начинает распадаться изнутри..."))
 
 /datum/status_effect/corrosion_curse/tick()
 	. = ..()
@@ -823,6 +841,11 @@
 /datum/status_effect/corrosion_curse/lesser
 	id = "corrosion_curse_lesser"
 	duration = 20 SECONDS
+	alert_type = /atom/movable/screen/alert/status_effect/heretic_corrosion_curse/lesser
+
+/atom/movable/screen/alert/status_effect/heretic_corrosion_curse/lesser
+	name = "Распад"
+	desc = "Ржавая хватка еретика разъедает тело 20 секунд: ушибы, головокружение и урон органам. Лечитесь, когда распад пройдёт."
 
 /datum/status_effect/corrosion_curse/lesser/tick()
 	if(!ishuman(owner))
@@ -854,13 +877,28 @@
 /datum/status_effect/amok
 	id = "amok"
 	status_type = STATUS_EFFECT_REPLACE
-	alert_type = null
+	alert_type = /atom/movable/screen/alert/status_effect/heretic_amok
 	duration = 10 SECONDS
 	tick_interval = 1 SECONDS
+	/// Ржавая пыль облака кружит над головой весь срок ярости.
+	var/mutable_appearance/swirl
+
+/atom/movable/screen/alert/status_effect/heretic_amok
+	name = "Амок"
+	desc = "Вас захлестнула чужая ярость: 10 секунд вы раз в секунду бьёте любого, кто стоит вплотную, кроме еретиков. Отойдите от друзей."
+	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
+	icon_state = "rust_amok"
 
 /datum/status_effect/amok/on_apply(mob/living/afflicted)
 	. = ..()
-	to_chat(owner, "<span class='boldwarning'>You feel filled with a rage that is not your own!</span>")
+	swirl = mutable_appearance('modular_bluemoon/icons/obj/heretic_effects.dmi', "plume_swirl", ABOVE_MOB_LAYER)
+	owner.add_overlay(swirl)
+	to_chat(owner, span_boldwarning("Вас переполняет чужая ярость!"))
+
+/datum/status_effect/amok/on_remove()
+	owner.cut_overlay(swirl)
+	swirl = null
+	return ..()
 
 /datum/status_effect/amok/tick()
 	. = ..()
@@ -880,10 +918,9 @@
 /datum/status_effect/cloudstruck
 	id = "cloudstruck"
 	status_type = STATUS_EFFECT_REPLACE
+	alert_type = /atom/movable/screen/alert/status_effect/heretic_cloudstruck
 	duration = 3 SECONDS
 	on_remove_on_mob_delete = TRUE
-	///This overlay is applied to the owner for the duration of the effect.
-	var/mutable_appearance/mob_overlay
 
 /datum/status_effect/cloudstruck/on_creation(mob/living/new_owner, set_duration)
 	if(isnum(set_duration))
@@ -892,9 +929,6 @@
 
 /datum/status_effect/cloudstruck/on_apply()
 	. = ..()
-	mob_overlay = mutable_appearance('icons/effects/eldritch.dmi', "cloud_swirl", ABOVE_MOB_LAYER)
-	owner.overlays += mob_overlay
-	owner.update_icon()
 	ADD_TRAIT(owner, TRAIT_BLIND, "cloudstruck")
 	return TRUE
 
@@ -903,13 +937,12 @@
 	if(QDELETED(owner))
 		return
 	REMOVE_TRAIT(owner, TRAIT_BLIND, "cloudstruck")
-	if(owner)
-		owner.overlays -= mob_overlay
-		owner.update_icon()
 
-/datum/status_effect/cloudstruck/Destroy()
-	. = ..()
-	QDEL_NULL(mob_overlay)
+/atom/movable/screen/alert/status_effect/heretic_cloudstruck
+	name = "Энтропийное облако"
+	desc = "Ржавая пыль облака забила глаза: вы ничего не видите, пока она не осядет. Чем дальше от еретика вас накрыло, тем дольше слепота, до 5 секунд."
+	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
+	icon_state = "rust_blind"
 
 
 /datum/status_effect/stacking/saw_bleed
@@ -1497,8 +1530,19 @@
 
 /datum/status_effect/rust_corruption
 	id = "rust_turf_effects"
-	alert_type = null
+	alert_type = /atom/movable/screen/alert/status_effect/heretic_rust_corrosion
 	tick_interval = 2 SECONDS
+	var/obj/effect/abstract/heretic_particle_holder/dust
+
+/datum/status_effect/rust_corruption/on_apply()
+	. = ..()
+	if(.)
+		dust = heretic_vfx_attach_particles(owner, /particles/heretic_ascension/rust/dust, FALSE)
+
+/datum/status_effect/rust_corruption/on_remove()
+	heretic_vfx_release_particles(owner, dust)
+	dust = null
+	return ..()
 
 /datum/status_effect/rust_corruption/tick()
 	if(QDELETED(owner) || owner.stat == DEAD || IS_HERETIC(owner) || IS_HERETIC_MONSTER(owner) || owner.anti_magic_check(chargecost = 0))
@@ -1512,7 +1556,7 @@
 	if(iscarbon(owner))
 		var/mob/living/carbon/carbon_owner = owner
 		carbon_owner.adjust_disgust(min(5 * tick_s, max(0, DISGUST_LEVEL_GROSS - carbon_owner.disgust)))
-		heretic_corrosion(carbon_owner, 2 * tick_s)
+		heretic_corrosion(carbon_owner, HERETIC_RUST_FLOOR_CORROSION * tick_s)
 		carbon_owner.reagents?.remove_all(0.75 * tick_s)
 		var/list/robotic_limbs = list()
 		for(var/obj/item/bodypart/limb as anything in carbon_owner.bodyparts)
@@ -1522,6 +1566,6 @@
 			limb.receive_damage(5 * tick_s / length(robotic_limbs), 0, 0, 0, FALSE)
 		carbon_owner.updatehealth()
 		return
-	heretic_corrosion(owner, 2 * tick_s)
+	heretic_corrosion(owner, HERETIC_RUST_FLOOR_CORROSION * tick_s)
 
 /////////////////////////////////////////////////////

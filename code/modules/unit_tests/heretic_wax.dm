@@ -1082,9 +1082,9 @@
 	var/full_height = flame.pixel_y
 	candle.wax = 500
 	candle.update_icon()
-	TEST_ASSERT(flame.pixel_y < full_height, "Огонёк опускается вместе с фитилём оплывшей свечи.")
+	TEST_ASSERT_EQUAL(flame.pixel_y, full_height, "Погребальная свеча не оплывает стадиями: огонёк держится над её фитилём.")
 	candle.light()
-	TEST_ASSERT_EQUAL(flame.alpha, 0, "Пока свеча горит своим пламенем, холодный огонёк не двоится с ним.")
+	TEST_ASSERT_EQUAL(flame.alpha, flame_alpha, "Зажжённый якорь горит холодным огоньком: обычного пламени на погребальной свече нет.")
 	candle.put_out_candle()
 	TEST_ASSERT_EQUAL(flame.alpha, flame_alpha, "Погашенная свеча снова несёт холодный огонёк.")
 	final_knowledge.on_body_lose(user)
@@ -1761,6 +1761,7 @@
 	var/datum/status_effect/doll_sleep = /datum/status_effect/heretic_capture_knockout/wax_doll
 	TEST_ASSERT(findtext(initial(doll_sleep.examine_text), "нулевым жезлом или [shake_text]"), "Спящий по кукле при осмотре подсказывает, что его будит.")
 	TEST_ASSERT(findtext(base.desc, "человек на вашем уровне чувствует укол"), "Укол ограничен уровнем.")
+	TEST_ASSERT(findtext(base.desc, "ноги - шаг вбок") && findtext(base.desc, "немота на [HERETIC_WAX_PRICK_DAZE / (1 SECONDS)] секунды"), "База называет зоны укола и срок.")
 	TEST_ASSERT(findtext(escape.desc, "неразрушимые и кодовые двери"), "Протечь называет запертые для неё двери.")
 	TEST_ASSERT(findtext(initial(sleep_spell.desc), "Перезарядка [HERETIC_WAX_PUPPET_SLEEP_COOLDOWN / (1 SECONDS)] секунд") && findtext(initial(leak_spell.desc), "Перезарядка [HERETIC_WAX_LEAK_COOLDOWN / (1 SECONDS)] секунд"), "Кнопки называют перезарядку.")
 	var/atom/movable/screen/alert/status_effect/heretic_wax_melting/melting_alert = /atom/movable/screen/alert/status_effect/heretic_wax_melting
@@ -2009,3 +2010,304 @@
 	TEST_ASSERT(model.AmountSleeping() <= HERETIC_WAX_PUPPET_DOZE_TIME + DAMAGE_PRECISION, "Не цель охоты дремлет не дольше 3 секунд: [model.AmountSleeping()] дс.")
 	var/datum/status_effect/heretic_capture_immunity/immunity = capture_immunity(model, "wax")
 	TEST_ASSERT(immunity && abs(immunity.duration - world.time - HERETIC_WAX_PUPPET_DOZE_TIME - HERETIC_CAPTURE_IMMUNITY) < 1, "Невосприимчивость отсчитывается от конца дрёмы.")
+
+/// Укол куклы бьёт по зоне прицела: ноги - шаг в сторону, рука - роняет вещь, голова - кружение, рот - немота; укол виден, а жертва узнаёт, где кукла.
+/datum/unit_test/heretic_wax_puppet_prick_zones/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_WAX)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	var/turf/origin = get_turf(user)
+	var/mob/living/carbon/human/model = allocate_wax_crew(locate(origin.x + 2, origin.y + 2, origin.z))
+	var/obj/item/heretic_wax_puppet/puppet = make_wax_puppet(wax, user, model)
+	var/turf/home = get_turf(model)
+	user.zone_selected = BODY_ZONE_L_LEG
+	TEST_ASSERT(wax.prick(user, puppet), "Укол в ногу проходит.")
+	TEST_ASSERT_EQUAL(get_dist(home, model), 1, "Укол в ногу уводит на шаг в сторону.")
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/temp_visual/heretic_wax/prick) in get_turf(model), "Укол виден на жертве.")
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/temp_visual/heretic_wax/prick) in origin, "Укол виден и на кукле в руке.")
+	COOLDOWN_RESET(puppet, prick_cooldown)
+	var/obj/item/pen/held = allocate(/obj/item/pen)
+	model.put_in_active_hand(held)
+	user.zone_selected = BODY_ZONE_R_ARM
+	TEST_ASSERT(wax.prick(user, puppet), "Укол в руку проходит.")
+	TEST_ASSERT(!model.is_holding(held) && isturf(held.loc), "Укол в руку роняет вещь на пол.")
+	COOLDOWN_RESET(puppet, prick_cooldown)
+	user.zone_selected = BODY_ZONE_HEAD
+	TEST_ASSERT(wax.prick(user, puppet), "Укол в голову проходит.")
+	var/datum/status_effect/heretic_wax_prick/dizzy/dizzy = model.has_status_effect(/datum/status_effect/heretic_wax_prick/dizzy)
+	TEST_ASSERT(dizzy && model.dizziness > 0, "Укол в голову кружит голову.")
+	TEST_ASSERT(abs(dizzy.duration - world.time - HERETIC_WAX_PRICK_DAZE) < 1, "Головокружение на 3 секунды.")
+	qdel(dizzy)
+	TEST_ASSERT_EQUAL(model.dizziness, 0, "Головокружение от укола проходит без следа.")
+	COOLDOWN_RESET(puppet, prick_cooldown)
+	user.zone_selected = BODY_ZONE_PRECISE_MOUTH
+	TEST_ASSERT(wax.prick(user, puppet), "Укол в рот проходит.")
+	var/datum/status_effect/heretic_wax_prick/hush/hush = model.has_status_effect(/datum/status_effect/heretic_wax_prick/hush)
+	TEST_ASSERT(hush && HAS_TRAIT(model, TRAIT_MUTE), "Укол в рот немит.")
+	TEST_ASSERT(abs(hush.duration - world.time - HERETIC_WAX_PRICK_DAZE) < 1, "Немота на 3 секунды.")
+	qdel(hush)
+	TEST_ASSERT(!HAS_TRAIT(model, TRAIT_MUTE), "Немота проходит.")
+	COOLDOWN_RESET(puppet, prick_cooldown)
+	var/turf/before_chest = get_turf(model)
+	user.zone_selected = BODY_ZONE_CHEST
+	TEST_ASSERT(wax.prick(user, puppet), "Укол в грудь проходит.")
+	TEST_ASSERT_EQUAL(get_turf(model), before_chest, "Укол в грудь только колет.")
+	TEST_ASSERT(!model.has_status_effect(/datum/status_effect/heretic_wax_prick), "Укол в грудь не кружит и не немит.")
+	var/hint = heretic_wax_puppet_hint(model, puppet)
+	var/side = dir2text_ru(get_dir(model, user))
+	TEST_ASSERT(findtext(hint, "на [side]е"), "Уколотый узнаёт, в какой стороне кукла: [hint]")
+	model.forceMove(get_step(user, EAST))
+	TEST_ASSERT(findtext(heretic_wax_puppet_hint(model, puppet), "рядом"), "Кукла в соседней клетке - рядом.")
+
+/// Ноги на краю пропасти не уводят жертву в пустоту: шаг только на твёрдый пол.
+/datum/unit_test/heretic_wax_prick_stumble_ground/Run()
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/turf/home = get_turf(victim)
+	for(var/direction in GLOB.cardinals)
+		var/turf/neighbour = get_step(home, direction)
+		if(neighbour && !neighbour.density)
+			neighbour.ChangeTurf(/turf/open/space/basic)
+	TEST_ASSERT(!heretic_wax_stumble(victim), "Без твёрдого пола рядом шага нет.")
+	TEST_ASSERT_EQUAL(get_turf(victim), home, "Жертва остаётся на месте.")
+	for(var/direction in GLOB.cardinals)
+		var/turf/neighbour = get_step(home, direction)
+		if(isspaceturf(neighbour))
+			neighbour.ChangeTurf(/turf/open/floor/plasteel)
+	TEST_ASSERT(heretic_wax_stumble(victim), "На полу шаг выходит.")
+
+/// Филактерия читается: в вознесении якоря - погребальные свечи, видные призракам; уходя к свече, воск тянет след от куклы и называет сторону.
+/datum/unit_test/heretic_wax_phylactery_trail/Run()
+	var/datum/antagonist/heretic/heretic = allocate_wax_phylactery()
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	var/datum/eldritch_knowledge/final_eldritch/wax_final/final_knowledge = heretic.get_knowledge(/datum/eldritch_knowledge/final_eldritch/wax_final)
+	var/turf/start = get_turf(user)
+	var/turf/spot = locate(start.x + 3, start.y + 1, start.z)
+	var/obj/item/candle/candle = cast_wax_anchor(wax, user, spot)
+	TEST_ASSERT_NOTNULL(candle, "Хватка отливает свечу-якорь.")
+	TEST_ASSERT_EQUAL(candle.icon, 'modular_bluemoon/icons/obj/heretic_wax.dmi', "Якорь вознёсшегося - свеча Воска.")
+	TEST_ASSERT_EQUAL(candle.icon_state, "wax_candle", "Якорь рисуется погребальной свечой.")
+	TEST_ASSERT_NOTNULL(SSpoints_of_interest.points_of_interest_by_target_ref[REF(candle)], "Якорь виден призракам.")
+	candle.light()
+	TEST_ASSERT_EQUAL(candle.icon_state, "wax_candle", "Зажжённый якорь не теряет вид.")
+	candle.put_out_candle()
+	final_knowledge.on_body_lose(user)
+	TEST_ASSERT_EQUAL(candle.icon, initial(candle.icon), "Без вознесения свеча снова обычная.")
+	TEST_ASSERT(candle.icon_state != "wax_candle", "Без вознесения свеча рисуется своим стейтом.")
+	TEST_ASSERT_NULL(SSpoints_of_interest.points_of_interest_by_target_ref[REF(candle)], "Без вознесения свеча не точка интереса.")
+	final_knowledge.on_body_gain(user)
+	TEST_ASSERT_EQUAL(candle.icon_state, "wax_candle", "Новое вознесение снова одевает якорь.")
+	user.adjustBruteLoss(300, FALSE)
+	user.death()
+	await_wax_phylactery(final_knowledge)
+	TEST_ASSERT_EQUAL(get_turf(user), spot, "Еретик поднимается у свечи, как раньше.")
+	var/obj/effect/temp_visual/heretic_wax_doll/doll = locate() in start
+	TEST_ASSERT_NOTNULL(doll, "На месте падения остаётся кукла.")
+	TEST_ASSERT_NOTNULL(doll.trail, "От куклы тянется восковой след.")
+	TEST_ASSERT_EQUAL(doll.trail.target, user, "След ведёт к вернувшемуся еретику.")
+	TEST_ASSERT_EQUAL(doll.trail.icon_state, "wax_trail", "След рисуется своим стейтом.")
+	var/side = dir2text_ru(get_dir(start, spot))
+	TEST_ASSERT(findtext(jointext(doll.examine(user), " "), "на [side]"), "Осмотр куклы называет сторону, куда ушёл воск.")
+	var/datum/beam/trail = doll.trail
+	qdel(doll)
+	TEST_ASSERT(QDELETED(trail), "Растаявшая кукла уносит след.")
+
+/// Двойник трескается по запасу прочности и брызжет воском от ударов.
+/datum/unit_test/heretic_wax_effigy_cracks/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_WAX
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_wax)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/wax_imprint)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(get_step(user, EAST), EAST))
+	wax.seal(victim)
+	TEST_ASSERT(wax.imprint(user, victim), "Оттиск создан.")
+	var/obj/structure/heretic_wax_effigy/effigy = wax.active_effigy.effigy
+	TEST_ASSERT_EQUAL(effigy.crack_stage, 0, "Целый двойник без трещин.")
+	var/turf/place = get_turf(effigy)
+	var/list/before = list_vfx_bursts(place)
+	effigy.take_damage(effigy.max_integrity / 2, BRUTE, MELEE, FALSE)
+	TEST_ASSERT_EQUAL(effigy.crack_stage, 2, "Половина запаса - вторая стадия трещин.")
+	TEST_ASSERT(effigy.crack_overlay && effigy.crack_overlay.icon_state == "wax_crack_2", "Трещины рисуются своим стейтом.")
+	var/cracks_shown = FALSE
+	for(var/mutable_appearance/overlay as anything in effigy.overlays)
+		cracks_shown ||= overlay.icon_state == "wax_crack_2"
+	TEST_ASSERT(cracks_shown, "Трещины видны на двойнике.")
+	TEST_ASSERT_NOTNULL(find_vfx_burst(place, /particles/heretic_ascension/wax/chip, before), "Удар выбивает капли воска.")
+	effigy.take_damage(effigy.max_integrity / 3, BRUTE, MELEE, FALSE)
+	TEST_ASSERT_EQUAL(effigy.crack_stage, 3, "Почти разбитый двойник - третья стадия.")
+	TEST_ASSERT(!(effigy.crack_overlay.icon_state == "wax_crack_2"), "Старые трещины сменяются новыми.")
+
+/// Звуки Воска разведены по событиям: свой набор без пересечений, частые события звучат вариантами, книга и вознесение со своими звуками.
+/datum/unit_test/heretic_wax_sounds/Run()
+	var/list/seen = list()
+	for(var/kind in GLOB.heretic_wax_sounds)
+		var/list/files = GLOB.heretic_wax_sounds[kind]
+		TEST_ASSERT(length(files), "У события [kind] есть звук.")
+		for(var/sound_file in files)
+			TEST_ASSERT(isfile(sound_file), "[kind]: [sound_file] - ресурс сборки.")
+			TEST_ASSERT(!seen["[sound_file]"], "[sound_file] звучит и в [kind], и в [seen["[sound_file]"]].")
+			seen["[sound_file]"] = kind
+	for(var/kind in list("absorb", "pulse", "effigy", "wick", "whisper"))
+		TEST_ASSERT(length(GLOB.heretic_wax_sounds[kind]) > 1, "Частое событие [kind] звучит вариантами.")
+	var/datum/heretic_path/wax/path = GLOB.heretic_paths[PATH_WAX]
+	TEST_ASSERT(!seen["[path.ascension_sound]"], "Звуки событий не повторяют обряд вознесения.")
+	TEST_ASSERT(findtext("[path.book_open_sound]", "book_wax") && findtext("[path.book_page_sound]", "book_wax"), "У книги Воска свои звуки.")
+	var/sound_file = heretic_wax_sound(run_loc_floor_bottom_left, "absorb", 0)
+	TEST_ASSERT(sound_file in GLOB.heretic_wax_sounds["absorb"], "Звук события берётся из его набора.")
+
+/// Свои стейты новых эффектов Воска на месте, мёртвая копия метки удалена из листа предметов.
+/datum/unit_test/heretic_wax_states/Run()
+	var/list/items = icon_states('modular_bluemoon/icons/obj/heretic_wax.dmi')
+	for(var/state in list("wax_candle", "wax_prick", "wax_trail", "wax_crack_1", "wax_crack_2", "wax_crack_3", "wax_puppet", "wax_blade", "wax_relic"))
+		TEST_ASSERT(state in items, "В листе предметов Воска есть [state].")
+	TEST_ASSERT(!("wax_mark" in items), "Метка Воска рисуется только из листа эффектов.")
+	var/list/effects = icon_states('modular_bluemoon/icons/obj/heretic_wax_effects.dmi')
+	for(var/state in list("wax_shell", "wax_procession", "wax_grasp", "wax_mark", "wax_burst", "wax_column", "wax_column_glow", "wax_seal", "wax_cling"))
+		TEST_ASSERT(state in effects, "В листе эффектов Воска есть [state].")
+
+/// Рисунок 64x64 со сдвигом стоит по центру клетки цели.
+/datum/unit_test/proc/wax_overlay_centered(mutable_appearance/overlay)
+	var/icon/sheet = icon(overlay.icon, overlay.icon_state)
+	return sheet.Width() + 2 * overlay.pixel_x == world.icon_size && sheet.Height() + 2 * overlay.pixel_y == world.icon_size
+
+/// Метка Воска стоит по центру цели поверх тела и взрывается своим рисунком; печать, липкий воск и метка рисуются разными стейтами, связь с двойником - восковым контуром без печати.
+/datum/unit_test/heretic_wax_marks_distinct/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_WAX
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_wax)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/wax_mark)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/wax_imprint)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(get_step(user, EAST), EAST))
+	var/datum/status_effect/eldritch/wax/mark = victim.apply_status_effect(/datum/status_effect/eldritch/wax, wax)
+	TEST_ASSERT_NOTNULL(mark, "Метка Воска легла.")
+	TEST_ASSERT(wax_overlay_centered(mark.marked_underlay), "Метка Воска стоит по центру цели: сдвиг [mark.marked_underlay.pixel_x],[mark.marked_underlay.pixel_y].")
+	TEST_ASSERT_EQUAL(mark.marked_underlay.layer, ABOVE_MOB_LAYER, "Метка Воска лежит поверх тела.")
+	TEST_ASSERT(ispath(mark.detonation_visual), "У взрыва Метки Воска есть свой рисунок.")
+	TEST_ASSERT(wax.imprint(user, victim), "Оттиск создан.")
+	var/datum/status_effect/heretic_wax/effigy/link = wax.active_effigy
+	TEST_ASSERT_NULL(link.wax_overlay, "Связь с двойником не рисует печать.")
+	TEST_ASSERT_NOTNULL(victim.get_filter("heretic_wax_effigy_link"), "Связь с двойником видна восковым контуром.")
+	var/datum/status_effect/heretic_wax/seal/seal = wax.seal(victim)
+	var/datum/status_effect/heretic_wax/clinging/clinging = victim.has_status_effect(/datum/status_effect/heretic_wax/clinging)
+	TEST_ASSERT_NOTNULL(seal, "Печать легла.")
+	TEST_ASSERT_NOTNULL(clinging, "Оттиск оставил липкий воск.")
+	var/list/states = icon_states('modular_bluemoon/icons/obj/heretic_wax_effects.dmi')
+	var/list/shown = list(mark.marked_underlay.icon_state, seal.wax_overlay.icon_state, clinging.wax_overlay.icon_state)
+	for(var/state in shown)
+		TEST_ASSERT(state in states, "Стейт [state] нарисован.")
+	TEST_ASSERT_EQUAL(length(uniqueList(shown)), 3, "Метка, печать и липкий воск рисуются разными стейтами: [jointext(shown, ", ")].")
+	TEST_ASSERT(wax_overlay_centered(seal.wax_overlay) && wax_overlay_centered(clinging.wax_overlay), "Печать и липкий воск стоят по центру цели.")
+	qdel(link)
+	TEST_ASSERT_NULL(victim.get_filter("heretic_wax_effigy_link"), "Связь снята - контур гаснет.")
+
+/// Свечи процессии стоят вокруг идущего, а не стеной у ног.
+/datum/unit_test/heretic_wax_procession_spread/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_WAX
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_wax)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/wax_procession)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	wax.combat_resource = 5
+	var/datum/status_effect/heretic_wax/procession/procession = user.apply_status_effect(/datum/status_effect/heretic_wax/procession, wax, heretic.get_knowledge(/datum/eldritch_knowledge/spell/wax_procession))
+	TEST_ASSERT_EQUAL(length(procession.candles), 3, "Три свечи.")
+	var/list/candles = procession.candles
+	for(var/first in 1 to length(candles) - 1)
+		for(var/second in first + 1 to length(candles))
+			var/obj/structure/heretic_wax_candle/one = candles[first]
+			var/obj/structure/heretic_wax_candle/other = candles[second]
+			TEST_ASSERT(abs(one.pixel_x - other.pixel_x) + abs(one.base_pixel_y - other.base_pixel_y) >= 10, "Свечи не сливаются в стену: [one.pixel_x],[one.base_pixel_y] и [other.pixel_x],[other.base_pixel_y].")
+	var/behind = 0
+	for(var/obj/structure/heretic_wax_candle/candle as anything in candles)
+		if(candle.layer < MOB_LAYER)
+			behind++
+	TEST_ASSERT(behind >= 1, "Хотя бы одна свеча идёт за спиной, а не перед ногами.")
+
+/// Звуки Воска на своих событиях: жар шипит паром и шепчет цели, сорванный жар гаснет, процессия и канделябр не звучат отливкой свечи, разбитый воск трескается, растаявшая кукла оплывает, лужица собирается.
+/datum/unit_test/heretic_wax_event_sounds/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_WAX)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/wax_puppet_sleep)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/wax_shell)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/wax_procession)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/wax_leak)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/wax_imprint)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_wax/wax = heretic.get_knowledge(/datum/eldritch_knowledge/base_wax)
+	var/turf/origin = get_turf(user)
+	var/mob/living/carbon/human/heretic_sound_probe/model = allocate(/mob/living/carbon/human/heretic_sound_probe, locate(origin.x + 2, origin.y + 2, origin.z))
+	model.mind = allocate_mind()
+	model.mind.current = model
+	model.dna.uni_identity = "wax_test_[REF(model)]"
+	var/list/sounds = GLOB.heretic_wax_sounds
+	var/obj/item/heretic_wax_puppet/puppet = make_wax_puppet(wax, user, model)
+	TEST_ASSERT_NOTNULL(puppet, "Кукла слеплена.")
+	TEST_ASSERT(wax.melt_puppet(user), "Кукла тает.")
+	TEST_ASSERT(model.heard(sounds["steam"][1], get_turf(model)), "Жар у цели шипит паром.")
+	TEST_ASSERT(model.loudest(sounds["steam"][1]) <= 40, "Пар тихий.")
+	TEST_ASSERT_EQUAL(model.heard(sounds["cast"][1]), 0, "Жар не звучит веером «Снять печать».")
+	var/whispered = 0
+	for(var/whisper in sounds["whisper"])
+		whispered += model.heard(whisper)
+	TEST_ASSERT(whispered, "Кукла шепчет своей цели.")
+	var/datum/status_effect/heretic_wax_melting/melting = model.has_status_effect(/datum/status_effect/heretic_wax_melting)
+	melting.interrupt()
+	TEST_ASSERT(model.heard(sounds["quench"][1]), "Сорванный жар гаснет со своим звуком.")
+	puppet.crack()
+	TEST_ASSERT(model.heard(sounds["break"][1]), "Треснувшая кукла осыпается с хрустом.")
+	COOLDOWN_RESET(heretic.deed, progress_cooldown)
+	puppet = make_wax_puppet(wax, user, model)
+	puppet.melt_away()
+	TEST_ASSERT(model.heard(sounds["leak"][1]), "Растаявшая кукла оплывает.")
+	var/wicks_before = 0
+	for(var/wick in sounds["wick"])
+		wicks_before += model.heard(wick)
+	wax.combat_resource = 5
+	TEST_ASSERT(wax.procession(user), "Процессия зажжена.")
+	TEST_ASSERT(model.heard(sounds["procession"][1]), "Процессия зажигается своим звуком.")
+	var/datum/status_effect/heretic_wax/procession/procession = user.has_status_effect(/datum/status_effect/heretic_wax/procession)
+	var/obj/structure/heretic_wax_candle/candle = procession.candles[1]
+	var/breaks_before = model.heard(sounds["break"][1])
+	candle.take_damage(100, BRUTE, MELEE)
+	TEST_ASSERT(model.heard(sounds["break"][1]) > breaks_before, "Разбитая погребальная свеча трескается.")
+	qdel(procession)
+	wax.combat_resource = 5
+	var/datum/eldritch_knowledge/recipe = heretic.get_knowledge(/datum/eldritch_knowledge/spell/wax_shell)
+	var/obj/item/heretic_path_relic/wax/relic = allocate(/obj/item/heretic_path_relic/wax)
+	relic.creator = WEAKREF(user.mind)
+	relic.knowledge_ref = WEAKREF(recipe)
+	user.put_in_hands(relic)
+	user.adjustBruteLoss(30)
+	TEST_ASSERT(wax.raise_shell(user), "Оболочка поднята.")
+	var/mob/living/attacker = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	attacker.mind = allocate_mind()
+	attacker.mind.current = attacker
+	var/obj/item/kitchen/knife/weapon = allocate(/obj/item/kitchen/knife)
+	user.mob_run_block(weapon, 20, "удар", ATTACK_TYPE_MELEE, 0, attacker, BODY_ZONE_CHEST, list())
+	TEST_ASSERT(relic.melt(user), "Канделябр переплавляет оболочку.")
+	TEST_ASSERT(model.heard(sounds["heal"][1]), "Канделябр лечит своим звуком.")
+	var/wicks_after = 0
+	for(var/wick in sounds["wick"])
+		wicks_after += model.heard(wick)
+	TEST_ASSERT_EQUAL(wicks_after, wicks_before, "Процессия и канделябр не звучат отливкой свечи.")
+	wax.combat_resource = 5
+	TEST_ASSERT(wax.raise_shell(user), "Новая оболочка поднята.")
+	breaks_before = model.heard(sounds["break"][1])
+	user.mob_run_block(weapon, 200, "удар", ATTACK_TYPE_MELEE, 0, attacker, BODY_ZONE_CHEST, list())
+	TEST_ASSERT(model.heard(sounds["break"][1]) > breaks_before, "Исчерпанная оболочка трескается.")
+	wax.combat_resource = 5
+	var/mob/living/carbon/human/target = allocate(/mob/living/carbon/human, locate(origin.x + 2, origin.y, origin.z))
+	TEST_ASSERT(wax.imprint(user, target), "Оттиск создан.")
+	var/obj/structure/heretic_wax_effigy/effigy = wax.active_effigy.effigy
+	breaks_before = model.heard(sounds["break"][1])
+	effigy.take_damage(effigy.obj_integrity, BRUTE, MELEE)
+	TEST_ASSERT(QDELETED(effigy), "Двойник разбит.")
+	TEST_ASSERT(model.heard(sounds["break"][1]) > breaks_before, "Разбитый двойник трескается.")
+	TEST_ASSERT(wax.start_leak(user), "Еретик растекается.")
+	qdel(wax.leak)
+	TEST_ASSERT(model.heard(sounds["rise"][1]), "Лужица собирается в тело со звуком.")
+	for(var/kind in list("steam", "quench", "procession", "heal"))
+		TEST_ASSERT(isfile(sounds[kind]?[1]), "У события [kind] есть звук.")

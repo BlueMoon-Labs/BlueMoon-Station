@@ -20,9 +20,9 @@
 		TEST_ASSERT(worn.icon_state in icon_states(worn.icon), "Спрайт мантии существует в используемом рендерером DMI.")
 		robes.ToggleHood()
 		TEST_ASSERT_EQUAL(wearer.head, robes.hood, "Капюшон действительно надет.")
-		TEST_ASSERT_EQUAL(robes.icon_state, "[path.robe_state]_t", "Поднятый капюшон выбирает второй спрайт.")
+		TEST_ASSERT_EQUAL(robes.icon_state, path.robe_state, "Поднятый капюшон не останавливает значок мантии в слоте.")
 		worn = wearer.overlays_standing[SUIT_LAYER]
-		TEST_ASSERT_EQUAL(worn.icon_state, robes.icon_state, "Переключение обновляет спрайт на теле.")
+		TEST_ASSERT_EQUAL(worn.icon_state, path.robe_raised_state ? "[path.robe_state]_t" : path.robe_state, "Переключение обновляет спрайт на теле.")
 		TEST_ASSERT(worn.icon_state in icon_states(worn.icon), "У поднятого капюшона есть спрайт мантии.")
 		var/mutable_appearance/head = wearer.overlays_standing[HEAD_LAYER]
 		TEST_ASSERT(head.icon_state in icon_states(head.icon), "Капюшон имеет спрайт на голове.")
@@ -43,10 +43,11 @@
 	var/obj/item/clothing/suit/hooded/cultrobes/eldritch/robes = allocate(/obj/item/clothing/suit/hooded/cultrobes/eldritch)
 	TEST_ASSERT(wearer.equip_to_slot_if_possible(robes, ITEM_SLOT_OCLOTHING), "Мантию можно надеть до выбора пути.")
 	robes.ToggleHood()
-	TEST_ASSERT(heretic.research_knowledge(/datum/eldritch_knowledge/base_ash, wearer), "Первое знание выбирает Пепел.")
-	TEST_ASSERT_EQUAL(robes.robe_path, PATH_ASH, "Первое исследование меняет уже надетую мантию.")
-	TEST_ASSERT_EQUAL(robes.icon_state, "ash_armor_t", "Настройка сохраняет поднятый капюшон.")
-	TEST_ASSERT_EQUAL(robes.hood.icon_state, "ash_armor", "Капюшон получает тот же путь.")
+	TEST_ASSERT(heretic.research_knowledge(/datum/eldritch_knowledge/base_rust, wearer), "Первое знание выбирает Ржавчину.")
+	TEST_ASSERT_EQUAL(robes.robe_path, PATH_RUST, "Первое исследование меняет уже надетую мантию.")
+	var/mutable_appearance/worn = wearer.overlays_standing[SUIT_LAYER]
+	TEST_ASSERT_EQUAL(worn.icon_state, "rust_armor_t", "Настройка сохраняет поднятый капюшон.")
+	TEST_ASSERT_EQUAL(robes.hood.icon_state, "rust_armor", "Капюшон получает тот же путь.")
 
 /// Оба спрайта в руках соответствуют собственному клинку, а не общему серпу или Пустоте.
 /datum/unit_test/heretic_blade_inhand_appearance/Run()
@@ -196,24 +197,25 @@
 	interruption = null
 	return ..()
 
-/// Метка Ржавчины видна над телом, переживает обновление внешности и исчезает при снятии.
+/// Метка Ржавчины лежит поверх тела, как метки других путей, переживает обновление внешности и исчезает при снятии.
 /datum/unit_test/heretic_rust_mark_appearance/Run()
 	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
 	var/datum/status_effect/eldritch/rust/mark = victim.apply_status_effect(/datum/status_effect/eldritch/rust)
 	TEST_ASSERT(mark, "Живая цель получает метку Ржавчины.")
-	TEST_ASSERT_EQUAL(mark.marked_underlay.icon_state, "sigil_rust", "Метка использует читаемый знак Ржавчины.")
-	TEST_ASSERT(mark.marked_underlay.layer > MOB_LAYER, "Тело не закрывает знак метки.")
+	TEST_ASSERT_EQUAL(mark.marked_underlay.icon_state, "rust_mark", "Метка использует своё кольцо Ржавчины.")
+	TEST_ASSERT(mark.marked_underlay.icon_state in icon_states(mark.marked_underlay.icon), "Стейт метки есть в листе.")
+	TEST_ASSERT(mark.marked_underlay.layer > MOB_LAYER, "Тело не закрывает метку.")
 	victim.update_icon()
 	var/mark_count = 0
 	for(var/image/overlay as anything in victim.overlays)
-		if(overlay.icon_state == "sigil_rust")
+		if(overlay.icon_state == "rust_mark")
 			mark_count++
 	TEST_ASSERT_EQUAL(mark_count, 1, "Обновление внешности сохраняет ровно один знак.")
 	TEST_ASSERT_EQUAL(mark.linked_alert?.name, "Метка Ржавчины", "HUD называет наложенную метку по-русски.")
 	TEST_ASSERT_EQUAL(mark.linked_alert?.icon, 'modular_bluemoon/icons/obj/heretic_alerts.dmi', "HUD метки использует отдельный лист значков.")
 	victim.remove_status_effect(/datum/status_effect/eldritch/rust)
 	for(var/image/overlay as anything in victim.overlays)
-		TEST_ASSERT(overlay.icon_state != "sigil_rust", "Снятая метка не оставляет ложный знак на теле.")
+		TEST_ASSERT(overlay.icon_state != "rust_mark", "Снятая метка не оставляет ложный знак на теле.")
 
 /// Перенесённая из слота без dropped() маска прекращает обработку до сканирования наблюдателей.
 /datum/unit_test/heretic_mask_stale_wearer/Run()
@@ -319,3 +321,54 @@
 	grasp.try_grasp(victim, user, TRUE, null)
 	var/datum/eldritch_knowledge/blade_type = /datum/eldritch_knowledge/base_blade
 	TEST_ASSERT_EQUAL(grasp.catchphrase, initial(blade_type.grasp_catchphrase), "Хватка берёт фразу изученного пути.")
+
+/// Метка каждого пути рисуется поверх тела; кольцо Пляски лежит на полу под ногами.
+/datum/unit_test/heretic_all_marks_over_body/Run()
+	var/list/floor_marks = list(/datum/status_effect/eldritch/dance)
+	for(var/datum/status_effect/eldritch/mark_type as anything in subtypesof(/datum/status_effect/eldritch) - floor_marks)
+		TEST_ASSERT(initial(mark_type.effect_sprite_layer) > MOB_LAYER, "[mark_type]: тело не закрывает метку.")
+	TEST_ASSERT(length(subtypesof(/datum/status_effect/eldritch)) >= length(GLOB.heretic_paths), "Метка есть у каждого пути.")
+
+/// Метки старых путей рисуются поверх тела, у Плоти, Клинка и Рассечения свои вспышки, все стейты есть в листах.
+/datum/unit_test/heretic_oldpath_marks_over_body/Run()
+	var/list/feedback_states = icon_states('modular_bluemoon/icons/obj/heretic_feedback.dmi')
+	for(var/mark_type in list(/datum/status_effect/eldritch/void, /datum/status_effect/eldritch/ash, /datum/status_effect/eldritch/blade, /datum/status_effect/eldritch/moon, /datum/status_effect/eldritch/cosmic))
+		var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+		var/datum/status_effect/eldritch/mark = victim.apply_status_effect(mark_type)
+		TEST_ASSERT(mark, "[mark_type]: живая цель получает метку.")
+		TEST_ASSERT(mark.marked_underlay.layer > MOB_LAYER, "[mark_type]: тело не закрывает метку.")
+		TEST_ASSERT(mark.marked_underlay.icon_state in feedback_states, "[mark_type]: стейт метки есть в листе.")
+		victim.remove_status_effect(mark_type)
+	var/list/burst_states = list()
+	for(var/obj/effect/temp_visual/visual_type as anything in list(/obj/effect/temp_visual/heretic_oldpath/flesh, /obj/effect/temp_visual/heretic_path_feedback/blade_mark, /obj/effect/temp_visual/cleave))
+		TEST_ASSERT(initial(visual_type.icon_state) in feedback_states, "[visual_type]: стейт вспышки есть в листе.")
+		TEST_ASSERT(!(initial(visual_type.icon_state) in burst_states), "[visual_type]: вспышка не делит стейт с другим смыслом.")
+		burst_states += initial(visual_type.icon_state)
+	for(var/obj/effect/temp_visual/visual_type as anything in list(/obj/effect/temp_visual/eldritch_smoke, /obj/effect/temp_visual/heretic_oldpath/ash, /obj/effect/temp_visual/heretic_oldpath/ash/trail, /obj/effect/temp_visual/heretic_oldpath/void, /obj/effect/temp_visual/heretic_path_feedback/moon_mark, /obj/effect/temp_visual/heretic_path_feedback/cosmic_mark))
+		TEST_ASSERT(initial(visual_type.icon_state) in icon_states(initial(visual_type.icon)), "[visual_type]: стейт эффекта есть в листе.")
+
+/// Центр поля Пустоты, шов Плоти и следы дел рисуются своими стейтами, а не значками HUD.
+/datum/unit_test/heretic_world_marks_own_sprites/Run()
+	for(var/atom/thing_type as anything in list(/obj/effect/heretic_combat_zone/void, /obj/effect/temp_visual/heretic_oldpath/flesh/mend, /obj/effect/decal/cleanable/heretic_trace))
+		var/thing_icon = initial(thing_type.icon)
+		TEST_ASSERT_NOTEQUAL(thing_icon, 'modular_bluemoon/icons/obj/heretic_alerts.dmi', "[thing_type] не кладёт в мир значок HUD.")
+		TEST_ASSERT(initial(thing_type.icon_state) in icon_states(thing_icon), "[thing_type]: стейт [initial(thing_type.icon_state)] есть в листе.")
+
+/// Край поля рисуется у стороны выхода из клетки, а не у соседней клетки того же поля.
+/datum/unit_test/heretic_field_edge_exit_side/Run()
+	var/turf/west_spot = run_loc_floor_bottom_left
+	var/turf/east_spot = get_step(west_spot, EAST)
+	var/obj/effect/heretic_field_edge/edge = allocate(/obj/effect/heretic_field_edge, west_spot, list(west_spot, east_spot), "#ffffff")
+	var/list/drawn = list()
+	for(var/mutable_appearance/overlay as anything in edge.overlays)
+		var/icon/sprite = icon(edge.icon, overlay.icon_state, SOUTH, 1)
+		if(sprite.GetPixel(16, 31))
+			drawn |= "north"
+		if(sprite.GetPixel(16, 2))
+			drawn |= "south"
+		if(sprite.GetPixel(31, 16))
+			drawn |= "east"
+		if(sprite.GetPixel(2, 16))
+			drawn |= "west"
+	TEST_ASSERT(("north" in drawn) && ("south" in drawn) && ("west" in drawn), "Край виден со всех сторон выхода: [english_list(drawn)].")
+	TEST_ASSERT(!("east" in drawn), "Со стороны соседней клетки поля края нет: [english_list(drawn)].")
