@@ -103,6 +103,24 @@
 	usesound = 'sound/weapons/drill.ogg'
 	hitsound = 'sound/weapons/drill.ogg'
 	desc = "An electric mining drill for the especially scrawny."
+	var/diamonded = FALSE
+
+/obj/item/pickaxe/drill/examine(mob/user)
+	. = ..()
+	if(max_integrity)
+		var/integrity_persentage = (obj_integrity / max_integrity) * 100
+		switch(integrity_persentage)
+			if(1 to 25.99)
+				. += span_danger("Разваливается на части!")
+			if(26 to 59.99)
+				. += span_warning("Имеет сильные повреждения.")
+			if(60 to 85)
+				. += span_notice("Видны лёгкие потёртости.")
+
+/obj/item/pickaxe/drill/obj_break(damage_flag)
+	playsound(src, 'sound/effects/bang.ogg', 70, TRUE)
+	visible_message(span_warning("[src] ломается на глазах!"))
+	. = ..()
 
 /obj/item/pickaxe/drill/cyborg
 	name = "cyborg mining drill"
@@ -120,6 +138,7 @@
 	item_state = "diamonddrill"
 	toolspeed = 0.4
 	desc = "Yours is the drill that will pierce the heavens!"
+	diamonded = TRUE
 
 /obj/item/pickaxe/drill/cyborg/diamond //This is the BORG version!
 	name = "diamond-tipped cyborg mining drill" //To inherit the NODROP_1 flag, and easier to change borg specific drill mechanics.
@@ -127,6 +146,7 @@
 	item_state = "diamonddrill"
 	toolspeed = 0.4
 	digrange = 2
+	diamonded = TRUE
 
 /obj/item/pickaxe/drill/jackhammer
 	name = "sonic jackhammer"

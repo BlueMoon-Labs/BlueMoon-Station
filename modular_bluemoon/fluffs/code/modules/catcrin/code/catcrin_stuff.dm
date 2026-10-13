@@ -515,18 +515,41 @@
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /obj/item/modkit/bwal2572_kit
-	name = "B-Wal-2572"
-	desc = "A modkit for making an Enforcer into a B-Wal-2572."
+	name = "B-Wal-2542"
+	desc = "A modkit for making an Enforcer into a B-Wal-2542."
 	product = /obj/item/gun/ballistic/automatic/pistol/enforcer/bwal2572
-	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag, /obj/item/gun/ballistic/automatic/pistol/enforcer, /obj/item/gun/ballistic/automatic/pistol/enforcerred, /obj/item/gun/ballistic/automatic/pistol/enforcergold)
+	fromitem = list(/obj/item/gun/ballistic/automatic/pistol/enforcer/nomag, /obj/item/gun/ballistic/automatic/pistol/enforcer, /obj/item/gun/ballistic/automatic/pistol/enforcergold)
 
 /obj/item/gun/ballistic/automatic/pistol/enforcer/bwal2572
 	DONATE_ITEM_TOOLTIP_PARENT
-	name = "\improper B-Wal-2572"
+	name = "\improper B-Wal-2542"
 	desc = "A one-handed pistol used in the regular Catcrin Army."
 	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/icons/bwal.dmi'
 	icon_state = "bwal"
 	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/bwalshot.ogg'
+	lefthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_right.dmi'
+	item_state = "bwal"
+	unique_reskin = null
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/obj/item/modkit/bwal2570_kit
+	name = "B-Wal-2540"
+	desc = "A modkit for making an Apostle into a B-Wal-2540."
+	product = /obj/item/gun/ballistic/revolver/Apostle/bwal2570
+	fromitem = list(/obj/item/gun/ballistic/revolver/Apostle)
+
+/obj/item/gun/ballistic/revolver/Apostle/bwal2570
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "\improper B-Wal-2540"
+	desc = "A standart issue Catctin police revolver. Despite its weight, it is still popular among some military units of the Catctrin army due to its ease of use."
+	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/icons/rwal.dmi'
+	icon_state = "rwal"
+	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/rwalshot.ogg'
+	lefthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_right.dmi'
+	item_state = "bwal"
 	unique_reskin = null
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -569,6 +592,38 @@
 	icon_state = "lar"
 	item_state = "lar"
 	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/magshot.ogg'
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/obj/item/modkit/magphar_kit
+	name = "MAG-H-Lar"
+	desc = "A modkit for making an Dies Iraen into a MAG-H-Lar."
+	product = /obj/item/gun/ballistic/revolver/Dies_Irae/maghlar
+	fromitem = list(/obj/item/gun/ballistic/revolver/Dies_Irae)
+
+/obj/item/gun/ballistic/revolver/Dies_Irae/maghlar
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "MAG-H-Lar"
+	desc = "A heavy, bulky, but sufficiently powerful high‑caliber revolver used by the Lar’rinei tribunal for the show execution of rebellious prisoners. However, the high lethality, caused by the revolver’s design based on the Gaus rifle, which is capable of penetrating a ship’s hull, led some Catcrins soldiers to use it as an auxiliary weapon."
+	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/icons/magweapon.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/weapons/hands/guns_right.dmi'
+	icon_state = "Har"
+	item_state = "lar"
+	fire_sound = 'modular_bluemoon/fluffs/code/modules/catcrin/sounds/weapons/Hshot.ogg'
+
+// BLUEMOON ADD - при выстреле меняем спрайт вылетающей пули на magjectile-large,
+// сохраняя при этом все характеристики самого снаряда (.308)
+/obj/item/gun/ballistic/revolver/Dies_Irae/maghlar/before_firing(atom/target, mob/user)
+	. = ..()
+	if(chambered?.BB)
+		chambered.BB.icon_state = "magjectile-large"
+
+// BLUEMOON ADD - при остатке двух выстрелов в барабане меняем спрайт на Har-e
+/obj/item/gun/ballistic/revolver/Dies_Irae/maghlar/update_icon_state()
+	. = ..()
+	var/ammo_left = get_ammo(0, 0)
+	icon_state = (ammo_left <= 2) ? "Har-e" : "Har"
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -679,6 +734,7 @@
 	icon = 'modular_bluemoon/fluffs/code/modules/catcrin/icons/mob/icons/accessories_32x48.dmi'
 	icon_state = "flag_catcrin"
 	pixel_y = -12
+	item_flag = /obj/item/sign/flag/catcrin
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////Коробки
 
@@ -705,6 +761,8 @@
 	new /obj/item/modkit/mark46_kit(src)
 	new /obj/item/sign/flag/catcrin(src)
 	new /obj/item/banner/catcrin(src)
+	new /obj/item/modkit/bwal2570_kit(src)
+	new /obj/item/modkit/magphar_kit(src)
 
 // Закину коробку с постерами для спратера сюда, чтоб особо не срать.
 

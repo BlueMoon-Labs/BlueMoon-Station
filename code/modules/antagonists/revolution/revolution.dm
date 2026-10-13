@@ -336,6 +336,8 @@
 	for(var/datum/objective/mutiny/O in objectives)
 		untracked_heads -= O.target
 	for(var/datum/mind/M in untracked_heads)
+		if(!antag_opt_in_allows(M, /datum/objective/mutiny::required_opt_in_level))
+			continue
 		var/datum/objective/mutiny/new_target = new()
 		new_target.team = src
 		new_target.target = M

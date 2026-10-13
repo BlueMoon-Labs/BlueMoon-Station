@@ -324,6 +324,11 @@
 	#define COMSIG_BLOCK_EYECONTACT (1<<0)
 //	#define COMPONENT_STOP_MIND_TRANSFER 1
 #define COMSIG_MOB_UPDATE_SIGHT "mob_update_sight"				//from base of /mob/update_sight(): ()
+/// After blindness overlays have been updated.
+#define COMSIG_MOB_BLINDNESS_CHANGED "mob_blindness_changed"
+/// A listener's sound/typing marker: (atom/source, kind, direction, duration).
+#define COMSIG_MOB_SOUND_INDICATOR "mob_sound_indicator"
+	#define COMPONENT_SOUND_INDICATOR_HANDLED (1<<0)
 #define COMSIG_MOB_ON_NEW_MIND "mob_on_new_mind"			//called when a new mind is assigned to a mob: ()
 #define COMSIG_MOB_SAY "mob_say" // from /mob/living/say(): (proc args list)
 	#define COMPONENT_UPPERCASE_SPEECH 1

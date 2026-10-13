@@ -52,19 +52,21 @@
 	if(human.internal)
 		human.update_action_buttons_icon()
 
-/datum/shuttle_event/simple_spawner/player_controlled/human/hitchhiker/inteq/spawn_movable()
+/// Налёт InteQ на эвакуационный шаттл: спавним отряд и объявляем станции попытку угона.
+/datum/shuttle_event/simple_spawner/player_controlled/human/hitchhiker/inteq/spawn_movable(spawn_type)
+	// аргумент обязателен: базовый player_controlled/spawn_movable отсекает не-ispath,
+	// и без него ..() всегда отдаёт FALSE, из-за чего тело ниже было мёртвым кодом
 	. = ..()
 	if(!.)
 		return
-	if(!port)
-		return
-	var/area/A = get_area(port)
-	if(!A)
-		return
-	var/obj/docking_port/mobile/S = SSshuttle.get_containing_shuttle(A)
-	if(!S)
-		return
-	if(S.mode == SHUTTLE_ESCAPE)
-		S.setTimer(S.timeLeft(1) + 120 SECONDS)
-	else
-		S.setTimer(S.timeLeft(1) + 120 SECONDS)
+	if(port)
+		var/area/A = get_area(port)
+		var/obj/docking_port/mobile/S = A ? SSshuttle.get_containing_shuttle(A) : null
+		if(S)
+			S.setTimer(S.timeLeft(1) + 120 SECONDS)
+	priority_announce(
+		"Перехвачен сигнал: к аварийному шаттлу сближается десант ИнтеКью. Зафиксирована попытка угона - шаттл пытаются украсть.",
+		null,
+		"shuttledock",
+		"Priority",
+	)

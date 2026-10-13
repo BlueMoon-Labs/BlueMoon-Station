@@ -148,14 +148,20 @@
 /datum/team/brother_team/proc/forge_single_objective()
 	var/tier = bm_traitor_violence_tier()
 	if(prob(50) && tier != BM_TRAITOR_VIOLENCE_NONE)
+		var/datum/objective/kill_objective
 		if(tier == BM_TRAITOR_VIOLENCE_SOFT)
-			add_objective(new/datum/objective/assassinate/once, TRUE)
+			kill_objective = new /datum/objective/assassinate/once
 		else if(LAZYLEN(active_ais()) && prob(100/GLOB.joined_player_list.len))
-			add_objective(new/datum/objective/destroy, TRUE)
+			kill_objective = new /datum/objective/destroy
 		else
-			add_objective(new/datum/objective/assassinate, TRUE)
-	else
-		add_objective(new/datum/objective/steal, TRUE)
+			kill_objective = new /datum/objective/assassinate
+		kill_objective.team = src
+		kill_objective.find_target()
+		if(kill_objective.target)
+			add_objective(kill_objective)
+			return
+		qdel(kill_objective)
+	add_objective(new/datum/objective/steal, TRUE)
 
 /datum/team/brother_team/antag_listing_name()
 	return "[name] blood brothers"

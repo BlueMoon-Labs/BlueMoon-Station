@@ -78,7 +78,7 @@
 	. = ..()
 
 /datum/emote/sound/human/snap
-	name = "Щелкнуть Пальцами"
+	name = "Щёлкнуть пальцами"
 	key = "snap"
 	key_third_person = "snaps"
 	message = "щёлкает пальцами."
@@ -89,10 +89,9 @@
 	sound = 'modular_citadel/sound/voice/snap.ogg'
 
 /datum/emote/sound/human/snap2
-	name = "Пару раз Щёлкнуть Пальцами"
+	name = "Щёлкнуть пальцами дважды"
 	key = "snap2"
 	key_third_person = "snaps2"
-	name = "snap twice"
 	message = "щёлкает пальцами дважды."
 	emote_type = EMOTE_AUDIBLE
 	muzzle_ignore = TRUE
@@ -101,10 +100,9 @@
 	sound = 'modular_citadel/sound/voice/snap2.ogg'
 
 /datum/emote/sound/human/snap3
-	name = "Трижды Щёлкнуть Пальцами"
+	name = "Щёлкнуть пальцами трижды"
 	key = "snap3"
 	key_third_person = "snaps thrice"
-	name = "snap thrice"
 	message = "щёлкает пальцами трижды."
 	emote_type = EMOTE_AUDIBLE
 	muzzle_ignore = TRUE

@@ -5,7 +5,7 @@
 //	You do not need to raise this if you are adding new values that have sane defaults.
 //	Only raise this value when changing the meaning/format/name/layout of an existing value
 //	where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX	83
+#define SAVEFILE_VERSION_MAX	84
 
 /// Upper bound for character slot indices during savefile migration (loop over S.dir).
 /// Prevents corrupted or garbage directory names (e.g. huge slot numbers) from inflating max_save_slots
@@ -540,6 +540,11 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 			features["xenodorsal"] = "None"
 			features["xenotail"] = "None"
 
+	// Quirk selections are saved by display name. Preserve the localized selection.
+	if(current_version < 84 && islist(all_quirks) && ("Echolocation" in all_quirks))
+		all_quirks -= "Echolocation"
+		all_quirks |= /datum/quirk/echolocation::name
+
 /datum/preferences/proc/load_path(ckey,filename="preferences.sav")
 	if(!ckey)
 		return
@@ -610,6 +615,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["action_buttons_hide_on_spawn"] 			>> action_buttons_hide_on_spawn
 	S["action_buttons_screen_locs"]	>> action_buttons_screen_locs
 	S["be_special"] 			>> be_special
+	S["antag_opt_in_notice_seen"]	>> antag_opt_in_notice_seen
 
 	//SKYRAT CHANGES BEGIN
 	S["see_chat_emotes"] 	>> see_chat_emotes
@@ -755,6 +761,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	outline_color = sanitize_hexcolor(outline_color, 6, 1, initial(outline_color))
 	outline_enabled = sanitize_integer(outline_enabled, 0, 1, initial(outline_enabled))
 	lastchangelog = sanitize_text(lastchangelog, initial(lastchangelog))
+	antag_opt_in_notice_seen = sanitize_integer(antag_opt_in_notice_seen, FALSE, TRUE, FALSE)
 	UI_style = sanitize_inlist(UI_style, GLOB.available_ui_styles, GLOB.available_ui_styles[1])
 	hotkeys = sanitize_integer(hotkeys, 0, 1, initial(hotkeys))
 	chat_on_map = sanitize_integer(chat_on_map, 0, 1, initial(chat_on_map))
@@ -1266,6 +1273,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	// Одиночный путь кладёт в буфер уже санитизированный список - пишем тем же видом.
 	WRITE_FILE(S["action_buttons_screen_locs"], sanitize_action_button_positions(action_buttons_screen_locs))
 	WRITE_FILE(S["be_special"], be_special)
+	WRITE_FILE(S["antag_opt_in_notice_seen"], antag_opt_in_notice_seen)
 	WRITE_FILE(S["default_slot"], default_slot)
 	WRITE_FILE(S["toggles"], toggles)
 	WRITE_FILE(S["sound_toggles"], sound_toggles)

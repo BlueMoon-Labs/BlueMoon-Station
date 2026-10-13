@@ -9730,10 +9730,10 @@
 /turf/open/floor/grass/grass2,
 /area/centcom/control)
 "ccc" = (
-/obj/effect/portal/permanent{
-	id = "centcom"
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 10
 	},
-/turf/open/floor/plasteel/dark/textured/large,
+/turf/open/floor/engine,
 /area/syndicate_mothership)
 "ccv" = (
 /obj/structure/table/wood,
@@ -10107,6 +10107,15 @@
 /obj/structure/fans/tiny/invisible,
 /turf/open/indestructible/hoteltile,
 /area/centcom/holding)
+"coL" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 9
+	},
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/floor/engine,
+/area/centcom/evac)
 "cpN" = (
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
@@ -10221,6 +10230,10 @@
 /obj/structure/reagent_dispensers/watertank,
 /turf/open/floor/plating,
 /area/syndicate_mothership/control)
+"cua" = (
+/obj/structure/flora/stump,
+/turf/open/floor/plating/asteroid/snow/complex,
+/area/syndicate_mothership)
 "cuh" = (
 /obj/effect/turf_decal/tile/neutral{
 	dir = 1
@@ -10490,7 +10503,8 @@
 /area/syndicate_mothership/control)
 "cHF" = (
 /obj/effect/portal/permanent{
-	id = "testchamber"
+	id = "testchamber";
+	icon_state = "portal1"
 	},
 /turf/open/indestructible/binary,
 /area/centcom/arena)
@@ -10738,6 +10752,12 @@
 /obj/effect/turf_decal/tile/dark_blue/opposingcorners,
 /turf/open/floor/plasteel/dark,
 /area/syndicate_mothership/control)
+"cTF" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 5
+	},
+/turf/open/floor/engine,
+/area/syndicate_mothership)
 "cTP" = (
 /obj/structure/closet/crate/bin,
 /obj/structure/railing{
@@ -11233,6 +11253,12 @@
 	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/centcom/holding)
+"dqH" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 6
+	},
+/turf/open/floor/engine,
+/area/centcom/evac)
 "dre" = (
 /obj/effect/turf_decal/tile/red/half{
 	dir = 4
@@ -11431,6 +11457,13 @@
 	},
 /turf/open/floor/mineral/abductor,
 /area/centcom/holding)
+"dCM" = (
+/obj/machinery/newscaster{
+	pixel_y = 0;
+	pixel_x = -28
+	},
+/turf/open/floor/plasteel/dark,
+/area/centcom/evac)
 "dDr" = (
 /obj/machinery/light{
 	light_color = "#c9d3e8"
@@ -11800,11 +11833,12 @@
 /turf/open/indestructible/hoteltile,
 /area/centcom/holding)
 "dRr" = (
-/obj/effect/portal/permanent{
-	id = "centcom1"
+/obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/effect/turf_decal/siding/dark_red/corner{
+	dir = 4
 	},
-/turf/open/floor/plasteel/dark,
-/area/centcom/evac)
+/turf/open/floor/plasteel/textured,
+/area/syndicate_mothership)
 "dRs" = (
 /obj/structure/mirror{
 	pixel_y = 32
@@ -12098,6 +12132,37 @@
 	},
 /turf/open/floor/holofloor/wood,
 /area/holodeck/rec_center/wrestlingarena)
+"elF" = (
+/obj/effect/portal/permanent{
+	id = "centcom";
+	icon = 'icons/obj/machines/gateway.dmi';
+	icon_state = "portal_effect";
+	pixel_x = -32;
+	pixel_y = -25;
+	name = "CentCom gateway"
+	},
+/obj/structure{
+	name = "gateway";
+	desc = "A mysterious gateway built by unknown hands, it allows for faster than light travel to far-flung locations.";
+	anchored = 1;
+	icon = 'icons/obj/machines/gateway.dmi';
+	icon_state = "portal_light";
+	pixel_x = -32;
+	pixel_y = -25;
+	resistance_flags = 64
+	},
+/obj/structure{
+	name = "gateway";
+	desc = "A mysterious gateway built by unknown hands, it allows for faster than light travel to far-flung locations.";
+	anchored = 1;
+	icon = 'icons/obj/machines/gateway.dmi';
+	icon_state = "portal_frame";
+	pixel_x = -32;
+	pixel_y = -25;
+	resistance_flags = 64
+	},
+/turf/open/floor/engine,
+/area/syndicate_mothership)
 "elS" = (
 /obj/machinery/door/airlock/centcom{
 	name = "Restroom";
@@ -12769,6 +12834,12 @@
 /obj/item/kirbyplants/random,
 /turf/open/floor/wood/wood_parquet,
 /area/centcom/control)
+"eQy" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 6
+	},
+/turf/open/floor/engine,
+/area/syndicate_mothership)
 "eQC" = (
 /obj/structure/reagent_dispensers/spacecleanertank{
 	pixel_y = 30
@@ -14192,11 +14263,13 @@
 /turf/open/floor/wood/wood_parquet,
 /area/syndicate_mothership/control)
 "fZj" = (
-/obj/effect/portal/permanent{
-	id = "centcom"
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/bar/opposingcorners,
+/obj/effect/turf_decal/siding/dark_red{
+	dir = 9
 	},
-/turf/open/floor/plasteel/dark,
-/area/centcom/evac)
+/turf/open/floor/plasteel/textured,
+/area/syndicate_mothership)
 "fZM" = (
 /obj/structure/table/wood,
 /obj/machinery/chem_dispenser/drinks/fullupgrade{
@@ -14671,7 +14744,9 @@
 /area/centcom/holding)
 "gyd" = (
 /obj/effect/portal/permanent{
-	id = "testchamber2"
+	id = "testchamber2";
+	icon_state = "portal1";
+	name = "Arena portal"
 	},
 /turf/open/floor/plasteel/dark,
 /area/centcom/evac)
@@ -15655,6 +15730,15 @@
 /obj/item/binoculars,
 /turf/open/floor/carpet/royalblue,
 /area/centcom/control)
+"hsj" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 10
+	},
+/obj/machinery/vending/cigarette{
+	shut_up = 1
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/syndicate_mothership)
 "hsk" = (
 /obj/effect/mob_spawn/human/centcom_nanotrasen{
 	dir = 4
@@ -16443,7 +16527,8 @@
 /area/syndicate_mothership/control)
 "ifE" = (
 /obj/effect/portal/permanent{
-	id = "testchamber2"
+	id = "testchamber2";
+	icon_state = "portal1"
 	},
 /turf/open/indestructible/binary,
 /area/centcom/arena)
@@ -17536,15 +17621,9 @@
 /turf/open/floor/plasteel/dark,
 /area/syndicate_mothership/control)
 "jap" = (
-/obj/effect/turf_decal/tile/bar/opposingcorners,
-/obj/machinery/vending/cigarette{
-	shut_up = 1
-	},
-/obj/effect/turf_decal/siding/dark_red{
-	dir = 1
-	},
-/turf/open/floor/plasteel/textured,
-/area/syndicate_mothership)
+/obj/machinery/door/poddoor/shutters/preopen,
+/turf/open/floor/plasteel/dark,
+/area/centcom/evac)
 "jar" = (
 /obj/structure/table,
 /obj/effect/turf_decal/tile/red/opposingcorners,
@@ -18814,10 +18893,8 @@
 /turf/open/indestructible/hotelwood,
 /area/centcom/holding)
 "klZ" = (
-/obj/effect/portal/permanent{
-	id = "centcom1"
-	},
-/turf/open/floor/plasteel/dark/textured/large,
+/obj/effect/turf_decal/box,
+/turf/open/floor/engine,
 /area/syndicate_mothership)
 "kml" = (
 /obj/structure/sign/directions/security{
@@ -19359,6 +19436,9 @@
 /obj/structure/anvil/obtainable/basic,
 /turf/open/floor/grass/grass0,
 /area/centcom/holding)
+"kGA" = (
+/turf/open/floor/plasteel,
+/area/syndicate_mothership)
 "kHv" = (
 /obj/machinery/button/door{
 	id = "ghostcaferesort2";
@@ -19404,6 +19484,12 @@
 /obj/item/key/security,
 /turf/open/indestructible/hotelwood,
 /area/centcom/holding)
+"kJV" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 10
+	},
+/turf/open/floor/engine,
+/area/centcom/evac)
 "kKl" = (
 /obj/structure/rack,
 /obj/item/pickaxe/mini,
@@ -20543,6 +20629,9 @@
 	},
 /turf/open/indestructible/hoteltile,
 /area/centcom/holding)
+"lIX" = (
+/turf/open/floor/engine,
+/area/centcom/evac)
 "lJl" = (
 /obj/item/kirbyplants/hedge{
 	anchored = 1
@@ -22164,6 +22253,10 @@
 /obj/effect/spawner/lootdrop/maintenance,
 /turf/open/floor/plating,
 /area/syndicate_mothership/control)
+"nrT" = (
+/obj/effect/turf_decal/box,
+/turf/open/floor/engine,
+/area/centcom/evac)
 "nsC" = (
 /obj/effect/turf_decal/tile/bar/opposingcorners,
 /obj/effect/turf_decal/siding/wood/corner{
@@ -22624,6 +22717,37 @@
 	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/centcom/holding)
+"nSb" = (
+/obj/effect/portal/permanent{
+	id = "centcom";
+	icon = 'icons/obj/machines/gateway.dmi';
+	icon_state = "portal_effect";
+	pixel_x = -32;
+	pixel_y = -25;
+	name = "CentCom gateway"
+	},
+/obj/structure{
+	name = "gateway";
+	desc = "A mysterious gateway built by unknown hands, it allows for faster than light travel to far-flung locations.";
+	anchored = 1;
+	icon = 'icons/obj/machines/gateway.dmi';
+	icon_state = "portal_frame";
+	pixel_x = -32;
+	pixel_y = -25;
+	resistance_flags = 64
+	},
+/obj/structure{
+	name = "gateway";
+	desc = "A mysterious gateway built by unknown hands, it allows for faster than light travel to far-flung locations.";
+	anchored = 1;
+	icon = 'icons/obj/machines/gateway.dmi';
+	icon_state = "portal_light";
+	pixel_x = -32;
+	pixel_y = -25;
+	resistance_flags = 64
+	},
+/turf/open/floor/engine,
+/area/centcom/evac)
 "nSA" = (
 /obj/structure/chair/pew/left{
 	dir = 1
@@ -24183,7 +24307,9 @@
 	light_color = "#c9d3e8"
 	},
 /obj/effect/portal/permanent{
-	id = "testchamber"
+	id = "testchamber";
+	icon_state = "portal1";
+	name = "Arena portal"
 	},
 /turf/open/floor/plasteel/dark,
 /area/centcom/evac)
@@ -25714,6 +25840,9 @@
 /obj/item/gavelhammer,
 /turf/open/floor/plasteel/dark,
 /area/centcom/control)
+"qCn" = (
+/turf/open/floor/engine,
+/area/syndicate_mothership)
 "qCG" = (
 /obj/structure/flora/ausbushes/lavendergrass,
 /obj/structure/flora/ausbushes/ywflowers,
@@ -25915,10 +26044,10 @@
 /area/space)
 "qJL" = (
 /obj/effect/turf_decal/tile/bar/opposingcorners,
-/obj/effect/turf_decal/siding/dark_red{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/siding/dark_red/corner{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /turf/open/floor/plasteel/textured,
 /area/syndicate_mothership)
 "qKq" = (
@@ -27370,7 +27499,6 @@
 /area/centcom/holding)
 "rUF" = (
 /obj/effect/turf_decal/tile/bar/opposingcorners,
-/obj/machinery/vending/coffee,
 /obj/effect/turf_decal/siding/dark_red{
 	dir = 5
 	},
@@ -27542,6 +27670,10 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/slavers)
+"rZT" = (
+/obj/structure/flora/rock/pile/icy,
+/turf/open/floor/plating/asteroid/snow/complex,
+/area/syndicate_mothership)
 "sal" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 5
@@ -27951,6 +28083,14 @@
 	},
 /turf/open/floor/holofloor/wood,
 /area/holodeck/rec_center/spacecheckers)
+"stt" = (
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "Syndie"
+	},
+/obj/structure/fans/tiny/invisible,
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/plating,
+/area/syndicate_mothership)
 "stQ" = (
 /obj/effect/turf_decal/tile/brown{
 	dir = 8
@@ -27984,6 +28124,7 @@
 	icon_state = "half_stairs_darkfull";
 	pixel_y = -16
 	},
+/obj/machinery/door/poddoor/shutters/preopen,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/syndicate_mothership)
 "svK" = (
@@ -28206,6 +28347,12 @@
 /obj/structure/sign/painting/large/library/directional/north,
 /turf/open/floor/wood/wood_tiled,
 /area/centcom/control)
+"sCW" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 9
+	},
+/turf/open/floor/engine,
+/area/syndicate_mothership)
 "sDe" = (
 /obj/effect/turf_decal/bot/yellow,
 /obj/structure/closet/crate,
@@ -28849,6 +28996,13 @@
 	icon_state = "wood"
 	},
 /area/holodeck/rec_center/lounge)
+"tjn" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 6
+	},
+/obj/machinery/vending/coffee,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/syndicate_mothership)
 "tkG" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 9
@@ -30207,6 +30361,10 @@
 /obj/structure/pool/Lboard,
 /turf/open/pool/water,
 /area/centcom/holding)
+"uuJ" = (
+/obj/structure/flora/rock/icy,
+/turf/open/floor/plating/asteroid/snow/complex,
+/area/syndicate_mothership)
 "uvm" = (
 /obj/structure/table/wood,
 /obj/machinery/fax{
@@ -31023,13 +31181,14 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/inteq/collosus)
 "vga" = (
-/obj/effect/turf_decal/delivery,
-/obj/machinery/door/poddoor/shutters/preopen{
-	id = "Syndie"
+/obj/machinery/light{
+	dir = 1
 	},
-/obj/structure/fans/tiny/invisible,
-/turf/open/floor/plating,
-/area/syndicate_mothership)
+/obj/structure/sign/poster/random{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/centcom/evac)
 "vgc" = (
 /obj/machinery/door/poddoor/ert{
 	id = "ExitBD";
@@ -31708,6 +31867,15 @@
 	},
 /turf/open/indestructible/hoteltile,
 /area/centcom/holding)
+"vLe" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 5
+	},
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/floor/engine,
+/area/centcom/evac)
 "vLs" = (
 /obj/machinery/door/airlock/wood{
 	id_tag = "ghostcafecabin3";
@@ -32541,6 +32709,14 @@
 /obj/vehicle/ridden/scooter,
 /turf/open/indestructible/hotelwood,
 /area/centcom/holding)
+"wBN" = (
+/obj/machinery/door/poddoor/shutters/preopen{
+	id = "Syndie"
+	},
+/obj/effect/turf_decal/delivery,
+/obj/structure/fans/tiny/invisible,
+/turf/open/floor/plating,
+/area/syndicate_mothership)
 "wBW" = (
 /obj/machinery/vending/wardrobe/chef_wardrobe{
 	shut_up = 1
@@ -54947,7 +55123,7 @@ brC
 brC
 ahl
 ahl
-ahl
+rZT
 ahl
 ahl
 amy
@@ -55697,7 +55873,7 @@ ahh
 oCl
 oCl
 ahl
-ahl
+rZT
 ahl
 ahl
 ahl
@@ -55705,7 +55881,7 @@ uHG
 ahl
 ahl
 amz
-ahl
+rZT
 ahl
 aQV
 qRA
@@ -58272,7 +58448,7 @@ oCl
 ahl
 ahl
 ahl
-brC
+aQV
 aQV
 aQV
 aQV
@@ -58529,12 +58705,12 @@ oCl
 ahl
 ahl
 amy
-brC
 aQV
 dQI
 fqM
 qRp
 aQV
+tjn
 eaB
 xce
 ioO
@@ -58786,12 +58962,12 @@ oCl
 ahl
 ahl
 amz
-brC
 aQV
 nIu
 jzA
 sAg
 wkT
+fZj
 qJL
 ieE
 ieE
@@ -59043,13 +59219,13 @@ oCl
 ahl
 ahl
 ahl
-brC
 aQV
 iQC
 aqU
 gbt
 aIk
 oIr
+dOW
 dOW
 dOW
 mXm
@@ -59300,13 +59476,13 @@ ahl
 ahl
 anx
 ahl
-ahl
 aQV
 wpz
 aFU
 oyD
 yaF
-oIr
+rUF
+dRr
 dOW
 dOW
 fob
@@ -59554,8 +59730,7 @@ ahh
 ahh
 oCl
 ahl
-ahl
-ahl
+amz
 ahl
 ahl
 aQV
@@ -59563,7 +59738,8 @@ oKt
 qLr
 kYV
 aQV
-jap
+hsj
+oIr
 dOW
 tnZ
 iNo
@@ -59813,8 +59989,8 @@ ahl
 ahl
 ahl
 ahl
-amz
-ahl
+brC
+aQV
 aQV
 aQV
 aQV
@@ -60070,11 +60246,11 @@ ahl
 ahl
 ahl
 ahl
-ahl
-ahl
-ahl
-ahl
+brC
+brC
 aQV
+sCW
+qCn
 ccc
 suQ
 dIu
@@ -60323,20 +60499,20 @@ ahh
 oCl
 ahl
 ahl
-ahl
-ahl
 amz
 ahl
 ahl
 ahl
-ahl
-vRz
+amz
+brC
 aQV
+qCn
+elF
 klZ
 suQ
-tiF
-qDn
-amU
+ncZ
+kGA
+iXE
 aQV
 brC
 aQV
@@ -60584,16 +60760,16 @@ ahl
 ahl
 ahl
 amy
-amz
-amy
 ahl
 brC
 aQV
-aQV
-aQV
-vga
-vga
-aQV
+cTF
+qCn
+eQy
+suQ
+tiF
+qDn
+amU
 aQV
 brC
 aQV
@@ -60840,18 +61016,18 @@ ahl
 ahl
 ahl
 ahl
-ahl
-ahl
+amz
 ahl
 brC
-tTV
-brC
-mhf
-mhf
-wAm
-wAm
-mhf
-brC
+aQV
+aQV
+aQV
+aQV
+aQV
+stt
+wBN
+aQV
+aQV
 brC
 brC
 brC
@@ -61099,7 +61275,7 @@ ahl
 ahl
 ahl
 ahl
-ahl
+amy
 brC
 brC
 brC
@@ -62365,7 +62541,7 @@ ahh
 ahl
 ahl
 ahl
-ahl
+uuJ
 osk
 ahl
 ahl
@@ -62407,7 +62583,7 @@ ahl
 ahl
 ahl
 ahl
-ahl
+cua
 ahl
 ahl
 ahl
@@ -62927,7 +63103,7 @@ ahl
 ahl
 amz
 ahl
-ahl
+rZT
 ahl
 ahl
 ahl
@@ -63137,7 +63313,7 @@ ahl
 ahl
 ahl
 amz
-ahl
+rZT
 amy
 ahl
 ahl
@@ -63445,7 +63621,7 @@ ahl
 ahl
 ahl
 ahl
-ahl
+uuJ
 ahl
 ahh
 ahh
@@ -63920,7 +64096,7 @@ ahl
 ahl
 ahl
 ahl
-ahl
+cua
 ahl
 ahl
 ahl
@@ -64988,7 +65164,7 @@ ahl
 amz
 ahl
 ahl
-ahl
+rZT
 ahl
 ahl
 ahl
@@ -65965,7 +66141,7 @@ ahl
 anx
 ahl
 ahl
-ahl
+uuJ
 ahl
 ahl
 ahl
@@ -66515,14 +66691,14 @@ ahl
 ahl
 ahl
 ahl
+cua
 ahl
 ahl
 ahl
 ahl
 ahl
 ahl
-ahl
-ahl
+rZT
 ahl
 ahl
 ahl
@@ -66789,7 +66965,7 @@ ahl
 ahl
 ahl
 ahl
-ahl
+uuJ
 ahl
 ahl
 ahl
@@ -67012,7 +67188,7 @@ ahl
 ahl
 ahl
 ahl
-ahl
+cua
 ahl
 ahl
 ahl
@@ -67528,7 +67704,7 @@ ahl
 ahl
 ahl
 osk
-ahl
+cua
 ahl
 ahl
 ahl
@@ -67537,7 +67713,7 @@ ahl
 ahl
 osk
 ahl
-ahl
+cua
 ahl
 ahl
 ahl
@@ -67814,7 +67990,7 @@ ahl
 ahl
 ahl
 amy
-ahl
+rZT
 ahl
 ahl
 ahl
@@ -68316,13 +68492,13 @@ osk
 ahl
 ahl
 ahl
+rZT
 ahl
 ahl
 ahl
 ahl
 ahl
-ahl
-ahl
+uuJ
 ahl
 ahl
 ahl
@@ -75629,9 +75805,9 @@ aaa
 aaa
 aaa
 aaa
-aaa
-aaa
-aaa
+alI
+alI
+alI
 alI
 aio
 ano
@@ -75885,10 +76061,10 @@ aaa
 aaa
 aaa
 aaa
-aaa
-aaa
-aaa
-aaa
+alI
+alI
+aio
+alI
 alI
 aio
 mlM
@@ -76141,10 +76317,10 @@ aaa
 aaa
 aaa
 aaa
-aaa
-aaa
 alI
 alI
+vUZ
+aio
 alI
 alI
 aio
@@ -76397,10 +76573,10 @@ aaa
 aaa
 aaa
 aaa
-aaa
-aaa
 alI
 alI
+vUZ
+mlM
 aio
 alI
 alI
@@ -76653,11 +76829,11 @@ aaa
 aaa
 aaa
 aaa
-aaa
-aaa
 alI
 alI
 vUZ
+mlM
+mlM
 aio
 alI
 alI
@@ -76909,12 +77085,12 @@ aaa
 aaa
 aaa
 aaa
-aaa
-aaa
 alI
 alI
 vUZ
 mlM
+mlM
+aDx
 aio
 alI
 alI
@@ -77165,11 +77341,11 @@ aaa
 aaa
 aaa
 aaa
-aaa
-aaa
 alI
 alI
 vUZ
+mlM
+mlM
 mlM
 mlM
 aio
@@ -77421,18 +77597,18 @@ aaa
 aaa
 aaa
 aaa
-aaa
-aaa
 alI
 alI
 vUZ
 mlM
 mlM
-aDx
-aio
+mlM
+mlM
+mlM
+mzz
 alI
 alI
-aio
+mzz
 mlM
 mlM
 ago
@@ -77678,15 +77854,15 @@ aaa
 aaa
 aaa
 aaa
-aaa
 alI
-alI
-vUZ
-mlM
-mlM
-mlM
-mlM
 aio
+mlM
+mlM
+mlM
+mlM
+mlM
+mlM
+mzz
 alI
 alI
 mzz
@@ -77936,8 +78112,8 @@ aaa
 aaa
 aaa
 alI
-alI
-vUZ
+aio
+ano
 mlM
 mlM
 mlM
@@ -78450,12 +78626,12 @@ aaa
 aaa
 aaa
 alI
-aio
-ano
+mzz
 mlM
 mlM
 mlM
 mlM
+eyq
 mlM
 mzz
 alI
@@ -78707,17 +78883,17 @@ aaa
 aaa
 aaa
 alI
+mzz
+mlM
+mlM
+mlM
+mlM
+mlM
+mlM
 aio
-mlM
-mlM
-mlM
-mlM
-mlM
-mlM
-mzz
 alI
 alI
-mzz
+aio
 mlM
 mlM
 aio
@@ -78967,15 +79143,15 @@ alI
 mzz
 mlM
 mlM
+fgs
 mlM
 mlM
-eyq
-mlM
-mzz
-alI
-alI
+aDx
 aio
-fLx
+alI
+aKH
+aKH
+vga
 alr
 aKH
 aio
@@ -79229,9 +79405,9 @@ mlM
 mlM
 mlM
 aio
-alI
-alI
-aio
+aKH
+aKH
+alr
 alr
 jvn
 aKH
@@ -79479,17 +79655,17 @@ aaa
 aaa
 alI
 mzz
-mlM
-mlM
 fgs
 mlM
 mlM
-aDx
+mlM
+mlM
 aio
-alI
 aio
-aio
-fth
+aKH
+fLx
+alr
+alr
 alr
 aKH
 ogr
@@ -79735,16 +79911,16 @@ aaa
 aaa
 aaa
 alI
-mzz
-mlM
-mlM
-mlM
-mlM
-mlM
-mlM
 aio
-aio
-aKH
+mlM
+mlM
+mlM
+mlM
+mlM
+aoN
+hEM
+vmh
+alr
 alr
 alr
 alr
@@ -79992,16 +80168,16 @@ aaa
 aaa
 aaa
 alI
-mzz
-fgs
-mlM
-mlM
-mlM
-mlM
 aio
+mlM
+mlM
+mlM
+mlM
+kIY
 aio
 aKH
-fLx
+aKH
+pCU
 alr
 alr
 alr
@@ -80250,14 +80426,14 @@ aaa
 aaa
 alI
 aio
+ano
 mlM
 mlM
 mlM
 mlM
-mlM
-aoN
-hEM
-vmh
+aKH
+aKH
+spp
 alr
 alr
 alr
@@ -80511,11 +80687,11 @@ mlM
 mlM
 mlM
 mlM
-kIY
-aio
 aKH
 aKH
-pCU
+uEq
+alr
+alr
 alr
 alr
 alr
@@ -80764,14 +80940,14 @@ aaa
 aaa
 alI
 aio
-ano
 mlM
 mlM
 mlM
-aio
 aKH
-uEq
-spp
+aKH
+alr
+alr
+alr
 alr
 gBo
 esG
@@ -81016,16 +81192,16 @@ aaa
 aaa
 aaa
 aaa
-aaa
-aaa
-aaa
+alI
+alI
+alI
 alI
 aio
 mlM
 mlM
-mlM
-aio
 aKH
+aKH
+alr
 alr
 alr
 alr
@@ -81273,15 +81449,15 @@ aaa
 aaa
 aaa
 aaa
-aaa
-aaa
-aaa
 alI
-aio
-mlM
-mlM
-aio
 aKH
+aKH
+aKH
+aKH
+aKH
+aKH
+aKH
+alr
 alr
 alr
 alr
@@ -81530,15 +81706,15 @@ aaa
 aaa
 aaa
 aaa
-aaa
-aaa
-aaa
 alI
-aio
-mlM
-aio
 aKH
-fLx
+coL
+lIX
+kJV
+jap
+dCM
+alr
+alr
 alr
 alr
 aKH
@@ -81787,16 +81963,16 @@ aaa
 aaa
 aaa
 aaa
-aaa
-aaa
-aaa
 alI
-aio
-aio
 aKH
+lIX
+nSb
+nrT
+jap
 alr
 alr
 alr
+xvY
 aKH
 aKH
 mOJ
@@ -82045,12 +82221,12 @@ alI
 alI
 alI
 alI
-alI
-alI
-alI
-aio
 aKH
-tgg
+vLe
+lIX
+dqH
+jap
+alr
 alr
 alr
 aKH
@@ -83361,7 +83537,7 @@ aKH
 fLx
 esG
 gBo
-fZj
+alr
 aKH
 ipM
 rdh
@@ -83618,7 +83794,7 @@ aKH
 fth
 esG
 gBo
-dRr
+alr
 aKH
 ipM
 rdh
