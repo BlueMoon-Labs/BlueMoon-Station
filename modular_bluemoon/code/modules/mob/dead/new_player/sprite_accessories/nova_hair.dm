@@ -171,11 +171,6 @@
 	icon = 'modular_bluemoon/icons/mob/hair.dmi'
 	icon_state = "hair_undercutright"
 
-/datum/sprite_accessory/hair/unkept
-	name = "Unkept"
-	icon = 'modular_bluemoon/icons/mob/hair.dmi'
-	icon_state = "hair_unkept"
-
 /datum/sprite_accessory/hair/wolfcut
 	name = "Wolfcut"
 	icon = 'modular_bluemoon/icons/mob/hair.dmi'
@@ -242,7 +237,7 @@
 	icon_state = "hair_viper"
 
 /datum/sprite_accessory/hair/long4
-	name = "Long 4"
+	name = "Long Hair 1 (Alt)"
 	icon = 'modular_bluemoon/icons/mob/hair.dmi'
 	icon_state = "hair_long4"
 
@@ -267,17 +262,17 @@
 	icon_state = "hair_diagonal_bangs_alt"
 
 /datum/sprite_accessory/hair/gloomy_medium
-	name = "Medium Gloomy Bangs"
+	name = "Gloomy Bangs"
 	icon = 'modular_bluemoon/icons/mob/hair.dmi'
 	icon_state = "hair_gloomy_medium"
 
 /datum/sprite_accessory/hair/gloomy_long
-	name = "Long Gloomy Bangs"
+	name = "Gloomy Bangs Long"
 	icon = 'modular_bluemoon/icons/mob/hair.dmi'
 	icon_state = "hair_gloomy_long"
 
 /datum/sprite_accessory/hair/gloomy_longer
-	name = "Very Long Gloomy Bangs"
+	name = "Gloomy Bangs Very Long"
 	icon = 'modular_bluemoon/icons/mob/hair.dmi'
 	icon_state = "hair_gloomy_longer"
 
@@ -292,7 +287,7 @@
 	icon_state = "hair_halfshave_snout"
 
 /datum/sprite_accessory/hair/bluntbangs_alt
-	name = "Blunt Bangs Alt"
+	name = "BluntBangs (Alt)"
 	icon = 'modular_bluemoon/icons/mob/hair.dmi'
 	icon_state = "hair_bluntbangs_alt"
 
@@ -321,30 +316,10 @@
 	icon = 'modular_bluemoon/icons/mob/hair.dmi'
 	icon_state = "hair_longdtails"
 
-/datum/sprite_accessory/hair/slime_tendrils_alt
-	name = "Slime Tendrils Alt"
-	icon = 'modular_bluemoon/icons/mob/hair.dmi'
-	icon_state = "hair_slimetendrils_alt"
-
-/datum/sprite_accessory/hair/slime_droplet_alt
-	name = "Slime Droplet Alt"
-	icon = 'modular_bluemoon/icons/mob/hair.dmi'
-	icon_state = "hair_slimedroplet_alt"
-
 /datum/sprite_accessory/hair/spicy
 	name = "Spicy"
 	icon = 'modular_bluemoon/icons/mob/hair.dmi'
 	icon_state = "hair_spicy"
-
-/datum/sprite_accessory/hair/gentle21
-	name = "Gently Brushed"
-	icon = 'modular_bluemoon/icons/mob/hair.dmi'
-	icon_state = "hair_gentle21"
-
-/datum/sprite_accessory/hair/country_s
-	name = "Country Side-Braid"
-	icon = 'modular_bluemoon/icons/mob/hair.dmi'
-	icon_state = "hair_country_s"
 
 /datum/sprite_accessory/hair/beachwave
 	name = "Beachwave"
@@ -355,16 +330,6 @@
 	name = "Half-shaved long"
 	icon = 'modular_bluemoon/icons/mob/hair.dmi'
 	icon_state = "halfshave_long"
-
-/datum/sprite_accessory/hair/halfshavedmessy
-	name = "Half-shaved messy"
-	icon = 'modular_bluemoon/icons/mob/hair.dmi'
-	icon_state = "halfshave_messy"
-
-/datum/sprite_accessory/hair/halfshavedmessylong
-	name = "Half-shave long messy"
-	icon = 'modular_bluemoon/icons/mob/hair.dmi'
-	icon_state = "halfshave_messylong"
 
 /datum/sprite_accessory/hair/emoshort
 	name = "Emo Short"
@@ -416,21 +381,6 @@
 	icon = 'modular_bluemoon/icons/mob/hair.dmi'
 	icon_state = "hair_runner_bun"
 
-/datum/sprite_accessory/hair/bonnie_2
-	name = "Bonnie 2"
-	icon = 'modular_bluemoon/icons/mob/hair.dmi'
-	icon_state = "hair_bonnie_2"
-
-/datum/sprite_accessory/hair/bonnie_2_long
-	name = "Bonnie long 2"
-	icon = 'modular_bluemoon/icons/mob/hair.dmi'
-	icon_state = "hair_bonnie_2_long"
-
-/datum/sprite_accessory/hair/bonnie_2_short
-	name = "Bonnie short 2"
-	icon = 'modular_bluemoon/icons/mob/hair.dmi'
-	icon_state = "hair_bonnie_2_short"
-
 /datum/sprite_accessory/hair/fluffy_bangs
 	name = "Fluffy Bangs"
 	icon = 'modular_bluemoon/icons/mob/hair.dmi'
@@ -466,18 +416,8 @@
 	icon = 'modular_bluemoon/icons/mob/hair.dmi'
 	icon_state = "hair_strict_short"
 
-/datum/sprite_accessory/hair/nova_twintails_2
-	name = "Twintails 2"
-	icon = 'modular_bluemoon/icons/mob/hair.dmi'
-	icon_state = "hair_twintails_2"
-
-/datum/sprite_accessory/hair/nova_twintails_2_long
-	name = "Long twintails"
-	icon = 'modular_bluemoon/icons/mob/hair.dmi'
-	icon_state = "hair_twintails_2_long"
-
 /datum/sprite_accessory/hair/twintails_2_short
-	name = "Short twintails"
+	name = "Twintails (Short)"
 	icon = 'modular_bluemoon/icons/mob/hair.dmi'
 	icon_state = "hair_twintails_2_short"
 
