@@ -3686,7 +3686,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("hair_style")
 					var/new_hair_style
-					new_hair_style = tgui_input_list(user, "Choose your character's hair style:", "Character Preference", filter_accessories_by_ckey(GLOB.hair_styles_list, user.client.ckey))
+					new_hair_style = tgui_input_list(user, "Choose your character's hair style:", "Character Preference", filter_accessories_by_ckey(GLOB.hair_styles_list, user.client.ckey), hair_style)
 					if(new_hair_style)
 						hair_style = new_hair_style
 
@@ -3703,7 +3703,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("facial_hair_style")
 					var/new_facial_hair_style
-					new_facial_hair_style = tgui_input_list(user, "Choose your character's facial-hair style:", "Character Preference", filter_accessories_by_ckey(GLOB.facial_hair_styles_list, user.client.ckey))
+					new_facial_hair_style = tgui_input_list(user, "Choose your character's facial-hair style:", "Character Preference", filter_accessories_by_ckey(GLOB.facial_hair_styles_list, user.client.ckey), facial_hair_style)
 					if(new_facial_hair_style)
 						facial_hair_style = new_facial_hair_style
 

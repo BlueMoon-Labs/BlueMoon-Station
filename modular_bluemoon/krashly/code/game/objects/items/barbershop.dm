@@ -38,8 +38,10 @@
 /obj/item/razor/scissors/shave(mob/living/carbon/human/H, location = BODY_ZONE_PRECISE_MOUTH)
 	if(location == BODY_ZONE_PRECISE_MOUTH)
 		return
-	else
-		H.hair_style = input(usr, "Select a hair style", "Grooming")  as null|anything in GLOB.hair_styles_list
+	var/new_hair = tgui_input_list(usr, "Select a hair style", "Grooming", GLOB.hair_styles_list, H.hair_style)
+	if(!new_hair)
+		return
+	H.hair_style = new_hair
 
 	H.update_hair()
 	playsound(loc, 'modular_bluemoon/krashly/sound/scissors.ogg', 20, 1)
@@ -57,10 +59,12 @@
 	return BRUTELOSS
 
 /obj/item/razor/straight_razor/shave(mob/living/carbon/human/H, location = BODY_ZONE_PRECISE_MOUTH)
-	if(location == BODY_ZONE_PRECISE_MOUTH)
-		H.facial_hair_style = input(usr, "Select a facial hair style", "Grooming")  as null|anything in GLOB.facial_hair_styles_list
-	else
+	if(location != BODY_ZONE_PRECISE_MOUTH)
 		return
+	var/new_hair = tgui_input_list(usr, "Select a facial hair style", "Grooming", GLOB.facial_hair_styles_list, H.facial_hair_style)
+	if(!new_hair)
+		return
+	H.facial_hair_style = new_hair
 
 	H.update_hair()
 	playsound(loc, 'modular_bluemoon/krashly/sound/straight_razor.ogg', 20, 1)
