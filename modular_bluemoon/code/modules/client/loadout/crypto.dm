@@ -27,12 +27,23 @@
 		return gear_crypto_failure(diagnostics, "invalid_secret_config")
 	var/node_executable = CONFIG_GET(string/loadout_crypto_node)
 	var/static/regex/unsafe_executable = regex(@"[^A-Za-zА-Яа-яЁё0-9_ ./\\:\-]")
-	// TGS bootstraps Node only for its build shell. Its hook writes the actual
-	// persistent-cache path here so the game process can use that same runtime.
-	if(node_executable == "node" && fexists("tools/loadout_crypto/node_path.txt"))
-		var/bootstrap_node = trim(file2text("tools/loadout_crypto/node_path.txt"))
-		if(length_char(bootstrap_node) && !unsafe_executable.Find(bootstrap_node))
-			node_executable = bootstrap_node
+	var/node_source = node_executable == "node" ? "PATH" : "config"
+	// The repository build script records process.execPath, including when TGS
+	// uses an older installed PreCompile hook that only runs the TGUI build.
+	if(node_executable == "node")
+		var/path_file_status = "missing"
+		if(fexists("tools/loadout_crypto/node_path.txt"))
+			var/bootstrap_node = trim(file2text("tools/loadout_crypto/node_path.txt"))
+			path_file_status = "invalid"
+			if(length_char(bootstrap_node) && !unsafe_executable.Find(bootstrap_node))
+				node_executable = bootstrap_node
+				node_source = "build"
+				path_file_status = "loaded"
+		if(islist(diagnostics))
+			diagnostics["node_path_file"] = path_file_status
+	if(islist(diagnostics))
+		diagnostics["node_executable"] = node_executable
+		diagnostics["node_source"] = node_source
 	if(!length_char(node_executable) || unsafe_executable.Find(node_executable))
 		return gear_crypto_failure(diagnostics, "invalid_node_executable")
 	var/state = "[secret]|[node_executable]"
