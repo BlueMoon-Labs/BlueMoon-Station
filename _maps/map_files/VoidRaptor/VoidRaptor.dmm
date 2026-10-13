@@ -8040,11 +8040,11 @@
 	},
 /area/cargo/drone_bay)
 "bTK" = (
-/obj/machinery/cryopod{
-	dir = 1
-	},
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 10
+	},
+/obj/machinery/cryopod{
+	dir = 1
 	},
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/security/prison)
@@ -18028,7 +18028,6 @@
 /turf/open/floor/plasteel/white/smooth/large,
 /area/medical/medbay/central)
 "eid" = (
-/obj/machinery/vr_sleeper,
 /obj/machinery/newscaster{
 	pixel_y = 30
 	},
@@ -18036,6 +18035,7 @@
 	dir = 1
 	},
 /obj/machinery/light/small/directional/north,
+/obj/machinery/vr_sleeper,
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/security/prison)
 "eim" = (
@@ -30603,7 +30603,7 @@
 	},
 /obj/machinery/door/airlock/grunge{
 	id_tag = "Cell3Privacy";
-	name = "Cell 3"
+	name = "Cell 1"
 	},
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/security/prison)
@@ -38007,8 +38007,8 @@
 	dir = 4
 	},
 /obj/machinery/door/airlock/grunge{
-	id_tag = "Cell6Privacy";
-	name = "Cell 6"
+	id_tag = "Cell5Privacy";
+	name = "Cell 4"
 	},
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/security/prison)
@@ -44975,10 +44975,10 @@
 /area/service/chapel/office)
 "keQ" = (
 /obj/structure/mirror/directional/west,
-/obj/machinery/vr_sleeper,
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 9
 	},
+/obj/machinery/vr_sleeper,
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/security/prison)
 "keS" = (
@@ -77650,8 +77650,8 @@
 	dir = 4
 	},
 /obj/machinery/door/airlock/grunge{
-	id_tag = "Cell5Privacy";
-	name = "Cell 5"
+	id_tag = "Cell4Privacy";
+	name = "Cell 3"
 	},
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/security/prison)
@@ -89627,10 +89627,10 @@
 /turf/open/floor/plasteel/smooth/small,
 /area/commons/dorms)
 "uoc" = (
-/obj/machinery/vr_sleeper,
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 5
 	},
+/obj/machinery/vr_sleeper,
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/security/prison)
 "uok" = (
@@ -90600,8 +90600,8 @@
 	dir = 4
 	},
 /obj/machinery/door/airlock/grunge{
-	id_tag = "Cell4Privacy";
-	name = "Cell 4"
+	id_tag = "Cell6Privacy";
+	name = "Cell 2"
 	},
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/security/prison)
@@ -92581,11 +92581,11 @@
 /turf/open/floor/engine,
 /area/engineering/main)
 "uVU" = (
-/obj/machinery/cryopod{
-	dir = 1
-	},
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 6
+	},
+/obj/machinery/cryopod{
+	dir = 1
 	},
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/security/prison)
