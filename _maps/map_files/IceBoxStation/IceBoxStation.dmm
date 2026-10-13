@@ -540,6 +540,9 @@
 	dir = 4
 	},
 /obj/effect/turf_decal/delivery,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/science/xenobiology)
 "agt" = (
@@ -13211,6 +13214,12 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/medical/pharmacy)
+"cZu" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 6
+	},
+/turf/open/floor/plasteel/white,
+/area/science/xenobiology)
 "cZy" = (
 /obj/effect/turf_decal/bot{
 	dir = 1
@@ -14822,6 +14831,9 @@
 	},
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
 	},
 /turf/open/floor/engine,
 /area/science/xenobiology)
@@ -18308,6 +18320,9 @@
 	id = "xenobio11";
 	name = "Xenobio Pen 11 Blast Door"
 	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
 /turf/open/floor/engine,
 /area/science/xenobiology)
 "ebP" = (
@@ -18695,6 +18710,9 @@
 	dir = 4
 	},
 /obj/effect/turf_decal/delivery,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/science/xenobiology)
 "egv" = (
@@ -18946,6 +18964,9 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/delivery,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/science/xenobiology)
 "eiJ" = (
@@ -22719,6 +22740,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /turf/open/floor/plasteel/white,
 /area/science/xenobiology)
 "faa" = (
@@ -28838,6 +28860,7 @@
 	name = "Xenobio Pen 3 Blast Door";
 	req_access_txt = "55"
 	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /turf/open/floor/plasteel/white,
 /area/science/xenobiology)
 "grD" = (
@@ -30487,6 +30510,9 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/delivery,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/science/xenobiology)
 "gLb" = (
@@ -31088,6 +31114,9 @@
 	},
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
 	},
 /turf/open/floor/engine,
 /area/science/xenobiology)
@@ -37618,6 +37647,7 @@
 	name = "Xenobio Pen 8 Blast DOors";
 	req_access_txt = "55"
 	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /turf/open/floor/plasteel/white,
 /area/science/xenobiology)
 "inb" = (
@@ -39411,6 +39441,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /turf/open/floor/plasteel/white,
 /area/science/xenobiology)
 "iHH" = (
@@ -40718,6 +40749,7 @@
 	req_access_txt = "55"
 	},
 /obj/machinery/light/floor,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /turf/open/floor/plasteel/white,
 /area/science/xenobiology)
 "iXv" = (
@@ -46410,6 +46442,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
 /turf/open/floor/engine,
 /area/science/xenobiology)
 "kno" = (
@@ -48114,6 +48149,9 @@
 /area/ai_monitored/turret_protected/ai_upload)
 "kHA" = (
 /mob/living/simple_animal/slime,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
 /turf/open/floor/engine,
 /area/science/xenobiology)
 "kHI" = (
@@ -49031,6 +49069,7 @@
 	name = "Xenobio Pen 10 Blast Doors";
 	req_access_txt = "55"
 	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /turf/open/floor/plasteel/white,
 /area/science/xenobiology)
 "kRT" = (
@@ -50941,6 +50980,9 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/delivery,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/science/xenobiology)
 "lms" = (
@@ -52186,6 +52228,7 @@
 	req_access_txt = "55"
 	},
 /obj/machinery/light/floor,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /turf/open/floor/plasteel/white,
 /area/science/xenobiology)
 "lBU" = (
@@ -53237,6 +53280,9 @@
 	dir = 4
 	},
 /obj/effect/turf_decal/delivery,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/science/xenobiology)
 "lMB" = (
@@ -56574,6 +56620,9 @@
 /obj/machinery/door/poddoor/preopen{
 	id = "xenobio4";
 	name = "Xenobio Pen 4 Blast Door"
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
 	},
 /turf/open/floor/engine,
 /area/science/xenobiology)
@@ -60920,6 +60969,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
 /turf/open/floor/engine,
 /area/science/xenobiology)
 "ntp" = (
@@ -60977,6 +61029,7 @@
 	name = "Xenobio Pen 5 Blast Door";
 	req_access_txt = "55"
 	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /turf/open/floor/plasteel/white,
 /area/science/xenobiology)
 "nue" = (
@@ -65388,6 +65441,9 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/delivery,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/science/xenobiology)
 "osi" = (
@@ -66837,6 +66893,15 @@
 /obj/effect/spawner/lootdrop/maintenance,
 /turf/open/floor/plating,
 /area/maintenance/port/aft)
+"oLs" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/turf/open/floor/plasteel/white,
+/area/science/xenobiology)
 "oLt" = (
 /obj/structure/railing/corner/end{
 	dir = 1
@@ -67145,6 +67210,9 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/delivery,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/science/xenobiology)
 "oOW" = (
@@ -68480,6 +68548,9 @@
 	dir = 4
 	},
 /obj/effect/turf_decal/delivery,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/science/xenobiology)
 "pcs" = (
@@ -71428,6 +71499,7 @@
 	name = "Xenobio Pen 11 Blast DOors";
 	req_access_txt = "55"
 	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /turf/open/floor/plasteel,
 /area/science/xenobiology)
 "pJs" = (
@@ -72211,6 +72283,13 @@
 	},
 /turf/open/floor/circuit,
 /area/ai_monitored/turret_protected/aisat/hallway)
+"pTC" = (
+/mob/living/simple_animal/slime,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/science/xenobiology)
 "pTF" = (
 /turf/closed/wall,
 /area/service/library)
@@ -74965,6 +75044,12 @@
 	dir = 1
 	},
 /area/service/chapel)
+"qxU" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/science/xenobiology)
 "qxV" = (
 /obj/structure/flora/grass/both,
 /obj/structure/sign/nanotrasen{
@@ -75752,6 +75837,7 @@
 	name = "Xenobio Pen 6 Blast DOors";
 	req_access_txt = "55"
 	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /turf/open/floor/plasteel/white,
 /area/science/xenobiology)
 "qHM" = (
@@ -77138,9 +77224,7 @@
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/lobby)
 "qXA" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 1
-	},
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer2,
 /turf/open/floor/plasteel/white,
 /area/science/xenobiology)
 "qXF" = (
@@ -80387,6 +80471,10 @@
 /obj/machinery/portable_atmospherics/canister/oxygen,
 /turf/open/floor/plating,
 /area/maintenance/department/cargo)
+"rFU" = (
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plasteel/white,
+/area/science/xenobiology)
 "rGc" = (
 /obj/structure/closet/secure_closet/security/med,
 /obj/structure/cable/yellow{
@@ -83912,6 +84000,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
 /turf/open/floor/engine,
 /area/science/xenobiology)
 "sxd" = (
@@ -85012,6 +85103,9 @@
 	dir = 8
 	},
 /obj/effect/turf_decal/delivery,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/science/xenobiology)
 "sJC" = (
@@ -88093,6 +88187,7 @@
 /area/hallway/primary/starboard)
 "tsJ" = (
 /obj/machinery/light/floor,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
 /turf/open/floor/plasteel/white,
 /area/science/xenobiology)
 "tsN" = (
@@ -89855,6 +89950,9 @@
 /obj/machinery/door/poddoor/preopen{
 	id = "xenobio2";
 	name = "Xenobio Pen 2 Blast Door"
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
 	},
 /turf/open/floor/engine,
 /area/science/xenobiology)
@@ -92381,6 +92479,12 @@
 	},
 /turf/open/floor/plating,
 /area/command/teleporter)
+"umS" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/science/xenobiology)
 "umX" = (
 /obj/structure/disposalpipe/segment{
 	dir = 4
@@ -97316,6 +97420,7 @@
 	name = "Xenobio Pen 7 Blast DOors";
 	req_access_txt = "55"
 	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /turf/open/floor/plasteel/white,
 /area/science/xenobiology)
 "vrL" = (
@@ -101682,6 +101787,9 @@
 	req_access_txt = "55";
 	dir = 4
 	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/science/xenobiology)
 "woS" = (
@@ -102306,6 +102414,9 @@
 	name = "Containment Pen 5";
 	req_access_txt = "55";
 	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
 	},
 /turf/open/floor/engine,
 /area/science/xenobiology)
@@ -103445,6 +103556,9 @@
 /obj/machinery/door/poddoor/preopen{
 	id = "xenobio3";
 	name = "Xenobio Pen 3 Blast Door"
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
 	},
 /turf/open/floor/engine,
 /area/science/xenobiology)
@@ -104727,6 +104841,12 @@
 	},
 /turf/open/floor/plating,
 /area/maintenance/port/lesser)
+"wVX" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/science/xenobiology)
 "wVZ" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 8
@@ -107201,6 +107321,7 @@
 	name = "Xenobio Pen 4 Blast Door";
 	req_access_txt = "55"
 	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /turf/open/floor/plasteel/white,
 /area/science/xenobiology)
 "xyj" = (
@@ -108511,6 +108632,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /turf/open/floor/plasteel/white,
 /area/science/xenobiology)
 "xMu" = (
@@ -109602,6 +109724,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
 /turf/open/floor/engine,
 /area/science/xenobiology)
 "xXp" = (
@@ -110077,6 +110202,7 @@
 /obj/machinery/atmospherics/pipe/simple/general/visible{
 	dir = 6
 	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /turf/open/floor/plasteel/white,
 /area/science/xenobiology)
 "ycs" = (
@@ -219329,19 +219455,19 @@ tRA
 nen
 hnK
 ohU
-kHA
+pTC
 djm
 hMz
-kHA
+pTC
 djm
 hMz
-djm
-djm
-hMz
-djm
+qxU
 djm
 hMz
+qxU
 djm
+hMz
+qxU
 djm
 kEr
 pmE
@@ -219586,19 +219712,19 @@ rtI
 nQZ
 hnK
 qpZ
-djm
-djm
-fIx
-djm
+wVX
 djm
 fIx
-djm
-djm
-fIx
-djm
+wVX
 djm
 fIx
+wVX
 djm
+fIx
+wVX
+djm
+fIx
+wVX
 djm
 wUv
 xli
@@ -220350,26 +220476,26 @@ hZq
 hMg
 tFz
 wAz
-cIS
+cZu
 yco
 pJd
 eZR
 xMi
 kRR
 iHG
-cIS
+rFU
 ntT
 lBR
-cIS
+rFU
 xye
 imY
 tsJ
 gry
 vrF
-cIS
+rFU
 iXu
 qHE
-cIS
+qXA
 lKw
 lvm
 xli
@@ -220864,7 +220990,7 @@ euN
 ner
 jPs
 wtT
-ner
+oLs
 kMq
 hnK
 wCC
@@ -221125,22 +221251,22 @@ mce
 ahq
 hnK
 djm
-djm
+wVX
 qfw
 djm
-djm
+wVX
 qfw
 djm
-djm
+wVX
 qfw
 djm
-djm
+wVX
 qfw
 djm
-djm
+wVX
 qfw
 djm
-djm
+wVX
 qUm
 wSx
 jli
@@ -221382,22 +221508,22 @@ hnK
 hnK
 hnK
 ohU
-djm
+umS
 eSq
 ohU
 kHA
 eSq
 ohU
-djm
+umS
 eSq
 ohU
-djm
+umS
 eSq
 ohU
-djm
+umS
 eSq
 ohU
-djm
+umS
 djm
 mKx
 uuf
