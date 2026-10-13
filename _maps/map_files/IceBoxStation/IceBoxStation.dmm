@@ -17196,14 +17196,12 @@
 /area/security/brig)
 "dQW" = (
 /obj/machinery/firealarm/directional/north,
-/obj/structure/chair{
-	dir = 8
-	},
 /obj/machinery/airalarm/directional/east,
 /obj/machinery/camera{
 	c_tag = "Cargo Bay Office - Access";
 	dir = 8
 	},
+/obj/machinery/vending/snack/random,
 /turf/open/floor/plasteel,
 /area/cargo/lobby)
 "dRa" = (
@@ -23083,14 +23081,14 @@
 /turf/open/floor/wood,
 /area/commons/lounge)
 "feu" = (
-/obj/effect/turf_decal/stripes/asteroid/corner{
-	dir = 4
-	},
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
 /obj/effect/turf_decal/tile/brown{
 	dir = 4
+	},
+/obj/effect/turf_decal/stripes/asteroid/corner{
+	dir = 8
 	},
 /turf/open/floor/plasteel,
 /area/cargo/storage)
@@ -62416,6 +62414,7 @@
 /area/icemoon/underground/explored)
 "nJW" = (
 /obj/machinery/light/directional/north,
+/obj/machinery/vending/cola/random,
 /turf/open/floor/plasteel,
 /area/cargo/lobby)
 "nKb" = (
@@ -70948,11 +70947,11 @@
 /turf/open/floor/plasteel/airless/dark,
 /area/science/mixing/freezer)
 "pDb" = (
-/obj/structure/chair{
-	dir = 8
-	},
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
+	},
+/obj/machinery/autolathe/secure{
+	name = "public autolathe"
 	},
 /turf/open/floor/plasteel,
 /area/cargo/lobby)
@@ -75035,7 +75034,6 @@
 /area/maintenance/fore)
 "qyS" = (
 /obj/effect/turf_decal/bot,
-/obj/machinery/vending/cola/random,
 /turf/open/floor/plasteel,
 /area/cargo/lobby)
 "qzt" = (
@@ -81250,10 +81248,10 @@
 /area/maintenance/department/medical/central)
 "rQu" = (
 /obj/structure/extinguisher_cabinet/directional/east,
-/obj/effect/turf_decal/stripes/asteroid/corner{
-	dir = 1
-	},
 /obj/effect/turf_decal/tile/brown/opposingcorners,
+/obj/effect/turf_decal/stripes/asteroid/corner{
+	dir = 4
+	},
 /turf/open/floor/plasteel,
 /area/cargo/storage)
 "rQv" = (
@@ -85474,7 +85472,6 @@
 /obj/machinery/status_display/supply{
 	pixel_x = -32
 	},
-/obj/machinery/vending/snack/random,
 /turf/open/floor/plasteel,
 /area/cargo/lobby)
 "sOk" = (
@@ -109872,12 +109869,6 @@
 /obj/effect/turf_decal/siding/yellow,
 /turf/open/floor/plasteel,
 /area/engineering/storage)
-"yav" = (
-/obj/machinery/autolathe/secure{
-	name = "public autolathe"
-	},
-/turf/open/floor/plasteel,
-/area/hallway/primary/port)
 "yax" = (
 /obj/structure/railing,
 /obj/structure/rack,
@@ -259105,7 +259096,7 @@ eKA
 kuG
 wZS
 lLI
-yav
+wZS
 nYw
 wDM
 oPv
