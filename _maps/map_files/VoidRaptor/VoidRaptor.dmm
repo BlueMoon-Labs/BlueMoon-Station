@@ -939,11 +939,15 @@
 /turf/open/space/basic,
 /area/space/nearstation)
 "ajX" = (
-/obj/structure/chair/plastic{
-	dir = 4
+/obj/effect/spawner/structure/window/reinforced,
+/obj/structure/cable/yellow{
+	icon_state = "2-4"
 	},
-/turf/open/floor/wood/wood_large,
-/area/commons/fitness/recreation/entertainment)
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
+/turf/open/floor/plating/airless,
+/area/security/brig)
 "akl" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/spawner/lootdrop/maintenance/two,
@@ -1319,17 +1323,13 @@
 	},
 /turf/open/floor/plasteel/rivets/large,
 /area/cargo/lobby)
-"apm" = (
-/obj/effect/spawner/structure/window/reinforced/tinted,
-/obj/structure/cable/yellow{
-	icon_state = "1-8"
-	},
-/turf/open/floor/plating,
-/area/security/courtroom)
 "apv" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
 	},
 /turf/open/floor/plating,
 /area/security/execution/transfer)
@@ -2464,6 +2464,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
+	},
 /turf/open/floor/plating,
 /area/security/execution/education)
 "aEn" = (
@@ -3085,7 +3088,7 @@
 /area/engineering/atmos/pumproom)
 "aLj" = (
 /obj/structure/cable/yellow{
-	icon_state = "1-4"
+	icon_state = "0-1"
 	},
 /obj/effect/spawner/structure/window/reinforced/tinted,
 /turf/open/floor/plating,
@@ -4547,6 +4550,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
 /turf/open/floor/plating,
 /area/security/prison/work)
 "aZP" = (
@@ -4979,14 +4985,14 @@
 /turf/open/floor/plasteel/smooth/large,
 /area/service/hydroponics)
 "bfa" = (
-/obj/effect/spawner/structure/window/reinforced,
-/obj/structure/cable/yellow{
-	icon_state = "2-4"
-	},
 /obj/machinery/door/poddoor/preopen{
 	id = "brigwindows";
 	name = "Brig Front Blast Door"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
+/obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/plating/airless,
 /area/security/brig)
 "bfe" = (
@@ -6314,6 +6320,9 @@
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
 	},
 /turf/open/floor/plating,
 /area/security/execution/transfer)
@@ -7655,6 +7664,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
+	},
 /turf/open/floor/plating,
 /area/security/holding_cell)
 "bPn" = (
@@ -8308,6 +8320,9 @@
 	},
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
 	},
 /turf/open/floor/plating,
 /area/security/prison/garden)
@@ -12938,6 +12953,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
 /turf/open/floor/plating,
 /area/hallway/secondary/command)
 "dep" = (
@@ -12948,6 +12966,9 @@
 	},
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
 	},
 /turf/open/floor/plating/airless,
 /area/command/heads_quarters/rd)
@@ -13299,6 +13320,9 @@
 	dir = 1
 	},
 /obj/effect/landmark/event_spawn,
+/obj/structure/chair/plastic{
+	dir = 4
+	},
 /turf/open/floor/wood/wood_large,
 /area/commons/fitness/recreation/entertainment)
 "dib" = (
@@ -14921,6 +14945,9 @@
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
 	},
 /turf/open/floor/plating,
 /area/maintenance/department/security/brig)
@@ -16621,6 +16648,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
+	},
 /turf/open/floor/plating,
 /area/security/courtroom)
 "dSP" = (
@@ -17911,6 +17941,9 @@
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
 	},
 /turf/open/floor/plating,
 /area/hallway/secondary/command)
@@ -21093,6 +21126,9 @@
 "eSg" = (
 /obj/machinery/holopad,
 /obj/effect/turf_decal/bot,
+/obj/structure/chair/plastic{
+	dir = 4
+	},
 /turf/open/floor/wood/wood_large,
 /area/commons/fitness/recreation/entertainment)
 "eSj" = (
@@ -22057,9 +22093,6 @@
 "fdg" = (
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "1-8"
 	},
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer4{
 	dir = 8
@@ -26126,6 +26159,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
+	},
 /turf/open/floor/plating,
 /area/security/execution/transfer)
 "fVq" = (
@@ -26594,6 +26630,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
 /turf/open/floor/plating,
 /area/maintenance/department/security/brig)
 "gas" = (
@@ -26882,6 +26921,9 @@
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
 	},
 /turf/open/floor/plating,
 /area/maintenance/department/security/brig)
@@ -27413,6 +27455,9 @@
 /obj/machinery/door/poddoor/preopen{
 	id = "brigprison";
 	name = "Prison Blast Door"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
 	},
 /turf/open/floor/plating,
 /area/security/pk)
@@ -28570,7 +28615,7 @@
 /obj/structure/disposalpipe/segment{
 	dir = 4
 	},
-/obj/effect/mapping_helpers/airlock/access/any/supply/general,
+/obj/effect/mapping_helpers/airlock/access/any/supply/mining,
 /turf/open/floor/plasteel/rivets/large,
 /area/cargo/sorting)
 "gvD" = (
@@ -32032,7 +32077,7 @@
 /area/command/heads_quarters/hop)
 "hlm" = (
 /obj/structure/cable/yellow{
-	icon_state = "1-8"
+	icon_state = "0-8"
 	},
 /obj/effect/spawner/structure/window/reinforced/tinted,
 /turf/open/floor/plating,
@@ -33457,6 +33502,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-8"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
 /turf/open/floor/plating,
 /area/security/prison/work)
 "hCj" = (
@@ -34078,6 +34126,9 @@
 "hJK" = (
 /obj/machinery/holopad,
 /obj/effect/turf_decal/bot,
+/obj/machinery/autolathe/secure{
+	name = "public autolathe"
+	},
 /turf/open/floor/plasteel/smooth/large,
 /area/commons/storage/primary)
 "hJL" = (
@@ -34136,6 +34187,9 @@
 	},
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
 	},
 /turf/open/floor/plating,
 /area/security/prison/work)
@@ -34580,6 +34634,9 @@
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
 	},
 /turf/open/floor/plating,
 /area/security/prison/work)
@@ -36989,7 +37046,10 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 4
 	},
-/obj/machinery/vending/clothing,
+/obj/structure/chair/plastic{
+	dir = 8
+	},
+/obj/effect/landmark/start/assistant,
 /turf/open/floor/wood/wood_large,
 /area/commons/fitness/recreation/entertainment)
 "ioL" = (
@@ -38530,6 +38590,9 @@
 /obj/machinery/door/poddoor/preopen{
 	id = "brigwindows";
 	name = "Brig Front Blast Door"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
 	},
 /turf/open/floor/plasteel/dark,
 /area/security/brig)
@@ -41829,6 +41892,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-8"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
 /turf/open/floor/plating,
 /area/security/prison/work)
 "juS" = (
@@ -42131,6 +42197,9 @@
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
 	},
 /turf/open/floor/plating,
 /area/security/execution/transfer)
@@ -43830,6 +43899,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
 /turf/open/floor/plating,
 /area/command/heads_quarters/rd)
 "jSH" = (
@@ -43899,7 +43971,6 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 5
 	},
-/obj/machinery/vending/autodrobe,
 /turf/open/floor/wood/wood_large,
 /area/commons/fitness/recreation/entertainment)
 "jTr" = (
@@ -45706,6 +45777,9 @@
 	},
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
 	},
 /turf/open/floor/plating,
 /area/command/bridge)
@@ -48258,7 +48332,8 @@
 /mob/living/simple_animal/hostile/carp/pet_carp{
 	name = "Lia";
 	real_name = "Lia";
-	desc = "A failed experiment of Nanotrasen to create weaponised carp technology. This less than intimidating carp now serves as the Head of Security's pet."
+	desc = "A failed experiment of Nanotrasen to create weaponised carp technology. This less than intimidating carp now serves as the Head of Security's pet.";
+	AIStatus = 3
 	},
 /obj/machinery/light/directional/south,
 /turf/open/floor/plasteel/rivets/large,
@@ -48621,15 +48696,16 @@
 /area/science/research/abandoned)
 "kZZ" = (
 /obj/effect/turf_decal/siding/wood,
-/obj/structure/chair/plastic{
-	dir = 4
-	},
+/obj/machinery/vending/autodrobe,
 /turf/open/floor/wood/wood_large,
 /area/commons/fitness/recreation/entertainment)
 "lah" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
 	icon_state = "2-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
 	},
 /turf/open/floor/plating,
 /area/security/execution/transfer)
@@ -49434,6 +49510,9 @@
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
 	},
 /turf/open/floor/plating,
 /area/maintenance/external/starboard)
@@ -50426,6 +50505,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
+	},
 /turf/open/floor/plating,
 /area/security/prison/garden)
 "lvi" = (
@@ -50881,16 +50963,12 @@
 /turf/open/floor/plasteel/airless/solarpanel,
 /area/solars/port/aft)
 "lAx" = (
-/obj/effect/spawner/structure/window/reinforced,
-/obj/structure/cable/yellow{
-	icon_state = "2-8"
+/obj/structure/table,
+/obj/item/camera{
+	pixel_y = 4
 	},
-/obj/machinery/door/poddoor/preopen{
-	id = "brigwindows";
-	name = "Brig Front Blast Door"
-	},
-/turf/open/floor/plating/airless,
-/area/security/brig)
+/turf/open/floor/wood/wood_large,
+/area/commons/fitness/recreation/entertainment)
 "lAC" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
@@ -52108,6 +52186,9 @@
 	},
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
 	},
 /turf/open/floor/plating/airless,
 /area/command/heads_quarters/rd)
@@ -54156,6 +54237,9 @@
 	id = "brigprison";
 	name = "Prison Blast Door"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
 /turf/open/floor/plating,
 /area/security/pk)
 "mmE" = (
@@ -55991,6 +56075,9 @@
 	name = "curtain";
 	color = "#A01010";
 	alpha = 255
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
 	},
 /turf/open/floor/plating,
 /area/command/blueshieldoffice)
@@ -62060,6 +62147,9 @@
 	id = "brigwindows";
 	name = "Brig Front Blast Door"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
+	},
 /turf/open/floor/plating/airless,
 /area/security/brig)
 "nYw" = (
@@ -62590,15 +62680,10 @@
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/starboard/fore)
 "oex" = (
-/obj/structure/cable/yellow{
-	icon_state = "1-4"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "1-8"
-	},
-/obj/effect/spawner/structure/window/reinforced/tinted,
-/turf/open/floor/plating,
-/area/security/courtroom)
+/obj/effect/turf_decal/siding/wood,
+/obj/machinery/vending/clothing,
+/turf/open/floor/wood/wood_large,
+/area/commons/fitness/recreation/entertainment)
 "ofc" = (
 /obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/plating,
@@ -63173,15 +63258,19 @@
 /turf/open/floor/plating/asteroid,
 /area/engineering/atmos/storage/gas)
 "ooD" = (
-/obj/effect/spawner/structure/window/reinforced/tinted,
-/obj/structure/cable/yellow{
-	icon_state = "1-4"
+/obj/effect/spawner/structure/window/reinforced,
+/obj/machinery/door/poddoor/preopen{
+	id = "bridgespace";
+	name = "Bridge External Shutters"
 	},
 /obj/structure/cable/yellow{
-	icon_state = "1-8"
+	icon_state = "4-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
 	},
 /turf/open/floor/plating,
-/area/security/courtroom)
+/area/command/bridge)
 "ooH" = (
 /obj/structure/rack,
 /obj/item/storage/toolbox/electrical{
@@ -66276,10 +66365,13 @@
 /turf/open/floor/catwalk_floor/iron_smooth,
 /area/maintenance/solars/port/fore)
 "oZE" = (
-/obj/effect/spawner/structure/window/reinforced,
 /obj/machinery/door/poddoor/preopen{
 	id = "bridgespace";
 	name = "Bridge External Shutters"
+	},
+/obj/effect/spawner/structure/window/reinforced,
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
 	},
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
@@ -66689,13 +66781,13 @@
 	},
 /area/hallway/secondary/command)
 "pew" = (
-/obj/effect/spawner/structure/window/reinforced/tinted,
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
 /obj/structure/cable/yellow{
-	icon_state = "1-8"
+	icon_state = "0-1"
 	},
+/obj/effect/spawner/structure/window/reinforced/tinted,
 /turf/open/floor/plating,
 /area/security/courtroom)
 "pey" = (
@@ -68227,20 +68319,15 @@
 /turf/closed/wall/r_wall,
 /area/ai_monitored/turret_protected/ai)
 "pxr" = (
+/obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
-	dir = 4
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
-	},
-/obj/machinery/autolathe/secure{
-	name = "public autolathe"
-	},
-/turf/open/floor/plasteel/smooth/large,
-/area/commons/storage/primary)
+/turf/open/floor/plating,
+/area/maintenance/department/security/brig)
 "pxs" = (
 /obj/structure/table/reinforced,
 /obj/effect/turf_decal/bot,
@@ -68651,8 +68738,8 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 4
 	},
-/obj/structure/chair/plastic{
-	dir = 8
+/obj/structure/chair/stool/directional/west{
+	dir = 2
 	},
 /obj/effect/landmark/start/assistant,
 /turf/open/floor/wood/wood_large,
@@ -71740,6 +71827,9 @@
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
 	icon_state = "2-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
 	},
 /turf/open/floor/plating,
 /area/engineering/transit_tube)
@@ -75280,6 +75370,9 @@
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
 	},
 /turf/open/floor/plating,
 /area/maintenance/external/port)
@@ -79410,6 +79503,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-8"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
 /turf/open/floor/plating,
 /area/maintenance/department/security/brig)
 "rXO" = (
@@ -79907,21 +80003,15 @@
 /turf/open/floor/pod/dark,
 /area/service/chapel/funeral)
 "sdF" = (
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer4{
-	dir = 1
+/obj/effect/spawner/structure/window/reinforced,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
-	dir = 4
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
 	},
-/obj/item/kirbyplants/random,
-/obj/machinery/status_display/evac{
-	pixel_y = -32
-	},
-/obj/machinery/light/directional/south,
-/turf/open/floor/plasteel/rivets/edge{
-	dir = 1
-	},
-/area/hallway/secondary/entry)
+/turf/open/floor/plating,
+/area/hallway/secondary/command)
 "sdH" = (
 /obj/structure/table/reinforced,
 /obj/item/stack/sheet/plasteel/twenty,
@@ -80555,6 +80645,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
 /turf/open/floor/plating,
 /area/security/brig)
 "skO" = (
@@ -80941,13 +81034,15 @@
 /turf/open/floor/pod/dark,
 /area/service/chapel/office)
 "spk" = (
-/obj/effect/turf_decal/siding/wood,
-/obj/structure/table,
-/obj/item/camera{
-	pixel_y = 4
+/obj/effect/spawner/structure/window/reinforced,
+/obj/structure/cable/yellow{
+	icon_state = "1-8"
 	},
-/turf/open/floor/wood/wood_large,
-/area/commons/fitness/recreation/entertainment)
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
+	},
+/turf/open/floor/plating,
+/area/maintenance/department/security/brig)
 "spp" = (
 /obj/structure/window/reinforced,
 /obj/structure/table,
@@ -81843,12 +81938,15 @@
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/aft/lesser)
 "sBe" = (
-/obj/effect/spawner/structure/window/reinforced/tinted,
+/obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
-	icon_state = "1-4"
+	icon_state = "2-4"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
 	},
 /turf/open/floor/plating,
-/area/security/courtroom)
+/area/security/execution/transfer)
 "sBf" = (
 /obj/effect/spawner/lootdrop{
 	loot = list(/obj/effect/decal/cleanable/dirt = 7, /obj/effect/decal/cleanable/generic = 4, /obj/effect/decal/cleanable/vomit/old = 3, /obj/effect/decal/cleanable/blood/gibs/old = 3, /obj/effect/decal/cleanable/insectguts = 1, /obj/effect/decal/cleanable/greenglow/ecto = 1, /obj/effect/decal/cleanable/wrapping = 1, /obj/effect/decal/cleanable/glass = 1)
@@ -82255,6 +82353,9 @@
 "sEO" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 4
+	},
+/obj/structure/chair/plastic{
+	dir = 8
 	},
 /turf/open/floor/wood/wood_large,
 /area/commons/fitness/recreation/entertainment)
@@ -84199,6 +84300,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
+	},
 /turf/open/floor/plating,
 /area/maintenance/department/security/brig)
 "tbX" = (
@@ -84911,13 +85015,13 @@
 	},
 /area/hallway/primary/fore)
 "tkb" = (
-/obj/effect/spawner/structure/window/reinforced,
 /obj/machinery/door/poddoor/preopen{
 	id = "bridgespace";
 	name = "Bridge External Shutters"
 	},
+/obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
-	icon_state = "1-4"
+	icon_state = "0-1"
 	},
 /turf/open/floor/plating,
 /area/command/bridge)
@@ -85418,6 +85522,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-8"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
+	},
 /turf/open/floor/plating,
 /area/security/courtroom)
 "trc" = (
@@ -85717,12 +85824,15 @@
 	},
 /area/cargo/drone_bay)
 "tve" = (
+/obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
-	icon_state = "2-8"
+	icon_state = "4-8"
 	},
-/obj/effect/spawner/structure/window/reinforced/tinted,
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
 /turf/open/floor/plating,
-/area/security/courtroom)
+/area/security/execution/transfer)
 "tvk" = (
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
@@ -88564,6 +88674,11 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 4
 	},
+/obj/machinery/status_display/evac{
+	pixel_y = -32
+	},
+/obj/item/kirbyplants/random,
+/obj/machinery/light/directional/south,
 /turf/open/floor/plasteel/rivets/edge{
 	dir = 1
 	},
@@ -88628,9 +88743,8 @@
 	},
 /area/hallway/primary/aft)
 "ufh" = (
-/obj/structure/chair/stool/directional/west,
 /obj/effect/turf_decal/siding/wood,
-/obj/effect/landmark/start/assistant,
+/obj/machinery/vending/wardrobe/syndie_wardrobe/civil,
 /turf/open/floor/wood/wood_large,
 /area/commons/fitness/recreation/entertainment)
 "ufm" = (
@@ -88756,6 +88870,9 @@
 	},
 /obj/structure/cable/yellow{
 	icon_state = "2-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
 	},
 /turf/open/floor/plating,
 /area/command/bridge)
@@ -89472,8 +89589,6 @@
 /turf/open/floor/pod/dark,
 /area/service/chapel/office)
 "uoO" = (
-/obj/structure/table,
-/obj/structure/showcase/machinery/tv,
 /obj/effect/turf_decal/siding/wood{
 	dir = 10
 	},
@@ -89482,6 +89597,7 @@
 	pixel_y = -27
 	},
 /obj/machinery/light/warm/directional/west,
+/obj/machinery/gear_painter,
 /turf/open/floor/wood/wood_large,
 /area/commons/fitness/recreation/entertainment)
 "uoX" = (
@@ -90999,6 +91115,9 @@
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
 	icon_state = "2-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
 	},
 /turf/open/floor/plating,
 /area/security/holding_cell)
@@ -94303,6 +94422,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-8"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
 /turf/open/floor/plating,
 /area/engineering/transit_tube)
 "vqS" = (
@@ -95357,7 +95479,8 @@
 	name = "Shorki";
 	real_name = "Shorki";
 	desc = "A not so ferocious, fang bearing creature that resembles a shark. This one seems a little big for its tank.";
-	gender = "male"
+	gender = "male";
+	AIStatus = 3
 	},
 /turf/open/floor/plating/asteroid,
 /area/commons/dorms)
@@ -95588,6 +95711,9 @@
 	},
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
 	},
 /turf/open/floor/plating,
 /area/security/execution/transfer)
@@ -96189,6 +96315,9 @@
 	},
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
 	},
 /turf/open/floor/plating,
 /area/hallway/secondary/command)
@@ -98200,6 +98329,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
 /turf/open/floor/plating,
 /area/security/prison)
 "whU" = (
@@ -99354,10 +99486,9 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 6
 	},
-/obj/structure/chair/plastic{
-	dir = 8
-	},
 /obj/structure/extinguisher_cabinet/directional/south,
+/obj/structure/showcase/machinery/tv,
+/obj/structure/table,
 /turf/open/floor/wood/wood_large,
 /area/commons/fitness/recreation/entertainment)
 "wye" = (
@@ -99611,6 +99742,9 @@
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
 	},
 /turf/open/floor/plating,
 /area/maintenance/department/security/brig)
@@ -102559,6 +102693,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
 /turf/open/floor/plating,
 /area/security/execution/transfer)
 "xjr" = (
@@ -103627,7 +103764,6 @@
 /obj/machinery/door/airlock/mining/glass{
 	name = "Cargo Office"
 	},
-/obj/effect/mapping_helpers/airlock/access/all/supply/general,
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
@@ -103641,6 +103777,7 @@
 	dir = 4
 	},
 /obj/effect/landmark/navigate_destination/cargo,
+/obj/effect/mapping_helpers/airlock/access/any/supply/mining,
 /turf/open/floor/plasteel/rivets/large,
 /area/cargo/office)
 "xwc" = (
@@ -103740,6 +103877,9 @@
 /obj/machinery/door/poddoor/preopen{
 	id = "brigwindows";
 	name = "Brig Front Blast Door"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
 	},
 /turf/open/floor/plating,
 /area/security/holding_cell)
@@ -105447,6 +105587,9 @@
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
 	},
 /turf/open/floor/plating,
 /area/security/prison)
@@ -128267,7 +128410,7 @@ vUl
 nkw
 nwe
 pZk
-sdF
+kni
 mte
 kTH
 fHX
@@ -138994,7 +139137,7 @@ qZS
 nzY
 nzY
 nzY
-kqd
+ooD
 gFQ
 ohp
 qlo
@@ -139251,7 +139394,7 @@ qmz
 ezv
 ezv
 ezv
-kqd
+ooD
 jww
 qdO
 wgP
@@ -139265,7 +139408,7 @@ xZX
 sFF
 dGc
 dGc
-ehz
+sdF
 cds
 oNf
 aqp
@@ -139522,7 +139665,7 @@ xZX
 qDd
 dGc
 iJM
-ehz
+sdF
 nYw
 lrs
 vbo
@@ -139779,7 +139922,7 @@ cua
 dGc
 dGc
 dGc
-ehz
+sdF
 jpT
 oNf
 aqp
@@ -140535,7 +140678,7 @@ ydI
 nzY
 ezv
 ezv
-kqd
+ooD
 lMf
 wOY
 dyr
@@ -141327,12 +141470,12 @@ ciZ
 aqp
 wui
 xdV
-tve
+hlm
 hlm
 xdV
 mji
 xdV
-tve
+hlm
 hlm
 sEY
 vnG
@@ -141821,7 +141964,7 @@ dUP
 ezv
 ezv
 ydI
-kqd
+ooD
 hXa
 bCV
 vFv
@@ -141840,7 +141983,7 @@ gzE
 oNf
 aqp
 aVO
-oex
+aLj
 fow
 qBi
 oru
@@ -141936,7 +142079,7 @@ dNh
 ufh
 aOP
 fWN
-pxr
+tiV
 irM
 tzl
 mBy
@@ -142097,7 +142240,7 @@ bys
 oNf
 sXw
 aVO
-hlm
+aLj
 fow
 qBi
 oru
@@ -142190,7 +142333,7 @@ pUd
 wRe
 dfF
 oPG
-mVh
+oex
 aOP
 lPE
 aBC
@@ -142446,7 +142589,7 @@ gom
 dhX
 eSg
 eQj
-ajX
+dNh
 kZZ
 aOP
 wXS
@@ -142611,7 +142754,7 @@ hRH
 lOf
 aiG
 bUp
-sBe
+aLj
 wIt
 ltd
 oru
@@ -142700,11 +142843,11 @@ cId
 rsj
 xum
 uCk
-dNh
-dNh
-dwq
 xDF
-spk
+lAx
+dwq
+dNh
+mVh
 aOP
 vEH
 tiV
@@ -142868,7 +143011,7 @@ kvY
 rYN
 aqp
 aVO
-ooD
+aLj
 iLL
 bIx
 oru
@@ -143125,7 +143268,7 @@ kvY
 nal
 hqS
 aVO
-apm
+aLj
 iLL
 goG
 oru
@@ -143410,7 +143553,7 @@ wNL
 ttG
 qeE
 hHS
-lAx
+bfa
 pTH
 xKj
 fzT
@@ -143639,7 +143782,7 @@ sIY
 aJf
 aqp
 aVO
-sBe
+aLj
 xmx
 noH
 oru
@@ -143665,7 +143808,7 @@ ooi
 nPC
 kyO
 jWJ
-dkd
+ajX
 lny
 rpd
 kYs
@@ -143896,7 +144039,7 @@ sIY
 xGp
 aqp
 aVO
-ooD
+aLj
 sHW
 loH
 vGi
@@ -144181,7 +144324,7 @@ wNL
 mZN
 qeE
 xFy
-lAx
+bfa
 ssm
 xKj
 fzT
@@ -144436,7 +144579,7 @@ hsF
 xma
 dbi
 jWJ
-dkd
+ajX
 lny
 rpd
 iYE
@@ -144692,7 +144835,7 @@ dva
 naA
 ukI
 qMQ
-dkd
+ajX
 jlu
 jrE
 bfa
@@ -144952,7 +145095,7 @@ cSN
 sAf
 qeE
 bRe
-lAx
+bfa
 jUx
 xKj
 fzT
@@ -148546,7 +148689,7 @@ dAq
 icQ
 sxW
 tbU
-gdJ
+spk
 icQ
 vvk
 mop
@@ -150071,11 +150214,11 @@ iGy
 xIT
 xIT
 qLe
-jya
+sBe
 bAK
 xjp
 xIT
-jya
+sBe
 iPm
 xjp
 xIT
@@ -150328,13 +150471,13 @@ iGy
 xIT
 xIT
 rmf
-fVk
+tve
 cFR
-fVk
+tve
 xIT
-fVk
+tve
 cFR
-fVk
+tve
 xIT
 jya
 bwQ
@@ -151112,7 +151255,7 @@ gca
 gca
 fvU
 icQ
-dAq
+pxr
 icQ
 gaf
 tbU
