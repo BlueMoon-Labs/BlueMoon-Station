@@ -890,6 +890,7 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 		if(istype(I, /obj/item/card/id))
 			continue
 		ADD_TRAIT(I, TRAIT_NODROP, "pirate_antag")
+	qdel(src)
 
 /obj/effect/mob_spawn/human/pirate/proc/generate_pirate_name()
 	var/beggings = strings(PIRATE_NAMES_FILE, "beginnings")

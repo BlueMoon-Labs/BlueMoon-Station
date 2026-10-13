@@ -1699,6 +1699,7 @@
 #include "code\game\objects\structures\artstuff.dm"
 #include "code\game\objects\structures\barsigns.dm"
 #include "code\game\objects\structures\bedsheet_bin.dm"
+#include "code\game\objects\structures\cannons\mounted_guns\mounted_gun.dm"
 #include "code\game\objects\structures\chess.dm"
 #include "code\game\objects\structures\containers.dm"
 #include "code\game\objects\structures\curtain_static.dm"
