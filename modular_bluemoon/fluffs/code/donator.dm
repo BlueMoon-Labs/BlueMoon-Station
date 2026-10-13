@@ -1,10 +1,12 @@
 //Файл для выдачи предметов донатерам по сикею
-// ckeywhitelist поддерживает исходный key "AA-BB-ab...", ckey "aabbab" и обратимые ID "enc1:...".
+// ckeywhitelist поддерживает исходный key "AA-BB-ab...", ckey "aabbab" и обратимые ID "enc1:...". Все форматы можно смешивать в одном листе.
+// ID может получить игрок на вкладке персональных вещей лодаута
+
 // Открытые имена сравниваются через ckey(), поэтому регистр и знаки в них не влияют на доступ.
-// gear_ckey_id(key) шифрует исходное имя AES-256-GCM с секретом из CONFIG_GET(string/loadout_ckey_secret). [SHOW] выдаёт этот ID игроку.
+// gear_ckey_id(key) шифрует исходное имя AES-256-GCM с секретом из CONFIG_GET(string/loadout_ckey_secret).
 // gear_ckey_from_id(id) возвращает исходное имя; при проверке доступа оно нормализуется через ckey().
+
 // Проверка ID и файлов вне игры: tools/loadout_crypto/README.md. Ключ нельзя публиковать или терять.
-// Все форматы можно смешивать. Вставляйте готовый ID, а не вызов gear_ckey_id("сикей"), раскрывающий владельца.
 
 
 /datum/gear/donator/bm
@@ -13,7 +15,7 @@
 	path = /obj/item/bikehorn/golden //Ссылка на датум объекта
 	category = LOADOUT_CATEGORY_DONATOR //Категория, в которой будет содержаться предмет - собственно во вкладке лодаута донатерских
 	subcategory = LOADOUT_SUBCATEGORIES_DON03
-	ckeywhitelist = list() //list("Сикей получателя") //Если вы видите этот текст ингейм, значит кто-то ебанулся с кодом - пингуйте всё того же
+	ckeywhitelist = list() // Пример (достаточно указать в 1 любом формате): list("AA-BB-ab...", "aabbab", "enc1:bdWWgObtc7vqD3botT13LuHJKA607o5T3ImYB0HdsV75sa9V_YYahA") //Если вы видите этот текст ингейм, значит кто-то ебанулся с кодом - пингуйте всё того же
 
 /datum/gear/donator/bm/tyranny_crown
 	name = "Crown of Pure Tyranny"
@@ -2800,9 +2802,3 @@
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/donator/bm/mall_cop_chic
 	ckeywhitelist = list("sawwarrr")
-
-/datum/gear/donator/bm/test_screwdriver
-	name = "Crypto test item"
-	path = /obj/item/screwdriver
-	slot = ITEM_SLOT_BACKPACK
-	ckeywhitelist = list("enc1:bdWWgObtc7vqD3botT13LuHJKA607o5T3ImYB0HdsV75sa9V_YYahA")
