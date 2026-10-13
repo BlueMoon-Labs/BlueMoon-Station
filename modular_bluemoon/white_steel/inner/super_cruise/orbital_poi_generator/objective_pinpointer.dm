@@ -9,7 +9,7 @@
 		пока вы не окажетесь в пределах 15 клеток от неё."
 	icon_state = "pinpointer_centcom"
 	item_state = "electronic"
-	minimum_range = 15
+	minimum_range = 10
 
 /obj/item/pinpointer/objective/attack_self(mob/living/user)
 	. = ..()

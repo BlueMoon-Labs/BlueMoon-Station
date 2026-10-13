@@ -80,6 +80,8 @@
 		/datum/outfit/hsc/vip/assistant,
 	)
 	created_human.equipOutfit(pick(vip_outfits))
+	//WHITE-STEEL PORT: VIP-тело можно занять призраку — mind с образом и целью сохраняется за телом.
+	created_human.AddComponent(/datum/component/ghost_takeover, "VIP-персоны", "Вы — VIP-персона! Задача: выжить на руине и вернуться на ЦК живым.")
 	//WHITE-STEEL PORT: у VIP настоящая цель в mind — выжить и вернуться на ЦК.
 	created_human.mind.add_antag_datum(/datum/antagonist/vip_recovery)
 	mob_to_recover = created_human
