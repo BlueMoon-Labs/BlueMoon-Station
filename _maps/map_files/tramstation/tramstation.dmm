@@ -15500,6 +15500,7 @@
 /area/engineering/engine_smes)
 "erO" = (
 /obj/machinery/holopad,
+/obj/machinery/vending/barkbox,
 /turf/open/floor/plasteel/grimy,
 /area/hallway/secondary/entry)
 "erP" = (
@@ -48462,7 +48463,6 @@
 /obj/effect/turf_decal/trimline/yellow/filled/line{
 	dir = 1
 	},
-/obj/machinery/vending/barkbox,
 /turf/open/floor/plasteel,
 /area/hallway/secondary/entry)
 "nAh" = (
@@ -77326,15 +77326,12 @@
 /turf/open/floor/plasteel,
 /area/hallway/secondary/service)
 "vox" = (
-/obj/effect/turf_decal/trimline/neutral/filled/line{
-	dir = 8
-	},
-/obj/effect/turf_decal/siding/thinplating{
-	dir = 4
+/obj/effect/turf_decal/tile/blue/opposingcorners{
+	dir = 1
 	},
 /obj/machinery/vending/kink,
-/turf/open/floor/plasteel,
-/area/commons/fitness/recreation)
+/turf/open/floor/plasteel/cafeteria,
+/area/commons/cryopod)
 "voE" = (
 /obj/item/toy/crayon/orange,
 /obj/effect/decal/cleanable/crayon{
@@ -172292,7 +172289,7 @@ jBt
 rst
 mPO
 uQL
-uQL
+vox
 cxP
 cxP
 pPW
@@ -173577,7 +173574,7 @@ rtX
 rtX
 cWR
 rtX
-vox
+rtX
 rtX
 aMw
 rmX
