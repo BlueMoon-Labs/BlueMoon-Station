@@ -54,6 +54,7 @@
 	. += "Alt-click on [src] to toggle the [togglename]."
 
 /obj/item/clothing/underwear/shirt/adjustable/proc/update_sprite_visibility(datum/source, obj/item/I)
+	SIGNAL_HANDLER
 	var/mob/living/carbon/human/H = source
 	var/obj/item/organ/genital/breasts/B = H.getorganslot(ORGAN_SLOT_BREASTS)
 	if(B?.is_exposed() || H.is_chest_exposed())
