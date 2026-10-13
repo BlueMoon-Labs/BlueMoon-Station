@@ -39954,15 +39954,7 @@
 /turf/open/floor/plasteel/rivets/large,
 /area/science/mixing)
 "iVI" = (
-/obj/machinery/cryopod{
-	dir = 4
-	},
-/obj/machinery/computer/cryopod{
-	pixel_x = -32
-	},
-/obj/effect/turf_decal/delivery/white{
-	color = "#00ff00"
-	},
+/obj/structure/table,
 /turf/open/floor/plasteel/dark/smooth/edge{
 	dir = 4
 	},
