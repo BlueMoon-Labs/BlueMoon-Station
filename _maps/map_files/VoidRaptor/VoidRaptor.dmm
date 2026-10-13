@@ -196,12 +196,6 @@
 /obj/effect/turf_decal/bot,
 /turf/open/floor/plasteel/rivets/large,
 /area/engineering/engine_smes)
-"abK" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 8
-	},
-/turf/open/floor/circuit/green,
-/area/science/xenobiology)
 "abO" = (
 /obj/machinery/igniter/incinerator_toxmix,
 /obj/effect/turf_decal/stripes/red{
@@ -749,6 +743,16 @@
 	},
 /turf/open/space/basic,
 /area/space/nearstation)
+"ahc" = (
+/obj/effect/spawner/structure/window/reinforced,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
+/turf/open/floor/plating,
+/area/ai_monitored/turret_protected/aisat/foyer)
 "ahC" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 4
@@ -2951,6 +2955,9 @@
 /obj/effect/spawner/structure/window/hollow/reinforced/middle,
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
 	},
 /turf/open/floor/plating,
 /area/ai_monitored/turret_protected/aisat/foyer)
@@ -8271,6 +8278,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
 /turf/open/floor/plating,
 /area/ai_monitored/turret_protected/aisat/foyer)
 "bWB" = (
@@ -12221,6 +12231,19 @@
 /obj/machinery/cell_charger,
 /turf/open/floor/plasteel/rivets,
 /area/security/checkpoint/engineering)
+"cUX" = (
+/obj/effect/spawner/structure/window/reinforced,
+/obj/structure/cable/yellow{
+	icon_state = "1-4"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
+	},
+/turf/open/floor/plating,
+/area/ai_monitored/turret_protected/aisat/foyer)
 "cVe" = (
 /obj/effect/turf_decal/trimline/brown/filled/warning,
 /obj/effect/turf_decal/arrows,
@@ -15476,6 +15499,9 @@
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
 	},
 /turf/open/floor/plating,
 /area/ai_monitored/turret_protected/aisat/foyer)
@@ -20730,20 +20756,6 @@
 	},
 /turf/open/floor/engine,
 /area/engineering/supermatter_room)
-"eNp" = (
-/obj/effect/turf_decal/trimline/purple/filled/warning{
-	dir = 4
-	},
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer2{
-	dir = 1
-	},
-/turf/open/floor/plasteel/white/smooth/edge{
-	dir = 8
-	},
-/area/science/xenobiology)
 "eNu" = (
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
@@ -36067,20 +36079,6 @@
 	},
 /turf/open/floor/plasteel/vaporwave,
 /area/service/barbershop)
-"ici" = (
-/obj/effect/turf_decal/trimline/purple/filled/line{
-	dir = 4
-	},
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 4
-	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 1
-	},
-/turf/open/floor/plasteel/white/smooth/edge{
-	dir = 8
-	},
-/area/science/xenobiology)
 "ick" = (
 /obj/effect/turf_decal/trimline/purple/filled/line{
 	dir = 8
@@ -40245,6 +40243,13 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/department/science/xenobiology)
+"iZI" = (
+/mob/living/simple_animal/slime,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/turf/open/floor/circuit/green,
+/area/science/xenobiology)
 "iZL" = (
 /obj/effect/turf_decal/siding/thinplating_new/terracotta/corner{
 	dir = 4
@@ -42102,6 +42107,20 @@
 	},
 /turf/open/floor/plasteel/dark/smooth/small,
 /area/security/prison/work)
+"jvM" = (
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/turf/open/floor/plasteel/white/smooth/edge{
+	dir = 8
+	},
+/area/science/xenobiology)
 "jvN" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
 	dir = 6
@@ -42380,6 +42399,9 @@
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
 	},
 /turf/open/floor/plating,
 /area/ai_monitored/turret_protected/aisat/foyer)
@@ -46063,6 +46085,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
 /turf/open/floor/plating,
 /area/ai_monitored/turret_protected/aisat/foyer)
 "kso" = (
@@ -46938,6 +46963,9 @@
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
 	},
 /turf/open/floor/plating,
 /area/ai_monitored/turret_protected/aisat/foyer)
@@ -55114,6 +55142,9 @@
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
 	},
 /turf/open/floor/plating,
 /area/ai_monitored/turret_protected/aisat/foyer)
@@ -65997,6 +66028,20 @@
 /obj/effect/turf_decal/bot,
 /turf/open/floor/wood/wood_large,
 /area/commons/fitness/recreation)
+"oTF" = (
+/obj/effect/turf_decal/trimline/purple/filled/warning{
+	dir = 4
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer2{
+	dir = 1
+	},
+/turf/open/floor/plasteel/white/smooth/edge{
+	dir = 8
+	},
+/area/science/xenobiology)
 "oTP" = (
 /obj/effect/turf_decal/delivery,
 /obj/effect/landmark/event_spawn,
@@ -75517,6 +75562,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-8"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
 /turf/open/floor/plating,
 /area/ai_monitored/turret_protected/aisat/foyer)
 "qZS" = (
@@ -81742,13 +81790,6 @@
 	dir = 1
 	},
 /area/medical/medbay/central)
-"swm" = (
-/mob/living/simple_animal/slime,
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 4
-	},
-/turf/open/floor/circuit/green,
-/area/science/xenobiology)
 "swD" = (
 /obj/item/clothing/suit/hazardvest{
 	desc = "A high-visibility lifejacket complete with whistle and slot for oxygen tanks.";
@@ -87915,6 +87956,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
 /turf/open/floor/plating,
 /area/ai_monitored/turret_protected/aisat/foyer)
 "tRU" = (
@@ -91459,7 +91503,7 @@
 /area/command/heads_quarters/captain/private)
 "uIM" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 4
+	dir = 8
 	},
 /turf/open/floor/circuit/green,
 /area/science/xenobiology)
@@ -95079,6 +95123,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
+	},
 /turf/open/floor/plating,
 /area/ai_monitored/turret_protected/aisat/foyer)
 "vvY" = (
@@ -95570,6 +95617,12 @@
 /obj/effect/turf_decal/bot,
 /turf/open/floor/circuit/red,
 /area/science/robotics/mechbay)
+"vAp" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/turf/open/floor/circuit/green,
+/area/science/xenobiology)
 "vAv" = (
 /obj/machinery/conveyor{
 	dir = 10;
@@ -97284,6 +97337,9 @@
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
 	icon_state = "2-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
 	},
 /turf/open/floor/plating,
 /area/ai_monitored/turret_protected/aisat/foyer)
@@ -103391,7 +103447,7 @@
 "xpN" = (
 /mob/living/simple_animal/slime,
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
-	dir = 8
+	dir = 4
 	},
 /turf/open/floor/circuit/green,
 /area/science/xenobiology)
@@ -121052,7 +121108,7 @@ jgG
 jgG
 mqK
 mqK
-dHy
+ahc
 xLf
 xLf
 uwf
@@ -121565,7 +121621,7 @@ rRq
 jgG
 mqK
 mtO
-ksj
+cUX
 azA
 jij
 oGx
@@ -127247,16 +127303,16 @@ cqA
 etS
 xfL
 elQ
-swm
+xpN
 elQ
 wOJ
-uIM
+vAp
 elQ
 wOJ
-uIM
+vAp
 elQ
 wOJ
-swm
+xpN
 elQ
 tlT
 dOB
@@ -128538,8 +128594,8 @@ ucQ
 mJo
 bQi
 ktS
-eNp
-ici
+oTF
+jvM
 kMe
 mJo
 rin
@@ -129303,16 +129359,16 @@ bCy
 eqR
 xfL
 elQ
-abK
+uIM
 elQ
 wOJ
-xpN
+iZI
 elQ
 wOJ
 jxS
 elQ
 wOJ
-abK
+uIM
 elQ
 tlT
 kJB
