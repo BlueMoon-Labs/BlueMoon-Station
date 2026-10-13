@@ -1,15 +1,15 @@
-/datum/preferences/proc/cit_character_pref_load(savefile/S)
+/datum/preferences/proc/cit_character_pref_load(savefile/S, datum/player_save_document/document)
 	//ipcs
-	S["feature_ipc_screen"] >> features["ipc_screen"]
-	S["feature_ipc_antenna"] >> features["ipc_antenna"]
+	READ_PLAYER_SAVE(S, document, "feature_ipc_screen", features["ipc_screen"])
+	READ_PLAYER_SAVE(S, document, "feature_ipc_antenna", features["ipc_antenna"])
 
 	features["ipc_screen"] 	= sanitize_inlist(features["ipc_screen"], GLOB.ipc_screens_list)
 	features["ipc_antenna"] 	= sanitize_inlist(features["ipc_antenna"], GLOB.ipc_antennas_list)
 	//Citadel
 	features["flavor_text"]		= sanitize_text(features["flavor_text"], initial(features["flavor_text"]))
-	features["allow_emissives"] = sanitize_integer(S["feature_allow_emissives"], 0, 1, FALSE)
-	var/legacy_emissive_eyes = sanitize_integer(S["feature_emissive_eyes"], 0, 1, FALSE)
-	var/legacy_emissive_parts = safe_json_decode(S["feature_emissive_parts"])
+	features["allow_emissives"] = sanitize_integer(PLAYER_SAVE_VALUE(S, document, "feature_allow_emissives"), 0, 1, FALSE)
+	var/legacy_emissive_eyes = sanitize_integer(PLAYER_SAVE_VALUE(S, document, "feature_emissive_eyes"), 0, 1, FALSE)
+	var/legacy_emissive_parts = safe_json_decode(PLAYER_SAVE_VALUE(S, document, "feature_emissive_parts"))
 	var/list/emissive_parts = list()
 	if(islist(legacy_emissive_parts))
 		for(var/part in legacy_emissive_parts)
@@ -28,20 +28,20 @@
 	features["mcolor3"]	= sanitize_hexcolor(features["mcolor3"], 6, FALSE)
 
 	// Sandstorm changes
-	S["enable_personal_chat_color"]		>> enable_personal_chat_color
-	S["personal_chat_color"]			>> personal_chat_color
-	S["lust_tolerance"] 				>> lust_tolerance
-	S["sexual_potency"]					>> sexual_potency
+	READ_PLAYER_SAVE(S, document, "enable_personal_chat_color", enable_personal_chat_color)
+	READ_PLAYER_SAVE(S, document, "personal_chat_color", personal_chat_color)
+	READ_PLAYER_SAVE(S, document, "lust_tolerance", lust_tolerance)
+	READ_PLAYER_SAVE(S, document, "sexual_potency", sexual_potency)
 
-	erppref = sanitize_inlist(S["erp_pref"], GLOB.lewd_prefs_choices, "Ask")
-	nonconpref = sanitize_inlist(S["noncon_pref"], GLOB.lewd_prefs_choices, "Ask")
-	vorepref = sanitize_inlist(S["vore_pref"], GLOB.lewd_prefs_choices, "Ask")
-	mobsexpref = sanitize_inlist(S["mobsex_pref"], GLOB.lewd_prefs_choices, "No") //Hentai
-	tattoopref = sanitize_inlist(S["tattoo_pref"], GLOB.lewd_prefs_choices, "Ask") //BLUEMOON ADD - tattoo consent
-	unholypref = sanitize_inlist(S["unholypref"], GLOB.lewd_prefs_choices, "Ask") //I AM MENTAL I AM MAD I AM INSANE
-	unholyhardpref = sanitize_inlist(S["unholyhard_pref"], GLOB.lewd_prefs_choices, "No") // https://youtu.be/DCC6w9pAn3k?si=YIKRdkT_wwQr-V8U
-	extremepref = sanitize_inlist(S["extreme_pref"], GLOB.lewd_prefs_choices, "No") //god has forsaken me
-	extremeharm = sanitize_inlist(S["extreme_harm"], (GLOB.lewd_prefs_choices - "Ask"), "No") //hacky for not saving "Ask"
+	erppref = sanitize_inlist(PLAYER_SAVE_VALUE(S, document, "erp_pref"), GLOB.lewd_prefs_choices, "Ask")
+	nonconpref = sanitize_inlist(PLAYER_SAVE_VALUE(S, document, "noncon_pref"), GLOB.lewd_prefs_choices, "Ask")
+	vorepref = sanitize_inlist(PLAYER_SAVE_VALUE(S, document, "vore_pref"), GLOB.lewd_prefs_choices, "Ask")
+	mobsexpref = sanitize_inlist(PLAYER_SAVE_VALUE(S, document, "mobsex_pref"), GLOB.lewd_prefs_choices, "No") //Hentai
+	tattoopref = sanitize_inlist(PLAYER_SAVE_VALUE(S, document, "tattoo_pref"), GLOB.lewd_prefs_choices, "Ask") //BLUEMOON ADD - tattoo consent
+	unholypref = sanitize_inlist(PLAYER_SAVE_VALUE(S, document, "unholypref"), GLOB.lewd_prefs_choices, "Ask") //I AM MENTAL I AM MAD I AM INSANE
+	unholyhardpref = sanitize_inlist(PLAYER_SAVE_VALUE(S, document, "unholyhard_pref"), GLOB.lewd_prefs_choices, "No") // https://youtu.be/DCC6w9pAn3k?si=YIKRdkT_wwQr-V8U
+	extremepref = sanitize_inlist(PLAYER_SAVE_VALUE(S, document, "extreme_pref"), GLOB.lewd_prefs_choices, "No") //god has forsaken me
+	extremeharm = sanitize_inlist(PLAYER_SAVE_VALUE(S, document, "extreme_harm"), (GLOB.lewd_prefs_choices - "Ask"), "No") //hacky for not saving "Ask"
 	if(extremepref == "No")
 		extremeharm = "No"
 	enable_personal_chat_color	= sanitize_integer(enable_personal_chat_color, 0, 1, initial(enable_personal_chat_color))
@@ -49,7 +49,7 @@
 	lust_tolerance = sanitize_integer(lust_tolerance, 25, 200, initial(lust_tolerance))
 	sexual_potency = sanitize_integer(sexual_potency, -1, 25, initial(sexual_potency))
 
-	S["silicon_lawset"] >> silicon_lawset
+	READ_PLAYER_SAVE(S, document, "silicon_lawset", silicon_lawset)
 
 	silicon_lawset = sanitize_inlist(silicon_lawset, CONFIG_GET(keyed_list/choosable_laws), "None")
 	if(silicon_lawset == "None")

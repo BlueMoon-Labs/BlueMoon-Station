@@ -1,14 +1,14 @@
-/datum/preferences/proc/bluemoon_character_pref_load(savefile/S) //TODO: modularize our other savefile edits... maybe?
-	S["pda_style"] >> pda_style
-	S["pda_color"] >> pda_color
-	S["pda_skin"] >> pda_skin
-	S["pda_ringtone"] >> pda_ringtone
-	S["pda_theme"] >> pda_theme
+/datum/preferences/proc/bluemoon_character_pref_load(savefile/S, datum/player_save_document/document) //TODO: modularize our other savefile edits... maybe?
+	READ_PLAYER_SAVE(S, document, "pda_style", pda_style)
+	READ_PLAYER_SAVE(S, document, "pda_color", pda_color)
+	READ_PLAYER_SAVE(S, document, "pda_skin", pda_skin)
+	READ_PLAYER_SAVE(S, document, "pda_ringtone", pda_ringtone)
+	READ_PLAYER_SAVE(S, document, "pda_theme", pda_theme)
 
-	S["silicon_lawset"] >> silicon_lawset
-	S["body_weight"] >> body_weight
-	S["normalized_size"] >> features["normalized_size"]
-	S["custom_laugh"] >> custom_laugh
+	READ_PLAYER_SAVE(S, document, "silicon_lawset", silicon_lawset)
+	READ_PLAYER_SAVE(S, document, "body_weight", body_weight)
+	READ_PLAYER_SAVE(S, document, "normalized_size", features["normalized_size"])
+	READ_PLAYER_SAVE(S, document, "custom_laugh", custom_laugh)
 
 	pda_style = sanitize_inlist(pda_style, GLOB.pda_styles, initial(pda_style))
 	pda_color = sanitize_hexcolor(pda_color, 6, 1, initial(pda_color))
@@ -58,7 +58,7 @@
 	if(current_version < 71)
 		if(path && SSmetadollars)
 			var/legacy_md = bm_read_metadollars_from_savefile_path(path)
-			if(!legacy_md)
+			if(!legacy_md && !fexists("[path].json") && !fexists("[path].json.recovery"))
 				legacy_md = bm_read_metadollars_from_savefile_path("[path].updatebac")
 			if(legacy_md > 0)
 				var/ck = bm_ckey_from_prefs_path(path)

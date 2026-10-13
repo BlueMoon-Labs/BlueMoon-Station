@@ -22,7 +22,9 @@
 	var/test_path = path
 	. = ..()
 	if(test_path)
-		fdel(test_path)
+		for(var/suffix in list("", ".json", ".json.recovery"))
+			fdel("[test_path][suffix]")
+		fdel("[test_path].json.d/")
 
 /// Чистая навигация меняет отображаемую вкладку без записи и пересборки превью.
 /datum/unit_test/preferences_navigation_no_save/Run()
@@ -136,7 +138,7 @@
 	prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 	prefs.saveprefcooldown = 0
 	prefs.process_link(null, list("preference" = "auto_capitalize_enabled"))
-	var/savefile/readback = new(prefs.path)
+	var/savefile/readback = prefs.open_player_save()
 	var/initial_written
 	READ_FILE(readback["auto_capitalize_enabled"], initial_written)
 	readback = null
@@ -157,7 +159,7 @@
 	TEST_ASSERT_EQUAL(prefs.pending_single_prefs["tgui_panel_state"], prefs.tgui_panel_state, "Навигация потеряла одиночную правку")
 
 	prefs.save_preferences(bypass_cooldown = TRUE, silent = TRUE)
-	readback = new(prefs.path)
+	readback = prefs.open_player_save()
 	var/final_written
 	var/written_panel_state
 	READ_FILE(readback["auto_capitalize_enabled"], final_written)
