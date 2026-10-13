@@ -47,6 +47,9 @@
 	docking_target = null
 	valid_docks = null
 	shuttleTarget = null
+	//WHITE-STEEL FIX: снимаем обратную ссылку на консоль, иначе удалённый объект шаттла
+	//удерживается управляющей консолью (shuttleObject) и не собирается GC.
+	controlling_computer = null
 	. = ..()
 	SSorbits.assoc_shuttles.Remove(shuttle_port_id)
 

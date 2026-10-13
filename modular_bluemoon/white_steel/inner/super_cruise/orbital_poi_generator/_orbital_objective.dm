@@ -14,6 +14,16 @@
 	id = objective_num ++
 	station_name = new_station_name()
 
+/datum/orbital_objective/Destroy()
+	//WHITE-STEEL FIX: разрываем цикл objective <-> beacon. Без этого при удалении
+	//задания (QDEL_NULL(SSorbits.current_objective)) живой маяк удерживал objective
+	//через linked_objective, а objective удерживал маяк через linked_beacon, и оба
+	//датума не собирались GC (hard del, утечка маяков/заданий).
+	if(linked_beacon)
+		linked_beacon.linked_objective = null
+		linked_beacon = null
+	return ..()
+
 /datum/orbital_objective/proc/on_assign(obj/machinery/computer/objective/objective_computer)
 	return
 

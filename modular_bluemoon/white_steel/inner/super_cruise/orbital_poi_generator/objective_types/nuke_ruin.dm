@@ -47,6 +47,15 @@
 		return FALSE
 	return TRUE
 
+/datum/orbital_objective/nuclear_bomb/Destroy()
+	//WHITE-STEEL FIX: бомба хранит linked_objective = задание, а задание — nuclear_bomb.
+	//Обнуляем обратную ссылку, иначе живая бомба удерживает удалённое задание.
+	if(!QDELETED(nuclear_bomb))
+		nuclear_bomb.linked_objective = null
+	nuclear_bomb = null
+	nuclear_disk = null
+	return ..()
+
 //==============
 //The disk
 //==============
@@ -167,6 +176,10 @@
 
 /obj/machinery/nuclearbomb/decomission/actually_explode()
 	SSticker.roundend_check_paused = FALSE
-	linked_objective.complete_objective()
-	QDEL_NULL(linked_objective.linked_beacon)
+	//WHITE-STEEL FIX: complete_objective() удаляет задание, а его Destroy обнуляет наш
+	//linked_objective; обращение к linked_objective.linked_beacon после этого роняло прок.
+	var/datum/orbital_objective/nuclear_bomb/objective = linked_objective
+	if(objective)
+		QDEL_NULL(objective.linked_beacon)
+		objective.complete_objective()
 	qdel(src)

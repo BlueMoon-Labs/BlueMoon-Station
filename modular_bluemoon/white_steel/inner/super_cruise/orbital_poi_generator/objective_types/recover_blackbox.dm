@@ -25,6 +25,16 @@
 		return FALSE
 	return TRUE
 
+/datum/orbital_objective/recover_blackbox/Destroy()
+	//WHITE-STEEL FIX: компонент recoverable на чёрном ящике хранит linked_obj = задание.
+	//Живой ящик удерживал задание (и наоборот) — обнуляем обратную ссылку перед удалением.
+	if(!QDELETED(linked_blackbox))
+		var/datum/component/recoverable/recoverable = linked_blackbox.GetComponent(/datum/component/recoverable)
+		if(recoverable)
+			recoverable.linked_obj = null
+	linked_blackbox = null
+	return ..()
+
 /*
  * Blackbox Item: Objective target, handles completion
  * Traitors can steal the Nanotrasen blackbox to prevent the station

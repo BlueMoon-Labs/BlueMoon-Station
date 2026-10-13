@@ -42,3 +42,7 @@
 	if(!QDELETED(linked_artifact))
 		return FALSE
 	return TRUE
+
+/datum/orbital_objective/artifact/Destroy()
+	linked_artifact = null
+	return ..()

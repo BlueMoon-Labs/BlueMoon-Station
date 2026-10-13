@@ -50,6 +50,7 @@
 /obj/item/alienartifact/Destroy()
 	. = ..()
 	QDEL_LIST(effects)
+	effects = null
 
 //WHITE-STEEL PORT: исследование инопланетного артефакта должно давать 7500 научных очков.
 /obj/item/alienartifact/attackby(obj/item/W, mob/user, params)
@@ -105,6 +106,11 @@
 	. = ..()
 	if(requires_processing)
 		STOP_PROCESSING(SSobj, src)
+	//WHITE-STEEL FIX: эффект держал source_object (артефакт), а артефакт держал эффект
+	//в списке effects. Взаимная ссылка между двумя удаляемыми датумами не давала собрать
+	//ни артефакт, ни эффекты (утечка /obj/item/alienartifact). Сигналы с артефакта уже
+	//снимает /datum/Destroy, осталось обнулить обратную ссылку.
+	source_object = null
 
 //===================
 // Chaos Throw

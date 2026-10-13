@@ -24,6 +24,27 @@
 /datum/orbital_objective/headhunt/get_target()
 	return mob_to_recover
 
+/datum/orbital_objective/headhunt/Destroy()
+	//WHITE-STEEL FIX: разрываем цепочку утечек вокруг преступника.
+	//1) Моб был добавлен в GLOB.mob_spawners[real_name] и держался этим глобальным списком
+	//   вечно — снимаем его.
+	//2) Личная цель преступника (mind -> antag -> objective) хранила linked_objective = src,
+	//   отчего живой моб удерживал удалённое задание. Обнуляем обратную ссылку.
+	if(!QDELETED(mob_to_recover))
+		var/target_name = mob_to_recover.real_name
+		if(istext(target_name))
+			LAZYREMOVE(GLOB.mob_spawners[target_name], mob_to_recover)
+			if(!LAZYLEN(GLOB.mob_spawners[target_name]))
+				GLOB.mob_spawners -= target_name
+		if(mob_to_recover.mind)
+			var/datum/antagonist/headhunt_survive/antag = mob_to_recover.mind.has_antag_datum(/datum/antagonist/headhunt_survive)
+			if(antag)
+				for(var/datum/objective/headhunt_survive/hunt_objective in antag.objectives)
+					hunt_objective.linked_objective = null
+	mob_to_recover = null
+	extraction_pod = null
+	return ..()
+
 /datum/orbital_objective/headhunt/on_assign(obj/machinery/computer/objective/objective_computer)
 	//WHITE-STEEL PORT: капсула должна прибывать на мостик шаттла к консоли заданий,
 	//а не на мостик станции (/area/command). Повторяем логику nuke_ruin.

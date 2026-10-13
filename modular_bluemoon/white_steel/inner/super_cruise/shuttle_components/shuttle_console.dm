@@ -52,7 +52,13 @@
 /obj/machinery/computer/shuttle_flight/Destroy()
 	. = ..()
 	SSorbits.open_orbital_maps -= SStgui.get_all_open_uis(src)
-	shuttleObject?.UnregisterReference(src)
+	//WHITE-STEEL FIX: разрываем цикл shuttle.controlling_computer <-> console.shuttleObject.
+	//Регистрация сигнала в /datum/Destroy уже снимается автоматически, но обратное поле
+	//controlling_computer у орбитального объекта нужно обнулить вручную, иначе удалённая
+	//консоль удерживается живым шаттлом и не собирается GC.
+	if(shuttleObject)
+		shuttleObject.controlling_computer = null
+		shuttleObject = null
 
 /obj/machinery/computer/shuttle_flight/process()
 	. = ..()
@@ -90,11 +96,11 @@
 	if(!ui)
 		ui = new(user, src, "OrbitalMap")
 		ui.open()
-	SSorbits.open_orbital_maps |= ui
+	SSorbits.track_orbital_map_ui(ui)
 	ui.set_autoupdate(FALSE)
 
-/obj/machinery/computer/shuttle_flight/ui_close(mob/user, datum/tgui/tgui)
-	SSorbits.open_orbital_maps -= tgui
+/obj/machinery/computer/shuttle_flight/ui_close(mob/user)
+	return
 
 /obj/machinery/computer/shuttle_flight/ui_static_data(mob/user)
 	var/list/data = list()

@@ -19,11 +19,10 @@
 		ui = new(user, src, "OrbitalMap")
 		ui.open()
 	//Do not auto update, handled by orbits subsystem.
-	SSorbits.open_orbital_maps |= ui
+	SSorbits.track_orbital_map_ui(ui)
 	ui.set_autoupdate(FALSE)
 
-/datum/orbital_map_tgui/ui_close(mob/user, datum/tgui/tgui)
-	SSorbits.open_orbital_maps -= tgui
+/datum/orbital_map_tgui/ui_close(mob/user)
 	//Clear the data from the user, we don't need it anymore.
 	assoc_data -= "[REF(user)]"
 

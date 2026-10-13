@@ -24,6 +24,18 @@
 	if(ferry && ferry.mode == SHUTTLE_IDLE && ferry.getDockedId() != "ferry_home")
 		SSshuttle.moveShuttle("ferry", "ferry_home", 1)
 
+/datum/orbital_objective/vip_recovery/Destroy()
+	//WHITE-STEEL FIX: VIP был добавлен в GLOB.mob_spawners[real_name] и держался этим
+	//глобальным списком даже после удаления задания/руины — снимаем его.
+	if(!QDELETED(mob_to_recover))
+		var/target_name = mob_to_recover.real_name
+		if(istext(target_name))
+			LAZYREMOVE(GLOB.mob_spawners[target_name], mob_to_recover)
+			if(!LAZYLEN(GLOB.mob_spawners[target_name]))
+				GLOB.mob_spawners -= target_name
+	mob_to_recover = null
+	return ..()
+
 //If nobody takes up the ghost role, then we dont care if they died.
 //I know, its a bit sad.
 /datum/orbital_objective/vip_recovery/check_failed()

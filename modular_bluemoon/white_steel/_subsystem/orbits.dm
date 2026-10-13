@@ -127,6 +127,22 @@ PROCESSING_SUBSYSTEM_DEF(orbits)
 	set category = "Ghost"
 	SSorbits.orbital_map_tgui.ui_interact(src)
 
+//WHITE-STEEL FIX: учёт открытых карт орбиты для периодического обновления.
+//tgui зовёт ui_close() как src_object.ui_close(user) — БЕЗ самого интерфейса, поэтому
+//старый код (SSorbits.open_orbital_maps -= tgui) всегда вычитал null и копил мёртвые
+///datum/tgui "OrbitalMap" (утечка 60+ за раунд). Снимаем интерфейс из списка сигналом
+//на его qdel, который срабатывает при любом пути закрытия (окно, логаут, удаление
+//консоли или глазного датума наблюдателя).
+/datum/controller/subsystem/processing/orbits/proc/track_orbital_map_ui(datum/tgui/ui)
+	if(QDELETED(ui))
+		return
+	open_orbital_maps |= ui
+	RegisterSignal(ui, COMSIG_PARENT_QDELETING, TYPE_PROC_REF(/datum/controller/subsystem/processing/orbits, untrack_orbital_map_ui), override = TRUE)
+
+/datum/controller/subsystem/processing/orbits/proc/untrack_orbital_map_ui(datum/tgui/ui)
+	SIGNAL_HANDLER
+	open_orbital_maps -= ui
+
 /datum/controller/subsystem/processing/orbits/proc/create_objective()
 	var/static/list/valid_objectives = list(
 		/datum/orbital_objective/recover_blackbox = 3,
