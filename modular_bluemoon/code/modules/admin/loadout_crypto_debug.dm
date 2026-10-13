@@ -25,11 +25,11 @@
 	if(!result)
 		to_chat(usr, span_notice("Loadout crypto: <code>[html_encode(json_encode(diagnostics))]</code>. Расшифровка кодов: tools/loadout_crypto/README.md."), confidential = TRUE)
 	// Оставляем в логах шифрованное значение
-	log_admin("DEBUG: [key_name_admin(usr)] used Loadout crypto debug[result ? null : " (FAILED)"] ([is_decryption ? "decrypt [input]" : "encrypt [result ? result : input]"]).")
+	log_admin("DEBUG: [key_name_admin(usr)] used Loadout crypto tool[result ? null : " (FAILED)"] ([is_decryption ? "decrypt [input]" : "encrypt[result ? null : " [input]"]"]).")
 	var/list/ignore_admin = list()
 	for(var/client/admin_cli as anything in GLOB.admins)
 		if(!QDELETED(admin_cli) && !check_rights_for(admin_cli, R_DEBUG))
 			ignore_admin += admin_cli.key
 	// Админам с правами отправляем оригинальное сообщение
-	message_admins("DEBUG: [key_name_admin(usr)][ADMIN_FLW(src.mob)] used Loadout crypto debug[result ? null : " (FAILED)"] ([is_decryption ? "decrypt [result ? result : input]" : "encrypt [input]"]).", ignore_ckey = ignore_admin)
+	message_admins("DEBUG: [key_name_admin(usr)][ADMIN_FLW(src.mob)] used Loadout crypto tool[result ? null : " (FAILED)"] ([is_decryption ? "decrypt [result ? result : input]" : "encrypt[result ? null : " [input]"]"]).", ignore_ckey = ignore_admin)
 
