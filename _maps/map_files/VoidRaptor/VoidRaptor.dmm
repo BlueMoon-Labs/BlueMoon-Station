@@ -941,13 +941,13 @@
 "ajX" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
-	icon_state = "2-4"
+	icon_state = "1-8"
 	},
 /obj/structure/cable/yellow{
-	icon_state = "0-4"
+	icon_state = "0-8"
 	},
-/turf/open/floor/plating/airless,
-/area/security/brig)
+/turf/open/floor/plating,
+/area/maintenance/department/security/brig)
 "akl" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/effect/spawner/lootdrop/maintenance/two,
@@ -1323,6 +1323,16 @@
 	},
 /turf/open/floor/plasteel/rivets/large,
 /area/cargo/lobby)
+"apm" = (
+/obj/effect/spawner/structure/window/reinforced,
+/obj/structure/cable/yellow{
+	icon_state = "2-4"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
+/turf/open/floor/plating,
+/area/security/execution/transfer)
 "apv" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
@@ -3087,12 +3097,12 @@
 /turf/open/floor/plasteel/rivets,
 /area/engineering/atmos/pumproom)
 "aLj" = (
-/obj/structure/cable/yellow{
-	icon_state = "0-1"
+/obj/structure/table,
+/obj/item/camera{
+	pixel_y = 4
 	},
-/obj/effect/spawner/structure/window/reinforced/tinted,
-/turf/open/floor/plating,
-/area/security/courtroom)
+/turf/open/floor/wood/wood_large,
+/area/commons/fitness/recreation/entertainment)
 "aLs" = (
 /obj/effect/landmark/event_spawn,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
@@ -18133,6 +18143,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-8"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
+	},
 /turf/open/floor/plating,
 /area/maintenance/department/security)
 "ejD" = (
@@ -19370,6 +19383,9 @@
 	},
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
 	},
 /turf/open/floor/plating,
 /area/maintenance/department/security)
@@ -21337,12 +21353,15 @@
 	},
 /area/engineering/atmos/storage/gas)
 "eUk" = (
-/obj/structure/cable/yellow{
-	icon_state = "1-4"
-	},
 /obj/effect/spawner/structure/window/reinforced,
-/turf/open/floor/plating,
-/area/security/checkpoint/engineering)
+/obj/structure/cable/yellow{
+	icon_state = "2-4"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
+/turf/open/floor/plating/airless,
+/area/security/brig)
 "eUr" = (
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
@@ -26160,7 +26179,7 @@
 	icon_state = "4-8"
 	},
 /obj/structure/cable/yellow{
-	icon_state = "0-8"
+	icon_state = "0-4"
 	},
 /turf/open/floor/plating,
 /area/security/execution/transfer)
@@ -26253,6 +26272,9 @@
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
 	icon_state = "2-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
 	},
 /turf/open/floor/plating,
 /area/maintenance/department/security)
@@ -35096,6 +35118,9 @@
 /obj/machinery/door/poddoor/shutters/preopen{
 	id = "medsecprivacy";
 	name = "Privacy Shutters"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
 	},
 /turf/open/floor/plating/airless,
 /area/security/checkpoint/medical)
@@ -44715,6 +44740,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
+	},
 /turf/open/floor/plating,
 /area/maintenance/department/security)
 "kcD" = (
@@ -48112,6 +48140,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
 /turf/open/floor/plating/airless,
 /area/security/checkpoint/science/research)
 "kTo" = (
@@ -50963,12 +50994,15 @@
 /turf/open/floor/plasteel/airless/solarpanel,
 /area/solars/port/aft)
 "lAx" = (
-/obj/structure/table,
-/obj/item/camera{
-	pixel_y = 4
+/obj/effect/spawner/structure/window/reinforced,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
 	},
-/turf/open/floor/wood/wood_large,
-/area/commons/fitness/recreation/entertainment)
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
+/turf/open/floor/plating,
+/area/maintenance/department/security/brig)
 "lAC" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
@@ -56731,6 +56765,9 @@
 	id = "medsecprivacy";
 	name = "Privacy Shutters"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
 /turf/open/floor/plating/airless,
 /area/security/checkpoint/medical)
 "mPn" = (
@@ -57972,6 +58009,9 @@
 /obj/machinery/door/poddoor/shutters/preopen{
 	id = "medsecprivacy";
 	name = "Privacy Shutters"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
 	},
 /turf/open/floor/plating/airless,
 /area/security/checkpoint/medical)
@@ -62680,10 +62720,19 @@
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/starboard/fore)
 "oex" = (
-/obj/effect/turf_decal/siding/wood,
-/obj/machinery/vending/clothing,
-/turf/open/floor/wood/wood_large,
-/area/commons/fitness/recreation/entertainment)
+/obj/effect/spawner/structure/window/reinforced,
+/obj/machinery/door/poddoor/preopen{
+	id = "bridgespace";
+	name = "Bridge External Shutters"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
+/turf/open/floor/plating,
+/area/command/bridge)
 "ofc" = (
 /obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/plating,
@@ -63257,20 +63306,6 @@
 	},
 /turf/open/floor/plating/asteroid,
 /area/engineering/atmos/storage/gas)
-"ooD" = (
-/obj/effect/spawner/structure/window/reinforced,
-/obj/machinery/door/poddoor/preopen{
-	id = "bridgespace";
-	name = "Bridge External Shutters"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-4"
-	},
-/turf/open/floor/plating,
-/area/command/bridge)
 "ooH" = (
 /obj/structure/rack,
 /obj/item/storage/toolbox/electrical{
@@ -63936,6 +63971,9 @@
 	icon_state = "2-4"
 	},
 /obj/effect/spawner/structure/window/reinforced,
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
 /turf/open/floor/plating,
 /area/security/checkpoint/supply)
 "ovN" = (
@@ -63961,6 +63999,9 @@
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
 	},
 /turf/open/floor/plating,
 /area/maintenance/department/security)
@@ -64612,6 +64653,9 @@
 /obj/machinery/door/poddoor/shutters/preopen{
 	id = "medsecprivacy";
 	name = "Privacy Shutters"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
 	},
 /turf/open/floor/plating/airless,
 /area/security/checkpoint/medical)
@@ -66815,6 +66859,9 @@
 	name = "Privacy Shutters";
 	dir = 4
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
+	},
 /turf/open/floor/plating/airless,
 /area/security/checkpoint/medical)
 "pfb" = (
@@ -67570,13 +67617,6 @@
 /obj/machinery/air_sensor/atmos/toxin_tank,
 /turf/open/floor/engine/plasma,
 /area/engineering/atmos)
-"poE" = (
-/obj/structure/cable/yellow{
-	icon_state = "1-8"
-	},
-/obj/effect/spawner/structure/window/reinforced,
-/turf/open/floor/plating,
-/area/security/checkpoint/engineering)
 "poS" = (
 /obj/structure/flora/tree/jungle/small,
 /turf/open/floor/grass,
@@ -68319,15 +68359,10 @@
 /turf/closed/wall/r_wall,
 /area/ai_monitored/turret_protected/ai)
 "pxr" = (
-/obj/effect/spawner/structure/window/reinforced,
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-4"
-	},
-/turf/open/floor/plating,
-/area/maintenance/department/security/brig)
+/obj/effect/turf_decal/siding/wood,
+/obj/machinery/vending/clothing,
+/turf/open/floor/wood/wood_large,
+/area/commons/fitness/recreation/entertainment)
 "pxs" = (
 /obj/structure/table/reinforced,
 /obj/effect/turf_decal/bot,
@@ -81036,13 +81071,13 @@
 "spk" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
-	icon_state = "1-8"
+	icon_state = "4-8"
 	},
 /obj/structure/cable/yellow{
 	icon_state = "0-8"
 	},
 /turf/open/floor/plating,
-/area/maintenance/department/security/brig)
+/area/security/execution/transfer)
 "spp" = (
 /obj/structure/window/reinforced,
 /obj/structure/table,
@@ -81938,15 +81973,12 @@
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/aft/lesser)
 "sBe" = (
-/obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
-	icon_state = "2-4"
+	icon_state = "0-1"
 	},
-/obj/structure/cable/yellow{
-	icon_state = "0-4"
-	},
+/obj/effect/spawner/structure/window/reinforced/tinted,
 /turf/open/floor/plating,
-/area/security/execution/transfer)
+/area/security/courtroom)
 "sBf" = (
 /obj/effect/spawner/lootdrop{
 	loot = list(/obj/effect/decal/cleanable/dirt = 7, /obj/effect/decal/cleanable/generic = 4, /obj/effect/decal/cleanable/vomit/old = 3, /obj/effect/decal/cleanable/blood/gibs/old = 3, /obj/effect/decal/cleanable/insectguts = 1, /obj/effect/decal/cleanable/greenglow/ecto = 1, /obj/effect/decal/cleanable/wrapping = 1, /obj/effect/decal/cleanable/glass = 1)
@@ -82689,6 +82721,9 @@
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
 	},
 /turf/open/floor/plating,
 /area/maintenance/department/security)
@@ -84725,6 +84760,9 @@
 	icon_state = "1-8"
 	},
 /obj/effect/spawner/structure/window/reinforced,
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
 /turf/open/floor/plating,
 /area/security/checkpoint/supply)
 "tgC" = (
@@ -85826,13 +85864,13 @@
 "tve" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
-	icon_state = "4-8"
+	icon_state = "1-2"
 	},
 /obj/structure/cable/yellow{
-	icon_state = "0-4"
+	icon_state = "0-2"
 	},
 /turf/open/floor/plating,
-/area/security/execution/transfer)
+/area/maintenance/department/security)
 "tvk" = (
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
@@ -86709,13 +86747,8 @@
 /turf/open/floor/plasteel/rivets,
 /area/cargo/sorting)
 "tFT" = (
-/obj/structure/cable/yellow{
-	icon_state = "1-4"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "1-8"
-	},
 /obj/effect/spawner/structure/window/reinforced,
+/obj/structure/cable/yellow,
 /turf/open/floor/plating,
 /area/security/checkpoint/engineering)
 "tFW" = (
@@ -98066,10 +98099,10 @@
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/engineering/atmos)
 "weV" = (
-/obj/structure/cable/yellow{
-	icon_state = "2-8"
-	},
 /obj/effect/spawner/structure/window/reinforced,
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
 /turf/open/floor/plating,
 /area/security/checkpoint/supply)
 "weY" = (
@@ -106916,6 +106949,9 @@
 	icon_state = "2-8"
 	},
 /obj/effect/spawner/structure/window/reinforced,
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
+	},
 /turf/open/floor/plating,
 /area/security/checkpoint/engineering)
 "yfx" = (
@@ -107315,6 +107351,9 @@
 	icon_state = "1-8"
 	},
 /obj/effect/spawner/structure/window/reinforced,
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
+	},
 /turf/open/floor/plating,
 /area/security/checkpoint/supply)
 "ykr" = (
@@ -138489,7 +138528,7 @@ aMQ
 fHk
 qgu
 vLA
-eUk
+tFT
 avj
 hWs
 pXr
@@ -139003,7 +139042,7 @@ aMQ
 tYM
 qgu
 vLA
-poE
+tFT
 avj
 hWs
 trv
@@ -139137,7 +139176,7 @@ qZS
 nzY
 nzY
 nzY
-ooD
+oex
 gFQ
 ohp
 qlo
@@ -139394,7 +139433,7 @@ qmz
 ezv
 ezv
 ezv
-ooD
+oex
 jww
 qdO
 wgP
@@ -140678,7 +140717,7 @@ ydI
 nzY
 ezv
 ezv
-ooD
+oex
 lMf
 wOY
 dyr
@@ -141726,7 +141765,7 @@ eCX
 tZC
 vTT
 awJ
-aLj
+sBe
 oDJ
 pRm
 aVn
@@ -141964,7 +142003,7 @@ dUP
 ezv
 ezv
 ydI
-ooD
+oex
 hXa
 bCV
 vFv
@@ -141983,7 +142022,7 @@ gzE
 oNf
 aqp
 aVO
-aLj
+sBe
 fow
 qBi
 oru
@@ -142240,7 +142279,7 @@ bys
 oNf
 sXw
 aVO
-aLj
+sBe
 fow
 qBi
 oru
@@ -142333,7 +142372,7 @@ pUd
 wRe
 dfF
 oPG
-oex
+pxr
 aOP
 lPE
 aBC
@@ -142754,7 +142793,7 @@ hRH
 lOf
 aiG
 bUp
-aLj
+sBe
 wIt
 ltd
 oru
@@ -142844,7 +142883,7 @@ rsj
 xum
 uCk
 xDF
-lAx
+aLj
 dwq
 dNh
 mVh
@@ -143011,7 +143050,7 @@ kvY
 rYN
 aqp
 aVO
-aLj
+sBe
 iLL
 bIx
 oru
@@ -143268,7 +143307,7 @@ kvY
 nal
 hqS
 aVO
-aLj
+sBe
 iLL
 goG
 oru
@@ -143782,7 +143821,7 @@ sIY
 aJf
 aqp
 aVO
-aLj
+sBe
 xmx
 noH
 oru
@@ -143808,7 +143847,7 @@ ooi
 nPC
 kyO
 jWJ
-ajX
+eUk
 lny
 rpd
 kYs
@@ -144039,7 +144078,7 @@ sIY
 xGp
 aqp
 aVO
-aLj
+sBe
 sHW
 loH
 vGi
@@ -144579,7 +144618,7 @@ hsF
 xma
 dbi
 jWJ
-ajX
+eUk
 lny
 rpd
 iYE
@@ -144835,7 +144874,7 @@ dva
 naA
 ukI
 qMQ
-ajX
+eUk
 jlu
 jrE
 bfa
@@ -147634,11 +147673,11 @@ cmg
 igZ
 iGy
 ovU
-kcz
-kcz
+tve
+tve
 ewT
-kcz
-kcz
+tve
+tve
 sIK
 rRz
 sAT
@@ -148689,7 +148728,7 @@ dAq
 icQ
 sxW
 tbU
-spk
+ajX
 icQ
 vvk
 mop
@@ -149195,7 +149234,7 @@ xIT
 xIT
 xIT
 xIT
-fVk
+spk
 gca
 gca
 xhd
@@ -149452,7 +149491,7 @@ xIT
 xIT
 xIT
 xIT
-fVk
+spk
 gca
 gca
 hKZ
@@ -149709,7 +149748,7 @@ xIT
 xIT
 xIT
 xIT
-fVk
+spk
 gca
 dIm
 hKZ
@@ -149799,7 +149838,7 @@ dld
 cGY
 kpo
 oJn
-ovG
+weV
 kzg
 qbk
 epq
@@ -149966,7 +150005,7 @@ agl
 xIT
 xIT
 xIT
-fVk
+spk
 lxi
 gca
 pbg
@@ -150214,16 +150253,16 @@ iGy
 xIT
 xIT
 qLe
-sBe
+apm
 bAK
 xjp
 xIT
-sBe
+apm
 iPm
 xjp
 xIT
 xIT
-fVk
+spk
 gca
 kro
 hKZ
@@ -150471,13 +150510,13 @@ iGy
 xIT
 xIT
 rmf
-tve
+fVk
 cFR
-tve
+fVk
 xIT
-tve
+fVk
 cFR
-tve
+fVk
 xIT
 jya
 bwQ
@@ -151255,7 +151294,7 @@ gca
 gca
 fvU
 icQ
-pxr
+lAx
 icQ
 gaf
 tbU
