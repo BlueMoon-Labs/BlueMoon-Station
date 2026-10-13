@@ -63,12 +63,9 @@
 
 /// Та же альфа-маска, что у нашего icemoon, но в тёплом песочном.
 /// В самом Shiptest этот стейт - сирота, их параллакс его не подключает.
-/atom/movable/screen/parallax_layer/donor/whitesands
+/atom/movable/screen/parallax_layer/donor/planet/whitesands
 	icon_state = "whitesands"
-	blend_mode = BLEND_OVERLAY
-	speed = 1.8
-	layer = 3
-	parallax_intensity = PARALLAX_HIGH
+	base_scale = 1.5
 
 // --- TauCetiClassic: единственный донор без единого совпадения -------------
 // Бирюзовое поле, полупрозрачная дымка (средняя альфа 17 - приём уникальный)

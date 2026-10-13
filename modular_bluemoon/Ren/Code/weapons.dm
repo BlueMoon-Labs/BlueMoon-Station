@@ -17,6 +17,7 @@
 	armour_penetration = 30
 	sharpness = SHARP_EDGED
 	attack_verb = list("slashed", "sliced", "shredded")
+	diamonded = TRUE
 
 /obj/item/pickaxe/drill/jackhammer/angle_grinder/afterattack(atom/A, mob/living/user, proximity)
 	. = ..()

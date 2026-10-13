@@ -47,26 +47,23 @@
 	update_metadollar_icon()
 
 /obj/item/stack/metadollar/proc/update_metadollar_icon()
-	var/n = amount
-	if(n <= 0)
-		icon_state = "metadollar"
-		return
-	if(n < 10)
-		icon_state = "metadollar"
-	else if(n < 20)
-		icon_state = "metadollar10"
-	else if(n < 50)
-		icon_state = "metadollar20"
-	else if(n < 100)
-		icon_state = "metadollar50"
-	else if(n < 200)
-		icon_state = "metadollar100"
-	else if(n < 500)
-		icon_state = "metadollar200"
-	else if(n < 1000)
-		icon_state = "metadollar500"
-	else
-		icon_state = "metadollar1000"
+	switch(amount)
+		if(-INFINITY to 9)
+			icon_state = "metadollar"
+		if(10 to 19)
+			icon_state = "metadollar10"
+		if(20 to 49)
+			icon_state = "metadollar20"
+		if(50 to 99)
+			icon_state = "metadollar50"
+		if(100 to 199)
+			icon_state = "metadollar100"
+		if(200 to 499)
+			icon_state = "metadollar200"
+		if(500 to 999)
+			icon_state = "metadollar500"
+		else
+			icon_state = "metadollar1000"
 
 /obj/item/stack/metadollar/proc/deposit_to_lobby_prefs(mob/user, atom/source)
 	var/client/C = user?.client
@@ -102,3 +99,15 @@
 
 /obj/item/stack/metadollar/fifty
 	amount = 50
+
+/obj/machinery/proc/vendor_can_buy_metadollar(mob/user, datum/job/job, license_type = "шахтёрскую деятельность")
+	if(!ishuman(user))
+		to_chat(user, span_warning("Невозможно произвести биометрический скан."))
+		return FALSE
+	if(!user.mind?.assigned_role)
+		to_chat(user, span_warning("Биометрический скан не нашёл вас в базах данных сотрудников станции."))
+		return FALSE
+	if(!istype(SSjob.GetJob(user.mind.assigned_role), job))
+		to_chat(user, span_warning("Биометрический скан не нашёл в базах данных вашу лицензию на [license_type]."))
+		return FALSE
+	return TRUE

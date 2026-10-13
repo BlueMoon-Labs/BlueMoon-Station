@@ -67,14 +67,6 @@
 /atom/movable/screen/parallax_layer/space/random/asteroids
 	icon_state = "asteroids"
 
-/// Ледяная равнина под станцией. Долго лежал в DMI неподключённым.
-/atom/movable/screen/parallax_layer/space/icemoon
-	icon_state = "icemoon"
-	blend_mode = BLEND_OVERLAY
-	speed = 1.8
-	layer = 3
-	parallax_intensity = PARALLAX_HIGH
-
 /**
  * Планета на орбите. Не тайлится: под движущейся областью уезжает за край пролётом,
  * а не прокручивается циклом.
@@ -96,3 +88,8 @@
 	spawn_jitter_min = 100
 	spawn_jitter_max = 130
 	environment_flags = PARALLAX_ENV_STATION | PARALLAX_ENV_SPACE_RUINS | PARALLAX_ENV_CENTCOM
+
+/// Ледяная равнина под станцией. Долго лежал в DMI неподключённым.
+/atom/movable/screen/parallax_layer/space/planet/icemoon
+	icon_state = "icemoon"
+	base_scale = 1.5

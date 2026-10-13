@@ -6,7 +6,7 @@
 					/obj/item/ammo_box/magazine/ak12/r,
 					/obj/item/ammo_box/magazine/ak12/r,
 					/obj/item/ammo_box/magazine/ak12/r)
-	crate_name = "pink ak12 rifle crate"
+	crate_name = "ak12 rifle crate"
 
 /datum/supply_pack/security/armory/alliance_case
 	name = "Alliance Assasin Cases"
