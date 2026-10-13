@@ -34302,6 +34302,7 @@
 /obj/effect/turf_decal/tile/red/half/contrasted{
 	dir = 1
 	},
+/obj/structure/closet/secure_closet/genpop,
 /turf/open/floor/plasteel/dark/textured,
 /area/security/prison)
 "hDn" = (
@@ -42039,10 +42040,10 @@
 /turf/open/floor/plasteel,
 /area/maintenance/disposal/incinerator)
 "jno" = (
-/obj/effect/turf_decal/tile/red/half/contrasted{
-	dir = 8
+/obj/effect/turf_decal/tile/red{
+	dir = 1
 	},
-/turf/open/floor/plasteel/dark/textured,
+/turf/open/floor/plasteel/dark/textured/edge,
 /area/security/prison)
 "jnq" = (
 /obj/structure/chair/pew{
@@ -54691,7 +54692,12 @@
 /turf/open/floor/plating/asteroid/snow/icemoon,
 /area/icemoon/surface/outdoors/less_spawns)
 "maN" = (
-/obj/structure/closet/secure_closet/genpop,
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 8
+	},
+/obj/machinery/cryopod{
+	dir = 4
+	},
 /turf/open/floor/plasteel/dark/textured,
 /area/security/prison/safe)
 "maS" = (
@@ -77817,12 +77823,11 @@
 /turf/open/floor/plasteel/dark/textured,
 /area/medical/cryo)
 "reg" = (
-/obj/effect/turf_decal/tile/red/half/contrasted{
-	dir = 1
+/obj/effect/turf_decal/siding/red{
+	dir = 4
 	},
-/obj/machinery/light/directional/north,
-/obj/machinery/cryopod,
-/turf/open/floor/plasteel/dark/textured/edge,
+/obj/structure/closet/secure_closet/genpop,
+/turf/open/floor/plasteel/dark/textured,
 /area/security/prison)
 "rel" = (
 /obj/machinery/airalarm/directional/west,
@@ -82588,7 +82593,13 @@
 	icon_state = "0-4"
 	},
 /obj/machinery/light/small/directional/west,
-/obj/structure/closet/secure_closet/genpop,
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 8
+	},
+/obj/machinery/computer/cryopod{
+	dir = 4;
+	pixel_x = -38
+	},
 /turf/open/floor/plasteel/dark/textured,
 /area/security/prison/safe)
 "shk" = (
@@ -91425,8 +91436,13 @@
 /turf/open/floor/plasteel,
 /area/tcommsat/computer)
 "ubf" = (
-/obj/structure/closet/secure_closet/genpop,
 /obj/machinery/airalarm/directional/north,
+/obj/effect/turf_decal/tile/red/anticorner/contrasted{
+	dir = 1
+	},
+/obj/machinery/cryopod{
+	dir = 4
+	},
 /turf/open/floor/plasteel/dark/textured,
 /area/security/prison/safe)
 "ubj" = (
@@ -97310,15 +97326,14 @@
 /turf/closed/wall,
 /area/medical/cryo)
 "vrW" = (
-/obj/effect/turf_decal/tile/red/half/contrasted{
+/obj/structure/railing{
 	dir = 1
 	},
-/obj/machinery/cryopod,
-/obj/machinery/computer/cryopod{
-	pixel_y = 26
+/obj/machinery/vr_sleeper,
+/turf/open/floor/plasteel/dark/side{
+	dir = 1
 	},
-/turf/open/floor/plasteel/dark/textured/edge,
-/area/security/prison)
+/area/security/prison/workout)
 "vse" = (
 /obj/machinery/vending/cola/random,
 /obj/effect/turf_decal/tile/neutral/fourcorners,
@@ -104604,6 +104619,12 @@
 /obj/effect/landmark/event_spawn,
 /turf/open/floor/plasteel/rivets,
 /area/security/brig/upper)
+"wUR" = (
+/obj/effect/turf_decal/tile/red/half/contrasted{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/security/prison)
 "wUW" = (
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 8
@@ -110083,9 +110104,6 @@
 "ycB" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
 	dir = 6
-	},
-/obj/effect/turf_decal/tile/red{
-	dir = 1
 	},
 /turf/open/floor/plasteel/dark/textured/edge,
 /area/security/prison)
@@ -140057,7 +140075,7 @@ saG
 nbL
 clk
 foc
-oZz
+vrW
 tiF
 gyS
 tRF
@@ -140314,7 +140332,7 @@ saG
 sfw
 rAZ
 vKR
-oZz
+vrW
 ljL
 qFE
 qiw
@@ -140571,7 +140589,7 @@ saG
 nbL
 dJM
 foc
-oZz
+vrW
 tiF
 gyS
 tRF
@@ -201738,7 +201756,7 @@ mSy
 klp
 vXj
 iwt
-reg
+jEP
 mAa
 bWc
 wiK
@@ -201995,7 +202013,7 @@ sVs
 tmH
 uFi
 iwt
-vrW
+mjy
 mAa
 bWc
 pVT
@@ -204308,7 +204326,7 @@ mzY
 ubf
 she
 maN
-mjy
+jno
 mAa
 bWc
 qec
@@ -204562,9 +204580,9 @@ xQg
 xQg
 xQg
 mvv
-tbm
+wUR
 iAl
-jno
+kVr
 ycB
 sYK
 xRW
@@ -205077,8 +205095,8 @@ xQg
 xQg
 jTC
 hDh
-usY
-usY
+reg
+reg
 usY
 jdC
 jdC
