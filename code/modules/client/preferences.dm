@@ -246,6 +246,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 "balls_efficiency" = CUM_EFFICIENCY,
 "has_breasts" = FALSE,
 "breasts_color" = "ffffff",
+"breasts_sprite_variant" = "New",
 "breasts_nipples" = FALSE,
 "breasts_nipples_color" = "ffffff",
 "breasts_size" = BREASTS_SIZE_DEF,
@@ -2014,6 +2015,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						var/womb_fluid_label = src.use_modern_translations ? get_modern_text("womb_fluid", src) : "Produces"
 						var/has_breasts_label = src.use_modern_translations ? get_modern_text("has_breasts", src) : "Has Breasts"
 						var/breasts_color_label = src.use_modern_translations ? get_modern_text("breast_color", src) : "Color"
+						var/breasts_variant_label = src.use_modern_translations ? get_modern_text("breasts_variant", src) : "Breasts Variant"
 						var/has_colorized_nipples_label = src.use_modern_translations ? get_modern_text("has_colorized_nipples", src) : "Colorized Nipples"
 						var/nipples_color_label = src.use_modern_translations ? get_modern_text("nipples_color", src) : "Nipples Color"
 						var/breasts_size_label = src.use_modern_translations ? get_modern_text("breast_cup_size", src) : "Cup Size"
@@ -2141,10 +2143,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							else
 								dat += "<b>[breasts_color_label]:</b></a><BR>"
 								dat += "<span style='border: 1px solid #161616; background-color: #[features["breasts_color"]];'><font color='[color_hex2num(features["breasts_color"]) < 200 ? "FFFFFF" : "000000"]'>#[features["breasts_color"]]</font></span> <a href='?_src_=prefs;preference=breasts_color;task=input'>Change</a><br>"
-							dat += "<b>[has_colorized_nipples_label]:</b> <a style='display:block;width:50px' href='?_src_=prefs;preference=breasts_nipples'>[features["breasts_nipples"] ? yes_label : no_label]</a>"
-							if(features["breasts_nipples"])
-								dat += "<b>[nipples_color_label]:</b> </a><BR>"
-								dat += "<span style='border: 1px solid #161616; background-color: #[features["breasts_nipples_color"]];'><font color='[color_hex2num(features["breasts_nipples_color"]) < 200 ? "FFFFFF" : "000000"]'>#[features["breasts_nipples_color"]]</font></span> <a href='?_src_=prefs;preference=breasts_nipples_color;task=input'>[change_label]</a><br>"
+							if(features["breasts_shape"] == "Pair")
+								dat += "<b>[breasts_variant_label]:</b> <a href='?_src_=prefs;preference=breasts_sprite_variant'>[features["breasts_sprite_variant"] == "Old" ? "Старый" : "Новый"]</a><br>"
+							if(features["breasts_sprite_variant"] != "Old")
+								dat += "<b>[has_colorized_nipples_label]:</b> <a style='display:block;width:50px' href='?_src_=prefs;preference=breasts_nipples'>[features["breasts_nipples"] ? yes_label : no_label]</a>"
+								if(features["breasts_nipples"])
+									dat += "<b>[nipples_color_label]:</b> </a><BR>"
+									dat += "<span style='border: 1px solid #161616; background-color: #[features["breasts_nipples_color"]];'><font color='[color_hex2num(features["breasts_nipples_color"]) < 200 ? "FFFFFF" : "000000"]'>#[features["breasts_nipples_color"]]</font></span> <a href='?_src_=prefs;preference=breasts_nipples_color;task=input'>[change_label]</a><br>"
 							dat += "<b>[breasts_size_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=breasts_size;task=input'>[features["breasts_size"]]</a>"
 							dat += "<b>[breasts_shape_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=breasts_shape;task=input'>[features["breasts_shape"]]</a>"
 							dat += "<b>[breasts_visibility_label]:</b><a style='display:block;width:100px' href='?_src_=prefs;preference=breasts_visibility;task=input'>[features["breasts_visibility"]]</a>"
@@ -5292,6 +5297,10 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					features["has_breasts"] = !features["has_breasts"]
 					if(features["has_breasts"] == FALSE)
 						features["breasts_producing"] = FALSE
+				if("breasts_sprite_variant")
+					features["breasts_sprite_variant"] = (features["breasts_sprite_variant"] == "Old") ? "New" : "Old"
+					if(features["breasts_sprite_variant"] == "Old")
+						features["breasts_nipples"] = FALSE
 				if("breasts_nipples")
 					features["breasts_nipples"] = !features["breasts_nipples"]
 				if("breasts_producing")

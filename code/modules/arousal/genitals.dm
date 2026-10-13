@@ -443,6 +443,7 @@ GLOBAL_LIST_EMPTY(genital_slot_dna_features)
 			var/obj/item/organ/genital/G = A
 			var/datum/sprite_accessory/S
 			var/size = G.size_to_state()
+
 			switch(G.type)
 				if(/obj/item/organ/genital/penis)
 					S = GLOB.cock_shapes_list[G.shape]
@@ -461,6 +462,15 @@ GLOBAL_LIST_EMPTY(genital_slot_dna_features)
 
 			if(!S || S.icon_state == "none")
 				continue
+
+			// BLUEMOON ADD
+			var/suffix = ""
+			if(istype(G, /obj/item/organ/genital/breasts) \
+				&& dna.features["breasts_sprite_variant"] == "Old" \
+				&& S?.icon_state == "pair")
+				suffix = "old_"
+			// BLUEMOON ADD
+
 			mutant_string = S.mutant_part_string
 			forced_by_hardlight = is_genital_forced_visible(mutant_string)
 			var/aroused_state = G.aroused_state && S.alt_aroused
@@ -499,12 +509,12 @@ GLOBAL_LIST_EMPTY(genital_slot_dna_features)
 					if("anus_color")
 						genital_overlay.color = "#[dna.features["anus_color"]]"
 
-			genital_overlay.icon_state = "[G.slot]_[S.icon_state]_[size][(dna.species.use_skintones && !dna.skin_tone_override) ? "_s" : ""]_[aroused_state]_[layertext]"
-
+			genital_overlay.icon_state = "[G.slot]_[S.icon_state]_[suffix][size][(dna.species.use_skintones && !dna.skin_tone_override) ? "_s" : ""]_[aroused_state]_[layertext]"
 			// BLUEMOON ADD
 			var/mutable_appearance/nipples_overlay
 			if(istype(G, /obj/item/organ/genital/breasts) \
 				&& dna.features["breasts_nipples"] \
+				&& dna.features["breasts_sprite_variant"] != "Old" \
 				&& S.icon_state == "pair" \
 				&& size != "плоского")
 				nipples_overlay = mutable_appearance(accessory_icon, layer = -layer)
