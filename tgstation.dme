@@ -4792,6 +4792,8 @@
 #include "modular_bluemoon\code\modules\antag_training.dm"
 #include "modular_bluemoon\code\modules\antag_training_duel.dm"
 #include "modular_bluemoon\code\modules\antag_training_heretic.dm"
+#include "modular_bluemoon\code\modules\antag_training_hk47.dm"
+#include "modular_bluemoon\code\modules\antag_training_hk47_contracts.dm"
 #include "modular_bluemoon\code\modules\antag_training_isolation.dm"
 #include "modular_bluemoon\code\modules\antag_training_practice.dm"
 #include "modular_bluemoon\code\modules\antag_training_tools.dm"

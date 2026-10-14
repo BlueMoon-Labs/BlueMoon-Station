@@ -80,6 +80,7 @@
 #include "antag_frame_objective.dm"
 #include "antag_opt_in.dm"
 #include "antag_removal_without_body.dm"
+#include "antag_training_hk47.dm"
 #include "airalarm_mode_cutoff.dm"
 #include "airalarm_thresholds.dm"
 #include "atmos_breach_containment.dm"
