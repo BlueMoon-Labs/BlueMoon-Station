@@ -503,10 +503,13 @@ GLOBAL_LIST_EMPTY(the_station_areas)
 
 /datum/controller/subsystem/mapping/proc/preloadRuinTemplates()
 	// Still supporting bans by filename
-	var/list/banned = generateMapList("[global.config.directory]/lavaruinblacklist.txt")
-	banned += generateMapList("[global.config.directory]/spaceruinblacklist.txt")
-	banned += generateMapList("[global.config.directory]/iceruinblacklist.txt")
-	banned += generateMapList("[global.config.directory]/stationruinblacklist.txt")
+	var/list/banned = list()
+	// Имена в config/ в смешанном регистре, а на Linux регистр важен; конфиг сервера может быть и в нижнем.
+	for(var/blacklist in list("lavaRuinBlacklist.txt", "spaceRuinBlacklist.txt", "iceruinblacklist.txt", "stationRuinBlacklist.txt"))
+		var/blacklist_path = "[global.config.directory]/[blacklist]"
+		if(!fexists(blacklist_path))
+			blacklist_path = "[global.config.directory]/[lowertext(blacklist)]"
+		banned += generateMapList(blacklist_path)
 
 	for(var/item in sort_list(subtypesof(/datum/map_template/ruin), GLOBAL_PROC_REF(cmp_ruincost_priority)))
 		var/datum/map_template/ruin/ruin_type = item
