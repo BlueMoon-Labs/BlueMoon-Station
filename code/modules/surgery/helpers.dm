@@ -1,3 +1,41 @@
+/// Операции, которые можно начать этим инструментом на выбранной зоне пациента: имя -> операция.
+/proc/get_available_surgeries(obj/item/tool, mob/living/patient, mob/user, selected_zone)
+	. = list()
+	var/obj/item/bodypart/affecting
+	if(iscarbon(patient))
+		var/mob/living/carbon/carbon_patient = patient
+		affecting = carbon_patient.get_bodypart(check_zone(selected_zone))
+
+	for(var/datum/surgery/surgery as anything in GLOB.surgeries_list)
+		if(!surgery.possible_locs.Find(selected_zone))
+			continue
+		if(affecting)
+			if(!surgery.requires_bodypart)
+				continue
+			if(surgery.requires_bodypart_type)
+				switch(surgery.requires_bodypart_type)
+					if(BODYPART_ORGANIC)
+						if(!affecting.is_organic_limb(FALSE))
+							continue
+					if(BODYPART_ROBOTIC)
+						if(!affecting.is_robotic_limb())
+							continue
+					if(BODYPART_HYBRID)
+						if(!affecting.is_organic_limb() || !affecting.is_robotic_limb())
+							continue
+			if(surgery.requires_real_bodypart && affecting.is_pseudopart)
+				continue
+		else if(iscarbon(patient) && surgery.requires_bodypart) //mob with no limb in surgery zone when we need a limb
+			continue
+		if(surgery.lying_required && !patient.lying)
+			continue
+		if(!surgery.can_start(user, patient, tool))
+			continue
+		for(var/path in surgery.target_mobtypes)
+			if(istype(patient, path))
+				.[surgery.name] = surgery
+				break
+
 /proc/attempt_initiate_surgery(obj/item/I, mob/living/M, mob/user)
 	if(!istype(M))
 		return
@@ -17,39 +55,7 @@
 			current_surgery = S
 
 	if(!current_surgery)
-		var/list/all_surgeries = GLOB.surgeries_list.Copy()
-		var/list/available_surgeries = list()
-
-		for(var/datum/surgery/S in all_surgeries)
-			if(!S.possible_locs.Find(selected_zone))
-				continue
-			if(affecting)
-				if(!S.requires_bodypart)
-					continue
-				if(S.requires_bodypart_type) //ugly but it'll do.
-					switch(S.requires_bodypart_type)
-						if(BODYPART_ORGANIC)
-							if(!affecting.is_organic_limb(FALSE))
-								continue
-						if(BODYPART_ROBOTIC)
-							if(!affecting.is_robotic_limb())
-								continue
-						if(BODYPART_HYBRID)
-							if(!affecting.is_organic_limb() || !affecting.is_robotic_limb())
-								continue
-				if(S.requires_real_bodypart && affecting.is_pseudopart)
-					continue
-			else if(C && S.requires_bodypart) //mob with no limb in surgery zone when we need a limb
-				continue
-			if(S.lying_required && !(M.lying))
-				continue
-			if(!S.can_start(user, M, I))
-				continue
-			for(var/path in S.target_mobtypes)
-				if(istype(M, path))
-					available_surgeries[S.name] = S
-					break
-
+		var/list/available_surgeries = get_available_surgeries(I, M, user, selected_zone)
 		if(!available_surgeries.len)
 			return
 		// BLUEMOON ADD START

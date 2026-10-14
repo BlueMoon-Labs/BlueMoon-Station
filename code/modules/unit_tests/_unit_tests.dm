@@ -168,6 +168,7 @@
 #include "harddel_round_9827.dm"
 #include "harddel_round_9832.dm"
 #include "harddel_round_9860.dm"
+#include "hk_droids_emp.dm"
 #include "holofan_charge.dm"
 #include "immovable_rod_cleanup.dm"
 // #include "greyscale_config.dm"
