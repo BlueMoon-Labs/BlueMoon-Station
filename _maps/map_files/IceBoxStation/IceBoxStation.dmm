@@ -43164,9 +43164,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "0-8"
 	},
-/obj/structure/cable/yellow{
-	icon_state = "0-8"
-	},
 /turf/open/floor/plating,
 /area/command/bridge)
 "jBE" = (
@@ -97159,19 +97156,6 @@
 /obj/structure/chair/sofa/left/brown,
 /turf/open/floor/carpet/blue,
 /area/security/prison/work)
-"vqo" = (
-/obj/effect/spawner/structure/window/reinforced,
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
-/turf/open/floor/plating,
-/area/hallway/secondary/entry)
 "vqA" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
 /turf/open/floor/plating,
@@ -255520,7 +255504,7 @@ ezw
 biT
 iKW
 xRM
-vqo
+xRM
 xRM
 wzD
 oIo
