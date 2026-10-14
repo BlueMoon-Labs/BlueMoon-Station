@@ -488,9 +488,7 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/hk_factory)
 "dq" = (
-/obj/effect/turf_decal/bot,
 /obj/effect/decal/cleanable/dirt,
-/obj/structure/hk50_rack/empty,
 /obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
 	dir = 1
 	},
@@ -1108,6 +1106,13 @@
 /obj/item/stock_parts/cell,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/hk_factory)
+"iE" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/turf_decal/bot,
+/obj/structure/hk50_rack,
+/obj/item/bodypart/l_arm/robot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
 "iI" = (
 /turf/closed/wall/r_wall,
 /area/ruin/space/has_grav/hk_factory)
@@ -1296,12 +1301,10 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/hk_factory)
 "jJ" = (
-/obj/effect/turf_decal/bot,
 /obj/effect/turf_decal/tile/neutral{
 	dir = 4
 	},
-/obj/structure/frame/machine,
-/obj/effect/hk_factory_sparker,
+/obj/item/bodypart/head/robot,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/hk_factory)
 "jP" = (
@@ -3547,10 +3550,12 @@
 	dir = 2
 	},
 /obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/bot,
+/obj/structure/frame/machine,
+/obj/effect/hk_factory_sparker,
 /obj/structure/sign/warning/electricshock{
 	pixel_y = -32
 	},
-/obj/item/bodypart/head/robot,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/hk_factory)
 "Ad" = (
@@ -4690,10 +4695,7 @@
 /area/ruin/space/has_grav/hk_factory)
 "Kc" = (
 /obj/effect/decal/cleanable/molten_object,
-/obj/effect/turf_decal/bot,
 /obj/effect/decal/cleanable/dirt,
-/obj/structure/hk50_rack,
-/obj/item/bodypart/l_arm/robot,
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/hk_factory)
 "Kh" = (
@@ -6358,6 +6360,8 @@
 /obj/effect/decal/cleanable/ash,
 /obj/effect/decal/cleanable/oil,
 /obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/bot,
+/obj/structure/hk50_rack/empty,
 /obj/item/clothing/head/welding,
 /obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
 	dir = 4
@@ -7176,7 +7180,7 @@ Eu
 fD
 jG
 If
-TS
+iE
 Kc
 vo
 ln
