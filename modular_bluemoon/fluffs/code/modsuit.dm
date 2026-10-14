@@ -244,6 +244,7 @@
 
 /obj/item/modsuit_modkit/melatonin
 	name = "Fairweather MODsuit theme Kit"
+	icon_state = "melatonin_modkit"
 	new_theme = /datum/mod_theme/station_combat/security/melatonin
 	from_theme = /datum/mod_theme/station_combat/security
 
