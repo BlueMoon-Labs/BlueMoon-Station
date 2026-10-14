@@ -205,7 +205,7 @@
 		if(is_station_level(z))
 			var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
 			if(D)
-				var/siphoned = min(D.account_balance,siphon_per_tick)
+				var/siphoned = clamp(D.account_balance, 0, siphon_per_tick)
 				D.adjust_money(-siphoned)
 				credits_stored += siphoned
 			interrupt_research()

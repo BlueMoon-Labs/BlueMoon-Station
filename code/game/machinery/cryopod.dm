@@ -23,6 +23,7 @@ GLOBAL_LIST_EMPTY(ghost_records)
 	desc = "An interface between crew and the cryogenic storage/teleporter storage oversight systems."
 	icon = 'icons/obj/Cryogenic2.dmi'
 	icon_state = "cellconsole_1"
+	icon_screen = null
 	icon_keyboard = null
 	circuit = /obj/item/circuitboard/cryopodcontrol
 	density = FALSE

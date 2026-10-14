@@ -424,7 +424,7 @@
 		return
 	if(!alt_click_can_use_id(user))
 		return
-	amount_to_remove = FLOOR(min(amount_to_remove, registered_account.account_balance), 1)
+	amount_to_remove = FLOOR(clamp(amount_to_remove, 0, max(0, registered_account.account_balance)), 1)
 	if(amount_to_remove && registered_account.adjust_money(-amount_to_remove))
 		var/obj/item/holochip/holochip = new (user.drop_location(), amount_to_remove)
 		user.put_in_hands(holochip)

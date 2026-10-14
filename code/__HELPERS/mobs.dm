@@ -567,6 +567,10 @@ GLOBAL_LIST_EMPTY(species_datums)
 #define IS_BEARTRAP_ENSNARED(mob) (mob.has_status_effect(/datum/status_effect/beartrap_ensnared))
 
 /proc/set_criminal_status(mob/living/user, datum/data/record/target_records , criminal_status, comment, user_rank, list/authcard_access = list(), user_name)
+	if(target_records.locked_security_reason)
+		if(user)
+			to_chat(user, span_warning("Статус ареста заблокирован. Причина: [target_records.locked_security_reason]"))
+		return FALSE
 	var/status = criminal_status
 	var/old_status = target_records.fields["criminal"] // BLUEMOON ADD - логгирование
 	var/their_name = target_records.fields["name"]
@@ -599,7 +603,7 @@ GLOBAL_LIST_EMPTY(species_datums)
 			status = SEC_RECORD_STATUS_RELEASED
 		if("discharged", SEC_RECORD_STATUS_DISCHARGED)
 			status = SEC_RECORD_STATUS_DISCHARGED
-	target_records.fields["criminal"] = status
+	target_records.set_security_status(status)
 	// Атрибуция активности антагов для директора: объявление в розыск/на казнь означает,
 	// что СБ уже занята этим персонажем. Ищем разум по имени записи - смена личности (агент-ID)
 	// уводит от атрибуции, это приемлемая цена дешёвого поиска на редком ручном действии.
