@@ -40,6 +40,17 @@
 #define HK50_PHOTORECEPTOR_CHANCE 25
 /// Игрок HK-50 с разумом без клиента дольше этого - тело предлагают другому призраку.
 #define HK50_GHOST_SERVANT_AWAY_TIME (150 SECONDS)
+#define HK_FACTORY_MAX_DROIDS 6
+#define HK_FACTORY_ASSEMBLY_DELAY (3 MINUTES)
+/// Стойки засады мигают и лязгают столько, прежде чем выпустить дроидов.
+#define HK_FACTORY_AMBUSH_WARNING (1.8 SECONDS)
+/// Сколько стража, поднятая автономным протоколом, обыскивает щитовую.
+#define HK_FACTORY_PROTOCOL_SEARCH_TIME (90 SECONDS)
+#define HK_FACTORY_PATROL_REACH 16
+/// Блэкборд патрульного HK-50: концы маршрута и текущая цель.
+#define BB_HK50_PATROL_ENDS "BB_hk50_patrol_ends"
+#define BB_HK50_PATROL_HEADING "BB_hk50_patrol_heading"
+#define HK_LOYALTY_CHIP_TIME (4 SECONDS)
 
 #define HK_PREFIX_STATEMENT "Утверждение:"
 #define HK_PREFIX_QUERY "Вопрос:"

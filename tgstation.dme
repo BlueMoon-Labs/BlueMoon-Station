@@ -5124,6 +5124,8 @@
 #include "modular_bluemoon\code\modules\hk_droids\hk51_parts.dm"
 #include "modular_bluemoon\code\modules\hk_droids\hk51_rivalry.dm"
 #include "modular_bluemoon\code\modules\hk_droids\hk51_scatter.dm"
+#include "modular_bluemoon\code\modules\hk_droids\hk_factory.dm"
+#include "modular_bluemoon\code\modules\hk_droids\hk_factory_props.dm"
 #include "modular_bluemoon\code\modules\hk_droids\hk_voice.dm"
 #include "modular_bluemoon\code\modules\hk_droids\loyalty.dm"
 #include "modular_bluemoon\code\modules\hk_droids\reprogram_surgery.dm"

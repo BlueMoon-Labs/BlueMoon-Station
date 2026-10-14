@@ -50,6 +50,8 @@
 
 | Файл | Слои | Источник и лицензия |
 | --- | --- | --- |
+| `factory_hum.ogg` | гул вентиляции, электрическое гудение, замедленный генератор, далёкие удары пресса | `ventilation_humming.ogg` - humming machinery by Lewooz (freesound.org/people/Lewooz/sounds/545952, CC0 1.0), `electrical_humming.ogg` - SFX_GEOFON-HUM-ELECTRICAL-BOARD by pblzr (freesound.org/people/pblzr/sounds/785942, CC0 1.0), обе через Aurora.3; `sound/machines/generator/generator_mid1.ogg` и `sound/machines/piston/piston_raise.ogg` из этого репозитория (CC BY-SA 3.0) |
+| `factory_clank.ogg` | удар пресса, лязг, шаг сервопривода, гул ленты (синтез) | `sound/foley/clank1.ogg` из Nebula (CC BY-SA 3.0); `sound/machines/piston/piston_raise.ogg`, `sound/effects/servostep.ogg` из этого репозитория (CC BY-SA 3.0) |
 | `hk51_boot.ogg` | гул мотиватора, нарастающий вой зарядки, писк обмена данными | синтез |
 
 ## Префиксы речи
