@@ -4991,10 +4991,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						var/datum/bark/B = GLOB.bark_list[path]
 						if(initial(B.ignore))
 							continue
-						if(initial(B.ckeys_allowed))
-							var/list/allowed = initial(B.ckeys_allowed)
-							if(!allowed.Find(user.client.ckey))
-								continue
+						if(!B.is_allowed_for(user.client.key))
+							continue
 						woof_woof[initial(B.name)] = initial(B.id)
 					var/new_bork = tgui_input_list(user, "Выберите желаемое звучание речи", "Настройка персонажа", woof_woof)
 					if(new_bork)

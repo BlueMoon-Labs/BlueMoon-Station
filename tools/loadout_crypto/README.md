@@ -52,6 +52,15 @@ reuse the crypto cache. A null or empty list allows everyone; an unreadable ID
 never grants access. This applies to character preferences and in-round
 appearance customization.
 
+The same formats are supported by `/datum/bark.ckeys_allowed`,
+`/datum/ai_donator_screen.ckey_whitelist`, `/datum/borg_donator_skin.ckey_whitelist`
+and `/datum/map_template/hilbertshotel.ckeywhitelist`. Their access rules are
+preserved: a null bark list is public but an explicit empty list denies access;
+empty AI screen lists deny access; borg skins require either whitelist membership
+or donor group membership; empty hotel lists are public. Hotel template access
+is checked on the server for both selection and check-in, and the UI receives
+only the availability decision instead of the whitelist.
+
 ## In-round diagnostics
 
 After deploying this build, use **Debug.2) Info → Loadout crypto** with debug rights.

@@ -9,7 +9,7 @@
  * 5. Не забудьте добавить новый datum в GLOB.borg_donator_skins внизу файла.
  *
  * Правила доступа:
- * - ckey_whitelist проверяется без учёта регистра, но сами ckey всё равно лучше писать в lowercase.
+ * - ckey_whitelist поддерживает исходные key, нормализованные ckey и enc1 ID от любого из этих вариантов.
  * - donator_group можно использовать вместо ckey_whitelist или вместе с ним.
  */
 
@@ -47,16 +47,17 @@
 	var/sit_lamp_has_state = null
 
 /datum/borg_donator_skin/proc/can_use(client/C)
-	if(!C)
+	return C && is_allowed_for(C.key)
+
+/// Whitelist membership OR donor group membership grants access; neither configured means no access.
+/datum/borg_donator_skin/proc/is_allowed_for(user_key)
+	if(!length_char(ckey(user_key)))
 		return FALSE
 
-	if(length(ckey_whitelist))
-		var/user_ckey = lowertext(C.ckey)
-		for(var/allowed_ckey in ckey_whitelist)
-			if(lowertext("[allowed_ckey]") == user_ckey)
-				return TRUE
+	if(length(ckey_whitelist) && is_key_in_whitelist(user_key, ckey_whitelist))
+		return TRUE
 
-	if(donator_group != DONATOR_GROUP_NONE && is_donator_group(C.ckey, donator_group))
+	if(donator_group != DONATOR_GROUP_NONE && is_donator_group(user_key, donator_group))
 		return TRUE
 
 	return FALSE

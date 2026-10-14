@@ -170,3 +170,95 @@
 	if(!isnull(saved_secret))
 		CONFIG_SET(string/loadout_ckey_secret, saved_secret)
 	return ..()
+
+/// Other private content shares the four whitelist formats but keeps its own empty-list and group rules.
+/datum/unit_test/additional_ckey_whitelists
+	var/saved_secret
+	var/list/saved_donator_groups
+	var/list/saved_hotel_templates
+
+/datum/unit_test/additional_ckey_whitelists/Run()
+	saved_secret = CONFIG_GET(string/loadout_ckey_secret)
+	CONFIG_SET(string/loadout_ckey_secret, "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f")
+	var/datum/bark/bark = allocate(/datum/bark)
+	var/datum/ai_donator_screen/screen = allocate(/datum/ai_donator_screen)
+	var/datum/borg_donator_skin/skin = allocate(/datum/borg_donator_skin)
+	var/datum/map_template/hilbertshotel/room = new()
+	allocated += room
+	TEST_ASSERT(bark.is_allowed_for("stranger"), "A null bark whitelist must remain public")
+	bark.ckeys_allowed = list()
+	TEST_ASSERT(!bark.is_allowed_for("stranger"), "An explicit empty bark whitelist must still deny everyone")
+	TEST_ASSERT(!screen.is_allowed_for("stranger"), "An empty private AI screen whitelist must deny everyone")
+	TEST_ASSERT(!skin.is_allowed_for("stranger"), "A borg skin without a whitelist or donor group must deny everyone")
+	TEST_ASSERT(!skin.can_use(null), "Borg skin selection must require a client")
+	TEST_ASSERT(room.is_allowed_for("stranger"), "An empty hotel whitelist must remain public")
+	var/original_id = "enc1:AAECAwQFBgcICQoLBkP7WYfIo3mjb7lYYwet3PW22BiBfjL-G3kJ"
+	var/normalized_id = gear_ckey_id("aabbab")
+	TEST_ASSERT(normalized_id, "The normalized-name encryption fixture must be available")
+	for(var/entry in list("AA-BB-ab...", "aabbab", original_id, normalized_id))
+		bark.ckeys_allowed = list(entry)
+		screen.ckey_whitelist = list(entry)
+		skin.ckey_whitelist = list(entry)
+		room.ckeywhitelist = list(entry)
+		for(var/account in list("AA-BB-ab...", "aabbab", "Aa.Bb-Ab"))
+			TEST_ASSERT(bark.is_allowed_for(account), "Barks must accept all four whitelist formats")
+			TEST_ASSERT(screen.is_allowed_for(account), "AI screens must accept all four whitelist formats")
+			TEST_ASSERT(skin.is_allowed_for(account), "Borg skins must accept all four whitelist formats")
+			TEST_ASSERT(room.is_allowed_for(account), "Hotel templates must accept all four whitelist formats")
+		TEST_ASSERT(!bark.is_allowed_for("stranger"), "Private barks must reject strangers")
+		TEST_ASSERT(!screen.is_allowed_for("stranger"), "Private AI screens must reject strangers")
+		TEST_ASSERT(!skin.is_allowed_for("stranger"), "Private borg skins must reject strangers")
+		TEST_ASSERT(!room.is_allowed_for("stranger"), "Private hotel templates must reject strangers")
+		TEST_ASSERT(!skin.is_allowed_for(null), "Borg skin access must reject missing account names")
+	var/list/mixed_whitelist = list("enc2:invalid", "enc1:bad", original_id, "Legacy-Account")
+	bark.ckeys_allowed = mixed_whitelist
+	screen.ckey_whitelist = mixed_whitelist
+	skin.ckey_whitelist = mixed_whitelist
+	room.ckeywhitelist = mixed_whitelist
+	for(var/account in list("aabbab", "legacyaccount"))
+		TEST_ASSERT(bark.is_allowed_for(account), "Mixed bark whitelists must accept their owners")
+		TEST_ASSERT(screen.is_allowed_for(account), "Mixed screen whitelists must accept their owners")
+		TEST_ASSERT(skin.is_allowed_for(account), "Mixed skin whitelists must accept their owners")
+		TEST_ASSERT(room.is_allowed_for(account), "Mixed hotel whitelists must accept their owners")
+	TEST_ASSERT(!screen.is_allowed_for("enc2invalid"), "Unknown encrypted versions must not become plaintext keys")
+	saved_donator_groups = GLOB.donators_by_group
+	GLOB.donators_by_group = list("skin_whitelist_test" = list("groupmember"))
+	skin.donator_group = "skin_whitelist_test"
+	TEST_ASSERT(skin.is_allowed_for("Group-Member"), "A donor group must independently grant borg skin access")
+	TEST_ASSERT(skin.is_allowed_for("AA-BB-ab..."), "A borg whitelist must independently grant access beside a donor group")
+	TEST_ASSERT(!skin.is_allowed_for("stranger"), "A stranger must not pass either borg access route")
+	skin.ckey_whitelist = list()
+	TEST_ASSERT(skin.is_allowed_for("Group-Member"), "An empty borg whitelist must not disable its donor group")
+	CONFIG_SET(string/loadout_ckey_secret, "")
+	TEST_ASSERT(!bark.is_allowed_for("aabbab"), "A missing secret must deny encrypted bark access")
+	TEST_ASSERT(!screen.is_allowed_for("aabbab"), "A missing secret must deny encrypted AI screen access")
+	TEST_ASSERT(!room.is_allowed_for("aabbab"), "A missing secret must deny encrypted hotel access")
+	TEST_ASSERT(bark.is_allowed_for("legacyaccount"), "Plaintext barks must work without a crypto secret")
+	TEST_ASSERT(screen.is_allowed_for("legacyaccount"), "Plaintext screens must work without a crypto secret")
+	TEST_ASSERT(room.is_allowed_for("legacyaccount"), "Plaintext hotel templates must work without a crypto secret")
+
+	// UI data carries the server's decision, never the whitelist itself.
+	saved_hotel_templates = SShilbertshotel.hotel_map_list
+	var/datum/map_template/hilbertshotel/public_room = new()
+	allocated += public_room
+	SShilbertshotel.hotel_map_list = list("private" = room, "public" = public_room)
+	var/obj/item/hilbertshotel/hotel = allocate(/obj/item/hilbertshotel)
+	var/mob/user = allocate(/mob)
+	var/list/ui_data = hotel.ui_static_data(user)
+	var/list/room_choices = ui_data["hotel_map_list"]
+	TEST_ASSERT_EQUAL(length(room_choices), 2, "Both hotel templates must be described to the UI")
+	var/list/private_choice = room_choices[1]
+	var/list/public_choice = room_choices[2]
+	TEST_ASSERT(!private_choice["available"], "An anonymous user must not select a private hotel template")
+	TEST_ASSERT(public_choice["available"], "An anonymous user may select a public hotel template")
+	TEST_ASSERT(!("ckeywhitelist" in private_choice), "Private hotel whitelists must not be sent to clients")
+	TEST_ASSERT(!("ckeywhitelist" in public_choice), "Public hotel whitelists must not be sent to clients")
+
+/datum/unit_test/additional_ckey_whitelists/Destroy()
+	if(!isnull(saved_secret))
+		CONFIG_SET(string/loadout_ckey_secret, saved_secret)
+	if(!isnull(saved_donator_groups))
+		GLOB.donators_by_group = saved_donator_groups
+	if(!isnull(saved_hotel_templates))
+		SShilbertshotel.hotel_map_list = saved_hotel_templates
+	return ..()
