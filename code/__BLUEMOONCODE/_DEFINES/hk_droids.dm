@@ -55,6 +55,25 @@
 #define HK_RIFLE_NUTRITION_PER_SHOT 15
 #define HK_RIFLE_MIN_NUTRITION 50
 
+#define HK51_PART_PRICE_MIN 1500
+#define HK51_PART_PRICE_MAX 2500
+#define HK51_MARKET /datum/blackmarket_market/blackmarket
+/// Место части HK-51, выставленной лотом на чёрный рынок.
+#define HK51_PLACE_BLACK_MARKET "black_market"
+/// Контейнеры руин, в которые части HK-51 не кладутся: тайник может взорваться или улететь.
+#define HK51_EXCLUDED_CONTAINERS list(/obj/structure/closet/crate/secure/loot, /obj/structure/closet/supplypod)
+#define HK51_NAME "HK-51"
+#define HK51_ASSIGNMENT "HK-51 Assassin Droid"
+#define HK51_PART_COUNT 5
+#define HK51_POLL_TIME (30 SECONDS)
+#define HK51_ACTIVATION_RETRY (2 MINUTES)
+#define HK51_VOICE_COOLDOWN (8 SECONDS)
+/// Реплика о верности звучит после строки диагностики, а не поверх неё.
+#define HK51_LOYALTY_LINE_DELAY (8.5 SECONDS)
+#define HK51_COMBAT_CALM_TIME (60 SECONDS)
+#define HK51_BODYGUARD_MARK_TIME (10 SECONDS)
+/// Повторный сигнал о том же нападавшем на хозяина - не чаще этого.
+#define HK51_BODYGUARD_REPEAT (5 SECONDS)
 #define HK47_RIVAL_OFFER_CHANCE 50
 #define HK47_RIVAL_POINTS 2
 

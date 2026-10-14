@@ -33,6 +33,25 @@
 | `hk50_foolish.ogg` | Statement: You are foolish to think we will allow you to take that information back to your master. |
 | `hk50_numbers_grow.ogg` | We are here. We exist, and our numbers grow. |
 
+## Реплики HK-51
+
+Реплики компаньона HK-51 из игры Star Wars: The Old Republic (BioWare / Electronic Arts / Lucasfilm, 2011-2012), HK-51 озвучил Kristoffer Tabori. Права на записи принадлежат правообладателям (Electronic Arts / Lucasfilm / Disney). Фоновая музыка убрана, фрагменты обрезаны и выровнены по громкости.
+
+| Файл | Реплика |
+| --- | --- |
+| `hk51_diagnostic.ogg` | Declaration: I have completed a full system diagnostic, master. I am operating at 75.31 percent efficiency. |
+| `hk51_loyalty.ogg` | Statement: Activating loyalty permanence protocols now. |
+| `hk51_deletions.ogg` | I recommend immediate and vigorous deletions, master. |
+| `hk51_efficiency_down.ogg` | Master, my combat efficiency rating is down 4.27 points. |
+
+## Звуки фабрики HK
+
+Петли собраны из донорских записей; лицензии слоёв ниже.
+
+| Файл | Слои | Источник и лицензия |
+| --- | --- | --- |
+| `hk51_boot.ogg` | гул мотиватора, нарастающий вой зарядки, писк обмена данными | синтез |
+
 ## Префиксы речи
 
 Слова-префиксы из реплик HK-47 в Star Wars Knights of the Old Republic II: The Sith Lords (Obsidian Entertainment / LucasArts, 2004), озвучил Kristoffer Tabori. Права на записи принадлежат правообладателям (Lucasfilm / Disney).
