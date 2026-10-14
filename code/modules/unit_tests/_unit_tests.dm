@@ -278,6 +278,7 @@
 #include "megafauna_multiz.dm"
 #include "merge_type.dm"
 // #include "metabolizing.dm"
+#include "minor_incidents_paperwork.dm"
 #include "mob_elements.dm"
 #include "multiz_ai_floor_controls.dm"
 #include "multiz_camera_console_floors.dm"
