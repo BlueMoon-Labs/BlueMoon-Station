@@ -84,12 +84,12 @@ FLOOR SAFES
 	if(lock_integrity < max_lock_integrity)
 		var/lock_integrity_persentage = (lock_integrity / max_lock_integrity) * 100
 		switch(lock_integrity_persentage)
-			if(80 to 95)
+			if(60 to 95)
 				. += span_notice("Выглядит слегка потёртым.")
-			if(26 to 79.99)
+			if(26 to 59.99)
 				. += span_warning("Имеет сильные повреждения замка.")
 			if(1 to 25.99)
-				. += span_danger("Замок просверлен насквозь!")
+				. += span_danger("Замок почти просверлен насквозь!")
 	if(explosion_count)
 		switch(explosion_count)
 			if(1)
@@ -110,25 +110,25 @@ FLOOR SAFES
 			to_chat(user, span_notice("Вы поместили [I] внутрь [src]."))
 		else
 			to_chat(user, span_warning("[I] не поместится внутрь [src]."))
+		return TRUE
 	else
 		if(istype(I, /obj/item/clothing/neck/stethoscope))
 			attack_hand(user)
 			return TRUE
-		if(istype(I, /obj/item/pickaxe/drill) && !check_broken())
+		if((istype(I, /obj/item/pickaxe/drill)) && !check_broken())
+			if(drill_process)
+				to_chat(user, span_warning("[src] уже кто-то сверлит!"))
+				return TRUE
 			if(I.type == /obj/item/pickaxe/drill/jackhammer)
-				return to_chat(user, span_warning("Отбойный молоток для этого не подойдёт!"))
-			if(!drillable)
-				return to_chat(user, span_warning("Похоже, материал [src] слишком вязкий для работы сверлом!"))
-			var/obj/item/pickaxe/drill/drill = I
-			start_drilling_sequence(user, drill, drill.diamonded)
+				to_chat(user, span_warning("Отбойный молоток для этого не подойдёт!"))
+				return TRUE
+			start_drilling_sequence(user, I)
 			return TRUE
 		else
 			to_chat(user, span_warning("Вы не можете положить [I] внутрь сейфа, пока тот закрыт!"))
 			return TRUE
 
-/obj/structure/safe/proc/start_drilling_sequence(mob/user, obj/item/drill, diamond)
-	if(drill_process)
-		return
+/obj/structure/safe/proc/start_drilling_sequence(mob/user, obj/item/drill)
 	if(check_broken())
 		to_chat(user, span_warning("Замок [src] уже вскрыт!"))
 		return FALSE
@@ -138,33 +138,60 @@ FLOOR SAFES
 		span_notice("Вы начинаете сверлить [src]..."),
 		span_hear("Вы слышите работу бура."))
 
+	INVOKE_ASYNC(src, PROC_REF(drill_loop), user, drill)
+	return TRUE
+
+/obj/structure/safe/proc/drill_loop(mob/user, obj/item/drill)
 	drill_process = TRUE
 	while(!QDELETED(src) && lock_integrity > 0 && !open)
 		if(!do_after(user, DRILL_TICK_TIME, src, progress = FALSE))
 			break
+		if(QDELETED(src) || open || check_broken())  // Защита цикла от умников, что решат во время него взорвать сейф или... Просто открыть его, введя код.
+			break
 		if(QDELETED(drill) || !user.is_holding(drill))
 			break
-		if(!diamond)
-			drill.take_damage(1, BRUTE, MELEE, FALSE)
-			if(QDELETED(drill))
-				break
 
+		var/obj/item/pickaxe/drill/drill_tool = drill
 		if(user.mob_weight <= MOB_WEIGHT_LIGHT || get_size(user) <= 0.8)
 			user.Shake(duration = DRILL_TICK_TIME)
 		else
 			user.Jitter(5)
 
-		playsound(src, drill.usesound, 100, TRUE, 5)
-		--lock_integrity
+		playsound(src, drill_tool.usesound, 100, TRUE, 5)
+		if(!drill_tool.diamonded)
+			drill_tool.take_damage(1, BRUTE, MELEE, FALSE)
+			if(QDELETED(drill_tool))
+				break
+		if(drillable)
+			--lock_integrity
+		else if(prob(2))
+			to_chat(user, span_danger("Вам что-то подсказывает, что материал стенок [src] слишком вязкий..."))
+
 		if(check_broken())
 			locked = 0
+			visible_message(span_danger("Замок [src] просверлен!"))
 			break
-
 	drill_process = FALSE
-	if(!QDELETED(src) && !lock_integrity)
-		visible_message(span_danger("Замок [src] просверлен!"))
+
+/obj/structure/safe/drill_act(obj/item/mecha_parts/mecha_equipment/drill/drill, mob/user)
+	if(check_broken())
+		to_chat(user, span_warning("Замок [src] уже разрушен!"))
+		return FALSE // FALSE нужен для прерывания while у меха
+	if(drill_process)
+		return FALSE
+
+	if(drillable)
+		lock_integrity -= 2
+		if(check_broken())
+			locked = 0
+			visible_message(span_danger("Замок [src] разрушен под натиском [drill.name]!"))
+			return FALSE
+		Shake(1, 1, DRILL_TICK_TIME)
 		return TRUE
-	return FALSE
+	else if(prob(2))
+		to_chat(user, span_danger("Вам что-то подсказывает, что материал стенок [src] слишком вязкий..."))
+
+	return TRUE
 
 /obj/structure/safe/blob_act(obj/structure/blob/B)
 	return

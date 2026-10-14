@@ -249,7 +249,7 @@
 
 // "Открыл превью снаряжения в панели спавна - рантайм про null.get_all_objectives"
 //
-// post_equip у InteQ-комплекта выдаёт цель martyr прямо на mind, а превью одевает
+// post_equip у InteQ-комплекта выдаёт цель угона прямо на mind, а превью одевает
 // безмозглого дамми: получался "Cannot execute null.get all objectives()".
 /datum/unit_test/outfit_preview_skips_mindless_dummy/Run()
 	var/mob/living/carbon/human/dummy/dummy = allocate(/mob/living/carbon/human/dummy, run_loc_floor_bottom_left)
@@ -263,12 +263,29 @@
 	var/mob/living/carbon/human/operative = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
 	operative.mind_initialize()
 	outfit.post_equip(operative, FALSE, null)
-	var/found_martyr = FALSE
+	var/found_hijack = FALSE
 	for(var/datum/objective/objective in operative.mind.get_all_objectives())
-		if(istype(objective, /datum/objective/martyr))
-			found_martyr = TRUE
+		if(istype(objective, /datum/objective/hijack))
+			found_hijack = TRUE
 			break
-	TEST_ASSERT(found_martyr, "Оперативник с разумом остался без цели martyr")
+	TEST_ASSERT(found_hijack, "Оперативник с разумом остался без цели угона шаттла")
+
+// "Оперативники ИнтеКью на шаттле эвакуации прилетели с выключенным джетпаком"
+//
+// post_equip искал ранец в H.back, но спину у комплекта занимает рюкзак из
+// /datum/outfit/inteq. Реактивный ранец хардсьюта лежит внутри скафандра
+// (hardsuit.jetpack) и достаётся только через get_jetpack().
+/datum/unit_test/inteq_full_outfit_starts_hardsuit_jetpack/Run()
+	var/mob/living/carbon/human/wearer = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	wearer.equipOutfit(/datum/outfit/inteq/full)
+
+	var/obj/item/clothing/suit/space/hardsuit/suit = wearer.wear_suit
+	TEST_ASSERT(istype(suit, /obj/item/clothing/suit/space/hardsuit), "тестовая посылка: на оперативнике нет хардсьюта")
+	TEST_ASSERT_NOTNULL(suit.jetpack, "тестовая посылка: в хардсьюте нет реактивного ранца")
+
+	var/obj/item/tank/jetpack/jetpack = wearer.get_jetpack()
+	TEST_ASSERT_EQUAL(jetpack, suit.jetpack, "get_jetpack() выдал не ранец хардсьюта")
+	TEST_ASSERT(jetpack.on, "Джетпак оперативника ИнтеКью остался выключенным")
 
 // "Нанитная помпа сыпет в логи Incompatible ... assigned to a ... каждые 15 секунд"
 //

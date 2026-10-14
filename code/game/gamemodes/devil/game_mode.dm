@@ -6,14 +6,24 @@
 	var/list/validtypes = list(/datum/objective/devil/soulquantity, /datum/objective/devil/soulquality, /datum/objective/devil/sintouch, /datum/objective/devil/buy_target)
 	var/datum/antagonist/devil/D = devil_mind.has_antag_datum(/datum/antagonist/devil)
 	for(var/i = 1 to quantity)
+		if(!length(validtypes))
+			break
 		var/type = pick(validtypes)
 		var/datum/objective/devil/objective = new type(null)
 		objective.owner = devil_mind
+		if(istype(objective, /datum/objective/devil/buy_target))
+			objective.find_target()
+			if(!objective.target)
+				qdel(objective)
+				validtypes -= type
+				if(!length(validtypes))
+					break
+				type = pick(validtypes)
+				objective = new type(null)
+				objective.owner = devil_mind
 		D.objectives += objective
 		if(!istype(objective, /datum/objective/devil/buy_target))
 			validtypes -= type //prevent duplicate objectives, EXCEPT for buy_target.
-		else
-			objective.find_target()
 
 /datum/game_mode/proc/update_devil_icons_added(datum/mind/devil_mind)
 	var/datum/atom_hud/antag/hud = GLOB.huds[ANTAG_HUD_DEVIL]

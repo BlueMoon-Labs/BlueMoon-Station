@@ -1902,7 +1902,7 @@
 	// ссылка на его тип не компилируется, а событие при подключении обязано остаться исключением.
 	var/list/exempt_names = list("Random Human-level Intelligence", "Station-wide Human-level Intelligence", "Spawn Qareen")
 	for(var/datum/round_event_control/control as anything in SSdirector.event_controls())
-		if(control.wizardevent || control.holidayID || (control.name in exempt_names))
+		if(control.wizardevent || control.holidayID || (control.name in exempt_names) || control.family == "crew_relief")
 			continue
 		if(!ispath(control.typepath, /datum/round_event/ghost_role))
 			continue

@@ -1,15 +1,46 @@
 //MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/machinery/bountyvend/plus,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 4
+	},
+/obj/machinery/light/cold/directional/east,
+/turf/open/floor/plasteel,
+/area/command/gateway)
 "b" = (
 /turf/open/floor/plating/asteroid,
 /area/asteroid/tramstation)
+"c" = (
+/obj/structure/bed/roller,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/command/gateway)
 "d" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/port/central)
+"e" = (
+/turf/open/floor/plasteel/dark/textured/half{
+	dir = 1
+	},
+/area/command/gateway)
 "f" = (
-/obj/effect/turf_decal/weather/sand/plating,
-/turf/open/floor/plating,
-/area/asteroid/tramstation)
+/turf/open/floor/plasteel/dark/textured/corner{
+	dir = 1
+	},
+/area/command/gateway)
+"g" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 8
+	},
+/obj/machinery/recharge_station,
+/obj/effect/turf_decal/bot,
+/obj/machinery/light/cold/directional/west,
+/turf/open/floor/plasteel,
+/area/command/gateway)
 "h" = (
 /obj/item/stack/ore/glass,
 /turf/open/floor/plating/asteroid{
@@ -18,10 +49,43 @@
 	icon_state = "asteroid_dug"
 	},
 /area/asteroid/tramstation)
+"i" = (
+/turf/open/floor/plasteel/dark/textured/large,
+/area/command/gateway)
+"j" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 8
+	},
+/obj/effect/landmark/start/expeditor,
+/turf/open/floor/plasteel,
+/area/command/gateway)
+"k" = (
+/obj/machinery/computer/vanguard_control/contraband,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/command/gateway)
 "n" = (
-/obj/item/stack/ore/iron,
-/turf/open/floor/plating/asteroid,
-/area/asteroid/tramstation)
+/obj/structure/table,
+/obj/item/radio/off,
+/obj/item/radio/off{
+	pixel_x = 6;
+	pixel_y = 4
+	},
+/obj/item/radio/off{
+	pixel_x = -6;
+	pixel_y = 4
+	},
+/obj/item/radio/off{
+	pixel_y = 6
+	},
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 5
+	},
+/turf/open/floor/plasteel,
+/area/command/gateway)
 "q" = (
 /obj/modular_map_connector,
 /obj/machinery/door/airlock/maintenance_hatch{
@@ -31,18 +95,23 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/port/central)
+"s" = (
+/obj/structure/closet/secure_closet/vanguard,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line,
+/turf/open/floor/plasteel,
+/area/command/gateway)
 "u" = (
 /obj/effect/turf_decal/weather/sand/plating,
 /turf/open/floor/plating,
 /area/maintenance/port/central)
 "v" = (
-/obj/machinery/door/airlock/external{
-	name = "External Access"
+/obj/machinery/ammo_workbench,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 4
 	},
-/obj/effect/turf_decal/weather/sand/plating,
-/obj/structure/fans/tiny,
-/turf/open/floor/plating,
-/area/maintenance/port/central)
+/turf/open/floor/plasteel,
+/area/command/gateway)
 "w" = (
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plating,
@@ -56,16 +125,62 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/port/central)
+"y" = (
+/obj/machinery/vanguard/contraband,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/command/gateway)
+"A" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 8
+	},
+/obj/machinery/camera/autoname{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/command/gateway)
 "C" = (
-/obj/item/t_scanner/adv_mining_scanner/lesser,
-/turf/open/floor/plating/asteroid,
-/area/asteroid/tramstation)
+/obj/effect/landmark/start/expeditor,
+/turf/open/floor/plasteel/dark/textured/half{
+	dir = 4
+	},
+/area/command/gateway)
+"D" = (
+/obj/effect/landmark/start/expeditor,
+/turf/open/floor/plasteel/dark/textured/corner{
+	dir = 4
+	},
+/area/command/gateway)
+"E" = (
+/turf/open/floor/plasteel/dark/textured/corner,
+/area/command/gateway)
 "F" = (
-/obj/machinery/light/small/directional/south,
-/turf/open/floor/plating/asteroid,
-/area/asteroid/tramstation)
+/turf/open/floor/plasteel/dark/textured/half{
+	dir = 4
+	},
+/area/command/gateway)
+"G" = (
+/obj/structure/table,
+/obj/item/storage/firstaid/regular{
+	pixel_x = 3;
+	pixel_y = 3
+	},
+/obj/machinery/recharger,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/command/gateway)
 "H" = (
 /turf/closed/wall,
+/area/maintenance/port/central)
+"J" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/fans/tiny,
+/turf/open/floor/plasteel/rivets,
 /area/maintenance/port/central)
 "L" = (
 /turf/open/floor/plating/asteroid{
@@ -82,6 +197,11 @@
 /obj/structure/ore_box,
 /turf/open/floor/plating/asteroid,
 /area/asteroid/tramstation)
+"O" = (
+/turf/open/floor/plasteel/dark/textured/corner{
+	dir = 8
+	},
+/area/command/gateway)
 "P" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/table,
@@ -90,20 +210,39 @@
 "Q" = (
 /turf/closed/mineral/random/stationside/asteroid/porus,
 /area/asteroid/tramstation)
+"R" = (
+/obj/effect/turf_decal/weather/sand/plating,
+/obj/structure/fans/tiny,
+/turf/open/floor/plating,
+/area/maintenance/port/central)
+"S" = (
+/obj/structure/closet/secure_closet/vanguard,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 10
+	},
+/turf/open/floor/plasteel,
+/area/command/gateway)
+"U" = (
+/obj/structure/closet/crate/freezer/blood,
+/obj/machinery/iv_drip,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 6
+	},
+/turf/open/floor/plasteel,
+/area/command/gateway)
 "V" = (
 /turf/template_noop,
 /area/template_noop)
+"W" = (
+/obj/structure/ladder,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 9
+	},
+/turf/open/floor/plasteel,
+/area/command/gateway)
 "X" = (
-/obj/structure/rack,
-/obj/item/pickaxe{
-	pixel_x = 5
-	},
-/obj/item/shovel{
-	pixel_x = -5
-	},
-/obj/item/storage/bag/ore,
-/turf/open/floor/plating/asteroid,
-/area/asteroid/tramstation)
+/turf/closed/wall/r_wall,
+/area/command/gateway)
 "Z" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/closet/secure_closet/miner/unlocked,
@@ -111,12 +250,13 @@
 /area/maintenance/port/central)
 
 (1,1,1) = {"
-Q
-Q
-Q
-Q
-Q
-b
+X
+X
+X
+X
+X
+X
+X
 b
 b
 Q
@@ -125,12 +265,13 @@ Q
 V
 "}
 (2,1,1) = {"
-Q
-Q
-b
-b
-b
-b
+X
+W
+A
+g
+j
+S
+X
 L
 b
 b
@@ -139,12 +280,13 @@ Q
 V
 "}
 (3,1,1) = {"
-Q
-b
-b
-b
-b
-L
+X
+y
+E
+e
+D
+s
+X
 h
 L
 b
@@ -153,12 +295,13 @@ Q
 V
 "}
 (4,1,1) = {"
-Q
-b
-b
+X
+k
+F
+i
 C
-L
-h
+s
+X
 h
 M
 b
@@ -167,12 +310,13 @@ Q
 V
 "}
 (5,1,1) = {"
-b
-b
-b
-b
-b
-b
+X
+G
+O
+e
+f
+s
+X
 b
 Q
 Q
@@ -181,13 +325,14 @@ Q
 V
 "}
 (6,1,1) = {"
+X
 n
+v
+a
+c
+U
+X
 b
-b
-b
-b
-Q
-Q
 Q
 Q
 Q
@@ -195,13 +340,14 @@ Q
 V
 "}
 (7,1,1) = {"
-Q
+X
+X
+X
+X
+X
+X
 X
 b
-b
-b
-H
-H
 H
 H
 H
@@ -209,27 +355,29 @@ Q
 V
 "}
 (8,1,1) = {"
+V
 Q
 N
 b
 b
-F
-H
-u
-P
+b
+b
+b
+J
 P
 V
 V
 V
 "}
 (9,1,1) = {"
+V
 Q
 N
 b
 b
-f
-v
-u
+b
+b
+R
 w
 d
 q
@@ -237,6 +385,7 @@ V
 V
 "}
 (10,1,1) = {"
+V
 Q
 Q
 b
@@ -251,6 +400,7 @@ V
 V
 "}
 (11,1,1) = {"
+V
 Q
 Q
 b
@@ -265,6 +415,7 @@ V
 V
 "}
 (12,1,1) = {"
+V
 Q
 Q
 b

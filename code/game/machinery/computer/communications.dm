@@ -822,77 +822,23 @@
 	priority_announce("Внимание, [station_name()]. Мы формируем [ertemplate.polldesc] для отправки на станцию. Ожидайте.", "Инициализирован протокол ОБР", 'modular_bluemoon/sound/ert/ert_send.ogg') //BlueMoon sound
 
 	var/list/mob/candidates = pollGhostCandidates("Do you wish to be considered for [ertemplate.polldesc]?", "Deathsquad", null, minimum_required = ertemplate.teamsize, poll_header = "[ertemplate.polldesc]", poll_alert_pic = /obj/item/card/id/centcom)
-	var/teamSpawned = FALSE
 
-	if(candidates.len > 0)
-		//Pick the (un)lucky players
-		var/numagents = min(ertemplate.maxteamsize, candidates.len)
-
-		//Create team
-		var/datum/team/ert/ert_team = new ertemplate.team
-		if(ertemplate.rename_team)
-			ert_team.name = ertemplate.rename_team
-
-		//Asign team objective
-		var/datum/objective/missionobj = new
-		missionobj.team = ert_team
-		missionobj.explanation_text = ertemplate.mission
-		missionobj.completed = TRUE
-		ert_team.objectives += missionobj
-		ert_team.mission = missionobj
-
-		var/list/spawnpoints = GLOB.emergencyresponseteamspawn
-		while(numagents && candidates.len)
-			if (numagents > spawnpoints.len)
-				numagents--
-				continue // This guy's unlucky, not enough spawn points, we skip him.
-			var/spawnloc = spawnpoints[numagents]
-			var/mob/chosen_candidate = pick(candidates)
-			candidates -= chosen_candidate
-			if(!chosen_candidate.key)
-				continue
-
-			//Spawn the body
-			var/mob/living/carbon/human/ERTOperative = new ertemplate.mobtype(spawnloc)
-			chosen_candidate.client.prefs.copy_to(ERTOperative)
-			chosen_candidate.transfer_ckey(ERTOperative)
-
-			if(ertemplate.enforce_human || ERTOperative.dna.species.dangerous_existence) // Don't want any exploding plasmemes
-				ERTOperative.set_species(/datum/species/human)
-
-			//Give antag datum
-			var/datum/antagonist/ert/ert_antag
-
-			if(numagents == 1)
-				ert_antag = new ertemplate.leader_role
-			else
-				ert_antag = ertemplate.roles[WRAP(numagents,1,length(ertemplate.roles) + 1)]
-				ert_antag = new ert_antag
-
-			ERTOperative.mind.add_antag_datum(ert_antag,ert_team)
-			ERTOperative.mind.assigned_role = ert_antag.name
-
-			//Logging and cleanup
-			log_game("[key_name(ERTOperative)] has been selected as an [ert_antag.name]")
-			numagents--
-			teamSpawned++
-
-		if (teamSpawned)
-			message_admins("[ertemplate.polldesc] были отправлены на станцию со следующей миссией: [ertemplate.mission]")
-			priority_announce("Внимание, [station_name()]. Мы отправляем подразделение - [ertemplate.polldesc]. Вам следует приготовиться.", "Подготовка Отряда Быстрого Реагирования", ertemplate.ertphrase) //BlueMoon sound
-
-		//Open the Armory doors
-		if(ertemplate.opendoors)
-			for(var/obj/machinery/door/poddoor/ert/door in GLOB.airlocks)
-				door.open()
-				CHECK_TICK
-		return TRUE
-	else
+	if(!length(candidates) || !length(ertemplate.spawn_members(candidates)))
 		priority_announce("[station_name()], мы не можем выслать [ertemplate.polldesc] ввиду занятости всех действующих оперативников. Средства были возвращены.", "Отряд Быстрого Реагирования недоступен", 'modular_bluemoon/sound/ert/ert_no.ogg') //BlueMoon sound
 		var/datum/bank_account/bank_account = SSeconomy.get_dep_account(ACCOUNT_CAR)
 		GLOB.payed_ert[id]["available"] = TRUE
 		bank_account.adjust_money(GLOB.payed_ert[id]["price"])
 		return FALSE
+
+	message_admins("[ertemplate.polldesc] были отправлены на станцию со следующей миссией: [ertemplate.mission]")
+	priority_announce("Внимание, [station_name()]. Мы отправляем подразделение - [ertemplate.polldesc]. Вам следует приготовиться.", "Подготовка Отряда Быстрого Реагирования", ertemplate.ertphrase) //BlueMoon sound
+
+	//Open the Armory doors
+	if(ertemplate.opendoors)
+		for(var/obj/machinery/door/poddoor/ert/door in GLOB.airlocks)
+			door.open()
+			CHECK_TICK
+	return TRUE
 
 /**
  * Call an emergency meeting
