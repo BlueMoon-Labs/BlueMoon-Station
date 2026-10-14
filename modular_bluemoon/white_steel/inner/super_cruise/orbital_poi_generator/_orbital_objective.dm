@@ -8,6 +8,11 @@
 	var/id = 0
 	var/station_name
 	var/static/objective_num = 0
+	//WHITE-STEEL PORT: Z-уровень сгенерированной руины миссии (выставляется генератором руин).
+	//Нужен для проверки состояния экспедиционного шаттла «на миссии».
+	var/objective_z_level
+	//WHITE-STEEL PORT: защита от повторной отправки шаттла с миссии.
+	var/mission_shuttle_dispatched = FALSE
 
 /datum/orbital_objective/New()
 	. = ..()
@@ -51,6 +56,135 @@
 
 /datum/orbital_objective/proc/remove_objective()
 	QDEL_NULL(SSorbits.current_objective)
+
+//=====================
+// WHITE-STEEL PORT: эвакуация экспедиции с миссии
+//=====================
+//Авто-возврат экспедиционного шаттла с ЛЮБОЙ миссии, если все игроки на руине мертвы, и
+//фултон их тел на мостик шаттла. Вызывается каждый тик из SSorbits для текущего задания.
+//Раньше эта логика существовала только у headhunt.
+/datum/orbital_objective/proc/handle_mission_shuttle()
+	if(!objective_z_level || mission_shuttle_dispatched)
+		return
+	var/obj/docking_port/mobile/exploration = SSshuttle.getShuttle("exploration")
+	if(!exploration || exploration.mode != SHUTTLE_IDLE || exploration.z != objective_z_level)
+		return
+	var/atom/movable/npc_target = get_target()
+	//Считаем живых подключённых игроков на руине (цель-непись миссии игнорируем).
+	for(var/mob/living/carbon/human/H as() in GLOB.human_list)
+		if(QDELETED(H) || H.z != objective_z_level || H.stat == DEAD || !H.mind || !H.client)
+			continue
+		if(H == npc_target)
+			continue
+		return
+	mission_shuttle_dispatched = TRUE
+	log_game("[name]: вся команда на руине (z=[objective_z_level]) мертва, шаттл авангарда возвращается на базу.")
+	//Тела погибших — на мостик шаттла, чтобы уехали домой и не были зачищены аннигилятором уровня.
+	fulton_dead_expeditors_to_bridge()
+	SSzclear.temp_keep_z(exploration.z)
+	var/obj/docking_port/stationary/home_port = SSshuttle.getDock("exploration_home")
+	if(home_port)
+		SSzclear.temp_keep_z(home_port.z)
+	if(SSshuttle.moveShuttle("exploration", "exploration_home", 1) == 0)
+		broadcast_auto_return()
+
+//WHITE-STEEL PORT: фултон тел погибших на мостик экспедиционного шаттла. Тело перемещаем СРАЗУ
+//(до moveShuttle), чтобы оно гарантированно уехало домой вместе с шаттлом; фултон-эффект —
+//отдельная визуалка на месте гибели.
+/datum/orbital_objective/proc/fulton_dead_expeditors_to_bridge()
+	var/turf/bridge = get_exploration_bridge_turf()
+	if(!bridge)
+		return
+	var/atom/movable/npc_target = get_target()
+	for(var/mob/living/carbon/human/H as() in GLOB.human_list)
+		if(QDELETED(H) || H == npc_target || H.z != objective_z_level)
+			continue
+		if(H.stat != DEAD || !H.mind)
+			continue
+		var/turf/start = get_turf(H)
+		H.forceMove(bridge)
+		INVOKE_ASYNC(src, PROC_REF(fulton_launch_effect), start)
+
+//WHITE-STEEL PORT: тайл мостика экспедиционного шаттла (по консоли полёта).
+/datum/orbital_objective/proc/get_exploration_bridge_turf()
+	for(var/obj/machinery/computer/shuttle_flight/exploration/flight_console in GLOB.machines)
+		var/turf/T = get_turf(flight_console)
+		if(T)
+			return T
+	return null
+
+//WHITE-STEEL PORT: визуальный запуск фултона (шарик вверх) на месте гибели — упрощённая
+//копия анимации /obj/item/extraction_pack без маяка и предмета.
+/datum/orbital_objective/proc/fulton_launch_effect(turf/launch_turf)
+	set waitfor = FALSE
+	if(QDELETED(launch_turf))
+		return
+	playsound(launch_turf, 'sound/items/fultext_launch.wav', 50, 1, -3)
+	var/obj/effect/extraction_holder/holder = new(launch_turf)
+	var/mutable_appearance/balloon = mutable_appearance('icons/obj/fulton_balloon.dmi', "fulton_balloon")
+	balloon.pixel_y = 10
+	balloon.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM
+	holder.add_overlay(balloon)
+	animate(holder, pixel_z = 1000, time = 25)
+	sleep(25)
+	qdel(holder)
+
+//WHITE-STEEL PORT: сообщение в общий канал от консоли шаттла при авто-возврате.
+/datum/orbital_objective/proc/broadcast_auto_return()
+	for(var/obj/machinery/computer/shuttle_flight/exploration/console in GLOB.machines)
+		console.speak_common("Потеряна связь с датчиками экспедиции, возвращаюсь на станцию.")
+		break
+
+//WHITE-STEEL PORT: есть ли живой подключённый игрок вне шаттла на руине текущей миссии.
+//Используется консолью шаттла, чтобы запретить запуск, пока часть состава снаружи.
+/datum/orbital_objective/proc/expedition_crew_left_behind()
+	if(!objective_z_level)
+		return FALSE
+	var/obj/docking_port/mobile/exploration = SSshuttle.getShuttle("exploration")
+	if(!exploration)
+		return FALSE
+	var/atom/movable/npc_target = get_target()
+	for(var/mob/living/carbon/human/H as() in GLOB.human_list)
+		if(QDELETED(H) || H.z != objective_z_level || H.stat == DEAD || !H.mind || !H.client)
+			continue
+		if(H == npc_target)
+			continue
+		var/area/A = get_area(H)
+		if(!A)
+			continue
+		if(A in exploration.shuttle_areas)
+			continue
+		return TRUE
+	return FALSE
+
+//WHITE-STEEL PORT: голосование призраков за гостроль (ВИП/цель охоты). В отличие от
+//notify_ghosts + клика по телу, это полноценный опрос (SSpolling) с HUD-иконкой.
+//Опрос блокирующий (UNTIL), поэтому запускаем через INVOKE_ASYNC; если тело так и
+//не заняли игроком — повторяем каждые 30 секунд, пока тело свободно и задание живо.
+/datum/orbital_objective/proc/start_ghost_role_poll(mob/target, question, ignore_category, role_text, takeover_message)
+	if(QDELETED(target) || target.key || target.client)
+		return
+	INVOKE_ASYNC(src, PROC_REF(run_ghost_role_poll), target, question, ignore_category, role_text, takeover_message)
+
+/datum/orbital_objective/proc/run_ghost_role_poll(mob/target, question, ignore_category, role_text, takeover_message)
+	set waitfor = FALSE
+	if(QDELETED(src) || QDELETED(target) || target.key || target.client)
+		return
+	var/list/candidates = pollGhostCandidates(question, null, null, 0, 30 SECONDS, ignore_category, FALSE, 1, FALSE, role_text)
+	for(var/mob/candidate as anything in candidates)
+		if(QDELETED(src) || QDELETED(target) || target.key || target.client)
+			return
+		if(!candidate?.client)
+			continue
+		candidate.transfer_ckey(target, FALSE)
+		target.client?.init_verbs()
+		if(takeover_message)
+			to_chat(target, span_boldnotice(takeover_message))
+		log_game("Orbital objective: [key_name(target)] занял гостроль '[role_text]' через голосование ([REF(target)]).")
+		return
+	// Никто не откликнулся — повторяем опрос, пока тело по-прежнему свободно.
+	if(!QDELETED(src) && !QDELETED(target) && !target.key && !target.client)
+		addtimer(CALLBACK(src, PROC_REF(run_ghost_role_poll), target, question, ignore_category, role_text, takeover_message), 30 SECONDS)
 
 /datum/orbital_objective/proc/complete_objective()
 	if(completed)

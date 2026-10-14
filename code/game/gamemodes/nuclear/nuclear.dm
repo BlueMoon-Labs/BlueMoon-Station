@@ -211,6 +211,9 @@
 
 	tc = null
 	uplink_type = null
+	//WHITE-STEEL PORT: expedition-вариант набора (цель охоты) не должен получать objective
+	//на захват шаттла. Флаг позволяет переиспользовать весь набор InteQ, отключив только его.
+	var/give_hijack_objective = TRUE
 
 /datum/outfit/inteq/full/pre_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
 	. = ..()
@@ -243,6 +246,10 @@
 	var/obj/item/tank/jetpack/J = H.get_jetpack()
 	if(istype(J, /obj/item/tank/jetpack/suit) && !J.on)
 		J.cycle(H)
+
+	//WHITE-STEEL PORT: expedition-вариант (цель охоты) не получает objective на захват шаттла.
+	if(!give_hijack_objective)
+		return
 
 	//превью в панели спавна одевает безмозглого дамми: цели ему выдавать некому
 	//("Cannot execute null.get all objectives()", раунд 9827)

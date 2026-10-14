@@ -371,6 +371,9 @@
 
 	//Generate objective stuff
 	if(linked_objective)
+		//WHITE-STEEL PORT: запоминаем z-уровень руины миссии — он нужен авто-возврату шаттла
+		//с любой миссии (эвакуация, когда вся команда на руине мертва).
+		linked_objective.objective_z_level = center_z
 		var/obj_sanity = 100
 		//Spawn in a sane place.
 		while(obj_sanity > 0)
@@ -399,9 +402,16 @@
 
 		//Spawn dead mosb
 		for(var/mob/M as() in SSzclear.nullspaced_mobs)
+			//WHITE-STEEL FIX: список может держать удалённые/пустые записи, из-за чего раньше
+			//генерация руины падала с "Cannot execute null.forceMove()".
+			if(QDELETED(M))
+				continue
 			var/objective_turf = pick(floor_turfs)
 			var/split_loc = splittext(objective_turf, "_")
-			M.forceMove(locate(text2num(split_loc[1]), text2num(split_loc[2]), center_z))
+			var/turf/spawn_turf = locate(text2num(split_loc[1]), text2num(split_loc[2]), center_z)
+			if(!spawn_turf)
+				continue
+			M.forceMove(spawn_turf)
 
 	ruin_event?.post_spawn(floor_turfs, center_z)
 

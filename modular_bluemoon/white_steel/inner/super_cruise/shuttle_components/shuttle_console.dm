@@ -449,6 +449,10 @@
 	if(mobile_port.mode != SHUTTLE_IDLE)
 		say("Круиз: Уже летим.")
 		return
+	//WHITE-STEEL PORT: запрещаем запуск с миссии, пока кто-то из состава экспедиции снаружи.
+	if(shuttleId == "exploration" && SSorbits.current_objective && SSorbits.current_objective.expedition_crew_left_behind())
+		say("Запуск запрещён: часть экспедиции находится за пределами шаттла на миссии.")
+		return
 	if(SSorbits.assoc_shuttles.Find(shuttleId))
 		say("Перехват управления из внешнего ПУ, обновление телеметрии.")
 		var/datum/orbital_object/O = SSorbits.assoc_shuttles[shuttleId]

@@ -109,6 +109,10 @@ PROCESSING_SUBSYSTEM_DEF(orbits)
 	if(current_objective)
 		if(current_objective.check_failed())
 			QDEL_NULL(current_objective)
+		else if(!QDELETED(current_objective))
+			//WHITE-STEEL PORT: авто-возврат экспедиционного шаттла с миссии, если вся команда
+			//на руине мертва (обобщено на все типы заданий).
+			current_objective.handle_mission_shuttle()
 	//Process events
 	for(var/datum/ruin_event/ruin_event as() in ruin_events)
 		if(!ruin_event.update())

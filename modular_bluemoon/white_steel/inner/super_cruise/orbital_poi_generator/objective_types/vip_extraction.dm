@@ -48,10 +48,50 @@
 			return TRUE
 		//WHITE-STEEL PORT: как только VIP оказывается на борту фёрри — фёрри сам стартует на ЦК.
 		send_ferry_if_loaded()
-		//WHITE-STEEL PORT: VIP доставлен на ЦК на фёрри — задание выполнено.
+		//WHITE-STEEL PORT: VIP доставлен на ЦК на фёрри — награда игроку и удаление тела.
 		if(is_centcom_level(mob_to_recover.z) && mob_to_recover.stat == CONSCIOUS)
-			complete_objective()
+			finish_vip_recovery()
 	return FALSE
+
+//WHITE-STEEL PORT: успешное завершение VIP-миссии. Игроку начисляется 1 М$, личная цель
+//помечается выполненной (для гринтекста), тело удаляется сразу по прибытии на ЦК (без
+//крио-капсулы), затем задание закрывается штатным пайаутом. Моб кэшируется заранее:
+//complete_objective() удаляет задание, а его Destroy() обнуляет mob_to_recover.
+/datum/orbital_objective/vip_recovery/proc/finish_vip_recovery()
+	var/mob/living/vip = mob_to_recover
+	if(!QDELETED(vip) && isliving(vip))
+		award_vip_metadollars(vip)
+		complete_vip_mind_objective(vip)
+		despawn_vip(vip)
+	complete_objective()
+
+//WHITE-STEEL PORT: мгновенное удаление VIP-тела на ЦК без крио-капсулы и очереди SSauto_cryo.
+//Если игрок ещё в теле — сначала гоустим (клиент не должен остаться в удаляемом мобе), затем
+//удаляем тело. Без штрафа и без реролла целей: миссия уже засчитана как выполненная.
+/datum/orbital_objective/vip_recovery/proc/despawn_vip(mob/living/vip)
+	if(vip.client)
+		vip.ghostize()
+	qdel(vip)
+
+/datum/orbital_objective/vip_recovery/proc/award_vip_metadollars(mob/living/vip)
+	var/client/C = vip.client
+	var/vip_ckey = C?.ckey || vip.ckey
+	if(!vip_ckey)
+		return
+	if(C?.prefs)
+		SSmetadollars.add_amount(C, 1, "ruin_vip")
+	else
+		SSmetadollars.metadollar_adjust(1, vip_ckey, null)
+	to_chat(vip, span_purple("Вы добрались до Центрального Командования. Награда: 1 метадоллар."))
+
+/datum/orbital_objective/vip_recovery/proc/complete_vip_mind_objective(mob/living/vip)
+	if(!vip.mind)
+		return
+	var/datum/antagonist/vip_recovery/antag = vip.mind.has_antag_datum(/datum/antagonist/vip_recovery)
+	if(!antag)
+		return
+	for(var/datum/objective/vip_return/return_objective in antag.objectives)
+		return_objective.completed = TRUE
 
 //WHITE-STEEL PORT: если VIP на борту фёрри, запускаем фёрри на ЦК-док ferry_away.
 /datum/orbital_objective/vip_recovery/proc/send_ferry_if_loaded()
@@ -92,12 +132,30 @@
 		/datum/outfit/hsc/vip/assistant,
 	)
 	created_human.equipOutfit(pick(vip_outfits))
+	//WHITE-STEEL PORT: снять с VIP снаряжение нельзя (кроме маски) — иначе первый же встречный
+	//раздевает уникальную VIP-персону до трусов. TRAIT_NODROP блокирует и strip, и сброс.
+	lock_vip_equipment(created_human)
 	//WHITE-STEEL PORT: VIP-тело можно занять призраку — mind с образом и целью сохраняется за телом.
 	created_human.AddComponent(/datum/component/ghost_takeover, "VIP-персоны", "Вы — VIP-персона! Задача: выжить на руине и вернуться на ЦК живым.")
 	//WHITE-STEEL PORT: у VIP настоящая цель в mind — выжить и вернуться на ЦК.
 	created_human.mind.add_antag_datum(/datum/antagonist/vip_recovery)
 	mob_to_recover = created_human
 	generated = TRUE
+	//WHITE-STEEL PORT: повторяющийся опрос призраков за роль VIP, пока тело не занято.
+	start_ghost_role_poll(created_human, "VIP эвакуация: занять роль VIP-персоны?", POLL_IGNORE_SPLITPERSONALITY, "VIP-персоны", "Вы — VIP-персона! Задача: выжить на руине и вернуться на ЦК живым.")
+
+//WHITE-STEEL PORT: фиксируем надетое на VIP снаряжение, кроме маски. TRAIT_NODROP
+//используется движком в /obj/item/proc/canStrip(), поэтому снять вещи через strip-меню
+//нельзя; маску оставляем снимаемой (доступ к дыханию/лицу). Сбросить вещи VIP тоже
+//не сможет — для неписи-цели это желаемое поведение.
+/datum/orbital_objective/vip_recovery/proc/lock_vip_equipment(mob/living/carbon/human/H)
+	if(!ishuman(H))
+		return
+	var/obj/item/worn_mask = H.get_item_by_slot(ITEM_SLOT_MASK)
+	for(var/obj/item/equipped as anything in H.get_equipped_items())
+		if(!istype(equipped) || equipped == worn_mask)
+			continue
+		ADD_TRAIT(equipped, TRAIT_NODROP, "vip_equipment_lock")
 
 //=====================
 // Centcom Official
@@ -185,6 +243,10 @@
 	completable = TRUE
 
 /datum/objective/vip_return/check_completion()
+	//WHITE-STEEL PORT: завершение могло быть зафиксировано вручную (finish_vip_recovery):
+	//VIP удаляется сразу по прибытии на ЦК, поэтому проверять живое тело на раунд-энде нельзя.
+	if(completed)
+		return TRUE
 	var/mob/living/L = owner?.current
 	if(!L || L.stat == DEAD)
 		return FALSE

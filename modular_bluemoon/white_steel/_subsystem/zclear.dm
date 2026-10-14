@@ -150,6 +150,12 @@ SUBSYSTEM_DEF(zclear)
 /datum/controller/subsystem/zclear/proc/unkeep_z(z_level)
 	docking_levels -= z_level
 
+//WHITE-STEEL FIX: чистим nullspaced_mobs от удалённых/пустых тел. Идём с конца: Cut сдвигает хвост.
+/datum/controller/subsystem/zclear/proc/prune_nullspaced_mobs()
+	for(var/index in length(nullspaced_mobs) to 1 step -1)
+		if(QDELETED(nullspaced_mobs[index]))
+			nullspaced_mobs.Cut(index, index + 1)
+
 /*
  * Создаёт на старте раунда пул готовых пустых z-уровней.
  * Каждый уровень полностью инициализируется (Initialize/параллакс) при создании,
@@ -313,7 +319,11 @@ SUBSYSTEM_DEF(zclear)
 				LAZYADD(free_levels, SSmapping.z_list[cleardata.zvalue])
 				var/nullspaced_mob_names = ""
 				var/valid = FALSE
+				//WHITE-STEEL FIX: nullspaced_mobs может содержать удалённые/пустые записи
+				//(мир их не чистит), из-за чего раньше падало "Cannot read null.key".
 				for(var/mob/M as() in nullspaced_mobs)
+					if(QDELETED(M))
+						continue
 					if(M.key || M.get_ghost(FALSE))
 						nullspaced_mob_names += " - [M.name]\n"
 						valid = TRUE
@@ -351,6 +361,9 @@ SUBSYSTEM_DEF(zclear)
 						//Store them for later
 						M.ghostize(TRUE)
 						M.forceMove(null)
+						//WHITE-STEEL FIX: не копим удалённые записи — список держит мобов
+						//жёстко и без чистки растёт до hard-del утечки.
+						prune_nullspaced_mobs()
 						nullspaced_mobs += M
 					else
 						//If the mob has a key (but is DC) then teleport them to a safe z-level where they can potentially be retrieved.

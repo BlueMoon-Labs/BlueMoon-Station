@@ -2,13 +2,11 @@
 /datum/orbital_objective/headhunt
 	name = "Охота за головами"
 	var/generated = FALSE
-	var/objective_z_level
 	var/mob/living/mob_to_recover
 	var/obj/structure/closet/supplypod/extractionpod/extraction_pod
 	//WHITE-STEEL PORT: статус экспедиционного шаттла относительно руины.
 	var/frontier_shuttle_docked = FALSE
 	var/frontier_shuttle_left = FALSE
-	var/auto_return_triggered = FALSE
 	var/objective_ended = FALSE
 	min_payout = 225 * CARGO_CRATE_VALUE
 	max_payout = 300 * CARGO_CRATE_VALUE
@@ -59,8 +57,8 @@
 	if(!T)
 		return
 	extraction_pod = new()
-	extraction_pod.name = "орбитальная система доставки Nanotrasen"
-	extraction_pod.desc = "Сюда сувать того самого преступника с [station_name]. Пожалуйста, игнорируйте символику синдиката, это трофейный под со Второй Космической."
+	extraction_pod.name = "Nanotrasen Orbital Delivery System"
+	extraction_pod.desc = "Place the target from [station_name] here. Please ignore the old syndicate markings on this pod; it is a trophy recovered during the Second Space War."
 	new /obj/effect/pod_landingzone(T, extraction_pod)
 	extraction_pod.stay_after_drop = TRUE
 	extraction_pod.reversing = TRUE
@@ -88,7 +86,31 @@
 			M.dropItemToGround(W)
 	var/obj/structure/closet/supplypod/extractionpod/pod = source
 	pod.startExitSequence(pod)
+	//WHITE-STEEL PORT: цель изымается из раунда (ghostize + qdel), а не остаётся живой в тюрьме.
+	despawn_target()
 	complete_objective()
+
+//WHITE-STEEL PORT: цель охоты отправлена через под захвата — изымаем её из раунда (ghostize + qdel).
+//Очищаем глобальные/обратные ссылки так же, как это делает Destroy().
+/datum/orbital_objective/headhunt/proc/despawn_target()
+	if(QDELETED(mob_to_recover))
+		mob_to_recover = null
+		return
+	var/mob/living/M = mob_to_recover
+	var/target_name = M.real_name
+	if(istext(target_name) && LAZYLEN(GLOB.mob_spawners[target_name]))
+		LAZYREMOVE(GLOB.mob_spawners[target_name], M)
+		if(!LAZYLEN(GLOB.mob_spawners[target_name]))
+			GLOB.mob_spawners -= target_name
+	if(M.mind)
+		var/datum/antagonist/headhunt_survive/antag = M.mind.has_antag_datum(/datum/antagonist/headhunt_survive)
+		if(antag)
+			for(var/datum/objective/headhunt_survive/hunt_objective in antag.objectives)
+				hunt_objective.linked_objective = null
+	mob_to_recover = null
+	if(M.client)
+		M.ghostize()
+	qdel(M)
 
 /datum/orbital_objective/headhunt/generate_objective_stuff(turf/chosen_turf)
 	var/mob/living/carbon/human/created_human = new(chosen_turf)
@@ -111,6 +133,8 @@
 	created_human.AddComponent(/datum/component/headhunt_skeleton)
 	//WHITE-STEEL PORT: преступника можно занять призраку — mind с целью сохраняется за телом.
 	created_human.AddComponent(/datum/component/ghost_takeover, "преступника-нелегала", "Вы — нелегал, цель «Охота за головами»! Держитесь на руине, пока шаттл наёмников авангарда не улетит — подмога InteQ уже близко.")
+	//WHITE-STEEL PORT: повторяющийся опрос призраков за роль преступника, пока тело не занято.
+	start_ghost_role_poll(created_human, "Охота за головами: занять роль преступника?", POLL_IGNORE_HEADHUNT, "преступника-нелегала", "Вы — нелегал, цель «Охота за головами»! Держитесь на руине, пока шаттл наёмников авангарда не улетит — подмога InteQ уже близко.")
 	generated = TRUE
 
 /datum/orbital_objective/headhunt/check_failed()
@@ -137,8 +161,6 @@
 		if(extraction_pod)
 			extraction_pod.startExitSequence(extraction_pod)
 		return
-	//WHITE-STEEL PORT: авто-возврат шаттла на базу, если вся высадившаяся охотничья команда мертва.
-	handle_auto_return()
 	return FALSE
 
 //WHITE-STEEL PORT: отслеживаем, когда экспедиционный шаттл покидает руину.
@@ -158,33 +180,6 @@
 	var/mob/living/carbon/C = mob_to_recover
 	return !!C.get_item_by_slot(ITEM_SLOT_HANDCUFFED)
 
-//WHITE-STEEL PORT: авто-возврат шаттла на базовый порт, если все активные игроки станции на руине мертвы.
-/datum/orbital_objective/headhunt/proc/handle_auto_return()
-	if(!generated || objective_ended || auto_return_triggered || !frontier_shuttle_docked || frontier_shuttle_left)
-		return
-	var/obj/docking_port/mobile/exploration_dock = SSshuttle.getShuttle("exploration")
-	if(!exploration_dock || exploration_dock.mode != SHUTTLE_IDLE || exploration_dock.z != objective_z_level)
-		return
-	//Считаем живых и подключённых игроков станции на руине (преступника игнорируем).
-	for(var/mob/living/carbon/human/H in GLOB.human_list)
-		if(H == mob_to_recover || H.z != objective_z_level || H.stat == DEAD || !H.mind || !H.client)
-			continue
-		return
-	auto_return_triggered = TRUE
-	log_game("Headhunt: вся охотничья команда мертва на руине (z=[objective_z_level]), шаттл авангарда возвращается на базу.")
-	SSzclear.temp_keep_z(exploration_dock.z)
-	var/obj/docking_port/stationary/home_port = SSshuttle.getDock("exploration_home")
-	if(home_port)
-		SSzclear.temp_keep_z(home_port.z)
-	if(SSshuttle.moveShuttle("exploration", "exploration_home", 1) == 0)
-		broadcast_auto_return()
-
-//WHITE-STEEL PORT: сообщение об авто-возврате через общую рацию.
-/datum/orbital_objective/headhunt/proc/broadcast_auto_return()
-	for(var/obj/machinery/computer/shuttle_flight/exploration/console in GLOB.machines)
-		console.speak_common("Потеряна связь с датчиками наёмников авангарда, возвращаюсь на станцию.")
-		break
-
 //WHITE-STEEL PORT: преступник продержался до отлёта шаттла — засчитываем его цель.
 /datum/orbital_objective/headhunt/proc/complete_target_survive()
 	if(QDELETED(mob_to_recover) || mob_to_recover.stat == DEAD || !mob_to_recover.mind)
@@ -193,11 +188,27 @@
 	if(antag)
 		for(var/datum/objective/headhunt_survive/hunt_objective in antag.objectives)
 			hunt_objective.completed = TRUE
+	//WHITE-STEEL PORT: преступник-игрок получает 2 М$ за успешное выживание.
+	award_headhunt_metadollars(mob_to_recover)
 	to_chat(mob_to_recover, span_greentext("Шаттл наёмников авангарда покинул вашу локацию. Подмога InteQ уже близко — вы продержались!"))
 
-//WHITE-STEEL PORT: экспедиционный вариант полного набора InteQ без взрывного импланта.
+//WHITE-STEEL PORT: награда игроку на цели охоты за то, что он продержался до отлёта шаттла.
+/datum/orbital_objective/headhunt/proc/award_headhunt_metadollars(mob/living/prey)
+	var/client/C = prey.client
+	var/prey_ckey = C?.ckey || prey.ckey
+	if(!prey_ckey)
+		return
+	if(C?.prefs)
+		SSmetadollars.add_amount(C, 2, "ruin_headhunt")
+	else
+		SSmetadollars.metadollar_adjust(2, prey_ckey, null)
+	to_chat(prey, span_purple("Вы продержались до прибытия подмоги InteQ. Награда: 2 метадоллара."))
+
+//WHITE-STEEL PORT: экспедиционный вариант полного набора InteQ. Без взрывного импланта и
+//без objective на захват шаттла: преступник не угоняет станцию, он ждёт подмогу InteQ.
 /datum/outfit/inteq/full/expedition
 	give_explosive_implant = FALSE
+	give_hijack_objective = FALSE
 
 //=====================
 // Цель преступника: продержаться до подлёта подмоги
@@ -211,6 +222,8 @@
 	var/datum/orbital_objective/headhunt/linked_objective
 
 /datum/objective/headhunt_survive/check_completion()
+	if(completed)
+		return TRUE
 	var/mob/living/L = owner?.current
 	if(!L || L.stat == DEAD)
 		return FALSE
