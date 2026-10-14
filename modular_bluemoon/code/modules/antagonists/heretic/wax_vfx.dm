@@ -37,9 +37,14 @@
 #define HERETIC_WAX_RISE_FLASH_RANGE 3
 #define HERETIC_WAX_RISE_FLASH_POWER 2
 #define HERETIC_WAX_RISE_FLASH_TIME (0.6 SECONDS)
-#define HERETIC_WAX_WICK_DROP 2
-#define HERETIC_WAX_CANDLE_STATE "candle"
 #define HERETIC_WAX_CANDLE_LIGHT_STEPS 3
+#define HERETIC_WAX_ITEMS_ICON 'modular_bluemoon/icons/obj/heretic_wax.dmi'
+#define HERETIC_WAX_DRESSED_STATE "wax_candle"
+#define HERETIC_WAX_DRESSED_NAME "funeral candle"
+#define HERETIC_WAX_DRESSED_FLAME_SHIFT (-5)
+#define HERETIC_WAX_TRAIL_TIME (3 SECONDS)
+#define HERETIC_WAX_TRAIL_RANGE 40
+#define HERETIC_WAX_TRAIL_STATE "wax_trail"
 
 /datum/eldritch_knowledge/base_wax
 	/// Холодные огоньки над свечами-якорями: свеча -> огонёк.
@@ -57,6 +62,8 @@
 		return
 	anchor_flames[candle] = flame
 	RegisterSignal(candle, COMSIG_ATOM_UPDATED_ICON, PROC_REF(on_anchor_icon_updated))
+	dress_anchor(candle)
+	SSpoints_of_interest.make_point_of_interest(candle)
 	fit_anchor_flame(candle, flame)
 
 /datum/eldritch_knowledge/base_wax/proc/snuff_anchor(obj/item/candle/candle)
@@ -67,19 +74,30 @@
 		qdel(flame)
 		return
 	flame?.fade_out()
+	if(!flame)
+		return
+	SSpoints_of_interest.remove_point_of_interest(candle)
+	candle.icon = initial(candle.icon)
+	candle.name = initial(candle.name)
+	candle.update_icon()
 
 /datum/eldritch_knowledge/base_wax/proc/on_anchor_icon_updated(obj/item/candle/source)
 	SIGNAL_HANDLER
+	dress_anchor(source)
 	fit_anchor_flame(source, anchor_flames[source])
 
-/// Огонёк держится над фитилём оплывающей свечи и прячется, пока горит её настоящее пламя.
+/// Якорь вознёсшегося носит вид погребальной свечи Воска поверх стадий обычной свечи.
+/datum/eldritch_knowledge/base_wax/proc/dress_anchor(obj/item/candle/candle)
+	candle.icon = HERETIC_WAX_ITEMS_ICON
+	candle.icon_state = HERETIC_WAX_DRESSED_STATE
+	candle.name = HERETIC_WAX_DRESSED_NAME
+
+/// Огонёк держится над фитилём погребальной свечи и виден, даже когда её зажгли обычным огнём.
 /datum/eldritch_knowledge/base_wax/proc/fit_anchor_flame(obj/item/candle/candle, obj/effect/abstract/heretic_vfx_attached/flame)
 	if(QDELETED(flame) || flame.fading)
 		return
-	var/prefix_length = length(HERETIC_WAX_CANDLE_STATE)
-	var/stage = text2num(copytext(candle.icon_state, prefix_length + 1, prefix_length + 2)) || 1
-	flame.pixel_y = -(stage - 1) * HERETIC_WAX_WICK_DROP
-	flame.alpha = candle.lit ? 0 : HERETIC_WAX_ANCHOR_FLAME_ALPHA
+	flame.pixel_y = HERETIC_WAX_DRESSED_FLAME_SHIFT
+	flame.alpha = HERETIC_WAX_ANCHOR_FLAME_ALPHA
 
 /// Кукла оплывает: оседает к полу, расползается и тает к концу срока.
 /obj/effect/temp_visual/heretic_wax_doll/proc/melt_down()
@@ -88,6 +106,12 @@
 	melted.Translate(0, -HERETIC_WAX_DOLL_SINK)
 	animate(src, transform = melted, time = duration, easing = QUAD_EASING | EASE_IN)
 	animate(src, alpha = 0, time = duration, easing = CUBIC_EASING | EASE_IN, flags = ANIMATION_PARALLEL)
+
+/// Воск, уходя к свече, тянет за собой след от куклы к вернувшемуся.
+/obj/effect/temp_visual/heretic_wax_doll/proc/leave_trail(atom/destination)
+	if(QDELETED(destination) || get_dist(src, destination) > HERETIC_WAX_TRAIL_RANGE)
+		return
+	trail = Beam(destination, HERETIC_WAX_TRAIL_STATE, HERETIC_WAX_ITEMS_ICON, HERETIC_WAX_TRAIL_TIME, HERETIC_WAX_TRAIL_RANGE + 1)
 
 /// Возвращение к свече: у куклы капает воск, свеча вспыхивает и оплывает, столб воска поднимается и стекает с тела.
 /proc/heretic_wax_rise_fx(mob/living/body, turf/fall_spot, turf/destination, anchor_look)
@@ -151,7 +175,7 @@
 
 /obj/effect/temp_visual/heretic_wax_column/Initialize(mapload)
 	. = ..()
-	add_overlay(emissive_appearance(icon, "wax_column_glow"))
+	add_overlay(emissive_appearance(icon, "wax_column_glow", offset_spokesman = src))
 
 /// Снимок свечи оплывает лужицей; вспышка сначала раздувает его холодным светом.
 /obj/effect/temp_visual/heretic_wax_melt
@@ -212,6 +236,18 @@
 	gravity = list(0, -0.12, 0)
 	friction = 0
 
+/// Воск: удар по двойнику выбивает брызги и крошку, они падают к ногам.
+/particles/heretic_ascension/wax/chip
+	icon_state = list("wax_drop" = 1)
+	count = 10
+	spawning = 10
+	lifespan = 0.7 SECONDS
+	fade = 0.3 SECONDS
+	position = generator("box", list(-6, -4, 0), list(6, 10, 0))
+	velocity = generator("box", list(-3, 0.5, 0), list(3, 2.5, 0))
+	gravity = list(0, -0.35, 0)
+	friction = 0.04
+
 /// Воск: импульс процессии бросает капли и холодные огоньки кольцом.
 /particles/heretic_ascension/wax/pulse
 	count = 24
@@ -260,6 +296,11 @@
 #undef HERETIC_WAX_RISE_FLASH_RANGE
 #undef HERETIC_WAX_RISE_FLASH_POWER
 #undef HERETIC_WAX_RISE_FLASH_TIME
-#undef HERETIC_WAX_WICK_DROP
-#undef HERETIC_WAX_CANDLE_STATE
 #undef HERETIC_WAX_CANDLE_LIGHT_STEPS
+#undef HERETIC_WAX_ITEMS_ICON
+#undef HERETIC_WAX_DRESSED_STATE
+#undef HERETIC_WAX_DRESSED_NAME
+#undef HERETIC_WAX_DRESSED_FLAME_SHIFT
+#undef HERETIC_WAX_TRAIL_TIME
+#undef HERETIC_WAX_TRAIL_RANGE
+#undef HERETIC_WAX_TRAIL_STATE

@@ -134,5 +134,5 @@
 		hex_combo.pixel_x = -16
 		hex_combo.pixel_y = -16
 		hex_combo.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-		hex_combo.plane = GAME_PLANE
+		SET_PLANE_EXPLICIT(hex_combo, GAME_PLANE, T)
 		new /obj/effect/temp_visual/ratvar/prolonging_prism(T, hex_combo)

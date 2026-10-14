@@ -260,7 +260,7 @@
 /atom/movable/screen/fullscreen/heroin
 	icon = 'modular_bluemoon/icons/screen/heroin_fullscreen.dmi'
 	plane = SPLASHSCREEN_PLANE
-	screen_loc = "CENTER-7,SOUTH"
+	screen_loc = "CENTER:-224,SOUTH"
 	icon_state = ""
 
 /datum/client_colour/heroin

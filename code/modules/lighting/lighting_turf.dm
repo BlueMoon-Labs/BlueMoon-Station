@@ -191,6 +191,15 @@
 			   old_area.contact_shadow_multiplier != new_area.contact_shadow_multiplier || \
 			   old_area.ambient_light != new_area.ambient_light)
 				recalc_area_blend_region()
+	update_fullbright_overlay(new_area)
+
+/// Засветка турфа под его этаж: снимается со всех смещений и ставится заново, если зоне turf_area она нужна.
+/turf/proc/update_fullbright_overlay(area/turf_area)
+	for(var/glow in GLOB.fullbright_turf_overlays)
+		if(glow)
+			overlays -= glow
+	if(TURF_NEEDS_OWN_FULLBRIGHT(src, turf_area))
+		overlays += fullbright_turf_overlay(src)
 
 /// Queues blended area profile recalculation on this turf and its cardinal neighbors.
 /// Called when a turf changes area or an area's lighting profile is modified.

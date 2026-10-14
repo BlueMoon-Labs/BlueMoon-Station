@@ -92,7 +92,8 @@
 	var/amount_grown = 0
 	var/player_spiders = 0
 	var/directive = "" //Message from the mother
-	var/poison_type = "toxin"
+	/// Яд матери; без неё каждый паук кусает своим ядом.
+	var/poison_type
 	var/poison_per_bite = 5
 	var/list/faction = list("spiders")
 
@@ -130,7 +131,7 @@
 	var/travelling_in_vent = 0
 	var/player_spiders = 0
 	var/directive = "" //Message from the mother
-	var/poison_type = "toxin"
+	var/poison_type
 	var/poison_per_bite = 5
 	var/list/faction = list("spiders")
 	var/no_nurses = FALSE
@@ -307,7 +308,8 @@
 					grow_as = pick(/mob/living/simple_animal/hostile/poison/giant_spider, /mob/living/simple_animal/hostile/poison/giant_spider/hunter, /mob/living/simple_animal/hostile/poison/giant_spider/nurse)
 			var/mob/living/simple_animal/hostile/poison/giant_spider/S = new grow_as(src.loc)
 			S.poison_per_bite = poison_per_bite
-			S.poison_type = poison_type
+			if(poison_type)
+				S.poison_type = poison_type
 			S.faction = faction.Copy()
 			S.directive = directive
 			if(player_spiders)

@@ -199,8 +199,11 @@
 		if(heretic.simulated || heretic.role_removed)
 			continue
 		var/mob/living/body = heretic.owner?.current
-		if(istype(body) && body.stat != DEAD)
-			active_heretics++
+		if(!istype(body) || body.stat == DEAD)
+			continue
+		if(heretic.ascended)
+			return "вознёсшийся еретик ещё жив"
+		active_heretics++
 	var/allowed = max(1, FLOOR(living_crew / HERETIC_CREW_PER_HERETIC, 1))
 	if(active_heretics >= allowed)
 		return "живых еретиков [active_heretics] при допустимых [allowed] на [living_crew] живого экипажа"

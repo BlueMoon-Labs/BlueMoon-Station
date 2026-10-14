@@ -261,9 +261,13 @@
 		track_flesh_servant(servant)
 		to_chat(user, span_notice("Создан учебный слуга без игрока. Опрос призраков не требуется."))
 		return TRUE
-	to_chat(user, span_notice("Мансус ищет душу для [summoned.name]. Пока идёт отклик, не отходите от руны и не трогайте компоненты."))
-	var/list/mob/dead/observer/candidates = poll_servant_candidates("Хотите стать [summoned.name], слугой [user.real_name]?", summoned, HERETIC_SERVANT_POLL_DURATION)
+	var/list/mob/dead/observer/candidates = list()
+	if(!servant_poll_wait_reason())
+		to_chat(user, span_notice("Мансус ищет душу для [summoned.name]. Пока идёт отклик, не отходите от руны и не трогайте компоненты."))
+		candidates = poll_servant_candidates("Хотите стать [summoned.name], слугой [user.real_name]?", summoned, HERETIC_SERVANT_POLL_DURATION)
 	summoning = FALSE
+	if(!length(candidates) && summon_soulless(user, atoms, loc, summoned))
+		return TRUE
 	finish_failure_reason = summon_poll_failure_reason(user, atoms, loc, candidates, summoned)
 	var/mob/dead/observer/chosen = finish_failure_reason ? null : pick(candidates)
 	if(!finish_failure_reason && (QDELETED(chosen) || !chosen.client))

@@ -3,6 +3,8 @@
 	// BLUEMOON OPTIMIZATION: stagger organ processing for clientless mobs (every other fire)
 	if(client || ((times_fired + life_periodic_phase) % 2 == 0))
 		handle_organs(client ? delta_time : delta_time * 2, times_fired)
+	if(QDELETED(src)) // reagents can transform the mob, e.g. mutadone on a monkey
+		return FALSE
 	. = ..()		// if . is false, we are dead.
 	if(stat == DEAD)
 		stop_sound_channel(CHANNEL_HEARTBEAT)
@@ -189,7 +191,7 @@
 	var/successful_breath = check_breath(breath)
 	if(successful_breath && is_on_internals)
 		// Дышим из баллона и вдох удался - включаем/поддерживаем звук дыхания.
-		if(client?.prefs?.toggles & SOUND_BREATHING && !HAS_TRAIT(src, TRAIT_DEAF))
+		if(!HAS_TRAIT(src, TRAIT_DEAF))
 			breathing_loop.start()
 		else
 			breathing_loop.stop()

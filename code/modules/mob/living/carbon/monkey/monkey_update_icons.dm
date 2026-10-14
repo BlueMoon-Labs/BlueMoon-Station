@@ -53,6 +53,8 @@
 		apply_overlay(LEGCUFF_LAYER)
 		if(istype(legcuffed, /obj/item/restraints/legcuffs/beartrap))
 			throw_alert("legcuffed", /atom/movable/screen/alert/restrained/legcuffed/beartrap)
+		else if(legcuffed.restrained_alert)
+			throw_alert("legcuffed", legcuffed.restrained_alert)
 		else
 			throw_alert("legcuffed", /atom/movable/screen/alert/restrained/legcuffed, new_master = legcuffed)
 

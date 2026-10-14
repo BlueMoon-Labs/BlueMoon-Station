@@ -233,3 +233,39 @@
 
 /obj/item/ammo_box/shotgun/loaded/dart
 	ammo_type = /obj/item/ammo_casing/shotgun/dart
+
+//сб ревики
+
+/obj/item/ammo_box/cal41
+	name = "speed loader (.41 rubber)"
+	desc = "Designed to quickly reload revolvers."
+	icon = 'modular_bluemoon/icons/obj/ammo.dmi' 
+	icon_state = "41"
+	caliber = ".41cal"
+	ammo_type = /obj/item/ammo_casing/cal41/rubber
+	max_ammo = 6
+	multiple_sprites = 1
+	custom_materials = list(/datum/material/iron = 20000)
+	speedloader = TRUE
+	w_class = WEIGHT_CLASS_TINY
+
+/obj/item/ammo_box/cal41/lethal
+	name = "speed loader (.41)"
+	ammo_type = /obj/item/ammo_casing/cal41/lethal
+
+/obj/item/ammo_box/cal41/incendiary
+	name = "speed loader (.41 incendiary)"
+	ammo_type = /obj/item/ammo_casing/cal41/incendiary
+
+/obj/item/ammo_box/cal41/dumdum
+	name = "speed loader (.41 dumdum)"
+	ammo_type = /obj/item/ammo_casing/cal41/dumdum
+
+/obj/item/ammo_box/cal41/magnum
+	name = "speed loader (.41 magnum)"
+	ammo_type = /obj/item/ammo_casing/cal41/magnum
+
+/obj/item/ammo_box/cal41/fmj
+	name = "speed loader (.41 FMJ)"
+	ammo_type = /obj/item/ammo_casing/cal41/fmj
+

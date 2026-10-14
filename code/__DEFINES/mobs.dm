@@ -447,9 +447,15 @@
 
 // Уровни искажения речи (текста) в проценте если рот прикрыт
 #define MUFFLE_NONE 0 // Нет искажений
-#define MUFFLE_LOW 45 // Речь разборчивая, но приглушенная
-#define MUFFLE_MEDIUM 75 // Явно невнятная, слова узнаваемы
-#define MUFFLE_HIGH 90 // Почти не разборчиво
+#define MUFFLE_LOW 30 // Речь разборчивая, но приглушенная
+#define MUFFLE_MEDIUM 60 // Явно невнятная, слова узнаваемы
+#define MUFFLE_HIGH 75 // Почти не разборчиво
 
 // Специальная константа для полной немоты
 #define MUFFLE_MUTE 255 // Запрещает издавать любые звуки
+
+// Уровни сенсорной депривации слуха
+#define HEARING_DEPRIV_NONE 0
+#define HEARING_DEPRIV_LOW 25 // Стандарт для виспера
+#define HEARING_DEPRIV_MEDIUM 50
+#define HEARING_DEPRIV_HIGH 75

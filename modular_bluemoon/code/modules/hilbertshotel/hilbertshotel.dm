@@ -88,7 +88,7 @@
 			"name" = room_template.name,
 			"category" = room_template.category,
 			"donator_tier" = room_template.donator_tier,
-			"ckeywhitelist" = room_template.ckeywhitelist
+			"available" = room_template.is_allowed_for(user.key)
 		))
 
 /obj/item/hilbertshotel/ui_data(mob/user)
@@ -182,6 +182,9 @@
 			var/template_name = params["room"]
 			if(!(template_name in SShilbertshotel.hotel_map_list))
 				return FALSE
+			var/datum/map_template/hilbertshotel/room_template = SShilbertshotel.hotel_map_list[template_name]
+			if(!room_template.is_allowed_for(user.key))
+				return FALSE
 			SShilbertshotel.user_data[user.ckey]["template"] = template_name
 			return TRUE
 
@@ -201,6 +204,9 @@
 			else
 				SShilbertshotel.user_data[user.ckey]["room_number"] = room_number
 			if(!room_number || !template || !(template in SShilbertshotel.hotel_map_list))
+				return FALSE
+			var/datum/map_template/hilbertshotel/room_template = SShilbertshotel.hotel_map_list[template]
+			if(!room_template.is_allowed_for(user.key))
 				return FALSE
 			SShilbertshotel.user_data[user.ckey]["status"] = STATUS_ENTERING_ROOM
 			SShilbertshotel.user_data[user.ckey]["entering_since"] = world.time
@@ -416,7 +422,8 @@
 	for(var/i in 0 to mapTemplate.width - 1)
 		for(var/j in 0 to mapTemplate.height - 1)
 			if(turfNumber <= stored_size)
-				for(var/atom/movable/A in stored_data[turfNumber])
+				var/list/turf_contents = stored_data[turfNumber]
+				for(var/atom/movable/A in turf_contents.Copy())
 					if(istype(A, /atom/movable/lighting_object)) // Сток, отравленный до фикса storeRoom: призрак прошлой эпохи не должен лечь на тайл поверх живого оверлея
 						qdel(A, force = TRUE)
 						continue
@@ -575,8 +582,14 @@
 	if(user.ckey && SShilbertshotel.user_data[user.ckey])
 		SShilbertshotel.user_data[user.ckey]["status"] = STATUS_IDLE
 	if(!mob_dorms[user]?.Find(roomNumber))
+		if(!mob_dorms[user])
+			RegisterSignal(user, COMSIG_PARENT_QDELETING, PROC_REF(forget_dorm_owner))
 		LAZYADD(mob_dorms[user], roomNumber)
 	return TRUE
+
+/obj/item/hilbertshotel/proc/forget_dorm_owner(mob/owner)
+	SIGNAL_HANDLER
+	mob_dorms -= owner
 
 /obj/item/hilbertshotel/proc/linkTurfs(var/datum/turf_reservation/currentReservation, var/currentRoomnumber, var/chosen_room)
 	var/area/hilbertshotel/currentArea = get_area(locate(currentReservation.bottom_left_coords[1], currentReservation.bottom_left_coords[2], currentReservation.bottom_left_coords[3]))
@@ -879,6 +892,14 @@
 	if(ismob(AM))
 		var/mob/M = AM
 		M.mob_transforming = FALSE
+	if(QDELETED(AM))
+		forget_stored_atom(AM)
+
+/// Атом, удалённый внутри стока (истёкший визуал, дым), уходит из списков комнаты: иначе они держат его до восстановления.
+/obj/item/abstracthotelstorage/proc/forget_stored_atom(atom/movable/gone)
+	var/list/room_turfs = parentSphere?.storedRooms["[roomNumber]"]
+	for(var/list/turf_contents in room_turfs)
+		turf_contents -= gone
 
 #undef STATUS_IDLE
 #undef STATUS_ENTERING_ROOM

@@ -65,8 +65,8 @@
 	var/mob/living/user = heretic.owner.current
 	var/datum/eldritch_knowledge/base_spirit/spirit = heretic.get_knowledge(/datum/eldritch_knowledge/base_spirit)
 	var/datum/eldritch_knowledge/spirit_grasp/grasp = heretic.get_knowledge(/datum/eldritch_knowledge/spirit_grasp)
-	var/obj/effect/proc_holder/spell/pointed/heretic_spirit/shift/spell = grasp.granted_spell
-	TEST_ASSERT(istype(spell), "Второе знание даёт активное смещение.")
+	var/obj/effect/proc_holder/spell/pointed/heretic_spirit/hold/spell = grasp.granted_spell
+	TEST_ASSERT(istype(spell), "Второе знание даёт «Притянуть душу».")
 	var/turf/origin = get_step(get_step(get_step(get_step(user, EAST), EAST), EAST), EAST)
 	var/mob/living/victim = allocate(/mob/living/carbon/human, origin)
 	var/datum/status_effect/heretic_spirit/separated/soul = spirit.separate(victim, spirit)
@@ -74,8 +74,8 @@
 	var/budget = soul.drain_limit
 	var/turf/user_origin = get_turf(user)
 	user.forceMove(get_step(origin, WEST))
-	TEST_ASSERT(!spell.can_target(soul.anchor, user, TRUE), "Соседнюю душу нельзя смещать.")
-	TEST_ASSERT(findtext(spell.heretic_failure_reason, "слишком близко"), "Отказ объясняет минимальную дистанцию.")
+	TEST_ASSERT(!spell.can_target(soul.anchor, user, TRUE), "Соседнюю душу без «Удержать душу» не тянут.")
+	TEST_ASSERT(findtext(spell.heretic_failure_reason, "рядом с вами"), "Отказ объясняет, что соседнюю душу берут в руку.")
 	user.forceMove(user_origin)
 	spirit.combat_resource = 0
 	TEST_ASSERT(spell.can_target(soul.anchor, user, TRUE), "Собственная душа доступна в четырёх клетках даже без оболов.")
@@ -89,7 +89,7 @@
 	soul.tick()
 	TEST_ASSERT(soul.drained > 0, "Тело у прежней позиции теперь истощается.")
 	TEST_ASSERT(!spirit.shift_soul(user, soul.anchor), "Одну душу нельзя смещать повторно.")
-	TEST_ASSERT(findtext(spirit.shift_failure, "уже смещена"), "Повторное смещение объясняет ограничение души.")
+	TEST_ASSERT(findtext(spirit.shift_failure, "уже притянули"), "Повторное смещение объясняет ограничение души.")
 	victim.forceMove(get_turf(soul.anchor))
 	TEST_ASSERT(QDELETED(soul), "Возврат к перемещённой душе обрывает связь.")
 	grasp.on_body_lose(user)

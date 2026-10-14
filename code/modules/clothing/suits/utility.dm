@@ -49,7 +49,7 @@
 	slowdown = 1.5
 
 /obj/item/clothing/suit/fire/atmos
-	name = "firesuit"
+	name = "High-Quality Firesuit"
 	desc = "An expensive firesuit that protects against even the most deadly of station fires. Designed to protect even if the wearer is set aflame."
 	icon_state = "atmos_firesuit"
 	item_state = "firesuit_atmos"
@@ -60,6 +60,7 @@
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT|HIDETAUR|HIDETAIL
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC|STYLE_PAW_TAURIC
+	slowdown = 0
 
 /*
  * Bomb protection

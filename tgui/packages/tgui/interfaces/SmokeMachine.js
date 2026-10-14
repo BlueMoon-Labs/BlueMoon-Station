@@ -11,22 +11,53 @@ export const SmokeMachine = (props) => {
     TankMaxVolume,
     active,
     setting,
-    screen,
-    maxSetting = [],
+    maxSetting = 1,
+    modifier,
+    maxModifier = 1,
+    open,
+    hasPowercell,
+    powerLevel,
   } = data;
   return (
     <Window
-      width={350}
+      width={450}
       height={350}>
       <Window.Content>
-        <Section title="Дисперсионный резервуар"
+        <Section
+          title="Питание"
           buttons={(
-            <Button
-              icon={active ? 'power-off' : 'times'}
-              selected={active}
-              content={active ? 'On' : 'Off'}
-              onClick={() => act('power')} />
+            <>
+              <Button
+                icon="eject"
+                content="Извлечь батарею"
+                disabled={!hasPowercell || !open}
+                onClick={() => act('eject')} />
+              <Button
+                icon={active ? 'power-off' : 'times'}
+                content={active ? 'Включено' : 'Выключено'}
+                selected={active}
+                onClick={() => act('power')} />
+            </>
           )}>
+          <LabeledList>
+            <LabeledList.Item
+              label="Батарея"
+              color={!hasPowercell && 'bad'}>
+              {hasPowercell && (
+                <ProgressBar
+                  value={powerLevel / 100}
+                  ranges={{
+                    good: [0.6, Infinity],
+                    average: [0.3, 0.6],
+                    bad: [-Infinity, 0.3],
+                  }}>
+                  {powerLevel + '%'}
+                </ProgressBar>
+              ) || 'Нет'}
+            </LabeledList.Item>
+          </LabeledList>
+        </Section>
+        <Section title="Дисперсионный резервуар">
           <ProgressBar
             value={TankCurrentVolume / TankMaxVolume}
             ranges={{
@@ -37,15 +68,27 @@ export const SmokeMachine = (props) => {
           </ProgressBar>
           <Box mt={1}>
             <LabeledList>
-              <LabeledList.Item label="Радиус">
-                {[1, 2, 3, 4, 5].map(amount => (
+              <LabeledList.Item label="Радиус облака" textAlign="right">
+                {[1, 2, 3, 4, 5, 6, 9].map(amount => (
                   <Button
                     key={amount}
                     selected={setting === amount}
                     icon="plus"
-                    content={amount * 3}
+                    content={amount * 2}
                     disabled={maxSetting < amount}
                     onClick={() => act('setting', { amount })} />
+                ))}
+              </LabeledList.Item>
+            </LabeledList>
+            <LabeledList>
+              <LabeledList.Item label="Модификатор потребления" textAlign="right">
+                {[0.25, 0.5, 1, 2, 3, 4, 5, 6].map(multiplier => (
+                  <Button
+                    key={multiplier}
+                    selected={modifier === multiplier}
+                    content={Number.isInteger(1 / multiplier) ? 1 / multiplier : `1/${multiplier}`}
+                    disabled={maxModifier < multiplier || (setting >= 2 && multiplier === 0.25) || (setting >= 3 && multiplier === 0.5)}
+                    onClick={() => act('modifier', { multiplier })} />
                 ))}
               </LabeledList.Item>
             </LabeledList>

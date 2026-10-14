@@ -20,8 +20,10 @@
 	var/danger_chance = 1
 	/// Amount of reagents ejected from each scrubber
 	var/reagents_amount = 100
-	/// Probability of an individual scrubber overflowing
-	var/overflow_probability = 50
+	/// Probability of an individual scrubber overflowing.
+	/// 100, а не меньше: вентиляция разложена по всей станции, и волна накрывает её целиком только
+	/// когда бьёт каждый экземпляр (и скруббер, и помпа), а не когда бьёт каждый второй.
+	var/overflow_probability = 100
 	/// Specific reagent to force all scrubbers to use, null for random reagent choice
 	var/datum/reagent/forced_reagent_type
 	/// A list of scrubbers and vents that will have reagents ejected from them
@@ -77,33 +79,35 @@
 	)
 	//needs to be chemid unit checked at some point
 
+/// Вентиляция, из которой может пойти жидкость: и скрубберы, и помпы - они соседние ветки от vent,
+/// поэтому в переборе нужны оба типа.
+#define OVERFLOW_VENT_TYPES list(\
+	/obj/machinery/atmospherics/components/unary/vent_scrubber, \
+	/obj/machinery/atmospherics/components/unary/vent_pump \
+)
+
+/// Вся незваренная вентиляция станции - кандидаты на источники для перелива.
+/// Список берётся из индекса SSmachines по типу, а не обходом GLOB.machines: тот на каждый ивент
+/// дважды перебирает всю технику на карте, ради пары сотен вентилей.
+/// Отдаёт новый список - вызывающий вправе чистить и фильтровать его на месте.
+/proc/get_overflow_station_vents()
+	var/list/station_vents = list()
+	for(var/vent_type in OVERFLOW_VENT_TYPES)
+		for(var/obj/machinery/atmospherics/components/unary/vent as anything in SSmachines.get_machines_by_type_and_subtypes(vent_type))
+			// Не вварилась в нуль (loc == null) машина тоже сюда не попадёт: z у неё 0, не станция.
+			if(vent.welded || !is_station_level(vent.z))
+				continue
+			station_vents += vent
+	return station_vents
+
 /datum/round_event/scrubber_overflow/announce(fake)
 	priority_announce("Сеть вентиляции испытывает скачок противодавления. Может произойти некоторый выброс содержимого.", "ВНИМАНИЕ: АТМОСФЕРА", 'sound/announcer/classic/ventclog.ogg')
 
 /datum/round_event/scrubber_overflow/setup()
-	for(var/obj/machinery/atmospherics/components/unary/vent_scrubber/temp_vent in GLOB.machines)
-		var/turf/scrubber_turf = get_turf(temp_vent)
-		if(!scrubber_turf)
-			continue
-		if(!is_station_level(scrubber_turf.z))
-			continue
-		if(temp_vent.welded)
-			continue
+	for(var/obj/machinery/atmospherics/components/unary/vent as anything in get_overflow_station_vents())
 		if(!prob(overflow_probability))
 			continue
-		scrubbers += temp_vent
-
-	for(var/obj/machinery/atmospherics/components/unary/vent_pump/temp_vent in GLOB.machines)
-		var/turf/vent_turf = get_turf(temp_vent)
-		if(!vent_turf)
-			continue
-		if(!is_station_level(vent_turf.z))
-			continue
-		if(temp_vent.welded)
-			continue
-		if(!prob(overflow_probability))
-			continue
-		scrubbers += temp_vent
+		scrubbers += vent
 
 	if(!scrubbers.len)
 		return kill()
@@ -112,17 +116,7 @@
 	. = ..()
 	if(!.)
 		return
-	for(var/obj/machinery/atmospherics/components/unary/vent_scrubber/temp_vent in GLOB.machines)
-		var/turf/scrubber_turf = get_turf(temp_vent)
-		if(!scrubber_turf || !is_station_level(scrubber_turf.z) || temp_vent.welded)
-			continue
-		return TRUE
-	for(var/obj/machinery/atmospherics/components/unary/vent_pump/temp_vent in GLOB.machines)
-		var/turf/vent_turf = get_turf(temp_vent)
-		if(!vent_turf || !is_station_level(vent_turf.z) || temp_vent.welded)
-			continue
-		return TRUE
-	return FALSE
+	return length(get_overflow_station_vents()) > 0
 
 /// proc that will run the prob check of the event and return a safe or dangerous reagent based off of that.
 /datum/round_event/scrubber_overflow/proc/get_overflowing_reagent(dangerous)
@@ -154,6 +148,8 @@
 /datum/round_event_control/scrubber_overflow/threatening
 	name = "Scrubber Overflow: Threatening"
 	typepath = /datum/round_event/scrubber_overflow/threatening
+	// Свой typepath - уже выбранная жидкость, спрашивать тип заново нечего.
+	admin_setup = list()
 	weight = 4
 	min_players = 25
 	max_occurrences = 1
@@ -168,6 +164,7 @@
 /datum/round_event_control/scrubber_overflow/catastrophic
 	name = "Scrubber Overflow: Catastrophic"
 	typepath = /datum/round_event/scrubber_overflow/catastrophic
+	admin_setup = list()
 	weight = 2
 	min_players = 35
 	max_occurrences = 1
@@ -182,12 +179,13 @@
 /datum/round_event_control/scrubber_overflow/every_vent
 	name = "Scrubber Overflow: Every Vent"
 	typepath = /datum/round_event/scrubber_overflow/every_vent
+	admin_setup = list()
 	admin_only = TRUE
 	max_occurrences = 0
-	description = "The scrubbers release a tide of mostly harmless froth, but every scrubber is affected."
+	description = "The scrubbers release a tide of mostly harmless froth, but twice as deep as usual."
 
 /datum/round_event/scrubber_overflow/every_vent
-	overflow_probability = 100
+	// overflow_probability уже 100 у базового ивента, отличается только объёмом.
 	reagents_amount = 200
 
 /datum/event_admin_setup/listed_options/scrubber_overflow

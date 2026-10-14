@@ -124,11 +124,12 @@
 	var/new_duration = world.realtime + duration
 	if(prefs.hearted_until > new_duration)
 		return
-	tgui_alert(src, "Кто-то поблагодарил меня за прошлый раунд!", "<3!", list("Лан"))
 	prefs.hearted_until = new_duration
 	prefs.hearted = TRUE
 	sync_hearted_pref(prefs)
 	prefs.save_preferences()
+	// Зовётся из declare_completion: алерт не должен ждать ответа игрока.
+	tgui_alert_async(src, "Кто-то поблагодарил меня за прошлый раунд!", "<3!", list("Лан"))
 
 /// Ask someone if they'd like to award a commendation for the round, 3 tries to get the name they want before we give up
 /mob/proc/query_heart(attempt=1)

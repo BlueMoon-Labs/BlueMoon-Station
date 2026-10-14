@@ -256,7 +256,7 @@ GLOBAL_LIST_EMPTY(asset_datums)
 	if(!name)
 		CRASH("datum/asset/json [type] cannot register without a name")
 	var/list/data = generate()
-	var/fname = "data/asset_cache/[name].json"
+	var/fname = "[ASSET_JSON_CACHE_DIR][name].json"
 	fdel(fname)
 	text2file(json_encode(data), fname)
 	SSassets.transport.register_asset("[name].json", fcopy_rsc(fname))

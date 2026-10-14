@@ -28,6 +28,7 @@
 //for antag huds. these are used at the /mob level
 #define ANTAG_HUD		"24"
 #define ANTAGTARGET_HUD "25" // Which players consent via their game settings to be a target for antagonists
+#define ANTAG_OPT_IN_HUD "26" // Уровень согласия быть целью заданий антагонистов
 
 //by default everything in the hud_list of an atom is an image
 //a value in hud_list with one of these will change that behavior
@@ -70,6 +71,7 @@
 #define DATA_HUD_ANTAGTARGET	30
 
 #define ANTAG_HUD_ZOMBIE		31
+#define DATA_HUD_ANTAG_OPT_IN	32
 
 #define ADD_HUD_TO_COOLDOWN 20 //cooldown for being shown the images for any particular data hud
 /// collect_hud_images_for: значки атомов всех групп z

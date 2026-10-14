@@ -9,9 +9,11 @@
  * а css уедет ссылаться на png, которого под этим именем никто не отправлял.
  */
 #ifdef UNIT_TESTS
-#define SPRITESHEET_CACHE_DIR "data/spritesheets_unit_tests/"
+#define SPRITESHEET_CACHE_DIR GLOB.unit_test_spritesheet_dir
+#define ASSET_JSON_CACHE_DIR GLOB.unit_test_asset_json_dir
 #else
 #define SPRITESHEET_CACHE_DIR "data/spritesheets/"
+#define ASSET_JSON_CACHE_DIR "data/asset_cache/"
 #endif
 
 /**

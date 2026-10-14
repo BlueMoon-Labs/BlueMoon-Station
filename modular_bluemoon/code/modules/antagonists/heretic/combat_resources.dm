@@ -305,28 +305,28 @@ GLOBAL_LIST_EMPTY(heretic_ward_notice_times)
 
 /datum/eldritch_knowledge/base_ash
 	grasp_visual = /obj/effect/temp_visual/heretic_oldpath/ash
-	grasp_sound = 'sound/effects/wounds/sizzle1.ogg'
+	grasp_sound = HERETIC_ASH_GRASP_SFX
 	grasp_catchphrase = "PE'LENAI ATSI'MENA"
 	combat_resource_name = "Угольки"
 	combat_resource_action = /obj/effect/proc_holder/spell/self/heretic_power/ash
 
 /datum/eldritch_knowledge/base_rust
 	grasp_visual = /obj/effect/temp_visual/heretic_oldpath/rust
-	grasp_sound = 'sound/effects/clangsmall1.ogg'
+	grasp_sound = 'modular_bluemoon/sound/heretic/rust_grasp_1.ogg'
 	grasp_catchphrase = "RU'DYS PRA'RYJA VISKA"
 	combat_resource_name = "Наросты"
 	combat_resource_action = /obj/effect/proc_holder/spell/self/heretic_power/rust
 
 /datum/eldritch_knowledge/base_flesh
 	grasp_visual = /obj/effect/temp_visual/heretic_oldpath/flesh
-	grasp_sound = 'sound/effects/wounds/blood1.ogg'
+	grasp_sound = HERETIC_FLESH_GRASP_SFX
 	grasp_catchphrase = "ME'SA TRO'KSTA ME'SOS"
 	combat_resource_name = "Биомасса"
 	combat_resource_action = /obj/effect/proc_holder/spell/self/heretic_power/flesh
 
 /datum/eldritch_knowledge/base_void
 	grasp_visual = /obj/effect/temp_visual/heretic_oldpath/void
-	grasp_sound = 'modular_bluemoon/sound/heretic/void_deflect1.ogg'
+	grasp_sound = 'modular_bluemoon/sound/heretic/void_grasp.ogg'
 	grasp_catchphrase = "TY'LA UZ'GESINA"
 	combat_resource_name = "Осколки зимы"
 	combat_resource_action = /obj/effect/proc_holder/spell/self/heretic_power/void
@@ -373,6 +373,9 @@ GLOBAL_LIST_EMPTY(heretic_ward_notice_times)
 	remove_combat_power()
 
 /datum/eldritch_knowledge/base_flesh/on_mansus_grasp(atom/target, mob/user, proximity_flag, click_parameters)
+	if(proximity_flag && ishuman(target) && user.a_intent == INTENT_DISARM)
+		var/mob/living/carbon/human/corpse = target
+		return corpse.stat == DEAD && excise_organ(user, corpse)
 	if(!proximity_flag || !istype(target, /obj/item/organ) || !isturf(target.loc))
 		return FALSE
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -380,9 +383,9 @@ GLOBAL_LIST_EMPTY(heretic_ward_notice_times)
 		return grow_fleshling(user, target)
 	var/turf/target_turf = get_turf(target)
 	gain_combat_resource()
-	new /obj/effect/temp_visual/heretic_oldpath/flesh(target_turf)
-	playsound(target, 'sound/effects/wounds/blood1.ogg', 50, TRUE)
-	user.visible_message(span_warning("[user] растворяет [target] в багровой дымке."))
+	heretic_vfx_stream(target_turf, user, /particles/heretic_ascension/flesh/flay)
+	playsound(target, pick('modular_bluemoon/sound/heretic/flesh_absorb_1.ogg', 'modular_bluemoon/sound/heretic/flesh_absorb_2.ogg', 'modular_bluemoon/sound/heretic/flesh_absorb_3.ogg'), 50, TRUE)
+	user.visible_message(span_warning("[user] растворяет [target] в багровой дымке, и она с хлюпаньем втягивается в ладонь."))
 	heretic?.advance_deed("[target.type]", target_turf, silent = TRUE)
 	qdel(target)
 	return TRUE
@@ -396,11 +399,14 @@ GLOBAL_LIST_EMPTY(heretic_ward_notice_times)
 		return FALSE
 	var/turf/target_turf = get_turf(target)
 	var/obj/effect/hotspot/floor_fire = locate() in target_turf
-	if(!extinguish_flame(target) && (held || isliving(target) || !extinguish_flame(floor_fire)))
-		return FALSE
+	var/own = !held && own_flame(user, target)
+	if(!extinguish_flame(target))
+		if(held || isliving(target) || !extinguish_flame(floor_fire))
+			return FALSE
+		own = FALSE
 	var/previous_resource = combat_resource
 	if(!held)
-		heretic.advance_deed(heretic.deed_key_for(target_turf), target_turf)
+		floor_flame_put_out(user, target_turf, own)
 	if(COOLDOWN_FINISHED(src, resource_harvest))
 		if(combat_resource == previous_resource)
 			gain_combat_resource()
@@ -451,6 +457,7 @@ GLOBAL_LIST_EMPTY(heretic_ward_notice_times)
 		return FALSE
 	lamp.flicker()
 	lamp.burn_out()
+	frost_lamp(lamp)
 	user.visible_message(span_warning("[lamp] мигает и гаснет, стекло покрывается инеем."))
 	heretic.advance_deed(heretic.deed_key_for(lamp), get_turf(user))
 	return TRUE
@@ -459,7 +466,7 @@ GLOBAL_LIST_EMPTY(heretic_ward_notice_times)
 	var/turf/open/floor/floor = get_turf(user)
 	if(!istype(floor) || user.stat == DEAD || !COOLDOWN_FINISHED(src, resource_harvest))
 		return
-	if(floor.GetTemperature() >= T0C)
+	if(!cold_floor(floor))
 		if(combat_resource >= HERETIC_VOID_WARM_SHARD_CAP)
 			return
 		if(combat_resource && !COOLDOWN_FINISHED(src, warm_shard_harvest))
@@ -503,7 +510,7 @@ GLOBAL_LIST_EMPTY(heretic_ward_notice_times)
 	knowledge.combat_zone = new /obj/effect/heretic_combat_zone/ash(get_turf(user), user.mind)
 	knowledge.track_combat_effect(knowledge.combat_zone)
 	new /obj/effect/temp_visual/heretic_oldpath/ash/trail(get_turf(user))
-	playsound(user, 'modular_bluemoon/sound/heretic/ash_burst.ogg', 60, TRUE)
+	playsound(user, HERETIC_ASH_REKINDLE_SOUND, 60, TRUE)
 
 /obj/effect/proc_holder/spell/self/heretic_power/rust
 	name = "Укоренение"
@@ -529,7 +536,7 @@ GLOBAL_LIST_EMPTY(heretic_ward_notice_times)
 	knowledge.combat_zone = new /obj/effect/heretic_combat_zone/rust(get_turf(user), user.mind)
 	knowledge.track_combat_effect(knowledge.combat_zone)
 	new /obj/effect/temp_visual/heretic_oldpath/rust(get_turf(user))
-	playsound(user, 'sound/effects/clangsmall1.ogg', 65, TRUE)
+	playsound(user, pick(GLOB.heretic_rust_root_sounds), 65, TRUE)
 
 /obj/effect/proc_holder/spell/self/heretic_power/flesh
 	name = "Сшивание"
@@ -554,9 +561,9 @@ GLOBAL_LIST_EMPTY(heretic_ward_notice_times)
 				for(var/datum/wound/wound as anything in limb.wounds)
 					wound.blood_flow *= 0.5
 				limb.update_part_wound_overlay()
-		user.Beam(servant, icon_state = "drainbeam", time = 8)
+		user.Beam(servant, icon_state = "tendon", icon = 'modular_bluemoon/icons/obj/heretic_flesh_fx.dmi', time = 8)
 		new /obj/effect/temp_visual/heretic_oldpath/flesh/mend(get_turf(servant))
-	playsound(user, 'sound/effects/wounds/blood2.ogg', 60, TRUE)
+	playsound(user, 'modular_bluemoon/sound/heretic/flesh_mend.ogg', 60, TRUE)
 
 /obj/effect/proc_holder/spell/self/heretic_power/void
 	name = "Зимний предел"
@@ -570,17 +577,16 @@ GLOBAL_LIST_EMPTY(heretic_ward_notice_times)
 	knowledge.combat_zone = new /obj/effect/heretic_combat_zone/void(get_turf(user), user.mind)
 	knowledge.track_combat_effect(knowledge.combat_zone)
 	new /obj/effect/temp_visual/heretic_oldpath/void(get_turf(user))
-	playsound(user, pick('modular_bluemoon/sound/heretic/void_deflect1.ogg', 'modular_bluemoon/sound/heretic/void_deflect2.ogg'), 60, TRUE)
+	playsound(user, HERETIC_VOID_EDGE_SOUND, 60, TRUE)
 
 /// Небольшая видимая область: её работа ограничена радиусом и временем жизни.
 /obj/effect/heretic_combat_zone
 	name = "Mansus echo"
 	desc = "Воздух дрожит над незнакомой печатью. Сила её создателя удерживает здесь частицу Мансуса."
-	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
-	icon_state = "sigil_ash"
+	icon = 'modular_bluemoon/icons/obj/heretic_oldpath_effects.dmi'
+	icon_state = null
 	anchored = TRUE
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	alpha = 170
 	var/datum/weakref/master_mind
 	var/radius = 2
 	var/duration = 15 SECONDS
@@ -689,10 +695,11 @@ GLOBAL_LIST_EMPTY(heretic_ward_notice_times)
 	return
 
 /obj/effect/heretic_combat_zone/ash
-	name = "ember trail"
-	desc = "Угольки тлеют без топлива. Кто войдёт в эту печать, подставится пламени. Вода и пена гасят её сразу."
+	name = "ashen fire"
+	desc = "Огонь горит на голом полу без всякого топлива и поджигает каждого, кто в него войдёт. Вода и пена гасят его сразу."
 	boundary_color = "#ff9b43"
-	icon_state = "sigil_ash"
+	icon = null
+	icon_state = null
 	radius = 1
 	duration = 6 SECONDS
 
@@ -721,7 +728,10 @@ GLOBAL_LIST_EMPTY(heretic_ward_notice_times)
 	name = "rust hearth"
 	desc = "В центре ржавого пятна бьётся живой нарост. Чужая плоть рядом с ним затягивает раны."
 	boundary_color = "#e7ad64"
-	icon_state = "sigil_rust"
+	icon = 'modular_bluemoon/icons/obj/heretic_rust_fx.dmi'
+	icon_state = "rust_hearth"
+	alpha = 255
+	layer = BELOW_OBJ_LAYER
 	duration = 30 SECONDS
 
 /obj/effect/heretic_combat_zone/rust/accepts_field_turf(turf/open/floor/floor)
@@ -738,7 +748,7 @@ GLOBAL_LIST_EMPTY(heretic_ward_notice_times)
 		if(!changed)
 			continue
 		visible |= changed
-		new /obj/effect/temp_visual/heretic_oldpath/rust(changed)
+		new /obj/effect/temp_visual/heretic_rust_creep(changed)
 		if(!--remaining)
 			break
 	refresh_boundary(visible)
@@ -754,9 +764,9 @@ GLOBAL_LIST_EMPTY(heretic_ward_notice_times)
 
 /obj/effect/heretic_combat_zone/void
 	name = "winter's edge"
-	desc = "Белая печать приглушает шаги и голоса. Её холод держится в нескольких шагах от центра."
+	desc = "Белый иней приглушает шаги и голоса. Его холод держится в нескольких шагах от центра."
 	boundary_color = "#b7edff"
-	icon_state = "sigil_void"
+	icon_state = "void_frost"
 
 /obj/effect/heretic_combat_zone/void/tick_zone(mob/living/user, list/visible)
 	if(!visible)

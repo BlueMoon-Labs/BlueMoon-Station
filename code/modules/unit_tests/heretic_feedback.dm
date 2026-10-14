@@ -19,6 +19,9 @@
 		TEST_ASSERT_EQUAL(indicator.icon, 'modular_bluemoon/icons/obj/heretic_alerts.dmi', "HUD использует отдельный лист значков.")
 		TEST_ASSERT_EQUAL(indicator.icon_state, "sigil_[lowertext(path_id)]", "HUD показывает знак выбранного пути.")
 		TEST_ASSERT(knowledge.grasp_visual && knowledge.grasp_sound, "Каждому пути нужны собственные визуал и звук хватки.")
+		var/datum/sound_effect/grasp_set = istext(knowledge.grasp_sound) ? GLOB.sfx_datum_by_key[knowledge.grasp_sound] : null
+		for(var/sound_file in grasp_set ? grasp_set.file_paths : list(knowledge.grasp_sound))
+			TEST_ASSERT(findtext("[sound_file]", "modular_bluemoon/sound/heretic/") == 1, "Хватка пути [path_id] звучит своим звуком, а не [sound_file].")
 		qdel(heretic)
 		TEST_ASSERT_NULL(body.alerts["heretic_path_resource"], "Удалённая роль не оставляет индикатор.")
 
@@ -290,19 +293,22 @@
 /// Алерты состояний рисуются своими стейтами: внутри пути нет двух одинаковых, и ни один не повторяет знак пути.
 /datum/unit_test/heretic_status_alert_icons/Run()
 	var/list/groups = list(
-		PATH_BLADE = list(/atom/movable/screen/alert/status_effect/heretic_parry, /atom/movable/screen/alert/status_effect/heretic_blade_oath, /atom/movable/screen/alert/status_effect/heretic_blade_brand, /atom/movable/screen/alert/status_effect/heretic_blade_throat),
-		PATH_MOON = list(/atom/movable/screen/alert/status_effect/heretic_lunatic, /atom/movable/screen/alert/status_effect/heretic_moon_daze, /atom/movable/screen/alert/status_effect/heretic_moon_sleepwalk, /atom/movable/screen/alert/heretic_moon_door),
+		PATH_BLADE = list(/atom/movable/screen/alert/status_effect/heretic_parry, /atom/movable/screen/alert/status_effect/heretic_blade_oath, /atom/movable/screen/alert/status_effect/heretic_blade_brand, /atom/movable/screen/alert/status_effect/heretic_blade_throat, /atom/movable/screen/alert/status_effect/heretic_blade_opening, /atom/movable/screen/alert/status_effect/heretic_blade_dance),
+		PATH_MOON = list(/atom/movable/screen/alert/status_effect/heretic_lunatic, /atom/movable/screen/alert/status_effect/heretic_moon_daze, /atom/movable/screen/alert/status_effect/heretic_moon_sleepwalk, /atom/movable/screen/alert/heretic_moon_door, /atom/movable/screen/alert/status_effect/heretic_moon_parade),
 		PATH_ECHO = list(/atom/movable/screen/alert/status_effect/heretic_echo_ringing, /atom/movable/screen/alert/status_effect/heretic_echo_dissonance, /atom/movable/screen/alert/status_effect/heretic_echo_lullaby, /atom/movable/screen/alert/status_effect/heretic_echo_hush),
-		PATH_BLOOD = list(/atom/movable/screen/alert/status_effect/heretic_blood_clot, /atom/movable/screen/alert/status_effect/heretic_blood_slip, /atom/movable/screen/alert/status_effect/heretic_blood_exsanguinated, /atom/movable/screen/alert/status_effect/heretic_blood_drain, /atom/movable/screen/alert/status_effect/heretic_blood_trail),
-		PATH_SPIRIT = list(/atom/movable/screen/alert/status_effect/heretic_spirit_hold, /atom/movable/screen/alert/status_effect/heretic_spirit_incorporeal),
-		PATH_WAX = list(/atom/movable/screen/alert/status_effect/heretic_wax_seal, /atom/movable/screen/alert/status_effect/heretic_wax_clinging, /atom/movable/screen/alert/status_effect/heretic_wax_effigy, /atom/movable/screen/alert/status_effect/heretic_wax_melting, /atom/movable/screen/alert/status_effect/heretic_wax_leak),
-		PATH_RUST = list(/atom/movable/screen/alert/heretic_rust_healing),
-		PATH_VOID = list(/atom/movable/screen/alert/status_effect/heretic_domain, /atom/movable/screen/alert/status_effect/heretic_void_chill),
-		PATH_COSMIC = list(/atom/movable/screen/alert/status_effect/heretic_cosmic_orbit),
-		PATH_TIDE = list(/atom/movable/screen/alert/status_effect/heretic_drenched, /atom/movable/screen/alert/status_effect/heretic_tide_drowning),
+		PATH_BLOOD = list(/atom/movable/screen/alert/status_effect/heretic_blood_clot, /atom/movable/screen/alert/status_effect/heretic_blood_slip, /atom/movable/screen/alert/status_effect/heretic_blood_exsanguinated, /atom/movable/screen/alert/status_effect/heretic_blood_drain, /atom/movable/screen/alert/status_effect/heretic_blood_trail, /atom/movable/screen/alert/status_effect/heretic_blood_seal, /atom/movable/screen/alert/status_effect/heretic_blood_tether),
+		PATH_SPIRIT = list(/atom/movable/screen/alert/status_effect/heretic_spirit_hold, /atom/movable/screen/alert/status_effect/heretic_spirit_incorporeal, /atom/movable/screen/alert/status_effect/heretic_spirit),
+		PATH_WAX = list(/atom/movable/screen/alert/status_effect/heretic_wax_seal, /atom/movable/screen/alert/status_effect/heretic_wax_clinging, /atom/movable/screen/alert/status_effect/heretic_wax_effigy, /atom/movable/screen/alert/status_effect/heretic_wax_melting, /atom/movable/screen/alert/status_effect/heretic_wax_leak, /atom/movable/screen/alert/status_effect/heretic_wax_shell, /atom/movable/screen/alert/status_effect/heretic_wax_prick),
+		PATH_RUST = list(/atom/movable/screen/alert/heretic_rust_healing, /atom/movable/screen/alert/status_effect/heretic_rust_roots, /atom/movable/screen/alert/status_effect/heretic_rust_corrosion, /atom/movable/screen/alert/status_effect/heretic_cloudstruck, /atom/movable/screen/alert/status_effect/heretic_amok, /atom/movable/screen/alert/status_effect/heretic_corrosion_curse),
+		PATH_VOID = list(/atom/movable/screen/alert/status_effect/heretic_domain, /atom/movable/screen/alert/status_effect/heretic_void_chill, /atom/movable/screen/alert/status_effect/heretic_void_prison),
+		PATH_COSMIC = list(/atom/movable/screen/alert/status_effect/heretic_cosmic_orbit, /atom/movable/screen/alert/status_effect/heretic_cosmic_leash, /atom/movable/screen/alert/status_effect/heretic_cosmic_tether),
+		PATH_TIDE = list(/atom/movable/screen/alert/status_effect/heretic_drenched, /atom/movable/screen/alert/status_effect/heretic_tide_drowning, /atom/movable/screen/alert/heretic_tide_depth),
 		PATH_GLASS = list(/atom/movable/screen/alert/status_effect/heretic_glass_fracture),
-		PATH_DANCE = list(/atom/movable/screen/alert/status_effect/heretic_dance_earworm, /atom/movable/screen/alert/status_effect/heretic_dance_invited, /atom/movable/screen/alert/status_effect/heretic_dance_partner, /atom/movable/screen/alert/status_effect/heretic_dance_lead, /atom/movable/screen/alert/status_effect/heretic_dance_horovod, /atom/movable/screen/alert/status_effect/heretic_dance_frenzy, /atom/movable/screen/alert/status_effect/heretic_dance_tarantism, /atom/movable/screen/alert/status_effect/heretic_dance_masquerade, /atom/movable/screen/alert/status_effect/heretic_dance_masked),
-		PATH_SAND = list(/atom/movable/screen/alert/status_effect/heretic_sand_recall, /atom/movable/screen/alert/status_effect/heretic_sand_stasis, /atom/movable/screen/alert/status_effect/heretic_sand_rewind, /atom/movable/screen/alert/status_effect/heretic_sand_drought),
+		PATH_DANCE = list(/atom/movable/screen/alert/status_effect/heretic_dance_earworm, /atom/movable/screen/alert/status_effect/heretic_dance_invited, /atom/movable/screen/alert/status_effect/heretic_dance_partner, /atom/movable/screen/alert/status_effect/heretic_dance_lead, /atom/movable/screen/alert/status_effect/heretic_dance_horovod, /atom/movable/screen/alert/status_effect/heretic_dance_frenzy, /atom/movable/screen/alert/status_effect/heretic_dance_tarantism, /atom/movable/screen/alert/status_effect/heretic_dance_masquerade, /atom/movable/screen/alert/status_effect/heretic_dance_masked, /atom/movable/screen/alert/status_effect/heretic_dance_mired),
+		PATH_ASH = list(/atom/movable/screen/alert/status_effect/heretic_ash_shroud),
+		PATH_FLESH = list(/atom/movable/screen/alert/status_effect/heretic_flesh_latch),
+		PATH_LOCK = list(/atom/movable/screen/alert/restrained/handcuffed/heretic_lock, /atom/movable/screen/alert/restrained/legcuffed/heretic_lock),
+		PATH_SAND = list(/atom/movable/screen/alert/status_effect/heretic_sand_recall, /atom/movable/screen/alert/status_effect/heretic_sand_stasis, /atom/movable/screen/alert/status_effect/heretic_sand_rewind, /atom/movable/screen/alert/status_effect/heretic_sand_drought, /atom/movable/screen/alert/status_effect/heretic_sand_mired),
 	)
 	for(var/path_id in groups)
 		var/list/seen = list()

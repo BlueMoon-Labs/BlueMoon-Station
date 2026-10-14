@@ -858,7 +858,7 @@
 			to_chat(user, span_notice("Вы начинаете включать подачу анестетика."))
 			if(patient.stat != UNCONSCIOUS) // пациент без сознания не видит сообщение ниже
 				to_chat(patient, span_danger("[user] пытается включить подачу анестетика!"))
-			if(!do_after(user, 3 SECONDS, patient))
+			if(!do_after(user, 3 SECONDS, patient) || !check_patient())
 				return
 			if(patient.wear_mask)
 				if(isclothing(patient.wear_mask)) // это одежда
@@ -882,7 +882,7 @@
 			if(patient.internal != tank) // У пациента включен собственный баллон
 				to_chat(user, span_danger("Сначала нужно отключить собственный баллон у [patient]!"))
 				return
-			if(!do_after(user, 1 SECONDS, patient))
+			if(!do_after(user, 1 SECONDS, patient) || !check_patient())
 				return
 			user.visible_message("[user] отключает подачу анестетика к [patient].", span_notice("Вы проворачиваете клапан и отключаете подачу анестезии."))
 			stop_process()

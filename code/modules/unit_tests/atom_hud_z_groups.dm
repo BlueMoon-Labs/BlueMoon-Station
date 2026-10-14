@@ -100,3 +100,51 @@
 /datum/unit_test/atom_hud_z_group_tracking/Destroy()
 	QDEL_NULL(hud)
 	return ..()
+
+/// Индекс атомов худа по группам z следует за добавлением, переездом, снятием и удалением атома
+/datum/unit_test/atom_hud_z_group_index
+	var/datum/atom_hud/hud
+
+/datum/unit_test/atom_hud_z_group_index/Run()
+	var/local_group = get_hud_z_group(run_loc_floor_bottom_left.z)
+	var/other_z = run_loc_floor_bottom_left.z == 1 ? 2 : 1
+	var/other_group = get_hud_z_group(other_z)
+	hud = new
+	hud.hud_icons = list(HEALTH_HUD)
+	var/obj/effect/marked = allocate(/obj/effect, run_loc_floor_bottom_left)
+	var/image/marker = image('icons/mob/hud.dmi')
+	marked.hud_list = list(HEALTH_HUD = marker)
+	hud.add_to_hud(marked)
+	TEST_ASSERT(group_has(local_group, marked), "Атом должен попасть в индекс своей группы")
+
+	marked.update_hud_z_group(other_z)
+	TEST_ASSERT(!group_has(local_group, marked), "Переезд должен убирать атом из индекса старой группы")
+	TEST_ASSERT(group_has(other_group, marked), "Переезд должен класть атом в индекс новой группы")
+	var/list/collected = list()
+	hud.collect_hud_images_for(null, collected, z_group = other_group)
+	TEST_ASSERT(marker in collected, "Сбор по группе должен находить переехавший атом")
+
+	hud.remove_from_hud(marked)
+	TEST_ASSERT(!group_has(other_group, marked), "Снятие с худа должно убирать атом из индекса")
+	TEST_ASSERT_EQUAL(length(hud.hudatoms_by_z_group), 0, "Опустевшая группа должна выписываться из индекса")
+
+	hud.add_to_hud(marked)
+	TEST_ASSERT_EQUAL(marked.hud_z_group, local_group, "Возврат в худ должен пересчитывать группу, устаревшую вне худов")
+	TEST_ASSERT(group_has(local_group, marked), "Возврат в худ должен класть атом в индекс его настоящей группы")
+	hud.remove_from_hud(marked)
+
+	var/obj/effect/doomed = allocate(/obj/effect, run_loc_floor_bottom_left)
+	doomed.hud_list = list(HEALTH_HUD = image('icons/mob/hud.dmi'))
+	hud.add_to_hud(doomed)
+	qdel(doomed)
+	TEST_ASSERT(!group_has(local_group, doomed), "Удалённый атом должен уходить из индекса")
+
+/datum/unit_test/atom_hud_z_group_index/proc/group_has(group, atom/movable/target)
+	if(!hud.hudatoms_by_z_group)
+		return FALSE
+	var/alist/bucket = hud.hudatoms_by_z_group[group]
+	return bucket && bucket[target]
+
+/datum/unit_test/atom_hud_z_group_index/Destroy()
+	QDEL_NULL(hud)
+	return ..()

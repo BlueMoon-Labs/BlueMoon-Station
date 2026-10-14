@@ -6,7 +6,7 @@
 	description = "Basic mechanical, electronic, surgical and botanical tools."
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE, RADIO_CHANNEL_ENGINEERING)
 	prereq_ids = list("base")
-	design_ids = list("screwdriver", "wrench", "bolter_wrench", "wirecutters", "crowbar", "multitool", "welding_tool", "tscanner", "dirtscanner", "analyzer", "geigercounter", "pipe_painter", "airlock_painter", "decal_painter", "tile_sprayer", "drapes", "scalpel", "circular_saw", "surgicaldrill", "bonesetter", "bloodfilter", "retractor", "cautery", "hemostat", "cultivator", "plant_analyzer", "shovel", "spade", "hatchet", "mop", "broom", "normtrash", "spraycan")
+	design_ids = list("screwdriver", "wrench", "bolter_wrench", "wirecutters", "crowbar", "multitool", "welding_tool", "wirebrush", "tscanner", "dirtscanner", "analyzer", "geigercounter", "pipe_painter", "airlock_painter", "decal_painter", "tile_sprayer", "drapes", "scalpel", "circular_saw", "surgicaldrill", "bonesetter", "bloodfilter", "retractor", "cautery", "hemostat", "cultivator", "plant_analyzer", "shovel", "spade", "hatchet", "mop", "broom", "normtrash", "spraycan")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 500)
 
 /datum/techweb_node/basic_mining

@@ -1,0 +1,232 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/bot,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/machinery/space_heater = 8, /obj/machinery/shieldgen = 3, /obj/machinery/portable_atmospherics/pump = 1, /obj/machinery/portable_atmospherics/scrubber = 1)
+	},
+/turf/open/floor/plating,
+/area/maintenance/starboard/greater)
+"e" = (
+/turf/open/space/basic,
+/area/asteroid/tramstation)
+"h" = (
+/turf/template_noop,
+/area/template_noop)
+"m" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/grille,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"n" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/flashlight = 20, /obj/item/flashlight/flare = 10, /obj/effect/spawner/lootdrop/glowstick = 10, /obj/item/flashlight/lantern = 5, /obj/item/flashlight/seclite = 4)
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/wrench = 2, /obj/item/wirecutters = 2, /obj/item/screwdriver = 2, /obj/item/crowbar = 2, /obj/item/weldingtool = 2, /obj/item/stack/cable_coil = 2, /obj/item/analyzer = 2, /obj/item/t_scanner = 2, /obj/item/multitool = 1, /obj/item/clothing/glasses/meson = 1, /obj/item/storage/belt/utility = 1, /obj/item/clothing/head/welding = 1)
+	},
+/obj/effect/spawner/lootdrop/coin,
+/obj/effect/spawner/lootdrop/maintenance/two,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"q" = (
+/turf/closed/wall,
+/area/maintenance/starboard/greater)
+"w" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/modular_map_connector,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"y" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"F" = (
+/turf/open/floor/plating/asteroid/airless,
+/area/asteroid/tramstation)
+"M" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/cardboard,
+/obj/effect/spawner/lootdrop/maintenance/five,
+/obj/effect/spawner/lootdrop/cig_packs,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"Q" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/maintenance/starboard/greater)
+"S" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/asteroid/tramstation)
+"V" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/extinguisher_cabinet/directional/north,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+"X" = (
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Maintenance Hatch"
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/greater)
+
+(1,1,1) = {"
+S
+S
+S
+S
+S
+h
+h
+h
+h
+h
+h
+"}
+(2,1,1) = {"
+S
+F
+e
+S
+S
+S
+S
+S
+q
+w
+h
+"}
+(3,1,1) = {"
+F
+F
+e
+e
+F
+F
+F
+F
+Q
+y
+h
+"}
+(4,1,1) = {"
+F
+e
+e
+e
+e
+e
+e
+F
+Q
+n
+h
+"}
+(5,1,1) = {"
+e
+e
+e
+e
+e
+e
+F
+F
+Q
+M
+h
+"}
+(6,1,1) = {"
+e
+e
+e
+e
+e
+e
+e
+S
+q
+h
+h
+"}
+(7,1,1) = {"
+S
+e
+e
+e
+e
+F
+F
+S
+S
+h
+h
+"}
+(8,1,1) = {"
+e
+e
+e
+e
+F
+q
+q
+q
+q
+h
+h
+"}
+(9,1,1) = {"
+e
+e
+e
+e
+e
+q
+c
+c
+c
+h
+h
+"}
+(10,1,1) = {"
+F
+e
+e
+e
+F
+q
+m
+m
+m
+h
+h
+"}
+(11,1,1) = {"
+S
+e
+e
+e
+S
+q
+V
+y
+y
+X
+h
+"}
+(12,1,1) = {"
+S
+S
+S
+S
+S
+q
+h
+h
+h
+h
+h
+"}

@@ -803,7 +803,7 @@
 	var/image/silicon_image = image('icons/effects/eldritch.dmi', src, null, OBJ_LAYER)
 	silicon_image.override = TRUE
 	add_alt_appearance(/datum/atom_hud/alternate_appearance/basic/silicons, "pierced_reality", silicon_image)
-	add_overlay(emissive_appearance(icon, "rift_glow", src))
+	add_overlay(emissive_appearance(icon, "rift_glow", offset_spokesman = src))
 
 /obj/effect/broken_illusion/proc/show_presence()
 	animate(src, alpha = 255, time = 5 SECONDS)

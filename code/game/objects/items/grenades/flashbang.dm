@@ -5,6 +5,8 @@
 	lefthand_file = 'icons/mob/inhands/equipment/security_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/security_righthand.dmi'
 	var/flashbang_range = 7 //how many tiles away the mob will be stunned.
+	shrapnel_type = /obj/item/projectile/bullet/pellet/stingball
+	shrapnel_radius = 6
 
 /obj/item/grenade/flashbang/prime(mob/living/lanced_by)
 	. = ..()

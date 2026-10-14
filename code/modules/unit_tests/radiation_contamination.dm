@@ -153,3 +153,37 @@
 	for(var/atom/source as anything in sources)
 		TEST_ASSERT(QDELETED(source), "Отмена черты не удалила [source.type]")
 	TEST_ASSERT_EQUAL(length(trait.contamination_atoms), 0, "Отмена черты должна очистить список")
+
+/// Россыпь заражённых предметов не глушит волны двигателя: кап волн действует только на пульсы заражения.
+/datum/unit_test/radiation_cap_spares_direct_sources
+
+/datum/unit_test/radiation_cap_spares_direct_sources/Run()
+	var/obj/item/wrench/source = allocate(/obj/item/wrench, run_loc_floor_bottom_left)
+	var/list/fillers = list()
+	for(var/i in 1 to RAD_MAX_PROCESSING + 1)
+		var/datum/filler = new
+		fillers += filler
+		SSradiation.processing += filler
+	var/list/waves_before = SSradiation.processing.Copy()
+	radiation_pulse(source, 1000)
+	var/list/direct_waves = SSradiation.processing - waves_before
+	var/direct_count = length(direct_waves)
+	SSradiation.processing -= fillers
+	QDEL_LIST(fillers)
+	QDEL_LIST(direct_waves)
+	TEST_ASSERT_EQUAL(direct_count, 4, "Двести с лишним заражённых предметов в processing заглушили волны прямого источника")
+
+	var/saved_waves = SSradiation.active_waves
+	SSradiation.active_waves = RAD_MAX_PROCESSING
+	waves_before = SSradiation.processing.Copy()
+	radiation_pulse(source, 1000, from_contamination = TRUE)
+	var/list/contamination_waves = SSradiation.processing - waves_before
+	radiation_pulse(source, 1000)
+	var/list/engine_waves = SSradiation.processing - waves_before - contamination_waves
+	var/contamination_count = length(contamination_waves)
+	var/engine_count = length(engine_waves)
+	SSradiation.active_waves = saved_waves + contamination_count + engine_count
+	QDEL_LIST(contamination_waves)
+	QDEL_LIST(engine_waves)
+	TEST_ASSERT_EQUAL(contamination_count, 0, "Пульс заражённого предмета создал волны сверх капа")
+	TEST_ASSERT_EQUAL(engine_count, 4, "Кап волн заглушил прямой источник")

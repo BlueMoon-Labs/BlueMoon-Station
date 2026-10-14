@@ -95,4 +95,9 @@
 	icon_state = "kathari_alt"
 	matrixed_sections = MATRIX_ALL
 
-
+/datum/sprite_accessory/snouts/mam_snouts/pumpkin
+	name = "Pumpkin Cat"
+	icon = 'modular_bluemoon/icons/mob/donator_snouts.dmi'
+	icon_state = "pumpkincat"
+	matrixed_sections = MATRIX_ALL
+	ckeys_allowed = list("kumikoshouko")

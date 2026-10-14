@@ -338,7 +338,7 @@
 	// Okay, the signal was never processed, send a mundane broadcast.
 	signal.data["compression"] = 0
 	signal.transmission_method = TRANSMISSION_RADIO
-	signal.levels = T ? list(T.z) : list(0)
+	signal.levels = T ? SSmapping.get_connected_levels(T).Copy() : list(0)
 	signal.broadcast()
 
 /obj/item/radio/Hear(message, atom/movable/speaker, message_language, raw_message, radio_freq, list/spans, message_mode, atom/movable/source)

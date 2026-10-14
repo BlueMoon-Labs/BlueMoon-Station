@@ -444,7 +444,7 @@
 /mob/living/simple_animal/slime/proc/handle_speech()
 	//Speech understanding starts here
 	var/to_say
-	if (speech_buffer.len > 0)
+	if (length(speech_buffer))
 		var/who = speech_buffer[1] // Who said it?
 		var/phrase = speech_buffer[2] // What did they say?
 		if ((findtext(phrase, num2text(number)) || findtext(phrase, "slimes"))) // Talking to us

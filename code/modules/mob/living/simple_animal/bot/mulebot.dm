@@ -381,7 +381,7 @@
 		load.forceMove(loc)
 		load.pixel_y = initial(load.pixel_y)
 		load.layer = initial(load.layer)
-		load.plane = initial(load.plane)
+		RESET_PLANE_EXPLICIT(load, load)
 		if(dirn)
 			var/turf/T = loc
 			var/turf/newT = get_step(T,dirn)

@@ -536,6 +536,8 @@
 #define VENT_SOUND_DELAY 30
 
 /obj/machinery/atmospherics/relaymove(mob/living/user, direction)
+	if(direction & (UP|DOWN))
+		return crawl_vertically(user, direction)
 	direction &= initialize_directions
 	if(!direction || !(direction in GLOB.cardinals)) //cant go this way.
 		return
@@ -557,7 +559,7 @@
 				if(pipenetdiff.len)
 					user.update_pipe_vision(target_move)
 				user.forceMove(target_move)
-				user.client.eye = target_move  //Byond only updates the eye every tick, This smooths out the movement
+				user.client.set_eye(target_move)  //Byond only updates the eye every tick, This smooths out the movement
 				if(world.time - user.last_played_vent > VENT_SOUND_DELAY)
 					user.last_played_vent = world.time
 					playsound(src, 'sound/machines/ventcrawl.ogg', 50, 1, -3)
@@ -566,6 +568,24 @@
 		if(!do_after(user, 2 SECONDS, target = src))
 			return
 		user.forceMove(loc) //handle entering and so on.
+
+/// Ползущий по трубам меняет этаж только в мульти-Z переходнике. TRUE, если перебрался.
+/obj/machinery/atmospherics/proc/crawl_vertically(mob/living/user, direction)
+	return FALSE
+
+/obj/machinery/atmospherics/pipe/simple/multiz/crawl_vertically(mob/living/user, direction)
+	if(user in buckled_mobs)
+		return FALSE
+	var/obj/machinery/atmospherics/pipe/simple/multiz/target = nodes[(direction & UP) ? 2 : 3]
+	if(!istype(target) || !target.can_crawl_through())
+		return FALSE
+	user.forceMove(target)
+	user.update_pipe_vision(target)
+	user.client?.set_eye(target)
+	if(world.time - user.last_played_vent > VENT_SOUND_DELAY)
+		user.last_played_vent = world.time
+		playsound(src, 'sound/machines/ventcrawl.ogg', 50, 1, -3)
+	return TRUE
 
 /obj/machinery/atmospherics/AltClick(mob/living/L)
 	if(is_type_in_typecache(src, GLOB.ventcrawl_machinery))

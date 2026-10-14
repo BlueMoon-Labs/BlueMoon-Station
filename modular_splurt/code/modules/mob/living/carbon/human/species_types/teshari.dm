@@ -151,14 +151,14 @@
 		return
 
 	if(hiding)
-		plane = initial(plane)
+		RESET_PLANE_EXPLICIT(src, src)
 		layer = initial(layer)
 		to_chat(usr, "<span class='notice'>You have stopped hiding.</span>")
 		hiding = 0
 	else
 		hiding = 1
 		layer = BELOW_OBJ_LAYER
-		plane = GAME_PLANE
+		SET_PLANE_IMPLICIT(src, GAME_PLANE)
 		to_chat(src,"<span class='notice'>You are now hiding.</span>")
 
 

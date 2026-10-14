@@ -4,8 +4,8 @@
 	icon = 'modular_bluemoon/icons/obj/heretic.dmi'
 	icon_state = "codex"
 	item_state = "codex"
-	lefthand_file = 'icons/mob/inhands/misc/books_lefthand.dmi'
-	righthand_file = 'icons/mob/inhands/misc/books_righthand.dmi'
+	lefthand_file = 'modular_bluemoon/icons/obj/heretic_books_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/obj/heretic_books_righthand.dmi'
 	w_class = WEIGHT_CLASS_SMALL
 	var/drawing = FALSE
 	var/knowledge_state_key
@@ -28,7 +28,7 @@
 		return
 	. += "Доступно очков знаний: [heretic.knowledge_points]. Прогресс принадлежит вам и сохраняется при потере книги."
 	. += "Откройте кодекс в руке для выбора пути, исследований и рецептов."
-	. += "Примените кодекс к полу, чтобы за 8 секунд начертить руну 3×3, к разлому - чтобы исследовать его, к руне - чтобы стереть её. Руну стирает и Хватка Мансуса. Разлом можно исследовать и рукой, хваткой или любым предметом в руке, пока кодекс при вас."
+	. += "Примените кодекс к полу станции, чтобы за 8 секунд начертить руну 3×3, к разлому - чтобы исследовать его, к руне - чтобы стереть её. Руну стирает и Хватка Мансуса. Разлом можно исследовать и рукой, хваткой или любым предметом в руке, пока кодекс при вас."
 	if(heretic.deed && !heretic.deed.complete())
 		. += span_notice("[heretic.deed.name]: [heretic.deed.progress]/[heretic.deed.goal()] на ступени [heretic.deed.tier + 1]. [heretic.deed.desc] [heretic.deed.hint]")
 
@@ -51,7 +51,7 @@
 	INVOKE_ASYNC(influence, TYPE_PROC_REF(/obj/effect/reality_smash, harvest), user, src)
 
 /obj/item/forbidden_book/proc/can_draw_rune(turf/center, mob/living/user)
-	if(QDELETED(src) || !center || !IS_HERETIC(user) || user.incapacitated() || !user.is_holding(src) || !user.Adjacent(center))
+	if(QDELETED(src) || !center || !IS_HERETIC(user) || user.incapacitated() || !user.is_holding(src) || !user.Adjacent(center) || !rune_site_allowed(center, user))
 		return FALSE
 	var/turf_count = 0
 	for(var/turf/tile in range(1, center))
@@ -64,8 +64,15 @@
 		return FALSE
 	return TRUE
 
+/obj/item/forbidden_book/proc/rune_site_allowed(turf/center, mob/living/user)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	return heretic?.simulated || is_station_level(center.z)
+
 /obj/item/forbidden_book/proc/draw_rune(turf/center, mob/living/user)
 	if(drawing)
+		return FALSE
+	if(center && !rune_site_allowed(center, user))
+		to_chat(user, span_warning("Завеса здесь слишком плотная: руну трансмутации можно начертить только на станции."))
 		return FALSE
 	if(!can_draw_rune(center, user))
 		to_chat(user, span_warning("Для руны нужен участок пола 3×3 без стен, космоса, лавы и других рун. Держите кодекс в руке."))
@@ -265,6 +272,8 @@
 			target_status = "Цель готова к обряду. Коснитесь её живым сердцем или доставьте к руне: 2 очка знаний и 1 побочное."
 		else
 			target_status = "Цель жива. Для обряда наденьте на неё наручники, оглушите или сбейте с ног; цель в крите подойдёт и без наручников. Если цель сама легла или уснула, это не считается."
+		if(target.stat != DEAD && heretic.hunt_live_only)
+			target_status += " Только живой: труп этой цели не примут."
 	data["hunt"] = list(
 		"target_name" = target?.real_name,
 		"target_role" = heretic.hunt_target?.assigned_role,

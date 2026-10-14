@@ -1,0 +1,246 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/blood/old,
+/obj/structure/kitchenspike,
+/turf/open/floor/plating,
+/area/maintenance/department/cargo)
+"b" = (
+/turf/template_noop,
+/area/template_noop)
+"g" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/item/kitchen/fork{
+	pixel_x = -7;
+	pixel_y = 5
+	},
+/obj/item/kitchen/fork{
+	pixel_x = -2;
+	pixel_y = 5
+	},
+/obj/item/kitchen/fork{
+	pixel_x = 8;
+	pixel_y = 5
+	},
+/obj/item/kitchen/fork{
+	pixel_x = 3;
+	pixel_y = 5
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/maintenance/department/cargo)
+"i" = (
+/obj/structure/reagent_dispensers/cooking_oil,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plasteel/cafeteria,
+/area/maintenance/department/cargo)
+"m" = (
+/obj/effect/turf_decal/siding/thinplating_new/corner{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/kitchen/rollingpin,
+/obj/item/kitchen/rollingpin{
+	pixel_y = -2;
+	pixel_x = 3
+	},
+/obj/item/storage/bag/tray,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"r" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/item/kitchen/spoon{
+	pixel_x = -7;
+	pixel_y = 5
+	},
+/obj/item/kitchen/spoon{
+	pixel_x = 8;
+	pixel_y = 5
+	},
+/obj/item/kitchen/spoon{
+	pixel_x = -2;
+	pixel_y = 5
+	},
+/obj/item/kitchen/spoon{
+	pixel_x = 3;
+	pixel_y = 5
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/maintenance/department/cargo)
+"s" = (
+/obj/effect/turf_decal/siding/thinplating_new{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"t" = (
+/obj/effect/turf_decal/siding/thinplating_new{
+	dir = 9
+	},
+/obj/structure/rack,
+/obj/item/vending_refill/dinnerware,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"w" = (
+/obj/structure/closet/crate/freezer,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/storage/box/donkpockets,
+/obj/item/storage/box/donkpockets,
+/turf/open/floor/plasteel/cafeteria,
+/area/maintenance/department/cargo)
+"B" = (
+/obj/effect/turf_decal/siding/thinplating_new{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop/syndicate_present,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"C" = (
+/obj/effect/turf_decal/siding/thinplating_new{
+	dir = 5
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"D" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/cafeteria,
+/area/maintenance/department/cargo)
+"G" = (
+/obj/structure/kitchenspike,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/plating,
+/area/maintenance/department/cargo)
+"H" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/blood/old,
+/turf/open/floor/plasteel/cafeteria,
+/area/maintenance/department/cargo)
+"J" = (
+/obj/effect/turf_decal/siding/thinplating_new/corner{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"N" = (
+/obj/structure/table,
+/obj/item/stack/packageWrap,
+/obj/item/hand_labeler,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/kitchen/knife,
+/turf/open/floor/plasteel/cafeteria,
+/area/maintenance/department/cargo)
+"P" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/secure_closet/freezer/meat,
+/turf/open/floor/plasteel/cafeteria,
+/area/maintenance/department/cargo)
+"Q" = (
+/turf/closed/wall,
+/area/maintenance/department/cargo)
+"U" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/template_noop)
+"X" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sink/kitchen{
+	dir = 8;
+	pixel_x = 12
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/maintenance/department/cargo)
+"Z" = (
+/obj/modular_map_connector,
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Kitchen Storage Maintenance Hatch"
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/mapping_helpers/airlock/access/all/service/kitchen,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+
+(1,1,1) = {"
+b
+b
+b
+b
+b
+b
+b
+b
+b
+"}
+(2,1,1) = {"
+U
+U
+Q
+Q
+G
+a
+C
+J
+b
+"}
+(3,1,1) = {"
+U
+U
+Q
+w
+H
+D
+D
+B
+Z
+"}
+(4,1,1) = {"
+U
+U
+Q
+i
+D
+g
+r
+s
+b
+"}
+(5,1,1) = {"
+U
+U
+Q
+P
+D
+D
+D
+s
+b
+"}
+(6,1,1) = {"
+U
+U
+Q
+Q
+N
+X
+t
+m
+b
+"}
+(7,1,1) = {"
+U
+U
+U
+Q
+Q
+Q
+Q
+Q
+b
+"}

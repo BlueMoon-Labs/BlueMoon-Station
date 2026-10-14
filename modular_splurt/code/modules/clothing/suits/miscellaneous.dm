@@ -5,9 +5,6 @@
 /obj/item/clothing/suit/toggle/wbreakpoly
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
-/obj/item/clothing/suit/apron/overalls
-	mob_overlay_icon = 'modular_splurt/icons/mob/clothing/suit.dmi'
-
 //Own stuff
 
 /* Already exists

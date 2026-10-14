@@ -12,6 +12,8 @@
 	var/initialized_button = 0
 	/// If FALSE, AI and cyborgs cannot use this button.
 	var/silicon_access = TRUE
+	/// Whether the front panel skin can be swapped with an empty hand while the panel is open
+	var/can_alter_skin = TRUE
 	armor = list(MELEE = 50, BULLET = 50, LASER = 50, ENERGY = 50, BOMB = 10, BIO = 100, RAD = 100, FIRE = 90, ACID = 70)
 	use_power = IDLE_POWER_USE
 	idle_power_usage = 2
@@ -24,7 +26,7 @@
 	. = ..()
 	var/turf/T = get_turf_pixel(src)
 	if(iswallturf(T))
-		plane = GAME_PLANE
+		SET_PLANE_IMPLICIT(src, GAME_PLANE)
 
 	if(built)
 		setDir(ndir)
@@ -170,7 +172,7 @@
 			update_icon()
 			to_chat(user, "<span class='notice'>You remove electronics from the button frame.</span>")
 
-		else
+		else if(can_alter_skin)
 			if(skin == "doorctrl")
 				skin = "launcher"
 			else
@@ -422,17 +424,3 @@
 	icon_state = "button"
 	result_path = /obj/machinery/button
 	custom_materials = list(/datum/material/iron = MINERAL_MATERIAL_AMOUNT)
-
-/obj/machinery/button/elevator
-	name = "elevator button"
-	desc = "Go back. Go back. Go back. Can you operate the elevator."
-	icon_state = "launcher"
-	skin = "launcher"
-	device_type = /obj/item/assembly/control/elevator
-	req_access = list()
-	id = 1
-
-/obj/machinery/button/elevator/examine(mob/user)
-	. = ..()
-	. += "<span class='notice'>There's a small inscription on the button...</span>"
-	. += "<span class='notice'>THIS CALLS THE ELEVATOR! IT DOES NOT OPERATE IT! Interact with the elevator itself to use it!</span>"

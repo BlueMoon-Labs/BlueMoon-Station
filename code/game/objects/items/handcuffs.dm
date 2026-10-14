@@ -3,6 +3,8 @@
 	var/demoralize_criminals = TRUE // checked on carbon/carbon.dm to decide wheter to apply the handcuffed negative moodlet or not.
 	/// allow movement at all during breakout
 	var/allow_breakout_movement = FALSE
+	/// Свой алерт вместо стандартного «Handcuffed»/«Legcuffed» с оверлеем предмета.
+	var/restrained_alert
 
 /obj/item/restraints/suicide_act(mob/living/carbon/user)
 	user.visible_message("<span class='suicide'>[user] is strangling себя with [src]! It looks like [user.p_theyre()] trying to commit suicide!</span>")

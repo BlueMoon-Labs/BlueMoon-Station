@@ -47,18 +47,11 @@
 			download_objective.owner = T.owner
 			download_objective.gen_amount_goal()
 			T.add_objective(download_objective)
-		else if(GLOB.round_type == ROUNDTYPE_DYNAMIC_LIGHT && prob(20) && !(locate(/datum/objective/frame) in T.objectives))	// BLUEMOON ADD - цель «Подстава»: посадить кого-то в бриг/перма-бриг/гулаг. Выдаётся только в Лайт-Динамик.
-			var/datum/objective/frame/frame_objective = new
-			frame_objective.owner = T.owner
-			if(!frame_objective.find_target())
-				qdel(frame_objective)
-				return FALSE
-			T.add_objective(frame_objective)
+		else if(prob(TRAITOR_FRAME_PROB) && !(locate(/datum/objective/frame) in T.objectives) && add_targeted_objective(T, new /datum/objective/frame))
+			return TRUE
 		else if(prob(30) && GLOB.roundstart_prisoners.len)
-			var/datum/objective/rescue_prisoner/rescue = new
-			rescue.owner = T.owner
-			rescue.find_target()
-			T.add_objective(rescue)
+			if(!add_targeted_objective(T, new /datum/objective/rescue_prisoner))
+				return FALSE
 		else if(prob(18) && has_manifest_prisoner())
 			var/datum/objective/breakout/breakout_obj = new
 			breakout_obj.owner = T.owner

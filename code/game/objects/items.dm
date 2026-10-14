@@ -1327,7 +1327,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 			M.update_inv_hands()
 			M.remove_from_hud_screens(src)
 			layer = initial(layer)
-			plane = initial(plane)
+			RESET_PLANE_EXPLICIT(src, destination)
 			appearance_flags &= ~NO_CLIENT_COLOR
 			dropped(M)
 	return ..()

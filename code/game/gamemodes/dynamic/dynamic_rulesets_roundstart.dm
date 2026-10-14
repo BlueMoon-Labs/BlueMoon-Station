@@ -1017,7 +1017,7 @@ BLUEMOON REMOVAL END*/
 	weight = 5
 	cost = 15
 	intensity = 45
-	requirements = list(101,101,101,101,101,60,40,30,20,10)
+	requirements = list(101,101,101,60,50,40,30,20,15,10)
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM)
 	flags = HIGH_IMPACT_RULESET
 

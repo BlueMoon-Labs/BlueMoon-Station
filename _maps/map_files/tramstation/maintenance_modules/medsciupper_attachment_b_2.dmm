@@ -1,0 +1,103 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"j" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/medical)
+"n" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/crate/freezer,
+/obj/effect/spawner/lootdrop/organ_spawner,
+/obj/effect/spawner/lootdrop/organ_spawner,
+/obj/effect/turf_decal/tile/blue/opposingcorners,
+/turf/open/floor/plasteel/freezer,
+/area/maintenance/department/medical)
+"p" = (
+/turf/template_noop,
+/area/template_noop)
+"q" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/window{
+	name = "Cold Storage";
+	req_access_txt = "5";
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/blue/opposingcorners,
+/turf/open/floor/plasteel/freezer,
+/area/maintenance/department/medical)
+"v" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/blue/opposingcorners,
+/turf/open/floor/plasteel/freezer,
+/area/maintenance/department/medical)
+"w" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/directional/north,
+/obj/effect/turf_decal/tile/blue/opposingcorners,
+/turf/open/floor/plasteel/freezer,
+/area/maintenance/department/medical)
+"C" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/crate/freezer/blood,
+/obj/effect/turf_decal/tile/blue/opposingcorners,
+/turf/open/floor/plasteel/freezer,
+/area/maintenance/department/medical)
+"F" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Freezer Maintenance"
+	},
+/obj/modular_map_connector,
+/obj/effect/mapping_helpers/airlock/access/all/medical/general,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/medical)
+"G" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/window/reinforced{
+	dir = 4
+	},
+/obj/structure/table,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/scalpel = 1, /obj/item/hemostat = 1, /obj/item/retractor = 1, /obj/item/circular_saw = 1, /obj/item/surgicaldrill = 1, /obj/item/cautery = 1, /obj/item/bonesetter = 1)
+	},
+/obj/effect/landmark/xeno_spawn,
+/obj/effect/turf_decal/tile/blue/opposingcorners,
+/turf/open/floor/plasteel/freezer,
+/area/maintenance/department/medical)
+"M" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/stack/medical/suture = 1, /obj/item/stack/medical/mesh = 1, /obj/item/stack/medical/gauze = 1)
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/storage/box/hug = 1, /obj/item/storage/box/pillbottles = 1, /obj/item/storage/box/bodybags = 1, /obj/item/storage/box/rxglasses = 1, /obj/item/storage/box/beakers = 1, /obj/item/storage/box/gloves = 1, /obj/item/storage/box/masks = 1, /obj/item/storage/box/syringes = 1)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/medical)
+
+(1,1,1) = {"
+C
+n
+"}
+(2,1,1) = {"
+w
+v
+"}
+(3,1,1) = {"
+G
+q
+"}
+(4,1,1) = {"
+M
+j
+"}
+(5,1,1) = {"
+j
+j
+"}
+(6,1,1) = {"
+F
+p
+"}

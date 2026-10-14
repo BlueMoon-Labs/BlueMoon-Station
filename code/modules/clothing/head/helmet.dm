@@ -322,8 +322,8 @@ GLOBAL_PROTECT(aventail_pride_colors)
 			RESKIN_ITEM_STATE = "helmet"
 		),
 		"Old" = list(
-			RESKIN_ICON_STATE = "helmetold",
-			RESKIN_ITEM_STATE = "helmetold"
+			RESKIN_ICON_STATE = "helmetaltold",
+			RESKIN_ITEM_STATE = "helmetaltold"
 		),
 	)
 

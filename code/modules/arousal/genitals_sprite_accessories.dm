@@ -1,12 +1,3 @@
-/datum/sprite_accessory
-	var/alt_aroused = FALSE //CIT CODE if this is TRUE, then the genitals will use an alternate icon_state when aroused.
-	var/taur_icon //leave null if the genital doesn't have a taur counterpart.
-	var/accepted_taurs = STYLE_HOOF_TAURIC|STYLE_PAW_TAURIC //Types that match with the accessory.
-	var/feat_taur //the text string of the dna feature to check for those who want to opt out.
-	var/taur_dimension_y = 32
-	var/taur_dimension_x = 32
-	var/use_custom_mod_icon = FALSE
-
 /*
  * This is an example of a penis object in the code.
  * The icon_state of the penis is structured as follows:

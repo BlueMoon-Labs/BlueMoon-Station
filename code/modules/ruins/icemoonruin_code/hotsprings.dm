@@ -11,7 +11,8 @@ GLOBAL_LIST_EMPTY(cursed_minds)
 
 /turf/open/water/cursed_spring
 	baseturfs = /turf/open/water/cursed_spring
-	initial_gas_mix = ICEMOON_DEFAULT_ATMOS
+	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
+	planetary_atmos = FALSE
 
 /turf/open/water/cursed_spring/Entered(atom/movable/thing, atom/oldLoc)
 	. = ..()

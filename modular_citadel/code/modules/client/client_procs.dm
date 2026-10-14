@@ -29,7 +29,7 @@
 		return TRUE
 
 	if(href_list["mentor_unfollow"])
-		var/mob/living/M = locate(href_list["mentor_follow"])
+		var/mob/living/M = locate(href_list["mentor_unfollow"])
 		if(M && mentor_datum.following == M)
 			mentor_unfollow()
 		return TRUE

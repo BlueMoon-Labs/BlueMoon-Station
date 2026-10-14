@@ -79,6 +79,7 @@ GLOBAL_LIST(topic_status_cache)
 
 	LoadBans()
 	initialize_global_loadout_items()
+	initialize_global_whitelist_cache()
 	reload_custom_roundstart_items_list()//Cit change - loads donator items. Remind me to remove when I port over bay's loadout system
 
 	// Читается до Master.Initialize(): инициализация подсистем сама начинает переписывать

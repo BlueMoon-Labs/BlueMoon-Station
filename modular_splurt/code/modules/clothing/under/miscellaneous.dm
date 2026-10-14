@@ -572,7 +572,7 @@
 
 /obj/item/clothing/under/misc/sheer/ComponentInitialize()
 	. = ..()
-	AddElement(/datum/element/polychromic, list("#3e769cc5"), 1)
+	AddElement(/datum/element/polychromic, list("#3e769c"), 1)
 
 /obj/item/clothing/under/misc/corsetdress
 	name = "corset dress"

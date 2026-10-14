@@ -246,6 +246,9 @@
 /// туманность и материал пути - за планетой.
 /datum/unit_test/heretic_sky_eclipses_planet/Run()
 	var/station_z = SSmapping.levels_by_trait(ZTRAIT_STATION)[1]
+	// Погода (ледяной шторм FestiveStation) ставит планетарный профиль без планеты.
+	var/list/weather_modifiers = SSparallax.modifiers_by_z["[station_z]"]
+	SSparallax.modifiers_by_z -= "[station_z]"
 	var/datum/eldritch_knowledge/final_eldritch/moon_final/final = allocate(/datum/eldritch_knowledge/final_eldritch/moon_final)
 	GLOB.heretic_sky.ascend(final, heretic_sky_test_station_turf())
 	var/datum/parallax/template = SSparallax.get_parallax_template(station_z)
@@ -278,6 +281,9 @@
 	var/veil_behind = veil && anchor && veil.layer < anchor.layer && islist(veil.color) && veil.alpha > 0
 	var/field_behind = field && anchor && field.layer < anchor.layer && field.particles
 	heretic_sky_test_clear()
+	if(length(weather_modifiers))
+		SSparallax.modifiers_by_z["[station_z]"] = weather_modifiers
+		SSparallax.invalidate_z(station_z)
 	TEST_ASSERT_NOTNULL(anchor, "В станционной сцене не нашлась планета")
 	TEST_ASSERT(distance >= 0 && distance < 1, "Первый Знак не в центре диска планеты: [distance] px")
 	TEST_ASSERT(sign_front, "Знак не перед планетой")
