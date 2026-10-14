@@ -2,6 +2,37 @@
 
 Реплики HK-47 - фрагменты диалогов из игр Star Wars: Knights of the Old Republic (BioWare / LucasArts, 2003; в таблице - KOTOR) и Star Wars Knights of the Old Republic II: The Sith Lords (Obsidian Entertainment / LucasArts, 2004; в таблице - KOTOR II), HK-47 озвучил Kristoffer Tabori. Права на записи принадлежат правообладателям (Lucasfilm / Disney). Фрагменты обрезаны и выровнены по громкости.
 
+## Реплики HK-47
+
+| Файл | Игра | Реплика |
+| --- | --- | --- |
+| `hk47_activate.ogg` | KOTOR II | Diagnostic: HK-47 activated. Running checks through primary systems. |
+| `hk47_ready.ogg` | KOTOR II | Statement: HK-47 is ready to serve, master. |
+| `hk47_offer.ogg` | KOTOR II | Query: Is there someone that you need killed, master? |
+| `hk47_accept.ogg` | KOTOR II | Assassination protocol initiated. |
+| `hk47_target_acquired.ogg` | KOTOR II | Target acquired. Engaging. |
+| `hk47_combat_mode.ogg` | KOTOR II | Switching to combat mode. Hostiles detected. |
+| `hk47_damage.ogg` | KOTOR II | I am registering excessive system damage. |
+| `hk47_failing.ogg` | KOTOR II | Systems failing, master. |
+| `hk47_stealth.ogg` | KOTOR II | Stealth mode activated. |
+| `hk47_full_gain.ogg` | KOTOR II | Photoreceptors on full gain. |
+| `hk47_rejoining.ogg` | KOTOR II | Rejoining group. |
+| `hk47_meatbags.ogg` | KOTOR | Commentary: That's the way to tell the meatbags, master. |
+| `hk47_charging.ogg` | KOTOR | Charging weapons, just in case this should be fun. |
+| `hk47_purchased.ogg` | KOTOR | Statement: I see you have purchased me, master. I find this a satisfactory arrangement. |
+| `hk47_prospective.ogg` | KOTOR | Greeting: Hello to you, prospective purchaser. |
+
+## Реплики HK-50
+
+Фрагменты диалогов HK-50 из Star Wars Knights of the Old Republic II: The Sith Lords (Obsidian Entertainment / LucasArts, 2004), озвучил Kristoffer Tabori. Права на записи принадлежат правообладателям (Lucasfilm / Disney).
+
+| Файл | Реплика |
+| --- | --- |
+| `hk50_selfdestruct.ogg` | Statement: Self-destruct sequence activated. |
+| `hk50_photoreceptors.ogg` | Agonized exclamation: My photoreceptors! |
+| `hk50_foolish.ogg` | Statement: You are foolish to think we will allow you to take that information back to your master. |
+| `hk50_numbers_grow.ogg` | We are here. We exist, and our numbers grow. |
+
 ## Префиксы речи
 
 Слова-префиксы из реплик HK-47 в Star Wars Knights of the Old Republic II: The Sith Lords (Obsidian Entertainment / LucasArts, 2004), озвучил Kristoffer Tabori. Права на записи принадлежат правообладателям (Lucasfilm / Disney).

@@ -455,6 +455,7 @@
 #define COMSIG_LIVING_ATTACKER_SET "living_attacker_set"			// from base of /mob/living/set_last_attacker(): (attacker)
 
 #define COMSIG_LIVING_SET_AS_ATTACKER "living_set_as_attacker"		// from base of /mob/living/set_last_attacker(): (target)
+#define COMSIG_LIVING_HIT_BY_PROJECTILE "living_hit_by_projectile"	// from base of /mob/living/bullet_act() before damage, when not blocked: (obj/item/projectile/projectile, def_zone)
 
 //ALL OF THESE DO NOT TAKE INTO ACCOUNT WHETHER AMOUNT IS 0 OR LOWER AND ARE SENT REGARDLESS!
 #define COMSIG_LIVING_STATUS_STUN "living_stun"					//from base of mob/living/Stun() (amount, update, ignore)

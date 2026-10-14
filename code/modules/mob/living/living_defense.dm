@@ -104,6 +104,7 @@
 			return BULLET_ACT_BLOCK
 		totaldamage = block_calculate_resultant_damage(totaldamage, returnlist)
 
+	SEND_SIGNAL(src, COMSIG_LIVING_HIT_BY_PROJECTILE, P, def_zone)
 	var/armor = run_armor_check(def_zone, P.flag, null, null, P.armour_penetration, null)
 
 	// BLUEMOON ADD START - больших и тяжёлых существ проблематично нормально оглушить
