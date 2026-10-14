@@ -9,3 +9,7 @@
 | `inventory_audit.dmi` | `bin`, `bin_accept`, `audit_tag` | нарисовано для BlueMoon Station |
 | `id_card_recall.dmi` | `terminal`, `terminal_working`, `terminal_done`, `recall_mark` | нарисовано для BlueMoon Station |
 | `intercepted_contraband.dmi` | `parcel`, `stash`, `stash_open`, `ledger` | нарисовано для BlueMoon Station |
+
+## Сервис
+
+`corporate_mixer.dmi`, `tasting_request.dmi`, `restless_spirit.dmi`, `rare_manuscript.dmi` и эффект `modular_bluemoon/icons/effects/minor_incidents/restless_spirit.dmi` нарисованы для BlueMoon Station. Курьерская капсула дегустации использует существующие состояния `icons/obj/supplypods.dmi`.
