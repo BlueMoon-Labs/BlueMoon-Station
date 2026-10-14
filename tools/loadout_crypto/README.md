@@ -40,7 +40,12 @@ spelling, and `gear_ckey_from_id(id)` decrypts it (or returns null on failure).
 Whitelist checks normalize the decrypted key, preserving account identity across
 case/punctuation changes. Keep the complete `enc1:` prefix when copying an ID.
 Results are cached and the cache is discarded when the configured secret changes.
-All encrypted whitelist entries are decrypted in one batch at loadout initialization.
+`initialize_global_whitelist_cache()` warms loadout, accessory, bark, AI screen,
+borg skin and hotel whitelists in a single deduplicated batch after config loading
+and loadout initialization. Whitelists are read from live datums, including
+configured loadout overrides. Hotel templates are prepared before the batch;
+their subsystem reuses the prepared list during its later initialization. The original lists
+retain their encrypted IDs; only the private crypto cache contains the decrypted text.
 
 `/datum/sprite_accessory.ckeys_allowed` uses the same whitelist check as
 `/datum/gear.ckeywhitelist`. Both lists accept original account names, normalized

@@ -262,3 +262,100 @@
 	if(!isnull(saved_hotel_templates))
 		SShilbertshotel.hotel_map_list = saved_hotel_templates
 	return ..()
+
+/// A hotel whitelist is initialized by the datum's constructor.
+/datum/map_template/hilbertshotel/whitelist_cache_fixture
+	ckeywhitelist = list("enc1:AAECAwQFBgcICQoLBkP7WYfIo3mjb7lYYwet3PW22BiBfjL-G3kJ")
+
+/// Warming must deduplicate IDs across categories and make later checks return before launching Node.
+/datum/unit_test/ckey_whitelist_cache
+	var/saved_secret
+	var/list/saved_ai_screens
+	var/list/saved_borg_skins
+	var/list/saved_loadout_items
+	var/list/saved_hair_styles
+	var/list/saved_bark_datums
+	var/list/saved_hotel_templates
+
+/datum/unit_test/ckey_whitelist_cache/Run()
+	saved_secret = CONFIG_GET(string/loadout_ckey_secret)
+	// Force a fresh decrypt cache, including the hotel fixture used by other tests.
+	CONFIG_SET(string/loadout_ckey_secret, "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
+	gear_crypto("decrypt", list())
+	CONFIG_SET(string/loadout_ckey_secret, "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f")
+	var/id = gear_ckey_id("Prewarm-Test-User")
+	TEST_ASSERT(id, "The cache fixture must be encrypted successfully")
+	var/invalid_id = "enc1:prewarm-invalid"
+	var/list/first_whitelist = list("Plain-Account", id, "enc2:invalid")
+	var/list/second_whitelist = list(id, invalid_id, 123)
+	var/datum/ai_donator_screen/screen = allocate(/datum/ai_donator_screen)
+	var/datum/borg_donator_skin/skin = allocate(/datum/borg_donator_skin)
+	var/datum/gear/gear = allocate(/datum/gear)
+	var/datum/sprite_accessory/accessory = allocate(/datum/sprite_accessory)
+	var/datum/bark/bark = allocate(/datum/bark)
+	var/datum/map_template/hilbertshotel/whitelist_cache_fixture/room = new()
+	allocated += room
+	screen.ckey_whitelist = first_whitelist
+	skin.ckey_whitelist = second_whitelist
+	gear.ckeywhitelist = first_whitelist
+	accessory.ckeys_allowed = first_whitelist
+	bark.ckeys_allowed = first_whitelist
+	saved_ai_screens = GLOB.ai_donator_screens
+	saved_borg_skins = GLOB.borg_donator_skins
+	saved_loadout_items = GLOB.loadout_items
+	saved_hair_styles = GLOB.hair_styles_list
+	saved_bark_datums = GLOB.bark_datums
+	saved_hotel_templates = SShilbertshotel.hotel_map_list
+	GLOB.ai_donator_screens = list(screen)
+	GLOB.borg_donator_skins = list(skin)
+	GLOB.loadout_items = list("category" = list("subcategory" = list("test gear" = gear)))
+	GLOB.hair_styles_list = list("test accessory" = accessory)
+	GLOB.bark_datums = list("test bark" = bark)
+	SShilbertshotel.hotel_map_list = list("test room" = room)
+	var/list/result = initialize_global_whitelist_cache()
+	var/matches = 0
+	for(var/plaintext in result)
+		if(plaintext == "Prewarm-Test-User")
+			matches++
+	TEST_ASSERT_EQUAL(matches, 1, "An ID shared by loadout, accessories, barks, AI and borg whitelists must be decrypted once")
+	TEST_ASSERT(id in first_whitelist, "Warming must preserve ciphertext in the original whitelist")
+	TEST_ASSERT(!("Prewarm-Test-User" in first_whitelist), "Warming must not place plaintext in the original whitelist")
+	var/list/diagnostics = list()
+	TEST_ASSERT_EQUAL(gear_crypto("decrypt", id, TRUE, diagnostics), "Prewarm-Test-User", "Later access checks must read the preloaded plaintext")
+	TEST_ASSERT_NULL(diagnostics["exit_code"], "A cache hit must return before launching Node")
+	TEST_ASSERT_NULL(diagnostics["node_version"], "A cache hit must not receive a new helper response")
+	TEST_ASSERT_NULL(gear_crypto("decrypt", invalid_id, TRUE, diagnostics), "Invalid IDs must also be cached as denied")
+	TEST_ASSERT_NULL(diagnostics["exit_code"], "A cached invalid ID must not launch Node again")
+	TEST_ASSERT_NULL(diagnostics["error"], "A cached invalid ID must not cause another helper validation request")
+	TEST_ASSERT_NULL(initialize_global_whitelist_cache(), "A fully cached batch must have no pending work")
+	TEST_ASSERT_EQUAL(gear_crypto("decrypt", room.ckeywhitelist[1], TRUE, diagnostics), "AA-BB-ab...", "Hotel IDs must be warmed from the initialized templates")
+	TEST_ASSERT_NULL(diagnostics["exit_code"], "A warmed hotel template must not launch Node during access checks")
+
+	// Exercise the post-config phase with registries that normally initialize before config.Load().
+	var/screen_id = gear_ckey_id("AI-Prewarm-Test")
+	var/skin_id = gear_ckey_id("Borg-Prewarm-Test")
+	TEST_ASSERT(screen_id && skin_id, "Registry fixtures must be encrypted successfully")
+	screen.ckey_whitelist = list(screen_id)
+	skin.ckey_whitelist = list(skin_id)
+	initialize_global_whitelist_cache()
+	TEST_ASSERT_EQUAL(gear_crypto("decrypt", screen_id, TRUE, diagnostics), "AI-Prewarm-Test", "AI screens must be warmed after config loading")
+	TEST_ASSERT_NULL(diagnostics["exit_code"], "A warmed screen must not launch Node during access checks")
+	TEST_ASSERT_EQUAL(gear_crypto("decrypt", skin_id, TRUE, diagnostics), "Borg-Prewarm-Test", "Borg skins must be warmed after config loading")
+	TEST_ASSERT_NULL(diagnostics["exit_code"], "A warmed borg skin must not launch Node during access checks")
+
+/datum/unit_test/ckey_whitelist_cache/Destroy()
+	if(!isnull(saved_secret))
+		CONFIG_SET(string/loadout_ckey_secret, saved_secret)
+	if(!isnull(saved_ai_screens))
+		GLOB.ai_donator_screens = saved_ai_screens
+	if(!isnull(saved_borg_skins))
+		GLOB.borg_donator_skins = saved_borg_skins
+	if(!isnull(saved_loadout_items))
+		GLOB.loadout_items = saved_loadout_items
+	if(!isnull(saved_hair_styles))
+		GLOB.hair_styles_list = saved_hair_styles
+	if(!isnull(saved_bark_datums))
+		GLOB.bark_datums = saved_bark_datums
+	if(!isnull(saved_hotel_templates))
+		SShilbertshotel.hotel_map_list = saved_hotel_templates
+	return ..()

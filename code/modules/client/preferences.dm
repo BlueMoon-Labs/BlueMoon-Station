@@ -4988,7 +4988,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				if("barksound")
 					var/list/woof_woof = list()
 					for(var/path in GLOB.bark_list)
-						var/datum/bark/B = GLOB.bark_list[path]
+						var/datum/bark/B = GLOB.bark_datums[path]
 						if(initial(B.ignore))
 							continue
 						if(!B.is_allowed_for(user.client.key))

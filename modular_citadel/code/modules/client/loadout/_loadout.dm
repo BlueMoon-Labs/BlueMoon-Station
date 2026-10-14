@@ -51,7 +51,6 @@ GLOBAL_LIST_EMPTY(loadout_whitelist_ids)
 
 /proc/initialize_global_loadout_items()
 	load_loadout_config()
-	var/list/encrypted_ids = list()
 	for(var/item in subtypesof(/datum/gear))
 		var/datum/gear/I = item
 		if(!initial(I.name))
@@ -68,11 +67,6 @@ GLOBAL_LIST_EMPTY(loadout_whitelist_ids)
 					I.ckeywhitelist |= GLOB.loadout_whitelist_ids["[entry]"]
 		else if(I.geargroupID in GLOB.loadout_whitelist_ids)
 			I.ckeywhitelist = GLOB.loadout_whitelist_ids["[I.geargroupID]"]
-		for(var/id in I.ckeywhitelist)
-			if(istext(id) && findtextEx(id, "enc1:", 1, 6))
-				encrypted_ids |= id
-	if(length(encrypted_ids))
-		gear_crypto("decrypt", encrypted_ids)
 
 
 /datum/gear
