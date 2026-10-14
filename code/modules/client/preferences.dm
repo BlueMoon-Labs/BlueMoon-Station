@@ -1203,6 +1203,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			var/change_label = src.use_modern_translations ? get_modern_text("change", src) : "Change"
 			var/yes_label = src.use_modern_translations ? get_modern_text("yes", src) : "Yes"
 			var/no_label = src.use_modern_translations ? get_modern_text("no", src) : "No"
+			var/new_label = src.use_modern_translations ? get_modern_text("new", src) : "New"
+			var/old_label = src.use_modern_translations ? get_modern_text("old", src) : "Old"
 			var/none_label = src.use_modern_translations ? get_modern_text("none", src) : "None"
 
 			dat += "<center>"
@@ -2144,9 +2146,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 								dat += "<b>[breasts_color_label]:</b></a><BR>"
 								dat += "<span style='border: 1px solid #161616; background-color: #[features["breasts_color"]];'><font color='[color_hex2num(features["breasts_color"]) < 200 ? "FFFFFF" : "000000"]'>#[features["breasts_color"]]</font></span> <a href='?_src_=prefs;preference=breasts_color;task=input'>Change</a><br>"
 							if(features["breasts_shape"] == "Pair")
-								dat += "<b>[breasts_variant_label]:</b> <a href='?_src_=prefs;preference=breasts_sprite_variant'>[features["breasts_sprite_variant"] == "Old" ? "Старый" : "Новый"]</a><br>"
+								dat += "<b>[breasts_variant_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=breasts_sprite_variant'>[features["breasts_sprite_variant"] == "Old" ? old_label : new_label]</a>"
 							if(features["breasts_sprite_variant"] != "Old")
-								dat += "<b>[has_colorized_nipples_label]:</b> <a style='display:block;width:50px' href='?_src_=prefs;preference=breasts_nipples'>[features["breasts_nipples"] ? yes_label : no_label]</a>"
+								dat += "<b>[has_colorized_nipples_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=breasts_nipples'>[features["breasts_nipples"] ? yes_label : no_label]</a>"
 								if(features["breasts_nipples"])
 									dat += "<b>[nipples_color_label]:</b> </a><BR>"
 									dat += "<span style='border: 1px solid #161616; background-color: #[features["breasts_nipples_color"]];'><font color='[color_hex2num(features["breasts_nipples_color"]) < 200 ? "FFFFFF" : "000000"]'>#[features["breasts_nipples_color"]]</font></span> <a href='?_src_=prefs;preference=breasts_nipples_color;task=input'>[change_label]</a><br>"
