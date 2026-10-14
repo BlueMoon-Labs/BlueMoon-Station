@@ -154,6 +154,37 @@
 	droid.death()
 	TEST_ASSERT_EQUAL(length(species.hk_eye_overlays(droid)), 0, "dead HK: eyes off")
 
+/// Кисти каждой модели HK во всех ракурсах лежат в рамке кистей человека, под которую нарисованы инхенды.
+/datum/unit_test/hk_hands_in_human_hand_box
+
+/datum/unit_test/hk_hands_in_human_hand_box/Run()
+	for(var/dir in GLOB.cardinals)
+		for(var/part in list("r_hand", "l_hand", "r_hand_behind", "l_hand_behind"))
+			var/list/human_box = opaque_box('icons/mob/human_parts_greyscale.dmi', "human_[part]", dir)
+			for(var/model in list(HK_MODEL_47, HK_MODEL_50, HK_MODEL_51))
+				var/list/hk_box = opaque_box('modular_bluemoon/icons/mob/human/hk_droid.dmi', "[model]_[part]", dir)
+				if(!hk_box)
+					continue
+				var/inside = human_box && hk_box[1] >= human_box[1] && hk_box[2] >= human_box[2] && hk_box[3] <= human_box[3] && hk_box[4] <= human_box[4]
+				TEST_ASSERT(inside, "[model]_[part] [dir2text(dir)]: hand [hk_box.Join(",")] is outside the human hand box [human_box?.Join(",")]")
+
+/// Границы непрозрачных пикселей стейта в одном направлении: list(x1, y1, x2, y2) или null.
+/datum/unit_test/hk_hands_in_human_hand_box/proc/opaque_box(file, state, dir)
+	var/icon/sprite = icon(file, state, dir)
+	var/list/box
+	for(var/x in 1 to sprite.Width())
+		for(var/y in 1 to sprite.Height())
+			if(!sprite.GetPixel(x, y))
+				continue
+			if(!box)
+				box = list(x, y, x, y)
+				continue
+			box[1] = min(box[1], x)
+			box[2] = min(box[2], y)
+			box[3] = max(box[3], x)
+			box[4] = max(box[4], y)
+	return box
+
 /// Глаза HK-51 рисуются на теле со свечением и светом, в крите мигают без лишних перерисовок, у мёртвого гаснут.
 /datum/unit_test/hk_eye_glow_on_body
 
