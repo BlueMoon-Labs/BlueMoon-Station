@@ -17852,9 +17852,9 @@
 /area/engineering/atmos/hfr_room)
 "egF" = (
 /obj/machinery/door/airlock/maintenance_hatch{
-	name = "Mining Maintenance"
+	name = "Mining Maintenance";
+	req_access_txt = "48"
 	},
-/obj/effect/mapping_helpers/airlock/access/all/supply/mining,
 /turf/open/floor/catwalk_floor/iron_smooth,
 /area/maintenance/starboard/lesser)
 "egH" = (
@@ -28659,9 +28659,6 @@
 /area/maintenance/department/science/xenobiology)
 "gvr" = (
 /obj/machinery/door/firedoor,
-/obj/machinery/door/airlock/mining/glass{
-	name = "Delivery Office"
-	},
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
@@ -28674,7 +28671,10 @@
 /obj/structure/disposalpipe/segment{
 	dir = 4
 	},
-/obj/effect/mapping_helpers/airlock/access/any/supply/mining,
+/obj/machinery/door/airlock/mining/glass{
+	name = "Delivery Office";
+	req_one_access_txt = "50;48"
+	},
 /turf/open/floor/plasteel/rivets/large,
 /area/cargo/sorting)
 "gvD" = (
@@ -49566,9 +49566,6 @@
 /turf/open/floor/plating,
 /area/medical/exam_room)
 "ljL" = (
-/obj/machinery/door/airlock/mining{
-	name = "Mining Lobby"
-	},
 /obj/machinery/door/firedoor,
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
@@ -49588,8 +49585,9 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
 	},
-/obj/effect/mapping_helpers/airlock/access/any/supply/mining,
-/obj/effect/mapping_helpers/airlock/access/any/supply/general,
+/obj/machinery/door/airlock/mining{
+	req_access_txt = "48"
+	},
 /turf/open/floor/plasteel/rivets/large,
 /area/cargo/miningoffice)
 "ljN" = (
@@ -57259,10 +57257,10 @@
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 4
 	},
-/obj/machinery/door/airlock/external/glass{
-	name = "Supply Door Airlock"
+/obj/machinery/door/airlock/external{
+	name = "Supply Dock Airlock";
+	req_access_txt = "31"
 	},
-/obj/effect/mapping_helpers/airlock/access/all/supply/general,
 /turf/open/floor/catwalk_floor,
 /area/cargo/storage)
 "mTl" = (
@@ -83366,11 +83364,11 @@
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 8
 	},
-/obj/machinery/door/airlock/external/glass{
-	name = "Supply Door Airlock"
-	},
-/obj/effect/mapping_helpers/airlock/access/all/supply/general,
 /obj/structure/fans/tiny,
+/obj/machinery/door/airlock/external{
+	name = "Supply Dock Airlock";
+	req_access_txt = "31"
+	},
 /turf/open/floor/catwalk_floor,
 /area/cargo/storage)
 "sOo" = (
@@ -89637,9 +89635,6 @@
 /turf/open/floor/plasteel/rivets/large,
 /area/engineering/atmos/pumproom)
 "umr" = (
-/obj/machinery/door/airlock/mining{
-	name = "Drone Bay"
-	},
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
@@ -89649,14 +89644,15 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
 	dir = 4
 	},
-/obj/effect/mapping_helpers/airlock/access/any/supply/mining,
-/obj/effect/mapping_helpers/airlock/access/any/supply/general,
 /obj/machinery/door/firedoor,
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
 	},
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 8
+	},
+/obj/machinery/door/airlock/mining{
+	req_access_txt = "48"
 	},
 /turf/open/floor/plasteel/rivets/large,
 /area/cargo/drone_bay)
@@ -93775,9 +93771,6 @@
 /turf/open/floor/plating,
 /area/maintenance/port/fore)
 "vhW" = (
-/obj/machinery/door/airlock/mining{
-	name = "Mining Dock"
-	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /obj/structure/cable/yellow{
@@ -93789,8 +93782,9 @@
 	dir = 1
 	},
 /obj/structure/disposalpipe/segment,
-/obj/effect/mapping_helpers/airlock/access/any/supply/mining,
-/obj/effect/mapping_helpers/airlock/access/any/supply/general,
+/obj/machinery/door/airlock/mining{
+	req_access_txt = "48"
+	},
 /turf/open/floor/plasteel/rivets,
 /area/cargo/miningdock)
 "vic" = (
@@ -103999,9 +103993,6 @@
 /area/cargo/storage)
 "xvY" = (
 /obj/machinery/door/firedoor,
-/obj/machinery/door/airlock/mining/glass{
-	name = "Cargo Office"
-	},
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
@@ -104015,7 +104006,10 @@
 	dir = 4
 	},
 /obj/effect/landmark/navigate_destination/cargo,
-/obj/effect/mapping_helpers/airlock/access/any/supply/mining,
+/obj/machinery/door/airlock/mining/glass{
+	name = "Cargo Office";
+	req_one_access_txt = "50;48"
+	},
 /turf/open/floor/plasteel/rivets/large,
 /area/cargo/office)
 "xwc" = (
