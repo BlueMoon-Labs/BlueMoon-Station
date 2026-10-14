@@ -14,7 +14,7 @@
 		var/rock_value = (distance / 120) + 0.1
 		var/sand_value = (distance / 120)
 		if(noise_at_coord >= rock_value)
-			T.ChangeTurf(/turf/closed/mineral/random, list(/turf/open/floor/plating/asteroid/airless), CHANGETURF_IGNORE_AIR)
+			T.ChangeTurf(/turf/closed/mineral/random/high_chance, list(/turf/open/floor/plating/asteroid/airless), CHANGETURF_IGNORE_AIR)
 		else if(noise_at_coord >= sand_value)
 			T.ChangeTurf(/turf/open/floor/plating/asteroid/airless, flags = CHANGETURF_IGNORE_AIR)
 		CHECK_TICK
