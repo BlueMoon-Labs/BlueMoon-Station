@@ -49,6 +49,7 @@ GLOBAL_LIST_EMPTY(caps_list)
 
 	//Bark bits
 GLOBAL_LIST_EMPTY(bark_list)
+GLOBAL_LIST_EMPTY(bark_datums)
 GLOBAL_LIST_EMPTY(bark_random_list)
 
 //a way to index the right bodypart list given the type of bodypart
@@ -212,30 +213,30 @@ GLOBAL_LIST_INIT(ai_core_display_screens, list(
 	))
 
 /proc/resolve_ai_icon(input, radial_preview = FALSE, client/C, dead = FALSE)
-    if(!input)
-        return "ai"
+	if(!input)
+		return "ai"
 
-    if(C)
-        for(var/datum/ai_donator_screen/donor_screen in GLOB.ai_donator_screens)
-            if(donor_screen.name == input && (C.ckey in donor_screen.ckey_whitelist))
-                if(dead && donor_screen.icon_state_dead)
-                    return donor_screen.icon_state_dead
-                return donor_screen.icon_state
+	if(C)
+		for(var/datum/ai_donator_screen/donor_screen in GLOB.ai_donator_screens)
+			if(donor_screen.name == input && donor_screen.is_allowed_for(C.key))
+				if(dead && donor_screen.icon_state_dead)
+					return donor_screen.icon_state_dead
+				return donor_screen.icon_state
 
-    if(!(input in GLOB.ai_core_display_screens))
-        return "ai"
+	if(!(input in GLOB.ai_core_display_screens))
+		return "ai"
 
-    if(radial_preview)
-        return "ai-[lowertext(input)]"
+	if(radial_preview)
+		return "ai-[lowertext(input)]"
 
-    if(input == "Random")
-        input = pick(GLOB.ai_core_display_screens - "Random")
-    if(input == "Portrait")
-        var/datum/portrait_picker/tgui = new(usr)
-        tgui.ui_interact(usr)
-        return "ai-portrait"
+	if(input == "Random")
+		input = pick(GLOB.ai_core_display_screens - "Random")
+	if(input == "Portrait")
+		var/datum/portrait_picker/tgui = new(usr)
+		tgui.ui_interact(usr)
+		return "ai-portrait"
 
-    return "ai-[lowertext(input)]"
+	return "ai-[lowertext(input)]"
 
 GLOBAL_LIST_INIT(security_depts_prefs, list(SEC_DEPT_RANDOM, SEC_DEPT_NONE, SEC_DEPT_ENGINEERING, SEC_DEPT_MEDICAL, SEC_DEPT_SCIENCE, SEC_DEPT_SUPPLY))
 

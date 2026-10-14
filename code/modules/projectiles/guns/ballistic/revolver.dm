@@ -699,6 +699,8 @@
 	unique_reskin = list(
 		"Police" = list(
 			"icon_state" = "apostle police"
+		),"M29" = list(
+			"icon_state" = "apostle m29"
 		))
 
 
@@ -719,8 +721,11 @@
 	slot_flags = ITEM_SLOT_BELT
 	unique_reskin = list(
 		"Police" = list(
-			"icon_state" = "dies_irae  police"
-		))
+			"icon_state" = "dies_irae police"
+		),"M29" = list(
+			"icon_state" = "dies_irae m29"
+		),"Huntinh" = list(
+			"icon_state" = "dies_irae hunt"))
 
 /obj/item/gun/ballistic/revolver/Liturgy //Апгрейд на ревик сбух, чтоб было 18 патрон, енфорсеру всунули 28, ревику можно 18
 	name = "\improper Liturgy"
@@ -740,6 +745,8 @@
 	unique_reskin = list(
 		"Police" = list(
 			"icon_state" = "liturgy police"
+		),"M29" = list(
+			"icon_state" = "liturgy m29"
 		))
 
 /obj/item/gun/ballistic/revolver/Passing_Bell //тупа секвоя из нью вегаса антагам, калибр 45 70 давно в игре, но его нахуй никто не использует
