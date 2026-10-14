@@ -273,7 +273,7 @@
 			CHESTPLATE_FLAGS = list(
 				UNSEALED_CLOTHING = THICKMATERIAL,
 				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
-				SEALED_INVISIBILITY = HIDEJUMPSUIT,
+				SEALED_INVISIBILITY = HIDEJUMPSUIT|HIDETAIL,
 			),
 			GAUNTLETS_FLAGS = list(
 				UNSEALED_CLOTHING = THICKMATERIAL,
@@ -286,4 +286,6 @@
 		),
 )
 
+/obj/item/mod/control/pre_equipped/melatonin/worn_overlays(isinhands = FALSE, icon_file)
+	return list()
 //////////////////////////////////////////////////////////
