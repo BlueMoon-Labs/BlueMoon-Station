@@ -724,7 +724,8 @@
 			"icon_state" = "dies_irae police"
 		),"M29" = list(
 			"icon_state" = "dies_irae m29"
-		))
+		),"Huntinh" = list(
+			"icon_state" = "dies_irae hunt"))
 
 /obj/item/gun/ballistic/revolver/Liturgy //Апгрейд на ревик сбух, чтоб было 18 патрон, енфорсеру всунули 28, ревику можно 18
 	name = "\improper Liturgy"
