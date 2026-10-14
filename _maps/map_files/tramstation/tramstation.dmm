@@ -14622,6 +14622,9 @@
 /turf/open/floor/plasteel,
 /area/maintenance/port/central)
 "ecG" = (
+/obj/machinery/door/airlock/mining/glass{
+	name = "Mailing Sorting Office"
+	},
 /obj/machinery/door/firedoor,
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 1
@@ -14641,10 +14644,7 @@
 	id = "cargolockdown";
 	dir = 8
 	},
-/obj/machinery/door/airlock/mining/glass{
-	name = "Delivery Office";
-	req_access_txt = "50"
-	},
+/obj/effect/mapping_helpers/airlock/access/all/supply/shipping,
 /turf/open/floor/plasteel,
 /area/cargo/sorting)
 "ecI" = (
@@ -22461,12 +22461,13 @@
 /turf/open/floor/plasteel,
 /area/engineering/engine_smes)
 "goJ" = (
-/obj/effect/mapping_helpers/airlock/cyclelink_helper,
-/obj/structure/fans/tiny,
-/obj/machinery/door/airlock/external{
-	name = "Supply Dock Airlock";
-	req_access_txt = "31"
+/obj/machinery/door/airlock/external/glass{
+	name = "Supply Door Airlock"
 	},
+/obj/effect/mapping_helpers/airlock/cyclelink_helper,
+/obj/effect/mapping_helpers/airlock/access/all/supply/general,
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/access/all/supply/mining,
 /turf/open/floor/plating,
 /area/cargo/storage)
 "goK" = (
@@ -33691,6 +33692,9 @@
 /turf/open/floor/plasteel,
 /area/cargo/miningdock)
 "jxi" = (
+/obj/machinery/door/airlock/mining/glass{
+	name = "Cargo Bay"
+	},
 /obj/machinery/door/firedoor,
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 4
@@ -33698,16 +33702,14 @@
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 8
 	},
+/obj/effect/mapping_helpers/airlock/access/any/supply/general,
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
 /obj/structure/disposalpipe/segment,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/obj/machinery/door/airlock/mining/glass{
-	name = "Cargo Bay";
-	req_one_access_txt = "50;48"
-	},
+/obj/effect/mapping_helpers/airlock/access/any/supply/mining,
 /turf/open/floor/plasteel,
 /area/cargo/storage)
 "jxw" = (
@@ -84818,6 +84820,9 @@
 /turf/open/floor/plasteel,
 /area/hallway/secondary/entry)
 "xkC" = (
+/obj/machinery/door/airlock/mining/glass{
+	name = "Cargo Office"
+	},
 /obj/machinery/door/firedoor,
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 8
@@ -84825,16 +84830,14 @@
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 4
 	},
+/obj/effect/mapping_helpers/airlock/access/any/supply/general,
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
 /obj/structure/disposalpipe/segment,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/obj/machinery/door/airlock/mining/glass{
-	name = "Cargo Office";
-	req_one_access_txt = "50;48"
-	},
+/obj/effect/mapping_helpers/airlock/access/any/supply/mining,
 /turf/open/floor/plasteel,
 /area/cargo/office)
 "xkE" = (
@@ -85827,13 +85830,14 @@
 /turf/open/floor/plasteel/white,
 /area/science/research/lobby)
 "xxA" = (
+/obj/machinery/door/airlock/external/glass{
+	name = "Supply Door Airlock"
+	},
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 1
 	},
-/obj/machinery/door/airlock/external{
-	name = "Supply Dock Airlock";
-	req_access_txt = "31"
-	},
+/obj/effect/mapping_helpers/airlock/access/all/supply/general,
+/obj/effect/mapping_helpers/airlock/access/all/supply/mining,
 /turf/open/floor/plating,
 /area/cargo/storage)
 "xxP" = (
