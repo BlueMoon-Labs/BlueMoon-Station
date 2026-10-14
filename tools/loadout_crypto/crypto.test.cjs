@@ -124,6 +124,21 @@ test('diagnostic requests include the original helper error detail', (t) => {
   });
 });
 
+test('DM numeric diagnostic flags enable details without enabling them for other values', (t) => {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'loadout-crypto-dm-diagnostic-'));
+  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
+  for (const [index, diagnostic] of [1, 0, '1'].entries()) {
+    const filename = path.join(directory, `${index}.json`);
+    fs.writeFileSync(filename, JSON.stringify({
+      operation: 'decrypt', value: 'enc1:bad', secret: secret.toString('hex'), diagnostic,
+    }));
+    request(filename);
+    const response = JSON.parse(fs.readFileSync(filename + '.out', 'utf8'));
+    assert.equal(response.error, 'invalid_token');
+    assert.equal(response.error_detail, diagnostic === 1 ? 'invalid_token' : undefined);
+  }
+});
+
 test('batch runtime failures are reported instead of becoming cached invalid IDs', (t) => {
   const original = crypto.createDecipheriv;
   t.after(() => { crypto.createDecipheriv = original; });

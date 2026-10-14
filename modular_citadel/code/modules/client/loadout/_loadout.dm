@@ -166,23 +166,8 @@ GLOBAL_LIST_EMPTY(loadout_whitelist_ids)
 
 //a comprehensive donator check proc is intentionally not implemented due to the fact that we (((might))) have job-whitelists for donator items in the future and I like to stay on the safe side.
 
-/// Pass the original account key: normalization cannot be reversed when checking a display-key hash.
+/// Donor group membership and the shared plaintext/encrypted whitelist check must both pass.
 /datum/gear/proc/donator_ckey_check(key)
 	if(donator_group_id && !IS_CKEY_DONATOR_GROUP(key, donator_group_id))
 		return FALSE
-	if(!LAZYLEN(ckeywhitelist))
-		return TRUE
-	var/normalized_key = ckey(key)
-	if(!length_char(normalized_key))
-		return FALSE
-	for(var/entry in ckeywhitelist)
-		if(!istext(entry))
-			continue
-		if(findtext(entry, ":"))
-			var/decrypted_key = gear_ckey_from_id(entry)
-			if(decrypted_key && ckey(decrypted_key) == normalized_key)
-				return TRUE
-			continue
-		if(ckey(entry) == normalized_key)
-			return TRUE
-	return FALSE
+	return is_key_in_whitelist(key, ckeywhitelist)

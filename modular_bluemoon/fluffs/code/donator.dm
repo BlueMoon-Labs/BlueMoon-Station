@@ -15,7 +15,7 @@
 	path = /obj/item/bikehorn/golden //Ссылка на датум объекта
 	category = LOADOUT_CATEGORY_DONATOR //Категория, в которой будет содержаться предмет - собственно во вкладке лодаута донатерских
 	subcategory = LOADOUT_SUBCATEGORIES_DON03
-	ckeywhitelist = list() // Пример (достаточно указать в 1 любом формате): list("AA-BB-ab...", "aabbab", "enc1:bdWWgObtc7vqD3botT13LuHJKA607o5T3ImYB0HdsV75sa9V_YYahA") //Если вы видите этот текст ингейм, значит кто-то ебанулся с кодом - пингуйте всё того же
+	ckeywhitelist = list() // Пример (достаточно указать в 1 любом формате): list("AA-BB-ab...", "aabbab", "enc1:unT9k2H2qbIKzt7MEgIheNaZHatKBY9AEc7Gnr54AeLG28UxZ3se") //Если вы видите этот текст ингейм, значит кто-то ебанулся с кодом - пингуйте всё того же
 
 /datum/gear/donator/bm/tyranny_crown
 	name = "Crown of Pure Tyranny"

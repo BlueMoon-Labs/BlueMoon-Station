@@ -42,6 +42,16 @@ case/punctuation changes. Keep the complete `enc1:` prefix when copying an ID.
 Results are cached and the cache is discarded when the configured secret changes.
 All encrypted whitelist entries are decrypted in one batch at loadout initialization.
 
+`/datum/sprite_accessory.ckeys_allowed` uses the same whitelist check as
+`/datum/gear.ckeywhitelist`. Both lists accept original account names, normalized
+ckeys, and `enc1:` IDs encrypted from either spelling, including mixed lists.
+For example, `list("AA-BB-ab", "anotheraccount", "enc1:...")` may be used
+for a personal accessory. Use a complete ID obtained with `[SHOW]` or the debug
+verb. Checks compare normalized identities after authenticated decryption and
+reuse the crypto cache. A null or empty list allows everyone; an unreadable ID
+never grants access. This applies to character preferences and in-round
+appearance customization.
+
 ## In-round diagnostics
 
 After deploying this build, use **Debug.2) Info → Loadout crypto** with debug rights.
@@ -67,10 +77,10 @@ cached as invalid IDs.
 | `stderr_code=node_not_found` | The shell started, but could not find the configured Node executable. Set `LOADOUT_CRYPTO_NODE` to an absolute executable path. |
 | `stderr_code=permission_denied` | The shell or Node executable is not permitted to run. Check TGS security level and executable permissions. |
 | `stderr_code=node_not_executable` | The configured file is not a runnable Linux Node binary (wrong architecture or missing execute permission). |
-| `stderr_code=process_stderr` | The process wrote an unclassified error; the raw text is intentionally hidden. |
+| `stderr_code=process_stderr` | The process wrote an unclassified error; debug diagnostics include the raw text in `stderr`. |
 | `authentication_failed` | The ID was changed or encrypted with another key. |
 | `invalid_token` / `invalid_text` / `invalid_account` / `invalid_request` | The input is invalid for the requested operation. |
-| `helper_failed` | The helper started but failed internally; native errors are intentionally not exposed. |
+| `helper_failed` | The helper started but failed internally; debug diagnostics include the original error in `error_detail`. Ordinary requests receive only the fixed code. |
 
 The TGS build uses `tools/bootstrap/node` with a separate cache. A successful
 TGUI build does **not** put Node on the game process's PATH. The repository's

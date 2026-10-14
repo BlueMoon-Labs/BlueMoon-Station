@@ -124,7 +124,7 @@
 				diagnostics["stderr_code"] = "permission_denied"
 			else if(findtext(stderr, "cannot execute") || findtext(stderr, "exec format"))
 				diagnostics["stderr_code"] = "node_not_executable"
-			else if(length(stderr))
+			else if(length_char(stderr))
 				diagnostics["stderr_code"] = "process_stderr"
 	catch
 		result = null

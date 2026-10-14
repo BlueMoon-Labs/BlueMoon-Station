@@ -3688,7 +3688,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("hair_style")
 					var/new_hair_style
-					new_hair_style = tgui_input_list(user, "Choose your character's hair style:", "Character Preference", filter_accessories_by_ckey(GLOB.hair_styles_list, user.client.ckey))
+					new_hair_style = tgui_input_list(user, "Choose your character's hair style:", "Character Preference", filter_accessories_by_ckey(GLOB.hair_styles_list, user.client.key))
 					if(new_hair_style)
 						hair_style = new_hair_style
 
@@ -3705,7 +3705,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("facial_hair_style")
 					var/new_facial_hair_style
-					new_facial_hair_style = tgui_input_list(user, "Choose your character's facial-hair style:", "Character Preference", filter_accessories_by_ckey(GLOB.facial_hair_styles_list, user.client.ckey))
+					new_facial_hair_style = tgui_input_list(user, "Choose your character's facial-hair style:", "Character Preference", filter_accessories_by_ckey(GLOB.facial_hair_styles_list, user.client.key))
 					if(new_facial_hair_style)
 						facial_hair_style = new_facial_hair_style
 
@@ -3722,7 +3722,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("grad_style")
 					var/new_grad_style
-					new_grad_style = tgui_input_list(user, "Choose your character's hair gradient style:", "Character Preference", filter_accessories_by_ckey(GLOB.hair_gradients_list, user.client.ckey))
+					new_grad_style = tgui_input_list(user, "Choose your character's hair gradient style:", "Character Preference", filter_accessories_by_ckey(GLOB.hair_gradients_list, user.client.key))
 					if(new_grad_style)
 						grad_style = new_grad_style
 
@@ -4099,7 +4099,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("ipc_screen")
 					var/new_ipc_screen
-					new_ipc_screen = tgui_input_list(user, "Choose your character's screen:", "Character Preference", filter_accessories_by_ckey(GLOB.ipc_screens_list, user.client.ckey))
+					new_ipc_screen = tgui_input_list(user, "Choose your character's screen:", "Character Preference", filter_accessories_by_ckey(GLOB.ipc_screens_list, user.client.key))
 					if(new_ipc_screen)
 						features["ipc_screen"] = new_ipc_screen
 
@@ -4112,7 +4112,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							var/datum/sprite_accessory/S = instance
 							if(!show_mismatched_markings && S.recommended_species && !S.recommended_species.Find(pref_species.id))
 								continue
-							if(S.is_allowed_for(user.client.ckey))
+							if(S.is_allowed_for(user.client.key))
 								snowflake_antenna_list[S.name] = path
 					var/new_ipc_antenna
 					new_ipc_antenna = tgui_input_list(user, "Choose your character's antenna:", "Character Preference", snowflake_antenna_list)
@@ -4121,25 +4121,25 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("arachnid_legs")
 					var/new_arachnid_legs
-					new_arachnid_legs = tgui_input_list(user, "Choose your character's variant of arachnid legs:", "Character Preference", filter_accessories_by_ckey(GLOB.arachnid_legs_list, user.client.ckey))
+					new_arachnid_legs = tgui_input_list(user, "Choose your character's variant of arachnid legs:", "Character Preference", filter_accessories_by_ckey(GLOB.arachnid_legs_list, user.client.key))
 					if(new_arachnid_legs)
 						features["arachnid_legs"] = new_arachnid_legs
 
 				if("arachnid_spinneret")
 					var/new_arachnid_spinneret
-					new_arachnid_spinneret = tgui_input_list(user, "Choose your character's spinneret markings:", "Character Preference", filter_accessories_by_ckey(GLOB.arachnid_spinneret_list, user.client.ckey))
+					new_arachnid_spinneret = tgui_input_list(user, "Choose your character's spinneret markings:", "Character Preference", filter_accessories_by_ckey(GLOB.arachnid_spinneret_list, user.client.key))
 					if(new_arachnid_spinneret)
 						features["arachnid_spinneret"] = new_arachnid_spinneret
 
 				if("arachnid_mandibles")
 					var/new_arachnid_mandibles
-					new_arachnid_mandibles = tgui_input_list(user, "Choose your character's variant of mandibles:", "Character Preference", filter_accessories_by_ckey(GLOB.arachnid_mandibles_list, user.client.ckey))
+					new_arachnid_mandibles = tgui_input_list(user, "Choose your character's variant of mandibles:", "Character Preference", filter_accessories_by_ckey(GLOB.arachnid_mandibles_list, user.client.key))
 					if (new_arachnid_mandibles)
 						features["arachnid_mandibles"] = new_arachnid_mandibles
 
 				if("tail_lizard")
 					var/new_tail
-					new_tail = tgui_input_list(user, "Choose your character's tail:", "Character Preference", filter_accessories_by_ckey(GLOB.tails_list_lizard, user.client.ckey))
+					new_tail = tgui_input_list(user, "Choose your character's tail:", "Character Preference", filter_accessories_by_ckey(GLOB.tails_list_lizard, user.client.key))
 					if(new_tail)
 						features["tail_lizard"] = new_tail
 						if(new_tail != "None")
@@ -4155,7 +4155,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							var/datum/sprite_accessory/S = instance
 							if(!show_mismatched_markings && S.recommended_species && !S.recommended_species.Find(pref_species.id))
 								continue
-							if(S.is_allowed_for(user.client.ckey))
+							if(S.is_allowed_for(user.client.key))
 								snowflake_tails_list[S.name] = path
 					var/new_tail
 					new_tail = tgui_input_list(user, "Choose your character's tail:", "Character Preference", snowflake_tails_list)
@@ -4174,7 +4174,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							var/datum/sprite_accessory/S = instance
 							if(!show_mismatched_markings && S.recommended_species && !S.recommended_species.Find(pref_species.id))
 								continue
-							if(S.is_allowed_for(user.client.ckey))
+							if(S.is_allowed_for(user.client.key))
 								snowflake_tails_list[S.name] = path
 					var/new_tail
 					new_tail = tgui_input_list(user, "Choose your character's tail:", "Character Preference", snowflake_tails_list)
@@ -4199,7 +4199,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							var/datum/sprite_accessory/S = instance
 							if(!show_mismatched_markings && S.recommended_species && !S.recommended_species.Find(pref_species.id))
 								continue
-							if(S.is_allowed_for(user.client.ckey))
+							if(S.is_allowed_for(user.client.key))
 								snowflake_snouts_list[S.name] = path
 					var/new_snout
 					new_snout = tgui_input_list(user, "Choose your character's snout:", "Character Preference", snowflake_snouts_list)
@@ -4216,7 +4216,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							var/datum/sprite_accessory/S = instance
 							if(!show_mismatched_markings && S.recommended_species && !S.recommended_species.Find(pref_species.id))
 								continue
-							if(S.is_allowed_for(user.client.ckey))
+							if(S.is_allowed_for(user.client.key))
 								snowflake_mam_snouts_list[S.name] = path
 					var/new_mam_snouts
 					new_mam_snouts = tgui_input_list(user, "Choose your character's snout:", "Character Preference", snowflake_mam_snouts_list)
@@ -4226,7 +4226,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("horns")
 					var/new_horns
-					new_horns = tgui_input_list(user, "Choose your character's horns:", "Character Preference", filter_accessories_by_ckey(GLOB.horns_list, user.client.ckey))
+					new_horns = tgui_input_list(user, "Choose your character's horns:", "Character Preference", filter_accessories_by_ckey(GLOB.horns_list, user.client.key))
 					if(new_horns)
 						features["horns"] = new_horns
 
@@ -4240,7 +4240,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("wings")
 					var/new_wings
-					new_wings = tgui_input_list(user, "Choose your character's wings:", "Character Preference", filter_accessories_by_ckey(GLOB.r_wings_list, user.client.ckey))
+					new_wings = tgui_input_list(user, "Choose your character's wings:", "Character Preference", filter_accessories_by_ckey(GLOB.r_wings_list, user.client.key))
 					if(new_wings)
 						features["wings"] = new_wings
 
@@ -4255,61 +4255,61 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("frills")
 					var/new_frills
-					new_frills = tgui_input_list(user, "Choose your character's frills:", "Character Preference", filter_accessories_by_ckey(GLOB.frills_list, user.client.ckey))
+					new_frills = tgui_input_list(user, "Choose your character's frills:", "Character Preference", filter_accessories_by_ckey(GLOB.frills_list, user.client.key))
 					if(new_frills)
 						features["frills"] = new_frills
 
 				if("spines")
 					var/new_spines
-					new_spines = tgui_input_list(user, "Choose your character's spines:", "Character Preference", filter_accessories_by_ckey(GLOB.spines_list, user.client.ckey))
+					new_spines = tgui_input_list(user, "Choose your character's spines:", "Character Preference", filter_accessories_by_ckey(GLOB.spines_list, user.client.key))
 					if(new_spines)
 						features["spines"] = new_spines
 
 				if("legs")
 					var/new_legs
-					new_legs = tgui_input_list(user, "Choose your character's legs:", "Character Preference", filter_accessories_by_ckey(GLOB.legs_list, user.client.ckey))
+					new_legs = tgui_input_list(user, "Choose your character's legs:", "Character Preference", filter_accessories_by_ckey(GLOB.legs_list, user.client.key))
 					if(new_legs)
 						features["legs"] = new_legs
 
 				if("insect_wings")
 					var/new_insect_wings
-					new_insect_wings = tgui_input_list(user, "Choose your character's wings:", "Character Preference", filter_accessories_by_ckey(GLOB.insect_wings_list, user.client.ckey))
+					new_insect_wings = tgui_input_list(user, "Choose your character's wings:", "Character Preference", filter_accessories_by_ckey(GLOB.insect_wings_list, user.client.key))
 					if(new_insect_wings)
 						features["insect_wings"] = new_insect_wings
 
 				if("deco_wings")
 					var/new_deco_wings
-					new_deco_wings = tgui_input_list(user, "Choose your character's wings:", "Character Preference", filter_accessories_by_ckey(GLOB.deco_wings_list, user.client.ckey))
+					new_deco_wings = tgui_input_list(user, "Choose your character's wings:", "Character Preference", filter_accessories_by_ckey(GLOB.deco_wings_list, user.client.key))
 					if(new_deco_wings)
 						features["deco_wings"] = new_deco_wings
 
 				if("insect_fluff")
 					var/new_insect_fluff
-					new_insect_fluff = tgui_input_list(user, "Choose your character's wings:", "Character Preference", filter_accessories_by_ckey(GLOB.insect_fluffs_list, user.client.ckey))
+					new_insect_fluff = tgui_input_list(user, "Choose your character's wings:", "Character Preference", filter_accessories_by_ckey(GLOB.insect_fluffs_list, user.client.key))
 					if(new_insect_fluff)
 						features["insect_fluff"] = new_insect_fluff
 
 				if("insect_markings")
 					var/new_insect_markings
-					new_insect_markings = tgui_input_list(user, "Choose your character's markings:", "Character Preference", filter_accessories_by_ckey(GLOB.insect_markings_list, user.client.ckey))
+					new_insect_markings = tgui_input_list(user, "Choose your character's markings:", "Character Preference", filter_accessories_by_ckey(GLOB.insect_markings_list, user.client.key))
 					if(new_insect_markings)
 						features["insect_markings"] = new_insect_markings
 
 				if("arachnid_legs")
 					var/new_arachnid_legs
-					new_arachnid_legs = tgui_input_list(user, "Choose your character's variant of arachnid legs:", "Character Preference", filter_accessories_by_ckey(GLOB.arachnid_legs_list, user.client.ckey))
+					new_arachnid_legs = tgui_input_list(user, "Choose your character's variant of arachnid legs:", "Character Preference", filter_accessories_by_ckey(GLOB.arachnid_legs_list, user.client.key))
 					if(new_arachnid_legs)
 						features["arachnid_legs"] = new_arachnid_legs
 
 				if("arachnid_spinneret")
 					var/new_arachnid_spinneret
-					new_arachnid_spinneret = tgui_input_list(user, "Choose your character's spinneret markings:", "Character Preference", filter_accessories_by_ckey(GLOB.arachnid_spinneret_list, user.client.ckey))
+					new_arachnid_spinneret = tgui_input_list(user, "Choose your character's spinneret markings:", "Character Preference", filter_accessories_by_ckey(GLOB.arachnid_spinneret_list, user.client.key))
 					if(new_arachnid_spinneret)
 						features["arachnid_spinneret"] = new_arachnid_spinneret
 
 				if("arachnid_mandibles")
 					var/new_arachnid_mandibles
-					new_arachnid_mandibles = tgui_input_list(user, "Choose your character's variant of mandibles:", "Character Preference", filter_accessories_by_ckey(GLOB.arachnid_mandibles_list, user.client.ckey))
+					new_arachnid_mandibles = tgui_input_list(user, "Choose your character's variant of mandibles:", "Character Preference", filter_accessories_by_ckey(GLOB.arachnid_mandibles_list, user.client.key))
 					if (new_arachnid_mandibles)
 						features["arachnid_mandibles"] = new_arachnid_mandibles
 
@@ -4343,7 +4343,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 								continue
 							if(S.ignore)
 								continue
-							if(S.is_allowed_for(user.client.ckey))
+							if(S.is_allowed_for(user.client.key))
 								snowflake_taur_list[S.name] = path
 					var/new_taur
 					new_taur = tgui_input_list(user, "Choose your character's tauric body:", "Character Preference", snowflake_taur_list)
@@ -4364,7 +4364,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							var/datum/sprite_accessory/S = instance
 							if(!show_mismatched_markings && S.recommended_species && !S.recommended_species.Find(pref_species.id))
 								continue
-							if(S.is_allowed_for(user.client.ckey))
+							if(S.is_allowed_for(user.client.key))
 								snowflake_ears_list[S.name] = path
 					var/new_ears
 					new_ears = tgui_input_list(user, "Choose your character's ears:", "Character Preference", snowflake_ears_list)
@@ -4379,7 +4379,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							var/datum/sprite_accessory/S = instance
 							if(!show_mismatched_markings && S.recommended_species && !S.recommended_species.Find(pref_species.id))
 								continue
-							if(S.is_allowed_for(user.client.ckey))
+							if(S.is_allowed_for(user.client.key))
 								snowflake_ears_list[S.name] = path
 					var/new_ears
 					new_ears = tgui_input_list(user, "Choose your character's ears:", "Character Preference", snowflake_ears_list)
@@ -4389,13 +4389,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 				//Xeno Bodyparts
 				if("xenohead")//Head or caste type
 					var/new_head
-					new_head = tgui_input_list(user, "Choose your character's caste:", "Character Preference", filter_accessories_by_ckey(GLOB.xeno_head_list, user.client.ckey))
+					new_head = tgui_input_list(user, "Choose your character's caste:", "Character Preference", filter_accessories_by_ckey(GLOB.xeno_head_list, user.client.key))
 					if(new_head)
 						features["xenohead"] = new_head
 
 				if("xenotail")//Currently one one type, more maybe later if someone sprites them. Might include animated variants in the future.
 					var/new_tail
-					new_tail = tgui_input_list(user, "Choose your character's tail:", "Character Preference", filter_accessories_by_ckey(GLOB.xeno_tail_list, user.client.ckey))
+					new_tail = tgui_input_list(user, "Choose your character's tail:", "Character Preference", filter_accessories_by_ckey(GLOB.xeno_tail_list, user.client.key))
 					if(new_tail)
 						features["xenotail"] = new_tail
 						if(new_tail != "None")
@@ -4406,7 +4406,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 				if("xenodorsal")
 					var/new_dors
-					new_dors = tgui_input_list(user, "Choose your character's dorsal tube type:", "Character Preference", filter_accessories_by_ckey(GLOB.xeno_dorsal_list, user.client.ckey))
+					new_dors = tgui_input_list(user, "Choose your character's dorsal tube type:", "Character Preference", filter_accessories_by_ckey(GLOB.xeno_dorsal_list, user.client.key))
 					if(new_dors)
 						features["xenodorsal"] = new_dors
 
@@ -5092,7 +5092,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 									var/datum/sprite_accessory/mam_body_markings/marking = S
 									if(!(actual_name in marking.covered_limbs))
 										continue
-									if(S.is_allowed_for(user.client.ckey))
+									if(S.is_allowed_for(user.client.key))
 										available += name
 								if(length(available))
 									var/current_pos = available.Find(entry[2])
@@ -5149,7 +5149,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 										if(!(selected_limb in marking.covered_limbs) && selected_limb != "All")
 											continue
 
-									if(S.is_allowed_for(user.client.ckey))
+									if(S.is_allowed_for(user.client.key))
 										snowflake_markings_list[S.name] = path
 							var/selected_marking = tgui_input_list(user, "Select the marking to apply to the limb.", "Character Preference", snowflake_markings_list)
 							if(selected_marking)
@@ -6776,16 +6776,16 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			return 0
 
 /**
- * Возвращает копию списка "имя -> аксессуар" без аксессуаров, недоступных для user_ckey.
+ * Возвращает копию списка "имя -> аксессуар" без аксессуаров, недоступных для user_key.
  * Значения, не являющиеся аксессуарами, и элементы обычных (не ассоциативных) списков остаются как есть.
  */
-/datum/preferences/proc/filter_accessories_by_ckey(list/accessories, user_ckey)
+/datum/preferences/proc/filter_accessories_by_ckey(list/accessories, user_key)
 	. = list()
 	for(var/name in accessories)
 		var/value = accessories[name]
 		if(istype(value, /datum/sprite_accessory))
 			var/datum/sprite_accessory/accessory = value
-			if(!accessory.is_allowed_for(user_ckey))
+			if(!accessory.is_allowed_for(user_key))
 				continue
 		if(isnull(value))
 			. += name

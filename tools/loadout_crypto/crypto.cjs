@@ -99,7 +99,8 @@ function request(filename) {
   let diagnostic = false;
   try {
     const data = JSON.parse(fs.readFileSync(filename, 'utf8'));
-    diagnostic = data.diagnostic === true;
+    // DM json_encode represents TRUE as 1 rather than a JSON boolean.
+    diagnostic = data.diagnostic === true || data.diagnostic === 1;
     const secret = data.secret ? parseSecret(data.secret) : readSecret(data.secret_file);
     let value;
     if (data.operation === 'encrypt') value = encrypt(data.value, secret);

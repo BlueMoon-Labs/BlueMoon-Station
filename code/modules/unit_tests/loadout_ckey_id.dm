@@ -84,6 +84,7 @@
 	TEST_ASSERT(diagnostics["node_version"], "Diagnostics must identify the running Node version")
 	TEST_ASSERT_NULL(gear_crypto("decrypt", other_fixture, FALSE, diagnostics), "Diagnostics must not bypass authentication")
 	TEST_ASSERT_EQUAL(diagnostics["error"], "authentication_failed", "Authentication errors must be distinguishable from process failures")
+	TEST_ASSERT_NOTNULL(diagnostics["error_detail"], "DM diagnostic flags must request helper error details")
 	gear_crypto("decrypt", list(fixture, other_fixture))
 	TEST_ASSERT_EQUAL(gear_ckey_from_id(fixture), "AA-BB-ab...", "Batch decryption must accept an independent AES-GCM fixture")
 	TEST_ASSERT_NULL(gear_ckey_from_id(other_fixture), "An altered authentication tag must fail")
@@ -128,4 +129,44 @@
 		CONFIG_SET(string/loadout_ckey_secret, saved_secret)
 	if(!isnull(saved_donator_groups))
 		GLOB.donators_by_group = saved_donator_groups
+	return ..()
+
+/// Sprite selection must use the same identity and authentication rules as the loadout.
+/datum/unit_test/sprite_accessory_ckey_whitelist
+	var/saved_secret
+
+/datum/unit_test/sprite_accessory_ckey_whitelist/Run()
+	saved_secret = CONFIG_GET(string/loadout_ckey_secret)
+	CONFIG_SET(string/loadout_ckey_secret, "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f")
+	var/datum/sprite_accessory/accessory = allocate(/datum/sprite_accessory)
+	TEST_ASSERT(accessory.is_allowed_for(null), "A null accessory whitelist must be unrestricted")
+	accessory.ckeys_allowed = list()
+	TEST_ASSERT(accessory.is_allowed_for("stranger"), "An empty accessory whitelist must be unrestricted")
+	var/original_id = "enc1:AAECAwQFBgcICQoLBkP7WYfIo3mjb7lYYwet3PW22BiBfjL-G3kJ"
+	var/normalized_id = gear_ckey_id("aabbab")
+	TEST_ASSERT(normalized_id, "The normalized-name encryption fixture must be available")
+	for(var/entry in list("AA-BB-ab...", "aabbab", original_id, normalized_id))
+		accessory.ckeys_allowed = list(entry)
+		for(var/account in list("AA-BB-ab...", "aabbab", "Aa.Bb-Ab"))
+			TEST_ASSERT(accessory.is_allowed_for(account), "All four whitelist formats must match the same accessory owner")
+		TEST_ASSERT(!accessory.is_allowed_for("stranger"), "A restricted accessory must reject other accounts")
+		TEST_ASSERT(!accessory.is_allowed_for(null), "A restricted accessory must reject a missing account")
+		TEST_ASSERT(!accessory.is_allowed_for("..."), "A restricted accessory must reject an empty normalized account")
+		TEST_ASSERT(!accessory.is_allowed_for(original_id), "A ciphertext is not a player account")
+	var/tampered_id = "enc1:AAECAwQFBgcICQoLBkP7WYfIo3mjb7lYYwet3PW22BiBfjL-G3kA"
+	accessory.ckeys_allowed = list(null, 123, "...", "enc2:invalid", tampered_id, original_id, "Legacy-Account")
+	TEST_ASSERT(accessory.is_allowed_for("aabbab"), "Valid IDs must work beside malformed entries")
+	TEST_ASSERT(accessory.is_allowed_for("legacyaccount"), "Plain entries must work beside encrypted entries")
+	TEST_ASSERT(!accessory.is_allowed_for("enc2invalid"), "An unknown encrypted version must not become a plaintext key")
+	TEST_ASSERT(!accessory.is_allowed_for("stranger"), "Mixed accessory whitelists must reject strangers")
+	CONFIG_SET(string/loadout_ckey_secret, "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff")
+	TEST_ASSERT(!accessory.is_allowed_for("aabbab"), "Changing the secret must invalidate cached accessory access")
+	TEST_ASSERT(accessory.is_allowed_for("Legacy-Account"), "Changing the secret must not break plaintext accessory access")
+	CONFIG_SET(string/loadout_ckey_secret, "")
+	TEST_ASSERT(!accessory.is_allowed_for("aabbab"), "A missing secret must deny encrypted accessory access")
+	TEST_ASSERT(accessory.is_allowed_for("legacyaccount"), "A missing secret must not break plaintext accessory access")
+
+/datum/unit_test/sprite_accessory_ckey_whitelist/Destroy()
+	if(!isnull(saved_secret))
+		CONFIG_SET(string/loadout_ckey_secret, saved_secret)
 	return ..()
