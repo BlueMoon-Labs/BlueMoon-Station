@@ -5,3 +5,7 @@
 ## Сервис
 
 `restless_spirit_whisper_1.ogg`, `restless_spirit_whisper_2.ogg`, `restless_spirit_whisper_3.ogg` - синтез: шум через форманты гласных, шипящие и взрывные согласные, второй голос и зал.
+
+## Экипаж
+
+`sanitary_inspection_chirp1.ogg`, `sanitary_inspection_chirp2.ogg`, `sanitary_inspection_chirp3.ogg` - синтез, сторонних записей нет.

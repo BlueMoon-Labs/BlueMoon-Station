@@ -278,6 +278,7 @@
 #include "megafauna_multiz.dm"
 #include "merge_type.dm"
 // #include "metabolizing.dm"
+#include "minor_incidents_crew.dm"
 #include "minor_incidents_paperwork.dm"
 #include "minor_incidents_service.dm"
 #include "mob_elements.dm"
