@@ -66,13 +66,13 @@
 		H.update_body()
 	else if(select_alteration == "Hair Style")
 		if(H.gender == MALE)
-			var/new_style = tgui_input_list(owner, "Select a facial hair style", "Hair Alterations", GLOB.facial_hair_styles_list)
+			var/new_style = tgui_input_list(owner, "Select a facial hair style", "Hair Alterations", GLOB.facial_hair_styles_list, H.facial_hair_style)
 			if(new_style)
 				H.facial_hair_style = new_style
 		else
 			H.facial_hair_style = "Shaved"
 		//handle normal hair
-		var/new_style = tgui_input_list(owner, "Select a hair style", "Hair Alterations", GLOB.hair_styles_list)
+		var/new_style = tgui_input_list(owner, "Select a hair style", "Hair Alterations", GLOB.hair_styles_list, H.hair_style)
 		if(new_style)
 			H.hair_style = new_style
 			H.update_hair()

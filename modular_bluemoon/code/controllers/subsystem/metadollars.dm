@@ -13,6 +13,8 @@ SUBSYSTEM_DEF(metadollars)
 	var/list/metashop_round_limited_purchases = list()
 	var/leaderboard_refresh_running = FALSE
 	var/legacy_balances_recovered = 0
+	/// ckey -> /datum/relief_join: летджойн в пустой отдел, ждущий бонуса
+	var/list/relief_joins = list()
 
 /proc/bm_metadollar_json_path(target_ckey)
 	return "data/player_saves/[target_ckey[1]]/[target_ckey]/metadollars.json"
@@ -35,6 +37,10 @@ SUBSYSTEM_DEF(metadollars)
 	round_earnings = list()
 	metadollar_burn_round_notice = null
 	metashop_round_limited_purchases = list()
+	for(var/joined_ckey in relief_joins)
+		var/datum/relief_join/join = relief_joins[joined_ckey]
+		deltimer(join.check_timer)
+	relief_joins = list()
 	INVOKE_ASYNC(src, PROC_REF(refresh_metadollar_leaderboard_from_saves))
 
 /datum/controller/subsystem/metadollars/proc/get_round_limited_purchase_count(limit_key)
@@ -447,6 +453,62 @@ SUBSYSTEM_DEF(metadollars)
 			if(O.check_completion())
 				add_amount(C, 2, "antag")
 
+	for(var/joined_ckey in collect_relief_bonuses(EMERGENCY_ESCAPED_OR_ENDGAMED))
+		log_game("METADOLLARS RELIEF: [joined_ckey] получает [METADOLLARS_RELIEF_BONUS] М$ за вход в пустой отдел")
+		var/client/C = GLOB.directory[joined_ckey]
+		if(C?.prefs)
+			add_amount(C, METADOLLARS_RELIEF_BONUS, "relief")
+		else
+			metadollar_adjust(METADOLLARS_RELIEF_BONUS, joined_ckey)
+
+/// Летджойн в пустой отдел: бонус заработан, если через 30 минут игрок жив и в этом теле или дожил так до эвакуации.
+/datum/relief_join
+	var/ckey
+	var/datum/weakref/body_ref
+	var/earned = FALSE
+	var/paid = FALSE
+	var/check_timer
+
+/datum/relief_join/proc/body_alive_and_played()
+	var/mob/living/body = body_ref?.resolve()
+	return !QDELETED(body) && body.stat != DEAD && body.ckey == ckey
+
+/datum/controller/subsystem/metadollars/proc/note_relief_join(mob/living/body)
+	var/joined_ckey = body?.ckey
+	if(!joined_ckey)
+		return
+	var/datum/relief_join/join = relief_joins[joined_ckey]
+	if(join)
+		if(join.earned || join.paid)
+			return
+		deltimer(join.check_timer)
+	join = new
+	join.ckey = joined_ckey
+	join.body_ref = WEAKREF(body)
+	join.check_timer = addtimer(CALLBACK(src, PROC_REF(check_relief_join), joined_ckey), METADOLLARS_RELIEF_MIN_TIME, TIMER_STOPPABLE)
+	relief_joins[joined_ckey] = join
+	to_chat(body, span_boldnotice("Вы вошли в пустой отдел. Продержитесь в смене [METADOLLARS_RELIEF_MIN_TIME / (1 MINUTES)] минут или до эвакуации, и в конце раунда получите [METADOLLARS_RELIEF_BONUS] М$."))
+
+/datum/controller/subsystem/metadollars/proc/check_relief_join(joined_ckey)
+	var/datum/relief_join/join = relief_joins[joined_ckey]
+	if(!join || join.earned)
+		return
+	join.check_timer = null
+	if(join.body_alive_and_played())
+		join.earned = TRUE
+	else
+		relief_joins -= joined_ckey
+
+/// ckey тех, кому положен бонус за вход в пустой отдел; каждый попадает сюда один раз за раунд.
+/datum/controller/subsystem/metadollars/proc/collect_relief_bonuses(evacuated)
+	. = list()
+	for(var/joined_ckey in relief_joins)
+		var/datum/relief_join/join = relief_joins[joined_ckey]
+		if(join.paid || !(join.earned || (evacuated && join.body_alive_and_played())))
+			continue
+		join.paid = TRUE
+		. += joined_ckey
+
 /datum/controller/subsystem/metadollars/proc/metadollar_roundend_missed_html(client/C, mob/M, list/E)
 	if(!C?.prefs || !M?.mind || isnewplayer(M))
 		return ""
@@ -513,6 +575,8 @@ SUBSYSTEM_DEF(metadollars)
 			lines += "Получено обменом: <b>[E["voucher"]]</b> М$"
 		if(E["pact_siege"])
 			lines += "Протокол осады InteQ/ПАКТ: <b>[E["pact_siege"]]</b> М$"
+		if(E["relief"])
+			lines += "Вход в пустой отдел: <b>[E["relief"]]</b> М$"
 		if(C.mob?.mind?.job_priority_boost)
 			lines += "Роль была приоритетной на момент входа: ставка М$ за время на станции <b>×2</b>"
 		chunks += "<div class='panel stationborder'><span class='header'>Метадоллары за раунд</span><br>Всего начислено: <b>[total] М$</b>.<br><small>[lines.Join("<br>")]</small><br>Текущий баланс: <b>[balance] М$</b>.</div>"

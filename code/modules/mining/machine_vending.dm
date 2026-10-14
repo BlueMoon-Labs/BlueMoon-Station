@@ -117,6 +117,8 @@
 	for (var/datum/data/mining_equipment/prize in prize_list)
 		if(ispath(prize.equipment_path, /obj/item/card/mining_point_card)) // Чтобы карточки по 50 и 500 очков не стоили меньше нужного.
 			continue
+		if(ispath(prize.equipment_path, /obj/item/stack/metadollar)) // Метадоллар не ветшает от каких-то там деталей
+			continue
 		prize.cost = max(1, round(prize.base_cost * (1 - discount_rate)))
 
 	update_static_data()
@@ -195,23 +197,27 @@
 
 	switch(action)
 		if("purchase")
-			var/mob/M = usr
-			var/obj/item/card/id/I = M.get_idcard(TRUE)
+			var/mob/user = usr
+			var/obj/item/card/id/I = user.get_idcard(TRUE)
 			if(!istype(I))
-				to_chat(usr, "<span class='alert'>Error: An ID is required!</span>")
+				to_chat(user, "<span class='alert'>Error: An ID is required!</span>")
 				flick(icon_deny, src)
 				return
 			var/datum/data/mining_equipment/prize = locate(params["ref"]) in prize_list
 			if(!prize || !(prize in prize_list))
-				to_chat(usr, "<span class='alert'>Error: Invalid choice!</span>")
+				to_chat(user, "<span class='alert'>Error: Invalid choice!</span>")
 				flick(icon_deny, src)
 				return
+			if(ispath(prize.equipment_path, /obj/item/stack/metadollar))
+				if(!vendor_can_buy_metadollar(user, /datum/job/mining))
+					flick(icon_deny, src)
+					return
 			if(prize.cost > I.mining_points)
-				to_chat(usr, "<span class='alert'>Error: Insufficient points for [prize.equipment_name] on [I]!</span>")
+				to_chat(user, "<span class='alert'>Error: Insufficient points for [prize.equipment_name] on [I]!</span>")
 				flick(icon_deny, src)
 				return
 			I.mining_points -= prize.cost
-			to_chat(usr, "<span class='notice'>[src] clanks to life briefly before vending [prize.equipment_name]!</span>")
+			to_chat(user, "<span class='notice'>[src] clanks to life briefly before vending [prize.equipment_name]!</span>")
 			playsound(src, 'sound/machines/machine_vend.ogg', 50, TRUE, extrarange = -3)
 			new prize.equipment_path(loc)
 			SSblackbox.record_feedback("nested tally", "mining_equipment_bought", 1, list("[type]", "[prize.equipment_path]"))

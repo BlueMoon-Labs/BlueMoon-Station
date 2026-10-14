@@ -1984,25 +1984,29 @@
 	name = "Truth Enforcer Uniform"
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/donator/gestapo
-	ckeywhitelist = list("monolithxxv")
+//	ckeywhitelist = list("monolithxxv")
+	subcategory = LOADOUT_SUBCATEGORIES_DON05
 
 /datum/gear/donator/bm/gestapo_cloak
 	name = "Truth Enforcer cloak"
 	slot = ITEM_SLOT_NECK
 	path = /obj/item/clothing/neck/cloak/gestapo
-	ckeywhitelist = list("monolithxxv")
+//	ckeywhitelist = list("monolithxxv")
+	subcategory = LOADOUT_SUBCATEGORIES_DON05
 
 /datum/gear/donator/bm/gestapo_head
 	name = "Truth Enforcer Cap"
 	slot = ITEM_SLOT_HEAD
 	path = /obj/item/clothing/head/donator/bm/gestapo
-	ckeywhitelist = list("monolithxxv")
+//	ckeywhitelist = list("monolithxxv")
+	subcategory = LOADOUT_SUBCATEGORIES_DON05
 
 /datum/gear/donator/bm/gestapo_mask
 	name = "Truth Enforcer Mask"
 	slot = ITEM_SLOT_MASK
 	path = /obj/item/clothing/mask/breath/gestapo
-	ckeywhitelist = list("monolithxxv")
+//	ckeywhitelist = list("monolithxxv")
+	subcategory = LOADOUT_SUBCATEGORIES_DON05
 
 /datum/gear/donator/bm/cultist_poly
 	name = "Aged Robe"
@@ -2010,7 +2014,8 @@
 	path = /obj/item/clothing/suit/donator/bm/cultist_poly
 	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#202020", "#C5302D")
-	ckeywhitelist = list("monolithxxv")
+//	ckeywhitelist = list("monolithxxv")
+	subcategory = LOADOUT_SUBCATEGORIES_DON05
 
 /datum/gear/donator/bm/exo_legs
 	name = "Exo Legs"
@@ -2018,7 +2023,8 @@
 	path = /obj/item/clothing/shoes/exo_legs
 	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#202020", "#C5302D")
-	ckeywhitelist = list("monolithxxv")
+//	ckeywhitelist = list("monolithxxv")
+	subcategory = LOADOUT_SUBCATEGORIES_DON05
 
 /datum/gear/donator/bm/dark_sabre_kit
 	name = "Dark Omen Sword Kit"
@@ -2030,19 +2036,22 @@
 	name = "Gosei.H.mk27"
 	slot = ITEM_SLOT_HEAD
 	path = /obj/item/clothing/head/helmet/sec/gosei
-	ckeywhitelist = list("monolithxxv")
+//	ckeywhitelist = list("monolithxxv")
+	subcategory = LOADOUT_SUBCATEGORIES_DON05
 
 /datum/gear/donator/bm/mark40k_helmet
 	name = "Mark40k Armored Head plates"
 	slot = ITEM_SLOT_HEAD
 	path = /obj/item/clothing/head/donator/bm/mark40k_helmet
-	ckeywhitelist = list("monolithxxv")
+//	ckeywhitelist = list("monolithxxv")
+	subcategory = LOADOUT_SUBCATEGORIES_DON05
 
 /datum/gear/donator/bm/saibasan
 	name = "Cybersun Surplus"
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/donator/saibasan
-	ckeywhitelist = list("monolithxxv")
+//	ckeywhitelist = list("monolithxxv")
+	subcategory = LOADOUT_SUBCATEGORIES_DON05
 
 /datum/gear/donator/bm/opssrt
 	name = "OPS-SRT Helmet"
@@ -2072,19 +2081,22 @@
 	name = "Mark50k Armored Head plates"
 	slot = ITEM_SLOT_HEAD
 	path = /obj/item/clothing/head/donator/bm/mark50k_helmet
-	ckeywhitelist = list("monolithxxv")
+//	ckeywhitelist = list("monolithxxv")
+	subcategory = LOADOUT_SUBCATEGORIES_DON05
 
 /datum/gear/donator/bm/mark40k_armor
 	name = "Mark40k Armored Chest plates"
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/suit/donator/bm/mark40k_armor
-	ckeywhitelist = list("monolithxxv")
+//	ckeywhitelist = list("monolithxxv")
+	subcategory = LOADOUT_SUBCATEGORIES_DON05
 
 /datum/gear/donator/bm/mark50k_armor
 	name = "Mark50k Armored Chest plates"
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/suit/donator/bm/mark50k_armor
-	ckeywhitelist = list("monolithxxv")
+//	ckeywhitelist = list("monolithxxv")
+	subcategory = LOADOUT_SUBCATEGORIES_DON05
 
 /datum/gear/donator/bm/ntrdrip
 	name = "Nanotrasen Representative Uniform"

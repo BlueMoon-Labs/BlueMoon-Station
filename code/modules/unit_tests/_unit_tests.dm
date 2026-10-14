@@ -77,6 +77,8 @@
 #include "action_button_positions.dm"
 #include "advanced_locator.dm"
 #include "anchored_mobs.dm"
+#include "antag_frame_objective.dm"
+#include "antag_opt_in.dm"
 #include "antag_removal_without_body.dm"
 #include "airalarm_mode_cutoff.dm"
 #include "airalarm_thresholds.dm"
@@ -143,6 +145,7 @@
 #include "director.dm"
 #include "door_timer_airlock.dm"
 #include "dynamic_ruleset_sanity.dm"
+#include "echolocation.dm"
 // #include "egg_glands.dm"
 // #include "dynamic_ruleset_sanity.dm"
 #include "emergency_shuttle_registration.dm"
@@ -341,6 +344,7 @@
 #include "round_10471_runtimes.dm"
 #include "round_10476_fixes.dm"
 #include "round_10483_10486_fixes.dm"
+#include "roundtype_rotation.dm"
 #include "runechat_sanity.dm"
 #include "runtime_null_guards.dm"
 // #include "say.dm"
@@ -417,6 +421,8 @@
 #include "camera_photo_probe.dm"
 #include "can_inject_clothing.dm"
 #include "director_beat_cost.dm"
+#include "director_crew_relief.dm"
+#include "director_vacancies.dm"
 #include "disposal_bin.dm"
 #include "disposal_holder.dm"
 #include "drink_icon_states.dm"
@@ -471,6 +477,7 @@
 #include "memory_leak_limits.dm"
 #include "human_mob_gc.dm"
 #include "observer_reenter_race.dm"
+#include "join_shift.dm"
 #include "jukebox_catchup_offset.dm"
 #include "jukebox_component_fixes.dm"
 #include "jukebox_import.dm"
@@ -619,4 +626,28 @@ TEST_FOCUS(/datum/unit_test/floorbot_failed_path_search_has_cooldown)
 #undef TEST_ASSERT_EQUAL
 #undef TEST_ASSERT_NOTEQUAL
 //#undef TEST_FOCUS - This define is used by vscode unit test extension to pick specific unit tests to run and appended later so needs to be used out of scope here
+
+#ifdef ECHOLOCATION_TESTS
+TEST_FOCUS(/datum/unit_test/echolocation_saved_name_migration)
+TEST_FOCUS(/datum/unit_test/echolocation_value)
+TEST_FOCUS(/datum/unit_test/echolocation_actions_and_blindness)
+TEST_FOCUS(/datum/unit_test/echolocation_can_snap_gates)
+TEST_FOCUS(/datum/unit_test/echolocation_restrained_action_fallbacks)
+TEST_FOCUS(/datum/unit_test/echolocation_mouth_fallbacks_and_hearing)
+TEST_FOCUS(/datum/unit_test/echolocation_manual_mouth_emotes)
+TEST_FOCUS(/datum/unit_test/echolocation_remove_and_transfer)
+TEST_FOCUS(/datum/unit_test/echolocation_emote_signal)
+TEST_FOCUS(/datum/unit_test/echolocation_generated_icons)
+TEST_FOCUS(/datum/unit_test/echolocation_hazard_surfaces)
+TEST_FOCUS(/datum/unit_test/echolocation_hazard_contours)
+TEST_FOCUS(/datum/unit_test/echolocation_echo_boundaries)
+TEST_FOCUS(/datum/unit_test/echolocation_snapshot_is_static)
+TEST_FOCUS(/datum/unit_test/echolocation_directional_shape_snapshots)
+TEST_FOCUS(/datum/unit_test/echolocation_monochrome_shape_grouping)
+TEST_FOCUS(/datum/unit_test/echolocation_lighting_shape_filtering)
+TEST_FOCUS(/datum/unit_test/echolocation_lit_fixtures)
+TEST_FOCUS(/datum/unit_test/echolocation_item_echo_visibility)
+TEST_FOCUS(/datum/unit_test/echolocation_typing_echo_lifecycle)
+#endif
+
 #endif

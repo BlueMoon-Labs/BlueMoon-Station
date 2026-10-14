@@ -35,6 +35,7 @@ GLOBAL_LIST_INIT(huds, alist(
 	ANTAG_HUD_SLAVER = new/datum/atom_hud/antag(),
 	DATA_HUD_ANTAGTARGET = new/datum/atom_hud/data/human/antagtarget(),
 	ANTAG_HUD_ZOMBIE = new/datum/atom_hud/antag(),
+	DATA_HUD_ANTAG_OPT_IN = new/datum/atom_hud/data/human/antag_opt_in(),
 	))
 
 /// Группы z худов, кэш по номеру уровня (см. get_hud_z_group)

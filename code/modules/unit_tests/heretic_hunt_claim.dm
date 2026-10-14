@@ -40,6 +40,10 @@
 	heart.attack(victim, user)
 	TEST_ASSERT_NULL(heretic.hunt_target, "Стоящего на ногах сердце не принимает.")
 	victim.Paralyze(10 SECONDS)
+	victim.mind.antag_opt_in_level = ANTAG_OPT_IN_NOT_TARGET
+	heart.attack(victim, user)
+	TEST_ASSERT_NULL(heretic.hunt_target, "Несогласного на охоту сердце целью не делает.")
+	victim.mind.antag_opt_in_level = ANTAG_OPT_IN_HERETIC_HUNT
 	heart.attack(victim, user)
 	TEST_ASSERT_EQUAL(heretic.hunt_target, victim.mind, "Обездвиженный член экипажа становится целью.")
 	TEST_ASSERT(!COOLDOWN_FINISHED(heretic, hunt_refresh_cooldown), "Касание запускает перезарядку смены цели.")

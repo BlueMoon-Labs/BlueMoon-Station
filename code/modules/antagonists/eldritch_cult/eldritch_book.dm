@@ -272,6 +272,8 @@
 			target_status = "Цель готова к обряду. Коснитесь её живым сердцем или доставьте к руне: 2 очка знаний и 1 побочное."
 		else
 			target_status = "Цель жива. Для обряда наденьте на неё наручники, оглушите или сбейте с ног; цель в крите подойдёт и без наручников. Если цель сама легла или уснула, это не считается."
+		if(target.stat != DEAD && heretic.hunt_live_only)
+			target_status += " Только живой: труп этой цели не примут."
 	data["hunt"] = list(
 		"target_name" = target?.real_name,
 		"target_role" = heretic.hunt_target?.assigned_role,

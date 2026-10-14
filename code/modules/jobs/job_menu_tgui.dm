@@ -186,10 +186,12 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 			jobs += list(build_job_entry(job_datum, user, heads))
 
 		var/department_type = head_job.exp_type_department
+		var/vacancy_dept = latejoin_mode ? director_dept_of_job(category[1]) : null
 		. += list(list(
 			"name" = (GLOB.exp_type_department_ru[department_type] || department_type),
 			"color" = head_job.selection_color,
 			"command" = (group_index == 1),
+			"needed" = (vacancy_dept && SSdirector.vacancies?.is_vacant(vacancy_dept)),
 			"jobs" = jobs,
 		))
 
@@ -506,6 +508,12 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 			if(SHUTTLE_CALL)
 				if(!SSshuttle.canRecall())
 					info["shuttle"] = "Станция сейчас проводит процедуру эвакуации экипажа."
+
+	var/datum/director_vacancies/vacancies = SSdirector.vacancies
+	for(var/dept in GLOB.director_vacancy_departments)
+		if(vacancies?.is_vacant(dept))
+			info["relief"] = "Отделы с пометкой «нужны» сейчас пусты. Вход туда до вызова эвакуации принесёт [METADOLLARS_RELIEF_BONUS] М$ в конце раунда, если продержитесь в смене [METADOLLARS_RELIEF_MIN_TIME / (1 MINUTES)] минут или до эвакуации."
+			break
 
 	return info
 
