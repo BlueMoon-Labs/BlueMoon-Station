@@ -188,6 +188,8 @@
 #define HK47_VOICE_COOLDOWN (8 SECONDS)
 #define HK47_VOICE_VOLUME 60
 #define HK47_VOICE_EXTRA_RANGE 2
+/// Сколько занят вокабулятор, если длину файла прочитать не удалось (в деплое без звуков на диске).
+#define HK_VOICE_LINE_FALLBACK_LENGTH (5 SECONDS)
 /// «Режим боя» звучит на первом выстреле или ударе после стольких секунд без боя.
 #define HK47_COMBAT_CALM_TIME (60 SECONDS)
 /// Ниже этой доли прочности HK сообщает о тяжёлых повреждениях.

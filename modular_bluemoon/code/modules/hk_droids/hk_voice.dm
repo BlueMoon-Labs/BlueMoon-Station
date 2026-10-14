@@ -1,8 +1,6 @@
 #define HK_PREFIX_BARK_VOLUME 45
 #define HK_PREFIX_BARK_EXTRA_RANGE 1
 #define HK_PREFIX_BARK_COOLDOWN (3 SECONDS)
-/// Сколько занят вокабулятор, если длину файла прочитать не удалось.
-#define HK_VOICE_LINE_FALLBACK_LENGTH (5 SECONDS)
 
 /datum/species/ipc/hk
 	COOLDOWN_DECLARE(prefix_bark_cooldown)
@@ -63,4 +61,3 @@
 #undef HK_PREFIX_BARK_VOLUME
 #undef HK_PREFIX_BARK_EXTRA_RANGE
 #undef HK_PREFIX_BARK_COOLDOWN
-#undef HK_VOICE_LINE_FALLBACK_LENGTH

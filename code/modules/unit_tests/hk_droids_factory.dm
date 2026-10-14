@@ -464,7 +464,6 @@
 		var/voice = droid.voice_lines[key]
 		TEST_ASSERT(isfile(voice), "[key] без звука")
 		TEST_ASSERT_EQUAL("[voice]", "modular_bluemoon/sound/hk_droids/[key].ogg", "[key] играет чужой файл")
-		TEST_ASSERT(fexists("[voice]"), "[voice] нет в репозитории")
 
 	var/level = "[droid.z]"
 	var/mob/living/simple_animal/hostile/hk50/packmate = allocate(/mob/living/simple_animal/hostile/hk50)

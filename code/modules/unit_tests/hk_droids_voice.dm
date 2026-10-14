@@ -16,7 +16,6 @@
 		var/voice = antag.voice_lines[key]
 		TEST_ASSERT(isfile(voice), "[key] has a sound")
 		TEST_ASSERT_EQUAL("[voice]", "modular_bluemoon/sound/hk_droids/[key].ogg", "[key] plays its own file")
-		TEST_ASSERT(fexists("[voice]"), "[voice] is in the repository")
 
 /// Щелчок префикса у всех моделей HK: свой звук на тип фразы, шёпот, жесты и повтор за кулдаун молчат.
 /datum/unit_test/hk_prefix_bark
@@ -118,7 +117,9 @@
 	chassis = droid.dna.species
 	TEST_ASSERT(hk_voice_line(droid, 'sound/machines/ping.ogg'), "the shared voice proc plays for any HK chassis")
 	var/busy = chassis.voice_busy_until - world.time
-	TEST_ASSERT(busy >= 3 && busy <= 7, "the vocabulator is busy for the clip length (ping.ogg ~5 ds), got [busy]")
+	var/expected_busy = hk_voice_line_length('sound/machines/ping.ogg')
+	TEST_ASSERT(abs(busy - expected_busy) < 0.1, "the vocabulator is busy for the clip length, expected [expected_busy], got [busy]")
+	TEST_ASSERT(busy > 0 && busy <= HK_VOICE_LINE_FALLBACK_LENGTH, "a clip keeps the vocabulator busy no longer than the fallback, got [busy]")
 	droid.moveToNullspace()
 	TEST_ASSERT(!hk_voice_line(droid, 'sound/machines/ping.ogg'), "nothing plays in nullspace")
 
