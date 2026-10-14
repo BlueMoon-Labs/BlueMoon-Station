@@ -132,12 +132,6 @@
 /area/ruin/unpowered)
 "z" = (
 /obj/machinery/door/airlock/mining/glass,
-/obj/machinery/door/firedoor/border_only{
-	dir = 4
-	},
-/obj/machinery/door/firedoor/border_only{
-	dir = 8
-	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/unpowered)
 "A" = (

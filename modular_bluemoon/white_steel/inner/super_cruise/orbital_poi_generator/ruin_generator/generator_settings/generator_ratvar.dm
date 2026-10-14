@@ -14,12 +14,9 @@
 		/obj/effect/decal/cleanable/blood/gibs/old = 1,
 		/obj/effect/decal/cleanable/greenglow = 1,
 		/obj/effect/spawner/lootdrop/maintenance = 3,
-		null = 70,
-		//WHITE-STEEL PORT: ловушки Ратвара (битые заглушки с desc "Ты не должен этого видеть")
-		//полностью убраны из спавна - оставлены только руны.
+		null = 50,
 		/obj/effect/clockwork/sigil/transgression = 2,
 		/obj/structure/destructible/clockwork/wall_gear/displaced = 10,
-		//WHITE-STEEL PORT: вместо ловушек спавним настоящих врагов-культистов Ратвара (было мало врагов).
 		/mob/living/simple_animal/hostile/clockcultistmelee = 3,
 		/mob/living/simple_animal/hostile/clockcultistranged = 2,
 		/mob/living/simple_animal/hostile/clockwork/clocktank = 1.5,

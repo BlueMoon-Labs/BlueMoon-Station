@@ -19,8 +19,6 @@
 		/mob/living/simple_animal/hostile/inteq/ranged/shotgun = 0.75,
 		/mob/living/simple_animal/hostile/inteq/melee = 1.5,
 		/mob/living/simple_animal/hostile/inteq/melee/sword = 0.75,
-		//WHITE-STEEL PORT: усиленные вариации ИнтеКа (скафандр и элитный штурмовик).
-		//Каждая базовая группа получает свои space и space/stormtrooper версии.
 		/mob/living/simple_animal/hostile/inteq/melee/space = 1,
 		/mob/living/simple_animal/hostile/inteq/melee/space/stormtrooper = 0.5,
 		/mob/living/simple_animal/hostile/inteq/melee/sword/space = 0.5,
@@ -33,13 +31,12 @@
 		/obj/item/storage/fancy/cigarettes/cigpack_inteq = 2,
 		/obj/item/storage/box/inteq_box = 1,
 		/obj/item/storage/box/inteq_box/inteq_clothes = 1,
-		//WHITE-STEEL PORT: документы ИнтеКа встречаются ещё реже (вес урезан вдвое).
 		/obj/item/documents/inteq = 0.1,
 		/obj/item/folder/inteq = 0.1,
 		/obj/item/clothing/under/inteq = 1,
 		/obj/item/storage/toolbox/inteq = 1,
 		/obj/item/gun/ballistic/revolver/inteq = 0.1,
-		null = 150,
+		null = 130,
 	)
 	. += get_broken_stuff()
 	for(var/trash in subtypesof(/obj/item/trash))

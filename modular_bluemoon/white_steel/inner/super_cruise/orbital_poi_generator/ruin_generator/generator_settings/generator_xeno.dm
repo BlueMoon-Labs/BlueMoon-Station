@@ -27,7 +27,7 @@
 		/obj/effect/mob_spawn/human/corpse/assistant = 1,
 		/obj/effect/mob_spawn/human/corpse/cargo_tech = 1,
 		/obj/effect/mob_spawn/human/corpse/damaged = 1,
-		null = 90
+		null = 70
 	)
 	. += get_broken_stuff()
 	for(var/trash in subtypesof(/obj/item/trash))

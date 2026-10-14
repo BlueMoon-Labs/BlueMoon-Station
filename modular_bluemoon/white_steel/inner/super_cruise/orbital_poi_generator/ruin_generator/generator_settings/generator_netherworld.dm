@@ -22,7 +22,7 @@
 		/obj/structure/destructible/cult/forge = 1,
 		/obj/effect/rune/blood_boil = 1,
 		/obj/effect/rune/empower = 1,
-		null = 140,
+		null = 120,
 	)
 	. += get_broken_stuff()
 	for(var/trash in subtypesof(/obj/item/trash))

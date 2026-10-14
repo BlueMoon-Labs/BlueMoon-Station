@@ -39,10 +39,6 @@
 	name = "Gateway Access Shutter"
 	},
 /obj/effect/turf_decal/delivery,
-/obj/machinery/door/firedoor/border_only,
-/obj/machinery/door/firedoor/border_only{
-	dir = 1
-	},
 /turf/open/floor/plasteel,
 /area/ruin/unpowered)
 "H" = (

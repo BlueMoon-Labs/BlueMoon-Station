@@ -17,7 +17,7 @@
 		/obj/effect/spawner/lootdrop/maintenance = 3,
 		/mob/living/simple_animal/hostile/poison/giant_spider/hunter = 0.75,
 		/mob/living/simple_animal/hostile/poison/giant_spider/nurse = 0.75,
-		null = 110,
+		null = 90,
 	)
 	. += get_broken_stuff()
 	for(var/trash in subtypesof(/obj/item/trash))

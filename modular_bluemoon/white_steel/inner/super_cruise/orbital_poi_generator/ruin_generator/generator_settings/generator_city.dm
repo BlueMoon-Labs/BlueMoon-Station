@@ -16,7 +16,7 @@
 		/obj/effect/spawner/lootdrop/glowstick = 4,
 		/obj/effect/spawner/lootdrop/maintenance = 3,
 		/mob/living/simple_animal/hostile/zombie = 3.75,
-		null = 110,
+		null = 90,
 	)
 	. += get_broken_stuff()
 	for(var/trash in subtypesof(/obj/item/trash))

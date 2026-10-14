@@ -19,7 +19,7 @@
 		/mob/living/simple_animal/hostile/blob/blobbernaut/independent = 0.75,
 		//WHITE-STEEL PORT: на сигнале био-угрозы мусора заметно больше — пустой вес снижен,
 		//чтобы на каждый тайл чаще что-то спавнилось.
-		null = 55,
+		null = 35,
 	)
 	. += get_broken_stuff()
 	for(var/trash in subtypesof(/obj/item/trash))
