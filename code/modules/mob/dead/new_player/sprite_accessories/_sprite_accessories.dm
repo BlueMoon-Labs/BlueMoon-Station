@@ -50,6 +50,7 @@
 			else
 				male += D.name
 				female += D.name
+	GLOB.sprite_accessory_lists |= list(L)
 	return L
 
 /datum/sprite_accessory

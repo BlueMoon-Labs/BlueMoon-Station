@@ -131,6 +131,7 @@
 	for(var/path in subtypesof(/datum/sprite_accessory/hair_gradient))
 		var/datum/sprite_accessory/hair_gradient/H = new path()
 		GLOB.hair_gradients_list[H.name] = H
+	GLOB.sprite_accessory_lists |= list(GLOB.hair_gradients_list)
 
 	// Keybindings
 	init_keybindings()
@@ -151,11 +152,7 @@
 				var/datum/gear/gear = items[item_name]
 				if(length(gear.ckeywhitelist))
 					whitelists += list(gear.ckeywhitelist)
-	// Sprite registries contain live datums indexed by name. Read their initialized lists.
-	for(var/global_name in GLOB.vars)
-		var/list/registry = GLOB.vars[global_name]
-		if(!islist(registry))
-			continue
+	for(var/list/registry as anything in GLOB.sprite_accessory_lists)
 		for(var/entry_name in registry)
 			if(!istext(entry_name))
 				continue

@@ -3,6 +3,8 @@
 GLOBAL_LIST_INIT(char_directory_tags, list("Pred", "Pred-Pref", "Prey", "Prey-Pref", "Switch", "Non-Vore", "Unset"))
 GLOBAL_LIST_INIT(char_directory_erptags, list("Top", "Top-Pref", "Bottom", "Bottom-Pref", "Submissive Top", "Dominant Bottom", "Switch", "No ERP", "Unset"))
 GLOBAL_LIST_INIT(char_directory_gendertags, list("Female", "Futa", "Male", "MtF", "FtM", "N/B", "Unset"))
+/// Initialized sprite accessory lists, registered by reference for whitelist cache warming.
+GLOBAL_LIST_EMPTY(sprite_accessory_lists)
 	//Hairstyles
 GLOBAL_LIST_EMPTY(hair_styles_list)			//stores /datum/sprite_accessory/hair indexed by name
 GLOBAL_LIST_EMPTY(hair_styles_male_list)		//stores only hair names
