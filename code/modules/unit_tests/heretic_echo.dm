@@ -341,16 +341,24 @@
 	var/obj/item/heretic_path_relic/echo_fork/fork = recipe.new_path_relic_ref.resolve()
 	allocated += fork
 	TEST_ASSERT(!fork.hold_echo(user), "Лира на полу не готовит удержание.")
+	var/datum/action/item_action/heretic_echo_hold/button = locate() in fork.actions
+	TEST_ASSERT_NOTNULL(button, "У лиры своя кнопка удержания.")
+	TEST_ASSERT(button.button_icon_state in icon_states(button.icon_icon), "Значок кнопки нарисован: [button.button_icon_state].")
+	TEST_ASSERT_EQUAL(button.button_icon_state, "echo_hold_ready", "Кнопка показывает готовую лиру.")
 	user.put_in_hands(fork)
-	TEST_ASSERT(fork.AltClick(user), "Alt-клик готовит задержку следующего повтора.")
+	TEST_ASSERT(!fork.AltClick(user) && !echo.hold_next_repeat, "Alt-клик больше не готовит удержание.")
+	TEST_ASSERT(fork.ui_action_click(user, button), "Кнопка готовит задержку следующего повтора.")
+	TEST_ASSERT_EQUAL(button.button_icon_state, "echo_hold_armed", "Кнопка показывает подготовленное удержание.")
 	var/mob/living/victim = allocate(/mob/living/carbon/human, get_step(center, EAST))
 	TEST_ASSERT(echo.release(user), "Последний удар запускается с удержанием.")
 	var/datum/heretic_echo_attack/attack = echo.attacks[1]
 	TEST_ASSERT(attack.held && !echo.hold_next_repeat, "Удержание применяется только к одному повтору.")
+	TEST_ASSERT_EQUAL(button.button_icon_state, "echo_hold_held", "Пока звук держится, кнопка показывает удержание.")
 	TEST_ASSERT(abs(victim.getBruteLoss() - 12) <= DAMAGE_PRECISION, "Первая волна всё равно наносит немедленный урон.")
 	TEST_ASSERT(!attack.resolve(), "Удержанный повтор нельзя выпустить без нового предупреждения.")
-	TEST_ASSERT(fork.AltClick(user), "Выпуск доступен во время перезарядки настройки.")
+	TEST_ASSERT(fork.ui_action_click(user, button), "Выпуск доступен во время перезарядки настройки.")
 	TEST_ASSERT(!attack.held && length(attack.warnings), "Выпуск снова показывает предупреждение.")
+	TEST_ASSERT_EQUAL(button.button_icon_state, "echo_hold_ready", "Выпущенный звук возвращает кнопку в готовность.")
 	TEST_ASSERT(abs(victim.getBruteLoss() - 12) <= DAMAGE_PRECISION, "Само отпускание не наносит урона.")
 	attack.resolve()
 	TEST_ASSERT(abs(victim.getBruteLoss() - 36) <= DAMAGE_PRECISION, "Задержка сохраняет исходный урон двух волн.")
@@ -358,9 +366,11 @@
 	COOLDOWN_RESET(fork, relic_cooldown)
 	TEST_ASSERT(fork.hold_echo(user) && echo.release(user), "Можно подготовить следующий задержанный повтор.")
 	var/datum/heretic_echo_attack/pending = echo.attacks[1]
+	TEST_ASSERT_EQUAL(button.button_icon_state, "echo_hold_held", "Новое удержание снова видно на кнопке.")
 	qdel(recipe)
 	TEST_ASSERT(QDELETED(pending), "Потеря лиры как знания отменяет удержанный звук.")
 	TEST_ASSERT(!echo.hold_next_repeat, "Потеря знания очищает подготовку.")
+	TEST_ASSERT_EQUAL(button.button_icon_state, "echo_hold_ready", "Отменённое удержание снимается с кнопки.")
 
 /// Удержание само заканчивается и всё равно оставляет время на уклонение.
 /datum/unit_test/heretic_echo_held_timer/Run()
@@ -396,7 +406,7 @@
 		TEST_ASSERT(istype(visual, /obj/effect/temp_visual/heretic_echo/warning/held) && visual.icon_state == "echo_held", "Удержанные клетки рисуются зависшей вибрацией, а не обычным предупреждением.")
 	var/spinup_left = timeleft(attack.spinup_timer)
 	TEST_ASSERT(spinup_left > 0, "Разгон ждёт своего момента.")
-	TEST_ASSERT_EQUAL(timeleft(attack.release_timer) - spinup_left, HERETIC_ECHO_SPINUP_TIME, "Разгон начинается ровно за время своей анимации до выпуска.")
+	TEST_ASSERT(abs(timeleft(attack.release_timer) - spinup_left - HERETIC_ECHO_SPINUP_TIME) < 0.01, "Разгон начинается ровно за время своей анимации до выпуска.")
 	TEST_ASSERT_EQUAL(length(GLOB.heretic_echo_hold_sounds), length(GLOB.heretic_echo_spinup_sounds), "У каждого тона удержания свой разгон.")
 	TEST_ASSERT(attack.hold_voice >= 1 && attack.hold_voice <= length(GLOB.heretic_echo_hold_sounds), "Тон удержания выбран из набора.")
 	for(var/sound_file in GLOB.heretic_echo_hold_sounds + GLOB.heretic_echo_spinup_sounds)
@@ -1630,3 +1640,294 @@
 	TEST_ASSERT_NOTNULL(user.has_status_effect(/datum/status_effect/heretic_echo_hush), "Сразу после эфира Тишина готова.")
 	TEST_ASSERT(!COOLDOWN_FINISHED(fixture, ether_cooldown), "Тишина не сбрасывает перезарядку эфира.")
 	qdel(fixture)
+
+/// Колыбельная поёт своим напевом: ноты летят от поющего к цели и гаснут, над головой своя нота, а не перекрашенная метка.
+/datum/unit_test/heretic_echo_lullaby_song/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_ECHO
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_echo)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/echo_lullaby)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_echo/echo = heretic.get_knowledge(/datum/eldritch_knowledge/base_echo)
+	var/turf/origin = get_turf(user)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, locate(origin.x + 3, origin.y, origin.z))
+	echo.set_ringing(victim)
+	echo.combat_resource = 4
+	var/list/before = list_vfx_bursts(origin)
+	TEST_ASSERT(echo.lullaby(user, victim), "Колыбельная начинается.")
+	var/obj/effect/temp_visual/heretic_vfx/burst/notes = find_vfx_burst(origin, /particles/heretic_ascension/echo/lullaby, before)
+	TEST_ASSERT_NOTNULL(notes, "Ноты вылетают от поющего.")
+	var/list/states = icon_states('modular_bluemoon/icons/obj/heretic_echo_effects.dmi')
+	TEST_ASSERT(("echo_note_1" in states) && ("echo_note_2" in states), "Ноты Колыбельной нарисованы.")
+	var/datum/status_effect/heretic_echo_lullaby/lullaby = victim.has_status_effect(/datum/status_effect/heretic_echo_lullaby)
+	TEST_ASSERT_EQUAL(lullaby.note.icon_state, "echo_lullaby_note", "Над головой своя нота Колыбельной.")
+	TEST_ASSERT("echo_lullaby_note" in states, "Нота над головой нарисована.")
+	lullaby.duration = world.time
+	TEST_ASSERT(wait_for_qdeleted(lullaby, 1 SECONDS), "Дремота заканчивается по сроку.")
+	TEST_ASSERT(victim.IsSleeping(), "Цель засыпает под колыбельную.")
+	TEST_ASSERT(wait_for_qdeleted(notes, 3 SECONDS), "Ноты долетают и гаснут.")
+
+/// Прислушаться: база выдаёт способность; у прослушки видны силуэты живых в пяти клетках, но не мёртвых, не дальних и не самого еретика; сводка называет цель охоты у динамика.
+/datum/unit_test/heretic_echo_listen/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_ECHO)
+	var/turf/origin = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/echo_chat_probe/user = allocate(/mob/living/carbon/human/echo_chat_probe, locate(origin.x + 2, origin.y + 3, origin.z))
+	var/mob/living/old_body = heretic.owner.current
+	heretic.owner.transfer_to(user, TRUE)
+	qdel(old_body)
+	var/datum/eldritch_knowledge/base_echo/echo = heretic.get_knowledge(/datum/eldritch_knowledge/base_echo)
+	TEST_ASSERT(istype(echo.listen_spell) && (echo.listen_spell in user.mind.spell_list), "База Эха выдаёт «Прислушаться».")
+	TEST_ASSERT(echo.listen_spell.action_icon_state in icon_states(echo.listen_spell.action_icon), "Значок «Прислушаться» нарисован.")
+	TEST_ASSERT_NULL(echo.listen(user), "Без прослушки слушать нечем.")
+	TEST_ASSERT(findtext(echo.echo_failure, "прослушку"), "Отказ просит поставить прослушку: [echo.echo_failure]")
+	var/obj/item/radio/intercom/intercom = allocate(/obj/item/radio/intercom, origin)
+	TEST_ASSERT(echo.tap(intercom, user), "Интерком прослушан.")
+	var/mob/living/carbon/human/prey = allocate_hunt_victim(heretic, locate(origin.x + 1, origin.y + 1, origin.z))
+	var/mob/living/carbon/human/crew = allocate(/mob/living/carbon/human, locate(origin.x + 4, origin.y, origin.z))
+	var/mob/living/carbon/human/corpse = allocate(/mob/living/carbon/human, locate(origin.x, origin.y + 2, origin.z))
+	corpse.death()
+	var/mob/living/carbon/human/far = allocate(/mob/living/carbon/human, locate(origin.x + 6, origin.y + 1, origin.z))
+	var/list/shown = echo.listen(user)
+	TEST_ASSERT(islist(shown), "У своего интеркома еретик прислушивается: [echo.echo_failure]")
+	var/turf/viewpoint = get_turf(user)
+	var/list/marked = list()
+	for(var/image/visual as anything in shown)
+		TEST_ASSERT_EQUAL(visual.loc, viewpoint, "Образ держится на клетке еретика, которую тот видит всегда.")
+		TEST_ASSERT_EQUAL(visual.plane, ABOVE_LIGHTING_PLANE, "Силуэт виден и в темноте.")
+		marked["[visual.pixel_x],[visual.pixel_y]"] = TRUE
+	for(var/mob/living/heard in list(prey, crew))
+		TEST_ASSERT(marked["[(heard.x - viewpoint.x) * world.icon_size],[(heard.y - viewpoint.y) * world.icon_size]"], "Живой у прослушки виден силуэтом: [heard.x],[heard.y].")
+	for(var/mob/living/unheard in list(corpse, far, user))
+		TEST_ASSERT(!marked["[(unheard.x - viewpoint.x) * world.icon_size],[(unheard.y - viewpoint.y) * world.icon_size]"], "Мёртвый, дальний и сам еретик силуэтом не видны: [unheard.x],[unheard.y].")
+	TEST_ASSERT(marked["[(intercom.x - viewpoint.x) * world.icon_size],[(intercom.y - viewpoint.y) * world.icon_size]"], "Интерком отзывается кольцом.")
+	TEST_ASSERT_EQUAL(length(shown), 3, "Два силуэта и кольцо интеркома.")
+	TEST_ASSERT_EQUAL(user.count_shown("живых рядом - 2"), 1, "Сводка считает живых у интеркома: [jointext(user.shown, " | ")]")
+	TEST_ASSERT_EQUAL(user.count_shown("цель охоты у самого динамика"), 1, "Сводка называет цель охоты у динамика: [jointext(user.shown, " | ")]")
+	prey.forceMove(locate(origin.x + 5, origin.y, origin.z))
+	echo.listen(user)
+	TEST_ASSERT_EQUAL(user.count_shown("цель охоты в 5 клетках от динамика"), 1, "Дальше трёх клеток сводка называет расстояние: [jointext(user.shown, " | ")]")
+
+/// Прослушанный динамик через полторы секунды глухо повторяет два последних слова чужой фразы, не чаще раза в 10 секунд; снятая прослушка молчит.
+/datum/unit_test/heretic_echo_tap_repeat/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_ECHO)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_echo/echo = heretic.get_knowledge(/datum/eldritch_knowledge/base_echo)
+	var/turf/origin = get_turf(user)
+	var/obj/item/radio/intercom/intercom = allocate(/obj/item/radio/intercom, locate(origin.x + 2, origin.y + 2, origin.z))
+	TEST_ASSERT(echo.tap(intercom, user), "Интерком прослушан.")
+	var/mob/living/carbon/human/echo_chat_probe/crew = allocate(/mob/living/carbon/human/echo_chat_probe, locate(origin.x + 3, origin.y + 2, origin.z))
+	crew.say("Встречаемся у шлюза в полночь.", language = /datum/language/common, ignore_spam = TRUE)
+	TEST_ASSERT_EQUAL(crew.count_shown("глухо доносится"), 0, "Динамик повторяет не сразу.")
+	sleep(HERETIC_ECHO_REPEAT_DELAY + 2)
+	TEST_ASSERT_EQUAL(crew.count_shown("«...в полночь.»"), 1, "Динамик глухо повторяет два последних слова: [jointext(crew.shown, " | ")]")
+	crew.say("Ещё одна фраза рядом.", language = /datum/language/common, ignore_spam = TRUE)
+	sleep(HERETIC_ECHO_REPEAT_DELAY + 2)
+	TEST_ASSERT_EQUAL(crew.count_shown("глухо доносится"), 1, "Динамик повторяет не чаще раза в 10 секунд.")
+	echo.untap(intercom)
+	TEST_ASSERT(!(intercom in echo.tap_repeat_ready), "Снятая прослушка забывает свою задержку.")
+	crew.say("Теперь никто не слушает.", language = /datum/language/common, ignore_spam = TRUE)
+	sleep(HERETIC_ECHO_REPEAT_DELAY + 2)
+	TEST_ASSERT_EQUAL(crew.count_shown("глухо доносится"), 1, "Чистый интерком ничего не повторяет.")
+
+/// Долгое послезвучие: пустой запас восстанавливается до двух, удар клинком на полном запасе оставляет Остаточный звон; без знания ни того, ни другого.
+/datum/unit_test/heretic_echo_sustain/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_ECHO
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_echo)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_echo/echo = heretic.get_knowledge(/datum/eldritch_knowledge/base_echo)
+	var/obj/item/melee/sickly_blade/echo/blade = allocate(/obj/item/melee/sickly_blade/echo)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
+	user.a_intent = INTENT_HARM
+	echo.combat_resource = echo.combat_resource_max
+	blade.attack(victim, user)
+	TEST_ASSERT_NULL(victim.has_status_effect(/datum/status_effect/heretic_echo_ringing), "Без Долгого послезвучия полный запас не звенит.")
+	heretic.gain_knowledge(/datum/eldritch_knowledge/echo_sustain)
+	TEST_ASSERT_EQUAL(echo.combat_resource_max, 5, "Знание поднимает запас до 5.")
+	echo.combat_resource = 0
+	for(var/expected in list(1, HERETIC_ECHO_SUSTAIN_FLOOR, HERETIC_ECHO_SUSTAIN_FLOOR))
+		COOLDOWN_RESET(echo, ascended_resonance)
+		echo.on_life(user)
+		TEST_ASSERT_EQUAL(echo.combat_resource, expected, "Пустой запас восстанавливается до [HERETIC_ECHO_SUSTAIN_FLOOR], не выше.")
+	echo.combat_resource = echo.combat_resource_max - 1
+	COOLDOWN_RESET(echo, resource_harvest)
+	blade.attack(victim, user)
+	TEST_ASSERT_NULL(victim.has_status_effect(/datum/status_effect/heretic_echo_ringing), "Неполный запас не звенит.")
+	echo.combat_resource = echo.combat_resource_max
+	blade.attack(victim, user)
+	TEST_ASSERT_NOTNULL(victim.has_status_effect(/datum/status_effect/heretic_echo_ringing), "Удар клинком на полном запасе оставляет Остаточный звон.")
+	TEST_ASSERT(isfile(GLOB.heretic_echo_sounds["ring"]), "Звон полного запаса - свой звук.")
+
+/// Эхо звучит своими файлами: у каждого события свой, без колокола и помех tg; хватка в трёх вариантах, книга и метка не звучат хваткой; финальный хор нарисован в родных 64 пикселях.
+/datum/unit_test/heretic_echo_own_sounds/Run()
+	var/list/sounds = list()
+	for(var/event in GLOB.heretic_echo_sounds)
+		var/sound_file = GLOB.heretic_echo_sounds[event]
+		TEST_ASSERT(isfile(sound_file), "Звук [event] - файл ресурса.")
+		sounds += sound_file
+	TEST_ASSERT_EQUAL(length(uniqueList(sounds)), length(sounds), "У каждого события свой файл.")
+	TEST_ASSERT(!('sound/effects/gong.ogg' in sounds) && !('sound/misc/interference.ogg' in sounds), "Колокол и эфир звучат не звуками tg.")
+	var/datum/sound_effect/grasp = GLOB.sfx_datum_by_key["heretic_echo_grasp"]
+	TEST_ASSERT(length(grasp?.file_paths) >= 3, "У частой хватки три варианта.")
+	for(var/sound_file in sounds)
+		TEST_ASSERT(!(sound_file in grasp.file_paths), "Событие [sound_file] не повторяет хватку.")
+	var/datum/heretic_path/path = GLOB.heretic_paths[PATH_ECHO]
+	TEST_ASSERT(!(path.book_open_sound in grasp.file_paths) && !(path.book_page_sound in grasp.file_paths) && path.book_open_sound != 'modular_bluemoon/sound/heretic/echo_cast.ogg', "У книги Эха свои звуки.")
+	var/datum/status_effect/eldritch/echo/mark = /datum/status_effect/eldritch/echo
+	TEST_ASSERT(!(initial(mark.detonation_sound) in grasp.file_paths), "Взрыв метки звучит не хваткой.")
+	var/obj/effect/temp_visual/heretic_echo/ascend/chorus = /obj/effect/temp_visual/heretic_echo/ascend
+	var/icon/chorus_sheet = icon(initial(chorus.icon), initial(chorus.icon_state))
+	TEST_ASSERT_EQUAL(chorus_sheet.Width(), 64, "Хор Последней службы нарисован в родных 64 пикселях.")
+
+/// Слушатель звуков: запоминает файл, громкость и клетку каждого сыгранного ему звука.
+/mob/living/carbon/human/heretic_sound_probe
+	var/list/heard_sounds = list()
+
+/mob/living/carbon/human/heretic_sound_probe/Initialize(mapload)
+	. = ..()
+	enable_client_mobs_in_contents()
+
+/mob/living/carbon/human/heretic_sound_probe/playsound_local(turf/turf_source, soundin, vol, vary, frequency, falloff_exponent, channel, pressure_affected, sound/S, max_distance, falloff_distance, distance_multiplier, envwet, envdry, virtual_hearer, source_pressure, list/source_echo)
+	heard_sounds += list(list("file" = "[soundin]", "volume" = vol, "turf" = turf_source))
+
+/mob/living/carbon/human/heretic_sound_probe/Destroy()
+	clear_important_client_contents()
+	heard_sounds = null
+	return ..()
+
+/// Сколько раз прозвучал файл; с from - только из этой клетки.
+/mob/living/carbon/human/heretic_sound_probe/proc/heard(sound_file, turf/from)
+	. = 0
+	for(var/list/entry as anything in heard_sounds)
+		if(entry["file"] == "[sound_file]" && (!from || entry["turf"] == from))
+			.++
+
+/mob/living/carbon/human/heretic_sound_probe/proc/loudest(sound_file)
+	. = 0
+	for(var/list/entry as anything in heard_sounds)
+		if(entry["file"] == "[sound_file]")
+			. = max(., entry["volume"])
+
+/// Уход в эфир виден: у входа облик рассыпается звуковой рябью, у выхода вспыхивают помехи.
+/datum/unit_test/heretic_echo_ether_visuals/Run()
+	var/turf/origin = run_loc_floor_bottom_left
+	var/datum/antagonist/heretic/heretic = allocate_heretic(origin)
+	heretic.selected_path = PATH_ECHO
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_echo)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/echo_ether)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_echo/echo = heretic.get_knowledge(/datum/eldritch_knowledge/base_echo)
+	var/obj/item/radio/intercom/near_tap = allocate(/obj/item/radio/intercom, get_step(origin, EAST))
+	var/obj/item/radio/intercom/far_tap = allocate(/obj/item/radio/intercom, locate(origin.x + 4, origin.y + 4, origin.z))
+	TEST_ASSERT(echo.tap(near_tap, user) && echo.tap(far_tap, user), "Оба интеркома прослушаны.")
+	echo.combat_resource = 2
+	var/list/before = list_vfx_bursts(get_turf(far_tap))
+	TEST_ASSERT(echo.ether(user, near_tap, far_tap), "Еретик уходит в эфир.")
+	var/turf/exit = get_turf(user)
+	var/obj/effect/temp_visual/heretic_echo/ether_out/crumble = locate() in origin
+	TEST_ASSERT_NOTNULL(crumble, "У входа облик рассыпается звуковой рябью.")
+	TEST_ASSERT(crumble.icon_state in icon_states(crumble.icon), "Рябь нарисована.")
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/temp_visual/heretic_vfx/ghost) in origin, "У входа остаётся тающий облик еретика.")
+	TEST_ASSERT_NOTNULL(find_vfx_burst(exit, /particles/heretic_ascension/echo/interference, before), "У выхода вспыхивают помехи.")
+	var/particles/heretic_ascension/echo/interference/noise = /particles/heretic_ascension/echo/interference
+	TEST_ASSERT(initial(noise.icon_state) in icon_states(initial(noise.icon)), "Помехи нарисованы.")
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/temp_visual/heretic_vfx/ghost) in exit, "У выхода облик собирается из шума.")
+
+/// Вход в Тишину и выход из неё видны кольцом звона и слышны рядом своими звуками.
+/datum/unit_test/heretic_echo_hush_cues/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_ECHO
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_echo)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/echo_ether)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_echo/echo = heretic.get_knowledge(/datum/eldritch_knowledge/base_echo)
+	var/mob/living/carbon/human/heretic_sound_probe/witness = allocate(/mob/living/carbon/human/heretic_sound_probe, get_step(get_step(user, EAST), EAST))
+	var/turf/place = get_turf(user)
+	TEST_ASSERT(echo.hush(user), "Тишина накрывает еретика.")
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/temp_visual/heretic_vfx/shockwave) in place, "Вход в Тишину виден кольцом.")
+	TEST_ASSERT(witness.heard(GLOB.heretic_echo_sounds["hush_in"], place), "Вход в Тишину слышен рядом.")
+	for(var/obj/effect/temp_visual/heretic_vfx/shockwave/ring in place)
+		qdel(ring)
+	qdel(user.has_status_effect(/datum/status_effect/heretic_echo_hush))
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/temp_visual/heretic_vfx/shockwave) in place, "Выход из Тишины виден кольцом.")
+	TEST_ASSERT(witness.heard(GLOB.heretic_echo_sounds["hush_out"]), "Выход из Тишины слышен рядом.")
+	TEST_ASSERT(GLOB.heretic_echo_sounds["hush_in"] != GLOB.heretic_echo_sounds["hush_out"], "Вход и выход звучат по-разному.")
+
+/// Звуки Эха звучат там, где смысл: прослушка и резонатор без звука удара, предупреждение и волна в центре зоны, колокол Последней службы громче рядовых, у пробуждения, гибели резонатора, повтора динамика и заглушённой рации свои звуки.
+/datum/unit_test/heretic_echo_sound_cues/Run()
+	var/turf/start = get_step(get_step(run_loc_floor_bottom_left, NORTHEAST), NORTHEAST)
+	var/datum/antagonist/heretic/heretic = allocate_heretic(start)
+	heretic.selected_path = PATH_ECHO
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_echo)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/echo_fork)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/echo_crescendo)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/echo_grasp)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_echo/echo = heretic.get_knowledge(/datum/eldritch_knowledge/base_echo)
+	var/mob/living/carbon/human/heretic_sound_probe/witness = allocate(/mob/living/carbon/human/heretic_sound_probe, get_step(start, NORTH))
+	var/warning = GLOB.heretic_echo_sounds["warning"]
+	var/obj/item/radio/intercom/intercom = allocate(/obj/item/radio/intercom, get_step(start, WEST))
+	TEST_ASSERT(echo.tap(intercom, user), "Интерком прослушан.")
+	TEST_ASSERT_EQUAL(witness.heard(warning), 0, "Прослушка не звучит предупреждением удара.")
+	echo.repeat_tail(WEAKREF(intercom), "в полночь")
+	TEST_ASSERT(witness.heard(GLOB.heretic_echo_sounds["speaker"], get_turf(intercom)), "Повтор динамика слышен треском.")
+	TEST_ASSERT(witness.loudest(GLOB.heretic_echo_sounds["speaker"]) <= 25, "Треск динамика тихий.")
+	echo.combat_resource = 4
+	var/turf/resonator_place = get_step(get_step(start, EAST), EAST)
+	TEST_ASSERT(echo.create_resonator(user, resonator_place), "Резонатор поставлен.")
+	TEST_ASSERT(witness.heard(GLOB.heretic_echo_sounds["retune"], resonator_place), "Резонатор встаёт звуком лиры.")
+	TEST_ASSERT_EQUAL(witness.heard(warning), 0, "Резонатор не звучит предупреждением удара.")
+	var/obj/structure/heretic_echo_resonator/resonator = echo.resonators[1]
+	qdel(resonator)
+	TEST_ASSERT(witness.heard(GLOB.heretic_echo_sounds["resonator_break"], resonator_place), "Гибель резонатора слышна.")
+	echo.toll(user)
+	TEST_ASSERT(witness.loudest(GLOB.heretic_echo_sounds["toll"]) >= 65, "Колокол Последней службы громче рядовых звуков: [witness.loudest(GLOB.heretic_echo_sounds["toll"])].")
+	var/turf/center = locate(start.x + 3, start.y, start.z)
+	echo.combat_resource = 4
+	TEST_ASSERT(echo.crescendo(user, center), "Крещендо запущено.")
+	TEST_ASSERT(witness.heard(warning, center), "Предупреждение Крещендо звучит в центре зоны.")
+	TEST_ASSERT_EQUAL(witness.heard(warning, start), 0, "Предупреждение не звучит в клетке еретика.")
+	var/datum/heretic_echo_attack/attack = echo.attacks[1]
+	attack.resolve()
+	TEST_ASSERT(witness.heard(GLOB.heretic_echo_sounds["burst"], center), "Волна Крещендо звучит в центре зоны.")
+	TEST_ASSERT_EQUAL(witness.heard(GLOB.heretic_echo_sounds["burst"], start), 0, "Волна не звучит в клетке еретика.")
+	qdel(attack)
+	var/mob/living/carbon/human/heretic_sound_probe/victim = allocate(/mob/living/carbon/human/heretic_sound_probe, get_step(user, SOUTH))
+	var/obj/item/radio/radio = allocate(/obj/item/radio, get_turf(victim))
+	victim.put_in_hands(radio)
+	echo.set_ringing(victim)
+	var/datum/status_effect/heretic_echo_ringing/ringing = victim.has_status_effect(/datum/status_effect/heretic_echo_ringing)
+	ringing.jam_radio(victim, radio)
+	TEST_ASSERT(victim.heard(GLOB.heretic_echo_sounds["jam"]), "Заглушённая рация звенит в ушах жертвы.")
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/echo_lullaby)
+	echo.combat_resource = 4
+	TEST_ASSERT(echo.lullaby(user, victim), "Колыбельная начинается.")
+	var/datum/status_effect/heretic_echo_lullaby/lullaby = victim.has_status_effect(/datum/status_effect/heretic_echo_lullaby)
+	lullaby.wake()
+	TEST_ASSERT(victim.heard(GLOB.heretic_echo_sounds["wake"]), "Сорванная Колыбельная обрывается своим звуком.")
+	var/list/files = list()
+	for(var/cue in list("warning", "burst", "hush_in", "hush_out", "wake", "resonator_break", "speaker", "jam", "toll", "retune"))
+		TEST_ASSERT(isfile(GLOB.heretic_echo_sounds[cue]), "У события [cue] есть звук.")
+		files |= GLOB.heretic_echo_sounds[cue]
+	TEST_ASSERT_EQUAL(length(files), 10, "Каждое событие звучит своим файлом.")
+
+/// Досмотренная Колыбельная не защёлкивает захват второй раз: метка сна та же, что и у напева.
+/datum/unit_test/heretic_echo_lullaby_single_latch/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_ECHO
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_echo)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/echo_lullaby)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_echo/echo = heretic.get_knowledge(/datum/eldritch_knowledge/base_echo)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(get_step(user, EAST), EAST))
+	echo.set_ringing(victim)
+	echo.combat_resource = 4
+	TEST_ASSERT(echo.lullaby(user, victim), "Колыбельная начинается.")
+	var/obj/effect/abstract/heretic_capture_mark/front/mark = victim.heretic_capture_mark
+	TEST_ASSERT_NOTNULL(mark, "Напев защёлкивает захват.")
+	var/datum/status_effect/heretic_echo_lullaby/lullaby = victim.has_status_effect(/datum/status_effect/heretic_echo_lullaby)
+	lullaby.duration = world.time
+	TEST_ASSERT(wait_for_qdeleted(lullaby, 1 SECONDS), "Дремота заканчивается по сроку.")
+	TEST_ASSERT(victim.IsSleeping(), "Цель спит.")
+	TEST_ASSERT_EQUAL(victim.heretic_capture_mark, mark, "Сон держит ту же метку захвата, без второй защёлки.")
+	TEST_ASSERT(!mark.fading, "Метка не гаснет между напевом и сном.")

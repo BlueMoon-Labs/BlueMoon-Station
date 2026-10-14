@@ -135,7 +135,7 @@
 // 	//Needs a holodeck area linked to it which is not guarenteed to exist and technically is supposed to have a 1:1 relationship with computer anyway.
 // 	ignore += typesof(/obj/machinery/computer/holodeck)
 // 	//runtimes if not paired with a landmark
-// 	// ignore += typesof(/obj/structure/industrial_lift)
+// 	// ignore += typesof(/obj/structure/transport/linear)
 // 	// Runtimes if the associated machinery does not exist, but not the base type
 // 	// ignore += subtypesof(/obj/machinery/airlock_controller)
 // 	// All of them sleep with CHECK_TICK and hang refs. //TODO: Port modern /tg/ techwebs

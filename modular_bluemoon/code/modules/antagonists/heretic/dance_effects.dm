@@ -1,12 +1,15 @@
 #define DANCE_EARWORM_SLEEP_CURE (10 SECONDS)
 #define DANCE_INVITE_CAPTURE "dance_invite"
 #define DANCE_LEAD_CAPTURE "dance_lead"
+#define DANCE_PARTNER_CAPTURE "dance_partner"
 #define DANCE_MASK_NAME "танцор в маске"
+#define DANCE_TARANTISM_FRENZY_STACKS 5
 
 /// Всё, что держит человека в танце еретика: музыка звучит ему, эффекты снимаются вместе с танцем.
 /datum/status_effect/heretic_dance
 	id = "heretic_dance"
 	status_type = STATUS_EFFECT_UNIQUE
+	alert_type = null
 	on_remove_on_mob_delete = TRUE
 	var/datum/weakref/dance_ref
 	/// Эффект открывает дверь в изнанку еретику вплотную.
@@ -188,6 +191,7 @@
 	if(message)
 		owner.visible_message(span_notice(message))
 	to_chat(owner, span_notice("Мелодия в голове обрывается. Наконец-то тишина."))
+	playsound(owner, 'modular_bluemoon/sound/heretic/dance/cure.ogg', 35, FALSE, SILENCED_SOUND_EXTRARANGE)
 	qdel(src)
 
 /datum/status_effect/heretic_dance_earworm/proc/on_shocked(datum/source, shock_damage, shock_source, siemens_coeff, flags)
@@ -261,7 +265,7 @@
 	var/turf/place = get_turf(owner)
 	if(place)
 		new /obj/effect/temp_visual/heretic_dance_note(place)
-	playsound(owner, 'modular_bluemoon/sound/heretic/dance/invite.ogg', 60, TRUE)
+	playsound(owner, 'modular_bluemoon/sound/heretic/dance/invite.ogg', 60, FALSE)
 	owner.visible_message(span_warning("Над [owner] звучит далёкая мелодия, и ноги [owner] вздрагивают в такт."), span_userdanger("Музыка зовёт вас танцевать! Ноги больше не слушаются: вас ведут к тому, кто пригласил. Если вас схватят, повалят или растолкают, танец оборвётся."))
 	owner.balloon_alert(owner, "зовите на помощь: пусть растолкают")
 	return TRUE
@@ -284,8 +288,9 @@
 	if(--beats_left < 0)
 		stop("танец выдохся, не дойдя до вас")
 		return
-	if(linked_alert)
-		linked_alert.desc = "[initial(linked_alert.desc)] Шаг на каждой доле, осталось долей: [beats_left]."
+	var/datum/eldritch_knowledge/base_dance/dance = dance()
+	if(linked_alert && dance)
+		linked_alert.desc = "[initial(linked_alert.desc)] Шаг на каждой доле; если не дойдёте, танец выдохнется через [heretic_dance_seconds((beats_left + 1) * dance.beat_ds)] с."
 	INVOKE_ASYNC(src, PROC_REF(dance_step), user)
 
 /datum/status_effect/heretic_dance/invited/proc/start()
@@ -347,6 +352,15 @@
 		return "святая вода смыла мелодию"
 	return null
 
+/datum/eldritch_knowledge/base_dance/proc/announce_partner(mob/living/user, mob/living/partner, time)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(heretic?.hunt_target && heretic.hunt_target == partner.mind)
+		to_chat(user, span_eldritch("[partner] - ваш партнёр на [DisplayTimeText(time)]. Коснитесь партнёра живым сердцем: пока вы выбираете дверь, танец держит цель."))
+		user.balloon_alert(user, "сердцем - в изнанку!")
+	else
+		to_chat(user, span_eldritch("[partner] - ваш партнёр на [DisplayTimeText(time)]. Это не цель охоты: в изнанку не увести, но фигура Вальса поведёт партнёра за собой."))
+	SEND_SIGNAL(src, COMSIG_HERETIC_DANCE_EVENT, "partner", partner, null)
+
 /datum/status_effect/heretic_dance/invited/proc/complete()
 	if(QDELETED(src))
 		return
@@ -358,13 +372,7 @@
 		heretic_dance_combat_deed(user, owner)
 		owner.apply_status_effect(/datum/status_effect/heretic_dance/partner, dance)
 		owner.visible_message(span_danger("[owner] в последнем па оказывается в руках [user]."), span_userdanger("Танец приводит вас прямо в руки [user]!"))
-		var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-		if(heretic?.hunt_target && heretic.hunt_target == owner.mind)
-			to_chat(user, span_eldritch("[owner] - ваш партнёр на [DisplayTimeText(HERETIC_DANCE_PARTNER_TIME)]. Коснитесь партнёра живым сердцем: пока вы выбираете дверь, танец держит цель."))
-			user.balloon_alert(user, "сердцем - в изнанку!")
-		else
-			to_chat(user, span_eldritch("[owner] - ваш партнёр на [DisplayTimeText(HERETIC_DANCE_PARTNER_TIME)]. Это не цель охоты: в изнанку не увести, но фигура Вальса поведёт партнёра за собой."))
-		SEND_SIGNAL(dance, COMSIG_HERETIC_DANCE_EVENT, "partner", owner, null)
+		dance.announce_partner(user, owner, HERETIC_DANCE_PARTNER_TIME)
 	held_since = world.time - held
 	qdel(src)
 
@@ -443,12 +451,17 @@
 	var/held_since = 0
 	var/datum/status_effect/incapacitating/paralyzed/heretic_ritual/restraint
 
+/datum/status_effect/heretic_dance/partner/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_dance/dance, time)
+	if(time)
+		duration = time
+	return ..()
+
 /datum/status_effect/heretic_dance/partner/on_apply()
 	. = ..()
 	if(!.)
 		return FALSE
 	held_since = world.time
-	heretic_capture_hold(owner, DANCE_INVITE_CAPTURE)
+	heretic_capture_hold(owner, DANCE_PARTNER_CAPTURE)
 	ADD_TRAIT(owner, TRAIT_IMMOBILIZED, id)
 	restraint = new(list(owner, -1, TRUE))
 	RegisterSignal(owner, COMSIG_LIVING_HERETIC_CAPTURE_SHAKEN, PROC_REF(on_shaken))
@@ -484,7 +497,7 @@
 			qdel(restraint)
 		restraint = null
 		owner.update_mobility()
-		heretic_capture_unhold(owner, DANCE_INVITE_CAPTURE)
+		heretic_capture_unhold(owner, DANCE_PARTNER_CAPTURE)
 		heretic_capture_release(owner, DANCE_INVITE_CAPTURE, held_for = heretic_capture_held_for(held_since))
 	return ..()
 
@@ -553,7 +566,7 @@
 	id = "heretic_dance_horovod"
 	duration = HERETIC_DANCE_HOROVOD_TIME
 	alert_type = /atom/movable/screen/alert/status_effect/heretic_dance_horovod
-	examine_text = span_warning("SUBJECTPRONOUN движется в чужом хороводе, повторяя каждый шаг. Лечь, сесть, схватить или пристегнуть - и танец отпустит.")
+	examine_text = span_warning("SUBJECTPRONOUN движется в чужом хороводе, повторяя каждый шаг: пояс обвивает алая лента. Лечь, сесть, схватить или пристегнуть - и танец отпустит.")
 	var/stamina_per_step = HERETIC_DANCE_HOROVOD_STAMINA
 	var/stamina_dealt = 0
 	var/datum/beam/ribbon
@@ -576,7 +589,7 @@
 	owner.balloon_alert(owner, "лягте - и танец отпустит")
 	if(voiced)
 		playsound(owner, pick(GLOB.heretic_dance_voices), 45, TRUE)
-	owner.add_overlay(mutable_appearance('modular_bluemoon/icons/obj/heretic_dance_marks.dmi', "dance_note", ABOVE_MOB_LAYER))
+	owner.add_overlay(mutable_appearance('modular_bluemoon/icons/obj/heretic_dance_marks.dmi', "dance_horovod_ring", ABOVE_MOB_LAYER))
 	heretic_dance_combat_deed(leader(), owner)
 	return TRUE
 
@@ -604,7 +617,7 @@
 		var/mob/living/user = leader()
 		if(user)
 			UnregisterSignal(user, COMSIG_MOVABLE_MOVED)
-		owner.cut_overlay(mutable_appearance('modular_bluemoon/icons/obj/heretic_dance_marks.dmi', "dance_note", ABOVE_MOB_LAYER))
+		owner.cut_overlay(mutable_appearance('modular_bluemoon/icons/obj/heretic_dance_marks.dmi', "dance_horovod_ring", ABOVE_MOB_LAYER))
 		owner.apply_status_effect(/datum/status_effect/heretic_dance_horovod_rest)
 	return ..()
 
@@ -617,7 +630,7 @@
 /// После хоровода ноги не поддаются следующему ещё немного.
 /datum/status_effect/heretic_dance_horovod_rest
 	id = "heretic_dance_horovod_rest"
-	duration = 20 SECONDS
+	duration = HERETIC_DANCE_HOROVOD_REST
 	alert_type = null
 	status_type = STATUS_EFFECT_REFRESH
 
@@ -660,7 +673,7 @@
 	duration = 6 SECONDS
 	status_type = STATUS_EFFECT_REFRESH
 	alert_type = /atom/movable/screen/alert/status_effect/heretic_dance_tarantism
-	examine_text = span_warning("SUBJECTPRONOUN дёргается мелкой дрожью, будто по коже бегают пауки.")
+	examine_text = span_warning("SUBJECTPRONOUN дёргается в такт, как марионетка: по одежде бегают пауки, а чем сильнее яд, тем больше алых нитей тянется от рук и ног вверх.")
 	var/stacks = 0
 
 /datum/status_effect/heretic_dance/tarantism/on_apply()
@@ -675,9 +688,9 @@
 	add_stack()
 
 /datum/status_effect/heretic_dance/tarantism/proc/add_stack()
-	owner.cut_overlay(mutable_appearance('modular_bluemoon/icons/obj/heretic_dance_marks.dmi', "dance_tarantism_[clamp(stacks, 1, 5)]", ABOVE_MOB_LAYER))
+	owner.cut_overlay(mutable_appearance('modular_bluemoon/icons/obj/heretic_dance_marks.dmi', "dance_tarantism_[clamp(stacks, 1, DANCE_TARANTISM_FRENZY_STACKS - 1)]", ABOVE_MOB_LAYER))
 	stacks++
-	if(stacks >= 5)
+	if(stacks >= DANCE_TARANTISM_FRENZY_STACKS)
 		var/datum/eldritch_knowledge/base_dance/dance = dance()
 		stacks = 0
 		owner.apply_status_effect(/datum/status_effect/heretic_dance/frenzy, dance, 3 SECONDS)
@@ -692,7 +705,7 @@
 
 /datum/status_effect/heretic_dance/tarantism/on_remove()
 	if(stacks)
-		owner.cut_overlay(mutable_appearance('modular_bluemoon/icons/obj/heretic_dance_marks.dmi', "dance_tarantism_[clamp(stacks, 1, 5)]", ABOVE_MOB_LAYER))
+		owner.cut_overlay(mutable_appearance('modular_bluemoon/icons/obj/heretic_dance_marks.dmi', "dance_tarantism_[clamp(stacks, 1, DANCE_TARANTISM_FRENZY_STACKS - 1)]", ABOVE_MOB_LAYER))
 	return ..()
 
 /atom/movable/screen/alert/status_effect/heretic_dance_tarantism
@@ -731,7 +744,7 @@
 			count++
 	owner.pulledby?.stop_pulling()
 	owner.add_movespeed_modifier(/datum/movespeed_modifier/heretic_dance_masquerade)
-	playsound(owner, pick('modular_bluemoon/sound/heretic/dance/masquerade_1.ogg', 'modular_bluemoon/sound/heretic/dance/masquerade_2.ogg', 'modular_bluemoon/sound/heretic/dance/masquerade_3.ogg'), 70, TRUE)
+	playsound(owner, pick('modular_bluemoon/sound/heretic/dance/masquerade_1.ogg', 'modular_bluemoon/sound/heretic/dance/masquerade_2.ogg', 'modular_bluemoon/sound/heretic/dance/masquerade_3.ogg'), 70, FALSE)
 	new /obj/effect/temp_visual/heretic_dance/confetti(get_turf(owner))
 	return TRUE
 
@@ -783,6 +796,8 @@
 				if(dancer.masquerade == src)
 					qdel(dancer)
 		owner.remove_movespeed_modifier(/datum/movespeed_modifier/heretic_dance_masquerade)
+		if(!QDELETED(owner) && isturf(owner.loc))
+			playsound(owner, 'modular_bluemoon/sound/heretic/dance/masquerade_end.ogg', 50, FALSE)
 		if(dance?.masquerade == src)
 			dance.masquerade = null
 	masked.Cut()
@@ -857,15 +872,17 @@
 /datum/status_effect/heretic_dance_stumble
 	id = "heretic_dance_stumble"
 	duration = 1 SECONDS
-	alert_type = null
+	alert_type = /atom/movable/screen/alert/status_effect/heretic_dance_mired/stumble
 	status_type = STATUS_EFFECT_REFRESH
 
 /datum/status_effect/heretic_dance_stumble/on_apply()
 	. = ..()
 	owner.add_movespeed_modifier(/datum/movespeed_modifier/heretic_dance_stumble)
+	heretic_dance_grip(owner, "Барабан бьёт у вас в груди, и костяные пальцы хватают за лодыжки: ноги заплетаются.")
 
 /datum/status_effect/heretic_dance_stumble/on_remove()
 	owner.remove_movespeed_modifier(/datum/movespeed_modifier/heretic_dance_stumble)
+	heretic_dance_ungrip(owner)
 	return ..()
 
 /datum/movespeed_modifier/heretic_dance_stumble
@@ -874,20 +891,67 @@
 /// Пляска смерти: на каждой доле враги рядом вязнут на полсекунды.
 /datum/status_effect/heretic_dance_dread
 	id = "heretic_dance_dread"
-	duration = 0.5 SECONDS
-	alert_type = null
+	duration = HERETIC_DANCE_DREAD_LINGER
+	alert_type = /atom/movable/screen/alert/status_effect/heretic_dance_mired/dread
 	status_type = STATUS_EFFECT_REFRESH
+	var/slow_timer
 
 /datum/status_effect/heretic_dance_dread/on_apply()
 	. = ..()
+	slow()
+	heretic_dance_grip(owner, "На каждом ударе колокола из-под пола тянутся костяные руки и хватают вас за ноги. Отойдите от танцора дальше 5 шагов.")
+
+/datum/status_effect/heretic_dance_dread/refresh()
+	. = ..()
+	slow()
+
+/datum/status_effect/heretic_dance_dread/proc/slow()
 	owner.add_movespeed_modifier(/datum/movespeed_modifier/heretic_dance_dread)
+	slow_timer = addtimer(CALLBACK(src, PROC_REF(unslow)), HERETIC_DANCE_DREAD_SLOW, TIMER_UNIQUE | TIMER_OVERRIDE | TIMER_STOPPABLE)
+
+/datum/status_effect/heretic_dance_dread/proc/unslow()
+	owner.remove_movespeed_modifier(/datum/movespeed_modifier/heretic_dance_dread)
 
 /datum/status_effect/heretic_dance_dread/on_remove()
-	owner.remove_movespeed_modifier(/datum/movespeed_modifier/heretic_dance_dread)
+	deltimer(slow_timer)
+	unslow()
+	heretic_dance_ungrip(owner)
 	return ..()
 
 /datum/movespeed_modifier/heretic_dance_dread
 	multiplicative_slowdown = 0.5
+
+/atom/movable/screen/alert/status_effect/heretic_dance_mired
+	name = "Вязкий такт"
+	desc = "Музыка Пляски цепляется за ноги: вы движетесь медленнее."
+	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
+	icon_state = "dance_mired"
+
+/atom/movable/screen/alert/status_effect/heretic_dance_mired/dread
+	desc = "Пляска смерти: на каждой доле костяные руки хватают вас за ноги на полсекунды. Отойдите дальше 5 клеток от танцора."
+
+/atom/movable/screen/alert/status_effect/heretic_dance_mired/dirge
+	desc = "Вход Пляски смерти: костяные руки держат ваши ноги пару секунд, шаги вязнут."
+
+/atom/movable/screen/alert/status_effect/heretic_dance_mired/stumble
+	desc = "Танго сбило вам шаг: секунду вы движетесь медленнее."
+
+/// Цель замедлил танец: костяные руки у ног, пока держит замедление; что это, цель узнаёт в чате раз в минуту.
+/proc/heretic_dance_grip(mob/living/victim, explanation)
+	victim.add_overlay(mutable_appearance('modular_bluemoon/icons/obj/heretic_dance_marks.dmi', "dance_bone_grip", ABOVE_MOB_LAYER))
+	if(!explanation || victim.has_status_effect(/datum/status_effect/heretic_dance_grip_told))
+		return
+	victim.apply_status_effect(/datum/status_effect/heretic_dance_grip_told)
+	to_chat(victim, span_warning(explanation))
+
+/proc/heretic_dance_ungrip(mob/living/victim)
+	victim.cut_overlay(mutable_appearance('modular_bluemoon/icons/obj/heretic_dance_marks.dmi', "dance_bone_grip", ABOVE_MOB_LAYER))
+
+/datum/status_effect/heretic_dance_grip_told
+	id = "heretic_dance_grip_told"
+	duration = 1 MINUTES
+	alert_type = null
+	status_type = STATUS_EFFECT_UNIQUE
 
 /// Скелет вместо еретика для заражённых зрителей в стиле Пляски смерти.
 /datum/atom_hud/alternate_appearance/basic/heretic_dance_skeleton
@@ -935,4 +999,6 @@
 #undef DANCE_EARWORM_SLEEP_CURE
 #undef DANCE_INVITE_CAPTURE
 #undef DANCE_LEAD_CAPTURE
+#undef DANCE_PARTNER_CAPTURE
 #undef DANCE_MASK_NAME
+#undef DANCE_TARANTISM_FRENZY_STACKS

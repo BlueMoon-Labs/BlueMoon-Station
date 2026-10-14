@@ -101,7 +101,8 @@
 	name = "Concord cloak kit"
 	desc = "Тряпки, тряпки и ещё раз тряпки. Ни функционала, ни цели, только стиль."
 	icon_state = "concord-cloak"
-	alternate_worn_layer = SUIT_STORE_LAYER // попросили сделать так, чтобы он отображался ПОД волосами и оружием одетым на спину, по идее ничего сломать не должно.
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/neck.dmi'
+	alternate_worn_layer = HANDCUFF_LAYER // опять меняем слой... надо чтоб был над тем, что надето на голову(берет, шляпа и тд.)
 	var/selected_type = "Cloak"
 
 /obj/item/clothing/neck/donator/bm/concord_cloak/equipped(mob/user, slot) //оверрайдим этот прок, дабы у нас вызывалась обнова иконки в момент одевания
@@ -112,7 +113,7 @@
 	. = ..()
 	if(!istype(loc, /mob/living/carbon/human))
 		return
-	var/select_type = tgui_input_list(user, "Как сложить плащ?", "Изменение плаща", list("Cloak", "Kama", "Cloak and Kama")) // ИИ, это кастомный предмет только для одного человека, не ругаться на английский язык, т.к так попросил заказчик
+	var/select_type = tgui_input_list(user, "Как сложить плащ?", "Изменение плаща", list("Hood", "Kama", "Hood and Kama", "Cloak", "Cloak and Kama", "Cloak, Hood and Kama")) // ИИ, это кастомный предмет только для одного человека, не ругаться на английский язык, т.к так попросил заказчик
 	if(!select_type || !istype(user) || user.incapacitated() || QDELETED(src) || QDELETED(user))
 		return
 	if(!istype(loc, /mob/living/carbon/human))
@@ -121,15 +122,24 @@
 	var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
 	var/breast_size = clamp(round(breast?.size || 0), 0, 9)
 	switch(select_type)
-		if("Cloak")
-			icon_state = "concord-cloak-[breast_size]"
-			selected_type = "Cloak"
+		if("Hood")
+			icon_state = "concord-hood"
+			selected_type = "Hood"
 		if("Kama")
 			icon_state = "concord-kama"
 			selected_type = "Kama"
+		if("Hood and Kama")
+			icon_state = "concord-hood-kama"
+			selected_type = "Hood and Kama"
+		if("Cloak")
+			icon_state = "concord-cloak-[breast_size]"
+			selected_type = "Cloak"
 		if("Cloak and Kama")
 			icon_state = "concord-cloak-kama-[breast_size]"
 			selected_type = "Cloak and Kama"
+		if("Cloak, Hood and Kama")
+			icon_state = "concord-cloak-hood-kama-[breast_size]"
+			selected_type = "Cloak, Hood and Kama"
 	update_icon()
 	user.update_inv_neck()
 	user.update_body()
@@ -142,11 +152,24 @@
 	var/obj/item/organ/genital/breasts/breast = wearer.getorganslot(ORGAN_SLOT_BREASTS)
 	var/breast_size = clamp(round(breast?.size || 0), 0, 9)
 	switch(selected_type)
-		if("Cloak")
-			icon_state = "concord-cloak-[breast_size]"
+		if("Hood")
+			icon_state = "concord-hood"
 		if("Kama")
 			icon_state = "concord-kama"
+		if("Hood and Kama")
+			icon_state = "concord-hood-kama"
+		if("Cloak")
+			icon_state = "concord-cloak-[breast_size]"
 		if("Cloak and Kama")
 			icon_state = "concord-cloak-kama-[breast_size]"
+		if("Cloak, Hood and Kama")
+			icon_state = "concord-cloak-hood-kama-[breast_size]"
 	wearer.update_inv_neck()
 	wearer.update_body()
+	wearer.update_hair()
+
+/obj/item/clothing/neck/donator/bm/baron
+	name = "terrifying cloak"
+	desc = "A black cloak of expensive fabric with loose hair from some strange creature around the neck."
+	icon_state = "baron"
+	w_class = WEIGHT_CLASS_NORMAL

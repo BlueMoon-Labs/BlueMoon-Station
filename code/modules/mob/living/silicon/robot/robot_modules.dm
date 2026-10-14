@@ -156,6 +156,11 @@
 	rebuild_modules()
 
 /obj/item/robot_module/proc/remove_module(obj/item/I, delete_after)
+	var/mob/living/silicon/robot/R = loc
+	if(istype(R))
+		var/held_slot = R.held_items.Find(I)
+		if(held_slot)
+			R.unequip_module_from_slot(I, held_slot)
 	basic_modules -= I
 	modules -= I
 	emag_modules -= I
@@ -219,7 +224,7 @@
 		for(var/trait in R)
 			REMOVE_TRAITS_IN(R, CYBORG_MODULE_TRAIT)
 	for(var/i in held_modules)
-		if(i)
+		if(i && (i in modules))
 			R.activate_module(i)
 	if(R.hud_used)
 		R.hud_used.update_robot_modules_display()
@@ -230,6 +235,7 @@
 	if(!RM.be_transformed_to(src))
 		qdel(RM)
 		return
+	R.uneq_all()
 	R.module = RM
 	R.update_module_innate()
 	RM.rebuild_modules()

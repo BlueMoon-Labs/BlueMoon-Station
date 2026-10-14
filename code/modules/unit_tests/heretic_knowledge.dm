@@ -19,16 +19,23 @@
 /datum/heretic_test_station_level
 	var/datum/space_level/level
 	var/list/original_traits
+	var/list/original_generators
 
 /datum/heretic_test_station_level/New(z)
 	level = SSmapping.z_list[z]
 	original_traits = level.traits
+	var/list/generators = GLOB.gravity_generators["[z]"]
+	original_generators = generators?.Copy()
 	level.traits = original_traits.Copy()
 	level.traits[ZTRAIT_STATION] = TRUE
 
+/// Станционный генератор гравитации успевает записать этот z в свой список, пока он помечен станцией.
 /datum/heretic_test_station_level/Destroy()
 	level.traits = original_traits
+	GLOB.gravity_generators["[level.z_value]"] = original_generators
+	SSmapping.calculate_z_level_gravity(level.z_value)
 	level = null
+	original_generators = null
 	return ..()
 
 /// Клетки резервации на время теста переходят в зону area_type и возвращаются в Destroy.

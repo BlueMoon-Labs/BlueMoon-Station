@@ -7,6 +7,7 @@ All the important duct code:
 	name = "fluid duct"
 	icon = 'icons/obj/plumbing/fluid_ducts.dmi'
 	icon_state = "nduct"
+	level = 1
 
 	///bitfield with the directions we're connected in
 	var/connects
@@ -57,6 +58,11 @@ All the important duct code:
 
 	handle_layer()
 
+	// Уложенная игроком поверх плитки труба остаётся видна, как у tg: прячут только карта и смена турфа.
+	if(mapload && isturf(loc))
+		var/turf/duct_turf = loc
+		hide(duct_turf.turf_flags & TURF_INTACT)
+
 	for(var/obj/machinery/duct/D in loc)
 		if(D == src)
 			continue
@@ -69,7 +75,24 @@ All the important duct code:
 
 ///start looking around us for stuff to connect to
 /obj/machinery/duct/proc/attempt_connect()
+	// Each duct that joins the network asks its new neighbour to look around too; done recursively, a long run hits BYOND's recursion limit.
+	var/static/list/connect_queue
+	if(connect_queue)
+		connect_queue += src
+		return
+	connect_queue = list(src)
+	try
+		var/index = 1
+		while(index <= length(connect_queue))
+			var/obj/machinery/duct/current = connect_queue[index++]
+			if(!QDELETED(current))
+				current.scan_for_connections()
+	catch(var/exception/error)
+		connect_queue = null
+		throw error
+	connect_queue = null
 
+/obj/machinery/duct/proc/scan_for_connections()
 	for(var/atom/movable/AM in loc)
 		var/datum/component/plumbing/P = AM.GetComponent(/datum/component/plumbing)
 		if(P?.active)
@@ -271,6 +294,8 @@ All the important duct code:
 	pixel_x = offset
 	pixel_y = offset
 
+/obj/machinery/duct/hide(intact)
+	invisibility = intact ? INVISIBILITY_MAXIMUM : 0
 
 /obj/machinery/duct/set_anchored(anchorvalue)
 	. = ..()

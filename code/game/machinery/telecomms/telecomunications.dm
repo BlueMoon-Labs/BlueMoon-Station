@@ -105,7 +105,23 @@ GLOBAL_LIST_EMPTY(telecomms_list)
 	for(var/obj/machinery/telecomms/comm in GLOB.telecomms_list)
 		comm.links -= src
 	links = list()
+	forget_in_consoles()
 	return ..()
+
+/// Консоли запоминают найденные машины до следующего скана и сами их не отпускают.
+/obj/machinery/telecomms/proc/forget_in_consoles()
+	for(var/obj/machinery/computer/telecomms/monitor/monitor as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/computer/telecomms/monitor))
+		monitor.machinelist -= src
+		if(monitor.SelectedMachine == src)
+			monitor.SelectedMachine = null
+	for(var/obj/machinery/computer/telecomms/server/browser as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/computer/telecomms/server))
+		browser.machinelist -= src
+		if(browser.SelectedMachine == src)
+			browser.SelectedMachine = null
+	for(var/obj/machinery/computer/message_monitor/message_console as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/computer/message_monitor))
+		message_console.machinelist -= src
+		if(message_console.linkedServer == src)
+			message_console.linkedServer = null
 
 // Used in auto linking
 /obj/machinery/telecomms/proc/add_link(obj/machinery/telecomms/T)

@@ -10,7 +10,7 @@
 
 	if(isobserver(mob) && COOLDOWN_FINISHED(src, mentor_mouse_spawn))
 		var/type = tgui_alert(src, "Which character you want to spawn?","Mentor Spawn",list("Mouse","Drone", "Cancel"))
-		if(type == "Cancel")
+		if(type != "Mouse" && type != "Drone")
 			return
 		if(type == "Mouse")
 			mentor = /mob/living/simple_animal/hostile/syndimouse

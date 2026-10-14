@@ -176,3 +176,7 @@
 /datum/gear/donator/backpack/riding_crop
 	name = "Riding Crop"
 	path = /obj/item/bdsm_whip/ridingcrop
+
+/datum/gear/donator/backpack/legax_kit
+	name = "Legax Gravpulser Kit"
+	path = /obj/item/modkit/legax

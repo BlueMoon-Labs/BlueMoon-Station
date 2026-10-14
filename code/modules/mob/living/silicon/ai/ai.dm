@@ -147,6 +147,8 @@
 
 	to_chat(src, "<B>You are playing the station's AI. The AI cannot move, but can interact with many objects while viewing them (through cameras).</B>")
 	to_chat(src, "<B>To look at other parts of the station, click on yourself to get a camera menu.</B>")
+	if(length(SSmapping.get_connected_levels(get_turf(src))) > 1)
+		to_chat(src, "<B>Станция многоэтажная: этаж камеры меняют красные стрелки в правом нижнем углу экрана или команды Move Upwards и Move Down.</B>")
 	to_chat(src, "<B>While observing through a camera, you can use most (networked) devices which you can see, such as computers, APCs, intercoms, doors, etc.</B>")
 	to_chat(src, "To use something, simply click on it.")
 	to_chat(src, "Use say :b to speak to your cyborgs through binary.")
@@ -193,7 +195,7 @@
 	builtInCamera = new (src)
 	builtInCamera.network = list("ss13")
 
-	alert_control = new(src, list(ALARM_ATMOS, ALARM_FIRE, ALARM_POWER, ALARM_CAMERA, ALARM_BURGLAR, ALARM_MOTION), list(z), camera_view = TRUE)
+	alert_control = new(src, list(ALARM_ATMOS, ALARM_FIRE, ALARM_POWER, ALARM_CAMERA, ALARM_BURGLAR, ALARM_MOTION), SSmapping.get_connected_levels(z).Copy(), camera_view = TRUE)
 	RegisterSignal(alert_control.listener, COMSIG_ALARM_TRIGGERED, PROC_REF(alarm_triggered))
 	RegisterSignal(alert_control.listener, COMSIG_ALARM_CLEARED, PROC_REF(alarm_cleared))
 	src.overlay_fullscreen("boot_blind", /atom/movable/screen/fullscreen/scaled/blind)
@@ -252,69 +254,69 @@
 // MARK: Core Display Icon
 // (C)Pe4henika | Встроена возможность выбора донатных/приватных дисплейчиков
 /mob/living/silicon/ai/proc/set_core_display_icon(input, client/C)
-    set waitfor = FALSE
-    if(client && !C)
-        C = client
-    if(!input && !C?.prefs?.preferred_ai_core_display)
-        icon_state = initial(icon_state)
-        icon = initial(icon)
-    else
-        var/preferred_icon = input ? input : C.prefs.preferred_ai_core_display
+	set waitfor = FALSE
+	if(client && !C)
+		C = client
+	if(!input && !C?.prefs?.preferred_ai_core_display)
+		icon_state = initial(icon_state)
+		icon = initial(icon)
+	else
+		var/preferred_icon = input ? input : C.prefs.preferred_ai_core_display
 
-        var/donor_found = FALSE
-        if(C)
-            for(var/datum/ai_donator_screen/donor_screen in GLOB.ai_donator_screens)
-                if(donor_screen.name == preferred_icon && (C.ckey in donor_screen.ckey_whitelist))
-                    icon = donor_screen.icon
-                    icon_state = (src.stat == DEAD) ? donor_screen.icon_state_dead : donor_screen.icon_state
-                    donor_found = TRUE
-                    break
+		var/donor_found = FALSE
+		if(C)
+			for(var/datum/ai_donator_screen/donor_screen in GLOB.ai_donator_screens)
+				if(donor_screen.name == preferred_icon && donor_screen.is_allowed_for(C.key))
+					icon = donor_screen.icon
+					icon_state = (src.stat == DEAD) ? donor_screen.icon_state_dead : donor_screen.icon_state
+					donor_found = TRUE
+					break
 
-        if(!donor_found)
-            icon = initial(icon)
-            icon_state = resolve_ai_icon(preferred_icon, C = C, dead = (src.stat == DEAD))
+		if(!donor_found)
+			icon = initial(icon)
+			icon_state = resolve_ai_icon(preferred_icon, C = C, dead = (src.stat == DEAD))
 /mob/living/silicon/ai/verb/pick_icon()
-    set category = "AI Commands"
-    set name = "Set AI Core Display"
-    if(incapacitated())
-        return
+	set category = "AI Commands"
+	set name = "Set AI Core Display"
+	if(incapacitated())
+		return
 
-    var/list/iconstates = GLOB.ai_core_display_screens.Copy()
+	var/list/iconstates = GLOB.ai_core_display_screens.Copy()
 
-    var/client/C = client
-    if(C)
-        for(var/datum/ai_donator_screen/donor_screen in GLOB.ai_donator_screens)
-            if(C.ckey in donor_screen.ckey_whitelist)
-                iconstates += donor_screen.name
+	var/client/C = client
+	if(C)
+		for(var/datum/ai_donator_screen/donor_screen in GLOB.ai_donator_screens)
+			if(donor_screen.is_allowed_for(C.key))
+				iconstates += donor_screen.name
 
-    var/list/icon_images = list()
-    for(var/option in iconstates)
-        if(option == "Random")
-            icon_images[option] = image(icon = src.icon, icon_state = "ai-random")
-            continue
+	var/list/icon_images = list()
+	for(var/option in iconstates)
+		if(option == "Random")
+			icon_images[option] = image(icon = src.icon, icon_state = "ai-random")
+			continue
 
-        var/donor_icon = null
-        var/donor_icon_state = null
-        if(C)
-            for(var/datum/ai_donator_screen/donor_screen in GLOB.ai_donator_screens)
-                if(donor_screen.name == option && (C.ckey in donor_screen.ckey_whitelist))
-                    donor_icon = donor_screen.icon
-                    donor_icon_state = donor_screen.icon_state
-                    break
+		var/donor_icon = null
+		var/donor_icon_state = null
+		if(C)
+			for(var/datum/ai_donator_screen/donor_screen in GLOB.ai_donator_screens)
+				if(donor_screen.name == option && donor_screen.is_allowed_for(C.key))
+					donor_icon = donor_screen.icon
+					donor_icon_state = donor_screen.icon_state
+					break
 
-        if(donor_icon)
-            icon_images[option] = image(icon = donor_icon, icon_state = donor_icon_state)
-        else
-            icon_images[option] = image(icon = src.icon, icon_state = resolve_ai_icon(option, radial_preview = TRUE))
+		if(donor_icon)
+			icon_images[option] = image(icon = donor_icon, icon_state = donor_icon_state)
+		else
+			icon_images[option] = image(icon = src.icon, icon_state = resolve_ai_icon(option, radial_preview = TRUE))
 
-    view_core()
-    var/ai_core_icon = show_radial_menu(src, src, icon_images, radius = 42)
+	view_core()
+	var/ai_core_icon = show_radial_menu(src, src, icon_images, radius = 42)
 
-    if(!ai_core_icon || incapacitated())
-        return
+	if(!ai_core_icon || incapacitated())
+		return
 
-    display_icon_override = ai_core_icon
-    set_core_display_icon(ai_core_icon)
+	display_icon_override = ai_core_icon
+	set_core_display_icon(ai_core_icon)
 // --
 
 // (ADD) Pe4henika Bluemonn -- start
@@ -1078,19 +1080,19 @@
 		if(A != GLOB.ai_camera_room_landmark)
 			end_multicam()
 		client.perspective = EYE_PERSPECTIVE
-		client.eye = A
+		client.set_eye(A)
 	else
 		end_multicam()
 		if(isturf(loc))
 			if(eyeobj)
-				client.eye = eyeobj
+				client.set_eye(eyeobj)
 				client.perspective = EYE_PERSPECTIVE
 			else
-				client.eye = client.mob
+				client.set_eye(client.mob)
 				client.perspective = MOB_PERSPECTIVE
 		else
 			client.perspective = EYE_PERSPECTIVE
-			client.eye = loc
+			client.set_eye(loc)
 	update_sight()
 	if(client.eye != src)
 		var/atom/AT = client.eye
@@ -1281,8 +1283,16 @@
 		return eyeobj.emote(act, m_type, message, intentional, forced = TRUE)
 	return ..()
 
-/mob/living/silicon/ai/zMove(dir, feedback = FALSE)
-	. = eyeobj.zMove(dir, feedback)
+//Верб уводит камеру, а падение и лестницы приходят с целью и двигают само ядро.
+/mob/living/silicon/ai/zMove(dir, turf/target, z_move_flags = ZMOVE_FLIGHT_FLAGS)
+	if(target || !eyeobj)
+		return ..()
+	return eyeobj.zMove(dir, target, z_move_flags)
+
+/mob/living/silicon/ai/move_vertically(direction)
+	if(!eyeobj)
+		return FALSE
+	return zMove(direction, null, ZMOVE_FLIGHT_FLAGS|ZMOVE_FEEDBACK)
 
 /mob/living/silicon/ai/proc/stop_controlling_display()
 	if(!controlled_display)

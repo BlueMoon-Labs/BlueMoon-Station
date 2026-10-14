@@ -36,14 +36,14 @@
 	RegisterSignal(anomaly_parent, COMSIG_PARENT_QDELETING, PROC_REF(clear_fog))
 	animate(src, 3 SECONDS, alpha = initial(alpha))
 	for(var/direction in GLOB.cardinals)
-		var/obj/machinery/door/d = locate(/obj/machinery/door, get_step(src, direction))
-		if(is_type_in_list(d, list(/obj/machinery/door/airlock, /obj/machinery/door/window)) \
-		&& d.density && !d.critical_machine)
-			if(istype(d, /obj/machinery/door/airlock))
-				var/obj/machinery/door/airlock/a = d
-				if(a.charge) //заминировано
-					continue
-			INVOKE_ASYNC(d, TYPE_PROC_REF(/obj/machinery/door, open), 1)
+		for(var/obj/machinery/door/d in get_step(src, direction))
+			if(is_type_in_list(d, list(/obj/machinery/door/airlock, /obj/machinery/door/window)) \
+			&& d.density && !d.critical_machine)
+				if(istype(d, /obj/machinery/door/airlock))
+					var/obj/machinery/door/airlock/a = d
+					if(a.charge) //заминировано
+						continue
+				INVOKE_ASYNC(d, TYPE_PROC_REF(/obj/machinery/door, open), 1)
 
 /obj/effect/particle_effect/smoke/fog/Destroy()
 	UnregisterSignal(anomaly_parent, COMSIG_PARENT_QDELETING)

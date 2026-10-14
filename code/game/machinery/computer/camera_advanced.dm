@@ -15,6 +15,8 @@
 	var/datum/action/innate/camera_off/off_action = /datum/action/innate/camera_off
 	/// Typepath for jumping
 	var/datum/action/innate/camera_jump/jump_action = /datum/action/innate/camera_jump
+	var/datum/action/innate/camera_multiz_up/move_up_action = /datum/action/innate/camera_multiz_up
+	var/datum/action/innate/camera_multiz_down/move_down_action = /datum/action/innate/camera_multiz_down
 
 	/// List of all actions to give to a user when they're well, granted actions
 	var/list/actions = list()
@@ -50,6 +52,10 @@
 		actions += new off_action(src)
 	if(jump_action)
 		actions += new jump_action(src)
+	if(move_up_action)
+		actions += new move_up_action(src)
+	if(move_down_action)
+		actions += new move_down_action(src)
 
 /obj/machinery/computer/camera_advanced/connect_to_shuttle(obj/docking_port/mobile/port, obj/docking_port/stationary/dock, idnum, override=FALSE)
 	//см. Initialize: правка списка внутри цикла по нему пропускает элементы
@@ -314,3 +320,39 @@
 		owner.clear_fullscreen("flash", 3) //Shorter flash than normal since it's an ~~advanced~~ console!
 	else
 		playsound(origin, 'sound/machines/terminal_prompt_deny.ogg', 25, FALSE)
+
+/datum/action/innate/camera_multiz_up
+	name = "Этаж выше"
+	icon_icon = 'icons/mob/actions/actions_silicon.dmi'
+	button_icon_state = "move_up"
+
+/datum/action/innate/camera_multiz_up/Activate()
+	camera_change_floor(owner, UP)
+
+/datum/action/innate/camera_multiz_down
+	name = "Этаж ниже"
+	icon_icon = 'icons/mob/actions/actions_silicon.dmi'
+	button_icon_state = "move_down"
+
+/datum/action/innate/camera_multiz_down/Activate()
+	camera_change_floor(owner, DOWN)
+
+/// Переводит камеру консоли оператора на соседний этаж связки. TRUE, если камера переехала.
+/proc/camera_change_floor(mob/living/operator, direction)
+	if(!isliving(operator))
+		return FALSE
+	var/mob/camera/aiEye/remote/remote_eye = operator.remote_control
+	if(!istype(remote_eye))
+		return FALSE
+	var/turf/start = get_turf(remote_eye)
+	var/turf/destination = start && (direction == UP ? GET_TURF_ABOVE(start) : GET_TURF_BELOW(start))
+	var/obj/machinery/computer/camera_advanced/console = remote_eye.origin
+	if(destination && istype(console) && length(console.z_lock) && !(destination.z in console.z_lock))
+		destination = null
+	if(destination)
+		remote_eye.setLoc(destination)
+	if(!destination || get_turf(remote_eye) != destination)
+		to_chat(operator, span_warning((direction == UP ? "Выше камере не подняться." : "Ниже камере не спуститься.")))
+		return FALSE
+	to_chat(operator, span_notice((direction == UP ? "Камера поднимается на этаж выше." : "Камера спускается на этаж ниже.")))
+	return TRUE

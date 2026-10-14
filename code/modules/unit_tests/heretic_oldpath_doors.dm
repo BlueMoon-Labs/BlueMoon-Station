@@ -453,7 +453,7 @@
 	var/list/facts = list(
 		list(ash_path.capture_summary, "в изнанку", pull_time),
 		list(rust_path.capture_summary, "в изнанку", pull_time),
-		list(flesh_path.capture_summary, "в изнанку", "из [HERETIC_FLESH_DOOR_RANGE] клеток", madness_time, "гуля, мертвеца или ползуна"),
+		list(flesh_path.capture_summary, "в изнанку", "из [HERETIC_FLESH_DOOR_RANGE] клеток", madness_time, "до [HERETIC_FLESH_LATCH_DURATION / (1 SECONDS)] секунд"),
 		list(void_path.capture_summary, "в изнанку", pull_time),
 		list(rust_path.escape_summary, "очагу"),
 		list(jointext(ash_path.weakness_points, " "), "До вознесения", "крепкой хватки уводит только Пепельный переход"),

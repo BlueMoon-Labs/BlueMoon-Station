@@ -289,14 +289,15 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 	if(!owner)
 		CRASH("Antag datum with no owner.")
 
-	remove_innate_effects()
+	if(owner.current)
+		remove_innate_effects()
 	clear_antag_moodies()
 	owner?.do_remove_antag_datum(src)
 	// cit skill
 	for(var/A in skill_modifiers)
 		owner.remove_skill_modifier(GET_SKILL_MOD_ID(A, type))
 	// end
-	if(!LAZYLEN(owner.antag_datums) && !soft_antag)
+	if(!LAZYLEN(owner.antag_datums) && !soft_antag && owner.current)
 		owner.current.remove_from_current_living_antags()
 	if(info_button)
 		QDEL_NULL(info_button)
@@ -335,7 +336,7 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
  * Proc that removes this antagonist's ascribed moodlet from the player.
  */
 /datum/antagonist/proc/clear_antag_moodies()
-	if(!antag_moodlet)
+	if(!antag_moodlet || !owner.current)
 		return
 	SEND_SIGNAL(owner.current, COMSIG_CLEAR_MOOD_EVENT, "antag_moodlet")
 

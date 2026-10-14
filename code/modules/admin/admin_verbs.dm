@@ -189,6 +189,8 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/client/proc/toggle_ntnet_debug,
 	/client/proc/set_parallax_profile,
 	/client/proc/show_parallax_state,
+	/client/proc/multiz_debug_panel,
+	/client/proc/space_sectors_panel,
 	/client/proc/cmd_debug_make_powernets,
 	/client/proc/cmd_debug_mob_lists,
 	/client/proc/cmd_admin_delete,
@@ -219,6 +221,7 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/client/proc/map_template_upload,
 	/client/proc/jump_to_ruin,
 	/client/proc/clear_dynamic_transit,
+	/client/proc/reset_tram,
 	/client/proc/toggle_medal_disable,
 	/client/proc/view_runtimes,
 	/client/proc/view_gc_failures,
@@ -253,6 +256,7 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/client/proc/discordnulls,
 	/client/proc/generate_wikichem_list, //DO NOT PRESS UNLESS YOU WANT SUPERLAG
 	/client/proc/allow_browser_inspect,
+	/client/proc/loadout_crypto_debug,
 	#ifdef TESTING
 	/datum/admins/proc/machines_benchmark,
 	#endif
@@ -350,7 +354,8 @@ GLOBAL_LIST_INIT(admin_verbs_hideable, list(
 	/client/proc/debug_huds,
 	/client/proc/cmd_admin_man_up, //CIT CHANGE - adds man up verb
 	/client/proc/cmd_admin_man_up_global, //CIT CHANGE - ditto
-	/client/proc/allow_browser_inspect
+	/client/proc/allow_browser_inspect,
+	/client/proc/loadout_crypto_debug,
 	))
 GLOBAL_PROTECT(admin_verbs_hideable)
 

@@ -60,4 +60,5 @@ GLOBAL_LIST_EMPTY(roundstart_prisoners)
 	shoes = /obj/item/clothing/shoes/sneakers/orange
 	id = /obj/item/card/id/prisoner
 	ears = /obj/item/radio/headset/headset_prisoner
+	box = /obj/item/storage/box/survival/prisoner
 	belt = null

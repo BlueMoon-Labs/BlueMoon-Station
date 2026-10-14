@@ -119,7 +119,7 @@
 			ass.climax_modify_size(partner, source_gen)
 		return
 
-	var/datum/reagents/fluid_source = source_gen.climaxable()
+	var/datum/reagents/fluid_source = source_gen?.climaxable()
 	if(!fluid_source)
 		return
 

@@ -132,16 +132,15 @@
 
 /obj/structure/heretic_rust_heart
 	name = "rooted rust heart"
-	desc = "Вросший в пол очаг ржавчины. Пульсирующие корни кормят его хозяина и свиту. Хозяин может коснуться сердца пустой рукой на вреде: после секунды подготовки оно разрывается, нанося врагам в своей области 18 урона коррозией, и прекращает лечение. Стены и антимагия защищают. Уничтожение сердца немедленно гасит окружающую область; без хозяина оно тоже увядает."
-	icon = 'modular_bluemoon/icons/obj/heretic_rust_heart.dmi'
-	icon_state = "tumor"
-	pixel_x = -16
-	color = "#cfad7a"
+	desc = "Лопнувшее колючее семя, вросшее в пол: между створками скорлупы бьётся ржавый узел в зелёных жилах, а корни кормят его хозяина и свиту. Хозяин может коснуться сердца пустой рукой на вреде: после секунды подготовки оно разрывается, нанося врагам в своей области 18 урона коррозией, и прекращает лечение. Стены и антимагия защищают. Уничтожение сердца немедленно гасит окружающую область и отпускает тех, кого держат Ржавые корни; без хозяина оно тоже увядает."
+	icon = 'modular_bluemoon/icons/obj/heretic_rust_fx.dmi'
+	icon_state = "rust_seed_heart"
 	anchored = TRUE
 	density = FALSE
 	max_integrity = 90
 	var/obj/effect/heretic_combat_zone/rust/rooted/zone
 	var/burst_pending = FALSE
+	var/burst_done = FALSE
 
 /obj/structure/heretic_rust_heart/attack_hand(mob/living/carbon/human/user)
 	if(user.a_intent != INTENT_HARM || zone?.master_mind?.resolve() != user.mind || user.incapacitated() || burst_pending)
@@ -149,6 +148,7 @@
 	burst_pending = TRUE
 	visible_message(span_warning("Корни [src] натягиваются и трещат, готовясь разорваться!"))
 	new /obj/effect/temp_visual/heretic_oldpath/rust(get_turf(src))
+	playsound(src, pick(GLOB.heretic_rust_root_sounds), 50, TRUE)
 	if(do_after(user, 1 SECONDS, target = src))
 		burst(user)
 	if(!QDELETED(src))
@@ -164,6 +164,9 @@
 		for(var/mob/living/victim in tile)
 			if(heretic_can_affect(user, victim))
 				heretic_corrosion(victim, 18)
+	burst_done = TRUE
+	heretic_vfx_burst(src, /particles/heretic_ascension/rust/collapse)
+	playsound(src, HERETIC_RUST_SEED_BURST_SOUND, 70, TRUE)
 	qdel(src)
 	return TRUE
 
@@ -175,7 +178,7 @@
 		path.relic_zone = zone
 		path.track_combat_effect(zone)
 	RegisterSignal(zone, COMSIG_PARENT_QDELETING, PROC_REF(on_zone_lost))
-	playsound(src, 'sound/effects/clangsmall1.ogg', 70, TRUE)
+	playsound(src, pick(GLOB.heretic_rust_root_sounds), 70, TRUE)
 
 /obj/structure/heretic_rust_heart/proc/on_zone_lost()
 	SIGNAL_HANDLER
@@ -187,10 +190,12 @@
 		UnregisterSignal(zone, COMSIG_PARENT_QDELETING)
 		QDEL_NULL(zone)
 	new /obj/effect/temp_visual/heretic_oldpath/rust(get_turf(src))
-	playsound(src, 'sound/effects/clangsmall2.ogg', 55, TRUE)
+	if(!burst_done)
+		playsound(src, HERETIC_RUST_COLLAPSE_SOUND, 55, TRUE)
 	return ..()
 
 /obj/effect/heretic_combat_zone/rust/rooted
+	icon_state = null
 	duration = 60 SECONDS
 
 /obj/item/heretic_relic/suture_needle
@@ -210,7 +215,8 @@
 	if(!proximity_flag || !can_mend(user, target))
 		return
 	user.visible_message(span_warning("[user] протягивает алую нить от [src] к [target]."))
-	user.Beam(target, icon_state = "drainbeam", time = 30)
+	user.Beam(target, icon_state = "tendon", icon = 'modular_bluemoon/icons/obj/heretic_flesh_fx.dmi', time = 30)
+	playsound(user, 'modular_bluemoon/sound/heretic/flesh_needle.ogg', 50, TRUE)
 	if(do_after(user, 3 SECONDS, target = target))
 		mend_servant(user, target)
 
@@ -240,7 +246,7 @@
 			limb.update_part_wound_overlay()
 	COOLDOWN_START(path, relic_cooldown, 10 SECONDS)
 	new /obj/effect/temp_visual/heretic_oldpath/flesh/mend(get_turf(target))
-	playsound(target, 'sound/effects/wounds/blood2.ogg', 60, TRUE)
+	playsound(target, 'modular_bluemoon/sound/heretic/flesh_mend.ogg', 55, TRUE)
 	return TRUE
 
 /obj/item/heretic_relic/hush_lantern
@@ -275,7 +281,7 @@
 	user.update_inv_hands()
 	set_light(3, 1, "#b9efff")
 	new /obj/effect/temp_visual/heretic_oldpath/void(get_turf(user))
-	playsound(user, pick('modular_bluemoon/sound/heretic/void_deflect1.ogg', 'modular_bluemoon/sound/heretic/void_deflect2.ogg'), 60, TRUE)
+	playsound(user, HERETIC_VOID_EDGE_SOUND, 50, TRUE)
 	return TRUE
 
 /obj/item/heretic_relic/hush_lantern/proc/on_holder_moved(mob/living/source)

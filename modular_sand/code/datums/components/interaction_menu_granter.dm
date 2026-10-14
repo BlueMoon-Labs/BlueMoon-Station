@@ -571,6 +571,7 @@
 		.["unholy_pref"] =				pref_to_num(prefs.unholypref)
 		.["unholy_hard_pref"] =			pref_to_num(prefs.unholyhardpref)
 		.["tattoo_pref"] =				pref_to_num(prefs.tattoopref)
+		.["antag_opt_in"] =				antag_opt_in_ui_data(self)
 
 	//Getting preferences
 		.["verb_consent"] = 			!!CHECK_BITFIELD(prefs.toggles, VERB_CONSENT)
@@ -923,6 +924,8 @@
 				return TRUE
 			else
 				return FALSE
+		if("antag_opt_in")
+			return set_antag_opt_in_level(parent_mob, params["level"])
 		if("char_pref")
 			var/datum/preferences/prefs = parent_mob.client.prefs
 			var/value = num_to_pref(params["value"])

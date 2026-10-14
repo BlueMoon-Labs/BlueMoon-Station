@@ -117,6 +117,15 @@
 	category = list("initial","Tools","Tool Designs")
 	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_SCIENCE
 
+/datum/design/wirebrush
+	name = "Wirebrush"
+	id = "wirebrush"
+	build_type = AUTOLATHE | PROTOLATHE
+	materials = list(/datum/material/iron = 30)
+	build_path = /obj/item/wirebrush
+	category = list("initial","Tools","Tool Designs")
+	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_SERVICE
+
 /datum/design/welding_helmet
 	name = "Welding Helmet"
 	id = "welding_helmet"

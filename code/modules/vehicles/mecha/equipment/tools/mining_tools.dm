@@ -68,7 +68,8 @@
 				playsound(src,'sound/weapons/drill.ogg',40,TRUE)
 			else if(isobj(target))
 				var/obj/O = target
-				O.take_damage(force, BRUTE, 0, FALSE, get_dir(chassis, target))
+				if(!(O.drill_act(src, source)))
+					break
 				playsound(src,'sound/weapons/drill.ogg',40,TRUE)
 			else
 				is_drilling = 0
@@ -82,6 +83,10 @@
 
 /turf/proc/drill_act(obj/item/mecha_parts/mecha_equipment/drill/drill, mob/user)
 	return
+
+/obj/proc/drill_act(obj/item/mecha_parts/mecha_equipment/drill/drill, mob/user)
+	take_damage(drill.force, BRUTE, 0, FALSE, get_dir(drill.chassis, src))
+	return TRUE
 
 /turf/closed/wall/drill_act(obj/item/mecha_parts/mecha_equipment/drill/drill, mob/user)
 	if(drill.do_after_mecha(src, user, 60 / drill.drill_level))

@@ -8,7 +8,7 @@
 	prereq_ids = list("base")
 	design_ids = list("solarcontrol", "recharger", "powermonitor", "rped", "pacman", "adv_capacitor", "adv_scanning", "emitter", "high_cell", "adv_matter_bin",
 	"atmosalerts", "atmos_control", "recycler", "autolathe", /*"autolathe_secure",*/ "high_micro_laser", "nano_mani", "mesons", "heater", "freezer", "crystallizer", "rad_collector", "tesla_coil", "grounding_rod",
-	"apc_control", "power control", "airlock_board", "firelock_board", "airalarm_electronics", "firealarm_electronics", "multi_cell_charger", "cell_charger", "stack_console", "stack_machine", "rcd_ammo", "oxygen_tank",
+	"apc_control", "power control", "airlock_board", "firelock_board", "airalarm_electronics", "firealarm_electronics", "multi_cell_charger", "stack_console", "stack_machine", "rcd_ammo", "oxygen_tank",
 	"plasma_tank", "emergency_oxygen", "emergency_oxygen_engi", "plasmaman_tank_belt", "colormate", "conveyor_sorter",
 	"big_manipulator", "manipulator_task_disk", "manucrafter", "manucraftercooker")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 6000)

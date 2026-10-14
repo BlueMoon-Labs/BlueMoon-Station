@@ -57,6 +57,9 @@ GLOBAL_VAR_INIT(glide_size_multiplier, 1.0)
 #define MOVEMENT_BUCKET_TIME 1
 #define MOVEMENT_BUCKET_LIST 2
 
+#define GET_TURF_ABOVE(target) (SSmapping.get_turf_above(target))	//аргумент обязан быть турфом
+#define GET_TURF_BELOW(target) (SSmapping.get_turf_below(target))
+
 /**
  * currently_z_moving defines. Higher numbers mean higher priority.
  * This one is for falling down open space from stuff such as deleted tile, pit grate...
@@ -96,7 +99,7 @@ GLOBAL_VAR_INIT(glide_size_multiplier, 1.0)
 #define ZMOVE_CHECK_PULLS (ZMOVE_CHECK_PULLING|ZMOVE_CHECK_PULLEDBY)
 
 /// Flags used in "Move Upwards" and "Move Downwards" verbs.
-#define ZMOVE_FLIGHT_FLAGS (ZMOVE_CAN_FLY_CHECKS|ZMOVE_INCAPACITATED_CHECKS|ZMOVE_CHECK_PULLS|ZMOVE_ALLOW_BUCKLED)
+#define ZMOVE_FLIGHT_FLAGS (ZMOVE_CAN_FLY_CHECKS|ZMOVE_INCAPACITATED_CHECKS|ZMOVE_CHECK_PULLS|ZMOVE_ALLOW_BUCKLED|ZMOVE_INCLUDE_PULLED)
 /// Used when walking upstairs
 #define ZMOVE_STAIRS_FLAGS (ZMOVE_CHECK_PULLEDBY|ZMOVE_ALLOW_BUCKLED)
 /// Used for falling down open space.

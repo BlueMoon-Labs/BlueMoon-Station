@@ -1,0 +1,406 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/turf/closed/wall,
+/area/maintenance/starboard/lesser)
+"c" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/oil,
+/obj/item/stock_parts/cell/empty,
+/obj/item/screwdriver{
+	pixel_y = -10;
+	pixel_x = 7
+	},
+/turf/open/floor/plating,
+/area/maintenance/starboard/lesser)
+"d" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/wrench,
+/turf/open/floor/plating,
+/area/maintenance/starboard/lesser)
+"e" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/vehicle/sealed/mecha/working/ripley,
+/obj/effect/decal/cleanable/oil,
+/turf/open/floor/plating,
+/area/maintenance/starboard/lesser)
+"f" = (
+/obj/structure/shipping_container/nakamura,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/maintenance/starboard/lesser)
+"g" = (
+/obj/structure/shipping_container/nanotrasen,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/maintenance/starboard/lesser)
+"h" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"i" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/white{
+	dir = 4
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/machinery/space_heater = 8, /obj/machinery/shieldgen = 3, /obj/machinery/portable_atmospherics/pump = 1, /obj/machinery/portable_atmospherics/scrubber = 1)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"j" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/caution/stand_clear,
+/obj/effect/turf_decal/trimline/neutral/warning,
+/obj/effect/turf_decal/trimline/neutral/warning{
+	dir = 1
+	},
+/obj/machinery/door/poddoor/shutters{
+	name = "Storage Shutters";
+	id = "defnotillegastuffinhereofficer"
+	},
+/turf/open/floor/plating,
+/area/maintenance/starboard/lesser)
+"k" = (
+/obj/structure/shipping_container/nthi,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/maintenance/starboard/lesser)
+"n" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/airlock/mining/glass{
+	name = "Long-Term Shipping Storage"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/supply/general,
+/obj/modular_map_connector,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"o" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/maintenance/starboard/lesser)
+"p" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/catwalk_floor,
+/area/maintenance/starboard/lesser)
+"r" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/item/clothing/gloves/fingerless,
+/obj/item/clothing/gloves/fingerless,
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"t" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Maintenance Hatch"
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"u" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"v" = (
+/obj/structure/shipping_container,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/maintenance/starboard/lesser)
+"w" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/structure/closet/crate = 20, /obj/structure/closet/crate/wooden = 1, /obj/structure/closet/crate/internals = 1, /obj/structure/closet/crate/medical = 1, /obj/structure/closet/crate/freezer = 1, /obj/structure/closet/crate/radiation = 1, /obj/structure/closet/crate/hydroponics = 1, /obj/structure/closet/crate/engineering = 1, /obj/structure/closet/crate/science = 1)
+	},
+/turf/open/floor/plating,
+/area/maintenance/starboard/lesser)
+"z" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/mecha_parts/chassis/ripley,
+/obj/item/mecha_parts/part/ripley_left_arm{
+	pixel_y = -2;
+	pixel_x = -9
+	},
+/obj/item/mecha_parts/part/ripley_right_leg{
+	pixel_x = 7;
+	pixel_y = -5
+	},
+/turf/open/floor/plating,
+/area/maintenance/starboard/lesser)
+"A" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/catwalk_floor,
+/area/maintenance/starboard/lesser)
+"B" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/white{
+	dir = 4
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"D" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"F" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/stool/directional/south,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"K" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop/syndicate_present,
+/turf/open/floor/plating,
+/area/maintenance/starboard/lesser)
+"L" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"P" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/button/door/directional/north{
+	id = "defnotillegastuffinhereofficer";
+	name = "Storage Shutters Toggle"
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"Q" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/structure/noticeboard/directional/south,
+/obj/item/paper{
+	default_raw_text = "Please make sure all heavy equipment and tools are stored properly between sessions to prevent on-site accidents! All current workers comp filings will have a minimal delay of 3 months to be reviewed from date of entry. If you are unable to work during those months, we will NOT be paying compensation until legally required. This isn't a threat.";
+	name = "Storage Units"
+	},
+/obj/item/paper{
+	default_raw_text = "Mark this room off as long-term storage, isn't worth trying to retrieve the containers before closing off the halls.";
+	name = "Equipment Notice"
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"S" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/catwalk_floor,
+/area/maintenance/starboard/lesser)
+"U" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/stack/sheet/mineral/wood/twenty = 1, /obj/item/stack/sheet/cardboard/fifty = 1, /obj/item/stack/sheet/mineral/sandstone/thirty = 1)
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/flashlight = 20, /obj/item/flashlight/flare = 10, /obj/effect/spawner/lootdrop/glowstick = 10, /obj/item/flashlight/lantern = 5, /obj/item/flashlight/seclite = 4)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"V" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/stack/sheet/metal/fifty = 5, /obj/item/stack/sheet/glass/fifty = 5, /obj/item/stack/rods/fifty = 3, /obj/item/stack/sheet/rglass/fifty = 2)
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/storage/toolbox/emergency = 4, /obj/item/storage/toolbox/electrical = 2, /obj/item/storage/toolbox/mechanical = 2)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"W" = (
+/turf/template_noop,
+/area/template_noop)
+"X" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/structure/closet/crate = 20, /obj/structure/closet/crate/wooden = 1, /obj/structure/closet/crate/internals = 1, /obj/structure/closet/crate/medical = 1, /obj/structure/closet/crate/freezer = 1, /obj/structure/closet/crate/radiation = 1, /obj/structure/closet/crate/hydroponics = 1, /obj/structure/closet/crate/engineering = 1, /obj/structure/closet/crate/science = 1)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"Y" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop/syndicate_present,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+"Z" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/stripes/white/corner,
+/obj/effect/turf_decal/stripes/white/corner{
+	dir = 4
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/starboard/lesser)
+
+(1,1,1) = {"
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+W
+"}
+(2,1,1) = {"
+a
+D
+h
+h
+h
+t
+h
+L
+U
+a
+W
+"}
+(3,1,1) = {"
+n
+h
+h
+F
+Q
+a
+X
+Y
+V
+a
+W
+"}
+(4,1,1) = {"
+a
+P
+h
+h
+r
+a
+a
+a
+a
+a
+W
+"}
+(5,1,1) = {"
+a
+i
+i
+Z
+u
+B
+Z
+B
+B
+a
+W
+"}
+(6,1,1) = {"
+j
+o
+v
+A
+o
+f
+A
+o
+w
+a
+W
+"}
+(7,1,1) = {"
+j
+o
+o
+A
+o
+o
+A
+d
+c
+a
+W
+"}
+(8,1,1) = {"
+j
+o
+o
+A
+K
+o
+A
+z
+e
+a
+W
+"}
+(9,1,1) = {"
+j
+A
+A
+A
+A
+A
+A
+A
+A
+a
+W
+"}
+(10,1,1) = {"
+j
+o
+g
+A
+o
+k
+A
+o
+g
+a
+W
+"}
+(11,1,1) = {"
+j
+o
+o
+A
+o
+o
+A
+o
+o
+a
+W
+"}
+(12,1,1) = {"
+j
+o
+o
+S
+K
+o
+p
+o
+o
+a
+W
+"}
+(13,1,1) = {"
+a
+a
+a
+a
+a
+a
+a
+a
+a
+a
+W
+"}

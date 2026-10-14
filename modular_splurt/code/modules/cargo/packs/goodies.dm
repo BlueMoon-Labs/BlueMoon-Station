@@ -60,7 +60,7 @@
 	name = "Hunting Rifle Single-Pack"
 	desc = "Contains a parts kit to assemble a hunting rifle."
 	cost = 1000
-	contains = list(/obj/item/gunpart/rifle308sotck, /obj/item/gunpart/rifle308barrel, /obj/item/ammo_box/a308, /obj/item/ammo_box/a308, /obj/item/ammo_box/a308)
+	contains = list(/obj/item/gunpart/rifle308sotck, /obj/item/gunpart/rifle308barrel, /obj/item/ammo_box/a308/rubber, /obj/item/ammo_box/a308/rubber, /obj/item/ammo_box/a308/rubber)
 
 /datum/supply_pack/goody/sawndbshotgun_single
 	name = "Sawn-off Double Barrel Shotgun Single-Pack"

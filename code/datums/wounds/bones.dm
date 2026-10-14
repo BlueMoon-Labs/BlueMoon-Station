@@ -93,7 +93,7 @@
 				: span_warning(span_bold("Ваша [limb.ru_name] травмирована и не может удержать [I]!"))
 			victim.visible_message(message, message_self, vision_distance=COMBAT_MESSAGE_RANGE)
 			if(has_pain)
-				victim.emote("agony")
+				victim.emote("realagony")
 
 	update_inefficiencies()
 
@@ -209,7 +209,7 @@
 				span_userdanger("Вам не удается ударить [target] из-за [has_pain ? "боли и " : ""][robo_limb ? "повреждений" : "перелома"] в вашей конечности - [limb.ru_name]!"), vision_distance=COMBAT_MESSAGE_RANGE
 			)
 			if(has_pain)
-				victim.emote("agony")
+				victim.emote("realagony")
 				if(has_pain > PAIN_LOW)
 					victim.adjustStaminaLoss(15)
 			victim.Stun(0.5 SECONDS)
@@ -254,7 +254,7 @@
 		vision_distance = COMBAT_MESSAGE_RANGE
 	)
 	if(has_pain)
-		victim.emote("agony")
+		victim.emote("realagony")
 	return COMSIG_MOB_CANCEL_CLICKON
 
 /datum/wound/blunt/receive_damage(wounding_type, wounding_dmg, wound_bonus)

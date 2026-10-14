@@ -63,7 +63,7 @@
 /obj/structure/flora/tree/pine/Initialize(mapload)
 	. = ..()
 
-	if(islist(icon_states && icon_states.len))
+	if(length(icon_states))
 		icon_state = pick(icon_states)
 
 /obj/structure/flora/tree/pine/xmas

@@ -21,6 +21,7 @@
 /obj/item/clothing/mask/balaclava/breath/goal
 	name = "Goal mask"
 	desc = "Mask that looks like a weird bear."
+	icon = 'icons/obj/clothing/masks/animal.dmi'
 	icon_state = "goal"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 

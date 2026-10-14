@@ -52,6 +52,8 @@ GLOBAL_DATUM_INIT(cameranet, /datum/cameranet, new)
 /datum/cameranet/proc/make_static_image(turf/target, use_static = USE_STATIC_OPAQUE)
 	var/image/static_image = new(use_static == USE_STATIC_TRANSPARENT ? static_template_transparent : static_template)
 	static_image.loc = target
+	if(SSmapping.max_plane_offset)
+		SET_PLANE_W_SCALAR(static_image, CAMERA_STATIC_PLANE, GET_Z_PLANE_OFFSET(target.z))
 	return static_image
 
 /// Сбросить кэш сетей камер. Зовётся из хуков жизненного цикла камеры:

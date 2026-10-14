@@ -55,7 +55,7 @@
 		/atom/movable/screen/parallax_layer/space/layer_3,
 	)
 	variant_sets = list(
-		list(1, /atom/movable/screen/parallax_layer/space/icemoon),
+		list(1, /atom/movable/screen/parallax_layer/space/planet/icemoon),
 	)
 	min_quality = PARALLAX_LOW
 	weight = 12

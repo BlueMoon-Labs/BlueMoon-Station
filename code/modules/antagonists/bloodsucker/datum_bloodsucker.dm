@@ -61,7 +61,8 @@
 /datum/antagonist/bloodsucker/on_removal()
 	SSticker.mode.bloodsuckers -= owner
 	SSticker.mode.check_cancel_sunlight()// End Sunlight? (if last Vamp)
-	ClearAllPowersAndStats()// Clear Powers & Stats
+	if(owner.current)
+		ClearAllPowersAndStats()// Clear Powers & Stats
 	clear_bloodsucker_objectives()	// Objectives
 	update_bloodsucker_icons_removed(owner.current)// Clear Antag HUD
 	owner.special_role = null // BLUEMOON ADD

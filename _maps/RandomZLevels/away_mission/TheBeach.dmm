@@ -5499,7 +5499,7 @@
 "KH" = (
 /obj/structure/rack/shelf,
 /obj/effect/turf_decal/weather/sand/floor,
-/obj/item/clothing/mask/kitsuneblk,
+/obj/item/clothing/mask/kitsune/black,
 /obj/item/clothing/mask/muzzle,
 /obj/item/clothing/mask/nobreath,
 /obj/item/clothing/mask/paper,
@@ -6551,7 +6551,7 @@
 "Re" = (
 /obj/structure/rack/shelf,
 /obj/effect/turf_decal/weather/sand/floor,
-/obj/item/clothing/mask/kitsuneblk,
+/obj/item/clothing/mask/kitsune/black,
 /obj/item/clothing/mask/muzzle,
 /obj/item/clothing/mask/nobreath,
 /obj/item/clothing/mask/paper,

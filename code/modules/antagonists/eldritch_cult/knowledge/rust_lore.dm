@@ -4,9 +4,9 @@
 	name = "История кузнеца"
 	summary = "Хватка ржавит полы и стены и ломает шлюзы, Укоренение за нарост ставит лечащий очаг."
 	details = list(
-		"Нож и мусор на руне дают ржавый клинок.",
-		"Хватка по полу или стене ржавит их, повторное касание сносит ржавую стену.",
-		"Хватка по обычному шлюзу разрушает его; укреплённая стена поддаётся с шансом 50%.",
+		"Нож и мусор на руне дают ржавый клинок; хватка по обычному шлюзу разрушает его.",
+		"Хватка ржавит пол и стену, повторное касание сносит ржавую стену; укреплённая поддаётся с шансом 50%.",
+		"Ржавый пол разъедает чужаков: 2 урона коррозией в секунду, тошнота, химия вымывается из крови.",
 		"Новая ржавая поверхность даёт нарост раз в 15 секунд, новый отдел идёт в дело пути.",
 		"Укоренение за 1 нарост: один очаг на 30 секунд ржавит пол 5×5 и лечит вас и слуг на ржавчине.",
 		"Новый очаг заменяет прежний и ставится только на ржавеющий пол. Перезарядка 30 секунд.",
@@ -30,19 +30,25 @@
 	cost = 0
 	route = PATH_RUST
 
-/datum/eldritch_knowledge/rust_fist
-	name = "Хватка Ржавчины"
-	summary = "Хватка обрушивает обычную стену с одного касания."
+/datum/eldritch_knowledge/spell/rust_formation
+	name = "Ржавая формация"
+	summary = "Хватка рушит обычную стену с одного касания, а из своего ржавого пола встаёт стена на 20 секунд."
 	details = list(
-		"Обычная стена ржавеет и рушится от одной хватки.",
-		"Укреплённую стену сначала ржавят, потом ломают; каждое касание срабатывает с шансом 50%.",
+		"Обычная стена ржавеет и рушится от одной хватки; укреплённую сначала ржавят, потом ломают, по 50% за касание.",
+		"Ржавая формация поднимает стену из ржавого пола в 4 клетках. Перезарядка 15 секунд.",
+		"Стена стоит 20 секунд, держит пули и закрывает обзор; вы и ваши слуги проходите сквозь неё.",
+		"Врага на этой клетке отбрасывает в сторону: 10 ушибов и 2 секунды на полу.",
+		"Стену разбивают оружием, а ломом или зажжённой сваркой разбирают за 2 секунды.",
 	)
-	role = HERETIC_ROLE_GRASP
+	role = HERETIC_ROLE_ESCAPE
 	gain_text = "Теперь я чувствую, где сталь готова пустить корни."
 	cost = 1
+	spell_to_add = /obj/effect/proc_holder/spell/pointed/rust_formation
 	route = PATH_RUST
 
 /datum/eldritch_knowledge/base_rust/on_mansus_grasp(atom/target, mob/user, proximity_flag, click_parameters)
+	// Хватка читает звук до вызова знаний, поэтому новый вариант достаётся следующему касанию.
+	grasp_sound = pick(GLOB.heretic_rust_grasp_sounds)
 	if(!proximity_flag)
 		return FALSE
 	if(istype(target, /obj/machinery/door))
@@ -59,6 +65,7 @@
 			floor.balloon_alert(user, "не поддаётся ржавчине")
 			return FALSE
 	var/was_rust = is_heretic_rust_turf(surface)
+	var/was_wall = iswallturf(surface)
 	var/surface_x = surface.x
 	var/surface_y = surface.y
 	var/surface_z = surface.z
@@ -71,29 +78,76 @@
 			gain_combat_resource()
 			COOLDOWN_START(src, resource_harvest, 15 SECONDS)
 	var/affected = was_rust || is_heretic_rust_turf(changed)
-	if(!was_rust && istype(changed, /turf/closed/wall/rust) && heretic?.get_knowledge(/datum/eldritch_knowledge/rust_fist))
+	if(!was_rust && istype(changed, /turf/closed/wall/rust) && heretic?.get_knowledge(/datum/eldritch_knowledge/spell/rust_formation))
 		changed.rust_heretic_act()
+	var/turf/after = locate(surface_x, surface_y, surface_z)
+	if(was_wall && !iswallturf(after))
+		playsound(after, HERETIC_RUST_COLLAPSE_SOUND, 50, TRUE)
 	return affected
 
 /datum/eldritch_knowledge/rust_regen
 	name = "Ржавая поступь"
-	summary = "На ржавом полу каждую секунду лечатся ушибы, ожоги, отравление, удушье, выносливость и кровь."
+	summary = "На ржавом полу каждую секунду лечатся раны, выносливость и кровь, а дубинкам труднее вас свалить."
 	details = list(
-		"Каждую секунду на ржавчине: 2 ушиба, 2 ожога, 1 отравления, 1 удушья и 4 выносливости.",
-		"Потерянная кровь тоже восполняется, так что кровотечение на своей территории не добьёт.",
+		"Каждую секунду на ржавчине: 2 ушиба, 2 ожога, 1 отравления, 1 удушья и 4 выносливости, кровь восполняется.",
+		"На ржавчине урон выносливости по вам на 30% слабее: дубинки и стамкрит берут хуже.",
 		"Улучшения усиливают лечение до 125 и 150%.",
-		"Складывается с Живой ржавчиной и очагом Укоренения.",
-		"Вне ржавчины лечения нет: вас будут выманивать с неё.",
+		"Со второго уровня на ржавчине стихает кровотечение и раз в 10 секунд закрывается одна рана.",
+		"С третьего уровня заживают органы и раз в 30 секунд отрастает утраченная конечность.",
+		"Складывается с Живой ржавчиной и очагом Укоренения; вне ржавчины ничего из этого не работает.",
 	)
 	role = HERETIC_ROLE_PASSIVE
 	gain_text = "Под ногами скрипит металл, но этот звук успокаивает меня."
 	cost = 1
 	route = PATH_RUST
+	var/datum/weakref/footing_body
+	COOLDOWN_DECLARE(wound_mend)
+	COOLDOWN_DECLARE(limb_mend)
+
+/datum/eldritch_knowledge/rust_regen/on_body_gain(mob/living/user)
+	if(isliving(user))
+		RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(on_body_moved), override = TRUE)
+		update_footing(user)
+
+/datum/eldritch_knowledge/rust_regen/on_body_lose(mob/living/user)
+	if(user)
+		UnregisterSignal(user, COMSIG_MOVABLE_MOVED)
+	set_footing(null)
+
+/datum/eldritch_knowledge/rust_regen/on_death(mob/user)
+	set_footing(null)
+
+/datum/eldritch_knowledge/rust_regen/Destroy()
+	set_footing(null)
+	return ..()
+
+/datum/eldritch_knowledge/rust_regen/proc/on_body_moved(mob/living/source)
+	SIGNAL_HANDLER
+	update_footing(source)
+
+/datum/eldritch_knowledge/rust_regen/proc/update_footing(mob/living/user)
+	set_footing(user.stat != DEAD && istype(user.loc, /turf/open/floor/plating/rust) ? user : null)
+
+/// Сниженный урон выносливости держится ровно на одном теле и только пока оно стоит на ржавчине.
+/datum/eldritch_knowledge/rust_regen/proc/set_footing(mob/living/carbon/human/body)
+	var/mob/living/carbon/human/current = footing_body?.resolve()
+	if(current == body)
+		return
+	if(current?.physiology)
+		current.physiology.heretic_stamina_mod /= HERETIC_RUST_FOOTING_STAMINA_MOD
+	footing_body = null
+	if(!ishuman(body) || !body.physiology)
+		return
+	body.physiology.heretic_stamina_mod *= HERETIC_RUST_FOOTING_STAMINA_MOD
+	footing_body = WEAKREF(body)
 
 /datum/eldritch_knowledge/rust_regen/on_life(mob/user)
-	if(!isliving(user) || user.stat == DEAD || !istype(get_turf(user), /turf/open/floor/plating/rust))
+	if(!isliving(user))
 		return
 	var/mob/living/living_user = user
+	update_footing(living_user)
+	if(user.stat == DEAD || !istype(get_turf(user), /turf/open/floor/plating/rust))
+		return
 	var/healing_multiplier = passive_values[passive_level]
 	heretic_heal_damage(living_user, 2 * healing_multiplier, 2 * healing_multiplier)
 	living_user.adjustToxLoss(-healing_multiplier, FALSE, TRUE, toxins_type = TOX_OMNI)
@@ -101,19 +155,75 @@
 	living_user.adjustStaminaLoss(-4 * healing_multiplier)
 	if(iscarbon(living_user) && living_user.blood_volume && living_user.blood_volume < BLOOD_VOLUME_NORMAL)
 		living_user.blood_volume = min(BLOOD_VOLUME_NORMAL, living_user.blood_volume + 2 * healing_multiplier)
+	if(!iscarbon(living_user))
+		return
+	if(passive_level >= 2)
+		mend_wounds(living_user)
+	if(passive_level >= 3)
+		mend_body(living_user)
+
+/datum/eldritch_knowledge/rust_regen/proc/mend_wounds(mob/living/carbon/user)
+	var/datum/wound/worst
+	for(var/obj/item/bodypart/limb as anything in user.bodyparts)
+		limb.generic_bleedstacks = 0
+		for(var/datum/wound/wound as anything in limb.wounds)
+			wound.blood_flow = 0
+			if(!worst || wound.severity > worst.severity)
+				worst = wound
+		limb.update_part_wound_overlay()
+	if(!worst || !COOLDOWN_FINISHED(src, wound_mend))
+		return
+	COOLDOWN_START(src, wound_mend, HERETIC_RUST_MEND_WOUND_INTERVAL)
+	to_chat(user, span_notice("Ржавчина затягивает [worst.name]."))
+	worst.remove_wound()
+
+/datum/eldritch_knowledge/rust_regen/proc/mend_body(mob/living/carbon/user)
+	for(var/obj/item/organ/organ as anything in user.internal_organs)
+		if(organ.damage > 0)
+			organ.applyOrganDamage(-HERETIC_RUST_MEND_ORGAN)
+	var/list/missing = user.get_missing_limbs(TRUE)
+	if(!length(missing) || !COOLDOWN_FINISHED(src, limb_mend))
+		return
+	if(!user.regenerate_limb(pick(missing)))
+		return
+	COOLDOWN_START(src, limb_mend, HERETIC_RUST_MEND_LIMB_INTERVAL)
+	user.visible_message(span_warning("Из культи [user] вытягивается ржавая конечность, обрастая плотью."), span_notice("Ржавчина отращивает вам утраченную конечность."))
+
+/datum/eldritch_knowledge/spell/rust_roots
+	name = "Ржавые корни"
+	summary = "Сбитый враг на ржавчине вашего очага врастает в пол на 10 секунд и готов к обряду."
+	details = list(
+		"Цель в 5 клетках сбита с ног или обессилена и лежит на ржавом полу в границе вашего очага.",
+		"Секунду корни ползут к ней; если цель ушла с клетки, корни опадают и перезарядка возвращается.",
+		"До 10 секунд цель не действует и её не сдвинуть; сердце уводит её в изнанку из любой клетки очага.",
+		"Корни рвут нулевой жезл, лом или зажжённая сварка за 2 секунды; пленника можно растолкать за 2 секунды.",
+		"Угасший или разбитый очаг отпускает цель, защита от магии спасает. Перезарядка 40 секунд.",
+		"Потом цель до минуты невосприимчива к корням, к любому захвату - 15 секунд.",
+	)
+	role = HERETIC_ROLE_CAPTURE
+	gain_text = "Ржавчина поднялась по ногам упавшего, и он стал частью пола."
+	cost = 2
+	spell_to_add = /obj/effect/proc_holder/spell/pointed/rust_roots
+	route = PATH_RUST
+
+/datum/eldritch_knowledge/spell/rust_roots/on_body_lose(mob/living/user)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_rust/rust = heretic?.get_knowledge(/datum/eldritch_knowledge/base_rust)
+	rust?.release_roots()
+	return ..()
 
 /datum/eldritch_knowledge/rust_mark
 	name = "Метка Ржавчины"
-	summary = "Хватка ставит метку на 15 секунд, удар ржавым клинком её взрывает."
+	summary = "Хватка ставит метку на 15 секунд, удар ржавым клинком её взрывает; клинок разъедает каждым ударом."
 	details = list(
 		"Взрыв: 15 урона коррозией - 5 ожогов и 10 отравления, у синтетика вместо отравления повреждение систем.",
-		"Вещи в руках и верхняя одежда ржавеют, но не разрушаются.",
-		"Взрыв даёт нарост для Укоренения.",
-		"Слизни и борги получают только ожоги.",
+		"Вещи в руках и верхняя одежда ржавеют, но не разрушаются. Взрыв даёт нарост для Укоренения.",
+		"Каждый удар ржавым клинком добавляет 5 урона коррозией: треть ожогами, остальное отравлением.",
+		"Слизни и борги получают только ожоги; коррозия никого не лечит.",
 		"Метка спадает через 15 секунд.",
 	)
 	role = HERETIC_ROLE_MARK
-	gain_text = "Плоть, как и металл, можно научить распаду."
+	gain_text = "Плоть, как и металл, можно научить распаду. На острие моего клинка созревает ещё одна жизнь."
 	cost = 2
 	route = PATH_RUST
 
@@ -124,8 +234,12 @@
 	victim.apply_status_effect(/datum/status_effect/eldritch/rust)
 	return TRUE
 
+/datum/eldritch_knowledge/rust_mark/on_eldritch_blade(atom/target, mob/user, proximity_flag, click_parameters)
+	if(proximity_flag && isliving(target) && target != user)
+		heretic_corrosion(target, HERETIC_RUST_BLADE_CORROSION)
+
 /datum/eldritch_knowledge/spell/area_conversion
-	name = "Агрессивный выброс"
+	name = "Буйное разрастание"
 	summary = "Ржавчина расходится по поверхностям в 6 клетках; сердце, кабель и железо дают семя ржавчины."
 	details = list(
 		"Полы и стены вокруг ржавеют: рядом наверняка, к 6 клеткам всё реже. Перезарядка 30 секунд.",
@@ -144,7 +258,7 @@
 	route = PATH_RUST
 
 /datum/eldritch_knowledge/spell/rust_wave
-	name = "Досягаемость покровителя"
+	name = "Длань покровителя"
 	summary = "Заряд ржавчины летит на 15 клеток: 50 урона отравлением цели и ржавая полоса за ним."
 	details = list(
 		"Прицельтесь и выстрелите: заряд бьёт первого на пути на 50 отравления. Защита от магии гасит заряд.",
@@ -157,23 +271,6 @@
 	cost = 1
 	spell_to_add = /obj/effect/proc_holder/spell/aimed/rust_wave
 	route = PATH_RUST
-
-/datum/eldritch_knowledge/rust_blade_upgrade
-	name = "Токсичный клинок"
-	summary = "Каждый удар ржавым клинком добавляет 5 урона коррозией."
-	details = list(
-		"Треть коррозии - ожоги, остальное - отравление, у синтетика - повреждение систем.",
-		"Слизни и борги получают только ожоги; коррозия никого не лечит.",
-	)
-	role = HERETIC_ROLE_PASSIVE
-	gain_text = "На острие моего клинка созревает ещё одна жизнь."
-	cost = 2
-	route = PATH_RUST
-
-/datum/eldritch_knowledge/rust_blade_upgrade/on_eldritch_blade(atom/target, mob/user, proximity_flag, click_parameters)
-	if(isliving(target))
-		var/mob/living/victim = target
-		heretic_corrosion(victim, 5)
 
 /datum/eldritch_knowledge/spell/entropic_plume
 	name = "Энтропийное облако"
@@ -255,10 +352,10 @@
 	details = list(
 		"Подготовьте руку и коснитесь врага: 2 секунды он на полу.",
 		"Распад 20 секунд: ушибы, головокружение и повреждение органов.",
-		"Сбитого с ног можно начать приносить в жертву.",
+		"Сбитого с ног можно начать приносить в жертву, а на ржавчине своего очага - оплести Ржавыми корнями.",
 		"Защита от магии поглощает касание. Перезарядка 2 минуты.",
 	)
-	role = HERETIC_ROLE_CAPTURE
+	role = HERETIC_ROLE_ATTACK
 	gain_text = "Ржавчина перестала отличать железо от крови."
 	cost = 2
 	sacs_needed = HERETIC_PENULTIMATE_SACRIFICES

@@ -274,15 +274,39 @@
 	var/turf/after = ChangeTurf(/turf/closed/wall/r_wall/rust)
 	after?.AddElement(/datum/element/heretic_rust)
 
+/turf/closed/wall/r_wall/r_plastitanium
+	name = "reinforced plastitanium wall"
+	desc = "A huge chunk of reinforced metal and plastitanium used to separate rooms."
+	icon = 'icons/turf/walls/reinforced_plastitanium_wall.dmi'
+	icon_state = "map-shuttle"
+	explosion_block = 4
+	sheet_type = /obj/item/stack/sheet/mineral/plastitanium
+	sheet_amount = 2
+	smooth = SMOOTH_MORE
+	canSmoothWith = list(/turf/closed/wall/r_wall/r_plastitanium, /turf/closed/wall/r_wall/syndicate, /turf/closed/wall/mineral/plastitanium, /obj/machinery/door/airlock/shuttle, /obj/machinery/door/airlock, /obj/structure/window/plastitanium, /obj/structure/shuttle/engine, /obj/structure/falsewall/plastitanium)
+
+/turf/closed/wall/r_wall/r_plastitanium/diagonal
+	smooth = SMOOTH_MORE|SMOOTH_DIAGONAL
+	icon_state = "map-shuttle_nd"
+
+/turf/closed/wall/r_wall/r_plastitanium/nosmooth
+	icon = 'icons/turf/shuttle.dmi'
+	icon_state = "wall"
+	smooth = SMOOTH_FALSE
+
+/turf/closed/wall/r_wall/r_plastitanium/overspace
+	icon_state = "map-overspace"
+	fixed_underlay = list("space"=1)
+
 /turf/closed/wall/r_wall/syndicate
 	name = "hull"
 	desc = "The armored hull of an ominous looking ship."
-	icon = 'icons/turf/walls/plastitanium_wall.dmi'
+	icon = 'icons/turf/walls/reinforced_plastitanium_wall.dmi'
 	icon_state = "map-shuttle"
 	explosion_block = 20
 	sheet_type = /obj/item/stack/sheet/mineral/plastitanium
 	smooth = SMOOTH_MORE|SMOOTH_DIAGONAL
-	canSmoothWith = list(/turf/closed/wall/r_wall/syndicate, /turf/closed/wall/mineral/plastitanium, /obj/machinery/door/airlock/shuttle, /obj/machinery/door/airlock, /obj/structure/window/plastitanium, /obj/structure/shuttle/engine, /obj/structure/falsewall/plastitanium)
+	canSmoothWith = list(/turf/closed/wall/r_wall/syndicate, /turf/closed/wall/r_wall/r_plastitanium, /turf/closed/wall/mineral/plastitanium, /obj/machinery/door/airlock/shuttle, /obj/machinery/door/airlock, /obj/structure/window/plastitanium, /obj/structure/shuttle/engine, /obj/structure/falsewall/plastitanium)
 
 /turf/closed/wall/r_wall/syndicate/rcd_vals(mob/user, obj/item/construction/rcd/the_rcd)
 	return FALSE

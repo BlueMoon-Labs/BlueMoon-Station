@@ -366,3 +366,17 @@
 	cost = 4
 	surplus = 10
 	purchasable_from = ~UPLINK_SYNDICATE_PACT_CREW
+
+/datum/uplink_item/dangerous/cowboy
+	name = "The Man Without A Name Kit"
+	desc = "Includes a belt and two revolvers that can be reloaded instantly using the belt with cartridges, shooting with both hands is highly recommended."
+	item = /obj/item/storage/box/inteq_kit/cowboy_kit
+	cost = 10
+	purchasable_from = UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE | UPLINK_TRAITORS
+
+/datum/uplink_item/dangerous/ncr
+	name = "Passing Bell"
+	desc = "45-70 revolver, nothing to say."
+	item = /obj/item/storage/box/inteq_kit/ncr_kit
+	cost = 10
+	purchasable_from = UPLINK_NUKE_OPS | UPLINK_CLOWN_OPS | UPLINK_SYNDICATE | UPLINK_TRAITORS

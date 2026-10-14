@@ -449,7 +449,101 @@
 	TEST_ASSERT(sky_still_asleep, "температурное остывание разбудило планетарный тайл")
 	TEST_ASSERT(pair_grouped, "разбуженный планетарный тайл не пошёл старым парным путём - выбросы на улицу больше не растекаются")
 
+#define PLANETARY_FIRE_PASSES 120
+#define PLANETARY_FIRE_TAIL_PASSES 20
+
+/// Пожар плазмы у кромки бассейна лавы ледяной луны догорает, когда плазма кончилась (раунд 10476, Reserch Avanpost).
+/datum/unit_test/planetary_churn/air_fire_burns_out/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair was not initialized")
+	build_room()
+	var/turf/base = run_loc_floor_bottom_left
+	for(var/turf/open/T as anything in room)
+		T.ChangeTurf(T.x == base.x + 3 ? /turf/open/floor/engine : /turf/open/lava/plasma/ice_moon)
+	room = list()
+	for(var/dx in 1 to 3)
+		for(var/dy in 1 to 3)
+			var/turf/open/T = locate(base.x + dx, base.y + dy, base.z)
+			TEST_ASSERT(istype(T) && T.air, "fire arena turf has no air at offset [dx],[dy]")
+			room += T
+	settle_room()
+	var/turf/open/spark = locate(base.x + 3, base.y + 2, base.z)
+	var/turf/open/lava_edge = locate(base.x + 2, base.y + 2, base.z)
+	TEST_ASSERT(lava_edge.planetary_atmos, "premise: ice moon lava is not planetary")
+	for(var/dy in 1 to 3)
+		var/turf/open/floor_turf = locate(base.x + 3, base.y + dy, base.z)
+		floor_turf.air.set_moles(GAS_PLASMA, 40)
+		floor_turf.air.adjust_moles(GAS_O2, 150)
+	activate_room()
+	spark.hotspot_expose(700, 5)
+	var/ignited = !!spark.active_hotspot
+
+	var/fire_base = SSair.times_fired + 70000
+	var/tail_hotspots = 0
+	var/reached_planetary = FALSE
+	var/list/trace = list()
+	for(var/pass in 1 to PLANETARY_FIRE_PASSES)
+		// times_fired в тесте не растёт: всё, что горит к началу прохода, родилось в прошлом.
+		for(var/turf/open/T as anything in room)
+			if(T.active_hotspot)
+				T.active_hotspot.spawned_pass = -1
+		for(var/turf/open/T as anything in room)
+			if(T.excited)
+				T.process_cell(fire_base + pass)
+		for(var/datum/excited_group/group as anything in SSair.excited_groups.Copy())
+			if(length(group.turf_list & room))
+				group.tick_lifecycle()
+		var/list/flames = list()
+		for(var/turf/open/T as anything in room)
+			if(T.active_hotspot && !QDELETED(T.active_hotspot))
+				flames += T.active_hotspot
+		for(var/obj/effect/hotspot/flame as anything in flames)
+			if(!QDELETED(flame))
+				flame.process()
+		var/burning = 0
+		var/burning_on_lava = 0
+		var/hottest = 0
+		for(var/turf/open/T as anything in room)
+			hottest = max(hottest, T.air.return_temperature())
+			if(T.active_hotspot && !QDELETED(T.active_hotspot))
+				burning++
+				if(T.planetary_atmos)
+					burning_on_lava++
+					reached_planetary = TRUE
+		if(pass > PLANETARY_FIRE_PASSES - PLANETARY_FIRE_TAIL_PASSES)
+			tail_hotspots += burning
+		if(pass % 10 == 0)
+			trace += "[pass]: [burning] очагов ([burning_on_lava] на лаве), [round(hottest)] K"
+
+	var/plasma_left = 0
+	for(var/turf/open/T as anything in room)
+		plasma_left += T.air.get_moles(GAS_PLASMA)
+		T.to_be_destroyed = FALSE
+		T.max_fire_temperature_sustained = 0
+		if(T.active_hotspot)
+			qdel(T.active_hotspot)
+		SSair.active_super_conductivity -= T
+	cleanup_room()
+	TEST_ASSERT(ignited, "premise: the plasma tile did not ignite")
+	TEST_ASSERT_EQUAL(tail_hotspots, 0, "огонь не догорел за [PLANETARY_FIRE_PASSES] проходов (плазмы осталось [round(plasma_left, 0.01)] моль, огонь дошёл до лавы: [reached_planetary]): [jointext(trace, "; ")]")
+
+#undef PLANETARY_FIRE_PASSES
+#undef PLANETARY_FIRE_TAIL_PASSES
+
 #undef PLANETARY_CHURN_TEMPLATE_A
 #undef PLANETARY_CHURN_TEMPLATE_B
 #undef PLANETARY_CHURN_MAX_CYCLES
 #undef PLANETARY_CHURN_WARM_EDGE_TEMPERATURE
+
+/// Закрытая комната руины Hot Springs стоит на одном непланетарном воздухе: вода с воздухом луны у песка со станционным давала активные турфы с роундстарта.
+/datum/unit_test/hotsprings_ruin_one_air
+
+/datum/unit_test/hotsprings_ruin_one_air/Run()
+	var/map_text = file2text("_maps/RandomRuins/IceRuins/icemoon_surface_hotsprings.dmm")
+	TEST_ASSERT(length(map_text), "Карта руины Hot Springs не прочиталась")
+	var/regex/open_turf_path = regex(@"/turf/open/[\w/]+", "g")
+	var/list/mixes = list()
+	while(open_turf_path.Find(map_text))
+		var/turf/open/turf_type = text2path(open_turf_path.match)
+		TEST_ASSERT(!initial(turf_type.planetary_atmos), "[turf_type] в закрытой руине планетарный")
+		mixes[initial(turf_type.initial_gas_mix)] = TRUE
+	TEST_ASSERT_EQUAL(length(mixes), 1, "Воздух открытых турфов руины разный: [jointext(mixes, ", ")]")

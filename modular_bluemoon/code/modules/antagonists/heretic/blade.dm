@@ -18,6 +18,11 @@
 #define HERETIC_BLADE_CHALLENGE_DECLINE "Отказаться"
 #define HERETIC_BLADE_SURRENDER "Сдаться"
 #define HERETIC_BLADE_KEEP_FIGHTING "Продолжить"
+#define HERETIC_BLADE_THROAT_HINT_COOLDOWN (3 SECONDS)
+#define HERETIC_BLADE_EVENT_VOLUME 50
+#define HERETIC_BLADE_QUIET_VOLUME 30
+#define HERETIC_BLADE_GONG_VOLUME 60
+#define HERETIC_BLADE_HEARING_RANGE 7
 
 /obj/item/melee/sickly_blade/duelist
 	name = "dark blade"
@@ -32,15 +37,15 @@
 
 /datum/eldritch_knowledge/base_blade
 	name = "Принцип поединка"
-	summary = "Дуэль в изнанке и стойка «Выжидание», в которой пули и лазеры спереди в секторе 90 градусов уходят вбок."
+	summary = "Дуэль в изнанке, Хватка со спины и «Выжидание», в котором пули спереди в секторе 90 градусов уходят вбок."
 	details = list(
 		"Нож и лист железа на руне дают тёмный клинок, до трёх. Выжидание: 2 секунды, 3 блока и ответ на 18 ушибов.",
+		"Хватка со спины вдобавок парализует на 1,5 секунды и ранит на 10: хватит, чтобы приставить клинок к горлу.",
 		"«Вызов» бросают человеку не дальше 5 клеток, где откроется изнанка, если оба 10 секунд без урона; ответ ждут 20 секунд.",
-		"Принявший уходит с вами в изнанку на 60 секунд; проиграл тот, кто в стамкрите, крите, оглушён, сдался или вырвался.",
-		"Победа: соперника 12 секунд держит клятва, над целью охоты обряд идёт там же. Иначе вас выносит к выходу, его ко входу.",
-		"Хватка или заклинание, кроме Выжидания и призыва сердца или кодекса, - поражение, даже если соперник лежит.",
-		"Поражение обнуляет Темп, закрывает вызовы на 5 минут, роняет клинок, и 5 минут на вашей шее виден порез-знак.",
-		"Отказ или молчание вызванного в 5 клетках от вас сбивают его с ног на 3 секунды; снова вызвать его можно через 5 минут.",
+		"Отказ или молчание в 5 клетках от вас сбивают его с ног на 3 секунды; снова вызвать его можно через 5 минут.",
+		"Принявший уходит с вами в изнанку на 60 секунд; там работают все приёмы клинка, а Хватка и чужая магия - поражение.",
+		"Проигравшего 12 секунд держит клятва (растолкать - 2 секунды), а живое сердце сразу примет его целью охоты.",
+		"Ваше поражение обнуляет Темп, роняет клинок и закрывает вызовы на 5 минут; 5 минут на вашей шее виден порез-знак.",
 	)
 	role = HERETIC_ROLE_CRAFT
 	gain_text = "Между взмахом и раной есть мгновение. Отныне оно принадлежит мне."
@@ -87,12 +92,28 @@
 	var/list/disarm_ready_at = list()
 	var/datum/status_effect/heretic_blade_throat/throat_hold
 	var/throat_failure
+	COOLDOWN_DECLARE(throat_hint)
+	var/obj/effect/abstract/heretic_vfx_attached/challenge_mark
+	var/datum/weakref/backstab_ref
+	var/backstab_at = -1
+	var/datum/weakref/body_ref
 
 /datum/eldritch_knowledge/base_blade/on_body_gain(mob/living/user)
 	grant_combat_power(user)
 	if(user?.mind && QDELETED(challenge_spell))
 		challenge_spell = new
 		user.mind.AddSpell(challenge_spell)
+	unwatch_body()
+	if(isliving(user))
+		body_ref = WEAKREF(user)
+		RegisterSignal(user, COMSIG_MOB_ITEM_ATTACK, PROC_REF(on_item_attack))
+
+/datum/eldritch_knowledge/base_blade/proc/unwatch_body()
+	var/mob/living/body = body_ref?.resolve()
+	if(body)
+		UnregisterSignal(body, COMSIG_MOB_ITEM_ATTACK)
+	body_ref = null
+	backstab_ref = null
 
 /datum/eldritch_knowledge/base_blade/on_life(mob/user)
 	if(combat_resource >= HERETIC_BLADE_IDLE_TEMPO_CAP || !COOLDOWN_FINISHED(src, idle_tempo) || user.stat != CONSCIOUS)
@@ -105,6 +126,7 @@
 
 /datum/eldritch_knowledge/base_blade/on_body_lose(mob/living/user)
 	remove_combat_power()
+	unwatch_body()
 	QDEL_NULL(challenge_spell)
 	clear_challenge()
 	QDEL_NULL(active_parry)
@@ -119,6 +141,7 @@
 	last_riposte_victim = null
 
 /datum/eldritch_knowledge/base_blade/Destroy()
+	unwatch_body()
 	QDEL_NULL(challenge_spell)
 	clear_challenge()
 	QDEL_NULL(active_parry)
@@ -145,7 +168,50 @@
 /datum/eldritch_knowledge/base_blade/on_mansus_grasp(atom/target, mob/user, proximity_flag, click_parameters)
 	if(active_duel && user == active_duel.champion && isliving(target))
 		active_duel.finish(HERETIC_BLADE_DUEL_LOST, "Хватка в честном поединке")
-	return FALSE
+		return FALSE
+	var/backstab_target = backstab_at == world.time ? backstab_ref?.resolve() : null
+	backstab_ref = null
+	if(!proximity_flag || !isliving(target))
+		return FALSE
+	var/mob/living/victim = target
+	var/from_behind = backstab_target == victim || heretic_blade_behind(user, victim)
+	if(!from_behind || victim.stat == DEAD || !heretic_can_affect(user, victim, chargecost = 0))
+		hint_throat(user, victim)
+		return FALSE
+	victim.Paralyze(HERETIC_BLADE_BACKSTAB_PARALYZE)
+	victim.apply_damage(HERETIC_BLADE_BACKSTAB_BRUTE, BRUTE, BODY_ZONE_CHEST)
+	heretic_blade_backstab_fx(user, victim)
+	victim.balloon_alert(user, "удар со спины!")
+	to_chat(victim, span_userdanger("Удар в спину! Тело не слушается."))
+	log_combat(user, victim, "бьёт Хваткой со спины")
+	hint_throat(user, victim)
+	return TRUE
+
+/// Хватка валит цель раньше, чем знания её видят, а упавший поворачивается: со спины ли удар, решается до касания.
+/datum/eldritch_knowledge/base_blade/proc/on_item_attack(mob/living/user, mob/living/target)
+	SIGNAL_HANDLER
+	if(!istype(user.get_active_held_item(), /obj/item/melee/touch_attack/mansus_fist) || !heretic_blade_behind(user, target))
+		return
+	backstab_ref = WEAKREF(target)
+	backstab_at = world.time
+
+/// Нападающий за спиной стоящей цели: шаг от него к цели совпадает со взглядом цели хотя бы по одной оси.
+/proc/heretic_blade_behind(atom/attacker, mob/living/target)
+	if(!isturf(attacker?.loc) || !isturf(target?.loc) || target.lying || attacker.z != target.z)
+		return FALSE
+	var/approach = get_dir(attacker, target)
+	return approach && (approach & target.dir)
+
+/// Цель готова для клинка у горла: еретик, у которого он есть и готов, видит подсказку над ней.
+/datum/eldritch_knowledge/base_blade/proc/hint_throat(mob/living/user, mob/living/victim)
+	if(!COOLDOWN_FINISHED(src, throat_hint) || !QDELETED(throat_hold) || throat_block_reason(user, victim))
+		return FALSE
+	var/obj/effect/proc_holder/spell/pointed/heretic_blade_throat/spell = locate() in user.mind?.spell_list
+	if(!spell || spell.charge_counter < spell.charge_max)
+		return FALSE
+	COOLDOWN_START(src, throat_hint, HERETIC_BLADE_THROAT_HINT_COOLDOWN)
+	victim.balloon_alert(user, "клинок к горлу!")
+	return TRUE
 
 /datum/eldritch_knowledge/base_blade/pocket_door(mob/living/user, mob/living/victim)
 	if(!throat_door_holds(user, victim))
@@ -198,7 +264,7 @@
 	if(place)
 		place.visible_message(span_warning("[blade] темнеет и рассыпается пеплом."))
 		new /obj/effect/decal/cleanable/ash(place)
-		playsound(place, "shatter", 40, TRUE)
+		playsound(place, 'modular_bluemoon/sound/heretic/blade_crumble.ogg', 40, TRUE)
 	log_game("HERETIC BLADE: [blade] рассыпается при создании нового клинка в [AREACOORD(place)].")
 	qdel(blade)
 
@@ -274,7 +340,7 @@
 	COOLDOWN_START(src, feint_cooldown, HERETIC_BLADE_FEINT_COOLDOWN)
 	user.do_attack_animation(target, used_item = held_blade(user))
 	user.visible_message(span_warning("[user] обманным движением клинка раскрывает защиту [target]!"))
-	playsound(target, 'sound/weapons/rapierhit.ogg', 35, TRUE)
+	playsound(target, 'modular_bluemoon/sound/heretic/blade_feint.ogg', HERETIC_BLADE_EVENT_VOLUME, TRUE)
 	return TRUE
 
 /datum/eldritch_knowledge/base_blade/proc/clear_feint(datum/eldritch_knowledge/blade_guard/guard)
@@ -336,7 +402,7 @@
 	if(!from_feint)
 		victim.adjustStaminaLoss(15)
 	if(!from_feint && heretic.get_knowledge(/datum/eldritch_knowledge/blade_riposte))
-		victim.Knockdown(0.6 SECONDS)
+		victim.Knockdown(HERETIC_BLADE_RIPOSTE_KNOCKDOWN)
 	if(!from_feint && user.has_status_effect(/datum/status_effect/heretic_blade_dance))
 		heretic_heal_damage(user, 5)
 		gain_combat_resource()
@@ -345,8 +411,10 @@
 		last_riposte_at = world.time
 		disarm(user, victim)
 	new /obj/effect/temp_visual/dir_setting/heretic_slash(get_turf(user), get_dir(user, victim), TRUE)
-	playsound(victim, 'sound/weapons/rapierhit.ogg', 55, TRUE)
+	playsound(victim, heretic_blade_riposte_sound(), HERETIC_BLADE_EVENT_VOLUME, TRUE)
 	user.visible_message(span_danger("[user] отвечает точным выпадом по [victim]!"))
+	if(!from_feint)
+		hint_throat(user, victim)
 	return TRUE
 
 /datum/status_effect/heretic_parry
@@ -360,7 +428,7 @@
 	var/expires_at
 	var/blocks_left = 1
 	var/stance_ready = TRUE
-	var/mutable_appearance/stance_overlay
+	var/list/stance_overlay
 
 /datum/status_effect/heretic_parry/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_blade/knowledge, window, blocks)
 	knowledge_ref = WEAKREF(knowledge)
@@ -413,9 +481,9 @@
 		return FALSE
 	RegisterSignal(owner, COMSIG_LIVING_RUN_BLOCK, PROC_REF(parry_attack))
 	RegisterSignal(owner, COMSIG_ATOM_UPDATE_OVERLAYS, PROC_REF(keep_stance_overlay))
-	stance_overlay = mutable_appearance('modular_bluemoon/icons/obj/heretic_feedback.dmi', "ring_leader_effect", ABOVE_MOB_LAYER)
-	stance_overlay.color = "#b6c9f4"
+	stance_overlay = heretic_blade_guard_appearance(owner)
 	owner.update_icon()
+	playsound(owner, 'modular_bluemoon/sound/heretic/blade_guard.ogg', HERETIC_BLADE_QUIET_VOLUME, TRUE)
 	return TRUE
 
 /datum/status_effect/heretic_parry/on_remove()
@@ -442,8 +510,8 @@
 /datum/status_effect/heretic_blade_opening
 	id = "heretic_blade_opening"
 	duration = 5 SECONDS
-	tick_interval = -1
-	alert_type = null
+	tick_interval = 1 SECONDS
+	alert_type = /atom/movable/screen/alert/status_effect/heretic_blade_opening
 	status_type = STATUS_EFFECT_MULTIPLE
 	on_remove_on_mob_delete = TRUE
 	var/datum/weakref/knowledge_ref
@@ -455,18 +523,37 @@
 	from_feint = feint
 	if(from_feint)
 		duration = HERETIC_BLADE_FEINT_WINDUP + HERETIC_BLADE_FEINT_WINDOW
-	return ..()
+	. = ..()
+	if(linked_alert)
+		linked_alert.desc = from_feint ? "Финт раскрыл вашу защиту: через 0,6 секунды следующий удар противника станет усиленным на 3 секунды. Разорвите дистанцию!" : "Ваш удар отбит: 5 секунд противник может ответить усиленным выпадом. Разорвите дистанцию!"
+		update_countdown()
 
 /datum/status_effect/heretic_blade_opening/on_apply()
 	. = ..()
 	if(!.)
 		return FALSE
-	opening_overlay = mutable_appearance('modular_bluemoon/icons/obj/heretic_alerts.dmi', "sigil_blade", ABOVE_MOB_LAYER)
-	opening_overlay.transform = matrix() * 0.6
+	opening_overlay = mutable_appearance('modular_bluemoon/icons/obj/heretic_blade_fx.dmi', "blade_opening", ABOVE_MOB_LAYER)
 	RegisterSignal(owner, COMSIG_ATOM_UPDATE_OVERLAYS, PROC_REF(keep_opening_overlay))
 	owner.update_icon()
 	to_chat(owner, span_userdanger((from_feint ? "Противник проводит финт: через 0,6 секунды его следующий удар получит усиление на три секунды. Разорвите дистанцию!" : "Ваш удар отбит: пять секунд противник может ответить усиленным выпадом. Разорвите дистанцию!")))
 	return TRUE
+
+/datum/status_effect/heretic_blade_opening/tick()
+	update_countdown()
+
+/datum/status_effect/heretic_blade_opening/proc/update_countdown()
+	if(!linked_alert)
+		return
+	var/left = CEILING(max(0, duration - world.time) / (1 SECONDS), 1)
+	linked_alert.maptext = MAPTEXT("<div style='text-align:center;font-size:8px;background-color:#17111d'>[left]с</div>")
+
+/atom/movable/screen/alert/status_effect/heretic_blade_opening
+	name = "Просвет в защите"
+	desc = "Противник видит брешь в вашей защите: его следующий удар станет усиленным. Разорвите дистанцию!"
+	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
+	icon_state = "blade_opening"
+	maptext_width = 32
+	maptext_height = 12
 
 /datum/status_effect/heretic_blade_opening/on_remove()
 	UnregisterSignal(owner, COMSIG_ATOM_UPDATE_OVERLAYS)
@@ -595,7 +682,8 @@
 	mark_name = "Метка Клинка"
 	mark_alert_state = "sigil_blade"
 	effect_sprite = "emark5"
-	detonation_sound = 'sound/weapons/rapierhit.ogg'
+	effect_sprite_layer = ABOVE_MOB_LAYER
+	detonation_sound = 'modular_bluemoon/sound/heretic/blade_mark.ogg'
 	detonation_visual = /obj/effect/temp_visual/heretic_path_feedback/blade_mark
 
 /datum/status_effect/eldritch/blade/on_effect()
@@ -641,7 +729,7 @@
 	name = "Клинок у горла"
 	summary = "Клинок у горла соседа: тот замирает до 12 секунд и идёт за вами шагом, а цель охоты можно увести разрезом."
 	details = list(
-		"Сбейте цель Хваткой (2 секунды) или Выпадом (1,5 секунды) и сразу приставьте клинок, пока она лежит.",
+		"Сбейте цель Хваткой (со спины она ещё парализует) или Выпадом: над ней всплывёт «клинок к горлу!», приставьте его.",
 		"Цель с пустой активной рукой годится и 3 секунды после ответа Выжидания; выбивать оружие научит «Обезоруживание».",
 		"Полсекунды замаха: отошедшая за это время цель уходит от захвата. Защита от магии спасает от клинка.",
 		"Заложник не двигается сам и идёт за вами шагом, обряд сердцем над ним работает; его можно растолкать за 2 секунды.",
@@ -671,14 +759,76 @@
 /datum/eldritch_knowledge/blade_riposte
 	name = "Ошибка противника"
 	sacs_needed = HERETIC_PENULTIMATE_SACRIFICES
-	summary = "Ответный удар после парирования сбивает врага с ног на 0,6 секунды."
+	summary = "Свой клинок раз в 20 секунд сам отбивает удар вплотную, а ответ сбивает врага с ног на 0,6 секунды."
 	details = list(
-		"Сбитый ответом враг годится для Клинка у горла, пока лежит.",
+		"Первый удар врага вплотную клинок в руке отбивает сам, без Выжидания и свободной руки; дальше 20 секунд ждать.",
+		"Такое парирование даёт Темп, шаг дела и окно ответного удара, как обычное.",
+		"Ответный удар после любого парирования сбивает врага на 0,6 секунды: сбитый годится для Клинка у горла.",
+		"Поднятое Выжидание принимает удар раньше, клинки орбиты - позже; выстрелы и броски не отбиваются сами.",
 		"Удар после финта не сбивает.",
 	)
 	role = HERETIC_ROLE_CONTROL
 	route = PATH_BLADE
 	cost = 2
+	var/datum/weakref/body_ref
+	var/reflex_ready_at = 0
+	var/reflex_taken_at = -1
+	var/datum/weakref/reflex_taken_ref
+
+/datum/eldritch_knowledge/blade_riposte/on_body_gain(mob/living/user)
+	release_body()
+	if(!isliving(user))
+		return
+	body_ref = WEAKREF(user)
+	RegisterSignal(user, COMSIG_LIVING_RUN_BLOCK, PROC_REF(reflex_block))
+
+/datum/eldritch_knowledge/blade_riposte/on_body_lose(mob/living/user)
+	release_body()
+
+/datum/eldritch_knowledge/blade_riposte/Destroy()
+	release_body()
+	return ..()
+
+/datum/eldritch_knowledge/blade_riposte/proc/release_body()
+	var/mob/living/body = body_ref?.resolve()
+	if(body)
+		UnregisterSignal(body, COMSIG_LIVING_RUN_BLOCK)
+	body_ref = null
+	reflex_taken_ref = null
+
+/// Сам ли клинок встретит эту атаку; принятая атака остаётся за ним до конца тика, так что орбита её не перехватит.
+/datum/eldritch_knowledge/blade_riposte/proc/reflex_would_take(mob/living/source, atom/object, attack_type, mob/aggressor)
+	if(reflex_taken_at == world.time && reflex_taken_ref?.resolve() == object)
+		return TRUE
+	if(body_ref?.resolve() != source || world.time < reflex_ready_at || source.stat != CONSCIOUS || !(attack_type & (ATTACK_TYPE_MELEE | ATTACK_TYPE_UNARMED)) || (attack_type & (ATTACK_TYPE_PROJECTILE | ATTACK_TYPE_THROWN)))
+		return FALSE
+	if(!ismob(aggressor) || aggressor == source || IS_HERETIC(aggressor) || IS_HERETIC_MONSTER(aggressor) || !source.Adjacent(aggressor))
+		return FALSE
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(source)
+	var/datum/eldritch_knowledge/base_blade/blade = heretic?.get_knowledge(/datum/eldritch_knowledge/base_blade)
+	if(!blade?.held_blade(source))
+		return FALSE
+	return QDELETED(blade.active_parry) || !blade.active_parry.would_parry(source, attack_type, aggressor)
+
+/datum/eldritch_knowledge/blade_riposte/proc/reflex_block(mob/living/source, real_attack, atom/object, damage, attack_text, attack_type, armour_penetration, mob/living/attacker, def_zone, list/return_list, attack_direction)
+	SIGNAL_HANDLER
+	if(!heretic_blade_blockable(real_attack, damage, attack_type, return_list))
+		return BLOCK_NONE
+	var/mob/aggressor = heretic_blade_aggressor(object, attacker)
+	if(reflex_taken_at == world.time && reflex_taken_ref?.resolve() == object)
+		return BLOCK_SUCCESS
+	if(!reflex_would_take(source, object, attack_type, aggressor))
+		return BLOCK_NONE
+	reflex_ready_at = world.time + HERETIC_BLADE_REFLEX_COOLDOWN
+	reflex_taken_at = world.time
+	reflex_taken_ref = WEAKREF(object)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(source)
+	var/datum/eldritch_knowledge/base_blade/blade = heretic.get_knowledge(/datum/eldritch_knowledge/base_blade)
+	blade.record_parry(source, aggressor)
+	heretic.advance_combat_deed(aggressor, PATH_BLADE)
+	heretic_blade_reflex_fx(source, aggressor)
+	source.visible_message(span_warning("Тёмный клинок в руке [source] сам встречает [attack_text]!"), span_notice("Клинок сам отбил [attack_text]. Следующий такой отбив - через [HERETIC_BLADE_REFLEX_COOLDOWN / (1 SECONDS)] секунд."))
+	return BLOCK_SUCCESS
 
 /datum/eldritch_knowledge/spell/blade_dance
 	name = "Ритм поединка"
@@ -772,7 +922,7 @@
 	var/obj/effect/heretic_orbit_blade/blade = new(null, slot, grown)
 	orbit_blades += blade
 	var/atom/movable/owner = parent
-	owner.vis_contents += blade
+	owner.add_vis_on_floor(blade)
 
 /datum/component/heretic_blade_orbit/proc/remove_blades(list/blades)
 	var/atom/movable/owner = parent
@@ -810,7 +960,7 @@
 		return
 	add_blade(TRUE)
 	heretic_vfx_burst(parent, /particles/heretic_ascension/blade/regrow)
-	playsound(parent, 'sound/items/unsheath.ogg', HERETIC_BLADE_REGROW_VOLUME, TRUE)
+	playsound(parent, 'modular_bluemoon/sound/heretic/blade_regrow.ogg', HERETIC_BLADE_REGROW_VOLUME, TRUE)
 	start_regeneration()
 
 /// Сторона, с которой пришёл удар: от нападающего, от места броска или против полёта снаряда.
@@ -835,6 +985,9 @@
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(source)
 	var/datum/eldritch_knowledge/base_blade/knowledge = heretic?.get_knowledge(/datum/eldritch_knowledge/base_blade)
 	if(!QDELETED(knowledge?.active_parry) && knowledge.active_parry.would_parry(source, attack_type, aggressor))
+		return BLOCK_NONE
+	var/datum/eldritch_knowledge/blade_riposte/reflex = heretic?.get_knowledge(/datum/eldritch_knowledge/blade_riposte)
+	if(reflex?.reflex_would_take(source, object, attack_type, aggressor))
 		return BLOCK_NONE
 	shatter_blade(attack_angle(source, object, aggressor))
 	playsound(source, 'modular_bluemoon/sound/heretic/parry.ogg', 50, TRUE)
@@ -896,10 +1049,11 @@
 		var/obj/item/melee/sickly_blade/duelist/blade = blade_ref.resolve()
 		if(blade?.bound_mind != user.mind || !isturf(blade.loc) || !(blade in view(7, user)))
 			continue
+		var/turf/lying_at = get_turf(blade)
 		if(!user.put_in_hands(blade))
 			heretic_revert_cast(user)
 			return
-		playsound(user, 'sound/magic/repulse.ogg', 35, TRUE)
+		heretic_blade_recall_fx(lying_at, user)
 		return
 	heretic_revert_cast(user, "В поле зрения нет вашего свободно лежащего клинка.")
 
@@ -924,7 +1078,7 @@
 	id = "heretic_blade_dance"
 	duration = 10 SECONDS
 	tick_interval = 0.5 SECONDS
-	alert_type = null
+	alert_type = /atom/movable/screen/alert/status_effect/heretic_blade_dance
 	status_type = STATUS_EFFECT_REPLACE
 	on_remove_on_mob_delete = TRUE
 
@@ -933,11 +1087,20 @@
 	if(!.)
 		return FALSE
 	owner.add_movespeed_modifier(/datum/movespeed_modifier/heretic_blade_dance)
+	RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(leave_afterimage))
+	heretic_blade_dance_start_fx(owner)
 	return TRUE
 
 /datum/status_effect/heretic_blade_dance/on_remove()
 	owner.remove_movespeed_modifier(/datum/movespeed_modifier/heretic_blade_dance)
+	UnregisterSignal(owner, COMSIG_MOVABLE_MOVED)
 	return ..()
+
+/datum/status_effect/heretic_blade_dance/proc/leave_afterimage(atom/movable/source, atom/old_loc, movement_dir, forced)
+	SIGNAL_HANDLER
+	if(forced || !isturf(old_loc) || !isturf(source.loc))
+		return
+	heretic_blade_dance_step_fx(source, old_loc, movement_dir)
 
 /datum/status_effect/heretic_blade_dance/tick()
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(owner)
@@ -947,6 +1110,12 @@
 
 /datum/movespeed_modifier/heretic_blade_dance
 	multiplicative_slowdown = -0.4
+
+/atom/movable/screen/alert/status_effect/heretic_blade_dance
+	name = "Танец граней"
+	desc = "10 секунд вы двигаетесь быстрее, а ответные удары лечат 5 ушибов и дают Темп. Выпустите клинок из рук - и танец оборвётся."
+	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
+	icon_state = "blade_dance"
 
 /obj/effect/proc_holder/spell/self/heretic_blade/storm
 	name = "Буря клинков"
@@ -1015,7 +1184,7 @@
 		log_combat(user, victim, "поражает Бурей клинков")
 	orbit.remove_blades(launched)
 	heretic_blade_storm_cast_fx(user)
-	playsound(user, 'sound/weapons/rapierhit.ogg', 60, TRUE)
+	playsound(user, 'modular_bluemoon/sound/heretic/blade_storm.ogg', HERETIC_BLADE_GONG_VOLUME, TRUE)
 	user.visible_message(span_danger("Клинки, кружившие вокруг [user], разом срываются к врагам!"))
 
 /obj/effect/proc_holder/spell/pointed/heretic_lunge
@@ -1026,7 +1195,7 @@
 	charge_max = 10 SECONDS
 	range = 5
 	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
-	action_icon_state = "cleave"
+	action_icon_state = "blade_lunge"
 	action_background_icon_state = "bg_ecult"
 
 /obj/effect/proc_holder/spell/pointed/heretic_lunge/can_target(atom/target, mob/user, silent)
@@ -1105,7 +1274,8 @@
 	knowledge.try_riposte(victim, user)
 	log_combat(user, victim, "поражает выпадом", addition = "старт [AREACOORD(start)]; ушибы: [round(victim.getBruteLoss() - damage_before, 0.1)]; Темп: [knowledge.combat_resource]")
 	new /obj/effect/temp_visual/dir_setting/heretic_slash(get_turf(user), get_dir(user, victim))
-	playsound(victim, 'sound/weapons/rapierhit.ogg', 50, TRUE)
+	playsound(victim, 'modular_bluemoon/sound/heretic/blade_lunge.ogg', HERETIC_BLADE_EVENT_VOLUME, TRUE)
+	knowledge.hint_throat(user, victim)
 
 /obj/effect/proc_holder/spell/pointed/heretic_feint
 	name = "Финт"
@@ -1204,8 +1374,10 @@
 	challenged_ref = WEAKREF(target)
 	deltimer(challenge_timer)
 	challenge_timer = addtimer(CALLBACK(src, PROC_REF(challenge_expired), challenge_serial), HERETIC_BLADE_CHALLENGE_TIMEOUT, TIMER_STOPPABLE)
-	user.visible_message(span_warning("[user] указывает на [target] и бросает вызов на дуэль!"), span_notice("Вы бросаете вызов [target]. Ответ ждёт [HERETIC_BLADE_CHALLENGE_TIMEOUT / (1 SECONDS)] секунд."))
+	user.visible_message(span_warning("[user] вскидывает тёмный клинок в салюте и бросает [target] вызов на дуэль!"), span_notice("Вы бросаете вызов [target]. Ответ ждёт [HERETIC_BLADE_CHALLENGE_TIMEOUT / (1 SECONDS)] секунд."))
 	log_game("[key_name(user)] бросает вызов на дуэль [key_name(target)] в [AREACOORD(user)].")
+	challenge_mark?.fade_out()
+	challenge_mark = heretic_blade_challenge_fx(user, target)
 	notify_resource_changed()
 
 /datum/eldritch_knowledge/base_blade/proc/close_challenge()
@@ -1213,6 +1385,8 @@
 	challenge_timer = null
 	challenger_ref = null
 	challenged_ref = null
+	challenge_mark?.fade_out()
+	challenge_mark = null
 	notify_resource_changed()
 
 /datum/eldritch_knowledge/base_blade/proc/clear_challenge()
@@ -1221,7 +1395,7 @@
 	active_duel = null
 
 /datum/eldritch_knowledge/base_blade/proc/ask_duel(mob/living/user, mob/living/target, serial)
-	var/answer = tgui_alert(target, "[user.name] бросает вам вызов на дуэль. Примете - вас обоих уведёт на арену в изнанке, тесную комнату без свидетелей, на [HERETIC_BLADE_DUEL_DURATION / (1 SECONDS)] секунд: выбитый из сил, оглушённый или сдавшийся проиграл, толчок в стену дуэль не решает. Вызвавший дерётся только клинком: любое его заклинание, кроме Выжидания и призыва сердца или кодекса, - его поражение, и тогда [HERETIC_BLADE_BRAND_DURATION / (1 MINUTES)] минут на его шее будет виден свежий порез. Проигравшего вас клятва удержит на месте [HERETIC_BLADE_OATH_HOLD / (1 SECONDS)] секунд. Если откажетесь или промолчите, стоя не дальше [HERETIC_BLADE_CHALLENGE_RANGE] клеток от него, невидимый клинок собьёт вас с ног на [HERETIC_BLADE_REFUSAL_KNOCKDOWN / (1 SECONDS)] секунды.", "Вызов на дуэль", list(HERETIC_BLADE_CHALLENGE_ACCEPT, HERETIC_BLADE_CHALLENGE_DECLINE), HERETIC_BLADE_CHALLENGE_TIMEOUT)
+	var/answer = tgui_alert(target, "[user.name] бросает вам вызов на дуэль. Примете - вас обоих уведёт на арену в изнанке, тесную комнату без свидетелей, на [HERETIC_BLADE_DUEL_DURATION / (1 SECONDS)] секунд: выбитый из сил, оглушённый или сдавшийся проиграл, толчок в стену дуэль не решает. Вызвавший дерётся клинком и его приёмами: Хватка или чужое заклинание - его поражение, и тогда [HERETIC_BLADE_BRAND_DURATION / (1 MINUTES)] минут на его шее будет виден свежий порез. Проигравшего вас клятва удержит на месте [HERETIC_BLADE_OATH_HOLD / (1 SECONDS)] секунд, и вызвавший сможет забрать вас в жертву. Если откажетесь или промолчите, стоя не дальше [HERETIC_BLADE_CHALLENGE_RANGE] клеток от него, невидимый клинок собьёт вас с ног на [HERETIC_BLADE_REFUSAL_KNOCKDOWN / (1 SECONDS)] секунды.", "Вызов на дуэль", list(HERETIC_BLADE_CHALLENGE_ACCEPT, HERETIC_BLADE_CHALLENGE_DECLINE), HERETIC_BLADE_CHALLENGE_TIMEOUT)
 	if(QDELETED(src) || serial != challenge_serial || challenged_ref?.resolve() != target)
 		return
 	if(answer == HERETIC_BLADE_CHALLENGE_ACCEPT)
@@ -1316,13 +1490,16 @@
 		if(HERETIC_BLADE_DUEL_WON)
 			if(user)
 				to_chat(user, span_notice("Дуэль выиграна: [reason]."))
-			bind_oath(user, rival)
+			var/bound = bind_oath(user, rival)
 			var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
-			if(arena?.contains(rival) && rival.mind && rival.mind == heretic?.hunt_target)
+			var/hunted = rival?.mind && rival.mind == heretic?.hunt_target
+			if(arena?.contains(rival) && (bound || hunted))
 				arena.restart_timer(HERETIC_POCKET_DURATION)
-				to_chat(user, span_notice("Соперник - ваша цель охоты: проведите обряд сердцем здесь, пока держит клятва. Изнанка продержится ещё [HERETIC_POCKET_DURATION / (1 SECONDS)] с."))
+				to_chat(user, span_notice("[hunted ? "Соперник - ваша цель охоты: проведите обряд сердцем здесь" : "Проигравший сам принял вызов: коснитесь его живым сердцем, и оно сразу примет его целью охоты, а обряд пройдёт здесь же"], пока держит клятва. Изнанка продержится ещё [HERETIC_POCKET_DURATION / (1 SECONDS)] с."))
 			else
-				arena?.collapse("дуэль выиграна", heretic_escapes = TRUE)
+				arena?.collapse("дуэль выиграна", heretic_escapes = !bound)
+				if(bound && user)
+					to_chat(user, span_notice("Соперник сбежал, но клятва держит его у входа изнанки: живое сердце сразу примет его целью охоты."))
 		if(HERETIC_BLADE_DUEL_LOST)
 			arena?.collapse("дуэль проиграна", heretic_escapes = TRUE)
 			combat_resource = 0
@@ -1354,7 +1531,7 @@
 		to_chat(user, span_warning("Клятва не легла на [rival]: [reason]"))
 		to_chat(rival, span_notice("Вы проиграли дуэль, но клятва вас не связала."))
 		return FALSE
-	var/datum/status_effect/heretic_blade_oath/oath = rival.apply_status_effect(/datum/status_effect/heretic_blade_oath)
+	var/datum/status_effect/heretic_blade_oath/oath = rival.apply_status_effect(/datum/status_effect/heretic_blade_oath, user.mind)
 	if(!oath || QDELETED(oath))
 		return FALSE
 	log_combat(user, rival, "связывает клятвой проигранной дуэли")
@@ -1398,19 +1575,21 @@
 	if(victim.stat != CONSCIOUS && world.time >= victim.voluntary_sleep_until)
 		return "[victim] уже без сил подняться: клинок у горла не нужен, поверженного живое сердце берёт и так."
 	var/window = HERETIC_BLADE_THROAT_WINDOW / (1 SECONDS)
-	var/knock_hint = "Клинок к горлу приставляют сбитой с ног цели: сбейте её Хваткой или Выпадом и сразу приставьте клинок."
-	var/disarm_hint = heretic?.get_knowledge(/datum/eldritch_knowledge/blade_disarm) ? "Или выбейте предмет: после ответного удара Выжидания у вас [window] секунды." : "Чтобы ответный удар Выжидания выбивал оружие, нужно «Обезоруживание»."
+	var/knock_hint = "Сначала свалите: Хватка (со спины она ещё и парализует) или Выпад, и сразу клинок к горлу - над целью всплывёт «клинок к горлу!»."
+	var/riposte_hint = heretic?.get_knowledge(/datum/eldritch_knowledge/blade_disarm) ? "Второй способ: поднимите Выжидание, отбейте удар и ответьте клинком - ответ выбьет оружие, и [window] секунды цель ваша." : "Второй способ: поднимите Выжидание, отбейте удар и ответьте клинком; если рука цели пуста, [window] секунды она ваша."
 	var/obj/item/held = victim.get_active_held_item()
 	if(held && last_riposte_victim?.resolve() == victim && world.time - last_riposte_at <= HERETIC_BLADE_THROAT_WINDOW)
-		return "Ответный удар не выбил [held] из активной руки [victim]. [knock_hint] [disarm_hint]"
+		return "[victim] стоит и после ответа держит [held]. [knock_hint]"
 	if(held)
-		return "[victim] не сбит с ног и держит [held] в активной руке. [knock_hint] [disarm_hint]"
-	return "[victim] не сбит с ног. [knock_hint] Цель с пустой активной рукой годится и [window] секунды после вашего ответного удара Выжидания."
+		return "[victim] стоит на ногах с [held] в руке. [knock_hint] [riposte_hint]"
+	return "[victim] стоит на ногах. [knock_hint] [riposte_hint]"
 
 /datum/eldritch_knowledge/base_blade/proc/throat_block_reason(mob/living/user, atom/target, check_ready = TRUE)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	if(!isliving(user) || heretic?.get_knowledge(type) != src || !heretic.get_knowledge(/datum/eldritch_knowledge/spell/blade_throat))
 		return "Способность недоступна вашему пути или текущему телу."
+	if(active_duel)
+		return "В поединке клинок к горлу не приставляют: свалите соперника, и его свяжет клятва."
 	var/reason = heretic_capture_block_reason(user, target, HERETIC_BLADE_THROAT_CAPTURE)
 	if(reason)
 		return reason
@@ -1432,7 +1611,7 @@
 	if(throat_failure)
 		return FALSE
 	user.visible_message(span_danger("[user] заносит тёмный клинок к горлу [victim]!"), span_notice("Вы заносите клинок к горлу [victim]."))
-	playsound(victim, 'sound/items/unsheath.ogg', 40, TRUE)
+	playsound(victim, 'modular_bluemoon/sound/heretic/blade_throat.ogg', 40, TRUE)
 	heretic_blade_throat_fx(victim, HERETIC_BLADE_THROAT_TELEGRAPH)
 	addtimer(CALLBACK(src, PROC_REF(seize_throat), user, victim), HERETIC_BLADE_THROAT_TELEGRAPH)
 	return TRUE
@@ -1508,8 +1687,12 @@
 	surrender_action.Grant(rival)
 	START_PROCESSING(SSfastprocess, src)
 	end_timer = addtimer(CALLBACK(src, PROC_REF(expire)), HERETIC_BLADE_DUEL_DURATION, TIMER_STOPPABLE)
-	to_chat(champion, span_notice("Арена в изнанке на [HERETIC_BLADE_DUEL_DURATION / (1 SECONDS)] секунд. Упадёте, покинете арену или возьмётесь за Хватку или заклинание, кроме Выжидания и призыва сердца или кодекса, - проиграете."))
-	to_chat(rival, span_userdanger("Арена в изнанке на [HERETIC_BLADE_DUEL_DURATION / (1 SECONDS)] секунд. Упадёте или вырветесь из изнанки - проиграете; сдаться можно кнопкой «[HERETIC_BLADE_SURRENDER]». Если соперник колдует, кроме Выжидания и призыва сердца или кодекса, поражение его."))
+	var/ends_at = world.time + HERETIC_BLADE_DUEL_DURATION
+	for(var/mob/living/fighter as anything in list(champion, rival))
+		fighter.apply_status_effect(/datum/status_effect/heretic_blade_duel, ends_at, fighter == champion ? rival : champion)
+	playsound(arena.center, 'modular_bluemoon/sound/heretic/blade_duel_start.ogg', HERETIC_BLADE_GONG_VOLUME, FALSE)
+	to_chat(champion, span_notice("Арена в изнанке на [HERETIC_BLADE_DUEL_DURATION / (1 SECONDS)] секунд. Работают все приёмы клинка; упадёте, покинете арену, возьмётесь за Хватку или чужое заклинание - проиграете."))
+	to_chat(rival, span_userdanger("Арена в изнанке на [HERETIC_BLADE_DUEL_DURATION / (1 SECONDS)] секунд. Упадёте или вырветесь из изнанки - проиграете; сдаться можно кнопкой «[HERETIC_BLADE_SURRENDER]». Если соперник возьмётся за Хватку или чужую магию, поражение его."))
 	log_game("Дуэль [key_name(champion)] и [key_name(rival)] начинается в изнанке, вход в [AREACOORD(second)].")
 	return null
 
@@ -1558,6 +1741,10 @@
 	if(finished)
 		return
 	finished = TRUE
+	var/turf/near = arena?.active ? arena.center : get_turf(champion)
+	var/turf/far = get_turf(rival)
+	for(var/turf/spot in list(near, (!near || far?.z != near.z || get_dist(far, near) > HERETIC_BLADE_HEARING_RANGE) ? far : null))
+		playsound(spot, 'modular_bluemoon/sound/heretic/blade_duel_end.ogg', HERETIC_BLADE_GONG_VOLUME, FALSE)
 	var/datum/eldritch_knowledge/base_blade/blade = blade_ref?.resolve()
 	if(blade)
 		blade.finish_duel(src, outcome, reason)
@@ -1585,9 +1772,13 @@
 
 /datum/heretic_blade_duel/proc/on_champion_cast(mob/living/source, obj/effect/proc_holder/spell/spell)
 	SIGNAL_HANDLER
-	if(istype(spell, /obj/effect/proc_holder/spell/self/heretic_blade/parry) || istype(spell, /obj/effect/proc_holder/spell/self/heretic_summon))
+	if(heretic_blade_duel_allowed(spell))
 		return
-	finish(HERETIC_BLADE_DUEL_LOST, "заклинание в честном поединке")
+	finish(HERETIC_BLADE_DUEL_LOST, "чужая магия в честном поединке")
+
+/// Приёмы самого клинка и призыв сердца или кодекса поединок не нарушают.
+/proc/heretic_blade_duel_allowed(obj/effect/proc_holder/spell/spell)
+	return istype(spell, /obj/effect/proc_holder/spell/self/heretic_blade) || istype(spell, /obj/effect/proc_holder/spell/pointed/heretic_lunge) || istype(spell, /obj/effect/proc_holder/spell/pointed/heretic_feint) || istype(spell, /obj/effect/proc_holder/spell/self/heretic_summon)
 
 /datum/heretic_blade_duel/Destroy()
 	finished = TRUE
@@ -1597,6 +1788,7 @@
 	QDEL_NULL(surrender_action)
 	for(var/mob/living/fighter in list(champion, rival))
 		UnregisterSignal(fighter, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_QDELETING, COMSIG_MOB_CAST_SPELL))
+		fighter.remove_status_effect(/datum/status_effect/heretic_blade_duel)
 	if(arena)
 		UnregisterSignal(arena, COMSIG_HERETIC_POCKET_COLLAPSING)
 	var/datum/eldritch_knowledge/base_blade/blade = blade_ref?.resolve()
@@ -1655,6 +1847,12 @@
 	examine_text = span_warning("SUBJECTPRONOUN скован клятвой проигранной дуэли и не может пошевелиться. Удар нулевым жезлом разорвёт клятву, а растолкать его можно за 2 секунды.")
 	var/datum/status_effect/incapacitating/paralyzed/heretic_ritual/restraint
 	var/bound = FALSE
+	/// Победивший в дуэли: его живое сердце берёт проигравшего целью без ожидания смены цели.
+	var/datum/weakref/victor_ref
+
+/datum/status_effect/heretic_blade_oath/on_creation(mob/living/new_owner, datum/mind/victor)
+	victor_ref = victor ? WEAKREF(victor) : null
+	return ..()
 
 /datum/status_effect/heretic_blade_oath/on_apply()
 	. = ..()
@@ -1670,12 +1868,37 @@
 
 /datum/status_effect/heretic_blade_oath/proc/on_attackby(mob/living/source, obj/item/item, mob/living/user, params)
 	SIGNAL_HANDLER
+	if(istype(item, /obj/item/living_heart))
+		return claim_by_heart(item, user)
 	if(!istype(item, /obj/item/nullrod))
 		return NONE
 	user.visible_message(span_warning("[user] касается [source] нулевым жезлом, и клятва дуэли рвётся."), span_notice("Вы разрываете клятву дуэли нулевым жезлом."))
 	log_game("[key_name(user)] разрывает клятву дуэли на [key_name(source)] нулевым жезлом в [AREACOORD(source)].")
 	qdel(src)
 	return COMPONENT_NO_AFTERATTACK
+
+/// Касание сердцем победителя: проигравший сам принял вызов, поэтому смена цели не ждёт перезарядки.
+/datum/status_effect/heretic_blade_oath/proc/claim_by_heart(obj/item/living_heart/heart, mob/living/user)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	if(!heretic || !user.mind || user.mind != victor_ref?.resolve() || heart.owner_mind != user.mind || !owner.mind || owner.mind == heretic.hunt_target)
+		return NONE
+	INVOKE_ASYNC(src, PROC_REF(claim_loser), heretic, user)
+	return COMPONENT_NO_AFTERATTACK
+
+/datum/status_effect/heretic_blade_oath/proc/claim_loser(datum/antagonist/heretic/heretic, mob/living/user)
+	if(QDELETED(src) || QDELETED(owner) || QDELETED(heretic))
+		return FALSE
+	var/reason = heretic.claim_refusal_reason(owner)
+	if(reason)
+		owner.balloon_alert(user, "сердце молчит")
+		to_chat(user, span_warning(reason))
+		return FALSE
+	heretic.set_hunt_target(owner.mind)
+	playsound(user, GLOB.heretic_heart_sounds["claim"], HERETIC_BLADE_QUIET_VOLUME, FALSE, SILENCED_SOUND_EXTRARANGE)
+	owner.balloon_alert(user, "новая цель")
+	to_chat(user, span_boldnotice("Сердце принимает [owner.real_name]: вызов был принят добровольно, ждать смены цели не нужно. Коснитесь сердцем ещё раз, пока держит клятва, и обряд пройдёт здесь же. [heretic.hunt_corpse_note()]"))
+	log_game("[key_name(user)] делает проигравшего дуэль [key_name(owner)] целью охоты в [AREACOORD(owner)].")
+	return TRUE
 
 /datum/status_effect/heretic_blade_oath/proc/end_oath(datum/source)
 	SIGNAL_HANDLER
@@ -1694,7 +1917,7 @@
 
 /atom/movable/screen/alert/status_effect/heretic_blade_oath
 	name = "Клятва дуэли"
-	desc = "Вы проиграли дуэль и не можете пошевелиться, пока держит клятва. Удар нулевым жезлом её разорвёт, а товарищ может вас растолкать за 2 секунды."
+	desc = "Вы проиграли дуэль и не можете пошевелиться, пока держит клятва, а победитель может забрать вас в жертву. Удар нулевым жезлом её разорвёт, а товарищ может вас растолкать за 2 секунды."
 	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
 	icon_state = "blade_oath"
 
@@ -1715,6 +1938,46 @@
 	. = ..()
 	desc = "Вы проиграли честный поединок: [HERETIC_BLADE_BRAND_DURATION / (1 MINUTES)] минут на вашей шее виден свежий порез-знак."
 
+/// Отсчёт поединка у обоих дуэлянтов: сколько осталось до ничьей и с кем бой.
+/datum/status_effect/heretic_blade_duel
+	id = "heretic_blade_duel"
+	duration = HERETIC_BLADE_DUEL_DURATION
+	tick_interval = 1 SECONDS
+	status_type = STATUS_EFFECT_UNIQUE
+	on_remove_on_mob_delete = TRUE
+	alert_type = /atom/movable/screen/alert/status_effect/heretic_blade_duel
+	var/ends_at = 0
+	var/rival_name
+
+/datum/status_effect/heretic_blade_duel/on_creation(mob/living/new_owner, duel_ends_at, mob/living/rival)
+	ends_at = duel_ends_at || world.time + HERETIC_BLADE_DUEL_DURATION
+	duration = max(world.tick_lag, ends_at - world.time)
+	rival_name = rival?.name
+	. = ..()
+	if(.)
+		update_countdown()
+
+/datum/status_effect/heretic_blade_duel/tick()
+	update_countdown()
+
+/datum/status_effect/heretic_blade_duel/proc/seconds_left()
+	return CEILING(max(0, ends_at - world.time) / (1 SECONDS), 1)
+
+/datum/status_effect/heretic_blade_duel/proc/update_countdown()
+	if(!linked_alert)
+		return
+	var/left = seconds_left()
+	linked_alert.desc = "Поединок[rival_name ? " с [rival_name]" : ""]: осталось [left] с. Выбитый из сил, оглушённый, сдавшийся или сбежавший проигрывает; когда время выйдет - ничья."
+	linked_alert.maptext = MAPTEXT("<div style='text-align:center;font-size:8px;background-color:#17111d'>[left]с</div>")
+
+/atom/movable/screen/alert/status_effect/heretic_blade_duel
+	name = "Поединок"
+	desc = "Идёт поединок в изнанке."
+	icon = 'modular_bluemoon/icons/obj/heretic_blade_fx.dmi'
+	icon_state = "duel_alert"
+	maptext_width = 32
+	maptext_height = 12
+
 /datum/status_effect/heretic_blade_throat
 	var/held_since = 0
 	id = "heretic_blade_throat"
@@ -1732,6 +1995,7 @@
 	var/hit_damage = 0
 	var/release_reason
 	var/held = FALSE
+	var/obj/effect/abstract/heretic_throat_blade/steel
 
 /datum/status_effect/heretic_blade_throat/on_creation(mob/living/new_owner, mob/living/new_holder, datum/eldritch_knowledge/base_blade/blade)
 	holder = new_holder
@@ -1752,8 +2016,10 @@
 	RegisterSignal(owner, COMSIG_LIVING_HERETIC_SACRIFICE_STARTING, PROC_REF(on_sacrifice))
 	RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(on_hostage_moved))
 	RegisterSignal(owner, COMSIG_LIVING_HERETIC_CAPTURE_SHAKEN, PROC_REF(on_shaken))
+	RegisterSignal(owner, COMSIG_CARBON_PRE_MISC_HELP, PROC_REF(on_shake_attempt))
 	heretic_capture_hold(owner, HERETIC_BLADE_THROAT_CAPTURE)
 	heretic_capture_lock_pull(owner, holder, REF(src))
+	steel = new(null, owner, holder)
 	RegisterSignal(holder, COMSIG_PARENT_ATTACKBY, PROC_REF(on_attackby))
 	RegisterSignal(holder, COMSIG_MOVABLE_MOVED, PROC_REF(on_holder_moved))
 	RegisterSignal(holder, COMSIG_CARBON_UPDATEHEALTH, PROC_REF(on_holder_health))
@@ -1838,8 +2104,15 @@
 	SIGNAL_HANDLER
 	release("держащий исчез")
 
+/datum/status_effect/heretic_blade_throat/proc/on_shake_attempt(mob/living/source, mob/living/helper)
+	SIGNAL_HANDLER
+	if(helper != owner && !IS_HERETIC(helper) && !IS_HERETIC_MONSTER(helper))
+		steel?.glint()
+
 /datum/status_effect/heretic_blade_throat/on_remove()
-	UnregisterSignal(owner, list(COMSIG_PARENT_ATTACKBY, COMSIG_LIVING_HERETIC_SACRIFICE_STARTING, COMSIG_MOVABLE_MOVED, COMSIG_LIVING_HERETIC_CAPTURE_SHAKEN))
+	UnregisterSignal(owner, list(COMSIG_PARENT_ATTACKBY, COMSIG_LIVING_HERETIC_SACRIFICE_STARTING, COMSIG_MOVABLE_MOVED, COMSIG_LIVING_HERETIC_CAPTURE_SHAKEN, COMSIG_CARBON_PRE_MISC_HELP))
+	steel?.withdraw()
+	steel = null
 	if(holder)
 		UnregisterSignal(holder, list(COMSIG_PARENT_ATTACKBY, COMSIG_MOVABLE_MOVED, COMSIG_CARBON_UPDATEHEALTH, COMSIG_PARENT_QDELETING))
 	if(!QDELETED(restraint) && restraint.duration <= duration)
@@ -1867,8 +2140,8 @@
 
 /obj/effect/proc_holder/spell/pointed/heretic_blade_challenge
 	name = "Вызов"
-	desc = "Бросьте вызов на дуэль человеку не дальше 5 клеток; оба 10 секунд должны быть без урона. Вызов бросают только там, где может открыться изнанка: на станции, не в зоне без телепортации и пока своя изнанка не открыта и не затягивается. На ответ у него 20 секунд. Принявший уходит с вами в изнанку на 60 секунд: выбитый из сил, оглушённый или сдавшийся проиграл, толчок в стену дуэль не решает. При ничьей и поражении соперник выпадает у входа, а вас выносит к своему выходу. Вы деретесь только клинком и Выжиданием: Хватка или другое заклинание, кроме призыва сердца или кодекса, - поражение. Соперник, вырвавшийся из изнанки, проиграл. Победа связывает соперника клятвой на 12 секунд, растолкать его можно за 2 секунды; над целью охоты обряд идёт там же, остальных изнанка выбрасывает у входа, а вас - к своему выходу. Поражение обнуляет Темп, роняет клинок, на 5 минут оставляет на шее свежий порез-знак и закрывает вызовы на 5 минут. Отказ или молчание, пока он не дальше 5 клеток от вас, сбивают его с ног на 3 секунды: хватит, чтобы приставить клинок к горлу. Снова вызвать его можно через 5 минут."
-	summary = "Дуэль с человеком в 5 клетках: изнанка на 60 секунд, проигравшего держит клятва."
+	desc = "Бросьте вызов на дуэль человеку не дальше 5 клеток; оба 10 секунд должны быть без урона. Вызов бросают только там, где может открыться изнанка: на станции, не в зоне без телепортации и пока своя изнанка не открыта и не затягивается. На ответ у него 20 секунд. Принявший уходит с вами в изнанку на 60 секунд: выбитый из сил, оглушённый или сдавшийся проиграл, толчок в стену дуэль не решает. При ничьей и поражении соперник выпадает у входа, а вас выносит к своему выходу. Деретесь вы клинком: Выжидание, Выпад, Финт, Танец граней, Зов клинка, Буря и призыв сердца или кодекса разрешены, а Хватка или чужое заклинание - поражение. Соперник, вырвавшийся из изнанки, проиграл. Победа связывает соперника клятвой на 12 секунд, растолкать его можно за 2 секунды; пока она держит, живое сердце сразу примет его целью охоты, и обряд пройдёт здесь же, в изнанке. Сбежавшего соперника клятва держит у входа. Поражение обнуляет Темп, роняет клинок, на 5 минут оставляет на шее свежий порез-знак и закрывает вызовы на 5 минут. Отказ или молчание, пока он не дальше 5 клеток от вас, сбивают его с ног на 3 секунды: хватит, чтобы приставить клинок к горлу. Снова вызвать его можно через 5 минут."
+	summary = "Дуэль с человеком в 5 клетках: изнанка на 60 секунд, проигравшего клятва отдаёт вашему сердцу."
 	clothes_req = FALSE
 	range = HERETIC_BLADE_CHALLENGE_RANGE
 	charge_max = 1 SECONDS
@@ -1901,7 +2174,7 @@
 
 /obj/effect/proc_holder/spell/pointed/heretic_blade_throat
 	name = "Клинок у горла"
-	desc = "Сбейте соседа Хваткой (2 секунды) или Выпадом (1,5 секунды) и сразу приставьте тёмный клинок к его горлу. Цель с пустой активной рукой годится и 3 секунды после ответного удара Выжидания; выбивание оружия ответом появится с «Обезоруживанием». Через полсекунды цель замирает до 12 секунд и идёт за вами шагом, обряд сердцем над ней работает; цель охоты сердце уводит разрезом в изнанку за 1,5 секунды. Захват срывается, если вы шагнёте дальше клетки, упадёте, вас оглушат, ударят на 15+ урона или клинок выпадет из руки; заложника освобождает и нулевой жезл, а ещё его можно растолкать за 2 секунды. Перезарядка 45 секунд."
+	desc = "Сбейте соседа Хваткой (2 секунды, со спины - ещё и паралич на 1,5 секунды) или Выпадом (1,5 секунды) и сразу приставьте тёмный клинок к его горлу: готовая цель подсвечивается надписью «клинок к горлу!». Цель с пустой активной рукой годится и 3 секунды после ответного удара Выжидания; выбивание оружия ответом появится с «Обезоруживанием». Через полсекунды цель замирает до 12 секунд и идёт за вами шагом, обряд сердцем над ней работает; цель охоты сердце уводит разрезом в изнанку за 1,5 секунды. Захват срывается, если вы шагнёте дальше клетки, упадёте, вас оглушат, ударят на 15+ урона или клинок выпадет из руки; заложника освобождает и нулевой жезл, а ещё его можно растолкать за 2 секунды. В поединке клинок к горлу не приставляют. Перезарядка 45 секунд."
 	summary = "Заложник: сбитый Хваткой или Выпадом сосед замирает до 12 секунд."
 	clothes_req = FALSE
 	range = 1
@@ -1952,3 +2225,8 @@
 #undef HERETIC_BLADE_CHALLENGE_DECLINE
 #undef HERETIC_BLADE_SURRENDER
 #undef HERETIC_BLADE_KEEP_FIGHTING
+#undef HERETIC_BLADE_THROAT_HINT_COOLDOWN
+#undef HERETIC_BLADE_EVENT_VOLUME
+#undef HERETIC_BLADE_QUIET_VOLUME
+#undef HERETIC_BLADE_GONG_VOLUME
+#undef HERETIC_BLADE_HEARING_RANGE

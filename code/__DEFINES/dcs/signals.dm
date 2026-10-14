@@ -204,7 +204,15 @@
 /////////////////
 
 //This signal return value bitflags can be found in __DEFINES/misc.dm
-#define COMSIG_ATOM_INTERCEPT_Z_FALL "movable_intercept_z_impact"	//called for each movable in a turf contents on /turf/zImpact(): (atom/movable/A, levels)
+#define COMSIG_ATOM_INTERCEPT_Z_FALL "movable_intercept_z_impact"	//called for each atom in a turf contents on /turf/zImpact(): (list/falling_movables, levels)
+
+#define COMSIG_CAN_Z_MOVE "can_z_move"							//from base of atom/movable/can_z_move(): (turf/start, turf/destination)
+	#define COMPONENT_CANT_Z_MOVE (1<<0)
+#define COMSIG_ATOM_ON_Z_IMPACT "atom_on_z_impact"				//from base of atom/movable/onZImpact(): (turf/impacted_turf, levels)
+#define COMSIG_LIVING_Z_IMPACT "living_z_impact"				//from base of mob/living/ZImpactDamage(): (levels, turf/impacted_turf)
+	#define ZIMPACT_CANCEL_DAMAGE (1<<0)
+	#define ZIMPACT_NO_MESSAGE (1<<1)
+	#define ZIMPACT_NO_SPIN (1<<2)
 
 /// Called from orbit component: (atom/movable/orbiter, radius, clockwise, rotation_speed, rotation_segments, pre_rotation)
 #define COMSIG_ATOM_ORBIT_BEGIN "atom_orbit_begin"
@@ -316,6 +324,11 @@
 	#define COMSIG_BLOCK_EYECONTACT (1<<0)
 //	#define COMPONENT_STOP_MIND_TRANSFER 1
 #define COMSIG_MOB_UPDATE_SIGHT "mob_update_sight"				//from base of /mob/update_sight(): ()
+/// After blindness overlays have been updated.
+#define COMSIG_MOB_BLINDNESS_CHANGED "mob_blindness_changed"
+/// A listener's sound/typing marker: (atom/source, kind, direction, duration).
+#define COMSIG_MOB_SOUND_INDICATOR "mob_sound_indicator"
+	#define COMPONENT_SOUND_INDICATOR_HANDLED (1<<0)
 #define COMSIG_MOB_ON_NEW_MIND "mob_on_new_mind"			//called when a new mind is assigned to a mob: ()
 #define COMSIG_MOB_SAY "mob_say" // from /mob/living/say(): (proc args list)
 	#define COMPONENT_UPPERCASE_SPEECH 1
@@ -423,6 +436,7 @@
 #define COMSIG_LIVING_FORCE_EMP "living_force_emp"
 
 #define COMSIG_MOB_RESET_PERSPECTIVE "mob_reset_perspective"		//from base of /mob/reset_perspective(): (atom/target)
+#define COMSIG_CLIENT_SET_EYE "client_set_eye"						//from base of /client/proc/set_eye(): (atom/old_eye, atom/new_eye)
 #define COMSIG_LIVING_GUN_PROCESS_FIRE "living_gun_process_fire"	//from base of /obj/item/gun/proc/process_fire(): (atom/target, params, zone_override)
 // This returns flags as defined for block in __DEFINES/combat.dm!
 #define COMSIG_LIVING_RUN_BLOCK "living_do_run_block"				//from base of mob/living/do_run_block(): (real_attack, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone)
@@ -888,7 +902,7 @@
 ///from /datum/element/jump when a jump has started and ended
 #define COMSIG_ELEMENT_JUMP_STARTED "element_jump_started"
 #define COMSIG_ELEMENT_JUMP_ENDED "element_jump_ended"
-#define COMSIG_KB_LIVING_JUMP "keybind_jump"
+#define COMSIG_KB_LIVING_JUMP "keybind_jump"      //from /datum/keybinding/living/jump/down(): (leap_dir)
 #define COMSIG_TURF_JUMP_ENDED_HERE "turf_jump_ended_here"      //from datum/element/jump/end_jump(): (jumper)
 #define COMSIG_KB_ACTIVATED (1<<0)
 

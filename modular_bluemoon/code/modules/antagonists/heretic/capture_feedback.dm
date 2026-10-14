@@ -2,6 +2,13 @@
 #define HERETIC_FX_HOLY_INK "#fff3c4"
 #define HERETIC_FX_HOLD_FADE_IN (0.3 SECONDS)
 #define HERETIC_FX_HOLD_FADE_OUT (0.5 SECONDS)
+#define HERETIC_FX_HOLD_PARTICLES 8
+#define HERETIC_FX_HOLD_SPAWNING 0.25
+#define HERETIC_FX_HOLD_SPREAD 9
+#define HERETIC_FX_HOLD_FEET_LOW -15
+#define HERETIC_FX_HOLD_FEET_HIGH -8
+#define HERETIC_FX_HOLD_DRIFT 0.4
+#define HERETIC_FX_HOLD_RISE 1.2
 #define HERETIC_FX_QUIET_VOLUME 20
 #define HERETIC_FX_HOLD_VOLUME 30
 #define HERETIC_FX_EVENT_VOLUME 45
@@ -62,18 +69,25 @@
 
 /// Метка захвата -> свой звук защёлкивания; остальные захваты звучат ударом своего пути.
 GLOBAL_LIST_INIT(heretic_capture_latch_sounds, list(
-	"sand" = 'modular_bluemoon/sound/heretic/capture/sand_latch.ogg',
+	"ash_shroud" = 'modular_bluemoon/sound/heretic/capture/ash_latch.ogg',
+	"sand" ='modular_bluemoon/sound/heretic/capture/sand_latch.ogg',
 	"cosmic" = 'modular_bluemoon/sound/heretic/capture/cosmic_latch.ogg',
 	"lock" = 'modular_bluemoon/sound/heretic/capture/lock_latch.ogg',
-	"tide" = 'modular_bluemoon/sound/heretic/capture/tide_latch.ogg',
+	"rust_roots" = 'modular_bluemoon/sound/heretic/capture/rust_latch.ogg',
+	"tide" ='modular_bluemoon/sound/heretic/capture/tide_latch.ogg',
 	"spirit_hold" = 'modular_bluemoon/sound/heretic/capture/spirit_latch.ogg',
 	"glass" = 'modular_bluemoon/sound/heretic/capture/glass_latch.ogg',
 	"moon" = 'modular_bluemoon/sound/heretic/capture/moon_latch.ogg',
+	"flesh_latch" = 'modular_bluemoon/sound/heretic/capture/flesh_latch.ogg',
 	"echo" = 'modular_bluemoon/sound/heretic/capture/echo_latch.ogg',
 	"blood" = 'modular_bluemoon/sound/heretic/capture/blood_latch.ogg',
 	"blade_throat" = 'modular_bluemoon/sound/heretic/capture/throat_latch.ogg',
+	"blade_oath" = 'modular_bluemoon/sound/heretic/capture/oath_latch.ogg',
 	"wax" = 'modular_bluemoon/sound/heretic/capture/wax_latch.ogg',
+	"void_prison" = 'modular_bluemoon/sound/heretic/capture/void_latch.ogg',
 	"dance_invite" = 'modular_bluemoon/sound/heretic/capture/dance_latch.ogg',
+	"dance_lead" = 'modular_bluemoon/sound/heretic/capture/dance_latch.ogg',
+	"dance_partner" = 'modular_bluemoon/sound/heretic/capture/dance_latch.ogg',
 ))
 
 /// Метка захвата по источнику удержания: у сна-захвата это метка усыпившего захвата.
@@ -134,7 +148,7 @@ GLOBAL_LIST_INIT(heretic_capture_latch_sounds, list(
 		heretic_vfx_burst(crafted, particles_type)
 	playsound(crafted, 'sound/magic/Teleport_diss.ogg', HERETIC_FX_EVENT_VOLUME, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
 
-// Захват: пока хоть один захват держит цель, у её ног лужа Мансуса и щупальца в чернилах пути.
+// Захват: пока хоть один захват держит цель, у её ног лужа Мансуса, щупальца в чернилах пути и частицы пути.
 
 /mob/living
 	var/obj/effect/abstract/heretic_capture_mark/front/heretic_capture_mark
@@ -170,6 +184,7 @@ GLOBAL_LIST_INIT(heretic_capture_latch_sounds, list(
 	playsound(victim, 'sound/magic/Repulse.ogg', HERETIC_FX_EVENT_VOLUME, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
 
 /// Слой метки в vis_contents цели: не ложится вместе с ней и не перекрашивается её цветом.
+/// Иконка 32x16 - нижняя половина тайла, BYOND кладёт её от левого нижнего угла.
 /obj/effect/abstract/heretic_capture_mark
 	icon = 'modular_bluemoon/icons/obj/heretic_capture.dmi'
 	icon_state = "hold_back"
@@ -187,10 +202,12 @@ GLOBAL_LIST_INIT(heretic_capture_latch_sounds, list(
 		return INITIALIZE_HINT_QDEL
 	path_id = new_path_id
 	ink = path_id ? heretic_path_ink(path_id) : HERETIC_FX_GRIP_INK
-	color = ink
-	add_overlay(emissive_appearance(icon, "[icon_state]_glow"))
+	var/mutable_appearance/edge = mutable_appearance(icon, "[icon_state]_glow")
+	edge.color = ink
+	add_overlay(edge)
+	add_floor_overlay(emissive_appearance(icon, "[icon_state]_glow", offset_spokesman = src))
 	host_ref = WEAKREF(host)
-	host.vis_contents += src
+	host.add_vis_on_floor(src)
 	alpha = 0
 	animate(src, alpha = 255, time = HERETIC_FX_HOLD_FADE_IN, easing = SINE_EASING | EASE_OUT)
 
@@ -203,16 +220,33 @@ GLOBAL_LIST_INIT(heretic_capture_latch_sounds, list(
 
 /obj/effect/abstract/heretic_capture_mark/front
 	icon_state = "hold_front"
-	vis_flags = VIS_INHERIT_PLANE
+	vis_flags = VIS_INHERIT_PLANE | VIS_INHERIT_DIR
 	var/obj/effect/abstract/heretic_capture_mark/back
 	var/fading = FALSE
+	/// Щупальца у всех путей одни, путь отличают его частицы у ног.
+	var/obj/effect/abstract/heretic_particle_holder/accent
 
 /obj/effect/abstract/heretic_capture_mark/front/Initialize(mapload, mob/living/host, new_path_id)
 	. = ..()
 	if(. == INITIALIZE_HINT_QDEL)
 		return
 	back = new(null, host, new_path_id)
+	add_path_accent(heretic_fx_particles(new_path_id))
 	RegisterSignal(host, COMSIG_PARENT_QDELETING, PROC_REF(on_host_deleted))
+
+/obj/effect/abstract/heretic_capture_mark/front/proc/add_path_accent(particles_type)
+	if(!particles_type)
+		return
+	accent = new(null, particles_type, FALSE)
+	if(QDELETED(accent))
+		accent = null
+		return
+	var/particles/flow = accent.particles
+	flow.count = HERETIC_FX_HOLD_PARTICLES
+	flow.spawning = HERETIC_FX_HOLD_SPAWNING
+	flow.position = generator("box", list(-HERETIC_FX_HOLD_SPREAD, HERETIC_FX_HOLD_FEET_LOW, 0), list(HERETIC_FX_HOLD_SPREAD, HERETIC_FX_HOLD_FEET_HIGH, 0))
+	flow.velocity = generator("box", list(-HERETIC_FX_HOLD_DRIFT, 0, 0), list(HERETIC_FX_HOLD_DRIFT, HERETIC_FX_HOLD_RISE, 0))
+	vis_contents += accent
 
 /obj/effect/abstract/heretic_capture_mark/front/proc/on_host_deleted(datum/source)
 	SIGNAL_HANDLER
@@ -227,6 +261,8 @@ GLOBAL_LIST_INIT(heretic_capture_latch_sounds, list(
 		return
 	fading = TRUE
 	animate(src, alpha = 0, time = HERETIC_FX_HOLD_FADE_OUT, easing = SINE_EASING | EASE_IN)
+	if(accent?.particles)
+		accent.particles.spawning = 0
 	if(back)
 		animate(back, alpha = 0, time = HERETIC_FX_HOLD_FADE_OUT, easing = SINE_EASING | EASE_IN)
 	QDEL_IN(src, HERETIC_FX_HOLD_FADE_OUT)
@@ -238,6 +274,8 @@ GLOBAL_LIST_INIT(heretic_capture_latch_sounds, list(
 		if(host.heretic_capture_mark == src)
 			host.heretic_capture_mark = null
 	QDEL_NULL(back)
+	vis_contents -= accent
+	QDEL_NULL(accent)
 	return ..()
 
 // Изнанка: шов перед уводом, разрыв открывается и схлопывается, выход к своему месту.
@@ -249,7 +287,7 @@ GLOBAL_LIST_INIT(heretic_capture_latch_sounds, list(
 	var/mutable_appearance/edge = mutable_appearance(rift.icon, "[state]_glow")
 	edge.color = ink
 	rift.add_overlay(edge)
-	rift.add_overlay(emissive_appearance(rift.icon, "[state]_glow"))
+	rift.add_overlay(emissive_appearance(rift.icon, "[state]_glow", offset_spokesman = rift))
 
 /obj/effect/heretic_pocket_rift/proc/settle()
 	heretic_rift_show(src, rift_state, heretic_path_ink(pocket?.owner?.selected_path))
@@ -461,7 +499,7 @@ GLOBAL_LIST_INIT(heretic_capture_latch_sounds, list(
 
 /obj/effect/temp_visual/heretic_large_fx/Initialize(mapload)
 	. = ..()
-	add_overlay(emissive_appearance(icon, "[icon_state]_glow"))
+	add_overlay(emissive_appearance(icon, "[icon_state]_glow", offset_spokesman = src))
 
 /// Когти из лужи под прижатой целью.
 /obj/effect/temp_visual/heretic_large_fx/door_grip
@@ -482,13 +520,13 @@ GLOBAL_LIST_INIT(heretic_capture_latch_sounds, list(
 	heretic_vfx_gather(victim, ink, HERETIC_FX_GATHER_CLOSE, telegraph)
 	heretic_vfx_pulse(victim, ink, HERETIC_FX_OUTLINE_THIN, telegraph)
 
-/// Кукла тает: над рукой еретика капает воск, у цели шипит пар.
+/// Кукла тает: над рукой еретика капает воск, у цели шипит пар и шепчет кукла.
 /proc/heretic_wax_melt_fx(mob/living/model, mob/living/caster)
 	if(!QDELETED(caster))
 		heretic_vfx_pulse(caster, heretic_path_ink(PATH_WAX, TRUE), HERETIC_FX_OUTLINE_THIN, HERETIC_WAX_PUPPET_SLEEP_CHANNEL)
 		heretic_vfx_burst(caster, /particles/heretic_ascension/wax/drip)
 	if(!QDELETED(model))
-		playsound(model, 'modular_bluemoon/sound/heretic/wax_cast.ogg', HERETIC_FX_EVENT_VOLUME, TRUE)
+		heretic_wax_heat_cue(model)
 
 /obj/effect/proc_holder/spell
 	COOLDOWN_DECLARE(heretic_fizzle_cooldown)
@@ -511,6 +549,13 @@ GLOBAL_LIST_INIT(heretic_capture_latch_sounds, list(
 #undef HERETIC_FX_HOLY_INK
 #undef HERETIC_FX_HOLD_FADE_IN
 #undef HERETIC_FX_HOLD_FADE_OUT
+#undef HERETIC_FX_HOLD_PARTICLES
+#undef HERETIC_FX_HOLD_SPAWNING
+#undef HERETIC_FX_HOLD_SPREAD
+#undef HERETIC_FX_HOLD_FEET_LOW
+#undef HERETIC_FX_HOLD_FEET_HIGH
+#undef HERETIC_FX_HOLD_DRIFT
+#undef HERETIC_FX_HOLD_RISE
 #undef HERETIC_FX_QUIET_VOLUME
 #undef HERETIC_FX_HOLD_VOLUME
 #undef HERETIC_FX_EVENT_VOLUME

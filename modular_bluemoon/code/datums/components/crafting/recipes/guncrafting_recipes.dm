@@ -31,7 +31,7 @@
 /datum/crafting_recipe/vector
 	name = "Vector SMG convertion"
 	result = /obj/item/gun/ballistic/automatic/mk60/vector
-	reqs = list(/obj/item/gun/ballistic/automatic/mk60/mk62 = 1,
+	reqs = list(/obj/item/gun/ballistic/automatic/mk60 = 1,
 				/obj/item/weaponcrafting/gunkit/vector = 1)
 	tools = list(TOOL_SCREWDRIVER)
 	time = 30
@@ -43,6 +43,26 @@
 	result = /obj/item/gun/ballistic/automatic/shotgun/katyusha/jager/empty
 	reqs = list(/obj/item/gun/ballistic/shotgun/automatic/combat= 1,
 				/obj/item/weaponcrafting/gunkit/jager = 1)
+	tools = list(TOOL_SCREWDRIVER)
+	time = 30
+	category = CAT_WEAPONRY
+	subcategory = CAT_WEAPON
+
+/datum/crafting_recipe/liturgy
+	name = "\improper Litugry revolver conversion"
+	result = /obj/item/gun/ballistic/revolver/Liturgy
+	reqs = list(/obj/item/gun/ballistic/revolver/Apostle = 1,
+				/obj/item/weaponcrafting/gunkit/liturgy = 1)
+	tools = list(TOOL_SCREWDRIVER)
+	time = 30
+	category = CAT_WEAPONRY
+	subcategory = CAT_WEAPON
+
+/datum/crafting_recipe/dies_irae
+	name = "\improper Dies Irae revolver conversion"
+	result = /obj/item/gun/ballistic/revolver/Dies_Irae
+	reqs = list(/obj/item/gun/ballistic/revolver/Apostle = 1,
+				/obj/item/weaponcrafting/gunkit/dies_irae = 1)
 	tools = list(TOOL_SCREWDRIVER)
 	time = 30
 	category = CAT_WEAPONRY

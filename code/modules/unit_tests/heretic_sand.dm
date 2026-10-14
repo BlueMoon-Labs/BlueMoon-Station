@@ -309,19 +309,22 @@
 	TEST_ASSERT_EQUAL(hourglass.icon_state, "sand_hourglass", "До последнего отсчёта часы спокойны.")
 	var/list/heard = list()
 	for(var/attempt in 1 to 12)
+		sand.sounds_heard_at.Cut()
 		var/sound_file = hourglass.count_down()
 		TEST_ASSERT(sound_file in hourglass.countdown_sounds, "Отсчёт звучит из набора часов.")
 		heard |= sound_file
 	TEST_ASSERT(length(heard) > 1, "Отсчёт звучит не одним и тем же файлом.")
 	TEST_ASSERT_EQUAL(hourglass.icon_state, "sand_hourglass_last", "В последние полсекунды часы раскаляются.")
 	for(var/sound_file in hourglass.countdown_sounds)
-		TEST_ASSERT(!(sound_file in list('modular_bluemoon/sound/heretic/sand_grasp.ogg', 'modular_bluemoon/sound/heretic/sand_cast.ogg', 'modular_bluemoon/sound/heretic/sand_impact.ogg', 'modular_bluemoon/sound/heretic/sand_ascend.ogg')), "Отсчёт не повторяет другие звуки Песка.")
+		TEST_ASSERT(!(sound_file in list('modular_bluemoon/sound/heretic/sand_grasp.ogg', 'modular_bluemoon/sound/heretic/sand_impact.ogg', 'modular_bluemoon/sound/heretic/ascend_sand.ogg')), "Отсчёт не повторяет другие звуки Песка.")
+		for(var/kind in GLOB.heretic_sand_sounds)
+			TEST_ASSERT(!(sound_file in GLOB.heretic_sand_sounds[kind]), "Отсчёт не повторяет звук [kind].")
 	sand.combat_resource = 2
 	TEST_ASSERT(hourglass.delay_impact(user), "Продление доступно и во время отсчёта.")
 	TEST_ASSERT_EQUAL(hourglass.icon_state, "sand_hourglass", "Продление гасит раскалённые часы.")
 	TEST_ASSERT(hourglass.countdown_timer, "Отсчёт назначен заново.")
 
-/// Запомнив цель, часы затягивают песок у её ног, а песчаная нить тянется за ней, пока возврат возможен.
+/// Запомнив цель, часы затягивают песок у её ног, а песчаная нить тянется за ней в девяти клетках, хоть из-за преграды.
 /datum/unit_test/heretic_sand_recall_tether/Run()
 	var/turf/start = run_loc_floor_bottom_left
 	var/datum/antagonist/heretic/heretic = allocate_heretic(locate(start.x, start.y + 1, start.z))
@@ -341,14 +344,14 @@
 	TEST_ASSERT(tether.taut, "Нить тянется за шагнувшей целью.")
 	TEST_ASSERT_EQUAL(tether.length, 2 * world.icon_size, "Нить дотягивается до цели.")
 	TEST_ASSERT_EQUAL(tether.angle, 90, "Нить смотрит на цель.")
-	victim.forceMove(locate(start.x + 4, start.y, start.z))
-	TEST_ASSERT(!tether.taut, "Вне досягаемости часов нить отпускает цель.")
+	victim.forceMove(locate(start.x + HERETIC_SAND_RECALL_RANGE + 1, start.y, start.z))
+	TEST_ASSERT(!tether.taut, "Дальше девяти клеток нить отпускает цель.")
 	victim.forceMove(locate(start.x + 2, start.y, start.z))
 	TEST_ASSERT(tether.taut, "Вернувшуюся цель нить снова держит.")
 	var/obj/blocker = allocate(/obj, locate(start.x + 1, start.y, start.z))
 	blocker.density = TRUE
 	victim.forceMove(locate(start.x + 3, start.y, start.z))
-	TEST_ASSERT(!tether.taut, "Преграда между часами и целью рвёт нить.")
+	TEST_ASSERT(tether.taut, "Преграда между часами и целью нить не рвёт.")
 	qdel(hourglass)
 	TEST_ASSERT(QDELETED(tether), "Удаление часов убирает нить.")
 	TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/heretic_sand_recall), "Связь с часами снята.")
@@ -410,10 +413,7 @@
 	TEST_ASSERT(abs(victim.getBruteLoss() - 28) <= DAMAGE_PRECISION, "Первый удар работает сразу в центре.")
 	TEST_ASSERT_NOTNULL(victim.has_status_effect(/datum/status_effect/heretic_sand_drought), "Поражённый Погребением получает Засуху.")
 	var/mob/living/dodging = allocate(/mob/living/carbon/human, get_step(center, NORTH))
-	var/resource_before = sand.combat_resource
-	TEST_ASSERT(!sand.release(user), "При полном поле Осыпь отклоняется.")
-	TEST_ASSERT_EQUAL(sand.combat_resource, resource_before, "Переполнение не тратит ресурс.")
-	TEST_ASSERT(!sand.create_hourglass(get_step(center, NORTH), sand), "Прямое создание также соблюдает лимит.")
+	TEST_ASSERT(!sand.create_hourglass(get_step(center, NORTH), sand), "Прямое создание соблюдает лимит.")
 	for(var/obj/structure/heretic_sand_hourglass/hourglass as anything in sand.hourglasses.Copy())
 		hourglass.resolve()
 	TEST_ASSERT(abs(victim.getBruteLoss() - 60) <= DAMAGE_PRECISION, "Остающийся в центре получает отложенный удар.")
@@ -539,7 +539,7 @@
 	qdel(heretic)
 	TEST_ASSERT(QDELETED(sand) && QDELETED(passive) && QDELETED(power), "Удаление роли без текущего тела очищает оба знания и способность.")
 
-/// Запомненный шаг возвращается, а дальность, стены, антимагия и разрушение часов спасают цель.
+/// Украденная секунда: часы возвращают запомненную цель из девяти клеток, хоть из-за угла; дальше, антимагия, запрет телепортации и разбитые часы спасают.
 /datum/unit_test/heretic_sand_stolen_second/Run()
 	var/turf/center = get_step(run_loc_floor_bottom_left, NORTHEAST)
 	var/datum/antagonist/heretic/heretic = allocate_heretic(center)
@@ -547,11 +547,16 @@
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_sand)
 	var/datum/eldritch_knowledge/base_sand/sand = heretic.get_knowledge(/datum/eldritch_knowledge/base_sand)
 	var/turf/target = get_step(center, EAST)
-	for(var/scenario in list("near", "far", "wall", "magic", "no_teleport", "destroy"))
+	for(var/scenario in list("near", "edge", "far", "wall", "magic", "no_teleport", "destroy"))
 		var/mob/living/victim = allocate(/mob/living/carbon/human, target)
 		var/obj/structure/heretic_sand_hourglass/hourglass = sand.create_hourglass(target, sand)
 		TEST_ASSERT(hourglass?.record_target(victim), "Часы запоминают врага в сценарии [scenario].")
-		var/turf/destination = locate(target.x, target.y + (scenario == "far" ? 4 : 2), target.z)
+		var/distance = 2
+		if(scenario == "edge")
+			distance = HERETIC_SAND_RECALL_RANGE
+		else if(scenario == "far")
+			distance = HERETIC_SAND_RECALL_RANGE + 1
+		var/turf/destination = locate(target.x, target.y + distance, target.z)
 		victim.forceMove(destination)
 		var/obj/blocker
 		var/datum/component/anti_magic/protection
@@ -566,8 +571,9 @@
 			qdel(hourglass)
 		else
 			hourglass.resolve()
-		TEST_ASSERT_EQUAL(get_turf(victim), scenario == "near" ? target : destination, "Возврат учитывает контрмеру [scenario].")
-		TEST_ASSERT(abs(victim.getBruteLoss() - (scenario == "near" ? 32 : 0)) <= DAMAGE_PRECISION, "Отложенный урон учитывает контрмеру [scenario].")
+		var/returned = (scenario in list("near", "edge", "wall"))
+		TEST_ASSERT_EQUAL(get_turf(victim), returned ? target : destination, "Возврат учитывает контрмеру [scenario].")
+		TEST_ASSERT(abs(victim.getBruteLoss() - (returned ? 32 : 0)) <= DAMAGE_PRECISION, "Отложенный урон учитывает контрмеру [scenario].")
 		TEST_ASSERT(!victim.has_status_effect(/datum/status_effect/heretic_sand_recall), "После исхода связь с часами удалена.")
 		if(protection)
 			TEST_ASSERT_EQUAL(protection.charges, 2, "Возврат расходует ровно один заряд защиты.")
@@ -851,7 +857,7 @@
 	TEST_ASSERT_NOTNULL(locate(/obj/effect/abstract/heretic_particle_holder/sand_trail) in inside.vis_contents, "Замедленный снаряд тянет след.")
 
 /datum/unit_test/heretic_sand_visual_types_create_and_destroy/Run()
-	for(var/thing_type in list(/obj/effect/temp_visual/heretic_sand_sun, /obj/effect/abstract/heretic_particle_holder/sand_trail, /obj/effect/temp_visual/heretic_sand/stasis, /obj/structure/heretic_sand_anchor/craft, /obj/effect/temp_visual/heretic_sand/bind, /obj/effect/abstract/heretic_sand_tether, /obj/effect/abstract/heretic_sand_grains/upper, /obj/effect/abstract/heretic_sand_grains/lower))
+	for(var/thing_type in list(/obj/effect/temp_visual/heretic_sand_sun, /obj/effect/abstract/heretic_particle_holder/sand_trail, /obj/effect/temp_visual/heretic_sand/stasis, /obj/effect/temp_visual/heretic_sand/trip, /obj/effect/heretic_sand_mire,/obj/structure/heretic_sand_anchor/craft, /obj/effect/temp_visual/heretic_sand/bind, /obj/effect/abstract/heretic_sand_tether, /obj/effect/abstract/heretic_sand_grains/upper, /obj/effect/abstract/heretic_sand_grains/lower))
 		var/atom/movable/thing = new thing_type(run_loc_floor_bottom_left)
 		qdel(thing)
 		TEST_ASSERT(QDELETED(thing), "[thing_type] удаляется без ошибок.")
@@ -1086,6 +1092,7 @@
 	TEST_ASSERT(lost.duration != -1 && lost.duration - world.time < 6 SECONDS, "У Отката есть запасной срок: [lost.duration - world.time] дс.")
 	var/obj/effect/abstract/heretic_vfx_attached/lost_vortex = lost.vortex
 	TEST_ASSERT_NOTNULL(lost_vortex, "Вихрь Отката виден.")
+	TEST_ASSERT_EQUAL(lost_vortex.icon_state, "sand_rewind", "У Отката свой вихрь, а не рисунок Погребения.")
 	qdel(host)
 	TEST_ASSERT(QDELETED(lost) && QDELETED(lost_vortex), "Удалённое посреди Отката тело не оставляет вихрь.")
 	heretic_test_area(center, /area/unit_test_sand_noteleport)
@@ -1516,3 +1523,251 @@
 	anchor.forceMove(locate(spot.x + HERETIC_SAND_HASTE_RANGE + 1, spot.y, spot.z))
 	TEST_ASSERT_EQUAL(heretic_ritual_speed_multiplier(user, get_turf(victim)), 1, "Засечка дальше пяти клеток от входа изнанку не ускоряет.")
 	heretic.pocket.collapse("проверка")
+
+/// Песок в суставах: удар часов по цели под Засухой сбивает её с ног на полторы секунды и делает готовой к Стазису; не чаще раза в 4 секунды, без Засухи не сбивает; Засуха замедляет шаг.
+/datum/unit_test/heretic_sand_joint_trip/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_SAND
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_sand)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/sand_stasis)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_sand/sand = heretic.get_knowledge(/datum/eldritch_knowledge/base_sand)
+	var/turf/spot = get_step(user, EAST)
+	var/mob/living/carbon/human/dry = allocate(/mob/living/carbon/human, spot)
+	dry.apply_status_effect(/datum/status_effect/heretic_sand_drought)
+	TEST_ASSERT(dry.has_movespeed_modifier(/datum/movespeed_modifier/heretic_sand_drought), "Засуха замедляет шаг.")
+	sand.combat_resource = 4
+	TEST_ASSERT(findtext(sand.stasis_block_reason(user, dry), "сбитая с ног"), "Стоящая цель под Засухой к Стазису не готова.")
+	var/obj/structure/heretic_sand_hourglass/hourglass = sand.create_hourglass(spot, sand)
+	hourglass.resolve()
+	TEST_ASSERT(dry.IsKnockdown(), "Удар часов сбивает с ног цель под Засухой.")
+	TEST_ASSERT(abs(dry.AmountKnockdown() - HERETIC_SAND_TRIP_TIME) < 1, "Цель лежит полторы секунды: [dry.AmountKnockdown()] дс.")
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/temp_visual/heretic_sand/trip) in spot, "Видно, как песок бьёт по суставам.")
+	TEST_ASSERT_NULL(sand.stasis_block_reason(user, dry), "Сбитая часами цель под Засухой готова к Стазису.")
+	TEST_ASSERT(abs(dry.getBruteLoss() - 32) <= DAMAGE_PRECISION, "Урон часов прежний.")
+	dry.SetKnockdown(0)
+	sand.last_clock_hits.Cut()
+	hourglass = sand.create_hourglass(spot, sand)
+	hourglass.resolve()
+	TEST_ASSERT(!dry.IsKnockdown(), "Песок в суставах сбивает не чаще раза в 4 секунды.")
+	var/mob/living/carbon/human/wet = allocate(/mob/living/carbon/human, get_step(user, NORTH))
+	hourglass = sand.create_hourglass(get_turf(wet), sand)
+	hourglass.resolve()
+	TEST_ASSERT(!wet.IsKnockdown(), "Без Засухи часы с ног не сбивают.")
+	TEST_ASSERT(abs(wet.getBruteLoss() - 32) <= DAMAGE_PRECISION, "Без Засухи урон часов тот же.")
+
+/// Зыбун: клетка удара часов вязнет; вошедший увязает на полторы секунды один раз, еретик и защищённый магией проходят; воронка высыхает сама, с Глубокой колбой позже, смерть еретика её снимает.
+/datum/unit_test/heretic_sand_mire/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_SAND
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_sand)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_sand/sand = heretic.get_knowledge(/datum/eldritch_knowledge/base_sand)
+	var/turf/spot = get_step(user, EAST)
+	var/obj/structure/heretic_sand_hourglass/hourglass = sand.create_hourglass(spot, sand)
+	hourglass.resolve()
+	var/obj/effect/heretic_sand_mire/mire = locate() in spot
+	TEST_ASSERT_NOTNULL(mire, "На клетке удара остаётся Зыбун.")
+	TEST_ASSERT(mire in sand.mires, "Зыбун учтён знанием.")
+	TEST_ASSERT(abs(timeleft(mire.expiry_timer) - HERETIC_SAND_MIRE_TIME) <= world.tick_lag, "Зыбун держится 4,5 секунды.")
+	var/mob/living/carbon/human/runner = allocate(/mob/living/carbon/human, get_step(spot, NORTH))
+	runner.forceMove(spot)
+	TEST_ASSERT(runner.IsImmobilized(), "Вошедший увязает.")
+	TEST_ASSERT(abs(runner.AmountImmobilized() - HERETIC_SAND_MIRE_HOLD) < 1, "Песок держит полторы секунды: [runner.AmountImmobilized()] дс.")
+	var/datum/status_effect/heretic_sand_mired/mired = runner.has_status_effect(/datum/status_effect/heretic_sand_mired)
+	TEST_ASSERT_NOTNULL(mired, "Увязший знает, что его держит песок.")
+	var/obj/effect/abstract/heretic_vfx_attached/grip = mired.grip
+	TEST_ASSERT(grip in runner.vis_contents, "Песок обхватывает ноги увязшего.")
+	runner.SetImmobilized(0)
+	qdel(mired)
+	TEST_ASSERT(QDELETED(grip) || grip.fading, "Хватка песка спадает вместе с ним.")
+	runner.forceMove(get_step(spot, NORTH))
+	runner.forceMove(spot)
+	TEST_ASSERT(!runner.IsImmobilized(), "Одна воронка держит человека один раз.")
+	user.forceMove(spot)
+	TEST_ASSERT(!user.IsImmobilized(), "Еретик по своему песку проходит.")
+	user.forceMove(get_step(spot, WEST))
+	var/mob/living/carbon/human/warded = allocate(/mob/living/carbon/human, get_step(spot, SOUTH))
+	warded.AddComponent(/datum/component/anti_magic, TRUE, FALSE, FALSE, null, 5)
+	warded.forceMove(spot)
+	TEST_ASSERT(!warded.IsImmobilized(), "Антимагия не даёт увязнуть.")
+	TEST_ASSERT(wait_for_qdeleted(mire, HERETIC_SAND_MIRE_TIME + 1 SECONDS), "Воронка высыхает.")
+	TEST_ASSERT(!(mire in sand.mires), "Высохшая воронка уходит из учёта.")
+	heretic.gain_knowledge(/datum/eldritch_knowledge/sand_sustain)
+	var/datum/eldritch_knowledge/sand_sustain/sustain = heretic.get_knowledge(/datum/eldritch_knowledge/sand_sustain)
+	sustain.passive_level = 3
+	sustain.on_passive_upgrade(user)
+	var/turf/north_spot = get_step(user, NORTH)
+	hourglass = sand.create_hourglass(north_spot, sand)
+	hourglass.resolve()
+	mire = locate() in north_spot
+	TEST_ASSERT(abs(timeleft(mire?.expiry_timer) - (HERETIC_SAND_MIRE_TIME + 3 SECONDS)) <= world.tick_lag, "Глубокая колба третьей ступени держит Зыбун на 3 секунды дольше.")
+	sand.on_death(user)
+	TEST_ASSERT(QDELETED(mire), "Смерть еретика снимает Зыбун.")
+
+/// Осыпь при полном поле часов освобождает место: уходят старые часы без запомненной цели, часы с целью остаются; без песка отказ называет причину.
+/datum/unit_test/heretic_sand_release_room/Run()
+	var/turf/center = get_step(get_step(run_loc_floor_bottom_left, NORTHEAST), NORTHEAST)
+	var/datum/antagonist/heretic/heretic = allocate_heretic(center)
+	heretic.selected_path = PATH_SAND
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_sand)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_sand/sand = heretic.get_knowledge(/datum/eldritch_knowledge/base_sand)
+	var/obj/structure/heretic_sand_hourglass/recorded
+	for(var/turf/tile in range(2, center))
+		if(length(sand.hourglasses) >= 13)
+			break
+		if(tile == center || (get_dist(tile, center) == 1 && (tile.x == center.x || tile.y == center.y)))
+			continue
+		var/obj/structure/heretic_sand_hourglass/hourglass = sand.create_hourglass(tile, sand)
+		if(!recorded)
+			var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, tile)
+			TEST_ASSERT(hourglass?.record_target(victim), "Первые часы запоминают цель.")
+			recorded = hourglass
+	TEST_ASSERT_EQUAL(length(sand.hourglasses), 13, "Поле часов заполнено.")
+	sand.combat_resource = 0
+	TEST_ASSERT(!sand.release(user), "Без песка Осыпь не выходит.")
+	TEST_ASSERT(findtext(sand.sand_failure, "песка"), "Отказ называет песок: [sand.sand_failure]")
+	sand.combat_resource = 2
+	TEST_ASSERT(sand.release(user), "При полном поле Осыпь всё равно выходит.")
+	TEST_ASSERT_EQUAL(length(sand.hourglasses), 13, "Предел часов соблюдён.")
+	for(var/direction in GLOB.cardinals)
+		TEST_ASSERT_NOTNULL(locate(/obj/structure/heretic_sand_hourglass) in get_step(center, direction), "Осыпь поставила часы: [dir2text(direction)].")
+	TEST_ASSERT(!QDELETED(recorded), "Часы с запомненной целью остались.")
+
+/// Стазис виден: песок смыкается своим рисунком, 10 секунд вокруг застывшего висят неподвижные песчинки, при спадании они осыпаются.
+/datum/unit_test/heretic_sand_stasis_visuals/Run()
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_SAND
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_sand)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/sand_stasis)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_sand/sand = heretic.get_knowledge(/datum/eldritch_knowledge/base_sand)
+	var/turf/spot = get_step(user, EAST)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, spot)
+	victim.apply_status_effect(/datum/status_effect/heretic_sand_drought)
+	victim.DefaultCombatKnockdown(5 SECONDS, override_stamdmg = 0)
+	sand.combat_resource = 4
+	TEST_ASSERT(sand.stasis(user, victim), "Стазис начинается.")
+	var/obj/effect/temp_visual/heretic_sand/stasis/seal = locate() in spot
+	TEST_ASSERT_EQUAL(seal?.icon_state, "sand_seal", "Смыкание песка - свой рисунок, а не вихрь Погребения.")
+	var/datum/status_effect/heretic_sand_stasis/stasis = await_sand_stasis(victim)
+	TEST_ASSERT_NOTNULL(stasis, "Цель застыла.")
+	var/obj/effect/abstract/heretic_particle_holder/grains = stasis.still_grains
+	TEST_ASSERT(grains in victim.vis_contents, "Вокруг застывшего висят песчинки.")
+	var/list/velocity = grains.particles.velocity
+	var/list/gravity = grains.particles.gravity
+	TEST_ASSERT(!velocity[1] && !velocity[2] && !gravity[1] && !gravity[2], "Песчинки не движутся.")
+	TEST_ASSERT(grains.particles.lifespan >= HERETIC_SAND_STASIS_DURATION, "Песчинки висят весь Стазис.")
+	var/list/before = list_vfx_bursts(spot)
+	qdel(stasis)
+	TEST_ASSERT(QDELETED(grains), "Висящие песчинки уходят со Стазисом.")
+	var/obj/effect/temp_visual/heretic_vfx/burst/fall = find_vfx_burst(spot, /particles/heretic_ascension/sand/fall, before)
+	TEST_ASSERT_NOTNULL(fall, "Песчинки осыпаются.")
+	var/list/fall_gravity = fall.particles.gravity
+	TEST_ASSERT(fall_gravity[2] < 0, "Осыпаются вниз.")
+	TEST_ASSERT(wait_for_qdeleted(fall, 3 SECONDS), "Осыпавшийся песок исчезает.")
+
+/// Значки Песка свои: метка показывает знак пути, алерты состояний не берут рисунки хватки, часов и метки.
+/datum/unit_test/heretic_sand_alert_icons/Run()
+	var/datum/status_effect/eldritch/sand/mark = /datum/status_effect/eldritch/sand
+	TEST_ASSERT_EQUAL(initial(mark.mark_alert_state), "sigil_sand", "Метка Песка показывает знак пути.")
+	for(var/alert_type in list(/atom/movable/screen/alert/status_effect/heretic_sand_drought, /atom/movable/screen/alert/status_effect/heretic_sand_rewind, /atom/movable/screen/alert/status_effect/heretic_sand_mired))
+		var/atom/movable/screen/alert/alert = alert_type
+		var/state = initial(alert.icon_state)
+		TEST_ASSERT(state in icon_states(initial(alert.icon)), "[alert_type]: стейт [state] есть в листе.")
+		TEST_ASSERT(!(state in list("sand_grasp", "sand_anchor", "sand_hourglass", "sand_mark", "sand_mire")), "[alert_type] рисуется своим значком, а не эффектом пути: [state].")
+
+/// Звуки Песка разведены по событиям: у каждого свой набор без пересечений, частые события звучат вариантами, полдень и книга не повторяют обряд вознесения.
+/datum/unit_test/heretic_sand_sounds/Run()
+	var/list/seen = list()
+	for(var/kind in GLOB.heretic_sand_sounds)
+		var/list/files = GLOB.heretic_sand_sounds[kind]
+		TEST_ASSERT(length(files), "У события [kind] есть звук.")
+		for(var/sound_file in files)
+			TEST_ASSERT(isfile(sound_file), "[kind]: [sound_file] - ресурс сборки.")
+			TEST_ASSERT(!seen["[sound_file]"], "[sound_file] звучит и в [kind], и в [seen["[sound_file]"]].")
+			seen["[sound_file]"] = kind
+	for(var/kind in list("scatter", "trip", "step", "mire"))
+		TEST_ASSERT(length(GLOB.heretic_sand_sounds[kind]) > 1, "Частое событие [kind] звучит вариантами.")
+	var/datum/heretic_path/sand/path = GLOB.heretic_paths[PATH_SAND]
+	TEST_ASSERT(!seen["[path.ascension_sound]"], "Звуки событий не повторяют обряд вознесения.")
+	TEST_ASSERT(findtext("[path.book_open_sound]", "book_sand") && findtext("[path.book_page_sound]", "book_sand"), "У книги Песка свои звуки.")
+	var/sound_file = heretic_sand_sound(run_loc_floor_bottom_left, "scatter", 0)
+	TEST_ASSERT(sound_file in GLOB.heretic_sand_sounds["scatter"], "Звук события берётся из его набора.")
+
+/// Боевой шаг дела Песка против бегущей цели: метка, взорванная по назначенной цели, возвращает её из-за угла под удар часов, и шаг засчитан.
+/datum/unit_test/heretic_sand_combat_deed/Run()
+	var/datum/antagonist/heretic/heretic = allocate_deed_heretic(PATH_SAND)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/sand_mark)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/sand_mark/mark = heretic.get_knowledge(/datum/eldritch_knowledge/sand_mark)
+	var/turf/spot = get_step(user, EAST)
+	var/mob/living/carbon/human/victim = allocate_hunt_victim(heretic, spot)
+	TEST_ASSERT(mark.on_mansus_grasp(victim, user, TRUE), "Метка ставится.")
+	var/datum/status_effect/eldritch/sand/effect = victim.has_status_effect(/datum/status_effect/eldritch/sand)
+	effect.on_effect()
+	var/obj/structure/heretic_sand_hourglass/hourglass = locate() in spot
+	TEST_ASSERT_EQUAL(hourglass?.recorded_second?.owner, victim, "Взрыв метки ставит часы, запомнившие цель.")
+	var/obj/blocker = allocate(/obj, get_step(spot, NORTH))
+	blocker.density = TRUE
+	var/turf/hideout = locate(spot.x, spot.y + 4, spot.z)
+	victim.forceMove(hideout)
+	hourglass.resolve()
+	TEST_ASSERT_EQUAL(get_turf(victim), spot, "Часы вернули бегущую цель из-за преграды.")
+	TEST_ASSERT(1 in heretic.deed.combat_tiers, "Удар часов по назначенной цели засчитан в дело.")
+
+/// Засуху видно на теле: с цели сыплется песок и об этом говорит осмотр; со снятием Засухи песок перестаёт сыпаться и опадает.
+/datum/unit_test/heretic_sand_drought_visible/Run()
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/datum/status_effect/heretic_sand_drought/drought = victim.apply_status_effect(/datum/status_effect/heretic_sand_drought)
+	TEST_ASSERT_NOTNULL(drought, "Засуха наложена.")
+	var/obj/effect/abstract/heretic_particle_holder/dust = drought.dust
+	TEST_ASSERT_NOTNULL(dust, "С пересохшей цели сыплется песок.")
+	TEST_ASSERT(dust in victim.vis_contents, "Песок идёт от самой цели.")
+	TEST_ASSERT(istype(dust.particles, /particles/heretic_ascension/sand/drought), "Сыплется песок Засухи.")
+	TEST_ASSERT_NULL(dust.glow, "Песок не светится сам.")
+	TEST_ASSERT(findtext(drought.examine_text, "песком"), "Осмотр говорит, что цель осыпается песком.")
+	victim.apply_status_effect(/datum/status_effect/heretic_sand_drought)
+	var/holders = 0
+	for(var/obj/effect/abstract/heretic_particle_holder/holder in victim.vis_contents)
+		holders++
+	TEST_ASSERT_EQUAL(holders, 1, "Повторная Засуха не копит песок.")
+	victim.remove_status_effect(/datum/status_effect/heretic_sand_drought)
+	TEST_ASSERT(!(dust in victim.vis_contents), "Без Засухи с цели больше не сыплется.")
+	TEST_ASSERT(QDELETED(dust) || !dust.particles.spawning, "Новых песчинок нет.")
+	TEST_ASSERT(wait_for_qdeleted(dust), "Последние песчинки опадают и исчезают.")
+
+/// Часы одного поля бьют в один тик, а слышно один удар и один отсчёт; в следующий тик часы звучат снова. Метка и удар часов звучат не хваткой.
+/datum/unit_test/heretic_sand_hourglass_one_sound_per_tick/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	var/datum/antagonist/heretic/heretic = allocate_heretic(locate(start.x + 2, start.y + 2, start.z))
+	heretic.selected_path = PATH_SAND
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_sand)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_sand/sand = heretic.get_knowledge(/datum/eldritch_knowledge/base_sand)
+	var/list/obj/structure/heretic_sand_hourglass/field = list()
+	for(var/direction in GLOB.cardinals)
+		var/obj/structure/heretic_sand_hourglass/hourglass = sand.create_hourglass(get_step(user, direction), sand)
+		if(hourglass)
+			field += hourglass
+	TEST_ASSERT_EQUAL(length(field), 4, "Часы стоят на четырёх клетках вокруг.")
+	var/countdowns = 0
+	var/impacts = 0
+	for(var/obj/structure/heretic_sand_hourglass/hourglass as anything in field)
+		if(hourglass.count_down())
+			countdowns++
+		if(hourglass.impact_sound())
+			impacts++
+	TEST_ASSERT_EQUAL(countdowns, 1, "Отсчёт поля за тик звучит один раз.")
+	TEST_ASSERT_EQUAL(impacts, 1, "Удар поля за тик звучит один раз.")
+	sleep(world.tick_lag)
+	var/obj/structure/heretic_sand_hourglass/late = field[1]
+	TEST_ASSERT(late.count_down() in late.countdown_sounds, "В следующий тик отсчёт звучит снова.")
+	TEST_ASSERT_EQUAL(late.impact_sound(), 'modular_bluemoon/sound/heretic/sand_impact.ogg', "В следующий тик удар звучит снова.")
+	var/grasp_sound = /datum/eldritch_knowledge/base_sand::grasp_sound
+	var/mark_sound = /datum/status_effect/eldritch/sand::detonation_sound
+	TEST_ASSERT(!(mark_sound in list(grasp_sound, 'modular_bluemoon/sound/heretic/sand_impact.ogg')), "Метка Песка звучит не хваткой и не ударом часов.")
+	TEST_ASSERT_NOTEQUAL(grasp_sound, 'modular_bluemoon/sound/heretic/sand_impact.ogg', "Удар часов звучит не хваткой.")
+	TEST_ASSERT(/datum/status_effect/eldritch/sand::effect_sprite_layer > MOB_LAYER, "Тело не закрывает метку Песка.")
+	TEST_ASSERT(/datum/status_effect/eldritch/sand::effect_sprite in icon_states('modular_bluemoon/icons/obj/heretic_sand.dmi'), "Стейт метки Песка есть в листе.")

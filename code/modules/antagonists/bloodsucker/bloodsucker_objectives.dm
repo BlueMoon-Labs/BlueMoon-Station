@@ -25,7 +25,7 @@
 	 // Look at all crew members, and for/loop through.
 	for(var/datum/mind/possible_target in get_crewmember_minds())
 		// Check One: Default Valid User
-		if(possible_target != owner && ishuman(possible_target.current) && possible_target.current.stat != DEAD)// && is_unique_objective(possible_target))
+		if(possible_target != owner && ishuman(possible_target.current) && possible_target.current.stat != DEAD && opt_in_valid(possible_target))// && is_unique_objective(possible_target))
 			// Check Two: Am Bloodsucker? OR in Bloodsucker list?
 			if (possible_target.has_antag_datum(ANTAG_DATUM_BLOODSUCKER) || (possible_target in SSticker.mode.bloodsuckers))
 				continue

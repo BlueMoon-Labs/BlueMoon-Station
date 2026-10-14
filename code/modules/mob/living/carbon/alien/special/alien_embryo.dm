@@ -103,11 +103,12 @@
 
 	if(kill_on_sucess) //ITS TOO LATE
 		new_xeno.visible_message("<span class='danger'>[new_xeno] bursts out of [owner]!</span>", "<span class='userdanger'>You exit [owner], your previous host.</span>", "<span class='italics'>You hear organic matter ripping and tearing!</span>")
-		owner.apply_damage(rand(100,300),BRUTE,zone,FALSE) //Random high damage to torso so health sensors don't metagame.
-		var/obj/item/bodypart/B = owner.get_bodypart(zone)
-		owner.cut_overlay(overlay)
-		B.drop_organs(owner) //Lets still make the death gruesome and impossible to just simply defib someone.
-		owner.death(FALSE) //Just in case some freak occurance occurs where you somehow survive all your organs being removed from you and the 100-300 brute damage.
+		var/mob/living/carbon/host = owner
+		host.apply_damage(rand(100,300),BRUTE,zone,FALSE) //Random high damage to torso so health sensors don't metagame.
+		var/obj/item/bodypart/B = host.get_bodypart(zone)
+		host.cut_overlay(overlay)
+		B?.drop_organs(host) //Lets still make the death gruesome and impossible to just simply defib someone.
+		host.death(FALSE) //Just in case some freak occurance occurs where you somehow survive all your organs being removed from you and the 100-300 brute damage.
 	else //When it is removed via surgery at a late stage, rather than forced.
 		new_xeno.visible_message("<span class='danger'>[new_xeno] wriggles out of [owner]!</span>", "<span class='userdanger'>You exit [owner], your previous host.</span>")
 		owner.adjustBruteLoss(40)

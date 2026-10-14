@@ -20,6 +20,7 @@
 	var/can_attach_mob = FALSE
 	var/full_damage_on_mobs = FALSE
 	var/can_gib_mobs = FALSE
+	var/plant_delay = 3 SECONDS
 
 /obj/item/grenade/plastic/Initialize(mapload)
 	. = ..()
@@ -116,7 +117,7 @@
 
 	to_chat(user, "<span class='notice'>You start planting [src]. The timer is set to [det_time]...</span>")
 
-	if(do_after(user, 30, target = AM))
+	if(do_after(user, plant_delay, target = AM))
 		if(!user.temporarilyRemoveItemFromInventory(src))
 			return
 		target = AM
@@ -251,3 +252,4 @@
 	gender = PLURAL
 	directional = TRUE
 	boom_sizes = list(0, 2, 5)
+	plant_delay = 0

@@ -268,11 +268,9 @@ GLOBAL_DATUM(necropolis_gate, /obj/structure/necropolis_gate/legion_gate)
 	. = ..()
 	icon_state = "[tile_key][rand(1, tile_random_sprite_max)]"
 
-/obj/structure/stone_tile/Destroy(force)
-	if(force || fallen)
-		. = ..()
-	else
-		return QDEL_HINT_LETMELIVE
+/obj/structure/stone_tile/examine(mob/user)
+	. = ..()
+	. += "<span class='notice'>There's a <b>small crack</b> on the edge of it.</span>"
 
 /obj/structure/stone_tile/singularity_pull()
 	return
@@ -324,6 +322,32 @@ GLOBAL_DATUM(necropolis_gate, /obj/structure/necropolis_gate/legion_gate)
 
 /obj/structure/stone_tile/proc/crossed_effect(atom/movable/AM)
 	return
+
+/obj/structure/stone_tile/crowbar_act(mob/user, obj/item/I)
+	. = ..()
+	var/consequences  = FALSE
+	if(istype(src.loc, /turf/open/indestructible/boss))
+		consequences = TRUE
+
+	if(istype(src.loc, /turf/open/lava) || istype(src.loc, /turf/open/chasm)) // тут вообще по хорошему нужно компоненту чазма брать, а не сам чазм but however
+		to_chat(user, span_warning("Не получается взять точку опоры чтобы сдвинуть [src]"))
+		return TRUE
+
+	to_chat(user, span_warning("Вы начинаете смещать [src]"))
+	if(!I.use_tool(src, user, (consequences ? 30 / clamp(I.toolspeed, 0.1, 1) : 3) SECONDS, volume = 50 ))
+		return TRUE
+
+	if(consequences)
+		to_chat(user, span_warning("С диким усилием вы отрываете плитку от пола... и видите под ней чёрно-фиолетовые квадраты."))
+		to_chat(user, span_eldritch("[user.key], ты ведь жаждал это увидеть?"))
+		user.client.give_award(/datum/award/achievement/misc/crow_necro, user)
+		user.emote("shiver")
+		user.dropItemToGround(I)
+		return TRUE
+
+	user.do_attack_animation(src, used_item = I)
+	deconstruct(TRUE)
+	return TRUE
 
 /obj/structure/stone_tile/block
 	name = "stone block"

@@ -661,7 +661,7 @@
 			// BLUEMOON EDIT END
 				portal_target.do_jitter_animation() //make your partner shake too!
 			// BLUEMOON ADD: Chain interactions - notify other connected fleshlights
-			if(portalunderwear?.portallight?.len > 1)
+			if(portalunderwear && portalunderwear.portallight.len > 1)
 				for(var/obj/item/portallight/other_fleshlight in portalunderwear.portallight)
 					if(other_fleshlight == src)
 						continue  // Skip self
@@ -981,7 +981,7 @@
 		deleted = loc
 	forceMove(get_turf(loc))
 	dropped(deleted) // Act like we've been dropped
-	plane = initial(plane)
+	RESET_PLANE_EXPLICIT(src, src)
 	layer = initial(layer)
 	update_portal()
 

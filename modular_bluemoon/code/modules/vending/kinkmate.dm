@@ -92,6 +92,8 @@
 				/obj/item/magicwand/blackwand = 5,
 				/obj/item/sybian_kit = 5,
 				/obj/item/dildo_machine_kit = 5,
+				/obj/item/wooden_horse_kit = 5,
+				/obj/item/wooden_horse_kit/vibrator = 5,
 				/obj/item/gloryhole_kit = 5,
 				/obj/item/wallframe/lewd_portal = 3,
 				/obj/item/storage/box/shibari_stand = 5,
@@ -179,6 +181,7 @@
 				/obj/item/love_offer = 32,
 				/obj/item/fancy_pillow = 32,
 				/obj/item/storage/daki = 4,
+				/obj/item/screwdriver/dildo = 5,
 				/obj/item/clothing/underwear/briefs/panties/maebari = 3,
 				/obj/item/clothing/underwear/briefs/panties/maebari/maebari_heart = 3,
 				/obj/item/clothing/underwear/briefs/panties/maebari/maebari_sheer = 3,
@@ -257,6 +260,7 @@
 		/obj/item/lewd_spellbook = 1,
 		/obj/item/clothing/mask/muzzle/mouthring = 5,
 		/obj/item/clothing/mask/muzzle/ballgag = 3,
+		/obj/item/clothing/ears/earmuffs/kink = 3,
 		/obj/item/storage/belt/cummerbund = 3
 	)
 	refill_canister = /obj/item/vending_refill/kink

@@ -24,6 +24,7 @@
 		/obj/item/reagent_containers/hypospray/medipen/oxandrolone,
 		/obj/item/reagent_containers/hypospray/medipen/salbutamol,
 		/obj/item/reagent_containers/hypospray/medipen/ferrocortex,
+		/obj/item/reagent_containers/hypospray/medipen/atropine,
 	)
 	var/max_medipens = 2
 	var/refill_time = 120 SECONDS

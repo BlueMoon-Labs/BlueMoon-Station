@@ -118,7 +118,8 @@
 	if(!mind.current || (mind.current && mind.current.stat == DEAD))
 		addtimer(CALLBACK(src, PROC_REF(rise)), respawn_time, TIMER_UNIQUE)
 
-/obj/item/phylactery/proc/get_threat(list/threat_list)
+/obj/item/phylactery/proc/get_threat(datum/source, list/threat_list)
+	SIGNAL_HANDLER
 	if(mind?.current?.stat == DEAD)
 		if(!("phylactery" in threat_list))
 			threat_list["phylactery"] = 0
@@ -133,7 +134,7 @@
 		return "[src] is not at a turf? NULLSPACE!?"
 
 	var/mob/living/old_body = mind.current
-	var/mob/living/carbon/human/lich_fetch = new(mind.current)
+	var/mob/living/carbon/human/lich_fetch = new(item_turf)
 
 	lich_fetch.real_name = mind.name
 	var/mob/living/carbon/human/lich = lich_fetch

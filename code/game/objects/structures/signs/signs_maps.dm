@@ -64,9 +64,11 @@
 /obj/structure/sign/directions/dorms
 	name = "dorm"
 	desc = "Dorm numbers, help others find you, or you find others."
+	icon = 'icons/obj/decals.dmi'
 	icon_state = "dormnum"
 
 /obj/structure/sign/directions/cells
 	name = "room"
 	desc = "So the less fortunate amongst us know where they'll be staying."
+	icon = 'icons/obj/decals.dmi'
 	icon_state = "cellnum"

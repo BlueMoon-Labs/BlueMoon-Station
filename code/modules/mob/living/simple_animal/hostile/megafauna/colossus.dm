@@ -21,6 +21,8 @@ Difficulty: Very Hard
 
 */
 
+#define SPIRAL_SHOT_DURATION 80 // Number of death bolts fired per spiral
+
 /mob/living/simple_animal/hostile/megafauna/colossus
 	name = "colossus"
 	desc = "A monstrous creature protected by heavy shielding."
@@ -31,7 +33,7 @@ Difficulty: Very Hard
 	attack_sound = 'sound/magic/clockwork/ratvar_attack.ogg'
 	icon_state = "eva"
 	icon_living = "eva"
-	icon_dead = "dragon_dead"
+	icon_dead = ""
 	friendly_verb_continuous = "stares down"
 	friendly_verb_simple = "stare down"
 	icon = 'icons/mob/lavaland/96x96megafauna.dmi'
@@ -153,11 +155,13 @@ Difficulty: Very Hard
 /mob/living/simple_animal/hostile/megafauna/colossus/proc/spiral_shoot(negative = FALSE, counter_start = 8)
 	if(QDELETED(src) || !isturf(loc))
 		return
+	icon_state = "eva_attack"
+	addtimer(CALLBACK(src, PROC_REF(reset_spiral_icon)), SPIRAL_SHOT_DURATION)
 	var/turf/start_turf = get_step(src, pick(GLOB.alldirs))
 	if(!start_turf)
 		return
 	var/counter = counter_start
-	for(var/i in 1 to 80)
+	for(var/i in 1 to SPIRAL_SHOT_DURATION)
 		if(QDELETED(src) || !isturf(loc))
 			return
 		if(negative)
@@ -171,6 +175,9 @@ Difficulty: Very Hard
 		shoot_projectile(start_turf, counter * 22.5)
 		playsound(get_turf(src), 'sound/magic/clockwork/invoke_general.ogg', 20, 1)
 		sleep(1)
+
+/mob/living/simple_animal/hostile/megafauna/colossus/proc/reset_spiral_icon()
+	icon_state = initial(icon_state)
 
 /mob/living/simple_animal/hostile/megafauna/colossus/proc/shoot_projectile(turf/marker, set_angle)
 	if(QDELETED(src))

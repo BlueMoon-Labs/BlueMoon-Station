@@ -81,6 +81,11 @@ GLOBAL_VAR_INIT(rollovercheck_last_timeofday, 0)
 /proc/gameTimestamp(format = "hh:mm:ss", wtime=world.time)
 	return time2text(wtime - GLOB.timezoneOffset, format)
 
+/// Час по часам сервера (как в time2text(world.timeofday, "hh")) в московском времени
+/proc/server_hour_to_msk(hour)
+	var/msk_hour = hour - GLOB.timezoneOffset / (1 HOURS) + MSK_UTC_OFFSET_HOURS
+	return (msk_hour % 24 + 24) % 24
+
 //Take a value in seconds and returns a string of minutes and seconds in the format X minute(s) and X seconds.
 /proc/seconds_to_time(var/seconds as num)
 	var/numSeconds = seconds % 60

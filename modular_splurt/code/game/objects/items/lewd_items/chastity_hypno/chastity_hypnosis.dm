@@ -98,7 +98,7 @@
 
 /mob/living/carbon/proc/remove_chastity_hypno_effects()
 	var/datum/component/mood/mood_comp = GetComponent(/datum/component/mood)
-	if(!("hypno" in mood_comp.mood_events))
+	if(!mood_comp || !("hypno" in mood_comp.mood_events))
 		return
 
 	if(HAS_TRAIT(src, TRAIT_IMPOTENT_ANUS))
@@ -185,7 +185,7 @@
 
 /datum/reagent/medicine/mannitol/on_mob_metabolize(mob/living/carbon/C)
 	var/datum/component/mood/mood_comp = C.GetComponent(/datum/component/mood)
-	if(!("hypno" in mood_comp.mood_events))
+	if(!mood_comp || !("hypno" in mood_comp.mood_events))
 		return ..()
 	C.remove_chastity_hypno_effects()
 	to_chat(C, span_warning("You manage to gain control over your genitals again."))

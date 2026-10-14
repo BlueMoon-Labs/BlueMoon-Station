@@ -237,3 +237,24 @@
 			TEST_ASSERT(isfile(sound_file), "Звук [key] события «[event]» включён в ресурсы.")
 			TEST_ASSERT(!owners[key], "Звук [key] события «[event]» уже звучит у события «[owners[key]]».")
 			owners[key] = event
+
+/// Коррозийный вал рушит стены без сварки и озвучивает обвал одним звуком на волну.
+/datum/unit_test/heretic_rust_wave_collapse_sound/Run()
+	var/turf/origin = run_loc_floor_bottom_left
+	var/list/fixture = ascend_rust_fixture(origin)
+	var/mob/living/carbon/human/user = fixture["user"]
+	var/datum/eldritch_knowledge/final_eldritch/rust_final/finale = fixture["finale"]
+	var/obj/effect/proc_holder/spell/self/rust_corrosive_wave/wave = locate() in finale.ascension_spell_instances
+	var/mob/living/heretic_sound_listener/ear = allocate_sound_listener(get_turf(user))
+	var/list/spots = list(locate(origin.x + 2, origin.y + 2, origin.z), locate(origin.x + 1, origin.y + 3, origin.z))
+	for(var/turf/spot as anything in spots)
+		spot.ChangeTurf(/turf/closed/wall)
+	wave.cast(list(user), user)
+	for(var/turf/spot as anything in spots)
+		TEST_ASSERT(!iswallturf(locate(spot.x, spot.y, spot.z)), "Стена у [spot.x],[spot.y] рухнула.")
+	var/collapses = 0
+	for(var/sound_file in ear.heard)
+		if(sound_file == "[HERETIC_RUST_COLLAPSE_SOUND]")
+			collapses++
+	TEST_ASSERT_EQUAL(collapses, 1, "Обвал звучит один раз на волну.")
+	TEST_ASSERT(!("[file('sound/items/welder.ogg')]" in ear.heard), "Стены рушатся без сварки.")

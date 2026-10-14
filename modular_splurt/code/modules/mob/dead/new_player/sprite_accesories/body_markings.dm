@@ -71,6 +71,108 @@
 	covered_limbs = list("Chest" = MATRIX_RED, "Right Arm" = MATRIX_RED, "Left Arm" = MATRIX_RED, "Right Leg" = MATRIX_RED, "Left Leg" = MATRIX_RED, "Head" = MATRIX_RED)
 	icon = 'modular_splurt/icons/mob/mam_markings.dmi'
 
+/datum/sprite_accessory/mam_body_markings/latex
+	name = "latex"
+	icon_state = "latex"
+	covered_limbs = list("Chest" = MATRIX_GREEN, "Right Arm" = MATRIX_GREEN, "Left Arm" = MATRIX_GREEN, "Right Leg" = MATRIX_GREEN, "Left Leg" = MATRIX_GREEN, "Head" = MATRIX_GREEN)
+	icon = 'modular_splurt/icons/mob/mam_markings.dmi'
+
+/datum/sprite_accessory/mam_body_markings/visor
+	name = "Surplus AV visor"
+	icon_state = "visor"
+	covered_limbs = list("Head" = MATRIX_RED)
+	icon = 'modular_splurt/icons/mob/mam_markings.dmi'
+
+/datum/sprite_accessory/mam_body_markings/visoreyes
+	name = "Surplus AV visor eyes"
+	icon_state = "visoreyes"
+	covered_limbs = list("Head" = MATRIX_RED)
+	icon = 'modular_splurt/icons/mob/mam_markings.dmi'
+
+/datum/sprite_accessory/mam_body_markings/visorupd
+	name = "Surplus AV visor (Alt)"
+	icon_state = "visorupd"
+	covered_limbs = list("Head" = MATRIX_RED)
+	icon = 'modular_splurt/icons/mob/mam_markings.dmi'
+
+/datum/sprite_accessory/mam_body_markings/pilotvisor1
+	name = "Surplus Visor"
+	icon_state = "pilotvisor1"
+	covered_limbs = list("Head" = MATRIX_RED)
+	icon = 'modular_splurt/icons/mob/mam_markings.dmi'
+
+/datum/sprite_accessory/mam_body_markings/pilotvisor1eyes
+	name = "Surplus Visor Eyes"
+	icon_state = "pilotvisor1eyes"
+	covered_limbs = list("Head" = MATRIX_RED)
+	icon = 'modular_splurt/icons/mob/mam_markings.dmi'
+
+/datum/sprite_accessory/mam_body_markings/metaljaw1
+	name = "Surplus Titanium jaw (Alt)"
+	icon_state = "metaljaw1"
+	covered_limbs = list("Head" = MATRIX_RED)
+	icon = 'modular_splurt/icons/mob/mam_markings.dmi'
+
+/datum/sprite_accessory/mam_body_markings/metaljaw2
+	name = "Surplus Titanium jaw"
+	icon_state = "metaljaw2"
+	covered_limbs = list("Head" = MATRIX_RED)
+	icon = 'modular_splurt/icons/mob/mam_markings.dmi'
+
+/datum/sprite_accessory/mam_body_markings/golova
+	name = "Surplus Brain Cord"
+	icon_state = "golova"
+	covered_limbs = list("Head" = MATRIX_RED)
+	icon = 'modular_splurt/icons/mob/mam_markings.dmi'
+
+/datum/sprite_accessory/mam_body_markings/plita
+	name = "Surplus Chest Augmentations"
+	icon_state = "plita"
+	covered_limbs = list("Chest" = MATRIX_RED)
+	icon = 'modular_splurt/icons/mob/mam_markings.dmi'
+
+/datum/sprite_accessory/mam_body_markings/boka
+	name = "Surplus Chest Augmentations 2"
+	icon_state = "boka"
+	covered_limbs = list("Chest" = MATRIX_RED)
+	icon = 'modular_splurt/icons/mob/mam_markings.dmi'
+
+/datum/sprite_accessory/mam_body_markings/grud
+	name = "Surplus Chest Augmentations 3"
+	icon_state = "grud"
+	covered_limbs = list("Chest" = MATRIX_RED)
+	icon = 'modular_splurt/icons/mob/mam_markings.dmi'
+
+/datum/sprite_accessory/mam_body_markings/naspinu
+	name = "Surplus Spine Augmentation"
+	icon_state = "naspinu"
+	covered_limbs = list("Chest" = MATRIX_RED)
+	icon = 'modular_splurt/icons/mob/mam_markings.dmi'
+
+/datum/sprite_accessory/mam_body_markings/cyberspine
+	name = "Surplus Spine Cord Augmentation"
+	icon_state = "cyberspine"
+	covered_limbs = list("Chest" = MATRIX_RED)
+	icon = 'modular_splurt/icons/mob/mam_markings.dmi'
+
+/datum/sprite_accessory/mam_body_markings/cyberleg
+	name = "Surplus Synth Legs"
+	icon_state = "cyberleg"
+	covered_limbs = list("Right Leg" = MATRIX_RED, "Left Leg" = MATRIX_RED)
+	icon = 'modular_splurt/icons/mob/mam_markings.dmi'
+
+/datum/sprite_accessory/mam_body_markings/naruchi
+	name = "Surplus Synth Arms"
+	icon_state = "naruchi"
+	covered_limbs = list("Right Arm" = MATRIX_RED, "Left Arm" = MATRIX_RED)
+	icon = 'modular_splurt/icons/mob/mam_markings.dmi'
+
+/datum/sprite_accessory/mam_body_markings/shoulderpad
+	name = "Surplus Synth Shoulder pads"
+	icon_state = "shoulderpad"
+	covered_limbs = list("Right Arm" = MATRIX_RED, "Left Arm" = MATRIX_RED)
+	icon = 'modular_splurt/icons/mob/mam_markings.dmi'
+
 /datum/sprite_accessory/mam_body_markings/floof
 	name = "Belly Fur (Floof)"
 	icon = 'modular_splurt/icons/mob/mam_markings.dmi'

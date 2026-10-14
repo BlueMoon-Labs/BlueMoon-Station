@@ -17,6 +17,9 @@
 /obj/item/slaver/gizmo/attack(mob/living/M, mob/user)
 	if(!M)
 		return
+	if(M.targeted_by) // edge case при многократном или использование сразу 2-мя слейверами настакивалась анимация, оставляя персонажа с 50-той альфой
+		to_chat(user, span_warning("Над [M] совершают иные действия, что может нарушить работу устройства."))
+		return
 
 	var/datum/antagonist/slaver/S = locate() in user.mind.antag_datums
 	if(!S) // Is not a slaver antag.

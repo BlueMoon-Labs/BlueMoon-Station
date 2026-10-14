@@ -24,7 +24,7 @@
 	if(DT_PROB(50, delta_time))
 		switch(rand(1, 11))
 			if(1 to 3)
-				M.emote("agony")
+				M.emote("realagony")
 				M.adjustOrganLoss(ORGAN_SLOT_LIVER, 6, 60)
 			if(4)
 				M.vomit()

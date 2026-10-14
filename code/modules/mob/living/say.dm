@@ -276,8 +276,8 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 		message_mode = MODE_WHISPER
 		src.log_talk(message, LOG_WHISPER)
 		if(fullcrit)
-			var/confirm = alert(src, "You are in full crit and can't talk, but you can whisper it in your last breath and succumb to death. Proceed?", "Last Breath", "Yes", "Cancel")
-			if(!confirm || confirm == "Cancel")
+			var/confirm = tgui_alert(src, "Вы при смерти и не можете говорить, но можете прошептать это последним вздохом и умереть. Продолжить?", "Последний вздох", list("Да", "Отмена"))
+			if(confirm != "Да" || QDELETED(src))
 				return
 			var/health_diff = round(-HEALTH_THRESHOLD_DEAD + health)
 			// If we cut our message short, abruptly end it with a-..
@@ -459,6 +459,29 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	play_fov_effect(src, 6, "talk", ignore_self = TRUE, override_list = listening)
 	for(var/_AM in listening)
 		var/atom/movable/AM = _AM
+
+		// Если есть TRAIT_HEARING_DEPRIVED, скрамблим текст как для виспера
+		// Так как это lewd trait, дальнейшая обрботка не нужна
+		if(!is_visual && ishuman(AM) && HAS_TRAIT(AM, TRAIT_HEARING_DEPRIVED) && !(the_dead[AM]))
+			var/hearing_deprived_message
+			var/hearing_deprived_rendered
+			var/mob/living/carbon/human/H = AM
+			var/hearing_level = H.get_hearing_deprivation_strength()
+			if(hearing_level > 0)
+				hearing_deprived_message = stars(message, hearing_level)
+				hearing_deprived_rendered = compose_message(src, message_language, hearing_deprived_message, null, spans, message_mode, FALSE, source)
+				AM.Hear(hearing_deprived_rendered, src, message_language, hearing_deprived_message, null, spans, MODE_WHISPER, source)
+				continue
+				/*
+					Для справки: в AM.Hear указан message_mode как MODE_WHISPER принудительно.
+					По дефолту, если это обычный says, там будет null.
+					По коду идет проверка:
+					../code/modules/mob/say.dm#L171-L176 (/mob/say_mod)
+					которая зачем-то делит текст по звездочкам, нежели по специальному magickword, которого нет.
+					В итоге, так как мы скрамблим текст то все, что до первой звездочки, определяется как customsayverb.
+					Сейчас если написать предложение и воткнуть звездочку, оно сломается, к счастью косметически.
+				*/
+
 		// ПАТЧ ТЕШАРИ - проверяем дистанцию для чёткого слуха
 		var/is_teshari_listener = FALSE
 		if(ishuman(AM))

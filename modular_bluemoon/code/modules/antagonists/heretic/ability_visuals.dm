@@ -14,49 +14,34 @@
 /obj/effect/temp_visual/heretic_spell/domain
 	icon = 'modular_bluemoon/icons/obj/heretic_domain.dmi'
 	icon_state = "cosmic_domain"
-	pixel_x = -64
-	pixel_y = -64
+	pixel_x = -48
+	pixel_y = -48
 	duration = 0.8 SECONDS
 
 /obj/effect/temp_visual/heretic_spell/moon
+	icon = 'modular_bluemoon/icons/obj/heretic_domain.dmi'
 	icon_state = "circle_wave"
-	color = "#c6d6ff"
-	alpha = 180
+	pixel_x = -48
+	pixel_y = -48
 	duration = 0.8 SECONDS
 
-/obj/effect/temp_visual/heretic_spell/moon/Initialize(mapload)
-	. = ..()
-	transform = matrix() * 0.25
-	animate(src, transform = matrix() * 2.5, alpha = 0, time = duration, easing = SINE_EASING)
-
-/// Дуга центрируется на атакующем: её край проходит через соседнюю клетку цели.
-#define HERETIC_SLASH_SCALE 1
-#define HERETIC_SLASH_ANGLE 135
-#define HERETIC_SLASH_REVERSE_ANGLE 225
-
+/// Серп нарисован на клетке по направлению удара в восьми направлениях; холст стоит на этой клетке.
 /obj/effect/temp_visual/dir_setting/heretic_slash
 	icon = 'modular_bluemoon/icons/obj/heretic_slashes.dmi'
 	icon_state = "left_swing"
-	color = "#d9c8ff"
-	alpha = 190
-	duration = 0.6 SECONDS
-	pixel_x = -32
-	pixel_y = -32
-	appearance_flags = PIXEL_SCALE
+	duration = 0.45 SECONDS
+	pixel_x = -4
+	pixel_y = -4
 
 /obj/effect/temp_visual/dir_setting/heretic_slash/Initialize(mapload, set_dir, reverse = FALSE)
 	if(reverse)
 		icon_state = "right_swing"
 	. = ..()
-	var/matrix/swing = matrix()
-	swing.Scale(reverse ? -HERETIC_SLASH_SCALE : HERETIC_SLASH_SCALE, HERETIC_SLASH_SCALE)
-	swing.Turn(dir2angle(set_dir) - (reverse ? HERETIC_SLASH_REVERSE_ANGLE : HERETIC_SLASH_ANGLE))
-	transform = swing
+	if(dir & (EAST|WEST))
+		pixel_x += (dir & EAST) ? world.icon_size : -world.icon_size
+	if(dir & (NORTH|SOUTH))
+		pixel_y += (dir & NORTH) ? world.icon_size : -world.icon_size
 	flick(icon_state, src)
-
-#undef HERETIC_SLASH_SCALE
-#undef HERETIC_SLASH_ANGLE
-#undef HERETIC_SLASH_REVERSE_ANGLE
 
 /// Лучи привязаны к исходным клеткам и исчезают после короткого рывка Пустоты.
 /obj/effect/ebeam/heretic_void

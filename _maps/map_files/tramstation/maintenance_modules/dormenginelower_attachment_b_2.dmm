@@ -1,0 +1,227 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"d" = (
+/turf/template_noop,
+/area/template_noop)
+"e" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/machinery/portable_atmospherics/canister/air = 4, /obj/machinery/portable_atmospherics/canister/oxygen = 1)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/lesser)
+"f" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/girder,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/lesser)
+"l" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/structure/reagent_dispensers/fueltank = 5, /obj/structure/reagent_dispensers/watertank = 4, /obj/structure/reagent_dispensers/watertank/high = 1)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/lesser)
+"m" = (
+/turf/closed/wall,
+/area/maintenance/central/lesser)
+"s" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/cardboard,
+/obj/effect/spawner/lootdrop/costume,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/storage/backpack = 1, /obj/item/storage/backpack/clown = 1, /obj/item/storage/backpack/explorer = 1, /obj/item/storage/backpack/mime = 1, /obj/item/storage/backpack/medic = 1, /obj/item/storage/backpack/security = 1, /obj/item/storage/backpack/industrial = 1, /obj/item/storage/backpack/botany = 1, /obj/item/storage/backpack/chemistry = 1, /obj/item/storage/backpack/genetics = 1, /obj/item/storage/backpack/science = 1, /obj/item/storage/backpack/virology = 1, /obj/item/storage/backpack/satchel = 1, /obj/item/storage/backpack/satchel/leather = 1, /obj/item/storage/backpack/satchel/eng = 1, /obj/item/storage/backpack/satchel/med = 1, /obj/item/storage/backpack/satchel/hyd = 1, /obj/item/storage/backpack/satchel/sec = 1, /obj/item/storage/backpack/satchel/explorer = 1, /obj/item/storage/backpack/duffelbag = 1, /obj/item/storage/backpack/duffelbag/med = 1, /obj/item/storage/backpack/duffelbag/sec = 1, /obj/item/storage/backpack/duffelbag/engineering = 1, /obj/item/storage/backpack/duffelbag/clown = 1)
+	},
+/obj/effect/spawner/lootdrop/minor/bowler_or_that,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/lesser)
+"y" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/extinguisher_cabinet/directional/east,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/lesser)
+"H" = (
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Maintenance Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/lesser)
+"J" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/asteroid/tramstation)
+"S" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/firecloset,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/lesser)
+"V" = (
+/obj/modular_map_connector,
+/turf/closed/wall,
+/area/maintenance/central/lesser)
+"W" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/lesser)
+"X" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/machinery/space_heater = 8, /obj/machinery/shieldgen = 3, /obj/machinery/portable_atmospherics/pump = 1, /obj/machinery/portable_atmospherics/scrubber = 1)
+	},
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/lesser)
+
+(1,1,1) = {"
+J
+J
+J
+J
+J
+J
+J
+J
+J
+J
+d
+d
+d
+d
+d
+"}
+(2,1,1) = {"
+J
+J
+J
+J
+J
+J
+J
+J
+J
+J
+d
+d
+d
+d
+d
+"}
+(3,1,1) = {"
+J
+J
+J
+J
+J
+J
+J
+J
+J
+J
+d
+d
+d
+d
+d
+"}
+(4,1,1) = {"
+J
+J
+J
+J
+J
+J
+J
+J
+J
+J
+d
+d
+d
+d
+d
+"}
+(5,1,1) = {"
+J
+J
+J
+J
+J
+J
+J
+J
+J
+J
+d
+d
+d
+d
+d
+"}
+(6,1,1) = {"
+J
+J
+J
+J
+J
+J
+J
+J
+J
+J
+d
+d
+d
+d
+d
+"}
+(7,1,1) = {"
+J
+J
+m
+m
+m
+m
+m
+m
+m
+m
+l
+l
+W
+S
+d
+"}
+(8,1,1) = {"
+J
+J
+m
+X
+e
+f
+s
+W
+W
+H
+y
+W
+W
+d
+d
+"}
+(9,1,1) = {"
+d
+d
+d
+W
+W
+W
+W
+W
+W
+V
+m
+m
+d
+d
+d
+"}

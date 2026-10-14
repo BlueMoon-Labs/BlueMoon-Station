@@ -29,3 +29,9 @@
 
 /turf/open/floor/plating/dirt/space/airless
 	initial_gas_mix = AIRLESS_ATMOS
+
+/turf/open/floor/plating/dirt/station
+	baseturfs = /turf/open/floor/plating
+	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
+	planetary_atmos = FALSE
+	desc = "Upon closer examination there's plating beneath the dirt."

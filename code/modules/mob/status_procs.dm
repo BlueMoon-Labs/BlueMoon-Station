@@ -3,12 +3,14 @@
 //The effects include: stun, knockdown, unconscious, sleeping, resting, jitteriness, dizziness, ear damage,
 // eye damage, eye_blind, eye_blurry, druggy, TRAIT_BLIND trait, and TRAIT_NEARSIGHT trait.
 
-///Set the jitter of a mob
+/**
+ * Задаёт ТРЯСКУ ТЕЛА персонажа, дрожь
+ */
 /mob/proc/Jitter(amount)
 	jitteriness = max(jitteriness,amount,0)
 
 /**
-  * Set the dizzyness of a mob to a passed in amount
+  * Задаёт ТРЯСКУ ЭКРАНА игрока, "головокружеине"
   *
   * Except if dizziness is already higher in which case it does nothing
   */
@@ -53,13 +55,29 @@
 	if(eye_blind) // UNCONSCIOUS or has blind trait, or has temporary blindness
 		if(stat == CONSCIOUS || stat == SOFT_CRIT)
 			throw_alert("blind", /atom/movable/screen/alert/blind)
-		overlay_fullscreen("blind", /atom/movable/screen/fullscreen/scaled/blind)
+
+		// Проверяем, надо ли накладывать Blindfold.
+		if(HAS_TRAIT(src, TRAIT_BLINDFOLD_HARD))
+			overlay_fullscreen("blind_blindfold_hard", /atom/movable/screen/fullscreen/scaled/blind_blindfold/hard)
+			overlay_fullscreen("blind_frame", /atom/movable/screen/fullscreen/scaled/blind_frame)
+		else if(HAS_TRAIT(src, TRAIT_BLINDFOLD))
+			overlay_fullscreen("blind_blindfold", /atom/movable/screen/fullscreen/scaled/blind_blindfold)
+			overlay_fullscreen("blind_frame", /atom/movable/screen/fullscreen/scaled/blind_frame)
+		else
+			clear_fullscreen("blind_blindfold_hard", 0)
+			clear_fullscreen("blind_blindfold", 0)
+			clear_fullscreen("blind_frame", 0)
+			overlay_fullscreen("blind", /atom/movable/screen/fullscreen/scaled/blind)
 		// You are blind why should you be able to make out details like color, only shapes near you
 		// add_client_colour(/datum/client_colour/monochrome/blind)
 	else // CONSCIOUS no blind trait, no blindness
+		clear_fullscreen("blind_frame", 0) // Мгновенно убрать
 		clear_alert("blind")
 		clear_fullscreen("blind")
+		clear_fullscreen("blind_blindfold_hard", 0) // Мгновенно убрать
+		clear_fullscreen("blind_blindfold", 0) // Мгновенно убрать
 		// remove_client_colour(/datum/client_colour/monochrome/blind)
+	SEND_SIGNAL(src, COMSIG_MOB_BLINDNESS_CHANGED)
 /**
   * Make the mobs vision blurry
   */
@@ -84,9 +102,14 @@
 	if(!hud_used)
 		return
 	var/atom/movable/plane_master_controller/game_plane_master_controller = hud_used.plane_master_controllers[PLANE_MASTERS_GAME]
+	// Life зовёт это каждый тик, а смена фильтра пересобирает фильтры всех игровых плоскостей
+	var/list/current_blur = LAZYACCESS(game_plane_master_controller.filter_data, "eye_blur")
 	if(eye_blurry)
-		game_plane_master_controller.add_filter("eye_blur", 1, gauss_blur_filter(clamp(eye_blurry * 0.1, 0.6, 3)))
-	else
+		var/blur_size = clamp(eye_blurry * 0.1, 0.6, 3)
+		if(current_blur && current_blur["size"] == blur_size)
+			return
+		game_plane_master_controller.add_filter("eye_blur", 1, gauss_blur_filter(blur_size))
+	else if(current_blur)
 		game_plane_master_controller.remove_filter("eye_blur")
 
 ///Adjust the drugginess of a mob

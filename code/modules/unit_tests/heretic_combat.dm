@@ -419,7 +419,7 @@
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	var/mob/living/user = heretic.owner.current
 	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(user, EAST))
-	var/datum/eldritch_knowledge/rust_blade_upgrade/upgrade = allocate(/datum/eldritch_knowledge/rust_blade_upgrade)
+	var/datum/eldritch_knowledge/rust_mark/upgrade = allocate(/datum/eldritch_knowledge/rust_mark)
 	for(var/strike in 1 to 3)
 		upgrade.on_eldritch_blade(victim, user, TRUE)
 	TEST_ASSERT(abs(victim.getToxLoss() + victim.getFireLoss() - 15) < 0.1, "Три попадания добавляют ровно 15 коррозии.")
@@ -501,7 +501,7 @@
 /datum/unit_test/heretic_passive_body_transfer/Run()
 	var/mob/living/carbon/human/old_body = allocate(/mob/living/carbon/human)
 	var/mob/living/carbon/human/new_body = allocate(/mob/living/carbon/human)
-	var/datum/eldritch_knowledge/cold_snap/cold = allocate(/datum/eldritch_knowledge/cold_snap)
+	var/datum/eldritch_knowledge/spell/void_prison/cold = allocate(/datum/eldritch_knowledge/spell/void_prison)
 	ADD_TRAIT(old_body, TRAIT_NOBREATH, "test_foreign_source")
 	cold.on_body_gain(old_body)
 	cold.on_body_gain(old_body)
@@ -787,14 +787,14 @@
 	TEST_ASSERT_EQUAL(storm.followed_area, first, "Буря привязана к первой области.")
 	storm.stage = MAIN_STAGE
 	storm.update_areas()
-	TEST_ASSERT_EQUAL(first.icon_state, storm.weather_overlay, "Буря видна в привязанной области.")
+	TEST_ASSERT_EQUAL(length(weather_overlay_planes(first, storm.weather_overlay)), 1, "Буря видна в привязанной области.")
 	storm.move_to_area(second)
 	TEST_ASSERT_EQUAL(storm.followed_area, second, "Буря переместилась во вторую область.")
-	TEST_ASSERT_EQUAL(first.icon_state, "", "Переход снимает оверлей с прежней области.")
-	TEST_ASSERT_EQUAL(second.icon_state, storm.weather_overlay, "Буря появляется в новой области.")
+	TEST_ASSERT_EQUAL(length(weather_overlay_planes(first, storm.weather_overlay)), 0, "Переход снимает оверлей с прежней области.")
+	TEST_ASSERT_EQUAL(length(weather_overlay_planes(second, storm.weather_overlay)), 1, "Буря появляется в новой области.")
 	TEST_ASSERT_EQUAL(length(storm.impacted_areas), 1, "За владельцем следует ровно одна область.")
 	storm.end()
-	TEST_ASSERT_EQUAL(second.icon_state, "", "Завершение убирает последний оверлей.")
+	TEST_ASSERT_EQUAL(length(weather_overlay_planes(second, storm.weather_overlay)), 0, "Завершение убирает последний оверлей.")
 
 /// Кольцо Клятвы огня не тратит заряды защиты при периодическом воздействии.
 /datum/unit_test/heretic_fire_sworn_antimagic/Run()
@@ -843,7 +843,7 @@
 	TEST_ASSERT(victim.on_fire, "Внешнее кольцо поджигает противника.")
 	var/visible_flame = FALSE
 	for(var/obj/effect/temp_visual/visual in outer)
-		if(visual.icon == 'icons/effects/turf_fire.dmi' && visual.icon_state == "red_big")
+		if(visual.icon == 'modular_bluemoon/icons/obj/heretic_effects.dmi' && visual.icon_state == "ash_flame")
 			visible_flame = TRUE
 	TEST_ASSERT(visible_flame, "Огонь каскада виден на обычном полу без горючего газа.")
 
@@ -860,7 +860,7 @@
 	TEST_ASSERT_EQUAL(round(victim.getFireLoss(), DAMAGE_PRECISION), 4, "Кольцо наносит урон повторно.")
 	var/visible_flame = FALSE
 	for(var/obj/effect/temp_visual/visual in nearby)
-		if(visual.icon == 'icons/effects/turf_fire.dmi' && visual.icon_state == "red_big")
+		if(visual.icon == 'modular_bluemoon/icons/obj/heretic_effects.dmi' && visual.icon_state == "ash_flame")
 			visible_flame = TRUE
 	TEST_ASSERT(visible_flame, "Клятва показывает огонь без горючего газа.")
 	spell.remove()
@@ -905,6 +905,26 @@
 		worm.back.current_stacks = worm.back.stacks_to_grow - 1
 		worm.heal()
 		TEST_ASSERT_EQUAL(worm.get_length(), 3, "Следующая порция удлиняет именно конец цепочки.")
+
+///Первая ошибка фаз волны по цепи червя или null: стейт каждого сегмента есть в иконке, середина в фазе своего номера от головы.
+/datum/unit_test/proc/armsy_phase_error(mob/living/simple_animal/hostile/eldritch/armsy/head)
+	var/list/available = icon_states(head.icon)
+	var/index = 0
+	for(var/mob/living/simple_animal/hostile/eldritch/armsy/segment = head, segment, segment = segment.back)
+		if(!(segment.icon_state in available))
+			return "сегмент [index] рисуется стейтом [segment.icon_state], которого нет в [head.icon]"
+		if(segment.front && segment.back && segment.icon_state != head.mid_phases[index % length(head.mid_phases) + 1])
+			return "сегмент [index] в фазе [segment.icon_state]"
+		index++
+
+/// Середина червя чередует три фазы волны по номеру от головы при спавне и при росте хвоста.
+/datum/unit_test/heretic_armsy_wave_phases/Run()
+	var/mob/living/simple_animal/hostile/eldritch/armsy/worm = allocate(/mob/living/simple_animal/hostile/eldritch/armsy, run_loc_floor_bottom_left, TRUE, 6)
+	TEST_ASSERT_NULL(armsy_phase_error(worm), "Фазы волны у новой цепи.")
+	var/mob/living/simple_animal/hostile/eldritch/armsy/old_tail = worm.get_tail()
+	TEST_ASSERT_NOTNULL(old_tail.grow_tail(), "Хвост отрастает.")
+	TEST_ASSERT_EQUAL(old_tail.back.icon_state, "armsy_end", "Новый хвост рисуется концом червя.")
+	TEST_ASSERT_NULL(armsy_phase_error(worm), "Бывший хвост встаёт в фазу своего номера.")
 
 /// Удаление многорукой оболочки выпускает все тела и снимает их стазис.
 /datum/unit_test/heretic_armsy_releases_contents/Run()
@@ -1001,6 +1021,7 @@
 	TEST_ASSERT_EQUAL(revived.get_length(), length_at_death, "Червь возвращается прежней длины.")
 	for(var/mob/living/simple_animal/hostile/eldritch/armsy/segment = revived, segment, segment = segment.back)
 		TEST_ASSERT_EQUAL(segment.health, segment.maxHealth * HERETIC_FLESH_WORM_REVIVE_HEALTH_RATIO, "Каждый сегмент возвращается с половиной здоровья.")
+	TEST_ASSERT_NULL(armsy_phase_error(revived), "Вернувшийся червь собран в фазах волны.")
 
 /// Лечение от трапезы идёт от головы к хвосту и не поднимает сегмент выше предела.
 /datum/unit_test/heretic_flesh_worm_feeding_heal_cap/Run()

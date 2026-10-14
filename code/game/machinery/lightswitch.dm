@@ -77,7 +77,7 @@
 /obj/machinery/light_switch/update_overlays()
 	. = ..()
 	if(!(machine_stat & NOPOWER))
-		. += emissive_appearance(icon, "[base_icon_state]-glow", alpha = src.alpha)
+		. += emissive_appearance(icon, "[base_icon_state]-glow", alpha = src.alpha, offset_spokesman = src)
 
 /obj/machinery/light_switch/examine(mob/user)
 	. = ..()

@@ -30,7 +30,7 @@
 	// hide_fullscreens(): экран снят с client.screen, но остался в fullscreens, и без этой
 	// оговорки повторный overlay_fullscreen() с той же тяжестью уходил бы возвратом, а
 	// оверлей не всплыл бы уже никогда.
-	else if(severity == screen.severity && !screen.hidden_from_client && (!client || screen.screen_loc != "CENTER-7,CENTER-7" || screen.view_current == client.view))
+	else if(severity == screen.severity && !screen.hidden_from_client && (!client || screen.screen_loc != ui_fullscreen || screen.view_current == client.view))
 		return screen
 	screen.SetSeverity(severity)
 	if(client)
@@ -111,7 +111,9 @@
 /atom/movable/screen/fullscreen
 	icon = 'icons/screen/fullscreen_15x15.dmi'
 	icon_state = "default"
-	screen_loc = "CENTER-7,CENTER-7"
+	screen_loc = ui_fullscreen
+	//Картинка больше вьюпорта, если обзор ниже 15: без TILE_BOUND она раздувает экран так же, как якорь за краем.
+	appearance_flags = APPEARANCE_UI | TILE_BOUND
 	layer = FULLSCREEN_LAYER
 	plane = FULLSCREEN_PLANE
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
@@ -159,11 +161,12 @@
 
 /atom/movable/screen/fullscreen/scaled
 	icon = 'icons/screen/fullscreen_15x15.dmi'
-	screen_loc = "CENTER-7,CENTER-7"
 	/// size of sprite in tiles
 	var/size_x = 15
 	/// size of sprite in tiles
 	var/size_y = 15
+	/// scale multiplier for transform (if used)
+	var/scale = 1
 
 /atom/movable/screen/fullscreen/scaled/SetView(client_view)
 	if(view_current != client_view)
@@ -316,6 +319,30 @@
 	layer = BLIND_LAYER
 	plane = FULLSCREEN_PLANE
 
+/atom/movable/screen/fullscreen/scaled/blind_blindfold
+	icon = 'icons/screen/fullscreen/blind_blindfold.dmi'
+	icon_state = "blind_blindfold"
+	layer = BLIND_LAYER
+	plane = FULLSCREEN_PLANE
+	scale = 1.0
+
+/atom/movable/screen/fullscreen/scaled/blind_blindfold/SetView(client_view)
+	if(view_current != client_view)
+		var/list/actualview = getviewsize(client_view)
+		view_current = client_view
+		transform = matrix(min(actualview[1], actualview[2]) / size_x * scale, 0, 0, 0, min(actualview[1], actualview[2]) / size_y * scale, 0)
+	return ..()
+
+/atom/movable/screen/fullscreen/scaled/blind_blindfold/hard
+	icon_state = "blind_blindfold"
+	scale = 0.4
+
+/atom/movable/screen/fullscreen/scaled/blind_frame
+	icon = 'icons/screen/fullscreen/blind_blindfold.dmi'
+	icon_state = "blind_frame"
+	layer = BLIND_LAYER
+	plane = FULLSCREEN_PLANE
+
 /atom/movable/screen/fullscreen/scaled/curse
 	icon = 'icons/screen/fullscreen/curse.dmi'
 	icon_state = "curse"
@@ -394,6 +421,7 @@
 /atom/movable/screen/fullscreen/special/lighting_backdrop
 	icon = 'icons/mob/screen_gen.dmi'
 	icon_state = "flash"
+	screen_loc = "CENTER"
 	transform = matrix(200, 0, 0, 0, 200, 0)
 	plane = LIGHTING_PLANE
 	blend_mode = BLEND_OVERLAY

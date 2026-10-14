@@ -41,6 +41,16 @@
 #define HERETIC_FLESH_GORE_FLASH_RANGE 2
 #define HERETIC_FLESH_GORE_FLASH_POWER 0.8
 #define HERETIC_FLESH_GORE_FLASH_TIME (0.4 SECONDS)
+#define HERETIC_FLESH_RISE_FADE (0.25 SECONDS)
+#define HERETIC_FLESH_RISE_ARCH 2
+#define HERETIC_FLESH_SHED_SOUND 'modular_bluemoon/sound/heretic/flesh_shed.ogg'
+#define HERETIC_FLESH_EXPEL_SOUND 'modular_bluemoon/sound/heretic/flesh_expel.ogg'
+#define HERETIC_FLESH_SHED_VOLUME 75
+#define HERETIC_FLESH_EXPEL_VOLUME 70
+#define HERETIC_FLESH_MADNESS_INK "#b24dff"
+#define HERETIC_FLESH_MADNESS_HOLD (0.6 SECONDS)
+#define HERETIC_FLESH_MADNESS_FADE (0.3 SECONDS)
+#define HERETIC_FLESH_MADNESS_LIFT 14
 
 /mob/living/simple_animal/hostile/eldritch/armsy/prime
 	var/datum/weakref/feast_ref
@@ -79,6 +89,7 @@
 	heretic_vfx_shockwave(place, ink, HERETIC_FLESH_SHED_WAVE_RADIUS, HERETIC_FLESH_SHED_WAVE_TIME)
 	heretic_vfx_flash(place, accent, HERETIC_FLESH_SHED_FLASH_RANGE, HERETIC_FLESH_SHED_FLASH_POWER, HERETIC_FLESH_SHED_FLASH_TIME)
 	heretic_vfx_quake(place, HERETIC_FLESH_SHED_QUAKE_RADIUS, HERETIC_FLESH_SHED_QUAKE)
+	playsound(place, HERETIC_FLESH_SHED_SOUND, HERETIC_FLESH_SHED_VOLUME, TRUE)
 	var/order = 0
 	for(var/mob/living/simple_animal/hostile/eldritch/armsy/segment = head, segment, segment = segment.back)
 		segment.emerge(order++)
@@ -96,6 +107,17 @@
 	heretic_vfx_burst(place, /particles/heretic_ascension/flesh/rupture, glow = FALSE)
 	heretic_vfx_flash(place, accent, HERETIC_FLESH_EXPEL_FLASH_RANGE, HERETIC_FLESH_EXPEL_FLASH_POWER, HERETIC_FLESH_EXPEL_FLASH_TIME)
 	heretic_vfx_pulse(body, accent)
+	playsound(place, HERETIC_FLESH_EXPEL_SOUND, HERETIC_FLESH_EXPEL_VOLUME, TRUE)
+
+/// Над головой жертвы Касания безумия вспыхивает пурпурный надлом; он стоит прямо, даже когда жертва падает.
+/proc/heretic_flesh_madness_fx(mob/living/victim)
+	var/obj/effect/abstract/heretic_vfx_attached/flash = heretic_vfx_attach(victim, 'modular_bluemoon/icons/obj/heretic_flesh_fx.dmi', "madness_flash", fade_in = 0)
+	if(!flash)
+		return null
+	flash.pixel_y = HERETIC_FLESH_MADNESS_LIFT
+	addtimer(CALLBACK(flash, TYPE_PROC_REF(/obj/effect/abstract/heretic_vfx_attached, fade_out), HERETIC_FLESH_MADNESS_FADE), HERETIC_FLESH_MADNESS_HOLD)
+	heretic_vfx_pulse(victim, HERETIC_FLESH_MADNESS_INK)
+	return flash
 
 /// Голова вгрызается в труп: отводится назад и бьёт, каждый укус выбивает кровь.
 /mob/living/simple_animal/hostile/eldritch/armsy/prime/proc/start_feast(datum/weakref/corpse_ref)
@@ -225,6 +247,56 @@
 	spread.Scale(HERETIC_FLESH_MEMBRANE_SCALE)
 	animate(src, transform = spread, alpha = 0, time = duration, easing = CUBIC_EASING | EASE_OUT)
 
+/// Снимок трупа поверх поднятого слуги: бьётся в судорогах, наливается кровью и тает, открывая живое тело.
+/obj/effect/temp_visual/heretic_flesh_husk/rise
+	duration = HERETIC_FLESH_CONVULSE_STEPS * HERETIC_FLESH_CONVULSE_STEP * 2 + HERETIC_FLESH_RISE_FADE
+
+/obj/effect/temp_visual/heretic_flesh_husk/rise/animate_husk()
+	layer = ABOVE_MOB_LAYER
+	var/list/meat = heretic_vfx_ink_tint(heretic_path_ink(PATH_FLESH, TRUE), HERETIC_FLESH_HUSK_LIFT)
+	var/matrix/rest = matrix(transform)
+	var/rest_x = pixel_x
+	var/rest_y = pixel_y
+	for(var/step in 1 to HERETIC_FLESH_CONVULSE_STEPS * 2)
+		var/side = step % 2 ? 1 : -1
+		var/strength = 1 - (step - 1) / (HERETIC_FLESH_CONVULSE_STEPS * 2)
+		var/matrix/twist = matrix(rest)
+		twist.Turn(side * HERETIC_FLESH_CONVULSE_TURN * strength * 2)
+		var/lift = step % 3 == 0 ? HERETIC_FLESH_RISE_ARCH : 0
+		if(step == 1)
+			animate(src, transform = twist, pixel_x = rest_x + side * HERETIC_FLESH_CONVULSE_SHIFT, pixel_y = rest_y + lift, color = meat, time = HERETIC_FLESH_CONVULSE_STEP, easing = QUAD_EASING | EASE_OUT)
+		else
+			animate(transform = twist, pixel_x = rest_x + round(side * HERETIC_FLESH_CONVULSE_SHIFT * strength), pixel_y = rest_y + lift, time = HERETIC_FLESH_CONVULSE_STEP, easing = QUAD_EASING | EASE_OUT)
+	animate(transform = rest, pixel_x = rest_x, pixel_y = rest_y, alpha = 0, time = HERETIC_FLESH_RISE_FADE, easing = SINE_EASING | EASE_IN)
+
+/// Плоть: поднятый слуга судорожно выплёвывает кровь.
+/particles/heretic_ascension/flesh/rise
+	icon_state = list("blood_drop_1" = 3, "blood_drop_2" = 2, "flesh_bit_2" = 1)
+	count = 10
+	spawning = 10
+	velocity = generator("box", list(-3, 3, 0), list(3, 6, 0))
+	gravity = list(0, -0.5)
+	lifespan = 0.9 SECONDS
+	fade = 0.3 SECONDS
+
+/// Плоть: вскрытый труп брызгает кровью и обрывками жил.
+/particles/heretic_ascension/flesh/excise
+	icon_state = list("blood_drop_1" = 3, "blood_drop_2" = 3, "flesh_bit_1" = 1)
+	count = 14
+	spawning = HERETIC_VFX_MAX_SPAWNING
+	velocity = generator("box", list(-4, 1, 0), list(4, 5, 0))
+	gravity = list(0, -0.55)
+	lifespan = 0.8 SECONDS
+	fade = 0.3 SECONDS
+
+/// Плоть: клинок срезает лоскут, и он летит к еретику.
+/particles/heretic_ascension/flesh/flay
+	icon_state = list("flesh_bit_1" = 2, "flesh_bit_2" = 2, "blood_drop_1" = 2)
+	count = 8
+	spawning = 8
+	lifespan = 0.7 SECONDS
+	fade = 0.25 SECONDS
+
 /// Плоть: тело лопается мясом и кровью.
 /particles/heretic_ascension/flesh/rupture
 	icon_state = list("flesh_bit_1" = 2, "flesh_bit_2" = 3, "blood_drop_1" = 3, "blood_drop_2" = 2)
@@ -292,3 +364,13 @@
 #undef HERETIC_FLESH_GORE_FLASH_RANGE
 #undef HERETIC_FLESH_GORE_FLASH_POWER
 #undef HERETIC_FLESH_GORE_FLASH_TIME
+#undef HERETIC_FLESH_RISE_FADE
+#undef HERETIC_FLESH_RISE_ARCH
+#undef HERETIC_FLESH_SHED_SOUND
+#undef HERETIC_FLESH_EXPEL_SOUND
+#undef HERETIC_FLESH_SHED_VOLUME
+#undef HERETIC_FLESH_EXPEL_VOLUME
+#undef HERETIC_FLESH_MADNESS_INK
+#undef HERETIC_FLESH_MADNESS_HOLD
+#undef HERETIC_FLESH_MADNESS_FADE
+#undef HERETIC_FLESH_MADNESS_LIFT

@@ -16,6 +16,8 @@
 	assemblytype = /obj/structure/door_assembly/door_assembly_sec
 	wiretypepath = /datum/wires/airlock/security
 	normal_integrity = 450
+	/// id таймера камеры (/obj/machinery/door_timer), который закрывает и открывает этот шлюз
+	var/id = null
 
 /obj/machinery/door/airlock/engineering
 	icon = 'icons/obj/doors/airlocks/station/engineering.dmi'
