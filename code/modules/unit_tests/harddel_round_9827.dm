@@ -386,7 +386,7 @@
 /// ХардСпейс-бра: тот же паттерн, слот рубашки.
 /datum/unit_test/cryo_path_releases_wearer/proc/hardspace_bra()
 	var/turf/floor = run_loc_floor_bottom_left
-	var/obj/item/clothing/underwear/shirt/adjustable/adjustable_bra/hardspace_bra/bra = new(floor)
+	var/obj/item/clothing/underwear/shirt/adjustable/top/adjustable_bra/hardspace_bra/bra = new(floor)
 	var/mob/living/carbon/human/wearer = new(floor)
 	var/obj/item/storage/box/package = new(floor)
 

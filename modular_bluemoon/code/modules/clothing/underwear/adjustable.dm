@@ -38,16 +38,17 @@
 	suit_toggle()
 
 /obj/item/clothing/underwear/shirt/adjustable/proc/suit_toggle(mob/user)
-	if(!user)
-		user = usr
-	if(!can_use(user))
-		return FALSE
-	on_toggle(user)
-	suittoggled = !suittoggled
-	update_icon()
-	for(var/X in actions)
-		var/datum/action/A = X
-		A.UpdateButtons()
+	if(togglename)
+		if(!user)
+			user = usr
+		if(!can_use(user))
+			return FALSE
+		on_toggle(user)
+		suittoggled = !suittoggled
+		update_icon()
+		for(var/X in actions)
+			var/datum/action/A = X
+			A.UpdateButtons()
 
 /obj/item/clothing/underwear/shirt/adjustable/examine(mob/user)
 	. = ..()
@@ -73,7 +74,6 @@
 		else
 			icon_state = "[initial(icon_state)]_t_[B?.size || 0][suffix]"
 		H.update_inv_w_shirt()
-		H.update_body()
 	else
 		icon_state = "[initial(icon_state)]"
 
@@ -99,18 +99,19 @@
 	mob_overlay_icon = 'modular_bluemoon/icons/obj/clothing/adjustable_shirt.dmi'
 	icon_state = "adjustableshirt"
 	togglename = "buttons"
+	can_toggle = TRUE
 	body_parts_covered = ARMS
 	slot_flags = ITEM_SLOT_SHIRT
-	alternate_worn_layer = WRISTS_LAYER
+	alternate_worn_layer = GENITALS_EXPOSED_LAYER
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
-/obj/item/clothing/underwear/shirt/adjustable/adjustable_bra
+/obj/item/clothing/underwear/shirt/adjustable/top/adjustable_bra
 	name = "adjustable bra"
 	desc = "A bra that adjusts its size to fit your breasts"
 	icon = 'modular_bluemoon/icons/mob/clothing/bra_overhaul.dmi'
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/bra_overhaul.dmi'
 	icon_state = "bra"
 	body_parts_covered = NONE
-	alternate_worn_layer = BACK_LAYER
+	alternate_worn_layer = GENITALS_EXPOSED_LAYER
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	polychromic = TRUE
