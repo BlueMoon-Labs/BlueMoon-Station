@@ -27,6 +27,8 @@
 	var/loaded_gun = TRUE
 	///If the gun is currently loaded with its maximum capacity.
 	var/fully_loaded_gun = TRUE
+	///Whether the gun is currently in the middle of a volley. Prevents re-ignition and duplicate timers.
+	var/charge_ignited = FALSE
 	///delay in firing the gun after lighting
 	var/fire_delay = 5
 	///Delay between shots
@@ -40,6 +42,9 @@
 
 ///Covers Reloading, lighting and anchoring of the gun
 /obj/structure/mounted_gun/attackby(obj/item/used_item, mob/user, params)
+	if(charge_ignited)
+		balloon_alert(user, "it's already firing!")
+		return
 	var/ignition_message = used_item.ignition_effect(src, user) // Checks if item used can ignite stuff.
 	if(istype(used_item, ammo_type))
 		if(fully_loaded_gun)
@@ -59,6 +64,7 @@
 		visible_message(ignition_message)
 		user.log_message("fired a mounted gun", LOG_ATTACK)
 		log_game("[key_name(user)] fired a mounted gun in [AREACOORD(src)]")
+		charge_ignited = TRUE
 		addtimer(CALLBACK(src, PROC_REF(fire)), fire_delay) //uses fire proc as shown below to shoot the gun
 		return
 
@@ -70,6 +76,7 @@
 /obj/structure/mounted_gun/proc/fire()
 	if (!loaded_gun)
 		balloon_alert_to_viewers("gun is not loaded!","",2)
+		charge_ignited = FALSE
 		return
 	for(var/times_fired = 1, times_fired <= shots_in_gun, times_fired++) //The normal DM for loop structure since the times it has fired is changing in the loop itself.
 		for(var/mob/shaken_mob in urange(10, src))
@@ -91,6 +98,7 @@
 	shots_in_gun = 0
 	fully_loaded_gun = FALSE
 	icon_state = icon_state_base
+	charge_ignited = FALSE
 
 /obj/structure/mounted_gun/canister_gatling //for the funny skeleton pirates!
 
