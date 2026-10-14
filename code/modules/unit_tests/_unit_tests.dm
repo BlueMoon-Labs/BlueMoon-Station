@@ -280,6 +280,7 @@
 // #include "metabolizing.dm"
 #include "minor_incidents_crew.dm"
 #include "minor_incidents_engineering.dm"
+#include "minor_incidents_outside.dm"
 #include "minor_incidents_paperwork.dm"
 #include "minor_incidents_service.dm"
 #include "mob_elements.dm"

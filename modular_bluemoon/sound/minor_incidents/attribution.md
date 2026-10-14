@@ -2,6 +2,10 @@
 
 Все файлы каталога распространяются под [Creative Commons Attribution-ShareAlike 3.0 Unported](https://creativecommons.org/licenses/by-sa/3.0/). Все звуки синтезированы для BlueMoon Station, сторонних записей нет.
 
+## Снаружи станции
+
+- `distress_capsule_beacon_1.ogg`, `distress_capsule_beacon_2.ogg`, `distress_capsule_beacon_3.ogg` - маяк спасательной капсулы. Синтез.
+
 ## Инженерия и синтетики
 
 `radiation_leak_hiss_1.ogg`, `radiation_leak_hiss_2.ogg`, `radiation_leak_hiss_3.ogg`, `gravity_failure_down.ogg`, `gravity_failure_up.ogg`, `bot_glitch_1.ogg`, `bot_glitch_2.ogg`, `bot_glitch_3.ogg`, `firmware_patch_install.ogg`, `firmware_patch_done.ogg` - синтез.

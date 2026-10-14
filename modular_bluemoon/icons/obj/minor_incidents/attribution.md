@@ -2,6 +2,14 @@
 
 Лицензия ресурсов и производных работ - [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/). Таблицы фиксируют происхождение рисунков, взятых за основу; перерисовки и анимации сохраняют это авторство. Состояния, которых нет в таблицах, нарисованы для BlueMoon Station.
 
+## Снаружи станции
+
+| Файл | Состояния | Основа | Источник | Лицензия |
+| --- | --- | --- | --- | --- |
+| `lost_mining_drone.dmi` | `drone_wreck`, `drone_wreck_open` | `mining_drone` (вид EAST) из `icons/mob/aibots.dmi`: наклон, обломки, копоть, вскрытый отсек | /tg/station | CC BY-SA 3.0 |
+
+`distress_capsule.dmi`, `derelict_satellite.dmi` и `tour_group.dmi` нарисованы для BlueMoon Station.
+
 ## Инженерия и синтетики
 
 | Файл и состояния | Источник | Изменения |
