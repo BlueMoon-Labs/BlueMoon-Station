@@ -93,7 +93,7 @@
 	head = /obj/item/clothing/head/helmet/space/pirate/bandana
 	ears = /obj/item/radio/headset/pirate
 	id = /obj/item/card/id/pirate
-	/obj/item/gun/energy/plasma/light
+	r_hand = /obj/item/gun/energy/plasma/light
 
 	give_space_cooler_if_synth = TRUE // BLUEMOON ADD
 
