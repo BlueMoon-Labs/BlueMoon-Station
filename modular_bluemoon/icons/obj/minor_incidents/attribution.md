@@ -2,6 +2,14 @@
 
 Лицензия ресурсов и производных работ - [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/). Таблицы фиксируют происхождение рисунков, взятых за основу; перерисовки и анимации сохраняют это авторство. Состояния, которых нет в таблицах, нарисованы для BlueMoon Station.
 
+## Инженерия и синтетики
+
+| Файл и состояния | Источник | Изменения |
+| --- | --- | --- |
+| `modular_bluemoon/icons/effects/minor_incidents/firmware_patch.dmi`: `ai_update` | Рамка ядра ИИ из `icons/mob/ai.dmi`, состояние `ai-empty` (унаследовано от [tgstation/tgstation](https://github.com/tgstation/tgstation), CC BY-SA 3.0) | Рамка перенесена без изменений, экран установки обновления нарисован поверх |
+
+Остальные состояния `firmware_patch.dmi` (`charger_*`), а также `gravity_compensator.dmi` и `modular_bluemoon/icons/effects/minor_incidents/bot_glitch.dmi` нарисованы для BlueMoon Station.
+
 ## Документооборот
 
 | Файл | Состояния | Происхождение |
