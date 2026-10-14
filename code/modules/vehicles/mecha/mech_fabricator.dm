@@ -403,6 +403,8 @@
 	. = TRUE
 	if(!D)
 		return
+	if(D.mechfab_ignore_sec_level)	// Корпоративные импланты печатаются в экзофабе на любом коде (ограничение на самом импланте)
+		return TRUE
 	if(on_station && (GLOB.security_level < D.min_security_level || GLOB.security_level > D.max_security_level))
 		return FALSE
 
@@ -624,6 +626,8 @@
 		var/datum/design/D = SSresearch.techweb_design_by_id(v)
 		if(!(D.build_type & MECHFAB))
 			continue // Никакой залутки имплантов в обход техфаба (условно заглушка, пока интерфейс не сделают для этого)
+		if(D.hacked_only && !(obj_flags & EMAGGED))
+			continue // Взломанные дизайны не должны попадать на экзофаб без эмага
 		if(!design_sec_level_check(D))
 			continue
 		// This is for us.

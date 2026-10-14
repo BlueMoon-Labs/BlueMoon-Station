@@ -39,6 +39,8 @@ other types of metals and chemistry for reagents).
 	///minimum and security levels the design can be printed on. Currently only available for rnd production machinery and mechfab.
 	var/min_security_level = SEC_LEVEL_GREEN
 	var/max_security_level = SEC_LEVEL_DELTA
+	/// Экзофаб игнорирует min/max_security_level для этого дизайна (ограничение реализовано на самом предмете). Протолат по-прежнему соблюдает min_security_level.
+	var/mechfab_ignore_sec_level = FALSE
 	var/research_icon					//Replaces the item icon in the research console
 	var/research_icon_state
 	var/icon_cache
