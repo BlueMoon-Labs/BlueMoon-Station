@@ -33,8 +33,9 @@
 		/obj/item/storage/fancy/cigarettes/cigpack_inteq = 2,
 		/obj/item/storage/box/inteq_box = 1,
 		/obj/item/storage/box/inteq_box/inteq_clothes = 1,
-		/obj/item/documents/inteq = 0.2,
-		/obj/item/folder/inteq = 0.2,
+		//WHITE-STEEL PORT: документы ИнтеКа встречаются ещё реже (вес урезан вдвое).
+		/obj/item/documents/inteq = 0.1,
+		/obj/item/folder/inteq = 0.1,
 		/obj/item/clothing/under/inteq = 1,
 		/obj/item/storage/toolbox/inteq = 1,
 		/obj/item/gun/ballistic/revolver/inteq = 0.1,

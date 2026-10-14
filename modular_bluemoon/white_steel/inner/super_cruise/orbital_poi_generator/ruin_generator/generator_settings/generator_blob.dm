@@ -17,7 +17,9 @@
 		/obj/effect/spawner/lootdrop/maintenance = 3,
 		/mob/living/simple_animal/hostile/blob/blobspore = 1.5,
 		/mob/living/simple_animal/hostile/blob/blobbernaut/independent = 0.75,
-		null = 90,
+		//WHITE-STEEL PORT: на сигнале био-угрозы мусора заметно больше — пустой вес снижен,
+		//чтобы на каждый тайл чаще что-то спавнилось.
+		null = 55,
 	)
 	. += get_broken_stuff()
 	for(var/trash in subtypesof(/obj/item/trash))

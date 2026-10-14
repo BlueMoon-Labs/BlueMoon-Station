@@ -13,8 +13,9 @@
 /datum/generator_settings/proc/get_floortrash()
 	return list()
 
-//WHITE-STEEL PORT: на ЛЮБОМ типе карт крайне редко (одна сотая процента, 0.01%)
-//вместо мусора появляется один случайный обломок /obj/structure/salvage (без родителя).
+//WHITE-STEEL PORT: на ЛЮБОМ типе карт вместо мусора может появиться один случайный обломок
+///obj/structure/salvage (без родителя). Шанс — 5% (0.05) от общего веса мусора на появление
+//любого из обломков.
 /datum/generator_settings/proc/add_rare_salvage(list/floortrash)
 	if(!islist(floortrash))
 		return
@@ -28,7 +29,7 @@
 		total_weight += floortrash[key]
 	if(total_weight <= 0)
 		return
-	var/per_type = total_weight * 0.0001 / length(salvage_types)
+	var/per_type = total_weight * 0.05 / length(salvage_types)
 	for(var/salvage_type in salvage_types)
 		floortrash[salvage_type] = (floortrash[salvage_type] || 0) + per_type
 

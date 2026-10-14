@@ -171,7 +171,7 @@
 /obj/effect/spawner/lootdrop/ruinloot/important
 	loot = list(
 		"" = 4,
-		/obj/item/disk/tech_disk/research/random = 48,
-		/obj/item/alienartifact = 6,
+		/obj/item/disk/tech_disk/research/random = 72,
+		/obj/item/alienartifact = 18,
 		/obj/item/gun/energy/alien = 1
 	)
