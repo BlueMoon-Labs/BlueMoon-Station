@@ -269,7 +269,7 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 	var/datum/data/crime/charge = createCrimeEntry(crime_name, reason, issuing_authority, STATION_TIME_TIMESTAMP("hh:mm:ss", world.time), TRUE)
 	charge.permanent = TRUE
 	LAZYADD(security_record.fields["ma_crim"], charge)
-	set_criminal_status(subject.current, security_record, SEC_RECORD_STATUS_ARREST, reason, issuing_authority, user_name = issuing_authority)
+	set_criminal_status(null, security_record, SEC_RECORD_STATUS_ARREST, reason, issuing_authority, user_name = issuing_authority)
 	security_record.locked_security_reason = reason
 	general_record.locked_security_reason = reason
 	return security_record
