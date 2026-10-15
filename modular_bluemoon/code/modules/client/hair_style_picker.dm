@@ -348,6 +348,11 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 		if("apply")
 			if(applying)
 				return
+			if(!isnull(params["name"]))
+				var/candidate = params["name"]
+				if(params["tab"] != tab || !(candidate in get_tab_full_list()))
+					return
+				selected = candidate
 			applying = TRUE
 			ui?.close()
 			apply_selection(user, ui)

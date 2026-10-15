@@ -117,6 +117,7 @@ export const HairStylePicker = (props) => {
                 <StyleGrid
                   data={data}
                   onSelect={(name) => act('select', { name })}
+                  onApply={(name) => act('apply', { name, tab: data.tab })}
                   onPage={(page) => act('page', { page })}
                 />
               </Stack.Item>
@@ -136,9 +137,10 @@ export const HairStylePicker = (props) => {
 const StyleGrid = (props: {
   data: HairPickerData;
   onSelect: (name: string) => void;
+  onApply: (name: string) => void;
   onPage: (page: number) => void;
 }) => {
-  const { data, onSelect, onPage } = props;
+  const { data, onSelect, onApply, onPage } = props;
   const names = data.names || [];
   const cols = data.cols || 4;
   const aspectRatio = (data.cell_w || 40) / (data.cell_h || 20);
@@ -188,6 +190,7 @@ const StyleGrid = (props: {
               rows={rows}
               selected={name === data.selected}
               onClick={() => onSelect(name)}
+              onDoubleClick={() => onApply(name)}
             />
           ))}
         </div>
@@ -207,9 +210,19 @@ const StyleCell = (props: {
   rows: number;
   selected: boolean;
   onClick: () => void;
+  onDoubleClick: () => void;
 }) => {
-  const { name, index, cols, aspectRatio, sheet, rows, selected, onClick } =
-    props;
+  const {
+    name,
+    index,
+    cols,
+    aspectRatio,
+    sheet,
+    rows,
+    selected,
+    onClick,
+    onDoubleClick,
+  } = props;
   const [hovered, setHovered] = useState(false);
   const col = index % cols;
   const row = Math.floor(index / cols);
@@ -217,6 +230,7 @@ const StyleCell = (props: {
     <div
       title={name}
       onClick={onClick}
+      onDoubleClick={onDoubleClick}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -300,6 +314,11 @@ const PreviewPanel = (props: {
           <Stack vertical fill justify="space-around">
             <Stack.Item>
               <div
+                onDoubleClick={() => {
+                  if (data.selected) {
+                    act('apply', { name: data.selected, tab: data.tab });
+                  }
+                }}
                 style={{
                   width: `${boxW}px`,
                   height: `${boxH}px`,
@@ -311,6 +330,7 @@ const PreviewPanel = (props: {
                   overflow: 'hidden',
                   borderRadius: '6px',
                   background: 'rgba(0, 0, 0, 0.45)',
+                  cursor: data.selected ? 'pointer' : 'default',
                 }}>
                 {(showFull ? [data.dir] : DIR_ORDER).map((dir) => {
                   const src = showFull
