@@ -30,9 +30,12 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	var/page = 1
 	var/selected
 	var/list/base_cache = list()
+	/// Положение исходного спрайта на расширенном холсте для каждого направления.
+	var/list/base_offsets = list()
 	var/render_dir = SOUTH
 	var/img_w = 40
 	var/img_h = 40
+	var/portrait_width = 40
 	var/portrait_rows = 19
 	var/build_attempts = 0 // попытка построить базу...
 	var/sheet_cache_key
@@ -40,7 +43,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	var/sheet_cell_w = 32
 	var/sheet_cell_h = 32
 	var/preview_cache_key
-	var/preview_b64
+	var/list/preview_portraits = list()
 	var/preview_full_b64
 	var/cached_list_tab
 	var/list/cached_list
@@ -139,8 +142,9 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	if(GLOB.hair_style_pickers[owner_ckey] == src)
 		GLOB.hair_style_pickers -= owner_ckey
 	base_cache = null
+	base_offsets = null
 	sheet_b64 = null
-	preview_b64 = null
+	preview_portraits = null
 	preview_full_b64 = null
 	cached_list = null
 	prefs = null
@@ -252,10 +256,11 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	.["cell_w"] = sheet_cell_w
 	.["cell_h"] = sheet_cell_h
 	.["cols"] = HAIR_PICKER_COLS
-	.["preview"] = preview_b64 || null
+	.["preview_portraits"] = preview_portraits
 	.["preview_full"] = preview_full_b64 || null
 	.["img_w"] = img_w
 	.["img_h"] = img_h
+	.["head_w"] = portrait_width
 	.["head_h"] = portrait_rows
 	.["labels"] = build_labels(user)
 
@@ -437,7 +442,10 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	var/slot_key = "hair_style_picker_[owner_ckey]_[rand(1, 999999)]"
 	var/mob/living/carbon/human/dummy/mannequin = generate_or_wait_for_human_dummy(slot_key, regenerate = FALSE)
 	var/list/dirs = list(SOUTH, WEST, NORTH, EAST)
-	var/icon/first_result
+	base_cache = list()
+	base_offsets = list()
+	img_w = 0
+	img_h = 0
 	try
 		if(prefs)
 			prefs.copy_to(mannequin, icon_updates = TRUE, roundstart_checks = FALSE, initial_spawn = TRUE)
@@ -468,30 +476,40 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 		mannequin.update_mutations_overlay()
 		for(var/dir in dirs)
 			mannequin.dir = dir
-			var/icon/result = getFlatIcon(mannequin, defdir = dir, no_anim = TRUE)
+			var/list/offsets = list()
+			var/icon/result = getFlatIcon(mannequin, defdir = dir, no_anim = TRUE, icon_offsets = offsets)
 			if(!isicon(result))
 				continue
 			result.Crop(1 - HAIR_PICKER_PAD, 1 - HAIR_PICKER_PAD, result.Width() + HAIR_PICKER_PAD, result.Height() + HAIR_PICKER_PAD)
 			base_cache["[dir]"] = result
-			if(!first_result)
-				first_result = result
+			base_offsets["[dir]"] = list("x" = offsets["x"] + HAIR_PICKER_PAD, "y" = offsets["y"] + HAIR_PICKER_PAD)
+			img_w = max(img_w, result.Width())
+			img_h = max(img_h, result.Height())
 	catch(var/exception/base_error)
 		stack_trace("hair_style_picker: не собралась база превью: [base_error]")
 	clear_human_dummy(slot_key)
-	if(!first_result)
+	if(length(base_cache) != length(dirs))
+		base_cache.Cut()
+		base_offsets.Cut()
 		return FALSE
-	img_w = first_result.Width()
-	img_h = first_result.Height()
-	portrait_rows = clamp(round(img_h * 0.5), 8, img_h)
+	// Полный рост использует общий размер, портрет кадрируется относительно головы.
+	for(var/dir in dirs)
+		var/icon/base = base_cache["[dir]"]
+		base.Crop(1, 1, img_w, img_h)
+	portrait_width = world.icon_size + 2 * HAIR_PICKER_PAD
+	portrait_rows = round(world.icon_size * 0.5) + HAIR_PICKER_PAD
 	build_attempts = 0
 	return TRUE
 
 // самая вкусная часть, попытка отрисовывать только голову сжатием композиции
-/datum/hair_style_picker/proc/crop_head(icon/source)
+/datum/hair_style_picker/proc/crop_head(icon/source, dir = SOUTH)
 	if(!isicon(source))
 		return null
 	var/icon/cropped = new /icon(source)
-	cropped.Crop(1, img_h - portrait_rows + 1, img_w, img_h)
+	var/list/offsets = base_offsets["[dir]"]
+	var/left = offsets["x"] - HAIR_PICKER_PAD + 1
+	var/top = offsets["y"] + world.icon_size + HAIR_PICKER_PAD
+	cropped.Crop(left, top - portrait_rows + 1, left + portrait_width - 1, top)
 	return cropped
 
 /datum/hair_style_picker/proc/compose_preview(hair_style, facial_style, grad_style, dir = SOUTH)
@@ -542,7 +560,8 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	if(species.hair_alpha < 255)
 		part.Blend(rgb(255, 255, 255, species.hair_alpha), ICON_MULTIPLY)
 	var/list/offset = islist(species.offset_features) ? species.offset_features[offset_key] : null
-	blend_at(target, part, HAIR_PICKER_PAD + (offset ? offset[1] : 0), HAIR_PICKER_PAD + (offset ? offset[2] : 0))
+	var/list/origin = base_offsets["[dir]"]
+	blend_at(target, part, origin["x"] + (offset ? offset[1] : 0), origin["y"] + (offset ? offset[2] : 0))
 
 /datum/hair_style_picker/proc/blend_gradient(icon/target, datum/sprite_accessory/hair, datum/sprite_accessory/gradient, datum/species/species, dir)
 	var/icon/part = accessory_icon(gradient, dir)
@@ -550,7 +569,8 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	var/grad_color = applied_grad_color()
 	if(length(grad_color))
 		part.Blend("#" + grad_color, ICON_MULTIPLY)
-	blend_at(target, part, HAIR_PICKER_PAD, HAIR_PICKER_PAD)
+	var/list/origin = base_offsets["[dir]"]
+	blend_at(target, part, origin["x"], origin["y"])
 
 /datum/hair_style_picker/proc/blend_at(icon/target, icon/part, dx, dy)
 	target.Blend(part, ICON_OVERLAY, max(1, dx + 1), max(1, dy + 1))
@@ -566,24 +586,26 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	return null
 
 /datum/hair_style_picker/proc/build_preview_b64()
-	preview_b64 = null
+	preview_portraits = list()
 	preview_full_b64 = null
 	if(!selected)
 		return FALSE
 	var/hair_style = tab == HAIR_PICKER_TAB_HAIR ? selected : applied_hair()
 	var/facial_style = tab == HAIR_PICKER_TAB_FACIAL ? selected : applied_facial()
 	var/grad_style = tab == HAIR_PICKER_TAB_GRAD ? selected : applied_grad()
-	var/icon/preview = compose_preview(hair_style, facial_style, grad_style, render_dir)
-	if(!preview)
-		return FALSE
-	preview_full_b64 = icon2base64(preview)
-	var/icon/head = crop_head(preview)
-	if(head)
-		preview_b64 = icon2base64(head)
+	for(var/dir in list(SOUTH, WEST, NORTH, EAST))
+		var/icon/preview = compose_preview(hair_style, facial_style, grad_style, dir)
+		if(!preview)
+			return FALSE
+		if(dir == render_dir)
+			preview_full_b64 = icon2base64(preview)
+		var/icon/head = crop_head(preview, dir)
+		if(head)
+			preview_portraits["[dir]"] = icon2base64(head)
 	return TRUE
 
 /datum/hair_style_picker/proc/build_sheet_b64(list/names)
-	sheet_cell_w = img_w
+	sheet_cell_w = portrait_width
 	sheet_cell_h = portrait_rows
 	if(!length(names))
 		return FALSE
@@ -602,12 +624,12 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	var/icon/sheet
 	try
 		sheet = icon('icons/effects/effects.dmi', "nothing")
-		sheet.Scale(HAIR_PICKER_COLS * img_w, rows * portrait_rows)
+		sheet.Scale(HAIR_PICKER_COLS * portrait_width, rows * portrait_rows)
 		var/i = 0
 		for(var/icon/cell in cells)
 			var/col = i % HAIR_PICKER_COLS
 			var/row = round(i / HAIR_PICKER_COLS)
-			sheet.Blend(cell, ICON_OVERLAY, 1 + col * img_w, sheet.Height() - row * portrait_rows - portrait_rows + 1)
+			sheet.Blend(cell, ICON_OVERLAY, 1 + col * portrait_width, sheet.Height() - row * portrait_rows - portrait_rows + 1)
 			i++
 	catch(var/exception/sheet_error)
 		stack_trace("hair_style_picker: не собрался лист миниатюр: [sheet_error]")

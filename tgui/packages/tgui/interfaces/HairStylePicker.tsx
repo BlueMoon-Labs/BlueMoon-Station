@@ -6,9 +6,10 @@ import { Window } from '../layouts';
 
 const CELL_SCREEN_W = 168;
 const CELL_SCREEN_H = 40;
-const PREVIEW_BOX_W = 250;
-const PREVIEW_BOX_H = 300;
-const PORTRAIT_BOX_H = 190;
+const PREVIEW_BOX_W = 350;
+const PREVIEW_BOX_H = 420;
+const PORTRAIT_BOX_W = 359;
+const PORTRAIT_BOX_H = 274;
 const MODE_MIRROR = 2;
 const MODE_SCISSORS = 3;
 const MODE_RAZOR = 4;
@@ -50,10 +51,11 @@ type HairPickerData = {
   cell_w: number;
   cell_h: number;
   cols: number;
-  preview: string | null;
+  preview_portraits: Record<string, string>;
   preview_full: string | null;
   img_w: number;
   img_h: number;
+  head_w: number;
   head_h: number;
   labels: HairPickerLabels;
 };
@@ -81,7 +83,7 @@ export const HairStylePicker = (props) => {
   };
 
   return (
-    <Window title={labels.title} width={860} height={560} resizable>
+    <Window title={labels.title} width={1060} height={700} resizable>
       <Window.Content scrollable={false}>
         <Stack vertical fill>
           <Stack.Item>
@@ -116,7 +118,9 @@ export const HairStylePicker = (props) => {
                   onSelect={(name) => act('select', { name })}
                 />
               </Stack.Item>
-              <Stack.Item width="270px" align="stretch">
+              <Stack.Item
+                width={`${Math.max(PORTRAIT_BOX_W, PREVIEW_BOX_W) + 20}px`}
+                align="stretch">
                 <PreviewPanel data={data} act={act} labels={labels} />
               </Stack.Item>
             </Stack>
@@ -244,18 +248,19 @@ const PreviewPanel = (props: {
     data.mode === MODE_RAZOR;
   const [fullBody, setFullBody] = useState(false);
   const showFull = !inRound && fullBody;
-  const src = showFull ? data.preview_full : data.preview;
+  const boxW = showFull ? PREVIEW_BOX_W : PORTRAIT_BOX_W;
   const boxH = showFull ? PREVIEW_BOX_H : PORTRAIT_BOX_H;
-  const naturalW = data.img_w || 40;
+  const cellW = showFull ? boxW : boxW / 2;
+  const cellH = showFull ? boxH : boxH / 2;
+  const naturalW = showFull ? data.img_w || 40 : data.head_w || 40;
   const naturalH = showFull ? data.img_h || 40 : data.head_h || 20;
-  const fitScale = Math.min(PREVIEW_BOX_W / naturalW, boxH / naturalH);
+  const fitScale = Math.min(cellW / naturalW, cellH / naturalH);
   const imgW = Math.round(naturalW * fitScale);
   const imgH = Math.round(naturalH * fitScale);
 
   const rotate = (step: number) => {
     const current = DIR_ORDER.indexOf(data.dir);
-    const next =
-      (current + step + DIR_ORDER.length) % DIR_ORDER.length;
+    const next = (current + step + DIR_ORDER.length) % DIR_ORDER.length;
     act('dir', { dir: DIR_ORDER[next] });
   };
 
@@ -268,8 +273,8 @@ const PreviewPanel = (props: {
           buttons={
             !inRound ? (
               <Button
-                icon={fullBody ? 'user' : 'search'}
-                content={fullBody ? labels.portrait : labels.full}
+                icon={fullBody ? 'person' : 'users'}
+                content={fullBody ? labels.full : labels.portrait}
                 onClick={() => setFullBody(!fullBody)}
               />
             ) : null
@@ -278,47 +283,56 @@ const PreviewPanel = (props: {
             <Stack.Item>
               <div
                 style={{
-                  width: `${PREVIEW_BOX_W}px`,
+                  width: `${boxW}px`,
                   height: `${boxH}px`,
                   margin: '0 auto',
-                  display: 'flex',
+                  display: 'grid',
+                  gridTemplateColumns: `repeat(${showFull ? 1 : 2}, 1fr)`,
                   alignItems: 'center',
-                  justifyContent: 'center',
+                  justifyItems: 'center',
                   overflow: 'hidden',
                   borderRadius: '6px',
                   background: 'rgba(0, 0, 0, 0.45)',
                 }}>
-                {src ? (
-                  <img
-                    src={`data:image/png;base64,${src}`}
-                    style={{
-                      width: `${imgW}px`,
-                      height: `${imgH}px`,
-                      imageRendering: 'pixelated',
-                      display: 'block',
-                    }}
-                  />
-                ) : null}
+                {(showFull ? [data.dir] : DIR_ORDER).map((dir) => {
+                  const src = showFull
+                    ? data.preview_full
+                    : data.preview_portraits?.[dir];
+                  return src ? (
+                    <img
+                      key={dir}
+                      src={`data:image/png;base64,${src}`}
+                      style={{
+                        width: `${imgW}px`,
+                        height: `${imgH}px`,
+                        imageRendering: 'pixelated',
+                        display: 'block',
+                      }}
+                    />
+                  ) : null;
+                })}
               </div>
             </Stack.Item>
-            <Stack.Item>
-              <Stack justify="center">
-                <Stack.Item>
-                  <Button
-                    icon="undo"
-                    tooltip="Повернуть влево"
-                    onClick={() => rotate(-1)}
-                  />
-                </Stack.Item>
-                <Stack.Item>
-                  <Button
-                    icon="redo"
-                    tooltip="Повернуть вправо"
-                    onClick={() => rotate(1)}
-                  />
-                </Stack.Item>
-              </Stack>
-            </Stack.Item>
+            {showFull && (
+              <Stack.Item>
+                <Stack justify="center">
+                  <Stack.Item>
+                    <Button
+                      icon="undo"
+                      tooltip="Повернуть влево"
+                      onClick={() => rotate(-1)}
+                    />
+                  </Stack.Item>
+                  <Stack.Item>
+                    <Button
+                      icon="redo"
+                      tooltip="Повернуть вправо"
+                      onClick={() => rotate(1)}
+                    />
+                  </Stack.Item>
+                </Stack>
+              </Stack.Item>
+            )}
             <Stack.Item textAlign="center">
               <div style={{ color: GOLD, fontWeight: 'bold' }}>
                 {data.selected || '—'}
