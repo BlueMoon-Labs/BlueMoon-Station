@@ -4,12 +4,11 @@ import { useBackend } from '../backend';
 import { Button, Input, NoticeBox, Section, Stack, Tabs } from '../components';
 import { Window } from '../layouts';
 
-const CELL_SCREEN_W = 168;
-const CELL_SCREEN_H = 40;
 const PREVIEW_BOX_W = 350;
 const PREVIEW_BOX_H = 420;
 const PORTRAIT_BOX_W = 359;
 const PORTRAIT_BOX_H = 274;
+const FULL_BODY_ZOOM = 2;
 const MODE_MIRROR = 2;
 const MODE_SCISSORS = 3;
 const MODE_RAZOR = 4;
@@ -138,11 +137,7 @@ const StyleGrid = (props: {
   const { data, onSelect } = props;
   const names = data.names || [];
   const cols = data.cols || 4;
-  const cellW = CELL_SCREEN_W;
-  const cellH = Math.max(
-    24,
-    Math.round((CELL_SCREEN_W * (data.cell_h || 20)) / (data.cell_w || 40)),
-  );
+  const aspectRatio = (data.cell_w || 40) / (data.cell_h || 20);
   const rows = Math.max(1, Math.ceil(names.length / cols));
 
   return (
@@ -151,10 +146,8 @@ const StyleGrid = (props: {
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: `repeat(${cols}, ${cellW}px)`,
-            gridAutoRows: `${cellH}px`,
+            gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
             gap: '4px',
-            justifyContent: 'center',
           }}>
           {names.map((name, index) => (
             <StyleCell
@@ -162,8 +155,7 @@ const StyleGrid = (props: {
               name={name}
               index={index}
               cols={cols}
-              cellW={cellW}
-              cellH={cellH}
+              aspectRatio={aspectRatio}
               sheet={data.sheet}
               rows={rows}
               selected={name === data.selected}
@@ -182,14 +174,13 @@ const StyleCell = (props: {
   name: string;
   index: number;
   cols: number;
-  cellW: number;
-  cellH: number;
+  aspectRatio: number;
   sheet: string | null;
   rows: number;
   selected: boolean;
   onClick: () => void;
 }) => {
-  const { name, index, cols, cellW, cellH, sheet, rows, selected, onClick } =
+  const { name, index, cols, aspectRatio, sheet, rows, selected, onClick } =
     props;
   const [hovered, setHovered] = useState(false);
   const col = index % cols;
@@ -201,8 +192,9 @@ const StyleCell = (props: {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        width: `${cellW}px`,
-        height: `${cellH}px`,
+        width: '100%',
+        aspectRatio,
+        minHeight: '24px',
         position: 'relative',
         cursor: 'pointer',
         borderRadius: '4px',
@@ -225,8 +217,8 @@ const StyleCell = (props: {
             position: 'absolute',
             inset: 0,
             backgroundImage: `url(data:image/png;base64,${sheet})`,
-            backgroundSize: `${cols * cellW}px ${rows * cellH}px`,
-            backgroundPosition: `-${col * cellW}px -${row * cellH}px`,
+            backgroundSize: `${cols * 100}% ${rows * 100}%`,
+            backgroundPosition: `${cols > 1 ? (col / (cols - 1)) * 100 : 0}% ${rows > 1 ? (row / (rows - 1)) * 100 : 0}%`,
             backgroundRepeat: 'no-repeat',
             imageRendering: 'pixelated',
           }}
@@ -307,6 +299,9 @@ const PreviewPanel = (props: {
                         height: `${imgH}px`,
                         imageRendering: 'pixelated',
                         display: 'block',
+                        transform: showFull
+                          ? `scale(${FULL_BODY_ZOOM})`
+                          : undefined,
                       }}
                     />
                   ) : null;
