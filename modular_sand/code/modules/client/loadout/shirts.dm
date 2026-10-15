@@ -48,7 +48,7 @@
 
 /datum/gear/shirt/bra/bra_adjustable
 	name = "Adjustable bra"
-	path = /obj/item/clothing/underwear/shirt/adjustable/top/adjustable_bra
+	path = /obj/item/clothing/underwear/shirt/adjustable/bra
 
 /datum/gear/shirt/bra/babydoll
 	name = "Babydoll Bra"

@@ -1,19 +1,16 @@
 /obj/item/clothing/underwear/shirt/adjustable
-	icon = 'icons/obj/clothing/suits.dmi'
-	name = "This item should never be used. Ahelp if you somehow found this."
+	icon = null
 	var/polychromic = FALSE
-	var/togglename = null
 	var/suittoggled = FALSE
 	slot_flags = ITEM_SLOT_SHIRT
 	fitted = NO_FEMALE_UNIFORM
-
-/obj/item/clothing/underwear/shirt/adjustable/toggle
+	alternate_worn_layer = (GENITALS_EXPOSED_LAYER - 1)
+	body_parts_covered = NONE
 
 /obj/item/clothing/underwear/shirt/adjustable/ComponentInitialize()
 	. = ..()
 	if(polychromic)
 		AddElement(/datum/element/polychromic, list("#ffffff"), 1)
-
 
 /obj/item/clothing/underwear/shirt/adjustable/proc/get_breasts_suffix(mob/living/carbon/human/H)
 	if(!istype(H) || !H.dna || !H.dna.features)
@@ -27,37 +24,6 @@
 	if(S?.icon_state != "pair")
 		return ""
 	return "_old"
-
-/obj/item/clothing/underwear/shirt/adjustable/toggle/AltClick(mob/user)
-	if(!user || !user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
-		return FALSE
-	. = ..()
-	suit_toggle(user)
-	return TRUE
-
-/obj/item/clothing/underwear/shirt/adjustable/toggle/proc/on_toggle(mob/user)
-	to_chat(user, "<span class='notice'>You toggle [src]'s [togglename].</span>")
-
-/obj/item/clothing/underwear/shirt/adjustable/toggle/ui_action_click()
-	suit_toggle(usr)
-
-/obj/item/clothing/underwear/shirt/adjustable/toggle/proc/suit_toggle(mob/user)
-	user = user || usr
-	if(!togglename || !user || !user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
-		return FALSE
-	on_toggle(user)
-	suittoggled = !suittoggled
-	update_icon()
-	for(var/X in actions)
-		var/datum/action/A = X
-		A.UpdateButtons()
-	return TRUE
-
-/obj/item/clothing/underwear/shirt/adjustable/toggle/examine(mob/user)
-	. = ..()
-	if(togglename)
-		. += "Alt-click on [src] to toggle the [togglename]."
-
 
 /obj/item/clothing/underwear/shirt/adjustable/proc/update_sprite_visibility(datum/source, obj/item/I)
 	SIGNAL_HANDLER
@@ -100,6 +66,43 @@
 		UnregisterSignal(H, list(COMSIG_MOB_ITEM_EQUIPPED, COMSIG_MOB_UNEQUIPPED_ITEM))
 	update_icon()
 
+//-----------------------------------------------------------//
+
+/obj/item/clothing/underwear/shirt/adjustable/toggle
+	var/togglename = null
+
+/obj/item/clothing/underwear/shirt/adjustable/toggle/AltClick(mob/user)
+	if(!user || !user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
+		return FALSE
+	. = ..()
+	suit_toggle(user)
+	return TRUE
+
+/obj/item/clothing/underwear/shirt/adjustable/toggle/proc/on_toggle(mob/user)
+	to_chat(user, "<span class='notice'>You toggle [src]'s [togglename].</span>")
+
+/obj/item/clothing/underwear/shirt/adjustable/toggle/ui_action_click()
+	suit_toggle(usr)
+
+/obj/item/clothing/underwear/shirt/adjustable/toggle/proc/suit_toggle(mob/user)
+	user = user || usr
+	if(!togglename || !user || !user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
+		return FALSE
+	on_toggle(user)
+	suittoggled = !suittoggled
+	update_icon()
+	for(var/X in actions)
+		var/datum/action/A = X
+		A.UpdateButtons()
+	return TRUE
+
+/obj/item/clothing/underwear/shirt/adjustable/toggle/examine(mob/user)
+	. = ..()
+	if(togglename)
+		. += "Alt-click on [src] to toggle the [togglename]."
+
+//-----------------------------------------------------------//
+
 /obj/item/clothing/underwear/shirt/adjustable/toggle/adjustable_shirt
 	name = "adjustable shirt"
 	desc = "An adjustable shirt."
@@ -107,17 +110,14 @@
 	mob_overlay_icon = 'modular_bluemoon/icons/obj/clothing/adjustable_shirt.dmi'
 	icon_state = "adjustableshirt"
 	togglename = "buttons"
-	body_parts_covered = ARMS
-	alternate_worn_layer = (GENITALS_EXPOSED_LAYER - 1)
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
-/obj/item/clothing/underwear/shirt/adjustable/top/adjustable_bra
+/obj/item/clothing/underwear/shirt/adjustable/bra
 	name = "adjustable bra"
 	desc = "A bra that adjusts its size to fit your breasts"
 	icon = 'modular_bluemoon/icons/mob/clothing/bra_overhaul.dmi'
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/bra_overhaul.dmi'
 	icon_state = "bra"
-	body_parts_covered = NONE
 	alternate_worn_layer = SUIT_LAYER
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	polychromic = TRUE
