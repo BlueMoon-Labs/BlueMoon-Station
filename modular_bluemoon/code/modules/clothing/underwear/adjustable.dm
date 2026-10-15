@@ -13,9 +13,9 @@
 		AddElement(/datum/element/polychromic, list("#ffffff"), 1)
 
 /obj/item/clothing/underwear/shirt/adjustable/proc/get_breasts_suffix(mob/living/carbon/human/H)
-	if(!istype(H) || !H.dna || !H.dna.features)
-		return ""
-	if(H.dna.features["breasts_sprite_variant"] != "Old")
+	if(!istype(H) || \
+		!H.dna?.features || \
+		H.dna.features["breasts_sprite_variant"] != "Old")
 		return ""
 	var/obj/item/organ/genital/breasts/B = H.getorganslot(ORGAN_SLOT_BREASTS)
 	if(!B || !B.shape)
@@ -40,10 +40,7 @@
 		var/mob/living/carbon/human/H = loc
 		var/obj/item/organ/genital/breasts/B = H.getorganslot(ORGAN_SLOT_BREASTS)
 		var/suffix = get_breasts_suffix(H)
-		if(!suittoggled)
-			icon_state = "[initial(icon_state)]_[B?.size || 0][suffix]"
-		else
-			icon_state = "[initial(icon_state)]_t_[B?.size || 0][suffix]"
+		icon_state = "[initial(icon_state)][suittoggled ? "_t" : ""]_[B?.size || 0][suffix]"
 		H.update_inv_w_shirt()
 	else
 		icon_state = "[initial(icon_state)]"
@@ -86,7 +83,9 @@
 
 /obj/item/clothing/underwear/shirt/adjustable/toggle/proc/suit_toggle(mob/user)
 	user = user || usr
-	if(!togglename || !user || !user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
+	if(!togglename || \
+	!user || \
+	!user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
 		return FALSE
 	on_toggle(user)
 	suittoggled = !suittoggled
