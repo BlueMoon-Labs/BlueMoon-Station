@@ -8,7 +8,7 @@
 	power_channel = ENVIRON
 	anchored = TRUE
 	density = FALSE
-	armor = list(MELEE = 80, BULLET = 90, LASER = 0, ENERGY = 0, BOMB = 70, BIO = 0, RAD = 0, FIRE = 100, ACID = 100)
+	armor_type = /datum/armor/transport_reinforced
 	resistance_flags = LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
 	max_integrity = 750
 	pixel_y = 32

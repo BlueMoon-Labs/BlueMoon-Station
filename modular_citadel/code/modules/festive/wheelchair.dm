@@ -45,7 +45,7 @@
 	icon_state = "wheelchair"
 	layer = OBJ_LAYER
 	max_integrity = 100
-	armor = list(MELEE = 10, BULLET = 10, LASER = 10, ENERGY = 0, BOMB = 10, BIO = 0, RAD = 0, FIRE = 20, ACID = 30)	//Wheelchairs aren't super tough yo
+	armor_type = /datum/armor/wheelchairs	//Wheelchairs aren't super tough yo
 	canmove = TRUE
 	density = FALSE		//Thought I couldn't fix this one easily, phew
 

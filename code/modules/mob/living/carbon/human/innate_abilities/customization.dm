@@ -104,7 +104,7 @@
 			var/datum/sprite_accessory/ears/mam_ears/instance = GLOB.mam_ears_list[path]
 			if(istype(instance, /datum/sprite_accessory))
 				var/datum/sprite_accessory/S = instance
-				if((!S.ckeys_allowed) || (S.ckeys_allowed.Find(H.client.ckey)))
+				if(S.is_allowed_for(H.client.key))
 					snowflake_ears_list[S.name] = path
 		var/new_ears = tgui_input_list(owner, "Choose your character's ears:", "Ear Alteration", snowflake_ears_list)
 		if(new_ears)
@@ -117,7 +117,7 @@
 			var/datum/sprite_accessory/snouts/mam_snouts/instance = GLOB.mam_snouts_list[path]
 			if(istype(instance, /datum/sprite_accessory))
 				var/datum/sprite_accessory/S = instance
-				if((!S.ckeys_allowed) || (S.ckeys_allowed.Find(H.client.ckey)))
+				if(S.is_allowed_for(H.client.key))
 					snowflake_snouts_list[S.name] = path
 		var/new_snout = tgui_input_list(owner, "Choose your character's face:", "Face Alteration", snowflake_snouts_list)
 		if(new_snout)
@@ -135,7 +135,7 @@
 			var/datum/sprite_accessory/deco_wings/instance = GLOB.deco_wings_list[path]
 			if(istype(instance, /datum/sprite_accessory))
 				var/datum/sprite_accessory/S = instance
-				if((!S.ckeys_allowed) || (S.ckeys_allowed.Find(H.client.ckey)))
+				if(S.is_allowed_for(H.client.key))
 					snowflake_wings_list[S.name] = path
 		var/new_wings = tgui_input_list(owner, "Choose your character's wings:", "Wing Alteration", snowflake_wings_list)
 		if(new_wings)
@@ -148,7 +148,7 @@
 			var/datum/sprite_accessory/mam_body_markings/instance = GLOB.mam_body_markings_list[path]
 			if(istype(instance, /datum/sprite_accessory))
 				var/datum/sprite_accessory/S = instance
-				if((!S.ckeys_allowed) || (S.ckeys_allowed.Find(H.client.ckey)))
+				if(S.is_allowed_for(H.client.key))
 					snowflake_markings_list[S.name] = path
 		var/new_mam_body_markings = tgui_input_list(H, "Choose your character's body markings:", "Marking Alteration", snowflake_markings_list)
 		if(new_mam_body_markings)
@@ -164,7 +164,7 @@
 			var/datum/sprite_accessory/tails/mam_tails/instance = GLOB.mam_tails_list[path]
 			if(istype(instance, /datum/sprite_accessory))
 				var/datum/sprite_accessory/S = instance
-				if((!S.ckeys_allowed) || (S.ckeys_allowed.Find(H.client.ckey)))
+				if(S.is_allowed_for(H.client.key))
 					snowflake_tails_list[S.name] = path
 		var/new_tail = tgui_input_list(owner, "Choose your character's Tail(s):", "Tail Alteration", snowflake_tails_list)
 		if(new_tail)
@@ -181,7 +181,7 @@
 				var/datum/sprite_accessory/S = instance
 				if(S.ignore)
 					continue
-				if((!S.ckeys_allowed) || (S.ckeys_allowed.Find(H.client.ckey)))
+				if(S.is_allowed_for(H.client.key))
 					snowflake_taur_list[S.name] = path
 		var/new_taur = tgui_input_list(owner, "Choose your character's tauric body:", "Tauric Alteration", snowflake_taur_list)
 		if(new_taur)

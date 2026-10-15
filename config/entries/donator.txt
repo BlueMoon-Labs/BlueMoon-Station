@@ -9,3 +9,11 @@
 #TIER_2_DONATORS SmiLeYcom
 
 TIER_3_DONATORS SmiLeYcom
+
+# Reversible loadout IDs: AES-256-GCM; Node.js must be available to the running server.
+# Back it up: replacing or losing the key makes existing encrypted IDs unreadable.
+# LOADOUT_CRYPTO_NODE node
+# If Node.js is not on PATH, supply the executable's full path without surrounding quotes.
+
+# Private loadout encryption key. Add the real value on the server only; never commit it.
+LOADOUT_CKEY_SECRET ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff

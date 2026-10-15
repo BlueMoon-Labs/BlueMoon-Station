@@ -224,14 +224,21 @@
 							R = GLOB.data_core.security_by_name[perpname]
 							if(R)
 								if(href_list["status"])
+									if(R.locked_security_reason)
+										to_chat(usr, span_warning("Эта запись службы безопасности заблокирована навсегда: [R.locked_security_reason]"))
+										return
 									var/setcriminal = input(usr, "Specify a new criminal status for this person.", "Security HUD", R.fields["criminal"]) in list(SEC_RECORD_STATUS_NONE, SEC_RECORD_STATUS_ARREST, SEC_RECORD_STATUS_EXECUTE, SEC_RECORD_STATUS_INCARCERATED, SEC_RECORD_STATUS_RELEASED, SEC_RECORD_STATUS_PAROLLED, SEC_RECORD_STATUS_DEMOTE, SEC_RECORD_STATUS_SEARCH, SEC_RECORD_STATUS_MONITOR, SEC_RECORD_STATUS_DISCHARGED, "Отмена")
 									if(setcriminal != "Отмена")
 										if(R)
 											if(H.canUseHUD())
 												if(istype(H.glasses, /obj/item/clothing/glasses/hud/security) || istype(H.getorganslot(ORGAN_SLOT_HUD), /obj/item/organ/cyberimp/eyes/hud/security))
-													investigate_log("[key_name(src)] has been set from [R.fields["criminal"]] to [setcriminal] by [key_name(usr)].", INVESTIGATE_RECORDS)
-													R.fields["criminal"] = setcriminal
-													sec_hud_set_security_status()
+													if(R.locked_security_reason)
+														to_chat(usr, span_warning("Эта запись службы безопасности заблокирована навсегда: [R.locked_security_reason]"))
+														return
+													var/old_status = R.fields["criminal"]
+													if(R.set_security_status(setcriminal))
+														investigate_log("[key_name(src)] has been set from [old_status] to [setcriminal] by [key_name(usr)].", INVESTIGATE_RECORDS)
+														sec_hud_set_security_status()
 									return
 								if(href_list["view"])
 									if(R)

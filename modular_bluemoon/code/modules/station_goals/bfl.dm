@@ -455,7 +455,7 @@
 	layer = ABOVE_MOB_LAYER
 	density = TRUE
 	anchored = FALSE
-	armor = list(MELEE = 0, BULLET = 0, LASER = 100, ENERGY = 100, BOMB = 0, BIO = 100, RAD = 100, FIRE = 100, ACID = 100)
+	armor_type = /datum/armor/bfl_lens
 	throwforce = 10 // when lens falls down through the floor
 	var/step_count = 0
 	var/state = FALSE

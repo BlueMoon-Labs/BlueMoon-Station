@@ -44,7 +44,7 @@ DEFINE_BITFIELD(turret_flags, list(
 	power_channel = EQUIP	//drains power from the EQUIPMENT channel
 	max_integrity = 160		//the turret's health
 	integrity_failure = 0.5
-	armor = list(MELEE = 50, BULLET = 30, LASER = 30, ENERGY = 30, BOMB = 30, BIO = 0, RAD = 0, FIRE = 90, ACID = 90)
+	armor_type = /datum/armor/porta_turret
 	/// Base turret icon state
 	base_icon_state = "standard"
 	/// Scan range of the turret for locating targets
@@ -863,7 +863,7 @@ DEFINE_BITFIELD(turret_flags, list(
 /obj/machinery/porta_turret/syndicate/energy/pirate
 	max_integrity = 260
 	integrity_failure = 0.08
-	armor = list(MELEE = 50, BULLET = 30, LASER = 30, ENERGY = 30, BOMB = 50, BIO = 0, RAD = 0, FIRE = 90, ACID = 90)
+	armor_type = /datum/armor/base_and_inteq
 
 /obj/machinery/porta_turret/syndicate/energy/pirate/assess_perp(mob/living/carbon/human/perp)
 	return 10
@@ -890,7 +890,7 @@ DEFINE_BITFIELD(turret_flags, list(
 	lethal_projectile = /obj/item/projectile/bullet/syndicate_turret
 	lethal_projectile_sound = 'sound/weapons/gunshot_smg.ogg'
 	stun_projectile_sound = 'sound/weapons/gunshot_smg.ogg'
-	armor = list(MELEE = 50, BULLET = 30, LASER = 30, ENERGY = 30, BOMB = 80, BIO = 0, RAD = 0, FIRE = 90, ACID = 90)
+	armor_type = /datum/armor/turret_shuttle
 
 /obj/machinery/porta_turret/syndicate/pod/toolbox
 	icon_state = "toolbox_off"

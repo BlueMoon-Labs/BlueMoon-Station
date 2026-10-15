@@ -16,12 +16,12 @@
 	var/w_class_on = WEIGHT_CLASS_BULKY
 	hitsound = "swing_hit"
 	var/hitsound_on = 'sound/weapons/blade1.ogg'
-	armour_penetration = 70
+	armour_penetration = MELEE_AP_EXCLUSIVE
 	var/saber_color = "green"
 	light_color = "#00ff00"//green
 	attack_verb = list("attacked", "slashed", "stabbed", "sliced", "torn", "ripped", "diced", "cut")
 	max_integrity = 200
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 70)
+	armor_type = /datum/armor/weapons_and_plasteel_tiles
 	resistance_flags = FIRE_PROOF
 	wound_bonus = 7
 	bare_wound_bonus = 13
@@ -281,7 +281,7 @@
 	force = 7
 	hitsound_on = 'sound/weapons/nebhit.ogg'
 	wound_bonus = 14
-	armour_penetration = 75
+	armour_penetration = MELEE_AP_EXCLUSIVE
 	light_color = "#37FFF7"
 	rainbow_colors = list("#FF0000", "#FFFF00", "#00FF00", "#00FFFF", "#0000FF","#FF00FF", "#3399ff", "#ff9900", "#fb008b", "#9800ff", "#00ffa3", "#ccff00")
 	attack_verb = list("attacked", "slashed", "stabbed", "sliced", "destroyed", "ripped", "devastated", "shredded")

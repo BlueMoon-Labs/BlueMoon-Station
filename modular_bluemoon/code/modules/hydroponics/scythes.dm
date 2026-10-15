@@ -11,7 +11,7 @@
 	throw_range = 3
 	w_class = WEIGHT_CLASS_BULKY
 	flags_1 = CONDUCT_1
-	armour_penetration = 20
+	armour_penetration = MELEE_AP_ANTAGONIST
 	slot_flags = ITEM_SLOT_BACK
 	hitsound = 'sound/weapons/bladeslice.ogg'
 

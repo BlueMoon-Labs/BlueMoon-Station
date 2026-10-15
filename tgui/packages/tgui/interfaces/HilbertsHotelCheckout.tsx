@@ -371,8 +371,7 @@ const RoomsTab = (props) => {
   const filteredRooms = hotel_map_list.filter(
     (room) =>
       room.category?.toLowerCase() === targetCategory &&
-      (!room.ckeywhitelist?.length ||
-        room.ckeywhitelist.includes(data.user_ckey)),
+      room.available,
   );
 
   const categoryIcons = {

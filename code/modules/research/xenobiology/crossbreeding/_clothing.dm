@@ -135,7 +135,7 @@ Slimecrossing Armor
 	obj_flags = IMMUTABLE_SLOW
 	slowdown = 4
 	var/hit_reflect_chance = 10 // Citadel Change: because 40% chance of bouncing lasers back into peoples faces isn't good.
-	armor = list(MELEE = 70, BULLET = 70, LASER = 40, ENERGY = 40, BOMB = 80, BIO = 80, RAD = 80, FIRE = 70, ACID = 90) //Citadel Change to avoid immortal Xenobiologists.
+	armor_type = /datum/armor/adamantine
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC
 
 /obj/item/clothing/suit/armor/heavy/adamantine/run_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)

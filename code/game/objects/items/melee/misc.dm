@@ -119,7 +119,7 @@
 	throwforce = 15
 	w_class = WEIGHT_CLASS_BULKY
 	block_chance = 50
-	armour_penetration = 75
+	armour_penetration = MELEE_AP_EXCLUSIVE
 	sharpness = SHARP_EDGED
 	attack_verb = list("slashed", "cut")
 	hitsound = 'sound/weapons/rapierhit.ogg'
@@ -593,7 +593,7 @@
 	force_on = 50
 	force_off = 10
 	sharpness = 1
-	armour_penetration = 100
+	armour_penetration = MELEE_AP_EXCLUSIVE
 
 /obj/item/melee/classic_baton/telescopic/newspaper
 	name = "The Daily Whiplash"
@@ -878,7 +878,7 @@
 	w_class = WEIGHT_CLASS_BULKY
 	throwforce = 8
 	block_chance = 10
-	armour_penetration = 50
+	armour_penetration = MELEE_AP_EXCLUSIVE
 	attack_verb = list("smacked", "struck", "cracked", "beaten")
 	var/overlay_state = "mace_handle"
 	var/mutable_appearance/overlay

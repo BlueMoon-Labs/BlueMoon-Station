@@ -1070,3 +1070,21 @@ GLOBAL_VAR_INIT(plush_reijo_mickie_active, 0)
 	desc = "Dementyi's pig"
 	icon_state = "pig"
 	squeak_override = list('modular_bluemoon/sound/plush/pig1.ogg' = 20, 'modular_bluemoon/sound/plush/pig2.ogg' = 20, 'modular_bluemoon/sound/plush/pig3.ogg' = 20, 'modular_bluemoon/sound/plush/pig4.ogg' = 20, 'modular_bluemoon/sound/plush/pig5.ogg' = 20)
+
+/obj/item/toy/plush/bm/brick
+	name = "Yes'nt pillow"
+	desc = "The middle ground between yes and no"
+	icon_state = "yes_pillow"
+	squeak_override = list('modular_bluemoon/sound/plush/brick.ogg' = 1)
+
+/obj/item/toy/plush/bm/brick/attack_self(mob/user)
+	..()
+	
+	if(icon_state == "no_pillow")
+		icon_state = "yes_pillow"
+		to_chat(user, span_notice("Вы сжимаете игрушку, и она меняет форму!"))
+	else
+		icon_state = "no_pillow"
+		to_chat(user, span_notice("Вы возвращаете игрушке прежний вид."))
+	
+	update_appearance() 

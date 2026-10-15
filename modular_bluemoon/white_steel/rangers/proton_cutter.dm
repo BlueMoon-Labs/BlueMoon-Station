@@ -16,7 +16,7 @@
 
 	force = 15
 	block_chance = 30
-	armour_penetration = 10
+	armour_penetration = MELEE_AP_COMBAT
 	wound_bonus = 0
 	bare_wound_bonus = 5
 	item_flags = ITEM_CAN_PARRY

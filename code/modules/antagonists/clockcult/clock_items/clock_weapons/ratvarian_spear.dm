@@ -7,7 +7,7 @@
 	item_state = "ratvarian_spear"
 	force = 15 //Extra damage is dealt to targets in attack()
 	throwforce = 25
-	armour_penetration = 10
+	armour_penetration = MELEE_AP_ANTAGONIST
 	sharpness = SHARP_POINTY
 	attack_verb = list("режет", "тыкает", "рубит")
 	hitsound = 'sound/weapons/bladeslice.ogg'
@@ -21,7 +21,7 @@
 		force = 20
 		bonus_burn = 10
 		throwforce = 40
-		armour_penetration = 50
+		armour_penetration = MELEE_AP_EXCLUSIVE
 	else
 		force = initial(force)
 		bonus_burn = initial(bonus_burn)

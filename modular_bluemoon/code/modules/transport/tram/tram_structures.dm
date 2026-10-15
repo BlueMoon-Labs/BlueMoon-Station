@@ -16,7 +16,7 @@
 	anchored = TRUE
 	flags_1 = PREVENT_CLICK_UNDER_1
 	pass_flags_self = PASSGLASS
-	armor = list(MELEE = 40, BULLET = 10, LASER = 10, ENERGY = 0, BOMB = 45, BIO = 0, RAD = 0, FIRE = 90, ACID = 100)
+	armor_type = /datum/armor/transport
 	CanAtmosPass = ATMOS_PASS_DENSITY
 	explosion_block = 3
 	ricochet_chance_mod = 1.2

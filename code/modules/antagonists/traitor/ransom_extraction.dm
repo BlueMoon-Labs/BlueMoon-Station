@@ -174,7 +174,7 @@
 		mob_captured.Dizzy(15)
 		mob_captured.confused += 20
 	var/datum/bank_account/cargo = SSeconomy.get_dep_account(ACCOUNT_CAR)
-	var/pay_points = (cargo && (cargo?.account_balance)) ? min(cargo.account_balance, ransom_credits) : 0
+	var/pay_points = cargo ? clamp(cargo.account_balance, 0, ransom_credits) : 0
 	if(cargo)
 		cargo.adjust_money(min(pay_points, ransom_credits))
 	priority_announce("Один из членов экипажа был захвачен корпорацией конкурентов - нам пришлось заплатить выкуп, чтобы вернуть его обратно. \
