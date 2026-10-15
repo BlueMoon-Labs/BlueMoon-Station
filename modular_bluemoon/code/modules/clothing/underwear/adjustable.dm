@@ -29,9 +29,9 @@
 	return "_old"
 
 /obj/item/clothing/underwear/shirt/adjustable/toggle/AltClick(mob/user)
+	if(!user || !user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
+		return FALSE
 	. = ..()
-	if(!user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
-		return
 	suit_toggle(user)
 	return TRUE
 
