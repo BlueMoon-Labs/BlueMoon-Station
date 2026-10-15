@@ -9,6 +9,7 @@ const PREVIEW_BOX_H = 420;
 const PORTRAIT_BOX_W = 359;
 const PORTRAIT_BOX_H = 274;
 const FULL_BODY_ZOOM = 1.5;
+const TAUR_FULL_BODY_ZOOM = 2.5;
 const PORTRAIT_ZOOM = 1.4;
 const MODE_MIRROR = 2;
 const MODE_SCISSORS = 3;
@@ -39,6 +40,7 @@ type HairPickerData = {
   error?: boolean;
   allowed_tabs?: string[];
   mode?: number;
+  is_taur: boolean;
   tab: string;
   dir: number;
   search: string;
@@ -241,6 +243,7 @@ const PreviewPanel = (props: {
     data.mode === MODE_RAZOR;
   const [fullBody, setFullBody] = useState(false);
   const showFull = !inRound && fullBody;
+  const fullBodyZoom = data.is_taur ? TAUR_FULL_BODY_ZOOM : FULL_BODY_ZOOM;
   const boxW = showFull ? PREVIEW_BOX_W : PORTRAIT_BOX_W;
   const boxH = showFull ? PREVIEW_BOX_H : PORTRAIT_BOX_H;
   const cellW = showFull ? boxW : boxW / 2;
@@ -310,7 +313,7 @@ const PreviewPanel = (props: {
                           imageRendering: 'pixelated',
                           display: 'block',
                           flexShrink: 0,
-                          transform: `scale(${showFull ? FULL_BODY_ZOOM : PORTRAIT_ZOOM})`,
+                          transform: `scale(${showFull ? fullBodyZoom : PORTRAIT_ZOOM})`,
                         }}
                       />
                     </div>

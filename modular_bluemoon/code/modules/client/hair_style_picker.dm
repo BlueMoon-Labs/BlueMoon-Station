@@ -33,6 +33,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	/// Положение исходного спрайта на расширенном холсте для каждого направления.
 	var/list/base_offsets = list()
 	var/render_dir = SOUTH
+	var/is_taur = FALSE
 	var/img_w = 40
 	var/img_h = 40
 	var/portrait_width = 40
@@ -243,6 +244,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 
 	.["allowed_tabs"] = allowed_tabs
 	.["mode"] = mode
+	.["is_taur"] = is_taur
 	.["tab"] = tab
 	.["dir"] = render_dir
 	.["search"] = search
@@ -474,6 +476,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 		mannequin.update_mutant_bodyparts()
 		mannequin.update_hair()
 		mannequin.update_mutations_overlay()
+		is_taur = mannequin.have_tauric_body()
 		for(var/dir in dirs)
 			mannequin.dir = dir
 			var/list/offsets = list()
