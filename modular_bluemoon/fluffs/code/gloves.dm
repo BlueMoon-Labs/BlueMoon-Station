@@ -127,6 +127,7 @@
 			fromitem = list(/obj/item/clothing/gloves/tackler/combat/insulated)
 
 /obj/item/clothing/gloves/tackler/hardlight_gloves
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Fingerless hardlight gloves"
 	desc = "Бронированные бело-чёрные перчатки с отсутствующими указательными и большим пальцами. Используются в лёгком варианте экипировки для возможности взаимодействия открытых участков тела с, например, системами оружия. Для защиты конечности оператора в перчатки встроены лёгкие полимерные броне-пластины, а открытые участки защищены невидимым полем."
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/gloves.dmi'
@@ -135,6 +136,7 @@
 	item_state = "hardlight_gloves"
 
 /obj/item/clothing/gloves/tackler/combat/insulated/hardlight_gloves
+	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Fingerless hardlight gloves"
 	desc = "Бронированные бело-чёрные перчатки с отсутствующими указательными и большим пальцами. Используются в лёгком варианте экипировки для возможности взаимодействия открытых участков тела с, например, системами оружия. Для защиты конечности оператора в перчатки встроены лёгкие полимерные броне-пластины, а открытые участки защищены невидимым полем."
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/gloves.dmi'
