@@ -2814,3 +2814,9 @@
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/donator/bm/mall_cop_chic
 	ckeywhitelist = list("sawwarrr")
+
+/datum/gear/donator/bm/brick_plush
+	name = "Yes? No? Pillow?""
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/toy/plush/bm/brick
+	ckeywhitelist = list("njiota")
