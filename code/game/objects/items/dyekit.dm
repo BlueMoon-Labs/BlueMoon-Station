@@ -8,9 +8,12 @@
 /obj/item/dyespray/attack_self(mob/user)
 	dye(user)
 
-/obj/item/dyespray/pre_attack(atom/target, mob/living/user, params)
-	dye(target)
-	return ..()
+/obj/item/dyespray/pre_attack(atom/target, mob/living/user, params, attackchain_flags, damage_multiplier)
+	. = ..()
+	if((. & STOP_ATTACK_PROC_CHAIN) || !ishuman(target))
+		return
+	dye(target, user)
+	return . | STOP_ATTACK_PROC_CHAIN
 
 /**
  * Applies a gradient and a gradient color to a mob.
