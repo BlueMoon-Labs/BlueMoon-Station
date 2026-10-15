@@ -19,7 +19,7 @@
 	desc = "A tactical security jumpsuit for officers complete with Nanotrasen belt buckle."
 	icon_state = "rsecurity"
 	item_state = "r_suit"
-	armor = list(MELEE = 10, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 30, ACID = 30, WOUND = 10)
+	armor_type = /datum/armor/light_duty
 	unique_reskin = list(
 		"Standart" = list("icon_state" = "rsecurity"),
 		"Blue" = list("icon_state" = "security_black"),
@@ -35,7 +35,7 @@
 	can_adjust = FALSE
 
 /obj/item/clothing/under/rank/security/officer/util/syndicate
-	armor = list(MELEE = 10, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 0)
+	armor_type = /datum/armor/under_syndicate
 	has_sensor = NO_SENSORS
 
 /obj/item/clothing/under/rank/security/officer/grey
@@ -64,13 +64,13 @@
 	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/security/officer/skirt/no_armor // Donat stuff - Borisovych
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
+	armor_type = /datum/armor/none
 
 /obj/item/clothing/under/rank/security/stripper
 	name = "secukini"
 	icon_state = "secukini"
 	item_state = "secukini"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0) //exchange powergame in order to be a whore what are you going to do about it
+	armor_type = /datum/armor/none //exchange powergame in order to be a whore what are you going to do about it
 	body_parts_covered = CHEST|GROIN
 	can_adjust = FALSE
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
@@ -151,7 +151,7 @@
 	desc = "A formal security suit for officers complete with Nanotrasen belt buckle."
 	icon_state = "rwarden"
 	item_state = "r_suit"
-	armor = list(MELEE = 10, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 30, ACID = 30, WOUND = 10)
+	armor_type = /datum/armor/light_duty
 	alt_covers_chest = FALSE
 
 /obj/item/clothing/under/rank/security/warden/grey
@@ -189,7 +189,7 @@
 	desc = "Someone who wears this means business."
 	icon_state = "detective"
 	item_state = "det"
-	armor = list(MELEE = 10, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 30, ACID = 30, WOUND = 10)
+	armor_type = /datum/armor/light_duty
 
 /obj/item/clothing/under/rank/security/detective/brown
 	name = "dark boiled suit"
@@ -230,7 +230,7 @@
 	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/rank/security/detective/grey/skirt/no_armor // Donat stuff - famas098
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
+	armor_type = /datum/armor/none
 
 /*
  * Head of Security
@@ -241,7 +241,7 @@
 	desc = "A security jumpsuit decorated for those few with the dedication to achieve the position of Head of Security."
 	icon_state = "rhos"
 	item_state = "r_suit"
-	armor = list(MELEE = 10, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 10)
+	armor_type = /datum/armor/hos_and_orville_security
 	strip_delay = 60
 	alt_covers_chest = FALSE
 

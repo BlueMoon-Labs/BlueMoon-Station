@@ -267,13 +267,17 @@
 /datum/map_template/hilbertshotel/whitelist_cache_fixture
 	ckeywhitelist = list("enc1:AAECAwQFBgcICQoLBkP7WYfIo3mjb7lYYwet3PW22BiBfjL-G3kJ")
 
+/datum/sprite_accessory/whitelist_cache_fixture
+	name = "Whitelist cache test accessory"
+	icon_state = "test"
+
 /// Warming must deduplicate IDs across categories and make later checks return before launching Node.
 /datum/unit_test/ckey_whitelist_cache
 	var/saved_secret
 	var/list/saved_ai_screens
 	var/list/saved_borg_skins
 	var/list/saved_loadout_items
-	var/list/saved_hair_styles
+	var/list/saved_sprite_accessory_lists
 	var/list/saved_bark_datums
 	var/list/saved_hotel_templates
 
@@ -291,25 +295,31 @@
 	var/datum/ai_donator_screen/screen = allocate(/datum/ai_donator_screen)
 	var/datum/borg_donator_skin/skin = allocate(/datum/borg_donator_skin)
 	var/datum/gear/gear = allocate(/datum/gear)
-	var/datum/sprite_accessory/accessory = allocate(/datum/sprite_accessory)
 	var/datum/bark/bark = allocate(/datum/bark)
 	var/datum/map_template/hilbertshotel/whitelist_cache_fixture/room = new()
 	allocated += room
 	screen.ckey_whitelist = first_whitelist
 	skin.ckey_whitelist = second_whitelist
 	gear.ckeywhitelist = first_whitelist
-	accessory.ckeys_allowed = first_whitelist
 	bark.ckeys_allowed = first_whitelist
 	saved_ai_screens = GLOB.ai_donator_screens
 	saved_borg_skins = GLOB.borg_donator_skins
 	saved_loadout_items = GLOB.loadout_items
-	saved_hair_styles = GLOB.hair_styles_list
+	saved_sprite_accessory_lists = GLOB.sprite_accessory_lists
 	saved_bark_datums = GLOB.bark_datums
 	saved_hotel_templates = SShilbertshotel.hotel_map_list
 	GLOB.ai_donator_screens = list(screen)
 	GLOB.borg_donator_skins = list(skin)
 	GLOB.loadout_items = list("category" = list("subcategory" = list("test gear" = gear)))
-	GLOB.hair_styles_list = list("test accessory" = accessory)
+	GLOB.sprite_accessory_lists = list()
+	var/list/accessories = init_sprite_accessory_subtypes(/datum/sprite_accessory/whitelist_cache_fixture, skip_prototype = FALSE)
+	var/datum/sprite_accessory/accessory = accessories["Whitelist cache test accessory"]
+	allocated += accessory
+	var/accessory_id = gear_ckey_id("Accessory-Prewarm-Test")
+	TEST_ASSERT(accessory_id, "The accessory fixture must be encrypted successfully")
+	accessory.ckeys_allowed = list(id, accessory_id)
+	TEST_ASSERT_EQUAL(length(GLOB.sprite_accessory_lists), 1, "Initializing accessories must register their list")
+	TEST_ASSERT(accessories in GLOB.sprite_accessory_lists, "The registry must retain the initialized list by reference")
 	GLOB.bark_datums = list("test bark" = bark)
 	SShilbertshotel.hotel_map_list = list("test room" = room)
 	var/list/result = initialize_global_whitelist_cache()
@@ -324,6 +334,8 @@
 	TEST_ASSERT_EQUAL(gear_crypto("decrypt", id, TRUE, diagnostics), "Prewarm-Test-User", "Later access checks must read the preloaded plaintext")
 	TEST_ASSERT_NULL(diagnostics["exit_code"], "A cache hit must return before launching Node")
 	TEST_ASSERT_NULL(diagnostics["node_version"], "A cache hit must not receive a new helper response")
+	TEST_ASSERT_EQUAL(gear_crypto("decrypt", accessory_id, TRUE, diagnostics), "Accessory-Prewarm-Test", "Registered accessories must have their own IDs warmed")
+	TEST_ASSERT_NULL(diagnostics["exit_code"], "A warmed accessory must not launch Node during access checks")
 	TEST_ASSERT_NULL(gear_crypto("decrypt", invalid_id, TRUE, diagnostics), "Invalid IDs must also be cached as denied")
 	TEST_ASSERT_NULL(diagnostics["exit_code"], "A cached invalid ID must not launch Node again")
 	TEST_ASSERT_NULL(diagnostics["error"], "A cached invalid ID must not cause another helper validation request")
@@ -352,8 +364,8 @@
 		GLOB.borg_donator_skins = saved_borg_skins
 	if(!isnull(saved_loadout_items))
 		GLOB.loadout_items = saved_loadout_items
-	if(!isnull(saved_hair_styles))
-		GLOB.hair_styles_list = saved_hair_styles
+	if(!isnull(saved_sprite_accessory_lists))
+		GLOB.sprite_accessory_lists = saved_sprite_accessory_lists
 	if(!isnull(saved_bark_datums))
 		GLOB.bark_datums = saved_bark_datums
 	if(!isnull(saved_hotel_templates))

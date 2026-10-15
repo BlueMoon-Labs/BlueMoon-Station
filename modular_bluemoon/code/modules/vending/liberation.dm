@@ -52,7 +52,7 @@
 		/obj/item/bedsheet/patriot = 5,
 		/obj/item/reagent_containers/food/snacks/burger/superbite = 3,
 	) //U S A
-	armor = list(MELEE = 100, BULLET = 100, LASER = 100, ENERGY = 100, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 50)
+	armor_type = /datum/armor/vending_durable
 
 	resistance_flags = FIRE_PROOF
 	default_price = PRICE_ABOVE_NORMAL
@@ -248,7 +248,7 @@
 			)
 		),
 	)
-	armor = list(MELEE = 100, BULLET = 100, LASER = 100, ENERGY = 100, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 50)
+	armor_type = /datum/armor/vending_durable
 	resistance_flags = INDESTRUCTIBLE | FIRE_PROOF | ACID_PROOF | UNACIDABLE | LAVA_PROOF
 	default_price = PRICE_ABOVE_NORMAL
 	extra_price = PRICE_ABOVE_EXPENSIVE

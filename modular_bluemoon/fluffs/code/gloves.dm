@@ -64,7 +64,7 @@
 	max_heat_protection_temperature = GLOVES_MAX_TEMP_PROTECT
 	resistance_flags = NONE
 	strip_mod = 1.5
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 80, ACID = 50)
+	armor_type = /datum/armor/combat_and_martial_arts
 
 // copypaste from /obj/item/clothing/gloves/poly_evening
 /obj/item/clothing/gloves/toggled/hug/poly_evening

@@ -13,6 +13,7 @@
 	w_class = WEIGHT_CLASS_BULKY //Quite a hefty load
 	slowdown = 1 //Balancing measure
 	throw_range = 2 //No head bowling
+	as_mob_layer = HEAD_PART_LAYER
 	px_x = 0
 	px_y = -8
 	stam_damage_coeff = 1

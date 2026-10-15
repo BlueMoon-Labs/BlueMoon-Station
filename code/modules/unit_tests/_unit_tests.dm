@@ -552,6 +552,8 @@
 #include "ssobj_idle_processing.dm"
 #include "proximity_monitor.dm"
 #include "sign_types.dm"
+#include "sol_inspection.dm"
+#include "sol_inspection_shuttle.dm"
 #include "supermatter_gas_response.dm"
 #include "tattoo_system.dm"
 #include "techweb_copy.dm"

@@ -3,7 +3,7 @@
 	desc = "Deep Durand modification, licensed and utilized by the manufacturers of the New Russian Empire."
 	name = "\improper TU-802 Solntsepyok"
 	icon_state = "shire"
-	armor = list(MELEE = 60, BULLET = 65, LASER = 50, ENERGY = 40, BOMB = 50, BIO = 0, RAD = 100, FIRE = 100, ACID = 100)
+	armor_type = /datum/armor/durand_tu802_and_ares
 	max_temperature = 60000
 	wreckage = /obj/structure/mecha_wreckage/shire
 	max_equip = 6
@@ -65,7 +65,7 @@
 	name = "\improper ZEUS"
 	icon = 'modular_bluemoon/kovac_shitcode/icons/mecha/solfed_mecha.dmi'
 	icon_state = "zeus"
-	armor = list(MELEE = 40, BULLET = 50, LASER = 70, ENERGY = 75, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 100)
+	armor_type = /datum/armor/zeus
 	max_temperature = 70000
 	wreckage = /obj/structure/mecha_wreckage/zeus
 	max_equip = 6

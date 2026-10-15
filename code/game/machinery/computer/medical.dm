@@ -340,6 +340,10 @@
 			switch(id)
 				if("edit")
 					var/field = arguments["field"]
+					if(field in list("name", "id"))
+						if(active1?.locked_security_reason)
+							set_temp("Эта общая запись заблокирована навсегда: [active1.locked_security_reason]", "danger")
+							return
 					if(!length(field) || !field_edit_questions[field])
 						return
 					var/question = field_edit_questions[field]
@@ -357,6 +361,30 @@
 			switch(id)
 				if("edit")
 					var/field = arguments["field"]
+					if(field in list("name", "id"))
+						if(active1?.locked_security_reason)
+							set_temp("Эта общая запись заблокирована навсегда: [active1.locked_security_reason]", "danger")
+							return
+						if(field == "name")
+							var/datum/data/record/current_security_by_name = GLOB.data_core.security_by_name[active1?.fields["name"]]
+							var/datum/data/record/locked_security_by_name = GLOB.data_core.security_by_name[answer]
+							if(locked_security_by_name && locked_security_by_name != current_security_by_name && locked_security_by_name.locked_security_reason)
+								set_temp("Нельзя использовать это имя: запись службы безопасности заблокирована навсегда: [locked_security_by_name.locked_security_reason]", "danger")
+								return
+							var/datum/data/record/locked_general_by_name = GLOB.data_core.general_by_name[answer]
+							if(locked_general_by_name && locked_general_by_name != active1 && locked_general_by_name.locked_security_reason)
+								set_temp("Нельзя использовать это имя: общая запись заблокирована навсегда: [locked_general_by_name.locked_security_reason]", "danger")
+								return
+						else
+							var/datum/data/record/current_security_by_id = GLOB.data_core.security_by_id[active1?.fields["id"]]
+							var/datum/data/record/locked_security_by_id = GLOB.data_core.security_by_id[answer]
+							if(locked_security_by_id && locked_security_by_id != current_security_by_id && locked_security_by_id.locked_security_reason)
+								set_temp("Нельзя использовать этот ID: запись службы безопасности заблокирована навсегда: [locked_security_by_id.locked_security_reason]", "danger")
+								return
+							var/datum/data/record/locked_general_by_id = GLOB.data_core.general_by_id[answer]
+							if(locked_general_by_id && locked_general_by_id != active1 && locked_general_by_id.locked_security_reason)
+								set_temp("Нельзя использовать этот ID: общая запись заблокирована навсегда: [locked_general_by_id.locked_security_reason]", "danger")
+								return
 					if(!length(field) || !field_edit_questions[field])
 						return
 					var/list/choices = field_edit_choices[field]

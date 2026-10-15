@@ -1,0 +1,2993 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ac" = (
+/obj/effect/turf_decal/tile/dark/full,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/pod/light,
+/area/shuttle/sol_inspection)
+"am" = (
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/button/door/directional/south{
+	id = "solinspectionportexternal";
+	name = "Внешний болтовой контроль";
+	normaldoorcontrol = 1;
+	specialfunctions = 4
+	},
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/sol_inspection)
+"az" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 4
+	},
+/obj/machinery/iv_drip,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"aC" = (
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/sol_inspection)
+"aJ" = (
+/obj/effect/turf_decal/siding/thinplating_new{
+	dir = 1
+	},
+/obj/effect/turf_decal/caution/stand_clear/white,
+/obj/structure/railing/corner{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable{
+	icon_state = "0-1"
+	},
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"aT" = (
+/turf/open/floor/plasteel/white,
+/area/shuttle/sol_inspection)
+"ba" = (
+/obj/structure/rack,
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/item/storage/box/flashbangs,
+/obj/item/gun/energy/disabler,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"bb" = (
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/sol_inspection)
+"bo" = (
+/obj/structure/railing,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/sol_inspection)
+"bp" = (
+/obj/structure/table,
+/obj/effect/turf_decal/siding/dark_green{
+	dir = 1
+	},
+/obj/item/reagent_containers/rag,
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"bw" = (
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/sol_inspection)
+"bT" = (
+/obj/structure/sink/kitchen/directional/east,
+/obj/machinery/button/door/directional/south{
+	id = "sol_inspection_bar";
+	name = "Приватные ставни"
+	},
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"bV" = (
+/obj/machinery/computer/shuttle/sol_inspection,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 9
+	},
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"cL" = (
+/obj/effect/spawner/structure/window/reinforced,
+/obj/machinery/door/poddoor/shutters{
+	dir = 8;
+	id = "sol_inspection_bridge"
+	},
+/turf/open/floor/plating,
+/area/shuttle/sol_inspection)
+"cO" = (
+/obj/machinery/computer/monitor{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 6
+	},
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"cR" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes,
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/full,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"dl" = (
+/turf/open/floor/glass,
+/area/shuttle/sol_inspection)
+"do" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line,
+/obj/structure/table/glass,
+/obj/item/storage/box/masks{
+	pixel_y = 6
+	},
+/obj/item/stack/medical/bone_gel{
+	pixel_x = 10;
+	pixel_y = 2
+	},
+/obj/item/storage/box/gloves,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"dy" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/turf/open/floor/plasteel{
+	dir = 4
+	},
+/area/shuttle/sol_inspection)
+"dC" = (
+/obj/structure/railing/corner{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/sol_inspection)
+"dP" = (
+/obj/effect/turf_decal/siding/dark_green,
+/obj/structure/window/plasma/reinforced{
+	dir = 4
+	},
+/obj/structure/window/plasma/reinforced{
+	dir = 8
+	},
+/obj/structure/window/plasma/reinforced{
+	dir = 2
+	},
+/obj/structure/statue/gold/hop{
+	name = "статуя образцового инспектора"
+	},
+/turf/open/floor/wood,
+/area/shuttle/sol_inspection)
+"dY" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Архив проверок"
+	},
+/obj/effect/mapping_helpers/airlock/access/any/command/general,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/door/firedoor,
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"eg" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/power/port_gen/pacman,
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"ev" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/dark_blue/filled/corner{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"ew" = (
+/obj/structure/railing{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/sol_inspection)
+"eZ" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable{
+	icon_state = "0-1"
+	},
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/turf/open/floor/plasteel{
+	dir = 8
+	},
+/area/shuttle/sol_inspection)
+"fb" = (
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/wood,
+/area/shuttle/sol_inspection)
+"fe" = (
+/obj/machinery/computer/apc_control,
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"fg" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/light/directional/west,
+/turf/open/floor/plasteel{
+	dir = 8
+	},
+/area/shuttle/sol_inspection)
+"fm" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/shuttle/sol_inspection)
+"fE" = (
+/obj/effect/turf_decal/caution/stand_clear/white{
+	dir = 1
+	},
+/turf/open/floor/pod/light,
+/area/shuttle/sol_inspection)
+"fO" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plasteel{
+	dir = 8
+	},
+/area/shuttle/sol_inspection)
+"fZ" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/firealarm/directional/west,
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/obj/structure/cable{
+	icon_state = "0-1"
+	},
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/turf/open/floor/plasteel{
+	dir = 8
+	},
+/area/shuttle/sol_inspection)
+"gd" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/shuttle/sol_inspection)
+"gl" = (
+/obj/structure/table/reinforced,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 1
+	},
+/obj/machinery/recharger,
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"gn" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 5
+	},
+/obj/machinery/cryopod,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"gw" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/turf/open/floor/plasteel{
+	dir = 8
+	},
+/area/shuttle/sol_inspection)
+"gY" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/sol_inspection)
+"gZ" = (
+/obj/machinery/door/airlock/hatch{
+	name = "Кабинет собеседований"
+	},
+/obj/effect/mapping_helpers/airlock/access/any/command/general,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/door/firedoor,
+/turf/open/floor/pod/light,
+/area/shuttle/sol_inspection)
+"hf" = (
+/obj/effect/spawner/structure/window/reinforced,
+/obj/machinery/door/poddoor/shutters{
+	dir = 8;
+	id = "sol_inspection_bar"
+	},
+/turf/open/floor/plating,
+/area/shuttle/sol_inspection)
+"hv" = (
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/button/door/directional/south{
+	id = "solinspectionstarboardexternal";
+	name = "Внешний болтовой контроль";
+	normaldoorcontrol = 1;
+	specialfunctions = 4
+	},
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/sol_inspection)
+"hS" = (
+/obj/effect/mob_spawn/human/sol_inspector/commander,
+/turf/open/floor/plasteel/white,
+/area/shuttle/sol_inspection)
+"hW" = (
+/obj/machinery/suit_storage_unit/standard_unit,
+/obj/effect/turf_decal/bot,
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"ia" = (
+/obj/structure/railing,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/sol_inspection)
+"ie" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 9
+	},
+/obj/structure/table/glass,
+/obj/item/clothing/neck/stethoscope,
+/obj/item/storage/backpack/duffelbag/med,
+/obj/item/reagent_containers/spray/cleaner,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"ig" = (
+/obj/structure/table/reinforced,
+/obj/machinery/light/red/dim/directional/south,
+/obj/item/storage/box/ids,
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"ip" = (
+/obj/structure/table,
+/obj/effect/turf_decal/siding/dark_green{
+	dir = 1
+	},
+/obj/item/storage/fancy/donut_box{
+	pixel_y = 6
+	},
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"iG" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/structure/table/reinforced,
+/obj/structure/fluff{
+	density = 1;
+	desc = "Материалы служебной проверки.";
+	icon = 'icons/obj/stack_objects.dmi';
+	icon_state = "sheet-gold_3";
+	name = "изъятый золотой запас"
+	},
+/obj/structure/window/reinforced{
+	dir = 2
+	},
+/obj/machinery/door/window{
+	dir = 1;
+	req_access_txt = "20"
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"iZ" = (
+/obj/effect/turf_decal/tile/dark/full,
+/obj/structure/rack,
+/obj/item/assembly/flash{
+	pixel_x = 1
+	},
+/obj/item/assembly/signaler{
+	pixel_x = -8
+	},
+/obj/effect/turf_decal/stripes/white{
+	dir = 6
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 9
+	},
+/obj/item/melee/classic_baton,
+/turf/open/floor/pod/light,
+/area/shuttle/sol_inspection)
+"jp" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes,
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/effect/turf_decal/tile/neutral/full,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"jX" = (
+/obj/effect/turf_decal/tile/dark/full,
+/obj/item/reagent_containers/glass/bucket{
+	pixel_x = -9;
+	pixel_y = -4
+	},
+/obj/item/stock_parts/cell/high{
+	pixel_y = -8;
+	pixel_x = 2
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/pod/light,
+/area/shuttle/sol_inspection)
+"kp" = (
+/obj/effect/turf_decal/stripes,
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral/full,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"kw" = (
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/obj/structure/cable{
+	icon_state = "0-1"
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/sol_inspection)
+"kK" = (
+/obj/structure/rack,
+/obj/structure/window/reinforced{
+	dir = 4
+	},
+/obj/structure/window/reinforced{
+	dir = 2
+	},
+/obj/item/storage/toolbox/mechanical{
+	pixel_y = -2
+	},
+/obj/item/crowbar/power,
+/obj/item/stack/sheet/mineral/sandbags{
+	amount = 30
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"kO" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 8
+	},
+/turf/open/floor/glass,
+/area/shuttle/sol_inspection)
+"lc" = (
+/obj/effect/mapping_helpers/airlock/cyclelink_helper,
+/obj/effect/mapping_helpers/airlock/access/any/command/general,
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/machinery/door/airlock/external/glass/ruin{
+	id_tag = "solinspectionportexternal"
+	},
+/obj/effect/mapping_helpers/airlock/locked,
+/turf/open/floor/pod/light,
+/area/shuttle/sol_inspection)
+"lf" = (
+/obj/structure/window/reinforced{
+	dir = 1
+	},
+/obj/structure/window/reinforced{
+	dir = 5
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"lu" = (
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Техническое помещение"
+	},
+/obj/effect/mapping_helpers/airlock/access/any/command/general,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/door/firedoor,
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/turf/open/floor/pod/light,
+/area/shuttle/sol_inspection)
+"lE" = (
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/sol_inspection)
+"lR" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/reagent_dispensers/watertank/high,
+/obj/machinery/power/apc{
+	dir = 1
+	},
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"mv" = (
+/obj/structure/rack,
+/obj/effect/turf_decal/bot,
+/obj/item/storage/box/lights/bulbs{
+	pixel_y = -1
+	},
+/obj/item/flashlight/seclite{
+	pixel_y = -8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/obj/item/storage/toolbox/mechanical,
+/obj/item/dyespray{
+	pixel_y = 1
+	},
+/obj/item/stack/sheet/mineral/plasma{
+	amount = 10;
+	pixel_y = -5
+	},
+/obj/item/stack/cable_coil{
+	pixel_y = -6
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"mA" = (
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"mE" = (
+/obj/machinery/door/airlock/grunge{
+	name = "Архив проверок"
+	},
+/obj/effect/mapping_helpers/airlock/access/any/command/general,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/door/firedoor,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"mN" = (
+/obj/effect/mob_spawn/human/sol_inspector/guard,
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"nk" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plasteel{
+	dir = 8
+	},
+/area/shuttle/sol_inspection)
+"nm" = (
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/obj/structure/cable{
+	icon_state = "0-1"
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/sol_inspection)
+"nq" = (
+/obj/effect/turf_decal/tile/dark/full,
+/turf/open/floor/pod/light,
+/area/shuttle/sol_inspection)
+"nA" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"nB" = (
+/obj/effect/mapping_helpers/airlock/cyclelink_helper,
+/obj/effect/mapping_helpers/airlock/access/any/command/general,
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/machinery/door/airlock/external/glass/ruin{
+	id_tag = "solinspectionstarboardexternal"
+	},
+/obj/effect/mapping_helpers/airlock/locked,
+/turf/open/floor/pod/light,
+/area/shuttle/sol_inspection)
+"nE" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"nI" = (
+/obj/effect/turf_decal/tile/dark/full,
+/obj/effect/turf_decal/arrows/red{
+	dir = 4;
+	pixel_x = -15
+	},
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/pod/light,
+/area/shuttle/sol_inspection)
+"nP" = (
+/obj/effect/turf_decal/tile/dark/full,
+/obj/machinery/firealarm/directional/north,
+/turf/open/floor/pod/light,
+/area/shuttle/sol_inspection)
+"od" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/door/firedoor,
+/turf/open/floor/plasteel{
+	dir = 8
+	},
+/area/shuttle/sol_inspection)
+"of" = (
+/obj/structure/railing{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable{
+	icon_state = "0-1"
+	},
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/turf/open/floor/plasteel{
+	dir = 1
+	},
+/area/shuttle/sol_inspection)
+"oo" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/firealarm/directional/west,
+/turf/open/floor/plasteel{
+	dir = 8
+	},
+/area/shuttle/sol_inspection)
+"oH" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/structure/table/reinforced,
+/obj/item/storage/box/flashbangs{
+	pixel_y = 6
+	},
+/obj/item/storage/box/flashbangs,
+/obj/machinery/firealarm/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"oJ" = (
+/obj/structure/table/reinforced,
+/obj/item/flashlight/lamp{
+	pixel_x = -5
+	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/obj/item/megaphone/command,
+/obj/item/encryptionkey/headset_com,
+/turf/open/floor/plasteel/white,
+/area/shuttle/sol_inspection)
+"oV" = (
+/obj/structure/railing/corner{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/structure/cable{
+	icon_state = "0-1"
+	},
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/sol_inspection)
+"pg" = (
+/obj/machinery/door/airlock/vault{
+	name = "Архив";
+	id_tag = "sol_inspection_vault"
+	},
+/obj/effect/mapping_helpers/airlock/access/any/command/general,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/door/firedoor,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/sol_inspection)
+"py" = (
+/obj/structure/closet/secure_closet/security,
+/obj/item/clothing/under/rank/security/officer,
+/obj/item/clothing/shoes/jackboots{
+	pixel_y = -7
+	},
+/obj/item/storage/belt/security,
+/obj/item/clothing/head/helmet/sec,
+/obj/item/clothing/suit/armor/vest,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/gloves/color/black,
+/obj/item/storage/backpack/security,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"pO" = (
+/obj/effect/turf_decal/trimline/yellow/filled/corner,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"pR" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 4
+	},
+/obj/machinery/cryopod,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"qj" = (
+/obj/machinery/chem_dispenser/drinks/fullupgrade{
+	dir = 1;
+	pixel_y = -16
+	},
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"qm" = (
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"qI" = (
+/obj/structure/closet/secure_closet/security,
+/obj/item/gun/energy/disabler,
+/obj/item/gun/energy/disabler,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"qO" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/reagent_dispensers/watertank/high,
+/obj/machinery/power/apc{
+	dir = 1
+	},
+/obj/structure/cable,
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"qU" = (
+/turf/open/floor/pod/light,
+/area/shuttle/sol_inspection)
+"rf" = (
+/obj/structure/chair/stool/directional/south,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/turf/open/floor/wood,
+/area/shuttle/sol_inspection)
+"rN" = (
+/obj/machinery/computer/med_data,
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"rU" = (
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/structure/cable{
+	icon_state = "0-1"
+	},
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/sol_inspection)
+"sb" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line,
+/obj/structure/table/glass,
+/obj/item/storage/firstaid{
+	pixel_y = -1
+	},
+/obj/machinery/light/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"se" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/shuttle/sol_inspection)
+"sg" = (
+/obj/effect/turf_decal/siding/thinplating_new/corner{
+	dir = 4
+	},
+/obj/structure/railing/corner{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/obj/machinery/firealarm/directional/north,
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"so" = (
+/obj/structure/railing{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable{
+	icon_state = "0-1"
+	},
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/sol_inspection)
+"sr" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/button/door/directional/south{
+	id = "solinspectionstarboardexternal";
+	name = "Внешний болтовой контроль";
+	normaldoorcontrol = 1;
+	specialfunctions = 4
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/sol_inspection)
+"sE" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/firstaid/regular,
+/obj/effect/turf_decal/trimline/blue/filled/corner{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"sH" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plasteel{
+	dir = 4
+	},
+/area/shuttle/sol_inspection)
+"sS" = (
+/obj/structure/chair/stool/directional/north,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/wood,
+/area/shuttle/sol_inspection)
+"tv" = (
+/obj/effect/turf_decal/siding/thinplating_new{
+	dir = 1
+	},
+/obj/effect/turf_decal/caution/stand_clear/white,
+/obj/structure/railing/corner{
+	dir = 1
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"tF" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line,
+/obj/machinery/light/floor,
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"uc" = (
+/obj/structure/table/reinforced,
+/obj/effect/turf_decal/trimline/yellow/filled/corner{
+	dir = 4
+	},
+/obj/item/restraints/handcuffs,
+/obj/item/assembly/flash{
+	pixel_y = 4;
+	pixel_x = -2
+	},
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"uj" = (
+/obj/structure/sign/departments/security{
+	dir = 1;
+	pixel_y = 32
+	},
+/obj/machinery/vending/clothing,
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"uk" = (
+/obj/structure/rack,
+/obj/structure/window/reinforced{
+	dir = 4
+	},
+/obj/item/assembly/flash{
+	pixel_x = -1
+	},
+/obj/item/assembly/flash{
+	pixel_x = 4
+	},
+/obj/item/assembly/flash{
+	pixel_x = 2;
+	pixel_y = -4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"ur" = (
+/obj/machinery/atmospherics/components/unary/tank/air{
+	dir = 1
+	},
+/obj/effect/turf_decal/bot,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"uy" = (
+/obj/machinery/chem_dispenser/drinks/fullupgrade{
+	dir = 1;
+	pixel_y = -18
+	},
+/obj/effect/turf_decal/siding/dark_green{
+	dir = 4
+	},
+/obj/machinery/door/window{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"uC" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/backpack/satchel,
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"uJ" = (
+/obj/structure/tank_dispenser,
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"vi" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/corner{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/dark_blue/filled/corner{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"vo" = (
+/obj/effect/mapping_helpers/airlock/access/any/command/general,
+/obj/machinery/door/airlock/glass{
+	name = "Комната отдыха"
+	},
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/machinery/door/firedoor,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"vA" = (
+/obj/machinery/door/airlock/vault{
+	name = "Архив";
+	id_tag = "sol_inspection_vault"
+	},
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/effect/mapping_helpers/airlock/access/any/command/general,
+/obj/machinery/door/firedoor,
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/sol_inspection)
+"vF" = (
+/obj/effect/turf_decal/stripes,
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral/full,
+/obj/effect/turf_decal/arrows{
+	dir = 8;
+	pixel_x = 14
+	},
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"vO" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/reagent_dispensers/watertank/high,
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"wl" = (
+/obj/structure/window/reinforced{
+	dir = 1
+	},
+/obj/structure/window/reinforced{
+	dir = 9
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"ww" = (
+/obj/item/documents,
+/obj/structure/filingcabinet,
+/turf/open/floor/plasteel/white,
+/area/shuttle/sol_inspection)
+"wM" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/corner{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"xo" = (
+/obj/effect/mob_spawn/human/sol_inspector,
+/obj/machinery/firealarm/directional/north,
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"xv" = (
+/obj/machinery/computer/crew{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 10
+	},
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"xy" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 5
+	},
+/obj/structure/bed,
+/obj/structure/curtain,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"xQ" = (
+/obj/effect/turf_decal/tile/dark/full,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 1
+	},
+/turf/open/floor/pod/light,
+/area/shuttle/sol_inspection)
+"yg" = (
+/obj/structure/chair/stool/directional/east,
+/obj/machinery/firealarm/directional/north,
+/turf/open/floor/wood,
+/area/shuttle/sol_inspection)
+"yl" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"yN" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/power/smes,
+/obj/structure/cable,
+/turf/open/floor/plating,
+/area/shuttle/sol_inspection)
+"yP" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 6
+	},
+/obj/structure/closet/crate/freezer/blood,
+/obj/item/reagent_containers/glass/bottle,
+/obj/item/reagent_containers/glass/bottle,
+/obj/item/reagent_containers/glass/bottle,
+/obj/item/reagent_containers/glass/bottle,
+/obj/item/reagent_containers/glass/bottle,
+/obj/item/reagent_containers/glass/bottle,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"zh" = (
+/obj/effect/turf_decal/trimline/blue/filled/line,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"zy" = (
+/obj/effect/turf_decal/trimline/blue/filled/corner{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"zC" = (
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/sol_inspection)
+"zG" = (
+/obj/effect/spawner/structure/window/reinforced,
+/obj/machinery/door/poddoor/shutters{
+	dir = 8;
+	id = "sol_inspection"
+	},
+/turf/open/floor/plating,
+/area/shuttle/sol_inspection)
+"Ae" = (
+/obj/machinery/suit_storage_unit/standard_unit,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"Ah" = (
+/obj/structure/railing{
+	dir = 4
+	},
+/turf/open/floor/plasteel{
+	dir = 1
+	},
+/area/shuttle/sol_inspection)
+"Aw" = (
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 5
+	},
+/obj/structure/table/reinforced,
+/obj/item/crowbar/red{
+	pixel_y = 5
+	},
+/obj/item/multitool{
+	pixel_x = 3
+	},
+/obj/machinery/firealarm/directional/east,
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"AB" = (
+/obj/effect/turf_decal/trimline/dark_blue/arrow_cw,
+/turf/open/floor/plating/airless,
+/area/shuttle/sol_inspection)
+"Bf" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/full,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/obj/structure/cable,
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"Bl" = (
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"Bq" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/dark_blue/filled/corner{
+	dir = 8
+	},
+/obj/structure/mirror/directional/north,
+/obj/structure/sink/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"BC" = (
+/obj/structure/table/wood/poker,
+/obj/item/toy/cards/deck/cas/black,
+/turf/open/floor/wood,
+/area/shuttle/sol_inspection)
+"BG" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/sol_inspection)
+"BO" = (
+/obj/machinery/door/airlock/vault{
+	name = "Архив";
+	id_tag = "sol_inspection_vault"
+	},
+/obj/effect/mapping_helpers/airlock/access/any/command/general,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/door/firedoor,
+/obj/structure/cable{
+	icon_state = "0-1"
+	},
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/sol_inspection)
+"BT" = (
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/sol_inspection)
+"Cf" = (
+/obj/machinery/vending/autodrobe,
+/obj/effect/turf_decal/siding/dark_green{
+	dir = 6
+	},
+/turf/open/floor/wood,
+/area/shuttle/sol_inspection)
+"Ck" = (
+/obj/structure/table,
+/obj/effect/turf_decal/siding/dark_green{
+	dir = 5
+	},
+/obj/item/reagent_containers/food/drinks/beer{
+	pixel_x = 5;
+	pixel_y = -2
+	},
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"Cr" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 4
+	},
+/obj/machinery/iv_drip,
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"Cx" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line,
+/obj/structure/table/optable,
+/obj/item/surgical_drapes,
+/obj/machinery/defibrillator_mount/loaded{
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"CB" = (
+/obj/effect/turf_decal/tile/dark/full,
+/obj/item/reagent_containers/syringe{
+	pixel_y = -11;
+	pixel_x = -5
+	},
+/obj/item/clothing/suit/toggle/labcoat{
+	pixel_y = 3
+	},
+/obj/structure/rack,
+/obj/item/taperecorder{
+	pixel_x = 6
+	},
+/obj/item/reagent_containers/glass/bottle/antitoxin{
+	pixel_x = 2
+	},
+/obj/item/reagent_containers/glass/bottle/antitoxin{
+	pixel_x = -7
+	},
+/obj/item/clothing/glasses/sunglasses,
+/obj/item/clothing/mask/breath,
+/obj/effect/turf_decal/stripes/white{
+	dir = 9
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 6
+	},
+/turf/open/floor/pod/light,
+/area/shuttle/sol_inspection)
+"CM" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 4
+	},
+/obj/structure/bed,
+/obj/structure/curtain,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"CU" = (
+/obj/effect/turf_decal/stripes,
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral/full,
+/obj/effect/turf_decal/arrows{
+	dir = 8;
+	pixel_x = 14
+	},
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/obj/structure/cable{
+	icon_state = "0-1"
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"Dr" = (
+/obj/structure/sign/departments/security{
+	dir = 1;
+	pixel_y = 32
+	},
+/obj/effect/turf_decal/trimline/dark_blue/filled/end{
+	dir = 8
+	},
+/obj/structure/railing{
+	dir = 10
+	},
+/obj/machinery/shower/directional/south,
+/obj/effect/turf_decal/box,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"Dy" = (
+/obj/machinery/light/directional/south,
+/turf/open/floor/plasteel/white,
+/area/shuttle/sol_inspection)
+"DK" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"DV" = (
+/obj/effect/turf_decal/trimline/dark_blue/arrow_ccw{
+	dir = 10
+	},
+/turf/open/floor/plating/airless,
+/area/shuttle/sol_inspection)
+"Ef" = (
+/obj/effect/turf_decal/bot,
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"Eq" = (
+/obj/machinery/suit_storage_unit/standard_unit,
+/obj/effect/turf_decal/bot,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"Et" = (
+/obj/structure/shuttle/engine/propulsion,
+/obj/effect/turf_decal/trimline/dark_blue/arrow_ccw,
+/turf/open/floor/plating/airless,
+/area/shuttle/sol_inspection)
+"Ew" = (
+/obj/effect/turf_decal/stripes,
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral/full,
+/obj/item/reagent_containers/glass/bucket,
+/obj/item/mop,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/firealarm/directional/west,
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"EJ" = (
+/obj/structure/table/reinforced,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"Ff" = (
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/obj/structure/cable{
+	icon_state = "0-1"
+	},
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/sol_inspection)
+"Fn" = (
+/obj/structure/chair/office{
+	dir = 4
+	},
+/turf/open/floor/plasteel/white,
+/area/shuttle/sol_inspection)
+"Fv" = (
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable{
+	icon_state = "0-1"
+	},
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/sol_inspection)
+"Fw" = (
+/obj/structure/railing,
+/turf/open/floor/plasteel{
+	dir = 8
+	},
+/area/shuttle/sol_inspection)
+"FN" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line,
+/obj/structure/table/glass,
+/obj/item/clothing/mask/breath{
+	pixel_x = 3;
+	pixel_y = 4
+	},
+/obj/item/healthanalyzer,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"FU" = (
+/obj/structure/shuttle/engine/propulsion/burst,
+/turf/open/floor/plating/airless,
+/area/shuttle/sol_inspection)
+"Gt" = (
+/obj/structure/table,
+/obj/effect/turf_decal/siding/dark_green{
+	dir = 1
+	},
+/obj/machinery/microwave,
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"GE" = (
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable{
+	icon_state = "0-1"
+	},
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/sol_inspection)
+"GN" = (
+/obj/effect/turf_decal/stripes{
+	dir = 1
+	},
+/obj/structure/safe,
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/structure/window/reinforced{
+	dir = 1
+	},
+/obj/structure/window/reinforced{
+	dir = 2
+	},
+/obj/structure/window/reinforced{
+	dir = 10
+	},
+/obj/structure/window/reinforced{
+	dir = 9
+	},
+/obj/item/gun/energy/disabler,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"Hg" = (
+/obj/effect/turf_decal/siding/dark/end{
+	dir = 4
+	},
+/turf/open/floor/glass,
+/area/shuttle/sol_inspection)
+"HG" = (
+/obj/effect/turf_decal/tile/dark/full,
+/obj/structure/rack{
+	desc = "Служебное оборудование инспекционной группы."
+	},
+/obj/item/melee/classic_baton{
+	name = "служебная телескопическая дубинка";
+	desc = "Средство нелетальной самообороны инспекционной группы.";
+	pixel_x = 2
+	},
+/obj/item/restraints/handcuffs{
+	pixel_y = -5;
+	pixel_x = -3
+	},
+/obj/item/restraints/handcuffs{
+	pixel_y = -5;
+	pixel_x = 2
+	},
+/obj/effect/turf_decal/stripes/white{
+	dir = 5
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 10
+	},
+/obj/item/crowbar,
+/obj/item/extinguisher{
+	name = "служебный огнетушитель";
+	desc = "Служебное оснащение инспекционной группы."
+	},
+/turf/open/floor/pod/light,
+/area/shuttle/sol_inspection)
+"HO" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/button/door/directional/south{
+	id = "solinspectionportexternal";
+	name = "Внешний болтовой контроль";
+	normaldoorcontrol = 1;
+	specialfunctions = 4
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/sol_inspection)
+"Ic" = (
+/obj/effect/mob_spawn/human/sol_inspector,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"If" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 4
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plasteel{
+	dir = 4
+	},
+/area/shuttle/sol_inspection)
+"Ik" = (
+/obj/effect/turf_decal/trimline/dark_blue/arrow_ccw,
+/turf/open/floor/plating/airless,
+/area/shuttle/sol_inspection)
+"Ir" = (
+/obj/effect/turf_decal/siding/thinplating_new{
+	dir = 1
+	},
+/obj/effect/turf_decal/caution/stand_clear/white,
+/obj/structure/railing/corner{
+	dir = 4
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"IE" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line,
+/obj/structure/table/glass,
+/obj/item/storage/firstaid/brute{
+	pixel_y = -1
+	},
+/obj/item/storage/firstaid/fire{
+	pixel_y = 5
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"IS" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel{
+	dir = 8
+	},
+/area/shuttle/sol_inspection)
+"IU" = (
+/obj/structure/table/wood/poker,
+/obj/structure/sign/poster/official/cleanliness{
+	dir = 1;
+	pixel_y = 32
+	},
+/obj/item/toy/cards/deck,
+/turf/open/floor/wood,
+/area/shuttle/sol_inspection)
+"IY" = (
+/obj/effect/turf_decal/trimline/dark_blue/arrow_cw{
+	dir = 6
+	},
+/turf/open/floor/plating/airless,
+/area/shuttle/sol_inspection)
+"Jn" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 8
+	},
+/obj/effect/mapping_helpers/airlock/access/any/command/general,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/door/airlock/public/glass{
+	name = "Мостик"
+	},
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/machinery/door/firedoor,
+/turf/open/floor/plasteel{
+	dir = 8
+	},
+/area/shuttle/sol_inspection)
+"Jq" = (
+/obj/structure/railing{
+	dir = 8
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/plasteel{
+	dir = 1
+	},
+/area/shuttle/sol_inspection)
+"Ka" = (
+/obj/item/kirbyplants/random,
+/obj/effect/turf_decal/trimline/dark_blue/corner{
+	dir = 4
+	},
+/obj/effect/turf_decal/trimline/dark_blue/arrow_ccw{
+	dir = 10
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 4
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"KA" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 8
+	},
+/obj/effect/turf_decal/trimline/blue/filled/line,
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"KE" = (
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 1
+	},
+/obj/effect/mapping_helpers/airlock/access/any/command/general,
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/machinery/door/airlock/external/glass/ruin{
+	id_tag = "solinspectionstarboardexternal"
+	},
+/obj/effect/mapping_helpers/airlock/locked,
+/obj/docking_port/mobile/sol_inspection,
+/turf/open/floor/pod/light,
+/area/shuttle/sol_inspection)
+"KI" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 4;
+	name = "служебное кресло"
+	},
+/obj/effect/turf_decal/trimline/yellow/filled/line,
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"KJ" = (
+/obj/structure/rack,
+/obj/item/storage/box/flashbangs,
+/obj/structure/window/reinforced{
+	dir = 2
+	},
+/obj/structure/window/reinforced{
+	dir = 8
+	},
+/obj/item/grenade/smokebomb{
+	pixel_x = -5;
+	pixel_y = 5
+	},
+/obj/item/grenade/smokebomb{
+	pixel_x = 2;
+	pixel_y = 5
+	},
+/obj/item/grenade/smokebomb{
+	pixel_x = 9;
+	pixel_y = 5
+	},
+/obj/item/grenade/smokebomb{
+	pixel_x = 9
+	},
+/obj/item/grenade/smokebomb{
+	pixel_x = 2
+	},
+/obj/item/grenade/smokebomb{
+	pixel_x = -5
+	},
+/obj/item/gun/energy/disabler{
+	pixel_y = 7
+	},
+/obj/machinery/light/small/directional/west,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"KZ" = (
+/obj/machinery/door/window{
+	dir = 4;
+	req_access_txt = "20"
+	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/turf/open/floor/plasteel/white,
+/area/shuttle/sol_inspection)
+"Lh" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 4
+	},
+/obj/machinery/computer/cryopod,
+/obj/machinery/light/small/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"LB" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"LM" = (
+/obj/structure/shuttle/engine/propulsion,
+/obj/effect/turf_decal/trimline/dark_blue/arrow_cw,
+/turf/open/floor/plating/airless,
+/area/shuttle/sol_inspection)
+"LR" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/firealarm/directional/east,
+/turf/open/floor/plasteel{
+	dir = 4
+	},
+/area/shuttle/sol_inspection)
+"LV" = (
+/obj/machinery/computer/camera_advanced/shuttle_docker/sol_inspection,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 5
+	},
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"LX" = (
+/turf/open/floor/plating/airless,
+/area/shuttle/sol_inspection)
+"LZ" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 4
+	},
+/turf/open/floor/plasteel{
+	dir = 4
+	},
+/area/shuttle/sol_inspection)
+"Ma" = (
+/obj/structure/closet/secure_closet/security,
+/obj/item/clothing/under/rank/security/officer,
+/obj/item/clothing/shoes/jackboots{
+	pixel_y = -7
+	},
+/obj/item/storage/belt/security,
+/obj/machinery/light/directional/east,
+/obj/item/clothing/head/helmet/sec,
+/obj/item/clothing/suit/armor/vest,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/gloves/color/black,
+/obj/item/storage/backpack/security,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"Mu" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"Mv" = (
+/obj/effect/turf_decal/tile/dark/full,
+/obj/structure/chair/comfy/shuttle{
+	dir = 8
+	},
+/obj/effect/turf_decal/box/red,
+/turf/open/floor/pod/light,
+/area/shuttle/sol_inspection)
+"My" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"MJ" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 4
+	},
+/obj/structure/sign/departments/security{
+	dir = 4;
+	pixel_x = 32
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/turf/open/floor/plasteel{
+	dir = 4
+	},
+/area/shuttle/sol_inspection)
+"MX" = (
+/obj/machinery/power/rtg/advanced{
+	power_gen = 608000
+	},
+/obj/machinery/power/terminal{
+	dir = 4
+	},
+/obj/machinery/door/window{
+	dir = 1;
+	req_access_txt = "20"
+	},
+/obj/structure/window/plasma/reinforced{
+	dir = 2
+	},
+/obj/structure/window/plasma/reinforced{
+	dir = 4
+	},
+/obj/structure/window/plasma/reinforced{
+	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "0-1"
+	},
+/turf/open/floor/plating,
+/area/shuttle/sol_inspection)
+"Ni" = (
+/obj/machinery/vending/cigarette,
+/obj/effect/turf_decal/siding/dark_green,
+/obj/machinery/light/directional/north,
+/turf/open/floor/wood,
+/area/shuttle/sol_inspection)
+"No" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 4
+	},
+/obj/structure/sign/departments/security{
+	dir = 4;
+	pixel_x = 32
+	},
+/turf/open/floor/plasteel{
+	dir = 4
+	},
+/area/shuttle/sol_inspection)
+"NW" = (
+/obj/structure/table/reinforced,
+/obj/item/stamp/solgov{
+	pixel_x = 7;
+	pixel_y = 10
+	},
+/obj/item/stamp/denied{
+	pixel_x = 7;
+	pixel_y = 1
+	},
+/obj/item/paper_bin{
+	pixel_y = 4;
+	pixel_x = -5
+	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/turf/open/floor/plasteel/white,
+/area/shuttle/sol_inspection)
+"NX" = (
+/obj/machinery/jukebox{
+	req_access = null
+	},
+/obj/effect/turf_decal/siding/dark_green,
+/turf/open/floor/wood,
+/area/shuttle/sol_inspection)
+"Og" = (
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 1
+	},
+/obj/effect/mapping_helpers/airlock/access/any/command/general,
+/obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/machinery/door/airlock/external/glass/ruin{
+	id_tag = "solinspectionportexternal"
+	},
+/obj/effect/mapping_helpers/airlock/locked,
+/turf/open/floor/pod/light,
+/area/shuttle/sol_inspection)
+"Oy" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/power/smes,
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/turf/open/floor/plating,
+/area/shuttle/sol_inspection)
+"OC" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"OG" = (
+/obj/effect/turf_decal/stripes{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral/full,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
+/obj/structure/cable{
+	icon_state = "0-8"
+	},
+/obj/structure/cable{
+	icon_state = "0-1"
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"Pn" = (
+/obj/structure/table/reinforced,
+/obj/machinery/light/red/dim/directional/south,
+/obj/item/stack/sheet/mineral/gold{
+	amount = 3;
+	pixel_x = -2;
+	pixel_y = 2
+	},
+/obj/item/stack/sheet/mineral/silver{
+	amount = 8;
+	pixel_x = 6;
+	pixel_y = 2
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"PP" = (
+/obj/effect/spawner/structure/window/reinforced,
+/obj/machinery/door/poddoor/shutters{
+	id = "sol_inspection_bridge";
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/shuttle/sol_inspection)
+"PX" = (
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Техническое помещение"
+	},
+/obj/effect/mapping_helpers/airlock/access/any/command/general,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/door/firedoor,
+/turf/open/floor/pod/light,
+/area/shuttle/sol_inspection)
+"Qi" = (
+/obj/structure/railing,
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/sol_inspection)
+"Qn" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/dark_blue/filled/corner{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"Qv" = (
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 9
+	},
+/obj/structure/table/reinforced,
+/obj/machinery/button/door{
+	id = "sol_inspection_bridge";
+	name = "Ставни мостика"
+	},
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"QQ" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/food/snacks/donut,
+/obj/item/reagent_containers/food/snacks/burger/plain,
+/obj/machinery/computer/monitor{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/shuttle/sol_inspection)
+"QS" = (
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/button/door/directional/north{
+	id = "sol_inspection_vault";
+	normaldoorcontrol = 1;
+	specialfunctions = 4;
+	name = "Блокировка архива"
+	},
+/obj/structure/cable{
+	icon_state = "0-2"
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/sol_inspection)
+"QT" = (
+/obj/machinery/vending/coffee,
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/sol_inspection)
+"QV" = (
+/obj/structure/chair/stool/bar/directional/south,
+/turf/open/floor/plasteel/grimy,
+/area/shuttle/sol_inspection)
+"Rh" = (
+/obj/effect/spawner/structure/window/reinforced,
+/obj/machinery/door/poddoor/shutters{
+	id = "sol_inspection_bridge";
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/sol_inspection)
+"Rv" = (
+/obj/structure/table/reinforced,
+/obj/item/folder/blue,
+/obj/item/pen/fountain,
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
+	},
+/turf/open/floor/plasteel/white,
+/area/shuttle/sol_inspection)
+"RC" = (
+/obj/structure/table/reinforced,
+/obj/item/storage/fancy/donut_box,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"RF" = (
+/obj/effect/turf_decal/siding/dark/end{
+	dir = 8
+	},
+/turf/open/floor/glass,
+/area/shuttle/sol_inspection)
+"RX" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 8
+	},
+/turf/open/floor/plasteel{
+	dir = 8
+	},
+/area/shuttle/sol_inspection)
+"SA" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 10
+	},
+/obj/machinery/computer/operating{
+	dir = 1
+	},
+/obj/item/healthanalyzer,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"SC" = (
+/obj/item/kirbyplants/random,
+/obj/effect/turf_decal/trimline/dark_blue/corner,
+/obj/effect/turf_decal/trimline/dark_blue/arrow_cw{
+	dir = 9
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
+	dir = 4
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"SG" = (
+/obj/effect/turf_decal/siding/thinplating_new/corner{
+	dir = 1
+	},
+/obj/structure/railing/corner{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"SM" = (
+/obj/effect/turf_decal/trimline/blue/filled/line,
+/obj/machinery/light/floor,
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"SQ" = (
+/obj/machinery/photocopier/gratis,
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/plasteel/white,
+/area/shuttle/sol_inspection)
+"Tg" = (
+/obj/effect/turf_decal/stripes{
+	dir = 5
+	},
+/obj/structure/table/reinforced,
+/obj/structure/fluff{
+	density = 1;
+	desc = "Материалы служебной проверки.";
+	icon = 'icons/obj/stack_objects.dmi';
+	icon_state = "sheet-silver_3";
+	name = "изъятый серебряный запас"
+	},
+/obj/structure/window/reinforced{
+	dir = 1
+	},
+/obj/structure/window/reinforced{
+	dir = 4
+	},
+/obj/structure/window/reinforced{
+	dir = 2
+	},
+/obj/structure/window/reinforced{
+	dir = 6
+	},
+/obj/structure/window/reinforced{
+	dir = 5
+	},
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"Th" = (
+/obj/structure/chair/comfy/shuttle{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/dark_blue/filled/corner{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"Ts" = (
+/obj/item/kirbyplants/random,
+/obj/effect/turf_decal/trimline/blue/filled/line{
+	dir = 9
+	},
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"Tu" = (
+/obj/effect/turf_decal/siding/dark{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/dark,
+/turf/open/floor/glass,
+/area/shuttle/sol_inspection)
+"TA" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/food/snacks/donut,
+/turf/open/floor/wood,
+/area/shuttle/sol_inspection)
+"Uk" = (
+/obj/machinery/door/airlock/vault{
+	name = "Архив";
+	id_tag = "sol_inspection_vault"
+	},
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/effect/mapping_helpers/airlock/access/any/command/general,
+/obj/machinery/door/firedoor,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/sol_inspection)
+"UF" = (
+/obj/item/kirbyplants/random,
+/obj/effect/turf_decal/trimline/yellow/filled/line{
+	dir = 5
+	},
+/turf/open/floor/plasteel,
+/area/shuttle/sol_inspection)
+"Vf" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 4
+	},
+/obj/machinery/door/firedoor,
+/turf/open/floor/plasteel{
+	dir = 4
+	},
+/area/shuttle/sol_inspection)
+"VB" = (
+/obj/machinery/atmospherics/components/unary/outlet_injector/layer2{
+	dir = 4;
+	on = 1
+	},
+/turf/open/floor/plating,
+/area/shuttle/sol_inspection)
+"VS" = (
+/obj/structure/window/reinforced{
+	dir = 1
+	},
+/turf/open/floor/pod/dark,
+/area/shuttle/sol_inspection)
+"WA" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/turf/closed/wall/mineral/titanium,
+/area/shuttle/sol_inspection)
+"WO" = (
+/obj/effect/turf_decal/tile/dark/full,
+/obj/structure/toilet{
+	dir = 8;
+	name = "туалет"
+	},
+/obj/effect/turf_decal/bot,
+/turf/open/floor/pod/light,
+/area/shuttle/sol_inspection)
+"WR" = (
+/turf/template_noop,
+/area/template_noop)
+"WU" = (
+/obj/effect/turf_decal/tile/dark/full,
+/obj/machinery/light/red/directional/east,
+/turf/open/floor/pod/light,
+/area/shuttle/sol_inspection)
+"Xr" = (
+/obj/machinery/door/airlock/public/glass{
+	name = "Инспекционный офис"
+	},
+/obj/effect/mapping_helpers/airlock/access/any/command/general,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/machinery/door/firedoor,
+/turf/open/floor/plasteel/white,
+/area/shuttle/sol_inspection)
+"XI" = (
+/obj/effect/spawner/structure/window/reinforced,
+/obj/machinery/door/poddoor/shutters{
+	dir = 1;
+	id = "sol_inspection_bridge"
+	},
+/turf/open/floor/plating,
+/area/shuttle/sol_inspection)
+"XX" = (
+/obj/structure/railing{
+	dir = 9
+	},
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 9
+	},
+/obj/effect/turf_decal/trimline/dark_blue/warning{
+	dir = 6
+	},
+/obj/item/kirbyplants/random,
+/turf/open/floor/plasteel/dark,
+/area/shuttle/sol_inspection)
+"Ya" = (
+/obj/structure/cable,
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/machinery/button/door/directional/north{
+	id = "sol_inspection_vault";
+	normaldoorcontrol = 1;
+	specialfunctions = 4;
+	name = "Блокировка архива"
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/shuttle/sol_inspection)
+"Yf" = (
+/obj/machinery/power/rtg/advanced{
+	power_gen = 608000
+	},
+/obj/structure/cable,
+/obj/machinery/power/terminal{
+	dir = 4
+	},
+/obj/machinery/door/window{
+	dir = 1;
+	req_access_txt = "20"
+	},
+/obj/structure/window/plasma/reinforced{
+	dir = 2
+	},
+/obj/structure/window/plasma/reinforced{
+	dir = 4
+	},
+/obj/structure/window/plasma/reinforced{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/shuttle/sol_inspection)
+"Yu" = (
+/obj/structure/shuttle/engine/heater,
+/obj/structure/window/reinforced{
+	dir = 1
+	},
+/turf/open/floor/plating/airless,
+/area/shuttle/sol_inspection)
+"YE" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
+/obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
+/obj/structure/cable,
+/turf/open/floor/plasteel{
+	dir = 8
+	},
+/area/shuttle/sol_inspection)
+"YJ" = (
+/obj/effect/turf_decal/tile/dark_blue/half{
+	dir = 4
+	},
+/obj/effect/mapping_helpers/airlock/access/any/command/general,
+/obj/effect/mapping_helpers/airlock/cutaiwire,
+/obj/machinery/door/airlock/public/glass{
+	name = "Мостик"
+	},
+/obj/machinery/door/firedoor,
+/turf/open/floor/plasteel{
+	dir = 4
+	},
+/area/shuttle/sol_inspection)
+"ZE" = (
+/obj/item/reagent_containers/glass/bottle/water{
+	pixel_y = 14;
+	pixel_x = -8
+	},
+/obj/item/reagent_containers/food/drinks/drinkingglass/shotglass{
+	pixel_x = -9
+	},
+/obj/structure/table/reinforced,
+/obj/machinery/button/door/directional/north{
+	id = "sol_inspection";
+	name = "Приватные ставни"
+	},
+/obj/item/melee/classic_baton{
+	pixel_y = 11;
+	pixel_x = 8
+	},
+/obj/item/storage/fancy/donut_box{
+	pixel_y = 9;
+	pixel_x = 6
+	},
+/obj/item/lighter{
+	pixel_x = 11;
+	pixel_y = 1
+	},
+/obj/item/reagent_containers/food/drinks/drinkingglass/shotglass,
+/obj/item/reagent_containers/food/drinks/drinkingglass/shotglass{
+	pixel_x = 9
+	},
+/turf/open/floor/plasteel/white,
+/area/shuttle/sol_inspection)
+
+(1,1,1) = {"
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+VB
+WR
+WR
+WR
+WR
+"}
+(2,1,1) = {"
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+aC
+aC
+zC
+aC
+aC
+WR
+WR
+"}
+(3,1,1) = {"
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+aC
+aC
+hf
+hf
+hf
+aC
+aC
+mv
+Ew
+MX
+aC
+aC
+WR
+"}
+(4,1,1) = {"
+WR
+WR
+WR
+WR
+WR
+WR
+aC
+zG
+zG
+zG
+aC
+NX
+lE
+QV
+Gt
+bT
+aC
+ur
+kp
+Oy
+Yu
+FU
+DV
+"}
+(5,1,1) = {"
+WR
+WR
+WR
+WR
+WR
+aC
+aC
+ZE
+hS
+SQ
+aC
+Ni
+lE
+QV
+ip
+mA
+QT
+vO
+cR
+OG
+Yu
+LX
+Et
+"}
+(6,1,1) = {"
+WR
+WR
+WR
+WR
+WR
+aC
+ww
+Fn
+aT
+Dy
+aC
+dP
+lE
+QV
+bp
+qj
+aC
+lR
+CU
+eg
+Yu
+LX
+Ik
+"}
+(7,1,1) = {"
+WR
+WR
+aC
+cL
+cL
+aC
+oJ
+Rv
+NW
+KZ
+aC
+Cf
+lE
+QV
+Ck
+uy
+aC
+aC
+lu
+aC
+aC
+aC
+aC
+"}
+(8,1,1) = {"
+WR
+WR
+Rh
+Ts
+xv
+aC
+dl
+kO
+kO
+dl
+aC
+yg
+fm
+RF
+se
+fb
+aC
+Ae
+bw
+lc
+fE
+qU
+Og
+"}
+(9,1,1) = {"
+WR
+aC
+aC
+rN
+KA
+aC
+dl
+dl
+dl
+dl
+aC
+IU
+sS
+Tu
+rf
+QQ
+aC
+Eq
+am
+gd
+gd
+aC
+aC
+"}
+(10,1,1) = {"
+WR
+Rh
+Qv
+sE
+SM
+aC
+Ka
+dl
+dl
+SC
+aC
+BC
+sS
+Hg
+rf
+TA
+aC
+hW
+bw
+VS
+Bl
+aC
+WR
+"}
+(11,1,1) = {"
+aC
+Rh
+RC
+LB
+zh
+gd
+rU
+Xr
+aC
+GE
+aC
+aC
+GE
+vo
+BT
+aC
+gd
+sg
+bw
+lf
+ig
+aC
+WR
+"}
+(12,1,1) = {"
+Rh
+bV
+Th
+mA
+zy
+Jn
+nk
+RX
+IS
+nk
+od
+fg
+nk
+gw
+fZ
+eZ
+of
+aJ
+nm
+Bl
+Ef
+aC
+WR
+"}
+(13,1,1) = {"
+Rh
+LV
+ev
+mA
+pO
+YJ
+sH
+LR
+sH
+sH
+Vf
+LZ
+MJ
+dy
+No
+LZ
+Ah
+Ir
+bw
+Bl
+Ef
+aC
+WR
+"}
+(14,1,1) = {"
+aC
+Rh
+gl
+nA
+nE
+gd
+aC
+aC
+vA
+aC
+aC
+aC
+aC
+dY
+aC
+aC
+gd
+SG
+bw
+wl
+Pn
+aC
+WR
+"}
+(15,1,1) = {"
+WR
+Rh
+Aw
+uc
+tF
+aC
+ba
+KJ
+bw
+GN
+aC
+xo
+bo
+ia
+ie
+SA
+aC
+uC
+bw
+VS
+mN
+aC
+WR
+"}
+(16,1,1) = {"
+WR
+aC
+aC
+fe
+KI
+aC
+DK
+My
+bw
+iG
+aC
+Ic
+bo
+ia
+yl
+Cx
+aC
+EJ
+hv
+gd
+gd
+aC
+aC
+"}
+(17,1,1) = {"
+WR
+WR
+XI
+UF
+cO
+aC
+uk
+kK
+bw
+Tg
+aC
+uj
+Fw
+ia
+yl
+FN
+aC
+uJ
+bb
+nB
+fE
+qU
+KE
+"}
+(18,1,1) = {"
+WR
+WR
+aC
+PP
+PP
+aC
+QS
+Fv
+Ff
+Fv
+BO
+so
+oV
+kw
+vi
+sb
+aC
+aC
+gZ
+aC
+aC
+aC
+aC
+"}
+(19,1,1) = {"
+WR
+WR
+WR
+WR
+WR
+aC
+oH
+OC
+Mu
+OC
+aC
+Dr
+bb
+XX
+wM
+IE
+aC
+iZ
+nI
+HG
+Yu
+LX
+LM
+"}
+(20,1,1) = {"
+WR
+WR
+WR
+WR
+WR
+aC
+aC
+py
+Ma
+qI
+aC
+Bq
+Qn
+wM
+qm
+do
+aC
+jX
+ac
+xQ
+Yu
+LX
+AB
+"}
+(21,1,1) = {"
+WR
+WR
+WR
+WR
+WR
+WR
+aC
+aC
+aC
+aC
+aC
+gn
+Lh
+pR
+az
+yP
+aC
+nP
+Mv
+nq
+Yu
+FU
+IY
+"}
+(22,1,1) = {"
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+aC
+aC
+aC
+aC
+aC
+aC
+aC
+WO
+WU
+CB
+aC
+aC
+WR
+"}
+(23,1,1) = {"
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+WR
+aC
+aC
+aC
+aC
+aC
+WR
+WR
+"}
