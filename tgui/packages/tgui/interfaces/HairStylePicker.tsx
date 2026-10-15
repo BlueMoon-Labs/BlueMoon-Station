@@ -145,12 +145,14 @@ const StyleGrid = (props: {
   const cols = data.cols || 4;
   const aspectRatio = (data.cell_w || 40) / (data.cell_h || 20);
   const rows = Math.max(1, Math.ceil(names.length / cols));
+  const viewedCount =
+    data.page < data.pages ? names.length * data.page : data.total;
 
   return (
     <Section
       fill
       scrollable
-      title={`${names.length}/${data.total}`}
+      title={`${viewedCount}/${data.total}`}
       buttons={
         <Stack align="center">
           <Stack.Item>
