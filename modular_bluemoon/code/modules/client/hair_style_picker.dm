@@ -364,7 +364,6 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 				prefs.facial_hair_style = selected
 			if(HAIR_PICKER_TAB_GRAD)
 				prefs.grad_style = selected
-		prefs.save_character(silent = TRUE)
 		prefs.ShowChoices(user, rebuild_preview = TRUE)
 		return TRUE
 

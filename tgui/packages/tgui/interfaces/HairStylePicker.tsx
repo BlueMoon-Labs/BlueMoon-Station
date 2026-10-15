@@ -102,6 +102,7 @@ export const HairStylePicker = (props) => {
               </Stack.Item>
               <Stack.Item width="200px">
                 <Input
+                  autoFocus
                   fluid
                   value={data.search}
                   placeholder={labels.search}
