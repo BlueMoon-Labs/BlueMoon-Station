@@ -7,7 +7,7 @@
 	base_pixel_x = -16
 	base_pixel_y = -16
 	max_integrity = 2000
-	armor = list(MELEE = 50, BULLET = 30, LASER = 30, ENERGY = 30, BOMB = 50, BIO = 0, RAD = 0, FIRE = 100, ACID = 100)
+	armor_type = /datum/armor/vehicle_tank
 	move_force = MOVE_FORCE_VERY_STRONG
 	move_resist = MOVE_FORCE_EXTREMELY_STRONG
 	generic_canpass = FALSE

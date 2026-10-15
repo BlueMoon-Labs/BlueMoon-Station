@@ -28,7 +28,7 @@
 	icon = 'modular_bluemoon/icons/obj/tram/tram_signs.dmi'
 	icon_state = "tram_plate"
 	max_integrity = 150
-	armor = list(MELEE = 40, BULLET = 10, LASER = 10, ENERGY = 0, BOMB = 45, BIO = 0, RAD = 0, FIRE = 90, ACID = 100)
+	armor_type = /datum/armor/transport
 	buildable_sign = FALSE
 	is_editable = FALSE
 	/// The tram we have info about

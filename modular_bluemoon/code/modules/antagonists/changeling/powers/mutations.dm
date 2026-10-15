@@ -32,7 +32,7 @@
 	cold_protection = ARMS|HANDS
 	min_cold_protection_temperature = GLOVES_MIN_TEMP_PROTECT
 	max_heat_protection_temperature = GLOVES_MAX_TEMP_PROTECT
-	armor = list(MELEE = 20, BULLET = 20, LASER = 20, ENERGY = 20, BOMB = 35, BIO = 35, RAD = 35, FIRE = 0, ACID = 0)
+	armor_type = /datum/armor/martial_arts_extended
 
 /obj/item/clothing/gloves/krav_maga/combatglovesplus/extended/Initialize(mapload)
 	. = ..()

@@ -3,7 +3,7 @@
 	icon = 'icons/obj/shields.dmi'
 	item_flags = ITEM_CAN_BLOCK
 	block_parry_data = /datum/block_parry_data/shield
-	armor = list(MELEE = 50, BULLET = 50, LASER = 50, ENERGY = 0, BOMB = 30, BIO = 0, RAD = 0, FIRE = 80, ACID = 70)
+	armor_type = /datum/armor/base_and_adamantineshield
 	/// Shield flags
 	var/shield_flags = SHIELD_FLAGS_DEFAULT
 	/// Last shieldbash world.time
@@ -314,7 +314,7 @@
 /obj/item/shield/riot/energy_proof
 	name = "energy resistant shield"
 	desc = "An ablative shield designed to absorb and disperse energy attacks. This comes at significant cost to its ability to withstand ballistics and kinetics, breaking apart easily."
-	armor = list(MELEE = 30, BULLET = -10, LASER = 80, ENERGY = 80, BOMB = -40, BIO = 0, RAD = 0, FIRE = 0, ACID = 50)
+	armor_type = /datum/armor/energy_proof
 	icon_state = "riot_laser"
 	item_state = "riot_laser"
 	lefthand_file = 'icons/mob/inhands/equipment/shields_lefthand.dmi'
@@ -327,7 +327,7 @@
 /obj/item/shield/riot/kinetic_proof
 	name = "kinetic resistant shield"
 	desc = "A polymer and ceramic shield designed to absorb ballistic projectiles and kinetic force. It doesn't do very well into energy attacks, especially from weapons that inflict burns."
-	armor = list(MELEE = 30, BULLET = 80, LASER = 0, ENERGY = 0, BOMB = -40, BIO = 0, RAD = 0, FIRE = 0, ACID = 50)
+	armor_type = /datum/armor/kinetic_proof
 	icon_state = "riot_bullet"
 	item_state = "riot_bullet"
 	shield_flags = SHIELD_FLAGS_DEFAULT | SHIELD_KINETIC_STRONG | SHIELD_ENERGY_WEAK
@@ -348,7 +348,7 @@
 
 /obj/item/shield/riot/roman/fake
 	desc = "Bears an inscription on the inside: <i>\"Romanes venio domus\"</i>. It appears to be a bit flimsy."
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0)
+	armor_type = /datum/armor/none
 	shield_flags = SHIELD_ENERGY_WEAK | SHIELD_KINETIC_WEAK | SHIELD_NO_RANGED
 	max_integrity = 40
 	melee_block = 30
@@ -494,7 +494,7 @@
 /obj/item/shield/makeshift
 	name = "Metal Shield"
 	desc = "A large shield made of wired and welded sheets of metal. The handle is made of cloth and leather, making it unwieldy."
-	armor = list(MELEE = 25, BULLET = 25, LASER = 5, ENERGY = 0, BOMB = 30, BIO = 0, RAD = 0, FIRE = 70, ACID = 80)
+	armor_type = /datum/armor/makeshift
 	lefthand_file = 'icons/mob/inhands/equipment/shields_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/shields_righthand.dmi'
 	item_state = "metal"
@@ -512,7 +512,7 @@
 /obj/item/shield/riot/tower
 	name = "tower shield"
 	desc = "An immense tower shield. Designed to ensure maximum protection to the user, at the expense of mobility."
-	armor = list(MELEE = 95, BULLET = 95, LASER = 75, ENERGY = 60, BOMB = 90, BIO = 90, RAD = 0, FIRE = 90, ACID = 10) //Armor for the item, dosnt transfer to user
+	armor_type = /datum/armor/tower
 	item_state = "metal"
 	icon_state = "metal"
 	force = 16

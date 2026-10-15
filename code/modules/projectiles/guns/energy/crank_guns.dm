@@ -39,6 +39,17 @@
 		/datum/material/plastic = SMALL_MATERIAL_AMOUNT * 3,
 	)
 
+/obj/item/gun/energy/laser/musket/prime/Initialize(mapload)
+	. = ..()
+	AddComponent( \
+		/datum/component/crank_recharge, \
+		charging_cell = get_cell(), \
+		charge_amount = STANDARD_CELL_CHARGE * 0.5, \
+		cooldown_time = 3 SECONDS, \
+		charge_sound = 'sound/items/weapons/laser_crank.ogg', \
+		charge_sound_cooldown_time = 2.8 SECONDS, \
+		charge_move = IGNORE_USER_LOC_CHANGE, \
+	)
 // Термальные пистолеты
 
 /obj/item/gun/energy/laser/thermal /* общий родитель этих пушек, он просто стреляет тяжёлыми пулями, может кому-то понравится? */

@@ -48,7 +48,7 @@
 	desc = "Костюм данной модели выполнен на основе неизвестного костюма. Изготавливается из особо прочной ткани Альянсиума с водоотталкивающей пропиткой и высоким содержанием хлопка, и полиэфирных нитей. Идеально подогнан под пропорции клиента и прекрасно подходит для грязной работы."
 	icon_state = "infiltrator_u"
 	item_state = "infiltrator_u"
-	armor = list(MELEE = 10, BULLET = 10, LASER = 10,ENERGY = 10, BOMB = 0, BIO = 0, RAD = 10, FIRE = 100, ACID = 100, WOUND = 10)
+	armor_type = /datum/armor/tactical
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	can_adjust = FALSE
 	icon = 'modular_bluemoon/icons/mob/assasin.dmi'

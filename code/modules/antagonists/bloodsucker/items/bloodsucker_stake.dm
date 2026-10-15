@@ -117,7 +117,7 @@
 	icon_state = "hardened" // Inventory Icon
 	force = 8
 	throwforce = 12
-	armour_penetration = 10
+	armour_penetration = MELEE_AP_ANTAGONIST
 	embedding = list("embed_chance" = 50, "fall_chance" = 0) // UPDATE 2/10/18 embedding_behavior.dm is how this is handled
 	obj_integrity = 120
 	max_integrity = 120
@@ -131,7 +131,7 @@
 	item_state = "silver" // In-hand Icon
 	siemens_coefficient = 1 //flags = CONDUCT // var/siemens_coefficient = 1 // for electrical admittance/conductance (electrocution checks and shit)
 	force = 9
-	armour_penetration = 25
+	armour_penetration = MELEE_AP_ANTAGONIST
 	embedding = list("embed_chance" = 65) // UPDATE 2/10/18 embedding_behavior.dm is how this is handled
 	obj_integrity = 300
 	max_integrity = 300

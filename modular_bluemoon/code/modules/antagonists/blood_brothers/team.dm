@@ -112,7 +112,7 @@ GLOBAL_LIST_INIT(brother_backstories, list(
 /datum/team/brother_team/is_solo()
 	return FALSE
 
-/datum/team/brother_team/antag_listing_name()
+/datum/team/brother_team/antag_check_name()
 	return "[name] blood brothers"
 
 /datum/team/brother_team/proc/update_name()

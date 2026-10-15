@@ -1,10 +1,10 @@
 // Port Tarkon Atmos Control
 
 /obj/machinery/air_sensor/tarkon
+	armor_type = /datum/armor/base_and_tarkon
 	name = "gas sensor"
 	icon = 'icons/obj/stationobjs.dmi'
 	icon_state = "gsensor1"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 0)
 
 /obj/machinery/computer/atmos_control/tarkon
 	circuit = /obj/item/circuitboard/computer/atmos_control/tarkon

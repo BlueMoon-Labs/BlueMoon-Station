@@ -60,18 +60,6 @@
 	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#2A2A2A")
 
-/datum/gear/suit/officerian_coat
-	name = "Poly Coat"
-	path = /obj/item/clothing/suit/toggle/captains_parade/hos_formal/officerian_coat
-	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
-	loadout_initial_colors = list("#2A2A2A","#1f1f1f")
-
-/datum/gear/suit/officerian_coat_oversized
-	name = "Poly Coat Oversized"
-	path = /obj/item/clothing/suit/toggle/captains_parade/hos_formal/officerian_coat_oversized
-	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
-	loadout_initial_colors = list("#2A2A2A","#1a1a1a")
-
 /datum/gear/suit/ponchored
 	name = "Red poncho"
 	path = /obj/item/clothing/suit/poncho/red

@@ -6,7 +6,6 @@
 	plane = ABOVE_WALL_PLANE
 	layer = SIGN_LAYER
 	max_integrity = 100
-	armor = list(MELEE = 50, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 50, ACID = 50)
 	var/buildable_sign = 1 //unwrenchable and modifiable
 	rad_flags = RAD_PROTECT_CONTENTS | RAD_NO_CONTAMINATE
 	///Как тип называется в списке выбора у ручки. Без него тип в список не попадёт даже с is_editable.
@@ -22,6 +21,7 @@
 	sign_change_name = "Blank Sign"
 
 /obj/item/sign
+	armor_type = /datum/armor/sign_and_structure_sign
 	name = "sign backing"
 	desc = "A plastic sign backing, use a pen to change the decal. It can be placed on a wall."
 	icon = 'icons/obj/decals.dmi'
@@ -31,7 +31,6 @@
 	righthand_file = 'icons/mob/inhands/items_righthand.dmi'
 	w_class = WEIGHT_CLASS_NORMAL
 	custom_materials = list(/datum/material/plastic = 2000)
-	armor = list(MELEE = 50, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 50, ACID = 50)
 	resistance_flags = FLAMMABLE
 	max_integrity = 100
 	///Тип структуры, которая появится на стене. По умолчанию выглядит так же, как сама подложка.

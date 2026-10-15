@@ -15,6 +15,8 @@ GLOBAL_VAR_INIT(next_account_number, 0)
 /datum/bank_account
 	var/account_holder = "Rusty Venture"
 	var/account_balance = 0
+	/// Regulatory fines may overdraw an account; normal purchases still require funds.
+	var/allow_debt = FALSE
 	var/datum/job/account_job
 	var/list/bank_cards = list()
 	var/add_to_accounts = TRUE
@@ -150,7 +152,7 @@ GLOBAL_VAR_INIT(next_account_number, 0)
  */
 /datum/bank_account/proc/_adjust_money(amount)
 	account_balance += amount
-	if(account_balance < 0)
+	if(account_balance < 0 && !allow_debt)
 		account_balance = 0
 
 /datum/bank_account/proc/adjust_money(amount, reason)

@@ -248,7 +248,12 @@
 	if(!need_drain_power)
 		return
 	var/obj/item/stock_parts/cell/mod_cell = mod.get_cell()
-	var/charge_drain = (damage * armour_penetration) * used_modificator
+	// Шкала AP ближнего боя сжата до 0/15/25/50, поэтому для melee домножаем,
+	// иначе элитный клинок почти не тратил бы ячейку (см. MOD_SHIELD_MELEE_AP_MULTIPLIER).
+	var/ap_for_drain = armour_penetration
+	if(attack_type & ATTACK_TYPE_MELEE)
+		ap_for_drain *= MOD_SHIELD_MELEE_AP_MULTIPLIER
+	var/charge_drain = (damage * ap_for_drain) * used_modificator
 	mod_cell.use(charge_drain, FALSE)
 
 /obj/item/mod/module/energy_shield/on_activation()

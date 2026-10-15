@@ -6,7 +6,7 @@
 	name = "Kinetic Destroyer"
 	desc = "Revised and refined by veteran miners, this crusher design has been improved in nearly everyway. Featuring a lightweight composite body and a hardened plastitanium head, this weapon is exceptional at removing life from most things."
 	hitsound = 'sound/weapons/bladeslice.ogg'
-	armour_penetration = 15
+	armour_penetration = MELEE_AP_CIVILIAN
 	detonation_damage = 60
 	backstab_bonus = 40
 
@@ -326,7 +326,7 @@
 	w_class = WEIGHT_CLASS_BULKY
 	throwforce = 15
 	throw_speed = 4
-	armour_penetration = 20
+	armour_penetration = MELEE_AP_ANTAGONIST
 	custom_materials = list(/datum/material/titanium=3150, /datum/material/glass=2075, /datum/material/gold=3000, /datum/material/diamond=5000)
 	hitsound = 'modular_sand/sound/weapons/zweihanderslice.ogg'
 	attack_verb = list("smashed", "crushed", "cleaved", "chopped", "pulped")

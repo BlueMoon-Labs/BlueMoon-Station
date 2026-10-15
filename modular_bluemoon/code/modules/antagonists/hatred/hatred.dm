@@ -844,16 +844,7 @@
 	desc = "The shabby leather overcoat with decent armor paddings. Once it has been splashed with blood you can't take it off anymore."
 	resistance_flags = FIRE_PROOF
 	// clueless armor stats.
-	armor = list(MELEE 	= 50, \
-				BULLET 	= 50, \
-				LASER 	= 50, \
-				ENERGY 	= 50, \
-				BOMB 	= 50, \
-				BIO 	= 40, \
-				RAD 	= 20, \
-				FIRE 	= 70, \
-				ACID 	= 40, \
-				WOUND 	= 40)
+	armor_type = /datum/armor/hatred_gear
 
 /obj/item/clothing/suit/jacket/leather/overcoat/hatred/Initialize(mapload)
 	. = ..()
@@ -864,16 +855,7 @@
 	desc = "Once you felt <b><i>that</i></b> urge to commit relentless genocide of civilians, you clearly understood you were cursed... blessed... and... protected by invisible Veil of Hatred."
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	// clueless armor stats.
-	armor = list(MELEE 	= 50, \
-				BULLET 	= 50, \
-				LASER 	= 50, \
-				ENERGY 	= 50, \
-				BOMB 	= 50, \
-				BIO 	= 40, \
-				RAD 	= 20, \
-				FIRE 	= 70, \
-				ACID 	= 40, \
-				WOUND 	= 40)
+	armor_type = /datum/armor/hatred_gear
 
 /obj/item/clothing/head/invisihat/hatred/equipped(mob/user, slot)
 	. = ..()

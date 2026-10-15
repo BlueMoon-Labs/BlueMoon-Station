@@ -7,7 +7,7 @@
 	icon = 'modular_bluemoon/Ren/Icons/Obj/misc.dmi'
 	lefthand_file = 'modular_bluemoon/Ren/Icons/Mob/inhand_l.dmi'
 	righthand_file = 'modular_bluemoon/Ren/Icons/Mob/inhand_r.dmi'
-	armour_penetration = 35
+	armour_penetration = MELEE_AP_ANTAGONIST
 	force_on = 35
 	damtype = "brute"
 	throwforce_on = 20
@@ -22,7 +22,6 @@
 	throw_range = 5
 	sharpness = SHARP_EDGED
 	embedding = list("embed_chance" = 75, "impact_pain_mult" = 10)
-	armour_penetration = 35
 	block_chance = 50
 	item_flags = NEEDS_PERMIT | ITEM_CAN_PARRY
 	block_parry_data = /datum/block_parry_data/energy_sword
@@ -97,11 +96,11 @@
 	heat = 300
 	hitsound = "swing_hit"
 	var/hitsound_on = 'modular_bluemoon/Ren/Sound/4.111.ogg'
-	armour_penetration = 70
+	armour_penetration = MELEE_AP_EXCLUSIVE
 	light_color = "#FF3900"
 	attack_verb = list("attacked", "slashed", "stabbed", "sliced", "torn", "ripped", "diced", "cut")
 	max_integrity = 200
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 70)
+	armor_type = /datum/armor/weapons_and_plasteel_tiles
 	resistance_flags = FIRE_PROOF
 	wound_bonus = 7
 	bare_wound_bonus = 13

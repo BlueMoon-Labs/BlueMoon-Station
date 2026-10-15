@@ -57,7 +57,6 @@
 
 /datum/antagonist/ghost_role/ghost_cafe
 	name = "Ghost Cafe"
-	show_in_check_antagonists = FALSE
 	var/area/adittonal_allowed_area
 
 /datum/antagonist/ghost_role/tarkov

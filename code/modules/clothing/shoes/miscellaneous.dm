@@ -12,7 +12,7 @@
 	item_state = "jackboots"
 	lefthand_file = 'icons/mob/inhands/equipment/security_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/security_righthand.dmi'
-	armor = list(MELEE = 25, BULLET = 25, LASER = 25, ENERGY = 25, BOMB = 50, BIO = 10, RAD = 0, FIRE = 70, ACID = 50)
+	armor_type = /datum/armor/shoe_combat
 	strip_delay = 70
 	resistance_flags = NONE
 	permeability_coefficient = 0.05 //Thick soles, and covers the ankle
@@ -41,7 +41,7 @@
 	desc = "High speed, no drag combat boots."
 	permeability_coefficient = 0.01
 	clothing_flags = NOSLIP | NOSLIP_ICE
-	armor = list(MELEE = 40, BULLET = 30, LASER = 25, ENERGY = 25, BOMB = 50, BIO = 30, RAD = 30, FIRE = 90, ACID = 50)
+	armor_type = /datum/armor/shoe_swat
 
 /obj/item/clothing/shoes/combat/swat/knife
 
@@ -80,7 +80,7 @@
 	strip_delay = 50
 	equip_delay_other = 50
 	resistance_flags = NONE
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 40, ACID = 75)
+	armor_type = /datum/armor/galoshes
 	custom_price = PRICE_ABOVE_EXPENSIVE
 	can_be_tied = FALSE
 
@@ -177,7 +177,7 @@
 	name = "Security Jackboots"
 	desc = "Nanotrasen-issue Security combat boots for combat scenarios or combat situations. All combat, all the time."
 	icon_state = "jackboots_sec"
-	armor = list(MELEE = 10, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 30, ACID = 50) // BLUEMOON ADD no armor = applying bare wound bonus. These boots now are between CBRN and MOPP
+	armor_type = /datum/armor/shoe_sec// BLUEMOON ADD no armor = applying bare wound bonus. These boots now are between CBRN and MOPP
 
 /obj/item/clothing/shoes/jackboots/black
 	name = "dark jackboots"

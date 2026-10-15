@@ -62,3 +62,42 @@
 	tastes = list("shrimp" = 1)
 	foodtype = MEAT | SEAFOOD | FRIED
 	w_class = WEIGHT_CLASS_TINY
+
+
+/obj/item/reagent_containers/food/snacks/surstromming
+	name = "Surstromming"
+	desc = "Oh no... this is so bad... Like Michael Jackson Bad, so it's pretty good, maybe."
+	icon = 'modular_bluemoon/icons/obj/toys/plushes.dmi'
+	icon_state = "surstromming"
+	list_reagents = list(
+		/datum/reagent/consumable/nutriment = 1,
+		/datum/reagent/consumable/nutriment/vitamin = 2
+	)
+	tastes = list("fish" = 1, "dried meat" = 1)
+	foodtype = SEAFOOD
+	w_class = WEIGHT_CLASS_SMALL
+	grind_results = list(/datum/reagent/consumable/bonito = 20)
+
+/obj/item/reagent_containers/food/snacks/surstromming/attackby(obj/item/I, mob/user, params)
+	return ..()
+
+/obj/item/reagent_containers/food/snacks/surstromming/attack(mob/living/M, mob/living/user)
+	..()
+	if(!iscarbon(M) || M.stat == DEAD)
+		return
+	addtimer(CALLBACK(src, PROC_REF(induce_surstromming_effect), M), 1)
+
+/obj/item/reagent_containers/food/snacks/surstromming/proc/induce_surstromming_effect(mob/living/carbon/M)
+	if(!M || M.stat == DEAD)
+		return
+
+	var/turf/T = get_turf(M)
+	if(!T)
+		return
+
+	playsound(T, pick('modular_bluemoon/sound/plush/surstromming1.ogg', 'modular_bluemoon/sound/plush/surstromming2.ogg', 'modular_bluemoon/sound/plush/surstromming3.ogg', 'modular_bluemoon/sound/plush/surstromming4.ogg', 'modular_bluemoon/sound/plush/surstromming5.ogg'), 60, TRUE)
+
+	// Стандартный вызов рвоты 
+	M.vomit(20, TRUE, TRUE)
+
+	new /obj/effect/decal/cleanable/vomit(T)

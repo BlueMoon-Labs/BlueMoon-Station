@@ -13,6 +13,7 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/mod/control
+	armor_type = /datum/armor/modsuit_parts_and_control
 	name = "MOD control unit"
 	desc = "Управляющий блок Модульного Внешнего Устройства — питаемый костюм на спине, защищающий от различных условий окружающей среды."
 	icon_state = "control"
@@ -20,7 +21,6 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 	w_class = WEIGHT_CLASS_BULKY
 	slot_flags = ITEM_SLOT_BACK
 	strip_delay = 10 SECONDS
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 25, ACID = 25, WOUND = 10, RAD = 0)
 	actions_types = list(
 		/datum/action/item_action/mod/deploy,
 		/datum/action/item_action/mod/activate,
@@ -185,7 +185,7 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 	return ..()
 
 /obj/item/mod/control/MouseDrop(atom/over_object)
-	var/obj/item/target_object = wearer?.get_item_by_slot(src.slot_flags)
+	var/obj/item/target_object = wearer?.get_item_by_slot(slot_flags)
 	if(is_welded())
 		return balloon_alert(wearer, "Заварено!")
 	if(src != target_object || !istype(over_object, /atom/movable/screen/inventory/hand))
@@ -202,7 +202,7 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 	if(!wearer.incapacitated())
 		var/atom/movable/screen/inventory/hand/ui_hand = over_object
 		if(wearer.putItemFromInventoryInHandIfPossible(src, ui_hand.held_index))
-			add_fingerprint(usr)
+			add_fingerprint(wearer)
 			return ..()
 
 /obj/item/mod/control/attack_hand(mob/user)
@@ -229,11 +229,10 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 
 /obj/item/mod/control/AltClick(mob/user)
 	var/obj/item/stock_parts/cell/cell = get_cell()
-	if(seconds_electrified && cell?.charge)
-		if(shock(user))
-			return
+	if(seconds_electrified && cell?.charge && (shock(user)))
+		return
 
-	. = ..()
+	return ..()
 
 /obj/item/mod/control/screwdriver_act(mob/living/user, obj/item/screwdriver)
 	. = ..()
@@ -457,7 +456,7 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 
 /obj/item/mod/control/proc/generate_ability_button(obj/item/mod/module/M)
 	// Target обязан быть модулем: на его QDELETING действие удаляет себя само
-	var/datum/action/cooldown/module_action/new_action = new(M, M)
+	var/datum/action/cooldown/module_action/new_action = new(M)
 	new_action.Grant(wearer)
 
 /obj/item/mod/control/proc/set_mod_color(new_color)

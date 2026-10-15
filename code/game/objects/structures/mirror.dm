@@ -38,27 +38,11 @@
 	if(ishuman(user))
 		var/mob/living/carbon/human/H = user
 		//see code/modules/mob/dead/new_player/preferences.dm at approx line 545 for comments!
-		//this is largely copypasted from there.
-
-		//handle facial hair (if necessary)
-		if(H.gender != FEMALE)
-			var/new_style = tgui_input_list(user, "Select a facial hair style", "Grooming", GLOB.facial_hair_styles_list, H.facial_hair_style)
-			if(!user.canUseTopic(src, BE_CLOSE, FALSE, NO_TK))
-				return	//no tele-grooming
-			if(new_style)
-				H.facial_hair_style = new_style
-		else
+		if(H.gender == FEMALE)
 			H.facial_hair_style = "Shaved"
-
-		//handle normal hair
-		var/new_style = tgui_input_list(user, "Select a hair style", "Grooming", GLOB.hair_styles_list, H.hair_style)
-		if(!user.canUseTopic(src, BE_CLOSE, FALSE, NO_TK))
-			return	//no tele-grooming
-		if(new_style)
-			H.hair_style = new_style
-
-		H.update_mutant_bodyparts()
-		H.update_hair()
+			H.update_mutant_bodyparts()
+			H.update_hair()
+		open_mirror_hair_picker(user, H, src)
 
 /obj/structure/mirror/examine_status(mob/user)
 	if(broken)

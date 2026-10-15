@@ -117,7 +117,7 @@
 
 /obj/item/clothing/under/costume/gladiator/ash_walker
 	desc = "This gladiator uniform appears to be covered in ash and fairly dated."
-	armor = list("melee" = 25, "bullet" = 5, "laser" = 0, "energy" = 0, "bomb" = 10, "bio" = 10, "rad" = 0, "fire" = 70, "acid" = 50)
+	armor_type = /datum/armor/ash_walker
 	has_sensor = NO_SENSORS
 
 /obj/item/clothing/under/costume/maid
