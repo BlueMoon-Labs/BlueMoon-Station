@@ -8,7 +8,8 @@ const PREVIEW_BOX_W = 350;
 const PREVIEW_BOX_H = 420;
 const PORTRAIT_BOX_W = 359;
 const PORTRAIT_BOX_H = 274;
-const FULL_BODY_ZOOM = 2;
+const FULL_BODY_ZOOM = 1.5;
+const PORTRAIT_ZOOM = 1.4;
 const MODE_MIRROR = 2;
 const MODE_SCISSORS = 3;
 const MODE_RAZOR = 4;
@@ -291,19 +292,28 @@ const PreviewPanel = (props: {
                     ? data.preview_full
                     : data.preview_portraits?.[dir];
                   return src ? (
-                    <img
+                    <div
                       key={dir}
-                      src={`data:image/png;base64,${src}`}
                       style={{
-                        width: `${imgW}px`,
-                        height: `${imgH}px`,
-                        imageRendering: 'pixelated',
-                        display: 'block',
-                        transform: showFull
-                          ? `scale(${FULL_BODY_ZOOM})`
-                          : undefined,
-                      }}
-                    />
+                        width: `${cellW}px`,
+                        height: `${cellH}px`,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        overflow: 'hidden',
+                      }}>
+                      <img
+                        src={`data:image/png;base64,${src}`}
+                        style={{
+                          width: `${imgW}px`,
+                          height: `${imgH}px`,
+                          imageRendering: 'pixelated',
+                          display: 'block',
+                          flexShrink: 0,
+                          transform: `scale(${showFull ? FULL_BODY_ZOOM : PORTRAIT_ZOOM})`,
+                        }}
+                      />
+                    </div>
                   ) : null;
                 })}
               </div>
