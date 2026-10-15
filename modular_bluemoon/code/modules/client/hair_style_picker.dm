@@ -552,9 +552,10 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	return "#" + base_color
 
 /datum/hair_style_picker/proc/accessory_icon(datum/sprite_accessory/accessory, dir)
+	// PNG-превью должно содержать один кадр: анимация размножает весь лист миниатюр при экспорте.
 	if(icon_state_has_directional_frames(accessory.icon, accessory.icon_state))
-		return icon(accessory.icon, accessory.icon_state, dir)
-	return icon(accessory.icon, accessory.icon_state)
+		return icon(accessory.icon, accessory.icon_state, dir, 1, FALSE)
+	return icon(accessory.icon, accessory.icon_state, SOUTH, 1, FALSE)
 
 /datum/hair_style_picker/proc/blend_accessory(icon/target, datum/sprite_accessory/accessory, color, datum/species/species, offset_key, dir)
 	var/icon/part = accessory_icon(accessory, dir)
@@ -637,7 +638,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	catch(var/exception/sheet_error)
 		stack_trace("hair_style_picker: не собрался лист миниатюр: [sheet_error]")
 		return FALSE
-	return icon2base64(sheet)
+	return icon2base64(icon(sheet, "", SOUTH, 1, FALSE))
 
 #undef HAIR_PICKER_TAB_HAIR
 #undef HAIR_PICKER_TAB_FACIAL
