@@ -5,8 +5,7 @@
 
 /obj/item/ammo_casing/energy/laser/musket/prime
 	projectile_type = /obj/item/projectile/beam/laser/musket/prime
-	pellets = 3
-	variance = 10
+	pellets = 1
 
 /obj/item/ammo_casing/energy/nanite
 	projectile_type = /obj/item/projectile/bullet/c10mm //хах

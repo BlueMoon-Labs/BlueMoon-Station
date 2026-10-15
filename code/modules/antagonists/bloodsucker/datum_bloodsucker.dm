@@ -453,14 +453,14 @@
 	return clan
 
 //Name shown on antag list
-/datum/antagonist/bloodsucker/antag_listing_name()
+/datum/antagonist/bloodsucker/antag_check_name()
 	return ..() + "([ReturnFullName(TRUE)])"
 
 //Whatever interesting things happened to the antag admins should know about
 //Include additional information about antag in this part
-/datum/antagonist/bloodsucker/antag_listing_status()
-	if (owner && owner.AmFinalDeath())
-		return "<font color=red>Окончательная Смерть</font>"
+/datum/antagonist/bloodsucker/antag_check_status()
+	if(owner && owner.AmFinalDeath())
+		return list("key" = "final_death")
 	return ..()
 
 

@@ -317,7 +317,7 @@
 	desc = "A torn, dust-caked hood. Strange letters line the inside."
 	flags_inv = HIDEFACE|HIDEHAIR|HIDEEARS
 	flags_cover = HEADCOVERSEYES
-	armor = list(MELEE = 40, BULLET = 30, LASER = 40,ENERGY = 20, BOMB = 65, BIO = 10, RAD = 0, FIRE = 10, ACID = 10)
+	armor_type = /datum/armor/cultrobes
 	cold_protection = HEAD
 	min_cold_protection_temperature = HELMET_MIN_TEMP_PROTECT
 	heat_protection = HEAD
@@ -331,7 +331,7 @@
 	item_state = "cultrobes"
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS
 	allowed = list(/obj/item/tome, /obj/item/melee/cultblade)
-	armor = list(MELEE = 40, BULLET = 30, LASER = 40,ENERGY = 20, BOMB = 65, BIO = 10, RAD = 0, FIRE = 10, ACID = 10)
+	armor_type = /datum/armor/cultrobes
 	brc_mitigation_bonus = 10  // BLUEMOON ADD
 	flags_inv = HIDEJUMPSUIT
 	cold_protection = CHEST|GROIN|LEGS|ARMS
@@ -387,7 +387,7 @@
 	item_state = "magus"
 	desc = "A helm worn by the followers of Nar'Sie."
 	flags_inv = HIDEFACE|HIDEHAIR|HIDEFACIALHAIR|HIDEEARS|HIDEEYES|HIDESNOUT
-	armor = list(MELEE = 30, BULLET = 30, LASER = 30,ENERGY = 20, BOMB = 0, BIO = 0, RAD = 0, FIRE = 10, ACID = 10)
+	armor_type = /datum/armor/magus
 	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
 	mutantrace_variation = STYLE_MUZZLE
 	alternate_screams = BLOOD_SCREAMS
@@ -399,7 +399,7 @@
 	item_state = "magusred"
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS
 	allowed = list(/obj/item/tome, /obj/item/melee/cultblade)
-	armor = list(MELEE = 50, BULLET = 30, LASER = 50,ENERGY = 20, BOMB = 25, BIO = 10, RAD = 0, FIRE = 10, ACID = 10)
+	armor_type = /datum/armor/magusred
 	brc_mitigation_bonus = 10  // BLUEMOON ADD
 	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT
 	alternate_screams = BLOOD_SCREAMS
@@ -419,7 +419,7 @@
 	desc = "A heavily-armored helmet worn by warriors of the Nar'Sien cult. It can withstand hard vacuum."
 	icon_state = "cult_helmet"
 	item_state = "cult_helmet"
-	armor = list(MELEE = 60, BULLET = 50, LASER = 30,ENERGY = 15, BOMB = 30, BIO = 30, RAD = 30, FIRE = 100, ACID = 75)
+	armor_type = /datum/armor/cult_helmet
 	brightness_on = 0
 	actions_types = list()
 	alternate_screams = BLOOD_SCREAMS
@@ -437,7 +437,7 @@
 	desc = "A heavily-armored exosuit worn by warriors of the Nar'Sien cult. It can withstand hard vacuum."
 	w_class = WEIGHT_CLASS_BULKY
 	allowed = list(/obj/item/tome, /obj/item/melee/cultblade, /obj/item/tank/internals/)
-	armor = list(MELEE = 70, BULLET = 50, LASER = 30,ENERGY = 15, BOMB = 30, BIO = 30, RAD = 30, FIRE = 100, ACID = 75)
+	armor_type = /datum/armor/cult_suit
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/cult
 	alternate_screams = BLOOD_SCREAMS
@@ -468,7 +468,7 @@
 	icon_state = "cult_armor"
 	item_state = "cult_armor"
 	w_class = WEIGHT_CLASS_BULKY
-	armor = list(MELEE = 75, BULLET = 50, LASER = 50, ENERGY = 50, BOMB = 50, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, MAGIC = 75)
+	armor_type = /datum/armor/cult_shield
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS
 	allowed = list(/obj/item/tome, /obj/item/melee/cultblade)
@@ -482,7 +482,7 @@
 	name = "\improper Nar'Sien Empowered Helmet"
 	desc = "A heavily-armored Empowered Helmet worn by warriors of the Nar'Sien cult. It can withstand hard vacuum."
 	icon_state = "cult_hoodalt"
-	armor = list(MELEE = 75, BULLET = 50, LASER = 50, ENERGY = 50, BOMB = 50, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, MAGIC = 75)
+	armor_type = /datum/armor/cult_shield
 	body_parts_covered = HEAD
 	flash_protect = 1
 	flags_inv = HIDEHAIR|HIDEFACE|HIDEEARS
@@ -542,7 +542,7 @@
 	flags_inv = HIDEJUMPSUIT
 	allowed = list(/obj/item/tome, /obj/item/melee/cultblade)
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS
-	armor = list(MELEE = -50, BULLET = -50, LASER = -50,ENERGY = -50, BOMB = -50, BIO = -50, RAD = -50, FIRE = 0, ACID = 0)
+	armor_type = /datum/armor/cult_berserker
 	slowdown = -0.5
 	hoodtype = /obj/item/clothing/head/hooded/berserkerhood
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC //bluemoon add
@@ -553,7 +553,7 @@
 	icon_state = "culthood"
 	body_parts_covered = HEAD
 	flags_inv = HIDEHAIR|HIDEFACE|HIDEEARS
-	armor = list(MELEE = -50, BULLET = -50, LASER = -50, ENERGY = -50, BOMB = -50, BIO = -50, RAD = -50, FIRE = 0, ACID = 0)
+	armor_type = /datum/armor/cult_berserker
 	alternate_screams = BLOOD_SCREAMS
 
 /obj/item/clothing/suit/hooded/cultrobes/berserker/equipped(mob/living/user, slot)

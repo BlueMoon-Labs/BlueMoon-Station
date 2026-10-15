@@ -3690,11 +3690,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						hair_color = sanitize_hexcolor(new_hair, 6)
 
 				if("hair_style")
-					var/new_hair_style
-
-					new_hair_style = tgui_input_list(user, "Choose your character's hair style:", "Character Preference", filter_accessories_by_ckey(GLOB.hair_styles_list, user.client.key), hair_style)
-					if(new_hair_style)
-						hair_style = new_hair_style
+					open_hair_style_picker(user, "hair")
 
 				if("next_hair_style")
 					hair_style = next_list_item(hair_style, GLOB.hair_styles_list)
@@ -3708,11 +3704,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						facial_hair_color = sanitize_hexcolor(new_facial, 6)
 
 				if("facial_hair_style")
-					var/new_facial_hair_style
-
-					new_facial_hair_style = tgui_input_list(user, "Choose your character's facial-hair style:", "Character Preference", filter_accessories_by_ckey(GLOB.facial_hair_styles_list, user.client.key), facial_hair_style)
-					if(new_facial_hair_style)
-						facial_hair_style = new_facial_hair_style
+					open_hair_style_picker(user, "facial")
 
 				if("next_facehair_style")
 					facial_hair_style = next_list_item(facial_hair_style, GLOB.facial_hair_styles_list)
@@ -3726,10 +3718,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						grad_color = sanitize_hexcolor(new_grad_color, 6)
 
 				if("grad_style")
-					var/new_grad_style
-					new_grad_style = tgui_input_list(user, "Choose your character's hair gradient style:", "Character Preference", filter_accessories_by_ckey(GLOB.hair_gradients_list, user.client.key))
-					if(new_grad_style)
-						grad_style = new_grad_style
+					open_hair_style_picker(user, "grad") // BLUEMOON EDIT
 
 				if("next_grad_style")
 					grad_style = next_list_item(grad_style, GLOB.hair_gradients_list)

@@ -115,8 +115,10 @@ Simple datum which is instanced once per type and is used for every object of sa
 		var/list/current_armor = o.armor?.getList()
 
 		for(var/i in current_armor)
-			temp_armor_list[i] = current_armor[i] * armor_modifiers[i]
-		o.armor = getArmor(arglist(temp_armor_list))
+			// Missing modifiers preserve the rating; explicit zero still removes it.
+			var/multiplier = (i in armor_modifiers) ? armor_modifiers[i] : 1
+			temp_armor_list[i] = current_armor[i] * multiplier
+		o.normal_set_armor(getArmor(arglist(temp_armor_list)))
 	if(!isitem(o))
 		return
 	var/obj/item/I = o

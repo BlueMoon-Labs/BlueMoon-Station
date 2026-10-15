@@ -1,22 +1,22 @@
 /obj/item/clothing/head/helmet/dragoncora
+	armor_type = /datum/armor/none
 	name = "Agent Headgear"
 	desc = "Abduct with style - spiky style."
 	icon_state = "alienhelmet"
 	item_state = "alienhelmet"
 	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0)
 
 /obj/item/clothing/suit/armor/dragoncora
+	armor_type = /datum/armor/none
 	name = "Agent Vest"
 	desc = "A vest outfitted with advanced stealth technology. It has two modes - combat and stealth."
 	icon = 'icons/obj/abductor.dmi'
 	icon_state = "vest_stealth"
 	item_state = "armor"
 	blood_overlay_type = "armor"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0)
 
 /obj/item/clothing/head/helmet/skull/ftu
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
+	armor_type = /datum/armor/clothing_ftu
 
 /obj/item/clothing/suit/armor/vest/dragoncora
 	name = "FTU Security Armor"
@@ -28,7 +28,7 @@
 	body_parts_covered = CHEST|GROIN|ARMS
 	cold_protection = CHEST|GROIN|ARMS
 	heat_protection = CHEST|GROIN|ARMS
-	armor = list(MELEE = 20, BULLET = 20, LASER = 25, ENERGY = 20, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 10)
+	armor_type = /datum/armor/secjacket_and_vest_dragoncora
 
 /obj/item/clothing/gloves/color/black/dragoncora
 	name = "SpecOps Guerrilla Gloves"
@@ -52,7 +52,7 @@
 	icon_state = "ert_engineering"
 
 /obj/item/clothing/suit/det_suit/lanyard/dragoncora
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
+	armor_type = /datum/armor/none
 
 /obj/item/radio/headset/dragoncora
 	name = "Alien Headset"

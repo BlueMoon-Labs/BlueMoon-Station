@@ -16,7 +16,7 @@
 	hitsound = 'sound/weapons/bladeslice.ogg'
 	sharpness = SHARP_EDGED
 	max_integrity = 200
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 30)
+	armor_type = /datum/armor/fireproof_tools_and_weapons
 	resistance_flags = FIRE_PROOF
 	wound_bonus = 7
 	bare_wound_bonus = 12

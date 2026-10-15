@@ -183,6 +183,7 @@
 	possible_colors = list("#FF0000","#FF7F00","#FFFF00","#00FF00","#0000FF","#4B0082","#8F00FF")
 
 /obj/item/reagent_containers/rag/towel/syndicate
+	armor_type = /datum/armor/item_syndicate
 	name = "Syndicate Towel"
 	desc = "Truly a weapon of mass destruction."
 	possible_colors = list("#DD1A1A", "#DB4325", "#E02700")
@@ -193,4 +194,3 @@
 	extinguish_efficiency = 5
 	action_speed = 15
 	damp_threshold = 0.8
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 20, BIO = 20, RAD = 20, FIRE = 50, ACID = 50) //items don't provide armor to wearers unlike clothing yet.

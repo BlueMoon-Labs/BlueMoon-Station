@@ -4,7 +4,6 @@
 	desc = "Незавершенная плитка дополнительной брони, защищающая владельца от указанного на этикетке типа повреждений. Стоит понимать, что \
 	каждая такая плитка имеет вес и, следовательно, повышает энергопотребление из-за нагрузки на сервоприводы."
 	module_type = MODULE_ARMOR
-	var/datum/armor/additional_armor = new()
 	var/armor_module_type //MELEE, BULLET, LASER
 	var/armor_bonus = 15
 	var/need_sheets = 10
@@ -48,14 +47,14 @@
 		return
 	for(var/obj/item/clothing/mod_part/part as anything in mod.get_mod_parts(include_cell = FALSE))
 		var/datum/armor/part_armor = part.get_armor()
-		part.set_armor(part_armor.generate_new_with_modifiers(list("[armor_module_type]" = armor_bonus)))
+		part.set_armor(part_armor.modifyRating(arglist(list("[armor_module_type]" = armor_bonus))))
 	mod.slowdown_active += slowdown_bonus
 	mod.slowdown_inactive += slowdown_bonus
 
 /obj/item/mod/module/armor/proc/remove_armor_bonus()
 	for(var/obj/item/clothing/mod_part/part as anything in mod.get_mod_parts(include_cell = FALSE))
 		var/datum/armor/part_armor = part.get_armor()
-		part.set_armor(part_armor.generate_new_with_modifiers(list("[armor_module_type]" = -armor_bonus)))
+		part.set_armor(part_armor.modifyRating(arglist(list("[armor_module_type]" = -armor_bonus))))
 	mod.slowdown_active -= slowdown_bonus
 	mod.slowdown_inactive -= slowdown_bonus
 

@@ -14,7 +14,7 @@
 	var/silicon_access = TRUE
 	/// Whether the front panel skin can be swapped with an empty hand while the panel is open
 	var/can_alter_skin = TRUE
-	armor = list(MELEE = 50, BULLET = 50, LASER = 50, ENERGY = 50, BOMB = 10, BIO = 100, RAD = 100, FIRE = 90, ACID = 70)
+	armor_type = /datum/armor/button_and_turnstile
 	use_power = IDLE_POWER_USE
 	idle_power_usage = 2
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF

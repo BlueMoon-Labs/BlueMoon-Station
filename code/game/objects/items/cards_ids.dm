@@ -188,7 +188,7 @@
 	lefthand_file = 'icons/mob/inhands/equipment/idcards_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/idcards_righthand.dmi'
 	slot_flags = ITEM_SLOT_ID
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 100)
+	armor_type = /datum/armor/fireproof_and_acidproof_misc
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	var/id_type_name = "Identification Card"
 	var/mining_points = 0 //For redeeming at mining equipment vendors

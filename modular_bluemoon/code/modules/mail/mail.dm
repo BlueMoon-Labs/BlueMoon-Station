@@ -415,6 +415,7 @@
 	return
 
 /obj/machinery/mailmat
+	armor_type = /datum/armor/mailmat_and_vending
 	name = "Mail Dispenser"
 	desc = "<i>Postman Pat, Postman Pat, Postman Pat and his black and white cat, All the birds are singing, And the day is just beginning, Pat feels he's a really happy man, Pat feels he's a really happy man, Pat feels he's a really happy man!</i>"
 	icon = 'icons/obj/vending.dmi'
@@ -426,7 +427,6 @@
 	verb_exclaim = "beeps"
 	max_integrity = 400
 	integrity_failure = 0.33
-	armor = list(MELEE = 20, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 50, ACID = 70)
 	light_power = 0.5
 	light_range = MINIMUM_USEFUL_LIGHT_RANGE
 

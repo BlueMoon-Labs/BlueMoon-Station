@@ -385,7 +385,7 @@
 		/obj/item/tank/internals/emergency_oxygen,
 		/obj/item/tank/internals/plasmaman,
 		)
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 50, RAD = 0, FIRE = 50, ACID = 50)
+	armor_type = /datum/armor/medical_coats
 	togglename = "buttons"
 	body_parts_covered = CHEST|ARMS
 

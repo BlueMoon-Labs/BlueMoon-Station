@@ -401,7 +401,7 @@
 	canSmoothWith = null
 	max_integrity = 70
 	resistance_flags = ACID_PROOF
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 80, ACID = 100)
+	armor_type = /datum/armor/fire80_acid100
 	var/list/debris = list()
 
 /obj/structure/table/glass/New()
@@ -491,7 +491,7 @@
 	canSmoothWith = null
 	max_integrity = 270
 	resistance_flags = ACID_PROOF
-	armor = list(MELEE = 10, BULLET = 5, LASER = 0, ENERGY = 0, BOMB = 10, BIO = 0, RAD = 0, FIRE = 80, ACID = 100)
+	armor_type = /datum/armor/table_plasmaglass
 	var/list/debris = list()
 
 /obj/structure/table/plasmaglass/New()
@@ -667,7 +667,7 @@
 	buildstack = /obj/item/stack/sheet/plasteel
 	max_integrity = 200
 	integrity_failure = 0.25
-	armor = list(MELEE = 10, BULLET = 30, LASER = 30, ENERGY = 100, BOMB = 20, BIO = 0, RAD = 0, FIRE = 80, ACID = 70)
+	armor_type = /datum/armor/table_reinforced
 	canSmoothWith = list(/obj/structure/table/reinforced, /obj/structure/table/reinforced/rglass, /obj/structure/table/reinforced/plasmarglass)
 
 /obj/structure/table/reinforced/deconstruction_hints(mob/user)

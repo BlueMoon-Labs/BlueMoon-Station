@@ -11,7 +11,7 @@
 	integrity_failure = 0.5
 	max_integrity = 100
 	rad_flags = RAD_PROTECT_CONTENTS
-	armor = list(MELEE = 0, BULLET = 20, LASER = 20, ENERGY = 100, BOMB = 0, BIO = 100, RAD = 100, FIRE = 0, ACID = 0)
+	armor_type = /datum/armor/modular_computer
 
 	var/enabled = 0 // Whether the computer is turned on.
 	var/screen_on = 1 // Whether the computer is active/opened/it's screen is on.

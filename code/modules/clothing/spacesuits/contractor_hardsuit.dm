@@ -6,7 +6,7 @@
 	icon_state = "hardsuit0-contractor"
 	item_state = "contractor_helm"
 	hardsuit_type = "contractor"
-	armor = list(MELEE = 40, BULLET = 50, LASER = 30, ENERGY = 30, BOMB = 35, BIO = 100, RAD = 75, FIRE = 75, ACID = 90, WOUND = 40)
+	armor_type = /datum/armor/contractor
 	actions_types = list(/datum/action/item_action/toggle_helmet_light)
 
 /obj/item/clothing/suit/space/hardsuit/contractor
@@ -14,7 +14,7 @@
 	desc = "A top-tier syndicate hardsuit, a favorite of Syndicate field Contractors. Property of the Gorlex Marauders, with assistance from Cybersun Industries."
 	icon_state = "hardsuit-contractor"
 	item_state = "contractor_hardsuit"
-	armor = list(MELEE = 40, BULLET = 50, LASER = 30, ENERGY = 30, BOMB = 35, BIO = 100, RAD = 75, FIRE = 75, ACID = 90, WOUND = 40)
+	armor_type = /datum/armor/contractor
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	slowdown = 0
 	w_class = WEIGHT_CLASS_NORMAL

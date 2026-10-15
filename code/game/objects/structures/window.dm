@@ -34,7 +34,7 @@
 	var/glass_amount = 1
 	can_be_unanchored = TRUE
 	resistance_flags = ACID_PROOF
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 80, ACID = 100)
+	armor_type = /datum/armor/fire80_acid100
 	CanAtmosPass = ATMOS_PASS_PROC
 	var/real_explosion_block	//ignore this, just use explosion_block
 	var/breaksound = "shatter"
@@ -645,7 +645,7 @@
 	icon_state = "rwindow"
 	reinf = TRUE
 	heat_resistance = 1600
-	armor = list(MELEE = 50, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 25, BIO = 100, RAD = 100, FIRE = 80, ACID = 100)
+	armor_type = /datum/armor/structure_window_reinforced
 	max_integrity = 50
 	explosion_block = 1
 	wave_explosion_block = EXPLOSION_BLOCK_REINFORCED_WINDOW
@@ -673,7 +673,7 @@
 	icon_state = "plasmawindow"
 	reinf = FALSE
 	heat_resistance = 25000
-	armor = list(MELEE = 75, BULLET = 5, LASER = 0, ENERGY = 0, BOMB = 45, BIO = 100, RAD = 100, FIRE = 99, ACID = 100)
+	armor_type = /datum/armor/window_plasma
 	max_integrity = 150
 	explosion_block = 1
 	wave_explosion_block = EXPLOSION_BLOCK_BOROSILICATE_WINDOW
@@ -718,7 +718,7 @@
 	reinf = TRUE
 	extra_reinforced = TRUE
 	heat_resistance = 50000
-	armor = list(MELEE = 85, BULLET = 20, LASER = 0, ENERGY = 0, BOMB = 60, BIO = 100, RAD = 100, FIRE = 99, ACID = 100)
+	armor_type = /datum/armor/plasma_window_reinforced
 	max_integrity = 500
 	explosion_block = 2
 	wave_explosion_block = EXPLOSION_BLOCK_EXTREME
@@ -934,7 +934,7 @@
 	flags_1 = PREVENT_CLICK_UNDER_1
 	reinf = TRUE
 	heat_resistance = 1600
-	armor = list(MELEE = 50, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 50, BIO = 100, RAD = 100, FIRE = 80, ACID = 100)
+	armor_type = /datum/armor/plastitanium_and_shuttle
 	smooth = SMOOTH_MORE|SMOOTH_TRUE
 	canSmoothWith = list(/turf/closed/wall/mineral/titanium, /obj/machinery/door/airlock/shuttle, /obj/machinery/door/airlock, /obj/structure/window/shuttle, /obj/structure/shuttle/engine/heater, /obj/structure/falsewall/titanium, /turf/closed/indestructible/riveted)
 	explosion_block = 3
@@ -972,7 +972,7 @@
 	reinf = TRUE
 	extra_reinforced = TRUE
 	heat_resistance = 1600
-	armor = list(MELEE = 50, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 50, BIO = 100, RAD = 100, FIRE = 80, ACID = 100)
+	armor_type = /datum/armor/plastitanium_and_shuttle
 	smooth = SMOOTH_MORE|SMOOTH_TRUE
 	canSmoothWith = list(/turf/closed/wall/r_wall/syndicate, /turf/closed/wall/r_wall/r_plastitanium, /turf/closed/wall/mineral/plastitanium, /obj/machinery/door/airlock/shuttle, /obj/machinery/door/airlock, /obj/structure/window/plastitanium, /obj/structure/shuttle/engine, /obj/structure/falsewall/plastitanium, /turf/closed/indestructible/riveted)
 	explosion_block = 3
@@ -1003,7 +1003,7 @@
 	icon_state = "clockwork_window_single"
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	max_integrity = 80
-	armor = list(MELEE = 60, BULLET = 25, LASER = 0, ENERGY = 0, BOMB = 25, BIO = 100, RAD = 100, FIRE = 80, ACID = 100)
+	armor_type = /datum/armor/window_clockwork
 	explosion_block = 2 //fancy AND hard to destroy. the most useful combination.
 	wave_explosion_block = EXPLOSION_BLOCK_BOROSILICATE_WINDOW
 	wave_explosion_multiply = EXPLOSION_DAMPEN_BOROSILICATE_WINDOW
@@ -1072,6 +1072,7 @@
 	anchored = FALSE
 
 /obj/structure/window/paperframe
+	armor_type = /datum/armor/none
 	name = "paper frame"
 	desc = "A fragile separator made of thin wood and paper."
 	icon = 'icons/obj/smooth_structures/paperframes.dmi'
@@ -1089,7 +1090,6 @@
 	decon_speed = 10
 	CanAtmosPass = ATMOS_PASS_YES
 	resistance_flags = FLAMMABLE
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0)
 	breaksound = 'sound/items/poster_ripped.ogg'
 	hitsound = 'sound/weapons/slashmiss.ogg'
 	var/static/mutable_appearance/torn = mutable_appearance('icons/obj/smooth_structures/paperframes.dmi',icon_state = "torn", layer = ABOVE_OBJ_LAYER - 0.1)
