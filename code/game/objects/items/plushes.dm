@@ -82,6 +82,7 @@
 
 /obj/item/toy/plush/Destroy()
 	QDEL_NULL(grenade)
+	QDEL_NULL(stored_weapon) 
 
 	//inform next of kin and... acquaintances
 	if(partner)
@@ -208,17 +209,10 @@
 /obj/item/toy/plush/afterattack(atom/target, mob/living/user, proximity, params)
 	if(stored_weapon && istype(stored_weapon, /obj/item/gun) && !proximity)
 		var/obj/item/gun/G = stored_weapon
-		
 		var/atom/original_loc = G.loc
-		G.loc = user 
+		G.forceMove(user) 
 
-		if(hascall(G, "process_fire"))
-			call(G, "process_fire")(target, user, TRUE, params)
-		else if(hascall(G, "Fire"))
-			call(G, "Fire")(target, user, TRUE, params)
-		else
-			// Если проки выше переименованы, дергаем базовый afterattack самой пушки
-			G.afterattack(target, user, proximity, params)
+		G.afterattack(target, user, proximity, params)
 
 		// Возвращаем пушку обратно в недра игрушки
 		if(G) 
@@ -310,7 +304,7 @@
 		if(stuffed)
 			to_chat(user, "<span class='warning'>You need to remove some stuffing first!</span>")
 			return
-		if(grenade || stored_weapon)
+		if(grenade || stored_weapon) //Проверка на оружие сюда тоже
 			to_chat(user, "<span class='warning'>[src] already has something hidden inside!</span>")
 			return
 		if(!user.transferItemToLoc(I, src))
@@ -1241,3 +1235,8 @@ GLOBAL_LIST_INIT(valid_plushie_paths, valid_plushie_paths())
 	lefthand_file = 'modular_sand/icons/mob/inhands/misc/plushes_lefthand.dmi'
 	righthand_file = 'modular_sand/icons/mob/inhands/misc/plushes_righthand.dmi'
 	squeak_override = list('sound/effects/footstep/rustystep1.ogg' = 1)
+
+/obj/item/toy/plush/handle_atom_del(atom/A)
+	if(A == stored_weapon)
+		stored_weapon = null
+	return ..()
