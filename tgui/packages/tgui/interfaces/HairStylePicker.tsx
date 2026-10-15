@@ -118,6 +118,7 @@ export const HairStylePicker = (props) => {
                 <StyleGrid
                   data={data}
                   onSelect={(name) => act('select', { name })}
+                  onPage={(page) => act('page', { page })}
                 />
               </Stack.Item>
               <Stack.Item
@@ -136,15 +137,40 @@ export const HairStylePicker = (props) => {
 const StyleGrid = (props: {
   data: HairPickerData;
   onSelect: (name: string) => void;
+  onPage: (page: number) => void;
 }) => {
-  const { data, onSelect } = props;
+  const { data, onSelect, onPage } = props;
   const names = data.names || [];
   const cols = data.cols || 4;
   const aspectRatio = (data.cell_w || 40) / (data.cell_h || 20);
   const rows = Math.max(1, Math.ceil(names.length / cols));
 
   return (
-    <Section fill scrollable title={`${names.length}/${data.total}`}>
+    <Section
+      fill
+      scrollable
+      title={`${names.length}/${data.total}`}
+      buttons={
+        <Stack align="center">
+          <Stack.Item>
+            <Button
+              icon="chevron-left"
+              disabled={data.page <= 1}
+              onClick={() => onPage(data.page - 1)}
+            />
+          </Stack.Item>
+          <Stack.Item>
+            {data.labels.page} {data.page}/{data.pages}
+          </Stack.Item>
+          <Stack.Item>
+            <Button
+              icon="chevron-right"
+              disabled={data.page >= data.pages}
+              onClick={() => onPage(data.page + 1)}
+            />
+          </Stack.Item>
+        </Stack>
+      }>
       {names.length ? (
         <div
           style={{
@@ -351,40 +377,15 @@ const PreviewPanel = (props: {
       </Stack.Item>
       <Stack.Item>
         <Section>
-          <Stack vertical>
-            <Stack.Item>
-              <Button
-                fluid
-                textAlign="center"
-                icon="cut"
-                color="good"
-                content={labels.apply}
-                disabled={!data.selected}
-                onClick={() => act('apply')}
-              />
-            </Stack.Item>
-            <Stack.Item>
-              <Stack align="center">
-                <Stack.Item>
-                  <Button
-                    icon="chevron-left"
-                    disabled={data.page <= 1}
-                    onClick={() => act('page', { page: data.page - 1 })}
-                  />
-                </Stack.Item>
-                <Stack.Item grow textAlign="center">
-                  {labels.page} {data.page}/{data.pages}
-                </Stack.Item>
-                <Stack.Item>
-                  <Button
-                    icon="chevron-right"
-                    disabled={data.page >= data.pages}
-                    onClick={() => act('page', { page: data.page + 1 })}
-                  />
-                </Stack.Item>
-              </Stack>
-            </Stack.Item>
-          </Stack>
+          <Button
+            fluid
+            textAlign="center"
+            icon="cut"
+            color="good"
+            content={labels.apply}
+            disabled={!data.selected}
+            onClick={() => act('apply')}
+          />
         </Section>
       </Stack.Item>
     </Stack>
