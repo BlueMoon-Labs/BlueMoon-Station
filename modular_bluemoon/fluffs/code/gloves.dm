@@ -103,7 +103,7 @@
 /obj/item/modkit/hardlight_gloves_kit
 	name = "Fingerless hardlight gloves Kit"
 	desc = "A modkit for making a gripper gloves into a Fingerless hardlight gloves."
-	icon_state = "supershort-shotgun_kit" // заменить на кит перчаток
+	icon_state = "gloves_kit"
 	product = /obj/item/clothing/gloves/tackler/hardlight_gloves
 	fromitem = list(/obj/item/clothing/gloves/tackler)
 
