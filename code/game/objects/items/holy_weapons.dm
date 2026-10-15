@@ -5,7 +5,7 @@
 	desc = "Deus Vult."
 	icon_state = "knight_templar"
 	item_state = "knight_templar"
-	armor = list(MELEE = 41, BULLET = 15, LASER = 5,ENERGY = 5, BOMB = 5, BIO = 2, RAD = 0, FIRE = 0, ACID = 50)
+	armor_type = /datum/armor/chaplain_and_adept_mech
 	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR
 	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
 	strip_delay = 80
@@ -158,7 +158,7 @@
 	icon = 'modular_bluemoon/icons/obj/clothing/suit.dmi'
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/suit.dmi'
 	icon_state = "genetor"
-	armor = list(MELEE = 41, BULLET = 15, LASER = 5, ENERGY = 5, BOMB = 5, BIO = 2, RAD = 0, FIRE = 0, ACID = 50)
+	armor_type = /datum/armor/chaplain_and_adept_mech
 	item_state = "genetor"
 	blood_overlay_type = "coat"
 	no_t = TRUE
@@ -172,7 +172,7 @@
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/suit.dmi'
 	icon_state = "genetor"
 	item_state = "genetor"
-	armor = list(MELEE = 41, BULLET = 15, LASER = 5, ENERGY = 5, BOMB = 5, BIO = 2, RAD = 0, FIRE = 0, ACID = 50)
+	armor_type = /datum/armor/chaplain_and_adept_mech
 	no_t = TRUE
 	blood_overlay_type = "coat"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON

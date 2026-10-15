@@ -24,7 +24,7 @@
 	var/outer_plating
 	var/outer_plating_amount
 
-/datum/component/construction/mecha/spawn_result()
+/datum/component/construction/mecha/spawn_result(mob/living/user)
 	if(!result)
 		return
 	// Remove default mech power cell, as we replace it with a new one.
@@ -35,6 +35,7 @@
 
 	var/obj/item/mecha_parts/chassis/parent_chassis = parent
 	M.CheckParts(parent_chassis.contents)
+	record_sol_inspection_builder(M, user)
 
 	SSblackbox.record_feedback("tally", "mechas_created", 1, M.name)
 	QDEL_NULL(parent)
@@ -120,12 +121,12 @@
 		parent_atom.add_overlay(I.icon_state+"+o")
 		qdel(I)
 
-/datum/component/construction/unordered/mecha_chassis/spawn_result()
+/datum/component/construction/unordered/mecha_chassis/spawn_result(mob/living/user)
 	var/atom/parent_atom = parent
 	parent_atom.icon = 'icons/mecha/mech_construction.dmi'
 	parent_atom.density = TRUE
 	parent_atom.cut_overlays()
-	..()
+	..(user)
 
 // Default proc for the first steps of mech construction.
 /datum/component/construction/mecha/proc/get_frame_steps()

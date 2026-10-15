@@ -129,7 +129,7 @@ GLOBAL_VAR_INIT(shield_coverage_cache_expiry, 0)
 	anchored = FALSE
 	density = TRUE
 	use_power = FALSE
-	armor = list(MELEE = 25, BULLET = 10, LASER = 10, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 50, ACID = 70)
+	armor_type = /datum/armor/machinery_standard
 	var/mode = "NTPROBEV0.8"
 	var/active = FALSE
 	var/static/gid = 1

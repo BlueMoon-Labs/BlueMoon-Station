@@ -339,6 +339,10 @@
 		if("delete_general")
 			if(!logged_in || !active1)
 				return
+			if(active1.locked_security_reason || active2?.locked_security_reason)
+				var/general_lock_reason = active1.locked_security_reason || active2?.locked_security_reason
+				set_temp("Эта запись заблокирована навсегда: [general_lock_reason]", "danger")
+				return
 			investigate_log("[key_name(usr)] has deleted all records for [active1.fields["name"]].", INVESTIGATE_RECORDS)
 			for(var/datum/data/record/R in GLOB.data_core.medical)
 				if(R.fields["name"] == active1.fields["name"] && R.fields["id"] == active1.fields["id"])
@@ -355,6 +359,9 @@
 		if("delete_security")
 			if(!logged_in || !active2)
 				return
+			if(active2.locked_security_reason)
+				set_temp("Эта запись службы безопасности заблокирована навсегда: [active2.locked_security_reason]", "danger")
+				return
 			investigate_log("[key_name(usr)] has deleted the security records for [active1?.fields["name"]].", INVESTIGATE_RECORDS)
 			qdel(active2)
 			active2 = null
@@ -364,11 +371,20 @@
 			if(!logged_in || !((ACCESS_HOS in login_state.access) || (ACCESS_CAPTAIN in login_state.access)))
 				set_temp("Недостаточно полномочий: необходим доступ ГСБ или Капитана.", "danger")
 				return
-			investigate_log("[key_name(usr)] has purged all the security records.", INVESTIGATE_RECORDS)
-			for(var/datum/data/record/R in GLOB.data_core.security)
+			var/deleted_records = 0
+			var/protected_records = 0
+			for(var/datum/data/record/R in GLOB.data_core.security.Copy())
+				if(R.locked_security_reason)
+					protected_records++
+					continue
 				qdel(R)
-			GLOB.data_core.security.Cut()
-			set_temp("Все записи безопасности удалены.")
+				deleted_records++
+			investigate_log("[key_name(usr)] has purged [deleted_records] security records.", INVESTIGATE_RECORDS)
+			update_all_mob_security_hud()
+			if(protected_records)
+				set_temp("Удалено записей службы безопасности: [deleted_records]. Сохранено навсегда заблокированных записей: [protected_records].", "warning")
+			else
+				set_temp("Удалено записей службы безопасности: [deleted_records].")
 		if("set_criminal")
 			if(!logged_in || !active2)
 				return
@@ -394,8 +410,24 @@
 				if("name")
 					if(!active1)
 						return
+					if(active1.locked_security_reason || active2?.locked_security_reason)
+						var/name_lock_reason = active1.locked_security_reason || active2?.locked_security_reason
+						set_temp("Эта запись заблокирована навсегда: [name_lock_reason]", "danger")
+						return
 					new_value = stripped_input(usr, "Введите имя:", "Записи безопасности", active1.fields["name"], MAX_MESSAGE_LEN)
 					if(!length(new_value) || !can_use_console(usr))
+						return
+					if(active1.locked_security_reason || active2?.locked_security_reason)
+						var/post_name_lock_reason = active1.locked_security_reason || active2?.locked_security_reason
+						set_temp("Эта запись заблокирована навсегда: [post_name_lock_reason]", "danger")
+						return
+					var/datum/data/record/locked_security_by_name = GLOB.data_core.security_by_name[new_value]
+					if(locked_security_by_name && locked_security_by_name != active2 && locked_security_by_name.locked_security_reason)
+						set_temp("Нельзя использовать это имя: запись службы безопасности заблокирована навсегда: [locked_security_by_name.locked_security_reason]", "danger")
+						return
+					var/datum/data/record/locked_general_by_name = GLOB.data_core.general_by_name[new_value]
+					if(locked_general_by_name && locked_general_by_name != active1 && locked_general_by_name.locked_security_reason)
+						set_temp("Нельзя использовать это имя: общая запись заблокирована навсегда: [locked_general_by_name.locked_security_reason]", "danger")
 						return
 					GLOB.data_core.append_sec_logs(active1.fields["id"], "%%GEN_AUTH%% сменил поле \"имя\" с [active1.fields["name"]] на [new_value]", login_state.name, login_state.rank)
 					var/old_name = active1.fields["name"]
@@ -407,8 +439,24 @@
 				if("id")
 					if(!active1)
 						return
+					if(active1.locked_security_reason || active2?.locked_security_reason)
+						var/id_lock_reason = active1.locked_security_reason || active2?.locked_security_reason
+						set_temp("Эта запись заблокирована навсегда: [id_lock_reason]", "danger")
+						return
 					new_value = stripped_input(usr, "Введите ID:", "Записи безопасности", active1.fields["id"])
 					if(!length(new_value) || !can_use_console(usr))
+						return
+					if(active1.locked_security_reason || active2?.locked_security_reason)
+						var/post_id_lock_reason = active1.locked_security_reason || active2?.locked_security_reason
+						set_temp("Эта запись заблокирована навсегда: [post_id_lock_reason]", "danger")
+						return
+					var/datum/data/record/locked_security_by_id = GLOB.data_core.security_by_id[new_value]
+					if(locked_security_by_id && locked_security_by_id != active2 && locked_security_by_id.locked_security_reason)
+						set_temp("Нельзя использовать этот ID: запись службы безопасности заблокирована навсегда: [locked_security_by_id.locked_security_reason]", "danger")
+						return
+					var/datum/data/record/locked_general_by_id = GLOB.data_core.general_by_id[new_value]
+					if(locked_general_by_id && locked_general_by_id != active1 && locked_general_by_id.locked_security_reason)
+						set_temp("Нельзя использовать этот ID: общая запись заблокирована навсегда: [locked_general_by_id.locked_security_reason]", "danger")
 						return
 					GLOB.data_core.append_sec_logs(active1.fields["id"], "%%GEN_AUTH%% сменил поле \"ID\" с [active1.fields["id"]] на [new_value]", login_state.name, login_state.rank)
 					var/old_id = active1.fields["id"]
@@ -949,6 +997,8 @@
 	if(machine_stat & (BROKEN|NOPOWER) || . & EMP_PROTECT_SELF)
 		return
 	for(var/datum/data/record/R in GLOB.data_core.security)
+		if(R.locked_security_reason)
+			continue
 		if(prob(severity/10))
 			switch(rand(1,8))
 				if(1)
@@ -961,7 +1011,7 @@
 				if(3)
 					R.fields["age"] = rand(5, 85)
 				if(4)
-					R.fields["criminal"] = pick(SEC_RECORD_STATUS_NONE, SEC_RECORD_STATUS_ARREST, SEC_RECORD_STATUS_INCARCERATED, SEC_RECORD_STATUS_PAROLLED, SEC_RECORD_STATUS_DISCHARGED)
+					R.set_security_status(pick(SEC_RECORD_STATUS_NONE, SEC_RECORD_STATUS_ARREST, SEC_RECORD_STATUS_INCARCERATED, SEC_RECORD_STATUS_PAROLLED, SEC_RECORD_STATUS_DISCHARGED))
 				if(5)
 					R.fields["p_stat"] = pick("*Unconscious*", "Active", "Physically Unfit")
 				if(6)

@@ -28665,6 +28665,7 @@
 	dir = 4
 	},
 /obj/effect/mapping_helpers/airlock/access/any/supply/mining,
+/obj/effect/mapping_helpers/airlock/access/any/supply/general,
 /turf/open/floor/plasteel/rivets/large,
 /area/cargo/sorting)
 "gvD" = (
@@ -57254,6 +57255,7 @@
 	name = "Supply Door Airlock"
 	},
 /obj/effect/mapping_helpers/airlock/access/all/supply/general,
+/obj/effect/mapping_helpers/airlock/access/all/supply/mining,
 /turf/open/floor/catwalk_floor,
 /area/cargo/storage)
 "mTl" = (
@@ -79518,7 +79520,6 @@
 /obj/structure/transit_tube/station/reverse{
 	dir = 1
 	},
-/obj/structure/transit_tube_pod,
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/hallway/primary/fore)
 "rVm" = (
@@ -83359,6 +83360,7 @@
 	},
 /obj/effect/mapping_helpers/airlock/access/all/supply/general,
 /obj/structure/fans/tiny,
+/obj/effect/mapping_helpers/airlock/access/all/supply/mining,
 /turf/open/floor/catwalk_floor,
 /area/cargo/storage)
 "sOo" = (
@@ -92597,6 +92599,9 @@
 	},
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 10
+	},
+/obj/structure/transit_tube_pod{
+	dir = 1
 	},
 /turf/open/floor/pod/dark,
 /area/service/chapel)
@@ -103996,6 +104001,7 @@
 	},
 /obj/effect/landmark/navigate_destination/cargo,
 /obj/effect/mapping_helpers/airlock/access/any/supply/mining,
+/obj/effect/mapping_helpers/airlock/access/any/supply/general,
 /turf/open/floor/plasteel/rivets/large,
 /area/cargo/office)
 "xwc" = (

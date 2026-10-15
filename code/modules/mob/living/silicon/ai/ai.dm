@@ -254,69 +254,69 @@
 // MARK: Core Display Icon
 // (C)Pe4henika | Встроена возможность выбора донатных/приватных дисплейчиков
 /mob/living/silicon/ai/proc/set_core_display_icon(input, client/C)
-    set waitfor = FALSE
-    if(client && !C)
-        C = client
-    if(!input && !C?.prefs?.preferred_ai_core_display)
-        icon_state = initial(icon_state)
-        icon = initial(icon)
-    else
-        var/preferred_icon = input ? input : C.prefs.preferred_ai_core_display
+	set waitfor = FALSE
+	if(client && !C)
+		C = client
+	if(!input && !C?.prefs?.preferred_ai_core_display)
+		icon_state = initial(icon_state)
+		icon = initial(icon)
+	else
+		var/preferred_icon = input ? input : C.prefs.preferred_ai_core_display
 
-        var/donor_found = FALSE
-        if(C)
-            for(var/datum/ai_donator_screen/donor_screen in GLOB.ai_donator_screens)
-                if(donor_screen.name == preferred_icon && (C.ckey in donor_screen.ckey_whitelist))
-                    icon = donor_screen.icon
-                    icon_state = (src.stat == DEAD) ? donor_screen.icon_state_dead : donor_screen.icon_state
-                    donor_found = TRUE
-                    break
+		var/donor_found = FALSE
+		if(C)
+			for(var/datum/ai_donator_screen/donor_screen in GLOB.ai_donator_screens)
+				if(donor_screen.name == preferred_icon && donor_screen.is_allowed_for(C.key))
+					icon = donor_screen.icon
+					icon_state = (src.stat == DEAD) ? donor_screen.icon_state_dead : donor_screen.icon_state
+					donor_found = TRUE
+					break
 
-        if(!donor_found)
-            icon = initial(icon)
-            icon_state = resolve_ai_icon(preferred_icon, C = C, dead = (src.stat == DEAD))
+		if(!donor_found)
+			icon = initial(icon)
+			icon_state = resolve_ai_icon(preferred_icon, C = C, dead = (src.stat == DEAD))
 /mob/living/silicon/ai/verb/pick_icon()
-    set category = "AI Commands"
-    set name = "Set AI Core Display"
-    if(incapacitated())
-        return
+	set category = "AI Commands"
+	set name = "Set AI Core Display"
+	if(incapacitated())
+		return
 
-    var/list/iconstates = GLOB.ai_core_display_screens.Copy()
+	var/list/iconstates = GLOB.ai_core_display_screens.Copy()
 
-    var/client/C = client
-    if(C)
-        for(var/datum/ai_donator_screen/donor_screen in GLOB.ai_donator_screens)
-            if(C.ckey in donor_screen.ckey_whitelist)
-                iconstates += donor_screen.name
+	var/client/C = client
+	if(C)
+		for(var/datum/ai_donator_screen/donor_screen in GLOB.ai_donator_screens)
+			if(donor_screen.is_allowed_for(C.key))
+				iconstates += donor_screen.name
 
-    var/list/icon_images = list()
-    for(var/option in iconstates)
-        if(option == "Random")
-            icon_images[option] = image(icon = src.icon, icon_state = "ai-random")
-            continue
+	var/list/icon_images = list()
+	for(var/option in iconstates)
+		if(option == "Random")
+			icon_images[option] = image(icon = src.icon, icon_state = "ai-random")
+			continue
 
-        var/donor_icon = null
-        var/donor_icon_state = null
-        if(C)
-            for(var/datum/ai_donator_screen/donor_screen in GLOB.ai_donator_screens)
-                if(donor_screen.name == option && (C.ckey in donor_screen.ckey_whitelist))
-                    donor_icon = donor_screen.icon
-                    donor_icon_state = donor_screen.icon_state
-                    break
+		var/donor_icon = null
+		var/donor_icon_state = null
+		if(C)
+			for(var/datum/ai_donator_screen/donor_screen in GLOB.ai_donator_screens)
+				if(donor_screen.name == option && donor_screen.is_allowed_for(C.key))
+					donor_icon = donor_screen.icon
+					donor_icon_state = donor_screen.icon_state
+					break
 
-        if(donor_icon)
-            icon_images[option] = image(icon = donor_icon, icon_state = donor_icon_state)
-        else
-            icon_images[option] = image(icon = src.icon, icon_state = resolve_ai_icon(option, radial_preview = TRUE))
+		if(donor_icon)
+			icon_images[option] = image(icon = donor_icon, icon_state = donor_icon_state)
+		else
+			icon_images[option] = image(icon = src.icon, icon_state = resolve_ai_icon(option, radial_preview = TRUE))
 
-    view_core()
-    var/ai_core_icon = show_radial_menu(src, src, icon_images, radius = 42)
+	view_core()
+	var/ai_core_icon = show_radial_menu(src, src, icon_images, radius = 42)
 
-    if(!ai_core_icon || incapacitated())
-        return
+	if(!ai_core_icon || incapacitated())
+		return
 
-    display_icon_override = ai_core_icon
-    set_core_display_icon(ai_core_icon)
+	display_icon_override = ai_core_icon
+	set_core_display_icon(ai_core_icon)
 // --
 
 // (ADD) Pe4henika Bluemonn -- start

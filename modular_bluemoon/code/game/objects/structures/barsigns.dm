@@ -1,4 +1,5 @@
 /obj/structure/sign/barsign
+    armor_type = /datum/armor/barsign
     icon = 'modular_bluemoon/icons/obj/barsigns.dmi'
 
 /datum/barsign/maltesefalcon

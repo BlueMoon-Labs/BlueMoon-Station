@@ -43,7 +43,7 @@
 	desc = "Boots part of a nanosuit. Slip resistant. Property of CryNet Systems."
 	clothing_flags = NOSLIP
 	gas_transfer_coefficient = 0.01
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 0, ACID = 0)
+	armor_type = /datum/armor/bio100
 	resistance_flags = INDESTRUCTIBLE | FIRE_PROOF | ACID_PROOF | FREEZE_PROOF
 	item_flags = DROPDEL
 
@@ -57,7 +57,7 @@
 	desc = "CryNet-issue guerrilla tackling gloves built into the nanosuit. Fireproof, shock resistant, and tuned for devastating rushes."
 	resistance_flags = INDESTRUCTIBLE | FIRE_PROOF | ACID_PROOF | FREEZE_PROOF
 	gas_transfer_coefficient = 0.01
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 0, ACID = 0)
+	armor_type = /datum/armor/bio100
 	item_flags = DROPDEL
 	tackle_stam_cost = 35
 	base_knockdown = 1.5 SECONDS
@@ -176,7 +176,7 @@
 	item_state = "nanosuit"
 	name = "nanosuit"
 	desc = "Some sort of alien future suit. It looks very robust. Property of CryNet Systems."
-	armor = list(MELEE = 45, BULLET = 45, LASER = 45, ENERGY = 50, BOMB = 80, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 40)
+	armor_type = /datum/armor/nano
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	allowed = list(/obj/item/gun, /obj/item/melee, /obj/item/grenade, /obj/item/nullrod, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/tank/internals)
 	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS					//Uncomment to enable firesuit protection
@@ -598,7 +598,7 @@
 	//item_color = "nano"
 	siemens_coefficient = 0
 	gas_transfer_coefficient = 0.01
-	armor = list(MELEE = 45, BULLET = 45, LASER = 45, ENERGY = 50, BOMB = 80, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 40)
+	armor_type = /datum/armor/nano
 	resistance_flags = INDESTRUCTIBLE | FIRE_PROOF | ACID_PROOF | FREEZE_PROOF //No longer shall our kind be foiled by lone chemists with spray bottles!
 	heat_protection = HEAD
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
@@ -727,6 +727,7 @@
 		Wearer.verbs -= help_verb
 
 /obj/item/clothing/suit/space/hardsuit/nano/proc/bootSequence()
+//Перевести на таймеры надо :(
 	helmet.display_visor_message("Crynet - UEFI v1.32 Syndicate Systems")
 	sleep(10)
 	helmet.display_visor_message("P.O.S.T. Загрузка...")

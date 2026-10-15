@@ -5,7 +5,7 @@
 /obj/item/clothing/suit/space/vanguard
 	name = "Vanguard EVA suit"
 	desc = "Укреплённый тонколистыми сплавами и молитвами стандартный костюм для иследования космоса эксадронов Авангарда"
-	armor = list(MELEE = 20, BULLET = 15, LASER = 15, ENERGY = 0, BOMB = 35, BIO = 100, RAD = 20, FIRE = 50, ACID = 65, WOUND = 20)
+	armor_type = /datum/armor/spacesuit_vanguard
 	icon_state = "hardsuit-explorer"
 	item_state = "hardsuit-explorer"
 	mob_overlay_icon = 'modular_sand/icons/mob/clothing/suit.dmi'
@@ -24,7 +24,7 @@
 	desc = "Укреплённый тонколистыми сплавами и молитвами стандартный щлем для иследования космоса эксадронов Авангарда"
 	icon_state = "hardsuit0-explorer"
 	item_state = "hardsuit0-explorer"
-	armor = list(MELEE = 20, BULLET = 15, LASER = 15, ENERGY = 0, BOMB = 35, BIO = 100, RAD = 20, FIRE = 50, ACID = 65, WOUND = 20)
+	armor_type = /datum/armor/spacesuit_vanguard
 	mob_overlay_icon = 'modular_sand/icons/mob/clothing/head.dmi'
 	icon = 'modular_bluemoon/Ren/Icons/Obj/cloth.dmi'
 	anthro_mob_worn_overlay = 'modular_sand/icons/mob/clothing/head_muzzled.dmi'
@@ -34,7 +34,7 @@
 	desc = "An advanced helmet that will protect you from space and other threats."
 	icon_state = "hardsuit0-exploration"
 	item_state = "hardsuit0-exploration"
-	armor = list(MELEE = 35, BULLET = 20, LASER = 40, ENERGY = 40, BOMB = 25, BIO = 100, RAD = 50, FIRE = 100, ACID = 75, WOUND = 20)
+	armor_type = /datum/armor/exploration
 	brightness_on = 12
 	hardsuit_type = "exploration"
 	obj_flags = NOT_VISIBLE_IN_STORAGE
@@ -48,7 +48,7 @@
 	name = "Ranger hardsuit"
 	desc = "An advanced suit that will protect you from space and other threats."
 	slowdown = 0.5
-	armor = list(MELEE = 35, BULLET = 20, LASER = 40, ENERGY = 40, BOMB = 25, BIO = 100, RAD = 50, FIRE = 100, ACID = 75, WOUND = 20)
+	armor_type = /datum/armor/exploration
 	brc_mitigation_bonus = 10  // BLUEMOON ADD
 	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/melee/transforming/energy/sword/saber, /obj/item/restraints/handcuffs, /obj/item/tank/internals)
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/exploration
@@ -70,7 +70,7 @@
 	body_parts_covered = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	cold_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
-	armor = list(MELEE = 35, BULLET = 35, LASER = 35, ENERGY = 35, BOMB = 25, BIO = 0, RAD = 0, FIRE = 80, ACID = 80, WOUND = 30)
+	armor_type = /datum/armor/clothing_vanguard
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/suit.dmi'
 	icon = 'modular_bluemoon/icons/obj/clothing/suit.dmi'
@@ -97,7 +97,7 @@
 	dog_fashion = null
 	mutantrace_variation = STYLE_MUZZLE
 	anthro_mob_worn_overlay = 'modular_bluemoon/icons/mob/clothing/head_muzzled.dmi'
-	armor = list(MELEE = 35, BULLET = 35, LASER = 35, ENERGY = 35, BOMB = 25, BIO = 0, RAD = 0, FIRE = 80, ACID = 80, WOUND = 30)
+	armor_type = /datum/armor/clothing_vanguard
 	is_edible = 0
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/head.dmi'
 	icon = 'modular_bluemoon/icons/obj/clothing/hats.dmi'

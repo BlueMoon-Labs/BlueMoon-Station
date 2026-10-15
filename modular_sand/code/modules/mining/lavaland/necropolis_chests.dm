@@ -217,7 +217,7 @@
 	block_chance = 0
 	var/block_chance_on = 50
 	max_integrity = 400
-	armor = list("melee" = 0, "bullet" = 0, "laser" = 0, "energy" = 0, "bomb" = 0, "bio" = 0, "rad" = 0, "fire" = 100, "acid" = 100)
+	armor_type = /datum/armor/fireproof_and_acidproof_misc
 	resistance_flags = FIRE_PROOF
 	var/brightness_on = 6
 	total_mass = 1
@@ -349,7 +349,7 @@
 /obj/item/clothing/suit/space/hardsuit/deathsquad/praetor
 	name = "Praetor Suit"
 	desc = "And those that tasted the bite of his sword named him... The Doom Slayer."
-	armor = list(MELEE = 70, BULLET = 40, LASER = 10, ENERGY = 10, BOMB = 50, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, MAGIC = 50, WOUND = 40)
+	armor_type = /datum/armor/praetor
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	strip_delay = 130
 	slowdown = 0
@@ -367,7 +367,7 @@
 /obj/item/clothing/head/helmet/space/hardsuit/deathsquad/praetor
 	name = "Praetor Suit helmet"
 	desc = "That's one doomed space marine."
-	armor = list(MELEE = 70, BULLET = 40, LASER = 10, ENERGY = 10, BOMB = 50, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, MAGIC = 50, WOUND = 40)
+	armor_type = /datum/armor/praetor
 	strip_delay = 130
 	icon = 'modular_sand/icons/obj/clothing/hats.dmi'
 	icon_state = "praetor"
@@ -711,26 +711,26 @@
 	desc = "It's not really in good shape, but still serves decent protection."
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/paranormal/inquisitor/damaged
 	clothing_flags = THICKMATERIAL // no space protection
-	armor = list("melee" = 65, "bullet" = 25, "laser" = 20, "energy" = 10, "bomb" = 50, "bio" = 100, "rad" = 50, "fire" = 100, "acid" = 40)
+	armor_type = /datum/armor/paranormal_damaged
 	brc_mitigation_bonus = 10  // BLUEMOON ADD
 
 /obj/item/clothing/head/helmet/space/hardsuit/ert/paranormal/inquisitor/damaged
 	name = "damaged inquisitor's hardsuit helmet"
 	clothing_flags = THICKMATERIAL // no space protection
-	armor = list("melee" = 65, "bullet" = 25, "laser" = 20, "energy" = 10, "bomb" = 50, "bio" = 100, "rad" = 50, "fire" = 100, "acid" = 40)
+	armor_type = /datum/armor/paranormal_damaged
 
 /obj/item/clothing/suit/space/hardsuit/ert/paranormal/beserker/damaged
 	name = "damaged berserker's hardsuit"
 	desc = "It's not really in good shape, but still serves decent protection."
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/paranormal/beserker/damaged
 	clothing_flags = THICKMATERIAL // no space protection
-	armor = list("melee" = 65, "bullet" = 25, "laser" = 20, "energy" = 10, "bomb" = 50, "bio" = 100, "rad" = 50, "fire" = 100, "acid" = 40)
+	armor_type = /datum/armor/paranormal_damaged
 	brc_mitigation_bonus = 10  // BLUEMOON ADD
 
 /obj/item/clothing/head/helmet/space/hardsuit/ert/paranormal/beserker/damaged
 	name = "damaged berserker's hardsuit helmet"
 	clothing_flags = THICKMATERIAL // no space protection
-	armor = list("melee" = 65, "bullet" = 25, "laser" = 20, "energy" = 10, "bomb" = 50, "bio" = 100, "rad" = 50, "fire" = 100, "acid" = 40)
+	armor_type = /datum/armor/paranormal_damaged
 
 /obj/item/stock_parts/cell/high/plus/argent
 	name = "Argent Energy Cell"
@@ -880,7 +880,7 @@
 	item_state = "dagoth"
 	actions_types = list(/datum/action/item_action/ashstorm)
 	flash_protect = 2
-	armor = list("melee" = 10, "bullet" = 10, "laser" = 10,"energy" = 10, "bomb" = 100, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 100)//HOW CAN YOU KILL A GOD?
+	armor_type = /datum/armor/dagoth
 	var/static/list/excluded_areas = list(/area/reebe/city_of_cogs)
 	var/storm_type = /datum/weather/ash_storm
 	var/storm_cooldown = 0

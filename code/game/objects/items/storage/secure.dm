@@ -255,7 +255,7 @@
 /obj/item/storage/lockbox/departmental_lathe/security
 	name = "Spare techfab (Security) circuit"
 	desc = "A storage case spare techfab circuit"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 30, BIO = 0, RAD = 0, FIRE = 100, ACID = 100)
+	armor_type = /datum/armor/bomb30_fire100_acid100
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | ACID_PROOF //на случай если какой то гений захочет заманчить платы
 	req_access = list(ACCESS_HOS)
 
@@ -265,7 +265,7 @@
 /obj/item/storage/lockbox/departmental_lathe/engineering
 	name = "Spare techfab (Engineering) circuit"
 	desc = "A storage case spare techfab circuit"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 30, BIO = 0, RAD = 0, FIRE = 100, ACID = 100)
+	armor_type = /datum/armor/bomb30_fire100_acid100
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | ACID_PROOF
 	req_access = list(ACCESS_CE)
 
@@ -275,7 +275,7 @@
 /obj/item/storage/lockbox/departmental_lathe/medical
 	name = "Spare techfab (Medical) circuit"
 	desc = "A storage case spare techfab circuit"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 30, BIO = 0, RAD = 0, FIRE = 100, ACID = 100)
+	armor_type = /datum/armor/bomb30_fire100_acid100
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | ACID_PROOF
 	req_access = list(ACCESS_CMO)
 
@@ -285,7 +285,7 @@
 /obj/item/storage/lockbox/departmental_lathe/cargo
 	name = "Spare techfab (Cargo) circuit"
 	desc = "A storage case spare techfab circuit"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 30, BIO = 0, RAD = 0, FIRE = 100, ACID = 100)
+	armor_type = /datum/armor/bomb30_fire100_acid100
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | ACID_PROOF
 	req_access = list(ACCESS_QM)
 
@@ -295,7 +295,7 @@
 /obj/item/storage/lockbox/departmental_lathe/service
 	name = "Spare techfab (Service) circuit"
 	desc = "A storage case spare techfab circuit"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 30, BIO = 0, RAD = 0, FIRE = 100, ACID = 100)
+	armor_type = /datum/armor/bomb30_fire100_acid100
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | ACID_PROOF
 	req_access = list(ACCESS_HOP)
 
@@ -305,7 +305,7 @@
 /obj/item/storage/lockbox/departmental_lathe/science
 	name = "Spare techfab (Science) circuit"
 	desc = "A storage case spare techfab circuit"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 30, BIO = 0, RAD = 0, FIRE = 100, ACID = 100)
+	armor_type = /datum/armor/bomb30_fire100_acid100
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | ACID_PROOF
 	req_access = list(ACCESS_RD)
 

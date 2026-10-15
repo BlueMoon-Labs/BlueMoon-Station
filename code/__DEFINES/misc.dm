@@ -37,9 +37,13 @@ Will print: "/mob/living/carbon/human/death" (you can optionally embed it in a s
 //Human Overlays Indexes/////////
 //LOTS OF CIT CHANGES HERE. BE CAREFUL WHEN UPSTREAM ADDS MORE LAYERS
 
-#define MUTATIONS_LAYER           45 // mutations. Tk headglows, cold resistance glow, etc
-#define GENITALS_BEHIND_LAYER     44 // Some genitalia needs to be behind everything, such as with taurs
-#define BODY_BEHIND_LAYER         43 // certain mutantrace features, such as tail when looking south
+#define MUTATIONS_LAYER           49 // mutations. Tk headglows, cold resistance glow, etc
+#define BODY_BEHIND_LAYER         48 // certain mutantrace features, such as tail when looking south
+#define	LEGS_PART_LAYER           47 // legs bodyparts
+#define	CHEST_PART_LAYER          46 // chest bodypart
+#define GENITALS_BEHIND_LAYER     45 // Some genitalia needs to be behind everything, such as with taurs
+#define	ARMS_PART_LAYER           44 // arms bodypart
+#define	HEAD_PART_LAYER           43 // head bodypart
 #define BODYPARTS_LAYER           42 // catch-all bodyparts flag
 #define MARKING_LAYER             41 // Matrixed body markings
 #define BODY_ADJ_LAYER            40 // snout, body markings, etc.
@@ -54,14 +58,14 @@ Will print: "/mob/living/carbon/human/death" (you can optionally embed it in a s
 #define SHOES_LAYER               31
 #define DRESS_LAYER               30 // uniforms drawn on top of shoes
 #define ID_LAYER                  29
-#define GENITALS_EXPOSED_LAYER    28
-#define HANDS_PART_LAYER          27
-#define DAMAGE_LAYER              26 // damage indicators
-#define WOUND_LAYER               25 // bleeding wound icons
-#define LOWER_MEDICINE_LAYER      24
-#define MEDICINE_LAYER            23
-#define GLOVES_LAYER              22
-#define WRISTS_LAYER              21
+#define HANDS_PART_LAYER          28
+#define GLOVES_LAYER              27
+#define WRISTS_LAYER              26
+#define GENITALS_EXPOSED_LAYER    25
+#define DAMAGE_LAYER              24 // damage indicators
+#define WOUND_LAYER               23 // bleeding wound icons
+#define LOWER_MEDICINE_LAYER      22
+#define MEDICINE_LAYER            21
 #define EAR_RIGHT_LAYER           20
 #define EAR_LEFT_LAYER            19
 #define SUIT_LAYER                18
@@ -83,7 +87,7 @@ Will print: "/mob/living/carbon/human/death" (you can optionally embed it in a s
 #define ANTAG_LAYER                2
 #define FIRE_LAYER                 1
 
-#define TOTAL_LAYERS              45
+#define TOTAL_LAYERS              49
 
 /// Потолок общего кэша наборов конечностей (limb_icon_cache, см. cache_limb_icons).
 /// Двух тысяч записей хватает на популяцию прода с запасом: ключ разный у каждого

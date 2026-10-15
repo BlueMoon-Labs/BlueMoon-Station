@@ -18,7 +18,7 @@
 	damage = 30
 	icon_state = "plasma2"
 	irradiate = 10
-	stamina = 20
+	stamina = 15
 
 /obj/item/projectile/energy/plasmabolt/rifle
 	damage = 50

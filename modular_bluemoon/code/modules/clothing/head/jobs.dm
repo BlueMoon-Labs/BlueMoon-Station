@@ -5,7 +5,7 @@
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/hats.dmi'
 	anthro_mob_worn_overlay = 'modular_bluemoon/icons/mob/clothing/head_muzzled.dmi'
 	icon_state = "utilcovergrey"
-	armor = list(MELEE = 40, BULLET = 30, LASER = 30,ENERGY = 10, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50)
+	armor_type = /datum/armor/armored_headgear
 	strip_delay = 60
 	dog_fashion = null
 	unique_reskin = list(

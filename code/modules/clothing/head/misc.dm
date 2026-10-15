@@ -6,7 +6,7 @@
 	desc = "It's good to be emperor."
 	item_state = "that"
 	flags_inv = 0
-	armor = list(MELEE = 30, BULLET = 15, LASER = 30, ENERGY = 10, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50)
+	armor_type = /datum/armor/centhat
 	strip_delay = 80
 
 
@@ -318,7 +318,7 @@
 	name = "crown"
 	desc = "A crown fit for a king, a petty king maybe."
 	icon_state = "crown"
-	armor = list(MELEE = 15, BULLET = 0, LASER = 0,ENERGY = 15, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 50)
+	armor_type = /datum/armor/crown
 	resistance_flags = FIRE_PROOF
 	dynamic_hair_suffix = ""
 
@@ -456,7 +456,7 @@
 	desc = "A security cowboy hat, perfect for any true lawman"
 	icon_state = "cowboyhat_sec"
 	item_state= "cowboyhat_sec"
-	armor = list(MELEE = 40, BULLET = 30, LASER = 30,ENERGY = 10, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50)
+	armor_type = /datum/armor/armored_headgear
 	resistance_flags = FIRE_PROOF
 
 /obj/item/clothing/head/cowboyhat/polychromic
@@ -489,7 +489,7 @@
 	desc = "Ain't nobody gonna cheat the hangman in my town."
 	icon_state = "hunter"
 	item_state = "hunter"
-	armor = list(MELEE = 5, BULLET = 5, LASER = 5, ENERGY = 15, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0)
+	armor_type = /datum/armor/head_hunter
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 
 /obj/item/clothing/head/kepi

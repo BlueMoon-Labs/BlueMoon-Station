@@ -4,7 +4,7 @@
 	icon_state = "pod-off"
 	density = TRUE
 	max_integrity = 350
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 100, BOMB = 0, BIO = 100, RAD = 100, FIRE = 30, ACID = 30)
+	armor_type = /datum/armor/cryo_cell
 	layer = ABOVE_WINDOW_LAYER
 	plane = GAME_PLANE
 	state_open = FALSE

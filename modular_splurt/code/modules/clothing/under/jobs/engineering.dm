@@ -8,5 +8,5 @@
 	item_state = "radkini"
 	can_adjust = FALSE
 	body_parts_covered = CHEST|GROIN
-	armor = list("melee" = 0, "bullet" = 0, "laser" = 0,"energy" = 0, "bomb" = 0, "bio" = 0, "rad" = 50, "fire" = 10, "acid" = 10)
+	armor_type = /datum/armor/radkini
 	fitted = FEMALE_UNIFORM_TOP
