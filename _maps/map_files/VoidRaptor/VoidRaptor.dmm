@@ -79532,7 +79532,6 @@
 /obj/structure/transit_tube/station/reverse{
 	dir = 1
 	},
-/obj/structure/transit_tube_pod,
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/hallway/primary/fore)
 "rVm" = (
@@ -92612,6 +92611,9 @@
 	},
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 10
+	},
+/obj/structure/transit_tube_pod{
+	dir = 1
 	},
 /turf/open/floor/pod/dark,
 /area/service/chapel)
