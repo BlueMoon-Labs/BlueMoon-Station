@@ -99,6 +99,11 @@ If ever any of these procs are useful for non-shuttles, rename it to proc/rotate
 	params = NONE
 	return ..()
 
+// The cryo terminal's flat directional frames must remain upright for the viewer.
+/obj/machinery/computer/cryopod/shuttleRotate(rotation, params)
+	params &= ~ROTATE_DIR
+	return ..()
+
 //prevents shuttles attempting to rotate this since it messes up sprites
 /obj/machinery/gravity_generator/shuttleRotate(rotation, params)
 	params = NONE

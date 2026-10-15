@@ -5,7 +5,7 @@
 	desc = "A thin spire of slightly swaying tendrils."
 	max_integrity = 60
 	point_return = 15
-	armor = list(MELEE = 10, BULLET = 10, LASER = 0, ENERGY = 0, BOMB = 15, BIO = 0, RAD = 0, FIRE = 90, ACID = 90)
+	armor_type = /datum/armor/resource
 	var/resource_delay = 0
 
 /obj/structure/blob/resource/scannerreport()

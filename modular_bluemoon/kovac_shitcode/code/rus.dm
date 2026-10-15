@@ -26,7 +26,7 @@
 	mob_overlay_icon = 'modular_bluemoon/kovac_shitcode/icons/rus/mob_rus.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	alternate_screams = RUSSIAN_SCREAMS
-	armor = list(MELEE = 55, BULLET = 65, LASER = 65, ENERGY = 65, BOMB = 40, BIO = 50, RAD = 100, FIRE = 40, ACID = 50,  WOUND = 40)
+	armor_type = /datum/armor/nri_and_solfed
 	brc_mitigation_bonus = BRC_MITIGATION_20  // BLUEMOON ADD
 
 /obj/item/clothing/suit/armor/nri_vest
@@ -35,12 +35,12 @@
 	icon_state = "warden_jacket_newtg"
 	item_state = "warden_jacket_newtg"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
-	armor = list(MELEE = 55, BULLET = 65, LASER = 65, ENERGY = 65, BOMB = 40, BIO = 50, RAD = 100, FIRE = 40, ACID = 50,  WOUND = 40)
+	armor_type = /datum/armor/nri_and_solfed
 	brc_mitigation_bonus = 20  // BLUEMOON ADD
 
 /obj/item/clothing/suit/armor/nri_coat/armorless
 	desc = "A greatcoat without armored fibers for cosplay purposes."
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0,  WOUND = 0)
+	armor_type = /datum/armor/none
 	brc_mitigation_bonus = 0  // BLUEMOON ADD
 
 // Cloaks
@@ -72,7 +72,7 @@
 	mob_overlay_icon = 'modular_bluemoon/kovac_shitcode/icons/rus/mob_rus.dmi'
 
 /obj/item/clothing/head/HoS/beret/nri/security
-	armor = list(MELEE = 40, BULLET = 30, LASER = 30,ENERGY = 10, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50)
+	armor_type = /datum/armor/armored_headgear
 
 /obj/item/clothing/head/HoS/beret/nri/cap
 	name = "nri cap"
@@ -82,7 +82,7 @@
 
 /obj/item/clothing/head/HoS/beret/nri/cap/armorless
 	desc = "A NRI Cap without any protection."
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0,  WOUND = 0)
+	armor_type = /datum/armor/none
 
 /obj/item/radio/headset/nri
 	name = "NRI Headset"
@@ -123,7 +123,7 @@
 	icon_state = "hardsuit0-russian"
 	item_state = "hardsuit0-russian"
 	hardsuit_type = "russiansuit"
-	armor = list(MELEE = 70, BULLET = 55, LASER = 50, ENERGY = 50, BOMB = 65, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 50)
+	armor_type = /datum/armor/ert_alert
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	actions_types = list()
@@ -136,7 +136,7 @@
 	item_state = "russiansuit"
 	alternate_screams = RUSSIAN_SCREAMS
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/alert/nri
-	armor = list(MELEE = 70, BULLET = 55, LASER = 50, ENERGY = 50, BOMB = 65, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 50)
+	armor_type = /datum/armor/ert_alert
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 
@@ -146,14 +146,14 @@
 	icon_state = "hardsuit0-russians"
 	item_state = "hardsuit0-russians"
 	hardsuit_type = "russiansuits"
-	armor = list(MELEE = 70, BULLET = 65, LASER = 60, ENERGY = 60, BOMB = 80, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 60)
+	armor_type = /datum/armor/nri_hardsuit_adv
 
 /obj/item/clothing/suit/space/hardsuit/ert/alert/nri/adv
 	name = "Ratnik-4M 'Voskhod' hardsuit"
 	icon_state = "russiansuits"
 	item_state = "russiansuits"
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/alert/nri/adv
-	armor = list(MELEE = 70, BULLET = 65, LASER = 60, ENERGY = 60, BOMB = 80, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 60)
+	armor_type = /datum/armor/nri_hardsuit_adv
 	var/mob/living/carbon/human/wearer
 
 /obj/item/clothing/suit/space/hardsuit/ert/alert/nri/adv/equipped(mob/user, slot)

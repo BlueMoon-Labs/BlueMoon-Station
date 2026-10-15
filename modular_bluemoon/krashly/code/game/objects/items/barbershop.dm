@@ -38,13 +38,9 @@
 /obj/item/razor/scissors/shave(mob/living/carbon/human/H, location = BODY_ZONE_PRECISE_MOUTH)
 	if(location == BODY_ZONE_PRECISE_MOUTH)
 		return
-	var/new_hair = tgui_input_list(usr, "Select a hair style", "Grooming", GLOB.hair_styles_list, H.hair_style)
-	if(!new_hair)
+	if(!usr || !ishuman(usr))
 		return
-	H.hair_style = new_hair
-
-	H.update_hair()
-	playsound(loc, 'modular_bluemoon/krashly/sound/scissors.ogg', 20, 1)
+	open_scissors_hair_picker(usr, H, src) // BLUEMOON EDIT - hair style picker window
 
 /obj/item/razor/straight_razor
 	name = "straight razor"
@@ -61,13 +57,9 @@
 /obj/item/razor/straight_razor/shave(mob/living/carbon/human/H, location = BODY_ZONE_PRECISE_MOUTH)
 	if(location != BODY_ZONE_PRECISE_MOUTH)
 		return
-	var/new_hair = tgui_input_list(usr, "Select a facial hair style", "Grooming", GLOB.facial_hair_styles_list, H.facial_hair_style)
-	if(!new_hair)
+	if(!usr || !ishuman(usr))
 		return
-	H.facial_hair_style = new_hair
-
-	H.update_hair()
-	playsound(loc, 'modular_bluemoon/krashly/sound/straight_razor.ogg', 20, 1)
+	open_razor_hair_picker(usr, H, src) // BLUEMOON EDIT - hair style picker window
 
 /obj/item/dyespray/hairspray
 	name = "hair dye spray"

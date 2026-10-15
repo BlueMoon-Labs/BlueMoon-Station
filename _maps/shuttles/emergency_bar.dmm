@@ -105,7 +105,7 @@
 /area/shuttle/escape)
 "au" = (
 /obj/structure/table,
-/obj/item/storage/backpack/duffelbag/med/surgery,
+/obj/item/storage/backpack/duffelbag/med/surgery/upgraded,
 /turf/open/floor/mineral/titanium,
 /area/shuttle/escape)
 "av" = (

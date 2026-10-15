@@ -109,31 +109,26 @@
 
 /datum/action/cooldown/module_action
 	name = "Generic MODsuit Module Action"
-	var/obj/item/mod/module/linked_module
 	button_block_right_click_context_menu = TRUE
 	icon_icon = 'icons/obj/clothing/modsuit/mod_modules.dmi'
 	button_icon = 'icons/mob/actions/backgrounds.dmi'
 	background_icon_state = "bg_tech_blue"
 	check_flags = AB_CHECK_CONSCIOUS
 
-/datum/action/cooldown/module_action/New(Target, obj/item/mod/module/module)
+/datum/action/cooldown/module_action/New(obj/item/mod/module/Target)
 	. = ..()
-	linked_module = module
-	name = linked_module?.name
-	cooldown_time = linked_module?.cooldown_time
-	button_icon_state = linked_module?.icon_state
-
-/datum/action/cooldown/module_action/Destroy()
-	. = ..()
-	linked_module = null
+	name = Target?.name
+	cooldown_time = Target?.cooldown_time
+	button_icon_state = Target?.icon_state
 
 /datum/action/cooldown/module_action/Trigger(trigger_flags, atom/target)
 	. = ..()
-	if(!linked_module.mod)
+	var/obj/item/mod/module/target_module = target
+	if(!target_module.mod)
 		to_chat(owner, span_danger("Модуль изъят!"))
 		return qdel(src)
 	if(CHECK_BITFIELD(trigger_flags, TRIGGER_RIGHT_CLICK))
 		to_chat(owner, span_danger("Способность удалена с хотбара!"))
 		return Remove(owner) //удаляет тут, в remove есть qdel
-	linked_module?.on_select()
-	StartCooldown(linked_module.cooldown_time)
+	target_module?.on_select()
+	StartCooldown(target_module.cooldown_time)

@@ -171,7 +171,7 @@
 	anchored = TRUE
 	max_integrity = 150
 	integrity_failure = 0.75
-	armor = list(MELEE = 40, BULLET = 10, LASER = 10, ENERGY = 0, BOMB = 45, BIO = 0, RAD = 0, FIRE = 90, ACID = 100)
+	armor_type = /datum/armor/transport
 	layer = TRAM_FLOOR_LAYER
 	plane = GAME_PLANE
 	obj_flags = CAN_BE_HIT | BLOCK_Z_OUT_DOWN | BLOCK_Z_OUT_UP

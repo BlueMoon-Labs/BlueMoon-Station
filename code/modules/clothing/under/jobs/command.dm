@@ -3,12 +3,12 @@
 	name = "captain's jumpsuit"
 	icon_state = "captain"
 	item_state = "b_suit"
-	armor = list(MELEE = 10, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 30, ACID = 30, WOUND = 10)
+	armor_type = /datum/armor/light_duty
 	sensor_mode = SENSOR_COORDS
 	sensor_flags = NONE
 
 /obj/item/clothing/under/rank/captain/utility/syndicate
-	armor = list(MELEE = 10, BULLET = 5, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 50, RAD = 0, FIRE = 50, ACID = 40, WOUND = 10)
+	armor_type = /datum/armor/command_and_syndicate_utility
 	has_sensor = NO_SENSORS
 
 /obj/item/clothing/under/rank/captain/util
@@ -16,7 +16,7 @@
 	desc = "A utility uniform for command personnel."
 	icon_state = "utilcom"
 	item_state = "utilcom"
-	armor = list(MELEE = 10, BULLET = 5, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 50, RAD = 0, FIRE = 50, ACID = 40, WOUND = 10)
+	armor_type = /datum/armor/command_and_syndicate_utility
 	can_adjust = FALSE
 
 /obj/item/clothing/under/rank/captain/skirt
@@ -71,7 +71,7 @@
 	desc = "The uniform of a bridge officer. It makes you feel extremely important, even if you are not."
 	icon_state = "bridgesec"
 	item_state = "bridgesec"
-	armor = list("melee" = 5, "bullet" = 0, "laser" = 5,"energy" = 5, "bomb" = 0, "bio" = 0, "rad" = 0, "fire" = 0, "acid" = 0, "wound" = 0)
+	armor_type = /datum/armor/bridgeofficer
 	alt_covers_chest = TRUE
 	can_adjust = FALSE
 	sensor_flags = NONE

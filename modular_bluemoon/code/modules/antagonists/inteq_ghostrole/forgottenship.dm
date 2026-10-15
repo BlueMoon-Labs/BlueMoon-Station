@@ -111,7 +111,7 @@ GLOBAL_VAR_INIT(fscpassword, generate_password())
 	icon_state = "cybersuncloak"
 	icon = 'modular_splurt/icons/obj/clothing/neck.dmi'
 	mob_overlay_icon = 'modular_splurt/icons/mob/clothing/neck.dmi'
-	armor = list(MELEE = 35, BULLET = 40, LASER = 25, ENERGY = 10, BOMB = 25, BIO = 20, RAD = 20, FIRE = 60, ACID = 60)
+	armor_type = /datum/armor/centcom_and_cybersun
 	body_parts_covered = CHEST|LEGS|ARMS
 	is_edible = 0
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC //bluemoon add

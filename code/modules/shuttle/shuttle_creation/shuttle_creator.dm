@@ -8,6 +8,7 @@ GLOBAL_LIST_EMPTY(custom_shuttle_machines)		//Machines that require updating (He
 
 //============ Shuttle Creator Object ============
 /obj/item/shuttle_creator
+	armor_type = /datum/armor/weapons_and_construction_tools
 	name = "Rapid Shuttle Designator"
 	icon = 'icons/obj/tools.dmi'
 	icon_state = "rsd"
@@ -24,7 +25,6 @@ GLOBAL_LIST_EMPTY(custom_shuttle_machines)		//Machines that require updating (He
 	throw_range = 5
 	w_class = WEIGHT_CLASS_NORMAL
 	req_access_txt = "11"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 50)
 	resistance_flags = FIRE_PROOF
 	var/ready = TRUE
 	//pre-designation

@@ -78,9 +78,10 @@
 	old_body.gib()
 	B.place_blob_core(blobtag.point_rate_human_blob, pop_override = TRUE)
 
-/datum/antagonist/blob/antag_listing_status()
+/datum/antagonist/blob/antag_check_status()
 	. = ..()
-	if(owner && owner.current)
+	if(owner && istype(owner.current, /mob/camera/blob))
 		var/mob/camera/blob/B = owner.current
-		if(istype(B))
-			. += "(Progress: [B.blobs_legit.len]/[B.blobwincount])"
+		if(!.)
+			. = list()
+		.["note"] = "Прогресс: [length(B.blobs_legit)]/[B.blobwincount]"

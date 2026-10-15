@@ -19,8 +19,8 @@
 		не установлена бронепластина, а их приводы лишь немного увеличивают скорость по сравнению с обычной."
 	/// Default skin of the MOD.
 	var/default_skin = "standard"
-	/// Armor shared across the MOD pieces.
-	var/armor = /datum/armor/mod
+	/// Initial armor profile type path shared across the MOD pieces.
+	var/armor_type = /datum/armor/modsuit_standard
 	/// Resistance flags shared across the MOD pieces.
 	var/resistance_flags = NONE
 	/// Max heat protection shared across the MOD pieces.
@@ -63,7 +63,7 @@
 
 /datum/mod_theme/proc/apply_theme_stats(obj/item/mod/control/modsuit, new_skin)
 	for(var/obj/item/piece in modsuit.get_mod_parts(include_cell = FALSE, include_mod = TRUE))
-		piece.normal_set_armor(armor)
+		piece.set_armor_type(armor_type)
 		piece.resistance_flags = resistance_flags
 		piece.heat_protection = NONE
 		piece.cold_protection = NONE

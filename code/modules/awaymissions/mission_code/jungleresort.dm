@@ -19,7 +19,7 @@
 	icon_state = "whip"
 
 /obj/item/clothing/suit/hooded/wintercoat/captain/jungle
-	armor = list(MELEE = 5, BULLET = 5, LASER = 5, ENERGY = 0, BOMB = 0, BIO = 10, RAD = 0, FIRE = 0, ACID = 0)
+	armor_type = /datum/armor/jungle
 
 /obj/item/clothing/head/rice_hat/cursed // this was a stupid idea lmao
 	name = "cursed rice hat"

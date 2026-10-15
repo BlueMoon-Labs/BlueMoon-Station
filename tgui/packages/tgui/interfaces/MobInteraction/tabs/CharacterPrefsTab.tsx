@@ -102,30 +102,6 @@ export const CharacterPrefsTab = (props) => {
         </Modal>
       )}
       <LabeledList>
-        {antag_opt_in ? (
-          <LabeledList.Item label={<Tooltip content={`Может ли персонаж выпасть целью в заданиях антагонистов. Новый уровень действует на следующие выборы целей. ${antag_opt_in.thresholds}`}><span>Задания антагов</span></Tooltip>}>
-            <Box mb={0.5} color="average">
-              {antag_opt_in.disclaimer}
-            </Box>
-            <Stack vertical>
-              {antag_opt_in.levels.map((level) => (
-                <Stack.Item key={level.value}>
-                  <Button
-                    fluid
-                    content={level.name}
-                    tooltip={level.description}
-                    color={antag_opt_in.level === level.value ? "green" : "default"}
-                    onClick={() => act('antag_opt_in', { level: level.value })} />
-                </Stack.Item>
-              ))}
-            </Stack>
-            {antag_opt_in.effective !== antag_opt_in.level ? (
-              <Box mt={0.5} color={antag_opt_in.levels[antag_opt_in.effective]?.color}>
-                Итоговый уровень с учётом порога: {antag_opt_in.levels[antag_opt_in.effective]?.name}
-              </Box>
-            ) : null}
-          </LabeledList.Item>
-        ) : null}
         <LabeledList.Item label={<Tooltip content="Эротические взаимодействия"><span>ERP Preference</span></Tooltip>}>
           <Stack textAlign="center">
             <Stack.Item grow>
@@ -381,6 +357,30 @@ export const CharacterPrefsTab = (props) => {
             </Stack.Item>
           </Stack>
         </LabeledList.Item>
+        {antag_opt_in ? (
+          <LabeledList.Item label={<Tooltip content={`Может ли персонаж выпасть целью в заданиях антагонистов. Новый уровень действует на следующие выборы целей. ${antag_opt_in.thresholds}`}><span>Задания антагов</span></Tooltip>}>
+            <Box mb={0.5} color="average">
+              {antag_opt_in.disclaimer}
+            </Box>
+            <Stack vertical>
+              {antag_opt_in.levels.map((level) => (
+                <Stack.Item key={level.value}>
+                  <Button
+                    fluid
+                    content={level.name}
+                    tooltip={level.description}
+                    color={antag_opt_in.level === level.value ? "green" : "default"}
+                    onClick={() => act('antag_opt_in', { level: level.value })} />
+                </Stack.Item>
+              ))}
+            </Stack>
+            {antag_opt_in.effective !== antag_opt_in.level ? (
+              <Box mt={0.5} color={antag_opt_in.levels[antag_opt_in.effective]?.color}>
+                Итоговый уровень с учётом порога: {antag_opt_in.levels[antag_opt_in.effective]?.name}
+              </Box>
+            ) : null}
+          </LabeledList.Item>
+        ) : null}
       </LabeledList>
     </Flex>
   );
