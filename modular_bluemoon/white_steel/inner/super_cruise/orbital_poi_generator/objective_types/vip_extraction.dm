@@ -132,11 +132,15 @@
 		/datum/outfit/hsc/vip/assistant,
 	)
 	created_human.equipOutfit(pick(vip_outfits))
+	//WHITE-STEEL PORT: VIP безоружен — всё оружие и патроны из сумки/пояса убираются, чтобы гражданское
+	//лицо не воевало с авангардом. Лодауты ERT-MOPP общие с настоящим ERT, поэтому чистим пост-фактум.
+	strip_vip_weapons(created_human)
+	//WHITE-STEEL PORT: VIP не умирает в космосе от разгермы и холода (те же трейты, что даёт мутация
+	//space_adaptation). HSC-лодаут — хардсьют с неснятым шлемом, поэтому без этого VIP задыхался в вакууме.
+	grant_vip_space_adaptation(created_human)
 	//WHITE-STEEL PORT: снять с VIP снаряжение нельзя (кроме маски) — иначе первый же встречный
 	//раздевает уникальную VIP-персону до трусов. TRAIT_NODROP блокирует и strip, и сброс.
 	lock_vip_equipment(created_human)
-	//WHITE-STEEL PORT: VIP-тело можно занять призраку — mind с образом и целью сохраняется за телом.
-	created_human.AddComponent(/datum/component/ghost_takeover, "VIP-персоны", "Вы — VIP-персона! Задача: выжить на руине и вернуться на ЦК живым.")
 	//WHITE-STEEL PORT: у VIP настоящая цель в mind — выжить и вернуться на ЦК.
 	created_human.mind.add_antag_datum(/datum/antagonist/vip_recovery)
 	mob_to_recover = created_human
@@ -144,18 +148,37 @@
 	//WHITE-STEEL PORT: повторяющийся опрос призраков за роль VIP, пока тело не занято.
 	start_ghost_role_poll(created_human, "VIP эвакуация: занять роль VIP-персоны?", POLL_IGNORE_SPLITPERSONALITY, "VIP-персоны", "Вы — VIP-персона! Задача: выжить на руине и вернуться на ЦК живым.")
 
-//WHITE-STEEL PORT: фиксируем надетое на VIP снаряжение, кроме маски. TRAIT_NODROP
+//WHITE-STEEL PORT: фиксируем надетое на VIP снаряжение, кроме маски и пояса. TRAIT_NODROP
 //используется движком в /obj/item/proc/canStrip(), поэтому снять вещи через strip-меню
-//нельзя; маску оставляем снимаемой (доступ к дыханию/лицу). Сбросить вещи VIP тоже
-//не сможет — для неписи-цели это желаемое поведение.
+//нельзя; маску оставляем снимаемой (доступ к дыханию/лицу), а пояс (макаров из лодаута) —
+//снимаемым, чтобы игрок мог убрать/сменить оружие. Сбросить остальные вещи VIP не сможет.
 /datum/orbital_objective/vip_recovery/proc/lock_vip_equipment(mob/living/carbon/human/H)
 	if(!ishuman(H))
 		return
 	var/obj/item/worn_mask = H.get_item_by_slot(ITEM_SLOT_MASK)
+	var/obj/item/worn_belt = H.get_item_by_slot(ITEM_SLOT_BELT)
 	for(var/obj/item/equipped as anything in H.get_equipped_items())
-		if(!istype(equipped) || equipped == worn_mask)
+		if(!istype(equipped) || equipped == worn_mask || equipped == worn_belt)
 			continue
 		ADD_TRAIT(equipped, TRAIT_NODROP, "vip_equipment_lock")
+
+//WHITE-STEEL PORT: убираем у VIP всё оружие и боеприпасы — где бы они ни лежали (пояс, сумка,
+//карманы, вложенные контейнеры). GetAllContents() рекурсивно обходит всё содержимое моба.
+/datum/orbital_objective/vip_recovery/proc/strip_vip_weapons(mob/living/carbon/human/H)
+	if(!ishuman(H))
+		return
+	for(var/obj/item/I in H.GetAllContents())
+		if(istype(I, /obj/item/gun) || istype(I, /obj/item/ammo_box) || istype(I, /obj/item/ammo_casing) || istype(I, /obj/item/storage/box/ammo))
+			qdel(I)
+
+//WHITE-STEEL PORT: VIP не гибнет в космосе от разгермы и переохлаждения. Трейты идентичны мутации
+//space_adaptation; кислород по-прежнему требуется (бак и маска выдаются рядом с VIP на полу).
+/datum/orbital_objective/vip_recovery/proc/grant_vip_space_adaptation(mob/living/carbon/human/H)
+	if(!ishuman(H))
+		return
+	ADD_TRAIT(H, TRAIT_RESISTCOLD, "vip_space_adaptation")
+	ADD_TRAIT(H, TRAIT_RESISTLOWPRESSURE, "vip_space_adaptation")
+	ADD_TRAIT(H, TRAIT_LOWPRESSURECOOLING, "vip_space_adaptation")
 
 //=====================
 // Centcom Official

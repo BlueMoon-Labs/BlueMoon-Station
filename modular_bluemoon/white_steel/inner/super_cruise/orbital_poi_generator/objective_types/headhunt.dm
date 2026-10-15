@@ -129,10 +129,11 @@
 		qdel(SA)
 	//Экипируем преступника набором InteQ Operative - Full Kit (без взрывного импланта).
 	created_human.equipOutfit(/datum/outfit/inteq/full/expedition)
+	//WHITE-STEEL PORT: цель охоты видит в темноте — руины часто не освещены, а преступник должен
+	//иметь шанс продержаться. spawn_effects=TRUE, чтобы сразу пересчитался sight (post_add).
+	created_human.add_quirk(/datum/quirk/night_vision, TRUE)
 	//WHITE-STEEL PORT: растворение в скелет при побеге (свободном прибытии на станцию).
 	created_human.AddComponent(/datum/component/headhunt_skeleton)
-	//WHITE-STEEL PORT: преступника можно занять призраку — mind с целью сохраняется за телом.
-	created_human.AddComponent(/datum/component/ghost_takeover, "преступника-нелегала", "Вы — нелегал, цель «Охота за головами»! Держитесь на руине, пока шаттл наёмников авангарда не улетит — подмога InteQ уже близко.")
 	//WHITE-STEEL PORT: повторяющийся опрос призраков за роль преступника, пока тело не занято.
 	start_ghost_role_poll(created_human, "Охота за головами: занять роль преступника?", POLL_IGNORE_HEADHUNT, "преступника-нелегала", "Вы — нелегал, цель «Охота за головами»! Держитесь на руине, пока шаттл наёмников авангарда не улетит — подмога InteQ уже близко.")
 	generated = TRUE
@@ -191,6 +192,9 @@
 	//WHITE-STEEL PORT: преступник-игрок получает 2 М$ за успешное выживание.
 	award_headhunt_metadollars(mob_to_recover)
 	to_chat(mob_to_recover, span_greentext("Шаттл наёмников авангарда покинул вашу локацию. Подмога InteQ уже близко — вы продержались!"))
+	//WHITE-STEEL PORT: шаттл авангарда улетел — цель охоты больше не нужна (иначе её тело держит
+	//уровень руины прогруженным). Награда и сообщение уже выданы, теперь гоустим и удаляем тело.
+	despawn_target()
 
 //WHITE-STEEL PORT: награда игроку на цели охоты за то, что он продержался до отлёта шаттла.
 /datum/orbital_objective/headhunt/proc/award_headhunt_metadollars(mob/living/prey)
@@ -290,45 +294,3 @@
 	//Тело превращается в скелет.
 	H.set_species(/datum/species/skeleton)
 	H.death(FALSE)
-
-//=====================
-// Захват тела призраком
-//=====================
-//WHITE-STEEL PORT: позволяет призраку занять роль существующего живого тела (нелегал, VIP и т.п.).
-//Текущий mind тела (с его целями/антагом) сохраняется — переносится только ключ призрака.
-/datum/component/ghost_takeover
-	var/role_name
-	var/takeover_message
-	var/claimed = FALSE
-
-/datum/component/ghost_takeover/Initialize(role_name, takeover_message)
-	. = ..()
-	if(!iscarbon(parent))
-		return COMPONENT_INCOMPATIBLE
-	src.role_name = role_name
-	src.takeover_message = takeover_message
-	RegisterSignal(parent, COMSIG_ATOM_ATTACK_GHOST, PROC_REF(on_ghost_click))
-
-/datum/component/ghost_takeover/proc/on_ghost_click(datum/source, mob/dead/observer/ghost)
-	SIGNAL_HANDLER
-	if(claimed)
-		return
-	var/mob/living/carbon/C = parent
-	if(QDELETED(C) || C.stat == DEAD || C.key || C.client)
-		return
-	if(!istype(ghost) || !ghost.client || !SSticker.HasRoundStarted())
-		return
-	if(!ghost.can_reenter_round())
-		to_chat(ghost, span_warning("Вы не можете занять эту роль: вы покинули раунд добровольно."))
-		return
-	if(tgui_alert(ghost, "Занять роль [role_name]? Это гост-роль — ваш текущий персонаж будет потерян!", "Гост-роль", list("Да", "Нет")) != "Да")
-		return
-	if(claimed || QDELETED(C) || C.stat == DEAD || C.key || C.client || QDELETED(ghost) || !ghost.client)
-		return
-	claimed = TRUE
-	log_game("Ghost takeover: [key_name(ghost)] занял роль [role_name] ([REF(C)])")
-	ghost.transfer_ckey(C, FALSE)
-	C.client?.init_verbs()
-	if(takeover_message)
-		to_chat(C, span_boldnotice(takeover_message))
-	return COMPONENT_NO_ATTACK_HAND

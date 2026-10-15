@@ -21,6 +21,10 @@
 	//Пул — ВСЕ узлы игры, кроме стартовых и BEPIS (experimental).
 	var/list/valid_nodes = list()
 	for(var/node_id in SSresearch.techweb_nodes)
+		//WHITE-STEEL PORT: служебный узел-заглушка «ERROR» (techweb_node/error_node) не должен
+		//выпадать в виде диска — иначе в луте появляется бессмысленный "research disk (ERROR)".
+		if(node_id == "ERROR")
+			continue
 		if(SSresearch.techweb_nodes_starting[node_id])
 			continue
 		if(SSresearch.techweb_nodes_experimental[node_id])
