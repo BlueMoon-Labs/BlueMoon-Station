@@ -190,7 +190,7 @@
 
 
 /obj/item/toy/plush/attack(mob/living/M, mob/living/carbon/user)
-	• if(stored_weapon && !QDELETED(stored_weapon))
+	if(stored_weapon && !QDELETED(stored_weapon))
 		// Наносим тяжелый brute-урон (10 ед.), как у стандартного тулбокса
 		M.take_bodypart_damage(10, 0)
 		
