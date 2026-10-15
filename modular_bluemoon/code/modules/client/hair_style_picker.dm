@@ -8,6 +8,7 @@
 #define HAIR_PICKER_MODE_MIRROR 2
 #define HAIR_PICKER_MODE_SCISSORS 3
 #define HAIR_PICKER_MODE_RAZOR 4
+#define HAIR_PICKER_MODE_CUSTOM 5
 
 #define HAIR_PICKER_PAGE_SIZE 28
 #define HAIR_PICKER_COLS 4
@@ -24,6 +25,9 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	var/mob/living/carbon/human/target
 	var/atom/movable/check_atom
 	var/apply_sound
+	/// Обработчик получает выбранный стиль и вкладку, возвращает TRUE после успешного применения.
+	var/datum/callback/apply_callback
+	var/applying = FALSE
 	var/list/allowed_tabs = list()
 	var/tab = HAIR_PICKER_TAB_HAIR
 	var/search = ""
@@ -77,6 +81,19 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	picker.setup_live(user, subject, razor, HAIR_PICKER_MODE_RAZOR, 'modular_bluemoon/krashly/sound/straight_razor.ogg')
 	return picker.finalize(user)
 
+/// Выбор для других инструментов и способностей с собственными условиями применения.
+/proc/open_live_hair_style_picker(mob/user, mob/living/carbon/human/subject, atom/movable/source, list/tabs, datum/callback/on_apply)
+	if(!user?.client || !subject?.dna || QDELETED(source))
+		return FALSE
+	var/datum/hair_style_picker/picker = create_hair_style_picker(user)
+	picker.setup_live(user, subject, source, HAIR_PICKER_MODE_CUSTOM, null)
+	picker.allowed_tabs = tabs & picker.allowed_tabs
+	if(length(picker.allowed_tabs))
+		picker.tab = picker.allowed_tabs[1]
+		picker.selected = picker.default_selection()
+	picker.apply_callback = on_apply
+	return picker.finalize(user)
+
 /proc/create_hair_style_picker(mob/user)
 	var/picker_key = user.ckey || REF(user)
 	var/datum/hair_style_picker/old = GLOB.hair_style_pickers[picker_key]
@@ -124,6 +141,13 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 			if(FACEHAIR in species_traits)
 				allowed_tabs += HAIR_PICKER_TAB_FACIAL
 			tab = HAIR_PICKER_TAB_FACIAL
+		if(HAIR_PICKER_MODE_CUSTOM)
+			if(HAIR in species_traits)
+				allowed_tabs += HAIR_PICKER_TAB_HAIR
+			if(FACEHAIR in species_traits)
+				allowed_tabs += HAIR_PICKER_TAB_FACIAL
+			if(HAIR in species_traits)
+				allowed_tabs += HAIR_PICKER_TAB_GRAD
 	if(!length(allowed_tabs))
 		return
 	if(!(tab in allowed_tabs))
@@ -152,6 +176,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	target = null
 	check_atom = null
 	apply_sound = null
+	apply_callback = null
 	return ..()
 
 
@@ -318,7 +343,12 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 			return TRUE
 
 		if("apply")
-			if(!apply_selection(user, ui))
+			if(applying)
+				return
+			applying = TRUE
+			var/success = apply_selection(user, ui)
+			applying = FALSE
+			if(!success)
 				return FALSE
 			ui?.close()
 			return
@@ -342,6 +372,12 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 		return FALSE
 	if(!user.canUseTopic(check_atom, BE_CLOSE, FALSE, NO_TK, TRUE, TRUE))
 		return FALSE
+	if(!user.canUseTopic(target, BE_CLOSE, FALSE, NO_TK, TRUE, TRUE))
+		return FALSE
+	if(apply_callback)
+		if(QDELETED(apply_callback) || (apply_callback.object != GLOBAL_PROC && QDELETED(apply_callback.object)))
+			return FALSE
+		return apply_callback.Invoke(selected, tab)
 	switch(tab)
 		if(HAIR_PICKER_TAB_HAIR)
 			target.hair_style = selected
@@ -641,6 +677,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 #undef HAIR_PICKER_MODE_MIRROR
 #undef HAIR_PICKER_MODE_SCISSORS
 #undef HAIR_PICKER_MODE_RAZOR
+#undef HAIR_PICKER_MODE_CUSTOM
 #undef HAIR_PICKER_PAGE_SIZE
 #undef HAIR_PICKER_COLS
 #undef HAIR_PICKER_PAD

@@ -65,17 +65,10 @@
 		H.dna?.update_ui_block(DNA_RIGHT_EYE_COLOR_BLOCK)
 		H.update_body()
 	else if(select_alteration == "Hair Style")
+		var/list/hair_tabs = list("hair")
 		if(H.gender == MALE)
-			var/new_style = tgui_input_list(owner, "Select a facial hair style", "Hair Alterations", GLOB.facial_hair_styles_list, H.facial_hair_style)
-			if(new_style)
-				H.facial_hair_style = new_style
-		else
-			H.facial_hair_style = "Shaved"
-		//handle normal hair
-		var/new_style = tgui_input_list(owner, "Select a hair style", "Hair Alterations", GLOB.hair_styles_list, H.hair_style)
-		if(new_style)
-			H.hair_style = new_style
-			H.update_hair()
+			hair_tabs += "facial"
+		open_live_hair_style_picker(owner, H, H, hair_tabs, CALLBACK(src, PROC_REF(apply_hair_style), H))
 	else if (select_alteration == "Genitals")
 		var/operation = tgui_input_list(owner, "Select organ operation.", "Organ Manipulation", list("add sexual organ", "remove sexual organ"))
 		switch(operation)
@@ -431,3 +424,17 @@
 			H.update_body()
 
 /// SPLURT EDIT END
+
+/datum/action/innate/ability/humanoid_customization/proc/apply_hair_style(mob/living/carbon/human/H, new_style, tab)
+	if(owner != H || !IsAvailable() || iszombie_infectious(H))
+		return FALSE
+	if(tab == "facial")
+		if(H.gender != MALE)
+			return FALSE
+		H.facial_hair_style = new_style
+	else
+		H.hair_style = new_style
+	if(H.gender != MALE)
+		H.facial_hair_style = "Shaved"
+	H.update_hair()
+	return TRUE

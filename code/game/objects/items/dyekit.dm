@@ -19,23 +19,30 @@
  * * target - The mob who we will apply the gradient and gradient color to.
  */
 
-/obj/item/dyespray/proc/dye(mob/target)
-	if(!ishuman(target))
+/obj/item/dyespray/proc/dye(mob/target, mob/user = usr)
+	if(!ishuman(target) || !user?.client)
 		return
 	var/mob/living/carbon/human/human_target = target
 
-	var/new_grad_style = input(usr, "Choose a color pattern:", "Character Preference")  as null|anything in GLOB.hair_gradients_list
-	if(!new_grad_style)
-		return
+	open_live_hair_style_picker(user, human_target, src, list("grad"), CALLBACK(src, PROC_REF(apply_hair_gradient), user, human_target))
 
-	var/new_grad_color = input(usr, "Choose a secondary hair color:", "Character Preference","#"+human_target.grad_color) as color|null
+/obj/item/dyespray/proc/apply_hair_gradient(mob/user, mob/living/carbon/human/human_target, new_grad_style, tab)
+	var/new_grad_color = input(user, "Choose a secondary hair color:", "Character Preference","#"+human_target.grad_color) as color|null
 	if(!new_grad_color)
-		return
+		return FALSE
+	if(!can_dye_target(user, human_target))
+		return FALSE
 
+	to_chat(human_target, span_notice("You start applying the hair dye..."))
+	if(!do_after(user, 3 SECONDS, target = human_target) || !can_dye_target(user, human_target))
+		return FALSE
 	human_target.grad_style = new_grad_style
 	human_target.grad_color = sanitize_hexcolor(new_grad_color)
-	to_chat(human_target, "<span class='notice'>You start applying the hair dye...</span>")
-	if(!do_after(usr, 3 SECONDS, target = human_target))
-		return
 	playsound(src, 'sound/effects/spray.ogg', 5, TRUE, 5)
 	human_target.update_hair()
+	return TRUE
+
+/obj/item/dyespray/proc/can_dye_target(mob/user, mob/living/carbon/human/human_target)
+	if(QDELETED(src) || QDELETED(user) || QDELETED(human_target))
+		return FALSE
+	return user.canUseTopic(src, BE_CLOSE, FALSE, NO_TK) && user.canUseTopic(human_target, BE_CLOSE, FALSE, NO_TK)
