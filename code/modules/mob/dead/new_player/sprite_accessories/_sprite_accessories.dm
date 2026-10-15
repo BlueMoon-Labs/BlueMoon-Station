@@ -75,7 +75,7 @@
 	var/extra2 = FALSE
 	var/extra2_color_src = MUTCOLORS3
 
-	//for snowflake/donor specific sprites
+	// Display keys, normalized ckeys and enc1 IDs for snowflake/donor specific sprites.
 	var/list/ckeys_allowed
 
 	//For soft-restricting markings to species IDs
@@ -105,7 +105,8 @@
 	var/covers_chest = FALSE
 
 /**
- * Доступен ли хвост/уши или другая часть тела игроку с указанным ckey. Пустой или отсутствующий ckeys_allowed = доступен всем.
+ * Доступен ли аксессуар игроку с указанным key/ckey. Поддерживает обычные имена и enc1 ID.
+ * Пустой или отсутствующий ckeys_allowed = доступен всем.
  */
-/datum/sprite_accessory/proc/is_allowed_for(user_ckey)
-	return !length(ckeys_allowed) || (user_ckey in ckeys_allowed)
+/datum/sprite_accessory/proc/is_allowed_for(user_key)
+	return is_key_in_whitelist(user_key, ckeys_allowed)

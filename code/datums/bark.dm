@@ -17,10 +17,13 @@
 	var/maxspeed = BARK_DEFAULT_MAXSPEED
 
 	// Visibility vars. Regardless of what's set below, these can still be obtained via adminbus and genetics. Rule of fun.
+	/// Original keys, normalized ckeys and enc1 IDs; null allows everyone, an empty list allows nobody.
 	var/list/ckeys_allowed
 	var/ignore = FALSE //Controls whether or not this can be chosen in chargen
 	var/allow_random = FALSE //Allows chargen randomization to use this. This is mainly to restrict the pool to sounds that fit well for most characters
 
+/datum/bark/proc/is_allowed_for(user_key)
+	return isnull(ckeys_allowed) || (length(ckeys_allowed) && is_key_in_whitelist(user_key, ckeys_allowed))
 
 // So the basic jist of the sound design here: We make use primarily of shorter instrument samples for barks. We would've went with animalese instead, but doing so would've involved quite a bit of overhead to saycode.
 // Short instrument samples tend to sound surprisingly nice for barks, being able to be played in rapid succession without being outright obnoxious.

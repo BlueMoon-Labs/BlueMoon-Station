@@ -51,6 +51,16 @@ export const TestListParameter = new Juke.Parameter({
   type: 'string',
 });
 
+// Run even when compiled assets are up to date: the Node installation may change.
+// This code comes from the deployed repository, unlike TGS's installed EventScripts.
+export const LoadoutCryptoRuntimeTarget = new Juke.Target({
+  executes: async () => {
+    const nodePath = process.execPath.replace(/\\/g, '/');
+    fs.writeFileSync('tools/loadout_crypto/node_path.txt', `${nodePath}\n`);
+    Juke.logger.info(`Loadout crypto Node: ${nodePath}`);
+  },
+});
+
 export const DmMapsIncludeTarget = new Juke.Target({
   executes: async () => {
     const folders = [
@@ -84,6 +94,7 @@ export const StatbrowserTarget = new Juke.Target({
 
 export const DmTarget = new Juke.Target({
   dependsOn: ({ get }) => [
+    LoadoutCryptoRuntimeTarget,
     StatbrowserTarget,
     get(DefineParameter).includes('ALL_TEMPLATES') && DmMapsIncludeTarget,
   ],
@@ -413,7 +424,7 @@ export const TgFontTarget = new Juke.Target({
 });
 
 export const TguiTarget = new Juke.Target({
-  dependsOn: [YarnTarget],
+  dependsOn: [YarnTarget, LoadoutCryptoRuntimeTarget],
   inputs: [
     'tgui/.yarn/install-target',
     'tgui/vite.base.config.cjs',
