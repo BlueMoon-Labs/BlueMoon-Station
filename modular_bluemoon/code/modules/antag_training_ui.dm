@@ -74,6 +74,7 @@
 		var/list/zone = arena.zones[zone_id]
 		data["zones"] += list(list("id" = zone_id, "name" = zone["name"], "desc" = zone["desc"], "members" = member_counts[zone_id] || 0, "targets" = target_counts[zone_id] || 0, "current" = arena.inside_bounds(get_turf(user), zone["bounds"])))
 	data["options"] = program.options
+	data["heretic_program"] = istype(program, /datum/antag_training_program/heretic)
 	data["preparing"] = preparing
 	data["supply_ready"] = world.time >= next_supply_at && !preparing
 	data["practice_ready"] = world.time >= arena.next_spawn_at && !preparing
