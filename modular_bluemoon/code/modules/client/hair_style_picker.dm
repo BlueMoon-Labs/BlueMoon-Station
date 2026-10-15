@@ -207,7 +207,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	addtimer(CALLBACK(src, PROC_REF(destroy_if_idle)), 1 SECONDS, TIMER_UNIQUE | TIMER_OVERRIDE)
 
 /datum/hair_style_picker/proc/destroy_if_idle()
-	if(QDELETED(src))
+	if(QDELETED(src) || applying)
 		return
 	if(length(SStgui.get_all_open_uis(src)))
 		return
@@ -349,11 +349,10 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 			if(applying)
 				return
 			applying = TRUE
-			var/success = apply_selection(user, ui)
-			applying = FALSE
-			if(!success)
-				return FALSE
 			ui?.close()
+			apply_selection(user, ui)
+			applying = FALSE
+			destroy_if_idle()
 			return
 
 /datum/hair_style_picker/proc/apply_selection(mob/user, datum/tgui/ui)
