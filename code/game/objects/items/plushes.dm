@@ -181,13 +181,16 @@
 	return TRUE
 
 /obj/item/toy/plush/handle_atom_del(atom/A)
+	if(A == stored_weapon)
+		stored_weapon = null
+	return ..()
 	if(A == grenade)
 		grenade = null
 	..()
 
 
 /obj/item/toy/plush/attack(mob/living/M, mob/living/carbon/user)
-	if(stored_weapon)
+	• if(stored_weapon && !QDELETED(stored_weapon))
 		// Наносим тяжелый brute-урон (10 ед.), как у стандартного тулбокса
 		M.take_bodypart_damage(10, 0)
 		
@@ -1235,8 +1238,3 @@ GLOBAL_LIST_INIT(valid_plushie_paths, valid_plushie_paths())
 	lefthand_file = 'modular_sand/icons/mob/inhands/misc/plushes_lefthand.dmi'
 	righthand_file = 'modular_sand/icons/mob/inhands/misc/plushes_righthand.dmi'
 	squeak_override = list('sound/effects/footstep/rustystep1.ogg' = 1)
-
-/obj/item/toy/plush/handle_atom_del(atom/A)
-	if(A == stored_weapon)
-		stored_weapon = null
-	return ..()
