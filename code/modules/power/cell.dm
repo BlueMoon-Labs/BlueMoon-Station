@@ -261,6 +261,13 @@
 	name = "pulse pistol power cell"
 	maxcharge = 2000
 
+/obj/item/stock_parts/cell/plasma/light
+	maxcharge = 3000
+
+/obj/item/stock_parts/cell/plasma/heavy
+
+	maxcharge = 3600
+
 /obj/item/stock_parts/cell/crystal_cell
 	name = "crystal power cell"
 	desc = "A very high power cell made from crystallized plasma."

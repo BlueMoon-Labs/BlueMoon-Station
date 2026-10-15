@@ -6,7 +6,7 @@
 	dir_in = 1 //Facing North.
 	max_integrity = 500
 	deflect_chance = 30
-	armor = list(MELEE = 50, BULLET = 55, LASER = 40, ENERGY = 30, BOMB = 30, BIO = 0, RAD = 60, FIRE = 100, ACID = 100)
+	armor_type = /datum/armor/durand_and_marauder
 	max_temperature = 50000
 	force = 40
 	wreckage = /obj/structure/mecha_wreckage/durand

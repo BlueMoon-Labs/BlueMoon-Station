@@ -643,10 +643,10 @@
 
 	return parts.Join("<br>")
 
-/datum/antagonist/changeling/antag_listing_name()
+/datum/antagonist/changeling/antag_check_name()
 	return ..() + "([changelingID])"
 
-/datum/antagonist/changeling/xenobio/antag_listing_name()
+/datum/antagonist/changeling/xenobio/antag_check_name()
 	return ..() + "(Xenobio)"
 
 /**

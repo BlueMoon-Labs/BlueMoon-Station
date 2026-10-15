@@ -55,17 +55,9 @@
 	layer = NECK_LAYER
 	plane = FLOAT_PLANE
 
-	if (islist(cloth.armor) || isnull(cloth.armor))
-		var/datum/armor/blank_armor = new()
-		cloth.armor = blank_armor.generate_new_with_specific(cloth.armor)
-		qdel(blank_armor)
-
-	if (islist(armor) || isnull(armor))
-		var/datum/armor/blank_armor = new()
-		armor = blank_armor.generate_new_with_specific(armor)
-		qdel(blank_armor)
-
-	cloth.armor = cloth.armor.attachArmor(armor)
+	cloth.initialize_armor()
+	initialize_armor()
+	cloth.normal_set_armor(cloth.armor.attachArmor(armor))
 
 	if(isliving(user))
 		on_uniform_equip(cloth, user)
@@ -77,7 +69,7 @@
 		TakeComponent(detached_pockets)
 
 	if(cloth.armor && armor)
-		cloth.armor = cloth.armor.detachArmor(armor)
+		cloth.normal_set_armor(cloth.armor.detachArmor(armor))
 	//SANDSTORM EDIT
 	current_uniform = null
 	//SANDSTORM EDIT END
@@ -537,7 +529,7 @@
 /obj/item/clothing/accessory/medal/gold/captain/family
 	name = "old medal of captaincy"
 	desc = "A rustic badge pure gold, has been through hell and back by the looks, the syndcate have been after these by the looks of it for generations..."
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 10) //Pure gold
+	armor_type = /datum/armor/family
 	custom_materials = list(/datum/material/gold=2000)
 	icon_state = "gold_c"
 
@@ -551,7 +543,7 @@
 	desc = "An eccentric medal made of plasma."
 	icon_state = "plasma"
 	medaltype = "medal-plasma"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = -10, ACID = 0) //It's made of plasma. Of course it's flammable.
+	armor_type = /datum/armor/accessorie_plasma
 	custom_materials = list(/datum/material/plasma=1000)
 
 /obj/item/clothing/accessory/medal/plasma/temperature_expose(datum/gas_mixture/air, exposed_temperature, exposed_volume)
@@ -673,7 +665,7 @@
 	name = "bone talisman"
 	desc = "A hunter's talisman, some say the old gods smile on those who wear it."
 	icon_state = "talisman"
-	armor = list(MELEE = 5, BULLET = 5, LASER = 0, ENERGY = 0, BOMB = 10, BIO = 20, RAD = 5, FIRE = 0, ACID = 25)
+	armor_type = /datum/armor/skullcodpiece_and_talisman
 	restricted_accessory = TRUE // BLUEMOON EDIT - изменение аксессуаров
 
 /obj/item/clothing/accessory/skullcodpiece
@@ -681,7 +673,7 @@
 	desc = "A skull shaped ornament, intended to protect the important things in life."
 	icon_state = "skull"
 	above_suit = TRUE
-	armor = list(MELEE = 5, BULLET = 5, LASER = 0, ENERGY = 0, BOMB = 10, BIO = 20, RAD = 5, FIRE = 0, ACID = 25)
+	armor_type = /datum/armor/skullcodpiece_and_talisman
 	restricted_accessory = TRUE // BLUEMOON EDIT - изменение аксессуаров
 
 /obj/item/clothing/accessory/skullcodpiece/fake
@@ -689,7 +681,7 @@
 	desc = "A plastic ornament, intended to protect the important things in life. It's not very good at it."
 	icon_state = "skull"
 	above_suit = TRUE
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0)
+	armor_type = /datum/armor/none
 	restricted_accessory = TRUE // BLUEMOON EDIT - изменение аксессуаров
 
 /////////////////////
@@ -700,7 +692,7 @@
 	name = "protective padding"
 	desc = "A soft padding meant to cushion the wearer from melee harm."
 	icon_state = "padding"
-	armor = list(MELEE = 10, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 5, BIO = 0, RAD = 0, FIRE = -20, ACID = 45) // BLUEMOON CHANGE нёрф защиты в два раза
+	armor_type = /datum/armor/padding // BLUEMOON CHANGE нёрф защиты в два раза
 	flags_inv = HIDEACCESSORY //hidden from indiscrete mob examines.
 	restricted_accessory = TRUE // BLUEMOON EDIT - изменение аксессуаров
 
@@ -708,7 +700,7 @@
 	name = "kevlar padding"
 	desc = "A layered kevlar padding meant to cushion the wearer from ballistic harm."
 	icon_state = "padding"
-	armor = list(MELEE = 0, BULLET = 10, LASER = 0, ENERGY = 0, BOMB = 10, BIO = 0, RAD = 0, FIRE = 0, ACID = 25) // BLUEMOON CHANGE нёрф защиты в два раза
+	armor_type = /datum/armor/kevlar // BLUEMOON CHANGE нёрф защиты в два раза
 	flags_inv = HIDEACCESSORY
 	restricted_accessory = TRUE // BLUEMOON EDIT - изменение аксессуаров
 
@@ -716,7 +708,7 @@
 	name = "ablative padding"
 	desc = "A thin ultra-refractory composite padding meant to cushion the wearer from energy lasers harm."
 	icon_state = "plastics"
-	armor = list(MELEE = 5, BULLET = 0, LASER = 10, ENERGY = 10, BOMB = 0, BIO = 0, RAD = 0, FIRE = 20, ACID = -40) // BLUEMOON CHANGE нёрф защиты в два раза
+	armor_type = /datum/armor/plastics // BLUEMOON CHANGE нёрф защиты в два раза
 	flags_inv = HIDEACCESSORY
 	restricted_accessory = TRUE // BLUEMOON EDIT - изменение аксессуаров
 

@@ -20,7 +20,8 @@
 	w_class = WEIGHT_CLASS_BULKY
 	ammo_type = list(/obj/item/ammo_casing/energy/plasmagun/rifle)
 	ammo_x_offset = 4
-
+	cell_type = /obj/item/stock_parts/cell/plasma/heavy
+	fire_delay = 13
 
 
 /obj/item/gun/energy/plasma/light
@@ -31,7 +32,8 @@
 	icon = 'modular_citadel/icons/obj/guns/VGguns.dmi'
 	ammo_type = list(/obj/item/ammo_casing/energy/plasmagun/light)
 	ammo_x_offset = 2
-
+	cell_type = /obj/item/stock_parts/cell/plasma/light
+	fire_delay = 6
 
 /obj/item/gun/energy/plasma/MP40k
 	name = "Plasma MP40k"

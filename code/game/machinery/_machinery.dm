@@ -84,6 +84,7 @@ Class Procs:
 */
 
 /obj/machinery
+	armor_type = /datum/armor/machinery_standard
 	name = "machinery"
 	icon = 'icons/obj/stationobjs.dmi'
 	desc = "Какого-то рода машинерия."
@@ -167,8 +168,6 @@ Class Procs:
 	var/sleep_static_power_channel
 
 /obj/machinery/Initialize(mapload)
-	if(!armor)
-		armor = list(MELEE = 25, BULLET = 10, LASER = 10, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 50, ACID = 70)
 	. = ..()
 	set_is_operational(!(machine_stat & (NOPOWER|BROKEN|MAINT)))
 	SSmachines.register_machine(src)

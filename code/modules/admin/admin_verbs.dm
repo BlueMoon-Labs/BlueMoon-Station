@@ -256,6 +256,7 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/client/proc/discordnulls,
 	/client/proc/generate_wikichem_list, //DO NOT PRESS UNLESS YOU WANT SUPERLAG
 	/client/proc/allow_browser_inspect,
+	/client/proc/loadout_crypto_debug,
 	#ifdef TESTING
 	/datum/admins/proc/machines_benchmark,
 	#endif
@@ -353,7 +354,8 @@ GLOBAL_LIST_INIT(admin_verbs_hideable, list(
 	/client/proc/debug_huds,
 	/client/proc/cmd_admin_man_up, //CIT CHANGE - adds man up verb
 	/client/proc/cmd_admin_man_up_global, //CIT CHANGE - ditto
-	/client/proc/allow_browser_inspect
+	/client/proc/allow_browser_inspect,
+	/client/proc/loadout_crypto_debug,
 	))
 GLOBAL_PROTECT(admin_verbs_hideable)
 

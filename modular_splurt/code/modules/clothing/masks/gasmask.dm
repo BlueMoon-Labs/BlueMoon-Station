@@ -9,7 +9,7 @@
 	anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/mask_muzzle.dmi'
 	icon_state = "radmask"
 	item_state = "radmask"
-	armor = list("melee" = 0, "bullet" = 0, "laser" = 0,"energy" = 0, "bomb" = 0, "bio" = 0, "rad" = 30, "fire" = 10, "acid" = 10)
+	armor_type = /datum/armor/radmask
 
 /obj/item/clothing/mask/gas/mime //Smaaalll edit here by Yawet. Makes the mime mask only hide the facial hair of an individual. Allows them to be examined (to see flavor text), and stops it from hiding ears. On request of Jglitch.
 	flags_inv = HIDEFACIALHAIR
@@ -29,7 +29,7 @@
 	anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/mask_muzzle.dmi'
 	icon_state = "goner_mask"
 	flags_inv = HIDEEARS | HIDEEYES | HIDEFACE | HIDEHAIR | HIDEFACIALHAIR | HIDESNOUT
-	armor = list("melee" = 10, "bullet" = 5, "laser" = 10, "energy" = 10, "bomb" = 10, "bio" = 100, "rad" = 100, "fire" = 40, "acid" = 100) // MOPP's
+	armor_type = /datum/armor/full_and_goner_and_sechailer_mopp
 
 /obj/item/clothing/mask/gas/goner/basic
 	name = "trencher gas mask"
@@ -56,4 +56,4 @@
 	gas_transfer_coefficient = 0.2
 	permeability_coefficient = 0.2
 	flags_inv = HIDEFACE | HIDEFACIALHAIR | HIDESNOUT | HIDEEYES
-	armor = list("melee" = 0, "bullet" = 0, "laser" = 0,"energy" = 0, "bomb" = 0, "bio" = 20, "rad" = 10, "fire" = 10, "acid" = 20)
+	armor_type = /datum/armor/tscmask

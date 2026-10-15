@@ -20,7 +20,7 @@
 	plane = ABOVE_WALL_PLANE
 	max_integrity = 250
 	integrity_failure = 0.4
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 100, RAD = 100, FIRE = 90, ACID = 30)
+	armor_type = /datum/armor/firealarm
 	mouse_over_pointer = MOUSE_HAND_POINTER
 	use_power = IDLE_POWER_USE
 	idle_power_usage = 2

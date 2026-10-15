@@ -163,5 +163,5 @@
 		qdel(kill_objective)
 	add_objective(new/datum/objective/steal, TRUE)
 
-/datum/team/brother_team/antag_listing_name()
+/datum/team/brother_team/antag_check_name()
 	return "[name] blood brothers"

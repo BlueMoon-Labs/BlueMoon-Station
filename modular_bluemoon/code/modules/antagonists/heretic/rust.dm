@@ -542,7 +542,7 @@ GLOBAL_LIST_INIT(heretic_rust_wave_sounds, list(
 	opacity = TRUE
 	anchored = TRUE
 	max_integrity = HERETIC_RUST_FORMATION_INTEGRITY
-	armor = list(MELEE = 20, BULLET = 30, LASER = 30, ENERGY = 30, BOMB = 0, BIO = 100, RAD = 100, FIRE = 80, ACID = 0)
+	armor_type = /datum/armor/heretic_rust
 	var/prying = FALSE
 
 /obj/structure/heretic_rust_formation/Initialize(mapload)
@@ -676,7 +676,7 @@ GLOBAL_LIST_INIT(heretic_rust_wave_sounds, list(
 	anchored = TRUE
 	density = FALSE
 	max_integrity = HERETIC_RUST_HEART_INTEGRITY
-	armor = list(MELEE = 20, BULLET = 20, LASER = 20, ENERGY = 20, BOMB = 20, BIO = 100, RAD = 100, FIRE = 50, ACID = 50)
+	armor_type = /datum/armor/heretic_rust_reinforced
 	appearance_flags = PIXEL_SCALE
 	var/obj/effect/abstract/heretic_particle_holder/flakes
 	COOLDOWN_DECLARE(wound_cooldown)

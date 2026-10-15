@@ -172,7 +172,7 @@
 	var/give_flash = FALSE
 	var/give_hud = TRUE
 
-/datum/antagonist/rev/head/antag_listing_name()
+/datum/antagonist/rev/head/antag_check_name()
 	return ..() + "(Leader)"
 
 /datum/antagonist/rev/proc/update_rev_icons_added(mob/living/M)
@@ -583,36 +583,41 @@
 
 	return result.Join()
 
-/datum/team/revolution/antag_listing_entry()
-	var/common_part = ""
-	var/list/parts = list()
-	parts += "<b>[antag_listing_name()]</b><br>"
-	parts += "<table cellspacing=5>"
+/// Приоритет для глав
+/datum/team/revolution/antag_check_sort_members(list/members)
+	var/list/heads = list()
+	var/list/others = list()
+	for(var/datum/antagonist/A as anything in members)
+		if(A.type == /datum/antagonist/rev/head)
+			heads += A
+		else
+			others += A
+	return heads + others
 
-	var/list/heads = get_team_antags(/datum/antagonist/rev/head,TRUE)
-
-	for(var/datum/antagonist/A in heads | get_team_antags())
-		parts += A.antag_listing_entry()
-
-	parts += "</table>"
-	parts += antag_listing_footer()
-	common_part = parts.Join()
-
-	var/heads_report = "<b>Heads of Staff</b><br>"
-	heads_report += "<table cellspacing=5>"
+/// Отдельный блок с главами
+/datum/team/revolution/antag_check_extras()
+	var/list/rows = list()
 	for(var/datum/mind/N in SSjob.get_living_heads())
 		var/mob/M = N.current
 		if(M)
-			heads_report += "<tr><td><a href='?_src_=holder;[HrefToken()];adminplayeropts=[REF(M)]'>[M.real_name]</a>[M.client ? "" : " <i>(No Client)</i>"][M.stat == DEAD ? " <b><font color=red>(DEAD)</font></b>" : ""]</td>"
-			heads_report += "<td><A href='?priv_msg=[M.ckey]'>PM</A></td>"
-			heads_report += "<td><A href='?_src_=holder;[HrefToken()];adminplayerobservefollow=[REF(M)]'>FLW</a></td>"
-			var/turf/mob_loc = get_turf(M)
-			heads_report += "<td>[mob_loc.loc]</td></tr>"
+			rows += list(list(
+				"text" = M.real_name,
+				"location" = AREACOORD(M),
+				"dead" = M.stat == DEAD,
+				"no_client" = !M.client,
+				"pm_ckey" = M.ckey,
+				"player_ref" = REF(M),
+				"follow_ref" = REF(M),
+			))
 		else
-			heads_report += "<tr><td><a href='?_src_=vars;[HrefToken()];Vars=[REF(N)]'>[N.name]([N.key])</a><i>Head body destroyed!</i></td>"
-			heads_report += "<td><A href='?priv_msg=[N.key]'>PM</A></td></tr>"
-	heads_report += "</table>"
-	return common_part + heads_report
+			rows += list(list(
+				"text" = "[N.name] ([N.key])",
+				"note" = "Тело уничтожено",
+				"pm_ckey" = ckey(N.key),
+			))
+	if(!length(rows))
+		return null
+	return list(list("title" = "Главы станции", "rows" = rows))
 
 /datum/team/revolution/is_gamemode_hero()
 	return SSticker.mode.name == "revolution"

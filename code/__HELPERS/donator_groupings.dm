@@ -9,6 +9,23 @@ For fast lookups, this is generated using regenerate_donator_grouping_list()
 
 */
 
+/// Display keys, normalized ckeys and enc1 IDs may coexist. An empty whitelist allows everyone.
+/proc/is_key_in_whitelist(key, list/whitelist)
+	if(!length(whitelist))
+		return TRUE
+	var/normalized_key = ckey(key)
+	if(!length_char(normalized_key))
+		return FALSE
+	for(var/entry in whitelist)
+		if(!istext(entry))
+			continue
+		// Encoded entries must decrypt successfully; unknown versions cannot become plaintext keys.
+		if(findtext(entry, ":"))
+			entry = gear_ckey_from_id(entry)
+		if(length_char(entry) && ckey(entry) == normalized_key)
+			return TRUE
+	return FALSE
+
 /proc/is_donator_group(ckey, group)
 	ckey = ckey(ckey)		//make sure it's ckey'd.
 	var/list/L = GLOB.donators_by_group[group]

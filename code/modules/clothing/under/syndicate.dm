@@ -4,7 +4,7 @@
 	icon_state = "syndicate"
 	item_state = "bl_suit"
 	has_sensor = NO_SENSORS
-	armor = list(MELEE = 10, BULLET = 10, LASER = 10,ENERGY = 10, BOMB = 0, BIO = 0, RAD = 10, FIRE = 50, ACID = 40, WOUND = 10)
+	armor_type = /datum/armor/inteq_and_syndicate
 	alt_covers_chest = TRUE
 
 /obj/item/clothing/under/syndicate/skirt
@@ -14,7 +14,7 @@
 	item_state = "bl_suit"
 	has_sensor = NO_SENSORS
 	body_parts_covered = CHEST|GROIN|ARMS
-	armor = list(MELEE = 10, BULLET = 10, LASER = 10,ENERGY = 10, BOMB = 0, BIO = 0, RAD = 10, FIRE = 50, ACID = 40, WOUND = 10)
+	armor_type = /datum/armor/inteq_and_syndicate
 	alt_covers_chest = TRUE
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE
@@ -25,7 +25,7 @@
 	desc = "An insidious armored jumpsuit lined with Syndicate nanofibers and prototype platings, slightly resistant to most forms of damage, but is far too bulky to have anything attached to it. It still counts as stealth if there are no witnesses."
 	icon_state = "bloodred_pajamas"
 	item_state = "bl_suit"
-	armor = list(MELEE = 10, BULLET = 10, LASER = 10,ENERGY = 10, BOMB = 0, BIO = 0, RAD = 10, FIRE = 100, ACID = 100, WOUND = 10)
+	armor_type = /datum/armor/tactical
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	can_adjust = FALSE
 
@@ -35,7 +35,7 @@
 	icon_state = "bloodred_pajamas"
 	item_state = "bl_suit"
 	resistance_flags = FIRE_PROOF | ACID_PROOF
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 100, WOUND = 5)
+	armor_type = /datum/armor/sleepytime
 
 /obj/item/clothing/under/syndicate/tacticool
 	name = "tacticool turtleneck"
@@ -43,7 +43,7 @@
 	icon_state = "tactifool"
 	item_state = "bl_suit"
 	has_sensor = HAS_SENSORS //BLUEMOON CHANGE красота не должна требовать жертв
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 5)
+	armor_type = /datum/armor/syndicate_civil
 
 /obj/item/clothing/under/syndicate/tacticool/skirt
 	name = "tacticool skirtleneck"
@@ -51,7 +51,7 @@
 	icon_state = "tactifool_skirt"
 	item_state = "bl_suit"
 	body_parts_covered = CHEST|GROIN|ARMS
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 5)
+	armor_type = /datum/armor/syndicate_civil
 	fitted = FEMALE_UNIFORM_TOP
 	mutantrace_variation = STYLE_DIGITIGRADE
 	alternate_worn_layer = DRESS_LAYER
@@ -71,8 +71,9 @@
 	can_adjust = FALSE
 
 /obj/item/clothing/under/syndicate/camo/cosmetic
+	armor_type = /datum/armor/none
 	has_sensor = HAS_SENSORS //BLUEMOON CHANGE красота не должна требовать жертв
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0)
+
 
 /obj/item/clothing/under/syndicate/soviet
 	name = "Ratnik 5 tracksuit"
@@ -80,7 +81,7 @@
 	alternate_screams = RUSSIAN_SCREAMS
 	icon_state = "trackpants"
 	can_adjust = FALSE
-	armor = list(MELEE = 10, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 5)
+	armor_type = /datum/armor/under_soviet
 	resistance_flags = NONE
 
 /obj/item/clothing/under/syndicate/combat
@@ -99,7 +100,7 @@
 	alternate_screams = RUSSIAN_SCREAMS
 	icon_state = "rus_under"
 	can_adjust = FALSE
-	armor = list(MELEE = 5, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 5)
+	armor_type = /datum/armor/enclave_and_russian_army
 	resistance_flags = NONE
 	mutantrace_variation = STYLE_DIGITIGRADE
 
@@ -109,7 +110,7 @@
 	alternate_screams = RUSSIAN_SCREAMS
 	icon_state = "rus_under_alt"
 	can_adjust = FALSE
-	armor = list(MELEE = 5, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 5)
+	armor_type = /datum/armor/enclave_and_russian_army
 	resistance_flags = NONE
 	mutantrace_variation = STYLE_DIGITIGRADE
 
@@ -123,7 +124,7 @@
 	name = "neo american sergeant uniform"
 	desc = "Throughout the stars, rumors of mad scientists and angry drill sergeant run rampent, of creatures in armor black as night being led by men or women wearing this uniform, they share one thing, a deep, natonalistic zeal of the dream of America."
 	icon_state = "enclave"
-	armor = list(MELEE = 5, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 5)
+	armor_type = /datum/armor/enclave_and_russian_army
 	resistance_flags = NONE
 	mutantrace_variation = STYLE_DIGITIGRADE
 
@@ -131,7 +132,7 @@
 	name = "neo american officer uniform"
 	desc = "Throughout the stars, rumors of mad scientists and angry drill sergeant run rampent, of creatures in armor black as night being led by men or women wearing this uniform, they share one thing, a deep, natonalistic zeal of the dream of America."
 	icon_state = "enclaveo"
-	armor = list(MELEE = 5, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 5)
+	armor_type = /datum/armor/enclave_and_russian_army
 	resistance_flags = NONE
 	mutantrace_variation = STYLE_DIGITIGRADE
 
@@ -141,7 +142,7 @@
 	icon_state = "syndicatebaseball"
 	item_state = "syndicatebaseball"
 	has_sensor = NO_SENSORS
-	armor = list(MELEE = 15, BULLET = 5, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 50, ACID = 40, WOUND = 10)
+	armor_type = /datum/armor/syndicate_under_baseball
 	alt_covers_chest = TRUE
 	mutantrace_variation = USE_TAUR_CLIP_MASK
 
@@ -154,4 +155,4 @@
 	icon_state = "scrubswine"
 	item_state = "scrubswine"
 	can_adjust = TRUE
-	armor = list(MELEE = 10, BULLET = 5, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 50, RAD = 0, FIRE = 50, ACID = 40, WOUND = 10)
+	armor_type = /datum/armor/command_and_syndicate_utility
