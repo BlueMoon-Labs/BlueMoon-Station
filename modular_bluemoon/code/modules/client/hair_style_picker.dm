@@ -25,6 +25,8 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	var/mob/living/carbon/human/target
 	var/atom/movable/check_atom
 	var/apply_sound
+	/// Выбранный цвет краски для превью до применения к персонажу.
+	var/preview_grad_color
 	/// Обработчик получает выбранный стиль и вкладку, возвращает TRUE после успешного применения.
 	var/datum/callback/apply_callback
 	var/applying = FALSE
@@ -82,7 +84,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	return picker.finalize(user)
 
 /// Выбор для других инструментов и способностей с собственными условиями применения.
-/proc/open_live_hair_style_picker(mob/user, mob/living/carbon/human/subject, atom/movable/source, list/tabs, datum/callback/on_apply)
+/proc/open_live_hair_style_picker(mob/user, mob/living/carbon/human/subject, atom/movable/source, list/tabs, datum/callback/on_apply, gradient_color = null)
 	if(!user?.client || !subject?.dna || QDELETED(source))
 		return FALSE
 	var/datum/hair_style_picker/picker = create_hair_style_picker(user)
@@ -92,6 +94,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 		picker.tab = picker.allowed_tabs[1]
 		picker.selected = picker.default_selection()
 	picker.apply_callback = on_apply
+	picker.preview_grad_color = gradient_color
 	return picker.finalize(user)
 
 /proc/create_hair_style_picker(mob/user)
@@ -411,6 +414,8 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	return prefs ? prefs.facial_hair_color : target?.facial_hair_color
 
 /datum/hair_style_picker/proc/applied_grad_color()
+	if(!isnull(preview_grad_color))
+		return preview_grad_color
 	return prefs ? prefs.grad_color : target?.grad_color
 
 /datum/hair_style_picker/proc/get_species()
