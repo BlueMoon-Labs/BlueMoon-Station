@@ -95,15 +95,7 @@
 	if(!T)
 		return
 
-	var/list/vomit_sounds = list(
-		'modular_bluemoon/sound/plush/surstromming1.ogg' = 20,
-		'modular_bluemoon/sound/plush/surstromming2.ogg' = 20,
-		'modular_bluemoon/sound/plush/surstromming3.ogg' = 20,
-		'modular_bluemoon/sound/plush/surstromming4.ogg' = 20,
-		'modular_bluemoon/sound/plush/surstromming5.ogg' = 20
-	)
-	var/chosen_sound = pickweight(vomit_sounds)
-	playsound(T, chosen_sound, 60, TRUE)
+	playsound(T, pick('modular_bluemoon/sound/plush/surstromming1.ogg', 'modular_bluemoon/sound/plush/surstromming2.ogg', 'modular_bluemoon/sound/plush/surstromming3.ogg', 'modular_bluemoon/sound/plush/surstromming4.ogg', 'modular_bluemoon/sound/plush/surstromming5.ogg'), 60, TRUE)
 
 	// Стандартный вызов рвоты 
 	M.vomit(20, TRUE, TRUE)

@@ -236,7 +236,8 @@
 /datum/crafting_recipe/food/surstromming
 	name = "Surstromming"
 	reqs = list(
-		/obj/item/reagent_containers/food/snacks/carpmeat = 1
+		/obj/item/reagent_containers/food/snacks/carpmeat = 10,
+		/obj/item/stack/sheet/metal = 1
 	)
 	result = /obj/item/reagent_containers/food/snacks/surstromming
 	subcategory = CAT_MEAT

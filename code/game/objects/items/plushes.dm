@@ -191,8 +191,9 @@
 
 /obj/item/toy/plush/attack(mob/living/M, mob/living/carbon/user)
 	if(stored_weapon && !QDELETED(stored_weapon))
-		// Наносим тяжелый brute-урон (10 ед.), как у стандартного тулбокса
-		M.take_bodypart_damage(10, 0)
+		var/damage = stored_weapon.force
+		
+		M.take_bodypart_damage(damage, 0)
 		
 		playsound(M.loc, 'sound/weapons/smash.ogg', 50, TRUE, -1)
 		
@@ -203,8 +204,8 @@
 		)
 		
 		// Лог в админку
-		log_combat(user, M, "атаковал с помощью тяжелого плюша (внутри: [stored_weapon.name])", src)
-		return TRUE 
+		log_combat(user, M, "атаковал с помощью тяжелого плюша (внутри: [stored_weapon.name], урон: [damage])", src)
+		return TRUE
 		
 	return ..()
 
@@ -299,11 +300,7 @@
 		log_game("[key_name(user)] added a grenade ([I.name]) to [src] at [AREACOORD(grenade_turf)].")
 		return
 
-	// Засовывание тулбокса или определенного пистолета
-	var/is_allowed_toolbox = istype(I, /obj/item/storage/toolbox)
-	var/is_allowed_pistol = istype(I, /obj/item/gun/ballistic/automatic/pistol) // Укажите точный тип пушки, если нужен конкретный
-
-	if(is_allowed_toolbox || is_allowed_pistol)
+	if(istype(I, /obj/item/storage/toolbox) || istype(I, /obj/item/gun/ballistic/automatic/pistol))
 		if(stuffed)
 			to_chat(user, "<span class='warning'>You need to remove some stuffing first!</span>")
 			return
