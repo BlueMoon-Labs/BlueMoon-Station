@@ -363,6 +363,7 @@
 #include "spatial_grid.dm"
 #include "spawn_humans.dm"
 #include "spawn_mobs.dm"
+#include "spawners_menu.dm"
 #include "spritesheet_asset_snapshot.dm"
 #include "spritesheet_batched.dm"
 #include "startup_bootstrap.dm"
