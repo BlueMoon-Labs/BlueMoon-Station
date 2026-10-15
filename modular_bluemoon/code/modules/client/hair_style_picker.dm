@@ -453,6 +453,9 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 			prefs.copy_to(mannequin, icon_updates = TRUE, roundstart_checks = FALSE, initial_spawn = TRUE)
 		else if(target?.dna)
 			target.dna.transfer_identity(mannequin, transfer_SE = FALSE)
+			// transfer_identity создаёт новую расу с настройками по умолчанию.
+			mannequin.dna.species.eye_type = target.dna.species.eye_type
+			mannequin.dna.species.mutant_bodyparts["limbs_id"] = target.dna.species.mutant_bodyparts["limbs_id"]
 			mannequin.gender = target.gender
 			mannequin.skin_tone = target.skin_tone
 			mannequin.hair_color = target.hair_color
@@ -461,6 +464,10 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 			mannequin.right_eye_color = target.right_eye_color
 			mannequin.grad_style = target.grad_style
 			mannequin.grad_color = target.grad_color
+			mannequin.lip_style = target.lip_style
+			mannequin.lip_color = target.lip_color
+			mannequin.nail_style = target.nail_style
+			mannequin.nail_color = target.nail_color
 			var/obj/item/organ/eyes/eyes = mannequin.getorgan(/obj/item/organ/eyes)
 			if(eyes)
 				eyes.left_eye_color = target.left_eye_color
@@ -468,6 +475,9 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 				eyes.old_left_eye_color = target.left_eye_color
 				eyes.old_right_eye_color = target.right_eye_color
 			target.copy_clothing_prefs(mannequin)
+			mannequin.undie_color = target.undie_color
+			mannequin.shirt_color = target.shirt_color
+			mannequin.socks_color = target.socks_color
 		mannequin.hair_style = "Bald"
 		mannequin.facial_hair_style = "Shaved"
 		mannequin.grad_style = null
