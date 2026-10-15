@@ -11,9 +11,6 @@ const PORTRAIT_BOX_H = 274;
 const FULL_BODY_ZOOM = 1.5;
 const TAUR_FULL_BODY_ZOOM = 2.5;
 const PORTRAIT_ZOOM = 1.4;
-const MODE_MIRROR = 2;
-const MODE_SCISSORS = 3;
-const MODE_RAZOR = 4;
 const GOLD = '#ffdd55';
 const DIR_SOUTH = 2;
 const DIR_WEST = 8;
@@ -40,6 +37,7 @@ type HairPickerData = {
   error?: boolean;
   allowed_tabs?: string[];
   mode?: number;
+  can_preview_full: boolean;
   is_taur: boolean;
   tab: string;
   dir: number;
@@ -263,12 +261,9 @@ const PreviewPanel = (props: {
   act: (type: string, payload?: Record<string, unknown>) => void;
 }) => {
   const { data, labels, act } = props;
-  const inRound =
-    data.mode === MODE_MIRROR ||
-    data.mode === MODE_SCISSORS ||
-    data.mode === MODE_RAZOR;
+  const canPreviewFull = data.can_preview_full;
   const [fullBody, setFullBody] = useState(false);
-  const showFull = !inRound && fullBody;
+  const showFull = canPreviewFull && fullBody;
   const fullBodyZoom = data.is_taur ? TAUR_FULL_BODY_ZOOM : FULL_BODY_ZOOM;
   const boxW = showFull ? PREVIEW_BOX_W : PORTRAIT_BOX_W;
   const boxH = showFull ? PREVIEW_BOX_H : PORTRAIT_BOX_H;
@@ -293,7 +288,7 @@ const PreviewPanel = (props: {
           fill
           title={labels.preview}
           buttons={
-            !inRound ? (
+            canPreviewFull ? (
               <Button
                 icon={fullBody ? 'person' : 'users'}
                 content={fullBody ? labels.full : labels.portrait}

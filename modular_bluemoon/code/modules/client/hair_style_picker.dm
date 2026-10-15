@@ -185,6 +185,11 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 		return
 	qdel(src)
 
+/datum/hair_style_picker/proc/can_preview_full_body(mob/user)
+	if(prefs)
+		return user?.client?.prefs == prefs
+	return user == target
+
 /datum/hair_style_picker/ui_data(mob/user)
 	. = list()
 	if(!length(allowed_tabs))
@@ -230,6 +235,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	var/applied_facial_style = applied["facial"]
 	var/applied_grad_style = applied["grad"]
 	var/selected_key = selected || ""
+	var/can_preview_full = can_preview_full_body(user)
 	var/color_key = "[applied_hair_color()]|[applied_facial_color()]|[applied_grad_color()]|[get_mcolor()]"
 	// единственное место где можно было сэкономить
 	var/sheet_key = "[tab]|[page]|[search]|[applied_hair_style]|[applied_facial_style]|[applied_grad_style]|[color_key]"
@@ -237,13 +243,14 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 		sheet_cache_key = sheet_key
 		sheet_b64 = build_sheet_b64(page_names)
 	// selected может меняться отдельно от листа, ключ для каждого свой
-	var/preview_key = "[render_dir]|[tab]|[selected_key]|[applied_hair_style]|[applied_facial_style]|[applied_grad_style]|[color_key]"
+	var/preview_key = "[can_preview_full]|[render_dir]|[tab]|[selected_key]|[applied_hair_style]|[applied_facial_style]|[applied_grad_style]|[color_key]"
 	if(preview_key != preview_cache_key)
 		preview_cache_key = preview_key
-		build_preview_b64()
+		build_preview_b64(can_preview_full)
 
 	.["allowed_tabs"] = allowed_tabs
 	.["mode"] = mode
+	.["can_preview_full"] = can_preview_full
 	.["is_taur"] = is_taur
 	.["tab"] = tab
 	.["dir"] = render_dir
@@ -259,7 +266,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	.["cell_h"] = sheet_cell_h
 	.["cols"] = HAIR_PICKER_COLS
 	.["preview_portraits"] = preview_portraits
-	.["preview_full"] = preview_full_b64 || null
+	.["preview_full"] = can_preview_full ? (preview_full_b64 || null) : null
 	.["img_w"] = img_w
 	.["img_h"] = img_h
 	.["head_w"] = portrait_width
@@ -273,6 +280,8 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	var/mob/user = ui?.user || usr
 	switch(action)
 		if("dir")
+			if(!can_preview_full_body(user))
+				return
 			var/new_dir = text2num("[params["dir"]]")
 			if(!(new_dir in list(NORTH, SOUTH, EAST, WEST)))
 				return
@@ -574,7 +583,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 			return compose_preview(applied_hair(), applied_facial(), style_name, SOUTH)
 	return null
 
-/datum/hair_style_picker/proc/build_preview_b64()
+/datum/hair_style_picker/proc/build_preview_b64(can_preview_full = FALSE)
 	preview_portraits = list()
 	preview_full_b64 = null
 	if(!selected)
@@ -586,7 +595,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 		var/icon/preview = compose_preview(hair_style, facial_style, grad_style, dir)
 		if(!preview)
 			return FALSE
-		if(dir == render_dir)
+		if(can_preview_full && dir == render_dir)
 			preview_full_b64 = icon2base64(preview)
 		var/icon/head = crop_head(preview, dir)
 		if(head)
