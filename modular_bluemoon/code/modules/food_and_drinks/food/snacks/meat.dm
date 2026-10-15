@@ -83,7 +83,7 @@
 
 /obj/item/reagent_containers/food/snacks/surstromming/attack(mob/living/M, mob/living/user)
 	..()
-	if(!istype(M) || M.stat == DEAD)
+	if(!iscarbon(M) || M.stat == DEAD)
 		return
 	addtimer(CALLBACK(src, PROC_REF(induce_surstromming_effect), M), 1)
 

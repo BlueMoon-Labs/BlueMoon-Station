@@ -1077,10 +1077,10 @@ GLOBAL_VAR_INIT(plush_reijo_mickie_active, 0)
 	icon_state = "yes_pillow"
 	squeak_override = list('modular_bluemoon/sound/plush/brick.ogg' = 1)
 
-/obj/item/toy/plush/bm/btick/attack_self(mob/user)
+/obj/item/toy/plush/bm/brick/attack_self(mob/user)
 	..()
 	
-	if(icon_state == "toy")
+	if(icon_state == "no_pillow")
 		icon_state = "yes_pillow"
 		to_chat(user, span_notice("Вы сжимаете игрушку, и она меняет форму!"))
 	else
