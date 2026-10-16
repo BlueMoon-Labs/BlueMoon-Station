@@ -7,7 +7,7 @@
 	use_power = IDLE_POWER_USE
 	idle_power_usage = 20
 	active_power_usage = 5000
-	//req_one_access = list(ACCESS_ROBOTICS, ACCESS_AWAY_GENERAL, ACCESS_SYNDICATE) // Лишнее, у хермитов нед доступа + платы все равно только в импринтере делаются
+	req_one_access = list(ACCESS_ROBOTICS, ACCESS_SYNDICATE))
 	circuit = /obj/item/circuitboard/machine/mechfab
 	// processing_flags = START_PROCESSING_MANUALLY
 
@@ -403,8 +403,6 @@
 	. = TRUE
 	if(!D)
 		return
-	if(D.mechfab_ignore_sec_level)	// Корпоративные импланты печатаются в экзофабе на любом коде (ограничение на самом импланте)
-		return TRUE
 	if(on_station && (GLOB.security_level < D.min_security_level || GLOB.security_level > D.max_security_level))
 		return FALSE
 
@@ -829,7 +827,28 @@
 /obj/machinery/mecha_part_fabricator/maint
 	link_on_init = FALSE
 	req_access = null
+	req_one_access = null
 
 /obj/machinery/mecha_part_fabricator/offstation
 	link_on_init = FALSE
 	req_access = null
+	req_one_access = null
+
+/obj/machinery/mecha_part_fabricator/emag_act(mob/user, obj/item/card/emag/emag_card)
+	if(obj_flags & EMAGGED)
+		return FALSE
+	obj_flags |= EMAGGED
+	req_access = list()
+	req_one_access = list()
+	if(user)
+		balloon_alert(user, span_balloon_warning("access lock shorted out"))
+	playsound(src, 'sound/machines/buzz-sigh.ogg', 50, TRUE)
+	update_static_data_for_all_viewers()
+	return TRUE
+
+/obj/machinery/mecha_part_fabricator/emagged
+	name = "hacked exosuit fabricator"
+	desc = "A hacked exosuit fabricator with no access requirements."
+	obj_flags = CAN_BE_HIT | EMAGGED
+	req_access = list()
+	req_one_access = list()

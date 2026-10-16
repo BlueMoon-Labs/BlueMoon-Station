@@ -87,8 +87,6 @@
 	build_path = /obj/item/organ/cyberimp/arm/shield/sec_level
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = RIOT_SHIELD_SEC_LEVEL
-	mechfab_ignore_sec_level = TRUE
 
 /datum/design/cyberimp_shield/hack
 	name = "Riot Shield implant"
@@ -106,8 +104,6 @@
 	build_path = /obj/item/organ/cyberimp/chest/chem_implant/sec_level
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = CHEM_SEQ_SEC_LEVEL
-	mechfab_ignore_sec_level = TRUE
 
 /datum/design/cyberimp_chem/hack
 	name = "Chemical Sequencer Implant"
@@ -180,8 +176,6 @@
 	build_path = /obj/item/organ/cyberimp/brain/anti_drop/sec_level
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = ANTI_DROP_SEC_LEVEL
-	mechfab_ignore_sec_level = TRUE
 
 /datum/design/cyberimp_antidrop/hack
 	name = "Anti-Drop Implant"
@@ -199,8 +193,6 @@
 	build_path = /obj/item/organ/cyberimp/brain/anti_stun/sec_level
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = CNS_REBOOTER_SEC_LEVEL
-	mechfab_ignore_sec_level = TRUE
 
 /datum/design/cyberimp_antistun/hack
 	name = "CNS Rebooter Implant"
@@ -251,8 +243,6 @@
 	build_path = /obj/item/organ/cyberimp/chest/reviver/sec_level
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = REVIVER_SEC_LEVEL
-	mechfab_ignore_sec_level = TRUE
 
 /datum/design/cyberimp_reviver/hack
 	name = "Reviver Implant"
@@ -281,8 +271,6 @@
 	build_path = /obj/item/organ/cyberimp/arm/mantis_blade/sec_level
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = MANTIS_IMPLANT_SEC_LEVEL
-	mechfab_ignore_sec_level = TRUE
 
 /datum/design/cyberimp_mantis/hack
 	name = "Mantis Blade Implant"

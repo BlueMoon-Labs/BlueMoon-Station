@@ -113,7 +113,7 @@
 
 /mob/proc/can_use_mechfab_topic(obj/machinery/mecha_part_fabricator/machine_target, action)
 	// Basic actions that are always permitted
-	if(action == "sync_rnd")
+	if((machine_target.obj_flags & EMAGGED) || action == "sync_rnd")
 		return TRUE
 
 	// Define user's access type
