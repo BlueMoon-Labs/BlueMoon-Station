@@ -429,3 +429,40 @@
 	TEST_ASSERT(findtext(recruit_text, "Вы приняли клятву брата [founder.name]"), "Принятый видит, чью клятву принял: [recruit_text]")
 	TEST_ASSERT(!findtext(recruit_text, leaver.name), "Ушедший в приветствии не назван")
 	TEST_ASSERT(!findtext(recruit_text, team.backstory), "Чужая предыстория не своя")
+
+/// Миграция сейва включает братьев тем, у кого включена другая антаг-роль, и не трогает остальных.
+/datum/unit_test/blood_brothers_savefile_migration_enables_role
+
+/datum/unit_test/blood_brothers_savefile_migration_enables_role/Run()
+	var/datum/preferences/antag_player = new
+	antag_player.be_special = list(ROLE_TRAITOR = ANTAG_PRIORITY_LOW)
+	antag_player.update_preferences(85, null)
+	TEST_ASSERT_EQUAL(antag_player.be_special[ROLE_BROTHER], ANTAG_PRIORITY_HIGH, "enabled for an antag player")
+	TEST_ASSERT_EQUAL(antag_player.be_special[ROLE_TRAITOR], ANTAG_PRIORITY_LOW, "other roles untouched")
+
+	var/datum/preferences/low_brother_player = new
+	low_brother_player.be_special = list(ROLE_BROTHER = ANTAG_PRIORITY_LOW)
+	low_brother_player.update_preferences(85, null)
+	TEST_ASSERT_EQUAL(low_brother_player.be_special[ROLE_BROTHER], ANTAG_PRIORITY_LOW, "chosen priority kept")
+
+	var/datum/preferences/no_antag_player = new
+	no_antag_player.be_special = list(ROLE_TRAITOR = ANTAG_PRIORITY_HIGH)
+	no_antag_player.toggles |= NO_ANTAG
+	no_antag_player.update_preferences(85, null)
+	TEST_ASSERT(!(ROLE_BROTHER in no_antag_player.be_special), "NO_ANTAG player untouched")
+
+	var/datum/preferences/empty_player = new
+	empty_player.be_special = list()
+	empty_player.update_preferences(85, null)
+	TEST_ASSERT(!(ROLE_BROTHER in empty_player.be_special), "player without antag roles untouched")
+
+	var/datum/preferences/opted_out_player = new
+	opted_out_player.be_special = list(ROLE_TRAITOR = ANTAG_PRIORITY_HIGH)
+	opted_out_player.update_preferences(86, null)
+	TEST_ASSERT(!(ROLE_BROTHER in opted_out_player.be_special), "already migrated save untouched")
+
+	qdel(antag_player)
+	qdel(low_brother_player)
+	qdel(no_antag_player)
+	qdel(empty_player)
+	qdel(opted_out_player)
