@@ -253,6 +253,25 @@
 
 	add_fingerprint(user)
 
+	if(istype(I, /obj/item/airbag_module))
+		var/obj/item/airbag_module/module = I
+		if(airbag_installed)
+			balloon_alert(user, "Airbag уже установлен")
+			return STOP_ATTACK_PROC_CHAIN
+		if(module.armed)
+			balloon_alert(user, "Airbag уже активирован!")
+			return STOP_ATTACK_PROC_CHAIN
+		if(!user.transferItemToLoc(module, src))
+			return STOP_ATTACK_PROC_CHAIN
+		if(!install_airbag())
+			user.put_in_hands(module)
+			return STOP_ATTACK_PROC_CHAIN
+		module.transfer_fingerprints_to(src)
+		qdel(module)
+		playsound(src, 'sound/machines/click.ogg', 50, TRUE)
+		balloon_alert(user, "Airbag установлен")
+		return STOP_ATTACK_PROC_CHAIN
+
 	if(I.tool_behaviour == TOOL_WELDER && user.a_intent == INTENT_HELP)
 		if(obj_integrity < max_integrity)
 			if(!I.tool_start_check(user, amount=0))
@@ -1212,7 +1231,7 @@
 // Window airbags, ported from WhiteMoon (Gandalf2k15; original sprites by TauCeti).
 /obj/item/airbag_module
 	name = "airbag"
-	desc = "Небольшой пакет с пиропатроном. Активируйте его и отойдите: через две секунды он развернёт аварийную мембрану."
+	desc = "Небольшой пакет с пиропатроном. Нажмите им по окну, чтобы установить аирбаг. Либо активируйте его и отойдите: через две секунды он развернёт аварийную мембрану."
 	icon = 'modular_bluemoon/icons/obj/structures/inflatable.dmi'
 	icon_state = "airbag_safe"
 	w_class = WEIGHT_CLASS_SMALL
