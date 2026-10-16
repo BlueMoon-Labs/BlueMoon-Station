@@ -285,9 +285,10 @@ const JobRow = (props: {
   mode: string;
   selected: string | null;
   onSelect: (title: string) => void;
+  onJoin: (title: string) => void;
   onPriority: (title: string, level: number) => void;
 }) => {
-  const { job, mode, selected, onSelect, onPriority } = props;
+  const { job, mode, selected, onSelect, onJoin, onPriority } = props;
   // Название строки базовая профессия, выбранное альтернативное показываем под ней
   const rowTitle = job.displayTitle || job.title;
   const baseTitle =
@@ -298,6 +299,7 @@ const JobRow = (props: {
   const hints: string[] = [];
   if (baseTitle) hints.push(`Профессия: ${baseTitle}`);
   if (job.pinned) hints.push('Приоритетная вакансия — ×2 метадоллара за час');
+  if (mode === 'latejoin') hints.push('Двойной клик — присоединиться');
 
   let rightSide: ReactNode = null;
   let rightColor: string | undefined;
@@ -332,7 +334,10 @@ const JobRow = (props: {
         fontWeight: job.command || job.head ? 700 : 400,
         opacity: job.locked ? 0.6 : 1,
       }}
-      onClick={() => onSelect(job.title)}>
+      onClick={() => onSelect(job.title)}
+      onDoubleClick={
+        mode === 'latejoin' ? () => onJoin(job.title) : undefined
+      }>
       <Box
         style={{
           display: 'flex',
@@ -1310,6 +1315,7 @@ const JobColumns = (props: {
                       mode={mode}
                       selected={selected}
                       onSelect={(title) => act('select', { job: title })}
+                      onJoin={(title) => act('join', { job: title })}
                       onPriority={(title, level) =>
                         act('set_priority', { job: title, level })
                       }
