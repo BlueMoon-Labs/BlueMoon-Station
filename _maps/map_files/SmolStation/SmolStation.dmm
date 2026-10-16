@@ -32415,16 +32415,6 @@
 /obj/machinery/power/grounding_rod,
 /turf/open/floor/engine/airless,
 /area/space/nearstation)
-"xUu" = (
-/obj/structure/lattice/catwalk,
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/turf/open/space/basic,
-/area/space/nearstation)
 "xUB" = (
 /obj/machinery/door/firedoor,
 /obj/machinery/door/airlock/command{
@@ -88082,7 +88072,7 @@ qKc
 qKc
 rXE
 qKc
-xUu
+qKc
 qKc
 vis
 qKc

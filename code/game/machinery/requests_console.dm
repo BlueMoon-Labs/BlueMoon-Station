@@ -281,7 +281,7 @@ GLOBAL_LIST_EMPTY(allConsoles)
 
 	if(href_list["write"])
 		dpt = ckey(reject_bad_text(href_list["write"])) //write contains the string of the receiving department's name
-		var/new_message = stripped_input(usr, "Напишите сообщение:", "Ввод", "", MAX_MESSAGE_LEN)
+		var/new_message = tgui_input_text(usr, "Напишите сообщение:", "Ввод", "", MAX_MESSAGE_LEN, FALSE, TRUE)
 		if(new_message)
 			message = new_message
 			screen = 9
@@ -294,7 +294,7 @@ GLOBAL_LIST_EMPTY(allConsoles)
 			priority = NORMAL_MESSAGE_PRIORITY //:salt:
 
 	if(href_list["writeAnnouncement"])
-		var/new_message = reject_bad_text(stripped_input(usr, "Напишите сообщение:", "Ввод", "", MAX_MESSAGE_LEN))
+		var/new_message = reject_bad_text(tgui_input_text(usr, "Напишите сообщение:", "Ввод", "", MAX_MESSAGE_LEN, FALSE, TRUE))
 		if(new_message)
 			message = new_message
 			priority = text2num(href_list["priority"])

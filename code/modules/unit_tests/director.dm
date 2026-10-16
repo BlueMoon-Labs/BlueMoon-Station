@@ -1894,13 +1894,13 @@
 /// cost/intensity и метаданными точного preflight. После спавна вклад переводится на живой
 /// трекинг созданного моба, поэтому фиксированный долгий linger больше не нужен.
 /// Исключения: wizard-события (пул Summon Events), праздничные (holidayID) и осознанно
-/// не-антагские (sentience - дружелюбная, qareen - джинн не гарантированно враждебен).
+/// не-антагские (sentience - дружелюбная, qareen - джинн не гарантированно враждебен, туристы и этапированный заключённый - мирные MINOR-роли).
 /datum/unit_test/director_ghost_event_classification
 
 /datum/unit_test/director_ghost_event_classification/Run()
 	// По именам, не тайп-пасам: qareen живёт в modular_splurt и не входит в текущую сборку -
 	// ссылка на его тип не компилируется, а событие при подключении обязано остаться исключением.
-	var/list/exempt_names = list("Random Human-level Intelligence", "Station-wide Human-level Intelligence", "Spawn Qareen")
+	var/list/exempt_names = list("Random Human-level Intelligence", "Station-wide Human-level Intelligence", "Spawn Qareen", "Tour Group", "Prisoner Transfer")
 	for(var/datum/round_event_control/control as anything in SSdirector.event_controls())
 		if(control.wizardevent || control.holidayID || (control.name in exempt_names) || control.family == "crew_relief")
 			continue

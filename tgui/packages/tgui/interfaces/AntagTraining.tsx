@@ -75,7 +75,9 @@ export type AntagTrainingData = {
   targets: Target[];
   programs: Choice[];
   options: string[];
-  heretic_program: BooleanLike;
+  option_hints?: Record<string, string>;
+  heretic?: BooleanLike;
+  target_action?: string | null;
 };
 
 const sectorIcons: Record<string, string> = {
@@ -177,7 +179,7 @@ const TrainingStart = ({ navigate }: { navigate: (tab: string) => void }) => {
       <Section title="1. Подготовка">
         <div className="AntagTraining__categories">
           {data.kits.map((kit) => <Button key={kit.id} icon="toolbox" disabled={blocked || !data.supply_ready} selected={data.last_kit === kit.id} onClick={() => act('kit', { id: kit.id })}>{kit.name}</Button>)}
-          <Button icon="book" onClick={() => navigate('Моя роль')}>{data.heretic_program ? 'Путь и рецепты еретика' : 'Возможности роли'}</Button>
+          <Button icon="book" onClick={() => navigate('Моя роль')}>{data.heretic ? 'Путь и рецепты еретика' : 'Возможности роли'}</Button>
         </div>
         <Box color="label">Комплект перенесёт вас в подходящий сектор и положит вещи рядом. Для личного набора откройте «Снаряжение».</Box>
       </Section>
@@ -185,7 +187,7 @@ const TrainingStart = ({ navigate }: { navigate: (tab: string) => void }) => {
         <Stack wrap>
           <Stack.Item><Button icon="bullseye" disabled={blocked || !data.practice_ready} onClick={() => act('practice', { id: 'combat' })}>Довести цель до крита</Button></Stack.Item>
           <Stack.Item><Button icon="heart-pulse" disabled={blocked || !data.practice_ready} onClick={() => act('practice', { id: 'medicine' })}>Вылечить пациента</Button></Stack.Item>
-          <Stack.Item><Button icon="book-skull" disabled={blocked || !data.practice_ready || !data.heretic_program} onClick={() => act('practice', { id: 'hunt' })}>Первое подношение</Button></Stack.Item>
+          <Stack.Item><Button icon="book-skull" disabled={blocked || !data.practice_ready || !data.heretic} onClick={() => act('practice', { id: 'hunt' })}>Первое подношение</Button></Stack.Item>
           {!!data.dance_lesson && <Stack.Item><Button icon="music" disabled={blocked || !data.practice_ready} onClick={() => act('practice', { id: 'dance' })}>Урок Пляски</Button></Stack.Item>}
           {!!data.spirit_lesson && <Stack.Item><Button icon="ghost" disabled={blocked || !data.practice_ready} onClick={() => act('practice', { id: 'spirit' })}>Урок Духа</Button></Stack.Item>}
         </Stack>
@@ -403,7 +405,7 @@ const TrainingTargets = () => {
               </div>
             )}
             <Box>
-              {!!target.human && !!data.heretic_program && <Button icon="crosshairs" disabled={!!data.busy || !target.can_manage} onClick={() => act('target_hunt', { id: target.id })}>Цель охоты</Button>}
+              {!!target.human && !!data.target_action && <Button icon="crosshairs" disabled={!!data.busy || !target.can_manage} onClick={() => act('target_hunt', { id: target.id })}>{data.target_action}</Button>}
               <Button icon="heart" disabled={!!data.busy || !target.can_manage} onClick={() => act('target_heal', { id: target.id })}>Исцелить</Button>
               <Button icon="trash" color="transparent" disabled={!!data.busy || !target.can_manage} tooltip="Удалить цель" onClick={() => act('target_delete', { id: target.id })} />
             </Box>
@@ -419,14 +421,14 @@ const TrainingProgram = () => {
   const { act, data } = useBackend<AntagTrainingData>();
   return (
     <>
-      {!!data.heretic_program && <TrainingRecipes />}
+      {!!data.heretic && <TrainingRecipes />}
       <Section title="Восстановление после смерти">
         <Button.Checkbox checked={!!data.auto_recover} onClick={() => act('auto_recover')}>Автовосстановление через 3 секунды</Button.Checkbox>
         <Box color="label" mt={1}>Отключите для испытаний с телом погибшего участника. Ручное восстановление и выход доступны даже после смерти.</Box>
       </Section>
       <Section title="Возможности роли">
         <div className="AntagTraining__catalog">
-          {data.options.map((option) => <Button key={option} fluid disabled={!!data.busy} onClick={() => act('program_option', { option })}>{option}</Button>)}
+          {data.options.map((option) => <Button key={option} fluid disabled={!!data.busy} tooltip={data.option_hints?.[option]} onClick={() => act('program_option', { option })}>{option}</Button>)}
         </div>
         {!data.options.length && <Box>Свободная тренировка: снаряжение, бой, строительство и медицина. Для способностей антагонистов выберите учебную роль ниже.</Box>}
       </Section>

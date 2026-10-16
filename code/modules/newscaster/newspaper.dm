@@ -162,7 +162,7 @@
 		if(scribble_page == curr_page)
 			to_chat(user, "<span class='notice'>There's already a scribble in this page... You wouldn't want to make things too cluttered, would you?</span>")
 		else
-			var/s = stripped_input(user, "Write something", "Newspaper")
+			var/s = tgui_input_text(user, "Напишите что-нибудь", "Газета", "", MAX_MESSAGE_LEN, FALSE, TRUE)
 			if (!s)
 				return
 			if(!user.canUseTopic(src, BE_CLOSE))

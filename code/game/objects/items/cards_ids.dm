@@ -447,6 +447,10 @@
 		. += "У этой карты [mining_points] рудокопных очков карго; всего было заработано [mining_points_total] очков."
 	if(contraband_points)
 		. += "<span class='info'>У этой карты [contraband_points] очков Авангарда.</span>"
+	. += bank_examine(user)
+
+/obj/item/card/id/proc/bank_examine(mob/user)
+	. = list()
 	if(!bank_support || (bank_support == ID_LOCKED_BANK_ACCOUNT && !registered_account))
 		. += "<span class='info'>Эта ID-карта не имеет банковского счёта. Должно быть, устаревшая модель...</span>"
 	else if(registered_account)

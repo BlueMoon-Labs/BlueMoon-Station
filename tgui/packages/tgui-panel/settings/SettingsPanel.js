@@ -128,6 +128,7 @@ export const SettingsGeneral = (props) => {
     timestampFormat,
     enableTimeDividers,
     timeDividerInterval,
+    showRadioJobs,
   } = useSelector(selectSettings);
   const dispatch = useDispatch();
   const [freeFont, setFreeFont] = useState(false);
@@ -295,6 +296,15 @@ export const SettingsGeneral = (props) => {
           dispatch(rebuildChat());
         }}>
         Разделители по времени
+      </Button.Checkbox>
+      <Button.Checkbox
+        checked={showRadioJobs !== false}
+        onClick={() => {
+          dispatch(updateSettings({
+            showRadioJobs: showRadioJobs === false,
+          }));
+        }}>
+        Должности в рации
       </Button.Checkbox>
       {enableTimeDividers && (
         <Box ml={2.5} mb={0.5}>

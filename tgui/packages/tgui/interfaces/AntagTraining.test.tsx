@@ -51,7 +51,8 @@ const fixture: AntagTrainingData = {
   targets: [],
   programs: [{ id: '/datum/antag_training_program/heretic', name: 'Еретик — все пути' }],
   options: ['Добавить очки знаний'],
-  heretic_program: 1,
+  heretic: 1,
+  target_action: 'Цель охоты',
 };
 
 const setup = (overrides: Partial<AntagTrainingData> = {}) => {
@@ -266,7 +267,7 @@ test('состояние цели видно в карточке, кнопка �
 });
 
 test('программа без еретика показывает свои кнопки без рецептов, подношения и цели охоты', () => {
-  const ui = setup({ program: 'Кровная клятва', program_id: '/datum/antag_training_program/blood_brother', options: ['Поднять связь'], heretic_program: 0, targets: [patient] });
+  const ui = setup({ program: 'Кровная клятва', program_id: '/datum/antag_training_program/blood_brother', options: ['Поднять связь'], heretic: 0, target_action: null, targets: [patient] });
   expect(ui.getByText('Первое подношение').closest('.Button')?.className).toContain('Button--disabled');
   fireEvent.click(ui.getByText('Цели'));
   expect(ui.queryByText('Цель охоты')).toBeNull();
@@ -275,4 +276,24 @@ test('программа без еретика показывает свои к�
   fireEvent.click(ui.getByText('Поднять связь'));
   const call = ui.topic.mock.calls.find(([message]) => message.type === 'act/program_option');
   expect(JSON.parse(call[0].payload)).toEqual({ option: 'Поднять связь' });
+});
+
+test('роль без еретика скрывает путь, кнопка роли и кнопка цели подписаны программой', () => {
+  const ui = setup({ heretic: 0, target_action: 'Цель контракта', program: 'HK-47 — дроид-ассасин', options: ['ЭМИ по себе'], option_hints: { 'ЭМИ по себе': 'Импульс как от ионной винтовки.' }, targets: [patient] });
+  fireEvent.click(ui.getByText('Моя роль'));
+  expect(ui.queryByText('Изучить до ступени')).toBeNull();
+  fireEvent.click(ui.getByText('ЭМИ по себе'));
+  const call = ui.topic.mock.calls.find(([message]) => message.type === 'act/program_option');
+  expect(JSON.parse(call[0].payload)).toEqual({ option: 'ЭМИ по себе' });
+  fireEvent.click(ui.getByText('Цели'));
+  expect(ui.queryByText('Цель охоты')).toBeNull();
+  fireEvent.click(ui.getByText('Цель контракта'));
+  const marked = ui.topic.mock.calls.find(([message]) => message.type === 'act/target_hunt');
+  expect(JSON.parse(marked[0].payload)).toEqual({ id: 'patient' });
+});
+
+test('без кнопки цели у программы карточка цели её не показывает', () => {
+  const ui = setup({ heretic: 0, target_action: null, options: [], targets: [patient] });
+  fireEvent.click(ui.getByText('Цели'));
+  expect(ui.queryByText('Цель охоты')).toBeNull();
 });

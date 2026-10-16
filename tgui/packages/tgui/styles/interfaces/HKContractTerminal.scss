@@ -1,0 +1,506 @@
+$hk-amber: #ffa31a;
+$hk-amber-dim: #b8771c;
+$hk-amber-faint: #6b4510;
+$hk-amber-ghost: rgba(255, 163, 26, 0.08);
+$hk-red: #ff4b33;
+$hk-bg: #0a0703;
+$hk-glow: 0 0 3px rgba(255, 163, 26, 0.55);
+$hk-glow-hot: 0 0 6px rgba(255, 163, 26, 0.9);
+$hk-noise: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='96' height='96'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 0.64 0 0 0 0 0.1 0 0 0 1.6 -0.35'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+
+@keyframes hk-flicker {
+  0%,
+  92%,
+  100% {
+    opacity: 1;
+  }
+  93% {
+    opacity: 0.93;
+  }
+  95% {
+    opacity: 0.99;
+  }
+  96% {
+    opacity: 0.95;
+  }
+}
+
+@keyframes hk-band {
+  from {
+    transform: translateY(-30%);
+  }
+  to {
+    transform: translateY(130%);
+  }
+}
+
+@keyframes hk-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes hk-flash {
+  0% {
+    color: $hk-bg;
+    background-color: $hk-amber;
+    text-shadow: none;
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+@keyframes hk-static {
+  0% {
+    background-position: 0 0;
+  }
+  25% {
+    background-position: -31px 17px;
+  }
+  50% {
+    background-position: 23px -41px;
+  }
+  75% {
+    background-position: -47px -13px;
+  }
+  100% {
+    background-position: 11px 29px;
+  }
+}
+
+@keyframes hk-sweep {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes hk-pulse {
+  0% {
+    transform: scale(0.4);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.25);
+    opacity: 0;
+  }
+}
+
+@keyframes hk-blip {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.Window:has(.HKContractTerminal) .TitleBar {
+  background-color: #1a1006;
+  border-bottom: 1px solid $hk-amber-faint;
+}
+
+.Window:has(.HKContractTerminal) .TitleBar__title {
+  font-family: Consolas, 'Lucida Console', 'Courier New', monospace;
+  color: $hk-amber;
+}
+
+.HKContractTerminal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  font-family: Consolas, 'Lucida Console', 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  color: $hk-amber;
+  text-shadow: $hk-glow;
+  background-color: $hk-bg;
+  background-image:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(255, 163, 26, 0.045) 0,
+      rgba(255, 163, 26, 0.045) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    radial-gradient(ellipse at center, transparent 55%, rgba(0, 0, 0, 0.6) 100%);
+  animation: hk-flicker 7s infinite;
+  outline: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 30%;
+    pointer-events: none;
+    background: linear-gradient(to bottom, transparent, rgba(255, 163, 26, 0.035), transparent);
+    animation: hk-band 9s linear infinite;
+  }
+
+  &__top {
+    flex-shrink: 0;
+    padding: 8px 14px 0;
+  }
+
+  &__status {
+    letter-spacing: 1px;
+  }
+
+  &__ticker {
+    margin-top: 2px;
+    min-height: 1.45em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__cursor {
+    display: inline-block;
+    width: 0.6em;
+    margin-left: 1px;
+    background-color: $hk-amber;
+    box-shadow: $hk-glow;
+    animation: hk-blink 1s steps(1) infinite;
+  }
+
+  &__menu {
+    margin-top: 2px;
+  }
+
+  &__menuItem {
+    margin-right: 16px;
+    padding: 0 3px;
+    cursor: pointer;
+    color: $hk-amber-dim;
+  }
+
+  &__menuItem:hover {
+    color: $hk-amber;
+    text-shadow: $hk-glow-hot;
+  }
+
+  &__menuItem--active,
+  &__menuItem--active:hover {
+    color: $hk-bg;
+    background-color: $hk-amber;
+    text-shadow: none;
+  }
+
+  &__keys {
+    float: right;
+    color: $hk-amber-faint;
+    text-shadow: none;
+  }
+
+  &__screen {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0 14px 10px;
+  }
+
+  &__pinned {
+    flex: 0 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  &__columns {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    gap: 14px;
+  }
+
+  &__pinned + &__columns {
+    min-height: 40%;
+  }
+
+  &__list {
+    flex: 0 0 44%;
+    min-width: 0;
+    overflow-y: auto;
+  }
+
+  &__detail {
+    flex: 1;
+    min-width: 0;
+    overflow-y: auto;
+    padding-left: 12px;
+    border-left: 1px solid $hk-amber-faint;
+  }
+
+  &__row {
+    display: flex;
+    gap: 8px;
+    padding: 1px 4px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  &__row:hover {
+    text-shadow: $hk-glow-hot;
+    background-color: $hk-amber-ghost;
+  }
+
+  &__row--selected,
+  &__row--selected:hover {
+    color: $hk-bg;
+    background-color: $hk-amber;
+    text-shadow: none;
+  }
+
+  &__row--selected &__dim,
+  &__row--selected &__warn {
+    color: $hk-bg;
+  }
+
+  &__row &__command {
+    margin: 0;
+  }
+
+  &__cell {
+    flex-shrink: 0;
+  }
+
+  &__cell--grow {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__rule {
+    overflow: hidden;
+    white-space: nowrap;
+    color: $hk-amber-faint;
+    text-shadow: none;
+    user-select: none;
+  }
+
+  &__heading {
+    margin-top: 8px;
+    letter-spacing: 1px;
+  }
+
+  &__line {
+    margin: 3px 0;
+  }
+
+  &__field {
+    display: grid;
+    grid-template-columns: 13ch 1fr;
+  }
+
+  &__label,
+  &__dim {
+    color: $hk-amber-dim;
+  }
+
+  &__warn {
+    color: $hk-red;
+    text-shadow: 0 0 3px rgba(255, 75, 51, 0.5);
+  }
+
+  &__big {
+    font-size: 15px;
+    letter-spacing: 1px;
+  }
+
+  &__timer {
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: $hk-red;
+    text-shadow: 0 0 6px rgba(255, 75, 51, 0.6);
+  }
+
+  &__commands {
+    margin: 6px 0 2px;
+  }
+
+  &__command {
+    display: inline-block;
+    margin: 0 14px 2px 0;
+  }
+
+  &__cmd {
+    cursor: pointer;
+    padding: 0 2px;
+  }
+
+  &__cmd:hover,
+  &__cmd:focus {
+    outline: none;
+    color: $hk-bg;
+    background-color: $hk-amber;
+    text-shadow: none;
+    box-shadow: $hk-glow-hot;
+  }
+
+  &__cmd--primary {
+    display: inline-block;
+    padding: 3px 10px;
+    font-size: 16px;
+    letter-spacing: 2px;
+    border: 1px solid $hk-amber;
+  }
+
+  &__cmd--flash {
+    animation: hk-flash 0.45s ease-out;
+  }
+
+  &__cmd--off,
+  &__cmd--off:hover {
+    cursor: default;
+    color: $hk-amber-faint;
+    background-color: transparent;
+    border-color: $hk-amber-faint;
+    box-shadow: none;
+  }
+
+  &__reason {
+    color: $hk-amber-dim;
+  }
+
+  &__toggle {
+    cursor: pointer;
+    color: $hk-amber-dim;
+  }
+
+  &__toggle:hover {
+    color: $hk-amber;
+    text-shadow: $hk-glow-hot;
+  }
+
+  &__card {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+
+  &__cardBody {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__photo {
+    position: relative;
+    flex-shrink: 0;
+    width: 96px;
+    height: 96px;
+    overflow: hidden;
+    background-color: #120b04;
+    border: 1px solid $hk-amber-faint;
+  }
+
+  &__photoImg {
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+    filter: grayscale(1) sepia(1) saturate(5) hue-rotate(-12deg) brightness(0.95) contrast(1.25);
+  }
+
+  &__static {
+    position: absolute;
+    inset: 0;
+    background-image: $hk-noise;
+    opacity: 0.75;
+    animation: hk-static 0.4s steps(1) infinite;
+  }
+
+  &__stamp {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    text-align: center;
+    font-size: 10px;
+    color: $hk-bg;
+    background-color: $hk-amber;
+    text-shadow: none;
+  }
+
+  &__noPhoto {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $hk-amber-faint;
+    text-shadow: none;
+  }
+
+  &__reticle {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    stroke: $hk-amber;
+    fill: none;
+    filter: drop-shadow(0 0 2px rgba(255, 163, 26, 0.7));
+  }
+
+  &__radar {
+    flex-shrink: 0;
+    width: 124px;
+    text-align: center;
+  }
+
+  &__radarSvg {
+    width: 120px;
+    height: 120px;
+    stroke: $hk-amber-faint;
+    fill: none;
+  }
+
+  &__radarSweep {
+    transform-origin: 0 0;
+    animation: hk-sweep 3s linear infinite;
+    fill: rgba(255, 163, 26, 0.18);
+    stroke: none;
+  }
+
+  &__radarBlip {
+    fill: $hk-amber;
+    stroke: none;
+    filter: drop-shadow(0 0 3px rgba(255, 163, 26, 0.9));
+    animation: hk-blip 1.5s ease-in-out infinite;
+  }
+
+  &__radarSelf {
+    fill: $hk-amber-dim;
+    stroke: none;
+  }
+
+  &__radarPulse {
+    transform-origin: 0 0;
+    stroke: $hk-red;
+    animation: hk-pulse 1.4s ease-out infinite;
+  }
+
+  &__radarCaption {
+    font-size: 11px;
+  }
+
+  &__tallies {
+    margin: 6px 0 4px;
+    letter-spacing: 1px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .HKContractTerminal,
+  .HKContractTerminal::after,
+  .HKContractTerminal__cursor,
+  .HKContractTerminal__static,
+  .HKContractTerminal__radarSweep,
+  .HKContractTerminal__radarBlip,
+  .HKContractTerminal__radarPulse,
+  .HKContractTerminal__cmd--flash {
+    animation: none;
+  }
+}

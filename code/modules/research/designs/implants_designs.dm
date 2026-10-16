@@ -81,13 +81,12 @@
 	name = "Corporate Riot Shield implant"
 	desc = "An implanted riot shield, designed to be installed on subject's arm."
 	id = "ci-shield"
-	build_type = PROTOLATHE
+	build_type = PROTOLATHE | MECHFAB
 	materials = list (/datum/material/iron = 8500, /datum/material/glass = 8500, /datum/material/silver = 1800, /datum/material/titanium = 600)
 	construction_time = 200
 	build_path = /obj/item/organ/cyberimp/arm/shield/sec_level
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = RIOT_SHIELD_SEC_LEVEL
 
 /datum/design/cyberimp_shield/hack
 	name = "Riot Shield implant"
@@ -99,13 +98,12 @@
 	name = "Corporate Chemical Sequencer Implant"
 	desc = "This implant can inject limited list of basic reagents into your blood."
 	id = "ci-chemseq"
-	build_type = PROTOLATHE
+	build_type = PROTOLATHE | MECHFAB
 	materials = list(/datum/material/iron = 600, /datum/material/glass = 600, /datum/material/silver = 500, /datum/material/gold = 1000)
 	construction_time = 120
 	build_path = /obj/item/organ/cyberimp/chest/chem_implant/sec_level
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = CHEM_SEQ_SEC_LEVEL
 
 /datum/design/cyberimp_chem/hack
 	name = "Chemical Sequencer Implant"
@@ -178,7 +176,6 @@
 	build_path = /obj/item/organ/cyberimp/brain/anti_drop/sec_level
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = ANTI_DROP_SEC_LEVEL
 
 /datum/design/cyberimp_antidrop/hack
 	name = "Anti-Drop Implant"
@@ -196,7 +193,6 @@
 	build_path = /obj/item/organ/cyberimp/brain/anti_stun/sec_level
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = CNS_REBOOTER_SEC_LEVEL
 
 /datum/design/cyberimp_antistun/hack
 	name = "CNS Rebooter Implant"
@@ -247,7 +243,6 @@
 	build_path = /obj/item/organ/cyberimp/chest/reviver/sec_level
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = REVIVER_SEC_LEVEL
 
 /datum/design/cyberimp_reviver/hack
 	name = "Reviver Implant"
@@ -270,13 +265,12 @@
 	name = "Corporate Mantis Blade Implant"
 	desc = "A long, sharp, mantis-like blade installed within the forearm, acting as a deadly self defense weapon."
 	id = "ci-mantis"
-	build_type = PROTOLATHE
+	build_type = PROTOLATHE | MECHFAB
 	materials = list (/datum/material/iron = 3500, /datum/material/glass = 1500, /datum/material/silver = 1500)
 	construction_time = 200
 	build_path = /obj/item/organ/cyberimp/arm/mantis_blade/sec_level
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = MANTIS_IMPLANT_SEC_LEVEL
 
 /datum/design/cyberimp_mantis/hack
 	name = "Mantis Blade Implant"
@@ -299,7 +293,7 @@
 	name = "External Healing Implant"
 	desc = "This implant will slowly mend localized damage that it can find. This version mends only brute and fire injures!"
 	id = "ci-healerext"
-	build_type = PROTOLATHE
+	build_type = PROTOLATHE | MECHFAB
 	construction_time = 40
 	materials = list(/datum/material/iron = 10000, /datum/material/glass = 10000, /datum/material/silver = 6000, /datum/material/gold = 6000, /datum/material/diamond = 6000)
 	build_path = /obj/item/organ/cyberimp/chest/healer/bruteburn
@@ -321,7 +315,7 @@
 	name = "Revitalizing Cortex Implant"
 	desc = "This attachable to the torso cortex optimizes the body's processes in order to preserve the body. Provides overall basic mending."
 	id = "ci-cortex"
-	build_type = PROTOLATHE
+	build_type = PROTOLATHE | MECHFAB
 	construction_time = 40
 	materials = list(/datum/material/iron = 10000, /datum/material/glass = 10000, /datum/material/silver = 6000, /datum/material/gold = 6000, /datum/material/diamond = 6000, /datum/material/bluespace = 6000)
 	build_path = /obj/item/organ/cyberimp/chest/healer/revitilzer
@@ -355,7 +349,7 @@
 	name = "Advanced Medical Data Chip"
 	desc = "Special implant that was designed to help field operators with medical care for their fallen brethren. Allows advanced surgical procedures outside of the sterile conditions."
 	id = "chip-medical"
-	build_type = PROTOLATHE
+	build_type = PROTOLATHE | MECHFAB
 	construction_time = 100
 	materials = list(/datum/material/iron = 30000, /datum/material/glass = 30000, /datum/material/silver = 6000, /datum/material/gold = 6000, /datum/material/diamond = 6000, /datum/material/bluespace = 6000)
 	build_path = /obj/item/organ/cyberimp/brainchip/medical
@@ -366,7 +360,7 @@
 	name = "Advanced Electrical Data Chip"
 	desc = "Special implant that was designed to provide a quick learning for field engineers and inadept electricians."
 	id = "chip-engi"
-	build_type = PROTOLATHE
+	build_type = PROTOLATHE | MECHFAB
 	construction_time = 100
 	materials = list(/datum/material/iron = 30000, /datum/material/glass = 30000, /datum/material/silver = 6000, /datum/material/gold = 6000, /datum/material/diamond = 6000, /datum/material/bluespace = 6000)
 	build_path = /obj/item/organ/cyberimp/brainchip/engi
@@ -377,7 +371,7 @@
 	name = "Advanced Robotical Data Chip"
 	desc = "Special implant that was designed to provide a quick learning for inadept roboticians and on-field crew."
 	id = "chip-robotic"
-	build_type = PROTOLATHE
+	build_type = PROTOLATHE | MECHFAB
 	construction_time = 100
 	materials = list(/datum/material/iron = 30000, /datum/material/glass = 30000, /datum/material/silver = 6000, /datum/material/gold = 6000, /datum/material/diamond = 6000, /datum/material/bluespace = 6000)
 	build_path = /obj/item/organ/cyberimp/brainchip/robotic
