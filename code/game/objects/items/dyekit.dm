@@ -39,7 +39,10 @@
 	if(!can_change_color)
 		new_grad_color = get_dye_color(human_target)
 
-	to_chat(human_target, span_notice("You start applying the hair dye..."))
+	if(user == human_target)
+		user.visible_message(span_notice("[user] начинает окрашивать свои волосы."), span_notice("Вы начинаете окрашивать свои волосы."), span_notice("Вы слышите звук баллончика с краской."))
+	else
+		user.visible_message(span_notice("[user] начинает окрашивать волосы [human_target]."), span_notice("Вы начинаете окрашивать волосы [human_target]."), span_notice("Вы слышите звук баллончика с краской."), target = human_target, target_message = span_warning("[user] начинает окрашивать вам волосы."))
 	if(!do_after(user, 3 SECONDS, target = human_target) || !can_dye_target(user, human_target))
 		return FALSE
 	human_target.grad_style = new_grad_style
