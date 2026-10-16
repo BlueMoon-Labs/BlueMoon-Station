@@ -29,7 +29,7 @@
 /datum/action/innate/ability/humanoid_customization/proc/change_form()
 	var/mob/living/carbon/human/H = owner
 
-	var/select_alteration = tgui_input_list(owner, "Select what part of your form to alter", "Form Alteration", list("Body Color", "Eye Color","Hair Style", "Genitals", "Tail", "Snout", "Wings", "Markings", "Ears", "Taur body", "Penis", "Testicles", "Vagina", "Penis Length", "Breast Size", "Breast Shape", "Testicles Size", "Butt Size", "Belly Size", "Body Size", "Genital Color", "Horns", "Hair Color", "Skin Tone (Non-Mutant)", "Gender & Lewd", "Legs"))
+	var/select_alteration = tgui_input_list(owner, "Select what part of your form to alter", "Form Alteration", list("Body Color", "Eye Color","Hair Style", "Genitals", "Tail", "Snout", "Wings", "Markings", "Ears", "Taur body", "Penis", "Testicles", "Vagina", "Penis Length", "Breast Size", "Breast Shape", "Testicles Size", "Butt Size", "Belly Size", "Body Size", "Genital Color", "Horns", "Skin Tone (Non-Mutant)", "Gender & Lewd", "Legs"))
 
 	if(select_alteration == "Body Color")
 		var/new_color = input(owner, "Choose your skin color:", "Race change","#"+H.dna.features["mcolor"]) as color|null
@@ -68,7 +68,7 @@
 		var/list/hair_tabs = list("hair")
 		if(H.gender == MALE)
 			hair_tabs += "facial"
-		open_live_hair_style_picker(owner, H, H, hair_tabs, CALLBACK(src, PROC_REF(apply_hair_style), H))
+		open_live_hair_style_picker(owner, H, H, hair_tabs, CALLBACK(src, PROC_REF(apply_hair_style), H), allow_color_without_spray = TRUE)
 	else if (select_alteration == "Genitals")
 		var/operation = tgui_input_list(owner, "Select organ operation.", "Organ Manipulation", list("add sexual organ", "remove sexual organ"))
 		switch(operation)
@@ -363,12 +363,6 @@
 				H.dna.features["horns_color"] = sanitize_hexcolor(new_horn_color, 6)
 
 			H.update_body()
-
-	else if (select_alteration == "Hair Color")
-		var/new_hair_color = input(owner, "Choose your character's hair color:", "Character Preference", "#" + H.dna.features["hair_color"]) as color|null
-		if (new_hair_color)
-			H.hair_color = sanitize_hexcolor(new_hair_color, 6)
-		H.update_hair()
 
 	else if(select_alteration == "Skin Tone (Non-Mutant)") // Skin tone, different than mutant color
 		var/list/choices = GLOB.skin_tones - GLOB.nonstandard_skin_tones

@@ -25,6 +25,8 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	var/mob/living/carbon/human/target
 	var/atom/movable/check_atom
 	var/apply_sound
+	/// Способности могут разрешать выбор цвета без предмета-красителя.
+	var/allow_color_without_spray = FALSE
 	/// Цвета для предпросмотра до нажатия Apply; не записываются в настройки или предмет.
 	var/preview_hair_color
 	var/preview_facial_color
@@ -86,7 +88,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	return picker.finalize(user)
 
 /// Выбор для других инструментов и способностей с собственными условиями применения.
-/proc/open_live_hair_style_picker(mob/user, mob/living/carbon/human/subject, atom/movable/source, list/tabs, datum/callback/on_apply)
+/proc/open_live_hair_style_picker(mob/user, mob/living/carbon/human/subject, atom/movable/source, list/tabs, datum/callback/on_apply, allow_color_without_spray = FALSE)
 	if(!user?.client || !subject?.dna || QDELETED(source))
 		return FALSE
 	var/datum/hair_style_picker/picker = create_hair_style_picker(user)
@@ -96,6 +98,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 		picker.tab = picker.allowed_tabs[1]
 		picker.selected = picker.default_selection()
 	picker.apply_callback = on_apply
+	picker.allow_color_without_spray = allow_color_without_spray
 	return picker.finalize(user)
 
 /proc/create_hair_style_picker(mob/user)
@@ -397,7 +400,9 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 		return FALSE
 	if(prefs)
 		return user.client?.prefs == prefs
-	if(QDELETED(target) || QDELETED(check_atom) || !get_color_spray(user))
+	if(QDELETED(target) || QDELETED(check_atom))
+		return FALSE
+	if(!allow_color_without_spray && !get_color_spray(user))
 		return FALSE
 	return user.canUseTopic(check_atom, BE_CLOSE, FALSE, NO_TK, TRUE, TRUE) && user.canUseTopic(target, BE_CLOSE, FALSE, NO_TK, TRUE, TRUE)
 
@@ -413,7 +418,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	// За время диалога могли сменить вкладку, отойти от цели или убрать спрей из рук.
 	if(QDELETED(src) || !new_color || tab != color_tab || !can_change_color(user))
 		return FALSE
-	if(!prefs && (QDELETED(spray) || get_color_spray(user) != spray))
+	if(!prefs && !allow_color_without_spray && (QDELETED(spray) || get_color_spray(user) != spray))
 		return FALSE
 	new_color = sanitize_hexcolor(new_color, 6)
 	switch(color_tab)
