@@ -129,7 +129,7 @@
 	if(!spent || !patch?.use(AIRBAG_REPACK_PLASTIC_COST))
 		return FALSE
 	spent = FALSE
-	icon_state = initial(icon_state)
+	icon_state = "airbag_folded"
 	playsound(src, 'sound/machines/click.ogg', 40, TRUE)
 	if(user)
 		user.visible_message("<span class='notice'>[user] складывает новую мембрану в [src].</span>",
@@ -155,8 +155,8 @@
 	playsound(target, 'sound/machines/click.ogg', 50, TRUE)
 	return TRUE
 
-/// Модуль тратится целиком: на тайл встаёт мембрана, а сам он уезжает внутрь неё
-/// и вернётся порванным, когда та сдуется.
+/// Корпус остаётся внутри мембраны. При аккуратном складывании вернётся целым,
+/// при разрыве или истечении срока службы потребуется новая мембрана.
 /obj/item/airbag_module/proc/deploy(turf/where)
 	if(spent || !isturf(where))
 		return null
@@ -174,31 +174,31 @@
 /obj/structure/inflatable/airbag
 	name = "Emergency membrane"
 	desc = "Раздутая аварийная мембрана. Держит давление ровно столько, сколько нужно, чтобы успеть застеклить проём."
+	icon = 'modular_bluemoon/icons/obj/structures/inflatable.dmi'
 	icon_state = "airbag_wall"
 	max_integrity = 30
+	intact = /obj/item/airbag_module
+	torn = /obj/item/airbag_module/spent
 	// Смысл мембраны в том, что она держит воздух; плотность тут вторична.
 	CanAtmosPass = ATMOS_PASS_NO
-	/// Отработавший модуль, который выпадет, когда мембрана сдуется.
+	/// Корпус модуля, который вернётся при складывании или разрыве мембраны.
 	var/obj/item/airbag_module/module
-	/// Таймер саморазряда; снимается в Destroy, чтобы лопнутая мембрана не висела в SStimer.
-	var/deflate_timer
+	/// Срок службы не зависит от таймера ручного складывания родительского типа.
+	var/lifetime_timer
 	/// Таймер предупреждения о скором сдувании; снимается там же и по той же причине.
 	var/warning_timer
 
 /obj/structure/inflatable/airbag/Initialize(mapload)
 	. = ..()
-	// Тайл только что перестал быть дырой наружу - атмосу надо сказать об этом
-	// сразу, иначе отсек продолжит стравливать до ближайшего пересчёта.
-	air_update_turf(TRUE)
 	playsound(src, 'sound/effects/spray.ogg', 60, TRUE)
 	visible_message("<span class='warning'>Аирбаг с шипением разворачивается, затыкая проём!</span>")
-	deflate_timer = addtimer(CALLBACK(src, PROC_REF(deflate)), AIRBAG_INFLATED_LIFETIME, TIMER_STOPPABLE)
+	lifetime_timer = addtimer(CALLBACK(src, PROC_REF(expire)), AIRBAG_INFLATED_LIFETIME, TIMER_STOPPABLE)
 	warning_timer = addtimer(CALLBACK(src, PROC_REF(warn_deflating)), AIRBAG_INFLATED_LIFETIME - AIRBAG_DEFLATE_WARNING, TIMER_STOPPABLE)
 
 /obj/structure/inflatable/airbag/Destroy()
-	if(deflate_timer)
-		deltimer(deflate_timer)
-		deflate_timer = null
+	if(lifetime_timer)
+		deltimer(lifetime_timer)
+		lifetime_timer = null
 	if(warning_timer)
 		deltimer(warning_timer)
 		warning_timer = null
@@ -206,11 +206,7 @@
 	if(module)
 		module.forceMove(where || drop_location())
 		module = null
-	. = ..()
-	// Порядок важен: пересчитывать проходимость имеет смысл только после того,
-	// как мембраны на тайле уже нет.
-	if(where)
-		where.air_update_turf(TRUE)
+	return ..()
 
 /obj/structure/inflatable/airbag/proc/warn_deflating()
 	warning_timer = null
@@ -219,12 +215,21 @@
 	visible_message("<span class='warning'>Аварийная мембрана начинает шипеть и оседать.</span>")
 	playsound(src, 'sound/effects/spray.ogg', 25, TRUE)
 
-/obj/structure/inflatable/airbag/proc/deflate()
+/obj/structure/inflatable/airbag/proc/expire()
 	if(QDELETED(src))
 		return
 	visible_message("<span class='warning'>Аварийная мембрана сдувается.</span>")
-	playsound(src, 'sound/effects/spray.ogg', 40, TRUE)
-	qdel(src)
+	deconstruct(FALSE)
+
+/obj/structure/inflatable/airbag/create_folded_item(disassembled)
+	var/obj/item/airbag_module/folded = module
+	module = null
+	if(!folded)
+		folded = ..()
+	folded.spent = !disassembled
+	folded.icon_state = disassembled ? "airbag_folded" : "airbag_folded_torn"
+	folded.forceMove(drop_location())
+	return folded
 
 /obj/structure/inflatable/airbag/examine(mob/user)
 	. = ..()
