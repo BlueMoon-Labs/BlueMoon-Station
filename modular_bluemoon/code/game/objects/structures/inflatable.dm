@@ -93,14 +93,16 @@
 	if(QDELETED(src))
 		return
 	var/obj/item/folded = create_folded_item(disassembled)
-	transfer_fingerprints_to(folded)
+	if(folded)
+		transfer_fingerprints_to(folded)
 	qdel(src)
 	return folded
 
-/// Subtypes can return their existing module instead of creating another item.
+/// A null item path lets disposable membranes disappear without leaving debris.
 /obj/structure/inflatable/proc/create_folded_item(disassembled)
 	var/item_path = disassembled ? intact : torn
-	return new item_path(drop_location())
+	if(item_path)
+		return new item_path(drop_location())
 
 /obj/item/inflatable/door
 	name = "inflatable door"
@@ -205,3 +207,22 @@
 		new /obj/item/inflatable/door(src)
 	for(var/i in 1 to 4)
 		new /obj/item/inflatable(src)
+
+/obj/item/storage/briefcase/inflatable_airbag
+	name = "emergency airbag box"
+	desc = "Contains emergency airbags."
+	icon = 'icons/obj/storage.dmi'
+	icon_state = "inf_box_airbag"
+	item_state = "syringe_kit"
+	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
+
+/obj/item/storage/briefcase/inflatable_airbag/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/storage = GetComponent(/datum/component/storage)
+	storage.can_hold = typecacheof(/obj/item/airbag_module)
+	storage.max_items = 7
+
+/obj/item/storage/briefcase/inflatable/PopulateContents()
+	for(var/i in 1 to 7)
+		new /obj/item/airbag_module(src)

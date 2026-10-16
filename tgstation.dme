@@ -4814,7 +4814,6 @@
 #include "modular_bluemoon\code\game\objects\structures\tram_signage.dm"
 #include "modular_bluemoon\code\game\objects\structures\wallmount.dm"
 #include "modular_bluemoon\code\game\objects\structures\watercloset.dm"
-#include "modular_bluemoon\code\game\objects\structures\window_airbag.dm"
 #include "modular_bluemoon\code\game\objects\structures\beds_chairs\bed.dm"
 #include "modular_bluemoon\code\game\objects\structures\beds_chairs\rollerbed.dm"
 #include "modular_bluemoon\code\game\objects\structures\crate_lockers\crates\secure.dm"

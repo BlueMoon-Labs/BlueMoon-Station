@@ -13,7 +13,6 @@
 		/obj/item/geiger_counter = 5,
 		/obj/item/stock_parts/cell/high = 10,
 		/obj/item/electronics/airlock = 10,
-		/obj/item/airbag_module = 8,
 		/obj/item/electronics/apc = 10,
 		/obj/item/electronics/airalarm = 10,
 		/obj/item/electronics/firealarm = 10,
@@ -32,6 +31,7 @@
 		/obj/item/storage/box/smart_metal_foam = 3,
 		/obj/item/rcd_ammo/large = 5,
 		/obj/item/storage/briefcase/inflatable = 3,
+		/obj/item/storage/briefcase/inflatable_airbag = 5,
 		/obj/item/storage/bag/material = 3,
 	)
 	refill_canister = /obj/item/vending_refill/engivend
