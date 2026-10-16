@@ -2820,3 +2820,9 @@
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/suit/donator/bm/arsmaid_suit
 	ckeywhitelist = list("TheARS")
+
+/datum/gear/donator/bm/taxedo
+	name = "Taxedo Suit"
+	slot = ITEM_SLOT_OCLOTHING
+	path = /obj/item/clothing/suit/taxedo
+	ckeywhitelist = list("kumikoshouko")
