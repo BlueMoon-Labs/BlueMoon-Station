@@ -15,7 +15,7 @@
 		return
 	inflating = TRUE
 	playsound(src, 'modular_bluemoon/sound/items/inflatable_zip.ogg', 75, TRUE)
-	if(!do_after(user, 1 SECONDS, target = src))
+	if(!do_after(user, 1 SECONDS, src, progress_loc = user))
 		inflating = FALSE
 		return
 	if(QDELETED(src) || QDELETED(user))
@@ -187,11 +187,11 @@
 	add_fingerprint(user)
 
 /obj/item/storage/briefcase/inflatable
-	name = "inflatable barrier box"
+	name = "inflatable barrier case"
 	desc = "Contains inflatable walls and doors."
-	icon = 'icons/obj/storage.dmi'
 	icon_state = "inf_box"
 	item_state = "syringe_kit"
+	resistance_flags = NONE
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
 	w_class = WEIGHT_CLASS_NORMAL
@@ -208,13 +208,36 @@
 	for(var/i in 1 to 4)
 		new /obj/item/inflatable(src)
 
+/obj/item/storage/briefcase/inflatable_mini
+	name = "emergency barrier case"
+	desc = "Contains inflatable walls and doors."
+	icon = 'icons/obj/storage.dmi'
+	icon_state = "inf_box_mini"
+	item_state = "syringe_kit"
+	resistance_flags = NONE
+	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
+	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
+	w_class = WEIGHT_CLASS_NORMAL
+
+/obj/item/storage/briefcase/inflatable_mini/ComponentInitialize()
+	. = ..()
+	var/datum/component/storage/storage = GetComponent(/datum/component/storage)
+	storage.can_hold = typecacheof(/obj/item/inflatable)
+	storage.max_items = 3
+
+/obj/item/storage/briefcase/inflatable_mini/PopulateContents()
+	new /obj/item/inflatable/door(src)
+	for(var/i in 1 to 2)
+		new /obj/item/inflatable(src)
+
 /obj/item/storage/briefcase/inflatable_airbag
-	name = "emergency airbag box"
+	name = "emergency airbag case"
 	desc = "Contains emergency airbags."
 	icon = 'icons/obj/storage.dmi'
 	icon_state = "inf_box_airbag"
 	item_state = "syringe_kit"
 	custom_price = PRICE_NORMAL
+	resistance_flags = NONE
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
 
