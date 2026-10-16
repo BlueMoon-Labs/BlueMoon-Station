@@ -4,6 +4,9 @@
 	icon = 'icons/obj/dyespray.dmi'
 	icon_state = "dyespray"
 	w_class = WEIGHT_CLASS_SMALL
+	/// Разрешает выбирать произвольный цвет в HairStylePicker.
+	var/can_change_color = TRUE
+	var/dye_sound = 'sound/effects/spray.ogg'
 
 /obj/item/dyespray/attack_self(mob/user)
 	dye(user)
@@ -33,15 +36,21 @@
 /obj/item/dyespray/proc/apply_hair_gradient(mob/user, mob/living/carbon/human/human_target, new_grad_style, tab, new_grad_color)
 	if(!can_dye_target(user, human_target))
 		return FALSE
+	if(!can_change_color)
+		new_grad_color = get_dye_color(human_target)
 
 	to_chat(human_target, span_notice("You start applying the hair dye..."))
 	if(!do_after(user, 3 SECONDS, target = human_target) || !can_dye_target(user, human_target))
 		return FALSE
 	human_target.grad_style = new_grad_style
 	human_target.grad_color = new_grad_color
-	playsound(src, 'sound/effects/spray.ogg', 5, TRUE, 5)
+	playsound(src, dye_sound, 5, TRUE, 5)
 	human_target.update_hair()
 	return TRUE
+
+/// Подтипы с заданным цветом используют его и для предпросмотра, и для окрашивания.
+/obj/item/dyespray/proc/get_dye_color(mob/living/carbon/human/human_target)
+	return human_target?.grad_color
 
 /obj/item/dyespray/proc/can_dye_target(mob/user, mob/living/carbon/human/human_target)
 	if(QDELETED(src) || QDELETED(user) || QDELETED(human_target))

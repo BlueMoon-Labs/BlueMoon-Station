@@ -376,8 +376,12 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 /// При вызове из красителя отдельный спрей в руках не требуется.
 /datum/hair_style_picker/proc/get_color_spray(mob/user)
 	if(istype(check_atom, /obj/item/dyespray) && !QDELETED(check_atom))
-		return check_atom
-	return user?.is_holding_item_of_type(/obj/item/dyespray)
+		var/obj/item/dyespray/source_spray = check_atom
+		return source_spray.can_change_color ? source_spray : null
+	for(var/obj/item/dyespray/spray in user?.held_items)
+		if(!QDELETED(spray) && spray.can_change_color)
+			return spray
+	return null
 
 /datum/hair_style_picker/proc/can_change_color(mob/user)
 	if(QDELETED(user) || !(tab in allowed_tabs))
@@ -516,6 +520,10 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	return prefs ? prefs.facial_hair_color : target?.facial_hair_color
 
 /datum/hair_style_picker/proc/applied_grad_color()
+	if(istype(check_atom, /obj/item/dyespray) && !QDELETED(check_atom))
+		var/obj/item/dyespray/spray = check_atom
+		if(!spray.can_change_color)
+			return spray.get_dye_color(target)
 	if(!isnull(preview_grad_color))
 		return preview_grad_color
 	return prefs ? prefs.grad_color : target?.grad_color
@@ -585,6 +593,10 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	.["apply"] = is_russian ? "Применить" : "Apply"
 	.["color"] = is_russian ? "Цвет" : "Color"
 	.["color_requires_spray"] = is_russian ? "Возьмите [/obj/item/dyespray::name] в руки, чтобы активировать кнопку." : "Hold [/obj/item/dyespray::name] to enable this button."
+	if(istype(check_atom, /obj/item/dyespray))
+		var/obj/item/dyespray/spray = check_atom
+		if(!spray.can_change_color)
+			.["color_requires_spray"] = is_russian ? "Цвет этого баллончика задан заранее." : "This spray has a fixed color."
 	.["search"] = is_russian ? "Поиск..." : "Search..."
 	.["preview"] = is_russian ? "Превью" : "Preview"
 	.["portrait"] = is_russian ? "Портрет" : "Portrait"
