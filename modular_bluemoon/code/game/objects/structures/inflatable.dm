@@ -224,6 +224,6 @@
 	storage.can_hold = typecacheof(/obj/item/airbag_module)
 	storage.max_items = 7
 
-/obj/item/storage/briefcase/inflatable/PopulateContents()
+/obj/item/storage/briefcase/inflatable_airbag/PopulateContents()
 	for(var/i in 1 to 7)
 		new /obj/item/airbag_module(src)
