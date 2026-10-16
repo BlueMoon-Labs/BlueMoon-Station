@@ -59,7 +59,7 @@
 	///Datum that the shard and debris type is pulled from for when the glass is broken.
 	var/cleanable_type = /obj/effect/decal/cleanable/glass
 	var/datum/material/glass_material_datum = /datum/material/glass
-	/// WhiteMoon-style emergency package, fitted to fulltile reinforced windows.
+	/// Emergency package installed explicitly by a window spawner or RCD.
 	var/airbag_installed = FALSE
 	/// Prevent two simultaneous Alt-clicks from removing the same package twice.
 	var/airbag_disarming = FALSE
@@ -869,10 +869,12 @@
 /obj/structure/window/reinforced/fulltile/unanchored
 	anchored = FALSE
 
-/obj/structure/window/reinforced/fulltile/Initialize(mapload, direct)
-	. = ..()
+/obj/structure/window/proc/install_airbag()
+	if(airbag_installed || QDELETED(src))
+		return FALSE
 	qdel(GetComponent(/datum/component/simple_rotation))
 	airbag_installed = TRUE
+	return TRUE
 
 /// Destruction by fire or acid can bypass deconstruct(), so deploy before the parent.
 /obj/structure/window/obj_destruction(damage_flag)
@@ -904,6 +906,7 @@
 	add_fingerprint(user)
 	var/obj/item/airbag_module/module = new(drop_location())
 	transfer_fingerprints_to(module)
+	user.put_in_hands(module)
 	balloon_alert(user, "аирбаг снят")
 	return TRUE
 

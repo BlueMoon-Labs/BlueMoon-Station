@@ -15,7 +15,7 @@
 		return
 	inflating = TRUE
 	playsound(src, 'modular_bluemoon/sound/items/inflatable_zip.ogg', 75, TRUE)
-	if(!do_after(user, 0.5 SECONDS, target = src))
+	if(!do_after(user, 1 SECONDS, target = src))
 		inflating = FALSE
 		return
 	if(QDELETED(src) || QDELETED(user))
@@ -214,6 +214,7 @@
 	icon = 'icons/obj/storage.dmi'
 	icon_state = "inf_box_airbag"
 	item_state = "syringe_kit"
+	custom_price = PRICE_NORMAL
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
 

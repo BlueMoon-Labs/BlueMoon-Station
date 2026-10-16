@@ -18,6 +18,7 @@
 		/obj/item/electronics/firealarm = 10,
 		/obj/item/electronics/firelock = 10,
 		/obj/item/assembly/control = 10,
+		/obj/item/storage/briefcase/inflatable_airbag = 8,
 		/obj/item/rcd_ammo = 3,
 	)
 	contraband = list(
@@ -31,7 +32,6 @@
 		/obj/item/storage/box/smart_metal_foam = 3,
 		/obj/item/rcd_ammo/large = 5,
 		/obj/item/storage/briefcase/inflatable = 3,
-		/obj/item/storage/briefcase/inflatable_airbag = 5,
 		/obj/item/storage/bag/material = 3,
 	)
 	refill_canister = /obj/item/vending_refill/engivend
