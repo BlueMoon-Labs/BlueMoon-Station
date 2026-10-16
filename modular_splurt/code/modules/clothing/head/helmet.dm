@@ -14,7 +14,7 @@
 /obj/item/clothing/head/helmet/goner/fake
 	name = "trencher helmet replica"
 	desc = "A plastic helmet with purple paint applied. Protects as best as cardboard box labeled 'Bomb Shelter'."
-	armor = 0
+	armor_type = /datum/armor/none
 
 /obj/item/clothing/head/helmet/goner/fake/poly
 	name = "polychromic trencher helmet"
@@ -55,7 +55,7 @@
 /obj/item/clothing/head/helmet/goner/officer/fake
 	name = "trencher officer cap replica"
 	desc = "A cheap officer cap. Great for people with Napoleon complex."
-	armor = 0
+	armor_type = /datum/armor/none
 
 /obj/item/clothing/head/helmet/goner/officer/fake/poly
 	name = "polychromic trencher officer cap"
