@@ -39,7 +39,6 @@
 	clothing_flags = THICKMATERIAL | BLOCK_GAS_SMOKE_EFFECT | ALLOWINTERNALS
 	mutantrace_variation = STYLE_MUZZLE
 	visor_flags_inv = 0
-	flavor_adjust = FALSE
 	armor = list("melee" = 5, "bullet" = 0, "laser" = 5,"energy" = 5, "bomb" = 0, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 100)
 	is_edible = 0
 
@@ -71,18 +70,17 @@
 		)
 	)
 
-/obj/item/clothing/mask/gas/sechailer/mopp/adjustmask(mob/living/user, just_flavor = FALSE)
+/obj/item/clothing/mask/gas/sechailer/mopp/adjustmask(mob/living/user)
 	. = ..()
-	if(!just_flavor)
-		var/base = current_skin ? unique_reskin[current_skin]["icon_state"] : initial(icon_state)
-		if(mask_adjusted)
-			icon_state = base + "_up"
-		else
-			icon_state = base
-		// Обновляем моб оверлей
-		if(ismob(loc))
-			var/mob/M = loc
-			M.update_inv_wear_mask()
+	var/base = current_skin ? unique_reskin[current_skin]["icon_state"] : initial(icon_state)
+	if(mask_adjusted)
+		icon_state = base + "_up"
+	else
+		icon_state = base
+	// Обновляем моб оверлей
+	if(ismob(loc))
+		var/mob/M = loc
+		M.update_inv_wear_mask()
 
 /obj/item/clothing/mask/gas/sechailer/mopp/advance
 	name = "advance MOPP gas mask"

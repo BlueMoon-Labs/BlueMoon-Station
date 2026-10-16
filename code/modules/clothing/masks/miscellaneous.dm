@@ -161,76 +161,41 @@
 		to_chat(user, "<span class='notice'>Your Joy mask now has a [choice] Emotion!</span>")
 		return TRUE
 
-/obj/item/clothing/mask/kitsuneblk
-	name = "Black Kitsune Mask"
-	desc = "An oriental styled porcelain mask, this one is black and gold."
-	icon_state = "blackkitsunemask"
-	item_state = "blackkitsunemask"
+/obj/item/clothing/mask/kitsune
+	name = "Kitsune Mask"
+	desc = "An oriental styled porcelain mask."
+	icon = 'icons/obj/clothing/masks/kitsune.dmi'
+	mob_overlay_icon = 'icons/mob/clothing/mask/kitsune.dmi'
+	icon_state = "kitsune"
 	w_class = WEIGHT_CLASS_TINY
 	flags_cover = MASKCOVERSMOUTH
 	flags_inv = HIDEFACE|HIDEFACIALHAIR
 	visor_flags_inv = HIDEFACE|HIDEFACIALHAIR
 	visor_flags_cover = MASKCOVERSMOUTH
-	slot_flags = ITEM_SLOT_MASK
+	var/list/poly_colors = list("#FFFFFF", "#CC0000", "#000000")
 
-/obj/item/clothing/mask/kitsuneblk/attack_self(mob/user)
-    adjustmask(user)
+/obj/item/clothing/mask/kitsune/examine(mob/user)
+	. = ..()
+	. += span_notice("Alt-клик чтобы сдвинуть маску.")
 
-/obj/item/clothing/mask/kitsuneblk/AltClick(mob/user)
-    if(face_hide_capable)
-        if(!user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
-            return ..()
-        toggle_face_hiding(user)
-        return TRUE
+/obj/item/clothing/mask/kitsune/ComponentInitialize()
+	. = ..()
+	AddElement(/datum/element/polychromic, poly_colors, 3, names = list("Shell", "Ornament", "Eyes"))
+
+/obj/item/clothing/mask/kitsune/AltClick(mob/user)
     . = ..()
     if(!user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
         return
     adjustmask(user)
     return TRUE
 
-/obj/item/clothing/mask/kitsunewhi
-	name = "White Kitsune Mask"
-	desc = "An oriental styled porcelain mask, this one is white and red."
-	icon_state = "whitekitsunemask"
-	item_state = "whitekitsunemask"
-	w_class = WEIGHT_CLASS_TINY
-	flags_cover = MASKCOVERSMOUTH
-	flags_inv = HIDEFACE|HIDEFACIALHAIR
-	visor_flags_inv = HIDEFACE|HIDEFACIALHAIR
-	visor_flags_cover = MASKCOVERSMOUTH
-	slot_flags = ITEM_SLOT_MASK
-
-/obj/item/clothing/mask/kitsunewhi/attack_self(mob/user)
-    adjustmask(user)
-
-/obj/item/clothing/mask/kitsunewhi/AltClick(mob/user)
-    if(face_hide_capable)
-        if(!user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
-            return ..()
-        toggle_face_hiding(user)
-        return TRUE
-    . = ..()
-    if(!user.canUseTopic(src, BE_CLOSE, ismonkey(user)))
-        return
-    adjustmask(user)
-    return TRUE
-
-/obj/item/clothing/mask/magickitsune
-	name = "Magical Kitsune Mask"
-	desc = "An oriental styled porcelain mask, this one is white and red. You can feel ancient power emitting from it!"
-	icon_state = "magickitsunemask"
-	item_state = "magickitsunemask"
-	clothing_flags = ALLOWINTERNALS
-	w_class = WEIGHT_CLASS_TINY
-	flags_cover = MASKCOVERSMOUTH
-	flags_inv = HIDEFACE|HIDEFACIALHAIR
-	visor_flags_inv = HIDEFACE|HIDEFACIALHAIR
-	visor_flags_cover = MASKCOVERSMOUTH
-	slot_flags = ITEM_SLOT_MASK
+/obj/item/clothing/mask/kitsune/black
+	poly_colors = list("#333333", "#CC9933", "#000000")
 
 /obj/item/clothing/mask/pig
 	name = "pig mask"
 	desc = "A rubber pig mask with a builtin voice modulator."
+	icon = 'icons/obj/clothing/masks/animal.dmi'
 	icon_state = "pig"
 	item_state = "pig"
 	flags_inv = HIDEFACE|HIDEHAIR|HIDEFACIALHAIR
@@ -257,6 +222,7 @@
 /obj/item/clothing/mask/frog
 	name = "frog mask"
 	desc = "An ancient mask carved in the shape of a frog.<br> Sanity is like gravity, all it needs is a push."
+	icon = 'icons/obj/clothing/masks/animal.dmi'
 	icon_state = "frog"
 	item_state = "frog"
 	flags_inv = HIDEFACE|HIDEHAIR|HIDEFACIALHAIR
@@ -313,6 +279,7 @@
 /obj/item/clothing/mask/horsehead
 	name = "horse head mask"
 	desc = "A mask made of soft vinyl and latex, representing the head of a horse."
+	icon = 'icons/obj/clothing/masks/animal.dmi'
 	icon_state = "horsehead"
 	item_state = "horsehead"
 	flags_inv = HIDEFACE|HIDEHAIR|HIDEFACIALHAIR|HIDEEYES|HIDEEARS
@@ -338,46 +305,46 @@
 /obj/item/clothing/mask/rat
 	name = "rat mask"
 	desc = "A mask made of soft vinyl and latex, representing the head of a rat."
+	icon = 'icons/obj/clothing/masks/animal.dmi'
 	icon_state = "rat"
-	item_state = "rat"
 	flags_inv = HIDEFACE
 	flags_cover = MASKCOVERSMOUTH
 
 /obj/item/clothing/mask/rat/fox
 	name = "fox mask"
 	desc = "A mask made of soft vinyl and latex, representing the head of a fox."
+	icon = 'icons/obj/clothing/masks/animal.dmi'
 	icon_state = "fox"
-	item_state = "fox"
 
 /obj/item/clothing/mask/rat/bee
 	name = "bee mask"
 	desc = "A mask made of soft vinyl and latex, representing the head of a bee."
+	icon = 'icons/obj/clothing/masks/animal.dmi'
 	icon_state = "bee"
-	item_state = "bee"
 
 /obj/item/clothing/mask/rat/bear
 	name = "bear mask"
 	desc = "A mask made of soft vinyl and latex, representing the head of a bear."
+	icon = 'icons/obj/clothing/masks/animal.dmi'
 	icon_state = "bear"
-	item_state = "bear"
 
 /obj/item/clothing/mask/rat/bat
 	name = "bat mask"
 	desc = "A mask made of soft vinyl and latex, representing the head of a bat."
+	icon = 'icons/obj/clothing/masks/animal.dmi'
 	icon_state = "bat"
-	item_state = "bat"
 
 /obj/item/clothing/mask/rat/raven
 	name = "raven mask"
 	desc = "A mask made of soft vinyl and latex, representing the head of a raven."
+	icon = 'icons/obj/clothing/masks/animal.dmi'
 	icon_state = "raven"
-	item_state = "raven"
 
 /obj/item/clothing/mask/rat/jackal
 	name = "jackal mask"
 	desc = "A mask made of soft vinyl and latex, representing the head of a jackal."
+	icon = 'icons/obj/clothing/masks/animal.dmi'
 	icon_state = "jackal"
-	item_state = "jackal"
 
 /obj/item/clothing/mask/rat/tribal
 	name = "tribal mask"
@@ -475,6 +442,7 @@
 /obj/item/clothing/mask/gondola
 	name = "gondola mask"
 	desc = "Genuine gondola fur."
+	icon = 'icons/obj/clothing/masks/animal.dmi'
 	icon_state = "gondola"
 	item_state = "gondola"
 	flags_inv = HIDEFACE|HIDEHAIR|HIDEFACIALHAIR
@@ -504,51 +472,24 @@
 	name = "paper mask"
 	desc = "A neat, circular mask made out of paper."
 	icon_state = "plainmask"
-	item_state = "plainmask"
+	icon = 'icons/obj/clothing/masks/paper_mask.dmi'
 	flags_inv = HIDEFACE|HIDEFACIALHAIR
 	resistance_flags = FLAMMABLE
 	max_integrity = 100
-	actions_types = list(/datum/action/item_action/adjust)
-	var/list/papermask_designs = list()
-
-
-/obj/item/clothing/mask/paper/Initialize(mapload)
-	. = ..()
-	papermask_designs = list(
-		"Blank" = image(icon = src.icon, icon_state = "plainmask"),
-		"Neutral" = image(icon = src.icon, icon_state = "neutralmask"),
-		"Eyes" = image(icon = src.icon, icon_state = "eyemask"),
-		"Sleeping" = image(icon = src.icon, icon_state = "sleepingmask"),
-		"Heart" = image(icon = src.icon, icon_state = "heartmask"),
-		"Core" = image(icon = src.icon, icon_state = "coremask"),
-		"Plus" = image(icon = src.icon, icon_state = "plusmask"),
-		"Square" = image(icon = src.icon, icon_state = "squaremask"),
-		"Bullseye" = image(icon = src.icon, icon_state = "bullseyemask"),
-		"Vertical" = image(icon = src.icon, icon_state = "verticalmask"),
-		"Horizontal" = image(icon = src.icon, icon_state = "horizontalmask"),
-		"X" = image(icon = src.icon, icon_state = "xmask"),
-		"Bugeyes" = image(icon = src.icon, icon_state = "bugmask"),
-		"Double" = image(icon = src.icon, icon_state = "doublemask"),
-		"Mark" = image(icon = src.icon, icon_state = "markmask")
-		)
-
-/obj/item/clothing/mask/paper/ui_action_click(mob/user)
-	if(!istype(user) || user.incapacitated())
-		return
-
-	var/static/list/options = list("Blank" = "plainmask", "Neutral" = "neutralmask", "Eyes" = "eyemask",
-							"Sleeping" ="sleepingmask", "Heart" = "heartmask", "Core" = "coremask",
-							"Plus" = "plusmask", "Square" ="squaremask", "Bullseye" = "bullseyemask",
-							"Vertical" = "verticalmask", "Horizontal" = "horizontalmask", "X" ="xmask",
-							"Bugeyes" = "bugmask", "Double" = "doublemask", "Mark" = "markmask")
-
-	var/choice = show_radial_menu(user, src, papermask_designs, custom_check = FALSE, radius = 36, require_near = TRUE)
-
-	if(src && choice && !user.incapacitated() && in_range(user,src))
-		icon_state = options[choice]
-		user.update_inv_wear_mask()
-		for(var/X in actions)
-			var/datum/action/A = X
-			A.UpdateButtons()
-		to_chat(user, "<span class='notice'>Your paper mask now has a [choice] symbol!</span>")
-		return TRUE
+	unique_reskin = list(
+		"Blank" = list(RESKIN_ICON_STATE = "plainmask"),
+		"Neutral" = list(RESKIN_ICON_STATE = "neutralmask"),
+		"Eyes" = list(RESKIN_ICON_STATE = "eyemask"),
+		"Sleeping" = list(RESKIN_ICON_STATE = "sleepingmask"),
+		"Heart" = list(RESKIN_ICON_STATE = "heartmask"),
+		"Core" = list(RESKIN_ICON_STATE = "coremask"),
+		"Plus" = list(RESKIN_ICON_STATE = "plusmask"),
+		"Square" = list(RESKIN_ICON_STATE = "squaremask"),
+		"Bullseye" = list(RESKIN_ICON_STATE = "bullseyemask"),
+		"Vertical" = list(RESKIN_ICON_STATE = "verticalmask"),
+		"Horizontal" = list(RESKIN_ICON_STATE = "horizontalmask"),
+		"X" = list(RESKIN_ICON_STATE = "xmask"),
+		"Bugeyes" = list(RESKIN_ICON_STATE = "bugmask"),
+		"Double" = list(RESKIN_ICON_STATE = "doublemask"),
+		"Mark" = list(RESKIN_ICON_STATE = "markmask")
+	)

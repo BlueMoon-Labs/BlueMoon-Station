@@ -1,3 +1,17 @@
+/obj/item/clothing/mask/magickitsune
+	name = "Magical Kitsune Mask"
+	desc = "An oriental styled porcelain mask, this one is white and red. You can feel ancient power emitting from it!"
+	icon_state = "magickitsunemask"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/mask.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/mask.dmi'
+	clothing_flags = ALLOWINTERNALS
+	w_class = WEIGHT_CLASS_TINY
+	flags_cover = MASKCOVERSMOUTH
+	flags_inv = HIDEFACE|HIDEFACIALHAIR
+	visor_flags_inv = HIDEFACE|HIDEFACIALHAIR
+	visor_flags_cover = MASKCOVERSMOUTH
+	slot_flags = ITEM_SLOT_MASK
+
 /obj/item/clothing/mask/magickitsune/equipped(mob/user, slot)
 	. = ..()
 	for(var/mob/living/M in get_hearers_in_view(4, user))
@@ -119,9 +133,9 @@
 	wearer.update_inv_wear_mask()
 	wearer.update_body()
 
-/obj/item/clothing/mask/gas/sechailer/star_dust/adjustmask(mob/living/user, just_flavor)
+/obj/item/clothing/mask/gas/sechailer/star_dust/adjustmask(mob/living/user)
 	. = ..()
-	if(. && !just_flavor)
+	if(.)
 		update_icon()
 
 /obj/item/modkit/star_dust_kit
@@ -179,3 +193,125 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/mask.dmi'
 	icon_state = "cybersun"
 	item_state = "cybersun"
+
+/obj/item/clothing/mask/gas/syndicate/hahun_mask
+	name = "MI13 infiltrator mask"
+	desc = "High-quality mask made of expensive materials, has a filtration system, as well as improved scanning of the environment. There are three lenses that shimmer red."
+	icon = 'modular_bluemoon/icons/obj/clothing/masks.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/masks.dmi'
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/clothing_righthand.dmi'
+	icon_state = "hahun_mask"
+	item_state = "hahun_mask"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	actions_types = list(/datum/action/item_action/masktakedown)
+	var/static/list/halt_sounds = list(
+		'modular_bluemoon/sound/effects/hahun_halt.ogg',
+		'modular_bluemoon/sound/effects/hahun_dontmove.ogg',
+		'modular_bluemoon/sound/effects/hahun_hold.ogg',
+		'modular_bluemoon/sound/effects/hahun_verdict.ogg'
+	)
+
+/obj/item/clothing/mask/gas/syndicate/hahun_mask/ui_action_click(mob/user, action)
+	if(istype(action, /datum/action/item_action/masktakedown))
+		masktakedown()
+
+/obj/item/clothing/mask/gas/syndicate/hahun_mask/verb/masktakedown()
+	set category = "Object"
+	set name = "TAKING DOWN!"
+	set src in usr
+	if(!isliving(usr))
+		return
+	if(!can_use(usr))
+		return
+
+	var/phrase = input("Какую фразу вы хотите сказать через преобразователь в маске?","") as text
+	phrase = reject_bad_text(phrase)
+	if(!phrase)
+		return
+
+	usr.say(message = phrase, spans = list("big warning"))
+	playsound(src.loc, pick(halt_sounds), 100, 0)
+
+/datum/action/item_action/masktakedown
+	name = "TAKING DOWN!"
+
+/obj/item/clothing/mask/gas/syndicate/hahun_mask/eidovox
+	name = "EIDOVOX Type-3"
+	desc = "A sealed, seamless shell with no visible apertures. The visor is a solid, matte surface — almost alive — reacting to light and movement, concealing the operator’s gaze behind a mirror \
+			of void. Lateral filtration conduits connect to a rear-mounted respiratory capsule, integrated directly into the cervical interface. The soft hum within isn’t the sound of filters — it’s the presence of active neural scanning. \
+			On the left side, the Eidolon insignia is etched into pseudo-osseous polymer. Fine strands of bioluminescent tracer lines arc across the surface, responding to the wearer’s vitals."
+	icon_state = "hahun_eidovox"
+	item_state = "hahun_eidovox"
+
+/////////////////////////////////////////////////////
+/obj/item/clothing/mask/gas/syndicate/legion
+	name = "Frank mask"
+	desc = "A mad smile that haunts its victims in their nightmares."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/mask/legion.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/mask/legion.dmi'
+	icon_state = "frank"
+	item_state = null
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	unique_reskin = list(
+		"Snout" = list(RESKIN_ICON_STATE = "frank_snout"),
+		"Basic" = list(RESKIN_ICON_STATE = "frank")
+	)
+
+/obj/item/clothing/mask/gas/syndicate/legion/julie
+	name = "Julie mask"
+	icon_state = "julie"
+	unique_reskin = list(
+		"Snout" = list(RESKIN_ICON_STATE = "julie_snout"),
+		"Basic" = list(RESKIN_ICON_STATE = "julie")
+	)
+
+/obj/item/clothing/mask/gas/syndicate/legion/joey
+	name = "Joey mask"
+	icon_state = "joey"
+	unique_reskin = list(
+		"Snout" = list(RESKIN_ICON_STATE = "joey_snout"),
+		"Basic" = list(RESKIN_ICON_STATE = "joey")
+	)
+
+/obj/item/clothing/mask/gas/syndicate/legion/susie
+	name = "Susie mask"
+	icon_state = "susie"
+	unique_reskin = list(
+		"Snout" = list(RESKIN_ICON_STATE = "susie_snout"),
+		"Basic" = list(RESKIN_ICON_STATE = "susie")
+	)
+
+/obj/item/clothing/mask/gas/syndicate/horror_mask
+	name = "Зловещая маска"
+	desc = "Серо-бледное лицо с потускневшими блондинистыми волосами. Чёрные прорези на месте глаз смотрят прямиком в душу."
+	icon_state = "horror_mask"
+	item_state = null
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/mask.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/mask.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	flags_inv = HIDEHAIR|HIDEFACIALHAIR
+
+/obj/item/clothing/mask/gas/syndicate/pmc_skull_mask
+	name = "Skull mask"
+	desc = "No fear, no regrets, no mercy."
+	icon_state = "pmc_skull_mask"
+	item_state = null
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/mask.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/mask.dmi'
+	clothing_flags = ALLOWINTERNALS
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
+	flags_inv = HIDEHAIR|HIDEFACIALHAIR|HIDEFACE|HIDEEARS
+	unique_reskin = list(
+		"Blood" = list(RESKIN_ICON_STATE = "pmc_skull_mask_blood"),
+		"Basic" = list(RESKIN_ICON_STATE = "pmc_skull_mask")
+	)
+
+/obj/item/clothing/mask/gas/syndicate/wypmc_gasmask
+	name = "Arctic PMC gasmask"
+	desc = "A specialized gas mask for special police units. It is a fairly good individual means of protection for the respiratory system, eyes, and face from toxic substances, radioactive dust, and combustion products."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/mask.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/masks.dmi'
+	icon_state = "wypmcgasmask"
+	item_state = "wypmcgasmask"
+	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON

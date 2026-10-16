@@ -537,6 +537,10 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 			temp.portallight -= src
 	QDEL_NULL(portal_settings)
 	QDEL_NULL(held_target_action)
+	for(var/obj/item/clothing/underwear/briefs/panties/portalpanties/panties as anything in GLOB.portalpanties)
+		LAZYREMOVE(panties.portallight, src)
+		if(panties.private_pair == src)
+			panties.private_pair = null
 	private_pair = null
 	GLOB.fleshlight_portallight -= src
 	return ..()
@@ -569,6 +573,10 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 	// предметов. Проходим по всем владельцам списка сами.
 	for(var/obj/item/portallight/light as anything in GLOB.fleshlight_portallight)
 		light.available_panties -= src
+		if(light.portalunderwear == src)
+			light.portalunderwear = null
+		if(light.private_pair == src)
+			light.private_pair = null
 	return ..()
 
 // Переименование трусиков

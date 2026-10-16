@@ -17,12 +17,17 @@
 
 /datum/gear/mask/kitsune
 	name = "White Kitsune Mask"
-	path = /obj/item/clothing/mask/kitsunewhi
+	path = /obj/item/clothing/mask/kitsune
+	loadout_initial_colors = list("#FFFFFF", "#CC0000", "#000000")
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	cost = 2
 
 /datum/gear/mask/black_kitsune
 	name = "Black Kitsune Mask"
-	path = /obj/item/clothing/mask/kitsuneblk
+	path = /obj/item/clothing/mask/kitsune/black
+	loadout_initial_colors = list("#333333", "#CC9933", "#000000")
+	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
+	item_icon_state = "kitsune_black"
 	cost = 2
 
 /datum/gear/mask/gas
