@@ -437,16 +437,11 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 		switch(tab)
 			if(HAIR_PICKER_TAB_HAIR)
 				prefs.hair_style = selected
-				if(!isnull(preview_hair_color))
-					prefs.hair_color = preview_hair_color
 			if(HAIR_PICKER_TAB_FACIAL)
 				prefs.facial_hair_style = selected
-				if(!isnull(preview_facial_color))
-					prefs.facial_hair_color = preview_facial_color
 			if(HAIR_PICKER_TAB_GRAD)
 				prefs.grad_style = selected
-				if(!isnull(preview_grad_color))
-					prefs.grad_color = preview_grad_color
+		apply_preview_colors()
 		prefs.ShowChoices(user, rebuild_preview = TRUE)
 		return TRUE
 
@@ -457,8 +452,8 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	if(!user.canUseTopic(target, BE_CLOSE, FALSE, NO_TK, TRUE, TRUE))
 		return FALSE
 	// Спрей мог оказаться вне рук между выбором цвета и Apply.
-	var/new_color = get_preview_color()
-	if(!isnull(new_color) && !can_change_color(user))
+	var/has_color_changes = !isnull(preview_hair_color) || !isnull(preview_facial_color) || !isnull(preview_grad_color)
+	if(has_color_changes && !can_change_color(user))
 		return FALSE
 	if(apply_callback)
 		if(QDELETED(apply_callback) || (apply_callback.object != GLOBAL_PROC && QDELETED(apply_callback.object)))
@@ -467,7 +462,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 			return FALSE
 		if(QDELETED(src) || QDELETED(target))
 			return FALSE
-		if(apply_target_color(new_color))
+		if(apply_preview_colors())
 			target.update_hair()
 		return TRUE
 	switch(tab)
@@ -480,7 +475,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	// Зеркало: женщины всегда с бритой - как и раньше.
 	if(mode == HAIR_PICKER_MODE_MIRROR && target.gender == FEMALE)
 		target.facial_hair_style = "Shaved"
-	apply_target_color(new_color)
+	apply_preview_colors()
 	target.update_hair()
 	if(mode == HAIR_PICKER_MODE_MIRROR)
 		target.update_mutant_bodyparts()
@@ -488,27 +483,27 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 		playsound(check_atom, apply_sound, 20, TRUE)
 	return TRUE
 
-/datum/hair_style_picker/proc/get_preview_color()
-	switch(tab)
-		if(HAIR_PICKER_TAB_HAIR)
-			return preview_hair_color
-		if(HAIR_PICKER_TAB_FACIAL)
-			return preview_facial_color
-		if(HAIR_PICKER_TAB_GRAD)
-			return preview_grad_color
-
-/// Вызывается только после успешного применения стиля.
-/datum/hair_style_picker/proc/apply_target_color(new_color)
-	if(isnull(new_color))
-		return FALSE
-	switch(tab)
-		if(HAIR_PICKER_TAB_HAIR)
-			target.hair_color = new_color
-		if(HAIR_PICKER_TAB_FACIAL)
-			target.facial_hair_color = new_color
-		if(HAIR_PICKER_TAB_GRAD)
-			target.grad_color = new_color
-	return TRUE
+/// После успешного применения стиля сохраняем все выбранные цвета доступных вкладок.
+/datum/hair_style_picker/proc/apply_preview_colors()
+	. = FALSE
+	if((HAIR_PICKER_TAB_HAIR in allowed_tabs) && !isnull(preview_hair_color))
+		if(prefs)
+			prefs.hair_color = preview_hair_color
+		else
+			target.hair_color = preview_hair_color
+		. = TRUE
+	if((HAIR_PICKER_TAB_FACIAL in allowed_tabs) && !isnull(preview_facial_color))
+		if(prefs)
+			prefs.facial_hair_color = preview_facial_color
+		else
+			target.facial_hair_color = preview_facial_color
+		. = TRUE
+	if((HAIR_PICKER_TAB_GRAD in allowed_tabs) && !isnull(preview_grad_color))
+		if(prefs)
+			prefs.grad_color = preview_grad_color
+		else
+			target.grad_color = preview_grad_color
+		. = TRUE
 
 // яндере-дев
 /datum/hair_style_picker/proc/applied_hair()
