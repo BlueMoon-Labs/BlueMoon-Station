@@ -538,7 +538,8 @@ GLOBAL_LIST_EMPTY(world_distortion_masters)
 		else
 			remove_filter("lighting_blur")
 			remove_filter("lighting_blur_edge_fix")
-	remove_filter("user_brightness")
+	//Яркость матрицей в color, а не фильтром: color мастер накладывает без отдельного прохода рендера.
+	color = null
 	if(is_fast)
 		// В режиме Быстро - стандартное освещение до LightUp, без пользовательской яркости
 		return
@@ -550,13 +551,7 @@ GLOBAL_LIST_EMPTY(world_distortion_masters)
 	var/mapped = brightness * 0.6
 	var/ratio = (mapped - LIGHTING_BRIGHTNESS_DEFAULT) / 200
 	if(ratio != 0)
-		add_filter("user_brightness", 5, color_matrix_filter(list(
-			1,0,0,0,
-			0,1,0,0,
-			0,0,1,0,
-			0,0,0,1,
-			ratio, ratio, ratio, 0
-		)))
+		color = list(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1, ratio,ratio,ratio,0)
 
 /// Прячем этаж - забираем и его подложки: без видимого мастера белый lit-квадрат рисуется сырым.
 /atom/movable/screen/plane_master/lighting/hide_from(mob/oldmob)
@@ -682,7 +677,7 @@ GLOBAL_LIST_EMPTY(world_distortion_masters)
 	add_filter("lamps_game_mask", 1, alpha_mask_filter(render_source = "[home?.use_render_plates ? "*" : ""][OFFSET_RENDER_TARGET(GAME_PLANE_RENDER_TARGET, offset)]", flags = MASK_INVERSE))
 
 /atom/movable/screen/plane_master/lamps/backdrop(mob/mymob)
-	remove_filter("user_brightness")
+	color = null
 	if(mymob?.client?.prefs?.lighting_quality == LIGHTING_QUALITY_FAST)
 		return
 	var/brightness = mymob?.client?.prefs?.lighting_lamp_brightness
@@ -693,13 +688,7 @@ GLOBAL_LIST_EMPTY(world_distortion_masters)
 	var/mapped = 60 + brightness * 0.4
 	var/ratio = (mapped - LIGHTING_LAMP_BRIGHTNESS_DEFAULT) / 200
 	if(ratio != 0)
-		add_filter("user_brightness", 5, color_matrix_filter(list(
-			1,0,0,0,
-			0,1,0,0,
-			0,0,1,0,
-			0,0,0,1,
-			ratio, ratio, ratio, 0
-		)))
+		color = list(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1, ratio,ratio,ratio,0)
 
 /atom/movable/screen/plane_master/lamps/floor
 	name = "floor lamps plane master"
@@ -722,7 +711,7 @@ GLOBAL_LIST_EMPTY(world_distortion_masters)
 
 /atom/movable/screen/plane_master/exposure/backdrop(mob/mymob)
 	remove_filter("blur_exposure")
-	remove_filter("user_brightness")
+	color = null
 	alpha = 0
 	var/datum/preferences/prefs = viewer_prefs(mymob)
 	if(!prefs || prefs.lighting_quality == LIGHTING_QUALITY_FAST)
@@ -734,20 +723,8 @@ GLOBAL_LIST_EMPTY(world_distortion_masters)
 	var/mapped = 60 + brightness * 0.4
 	var/ratio = (mapped - LIGHTING_LAMP_BRIGHTNESS_DEFAULT) / 200
 	if(ratio != 0)
-		add_filter("user_brightness", 5, color_matrix_filter(list(
-			1,0,0,0,
-			0,1,0,0,
-			0,0,1,0,
-			0,0,0,1,
-			ratio, ratio, ratio, 0
-		)))
-	var/has_legacy_light_pref = ("light" in prefs.vars)
-	var/enabled = TRUE
-	if(has_legacy_light_pref)
-		enabled = (prefs.light & LIGHT_EXPOSURE)
-	else
-		enabled = (prefs.lighting_blur >= 1)
-	if(enabled)
+		color = list(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1, ratio,ratio,ratio,0)
+	if(prefs.lighting_blur >= 1)
 		alpha = is_eye_floor ? 255 : 0
 		var/bloom_intensity = prefs.lighting_bloom_intensity
 		if(isnull(bloom_intensity))
@@ -778,7 +755,7 @@ GLOBAL_LIST_EMPTY(world_distortion_masters)
 /atom/movable/screen/plane_master/lamps_selfglow/backdrop(mob/mymob)
 	remove_filter("add_lamps_to_selfglow")
 	remove_filter("lamps_selfglow_bloom")
-	remove_filter("user_brightness")
+	color = null
 	var/datum/preferences/prefs = viewer_prefs(mymob)
 	if(!prefs || prefs.lighting_quality == LIGHTING_QUALITY_FAST)
 		return
@@ -789,32 +766,17 @@ GLOBAL_LIST_EMPTY(world_distortion_masters)
 	var/mapped = 60 + brightness * 0.4
 	var/ratio = (mapped - LIGHTING_LAMP_BRIGHTNESS_DEFAULT) / 200
 	if(ratio != 0)
-		add_filter("user_brightness", 5, color_matrix_filter(list(
-			1,0,0,0,
-			0,1,0,0,
-			0,0,1,0,
-			0,0,0,1,
-			ratio, ratio, ratio, 0
-		)))
-	var/has_legacy_light_pref = ("light" in prefs.vars)
-	var/has_glowlevel = ("glowlevel" in prefs.vars)
+		color = list(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1, ratio,ratio,ratio,0)
 	var/level
-	if(has_legacy_light_pref && has_glowlevel)
-		if(!(prefs.light & LIGHT_NEW_LIGHTING))
-			return
-		level = prefs.glowlevel
-	else
-		var/blur = prefs.lighting_blur || 0
-		if(blur <= 0)
-			return
-		else if(blur == 1)
+	switch(prefs.lighting_blur)
+		if(1 to 2)
 			level = GLOW_LOW
-		else if(blur == 2)
+		if(3)
 			level = GLOW_MED
 		if(4 to INFINITY)
 			level = GLOW_HIGH
-	if(isnull(level))
-		return
+		else
+			return
 	var/bloomsize = 0
 	var/bloomoffset = 0
 	switch(level)
@@ -862,7 +824,7 @@ GLOBAL_LIST_EMPTY(world_distortion_masters)
 /atom/movable/screen/plane_master/lamps_glare/backdrop(mob/mymob)
 	remove_filter("add_lamps_to_glare")
 	remove_filter("lamps_glare")
-	remove_filter("user_brightness")
+	color = null
 	var/datum/preferences/prefs = viewer_prefs(mymob)
 	if(!prefs || prefs.lighting_quality == LIGHTING_QUALITY_FAST)
 		return
@@ -873,20 +835,8 @@ GLOBAL_LIST_EMPTY(world_distortion_masters)
 	var/mapped = 60 + brightness * 0.4
 	var/ratio = (mapped - LIGHTING_LAMP_BRIGHTNESS_DEFAULT) / 200
 	if(ratio != 0)
-		add_filter("user_brightness", 5, color_matrix_filter(list(
-			1,0,0,0,
-			0,1,0,0,
-			0,0,1,0,
-			0,0,0,1,
-			ratio, ratio, ratio, 0
-		)))
-	var/has_legacy_light_pref = ("light" in prefs.vars)
-	var/enabled = TRUE
-	if(has_legacy_light_pref)
-		enabled = (prefs.light & LIGHT_GLARE)
-	else
-		enabled = (prefs.lighting_blur >= 2)
-	if(enabled)
+		color = list(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1, ratio,ratio,ratio,0)
+	if(prefs.lighting_blur >= 2)
 		add_filter("add_lamps_to_glare", 1, layering_filter(render_source = OFFSET_RENDER_TARGET(target_rendering, offset), blend_mode = BLEND_ADD))
 		// Комфортнее: чуть слабее radial blur
 		add_filter("lamps_glare", 1, radial_blur_filter(size = 0.025))
