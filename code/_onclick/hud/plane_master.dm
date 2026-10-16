@@ -84,6 +84,8 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/plane_master)
 	//Искажения ставим только этажу глаза, дальше их двигает sync_to_viewer().
 	if(wants_vision_cone)
 		add_filter("vision_cone", 100, list(type = "alpha", render_source = OFFSET_RENDER_TARGET(FIELD_OF_VISION_RENDER_TARGET, offset), flags = MASK_INVERSE))
+	if(wants_world_distortion)
+		GLOB.world_distortion_masters += src
 	if(wants_world_distortion && !offset)
 		world_distortion_applied = TRUE
 		apply_world_distortion()
@@ -153,6 +155,7 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/plane_master)
 
 /atom/movable/screen/plane_master/Destroy()
 	stop_singularity_filters()
+	GLOB.world_distortion_masters -= src
 	if(home)
 		home.plane_masters -= "[plane]"
 		home = null
@@ -264,13 +267,16 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/plane_master)
 	plane = OPENSPACE_PLANE
 	appearance_flags = PLANE_MASTER
 	render_relay_planes = list(RENDER_PLANE_GAME_WORLD)
-	wants_world_distortion = TRUE
 	wants_vision_cone = TRUE
 
 /// Искажения мира: гравитационный импульс и четыре ступени сингулярности.
 /atom/movable/screen/plane_master/proc/apply_world_distortion()
 	queue_filter("displacer", 1, displacement_map_filter(render_source = OFFSET_RENDER_TARGET(GRAVITY_PULSE_RENDER_TARGET, offset), size = 10))
-
+	if(!length(GLOB.gravitational_lenses))
+		for(var/filter_name in GLOB.singularity_filter_names)
+			LAZYREMOVE(filter_data, filter_name)
+		update_filters()
+		return
 	queue_filter("singularity_0", 1, displacement_map_filter(render_source = OFFSET_RENDER_TARGET(SINGULARITY_0_RENDER_TARGET, offset), size = -20))
 	queue_filter("singularity_1", 2, displacement_map_filter(render_source = OFFSET_RENDER_TARGET(SINGULARITY_1_RENDER_TARGET, offset), size = 75))
 	queue_filter("singularity_2", 3, displacement_map_filter(render_source = OFFSET_RENDER_TARGET(SINGULARITY_2_RENDER_TARGET, offset), size = 400))
@@ -290,7 +296,7 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/plane_master)
 		return
 	stop_singularity_filters()
 	. = ..()
-	if(world_distortion_applied)
+	if(world_distortion_applied && get_filter("singularity_0"))
 		animate_singularity_filters()
 
 /// Глаз сменил этаж: искажения и декор встают на плоскость одной пересборкой фильтров.
@@ -370,6 +376,14 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/plane_master)
 			animate(existing)
 
 GLOBAL_LIST_INIT(singularity_filter_names, list("singularity_0", "singularity_1", "singularity_2", "singularity_3"))
+/// Сингулярности с линзой: пока их нет, мастера не держат её фильтры и бесконечные анимации.
+GLOBAL_LIST_EMPTY(gravitational_lenses)
+GLOBAL_LIST_EMPTY(world_distortion_masters)
+
+/proc/refresh_world_distortion()
+	for(var/atom/movable/screen/plane_master/master as anything in GLOB.world_distortion_masters)
+		if(master.world_distortion_applied)
+			master.apply_world_distortion()
 
 /atom/movable/screen/plane_master/proc/apply_ambient_occlusion(mob/mymob, strength, color)
 	if(!mymob?.client?.prefs?.ambientocclusion)
@@ -391,7 +405,6 @@ GLOBAL_LIST_INIT(singularity_filter_names, list("singularity_0", "singularity_1"
 	render_relay_planes = list(RENDER_PLANE_GAME_WORLD)
 	appearance_flags = PLANE_MASTER
 	blend_mode = BLEND_OVERLAY
-	wants_world_distortion = TRUE
 	eye_floor_filters = list("ambient_occlusion")
 
 /atom/movable/screen/plane_master/floor/backdrop(mob/mymob)
@@ -402,7 +415,6 @@ GLOBAL_LIST_INIT(singularity_filter_names, list("singularity_0", "singularity_1"
 	plane = WALL_PLANE
 	render_relay_planes = list(RENDER_PLANE_GAME_WORLD)
 	appearance_flags = PLANE_MASTER
-	wants_world_distortion = TRUE
 	wants_vision_cone = TRUE
 	eye_floor_filters = list("ambient_occlusion")
 
@@ -414,7 +426,6 @@ GLOBAL_LIST_INIT(singularity_filter_names, list("singularity_0", "singularity_1"
 	plane = ABOVE_WALL_PLANE
 	render_relay_planes = list(RENDER_PLANE_GAME_WORLD)
 	appearance_flags = PLANE_MASTER
-	wants_world_distortion = TRUE
 	wants_vision_cone = TRUE
 	eye_floor_filters = list("ambient_occlusion")
 
@@ -429,7 +440,6 @@ GLOBAL_LIST_INIT(singularity_filter_names, list("singularity_0", "singularity_1"
 	appearance_flags = PLANE_MASTER //should use client color
 	blend_mode = BLEND_OVERLAY
 	render_target = GAME_PLANE_RENDER_TARGET
-	wants_world_distortion = TRUE
 	wants_vision_cone = TRUE
 	eye_floor_filters = list("ambient_occlusion")
 
@@ -495,7 +505,6 @@ GLOBAL_LIST_INIT(singularity_filter_names, list("singularity_0", "singularity_1"
 	render_relay_planes = list(RENDER_PLANE_GAME_WORLD)
 	blend_mode = BLEND_MULTIPLY
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	wants_world_distortion = TRUE
 	eye_floor_filters = list("lighting_blur", "lighting_blur_edge_fix")
 	/// update_sight() переставляет порог на каждом шаге, а пересборка фильтров дорогая.
 	var/applied_cutoff_key
@@ -574,16 +583,6 @@ GLOBAL_LIST_INIT(singularity_filter_names, list("singularity_0", "singularity_1"
 	apply_light_cutoff(0)
 	if(!home?.use_render_plates)
 		add_filter("object_lighting", 3, alpha_mask_filter(render_source = OFFSET_RENDER_TARGET(O_LIGHTING_VISUAL_RENDER_TARGET, offset), flags = MASK_INVERSE))
-
-/// Маски эмиссива и оверлейного света ложатся раньше искажений, иначе линза сингулярности размажет вырезанные ими дырки.
-/atom/movable/screen/plane_master/lighting/apply_world_distortion()
-	queue_filter("singularity_0", 4, displacement_map_filter(render_source = OFFSET_RENDER_TARGET(SINGULARITY_0_RENDER_TARGET, offset), size = -20))
-	queue_filter("singularity_1", 4, displacement_map_filter(render_source = OFFSET_RENDER_TARGET(SINGULARITY_1_RENDER_TARGET, offset), size = 75))
-	queue_filter("singularity_2", 4, displacement_map_filter(render_source = OFFSET_RENDER_TARGET(SINGULARITY_2_RENDER_TARGET, offset), size = 400))
-	queue_filter("singularity_3", 4, displacement_map_filter(render_source = OFFSET_RENDER_TARGET(SINGULARITY_3_RENDER_TARGET, offset), size = 700))
-
-	queue_filter("displacer", 5, displacement_map_filter(render_source = OFFSET_RENDER_TARGET(GRAVITY_PULSE_RENDER_TARGET, offset), size = 10))
-	update_filters()
 
 /atom/movable/screen/plane_master/lighting/proc/apply_light_cutoff(cutoff, list/color_cutoffs)
 	var/cutoff_key = "[cutoff]|[islist(color_cutoffs) ? jointext(color_cutoffs, ",") : "-"]"
@@ -812,7 +811,7 @@ GLOBAL_LIST_INIT(singularity_filter_names, list("singularity_0", "singularity_1"
 			level = GLOW_LOW
 		else if(blur == 2)
 			level = GLOW_MED
-		else
+		if(4 to INFINITY)
 			level = GLOW_HIGH
 	if(isnull(level))
 		return
@@ -918,7 +917,6 @@ GLOBAL_LIST_INIT(singularity_filter_names, list("singularity_0", "singularity_1"
 	name = "parallax backdrop/space turf plane master"
 	plane = PLANE_SPACE
 	render_relay_planes = list(RENDER_PLANE_GAME_WORLD)
-	wants_world_distortion = TRUE
 
 ///Надсветовое: лампочки шлюзов, искры, свечение флоры, иконки билдмода. Свет его не гасит - реле плиты лежит слоем выше реле освещения.
 /atom/movable/screen/plane_master/above_lighting
