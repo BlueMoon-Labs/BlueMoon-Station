@@ -34,10 +34,15 @@
 	open_live_hair_style_picker(user, human_target, src, list("grad"), CALLBACK(src, PROC_REF(apply_hair_gradient), user, human_target))
 
 /obj/item/dyespray/proc/apply_hair_gradient(mob/user, mob/living/carbon/human/human_target, new_grad_style, tab, new_grad_color)
+	if(tab != "grad" || !(new_grad_style in GLOB.hair_gradients_list))
+		return FALSE
 	if(!can_dye_target(user, human_target))
 		return FALSE
 	if(!can_change_color)
 		new_grad_color = get_dye_color(human_target)
+	if(!istext(new_grad_color) || !length(new_grad_color))
+		return FALSE
+	new_grad_color = sanitize_hexcolor(new_grad_color, 6)
 
 	if(user == human_target)
 		user.visible_message(span_notice("[user] начинает окрашивать свои волосы."), span_notice("Вы начинаете окрашивать свои волосы."), span_notice("Вы слышите звук баллончика с краской."))

@@ -351,7 +351,11 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 			if(applying)
 				return
 			applying = TRUE
-			var/changed = change_color(user)
+			var/changed = FALSE
+			try
+				changed = change_color(user)
+			catch(var/exception/color_error)
+				stack_trace("hair_style_picker: ошибка выбора цвета: [color_error]")
 			if(QDELETED(src))
 				return
 			applying = FALSE
@@ -367,8 +371,13 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 					return
 				selected = candidate
 			applying = TRUE
-			ui?.close()
-			apply_selection(user, ui)
+			try
+				ui?.close()
+				apply_selection(user, ui)
+			catch(var/exception/apply_error)
+				stack_trace("hair_style_picker: ошибка применения выбора: [apply_error]")
+			if(QDELETED(src))
+				return
 			applying = FALSE
 			destroy_if_idle()
 			return
@@ -421,6 +430,8 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 
 /datum/hair_style_picker/proc/apply_selection(mob/user, datum/tgui/ui)
 	if(!user || !selected)
+		return FALSE
+	if(!(tab in allowed_tabs) || !(selected in get_tab_full_list()))
 		return FALSE
 	if(prefs)
 		switch(tab)
