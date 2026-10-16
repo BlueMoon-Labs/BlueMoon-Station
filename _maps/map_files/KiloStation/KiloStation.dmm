@@ -8930,11 +8930,11 @@
 	},
 /area/maintenance/port/fore)
 "arc" = (
-/obj/machinery/rnd/destructive_analyzer,
 /obj/effect/turf_decal/bot,
 /obj/effect/turf_decal/tile/neutral/anticorner/contrasted{
 	dir = 1
 	},
+/obj/machinery/rnd/production/protolathe/department/science,
 /turf/open/floor/plasteel/dark,
 /area/science/lab)
 "ard" = (
@@ -23415,7 +23415,6 @@
 /turf/open/floor/plasteel/dark,
 /area/science/storage)
 "aUm" = (
-/obj/machinery/rnd/production/protolathe/department/science,
 /obj/effect/turf_decal/bot,
 /obj/machinery/camera{
 	c_tag = "Research Lab";
@@ -23427,6 +23426,7 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},
+/obj/machinery/rnd/destructive_analyzer,
 /turf/open/floor/plasteel/dark,
 /area/science/lab)
 "aUn" = (
@@ -27986,12 +27986,10 @@
 /area/service/hydroponics)
 "bdG" = (
 /obj/effect/turf_decal/bot,
-/obj/machinery/computer/rdconsole{
-	dir = 4
-	},
 /obj/effect/turf_decal/tile/neutral/anticorner/contrasted{
 	dir = 8
 	},
+/obj/machinery/rnd/production/circuit_imprinter/department/science,
 /turf/open/floor/plasteel/dark,
 /area/science/lab)
 "bdH" = (
@@ -28033,7 +28031,6 @@
 /turf/open/floor/plasteel,
 /area/service/hydroponics)
 "bdM" = (
-/obj/machinery/rnd/production/circuit_imprinter/department/science,
 /obj/effect/turf_decal/bot,
 /obj/machinery/requests_console{
 	department = "Research Lab";
@@ -28044,6 +28041,9 @@
 	pixel_x = 30
 	},
 /obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/machinery/computer/rdconsole{
 	dir = 8
 	},
 /turf/open/floor/plasteel/dark,
@@ -30788,9 +30788,9 @@
 "bjc" = (
 /obj/machinery/door/firedoor,
 /obj/machinery/door/airlock/mining/glass{
-	name = "Mining Dock"
+	name = "Mining Dock";
+	req_access_txt = "48"
 	},
-/obj/effect/mapping_helpers/airlock/access/all/supply/mining,
 /turf/open/floor/plasteel/dark,
 /area/cargo/miningoffice)
 "bjd" = (
@@ -30882,7 +30882,8 @@
 	dir = 4
 	},
 /obj/machinery/door/airlock/external{
-	name = "Mining Dock Airlock"
+	name = "Mining Dock Airlock";
+	req_access_txt = "48"
 	},
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 4
@@ -30893,7 +30894,6 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 8
 	},
-/obj/effect/mapping_helpers/airlock/access/all/supply/mining,
 /turf/open/floor/plasteel/dark,
 /area/cargo/miningoffice)
 "bjn" = (
@@ -31486,9 +31486,9 @@
 	dir = 4
 	},
 /obj/machinery/door/airlock/mining/glass{
-	name = "Mining Dock"
+	name = "Mining Dock";
+	req_access_txt = "48"
 	},
-/obj/effect/mapping_helpers/airlock/access/all/supply/mining,
 /turf/open/floor/plasteel/dark,
 /area/cargo/miningoffice)
 "bkE" = (
@@ -32470,15 +32470,14 @@
 /area/service/bar/atrium)
 "bnb" = (
 /obj/machinery/door/airlock/external/glass{
-	name = "Supply Door Airlock"
+	name = "Supply Door Airlock";
+	req_access_txt = "31"
 	},
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 8
 	},
 /obj/effect/decal/cleanable/dirt,
-/obj/effect/mapping_helpers/airlock/access/all/supply/general,
 /obj/structure/fans/tiny,
-/obj/effect/mapping_helpers/airlock/access/all/supply/mining,
 /turf/open/floor/plasteel/dark,
 /area/cargo/storage)
 "bnd" = (
@@ -32866,10 +32865,9 @@
 	dir = 4
 	},
 /obj/machinery/door/airlock/mining{
-	name = "Cargo Bay"
+	name = "Cargo Bay";
+	req_one_access_txt = "50;48"
 	},
-/obj/effect/mapping_helpers/airlock/access/all/supply/general,
-/obj/effect/mapping_helpers/airlock/access/all/supply/mining,
 /turf/open/floor/plasteel/dark,
 /area/cargo/office)
 "bof" = (
@@ -33407,14 +33405,13 @@
 "bpr" = (
 /obj/machinery/door/firedoor,
 /obj/machinery/door/airlock/mining/glass{
-	name = "Cargo Office"
+	name = "Cargo Office";
+	req_one_access_txt = "50;48"
 	},
 /obj/structure/disposalpipe/segment{
 	dir = 4
 	},
-/obj/effect/mapping_helpers/airlock/access/all/supply/general,
 /obj/effect/landmark/navigate_destination/cargo,
-/obj/effect/mapping_helpers/airlock/access/all/supply/mining,
 /turf/open/floor/plasteel/dark,
 /area/cargo/office)
 "bps" = (
@@ -33481,7 +33478,8 @@
 "bpx" = (
 /obj/machinery/door/firedoor,
 /obj/machinery/door/airlock/mining{
-	name = "Cargo Bay"
+	name = "Cargo Bay";
+	req_one_access_txt = "50;48"
 	},
 /obj/structure/disposalpipe/segment{
 	dir = 4
@@ -33489,8 +33487,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/obj/effect/mapping_helpers/airlock/access/all/supply/general,
-/obj/effect/mapping_helpers/airlock/access/all/supply/mining,
 /turf/open/floor/plasteel/dark,
 /area/cargo/office)
 "bpy" = (
@@ -37902,13 +37898,12 @@
 /area/cargo/storage)
 "byK" = (
 /obj/machinery/door/airlock/external/glass{
-	name = "Supply Door Airlock"
+	name = "Supply Door Airlock";
+	req_access_txt = "31"
 	},
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 4
 	},
-/obj/effect/mapping_helpers/airlock/access/all/supply/general,
-/obj/effect/mapping_helpers/airlock/access/all/supply/mining,
 /turf/open/floor/plasteel/dark,
 /area/cargo/storage)
 "byL" = (
@@ -38904,7 +38899,8 @@
 "bAG" = (
 /obj/machinery/door/firedoor,
 /obj/machinery/door/airlock/mining/glass{
-	name = "Mailroom"
+	name = "Mailroom";
+	req_access_txt = "50"
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
 	dir = 4
@@ -38918,7 +38914,6 @@
 /obj/effect/mapping_helpers/airlock/cyclelink_helper_multi{
 	cycle_id = "cargo-mailroom"
 	},
-/obj/effect/mapping_helpers/airlock/access/all/supply/shipping,
 /turf/open/floor/plasteel/dark,
 /area/cargo/sorting)
 "bAH" = (
@@ -39077,14 +39072,13 @@
 /area/hallway/primary/starboard)
 "bAY" = (
 /obj/machinery/door/airlock/external/glass{
-	name = "Supply Door Airlock"
+	name = "Supply Door Airlock";
+	req_access_txt = "31"
 	},
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 4
 	},
 /obj/effect/decal/cleanable/dirt,
-/obj/effect/mapping_helpers/airlock/access/all/supply/general,
-/obj/effect/mapping_helpers/airlock/access/all/supply/mining,
 /turf/open/floor/plasteel/dark,
 /area/cargo/storage)
 "bBa" = (
@@ -45990,7 +45984,8 @@
 "bOv" = (
 /obj/machinery/door/firedoor,
 /obj/machinery/door/airlock/mining/glass{
-	name = "Mailroom"
+	name = "Mailroom";
+	req_access_txt = "50"
 	},
 /obj/structure/disposalpipe/segment{
 	dir = 4
@@ -45998,7 +45993,6 @@
 /obj/effect/mapping_helpers/airlock/cyclelink_helper_multi{
 	cycle_id = "cargo-mailroom"
 	},
-/obj/effect/mapping_helpers/airlock/access/all/supply/shipping,
 /turf/open/floor/plasteel/dark,
 /area/cargo/sorting)
 "bOx" = (
@@ -70621,14 +70615,13 @@
 /area/maintenance/port/greater)
 "epW" = (
 /obj/machinery/door/airlock/external/glass{
-	name = "Supply Door Airlock"
+	name = "Supply Door Airlock";
+	req_access_txt = "31"
 	},
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 8
 	},
-/obj/effect/mapping_helpers/airlock/access/all/supply/general,
 /obj/structure/fans/tiny,
-/obj/effect/mapping_helpers/airlock/access/all/supply/mining,
 /turf/open/floor/plasteel/dark,
 /area/cargo/storage)
 "eqI" = (
@@ -93833,7 +93826,8 @@
 "xtt" = (
 /obj/effect/decal/cleanable/blood/old,
 /obj/machinery/door/airlock/external{
-	name = "Mining Dock Airlock"
+	name = "Mining Dock Airlock";
+	req_access_txt = "48"
 	},
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 8
@@ -93847,7 +93841,6 @@
 /obj/machinery/atmospherics/pipe/simple/general/visible{
 	dir = 4
 	},
-/obj/effect/mapping_helpers/airlock/access/all/supply/mining,
 /obj/structure/fans/tiny,
 /turf/open/floor/plasteel/dark,
 /area/cargo/miningoffice)
