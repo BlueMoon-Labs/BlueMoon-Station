@@ -424,7 +424,8 @@
 /// A "Locked" console with no explanation reads as a bug to the crew, so spell the reason out.
 /obj/machinery/computer/shuttle/sol_inspection/ui_data(mob/user)
 	. = ..()
-	var/datum/team/sol_inspection/team = SSshuttle.getShuttle(shuttleId)?.inspection_team
+	var/obj/docking_port/mobile/sol_inspection/vessel = SSshuttle.getShuttle(shuttleId)
+	var/datum/team/sol_inspection/team = istype(vessel) ? vessel.inspection_team : null
 	.["status_note"] = null
 	if(!.["locked"] || !team)
 		return

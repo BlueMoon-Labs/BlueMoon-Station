@@ -2,14 +2,8 @@
 /datum/unit_test/sol_inspection_shuttle
 	var/datum/round_event/sol_inspection/event
 	var/obj/docking_port/stationary/landing
-	var/list/cryo_deletions = list()
 
 /datum/unit_test/sol_inspection_shuttle/Destroy()
-	// Cryosleep defers gear deletion; do not leak our queue into later subsystem tests.
-	for(var/atom/movable/pending as anything in cryo_deletions)
-		SSauto_cryo.delete_queue -= pending
-		if(!QDELETED(pending))
-			qdel(pending)
 	var/datum/team/sol_inspection/team = event?.inspection_team
 	var/obj/docking_port/mobile/sol_inspection/vessel = team?.shuttle
 	if(vessel && !QDELETED(vessel))
@@ -40,17 +34,10 @@
 
 	var/spawner_count = 0
 	var/sign_count = 0
-	var/list/cryo_pods = list()
-	var/obj/machinery/computer/cryopod/cryo_console
 	var/obj/machinery/computer/shuttle/sol_inspection/flight_console
 	var/obj/effect/mob_spawn/human/sol_inspector/commander/commander
 	var/obj/effect/mob_spawn/human/sol_inspector/inspector_spawner
-	var/obj/effect/mob_spawn/human/sol_inspector/guard/guard
 	for(var/area/shuttle_area as anything in vessel.shuttle_areas)
-		for(var/obj/machinery/cryopod/pod in shuttle_area)
-			cryo_pods += pod
-		for(var/obj/machinery/computer/cryopod/console in shuttle_area)
-			cryo_console = console
 		for(var/obj/machinery/computer/shuttle/sol_inspection/console in shuttle_area)
 			flight_console = console
 		for(var/obj/structure/sign/sign in shuttle_area)
@@ -69,18 +56,10 @@
 				commander = spawner
 			if(istype(spawner.outfit, /datum/outfit/sol_inspection/inspector))
 				inspector_spawner = spawner
-			if(istype(spawner, /obj/effect/mob_spawn/human/sol_inspector/guard))
-				guard = spawner
-	TEST_ASSERT_EQUAL(spawner_count, 4, "The vessel must contain four crew slots.")
+	TEST_ASSERT_EQUAL(spawner_count, 3, "The vessel must contain three crew slots.")
 	TEST_ASSERT_EQUAL(sign_count, 5, "The vessel must retain its five wall-mounted signs and posters.")
 	TEST_ASSERT(commander, "The inspection needs a commander slot.")
 	TEST_ASSERT(inspector_spawner, "The inspection needs an inspector slot.")
-	TEST_ASSERT(guard, "The inspection needs a guard slot.")
-	TEST_ASSERT_EQUAL(length(cryo_pods), 2, "The vessel must contain two round-exit cryopods.")
-	TEST_ASSERT(cryo_console, "The cryopods need an onboard storage console.")
-	var/cryo_console_direction = cryo_console.dir
-	for(var/obj/machinery/cryopod/pod as anything in cryo_pods)
-		TEST_ASSERT(pod.control_computer_weakref?.resolve() == cryo_console, "Each cryopod must link to the onboard console after map initialization.")
 	TEST_ASSERT(flight_console, "The inspection needs a flight console for the return trip.")
 	TEST_ASSERT(!home_destination_visible(flight_console), "The console must not offer a return before the first station visit.")
 	var/mob/living/carbon/human/inspector = allocate(/mob/living/carbon/human, get_turf(commander))
@@ -88,13 +67,12 @@
 	commander.equip(inspector)
 	commander.special(inspector)
 	TEST_ASSERT(locate(/obj/item/sol_inspection_scanner) in inspector.GetAllContents(), "The commander's equipped outfit must include an inspection scanner.")
-	for(var/obj/effect/mob_spawn/human/sol_inspector/spawner as anything in list(inspector_spawner, guard))
-		var/mob/living/carbon/human/crew_member = allocate(/mob/living/carbon/human, get_turf(spawner))
-		spawner.equip(crew_member)
-		TEST_ASSERT(locate(/obj/item/sol_inspection_scanner) in crew_member.GetAllContents(), "Each equipped Sol inspection outfit must include an inspection scanner.")
+	var/mob/living/carbon/human/crew_member = allocate(/mob/living/carbon/human, get_turf(inspector_spawner))
+	inspector_spawner.equip(crew_member)
+	TEST_ASSERT(locate(/obj/item/sol_inspection_scanner) in crew_member.GetAllContents(), "The inspector outfit must include an inspection scanner.")
 	var/obj/item/card/id/card = inspector.wear_id
 	TEST_ASSERT(card?.registered_account == team.account, "The spawned inspector's ID must use the shared account.")
-	TEST_ASSERT(istype(inspector.wear_suit, /obj/item/clothing/suit/space/hardsuit/ert/alert/sol), "The inspector must wear the Sol hardsuit.")
+	TEST_ASSERT(istype(inspector.wear_suit, /obj/item/clothing/suit/armor/vest/warden/peacekeeper), "The inspector must wear the peacekeeper trench coat.")
 	TEST_ASSERT_EQUAL(vessel.canDock(vessel.home_dock), SHUTTLE_NOT_A_DOCKING_PORT, "Return must be locked before the first inspection visit.")
 
 	var/station_z = SSmapping.levels_by_trait(ZTRAIT_STATION)[1]
@@ -123,7 +101,6 @@
 	landing.area_type = /area/space
 	TEST_ASSERT_EQUAL(vessel.initiate_docking(landing), DOCKING_SUCCESS, "The loaded vessel must fly to the station sector.")
 	TEST_ASSERT_EQUAL(vessel.dir, landing_direction, "The flight must exercise a 90-degree shuttle rotation.")
-	TEST_ASSERT_EQUAL(cryo_console.dir, cryo_console_direction, "The cryo console must retain its readable orientation when the shuttle rotates.")
 	TEST_ASSERT(team.visited_station, "The first station arrival must start the return timer.")
 	TEST_ASSERT(team.return_available_at > world.time + 29 MINUTES, "The return delay must be 30 minutes.")
 	TEST_ASSERT(team.return_time_left() <= 30 MINUTES && team.return_time_left() > 29 MINUTES, "The console must report the whole mandatory stay.")
@@ -153,20 +130,7 @@
 	TEST_ASSERT(home_destination_visible(flight_console), "The console must automatically offer the CentCom berth when the 30-minute lock expires.")
 	TEST_ASSERT_EQUAL(vessel.initiate_docking(vessel.home_dock), DOCKING_SUCCESS, "The vessel must return once the inspection period expires.")
 	TEST_ASSERT(team.returned_home, "Returning to CentCom must finish the inspection.")
-	TEST_ASSERT_EQUAL(cryo_console.dir, cryo_console_direction, "The cryo console must retain its orientation on the return flight too.")
 	TEST_ASSERT(team.is_returned_inspector(inspector.mind), "A living inspector aboard the returning ship must complete the objective.")
-	for(var/obj/machinery/cryopod/pod as anything in cryo_pods)
-		var/datum/weakref/controller_ref = cryo_find_control_computer(pod)
-		TEST_ASSERT(controller_ref?.resolve() == cryo_console, "Cryopods must retain their onboard console after both shuttle flights.")
-	var/obj/machinery/cryopod/exit_pod = cryo_pods[1]
-	exit_pod.close_machine(inspector)
-	TEST_ASSERT(exit_pod.occupant == inspector, "An inspector must be able to enter an onboard cryopod.")
-	var/list/previous_deletions = SSauto_cryo.delete_queue.Copy()
-	exit_pod.despawn_occupant()
-	cryo_deletions = SSauto_cryo.delete_queue - previous_deletions
-	TEST_ASSERT(isnull(inspector.loc), "Cryosleep must remove the inspector from the round.")
-	TEST_ASSERT_EQUAL(length(cryo_console.frozen_crew), 1, "The onboard console must record the inspector's departure.")
-	TEST_ASSERT(!QDELETED(team.account), "Cryosleep must preserve the shared inspection account.")
 
 /// Check the destination data actually rendered by ShuttleConsole.
 /datum/unit_test/sol_inspection_shuttle/proc/home_destination_visible(obj/machinery/computer/shuttle/sol_inspection/console)

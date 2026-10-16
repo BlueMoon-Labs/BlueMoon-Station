@@ -34,7 +34,7 @@
 /obj/item/clothing/mask/gas/goner/basic
 	name = "trencher gas mask"
 	desc = "A head-covering mask. This gas mask model is made by mooks and romantically apocalyptic people. Still isn't good for blocking gas flow."
-	armor = 0
+	armor_type = /datum/armor/none
 
 // Cosmetic gas mask for Bane Syndrome (masked_mook)
 /obj/item/clothing/mask/gas/cosmetic
