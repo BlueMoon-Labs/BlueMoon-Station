@@ -43,6 +43,7 @@ const initialState = {
   timestampFormat: 'hm',
   enableTimeDividers: false,
   timeDividerInterval: 300000,
+  showRadioJobs: true,
   view: {
     visible: false,
     activeTab: SETTINGS_TABS[0].id,

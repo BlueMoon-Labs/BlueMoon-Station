@@ -433,7 +433,7 @@ Burning extracts:
 	w_class = WEIGHT_CLASS_BULKY
 	force = 15
 	throwforce = 10
-	armour_penetration = 15
+	armour_penetration = MELEE_AP_COMBAT
 	hitsound = 'sound/weapons/bladeslice.ogg'
 	attack_verb = list("attacked", "slashed", "stabbed", "sliced", "torn", "ripped", "diced", "cut")
 	sharpness = SHARP_EDGED

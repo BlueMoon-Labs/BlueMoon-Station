@@ -285,9 +285,10 @@ const JobRow = (props: {
   mode: string;
   selected: string | null;
   onSelect: (title: string) => void;
+  onJoin: (title: string) => void;
   onPriority: (title: string, level: number) => void;
 }) => {
-  const { job, mode, selected, onSelect, onPriority } = props;
+  const { job, mode, selected, onSelect, onJoin, onPriority } = props;
   // Название строки базовая профессия, выбранное альтернативное показываем под ней
   const rowTitle = job.displayTitle || job.title;
   const baseTitle =
@@ -332,7 +333,10 @@ const JobRow = (props: {
         fontWeight: job.command || job.head ? 700 : 400,
         opacity: job.locked ? 0.6 : 1,
       }}
-      onClick={() => onSelect(job.title)}>
+      onClick={() => onSelect(job.title)}
+      onDoubleClick={
+        mode === 'latejoin' ? () => onJoin(job.title) : undefined
+      }>
       <Box
         style={{
           display: 'flex',
@@ -1105,12 +1109,19 @@ const InfoColumn = (props: {
             flex: '0 0 auto',
             display: 'flex',
             justifyContent: 'flex-start',
+            alignItems: 'center',
+            gap: '6px',
             marginTop: '6px',
             paddingTop: '6px',
             marginRight: '6px',
             borderTop: '1px solid rgba(255,255,255,0.2)',
           }}>
           {joinButton}
+          {selectedJob && !selectedGhost && (
+            <Box color="label" fontSize="11px">
+              Или дважды кликните по должности в списке
+            </Box>
+          )}
         </Box>
       )}
     </Stack.Item>
@@ -1310,6 +1321,7 @@ const JobColumns = (props: {
                       mode={mode}
                       selected={selected}
                       onSelect={(title) => act('select', { job: title })}
+                      onJoin={(title) => act('join', { job: title })}
                       onPriority={(title, level) =>
                         act('set_priority', { job: title, level })
                       }

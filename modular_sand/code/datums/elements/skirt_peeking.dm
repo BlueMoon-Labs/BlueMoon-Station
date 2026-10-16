@@ -113,6 +113,11 @@
 			string += "."
 
 		examine_content += span_purple(string)
+		// Мне выебли мозги по поводу этого нахрен нахуй. Показывает фото если подсматривать под юбкой
+		if(!worn_underwear)
+			var/ass_photo = peeked.dna?.features["ass_photo"]
+			if(ass_photo)
+				examine_content += headshot_preview_html(ass_photo, 256, 256)
 		// Let's see if we caught them, addtimer so it appears after the peek.
 		addtimer(CALLBACK(src, PROC_REF(try_notice), peeked, peeker), 1)
 

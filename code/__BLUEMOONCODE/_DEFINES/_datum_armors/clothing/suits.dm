@@ -38,10 +38,10 @@
 	wound = 10
 
 /datum/armor/bulletproof
-	melee = 35
-	bullet = 60
+	melee = 20
+	bullet = 70
 	laser = 20
-	energy = 40
+	energy = 50
 	bomb = 25
 	bio = 0
 	rad = 0
@@ -142,11 +142,11 @@
 	wound = 15
 
 /datum/armor/suit_riot
-	melee = 60
+	melee = 70
 	bullet = 20
 	laser = 20
-	energy = 10
-	bomb = 0
+	energy = 50
+	bomb = 25
 	bio = 0
 	rad = 0
 	fire = 80

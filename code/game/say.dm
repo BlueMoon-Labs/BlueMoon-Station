@@ -98,6 +98,16 @@ GLOBAL_LIST_INIT(freqtospan, list(
 	var/spanpart2 = "<span class='name'>"
 	//Radio freq/name display
 	var/freqpart = radio_freq ? "\[[get_radio_name(radio_freq)]\] " : ""
+	var/jobpart = ""
+	if(radio_freq)
+		var/speaker_job = speaker.GetJob()
+		var/lower_job = speaker_job ? lowertext(trimtext(speaker_job)) : ""
+		if(lower_job != "" && lower_job != "unknown" && lower_job != "no id" && lower_job != "machine")
+			if(speaker.GetVoice() != "Unknown")
+				var/job_class = speaker.GetJobClass()
+				if(!job_class || job_class == "")
+					job_class = get_radio_job_class(null, speaker_job)
+				jobpart = "<span class='radiojob [job_class]' style='color: [get_radio_job_hex(job_class)]'>\[[speaker_job]\]</span> "
 	//Speaker name
 	var/namepart = "[speaker.GetVoice()][speaker.get_alt_name()]"
 	if(face_name && ishuman(speaker))
@@ -114,7 +124,7 @@ GLOBAL_LIST_INIT(freqtospan, list(
 	if(istype(D) && D.display_icon(src))
 		languageicon = "[D.get_icon()] "
 
-	return "[spanpart1][spanpart2][freqpart][languageicon][compose_track_href(speaker, namepart)][namepart][compose_job(speaker, message_language, raw_message, radio_freq)][endspanpart][messagepart]"
+	return "[spanpart1][spanpart2][freqpart][jobpart][languageicon][compose_track_href(speaker, namepart)][namepart][compose_job(speaker, message_language, raw_message, radio_freq)][endspanpart][messagepart]"
 
 /atom/movable/proc/compose_track_href(atom/movable/speaker, message_langs, raw_message, radio_freq)
 	return ""
@@ -233,6 +243,113 @@ GLOBAL_LIST_INIT(freqtospan, list(
 		return returntext
 	return "[copytext_char("[freq]", 1, 4)].[copytext_char("[freq]", 4, 5)]"
 
+/proc/get_radio_job_class(base_job, display_job)
+	var/real = base_job ? GetJobName(base_job) : "Unknown"
+	if(real == "Unknown" && display_job && display_job != base_job)
+		real = GetJobName(display_job)
+	var/combined = ""
+	if(base_job)
+		combined += "[lowertext(base_job)]|"
+	if(display_job)
+		combined += "[lowertext(display_job)]"
+	if(combined != "" && combined != "|")
+		if(findtext(combined, "syndicate") || findtext(combined, "syndicom") || findtext(combined, "синдикат") || findtext(combined, "ds-1") || findtext(combined, "ds-2") || findtext(combined, "ds1") || findtext(combined, "ds2"))
+			return "radiojob-synd"
+		if(findtext(combined, "inteq") || findtext(combined, "интек") || findtext(combined, "vanguard") || findtext(combined, "авангард") || findtext(combined, "mercenary") || findtext(combined, "наемник") || findtext(combined, "наёмник"))
+			return "radiojob-inteq"
+		if(findtext(combined, "tarkov") || findtext(combined, "tarkoff") || findtext(combined, "тарков") || findtext(combined, "таркон"))
+			return "radiojob-tarkon"
+		if(findtext(combined, "pirate") || findtext(combined, "пират"))
+			return "radiojob-pirate"
+		if(findtext(combined, "solfed") || findtext(combined, "sol fed") || findtext(combined, "sol federation"))
+			return "radiojob-sol"
+		if(findtext(combined, "nri"))
+			return "radiojob-nri"
+		if(findtext(combined, "hotel") || findtext(combined, "отель"))
+			return "radiojob-hotel"
+		if(findtext(combined, "centcom") || findtext(combined, "central command") || findtext(combined, "emergency response") || findtext(combined, "death commando") || findtext(combined, "response officer") || findtext(combined, "health safety"))
+			return "radiojob-centcom"
+	if(real == "Clown")
+		return "radiojob-clown"
+	if(real == "Centcom")
+		return "radiojob-centcom"
+	if(real == "Bridge Officer")
+		return "radiojob-cmd"
+	if(real == "NanoTrasen Representative")
+		return "radiojob-cmd"
+	if(real == "Head of Personnel")
+		return "radiojob-cmd"
+	if(real == "Assistant")
+		return "radiojob-asst"
+	if(real == "Peacekeeper")
+		return "radiojob-sec"
+	if(real == "Detective")
+		return "radiojob-sec"
+	var/datum/job/J = SSjob.GetJob(real)
+	if(J)
+		var/deps = J.departments
+		if(deps & DEPARTMENT_BITFLAG_SECURITY)
+			return "radiojob-sec"
+		if(deps & DEPARTMENT_BITFLAG_ENGINEERING)
+			return "radiojob-eng"
+		if(deps & DEPARTMENT_BITFLAG_MEDICAL)
+			return "radiojob-med"
+		if(deps & DEPARTMENT_BITFLAG_SCIENCE)
+			return "radiojob-sci"
+		if(deps & DEPARTMENT_BITFLAG_SUPPLY)
+			return "radiojob-cargo"
+		if(deps & DEPARTMENT_BITFLAG_LAW)
+			return "radiojob-law"
+		if(deps & DEPARTMENT_BITFLAG_SERVICE)
+			return "radiojob-srv"
+		if(deps & DEPARTMENT_BITFLAG_SILICON)
+			return "radiojob-silicon"
+		if(deps & DEPARTMENT_BITFLAG_COMMAND)
+			return "radiojob-cmd"
+		return "radiojob-unk"
+	return "radiojob-unk"
+
+
+/proc/get_radio_job_hex(job_class)
+	switch(job_class)
+		if("radiojob-cmd")
+			return "#fcdf03"
+		if("radiojob-sec")
+			return "#dd3535"
+		if("radiojob-eng")
+			return "#f37746"
+		if("radiojob-med")
+			return "#57b8f0"
+		if("radiojob-sci")
+			return "#c68cfa"
+		if("radiojob-cargo")
+			return "#b88646"
+		if("radiojob-srv")
+			return "#6ca729"
+		if("radiojob-law", "radiojob-clown")
+			return "#ff69d7"
+		if("radiojob-asst")
+			return "#1ecc43"
+		if("radiojob-synd")
+			return "#8f4a4b"
+		if("radiojob-inteq")
+			return "#e58200"
+		if("radiojob-tarkon")
+			return "#f37746"
+		if("radiojob-pirate")
+			return "#fafafa"
+		if("radiojob-sol")
+			return "#3434fd"
+		if("radiojob-nri")
+			return "#ff4444"
+		if("radiojob-hotel")
+			return "#6ca729"
+		if("radiojob-centcom")
+			return "#2681a5"
+		if("radiojob-silicon")
+			return "#9e9e9e"
+	return "#b0b0b0"
+
 /atom/movable/proc/attach_spans(input, list/spans)
 	if(!length(input))
 		return
@@ -274,6 +391,8 @@ GLOBAL_LIST_INIT(freqtospan, list(
 
 /atom/movable/proc/GetJob() //Get a job, you lazy butte
 
+/atom/movable/proc/GetJobClass()
+
 /atom/movable/proc/GetSource()
 
 /atom/movable/proc/GetRadio()
@@ -281,6 +400,7 @@ GLOBAL_LIST_INIT(freqtospan, list(
 //VIRTUALSPEAKERS
 /atom/movable/virtualspeaker
 	var/job
+	var/job_class
 	var/atom/movable/source
 	var/obj/item/radio/radio
 
@@ -298,26 +418,50 @@ INITIALIZE_IMMEDIATE(/atom/movable/virtualspeaker)
 
 	// The mob's job identity
 	if(ishuman(M))
-		// Humans use their job as seen on the crew manifest. This is so the AI
-		// can know their job even if they don't carry an ID.
-		var/datum/data/record/findjob = GLOB.data_core.general_by_name[name]
-		if(findjob)
-			job = findjob.fields["rank"]
+		var/mob/living/carbon/human/H = M
+		var/obj/item/card/id/idcard = H.wear_id?.GetID()
+		if(!idcard)
+			idcard = H.wear_neck?.GetID()
+		if(!idcard && H.belt)
+			idcard = H.belt?.GetID()
+		if(idcard)
+			job = idcard.get_assignment_name()
+			if(!job || job == "")
+				job = null
+				job_class = null
+			else
+				job_class = get_radio_job_class(idcard.assignment, job)
 		else
-			job = "Unknown"
+			if(istype(H.wear_id, /obj/item/modular_computer/pda))
+				var/obj/item/modular_computer/pda/worn_pda = H.wear_id
+				if(worn_pda.ownjob && worn_pda.ownjob != "")
+					job = worn_pda.ownjob
+					job_class = get_radio_job_class(null, job)
+				else
+					job = null
+					job_class = null
+			else
+				job = null
+				job_class = null
 	else if(iscarbon(M))  // Carbon nonhuman
 		job = "No ID"
+		job_class = null
 	else if(isAI(M))  // AI
 		job = "AI"
+		job_class = "radiojob-silicon"
 	else if(iscyborg(M))  // Cyborg
 		var/mob/living/silicon/robot/B = M
 		job = "[B.designation] Cyborg"
+		job_class = "radiojob-silicon"
 	else if(istype(M, /mob/living/silicon/pai))  // Personal AI (pAI)
 		job = M.GetJob()
+		job_class = "radiojob-silicon"
 	else if(isobj(M))  // Cold, emotionless machines
 		job = "Machine"
+		job_class = "radiojob-unk"
 	else  // Unidentifiable mob
 		job = "Unknown"
+		job_class = null
 
 /atom/movable/virtualspeaker/Destroy()
 	set_source(null)
@@ -354,6 +498,9 @@ INITIALIZE_IMMEDIATE(/atom/movable/virtualspeaker)
 
 /atom/movable/virtualspeaker/GetJob()
 	return job
+
+/atom/movable/virtualspeaker/GetJobClass()
+	return job_class
 
 /atom/movable/virtualspeaker/GetSource()
 	return source

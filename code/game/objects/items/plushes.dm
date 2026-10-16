@@ -42,6 +42,8 @@
 	/// wrapper, do not use, read only
 	var/__ADMIN_SET_TO_ID
 	var/can_random_spawn = TRUE			//if this is FALSE, don't spawn this for random plushies.
+	var/obj/item/stored_weapon          // <--- стрелять игрушкой/бить тулбоксом в ней
+
 
 /obj/item/toy/plush/random_snowflake/Initialize(mapload, set_snowflake_id)
 	. = ..()
@@ -80,6 +82,7 @@
 
 /obj/item/toy/plush/Destroy()
 	QDEL_NULL(grenade)
+	QDEL_NULL(stored_weapon) 
 
 	//inform next of kin and... acquaintances
 	if(partner)
@@ -178,9 +181,52 @@
 	return TRUE
 
 /obj/item/toy/plush/handle_atom_del(atom/A)
+	if(A == stored_weapon)
+		stored_weapon = null
 	if(A == grenade)
 		grenade = null
-	..()
+	return ..()
+
+
+/obj/item/toy/plush/attack(mob/living/M, mob/living/carbon/user)
+	if(stored_weapon && !QDELETED(stored_weapon))
+		var/damage = stored_weapon.force
+		
+		M.take_bodypart_damage(damage, 0)
+		
+		playsound(M.loc, 'sound/weapons/smash.ogg', 50, TRUE, -1)
+		
+		// Выводим сообщения в чат
+		M.visible_message(
+			"<span class='danger'>[user] со всего маху бьет [M] подозрительно тяжелым [src.name]!</span>", \
+			"<span class='userdanger'>Вы получаете тяжелый металлический удар от [user] с помощью [src.name]!</span>"
+		)
+		
+		// Лог в админку
+		log_combat(user, M, "атаковал с помощью тяжелого плюша (внутри: [stored_weapon.name], урон: [damage])", src)
+		return TRUE
+		
+	return ..()
+
+// Стрельба из пушки через afterattack
+/obj/item/toy/plush/afterattack(atom/target, mob/living/user, proximity, params)
+	if(stored_weapon && istype(stored_weapon, /obj/item/gun) && !proximity)
+		var/obj/item/gun/G = stored_weapon
+		var/atom/original_loc = G.loc
+		G.forceMove(user) 
+
+		G.afterattack(target, user, proximity, params)
+
+		// Возвращаем пушку обратно в недра игрушки
+		if(G) 
+			G.loc = original_loc
+			
+		return TRUE
+		
+	return ..()
+
+
+
 
 /obj/item/toy/plush/attack_self(mob/user)
 	. = ..()
@@ -205,6 +251,14 @@
 /obj/item/toy/plush/attackby(obj/item/I, mob/living/user, params)
 	if(istype(I, /obj/item/pen))
 		return ..()
+	
+	// Проверка извлечения оружия, если оно внутри
+	if(I.get_sharpness() && stored_weapon)
+		to_chat(user, "<span class='notice'>You carefully cut the seams and remove [stored_weapon] from [src].</span>")
+		user.put_in_hands(stored_weapon)
+		stored_weapon = null
+		return
+
 	if(I.get_sharpness())
 		if(!grenade)
 			if(unstuffable)
@@ -244,11 +298,27 @@
 		var/turf/grenade_turf = get_turf(src)
 		log_game("[key_name(user)] added a grenade ([I.name]) to [src] at [AREACOORD(grenade_turf)].")
 		return
+
+	if(istype(I, /obj/item/storage/toolbox) || istype(I, /obj/item/gun/ballistic/automatic/pistol))
+		if(stuffed)
+			to_chat(user, "<span class='warning'>You need to remove some stuffing first!</span>")
+			return
+		if(grenade || stored_weapon) //Проверка на оружие сюда тоже
+			to_chat(user, "<span class='warning'>[src] already has something hidden inside!</span>")
+			return
+		if(!user.transferItemToLoc(I, src))
+			return
+		user.visible_message("<span class='warning'>[user] stuffs [I] into [src] and roughly sews it up.</span>", \
+		"<span class='danger'>You slide [I] into [src].</span>")
+		stored_weapon = I
+		return
+
 	if(istype(I, /obj/item/toy/plush))
 		love(I, user)
 		SEND_SIGNAL(user, COMSIG_ADD_MOOD_EVENT,"plushplay", /datum/mood_event/plushplay)
 		return
 	return ..()
+
 
 /obj/item/toy/plush/proc/love(obj/item/toy/plush/Kisser, mob/living/user) //~<3
 	var/chance = 100 //to steal a kiss, surely there's a 100% chance no-one would reject a plush such as I?

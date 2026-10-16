@@ -5465,16 +5465,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/security/warden)
-"asA" = (
-/obj/effect/spawner/structure/window/reinforced,
-/obj/structure/cable/yellow{
-	icon_state = "0-8"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-8"
-	},
-/turf/open/floor/plating,
-/area/security/warden)
 "asB" = (
 /obj/machinery/light/small{
 	dir = 8
@@ -55485,9 +55475,6 @@
 /obj/machinery/light{
 	dir = 8
 	},
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
 /obj/structure/table/glass,
 /obj/effect/turf_decal/tile/green{
 	dir = 1
@@ -59875,17 +59862,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
-"jji" = (
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/structure/disposalpipe/segment,
-/turf/open/floor/plating,
-/area/maintenance/port/aft)
 "jjm" = (
 /obj/machinery/rnd/production/techfab/department/service,
 /obj/effect/turf_decal/box,
@@ -88757,15 +88733,6 @@
 	},
 /turf/open/floor/wood,
 /area/command/heads_quarters/captain/private)
-"wim" = (
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
-/turf/open/floor/plating,
-/area/maintenance/starboard/fore)
 "wiv" = (
 /obj/machinery/vending/assist,
 /turf/open/floor/plasteel/dark,
@@ -113827,10 +113794,10 @@ dyj
 cdj
 chZ
 chZ
-jji
 chZ
 chZ
-jji
+chZ
+chZ
 chZ
 egv
 dux
@@ -122743,7 +122710,7 @@ ahB
 aoA
 ahB
 ark
-asA
+aoA
 ahB
 ave
 awl
@@ -136347,7 +136314,7 @@ gVH
 wKW
 lQi
 aTC
-wim
+gBS
 hpb
 dnS
 dnS

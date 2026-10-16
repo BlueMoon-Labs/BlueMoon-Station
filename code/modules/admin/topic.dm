@@ -1093,6 +1093,18 @@
 		else
 			dat += "<td width='20%'><a href='?src=[REF(src)];[HrefToken()];jobban3=slaver;jobban4=[REF(M)]'>Slaver</a></td>"
 
+		//Space Ninja
+		if(jobban_isbanned(M, ROLE_NINJA) || isbanned_dept)
+			dat += "<td width='20%'><a href='?src=[REF(src)];[HrefToken()];jobban3=[ROLE_NINJA];jobban4=[REF(M)]'><font color=red>Space Ninja</font></a></td>"
+		else
+			dat += "<td width='20%'><a href='?src=[REF(src)];[HrefToken()];jobban3=[ROLE_NINJA];jobban4=[REF(M)]'>Space Ninja</a></td>"
+
+		//HK-47
+		if(jobban_isbanned(M, ROLE_HK47) || isbanned_dept)
+			dat += "<td width='20%'><a href='?src=[REF(src)];[HrefToken()];jobban3=[ROLE_HK47];jobban4=[REF(M)]'><font color=red>HK-47</font></a></td>"
+		else
+			dat += "<td width='20%'><a href='?src=[REF(src)];[HrefToken()];jobban3=[ROLE_HK47];jobban4=[REF(M)]'>HK-47</a></td>"
+
 	//Other Roles (black)
 		dat += "<table cellpadding='1' cellspacing='0' width='100%'>"
 		dat += "<tr bgcolor='000000'><th colspan='5'><a href='?src=[REF(src)];[HrefToken()];jobban3=otherroles;jobban4=[REF(M)]' style='color: white;'>Other Roles</a></th></tr><tr align='center'>"

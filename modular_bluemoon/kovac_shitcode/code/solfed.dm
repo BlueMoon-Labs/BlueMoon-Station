@@ -166,7 +166,6 @@
 	armor_type = /datum/armor/ert_alert
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
-	actions_types = list()
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	icon = 'modular_bluemoon/kovac_shitcode/icons/solfed/obj_sol_head.dmi'
 	mob_overlay_icon = 'modular_bluemoon/kovac_shitcode/icons/solfed/mob_sol_head.dmi'
@@ -205,6 +204,7 @@
 	hardsuit_type = "solfeds"
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/alert/sol/adv
 	armor_type = /datum/armor/sol_hardsuit_adv
+	tail_state = "inteq-elite"
 	brc_mitigation_bonus = 25  // BLUEMOON ADD
 
 /// Outfits (ERT military suits were stored in ert.dm)

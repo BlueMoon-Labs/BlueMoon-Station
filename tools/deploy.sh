@@ -24,6 +24,13 @@ cp -r _maps/* $1/_maps/
 cp -r icons/runtime/* $1/icons/runtime/
 cp -r strings/* $1/strings/
 
+#Мир шифрует ckey в лодауте через Node-хелпер, путь к node пишет сборка.
+mkdir -p "$1/tools/loadout_crypto"
+cp tools/loadout_crypto/crypto.cjs "$1/tools/loadout_crypto/"
+if [ -f tools/loadout_crypto/node_path.txt ]; then
+  cp tools/loadout_crypto/node_path.txt "$1/tools/loadout_crypto/"
+fi
+
 #Спрайтшиты интерфейсов собирает rust-g (IconForge), а он читает .dmi с диска и ищет
 #их относительно рабочего каталога сервера - в .rsc он не заглядывает. Без файлов
 #иконок лист приезжает пустым, поэтому в деплой едут все .dmi всех деревьев кода.

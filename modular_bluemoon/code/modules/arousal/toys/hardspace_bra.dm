@@ -18,7 +18,7 @@
 
 #define HS_TEXT_CHANCE 20
 
-/obj/item/clothing/underwear/shirt/bra/bra_adjustable/hardspace_bra
+/obj/item/clothing/underwear/shirt/adjustable/bra/hardspace_bra
 	name = "Hardspace bra"
 	desc = "С виду обычное белье, но сбоку наблюдается небольшая, гибкая панель."
 	polychromic = FALSE
@@ -95,24 +95,24 @@
 
 /datum/gear/shirt/bra/hardspace_bra
 	name = "Hardspace bra"
-	path = /obj/item/clothing/underwear/shirt/bra/bra_adjustable/hardspace_bra
+	path = /obj/item/clothing/underwear/shirt/adjustable/bra/hardspace_bra
 
-/obj/item/clothing/underwear/shirt/bra/bra_adjustable/hardspace_bra/Initialize(mapload)
+/obj/item/clothing/underwear/shirt/adjustable/bra/hardspace_bra/Initialize(mapload)
 	. = ..()
 	var/datum/action/item_action/hardspace_bra/control/button = new(src)
 	button.bra = src
 
-/*/obj/item/clothing/underwear/shirt/bra/bra_adjustable/hardspace_bra/ComponentInitialize()
+/*/obj/item/clothing/underwear/shirt/adjustable/bra/hardspace_bra/ComponentInitialize()
 	. = ..()
 	AddElement(/datum/element/polychromic, list("#d9d9d9"), 1)*/
 
-/obj/item/clothing/underwear/shirt/bra/bra_adjustable/hardspace_bra/examine(mob/user)
+/obj/item/clothing/underwear/shirt/adjustable/bra/hardspace_bra/examine(mob/user)
 	. = ..()
 	. += span_notice("На дисплее управления ХардСпейс:")
 	. += span_notice("	<i>Режим: <b>[mode]</b></i>")
 	. += span_notice("	<i>Интенсивность: <b>[intence] режим</b></i>")
 
-/obj/item/clothing/underwear/shirt/bra/bra_adjustable/hardspace_bra/Destroy()
+/obj/item/clothing/underwear/shirt/adjustable/bra/hardspace_bra/Destroy()
 	STOP_PROCESSING(SSobj,src)
 	if(owner)
 		UnregisterSignal(owner, COMSIG_PARENT_QDELETING)
@@ -121,24 +121,24 @@
 
 /// Крио уносит надетые вещи forceMove'ом, минуя dropped(): без подписки на смерть
 /// носителя бра держало тело до конца смены и продолжало тикать на трупе.
-/obj/item/clothing/underwear/shirt/bra/bra_adjustable/hardspace_bra/proc/on_owner_deleted(datum/source)
+/obj/item/clothing/underwear/shirt/adjustable/bra/hardspace_bra/proc/on_owner_deleted(datum/source)
 	SIGNAL_HANDLER
 	STOP_PROCESSING(SSobj,src)
 	owner = null
 
-/obj/item/clothing/underwear/shirt/bra/bra_adjustable/hardspace_bra/equipped(mob/living/carbon/human/M, slot)
+/obj/item/clothing/underwear/shirt/adjustable/bra/hardspace_bra/equipped(mob/living/carbon/human/M, slot)
 	.=..()
 	if(slot == ITEM_SLOT_SHIRT)
 		on_equip(M)
 		return
 	on_unequip(M)
 
-/obj/item/clothing/underwear/shirt/bra/bra_adjustable/hardspace_bra/dropped(mob/user)
+/obj/item/clothing/underwear/shirt/adjustable/bra/hardspace_bra/dropped(mob/user)
 	. = ..()
 	if(current_equipped_slot == ITEM_SLOT_SHIRT)
 		on_unequip(user)
 
-/obj/item/clothing/underwear/shirt/bra/bra_adjustable/hardspace_bra/proc/on_equip(mob/user)
+/obj/item/clothing/underwear/shirt/adjustable/bra/hardspace_bra/proc/on_equip(mob/user)
 	if(!user)
 		return
 	var/mob/living/carbon/human/M = astype(user, /mob/living/carbon/human)
@@ -150,7 +150,7 @@
 	RegisterSignal(owner, COMSIG_PARENT_QDELETING, PROC_REF(on_owner_deleted), override = TRUE)
 	START_PROCESSING(SSobj,src)
 
-/obj/item/clothing/underwear/shirt/bra/bra_adjustable/hardspace_bra/proc/on_unequip(mob/user)
+/obj/item/clothing/underwear/shirt/adjustable/bra/hardspace_bra/proc/on_unequip(mob/user)
 	if(!user)
 		return
 
@@ -164,7 +164,7 @@
 
 
 
-/obj/item/clothing/underwear/shirt/bra/bra_adjustable/hardspace_bra/process(delta_time)
+/obj/item/clothing/underwear/shirt/adjustable/bra/hardspace_bra/process(delta_time)
 	if(intence == HS_INTENCE_OFF)
 		return
 
@@ -218,18 +218,18 @@
 
 
 // MODE SELECTION
-/obj/item/clothing/underwear/shirt/bra/bra_adjustable/hardspace_bra/proc/select_intence(mob/user, value)
+/obj/item/clothing/underwear/shirt/adjustable/bra/hardspace_bra/proc/select_intence(mob/user, value)
 	intence = value
 	to_chat(user, span_notice("Был выбран режим мощности: [intence]."))
 
-/obj/item/clothing/underwear/shirt/bra/bra_adjustable/hardspace_bra/proc/select_mode(mob/user, value)
+/obj/item/clothing/underwear/shirt/adjustable/bra/hardspace_bra/proc/select_mode(mob/user, value)
 	mode = value
 	to_chat(user, span_notice("Был выбран режим: [mode]."))
 
 
 //ACTIONS------
 /datum/action/item_action/hardspace_bra/
-	var/obj/item/clothing/underwear/shirt/bra/bra_adjustable/hardspace_bra/bra
+	var/obj/item/clothing/underwear/shirt/adjustable/bra/hardspace_bra/bra
 
 /datum/action/item_action/hardspace_bra/control
 	name = "Control HS Bra"

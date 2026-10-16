@@ -188,7 +188,7 @@
 	desc = "Truly a weapon of mass destruction."
 	possible_colors = list("#DD1A1A", "#DB4325", "#E02700")
 	force = 4
-	armour_penetration = 10
+	armour_penetration = MELEE_AP_CIVILIAN
 	volume = 20
 	soak_efficiency = 6
 	extinguish_efficiency = 5

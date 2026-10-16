@@ -633,8 +633,9 @@ GLOBAL_LIST_INIT(medical_armor_as_regular_list, typecacheof(list(
 	singular_name = "sterilized medical gauze"
 	desc = "Моток эластичной стерилизованной ткани. Экстремально эффективна для остановки кровотечений и стабилизации ожогов."
 	icon = 'icons/obj/medical/stack_medical.dmi'
-	icon_state = "gauze"
-	heal_brute = 7
+	icon_state = "gauze_adv"
+	heal_brute = 10
+	heal_burn = 10
 	armored_delay_multiplier = 1 // Под бронёй шила с обычной скоростью.
 	bare_delay_multiplier = 0.75 // На голом теле — на четверть быстрее.
 	self_delay = 45

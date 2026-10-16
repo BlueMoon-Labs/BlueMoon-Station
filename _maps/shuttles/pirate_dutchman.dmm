@@ -171,6 +171,7 @@
 /obj/item/restraints/legcuffs/bola,
 /obj/item/restraints/legcuffs/bola,
 /obj/item/restraints/legcuffs/bola,
+/obj/item/storage/backpack/duffelbag/syndie/inteq/c4,
 /turf/open/floor/wood/airless,
 /area/shuttle/pirate/flying_dutchman)
 "bn" = (
@@ -201,6 +202,10 @@
 /obj/effect/turf_decal/siding/wood{
 	dir = 1
 	},
+/turf/open/floor/wood/airless,
+/area/shuttle/pirate/flying_dutchman)
+"cI" = (
+/obj/structure/mounted_gun/canister_gatling,
 /turf/open/floor/wood/airless,
 /area/shuttle/pirate/flying_dutchman)
 "da" = (
@@ -311,6 +316,7 @@
 	},
 /obj/machinery/light/small/directional/south,
 /obj/structure/fermenting_barrel/black_powder,
+/obj/item/reagent_containers/glass/bucket/wood,
 /turf/open/floor/wood/airless,
 /area/shuttle/pirate/flying_dutchman)
 "hV" = (
@@ -451,6 +457,7 @@
 	dir = 8
 	},
 /obj/structure/cable,
+/turf/open/floor/plasteel/airless/solarpanel,
 /area/shuttle/pirate/flying_dutchman)
 "vt" = (
 /obj/structure/chair/comfy/shuttle{
@@ -463,6 +470,9 @@
 	dir = 8
 	},
 /obj/structure/rack,
+/obj/machinery/recharger{
+	pixel_y = 2
+	},
 /turf/open/floor/wood/airless,
 /area/shuttle/pirate/flying_dutchman)
 "vT" = (
@@ -508,12 +518,13 @@
 	},
 /obj/machinery/light/floor,
 /obj/docking_port/stationary{
+	dheight = 7;
 	dir = 8;
-	dwidth = 11;
-	height = 16;
-	shuttle_id = "pirate_home";
+	dwidth = 18;
+	height = 21;
+	shuttle_id = "pirateship_home";
 	name = "Deep Space";
-	width = 17
+	width = 25
 	},
 /obj/docking_port/mobile/pirate{
 	dir = 8;
@@ -581,6 +592,7 @@
 	},
 /obj/machinery/light/small/directional/south,
 /obj/structure/fermenting_barrel/black_powder,
+/obj/item/reagent_containers/glass/bucket/wood,
 /turf/open/floor/wood/airless,
 /area/shuttle/pirate/flying_dutchman)
 "Bc" = (
@@ -620,6 +632,25 @@
 /obj/item/clothing/mask/cigarette/cigar,
 /turf/open/floor/carpet/royalblack/airless,
 /area/shuttle/pirate/flying_dutchman)
+"Eg" = (
+/obj/item/ammo_casing/canister_shot{
+	pixel_x = -11;
+	pixel_y = -2
+	},
+/obj/item/ammo_casing/canister_shot{
+	pixel_x = -11;
+	pixel_y = 12
+	},
+/obj/item/ammo_casing/canister_shot{
+	pixel_x = 1;
+	pixel_y = -2
+	},
+/obj/item/ammo_casing/canister_shot{
+	pixel_x = 1;
+	pixel_y = 12
+	},
+/turf/open/floor/wood/airless,
+/area/shuttle/pirate/flying_dutchman)
 "Ew" = (
 /obj/effect/turf_decal/siding/wood{
 	dir = 5
@@ -636,6 +667,7 @@
 	pixel_y = -1
 	},
 /obj/item/storage/bag/money,
+/obj/item/storage/backpack/duffelbag/syndie/inteq/c4,
 /turf/open/floor/wood/airless,
 /area/shuttle/pirate/flying_dutchman)
 "EU" = (
@@ -810,8 +842,12 @@
 /turf/open/floor/wood/airless,
 /area/shuttle/pirate/flying_dutchman)
 "RY" = (
-/obj/machinery/power/solar/fake,
 /obj/structure/cable,
+/obj/machinery/power/solar{
+	id = "portsolar";
+	name = "Port Solar Array"
+	},
+/turf/open/floor/plasteel/airless/solarpanel,
 /area/shuttle/pirate/flying_dutchman)
 "Sp" = (
 /obj/effect/turf_decal/siding/wood{
@@ -888,6 +924,7 @@
 /obj/item/melee/chainofcommand/tailwhip/kitty,
 /obj/item/gun/energy/taser/bolestrel/censor,
 /obj/item/melee/transforming/energy/sword/pirate,
+/obj/item/storage/backpack/duffelbag/syndie/inteq/x4,
 /turf/open/floor/carpet/royalblack/airless,
 /area/shuttle/pirate/flying_dutchman)
 "Ys" = (
@@ -1210,7 +1247,7 @@ fW
 St
 QM
 da
-WB
+cI
 WB
 RQ
 eG
@@ -1237,7 +1274,7 @@ km
 sC
 mG
 bn
-WB
+Eg
 WB
 xY
 WR

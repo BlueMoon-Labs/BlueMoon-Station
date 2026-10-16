@@ -2064,6 +2064,10 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 /datum/species/proc/spec_hitby(atom/movable/AM, mob/living/carbon/human/H)
 	return
 
+/// ЭМИ, прошедший защиту носителя.
+/datum/species/proc/spec_emp_act(mob/living/carbon/human/H, severity)
+	return
+
 /datum/species/proc/spec_attack_hand(mob/living/carbon/human/M, mob/living/carbon/human/H, datum/martial_art/attacker_style, act_intent, attackchain_flags)
 	if(!istype(M))
 		return

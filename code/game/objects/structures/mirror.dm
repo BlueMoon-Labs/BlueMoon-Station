@@ -115,7 +115,7 @@
 	name = "magic mirror"
 	desc = "Turn and face the strange... face."
 	icon_state = "magic_mirror"
-	var/list/races_blacklist = list("skeleton", "agent", "military_synth", "memezombies", "clockwork golem servant", "android", "synth", "mush", "zombie", "memezombie")
+	var/list/races_blacklist = list("skeleton", "agent", "military_synth", "memezombies", "clockwork golem servant", "android", "synth", "mush", "zombie", "memezombie", SPECIES_HK, SPECIES_HK47, SPECIES_HK50, SPECIES_HK51)
 	var/list/choosable_races = list()
 
 /obj/structure/mirror/magic/Initialize(mapload)

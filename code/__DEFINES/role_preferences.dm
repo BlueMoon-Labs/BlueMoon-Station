@@ -22,6 +22,7 @@
 #define ROLE_HERETIC				"Heretic"
 #define ROLE_BLOB					"blob"
 #define ROLE_NINJA					"space ninja"
+#define ROLE_HK47					"hk-47 assassin droid"
 #define ROLE_MONKEY					"monkey"
 #define ROLE_ABDUCTOR				"abductor"
 #define ROLE_REVENANT				"revenant"
@@ -75,6 +76,7 @@ GLOBAL_LIST_INIT(special_roles, list(
 	ROLE_CULTIST = /datum/game_mode/cult,
 	ROLE_BLOB,
 	ROLE_NINJA,
+	ROLE_HK47,
 	ROLE_MONKEY = /datum/game_mode/monkey,
 	ROLE_REVENANT,
 	ROLE_ABDUCTOR,

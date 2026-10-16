@@ -1326,11 +1326,12 @@
 			owner.balloon_alert(owner, "[current_gauze] пропитался, кровотечение остановилось.")
 
 /**
-  * remove_gauze() removes the gauze wrapping from this bodypart and returns it to the user.
+  * remove_gauze() removes the gauze wrapping from this bodypart and leaves
+  * used gauze trash behind (washed into improvised gauze later).
   *
   * Arguments:
   * * user - The mob removing the gauze
-  * * to_hands - If TRUE, attempt to place the gauze in the user's hands
+  * * to_hands - If TRUE, attempt to place the trash gauze in the user's hands
   */
 /obj/item/bodypart/proc/remove_gauze(mob/user, to_hands = TRUE)
 	if(!current_gauze || !owner)
@@ -1338,9 +1339,15 @@
 	var/obj/item/stack/medical/gauze/removed = current_gauze
 	var/mob/living/carbon/gauze_owner = owner
 	current_gauze = null
-	removed.forceMove(user || gauze_owner)
+	// BLUEMOON ADD START - снятый бинт становится использованным мусором:
+	// он попадает в руки снимающего, если там есть место, иначе остаётся на полу.
+	var/list/blood_info = gauze_owner.get_blood_dna_list()
+	var/mob/drop_mob = user || gauze_owner
+	var/obj/item/trash/gauze/used_gauze = new /obj/item/trash/gauze(drop_mob.drop_location(), removed, blood_info?["color"], blood_info?["blendmode"])
 	if(to_hands && user)
-		user.put_in_hands(removed)
+		user.put_in_hands(used_gauze)
+	qdel(removed)
+	// BLUEMOON ADD END
 	gauze_owner.update_bandage_overlays()
 	// BLUEMOON ADD START - сняв повязку, игрок должен узнать, что рана никуда не делась
 	if(gauze_owner.stat != DEAD && gauze_owner.get_total_bleed_rate() > 0)

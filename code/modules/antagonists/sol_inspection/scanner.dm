@@ -4,23 +4,21 @@
 #define SOL_INSPECTION_CONFISCATION_SPARKS 5
 
 /obj/item/circuitboard/machine/cryptominer
-	/// The fine cooldown follows this board when its machine is rebuilt.
-	var/sol_inspection_last_fined
 	/// The ckey of the person who most recently assembled this machine.
 	var/sol_inspection_builder_ckey
 
 /obj/item/circuitboard/machine/bluespace_miner
-	/// The fine cooldown follows this board when its machine is rebuilt.
-	var/sol_inspection_last_fined
+	/// The ckey of the person who most recently assembled this machine.
+	var/sol_inspection_builder_ckey
+
+/obj/item/circuitboard/machine/sleeper/syndie
 	/// The ckey of the person who most recently assembled this machine.
 	var/sol_inspection_builder_ckey
 
 /obj/vehicle/sealed/mecha/combat/durand
-	var/sol_inspection_last_fined
 	var/sol_inspection_builder_ckey
 
 /obj/vehicle/sealed/mecha/combat/gygax
-	var/sol_inspection_last_fined
 	var/sol_inspection_builder_ckey
 
 /proc/record_sol_inspection_builder(atom/target, mob/living/builder)
@@ -39,6 +37,12 @@
 		if(board)
 			board.sol_inspection_builder_ckey = builder_ckey
 		return
+	if(istype(target, /obj/machinery/sleeper/syndie))
+		var/obj/machinery/sleeper/syndie/syndicate_sleeper = target
+		var/obj/item/circuitboard/machine/sleeper/syndie/board = syndicate_sleeper.circuit
+		if(board)
+			board.sol_inspection_builder_ckey = builder_ckey
+		return
 	if(istype(target, /obj/vehicle/sealed/mecha/combat/durand))
 		var/obj/vehicle/sealed/mecha/combat/durand/durand = target
 		durand.sol_inspection_builder_ckey = builder_ckey
@@ -48,15 +52,13 @@
 		gygax.sol_inspection_builder_ckey = builder_ckey
 
 /obj/item/sol_inspection_scanner
-	name = "сканер инспекции"
-	desc = "Служебный сканер для выявления и изъятия незаконной добывающей техники и боевых экзокостюмов."
+	name = "SOL Ccanner"
+	desc = "Служебный сканер для выявления и изъятия незаконной добывающей техники, боевых экзокостюмов и нелегальных капсул стазиса."
 	icon = 'icons/obj/device.dmi'
 	icon_state = "survey-adv"
 	item_state = "electronic"
 	slot_flags = ITEM_SLOT_BELT
 	w_class = WEIGHT_CLASS_SMALL
-
-	var/const/fine_cooldown = 20 MINUTES
 
 /obj/item/sol_inspection_scanner/pre_attack(atom/target, mob/living/user, params, attackchain_flags, damage_multiplier)
 	if(!can_scan(user, target))
@@ -67,15 +69,11 @@
 		balloon_alert(user, "нарушений не найдено")
 		return TRUE
 
-	if(is_on_cooldown(target))
-		balloon_alert(user, "цель уже оштрафована")
-		return TRUE
-
 	to_chat(user, span_notice("Вы начинаете инспекцию [target]."))
 	if(!do_after(user, SOL_INSPECTION_SCAN_DURATION, target))
 		return TRUE
 
-	if(!can_scan(user, target) || is_on_cooldown(target))
+	if(!can_scan(user, target))
 		return TRUE
 
 	reason = violation_reason(target)
@@ -97,9 +95,9 @@
 		to_chat(user, span_warning("Не удалось взыскать штраф с бюджета Карго."))
 		return TRUE
 
-	set_last_fined(target)
 	print_receipt(user, target, reason, fine_amount)
 	inspector.inspection_team.report_violation("Взыскан штраф [fine_amount] кредитов за [reason]. Объект: [target] в [get_area(target)]. Техника изъята.")
+	inspector.inspection_team.announce_early_return_if_unlocked()
 	confiscate_target(target)
 	to_chat(user, span_notice("Инспекция завершена. Штраф взыскан, техника изъята."))
 	return TRUE
@@ -137,6 +135,12 @@
 					brain.forceMove(brain.container)
 				brain.remote_control = null
 				brain.update_mobility()
+	if(istype(target, /obj/machinery/sleeper))
+		// A stasis pod with its controls inside is the perfect kidnapping device: whoever is
+		// asleep in it still has to be dumped on the station floor before the pod is seized.
+		var/obj/machinery/sleeper/sleeper = target
+		if(sleeper.occupant && !QDELETED(sleeper.occupant) && location)
+			sleeper.dropContents()
 	if(location)
 		target.visible_message(span_notice("[target] исчезает во вспышке искр: техника изъята инспекцией Солнечной Федерации."))
 		do_fake_sparks(SOL_INSPECTION_CONFISCATION_SPARKS, FALSE, location)
@@ -157,6 +161,11 @@
 	if(istype(target, /obj/machinery/mineral/bluespace_miner) || istype(target, /obj/machinery/cryptominer))
 		return "незаконная добывающая установка"
 
+	// Controls inside make it a stasis kidnapping pod, and the board is printable in R&D.
+	// There is no legitimate deployment for one, so no security level excuses it.
+	if(istype(target, /obj/machinery/sleeper/syndie))
+		return "нелегальный слипер с внутренним управлением"
+
 	if(istype(target, /obj/vehicle/sealed/mecha/combat/durand))
 		if(!istype(get_area(target), /area/ai_monitored/security/armory) && GLOB.security_level < SEC_LEVEL_RED)
 			return "экзокостюм Durand вне оружейной до кода Красный"
@@ -164,47 +173,6 @@
 	if(istype(target, /obj/vehicle/sealed/mecha/combat/gygax))
 		if(!istype(get_area(target), /area/ai_monitored/security/armory) && GLOB.security_level < SEC_LEVEL_AMBER)
 			return "экзокостюм Gygax вне оружейной до кода Янтарный"
-
-/obj/item/sol_inspection_scanner/proc/is_on_cooldown(atom/target)
-	var/last_fined = get_last_fined(target)
-	return !isnull(last_fined) && world.time < last_fined + fine_cooldown
-
-/obj/item/sol_inspection_scanner/proc/get_last_fined(atom/target)
-	if(istype(target, /obj/machinery/mineral/bluespace_miner))
-		var/obj/machinery/mineral/bluespace_miner/bluespace_miner = target
-		var/obj/item/circuitboard/machine/bluespace_miner/board = bluespace_miner.circuit
-		return board?.sol_inspection_last_fined
-	if(istype(target, /obj/machinery/cryptominer))
-		var/obj/machinery/cryptominer/crypto_miner = target
-		var/obj/item/circuitboard/machine/cryptominer/board = crypto_miner.circuit
-		return board?.sol_inspection_last_fined
-	if(istype(target, /obj/vehicle/sealed/mecha/combat/durand))
-		var/obj/vehicle/sealed/mecha/combat/durand/durand = target
-		return durand.sol_inspection_last_fined
-	if(istype(target, /obj/vehicle/sealed/mecha/combat/gygax))
-		var/obj/vehicle/sealed/mecha/combat/gygax/gygax = target
-		return gygax.sol_inspection_last_fined
-
-/obj/item/sol_inspection_scanner/proc/set_last_fined(atom/target)
-	if(istype(target, /obj/machinery/mineral/bluespace_miner))
-		var/obj/machinery/mineral/bluespace_miner/bluespace_miner = target
-		var/obj/item/circuitboard/machine/bluespace_miner/board = bluespace_miner.circuit
-		if(board)
-			board.sol_inspection_last_fined = world.time
-		return
-	if(istype(target, /obj/machinery/cryptominer))
-		var/obj/machinery/cryptominer/crypto_miner = target
-		var/obj/item/circuitboard/machine/cryptominer/board = crypto_miner.circuit
-		if(board)
-			board.sol_inspection_last_fined = world.time
-		return
-	if(istype(target, /obj/vehicle/sealed/mecha/combat/durand))
-		var/obj/vehicle/sealed/mecha/combat/durand/durand = target
-		durand.sol_inspection_last_fined = world.time
-		return
-	if(istype(target, /obj/vehicle/sealed/mecha/combat/gygax))
-		var/obj/vehicle/sealed/mecha/combat/gygax/gygax = target
-		gygax.sol_inspection_last_fined = world.time
 
 /obj/item/sol_inspection_scanner/proc/get_builder_ckey(atom/target)
 	if(istype(target, /obj/machinery/mineral/bluespace_miner))
@@ -214,6 +182,10 @@
 	if(istype(target, /obj/machinery/cryptominer))
 		var/obj/machinery/cryptominer/crypto_miner = target
 		var/obj/item/circuitboard/machine/cryptominer/board = crypto_miner.circuit
+		return board?.sol_inspection_builder_ckey
+	if(istype(target, /obj/machinery/sleeper/syndie))
+		var/obj/machinery/sleeper/syndie/syndicate_sleeper = target
+		var/obj/item/circuitboard/machine/sleeper/syndie/board = syndicate_sleeper.circuit
 		return board?.sol_inspection_builder_ckey
 	if(istype(target, /obj/vehicle/sealed/mecha/combat/durand))
 		var/obj/vehicle/sealed/mecha/combat/durand/durand = target

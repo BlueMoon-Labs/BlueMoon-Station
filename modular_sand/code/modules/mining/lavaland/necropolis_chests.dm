@@ -211,7 +211,7 @@
 	var/w_class_on = WEIGHT_CLASS_HUGE
 	hitsound = "swing_hit"
 	var/hitsound_on = 'sound/weapons/bladeslice.ogg'
-	armour_penetration = 50
+	armour_penetration = MELEE_AP_EXCLUSIVE
 	light_color = "#ff0000"//BLOOD RED
 	attack_verb = list("attacked", "slashed", "stabbed", "sliced", "torn", "ripped", "teared", "diced", "cut")
 	block_chance = 0
@@ -452,7 +452,12 @@
 	var/ghost_counter = ghost_check()
 	force = clamp((ghost_counter * 2.5), 15, 25)
 	throwforce = clamp((ghost_counter * 2), 5, 18)
-	armour_penetration = clamp((ghost_counter * 3), 0, 35)
+	if(ghost_counter >= 8)
+		armour_penetration = MELEE_AP_EXCLUSIVE
+	else if(ghost_counter >= 4)
+		armour_penetration = MELEE_AP_ANTAGONIST
+	else if(ghost_counter >= 1)
+		armour_penetration = MELEE_AP_COMBAT
 	sharpness = SHARP_NONE
 	if(ghost_counter >= 4)
 		sharpness = SHARP_POINTY
@@ -759,7 +764,7 @@
 
 /obj/item/katana/necropolis
 	force = 25 //Wouldn't want a miner walking around with a 40 damage melee around now, would we?
-	armour_penetration = 33
+	armour_penetration = MELEE_AP_ANTAGONIST
 	block_chance = 0 //blocky bad
 
 /obj/item/immortality_talisman

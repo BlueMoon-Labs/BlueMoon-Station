@@ -713,6 +713,21 @@
 		G.use(1)
 		return
 
+	// BLUEMOON ADD START - отмываем использованный бинт до импровизированной марли
+	if(istype(O, /obj/item/trash/gauze))
+		to_chat(user, "<span class='notice'>You start washing [O]...</span>")
+		busy = TRUE
+		if(!do_after(user, 4 SECONDS, src))
+			busy = FALSE
+			return TRUE
+		busy = FALSE
+		var/obj/item/trash/gauze/gauze_to_wash = O
+		user.visible_message("<span class='notice'>[user] washes [gauze_to_wash] using [src], turning it into improvised gauze.</span>", \
+							"<span class='notice'>You wash [gauze_to_wash] using [src], turning it into improvised gauze.</span>")
+		gauze_to_wash.wash_into_improvised(user)
+		return TRUE
+	// BLUEMOON ADD END
+
 	if(istype(O, /obj/item/stack/ore/glass))
 		new /obj/item/stack/sheet/sandblock(loc)
 		to_chat(user, "<span class='notice'>You wet the sand in the sink and form it into a block.</span>")

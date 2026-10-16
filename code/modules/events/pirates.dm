@@ -140,6 +140,14 @@
 		fail_spawn("корабль не удалось загрузить на карту")
 		return
 
+	// load() проставляет габариты мобильного порта уже после Initialize(), поэтому
+	// добиваем зоны корпуса, движки и привязку консолей (linkup) через post_load.
+	var/obj/docking_port/mobile/pirate/pirate_port = SSshuttle.getShuttle("pirateship")
+	if(pirate_port)
+		ship.post_load(pirate_port)
+
+	ensure_pirates_away(z)
+
 	var/list/spawners_list = list()
 	for(var/turf/A in ship.get_affected_turfs(T))
 		for(var/obj/effect/mob_spawn/human/pirate/spawner in A)
@@ -183,6 +191,24 @@
 			detail = "корабль создан; сразу назначено ролей: 0, свободные спавнеры оставлены призракам")
 
 	priority_announce("В секторе обнаружен вооруженный корабль.", "Отдел ССО ПАКТа Синих Лун", 'modular_bluemoon/phenyamomota/sound/announcer/pirate_incoming.ogg')
+
+/// Создаёт реальный порт "pirateship_away" в дальнем углу Z-уровня спавна. Без него
+/// консоль корабля на старте не имеет валидных точек назначения и заблокирована.
+/datum/round_event/pirates/proc/ensure_pirates_away(z)
+	for(var/obj/docking_port/stationary/existing as anything in SSshuttle.stationary)
+		if(existing.shuttle_id == "pirateship_away")
+			return
+	var/obj/docking_port/mobile/M = SSshuttle.getShuttle("pirateship")
+	if(!M)
+		return
+	var/obj/docking_port/stationary/away = new /obj/docking_port/stationary/pirates_away()
+	away.width = M.width
+	away.height = M.height
+	away.dwidth = M.dwidth
+	away.dheight = M.dheight
+	var/turf/spot = locate(world.maxx - 20, world.maxy - 20, z)
+	if(spot)
+		away.forceMove(spot)
 
 //Shuttle equipment
 
@@ -289,6 +315,34 @@
 	name = "pirate shuttle"
 	shuttle_id = "pirateship"
 	rechargeTime = 3 MINUTES
+	// Габариты обязаны быть известны уже к Initialize(). Карта их не задаёт, а load()
+	// выставляет размеры только ПОСЛЕ инициализации атомов, поэтому shuttle_areas
+	// собиралась пустой: beforeShuttleMove возвращал NONE, корпус не двигался
+	// (докинг "проходил", шаттл стоял и уходил в КД), а навигатор не рисовал силуэт.
+	// Значения соответствуют pirate_dutchman.dmm (21x25, порт на x=14,y=19, dir=WEST).
+	width = 25
+	height = 21
+	dwidth = 18
+	dheight = 7
+
+/datum/map_template/shuttle/pirate/post_load(obj/docking_port/mobile/vessel)
+	// Страховка на случай, если load() не смог проставить габариты (турф порта в космосе):
+	// пересобираем зоны корпуса и движки уже после загрузки карты.
+	vessel.shuttle_areas.Cut()
+	for(var/turf/place as anything in vessel.return_turfs())
+		var/area/shuttle_area = get_area(place)
+		if(istype(shuttle_area, vessel.area_type))
+			vessel.shuttle_areas[shuttle_area] = TRUE
+	vessel.initial_engines = vessel.count_engines()
+	vessel.current_engines = vessel.initial_engines
+	return ..()
+
+// Консоль корабля пиратов перечисляет "pirateship_away", но такого порта нет ни в одной
+// карте — из-за этого на спавне нет ни одной валидной точки назначения и консоль
+// заблокирована ("Locked"). Этот порт создаётся кодом при спавне корабля (spawn_pirates).
+/obj/docking_port/stationary/pirates_away
+	name = "Deep Space"
+	shuttle_id = "pirateship_away"
 
 /obj/machinery/suit_storage_unit/pirate
 	helmet_type = /obj/item/clothing/head/helmet/space/pirate/bandana/eva

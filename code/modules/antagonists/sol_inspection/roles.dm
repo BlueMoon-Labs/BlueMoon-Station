@@ -1,5 +1,5 @@
 /datum/objective/sol_inspection_return
-	name = "complete the Sol inspection"
+	name = "complete the SOL inspection"
 	explanation_text = "Проведите инспекцию станции на наличие нелегальных майнеров и вернитесь живыми на ЦК на инспекционном шаттле."
 	var/datum/antagonist/sol_inspector/inspector
 
@@ -23,7 +23,7 @@
 
 /datum/antagonist/sol_inspector/create_team(datum/team/sol_inspection/new_team)
 	if(!istype(new_team))
-		stack_trace("Sol inspector added without a Sol inspection team.")
+		stack_trace("SOL inspector added without a SOL inspection team.")
 		return
 	inspection_team = new_team
 
@@ -37,24 +37,30 @@
 
 /datum/antagonist/sol_inspector/greet()
 	to_chat(owner, span_boldannounce("Вы входите в инспекционную группу Солнечной Федерации."))
-	to_chat(owner, span_notice("Проверьте станцию, Лаваленд и ксеноархеологическую экспедицию на наличие нелегальных БС-майнеров и криптомайнеров. Штраф за майнер или Gygax — 25 000 кредитов, за Durand — 50 000; деньги поступают на общий счёт ваших ID-карт. После завершённой проверки незаконная техника немедленно изымается со вспышкой искр, пилоты высаживаются. Durand вне арсенала запрещён до красного кода, Gygax — до янтарного. Возвращение на ЦК открывается через 90 минут после прибытия в сектор станции."))
+	to_chat(owner, span_notice("Проверьте станцию, Лаваленд и ксеноархеологическую экспедицию на наличие нелегальных БС-майнеров, криптомайнеров и слиперов с управлением внутри капсулы. Штраф за майнер, слипер или Gygax — 25 000 кредитов, за Durand — 50 000; деньги поступают на общий счёт ваших ID-карт. После завершённой проверки незаконная техника немедленно изымается со вспышкой искр. Durand вне арсенала запрещён до красного кода, Gygax — до янтарного. Слиперы с внутренним управлением нелегальны при любом уровне тревоги."))
+	to_chat(owner, span_notice("Возврат на ЦК открывается через 30 минут после прибытия в сектор станции — либо досрочно, как только общая сумма взысканий достигнет 100 000 кредитов. Пункт назначения появляется на бортовой консоли, а по истечении срока шаттл уходит автоматически ещё через 3 минуты, даже если никто не воспользуется консолью."))
 	to_chat(owner, span_warning("Не создавайте нарушения сами: если нелегальный объект собрал член инспекции, проверка выявит саботаж и потребует его ареста. Для успеха не требуется собирать определённую сумму штрафов."))
 	to_chat(owner, span_warning("Не применяйте незаконную силу. Ваше вооружение предназначено только для защиты."))
 	owner.announce_objectives()
 
 /datum/outfit/sol_inspection
-	name = "Sol Inspection Team"
+	name = "SOL Inspection Team"
 
 	id = /obj/item/card/id/sol
 	uniform = /obj/item/clothing/under/rank/security/officer/formal/sol
-	suit = /obj/item/clothing/suit/space/hardsuit/ert/alert/sol
+	suit = /obj/item/clothing/suit/armor/vest/warden/peacekeeper{name = "Peacekeeper Armored Trench Coat"}
+	glasses = /obj/item/clothing/glasses/hud/health/sunglasses
+	mask = /obj/item/clothing/mask/gas/sechailer/swat/spacepol
 	shoes = /obj/item/clothing/shoes/combat
-	gloves = /obj/item/clothing/gloves/color/black
+	gloves = /obj/item/clothing/gloves/color/black/forensic
 	ears = /obj/item/radio/headset/sol
-	back = /obj/item/storage/backpack/satchel
+	back = /obj/item/storage/backpack/satchel/leather
 	belt = /obj/item/storage/belt/security/full
-	suit_store = /obj/item/gun/energy/disabler
-	backpack_contents = list(/obj/item/storage/box/survival/centcom = 1, /obj/item/sol_inspection_scanner = 1)
+	suit_store = /obj/item/gun/ballistic/automatic/pistol/deagle
+	backpack_contents = list(/obj/item/storage/box/survival/centcom = 1, /obj/item/storage/firstaid/tactical/vanguard = 1, /obj/item/sol_inspection_scanner = 1, /obj/item/ammo_box/magazine/m50 = 3)
+	implants = list(
+		/obj/item/implant/mindshield,
+		/obj/item/implant/deathrattle/centcom)
 
 /datum/outfit/sol_inspection/post_equip(mob/living/carbon/human/inspector, visualsOnly = FALSE, client/preference_source)
 	. = ..()
@@ -79,17 +85,17 @@
 		id_card.update_label()
 
 /datum/outfit/sol_inspection/commander
-	name = "Sol Inspection Commander"
+	name = "SOL Inspection Commander"
 
 	uniform = /obj/item/clothing/under/rank/captain/sol
 	ears = /obj/item/radio/headset/sol/command
-	head = /obj/item/clothing/head/HoS/beret/sol/plain
+	head = /obj/item/clothing/head/HoS/beret/sol/cap
 
 /datum/outfit/sol_inspection/inspector
-	name = "Sol Inspector"
+	name = "SOL Inspector"
 
 /datum/outfit/sol_inspection/guard
-	name = "Sol Inspection Guard"
+	name = "SOL Inspection Guard"
 
 	uniform = /obj/item/clothing/under/rank/security/officer/solfed_military
 	ears = /obj/item/radio/headset/sol/bowman

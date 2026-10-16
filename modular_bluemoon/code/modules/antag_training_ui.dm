@@ -74,6 +74,8 @@
 		var/list/zone = arena.zones[zone_id]
 		data["zones"] += list(list("id" = zone_id, "name" = zone["name"], "desc" = zone["desc"], "members" = member_counts[zone_id] || 0, "targets" = target_counts[zone_id] || 0, "current" = arena.inside_bounds(get_turf(user), zone["bounds"])))
 	data["options"] = program.options
+	data["option_hints"] = program.option_hints
+	data["target_action"] = program.target_action
 	data["preparing"] = preparing
 	data["supply_ready"] = world.time >= next_supply_at && !preparing
 	data["practice_ready"] = world.time >= arena.next_spawn_at && !preparing
@@ -81,6 +83,7 @@
 	data["last_kit"] = last_kit
 	data["recipes"] = training_recipes()
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(current_body)
+	data["heretic"] = !!heretic
 	data["selected_path"] = heretic?.selected_path
 	data["path_stage"] = heretic?.path_stage || 0
 	data["dance_lesson"] = !!dance_knowledge()

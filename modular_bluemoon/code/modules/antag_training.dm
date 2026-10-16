@@ -311,7 +311,7 @@ GLOBAL_VAR_INIT(antag_training_work_usage, 0)
 	GLOB.antag_training_sessions[player_key] = src
 	connected = TRUE
 	user.transfer_ckey(current_body, FALSE)
-	if(!character_preferences)
+	if(!character_preferences && !program.avatar_name)
 		current_body.real_name = return_name
 		current_body.name = return_name
 	START_PROCESSING(SSprocessing, src)

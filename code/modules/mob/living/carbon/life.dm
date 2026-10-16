@@ -625,7 +625,9 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Йоу, а что, если мы 
 		var/saved_dizz = dizziness
 		if(C)
 			var/oldsrc = src
-			var/amplitude = dizziness*(sin(dizziness * world.time) + 1) // This shit is annoying at high strength
+			// Dizziness can be stacked by large reagent doses. Keep the camera offset
+			// below a tile so it cannot reveal off-screen areas or hide the player's mob.
+			var/amplitude = min(8, dizziness * (sin(dizziness * world.time) + 1))
 			src = null
 			spawn(0)
 				if(C)

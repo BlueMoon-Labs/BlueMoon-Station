@@ -12,6 +12,8 @@
 	var/force_replace = FALSE // Can forcefully replace other pins.
 	var/pin_removeable = FALSE // Can be replaced by any pin.
 	var/emag_removeable = FALSE
+	/// Впаян в оружие: не извлекается ни инструментами, ни взломом, ни заменой.
+	var/permanent = FALSE
 	var/obj/item/gun/gun
 
 /obj/item/firing_pin/Initialize(mapload, newloc)
@@ -75,6 +77,9 @@
 	return
 
 /obj/item/firing_pin/proc/can_be_extracted(obj/item/gun/G, mob/living/user)
+	if(permanent)
+		to_chat(user, span_warning("[src] впаян в [G] намертво, его не извлечь."))
+		return FALSE
 	if(emag_removeable && !(G.obj_flags & EMAGGED))
 		to_chat(user, span_warning("[src] зафиксирован в [G] намертво. Сначала взломайте электронику оружия."))
 		return FALSE

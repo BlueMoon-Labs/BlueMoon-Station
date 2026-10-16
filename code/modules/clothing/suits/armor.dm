@@ -317,7 +317,9 @@
 	blood_overlay_type = "armor"
 	armor_type = /datum/armor/bulletproof
 	brc_mitigation_bonus = 20  // BLUEMOON ADD
-	body_parts_covered = CHEST|GROIN|LEGS|FEET|ARMS
+	body_parts_covered = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
+	cold_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
+	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	strip_delay = 70
 	equip_delay_other = 50
 	clothing_flags = THICKMATERIAL

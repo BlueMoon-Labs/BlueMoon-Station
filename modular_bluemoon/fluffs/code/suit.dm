@@ -1232,7 +1232,6 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
 	icon_state = "tau"
-	item_state = "tau"
 	blood_overlay_type = "armor"
 	body_parts_covered = CHEST
 
@@ -1248,7 +1247,14 @@
 	name = "Honorable coat"
 	desc = "Old honoroble coat, pretty expensive"
 	icon_state = "honorable_coat"
-	item_state = "honorable_coat"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/suit/donator/bm/arsmaid_suit
+	name = "Maid Suit"
+	desc = "Maid Suit"
+	icon_state = "arsmaid_suit"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON

@@ -415,22 +415,6 @@
 
 ///////////////////////////////////////////////
 
-/obj/item/clothing/head/officerian_cap
-	name = "Officerian Cap"
-	desc = "Головной убор ветеранов и действующих офицеров"
-	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
-	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
-	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
-	icon_state = "officerian_cap"
-	item_state = "officerian_cap"
-	var/list/poly_colors = list("#2A2A2A","#303030","#575757","#d4d4d4")
-
-/obj/item/clothing/head/officerian_cap/ComponentInitialize()
-	. = ..()
-	AddElement(/datum/element/polychromic, list("#2A2A2A","#303030","#575757","#d4d4d4"), 4)
-
-///////////////////////////////////////////////
-
 /obj/item/clothing/head/helmet/sec/gosei
 	armor_type = /datum/armor/none
 	name = "Gosei.H.mk27"
@@ -855,7 +839,7 @@
 	item_state = "desert_ranger"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
-	flags_inv = HIDEFACIALHAIR|HIDEFACE|HIDEEYES|HIDEEARS|HIDEHAIR
+	flags_inv = HIDEFACIALHAIR|HIDEFACE|HIDEEYES|HIDEEARS|HIDEHAIR|HIDESNOUT
 
 /obj/item/clothing/head/helmet/alt/kumiko_ncr_bulletproof_helmet
 	name = "Custom NCR ranger helmet"
@@ -864,4 +848,4 @@
 	item_state = "rangercustom"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/head.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/head.dmi'
-	flags_inv = HIDEFACIALHAIR|HIDEFACE|HIDEEYES|HIDEEARS|HIDEHAIR
+	flags_inv = HIDEFACIALHAIR|HIDEFACE|HIDEEYES|HIDEEARS|HIDEHAIR|HIDESNOUT

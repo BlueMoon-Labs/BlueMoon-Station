@@ -216,7 +216,7 @@
 "sM" = (
 /obj/structure/table/reinforced/rglass,
 /obj/item/defibrillator/loaded,
-/obj/item/storage/backpack/duffelbag/med/surgery,
+/obj/item/storage/backpack/duffelbag/med/surgery/upgraded,
 /obj/effect/turf_decal/tile/blue/anticorner{
 	dir = 8
 	},

@@ -1,6 +1,12 @@
 /datum/antag_training_program
 	var/name
 	var/list/options = list()
+	/// Вариант -> подсказка на кнопке пульта.
+	var/list/option_hints = list()
+	/// Имя куклы, которое вход не заменяет именем призрака.
+	var/avatar_name
+	/// Подпись кнопки учебной цели, которая зовёт target_created(); null - кнопки нет.
+	var/target_action
 
 /datum/antag_training_program/proc/setup(datum/antag_training_session/session)
 	return FALSE
@@ -13,6 +19,7 @@
 
 /datum/antag_training_program/heretic
 	name = "Еретик — все пути"
+	target_action = "Цель охоты"
 	options = list("Добавить очки знаний", "Предметы изученного рецепта", "Компоненты изученного рецепта", "Подготовить вознесение")
 
 /datum/antag_training_program/heretic/setup(datum/antag_training_session/session)

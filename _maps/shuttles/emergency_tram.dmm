@@ -325,7 +325,7 @@
 /area/shuttle/escape)
 "LN" = (
 /obj/structure/table/optable,
-/obj/item/storage/backpack/duffelbag/med/surgery,
+/obj/item/storage/backpack/duffelbag/med/surgery/upgraded,
 /obj/item/clothing/mask/surgical,
 /obj/machinery/vitals_reader/directional/west,
 /turf/open/floor/mineral/titanium/blue,
