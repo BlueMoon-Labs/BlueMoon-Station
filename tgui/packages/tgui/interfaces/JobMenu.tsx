@@ -299,7 +299,6 @@ const JobRow = (props: {
   const hints: string[] = [];
   if (baseTitle) hints.push(`Профессия: ${baseTitle}`);
   if (job.pinned) hints.push('Приоритетная вакансия — ×2 метадоллара за час');
-  if (mode === 'latejoin') hints.push('Двойной клик — присоединиться');
 
   let rightSide: ReactNode = null;
   let rightColor: string | undefined;
@@ -1110,12 +1109,19 @@ const InfoColumn = (props: {
             flex: '0 0 auto',
             display: 'flex',
             justifyContent: 'flex-start',
+            alignItems: 'center',
+            gap: '6px',
             marginTop: '6px',
             paddingTop: '6px',
             marginRight: '6px',
             borderTop: '1px solid rgba(255,255,255,0.2)',
           }}>
           {joinButton}
+          {selectedJob && !selectedGhost && (
+            <Box color="label" fontSize="11px">
+              Или дважды кликните по должности в списке
+            </Box>
+          )}
         </Box>
       )}
     </Stack.Item>
