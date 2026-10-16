@@ -181,7 +181,7 @@ GLOBAL_LIST_EMPTY(blood_bond_blackouts)
 	if(abandoned || (user.mind in departed_minds))
 		user.balloon_alert(user, "схрона больше нет")
 		return FALSE
-	if(!stash)
+	if(QDELETED(stash))
 		stash = new /obj/item/storage/blood_stash(null)
 	var/datum/component/storage/storage = stash.GetComponent(/datum/component/storage)
 	if(user in storage.is_using)
@@ -203,7 +203,8 @@ GLOBAL_LIST_EMPTY(blood_bond_blackouts)
 
 /// Высыпать Схрон под ноги открывавшему последним, иначе первому живому брату, иначе ушедшему последним
 /datum/team/brother_team/proc/dump_stash()
-	if(!stash)
+	if(QDELETED(stash))
+		stash = null
 		return
 	var/list/candidates = list(stash_last_user?.current) + living_brothers()
 	for(var/departed_index in length(departed_minds) to 1 step -1)

@@ -344,12 +344,16 @@
 				QDEL_NULL(spawned.mind)
 				qdel(spawned)
 			return FALSE
-	QDEL_NULL(team.oath)
+	var/datum/blood_oath/old_oath = team.oath
+	team.oath = null
 	team.swear_oath(new_oath)
 	if(team.oath != new_oath)
-		qdel(new_oath)
+		team.oath = old_oath
+		if(!QDELETED(new_oath))
+			qdel(new_oath)
 		to_chat(user, span_warning("Клятва не принята, попробуйте другую."))
 		return FALSE
+	qdel(old_oath)
 	var/text = "Клятва «[new_oath.name]» дана. Шаги и их условия - в окне клятвы."
 	if(new_oath.target_mind)
 		text += " Её цель - [new_oath.target_mind.name], учебная цель полигона: она есть в разделе «Цели» пульта."

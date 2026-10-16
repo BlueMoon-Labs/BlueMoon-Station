@@ -254,10 +254,13 @@
 		return
 	examine_list += span_warning("Поперёк [source.ru_ego()] ладони тянется шрам от глубокого пореза.")
 
-/// Тело удаляют из nullspace: так уходит крио, не дожидаясь проверки команды
+/// Удаление тела закрывает Схрон; из nullspace так уходит крио, не дожидаясь проверки команды
 /datum/antagonist/brother/proc/on_body_deleted(mob/living/source)
 	SIGNAL_HANDLER
-	if(team && !source.loc && owner.current == source)
+	if(!team || owner.current != source)
+		return
+	team.close_stash(source)
+	if(!source.loc)
 		team.handle_departure(owner, BROTHER_DEPARTURE_CRYO)
 
 /datum/antagonist/brother/proc/on_stat_change(datum/source, new_stat, old_stat)
