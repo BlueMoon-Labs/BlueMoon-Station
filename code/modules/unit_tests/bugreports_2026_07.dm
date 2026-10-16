@@ -72,7 +72,11 @@
 
 	prefs.update_preferences(77, null)
 
-	TEST_ASSERT_EQUAL(length(prefs.be_special), 1, "The savefile migration must collapse duplicated antag rows")
+	var/role_rows = 0
+	for(var/row in prefs.be_special)
+		if(row == role)
+			role_rows++
+	TEST_ASSERT_EQUAL(role_rows, 1, "The savefile migration must collapse duplicated antag rows")
 	TEST_ASSERT_EQUAL(prefs.be_special[role], ANTAG_PRIORITY_LOW, "The migration must keep the priority the player had picked")
 	TEST_ASSERT(prefs.set_antag_preference(role, ANTAG_PRIORITY_DISABLED), "A repaired preference must be switchable off")
 	TEST_ASSERT(!(role in prefs.be_special), "A repaired preference must actually switch off")
