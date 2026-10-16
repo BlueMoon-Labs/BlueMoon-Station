@@ -157,7 +157,9 @@
 	if(timing)
 		detonation_timer = world.time + (timer_set * 10)
 		countdown.start()
-		priority_announce("Ядерная бомба была запущена в отдалённом секторе, будьте осторожны.",null, 'sound/misc/notice1.ogg', "Priority")
+		//WHITE-STEEL FIX: priority_announce слал оповещение от ЦК и звук notice1.ogg на ВСЕ
+		//z-уровни (всю станцию) при подрыве бомбы экспедиции. Убираем глобальное оповещение —
+		//экипаж экспедиции и так получает сообщение по радио и видит таймер на самой бомбе.
 		var/msg = "Инициирован финальный отсчет, до взрыва: [get_time_left()] секунд."
 		radio.talk_into(src, msg, radio_channel)
 	else
@@ -172,7 +174,19 @@
 		countdown?.stop()
 		update_icon()
 		return
-	. = ..()
+	//WHITE-STEEL FIX: базовая explode() зовёт sound_to_playing_players('sound/machines/alarm.ogg'),
+	//а тот проигрывает вой ВСЕМ игрокам на всех z-уровнях, включая станцию. Бомба экспедиции
+	//рвётся на дальнем аутпосте, и общекорабельная сирена там неуместна — детонируем без неё.
+	if(safety)
+		timing = FALSE
+		return
+	exploding = TRUE
+	yes_code = FALSE
+	safety = TRUE
+	update_icon()
+	if(SSticker && SSticker.mode)
+		SSticker.roundend_check_paused = TRUE
+	addtimer(CALLBACK(src, PROC_REF(actually_explode)), 100)
 
 /obj/machinery/nuclearbomb/decomission/actually_explode()
 	SSticker.roundend_check_paused = FALSE
