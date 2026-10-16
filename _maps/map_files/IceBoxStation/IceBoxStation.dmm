@@ -4509,12 +4509,12 @@
 /area/science/xenobiology)
 "beG" = (
 /obj/machinery/door/airlock/mining/glass{
-	name = "Mining Dock"
+	name = "Mining Dock";
+	req_access_txt = "48"
 	},
 /obj/effect/mapping_helpers/airlock/cyclelink_helper_multi{
 	cycle_id = "miner-passthrough"
 	},
-/obj/effect/mapping_helpers/airlock/access/all/supply/mining,
 /turf/open/floor/plasteel,
 /area/cargo/miningdock)
 "beQ" = (
@@ -15930,19 +15930,6 @@
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel,
 /area/mine/laborcamp)
-"dDH" = (
-/obj/effect/mapping_helpers/airlock/cyclelink_helper{
-	dir = 4
-	},
-/obj/machinery/door/airlock/external/glass{
-	dir = 4;
-	name = "Supply Door Airlock"
-	},
-/obj/effect/mapping_helpers/airlock/access/all/supply/general,
-/obj/structure/fans/tiny,
-/obj/effect/mapping_helpers/airlock/access/all/supply/mining,
-/turf/open/floor/plating,
-/area/cargo/storage)
 "dDT" = (
 /obj/structure/chair/office{
 	dir = 8
@@ -17232,10 +17219,10 @@
 /turf/open/floor/plating,
 /area/maintenance/starboard/aft)
 "dRk" = (
-/obj/effect/mapping_helpers/airlock/access/all/supply/mining,
 /obj/machinery/door/airlock/external/glass{
 	name = "Mining Airlock";
-	dir = 4
+	dir = 4;
+	req_access_txt = "48"
 	},
 /obj/effect/mapping_helpers/airlock/cyclelink_helper_multi{
 	cycle_id = "miner-passthrough"
@@ -26063,7 +26050,7 @@
 	pixel_y = 32
 	},
 /obj/effect/turf_decal/stripes/yellow/corner{
-	dir = 1
+	dir = 4
 	},
 /obj/effect/turf_decal/tile/blue{
 	dir = 1
@@ -28783,7 +28770,8 @@
 /obj/machinery/door/firedoor,
 /obj/machinery/door/airlock/mining/glass{
 	id_tag = "cargooffice";
-	name = "Cargo Office"
+	name = "Cargo Office";
+	req_access_txt = "50"
 	},
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
@@ -28802,7 +28790,6 @@
 	name = "Cargo Lockdown Shutters";
 	id = "cargolockdown"
 	},
-/obj/effect/mapping_helpers/airlock/access/all/supply/shipping,
 /turf/open/floor/plasteel,
 /area/cargo/sorting)
 "grj" = (
@@ -32015,9 +32002,9 @@
 "hdf" = (
 /obj/machinery/door/firedoor,
 /obj/machinery/door/airlock/mining/glass{
-	name = "Delivery Office"
+	name = "Delivery Office";
+	req_access_txt = "50"
 	},
-/obj/effect/mapping_helpers/airlock/access/all/supply/shipping,
 /turf/open/floor/plasteel,
 /area/cargo/sorting)
 "hdg" = (
@@ -38670,12 +38657,6 @@
 	pixel_y = -8;
 	req_access_txt = "31"
 	},
-/obj/machinery/button/door/directional/west{
-	id = "QMLoaddoor2";
-	name = "Loading Doors";
-	pixel_y = 8;
-	req_access_txt = "31"
-	},
 /turf/open/floor/plasteel,
 /area/cargo/storage)
 "izm" = (
@@ -42492,10 +42473,9 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
 /obj/machinery/door/airlock/mining{
-	name = "Mining Dock"
+	name = "Mining Dock";
+	req_one_access_txt = "50;48"
 	},
-/obj/effect/mapping_helpers/airlock/access/any/supply/mining,
-/obj/effect/mapping_helpers/airlock/access/any/supply/general,
 /turf/open/floor/plasteel,
 /area/cargo/storage)
 "jrO" = (
@@ -42952,7 +42932,8 @@
 /obj/machinery/door/firedoor,
 /obj/machinery/door/airlock/mining/glass{
 	id_tag = "cargooffice";
-	name = "Cargo Office"
+	name = "Cargo Office";
+	req_one_access_txt = "50;48"
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 4
@@ -42963,9 +42944,7 @@
 /obj/structure/disposalpipe/segment{
 	dir = 4
 	},
-/obj/effect/mapping_helpers/airlock/access/any/supply/general,
 /obj/effect/landmark/navigate_destination/cargo,
-/obj/effect/mapping_helpers/airlock/access/any/supply/mining,
 /turf/open/floor/plasteel,
 /area/cargo/office)
 "jyW" = (
@@ -47166,11 +47145,11 @@
 	dir = 8
 	},
 /obj/machinery/door/airlock/external/glass{
-	dir = 8;
-	name = "Supply Door Airlock"
+	dir = 4;
+	name = "Supply Door Airlock";
+	pixel_y = 0;
+	req_access_txt = "31"
 	},
-/obj/effect/mapping_helpers/airlock/access/all/supply/general,
-/obj/effect/mapping_helpers/airlock/access/all/supply/mining,
 /turf/open/floor/plating,
 /area/cargo/storage)
 "kuo" = (
@@ -51435,14 +51414,13 @@
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 4
 	},
+/obj/structure/fans/tiny,
 /obj/machinery/door/airlock/external/glass{
 	dir = 4;
 	name = "Supply Door Airlock";
-	pixel_y = 0
+	pixel_y = 0;
+	req_access_txt = "31"
 	},
-/obj/effect/mapping_helpers/airlock/access/all/supply/general,
-/obj/structure/fans/tiny,
-/obj/effect/mapping_helpers/airlock/access/all/supply/mining,
 /turf/open/floor/plating,
 /area/cargo/storage)
 "lri" = (
@@ -55106,10 +55084,9 @@
 "mdW" = (
 /obj/machinery/door/airlock/mining/glass{
 	id_tag = "innercargo";
-	name = "Cargo Bay"
+	name = "Cargo Bay";
+	req_one_access_txt = "50;48"
 	},
-/obj/effect/mapping_helpers/airlock/access/any/supply/mining,
-/obj/effect/mapping_helpers/airlock/access/any/supply/general,
 /turf/open/floor/plasteel,
 /area/cargo/storage)
 "mdY" = (
@@ -62492,9 +62469,9 @@
 	cycle_id = "miner-passthrough"
 	},
 /obj/machinery/door/airlock/mining/glass{
-	name = "Mining Dock"
+	name = "Mining Dock";
+	req_access_txt = "48"
 	},
-/obj/effect/mapping_helpers/airlock/access/all/supply/mining,
 /turf/open/floor/plasteel,
 /area/cargo/miningdock)
 "nJG" = (
@@ -64080,18 +64057,6 @@
 	},
 /turf/open/floor/plating,
 /area/maintenance/port/lesser)
-"occ" = (
-/obj/effect/mapping_helpers/airlock/cyclelink_helper{
-	dir = 8
-	},
-/obj/machinery/door/airlock/external/glass{
-	dir = 4;
-	name = "Supply Door Airlock"
-	},
-/obj/effect/mapping_helpers/airlock/access/all/supply/general,
-/obj/effect/mapping_helpers/airlock/access/all/supply/mining,
-/turf/open/floor/plating,
-/area/cargo/storage)
 "ocd" = (
 /obj/effect/turf_decal/siding/white{
 	dir = 1
@@ -75666,7 +75631,8 @@
 "qFl" = (
 /obj/machinery/door/airlock/mining/glass{
 	id_tag = "innercargo";
-	name = "Cargo Bay"
+	name = "Cargo Bay";
+	req_one_access_txt = "50;48"
 	},
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
@@ -75680,8 +75646,6 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 4
 	},
-/obj/effect/mapping_helpers/airlock/access/any/supply/mining,
-/obj/effect/mapping_helpers/airlock/access/any/supply/general,
 /turf/open/floor/plasteel,
 /area/cargo/storage)
 "qFt" = (
@@ -95723,9 +95687,9 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
 /obj/machinery/door/airlock/mining{
-	name = "Mining Dock"
+	name = "Mining Dock";
+	req_access_txt = "48"
 	},
-/obj/effect/mapping_helpers/airlock/access/all/supply/mining,
 /obj/machinery/door/firedoor,
 /turf/open/floor/plasteel,
 /area/cargo/miningdock)
@@ -105243,7 +105207,7 @@
 /area/hallway/primary/port)
 "wZV" = (
 /obj/effect/turf_decal/stripes/yellow/corner{
-	dir = 4
+	dir = 8
 	},
 /obj/effect/turf_decal/tile/blue/half/contrasted{
 	dir = 1
@@ -107074,10 +107038,10 @@
 /turf/open/floor/glass/reinforced,
 /area/hallway/primary/starboard)
 "xuK" = (
-/obj/effect/mapping_helpers/airlock/access/all/supply/mining,
 /obj/machinery/door/airlock/external/glass{
 	name = "Mining Airlock";
-	dir = 4
+	dir = 4;
+	req_access_txt = "48"
 	},
 /obj/effect/mapping_helpers/airlock/cyclelink_helper_multi{
 	cycle_id = "miner-passthrough"
@@ -259827,7 +259791,7 @@ kAP
 tfv
 jJV
 hox
-dDH
+lrh
 jJV
 lrh
 wQI
@@ -260343,7 +260307,7 @@ jJV
 jhp
 kuj
 tSO
-occ
+kuj
 xhA
 jJV
 kAP
