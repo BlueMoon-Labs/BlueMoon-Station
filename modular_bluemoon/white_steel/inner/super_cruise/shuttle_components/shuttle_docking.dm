@@ -284,10 +284,11 @@
 		if(port == my_port)
 			continue
 		var/port_hidden = !shuttleObject.stealth && port.hidden
+		//WHITE-STEEL FIX: get_dock_overlap() отдаёт прямоугольник [x_min, y_min, x_max, y_max]
+		//(см. get_rect_overlap), а не списки координат. Из-за индексации overlap[1] как списка
+		//сыпался рантайм "bad index" и проверка перекрытия доков не работала вовсе.
 		var/list/overlap = overlappers[port]
-		var/list/xs = overlap[1]
-		var/list/ys = overlap[2]
-		if(xs["[T.x]"] && ys["[T.y]"])
+		if(T.x >= overlap[1] && T.x <= overlap[3] && T.y >= overlap[2] && T.y <= overlap[4])
 			if(port_hidden)
 				. = SHUTTLE_DOCKER_BLOCKED_BY_HIDDEN_PORT
 			else

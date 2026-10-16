@@ -28,8 +28,8 @@
 	for(var/trash in subtypesof(/obj/item/trash))
 		.[trash] = 0.33
 	//WHITE-STEEL PORT: на сигналах преисподней изредка попадаются книги заклинаний
-	//(/obj/item/book/granter/spell, кроме базового родителя и мета-книги /random) — 0.5%
-	//(0.005) от общего веса мусора на появление любой из книг.
+	//(/obj/item/book/granter/spell, кроме базового родителя и мета-книги /random) — 0.25%
+	//(0.0025) от общего веса мусора на появление любой из книг.
 	var/list/spell_books = list()
 	for(var/obj/item/book/granter/spell/book as() in subtypesof(/obj/item/book/granter/spell))
 		if(ispath(book, /obj/item/book/granter/spell/random))
@@ -39,7 +39,7 @@
 		var/total_weight = 0
 		for(var/key in .)
 			total_weight += .[key]
-		var/per_book = total_weight * 0.005 / length(spell_books)
+		var/per_book = total_weight * 0.0025 / length(spell_books)
 		for(var/book in spell_books)
 			.[book] = per_book
 

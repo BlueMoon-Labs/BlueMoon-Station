@@ -14,7 +14,10 @@
 		var/rock_value = (distance / 120) + 0.1
 		var/sand_value = (distance / 120)
 		if(noise_at_coord >= rock_value)
-			T.ChangeTurf(/turf/closed/mineral/random/high_chance, list(/turf/open/floor/plating/asteroid/airless), CHANGETURF_IGNORE_AIR)
+			//WHITE-STEEL PORT: богатая жила (high_chance) теперь только в четверти случаев,
+			//остальное — обычная порода, чтобы жил было вчетверо меньше.
+			var/rock_type = prob(25) ? /turf/closed/mineral/random/high_chance : /turf/closed/mineral/random
+			T.ChangeTurf(rock_type, list(/turf/open/floor/plating/asteroid/airless), CHANGETURF_IGNORE_AIR)
 		else if(noise_at_coord >= sand_value)
 			T.ChangeTurf(/turf/open/floor/plating/asteroid/airless, flags = CHANGETURF_IGNORE_AIR)
 		CHECK_TICK

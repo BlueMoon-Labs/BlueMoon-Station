@@ -1,3 +1,7 @@
+//WHITE-STEEL FIX: сколько подряд на руине не должно быть живых игроков, прежде чем
+//экспедиционный шаттл уедет сам. Защита от транзитного сбоя проверки.
+#define MISSION_SHUTTLE_EMPTY_GRACE (30 SECONDS)
+
 /datum/orbital_objective
 	var/name = "Null Objective"
 	var/datum/orbital_object/z_linked/beacon/ruin/linked_beacon
@@ -13,6 +17,9 @@
 	var/objective_z_level
 	//WHITE-STEEL PORT: защита от повторной отправки шаттла с миссии.
 	var/mission_shuttle_dispatched = FALSE
+	//WHITE-STEEL FIX: с какого момента (world.time) на руине не видно живых игроков.
+	//Шаттл уедет сам, только если это длится дольше MISSION_SHUTTLE_EMPTY_GRACE.
+	var/mission_shuttle_empty_since = 0
 
 /datum/orbital_objective/New()
 	. = ..()
@@ -70,12 +77,33 @@
 	if(!exploration || exploration.mode != SHUTTLE_IDLE || exploration.z != objective_z_level)
 		return
 	var/atom/movable/npc_target = get_target()
-	//Считаем живых подключённых игроков на руине (цель-непись миссии игнорируем).
+	//Считаем живых игроков на руине (цель-непись миссии игнорируем). Намеренно НЕ требуем
+	//наличия client: живой игрок мог на миг потерять соединение или уйти в SSD — оставлять
+	//его на руине, посчитав команду мёртвой, нельзя.
+	var/found_alive = FALSE
 	for(var/mob/living/carbon/human/H as() in GLOB.human_list)
-		if(QDELETED(H) || H.z != objective_z_level || H.stat == DEAD || !H.mind || !H.client)
+		if(QDELETED(H) || H.z != objective_z_level || H.stat == DEAD || !H.mind)
 			continue
 		if(H == npc_target)
 			continue
+		found_alive = TRUE
+		break
+	if(found_alive)
+		mission_shuttle_empty_since = 0
+		return
+	//WHITE-STEEL FIX: никого живого не видно. Не улетаем по одному «пустому» тику — ждём
+	//grace-период, иначе транзитный сбой проверки (игрок в Move(), моргнувший client и т.п.)
+	//оставлял человека на руине без шаттла.
+	if(!mission_shuttle_empty_since)
+		mission_shuttle_empty_since = world.time
+		var/list/who = list()
+		for(var/mob/living/carbon/human/H as() in GLOB.human_list)
+			if(QDELETED(H) || H.z != objective_z_level)
+				continue
+			who += "[key_name(H)] ([H.stat == DEAD ? "мёртв" : "жив"][H.client ? "" : ", нет клиента"])"
+		log_game("[name]: на руине (z=[objective_z_level]) не видно живых игроков (на уровне: [length(who) ? who.Join("; ") : "никого"]), повторная проверка через [MISSION_SHUTTLE_EMPTY_GRACE / (1 SECONDS)]с.")
+		return
+	if(world.time - mission_shuttle_empty_since < MISSION_SHUTTLE_EMPTY_GRACE)
 		return
 	mission_shuttle_dispatched = TRUE
 	log_game("[name]: вся команда на руине (z=[objective_z_level]) мертва, шаттл авангарда возвращается на базу.")
@@ -143,9 +171,13 @@
 	var/obj/docking_port/mobile/exploration = SSshuttle.getShuttle("exploration")
 	if(!exploration)
 		return FALSE
+	//WHITE-STEEL FIX: гейт нужен, только когда шаттл СТОИТ на руине миссии (тогда запуск =
+	//бросок экипажа). Если шаттл уже у базы, запуск — это отправка на спасение, блокировать нельзя.
+	if(exploration.z != objective_z_level)
+		return FALSE
 	var/atom/movable/npc_target = get_target()
 	for(var/mob/living/carbon/human/H as() in GLOB.human_list)
-		if(QDELETED(H) || H.z != objective_z_level || H.stat == DEAD || !H.mind || !H.client)
+		if(QDELETED(H) || H.z != objective_z_level || H.stat == DEAD || !H.mind)
 			continue
 		if(H == npc_target)
 			continue
