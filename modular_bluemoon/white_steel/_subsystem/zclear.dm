@@ -47,7 +47,7 @@ SUBSYSTEM_DEF(zclear)
 	var/list/ignored_atoms = null
 
 	//List of nullspaced mobs to replace in ruins
-	var/list/nullspaced_mobs = list()
+	var/list/mob/nullspaced_mobs = list()
 
 	//List of z-levels being docked with
 	var/list/docking_levels = list()
