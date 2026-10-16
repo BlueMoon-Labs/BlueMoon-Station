@@ -86,7 +86,7 @@
 	module.forceMove(drop_location())
 
 /obj/item/airbag_module
-	name = "аварийный аирбаг"
+	name = "Emergency airbag"
 	desc = "Закладной модуль в оконную раму. Когда стекло вылетает, разворачивает мембрану на тот же тайл и держит давление, пока кто-нибудь не придёт с листом стекла."
 	icon = 'modular_bluemoon/icons/obj/structures/inflatable.dmi'
 	icon_state = "airbag_folded"
@@ -172,7 +172,7 @@
 	icon_state = "airbag_folded_torn"
 
 /obj/structure/inflatable/airbag
-	name = "аварийная мембрана"
+	name = "Emergency membrane"
 	desc = "Раздутая аварийная мембрана. Держит давление ровно столько, сколько нужно, чтобы успеть застеклить проём."
 	icon_state = "airbag_wall"
 	max_integrity = 30
