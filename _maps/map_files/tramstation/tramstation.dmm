@@ -4500,7 +4500,7 @@
 	icon_state = "1-4"
 	},
 /obj/structure/cable/yellow{
-	icon_state = "1-8"
+	icon_state = "4-8"
 	},
 /turf/open/floor/plasteel/dark,
 /area/command/bridge)

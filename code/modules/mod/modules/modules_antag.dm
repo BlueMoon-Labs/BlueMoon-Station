@@ -101,7 +101,7 @@
 	righthand_file = null
 	icon_state = "power_kick"
 	force = 35
-	armour_penetration = 100 //за 5 ТК норм.
+	armour_penetration = MELEE_AP_EXCLUSIVE  //за 5 ТК норм.
 	wound_bonus = 20
 
 /obj/item/melee/baseball_bat/powerkick/attack(mob/living/target, mob/living/user)

@@ -276,7 +276,7 @@
 	throw_range = 7
 	embedding = null
 	block_chance = 50
-	armour_penetration = 75
+	armour_penetration = MELEE_AP_EXCLUSIVE
 	sharpness = SHARP_EDGED
 	attack_verb_on = list("slashed", "cut")
 	custom_materials = list(/datum/material/iron = 1000)

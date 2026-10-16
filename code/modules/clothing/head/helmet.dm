@@ -310,7 +310,6 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	name = "bulletproof Helmet"
 	desc = "A bulletproof combat helmet that excels in protecting the wearer against traditional projectile weaponry and explosives to a minor extent."
 	icon_state = "helmetalt"
-	item_state = "helmetalt"
 	armor_type = /datum/armor/alt
 	can_flashlight = TRUE
 	dog_fashion = null
@@ -325,6 +324,7 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
 	visor_flags_inv = HIDEFACE
 	visor_flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
+	mutantrace_variation = STYLE_MUZZLE
 	toggle_cooldown = 0
 	active_sound = 'sound/machines/closet_open.ogg'
 	// BLUEMOON ADD END
@@ -338,6 +338,9 @@ GLOBAL_PROTECT(aventail_pride_colors)
 			RESKIN_ITEM_STATE = "helmetaltold"
 		),
 	)
+
+/obj/item/clothing/head/helmet/alt/wm
+	icon_state = "helmetalt-wm"
 
 /obj/item/clothing/head/helmet/old
 	name = "degrading Helmet"
@@ -419,6 +422,9 @@ GLOBAL_PROTECT(aventail_pride_colors)
 			if(active_sound_2)
 				if(!up)
 					playsound(src.loc, "[active_sound_2]", 100, 0, 4)
+
+/obj/item/clothing/head/helmet/riot/wm
+	icon_state = "riot-wm"
 
 /obj/item/clothing/head/helmet/justice
 	name = "helmet of justice"

@@ -981,7 +981,7 @@
 	desc = "Изящное оружие."
 	force = 8
 	throwforce = 12
-	armour_penetration = 50
+	armour_penetration = MELEE_AP_EXCLUSIVE
 	block_parry_data = null
 
 /obj/item/storage/belt/sabre/secbelt

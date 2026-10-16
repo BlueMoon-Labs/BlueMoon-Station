@@ -207,6 +207,7 @@
 	embedding = list("pain_mult" = 4, "embed_chance" = 65, "fall_chance" = 10, "ignore_throwspeed_threshold" = TRUE)
 	force = 20
 	throwforce = 16
+	armour_penetration = MELEE_AP_COMBAT
 	wound_bonus = 8
 	bare_wound_bonus = 11
 	attack_verb = list("slashed", "stabbed", "sliced", "torn", "ripped", "cut")

@@ -36,7 +36,7 @@
 	throwforce = 25
 	wound_bonus = 10
 	bare_wound_bonus = 20
-	armour_penetration = 35
+	armour_penetration = MELEE_AP_ANTAGONIST
 	actions_types = list(/datum/action/item_action/cult_dagger)
 
 /obj/item/melee/cultblade/dagger/Initialize(mapload)
@@ -111,7 +111,7 @@
 	block_chance = 50
 	throwforce = 20
 	force = 35
-	armour_penetration = 45
+	armour_penetration = MELEE_AP_EXCLUSIVE
 	throw_speed = 1
 	throw_range = 3
 	sharpness = SHARP_EDGED
@@ -817,7 +817,7 @@
 	force = 17
 	throwforce = 52
 	throw_speed = 2
-	armour_penetration = 30
+	armour_penetration = MELEE_AP_ANTAGONIST
 	block_chance = 30
 	attack_verb = list("attacked", "impaled", "stabbed", "torn", "gored")
 	sharpness = SHARP_EDGED
@@ -924,7 +924,7 @@
 	force = 17
 	throwforce = 28
 	throw_speed = 2
-	armour_penetration = 30
+	armour_penetration = MELEE_AP_ANTAGONIST
 	block_chance = 45
 	attack_verb = list("attacked", "impaled", "stabbed", "torn", "gored")
 	sharpness = SHARP_EDGED

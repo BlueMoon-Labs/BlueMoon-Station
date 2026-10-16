@@ -12,7 +12,7 @@
 	throwforce = 40
 	throw_speed = 4
 	embedding = list("impact_pain_mult" = 3)
-	armour_penetration = 10
+	armour_penetration = MELEE_AP_CIVILIAN
 	custom_materials = list(/datum/material/iron=1150, /datum/material/glass=2075)
 	hitsound = 'sound/weapons/bladeslice.ogg'
 	attack_verb = list("attacked", "poked", "jabbed", "torn", "gored")
@@ -237,7 +237,7 @@
 	slot_flags = ITEM_SLOT_BACK
 	throwforce = 50
 	embedding = list("embedded_impact_pain_multiplier" = 3)
-	armour_penetration = 15				//Enhanced armor piercing
+	armour_penetration = MELEE_AP_COMBAT 				//Enhanced armor piercing
 	custom_materials = null
 	hitsound = 'sound/weapons/bladeslice.ogg'
 	attack_verb = list("attacked", "poked", "jabbed", "torn", "gored")
@@ -255,7 +255,7 @@
 	desc = "A deadly spear that passes down through the tribe from Cycle to Cycle. Like its original wielder, it is forced to shed blood until the end of time."
 	force = 18
 	throwforce = 60
-	armour_penetration = 25				//Enhanced armor piercing
+	armour_penetration = MELEE_AP_ANTAGONIST 				//Enhanced armor piercing
 	icon_prefix = "bonemetal_spear"
 
 /obj/item/spear/bonespear/Khasal/ComponentInitialize()

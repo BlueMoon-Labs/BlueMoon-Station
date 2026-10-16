@@ -939,3 +939,17 @@
 	var/list/access_list = ..()
 	access_list += ACCESS_CENT_BAR
 	return access_list
+
+// -------------------- InteQ access helpers
+/obj/effect/mapping_helpers/airlock/access/any/InteQ
+	icon_state = "access_helper_eng"
+
+/obj/effect/mapping_helpers/airlock/access/any/InteQ/general/get_access()
+	var/list/access_list = ..()
+	access_list += ACCESS_INTEQ
+	return access_list
+
+/obj/effect/mapping_helpers/airlock/access/any/InteQ/leader/get_access()
+	var/list/access_list = ..()
+	access_list += ACCESS_INTEQ_LEADER
+	return access_list

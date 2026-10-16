@@ -120,7 +120,7 @@
 		knife_force = clamp(knife_force + whetstone.increment, 0, whetstone.max)
 		knife_wound_bonus += whetstone.increment
 		knife_bare_wound_bonus += whetstone.increment
-		armour_penetration += 20
+		armour_penetration = max(armour_penetration, MELEE_AP_COMBAT)
 
 		if(knife_mode)
 			force = knife_force
@@ -162,7 +162,7 @@
 	wound_bonus = 15
 	knife_bare_wound_bonus = 15
 	bare_wound_bonus = 15
-	armour_penetration = 10
+	armour_penetration = MELEE_AP_COMBAT
 
 	icon_state = "wolverine_emag"
 	item_state = "wolverine_emag"
@@ -336,7 +336,7 @@
 		knife_force = clamp(knife_force + whetstone.increment, 0, whetstone.max)
 		knife_wound_bonus += whetstone.increment
 		knife_bare_wound_bonus += whetstone.increment
-		armour_penetration += 20
+		armour_penetration = max(armour_penetration, MELEE_AP_COMBAT)
 
 		if(knife_mode)
 			force = knife_force
@@ -377,7 +377,7 @@
 	wound_bonus = 15
 	knife_bare_wound_bonus = 15
 	bare_wound_bonus = 15
-	armour_penetration = 10
+	armour_penetration = MELEE_AP_COMBAT
 
 	icon_state = "wolverine_emag"
 	item_state = "wolverine_emag"

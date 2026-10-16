@@ -176,7 +176,7 @@
 	icon_state = "hardened"
 	force = 8
 	throwforce = 12
-	armour_penetration = 10
+	armour_penetration = MELEE_AP_ANTAGONIST
 	embedding = list("embed_chance" = 35)
 	staketime = 80
 
@@ -187,7 +187,7 @@
 	item_state = "silver"
 	siemens_coefficient = 1 //flags = CONDUCT // var/siemens_coefficient = 1 // for electrical admittance/conductance (electrocution checks and shit)
 	force = 9
-	armour_penetration = 25
+	armour_penetration = MELEE_AP_ANTAGONIST
 	embedding = list("embed_chance" = 65)
 	staketime = 60
 

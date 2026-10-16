@@ -268,7 +268,7 @@
 	name = "warped arm blade"
 	desc = "Неправильно срощенные кости и сухожилия — все ещё голодные."
 	force = 22
-	armour_penetration = 10
+	armour_penetration = MELEE_AP_COMBAT
 	wound_bonus = 5
 	bare_wound_bonus = 5
 	can_dismember = FALSE

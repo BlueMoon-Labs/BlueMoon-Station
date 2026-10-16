@@ -437,7 +437,7 @@
 	slot_flags = ITEM_SLOT_BACK|ITEM_SLOT_BELT
 	item_flags = ITEM_CAN_PARRY
 	block_chance = 35
-	armour_penetration = 10
+	armour_penetration = MELEE_AP_ANTAGONIST
 	sharpness = SHARP_EDGED
 	damtype = BRUTE
 	force = 20
@@ -548,7 +548,7 @@
 	name = "reaper scythe"
 	desc = "Ask not for whom the bell tolls..."
 	w_class = WEIGHT_CLASS_BULKY
-	armour_penetration = 35
+	armour_penetration = MELEE_AP_EXCLUSIVE
 	slot_flags = ITEM_SLOT_BACK
 	sharpness = SHARP_EDGED
 	attack_verb = list("chopped", "sliced", "cut", "reaped")
@@ -798,7 +798,7 @@
 	w_class = WEIGHT_CLASS_BULKY
 	force = 24
 	block_chance = 40
-	armour_penetration = 100
+	armour_penetration = MELEE_AP_EXCLUSIVE
 	slot_flags = ITEM_SLOT_BACK
 	sharpness = SHARP_NONE
 	hitsound = "swing_hit"
@@ -970,54 +970,3 @@
 	else
 		to_chat(user, "<span class='notice'>Your prayer to [deity_name] was interrupted.</span>")
 		praying = FALSE
-
-//monk's staf | BM added
-/obj/item/staff/bostaff/chaplain
-	name = "monk's staff"
-	desc = "A long, tall staff made of polished wood. Traditionally used in ancient old-Earth martial arts, it is now used to harass the clown."
-	block_chance = 40
-
-/obj/item/staff/bostaff/chaplain/proc/jedi_spin(mob/living/user)
-	for(var/i in list(NORTH,SOUTH,EAST,WEST,EAST,SOUTH,NORTH,SOUTH,EAST,WEST,EAST,SOUTH))
-		user.setDir(i)
-		if(i == WEST)
-			user.emote("flip")
-		sleep(1)
-
-/obj/item/staff/bostaff/chaplain/attack(mob/target, mob/living/user)
-	add_fingerprint(user)
-	if((HAS_TRAIT(user, TRAIT_CLUMSY)) && prob(50))
-		to_chat(user, "<span class ='warning'>You club yourself over the head with [src].</span>")
-		user.DefaultCombatKnockdown(60)
-		if(ishuman(user))
-			var/mob/living/carbon/human/H = user
-			H.apply_damage(2*force, BRUTE, BODY_ZONE_HEAD)
-		else
-			user.take_bodypart_damage(2*force)
-		return
-	if(iscyborg(target))
-		return ..()
-	if(!isliving(target))
-		return ..()
-	var/mob/living/carbon/C = target
-	if(C.stat || C.health < 0 || C.staminaloss > 130 )
-		to_chat(user, "<span class='warning'>It would be dishonorable to attack a foe while they cannot retaliate.</span>")
-		return
-	if(user.a_intent == INTENT_DISARM)
-		if(!ishuman(target))
-			return ..()
-		var/mob/living/carbon/human/H = target
-		var/list/fluffmessages = list("[user] clubs [H] with [src]!", \
-									"[user] smacks [H] with the butt of [src]!", \
-									"[user] broadsides [H] with [src]!", \
-									"[user] smashes [H]'s head with [src]!", \
-									"[user] beats [H] with front of [src]!", \
-									"[user] twirls and slams [H] with [src]!")
-		H.visible_message("<span class='warning'>[pick(fluffmessages)]</span>", \
-							"<span class='userdanger'>[pick(fluffmessages)]</span>")
-		playsound(get_turf(user), 'sound/effects/woodhit.ogg', 75, 1, -1)
-		H.adjustStaminaLoss(rand(12,18))
-		if(prob(25))
-			INVOKE_ASYNC(src, PROC_REF(jedi_spin), user)
-	else
-		return ..()

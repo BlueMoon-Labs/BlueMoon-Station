@@ -307,7 +307,7 @@
 /obj/item/clothing/under/goner/fake
 	name = "trencher uniform replica"
 	desc = "A 90% replica of No Man's Land-type uniform."
-	armor = 0
+	armor_type = /datum/armor/none
 
 /obj/item/clothing/under/goner/fake/poly
 	name = "polychromic trencher uniform"

@@ -245,7 +245,7 @@
 	throw_range = 3
 	wound_bonus = 30
 	bare_wound_bonus = 30
-	armour_penetration = 70
+	armour_penetration = MELEE_AP_EXCLUSIVE
 	attack_speed = CLICK_CD_MELEE * 1.2
 	w_class = WEIGHT_CLASS_BULKY
 	item_flags = ITEM_CAN_PARRY | ITEM_CAN_BLOCK

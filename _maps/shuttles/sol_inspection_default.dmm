@@ -196,7 +196,6 @@
 /obj/machinery/door/airlock/grunge{
 	name = "Архив проверок"
 	},
-/obj/effect/mapping_helpers/airlock/access/any/command/general,
 /obj/effect/mapping_helpers/airlock/cutaiwire,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
@@ -207,6 +206,7 @@
 /obj/structure/cable{
 	icon_state = "0-8"
 	},
+/obj/effect/mapping_helpers/airlock/access/any/InteQ/leader,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/sol_inspection)
 "eg" = (
@@ -305,7 +305,7 @@
 /obj/effect/turf_decal/trimline/dark_blue/filled/line{
 	dir = 5
 	},
-/obj/machinery/cryopod,
+/obj/structure/bed/roller/stasis,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/sol_inspection)
 "gw" = (
@@ -328,7 +328,6 @@
 /obj/machinery/door/airlock/hatch{
 	name = "Кабинет собеседований"
 	},
-/obj/effect/mapping_helpers/airlock/access/any/command/general,
 /obj/effect/mapping_helpers/airlock/cutaiwire,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
@@ -387,9 +386,8 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/sol_inspection)
 "ig" = (
-/obj/structure/table/reinforced,
 /obj/machinery/light/red/dim/directional/south,
-/obj/item/storage/box/ids,
+/obj/machinery/portable_atmospherics/canister/oxygen,
 /turf/open/floor/pod/dark,
 /area/shuttle/sol_inspection)
 "ip" = (
@@ -400,6 +398,11 @@
 /obj/item/storage/fancy/donut_box{
 	pixel_y = 6
 	},
+/obj/item/storage/fancy/donut_box{
+	pixel_y = 6
+	},
+/obj/item/storage/box/donkpockets,
+/obj/item/storage/box/donkpockets,
 /turf/open/floor/plasteel,
 /area/shuttle/sol_inspection)
 "iG" = (
@@ -407,19 +410,19 @@
 	dir = 1
 	},
 /obj/structure/table/reinforced,
-/obj/structure/fluff{
-	density = 1;
-	desc = "Материалы служебной проверки.";
-	icon = 'icons/obj/stack_objects.dmi';
-	icon_state = "sheet-gold_3";
-	name = "изъятый золотой запас"
-	},
 /obj/structure/window/reinforced{
 	dir = 2
 	},
 /obj/machinery/door/window{
 	dir = 1;
 	req_access_txt = "20"
+	},
+/obj/item/storage/bag/money/c5000{
+	pixel_x = 6
+	},
+/obj/item/storage/bag/money/c5000,
+/obj/item/storage/bag/money/c5000{
+	pixel_x = -6
 	},
 /turf/open/floor/plasteel/dark,
 /area/shuttle/sol_inspection)
@@ -500,29 +503,21 @@
 /area/shuttle/sol_inspection)
 "lc" = (
 /obj/effect/mapping_helpers/airlock/cyclelink_helper,
-/obj/effect/mapping_helpers/airlock/access/any/command/general,
 /obj/structure/fans/tiny,
 /obj/effect/mapping_helpers/airlock/cutaiwire,
 /obj/machinery/door/airlock/external/glass/ruin{
 	id_tag = "solinspectionportexternal"
 	},
-/obj/effect/mapping_helpers/airlock/locked,
+/obj/effect/mapping_helpers/airlock/locked{
+	req_access = list(153)
+	},
+/obj/effect/mapping_helpers/airlock/access/any/InteQ/leader,
 /turf/open/floor/pod/light,
-/area/shuttle/sol_inspection)
-"lf" = (
-/obj/structure/window/reinforced{
-	dir = 1
-	},
-/obj/structure/window/reinforced{
-	dir = 5
-	},
-/turf/open/floor/pod/dark,
 /area/shuttle/sol_inspection)
 "lu" = (
 /obj/machinery/door/airlock/maintenance_hatch{
 	name = "Техническое помещение"
 	},
-/obj/effect/mapping_helpers/airlock/access/any/command/general,
 /obj/effect/mapping_helpers/airlock/cutaiwire,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
@@ -533,6 +528,7 @@
 /obj/structure/cable{
 	icon_state = "0-8"
 	},
+/obj/effect/mapping_helpers/airlock/access/any/InteQ/leader,
 /turf/open/floor/pod/light,
 /area/shuttle/sol_inspection)
 "lE" = (
@@ -576,7 +572,10 @@
 /turf/open/floor/plasteel,
 /area/shuttle/sol_inspection)
 "mN" = (
-/obj/effect/mob_spawn/human/sol_inspector/guard,
+/obj/vehicle/sealed/mecha/combat/durand/zeus{
+	internals_req_access = list(153);
+	operation_req_access = list(153)
+	},
 /turf/open/floor/pod/dark,
 /area/shuttle/sol_inspection)
 "nk" = (
@@ -613,13 +612,15 @@
 /area/shuttle/sol_inspection)
 "nB" = (
 /obj/effect/mapping_helpers/airlock/cyclelink_helper,
-/obj/effect/mapping_helpers/airlock/access/any/command/general,
 /obj/structure/fans/tiny,
 /obj/effect/mapping_helpers/airlock/cutaiwire,
 /obj/machinery/door/airlock/external/glass/ruin{
 	id_tag = "solinspectionstarboardexternal"
 	},
-/obj/effect/mapping_helpers/airlock/locked,
+/obj/effect/mapping_helpers/airlock/locked{
+	req_access = list(153)
+	},
+/obj/effect/mapping_helpers/airlock/access/any/InteQ/leader,
 /turf/open/floor/pod/light,
 /area/shuttle/sol_inspection)
 "nE" = (
@@ -728,15 +729,8 @@
 /obj/effect/turf_decal/trimline/dark_blue/filled/line{
 	dir = 4
 	},
-/obj/machinery/cryopod,
+/obj/structure/bed/roller/stasis,
 /turf/open/floor/plasteel/dark,
-/area/shuttle/sol_inspection)
-"qj" = (
-/obj/machinery/chem_dispenser/drinks/fullupgrade{
-	dir = 1;
-	pixel_y = -18
-	},
-/turf/open/floor/plasteel,
 /area/shuttle/sol_inspection)
 "qm" = (
 /turf/open/floor/plasteel/dark,
@@ -881,10 +875,6 @@
 /turf/open/floor/pod/dark,
 /area/shuttle/sol_inspection)
 "uy" = (
-/obj/machinery/chem_dispenser/drinks/fullupgrade{
-	dir = 1;
-	pixel_y = -18
-	},
 /obj/effect/turf_decal/siding/dark_green{
 	dir = 4
 	},
@@ -914,12 +904,12 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/sol_inspection)
 "vo" = (
-/obj/effect/mapping_helpers/airlock/access/any/command/general,
 /obj/machinery/door/airlock/glass{
 	name = "Комната отдыха"
 	},
 /obj/effect/mapping_helpers/airlock/cutaiwire,
 /obj/machinery/door/firedoor,
+/obj/effect/mapping_helpers/airlock/access/any/InteQ/leader,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/sol_inspection)
 "vA" = (
@@ -930,11 +920,11 @@
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
 /obj/effect/mapping_helpers/airlock/cutaiwire,
-/obj/effect/mapping_helpers/airlock/access/any/command/general,
 /obj/machinery/door/firedoor,
 /obj/structure/cable{
 	icon_state = "0-4"
 	},
+/obj/effect/mapping_helpers/airlock/access/any/InteQ/leader,
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/shuttle/sol_inspection)
 "vO" = (
@@ -943,12 +933,8 @@
 /turf/open/floor/pod/dark,
 /area/shuttle/sol_inspection)
 "wl" = (
-/obj/structure/window/reinforced{
-	dir = 1
-	},
-/obj/structure/window/reinforced{
-	dir = 9
-	},
+/obj/structure/window/reinforced/spawner/west,
+/obj/structure/window/reinforced/spawner/north,
 /turf/open/floor/pod/dark,
 /area/shuttle/sol_inspection)
 "ww" = (
@@ -1036,8 +1022,6 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 1
 	},
-/obj/effect/turf_decal/bot,
-/obj/machinery/suit_storage_unit/sol_combat,
 /turf/open/floor/pod/dark,
 /area/shuttle/sol_inspection)
 "Ah" = (
@@ -1077,7 +1061,7 @@
 	dir = 8
 	},
 /obj/structure/mirror/directional/north,
-/obj/structure/sink/directional/south,
+/obj/structure/sink/directional/north,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/sol_inspection)
 "BC" = (
@@ -1090,7 +1074,6 @@
 	name = "Архив";
 	id_tag = "sol_inspection_vault"
 	},
-/obj/effect/mapping_helpers/airlock/access/any/command/general,
 /obj/effect/mapping_helpers/airlock/cutaiwire,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
@@ -1101,6 +1084,7 @@
 /obj/structure/cable{
 	icon_state = "0-2"
 	},
+/obj/effect/mapping_helpers/airlock/access/any/InteQ/leader,
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/shuttle/sol_inspection)
 "BT" = (
@@ -1126,6 +1110,14 @@
 	pixel_x = 5;
 	pixel_y = -2
 	},
+/obj/item/reagent_containers/food/drinks/beer/macvulp,
+/obj/item/reagent_containers/food/drinks/beer/macvulp,
+/obj/item/reagent_containers/food/drinks/beer/macvulp,
+/obj/item/reagent_containers/food/drinks/beer/macvulp,
+/obj/item/reagent_containers/food/drinks/beer/light,
+/obj/item/reagent_containers/food/drinks/beer/light,
+/obj/item/reagent_containers/food/drinks/beer/light,
+/obj/item/reagent_containers/food/drinks/beer/light,
 /turf/open/floor/plasteel,
 /area/shuttle/sol_inspection)
 "Cx" = (
@@ -1221,22 +1213,17 @@
 /obj/effect/turf_decal/trimline/dark_blue/arrow_ccw{
 	dir = 10
 	},
+/obj/structure/shuttle/engine/huge,
 /turf/open/floor/plating/airless,
 /area/shuttle/sol_inspection)
 "Ef" = (
 /obj/effect/turf_decal/bot,
-/turf/open/floor/pod/dark,
-/area/shuttle/sol_inspection)
-"Eq" = (
-/obj/effect/turf_decal/bot,
-/obj/machinery/light/small/directional/north,
 /obj/machinery/suit_storage_unit/sol_combat,
 /turf/open/floor/pod/dark,
 /area/shuttle/sol_inspection)
-"Et" = (
-/obj/structure/shuttle/engine/propulsion,
-/obj/effect/turf_decal/trimline/dark_blue/arrow_ccw,
-/turf/open/floor/plating/airless,
+"Eq" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/pod/dark,
 /area/shuttle/sol_inspection)
 "Ew" = (
 /obj/effect/turf_decal/stripes,
@@ -1253,6 +1240,7 @@
 "EJ" = (
 /obj/machinery/light/small/directional/north,
 /obj/structure/table/reinforced,
+/obj/item/storage/secure/briefcase/syndie,
 /turf/open/floor/pod/dark,
 /area/shuttle/sol_inspection)
 "Ff" = (
@@ -1297,10 +1285,6 @@
 /obj/structure/table/glass,
 /obj/item/storage/backpack/duffelbag/med/surgery/upgraded,
 /turf/open/floor/plasteel/dark,
-/area/shuttle/sol_inspection)
-"FU" = (
-/obj/structure/shuttle/engine/propulsion/burst,
-/turf/open/floor/plating/airless,
 /area/shuttle/sol_inspection)
 "Gt" = (
 /obj/structure/table,
@@ -1431,7 +1415,6 @@
 /obj/effect/turf_decal/tile/dark_blue/half{
 	dir = 8
 	},
-/obj/effect/mapping_helpers/airlock/access/any/command/general,
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
 /obj/machinery/atmospherics/pipe/manifold4w/scrubbers/hidden/layer2,
 /obj/machinery/door/airlock/public/glass{
@@ -1439,6 +1422,7 @@
 	},
 /obj/effect/mapping_helpers/airlock/cutaiwire,
 /obj/machinery/door/firedoor,
+/obj/effect/mapping_helpers/airlock/access/any/InteQ/leader,
 /turf/open/floor/plasteel{
 	dir = 8
 	},
@@ -1467,14 +1451,15 @@
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 1
 	},
-/obj/effect/mapping_helpers/airlock/access/any/command/general,
 /obj/structure/fans/tiny,
 /obj/effect/mapping_helpers/airlock/cutaiwire,
 /obj/machinery/door/airlock/external/glass/ruin{
-	id_tag = "solinspectionstarboardexternal"
+	id_tag = "solinspectionstarboardexternal";
+	req_access = list(153)
 	},
 /obj/effect/mapping_helpers/airlock/locked,
 /obj/docking_port/mobile/sol_inspection,
+/obj/effect/mapping_helpers/airlock/access/any/InteQ/leader,
 /turf/open/floor/pod/light,
 /area/shuttle/sol_inspection)
 "KI" = (
@@ -1536,10 +1521,7 @@
 	dir = 4
 	},
 /obj/machinery/light/small/directional/east,
-/obj/machinery/computer/cryopod{
-	pixel_x = 32
-	},
-/obj/machinery/cryopod,
+/obj/structure/bed/roller/stasis,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/sol_inspection)
 "LB" = (
@@ -1547,8 +1529,8 @@
 /turf/open/floor/plasteel,
 /area/shuttle/sol_inspection)
 "LM" = (
-/obj/structure/shuttle/engine/propulsion,
 /obj/effect/turf_decal/trimline/dark_blue/arrow_cw,
+/obj/structure/shuttle/engine/huge,
 /turf/open/floor/plating/airless,
 /area/shuttle/sol_inspection)
 "LR" = (
@@ -1705,13 +1687,12 @@
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 1
 	},
-/obj/effect/mapping_helpers/airlock/access/any/command/general,
 /obj/structure/fans/tiny,
 /obj/effect/mapping_helpers/airlock/cutaiwire,
 /obj/machinery/door/airlock/external/glass/ruin{
 	id_tag = "solinspectionportexternal"
 	},
-/obj/effect/mapping_helpers/airlock/locked,
+/obj/effect/mapping_helpers/airlock/access/any/InteQ/leader,
 /turf/open/floor/pod/light,
 /area/shuttle/sol_inspection)
 "Oy" = (
@@ -1748,18 +1729,8 @@
 /turf/open/floor/pod/dark,
 /area/shuttle/sol_inspection)
 "Pn" = (
-/obj/structure/table/reinforced,
 /obj/machinery/light/red/dim/directional/south,
-/obj/item/stack/sheet/mineral/gold{
-	amount = 3;
-	pixel_x = -2;
-	pixel_y = 2
-	},
-/obj/item/stack/sheet/mineral/silver{
-	amount = 8;
-	pixel_x = 6;
-	pixel_y = 2
-	},
+/obj/structure/window/reinforced/spawner/west,
 /turf/open/floor/pod/dark,
 /area/shuttle/sol_inspection)
 "PP" = (
@@ -1794,13 +1765,11 @@
 /turf/open/floor/plasteel,
 /area/shuttle/sol_inspection)
 "QQ" = (
-/obj/structure/table/wood,
-/obj/item/reagent_containers/food/snacks/donut,
-/obj/item/reagent_containers/food/snacks/burger/plain,
-/obj/machinery/computer/monitor{
-	dir = 2
+/obj/machinery/chem_dispenser/drinks/fullupgrade{
+	dir = 1;
+	pixel_y = 18
 	},
-/turf/open/floor/wood,
+/turf/closed/wall/mineral/titanium,
 /area/shuttle/sol_inspection)
 "QS" = (
 /obj/machinery/atmospherics/pipe/manifold4w/supply/hidden/layer4,
@@ -1920,6 +1889,13 @@
 /obj/structure/window/reinforced{
 	dir = 2
 	},
+/obj/structure/fluff{
+	density = 1;
+	desc = "Материалы служебной проверки.";
+	icon = 'icons/obj/stack_objects.dmi';
+	icon_state = "sheet-gold_3";
+	name = "изъятый золотой запас"
+	},
 /turf/open/floor/plasteel/dark,
 /area/shuttle/sol_inspection)
 "Th" = (
@@ -1947,7 +1923,11 @@
 /area/shuttle/sol_inspection)
 "TA" = (
 /obj/structure/table/wood,
-/obj/item/reagent_containers/food/snacks/donut,
+/obj/item/reagent_containers/food/snacks/burger/plain,
+/obj/item/reagent_containers/food/snacks/burger/plain,
+/obj/item/reagent_containers/food/snacks/burger/plain,
+/obj/item/reagent_containers/food/snacks/burger/plain,
+/obj/item/reagent_containers/food/snacks/burger/plain,
 /turf/open/floor/wood,
 /area/shuttle/sol_inspection)
 "UF" = (
@@ -1974,8 +1954,8 @@
 /turf/open/floor/plating,
 /area/shuttle/sol_inspection)
 "VS" = (
-/obj/structure/window/reinforced{
-	dir = 1
+/obj/structure/window/reinforced/survival_pod/north{
+	req_access = list(153)
 	},
 /turf/open/floor/pod/dark,
 /area/shuttle/sol_inspection)
@@ -2000,9 +1980,9 @@
 /obj/machinery/door/airlock/public/glass{
 	name = "Инспекционный офис"
 	},
-/obj/effect/mapping_helpers/airlock/access/any/command/general,
 /obj/effect/mapping_helpers/airlock/cutaiwire,
 /obj/machinery/door/firedoor,
+/obj/effect/mapping_helpers/airlock/access/any/InteQ/leader,
 /turf/open/floor/plasteel/white,
 /area/shuttle/sol_inspection)
 "XI" = (
@@ -2027,22 +2007,20 @@
 /turf/open/floor/plasteel/dark,
 /area/shuttle/sol_inspection)
 "Yu" = (
-/obj/structure/shuttle/engine/heater,
-/obj/structure/window/reinforced{
-	dir = 1
-	},
+/obj/structure/window/plasma/reinforced/spawner/north,
+/obj/structure/fans/tiny,
 /turf/open/floor/plating/airless,
 /area/shuttle/sol_inspection)
 "YJ" = (
 /obj/effect/turf_decal/tile/dark_blue/half{
 	dir = 4
 	},
-/obj/effect/mapping_helpers/airlock/access/any/command/general,
 /obj/effect/mapping_helpers/airlock/cutaiwire,
 /obj/machinery/door/airlock/public/glass{
 	name = "Мостик"
 	},
 /obj/machinery/door/firedoor,
+/obj/effect/mapping_helpers/airlock/access/any/InteQ/leader,
 /turf/open/floor/plasteel{
 	dir = 4
 	},
@@ -2176,7 +2154,7 @@ ur
 kp
 Oy
 Yu
-FU
+LX
 DV
 "}
 (5,1,1) = {"
@@ -2202,7 +2180,7 @@ cR
 OG
 Yu
 LX
-Et
+Ik
 "}
 (6,1,1) = {"
 WR
@@ -2220,8 +2198,8 @@ dP
 lE
 QV
 bp
-qj
-aC
+mA
+QQ
 lR
 CU
 eg
@@ -2246,7 +2224,7 @@ lE
 QV
 Ck
 uy
-aC
+QQ
 aC
 lu
 aC
@@ -2295,7 +2273,7 @@ IU
 sS
 Tu
 rf
-QQ
+TA
 aC
 Eq
 am
@@ -2322,10 +2300,10 @@ Hg
 rf
 TA
 aC
-uJ
-bw
-VS
 Bl
+bw
+Bl
+uJ
 aC
 WR
 "}
@@ -2349,7 +2327,7 @@ aC
 gd
 sg
 bw
-lf
+Bl
 ig
 aC
 WR
@@ -2601,7 +2579,7 @@ nP
 Mv
 nq
 Yu
-FU
+LX
 IY
 "}
 (22,1,1) = {"

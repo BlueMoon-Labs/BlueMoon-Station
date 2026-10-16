@@ -2006,6 +2006,8 @@
 		// Воксы - гост-команда со своего корабля, но не antag_heavy: решением геймдизайна это
 		// единственный рейд лёгкого профиля, и живёт он только в нём (см. vox_scavengers_event.dm).
 		/datum/round_event_control/vox_scavengers,
+		// Бюрократическая проверка без боевой задачи.
+		/datum/round_event_control/sol_inspection,
 	)
 	var/datum/round_event_control/operative/operative_control = locate() in SSdirector.event_controls()
 	var/datum/round_event_control/operative/keeper/keeper_control = locate() in SSdirector.event_controls()

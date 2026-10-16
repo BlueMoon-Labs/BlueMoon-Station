@@ -176,6 +176,43 @@
 	TEST_ASSERT_EQUAL(ordinary_record.fields["criminal"], SEC_RECORD_STATUS_RELEASED, "Normal brig release behavior must be preserved.")
 	GLOB.player_list -= actor
 
+/// The syndicate sleeper is illegal at every security level and records its assembler like a miner.
+/datum/unit_test/sol_inspection_syndicate_sleeper
+	var/old_security_level
+
+/datum/unit_test/sol_inspection_syndicate_sleeper/Destroy()
+	GLOB.security_level = old_security_level
+	return ..()
+
+/datum/unit_test/sol_inspection_syndicate_sleeper/Run()
+	old_security_level = GLOB.security_level
+	var/obj/item/sol_inspection_scanner/scanner = allocate(/obj/item/sol_inspection_scanner)
+	var/mob/living/carbon/human/builder = allocate(/mob/living/carbon/human)
+	builder.ckey = "sol_sleeper_assembly_test"
+	builder.key = builder.ckey
+	var/obj/machinery/sleeper/syndie/syndicate_sleeper = allocate(/obj/machinery/sleeper/syndie)
+	record_sol_inspection_builder(syndicate_sleeper, builder)
+	TEST_ASSERT_EQUAL(scanner.get_builder_ckey(syndicate_sleeper), builder.ckey, "Completing the sleeper frame must record its assembler.")
+	TEST_ASSERT_EQUAL(scanner.get_fine_amount(syndicate_sleeper), 25000, "A syndicate sleeper must incur the standard fine.")
+
+	for(var/security_level in list(SEC_LEVEL_GREEN, SEC_LEVEL_BLUE, SEC_LEVEL_AMBER, SEC_LEVEL_RED, SEC_LEVEL_DELTA))
+		GLOB.security_level = security_level
+		TEST_ASSERT(scanner.violation_reason(syndicate_sleeper), "A sleeper with controls inside must stay illegal at code [security_level].")
+
+	// A regular sleeper is the board the station is actually allowed to build.
+	var/obj/machinery/sleeper/ordinary_sleeper = allocate(/obj/machinery/sleeper)
+	GLOB.security_level = SEC_LEVEL_GREEN
+	TEST_ASSERT(!scanner.violation_reason(ordinary_sleeper), "An ordinary sleeper must remain legal.")
+
+	// Whoever is stasis-locked inside must land on the station floor, not inside the deleted pod.
+	var/turf/test_turf = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, test_turf)
+	syndicate_sleeper.occupant = victim
+	victim.forceMove(syndicate_sleeper)
+	scanner.confiscate_target(syndicate_sleeper)
+	TEST_ASSERT(QDELETED(syndicate_sleeper), "Confiscation must delete the syndicate sleeper.")
+	TEST_ASSERT(!QDELETED(victim) && victim.loc == test_turf, "The sleeper occupant must be dumped on the seizure turf.")
+
 /// Completing either miner frame records the assembler independently of later fingerprints.
 /datum/unit_test/sol_inspection_miner_assembly/Run()
 	var/mob/living/carbon/human/builder = allocate(/mob/living/carbon/human)
@@ -233,7 +270,7 @@
 /datum/unit_test/sol_inspection_confiscation_removes_targets/Run()
 	var/turf/test_turf = run_loc_floor_bottom_left
 	var/obj/item/sol_inspection_scanner/scanner = allocate(/obj/item/sol_inspection_scanner, test_turf)
-	for(var/target_type in list(/obj/machinery/cryptominer, /obj/machinery/mineral/bluespace_miner, /obj/vehicle/sealed/mecha/combat/durand, /obj/vehicle/sealed/mecha/combat/gygax))
+	for(var/target_type in list(/obj/machinery/cryptominer, /obj/machinery/mineral/bluespace_miner, /obj/machinery/sleeper/syndie, /obj/vehicle/sealed/mecha/combat/durand, /obj/vehicle/sealed/mecha/combat/gygax))
 		for(var/obj/effect/particle_effect/fake_sparks/sparks in test_turf)
 			qdel(sparks)
 		var/atom/target = allocate(target_type, test_turf)

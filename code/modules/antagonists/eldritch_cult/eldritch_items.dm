@@ -151,7 +151,7 @@
 	attack_verb = list("атаковал", "рубанул", "уколол", "порезал", "терзал")
 	wound_bonus = 5
 	bare_wound_bonus = 10
-	armour_penetration = 25
+	armour_penetration = MELEE_AP_ANTAGONIST
 	actions_types = list(/datum/action/item_action/heretic_escape)
 	/// Только соответствующий клинок активирует метку своего пути.
 	var/mark_type = /datum/status_effect/eldritch

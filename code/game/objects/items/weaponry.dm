@@ -646,7 +646,7 @@ for further reading, please see: https://github.com/tgstation/tgstation/pull/301
 	throwforce = 10 //10 + 2 (WEIGHT_CLASS_SMALL) * 4 (EMBEDDED_IMPACT_PAIN_MULTIPLIER) = 18 damage on hit due to guaranteed embedding
 	throw_speed = 4
 	embedding = list("pain_mult" = 4, "embed_chance" = 100, "fall_chance" = 0, "embed_chance_turf_mod" = 15)
-	armour_penetration = 40
+	armour_penetration = MELEE_AP_EXCLUSIVE
 
 	w_class = WEIGHT_CLASS_SMALL
 	sharpness = SHARP_POINTY
@@ -770,7 +770,7 @@ for further reading, please see: https://github.com/tgstation/tgstation/pull/301
 	throw_speed = 2
 	throw_range = 5
 	w_class = WEIGHT_CLASS_SMALL
-	armour_penetration = 100
+	armour_penetration = MELEE_AP_EXCLUSIVE
 	attack_verb = list("bludgeoned", "whacked", "disciplined")
 	resistance_flags = FLAMMABLE
 
@@ -1074,7 +1074,7 @@ for further reading, please see: https://github.com/tgstation/tgstation/pull/301
 	off_icon_state = "baseball_bat_telescopic_0"
 	on_item_state = "baseball_bat_telescopic"
 	force_on = 23 // better then toolbox
-	armour_penetration =  10
+	armour_penetration = MELEE_AP_COMBAT
 	force_off = 5
 	throwforce_on = 20
 	throwforce_off = 10
@@ -1192,7 +1192,7 @@ for further reading, please see: https://github.com/tgstation/tgstation/pull/301
 	righthand_file = 'icons/mob/inhands/weapons/swords_righthand.dmi'
 	name = "vibro sword"
 	desc = "A potent weapon capable of cutting through nearly anything. Wielding it in two hands will allow you to deflect gunfire."
-	armour_penetration = 100
+	armour_penetration = MELEE_AP_EXCLUSIVE
 	block_chance = 40
 	force = 20
 	throwforce = 20

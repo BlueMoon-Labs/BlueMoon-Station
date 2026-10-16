@@ -12,7 +12,7 @@
 	slot_flags = NONE		// Doesn't have on_back sprites...
 	force = 5
 	throwforce = 15
-	armour_penetration = 40
+	armour_penetration = MELEE_AP_EXCLUSIVE
 	wound_bonus = 8
 	bare_wound_bonus = 14
 	max_integrity = 200

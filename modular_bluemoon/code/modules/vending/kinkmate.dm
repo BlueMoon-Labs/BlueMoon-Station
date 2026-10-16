@@ -274,8 +274,10 @@
 
 /obj/machinery/vending/kink/Initialize(mapload)
 	. = ..()
+#ifndef UNIT_TESTS
 	if(mapload && prob(0.1))
 		var/turf/T = get_turf(src)
 		if(T)
 			qdel(src)
 			new /obj/machinery/vending/sexmachine(T)
+#endif

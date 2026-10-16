@@ -211,7 +211,7 @@ GLOBAL_VAR_INIT(fscpassword, generate_password())
 	sharpness = SHARP_EDGED
 	embedding = list("embed_chance" = 75, "impact_pain_mult" = 10)
 	w_class = WEIGHT_CLASS_BULKY
-	armour_penetration = 75
+	armour_penetration = MELEE_AP_EXCLUSIVE
 	item_flags = NEEDS_PERMIT | ITEM_CAN_PARRY
 	custom_materials = list(/datum/material/iron = 2500)
 	total_mass = 3.4

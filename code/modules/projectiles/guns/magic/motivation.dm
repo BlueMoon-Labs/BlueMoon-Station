@@ -9,7 +9,7 @@
 	fire_sound = 'sound/weapons/judgementhit.ogg'
 	ammo_type = /obj/item/ammo_casing/magic/judgement_cut
 	force = 30 // оно вообще не стоило своих ТК
-	armour_penetration = 50
+	armour_penetration = MELEE_AP_EXCLUSIVE
 	w_class = WEIGHT_CLASS_NORMAL
 	slot_flags = ITEM_SLOT_BELT
 	hitsound = 'sound/weapons/bladeslice.ogg'
