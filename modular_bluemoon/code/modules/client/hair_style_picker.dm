@@ -25,9 +25,11 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	var/mob/living/carbon/human/target
 	var/atom/movable/check_atom
 	var/apply_sound
-	/// Выбранный цвет краски для превью до применения к персонажу.
+	/// Цвета для предпросмотра до нажатия Apply; не записываются в настройки или предмет.
+	var/preview_hair_color
+	var/preview_facial_color
 	var/preview_grad_color
-	/// Обработчик получает выбранный стиль и вкладку, возвращает TRUE после успешного применения.
+	/// Обработчик получает выбранный стиль, вкладку и цвет, возвращает TRUE после успешного применения.
 	var/datum/callback/apply_callback
 	var/applying = FALSE
 	var/list/allowed_tabs = list()
@@ -84,7 +86,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	return picker.finalize(user)
 
 /// Выбор для других инструментов и способностей с собственными условиями применения.
-/proc/open_live_hair_style_picker(mob/user, mob/living/carbon/human/subject, atom/movable/source, list/tabs, datum/callback/on_apply, gradient_color = null)
+/proc/open_live_hair_style_picker(mob/user, mob/living/carbon/human/subject, atom/movable/source, list/tabs, datum/callback/on_apply)
 	if(!user?.client || !subject?.dna || QDELETED(source))
 		return FALSE
 	var/datum/hair_style_picker/picker = create_hair_style_picker(user)
@@ -94,7 +96,6 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 		picker.tab = picker.allowed_tabs[1]
 		picker.selected = picker.default_selection()
 	picker.apply_callback = on_apply
-	picker.preview_grad_color = gradient_color
 	return picker.finalize(user)
 
 /proc/create_hair_style_picker(mob/user)
@@ -279,6 +280,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	.["allowed_tabs"] = allowed_tabs
 	.["mode"] = mode
 	.["can_preview_full"] = can_preview_full
+	.["can_change_color"] = can_change_color(user)
 	.["is_taur"] = is_taur
 	.["tab"] = tab
 	.["dir"] = render_dir
@@ -345,6 +347,17 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 			selected = candidate
 			return TRUE
 
+		if("color")
+			if(applying)
+				return
+			applying = TRUE
+			var/changed = change_color(user)
+			if(QDELETED(src))
+				return
+			applying = FALSE
+			destroy_if_idle()
+			return !QDELETED(src) && changed
+
 		if("apply")
 			if(applying)
 				return
@@ -360,6 +373,48 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 			destroy_if_idle()
 			return
 
+/// При вызове из красителя отдельный спрей в руках не требуется.
+/datum/hair_style_picker/proc/get_color_spray(mob/user)
+	if(istype(check_atom, /obj/item/dyespray) && !QDELETED(check_atom))
+		return check_atom
+	return user?.is_holding_item_of_type(/obj/item/dyespray)
+
+/datum/hair_style_picker/proc/can_change_color(mob/user)
+	if(QDELETED(user) || !(tab in allowed_tabs))
+		return FALSE
+	if(prefs)
+		return user.client?.prefs == prefs
+	if(QDELETED(target) || QDELETED(check_atom) || !get_color_spray(user))
+		return FALSE
+	return user.canUseTopic(check_atom, BE_CLOSE, FALSE, NO_TK, TRUE, TRUE) && user.canUseTopic(target, BE_CLOSE, FALSE, NO_TK, TRUE, TRUE)
+
+/datum/hair_style_picker/proc/change_color(mob/user)
+	if(!can_change_color(user))
+		return FALSE
+	var/color_tab = tab
+	var/obj/item/dyespray/spray = get_color_spray(user)
+	var/list/labels = build_labels(user)
+	var/tab_label = labels["tab_[color_tab]"]
+	var/current_color = get_tab_color()
+	var/new_color = input(user, tab_label, labels["color"], "#[current_color]") as color|null
+	// За время диалога могли сменить вкладку, отойти от цели или убрать спрей из рук.
+	if(QDELETED(src) || !new_color || tab != color_tab || !can_change_color(user))
+		return FALSE
+	if(!prefs && (QDELETED(spray) || get_color_spray(user) != spray))
+		return FALSE
+	new_color = sanitize_hexcolor(new_color, 6)
+	switch(color_tab)
+		if(HAIR_PICKER_TAB_HAIR)
+			preview_hair_color = new_color
+		if(HAIR_PICKER_TAB_FACIAL)
+			preview_facial_color = new_color
+		if(HAIR_PICKER_TAB_GRAD)
+			preview_grad_color = new_color
+	// Пересобираем и лист миниатюр, и все направления предпросмотра в следующем ui_data.
+	sheet_cache_key = null
+	preview_cache_key = null
+	return TRUE
+
 /datum/hair_style_picker/proc/apply_selection(mob/user, datum/tgui/ui)
 	if(!user || !selected)
 		return FALSE
@@ -367,10 +422,16 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 		switch(tab)
 			if(HAIR_PICKER_TAB_HAIR)
 				prefs.hair_style = selected
+				if(!isnull(preview_hair_color))
+					prefs.hair_color = preview_hair_color
 			if(HAIR_PICKER_TAB_FACIAL)
 				prefs.facial_hair_style = selected
+				if(!isnull(preview_facial_color))
+					prefs.facial_hair_color = preview_facial_color
 			if(HAIR_PICKER_TAB_GRAD)
 				prefs.grad_style = selected
+				if(!isnull(preview_grad_color))
+					prefs.grad_color = preview_grad_color
 		prefs.ShowChoices(user, rebuild_preview = TRUE)
 		return TRUE
 
@@ -380,10 +441,20 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 		return FALSE
 	if(!user.canUseTopic(target, BE_CLOSE, FALSE, NO_TK, TRUE, TRUE))
 		return FALSE
+	// Спрей мог оказаться вне рук между выбором цвета и Apply.
+	var/new_color = get_preview_color()
+	if(!isnull(new_color) && !can_change_color(user))
+		return FALSE
 	if(apply_callback)
 		if(QDELETED(apply_callback) || (apply_callback.object != GLOBAL_PROC && QDELETED(apply_callback.object)))
 			return FALSE
-		return apply_callback.Invoke(selected, tab)
+		if(!apply_callback.Invoke(selected, tab, get_tab_color()))
+			return FALSE
+		if(QDELETED(src) || QDELETED(target))
+			return FALSE
+		if(apply_target_color(new_color))
+			target.update_hair()
+		return TRUE
 	switch(tab)
 		if(HAIR_PICKER_TAB_HAIR)
 			target.hair_style = selected
@@ -394,11 +465,34 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	// Зеркало: женщины всегда с бритой - как и раньше.
 	if(mode == HAIR_PICKER_MODE_MIRROR && target.gender == FEMALE)
 		target.facial_hair_style = "Shaved"
+	apply_target_color(new_color)
 	target.update_hair()
 	if(mode == HAIR_PICKER_MODE_MIRROR)
 		target.update_mutant_bodyparts()
 	if(apply_sound)
 		playsound(check_atom, apply_sound, 20, TRUE)
+	return TRUE
+
+/datum/hair_style_picker/proc/get_preview_color()
+	switch(tab)
+		if(HAIR_PICKER_TAB_HAIR)
+			return preview_hair_color
+		if(HAIR_PICKER_TAB_FACIAL)
+			return preview_facial_color
+		if(HAIR_PICKER_TAB_GRAD)
+			return preview_grad_color
+
+/// Вызывается только после успешного применения стиля.
+/datum/hair_style_picker/proc/apply_target_color(new_color)
+	if(isnull(new_color))
+		return FALSE
+	switch(tab)
+		if(HAIR_PICKER_TAB_HAIR)
+			target.hair_color = new_color
+		if(HAIR_PICKER_TAB_FACIAL)
+			target.facial_hair_color = new_color
+		if(HAIR_PICKER_TAB_GRAD)
+			target.grad_color = new_color
 	return TRUE
 
 // яндере-дев
@@ -412,15 +506,28 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	return prefs ? prefs.grad_style : target?.grad_style
 
 /datum/hair_style_picker/proc/applied_hair_color()
+	if(!isnull(preview_hair_color))
+		return preview_hair_color
 	return prefs ? prefs.hair_color : target?.hair_color
 
 /datum/hair_style_picker/proc/applied_facial_color()
+	if(!isnull(preview_facial_color))
+		return preview_facial_color
 	return prefs ? prefs.facial_hair_color : target?.facial_hair_color
 
 /datum/hair_style_picker/proc/applied_grad_color()
 	if(!isnull(preview_grad_color))
 		return preview_grad_color
 	return prefs ? prefs.grad_color : target?.grad_color
+
+/datum/hair_style_picker/proc/get_tab_color()
+	switch(tab)
+		if(HAIR_PICKER_TAB_HAIR)
+			return applied_hair_color()
+		if(HAIR_PICKER_TAB_FACIAL)
+			return applied_facial_color()
+		if(HAIR_PICKER_TAB_GRAD)
+			return applied_grad_color()
 
 /datum/hair_style_picker/proc/get_species()
 	if(prefs)
@@ -476,6 +583,8 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	.["tab_grad"] = use_translations ? get_modern_text("hair_gradient", lang_prefs) : "Hair Gradient"
 	.["title"] = is_russian ? "Выбор прически" : "Hair Style"
 	.["apply"] = is_russian ? "Применить" : "Apply"
+	.["color"] = is_russian ? "Цвет" : "Color"
+	.["color_requires_spray"] = is_russian ? "Возьмите [/obj/item/dyespray::name] в руки, чтобы активировать кнопку." : "Hold [/obj/item/dyespray::name] to enable this button."
 	.["search"] = is_russian ? "Поиск..." : "Search..."
 	.["preview"] = is_russian ? "Превью" : "Preview"
 	.["portrait"] = is_russian ? "Портрет" : "Portrait"

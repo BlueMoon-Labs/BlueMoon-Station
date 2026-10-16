@@ -24,6 +24,8 @@ type HairPickerLabels = {
   tab_grad: string;
   title: string;
   apply: string;
+  color: string;
+  color_requires_spray: string;
   search: string;
   preview: string;
   portrait: string;
@@ -38,6 +40,7 @@ type HairPickerData = {
   allowed_tabs?: string[];
   mode?: number;
   can_preview_full: boolean;
+  can_change_color: boolean;
   is_taur: boolean;
   tab: string;
   dir: number;
@@ -305,13 +308,25 @@ const PreviewPanel = (props: {
           fill
           title={labels.preview}
           buttons={
-            canPreviewFull ? (
+            <>
               <Button
-                icon={fullBody ? 'person' : 'users'}
-                content={fullBody ? labels.full : labels.portrait}
-                onClick={() => setFullBody(!fullBody)}
+                icon="palette"
+                color="good"
+                content={labels.color}
+                disabled={!data.can_change_color}
+                tooltip={
+                  !data.can_change_color ? labels.color_requires_spray : undefined
+                }
+                onClick={() => act('color')}
               />
-            ) : null
+              {canPreviewFull && (
+                <Button
+                  icon={fullBody ? 'person' : 'users'}
+                  content={fullBody ? labels.full : labels.portrait}
+                  onClick={() => setFullBody(!fullBody)}
+                />
+              )}
+            </>
           }>
           <Stack vertical fill justify="space-around">
             <Stack.Item>

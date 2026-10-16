@@ -106,11 +106,11 @@
 	if(hair_style)
 		open_live_hair_style_picker(src, src, src, list("hair"), CALLBACK(src, PROC_REF(apply_tied_hair)))
 
-/mob/living/carbon/human/proc/apply_tied_hair(new_style, tab)
+/mob/living/carbon/human/proc/apply_tied_hair(new_style, tab, new_color)
 	if(incapacitated())
 		to_chat(src, span_warning("You can't mess with your hair right now!"))
 		return FALSE
-	if(hair_style == new_style)
+	if(hair_style == new_style && (isnull(new_color) || hair_color == new_color))
 		to_chat(src, span_notice("You're already using that style."))
 		return FALSE
 	hair_style = new_style
