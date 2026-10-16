@@ -912,7 +912,7 @@
 	if(airbag_disarming || !isliving(user) || !user.canUseTopic(src, BE_CLOSE, FALSE, TRUE, FALSE))
 		return
 	airbag_disarming = TRUE
-	balloon_alert(user, "обезвреживание аирбага...")
+	balloon_alert(user, "Обезвреживание airbag...")
 	if(!do_after(user, 3 SECONDS, target = src))
 		airbag_disarming = FALSE
 		return TRUE
@@ -926,7 +926,7 @@
 	var/obj/item/airbag_module/module = new(drop_location())
 	transfer_fingerprints_to(module)
 	user.put_in_hands(module)
-	balloon_alert(user, "аирбаг снят")
+	balloon_alert(user, "Airbag снят")
 	return TRUE
 
 /obj/structure/window/reinforced/tinted/fulltile
