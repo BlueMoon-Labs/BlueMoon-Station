@@ -24,7 +24,13 @@
 	..()
 	new /obj/item/clothing/head/helmet/space/ervos(src)
 	new /obj/item/clothing/suit/space/ervos(src)
-	new /obj/item/storage/briefcase/inflatable_mini(src)
+	switch(rand(1, 100))
+		if(1 to 15)
+			new /obj/item/storage/briefcase/inflatable(src)
+		if(15 to 30)
+			new /obj/item/storage/briefcase/inflatable_airbag(src)
+		else
+			new /obj/item/storage/briefcase/inflatable_mini(src)
 
 	if (prob(40))
 		new /obj/item/storage/toolbox/emergency(src)
