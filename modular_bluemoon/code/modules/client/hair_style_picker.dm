@@ -17,6 +17,20 @@
 
 GLOBAL_LIST_EMPTY(hair_style_pickers)
 
+/// В сейве храним отдельные массивы имён для каждой вкладки.
+/proc/sanitize_hair_style_favorites(candidate)
+	var/list/stored = islist(candidate) ? candidate : list()
+	var/list/sanitized = list()
+	for(var/style_tab in list(HAIR_PICKER_TAB_HAIR, HAIR_PICKER_TAB_FACIAL, HAIR_PICKER_TAB_GRAD))
+		var/list/styles = stored[style_tab]
+		var/list/valid_styles = list()
+		if(islist(styles) && !is_assoc_list(styles))
+			for(var/style_name in styles)
+				if(istext(style_name) && length(style_name))
+					valid_styles |= style_name
+		sanitized[style_tab] = valid_styles
+	return sanitized
+
 /datum/hair_style_picker
 	/// Делаем все через ключи, в данном случае сикей
 	var/owner_ckey
@@ -37,6 +51,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	var/list/allowed_tabs = list()
 	var/tab = HAIR_PICKER_TAB_HAIR
 	var/search = ""
+	var/favorites_only = FALSE
 	var/page = 1
 	var/selected
 	var/list/base_cache = list()
@@ -239,14 +254,18 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	if(!selected)
 		selected = default_selection()
 
+	var/list/favorites = get_favorites(user)
 	var/list/all_entries = get_tab_full_list()
 	var/list/entries = all_entries
-	if(length(search))
+	if(favorites_only || length(search))
 		var/needle = lowertext(search)
 		entries = list()
 		for(var/style_name in all_entries)
-			if(findtext(lowertext(style_name), needle))
-				entries += style_name
+			if(favorites_only && !(style_name in favorites))
+				continue
+			if(length(needle) && !findtext(lowertext(style_name), needle))
+				continue
+			entries += style_name
 	var/total = length(entries)
 	var/pages = max(1, CEILING(total / HAIR_PICKER_PAGE_SIZE, 1))
 	page = clamp(page, 1, pages)
@@ -270,7 +289,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	var/can_preview_full = can_preview_full_body(user)
 	var/color_key = "[applied_hair_color()]|[applied_facial_color()]|[applied_grad_color()]|[get_mcolor()]"
 	// единственное место где можно было сэкономить
-	var/sheet_key = "[tab]|[page]|[search]|[applied_hair_style]|[applied_facial_style]|[applied_grad_style]|[color_key]"
+	var/sheet_key = "[tab]|[page]|[search]|[favorites_only]|[applied_hair_style]|[applied_facial_style]|[applied_grad_style]|[color_key]"
 	if(sheet_key != sheet_cache_key)
 		sheet_cache_key = sheet_key
 		sheet_b64 = build_sheet_b64(page_names)
@@ -288,6 +307,8 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	.["tab"] = tab
 	.["dir"] = render_dir
 	.["search"] = search
+	.["favorites"] = favorites
+	.["favorites_only"] = favorites_only
 	.["page"] = page
 	.["pages"] = pages
 	.["total"] = total
@@ -341,6 +362,27 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 		if("page")
 			var/page_raw = params["page"]
 			page = max(1, isnum(page_raw) ? page_raw : (text2num("[page_raw]") || 1))
+			return TRUE
+
+		if("favorites_only")
+			favorites_only = !favorites_only
+			page = 1
+			return TRUE
+
+		if("toggle_favorite")
+			var/datum/preferences/viewer_prefs = user?.client?.prefs
+			var/style_name = params["name"]
+			if(!viewer_prefs || params["tab"] != tab || !(style_name in get_tab_full_list()))
+				return
+			var/list/favorites = get_favorites(user)
+			if(style_name in favorites)
+				favorites -= style_name
+			else
+				favorites |= style_name
+			viewer_prefs.favorite_hair_styles[tab] = favorites
+			viewer_prefs.save_single_pref("favorite_hair_styles", viewer_prefs.favorite_hair_styles)
+			if(favorites_only)
+				sheet_cache_key = null
 			return TRUE
 
 		if("select")
@@ -571,6 +613,14 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 			return applied_grad() || "None"
 	return null
 
+/datum/hair_style_picker/proc/get_favorites(mob/user)
+	var/datum/preferences/viewer_prefs = user?.client?.prefs
+	var/list/favorite_tabs = viewer_prefs?.favorite_hair_styles
+	if(!islist(favorite_tabs))
+		return list()
+	var/list/favorites = favorite_tabs[tab]
+	return islist(favorites) ? favorites : list()
+
 /datum/hair_style_picker/proc/get_tab_full_list()
 	if(cached_list_tab == tab && length(cached_list))
 		return cached_list
@@ -609,6 +659,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 		if(!spray.can_change_color)
 			.["color_requires_spray"] = is_russian ? "Цвет этого баллончика задан заранее." : "This spray has a fixed color."
 	.["search"] = is_russian ? "Поиск..." : "Search..."
+	.["favorites"] = is_russian ? "Избранное" : "Favorites"
 	.["preview"] = is_russian ? "Превью" : "Preview"
 	.["portrait"] = is_russian ? "Портрет" : "Portrait"
 	.["full"] = is_russian ? "Всё тело" : "Full body"

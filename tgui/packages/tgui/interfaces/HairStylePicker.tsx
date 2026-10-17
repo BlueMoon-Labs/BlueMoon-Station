@@ -27,6 +27,7 @@ type HairPickerLabels = {
   color: string;
   color_requires_spray: string;
   search: string;
+  favorites: string;
   preview: string;
   portrait: string;
   full: string;
@@ -45,6 +46,8 @@ type HairPickerData = {
   tab: string;
   dir: number;
   search: string;
+  favorites: string[];
+  favorites_only: boolean;
   page: number;
   pages: number;
   total: number;
@@ -121,6 +124,10 @@ export const HairStylePicker = (props) => {
                   data={data}
                   onSelect={(name) => act('select', { name })}
                   onApply={(name) => act('apply', { name, tab: data.tab })}
+                  onToggleFavorite={(name) =>
+                    act('toggle_favorite', { name, tab: data.tab })
+                  }
+                  onToggleFavoritesOnly={() => act('favorites_only')}
                   onPage={(page) => act('page', { page })}
                 />
               </Stack.Item>
@@ -141,10 +148,20 @@ const StyleGrid = (props: {
   data: HairPickerData;
   onSelect: (name: string) => void;
   onApply: (name: string) => void;
+  onToggleFavorite: (name: string) => void;
+  onToggleFavoritesOnly: () => void;
   onPage: (page: number) => void;
 }) => {
-  const { data, onSelect, onApply, onPage } = props;
+  const {
+    data,
+    onSelect,
+    onApply,
+    onToggleFavorite,
+    onToggleFavoritesOnly,
+    onPage,
+  } = props;
   const names = data.names || [];
+  const favorites = data.favorites || [];
   const cols = data.cols || 4;
   const aspectRatio = (data.cell_w || 40) / (data.cell_h || 20);
   const rows = Math.max(1, Math.ceil(names.length / cols));
@@ -158,6 +175,15 @@ const StyleGrid = (props: {
       title={`${viewedCount}/${data.total}`}
       buttons={
         <Stack align="center">
+          <Stack.Item>
+            <Button
+              icon={data.favorites_only ? 'star' : 'star-o'}
+              iconColor={data.favorites_only ? GOLD : 'label'}
+              color="transparent"
+              content={data.labels.favorites}
+              onClick={onToggleFavoritesOnly}
+            />
+          </Stack.Item>
           <Stack.Item>
             <Button
               icon="chevron-left"
@@ -194,6 +220,8 @@ const StyleGrid = (props: {
               sheet={data.sheet}
               rows={rows}
               selected={name === data.selected}
+              favorite={favorites.includes(name)}
+              onToggleFavorite={() => onToggleFavorite(name)}
               onClick={() => onSelect(name)}
               onDoubleClick={() => onApply(name)}
             />
@@ -214,6 +242,8 @@ const StyleCell = (props: {
   sheet: string | null;
   rows: number;
   selected: boolean;
+  favorite: boolean;
+  onToggleFavorite: () => void;
   onClick: () => void;
   onDoubleClick: () => void;
 }) => {
@@ -225,6 +255,8 @@ const StyleCell = (props: {
     sheet,
     rows,
     selected,
+    favorite,
+    onToggleFavorite,
     onClick,
     onDoubleClick,
   } = props;
@@ -271,6 +303,26 @@ const StyleCell = (props: {
           }}
         />
       ) : null}
+      <div
+        onClick={(event) => event.stopPropagation()}
+        onDoubleClick={(event) => event.stopPropagation()}
+        style={{
+          position: 'absolute',
+          top: '4px',
+          right: '4px',
+          zIndex: 1,
+          borderRadius: '3px',
+          background: 'rgba(0, 0, 0, 0.65)',
+        }}>
+        <Button
+          compact
+          m={0}
+          icon={favorite ? 'star' : 'star-o'}
+          iconColor={favorite ? GOLD : 'label'}
+          color="transparent"
+          onClick={onToggleFavorite}
+        />
+      </div>
     </div>
   );
 };
