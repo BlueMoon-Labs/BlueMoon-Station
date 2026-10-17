@@ -6,6 +6,8 @@
 		"hk47_activate", "hk47_ready", "hk47_offer", "hk47_accept", "hk47_target_acquired",
 		"hk47_combat_mode", "hk47_damage", "hk47_failing", "hk47_stealth", "hk47_full_gain",
 		"hk47_rejoining", "hk47_meatbags", "hk47_charging", "hk47_purchased", "hk47_prospective",
+		"hk47_unlock_begin", "hk47_unlock_success", "hk47_unlock_failed", "hk47_scan", "hk47_self_diagnostic",
+		"hk47_recite_shields", "hk47_accuracy", "hk47_prejudice", "hk47_crude",
 	)
 	var/mob/living/carbon/human/droid = allocate(/mob/living/carbon/human)
 	droid.mind_initialize()
@@ -30,6 +32,8 @@
 	TEST_ASSERT_EQUAL(species.hk_prefix_bark_sound("[HK_PREFIX_STATEMENT] цель найдена"), statement, "statement clip")
 	TEST_ASSERT_EQUAL(species.hk_prefix_bark_sound("[HK_PREFIX_QUERY] где хозяин?"), query, "query clip")
 	TEST_ASSERT_EQUAL(species.hk_prefix_bark_sound("[HK_PREFIX_EXCLAMATION] огонь!"), exclamation, "exclamation clip")
+	TEST_ASSERT_EQUAL(species.hk_prefix_bark_sound("[HK_PREFIX_ANALYSIS] цель уязвима"), 'modular_bluemoon/sound/hk_droids/hk47_prefix_analysis.ogg', "analysis clip")
+	TEST_ASSERT_EQUAL(species.hk_speech_prefix("[HK_PREFIX_ANALYSIS] цель уязвима"), "[HK_PREFIX_ANALYSIS] цель уязвима", "a typed analysis prefix is kept")
 	TEST_ASSERT_NULL(species.hk_prefix_bark_sound("цель найдена"), "no prefix, no clip")
 
 	TEST_ASSERT_EQUAL(species.hk_prefix_bark(droid, "[HK_PREFIX_QUERY] где хозяин?", null, /datum/language/common), query, "first bark plays")
@@ -80,7 +84,7 @@
 	allocated += droid.mind
 	var/datum/antagonist/hk47/voice_probe/antag = new
 	droid.mind.add_antag_datum(antag)
-	var/list/private_lines = list("hk47_offer", "hk47_accept", "hk47_stealth", "hk47_charging", "hk47_full_gain")
+	var/list/private_lines = list("hk47_offer", "hk47_accept", "hk47_stealth", "hk47_charging", "hk47_full_gain", "hk47_scan", "hk47_self_diagnostic", "hk47_recite_shields", "hk47_accuracy")
 	for(var/key in antag.voice_lines)
 		droid.heard_locally.Cut()
 		var/played_before = antag.played

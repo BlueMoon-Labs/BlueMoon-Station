@@ -176,6 +176,7 @@
 #include "hk_droids_emp.dm"
 #include "hk_droids_factory.dm"
 #include "hk_droids_hk47.dm"
+#include "hk_droids_hk47_arsenal.dm"
 #include "hk_droids_hk47_status.dm"
 #include "hk_droids_hk50.dm"
 #include "hk_droids_hk50_servant.dm"

@@ -93,7 +93,7 @@
 /datum/species/ipc/hk/proc/hk_speech_prefix(message)
 	if(!length(message))
 		return message
-	for(var/prefix in list(HK_PREFIX_STATEMENT, HK_PREFIX_QUERY, HK_PREFIX_EXCLAMATION))
+	for(var/prefix in list(HK_PREFIX_STATEMENT, HK_PREFIX_QUERY, HK_PREFIX_EXCLAMATION, HK_PREFIX_ANALYSIS))
 		if(findtext(message, prefix) == 1)
 			return message
 	var/last_char = copytext_char(message, -1)
@@ -110,6 +110,16 @@
 	hk_model = HK_MODEL_47
 	limbs_id = HK_MODEL_47
 	override_bp_icon = 'modular_bluemoon/icons/mob/human/hk_droid.dmi'
+
+/datum/species/ipc/hk/hk47/on_species_gain(mob/living/carbon/human/droid, datum/species/old_species, pref_load)
+	. = ..()
+	if(droid.physiology)
+		droid.physiology.stamina_mod *= HK47_STAMINA_MOD
+
+/datum/species/ipc/hk/hk47/on_species_loss(mob/living/carbon/human/droid, datum/species/new_species, pref_load)
+	if(droid.physiology)
+		droid.physiology.stamina_mod /= HK47_STAMINA_MOD
+	return ..()
 
 /datum/species/ipc/hk/hk50
 	name = "HK-50"

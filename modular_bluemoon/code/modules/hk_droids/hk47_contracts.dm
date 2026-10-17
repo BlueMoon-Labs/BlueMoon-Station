@@ -968,7 +968,7 @@ GLOBAL_LIST_INIT(hk_contract_clients, list(
 	else if(get_dist(droid, victim) > HK47_SCAN_RANGE || droid.z != victim.z)
 		refusal = "подойдите к цели вплотную."
 	else if(!hk47_capture_ready(victim))
-		refusal = "цель сопротивляется: нужны наручники, оглушение, сон или крит."
+		refusal = "цель сопротивляется: нужны наручники, оглушение, истощение выносливости, сон или крит."
 	else if(droid.incapacitated())
 		refusal = "вызов невозможен в текущем состоянии."
 	if(refusal)

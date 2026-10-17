@@ -97,7 +97,8 @@
 	switch(legend)
 		if(HK47_STATUS_COVERT)
 			var/first_contract = contract ? "Первый контракт уже принят." : "Контракта пока нет: предложения придут в терминал."
-			to_chat(droid, span_notice("<b>Легенда: тайное прибытие.</b> Станция о вас не знает: ни лицензии, ни записи в базе СБ. [first_contract]"))
+			points += HK47_COVERT_ADVANCE_POINTS
+			to_chat(droid, span_notice("<b>Легенда: тайное прибытие.</b> Станция о вас не знает: ни лицензии, ни записи в базе СБ. [first_contract] Прикрытия нет, поэтому заказчик выдал аванс: очков на счету - [points], первый модуль шасси можно поставить сразу (терминал, вкладка «МОДУЛИ»)."))
 		if(HK47_STATUS_LICENSED)
 			issue_license(/obj/item/card/id/hk47_license)
 			file_security_record("Лицензированный подрядчик ЦК", "Лицензия ЦК № [license_number]: подрядчик по засекреченному контракту. Работе не препятствовать, вопросы - к главе СБ.")
