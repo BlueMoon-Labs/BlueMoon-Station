@@ -150,7 +150,7 @@
 
 /datum/station_trait/slow_shuttle/on_round_start()
 	. = ..()
-	SSshuttle.supply.callTime *= 1.5
+	SSshuttle.supply?.callTime *= 1.5
 
 /datum/station_trait/bot_languages
 	name = "Bot Language Matrix Malfunction"
