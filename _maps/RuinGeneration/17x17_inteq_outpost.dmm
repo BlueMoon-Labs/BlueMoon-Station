@@ -1,0 +1,393 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"Y" = (
+	/turf/closed/wall,
+	/area/ruin/space/has_grav/powered,
+)
+"f" = (
+	/turf/open/floor/plasteel,
+	/area/ruin/space/has_grav/powered,
+)
+"D" = (
+	/obj/effect/abstract/doorway_marker,
+	/turf/open/floor/plasteel,
+	/area/ruin/space/has_grav/powered,
+)
+"p" = (
+	/obj/structure/sign/flag/inteq,
+	/turf/open/floor/plasteel,
+	/area/ruin/space/has_grav/powered,
+)
+"g" = (
+	/obj/structure/closet/syndicate/inteq/vanguard,
+	/turf/open/floor/plasteel,
+	/area/ruin/space/has_grav/powered,
+)
+"h" = (
+	/obj/structure/closet/syndicate/inteq/personal,
+	/turf/open/floor/plasteel,
+	/area/ruin/space/has_grav/powered,
+)
+"n" = (
+	/obj/structure/closet/syndicate/inteq,
+	/turf/open/floor/plasteel,
+	/area/ruin/space/has_grav/powered,
+)
+"e" = (
+	/obj/effect/mob_spawn/human/corpse/inteq_dead,
+	/turf/open/floor/plasteel,
+	/area/ruin/space/has_grav/powered,
+)
+"t" = (
+	/obj/structure/table,
+	/turf/open/floor/plasteel,
+	/area/ruin/space/has_grav/powered,
+)
+"r" = (
+	/obj/structure/rack,
+	/turf/open/floor/plasteel,
+	/area/ruin/space/has_grav/powered,
+)
+"c" = (
+	/obj/machinery/vending/inteq_vendomat,
+	/turf/open/floor/plasteel,
+	/area/ruin/space/has_grav/powered,
+)
+"s" = (
+	/obj/machinery/suit_storage_unit/inteq_spacesuit,
+	/turf/open/floor/plasteel,
+	/area/ruin/space/has_grav/powered,
+)
+"b" = (
+	/obj/structure/bed,
+	/turf/open/floor/plasteel,
+	/area/ruin/space/has_grav/powered,
+)
+"M" = (
+	/mob/living/simple_animal/hostile/inteq/melee,
+	/turf/open/floor/plasteel,
+	/area/ruin/space/has_grav/powered,
+)
+(1,1,1) = {"
+Y
+Y
+Y
+Y
+Y
+Y
+Y
+Y
+Y
+Y
+Y
+Y
+Y
+Y
+Y
+Y
+Y
+"}
+(2,1,1) = {"
+Y
+f
+f
+f
+f
+f
+f
+f
+f
+f
+f
+f
+f
+f
+f
+f
+f
+Y
+"}
+(3,1,1) = {"
+Y
+f
+p
+t
+f
+f
+f
+f
+f
+f
+h
+f
+f
+f
+f
+f
+Y
+"}
+(4,1,1) = {"
+Y
+f
+g
+r
+f
+f
+f
+f
+f
+f
+f
+f
+f
+f
+f
+f
+Y
+"}
+(5,1,1) = {"
+Y
+f
+f
+f
+f
+f
+b
+f
+f
+f
+f
+f
+f
+f
+f
+f
+Y
+"}
+(6,1,1) = {"
+Y
+f
+f
+f
+f
+b
+b
+f
+f
+f
+f
+f
+f
+f
+f
+f
+Y
+"}
+(7,1,1) = {"
+Y
+f
+f
+f
+f
+b
+f
+f
+f
+f
+f
+f
+f
+f
+f
+f
+Y
+"}
+(8,1,1) = {"
+Y
+f
+f
+f
+f
+f
+t
+f
+f
+f
+f
+f
+f
+f
+f
+f
+Y
+"}
+(9,1,1) = {"
+Y
+f
+f
+f
+f
+f
+f
+f
+f
+f
+f
+f
+f
+f
+f
+f
+D
+"}
+(10,1,1) = {"
+Y
+f
+f
+f
+f
+f
+f
+f
+f
+f
+f
+f
+f
+f
+f
+f
+Y
+"}
+(11,1,1) = {"
+Y
+f
+f
+f
+f
+f
+b
+f
+f
+f
+f
+f
+f
+f
+f
+f
+Y
+"}
+(12,1,1) = {"
+Y
+f
+f
+f
+f
+b
+b
+f
+f
+f
+f
+f
+f
+f
+f
+f
+Y
+"}
+(13,1,1) = {"
+Y
+f
+f
+f
+f
+b
+f
+f
+f
+f
+f
+f
+f
+f
+f
+f
+Y
+"}
+(14,1,1) = {"
+Y
+f
+e
+c
+f
+f
+f
+f
+f
+f
+f
+f
+f
+f
+f
+f
+Y
+"}
+(15,1,1) = {"
+Y
+f
+f
+s
+f
+f
+f
+f
+f
+f
+h
+f
+f
+f
+f
+f
+Y
+"}
+(16,1,1) = {"
+Y
+f
+f
+f
+f
+f
+n
+M
+f
+f
+f
+f
+f
+f
+f
+f
+Y
+"}
+(17,1,1) = {"
+Y
+Y
+Y
+Y
+Y
+Y
+Y
+Y
+Y
+Y
+Y
+Y
+Y
+Y
+Y
+Y
+Y
+"}

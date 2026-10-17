@@ -388,7 +388,7 @@
 //2. Gets a number between 1 and that total
 //3. For each element in the list, subtracts its weighting from that number
 //4. If that makes the number 0 or less, return that element.
-//Will output null sometimes if you use decimals (e.g. 0.1 instead of 10) as rand() uses integers, not floats
+//Supports fractional weights (e.g. 0.1): the roll is a float in [0, total), so every element stays reachable.
 /proc/pickweight(list/L)
 	if(length(L) == 0)
 		return null
@@ -403,7 +403,7 @@
 			L[item] = item_weight = 1
 		total += item_weight
 
-	total = rand(1, total)
+	total = rand() * total
 	for(var/item, item_weight in L)
 		if(positional_numbers && isnum(item))
 			item_weight = L[item]
