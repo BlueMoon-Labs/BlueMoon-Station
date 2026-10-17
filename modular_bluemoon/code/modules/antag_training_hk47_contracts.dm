@@ -49,8 +49,6 @@
 				to_chat(user, span_warning("Создайте живую учебную цель в разделе «Цели»: контракт назначается на последнюю из них."))
 				return FALSE
 			enlist_dummy(dummy)
-			if(task_type == /datum/hk_contract_task/theft)
-				issue_practice_id(session, dummy)
 			target = dummy.mind
 	if(!target)
 		return FALSE
@@ -63,7 +61,9 @@
 		role.shorten_protection(contract)
 	else if(task_type == /datum/hk_contract_task/hunt)
 		contract.update_trace(session.arena.zones[zone_id]["name"])
-	to_chat(user, span_notice(practice_hint(task_type, contract)))
+	var/hint = practice_hint(task_type, contract)
+	if(hint)
+		to_chat(user, span_notice(hint))
 	return TRUE
 
 /datum/antag_training_program/hk47/proc/practice_hint(task_type, datum/hk_contract/contract)
@@ -72,8 +72,6 @@
 			return "Учебная ликвидация: убейте [contract.target_name] и просканируйте тело терминалом. «Исцелить» в «Целях» поднимет манекен для повтора."
 		if(/datum/hk_contract_task/capture)
 			return "Учебный захват: обездвижьте [contract.target_name] наручниками, оглушением, сном или до крита, встаньте рядом и вызовите капсулу из терминала. Учебная капсула не улетает: держите цель у неё [DisplayTimeText(ANTAG_TRAINING_HK47_CAPTURE_TIME)]."
-		if(/datum/hk_contract_task/theft)
-			return "Учебная кража: ID-карта [contract.target_name] у неё в слоте карты. Снимите карту, возьмите в руку и просканируйте терминалом."
 		if(/datum/hk_contract_task/protect)
 			return "Учебная охрана: [contract.target_name] должна прожить [DisplayTimeText(ANTAG_TRAINING_HK47_PROTECT_TIME)], в раунде - [DisplayTimeText(HK47_PROTECT_TIME)]. Вызовите HK-50: они нападут и на подопечного."
 		if(/datum/hk_contract_task/sabotage)
@@ -125,6 +123,18 @@
 	training = null
 	practice_machines.Cut()
 	return ..()
+
+/// У манекена нет своей карты, а печатей глав отделов на полигоне нет, поэтому карту получает цель любой кражи, а не только заказа с пульта.
+/datum/antagonist/hk47/training/accept(datum/hk_contract/contract)
+	. = ..()
+	if(!. || contract.task.type != /datum/hk_contract_task/theft)
+		return
+	var/datum/antag_training_program/hk47/program = training?.program
+	var/mob/living/carbon/human/dummy = contract.target_body()
+	if(!istype(program) || !ishuman(dummy))
+		return
+	program.issue_practice_id(training, dummy)
+	to_chat(owner.current, span_notice("Учебная кража: ID-карта [contract.target_name] у неё в слоте карты. Снимите карту, возьмите в руку и просканируйте терминалом. Печатей глав отделов на полигоне нет."))
 
 /datum/antagonist/hk47/training/proc/drop_practice_contract()
 	if(active_contract)

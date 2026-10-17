@@ -188,3 +188,40 @@
 	var/list/candidates = list(absent)
 	TEST_ASSERT_EQUAL(length(template.spawn_members(candidates, 3)), 0, "Кандидат без клиента не должен получить тело")
 	TEST_ASSERT_EQUAL(length(GLOB.antagonist_teams), teams_before, "Несобранный отряд не должен оставлять пустую команду")
+
+/// Опрос, брифинг и объявление называют причину вызова из последнего бита директора и настоящий размер отряда.
+/datum/unit_test/director_crew_relief_reason
+	var/datum/director_signals/saved_signals
+
+/datum/unit_test/director_crew_relief_reason/Destroy()
+	SSdirector.last_signals = saved_signals
+	return ..()
+
+/datum/unit_test/director_crew_relief_reason/Run()
+	saved_signals = SSdirector.last_signals
+	var/datum/director_signals/signals = allocate(/datum/director_signals)
+	signals.staffing = list(DIRECTOR_DEPT_ENGINEERING = 1, DIRECTOR_DEPT_MEDICAL = 0)
+	signals.dead_fraction = 0.2
+	SSdirector.last_signals = signals
+
+	var/datum/round_event_control/crew_relief/repair/repair_control = allocate(/datum/round_event_control/crew_relief/repair)
+	var/datum/round_event/ghost_role/crew_relief/repair/repair = allocate(/datum/round_event/ghost_role/crew_relief/repair, FALSE)
+	repair.kill()
+	repair.control = repair_control
+	repair.spawn_role()
+	TEST_ASSERT_EQUAL(repair.reason, "в инженерном отделе остался один инженер", "Причина ремонтной бригады берётся из последнего бита")
+	var/question = repair.poll_question()
+	TEST_ASSERT(findtext(question, repair.reason) && findtext(question, "не боевой отряд"), "Опрос призраков называет причину и предупреждает, что отряд не боевой: [question]")
+
+	repair.spawned_mobs = list(allocate(/mob/living/carbon/human))
+	TEST_ASSERT(findtext(repair.announce_text(), "направляет одного ремонтника"), "Одиночку объявляют одним ремонтником, а не бригадой: [repair.announce_text()]")
+	repair.spawned_mobs += list(allocate(/mob/living/carbon/human), allocate(/mob/living/carbon/human))
+	TEST_ASSERT(findtext(repair.announce_text(), "направляет ремонтную бригаду из 3 человек"), "Бригаду объявляют с числом бойцов: [repair.announce_text()]")
+
+	signals.staffing[DIRECTOR_DEPT_ENGINEERING] = 0
+	TEST_ASSERT_EQUAL(repair_control.relief_reason(signals), "в инженерном отделе не осталось ни одного инженера", "Пустой инженерный отдел называется пустым")
+
+	var/datum/round_event_control/crew_relief/medical/medical_control = allocate(/datum/round_event_control/crew_relief/medical)
+	TEST_ASSERT_EQUAL(medical_control.relief_reason(signals), "в медотделе не осталось врачей, погибло 20% экипажа", "Санитары называют обе причины")
+	signals.staffing[DIRECTOR_DEPT_MEDICAL] = 2
+	TEST_ASSERT_EQUAL(medical_control.relief_reason(signals), "погибло 20% экипажа", "При живых врачах причина санитаров - потери")
