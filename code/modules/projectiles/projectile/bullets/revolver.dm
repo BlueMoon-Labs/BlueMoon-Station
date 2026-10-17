@@ -42,7 +42,7 @@
 
 /obj/item/projectile/bullet/c38/match/bouncy
 	name = ".38 Bouncy bullet" // уточняем название, чтобы не путули с резиной
-	damage = 10
+	nodamage = TRUE
 	stamina = 30
 	armour_penetration = -30
 	ricochets_max = 6
@@ -71,7 +71,7 @@
 
 /obj/item/projectile/bullet/c38/rubber
 	name = ".38 Rubber bullet"
-	damage = 2
+	nodamage = TRUE
 	stamina = 50
 	shrapnel_type = NONE
 	sharpness = SHARP_NONE
@@ -200,7 +200,7 @@
 
 /obj/item/projectile/bullet/cal41/rubber
 	name = ".41 rubber bullet"
-	damage = 2
+	nodamage = TRUE
 	stamina = 50
 	shrapnel_type = NONE
 	sharpness = SHARP_NONE
@@ -239,7 +239,7 @@
 	sharpness = SHARP_NONE
 	embedding = null
 	armour_penetration = BULLET_BR1
-	
+
 
 /obj/item/projectile/bullet/cal41/incendiary/on_hit(atom/target, blocked = FALSE)
 	. = ..()
@@ -321,7 +321,7 @@
 /obj/item/projectile/bullet/pellet/exorcist_rubber
 	name = "rubbershot pellet"
 	icon_state = "pellet"
-	damage = 1
+	nodamage = TRUE
 	stamina = 4
 	armour_penetration = BULLET_BR0
 	sharpness = SHARP_NONE
@@ -373,7 +373,7 @@
 // Маячок (10 урона + МНОЖЕСТВЕННОЕ вживление имплантов)
 /obj/item/projectile/bullet/judgement_beacon
 	name = ".44 Magnum glycerine rounds"
-	damage = 10 
+	damage = 10
 
 /obj/item/projectile/bullet/judgement_beacon/on_hit(atom/target, blocked = FALSE)
 	. = ..()
@@ -381,7 +381,7 @@
 		return
 
 	var/mob/living/carbon/C = target
-	
+
 	if(!firer || !istype(firer.get_active_held_item(), /obj/item/gun/ballistic/revolver/judgement))
 		return
 
@@ -391,16 +391,16 @@
 	bomb.my_gun = J
 	bomb.my_target = C
 	bomb.tryEmbed(C, forced = TRUE, silent = TRUE)
-	
+
 	J.active_beacons.Add(C)
-	
+
 	to_chat(firer, "<span class='notice'>Револьвер издает писк</span>")
 
 /obj/effect/temp_visual/judgement_kinetic_blast
 	name = "кинетическая вспышка"
 	desc = "Визуальный эффект кинетического удара."
-	icon = 'modular_bluemoon/icons/obj/effect/projectiles/generic.dmi' 
-	icon_state = "fire" 
+	icon = 'modular_bluemoon/icons/obj/effect/projectiles/generic.dmi'
+	icon_state = "fire"
 	duration = 5 // Длительность анимации в тиках (0.5 секунды), после чего игра сама удалит эффект
 
 /obj/item/projectile/bullet/judgement_kinetic_ricochet
@@ -416,7 +416,7 @@
 
 /obj/item/projectile/bullet/judgement_kinetic_ricochet/on_hit(atom/target, blocked = 0)
 	. = ..()
-	
+
 	var/turf/hit_turf = get_turf(target)
 	if(hit_turf)
 		new /obj/effect/temp_visual/judgement_kinetic_blast(hit_turf)
@@ -425,12 +425,12 @@
 	// КРИВО СПИЗДИЛ КОД С ПАУВЕР ФИСТА
 	if(isliving(target))
 		var/mob/living/L = target
-		
+
 		if(hasvar(L, "move_resist") && L.vars["move_resist"] >= INFINITY)
 			return
 
 		var/atom/throw_target = get_edge_target_turf(L, get_dir(src, get_step_away(L, starting)))
-		
+
 		if(throw_target)
 			L.throw_at(throw_target, 2, 1)
 			to_chat(L, "<span class='userdanger'>Тяжелый кинетический импульс пули сбивает вас с ног и отбрасывает назад!</span>")
@@ -439,14 +439,14 @@
 	name = "Маячок-детонатор"
 	desc = "Миниатюрный скрытый заряд, внедренный под кожу. Дистанционно взрывается по радиосигналу револьвера или автоматически через 2 минуты."
 	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
-	icon_state = "bomb_beacon" 
-	
-	var/obj/item/gun/ballistic/revolver/judgement/my_gun 
-	var/mob/living/carbon/my_target 
+	icon_state = "bomb_beacon"
+
+	var/obj/item/gun/ballistic/revolver/judgement/my_gun
+	var/mob/living/carbon/my_target
 
 /obj/item/gps/embed_gps/judgement_beacon_bomb/Initialize(mapload)
 	. = ..()
-	src.lifespan = 2 MINUTES 
+	src.lifespan = 2 MINUTES
 	addtimer(CALLBACK(src, PROC_REF(auto_detonate)), src.lifespan)
 
 /obj/item/gps/embed_gps/judgement_beacon_bomb/proc/auto_detonate()
@@ -455,19 +455,19 @@
 
 	if(my_target && !QDELETED(my_target))
 		to_chat(my_target, "<span class='userdanger'>Вживленный внутри вас маячок издает критический писк и детонирует!</span>")
-		
+
 		var/turf/T = get_turf(my_target)
 		if(T)
 			new /obj/effect/temp_visual/kinetic_blast(T)
 			playsound(T, 'sound/weapons/resonator_blast.ogg', 50, 1)
-		
+
 		my_target.ex_act(EXPLODE_LIGHT)
-		
+
 		if(my_gun && !QDELETED(my_gun))
 			my_gun.active_beacons -= my_target
 	else
 		var/turf/T = get_turf(src)
 		if(T)
 			new /obj/effect/particle_effect/smoke(T)
-	
+
 	qdel(src)

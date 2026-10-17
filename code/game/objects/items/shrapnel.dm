@@ -54,7 +54,7 @@
 /obj/item/projectile/bullet/pellet/stingball
 	name = "stingball pellet"
 	armour_penetration = BULLET_BR0
-	damage = 3
+	damage = 0
 	stamina = 8
 	ricochets_max = 4
 	ricochet_chance = 66

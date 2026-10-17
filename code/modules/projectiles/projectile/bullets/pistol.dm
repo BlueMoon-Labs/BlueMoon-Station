@@ -57,6 +57,6 @@
 
 /obj/item/projectile/bullet/c10mm/rubber
 	name = "10mm rubber bullet"
-	damage = 5
+	nodamage = TRUE
 	stamina = 35
 	armour_penetration = BULLET_BR0

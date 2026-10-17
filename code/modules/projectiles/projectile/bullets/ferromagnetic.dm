@@ -9,7 +9,7 @@
 
 /obj/item/projectile/bullet/magnetic/disabler
 	icon_state = "magjectile-nl"
-	damage = 2
+	nodamage = TRUE
 	armour_penetration = BULLET_BR1
 	stamina = 20
 	fired_light_color = LIGHT_COLOR_BLUE
@@ -21,7 +21,7 @@
 	range = 25
 
 /obj/item/projectile/bullet/magnetic/weak/disabler
-	damage = 2
+	nodamage = TRUE
 	armour_penetration = BULLET_BR1
 	stamina = 25
 

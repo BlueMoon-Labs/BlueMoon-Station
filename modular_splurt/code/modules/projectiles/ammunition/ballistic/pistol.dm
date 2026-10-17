@@ -13,7 +13,7 @@
 
 /obj/item/projectile/bullet/c22lr/rubber
 	armour_penetration = BULLET_BR0
-	damage = 1
+	nodamage = TRUE
 	stamina = 15
 	sharpness = SHARP_NONE
 	embedding = null
@@ -30,8 +30,8 @@
 
 /obj/item/projectile/bullet/a357/rubber
 	name = ".357 Rubber bullet"
-	damage = 5
-	stamina = 40
+	nodamage = TRUE
+	stamina = 80
 	armour_penetration = BULLET_BR0
 	sharpness = SHARP_NONE
 	embedding = null

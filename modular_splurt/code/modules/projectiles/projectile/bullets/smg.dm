@@ -90,7 +90,7 @@
 
 /obj/item/projectile/bullet/c9mm/rubber
 	name = "9mm Rubber"
-	damage = 2
+	nodamage = TRUE
 	stamina = 33
 	armour_penetration = BULLET_BR0
 	sharpness = SHARP_NONE

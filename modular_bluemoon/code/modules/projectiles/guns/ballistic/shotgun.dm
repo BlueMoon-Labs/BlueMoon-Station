@@ -23,8 +23,8 @@
 
 /obj/item/projectile/bullet/slug_rubber23
 	name = "23 rubber slug"
-	damage = 20
-	stamina = 120
+	nodamage = TRUE
+	stamina = 150
 	armour_penetration = BULLET_BR0
 	wound_bonus = 2
 	sharpness = SHARP_NONE
@@ -35,8 +35,8 @@
 /obj/item/projectile/bullet/pellet/rubbershot23
 	name = "23 rubbershot pellet"
 	icon_state = "pellet"
-	damage = 3
-	stamina = 18
+	nodamage = TRUE
+	stamina = 35
 	armour_penetration = BULLET_BR0
 	sharpness = SHARP_NONE
 	embedding = null

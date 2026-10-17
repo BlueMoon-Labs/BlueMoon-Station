@@ -44,7 +44,7 @@
 
 /obj/item/projectile/bullet/a308/rubber
 	name = ".308 Rubber bullet"
-	damage = 3
+	nodamage = TRUE
 	armour_penetration = BULLET_BR0
 	wound_bonus = 5
 	stamina = 50
@@ -81,10 +81,10 @@
 
 /obj/item/projectile/bullet/a543/rubber
 	name = "5.43mm Rubber bullet"
-	damage = 1
+	nodamage = TRUE
 	armour_penetration = BULLET_BR0
 	wound_bonus = 5
-	stamina = 30
+	stamina = 45
 	sharpness = SHARP_NONE
 	embedding = null
 
@@ -108,10 +108,10 @@
 // .45 Long — BR0 резина, BR1 летальный
 /obj/item/projectile/bullet/g45l
 	name = ".45 Long Rubber bullet"
-	damage = 3
+	nodamage = TRUE
 	armour_penetration = BULLET_BR0
 	wound_bonus = 5
-	stamina = 35
+	stamina = 45
 	sharpness = SHARP_NONE
 	embedding = null
 

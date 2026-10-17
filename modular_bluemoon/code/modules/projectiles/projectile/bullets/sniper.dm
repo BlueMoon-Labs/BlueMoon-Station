@@ -1,7 +1,7 @@
 //Crocine .50 bullet
 /obj/item/projectile/bullet/p50/lewd
 	name =".50 lewd bullet"
-	damage = 5
+	nodamage = TRUE
 	knockdown = 100
 	dismemberment = 0
 	stamina = 75

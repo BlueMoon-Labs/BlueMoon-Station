@@ -55,7 +55,7 @@
 
 /obj/item/projectile/bullet/a556_rubber
 	name = "5.56mm rubber bullet"
-	damage = 1
+	nodamage = TRUE
 	stamina = 35
 	armour_penetration = BULLET_BR0
 	sharpness = SHARP_NONE
@@ -84,7 +84,7 @@
 
 /obj/item/projectile/bullet/a762x39_rubber
 	name = "7.62x39 rubber bullet"
-	damage = 1
+	nodamage = TRUE
 	stamina = 40
 	armour_penetration = BULLET_BR0
 	sharpness = SHARP_NONE
