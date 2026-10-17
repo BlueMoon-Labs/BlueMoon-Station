@@ -11,6 +11,11 @@
 /datum/asset/spritesheet_batched/chat/create_spritesheets()
 	insert_all_icons("emoji", 'icons/emoji.dmi')
 	insert_all_icons("emoji", 'icons/emoji_32.dmi')
+	// Значки BYOND-членства в OOC/AOOC, под высоту строки чата.
+	var/datum/universal_icon/ooc_badge = uni_icon('icons/obj/plushes.dmi', "plushie_nuke")
+	insert_icon("member-ooc", ooc_badge.scale(16, 16))
+	var/datum/universal_icon/aooc_badge = uni_icon('icons/member_content.dmi', "blag")
+	insert_icon("member-aooc", aooc_badge.scale(16, 16))
 	// pre-loading all lanugage icons also helps to avoid meta
 	insert_all_icons("language", default_language_file)
 	// catch languages which are pulling icons from another file

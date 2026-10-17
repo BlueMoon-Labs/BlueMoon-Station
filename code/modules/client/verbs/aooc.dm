@@ -71,7 +71,8 @@ GLOBAL_VAR_INIT(normal_aooc_colour, "#ce254f")
 	var/keyname = key
 	if(prefs.unlock_content)
 		if(prefs.toggles & MEMBER_PUBLIC)
-			keyname = "<font color='[prefs.aooccolor && (prefs.custom_colors & CUSTOM_AOOC) ? prefs.aooccolor : GLOB.normal_aooc_colour]'>[icon2html('icons/member_content.dmi', world, "blag")][keyname]</font>"
+			var/datum/asset/spritesheet_batched/chat/sheet = get_asset_datum(/datum/asset/spritesheet_batched/chat)
+			keyname = "<font color='[prefs.aooccolor && (prefs.custom_colors & CUSTOM_AOOC) ? prefs.aooccolor : GLOB.normal_aooc_colour]'>[sheet?.icon_tag("member-aooc")][keyname]</font>"
 	//The linkify span classes and linkify=TRUE below make ooc text get clickable chat href links if you pass in something resembling a url
 
 	var/antaglisting = list()
