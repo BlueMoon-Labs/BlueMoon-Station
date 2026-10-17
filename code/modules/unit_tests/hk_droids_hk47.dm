@@ -92,6 +92,8 @@
 	TEST_ASSERT_EQUAL(droid.mind.assigned_role, ROLE_HK47, "assigned role")
 	TEST_ASSERT_EQUAL(droid.mind.special_role, ROLE_HK47, "special role")
 	TEST_ASSERT(istype(droid.loc, /obj/structure/closet/supplypod/hk47/covert), "HK-47 rides inside the covert capsule")
+	var/turf/transit_turf = get_turf(droid)
+	TEST_ASSERT(istype(transit_turf?.loc, /area/centcom/supplypod/podStorage), "the capsule waits in the CentCom pod bay, never in nullspace")
 	TEST_ASSERT_NOTNULL(zone, "capsule targets the landing turf")
 	TEST_ASSERT_EQUAL(zone.pod, droid.loc, "the landing zone carries HK-47's capsule")
 	TEST_ASSERT_NULL(zone.helper, "no landing marker for a covert capsule")
@@ -116,6 +118,7 @@
 	var/datum/antagonist/hk47/antag = droid.mind.has_antag_datum(/datum/antagonist/hk47)
 	var/obj/effect/temp_visual/hk47_crash_fall/fall = locate() in run_loc_floor_bottom_left
 	TEST_ASSERT_NOTNULL(fall, "the wreck is falling")
+	TEST_ASSERT_EQUAL(droid.loc, fall, "HK-47 rides the falling wreck, not nullspace")
 	TEST_ASSERT_NULL(antag.last_voice, "silent while falling")
 	qdel(fall)
 	TEST_ASSERT_EQUAL(get_turf(droid), run_loc_floor_bottom_left, "HK-47 lands at the crash site")

@@ -52,9 +52,12 @@
 #define BB_HK50_PATROL_HEADING "BB_hk50_patrol_heading"
 #define HK_LOYALTY_CHIP_TIME (4 SECONDS)
 
+/// Внутренний голос HK-47 в чате: янтарный моноширинный, как его терминал.
+#define span_hk47(str) ("<span class='hk47'>" + (str) + "</span>")
 #define HK_PREFIX_STATEMENT "Утверждение:"
 #define HK_PREFIX_QUERY "Вопрос:"
 #define HK_PREFIX_EXCLAMATION "Восклицание:"
+#define HK_PREFIX_ANALYSIS "Анализ:"
 
 /// Хозяин HK сменился: (datum/mind/new_master, datum/mind/old_master)
 #define COMSIG_HK_MASTER_CHANGED "hk_master_changed"
@@ -210,6 +213,25 @@
 /// ЦК закрыл все дела HK без лицензии: станция о нём знает, но розыска нет.
 #define HK47_STATUS_PARDONED "pardoned"
 #define HK47_LEGEND_WEIGHTS list(HK47_STATUS_COVERT = 2, HK47_STATUS_LICENSED = 1, HK47_STATUS_BODYGUARD = 1)
+/// Аванс заказчика тайному HK-47: прикрытия у него нет, первый модуль ставится сразу после посадки.
+#define HK47_COVERT_ADVANCE_POINTS 1
+/// Доля урона выносливости по шасси HK-47 поверх брони шасси: дубинки и дизейблеры валят его медленнее, ЭМИ - как прежде.
+#define HK47_STAMINA_MOD 0.6
+#define HK47_SPIKE_HACK_TIME (6 SECONDS)
+#define HK47_SPIKE_HACK_NUTRITION 25
+#define HK47_SPIKE_CARD_TIME (1 SECONDS)
+#define HK47_SPIKE_SKIM_TIME (4 SECONDS)
+/// Сколько оплавленная щупом панель шлюза выдаёт взлом при осмотре.
+#define HK47_HACK_TRACE_TIME (10 MINUTES)
+#define HK47_ACCESS_PROFILES 3
+#define HK47_STUN_BOLT_STAMINA 35
+#define HK47_SHIELD_ARMOR 40
+#define HK47_SHIELD_DURATION (8 SECONDS)
+#define HK47_SHIELD_COOLDOWN (60 SECONDS)
+#define HK47_SHIELD_NUTRITION 100
+#define HK47_REPAIR_KIT_HEAL 40
+#define HK47_REPAIR_KIT_TIME (4 SECONDS)
+#define HK47_REPAIR_KITS_PER_ORDER 2
 #define HK47_CRASH_CHANCE 50
 #define HK47_CRASH_FALL_TIME (3 SECONDS)
 #define HK47_CRASH_FALL_HEIGHT 256

@@ -1,8 +1,0 @@
-author: FinkRLD
-delete-after: true
-changes:
-  - rscadd: Добавлен менеджер законов с поддержкой фейк законов для malf AI
-  - rscadd: Добавлена абилка фейк анонса для malf AI
-  - rscadd: Добавлена абилка камуфляжа взломанных апц для malf AI
-  - bugfix: Исправлен экран ИИ darkmatter
-  - bugfix: Исправлено визуальное отображение взломов апц.
