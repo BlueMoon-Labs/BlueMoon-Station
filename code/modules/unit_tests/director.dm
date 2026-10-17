@@ -3068,8 +3068,9 @@
 	TEST_ASSERT_EQUAL(initial(base_path.name), "", "Каркас crew_conversion не должен регистрироваться сам (init_rulesets отсекает пустые имена)")
 	var/datum/dynamic_ruleset/midround/crew_conversion/heretic/heretic_rule = new
 	var/datum/dynamic_ruleset/midround/crew_conversion/changeling/changeling_rule = new
+	var/datum/dynamic_ruleset/midround/crew_conversion/blood_brothers/brothers_rule = new
 	try
-		for(var/datum/dynamic_ruleset/midround/crew_conversion/rule as anything in list(heretic_rule, changeling_rule))
+		for(var/datum/dynamic_ruleset/midround/crew_conversion/rule as anything in list(heretic_rule, changeling_rule, brothers_rule))
 			TEST_ASSERT_EQUAL(rule.severity, DIRECTOR_SEVERITY_ANTAG, "[rule.name]: экипажная конверсия обязана жить в ANTAG-пуле")
 			TEST_ASSERT(rule.weight > 0, "[rule.name]: конверсия обязана участвовать в естественном выборе")
 			TEST_ASSERT(!rule.admin_only, "[rule.name]: конверсия не должна быть admin_only")
@@ -3079,9 +3080,11 @@
 	catch(var/exception/e)
 		qdel(heretic_rule)
 		qdel(changeling_rule)
+		qdel(brothers_rule)
 		throw e
 	qdel(heretic_rule)
 	qdel(changeling_rule)
+	qdel(brothers_rule)
 
 /// Экипажная конверсия не выбирает игрока в крите или без сознания.
 /datum/unit_test/director_crew_conversion_skips_unconscious
