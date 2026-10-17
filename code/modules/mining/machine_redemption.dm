@@ -1,7 +1,7 @@
 /**********************Ore Redemption Unit**************************/
 //Turns all the various mining machines into a single unit to speed up mining and establish a point system
 
-	/obj/machinery/mineral/ore_redemption
+/obj/machinery/mineral/ore_redemption
 	name = "ore redemption machine"
 	desc = "A machine that accepts ore and instantly transforms it into workable material sheets. Points for ore are generated based on type and can be redeemed at a mining equipment vendor."
 	icon = 'icons/obj/machines/mining_machines.dmi'
