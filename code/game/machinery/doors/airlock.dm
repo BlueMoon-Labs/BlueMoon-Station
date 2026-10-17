@@ -67,6 +67,7 @@
 #define AIRLOCK_OBSTRUCTION_CLEARED_DELAY (1 SECONDS)
 
 /obj/machinery/door/airlock
+	opening_passable_delay = DOOR_OPENING_PASSABLE_DELAY
 	name = "airlock"
 	icon = 'icons/obj/doors/airlocks/station/public.dmi'
 	icon_state = "closed"
@@ -1324,7 +1325,7 @@
 	operating = TRUE
 	play_fov_effect(src, 5, "forcefield")
 	update_icon(ALL, AIRLOCK_OPENING, 1)
-	sleep(1)
+	sleep(opening_passable_delay)
 	set_opacity(0)
 	density = FALSE
 	air_update_turf(TRUE)

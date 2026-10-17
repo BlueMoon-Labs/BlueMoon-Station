@@ -27,6 +27,7 @@
 	var/shockedby
 	var/visible = TRUE // To explain: Whether the door can block line of sight when closed or not.
 	var/operating = FALSE
+	var/opening_passable_delay = 0.5 SECONDS
 	var/glass = FALSE
 	var/welded = FALSE
 	var/normalspeed = TRUE
@@ -207,8 +208,8 @@
 
 /// Удерживает ли закрытая дверь опасный перепад давления между своей плиткой и
 /// соседними. Порог задан в кПа, см. DOOR_PRESSURE_DIFFERENCE_TOLERANCE.
-/obj/machinery/door/proc/is_holding_pressure(pressure_tolerance = DOOR_PRESSURE_DIFFERENCE_TOLERANCE)
-	if(!density)
+/obj/machinery/door/proc/is_holding_pressure(pressure_tolerance = DOOR_PRESSURE_DIFFERENCE_TOLERANCE, include_open = FALSE)
+	if(!density && !include_open)
 		return FALSE
 	var/turf/open/our_turf = loc
 	// Плитка под дверью может оказаться закрытой: стену строят поверх содержимого
@@ -222,10 +223,11 @@
 	// удерживаемый перепад не виден вовсе. Список снимаем копией и сразу
 	// возвращаем плотность: если чтение смесей ниже когда-нибудь упадёт, дверь
 	// не должна остаться проходимой навсегда.
+	var/was_dense = density
 	density = FALSE
 	our_turf.ImmediateCalculateAdjacentTurfs()
 	var/list/neighbors = our_turf.atmos_adjacent_turfs?.Copy()
-	density = TRUE
+	density = was_dense
 	our_turf.ImmediateCalculateAdjacentTurfs()
 	if(!length(neighbors))
 		return FALSE
@@ -316,15 +318,15 @@
 	operating = TRUE
 	do_animate("opening")
 	set_opacity(0)
-	sleep(5)
+	sleep(opening_passable_delay)
 	density = FALSE
+	air_update_turf(TRUE)
+	update_freelook_sight()
 	sleep(5)
 	layer = initial(layer)
 	update_icon()
 	set_opacity(0)
 	operating = FALSE
-	air_update_turf(TRUE)
-	update_freelook_sight()
 	if(autoclose)
 		spawn(autoclose)
 			close()

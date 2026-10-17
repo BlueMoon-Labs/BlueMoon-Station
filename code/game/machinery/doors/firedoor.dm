@@ -27,7 +27,9 @@
 	attack_hand_is_action = TRUE
 	attack_hand_speed = CLICK_CD_MELEE
 	can_open_with_hands = FALSE
+	opening_passable_delay = DOOR_OPENING_PASSABLE_DELAY
 	var/emergency_close_timer = 0
+	var/automatic_close_timer
 	var/nextstate = null
 	var/boltslocked = TRUE
 	var/list/affecting_areas
@@ -86,9 +88,15 @@
 		. += "<span class='notice'>Детекция снята проводом на пожарной сигнализации зоны: дверь слушает только ручное управление.</span>"
 	. += span_notice("Alt-click the door to use the manual override.")
 	. += span_notice("Упершись в закрытую дверь, можно попробовать открыть её вручную.")
+	. += span_notice("Ручное открытие, в том числе ломом или при столкновении, блокирует автоматическое закрытие на [DisplayTimeText(FIRELOCK_MANUAL_OVERRIDE_GRACE)].")
+	. += span_notice("Ctrl-клик [can_auto_close() ? "блокирует автоматическое закрытие ([DisplayTimeText(FIRELOCK_CTRL_CLICK_OVERRIDE_TIME)])" : "снимает блокировку автоматического закрытия"]. Действие занимает [DisplayTimeText(FIRELOCK_CTRL_CLICK_ACTION_TIME)]. Ломом дверь можно закрыть в любой момент.")
+	if(!can_auto_close())
+		. += span_notice("Автоматическое закрытие заблокировано ещё на [DisplayTimeText(emergency_close_timer - world.time)].")
 
 /obj/machinery/door/firedoor/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
+	LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, can_auto_close() ? "Блокировать автозакрытие ([DisplayTimeText(FIRELOCK_CTRL_CLICK_OVERRIDE_TIME)])" : "Разблокировать автозакрытие")
+	. = CONTEXTUAL_SCREENTIP_SET
 
 	if (isnull(held_item))
 		if (density)
@@ -176,6 +184,9 @@
 			LAZYREMOVE(A.firedoors, src)
 // обнуление affecting_areas в firedoor для надёжности. тк возможная утечка
 /obj/machinery/door/firedoor/Destroy()
+	if(automatic_close_timer)
+		deltimer(automatic_close_timer)
+		automatic_close_timer = null
 	if(reopen_timer)
 		deltimer(reopen_timer)
 		reopen_timer = null
@@ -562,16 +573,15 @@
 			whack_a_mole()
 		if(welded || operating || !density)
 			return // whack_a_mole мог задеть и эту дверь
-		// Ломом дверь открывают осознанно и обычно затем, чтобы через неё пройти
-		// или протащить баллон. Шести секунд на это не хватало: любой следующий
-		// переход тревоги захлопывал дверь прямо в проходе.
-		emergency_close_timer = world.time + FIRELOCK_MANUAL_OVERRIDE_GRACE
-		auto_closed = FALSE
-		open()
+		// Защищаем и саму анимацию, и полный интервал после открытия.
+		block_automatic_closing(FIRELOCK_MANUAL_OVERRIDE_GRACE)
+		if(open())
+			block_automatic_closing(FIRELOCK_MANUAL_OVERRIDE_GRACE)
 	else
 		// Закрыл человек - автоматика открывать обратно не лезет.
 		auto_closed = FALSE
-		close()
+		nextstate = null
+		close(manual = TRUE)
 
 /obj/machinery/door/firedoor/proc/allow_hand_open(mob/user)
 	var/area/A = get_area(src)
@@ -639,10 +649,43 @@
 	. = ..()
 	latetoggle()
 
-/obj/machinery/door/firedoor/close()
+/obj/machinery/door/firedoor/close(manual = FALSE)
+	if(!manual && !can_auto_close())
+		return FALSE
 	playsound(loc, door_close_sound, 100, TRUE)
 	. = ..()
 	latetoggle()
+
+/obj/machinery/door/firedoor/proc/can_auto_close()
+	return world.time >= emergency_close_timer
+
+/obj/machinery/door/firedoor/proc/block_automatic_closing(duration)
+	emergency_close_timer = max(emergency_close_timer, world.time + duration)
+	nextstate = null
+	auto_closed = FALSE
+	automatic_close_timer = addtimer(CALLBACK(src, PROC_REF(resume_automatic_closing)), emergency_close_timer - world.time, TIMER_UNIQUE|TIMER_OVERRIDE|TIMER_NO_HASH_WAIT|TIMER_STOPPABLE)
+
+/obj/machinery/door/firedoor/proc/unblock_automatic_closing()
+	if(automatic_close_timer)
+		deltimer(automatic_close_timer)
+		automatic_close_timer = null
+	emergency_close_timer = 0
+	resume_automatic_closing()
+
+/obj/machinery/door/firedoor/proc/resume_automatic_closing()
+	automatic_close_timer = null
+	if(!can_auto_close() || density || welded)
+		return
+	if(operating)
+		automatic_close_timer = addtimer(CALLBACK(src, PROC_REF(resume_automatic_closing)), 1 SECONDS, TIMER_UNIQUE|TIMER_OVERRIDE|TIMER_NO_HASH_WAIT|TIMER_STOPPABLE)
+		return
+	var/should_close = firelock_alarm_seals(alarm_type)
+	for(var/area/affected as anything in affecting_areas)
+		if(affected.fire)
+			should_close = TRUE
+			break
+	if(should_close || is_holding_pressure(include_open = TRUE))
+		emergency_pressure_stop()
 
 /obj/machinery/door/firedoor/proc/whack_a_mole(reconsider_immediately = FALSE)
 	set waitfor = 0
@@ -686,25 +729,26 @@
 	if(turfs.len > 10)
 		return // too big, don't bother
 	for(var/obj/machinery/door/firedoor/FD in doors_to_close)
-		FD.emergency_pressure_stop(FALSE)
+		FD.emergency_pressure_stop()
 		if(reconsider_immediately)
 			var/turf/open/T = FD.loc
 			if(istype(T))
 				T.ImmediateCalculateAdjacentTurfs()
 
-/obj/machinery/door/firedoor/proc/emergency_pressure_stop(consider_timer = TRUE)
+/obj/machinery/door/firedoor/proc/emergency_pressure_stop()
 	set waitfor = 0
-	if(density || operating || welded)
+	if(density || operating || welded || !can_auto_close())
 		return
-	if(world.time >= emergency_close_timer || !consider_timer)
-		mark_auto_closed()
-		close()
+	mark_auto_closed()
+	close()
 
 /// Отмечает закрытие как сделанное автоматикой и взводит отложенную проверку на
 /// открытие. Без неё дверь, закрытую мимо системы тревог, открыть было некому:
 /// recompute_atmos_alarm() ходит только по фронту тревоги, а у такого закрытия
 /// фронта нет вовсе - тревога как была пустой, так и осталась.
 /obj/machinery/door/firedoor/proc/mark_auto_closed()
+	if(!can_auto_close())
+		return
 	auto_closed = TRUE
 	schedule_auto_reopen()
 
@@ -777,7 +821,9 @@
 	opacity = TRUE
 	density = TRUE
 
-/obj/machinery/door/firedoor/border_only/close()
+/obj/machinery/door/firedoor/border_only/close(manual = FALSE)
+	if(!manual && !can_auto_close())
+		return FALSE
 	if(density)
 		return TRUE
 	if(operating || welded)
@@ -799,7 +845,7 @@
 				to_chat(M, "<span class='notice'>You pull [M.pulling] through [src] right as it closes</span>")
 				M.pulling.forceMove(T2)
 				M.start_pulling(M2)
-	. = ..()
+	. = ..(manual)
 
 /obj/machinery/door/firedoor/border_only/allow_hand_open(mob/user)
 	var/area/A = get_area(src)
@@ -1135,6 +1181,25 @@
 	if(!user.canUseTopic(src, be_close = TRUE))
 		return
 	try_manual_override(user)
+
+/obj/machinery/door/firedoor/CtrlClick(mob/user)
+	if(!user.canUseTopic(src, be_close = TRUE) || (src in user.do_afters))
+		return
+	var/should_block = can_auto_close()
+	var/previous_close_timer = emergency_close_timer
+	balloon_alert(user, should_block ? "блокировка фаерлока" : "снятие блокировки")
+	if(!do_after(user, FIRELOCK_CTRL_CLICK_ACTION_TIME, target = src))
+		return
+	if(!user.canUseTopic(src, be_close = TRUE))
+		return
+	if(can_auto_close() != should_block || emergency_close_timer != previous_close_timer)
+		balloon_alert(user, "состояние изменилось")
+		return
+	add_fingerprint(user)
+	if(should_block)
+		block_automatic_closing(FIRELOCK_CTRL_CLICK_OVERRIDE_TIME)
+	else
+		unblock_automatic_closing()
 
 /obj/machinery/door/firedoor/proc/try_manual_override(mob/user, override_time = FIRELOCK_MANUAL_OVERRIDE_TIME)
 	if(density && !welded && !operating && !(src in user.do_afters))
