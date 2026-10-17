@@ -83,4 +83,4 @@
 	icon = 'modular_bluemoon/icons/mob/body_markings/donator_markings.dmi'
 	icon_state = "lycanthrope-hand"
 	covered_limbs = list("Left Arm" = MATRIX_NONE)
-	ckeys_allowed = list("melatonin1")
+
