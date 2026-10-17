@@ -428,6 +428,8 @@
 		return
 
 	var/obj/item/shield/changeling/S = ..(user)
+	if(!S)
+		return
 	S.remaining_uses = round(changeling.absorbedcount * 3)
 	return TRUE
 

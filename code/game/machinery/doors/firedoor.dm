@@ -6,12 +6,12 @@
 
 /obj/machinery/door/firedoor
 	name = "firelock"
-	desc = "Apply crowbar."
+	desc = "Воспользуйтесь ломом."
 	icon = 'icons/obj/doors/Doorfireglass.dmi'
 	icon_state = "door_open"
 	opacity = FALSE
 	density = FALSE
-	max_integrity = 300
+	max_integrity = 100
 	resistance_flags = FIRE_PROOF
 	heat_proof = TRUE
 	glass = TRUE
@@ -27,7 +27,9 @@
 	attack_hand_is_action = TRUE
 	attack_hand_speed = CLICK_CD_MELEE
 	can_open_with_hands = FALSE
+	opening_passable_delay = DOOR_OPENING_PASSABLE_DELAY
 	var/emergency_close_timer = 0
+	var/automatic_close_timer
 	var/nextstate = null
 	var/boltslocked = TRUE
 	var/list/affecting_areas
@@ -71,28 +73,33 @@
 /obj/machinery/door/firedoor/examine(mob/user)
 	. = ..()
 	if(!density)
-		. += "<span class='notice'>It is open, but could be <b>pried</b> closed.</span>"
+		. += "<span class='notice'>Дверь открыта. Её можно закрыть <b>ломом</b>.</span>"
 	else if(!welded)
-		. += "<span class='notice'>It is closed, but could be <i>pried</i> open. Deconstruction would require it to be <b>welded</b> shut.</span>"
+		. += "<span class='notice'>Дверь закрыта. Её можно открыть <i>ломом</i>. Для разборки её необходимо <b>заварить</b>.</span>"
 	else if(boltslocked)
-		. += "<span class='notice'>It is <i>welded</i> shut. The floor bolts have been locked by <b>screws</b>.</span>"
+		. += "<span class='notice'>Дверь <i>заварена</i>. Крепёжные болты зафиксированы <b>винтами</b>.</span>"
 	else
-		. += "<span class='notice'>The bolt locks have been <i>unscrewed</i>, but the bolts themselves are still <b>wrenched</b> to the floor.</span>"
+		. += "<span class='notice'>Фиксаторы болтов <i>отвинчены</i>, но сами болты всё ещё крепят дверь к полу. Их можно открутить <b>гаечным ключом</b>.</span>"
 	if(alarm_type == FIRELOCK_ALARM_TYPE_COLD)
 		. += "<span class='notice'>Синяя лампа датчика: за дверью холоднее, чем задумано для этой комнаты. От холода дверь не закрывается - это предупреждение тому, кто собрался войти без скафандра.</span>"
 	else if(alarm_type)
 		. += "<span class='warning'>Атмосферный датчик сообщает: [alarm_type == FIRELOCK_ALARM_TYPE_HOT ? "опасный нагрев" : "общая угроза"].</span>"
 	if(!fire_detection)
 		. += "<span class='notice'>Детекция снята проводом на пожарной сигнализации зоны: дверь слушает только ручное управление.</span>"
-	. += span_notice("Alt-click the door to use the manual override.")
-	. += span_notice("Упершись в закрытую дверь, можно попробовать открыть её вручную.")
+	. += span_notice("Alt-клик позволяет открыть дверь ручным приводом. Упершись в закрытую дверь, можно попробовать открыть её вручную.")
+	. += span_notice("Ручное открытие, в том числе ломом или при столкновении, блокирует автоматическое закрытие на [DisplayTimeText(FIRELOCK_MANUAL_OVERRIDE_GRACE)].")
+	. += span_notice("Ctrl-клик [can_auto_close() ? "блокирует автоматическое закрытие ([DisplayTimeText(FIRELOCK_CTRL_CLICK_OVERRIDE_TIME)])" : "снимает блокировку автоматического закрытия"].")
+	if(!can_auto_close())
+		. += span_notice("Автоматическое закрытие заблокировано ещё на [DisplayTimeText(emergency_close_timer - world.time)].")
 
 /obj/machinery/door/firedoor/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
+	LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, can_auto_close() ? "Блокировать автозакрытие" : "Разблокировать автозакрытие")
+	. = CONTEXTUAL_SCREENTIP_SET
 
 	if (isnull(held_item))
 		if (density)
-			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Knock")
+			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Постучать")
 			return CONTEXTUAL_SCREENTIP_SET
 		else
 			return .
@@ -100,18 +107,18 @@
 	switch (held_item.tool_behaviour)
 		if (TOOL_CROWBAR)
 			if(!welded)
-				LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, (density ? "Open" : "Close"))
+				LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, (density ? "Открыть" : "Закрыть"))
 				return CONTEXTUAL_SCREENTIP_SET
 		if (TOOL_WELDER)
-			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, (welded ? "Unweld shut" : "Weld shut"))
+			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, (welded ? "Разварить" : "Заварить"))
 			return CONTEXTUAL_SCREENTIP_SET
 		if (TOOL_WRENCH)
 			if (welded && !boltslocked)
-				LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Unfasten bolts")
+				LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Открутить болты")
 				return CONTEXTUAL_SCREENTIP_SET
 		if (TOOL_SCREWDRIVER)
 			if (welded)
-				LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, (boltslocked ? "Unlock bolts" : "Lock bolts"))
+				LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, (boltslocked ? "Освободить болты" : "Зафиксировать болты"))
 				return CONTEXTUAL_SCREENTIP_SET
 	return .
 
@@ -176,6 +183,9 @@
 			LAZYREMOVE(A.firedoors, src)
 // обнуление affecting_areas в firedoor для надёжности. тк возможная утечка
 /obj/machinery/door/firedoor/Destroy()
+	if(automatic_close_timer)
+		deltimer(automatic_close_timer)
+		automatic_close_timer = null
 	if(reopen_timer)
 		deltimer(reopen_timer)
 		reopen_timer = null
@@ -476,7 +486,13 @@
 		return
 	if(iscarbon(AM))
 		var/mob/living/carbon/L = AM
-		try_manual_override(L, DOOR_BUMP_OVERRIDE_TIME)
+		if(!density || (src in L.do_afters))
+			return FALSE
+		var/obj/item/crowbar = L.is_holding_tool_quality(TOOL_CROWBAR)
+		if(crowbar)
+			try_to_crowbar(crowbar, L)
+		else
+			try_manual_override(L, DOOR_BUMP_OVERRIDE_TIME)
 	return FALSE
 
 /obj/machinery/door/firedoor/power_change()
@@ -556,16 +572,15 @@
 			whack_a_mole()
 		if(welded || operating || !density)
 			return // whack_a_mole мог задеть и эту дверь
-		// Ломом дверь открывают осознанно и обычно затем, чтобы через неё пройти
-		// или протащить баллон. Шести секунд на это не хватало: любой следующий
-		// переход тревоги захлопывал дверь прямо в проходе.
-		emergency_close_timer = world.time + FIRELOCK_MANUAL_OVERRIDE_GRACE
-		auto_closed = FALSE
-		open()
+		// Защищаем и саму анимацию, и полный интервал после открытия.
+		block_automatic_closing(FIRELOCK_MANUAL_OVERRIDE_GRACE)
+		if(open())
+			block_automatic_closing(FIRELOCK_MANUAL_OVERRIDE_GRACE)
 	else
 		// Закрыл человек - автоматика открывать обратно не лезет.
 		auto_closed = FALSE
-		close()
+		nextstate = null
+		close(manual = TRUE)
 
 /obj/machinery/door/firedoor/proc/allow_hand_open(mob/user)
 	var/area/A = get_area(src)
@@ -579,11 +594,12 @@
 		return TRUE
 	// Ручное управление, пусть и силиконовое: автоматика в его решение не лезет.
 	auto_closed = FALSE
+	nextstate = null
 	var/was_closed = density
 	if(density)
 		open()
 	else
-		close()
+		close(manual = TRUE)
 	if(density != was_closed)
 		log_remote_use(user, was_closed ? "opened" : "closed", "firelock interface")
 	return TRUE
@@ -599,7 +615,7 @@
 	auto_closed = FALSE
 	open()
 
-/obj/machinery/door/firedoor/do_animate(animation)
+/obj/machinery/door/firedoor/do_animate(animation, from_bump = FALSE)
 	switch(animation)
 		if("opening")
 			flick("door_opening", src)
@@ -633,10 +649,45 @@
 	. = ..()
 	latetoggle()
 
-/obj/machinery/door/firedoor/close()
+/obj/machinery/door/firedoor/close(manual = FALSE)
+	if(!manual && !can_auto_close())
+		return FALSE
 	playsound(loc, door_close_sound, 100, TRUE)
 	. = ..()
 	latetoggle()
+
+/obj/machinery/door/firedoor/proc/can_auto_close()
+	return world.time >= emergency_close_timer
+
+/obj/machinery/door/firedoor/proc/block_automatic_closing(duration)
+	emergency_close_timer = max(emergency_close_timer, world.time + duration)
+	nextstate = null
+	// Уже закрытая автоматикой дверь должна сохранять возможность открыться сама.
+	if(!density)
+		auto_closed = FALSE
+	automatic_close_timer = addtimer(CALLBACK(src, PROC_REF(resume_automatic_closing)), emergency_close_timer - world.time, TIMER_UNIQUE|TIMER_OVERRIDE|TIMER_NO_HASH_WAIT|TIMER_STOPPABLE)
+
+/obj/machinery/door/firedoor/proc/unblock_automatic_closing()
+	if(automatic_close_timer)
+		deltimer(automatic_close_timer)
+		automatic_close_timer = null
+	emergency_close_timer = 0
+	resume_automatic_closing()
+
+/obj/machinery/door/firedoor/proc/resume_automatic_closing()
+	automatic_close_timer = null
+	if(!can_auto_close() || density || welded)
+		return
+	if(operating)
+		automatic_close_timer = addtimer(CALLBACK(src, PROC_REF(resume_automatic_closing)), 1 SECONDS, TIMER_UNIQUE|TIMER_OVERRIDE|TIMER_NO_HASH_WAIT|TIMER_STOPPABLE)
+		return
+	var/should_close = firelock_alarm_seals(alarm_type)
+	for(var/area/affected as anything in affecting_areas)
+		if(affected.fire)
+			should_close = TRUE
+			break
+	if(should_close || is_holding_pressure(include_open = TRUE))
+		emergency_pressure_stop()
 
 /obj/machinery/door/firedoor/proc/whack_a_mole(reconsider_immediately = FALSE)
 	set waitfor = 0
@@ -680,25 +731,26 @@
 	if(turfs.len > 10)
 		return // too big, don't bother
 	for(var/obj/machinery/door/firedoor/FD in doors_to_close)
-		FD.emergency_pressure_stop(FALSE)
+		FD.emergency_pressure_stop()
 		if(reconsider_immediately)
 			var/turf/open/T = FD.loc
 			if(istype(T))
 				T.ImmediateCalculateAdjacentTurfs()
 
-/obj/machinery/door/firedoor/proc/emergency_pressure_stop(consider_timer = TRUE)
+/obj/machinery/door/firedoor/proc/emergency_pressure_stop()
 	set waitfor = 0
-	if(density || operating || welded)
+	if(density || operating || welded || !can_auto_close())
 		return
-	if(world.time >= emergency_close_timer || !consider_timer)
-		mark_auto_closed()
-		close()
+	mark_auto_closed()
+	close()
 
 /// Отмечает закрытие как сделанное автоматикой и взводит отложенную проверку на
 /// открытие. Без неё дверь, закрытую мимо системы тревог, открыть было некому:
 /// recompute_atmos_alarm() ходит только по фронту тревоги, а у такого закрытия
 /// фронта нет вовсе - тревога как была пустой, так и осталась.
 /obj/machinery/door/firedoor/proc/mark_auto_closed()
+	if(!can_auto_close())
+		return
 	auto_closed = TRUE
 	schedule_auto_reopen()
 
@@ -771,7 +823,9 @@
 	opacity = TRUE
 	density = TRUE
 
-/obj/machinery/door/firedoor/border_only/close()
+/obj/machinery/door/firedoor/border_only/close(manual = FALSE)
+	if(!manual && !can_auto_close())
+		return FALSE
 	if(density)
 		return TRUE
 	if(operating || welded)
@@ -793,7 +847,7 @@
 				to_chat(M, "<span class='notice'>You pull [M.pulling] through [src] right as it closes</span>")
 				M.pulling.forceMove(T2)
 				M.start_pulling(M2)
-	. = ..()
+	. = ..(manual)
 
 /obj/machinery/door/firedoor/border_only/allow_hand_open(mob/user)
 	var/area/A = get_area(src)
@@ -849,12 +903,12 @@
 	glass = FALSE
 	explosion_block = 2
 	assemblytype = /obj/structure/firelock_frame/heavy
-	max_integrity = 550
+	max_integrity = 250
 
 /obj/machinery/door/firedoor/window
 	name = "window shutter"
 	icon = 'icons/obj/doors/doorfirewindow.dmi'
-	desc = "A second window that slides in when the original window is broken, designed to protect against hull breaches. Truly a work of genius by NT engineers."
+	desc = "Резервная оконная заслонка, закрывающая проём при разрушении окна для защиты от разгерметизации. Поистине гениальное изобретение инженеров НТ."
 	glass = TRUE
 	explosion_block = 0
 	max_integrity = 50
@@ -867,12 +921,12 @@
 /obj/item/electronics/firelock
 	name = "firelock circuitry"
 	custom_price = PRICE_CHEAP
-	desc = "A circuit board used in construction of firelocks."
+	desc = "Плата управления для сборки фаерлоков."
 	icon_state = "mainboard"
 
 /obj/structure/firelock_frame
 	name = "firelock frame"
-	desc = "A partially completed firelock."
+	desc = "Частично собранный фаерлок."
 	icon = 'icons/obj/doors/Doorfire.dmi'
 	icon_state = "frame1"
 	anchored = FALSE
@@ -884,15 +938,15 @@
 	. = ..()
 	switch(constructionStep)
 		if(CONSTRUCTION_PANEL_OPEN)
-			. += "<span class='notice'>It is <i>unbolted</i> from the floor. A small <b>loosely connected</b> metal plate is covering the wires.</span>"
+			. += "<span class='notice'>Крепёжные болты <i>откручены</i>. Провода прикрывает небольшая <b>незакреплённая</b> металлическая панель.</span>"
 			if(!reinforced)
-				. += "<span class='notice'>It could be reinforced with plasteel.</span>"
+				. += "<span class='notice'>Каркас можно укрепить пласталью.</span>"
 		if(CONSTRUCTION_WIRES_EXPOSED)
-			. += "<span class='notice'>The maintenance plate has been <i>pried away</i>, and <b>wires</b> are trailing.</span>"
+			. += "<span class='notice'>Панель обслуживания <i>снята</i>, наружу свисают <b>провода</b>.</span>"
 		if(CONSTRUCTION_GUTTED)
-			. += "<span class='notice'>The maintenance panel is missing <i>wires</i> and the circuit board is <b>loosely connected</b>.</span>"
+			. += "<span class='notice'>В панели обслуживания отсутствуют <i>провода</i>, а плата управления <b>не закреплена</b>.</span>"
 		if(CONSTRUCTION_NOCIRCUIT)
-			. += "<span class='notice'>There are no <i>firelock electronics</i> in the frame. The frame could be <b>cut</b> apart.</span>"
+			. += "<span class='notice'>В каркасе отсутствует <i>электроника фаерлока</i>. Каркас можно <b>разрезать</b>.</span>"
 
 /obj/structure/firelock_frame/deconstruct(disassembled = TRUE)
 	if(!(flags_1 & NODECONSTRUCT_1))
@@ -1096,14 +1150,14 @@
 
 /obj/machinery/door/firedoor
 	name = "Emergency Shutter"
-	desc = "Emergency air-tight shutter, capable of sealing off breached areas. This one has a glass panel. It has a mechanism to open it with crowbar."
+	desc = "Аварийная герметичная заслонка со стеклянной панелью для изоляции разгерметизированных отсеков. Её можно открыть ломом или ручным приводом."
 	icon = 'modular_bluemoon/icons/obj/aesthetics/firedoor/firedoor_glass.dmi'
 	var/door_open_sound = 'modular_bluemoon/sound/machines/firedoor_open.ogg'
 	var/door_close_sound = 'modular_bluemoon/sound/machines/firedoor_open.ogg'
 
 /obj/machinery/door/firedoor/heavy
 	name = "Heavy Emergency Shutter"
-	desc = "Emergency air-tight shutter, capable of sealing off breached areas. It has a mechanism to open it with just your hands."
+	desc = "Тяжёлая аварийная герметичная заслонка для изоляции разгерметизированных отсеков. Её можно открыть ломом или ручным приводом."
 	icon = 'modular_bluemoon/icons/obj/aesthetics/firedoor/firedoor.dmi'
 
 /obj/effect/spawner/structure/window/reinforced/no_firelock
@@ -1115,7 +1169,7 @@
 
 /obj/machinery/door/firedoor/solid
 	name = "Solid Emergency Shutter"
-	desc = "Emergency air-tight shutter, capable of sealing off breached areas. It has a mechanism to open it with just your hands."
+	desc = "Глухая аварийная герметичная заслонка для изоляции разгерметизированных отсеков. Её можно открыть ломом или ручным приводом."
 	icon = 'modular_bluemoon/icons/obj/aesthetics/firedoor/firedoor.dmi'
 	glass = FALSE
 
@@ -1129,6 +1183,25 @@
 	if(!user.canUseTopic(src, be_close = TRUE))
 		return
 	try_manual_override(user)
+
+/obj/machinery/door/firedoor/CtrlClick(mob/user)
+	if(!user.canUseTopic(src, be_close = TRUE) || (src in user.do_afters))
+		return
+	var/should_block = can_auto_close()
+	var/previous_close_timer = emergency_close_timer
+	balloon_alert(user, should_block ? "блокировка фаерлока" : "снятие блокировки")
+	if(!do_after(user, FIRELOCK_CTRL_CLICK_ACTION_TIME, target = src))
+		return
+	if(!user.canUseTopic(src, be_close = TRUE))
+		return
+	if(can_auto_close() != should_block || emergency_close_timer != previous_close_timer)
+		balloon_alert(user, "состояние изменилось")
+		return
+	add_fingerprint(user)
+	if(should_block)
+		block_automatic_closing(FIRELOCK_CTRL_CLICK_OVERRIDE_TIME)
+	else
+		unblock_automatic_closing()
 
 /obj/machinery/door/firedoor/proc/try_manual_override(mob/user, override_time = FIRELOCK_MANUAL_OVERRIDE_TIME)
 	if(density && !welded && !operating && !(src in user.do_afters))

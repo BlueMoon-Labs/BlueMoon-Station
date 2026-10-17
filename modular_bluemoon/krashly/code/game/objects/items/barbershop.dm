@@ -66,20 +66,12 @@
 	desc = "Спрей с краской для волос в разных цветах."
 	icon = 'modular_bluemoon/krashly/icons/obj/barbershop.dmi'
 	icon_state = "hairspraywhite"
+	can_change_color = FALSE
+	dye_sound = 'modular_bluemoon/krashly/sound/sprayer.ogg'
 	var/spray_color = COLOR_WHITE
 
-/obj/item/dyespray/hairspray/dye(mob/target)
-	if(!ishuman(target))
-		return
-	var/mob/living/carbon/human/human_target = target
-
-	human_target.grad_style = spray_color
-	human_target.grad_color = sanitize_hexcolor(spray_color)
-	to_chat(human_target, "<span class='notice'>Вы начинаете красить свои волосы...</span>")
-	if(!do_after(usr, 30, target = human_target))
-		return
-	playsound(src, 'modular_bluemoon/krashly/sound/sprayer.ogg', 5, TRUE, 5)
-	human_target.update_hair()
+/obj/item/dyespray/hairspray/get_dye_color(mob/living/carbon/human/human_target)
+	return sanitize_hexcolor(spray_color, 6)
 
 /obj/item/dyespray/hairspray/white
 	icon_state = "hairspraywhite"

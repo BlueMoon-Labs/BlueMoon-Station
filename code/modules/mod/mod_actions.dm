@@ -123,8 +123,8 @@
 
 /datum/action/cooldown/module_action/Trigger(trigger_flags, atom/target)
 	. = ..()
-	var/obj/item/mod/module/target_module = target
-	if(!target_module.mod)
+	var/obj/item/mod/module/target_module = src.target
+	if(!target_module?.mod)
 		to_chat(owner, span_danger("Модуль изъят!"))
 		return qdel(src)
 	if(CHECK_BITFIELD(trigger_flags, TRIGGER_RIGHT_CLICK))

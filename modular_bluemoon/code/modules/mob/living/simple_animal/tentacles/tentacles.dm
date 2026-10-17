@@ -135,6 +135,8 @@
 //BLUEMOON ADD END
 
 /mob/living/simple_animal/hostile/tentacles/AttackingTarget()
+	if(!isliving(target))
+		return ..()
 	var/mob/living/M = target
 
 	var/onLewdCooldown = FALSE

@@ -67,6 +67,7 @@
 #define AIRLOCK_OBSTRUCTION_CLEARED_DELAY (1 SECONDS)
 
 /obj/machinery/door/airlock
+	opening_passable_delay = DOOR_OPENING_PASSABLE_DELAY
 	name = "airlock"
 	icon = 'icons/obj/doors/airlocks/station/public.dmi'
 	icon_state = "closed"
@@ -108,6 +109,7 @@
 	var/doorOpen = 'sound/machines/airlock.ogg'
 	var/doorClose = 'sound/machines/airlockclose.ogg'
 	var/doorDeni = 'sound/machines/deniedbeep.ogg' // i'm thinkin' Deni's
+	COOLDOWN_DECLARE(deny_cooldown)
 	var/boltUp = 'sound/machines/boltsup.ogg'
 	var/boltDown = 'sound/machines/boltsdown.ogg'
 	var/noPower = 'sound/machines/doorclick.ogg'
@@ -379,6 +381,10 @@
 /obj/machinery/door/airlock/proc/try_bump_open(mob/living/user)
 	if(!density || operating || welded || locked || hasPower() || (src in user.do_afters))
 		return FALSE
+	var/obj/item/crowbar = user.is_holding_tool_quality(TOOL_CROWBAR)
+	if(crowbar)
+		try_to_crowbar(crowbar, user)
+		return TRUE
 	balloon_alert(user, "forcing open...")
 	user.visible_message("<span class='notice'>[user] starts forcing [src] open...</span>", \
 						"<span class='notice'>You start forcing [src] open...</span>")
@@ -712,7 +718,7 @@
 		else
 			set_light(0)
 
-/obj/machinery/door/airlock/do_animate(animation)
+/obj/machinery/door/airlock/do_animate(animation, from_bump = FALSE)
 	switch(animation)
 		if("opening")
 			update_icon(ALL, AIRLOCK_OPENING)
@@ -721,7 +727,10 @@
 		if("deny")
 			if(machine_stat)
 				return
-
+			if(from_bump)
+				if(!COOLDOWN_FINISHED(src, deny_cooldown))
+					return
+				COOLDOWN_START(src, deny_cooldown, AIRLOCK_DENY_COOLDOWN)
 			update_icon(ALL, AIRLOCK_DENY)
 			playsound(src, doorDeni, 50, 0, 3)
 			addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_icon), AIRLOCK_CLOSED), 6 DECISECONDS, TIMER_DELETE_ME)
@@ -1320,7 +1329,7 @@
 	operating = TRUE
 	play_fov_effect(src, 5, "forcefield")
 	update_icon(ALL, AIRLOCK_OPENING, 1)
-	sleep(1)
+	sleep(opening_passable_delay)
 	set_opacity(0)
 	density = FALSE
 	air_update_turf(TRUE)
