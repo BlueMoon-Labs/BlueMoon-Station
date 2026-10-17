@@ -391,8 +391,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/lighting_lamp_brightness = LIGHTING_LAMP_BRIGHTNESS_DEFAULT
 	var/lighting_bloom_intensity = LIGHTING_BLOOM_INTENSITY_DEFAULT
 	var/lighting_quality = LIGHTING_QUALITY_DEFAULT
-	var/light = LIGHT_DEFAULT
-	var/glowlevel = GLOW_MED
 	///Should we automatically fit the viewport?
 	var/auto_fit_viewport = FALSE
 	///Should we be in the widescreen mode set by the config?

@@ -295,7 +295,7 @@ export const GraphicsSection = (props) => {
               <Stack align="center" fill className="GamePreferences__row">
                 <Stack.Item grow basis={0}>
                   <div className="GamePreferences__label" style={{ opacity: isFastMode ? 0.5 : 1, color: isFastMode ? '#6e6e6e' : undefined }}>Размытие</div>
-                  <div className="GamePreferences__hint" style={{ color: isFastMode ? '#6e6e6e' : undefined }}>Мягкость света</div>
+                  <div className="GamePreferences__hint" style={{ color: isFastMode ? '#6e6e6e' : undefined }}>Мягкость света и ореолы ламп, 0 - без них</div>
                 </Stack.Item>
                 <Stack.Item style={{ opacity: isFastMode ? 0.45 : 1 }}>
                   <Dropdown

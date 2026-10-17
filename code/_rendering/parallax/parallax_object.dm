@@ -17,7 +17,8 @@
 	// вьюпорта раздувает область отрисовки карты - экран уезжает мельче и в рамке.
 	// Все четыре донора со скайбоксами 736 держат TILE_BOUND; у нас он потерялся
 	// при перекрытии appearance_flags, пока все слои были ровно по вьюпорту.
-	appearance_flags = PIXEL_SCALE | KEEP_TOGETHER | TILE_BOUND
+	// Без KEEP_TOGETHER: плитки не перекрываются, а с ним клиент каждый кадр собирает слой целиком, до 2400x2400.
+	appearance_flags = PIXEL_SCALE | TILE_BOUND
 
 	/// pixel x/y shift per real x/y
 	var/speed = 1
