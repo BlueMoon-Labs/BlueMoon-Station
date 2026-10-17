@@ -231,6 +231,30 @@
 	role.finish_practice_capture(WEAKREF(role.active_contract), WEAKREF(hunted), get_turf(hunted))
 	TEST_ASSERT_EQUAL(role.contracts_done, 6, "Охота засчитана.")
 
+/// Кража на манекен из обычного предложения терминала, а не с пульта, тоже выполнима: манекен получает свою ID-карту.
+/datum/unit_test/antag_training_hk47_offered_theft/Run()
+	var/datum/antag_training_session/session = allocate_training_session(/datum/antag_training_program/hk47)
+	TEST_ASSERT(session.prepare(), "Полигон готовит HK-47.")
+	var/datum/antag_training_arena/arena = session.arena
+	var/mob/living/carbon/human/droid = session.avatar
+	var/datum/antagonist/hk47/training/role = droid.mind.has_antag_datum(/datum/antagonist/hk47/training)
+	var/datum/antag_training_program/hk47/program = session.program
+	droid.forceMove(arena.zones["pve"]["spawn"])
+	var/mob/living/carbon/human/dummy = arena.spawn_creature("human", "pve", creator = session)
+	program.target_created(session, dummy)
+	dummy.forceMove(get_step(droid, EAST))
+	TEST_ASSERT_NULL(dummy.wear_id, "Манекен появляется без ID-карты.")
+
+	var/datum/hk_contract/offer = role.make_contract(HK_CLIENT_SYNDICATE, /datum/hk_contract_task/theft, /datum/hk_contract_modifier/no_witnesses, dummy.mind)
+	role.offers += offer
+	TEST_ASSERT(role.accept(offer), "Предложенная кража на манекен принимается.")
+	var/obj/item/card/id/card = dummy.wear_id
+	TEST_ASSERT(istype(card) && card.registered_name == dummy.real_name, "Цель предложенной кражи получает свою ID-карту.")
+	dummy.temporarilyRemoveItemFromInventory(card, TRUE)
+	droid.put_in_hands(card)
+	TEST_ASSERT(role.try_scan(), "Скан карты закрывает предложенную кражу.")
+	TEST_ASSERT_EQUAL(role.contracts_done, 1, "Предложенная кража засчитана.")
+
 /// Учебный HK-47 не доходит до станции: раскрытия без объявлений, записей и пеленгатора, HK-50 с разумом закрыт, пара встаёт в секторе, выход всё убирает.
 /datum/unit_test/antag_training_hk47_isolation/Run()
 	var/datum/antag_training_session/session = allocate_training_session(/datum/antag_training_program/hk47)
