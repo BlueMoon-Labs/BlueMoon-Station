@@ -476,7 +476,13 @@
 		return
 	if(iscarbon(AM))
 		var/mob/living/carbon/L = AM
-		try_manual_override(L, DOOR_BUMP_OVERRIDE_TIME)
+		if(!density || (src in L.do_afters))
+			return FALSE
+		var/obj/item/crowbar = L.is_holding_tool_quality(TOOL_CROWBAR)
+		if(crowbar)
+			try_to_crowbar(crowbar, L)
+		else
+			try_manual_override(L, DOOR_BUMP_OVERRIDE_TIME)
 	return FALSE
 
 /obj/machinery/door/firedoor/power_change()

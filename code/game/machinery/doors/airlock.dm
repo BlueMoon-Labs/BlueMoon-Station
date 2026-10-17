@@ -379,6 +379,10 @@
 /obj/machinery/door/airlock/proc/try_bump_open(mob/living/user)
 	if(!density || operating || welded || locked || hasPower() || (src in user.do_afters))
 		return FALSE
+	var/obj/item/crowbar = user.is_holding_tool_quality(TOOL_CROWBAR)
+	if(crowbar)
+		try_to_crowbar(crowbar, user)
+		return TRUE
 	balloon_alert(user, "forcing open...")
 	user.visible_message("<span class='notice'>[user] starts forcing [src] open...</span>", \
 						"<span class='notice'>You start forcing [src] open...</span>")
