@@ -76,11 +76,10 @@
 	icon = 'modular_bluemoon/icons/mob/body_markings/donator_markings.dmi'
 	icon_state = "skeleton"
 	covered_limbs = list("Chest" = MATRIX_ALL, "Left Leg" = MATRIX_ALL, "Right Leg" = MATRIX_ALL, "Left Arm" = MATRIX_ALL, "Right Arm" = MATRIX_ALL)
-	ckeys_allowed = list("kumikoshouko")
 
 /datum/sprite_accessory/mam_body_markings/other/melatonin_arm
 	name = "Lycanthrope Hand"
 	icon = 'modular_bluemoon/icons/mob/body_markings/donator_markings.dmi'
 	icon_state = "lycanthrope-hand"
 	covered_limbs = list("Left Arm" = MATRIX_NONE)
-	ckeys_allowed = list("melatonin1")
+
