@@ -246,6 +246,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 "balls_efficiency" = CUM_EFFICIENCY,
 "has_breasts" = FALSE,
 "breasts_color" = "ffffff",
+"breasts_sprite_variant" = "New",
+"breasts_nipples" = FALSE,
+"breasts_nipples_color" = "ffffff",
 "breasts_size" = BREASTS_SIZE_DEF,
 "breasts_shape" = DEF_BREASTS_SHAPE,
 "breasts_fluid" = /datum/reagent/consumable/milk,
@@ -388,8 +391,6 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/lighting_lamp_brightness = LIGHTING_LAMP_BRIGHTNESS_DEFAULT
 	var/lighting_bloom_intensity = LIGHTING_BLOOM_INTENSITY_DEFAULT
 	var/lighting_quality = LIGHTING_QUALITY_DEFAULT
-	var/light = LIGHT_DEFAULT
-	var/glowlevel = GLOW_MED
 	///Should we automatically fit the viewport?
 	var/auto_fit_viewport = FALSE
 	///Should we be in the widescreen mode set by the config?
@@ -1200,6 +1201,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 			var/change_label = src.use_modern_translations ? get_modern_text("change", src) : "Change"
 			var/yes_label = src.use_modern_translations ? get_modern_text("yes", src) : "Yes"
 			var/no_label = src.use_modern_translations ? get_modern_text("no", src) : "No"
+			var/new_label = src.use_modern_translations ? get_modern_text("new", src) : "New"
+			var/old_label = src.use_modern_translations ? get_modern_text("old", src) : "Old"
 			var/none_label = src.use_modern_translations ? get_modern_text("none", src) : "None"
 
 			dat += "<center>"
@@ -2013,6 +2016,9 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						var/womb_fluid_label = src.use_modern_translations ? get_modern_text("womb_fluid", src) : "Produces"
 						var/has_breasts_label = src.use_modern_translations ? get_modern_text("has_breasts", src) : "Has Breasts"
 						var/breasts_color_label = src.use_modern_translations ? get_modern_text("breast_color", src) : "Color"
+						var/breasts_variant_label = src.use_modern_translations ? get_modern_text("breasts_variant", src) : "Breasts Variant"
+						var/has_colorized_nipples_label = src.use_modern_translations ? get_modern_text("has_colorized_nipples", src) : "Colorized Nipples"
+						var/nipples_color_label = src.use_modern_translations ? get_modern_text("nipples_color", src) : "Nipples Color"
 						var/breasts_size_label = src.use_modern_translations ? get_modern_text("breast_cup_size", src) : "Cup Size"
 						var/breasts_shape_label = src.use_modern_translations ? get_modern_text("breast_shape", src) : "Breasts Shape"
 						var/breasts_visibility_label = src.use_modern_translations ? get_modern_text("breast_visibility", src) : "Breasts Visibility"
@@ -2138,6 +2144,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 							else
 								dat += "<b>[breasts_color_label]:</b></a><BR>"
 								dat += "<span style='border: 1px solid #161616; background-color: #[features["breasts_color"]];'><font color='[color_hex2num(features["breasts_color"]) < 200 ? "FFFFFF" : "000000"]'>#[features["breasts_color"]]</font></span> <a href='?_src_=prefs;preference=breasts_color;task=input'>Change</a><br>"
+							if(features["breasts_shape"] == "Pair")
+								dat += "<b>[breasts_variant_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=breasts_sprite_variant'>[features["breasts_sprite_variant"] == "Old" ? old_label : new_label]</a>"
+							if(features["breasts_sprite_variant"] != "Old")
+								dat += "<b>[has_colorized_nipples_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=breasts_nipples'>[features["breasts_nipples"] ? yes_label : no_label]</a>"
+								if(features["breasts_nipples"])
+									dat += "<b>[nipples_color_label]:</b> </a><BR>"
+									dat += "<span style='border: 1px solid #161616; background-color: #[features["breasts_nipples_color"]];'><font color='[color_hex2num(features["breasts_nipples_color"]) < 200 ? "FFFFFF" : "000000"]'>#[features["breasts_nipples_color"]]</font></span> <a href='?_src_=prefs;preference=breasts_nipples_color;task=input'>[change_label]</a><br>"
 							dat += "<b>[breasts_size_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=breasts_size;task=input'>[features["breasts_size"]]</a>"
 							dat += "<b>[breasts_shape_label]:</b><a style='display:block;width:50px' href='?_src_=prefs;preference=breasts_shape;task=input'>[features["breasts_shape"]]</a>"
 							dat += "<b>[breasts_visibility_label]:</b><a style='display:block;width:100px' href='?_src_=prefs;preference=breasts_visibility;task=input'>[features["breasts_visibility"]]</a>"
@@ -4558,6 +4571,17 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 						else
 							to_chat(user,"<span class='danger'>Invalid color. Your color is not bright enough.</span>")
 
+				if("breasts_nipples_color")
+					var/new_nipples_color = input(user, "Nipples Color:", "Character Preference", "#" + features["breasts_nipples_color"]) as color|null
+					if(new_nipples_color)
+						var/temp_hsv = RGBtoHSV(new_nipples_color)
+						if(new_nipples_color == "#000000" && features["breasts_nipples_color"] != pref_species.default_color)
+							features["breasts_nipples_color"] = pref_species.default_color
+						else if(ReadHSV(temp_hsv)[3] >= ReadHSV(MINIMUM_MUTANT_COLOR)[3] || !CONFIG_GET(flag/character_color_limits))
+							features["breasts_nipples_color"] = sanitize_hexcolor(new_nipples_color, 6)
+						else
+							to_chat(user, "<span class='danger'>Invalid color. Your color is not bright enough.</span>")
+
 				if("breasts_visibility")
 					var/n_vis = tgui_input_list(user, "Breasts Visibility", "Character Preference", CONFIG_GET(str_list/safe_visibility_toggles))
 					if(n_vis)
@@ -5267,6 +5291,12 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 					features["has_breasts"] = !features["has_breasts"]
 					if(features["has_breasts"] == FALSE)
 						features["breasts_producing"] = FALSE
+				if("breasts_sprite_variant")
+					features["breasts_sprite_variant"] = (features["breasts_sprite_variant"] == "Old") ? "New" : "Old"
+					if(features["breasts_sprite_variant"] == "Old")
+						features["breasts_nipples"] = FALSE
+				if("breasts_nipples")
+					features["breasts_nipples"] = !features["breasts_nipples"]
 				if("breasts_producing")
 					features["breasts_producing"] = !features["breasts_producing"]
 				if("breasts_accessible")
@@ -6720,8 +6750,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	return "<img src='[link]' referrerpolicy='no-referrer' style='border: 1px solid black; object-fit: contain;' width='[width]' height='[height]'>"
 
 /datum/preferences/proc/get_ass_photo_markup()
-	var/ass_photo_label = use_modern_translations ? get_modern_text("ass_photo", src) : "Butt photo"
-	var/set_ass_photo_label = use_modern_translations ? get_modern_text("set_ass_photo", src) : "Set photo"
+	var/ass_photo_label = use_modern_translations ? get_modern_text("ass_photo", src) : "Ass Shot"
+	var/set_ass_photo_label = use_modern_translations ? get_modern_text("set_ass_photo", src) : "Set Ass Shot"
 	var/list/markup = list()
 	markup += "<h2>[ass_photo_label]</h2>"
 	markup += "<a href='?_src_=prefs;preference=ass_photo'><b>[set_ass_photo_label]</b></a>"

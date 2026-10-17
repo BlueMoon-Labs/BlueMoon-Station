@@ -20644,9 +20644,6 @@
 	name = "Brig";
 	req_access_txt = "63"
 	},
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
 /obj/effect/mapping_helpers/airlock/cyclelink_helper,
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel,
@@ -27379,9 +27376,6 @@
 /turf/open/floor/plasteel,
 /area/hallway/secondary/command)
 "bai" = (
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
@@ -92288,9 +92282,6 @@
 /obj/machinery/door/firedoor,
 /obj/machinery/door/airlock/public/glass{
 	name = "Atrium Access"
-	},
-/obj/structure/cable{
-	icon_state = "1-2"
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,

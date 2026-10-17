@@ -11,6 +11,10 @@
 	/// The ckey of the person who most recently assembled this machine.
 	var/sol_inspection_builder_ckey
 
+/obj/item/circuitboard/machine/sleeper/syndie
+	/// The ckey of the person who most recently assembled this machine.
+	var/sol_inspection_builder_ckey
+
 /obj/vehicle/sealed/mecha/combat/durand
 	var/sol_inspection_builder_ckey
 
@@ -33,6 +37,12 @@
 		if(board)
 			board.sol_inspection_builder_ckey = builder_ckey
 		return
+	if(istype(target, /obj/machinery/sleeper/syndie))
+		var/obj/machinery/sleeper/syndie/syndicate_sleeper = target
+		var/obj/item/circuitboard/machine/sleeper/syndie/board = syndicate_sleeper.circuit
+		if(board)
+			board.sol_inspection_builder_ckey = builder_ckey
+		return
 	if(istype(target, /obj/vehicle/sealed/mecha/combat/durand))
 		var/obj/vehicle/sealed/mecha/combat/durand/durand = target
 		durand.sol_inspection_builder_ckey = builder_ckey
@@ -43,7 +53,7 @@
 
 /obj/item/sol_inspection_scanner
 	name = "SOL Ccanner"
-	desc = "Служебный сканер для выявления и изъятия незаконной добывающей техники и боевых экзокостюмов."
+	desc = "Служебный сканер для выявления и изъятия незаконной добывающей техники, боевых экзокостюмов и нелегальных капсул стазиса."
 	icon = 'icons/obj/device.dmi'
 	icon_state = "survey-adv"
 	item_state = "electronic"
@@ -87,6 +97,7 @@
 
 	print_receipt(user, target, reason, fine_amount)
 	inspector.inspection_team.report_violation("Взыскан штраф [fine_amount] кредитов за [reason]. Объект: [target] в [get_area(target)]. Техника изъята.")
+	inspector.inspection_team.announce_early_return_if_unlocked()
 	confiscate_target(target)
 	to_chat(user, span_notice("Инспекция завершена. Штраф взыскан, техника изъята."))
 	return TRUE
@@ -124,6 +135,12 @@
 					brain.forceMove(brain.container)
 				brain.remote_control = null
 				brain.update_mobility()
+	if(istype(target, /obj/machinery/sleeper))
+		// A stasis pod with its controls inside is the perfect kidnapping device: whoever is
+		// asleep in it still has to be dumped on the station floor before the pod is seized.
+		var/obj/machinery/sleeper/sleeper = target
+		if(sleeper.occupant && !QDELETED(sleeper.occupant) && location)
+			sleeper.dropContents()
 	if(location)
 		target.visible_message(span_notice("[target] исчезает во вспышке искр: техника изъята инспекцией Солнечной Федерации."))
 		do_fake_sparks(SOL_INSPECTION_CONFISCATION_SPARKS, FALSE, location)
@@ -144,6 +161,11 @@
 	if(istype(target, /obj/machinery/mineral/bluespace_miner) || istype(target, /obj/machinery/cryptominer))
 		return "незаконная добывающая установка"
 
+	// Controls inside make it a stasis kidnapping pod, and the board is printable in R&D.
+	// There is no legitimate deployment for one, so no security level excuses it.
+	if(istype(target, /obj/machinery/sleeper/syndie))
+		return "нелегальный слипер с внутренним управлением"
+
 	if(istype(target, /obj/vehicle/sealed/mecha/combat/durand))
 		if(!istype(get_area(target), /area/ai_monitored/security/armory) && GLOB.security_level < SEC_LEVEL_RED)
 			return "экзокостюм Durand вне оружейной до кода Красный"
@@ -160,6 +182,10 @@
 	if(istype(target, /obj/machinery/cryptominer))
 		var/obj/machinery/cryptominer/crypto_miner = target
 		var/obj/item/circuitboard/machine/cryptominer/board = crypto_miner.circuit
+		return board?.sol_inspection_builder_ckey
+	if(istype(target, /obj/machinery/sleeper/syndie))
+		var/obj/machinery/sleeper/syndie/syndicate_sleeper = target
+		var/obj/item/circuitboard/machine/sleeper/syndie/board = syndicate_sleeper.circuit
 		return board?.sol_inspection_builder_ckey
 	if(istype(target, /obj/vehicle/sealed/mecha/combat/durand))
 		var/obj/vehicle/sealed/mecha/combat/durand/durand = target

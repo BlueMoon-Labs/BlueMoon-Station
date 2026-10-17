@@ -56,6 +56,7 @@
 	WRITE_FILE(.["custom_moan_sounds"],		custom_moan_sounds)
 	// Bluemoon prefs root (must run last вЂ” СЃРј. modular_bluemoon/preferences_savefile.dm)
 	WRITE_FILE(.["favorite_tracks"], favorite_tracks)
+	WRITE_FILE(.["favorite_hair_styles"], favorite_hair_styles)
 	WRITE_FILE(.["playlists"], playlists)
 	WRITE_FILE(.["favorite_paintings_md5"], favorite_paintings_md5)
 	WRITE_FILE(.["metadollar_minute_pool"], metadollar_minute_pool)
@@ -118,6 +119,8 @@
 	custom_moan_sounds = SANITIZE_LIST(custom_moan_sounds) & valid_moan_paths
 	.["favorite_tracks"] >> favorite_tracks
 	favorite_tracks = sanitize_jukebox_track_list(favorite_tracks)
+	.["favorite_hair_styles"] >> favorite_hair_styles
+	favorite_hair_styles = sanitize_hair_style_favorites(favorite_hair_styles)
 	.["favorite_paintings_md5"] >> favorite_paintings_md5
 	favorite_paintings_md5 = SANITIZE_LIST(favorite_paintings_md5)
 	.["playlists"] >> playlists

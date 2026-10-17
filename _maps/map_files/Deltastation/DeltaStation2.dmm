@@ -3434,15 +3434,6 @@
 	heat_capacity = 1e+006
 	},
 /area/maintenance/port/fore)
-"arI" = (
-/obj/structure/cable/white{
-	icon_state = "4-8"
-	},
-/obj/structure/cable/white{
-	icon_state = "4-8"
-	},
-/turf/open/floor/plating,
-/area/maintenance/port/fore)
 "arK" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/space_heater,
@@ -8783,9 +8774,6 @@
 /turf/open/floor/plasteel,
 /area/hallway/primary/fore)
 "bjU" = (
-/obj/structure/cable/white{
-	icon_state = "1-2"
-	},
 /obj/structure/cable/white{
 	icon_state = "1-2"
 	},
@@ -16288,9 +16276,6 @@
 /obj/machinery/power/rad_collector/anchored,
 /obj/structure/cable{
 	icon_state = "4-8"
-	},
-/obj/structure/cable{
-	icon_state = "0-4"
 	},
 /obj/structure/cable{
 	icon_state = "0-4"
@@ -60291,9 +60276,6 @@
 /obj/structure/cable/white{
 	icon_state = "2-4"
 	},
-/obj/structure/cable/white{
-	icon_state = "2-4"
-	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 4
 	},
@@ -74549,21 +74531,6 @@
 	},
 /turf/open/floor/plasteel/grimy,
 /area/command/bridge)
-"mxo" = (
-/obj/structure/cable{
-	icon_state = "2-8"
-	},
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 8
-	},
-/turf/open/floor/plasteel,
-/area/engineering/atmospherics_engine)
 "mxv" = (
 /obj/structure/cable/white{
 	icon_state = "4-8"
@@ -74592,9 +74559,6 @@
 	req_access_txt = "47"
 	},
 /obj/effect/decal/cleanable/dirt,
-/obj/structure/cable/white{
-	icon_state = "1-2"
-	},
 /obj/effect/turf_decal/stripes/yellow/line,
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 1
@@ -84954,34 +84918,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/command/storage/eva)
-"oLd" = (
-/obj/structure/cable/white{
-	icon_state = "4-8"
-	},
-/obj/structure/cable/white{
-	icon_state = "4-8"
-	},
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/neutral{
-	dir = 1
-	},
-/obj/effect/turf_decal/tile/neutral,
-/obj/effect/turf_decal/tile/neutral{
-	dir = 4
-	},
-/obj/effect/turf_decal/tile/neutral{
-	dir = 8
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
-	dir = 4
-	},
-/turf/open/floor/plasteel,
-/area/engineering/break_room)
 "oLg" = (
 /obj/machinery/vending/cart,
 /obj/machinery/computer/security/telescreen/entertainment{
@@ -85267,22 +85203,6 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/central)
-"oOE" = (
-/obj/effect/decal/cleanable/dirt,
-/obj/structure/cable/white{
-	icon_state = "4-8"
-	},
-/obj/structure/cable/white{
-	icon_state = "4-8"
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
-	dir = 4
-	},
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
-/turf/open/floor/plating,
-/area/maintenance/starboard/fore)
 "oOO" = (
 /obj/machinery/door/firedoor,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
@@ -96921,24 +96841,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/maintenance/port/aft)
-"rod" = (
-/obj/structure/cable/white{
-	icon_state = "4-8"
-	},
-/obj/structure/cable/white{
-	icon_state = "4-8"
-	},
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
-	dir = 4
-	},
-/turf/open/floor/plating,
-/area/maintenance/port/fore)
 "rol" = (
 /obj/structure/table/reinforced,
 /obj/item/assembly/timer,
@@ -117615,9 +117517,6 @@
 /obj/structure/cable/white{
 	icon_state = "2-8"
 	},
-/obj/structure/cable/white{
-	icon_state = "2-8"
-	},
 /obj/effect/landmark/navigate_destination/det,
 /obj/structure/table/wood,
 /obj/item/paper_bin,
@@ -126185,9 +126084,6 @@
 /area/hallway/primary/central)
 "xye" = (
 /obj/effect/decal/cleanable/dirt,
-/obj/structure/cable/white{
-	icon_state = "4-8"
-	},
 /obj/structure/cable/white{
 	icon_state = "4-8"
 	},
@@ -155267,7 +155163,7 @@ xfU
 mvS
 leQ
 jnw
-oLd
+kFp
 aHZ
 uoM
 sQd
@@ -156768,7 +156664,7 @@ nKC
 sVs
 gfX
 uuq
-mxo
+uuq
 qjJ
 eFY
 eFY
@@ -161154,7 +161050,7 @@ sNp
 rjQ
 jRQ
 qOV
-rod
+sjH
 mLR
 mLR
 mLR
@@ -166527,7 +166423,7 @@ aoh
 euT
 aqj
 vtY
-arI
+arD
 mTK
 pRL
 vkp
@@ -173725,7 +173621,7 @@ apw
 apv
 asa
 atw
-oOE
+pSw
 uqS
 lMD
 fSj

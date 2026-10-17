@@ -5,7 +5,7 @@
 //	You do not need to raise this if you are adding new values that have sane defaults.
 //	Only raise this value when changing the meaning/format/name/layout of an existing value
 //	where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX	84
+#define SAVEFILE_VERSION_MAX	85
 
 /// Upper bound for character slot indices during savefile migration (loop over S.dir).
 /// Prevents corrupted or garbage directory names (e.g. huge slot numbers) from inflating max_save_slots
@@ -184,6 +184,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 		exp -= "Expeditor"
 		exp -= "Vanguard operative"
+
+	// уже включённая антаг-роль поднимает порог согласия, так что HK-47 его не меняет
+	if(current_version < 85 && antag_opt_in_prefs_force_minimum(src) && !(ROLE_HK47 in be_special))
+		be_special[ROLE_HK47] = ANTAG_PRIORITY_HIGH
 
 /datum/preferences/proc/update_character(current_version, savefile/S)
 	if(current_version < 19)
@@ -675,8 +679,6 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["lighting_lamp_brightness"] >> lighting_lamp_brightness
 	S["lighting_bloom_intensity"] >> lighting_bloom_intensity
 	S["lighting_quality"] >> lighting_quality
-	S["light"] >> light
-	S["glowlevel"] >> glowlevel
 	S["auto_fit_viewport"] >> auto_fit_viewport
 	S["widescreenpref"] >> widescreenpref
 	S["fullscreen"] >> fullscreen
@@ -836,8 +838,6 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	lighting_lamp_brightness = sanitize_integer(lighting_lamp_brightness, LIGHTING_LAMP_BRIGHTNESS_MIN, LIGHTING_LAMP_BRIGHTNESS_MAX, LIGHTING_LAMP_BRIGHTNESS_DEFAULT)
 	lighting_bloom_intensity = sanitize_integer(lighting_bloom_intensity, LIGHTING_BLOOM_INTENSITY_MIN, LIGHTING_BLOOM_INTENSITY_MAX, LIGHTING_BLOOM_INTENSITY_DEFAULT)
 	lighting_quality = sanitize_integer(lighting_quality, LIGHTING_QUALITY_FAST, LIGHTING_QUALITY_HIGH, LIGHTING_QUALITY_DEFAULT)
-	light = sanitize_integer(light, 0, 7, initial(light))
-	glowlevel = sanitize_integer(glowlevel, GLOW_HIGH, GLOW_DISABLE, initial(glowlevel))
 	auto_fit_viewport = sanitize_integer(auto_fit_viewport, 0, 1, initial(auto_fit_viewport))
 	widescreenpref = sanitize_integer(widescreenpref, 0, 1, initial(widescreenpref))
 	fullscreen = sanitize_integer(fullscreen, 0, 1, initial(fullscreen))
@@ -1326,8 +1326,6 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["lighting_lamp_brightness"], lighting_lamp_brightness)
 	WRITE_FILE(S["lighting_bloom_intensity"], lighting_bloom_intensity)
 	WRITE_FILE(S["lighting_quality"], lighting_quality)
-	WRITE_FILE(S["light"], light)
-	WRITE_FILE(S["glowlevel"], glowlevel)
 	WRITE_FILE(S["auto_fit_viewport"], auto_fit_viewport)
 	WRITE_FILE(S["hud_toggle_flash"], hud_toggle_flash)
 	WRITE_FILE(S["hud_toggle_color"], hud_toggle_color)
@@ -1509,6 +1507,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 "balls_efficiency" = CUM_EFFICIENCY,
 "has_breasts" = FALSE,
 "breasts_color" = "ffffff",
+"breasts_sprite_variant" = "New",
+"breasts_nipples" = FALSE,
+"breasts_nipples_color" = "ffffff",
 "breasts_size" = BREASTS_SIZE_DEF,
 "breasts_shape" = DEF_BREASTS_SHAPE,
 "breasts_producing" = FALSE,
@@ -1774,6 +1775,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["feature_breasts_size"] >> features["breasts_size"]
 	S["feature_breasts_shape"] >> features["breasts_shape"]
 	S["feature_breasts_color"] >> features["breasts_color"]
+	S["feature_breasts_sprite_variant"] >> features["breasts_sprite_variant"] // BLUEMOON ADD
+	S["feature_breasts_nipples"] >> features["breasts_nipples"] // BLUEMOON ADD
+	S["feature_breasts_nipples_color"] >> features["breasts_nipples_color"] // BLUEMOON ADD
 	S["feature_breasts_producing"] >> features["breasts_producing"]
 	S["feature_breasts_fluid"] >> features["breasts_fluid"]
 	S["feature_breasts_visibility"] >> features["breasts_visibility"]
@@ -2108,6 +2112,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	features["vag_shape"] = sanitize_inlist(features["vag_shape"], GLOB.vagina_shapes_list, DEF_VAGINA_SHAPE)
 	features["anus_shape"] = sanitize_inlist(features["anus_shape"], GLOB.anus_shapes_list, DEF_ANUS_SHAPE)
 	features["breasts_color"] = sanitize_hexcolor(features["breasts_color"], 6, FALSE, "FFFFFF")
+	features["breasts_sprite_variant"] = sanitize_inlist(features["breasts_sprite_variant"], list("New", "Old"), "New")  // BLUEMOON ADD
+	features["breasts_nipples"] = sanitize_integer(features["breasts_nipples"], 0, 1, FALSE)                    // BLUEMOON ADD
+	features["breasts_nipples_color"] = sanitize_hexcolor(features["breasts_nipples_color"], 6, FALSE, "FFFFFF") // BLUEMOON ADD
 	features["cock_color"] = sanitize_hexcolor(features["cock_color"], 6, FALSE, "FFFFFF")
 	features["balls_color"] = sanitize_hexcolor(features["balls_color"], 6, FALSE, "FFFFFF")
 	features["vag_color"] = sanitize_hexcolor(features["vag_color"], 6, FALSE, "FFFFFF")
@@ -2483,6 +2490,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["feature_breasts_size"], features["breasts_size"])
 	WRITE_FILE(S["feature_breasts_shape"], features["breasts_shape"])
 	WRITE_FILE(S["feature_breasts_color"], features["breasts_color"])
+	WRITE_FILE(S["feature_breasts_sprite_variant"], features["breasts_sprite_variant"])  // BLUEMOON ADD
+	WRITE_FILE(S["feature_breasts_nipples"], features["breasts_nipples"]) // BLUEMOON ADD
+	WRITE_FILE(S["feature_breasts_nipples_color"], features["breasts_nipples_color"]) // BLUEMOON ADD
 	WRITE_FILE(S["feature_breasts_fluid"], features["breasts_fluid"])
 	WRITE_FILE(S["feature_breasts_producing"], features["breasts_producing"])
 	WRITE_FILE(S["feature_breasts_visibility"], features["breasts_visibility"])

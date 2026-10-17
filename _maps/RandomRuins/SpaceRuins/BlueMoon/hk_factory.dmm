@@ -1,0 +1,8036 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"ai" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table/reinforced,
+/obj/item/paper/fluff/ruins/hk_factory/switchboard,
+/obj/item/multitool,
+/obj/item/trash/raisins,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"al" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 8
+	},
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/hk_factory)
+"an" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/stock_parts/cell,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"ap" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/bodypart/head/robot,
+/obj/item/screwdriver,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"as" = (
+/obj/effect/decal/cleanable/robot_debris/down,
+/obj/structure/cable/yellow{
+	icon_state = "2-4"
+	},
+/obj/item/bodypart/head/robot,
+/turf/open/floor/plasteel/dark/telecomms,
+/area/ruin/space/has_grav/hk_factory)
+"at" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"au" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/shard,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"aD" = (
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/cobweb,
+/obj/structure/grille/broken,
+/obj/item/shard,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"aG" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/ruin/space/has_grav/hk_factory)
+"aI" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"aK" = (
+/obj/effect/decal/cleanable/oil,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"aS" = (
+/obj/machinery/conveyor/hk_factory{
+	dir = 4
+	},
+/obj/item/bodypart/l_arm/robot,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"aX" = (
+/obj/effect/decal/remains/human,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/machinery/shower{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/freezer,
+/area/ruin/space/has_grav/hk_factory)
+"aY" = (
+/obj/item/stack/cable_coil,
+/obj/item/wirecutters,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"aZ" = (
+/obj/effect/decal/cleanable/robot_debris/down,
+/obj/machinery/conveyor/hk_factory{
+	dir = 8
+	},
+/obj/item/stack/cable_coil,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"ba" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/reagent_dispensers/urbanismbarrel,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 6
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 6
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/ruin/space/has_grav/hk_factory)
+"bd" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/blood/tracks,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plasteel/freezer,
+/area/ruin/space/has_grav/hk_factory)
+"be" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"bm" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/hk50_rack,
+/obj/item/bodypart/r_leg/robot,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"bo" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/hk_factory)
+"bw" = (
+/obj/effect/decal/cleanable/robot_debris/hk50,
+/obj/effect/decal/cleanable/ash,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"bx" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"bz" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/east,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/item/stack/cable_coil,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"bC" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/bot,
+/obj/structure/salvage/metal_frame,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"bD" = (
+/obj/effect/turf_decal/vg_decals/numbers/one,
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"bF" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/item/pipe,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"bL" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"bM" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"bS" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/medical/bruise_pack,
+/obj/item/stack/medical/gauze,
+/turf/open/floor/plasteel/white,
+/area/ruin/space/has_grav/hk_factory)
+"bT" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/hk50_rack/dormant{
+	dir = 2
+	},
+/obj/item/shard,
+/obj/structure/sign/poster/ripped{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"cb" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/ruin/space/has_grav/hk_factory)
+"cc" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
+	},
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plasteel/cafeteria,
+/area/ruin/space/has_grav/hk_factory)
+"ce" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/pipe,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"ci" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate/internals,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/clothing/mask/breath,
+/obj/item/tank/internals/emergency_oxygen,
+/turf/open/floor/mineral/titanium,
+/area/ruin/space/has_grav/hk_factory)
+"cm" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"cn" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/oil,
+/obj/structure/frame/machine,
+/obj/item/bodypart/l_arm/robot,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"co" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/robot_debris/up,
+/obj/structure/frame/machine,
+/obj/effect/hk_factory_sparker,
+/obj/item/bodypart/l_arm/robot,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"cq" = (
+/obj/effect/decal/cleanable/robot_debris/hk50,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/ruin/space/has_grav/hk_factory)
+"cr" = (
+/obj/item/shard,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"cy" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/salvage/protolathe,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"cz" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plasteel/dark/telecomms,
+/area/ruin/space/has_grav/hk_factory)
+"cH" = (
+/obj/item/flashlight/lantern,
+/obj/item/trash/can,
+/obj/item/trash/sosjerky,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"cJ" = (
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/stack/cable_coil,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"cM" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/closet/secure_closet/personal,
+/obj/item/stack/rods,
+/obj/machinery/airalarm/directional/east,
+/obj/item/clothing/head/hardhat/orange,
+/obj/item/clothing/shoes/workboots,
+/turf/open/floor/plasteel/freezer,
+/area/ruin/space/has_grav/hk_factory)
+"cN" = (
+/obj/effect/decal/cleanable/blood/tracks,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/stack/sheet/metal/five,
+/obj/structure/sign/poster/official/build{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/ruin/space/has_grav/hk_factory)
+"cQ" = (
+/obj/effect/decal/cleanable/ash,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"cR" = (
+/obj/item/stock_parts/cell,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"cX" = (
+/obj/machinery/door/airlock/hatch{
+	name = "Break Room"
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"cZ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"db" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 8
+	},
+/turf/open/floor/plasteel/grimy,
+/area/ruin/space/has_grav/hk_factory)
+"dd" = (
+/obj/effect/decal/cleanable/robot_debris,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate,
+/obj/item/stack/sheet/metal/ten,
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 1
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
+/obj/structure/sign/poster/official/build{
+	pixel_x = -32
+	},
+/obj/item/stack/cable_coil,
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"dk" = (
+/obj/effect/decal/cleanable/robot_debris,
+/obj/machinery/conveyor/hk_factory{
+	dir = 8
+	},
+/obj/structure/plasticflaps,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"dp" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/cable_coil,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"dq" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 1
+	},
+/obj/machinery/firealarm/directional/west,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"dF" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/item/stock_parts/cell,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"dH" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/salvage/protolathe,
+/obj/item/bodypart/l_arm/robot,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"dN" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"dV" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/red/hk_factory/directional/north,
+/obj/item/stock_parts/cell,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"dW" = (
+/obj/item/stock_parts/manipulator,
+/obj/item/bodypart/l_leg/robot,
+/obj/machinery/light/floor/hk_factory,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"dZ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"eb" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate/engineering/electrical,
+/obj/item/stack/cable_coil,
+/obj/item/stock_parts/cell/high,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 1
+	},
+/obj/item/multitool,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"eh" = (
+/obj/effect/decal/cleanable/ash,
+/obj/effect/decal/cleanable/ash,
+/obj/structure/barricade/security,
+/obj/item/pipe,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/hk_factory)
+"ei" = (
+/obj/effect/decal/cleanable/ash,
+/obj/effect/decal/cleanable/robot_debris,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"ej" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/hk50_rack/dormant{
+	dir = 2
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"ep" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/item/storage/toolbox/mechanical,
+/turf/open/floor/mineral/titanium,
+/area/ruin/space/has_grav/hk_factory)
+"es" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/shuttle/engine/heater{
+	dir = 4
+	},
+/obj/item/trash/can,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"eA" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/machinery/light/red/hk_factory/directional/north,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/trash/can,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"eD" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/red/hk_factory/directional/south,
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
+	},
+/obj/item/cigbutt,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"eI" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate/internals,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/clothing/mask/breath,
+/obj/item/tank/internals/emergency_oxygen,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"eK" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"eM" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/robot_debris/down,
+/obj/item/bodypart/r_arm/robot,
+/turf/open/floor/plasteel/dark/textured/half,
+/area/ruin/space/has_grav/hk_factory)
+"eQ" = (
+/obj/effect/decal/cleanable/ash,
+/obj/effect/hk_factory_ambush_trigger,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"eS" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/salvage/server,
+/turf/open/floor/plasteel/dark/telecomms,
+/area/ruin/space/has_grav/hk_factory)
+"eU" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/bodypart/chest/robot,
+/turf/open/floor/plasteel/freezer,
+/area/ruin/space/has_grav/hk_factory)
+"eZ" = (
+/obj/machinery/light/red/hk_factory/directional/north,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"fk" = (
+/obj/effect/decal/cleanable/robot_debris/up,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"fl" = (
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"fq" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/table/reinforced,
+/obj/item/paper/fluff/ruins/hk_factory/range_protocol,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/stock_parts/scanning_module,
+/obj/item/stock_parts/scanning_module,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/ruin/space/has_grav/hk_factory)
+"fs" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/telecomms,
+/area/ruin/space/has_grav/hk_factory)
+"ft" = (
+/obj/effect/decal/cleanable/ash,
+/obj/structure/target_stake/hk_factory,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"fu" = (
+/obj/machinery/space_heater,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"fB" = (
+/obj/effect/decal/cleanable/robot_debris/hk50,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/cable_coil,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"fD" = (
+/obj/effect/decal/cleanable/robot_debris/old,
+/obj/machinery/conveyor/hk_factory{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"fG" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"fJ" = (
+/obj/effect/decal/cleanable/glass,
+/obj/item/shard,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/ruin/space/has_grav/hk_factory)
+"fL" = (
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"fN" = (
+/obj/structure/table/reinforced,
+/obj/item/trash/sosjerky,
+/obj/item/trash/raisins,
+/obj/item/wrench,
+/turf/open/floor/plasteel/cafeteria,
+/area/ruin/space/has_grav/hk_factory)
+"fS" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/rack,
+/obj/item/gun/energy/laser/practice,
+/obj/item/stock_parts/cell,
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/ruin/space/has_grav/hk_factory)
+"fU" = (
+/obj/structure/table/reinforced,
+/obj/item/weldingtool,
+/obj/item/clothing/head/welding,
+/obj/item/stack/cable_coil,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"gd" = (
+/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/robot_debris/old,
+/obj/machinery/conveyor/hk_factory{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"gi" = (
+/obj/machinery/light/red/hk_factory/directional/north,
+/obj/item/stack/cable_coil,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"gq" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"gv" = (
+/turf/template_noop,
+/area/template_noop)
+"gy" = (
+/obj/effect/decal/cleanable/blood/gibs/old,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/target_stake/hk_factory,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/item/trash/can,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"gE" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/ruin/space/has_grav/hk_factory)
+"gF" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
+	},
+/obj/structure/reagent_dispensers/watertank,
+/obj/structure/sign/warning/vacuum{
+	pixel_x = -32
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"gJ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/conveyor/hk_factory{
+	dir = 4
+	},
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"gM" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/hk50_rack/empty,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"gN" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/robot_debris/down,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/trash/can,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"gW" = (
+/obj/effect/decal/cleanable/glass,
+/obj/item/stack/rods,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"gX" = (
+/obj/effect/decal/cleanable/ash/large,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"hd" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 8
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/ruin/space/has_grav/hk_factory)
+"he" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/bodypart/l_arm/robot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"hg" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/robot_debris/down,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"hk" = (
+/obj/machinery/light/red/hk_factory/directional/east,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"ho" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/dark/textured/half,
+/area/ruin/space/has_grav/hk_factory)
+"hp" = (
+/obj/effect/decal/cleanable/blood/drip,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/titanium,
+/area/ruin/space/has_grav/hk_factory)
+"hu" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"hx" = (
+/obj/effect/decal/cleanable/robot_debris/hk50,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table/reinforced,
+/obj/item/bodypart/head/robot,
+/obj/item/clothing/head/welding,
+/obj/item/stack/cable_coil,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"hG" = (
+/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/crate/engineering/electrical,
+/obj/item/stack/cable_coil,
+/obj/item/stack/cable_coil,
+/obj/item/storage/toolbox/electrical,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"hI" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/turf/open/floor/plasteel/grimy,
+/area/ruin/space/has_grav/hk_factory)
+"hK" = (
+/obj/effect/decal/cleanable/oil,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"hL" = (
+/obj/item/pipe,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"hO" = (
+/obj/machinery/conveyor/hk_factory{
+	dir = 4
+	},
+/obj/structure/plasticflaps,
+/obj/item/bodypart/l_leg/robot,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"hV" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/closet/wardrobe/engineering_yellow,
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
+	},
+/obj/item/bodypart/r_leg/robot,
+/turf/open/floor/plasteel/freezer,
+/area/ruin/space/has_grav/hk_factory)
+"id" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"ih" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/firealarm/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"ii" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/directional/east,
+/obj/structure/closet/emcloset,
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 8
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/ruin/space/has_grav/hk_factory)
+"ir" = (
+/obj/item/trash/chips,
+/obj/item/cigbutt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"is" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"it" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/item/bodypart/chest/robot,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"iv" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/mob_spawn/human/corpse/hk_factory_foreman,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/grimy,
+/area/ruin/space/has_grav/hk_factory)
+"iB" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/loading_area{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/item/stock_parts/cell,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"iE" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/turf_decal/bot,
+/obj/structure/hk50_rack,
+/obj/item/bodypart/l_arm/robot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"iI" = (
+/turf/closed/wall/r_wall,
+/area/ruin/space/has_grav/hk_factory)
+"iM" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/robot_debris,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/robot_debris/down,
+/obj/item/bodypart/l_arm/robot,
+/turf/open/floor/plasteel/dark/textured/half,
+/area/ruin/space/has_grav/hk_factory)
+"iN" = (
+/obj/machinery/power/smes,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"iO" = (
+/obj/effect/mapping_helpers/network_builder/power_cable/auto,
+/obj/item/bodypart/r_arm/robot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"iP" = (
+/obj/effect/decal/cleanable/ash,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 5
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 5
+	},
+/obj/item/bodypart/head/robot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"iQ" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/ash,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/ruin/space/has_grav/hk_factory)
+"iU" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/mapping_helpers/network_builder/power_cable/auto,
+/obj/item/bodypart/r_leg/robot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"iZ" = (
+/obj/machinery/light/red/hk_factory/directional/south,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"ja" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate/bin,
+/obj/item/trash/chips,
+/obj/item/trash/can,
+/turf/open/floor/plasteel/cafeteria,
+/area/ruin/space/has_grav/hk_factory)
+"jc" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate/engineering,
+/obj/item/stack/rods,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/stock_parts/matter_bin,
+/obj/item/stock_parts/scanning_module,
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"ji" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/textured/half,
+/area/ruin/space/has_grav/hk_factory)
+"jk" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/robot_debris/up,
+/obj/machinery/conveyor/hk_factory{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"jn" = (
+/obj/effect/decal/cleanable/ash,
+/obj/effect/turf_decal/vg_decals/numbers/three,
+/obj/item/bodypart/head/robot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"jo" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/light/red/hk_factory/directional/east,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 1
+	},
+/obj/structure/closet/crate,
+/obj/item/bodypart/r_leg/robot,
+/obj/item/bodypart/chest/robot,
+/obj/item/stock_parts/matter_bin,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"jr" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/bodypart/r_arm/robot,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"jt" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"ju" = (
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plasteel/freezer,
+/area/ruin/space/has_grav/hk_factory)
+"jy" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/rack,
+/obj/item/bodypart/l_arm/robot,
+/obj/item/stock_parts/manipulator,
+/obj/item/bodypart/r_leg/robot,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"jC" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table/reinforced,
+/obj/item/reagent_containers/food/drinks/coffee,
+/obj/item/cigbutt,
+/obj/machinery/firealarm/directional/north,
+/obj/item/weldingtool,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"jG" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"jI" = (
+/obj/item/bodypart/r_arm/robot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"jJ" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/item/bodypart/head/robot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"jP" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/item/bodypart/r_arm/robot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"jR" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/robot_suit,
+/obj/item/bodypart/chest/robot,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/bodypart/l_leg/robot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"jT" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/portable_atmospherics/canister,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"jU" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/crate/large,
+/obj/item/stack/rods,
+/obj/item/stock_parts/scanning_module,
+/obj/item/stock_parts/manipulator,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"jW" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stock_parts/cell,
+/obj/item/stack/cable_coil,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"jZ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 1
+	},
+/obj/structure/closet/crate,
+/obj/item/stack/cable_coil,
+/obj/item/bodypart/l_leg/robot,
+/obj/item/assembly/prox_sensor,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"kf" = (
+/obj/item/bodypart/head/robot,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"kl" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/stool,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/freezer,
+/area/ruin/space/has_grav/hk_factory)
+"km" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/trash/can,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/ruin/space/has_grav/hk_factory)
+"ku" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plasteel/dark/textured/half,
+/area/ruin/space/has_grav/hk_factory)
+"kx" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/glass,
+/obj/item/reagent_containers/glass/beaker,
+/obj/item/stack/medical/bruise_pack,
+/turf/open/floor/plasteel/white,
+/area/ruin/space/has_grav/hk_factory)
+"kF" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/grimy,
+/area/ruin/space/has_grav/hk_factory)
+"kI" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sign/poster/official/do_not_question{
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel/grimy,
+/area/ruin/space/has_grav/hk_factory)
+"kL" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/stack/cable_coil,
+/obj/item/stack/cable_coil,
+/obj/item/clothing/gloves/color/fyellow,
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"kS" = (
+/obj/item/weldingtool,
+/obj/item/clothing/gloves/color/black,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"kZ" = (
+/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"la" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/vending/snack,
+/turf/open/floor/plasteel/cafeteria,
+/area/ruin/space/has_grav/hk_factory)
+"ld" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"lg" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/bodypart/chest/robot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"ln" = (
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"lo" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/reagent_dispensers/urbanismbarrel/red,
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 2
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 2
+	},
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"lr" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/cafeteria,
+/area/ruin/space/has_grav/hk_factory)
+"ls" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/rack,
+/obj/item/stock_parts/matter_bin,
+/obj/item/bodypart/chest/robot,
+/obj/item/screwdriver,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"lC" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/firealarm/directional/west,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/ruin/space/has_grav/hk_factory)
+"lE" = (
+/obj/effect/decal/cleanable/oil/streak,
+/obj/machinery/conveyor/hk_factory{
+	dir = 4
+	},
+/obj/item/pipe,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"lK" = (
+/obj/machinery/conveyor/hk_factory{
+	dir = 4
+	},
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"lQ" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/rack,
+/obj/item/bodypart/l_leg/robot,
+/obj/item/stack/rods,
+/obj/item/bodypart/r_arm/robot,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"lR" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"mj" = (
+/obj/effect/decal/cleanable/oil,
+/obj/machinery/conveyor/hk_factory{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"mk" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/cobweb,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/structure/sign/warning/securearea{
+	pixel_y = -32
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"mm" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/ruin/space/has_grav/hk_factory)
+"my" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/machinery/airalarm/directional/south,
+/turf/open/floor/plasteel/white,
+/area/ruin/space/has_grav/hk_factory)
+"mA" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"mG" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/cobweb,
+/obj/machinery/portable_atmospherics/canister,
+/obj/item/bodypart/head/robot,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"mI" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"mQ" = (
+/obj/machinery/door/airlock/hatch{
+	name = "Hangar"
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"mR" = (
+/obj/item/paper,
+/obj/item/pen,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"mS" = (
+/obj/machinery/conveyor/hk_factory{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"mU" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/salvage/server,
+/turf/open/floor/plasteel/dark/telecomms,
+/area/ruin/space/has_grav/hk_factory)
+"mV" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/robot_debris/old,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/bodypart/head/robot,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"mX" = (
+/obj/effect/decal/cleanable/robot_debris/old,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/conveyor/hk_factory{
+	dir = 9
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"na" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"nb" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/cobweb,
+/obj/structure/closet/crate/large,
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 1
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
+	},
+/obj/item/stack/rods,
+/obj/item/stack/sheet/metal/five,
+/obj/item/stack/rods,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"nc" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/item/bodypart/r_leg/robot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"nd" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/machinery/light/small/broken/directional/south,
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 8
+	},
+/turf/open/floor/plasteel/white,
+/area/ruin/space/has_grav/hk_factory)
+"nf" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"nh" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/north,
+/obj/item/trash/can,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"ni" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/cobweb,
+/obj/machinery/light/small/broken/directional/south,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/ruin/space/has_grav/hk_factory)
+"nq" = (
+/obj/effect/turf_decal/vg_decals/numbers/two,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"ns" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/white,
+/area/ruin/space/has_grav/hk_factory)
+"nu" = (
+/obj/effect/decal/cleanable/robot_debris/old,
+/obj/effect/turf_decal/bot,
+/obj/structure/salvage/autolathe,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"nv" = (
+/obj/effect/decal/cleanable/glass,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/frame/machine,
+/obj/effect/hk_factory_sparker,
+/obj/machinery/firealarm/directional/east,
+/turf/open/floor/plasteel/dark/telecomms,
+/area/ruin/space/has_grav/hk_factory)
+"nB" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/salvage/server,
+/obj/item/stock_parts/cell,
+/obj/machinery/airalarm/directional/north,
+/turf/open/floor/plasteel/dark/telecomms,
+/area/ruin/space/has_grav/hk_factory)
+"nE" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/bodypart/r_leg/robot,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"nH" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/hk50_rack,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 1
+	},
+/obj/item/trash/can,
+/obj/structure/sign/warning/electricshock{
+	pixel_x = -32
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"nJ" = (
+/obj/item/bodypart/head/robot,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"nL" = (
+/obj/machinery/airalarm/directional/north,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"nN" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate/large,
+/obj/structure/extinguisher_cabinet{
+	pixel_y = 32
+	},
+/obj/item/stock_parts/capacitor,
+/obj/item/stack/rods,
+/obj/item/stock_parts/micro_laser,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"nP" = (
+/obj/machinery/door/airlock/glass{
+	name = "Paint Booth"
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"nS" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/oil/streak,
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plasteel/dark/textured/half,
+/area/ruin/space/has_grav/hk_factory)
+"nX" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/structure/table/reinforced,
+/obj/item/airlock_painter,
+/obj/item/clothing/mask/gas,
+/obj/item/stack/cable_coil,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"og" = (
+/obj/effect/turf_decal/stripes/red{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/ash/large,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/bodypart/l_arm/robot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"ok" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/reinforced,
+/obj/item/trash/popcorn,
+/obj/item/cigbutt,
+/obj/item/multitool,
+/turf/open/floor/plasteel/cafeteria,
+/area/ruin/space/has_grav/hk_factory)
+"oo" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 1
+	},
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"oq" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stock_parts/cell,
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"os" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"ov" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/reagent_dispensers/fueltank,
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 8
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"ox" = (
+/obj/effect/decal/cleanable/ash,
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"oA" = (
+/obj/effect/turf_decal/stripes/yellow/box,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"oC" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"oF" = (
+/obj/effect/decal/cleanable/oil,
+/obj/item/stack/rods,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"oG" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/machinery/light/directional/north,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/ruin/space/has_grav/hk_factory)
+"oI" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/bodypart/r_arm/robot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"oQ" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/extinguisher_cabinet{
+	pixel_y = 30
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/bodypart/l_arm/robot,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/ruin/space/has_grav/hk_factory)
+"oT" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 8
+	},
+/obj/item/bodypart/head/robot,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"oU" = (
+/obj/item/stack/cable_coil,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"oX" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/item/stack/rods,
+/obj/item/stock_parts/cell,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"pa" = (
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"pc" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/cobweb,
+/obj/structure/hk50_rack,
+/obj/item/bodypart/chest/robot,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"pm" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plasteel/white,
+/area/ruin/space/has_grav/hk_factory)
+"po" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 1
+	},
+/obj/item/stack/tile/plasteel,
+/obj/machinery/airalarm/directional/west,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"pw" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/toolcloset,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"px" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/robot_debris/up,
+/obj/machinery/conveyor/hk_factory{
+	dir = 1
+	},
+/obj/item/bodypart/l_arm/robot,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"py" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/stack/rods,
+/obj/item/assembly/prox_sensor,
+/obj/item/stack/rods,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"pz" = (
+/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"pB" = (
+/obj/effect/decal/cleanable/oil/streak,
+/obj/structure/cable/yellow{
+	icon_state = "1-8"
+	},
+/turf/open/floor/plasteel/dark/telecomms,
+/area/ruin/space/has_grav/hk_factory)
+"pD" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/white,
+/area/ruin/space/has_grav/hk_factory)
+"pE" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/ash,
+/obj/effect/decal/cleanable/oil,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/bodypart/r_arm/robot,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"pL" = (
+/obj/structure/shuttle/engine/propulsion/burst{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"pQ" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/salvage/autolathe,
+/obj/item/bodypart/l_leg/robot,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"pW" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/item/stock_parts/cell,
+/turf/open/floor/plasteel/dark/textured/half,
+/area/ruin/space/has_grav/hk_factory)
+"qe" = (
+/turf/open/floor/plasteel/dark/telecomms,
+/area/ruin/space/has_grav/hk_factory)
+"qj" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/item/stack/cable_coil,
+/obj/item/wirecutters,
+/turf/open/floor/plasteel/dark/textured/half,
+/area/ruin/space/has_grav/hk_factory)
+"qm" = (
+/obj/item/bodypart/r_leg/robot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"qo" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/directional/north,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/ruin/space/has_grav/hk_factory)
+"qq" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/ore_box,
+/obj/item/bodypart/l_arm/robot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"qt" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/freezer,
+/area/ruin/space/has_grav/hk_factory)
+"qy" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
+	},
+/turf/open/floor/plasteel/dark/telecomms,
+/area/ruin/space/has_grav/hk_factory)
+"qA" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/item/trash/can,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"qC" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/cobweb,
+/obj/structure/filingcabinet/chestdrawer,
+/obj/machinery/airalarm/directional/north,
+/turf/open/floor/plasteel/grimy,
+/area/ruin/space/has_grav/hk_factory)
+"qK" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/cobweb,
+/obj/machinery/power/smes,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"qL" = (
+/obj/effect/decal/cleanable/glass,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/frame/computer{
+	anchored = 1
+	},
+/obj/item/bodypart/l_leg/robot,
+/turf/open/floor/mineral/titanium,
+/area/ruin/space/has_grav/hk_factory)
+"qR" = (
+/obj/effect/decal/cleanable/oil,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/robot_debris/up,
+/obj/structure/hk50_rack/empty,
+/obj/machinery/firealarm/directional/north,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"qX" = (
+/obj/structure/sign/warning/vacuum{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"re" = (
+/obj/effect/decal/cleanable/generic,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table/reinforced,
+/obj/item/airlock_painter,
+/obj/item/clothing/mask/gas,
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 4
+	},
+/obj/item/trash/plate,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"rf" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
+/obj/item/trash/can,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"rg" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/rack,
+/obj/item/stock_parts/scanning_module,
+/obj/item/stock_parts/matter_bin,
+/obj/item/bodypart/chest/robot,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"rj" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/paper/fluff/ruins/hk_factory/salvager,
+/obj/item/gps{
+	gpstag = "SALV1"
+	},
+/turf/open/floor/mineral/titanium,
+/area/ruin/space/has_grav/hk_factory)
+"rk" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/mech_bay_recharge_port,
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 8
+	},
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/hk_factory)
+"rl" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/robot_debris/hk50,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"rn" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/grimy,
+/area/ruin/space/has_grav/hk_factory)
+"ro" = (
+/obj/machinery/conveyor/hk_factory{
+	dir = 4
+	},
+/obj/structure/plasticflaps,
+/obj/item/bodypart/head/robot,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"rt" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/stock_parts/cell/high,
+/obj/item/stack/cable_coil,
+/obj/item/stock_parts/manipulator,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"ru" = (
+/obj/effect/decal/cleanable/robot_debris/down,
+/obj/machinery/conveyor/hk_factory{
+	dir = 8
+	},
+/obj/item/bodypart/r_arm/robot,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"ry" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate/engineering/electrical,
+/obj/item/stack/cable_coil,
+/obj/item/multitool,
+/obj/item/storage/toolbox/electrical,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"rB" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/trash/can,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"rJ" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/directional/south,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"rK" = (
+/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/pipe,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"rL" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/machinery/light/red/hk_factory/directional/west,
+/obj/item/bodypart/r_leg/robot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"rQ" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"rS" = (
+/obj/machinery/porta_turret/syndicate/energy/hk_factory,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"rT" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/red/hk_factory/directional/north,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/hk_factory)
+"rY" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/cobweb,
+/obj/machinery/vending/coffee,
+/obj/item/bodypart/chest/robot,
+/obj/machinery/firealarm/directional/north,
+/turf/open/floor/plasteel/cafeteria,
+/area/ruin/space/has_grav/hk_factory)
+"sc" = (
+/obj/effect/decal/cleanable/oil/streak,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/bodypart/head/robot,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"sd" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/computer/arcade/orion_trail,
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/cafeteria,
+/area/ruin/space/has_grav/hk_factory)
+"sf" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"sk" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/white,
+/area/ruin/space/has_grav/hk_factory)
+"sl" = (
+/obj/item/bodypart/l_leg/robot,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"sm" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/secure_closet{
+	name = "HK parts locker";
+	req_access_txt = "207"
+	},
+/obj/item/organ/cyberimp/arm/gun/laser/hk50,
+/obj/effect/landmark/hk51_part_spot/factory,
+/obj/item/stock_parts/cell/high,
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"so" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/turf/open/floor/plasteel/dark/textured/half,
+/area/ruin/space/has_grav/hk_factory)
+"sw" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 1
+	},
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"sB" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/oil,
+/turf/open/floor/plasteel/dark/telecomms,
+/area/ruin/space/has_grav/hk_factory)
+"sC" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/stack/cable_coil,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"sH" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/secure_closet/personal,
+/obj/item/clothing/shoes/workboots,
+/obj/item/clothing/head/hardhat/orange,
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/freezer,
+/area/ruin/space/has_grav/hk_factory)
+"sL" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/cobweb,
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 8
+	},
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/hk_factory)
+"sP" = (
+/obj/effect/decal/cleanable/robot_debris,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/sheet/metal/five,
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"tf" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/item/cigbutt,
+/turf/open/floor/mineral/titanium,
+/area/ruin/space/has_grav/hk_factory)
+"to" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/plasteel/freezer,
+/area/ruin/space/has_grav/hk_factory)
+"tr" = (
+/obj/machinery/door/airlock/engineering{
+	name = "Conduit Room"
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"tu" = (
+/obj/effect/decal/cleanable/robot_debris/up,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/conveyor/hk_factory{
+	dir = 8
+	},
+/obj/item/trash/can,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"tx" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"ty" = (
+/obj/effect/decal/cleanable/robot_debris/hk50,
+/obj/effect/decal/cleanable/ash,
+/obj/effect/decal/cleanable/blood/drip,
+/obj/item/bodypart/l_arm/robot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"tz" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/ruin/space/has_grav/hk_factory)
+"tG" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/ruin/space/has_grav/hk_factory)
+"tL" = (
+/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/cable_coil,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"tV" = (
+/obj/effect/decal/cleanable/oil,
+/obj/machinery/hk_assembly_line,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"tY" = (
+/obj/structure/target_stake/hk_factory,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"ua" = (
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
+	},
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"ub" = (
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"uc" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/cobweb,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/hk_factory)
+"ud" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/item/trash/raisins,
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/cafeteria,
+/area/ruin/space/has_grav/hk_factory)
+"uh" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"uj" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/pipe,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"uk" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/secure_closet/personal,
+/obj/item/bodypart/l_arm/robot,
+/obj/item/clothing/under/rank/cargo/miner,
+/obj/item/clothing/head/hardhat/orange,
+/turf/open/floor/plasteel/freezer,
+/area/ruin/space/has_grav/hk_factory)
+"un" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/ruin/space/has_grav/hk_factory)
+"uz" = (
+/obj/effect/decal/cleanable/robot_debris/old,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/stack/cable_coil,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/ruin/space/has_grav/hk_factory)
+"uA" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/blood/tracks,
+/turf/open/floor/plasteel/white,
+/area/ruin/space/has_grav/hk_factory)
+"uB" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark/textured/half,
+/area/ruin/space/has_grav/hk_factory)
+"uD" = (
+/turf/open/floor/plasteel/white,
+/area/ruin/space/has_grav/hk_factory)
+"uE" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/conveyor/hk_factory{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"uM" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/bodypart/r_leg/robot,
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"uT" = (
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 1
+	},
+/obj/item/stack/rods,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"uW" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/table/reinforced,
+/obj/item/target/clown,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/trash/sosjerky,
+/obj/item/stack/cable_coil,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/ruin/space/has_grav/hk_factory)
+"uZ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/cobweb,
+/obj/item/cigbutt,
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/grimy,
+/area/ruin/space/has_grav/hk_factory)
+"vg" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "2-8"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"vi" = (
+/obj/effect/hk_factory_ambush_trigger,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"vj" = (
+/obj/effect/decal/cleanable/ash,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"vk" = (
+/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/portable_atmospherics/canister,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"vm" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/directional/south,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"vo" = (
+/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"vr" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"vt" = (
+/obj/effect/decal/cleanable/robot_debris/up,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/conveyor/hk_factory{
+	dir = 8
+	},
+/obj/item/stock_parts/cell,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"vu" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/sign/poster/official/build{
+	pixel_x = -32
+	},
+/turf/open/floor/plasteel/grimy,
+/area/ruin/space/has_grav/hk_factory)
+"vw" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"vE" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/salvage/circuit_imprinter,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"vH" = (
+/obj/effect/decal/cleanable/generic,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"vJ" = (
+/obj/effect/decal/cleanable/ash,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"vN" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/hk50_rack,
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"vQ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/rods,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"vW" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 1
+	},
+/obj/structure/closet/crate,
+/obj/item/bodypart/l_arm/robot,
+/obj/item/stack/rods,
+/obj/item/stock_parts/scanning_module,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/hk_factory)
+"vX" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/oil,
+/obj/item/bodypart/chest/robot,
+/turf/open/floor/plasteel/dark/textured/half,
+/area/ruin/space/has_grav/hk_factory)
+"vY" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/robot_debris,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 1
+	},
+/obj/item/pipe,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"wa" = (
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/ruin/space/has_grav/hk_factory)
+"we" = (
+/obj/effect/decal/cleanable/generic,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/stack/rods,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"wg" = (
+/obj/effect/decal/cleanable/blood/drip,
+/obj/structure/mecha_wreckage/ripley,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"wl" = (
+/obj/effect/decal/cleanable/ash,
+/obj/item/stack/rods,
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"wu" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/secure_closet/personal,
+/obj/item/clothing/shoes/workboots,
+/obj/item/cigbutt,
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/freezer,
+/area/ruin/space/has_grav/hk_factory)
+"wy" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/item/stack/cable_coil,
+/turf/open/floor/plasteel/grimy,
+/area/ruin/space/has_grav/hk_factory)
+"wB" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/rack,
+/obj/item/bodypart/r_leg/robot,
+/obj/item/stack/rods,
+/obj/item/assembly/prox_sensor,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"wC" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/bodypart/r_leg/robot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"wF" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/hk50_rack,
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"wG" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/rack,
+/obj/item/stock_parts/capacitor,
+/obj/item/assembly/prox_sensor,
+/obj/item/crowbar,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"wL" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/item/stack/cable_coil,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"wO" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"wP" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/rack,
+/obj/item/stack/cable_coil,
+/obj/item/stack/cable_coil,
+/obj/item/screwdriver,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"wR" = (
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/bodypart/r_arm/robot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"xd" = (
+/obj/effect/decal/cleanable/robot_debris/down,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/robot_debris/up,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"xe" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/ruin/space/has_grav/hk_factory)
+"xf" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/conveyor/hk_factory{
+	dir = 4
+	},
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"xk" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/oil/streak,
+/obj/machinery/light/red/hk_factory/directional/west,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"xl" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/ruin/space/has_grav/hk_factory)
+"xm" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/telecomms,
+/area/ruin/space/has_grav/hk_factory)
+"xp" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/ruin/space/has_grav/hk_factory)
+"xq" = (
+/obj/effect/decal/cleanable/robot_debris/down,
+/obj/machinery/conveyor/hk_factory{
+	dir = 2
+	},
+/obj/item/bodypart/r_leg/robot,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"xt" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"xv" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/item/shard,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"xz" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/cobweb,
+/obj/structure/closet/firecloset,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/airalarm/directional/north,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/ruin/space/has_grav/hk_factory)
+"xF" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/rack,
+/obj/item/bodypart/head/robot,
+/obj/item/bodypart/l_leg/robot,
+/obj/item/screwdriver,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"xH" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"xO" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/oil/streak,
+/obj/item/bodypart/l_arm/robot,
+/turf/open/floor/plasteel/dark/textured/half,
+/area/ruin/space/has_grav/hk_factory)
+"xT" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/structure/fans/tiny/invisible,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"xY" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/filingcabinet/chestdrawer,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"xZ" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/crate/large,
+/obj/item/stock_parts/matter_bin,
+/obj/item/stock_parts/matter_bin,
+/obj/item/stock_parts/scanning_module,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"yf" = (
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"yo" = (
+/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/turf_decal/bot,
+/obj/structure/frame/machine,
+/obj/effect/hk_factory_sparker,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"yr" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/item/bodypart/l_leg/robot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"yu" = (
+/obj/item/bodypart/head/robot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"yy" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/conveyor/hk_factory{
+	dir = 4
+	},
+/obj/item/bodypart/head/robot,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"yE" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 4
+	},
+/obj/item/bodypart/head/robot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"yF" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"yG" = (
+/obj/effect/decal/cleanable/robot_debris/old,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/conveyor/hk_factory{
+	dir = 4
+	},
+/obj/item/pipe,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"yH" = (
+/obj/effect/decal/cleanable/ash,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"yI" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/robot_debris/limb,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/stock_parts/matter_bin,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"yP" = (
+/turf/closed/wall/mineral/titanium/nodiagonal,
+/area/ruin/space/has_grav/hk_factory)
+"yW" = (
+/obj/structure/table/reinforced,
+/obj/item/weldingtool,
+/obj/item/bodypart/r_arm/robot,
+/obj/item/multitool,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"zb" = (
+/obj/effect/decal/cleanable/ash,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/hk_factory)
+"zc" = (
+/obj/effect/decal/cleanable/blood/tracks,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/trash/can,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/hk_factory)
+"zf" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/bodypart/r_arm/robot,
+/obj/item/stack/cable_coil,
+/obj/item/bodypart/l_leg/robot,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"zh" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/hk50_rack,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"zo" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/turf/open/floor/plasteel/white,
+/area/ruin/space/has_grav/hk_factory)
+"zr" = (
+/obj/structure/table/reinforced,
+/obj/item/trash/candy,
+/obj/item/trash/candy,
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/cafeteria,
+/area/ruin/space/has_grav/hk_factory)
+"zt" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/frame/machine,
+/obj/effect/hk_factory_sparker,
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
+	},
+/obj/item/bodypart/head/robot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"zB" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/bodypart/head/robot,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/ruin/space/has_grav/hk_factory)
+"zG" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/item/stock_parts/cell,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"zM" = (
+/obj/effect/decal/cleanable/robot_debris/down,
+/obj/structure/table/reinforced,
+/obj/item/bodypart/head/robot,
+/obj/item/bodypart/l_arm/robot,
+/obj/item/trash/can,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"zO" = (
+/obj/effect/turf_decal/stripes/red{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/item/stack/cable_coil,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"zZ" = (
+/obj/effect/decal/cleanable/ash/large,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stock_parts/cell,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Aa" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/bot,
+/obj/structure/frame/machine,
+/obj/effect/hk_factory_sparker,
+/obj/structure/sign/warning/electricshock{
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Ad" = (
+/obj/effect/decal/cleanable/oil,
+/obj/machinery/conveyor/hk_factory{
+	dir = 8
+	},
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"Ag" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate/engineering,
+/obj/item/stack/sheet/metal/twenty,
+/obj/item/stack/sheet/glass/twenty,
+/obj/item/stock_parts/capacitor,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Ap" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/cafeteria,
+/area/ruin/space/has_grav/hk_factory)
+"At" = (
+/obj/effect/decal/cleanable/blood/drip,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"Au" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/ruin/space/has_grav/hk_factory)
+"AE" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/ruin/space/has_grav/hk_factory)
+"AF" = (
+/obj/item/stock_parts/cell,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"AP" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"AR" = (
+/obj/item/bodypart/r_arm/robot,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"AW" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/airalarm/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"AY" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/pipe,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Bg" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Bi" = (
+/obj/effect/turf_decal/stripes/red{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/ash,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/item/bodypart/l_arm/robot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Bq" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/machinery/vending/cola,
+/obj/structure/sign/poster/official/random{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/ruin/space/has_grav/hk_factory)
+"Bv" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/ruin/space/has_grav/hk_factory)
+"BA" = (
+/obj/effect/turf_decal/box/yellow,
+/obj/effect/decal/cleanable/generic,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"BC" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/ruin/space/has_grav/hk_factory)
+"BE" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/bed,
+/obj/item/bedsheet,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"BJ" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/robot_debris/limb,
+/obj/structure/hk50_rack,
+/obj/item/pipe,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"BN" = (
+/obj/effect/decal/cleanable/robot_debris,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/hk_assembly_line,
+/obj/item/bodypart/l_arm/robot,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"BT" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Cb" = (
+/obj/machinery/door/airlock/hatch{
+	name = "Testing Range"
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Ce" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/ruin/space/has_grav/hk_factory)
+"Cf" = (
+/turf/open/floor/plasteel/dark/textured/large,
+/area/ruin/space/has_grav/hk_factory)
+"Ch" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/closet/crate/medical,
+/obj/item/storage/firstaid/regular,
+/turf/open/floor/plasteel/white,
+/area/ruin/space/has_grav/hk_factory)
+"Co" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 8
+	},
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Cx" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/broken/directional/west,
+/turf/open/floor/plasteel/cafeteria,
+/area/ruin/space/has_grav/hk_factory)
+"CH" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"CP" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/bot,
+/obj/structure/hk50_rack,
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"CW" = (
+/obj/effect/decal/cleanable/ash/large,
+/obj/effect/decal/cleanable/oil,
+/obj/structure/table/reinforced,
+/obj/item/bodypart/l_arm/robot,
+/obj/item/weldingtool,
+/obj/item/multitool,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"Db" = (
+/obj/effect/decal/cleanable/ash,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/frame/machine,
+/obj/effect/hk_factory_sparker,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/bodypart/head/robot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"Dc" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/hk50_rack/empty,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"Dd" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/cobweb,
+/obj/structure/closet/crate/bin,
+/obj/item/trash/can,
+/obj/item/paper,
+/turf/open/floor/plasteel/grimy,
+/area/ruin/space/has_grav/hk_factory)
+"Dj" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Dl" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/broken/directional/south,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/ruin/space/has_grav/hk_factory)
+"Do" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/stack/sheet/plasteel{
+	amount = 5
+	},
+/obj/item/stack/sheet/mineral/titanium{
+	amount = 5
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 4
+	},
+/obj/machinery/firealarm/directional/north,
+/obj/item/stack/cable_coil,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Dv" = (
+/obj/item/clothing/suit/space/eva,
+/obj/item/tank/internals/oxygen,
+/turf/open/floor/mineral/titanium,
+/area/ruin/space/has_grav/hk_factory)
+"Dx" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/directional/east,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 1
+	},
+/obj/item/cigbutt,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"Dy" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/trash/can,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"Dz" = (
+/obj/item/bodypart/r_leg/robot,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"DB" = (
+/obj/machinery/door/airlock/hatch{
+	name = "Server Room"
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"DI" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/ruin/space/has_grav/hk_factory)
+"DP" = (
+/obj/effect/decal/cleanable/oil,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"DQ" = (
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/stack/tile/plasteel,
+/obj/item/pipe,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"DR" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/stock_parts/scanning_module,
+/obj/item/stock_parts/micro_laser,
+/obj/item/bodypart/chest/robot,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"DX" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/cobweb,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/structure/sign/poster/official/obey{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/ruin/space/has_grav/hk_factory)
+"DY" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Ec" = (
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
+/obj/item/bodypart/r_arm/robot,
+/turf/open/floor/plasteel/freezer,
+/area/ruin/space/has_grav/hk_factory)
+"Ee" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/robot_debris,
+/obj/structure/salvage/metal_frame,
+/obj/structure/sign/warning/securearea{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"Eh" = (
+/obj/effect/decal/cleanable/robot_debris/limb,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark/textured/half,
+/area/ruin/space/has_grav/hk_factory)
+"Ei" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/machinery/light/red/hk_factory/directional/south,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/bodypart/r_leg/robot,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/ruin/space/has_grav/hk_factory)
+"Ej" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/item/soap,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/freezer,
+/area/ruin/space/has_grav/hk_factory)
+"En" = (
+/obj/item/stock_parts/capacitor,
+/obj/item/stack/cable_coil,
+/obj/machinery/light/floor/hk_factory,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"Eo" = (
+/obj/structure/chair/stool,
+/obj/item/stack/cable_coil,
+/turf/open/floor/plasteel/freezer,
+/area/ruin/space/has_grav/hk_factory)
+"Eq" = (
+/obj/effect/decal/cleanable/robot_debris/limb,
+/obj/machinery/conveyor/hk_factory{
+	dir = 8
+	},
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"Eu" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/robot_debris,
+/obj/structure/table/reinforced,
+/obj/item/robot_suit,
+/obj/item/stock_parts/capacitor,
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"Ev" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/red/hk_factory/directional/west,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 1
+	},
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Ex" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Ez" = (
+/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/bodypart/r_arm/robot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"EB" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/ruin/space/has_grav/hk_factory)
+"EC" = (
+/obj/effect/hk_factory_ambush_trigger,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 1
+	},
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"EG" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/shard,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/ruin/space/has_grav/hk_factory)
+"EW" = (
+/obj/structure/table/wood,
+/obj/item/paper/fluff/ruins/hk_factory/quota,
+/obj/item/folder/yellow,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/ruin/space/has_grav/hk_factory)
+"Fl" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Fm" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/salvage/protolathe,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"Fx" = (
+/obj/effect/turf_decal/box/yellow,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/bodypart/chest/robot,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"FC" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"FF" = (
+/obj/effect/decal/cleanable/ash/large,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"FH" = (
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 1
+	},
+/obj/item/cigbutt,
+/obj/machinery/airalarm/directional/east,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"FM" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/trash/can,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"FO" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/ruin/space/has_grav/hk_factory)
+"FX" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/hk_factory)
+"Gd" = (
+/obj/machinery/door/airlock/hatch{
+	name = "Locker Room"
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Gn" = (
+/obj/structure/table/reinforced,
+/obj/item/robot_suit,
+/obj/item/stack/sheet/metal/five,
+/obj/item/trash/popcorn,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"Gw" = (
+/obj/effect/decal/cleanable/ash/large,
+/obj/structure/table/reinforced,
+/obj/item/robot_suit,
+/obj/machinery/light/small/directional/west,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 1
+	},
+/obj/item/stock_parts/manipulator,
+/obj/item/crowbar,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"Gy" = (
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"GA" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/robot_debris,
+/obj/structure/closet/crate/engineering/electrical,
+/obj/item/stack/cable_coil,
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 4
+	},
+/obj/item/storage/box/lights/mixed,
+/obj/item/storage/toolbox/electrical,
+/turf/open/floor/plasteel/dark/telecomms,
+/area/ruin/space/has_grav/hk_factory)
+"GE" = (
+/obj/effect/decal/cleanable/ash,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/oil,
+/obj/structure/salvage/autolathe,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"GH" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plasteel/grimy,
+/area/ruin/space/has_grav/hk_factory)
+"GO" = (
+/obj/effect/decal/cleanable/ash,
+/obj/structure/table/reinforced,
+/obj/item/trash/sosjerky,
+/obj/item/assembly/prox_sensor,
+/obj/item/screwdriver,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/ruin/space/has_grav/hk_factory)
+"GP" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
+	},
+/obj/item/bodypart/r_arm/robot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"GR" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/item/bodypart/r_leg/robot,
+/obj/machinery/airalarm/directional/west,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"GS" = (
+/obj/effect/decal/cleanable/robot_debris,
+/obj/structure/table/reinforced,
+/obj/item/weldingtool,
+/obj/item/clothing/head/welding,
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"GV" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/bodypart/r_leg/robot,
+/obj/item/stock_parts/scanning_module,
+/obj/item/bodypart/r_leg/robot,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"Hc" = (
+/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/robot_debris/limb,
+/obj/machinery/conveyor/hk_factory{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"He" = (
+/obj/machinery/conveyor/hk_factory{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"Hr" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/ruin/space/has_grav/hk_factory)
+"Ht" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/item/bodypart/r_arm/robot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Hu" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"HE" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/ruin/space/has_grav/hk_factory)
+"HF" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/robot_debris/limb,
+/obj/machinery/computer/hk_factory_server,
+/turf/open/floor/plasteel/dark/telecomms,
+/area/ruin/space/has_grav/hk_factory)
+"HI" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/ruin/space/has_grav/hk_factory)
+"HM" = (
+/obj/item/bodypart/r_arm/robot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"HN" = (
+/obj/item/stack/rods,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"HO" = (
+/obj/machinery/door/airlock/external,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"HP" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 4
+	},
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"HR" = (
+/obj/machinery/door/airlock/glass{
+	name = "Welding Booth"
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"HT" = (
+/obj/effect/decal/cleanable/robot_debris/old,
+/obj/effect/turf_decal/bot,
+/obj/machinery/portable_atmospherics/canister,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 10
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 10
+	},
+/obj/structure/extinguisher_cabinet{
+	pixel_x = 32
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"HX" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/cobweb,
+/obj/structure/table/reinforced,
+/obj/item/clipboard,
+/obj/item/pen,
+/obj/structure/sign/poster/ripped{
+	pixel_y = 32
+	},
+/obj/item/assembly/prox_sensor,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"HY" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/crate,
+/obj/item/stack/sheet/metal/ten,
+/obj/item/stack/rods,
+/obj/item/stack/rods,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"HZ" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/item/bodypart/l_arm/robot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Ia" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Ib" = (
+/obj/item/bodypart/l_arm/robot,
+/turf/open/floor/mineral/titanium,
+/area/ruin/space/has_grav/hk_factory)
+"If" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"Ig" = (
+/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"Ih" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/robot_debris/down,
+/turf/open/floor/plasteel/dark/textured/half,
+/area/ruin/space/has_grav/hk_factory)
+"Ii" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/bodypart/r_arm/robot,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"Ij" = (
+/obj/effect/decal/cleanable/ash/large,
+/obj/effect/turf_decal/bot,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/structure/closet/crate/engineering,
+/obj/item/bodypart/head/robot,
+/obj/item/crowbar,
+/obj/item/assembly/prox_sensor,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"In" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/machinery/airalarm/directional/south,
+/turf/open/floor/plasteel/cafeteria,
+/area/ruin/space/has_grav/hk_factory)
+"Io" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Iv" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/yellow{
+	icon_state = "1-8"
+	},
+/obj/item/trash/can,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/hk_factory)
+"Iy" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sign/warning/electricshock{
+	pixel_y = 32
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"IB" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/closet/secure_closet/personal,
+/obj/item/clothing/suit/toggle/labcoat,
+/obj/item/clothing/head/hardhat/orange,
+/obj/item/clothing/shoes/workboots,
+/turf/open/floor/plasteel/white,
+/area/ruin/space/has_grav/hk_factory)
+"IK" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"IL" = (
+/obj/machinery/conveyor/hk_factory{
+	dir = 8
+	},
+/obj/item/bodypart/head/robot,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"IM" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"IN" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/machinery/airalarm/directional/south,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"IU" = (
+/turf/open/floor/plasteel/cafeteria,
+/area/ruin/space/has_grav/hk_factory)
+"IY" = (
+/obj/machinery/door/airlock/external,
+/obj/effect/mapping_helpers/airlock/cyclelink_helper{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"IZ" = (
+/mob/living/simple_animal/hostile/hk50/factory_guard,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Jc" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/trash/plate,
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 4
+	},
+/obj/structure/sign/poster/ripped{
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/ruin/space/has_grav/hk_factory)
+"Jf" = (
+/obj/machinery/door/airlock/medical{
+	name = "Medical Post"
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Jq" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/mob_spawn/human/corpse/hk_factory_salvager,
+/obj/item/bodypart/r_arm/robot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"Jt" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
+/obj/item/stack/sheet/metal/five,
+/obj/item/clothing/gloves/color/black,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"JI" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/ruin/space/has_grav/hk_factory)
+"JN" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/item/reagent_containers/food/drinks/coffee,
+/turf/open/floor/plasteel/grimy,
+/area/ruin/space/has_grav/hk_factory)
+"JQ" = (
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"JT" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/conveyor/hk_factory{
+	dir = 5
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"JU" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"JZ" = (
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"Kc" = (
+/obj/effect/decal/cleanable/molten_object,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"Kh" = (
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
+/obj/item/bodypart/head/robot,
+/turf/open/floor/plasteel/dark/telecomms,
+/area/ruin/space/has_grav/hk_factory)
+"Kp" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/portable_atmospherics/canister,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"Kx" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/cobweb,
+/obj/structure/hk50_rack/empty,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 9
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 9
+	},
+/obj/structure/sign/warning/securearea{
+	pixel_y = -32
+	},
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"KG" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/robot_debris/up,
+/obj/item/stock_parts/scanning_module,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/telecomms,
+/area/ruin/space/has_grav/hk_factory)
+"KI" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/item/pipe,
+/turf/open/floor/plasteel/dark/textured/half,
+/area/ruin/space/has_grav/hk_factory)
+"KK" = (
+/obj/machinery/door/airlock/hatch{
+	name = "Assembly Hall"
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"KP" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/filingcabinet/chestdrawer,
+/turf/open/floor/plasteel/grimy,
+/area/ruin/space/has_grav/hk_factory)
+"KQ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/office/dark{
+	dir = 1
+	},
+/turf/open/floor/plasteel/grimy,
+/area/ruin/space/has_grav/hk_factory)
+"KR" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/robot_debris/up,
+/turf/open/floor/plasteel/dark/textured/half,
+/area/ruin/space/has_grav/hk_factory)
+"KT" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/glass,
+/obj/item/reagent_containers/syringe,
+/obj/item/stack/medical/gauze,
+/turf/open/floor/plasteel/white,
+/area/ruin/space/has_grav/hk_factory)
+"KU" = (
+/obj/effect/decal/cleanable/ash,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"KX" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/machinery/light/broken/directional/east,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"KZ" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/machinery/power/apc/auto_name/north{
+	locked = 0
+	},
+/obj/effect/mapping_helpers/network_builder/power_cable/auto,
+/obj/item/pipe,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Lk" = (
+/obj/machinery/conveyor/hk_factory{
+	dir = 10
+	},
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"Ln" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/robot_debris/old,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/bodypart/l_arm/robot,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"Lo" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/red/hk_factory/directional/south,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/bodypart/chest/robot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Lq" = (
+/obj/machinery/door/airlock/hatch{
+	name = "Control Room"
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Lr" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/hk50_rack,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"Ls" = (
+/obj/structure/chair/stool,
+/obj/item/clothing/under/rank/cargo/miner,
+/turf/open/floor/plasteel/freezer,
+/area/ruin/space/has_grav/hk_factory)
+"Lu" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"Lx" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 1
+	},
+/obj/item/stack/cable_coil,
+/turf/open/floor/plasteel/freezer,
+/area/ruin/space/has_grav/hk_factory)
+"Lz" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/stool,
+/turf/open/floor/plasteel/cafeteria,
+/area/ruin/space/has_grav/hk_factory)
+"LC" = (
+/obj/effect/decal/cleanable/glass,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/item/shard,
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plasteel/cafeteria,
+/area/ruin/space/has_grav/hk_factory)
+"LJ" = (
+/obj/effect/decal/cleanable/oil/streak,
+/obj/machinery/conveyor/hk_factory{
+	dir = 4
+	},
+/obj/item/bodypart/chest/robot,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"Ma" = (
+/obj/item/bodypart/l_arm/robot,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"Mg" = (
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/bodypart/head/robot,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"Mi" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/frame/machine,
+/obj/item/bodypart/chest/robot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"Mr" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate,
+/obj/item/target,
+/obj/item/target/alien,
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 4
+	},
+/obj/item/stock_parts/micro_laser,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/hk_factory)
+"My" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/trash/can,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/ruin/space/has_grav/hk_factory)
+"MC" = (
+/turf/open/floor/mineral/titanium,
+/area/ruin/space/has_grav/hk_factory)
+"ME" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"MO" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/blood/tracks,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/mob_spawn/human/corpse/hk_factory_salvager/leader,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 1
+	},
+/obj/item/stack/rods,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"MS" = (
+/turf/open/floor/plasteel/freezer,
+/area/ruin/space/has_grav/hk_factory)
+"MU" = (
+/obj/effect/decal/cleanable/oil,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/airlock_painter,
+/obj/item/clothing/mask/gas,
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"MX" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/oil/streak,
+/obj/structure/table/reinforced,
+/obj/item/weldingtool,
+/obj/item/clothing/head/welding,
+/obj/item/stock_parts/manipulator,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"MY" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/salvage/server,
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark/telecomms,
+/area/ruin/space/has_grav/hk_factory)
+"MZ" = (
+/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/flashlight,
+/turf/open/floor/mineral/titanium,
+/area/ruin/space/has_grav/hk_factory)
+"Ne" = (
+/obj/effect/decal/cleanable/blood/tracks,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/white,
+/area/ruin/space/has_grav/hk_factory)
+"Ns" = (
+/obj/effect/decal/cleanable/robot_debris/hk50,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/item/bodypart/r_arm/robot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"NA" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/robot_debris/limb,
+/obj/structure/hk50_rack,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"NC" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/stock_parts/cell,
+/turf/open/floor/plasteel/freezer,
+/area/ruin/space/has_grav/hk_factory)
+"NI" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/machinery/light/small/directional/west,
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 2
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 2
+	},
+/turf/open/floor/plasteel/freezer,
+/area/ruin/space/has_grav/hk_factory)
+"NL" = (
+/obj/effect/decal/cleanable/oil,
+/obj/item/clothing/mask/gas,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"NM" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/stool,
+/obj/item/trash/tray,
+/turf/open/floor/plasteel/cafeteria,
+/area/ruin/space/has_grav/hk_factory)
+"NX" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 1
+	},
+/turf/open/floor/plasteel/freezer,
+/area/ruin/space/has_grav/hk_factory)
+"NY" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/robot_debris/old,
+/obj/structure/chair/comfy/shuttle{
+	dir = 8
+	},
+/obj/item/clothing/head/helmet/space/eva,
+/turf/open/floor/mineral/titanium,
+/area/ruin/space/has_grav/hk_factory)
+"Oi" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/oil,
+/obj/structure/frame/machine,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"Ok" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/mineral/titanium,
+/area/ruin/space/has_grav/hk_factory)
+"Or" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/machinery/power/rtg/advanced/fullupgrade,
+/obj/effect/mapping_helpers/network_builder/power_cable/knot,
+/obj/item/stack/cable_coil,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Ow" = (
+/obj/effect/decal/cleanable/blood/drip,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/item/bodypart/head/robot,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/hk_factory)
+"Oy" = (
+/obj/effect/decal/cleanable/ash,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/hk50_rack,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"OC" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/power/rtg,
+/obj/effect/mapping_helpers/network_builder/power_cable/knot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"OO" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/cobweb,
+/obj/structure/salvage/server,
+/obj/structure/sign/warning/securearea{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark/telecomms,
+/area/ruin/space/has_grav/hk_factory)
+"OQ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/bodypart/chest/robot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"OT" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 1
+	},
+/obj/item/bodypart/r_arm/robot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"OW" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/stack/cable_coil,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/ruin/space/has_grav/hk_factory)
+"OX" = (
+/obj/machinery/light/broken/directional/west,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"Pa" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/ruin/space/has_grav/hk_factory)
+"Pb" = (
+/obj/effect/decal/cleanable/robot_debris/old,
+/obj/machinery/conveyor/hk_factory{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"Pg" = (
+/turf/open/floor/plasteel/grimy,
+/area/ruin/space/has_grav/hk_factory)
+"Pj" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/grimy,
+/area/ruin/space/has_grav/hk_factory)
+"Pk" = (
+/obj/structure/table/reinforced,
+/obj/item/robot_suit,
+/obj/item/clothing/head/welding,
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"Pl" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/shard,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/ruin/space/has_grav/hk_factory)
+"Pq" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/rack,
+/obj/item/stock_parts/matter_bin,
+/obj/item/bodypart/chest/robot,
+/obj/item/bodypart/r_leg/robot,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"Pw" = (
+/obj/effect/decal/cleanable/ash/large,
+/obj/effect/decal/cleanable/robot_debris/down,
+/obj/item/bodypart/head/robot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"PA" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/robot_debris,
+/obj/structure/hk50_rack,
+/obj/item/bodypart/chest/robot,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"PB" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/textured/large,
+/area/ruin/space/has_grav/hk_factory)
+"PJ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/conveyor/hk_factory{
+	dir = 4
+	},
+/obj/item/shard,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"PL" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/clothing/gloves/color/latex,
+/obj/item/reagent_containers/syringe,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/structure/sign/poster/official/medical_green_cross{
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel/white,
+/area/ruin/space/has_grav/hk_factory)
+"PP" = (
+/obj/effect/decal/cleanable/blood/drip,
+/obj/effect/decal/cleanable/ash,
+/obj/item/weldingtool/largetank,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"PY" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/bodypart/l_leg/robot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Qc" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/computer/hk_factory_console,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Qd" = (
+/obj/structure/cable/yellow{
+	icon_state = "2-8"
+	},
+/obj/item/bodypart/r_arm/robot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"Qg" = (
+/obj/structure/table/reinforced,
+/obj/item/screwdriver,
+/obj/item/bodypart/l_leg/robot,
+/obj/item/wrench,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"Qm" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/hk_factory)
+"Qo" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 2
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 2
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Qr" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Qt" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Qv" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"Qz" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"QA" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/obj/structure/bed/roller,
+/turf/open/floor/plasteel/white,
+/area/ruin/space/has_grav/hk_factory)
+"QB" = (
+/obj/structure/table/wood,
+/obj/item/paper/fluff/ruins/hk_factory/foreman_log,
+/obj/item/pen,
+/turf/open/floor/plasteel/grimy,
+/area/ruin/space/has_grav/hk_factory)
+"QE" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/pipe,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"QF" = (
+/obj/effect/decal/cleanable/oil,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 1
+	},
+/obj/item/stack/cable_coil,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"QO" = (
+/obj/effect/decal/cleanable/ash,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/reinforced,
+/obj/item/weldingtool,
+/obj/item/clothing/head/welding,
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 2
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 2
+	},
+/obj/item/stack/rods,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"QP" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"QS" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/oil/streak,
+/obj/structure/salvage/metal_frame,
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"QW" = (
+/obj/effect/decal/cleanable/robot_debris,
+/obj/machinery/conveyor/hk_factory{
+	dir = 4
+	},
+/obj/item/stock_parts/cell,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"Rf" = (
+/obj/effect/decal/cleanable/glass,
+/obj/structure/grille/broken,
+/obj/structure/fans/tiny/invisible,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"Rp" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/mirror{
+	pixel_x = 28
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 8
+	},
+/obj/item/bodypart/l_leg/robot,
+/turf/open/floor/plasteel/freezer,
+/area/ruin/space/has_grav/hk_factory)
+"Rt" = (
+/obj/item/bedsheet,
+/turf/open/floor/plasteel/white,
+/area/ruin/space/has_grav/hk_factory)
+"Rw" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/mob/living/simple_animal/hostile/hk50/factory_guard/patrol,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/ruin/space/has_grav/hk_factory)
+"RC" = (
+/obj/effect/decal/cleanable/robot_debris/limb,
+/obj/structure/table/reinforced,
+/obj/item/bodypart/head/robot,
+/obj/item/bodypart/l_arm/robot,
+/obj/item/trash/popcorn,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"RG" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/reinforced,
+/obj/item/screwdriver,
+/obj/item/bodypart/l_leg/robot,
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"RK" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/pipe,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"RM" = (
+/obj/effect/decal/cleanable/glass,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/shard,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"RO" = (
+/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/trash/can,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/ruin/space/has_grav/hk_factory)
+"RZ" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"Se" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Sg" = (
+/obj/structure/chair/stool,
+/obj/item/shard,
+/turf/open/floor/plasteel/cafeteria,
+/area/ruin/space/has_grav/hk_factory)
+"Sk" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/bodypart/l_leg/robot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Sn" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"Sx" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/reinforced,
+/obj/item/stock_parts/micro_laser,
+/obj/item/stock_parts/capacitor,
+/obj/item/trash/chips,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/ruin/space/has_grav/hk_factory)
+"SA" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stock_parts/cell,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"SJ" = (
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"SL" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/cobweb,
+/obj/structure/rack,
+/obj/item/disk/tech_disk/hk_factory,
+/obj/item/bodypart/l_arm/robot,
+/obj/item/bodypart/r_arm/robot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"SN" = (
+/obj/effect/decal/cleanable/robot_debris/up,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/stack/cable_coil,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"SP" = (
+/obj/structure/chair/stool,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/ruin/space/has_grav/hk_factory)
+"SQ" = (
+/obj/machinery/door/airlock/highsecurity{
+	name = "Storage";
+	req_access_txt = "207"
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"ST" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate/large,
+/obj/item/stock_parts/matter_bin,
+/obj/item/assembly/prox_sensor,
+/obj/item/stack/cable_coil,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"SW" = (
+/obj/effect/mapping_helpers/network_builder/power_cable/auto,
+/obj/item/pipe,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Td" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/blood/tracks,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"Te" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/salvage/circuit_imprinter,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"Th" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/portable_atmospherics/canister,
+/obj/item/bodypart/head/robot,
+/obj/structure/sign/poster/ripped{
+	pixel_y = 32
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"Tl" = (
+/obj/machinery/conveyor/hk_factory{
+	dir = 6
+	},
+/obj/item/pipe,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"To" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/mapping_helpers/network_builder/power_cable/auto,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Tp" = (
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/item/bodypart/r_leg/robot,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"Tr" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/white,
+/area/ruin/space/has_grav/hk_factory)
+"TF" = (
+/obj/effect/decal/cleanable/blood/splatter,
+/obj/item/reagent_containers/syringe,
+/turf/open/floor/plasteel/white,
+/area/ruin/space/has_grav/hk_factory)
+"TK" = (
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/ruin/space/has_grav/hk_factory)
+"TL" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"TP" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/item/stack/cable_coil,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"TS" = (
+/obj/effect/decal/cleanable/cobweb,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"Uc" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/cobweb,
+/obj/structure/rack,
+/obj/item/clothing/ears/earmuffs,
+/obj/item/clothing/glasses/sunglasses,
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 4
+	},
+/obj/structure/sign/poster/official/do_not_question{
+	pixel_y = 32
+	},
+/obj/item/wirecutters,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/ruin/space/has_grav/hk_factory)
+"Ug" = (
+/obj/machinery/door/airlock/hatch{
+	name = "Foreman's Office"
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Uh" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/bodypart/r_leg/robot,
+/obj/item/stack/rods,
+/obj/item/bodypart/l_leg/robot,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"Uk" = (
+/obj/machinery/iv_drip,
+/turf/open/floor/plasteel/white,
+/area/ruin/space/has_grav/hk_factory)
+"Ul" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/hk50_rack/dormant,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"Uo" = (
+/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/bodypart/r_arm/robot,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/hk_factory)
+"Up" = (
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"Ur" = (
+/obj/effect/decal/cleanable/ash/large,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/barricade/security,
+/obj/item/bodypart/l_arm/robot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Ux" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/item/stack/cable_coil,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"UD" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/reagent_dispensers/urbanismbarrel/red,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"UH" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/cobweb,
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/white,
+/area/ruin/space/has_grav/hk_factory)
+"UM" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"UO" = (
+/obj/effect/decal/cleanable/ash,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/item/bodypart/r_arm/robot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"UP" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/salvage/metal_frame,
+/obj/item/trash/can,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"UU" = (
+/obj/effect/decal/cleanable/oil/streak,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"Va" = (
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"Vd" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/robot_debris/up,
+/obj/item/stock_parts/scanning_module,
+/obj/item/stack/cable_coil,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plasteel/dark/telecomms,
+/area/ruin/space/has_grav/hk_factory)
+"Vf" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/oil,
+/obj/item/bodypart/l_leg/robot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"Vm" = (
+/turf/closed/wall/r_wall/rust,
+/area/ruin/space/has_grav/hk_factory)
+"VD" = (
+/obj/effect/turf_decal/stripes/yellow/box,
+/obj/effect/decal/cleanable/robot_debris/limb,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"VG" = (
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 4
+	},
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/hk_factory)
+"VK" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/grimy,
+/area/ruin/space/has_grav/hk_factory)
+"VN" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/loading_area{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/item/pipe,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"VP" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/bodypart/chest/robot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"VT" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/portable_atmospherics/canister,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"Wg" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"Wh" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/machinery/power/port_gen/pacman,
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Wi" = (
+/obj/effect/decal/cleanable/generic,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/pipe,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"Wk" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/directional/east,
+/obj/item/stock_parts/cell,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Wt" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/closet/crate,
+/obj/item/stock_parts/capacitor,
+/obj/item/stock_parts/micro_laser,
+/obj/item/stock_parts/matter_bin,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Ww" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/oil/streak,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/pipe,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"Wx" = (
+/obj/effect/decal/cleanable/oil,
+/obj/item/stack/rods,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"Wy" = (
+/obj/machinery/door/airlock/engineering{
+	name = "Switchboard"
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"WB" = (
+/obj/effect/decal/cleanable/ash/large,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"WN" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/effect/hk_factory_ambush_trigger,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"WP" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/reagent_dispensers/urbanismbarrel,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/hk_factory)
+"WS" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"WU" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/robot_debris/down,
+/turf/open/floor/plasteel/dark/textured/half,
+/area/ruin/space/has_grav/hk_factory)
+"WV" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"WW" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/shower{
+	dir = 1
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/freezer,
+/area/ruin/space/has_grav/hk_factory)
+"Xe" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/closet/secure_closet/personal,
+/obj/structure/sign/poster/official/build{
+	pixel_y = 32
+	},
+/obj/item/clothing/head/hardhat/orange,
+/obj/item/clothing/shoes/workboots,
+/obj/item/clothing/gloves/color/black,
+/turf/open/floor/plasteel/freezer,
+/area/ruin/space/has_grav/hk_factory)
+"Xh" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Xj" = (
+/obj/effect/decal/cleanable/robot_debris/hk50,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"XA" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/hk_factory_ambush_trigger,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"XB" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/bodypart/l_arm/robot,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"XC" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/bodypart/head/robot,
+/obj/item/bodypart/r_leg/robot,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"XF" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/decal/cleanable/robot_debris,
+/obj/structure/reagent_dispensers/urbanismbarrel/red,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 1
+	},
+/obj/item/bodypart/head/robot,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"XL" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"XN" = (
+/obj/item/bodypart/head/robot,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"XR" = (
+/obj/effect/decal/cleanable/robot_debris/up,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"XT" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/office/dark{
+	dir = 1
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/shard,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"XW" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/cobweb,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/ruin/space/has_grav/hk_factory)
+"XX" = (
+/obj/structure/chair/stool,
+/obj/item/clothing/shoes/workboots,
+/turf/open/floor/plasteel/freezer,
+/area/ruin/space/has_grav/hk_factory)
+"Ya" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/pipe,
+/turf/open/floor/plasteel/dark/textured/half,
+/area/ruin/space/has_grav/hk_factory)
+"Yd" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/stock_parts/matter_bin,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"Yj" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stock_parts/cell,
+/turf/open/floor/mineral/titanium,
+/area/ruin/space/has_grav/hk_factory)
+"Yl" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/cobweb,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/item/trash/can,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"Yp" = (
+/obj/machinery/light/broken/directional/east,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 10
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 10
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"Yq" = (
+/obj/effect/decal/cleanable/ash,
+/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/bot,
+/obj/structure/hk50_rack/empty,
+/obj/item/clothing/head/welding,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"Yr" = (
+/obj/effect/decal/cleanable/ash,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/bodypart/l_arm/robot,
+/obj/structure/sign/warning/securearea{
+	pixel_y = 32
+	},
+/obj/machinery/light/small/directional/north,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"YC" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/blood/tracks,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"YM" = (
+/obj/item/stack/medical/gauze,
+/obj/item/reagent_containers/syringe,
+/turf/open/floor/plasteel/white,
+/area/ruin/space/has_grav/hk_factory)
+"YP" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/reagent_dispensers/urbanismbarrel,
+/obj/machinery/firealarm/directional/north,
+/turf/open/floor/plating/rust,
+/area/ruin/space/has_grav/hk_factory)
+"YS" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/item/stack/rods,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"Ze" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/robot_debris,
+/obj/machinery/porta_turret/syndicate/energy/hk_factory,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"Zg" = (
+/obj/effect/decal/cleanable/robot_debris/limb,
+/obj/machinery/conveyor/hk_factory{
+	dir = 4
+	},
+/obj/item/bodypart/l_leg/robot,
+/turf/open/floor/plasteel/dark/textured,
+/area/ruin/space/has_grav/hk_factory)
+"Zl" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/bot,
+/obj/machinery/portable_atmospherics/canister,
+/obj/item/stack/rods,
+/turf/open/floor/engine,
+/area/ruin/space/has_grav/hk_factory)
+"Zv" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 1
+	},
+/obj/structure/closet/toolcloset,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/hk_factory)
+"ZD" = (
+/obj/effect/mapping_helpers/network_builder/power_cable/auto,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"ZG" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/ruin/space/has_grav/hk_factory)
+"ZK" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/bookcase,
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/grimy,
+/area/ruin/space/has_grav/hk_factory)
+"ZM" = (
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
+/obj/item/stack/cable_coil,
+/obj/structure/hk50_rack/dormant,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/space/has_grav/hk_factory)
+"ZO" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/textured/large,
+/area/ruin/space/has_grav/hk_factory)
+"ZQ" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+"ZX" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/atmospherics/pipe/simple/supply/visible/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
+	dir = 4
+	},
+/obj/item/stock_parts/cell,
+/turf/open/floor/plasteel/dark,
+/area/ruin/space/has_grav/hk_factory)
+
+(1,1,1) = {"
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+"}
+(2,1,1) = {"
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+iI
+iI
+Vm
+xT
+xT
+xT
+xT
+xT
+xT
+xT
+iI
+iI
+Vm
+iI
+iI
+iI
+iI
+Vm
+iI
+iI
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+"}
+(3,1,1) = {"
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+iI
+YP
+Qm
+fG
+VN
+jt
+qA
+Wg
+iB
+aI
+gF
+VG
+Vm
+Qo
+eb
+OT
+Ev
+po
+VP
+Vm
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+"}
+(4,1,1) = {"
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+Vm
+WP
+yE
+dZ
+au
+gW
+FC
+BE
+cH
+jU
+HY
+zb
+iI
+KZ
+ZD
+iU
+iO
+SW
+Or
+Vm
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+"}
+(5,1,1) = {"
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+Vm
+Th
+QP
+KU
+yP
+aD
+yP
+dZ
+eI
+xZ
+qq
+nf
+iI
+na
+lR
+HM
+lR
+qm
+To
+iI
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+"}
+(6,1,1) = {"
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+iI
+hG
+cJ
+yP
+qL
+NY
+Yj
+yP
+vr
+ir
+dZ
+UM
+Wy
+vw
+fL
+hL
+dp
+DP
+OC
+Vm
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+"}
+(7,1,1) = {"
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+iI
+eZ
+yf
+yP
+ci
+MC
+ep
+yP
+pw
+CH
+jI
+iZ
+iI
+nh
+ih
+ai
+XR
+jJ
+Aa
+iI
+Vm
+iI
+Vm
+iI
+Vm
+iI
+gv
+"}
+(8,1,1) = {"
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+iI
+nN
+XL
+yP
+Dv
+Ok
+rj
+yP
+he
+Sn
+Vf
+bx
+iI
+Vm
+iI
+iI
+tr
+iI
+iI
+iI
+IB
+zo
+pD
+kx
+UH
+Vm
+gv
+"}
+(9,1,1) = {"
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+Vm
+vk
+DQ
+yP
+Ib
+MZ
+tf
+yP
+FC
+HN
+Jq
+pz
+iI
+qK
+bo
+RZ
+ln
+ce
+kL
+iI
+pm
+QA
+Rt
+uD
+PL
+iI
+gv
+"}
+(10,1,1) = {"
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+iI
+iI
+iI
+Kp
+cJ
+dZ
+yP
+hp
+yP
+TS
+wg
+At
+PP
+kZ
+Vm
+iN
+XB
+FX
+OQ
+IM
+yf
+Jf
+Tr
+Uk
+uD
+uA
+sk
+iI
+gv
+"}
+(11,1,1) = {"
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+iI
+tG
+mQ
+dZ
+yH
+aK
+es
+dZ
+pL
+UU
+ty
+ln
+Uo
+Ow
+Vm
+Iy
+an
+Qd
+Qv
+Iv
+aY
+Vm
+Ch
+Tr
+YM
+TF
+my
+iI
+gv
+"}
+(12,1,1) = {"
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+iI
+xz
+iI
+UD
+Yp
+Zv
+QF
+Up
+MO
+FH
+jZ
+jo
+vW
+rk
+iI
+ry
+vg
+bz
+Qv
+zt
+sL
+Vm
+KT
+ns
+Ne
+bS
+nd
+iI
+gv
+"}
+(13,1,1) = {"
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+iI
+qo
+iI
+Vm
+Vm
+iI
+iI
+iI
+KK
+iI
+iI
+iI
+iI
+Vm
+Vm
+iI
+tr
+Vm
+iI
+Vm
+iI
+iI
+iI
+Vm
+Jf
+iI
+Vm
+Vm
+gv
+"}
+(14,1,1) = {"
+gv
+iI
+iI
+iI
+Vm
+Vm
+Vm
+iI
+OW
+Vm
+zh
+ba
+Eh
+xd
+xk
+vi
+jT
+dd
+If
+QO
+Gw
+OX
+nH
+eQ
+dq
+iP
+Vm
+Uc
+Au
+fS
+xe
+SP
+lC
+Mr
+iI
+gv
+"}
+(15,1,1) = {"
+gv
+Vm
+nB
+sB
+eS
+eS
+GA
+iI
+RO
+iI
+bT
+wa
+iM
+JT
+He
+px
+mX
+jG
+If
+hx
+yu
+fl
+Ez
+kS
+Pk
+Yq
+iI
+rT
+Cf
+Cf
+PB
+Cf
+SP
+Dl
+iI
+gv
+"}
+(16,1,1) = {"
+gv
+iI
+HF
+xm
+qe
+as
+qy
+DB
+XW
+Vm
+mI
+JZ
+KR
+aS
+GE
+dH
+mS
+hg
+If
+CW
+Pw
+Db
+wl
+dZ
+oF
+Ij
+iI
+iQ
+un
+FO
+xp
+Ce
+HI
+BC
+iI
+gv
+"}
+(17,1,1) = {"
+gv
+iI
+cz
+Kh
+Vd
+pB
+KG
+Vm
+zB
+iI
+tV
+VD
+pW
+yG
+fU
+PA
+Hc
+mV
+If
+Mi
+ei
+hK
+ln
+yW
+cr
+jc
+iI
+fq
+AE
+GO
+PB
+Sx
+ZO
+uW
+iI
+gv
+"}
+(18,1,1) = {"
+gv
+iI
+OO
+fs
+mU
+nv
+MY
+iI
+ni
+Vm
+bC
+cZ
+ji
+gJ
+wF
+Eu
+fD
+jG
+If
+iE
+Kc
+vo
+ln
+dZ
+gX
+ov
+iI
+eK
+bD
+Dj
+nq
+Ex
+jn
+lg
+If
+gv
+"}
+(19,1,1) = {"
+gv
+iI
+Vm
+Vm
+iI
+iI
+iI
+iI
+zc
+iI
+qR
+mA
+nS
+hO
+co
+Te
+Eq
+WV
+If
+If
+If
+HR
+If
+If
+If
+If
+Vm
+rl
+Ia
+If
+Yl
+If
+dN
+bM
+If
+gv
+"}
+(20,1,1) = {"
+gv
+iI
+HX
+xH
+xY
+GR
+Wh
+If
+uc
+iI
+Lr
+fk
+ku
+PJ
+RC
+RG
+mS
+Ii
+Ig
+En
+JQ
+AR
+Wx
+kf
+Lu
+yF
+Vm
+AY
+tx
+If
+Ux
+If
+vj
+uj
+If
+gv
+"}
+(21,1,1) = {"
+gv
+Vm
+bL
+rf
+mR
+YC
+Se
+If
+DI
+iI
+dV
+cq
+so
+yy
+cy
+gM
+uE
+Yd
+HP
+zf
+Uh
+wB
+jy
+GV
+lQ
+jr
+Vm
+ZX
+fB
+If
+Ns
+If
+TL
+sC
+iI
+gv
+"}
+(22,1,1) = {"
+gv
+iI
+Qc
+XT
+fL
+XN
+Qr
+Lq
+TK
+KK
+XA
+JZ
+so
+lK
+NA
+cn
+dk
+gN
+Td
+ZM
+be
+be
+it
+be
+Tp
+eD
+iI
+PY
+Xh
+If
+id
+If
+DY
+rQ
+Vm
+gv
+"}
+(23,1,1) = {"
+gv
+iI
+TL
+Hu
+fL
+fL
+bw
+If
+gE
+iI
+gi
+EB
+WU
+lE
+Gn
+QS
+aZ
+Ze
+JZ
+zG
+jW
+oC
+Dy
+ap
+vQ
+WN
+Cb
+WS
+yr
+If
+id
+If
+Qt
+uM
+iI
+gv
+"}
+(24,1,1) = {"
+gv
+iI
+jC
+GP
+KX
+Ex
+sP
+If
+Rw
+iI
+zh
+rB
+qj
+LJ
+vE
+pQ
+IL
+hu
+JZ
+Ul
+nJ
+Ma
+sl
+ub
+ub
+vm
+iI
+Io
+Xj
+If
+xv
+If
+na
+Sk
+iI
+gv
+"}
+(25,1,1) = {"
+gv
+iI
+iI
+Vm
+Vm
+iI
+Vm
+iI
+tz
+Vm
+Dc
+Mg
+Ya
+QW
+Qg
+GS
+jk
+pE
+oT
+DR
+ls
+wG
+py
+Pq
+rg
+SJ
+iI
+eK
+oI
+If
+id
+If
+FF
+RM
+Rf
+gv
+"}
+(26,1,1) = {"
+gv
+iI
+KP
+vu
+hI
+Pj
+Dd
+iI
+oG
+iI
+nL
+SN
+xO
+ro
+gM
+Oy
+gd
+YS
+Va
+dW
+SJ
+SJ
+rK
+ld
+AF
+nE
+iI
+Yr
+Xh
+If
+id
+If
+jP
+ZQ
+If
+gv
+"}
+(27,1,1) = {"
+gv
+iI
+Pa
+EW
+ZG
+rn
+ZK
+iI
+km
+iI
+Gy
+JZ
+vX
+mj
+Oi
+yo
+ru
+Ln
+If
+If
+If
+nP
+If
+If
+If
+If
+iI
+QE
+zZ
+If
+UO
+If
+FF
+sf
+If
+gv
+"}
+(28,1,1) = {"
+gv
+iI
+VK
+QB
+KQ
+kF
+Pg
+Ug
+mk
+Vm
+Ee
+wa
+KI
+Zg
+UP
+zM
+vt
+is
+If
+mG
+vH
+SJ
+tL
+Zl
+Wi
+re
+Vm
+wC
+cQ
+If
+WB
+If
+bF
+rQ
+iI
+gv
+"}
+(29,1,1) = {"
+gv
+iI
+GH
+Pg
+Pg
+iv
+kI
+iI
+EG
+iI
+BN
+oA
+Ih
+Pb
+nu
+Fm
+tu
+Ww
+If
+VT
+Jt
+nX
+ua
+NL
+AF
+rJ
+iI
+cm
+Bi
+If
+zO
+If
+og
+IN
+Vm
+gv
+"}
+(30,1,1) = {"
+gv
+iI
+qC
+wy
+JN
+db
+uZ
+iI
+oQ
+Vm
+dF
+sc
+eM
+xf
+MX
+BJ
+Ad
+yI
+If
+RK
+AF
+BA
+SJ
+Fx
+xF
+MU
+Vm
+Fl
+tY
+Ht
+gy
+vJ
+ft
+FM
+iI
+gv
+"}
+(31,1,1) = {"
+gv
+iI
+iI
+iI
+iI
+iI
+iI
+iI
+cN
+iI
+ej
+uz
+ho
+Tl
+xq
+xq
+Lk
+os
+If
+SJ
+vN
+fu
+bm
+Dz
+CP
+we
+iI
+eA
+Ur
+ox
+wO
+hL
+eh
+Lo
+iI
+gv
+"}
+(32,1,1) = {"
+gv
+Vm
+Bq
+Cx
+NM
+xl
+Jc
+iI
+Ei
+iI
+pc
+HT
+uB
+vY
+hk
+vi
+XF
+nb
+If
+lo
+sw
+Dx
+uT
+EC
+oo
+Kx
+Vm
+gq
+IK
+uh
+pa
+wL
+HZ
+al
+iI
+gv
+"}
+(33,1,1) = {"
+gv
+If
+la
+HE
+ok
+Lz
+aG
+iI
+DX
+iI
+iI
+Vm
+iI
+Vm
+iI
+SQ
+iI
+iI
+iI
+iI
+iI
+iI
+iI
+Gd
+Vm
+iI
+iI
+iI
+iI
+iI
+IY
+iI
+iI
+iI
+Vm
+gv
+"}
+(34,1,1) = {"
+gv
+If
+JI
+mm
+fN
+Sg
+cb
+cX
+Hr
+iI
+gv
+Vm
+Do
+nc
+rL
+at
+xt
+Wt
+Qz
+Ag
+iI
+to
+NI
+NX
+Lx
+WW
+Vm
+gv
+gv
+iI
+qX
+Vm
+gv
+gv
+gv
+gv
+"}
+(35,1,1) = {"
+gv
+Rf
+LC
+mm
+zr
+Lz
+In
+iI
+My
+Vm
+gv
+Vm
+jR
+Bg
+hL
+fL
+JU
+fL
+wR
+TP
+iI
+sH
+Ec
+Ls
+MS
+aX
+iI
+gv
+gv
+iI
+HO
+iI
+gv
+gv
+gv
+gv
+"}
+(36,1,1) = {"
+gv
+If
+lr
+fJ
+IU
+Ap
+hd
+iI
+Pl
+iI
+gv
+iI
+rt
+Bg
+cR
+IZ
+fL
+oU
+rS
+AP
+iI
+Xe
+NC
+Eo
+bd
+kl
+iI
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+"}
+(37,1,1) = {"
+gv
+iI
+rY
+cc
+ud
+ja
+sd
+iI
+Bv
+iI
+gv
+iI
+XC
+oX
+oq
+fL
+SA
+fL
+wR
+BT
+iI
+wu
+qt
+XX
+ju
+Ej
+iI
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+"}
+(38,1,1) = {"
+gv
+iI
+iI
+iI
+iI
+iI
+Vm
+iI
+ii
+Vm
+gv
+Vm
+sm
+ME
+ST
+AW
+Wk
+wP
+Co
+SL
+iI
+uk
+hV
+cM
+eU
+Rp
+Vm
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+"}
+(39,1,1) = {"
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+iI
+iI
+Vm
+gv
+Vm
+iI
+iI
+Vm
+iI
+iI
+iI
+iI
+Vm
+iI
+Vm
+iI
+iI
+Vm
+iI
+iI
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+"}
+(40,1,1) = {"
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+gv
+"}

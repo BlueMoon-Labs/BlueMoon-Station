@@ -133,4 +133,4 @@
 	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
 	prereq_ids = list("weaponry", "adv_weaponry")
 	design_ids = list("dies_irae", "liturgy")
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 3500)
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)

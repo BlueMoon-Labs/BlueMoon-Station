@@ -54,8 +54,8 @@
 /datum/unit_test/multiz_eye_floor_distortion_and_exposure/Run()
 	var/datum/plane_master_group/main/group = allocate(/datum/plane_master_group/main, EYE_FLOOR_FILTERS_TEST_KEY)
 	group.build_plane_masters(1, 1)
-	var/atom/movable/screen/plane_master/upper = group.plane_masters["[GET_NEW_PLANE(GAME_PLANE, 0)]"]
-	var/atom/movable/screen/plane_master/lower = group.plane_masters["[GET_NEW_PLANE(GAME_PLANE, 1)]"]
+	var/atom/movable/screen/plane_master/upper = group.plane_masters["[GET_NEW_PLANE(RENDER_PLANE_GAME_WORLD, 0)]"]
+	var/atom/movable/screen/plane_master/lower = group.plane_masters["[GET_NEW_PLANE(RENDER_PLANE_GAME_WORLD, 1)]"]
 	var/atom/movable/screen/plane_master/upper_exposure = group.plane_masters["[GET_NEW_PLANE(LIGHTING_EXPOSURE_PLANE, 0)]"]
 	var/atom/movable/screen/plane_master/lower_exposure = group.plane_masters["[GET_NEW_PLANE(LIGHTING_EXPOSURE_PLANE, 1)]"]
 	upper_exposure.add_filter("blur_exposure", 1, gauss_blur_filter(size = 12))
@@ -65,14 +65,14 @@
 
 	group.apply_viewer_offset(0, 1, MULTIZ_PERFORMANCE_DISABLE, MULTIZ_SCALE_PER_LEVEL)
 	var/upper_filters = length(upper.filters)
-	TEST_ASSERT_NOTNULL(upper.get_filter("singularity_0"), "Этаж глаза обязан нести искажения мира")
-	TEST_ASSERT_NULL(lower.get_filter("singularity_0"), "Нижний этаж искажений нести не должен")
+	TEST_ASSERT_NOTNULL(upper.get_filter("displacer"), "Этаж глаза обязан нести искажения мира")
+	TEST_ASSERT_NULL(lower.get_filter("displacer"), "Нижний этаж искажений нести не должен")
 	TEST_ASSERT_EQUAL(lower_exposure.alpha, 0, "Экспозиция без размытия на нижнем этаже должна гаснуть")
 	TEST_ASSERT_EQUAL(upper_exposure.alpha, 255, "Экспозиция этажа глаза должна гореть")
 
 	group.apply_viewer_offset(1, 1, MULTIZ_PERFORMANCE_DISABLE, MULTIZ_SCALE_PER_LEVEL)
-	TEST_ASSERT_NOTNULL(lower.get_filter("singularity_0"), "Искажения обязаны переехать на этаж глаза")
-	TEST_ASSERT_NULL(upper.get_filter("singularity_0"), "Покинутый этаж обязан отдать искажения")
+	TEST_ASSERT_NOTNULL(lower.get_filter("displacer"), "Искажения обязаны переехать на этаж глаза")
+	TEST_ASSERT_NULL(upper.get_filter("displacer"), "Покинутый этаж обязан отдать искажения")
 	TEST_ASSERT_EQUAL(lower_exposure.alpha, 255, "Экспозиция обязана загореться на новом этаже глаза")
 
 	group.apply_viewer_offset(0, 1, MULTIZ_PERFORMANCE_DISABLE, MULTIZ_SCALE_PER_LEVEL)
@@ -82,13 +82,38 @@
 #define DISTORTION_REBUILD_WARMUP 200
 #define DISTORTION_REBUILD_TIMER "unit-test-distortion-rebuild"
 
+/// Искажения мира лежат одним набором на плите мира, а линза сингулярности - только пока сингулярность есть.
+/datum/unit_test/world_distortion_single_plate
+
+/datum/unit_test/world_distortion_single_plate/Run()
+	var/datum/plane_master_group/main/group = allocate(/datum/plane_master_group/main, EYE_FLOOR_FILTERS_TEST_KEY)
+	var/atom/movable/screen/plane_master/plate = group.plane_masters["[GET_NEW_PLANE(RENDER_PLANE_GAME_WORLD, 0)]"]
+	for(var/plane_key in group.plane_masters)
+		var/atom/movable/screen/plane_master/master = group.plane_masters[plane_key]
+		if(master != plate && master.offset == 0)
+			TEST_ASSERT_NULL(master.get_filter("displacer"), "[master.type] не должен дублировать искажения плиты")
+	TEST_ASSERT_NOTNULL(plate.get_filter("displacer"), "Плита мира обязана нести гравитационный импульс")
+	TEST_ASSERT_NULL(plate.get_filter("singularity_0"), "Без сингулярности линза не нужна")
+	TEST_ASSERT(!plate.singularity_animated, "Без сингулярности анимаций линзы быть не должно")
+
+	var/turf/spot = run_loc_floor_bottom_left
+	var/obj/singularity/gravitational/singulo = new(spot)
+	STOP_PROCESSING(SSobj, singulo)
+	TEST_ASSERT_NOTNULL(plate.get_filter("singularity_0"), "Появившаяся сингулярность обязана включить линзу")
+	TEST_ASSERT(plate.singularity_animated, "Линза сингулярности обязана анимироваться")
+	qdel(singulo)
+	TEST_ASSERT_NULL(plate.get_filter("singularity_0"), "Ушедшая сингулярность обязана снять линзу")
+	TEST_ASSERT(!plate.singularity_animated, "Ушедшая сингулярность обязана остановить анимации линзы")
+
 /// Пересборка фильтров на этаже с линзой сингулярности не дорожает от раза к разу.
 /datum/unit_test/multiz_distortion_rebuild_cost_flat
 
 /datum/unit_test/multiz_distortion_rebuild_cost_flat/Run()
 	var/datum/plane_master_group/main/group = allocate(/datum/plane_master_group/main, EYE_FLOOR_FILTERS_TEST_KEY)
-	var/atom/movable/screen/plane_master/game = group.plane_masters["[GET_NEW_PLANE(GAME_PLANE, 0)]"]
-	TEST_ASSERT(game.world_distortion_applied, "Этаж глаза обязан нести линзу сингулярности")
+	var/atom/movable/screen/plane_master/game = group.plane_masters["[GET_NEW_PLANE(RENDER_PLANE_GAME_WORLD, 0)]"]
+	var/obj/singularity/gravitational/singulo = allocate(/obj/singularity/gravitational, run_loc_floor_bottom_left)
+	STOP_PROCESSING(SSobj, singulo)
+	TEST_ASSERT(game.get_filter("singularity_0"), "Этаж глаза обязан нести линзу сингулярности")
 
 	var/first_batch = time_rebuilds(game, DISTORTION_REBUILD_BATCH)
 	time_rebuilds(game, DISTORTION_REBUILD_WARMUP)

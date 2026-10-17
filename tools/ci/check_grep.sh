@@ -42,15 +42,16 @@ fi;
 #     st=1
 # fi;
 echo "Checking for stacked cables"
-if grep -P '"\w+" = \(\n([^)]+\n)*/obj/structure/cable,\n([^)]+\n)*/obj/structure/cable,\n([^)]+\n)*/area/.+\)' _maps/**/*.dmm;	then
-    echo "found multiple cables on the same tile, please remove them."
+# -z makes the whole map one record so the pattern spans the lines of a TGM tile; the area line closing every tile keeps it inside one tile.
+if grep -Pzo '"\w+" = \((?=\n(?:(?!/area/)[^\n]*\n)*?(/obj/structure/cable(?:/\w+)*(?:\{\n(?:\t[^\n]*\n)*?\t\})?,\n)(?:(?!/area/)[^\n]*\n)*?\1)' _maps/**/*.dmm | tr '\0' '\n';	then
+    echo "ERROR: the same cable (same type and vars) is placed twice on one tile, please remove the copy."
     st=1
 fi;
 if grep -P '^/area/.+[\{]' _maps/**/*.dmm;	then
     echo "ERROR: Vareditted /area path use detected in maps, please replace with proper paths."
     st=1
 fi;
-if grep -P '\W\/turf\s*[,\){]' _maps/**/*.dmm; then
+if grep -P '(^|\W)/turf\s*[,\){]' _maps/**/*.dmm; then
     echo "ERROR: base /turf path use detected in maps, please replace with proper paths."
     st=1
 fi;

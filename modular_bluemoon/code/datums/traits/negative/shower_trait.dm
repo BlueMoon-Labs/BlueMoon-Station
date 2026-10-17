@@ -179,7 +179,7 @@
 		var/mob/living/carbon/human/holder = quirk_holder
 
 		if(holder.w_shirt) // мыться в футболках нельзя
-			if(!(holder.w_shirt.type in typesof(/obj/item/clothing/underwear/shirt/bra, /obj/item/clothing/underwear/shirt/top))) // мыться в лифчике можно
+			if(!(holder.w_shirt.type in typesof(/obj/item/clothing/underwear/shirt/bra, /obj/item/clothing/underwear/shirt/top, /obj/item/clothing/underwear/shirt/adjustable))) // мыться в лифчике можно
 				return
 
 		if(holder.back) // мыться с рюкзаком нельзя

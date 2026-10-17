@@ -6,6 +6,17 @@
 	crate_name = "gas miner circuitboard"
 	crate_type = /obj/structure/closet/crate/secure/engineering
 
+/datum/supply_pack/engineering/inflatable
+	name = "Inflatable Barriers Crate"
+	desc = "Три комплекта надувных заграждений: двенадцать стен и девять дверей для временной герметизации пробоин."
+	cost = 1000
+	contains = list(
+		/obj/item/storage/briefcase/inflatable,
+		/obj/item/storage/briefcase/inflatable,
+		/obj/item/storage/briefcase/inflatable,
+	)
+	crate_name = "inflatable barrier crate"
+
 //////////////////////////////////////////////////////////////////////////////
 
 /datum/supply_pack/engineering/bfl
