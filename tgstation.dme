@@ -5190,6 +5190,7 @@
 #include "modular_bluemoon\code\modules\integrated_electronics\integral_surgical_scanner.dm"
 #include "modular_bluemoon\code\modules\integrated_electronics\integral_user.dm"
 #include "modular_bluemoon\code\modules\integrated_electronics\virtual_joystick.dm"
+#include "modular_bluemoon\code\modules\Interdyne\interdyne.dm"
 #include "modular_bluemoon\code\modules\item_pixel_shift\item_pixel_shift.dm"
 #include "modular_bluemoon\code\modules\jobs\job_types\job.dm"
 #include "modular_bluemoon\code\modules\jobs\job_types\service\curator.dm"
