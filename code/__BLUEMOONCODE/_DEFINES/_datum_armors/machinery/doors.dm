@@ -12,14 +12,14 @@
 	wound = 0
 
 /datum/armor/firedoor
-	melee = 30
-	bullet = 30
+	melee = 0
+	bullet = 0
 	laser = 20
-	energy = 20
-	bomb = 10
+	energy = 0
+	bomb = 20
 	bio = 100
 	rad = 100
-	fire = 95
+	fire = 100
 	acid = 70
 	magic = 0
 	wound = 0
