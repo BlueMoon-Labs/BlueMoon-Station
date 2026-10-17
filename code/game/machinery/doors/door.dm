@@ -58,7 +58,7 @@
 /obj/machinery/door/examine(mob/user)
 	. = ..()
 	if(!poddoor)
-		. += "<span class='notice'>Its maintenance panel is <b>screwed</b> in place.</span>"
+		. += "<span class='notice'>Панель обслуживания закреплена <b>винтами</b>.</span>"
 
 /obj/machinery/door/add_context(atom/source, list/context, obj/item/held_item, mob/user)
 	. = ..()
