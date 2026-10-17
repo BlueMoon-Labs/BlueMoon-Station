@@ -15,6 +15,64 @@
 	var/vr_category = "default" //Specific category of spawn points to pick from
 	var/allow_creating_vr_mobs = TRUE //So you can have vr_sleepers that always spawn you as a specific person or 1 life/chance vr games
 	var/only_current_user_can_interact = FALSE
+	/// What the panel last said to each player, keyed by ckey. Whoever presses a
+	/// button is not always whoever has to read the answer, and a chat line that
+	/// scrolls off the bottom of the screen looks exactly like a dead button, so
+	/// the same text is shown inside the panel too. Read once by ui_data() and
+	/// cleared, so it survives a single refresh and no longer.
+	var/list/sleeper_notices = list()
+
+/**
+ * tgui state: sleeper_guest_state
+ *
+ * The whole panel runs on this one state, because the alternatives are wrong for
+ * somebody and stale for everybody else.
+ *
+ * default_state will not admit a guest at all. Its can_use_topic() defers to
+ * /mob/proc/default_can_use_topic(), which is the proc a ghost actually gets -
+ * being neither /mob/living nor a robot - and that returns UI_CLOSE for
+ * everything. Opening a window only needs UI_UPDATE, so the panel appeared to
+ * work and then every button in it was silently inert.
+ *
+ * Picking contained_state for the occupant and default_state for everyone else
+ * fixes the ghost but breaks the reverse case: a tgui state is read once, when
+ * the window is created, so a host who is lying in the sleeper keeps
+ * contained_state, and the moment their mind moves into a virtual body they stop
+ * being in contents and their own Leave button goes dead too. Deciding per press
+ * instead of per window avoids that.
+ *
+ * observer_state would hand a ghost the panel unconditionally, but it is not used
+ * because it also says nothing about anybody else, and the occupant still needs
+ * the shared interaction check so a body that cannot act does not get full
+ * control of the machine it is lying in.
+ */
+GLOBAL_DATUM_INIT(sleeper_guest_state, /datum/ui_state/sleeper_guest_state, new)
+
+/datum/ui_state/sleeper_guest_state/can_use_topic(src_object, mob/user)
+	if(!user)
+		return UI_CLOSE
+	// A guest has no hands to reach anything with, so nothing physical to test: the
+	// panel is theirs wherever they are on the map. Gating this on view distance
+	// only produced a window that opened and then went inert the moment the ghost
+	// drifted, which reads as a broken button rather than as a refused one.
+	if(isobserver(user))
+		return UI_INTERACTIVE
+	// In the sleeper, they own it. Delegated to the same shared check contained_state
+	// would use, so an occupant who cannot act does not get full control.
+	// Cast, because the base proc hands src_object over untyped.
+	var/atom/machine = src_object
+	if(!isnull(machine) && machine.contains(user))
+		return user.shared_ui_interaction(machine)
+	// Anybody else gets the ordinary range-based rules.
+	return GLOB.default_state.can_use_topic(src_object, user)
+
+/// Says the same thing to a player in chat and in the panel, so a refusal or a
+/// result cannot be missed by somebody looking straight at the button they pressed.
+/obj/machinery/vr_sleeper/proc/feedback(mob/user, message)
+	if(isnull(user))
+		return
+	to_chat(user, message)
+	sleeper_notices[user.ckey] = message
 
 /obj/machinery/vr_sleeper/Initialize(mapload)
 	. = ..()
@@ -83,19 +141,42 @@
 	ui_interact(user)
 
 /obj/machinery/vr_sleeper/ui_state(mob/user)
-	if(user == occupant)
-		return GLOB.contained_state
-	return GLOB.default_state
+	// One state for everybody, occupant and ghost alike. See sleeper_guest_state for
+	// why splitting this per user is what left guests pressing dead buttons.
+	return GLOB.sleeper_guest_state
+
+/obj/machinery/vr_sleeper/attack_hand(mob/user)
+	// A guest opens this panel from the floor next to the sleeper. The stock
+	// machinery path gates the click on canUseTopic, which a ghost sitting on the
+	// other side of the room never passes, and the panel is the only place a
+	// loadout can be picked - which is the only way into a game as a guest. Left
+	// alone, a guest reaches for the Join Deathmatch verb instead and gets
+	// dropped into whichever lobby happens to be first.
+	if(istype(user, /mob/dead))
+		ui_interact(user)
+		return TRUE
+	return ..()
 
 /obj/machinery/vr_sleeper/ui_interact(mob/user, datum/tgui/ui)
+	// One window for the whole machine now. It used to be "VrSleeper", which
+	// carried the machine's own VR controls *and* a half-written deathmatch browser
+	// in the same payload, and every button in it was fighting for the same space.
+	// DeathmatchPanel keeps the machine controls and replaces that browser with the
+	// real one: a list of open lobbies, and a Create button per mode.
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
-		ui = new(user, src, "VrSleeper", "VR Sleeper")
+		ui = new(user, src, "DeathmatchPanel", "VR Sleeper")
 		ui.open()
 
-/obj/machinery/vr_sleeper/ui_act(action, params)
+/obj/machinery/vr_sleeper/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	if(..())
 		return
+	// Join, Spectate and View are the same code the standalone browser runs, so a
+	// guest who opened this window from across the map gets the same answers as one
+	// standing on the machine. create_lobby stays below: it needs an occupant, and
+	// only this machine's occupant is one.
+	if(handle_deathmatch_browser_act(sleeper_notices, action, params, usr))
+		return TRUE
 	switch(action)
 		if("vr_connect")
 			var/mob/M = occupant
@@ -131,6 +212,97 @@
 			else if ((!occupant || usr == occupant) || !only_current_user_can_interact)
 				open_machine()
 			. = TRUE
+		if("create_lobby")
+			var/mode_name = params["mode"]
+			var/datum/map_template/deathmatch/mode = get_deathmatch_map(mode_name)
+			// Never swallow this. A button that returns without a word reads as a
+			// dead button, and this one used to fail exactly that way.
+			if(isnull(mode))
+				feedback(usr, span_warning("Unknown deathmatch mode \"[mode_name]\"."))
+				return TRUE
+			// Already on a roster. The Create buttons are how somebody opens a game,
+			// not how they leave the one they are in.
+			var/datum/deathmatch_lobby/mine = get_deathmatch_lobby_of(usr.ckey)
+			if(!isnull(mine))
+				if(mine.template?.name == mode_name)
+					feedback(usr, "<span class='notice'>You are already in the [mode.display_name] roster.</span>")
+				else
+					feedback(usr, "<span class='warning'>You are already in [mine.template.display_name].</span>")
+				return TRUE
+			// Somebody already recruiting for this mode? Walk in on them rather than
+			// opening a second lobby for the same map. A guest can only ever join one,
+			// never open one, so this is the only door they have.
+			var/datum/deathmatch_lobby/lobby = get_deathmatch_lobby_of_mode(mode_name)
+			if(!isnull(lobby))
+				if(lobby.join(usr))
+					feedback(usr, "<span class='notice'>Joined the [mode.display_name] lobby.</span>")
+				else
+					feedback(usr, "<span class='warning'>[mode.display_name] would not take you. The chat says why.</span>")
+				open_lobby_window(usr, lobby)
+				return TRUE
+			// No lobby for this mode. A guest can only ever join one, never open
+			// one, so saying "lie in the sleeper" to somebody standing next to a
+			// sleeper they cannot lie in is just a dead end.
+			// occupant is a plain /obj machine var, not a typed mob, so both the mind
+			// check and the hand-off to start_deathmatch_lobby() need a cast.
+			var/mob/host = occupant
+			if(usr != host || isnull(host?.mind))
+				if(!isnull(host))
+					feedback(usr, "<span class='warning'>[host.name] is in the sleeper. Ask them to open a [mode.display_name] lobby.</span>")
+				else
+					feedback(usr, "<span class='warning'>No [mode.display_name] lobby is open. Lie in a VR sleeper and open one, or wait for a host.</span>")
+				return TRUE
+			if(!allow_creating_vr_mobs)
+				feedback(usr, "<span class='warning'>This sleeper does not open new virtual worlds.</span>")
+				return TRUE
+			feedback(usr, "<span class='notice'>Opening a [mode.display_name] lobby...</span>")
+			var/datum/deathmatch_lobby/started = start_deathmatch_lobby(host, mode_name)
+			if(!isnull(started))
+				open_lobby_window(usr, started)
+			return TRUE
+		if("view_lobby")
+			// Looking does not join. The lobby window opens on the roster, and its
+			// state proc closes it again for anybody not at the table, so "View" on
+			// somebody else's game shows a roster for as long as the window is open and
+			// no longer.
+			var/datum/deathmatch_lobby/lobby = get_open_deathmatch_lobby(params["map"])
+			if(isnull(lobby))
+				feedback(usr, span_warning("That lobby is gone."))
+				return TRUE
+			lobby.show_roster(usr)
+			return TRUE
+
+/**
+ * Puts a player's own lobby window in front of them.
+ *
+ * ui_interact() rather than an explicit UI object, because the lobby is a datum the
+ * player does not necessarily own: hand-building a UI here would leave a window that
+ * outlives the lobby and one that the state proc then refuses to talk to.
+ */
+proc/open_lobby_window(mob/user, datum/deathmatch_lobby/lobby)
+	if(isnull(user) || isnull(lobby) || lobby.is_finished())
+		return
+	lobby.ui_interact(user)
+
+/**
+ * Puts the browser back in front of somebody who has just left a lobby.
+ *
+ * Kept as a name callers already use, but it no longer goes looking for a machine:
+ * the window it opens is /datum/deathmatch_browser, which is not tied to a tile.
+ */
+proc/open_sleeper_browser(mob/user)
+	return open_deathmatch_browser(user)
+
+/**
+ * The mode catalogue, sent once.
+ *
+ * The list of arenas cannot change while the server is up - it is compiled into the
+ * dmb - so it belongs in static data rather than riding along on every status
+ * update, where it would be re-sent roughly once a second per client.
+ */
+/obj/machinery/vr_sleeper/ui_static_data(mob/user)
+	. = list()
+	.["modes"] = get_deathmatch_mode_rows()
 
 /obj/machinery/vr_sleeper/ui_data(mob/user)
 	var/list/data = list()
@@ -160,6 +332,23 @@
 	data["toggle_open"] = state_open
 	data["emagged"] = you_die_in_the_game_you_die_for_real
 	data["isoccupant"] = (user == occupant)
+	// Whatever the last button press had to say, read once and cleared. A guest who
+	// presses Join is looking at the panel, not at the chat log.
+	data["sleeper_notice"] = sleeper_notices[user.ckey]
+	sleeper_notices[user.ckey] = null
+
+	// The Deathmatch half of the payload is the same list the standalone browser
+	// sends, built in deathmatch_browser.dm. Two copies of these rows is how the
+	// index constants in DeathmatchPanel.tsx and the DM side drifted apart before.
+	data += get_deathmatch_browser_data(user)
+	data["has_machine"] = TRUE
+
+	// Only the occupant may open a lobby, because the machine is where their real
+	// body ends up when the game is over. occupant is untyped on /obj/machinery and
+	// this codebase is in strict mode.
+	var/mob/deathmatch_host = occupant
+	data["can_create_lobby"] = (user == deathmatch_host) && !isnull(deathmatch_host?.mind) \
+		&& allow_creating_vr_mobs && isnull(get_deathmatch_lobby_of(user.ckey))
 	return data
 
 /obj/machinery/vr_sleeper/proc/get_vr_spawnpoint() //proc so it can be overridden for team games or something

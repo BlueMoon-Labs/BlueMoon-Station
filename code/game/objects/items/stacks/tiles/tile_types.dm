@@ -567,8 +567,8 @@
 /turf/open/floor/fakeice
 	desc = "Is it marble, polished to a mirror finish? Or just really, really grippy ice?"
 	icon = 'icons/turf/floors/ice_turf.dmi'
-	icon_state = "ice_turf-0"
-	base_icon_state = "ice_turf-0"
+	icon_state = "unsmooth"
+	base_icon_state = "unsmooth"
 
 /turf/open/floor/fakeice/slippery
 	desc = "Somehow, it is not melting under these conditions. Must be some very thick ice. Just as slippery too."
