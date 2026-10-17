@@ -113,4 +113,7 @@ GLOBAL_LIST_INIT(blood_bond_tier_passives, list(
 		for(var/action_type in oath.extra_actions)
 			oath_abilities += list(blood_bond_ability_data(action_type))
 		ladder += list(list("tier" = 0, "abilities" = oath_abilities, "label" = "Клятва «[oath.name]» даёт"))
+	for(var/datum/blood_oath/fulfilled as anything in team?.all_fulfilled_oaths())
+		if(fulfilled.capstone_type)
+			ladder += list(list("tier" = BLOOD_BOND_TIER_MAX, "abilities" = list(blood_bond_ability_data(fulfilled.capstone_type)), "label" = "Венец исполненной клятвы «[fulfilled.name]»"))
 	return ladder

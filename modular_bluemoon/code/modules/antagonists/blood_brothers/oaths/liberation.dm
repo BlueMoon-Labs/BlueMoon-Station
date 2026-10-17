@@ -1,6 +1,7 @@
 /datum/blood_oath/liberation
 	name = "Вызволение"
 	key = "liberation"
+	summary = "добыть ключ от брига, вывести узника и укрыть его"
 	weight = 6
 	capstone_type = /datum/action/cooldown/blood_bond/capstone/unshackle
 	target_opt_in_level = ANTAG_OPT_IN_TEMPORARY

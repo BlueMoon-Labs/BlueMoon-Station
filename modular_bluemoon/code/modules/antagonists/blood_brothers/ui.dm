@@ -27,6 +27,7 @@
 		"Кровь клятвы оставила шрам на ладони: его видно при осмотре, если руки без перчаток, а медицинский анализатор находит его и под перчатками. На протезе и на руке КПБ шрама нет.",
 		"Майндшилд или тело без крови, вроде борга, глушат связь: способности, Чутьё и печати не работают, а голосовать за клятву нельзя.",
 		"Обряд священника или операция по иссечению шрама рвут клятву навсегда.",
+		"Исполнив клятву, можно дать следующую: венцы исполненных клятв остаются за вами.",
 		"Если обет цел к третьей печати, перезарядки связи до конца смены на [round((1 - BROTHER_FLAWLESS_COOLDOWN_MULT) * 100)]% короче.",
 		"Вы - малые антагонисты: действуйте по клятве, без лишнего вреда экипажу. Убийство - только если его требует клятва, и только разовое: тело не уничтожать, из раунда не выводить.",
 	)
@@ -35,6 +36,10 @@
 		offer_texts += list(candidate.ui_texts())
 	data["offer_texts"] = offer_texts
 	data["oath_texts"] = team?.oath?.ui_texts()
+	var/list/fulfilled_names = list()
+	for(var/datum/blood_oath/fulfilled as anything in team?.all_fulfilled_oaths())
+		fulfilled_names += fulfilled.name
+	data["fulfilled"] = fulfilled_names
 	return data
 
 /datum/antagonist/brother/ui_data(mob/user)
@@ -43,7 +48,10 @@
 		return data
 	var/datum/blood_oath/oath = team.oath
 	var/muted = is_muted()
-	data["state"] = oath ? "sworn" : "choosing"
+	if(!oath)
+		data["state"] = "choosing"
+	else
+		data["state"] = team.choosing_oath() ? "next" : "sworn"
 	var/list/offered_keys = list()
 	for(var/datum/blood_oath/candidate as anything in team.offered)
 		offered_keys += candidate.key
@@ -62,6 +70,11 @@
 	data["finale_check"] = (oath && !current) ? finale_check_data(muted) : null
 	data["tier"] = team.bond_tier
 	data["tier_max"] = BLOOD_BOND_TIER_MAX
+	var/list/earned_names = list()
+	for(var/capstone_type in team.earned_capstones())
+		var/list/capstone_data = blood_bond_ability_data(capstone_type)
+		earned_names += capstone_data["name"]
+	data["earned_capstones"] = earned_names
 	data["cooldown_mult"] = team.cooldown_multiplier
 	var/datum/blood_vow/vow = team.vow
 	data["vow"] = vow ? list(
@@ -145,6 +158,7 @@
 	return list(
 		"key" = key,
 		"name" = name,
+		"summary" = summary,
 		"story" = story,
 		"vow_name" = shown_vow?.name,
 		"vow_desc" = shown_vow?.desc,

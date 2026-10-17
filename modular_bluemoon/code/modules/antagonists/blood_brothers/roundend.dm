@@ -8,8 +8,14 @@ GLOBAL_LIST_INIT(brother_seal_ordinals, list("Первая", "Вторая", "Т
 	for(var/datum/mind/severed as anything in severed_minds)
 		var/kind = severed_kinds[severed]
 		parts += "<span class='redtext'>Клятва [severed.name] разорвана[kind == BROTHER_SEVER_RITE ? " обрядом" : ""][kind == BROTHER_SEVER_SURGERY ? " операцией" : ""].</span>"
+	for(var/datum/blood_oath/fulfilled as anything in fulfilled_oaths)
+		var/fulfilled_extra = fulfilled.finale_extra_text()
+		var/extra_verdict = ""
+		if(fulfilled_extra)
+			extra_verdict = ", к концу смены [fulfilled_extra]: [fulfilled.finale_extra_complete() ? "<span class='greentext'>да</span>" : "<span class='redtext'>нет</span>"]"
+		parts += "<b>Клятва «[fulfilled.name]»</b>: <span class='greentext'>все печати скреплены</span>[extra_verdict]"
 	if(oath)
-		parts += "<b>Клятва «[oath.name]»</b>"
+		parts += "<b>[length(fulfilled_oaths) ? "Следующая клятва" : "Клятва"] «[oath.name]»</b>"
 		for(var/step_index in 1 to length(oath.steps))
 			var/datum/blood_oath_step/oath_step = oath.steps[step_index]
 			var/ordinal = step_index <= length(GLOB.brother_seal_ordinals) ? GLOB.brother_seal_ordinals[step_index] : "[step_index]-я"

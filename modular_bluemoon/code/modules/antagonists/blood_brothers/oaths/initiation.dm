@@ -1,6 +1,7 @@
 /datum/blood_oath/initiation
 	name = "Посвящение"
 	key = "initiation"
+	summary = "принять третьего, испытать его делом и уйти втроём"
 	weight = 5
 	capstone_type = /datum/blood_bond_passive/circle
 	var/gift_type

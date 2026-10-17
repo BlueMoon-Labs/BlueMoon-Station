@@ -1,6 +1,7 @@
 /datum/blood_oath/vendetta
 	name = "Месть"
 	key = "vendetta"
+	summary = "забрать ID-карту предателя, упечь его за решётку и расквитаться"
 	weight = 10
 	capstone_type = /datum/action/cooldown/blood_bond/capstone/mark
 

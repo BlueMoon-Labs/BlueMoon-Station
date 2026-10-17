@@ -107,31 +107,40 @@
 	TEST_ASSERT_NULL(locate(/obj/effect/decal/cleanable/blood/brother_sign) in pale_spot, "Знака нет")
 	TEST_ASSERT_EQUAL(second_body.blood_volume, BLOOD_VOLUME_SAFE, "Кровь не потрачена")
 
-/// Знак братства: знак в отделе, знаки в трёх отделах сразу, знак в перме; лобби не в счёт
+/// Знак братства: знак в отделе, знаки в трёх чужих отделах сразу, знак в перме; лобби и свой отдел для второго шага не в счёт
 /datum/unit_test/blood_brothers_oath_brother_sign/Run()
 	blood_brothers_oath_world()
 	var/datum/team/brother_team/team = allocate_brother_team(src)
+	var/datum/mind/first = team.members[1]
+	first.assigned_role = "Medical Doctor"
 	var/datum/blood_oath/brother_sign/oath = new
 	TEST_ASSERT(oath.prepare(team), "Знак братства готов")
 	team.swear_oath(oath)
-	var/datum/mind/first = team.members[1]
 	TEST_ASSERT(istext(team.try_seal(first)), "Без знаков печати нет")
-	blood_brothers_sign_at(blood_brothers_floor(1, 0), team, /area/medical/medbay/lobby)
+	var/obj/effect/decal/cleanable/blood/brother_sign/lobby_sign = blood_brothers_sign_at(blood_brothers_floor(1, 0), team, /area/medical/medbay/lobby)
 	TEST_ASSERT(istext(team.try_seal(first)), "Лобби медотсека - не отдел")
-	blood_brothers_sign_at(blood_brothers_floor(2, 0), team, /area/medical)
-	TEST_ASSERT(team.try_seal(first) == TRUE, "Знак в медотсеке скрепляет первый шаг")
+	TEST_ASSERT(findtext(oath.sign_note(lobby_sign), "не отдел"), "Рисующему сказано, что лобби не в счёт: [oath.sign_note(lobby_sign)]")
+	var/obj/effect/decal/cleanable/blood/brother_sign/ward_sign = blood_brothers_sign_at(blood_brothers_floor(2, 0), team, /area/medical)
+	TEST_ASSERT(team.try_seal(first) == TRUE, "Знак в своём медотсеке скрепляет первый шаг")
+	TEST_ASSERT(findtext(oath.sign_note(ward_sign), "ваш"), "Рисующему сказано, что отдел свой: [oath.sign_note(ward_sign)]")
 	var/obj/effect/decal/cleanable/blood/brother_sign/lab_sign = blood_brothers_sign_at(blood_brothers_floor(3, 0), team, /area/science)
-	TEST_ASSERT(istext(team.try_seal(first)), "Двух отделов мало")
+	TEST_ASSERT(findtext(oath.sign_note(lab_sign), "«наука»"), "Знак в чужом отделе назван: [oath.sign_note(lab_sign)]")
 	blood_brothers_sign_at(blood_brothers_floor(4, 0), team, /area/engineering)
 	var/datum/blood_oath_step/spread_step = oath.steps[2]
+	var/spread_condition = spread_step.condition_text(first.current)
+	TEST_ASSERT(findtext(spread_condition, "2 из 3"), "Свой медотсек не в счёт: [spread_condition]")
+	TEST_ASSERT(findtext(spread_condition, "свои не в счёт: медицина"), "Условие называет свой отдел: [spread_condition]")
+	TEST_ASSERT(istext(team.try_seal(first)), "Двух чужих отделов мало")
+	blood_brothers_sign_at(blood_brothers_floor(0, 1), team, /area/cargo/storage)
 	TEST_ASSERT(findtext(spread_step.condition_text(first.current), "3 из 3"), "Условие считает отделы: [spread_step.condition_text(first.current)]")
 	qdel(lab_sign)
 	TEST_ASSERT(istext(team.try_seal(first)), "Смытый знак не считается")
-	blood_brothers_sign_at(blood_brothers_floor(0, 1), team, /area/cargo/storage)
-	TEST_ASSERT(team.try_seal(first) == TRUE, "Знаки в трёх отделах скрепляют второй шаг")
+	blood_brothers_sign_at(blood_brothers_floor(3, 1), team, /area/service/kitchen)
+	TEST_ASSERT(team.try_seal(first) == TRUE, "Знаки в трёх чужих отделах скрепляют второй шаг")
 	blood_brothers_sign_at(blood_brothers_floor(1, 1), team, /area/command/meeting_room)
 	TEST_ASSERT(istext(team.try_seal(first)), "Зал совещаний не охраняется")
-	blood_brothers_sign_at(blood_brothers_floor(2, 1), team, /area/security/prison)
+	var/obj/effect/decal/cleanable/blood/brother_sign/prison_sign = blood_brothers_sign_at(blood_brothers_floor(2, 1), team, /area/security/prison)
+	TEST_ASSERT(findtext(oath.sign_note(prison_sign), "под носом у охраны"), "Знак в перме помечен охраняемым: [oath.sign_note(prison_sign)]")
 	TEST_ASSERT(team.try_seal(first) == TRUE, "Знак в перме скрепляет третий шаг")
 	TEST_ASSERT_EQUAL(team.bond_tier, BLOOD_BOND_TIER_MAX, "Три печати")
 

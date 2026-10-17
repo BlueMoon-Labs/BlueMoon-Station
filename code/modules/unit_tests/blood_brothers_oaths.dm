@@ -419,3 +419,69 @@
 	qdel(doomed)
 	TEST_ASSERT(!(doomed in vow.watched_minds), "Удалённый разум снят со слежки")
 	TEST_ASSERT_NULL(vow.recent_hits[WEAKREF(victim)], "Удары удалённого разума забыты")
+
+/datum/blood_oath_step/blood_brothers_open
+	name = "Открытый шаг"
+
+/datum/blood_oath_step/blood_brothers_open/can_seal(mob/living/sealer)
+	return TRUE
+
+/// Исполненная клятва открывает следующие без срока и с прежним обетом; её венец остаётся, венец следующей - с последней печатью
+/datum/unit_test/blood_brothers_next_oath/Run()
+	var/datum/antag_opt_in_test_world/world_state = blood_brothers_oath_world()
+	var/datum/team/brother_team/team = allocate_brother_team(src)
+	var/list/crew = list()
+	for(var/crew_number in 1 to 4)
+		crew += blood_brothers_target(ANTAG_OPT_IN_ROUND_REMOVE)
+	world_state.set_crew(crew + team.members)
+	var/mob/living/carbon/human/admin = allocate(/mob/living/carbon/human)
+	var/datum/mind/first = team.members[1]
+	var/datum/mind/second = team.members[2]
+	var/datum/antagonist/brother/brother = first.has_antag_datum(/datum/antagonist/brother)
+	var/datum/blood_oath/blood_brothers_capstone_test/first_oath = new
+	first_oath.capstone_type = /datum/action/cooldown/blood_bond/capstone/stash
+	first_oath.vow_type = /datum/blood_vow/shadow
+	for(var/step_number in 1 to BLOOD_BOND_TIER_MAX)
+		first_oath.add_step(new /datum/blood_oath_step/blood_brothers_open)
+	team.swear_oath(first_oath)
+	var/datum/blood_vow/kept_vow = team.vow
+	for(var/step_number in 1 to BLOOD_BOND_TIER_MAX - 1)
+		TEST_ASSERT(team.try_seal(first) == TRUE, "Печать [step_number]")
+	TEST_ASSERT(!length(team.offered), "До последней печати новых клятв нет")
+	TEST_ASSERT(team.try_seal(first) == TRUE, "Последняя печать")
+	TEST_ASSERT(length(team.offered), "Исполненная клятва открыла выбор следующей")
+	TEST_ASSERT_NULL(team.oath_timer, "Следующую клятву не навязывают по таймеру")
+	for(var/datum/blood_oath/offer as anything in team.offered)
+		TEST_ASSERT_EQUAL(offer.vow_type, kept_vow.type, "Следующая клятва [offer.key] - с прежним обетом")
+	TEST_ASSERT_EQUAL(brother.ui_data(first.current)["state"], "next", "Окно предлагает следующую")
+	TEST_ASSERT(first_oath.name in brother.ui_static_data(first.current)["fulfilled"], "Окно числит клятву исполненной")
+	var/datum/blood_oath/next_oath
+	for(var/datum/blood_oath/offer as anything in team.offered)
+		if(offer.capstone_type && offer.capstone_type != first_oath.capstone_type)
+			next_oath = offer
+			break
+	TEST_ASSERT_NOTNULL(next_oath, "Среди следующих есть клятва с другим венцом")
+	TEST_ASSERT(team.propose_oath(first, next_oath.key), "Следующую можно предложить")
+	TEST_ASSERT(team.sign_oath(second), "И подписать")
+	TEST_ASSERT_EQUAL(team.oath, next_oath, "Следующая клятва дана")
+	TEST_ASSERT(first_oath in team.fulfilled_oaths, "Исполненная клятва в зачёте")
+	TEST_ASSERT(!QDELETED(first_oath), "Исполненная клятва цела")
+	TEST_ASSERT_EQUAL(team.vow, kept_vow, "Обет прежний")
+	TEST_ASSERT_EQUAL(team.bond_tier, BLOOD_BOND_TIER_MAX, "Ступень высшая")
+	TEST_ASSERT(team.has_stash_capstone(), "Венец исполненной клятвы остался")
+	TEST_ASSERT_NOTNULL(brother.bond_actions[/datum/action/cooldown/blood_bond/capstone/stash], "Кнопка венца на месте")
+	TEST_ASSERT(!team.holds_capstone(next_oath.capstone_type), "Венец следующей клятвы до её печатей закрыт")
+	var/datum/objective/blood_oath/oath_objective = locate() in team.objectives
+	TEST_ASSERT(oath_objective.check_completion(), "Цель клятвы выполнена исполненной")
+	TEST_ASSERT(findtext(oath_objective.explanation_text, "Исполнено: «[first_oath.name]»"), "Цель называет исполненную: [oath_objective.explanation_text]")
+	TEST_ASSERT(findtext(team.roundend_report(), "Клятва «[first_oath.name]»"), "Итоги называют исполненную")
+	TEST_ASSERT(brother.admin_flip_step(admin, 1), "Админ скрепил шаг следующей клятвы")
+	TEST_ASSERT_EQUAL(team.bond_tier, BLOOD_BOND_TIER_MAX, "Печать следующей клятвы не сбрасывает ступень")
+	for(var/step_index in 2 to length(next_oath.steps))
+		brother.admin_flip_step(admin, step_index)
+	TEST_ASSERT(team.holds_capstone(next_oath.capstone_type), "Последняя печать открыла венец следующей клятвы")
+	for(var/datum/blood_oath/offer as anything in team.offered)
+		TEST_ASSERT(offer.key != next_oath.key, "Исполненную клятву [offer.key] снова не предлагают")
+	TEST_ASSERT(brother.admin_apply_oath(admin, /datum/blood_oath/blood_brothers_capstone_test), "Админ дал новую клятву после исполненной")
+	TEST_ASSERT(next_oath in team.fulfilled_oaths, "Смена клятвы оставила исполненную в зачёте")
+	TEST_ASSERT(!length(team.offered), "Предложения сняты")

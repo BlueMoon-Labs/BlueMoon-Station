@@ -144,15 +144,15 @@
 	var/list/choices = list()
 	for(var/oath_type in GLOB.blood_oath_types)
 		var/datum/blood_oath/probe = new oath_type
-		choices["[probe.name][probe.available(team) ? "" : " (недоступна в этом раунде)"]"] = oath_type
+		choices["[probe.name]: [probe.summary][probe.available(team) ? "" : " (недоступна в этом раунде)"]"] = oath_type
 		qdel(probe)
-	var/choice = tgui_input_list(admin, "Новая клятва команды [team.name]. Ступень и обет сохранятся, печати начнутся заново.", "Кровные братья", choices)
+	var/choice = tgui_input_list(admin, "Новая клятва команды [team.name]. Ступень и обет сохранятся, печати начнутся заново. Исполненная клятва останется в зачёте вместе с венцом.", "Кровные братья", choices)
 	var/oath_type = choices[choice]
 	if(!oath_type || QDELETED(src) || QDELETED(team))
 		return
 	admin_apply_oath(admin, oath_type)
 
-/// Клятва oath_type вместо нынешней; нынешняя остаётся, если новую не принять
+/// Клятва oath_type вместо нынешней; нынешняя остаётся, если новую не принять, а исполненная уходит в зачёт
 /datum/antagonist/brother/proc/admin_apply_oath(mob/admin, oath_type)
 	var/datum/blood_oath/new_oath = new oath_type
 	if(!new_oath.prepare(team))
@@ -160,18 +160,22 @@
 		qdel(new_oath)
 		return FALSE
 	var/datum/blood_oath/old_oath = team.oath
-	team.oath = null
+	var/discard_old = old_oath?.current_step()
+	if(discard_old)
+		team.oath = null
 	team.swear_oath(new_oath, keep_vow = TRUE)
 	if(team.oath != new_oath)
 		if(!QDELETED(new_oath))
 			qdel(new_oath)
-		if(team.oath)
-			qdel(old_oath)
-		else
-			team.oath = old_oath
+		if(discard_old)
+			if(team.oath)
+				qdel(old_oath)
+			else
+				team.oath = old_oath
 		to_chat(admin, span_warning("Клятва не принята."))
 		return FALSE
-	qdel(old_oath)
+	if(discard_old)
+		qdel(old_oath)
 	admin_bond_changed()
 	message_admins("[key_name_admin(admin)] сменил клятву команды братьев [team.name] на «[new_oath.name]».")
 	log_admin("[key_name(admin)] changed the oath of blood brothers [team.name] to [new_oath.key].")
@@ -200,7 +204,7 @@
 		return
 	admin_flip_step(admin, step_index)
 
-/// Ступень связи после переключения - по числу печатей
+/// Ступень связи после переключения - по числу печатей; после исполненной клятвы она уже высшая
 /datum/antagonist/brother/proc/admin_flip_step(mob/admin, step_index)
 	var/datum/blood_oath/oath = team.oath
 	if(!oath || step_index < 1 || step_index > length(oath.steps))
@@ -208,13 +212,15 @@
 	var/datum/blood_oath_step/flipped = oath.steps[step_index]
 	flipped.sealed = !flipped.sealed
 	flipped.sealed_by = flipped.sealed ? "администратор" : null
-	var/sealed_count = 0
-	for(var/datum/blood_oath_step/oath_step as anything in oath.steps)
-		if(oath_step.sealed)
-			sealed_count++
-	team.set_bond_tier(sealed_count)
+	team.set_bond_tier(length(team.fulfilled_oaths) ? BLOOD_BOND_TIER_MAX : oath.sealed_count())
+	if(oath.current_step())
+		team.clear_offers()
+		for(var/datum/antagonist/brother/brother as anything in team.brother_antags())
+			brother.refresh_bond_actions()
+	else
+		team.oath_fulfilled()
 	admin_bond_changed()
-	team.refresh_brother_uis()
+	team.refresh_brother_uis(static_data = TRUE)
 	message_admins("[key_name_admin(admin)] [flipped.sealed ? "скрепил" : "снял"] шаг [step_index] клятвы команды братьев [team.name].")
 	log_admin("[key_name(admin)] [flipped.sealed ? "sealed" : "unsealed"] step [step_index] of the oath of blood brothers [team.name].")
 	return TRUE
@@ -298,8 +304,9 @@
 		var/list/tier_actions = GLOB.blood_bond_tier_actions["[tier]"]
 		if(tier_actions)
 			needed |= tier_actions
-	if(team.bond_tier >= BLOOD_BOND_TIER_MAX && ispath(team.oath?.capstone_type, /datum/action/cooldown/blood_bond))
-		needed |= team.oath.capstone_type
+	for(var/capstone_type in team.earned_capstones())
+		if(ispath(capstone_type, /datum/action/cooldown/blood_bond))
+			needed |= capstone_type
 	if(length(team.oath?.extra_actions))
 		needed |= team.oath.extra_actions
 	for(var/action_type in bond_actions)

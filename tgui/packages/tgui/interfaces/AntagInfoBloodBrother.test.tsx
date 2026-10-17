@@ -501,3 +501,32 @@ test('данная клятва проступает строками, откр�
   const opened = setup(sworn());
   expect(opened.container.querySelector('.AntagInfoBloodBrother__sworn--written')).toBeNull();
 });
+
+test('после исполненной клятвы следующие предлагаются без срока, рядом финал, венец прежней открыт', () => {
+  const done = sworn();
+  done.oath.steps = done.oath.steps.map((step) => ({ ...step, sealed: 1, sealed_by: 'Иван Рудный', condition: null }));
+  const heistCapstone = { ...capstones.heist, how: 'Кнопка слева сверху.', cooldown: 300, passive: 0 };
+  const ui = setup({
+    ...done,
+    state: 'next',
+    offered: ['vendetta', 'debt'],
+    offer_texts: [{ ...oath('vendetta', 'Месть', 'Тень'), summary: 'забрать ID-карту предателя' }, oath('debt', 'Долг крови', 'Тень')],
+    current_step: 0,
+    tier: 3,
+    deadline_left: 0,
+    finale_check: { brothers: [{ name: 'Иван Рудный', status: 'ещё на станции', done: 0 }], extra: null, extra_done: 1 },
+    fulfilled: ['Добыча'],
+    earned_capstones: ['Схрон крови'],
+    bond_ladder: [...fixture.bond_ladder, { tier: 3, abilities: [heistCapstone], label: 'Венец исполненной клятвы «Добыча»' }],
+  });
+  expect(screen.getByText('Клятва «Добыча» исполнена · следующая - по желанию')).toBeTruthy();
+  expect(screen.queryByText(/осталось/)).toBeNull();
+  expect(screen.getByText('забрать ID-карту предателя')).toBeTruthy();
+  expect(screen.getAllByText(/венец добавится к прежним/).length).toBeGreaterThan(0);
+  expect(within(screen.getByLabelText('Финал')).getByText('Иван Рудный - ещё на станции')).toBeTruthy();
+  fireEvent.click(command(/Предложить/));
+  expect(sent(ui.topic, 'propose')).toEqual([{ key: 'vendetta' }]);
+  fireEvent.click(screen.getByRole('tab', { name: 'Связь' }));
+  expect(within(abilityRow('Схрон крови')).getByText('открыто')).toBeTruthy();
+  expect(within(abilityRow('Метка крови')).getByText('откроет последняя печать клятвы')).toBeTruthy();
+});

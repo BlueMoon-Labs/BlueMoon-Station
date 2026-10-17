@@ -1,6 +1,7 @@
 /datum/blood_oath/heist
 	name = "Добыча"
 	key = "heist"
+	summary = "украсть две ценности и спрятать их"
 	weight = 10
 	capstone_type = /datum/action/cooldown/blood_bond/capstone/stash
 	var/list/datum/objective_item/loot = list()

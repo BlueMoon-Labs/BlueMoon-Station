@@ -116,6 +116,7 @@ GLOBAL_LIST_INIT(brother_head_offices, list(
 /datum/blood_oath/compromat
 	name = "Компромат"
 	key = "compromat"
+	summary = "собрать компромат на человека и подбросить его начальству"
 	weight = 6
 	capstone_type = /datum/action/cooldown/blood_bond/capstone/mark
 	var/office_type

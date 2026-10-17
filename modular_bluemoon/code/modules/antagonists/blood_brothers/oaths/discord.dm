@@ -88,6 +88,7 @@ GLOBAL_LIST_INIT(brother_discord_targets, list(
 /datum/blood_oath/discord
 	name = "Разлад"
 	key = "discord"
+	summary = "обесточить отдел, сломать его машину и унести плату"
 	weight = 5
 	round_types = list(ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED)
 	capstone_type = /datum/action/cooldown/blood_bond/capstone/blackout

@@ -13,12 +13,48 @@
 /datum/team/brother_team/proc/offer_oaths()
 	if(oath || abandoned)
 		return FALSE
+	if(!fill_offers())
+		ensure_oath_objectives()
+		log_game("Blood brothers [name] got no oath to offer, only the escape remains.")
+		notify("Клятвы для вас не нашлось. Держитесь вместе и уходите со станции свободными.")
+		refresh_brother_uis(static_data = TRUE)
+		return FALSE
+	oath_deadline = world.time + BROTHER_OATH_CHOICE_TIME
+	deltimer(oath_timer)
+	oath_timer = addtimer(CALLBACK(src, PROC_REF(oath_timeout)), BROTHER_OATH_CHOICE_TIME, TIMER_STOPPABLE)
+	log_game("Blood brothers [name] offered oaths: [offered_keys_text()].")
+	notify("Пора дать клятву: откройте окно «Кровная клятва». На выбор [BROTHER_OATH_CHOICE_TIME / (1 MINUTES)] минут, потом клятвой станет первая из предложенных.")
+	refresh_brother_uis(static_data = TRUE)
+	return TRUE
+
+/// После исполненной клятвы - новые на выбор, без срока и со старым обетом
+/datum/team/brother_team/proc/offer_next_oaths()
+	if(!oath || oath.current_step() || abandoned || training)
+		return FALSE
+	var/list/sworn_keys = list(oath.key)
+	for(var/datum/blood_oath/fulfilled as anything in fulfilled_oaths)
+		sworn_keys |= fulfilled.key
+	if(!fill_offers(sworn_keys, vow?.type))
+		return FALSE
+	oath_deadline = 0
+	log_game("Blood brothers [name] offered next oaths: [offered_keys_text()].")
+	notify("Можно дать ещё одну клятву в окне «Кровная клятва»: её венец добавится к прежним, обет останется тот же. Можно и не давать - тогда осталось уйти вместе.")
+	refresh_brother_uis(static_data = TRUE)
+	return TRUE
+
+/datum/team/brother_team/proc/clear_offers()
 	QDEL_LIST(offered)
 	proposed = null
 	proposed_by = null
 	signed.Cut()
+
+/// До BROTHER_OATH_OFFER_COUNT клятв, кроме excluded_keys; vow_type - один обет на все, иначе случайный каждой
+/datum/team/brother_team/proc/fill_offers(list/excluded_keys, vow_type)
+	clear_offers()
 	var/list/weighted = list()
-	for(var/oath_type in GLOB.blood_oath_types)
+	for(var/datum/blood_oath/oath_type as anything in GLOB.blood_oath_types)
+		if(initial(oath_type.key) in excluded_keys)
+			continue
 		var/datum/blood_oath/candidate = new oath_type
 		if(!candidate.available(src) || !candidate.prepare(src))
 			qdel(candidate)
@@ -29,27 +65,28 @@
 		if(!picked)
 			break
 		weighted -= picked
-		picked.vow_type = pick(GLOB.blood_vow_types)
+		picked.vow_type = vow_type || pick(GLOB.blood_vow_types)
 		picked.vow = new picked.vow_type
 		offered += picked
 	for(var/datum/blood_oath/leftover as anything in weighted)
 		qdel(leftover)
-	if(!length(offered))
-		ensure_oath_objectives()
-		log_game("Blood brothers [name] got no oath to offer, only the escape remains.")
-		notify("Клятвы для вас не нашлось. Держитесь вместе и уходите со станции свободными.")
-		refresh_brother_uis(static_data = TRUE)
-		return FALSE
-	oath_deadline = world.time + BROTHER_OATH_CHOICE_TIME
-	deltimer(oath_timer)
-	oath_timer = addtimer(CALLBACK(src, PROC_REF(oath_timeout)), BROTHER_OATH_CHOICE_TIME, TIMER_STOPPABLE)
+	return length(offered)
+
+/datum/team/brother_team/proc/offered_keys_text()
 	var/list/offered_keys = list()
 	for(var/datum/blood_oath/candidate as anything in offered)
 		offered_keys += candidate.key
-	log_game("Blood brothers [name] offered oaths: [offered_keys.Join(", ")].")
-	notify("Пора дать клятву: откройте окно «Кровная клятва».")
-	refresh_brother_uis(static_data = TRUE)
-	return TRUE
+	return offered_keys.Join(", ")
+
+/// Исполненные клятвы вместе с данной, если все её печати стоят
+/datum/team/brother_team/proc/all_fulfilled_oaths()
+	. = fulfilled_oaths.Copy()
+	if(oath && length(oath.steps) && !oath.current_step())
+		. += oath
+
+/// Клятву выбирают, пока данной нет или данная исполнена
+/datum/team/brother_team/proc/choosing_oath()
+	return length(offered) && (!oath || !oath.current_step())
 
 /// TRUE или причина, почему брат сейчас не голосует за клятву; наручники голосу не мешают
 /datum/team/brother_team/proc/vote_refusal(datum/mind/voter)
@@ -71,7 +108,7 @@
 	return TRUE
 
 /datum/team/brother_team/proc/propose_oath(datum/mind/proposer, oath_key)
-	if(oath || vote_refusal(proposer) != TRUE)
+	if(!choosing_oath() || vote_refusal(proposer) != TRUE)
 		return FALSE
 	var/datum/blood_oath/choice
 	for(var/datum/blood_oath/candidate as anything in offered)
@@ -93,7 +130,7 @@
 	return TRUE
 
 /datum/team/brother_team/proc/sign_oath(datum/mind/signer)
-	if(oath || !proposed || signer == proposed_by || (signer in signed) || vote_refusal(signer) != TRUE)
+	if(!choosing_oath() || !proposed || signer == proposed_by || (signer in signed) || vote_refusal(signer) != TRUE)
 		return FALSE
 	signed += signer
 	log_game("Blood brothers [name]: [key_name(signer)] signed oath [proposed.key].")
@@ -112,9 +149,9 @@
 		offer_oaths()
 
 /// allow_fallback - только по таймеру: отпавшая клятва подбирается заново или уступает следующей.
-/// keep_vow - нынешний обет команды остаётся со своей историей
+/// keep_vow - нынешний обет команды остаётся со своей историей. Исполненная клятва уходит в fulfilled_oaths
 /datum/team/brother_team/proc/swear_oath(datum/blood_oath/chosen, allow_fallback = FALSE, keep_vow = FALSE)
-	if(!chosen || oath || QDELETED(src))
+	if(!chosen || oath?.current_step() || QDELETED(src))
 		return FALSE
 	if(!allow_fallback)
 		chosen.team = src
@@ -131,6 +168,8 @@
 			qdel(chosen)
 			if(length(offered))
 				refresh_brother_uis()
+			else if(oath)
+				offer_next_oaths()
 			else
 				offer_oaths()
 			return FALSE
@@ -153,12 +192,12 @@
 		refresh_brother_uis()
 		return FALSE
 	offered -= sworn
-	QDEL_LIST(offered)
-	proposed = null
-	proposed_by = null
-	signed.Cut()
+	clear_offers()
 	deltimer(oath_timer)
 	oath_timer = null
+	if(oath)
+		fulfilled_oaths += oath
+		keep_vow = TRUE
 	oath = sworn
 	if(keep_vow && vow)
 		QDEL_NULL(sworn.vow)
@@ -177,7 +216,7 @@
 	sworn.on_sworn()
 	ensure_oath_objectives()
 	SEND_SIGNAL(src, COMSIG_BROTHER_TEAM_OATH_SWORN, sworn)
-	notify("Клятва дана: [sworn.name]. Обет: [vow.name].", 'modular_bluemoon/sound/blood_brothers/brother_sworn.ogg', BROTHER_SWORN_VOLUME)
+	notify("[length(fulfilled_oaths) ? "Новая клятва дана" : "Клятва дана"]: [sworn.name]. Обет: [vow.name].", 'modular_bluemoon/sound/blood_brothers/brother_sworn.ogg', BROTHER_SWORN_VOLUME)
 	log_game("Blood brothers [name] swore oath [sworn.key][sworn.target_mind ? " against [key_name(sworn.target_mind)]" : ""] with vow [vow.key].")
 	for(var/datum/antagonist/brother/brother as anything in brother_antags())
 		brother.refresh_bond_actions()
@@ -230,11 +269,23 @@
 	var/all_sealed = !oath.current_step()
 	if(all_sealed && vow?.holds())
 		cooldown_multiplier = BROTHER_FLAWLESS_COOLDOWN_MULT
-	notify("[sealer.name] скрепляет кровью шаг «[sealed_step.name]».[all_sealed ? " Все печати на месте: осталось уйти вместе." : ""]", 'modular_bluemoon/sound/blood_brothers/brother_seal.ogg', BROTHER_SEAL_VOLUME)
+	notify("[sealer.name] скрепляет кровью шаг «[sealed_step.name]».[all_sealed ? " Все печати на месте: клятва исполнена." : ""]", 'modular_bluemoon/sound/blood_brothers/brother_seal.ogg', BROTHER_SEAL_VOLUME)
 	flash_seal(sealer.current)
 	log_game("Blood brothers [name]: [key_name(sealer)] sealed step [oath.steps.Find(sealed_step)] of oath [oath.key].")
 	refresh_brother_uis()
+	if(all_sealed)
+		oath_fulfilled()
 	return TRUE
+
+/// Все печати клятвы стоят: её венец остаётся за командой, дальше можно дать следующую
+/datum/team/brother_team/proc/oath_fulfilled()
+	log_game("Blood brothers [name] fulfilled oath [oath.key].")
+	for(var/datum/antagonist/brother/brother as anything in brother_antags())
+		brother.refresh_bond_actions()
+	if(offer_next_oaths())
+		return
+	notify("Осталось уйти вместе: всем живым братьям - до ЦК, без наручников.")
+	refresh_brother_uis(static_data = TRUE)
 
 /// Вспышка печати над скрепившим; видят только незаглушённые живые братья
 /datum/team/brother_team/proc/flash_seal(mob/living/sealer)

@@ -28,6 +28,7 @@ type BondTier = { tier: number; abilities: BondAbility[]; label?: string };
 export type OathTexts = {
   key: string;
   name: string;
+  summary?: string | null;
   story: string;
   vow_name: string | null;
   vow_desc: string | null;
@@ -72,7 +73,12 @@ export type AntagInfoBloodBrotherData = {
   rules: string[];
   offer_texts: OathTexts[];
   oath_texts: OathTexts | null;
-  state: 'choosing' | 'sworn';
+  /** next - клятва исполнена, на выбор следующие, без срока. */
+  state: 'choosing' | 'sworn' | 'next';
+  /** Названия исполненных прежде клятв. */
+  fulfilled?: string[];
+  /** Названия венцов, которые уже за командой. */
+  earned_capstones?: string[];
   offered: string[];
   proposed_key: string | null;
   proposed_by: string | null;
@@ -110,6 +116,16 @@ const offeredOaths = (data: AntagInfoBloodBrotherData): Oath[] =>
 
 const swornOath = (data: AntagInfoBloodBrotherData): Oath | null =>
   data.oath && data.oath_texts ? withProgress(data.oath_texts, data.oath) : null;
+
+const capstoneEarned = (data: AntagInfoBloodBrotherData, ability: BondAbility) => (data.earned_capstones || []).includes(ability.name);
+
+/** Что ещё держит венец закрытым, или null, если он уже за командой. */
+const capstoneLock = (data: AntagInfoBloodBrotherData, ability: BondAbility) => {
+  if (capstoneEarned(data, ability)) {
+    return null;
+  }
+  return data.fulfilled?.length ? 'откроет последняя печать клятвы' : `откроет печать ${data.tier_max}`;
+};
 
 type MainCommand = {
   id: string;
@@ -1111,8 +1127,11 @@ const sealCommand = (data: AntagInfoBloodBrotherData, act: Act): MainCommand | n
 
 const proposalLine = (data: AntagInfoBloodBrotherData, offered: Oath[], selected: Oath | undefined) => {
   if (!data.proposed_key) {
-    return data.muted
-      ? 'Связь заглушена: пока стоит майндшилд, клятву не предложить.'
+    if (data.muted) {
+      return 'Связь заглушена: пока стоит майндшилд, клятву не предложить.';
+    }
+    return data.state === 'next'
+      ? 'Можно дать ещё одну клятву: её венец добавится к прежним. Не хотите - просто уйдите вместе к концу смены.'
       : 'Выберите клятву и предложите её братьям. Не решите вовремя - клятвой станет первая.';
   }
   const proposed = offered.find((offer) => offer.key === data.proposed_key);
@@ -1181,6 +1200,7 @@ const OathChoice = ({ selected, onSelect }: ListProps) => {
             <span className="AntagInfoBloodBrother__rowNumber">{index + 1}</span>
             <span className="AntagInfoBloodBrother__rowText">
               <span className="AntagInfoBloodBrother__rowName">{offer.name}</span>
+              {!!offer.summary && <span className="AntagInfoBloodBrother__rowNote">{offer.summary}</span>}
               <span className="AntagInfoBloodBrother__rowNote">
                 {[offer.vow_name && `обет: ${offer.vow_name}`, offer.capstone && `даст: ${offer.capstone.name}`]
                   .filter(Boolean)
@@ -1195,6 +1215,7 @@ const OathChoice = ({ selected, onSelect }: ListProps) => {
           </div>
         ))}
         {!offered.length && <div className="AntagInfoBloodBrother__quiet">Клятв пока нет. Кровь ещё не решила.</div>}
+        {data.state === 'next' && !!data.finale_check && <FinaleChecklist check={data.finale_check} />}
       </div>
       <Divider seed="колонки выбора" vertical />
       <div className="AntagInfoBloodBrother__detail">
@@ -1381,7 +1402,7 @@ const SwornOath = ({ selected, onSelect, seals, stamping, written, onStamped, on
           )}
           {!!oath.capstone && (
             <div className="AntagInfoBloodBrother__fact">
-              <b>Венец: {oath.capstone.name}</b>, {data.tier >= data.tier_max ? 'открыт' : `откроет печать ${data.tier_max}`}
+              <b>Венец: {oath.capstone.name}</b>, {capstoneLock(data, oath.capstone) || 'открыт'}
             </div>
           )}
           {!data.finale_check && <Finale text={oath.finale} />}
@@ -1400,15 +1421,20 @@ const ladderEntries = (data: AntagInfoBloodBrotherData, capstoneOath: Oath | und
       entries.push({ tier: step.tier, ability, capstone: false, source: step.label });
     }
   }
-  if (capstoneOath?.capstone) {
-    entries.push({ tier: data.tier_max, ability: capstoneOath.capstone, capstone: true });
+  const capstone = capstoneOath?.capstone;
+  if (capstone && !entries.some((entry) => entry.ability.name === capstone.name)) {
+    entries.push({ tier: data.tier_max, ability: capstone, capstone: true });
   }
   return entries;
 };
 
-const abilityState = (data: AntagInfoBloodBrotherData, tier: number) => {
-  if (tier > data.tier) {
-    return { open: false, text: `откроет печать ${tier}` };
+const abilityState = (data: AntagInfoBloodBrotherData, entry: LadderEntry) => {
+  if (entry.tier > data.tier) {
+    return { open: false, text: `откроет печать ${entry.tier}` };
+  }
+  const lock = entry.capstone ? capstoneLock(data, entry.ability) : null;
+  if (lock) {
+    return { open: false, text: lock };
   }
   return data.muted ? { open: false, text: 'заглушено' } : { open: true, text: 'открыто' };
 };
@@ -1463,8 +1489,9 @@ const BondLadder = ({ focus, capstoneOath, seals }: LadderProps) => {
                 {tier === data.tier_max ? 'Венец зависит от клятвы: выберите её, и он появится здесь.' : 'Ничего нового.'}
               </div>
             )}
-            {own.map(({ ability, source }) => {
-              const state = abilityState(data, tier);
+            {own.map((entry) => {
+              const { ability, source } = entry;
+              const state = abilityState(data, entry);
               return (
                 <div
                   key={ability.name}
@@ -1529,7 +1556,7 @@ type FooterProps = { capstoneOath: Oath | undefined; onAbility: (name: string) =
 
 const Footer = ({ capstoneOath, onAbility }: FooterProps) => {
   const { data } = useBackend<AntagInfoBloodBrotherData>();
-  const ladder = ladderEntries(data, capstoneOath).filter((entry) => entry.tier <= data.tier && (!entry.capstone || data.oath));
+  const ladder = ladderEntries(data, capstoneOath).filter((entry) => entry.tier <= data.tier && (!entry.capstone || capstoneEarned(data, entry.ability)));
   const names = ladder.length ? ladder.map((entry) => entry.ability.name) : (data.abilities || []).map((ability) => ability.name);
   const onKeyDown = (event: KeyboardEvent<HTMLSpanElement>, name: string) => {
     if ((event.code === 'Enter' || event.code === 'NumpadEnter' || event.code === 'Space') && !event.repeat) {
@@ -1670,9 +1697,13 @@ export const AntagInfoBloodBrother = () => {
     patch = (
       <Patch
         kicker={
-          <>
-            Выбираем клятву, осталось <span className="AntagInfoBloodBrother__timer">{formatTime(data.deadline_left)}</span>
-          </>
+          data.state === 'next' ? (
+            `Клятва «${oath?.name || ''}» исполнена · следующая - по желанию`
+          ) : (
+            <>
+              Выбираем клятву, осталось <span className="AntagInfoBloodBrother__timer">{formatTime(data.deadline_left)}</span>
+            </>
+          )
         }
         title={selectedOath?.name || 'Клятв нет'}
         sub={proposalLine(data, offered, selectedOath)}

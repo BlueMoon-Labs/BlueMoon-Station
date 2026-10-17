@@ -24,7 +24,10 @@
 	if(refusal)
 		drawer.balloon_alert(drawer, refusal)
 		return FALSE
-	draw_sign(drawer, spot, angle)
+	var/obj/effect/decal/cleanable/blood/brother_sign/sign = draw_sign(drawer, spot, angle)
+	var/datum/blood_oath/brother_sign/sign_oath = brother.team.oath
+	if(sign)
+		to_chat(drawer, span_notice(sign_oath.sign_note(sign)))
 	StartCooldown(bond_cooldown())
 	return TRUE
 

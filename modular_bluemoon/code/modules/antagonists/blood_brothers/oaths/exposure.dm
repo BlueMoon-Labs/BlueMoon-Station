@@ -1,6 +1,7 @@
 /datum/blood_oath/exposure
 	name = "Разоблачение"
 	key = "exposure"
+	summary = "добыть секретные документы, снять копию и выложить её на виду"
 	weight = 6
 	capstone_type = /datum/action/cooldown/blood_bond/capstone/stash
 

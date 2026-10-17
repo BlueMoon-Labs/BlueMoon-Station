@@ -1755,6 +1755,15 @@ $bb-stains: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'
     text-decoration-color: rgba($bb-dried, 0.7);
   }
 
+  &__list &__finale {
+    max-width: none;
+    margin: 10px 0 0 6px;
+  }
+
+  &__list &__finaleRow {
+    white-space: normal;
+  }
+
   &__whisper {
     padding: 1px 0 1px 8px;
     line-height: 1.35;

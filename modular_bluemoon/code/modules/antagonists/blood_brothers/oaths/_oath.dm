@@ -18,6 +18,8 @@ GLOBAL_LIST_INIT(blood_oath_types, list(
 	/// null - все режимы; иначе список ROUNDTYPE_*
 	var/list/round_types
 	var/requires_violence = FALSE
+	/// Что делать, одной строкой: для списка клятв и админ-панели
+	var/summary
 	var/story
 	var/list/datum/blood_oath_step/steps = list()
 	/// Действие-венец или пассивка /datum/blood_bond_passive

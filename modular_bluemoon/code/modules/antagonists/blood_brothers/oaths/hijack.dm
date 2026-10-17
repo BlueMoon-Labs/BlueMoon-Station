@@ -1,6 +1,7 @@
 /datum/blood_oath/hijack
 	name = "Угон"
 	key = "hijack"
+	summary = "добыть ценности и доступ на мостик, угнать аварийный шаттл"
 	weight = 2
 	round_types = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED)
 	requires_violence = TRUE

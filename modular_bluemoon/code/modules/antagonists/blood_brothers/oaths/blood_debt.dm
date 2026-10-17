@@ -1,6 +1,7 @@
 /datum/blood_oath/blood_debt
 	name = "Долг крови"
 	key = "blood_debt"
+	summary = "добыть подарок спасителю, вручить его и отдать спасителю свою кровь"
 	weight = 8
 	capstone_type = /datum/action/cooldown/blood_bond/capstone/bulwark
 	target_opt_in_level = ANTAG_OPT_IN_TEMPORARY

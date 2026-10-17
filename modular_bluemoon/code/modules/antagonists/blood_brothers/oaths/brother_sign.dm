@@ -8,6 +8,7 @@ GLOBAL_LIST_INIT(brother_guarded_areas, list(
 /datum/blood_oath/brother_sign
 	name = "Знак братства"
 	key = "brother_sign"
+	summary = "метить отделы знаками из своей крови, последний - под носом у охраны"
 	weight = 6
 	capstone_type = /datum/action/cooldown/blood_bond/capstone/sign_eyes
 	extra_actions = list(/datum/action/cooldown/blood_bond/brother_sign)
@@ -27,6 +28,27 @@ GLOBAL_LIST_INIT(brother_guarded_areas, list(
 		if(sign.department && isturf(sign.loc))
 			. |= sign.department
 
+/// Отделы, где работают братья: знаки по станции в них не в счёт
+/datum/blood_oath/brother_sign/proc/own_departments()
+	. = list()
+	if(!team)
+		return
+	for(var/datum/mind/member as anything in team.members - team.departed_minds - team.severed_minds)
+		. |= brother_job_departments(member.assigned_role)
+
+/datum/blood_oath/brother_sign/proc/foreign_signed_departments()
+	return signed_departments() - own_departments()
+
+/// Строка для рисующего: засчитается ли знак и куда
+/datum/blood_oath/brother_sign/proc/sign_note(obj/effect/decal/cleanable/blood/brother_sign/sign)
+	var/guarded = brother_area_is(sign, GLOB.brother_guarded_areas) || brother_area_is(sign, GLOB.brother_brig_areas)
+	var/guarded_text = guarded ? " Он под носом у охраны." : ""
+	if(!sign.department)
+		return "Здесь не отдел: для шагов клятвы этот знак не в счёт.[guarded_text]"
+	if(sign.department in own_departments())
+		return "Отдел «[sign.department]» - ваш: первый знак здесь годится, а для знаков по станции нужны чужие отделы.[guarded_text]"
+	return "Знак в отделе «[sign.department]».[guarded_text]"
+
 /datum/blood_oath_step/sign_department
 	name = "Первый знак"
 	desc = "Нарисуйте кнопкой «Знак братства» знак в любом отделе: в науке, медицине, инженерии, снабжении, СБ, командовании или в служебных помещениях сервиса. Лобби, холлы и коридоры не в счёт."
@@ -44,7 +66,7 @@ GLOBAL_LIST_INIT(brother_guarded_areas, list(
 	name = "Знаки по станции"
 
 /datum/blood_oath_step/sign_spread/describe()
-	desc = "Целые знаки одновременно в [BROTHER_SIGN_DEPARTMENTS] разных отделах. Смытый знак не считается: нарисуйте новый."
+	desc = "Целые знаки одновременно в [BROTHER_SIGN_DEPARTMENTS] разных отделах, где никто из вас не работает. Смытый знак не считается: нарисуйте новый."
 
 /datum/blood_oath_step/sign_spread/can_seal(mob/living/sealer)
 	if(signed_count() >= BROTHER_SIGN_DEPARTMENTS)
@@ -52,11 +74,13 @@ GLOBAL_LIST_INIT(brother_guarded_areas, list(
 	return condition_text(sealer)
 
 /datum/blood_oath_step/sign_spread/condition_text(mob/living/viewer, sealable)
-	return "отделов со знаками: [min(signed_count(), BROTHER_SIGN_DEPARTMENTS)] из [BROTHER_SIGN_DEPARTMENTS]"
+	var/datum/blood_oath/brother_sign/sign_oath = oath
+	var/list/own = sign_oath.own_departments()
+	return "чужих отделов со знаками: [min(signed_count(), BROTHER_SIGN_DEPARTMENTS)] из [BROTHER_SIGN_DEPARTMENTS][length(own) ? " (свои не в счёт: [own.Join(", ")])" : ""]"
 
 /datum/blood_oath_step/sign_spread/proc/signed_count()
 	var/datum/blood_oath/brother_sign/sign_oath = oath
-	return length(sign_oath.signed_departments())
+	return length(sign_oath.foreign_signed_departments())
 
 /datum/blood_oath_step/sign_guarded
 	name = "Под носом у охраны"

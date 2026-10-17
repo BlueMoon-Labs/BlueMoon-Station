@@ -25,6 +25,8 @@ GLOBAL_LIST_INIT(brother_backstories, list(
 	name = "brotherhood"
 	member_name = "blood brother"
 	var/datum/blood_oath/oath
+	/// Исполненные прежде клятвы: их венцы и финалы остаются за командой
+	var/list/datum/blood_oath/fulfilled_oaths = list()
 	var/list/datum/blood_oath/offered = list()
 	var/datum/blood_oath/proposed
 	var/datum/mind/proposed_by
@@ -76,6 +78,7 @@ GLOBAL_LIST_INIT(brother_backstories, list(
 		brother.silent = TRUE
 		brother.owner.remove_antag_datum(/datum/antagonist/brother)
 	QDEL_NULL(oath)
+	QDEL_LIST(fulfilled_oaths)
 	QDEL_LIST(offered)
 	QDEL_NULL(vow)
 	QDEL_LIST(objectives)
@@ -173,7 +176,7 @@ GLOBAL_LIST_INIT(brother_backstories, list(
 	return TRUE
 
 /datum/team/brother_team/proc/has_stash_capstone()
-	return bond_tier >= BLOOD_BOND_TIER_MAX && ispath(oath?.capstone_type, /datum/action/cooldown/blood_bond/capstone/stash)
+	return holds_capstone(/datum/action/cooldown/blood_bond/capstone/stash)
 
 /// Моб, за которым сидит игрок брата: тело, VR-аватар, призрак с правом вернуться или кукла полигона
 /datum/team/brother_team/proc/player_mob_of(datum/mind/member)

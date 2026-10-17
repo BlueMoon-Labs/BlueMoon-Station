@@ -579,8 +579,17 @@ GLOBAL_LIST_EMPTY(blood_bond_blackouts)
 	/// world.time последней раны кого-то из круга
 	var/circle_hit_at = 0
 
+/// Венцы исполненных клятв и венец данной: у первой - с высшей ступенью, у следующих - с последней печатью
+/datum/team/brother_team/proc/earned_capstones()
+	. = list()
+	for(var/datum/blood_oath/fulfilled as anything in fulfilled_oaths)
+		if(fulfilled.capstone_type)
+			. |= fulfilled.capstone_type
+	if(oath?.capstone_type && bond_tier >= BLOOD_BOND_TIER_MAX && (!length(fulfilled_oaths) || !oath.current_step()))
+		. |= oath.capstone_type
+
 /datum/team/brother_team/proc/holds_capstone(capstone_type)
-	return bond_tier >= BLOOD_BOND_TIER_MAX && oath?.capstone_type == capstone_type
+	return capstone_type in earned_capstones()
 
 /datum/team/brother_team/proc/capstone_tick()
 	if(stash && !holds_capstone(/datum/action/cooldown/blood_bond/capstone/stash))
