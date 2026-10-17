@@ -615,7 +615,7 @@
 	auto_closed = FALSE
 	open()
 
-/obj/machinery/door/firedoor/do_animate(animation)
+/obj/machinery/door/firedoor/do_animate(animation, from_bump = FALSE)
 	switch(animation)
 		if("opening")
 			flick("door_opening", src)
