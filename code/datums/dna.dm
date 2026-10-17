@@ -53,7 +53,7 @@ GLOBAL_DATUM(dna_for_copying, /datum/dna)
 
 	return ..()
 
-/// Переносит ДНК и доступную внешность владельца; бельё копируется только по запросу вызывающего.
+// Переносит ДНК и доступную внешность владельца; бельё копируется только по запросу вызывающего.
 /datum/dna/proc/transfer_identity(mob/living/carbon/destination, transfer_SE = 0, copy_clothing = FALSE)
 	if(!istype(destination))
 		return

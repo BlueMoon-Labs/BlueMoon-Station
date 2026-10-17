@@ -45,7 +45,7 @@
 
 /datum/preferences
 	var/list/favorite_tracks = list()
-	/// Избранные стили по вкладкам hair/facial/grad, общие для всех слотов персонажей.
+	// Избранные стили по вкладкам hair/facial/grad, общие для всех слотов персонажей.
 	var/list/favorite_hair_styles = list()
 
 	//Ключем будет имя плейлиста, а значением, лист с треками. Пример:

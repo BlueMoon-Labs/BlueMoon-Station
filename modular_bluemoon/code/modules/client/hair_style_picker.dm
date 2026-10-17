@@ -17,7 +17,7 @@
 
 GLOBAL_LIST_EMPTY(hair_style_pickers)
 
-/// В сейве храним отдельные массивы имён для каждой вкладки.
+// В сейве храним отдельные массивы имён для каждой вкладки.
 /proc/sanitize_hair_style_favorites(candidate)
 	var/list/stored = islist(candidate) ? candidate : list()
 	var/list/sanitized = list()
@@ -39,13 +39,13 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	var/mob/living/carbon/human/target
 	var/atom/movable/check_atom
 	var/apply_sound
-	/// Способности могут разрешать выбор цвета без предмета-красителя.
+	// Способности могут разрешать выбор цвета без предмета-красителя.
 	var/allow_color_without_spray = FALSE
-	/// Цвета для предпросмотра до нажатия Apply; не записываются в настройки или предмет.
+	// Цвета для предпросмотра до нажатия Apply; не записываются в настройки или предмет.
 	var/preview_hair_color
 	var/preview_facial_color
 	var/preview_grad_color
-	/// Обработчик получает выбранный стиль, вкладку и цвет, возвращает TRUE после успешного применения.
+	// Обработчик получает выбранный стиль, вкладку и цвет, возвращает TRUE после успешного применения.
 	var/datum/callback/apply_callback
 	var/applying = FALSE
 	var/list/allowed_tabs = list()
@@ -55,7 +55,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	var/page = 1
 	var/selected
 	var/list/base_cache = list()
-	/// Положение исходного спрайта на расширенном холсте для каждого направления.
+	// Положение исходного спрайта на расширенном холсте для каждого направления.
 	var/list/base_offsets = list()
 	var/render_dir = SOUTH
 	var/is_taur = FALSE
@@ -102,7 +102,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	picker.setup_live(user, subject, razor, HAIR_PICKER_MODE_RAZOR, 'modular_bluemoon/krashly/sound/straight_razor.ogg')
 	return picker.finalize(user)
 
-/// Выбор для других инструментов и способностей с собственными условиями применения.
+// Выбор для других инструментов и способностей с собственными условиями применения.
 /proc/open_live_hair_style_picker(mob/user, mob/living/carbon/human/subject, atom/movable/source, list/tabs, datum/callback/on_apply, allow_color_without_spray = FALSE)
 	if(!user?.client || !subject?.dna || QDELETED(source))
 		return FALSE
@@ -427,7 +427,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 			destroy_if_idle()
 			return
 
-/// При вызове из красителя отдельный спрей в руках не требуется.
+// При вызове из красителя отдельный спрей в руках не требуется.
 /datum/hair_style_picker/proc/get_color_spray(mob/user)
 	if(istype(check_atom, /obj/item/dyespray) && !QDELETED(check_atom))
 		var/obj/item/dyespray/source_spray = check_atom
@@ -530,7 +530,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 		playsound(check_atom, apply_sound, 20, TRUE)
 	return TRUE
 
-/// После успешного применения стиля сохраняем все выбранные цвета доступных вкладок.
+// После успешного применения стиля сохраняем все выбранные цвета доступных вкладок.
 /datum/hair_style_picker/proc/apply_preview_colors()
 	. = FALSE
 	if((HAIR_PICKER_TAB_HAIR in allowed_tabs) && !isnull(preview_hair_color))

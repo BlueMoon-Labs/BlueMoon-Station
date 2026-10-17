@@ -4,7 +4,7 @@
 	icon = 'icons/obj/dyespray.dmi'
 	icon_state = "dyespray"
 	w_class = WEIGHT_CLASS_SMALL
-	/// Разрешает выбирать произвольный цвет в HairStylePicker.
+	// Разрешает выбирать произвольный цвет в HairStylePicker.
 	var/can_change_color = TRUE
 	var/dye_sound = 'sound/effects/spray.ogg'
 
@@ -56,7 +56,7 @@
 	human_target.update_hair()
 	return TRUE
 
-/// Подтипы с заданным цветом используют его и для предпросмотра, и для окрашивания.
+// Подтипы с заданным цветом используют его и для предпросмотра, и для окрашивания.
 /obj/item/dyespray/proc/get_dye_color(mob/living/carbon/human/human_target)
 	return human_target?.grad_color
 
