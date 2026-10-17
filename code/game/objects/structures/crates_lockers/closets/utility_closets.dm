@@ -27,7 +27,7 @@
 	switch(rand(1, 100))
 		if(1 to 10)
 			new /obj/item/storage/briefcase/inflatable(src)
-		if(10 to 20)
+		if(11 to 20)
 			new /obj/item/storage/briefcase/inflatable_airbag(src)
 		else
 			new /obj/item/storage/briefcase/inflatable_mini(src)

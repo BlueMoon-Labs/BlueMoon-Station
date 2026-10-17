@@ -594,11 +594,12 @@
 		return TRUE
 	// Ручное управление, пусть и силиконовое: автоматика в его решение не лезет.
 	auto_closed = FALSE
+	nextstate = null
 	var/was_closed = density
 	if(density)
 		open()
 	else
-		close()
+		close(manual = TRUE)
 	if(density != was_closed)
 		log_remote_use(user, was_closed ? "opened" : "closed", "firelock interface")
 	return TRUE
@@ -661,7 +662,9 @@
 /obj/machinery/door/firedoor/proc/block_automatic_closing(duration)
 	emergency_close_timer = max(emergency_close_timer, world.time + duration)
 	nextstate = null
-	auto_closed = FALSE
+	// Уже закрытая автоматикой дверь должна сохранять возможность открыться сама.
+	if(!density)
+		auto_closed = FALSE
 	automatic_close_timer = addtimer(CALLBACK(src, PROC_REF(resume_automatic_closing)), emergency_close_timer - world.time, TIMER_UNIQUE|TIMER_OVERRIDE|TIMER_NO_HASH_WAIT|TIMER_STOPPABLE)
 
 /obj/machinery/door/firedoor/proc/unblock_automatic_closing()

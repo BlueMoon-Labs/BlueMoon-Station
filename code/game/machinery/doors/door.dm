@@ -153,7 +153,7 @@
 		if(allowed(user))
 			open()
 		else
-			do_animate("deny")
+			do_animate("deny", from_bump = TRUE)
 	return
 
 /obj/machinery/door/on_attack_hand(mob/user, act_intent = user.a_intent, unarmed_attack_flags)
@@ -293,7 +293,7 @@
 	else
 		icon_state = "door0"
 
-/obj/machinery/door/proc/do_animate(animation)
+/obj/machinery/door/proc/do_animate(animation, from_bump = FALSE)
 	switch(animation)
 		if("opening")
 			if(panel_open)

@@ -25,7 +25,7 @@
 		return
 	var/obj/structure/inflatable/inflated_structure = new structure_path(user.loc)
 	transfer_fingerprints_to(inflated_structure)
-	to_chat(user, span_notice("You inflate [src]."))
+	to_chat(user, span_notice("Вы надуваете [src]."))
 	qdel(src)
 	return inflated_structure
 
@@ -59,7 +59,7 @@
 
 /obj/structure/inflatable/examine(mob/user)
 	. = ..()
-	. += span_notice("Alt-click to slowly deflate and fold it up.")
+	. += span_notice("Alt-клик позволяет медленно сдуть и сложить конструкцию.")
 
 /obj/structure/inflatable/attackby(obj/item/used_item, mob/living/user, params)
 	. = ..()
@@ -82,11 +82,11 @@
 		return
 	playsound(src, 'modular_bluemoon/sound/machines/inflatable_hiss.ogg', 75, TRUE)
 	if(!disassembled)
-		visible_message(span_warning("[src] rapidly deflates!"))
+		visible_message(span_warning("[src] стремительно сдувается!"))
 		deflate(FALSE)
 		return
 	deflating = TRUE
-	visible_message(span_notice("[src] slowly deflates."))
+	visible_message(span_notice("[src] медленно сдувается."))
 	deflate_timer = addtimer(CALLBACK(src, PROC_REF(deflate)), 4 SECONDS, TIMER_STOPPABLE)
 
 /obj/structure/inflatable/proc/deflate(disassembled = TRUE)
@@ -173,7 +173,7 @@
 	structure_path = null
 
 /obj/item/inflatable/torn/inflate(mob/user)
-	to_chat(user, span_warning("The inflatable wall is too torn to be inflated!"))
+	to_chat(user, span_warning("Надувная стена слишком сильно порвана, чтобы её надуть!"))
 	add_fingerprint(user)
 
 /obj/item/inflatable/door/torn
@@ -183,7 +183,7 @@
 	structure_path = null
 
 /obj/item/inflatable/door/torn/inflate(mob/user)
-	to_chat(user, span_warning("The inflatable door is too torn to be inflated!"))
+	to_chat(user, span_warning("Надувная дверь слишком сильно порвана, чтобы её надуть!"))
 	add_fingerprint(user)
 
 /obj/item/storage/briefcase/inflatable

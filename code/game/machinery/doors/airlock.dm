@@ -109,6 +109,7 @@
 	var/doorOpen = 'sound/machines/airlock.ogg'
 	var/doorClose = 'sound/machines/airlockclose.ogg'
 	var/doorDeni = 'sound/machines/deniedbeep.ogg' // i'm thinkin' Deni's
+	COOLDOWN_DECLARE(deny_cooldown)
 	var/boltUp = 'sound/machines/boltsup.ogg'
 	var/boltDown = 'sound/machines/boltsdown.ogg'
 	var/noPower = 'sound/machines/doorclick.ogg'
@@ -717,7 +718,7 @@
 		else
 			set_light(0)
 
-/obj/machinery/door/airlock/do_animate(animation)
+/obj/machinery/door/airlock/do_animate(animation, from_bump = FALSE)
 	switch(animation)
 		if("opening")
 			update_icon(ALL, AIRLOCK_OPENING)
@@ -726,7 +727,10 @@
 		if("deny")
 			if(machine_stat)
 				return
-
+			if(from_bump)
+				if(!COOLDOWN_FINISHED(src, deny_cooldown))
+					return
+				COOLDOWN_START(src, deny_cooldown, AIRLOCK_DENY_COOLDOWN)
 			update_icon(ALL, AIRLOCK_DENY)
 			playsound(src, doorDeni, 50, 0, 3)
 			addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_icon), AIRLOCK_CLOSED), 6 DECISECONDS, TIMER_DELETE_ME)
