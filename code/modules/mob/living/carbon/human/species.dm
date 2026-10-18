@@ -295,6 +295,33 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 	return FALSE
 
 /**
+ * Короткое описание вида для панели профиля персонажа.
+ * Возвращает список абзацев или null, если у вида нет описания.
+ */
+/datum/species/proc/get_species_description()
+	return null
+
+/**
+ * Полный лор вида для панели профиля персонажа.
+ * Возвращает список абзацев или null, если у вида нет лора.
+ */
+/datum/species/proc/get_species_lore()
+	return null
+
+/// Склеивает описание и лор вида в один текст для панели профиля.
+/datum/species/proc/get_species_lore_text()
+	var/list/parts = list()
+	var/list/description = get_species_description()
+	var/list/lore = get_species_lore()
+	if(description)
+		parts += description
+	if(lore)
+		parts += lore
+	if(!length(parts))
+		return ""
+	return jointext(parts, "\n\n")
+
+/**
  * Generates a random name for a carbon.
  *
  * This generates a random unique name based on a human's species and gender.
