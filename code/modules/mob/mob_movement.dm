@@ -485,6 +485,19 @@
 			current_ladder.travel(direction == UP, src, isobserver(src), destination)
 			return TRUE
 
+	// Полёт
+	if(!isobserver(src))
+		if(incapacitated())
+			to_chat(src, span_warning("Вы не в состоянии двигаться!"))
+			return FALSE
+
+		if(!can_z_move(direction, current_turf, null, ZMOVE_FLIGHT_FLAGS|ZMOVE_FEEDBACK))
+			return FALSE
+
+		to_chat(src, "<span class='notice'>Вы начинаете двигаться [direction == UP ? "вверх" : "вниз"]...</span>")
+		if(!do_after(src, 15, src))
+			return FALSE
+
 	if(!zMove(direction, null, ZMOVE_FLIGHT_FLAGS|ZMOVE_FEEDBACK))
 		return FALSE
 	to_chat(src, "<span class='notice'>Вы перемещаетесь [direction == UP ? "вверх" : "вниз"].</span>")
