@@ -99,11 +99,9 @@
 		new /datum/data/bounty_equipment("ИРП-6 Вегатарианский",			/obj/item/storage/mre/vegan,									500,	"Recreational"),
 		new /datum/data/bounty_equipment("ИРП-47 Белковый",					/obj/item/storage/mre/protein,									500,	"Recreational"),
 
-		// ============ MOD DESIGNS ============
-		new /datum/data/bounty_equipment("Extended MOD storage module",				/obj/item/mod/module/storage/extended,					2000,		"MOD Designs"),
-		new /datum/data/bounty_equipment("MOD ion jetpack module",					/obj/item/mod/module/jetpack,							5000,		"MOD Designs"),
-		new /datum/data/bounty_equipment("MOD DNA lock module",						/obj/item/mod/module/dna_lock,							7500,		"MOD Designs"),
-		new /datum/data/bounty_equipment("MOD Magnetic Harness",					/obj/item/mod/module/magnetic_harness,					5000,		"MOD Designs"),
+		// ============ MISCELLANEOUS ============
+		new /datum/data/bounty_equipment("1 Metadollar",            		/obj/item/stack/metadollar, 									100000, 	"Miscellaneous"),
+		new /datum/data/bounty_equipment("space cash",						/obj/item/stack/spacecash/c1000,								1500,	"Miscellaneous"),
 
 		// ============ ELITE EQUIPMENT =========
 		new /datum/data/bounty_equipment("ACR-5m26",						/obj/item/gun/ballistic/automatic/acr5m30/pinvanguard,			20000,		"Elite Equipment"),
@@ -193,7 +191,7 @@
 		)
 		records += list(product_data)
 	.["product_records"] = records
-	.["categories"] = list("Weaponry", "Armor", "Medical", "Tools", "Recreational", "Miscellaneous", "Elite Equipment", "MOD Designs")
+	.["categories"] = list("Weaponry", "Armor", "Medical", "Tools", "Recreational", "Miscellaneous", "Elite Equipment")
 	.["discount"] = get_discount()
 
 /obj/machinery/bountyvend/ui_data(mob/user)
@@ -349,18 +347,4 @@
 	new /obj/item/clothing/glasses/sunglasses(src)
 
 
-// Потому что нехорошие люди абьюзят метадолоровку - оставляю их только в специальном вендомате станции
 
-/obj/machinery/bountyvend/plus
-	name = "BountyVend Expert"
-	circuit = /obj/item/circuitboard/machine/bountyvend/plus
-
-/obj/machinery/bountyvend/plus/Initialize(mapload)
-	. = ..()
-	desc += "\nIt seems a few selections have been added."
-	prize_list += list(
-		// ============ MISCELLANEOUS ============
-		new /datum/data/bounty_equipment("1 Metadollar",            		/obj/item/stack/metadollar, 									100000, 	"Miscellaneous"),
-		new /datum/data/bounty_equipment("space cash",						/obj/item/stack/spacecash/c1000,								1500,	"Miscellaneous")
-		)
-	build_inventory()
