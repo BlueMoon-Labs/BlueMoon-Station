@@ -245,7 +245,7 @@
 	data["maxSetting"] = max_range
 	data["modifier"] = modifier
 	data["maxModifier"] = max_modifier
-
+	data["smokeCost"] = round(SMOKE_COST(setting, modifier), 0.01)
 	data["open"] = panel_open
 	data["hasPowercell"] = !QDELETED(cell)
 	if(!QDELETED(cell))

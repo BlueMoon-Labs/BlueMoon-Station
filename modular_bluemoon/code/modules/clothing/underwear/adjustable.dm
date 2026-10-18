@@ -4,7 +4,7 @@
 	var/suittoggled = FALSE
 	slot_flags = ITEM_SLOT_SHIRT
 	fitted = NO_FEMALE_UNIFORM
-	alternate_worn_layer = (GENITALS_EXPOSED_LAYER - 1)
+	alternate_worn_layer = (SUIT_LAYER + 1)
 	body_parts_covered = NONE
 
 /obj/item/clothing/underwear/shirt/adjustable/ComponentInitialize()
@@ -117,6 +117,6 @@
 	icon = 'modular_bluemoon/icons/mob/clothing/bra_overhaul.dmi'
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/bra_overhaul.dmi'
 	icon_state = "bra"
-	alternate_worn_layer = SUIT_LAYER
+	alternate_worn_layer = BELT_LAYER
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	polychromic = TRUE

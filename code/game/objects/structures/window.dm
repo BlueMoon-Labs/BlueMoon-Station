@@ -1033,7 +1033,7 @@
 	heat_resistance = 1600
 	armor_type = /datum/armor/plastitanium_and_shuttle
 	smooth = SMOOTH_MORE|SMOOTH_TRUE
-	canSmoothWith = list(/turf/closed/wall/r_wall/syndicate, /turf/closed/wall/r_wall/r_plastitanium, /turf/closed/wall/mineral/plastitanium, /obj/machinery/door/airlock/shuttle, /obj/machinery/door/airlock, /obj/structure/window/plastitanium, /obj/structure/shuttle/engine, /obj/structure/falsewall/plastitanium, /turf/closed/indestructible/riveted)
+	canSmoothWith = list(/turf/closed/wall/r_wall/syndicate, /turf/closed/wall/r_wall/r_plastitanium, /turf/closed/wall/mineral/plastitanium, /obj/structure/window/plastitanium, /obj/structure/shuttle/engine, /obj/structure/falsewall/plastitanium, /turf/closed/indestructible/riveted)
 	explosion_block = 3
 	level = 3
 	glass_type = /obj/item/stack/sheet/plastitaniumglass

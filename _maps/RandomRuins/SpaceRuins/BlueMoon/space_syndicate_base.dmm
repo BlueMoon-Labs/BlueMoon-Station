@@ -7766,7 +7766,6 @@
 	dir = 5
 	},
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
-/obj/effect/mapping_helpers/network_builder/power_cable/auto,
 /obj/effect/turf_decal/siding/wideplating/dark/corner{
 	dir = 4
 	},
