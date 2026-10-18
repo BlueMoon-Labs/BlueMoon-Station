@@ -812,3 +812,19 @@
 	update_icon()
 
 #undef PANCAKE_MAX_STACK
+
+/obj/item/reagent_containers/food/snacks/pawcookie
+	name = "PawCookie"
+	desc = "Печенька с отпечатком лапки."
+	icon = 'icons/obj/food/pawcookie.dmi'
+	icon_state = "paw2"
+	tastes = list("cookie" = 1)
+	list_reagents = list(/datum/reagent/consumable/nutriment = 3)
+	bitesize = 3
+	foodtype = GRAIN | SUGAR
+
+/obj/item/reagent_containers/food/snacks/pawcookie/Initialize
+	..()
+	icon_state = pick("paw1", "paw2", "paw3", "paw4", "paw5", "paw6", "paw7")
+
+
