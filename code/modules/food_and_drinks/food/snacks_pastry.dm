@@ -813,6 +813,13 @@
 
 #undef PANCAKE_MAX_STACK
 
+/obj/item/reagent_containers/food/snacks/pawcookie_raw
+	name = "Raw paw form"
+	desc = "Заготовка из теста, отлитая в форме лапки. Нужно запечь."
+	icon = 'icons/obj/food/food_ingredients.dmi'
+	icon_state = "rawpaw"
+	w_class = WEIGHT_CLASS_SMALL
+
 /obj/item/reagent_containers/food/snacks/pawcookie
 	name = "PawCookie"
 	desc = "Печенька с отпечатком лапки."
@@ -823,7 +830,7 @@
 	bitesize = 3
 	foodtype = GRAIN | SUGAR
 
-/obj/item/reagent_containers/food/snacks/pawcookie/Initialize
+/obj/item/reagent_containers/food/snacks/pawcookie/Initialize()
 	..()
 	icon_state = pick("paw1", "paw2", "paw3", "paw4", "paw5", "paw6", "paw7")
 
