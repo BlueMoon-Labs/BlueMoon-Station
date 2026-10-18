@@ -23449,7 +23449,7 @@
 /obj/effect/turf_decal/tile/purple{
 	dir = 4
 	},
-/obj/machinery/bountyvend/plus,
+/obj/machinery/bountyvend,
 /turf/open/floor/plasteel/white,
 /area/command/gateway)
 "bZq" = (

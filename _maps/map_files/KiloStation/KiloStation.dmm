@@ -84058,7 +84058,7 @@
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/neutral,
-/obj/machinery/bountyvend/plus,
+/obj/machinery/bountyvend,
 /turf/open/floor/plasteel,
 /area/command/gateway)
 "ppb" = (

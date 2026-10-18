@@ -16302,7 +16302,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
 	},
-/obj/machinery/bountyvend/plus,
+/obj/machinery/bountyvend,
 /turf/open/floor/plasteel/dark/smooth/edge{
 	dir = 4
 	},

@@ -11591,7 +11591,7 @@
 /turf/open/floor/plasteel,
 /area/mine/living_quarters)
 "cFw" = (
-/obj/machinery/bountyvend/plus,
+/obj/machinery/bountyvend,
 /obj/machinery/vending/wallmed/directional/west,
 /obj/effect/turf_decal/tile/blue/opposingcorners,
 /obj/machinery/newscaster{

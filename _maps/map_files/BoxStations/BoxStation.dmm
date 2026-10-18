@@ -63720,7 +63720,7 @@
 /obj/effect/turf_decal/trimline/dark_blue/filled/mid_joiner{
 	dir = 4
 	},
-/obj/machinery/bountyvend/plus,
+/obj/machinery/bountyvend,
 /turf/open/floor/plasteel/dark/textured/half{
 	dir = 1
 	},

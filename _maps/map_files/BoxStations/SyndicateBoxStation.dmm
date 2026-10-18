@@ -76505,7 +76505,7 @@
 /area/maintenance/aft)
 "uAC" = (
 /obj/effect/turf_decal/trimline/dark_blue/filled/line,
-/obj/machinery/bountyvend/plus,
+/obj/machinery/bountyvend,
 /turf/open/floor/mineral/plastitanium,
 /area/command/gateway)
 "uBa" = (

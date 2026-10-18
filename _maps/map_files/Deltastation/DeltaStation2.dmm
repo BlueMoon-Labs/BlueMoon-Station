@@ -72949,7 +72949,7 @@
 "mfM" = (
 /obj/effect/turf_decal/stripes/yellow/line,
 /obj/effect/turf_decal/bot/yellow,
-/obj/machinery/bountyvend/plus,
+/obj/machinery/bountyvend,
 /turf/open/floor/plasteel,
 /area/command/gateway)
 "mfR" = (

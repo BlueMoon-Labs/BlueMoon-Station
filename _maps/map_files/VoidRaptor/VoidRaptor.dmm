@@ -16245,7 +16245,7 @@
 	dir = 4
 	},
 /obj/machinery/light/cold/directional/east,
-/obj/machinery/bountyvend/plus,
+/obj/machinery/bountyvend,
 /turf/open/floor/plasteel/dark/smooth/edge{
 	dir = 8
 	},
