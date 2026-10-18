@@ -453,7 +453,7 @@
 	dir = 10
 	},
 /mob/living/simple_animal/hostile/tentacles,
-/turf/open/floor/plasteel/showroomfloor/shower,
+/turf/open/floor/plasteel/white/smooth/small,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/security/prison_shower)
 "bw" = (
 /turf/closed/wall/r_wall/syndicate/nodiagonal,
@@ -5661,7 +5661,7 @@
 	dir = 6
 	},
 /mob/living/simple_animal/hostile/tentacles,
-/turf/open/floor/plasteel/showroomfloor/shower,
+/turf/open/floor/plasteel/white/smooth/small,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/security/prison_shower)
 "vK" = (
 /obj/machinery/computer/crew/syndie{
@@ -7115,7 +7115,7 @@
 /obj/effect/turf_decal/siding/thinplating/end{
 	dir = 4
 	},
-/turf/open/floor/plasteel/showroomfloor/shower,
+/turf/open/floor/plasteel/white/smooth/small,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/engineering)
 "Cf" = (
 /turf/open/floor/plasteel/kitchen/diagonal,
