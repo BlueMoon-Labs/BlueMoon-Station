@@ -34478,13 +34478,6 @@
 /obj/effect/turf_decal/tile/yellow/half/contrasted,
 /turf/open/floor/plasteel/white,
 /area/medical/medbay/factory)
-"czS" = (
-/obj/structure/lattice/catwalk,
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/turf/open/space/basic,
-/area/solars/starboard/aft)
 "czT" = (
 /obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/plating,
@@ -47170,15 +47163,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/cargo/qm)
-"dzu" = (
-/obj/structure/lattice,
-/obj/structure/lattice/catwalk,
-/obj/structure/lattice/catwalk,
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/turf/open/space,
-/area/solars/starboard/aft)
 "dzI" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/structure/cable/yellow{
@@ -57742,11 +57726,10 @@
 /turf/closed/wall/r_wall,
 /area/ai_monitored/command/nuke_storage)
 "ihN" = (
-/obj/structure/lattice,
-/obj/structure/lattice/catwalk,
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
+/obj/structure/lattice/catwalk,
 /turf/open/space/basic,
 /area/solars/starboard/aft)
 "ihO" = (
@@ -74391,11 +74374,10 @@
 /turf/open/floor/plasteel,
 /area/engineering/gravity_generator)
 "pHY" = (
-/obj/structure/lattice,
-/obj/structure/lattice/catwalk,
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
+/obj/structure/lattice/catwalk,
 /turf/open/space,
 /area/solars/starboard/aft)
 "pIc" = (
@@ -130776,8 +130758,8 @@ aaf
 mJX
 ihN
 pHY
-czS
-dzu
+ihN
+pHY
 ods
 aaf
 aaf
@@ -137640,7 +137622,7 @@ rhU
 mDk
 uyH
 vYs
-mIJ
+dgj
 aaf
 aaf
 ack
@@ -137896,7 +137878,7 @@ ewx
 dXn
 sZV
 iiu
-aaa
+cPf
 aYx
 dgf
 dgj
