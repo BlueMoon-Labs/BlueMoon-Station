@@ -7,7 +7,7 @@
 
 /datum/language/marish
 	name = "Marish"
-	desc = "A soft, purring language of the shadekin, full of subtle tones and drawn-out syllables."
+	desc = "Мягкий, мурлыкающий язык шейдкинов, полный тонких оттенков и протяжных слогов."
 	key = "M" // BLUEMOON: "m" уже занят языком modular_sand, поэтому как в SPLURT — заглавная
 	space_chance = 55
 	icon = 'modular_splurt/icons/misc/language.dmi'
