@@ -351,3 +351,36 @@
 	TEST_ASSERT(findtext(record_report, surgeon.mind.name), "the record names the new master")
 	TEST_ASSERT(findtext(record_report, "Test Target"), "the record keeps the contract log")
 	TEST_ASSERT(!length(record.members), "the record makes nobody a team antagonist")
+
+/// Выдача HK-47 из админки: шасси HK-47 получает роль, мозг без тела и игрока - нет, и без рантайма on_gain().
+/datum/unit_test/hk47_admin_add
+
+/datum/unit_test/hk47_admin_add/Run()
+	var/datum/mind/bodiless = new /datum/mind(null)
+	bodiless.name = "Bodiless"
+	bodiless.add_antag_wrapper(/datum/antagonist/hk47, null)
+	TEST_ASSERT_NULL(bodiless.has_antag_datum(/datum/antagonist/hk47), "no role without a body or a player")
+	qdel(bodiless)
+	var/mob/living/carbon/human/droid = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	droid.set_species(/datum/species/ipc/hk/hk47)
+	droid.mind_initialize()
+	allocated += droid.mind
+	droid.mind.add_antag_wrapper(/datum/antagonist/hk47, null)
+	TEST_ASSERT_NOTNULL(droid.mind.has_antag_datum(/datum/antagonist/hk47), "an HK-47 chassis takes the role directly")
+
+/// Карта лицензии в слоте ID даёт кнопку предъявления, а текст называет статус и полномочия.
+/datum/unit_test/hk47_license_present
+
+/datum/unit_test/hk47_license_present/Run()
+	var/mob/living/carbon/human/droid = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	droid.set_species(/datum/species/ipc/hk/hk47)
+	var/obj/item/card/id/hk47_license/license = allocate(/obj/item/card/id/hk47_license)
+	license.license_number = "HK-100-1000"
+	TEST_ASSERT(droid.equip_to_slot_if_possible(license, ITEM_SLOT_ID, disable_warning = TRUE), "license fits the ID slot")
+	var/datum/action/item_action/hk47_show_license/button = locate() in droid.actions
+	TEST_ASSERT_NOTNULL(button, "the license grants the show button")
+	button.Trigger()
+	TEST_ASSERT(!COOLDOWN_FINISHED(license, present_cooldown), "the button presents the license")
+	TEST_ASSERT(findtext(license.license_text(), "Доступа в помещения"), "valid license lists its limits")
+	license.revoked = TRUE
+	TEST_ASSERT(findtext(license.license_text(), "задержать"), "revoked license tells security to detain")

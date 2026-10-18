@@ -395,6 +395,8 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 	. = ..()
 	if(!is_active())
 		return
+	if(istype(theme, /datum/mod_theme/station_combat/security/melatonin) || istype(theme, /datum/mod_theme/antagonist/syndicate/melatonin_syndicate)) // сделано, чтобы модули не рисовались на данной теме. Иного способа отключить я не нашёл.
+		return
 	for(var/obj/item/mod/module/module as anything in modules)
 		var/list/module_icons = module.generate_worn_overlay()
 		if(!length(module_icons))

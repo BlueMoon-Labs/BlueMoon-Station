@@ -65,7 +65,7 @@ GLOBAL_LIST_EMPTY(sechailers)
 	var/safety = TRUE
 	var/obj/item/radio/radio //For engineering alerts.
 	var/radio_key = /obj/item/encryptionkey/headset_sec
-	var/radio_channel = "Security"
+	var/radio_channel = RADIO_CHANNEL_SECURITY
 	var/dispatch_cooldown = 250
 	var/last_dispatch = 0
 

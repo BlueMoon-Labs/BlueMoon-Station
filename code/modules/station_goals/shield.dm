@@ -142,7 +142,7 @@ GLOBAL_VAR_INIT(shield_coverage_cache_expiry, 0)
 
 	var/obj/item/radio/radio // рация и всё с ней связанное
 	var/radio_key = /obj/item/encryptionkey/headset_eng
-	var/engineering_channel = "Engineering"
+	var/engineering_channel = RADIO_CHANNEL_ENGINEERING
 
 	var/roundstart = FALSE // если спутник с начала раунда, то он сразу же активируется и его камера включается. Важно разместить спутник в космосе при этом
 

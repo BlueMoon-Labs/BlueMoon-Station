@@ -50,6 +50,7 @@ const fixture: HKContractTerminalData = {
   rifle_max: 12,
   identify_range: 2,
   protect_presence_needed: 40,
+  manual: [{ title: 'БРОНЯ', text: 'Шасси бронировано само: броня 25.' }],
   photos: { '[0x1]': PHOTO, '[0x2]': PHOTO, '[0x3]': PHOTO, '[0x8]': PHOTO, '[0x9]': PHOTO },
   reroll_cooldown: 0,
   identify_cooldown: 0,
@@ -393,10 +394,12 @@ test('охрана показывает, сколько срока HK был р�
       capture_called: 0,
       suspects: [],
       presence: 25,
+      presence_left: 360,
     },
   });
   expect(screen.getByText('25%').className).toContain('warn');
   expect(screen.getByText(/заказчик платит от 40%/)).toBeTruthy();
+  expect(screen.getByText(/ещё 06:00 рядом/).className).toContain('warn');
 });
 
 test('сверка без подозреваемых называет дальность из данных', () => {
@@ -408,4 +411,11 @@ test('радар говорит, выше или ниже цель на друг
   setup({ offers: [], active: { ...activeKill, radar: { other_level: 1, level: 'below' as const } } });
   expect(screen.getByText('УРОВЕНЬ НИЖЕ')).toBeTruthy();
   expect(screen.queryByTestId('hk-blip')).toBeNull();
+});
+
+test('вкладка шасси показывает памятку из данных', () => {
+  setup({});
+  fireEvent.click(screen.getByText(/\[4\] ШАССИ/));
+  expect(screen.getByText('БРОНЯ:')).toBeTruthy();
+  expect(screen.getByText(/броня 25/)).toBeTruthy();
 });

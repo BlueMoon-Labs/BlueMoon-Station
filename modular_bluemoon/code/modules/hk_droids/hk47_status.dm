@@ -111,7 +111,7 @@
 			to_chat(droid, span_notice("<b>Легенда: частный телохранитель, контракт № [license_number].</b> Охраняемый - [contract.display_target()], он знает о вас из личного сообщения и может поручиться перед СБ. Станции объявлено о контракте без имени охраняемого, в базе СБ есть ваша запись."))
 	if(is_licensed())
 		RegisterSignal(contract, COMSIG_PARENT_QDELETING, PROC_REF(on_license_contract_closed))
-		to_chat(droid, span_warning("Лицензия действует, пока идёт этот контракт, и истекает вместе с ним. Раньше её отзовут, если член экипажа умрёт в течение [DisplayTimeText(HK47_HIT_MEMORY)] после вашего попадания или попадания ваших слуг. Не в счёт цель контракта, разыскиваемые СБ и те, кто за последние [DisplayTimeText(HK47_AGGRESSION_MEMORY)] напал на вас или на охраняемого."))
+		to_chat(droid, span_warning("Лицензия действует, пока идёт этот контракт, и истекает вместе с ним. Раньше её отзовут, если член экипажа умрёт в течение [DisplayTimeText(HK47_HIT_MEMORY)] после вашего попадания или попадания ваших слуг. Не в счёт цель контракта, разыскиваемые СБ и те, кто за последние [DisplayTimeText(HK47_AGGRESSION_MEMORY)] напал на вас или на охраняемого. Кнопка Show License предъявляет карту всем рядом вместе с полномочиями."))
 	antag_memory += "Легенда: [hk47_status_name(legend)][license_number ? ", лицензия № [license_number]" : ""].<br>"
 	log_game("[key_name(owner)] прибывает как HK-47 с легендой «[hk47_status_name(legend)]», первый контракт: [contract ? contract.describe() : "нет"].")
 	return legend
@@ -401,18 +401,36 @@
 	assignment = "Лицензированный подрядчик ЦК"
 	uses_overlays = FALSE
 	bank_support = ID_NO_BANK_ACCOUNT
+	actions_types = list(/datum/action/item_action/hk47_show_license)
 	var/license_number
 	var/revoked = FALSE
 	var/expired = FALSE
+	var/terms = "Подрядчик ЦК по засекреченному контракту, цель не раскрывается. Работе не препятствовать, вопросы - к главе СБ. Доступа в помещения лицензия не даёт."
+	COOLDOWN_DECLARE(present_cooldown)
 
 /obj/item/card/id/hk47_license/examine(mob/user)
 	. = ..()
-	var/state = span_notice("действительна")
+	. += license_text()
+
+/obj/item/card/id/hk47_license/proc/license_text()
 	if(revoked)
-		state = span_danger("ОТОЗВАНА")
-	else if(expired)
-		state = span_warning("ИСТЕКЛА")
-	. += "Лицензия № [license_number]: [state]."
+		return "Лицензия № [license_number]: [span_danger("ОТОЗВАНА")]. Дроид вне закона, службе безопасности приказано его задержать."
+	if(expired)
+		return "Лицензия № [license_number]: [span_warning("ИСТЕКЛА")]. Контракт закрыт, полномочий у дроида больше нет."
+	return "Лицензия № [license_number]: [span_notice("действительна")]. [terms] Действует, пока идёт контракт. Если член экипажа, не цель контракта, погибнет после попадания дроида, ЦК отзовёт лицензию и СБ получит приказ задержать."
+
+/obj/item/card/id/hk47_license/attack_self(mob/user)
+	present(user)
+
+/obj/item/card/id/hk47_license/ui_action_click(mob/user, action)
+	present(user)
+
+/obj/item/card/id/hk47_license/proc/present(mob/living/user)
+	if(!COOLDOWN_FINISHED(src, present_cooldown) || user.incapacitated())
+		return
+	COOLDOWN_START(src, present_cooldown, HK47_LICENSE_PRESENT_COOLDOWN)
+	add_fingerprint(user)
+	user.visible_message(span_notice("[user] предъявляет [icon2html(src, viewers(user))] [name]. [license_text()]"), span_notice("Вы предъявляете лицензию. [license_text()]"))
 
 /obj/item/card/id/hk47_license/bank_examine(mob/user)
 	return list()
@@ -422,6 +440,11 @@
 	desc = "Карта частного телохранителя из реестра ЦК. Охраняемое лицо на карте не указано, номер контракта выбит, статус обновляется по сети ЦК."
 	icon_state = "silver"
 	assignment = "Частный телохранитель"
+	terms = "Частный телохранитель из реестра ЦК. Охраняемое лицо не указано, но может само поручиться за дроида. Работе не препятствовать, вопросы - к главе СБ. Доступа в помещения лицензия не даёт."
+
+/datum/action/item_action/hk47_show_license
+	name = "Show License"
+	desc = "Предъявить лицензию всем, кто рядом: номер, статус и полномочия."
 
 /obj/item/pinpointer/hk47
 	name = "HK signal tracker"
