@@ -14,6 +14,6 @@
 
 /obj/item/projectile/bullet/a762_enchanted
 	name = "enchanted 7.62 bullet"
-	nodamage = TRUE
+	damage = 5
 	armour_penetration = BULLET_BR20
 	stamina = 80

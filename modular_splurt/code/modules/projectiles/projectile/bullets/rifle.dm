@@ -39,12 +39,13 @@
 	icon_state = "762-casing"
 	caliber = ".308"
 	projectile_type = /obj/item/projectile/bullet/a308/rubber //bluemoon change
+	harmful = FALSE
 	advanced_print_req = FALSE
 	custom_materials = list(/datum/material/glass = 400)
 
 /obj/item/projectile/bullet/a308/rubber
 	name = ".308 Rubber bullet"
-	nodamage = TRUE
+	damage = 3
 	armour_penetration = BULLET_BR0
 	wound_bonus = 5
 	stamina = 50
@@ -81,10 +82,10 @@
 
 /obj/item/projectile/bullet/a543/rubber
 	name = "5.43mm Rubber bullet"
-	nodamage = TRUE
+	damage = 1
 	armour_penetration = BULLET_BR0
 	wound_bonus = 5
-	stamina = 45
+	stamina = 30
 	sharpness = SHARP_NONE
 	embedding = null
 
@@ -94,12 +95,14 @@
 	icon_state = "762-casing"
 	caliber = ".543"
 	projectile_type = /obj/item/projectile/bullet/a543/rubber
+	harmful = FALSE
 
 /obj/item/ammo_casing/g45l
 	name= ".45 Long bullet casing (Rubber)"
 	desc = "An .45 Long bullet casing."
 	caliber = ".45l"
 	projectile_type = /obj/item/projectile/bullet/g45l
+	harmful = FALSE
 
 /obj/item/ammo_casing/g45l/lehtal
 	name= ".45 Long bullet casing (Lethal)"
@@ -108,10 +111,10 @@
 // .45 Long — BR0 резина, BR1 летальный
 /obj/item/projectile/bullet/g45l
 	name = ".45 Long Rubber bullet"
-	nodamage = TRUE
+	damage = 3
 	armour_penetration = BULLET_BR0
 	wound_bonus = 5
-	stamina = 45
+	stamina = 35
 	sharpness = SHARP_NONE
 	embedding = null
 

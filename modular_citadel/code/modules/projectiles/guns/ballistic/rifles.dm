@@ -57,7 +57,7 @@
 
 /obj/item/projectile/bullet/c46x30mm/rubber
 	name = "4.6x30mm bullet"
-	nodamage = TRUE
+	damage = 2.5
 	stamina = 30
 	wound_bonus = 3
 	armour_penetration = BULLET_BR0 //стас не проверил сплюртовские файлы и у ВТ резины было пробитие как у обычного патрона

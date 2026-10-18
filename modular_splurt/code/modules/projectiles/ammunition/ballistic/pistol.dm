@@ -13,7 +13,7 @@
 
 /obj/item/projectile/bullet/c22lr/rubber
 	armour_penetration = BULLET_BR0
-	nodamage = TRUE
+	damage = 1
 	stamina = 15
 	sharpness = SHARP_NONE
 	embedding = null
@@ -21,17 +21,19 @@
 /obj/item/ammo_casing/c22lr/rubber
 	name = ".22 Long rifle bullet casing (rubber)"
 	projectile_type = /obj/item/projectile/bullet/c22lr/rubber
+	harmful = FALSE
 
 /obj/item/ammo_casing/a357/rubber
 	name = ".357 Rubber bullet casing"
 	desc = "A .357 Rubber bullet casing."
 	caliber = "357"
 	projectile_type = /obj/item/projectile/bullet/a357/rubber
+	harmful = FALSE
 
 /obj/item/projectile/bullet/a357/rubber
 	name = ".357 Rubber bullet"
-	nodamage = TRUE
-	stamina = 80
+	damage = 15
+	stamina = 90
 	armour_penetration = BULLET_BR0
 	sharpness = SHARP_NONE
 	embedding = null

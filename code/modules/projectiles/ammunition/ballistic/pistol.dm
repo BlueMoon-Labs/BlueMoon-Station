@@ -41,6 +41,7 @@
 	name = "10mm rubber bullet casing"
 	desc = "A 10mm rubber bullet casing."
 	projectile_type = /obj/item/projectile/bullet/c10mm/rubber
+	harmful = FALSE
 	can_be_printed = TRUE
 	advanced_print_req = FALSE
 	custom_materials = list(/datum/material/glass = 400)

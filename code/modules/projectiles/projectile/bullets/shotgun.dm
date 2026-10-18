@@ -28,7 +28,7 @@
 /obj/item/projectile/bullet/shotgun_beanbag
 	name = "beanbag slug"
 	icon_state = "pellet"
-	nodamage = TRUE
+	damage = 5
 	stamina = 80
 	armour_penetration = BULLET_BR0
 	wound_bonus = 2
@@ -49,7 +49,7 @@
 
 /obj/item/projectile/bullet/shotgun_stunslug
 	name = "stunslug"
-	nodamage = TRUE
+	damage =  5
 	armour_penetration = BULLET_BR0 // Stunslug — BR0
 	stamina = 60 //30 - Для 12 калибра 30 это реально мало если сравнивать с более удобными аналогами
 	knockdown = 5
@@ -126,7 +126,7 @@
 /obj/item/projectile/bullet/pellet/shotgun_rubbershot
 	name = "rubbershot pellet"
 	icon_state = "pellet"
-	nodamage = TRUE
+	damage = 2
 	stamina = 25                      // BLUEMOON EDIT: было 15 → 25
 	armour_penetration = BULLET_BR0
 	sharpness = SHARP_NONE
