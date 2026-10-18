@@ -182,7 +182,7 @@ GLOBAL_LIST_EMPTY(cached_previews)
 		data["headshot_links"] = (!unknown) ? (C.dna.headshot_links.Copy() || "") : list()
 		data["species_name"] = (!unknown) ? (C.dna?.custom_species || C.dna?.species) : "????"
 		var/race_lore = C.dna?.custom_species_lore
-		if(!length(race_lore))
+		if(!length(race_lore) && !length(C.dna?.custom_species)) // BLUEMOON ADD - лор вида подставляем только без своего названия вида, иначе профиль описывал бы другой вид
 			var/datum/species/species_datum = C.dna?.species
 			if(species_datum)
 				race_lore = species_datum.get_species_lore_text() // BLUEMOON ADD - лор вида, если игрок не задал свой
