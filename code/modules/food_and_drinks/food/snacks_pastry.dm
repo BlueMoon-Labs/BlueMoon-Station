@@ -815,7 +815,7 @@
 
 /obj/item/reagent_containers/food/snacks/pawcookie_raw
 	name = "Raw paw form"
-	desc = "Заготовка из теста, отлитая в форме лапки. Нужно запечь."
+	desc = "Заготовка из теста в форме лапки. Нужно запечь."
 	icon = 'icons/obj/food/food_ingredients.dmi'
 	icon_state = "rawpaw"
 	w_class = WEIGHT_CLASS_SMALL
