@@ -166,6 +166,7 @@
 #define HK47_PROTECT_SAMPLE (10 SECONDS)
 #define HK47_PROTECT_RANGE 7
 #define HK47_PROTECT_PRESENCE_PERCENT 40
+#define HK47_LICENSE_PRESENT_COOLDOWN (3 SECONDS)
 /// Пара HK-50 конкурента ищет посадку для капсулы в этом радиусе от своей цели.
 #define HK47_RIVAL_LANDING_RANGE 4
 #define HK47_RIVAL_FACTION "hk50_rival"
