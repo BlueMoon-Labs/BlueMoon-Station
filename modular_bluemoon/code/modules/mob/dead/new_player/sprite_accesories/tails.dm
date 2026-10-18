@@ -460,4 +460,3 @@
 	name = "RadFox"
 	icon_state = "radfox"
 	matrixed_sections = MATRIX_ALL
-	ckeys_allowed = list("lindaastereih", "silverfoxpaws")

@@ -461,14 +461,9 @@ GLOBAL_LIST_INIT(lighting_ambient_matrices, list())
 #define LIGHT_COLOR_STATION_MAINT_NIGHT	 "#dcd4c0"
 #define LIGHT_COLOR_WARM_BLOOM			 "#ffe4b8"
 #define LIGHT_COLOR_BLOOM_THRESHOLD		 "#8c7a60"
-#define LIGHT_NEW_LIGHTING	(1<<0)
-#define LIGHT_EXPOSURE		(1<<1)
-#define LIGHT_GLARE			(1<<2)
-#define LIGHT_DEFAULT		(LIGHT_NEW_LIGHTING|LIGHT_EXPOSURE|LIGHT_GLARE)
 #define GLOW_HIGH    0
 #define GLOW_MED     1
 #define GLOW_LOW     2
-#define GLOW_DISABLE 3
 
 #define COLOR_STARLIGHT "#8589fa" //Periwinkle/lavender blue, used for space starlight
 

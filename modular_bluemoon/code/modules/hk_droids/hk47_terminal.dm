@@ -161,6 +161,12 @@
 		"sniper" = rifle.sniper_unlocked,
 		"sniper_mode" = rifle.sniper_selected(),
 		"sniper_cooldown" = round(COOLDOWN_TIMELEFT(rifle, sniper_cooldown) / (1 SECONDS)),
+		"stun_mode" = rifle.stun_selected(),
+	) : null
+	var/datum/component/hk47_shield/shield = droid?.GetComponent(/datum/component/hk47_shield)
+	data["shield"] = shield ? list(
+		"active" = shield.active,
+		"cooldown" = round(COOLDOWN_TIMELEFT(shield, recharge) / (1 SECONDS)),
 	) : null
 	data["reroll_cooldown"] = round(COOLDOWN_TIMELEFT(hunter, reroll_cooldown) / (1 SECONDS))
 	data["identify_cooldown"] = round(COOLDOWN_TIMELEFT(hunter, identify_cooldown) / (1 SECONDS))

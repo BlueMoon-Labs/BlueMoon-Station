@@ -74,6 +74,7 @@
 			to_chat(user, "<span class='notice'>You construct the window.</span>")
 			var/obj/structure/window/WD = new the_rcd.window_type(drop_location())
 			WD.setAnchored(TRUE)
+			WD.install_airbag()
 			return TRUE
 	return FALSE
 

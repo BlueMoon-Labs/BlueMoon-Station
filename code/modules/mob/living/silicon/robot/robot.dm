@@ -649,6 +649,8 @@
 		new /obj/item/bodypart/l_arm/robot(drop_to)
 		new /obj/item/bodypart/r_arm/robot(drop_to)
 		new /obj/item/bodypart/head/robot(drop_to)
+		new /obj/item/assembly/flash/handheld(drop_to)
+		new /obj/item/assembly/flash/handheld(drop_to)
 
 	cell?.forceMove(drop_to) // Cell can be null, if removed beforehand
 	radio?.keyslot?.forceMove(drop_to)

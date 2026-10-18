@@ -27,6 +27,37 @@
 	qdel(prefs)
 	TEST_ASSERT(accepted, "role selectable in prefs")
 
+/// Миграция сейва включает HK-47 тем, у кого включена другая антаг-роль, и не трогает остальных.
+/datum/unit_test/hk47_savefile_migration_enables_role
+
+/datum/unit_test/hk47_savefile_migration_enables_role/Run()
+	var/datum/preferences/antag_player = new
+	antag_player.be_special = list(ROLE_TRAITOR = ANTAG_PRIORITY_LOW)
+	antag_player.update_preferences(84, null)
+	TEST_ASSERT_EQUAL(antag_player.be_special[ROLE_HK47], ANTAG_PRIORITY_HIGH, "enabled for an antag player")
+	TEST_ASSERT_EQUAL(antag_player.be_special[ROLE_TRAITOR], ANTAG_PRIORITY_LOW, "other roles untouched")
+
+	var/datum/preferences/no_antag_player = new
+	no_antag_player.be_special = list(ROLE_TRAITOR = ANTAG_PRIORITY_HIGH)
+	no_antag_player.toggles |= NO_ANTAG
+	no_antag_player.update_preferences(84, null)
+	TEST_ASSERT(!(ROLE_HK47 in no_antag_player.be_special), "NO_ANTAG player untouched")
+
+	var/datum/preferences/empty_player = new
+	empty_player.be_special = list()
+	empty_player.update_preferences(84, null)
+	TEST_ASSERT(!(ROLE_HK47 in empty_player.be_special), "player without antag roles untouched")
+
+	var/datum/preferences/opted_out_player = new
+	opted_out_player.be_special = list(ROLE_TRAITOR = ANTAG_PRIORITY_HIGH)
+	opted_out_player.update_preferences(85, null)
+	TEST_ASSERT(!(ROLE_HK47 in opted_out_player.be_special), "already migrated save untouched")
+
+	qdel(antag_player)
+	qdel(no_antag_player)
+	qdel(empty_player)
+	qdel(opted_out_player)
+
 /datum/round_event/ghost_role/hk47/test_launch
 	var/legend = HK47_STATUS_COVERT
 	var/crash = FALSE
@@ -61,6 +92,8 @@
 	TEST_ASSERT_EQUAL(droid.mind.assigned_role, ROLE_HK47, "assigned role")
 	TEST_ASSERT_EQUAL(droid.mind.special_role, ROLE_HK47, "special role")
 	TEST_ASSERT(istype(droid.loc, /obj/structure/closet/supplypod/hk47/covert), "HK-47 rides inside the covert capsule")
+	var/turf/transit_turf = get_turf(droid)
+	TEST_ASSERT(istype(transit_turf?.loc, /area/centcom/supplypod/podStorage), "the capsule waits in the CentCom pod bay, never in nullspace")
 	TEST_ASSERT_NOTNULL(zone, "capsule targets the landing turf")
 	TEST_ASSERT_EQUAL(zone.pod, droid.loc, "the landing zone carries HK-47's capsule")
 	TEST_ASSERT_NULL(zone.helper, "no landing marker for a covert capsule")
@@ -85,6 +118,7 @@
 	var/datum/antagonist/hk47/antag = droid.mind.has_antag_datum(/datum/antagonist/hk47)
 	var/obj/effect/temp_visual/hk47_crash_fall/fall = locate() in run_loc_floor_bottom_left
 	TEST_ASSERT_NOTNULL(fall, "the wreck is falling")
+	TEST_ASSERT_EQUAL(droid.loc, fall, "HK-47 rides the falling wreck, not nullspace")
 	TEST_ASSERT_NULL(antag.last_voice, "silent while falling")
 	qdel(fall)
 	TEST_ASSERT_EQUAL(get_turf(droid), run_loc_floor_bottom_left, "HK-47 lands at the crash site")

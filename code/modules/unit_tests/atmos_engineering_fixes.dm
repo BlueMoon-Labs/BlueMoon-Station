@@ -201,7 +201,7 @@
 	var/list/examine_lines = door.examine(observer)
 	var/examine_text = examine_lines.Join("\n")
 	TEST_ASSERT(findtext(examine_text, "Атмосферный датчик"), "осмотр файрлока потерял строку атмосферного датчика: [examine_text]")
-	TEST_ASSERT(findtext(examine_text, "manual override"), "осмотр файрлока потерял строку ручного открытия: [examine_text]")
+	TEST_ASSERT(findtext(examine_text, "ручным приводом"), "осмотр файрлока потерял строку ручного открытия: [examine_text]")
 	door.alarm_type = null
 
 	// Открытие ломом обязано взводить грейс, иначе следующая же тревога

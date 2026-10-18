@@ -34,6 +34,10 @@
 /datum/round_event_control/crew_relief/get_weight(datum/director_signals/signals)
 	return weight * (SSdirector.profile ? SSdirector.profile.crew_relief_weight_mult : 1)
 
+/// Почему нужен отряд, по сигналам бита: идёт в опрос призраков, брифинг бойцов и объявление.
+/datum/round_event_control/crew_relief/proc/relief_reason(datum/director_signals/signals)
+	return "станции нужна помощь"
+
 /datum/round_event_control/crew_relief/proc/note_relief_team(list/mob/members)
 	relief_team = list()
 	for(var/mob/member as anything in members)
@@ -54,6 +58,16 @@
 	relief_department = DIRECTOR_DEPT_ENGINEERING
 	relief_staff_max = 1
 
+/datum/round_event_control/crew_relief/repair/relief_reason(datum/director_signals/signals)
+	if(!signals)
+		return "инженерному отделу нужна помощь"
+	switch(signals.staffing[DIRECTOR_DEPT_ENGINEERING] || 0)
+		if(0)
+			return "в инженерном отделе не осталось ни одного инженера"
+		if(1)
+			return "в инженерном отделе остался один инженер"
+	return "инженерному отделу нужна помощь"
+
 /datum/round_event_control/crew_relief/medical
 	name = "Medical Relief Team"
 	typepath = /datum/round_event/ghost_role/crew_relief/medical
@@ -62,16 +76,35 @@
 	relief_staff_max = 0
 	relief_dead_fraction = 0.15
 
+/datum/round_event_control/crew_relief/medical/relief_reason(datum/director_signals/signals)
+	if(!signals)
+		return "медотделу нужна помощь"
+	var/list/reasons = list()
+	if(!signals.staffing[DIRECTOR_DEPT_MEDICAL])
+		reasons += "в медотделе не осталось врачей"
+	if(signals.dead_fraction >= relief_dead_fraction)
+		reasons += "погибло [round(signals.dead_fraction * 100)]% экипажа"
+	return length(reasons) ? jointext(reasons, ", ") : "медотделу нужна помощь"
+
 /datum/round_event/ghost_role/crew_relief
 	minimum_required = CREW_RELIEF_MIN_MEMBERS
 	/// Шаблон ОБР, по которому собирается отряд
 	var/datum/ert/ert_template
 	/// Задача отряда: миссия команды и брифинг каждому бойцу
 	var/mission = ""
+	/// Задача одной фразой для опроса призраков
+	var/poll_task = ""
 	var/announce_title = ""
-	var/announce_text = ""
+	/// Отряд в винительном падеже для объявления: один боец и бригада
+	var/team_single = ""
+	var/team_plural = ""
+	var/announce_tail = ""
+	var/reason = "станции нужна помощь"
 
 /datum/round_event/ghost_role/crew_relief/spawn_role()
+	var/datum/round_event_control/crew_relief/relief_control = control
+	if(istype(relief_control))
+		reason = relief_control.relief_reason(SSdirector.last_signals)
 	if(!length(GLOB.emergencyresponseteamspawn))
 		return MAP_ERROR
 	var/list/mob/candidates = get_candidates(ROLE_DEATHSQUAD)
@@ -86,31 +119,44 @@
 	for(var/mob/living/carbon/human/member as anything in members)
 		prepare_member(member)
 	spawned_mobs += members
-	var/datum/round_event_control/crew_relief/relief_control = control
 	if(istype(relief_control))
 		relief_control.note_relief_team(members)
 	return SUCCESSFUL_SPAWN
 
+/datum/round_event/ghost_role/crew_relief/poll_question()
+	return "[role_name]: [reason]. [poll_task] Это не боевой отряд. Прилетите?"
+
 /datum/round_event/ghost_role/crew_relief/proc/prepare_member(mob/living/carbon/human/member)
 	ADD_TRAIT(member, TRAIT_NO_MIDROUND_ANTAG, GHOSTROLE_TRAIT)
-	to_chat(member, span_boldnotice("Вы - отряд помощи экипажу, а не боевое ОБР. [mission]"))
+	to_chat(member, span_boldnotice("Вы - отряд помощи экипажу, а не боевое ОБР. Вас прислали, потому что [reason]. [mission]"))
 
 /datum/round_event/ghost_role/crew_relief/announce(fake)
-	priority_announce("Внимание, [station_name()]. [announce_text]", announce_title, initial(ert_template.ertphrase))
+	priority_announce(announce_text(), announce_title)
+
+/datum/round_event/ghost_role/crew_relief/proc/announce_text()
+	var/count = length(spawned_mobs)
+	var/team = count > 1 ? "[team_plural] из [count] человек" : team_single
+	return "Внимание, [station_name()]. По данным ЦК, [reason]. Центральное Командование направляет [team]. [announce_tail]"
 
 /datum/round_event/ghost_role/crew_relief/repair
 	role_name = "Ремонтная бригада ЦК"
 	ert_template = /datum/ert/engineer_ert
 	mission = "Задача: устранить пробоины и разгерметизацию, восстановить питание и атмосферу, починить повреждённое. Вы подчиняетесь капитану станции в разумных пределах."
+	poll_task = "Задача - пробоины, питание, атмосфера и двигатель, пригодится опыт инженера."
 	announce_title = "Ремонтная бригада ЦК"
-	announce_text = "На станции почти не осталось инженерного персонала. Центральное Командование направляет ремонтную бригаду для устранения повреждений. Окажите ей содействие."
+	team_single = "одного ремонтника"
+	team_plural = "ремонтную бригаду"
+	announce_tail = "Задача - пробоины, питание и атмосфера, это не боевой отряд. Окажите содействие."
 
 /datum/round_event/ghost_role/crew_relief/medical
 	role_name = "Санитарная бригада ЦК"
 	ert_template = /datum/ert/hsc
 	mission = "Задача: стабилизировать раненых, доставить пострадавших и тела в медотдел, вернуть к жизни всех, кого возможно. Вы подчиняетесь капитану станции в разумных пределах."
+	poll_task = "Задача - лечить раненых и возвращать к жизни погибших, пригодится опыт врача."
 	announce_title = "Санитарная бригада ЦК"
-	announce_text = "Медицинский отдел станции не справляется с потоком пострадавших. Центральное Командование направляет санитарную бригаду. Обеспечьте ей доступ в медотдел."
+	team_single = "одного медика"
+	team_plural = "санитарную бригаду"
+	announce_tail = "Задача - раненые и погибшие, это не боевой отряд. Обеспечьте доступ в медотдел."
 
 #undef CREW_RELIEF_MIN_MEMBERS
 #undef CREW_RELIEF_MAX_MEMBERS

@@ -90,11 +90,17 @@ type Tallies = {
   sabotaged: number;
 };
 
+type ShieldState = {
+  active: BooleanLike;
+  cooldown: number;
+};
+
 type RifleState = {
   shots: number;
   sniper: BooleanLike;
   sniper_mode: BooleanLike;
   sniper_cooldown: number;
+  stun_mode: BooleanLike;
 };
 
 /** Статус HK-47 для станции, эскалация и эвакуация. */
@@ -115,6 +121,7 @@ export type HKContractTerminalData = {
   charge: number;
   charge_max: number;
   rifle: RifleState | null;
+  shield: ShieldState | null;
   rifle_max: number;
   identify_range: number;
   protect_presence_needed: number;
@@ -514,11 +521,14 @@ const upgradeStates = (upgrades: UpgradeState[]) => {
 
 const StatusLine = () => {
   const { data } = useBackend<HKContractTerminalData>();
-  const { rifle, station } = data;
+  const { rifle, shield, station } = data;
   const lowCharge = data.charge < data.charge_max / 4;
   let sniper = '';
   if (rifle?.sniper) {
     sniper = rifle.sniper_cooldown > 0 ? ` СНАЙП ${pad2(rifle.sniper_cooldown)}с` : rifle.sniper_mode ? ' СНАЙП' : '';
+  }
+  if (rifle?.stun_mode) {
+    sniper = ` ПАРАЛ${sniper}`;
   }
   const warn = (flag: boolean) => (flag ? 'HKContractTerminal__warn' : undefined);
   return (
@@ -527,6 +537,7 @@ const StatusLine = () => {
       <span className={warn(lowCharge)}>{`${chargeBar(data.charge, data.charge_max)} ${data.charge}`}</span>
       {' // ВИНТОВКА '}
       <span className={warn(!rifle)}>{rifle ? `${pad2(rifle.shots)}/${pad2(data.rifle_max)}${sniper}` : 'ОТСУТСТВУЕТ'}</span>
+      {!!shield && ` // ЩИТ ${shield.active ? 'АКТИВЕН' : shield.cooldown > 0 ? `${pad2(shield.cooldown)}с` : 'ГОТОВ'}`}
       {!!station && (
         <>
           {` // ${station.status_name.toUpperCase()} // УГРОЗА `}

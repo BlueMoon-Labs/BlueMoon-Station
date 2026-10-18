@@ -207,7 +207,7 @@ GLOBAL_LIST_INIT(ai_core_display_screens, list(
 	"Anon",
 	"Cheese",
 	"Voiddonut",
-	"Darkmatrer",
+	"Darkmatter",
 	"Nadburn",
 	"Rainbowslime",
 	"Catamari",

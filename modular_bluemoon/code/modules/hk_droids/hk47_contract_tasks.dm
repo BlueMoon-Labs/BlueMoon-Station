@@ -118,7 +118,7 @@ GLOBAL_LIST_INIT(hk_contract_tasks, hk_contract_singletons(/datum/hk_contract_ta
 	capturable = TRUE
 
 /datum/hk_contract_task/capture/rules_text(datum/hk_contract/contract)
-	return "Обездвижьте цель живой (наручники, оглушение, сон или крит), встаньте рядом и вызовите капсулу. Если цель сдвинется с места посадки, перетащите её мышью на капсулу. Труп и тело без игрока заказчик не примет. Контракт засчитывается, когда цель окажется внутри; через [DisplayTimeText(HK47_CAPTURE_RETURN_TIME)] её вернут на станцию. Пустая капсула улетает через [DisplayTimeText(HK47_CAPTURE_POD_WAIT)]."
+	return "Обездвижьте цель живой (наручники, оглушение, истощение выносливости - парализующим режимом винтовки, сон или крит), встаньте рядом и вызовите капсулу. Если цель сдвинется с места посадки, перетащите её мышью на капсулу. Труп и тело без игрока заказчик не примет. Контракт засчитывается, когда цель окажется внутри; через [DisplayTimeText(HK47_CAPTURE_RETURN_TIME)] её вернут на станцию. Пустая капсула улетает через [DisplayTimeText(HK47_CAPTURE_POD_WAIT)]."
 
 /datum/hk_contract_task/theft
 	name = "кража"

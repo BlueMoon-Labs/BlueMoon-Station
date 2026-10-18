@@ -45,7 +45,8 @@ const fixture: HKContractTerminalData = {
   contracts_needed: 3,
   charge: 300,
   charge_max: 450,
-  rifle: { shots: 9, sniper: 0, sniper_mode: 0, sniper_cooldown: 0 },
+  rifle: { shots: 9, sniper: 0, sniper_mode: 0, sniper_cooldown: 0, stun_mode: 0 },
+  shield: null,
   rifle_max: 12,
   identify_range: 2,
   protect_presence_needed: 40,
@@ -261,6 +262,22 @@ test('статус для станции в строке состояния', ()
   setup({ station: { ...station, status_name: 'вне закона', threat: 1 } });
   expect(screen.getByText(/ВНЕ ЗАКОНА \/\/ УГРОЗА/)).toBeTruthy();
   expect(screen.getByText('1/2')).toBeTruthy();
+});
+
+test('парализующий режим винтовки виден в строке состояния', () => {
+  setup({ rifle: { shots: 9, sniper: 0, sniper_mode: 0, sniper_cooldown: 0, stun_mode: 1 } });
+  expect(screen.getByText('09/12 ПАРАЛ')).toBeTruthy();
+});
+
+test('щит в строке состояния: активен, перезарядка, готов', () => {
+  const { unmount } = setup({ shield: { active: 1, cooldown: 60 } });
+  expect(screen.getByText(/ЩИТ АКТИВЕН/)).toBeTruthy();
+  unmount();
+  const second = setup({ shield: { active: 0, cooldown: 7 } });
+  expect(screen.getByText(/ЩИТ 07с/)).toBeTruthy();
+  second.unmount();
+  setup({ shield: { active: 0, cooldown: 0 } });
+  expect(screen.getByText(/ЩИТ ГОТОВ/)).toBeTruthy();
 });
 
 test('бегущая строка допечатывает комментарий по символу', () => {

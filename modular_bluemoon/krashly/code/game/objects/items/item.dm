@@ -8,24 +8,11 @@
 /obj/item/hand_mirror/attack_self(mob/user) // Функция зеркала
 	if(ishuman(user))
 		var/mob/living/carbon/human/H = user
-
-		if(H.gender != FEMALE)
-			var/new_style = tgui_input_list(user, "Select a facial hair style", "Grooming", GLOB.facial_hair_styles_list, H.facial_hair_style)
-			if(!user.canUseTopic(src, BE_CLOSE, FALSE, NO_TK))
-				return
-			if(new_style)
-				H.facial_hair_style = new_style
-		else
+		if(H.gender == FEMALE)
 			H.facial_hair_style = "Shaved"
-
-		var/new_style = tgui_input_list(user, "Select a hair style", "Grooming", GLOB.hair_styles_list, H.hair_style)
-		if(!user.canUseTopic(src, BE_CLOSE, FALSE, NO_TK))
-			return
-		if(new_style)
-			H.hair_style = new_style
-
-		H.update_mutant_bodyparts()
-		H.update_hair()
+			H.update_mutant_bodyparts()
+			H.update_hair()
+		open_mirror_hair_picker(user, H, src)
 
 /obj/item/icona_madonna
 	name = "Madonna icon"

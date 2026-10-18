@@ -422,6 +422,8 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 						cont = FALSE
 						break
 			if(cont && D.is_operational())
+				if(!opening && !D.can_auto_close())
+					continue
 				// Закрытие зоной - тоже работа автоматики, и открывать обратно
 				// обязана она же: собственной тревоги у такой двери нет, а
 				// пересчёт тревоги ходит только по фронту тревоги.

@@ -87,3 +87,20 @@
 	item_state = "black_sneakers"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/shoes.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/shoes.dmi'
+
+/obj/item/modkit/formal_concord_boots_kit
+	name = "Formal concord boots Kit"
+	desc = "A modkit for making a MOPP boots into a Formal concord boots."
+	icon_state = "boots_kit"
+	product = /obj/item/clothing/shoes/jackboots/cbrn/mopp/formal_concord_boots
+	fromitem = list(/obj/item/clothing/shoes/jackboots/cbrn/mopp)
+
+/obj/item/clothing/shoes/jackboots/cbrn/mopp/formal_concord_boots
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Formal concord boots"
+	desc = "Удивительно, но в обувь не напихать ничего, кроме повышенного комфорта - данная обувь обладает отличными характеристиками для длительного ношения - не смотря на защищённость, лапы легко дышат, подошва подстроена под узкую стопу, а внутренние части обиты дорогой синтетикой."
+	icon_state = "formal_concord_boots"
+	item_state = "formal_concord_boots"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/shoes.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/shoes.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/shoes_digi.dmi'

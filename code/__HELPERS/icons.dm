@@ -775,7 +775,8 @@ GLOBAL_LIST_EMPTY(cached_icon_state_directional)
 		GLOB.cached_icon_state_directional.Cut(1, (ICON_STATE_DIRECTIONAL_CACHE_MAX / 4) + 1) // evict oldest 25%
 
 // Creates a single icon from a given /atom or /image.  Only the first argument is required.
-/proc/getFlatIcon(image/A, defdir, deficon, defstate, defblend, start = TRUE, no_anim = FALSE)
+// icon_offsets optionally receives the original origin's pixel offsets within the flattened icon.
+/proc/getFlatIcon(image/A, defdir, deficon, defstate, defblend, start = TRUE, no_anim = FALSE, list/icon_offsets = null)
 	//Define... defines.
 	var/static/icon/flat_template = icon('icons/effects/effects.dmi', "nothing")
 
@@ -809,6 +810,9 @@ GLOBAL_LIST_EMPTY(cached_icon_state_directional)
 	#define addY1 add_size[INDEX_Y_LOW]
 	#define addY2 add_size[INDEX_Y_HIGH]
 
+	if(!isnull(icon_offsets))
+		icon_offsets["x"] = 0
+		icon_offsets["y"] = 0
 	if(!A || A.alpha <= 0)
 		return BLANK
 
@@ -938,6 +942,9 @@ GLOBAL_LIST_EMPTY(cached_icon_state_directional)
 				addY2 - flatY1 + 1
 				)
 				flat_size = add_size.Copy()
+				if(!isnull(icon_offsets))
+					icon_offsets["x"] = 1 - flatX1
+					icon_offsets["y"] = 1 - flatY1
 
 			// Blend the overlay into the flattened icon
 			if(I != copy && (I.appearance_flags & RESET_COLOR))

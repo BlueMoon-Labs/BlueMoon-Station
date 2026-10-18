@@ -192,6 +192,26 @@
 /mob/living/silicon/proc/statelaws(force = 0)
 	var/is_radio = (radiomod != "none")
 	var/prefix = is_radio ? "[radiomod] " : ""
+	// BLUEMOON ADD malf fake laws - подмена показываемых законов
+	if(!force)
+		var/list/fakes_to_state = null
+		if(fake_laws_enabled && length(fake_laws) && is_malf_ai())
+			fakes_to_state = fake_laws
+		else if(iscyborg(src))
+			var/mob/living/silicon/robot/R = src
+			var/mob/living/silicon/ai/M = R.connected_ai
+			if(istype(M) && R.lawupdate && M.fake_laws_enabled && length(M.fake_laws) && M.is_malf_ai())
+				fakes_to_state = M.fake_laws
+		if(length(fakes_to_state))
+			say("[prefix]Текущие законы:")
+			sleep(10)
+			var/fnum = 1
+			for(var/fl in fakes_to_state)
+				if(length(fl))
+					say("[prefix] [fnum]. [fl]")
+					sleep(10)
+					fnum++
+			return
 	say("[prefix]Текущие законы:")
 	var/number = 1
 	sleep(10)
@@ -349,6 +369,34 @@
 			l_num++
 
 	data["laws"] = laws_to_send
+	// BLUEMOON ADD malf fake laws tab
+	var/list/fake_to_send = list()
+	var/fi = 1
+	for(var/fl in fake_laws)
+		if(length(fl))
+			fake_to_send += list(list("id" = "fake-[fi]", "index" = fi, "name" = "[fi]", "text" = "[fl]", "active" = 1, "type" = "fake"))
+			fi++
+	// BLUEMOON ADD: привязанный борг видит в менеджере фейки своего малф-ИИ (то, что услышит экипаж)
+	if(iscyborg(src))
+		var/mob/living/silicon/robot/R = src
+		var/mob/living/silicon/ai/M = R.connected_ai
+		if(istype(M) && R.lawupdate && M.fake_laws_enabled && length(M.fake_laws) && M.is_malf_ai())
+			var/mfn = 1
+			for(var/mfl in M.fake_laws)
+				if(length(mfl))
+					laws_to_send += list(list(
+						"id" = "masterfake-[mfn]",
+						"index" = mfn,
+						"name" = "FAKE",
+						"text" = "[mfl]",
+						"active" = 1,
+						"type" = "fake"
+					))
+				mfn++
+			data["laws"] = laws_to_send
+	data["fake_laws"] = fake_to_send
+	data["fake_enabled"] = fake_laws_enabled ? 1 : 0
+	data["is_malf"] = is_malf_ai() ? 1 : 0
 	return data
 
 /mob/living/silicon/ui_act(action, params)
@@ -395,9 +443,45 @@
 					while(lawcheck.len < true_idx) lawcheck += "Yes"
 					lawcheck[true_idx] = (lawcheck[true_idx] == "No") ? "Yes" : "No"
 
+				if("fake")
+					// BLUEMOON ADD: фейки мастера только для чтения, их меняет сам ИИ
+					to_chat(src, span_notice("Это фейковый закон вашего ИИ, его меняет сам ИИ."))
+					update_law_menu()
+					return TRUE
+
 			update_law_menu()
 			return TRUE
-// (ADD) Pe4henika bluemoon -- end
+
+		if("toggle_fake")
+			if(!is_malf_ai())
+				return TRUE
+			fake_laws_enabled = !fake_laws_enabled
+			update_law_menu()
+			return TRUE
+
+		if("add_fake")
+			if(!is_malf_ai())
+				return TRUE
+			var/new_law = tgui_input_text(usr, "Введите фейковый закон:", "Fake Law", max_length = 512, multiline = TRUE, encode = FALSE)
+			if(new_law)
+				if(length(fake_laws) >= 20)
+					to_chat(src, span_warning("Максимум 20 фейковых законов."))
+					return TRUE
+				fake_laws += new_law
+				fake_laws_enabled = TRUE
+				log_game("[key_name(usr)] MALF fake law added via LawManager: [new_law]")
+			update_law_menu()
+			return TRUE
+
+		if("del_fake")
+			if(!is_malf_ai())
+				return TRUE
+			var/idx = text2num(params["index"])
+			if(idx >= 1 && idx <= length(fake_laws))
+				fake_laws.Cut(idx, idx + 1)
+			update_law_menu()
+			return TRUE
+// (ADD) Bluemoon -- end
 /mob/living/silicon/proc/set_autosay() //For allowing the AI and borgs to set the radio behavior of auto announcements (state laws, arrivals).
 	if(!radio)
 		to_chat(src, span_alert("Радио не обнаружено."))

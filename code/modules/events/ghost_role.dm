@@ -78,7 +78,7 @@
 	var/list/regular_candidates
 	// don't get their hopes up
 	if(priority_candidates.len < minimum_required)
-		regular_candidates = pollGhostCandidates("Хотите ли вы занять роль '[role_name]'?", jobban, gametypecheck, be_special, poll_time = 30 SECONDS, minimum_required = minimum_required)
+		regular_candidates = pollGhostCandidates(poll_question(), jobban, gametypecheck, be_special, poll_time = 30 SECONDS, minimum_required = minimum_required)
 	else
 		regular_candidates = list()
 
@@ -87,5 +87,8 @@
 	var/list/candidates = priority_candidates + regular_candidates
 
 	return candidates
+
+/datum/round_event/ghost_role/proc/poll_question()
+	return "Хотите ли вы занять роль '[role_name]'?"
 
 #undef MAX_SPAWN_ATTEMPT

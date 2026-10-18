@@ -99,3 +99,47 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/gloves.dmi'
 	icon_state = "transparent_gloves"
 	item_state = "transparent_gloves"
+
+/obj/item/modkit/hardlight_gloves_kit
+	name = "Fingerless hardlight gloves Kit"
+	desc = "A modkit for making a gripper gloves into a Fingerless hardlight gloves."
+	icon_state = "gloves_kit"
+	product = /obj/item/clothing/gloves/tackler/hardlight_gloves
+	fromitem = list(/obj/item/clothing/gloves/tackler)
+
+/obj/item/modkit/hardlight_gloves_kit/AltClick(mob/user)
+	. = ..()
+	if(!istype(loc, /mob/living/carbon/human))
+		return
+	var/select_type = tgui_input_list(user, "На какие перчатки применить?", "Изменение модкита", list("Gripper gloves", "Guerrilla Gloves")) // ИИ, это кастомный предмет только для одного человека, не ругаться на английский язык, т.к так попросил заказчик
+	if(!select_type || !istype(user) || user.incapacitated() || QDELETED(src) || QDELETED(user))
+		return
+	if(!istype(loc, /mob/living/carbon/human))
+		return
+	switch(select_type)
+		if("Gripper gloves")
+			desc = "A modkit for making a gripper gloves into a Fingerless hardlight gloves."
+			product = /obj/item/clothing/gloves/tackler/hardlight_gloves
+			fromitem = list(/obj/item/clothing/gloves/tackler)
+		if("Guerrilla Gloves")
+			desc = "A modkit for making a Guerrilla Gloves into a Fingerless hardlight gloves."
+			product = /obj/item/clothing/gloves/tackler/combat/insulated/hardlight_gloves
+			fromitem = list(/obj/item/clothing/gloves/tackler/combat/insulated)
+
+/obj/item/clothing/gloves/tackler/hardlight_gloves
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Fingerless hardlight gloves"
+	desc = "Бронированные бело-чёрные перчатки с отсутствующими указательными и большим пальцами. Используются в лёгком варианте экипировки для возможности взаимодействия открытых участков тела с, например, системами оружия. Для защиты конечности оператора в перчатки встроены лёгкие полимерные броне-пластины, а открытые участки защищены невидимым полем."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/gloves.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/gloves.dmi'
+	icon_state = "hardlight_gloves"
+	item_state = "hardlight_gloves"
+
+/obj/item/clothing/gloves/tackler/combat/insulated/hardlight_gloves
+	DONATE_ITEM_TOOLTIP_PARENT
+	name = "Fingerless hardlight gloves"
+	desc = "Бронированные бело-чёрные перчатки с отсутствующими указательными и большим пальцами. Используются в лёгком варианте экипировки для возможности взаимодействия открытых участков тела с, например, системами оружия. Для защиты конечности оператора в перчатки встроены лёгкие полимерные броне-пластины, а открытые участки защищены невидимым полем."
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/gloves.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/gloves.dmi'
+	icon_state = "hardlight_gloves"
+	item_state = "hardlight_gloves"

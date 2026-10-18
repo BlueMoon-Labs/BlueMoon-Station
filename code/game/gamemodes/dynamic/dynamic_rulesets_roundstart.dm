@@ -213,7 +213,9 @@
 	weight = 6 //BLUEMOON CHANGES
 	cost = 20
 	intensity = 45
-	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD) // BLUEMOON ADD
+	// BLUEMOON ADD - раундстартовый маг доступен и в Тим-Базе: его Summon Events глушат обычные
+	// события, так что тяжёлая смена идёт силами антаг-капли, а не разнобоем ивентов.
+	required_round_type = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED)
 	requirements = list(101,101,101,60,40,20,20,20,10,10)  //BLUEMOON CHANGES
 	var/list/roundstart_wizards = list()
 
@@ -268,6 +270,7 @@
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	requirements = list(101,101,101,101,101,60,40,20,15,10) //BLUEMOON CHANGES
 	flags = HIGH_IMPACT_RULESET
+	blocking_rules = list(/datum/dynamic_ruleset/roundstart/cultwar) // BLUEMOON ADD - либо этот культ, либо двойной cultwar, но не оба
 	antag_cap = list("denominator" = 20, "offset" = 1)
 	var/datum/team/cult/main_cult
 
@@ -508,6 +511,7 @@
 	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
 	requirements = list(101,101,101,101,101,50,40,30,20,15) //BLUEMOON CHANGES
 	flags = HIGH_IMPACT_RULESET
+	blocking_rules = list(/datum/dynamic_ruleset/roundstart/cultwar) // BLUEMOON ADD - либо этот культ, либо двойной cultwar, но не оба
 	antag_cap = list("denominator" = 20, "offset" = 1)
 	var/datum/team/clockcult/main_clockcult
 
@@ -548,6 +552,121 @@
 	else
 		SSticker.mode_result = "loss - servants failed their objective (summon ratvar)"
 		SSticker.news_report = CULT_FAILURE
+
+//////////////////////////////////////////////
+//                                          //
+//          CULT WAR (DOUBLE CULT)          //
+//                                          //
+//////////////////////////////////////////////
+/// Ратваровцы и Кровавый Культ на одной смене: два HIGH_IMPACT-рулсета, объединённые в один.
+/// По четыре культиста на сторону: восемь зараченных стартовых ролей вместо одной команды.
+/// Культы враждебны друг другу: цели мешают друг другу, и победа одной стороны
+/// не отменяет провала второй.
+#define CULT_WAR_TEAM_SIZE 4
+
+/datum/dynamic_ruleset/roundstart/cultwar
+	name = "Cult War"
+	minimum_required_age = 0 // BLUEMOON EDIT
+	protected_roles = list("Vanguard Operative", "NanoTrasen Representative", "Internal Affairs Agent", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director")  //BLUEMOON CHANGES
+	restricted_roles = list("Cyborg", "AI", "Positronic Brain")
+	// Базовая проверка бана и предпочтений идёт по культу; Ратвара добавляет trim_candidates/has_required_antag_preference.
+	antag_flag = "Cult War"
+	antag_flag_override = ROLE_CULTIST
+	required_candidates = 2
+	weight = 3
+	cost = 30
+	scaling_cost = 0
+	// Две тяжёлые команды в одном правиле: выше любого одиночного (45), но дешевле суммы двух -
+	// слот нагрузки у директора один на весь рулсет.
+	intensity = 60
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED) // BLUEMOON ADD
+	blocking_rules = list( /datum/dynamic_ruleset/roundstart/bloodcult, /datum/dynamic_ruleset/roundstart/clockcult, /datum/dynamic_ruleset/midround/ratvar_awakening, /datum/dynamic_ruleset/midround/narsie_awakening) // BLUEMOON ADD
+	min_players = 30
+	requirements = list(101,101,101,101,101,60,50,40,30,20) //BLUEMOON CHANGES
+	flags = HIGH_IMPACT_RULESET | LONE_RULESET
+	antag_cap = CULT_WAR_TEAM_SIZE // по четыре на каждый культ, без роста от онлайна
+	var/datum/team/clockcult/main_clockcult
+	var/datum/team/cult/main_cult
+	/// Обе половины в assigned: директор считает нагрузку правила по назначенным.
+	var/list/datum/mind/clock_assigned = list()
+	var/list/datum/mind/blood_assigned = list()
+
+/datum/dynamic_ruleset/roundstart/cultwar/ready(population, forced = FALSE)
+	required_candidates = get_antag_cap(population) * 2
+	. = ..()
+
+/datum/dynamic_ruleset/roundstart/cultwar/has_required_antag_preference(client/candidate_client)
+	// Подходит и оптик под культ, и под Ратвара - правило выдаёт роли обоих типов.
+	if(HAS_ANTAG_PREF(candidate_client, ROLE_CULTIST) || HAS_ANTAG_PREF(candidate_client, ROLE_SERVANT_OF_RATVAR))
+		return TRUE
+	return ..()
+
+/datum/dynamic_ruleset/roundstart/cultwar/trim_candidates()
+	. = ..()
+	// Базовый trim проверяет бан только по antag_flag_override (ROLE_CULTIST) - добавляем вторую половину.
+	for(var/mob/P in candidates.Copy())
+		if(jobban_isbanned(P, ROLE_SERVANT_OF_RATVAR))
+			candidates -= P
+
+/datum/dynamic_ruleset/roundstart/cultwar/pre_execute(population)
+	. = ..()
+	if(!.)
+		return FALSE
+	var/per_cult = get_antag_cap(population)
+	// Сначала весь набор, потом выдача: обрыв на середине оставил бы половину экипажа
+	// со special_role без антаг-датума. ready() уже отсекает нехватку, это страховка от дисконнекта.
+	if(candidates.len < per_cult * 2)
+		message_admins("Рулсет [name] не был активирован: кандидатов [candidates.len], нужно [per_cult * 2] (по [per_cult] на каждый культ).")
+		return FALSE
+	for(var/i = 1 to per_cult)
+		var/mob/clock_member = pick_n_take(candidates)
+		clock_member.mind.special_role = ROLE_SERVANT_OF_RATVAR
+		clock_member.mind.restricted_roles = restricted_roles
+		clock_assigned += clock_member.mind
+		assigned += clock_member.mind
+	for(var/i = 1 to per_cult)
+		var/mob/blood_member = pick_n_take(candidates)
+		blood_member.mind.special_role = ROLE_CULTIST
+		blood_member.mind.restricted_roles = restricted_roles
+		blood_assigned += blood_member.mind
+		assigned += blood_member.mind
+	return TRUE
+
+/datum/dynamic_ruleset/roundstart/cultwar/execute()
+	main_clockcult = new
+	for(var/datum/mind/M in clock_assigned)
+		var/datum/antagonist/clockcult/new_servant = new /datum/antagonist/clockcult
+		new_servant.clock_team = main_clockcult
+		new_servant.give_equipment = TRUE
+		M.add_antag_datum(new_servant)
+		SSticker.mode.greet_servant(M.current)
+	main_cult = new
+	for(var/datum/mind/M in blood_assigned)
+		var/datum/antagonist/cult/new_cultist = new /datum/antagonist/cult
+		new_cultist.cult_team = main_cult
+		new_cultist.give_equipment = TRUE
+		M.add_antag_datum(new_cultist)
+	main_cult.setup_objectives()
+	return TRUE
+
+/datum/dynamic_ruleset/roundstart/cultwar/round_result()
+	..()
+	var/clock_won = main_clockcult?.check_clockwork_victory()
+	var/blood_won = main_cult?.check_cult_victory()
+	if(clock_won && blood_won)
+		SSticker.mode_result = "win - both cults fulfilled their objectives"
+		SSticker.news_report = CULT_SUMMON
+	else if(clock_won)
+		SSticker.mode_result = "win - servants of Ratvar completed their objective (summon ratvar)"
+		SSticker.news_report = CLOCK_SUMMON
+	else if(blood_won)
+		SSticker.mode_result = "win - cult win"
+		SSticker.news_report = CULT_SUMMON
+	else
+		SSticker.mode_result = "loss - both cults failed their objectives"
+		SSticker.news_report = CULT_FAILURE
+
+#undef CULT_WAR_TEAM_SIZE
 
 //////////////////////////////////////////////
 //                                          //
@@ -640,7 +759,11 @@ BLUEMOON REMOVAL END*/
 	antag_flag = ROLE_OPERATIVE
 	antag_datum = /datum/antagonist/nukeop/clownop
 	antag_leader_datum = /datum/antagonist/nukeop/leader/clownop
-	requirements = list(101,101,101,101,101,101,101,101,101,101)
+	// BLUEMOON ADD - клоуны-оперативники выпали из набора: requirements из одних 101 при потолке
+	// угрозы 100 делали правило недостижимым для директора (работал только ручной форс админом).
+	// Пороги повторяют Nuclear Emergency, от которого этот тип и наследуется, так что теперь в
+	// Тим-Базе и Харде бросается монетка между ядерной командой и клоунской.
+	requirements = list(101,101,101,101,101,101,60,40,30,10) //BLUEMOON CHANGES
 
 /datum/dynamic_ruleset/roundstart/nuclear/clown_ops/pre_execute()
 	. = ..()
@@ -763,58 +886,6 @@ BLUEMOON REMOVAL END*/
 
 //////////////////////////////////////////////
 //                                          //
-//               BLOODSUCKERS               //
-//                                          //
-//////////////////////////////////////////////
-
-/datum/dynamic_ruleset/roundstart/bloodsuckers
-	name = "Bloodsuckers"
-	// Кровососы сломаны и ждут починки/упрощения: естественно не выдаются ни в одном типе раунда.
-	// Прежний хак (только team-based) заменён честным выключателем - ручной форс админом работает.
-	admin_only = TRUE
-	antag_flag = "shiftstart bloodsucker"
-	antag_flag_override = ROLE_BLOODSUCKER
-	antag_datum = /datum/antagonist/bloodsucker
-	protected_roles = list("Vanguard Operative", "Prisoner", "NanoTrasen Representative", "Internal Affairs Agent", "Blueshield", "Peacekeeper", "Brig Physician", "Security Officer", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director")  //BLUEMOON CHANGES
-	restricted_roles = list("Cyborg", "AI", "Positronic Brain")
-	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED) // BLUEMOON ADD
-	required_candidates = 1
-	weight = 6
-	cost = 5
-	scaling_cost = 10
-	intensity = 15
-	requirements = list(101,101,60,50,40,30,20,15,10,10)
-	antag_cap = list("denominator" = 39, "offset" = 1)
-
-// Мидраунд-тёзка "Bloodsuckers" уже занимает ключ конфига/intensity_ledger - суффикс разводит их.
-/datum/dynamic_ruleset/roundstart/bloodsuckers/action_name()
-	return "[name] (Roundstart)"
-
-/datum/dynamic_ruleset/roundstart/bloodsuckers/pre_execute(population)
-	. = ..()
-	// BLUEMOON ADD START - если нет кандидатов и не выданы все роли, иначе выдаст рантайм
-	if(candidates.len <= 0)
-		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов.")
-		return FALSE
-	// BLUEMOON ADD END
-	var/num_bloodsuckers = get_antag_cap(population) * (scaled_times + 1)
-	for (var/i = 1 to num_bloodsuckers)
-		var/mob/M = pick_n_take(candidates)
-		assigned += M.mind
-		M.mind.restricted_roles = restricted_roles
-		M.mind.special_role = antag_flag
-	return TRUE
-
-/datum/dynamic_ruleset/roundstart/bloodsuckers/trim_candidates()
-	. = ..()
-	for(var/mob/P in candidates)
-		if(P.mob_weight > MOB_WEIGHT_HEAVY) // никаких сверхтяжёлых кровососов
-			candidates -= P
-		else if(HAS_TRAIT(P, TRAIT_ROBOTIC_ORGANISM)) // никаких роботов-вампиров из далекого космоса
-			candidates -= P
-
-//////////////////////////////////////////////
-//                                          //
 //           BLOB INFECTION (ROUNDSTART)    //
 //                                          //
 //////////////////////////////////////////////
@@ -932,7 +1003,10 @@ BLUEMOON REMOVAL END*/
 	protected_roles = list("Vanguard Operative", "Prisoner", "NanoTrasen Representative", "Internal Affairs Agent", "Security Officer", "Blueshield", "Peacekeeper", "Brig Physician", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director") //BLUEMOON CHANGES
 	restricted_roles = list("AI", "Cyborg", "Positronic Brain")
 	required_candidates = 2
-	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
+	// BLUEMOON ADD - одиночная пара живёт только в Медиум; в Тим-Базе место занимает соревнование
+	// двух пар (roundstart/abductors_rival), а Хард отдан под более плотные рулсеты.
+	required_round_type = list(ROUNDTYPE_DYNAMIC_MEDIUM)
+	blocking_rules = list(/datum/dynamic_ruleset/roundstart/abductors_rival) // BLUEMOON ADD
 	min_players = 30
 	weight = 6
 	cost = 12
@@ -1003,6 +1077,105 @@ BLUEMOON REMOVAL END*/
 
 //////////////////////////////////////////////
 //                                          //
+//        RIVAL ABDUCTOR TEAMS (PAIR x2)    //
+//                                          //
+//////////////////////////////////////////////
+/// Сразу две пары абдукторов (учёный + агент) с разными mothership'ами, номерами команд и
+/// консолями. Команды не знают друг о друге и работают на один и тот же экипаж: выигрывает тот,
+/// кто быстрее вывозит подопытных, а снайперы между командами — обычный вечер в отделении.
+/// Одиночная пара переехала в Медиум (roundstart/abductors), здесь только Тим-База.
+#define RIVAL_ABDUCTOR_TEAMS 2
+#define ABDUCTOR_MAX_TEAMS_DYNAMIC_RS 4 // локальная копия лимита команд из модуля абдукторов (порядок сборки файлов не гарантирован)
+
+/datum/dynamic_ruleset/roundstart/abductors_rival
+	name = "Rival Abductors"
+	antag_flag = "Abductor"
+	antag_flag_override = ROLE_ABDUCTOR
+	minimum_required_age = 0
+	protected_roles = list("Vanguard Operative", "Prisoner", "NanoTrasen Representative", "Internal Affairs Agent", "Security Officer", "Blueshield", "Peacekeeper", "Brig Physician", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director") //BLUEMOON CHANGES
+	restricted_roles = list("AI", "Cyborg", "Positronic Brain")
+	required_candidates = RIVAL_ABDUCTOR_TEAMS * 2
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED) // BLUEMOON ADD
+	// Ни с одиночной парой, ни с гостем-абдуктором одновременно: три команды на станции - уже не соревнование.
+	blocking_rules = list( /datum/dynamic_ruleset/roundstart/abductors, /datum/dynamic_ruleset/midround/from_ghosts/abductors) // BLUEMOON ADD
+	min_players = 30
+	weight = 4
+	cost = 24
+	scaling_cost = 0
+	// Две команды вместо одной: вдвое тяжелее одиночной пары (15), но дешевле полноценного командного рулсета (45).
+	intensity = 30
+	flags = LONE_RULESET
+	// scale_up() соседних правил считает долю антагов через get_antag_cap: без явного значения
+	// рулсет вносил бы ноль и директор разрешал бы другому правилу добрать лишнюю роль.
+	antag_cap = RIVAL_ABDUCTOR_TEAMS * 2
+	requirements = list(101,101,101,101,101,50,40,30,20,15) //BLUEMOON CHANGES
+	/// Учёные и агенты разложены по индексам: rival_scientists[i] + rival_agents[i] - одна команда.
+	var/list/datum/mind/rival_scientists = list()
+	var/list/datum/mind/rival_agents = list()
+
+/datum/dynamic_ruleset/roundstart/abductors_rival/ready(population, forced = FALSE)
+	if(forced)
+		return ..()
+	if(length(candidates) < required_candidates)
+		return FALSE
+	return ..()
+
+/datum/dynamic_ruleset/roundstart/abductors_rival/pre_execute(population)
+	. = ..()
+	if(!.)
+		return FALSE
+	var/list/human_pool = list()
+	for(var/mob/M in candidates)
+		if(ishuman(M))
+			human_pool += M
+	if(length(human_pool) < required_candidates)
+		message_admins("Рулсет [name] не был активирован по причине отсутствия кандидатов-людей ([length(human_pool)] из [required_candidates]).")
+		return FALSE
+	for(var/i = 1 to RIVAL_ABDUCTOR_TEAMS)
+		var/mob/scientist_mob = pick_n_take(human_pool)
+		var/mob/agent_mob = pick_n_take(human_pool)
+		if(!scientist_mob?.mind || !agent_mob?.mind)
+			return FALSE
+		candidates -= scientist_mob
+		candidates -= agent_mob
+		scientist_mob.mind.special_role = ROLE_ABDUCTOR
+		agent_mob.mind.special_role = ROLE_ABDUCTOR
+		scientist_mob.mind.restricted_roles = restricted_roles
+		agent_mob.mind.restricted_roles = restricted_roles
+		rival_scientists += scientist_mob.mind
+		rival_agents += agent_mob.mind
+		// Все четверо в assigned: директор считает нагрузку правила по назначенным, а не по execute().
+		assigned += scientist_mob.mind
+		assigned += agent_mob.mind
+		message_admins("[ADMIN_LOOKUPFLW(scientist_mob)] и [ADMIN_LOOKUPFLW(agent_mob)] выбраны раундстартовым правилом [name] (команда [i], учёный и агент).")
+		log_game("DYNAMIC: [key_name(scientist_mob)] и [key_name(agent_mob)] выбраны раундстартовым правилом [name] (команда [i]).")
+	return TRUE
+
+/datum/dynamic_ruleset/roundstart/abductors_rival/execute()
+	if(length(rival_scientists) < RIVAL_ABDUCTOR_TEAMS || length(rival_agents) < RIVAL_ABDUCTOR_TEAMS)
+		return FALSE
+	// team_count - статический счётчик созданных команд, считает и команды от других источников.
+	// Нужно, чтобы под обе пары хватило mothership'ов (карта держит 4 номера).
+	if(/datum/team/abductor_team::team_count + RIVAL_ABDUCTOR_TEAMS - 1 > ABDUCTOR_MAX_TEAMS_DYNAMIC_RS)
+		stack_trace("Rival abductors could not spawn: abductor team limit exceeded.")
+		return FALSE
+	for(var/i = 1 to RIVAL_ABDUCTOR_TEAMS)
+		var/datum/mind/sci_mind = rival_scientists[i]
+		var/datum/mind/agent_mind = rival_agents[i]
+		if(!sci_mind?.current || !agent_mind?.current)
+			continue
+		if(!ishuman(sci_mind.current) || !ishuman(agent_mind.current))
+			continue
+		var/datum/team/abductor_team/new_team = new
+		sci_mind.add_antag_datum(/datum/antagonist/abductor/scientist, new_team)
+		agent_mind.add_antag_datum(/datum/antagonist/abductor/agent, new_team)
+	return TRUE
+
+#undef RIVAL_ABDUCTOR_TEAMS
+#undef ABDUCTOR_MAX_TEAMS_DYNAMIC_RS
+
+//////////////////////////////////////////////
+//                                          //
 //         Malfunctioning AI                //
 //                                         //
 //////////////////////////////////////////////
@@ -1043,3 +1216,164 @@ BLUEMOON REMOVAL END*/
 		var/datum/antagonist/traitor/T = new antag_datum()
 		M.add_antag_datum(T)
 	return TRUE
+
+//////////////////////////////////////////////
+//                                          //
+//        XENOMORPH HIVE (ROUNDSTART)       //
+//                                          //
+//////////////////////////////////////////////
+#define XENO_HIVE_DENOMINATOR 20
+
+/datum/dynamic_ruleset/roundstart/xenomorphs
+	name = "Alien Outbreak"
+	antag_flag = "alien roundstart"
+	antag_flag_override = ROLE_ALIEN
+	antag_datum = /datum/antagonist/xeno
+	minimum_required_age = 0 // BLUEMOON EDIT
+	protected_roles = list("Vanguard Operative", "Prisoner", "NanoTrasen Representative", "Internal Affairs Agent", "Security Officer", "Blueshield", "Peacekeeper", "Brig Physician", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director") //BLUEMOON CHANGES
+	restricted_roles = list("AI", "Cyborg", "Positronic Brain")
+	required_candidates = 1
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD) // BLUEMOON ADD
+	family = "xenomorph" // с событием Alien Infestation: не подряд
+	min_players = 30
+	weight = 3 //BLUEMOON CHANGES
+	cost = 20
+	scaling_cost = 0
+	intensity = 45
+	flags = HIGH_IMPACT_RULESET | LONE_RULESET
+	requirements = list(101,101,101,101,101,60,50,40,30,20) //BLUEMOON CHANGES
+	antag_cap = list("denominator" = XENO_HIVE_DENOMINATOR) // одна личинка на 20 игроков
+	/// Турфы спавна, перемешанные в pre_execute: assigned[i] получает hive_turfs[i].
+	var/list/turf/hive_turfs = list()
+
+/datum/dynamic_ruleset/roundstart/xenomorphs/ready(population, forced = FALSE)
+	required_candidates = get_antag_cap(population)
+	if(!length(GLOB.xeno_spawn))
+		return FALSE
+	return ..()
+
+/datum/dynamic_ruleset/roundstart/xenomorphs/pre_execute(population)
+	. = ..()
+	if(!.)
+		return FALSE
+	var/needed = get_antag_cap(population)
+	// Набор целиком до выдачи: обрыв на середине оставил бы часть экипажа со special_role без тела.
+	if(candidates.len < needed)
+		message_admins("Рулсет [name] не был активирован: кандидатов [candidates.len], нужно [needed].")
+		return FALSE
+	hive_turfs = GLOB.xeno_spawn.Copy()
+	shuffle_inplace(hive_turfs)
+	for(var/i = 1 to needed)
+		var/mob/M = pick_n_take(candidates)
+		M.mind.special_role = ROLE_ALIEN
+		M.mind.restricted_roles = restricted_roles
+		assigned += M.mind
+	return TRUE
+
+/datum/dynamic_ruleset/roundstart/xenomorphs/execute()
+	if(!length(assigned))
+		return FALSE
+	note_family_fired()
+	for(var/i = 1 to length(assigned))
+		var/datum/mind/M = assigned[i]
+		var/mob/old_body = M.current
+		if(!old_body)
+			continue
+		var/turf/spawn_turf = hive_turfs[i] || old_body.loc
+		var/mob/living/carbon/alien/larva/new_xeno = new(spawn_turf)
+		// transfer_to умеет отказать (training_origin, стоп-сигнал) - тогда человек остаётся
+		// человеком, и его нельзя ни убивать как оболочку, ни оставлять с ролью без тела.
+		if(!M.transfer_to(new_xeno))
+			message_admins("Рулсет [name]: разум [M] не переносится в ксеноморфа - игрок остаётся человеком.")
+			log_game("DYNAMIC: [name]: перенос разума в ксеноморфа не удался для [key_name(M)].")
+			qdel(new_xeno)
+			continue
+		if(!M.has_antag_datum(/datum/antagonist/xeno))
+			M.add_antag_datum(/datum/antagonist/xeno)
+		old_body.gib()
+		message_admins("[ADMIN_LOOKUPFLW(new_xeno)] превращён в ксеноморфа раундстартовым правилом [name].")
+		log_game("DYNAMIC: [key_name(new_xeno)] превращён в ксеноморфа раундстартовым правилом [name].")
+	return TRUE
+
+#undef XENO_HIVE_DENOMINATOR
+
+//////////////////////////////////////////////
+//                                          //
+//         MORPHS (ROUNDSTART, PAIR)        //
+//                                          //
+//////////////////////////////////////////////
+/// Два морфа на старте смены: экипаж превращается в две отдельные фигуры, которые охотятся
+/// за ID и органами сами по себе. Самостоятельной командой не считаются (LONE, не HIGH_IMPACT),
+/// поэтому копятся поверх большой войны - культов, абдукторов, хайва. Как и у морфа-события,
+/// family общий с /datum/round_event_control/morph: спавн-и-волна не дублируются.
+#define MORPH_ROUNDSTART_COUNT 2
+
+/datum/dynamic_ruleset/roundstart/morphs
+	name = "Morphs"
+	antag_flag = "morph roundstart"
+	antag_flag_override = ROLE_ALIEN
+	antag_datum = /datum/antagonist/morph
+	minimum_required_age = 0 // BLUEMOON EDIT
+	protected_roles = list("Vanguard Operative", "Prisoner", "NanoTrasen Representative", "Internal Affairs Agent", "Security Officer", "Blueshield", "Peacekeeper", "Brig Physician", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director") //BLUEMOON CHANGES
+	restricted_roles = list("AI", "Cyborg", "Positronic Brain")
+	required_candidates = MORPH_ROUNDSTART_COUNT
+	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD) // BLUEMOON ADD
+	family = "morph" // с событием Spawn Morph: не подряд
+	min_players = 30
+	weight = 3 //BLUEMOON CHANGES
+	cost = 14
+	scaling_cost = 0
+	// Две соло-фигуры тяжелее одного спавнера (15), но легче любого командного рулсета (45+).
+	intensity = 30
+	flags = LONE_RULESET
+	requirements = list(101,101,101,101,101,50,40,30,20,15) //BLUEMOON CHANGES
+	antag_cap = MORPH_ROUNDSTART_COUNT
+	var/list/turf/morph_turfs = list()
+
+/datum/dynamic_ruleset/roundstart/morphs/ready(population, forced = FALSE)
+	if(!length(GLOB.xeno_spawn))
+		return FALSE
+	return ..()
+
+/datum/dynamic_ruleset/roundstart/morphs/pre_execute(population)
+	. = ..()
+	if(!.)
+		return FALSE
+	if(candidates.len < MORPH_ROUNDSTART_COUNT)
+		message_admins("Рулсет [name] не был активирован: кандидатов [candidates.len], нужно [MORPH_ROUNDSTART_COUNT].")
+		return FALSE
+	morph_turfs = GLOB.xeno_spawn.Copy()
+	shuffle_inplace(morph_turfs)
+	for(var/i = 1 to MORPH_ROUNDSTART_COUNT)
+		var/mob/M = pick_n_take(candidates)
+		M.mind.special_role = "Morph"
+		M.mind.restricted_roles = restricted_roles
+		assigned += M.mind
+	return TRUE
+
+/datum/dynamic_ruleset/roundstart/morphs/execute()
+	if(length(assigned) < MORPH_ROUNDSTART_COUNT)
+		return FALSE
+	note_family_fired()
+	for(var/i = 1 to length(assigned))
+		var/datum/mind/M = assigned[i]
+		var/mob/old_body = M.current
+		if(!old_body)
+			continue
+		var/turf/spawn_turf = morph_turfs[i] || old_body.loc
+		var/mob/living/simple_animal/hostile/morph/new_morph = new(spawn_turf)
+		if(!M.transfer_to(new_morph))
+			message_admins("Рулсет [name]: разум [M] не переносится в морфа - игрок остаётся человеком.")
+			log_game("DYNAMIC: [name]: перенос разума в морфа не удался для [key_name(M)].")
+			qdel(new_morph)
+			continue
+		if(!M.has_antag_datum(/datum/antagonist/morph))
+			M.add_antag_datum(/datum/antagonist/morph)
+		old_body.gib()
+		to_chat(new_morph, new_morph.playstyle_string)
+		SEND_SOUND(new_morph, sound('sound/magic/mutate.ogg'))
+		message_admins("[ADMIN_LOOKUPFLW(new_morph)] превращён в морфа раундстартовым правилом [name] ([i] из [MORPH_ROUNDSTART_COUNT]).")
+		log_game("DYNAMIC: [key_name(new_morph)] превращён в морфа раундстартовым правилом [name] ([i] из [MORPH_ROUNDSTART_COUNT]).")
+	return TRUE
+
+#undef MORPH_ROUNDSTART_COUNT

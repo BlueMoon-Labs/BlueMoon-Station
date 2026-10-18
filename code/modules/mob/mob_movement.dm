@@ -55,6 +55,15 @@
 		return FALSE
 	if(mob.force_moving)
 		return FALSE
+	// BLUEMOON CHANGE START - Брошенного персонажа нельзя вести собственными шагами:
+	// ниже, после успешного шага, вызывается throwing.finalize(FALSE), то есть любой
+	// нажатый ключ обрывал полёт на самой клетке. У поля сдерживания Shock() даёт
+	// Stun(40) - 4 секунды, а бросок живёт до range/speed = 200/4 = 5 секунд, так что
+	// последнюю секунду игрок успевал перехватить управление. Ловим на входе, рядом с
+	// force_moving - оба означают "движением игнорируют".
+	if(mob.throwing)
+		return FALSE
+	// BLUEMOON CHANGE END
 
 	// Sandstorm Edit
 	if(mob.shifting || mob.tilting)

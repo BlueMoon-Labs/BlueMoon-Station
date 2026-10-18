@@ -405,7 +405,7 @@
 	else
 		if (machine_stat & MAINT)
 			. += "The cover is closed. Something is wrong with it. It doesn't work."
-		else if (malfhack)
+		else if (malfhack && !(stealth_end_time > world.time))
 			. += "The cover is broken. It may be hard to force it open."
 		else
 			. += "The cover is closed."
@@ -508,7 +508,9 @@
 			new_update_state |= UPSTATE_CELL_IN
 
 	else if((obj_flags & EMAGGED) || malfai)
-		new_update_state |= UPSTATE_BLUESCREEN
+		// BLUEMOON ADD malf stealth - прячем синий экран
+		if(!(malfhack && stealth_end_time > world.time))
+			new_update_state |= UPSTATE_BLUESCREEN
 	else if(panel_open)
 		new_update_state |= UPSTATE_WIREEXP
 
@@ -578,6 +580,7 @@
 							"<span class='notice'>You discard the strangely programmed board.</span>")
 						malfai = null
 						malfhack = 0
+						update_appearance() // BLUEMOON FIX: сбросить синий экран после извлечения взломанной платы
 						return
 					else
 						user.visible_message(\

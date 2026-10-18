@@ -29,7 +29,7 @@
 /datum/action/innate/ability/humanoid_customization/proc/change_form()
 	var/mob/living/carbon/human/H = owner
 
-	var/select_alteration = tgui_input_list(owner, "Select what part of your form to alter", "Form Alteration", list("Body Color", "Eye Color","Hair Style", "Genitals", "Tail", "Snout", "Wings", "Markings", "Ears", "Taur body", "Penis", "Testicles", "Vagina", "Penis Length", "Breast Size", "Breast Shape", "Testicles Size", "Butt Size", "Belly Size", "Body Size", "Genital Color", "Horns", "Hair Color", "Skin Tone (Non-Mutant)", "Gender & Lewd", "Legs"))
+	var/select_alteration = tgui_input_list(owner, "Select what part of your form to alter", "Form Alteration", list("Body Color", "Eye Color","Hair Style", "Genitals", "Tail", "Snout", "Wings", "Markings", "Ears", "Taur body", "Penis", "Testicles", "Vagina", "Penis Length", "Breast Size", "Breast Shape", "Testicles Size", "Butt Size", "Belly Size", "Body Size", "Genital Color", "Horns", "Skin Tone (Non-Mutant)", "Gender & Lewd", "Legs"))
 
 	if(select_alteration == "Body Color")
 		var/new_color = input(owner, "Choose your skin color:", "Race change","#"+H.dna.features["mcolor"]) as color|null
@@ -65,17 +65,10 @@
 		H.dna?.update_ui_block(DNA_RIGHT_EYE_COLOR_BLOCK)
 		H.update_body()
 	else if(select_alteration == "Hair Style")
+		var/list/hair_tabs = list("hair")
 		if(H.gender == MALE)
-			var/new_style = tgui_input_list(owner, "Select a facial hair style", "Hair Alterations", GLOB.facial_hair_styles_list, H.facial_hair_style)
-			if(new_style)
-				H.facial_hair_style = new_style
-		else
-			H.facial_hair_style = "Shaved"
-		//handle normal hair
-		var/new_style = tgui_input_list(owner, "Select a hair style", "Hair Alterations", GLOB.hair_styles_list, H.hair_style)
-		if(new_style)
-			H.hair_style = new_style
-			H.update_hair()
+			hair_tabs += "facial"
+		open_live_hair_style_picker(owner, H, H, hair_tabs, CALLBACK(src, PROC_REF(apply_hair_style), H), allow_color_without_spray = TRUE)
 	else if (select_alteration == "Genitals")
 		var/operation = tgui_input_list(owner, "Select organ operation.", "Organ Manipulation", list("add sexual organ", "remove sexual organ"))
 		switch(operation)
@@ -371,12 +364,6 @@
 
 			H.update_body()
 
-	else if (select_alteration == "Hair Color")
-		var/new_hair_color = input(owner, "Choose your character's hair color:", "Character Preference", "#" + H.dna.features["hair_color"]) as color|null
-		if (new_hair_color)
-			H.hair_color = sanitize_hexcolor(new_hair_color, 6)
-		H.update_hair()
-
 	else if(select_alteration == "Skin Tone (Non-Mutant)") // Skin tone, different than mutant color
 		var/list/choices = GLOB.skin_tones - GLOB.nonstandard_skin_tones
 		if(CONFIG_GET(flag/allow_custom_skintones))
@@ -431,3 +418,17 @@
 			H.update_body()
 
 /// SPLURT EDIT END
+
+/datum/action/innate/ability/humanoid_customization/proc/apply_hair_style(mob/living/carbon/human/H, new_style, tab)
+	if(owner != H || !IsAvailable() || iszombie_infectious(H))
+		return FALSE
+	if(tab == "facial")
+		if(H.gender != MALE)
+			return FALSE
+		H.facial_hair_style = new_style
+	else
+		H.hair_style = new_style
+	if(H.gender != MALE)
+		H.facial_hair_style = "Shaved"
+	H.update_hair()
+	return TRUE

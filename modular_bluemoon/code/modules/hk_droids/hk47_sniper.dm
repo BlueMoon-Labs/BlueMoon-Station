@@ -28,12 +28,18 @@
 	return istype(ammo_type[current_firemode_index], /obj/item/ammo_casing/energy/hk_bolt/sniper)
 
 /obj/item/gun/energy/hk_rifle/select_fire(mob/living/user)
-	if(!sniper_unlocked)
+	if(length(ammo_type) < 2)
 		return
 	set_firemode_index(current_firemode_index + 1)
+	playsound(src, 'modular_bluemoon/sound/hk_droids/hk47_mode_switch.ogg', 35, TRUE, SILENCED_SOUND_EXTRARANGE)
 	if(sniper_selected())
+		balloon_alert(user, "снайперский режим")
 		to_chat(user, span_notice("Снайперский режим: прицеливание [HK47_SNIPER_AIM_TIME / (1 SECONDS)] с, выстрел стоит [HK47_SNIPER_SHOT_CHARGES] заряда."))
+	else if(stun_selected())
+		balloon_alert(user, "парализующий режим")
+		to_chat(user, span_notice("Парализующий режим: выстрел бьёт по выносливости и не ранит."))
 	else
+		balloon_alert(user, "бластерный режим")
 		to_chat(user, span_notice("Обычный режим: одиночные выстрелы."))
 
 /obj/item/gun/energy/hk_rifle/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0, stam_cost = 0)

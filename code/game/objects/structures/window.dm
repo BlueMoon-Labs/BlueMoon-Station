@@ -59,10 +59,15 @@
 	///Datum that the shard and debris type is pulled from for when the glass is broken.
 	var/cleanable_type = /obj/effect/decal/cleanable/glass
 	var/datum/material/glass_material_datum = /datum/material/glass
+	/// Emergency package installed explicitly by a window spawner or RCD.
+	var/airbag_installed = FALSE
+	/// Prevent two simultaneous Alt-clicks from removing the same package twice.
+	var/airbag_disarming = FALSE
 
 /obj/structure/window/examine(mob/user)
 	. = ..()
-	. += airbag_examine()
+	if(airbag_installed)
+		. += span_warning("Мигающий красный индикатор указывает на установленный аирбаг. <b>Alt-клик</b>, чтобы обезвредить и снять его.")
 	if(electrochromatic_status != NOT_ELECTROCHROMATIC)
 		. += "<span class='notice'>The window has electrochromatic circuitry on it.</span>"
 	if(reinf)
@@ -248,8 +253,24 @@
 
 	add_fingerprint(user)
 
-	if(airbag_attackby(I, user))
-		return TRUE
+	if(istype(I, /obj/item/airbag_module))
+		var/obj/item/airbag_module/module = I
+		if(airbag_installed)
+			balloon_alert(user, "Airbag уже установлен")
+			return STOP_ATTACK_PROC_CHAIN
+		if(module.armed)
+			balloon_alert(user, "Airbag уже активирован!")
+			return STOP_ATTACK_PROC_CHAIN
+		if(!user.transferItemToLoc(module, src))
+			return STOP_ATTACK_PROC_CHAIN
+		if(!install_airbag())
+			user.put_in_hands(module)
+			return STOP_ATTACK_PROC_CHAIN
+		module.transfer_fingerprints_to(src)
+		qdel(module)
+		playsound(src, 'sound/machines/click.ogg', 50, TRUE)
+		balloon_alert(user, "Airbag установлен")
+		return STOP_ATTACK_PROC_CHAIN
 
 	if(I.tool_behaviour == TOOL_WELDER && user.a_intent == INTENT_HELP)
 		if(obj_integrity < max_integrity)
@@ -504,7 +525,8 @@
 /obj/structure/window/deconstruct(disassembled = TRUE)
 	if(QDELETED(src))
 		return
-	airbag_on_deconstruct(disassembled)
+	if(!disassembled)
+		deploy_airbag()
 	if(!disassembled)
 		playsound(src, breaksound, 70, 1)
 		if(!(flags_1 & NODECONSTRUCT_1))
@@ -554,7 +576,6 @@
 	add_fingerprint(user)
 
 /obj/structure/window/Destroy()
-	airbag_drop()
 	density = FALSE
 	air_update_turf(TRUE)
 	update_nearby_icons()
@@ -584,9 +605,6 @@
 //merges adjacent full-tile windows into one
 /obj/structure/window/update_overlays()
 	. = ..()
-	var/mutable_appearance/airbag_light = airbag_overlay()
-	if(airbag_light)
-		. += airbag_light
 	if(QDELETED(src) || !fulltile)
 		return
 	var/ratio = obj_integrity / max_integrity
@@ -869,6 +887,47 @@
 
 /obj/structure/window/reinforced/fulltile/unanchored
 	anchored = FALSE
+
+/obj/structure/window/proc/install_airbag()
+	if(airbag_installed || QDELETED(src))
+		return FALSE
+	qdel(GetComponent(/datum/component/simple_rotation))
+	airbag_installed = TRUE
+	return TRUE
+
+/// Destruction by fire or acid can bypass deconstruct(), so deploy before the parent.
+/obj/structure/window/obj_destruction(damage_flag)
+	deploy_airbag()
+	return ..()
+
+/obj/structure/window/proc/deploy_airbag()
+	if(!airbag_installed || !isturf(loc))
+		return
+	airbag_installed = FALSE
+	new /obj/item/airbag_module/immediate_arm(get_turf(src))
+
+/obj/structure/window/AltClick(mob/user)
+	if(!airbag_installed)
+		return ..()
+	if(airbag_disarming || !isliving(user) || !user.canUseTopic(src, BE_CLOSE, FALSE, TRUE, FALSE))
+		return
+	airbag_disarming = TRUE
+	balloon_alert(user, "Обезвреживание airbag...")
+	if(!do_after(user, 3 SECONDS, target = src))
+		airbag_disarming = FALSE
+		return TRUE
+	if(QDELETED(src))
+		return TRUE
+	airbag_disarming = FALSE
+	if(!airbag_installed)
+		return TRUE
+	airbag_installed = FALSE
+	add_fingerprint(user)
+	var/obj/item/airbag_module/module = new(drop_location())
+	transfer_fingerprints_to(module)
+	user.put_in_hands(module)
+	balloon_alert(user, "Airbag снят")
+	return TRUE
 
 /obj/structure/window/reinforced/tinted/fulltile
 	icon = 'icons/obj/smooth_structures/tinted_window.dmi'
@@ -1168,3 +1227,102 @@
 
 /obj/structure/window/bronze/fulltile/unanchored
 	anchored = FALSE
+
+// Window airbags, ported from WhiteMoon (Gandalf2k15; original sprites by TauCeti).
+/obj/item/airbag_module
+	name = "airbag"
+	desc = "Небольшой пакет с пиропатроном. Нажмите им по окну, чтобы установить аирбаг. Либо активируйте его и отойдите: через две секунды он развернёт аварийную мембрану."
+	icon = 'modular_bluemoon/icons/obj/structures/inflatable.dmi'
+	icon_state = "airbag_safe"
+	w_class = WEIGHT_CLASS_SMALL
+	max_integrity = 10
+	var/detonate_time = 2 SECONDS
+	var/drop_type = /obj/structure/inflatable/airbag
+	var/immediate_arm = FALSE
+	var/armed = FALSE
+	var/armed_sound = 'sound/items/airbag_arm.ogg'
+	var/bang_sound = 'sound/effects/airbag_bang.ogg'
+	var/anchor_timer
+	var/detonate_timer
+
+/obj/item/airbag_module/Initialize(mapload)
+	. = ..()
+	if(immediate_arm)
+		anchored = TRUE
+		arm()
+
+/obj/item/airbag_module/Destroy()
+	if(anchor_timer)
+		deltimer(anchor_timer)
+		anchor_timer = null
+	if(detonate_timer)
+		deltimer(detonate_timer)
+		detonate_timer = null
+	return ..()
+
+/obj/item/airbag_module/update_icon_state()
+	. = ..()
+	icon_state = "airbag_[armed ? "armed" : "safe"]"
+
+/obj/item/airbag_module/attack_self(mob/user)
+	. = ..()
+	arm()
+
+/obj/item/airbag_module/proc/arm()
+	if(armed || QDELETED(src))
+		return FALSE
+	armed = TRUE
+	balloon_alert_to_viewers("активирован!")
+	if(!anchored)
+		anchor_timer = addtimer(CALLBACK(src, PROC_REF(deploy_anchor)), 1 SECONDS, TIMER_STOPPABLE)
+	detonate_timer = addtimer(CALLBACK(src, PROC_REF(bang)), detonate_time, TIMER_STOPPABLE)
+	playsound(src, armed_sound, 50)
+	update_icon()
+	return TRUE
+
+/obj/item/airbag_module/proc/deploy_anchor()
+	if(!isturf(loc) || anchored)
+		return
+	balloon_alert_to_viewers("якорь развёрнут!")
+	anchored = TRUE
+
+/obj/item/airbag_module/proc/bang()
+	if(!armed || QDELETED(src))
+		return
+	armed = FALSE
+	var/turf/deployment_turf = get_turf(src)
+	if(!deployment_turf)
+		qdel(src)
+		return
+	var/obj/structure/inflatable/created_object = new drop_type(deployment_turf)
+	transfer_fingerprints_to(created_object)
+	playsound(src, bang_sound, 50, pressure_affected = FALSE)
+	do_smoke(range = 1, location = deployment_turf)
+	qdel(src)
+	return created_object
+
+/obj/item/airbag_module/immediate_arm
+	immediate_arm = TRUE
+
+/obj/structure/inflatable/airbag
+	name = "window airbag"
+	desc = "Аварийная мембрана, закрывающая проём разбитого окна. Автоматически сдувается через десять минут."
+	icon_state = "airbag_wall"
+	max_integrity = 40
+	CanAtmosPass = ATMOS_PASS_NO
+	intact = /obj/item/airbag_module
+	torn = null
+	var/lifetime_timer
+
+/obj/structure/inflatable/airbag/Initialize(mapload)
+	. = ..()
+	lifetime_timer = addtimer(CALLBACK(src, PROC_REF(expire)), 10 MINUTES, TIMER_STOPPABLE)
+
+/obj/structure/inflatable/airbag/Destroy()
+	if(lifetime_timer)
+		deltimer(lifetime_timer)
+		lifetime_timer = null
+	return ..()
+
+/obj/structure/inflatable/airbag/proc/expire()
+	deconstruct(FALSE)

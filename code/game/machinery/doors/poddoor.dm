@@ -244,7 +244,7 @@
 		return
 	..()
 
-/obj/machinery/door/poddoor/do_animate(animation)
+/obj/machinery/door/poddoor/do_animate(animation, from_bump = FALSE)
 	switch(animation)
 		if("opening")
 			flick("opening", src)

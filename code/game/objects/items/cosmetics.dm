@@ -227,6 +227,7 @@
 
 /obj/item/razor/attack(mob/M, mob/user)
 	if(ishuman(M) && extended == 1 && user.a_intent != INTENT_HARM)
+		. = STOP_ATTACK_PROC_CHAIN
 		var/mob/living/carbon/human/H = M
 		var/location = user.zone_selected
 		var/mirror = FALSE
@@ -297,6 +298,6 @@
 												"<span class='notice'>You shave [H]'s head bald.</span>")
 							shave(H, location)
 		else
-			..()
+			return ..()
 	else
-		..()
+		return ..()

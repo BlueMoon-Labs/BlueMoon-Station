@@ -27,6 +27,7 @@
 	plane = RENDER_PLANE_GAME_WORLD
 	blend_mode = BLEND_OVERLAY
 	render_relay_planes = list(RENDER_PLANE_MASTER)
+	wants_world_distortion = TRUE
 
 /atom/movable/screen/plane_master/rendering_plate/master
 	name = "master plate"

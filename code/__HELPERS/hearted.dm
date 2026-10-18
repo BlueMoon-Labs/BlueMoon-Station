@@ -17,15 +17,15 @@
 	if(!C)
 		return "Unknown"
 	var/keyname = C.key
+	var/datum/asset/spritesheet_batched/chat/sheet = get_asset_datum(/datum/asset/spritesheet_batched/chat)
 	var/heart_suffix = ""
 	if(client_has_active_heart(C))
-		var/datum/asset/spritesheet_batched/chat/sheet = get_asset_datum(/datum/asset/spritesheet_batched/chat)
 		var/heart_tag = sheet?.icon_tag("emoji-heart")
 		if(heart_tag)
 			heart_suffix = " [heart_tag]"
 	keyname = "[keyname][heart_suffix]"
 	if(C.prefs?.unlock_content && (C.prefs.toggles & MEMBER_PUBLIC))
-		keyname = "<font color='[C.prefs.ooccolor && (C.prefs.custom_colors & CUSTOM_OOC) ? C.prefs.ooccolor : GLOB.normal_ooc_colour]'>[icon2html('icons/obj/plushes.dmi', world, "plushie_nuke")][keyname]</font>"
+		keyname = "<font color='[C.prefs.ooccolor && (C.prefs.custom_colors & CUSTOM_OOC) ? C.prefs.ooccolor : GLOB.normal_ooc_colour]'>[sheet?.icon_tag("member-ooc")][keyname]</font>"
 	return keyname
 
 /// ckey() drops every non-ASCII letter, so Cyrillic names need their own key.
