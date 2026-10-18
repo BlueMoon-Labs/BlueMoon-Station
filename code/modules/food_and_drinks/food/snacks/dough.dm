@@ -114,7 +114,7 @@
 
 /obj/item/reagent_containers/food/snacks/rawpastrybase
 	name = "raw pastry base"
-	desc = "Must be cooked before use."
+	desc = "Должно быть приготовлено перед употреблением. Можно попробовать наступить..."
 	icon = 'icons/obj/food/food_ingredients.dmi'
 	icon_state = "rawpastrybase"
 	cooked_type = /obj/item/reagent_containers/food/snacks/pastrybase
@@ -122,6 +122,23 @@
 	list_reagents = list(/datum/reagent/consumable/nutriment = 1)
 	tastes = list("raw pastry" = 1)
 	foodtype = GRAIN | DAIRY
+
+	attack_self(mob/user)
+		. = ..()
+		if(.)
+			return
+		if(user.get_item_by_slot(ITEM_SLOT_FEET))
+			to_chat(user, "<span class='warning'>Нельзя работать с едой в обуви! Надо сначала снять её</span>")
+			return
+		to_chat(user, "<span class='notice'>Ты прижимаешь ногу к тесту, придавая ему форму лапки...</span>")
+		if(!do_after(user, 3 SECONDS, user))
+			to_chat(user, "<span class='warning'>Ты сбилися!</span>")
+			return
+		var/obj/item/reagent_containers/food/snacks/pawcookie_raw/form = new(get_turf(user))
+		qdel(src)
+		user.put_in_hands(form)
+		to_chat(user, "<span class='notice'>Заготовка готова! Теперь её можно запечь</span>")
+
 
 /obj/item/reagent_containers/food/snacks/pastrybase
 	name = "pastry base"
