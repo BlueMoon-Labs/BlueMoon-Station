@@ -21,7 +21,16 @@
 	GLOB.navigation_computers += src
 	whitelist_turfs = typecacheof(whitelist_turfs)
 
+/obj/machinery/computer/shuttle_flight/on_unset_machine(mob/M)
+	if(M && M == current_user)
+		remove_eye_control(M)
+
 /obj/machinery/computer/shuttle_flight/Destroy()
+	if(current_user)
+		remove_eye_control(current_user)
+	if(eyeobj)
+		QDEL_NULL(eyeobj)
+	actions = list()
 	. = ..()
 	GLOB.navigation_computers -= src
 
@@ -69,14 +78,17 @@
 			the_eye.placement_images[I] = list(x_off, y_off)
 
 /obj/machinery/computer/shuttle_flight/proc/give_eye_control(mob/user)
-	if(!isliving(user))
+	if(!isliving(user) || !user.client)
 		return
 	if(!eyeobj)
 		CreateEye()
+		if(!eyeobj)
+			return
 	GrantActions(user)
 	current_user = user
 	eyeobj.eye_user = user
 	eyeobj.name = "Camera Eye ([user.name])"
+	user.set_machine(src)
 	user.remote_control = eyeobj
 	user.reset_perspective(eyeobj)
 	eyeobj.setLoc(eyeobj.loc)
@@ -84,47 +96,50 @@
 	if(!QDELETED(user) && user.client)
 		var/mob/camera/aiEye/remote/supercruise_docker/the_eye = eyeobj
 		var/list/to_add = list()
-		to_add += the_eye.placement_images
-		to_add += the_eye.placed_images
-		if(!shuttleObject.stealth)
+		if(the_eye.placement_images)
+			to_add += the_eye.placement_images
+		if(the_eye.placed_images)
+			to_add += the_eye.placed_images
+		if(shuttleObject && !shuttleObject.stealth)
 			to_add += SSshuttle.hidden_shuttle_turf_images
 
 		user.client.images += to_add
 		user.client.view_size.setTo(view_range)
 
 /obj/machinery/computer/shuttle_flight/remove_eye_control(mob/user)
-	if(!user)
-		return
-	for(var/V in actions)
-		var/datum/action/A = V
-		A.Remove(user)
+	if(user && !QDELETED(user))
+		for(var/V in actions)
+			var/datum/action/A = V
+			if(A)
+				A.Remove(user)
 	actions.Cut()
-	for(var/V in eyeobj.visibleCameraChunks)
-		var/datum/camerachunk/C = V
-		C.remove(eyeobj)
-	if(user.client)
-		user.reset_perspective(null)
-		if(eyeobj.visible_icon && user.client)
-			user.client.images -= eyeobj.user_image
-
-		user.client.view_size.unsupress()
-
-	eyeobj.eye_user = null
-	user.remote_control = null
-
+	if(eyeobj)
+		if(istype(eyeobj) && eyeobj.visibleCameraChunks)
+			for(var/V in eyeobj.visibleCameraChunks)
+				var/datum/camerachunk/C = V
+				if(C)
+					C.remove(eyeobj)
+		if(user && !QDELETED(user) && user.client)
+			user.reset_perspective(null)
+			if(eyeobj.visible_icon && eyeobj.user_image)
+				user.client.images -= eyeobj.user_image
+			user.client.view_size.unsupress()
+		eyeobj.eye_user = null
+	if(user && !QDELETED(user))
+		if(user.remote_control == eyeobj)
+			user.remote_control = null
+		user.unset_machine()
 	current_user = null
-	user.unset_machine()
-
 	playsound(src, 'sound/machines/terminal_off.ogg', 25, FALSE)
-
-	if(!QDELETED(user) && user.client)
+	if(user && !QDELETED(user) && user.client && eyeobj)
 		var/mob/camera/aiEye/remote/supercruise_docker/the_eye = eyeobj
 		var/list/to_remove = list()
-		to_remove += the_eye.placement_images
-		to_remove += the_eye.placed_images
-		if(!shuttleObject.stealth)
+		if(the_eye.placement_images)
+			to_remove += the_eye.placement_images
+		if(the_eye.placed_images)
+			to_remove += the_eye.placed_images
+		if(shuttleObject && !shuttleObject.stealth)
 			to_remove += SSshuttle.hidden_shuttle_turf_images
-
 		user.client.images -= to_remove
 		user.client.view_size.resetToDefault()
 
