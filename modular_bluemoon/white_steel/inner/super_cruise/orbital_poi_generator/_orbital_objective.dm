@@ -250,10 +250,23 @@
 	for(var/mob/living/carbon/human/H as() in GLOB.human_list)
 		if(!H.mind)
 			continue
+		var/is_vanguard = FALSE
 		var/datum/job/J = SSjob.GetJob(H.mind.assigned_role)
-		if(!istype(J, /datum/job/expeditor))
-			continue
+		if(istype(J, /datum/job/expeditor))
+			is_vanguard = TRUE
 		var/obj/item/card/id/id_card = H.get_idcard(TRUE)
+		if(!is_vanguard && id_card)
+			var/assign = lowertext(id_card.get_assignment_name() || "")
+			if(findtext(assign, "vanguard") || findtext(assign, "expeditor"))
+				is_vanguard = TRUE
+		if(!is_vanguard && H.mind.assigned_role)
+			var/role_txt = lowertext(H.mind.assigned_role)
+			if(findtext(role_txt, "vanguard") || findtext(role_txt, "expeditor"))
+				is_vanguard = TRUE
+		if(!is_vanguard)
+			continue
+		if(!id_card)
+			id_card = H.get_idcard(TRUE)
 		if(!id_card)
 			continue
 		id_card.contraband_points += cargo_share * 2
