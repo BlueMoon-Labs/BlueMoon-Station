@@ -208,7 +208,6 @@
 	resistance_flags = NONE
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
-	w_class = WEIGHT_CLASS_NORMAL
 
 /obj/item/storage/briefcase/inflatable/ComponentInitialize()
 	. = ..()
@@ -232,7 +231,6 @@
 	resistance_flags = NONE
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
-	w_class = WEIGHT_CLASS_NORMAL
 
 /obj/item/storage/briefcase/inflatable_mini/ComponentInitialize()
 	. = ..()
