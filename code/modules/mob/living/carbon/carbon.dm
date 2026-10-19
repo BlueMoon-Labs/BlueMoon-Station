@@ -149,6 +149,12 @@
 
 /mob/living/carbon/attackby(obj/item/I, mob/user, params)
 	if(lying && surgeries.len)
+		// Вправление вывиха остаётся лечением травмы даже при начатой операции
+		// на той же конечности. Иначе хирургический инструмент перехватит клик.
+		if(user.a_intent == INTENT_HELP)
+			for(var/datum/wound/blunt/moderate/dislocation in all_wounds)
+				if(dislocation.try_treating(I, user))
+					return STOP_ATTACK_PROC_CHAIN
 		if(user.a_intent == INTENT_HELP || user.a_intent == INTENT_DISARM)
 			for(var/datum/surgery/S in surgeries)
 				if(S.next_step(user,user.a_intent))

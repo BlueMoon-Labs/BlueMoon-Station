@@ -157,8 +157,8 @@
 				user.visible_message("[user] drapes [I] over [M]'s [parse_zone(selected_zone)] to prepare for surgery.", \
 					"<span class='notice'>You drape [I] over [M]'s [parse_zone(selected_zone)] to prepare for \an [procedure.name].</span>")
 				// BLUEMOON ADD START
-				// Only shorten voluntary sleep. Cutting anesthesia to six seconds can
-				// wake the patient before their next breath, normally eight seconds apart.
+				// Сокращаем только добровольный сон. Обрезание наркоза до шести секунд
+				// может разбудить пациента до следующего вдоха: обычно между ними восемь секунд.
 				if(M.voluntary_sleep_until > world.time && M.AmountSleeping() > 6 SECONDS)
 					M.SetSleeping(6 SECONDS)
 					M.voluntary_sleep_until = world.time + 6 SECONDS

@@ -854,14 +854,14 @@
 	if(tank && mask)
 		if(!check_patient())
 			return
-		if(!patient.internal) // у пациента не включена подача воздуха
+		if(patient.internal != tank) // переключаем с любого другого источника на баллон стола
 			to_chat(user, span_notice("Вы начинаете включать подачу анестетика."))
 			if(patient.stat != UNCONSCIOUS) // пациент без сознания не видит сообщение ниже
 				to_chat(patient, span_danger("[user] пытается включить подачу анестетика!"))
 			if(!do_after(user, 3 SECONDS, patient) || !check_patient())
 				return
-			// The table tracks its own retractable mask, so an existing breath mask
-			// must also be removed before connecting the patient.
+			// Стол отслеживает собственную втягивающуюся маску, поэтому перед
+			// подключением пациента нужно снять и уже надетую дыхательную маску.
 			if(patient.wear_mask && patient.wear_mask != mask)
 				if(!patient.dropItemToGround(patient.wear_mask))
 					to_chat(user, span_danger("У вас не получилось снять маску с [patient], чтобы надеть кислородную маску!"))
@@ -870,12 +870,10 @@
 				to_chat(user, span_danger("У вас не получилось надеть кислородную маску на [patient]!"))
 				return
 			patient.internal = tank
+			patient.update_action_buttons_icon()
 			user.visible_message("[user] подключает оборудование для анестезии к [patient] и проворачиваете клапан.", span_notice("Вы открываете клапан с анестезией. Убедитесь, что пациент спит и можно начинать."))
 			START_PROCESSING(SSobj, src)
 		else
-			if(patient.internal != tank) // У пациента включен собственный баллон
-				to_chat(user, span_danger("Сначала нужно отключить собственный баллон у [patient]!"))
-				return
 			if(!do_after(user, 1 SECONDS, patient) || !check_patient())
 				return
 			user.visible_message("[user] отключает подачу анестетика к [patient].", span_notice("Вы проворачиваете клапан и отключаете подачу анестезии."))
@@ -918,7 +916,7 @@
 		eject_patient()
 
 /obj/structure/table/optable/proc/eject_patient()
-	// Recover the mask while the patient reference and their inventory are intact.
+	// Возвращаем маску до очистки ссылки на пациента, корректно снимая её из инвентаря.
 	stop_process()
 	if(isnull(patient))
 		return
@@ -946,6 +944,7 @@
 			mask.forceMove(src)
 	if(patient && patient.internal == tank)
 		patient.internal = null
+		patient.update_action_buttons_icon()
 
 /obj/structure/table/optable/Destroy()
 	eject_patient()

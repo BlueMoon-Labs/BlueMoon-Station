@@ -102,6 +102,10 @@
 		return TRUE
 
 /datum/surgery/proc/next_step(mob/user, intent)
+	// Операция на другой зоне тела не должна перехватывать это действие,
+	// даже если её текущий этап уже выполняется.
+	if(user.zone_selected != location)
+		return FALSE
 	if(step_in_progress)
 		return TRUE
 
