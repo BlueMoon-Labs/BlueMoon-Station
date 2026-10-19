@@ -30,6 +30,7 @@ export type OathTexts = {
   name: string;
   summary?: string | null;
   story: string;
+  kit?: string | null;
   vow_name: string | null;
   vow_desc: string | null;
   capstone: BondAbility | null;
@@ -1228,6 +1229,11 @@ const OathChoice = ({ selected, onSelect }: ListProps) => {
                 <b>Даст: {chosen.capstone.name}</b> - {chosen.capstone.desc}
               </div>
             )}
+            {!!chosen.kit && (
+              <div className="AntagInfoBloodBrother__fact">
+                <b>Узелок каждому:</b> {chosen.kit}
+              </div>
+            )}
             {!!chosen.vow_name && (
               <div className="AntagInfoBloodBrother__fact">
                 <b>Обет «{chosen.vow_name}»</b>
@@ -1403,6 +1409,11 @@ const SwornOath = ({ selected, onSelect, seals, stamping, written, onStamped, on
           {!!oath.capstone && (
             <div className="AntagInfoBloodBrother__fact">
               <b>Венец: {oath.capstone.name}</b>, {capstoneLock(data, oath.capstone) || 'открыт'}
+            </div>
+          )}
+          {!!oath.kit && (
+            <div className="AntagInfoBloodBrother__fact">
+              <b>Узелок клятвы:</b> {oath.kit}
             </div>
           )}
           {!data.finale_check && <Finale text={oath.finale} />}

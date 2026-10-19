@@ -485,3 +485,36 @@
 	TEST_ASSERT(brother.admin_apply_oath(admin, /datum/blood_oath/blood_brothers_capstone_test), "Админ дал новую клятву после исполненной")
 	TEST_ASSERT(next_oath in team.fulfilled_oaths, "Смена клятвы оставила исполненную в зачёте")
 	TEST_ASSERT(!length(team.offered), "Предложения сняты")
+
+/// Клятва даёт узелок с вещами каждому живому брату, мёртвому - нет
+/datum/unit_test/blood_brothers_oath_kit/Run()
+	blood_brothers_oath_world()
+	var/datum/team/brother_team/team = allocate_brother_team(src)
+	var/datum/mind/living_member = team.members[1]
+	var/datum/mind/dead_member = team.members[2]
+	dead_member.current.death()
+	var/datum/blood_oath/brother_sign/oath = new
+	TEST_ASSERT(oath.prepare(team), "Знак братства готов")
+	var/mob/living/carbon/human/living_body = living_member.current
+	var/obj/item/storage/backpack/backpack = allocate(/obj/item/storage/backpack)
+	living_body.equip_to_slot(backpack, ITEM_SLOT_BACK)
+	TEST_ASSERT(team.swear_oath(oath), "Клятва дана")
+	var/obj/item/storage/box/papersack/kit = locate() in backpack
+	TEST_ASSERT_NOTNULL(kit, "Живой брат получил узелок в рюкзак")
+	for(var/item_type in oath.kit_items)
+		TEST_ASSERT(locate(item_type) in kit, "В узелке есть [item_type]")
+	TEST_ASSERT(!length(dead_member.current.GetAllContents(/obj/item/storage/box/papersack)), "Мёртвому узелок не положен")
+	TEST_ASSERT_NULL(locate(/obj/item/storage/box/papersack) in get_turf(dead_member.current), "Под мёртвым узелка нет")
+
+/// У каждой клятвы есть узелок, его вещи подписаны и честно влезают в бумажный пакет
+/datum/unit_test/blood_brothers_oath_kit_contents/Run()
+	for(var/datum/blood_oath/oath_type as anything in GLOB.blood_oath_types)
+		var/datum/blood_oath/oath = new oath_type
+		TEST_ASSERT(length(oath.kit_items), "У [oath_type] нет узелка")
+		var/obj/item/storage/box/papersack/sack = allocate(/obj/item/storage/box/papersack)
+		for(var/item_type in oath.kit_items)
+			TEST_ASSERT(GLOB.brother_kit_labels[item_type], "[item_type] без подписи")
+			var/obj/item/kit_item = allocate(item_type)
+			TEST_ASSERT(SEND_SIGNAL(sack, COMSIG_TRY_STORAGE_INSERT, kit_item, null, TRUE, FALSE), "[item_type] не влезает в узелок [oath_type]")
+		TEST_ASSERT(length(oath.kit_text()), "У [oath_type] пустая подпись узелка")
+		qdel(oath)

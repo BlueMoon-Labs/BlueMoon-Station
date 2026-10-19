@@ -4,6 +4,7 @@
 	summary = "принять третьего, испытать его делом и уйти втроём"
 	weight = 5
 	capstone_type = /datum/blood_bond_passive/circle
+	kit_items = list(BROTHER_KIT_BREAKIN)
 	var/gift_type
 	var/gift_name
 	var/datum/objective_item/gift_info

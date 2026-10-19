@@ -11,6 +11,7 @@ GLOBAL_LIST_INIT(brother_guarded_areas, list(
 	summary = "метить отделы знаками из своей крови, последний - под носом у охраны"
 	weight = 6
 	capstone_type = /datum/action/cooldown/blood_bond/capstone/sign_eyes
+	kit_items = list(/obj/item/clothing/mask/balaclava, /obj/item/reagent_containers/glass/bottle/iron)
 	extra_actions = list(/datum/action/cooldown/blood_bond/brother_sign)
 	story = "Пусть станция знает, что вы здесь были. Метьте её своей кровью: отдел за отделом, до самого мостика."
 

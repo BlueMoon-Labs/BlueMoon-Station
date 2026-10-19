@@ -119,6 +119,7 @@
 	var/datum/game_mode/dynamic/mode = allocate(/datum/game_mode/dynamic)
 	var/datum/dynamic_ruleset/roundstart/traitorbro/rule = allocate(/datum/dynamic_ruleset/roundstart/traitorbro)
 	rule.mode = mode
+	TEST_ASSERT(!(ROUNDTYPE_DYNAMIC_TEAMBASED in rule.required_round_type), "В тимбазе братьев на старте нет")
 	for(var/candidate_number in 1 to 4)
 		var/datum/mind/candidate = allocate_brother_mind(src)
 		rule.candidates += candidate.current

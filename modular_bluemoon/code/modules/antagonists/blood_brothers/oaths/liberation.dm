@@ -4,6 +4,7 @@
 	summary = "добыть ключ от брига, вывести узника и укрыть его"
 	weight = 6
 	capstone_type = /datum/action/cooldown/blood_bond/capstone/unshackle
+	kit_items = list(BROTHER_KIT_BREAKIN, /obj/item/clothing/mask/balaclava)
 	target_opt_in_level = ANTAG_OPT_IN_TEMPORARY
 
 /datum/blood_oath/liberation/available(datum/team/brother_team/for_team)

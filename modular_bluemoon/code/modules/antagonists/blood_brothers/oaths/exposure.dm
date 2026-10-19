@@ -4,6 +4,7 @@
 	summary = "добыть секретные документы, снять копию и выложить её на виду"
 	weight = 6
 	capstone_type = /datum/action/cooldown/blood_bond/capstone/stash
+	kit_items = list(BROTHER_KIT_BREAKIN)
 
 /// Подлинные документы станции; копии не в счёт
 GLOBAL_LIST_EMPTY(brother_station_papers)

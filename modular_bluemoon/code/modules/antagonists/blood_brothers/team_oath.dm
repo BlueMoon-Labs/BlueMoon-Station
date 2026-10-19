@@ -218,10 +218,31 @@
 	SEND_SIGNAL(src, COMSIG_BROTHER_TEAM_OATH_SWORN, sworn)
 	notify("[length(fulfilled_oaths) ? "Новая клятва дана" : "Клятва дана"]: [sworn.name]. Обет: [vow.name].", 'modular_bluemoon/sound/blood_brothers/brother_sworn.ogg', BROTHER_SWORN_VOLUME)
 	log_game("Blood brothers [name] swore oath [sworn.key][sworn.target_mind ? " against [key_name(sworn.target_mind)]" : ""] with vow [vow.key].")
+	give_oath_kit(sworn)
 	for(var/datum/antagonist/brother/brother as anything in brother_antags())
 		brother.refresh_bond_actions()
 	refresh_brother_uis(static_data = TRUE)
 	return TRUE
+
+/// Каждому живому брату - бумажный узелок с вещами клятвы: в рюкзак или под ноги
+/datum/team/brother_team/proc/give_oath_kit(datum/blood_oath/sworn)
+	if(!length(sworn.kit_items))
+		return
+	var/kit_text = sworn.kit_text()
+	for(var/datum/antagonist/brother/brother as anything in brother_antags())
+		var/datum/mind/member = brother.owner
+		if(!is_active_brother(member))
+			continue
+		var/mob/living/body = member.current
+		var/obj/item/storage/box/papersack/kit = new(body.drop_location())
+		for(var/item_type in sworn.kit_items)
+			new item_type(kit)
+		kit.update_appearance()
+		var/where = "под ногами"
+		if(iscarbon(body))
+			var/mob/living/carbon/carbon_body = body
+			where = carbon_body.equip_in_one_of_slots(kit, list("в рюкзаке" = ITEM_SLOT_BACKPACK), qdel_on_fail = FALSE) || where
+		to_chat(body, span_notice("Узелок под клятву [where], в бумажном пакете: [kit_text]."))
 
 /datum/team/brother_team/proc/ensure_oath_objectives()
 	if(oath && !(locate(/datum/objective/blood_oath) in objectives))

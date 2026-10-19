@@ -57,6 +57,8 @@
 /// Сколько отделов одновременно метит второй шаг Знака братства
 #define BROTHER_SIGN_DEPARTMENTS 3
 #define BROTHER_COMPROMAT_PLANT_RANGE 3
+/// Узелок клятв, где надо пройти через чужие двери
+#define BROTHER_KIT_BREAKIN /obj/item/clothing/gloves/color/yellow, /obj/item/multitool, /obj/item/screwdriver, /obj/item/wirecutters, /obj/item/crowbar/red
 /// Скорость взлома аварийного шаттла у братьев с клятвой Угона
 #define BROTHER_HIJACK_SPEED 1
 

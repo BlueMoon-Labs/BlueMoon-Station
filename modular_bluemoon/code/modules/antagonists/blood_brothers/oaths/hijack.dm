@@ -6,6 +6,7 @@
 	round_types = list(ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED)
 	requires_violence = TRUE
 	capstone_type = /datum/action/cooldown/blood_bond/capstone/stash
+	kit_items = list(BROTHER_KIT_BREAKIN, /obj/item/clothing/mask/balaclava)
 
 /datum/blood_oath/hijack/available(datum/team/brother_team/for_team)
 	return !for_team.training && ..()

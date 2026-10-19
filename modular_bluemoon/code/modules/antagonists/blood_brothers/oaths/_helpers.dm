@@ -21,6 +21,19 @@ GLOBAL_LIST_INIT(brother_public_areas, list(
 	/area/hallway/secondary/entry,
 ))
 
+/// Как вещи узелка клятвы называются в окне и в чате
+GLOBAL_LIST_INIT(brother_kit_labels, list(
+	/obj/item/clothing/gloves/color/yellow = "изолированные перчатки",
+	/obj/item/multitool = "мультитул",
+	/obj/item/screwdriver = "отвёртка",
+	/obj/item/wirecutters = "кусачки",
+	/obj/item/crowbar/red = "монтировка",
+	/obj/item/clothing/mask/balaclava = "балаклава",
+	/obj/item/restraints/handcuffs/cable/zipties = "стяжки",
+	/obj/item/camera = "фотоаппарат",
+	/obj/item/reagent_containers/glass/bottle/iron = "бутылочка железа для крови",
+))
+
 /// Предметы типа item_type у живых братьев и в Схроне крови
 /proc/brother_team_items(datum/team/brother_team/team, item_type)
 	. = list()

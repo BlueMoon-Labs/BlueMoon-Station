@@ -26,6 +26,8 @@ GLOBAL_LIST_INIT(blood_oath_types, list(
 	var/capstone_type
 	/// Действия связи, которые клятва даёт с первой минуты
 	var/list/extra_actions
+	/// Станционные вещи, которые каждый живой брат получает при клятве
+	var/list/kit_items
 	var/vow_type
 	/// Обет предложения; при клятве переходит к команде
 	var/datum/blood_vow/vow
@@ -56,6 +58,12 @@ GLOBAL_LIST_INIT(blood_oath_types, list(
 	if(requires_violence && !brother_team_violence_allowed(for_team))
 		return FALSE
 	return TRUE
+
+/datum/blood_oath/proc/kit_text()
+	var/list/labels = list()
+	for(var/item_type in kit_items)
+		labels |= GLOB.brother_kit_labels[item_type]
+	return labels.Join(", ")
 
 /// Подбор целей и шагов заново; подтипы зовут родителя первым
 /datum/blood_oath/proc/prepare(datum/team/brother_team/for_team)

@@ -119,6 +119,7 @@ GLOBAL_LIST_INIT(brother_head_offices, list(
 	summary = "собрать компромат на человека и подбросить его начальству"
 	weight = 6
 	capstone_type = /datum/action/cooldown/blood_bond/capstone/mark
+	kit_items = list(/obj/item/camera, /obj/item/restraints/handcuffs/cable/zipties, /obj/item/clothing/mask/balaclava)
 	var/office_type
 	/// Кабинет в винительном падеже: «подбросьте в кабинет капитана»
 	var/office_name

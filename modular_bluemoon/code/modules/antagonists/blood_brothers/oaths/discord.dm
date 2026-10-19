@@ -92,6 +92,7 @@ GLOBAL_LIST_INIT(brother_discord_targets, list(
 	weight = 5
 	round_types = list(ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_TEAMBASED)
 	capstone_type = /datum/action/cooldown/blood_bond/capstone/blackout
+	kit_items = list(BROTHER_KIT_BREAKIN)
 	var/department
 
 /datum/blood_oath/discord/available(datum/team/brother_team/for_team)

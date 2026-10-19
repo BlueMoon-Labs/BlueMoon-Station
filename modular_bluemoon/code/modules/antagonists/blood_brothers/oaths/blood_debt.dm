@@ -4,6 +4,7 @@
 	summary = "добыть подарок спасителю, вручить его и отдать спасителю свою кровь"
 	weight = 8
 	capstone_type = /datum/action/cooldown/blood_bond/capstone/bulwark
+	kit_items = list(BROTHER_KIT_BREAKIN)
 	target_opt_in_level = ANTAG_OPT_IN_TEMPORARY
 	var/gift_type
 	var/gift_name

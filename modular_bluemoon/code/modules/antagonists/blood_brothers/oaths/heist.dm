@@ -4,6 +4,7 @@
 	summary = "украсть две ценности и спрятать их"
 	weight = 10
 	capstone_type = /datum/action/cooldown/blood_bond/capstone/stash
+	kit_items = list(BROTHER_KIT_BREAKIN)
 	var/list/datum/objective_item/loot = list()
 
 /datum/blood_oath/heist/Destroy()

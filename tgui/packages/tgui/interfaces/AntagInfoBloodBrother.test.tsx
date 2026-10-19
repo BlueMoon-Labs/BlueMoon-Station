@@ -152,6 +152,17 @@ test('до клятвы видны все три предложенные кля
   expect(screen.getAllByText(/Схрон крови/).length).toBeGreaterThan(0);
 });
 
+test('узелок клятвы виден до выбора и после клятвы', () => {
+  const kit = 'изолированные перчатки, мультитул';
+  const ui = setup({ offer_texts: [{ ...oath('heist', 'Добыча', 'Без крови'), kit }, oath('vendetta', 'Месть', 'Тень')] });
+  expect(screen.getByText(kit)).toBeTruthy();
+  expect(screen.getByText('Узелок каждому:')).toBeTruthy();
+  ui.unmount();
+  setup({ ...sworn(), oath_texts: { ...oath('heist', 'Добыча', 'Тень'), kit } });
+  expect(screen.getByText(kit)).toBeTruthy();
+  expect(screen.getByText('Узелок клятвы:')).toBeTruthy();
+});
+
 test('«Предложить» отправляет ключ выбранной клятвы', () => {
   const ui = setup();
   fireEvent.click(screen.getByRole('option', { name: /Месть/ }));

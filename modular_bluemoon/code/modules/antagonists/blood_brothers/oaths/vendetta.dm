@@ -4,6 +4,7 @@
 	summary = "забрать ID-карту предателя, упечь его за решётку и расквитаться"
 	weight = 10
 	capstone_type = /datum/action/cooldown/blood_bond/capstone/mark
+	kit_items = list(/obj/item/restraints/handcuffs/cable/zipties, /obj/item/restraints/handcuffs/cable/zipties, /obj/item/clothing/mask/balaclava, /obj/item/crowbar/red)
 
 /datum/blood_oath/vendetta/Destroy()
 	if(team)

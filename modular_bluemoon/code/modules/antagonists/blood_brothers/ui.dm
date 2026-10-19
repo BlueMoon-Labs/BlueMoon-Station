@@ -160,6 +160,7 @@
 		"name" = name,
 		"summary" = summary,
 		"story" = story,
+		"kit" = kit_text(),
 		"vow_name" = shown_vow?.name,
 		"vow_desc" = shown_vow?.desc,
 		"steps" = step_texts,
