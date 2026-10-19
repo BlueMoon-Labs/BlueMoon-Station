@@ -155,6 +155,7 @@
 	pin = /obj/item/firing_pin/explorer
 	icon = 'modular_bluemoon/icons/obj/guns/projectile.dmi'
 	icon_state = "45revolvervanguard"
+	unique_reskin = null //Рескины базового .45 используют кадры из другого dmi и делают спрайт невидимым.
 	projectile_simple_mob_damage_multiplier = 1.75
 
 /obj/item/melee/tomahawk

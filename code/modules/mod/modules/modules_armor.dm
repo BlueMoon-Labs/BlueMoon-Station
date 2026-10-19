@@ -37,9 +37,14 @@
 	. = ..()
 	if(armor_module_type)
 		return
-	. += span_boldnotice("Сейчас доступны варианты:")
+	. += span_boldnotice("<hr><center>Доступные варианты армирования</center>")
+	. += "Пригодные для защиты от угроз материалы:"
+	var/list/armor_vars = list()
 	for(var/material in material_to_armor_list)
-		. += (span_alert("Материал --[(material)]-- позволяет сделать защиту от:") + span_revenminor("[material_to_armor_list[material]]"))
+		var/material_name = span_alert("[capitalize(vocabulary_to_ru(GLOB.mat_ru_nominative, material))]")
+		var/armor_name = span_revenminor("[vocabulary_to_ru(GLOB.armor_rating_genitive_ru, material_to_armor_list[material])]")
+		armor_vars += "<div style='margin-top:4px;'>– [material_name] поможет от [armor_name].</div>"
+	. += armor_vars.Join()
 
 /obj/item/mod/module/armor/proc/add_armor_bonus()
 	if(!mod.theme.compatible_with_armor_modules)

@@ -169312,7 +169312,7 @@
 "vbr" = (
 /obj/effect/turf_decal/siding/dark,
 /obj/effect/turf_decal/trimline/dark_blue/filled/line,
-/obj/machinery/bountyvend/plus,
+/obj/machinery/bountyvend,
 /obj/machinery/vending/wallmed/directional/south,
 /obj/structure/cable/yellow{
 	icon_state = "1-4"

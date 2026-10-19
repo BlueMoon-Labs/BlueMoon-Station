@@ -16,3 +16,4 @@
 	suffix = "lavaland_surface_abandoned_shelter.dmm"
 	cost = 5
 	allow_duplicates = FALSE
+	always_place = TRUE

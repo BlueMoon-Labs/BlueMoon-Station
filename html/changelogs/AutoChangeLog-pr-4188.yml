@@ -1,0 +1,5 @@
+author: ICE-IS-NICE
+delete-after: true
+changes:
+  - rscadd: Стаканы переполняются камом.
+  - rscadd: Узлы блокируют подтекания.

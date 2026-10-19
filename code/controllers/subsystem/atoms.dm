@@ -10,6 +10,10 @@ SUBSYSTEM_DEF(atoms)
 
 	var/old_initialized
 
+	//WHITE-STEEL PORT: стек предыдущих значений initialized для map_loader_begin/stop.
+	//Нужен, чтобы вложенные begin/stop не перезаписывали общий old_initialized.
+	var/list/map_loader_initialized = list()
+
 	var/list/late_loaders = list()
 
 	var/list/BadInitializeCalls = list()
@@ -180,11 +184,28 @@ SUBSYSTEM_DEF(atoms)
 	return qdeleted || QDELING(A)
 
 /datum/controller/subsystem/atoms/proc/map_loader_begin()
-	old_initialized = initialized
+	//WHITE-STEEL PORT: держим стек предыдущих значений. Раньше использовался общий
+	//old_initialized, который перезаписывает InitializeAtoms(), из-за чего при
+	//вложенных begin/stop (build_coordinate -> instance_atom -> stoplag) или при
+	//исключении initialized мог застрять в INSSATOMS(0) - и двери/стёкла руин
+	//через раз не инициализировались.
+	map_loader_initialized += initialized
 	initialized = INITIALIZATION_INSSATOMS
 
 /datum/controller/subsystem/atoms/proc/map_loader_stop()
-	initialized = old_initialized
+	if(!length(map_loader_initialized))
+		//Не должно случаться, но не оставляем initialized в INSSATOMS навсегда.
+		initialized = INITIALIZATION_INNEW_REGULAR
+		return
+	initialized = map_loader_initialized[length(map_loader_initialized)]
+	map_loader_initialized.len--
+
+/datum/controller/subsystem/atoms/proc/map_loader_abort()
+	//Полный сброс маплоадера после исключения (напр. в build_coordinate), когда
+	//стек begin/stop не сбалансирован. Иначе initialized остаётся INSSATOMS и
+	//все последующие атомы (двери, стёкла) перестают инициализироваться.
+	map_loader_initialized.Cut()
+	initialized = INITIALIZATION_INNEW_REGULAR
 
 /datum/controller/subsystem/atoms/Recover()
 	initialized = SSatoms.initialized
@@ -192,6 +213,7 @@ SUBSYSTEM_DEF(atoms)
 		InitializeAtoms()
 	old_initialized = SSatoms.old_initialized
 	BadInitializeCalls = SSatoms.BadInitializeCalls
+	map_loader_initialized = SSatoms.map_loader_initialized
 
 /datum/controller/subsystem/atoms/proc/setupGenetics()
 	var/list/mutations = subtypesof(/datum/mutation/human)

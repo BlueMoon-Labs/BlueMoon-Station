@@ -25133,7 +25133,7 @@
 	dir = 1
 	},
 /obj/machinery/light/small/dim/directional/north,
-/obj/machinery/bountyvend/plus,
+/obj/machinery/bountyvend,
 /turf/open/floor/plasteel,
 /area/command/gateway)
 "gxm" = (

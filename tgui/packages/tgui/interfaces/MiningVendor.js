@@ -2,12 +2,12 @@ import { classes } from 'common/react';
 import { useState } from 'react';
 
 import { useBackend } from '../backend';
-import { Box, Button, Flex, Section, Table } from '../components';
+import { Box, Button, Section, Stack, Table } from '../components';
 import { Window } from '../layouts';
 
 export const MiningVendor = (props) => {
   const { act, data } = useBackend();
-  const [selectedCategory, setCategory] = useState('Mining Gear');
+  const [selectedCategory, setCategory] = useState('Общее снаряжение');
 
   const allProducts = data?.product_records || [];
   const dataCategories = data?.categories || [];
@@ -17,7 +17,7 @@ export const MiningVendor = (props) => {
   );
   const inventory = selectedCategory
     ? allProducts.filter(p => p.category === selectedCategory)
-    : allProducts;
+    : [...allProducts];
 
   { /* Сортировка инвентаря по ценнику, cuz в .dm порядка нет */ }
   inventory.sort((a, b) =>
@@ -26,92 +26,95 @@ export const MiningVendor = (props) => {
 
   return (
     <Window
-      width={620}
-      height={550}>
-      <Window.Content scrollable>
-        <Section title="User">
-          {data.user && (
-            <Box>
-              Welcome, <b>{data.user.name || "Unknown"}</b>,
-              {' '}
-              <b>{data.user.job || "Unemployed"}</b>!
-              <br />
-              Your balance is <b>{data.user.points} mining points</b>.
-              <br />
-              <Box color="good">
-                Current discount is: <b>{data.discount * 100}%</b>
-                {data.discount === 0 && ' What a shame...'}
-              </Box>
-            </Box>
-          ) || (
-            <Box color="light-gray">
-              No registered ID card!<br />
-              Please contact your local HoP!
-            </Box>
-          )}
-        </Section>
-        <Section title="Equipment">
-            <Flex>
-              {/* Левые вкладки, содержащие категории */}
-              <Flex.Item
-                basis="140px"
-                grow={0}
-                shrink={0}
-                mr={1}
-                style={{
-                  borderRight: '1px solid rgba(255,255,255,0.1)',
-                }}
-              >
-                {categories.map(category => (
-                  <Box key={category} mb={0.5}>
-                    <Button
-                      fluid
-                      selected={selectedCategory === category}
-                      onClick={() => setCategory(category)}
-                    >
-                      {category}
-                    </Button>
+      width={640}
+      height={510}>
+      <Window.Content>
+        <Stack fill vertical>
+          <Stack.Item>
+            <Section title="Пользователь">
+              {data.user && (
+                <Box>
+                  Добро пожаловать, <b>{data.user.name || "Неизвестный"}</b>,
+                  {' '}
+                  <b>{data.user.job || "БЕЗ РАБОТЫ"}</b>!
+                  <br />
+                  Ваш баланс: <b>{data.user.points} шахтёрских очков</b>.
+                  <br />
+                  <Box color="good">
+                    Текущая скидка: <b>{Math.round(data.discount * 1000) / 10}%</b>
+                    {data.discount === 0 && ' Какая жалость...'}
                   </Box>
-                ))}
-              </Flex.Item>
+                </Box>
+              ) || (
+                <Box color="light-gray">
+                  Не обнаружено зарегистрированной ID-карты!<br />
+                  Пожалуйста, обратитесь к местному Главе Персонала!
+                </Box>
+              )}
+            </Section>
+          </Stack.Item>
 
-              {/* Правая часть интерфейса: товары категорий */}
-              <Flex.Item grow={1}>
-                <Table>
-                  {inventory.map(product => (
-                    <Table.Row key={product.name}>
-                      <Table.Cell>
-                        <Box inline mr={1}>
-                          <span
-                            className={classes(['vending32x32', product.path])}
-                            style={{
-                              verticalAlign: 'middle',
-                            }} />
-                        </Box>
-                        {' '}<b>{product.name}</b>
-                      </Table.Cell>
-                      <Table.Cell collapsing textAlign="right">
-                        <Button
-                          fluid
-                          style={{
-                            minWidth: '100px',
-                            textAlign: 'center',
-                          }}
-                          disabled={!data.user
-                            || product.price > data.user.points}
-                          onClick={() => act('purchase', {
-                            ref: product.ref,
-                          })} >
-                          {product.price} points
-                        </Button>
-                      </Table.Cell>
-                    </Table.Row>
+          <Stack.Item grow>
+            <Section fill title="Ассортимент">
+              <Stack fill>
+                <Stack.Item grow basis={0}>
+                  <Section
+                    key={selectedCategory}
+                    fill
+                    scrollable>
+                    <Table>
+                      {inventory.map(product => (
+                        <Table.Row key={product.name}>
+                          <Table.Cell>
+                            <Box inline mr={1}>
+                              <span
+                                className={classes([
+                                  'vending32x32',
+                                  product.path,
+                                ])}
+                                style={{ verticalAlign: 'middle' }} />
+                            </Box>
+                            {' '}<b>{product.name}</b>
+                          </Table.Cell>
+                          <Table.Cell collapsing textAlign="right">
+                            <Button
+                              fluid
+                              style={{
+                                minWidth: '100px',
+                                textAlign: 'center',
+                              }}
+                              disabled={!data.user
+                                || product.price > data.user.points}
+                              onClick={() => act('purchase', {
+                                ref: product.ref,
+                              })} >
+                              {product.price} очков
+                            </Button>
+                          </Table.Cell>
+                        </Table.Row>
+                      ))}
+                    </Table>
+                  </Section>
+                </Stack.Item>
+
+                <Stack.Item basis="160px" shrink={0}>
+                  {categories.map(category => (
+                    <Box key={category} mb={0.5} ml={1}>
+                      <Button
+                        fluid
+                        selected={selectedCategory === category}
+                        onClick={() => setCategory(category)}
+                      >
+                        {category}
+                      </Button>
+                    </Box>
                   ))}
-                </Table>
-              </Flex.Item>
-            </Flex>
-        </Section>
+                </Stack.Item>
+              </Stack>
+            </Section>
+          </Stack.Item>
+        </Stack>
       </Window.Content>
     </Window>
-    );
-  };
+  );
+};

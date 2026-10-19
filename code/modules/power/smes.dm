@@ -18,7 +18,7 @@
 
 /obj/machinery/power/smes
 	name = "power storage unit"
-	desc = "A high-capacity superconducting magnetic energy storage (SMES) unit."
+	desc = "Сверхмощный электростатический накопитель, также называемый SMES."
 	icon_state = "smes"
 	icon = 'icons/obj/machines/smes.dmi'
 	density = TRUE
@@ -51,7 +51,7 @@
 /obj/machinery/power/smes/examine(user)
 	. = ..()
 	if(!terminal)
-		. += "<span class='warning'>This SMES has no power terminal!</span>"
+		. += span_warning("У этого накопителя нет энерготерминала!")
 
 /obj/machinery/power/smes/Initialize()
 	. = ..()
@@ -109,10 +109,10 @@
 			if(term && term.dir == turn(dir, 180))
 				terminal = term
 				terminal.master = src
-				to_chat(user, "<span class='notice'>Terminal found.</span>")
+				to_chat(user, span_notice("Терминал был найден."))
 				break
 		if(!terminal)
-			to_chat(user, "<span class='alert'>No power terminal found.</span>")
+			to_chat(user, span_alert("Не было найдено энерготерминала."))
 			return
 		set_machine_stat(machine_stat & ~BROKEN)
 		update_icon()
@@ -125,25 +125,25 @@
 			return
 
 		if(terminal) //is there already a terminal ?
-			to_chat(user, "<span class='warning'>This SMES already has a power terminal!</span>")
+			to_chat(user, span_warning("У этого накопителя уже есть энерготерминал!"))
 			return
 
 		if(!panel_open) //is the panel open ?
-			to_chat(user, "<span class='warning'>You must open the maintenance panel first!</span>")
+			to_chat(user, span_warning("Для начала нужно открыть панель техобслуживания!"))
 			return
 
 		var/turf/T = get_turf(user)
 		if (T.turf_flags & TURF_INTACT) //is the floor plating removed ?
-			to_chat(user, "<span class='warning'>You must first remove the floor plating!</span>")
+			to_chat(user, span_warning("Для начала уберите покрытие пола!"))
 			return
 
 
 		var/obj/item/stack/cable_coil/C = I
 		if(C.get_amount() < 10)
-			to_chat(user, "<span class='warning'>You need more wires!</span>")
+			to_chat(user, span_warning("Нужно больше кабеля!"))
 			return
 
-		to_chat(user, "<span class='notice'>You start building the power terminal...</span>")
+		to_chat(user, span_notice("Вы начинаете прокладывать энерготерминал..."))
 		playsound(src.loc, 'sound/items/deconstruct.ogg', 50, TRUE)
 
 		if(do_after(user, 20, target = src))
@@ -155,8 +155,8 @@
 				return
 			if(!terminal)
 				C.use(10)
-				user.visible_message("<span class='notice'>[user.name] builds a power terminal.</span>",\
-					"<span class='notice'>You build the power terminal.</span>")
+				user.visible_message(span_notice("[user.name] прокладывает энерготерминал."),\
+					span_notice("Вы прокладываете энерготерминал."))
 
 				//build the terminal and link it to the network
 				make_terminal(T)
@@ -186,7 +186,7 @@
 
 /obj/machinery/power/smes/default_deconstruction_crowbar(obj/item/crowbar/C)
 	if(istype(C) && terminal)
-		to_chat(usr, "<span class='warning'>You must first remove the power terminal!</span>")
+		to_chat(usr, span_warning("Для начала вам нужно убрать энерготерминал!"))
 		return FALSE
 
 	return ..()
@@ -488,7 +488,7 @@
 
 /obj/machinery/power/smes/magical
 	name = "magical power storage unit"
-	desc = "A high-capacity superconducting magnetic energy storage (SMES) unit. Magically produces power."
+	desc = "Сверхмагический маностатический накопитель, также называемый SMES."
 
 /obj/machinery/power/smes/magical/process()
 	capacity = INFINITY

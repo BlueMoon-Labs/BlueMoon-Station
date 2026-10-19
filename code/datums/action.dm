@@ -696,15 +696,15 @@
 	if(IsAvailable())
 		active = !active
 		if(active)
-			owner.research_scanner++
+			ADD_TRAIT(owner, TRAIT_RESEARCH_SCANNER, CLOTHING_TRAIT)
 		else
-			owner.research_scanner--
-		to_chat(owner, "<span class='notice'>[target] research scanner has been [active ? "activated" : "deactivated"].</span>")
+			REMOVE_TRAIT(owner, TRAIT_RESEARCH_SCANNER, CLOTHING_TRAIT)
+		to_chat(owner, span_notice("Научный сканер [target] был [active ? "активирован" : "деактивирован"]."))
 		return TRUE
 
 /datum/action/item_action/toggle_research_scanner/Remove(mob/M)
 	if(owner && active)
-		owner.research_scanner--
+		REMOVE_TRAIT(owner, TRAIT_RESEARCH_SCANNER, CLOTHING_TRAIT)
 		active = FALSE
 	..()
 

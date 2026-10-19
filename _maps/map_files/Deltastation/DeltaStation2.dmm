@@ -23180,18 +23180,14 @@
 /turf/open/floor/plasteel,
 /area/science/research)
 "dcE" = (
-/obj/structure/table/reinforced,
-/obj/item/stock_parts/matter_bin{
-	pixel_x = 3;
-	pixel_y = 3
-	},
-/obj/item/stock_parts/matter_bin,
-/obj/item/stock_parts/micro_laser,
 /obj/machinery/airalarm{
 	dir = 4;
 	pixel_x = -23
 	},
 /obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/machinery/computer/shuttle_flight/exploration{
 	dir = 4
 	},
 /turf/open/floor/plasteel,
@@ -35311,8 +35307,7 @@
 	dir = 1
 	},
 /obj/machinery/door/airlock/external{
-	name = "External Airlock";
-	req_access_txt = "13"
+	name = "Igla dock"
 	},
 /obj/effect/mapping_helpers/airlock/cyclelink_helper,
 /obj/machinery/door/firedoor,
@@ -35993,8 +35988,7 @@
 	dir = 1
 	},
 /obj/machinery/door/airlock/external{
-	name = "External Airlock";
-	req_access_txt = "13"
+	name = "Igla dock"
 	},
 /obj/effect/turf_decal/stripes/yellow/line,
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -66337,6 +66331,12 @@
 	},
 /turf/open/floor/plasteel/grimy,
 /area/service/chapel/office)
+"kMA" = (
+/obj/docking_port/stationary/exploration{
+	dir = 2
+	},
+/turf/open/space,
+/area/space)
 "kMO" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/toilet/secret/low_loot{
@@ -72999,7 +72999,7 @@
 "mfM" = (
 /obj/effect/turf_decal/stripes/yellow/line,
 /obj/effect/turf_decal/bot/yellow,
-/obj/machinery/bountyvend/plus,
+/obj/machinery/bountyvend,
 /turf/open/floor/plasteel,
 /area/command/gateway)
 "mfR" = (
@@ -164636,10 +164636,10 @@ pIV
 rnF
 wDZ
 mjH
-aad
-ajr
 aaa
-ajr
+aaa
+aaa
+aaa
 aaa
 aaa
 aaa
@@ -164894,9 +164894,9 @@ jQJ
 ikw
 mjH
 aaa
-aad
+nph
 aaa
-ajr
+aaa
 aaa
 aaa
 aaa
@@ -165151,9 +165151,9 @@ nio
 oxf
 mjH
 aaa
-aad
 aaa
-aad
+aaa
+aaa
 aaa
 aaa
 aaa
@@ -165407,10 +165407,10 @@ sTX
 dHV
 oxf
 mjH
-aad
-ajr
+nph
 aaa
-ajr
+aaa
+aaa
 aaa
 aaa
 aaa
@@ -165664,10 +165664,10 @@ irs
 llf
 gKv
 oTr
-aad
-ajr
-aad
-ajr
+aaa
+aaa
+aaa
+aaa
 aaa
 aaa
 aaa
@@ -165921,10 +165921,10 @@ oTr
 oTr
 oTr
 oTr
-aad
-aad
+nph
 aaa
-ajr
+aaa
+aaa
 aaa
 aaa
 aaa
@@ -166178,12 +166178,12 @@ eeG
 eft
 egg
 egD
-abj
-abj
+kMA
+nph
 aaa
-aad
 aaa
-ajr
+aaa
+aaa
 aaa
 aaa
 aaa
@@ -166435,12 +166435,12 @@ edY
 edY
 edY
 egE
-aad
-aad
+nph
+nph
 aaa
-ajr
-aad
-ajr
+aaa
+aaa
+aaa
 aaa
 aaa
 aaa
@@ -166692,12 +166692,12 @@ eeH
 pNr
 egh
 egE
-aad
-ajr
-aad
-ajr
+nph
 aaa
-ajr
+aaa
+aaa
+aaa
+aaa
 aaa
 aaa
 aaa
@@ -166949,10 +166949,10 @@ kew
 oXR
 egi
 eeb
-aad
-aad
 aaa
-ajr
+aaa
+aaa
+aaa
 aaa
 aaa
 aaa
@@ -167207,9 +167207,9 @@ efw
 egj
 egF
 aaa
-aad
+nph
 aaa
-aad
+aaa
 aaa
 aaa
 aaa
@@ -167463,10 +167463,10 @@ jBu
 pgH
 egk
 egG
-aad
-aad
 aaa
-ajr
+aaa
+aaa
+aaa
 aaa
 aaa
 aaa
@@ -167720,10 +167720,10 @@ gjk
 fmS
 egl
 egE
-aad
-ajr
-aad
-ajr
+aaa
+aaa
+aaa
+aaa
 aaa
 aaa
 aaa

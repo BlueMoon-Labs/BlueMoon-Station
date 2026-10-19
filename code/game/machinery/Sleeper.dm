@@ -174,10 +174,11 @@
 
 /obj/machinery/sleeper/examine(mob/user)
 	. = ..()
-	. += "<span class='notice'>Alt-click для того, чтобы [state_open ? "закрыть" : "открыть"].</span>"
-	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>Статус-дисплей сообщает: \n\
-		- Эффективность дозировок: <b>[efficiency*100]%</b>.</span>"
+	. += span_notice("Alt-click для того, чтобы [state_open ? "закрыть" : "открыть"].")
+
+/obj/machinery/sleeper/examine_display_content(mob/user)
+	. += "\
+	– Эффективность дозировок: <b>[efficiency*100]%</b>."
 
 /obj/machinery/sleeper/process()
 	if(!occupant)

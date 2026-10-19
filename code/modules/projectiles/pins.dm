@@ -370,10 +370,12 @@
 	pin_removeable = FALSE
 	emag_removeable = TRUE
 
-// This checks that the user isn't on the station Z-level.
+// This checks that the user isn't on the station Z-level, unless the alert is red or higher.
 /obj/item/firing_pin/explorer/pin_auth(mob/living/user)
 	var/turf/station_check = get_turf(user)
-	if(!station_check||is_station_level(station_check.z))
+	if(!station_check)
+		return FALSE
+	if(is_station_level(station_check.z) && GLOB.security_level < SEC_LEVEL_RED)
 		to_chat(user, "<span class='warning'>You cannot use your weapon while on the station!</span>")
 		return FALSE
 	return TRUE

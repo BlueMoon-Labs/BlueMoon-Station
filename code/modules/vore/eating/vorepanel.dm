@@ -189,8 +189,6 @@
 		"allowmobvore" = (host.vore_flags & MOBVORE),
 		"vore_sounds" = (host.client?.prefs?.cit_toggles & EATING_NOISES),
 		"digestion_sounds" = (host.client?.prefs?.cit_toggles & DIGESTION_NOISES),
-		"lickable" = (host.vore_flags & LICKABLE),
-		"smellable" = (host.vore_flags & SMELLABLE),
 	)
 
 	return data
@@ -283,28 +281,6 @@
 				to_chat(usr, "<span class='notice'>Vore preferences applied from active slot!</span>")
 				unsaved_changes = FALSE
 			return TRUE
-		if("setflavor")
-			var/new_flavor = html_encode_readable(input(usr,"What your character tastes like (400ch limit). This text will be printed to the pred after 'X tastes of...' so just put something like 'strawberries and cream':","Character Flavor",host.vore_taste) as text|null)
-			if(!new_flavor)
-				return FALSE
-
-			if(length(new_flavor) > FLAVOR_MAX)
-				tgui_alert_async(usr, "Entered flavor/taste text too long. [FLAVOR_MAX] character limit.","Error!")
-				return FALSE
-			host.vore_taste = new_flavor
-			unsaved_changes = TRUE
-			return TRUE
-		if("setsmell")
-			var/new_smell = html_encode_readable(input(usr,"What your character smells like (400ch limit). This text will be printed to the pred after 'X smells of...' so just put something like 'strawberries and cream':","Character Smell",host.vore_smell) as text|null)
-			if(!new_smell)
-				return FALSE
-
-			if(length(new_smell) > FLAVOR_MAX)
-				tgui_alert_async(usr, "Entered perfume/smell text too long. [FLAVOR_MAX] character limit.","Error!")
-				return FALSE
-			host.vore_smell = new_smell
-			unsaved_changes = TRUE
-			return TRUE
 		if("toggle_digest")
 			(host.vore_flags ^= DIGESTABLE)
 			if(host.client.prefs)
@@ -341,14 +317,6 @@
 			return TRUE
 		if("toggle_digestion_sounds")
 			(host.client.prefs.cit_toggles ^= DIGESTION_NOISES)
-			unsaved_changes = TRUE
-			return TRUE
-		if("toggle_lickable")
-			(host.vore_flags ^= LICKABLE)
-			unsaved_changes = TRUE
-			return TRUE
-		if("toggle_smellable")
-			(host.vore_flags ^= SMELLABLE)
 			unsaved_changes = TRUE
 			return TRUE
 

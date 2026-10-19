@@ -1,0 +1,4 @@
+author: FelixRuin
+delete-after: true
+changes:
+  - bugfix: часть членов просвечивалось через спину при направлении на север
