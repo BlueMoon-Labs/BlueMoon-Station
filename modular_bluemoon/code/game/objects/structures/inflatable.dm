@@ -4,6 +4,7 @@
 	desc = "A folded membrane which rapidly expands into a large cubical shape on activation."
 	icon = 'modular_bluemoon/icons/obj/structures/inflatable.dmi'
 	icon_state = "folded_wall"
+	w_class = WEIGHT_CLASS_SMALL
 	var/structure_path = /obj/structure/inflatable
 	var/inflating = FALSE
 
@@ -203,6 +204,7 @@
 	desc = "Contains inflatable walls and doors."
 	icon_state = "inf_box"
 	item_state = "syringe_kit"
+	w_class = WEIGHT_CLASS_SMALL
 	resistance_flags = NONE
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
@@ -226,6 +228,7 @@
 	icon = 'icons/obj/storage.dmi'
 	icon_state = "inf_box_mini"
 	item_state = "syringe_kit"
+	w_class = WEIGHT_CLASS_SMALL
 	resistance_flags = NONE
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
@@ -249,6 +252,7 @@
 	icon_state = "inf_box_airbag"
 	item_state = "syringe_kit"
 	custom_price = PRICE_NORMAL
+	w_class = WEIGHT_CLASS_SMALL
 	resistance_flags = NONE
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
