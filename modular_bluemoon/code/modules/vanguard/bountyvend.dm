@@ -115,7 +115,7 @@
 //		new /datum/data/bounty_equipment("ERT MOD Suit",					/obj/item/mod/control/pre_equipped/responsory,					50000,		"Elite Equipment"),
 		new /datum/data/bounty_equipment("Department Prototlathe beacon",	/obj/item/choice_beacon/departmental_protholate,				20000,		"Elite Equipment"),
 		new /datum/data/bounty_equipment("Syndicate Baloon",				/obj/item/toy/syndicateballoon,									1000000,	"Elite Equipment"),
-		new /datum/data/bounty_equipment("Medbeam Gun",						/obj/item/gun/medbeam,											30000,		"Elite Equipment"),
+		new /datum/data/bounty_equipment("Medbeam Gun",						/obj/item/gun/medbeam,											60000,		"Elite Equipment"),
 		new /datum/data/bounty_equipment("Civillian Syndicate ID card",		/obj/item/card/id/syndicate/one_access_copy,					25000,		"Elite Equipment"),
 	)
 

@@ -39,8 +39,8 @@ export const OrbitalMapSvg = (props) => {
     y: y * zoomScale + scaledYOffset,
   });
 
-  //WHITE-STEEL PORT: направление вектора скорости совпадает с направлением
-  //движения на карте (без инверсии по Y, как в списке карт белого стиля).
+  // WHITE-STEEL PORT: направление вектора скорости совпадает с направлением
+  // движения на карте (без инверсии по Y, как в списке карт белого стиля).
   const velocityVector = (vx, vy) => {
     const magnitude = Math.hypot(vx, vy);
     if (!magnitude) {

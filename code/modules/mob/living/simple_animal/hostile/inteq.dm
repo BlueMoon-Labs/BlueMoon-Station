@@ -12,6 +12,7 @@
 /mob/living/simple_animal/hostile/inteq
 	name = "InteQ Operative"
 	desc = "Смерть Nanotrasen и Синдикату!"
+	gold_core_spawnable = HOSTILE_SPAWN
 	icon = 'icons/mob/simple_human.dmi'
 	icon_state = "syndicate"
 	icon_living = "syndicate"
