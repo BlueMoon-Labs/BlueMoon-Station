@@ -88,7 +88,7 @@
 /datum/crafting_recipe/food/pawcookie_raw_right
 	name = "Raw PawCookie (right)"
 	reqs = list(
-		/obj/item/reagent_containers/food/snacks/rawpastrybase = 1,
+		/obj/item/reagent_containers/food/snacks/doughslice = 1,
 		/datum/reagent/consumable/sugar = 5,
 		/obj/item/bodypart/r_leg = 1
 	)
@@ -98,7 +98,7 @@
 /datum/crafting_recipe/food/pawcookie_raw_left
 	name = "Raw PawCookie (left)"
 	reqs = list(
-		/obj/item/reagent_containers/food/snacks/rawpastrybase = 1,
+		/obj/item/reagent_containers/food/snacks/doughslice = 1,
 		/datum/reagent/consumable/sugar = 5,
 		/obj/item/bodypart/l_leg = 1
 	)
