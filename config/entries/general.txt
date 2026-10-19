@@ -432,7 +432,7 @@ STATION_SPACE_BUDGET 20
 ## Шанс выбора оконных фаерлоков вместо аирбагов для внешних станционных окон из спавнеров: 0–100%.
 ## Один выбор на весь раунд: 0 — всегда аирбаги, 100 — всегда оконные фаерлоки.
 ## Окна из спавнеров на шаттлах и в капсулах всегда получают оконные фаерлоки независимо от настройки.
-STATION_WINDOW_FIRELOCKS_CHANCE 50
+STATION_WINDOW_FIRELOCKS_CHANCE 70
 
 ## Time in ds from when a player latejoins till the arrival shuttle docks at the station
 ## Must be at least 30. At least 55 recommended to be visually/aurally appropriate

@@ -216,7 +216,7 @@
 	min_val = 0
 
 /datum/config_entry/number/station_window_firelocks_chance
-	default = 50
+	default = 70
 	min_val = 0
 	max_val = 100
 
