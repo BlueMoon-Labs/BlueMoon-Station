@@ -837,6 +837,16 @@
 	..()
 	icon_state = pick("paw1", "paw2", "paw3", "paw4", "paw5", "paw6", "paw7", "paw8", "paw9", "paw10", "paw11", "paw12", "paw13", "paw14")
 
+/obj/item/reagent_containers/food/snacks/pawgold
+	name = "Golden paw"
+	desc = "Блестящая лапка! Сытнее обычной."
+	icon = 'icons/obj/food/food.dmi'
+	icon_state = "pawg"
+	cooked_type = /obj/item/reagent_containers/food/snacks/pawcookie
+	list_reagents = list(/datum/reagent/consumable/nutriment = 6)
+	tastes = list("cookie" = 1)
+	bitesize = 6
+	foodtype = GRAIN | SUGAR
 
 GLOBAL_LIST_INIT(paw_eater_progress, list()) // Ачивка pawlicker
 
@@ -854,8 +864,12 @@ GLOBAL_LIST_INIT(paw_eater_progress, list()) // Ачивка pawlicker
 	if(!(state_index in eaten))
 		eaten |= state_index
 		if(eaten.len >= needed)
-			user.emote("yummers")
+			user.client.increment_progress("achievement_pawlicker", 1)
+			to_chat(user, span_warning("Ты съел половину от всех видов, но как можно остановиться?"))
 			user.client.give_award(/datum/award/achievement/misc/pawlicker, user)
-			
-
-
+			var/obj/item/reagent_containers/food/snacks/pawgold/gold = new(get_turf(user))
+			gold.pixel_x = rand(-6, 6)
+			gold.pixel_y = 20
+			animate(gold, pixel_y = 0, time = 20, easing = BOUNCE_EASING)
+			playsound(gold, 'sound/effects/magic.ogg', 50, TRUE)
+			addtimer(CALLBACK(user, TYPE_PROC_REF(/mob, emote), "yummers"), 1.5 SECONDS)

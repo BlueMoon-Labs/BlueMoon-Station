@@ -128,7 +128,7 @@
 		if(.)
 			return
 		if(user.get_item_by_slot(ITEM_SLOT_FEET))
-			to_chat(user, "<span class='warning'>Нельзя работать с едой в обуви! Надо сначала снять её</span>")
+			to_chat(user, span_warning("Нельзя работать с едой в обуви! Надо сначала снять её"))
 			return
 		var/obj/item/reagent_containers/food/condiment/sugar/sugarpack
 		for(var/obj/item/I in user.held_items)
@@ -138,20 +138,20 @@
 				sugarpack = I
 				break
 		if(!sugarpack)
-			to_chat(user, "<span class='warning'>Для формовки нужна пачка сахара во второй руке!</span>")
+			to_chat(user, span_warning("Для формовки нужна пачка сахара во второй руке!"))
 			return
 		if(!sugarpack.reagents || sugarpack.reagents.get_reagent_amount(/datum/reagent/consumable/sugar) < 1)
-			to_chat(user, "<span class='warning'>Пачка сахара пуста!</span>")
+			to_chat(user, span_warning("Пачка сахара пуста!</span>"))
 			return
-		to_chat(user, "<span class='notice'>Ты прижимаешь ногу к тесту, придавая ему форму лапки...</span>")
+		to_chat(user, span_notice("Ты прижимаешь ногу к тесту, придавая ему форму лапки..."))
 		if(!do_after(user, 1 SECONDS, user))
-			to_chat(user, "<span class='warning'>Ты сбилися!</span>")
+			to_chat(user, span_warning("Ты сбился!"))
 			return
 		sugarpack.reagents.remove_reagent((/datum/reagent/consumable/sugar), 1)
 		var/obj/item/reagent_containers/food/snacks/pawcookie_raw/form = new(get_turf(user))
 		qdel(src)
 		user.put_in_hands(form)
-		to_chat(user, "<span class='notice'>Заготовка готова! Теперь её можно разогреть</span>")
+		to_chat(user, span_notice("Заготовка готова! Теперь её можно разогреть</span>"))
 
 
 /obj/item/reagent_containers/food/snacks/pastrybase

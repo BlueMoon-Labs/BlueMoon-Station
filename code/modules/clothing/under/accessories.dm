@@ -562,7 +562,6 @@
 	desc = "За любовь к лапам"
 	icon_state = "paw"
 	medaltype = "medal"
-	var/bites_left = 3
 
 ////////////
 //Armbands//
