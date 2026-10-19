@@ -557,6 +557,13 @@
 	desc = "A plasma medal which represents significant contributions to the field of science or engineering."
 	icon_state = "plasma_b"
 
+/obj/item/clothing/accessory/medal/pawlicker
+	name = "Paw medal"
+	desc = "За любовь к лапам"
+	icon_state = "paw"
+	medaltype = "medal"
+	var/bites_left = 3
+
 ////////////
 //Armbands//
 ////////////

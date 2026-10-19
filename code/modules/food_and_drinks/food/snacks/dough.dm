@@ -144,7 +144,7 @@
 			to_chat(user, "<span class='warning'>Пачка сахара пуста!</span>")
 			return
 		to_chat(user, "<span class='notice'>Ты прижимаешь ногу к тесту, придавая ему форму лапки...</span>")
-		if(!do_after(user, 2 SECONDS, user))
+		if(!do_after(user, 1 SECONDS, user))
 			to_chat(user, "<span class='warning'>Ты сбилися!</span>")
 			return
 		sugarpack.reagents.remove_reagent((/datum/reagent/consumable/sugar), 1)
