@@ -325,7 +325,11 @@
 #define FIRELOCK_ALARM_TEMPERATURE_HYSTERESIS 10
 
 // Защита от автоматического закрытия после открытия ломом или ручным приводом.
-#define FIRELOCK_MANUAL_OVERRIDE_GRACE (10 SECONDS)
+#define FIRELOCK_MANUAL_OVERRIDE_GRACE (8 SECONDS)
+
+// Шанс выбора оконных фаерлоков вместо аирбагов для внешних окон станции.
+// Один выбор на весь раунд; окна шаттлов и капсул всегда получают фаерлоки.
+#define STATION_WINDOW_FIRELOCKS_CHANCE 90
 
 // Блокировка автоматического закрытия фаерлока по Ctrl-клику.
 #define FIRELOCK_CTRL_CLICK_OVERRIDE_TIME (3 MINUTES)

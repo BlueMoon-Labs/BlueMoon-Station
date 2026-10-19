@@ -74,10 +74,7 @@ again.
 	if(!use_firelock && SSmapping.station_window_firelocks && is_station_level(window_turf.z))
 		var/station_window = window_area.is_station_member()
 		var/borders_space = isspaceturf(window_turf)
-		for(var/direction in GLOB.cardinals)
-			var/turf/neighbor = get_step(window_turf, direction)
-			if(!neighbor)
-				continue
+		for(var/turf/neighbor in range(1, window_turf))
 			if(!station_window && istype(window_area, /area/space))
 				var/area/neighbor_area = get_area(neighbor)
 				station_window = neighbor_area.is_station_member()

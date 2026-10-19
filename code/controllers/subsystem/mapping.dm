@@ -116,7 +116,7 @@ SUBSYSTEM_DEF(mapping)
 	HACK_LoadMapConfig()
 	if(initialized)
 		return
-	station_window_firelocks = prob(CONFIG_GET(number/station_window_firelocks_chance))
+	station_window_firelocks = prob(STATION_WINDOW_FIRELOCKS_CHANCE)
 	if(config.defaulted)
 		var/old_config = config
 		config = global.config.defaultmap

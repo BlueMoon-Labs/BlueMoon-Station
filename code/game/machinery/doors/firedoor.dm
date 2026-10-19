@@ -600,8 +600,10 @@
 /obj/machinery/door/firedoor/do_animate(animation, from_bump = FALSE)
 	switch(animation)
 		if("opening")
+			icon_state = "door_open"
 			flick("door_opening", src)
 		if("closing")
+			icon_state = "door_closed"
 			flick("door_closing", src)
 
 /// Which alarm lamp this firelock should be showing, or null for dark. The
@@ -614,14 +616,10 @@
 
 /obj/machinery/door/firedoor/update_icon()
 	cut_overlays()
-	if(density)
-		icon_state = "door_closed"
-		if(welded)
-			add_overlay("welded")
-	else
-		icon_state = "door_open"
-		if(welded)
-			add_overlay("welded_open")
+	if(!operating)
+		icon_state = density ? "door_closed" : "door_open"
+	if(welded)
+		add_overlay(density ? "welded" : "welded_open")
 	var/lamp_state = alarm_overlay_state()
 	if(lamp_state)
 		add_overlay(lamp_state)
@@ -632,7 +630,7 @@
 	latetoggle()
 
 /obj/machinery/door/firedoor/close(manual = FALSE)
-	if(!manual && !can_auto_close())
+	if(!manual && !can_close_for_alarm())
 		return FALSE
 	playsound(loc, door_close_sound, 100, TRUE)
 	. = ..()
@@ -640,6 +638,25 @@
 
 /obj/machinery/door/firedoor/proc/can_auto_close()
 	return world.time >= emergency_close_timer
+
+/obj/machinery/door/firedoor/proc/can_close_for_alarm()
+	if(!can_auto_close())
+		return FALSE
+	if(alarm_type != FIRELOCK_ALARM_TYPE_GENERIC)
+		return TRUE
+	// Общая тревога не дублирует уже герметичную преграду. Проверяем её текущее
+	// состояние: открытый шлюз или откреплённое окно должны пропускать воздух.
+	var/turf/door_turf = get_turf(src)
+	for(var/obj/blocker in door_turf)
+		if(blocker == src || blocker.CanAtmosPass == ATMOS_PASS_YES)
+			continue
+		for(var/direction in GLOB.cardinals)
+			if((flags_1 & ON_BORDER_1) && direction != dir)
+				continue
+			var/turf/neighbor = get_step(door_turf, direction)
+			if(neighbor && !CANATMOSPASS(blocker, neighbor))
+				return FALSE
+	return TRUE
 
 /obj/machinery/door/firedoor/proc/should_block_on_ctrl_click()
 	return emergency_close_timer - world.time <= FIRELOCK_MANUAL_OVERRIDE_GRACE
@@ -724,7 +741,7 @@
 
 /obj/machinery/door/firedoor/proc/emergency_pressure_stop()
 	set waitfor = 0
-	if(density || operating || welded || !can_auto_close())
+	if(density || operating || welded || !can_close_for_alarm())
 		return
 	mark_auto_closed()
 	close()
@@ -734,7 +751,7 @@
 /// recompute_atmos_alarm() ходит только по фронту тревоги, а у такого закрытия
 /// фронта нет вовсе - тревога как была пустой, так и осталась.
 /obj/machinery/door/firedoor/proc/mark_auto_closed()
-	if(!can_auto_close())
+	if(!can_close_for_alarm())
 		return
 	auto_closed = TRUE
 	schedule_auto_reopen()
@@ -823,7 +840,7 @@
 	density = TRUE
 
 /obj/machinery/door/firedoor/border_only/close(manual = FALSE)
-	if(!manual && !can_auto_close())
+	if(!manual && !can_close_for_alarm())
 		return FALSE
 	if(density)
 		return TRUE
