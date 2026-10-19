@@ -838,3 +838,24 @@
 	icon_state = pick("paw1", "paw2", "paw3", "paw4", "paw5", "paw6", "paw7", "paw8", "paw9", "paw10", "paw11", "paw12", "paw13", "paw14")
 
 
+GLOBAL_LIST_INIT(paw_eater_progress, list()) // Ачивка pawlicker
+
+/obj/item/reagent_containers/food/snacks/pawcookie/On_Consume(mob/living/user)
+	. = ..()
+	if(!user?.client)
+		return
+	var/state_index = text2num(copytext(icon_state, 4))
+	var/needed = 7
+	var/key = REF(user.client)
+	var/list/eaten = GLOB.paw_eater_progress[key]
+	if(!eaten)
+		eaten = list()
+		GLOB.paw_eater_progress[key] = eaten
+	if(!(state_index in eaten))
+		eaten |= state_index
+		if(eaten.len >= needed)
+			user.emote("yummers")
+			user.client.give_award(/datum/award/achievement/misc/pawlicker, user)
+			
+
+
