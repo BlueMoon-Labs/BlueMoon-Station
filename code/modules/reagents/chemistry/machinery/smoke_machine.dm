@@ -143,7 +143,7 @@
 	amount = setting * 2
 	var/cost = SMOKE_COST(setting, modifier)
 	carry.copy_to(chemholder, cost)
-	carry.remove_any(cost)
+	carry.remove_all(cost)
 	location = loc
 
 /datum/effect_system/smoke_spread/chem/smoke_machine
