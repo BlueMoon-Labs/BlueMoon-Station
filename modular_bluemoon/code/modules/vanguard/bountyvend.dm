@@ -64,7 +64,8 @@
 		new /datum/data/bounty_equipment("Empty marksman pouch",			/obj/item/storage/bag/marksman/empty,							750,	"Armor"),
 		new /datum/data/bounty_equipment("Empty combatant pouch",			/obj/item/storage/bag/medpen/combatant/empty,					750,	"Armor"),
 		new /datum/data/bounty_equipment("Empty Vanguard belt",				/obj/item/storage/belt/avangard_belt/empty,						1500,	"Armor"),
-		new /datum/data/bounty_equipment("Tactical Oxygen tank",			/obj/item/tank/internals/tactical,								5000,	"Armor"),
+		new /datum/data/bounty_equipment("Tactical Oxygen tank",			/obj/item/tank/internals/tactical,								2500,	"Armor"),
+		new /datum/data/bounty_equipment("Military belt",					/obj/item/storage/belt/military/green,							2500,	"Armor"),
 
 		// ============ MEDICAL ============
 		new /datum/data/bounty_equipment("First-Aid Kit",					/obj/item/storage/firstaid/regular,								100,	"Medical"),
@@ -74,20 +75,19 @@
 		new /datum/data/bounty_equipment("CMS",								/obj/item/stack/medical/fracture_kit/cms,						750,	"Medical"),
 		new /datum/data/bounty_equipment("Surv12",							/obj/item/stack/medical/fracture_kit/surv12,					1500,	"Medical"),
 		new /datum/data/bounty_equipment("Ferrocortex Medipen",				/obj/item/reagent_containers/hypospray/medipen/ferrocortex,		500,	"Medical"),
+		new /datum/data/bounty_equipment("Psicodine pill bottle",			/obj/item/storage/pill_bottle/psicodine,						2500,	"Medical"),
+		new /datum/data/bounty_equipment("Hapiness pill bottle",			/obj/item/storage/pill_bottle/happinesspsych,					5000,	"Medical"),
 
 		// ============ TOOLS ============
 		new /datum/data/bounty_equipment("Lazarus injector",				/obj/item/lazarus_injector,										500,	"Tools"),
 		new /datum/data/bounty_equipment("Fulton pack",						/obj/item/extraction_pack,										500,	"Tools"),
 		new /datum/data/bounty_equipment("Auto surgeon",					/obj/item/autosurgeon/vanguard,									750,	"Tools"),
-		new /datum/data/bounty_equipment("Illegal technology disk",			/obj/item/disk/tech_disk/illegal,								100000,	"Tools"),
 		new /datum/data/bounty_equipment("Fulton beacon",					/obj/item/fulton_core,											200,	"Tools"),
-		new /datum/data/bounty_equipment("BEPIS technology disk",			/obj/item/disk/tech_disk/major,									1000,	"Tools"),
 		new /datum/data/bounty_equipment("Vanguard basic kit",				/obj/item/storage/backpack/duffelbag/vanguard/conscript,		1500,	"Tools"),
 		new /datum/data/bounty_equipment("Vanguard points transfer card",	/obj/item/card/contraband_point_card,							100,	"Tools"),
 		new /datum/data/bounty_equipment("B&R kit",							/obj/item/storage/box/demolition,								1200,	"Tools"),
 		new /datum/data/bounty_equipment("Spare breaching charge",			/obj/item/grenade/exploration,									300,	"Tools"),
 		new /datum/data/bounty_equipment("Spare detonation device",			/obj/item/exploration_detonator,								200,	"Tools"),
-		new /datum/data/bounty_equipment("Strange object",					/obj/item/relic,												2500,	"Tools"),
 		new /datum/data/bounty_equipment("Vanguard objective pinpointer",	/obj/item/pinpointer/objective,									10000,	"Tools"),
 
 		// ============ RECREATIONAL ============
@@ -95,13 +95,16 @@
 		new /datum/data/bounty_equipment("Cigar",							/obj/item/clothing/mask/cigarette/cigar/havana,					75,		"Recreational"),
 		new /datum/data/bounty_equipment("High quality Soap",				/obj/item/soap/syndie,											150,	"Recreational"),
 		new /datum/data/bounty_equipment("MRE pack",						/obj/item/storage/box/mre/menu2,								300,	"Recreational"),
-		new /datum/data/bounty_equipment("ИРП-4",							/obj/item/storage/mre,											500,	"Recreational"),
-		new /datum/data/bounty_equipment("ИРП-6 Вегатарианский",			/obj/item/storage/mre/vegan,									500,	"Recreational"),
-		new /datum/data/bounty_equipment("ИРП-47 Белковый",					/obj/item/storage/mre/protein,									500,	"Recreational"),
+		new /datum/data/bounty_equipment("MRE-4",							/obj/item/storage/mre,											500,	"Recreational"),
+		new /datum/data/bounty_equipment("MRE-6 Veg.",						/obj/item/storage/mre/vegan,									500,	"Recreational"),
+		new /datum/data/bounty_equipment("MRE-47 Meat",						/obj/item/storage/mre/protein,									500,	"Recreational"),
 
 		// ============ MISCELLANEOUS ============
-		new /datum/data/bounty_equipment("1 Metadollar",            		/obj/item/stack/metadollar, 									100000, 	"Miscellaneous"),
+		new /datum/data/bounty_equipment("1 Metadollar",            		/obj/item/stack/metadollar, 									100000, "Miscellaneous"),
 		new /datum/data/bounty_equipment("space cash",						/obj/item/stack/spacecash/c1000,								1500,	"Miscellaneous"),
+		new /datum/data/bounty_equipment("Strange object",					/obj/item/relic,												2500,	"Miscellaneous"),
+		new /datum/data/bounty_equipment("BEPIS technology disk",			/obj/item/disk/tech_disk/major,									1000,	"Miscellaneous"),
+		new /datum/data/bounty_equipment("Illegal technology disk",			/obj/item/disk/tech_disk/illegal,								100000,	"Miscellaneous"),
 
 		// ============ ELITE EQUIPMENT =========
 		new /datum/data/bounty_equipment("ACR-5m26",						/obj/item/gun/ballistic/automatic/acr5m30/pinvanguard,			20000,		"Elite Equipment"),
