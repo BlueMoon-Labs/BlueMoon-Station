@@ -860,19 +860,13 @@
 				to_chat(patient, span_danger("[user] пытается включить подачу анестетика!"))
 			if(!do_after(user, 3 SECONDS, patient) || !check_patient())
 				return
-			if(patient.wear_mask)
-				if(isclothing(patient.wear_mask)) // это одежда
-					var/obj/item/clothing/patient_item_in_mask_slot = patient.wear_mask
-					if(!(patient_item_in_mask_slot.clothing_flags & ALLOWINTERNALS)) // можно использовать для дыхания
-						if(!patient.dropItemToGround(patient.wear_mask)) // если нельзя, то можно ли снять
-							to_chat(user, span_danger("У вас не получилось снять маску с [patient], чтобы надеть кислородную маску!"))
-							return
-				else // это предмет
-					if(!patient.dropItemToGround(patient.wear_mask))
-						to_chat(user, span_danger("У вас не получилось убрать предмет с лица [patient], чтобы надеть кислородную маску!"))
-						return
-			patient.equip_to_slot_if_possible(mask, ITEM_SLOT_MASK)
-			if(!patient.wear_mask) // если головы нет, например
+			// The table tracks its own retractable mask, so an existing breath mask
+			// must also be removed before connecting the patient.
+			if(patient.wear_mask && patient.wear_mask != mask)
+				if(!patient.dropItemToGround(patient.wear_mask))
+					to_chat(user, span_danger("У вас не получилось снять маску с [patient], чтобы надеть кислородную маску!"))
+					return
+			if(patient.wear_mask != mask && !patient.equip_to_slot_if_possible(mask, ITEM_SLOT_MASK))
 				to_chat(user, span_danger("У вас не получилось надеть кислородную маску на [patient]!"))
 				return
 			patient.internal = tank
@@ -885,7 +879,7 @@
 			if(!do_after(user, 1 SECONDS, patient) || !check_patient())
 				return
 			user.visible_message("[user] отключает подачу анестетика к [patient].", span_notice("Вы проворачиваете клапан и отключаете подачу анестезии."))
-			stop_process()
+			eject_patient()
 	else
 		to_chat(user, span_warning("[src] не имеет прикрепленного к нему баллона или маски!"))
 		return
@@ -924,6 +918,8 @@
 		eject_patient()
 
 /obj/structure/table/optable/proc/eject_patient()
+	// Recover the mask while the patient reference and their inventory are intact.
+	stop_process()
 	if(isnull(patient))
 		return
 	SEND_SIGNAL(src, COMSIG_MACHINE_EJECT_OCCUPANT, patient)
@@ -936,33 +932,29 @@
 		eject_patient()
 
 /obj/structure/table/optable/process()
-	if(mask?.loc != patient || tank?.loc != src || patient?.loc != loc)
-		stop_process()
+	if(!mask || !tank || !patient || mask.loc != patient || tank.loc != src || get_turf(mask) != get_turf(src) || patient.loc != loc)
+		eject_patient()
 
 /obj/structure/table/optable/proc/stop_process()
 	STOP_PROCESSING(SSobj, src)
-	if(!patient)
-		if(mask)
-			mask.forceMove(src)
-		return
 	if(mask && mask.loc != src)
 		visible_message(span_notice("[mask] срывается и возвращается на место по втягивающемуся шлангу."))
-		patient.transferItemToLoc(mask, src, TRUE)
-	patient.internal = null
-	eject_patient()
+		if(ismob(mask.loc))
+			var/mob/mask_holder = mask.loc
+			mask_holder.transferItemToLoc(mask, src, TRUE)
+		else
+			mask.forceMove(src)
+	if(patient && patient.internal == tank)
+		patient.internal = null
 
 /obj/structure/table/optable/Destroy()
+	eject_patient()
 	if(tank)
 		tank.forceMove(loc)
 		tank = null
 	if(mask)
 		mask.forceMove(loc)
 		mask = null
-	if(patient)
-		if(patient.internal == tank)
-			patient.internal = null
-		UnregisterSignal(patient, COMSIG_MOVABLE_MOVED)
-		patient = null
 	if(computer)
 		computer.table = null
 		computer = null
@@ -1011,6 +1003,7 @@
 	if(H)
 		if(!CHECK_MOBILITY(H, MOBILITY_STAND))
 			if(patient != H)
+				eject_patient()
 				patient = H
 				RegisterSignal(patient, COMSIG_MOVABLE_MOVED, PROC_REF(patient_moved))
 				SEND_SIGNAL(src, COMSIG_MACHINERY_SET_OCCUPANT, patient)

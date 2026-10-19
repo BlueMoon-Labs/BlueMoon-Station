@@ -157,8 +157,11 @@
 				user.visible_message("[user] drapes [I] over [M]'s [parse_zone(selected_zone)] to prepare for surgery.", \
 					"<span class='notice'>You drape [I] over [M]'s [parse_zone(selected_zone)] to prepare for \an [procedure.name].</span>")
 				// BLUEMOON ADD START
-				if(M.AmountSleeping() > 60)
-					M.SetSleeping(60) //пациент не может уснуть через кнопку во вкладке
+				// Only shorten voluntary sleep. Cutting anesthesia to six seconds can
+				// wake the patient before their next breath, normally eight seconds apart.
+				if(M.voluntary_sleep_until > world.time && M.AmountSleeping() > 6 SECONDS)
+					M.SetSleeping(6 SECONDS)
+					M.voluntary_sleep_until = world.time + 6 SECONDS
 				if(!HAS_TRAIT(M, CAN_BE_OPERATED_WITHOUT_PAIN) && !isbloodfledge(M))
 					if(procedure.special_surgery_traits.len) // подсказка хирургу при начале процедуры
 						if(OPERATION_NEED_FULL_ANESTHETIC in procedure.special_surgery_traits)
