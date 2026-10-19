@@ -7,7 +7,7 @@
 		внешним ударостойким слоем, делая костюм почти неуязвимым даже к экстремальному высоковольтному электричеству. \
 		Однако потенциал для модификации остаётся таким же, как у гражданских моделей."
 	default_skin = "engineering"
-	armor = /datum/armor/mod/engineer
+	armor_type = /datum/armor/default_engineer
 	resistance_flags = FIRE_PROOF
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
@@ -25,7 +25,7 @@
 		коррозионным газам и жидкостям, что полезно в мире труб. \
 		Однако потенциал для модификации остаётся таким же, как у гражданских моделей."
 	default_skin = "atmospheric"
-	armor = /datum/armor/mod/atmosphere_tech
+	armor_type = /datum/armor/atmospheric
 	skins = list(
 		"atmospheric" = MOD_PRESET_DEFAULT,
 		)
@@ -39,7 +39,7 @@
 		Использованная краска практически полностью невосприимчива к коррозии и, безусловно, выглядит чертовски хорошо. \
 		В комплекте предустановлены магнитные ботинки с продвинутой системой автоматического включения и выключения при ходьбе."
 	default_skin = "advanced"
-	armor = /datum/armor/mod/chief_engineer
+	armor_type = /datum/armor/advanced
 	complexity_max = COMMAND_MAX_COMPLEXITY
 	hardlight_color = MOD_COMMAND_COLOR
 	skins = list(
@@ -57,7 +57,7 @@
 		Однако всё это оказалось изнурительным для батареи и приводов костюма, \
 		заставляя его требовать больше энергии взамен."
 	default_skin = "mining"
-	armor = /datum/armor/mod/mining
+	armor_type = /datum/armor/modsuit_mining
 	skins = list(
 		"mining" = MOD_PRESET_DEFAULT,
 		"asteroid" = MOD_PRESET_DEFAULT,
@@ -73,7 +73,7 @@
 		он невероятно кислотостойкий. Энергопотребление немного выше, чем у гражданских моделей, \
 		и он слаб против постукиваний пальцами по стеклу."
 	default_skin = "medical"
-	armor = /datum/armor/mod/medical
+	armor_type = /datum/armor/modsuit_medical
 	skins = list(
 		"medical" = MOD_PRESET_DEFAULT,
 		"corpsman" = MOD_PRESET_DEFAULT,
@@ -90,7 +90,7 @@
 		при этом оставаясь полностью иммунными к химическим и термическим угрозам. \
 		Энергопотребление немного выше, чем у гражданских моделей, и он слаб против постукиваний пальцами по стеклу."
 	default_skin = "rescue"
-	armor = /datum/armor/mod/paramedic
+	armor_type = /datum/armor/rescue
 	skins = list(
 		"rescue" = MOD_PRESET_DEFAULT,
 	)
@@ -107,7 +107,7 @@
 		других типов оружия и физического урона; а вся взрывостойкость в основном работает, чтобы сохранить пользователя целым, \
 		но не живым. Также пользователь обнаружит, что узкие дверные проёмы практически невозможно преодолеть."
 	default_skin = "research"
-	armor = /datum/armor/mod/research_director
+	armor_type = /datum/armor/research
 	resistance_flags = FIRE_PROOF|ACID_PROOF
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	hardlight_color = MOD_RESEARCH_COLOR
@@ -128,7 +128,7 @@
 		Однако системы, используемые в этих костюмах, устарели более чем на несколько лет, \
 		что приводит к общему снижению ёмкости модулей."
 	default_skin = "security"
-	armor = /datum/armor/mod/security_officer
+	armor_type = /datum/armor/modsuit_security
 	skins = list(
 		"security" = MOD_PRESET_DEFAULT,
 	)
@@ -153,7 +153,7 @@
 		поверх утеплённой внутренней брони, обеспечивают защиту от агрессивных жидкостей, взрывов, \
 		огня, электрических разрядов и презрения со стороны остального экипажа."
 	default_skin = "praetorian"
-	armor = /datum/armor/mod/blueshied
+	armor_type = /datum/armor/modsuit_blueshield_and_captain
 	hardlight_color = MOD_COMMAND_COLOR
 	skins = list(
 		"praetorian" = MOD_PRESET_DEFAULT,
@@ -177,7 +177,7 @@
 		По бокам костюма установлены теплоотводы, а для изоляции от \
 		коррозионных сред и внезапных ударов по суставам пользователя применены более совершенные технологии."
 	default_skin = "safeguard"
-	armor = /datum/armor/mod/head_of_sec
+	armor_type = /datum/armor/modsuit_ert_and_hos
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	complexity_max = STATION_COMBAT_MAX_COMPLEXITY
 	skins = list(
@@ -197,7 +197,7 @@
 		и блюспейс-обработку для поддержки широкого спектра модулей, а для скорости задействованы только лучшие приводы. \
 		Сходство с шлемом Gorlex Marauder — чистое совпадение."
 	default_skin = "magnate"
-	armor = /datum/armor/mod/captain
+	armor_type = /datum/armor/modsuit_blueshield_and_captain
 	skins = list(
 		"magnate" = MOD_PRESET_DEFAULT,
 	)
@@ -227,7 +227,7 @@
 		С него свисает маленькая бирка с надписью: 'Собственность Gorlex Marauders при содействии Cybersun Industries. \
 		Все права защищены, вмешательство в костюм аннулирует гарантию."
 	default_skin = "syndicate"
-	armor = /datum/armor/mod/syndicate_simple
+	armor_type = /datum/armor/modsuit_syndicate
 	compatible_with_armor_modules = TRUE //синди можно, у него статы не высокие
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	ui_theme = "syndicate"
@@ -247,7 +247,7 @@
 		'Собственность Gorlex Marauders при содействии Cybersun Industries. \
 		Все права защищены, вмешательство в костюм аннулирует продолжительность жизни.'"
 	default_skin = "elite"
-	armor = /datum/armor/mod/syndicate_elite
+	armor_type = /datum/armor/syndicate_elite_and_inteq
 	compatible_with_armor_modules = TRUE
 	resistance_flags = FIRE_PROOF|ACID_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
@@ -272,7 +272,7 @@
 		как и подразумевает забрало, не позволяя пользователю видеть на дальние расстояния. \
 		Однако способ складывания шлема довольно крутой."
 	default_skin = "prototype"
-	armor = /datum/armor/mod/mining
+	armor_type = /datum/armor/prototype
 	ui_theme = "hackerman"
 	skins = list(
 		"prototype" = MOD_PRESET_DEFAULT,
@@ -287,7 +287,7 @@
 		она сохраняет носителя в безопасности от суровой пустоты космоса, не жертвуя ни каплей скорости. \
 		Нося его, вы чувствуете крайнее почтение к тьме."
 	default_skin = "responsory"
-	armor = /datum/armor/mod/ert_red_code
+	armor_type = /datum/armor/modsuit_ert_and_hos
 	skins = list(
 		"responsory"  = MOD_PRESET_DEFAULT,
 		"inquisitory" = MOD_PRESET_DEFAULT,
@@ -304,7 +304,7 @@
 		Использовать ли их — решение самого носителя. \
 		На запястье, кажется, есть маленькая гравировка: 'squiddie', милашка."
 	default_skin = "apocryphal"
-	armor = /datum/armor/mod/deathsquad
+	armor_type = /datum/armor/apocryphal
 	skins = list(
 		"apocryphal" = MOD_PRESET_DEFAULT,
 	)
@@ -318,7 +318,7 @@
 		считается военным преступлением и поводом для немедленной казни на более чем пятидесяти космических станциях Nanotrasen. \
 		Сходство с шлемом Gorlex Marauder — чистое совпадение."
 	default_skin = "corporate"
-	armor = /datum/armor/mod/nanotrasen_representative
+	armor_type = /datum/armor/corporate
 	resistance_flags = FIRE_PROOF|ACID_PROOF
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
@@ -335,7 +335,7 @@
 		Содержит внутренний самозаряжающийся высокотоковый конденсатор для коротких, мощных взры- \
 		Ой, стоп, это на самом деле не костюм для полёта. Бля."
 	default_skin = "debug"
-	armor = /datum/armor/mod/debug
+	armor_type = /datum/armor/modsuit_debug
 	resistance_flags = FIRE_PROOF|ACID_PROOF
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	complexity_max = DEBUG_COMPLEXITY
@@ -364,7 +364,7 @@
 	desc = "Высокотехнологичный боевой костюм, выполненный в зловещих тёмно-синих тонах и изготовленный специально для наёмников, участвующих в специальных операциях. "
 	extended_desc = "Высокотехнологичный боевой костюм, выполненный в зловещих тёмно-синих тонах и изготовленный специально для наёмников, участвующих в специальных операциях. Конструкция представляет собой обтекаемую многослойную систему из формованного пласталя и композитной керамики, а нижний слой выполнен из лёгкого кевлара и гибридной ткани «дуратри». На костюме висит небольшая бирка с надписью: «Изготовлено в сотрудничестве компаний Fox и Ghost. Все права защищены. Несанкционированное изменение конструкции костюма приведёт к его немедленному уничтожению»."
 	default_skin = "InteQ"
-	armor = /datum/armor/mod/inteq_nuclear
+	armor_type = /datum/armor/syndicate_elite_and_inteq
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	ui_theme = "inteq"
 	hardlight_color = MOD_INTEQ_COLOR
@@ -378,7 +378,7 @@
 	Неплохая броня и улучшенный джетпак позволяют вести уверенный бой в условиях космоса и разгерметизаций, а \
 	встроенная кобура - прятать оружие, оно не помещается в рюкзак. "
 	default_skin = "inteqe"
-	armor = /datum/armor/mod/inteq_traitor
+	armor_type = /datum/armor/traitor
 	compatible_with_armor_modules = TRUE
 	skins = list(
 		"inteqe" = MOD_PRESET_DEFAULT,
@@ -389,7 +389,7 @@
 	desc = "Высокотехнологичный боевой костюм, изготовленный специально для наёмников, участвующих в специальных операциях. "
 	extended_desc = "Высокотехнологичный боевой костюм, изготовленный специально для наёмников, участвующих в специальных операциях. Конструкция представляет собой обтекаемую многослойную систему из формованного пласталя и композитной керамики, а нижний слой выполнен из лёгкого кевлара и гибридной ткани «дуратри». На костюме висит небольшая бирка с надписью: «Изготовлено в сотрудничестве компаний Fox и Ghost. Все права защищены. Несанкционированное изменение конструкции костюма приведёт к его немедленному уничтожению»."
 	default_skin = "infiltrator"
-	armor = /datum/armor/mod/inteq_infiltrator
+	armor_type = /datum/armor/modsuit_infiltrator
 	max_heat_protection_temperature = ARMOR_MAX_TEMP_PROTECT
 	ui_theme = "inteq"
 	skins = list(
@@ -415,7 +415,7 @@
 	desc = "Уникальный, защищенный от вакуума и температур модулярный костюм, разработанный специально для убийц из клана Паука."
 	extended_desc = "Уникальный, защищенный от вакуума и температур модулярный костюм, разработанный специально для убийц из клана Паука"
 	default_skin = "ninja"
-	armor = /datum/armor/mod/ninja
+	armor_type = /datum/armor/spider_clan
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	ui_theme = "ninja"
 	hardlight_color = MOD_NINJA_COLOR
@@ -434,7 +434,7 @@
 		Несмотря на внешнюю «магическую» эстетику, вся работа обеспечивается передовыми технологиями: \
 		кристаллы служат высокоёмкими конденсаторами, а светящиеся узоры — проекциями хардлайт-полей."
 	default_skin = "enchanted"
-	armor = /datum/armor/mod/magican
+	armor_type = /datum/armor/mage
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	ui_theme = "enchanted"
 	hardlight_color = MOD_MAGE_FEDERATION_COLOR

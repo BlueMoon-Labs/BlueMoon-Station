@@ -57,7 +57,7 @@
 	desc = "An expensive piece of plasmaman envirosuit fashion. guaranteed to keep you cool while the station goes down in fierceful fires."
 	icon_state = "captain_envirosuit"
 	item_state = "captain_envirosuit"
-	armor = list(MELEE = 10, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 100, RAD = 0, FIRE = 95, ACID = 95, WOUND = 15)
+	armor_type = /datum/armor/under_captain
 	sensor_mode = SENSOR_COORDS
 	sensor_flags = NONE
 

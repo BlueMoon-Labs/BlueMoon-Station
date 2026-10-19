@@ -82,7 +82,6 @@
 		new /datum/data/bounty_equipment("BEPIS technology disk",			/obj/item/disk/tech_disk/major,									1000,	"Tools"),
 		new /datum/data/bounty_equipment("Vanguard basic kit",				/obj/item/storage/backpack/duffelbag/vanguard/conscript,		1500,	"Tools"),
 		new /datum/data/bounty_equipment("Vanguard points transfer card",	/obj/item/card/contraband_point_card,							100,	"Tools"),
-		new /datum/data/bounty_equipment("Weapon blueprints",				/obj/item/disk/weapon_blueprint,								7500,	"Tools"),
 		new /datum/data/bounty_equipment("B&R kit",							/obj/item/storage/box/demolition,								1200,	"Tools"),
 		new /datum/data/bounty_equipment("Spare breaching charge",			/obj/item/grenade/exploration,									300,	"Tools"),
 		new /datum/data/bounty_equipment("Spare detonation device",			/obj/item/exploration_detonator,								200,	"Tools"),
@@ -212,26 +211,30 @@
 		return
 	switch(action)
 		if("purchase")
-			var/mob/M = usr
-			var/obj/item/card/id/I = M.get_idcard(TRUE)
+			var/mob/user = usr
+			var/obj/item/card/id/I = user.get_idcard(TRUE)
 			if(!istype(I))
-				to_chat(usr, "<span class='alert'>Error: An ID is required!</span>")
+				to_chat(user, "<span class='alert'>Error: An ID is required!</span>")
 				flick(icon_deny, src)
 				return
 			var/datum/data/bounty_equipment/prize = locate(params["ref"]) in prize_list
 			if(!prize || !(prize in prize_list))
-				to_chat(usr, "<span class='alert'>Error: Invalid choice!</span>")
+				to_chat(user, "<span class='alert'>Error: Invalid choice!</span>")
 				flick(icon_deny, src)
 				return
-			if(ispath(prize.equipment_path, /obj/item/stack/metadollar) && !bm_bounty_vendor_can_buy_metadollar(usr))
+			if(ispath(prize.equipment_path, /obj/item/stack/metadollar) && !vendor_can_buy_metadollar(user, /datum/job/expeditor, "экспедиторскую деятельность"))
+				flick(icon_deny, src)
+				return
+			if(ispath(prize.equipment_path, /obj/item/disk/tech_disk/major) && !length(SSresearch.techweb_nodes_experimental))
+				to_chat(user, span_alert("Error: No experimental technology left to record on [prize.equipment_name]!"))
 				flick(icon_deny, src)
 				return
 			if(prize.cost > I.contraband_points)
-				to_chat(usr, "<span class='alert'>Error: Insufficient points for [prize.equipment_name] on [I]!</span>")
+				to_chat(user, "<span class='alert'>Error: Insufficient points for [prize.equipment_name] on [I]!</span>")
 				flick(icon_deny, src)
 				return
 			I.contraband_points -= prize.cost
-			to_chat(usr, "<span class='notice'>[src] clanks to life briefly before vending [prize.equipment_name]!</span>")
+			to_chat(user, "<span class='notice'>[src] clanks to life briefly before vending [prize.equipment_name]!</span>")
 			playsound(src, 'sound/machines/machine_vend.ogg', 50, TRUE, extrarange = -3)
 			new prize.equipment_path(loc)
 			return TRUE
@@ -358,18 +361,3 @@
 		new /datum/data/bounty_equipment("space cash",						/obj/item/stack/spacecash/c1000,								1500,	"Miscellaneous")
 		)
 	build_inventory()
-
-// и дабл чек что бы могли покупать только авангардцы
-/proc/bm_bounty_vendor_can_buy_metadollar(mob/user)
-	if(!ishuman(user))
-		to_chat(user, span_warning("Нужна гуманоидная форма."))
-		return FALSE
-	var/mob/living/carbon/human/H = user
-	if(!H.mind?.assigned_role)
-		to_chat(H, span_warning("Нужна зарегистрированная профессия."))
-		return FALSE
-	var/datum/job/J = SSjob.GetJob(H.mind.assigned_role)
-	if(!istype(J, /datum/job/expeditor))
-		to_chat(H, span_warning("Попридержи коней, приятель. Эта награда тебе не по зубам, доступна только настоящим оперативникам."))
-		return FALSE
-	return TRUE

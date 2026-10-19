@@ -17,12 +17,6 @@
 	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#2A2A2A","#e4b829")
 
-/datum/gear/head/officerian_cap
-	name = "Officerian_cap"
-	path = /obj/item/clothing/head/officerian_cap
-	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
-	loadout_initial_colors = list("#2A2A2A","#303030","#575757","#d4d4d4")
-
 /datum/gear/head/campaignhat
 	name = "Sheriff Department's Campaign Hat"
 	path = /obj/item/clothing/head/warden/campaignhat

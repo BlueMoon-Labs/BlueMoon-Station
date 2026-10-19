@@ -7,8 +7,9 @@
 	icon = 'icons/mob/human_parts.dmi'
 	w_class = WEIGHT_CLASS_SMALL
 	icon_state = ""
-	layer = BELOW_MOB_LAYER //so it isn't hidden behind objects when on the floor
 	appearance_flags = KEEP_TOGETHER | LONG_GLIDE | PIXEL_SCALE | TILE_BOUND
+	layer = BELOW_MOB_LAYER //so it isn't hidden behind objects when on the floor
+	var/as_mob_layer = BODYPARTS_LAYER
 	var/mob/living/carbon/owner = null
 	var/datum/weakref/original_owner = null
 	var/status = BODYPART_ORGANIC
@@ -917,10 +918,10 @@
 					mark.color = marking_list[3]
 				. += mark
 				if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
-					var/image/mark_emissive = emissive_copy(mark)
+					var/image/mark_emissive = emissive_copy(mark, offset_spokesman = owner || src)
 					. += mark_emissive
 
-	var/image/limb = image(layer = -BODYPARTS_LAYER, dir = image_dir)
+	var/image/limb = image(layer = -as_mob_layer, dir = image_dir)
 	var/image/second_limb
 	var/list/aux = list()
 	var/list/marking_emissives = list()
@@ -970,7 +971,7 @@
 			limb.icon_state = "[render_species_id]_[body_zone]"
 
 		if(istype(src, /obj/item/bodypart/l_leg) || istype(src, /obj/item/bodypart/r_leg))
-			second_limb = image(layer = -BODYPARTS_LAYER-0.1, dir = image_dir) // BLUEMOON CHANGES - WAS second_limb = image(layer = -BODYPARTS_LAYER, dir = image_dir) - фикс для отображения ног (РАБОТАЕТ ТОЛЬКО ЕСЛИ ИСПОЛЬЗУЕТСЯ НАШ GREYSCALE ФАЙЛ КОНЕЧНОСТЕЙ)
+			second_limb = image(layer = -as_mob_layer-0.1, dir = image_dir) // BLUEMOON CHANGES - WAS second_limb = image(layer = -BODYPARTS_LAYER, dir = image_dir) - фикс для отображения ног (РАБОТАЕТ ТОЛЬКО ЕСЛИ ИСПОЛЬЗУЕТСЯ НАШ GREYSCALE ФАЙЛ КОНЕЧНОСТЕЙ)
 			second_limb.icon = limb.icon
 			. += second_limb
 
@@ -999,7 +1000,7 @@
 						mark.color = marking_list[3]
 					limb.overlays += mark
 					if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
-						var/image/mark_emissive = emissive_copy(mark)
+						var/image/mark_emissive = emissive_copy(mark, offset_spokesman = owner || src)
 						mark_emissive.pixel_x = limb.pixel_x
 						mark_emissive.pixel_y = limb.pixel_y
 						marking_emissives += mark_emissive
@@ -1022,7 +1023,7 @@
 							aux_marking_image.color = marking_list[3]
 						aux_img.overlays += aux_marking_image
 						if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
-							var/image/aux_marking_emissive = emissive_copy(aux_marking_image)
+							var/image/aux_marking_emissive = emissive_copy(aux_marking_image, offset_spokesman = owner || src)
 							aux_marking_emissive.pixel_x = limb.pixel_x + aux_img.pixel_x
 							aux_marking_emissive.pixel_y = limb.pixel_y + aux_img.pixel_y
 							marking_emissives += aux_marking_emissive
@@ -1048,7 +1049,7 @@
 			if(prosthetic_digi_limbs_cache[cache_id])
 				limb.icon_state = "digi_[body_zone]"
 				if(istype(src, /obj/item/bodypart/l_leg) || istype(src, /obj/item/bodypart/r_leg))
-					second_limb = image(layer = -BODYPARTS_LAYER-0.1, dir = image_dir)
+					second_limb = image(layer = -as_mob_layer-0.1, dir = image_dir)
 					second_limb.icon = limb.icon
 					var/original_state = limb.icon_state
 					limb.icon_state = "[original_state]_front"
@@ -1072,7 +1073,7 @@
 							aux_marking_image.color = marking_list[3]
 						aux_img.overlays += aux_marking_image
 						if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
-							var/image/aux_marking_emissive = emissive_copy(aux_marking_image)
+							var/image/aux_marking_emissive = emissive_copy(aux_marking_image, offset_spokesman = owner || src)
 							aux_marking_emissive.pixel_x = limb.pixel_x + aux_img.pixel_x
 							aux_marking_emissive.pixel_y = limb.pixel_y + aux_img.pixel_y
 							marking_emissives += aux_marking_emissive
@@ -1103,7 +1104,7 @@
 						mark.color = marking_list[3]
 					limb.overlays += mark
 					if(length(marking_list) >= 4 && marking_list[4] && emissives_allowed(owner?.dna))
-						var/image/mark_emissive = emissive_copy(mark)
+						var/image/mark_emissive = emissive_copy(mark, offset_spokesman = owner || src)
 						mark_emissive.pixel_x = limb.pixel_x
 						mark_emissive.pixel_y = limb.pixel_y
 						marking_emissives += mark_emissive
@@ -1325,11 +1326,12 @@
 			owner.balloon_alert(owner, "[current_gauze] пропитался, кровотечение остановилось.")
 
 /**
-  * remove_gauze() removes the gauze wrapping from this bodypart and returns it to the user.
+  * remove_gauze() removes the gauze wrapping from this bodypart and leaves
+  * used gauze trash behind (washed into improvised gauze later).
   *
   * Arguments:
   * * user - The mob removing the gauze
-  * * to_hands - If TRUE, attempt to place the gauze in the user's hands
+  * * to_hands - If TRUE, attempt to place the trash gauze in the user's hands
   */
 /obj/item/bodypart/proc/remove_gauze(mob/user, to_hands = TRUE)
 	if(!current_gauze || !owner)
@@ -1337,9 +1339,15 @@
 	var/obj/item/stack/medical/gauze/removed = current_gauze
 	var/mob/living/carbon/gauze_owner = owner
 	current_gauze = null
-	removed.forceMove(user || gauze_owner)
+	// BLUEMOON ADD START - снятый бинт становится использованным мусором:
+	// он попадает в руки снимающего, если там есть место, иначе остаётся на полу.
+	var/list/blood_info = gauze_owner.get_blood_dna_list()
+	var/mob/drop_mob = user || gauze_owner
+	var/obj/item/trash/gauze/used_gauze = new /obj/item/trash/gauze(drop_mob.drop_location(), removed, blood_info?["color"], blood_info?["blendmode"])
 	if(to_hands && user)
-		user.put_in_hands(removed)
+		user.put_in_hands(used_gauze)
+	qdel(removed)
+	// BLUEMOON ADD END
 	gauze_owner.update_bandage_overlays()
 	// BLUEMOON ADD START - сняв повязку, игрок должен узнать, что рана никуда не делась
 	if(gauze_owner.stat != DEAD && gauze_owner.get_total_bleed_rate() > 0)

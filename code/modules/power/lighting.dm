@@ -44,7 +44,7 @@
 	anchored = TRUE
 	layer = WALL_OBJ_LAYER
 	max_integrity = 200
-	armor = list(MELEE = 50, BULLET = 10, LASER = 10, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 80, ACID = 50)
+	armor_type = /datum/armor/light_construct
 
 	var/stage = 1
 	var/fixture_type = "tube"
@@ -546,6 +546,7 @@
 		M.dir = dir
 		. += M
 		var/mutable_appearance/emissive_overlay = mutable_appearance(overlayicon, base_state, FLOAT_LAYER, EMISSIVE_PLANE)
+		SET_PLANE_EXPLICIT(emissive_overlay, EMISSIVE_PLANE, src)
 		emissive_overlay.alpha = overlay_alpha
 		emissive_overlay.color = M.color
 		emissive_overlay.dir = dir

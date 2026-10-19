@@ -141,6 +141,9 @@ const createApplySettings = () => {
         settings.chatTextColor,
         settings.chatAccentColor);
     }
+    if (anyChanged(prev, settings, ['showRadioJobs'])) {
+      chatRenderer.setRadioJobsVisible(settings.showRadioJobs !== false);
+    }
     if (anyChanged(prev, settings, ['styleOverrides', 'spanAnimations'])) {
       // Normalize so the renderer always sees every known style id and
       // clears stale properties for styles that lost their override.

@@ -288,7 +288,7 @@
 		return FALSE
 	I.forceMove(drop_location())
 	I.layer = initial(I.layer)
-	I.plane = initial(I.plane)
+	RESET_PLANE_EXPLICIT(I, I)
 	I.dropped(src)
 	return FALSE
 
@@ -371,7 +371,7 @@
 	if(!QDELETED(I))
 		I.screen_loc = null
 		I.layer = initial(I.layer)
-		I.plane = initial(I.plane)
+		RESET_PLANE_EXPLICIT(I, newloc)
 		I.appearance_flags &= ~NO_CLIENT_COLOR
 		if(!no_move && !(I.item_flags & DROPDEL))	//item may be moved/qdel'd immedietely, don't bother moving it
 			if (isnull(newloc))
@@ -383,6 +383,9 @@
 		on_item_dropped(I)
 		if(I.dropped(src) == ITEM_RELOCATED_BY_DROPPED)
 			return FALSE
+	else
+		// блок и парирование держат ссылку на предмет, а разбитый щит удаляется прямо из рук
+		on_item_dropped(I)
 	SEND_SIGNAL(src, COMSIG_MOB_UNEQUIPPED_ITEM, I, force, newloc, no_move, invdrop, silent)
 	return TRUE
 
@@ -391,7 +394,8 @@
 //set disable_warning to disable the 'you are unable to equip that' warning.
 //unset redraw_mob to prevent the mob from being redrawn at the end.
 /mob/proc/equip_to_slot_if_possible(obj/item/W, slot, qdel_on_fail = FALSE, disable_warning = FALSE, redraw_mob = TRUE, bypass_equip_delay_self = FALSE, clothing_check = FALSE)
-	if(!istype(W))
+	// Новая пачка, слитая при создании с такой же у моба, приходит сюда уже удалённой.
+	if(!istype(W) || QDELETED(W))
 		return FALSE
 	var/list/warning = list("<span class='warning'>Вы не можете это экипировать!</span>")
 	if(!W.mob_can_equip(src, null, slot, disable_warning, bypass_equip_delay_self, clothing_check, warning))

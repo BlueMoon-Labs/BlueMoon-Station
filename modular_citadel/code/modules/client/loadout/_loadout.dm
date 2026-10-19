@@ -89,7 +89,7 @@ GLOBAL_LIST_EMPTY(loadout_whitelist_ids)
 
 	var/list/restricted_roles
 
-	//Old donator system/snowflake ckey whitelist, used for single ckeys/exceptions
+	// Display keys, normalized ckeys and reversible enc1: IDs.
 	var/list/ckeywhitelist
 	//END
 
@@ -118,6 +118,15 @@ GLOBAL_LIST_EMPTY(loadout_whitelist_ids)
 	//энкод делается лениво при первом запросе UI через get_base64icon(),
 	//меню лодаута рендерит одну подкатегорию за раз - первый показ дешёвый
 	// BLUEMOON EDIT END
+
+/// Добивает цвета полихромного предмета до числа его слоёв начальными цветами.
+/datum/gear/proc/pad_polychromic_colors(list/user_gear)
+	var/list/colors = user_gear[LOADOUT_COLOR]
+	if(!islist(colors))
+		colors = list()
+		user_gear[LOADOUT_COLOR] = colors
+	for(var/index in length(colors) + 1 to length(loadout_initial_colors))
+		colors += loadout_initial_colors[index]
 
 ///Ленивая генерация base64-превью с общим кэшем по паре иконка:стейт.
 ///Возвращает null, если у предмета нет иконки или энкод упал.
@@ -151,10 +160,8 @@ GLOBAL_LIST_EMPTY(loadout_whitelist_ids)
 
 //a comprehensive donator check proc is intentionally not implemented due to the fact that we (((might))) have job-whitelists for donator items in the future and I like to stay on the safe side.
 
-//ckey only check
+/// Donor group membership and the shared plaintext/encrypted whitelist check must both pass.
 /datum/gear/proc/donator_ckey_check(key)
-	. = TRUE
-	if(donator_group_id)
-		. = IS_CKEY_DONATOR_GROUP(key, donator_group_id)
-	if(LAZYLEN(ckeywhitelist))
-		. = . && !!ckeywhitelist.Find(key)
+	if(donator_group_id && !IS_CKEY_DONATOR_GROUP(key, donator_group_id))
+		return FALSE
+	return is_key_in_whitelist(key, ckeywhitelist)

@@ -22,7 +22,7 @@
 	mecha_flags = ADDING_ACCESS_POSSIBLE | CANSTRAFE | IS_ENCLOSED | HAS_LIGHTS
 	movedelay = 3
 	max_integrity = 450 //really tanky, like damn
-	armor = list(MELEE = 45, BULLET = 40, LASER = 30, ENERGY = 30, BOMB = 40, BIO = 0, FIRE = 100, ACID = 100)
+	armor_type = /datum/armor/savannah_ivanov
 	deflect_chance = 20
 	max_temperature = 30000
 	wreckage = /obj/structure/mecha_wreckage/savannah_ivanov
@@ -164,7 +164,7 @@
 	chassis.movedelay = initial(chassis.movedelay)
 	chassis.density = TRUE
 	chassis.layer = initial(chassis.layer)
-	chassis.plane = initial(chassis.plane)
+	RESET_PLANE_EXPLICIT(chassis, chassis)
 	skyfall_charge_level = 0
 	chassis.update_appearance(UPDATE_ICON_STATE)
 	for(var/mob/living/shaken in range(7, chassis))

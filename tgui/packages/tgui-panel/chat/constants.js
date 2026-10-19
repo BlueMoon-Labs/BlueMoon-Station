@@ -69,7 +69,7 @@ export const MESSAGE_TYPES = [
     name: 'Info',
     description: 'Non-urgent messages from the game and items',
     selector:
-      '.notice:not(.pm), .info, .sinister, .cult, .infoplain, .announce, .hear, .smallnotice, .holoparasite, .boldnotice, .votepanel, .eldritch, .eldritch_big, .syndicate, .syndicate_big, .telepathy, .telepathybold, .dream, .thought',
+      '.notice:not(.pm), .info, .sinister, .cult, .infoplain, .announce, .hear, .smallnotice, .holoparasite, .boldnotice, .votepanel, .eldritch, .eldritch_big, .syndicate, .syndicate_big, .telepathy, .telepathybold, .dream, .thought, .hk47',
   },
   {
     type: MESSAGE_TYPE_WARNING,

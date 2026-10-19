@@ -250,6 +250,10 @@ hr {
   animation: none;
 }
 
+.Chat--hideRadioJobs .radiojob {
+  display: none;
+}
+
 // Библиотека анимаций для кастомизации стилей игроком.
 // Только opacity/text-shadow/color - transform ломает перенос строк,
 // а на длинных сообщениях это критично.

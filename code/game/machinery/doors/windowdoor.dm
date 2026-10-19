@@ -10,7 +10,7 @@
 	var/base_state = "left"
 	max_integrity = 150 //If you change this, consider changing ../door/window/brigdoor/ max_integrity at the bottom of this .dm file
 	integrity_failure = 0
-	armor = list(MELEE = 20, BULLET = 50, LASER = 50, ENERGY = 50, BOMB = 10, BIO = 100, RAD = 100, FIRE = 70, ACID = 100)
+	armor_type = /datum/armor/window
 	visible = FALSE
 	flags_1 = ON_BORDER_1|DEFAULT_RICOCHET_1
 	pass_flags_self = PASSGLASS
@@ -140,6 +140,9 @@
 			var/obj/vehicle/sealed/mecha/mecha = AM
 			for(var/O in mecha.occupants)
 				var/mob/living/occupant = O
+				if(elevator_mode && elevator_status == LIFT_PLATFORM_UNLOCKED)
+					open()
+					return
 				if(allowed(occupant))
 					open_and_close()
 					return
@@ -170,7 +173,9 @@
 	if(!src.requiresID())
 		user = null
 
-	if(allowed(user))
+	if(elevator_mode && elevator_status == LIFT_PLATFORM_UNLOCKED)
+		open()
+	else if(allowed(user))
 		open_and_close()
 	else
 		do_animate("deny")
@@ -419,7 +424,7 @@
 	else
 		to_chat(user, "<span class='warning'>The door's motors resist your efforts to force it!</span>")
 
-/obj/machinery/door/window/do_animate(animation)
+/obj/machinery/door/window/do_animate(animation, from_bump = FALSE)
 	switch(animation)
 		if("opening")
 			flick("[src.base_state]opening", src)

@@ -122,10 +122,6 @@
 	name = "Bluntbangs"
 	icon_state = "hair_bluntbangs"
 
-/datum/sprite_accessory/hair/bluntbangsalt
-	name = "Bluntbangs (Alt)"
-	icon_state = "hair_bluntbangsalt"
-
 /datum/sprite_accessory/hair/bob
 	name = "Bob Hair"
 	icon_state = "hair_bob"
@@ -431,11 +427,11 @@
 	icon_state = "hair_glammetal"
 
 /datum/sprite_accessory/hair/gloomy
-	name = "Gloomy"
+	name = "Gloomy Bangs (Alt)"
 	icon_state = "hair_gloomy"
 
 /datum/sprite_accessory/hair/gloomylong
-	name = "Gloomy (Long)"
+	name = "Gloomy Bangs Long (Alt)"
 	icon_state = "hair_gloomylong"
 
 /datum/sprite_accessory/hair/hajime
@@ -459,7 +455,7 @@
 	icon_state = "hair_halfbang_alt"
 
 /datum/sprite_accessory/hair/halfshaved
-	name = "Half-shaved Hair"
+	name = "Half-shaved"
 	icon_state = "hair_halfshaved"
 
 /datum/sprite_accessory/hair/harold

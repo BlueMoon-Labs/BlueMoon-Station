@@ -10,7 +10,7 @@
 	icon_state = "sigu"
 	item_state = "coatsecurity"
 	body_parts_covered = CHEST|ARMS
-	armor = list(MELEE = 10, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 30, ACID = 30, WOUND = 20)
+	armor_type = /datum/armor/sigu
 
 /obj/item/clothing/under/bm/regaloutfit
 	name = "Regal-Looking Feminine Outfit"
@@ -19,7 +19,7 @@
 	item_state = "capspacehelmet"
 	body_parts_covered = CHEST|ARMS
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
-	armor = list(MELEE = 10, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 30, ACID = 30, WOUND = 10)
+	armor_type = /datum/armor/light_duty
 	alternate_worn_layer = DRESS_LAYER
 
 /obj/item/clothing/under/bm/utility

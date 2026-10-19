@@ -306,9 +306,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
 /turf/open/floor/plasteel/dark,
 /area/engineering/engine_smes)
 "agJ" = (
@@ -2926,9 +2923,6 @@
 /turf/open/floor/plasteel/dark,
 /area/hallway/primary/fore)
 "bff" = (
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
@@ -27159,9 +27153,6 @@
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
 	},
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
 /obj/machinery/door/airlock/vault{
 	name = "Vault Door";
 	req_access_txt = "53"
@@ -28761,9 +28752,6 @@
 /turf/open/floor/plasteel/white/textured,
 /area/medical/psychology)
 "kvm" = (
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
@@ -56349,13 +56337,6 @@
 /obj/structure/table/wood,
 /turf/open/floor/plasteel/dark,
 /area/service/chapel/main)
-"ukd" = (
-/obj/effect/turf_decal/stripes/yellow/line,
-/obj/structure/cable,
-/obj/machinery/power/emitter,
-/obj/structure/cable,
-/turf/open/floor/plasteel/dark,
-/area/engineering/main)
 "ukj" = (
 /obj/effect/landmark/event_spawn,
 /turf/open/floor/plasteel/dark,
@@ -62375,9 +62356,6 @@
 	req_access_txt = "10"
 	},
 /obj/machinery/door/firedoor,
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
 /obj/effect/turf_decal/tile/yellow/full,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	name = "scrubbers pipe"
@@ -126312,7 +126290,7 @@ wrz
 omd
 tnH
 vWB
-ukd
+hvE
 oja
 nRn
 nRn

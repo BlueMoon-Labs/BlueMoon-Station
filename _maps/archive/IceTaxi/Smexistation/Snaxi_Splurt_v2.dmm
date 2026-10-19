@@ -14656,9 +14656,6 @@
 	},
 /obj/machinery/power/apc/auto_name/north,
 /obj/structure/cable{
-	icon_state = "2-8"
-	},
-/obj/structure/cable{
 	icon_state = "0-2"
 	},
 /turf/open/floor/plating/snowed/smoothed/warmer,
@@ -27442,9 +27439,6 @@
 	dir = 4
 	},
 /obj/structure/fans/tiny,
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
 /turf/open/floor/plasteel/dark,
 /area/construction)
 "jqP" = (
@@ -36264,9 +36258,6 @@
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
 /turf/open/floor/plating,
 /area/maintenance/bar)
 "miJ" = (
@@ -37960,9 +37951,6 @@
 /turf/open/floor/plasteel,
 /area/mine/eva)
 "mNA" = (
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
@@ -54520,9 +54508,6 @@
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
 "svw" = (
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
@@ -71783,9 +71768,6 @@
 	dir = 4
 	},
 /obj/structure/fans/tiny,
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
 /turf/open/floor/plasteel/dark,
 /area/construction)
 

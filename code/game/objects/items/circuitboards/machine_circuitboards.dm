@@ -1069,6 +1069,17 @@
 		/obj/item/stock_parts/micro_laser = 1,
 		/obj/item/stack/sheet/glass = 1)
 
+/obj/item/circuitboard/machine/mechfab/emagged
+	name = "Hacked Exosuit Fabricator (Machine Board)"
+	desc = "A circuit board for a hacked exosuit fabricator with no access requirements."
+	icon_state = "science"
+	build_path = /obj/machinery/mecha_part_fabricator/emagged
+	req_components = list(
+		/obj/item/stock_parts/matter_bin = 2,
+		/obj/item/stock_parts/manipulator = 1,
+		/obj/item/stock_parts/micro_laser = 1,
+		/obj/item/stack/sheet/glass = 1)
+
 /obj/item/circuitboard/machine/monkey_recycler
 	name = "Monkey Recycler (Machine Board)"
 	icon_state = "science"

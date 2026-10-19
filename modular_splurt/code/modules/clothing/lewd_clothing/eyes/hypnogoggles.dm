@@ -24,7 +24,7 @@
 	if(slot != ITEM_SLOT_EYES)
 		return
 	if(iscarbon(victim) && victim.client?.prefs.cit_toggles & HYPNO)
-		if(codephrase != "")
+		if(codephrase)
 			victim.gain_trauma(new /datum/brain_trauma/induced_hypnosis(codephrase), TRAUMA_RESILIENCE_BASIC)
 		else
 			codephrase = "Obey"
@@ -120,7 +120,7 @@
 		qdel(src)
 	hypnotic_phrase = phrase
 	try
-		target_phrase = new("(//b[REGEX_QUOTE(hypnotic_phrase)]//b)","ig")
+		target_phrase = new("(\\b[REGEX_QUOTE(hypnotic_phrase)]\\b)","ig")
 	catch(var/exception/e)
 		stack_trace("[e] on [e.file]:[e.line]")
 		qdel(src)

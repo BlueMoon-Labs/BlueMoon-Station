@@ -146,7 +146,7 @@
 	icon_state = "secslutskirt"
 	item_state = "secslutskirt"
 	body_parts_covered = CHEST|GROIN|ARMS
-	armor = list("melee" = 10, "bullet" = 0, "laser" = 0,"energy" = 0, "bomb" = 0, "bio" = 0, "rad" = 0, "fire" = 30, "acid" = 30, "wound" = 10)
+	armor_type = /datum/armor/light_duty
 	can_adjust = FALSE
 	mob_overlay_icon = 'modular_splurt/icons/mob/clothing/uniform.dmi'
 	mutantrace_variation = NONE
@@ -180,7 +180,7 @@
 	mob_overlay_icon = 'modular_splurt/icons/mob/clothing/uniform.dmi'
 	icon_state = "brigphys"
 	item_state = "brigphys"
-	armor = list("melee" = 10, "bullet" = 0, "laser" = 0,"energy" = 0, "bomb" = 0, "bio" = 10, "rad" = 0, "fire" = 20, "acid" = 30, "wound" = 10)
+	armor_type = /datum/armor/brigdoc
 	can_adjust = FALSE
 	strip_delay = 50
 	alt_covers_chest = TRUE
@@ -203,7 +203,7 @@
 	desc = "The uniform of the Blueshield. It makes you feel protected"
 	icon_state = "hosalt_blue"
 	item_state = "hosalt_blue"
-	armor = list("melee" = 10, "bullet" = 5, "laser" = 5,"energy" = 5, "bomb" = 0, "bio" = 0, "rad" = 0, "fire" = 20, "acid" = 30, "wound" = 10)
+	armor_type = /datum/armor/under_blueshield
 	can_adjust = TRUE
 	strip_delay = 50
 	alt_covers_chest = TRUE
@@ -246,7 +246,7 @@
 	item_state = "bs_envirosuit"
 	icon = 'modular_splurt/icons/obj/clothing/uniforms.dmi'
 	mob_overlay_icon = 'modular_splurt/icons/mob/clothing/uniform.dmi'
-	armor = list("melee" = 10, "bullet" = 5, "laser" = 5,"energy" = 5, "bomb" = 0, "bio" = 0, "rad" = 0, "fire" = 20, "acid" = 30, "wound" = 10)
+	armor_type = /datum/armor/under_blueshield
 
 /obj/item/clothing/head/helmet/space/plasmaman/security/blueshield
 	name = "blueshield plasma envirosuit helmet"
@@ -255,7 +255,7 @@
 	item_state = "bs_envirohelm"
 	icon = 'modular_splurt/icons/obj/clothing/head.dmi'
 	mob_overlay_icon = 'modular_splurt/icons/mob/clothing/head.dmi'
-	armor = list("melee" = 40, "bullet" = 30, "laser" = 25, "energy" = 10, "bomb" = 25, "bio" = 10, "rad" = 0, "fire" = 50, "acid" = 60)
+	armor_type = /datum/armor/spacesuit_blueshield
 
 /obj/item/clothing/under/cyberpunksleek
 	name = "modern sweater"
@@ -302,12 +302,12 @@
 	anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/uniform_digi.dmi'
 	icon_state = "goner_uniform"
 	can_adjust = FALSE
-	armor = list(MELEE = 10, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 5, RAD = 5, FIRE = 30, ACID = 30, WOUND = 10) // Security uniform's + BIO&RAD
+	armor_type = /datum/armor/under_goner // Security uniform's + BIO&RAD
 
 /obj/item/clothing/under/goner/fake
 	name = "trencher uniform replica"
 	desc = "A 90% replica of No Man's Land-type uniform."
-	armor = 0
+	armor_type = /datum/armor/none
 
 /obj/item/clothing/under/goner/fake/poly
 	name = "polychromic trencher uniform"
@@ -572,7 +572,7 @@
 
 /obj/item/clothing/under/misc/sheer/ComponentInitialize()
 	. = ..()
-	AddElement(/datum/element/polychromic, list("#3e769cc5"), 1)
+	AddElement(/datum/element/polychromic, list("#3e769c"), 1)
 
 /obj/item/clothing/under/misc/corsetdress
 	name = "corset dress"

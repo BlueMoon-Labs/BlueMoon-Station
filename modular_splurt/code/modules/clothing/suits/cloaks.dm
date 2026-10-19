@@ -29,7 +29,7 @@
 	icon_state = "centcomcloak"
 	icon = 'modular_splurt/icons/obj/clothing/neck.dmi'
 	mob_overlay_icon = 'modular_splurt/icons/mob/clothing/neck.dmi'
-	armor = list(MELEE = 35, BULLET = 40, LASER = 25, ENERGY = 10, BOMB = 25, BIO = 20, RAD = 20, FIRE = 60, ACID = 60)
+	armor_type = /datum/armor/centcom_and_cybersun
 	body_parts_covered = CHEST|ARMS
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC //bluemoon add
 
@@ -723,13 +723,13 @@
 	desc = "A mining padded Teshari cloak made for Mining"
 	icon_state = "tesh_beltcloak_mine"
 	allowed = list(/obj/item/pickaxe, /obj/item/flashlight, /obj/item/tank/internals, /obj/item/resonator, /obj/item/mining_scanner, /obj/item/t_scanner/adv_mining_scanner, /obj/item/gun/energy/kinetic_accelerator, /obj/item/toy, /obj/item/storage/fancy/cigarettes, /obj/item/lighter)
-	armor = list(MELEE = 10, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 20, BIO = 0, RAD = 0, FIRE = 70, ACID = 0)
+	armor_type = /datum/armor/suit_mining
 
 /obj/item/clothing/suit/hooded/teshari/beltcloak/jobs/command
 	name = "command belted cloak"
 	desc = "A premium armor padded Teshari cloak made for Captain."
 	icon_state = "tesh_beltcloak_comm"
-	armor = list(MELEE = 50, BULLET = 40, LASER = 50, ENERGY = 50, BOMB = 25, BIO = 0, RAD = 0, FIRE = 100, ACID = 90, WOUND = 30)
+	armor_type = /datum/armor/command
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	allowed = list(/obj/item/tank/internals/emergency_oxygen, /obj/item/flashlight, /obj/item/analyzer, /obj/item/radio, /obj/item/gun, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/reagent_containers/hypospray, /obj/item/hypospray, /obj/item/healthanalyzer, /obj/item/reagent_containers/syringe, /obj/item/reagent_containers/glass/bottle/vial, /obj/item/reagent_containers/glass/beaker, /obj/item/storage/pill_bottle, /obj/item/taperecorder)
 
@@ -737,14 +737,14 @@
 	name = "chief engineer belted cloak"
 	desc = "A soft Teshari cloak made the Chief Engineer with special rad and fire alloy"
 	icon_state = "tesh_beltcloak_ce"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 5, ENERGY = 0, BOMB = 10, BIO = 0, RAD = 30, FIRE = 35, ACID = 45)
+	armor_type = /datum/armor/ce_coats
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/t_scanner, /obj/item/construction/rcd, /obj/item/pipe_dispenser, /obj/item/toy, /obj/item/storage/fancy/cigarettes, /obj/item/lighter, /obj/item/melee/baton)
 
 /obj/item/clothing/suit/hooded/teshari/beltcloak/jobs/engineer
 	name = "engineering belted cloak"
 	desc = "A soft Teshari cloak made for the Engineering department with standart rad and fire alloy"
 	icon_state = "tesh_beltcloak_engie"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 20, FIRE = 30, ACID = 45)
+	armor_type = /datum/armor/rad20_fire30_acid45
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/t_scanner, /obj/item/construction/rcd, /obj/item/pipe_dispenser, /obj/item/toy, /obj/item/storage/fancy/cigarettes, /obj/item/lighter)
 
 /obj/item/clothing/suit/hooded/teshari/beltcloak/jobs/engineer/atmos
@@ -756,14 +756,14 @@
 	name = "chief medical officer belted  cloak"
 	desc = "A soft Teshari cloak made the Chief Medical Officer"
 	icon_state = "tesh_beltcloak_cmo"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 50, RAD = 0, FIRE = 50, ACID = 50)
+	armor_type = /datum/armor/medical_coats
 	allowed = list(/obj/item/analyzer, /obj/item/stack/medical, /obj/item/dnainjector, /obj/item/melee/baton, /obj/item/reagent_containers/dropper, /obj/item/reagent_containers/syringe, /obj/item/reagent_containers/hypospray, /obj/item/hypospray/mkii, /obj/item/healthanalyzer, /obj/item/flashlight/pen, /obj/item/reagent_containers/glass/bottle, /obj/item/reagent_containers/glass/beaker, /obj/item/reagent_containers/pill, /obj/item/storage/pill_bottle, /obj/item/paper, /obj/item/melee/classic_baton/telescopic, /obj/item/soap, /obj/item/sensor_device, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/gun/medbeam)
 
 /obj/item/clothing/suit/hooded/teshari/beltcloak/jobs/medical
 	name = "medical belted cloak"
 	desc = "A soft Teshari cloak made for the Medical department"
 	icon_state = "tesh_beltcloak_doc"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 50, RAD = 0, FIRE = 50, ACID = 50)
+	armor_type = /datum/armor/medical_coats
 	allowed = list(/obj/item/analyzer, /obj/item/stack/medical, /obj/item/dnainjector, /obj/item/reagent_containers/dropper, /obj/item/reagent_containers/syringe, /obj/item/reagent_containers/hypospray, /obj/item/hypospray/mkii, /obj/item/healthanalyzer, /obj/item/flashlight/pen, /obj/item/reagent_containers/glass/bottle, /obj/item/reagent_containers/glass/beaker, /obj/item/reagent_containers/pill, /obj/item/storage/pill_bottle, /obj/item/paper, /obj/item/melee/classic_baton/telescopic, /obj/item/soap, /obj/item/sensor_device, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/gun/medbeam)
 
 /obj/item/clothing/suit/hooded/teshari/beltcloak/jobs/medical/chemistry
@@ -795,7 +795,7 @@
 	name = "security belted cloak"
 	desc = "A armor padded Teshari cloak made for the Security department"
 	icon_state = "tesh_beltcloak_sec"
-	armor = list(MELEE = 35, BULLET = 30, LASER = 30, ENERGY = 40, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 10)
+	armor_type = /datum/armor/security_and_syndicate_basic
 	brc_mitigation_bonus = 10  // BLUEMOON ADD
 	allowed = list(/obj/item/tank/internals/emergency_oxygen, /obj/item/flashlight, /obj/item/analyzer, /obj/item/radio, /obj/item/gun, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/reagent_containers/hypospray, /obj/item/hypospray, /obj/item/healthanalyzer, /obj/item/reagent_containers/syringe, /obj/item/reagent_containers/glass/bottle/vial, /obj/item/reagent_containers/glass/beaker, /obj/item/storage/pill_bottle, /obj/item/taperecorder)
 
@@ -805,10 +805,10 @@
 	icon_state = "tesh_beltcloak_qm"
 
 /obj/item/clothing/suit/hooded/teshari/beltcloak/jobs/service
+	armor_type = /datum/armor/service_coats
 	name = "service belted cloak"
 	desc = "A soft Teshari cloak made for the Service department"
 	icon_state = "tesh_beltcloak_serv"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 10, RAD = 0, FIRE = 0, ACID = 0)
 	allowed = list(/obj/item/toy, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/storage/fancy/cigarettes, /obj/item/lighter,/obj/item/grenade/chem_grenade,/obj/item/lightreplacer,/obj/item/flashlight,/obj/item/reagent_containers/glass/beaker,/obj/item/reagent_containers/glass/bottle,/obj/item/reagent_containers/spray,/obj/item/soap,/obj/item/holosign_creator,/obj/item/key/janitor,/obj/item/melee/flyswatter,/obj/item/paint/paint_remover,/obj/item/storage/bag/trash,/obj/item/reagent_containers/glass/bucket,/obj/item/t_scanner/dirt_scanner)
 
 /obj/item/clothing/suit/hooded/teshari/beltcloak/jobs/iaa
@@ -825,7 +825,7 @@
 	name = "security chief belted cloak"
 	desc = "A hard armor padded Teshari cloak made for the Head of Security"
 	icon_state = "tesh_beltcloak_hos"
-	armor = list(MELEE = 40, BULLET = 40, LASER = 40, ENERGY = 50, BOMB = 25, BIO = 0, RAD = 0, FIRE = 70, ACID = 90, WOUND = 20)
+	armor_type = /datum/armor/hos_coats
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	allowed = list(/obj/item/tank/internals/emergency_oxygen, /obj/item/flashlight, /obj/item/analyzer, /obj/item/radio, /obj/item/gun, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/reagent_containers/hypospray, /obj/item/hypospray, /obj/item/healthanalyzer, /obj/item/reagent_containers/syringe, /obj/item/reagent_containers/glass/bottle/vial, /obj/item/reagent_containers/glass/beaker, /obj/item/storage/pill_bottle, /obj/item/taperecorder)
 

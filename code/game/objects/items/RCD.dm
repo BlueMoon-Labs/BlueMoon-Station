@@ -24,7 +24,7 @@ RLD
 	w_class = WEIGHT_CLASS_NORMAL
 	custom_materials = list(/datum/material/iron=100000)
 	req_access_txt = "11"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 50)
+	armor_type = /datum/armor/weapons_and_construction_tools
 	resistance_flags = FIRE_PROOF
 	var/datum/effect_system/spark_spread/spark_system
 	var/matter = 0
@@ -473,6 +473,9 @@ RLD
 	GLOB.rcd_list -= src
 	. = ..()
 
+/obj/item/construction/rcd/builds_over_openspace()
+	return TRUE
+
 /obj/item/construction/rcd/attack_self(mob/user)
 	..()
 	var/list/choices = list(
@@ -652,7 +655,7 @@ RLD
 	name = "large compressed matter cartridge"
 	desc = "Highly compressed matter for the RCD. Has four times the matter packed into the same space as a normal cartridge."
 	custom_materials = list(/datum/material/iron=96000, /datum/material/glass=64000)
-	ammoamt = 320 
+	ammoamt = 320
 
 
 /obj/item/construction/rcd/combat/admin

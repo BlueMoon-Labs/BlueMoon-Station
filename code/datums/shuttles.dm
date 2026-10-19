@@ -732,7 +732,7 @@
 	name = "assault pod (Default)"
 
 /datum/map_template/shuttle/pirate/default
-	suffix = "default"
+	suffix = "dutchman"
 	name = "Pirate ship (Default)"
 
 /datum/map_template/shuttle/hunter/space_cop

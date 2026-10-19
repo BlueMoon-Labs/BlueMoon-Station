@@ -13,6 +13,7 @@
 
 	var/obj/item/holder = null
 	// You can use this var for item path, it would be converted into an item on New()
+	var/retracting = FALSE
 
 /obj/item/organ/cyberimp/arm/Initialize(mapload)
 	. = ..()
@@ -107,10 +108,13 @@
 		Retract()
 
 /obj/item/organ/cyberimp/arm/proc/Retract(silent = FALSE)
-	if(!holder || (holder in src))
+	if(!holder || (holder in src) || retracting)
 		return
 
+	// Отказанный перенос зовёт dropped() -> magnetic_catch() -> Retract() по кругу.
+	retracting = TRUE
 	owner.transferItemToLoc(holder, src, TRUE)
+	retracting = FALSE
 	holder = null
 	if(!silent)
 		RetractPLaySound()

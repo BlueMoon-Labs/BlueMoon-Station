@@ -1,0 +1,147 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"h" = (
+/obj/effect/spawner/lootdrop/syndicate_present,
+/turf/open/floor/plating/asteroid{
+	dug = 1;
+	floor_variance = 0;
+	icon_state = "asteroid_dug"
+	},
+/area/maintenance/starboard/greater)
+"j" = (
+/obj/item/stack/ore/glass,
+/turf/open/floor/plating/asteroid{
+	dug = 1;
+	floor_variance = 0;
+	icon_state = "asteroid_dug"
+	},
+/area/maintenance/starboard/greater)
+"n" = (
+/turf/template_noop,
+/area/template_noop)
+"o" = (
+/obj/structure/ore_box,
+/turf/open/floor/plating/asteroid,
+/area/maintenance/starboard/greater)
+"v" = (
+/obj/modular_map_root/tramstation{
+	key = "servicecargolower_attachment_b";
+	name = "servicecargolower_attachment_b"
+	},
+/obj/effect/turf_decal/weather/sand/plating,
+/obj/structure/girder,
+/obj/item/stack/sheet/metal,
+/turf/open/floor/plating,
+/area/maintenance/starboard/greater)
+"w" = (
+/obj/effect/turf_decal/weather/sand/plating,
+/obj/modular_map_connector,
+/turf/open/floor/plating,
+/area/maintenance/starboard/greater)
+"z" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/maintenance/starboard/greater)
+"A" = (
+/obj/item/relic,
+/obj/item/stack/ore/glass,
+/turf/open/floor/plating/asteroid{
+	dug = 1;
+	floor_variance = 0;
+	icon_state = "asteroid_dug"
+	},
+/area/maintenance/starboard/greater)
+"E" = (
+/turf/open/floor/plating/asteroid{
+	dug = 1;
+	floor_variance = 0;
+	icon_state = "asteroid_dug"
+	},
+/area/maintenance/starboard/greater)
+"G" = (
+/turf/closed/wall/rust,
+/area/maintenance/starboard/greater)
+"K" = (
+/turf/closed/mineral/random/stationside/asteroid/porus,
+/area/asteroid/tramstation)
+"L" = (
+/turf/open/floor/plating/asteroid,
+/area/maintenance/starboard/greater)
+"M" = (
+/obj/effect/turf_decal/weather/sand/plating,
+/turf/open/floor/plating,
+/area/maintenance/starboard/greater)
+"Q" = (
+/turf/closed/mineral/asteroid/porous,
+/area/maintenance/starboard/greater)
+"W" = (
+/obj/item/shovel,
+/turf/open/floor/plating/asteroid,
+/area/maintenance/starboard/greater)
+"Y" = (
+/obj/item/pickaxe,
+/turf/open/floor/plating/asteroid,
+/area/maintenance/starboard/greater)
+
+(1,1,1) = {"
+n
+n
+n
+n
+K
+K
+"}
+(2,1,1) = {"
+n
+n
+n
+n
+K
+K
+"}
+(3,1,1) = {"
+n
+Q
+z
+L
+z
+z
+"}
+(4,1,1) = {"
+n
+n
+W
+Y
+L
+z
+"}
+(5,1,1) = {"
+w
+L
+L
+L
+h
+L
+"}
+(6,1,1) = {"
+M
+v
+L
+E
+A
+E
+"}
+(7,1,1) = {"
+n
+G
+L
+L
+j
+z
+"}
+(8,1,1) = {"
+n
+n
+z
+o
+z
+z
+"}

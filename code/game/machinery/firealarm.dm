@@ -20,7 +20,7 @@
 	plane = ABOVE_WALL_PLANE
 	max_integrity = 250
 	integrity_failure = 0.4
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 100, RAD = 100, FIRE = 90, ACID = 30)
+	armor_type = /datum/armor/firealarm
 	mouse_over_pointer = MOUSE_HAND_POINTER
 	use_power = IDLE_POWER_USE
 	idle_power_usage = 2
@@ -153,20 +153,20 @@
 	if(is_station_level(z))
 		. += "fire_[GLOB.security_level]"
 		. += mutable_appearance(icon, "overlay_[NUM2SECLEVEL(GLOB.security_level)]")
-		. += emissive_appearance(icon, "overlay_[NUM2SECLEVEL(GLOB.security_level)]")
+		. += emissive_appearance(icon, "overlay_[NUM2SECLEVEL(GLOB.security_level)]", offset_spokesman = src)
 	else
 		. += "overlay_[NUM2SECLEVEL(SEC_LEVEL_GREEN)]"
 		. += mutable_appearance(icon, "overlay_[NUM2SECLEVEL(GLOB.security_level)]")
-		. += emissive_appearance(icon, "overlay_[NUM2SECLEVEL(GLOB.security_level)]")
+		. += emissive_appearance(icon, "overlay_[NUM2SECLEVEL(GLOB.security_level)]", offset_spokesman = src)
 
 	if(obj_flags & EMAGGED)
 		. += "overlay_emagged"
 		. += mutable_appearance(icon, "overlay_emagged")
-		. += emissive_appearance(icon, "overlay_emagged")
+		. += emissive_appearance(icon, "overlay_emagged", offset_spokesman = src)
 	else
 		. += "fire_on"
 		. += mutable_appearance(icon, "fire_on")
-		. += emissive_appearance(icon, "fire_on")
+		. += emissive_appearance(icon, "fire_on", offset_spokesman = src)
 
 /obj/machinery/firealarm/examine(mob/user)
 	. = ..()
@@ -334,7 +334,7 @@
 				else if(W.force) //hit and turn it on
 					..()
 					var/area/A = get_base_area(src)
-					if(!A.fire)
+					if(A && !A.fire)
 						alarm()
 					return
 			if(1)

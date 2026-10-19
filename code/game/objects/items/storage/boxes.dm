@@ -112,6 +112,7 @@
 	var/mask_type = /obj/item/clothing/mask/breath
 	var/internal_type = /obj/item/tank/internals/emergency_oxygen
 	var/medipen_type = /obj/item/reagent_containers/hypospray/medipen
+	var/give_hook = TRUE
 
 /obj/item/storage/box/survival/PopulateContents()
 	// BLUEMOON ADD - у робототов особый набор для выживания
@@ -136,6 +137,13 @@
 	if(HAS_TRAIT(SSstation, STATION_TRAIT_PREMIUM_INTERNALS))
 		new /obj/item/flashlight/flare(src)
 		new /obj/item/radio/off(src)
+
+	if(give_hook && SSmapping.config?.give_players_hooks && length(SSmapping.levels_by_trait(ZTRAIT_STATION)) > 1)
+		new /obj/item/climbing_hook/emergency(src)
+
+/// Заключённым крюк для побега через дыры не положен.
+/obj/item/storage/box/survival/prisoner
+	give_hook = FALSE
 
 /obj/item/storage/box/survival/radio/PopulateContents()
 	..() // we want the survival stuff too.
@@ -1397,8 +1405,9 @@
 /obj/item/storage/box/rndboards/PopulateContents()
 	new /obj/item/circuitboard/machine/protolathe(src)
 	new /obj/item/circuitboard/machine/destructive_analyzer(src)
-	new /obj/item/circuitboard/machine/circuit_imprinter(src)
+	new /obj/item/circuitboard/machine/circuit_imprinter/hacked(src)
 	new /obj/item/circuitboard/computer/rdconsole(src)
+	new /obj/item/circuitboard/machine/mechfab/emagged(src)
 
 /obj/item/storage/box/silver_sulf
 	name = "box of silver sulfadiazine patches"
@@ -1790,13 +1799,13 @@
 /obj/item/storage/box/coffeepack/ComponentInitialize()
 	. = ..()
 	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
-	STR.max_items = 5
+	STR.max_items = 14
 	STR.can_hold = typecacheof(list(/obj/item/reagent_containers/food/snacks/grown/coffee))
 
 /obj/item/storage/box/coffeepack/PopulateContents()
-	for(var/i in 1 to 5)
+	for(var/i in 1 to 14)
 		var/obj/item/reagent_containers/food/snacks/grown/coffee/bean = new beantype(src)
-		bean.add_atom_colour(COLOR_DRIED_TAN, FIXED_COLOUR_PRIORITY) //give them the tan just like from the drying rack
+		SEND_SIGNAL(bean, COMSIG_ITEM_DRIED)
 
 /obj/item/storage/box/coffeepack/robusta
 	name = "Robusta Beans"

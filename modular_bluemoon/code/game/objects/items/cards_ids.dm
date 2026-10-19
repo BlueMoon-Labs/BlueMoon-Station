@@ -201,5 +201,5 @@
 	special_assignment = "sol"
 
 /obj/item/card/id/sol/Initialize(mapload)
-	access = get_all_accesses()+get_ert_access("commander")-ACCESS_CHANGE_IDS
+	access = get_all_accesses()+get_ert_access("commander")+get_all_inteq_access()-ACCESS_CHANGE_IDS
 	. = ..()

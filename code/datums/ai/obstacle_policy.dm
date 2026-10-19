@@ -26,6 +26,10 @@
 		return barrier.dir == barrier_side
 	return istype(barrier, /obj/machinery/door) && barrier.loc == to_turf
 
+///Моб фракции экипажа (питомец отдела, оживлённый лазарем, приручённый) имущество на пути не ломает.
+/proc/ai_pawn_spares_crew_property(mob/living/pawn)
+	return ("neutral" in pawn.faction)
+
 /datum/obstacle_policy
 	///Открывать ли двери по доступу (обесточенные - всегда, если TRUE)
 	var/opens_doors = TRUE
@@ -45,6 +49,17 @@
 	var/wall_breach_cost = 12
 	var/reinforced_wall_breach_cost = 24
 	var/hit_breach_cost = 4
+	///Машинерия, которая остаётся преградой пути для мобов слабее босса
+	var/static/list/smashable_machinery = typecacheof(list(
+		/obj/machinery/door,
+		/obj/machinery/vending,
+	))
+	///Постройки фракций: тип -> фракция, чьи мобы их не ломают
+	var/static/list/faction_structures = list(
+		/obj/structure/alien = ROLE_ALIEN,
+		/obj/structure/blob = ROLE_BLOB,
+		/obj/structure/spider = "spiders",
+	)
 
 ///Whether opening/destroying a pressure barrier on this edge is safe for pawn.
 /datum/obstacle_policy/proc/step_preserves_atmosphere(mob/living/pawn, turf/from_turf, turf/to_turf)
@@ -73,14 +88,68 @@
 	if(whitelist && !is_type_in_typecache(blocker, whitelist))
 		return FALSE
 	var/mob/living/simple_animal/simple_pawn = pawn
-	if(!istype(simple_pawn))
+	if(!istype(simple_pawn) || ai_pawn_spares_crew_property(simple_pawn))
 		return FALSE
+	if(ismachinery(blocker) && !(simple_pawn.environment_smash & ENVIRONMENT_SMASH_RWALLS) && !is_type_in_typecache(blocker, smashable_machinery))
+		return FALSE
+	if(is_kin_structure(simple_pawn, blocker) || is_abandoned_obstacle(controller, blocker))
+		return FALSE
+	var/hits_needed = get_smash_hits_needed(simple_pawn, blocker)
+	return hits_needed && hits_needed <= AI_OBSTACLE_MAX_SMASH_HITS
+
+///Ударов до разрушения преграды по реальной формуле attack_animal -> take_damage; 0 - урона не будет.
+/datum/obstacle_policy/proc/get_smash_hits_needed(mob/living/simple_animal/simple_pawn, obj/blocker)
+	if(blocker.obj_integrity <= 0)
+		return 0
 	var/attack_damage = simple_pawn.obj_damage || simple_pawn.melee_damage_upper
-	return attack_damage > blocker.damage_deflection
+	var/hit_damage = blocker.run_obj_armor(attack_damage, simple_pawn.melee_damage_type, MELEE, null, simple_pawn.armour_penetration)
+	if(hit_damage < DAMAGE_PRECISION)
+		return 0
+	return CEILING(blocker.obj_integrity / hit_damage, 1)
+
+///Своё гнездо и постройки своей фракции моб на пути не ломает.
+/datum/obstacle_policy/proc/is_kin_structure(mob/living/simple_animal/simple_pawn, obj/blocker)
+	var/datum/component/spawner/nest = blocker.GetComponent(/datum/component/spawner)
+	if(nest)
+		return simple_pawn.nest == nest || faction_check(simple_pawn.faction, nest.faction)
+	for(var/structure_type in faction_structures)
+		if(istype(blocker, structure_type))
+			return (faction_structures[structure_type] in simple_pawn.faction)
+	return FALSE
+
+/datum/obstacle_policy/proc/is_abandoned_obstacle(datum/ai_controller/controller, obj/blocker)
+	var/list/abandoned = controller.blackboard[BB_AI_ABANDONED_OBSTACLES]
+	if(!length(abandoned) || !blocker.weak_reference)
+		return FALSE
+	return abandoned[blocker.weak_reference] > world.time
+
+///Считает удары подряд по одной преграде; сверх лимита моб бросает её и ищет другой путь.
+/datum/obstacle_policy/proc/count_smash_attempt(datum/ai_controller/controller, obj/blocker)
+	var/datum/weakref/blocker_ref = WEAKREF(blocker)
+	var/attempts = 1
+	if(controller.blackboard[BB_AI_SMASH_BLOCKER] == blocker_ref)
+		attempts += controller.blackboard[BB_AI_SMASH_ATTEMPTS]
+	controller.blackboard[BB_AI_SMASH_BLOCKER] = blocker_ref
+	if(attempts <= AI_OBSTACLE_SMASH_ATTEMPT_LIMIT)
+		controller.blackboard[BB_AI_SMASH_ATTEMPTS] = attempts
+		return TRUE
+	controller.blackboard[BB_AI_SMASH_ATTEMPTS] = 0
+	var/list/abandoned = controller.blackboard[BB_AI_ABANDONED_OBSTACLES]
+	if(!abandoned)
+		abandoned = list()
+		controller.blackboard[BB_AI_ABANDONED_OBSTACLES] = abandoned
+	for(var/datum/weakref/stale_ref as anything in abandoned)
+		if(abandoned[stale_ref] <= world.time)
+			abandoned -= stale_ref
+	abandoned[blocker_ref] = world.time + AI_OBSTACLE_ABANDON_TIME
+	AI_TRACE(controller, "move", "бросил преграду [blocker]: [AI_OBSTACLE_SMASH_ATTEMPT_LIMIT] ударов без результата")
+	return FALSE
 
 /datum/obstacle_policy/proc/can_smash_turf(mob/living/pawn, turf/blocked_turf)
 	var/mob/living/simple_animal/hostile/hostile_pawn = pawn
 	if(!istype(hostile_pawn) || !hostile_pawn.environment_smash || !hostile_pawn.CanSmashTurfs(blocked_turf))
+		return FALSE
+	if(ai_pawn_spares_crew_property(hostile_pawn))
 		return FALSE
 	if(istype(blocked_turf, /turf/closed/wall/r_wall))
 		return hostile_pawn.environment_smash & ENVIRONMENT_SMASH_RWALLS
@@ -122,10 +191,7 @@
 
 	if(!can_smash_blocker(pawn, controller, blocker))
 		return 0
-	var/mob/living/simple_animal/simple_pawn = pawn
-	var/attack_damage = max(simple_pawn.obj_damage || simple_pawn.melee_damage_upper, 1)
-	var/effective_damage = max(attack_damage - blocker.damage_deflection, 1)
-	return max(hit_breach_cost, CEILING(blocker.obj_integrity / effective_damage, 1) * hit_breach_cost)
+	return max(hit_breach_cost, get_smash_hits_needed(pawn, blocker) * hit_breach_cost)
 
 ///Cost of a cardinal step for the breach A*: 0 means impossible.
 /datum/obstacle_policy/proc/get_breach_step_cost(mob/living/pawn, datum/ai_controller/controller, turf/from_turf, turf/to_turf, simulated_only, turf/avoid, obj/item/card/id/id, check_environment = TRUE)
@@ -278,7 +344,7 @@
 
 ///Выломать плотный объект (с учётом вайтлиста профиля)
 /datum/obstacle_policy/proc/try_smash(mob/living/pawn, datum/ai_controller/controller, obj/blocker)
-	if(!can_smash_blocker(pawn, controller, blocker))
+	if(!can_smash_blocker(pawn, controller, blocker) || !count_smash_attempt(controller, blocker))
 		return FALSE
 	//Атаки NPC по объектам не логировались нигде: цепочка attack_animal ->
 	//attack_generic -> take_damage не зовёт log_combat, и единственный объект,

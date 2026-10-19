@@ -92,7 +92,7 @@
 
 /obj/structure/bed/roller/stasis/AltClick(mob/user)
 	. = ..()
-	if(user && user != get_occupant() && Adjacent(user) && user.can_hold_items())
+	if(cell && user && user != get_occupant() && Adjacent(user) && user.can_hold_items())
 		user.put_in_hands(cell)
 		cell.update_appearance()
 		cell = null

@@ -50,25 +50,83 @@
 #define HERETIC_BLOOD_VERDICT_QUAKE 0.15
 #define HERETIC_BLOOD_VERDICT_QUAKE_RADIUS 7
 #define HERETIC_BLOOD_VERDICT_QUAKE_TIME (0.4 SECONDS)
+#define HERETIC_BLOOD_BIND_VOLUME 35
+#define HERETIC_BLOOD_COLLECT_VOLUME 60
+#define HERETIC_BLOOD_LANCE_VOLUME 55
+#define HERETIC_BLOOD_SNARE_VOLUME 50
+#define HERETIC_BLOOD_SLIP_VOLUME 50
+#define HERETIC_BLOOD_DRINK_VOLUME 40
+#define HERETIC_BLOOD_WARNING_VOLUME 50
+#define HERETIC_BLOOD_VERDICT_VOLUME 72
+#define HERETIC_BLOOD_SEVER_VOLUME 40
+#define HERETIC_BLOOD_ABSORB_VOLUME 35
+#define HERETIC_BLOOD_HEARTBEAT_FAST (0.6 SECONDS)
+#define HERETIC_BLOOD_HEARTBEAT_SLOW (1.4 SECONDS)
+#define HERETIC_BLOOD_HEARTBEAT_LOUD 50
+#define HERETIC_BLOOD_HEARTBEAT_QUIET 25
+#define HERETIC_BLOOD_HEARTBEAT_HEAVY 0.6
+#define HERETIC_BLOOD_REEL_STEP (0.15 SECONDS)
+#define HERETIC_BLOOD_REEL_WIDTH 2
+#define HERETIC_BLOOD_REEL_FIZZLE (0.2 SECONDS)
+#define HERETIC_BLOOD_PALE_PRIORITY 5
+#define HERETIC_BLOOD_PALE_SATURATION 0.3
+#define HERETIC_BLOOD_PALE_DIM 0.85
+#define HERETIC_BLOOD_PALE_LIFT_RED 0.1
+#define HERETIC_BLOOD_PALE_LIFT_GREEN 0.12
+#define HERETIC_BLOOD_PALE_LIFT_BLUE 0.17
+#define HERETIC_BLOOD_PALE_RECOVER (1 SECONDS)
+#define HERETIC_BLOOD_SIGN_PRIORITY 2
+#define HERETIC_BLOOD_SIGN_GLOW 1
+#define HERETIC_BLOOD_SIGN_GLOW_COLOR "#e8324f"
+#define HERETIC_BLOOD_SIGN_RISE (0.3 SECONDS)
+#define HERETIC_BLOOD_SIGN_FALL (0.9 SECONDS)
+#define HERETIC_BLOOD_SIGN_REST (0.8 SECONDS)
+#define HERETIC_BLOOD_SNARE_FLASH_RANGE 2
+#define HERETIC_BLOOD_SNARE_FLASH_POWER 1
+#define HERETIC_BLOOD_SNARE_FLASH_TIME (0.4 SECONDS)
+#define HERETIC_BLOOD_TETHER_CHECK (0.25 SECONDS)
+#define HERETIC_BLOOD_RECKONING_PULSE (0.5 SECONDS)
+
+GLOBAL_LIST_INIT(heretic_blood_collect_sounds, list(
+	'modular_bluemoon/sound/heretic/blood_collect_1.ogg',
+	'modular_bluemoon/sound/heretic/blood_collect_2.ogg',
+	'modular_bluemoon/sound/heretic/blood_collect_3.ogg',
+))
+
+GLOBAL_LIST_INIT(heretic_blood_heartbeat_sounds, list(
+	'modular_bluemoon/sound/heretic/blood_heartbeat_1.ogg',
+	'modular_bluemoon/sound/heretic/blood_heartbeat_2.ogg',
+))
+
+GLOBAL_LIST_INIT(heretic_blood_cue_sounds, list(
+	"warning" = 'modular_bluemoon/sound/heretic/blood_warning.ogg',
+	"verdict" = 'modular_bluemoon/sound/heretic/blood_verdict.ogg',
+	"sever" = 'modular_bluemoon/sound/heretic/blood_sever.ogg',
+	"absorb" = 'modular_bluemoon/sound/heretic/blood_absorb.ogg',
+))
+
+/// Удар сердца под Кровопусканием: к концу (progress от 0 до 1) тяжелее и глуше.
+/proc/heretic_blood_beat_sound(progress)
+	return GLOB.heretic_blood_heartbeat_sounds[progress < HERETIC_BLOOD_HEARTBEAT_HEAVY ? 1 : 2]
 
 /datum/heretic_path/blood
 	id = PATH_BLOOD
 	deed_type = /datum/heretic_deed/blood
 	name = "Кровь"
-	tagline = "Долг копится ударами, взыскание бьёт и лечит, Кровопускание роняет должника в обморок."
+	tagline = "Долг копится ударами: взыскание бьёт и лечит, путы держат, Кровопускание роняет в обморок."
 	craft_summary = "Хватка в «Помощи» по чужой крови ведёт к владельцу 3 минуты, пятно на полу становится меткой-ловушкой."
 	capture_summary = "Кровопускание 6 секунд держит немого должника на нити до обморока; со 2-й секунды сердце уводит его в изнанку."
 	escape_summary = "Скользкая кровь за 10 своих ушибов на 5 секунд вырывает из захвата; из изнанки выходите к своей метке."
 	strength_points = list(
-		"Удар клинком сам связывает врага; взыскание бьёт по 2 ушиба за каждую единицу долга.",
-		"Взыскание лечит раны, восполняет кровь и на 8 секунд вдвое ослабляет ваше кровотечение.",
+		"Удар клинком сам связывает врага; взыскание бьёт по 2 ушиба за долг и лечит ваши раны.",
+		"Долг можно тратить на путы: 3 секунды должник не отходит; на крови взыскание прибивает его шипом.",
 		"Чужая кровь ведёт к владельцу 3 минуты, метки на полу сами связывают наступивших.",
 		"Во время Кровопускания цель немая и без рации, а в изнанке нить не рвётся до самого обморока.",
 		"Скользкая кровь работает в чужой хватке: вырывает, ускоряет, валит преследователей.",
 		"Вознёсшийся удваивает кровотечение врагов рядом и пьёт свежую кровь с пола.",
 	)
 	weakness_points = list(
-		"Помеченная кровь не засыхает и пульсирует: швабра, космочист или нулевой жезл снимают метку.",
+		"Помеченная кровь не засыхает и пульсирует багровой каймой: швабра, космочист или жезл снимают метку.",
 		"Кровопускание рвут стена, уход, антимагия, жезл, переливание, оглушение еретика; цель растолкают за 2 секунды.",
 		"Взыскание требует секунду прямой видимости в 5 клетках; укрытие или оглушение его срывают.",
 		"С одной цели лечения не больше 10, пока держится её пустая печать; цель без разума не лечит.",
@@ -118,6 +176,8 @@
 		"Взыскание на 8 секунд вдвое ослабляет ваше кровотечение.",
 		"Когда связь кончилась взысканием, разрывом или смертью, пустая печать 15 секунд хранит пределы лечения с этой цели.",
 		"Чаша тратит долг на лечение, Кровопускание списывает весь долг должника.",
+		"В «Захвате» «Связать / взыскать» тратит 8 долга на путы: 3 секунды должник не отходит от вас.",
+		"Должника на свежей крови или вашем скользком следе взыскание бьёт шипом из лужи и на секунду прибивает.",
 	)
 	combat_resource_action = /obj/effect/proc_holder/spell/pointed/heretic_blood/release
 	grasp_visual = /obj/effect/temp_visual/heretic_blood/grasp
@@ -292,7 +352,7 @@
 /datum/eldritch_knowledge/base_blood/combat_resource_state()
 	. = "Связей: [length(seals)]/[link_limit]. Меток крови: [length(signs)] из [HERETIC_BLOOD_SIGN_LIMIT]."
 	if(length(seals))
-		. += " Чтобы нанести урон, нажмите индикатор долга и укажите своего должника. Хватка и клинок сами долг не взыскивают."
+		. += " Чтобы нанести урон, нажмите индикатор долга и укажите своего должника. Хватка и клинок сами долг не взыскивают. В «Захвате» индикатор опутывает должника за [HERETIC_BLOOD_TETHER_COST] долга."
 	else
 		. += " Нажмите индикатор долга и укажите врага, чтобы создать связь."
 	for(var/datum/status_effect/heretic_blood_seal/seal as anything in seals)
@@ -313,14 +373,16 @@
 	if(seal?.spent && seal.blood_ref?.resolve() != src)
 		qdel(seal)
 
-/datum/eldritch_knowledge/base_blood/proc/release(mob/living/user, mob/living/victim, partial = FALSE)
+/datum/eldritch_knowledge/base_blood/proc/release(mob/living/user, mob/living/victim, partial = FALSE, tether = FALSE)
 	ability_failure = null
 	if(!valid_victim(user, victim))
 		return FALSE
 	drop_foreign_spent(victim)
 	var/datum/status_effect/heretic_blood_seal/existing = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
 	if(existing && !existing.spent)
-		return existing.blood_ref?.resolve() == src && existing.begin_collection(src, partial ? HERETIC_BLOOD_PARTIAL_COLLECTION : null)
+		if(existing.blood_ref?.resolve() != src)
+			return FALSE
+		return tether ? snare_debtor(user, victim, existing) : existing.begin_collection(src, partial ? HERETIC_BLOOD_PARTIAL_COLLECTION : null)
 	if(existing && existing.blood_ref?.resolve() != src)
 		return FALSE
 	if(length(seals) >= link_limit)
@@ -340,8 +402,30 @@
 			return FALSE
 		seal.debt = min(HERETIC_BLOOD_INITIAL_DEBT, debt_cap)
 	update_debt()
-	to_chat(user, span_notice("[victim] связан: [seal.debt] долга. Повторное «Связать / взыскать» по этой цели нанесёт урон, удары клинком накопят больше долга."))
-	playsound(victim, 'modular_bluemoon/sound/heretic/blood_release.ogg', 45, TRUE)
+	to_chat(user, span_notice("[victim] связан: [seal.debt] долга. Повторное «Связать / взыскать» по этой цели нанесёт урон, в «Захвате» опутает ноги, удары клинком накопят больше долга."))
+	playsound(victim, 'modular_bluemoon/sound/heretic/blood_bind.ogg', HERETIC_BLOOD_BIND_VOLUME, TRUE)
+	return TRUE
+
+/// Путы вместо удара: часть долга должника уходит в жилы, и он не может отойти от еретика.
+/datum/eldritch_knowledge/base_blood/proc/snare_debtor(mob/living/user, mob/living/victim, datum/status_effect/heretic_blood_seal/seal)
+	if(seal.collecting)
+		ability_failure = "С [victim] уже взыскивается долг: дождитесь удара."
+		return FALSE
+	if(victim.has_status_effect(/datum/status_effect/heretic_blood_tether))
+		ability_failure = "Ноги [victim] уже оплетены жилами."
+		return FALSE
+	if(seal.debt < HERETIC_BLOOD_TETHER_COST)
+		ability_failure = "Для пут нужно [HERETIC_BLOOD_TETHER_COST] долга, на [victim] сейчас [round(seal.debt, 0.1)]."
+		return FALSE
+	var/datum/status_effect/heretic_blood_tether/snare = victim.apply_status_effect(/datum/status_effect/heretic_blood_tether, src, seal)
+	if(QDELETED(snare))
+		ability_failure = "Жилы не удержали [victim]."
+		return FALSE
+	seal.debt -= HERETIC_BLOOD_TETHER_COST
+	update_debt()
+	to_chat(user, span_notice("Жилы оплели ноги [victim]: [DisplayTimeText(HERETIC_BLOOD_TETHER_DURATION)] от вас не отойти. Остаток долга: [round(seal.debt, 0.1)]."))
+	playsound(victim, 'modular_bluemoon/sound/heretic/blood_snare.ogg', HERETIC_BLOOD_SNARE_VOLUME, TRUE)
+	log_combat(user, victim, "оплетает кровяными жилами", addition = "потрачено [HERETIC_BLOOD_TETHER_COST] долга")
 	return TRUE
 
 /datum/eldritch_knowledge/base_blood/on_eldritch_blade(atom/target, mob/user, proximity_flag, click_parameters)
@@ -387,15 +471,64 @@
 	victim.adjustBruteLoss(HERETIC_BLOOD_LANCE_DAMAGE)
 	if(!can_use(user) || QDELETED(victim) || victim.stat == DEAD)
 		return TRUE
-	for(var/pull_step in 1 to HERETIC_BLOOD_LANCE_PULL)
-		if(victim.anchored || victim.buckled || get_dist(user, victim) <= 1 || !valid_victim(user, victim))
-			break
-		step_towards(victim, user)
-	var/obj/effect/temp_visual/heretic_blood/lance/visual = new(get_turf(victim), src)
-	visual.setDir(get_dir(victim, user))
-	playsound(victim, 'modular_bluemoon/sound/heretic/blood_grasp.ogg', 45, TRUE)
+	new /obj/effect/temp_visual/heretic_blood/lance(get_turf(victim), src)
+	playsound(victim, 'modular_bluemoon/sound/heretic/blood_lance.ogg', HERETIC_BLOOD_LANCE_VOLUME, TRUE)
+	if(reel_holds(user, victim))
+		victim.apply_status_effect(/datum/status_effect/heretic_blood_reel, src)
 	log_combat(user, victim, "натягивает кровную связь с")
 	return TRUE
+
+/// Жила дотягивает цель до соседней клетки, пока та свободна, в прямой линии и без защиты от магии.
+/datum/eldritch_knowledge/base_blood/proc/reel_holds(mob/living/user, mob/living/victim)
+	return can_use(user) && !QDELETED(victim) && victim.stat != DEAD && !victim.anchored && !victim.buckled && get_dist(user, victim) > 1 && valid_victim(user, victim) && heretic_can_affect(user, victim, chargecost = 0)
+
+/// Натянутая жила: цель скользит к еретику по клетке за шаг, жила от неё укорачивается следом.
+/datum/status_effect/heretic_blood_reel
+	id = "heretic_blood_reel"
+	duration = (HERETIC_BLOOD_LANCE_PULL + 2) * HERETIC_BLOOD_REEL_STEP
+	tick_interval = HERETIC_BLOOD_REEL_STEP
+	status_type = STATUS_EFFECT_REPLACE
+	alert_type = null
+	on_remove_on_mob_delete = TRUE
+	var/datum/weakref/blood_ref
+	var/steps_left = HERETIC_BLOOD_LANCE_PULL
+	var/obj/effect/temp_visual/heretic_vfx/thread/vein
+
+/datum/status_effect/heretic_blood_reel/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_blood/blood)
+	blood_ref = WEAKREF(blood)
+	return ..()
+
+/datum/status_effect/heretic_blood_reel/on_apply()
+	. = ..()
+	var/datum/eldritch_knowledge/base_blood/blood = blood_ref?.resolve()
+	if(!. || !blood?.reel_holds(blood.blood_body, owner))
+		return FALSE
+	var/pull_time = steps_left * HERETIC_BLOOD_REEL_STEP
+	vein = heretic_vfx_thread(owner, blood.blood_body, heretic_path_ink(PATH_BLOOD, TRUE), pull_time, HERETIC_BLOOD_REEL_WIDTH)
+	if(vein)
+		vein.finish_in(pull_time)
+		animate(vein, transform = vein.span(1, 1), time = pull_time, flags = ANIMATION_LINEAR_TRANSFORM)
+	return TRUE
+
+/datum/status_effect/heretic_blood_reel/tick()
+	var/datum/eldritch_knowledge/base_blood/blood = blood_ref?.resolve()
+	var/mob/living/puller = blood?.blood_body
+	if(!blood?.reel_holds(puller, owner))
+		qdel(src)
+		return
+	owner.set_glide_size(DELAY_TO_GLIDE_SIZE(tick_interval))
+	var/turf/before = get_turf(owner)
+	step_towards(owner, puller)
+	steps_left--
+	if(get_turf(owner) == before || steps_left <= 0 || get_dist(owner, puller) <= 1)
+		qdel(src)
+
+/datum/status_effect/heretic_blood_reel/on_remove()
+	if(steps_left > 0 && !QDELETED(vein))
+		vein.fizzle(HERETIC_BLOOD_REEL_FIZZLE)
+	vein = null
+	blood_ref = null
+	return ..()
 
 /datum/eldritch_knowledge/base_blood/proc/blood_source(atom/target)
 	if(istype(target, /obj/effect/decal/cleanable/blood))
@@ -564,8 +697,11 @@
 				return FALSE
 			seal.debt = min(HERETIC_BLOOD_TRAP_DEBT, debt_cap)
 		update_debt()
+	new /obj/effect/temp_visual/heretic_blood/snare(get_turf(pool), src)
+	heretic_vfx_flash(pool, heretic_path_ink(PATH_BLOOD, TRUE), HERETIC_BLOOD_SNARE_FLASH_RANGE, HERETIC_BLOOD_SNARE_FLASH_POWER, HERETIC_BLOOD_SNARE_FLASH_TIME)
+	playsound(pool, 'modular_bluemoon/sound/heretic/blood_snare.ogg', HERETIC_BLOOD_SNARE_VOLUME, TRUE)
 	to_chat(blood_body, span_eldritch("[victim] ступает в вашу метку крови ([get_area_name(pool, TRUE)]): [round(seal.debt, 0.1)] долга."))
-	to_chat(victim, span_userdanger("Кровь под ногами липнет к подошвам и тянется нитью к [blood_body]!"))
+	to_chat(victim, span_userdanger("Кровь под ногами вспыхивает, жилы хлещут по щиколоткам и тянутся нитью к [blood_body]!"))
 	log_combat(blood_body, victim, "связывает меткой крови", addition = "метка в [AREACOORD(pool)]")
 	return TRUE
 
@@ -581,10 +717,21 @@
 	src.blood = blood
 	place = pool.loc
 	RegisterSignal(place, COMSIG_ATOM_ENTERED, PROC_REF(on_entered))
+	pulse()
+
+/// Помеченная кровь живая: кромка лужи мерно наливается багровым.
+/datum/heretic_blood_sign/proc/pulse()
+	pool.add_filter(HERETIC_BLOOD_SIGN_FILTER, HERETIC_BLOOD_SIGN_PRIORITY, outline_filter(size = 0, color = HERETIC_BLOOD_SIGN_GLOW_COLOR))
+	var/filter = pool.get_filter(HERETIC_BLOOD_SIGN_FILTER)
+	animate(filter, size = HERETIC_BLOOD_SIGN_GLOW, time = HERETIC_BLOOD_SIGN_RISE, loop = -1, easing = SINE_EASING | EASE_OUT)
+	animate(size = 0, time = HERETIC_BLOOD_SIGN_FALL, easing = SINE_EASING | EASE_IN)
+	animate(time = HERETIC_BLOOD_SIGN_REST)
 
 /datum/heretic_blood_sign/Destroy()
 	if(place)
 		UnregisterSignal(place, COMSIG_ATOM_ENTERED)
+	if(!QDELETED(pool))
+		pool.remove_filter(HERETIC_BLOOD_SIGN_FILTER)
 	pool = null
 	place = null
 	blood = null
@@ -709,7 +856,7 @@
 	status_type = STATUS_EFFECT_UNIQUE
 	on_remove_on_mob_delete = TRUE
 	alert_type = /atom/movable/screen/alert/status_effect/heretic_blood_drain
-	examine_text = span_warning("SUBJECTPRONOUN бледнеет, от кожи к еретику тянется натянутая багровая нить. Уведите за стену, оглушите еретика, коснитесь цели нулевым жезлом, перелейте ей кровь или растолкайте её за 2 секунды.")
+	examine_text = span_warning("SUBJECTPRONOUN бледнеет, по натянутой багровой нити к еретику бегут капли крови, сердце бьётся всё реже. Уведите за стену, оглушите еретика, коснитесь цели нулевым жезлом, перелейте ей кровь или растолкайте её за 2 секунды.")
 	var/datum/weakref/blood_ref
 	var/datum/status_effect/heretic_blood_seal/seal
 	var/mob/living/drainer
@@ -723,6 +870,8 @@
 	var/applied = FALSE
 	var/interrupted = FALSE
 	var/fainted = FALSE
+	var/heartbeats = 0
+	var/heartbeat_timer
 	COOLDOWN_DECLARE(leash_message)
 
 /datum/status_effect/heretic_blood_drain/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_blood/blood, datum/status_effect/heretic_blood_seal/seal)
@@ -787,6 +936,9 @@
 	ADD_TRAIT(owner, TRAIT_MUTE, HERETIC_BLOOD_DRAIN_TRAIT)
 	RegisterSignal(owner, COMSIG_MOVABLE_USING_RADIO, PROC_REF(jam_radio))
 	owner.visible_message(span_danger("Из пор [owner] проступает кровь и тянется по нити к [drainer]!"), span_userdanger("Кровь уходит по нити к [drainer]: горло сжато, ни крикнуть, ни позвать по рации, а дальше трёх клеток от еретика не отойти!"))
+	turn_pale()
+	heartbeat()
+	show_flow()
 	pull_close()
 
 /datum/status_effect/heretic_blood_drain/tick()
@@ -801,7 +953,44 @@
 		return
 	drain_to(drain_goal * min(1, (world.time - channel_starts_at) / HERETIC_BLOOD_DRAIN_DURATION))
 	pull_close()
+	show_flow()
 	last_blood_total = blood_total()
+
+/datum/status_effect/heretic_blood_drain/proc/drain_share()
+	return clamp((world.time - channel_starts_at) / HERETIC_BLOOD_DRAIN_DURATION, 0, 1)
+
+/datum/status_effect/heretic_blood_drain/proc/beat_interval(progress)
+	return LERP(HERETIC_BLOOD_HEARTBEAT_FAST, HERETIC_BLOOD_HEARTBEAT_SLOW, progress)
+
+/// Сердце цели слышно рядом: удары реже и тише, пока кровь уходит.
+/datum/status_effect/heretic_blood_drain/proc/heartbeat()
+	heartbeat_timer = null
+	if(QDELETED(src) || !channel_started)
+		return
+	var/progress = drain_share()
+	playsound(owner, heretic_blood_beat_sound(progress), round(LERP(HERETIC_BLOOD_HEARTBEAT_LOUD, HERETIC_BLOOD_HEARTBEAT_QUIET, progress)), FALSE, SHORT_RANGE_SOUND_EXTRARANGE)
+	heartbeats++
+	heartbeat_timer = addtimer(CALLBACK(src, PROC_REF(heartbeat)), beat_interval(progress), TIMER_STOPPABLE)
+
+/// Капли по нити от цели к еретику; без зрителей рядом не рисуются.
+/datum/status_effect/heretic_blood_drain/proc/show_flow(watched)
+	if(isnull(watched))
+		watched = heretic_vfx_watched(owner)
+	if(!watched || !channel_started || QDELETED(drainer))
+		return null
+	return heretic_vfx_stream(owner, drainer, /particles/heretic_ascension/blood/drain_flow, HERETIC_BLOOD_CHECK_INTERVAL)
+
+/// Цель бледнеет вместе с уходящей кровью, к обмороку - почти до серого.
+/datum/status_effect/heretic_blood_drain/proc/turn_pale()
+	var/list/pale = color_matrix_multiply(color_matrix_saturation(HERETIC_BLOOD_PALE_SATURATION), list(HERETIC_BLOOD_PALE_DIM, 0, 0, 0, 0, HERETIC_BLOOD_PALE_DIM, 0, 0, 0, 0, HERETIC_BLOOD_PALE_DIM, 0, 0, 0, 0, 1, HERETIC_BLOOD_PALE_LIFT_RED, HERETIC_BLOOD_PALE_LIFT_GREEN, HERETIC_BLOOD_PALE_LIFT_BLUE, 0))
+	owner.add_filter(HERETIC_BLOOD_PALE_FILTER, HERETIC_BLOOD_PALE_PRIORITY, color_matrix_filter(color_matrix_identity()))
+	owner.transition_filter(HERETIC_BLOOD_PALE_FILTER, HERETIC_BLOOD_DRAIN_DURATION, list("color" = pale), SINE_EASING | EASE_IN)
+
+/datum/status_effect/heretic_blood_drain/proc/restore_colour(time)
+	if(QDELETED(owner) || !owner.get_filter(HERETIC_BLOOD_PALE_FILTER))
+		return
+	owner.transition_filter(HERETIC_BLOOD_PALE_FILTER, time, list("color" = color_matrix_identity()), SINE_EASING | EASE_OUT)
+	addtimer(CALLBACK(owner, TYPE_PROC_REF(/atom, remove_filter), HERETIC_BLOOD_PALE_FILTER), time, TIMER_UNIQUE | TIMER_OVERRIDE)
 
 /// Кровь не опускается ниже BLOOD_VOLUME_SAFE: ниже начинается удушье от кровопотери.
 /datum/status_effect/heretic_blood_drain/proc/drain_to(amount)
@@ -881,6 +1070,8 @@
 	if(applied)
 		deltimer(channel_timer)
 		channel_timer = null
+		deltimer(heartbeat_timer)
+		heartbeat_timer = null
 		UnregisterSignal(owner, list(COMSIG_PARENT_ATTACKBY, COMSIG_LIVING_HERETIC_SACRIFICE_STARTING, COMSIG_MOVABLE_PRE_MOVE, COMSIG_LIVING_HERETIC_CAPTURE_SHAKEN, COMSIG_MOVABLE_USING_RADIO))
 		REMOVE_TRAIT(owner, TRAIT_MUTE, HERETIC_BLOOD_DRAIN_TRAIT)
 		heretic_capture_unhold(owner, HERETIC_BLOOD_CAPTURE)
@@ -896,8 +1087,9 @@
 			heretic_capture_knock_out(owner, blood_ref?.resolve(), HERETIC_BLOOD_CAPTURE, HERETIC_BLOOD_DRAIN_FAINT)
 			owner.visible_message(span_danger("[owner] бледнеет и оседает без сознания."), span_userdanger("Кровь уходит последней каплей, и всё темнеет."))
 			log_combat(drainer, owner, "обескровливает до обморока", addition = "потеряно до [round(drained, 0.1)] крови")
+		restore_colour(fainted ? HERETIC_BLOOD_DRAIN_FAINT : HERETIC_BLOOD_PALE_RECOVER)
 		if(!QDELETED(seal) && !seal.collecting)
-			seal.seal_overlay.icon_state = "blood_mark"
+			seal.seal_overlay.icon_state = "blood_seal"
 			owner.update_icon()
 		heretic_capture_release(owner, HERETIC_BLOOD_CAPTURE, fainted ? HERETIC_BLOOD_DRAIN_FAINT : 0, fainted ? INFINITY : heretic_capture_held_for(held_since))
 	seal = null
@@ -907,9 +1099,79 @@
 
 /atom/movable/screen/alert/status_effect/heretic_blood_drain
 	name = "Кровопускание"
-	desc = "Кровяная нить тянет из вас кровь. После секунды предупреждения 6 секунд вы не сможете отойти от еретика дальше трёх клеток и говорить ни вслух, ни по рации, а из вас уйдёт до 15% крови, но не ниже безопасного уровня. Если нить выдержит - обморок на 10 секунд. Уйдите за стену, пусть еретика оглушат, коснутся вас нулевым жезлом, перельют вам кровь или растолкают вас за 2 секунды."
+	desc = "Кровяная нить тянет из вас кровь, сердце бьётся всё реже. После секунды предупреждения 6 секунд вы не сможете отойти от еретика дальше трёх клеток и говорить ни вслух, ни по рации, а из вас уйдёт до 15% крови, но не ниже безопасного уровня. Если нить выдержит - обморок на 10 секунд. Уйдите за стену, пусть еретика оглушат, коснутся вас нулевым жезлом, перельют вам кровь или растолкают вас за 2 секунды."
 	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
 	icon_state = "blood_letting"
+
+/// Путы: жилы из пола держат ноги должника, и от еретика он не отходит ни на шаг.
+/datum/status_effect/heretic_blood_tether
+	id = "heretic_blood_tether"
+	duration = HERETIC_BLOOD_TETHER_DURATION
+	tick_interval = HERETIC_BLOOD_TETHER_CHECK
+	status_type = STATUS_EFFECT_UNIQUE
+	alert_type = /atom/movable/screen/alert/status_effect/heretic_blood_tether
+	on_remove_on_mob_delete = TRUE
+	examine_text = span_warning("Ноги SUBJECTPRONOUN оплетены кровяными жилами: от еретика не отойти, пока жилы держат.")
+	var/datum/weakref/blood_ref
+	var/datum/status_effect/heretic_blood_seal/seal
+	var/obj/effect/abstract/heretic_vfx_attached/snare
+	var/applied = FALSE
+	COOLDOWN_DECLARE(leash_message)
+
+/datum/status_effect/heretic_blood_tether/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_blood/blood, datum/status_effect/heretic_blood_seal/seal)
+	blood_ref = WEAKREF(blood)
+	src.seal = seal
+	return ..()
+
+/datum/status_effect/heretic_blood_tether/on_apply()
+	. = ..()
+	var/datum/eldritch_knowledge/base_blood/blood = blood_ref?.resolve()
+	if(!. || QDELETED(blood?.blood_body) || QDELETED(seal) || seal.spent || seal.owner != owner)
+		return FALSE
+	applied = TRUE
+	RegisterSignal(owner, COMSIG_MOVABLE_PRE_MOVE, PROC_REF(on_pre_move))
+	RegisterSignal(seal, COMSIG_PARENT_QDELETING, PROC_REF(on_seal_lost))
+	snare = heretic_vfx_attach(owner, 'modular_bluemoon/icons/obj/heretic_blood_effects.dmi', "blood_snare", glow = FALSE)
+	owner.visible_message(span_danger("Из-под ног [owner] выстреливают кровяные жилы и оплетают щиколотки!"), span_userdanger("Кровяные жилы оплели ваши ноги: [DisplayTimeText(HERETIC_BLOOD_TETHER_DURATION)] от [blood.blood_body] не отойти ни на шаг!"))
+	return TRUE
+
+/datum/status_effect/heretic_blood_tether/tick()
+	if(QDELETED(seal) || seal.spent)
+		qdel(src)
+
+/datum/status_effect/heretic_blood_tether/proc/on_pre_move(atom/movable/source, atom/newloc)
+	SIGNAL_HANDLER
+	var/datum/eldritch_knowledge/base_blood/blood = blood_ref?.resolve()
+	var/turf/anchor = get_turf(blood?.blood_body)
+	var/turf/destination = get_turf(newloc)
+	var/turf/here = get_turf(owner)
+	if(!anchor || !destination || !here || destination.z != anchor.z || get_dist(destination, anchor) <= get_dist(here, anchor))
+		return NONE
+	if(COOLDOWN_FINISHED(src, leash_message))
+		COOLDOWN_START(src, leash_message, HERETIC_BLOOD_LEASH_MESSAGE_COOLDOWN)
+		to_chat(owner, span_warning("Жилы держат ноги: от еретика не отойти."))
+	return COMPONENT_MOVABLE_BLOCK_PRE_MOVE
+
+/datum/status_effect/heretic_blood_tether/proc/on_seal_lost(datum/source)
+	SIGNAL_HANDLER
+	qdel(src)
+
+/datum/status_effect/heretic_blood_tether/on_remove()
+	if(applied)
+		UnregisterSignal(owner, COMSIG_MOVABLE_PRE_MOVE)
+		if(seal)
+			UnregisterSignal(seal, COMSIG_PARENT_QDELETING)
+	snare?.fade_out()
+	snare = null
+	seal = null
+	blood_ref = null
+	return ..()
+
+/atom/movable/screen/alert/status_effect/heretic_blood_tether
+	name = "Путы крови"
+	desc = "Кровяные жилы держат ваши ноги 3 секунды: от еретика не отойти, подойти можно. Путы спадают, если кровная связь порвётся: уйдите за преграду или пусть еретика оглушат."
+	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
+	icon_state = "blood_tether"
 
 /datum/eldritch_knowledge/base_blood/proc/slip_failure(mob/living/user)
 	var/containment = heretic_containment_reason(user)
@@ -935,6 +1197,7 @@
 		effect = user.apply_status_effect(/datum/status_effect/heretic_blood_slip, src)
 	blood_slip = (effect && !QDELETED(effect)) ? effect : null
 	new /obj/effect/temp_visual/heretic_blood/pact(get_turf(user), src)
+	playsound(user, 'modular_bluemoon/sound/heretic/blood_slip.ogg', HERETIC_BLOOD_SLIP_VOLUME, TRUE)
 	user.visible_message(span_danger("[user] проводит пальцами по свежей ране, и кровь делает кожу скользкой!"), span_notice("Кровь делает вас скользким: [DisplayTimeText(HERETIC_BLOOD_SLIP_DURATION)] никто вас не удержит."))
 	log_game("[key_name(user)] применяет Скользкую кровь в [AREACOORD(user)].")
 	return TRUE
@@ -1025,10 +1288,8 @@
 /obj/effect/heretic_blood_slick
 	name = "slick blood"
 	desc = "Размазанная кровь блестит, будто не высыхает. На ней поскальзываются, как на мокром полу; шагом пройти можно. Скоро она впитается."
-	icon = 'icons/effects/blood.dmi'
-	icon_state = "tracks"
-	color = BLOOD_COLOR_HUMAN
-	blend_mode = BLEND_MULTIPLY
+	icon = 'modular_bluemoon/icons/obj/heretic_blood_effects.dmi'
+	icon_state = "blood_slick"
 	anchored = TRUE
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	layer = ABOVE_NORMAL_TURF_LAYER
@@ -1089,6 +1350,8 @@
 			started = TRUE
 	if(started)
 		playsound(user, 'modular_bluemoon/sound/heretic/blood_reckoning.ogg', 70, TRUE)
+		new /obj/effect/temp_visual/heretic_blood/reckoning(get_turf(user), src)
+		heretic_vfx_pulse(user, heretic_path_ink(PATH_BLOOD, TRUE), 2, HERETIC_BLOOD_RECKONING_PULSE)
 	else
 		ability_failure = already_collecting ? "С доступных должников уже взыскивается долг. Дождитесь удара." : "Нет доступных должников: восстановите открытую линию до своей цели в пределах пяти клеток или создайте новую связь."
 	return started
@@ -1139,6 +1402,40 @@
 	heretic_vfx_burst(victim, /particles/heretic_ascension/blood)
 	heretic_vfx_flash(victim, ink, HERETIC_BLOOD_VERDICT_FLASH_RANGE, HERETIC_BLOOD_VERDICT_FLASH_POWER, HERETIC_BLOOD_VERDICT_FLASH_TIME)
 	heretic_vfx_quake(victim, HERETIC_BLOOD_VERDICT_QUAKE_RADIUS, HERETIC_BLOOD_VERDICT_QUAKE, HERETIC_BLOOD_VERDICT_QUAKE_TIME)
+
+/datum/eldritch_knowledge/base_blood/proc/collect_sound(verdict = FALSE)
+	return verdict ? GLOB.heretic_blood_cue_sounds["verdict"] : pick(GLOB.heretic_blood_collect_sounds)
+
+/// Свежая кровь под должником: лужа, кроме засохшей и следов, или след Скользкой крови.
+/datum/eldritch_knowledge/base_blood/proc/pool_under(mob/living/victim)
+	var/static/list/spike_pools = typecacheof(/obj/effect/decal/cleanable/blood) - typecacheof(list(
+		/obj/effect/decal/cleanable/blood/footprints,
+		/obj/effect/decal/cleanable/blood/hitsplatter,
+		/obj/effect/decal/cleanable/blood/xtracks,
+	))
+	var/turf/place = get_turf(victim)
+	if(!place)
+		return null
+	var/obj/effect/heretic_blood_slick/slick = locate() in place
+	if(slick)
+		return slick
+	for(var/obj/effect/decal/cleanable/blood/stain in place)
+		if(!stain.dried && is_type_in_typecache(stain, spike_pools))
+			return stain
+	return null
+
+/// Взыскание с должника на крови бьёт шипом из лужи: лужа уходит в шип, кроме помеченной, должник на миг прибит.
+/datum/eldritch_knowledge/base_blood/proc/spike_from_pool(mob/living/victim)
+	var/atom/movable/pool = pool_under(victim)
+	if(!pool)
+		return FALSE
+	new /obj/effect/temp_visual/heretic_blood/lance(get_turf(victim), src)
+	if(victim.stat != DEAD)
+		victim.Immobilize(HERETIC_BLOOD_SPIKE_PIN)
+		to_chat(victim, span_userdanger("Из крови под ногами бьёт шип и прибивает вас к месту!"))
+	if(!(pool in signs))
+		qdel(pool)
+	return TRUE
 
 /datum/eldritch_knowledge/base_blood/proc/mend_wounds(mob/living/user, amount)
 	if(!can_use(user) || amount <= 0)
@@ -1305,7 +1602,7 @@
 	blood_ref = WEAKREF(blood)
 	expected_generation = blood.blood_generation
 	expires_at = world.time + HERETIC_BLOOD_LINK_LIFETIME
-	seal_overlay = mutable_appearance('modular_bluemoon/icons/obj/heretic_blood_effects.dmi', "blood_mark", ABOVE_MOB_LAYER)
+	seal_overlay = mutable_appearance('modular_bluemoon/icons/obj/heretic_blood_effects.dmi', "blood_seal", ABOVE_MOB_LAYER)
 	return ..()
 
 /datum/status_effect/heretic_blood_seal/on_apply()
@@ -1450,6 +1747,8 @@
 /// Связь, с которой уже лечились, остаётся пустой печатью: пределы лечения с цели не обнуляются.
 /datum/status_effect/heretic_blood_seal/proc/break_link(reason)
 	link_end_reason = reason
+	if(!QDELETED(owner))
+		playsound(owner, GLOB.heretic_blood_cue_sounds["sever"], HERETIC_BLOOD_SEVER_VOLUME, TRUE)
 	var/datum/eldritch_knowledge/base_blood/blood = blood_ref?.resolve()
 	if(blood && blood.blood_generation == expected_generation && !QDELETED(owner) && (siphoned > 0 || blood_recovered > 0))
 		announce_loss(blood)
@@ -1476,7 +1775,7 @@
 	if(required)
 		UnregisterSignal(required, COMSIG_PARENT_QDELETING)
 	collection_knowledge_ref = null
-	seal_overlay.icon_state = "blood_mark"
+	seal_overlay.icon_state = "blood_seal"
 	owner.update_icon()
 
 /datum/status_effect/heretic_blood_seal/proc/begin_collection(datum/eldritch_knowledge/required, amount)
@@ -1499,6 +1798,7 @@
 		expires_at = max(expires_at, collection_ready_at + 0.1 SECONDS)
 	seal_overlay.icon_state = "blood_warning"
 	owner.update_icon()
+	playsound(owner, GLOB.heretic_blood_cue_sounds["warning"], HERETIC_BLOOD_WARNING_VOLUME, FALSE)
 	collection_timer = addtimer(CALLBACK(src, PROC_REF(detonate)), HERETIC_BLOOD_COLLECTION_DELAY, TIMER_STOPPABLE)
 	blood.notify_resource_changed()
 	to_chat(blood.blood_body, span_notice("Взыскание [round(collection_amount, 0.1)] долга с [owner] началось: держите цель в пяти клетках без преград ещё секунду.[collection_amount < debt ? " Остаток останется в связи." : ""]"))
@@ -1540,12 +1840,14 @@
 		if(healed > 0)
 			to_chat(user, span_notice("Взысканная кровь залечивает [round(healed, 0.1)] ушибов и ожогов."))
 	if(!QDELETED(victim))
-		new /obj/effect/temp_visual/heretic_blood/burst(get_turf(victim), blood)
+		if(!blood.spike_from_pool(victim))
+			new /obj/effect/temp_visual/heretic_blood/burst(get_turf(victim), blood)
 		if(istype(required, /datum/eldritch_knowledge/final_eldritch/blood_final) && !QDELETED(blood))
 			blood.verdict_strike_fx(victim)
 		if(istype(required, /datum/eldritch_knowledge/spell/blood_reckoning) && victim.stat != DEAD)
 			victim.apply_status_effect(/datum/status_effect/heretic_blood_exsanguinated)
-		playsound(victim, 'modular_bluemoon/sound/heretic/blood_release.ogg', 65, TRUE)
+		var/verdict = istype(required, /datum/eldritch_knowledge/final_eldritch/blood_final)
+		playsound(victim, blood.collect_sound(verdict), verdict ? HERETIC_BLOOD_VERDICT_VOLUME : HERETIC_BLOOD_COLLECT_VOLUME, TRUE)
 		if(!QDELETED(user))
 			log_combat(user, victim, "взыскивает кровный долг с", addition = "заданный урон: [damage]; полученные ушибы: [round(victim.getBruteLoss() - damage_before, 0.1)]")
 	if(QDELETED(src))
@@ -1591,8 +1893,8 @@
 /atom/movable/screen/alert/status_effect/heretic_blood_seal
 	name = "Кровная связь"
 	desc = "Попадания еретика накапливают долг и обновляют срок связи. Скройтесь за преградой, отойдите дальше пяти клеток или выведите еретика из строя на две секунды. Во время предупреждения взыскания отход или укрытие сразу рвут связь. Краткий контроль срывает взыскание, но даёт еретику две секунды на восстановление связи с прежним долгом. Антимагия и потеря сознания еретиком рвут её немедленно. Без новых попаданий связь живёт 15 секунд."
-	icon = 'modular_bluemoon/icons/obj/heretic_blood_effects.dmi'
-	icon_state = "blood_mark"
+	icon = 'modular_bluemoon/icons/obj/heretic_alerts.dmi'
+	icon_state = "blood_bond"
 
 /datum/status_effect/eldritch/blood
 	id = "blood_mark"
@@ -1600,7 +1902,9 @@
 	mark_alert_state = "sigil_blood"
 	effect_sprite_icon = 'modular_bluemoon/icons/obj/heretic_blood_effects.dmi'
 	effect_sprite = "blood_mark"
+	effect_sprite_layer = ABOVE_MOB_LAYER
 	detonation_sound = 'modular_bluemoon/sound/heretic/blood_release.ogg'
+	detonation_visual = /obj/effect/temp_visual/heretic_blood/reckoning
 	var/datum/weakref/blood_ref
 
 /datum/status_effect/eldritch/blood/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_blood/blood)
@@ -1681,7 +1985,7 @@
 	if(!blood.refund(user, victim))
 		return FALSE
 	COOLDOWN_START(src, relic_cooldown, HERETIC_BLOOD_REFUND_COOLDOWN)
-	playsound(user, 'modular_bluemoon/sound/heretic/blood_grasp.ogg', 35, TRUE)
+	playsound(user, 'modular_bluemoon/sound/heretic/blood_drink.ogg', HERETIC_BLOOD_DRINK_VOLUME, TRUE)
 	return TRUE
 
 /obj/effect/temp_visual/heretic_blood
@@ -1710,18 +2014,21 @@
 
 /obj/effect/temp_visual/heretic_blood/lance
 	icon_state = "blood_lance"
+	duration = 0.9 SECONDS
 
 /obj/effect/temp_visual/heretic_blood/pact
 	icon_state = "blood_pact"
+	duration = 0.7 SECONDS
 
 /obj/effect/temp_visual/heretic_blood/burst
 
-/obj/effect/temp_visual/heretic_blood/warning
-	icon_state = "blood_warning"
-	duration = 1 SECONDS
-
 /obj/effect/temp_visual/heretic_blood/reckoning
 	icon_state = "blood_reckoning"
+	duration = 0.7 SECONDS
+
+/obj/effect/temp_visual/heretic_blood/snare
+	icon_state = "blood_snare"
+	duration = 1 SECONDS
 
 /obj/effect/proc_holder/spell/pointed/heretic_blood
 	clothes_req = FALSE
@@ -1749,9 +2056,9 @@
 
 /obj/effect/proc_holder/spell/pointed/heretic_blood/release
 	name = "Связать / взыскать"
-	desc = "Первый выбор врага - бесплатная связь и 10 долга, повторный - через секунду 2 ушиба за долг, в «Разоружении» до 10 долга. Четверть урона лечит вас, до 10 с одной цели; цель без разума не лечит."
+	desc = "Первый выбор врага - бесплатная связь и 10 долга, повторный - через секунду 2 ушиба за долг, в «Разоружении» до 10 долга, в «Захвате» - путы за 8 долга: 3 секунды должник не отходит от вас. Четверть урона лечит вас, до 10 с одной цели; цель без разума не лечит."
 	summary = "Нового врага связывает и даёт ему 10 долга; со своего должника через секунду взыскивает по 2 ушиба за долг."
-	active_msg = "Новый враг — связать бесплатно. Свой должник — взыскать весь долг; в намерении «Разоружить» — до 10, сохранив остаток."
+	active_msg = "Новый враг — связать бесплатно. Свой должник — взыскать весь долг; в намерении «Разоружить» — до 10, сохранив остаток; в «Захвате» — путы за 8 долга."
 
 /obj/effect/proc_holder/spell/pointed/heretic_blood/release/can_target(atom/target, mob/user, silent)
 	if(!..())
@@ -1769,13 +2076,13 @@
 /obj/effect/proc_holder/spell/pointed/heretic_blood/release/cast(list/targets, mob/living/user)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	var/datum/eldritch_knowledge/base_blood/blood = heretic?.get_knowledge(/datum/eldritch_knowledge/base_blood)
-	if(!length(targets) || !blood?.release(user, targets[1], partial = user.a_intent == INTENT_DISARM))
+	if(!length(targets) || !blood?.release(user, targets[1], partial = user.a_intent == INTENT_DISARM, tether = user.a_intent == INTENT_GRAB))
 		heretic_revert_cast(user, blood?.ability_failure)
 
 /obj/effect/proc_holder/spell/pointed/heretic_blood/lance
 	name = "Натянуть жилу"
-	desc = "Враг в пяти клетках получает 18 ушибов, связь и 6 долга и притягивается на три клетки. Преграды, антимагия, закрепление и пристёгивание защищают от притяжения; перезарядка 12 секунд."
-	summary = "18 ушибов, притяжение на 3 клетки, связь и 6 долга."
+	desc = "Шип бьёт из-под врага в пяти клетках: 18 ушибов, связь и 6 долга, затем жила за полсекунды подтягивает его на три клетки. Преграды, антимагия, закрепление и пристёгивание защищают от притяжения; перезарядка 12 секунд."
+	summary = "Шип из-под врага: 18 ушибов, связь и 6 долга, жила подтягивает его на 3 клетки."
 	action_icon_state = "blood_lance"
 	charge_max = 12 SECONDS
 	active_msg = "Выберите врага: ударить и притянуть к клинку. Предварительная связь не нужна."
@@ -1850,7 +2157,7 @@
 	clothes_req = FALSE
 	invocation_type = "none"
 	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
-	action_icon_state = "blood_pact"
+	action_icon_state = "blood_slip"
 	action_background_icon_state = "bg_ecult"
 	charge_max = 20 SECONDS
 
@@ -1918,7 +2225,7 @@
 	details = list(
 		"Нужен должник с долгом от 16 в 5 клетках без преград; секунду нить краснеет, и цель может уйти за стену.",
 		"6 секунд: до 15% крови, не ниже безопасного уровня; цель немая, без рации, дальше 3 клеток не уйдёт.",
-		"Нить не тянет в космос, пропасть или лаву, а само Кровопускание никого не убивает.",
+		"Капли бегут по нити, цель бледнеет, её сердце слышно; в космос и лаву нить не тянет, сама не убивает.",
 		"Если связь выдержала - обморок на 10 секунд, цель готова к обряду; долг списывается целиком.",
 		"Со 2-й секунды сердце уводит цель в изнанку, если вы в 3 клетках; там нить не рвётся и Кровопускание идёт до конца.",
 		"Нить рвётся за стеной и вдали, от антимагии, жезла, переливания и вашего оглушения; цель можно растолкать за 2 секунды.",
@@ -1934,8 +2241,9 @@
 	name = "Натянуть жилу"
 	summary = "Врагу в 5 клетках 18 ушибов, притяжение на 3 клетки, связь и 6 долга."
 	details = list(
+		"Шип бьёт из-под врага, затем жила за полсекунды подтягивает его к вам шаг за шагом.",
 		"Работает без подготовки и саморанения.",
-		"Стены и антимагия защищают; закрепление и пристёгивание не дают притянуть.",
+		"Стены и антимагия защищают; закрепление, пристёгивание и преграда на пути обрывают жилу.",
 		"Перезарядка 12 секунд.",
 	)
 	role = HERETIC_ROLE_ATTACK
@@ -2003,7 +2311,7 @@
 	details = list(
 		"Работает в агрессивном грабе, на чужих руках и при таскании; схватить вас заново нельзя.",
 		"Вы бегаете быстрее; враги на следу поскальзываются, как на мокром полу, шагом его можно пройти.",
-		"След впитывается через 10 секунд, вы сами и защищённые от магии на нём не скользят.",
+		"След впитывается через 10 секунд; вы и защищённые от магии на нём не скользят, должника на нём бьёт шип.",
 		"Наручники, смирительная рубашка и щит разума закрывают способность; если плата опасна для жизни, она не сработает.",
 		"Перезарядка 30 секунд.",
 	)
@@ -2213,6 +2521,7 @@
 		animate(swirl, transform = sucked, alpha = 0, time = HERETIC_BLOOD_DRINK_TIME, easing = QUAD_EASING | EASE_IN)
 	heretic_vfx_converge(drinker, /particles/heretic_ascension/blood/drink, HERETIC_BLOOD_DRINK_RADIUS, HERETIC_BLOOD_DRINK_TIME, HERETIC_BLOOD_DRINK_EMIT, HERETIC_BLOOD_DRINK_ARMS, HERETIC_BLOOD_DRINK_SWIRL)
 	heretic_vfx_pulse(drinker, heretic_path_ink(PATH_BLOOD, TRUE), 1, HERETIC_BLOOD_DRINK_TIME)
+	playsound(drinker, GLOB.heretic_blood_cue_sounds["absorb"], HERETIC_BLOOD_ABSORB_VOLUME, TRUE)
 
 /datum/component/heretic_blood_tide/proc/drinkable(obj/effect/decal/cleanable/blood/stain, mob/living/drinker)
 	if(QDELETED(stain) || stain.dried || !is_type_in_typecache(stain, drinkable_blood))
@@ -2241,6 +2550,16 @@
 	icon_state = list("blood_wisp_1" = 2, "blood_drop_2" = 1)
 	count = 8
 	spawning = 4
+
+/// Кровь: капли Кровопускания бегут по нити от должника к еретику.
+/particles/heretic_ascension/blood/drain_flow
+	icon_state = list("blood_drop_1" = 3, "blood_drop_2" = 2, "blood_wisp_1" = 1)
+	count = 16
+	spawning = 1.2
+	position = generator("circle", 0, 2)
+	lifespan = 0.6 SECONDS
+	fade = 0.15 SECONDS
+	fadein = 0.1 SECONDS
 
 /// Кровь: поток долга по нити в выбранного должника.
 /particles/heretic_ascension/blood/verdict
@@ -2307,3 +2626,39 @@
 #undef HERETIC_BLOOD_VERDICT_QUAKE
 #undef HERETIC_BLOOD_VERDICT_QUAKE_RADIUS
 #undef HERETIC_BLOOD_VERDICT_QUAKE_TIME
+#undef HERETIC_BLOOD_BIND_VOLUME
+#undef HERETIC_BLOOD_COLLECT_VOLUME
+#undef HERETIC_BLOOD_LANCE_VOLUME
+#undef HERETIC_BLOOD_SNARE_VOLUME
+#undef HERETIC_BLOOD_SLIP_VOLUME
+#undef HERETIC_BLOOD_DRINK_VOLUME
+#undef HERETIC_BLOOD_WARNING_VOLUME
+#undef HERETIC_BLOOD_VERDICT_VOLUME
+#undef HERETIC_BLOOD_SEVER_VOLUME
+#undef HERETIC_BLOOD_ABSORB_VOLUME
+#undef HERETIC_BLOOD_HEARTBEAT_FAST
+#undef HERETIC_BLOOD_HEARTBEAT_SLOW
+#undef HERETIC_BLOOD_HEARTBEAT_LOUD
+#undef HERETIC_BLOOD_HEARTBEAT_QUIET
+#undef HERETIC_BLOOD_HEARTBEAT_HEAVY
+#undef HERETIC_BLOOD_REEL_STEP
+#undef HERETIC_BLOOD_REEL_WIDTH
+#undef HERETIC_BLOOD_REEL_FIZZLE
+#undef HERETIC_BLOOD_PALE_PRIORITY
+#undef HERETIC_BLOOD_PALE_SATURATION
+#undef HERETIC_BLOOD_PALE_DIM
+#undef HERETIC_BLOOD_PALE_LIFT_RED
+#undef HERETIC_BLOOD_PALE_LIFT_GREEN
+#undef HERETIC_BLOOD_PALE_LIFT_BLUE
+#undef HERETIC_BLOOD_PALE_RECOVER
+#undef HERETIC_BLOOD_SIGN_PRIORITY
+#undef HERETIC_BLOOD_SIGN_GLOW
+#undef HERETIC_BLOOD_SIGN_GLOW_COLOR
+#undef HERETIC_BLOOD_SIGN_RISE
+#undef HERETIC_BLOOD_SIGN_FALL
+#undef HERETIC_BLOOD_SIGN_REST
+#undef HERETIC_BLOOD_SNARE_FLASH_RANGE
+#undef HERETIC_BLOOD_SNARE_FLASH_POWER
+#undef HERETIC_BLOOD_SNARE_FLASH_TIME
+#undef HERETIC_BLOOD_TETHER_CHECK
+#undef HERETIC_BLOOD_RECKONING_PULSE

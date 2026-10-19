@@ -11,12 +11,12 @@
 	feature_spawn_list = list(/obj/structure/geyser/random = 1)
 
 /datum/map_generator/cave_generator/icemoon/surface
-	flora_spawn_chance = 4
+	open_turf_types = list(/turf/open/floor/plating/asteroid/snow/icemoon = 1)
+	flora_spawn_list = list(/obj/structure/flora/grass/both = 20, /obj/structure/flora/tree/pine = 2)
+	flora_spawn_chance = 60
+	feature_spawn_chance = 0.15
 	mob_spawn_list = null
-	initial_closed_chance = 53
-	birth_limit = 5
-	death_limit = 4
-	smoothing_iterations = 10
+	initial_closed_chance = 0
 
 /datum/map_generator/cave_generator/icemoon/deep
 	closed_turf_types = list(/turf/closed/mineral/random/snow/underground = 1)

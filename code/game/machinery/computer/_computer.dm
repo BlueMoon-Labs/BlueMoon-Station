@@ -9,7 +9,7 @@
 	active_power_usage = 300
 	max_integrity = 200
 	integrity_failure = 0.5
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 40, ACID = 20)
+	armor_type = /datum/armor/computer
 	var/brightness_on = 1
 	var/icon_keyboard = "generic_key"
 	var/icon_screen = "generic"
@@ -146,7 +146,7 @@
 
 	if(icon_screen)
 		. += mutable_appearance(icon, icon_screen)
-		. += emissive_appearance(icon, icon_screen)
+		. += emissive_appearance(icon, icon_screen, offset_spokesman = src)
 
 /obj/machinery/computer/power_change()
 	..()

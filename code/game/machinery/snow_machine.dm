@@ -201,12 +201,13 @@
 /obj/effect/snowcloud/proc/try_to_spread_cloud()
 	if(prob(95 - parent_machine.cooling_speed * 5)) //10 / 15 / 20 / 25% chance to spawn a new cloud
 		return
+	var/turf/our_turf = get_turf(src)
 	var/list/random_dirs = shuffle(GLOB.cardinals)
 	for(var/potential in random_dirs)
-		var/turf/T = get_turf(get_step(src, potential))
-		if(isspaceturf(T) || T.density)
+		var/turf/T = get_step(our_turf, potential)
+		if(!T || isspaceturf(T) || T.density)
 			continue
-		if(!CanAtmosPass(potential) || !T.CanAtmosPass(turn(potential, 180)))
+		if(!our_turf.CanAtmosPass(T))
 			continue
 		if(parent_machine.make_snowcloud(T))
 			return

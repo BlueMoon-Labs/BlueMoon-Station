@@ -613,7 +613,7 @@
 "cf" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/structure/table,
-/obj/item/storage/backpack/duffelbag/med/surgery,
+/obj/item/storage/backpack/duffelbag/med/surgery/upgraded,
 /turf/open/floor/plasteel,
 /area/shuttle/escape)
 "cg" = (

@@ -105,7 +105,7 @@ SUBSYSTEM_DEF(jukeboxes)
 	// SEND_SOUND тянет клиенту весь файл трека: стартовая рассылка только тем, кому он слышен,
 	// остальным fire() дошлёт по факту входа в радиус.
 	var/turf/juke_turf = get_turf(jukebox)
-	var/list/audible_zlevels = juke_turf ? get_multiz_accessible_levels(juke_turf.z) : list()
+	var/list/audible_zlevels = juke_turf ? SSmapping.get_connected_levels(juke_turf.z) : list()
 	var/list/hearerscache = jukebox_hearers(jukebox)
 	for(var/mob/M in GLOB.player_list)
 		if(!M.client)
@@ -328,11 +328,7 @@ SUBSYSTEM_DEF(jukeboxes)
 		stack_trace("Track [track]'s beat value is not a number")
 		return FALSE
 	track_datum.song_beat = track_beat
-	var/track_id = LAZYACCESS(track_data, TRACK_ID)
-	if(!track_id)
-		stack_trace("Track [track] lacks an unique identifier.")
-		return FALSE
-	track_datum.song_associated_id = track_id
+	track_datum.song_associated_id = LAZYACCESS(track_data, TRACK_ID) || track_name
 	return track_datum
 
 
@@ -355,7 +351,8 @@ SUBSYSTEM_DEF(jukeboxes)
 		if(!currentturf)
 			continue
 
-		var/list/audible_zlevels = get_multiz_accessible_levels(currentturf.z) //TODO - for multiz refresh, this should use the cached zlevel connections var in SSMapping. For now this is fine!
+		var/list/audible_zlevels = SSmapping.get_connected_levels(currentturf.z) //кэш связки, только на чтение
+
 
 		var/personal = jukeinfo[JUKE_PERSONAL]
 		var/sound/song_played = jukeinfo[JUKE_SOUND]

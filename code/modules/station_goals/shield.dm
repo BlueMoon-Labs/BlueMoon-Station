@@ -64,7 +64,7 @@ GLOBAL_VAR_INIT(shield_coverage_cache_expiry, 0)
 			if(counted[covered])
 				continue
 			counted[covered] = TRUE
-			if(isspaceturf(covered) || istransparentturf(covered)) // openspace - for multi-z stations
+			if(isspaceturf(covered) || isopenspaceturf(covered))
 				counter++
 
 	GLOB.shield_coverage_cache = counter
@@ -129,7 +129,7 @@ GLOBAL_VAR_INIT(shield_coverage_cache_expiry, 0)
 	anchored = FALSE
 	density = TRUE
 	use_power = FALSE
-	armor = list(MELEE = 25, BULLET = 10, LASER = 10, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 50, ACID = 70)
+	armor_type = /datum/armor/machinery_standard
 	var/mode = "NTPROBEV0.8"
 	var/active = FALSE
 	var/static/gid = 1
@@ -142,7 +142,7 @@ GLOBAL_VAR_INIT(shield_coverage_cache_expiry, 0)
 
 	var/obj/item/radio/radio // рация и всё с ней связанное
 	var/radio_key = /obj/item/encryptionkey/headset_eng
-	var/engineering_channel = "Engineering"
+	var/engineering_channel = RADIO_CHANNEL_ENGINEERING
 
 	var/roundstart = FALSE // если спутник с начала раунда, то он сразу же активируется и его камера включается. Важно разместить спутник в космосе при этом
 

@@ -53,15 +53,15 @@
 		removeTarget(user)
 
 /obj/structure/target_stake/proc/removeTarget(mob/user)
-	pinned_target.layer = OBJ_LAYER
-	pinned_target.forceMove(user.loc)
-	pinned_target.nullPinnedLoc()
+	var/obj/item/target/target = pinned_target
+	target.layer = OBJ_LAYER
+	target.nullPinnedLoc()
 	nullPinnedTarget()
 	handle_density()
-	pinned_target.forceMove(get_turf(src))
+	target.forceMove(get_turf(src))
 	to_chat(user, "<span class='notice'>You take the target out of the stake.</span>")
 	if(user.can_hold_items())
-		user.put_in_hands(pinned_target)
+		user.put_in_hands(target)
 
 /obj/structure/target_stake/bullet_act(obj/item/projectile/P)
 	if(pinned_target)

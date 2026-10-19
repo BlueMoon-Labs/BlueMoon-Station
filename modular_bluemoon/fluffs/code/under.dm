@@ -270,7 +270,7 @@
 	name = "Lotos skirt"
 	desc = "Black kitten`s black dress"
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 0)
+	armor_type = /datum/armor/clothing_and_general_objects
 	always_reskinnable = TRUE
 	icon_state = "Lotos"
 	unique_reskin = list(
@@ -1219,4 +1219,13 @@
 	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/under_digi.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE
 
+	can_adjust = FALSE
+
+/obj/item/clothing/under/donator/bm/mall_cop_chic
+	name = "Mall Cop Chic"
+	desc = "Pants from a secondhand shop that someone resewed, added straps from an old backpack, and called it 'style.' Someone clearly wanted to look like an elite mercenary, but it turned out like a shopping mall security guard. They cover your ass. Thx for that."
+	icon_state = "mall_cop_chic"
+	item_state = "mall_cop_chic"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
 	can_adjust = FALSE

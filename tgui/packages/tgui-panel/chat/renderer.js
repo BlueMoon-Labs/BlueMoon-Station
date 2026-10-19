@@ -807,6 +807,17 @@ export class ChatRenderer {
    *   { color, disabled, font, size, anim }
    * @param {boolean} spanAnimations
    */
+  setRadioJobsVisible(visible = true) {
+    this._pendingAppearance = {
+      ...this._pendingAppearance,
+      radioJobsVisible: visible,
+    };
+    if (!this.rootNode) {
+      return;
+    }
+    this.rootNode.classList.toggle('Chat--hideRadioJobs', !visible);
+  }
+
   setStyleOverrides(overrides = {}, spanAnimations = true) {
     this._pendingAppearance = {
       ...this._pendingAppearance,
@@ -891,6 +902,9 @@ export class ChatRenderer {
     }
     if (p.styleOverrides !== undefined) {
       this.setStyleOverrides(p.styleOverrides, p.spanAnimations);
+    }
+    if (p.radioJobsVisible !== undefined) {
+      this.setRadioJobsVisible(p.radioJobsVisible);
     }
     this._pendingAppearance = null;
   }

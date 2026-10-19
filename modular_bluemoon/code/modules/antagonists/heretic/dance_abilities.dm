@@ -1,7 +1,9 @@
 #define DANCE_GRASP_STAMINA 10
 #define DANCE_BLADE_LIFESTEAL 3
 #define DANCE_BLADE_CHAIN 3
-#define DANCE_HEARTBEAT_TIME (3 SECONDS)
+#define DANCE_TRAIL_TIME (0.6 SECONDS)
+#define DANCE_TRAIL_ALPHA 170
+#define DANCE_TRAIL_DRIFT 12
 #define DANCE_LEAD_CAPTURE "dance_lead"
 #define DANCE_INVITE_CAPTURE "dance_invite"
 
@@ -211,7 +213,7 @@
 		"Хоровод отнимает не больше 42 выносливости. Лечь, сесть или схватить втянутого - танец отпустит; потом 20 секунд покоя.",
 		"Стиль Пляска смерти: доля 1,2 с, заражённые видят вместо вас скелет, враги в 5 клетках вязнут на каждой доле.",
 		"Акцент - колокол: каждый заражённый в 7 клетках делает шаг к вам; фигура - 4 шага прямо, хоровод на 3 секунды.",
-		"Без 4 Такта колокол не звонит. Перезарядка 40 секунд.",
+		"Без 4 Такта колокол не звонит; после звона пассивка стиля держится до сильной доли. Перезарядка 40 секунд.",
 		"Номер «Пляска мертвецов»: линия Канкана, связка в Пляску смерти и процессия - хоровод до 6 врагов из 4 клеток на 6 с.",
 		"Номер «Исчезновение»: процессия, связка в Канкан и линия - рывок на 6 клеток, маска на 4 секунды и скорость.",
 	)
@@ -252,7 +254,8 @@
 		return "[victim] уже танцует с вами."
 	var/range = invite_range()
 	if(!isturf(victim.loc) || victim.z != user.z || get_dist(user, victim) > range)
-		return "Цель должна стоять на полу не дальше [range] клеток от вас."
+		var/datum/heretic_dance_style/style = current_style()
+		return "В стиле «[style.name]» Приглашение зовёт [invite_reach_text()]: цель должна стоять на полу не дальше [range] клеток."
 	return null
 
 /// Почему Приглашению сейчас некого звать: ни одного заражённого в радиусе стиля.
@@ -263,15 +266,25 @@
 	for(var/datum/status_effect/heretic_dance_earworm/earworm as anything in earworms)
 		if(earworm.owner.z == user.z && get_dist(earworm.owner, user) <= range)
 			return null
-	return "Ближе [range] клеток нет заражённых. Их видно по ноте над головой; заражённых: [length(earworms)] из [HERETIC_DANCE_EARWORM_LIMIT]."
+	var/datum/heretic_dance_style/style = current_style()
+	return "Ближе [range] клеток нет заражённых: в стиле «[style.name]» Приглашение зовёт [invite_reach_text()]. Заражённых видно по ноте над головой; их [length(earworms)] из [HERETIC_DANCE_EARWORM_LIMIT]."
 
-/datum/eldritch_knowledge/base_dance/proc/invite_range()
-	switch(style_id)
+/datum/eldritch_knowledge/base_dance/proc/invite_range(id = style_id)
+	switch(id)
 		if(HERETIC_DANCE_STYLE_TANGO)
 			return HERETIC_DANCE_INVITE_TANGO_RANGE
 		if(HERETIC_DANCE_STYLE_MACABRE)
 			return HERETIC_DANCE_INVITE_MACABRE_RANGE
 	return HERETIC_DANCE_INVITE_RANGE
+
+/// Дальность Приглашения в стиле словами: она зависит от танца.
+/datum/eldritch_knowledge/base_dance/proc/invite_reach_text(id = style_id)
+	switch(id)
+		if(HERETIC_DANCE_STYLE_TANGO)
+			return "одним рывком из [HERETIC_DANCE_INVITE_TANGO_RANGE] клеток"
+		if(HERETIC_DANCE_STYLE_MACABRE)
+			return "медленно из [HERETIC_DANCE_INVITE_MACABRE_RANGE] клеток"
+	return "из [HERETIC_DANCE_INVITE_RANGE] клеток"
 
 /datum/eldritch_knowledge/base_dance/proc/invite(mob/living/user, mob/living/victim)
 	dance_failure = invite_block_reason(user, victim)
@@ -302,9 +315,9 @@
 	var/mob/living/partner = lead_candidate(user)
 	if(!partner)
 		return FALSE
-	partner.remove_status_effect(/datum/status_effect/heretic_dance/partner)
 	if(!partner.apply_status_effect(/datum/status_effect/heretic_dance/lead, src))
 		return FALSE
+	partner.remove_status_effect(/datum/status_effect/heretic_dance/partner)
 	partner.visible_message(span_danger("[user] подхватывает [partner] в вальс, и [partner] кружится следом, шаг в шаг!"), span_userdanger("Вас подхватили в вальс: вы повторяете каждый шаг партнёра!"))
 	partner.balloon_alert(partner, "пусть вас растолкают или схватят")
 	log_combat(user, partner, "ведёт в вальсе")
@@ -318,13 +331,25 @@
 			victim.confused = max(victim.confused, 2)
 	new /obj/effect/temp_visual/heretic_dance/confetti(get_turf(user))
 	user.pulledby?.stop_pulling()
+	var/datum/heretic_dance_style/style = current_style()
 	for(var/step_index in 1 to distance)
 		var/turf/next = get_step(user, user.dir)
 		if(!next || isgroundlessturf(next) || !heretic_tile_passable(next) || !heretic_step_open(get_turf(user), next))
 			break
-		new /obj/effect/temp_visual/decoy/fading(get_turf(user), user)
+		heretic_dance_trail(user, get_turf(user), user.dir, style.color)
 		user.forceMove(next)
 	return TRUE
+
+/// Шлейф рывка в цвете стиля: копия танцора тает, уплывая вслед за ним.
+/proc/heretic_dance_trail(mob/living/dancer, turf/from, direction, ink)
+	var/obj/effect/temp_visual/heretic_vfx/ghost/trail = heretic_vfx_ghost(dancer, from, heretic_vfx_ink_tint(ink), DANCE_TRAIL_TIME, TRUE)
+	if(!trail)
+		return null
+	trail.alpha = trail.model_share(DANCE_TRAIL_ALPHA)
+	var/drift_x = ((direction & EAST) ? 1 : (direction & WEST) ? -1 : 0) * DANCE_TRAIL_DRIFT
+	var/drift_y = ((direction & NORTH) ? 1 : (direction & SOUTH) ? -1 : 0) * DANCE_TRAIL_DRIFT
+	animate(trail, pixel_x = trail.pixel_x + drift_x, pixel_y = trail.pixel_y + drift_y, alpha = 0, time = DANCE_TRAIL_TIME, easing = SINE_EASING | EASE_IN)
+	return trail
 
 /datum/eldritch_knowledge/base_dance/proc/start_horovod(mob/living/user, time, limit, range)
 	var/count = 0
@@ -344,9 +369,15 @@
 		new /obj/effect/temp_visual/heretic_dance/horovod(get_turf(user), user, time)
 	return count > 0
 
+/datum/eldritch_knowledge/base_dance/proc/horovod_failure_reason(mob/living/user, range)
+	for(var/mob/living/carbon/victim in range(range, user))
+		if(victim != user && victim.has_status_effect(/datum/status_effect/heretic_dance_horovod_rest) && heretic_edge_line_clear(user, victim))
+			return "Прошлый хоровод отпустил [victim] меньше [DisplayTimeText(HERETIC_DANCE_HOROVOD_REST)] назад: новый пока не возьмёт."
+	return "Рядом нет никого, кого хоровод мог бы подхватить: лежачие, схваченные и глухие не пляшут."
+
 /datum/eldritch_knowledge/base_dance/proc/toll_bell(mob/living/user, steps = 1)
 	new /obj/effect/temp_visual/heretic_dance/bell(get_turf(user))
-	playsound(user, HERETIC_DANCE_BELL_SOUND, 70, TRUE)
+	playsound(user, HERETIC_DANCE_BELL_SOUND, 70, FALSE)
 	for(var/datum/status_effect/heretic_dance_earworm/earworm as anything in earworms)
 		var/mob/living/victim = earworm.owner
 		if(victim.z != user.z || get_dist(victim, user) > HERETIC_DANCE_BELL_RANGE || !heretic_dance_can_sway(user, victim))
@@ -363,13 +394,14 @@
 		dance_failure = "Колоколу нужно [HERETIC_DANCE_BELL_COST] Такта, сейчас [combat_resource]."
 		return FALSE
 	if(!start_horovod(user, HERETIC_DANCE_HOROVOD_TIME, INFINITY, HERETIC_DANCE_HOROVOD_RANGE))
-		dance_failure = "Рядом нет никого, кого хоровод мог бы подхватить: лежачие, схваченные и глухие не пляшут."
+		dance_failure = horovod_failure_reason(user, HERETIC_DANCE_HOROVOD_RANGE)
 		return FALSE
 	spend_combat_resource(HERETIC_DANCE_BELL_COST)
+	passive_held_to_bar = passive_active
 	update_passive()
 	last_combat_at = world.time
 	new /obj/effect/temp_visual/heretic_dance/bell(get_turf(user))
-	playsound(user, HERETIC_DANCE_BELL_SOUND, 80, TRUE)
+	playsound(user, HERETIC_DANCE_BELL_SOUND, 80, FALSE)
 	user.visible_message(span_danger("Где-то бьёт погребальный колокол, и все вокруг [user] берутся за руки в хоровод!"))
 	return TRUE
 
@@ -411,20 +443,72 @@
 	return TRUE
 
 /datum/eldritch_knowledge/base_dance/proc/show_heartbeats(mob/living/user, list/hearts)
-	if(!user.client || !length(hearts))
-		return
-	var/list/image/shown = list()
+	hide_heartbeats()
 	for(var/mob/living/victim as anything in hearts)
-		var/image/heart = image('modular_bluemoon/icons/obj/heretic_dance_marks.dmi', victim, "dance_note", ABOVE_LIGHTING_LAYER)
-		heart.plane = ABOVE_LIGHTING_PLANE
-		heart.appearance_flags = RESET_COLOR | RESET_TRANSFORM | KEEP_APART
-		shown += heart
-	user.client.images |= shown
-	addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(heretic_dance_hide_images), WEAKREF(user), shown), DANCE_HEARTBEAT_TIME)
+		heartbeats += new /atom/movable/screen/heretic_dance_heartbeat(null, user, victim)
+	if(length(heartbeats))
+		heartbeat_timer = addtimer(CALLBACK(src, PROC_REF(hide_heartbeats)), HERETIC_DANCE_HEARTBEAT_TIME, TIMER_STOPPABLE)
 
-/proc/heretic_dance_hide_images(datum/weakref/user_ref, list/image/shown)
-	var/mob/living/user = user_ref?.resolve()
-	user?.client?.images -= shown
+/datum/eldritch_knowledge/base_dance/proc/hide_heartbeats()
+	deltimer(heartbeat_timer)
+	heartbeat_timer = null
+	QDEL_LIST(heartbeats)
+
+/datum/eldritch_knowledge/base_dance/proc/heartbeat_of(mob/living/victim)
+	for(var/atom/movable/screen/heretic_dance_heartbeat/heart as anything in heartbeats)
+		if(heart.victim_ref?.resolve() == victim)
+			return heart
+	return null
+
+/// Сердце заражённого на экране еретика: экранный значок не прячется за стенами, а за краем обзора прижимается к краю.
+/atom/movable/screen/heretic_dance_heartbeat
+	name = "сердцебиение"
+	icon = 'modular_bluemoon/icons/obj/heretic_dance_marks.dmi'
+	icon_state = "dance_heartbeat"
+	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	animate_movement = NO_STEPS
+	var/datum/weakref/viewer_ref
+	var/datum/weakref/victim_ref
+
+/atom/movable/screen/heretic_dance_heartbeat/Initialize(mapload, mob/living/viewer, mob/living/victim)
+	. = ..()
+	if(QDELETED(viewer) || QDELETED(victim))
+		return INITIALIZE_HINT_QDEL
+	viewer_ref = WEAKREF(viewer)
+	victim_ref = WEAKREF(victim)
+	RegisterSignal(viewer, COMSIG_MOVABLE_MOVED, PROC_REF(place))
+	RegisterSignal(victim, COMSIG_MOVABLE_MOVED, PROC_REF(place))
+	place()
+	viewer.client?.screen += src
+
+/atom/movable/screen/heretic_dance_heartbeat/Destroy()
+	var/mob/living/viewer = viewer_ref?.resolve()
+	var/mob/living/victim = victim_ref?.resolve()
+	if(viewer)
+		UnregisterSignal(viewer, COMSIG_MOVABLE_MOVED)
+		viewer.client?.screen -= src
+	if(victim)
+		UnregisterSignal(victim, COMSIG_MOVABLE_MOVED)
+	viewer_ref = null
+	victim_ref = null
+	return ..()
+
+/atom/movable/screen/heretic_dance_heartbeat/proc/place()
+	SIGNAL_HANDLER
+	var/mob/living/viewer = viewer_ref?.resolve()
+	var/turf/here = get_turf(viewer)
+	var/turf/there = get_turf(victim_ref?.resolve())
+	if(!here || !there || here.z != there.z)
+		alpha = 0
+		return
+	alpha = 255
+	var/list/view_size = getviewsize(viewer.client?.view || world.view)
+	var/reach_x = round((view_size[1] - 1) / 2)
+	var/reach_y = round((view_size[2] - 1) / 2)
+	var/dx = clamp(there.x - here.x, -reach_x, reach_x)
+	var/dy = clamp(there.y - here.y, -reach_y, reach_y)
+	var/lift = dy < reach_y ? HERETIC_DANCE_HEARTBEAT_LIFT : 0
+	screen_loc = "CENTER[dx < 0 ? "" : "+"][dx],CENTER[dy < 0 ? "" : "+"][dy]:[lift]"
 
 /obj/effect/temp_visual/heretic_dance/horovod
 	icon_state = "dance_horovod"
@@ -453,11 +537,33 @@
 	leader_ref = null
 	return ..()
 
+/datum/action/spell_action/spell/heretic_dance
+
+/// Подсказка кнопки начинается с того, что меняет текущий танец: дальности Приглашения и секунд перезарядок в долях.
+/datum/action/spell_action/spell/heretic_dance/format_tooltip(mob/viewer, base_description)
+	. = ..()
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(viewer)
+	var/datum/eldritch_knowledge/base_dance/dance = heretic?.get_knowledge(/datum/eldritch_knowledge/base_dance)
+	if(viewer != owner || !dance)
+		return
+	var/now
+	if(istype(target, /obj/effect/proc_holder/spell/pointed/heretic_dance/invite))
+		now = "Приглашение зовёт [dance.invite_reach_text()]"
+	else if(istype(target, /obj/effect/proc_holder/spell/self/heretic_dance/drum))
+		now = "барабан бьёт раз в [heretic_dance_seconds(HERETIC_DANCE_DRUM_BEATS * dance.beat_ds)] с"
+	else if(istype(target, /obj/effect/proc_holder/spell/self/heretic_dance/style))
+		now = "доля [heretic_dance_seconds(dance.beat_ds)] с, фигура остывает [heretic_dance_seconds(dance.figure_cooldown_ds())] с, Приглашение [dance.invite_reach_text()]"
+	if(!now)
+		return
+	var/datum/heretic_dance_style/style = dance.current_style()
+	. = "<b>Сейчас, [style.name]:</b> [now].<br>[.]"
+
 /obj/effect/proc_holder/spell/self/heretic_dance
 	clothes_req = FALSE
 	invocation_type = "none"
 	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
 	action_background_icon_state = "bg_ecult"
+	base_action = /datum/action/spell_action/spell/heretic_dance
 
 /obj/effect/proc_holder/spell/self/heretic_dance/can_cast(mob/user, skipcharge, silent)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -514,7 +620,7 @@
 
 /obj/effect/proc_holder/spell/self/heretic_dance/bell
 	name = "Колокол"
-	desc = "За 4 Такта враги в 3 клетках 5 секунд повторяют каждый ваш шаг и теряют 6 выносливости за шаг, всего не больше 42. Лежачих, сидящих, пристёгнутых, схваченных, глухих, в заглушках и под защитой от магии хоровод не берёт. Перезарядка 40 секунд."
+	desc = "За 4 Такта враги в 3 клетках 5 секунд повторяют каждый ваш шаг и теряют 6 выносливости за шаг, всего не больше 42. Пассивка стиля после звона держится до следующей сильной доли. Лежачих, сидящих, пристёгнутых, схваченных, глухих, в заглушках и под защитой от магии хоровод не берёт. Перезарядка 40 секунд."
 	summary = "За 4 Такта враги в 3 клетках 5 секунд повторяют ваши шаги."
 	action_icon_state = "dance_bell"
 	charge_max = HERETIC_DANCE_BELL_COOLDOWN
@@ -533,6 +639,7 @@
 	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
 	action_icon_state = "dance_invite"
 	action_background_icon_state = "bg_ecult"
+	base_action = /datum/action/spell_action/spell/heretic_dance
 	range = HERETIC_DANCE_INVITE_MACABRE_RANGE
 	selection_type = "range"
 	aim_assist = FALSE
@@ -565,6 +672,8 @@
 #undef DANCE_GRASP_STAMINA
 #undef DANCE_BLADE_LIFESTEAL
 #undef DANCE_BLADE_CHAIN
-#undef DANCE_HEARTBEAT_TIME
+#undef DANCE_TRAIL_TIME
+#undef DANCE_TRAIL_ALPHA
+#undef DANCE_TRAIL_DRIFT
 #undef DANCE_LEAD_CAPTURE
 #undef DANCE_INVITE_CAPTURE

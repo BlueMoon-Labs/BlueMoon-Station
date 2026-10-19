@@ -36,7 +36,7 @@
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/energyaxe_righthand.dmi'
 	name = "energy fire axe"
 	desc = "You aren't quite sure if this counts as a fire axe anymore, but it sure is fancy! A tag hangs off of it reading: 'properly of the Gorlex Marauders'"
-	armour_penetration = 35
+	armour_penetration = MELEE_AP_EXCLUSIVE
 
 /obj/item/fireaxe/energy/ComponentInitialize()
 	. = ..()

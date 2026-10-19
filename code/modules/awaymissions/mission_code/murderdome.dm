@@ -9,6 +9,7 @@
 
 /obj/effect/spawner/structure/window/reinforced/indestructable
 	spawn_list = list(/obj/structure/grille/indestructable, /obj/structure/window/reinforced/fulltile/indestructable)
+	install_airbags = FALSE
 
 /obj/structure/barricade/security/murderdome
 	name = "respawnable barrier"

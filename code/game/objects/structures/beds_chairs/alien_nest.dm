@@ -64,8 +64,8 @@
 	add_fingerprint(user)
 	return TRUE
 
-/obj/structure/bed/nest/user_buckle_mob(mob/living/M, mob/living/carbon/user, check_loc)
-	if ( !ismob(M) || (get_dist(src, user) > 1) || (M.loc != src.loc) || !user.cuff_resist_check() || M.buckled )
+/obj/structure/bed/nest/user_buckle_mob(mob/living/M, mob/living/user, check_loc)
+	if ( !ismob(M) || (get_dist(src, user) > 1) || (M.loc != src.loc) || user.incapacitated(ignore_restraints = TRUE) || M.buckled )
 		return
 
 	if(M.getorgan(/obj/item/organ/alien/plasmavessel))

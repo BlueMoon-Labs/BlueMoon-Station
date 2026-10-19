@@ -275,6 +275,11 @@
 						new_machine.RefreshParts()
 
 						new_machine.on_construction()
+						// Preserve the assembler for inspection independently of later interactions.
+						if(istype(new_machine, /obj/machinery/cryptominer) || istype(new_machine, /obj/machinery/mineral/bluespace_miner))
+							new_machine.add_fingerprint(user)
+							new_machine.circuit.add_hiddenprint(user)
+							record_sol_inspection_builder(new_machine, user)
 						// TODO: make sleepers not shit out parts PROPERLY THIS TIME.
 						new_machine.circuit.moveToNullspace()
 					qdel(src)

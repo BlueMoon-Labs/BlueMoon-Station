@@ -251,7 +251,7 @@
 /area/shuttle/escape)
 "aL" = (
 /obj/structure/table,
-/obj/item/storage/backpack/duffelbag/med/surgery,
+/obj/item/storage/backpack/duffelbag/med/surgery/upgraded,
 /turf/open/floor/mineral/titanium/white,
 /area/shuttle/escape)
 "aM" = (

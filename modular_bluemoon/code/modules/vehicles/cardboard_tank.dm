@@ -112,6 +112,7 @@
 	foodtype = GRAIN | SUGAR
 
 /obj/vehicle/sealed/cardboard_tank
+	armor_type = /datum/armor/none
 	name = "cardboard tank"
 	desc = "Шедевр инженерной мысли из гофрокартона. Внутри тесно, но зато есть «пушка»."
 	icon = CARDBOARD_TANK_ICON
@@ -120,7 +121,6 @@
 	anchored = FALSE
 	max_integrity = CARDBOARD_TANK_INTEGRITY
 	damage_deflection = 7
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0)
 	movedelay = 1
 	default_driver_move = FALSE
 	key_type = null

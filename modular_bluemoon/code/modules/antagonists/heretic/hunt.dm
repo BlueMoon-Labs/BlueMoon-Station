@@ -3,6 +3,13 @@
 
 GLOBAL_LIST_EMPTY(heretic_ritual_reservations)
 GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
+/// Сердце говорит разными голосами: указание, новая цель, цель повержена, цель погибла.
+GLOBAL_LIST_INIT(heretic_heart_sounds, list(
+	"track" = 'modular_bluemoon/sound/heretic/heart_track.ogg',
+	"claim" = 'modular_bluemoon/sound/heretic/heart_claim.ogg',
+	"downed" = 'modular_bluemoon/sound/heretic/heart_downed.ogg',
+	"dead" = 'modular_bluemoon/sound/heretic/heart_dead.ogg',
+))
 
 /obj/effect/proc_holder/spell/self/heretic_summon/heart
 	desc = "Призывает или прячет своё живое сердце. Потерянное сердце возвращается, если 5 секунд стоять на месте."
@@ -77,6 +84,8 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 	var/datum/weakref/watched_hunt_body
 	var/hunt_assigned_at = 0
 	var/hunt_stale_hinted = FALSE
+	/// Снимок согласия цели на момент назначения: смена настройки посреди охоты его не меняет.
+	var/hunt_live_only = FALSE
 	COOLDOWN_DECLARE(hunt_refresh_cooldown)
 	COOLDOWN_DECLARE(hunt_downed_alert_cooldown)
 	COOLDOWN_DECLARE(hunt_claim_hint_cooldown)
@@ -112,14 +121,31 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 		return "Назначенная цель сама служит Мансусу и не подходит для подношения. Выберите новую цель через живое сердце или кодекс: ждать перезарядки не нужно."
 	if(candidate.is_ghost_role())
 		return "Назначенная душа перешла в роль вне экипажа станции. Выберите новую цель."
+	if(selecting)
+		var/opt_in_refusal = hunt_opt_in_refusal_reason(candidate)
+		if(opt_in_refusal)
+			return opt_in_refusal
 	var/turf/body_turf = heretic_pocket_anchor(get_turf(body))
 	if(!body_turf || !is_station_level(body_turf.z))
 		return "Тело назначенной цели находится вне станции: [get_area_name(body_turf || body, TRUE) || "неизвестно где"]. Подношение принимается только на станции, шахта, Лаваленд и шаттлы вне станции не в счёт. Верните тело на станцию или выберите другую цель."
-	if(selecting && body.stat == DEAD)
-		return "Погибшего нельзя назначить новой целью. Труп уже назначенной цели принимается."
+	if(body.stat == DEAD)
+		if(selecting)
+			return "Погибшего нельзя назначить новой целью. Труп уже назначенной цели принимается, если она согласна быть целью убийства."
+		if(candidate == hunt_target && hunt_live_only)
+			return "Цель погибла, а её труп Мансус не примет: в настройках цели охота разрешена только живой. Выберите новую цель через живое сердце или кодекс: ждать перезарядки не нужно."
 	if(selecting && !body.client)
 		return "Для нового назначения нужен игрок в теле цели. Уже назначенная цель сохраняется после выхода в призрака."
 	return null
+
+/datum/antagonist/heretic/proc/hunt_opt_in_refusal_reason(datum/mind/candidate)
+	if(antag_opt_in_allows(candidate, ANTAG_OPT_IN_HERETIC_HUNT))
+		return null
+	return "Этот член экипажа не согласен быть целью охоты: в его настройках выбрано \"[antag_opt_in_level_name(candidate.get_effective_antag_opt_in_level())]\", а охоте нужно хотя бы \"[antag_opt_in_level_name(ANTAG_OPT_IN_HERETIC_HUNT)]\". Выберите другую цель. Согласие видно заранее по значку слева у ног: у таких он серый и перечёркнутый."
+
+/datum/antagonist/heretic/proc/hunt_corpse_note()
+	if(!hunt_live_only)
+		return "Если цель погибнет, её труп тоже примут, но лишь за 1 очко знаний без побочного."
+	return "Эту цель Мансус примет только живой: убивать себя она не разрешила, труп не засчитается."
 
 /datum/antagonist/heretic/proc/set_hunt_target(datum/mind/new_target)
 	if(hunt_target)
@@ -129,6 +155,7 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 	hunt_candidates.Cut()
 	hunt_assigned_at = world.time
 	hunt_stale_hinted = FALSE
+	hunt_live_only = new_target && !antag_opt_in_allows(new_target, ANTAG_OPT_IN_HERETIC_HUNT_CORPSE)
 	if(new_target)
 		RegisterSignal(new_target, COMSIG_MIND_TRANSFER, PROC_REF(on_hunt_target_transferred))
 		watch_hunt_body(new_target.current)
@@ -170,12 +197,14 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 	if(!COOLDOWN_FINISHED(src, hunt_downed_alert_cooldown))
 		return
 	COOLDOWN_START(src, hunt_downed_alert_cooldown, HERETIC_HUNT_DOWNED_ALERT_COOLDOWN)
-	SEND_SOUND(user, sound('modular_bluemoon/sound/heretic/heart_track.ogg', volume = 50))
+	SEND_SOUND(user, sound(GLOB.heretic_heart_sounds[new_stat == DEAD ? "dead" : "downed"], volume = 50))
 	source.balloon_alert(user, new_stat == DEAD ? "цель погибла" : "цель повержена")
-	if(new_stat == DEAD)
+	if(new_stat == DEAD && hunt_live_only)
+		to_chat(user, span_boldwarning("Цель охоты [source.real_name] погибла. Её труп Мансус не примет: цель согласна только на живую жертву. Выберите новую цель через живое сердце, ждать перезарядки не нужно."))
+	else if(new_stat == DEAD)
 		to_chat(user, span_boldwarning("Цель охоты [source.real_name] погибла. Труп ещё примут, но лишь за 1 очко знаний без побочного: коснитесь его живым сердцем или принесите на руну."))
 	else
-		to_chat(user, span_boldnotice("Цель охоты [source.real_name] повержена. Коснитесь её живым сердцем: круг проступит прямо под телом, обряд займёт [DisplayTimeText(heart_rite_time(source), 1)]. Можно и перенести её на руну. Если у пути есть дверь, сердце предложит увести цель в изнанку. Живая жертва даёт 2 очка знаний и 1 побочное."))
+		to_chat(user, span_boldnotice("Цель охоты [source.real_name] повержена. Коснитесь её живым сердцем: круг проступит прямо под телом, обряд займёт [DisplayTimeText(heart_rite_time(source), 1)]. Можно и перенести её на руну. Если у пути есть дверь, сердце предложит увести цель в изнанку. Живая жертва даёт 2 очка знаний и 1 побочное.[hunt_live_only ? " Не добивайте: труп этой цели не примут." : ""]"))
 
 /// Длина обряда сердцем на месте цели: с Течением часа и скоростью действий еретика.
 /datum/antagonist/heretic/proc/heart_rite_time(atom/place)
@@ -200,7 +229,7 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 	var/datum/mind/soul = victim.mind
 	if(!soul)
 		return "В этом теле нет души, которую мог бы принять Мансус."
-	var/reason = hunt_target_unavailable_reason(soul)
+	var/reason = hunt_target_unavailable_reason(soul) || hunt_opt_in_refusal_reason(soul)
 	if(reason)
 		return reason
 	if(victim.stat == DEAD)
@@ -228,9 +257,9 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 		return FALSE
 	COOLDOWN_START(src, hunt_refresh_cooldown, HERETIC_HUNT_REFRESH_COOLDOWN)
 	set_hunt_target(victim.mind)
-	playsound(user, 'modular_bluemoon/sound/heretic/heart_track.ogg', 40, FALSE, extrarange = SILENCED_SOUND_EXTRARANGE)
+	playsound(user, GLOB.heretic_heart_sounds["claim"], 40, FALSE, extrarange = SILENCED_SOUND_EXTRARANGE)
 	victim.balloon_alert(user, "новая цель")
-	to_chat(user, span_boldnotice("Сердце принимает [victim.real_name]. Коснитесь цели сердцем ещё раз, чтобы провести обряд прямо здесь, или перенесите её на руну. Следующая смена цели - через [DisplayTimeText(HERETIC_HUNT_REFRESH_COOLDOWN)]."))
+	to_chat(user, span_boldnotice("Сердце принимает [victim.real_name]. Коснитесь цели сердцем ещё раз, чтобы провести обряд прямо здесь, или перенесите её на руну. Следующая смена цели - через [DisplayTimeText(HERETIC_HUNT_REFRESH_COOLDOWN)]. [hunt_corpse_note()]"))
 	return TRUE
 
 /obj/effect/eldritch/big/heart_rite
@@ -381,7 +410,7 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 			return FALSE
 	var/list/choices = prepare_hunt_choices()
 	if(!length(choices))
-		to_chat(user, span_warning("Покровители не находят новой доступной цели на станции. Попробуйте позднее."))
+		to_chat(user, span_warning("Покровители не находят новой доступной цели на станции: годятся только живые члены экипажа с игроком, согласные быть целью охоты. Попробуйте позднее."))
 		return FALSE
 	hunt_selection_open = TRUE
 	var/choice = prompt_hunt_target(user, choices)
@@ -392,13 +421,18 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 		return FALSE
 	var/datum/weakref/chosen_ref = choices[choice]
 	var/datum/mind/chosen = chosen_ref?.resolve()
-	if(!(chosen_ref in hunt_candidates) || !hunt_target_available(chosen, selecting = TRUE))
+	if(!(chosen_ref in hunt_candidates))
+		return FALSE
+	if(!hunt_target_available(chosen, selecting = TRUE))
+		var/chosen_refusal = hunt_target_unavailable_reason(chosen, selecting = TRUE)
+		if(chosen_refusal)
+			to_chat(user, span_warning(chosen_refusal))
 		return FALSE
 	var/replacing_target = hunt_target_available(hunt_target)
 	if(replacing_target)
 		COOLDOWN_START(src, hunt_refresh_cooldown, HERETIC_HUNT_REFRESH_COOLDOWN)
 	set_hunt_target(chosen)
-	to_chat(user, span_notice("Сердце запомнило [chosen.current.real_name]. Обезвредьте цель: подойдут наручники, оглушение, сбивание с ног или потеря сознания. Добровольно лёгший или уснувший не считается. Цель в крите принимается без наручников, даже если ещё стоит. Затем коснитесь её живым сердцем, и круг проступит прямо под телом, или положите сердце рядом с ней на руне и выберите «Обряд возвращения». Если цель погибнет, её труп тоже примут, но лишь за 1 очко знаний без побочного."))
+	to_chat(user, span_notice("Сердце запомнило [chosen.current.real_name]. Обезвредьте цель: подойдут наручники, оглушение, сбивание с ног или потеря сознания. Добровольно лёгший или уснувший не считается. Цель в крите принимается без наручников, даже если ещё стоит. Затем коснитесь её живым сердцем, и круг проступит прямо под телом, или положите сердце рядом с ней на руне и выберите «Обряд возвращения». [hunt_corpse_note()]"))
 	return TRUE
 
 /datum/antagonist/heretic/proc/select_hunt_atoms(mob/living/user, list/atoms, list/selected_atoms)
@@ -579,28 +613,28 @@ GLOBAL_LIST_EMPTY(heretic_sacrificed_minds)
 		return destination
 	return null
 
-/// После неудачной случайной выборки проверяем оставшиеся зоны без повторений.
+/// После неудачной случайной выборки проверяем оставшиеся зоны без повторений. С полигона поиск не уходит, из любого другого места ведёт на станцию.
 /proc/find_heretic_escape_fallback(turf/origin)
 	if(!origin)
 		return null
-	var/on_station = is_station_level(origin.z)
+	var/to_station = !SSmapping.level_trait(origin.z, ZTRAIT_ANTAG_TRAINING)
 	var/list/areas = GLOB.sortedAreas.Copy()
 	while(length(areas))
 		CHECK_TICK
 		var/area/destination_area = pick_n_take(areas)
 		if(!is_heretic_escape_area(destination_area))
 			continue
-		if(on_station && (!(destination_area.type in GLOB.the_station_areas) || !(destination_area.area_flags & VALID_TERRITORY)))
+		if(to_station && (!(destination_area.type in GLOB.the_station_areas) || !(destination_area.area_flags & VALID_TERRITORY)))
 			continue
 		var/list/turfs = list()
 		for(var/turf/open/floor/floor in destination_area)
 			CHECK_TICK
-			if(on_station ? is_station_level(floor.z) : floor.z == origin.z)
+			if(to_station ? is_station_level(floor.z) : floor.z == origin.z)
 				turfs += floor
 		while(length(turfs))
 			CHECK_TICK
 			var/turf/destination = pick_n_take(turfs)
-			if(destination == origin || destination.density || destination.is_transition_turf() || (on_station && !is_station_level(destination.z)))
+			if(destination == origin || destination.density || destination.is_transition_turf() || (to_station && !is_station_level(destination.z)))
 				continue
 			if(is_heretic_escape_area(get_area(destination)) && is_safe_turf(destination))
 				return destination

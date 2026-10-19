@@ -21,3 +21,13 @@
 /datum/config_entry/multi_keyed_flag/donator_group/tier_2_donators
 
 /datum/config_entry/multi_keyed_flag/donator_group/tier_3_donators
+
+/// Private AES-256-GCM key, kept in the server-only donator config.
+/datum/config_entry/string/loadout_ckey_secret
+	default = "ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+	protection = CONFIG_ENTRY_LOCKED | CONFIG_ENTRY_HIDDEN
+
+/// Node.js executable (not a shell command); uses only the built-in crypto module.
+/datum/config_entry/string/loadout_crypto_node
+	default = "node"
+	protection = CONFIG_ENTRY_LOCKED

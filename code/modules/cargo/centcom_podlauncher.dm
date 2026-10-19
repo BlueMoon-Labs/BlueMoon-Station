@@ -52,7 +52,7 @@
 	// Stuff needed to render the map
 	var/map_name
 	var/atom/movable/screen/map_view/cam_screen
-	var/list/cam_plane_masters
+	var/datum/plane_master_group/popup/cam_plane_group
 	var/atom/movable/screen/background/cam_background
 	var/tabIndex = 1
 	var/renderLighting = FALSE
@@ -83,6 +83,8 @@
 /datum/centcom_podlauncher/proc/initMap()
 	if(map_name)
 		holder.clear_map(map_name)
+	//clear_map() мастеров не трогает (del_on_map_removal = FALSE), а нас зовут повторно из refreshView.
+	QDEL_NULL(cam_plane_group)
 
 	map_name = "admin_supplypod_bay_[REF(src)]_map"
 	// Initialize map objects
@@ -91,18 +93,12 @@
 	cam_screen.assigned_map = map_name
 	cam_screen.del_on_map_removal = TRUE
 	cam_screen.screen_loc = "[map_name]:1,1"
-	cam_plane_masters = list()
-	for(var/plane in subtypesof(/atom/movable/screen/plane_master))
-		var/atom/movable/screen/instance = new plane()
-		if (!renderLighting && instance.plane == LIGHTING_PLANE)
-			instance.alpha = 100
-		instance.assigned_map = map_name
-		instance.del_on_map_removal = TRUE
-		instance.screen_loc = "[map_name]:CENTER"
-		cam_plane_masters += instance
+	//Через группу, а не голым циклом: без объектов-реле плита останется пустой и карта чёрной.
+	cam_plane_group = new /datum/plane_master_group/popup(PLANE_GROUP_POPUP_WINDOW(src), map_name)
 	cam_background = new
 	cam_background.assigned_map = map_name
 	cam_background.del_on_map_removal = TRUE
+	apply_render_lighting()
 	refreshView()
 	// Map objects will be registered in ui_interact after window becomes visible (BYOND 516 fix)
 
@@ -116,10 +112,18 @@
 		get_asset_datum(/datum/asset/spritesheet_batched/supplypods),
 	)
 
+/datum/centcom_podlauncher/proc/apply_render_lighting()
+	if(!cam_plane_group)
+		return
+	for(var/plane_key in cam_plane_group.plane_masters)
+		var/atom/movable/screen/plane_master/lighting/lighting_plane = cam_plane_group.plane_masters[plane_key]
+		if(!istype(lighting_plane))
+			continue
+		lighting_plane.set_alpha(renderLighting ? 255 : 100)
+
 /datum/centcom_podlauncher/proc/register_map_to_holder()
 	holder.register_map_obj(cam_screen)
-	for(var/plane in cam_plane_masters)
-		holder.register_map_obj(plane)
+	cam_plane_group.register_to_client(holder)
 	holder.register_map_obj(cam_background)
 
 /datum/centcom_podlauncher/proc/on_map_window_visible(datum/tgui_window/window, client/show_to)
@@ -518,6 +522,7 @@
 			. = TRUE
 		if("renderLighting")
 			renderLighting = !renderLighting
+			apply_render_lighting()
 			. = TRUE
 		if("setStyle")
 			var/chosenStyle = params["style"]
@@ -543,7 +548,7 @@
 	QDEL_NULL(temp_pod)
 	user.client?.clear_map(map_name)
 	QDEL_NULL(cam_screen)
-	QDEL_LIST(cam_plane_masters)
+	QDEL_NULL(cam_plane_group)
 	QDEL_NULL(cam_background)
 	qdel(src)
 
@@ -797,9 +802,7 @@
 	if(cam_screen)
 		cam_screen.screen_loc = null
 		QDEL_NULL(cam_screen)
-	for(var/atom/movable/screen/P in cam_plane_masters)
-		P.screen_loc = null
-	QDEL_LIST(cam_plane_masters)
+	QDEL_NULL(cam_plane_group)
 	QDEL_NULL(cam_background)
 	. = ..()
 

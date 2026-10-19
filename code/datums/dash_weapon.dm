@@ -46,6 +46,8 @@
 
 /datum/action/innate/dash/proc/charge()
 	current_charges = clamp(current_charges + 1, 0, max_charges)
+	if(!owner)
+		return
 	owner.update_action_buttons_icon()
 	if(recharge_sound)
 		playsound(dashing_item, recharge_sound, 50, 1)

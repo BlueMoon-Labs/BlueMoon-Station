@@ -1,4 +1,5 @@
 /obj/item/clothing/mod_part/head
+	armor_type = /datum/armor/modsuit_parts_and_control
 	name = "MOD helmet"
 	desc = "Шлем для MOD-костюма."
 	icon = 'modular_bluemoon/icons/obj/clothing/modsuit/mod_clothing.dmi'
@@ -6,7 +7,6 @@
 	anthro_mob_worn_overlay = 'modular_bluemoon/icons/mob/clothing/modsuit/mod_clothing_anthro.dmi'
 	icon_state = "helmet"
 	item_state = "helmet"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 25, ACID = 25, WOUND = 10)
 	body_parts_covered = HEAD
 	heat_protection = HEAD
 	cold_protection = HEAD
@@ -50,6 +50,7 @@
 
 //Дать на альт-клик отображать глаза поверх шлема.
 /obj/item/clothing/mod_part/suit
+	armor_type = /datum/armor/modsuit_parts_and_control
 	name = "MOD chestplate"
 	desc = "Нагрудник для MOD-костюма."
 	icon = 'modular_bluemoon/icons/obj/clothing/modsuit/mod_clothing.dmi'
@@ -58,7 +59,6 @@
 	icon_state = "chestplate"
 	item_state = "chestplate"
 	tail_state = ""
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 25, ACID = 25, WOUND = 10)
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS
 	heat_protection = CHEST|GROIN|LEGS|ARMS
 	cold_protection = CHEST|GROIN|LEGS|ARMS
@@ -85,6 +85,7 @@
 	mod?.wearer?.update_inv_w_uniform()
 
 /obj/item/clothing/mod_part/gloves
+	armor_type = /datum/armor/modsuit_parts_and_control
 	name = "MOD gauntlets"
 	desc = "Пара рукавиц для MOD-костюма."
 	icon = 'modular_bluemoon/icons/obj/clothing/modsuit/mod_clothing.dmi'
@@ -92,7 +93,6 @@
 	anthro_mob_worn_overlay = 'modular_bluemoon/icons/mob/clothing/modsuit/mod_clothing_anthro.dmi'
 	icon_state = "gauntlets"
 	item_state = "gauntlets"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 25, ACID = 25, WOUND = 10)
 	body_parts_covered = HANDS|ARMS
 	heat_protection = HANDS|ARMS
 	cold_protection = HANDS|ARMS
@@ -150,6 +150,7 @@
 	return FALSE // return TRUE to cancel attack_hand()
 
 /obj/item/clothing/mod_part/shoes
+	armor_type = /datum/armor/modsuit_parts_and_control
 	name = "MOD boots"
 	desc = "Пара ботинок для MOD-костюма."
 	icon = 'modular_bluemoon/icons/obj/clothing/modsuit/mod_clothing.dmi'
@@ -157,7 +158,6 @@
 	anthro_mob_worn_overlay = 'modular_bluemoon/icons/mob/clothing/modsuit/mod_clothing_anthro.dmi'
 	icon_state = "boots"
 	item_state = "boots"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 100, FIRE = 25, ACID = 25, WOUND = 10)
 	body_parts_covered = FEET|LEGS
 	heat_protection = FEET|LEGS
 	cold_protection = FEET|LEGS

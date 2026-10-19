@@ -31,7 +31,16 @@
 		if(!CHECK_MOBILITY(L, MOBILITY_USE))
 			to_chat(L, "<span class='warning'>You are unable to raise [src] right now!</span>")
 			return
+	if(builds_over_openspace() && target.z != user.z)
+		var/list/modifiers = params2list(params)
+		var/turf/hole = parse_caught_click_modifiers(modifiers, get_turf(user.client?.eye || user), user.client)
+		if(hole?.z == user.z && isopenspaceturf(hole) && user.CanReach(hole, src))
+			return melee_attack_chain(user, hole, list2params(modifiers))
 	return afterattack(target, user, FALSE, params)
+
+/// Дыра в полу прозрачна для мыши: клик попадает в то, что видно снизу. Такие предметы строят в самой дыре под курсором.
+/obj/item/proc/builds_over_openspace()
+	return FALSE
 
 // Called when the item is in the active hand, and clicked; alternately, there is an 'activate held object' verb or you can hit pagedown.
 /obj/item/proc/attack_self(mob/user)

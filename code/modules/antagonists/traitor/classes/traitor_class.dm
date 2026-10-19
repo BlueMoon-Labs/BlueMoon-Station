@@ -96,6 +96,16 @@ GLOBAL_LIST_EMPTY(traitor_classes)
 /datum/traitor_class/proc/on_process(datum/antagonist/traitor/T)
 	// only for processing traitor classes; runs once an SSprocessing tick
 
+/// Выдаёт задание с целью, только если нашлась цель с подходящим уровнем согласия.
+/datum/traitor_class/proc/add_targeted_objective(datum/antagonist/traitor/T, datum/objective/objective)
+	objective.owner = T.owner
+	objective.find_target()
+	if(!objective.target)
+		qdel(objective)
+		return FALSE
+	T.add_objective(objective)
+	return TRUE
+
 /datum/traitor_class/proc/get_selection_weight()
 	. = LOGISTIC_FUNCTION(1.5 * weight, 0, chaos, 0) * 1000
 	if(population_weight_penalty_threshold && length(GLOB.joined_player_list) >= population_weight_penalty_threshold)
@@ -104,50 +114,40 @@ GLOBAL_LIST_EMPTY(traitor_classes)
 /datum/traitor_class/human
 	var/assassin_prob = 50
 
-/datum/traitor_class/human/proc/get_effective_assassin_prob(datum/game_mode/dynamic/mode)
+/datum/traitor_class/human/proc/get_effective_assassin_prob(datum/game_mode/dynamic/mode, datum/mind/owner)
 	if(GLOB.round_type == ROUNDTYPE_DYNAMIC_LIGHT)
+		return 0
+	var/style = owner ? owner.get_antag_objective_style() : ANTAG_OBJECTIVE_STYLE_NORMAL
+	if(style == ANTAG_OBJECTIVE_STYLE_QUIET)
 		return 0
 	var/tier = bm_traitor_violence_tier()
 	switch(tier)
 		if(BM_TRAITOR_VIOLENCE_NONE)
 			return 0
 		if(BM_TRAITOR_VIOLENCE_SOFT)
-			return min(assassin_prob, 25)
+			var/soft_prob = min(assassin_prob, 25)
+			return style == ANTAG_OBJECTIVE_STYLE_VIOLENT ? soft_prob + ANTAG_OBJECTIVE_VIOLENT_SOFT_BONUS : soft_prob
 	var/effective_prob = assassin_prob
 	if(istype(mode))
 		effective_prob = max(assassin_prob, mode.threat_level - 20)
+	if(style == ANTAG_OBJECTIVE_STYLE_VIOLENT)
+		effective_prob = min(100, effective_prob * ANTAG_OBJECTIVE_VIOLENT_KILL_MULT)
 	return max(0, effective_prob)
 
 /datum/traitor_class/human/proc/try_forge_assassinate_objective(datum/antagonist/traitor/T, datum/game_mode/dynamic/mode)
-	var/effective_prob = get_effective_assassin_prob(mode)
+	var/effective_prob = get_effective_assassin_prob(mode, T.owner)
 	if(!effective_prob || !prob(effective_prob))
 		return FALSE
 	var/tier = bm_traitor_violence_tier()
 	if(tier == BM_TRAITOR_VIOLENCE_SOFT)
-		var/datum/objective/assassinate/once/kill_objective = new
-		kill_objective.owner = T.owner
-		kill_objective.find_target()
-		T.add_objective(kill_objective)
-		return TRUE
+		return add_targeted_objective(T, new /datum/objective/assassinate/once)
 	var/list/active_ais = active_ais()
-	if(active_ais.len && prob(100 / max(1, GLOB.joined_player_list.len)))
-		var/datum/objective/destroy/destroy_objective = new
-		destroy_objective.owner = T.owner
-		destroy_objective.find_target()
-		T.add_objective(destroy_objective)
-	else if(prob(max(0, effective_prob - 20)))
-		var/datum/objective/assassinate/kill_objective = new
-		kill_objective.owner = T.owner
-		kill_objective.find_target()
-		T.add_objective(kill_objective)
+	if(active_ais.len && prob(100 / max(1, GLOB.joined_player_list.len)) && add_targeted_objective(T, new /datum/objective/destroy))
+		return TRUE
+	if(prob(max(0, effective_prob - 20)))
+		if(add_targeted_objective(T, new /datum/objective/assassinate))
+			return TRUE
 	else if(prob(20))
-		var/datum/objective/assassinate/internal/kill_objective = new
-		kill_objective.owner = T.owner
-		kill_objective.find_target()
-		T.add_objective(kill_objective)
-	else
-		var/datum/objective/assassinate/once/kill_objective = new
-		kill_objective.owner = T.owner
-		kill_objective.find_target()
-		T.add_objective(kill_objective)
-	return TRUE
+		if(add_targeted_objective(T, new /datum/objective/assassinate/internal))
+			return TRUE
+	return add_targeted_objective(T, new /datum/objective/assassinate/once)

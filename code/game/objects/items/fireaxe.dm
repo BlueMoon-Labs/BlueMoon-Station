@@ -9,14 +9,14 @@
 	desc = "Truly, the weapon of a madman. Who would think to fight fire with an axe?"
 	force = 5
 	throwforce = 15
-	armour_penetration = 25
+	armour_penetration = MELEE_AP_ANTAGONIST
 	w_class = WEIGHT_CLASS_BULKY
 	slot_flags = ITEM_SLOT_BACK
 	attack_verb = list("attacked", "chopped", "cleaved", "torn", "cut")
 	hitsound = 'sound/weapons/bladeslice.ogg'
 	sharpness = SHARP_EDGED
 	max_integrity = 200
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 30)
+	armor_type = /datum/armor/fireproof_tools_and_weapons
 	resistance_flags = FIRE_PROOF
 	wound_bonus = 7
 	bare_wound_bonus = 12
@@ -98,7 +98,7 @@
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/metalh2_axe_righthand.dmi'
 	name = "metal hydrogen fire axe"
 	desc = "Монтировочный топор с очень острым лезвием из металлического водорода — прочнее и опаснее обычного пожарного. Удобно носить в слоте костюма Elder Atmosian, не занимая рюкзак."
-	armour_penetration = 40
+	armour_penetration = MELEE_AP_EXCLUSIVE
 	wound_bonus = 12
 	bare_wound_bonus = 18
 	w_class = WEIGHT_CLASS_NORMAL
@@ -113,7 +113,7 @@
 
 /obj/item/fireaxe/energized
 	desc = "Someone with a love for fire axes decided to turn this one into a high-powered energy weapon. Seems excessive."
-	armour_penetration = 50
+	armour_penetration = MELEE_AP_EXCLUSIVE
 	icon_state = "fireaxe_old0"
 	icon = 'modular_bluemoon/icons/obj/items_and_weapons.dmi'
 	var/charge = 90
@@ -157,7 +157,7 @@
 	desc = "A hulking cleaver that feels like a burden just looking at it. Seems excellent at halving obstacles like windows, airlocks, barricades and people."
 	icon_state = "boarding_axe0"
 	throwforce = 25
-	armour_penetration = 40
+	armour_penetration = MELEE_AP_EXCLUSIVE
 
 /obj/item/fireaxe/boardingaxe/update_icon_state()
 	icon_state = "boarding_axe0"

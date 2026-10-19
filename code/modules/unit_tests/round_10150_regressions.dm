@@ -230,6 +230,31 @@
 	var/obj/item/stack/applied = chest.current_gauze
 	TEST_ASSERT(!applied.is_cyborg, "на конечность обязан лечь обычный бинт, а не киборгский")
 
+/// Снятая повязка обязана превращаться в использованный бинт-мусор,
+/// который затем отмывается до одной единицы импровизированной марли.
+/datum/unit_test/trash_gauze_wash/Run()
+	var/mob/living/carbon/human/dummy = allocate(/mob/living/carbon/human)
+	var/obj/item/bodypart/chest = dummy.get_bodypart(BODY_ZONE_CHEST)
+	TEST_ASSERT_NOTNULL(chest, "test premise: у человека должна быть грудь")
+
+	chest.apply_gauze(new /obj/item/stack/medical/gauze)
+	TEST_ASSERT_NOTNULL(chest.current_gauze, "бинт обязан лечь на конечность")
+
+	var/turf/gauze_turf = dummy.drop_location()
+	chest.remove_gauze(null)
+	TEST_ASSERT_NULL(chest.current_gauze, "после снятия конечность обязана остаться без бинта")
+
+	var/obj/item/trash/gauze/used = locate(/obj/item/trash/gauze) in gauze_turf
+	TEST_ASSERT_NOTNULL(used, "снятая повязка обязана превратиться в использованный бинт")
+	TEST_ASSERT_EQUAL(used.icon_kind, "gauze_trash", "мусор из обычного бинта обязан получить иконку gauze_trash")
+	TEST_ASSERT_EQUAL(used.icon_state, "[used.icon_kind][used.variant]", "имя иконки обязано собираться из вида бинта и номера варианта")
+
+	used.wash_into_improvised(null)
+	TEST_ASSERT(QDELETED(used), "использованный бинт обязан уйти при отмывке")
+	var/obj/item/stack/medical/gauze/improvised/clean = locate(/obj/item/stack/medical/gauze/improvised) in gauze_turf
+	TEST_ASSERT_NOTNULL(clean, "отмытый бинт обязан стать импровизированной марлей")
+	TEST_ASSERT_EQUAL(clean.amount, 1, "отмытая марля обязана быть ровно одной единицей")
+
 /// Кнопка накожного нанит-модуля и сама программа держали друг друга и уходили
 /// в харддел с одной внешней ссылкой каждая.
 /datum/unit_test/nanite_button_releases_its_program/Run()

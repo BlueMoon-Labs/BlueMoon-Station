@@ -157,12 +157,13 @@
 
 /obj/structure/closet/secure_closet/genpop/proc/set_security_status(status2set)
 	if(target_record)
-		target_record.fields["criminal"] = status2set
+		if(!target_record.set_security_status(status2set))
+			return FALSE
 		var/rank = select_rank_do_stuff(usr)
 		if(!isnull(rank))
 			target_record.fields["actions_logs"] +=	"<u>[GLOB.current_date_string] | [STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)] Sentenced to PermaBrig [filteredsentlength ? "at [filteredsentlength] minutes" : ""] for the charges of \"[crimes]\" by [rank] [usr.name];</u>"
 		update_all_mob_security_hud()
-	return
+	return TRUE
 
 /obj/structure/closet/secure_closet/genpop/proc/generate_log_release()
 	if(target_record)

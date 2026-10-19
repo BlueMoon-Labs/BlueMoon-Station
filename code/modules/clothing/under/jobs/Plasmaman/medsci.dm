@@ -21,7 +21,7 @@
 	desc = "A plasmaman envirosuit designed for the research director to aid them in their job of directing research into the right direction."
 	icon_state = "rd_envirosuit"
 	item_state = "rd_envirosuit"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 10, BIO = 100, RAD = 0, FIRE = 95, ACID = 95, WOUND = 5)
+	armor_type = /datum/armor/under_rd
 
 /obj/item/clothing/under/plasmaman/robotics
 	name = "robotics plasma envirosuit"

@@ -32,7 +32,7 @@
 	attack_verb_simple = "glomp"
 	attack_sound = 'sound/effects/blobattack.ogg'
 	butcher_results = list(/obj/item/reagent_containers/food/snacks/meat/slab = 2)
-
+	armour_penetration = 15
 	var/morphed = FALSE
 	var/melee_damage_disguised = 0
 	var/eat_while_disguised = FALSE

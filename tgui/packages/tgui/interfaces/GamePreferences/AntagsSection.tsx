@@ -6,11 +6,19 @@ type AntagRole = {
   status: number;
 };
 
+type ObjectiveStyle = {
+  value: string;
+  name: string;
+  description: string;
+};
+
 type AntagData = {
   antag_roles: AntagRole[];
   no_antag: boolean;
   midround_antag: boolean;
   preferred_chaos_level: number;
+  antag_objective_style: string;
+  antag_objective_styles: ObjectiveStyle[];
 };
 
 const capitalize = (str: string) =>
@@ -19,6 +27,8 @@ const capitalize = (str: string) =>
 export const AntagsSection = (props) => {
   const { act, data } = useBackend<AntagData>();
   const { antag_roles, no_antag, midround_antag } = data;
+  const objectiveStyles = data.antag_objective_styles || [];
+  const currentStyle = objectiveStyles.find((style) => style.value === data.antag_objective_style);
 
   if (!antag_roles) {
     return null;
@@ -132,6 +142,27 @@ export const AntagsSection = (props) => {
           </Stack.Item>
         </Stack>
       </Stack.Item>
+      {objectiveStyles.length > 0 && (
+        <Stack.Item>
+          <Stack align="center" fill className="GamePreferences__row">
+            <Stack.Item grow basis={0}>
+              <div className="GamePreferences__label">Стиль заданий</div>
+              <div className="GamePreferences__hint">{currentStyle?.description}</div>
+            </Stack.Item>
+            <Stack.Item>
+              <Dropdown
+                width="150px"
+                options={objectiveStyles.map((style) => style.name)}
+                selected={currentStyle?.name}
+                onSelected={(value) => {
+                  const style = objectiveStyles.find((option) => option.name === value);
+                  if (style) act('set_antag_objective_style', { value: style.value });
+                }}
+              />
+            </Stack.Item>
+          </Stack>
+        </Stack.Item>
+      )}
     </Stack>
   );
 };

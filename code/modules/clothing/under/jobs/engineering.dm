@@ -4,7 +4,7 @@
 	name = "chief engineer's jumpsuit"
 	icon_state = "chiefengineer"
 	item_state = "gy_suit"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 10, FIRE = 80, ACID = 40, WOUND = 5)
+	armor_type = /datum/armor/under_chief_engineer
 	resistance_flags = NONE
 
 /obj/item/clothing/under/rank/engineering/chief_engineer/skirt
@@ -23,7 +23,7 @@
 	name = "atmospheric technician's jumpsuit"
 	icon_state = "atmos"
 	item_state = "atmos_suit"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 70, ACID = 20, WOUND = 5)
+	armor_type = /datum/armor/atmospheric_technician
 	resistance_flags = NONE
 
 /obj/item/clothing/under/rank/engineering/atmospheric_technician/skirt
@@ -42,7 +42,7 @@
 	name = "engineer's jumpsuit"
 	icon_state = "engine"
 	item_state = "engi_suit"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 10, FIRE = 60, ACID = 20, WOUND = 5)
+	armor_type = /datum/armor/engineer
 	resistance_flags = NONE
 	unique_reskin = list(
 		"Alt" = list("icon_state" = "eng_alt")
@@ -63,7 +63,7 @@
 	can_adjust = FALSE
 
 /obj/item/clothing/under/rank/engineering/engineer/util/syndicate
-	armor = list(MELEE = 10, BULLET = 5, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 50, RAD = 0, FIRE = 50, ACID = 40, WOUND = 10)
+	armor_type = /datum/armor/command_and_syndicate_utility
 	has_sensor = NO_SENSORS
 
 /obj/item/clothing/under/rank/engineering/engineer/hazard

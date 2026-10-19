@@ -163,7 +163,7 @@ The console is located at computer/gulag_teleporter.dm
 	if(id)
 		prisoner.equip_to_appropriate_slot(id)
 	if(R)
-		R.fields["criminal"] = SEC_RECORD_STATUS_INCARCERATED
+		R.set_security_status(SEC_RECORD_STATUS_INCARCERATED)
 	last_sent_prisoner = prisoner.mind
 
 /obj/item/circuitboard/machine/gulag_teleporter

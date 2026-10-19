@@ -96,7 +96,7 @@
 
 	if(R)
 		prisoner = R
-		R.fields["criminal"] = SEC_RECORD_STATUS_INCARCERATED
+		R.set_security_status(SEC_RECORD_STATUS_INCARCERATED)
 		var/mob/living/carbon/human/M = usr
 		var/rank = "UNKNOWN RANK"
 		if(istype(M))
@@ -127,25 +127,31 @@
 	Radio.recalculateChannels()
 
 	spawn(20)
-		for(var/obj/machinery/door/window/brigdoor/M in GLOB.airlocks)
-			if(M.id == id)
-				targets += M
-
-		for(var/obj/machinery/flasher/F in GLOB.machines)
-			if(F.id == id)
-				targets += F
-
-		for(var/obj/structure/closet/secure_closet/brig/C in world)
-			if(C.id == id)
-				targets += C
-
-		for(var/obj/machinery/treadmill_monitor/T in GLOB.machines)
-			if(T.id == id)
-				targets += T
-
+		find_targets()
 		if(targets.len==0)
 			set_machine_stat(machine_stat | BROKEN)
 		update_icon()
+
+/obj/machinery/door_timer/proc/find_targets()
+	for(var/obj/machinery/door/window/brigdoor/M in GLOB.airlocks)
+		if(M.id == id)
+			targets |= M
+
+	for(var/obj/machinery/door/airlock/security/cell_airlock in GLOB.airlocks)
+		if(cell_airlock.id == id)
+			targets |= cell_airlock
+
+	for(var/obj/machinery/flasher/F in GLOB.machines)
+		if(F.id == id)
+			targets |= F
+
+	for(var/obj/structure/closet/secure_closet/brig/C in world)
+		if(C.id == id)
+			targets |= C
+
+	for(var/obj/machinery/treadmill_monitor/T in GLOB.machines)
+		if(T.id == id)
+			targets |= T
 
 // Раньше в этом файле лежало два Destroy на один тип: dreamchecker ругался
 // redefined_proc, а вычёркивание из GLOB.celltimers_list зависело от того,
@@ -198,7 +204,7 @@
 	releasetime = world.timeofday + timetoset
 	START_PROCESSING(SSmachines, src)
 
-	for(var/obj/machinery/door/window/brigdoor/door in targets)
+	for(var/obj/machinery/door/door in targets)
 		if(door.density)
 			continue
 		spawn(0)
@@ -232,14 +238,14 @@
 	releasetime = 0
 	printed = 0
 	if(prisoner)
-		prisoner.fields["criminal"] = SEC_RECORD_STATUS_RELEASED
+		prisoner.set_security_status(SEC_RECORD_STATUS_RELEASED)
 		update_all_mob_security_hud()
 		prisoner = null
 
-	for(var/obj/machinery/door/window/brigdoor/door in targets)
+	for(var/obj/machinery/door/door in targets)
 		if(!door.density)
 			continue
-		INVOKE_ASYNC(door, TYPE_PROC_REF(/obj/machinery/door/window/brigdoor, open))
+		INVOKE_ASYNC(door, TYPE_PROC_REF(/obj/machinery/door, open))
 
 	for(var/obj/structure/closet/secure_closet/brig/C in targets)
 		if(C.broken)

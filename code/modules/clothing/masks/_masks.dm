@@ -21,7 +21,7 @@
 	var/hailer_safety = TRUE
 	var/obj/item/radio/hailer_radio
 	var/hailer_radio_key = /obj/item/encryptionkey/headset_sec
-	var/hailer_radio_channel = "Security"
+	var/hailer_radio_channel = RADIO_CHANNEL_SECURITY
 	var/hailer_dispatch_cooldown = 250
 	var/hailer_last_dispatch = 0
 

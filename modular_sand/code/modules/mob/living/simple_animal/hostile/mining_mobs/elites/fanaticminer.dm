@@ -262,7 +262,7 @@
 	force = 20
 	throwforce = 18
 	embedding = list("embedded_pain_multiplier" = 3, "embed_chance" = 90, "embedded_fall_chance" = 50)
-	armour_penetration = 50
+	armour_penetration = MELEE_AP_EXCLUSIVE
 	block_chance = 25
 	sharpness = SHARP_EDGED
 	hitsound = 'sound/weapons/slash.ogg'

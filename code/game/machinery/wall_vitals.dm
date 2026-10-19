@@ -37,7 +37,7 @@
 	active_power_usage = 10
 	max_integrity = 150
 	payment_department = ACCOUNT_MED
-	armor = list(MELEE = 30, BULLET = 20, LASER = 20, ENERGY = 30, BOMB = 10, FIRE = 50, ACID = 80)
+	armor_type = /datum/armor/vitals_reader
 	light_range = 1.5
 	light_power = 0.75
 	light_color = LIGHT_COLOR_CYAN
@@ -316,7 +316,7 @@
 	if(!is_operational)
 		return
 
-	. += emissive_appearance(icon, "outline", src, alpha = src.alpha)
+	. += emissive_appearance(icon, "outline", alpha = src.alpha, offset_spokesman = src)
 	if(isnull(patient))
 		return
 

@@ -273,6 +273,9 @@
 	new /obj/item/modkit/concord_riot_helmet_kit(src) // шлем
 	new /obj/item/modsuit_modkit/lapkee(src) //модсьют
 	new /obj/item/modkit/white_belt_kit(src) // пояс
+	new /obj/item/modkit/hardlight_gloves_kit(src) // перчатки
+	new /obj/item/modkit/hardlight_gloves_kit(src) // перчатки
+	new /obj/item/modkit/formal_concord_boots_kit(src) // ботинки
 	new /obj/item/modkit/nebular_kit(src) // пистоль - энфорсер
 	new /obj/item/modkit/comet_kit(src) // WT-550 PDW
 	new /obj/item/modkit/nebular_t_kit(src) // тазер
@@ -435,6 +438,7 @@
 	new /obj/item/modkit/melatonin_stunsword_kit(src)
 	new /obj/item/modkit/melatonin_carrier_kit(src)
 	new /obj/item/modkit/melatonin_shotgun_hair_of_dog_kit(src)
+	new /obj/item/modsuit_modkit/melatonin(src)
 
 /obj/item/storage/box/tau_box
 	name = "Tau modkits box"

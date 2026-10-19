@@ -1,0 +1,96 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"c" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+"g" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/obj/item/stack/sheet/animalhide/gondola,
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+"i" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
+/obj/structure/flora/ausbushes/brflowers,
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+"s" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/blood/drip,
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+"z" = (
+/obj/structure/flora/ausbushes/ywflowers,
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+"D" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 9
+	},
+/obj/machinery/light/warm/directional/south,
+/obj/structure/flora/ausbushes/ppflowers,
+/obj/effect/decal/cleanable/blood,
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+"E" = (
+/obj/machinery/light/warm/directional/south,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 5
+	},
+/obj/item/stack/sheet/animalhide/gondola,
+/obj/effect/decal/cleanable/blood/drip,
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+"J" = (
+/obj/effect/decal/cleanable/blood,
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+"M" = (
+/obj/effect/decal/cleanable/blood/drip,
+/obj/item/clothing/mask/gondola,
+/obj/item/clothing/under/costume/gondola,
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+"S" = (
+/obj/item/stack/sheet/animalhide/gondola,
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+"U" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
+/obj/item/stack/sheet/animalhide/gondola,
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+"W" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 10
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 6
+	},
+/obj/modular_map_connector,
+/obj/item/stack/sheet/animalhide/gondola,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/grass,
+/area/maintenance/aft/upper)
+
+(1,1,1) = {"
+g
+i
+E
+"}
+(2,1,1) = {"
+z
+J
+W
+"}
+(3,1,1) = {"
+M
+S
+s
+"}
+(4,1,1) = {"
+c
+U
+D
+"}

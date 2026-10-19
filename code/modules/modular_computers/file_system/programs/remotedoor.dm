@@ -41,8 +41,11 @@
 			var/obj/machinery/door/airlock/A = locate(params["ref"]) in view(3, get_turf(computer?.physical || src))
 			if(!A || A.requiresID())
 				return FALSE
+			var/was_closed = A.density
 			if(A.density)
 				A.open()
 			else
 				A.close()
+			if(A.density != was_closed)
+				A.log_remote_use(usr, was_closed ? "opened" : "closed", "remote door program")
 			return TRUE

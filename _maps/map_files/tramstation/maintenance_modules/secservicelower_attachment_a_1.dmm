@@ -1,0 +1,159 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/turf/closed/wall,
+/area/maintenance/central/greater)
+"h" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/effect/spawner/lootdrop/druggie_pill,
+/obj/machinery/light/small/directional/north,
+/obj/structure/sign/poster/contraband/random{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/greater)
+"p" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/dice/d4 = 1, /obj/item/dice/d6 = 1, /obj/item/dice/d8 = 1, /obj/item/dice/d10 = 1, /obj/item/dice/d12 = 1, /obj/item/dice/d20 = 1)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/greater)
+"r" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/stool/directional/north,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/greater)
+"s" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/greater)
+"t" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/structure/rack,
+/obj/effect/spawner/lootdrop/maintenance/four,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/greater)
+"z" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/stool/directional/south,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/greater)
+"B" = (
+/turf/template_noop,
+/area/template_noop)
+"J" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/item/toy/cards/deck,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/greater)
+"K" = (
+/obj/modular_map_connector,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/greater)
+"M" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/greater)
+"Q" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/central/greater)
+
+(1,1,1) = {"
+B
+B
+B
+B
+B
+B
+B
+B
+B
+B
+B
+"}
+(2,1,1) = {"
+B
+B
+B
+B
+M
+M
+M
+M
+M
+B
+B
+"}
+(3,1,1) = {"
+B
+B
+B
+b
+M
+z
+J
+r
+K
+B
+B
+"}
+(4,1,1) = {"
+B
+B
+B
+b
+t
+s
+p
+s
+M
+B
+B
+"}
+(5,1,1) = {"
+B
+B
+B
+b
+b
+b
+h
+r
+M
+B
+B
+"}
+(6,1,1) = {"
+B
+B
+B
+B
+B
+b
+b
+Q
+M
+B
+B
+"}
+(7,1,1) = {"
+B
+B
+B
+B
+B
+B
+b
+b
+b
+B
+B
+"}

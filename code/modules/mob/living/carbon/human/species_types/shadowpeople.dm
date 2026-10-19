@@ -183,7 +183,7 @@
 	icon_state = "arm_blade"
 	item_state = "arm_blade"
 	force = 30
-	armour_penetration = 25
+	armour_penetration = MELEE_AP_ANTAGONIST
 	stuttering = 5
 	lefthand_file = 'icons/mob/inhands/antag/changeling_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/antag/changeling_righthand.dmi'

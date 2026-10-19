@@ -50,6 +50,7 @@
 			else
 				male += D.name
 				female += D.name
+	GLOB.sprite_accessory_lists |= list(L)
 	return L
 
 /datum/sprite_accessory
@@ -75,7 +76,7 @@
 	var/extra2 = FALSE
 	var/extra2_color_src = MUTCOLORS3
 
-	//for snowflake/donor specific sprites
+	// Display keys, normalized ckeys and enc1 IDs for snowflake/donor specific sprites.
 	var/list/ckeys_allowed
 
 	//For soft-restricting markings to species IDs
@@ -86,6 +87,14 @@
 
 	var/mutable_category // simply do not worry about this value
 
+	var/alt_aroused = FALSE //CIT CODE if this is TRUE, then the genitals will use an alternate icon_state when aroused.
+	var/taur_icon //leave null if the genital doesn't have a taur counterpart.
+	var/accepted_taurs = STYLE_HOOF_TAURIC|STYLE_PAW_TAURIC //Types that match with the accessory.
+	var/feat_taur //the text string of the dna feature to check for those who want to opt out.
+	var/taur_dimension_y = 32
+	var/taur_dimension_x = 32
+	var/use_custom_mod_icon = FALSE
+
 /datum/sprite_accessory/proc/is_not_visible(var/mob/living/carbon/human/H, var/tauric) //return if the accessory shouldn't be shown
 	return FALSE
 
@@ -95,3 +104,10 @@
 	var/has_digitigrade = FALSE
 	var/covers_groin = FALSE
 	var/covers_chest = FALSE
+
+/**
+ * Доступен ли аксессуар игроку с указанным key/ckey. Поддерживает обычные имена и enc1 ID.
+ * Пустой или отсутствующий ckeys_allowed = доступен всем.
+ */
+/datum/sprite_accessory/proc/is_allowed_for(user_key)
+	return is_key_in_whitelist(user_key, ckeys_allowed)

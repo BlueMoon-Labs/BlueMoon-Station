@@ -432,6 +432,8 @@ Difficulty: Normal
 	var/turf/source = get_turf(src)
 	if(!T || !source)
 		return
+	if(T.z != source.z && victim != spawned_beacon)
+		return
 	new /obj/effect/temp_visual/hierophant/telegraph(T, src)
 	new /obj/effect/temp_visual/hierophant/telegraph(source, src)
 	playsound(T,'sound/magic/wand_teleport.ogg', 200, 1)

@@ -1,6 +1,6 @@
 /obj/item/living_heart
 	name = "living heart"
-	desc = "Сердце, которое бьётся в такт чужой душе. Еретик сжимает его, чтобы найти цель, а Alt-ЛКМ выбирает другую. Касанием поверженного члена экипажа еретик делает целью его, а касанием обезвреженной цели начинает обряд прямо на месте или, если у пути есть дверь, уводит её в изнанку. Если дверь работает издалека, сжатое сердце спросит: найти цель или увести её."
+	desc = "Сердце, которое бьётся в такт чужой душе. Еретик сжимает его, чтобы найти цель, а Alt-ЛКМ выбирает другую. Касанием поверженного члена экипажа, согласного на охоту, еретик делает целью его, а касанием обезвреженной цели начинает обряд прямо на месте или, если у пути есть дверь, уводит её в изнанку. Если дверь работает издалека, сжатое сердце спросит: найти цель или увести её."
 	icon = 'modular_bluemoon/icons/obj/heretic_living_heart.dmi'
 	icon_state = "living_heart"
 	lefthand_file = 'modular_bluemoon/icons/obj/heretic_living_heart_lefthand.dmi'
@@ -49,12 +49,13 @@
 		return
 	var/datum/antagonist/heretic/heretic = user.mind.has_antag_datum(/datum/antagonist/heretic)
 	if(heretic.hunt_target?.current)
-		. += span_notice("Цель: [heretic.hunt_target.current.real_name]. Живую цель достаточно связать, оглушить или сбить с ног; цель в крите принимается без наручников. Награда - 2 очка знаний и 1 побочное. Труп назначенной цели даёт только 1 очко знаний.")
+		. += span_notice("Цель: [heretic.hunt_target.current.real_name]. Живую цель достаточно связать, оглушить или сбить с ног; цель в крите принимается без наручников. Награда - 2 очка знаний и 1 побочное. [heretic.hunt_corpse_note()]")
 	else
 		. += span_notice("Сожмите сердце, чтобы выбрать цель.")
 	. += span_notice("Коснитесь сердцем обезвреженной цели охоты: круг проступит прямо под телом, и обряд займёт [DisplayTimeText(heretic.heart_rite_time(heretic.hunt_target?.current || user), 1)]. На руне трансмутации сердце кладут рядом с целью.")
 	. += span_notice("Если у пути есть дверь, сердце предложит увести цель в изнанку; если дверь работает издалека, сжатое сердце спросит, найти цель или увести её.")
 	. += span_notice("Сменить цель: Alt+ЛКМ по сердцу, кнопка в кодексе или касание сердцем поверженного члена экипажа. Не чаще раза в [DisplayTimeText(HERETIC_HUNT_REFRESH_COOLDOWN)].")
+	. += span_notice("Значок слева у ног показывает согласие члена экипажа на охоту: серый перечёркнутый круг - нельзя, синее кольцо - только живым, оранжевый прицел и красный круг - примут и труп.")
 
 /obj/item/living_heart/AltClick(mob/user)
 	. = ..()
@@ -104,7 +105,7 @@
 	. = TRUE
 	var/turf/target_turf = get_turf(target)
 	var/turf/user_turf = get_turf(user)
-	playsound(src, 'modular_bluemoon/sound/heretic/heart_track.ogg', 25, FALSE, extrarange = SILENCED_SOUND_EXTRARANGE)
+	playsound(src, GLOB.heretic_heart_sounds["track"], 25, FALSE, extrarange = SILENCED_SOUND_EXTRARANGE)
 	if(!target_turf || !user_turf || target_turf.z != user_turf.z)
 		balloon_alert(user, "на другом уровне")
 		to_chat(user, span_notice("[target.real_name] находится на другом уровне станции."))
@@ -150,7 +151,7 @@
 	attack_verb = list("атаковал", "рубанул", "уколол", "порезал", "терзал")
 	wound_bonus = 5
 	bare_wound_bonus = 10
-	armour_penetration = 25
+	armour_penetration = MELEE_AP_ANTAGONIST
 	actions_types = list(/datum/action/item_action/heretic_escape)
 	/// Только соответствующий клинок активирует метку своего пути.
 	var/mark_type = /datum/status_effect/eldritch
@@ -237,11 +238,11 @@
 			return
 		if(safe_turf && do_teleport(user, safe_turf, forceMove = TRUE, channel = TELEPORT_CHANNEL_MAGIC))
 			user.mind.heretic_escape_ready_at = world.time + HERETIC_BLADE_ESCAPE_COOLDOWN
-			origin.visible_message(span_warning("Клинок в руке [user] разлетается осколками, и [user] исчезает в клубах дыма."))
+			origin.visible_message(span_warning("Клинок в руке [user] разлетается осколками, воздух расходится тёмным швом, и [user] исчезает в нём."))
 			new /obj/effect/temp_visual/eldritch_smoke(origin)
 			playsound(origin, "shatter", 70, TRUE)
 			new /obj/effect/temp_visual/eldritch_smoke(safe_turf)
-			user.visible_message(span_warning("Из клубов дыма появляется [user], сжимая осколки клинка."))
+			user.visible_message(span_warning("Воздух расходится тёмным швом, и из него шагает [user], сжимая осколки клинка."))
 			to_chat(user,"<span class='warning'>Вы разбиваете [src], и чужая сила подхватывает ваше тело. Ржавые холмы услышали зов.</span>")
 			log_game("HERETIC ESCAPE: [key_name(user)] escaped using [src] from [AREACOORD(origin)] to [AREACOORD(user)].")
 		else
@@ -254,7 +255,7 @@
 	qdel(src)
 
 /obj/item/melee/sickly_blade/proc/find_escape_turf(turf/origin)
-	var/turf/destination = is_station_level(origin.z) ? find_heretic_station_turf(for_escape = TRUE) : find_safe_turf(zlevels = list(origin.z), extended_safety_checks = TRUE, dense_atoms = FALSE)
+	var/turf/destination = SSmapping.level_trait(origin.z, ZTRAIT_ANTAG_TRAINING) ? find_safe_turf(zlevels = list(origin.z), extended_safety_checks = TRUE, dense_atoms = FALSE) : find_heretic_station_turf(for_escape = TRUE)
 	if(destination && destination != origin && !destination.is_transition_turf() && is_heretic_escape_area(get_area(destination)))
 		return destination
 	return find_heretic_escape_fallback(origin)
@@ -275,7 +276,7 @@
 /obj/item/melee/sickly_blade/examine(mob/user)
 	. = ..()
 	if(IS_HERETIC(user) || IS_HERETIC_MONSTER(user))
-		. += span_notice("Возьмите клинок в руку и нажмите «Разбить клинок и отступить» или активируйте его в руке: вы переместитесь в случайное безопасное место, потеряв оружие. Успейте до оглушения или потери сознания. Следующий побег возможен только через [DisplayTimeText(HERETIC_BLADE_ESCAPE_COOLDOWN)]. Наручники, смирительная рубашка и щит разума не дают разбить клинок. После вознесения побег клинком закрыт. При неудаче клинок сохранится.")
+		. += span_notice("Возьмите клинок в руку и нажмите «Разбить клинок и отступить» или активируйте его в руке: вы переместитесь в случайное безопасное место станции, потеряв оружие. Успейте до оглушения или потери сознания. Следующий побег возможен только через [DisplayTimeText(HERETIC_BLADE_ESCAPE_COOLDOWN)]. Наручники, смирительная рубашка и щит разума не дают разбить клинок. После вознесения побег клинком закрыт. При неудаче клинок сохранится.")
 
 /obj/item/melee/sickly_blade/rust
 	name = "rusted blade"
@@ -362,7 +363,7 @@
 	allowed = list(/obj/item/melee/sickly_blade, /obj/item/forbidden_book, /obj/item/living_heart)
 	hoodtype = /obj/item/clothing/head/hooded/cult_hoodie/eldritch
 	// slightly better than normal cult robes
-	armor = list(MELEE = 50, BULLET = 50, LASER = 50,ENERGY = 50, BOMB = 35, BIO = 20, RAD = 0, FIRE = 20, ACID = 20)
+	armor_type = /datum/armor/eldritch
 	brc_mitigation_bonus = 15  // BLUEMOON ADD - балахон теперь реально превосходит бронежилет
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	alternate_screams = BLOOD_SCREAMS
@@ -390,7 +391,7 @@
 	flags_inv = NONE
 	flags_cover = NONE
 	desc = "Чёрный капюшон, который словно поглощает свет. Руны на ткани вспыхивают и ускользают из памяти."
-	armor = list(MELEE = 30, BULLET = 30, LASER = 30,ENERGY = 30, BOMB = 15, BIO = 0, RAD = 0, FIRE = 0, ACID = 0)
+	armor_type = /datum/armor/void
 	obj_flags = NONE | EXAMINE_SKIP
 
 /obj/item/clothing/suit/hooded/cultrobes/void
@@ -402,7 +403,7 @@
 	hoodtype = /obj/item/clothing/head/hooded/cult_hoodie/void
 	flags_inv = NONE
 	// slightly worse than normal cult robes
-	armor = list(MELEE = 30, BULLET = 30, LASER = 30,ENERGY = 30, BOMB = 15, BIO = 0, RAD = 0, FIRE = 0, ACID = 0)
+	armor_type = /datum/armor/void
 	pocket_storage_component_path = /datum/component/storage/concrete/pockets/void_cloak
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
@@ -608,8 +609,8 @@
 	name = "Разрушение рун"
 	desc = "Уничтожает все руны, привязанные к этому клинку."
 	background_icon_state = "bg_ecult"
-	button_icon_state = "rune_break"
-	icon_icon = 'icons/mob/actions/actions_ecult.dmi'
+	button_icon_state = "rune_shatter"
+	icon_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
 	check_flags = AB_CHECK_CONSCIOUS
 
 /datum/action/innate/rune_shatter/Activate()

@@ -24,6 +24,9 @@
 	pixel_y = rand(-3, 3) //randomize a little
 	air_update_turf(TRUE) // Почему.
 
+/obj/item/stack/tile/builds_over_openspace()
+	return TRUE
+
 /obj/item/stack/tile/examine(mob/user)
 	. = ..()
 	if(throwforce && !is_cyborg) //do not want to divide by zero or show the message to borgs who can't throw
@@ -648,7 +651,7 @@
 	flags_1 = CONDUCT_1
 	turf_type = /turf/open/floor/plasteel
 	mineralType = "metal"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 70)
+	armor_type = /datum/armor/weapons_and_plasteel_tiles
 	resistance_flags = FIRE_PROOF
 
 /obj/item/stack/tile/plasteel/cyborg

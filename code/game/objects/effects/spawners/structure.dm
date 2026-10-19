@@ -12,8 +12,11 @@ again.
 	. = ..()
 	if(spawn_list && spawn_list.len)
 		for(var/I in spawn_list)
-			new I(get_turf(src))
+			spawn_structure(I, get_turf(src))
 	return INITIALIZE_HINT_QDEL
+
+/obj/effect/spawner/structure/proc/spawn_structure(structure_type, turf/location)
+	return new structure_type(location)
 
 
 //normal windows
@@ -26,6 +29,8 @@ again.
 	dir = SOUTH
 	var/electrochromatic
 	var/electrochromatic_id
+	/// Install an emergency package in each spawned window.
+	var/install_airbags = FALSE
 
 /obj/effect/spawner/structure/window/Initialize(mapload)
 	. = ..()
@@ -42,11 +47,19 @@ again.
 		if(electrochromatic == ELECTROCHROMATIC_DIMMED)
 			W.electrochromatic_dim()
 
+/obj/effect/spawner/structure/window/spawn_structure(structure_type, turf/location)
+	var/atom/movable/spawned_structure = ..()
+	if(install_airbags && istype(spawned_structure, /obj/structure/window))
+		var/obj/structure/window/window = spawned_structure
+		window.install_airbag()
+	return spawned_structure
+
 //shutter
 /obj/effect/spawner/structure/window/shutter
 	name = "shutter window spawner"
 	icon_state = "shwindow_spawner"
-	spawn_list = list(/obj/machinery/door/firedoor/window, /obj/structure/grille, /obj/structure/window/fulltile)
+	spawn_list = list(/obj/structure/grille, /obj/structure/window/fulltile)
+	install_airbags = TRUE
 
 //reinforced
 
@@ -59,7 +72,8 @@ again.
 /obj/effect/spawner/structure/window/reinforced/shutter
 	name = "reinforced shutter window spawner"
 	icon_state = "shrwindow_spawner"
-	spawn_list = list(/obj/machinery/door/firedoor/window, /obj/structure/grille, /obj/structure/window/reinforced/fulltile)
+	spawn_list = list(/obj/structure/grille, /obj/structure/window/reinforced/fulltile)
+	install_airbags = TRUE
 
 /obj/effect/spawner/structure/window/hollow
 	name = "hollow Window Spawner"
@@ -120,10 +134,12 @@ again.
 /obj/effect/spawner/structure/window/reinforced
 	name = "reinforced Window Spawner"
 	icon_state = "rwindow_spawner"
-	spawn_list = list(/obj/machinery/door/firedoor/heavy, /obj/structure/grille, /obj/structure/window/reinforced/fulltile)
+	spawn_list = list(/obj/structure/grille, /obj/structure/window/reinforced/fulltile)
+	install_airbags = TRUE
 
 /obj/effect/spawner/structure/window/reinforced/no_firelock
 	spawn_list = list(/obj/structure/grille, /obj/structure/window/reinforced/fulltile)
+	install_airbags = FALSE
 
 /obj/effect/spawner/structure/window/hollow/reinforced
 	name = "hollow reinforced Window Spawner"
@@ -185,6 +201,7 @@ again.
 	name = "tinted reinforced Window Spawner"
 	icon_state = "twindow_spawner"
 	spawn_list = list(/obj/structure/grille, /obj/structure/window/reinforced/tinted/fulltile)
+	install_airbags = FALSE
 
 /obj/effect/spawner/structure/window/reinforced/tinted/electrochromatic
 	name = "electrochromatic reinforced Window Spawner"
@@ -195,7 +212,8 @@ again.
 /obj/effect/spawner/structure/window/shuttle
 	name = "shuttle Window Spawner"
 	icon_state = "swindow_spawner"
-	spawn_list = list(/obj/machinery/door/firedoor/heavy, /obj/structure/grille, /obj/structure/window/shuttle)
+	spawn_list = list(/obj/structure/grille, /obj/structure/window/shuttle)
+	install_airbags = TRUE
 
 
 //plastitanium window
@@ -203,12 +221,14 @@ again.
 /obj/effect/spawner/structure/window/plastitanium
 	name = "plastitanium Window Spawner"
 	icon_state = "plastitaniumwindow_spawner"
-	spawn_list = list(/obj/machinery/door/firedoor/heavy, /obj/structure/grille, /obj/structure/window/plastitanium)
+	spawn_list = list(/obj/structure/grille, /obj/structure/window/plastitanium)
+	install_airbags = TRUE
 
 //plastitanium pirate window
 
 /obj/effect/spawner/structure/window/plastitanium/pirate
 	spawn_list = list(/obj/structure/grille, /obj/structure/window/plastitanium/pirate)
+	install_airbags = FALSE
 
 //ice window
 
@@ -223,7 +243,8 @@ again.
 /obj/effect/spawner/structure/window/survival_pod
 	name = "pod Window Spawner"
 	icon_state = "podwindow_spawner"
-	spawn_list = list(/obj/machinery/door/firedoor/heavy, /obj/structure/grille, /obj/structure/window/shuttle/survival_pod)
+	spawn_list = list(/obj/structure/grille, /obj/structure/window/shuttle/survival_pod)
+	install_airbags = TRUE
 
 /obj/effect/spawner/structure/window/hollow/survival_pod
 	name = "hollow pod Window Spawner"
@@ -285,7 +306,8 @@ again.
 /obj/effect/spawner/structure/window/plasma
 	name = "plasma Window Spawner"
 	icon_state = "pwindow_spawner"
-	spawn_list = list(/obj/machinery/door/firedoor/heavy, /obj/structure/grille, /obj/structure/window/plasma/fulltile)
+	spawn_list = list(/obj/structure/grille, /obj/structure/window/plasma/fulltile)
+	install_airbags = TRUE
 
 /obj/effect/spawner/structure/window/hollow/plasma
 	name = "hollow plasma Window Spawner"
@@ -347,6 +369,7 @@ again.
 	name = "reinforced plasma Window Spawner"
 	icon_state = "prwindow_spawner"
 	spawn_list = list(/obj/structure/grille, /obj/structure/window/plasma/reinforced/fulltile)
+	install_airbags = FALSE
 
 /obj/effect/spawner/structure/window/hollow/plasma/reinforced
 	name = "hollow reinforced plasma Window Spawner"

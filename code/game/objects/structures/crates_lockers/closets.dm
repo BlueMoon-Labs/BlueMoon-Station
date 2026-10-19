@@ -7,7 +7,6 @@
 	shadow_weight = 0.5
 	max_integrity = 200
 	integrity_failure = 0.25
-	armor = list(MELEE = 20, BULLET = 10, LASER = 10, ENERGY = 0, BOMB = 10, BIO = 0, RAD = 0, FIRE = 70, ACID = 60)
 
 	/// The overlay for the closet's door
 	var/obj/effect/overlay/closet_door/door_obj
@@ -111,7 +110,7 @@
 			. += "off"
 			. += "sparking"
 		//Overlay is similar enough for both that we can use the same mask for both
-		. += emissive_appearance(icon, "locked", alpha = src.alpha)
+		. += emissive_appearance(icon, "locked", alpha = src.alpha, offset_spokesman = src)
 		. += locked ? "locked" : "unlocked"
 
 /// Animates the closet door opening and closing

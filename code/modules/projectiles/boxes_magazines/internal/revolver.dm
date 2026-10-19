@@ -72,3 +72,8 @@
 	max_ammo = 6
 	multiload = 1
 
+/obj/item/ammo_box/magazine/internal/cylinder/judgement
+	name = "барабан Judgement"
+	ammo_type = /obj/item/ammo_casing/magnum44
+	caliber = list(".44 magnum")
+	max_ammo = 6

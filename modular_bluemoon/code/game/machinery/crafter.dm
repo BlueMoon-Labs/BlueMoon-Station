@@ -233,7 +233,7 @@ GLOBAL_LIST_EMPTY(attackby_recipes)
 		available_recipes += potential_recipe
 
 	// Stack recipes (items only)
-	for(var/list/stack_list in list(GLOB.metal_recipes, GLOB.rod_recipes, GLOB.glass_recipes, GLOB.cloth_recipes, GLOB.wood_recipes, GLOB.cardboard_recipes, GLOB.plastic_recipes, GLOB.plasteel_recipes, GLOB.bone_recipes, GLOB.durathread_recipes))
+	for(var/list/stack_list in list(GLOB.metal_recipes, GLOB.rod_recipes, GLOB.glass_recipes, GLOB.cloth_recipes, GLOB.wood_recipes_generic, GLOB.cardboard_recipes, GLOB.plastic_recipes, GLOB.plasteel_recipes, GLOB.bone_recipes, GLOB.durathread_recipes))
 		for(var/datum/stack_recipe/SR in stack_list)
 			if(!is_craftable_stack(SR))
 				continue
@@ -250,7 +250,7 @@ GLOBAL_LIST_EMPTY(attackby_recipes)
 				sw.stack_type = /obj/item/stack/sheet/glass
 			else if(stack_list == GLOB.cloth_recipes)
 				sw.stack_type = /obj/item/stack/sheet/cloth
-			else if(stack_list == GLOB.wood_recipes)
+			else if(stack_list == GLOB.wood_recipes_generic)
 				sw.stack_type = /obj/item/stack/sheet/mineral/wood
 			else if(stack_list == GLOB.cardboard_recipes)
 				sw.stack_type = /obj/item/stack/sheet/cardboard
