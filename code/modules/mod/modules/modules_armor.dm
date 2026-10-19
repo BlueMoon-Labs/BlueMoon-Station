@@ -16,6 +16,7 @@
 	. = ..()
 	material_to_armor_list = list(
 		/obj/item/stack/sheet/durathread::name 			 = MELEE,
+		/obj/item/stack/sheet/animalhide/goliath_hide::name = MELEE,
 		/obj/item/stack/sheet/plasteel::name 			 = BULLET,
 		/obj/item/stack/sheet/mineral/titanium::name 	 = LASER,
 		/obj/item/stack/sheet/mineral/diamond::name		 = ENERGY,

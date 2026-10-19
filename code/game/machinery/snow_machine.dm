@@ -89,6 +89,7 @@
 		return
 	if(istype(T, /turf/open))
 		cool_turf(T, cooling_speed)
+		make_snowcloud(T)
 	for(var/turf/open/TF in range(1, src))
 		if(prob(50))
 			continue
