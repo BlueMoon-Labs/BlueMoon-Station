@@ -25,7 +25,7 @@
 
 /datum/component/discoverable/proc/examine(datum/source, mob/user, atom/thing)
 	SIGNAL_HANDLER
-	if(!user.research_scanner)
+	if(!HAS_TRAIT(user, TRAIT_RESEARCH_SCANNER))
 		return
 	to_chat(user, span_notice("Научная ценность обнаружена."))
 	to_chat(user, span_notice("Сканирование: [scanned ? "Истина" : "Ложь"]."))

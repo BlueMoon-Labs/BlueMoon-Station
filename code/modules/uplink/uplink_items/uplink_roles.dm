@@ -73,11 +73,11 @@
 
 
 /datum/uplink_item/role_restricted/honker
-    name = "Dark H.O.N.K."
-    desc = "Клоунский боевой мех с пусковыми установками для банановых шкурок и слезогранат, а также с незаменимым HoNkER BlAsT 5000."
-    item = /obj/mecha/combat/honker/dark/loaded
-    cost = 20
-    restricted_roles = list("Clown")
+	name = "Dark H.O.N.K."
+	desc = "Клоунский боевой мех с пусковыми установками для банановых шкурок и слезогранат, а также с незаменимым HoNkER BlAsT 5000."
+	item = /obj/vehicle/sealed/mecha/combat/honker/dark/loaded
+	cost = 20
+	restricted_roles = list("Clown")
 
 /datum/uplink_item/role_restricted/haunted_magic_eightball
 	name = "Haunted Magic Eightball"
