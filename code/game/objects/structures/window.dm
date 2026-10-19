@@ -903,9 +903,12 @@
 /obj/structure/window/proc/deploy_window_safety()
 	if(!isturf(loc))
 		return
-	// Заслонка у самого окна закрывается сразу, без общей тревоги отсека.
+	// Окно уже разбивается: проверяем перепад через открывшийся проём,
+	// учитывая реальные атмосферные соединения и остальные преграды.
+	density = FALSE
 	for(var/obj/machinery/door/firedoor/firelock in loc)
-		firelock.emergency_pressure_stop()
+		if(!firelock.density && firelock.is_holding_pressure(include_open = TRUE))
+			firelock.emergency_pressure_stop()
 	deploy_airbag()
 
 /obj/structure/window/proc/deploy_airbag()
