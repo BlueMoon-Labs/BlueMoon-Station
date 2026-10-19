@@ -220,7 +220,7 @@
 	name = "Syndicate Admiral's Cloak"
 	slot = ITEM_SLOT_NECK
 	path = /obj/item/clothing/neck/cloak/syndieadm
-	ckeywhitelist = list("architect0r", "fanlexa", "enc1:pA4ldRKGM_djQ0yeaKYQSjiJB5khrtDJoe_6-DFy9E2ge_0HDjIzxw", "enc1:DUkK4alGSMT4SHpGZBQFhMg-h4odUDnnNRMLImS6Fq07YBJF")
+	ckeywhitelist = list("architect0r", "fanlexa", "enc1:ZSm5SLVs22RzJuB72CoClG1zO2svXDvNskZVzg7u5HC4qAvivk2TLg", "enc1:5RF1peUXV44QSOj8ZcdUrCvi0QUYOWVI7EdOr8M-0c-S3EOJ")
 
 /datum/gear/donator/bm/sencloak
 	name = "Senior Commander's Trenchcloak"
@@ -635,7 +635,7 @@
 	name = "Upgraded Size Tool"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/melee/sizetool/upgraded
-	ckeywhitelist = list("enc1:L761CX8oLXIKx_fqs8lUyQ2NDp-_2VbAHdcK-GRjes-2Rq1xNSI", "enc1:lhEi7qYQEtX4yFwkJbdZREOdBIwZDgjiUGDIHANYVxefjTe8JkShWw", "enc1:P12NZ3vguo4ZFOizYVATaRP5VfK7czRl7QM5nHd-Db3mKphq", "thevelocipony")
+	ckeywhitelist = list("enc1:0ZhIqEqjyfOXkmvUajQcLIbzJoOQ5CV8L8y4w26sqNGICe0Xv4o", "enc1:3FOMDCsG1QwEcOrt3lTBkSHXj0lAYTWXHCevAVV9wSjlmyYzKu1L3A", "enc1:6QnjOcQBWtFGfgFF1hqMR8ktwXMX03_XC8LkmrKtyjOa0SIz", "thevelocipony")
 
 /datum/gear/donator/bm/pet_alta
 	name = "Alta Cat"
@@ -1474,13 +1474,13 @@
 	name = "Lissara plush"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/toy/plush/bm/lissara
-	ckeywhitelist = list("enc1:IHGsavUUXw07VrF8t2V3xzMI63qdBakcy1xAvlYUc9SAsrEddC8J-A", "enc1:_XABxxpt6Ic_U76G9ckKCS-COqa1eAH35YQd2BO_c9q3LdGZ")
+	ckeywhitelist = list("enc1:HfL74qz9SYsWj1sl3G7cmRAA-TJsUjaLbqENaxODVwkrYOBAHDc6lw", "enc1:hGA4yPBBCnkiBPggAzGU0OlnwdSbTou7AaKvQJ3CXGhAMH53")
 
 /datum/gear/donator/bm/araminta_plush
 	name = "Araminta plush"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/toy/plush/bm/araminta
-	ckeywhitelist = list("enc1:AJRLvICpNf50qrCivyUlCTYG4vnt7OoNueOYhlttO7JsnPlkoh6dTA", "enc1:O-UXKW_YlQ0UsKDRthkFIXZrjDw51pDxNGcHcxNoiOzI5DCi")
+	ckeywhitelist = list("enc1:hMWYWPkGFVRawiIkNDxMaEfrYRdTUwosBftTUJPqpjCOJjNP8ZVwSg", "enc1:biIANg5mBQNChLoydOEFmKJjTyub1DZfq4rTACAfeV6yqnLX")
 
 /datum/gear/donator/bm/dilivery_bag
 	name = "Delivery Bag"
@@ -1603,37 +1603,37 @@
 	name = "A diamond ring"
 	path = /obj/item/clothing/accessory/ring/diamond
 	slot = ITEM_SLOT_ACCESSORY
-	ckeywhitelist = list("enc1:e3aAGV9hh45nIY44fEVbbJCpTZ8kZhfRbt9yPttdN1_VkcPeamB1eA", "enc1:eWhwFL0bz7jbRFC2w1vG7VwnhrP8Q6BH6IbyBWwmFBC8tu6R")
+	ckeywhitelist = list("enc1:9a_7wwtg3FGNvdmGjwfh_3E0vuLoztjlunQttIbCQgKrxoZuf4Y22Q", "enc1:wjCE29ihhHhkiF8eSq5OSvomLGfmkncpfi08cJalqnsar1xR")
 
 /datum/gear/donator/bm/cybersun_cloak
 	name = "Cybersun Cloak"
 	path = /obj/item/clothing/neck/cloak/cybersun/civil
 	slot = ITEM_SLOT_NECK
-	ckeywhitelist = list("enc1:I4WL7XDROdDXcFmZ3uMcui3n33iPSdSpP5C_4-y07IQXb8eZWdDeQw", "enc1:h0iCzGHylJkknvLH7wwhXE_myha8E9y6KkYlJAauhVv-dBvC", "sheya")
+	ckeywhitelist = list("enc1:0VJlsOQoD7-7axhvl2k7IwGh_k9-GsKrXERto7YOL2V9SZHubh66Ew", "enc1:HP390l2garT2JwvNwjxJyX6wPuosjwnf125AwXCMvZhQgLPI", "sheya")
 
 /datum/gear/donator/bm/toggles_combat_maid_civil
 	name = "Combat Maid Sleeves"
 	path = /obj/item/clothing/gloves/toggled/hug/combat_maid_civil
 	slot = ITEM_SLOT_GLOVES
-	ckeywhitelist = list("enc1:qFwovcjYgLKA7lDu4RfAtGhgx_jyXfEGrvVOmk71XTto28wh")
+	ckeywhitelist = list("enc1:SZvkmjU-7oC84CG7gVRA6jpYoa2n8AlFeFZDXNxvZbBzKh_h")
 
 /datum/gear/donator/bm/long_fancy_kimono
 	name = "Long Fancy Kimono"
 	path = /obj/item/clothing/suit/donator/bm/long_fancy_kimono
 	slot = ITEM_SLOT_OCLOTHING
-	ckeywhitelist = list("enc1:WTPtW_ZPESOc7U61oI1429RfesS-L0NUszk5sl18dzEIAbjs")
+	ckeywhitelist = list("enc1:XagCJcs1DtEsWWM_y4Pi7EQfwAqbioXo6NsPWKX1QLK83Kcz")
 
 /datum/gear/donator/bm/long_wintercoat
 	name = "Long Winter Coat"
 	path = /obj/item/clothing/suit/hooded/wintercoat/bm/donator/long_wintercoat
 	slot = ITEM_SLOT_OCLOTHING
-	ckeywhitelist = list("enc1:QURw6548auuzfN2tF_heCmwxAKclHjInRFzPMtRKi_BxSX2i1HproQ", "enc1:7JC5tiHxwGiinVWKHwr2jomudeGFm-FJUDMls02tGS1G-ZkF")
+	ckeywhitelist = list("enc1:rozpGAp0vjEPGcxZ55baKOJibncZ8aD6-a10tseFS7NoTbTB6RI2oQ", "enc1:UAq_ejnBwTuhvSfsC5wBissC0hOHpWPWyify8o7LVuGDCVWl")
 
 /datum/gear/donator/bm/wardrobe_box
 	name = "Wardrobe Box"
 	path = /obj/item/storage/box/wardrobe_box
 	slot = ITEM_SLOT_BACKPACK
-	ckeywhitelist = list("enc1:-BibbP3DAG6p-Uarpd_ZVY_Cdp-cQHc7lhvh5QnftDxxdWbCFFZdWg", "enc1:rIxiHni9V67cXAzXnV1hV5tDg7M_udqnb4wU3x6Yzqw60LD1")
+	ckeywhitelist = list("enc1:vRA_b0DHwCYJDDhET4zVt_kb2WZygOOhwBFcvSRZ-6jYgEGwv5_OvA", "enc1:X98CCFEfpaxjOlQ4zQbTQjBReTyCR8tHWgjpppkgH53IOKXI")
 
 /datum/gear/donator/bm/toggles_poly_evening
 	name = "Polychromic evening gloves"
@@ -1641,13 +1641,13 @@
 	slot = ITEM_SLOT_GLOVES
 	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#FEFEFE")
-	ckeywhitelist = list("enc1:_BYQOf-lqWgWWzG2OTGcAgqqqHKTv5gvRonxASgwakGjzZjKDgSD1Q")
+	ckeywhitelist = list("enc1:FcB3klMqU5S5TexFTJxWjWE66IBn9yTi-GZiVecDZjFdpYfmNQGRoQ")
 
 /datum/gear/donator/bm/moonflower
 	name = "Moonflower"
 	path = /obj/item/reagent_containers/food/snacks/grown/moonflower
 	slot = ITEM_SLOT_HEAD
-	ckeywhitelist = list("enc1:PybG3IvqWPdE8sfRlO1fkvT3LgrScKUaAUWq-WTvkzIulN6W8-gvXw")
+	ckeywhitelist = list("enc1:S3sZH1l3C4vLhYdSWAw9t6Er_RbmUa3_cmZF09vPCGSgttcBa-ITXQ")
 
 /datum/gear/donator/bm/saareuni
 	name = "SAARE BDU G3"
@@ -1966,7 +1966,7 @@
 	name = "Invisible Belt Kit"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/modkit/invis_belt
-	ckeywhitelist = list("enc1:z7utSYld3-DHTgTQBw8pJcx1xpf5_ddB5zajb-HjmFg444aG99rKLQ", "enc1:aOGcX-HPk9I0NybJgZfeBmn9tZwHj9jt7X1rImLEGmJdk_zJ")
+	ckeywhitelist = list("enc1:D5TDsqpqFc0DDW2927vJnDyLXpoEZJ07NBHp64oPeZQZoPxSbNoOhg", "enc1:owrU4CHVDDC6Ef2XlHdwNlhpjuutJJ-2X_hJvwoJ9ded8NQG")
 
 /datum/gear/donator/bm/verdant_suit
 	name = "Verdant Tactical Suit"
@@ -2348,7 +2348,7 @@
 	name = "Armolex Box"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/box/donator/bm/armolex_box
-	ckeywhitelist = list("xaeshkavd", "sosnovskii", "hellsinggc", "ty4kahahebe", "enc1:OyiVnKjucM6u_Eg8VhaQ2wmypYh7WGoDpQ5Z9gI-gVCajT0JpTDQVw")
+	ckeywhitelist = list("xaeshkavd", "sosnovskii", "hellsinggc", "ty4kahahebe", "enc1:cqe8OokEA5MzamwCWfeHJEIgBZllmKLlOJBOyMOT2YvPmul1kJDJXA")
 
 /datum/gear/donator/bm/jason_mask
 	name = "Jason Mask"
@@ -2627,7 +2627,7 @@
 	path = /obj/item/clothing/neck/donator/bm/antique_cape
 	loadout_flags = LOADOUT_CAN_NAME_DESC_POLY
 	loadout_initial_colors = list("#777777", "#FFFFCC", "#66FFFF")
-	ckeywhitelist = list("ingvarr3313", "shizalrp", "enc1:9mv_C9CIT6WeZJb4ng3rXLIBrVRR_RtutmOImkW2IKR2S_y1ToI6Uw")
+	ckeywhitelist = list("ingvarr3313", "shizalrp", "enc1:pkq2i9bnjHJwyQ1lyRkpsDIAm2vKB3R0uvIY9-OhtCGGRCeG4xiAhw")
 
 /datum/gear/donator/bm/longshirt
 	name = "Long Shirt"
