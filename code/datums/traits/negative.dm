@@ -79,6 +79,8 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 		if(heirloom && istype(heirloom))
 			loadout_heirloom = TRUE
 	if(!loadout_heirloom)
+		if(!spawn_items)
+			return
 		// The quirk holder's species - we have a 50% chance, if we have a species with a set heirloom, to choose a species heirloom.
 		var/datum/species/holder_species = human_holder.dna?.species
 		if(holder_species && LAZYLEN(holder_species.family_heirlooms) && prob(50))
@@ -159,8 +161,16 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 /datum/quirk/family_heirloom/clone_data()
 	return heirloom
 
-/datum/quirk/family_heirloom/on_clone(data)
+/datum/quirk/family_heirloom/on_clone(obj/item/data)
+	if(!istype(data) || QDELETED(data))
+		return
+	if(heirloom)
+		UnregisterSignal(heirloom, COMSIG_PARENT_QDELETING)
+		GLOB.family_heirlooms -= heirloom
 	heirloom = data
+	loadout_heirloom = TRUE
+	GLOB.family_heirlooms |= heirloom
+	RegisterSignal(heirloom, COMSIG_PARENT_QDELETING, PROC_REF(on_heirloom_deleted))
 
 /datum/quirk/heavy_sleeper
 	name = "Крепко спящий"
@@ -198,6 +208,8 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 	quirk_holder.become_nearsighted(ROUNDSTART_TRAIT)
 
 /datum/quirk/nearsighted/on_spawn()
+	if(!spawn_items)
+		return
 	var/mob/living/carbon/human/H = quirk_holder
 	var/obj/item/clothing/glasses/regular/glasses = new(get_turf(H))
 	if(!H.equip_to_slot_if_possible(glasses, ITEM_SLOT_EYES))
@@ -316,6 +328,8 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 	H.gain_trauma(T, TRAUMA_RESILIENCE_ABSOLUTE)
 
 /datum/quirk/paraplegic/on_spawn()
+	if(!spawn_items)
+		return
 	if(quirk_holder.client)
 		var/modified_limbs = quirk_holder.client.prefs.modified_limbs
 		if(!(modified_limbs[BODY_ZONE_L_LEG] == LOADOUT_LIMB_AMPUTATED && modified_limbs[BODY_ZONE_R_LEG] == LOADOUT_LIMB_AMPUTATED && !isjellyperson(quirk_holder)))
@@ -471,6 +485,8 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 	RegisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE, PROC_REF(on_examine_holder))
 
 /datum/quirk/blindness/on_spawn()
+	if(!spawn_items)
+		return
 	var/mob/living/carbon/human/H = quirk_holder
 	var/obj/item/clothing/glasses/sunglasses/blindfold/white/glasses = new(get_turf(H))
 	if(!H.equip_to_slot_if_possible(glasses, ITEM_SLOT_EYES, bypass_equip_delay_self = TRUE)) //if you can't put it on the user's eyes, put it in their hands, otherwise put it on their eyes eyes

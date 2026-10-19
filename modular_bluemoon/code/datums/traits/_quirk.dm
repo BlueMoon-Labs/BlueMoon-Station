@@ -1,4 +1,6 @@
 /datum/quirk/proc/give_item(obj/item/item_path, mob/living/carbon/human/H, list/slots)
+	if(!spawn_items)
+		return FALSE
 	if(!LAZYLEN(slots))
 		slots = list(
 			"backpack" = ITEM_SLOT_BACKPACK,

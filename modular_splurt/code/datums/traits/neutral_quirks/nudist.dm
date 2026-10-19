@@ -27,11 +27,12 @@
 	check_outfit()
 
 /datum/quirk/nudist/on_spawn()
-	// Spawn a Rapid Disrobe Implant
+	if(locate(/obj/item/implant/disrobe) in quirk_holder.implants)
+		return
 	var/obj/item/implant/disrobe/quirk_implant = new
 
-	// Implant into quirk holder
-	quirk_implant.implant(quirk_holder, null, TRUE, TRUE)
+	if(!quirk_implant.implant(quirk_holder, null, TRUE, TRUE))
+		qdel(quirk_implant)
 
 /datum/quirk/nudist/proc/check_outfit()
 	SIGNAL_HANDLER

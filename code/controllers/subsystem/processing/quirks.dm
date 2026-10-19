@@ -63,7 +63,7 @@ PROCESSING_SUBSYSTEM_DEF(quirks)
 		quirk_points[initial(T.name)] = initial(T.value)
 		quirk_names_by_path[T] = initial(T.name)
 
-/datum/controller/subsystem/processing/quirks/proc/AssignQuirks(mob/living/user, client/cli, spawn_effects, roundstart = FALSE, datum/job/job, silent = FALSE, mob/to_chat_target)
+/datum/controller/subsystem/processing/quirks/proc/AssignQuirks(mob/living/user, client/cli, spawn_effects, roundstart = FALSE, datum/job/job, silent = FALSE, mob/to_chat_target, spawn_items = TRUE)
 	if(!cli?.prefs)
 		return
 	var/badquirk = FALSE
@@ -86,7 +86,7 @@ PROCESSING_SUBSYSTEM_DEF(quirks)
 	for(var/V in my_quirks)
 		if(V in quirks)
 			var/datum/quirk/Q = quirks[V]
-			user.add_quirk(Q, spawn_effects)
+			user.add_quirk(Q, spawn_effects, spawn_items)
 		else
 			log_admin("Invalid quirk \"[V]\" in client [cli.ckey] preferences")
 			cli.prefs.all_quirks -= V

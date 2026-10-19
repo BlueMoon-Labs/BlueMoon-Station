@@ -1,4 +1,4 @@
-/datum/controller/subsystem/processing/quirks/AssignQuirks(mob/living/user, client/cli, spawn_effects, roundstart = FALSE, datum/job/job, silent = FALSE, mob/to_chat_target)
+/datum/controller/subsystem/processing/quirks/AssignQuirks(mob/living/user, client/cli, spawn_effects, roundstart = FALSE, datum/job/job, silent = FALSE, mob/to_chat_target, spawn_items = TRUE)
 	if(!cli?.prefs)
 		return
 	. = ..()

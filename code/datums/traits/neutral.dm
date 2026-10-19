@@ -182,6 +182,8 @@
 	medical_record_text = "Пациент упоминает фотографию, как хобби для снятия стресса."
 
 /datum/quirk/photographer/on_spawn()
+	if(!spawn_items)
+		return
 	var/mob/living/carbon/human/H = quirk_holder
 	var/obj/item/storage/photo_album/photo_album = new(get_turf(H))
 	H.put_in_hands(photo_album)
