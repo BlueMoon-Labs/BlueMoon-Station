@@ -855,7 +855,7 @@ GLOBAL_LIST_INIT(paw_eater_progress, list()) // Ачивка pawlicker
 		return
 	var/state_index = text2num(copytext(icon_state, 4))
 	var/needed = 7
-+	var/key = user.client.ckey
+	var/key = user.client.ckey
 	var/list/eaten = GLOB.paw_eater_progress[key]
 	if(!eaten)
 		eaten = list()
