@@ -187,5 +187,6 @@
 /datum/award/achievement/misc/pawlicker
 	name = "PawLicker"
 	desc = "Ты попробовал так много лапок..."
+
 	database_id = MEDAL_PAWLICKER
 	icon = "pawlicker"
