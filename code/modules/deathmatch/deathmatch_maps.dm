@@ -51,6 +51,12 @@ proc/get_deathmatch_loadout_paths()
 	for(var/item in subtypesof(/datum/outfit/vr/deathmatch_loadout))
 		if(item == /datum/outfit/vr/deathmatch_loadout)
 			continue
+		// A team mode hands its kits out itself, one per side per round. They are
+		// halves of a pair - one side's shotgun, the other side's sniper - so they
+		// have no meaning in a free-for-all picker and are kept out of it.
+		var/datum/outfit/vr/deathmatch_loadout/kit = get_deathmatch_loadout(item)
+		if(isnull(kit) || kit.tdm_only)
+			continue
 		paths += item
 	return sort_list(paths, GLOBAL_PROC_REF(cmp_deathmatch_loadout_path))
 
@@ -114,6 +120,9 @@ proc/get_deathmatch_loadout(path)
 	/// map cannot be balanced for five kits at once. The mode's own `loadout` is
 	/// always offered on top of these, so it does not have to be repeated here.
 	var/list/loadout_options = list()
+	/// The lobby type that runs this map. Free-for-all maps use the plain
+	/// /datum/deathmatch_lobby; team and round based modes use a subtype.
+	var/lobby_type = /datum/deathmatch_lobby
 
 	/**
 	 * The loadouts this mode offers, in picker order, as datums.
@@ -242,3 +251,19 @@ proc/get_deathmatch_loadout(path)
 		/datum/outfit/vr/deathmatch_loadout/butt_naked,
 		/datum/outfit/vr/deathmatch_loadout/brawler,
 	)
+
+// Team Deathmatch on a three-level recreation of de_dust2.
+//
+// The map is a full 200x200 .dmm with the surface (T spawn, long A, mid, A and
+// B sites, tunnels) on its first z-level and two tunnel networks underneath.
+// Because it is deeper than one z-level the arena stacks three reservations
+// over the same rectangle; see /datum/deathmatch_arena/load_arena().
+/datum/map_template/deathmatch/de_dust2
+	name = "TDM - de_dust2"
+	display_name = "Team Deathmatch: de_dust2"
+	description = "Two five-player teams, a fresh pair of kits every round, on a three-level de_dust2. First team to three rounds takes the match."
+	mappath = "_maps/TDM/de_dust2/de_dust2.dmm"
+	min_players = 2
+	max_players = 10
+	loadout = /datum/outfit/vr/deathmatch_loadout/sidearm
+	lobby_type = /datum/deathmatch_lobby/team_deathmatch

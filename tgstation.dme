@@ -2467,6 +2467,8 @@
 #include "code\modules\deathmatch\deathmatch_modifier.dm"
 #include "code\modules\deathmatch\deathmatch_arena.dm"
 #include "code\modules\deathmatch\deathmatch_lobby.dm"
+#include "code\modules\deathmatch\deathmatch_team.dm"
+#include "code\modules\deathmatch\deathmatch_perks.dm"
 #include "code\modules\deathmatch\deathmatch_browser.dm"
 #include "code\modules\awaymissions\corpse.dm"
 #include "code\modules\awaymissions\exile.dm"

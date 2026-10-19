@@ -19,6 +19,12 @@
 	var/desc = ""
 	/// If set, the wearer is turned into this species before the outfit is applied.
 	var/datum/species/species_override
+	/// Handed out by a team mode's own rotation rather than by the deathmatch
+	/// picker. These are halves of a team pair - one side's shotgun, the other
+	/// side's sniper - so the free-for-all picker must not offer them: a player
+	/// who picked "Counter-Terrorist Pistols" in a free-for-all would be choosing
+	/// a side that does not exist there.
+	var/tdm_only = FALSE
 
 /// What the picker calls this loadout.
 ///
@@ -421,3 +427,249 @@
 	if(bomb && !bomb_defused)
 		bomb_timer = 0
 		process()
+
+//
+// Team Deathmatch kits.
+//
+// /datum/deathmatch_lobby/team_deathmatch hands these out on a fixed rotation,
+// one pair of kits per round: both teams get the same weapon family, but each
+// side gets its own version of it. They are all tdm_only so the free-for-all
+// picker does not offer one side's half of a pair.
+//
+// The kits assume the map is an open arena where a fight lasts a round, not a
+// shift, so a kit is a weapon, what it needs to keep firing, and nothing else -
+// no armour, no medkits, no backpack to rummage through.
+
+/// The riot shotgun's internal magazine, loaded with buckshot instead of the
+/// non-lethal rubber the armory version ships with. TDM has no crowd to control.
+/obj/item/ammo_box/magazine/internal/shot/riot/lethal
+	name = "riot shotgun internal magazine"
+	ammo_type = /obj/item/ammo_casing/shotgun/buckshot
+
+/// The Counter-Terrorist shotgun: a stock riot shotgun with a lethal magazine.
+/obj/item/gun/ballistic/shotgun/riot/deathmatch
+	mag_type = /obj/item/ammo_box/magazine/internal/shot/riot/lethal
+
+/// The Terrorist shotgun: the syndicate Peacebreaker, same lethal magazine.
+/obj/item/gun/ballistic/shotgun/riot/syndicate/deathmatch
+	mag_type = /obj/item/ammo_box/magazine/internal/shot/riot/lethal
+
+/// A bandolier that spawns already full of buckshot.
+/obj/item/storage/belt/bandolier/deathmatch
+	desc = "A bandolier for holding ammunition. This one is already full of buckshot."
+
+/obj/item/storage/belt/bandolier/deathmatch/PopulateContents()
+	for(var/shell in 1 to 12)
+		new /obj/item/ammo_casing/shotgun/buckshot(src)
+
+/// An extended Enforcer magazine loaded with armour-piercing .45 ACP. The
+/// codebase has a lethal extended magazine but no AP one, and the kit calls for
+/// AP, so the round has to be defined here.
+/obj/item/ammo_box/magazine/e45/e45_extended/ap
+	name = "Extended Enforcer magazine (.45 ACP)"
+	desc = "An extended Mk. 58 magazine. Loaded with armour-piercing rounds."
+	ammo_type = /obj/item/ammo_casing/c45/armour
+
+/// The Enforcer the Counter-Terrorist sidearm kit ships with: same pistol, but
+/// loaded from an extended AP magazine instead of the eight-round rubber one.
+/obj/item/gun/ballistic/automatic/pistol/enforcer/deathmatch
+	mag_type = /obj/item/ammo_box/magazine/e45/e45_extended/ap
+
+/// Ammo pouch for the Terrorist sidearm round: three spare Makarov magazines.
+/// The pouch holds exactly three, so the whole kit is one pistol, one reload
+/// band and a knife.
+/obj/item/storage/bag/ammo/deathmatch_makarov
+/obj/item/storage/bag/ammo/deathmatch_makarov/PopulateContents()
+	for(var/magazine in 1 to 3)
+		new /obj/item/ammo_box/magazine/m10mm(src)
+
+/// Ammo pouch for the Counter-Terrorist sidearm round: three spare extended AP
+/// Enforcer magazines.
+/obj/item/storage/bag/ammo/deathmatch_enforcer
+/obj/item/storage/bag/ammo/deathmatch_enforcer/PopulateContents()
+	for(var/magazine in 1 to 3)
+		new /obj/item/ammo_box/magazine/e45/e45_extended/ap(src)
+
+/// Ammo pouch for the Desert Eagle round: two spare .50 AE magazines.
+/obj/item/storage/bag/ammo/deathmatch_deagle
+/obj/item/storage/bag/ammo/deathmatch_deagle/PopulateContents()
+	for(var/magazine in 1 to 2)
+		new /obj/item/ammo_box/magazine/m50(src)
+
+/// The knife round's weapon.
+///
+/// Thirty force, an instant kill from behind, and a speed bonus that exists
+/// only while the blade is actually in a hand. The speed is applied through a
+/// variable movespeed modifier rather than a fixed number because "half again
+/// as fast" has to stay half again as fast whatever the server's configured run
+/// delay is.
+/datum/movespeed_modifier/deathmatch_knife
+	variable = TRUE
+
+/obj/item/kitchen/knife/combat/deathmatch
+	name = "deathmatch combat knife"
+	desc = "A combat knife issued for the knife round. It kills instantly from behind, and its balance makes carrying it faster than not."
+	force = 30
+	throwforce = 25
+	w_class = WEIGHT_CLASS_SMALL
+
+/obj/item/kitchen/knife/combat/deathmatch/equipped(mob/user, slot)
+	. = ..()
+	if(slot != ITEM_SLOT_HANDS || !ishuman(user) || QDELETED(user))
+		return
+	var/mob/living/carbon/human/wielder = user
+	// Recompute from the unboosted speed. A knife can pass from one hand to the
+	// other, and the speed already cached includes the boost from the first hand,
+	// so the old modifier has to come off before the base speed is read.
+	wielder.remove_movespeed_modifier(/datum/movespeed_modifier/deathmatch_knife)
+	var/base_slowdown = wielder.cached_multiplicative_slowdown
+	if(base_slowdown > 0)
+		wielder.add_or_update_variable_movespeed_modifier(
+			/datum/movespeed_modifier/deathmatch_knife,
+			multiplicative_slowdown = -base_slowdown / 3,
+		)
+
+/obj/item/kitchen/knife/combat/deathmatch/dropped(mob/user)
+	. = ..()
+	if(!ishuman(user) || QDELETED(user))
+		return
+	var/mob/living/carbon/human/wielder = user
+	wielder.remove_movespeed_modifier(/datum/movespeed_modifier/deathmatch_knife)
+
+/**
+ * Whether a strike counts as a stab in the back.
+ *
+ * "Behind" is the same reading the backstab knives in modular_bluemoon use: the
+ * victim is facing the same way the attacker is, or is already on the floor. A
+ * GODMODE or TRAIT_NODEATH victim is not a backstab target - the codebase uses
+ * those flags to mean "deaths do not apply here" and a knife is not an exception
+ * to that.
+ */
+/obj/item/kitchen/knife/combat/deathmatch/proc/is_backstab(mob/living/carbon/victim, mob/living/carbon/user)
+	if(!istype(victim) || !istype(user) || victim == user || victim.stat == DEAD)
+		return FALSE
+	if(user.lying)
+		return FALSE
+	if(HAS_TRAIT(victim, TRAIT_NODEATH) || (victim.status_flags & GODMODE))
+		return FALSE
+	return victim.lying || victim.dir == user.dir
+
+/// A stab in the back is a kill, not a big hit. Armour is irrelevant to it the
+/// same way it is to a decapitation: `adjustBruteLoss()` writes past the armour
+/// check that `apply_damage()` would have run.
+///
+/// The explicit death() afterwards is not redundant. `adjustBruteLoss()` only
+/// takes a body to `-maxHealth` health, and death happens at -100, so a species
+/// squishier than a baseline human would survive its own instant kill.
+/obj/item/kitchen/knife/combat/deathmatch/attack(mob/living/carbon/victim, mob/living/carbon/user)
+	if(is_backstab(victim, user))
+		user.visible_message(
+			span_danger("[user] buries [src] in [victim]'s back!"),
+			span_danger("You bury [src] in [victim]'s back!"),
+		)
+		playsound(victim, 'sound/weapons/bladeslice.ogg', 75, TRUE)
+		victim.adjustBruteLoss(victim.maxHealth * 2)
+		if(victim.stat != DEAD)
+			victim.death()
+		log_combat(user, victim, "backstabbed", src)
+		return TRUE
+	return ..()
+
+/// The Terrorist shotgun kit: Peacebreaker, a bandolier of spare buckshot and a
+/// combat knife.
+/datum/outfit/vr/deathmatch_loadout/tdm_shotgun_terror
+	name = "TDM Shotguns (Terrorist)"
+	display_name = "Terrorist Shotguns"
+	desc = "A Peacebreaker shotgun loaded with buckshot, a bandolier of spare shells and a combat knife."
+	tdm_only = TRUE
+	uniform = /obj/item/clothing/under/color/random
+	shoes = /obj/item/clothing/shoes/sneakers/black
+	r_hand = /obj/item/gun/ballistic/shotgun/riot/syndicate/deathmatch
+	belt = /obj/item/storage/belt/bandolier/deathmatch
+	r_pocket = /obj/item/kitchen/knife/combat
+
+/// The Counter-Terrorist shotgun kit: the stock riot shotgun, same ammunition.
+/datum/outfit/vr/deathmatch_loadout/tdm_shotgun_counter
+	name = "TDM Shotguns (Counter-Terrorist)"
+	display_name = "Counter-Terrorist Shotguns"
+	desc = "A riot shotgun loaded with buckshot, a bandolier of spare shells and a combat knife."
+	tdm_only = TRUE
+	uniform = /obj/item/clothing/under/color/random
+	shoes = /obj/item/clothing/shoes/sneakers/black
+	r_hand = /obj/item/gun/ballistic/shotgun/riot/deathmatch
+	belt = /obj/item/storage/belt/bandolier/deathmatch
+	r_pocket = /obj/item/kitchen/knife/combat
+
+/// The Terrorist sidearm kit: a Makarov, three spare magazines and a knife.
+/datum/outfit/vr/deathmatch_loadout/tdm_pistol_terror
+	name = "TDM Pistols (Terrorist)"
+	display_name = "Terrorist Pistols"
+	desc = "A Makarov pistol, an ammo pouch with three spare magazines and a combat knife."
+	tdm_only = TRUE
+	uniform = /obj/item/clothing/under/color/random
+	shoes = /obj/item/clothing/shoes/sneakers/black
+	r_hand = /obj/item/gun/ballistic/automatic/pistol
+	l_pocket = /obj/item/storage/bag/ammo/deathmatch_makarov
+	r_pocket = /obj/item/kitchen/knife/combat
+
+/// The Counter-Terrorist sidearm kit: an Enforcer with an extended AP magazine,
+/// three more of the same and a knife. The round is the trade between volume
+/// and penetration, so the CT half pays for its AP with a slower reload.
+/datum/outfit/vr/deathmatch_loadout/tdm_pistol_counter
+	name = "TDM Pistols (Counter-Terrorist)"
+	display_name = "Counter-Terrorist Pistols"
+	desc = "An Enforcer loaded with an extended armour-piercing magazine, three more magazines and a combat knife."
+	tdm_only = TRUE
+	uniform = /obj/item/clothing/under/color/random
+	shoes = /obj/item/clothing/shoes/sneakers/black
+	r_hand = /obj/item/gun/ballistic/automatic/pistol/enforcer/deathmatch
+	l_pocket = /obj/item/storage/bag/ammo/deathmatch_enforcer
+	r_pocket = /obj/item/kitchen/knife/combat
+
+/// The Desert Eagle kit. Both teams get it; a .50 hand cannon is the same
+/// answer to "what beats a pistol" on either side.
+/datum/outfit/vr/deathmatch_loadout/tdm_deagle
+	name = "TDM Desert Eagle"
+	display_name = "Desert Eagle"
+	desc = "A .50 AE Desert Eagle, an ammo pouch with two spare magazines and a combat knife."
+	tdm_only = TRUE
+	uniform = /obj/item/clothing/under/color/random
+	shoes = /obj/item/clothing/shoes/sneakers/black
+	r_hand = /obj/item/gun/ballistic/automatic/pistol/deagle
+	l_pocket = /obj/item/storage/bag/ammo/deathmatch_deagle
+	r_pocket = /obj/item/kitchen/knife/combat
+
+/// The Terrorist sniper kit: the m40a1 and one spare magazine.
+/datum/outfit/vr/deathmatch_loadout/tdm_sniper_terror
+	name = "TDM Snipers (Terrorist)"
+	display_name = "Terrorist Snipers"
+	desc = "An m40a1 sniper rifle, one spare magazine and a combat knife. One shot, one kill, if you can place it."
+	tdm_only = TRUE
+	uniform = /obj/item/clothing/under/color/random
+	shoes = /obj/item/clothing/shoes/sneakers/black
+	r_hand = /obj/item/gun/ballistic/automatic/sniper_rifle/m4oa1
+	l_pocket = /obj/item/ammo_box/magazine/sniper_rounds/m4oa1
+	r_pocket = /obj/item/kitchen/knife/combat
+
+/// The Counter-Terrorist sniper kit: the standard sniper rifle and one spare
+/// magazine.
+/datum/outfit/vr/deathmatch_loadout/tdm_sniper_counter
+	name = "TDM Snipers (Counter-Terrorist)"
+	display_name = "Counter-Terrorist Snipers"
+	desc = "A sniper rifle, one spare magazine and a combat knife. One shot, one kill, if you can place it."
+	tdm_only = TRUE
+	uniform = /obj/item/clothing/under/color/random
+	shoes = /obj/item/clothing/shoes/sneakers/black
+	r_hand = /obj/item/gun/ballistic/automatic/sniper_rifle
+	l_pocket = /obj/item/ammo_box/magazine/sniper_rounds
+	r_pocket = /obj/item/kitchen/knife/combat
+
+/// The knife round. Both teams get the same blade; nothing else at all.
+/datum/outfit/vr/deathmatch_loadout/tdm_knives
+	name = "TDM Knives"
+	display_name = "Knives"
+	desc = "One knife: thirty damage, an instant kill from behind and half again the normal speed while it is in your hand. Nothing else."
+	tdm_only = TRUE
+	uniform = /obj/item/clothing/under/color/random
+	shoes = /obj/item/clothing/shoes/sneakers/black
+	r_hand = /obj/item/kitchen/knife/combat/deathmatch

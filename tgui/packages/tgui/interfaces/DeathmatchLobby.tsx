@@ -40,11 +40,31 @@ type PlayerRow = [
   BooleanLike, // you
   string, // loadout name, or "watching"
   BooleanLike, // standing in the arena
+  number, // team, 0 in free-for-all
+  BooleanLike, // eliminated for this round
 ];
 
 type LoadoutRow = [string, string, string];
 type ModifierRow = [string, string, string, BooleanLike];
 type ModeRow = [string, string, string, number, number];
+
+/**
+ * Extra state only team modes send. Its presence is what tells this window to
+ * draw the scoreboard, so a free-for-all lobby is unchanged.
+ */
+type TeamDeathmatchData = {
+  round: number;
+  round_live: BooleanLike;
+  round_time_left: string;
+  score_one: number;
+  score_two: number;
+  team_one_name: string;
+  team_two_name: string;
+  rounds_to_win: number;
+  your_team: number;
+  kit_one: string;
+  kit_two: string;
+};
 
 type Data = {
   map_name: string;
@@ -78,6 +98,7 @@ type Data = {
   // ui_static_data is merged into data by backend.ts, not kept apart.
   modes?: ModeRow[];
   modifiers?: ModifierRow[];
+  team_deathmatch?: TeamDeathmatchData;
 };
 
 const CKEY = 0;
@@ -87,6 +108,8 @@ const IS_READY = 3;
 const IS_OBSERVER = 4;
 const IS_YOU = 5;
 const LOADOUT = 6;
+const TEAM = 8;
+const ELIMINATED = 9;
 
 const KIT_PATH = 0;
 const KIT_NAME = 1;
@@ -105,6 +128,7 @@ export function DeathmatchLobby(props) {
   const [you_are_observer] = [data.you_are_observer];
 
   const running = state === 'running';
+  const tdm = data.team_deathmatch;
   const fighters = players.filter((player) => !player[IS_OBSERVER]);
   const allReady =
     fighters.length > 0 && fighters.every((player) => player[IS_READY]);
@@ -121,6 +145,27 @@ export function DeathmatchLobby(props) {
                 <Box color="average">
                   Hosted by {data.host} &mdash; {running ? time_left : 'Waiting'}
                 </Box>
+                {!!tdm && (
+                  <Box mt={0.5}>
+                    <Box inline bold color={tdm.your_team === 1 ? 'good' : 'label'}>
+                      {tdm.team_one_name} {tdm.score_one}
+                    </Box>
+                    <Box inline mx={1} color="label">
+                      &ndash;
+                    </Box>
+                    <Box inline bold color={tdm.your_team === 2 ? 'good' : 'label'}>
+                      {tdm.score_two} {tdm.team_two_name}
+                    </Box>
+                    <Box inline ml={2} color="average">
+                      {tdm.round > 0
+                        ? `Round ${tdm.round}/${tdm.rounds_to_win * 2 - 1}`
+                        : 'First round next'}
+                      {tdm.round_live
+                        ? ` \u2014 ${tdm.round_time_left}`
+                        : ' \u2014 intermission'}
+                    </Box>
+                  </Box>
+                )}
               </Stack.Item>
               <Stack.Item>
                 <Stack>
@@ -291,14 +336,24 @@ function PlayerColumn(props) {
 }
 
 function FighterRow(props) {
-  const { act } = useBackend<Data>();
+  const { act, data } = useBackend<Data>();
   const { isHost, kitOptions, player, running, yourKitIndex } = props;
+  const tdm = data.team_deathmatch;
 
   const host = !!player[IS_HOST];
   const self = !!player[IS_YOU];
+  const eliminated = !!player[ELIMINATED];
   // Kicking yourself is what the Leave button is for, and a host handing hosting to
   // themselves is not an action.
   const canAdmin = isHost && !self;
+  const teamName =
+    !tdm || !player[TEAM]
+      ? null
+      : player[TEAM] === 1
+        ? tdm.team_one_name
+        : player[TEAM] === 2
+          ? tdm.team_two_name
+          : null;
 
   return (
     <Table.Row className="candystripe">
@@ -317,11 +372,29 @@ function FighterRow(props) {
       </Table.Cell>
 
       <Table.Cell verticalAlign="top">
-        {!canAdmin ? (
-          <Box color="label">{player[DISPLAY_NAME]}</Box>
-        ) : (
-          <AdminDropdown player={player[CKEY]} host={host} />
-        )}
+        <Stack align="center">
+          {!!teamName && (
+            <Stack.Item>
+              <Box
+                bold
+                color={player[TEAM] === 1 ? 'average' : 'green'}
+                mr={1}
+              >
+                {teamName}
+              </Box>
+            </Stack.Item>
+          )}
+          <Stack.Item>
+            {!canAdmin ? (
+              <Box color={eliminated ? 'bad' : 'label'}>
+                {player[DISPLAY_NAME]}
+                {eliminated ? ' (out)' : ''}
+              </Box>
+            ) : (
+              <AdminDropdown player={player[CKEY]} host={host} />
+            )}
+          </Stack.Item>
+        </Stack>
       </Table.Cell>
 
       <Table.Cell>
@@ -332,8 +405,10 @@ function FighterRow(props) {
             width={10}
             selected={yourKitIndex === -1 ? undefined : yourKitIndex}
             // The roster closes the moment the arena loads, so a loadout picked then
-            // would come too late to matter.
-            disabled={running}
+            // would come too late to matter. Team modes hand out their kit by round
+            // rotation and the server refuses a manual pick, so the control is off
+            // there even before the first round.
+            disabled={running || !!tdm}
             options={kitOptions}
             onSelected={(value) => act('select_loadout', { choice: value })}
           />
@@ -431,12 +506,57 @@ function SideColumn(props) {
     dm_max_stake,
     dm_stake_step,
     your_balance,
+    team_deathmatch: tdm,
   } = data;
   const [stakeInput, setStakeInput] = useState(stake || 0);
 
   return (
     <Section fill scrollable title="Arena">
       <MapInfo />
+      {!!tdm && (
+        <>
+          <Divider />
+          <Box bold mb={1}>
+            Team Deathmatch
+          </Box>
+          <LabeledList>
+            <LabeledList.Item label={tdm.team_one_name}>
+              {tdm.score_one}
+            </LabeledList.Item>
+            <LabeledList.Item label={tdm.team_two_name}>
+              {tdm.score_two}
+            </LabeledList.Item>
+            <LabeledList.Item label="Round">
+              {tdm.round > 0 ? tdm.round : 'not started'} /{' '}
+              {tdm.rounds_to_win * 2 - 1}
+            </LabeledList.Item>
+            <LabeledList.Item label="Your team">
+              {tdm.your_team === 1
+                ? tdm.team_one_name
+                : tdm.your_team === 2
+                  ? tdm.team_two_name
+                  : 'not assigned'}
+            </LabeledList.Item>
+            {/* A round hands each side its own half of a pair, so both are shown
+                rather than only the viewer's: knowing what the other team is
+                holding is the point of a team round. */}
+            <LabeledList.Item label={`${tdm.team_one_name} kit`}>
+              {tdm.kit_one}
+            </LabeledList.Item>
+            <LabeledList.Item label={`${tdm.team_two_name} kit`}>
+              {tdm.kit_two}
+            </LabeledList.Item>
+          </LabeledList>
+          <Box color="label" mt={1}>
+            Each round hands both teams a fresh pair of kits, one per side. First
+            team to {tdm.rounds_to_win} rounds wins.
+          </Box>
+          <Box color="label" mt={1}>
+            Both sides can slip bullets mid-jump and recover stamina quickly,
+            whatever the round&apos;s kit is.
+          </Box>
+        </>
+      )}
       <Divider />
       <Box textAlign="center" color="average">
         {selected_modifiers.length === 0

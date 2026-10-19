@@ -2,9 +2,14 @@
 //
 // BlueMoon cannot delete a z-level, and a new one costs 150-250 MB, so arenas
 // are not z-levels of their own. Every arena is a rectangular block reserved on
-// one shared virtual reality z-level, which is what makes unloading an arena
-// cheap: every atom on the reserved turfs is deleted and the block is handed
-// back to the reservation pool as empty space.
+// one or more shared virtual reality z-levels, which is what makes unloading an
+// arena cheap: every atom on the reserved turfs is deleted and the blocks are
+// handed back to the reservation pool as empty space.
+//
+// Multi-level maps (maps whose .dmm is more than one z-level deep, such as the
+// de_dust2 TDM map) get one reservation per level, stacked over the same x/y
+// rectangle. parsed_map.load() writes gridset z-level n to z + n - 1, so the
+// reserved levels have to be consecutive.
 
 /// The arena maps all get this. A one tile indestructible ring keeps players in
 /// and hides the void (and any other arena) from them.
@@ -16,27 +21,39 @@
 /datum/deathmatch_arena
 	/// The map this arena was built from.
 	var/datum/map_template/deathmatch/template
-	/// The reserved block the map sits on, NULL while the arena is unloaded.
-	var/datum/turf_reservation/reservation
+	/// The reserved blocks the map sits on, empty while the arena is unloaded.
+	/// One entry per z-level of the map, all over the same x/y rectangle.
+	var/list/reservations = list()
 	/// Bounds of the loaded map, [min x, min y, min z, max x, max y, max z].
 	var/list/bounds
-	/// z-level the arena is on. Not the same as arena.turf.z in any way, it is
-	/// the number to hand to SSmapping when touching the level.
+	/// First z-level of the arena. parsed_map writes deeper levels to z + n - 1,
+	/// so this is the number to hand to SSmapping when touching the level.
 	var/z
 	/// /obj/effect/landmark/deathmatch_player_spawn inside bounds.
 	var/list/spawns = list()
+	/// Spawn landmarks already handed out in this arena.
+	///
+	/// Reserved at spawn time rather than checked for a mob standing on them: a
+	/// mob is not on the landmark until the transfer lands, and begin_match()
+	/// walks everybody in one pass, so a "is anybody there yet" test lets the
+	/// whole lobby through the same door.
+	var/list/claimed_spawns = list()
 
 /datum/deathmatch_arena/New(template)
 	src.template = template
 
 /datum/deathmatch_arena/proc/is_loaded()
-	return !isnull(reservation)
+	return length(reservations) > 0
 
 /datum/deathmatch_arena/proc/get_name()
 	return template?.display_name || "Deathmatch arena"
 
+/datum/deathmatch_arena/proc/get_depth()
+	return max(length(reservations), 1)
+
 /datum/deathmatch_arena/proc/to_string()
-	return "[get_name()] on z[z]"
+	var/depth = get_depth()
+	return "[get_name()] on z[z][depth > 1 ? "-[z + depth - 1]" : ""]"
 
 /**
  * Reserves a block on the shared virtual reality z-level and loads the map into
@@ -56,35 +73,52 @@
 	var/list/map_size = template.get_size() // sizes the template if nothing has yet
 	var/map_width = map_size[1]
 	var/map_height = map_size[2]
+	var/map_depth = max(map_size[3] || template.zdepth || 1, 1)
 	if(map_width < 1 || map_height < 1)
 		log_game("Deathmatch: [template] has no usable bounds, refusing to load.")
 		return FALSE
-	if(template.zdepth != 1)
-		log_game("Deathmatch: [template] is [template.zdepth] z-levels deep, only single level maps are supported.")
+
+	// One reserved level per z-level of the map, all in a row.
+	var/list/arena_levels = get_deathmatch_z_stack(map_depth)
+	if(length(arena_levels) < map_depth)
+		log_game("Deathmatch: could not get [map_depth] consecutive virtual reality z-level(s) for [template].")
 		return FALSE
 
-	var/arena_z = get_deathmatch_z()
-	if(!arena_z)
-		log_game("Deathmatch: could not get a virtual reality z-level for [template].")
-		return FALSE
-
-	var/datum/turf_reservation/block = SSmapping.RequestBlockReservation(\
-		map_width + 2, map_height + 2, arena_z, /datum/turf_reservation/deathmatch)
+	var/datum/turf_reservation/deathmatch/block = SSmapping.RequestBlockReservation(\
+		map_width + 2, map_height + 2, arena_levels[1], /datum/turf_reservation/deathmatch)
 	if(isnull(block))
 		log_game("Deathmatch: no free [map_width + 2]x[map_height + 2] reservation left for [template].")
 		return FALSE
 
+	// Every later level is reserved over exactly the same rectangle. Without
+	// this the z-levels would be stacked over different parts of the map and a
+	// ladder would come out somewhere it was not mapped to.
+	var/reserved_x = block.bottom_left_coords[1]
+	var/reserved_y = block.bottom_left_coords[2]
+	var/list/blocks = list(block)
+	for(var/level_index in 2 to map_depth)
+		var/datum/turf_reservation/deathmatch/extra = new
+		if(extra.ReserveArea(map_width + 2, map_height + 2, arena_levels[level_index], reserved_x, reserved_y))
+			blocks += extra
+			continue
+		qdel(extra)
+		for(var/datum/turf_reservation/reserved as anything in blocks)
+			qdel(reserved)
+		log_game("Deathmatch: z-level [arena_levels[level_index]] of [template] could not reserve [map_width + 2]x[map_height + 2] at [reserved_x],[reserved_y].")
+		return FALSE
+
 	// Shift by one so the map fills the interior and the border ring is left
 	// standing around it.
-	var/turf/placement = locate(block.bottom_left_coords[1] + 1, block.bottom_left_coords[2] + 1, block.bottom_left_coords[3])
+	var/turf/placement = locate(reserved_x + 1, reserved_y + 1, block.bottom_left_coords[3])
 	if(isnull(placement))
-		qdel(block)
+		for(var/datum/turf_reservation/reserved as anything in blocks)
+			qdel(reserved)
 		log_game("Deathmatch: reservation for [template] handed back broken coordinates.")
 		return FALSE
 
-	// Only now do we own the block, so a failed load must not leave it behind.
-	reservation = block
-	z = arena_z
+	// Only now do we own the blocks, so a failed load must not leave them behind.
+	reservations = blocks
+	z = arena_levels[1]
 	var/list/loaded_bounds = template.load(placement, FALSE, SOUTH, FALSE)
 	if(isnull(loaded_bounds))
 		log_game("Deathmatch: [template] failed to load, releasing the reservation.")
@@ -94,7 +128,7 @@
 	bounds = loaded_bounds
 	collect_spawns()
 	GLOB.deathmatch_arenas += src
-	log_game("Deathmatch: [to_string()] loaded at [bounds[MAP_MINX]],[bounds[MAP_MINY]],[z] with [length(spawns)] spawn(s).")
+	log_game("Deathmatch: [to_string()] loaded at [bounds[MAP_MINX]],[bounds[MAP_MINY]],[z] with [length(spawns)] spawn(s) over [map_depth] z-level(s).")
 	return src
 
 /// Picks up the landmarks the map dropped, so that a second arena on the same
@@ -107,7 +141,8 @@
 		var/turf/spawn_turf = get_turf(spawn_point)
 		if(isnull(spawn_turf))
 			continue
-		if(spawn_turf.z != z)
+		// A multi-level arena owns a range of z-levels, not one.
+		if(spawn_turf.z < bounds[MAP_MINZ] || spawn_turf.z > bounds[MAP_MAXZ])
 			continue
 		if(spawn_turf.x < bounds[MAP_MINX] || spawn_turf.x > bounds[MAP_MAXX])
 			continue
@@ -116,27 +151,26 @@
 		spawns += spawn_point
 	return spawns
 
-/// Spawn landmarks already handed out in this arena.
-///
-/// Reserved at spawn time rather than checked for a mob standing on them: a mob
-/// is not on the landmark until the transfer lands, and begin_match() walks
-/// everybody in one pass, so a "is anybody there yet" test lets the whole lobby
-/// through the same door.
-var/list/claimed_spawns = list()
-
 /**
  * An unclaimed spawn landmark inside this arena, or NULL if they are all taken.
  *
  * Returns the landmark itself, not its turf, because the caller needs the
  * reference to hold the claim and to give it back later.
+ *
+ * team is the team specific spawn filter used by Team Deathmatch. 0 means "any
+ * spawn", which is what the free-for-all modes ask for.
  */
-/datum/deathmatch_arena/proc/claim_spawn_point()
+/datum/deathmatch_arena/proc/claim_spawn_point(team = 0)
 	var/list/free_spawns = list()
 	for(var/spawn_ref as anything in spawns)
 		var/obj/effect/landmark/deathmatch_player_spawn/landmark = spawn_ref
 		if(isnull(landmark) || QDELETED(landmark))
 			continue
 		if(landmark in claimed_spawns)
+			continue
+		// A team spawn belongs to its team; an untyped spawn is open to
+		// everybody, so a map that only has one kind still works in both modes.
+		if(team && landmark.team && landmark.team != team)
 			continue
 		free_spawns += landmark
 	if(!length(free_spawns))
@@ -158,9 +192,9 @@ var/list/claimed_spawns = list()
  * Picked at random among the unclaimed ones rather than first free, so a full
  * lobby does not funnel everybody into the same corner of the map.
  */
-/datum/deathmatch_arena/proc/get_spawn_point()
+/datum/deathmatch_arena/proc/get_spawn_point(team = 0)
 	if(length(spawns))
-		return claim_spawn_point()
+		return claim_spawn_point(team)
 	return null
 
 /**
@@ -175,8 +209,8 @@ var/list/claimed_spawns = list()
 /datum/deathmatch_arena/proc/get_fallback_spawn_point()
 	if(isnull(bounds))
 		return null
-	if(!isnull(reservation))
-		for(var/turf/arena_turf as anything in reservation.reserved_turfs)
+	for(var/datum/turf_reservation/reserved as anything in reservations)
+		for(var/turf/arena_turf as anything in reserved.reserved_turfs)
 			if(!arena_turf.density && !locate(/mob, arena_turf))
 				return arena_turf
 	return locate(bounds[MAP_MINX], bounds[MAP_MINY], z)
@@ -185,15 +219,16 @@ var/list/claimed_spawns = list()
 /// player's feet would delete them along with the map.
 /datum/deathmatch_arena/proc/occupants()
 	var/list/found = list()
-	if(isnull(reservation))
+	if(!is_loaded())
 		return found
-	for(var/turf/arena_turf as anything in reservation.reserved_turfs)
-		for(var/mob/living/mob_in_arena in arena_turf)
-			found += mob_in_arena
+	for(var/datum/turf_reservation/reserved as anything in reservations)
+		for(var/turf/arena_turf as anything in reserved.reserved_turfs)
+			for(var/mob/living/mob_in_arena in arena_turf)
+				found += mob_in_arena
 	return found
 
 /**
- * Deletes the arena and hands its block back to the reservation pool.
+ * Deletes the arena and hands its blocks back to the reservation pool.
  *
  * force = TRUE skips the "somebody is still inside" check, for a load that just
  * failed and has to clean up after itself.
@@ -207,13 +242,15 @@ var/list/claimed_spawns = list()
 
 	// Not /turf.empty(): it keeps landmarks, docks and mobs on purpose, and the
 	// landmarks are the arena's own data. The border ring has no contents.
-	for(var/turf/arena_turf as anything in reservation.reserved_turfs)
-		for(var/atom/arena_atom as anything in arena_turf.contents.Copy())
-			qdel(arena_atom)
+	for(var/datum/turf_reservation/reserved as anything in reservations)
+		for(var/turf/arena_turf as anything in reserved.reserved_turfs)
+			for(var/atom/arena_atom as anything in arena_turf.contents.Copy())
+				qdel(arena_atom)
 
 	// This reclaims the turfs and turns them back into space.
-	qdel(reservation)
-	reservation = null
+	for(var/datum/turf_reservation/reserved as anything in reservations)
+		qdel(reserved)
+	reservations = list()
 	bounds = null
 	spawns = list()
 	claimed_spawns = list()
@@ -246,6 +283,48 @@ var/list/claimed_spawns = list()
 	SSmapping.initialize_reserved_level(arena_level.z_value)
 	log_game("Deathmatch: created virtual reality z-level [arena_level.z_value] for arenas.")
 	return arena_level.z_value
+
+/**
+ * A run of depth consecutive virtual reality levels, creating them if needed.
+ *
+ * parsed_map lays a multi-level .dmm out over z, z + 1, ..., so the levels have
+ * to be consecutive and all reservable. A single-level arena keeps using
+ * get_deathmatch_z(); this only allocates more than one when the map asks for it.
+ */
+/proc/get_deathmatch_z_stack(depth = 1)
+	depth = max(depth, 1)
+	if(depth == 1)
+		var/one_level = get_deathmatch_z()
+		return one_level ? list(one_level) : null
+
+	// Reuse an existing run when one is already long enough. This is the normal
+	// case on the second TDM game of the round.
+	for(var/first_z in SSmapping.levels_by_trait(ZTRAIT_RESERVED))
+		if(!SSmapping.level_trait(first_z, ZTRAIT_VIRTUAL_REALITY))
+			continue
+		var/list/candidate = list()
+		for(var/offset in 0 to depth - 1)
+			var/check_z = first_z + offset
+			if(check_z > world.maxz)
+				break
+			if(!SSmapping.level_trait(check_z, ZTRAIT_RESERVED))
+				break
+			if(!SSmapping.level_trait(check_z, ZTRAIT_VIRTUAL_REALITY))
+				break
+			candidate += check_z
+		if(length(candidate) == depth)
+			return candidate
+
+	// Nothing long enough exists. add_new_zlevel() appends, so creating all the
+	// levels in one go still leaves them consecutive.
+	var/list/created = list()
+	for(var/index in 1 to depth)
+		var/datum/space_level/arena_level = SSmapping.add_new_zlevel("Deathmatch Arenas [index]", \
+			list(ZTRAIT_RESERVED = TRUE, ZTRAIT_VIRTUAL_REALITY = TRUE, ZTRAIT_AWAY = TRUE))
+		SSmapping.initialize_reserved_level(arena_level.z_value)
+		created += arena_level.z_value
+	log_game("Deathmatch: created [depth] virtual reality z-level(s) for multi-level arenas.")
+	return created
 
 /datum/admins/proc/deathmatch_load_arena()
 	set category = "Deathmatch"

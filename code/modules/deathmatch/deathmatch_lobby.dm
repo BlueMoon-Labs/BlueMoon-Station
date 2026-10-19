@@ -46,6 +46,13 @@
 	var/is_observer = FALSE
 	/// Whether this fighter has paid the lobby's stake. Observers never pay.
 	var/bet_paid = FALSE
+	/// Team this fighter is on, used by team modes. 0 means unassigned, which is
+	/// also what every free-for-all mode leaves it at.
+	var/team = 0
+	/// Set when a round based mode reaps this fighter for the current round.
+	/// Unlike a free-for-all death this does not remove them from the lobby: they
+	/// come back when the next round starts.
+	var/is_eliminated = FALSE
 	/// The stake this fighter actually paid, captured at join time so a refund
 	/// after the host changes the lobby stake still returns the right amount.
 	var/paid_stake = 0
@@ -358,6 +365,14 @@
 	return kit.get_display_name()
 
 /**
+ * The spawn landmark a fighter should be put on. Free-for-all modes take any
+ * unclaimed spawn; team modes override this to ask for their team's spawns, so
+ * each team starts on its own side of the map.
+ */
+/datum/deathmatch_lobby/proc/get_player_spawn_point(datum/deathmatch_player/player)
+	return arena.get_spawn_point()
+
+/**
  * Builds a waiting player's arena body and moves them into it. Called from
  * begin_match() once the arena exists.
  *
@@ -421,7 +436,7 @@
 		real_body.mind.active = TRUE
 		real_body.mind.set_current(real_body)
 
-	var/obj/effect/landmark/deathmatch_player_spawn/spawn_landmark = arena.get_spawn_point()
+	var/obj/effect/landmark/deathmatch_player_spawn/spawn_landmark = get_player_spawn_point(player)
 	var/turf/spawn_turf = get_turf(isnull(spawn_landmark) ? arena.get_fallback_spawn_point() : spawn_landmark)
 	if(isnull(spawn_turf))
 		log_game("Deathmatch: [to_string()] could not seat [player.ckey]: no spawn turf on the arena.")
@@ -877,7 +892,10 @@
 	if(isnull(template))
 		to_chat(host, span_danger("Unknown deathmatch mode."))
 		return null
-	var/datum/deathmatch_lobby/lobby = new(template, host)
+	// The map decides how its game is run: team and round modes use a lobby
+	// subtype, ordinary deathmatch maps keep the free-for-all one.
+	var/lobby_type = template.lobby_type || /datum/deathmatch_lobby
+	var/datum/deathmatch_lobby/lobby = new lobby_type(template, host)
 	if(!lobby.open())
 		return null
 	return lobby
@@ -1362,6 +1380,8 @@ proc/close_sleeper_panels(mob/user)
 		UNTYPED_LIST_ADD(row, player.ckey == your_ckey)
 		UNTYPED_LIST_ADD(row, player.is_observer ? "watching" : loadout_name(player.loadout))
 		UNTYPED_LIST_ADD(row, !isnull(player.vr_body) && !QDELETED(player.vr_body))
+		UNTYPED_LIST_ADD(row, player.team)
+		UNTYPED_LIST_ADD(row, player.is_eliminated)
 		UNTYPED_LIST_ADD(rows, row)
 	.["players"] = rows
 	var/list/picked = list()
