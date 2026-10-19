@@ -829,7 +829,7 @@
 	icon = 'icons/obj/food/pawcookie.dmi'
 	icon_state = "paw14"
 	tastes = list("cookie" = 1)
-	list_reagents = list(/datum/reagent/consumable/nutriment = 3)
+	list_reagents = list(/datum/reagent/consumable/nutriment = 6)
 	bitesize = 3
 	foodtype = GRAIN | SUGAR
 
@@ -843,7 +843,7 @@
 	icon = 'icons/obj/food/food.dmi'
 	icon_state = "pawg"
 	cooked_type = /obj/item/reagent_containers/food/snacks/pawcookie
-	list_reagents = list(/datum/reagent/consumable/nutriment = 6)
+	list_reagents = list(/datum/reagent/consumable/nutriment = 10)
 	tastes = list("cookie" = 1)
 	bitesize = 6
 	foodtype = GRAIN | SUGAR
