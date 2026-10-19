@@ -49,7 +49,7 @@
 
 /obj/item/reagent_containers/food/snacks/doughslice
 	name = "dough slice"
-	desc = "A slice of dough. Can be cooked into a bun."
+	desc = "Кусочек теста. Из него можно испечь булочку. Или можно попробовать наступить и посыпать сахаром..."
 	icon = 'icons/obj/food/food_ingredients.dmi'
 	icon_state = "doughslice"
 	cooked_type = /obj/item/reagent_containers/food/snacks/bun
@@ -143,7 +143,7 @@
 
 /obj/item/reagent_containers/food/snacks/rawpastrybase
 	name = "raw pastry base"
-	desc = "Должно быть приготовлено перед употреблением. Или можно попробовать наступить и посыпать сахаром..."
+	desc = "Must be cooked before use"
 	icon = 'icons/obj/food/food_ingredients.dmi'
 	icon_state = "rawpastrybase"
 	cooked_type = /obj/item/reagent_containers/food/snacks/pastrybase
