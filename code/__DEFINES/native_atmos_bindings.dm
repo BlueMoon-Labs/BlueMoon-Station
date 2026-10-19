@@ -283,17 +283,15 @@
 	var/last_handled = decompression_handled_at[base]
 	if(last_handled && world.time < last_handled + DECOMPRESSION_AREA_ALARM_COOLDOWN)
 		return
+	decompression_seen[base] = TRUE
 	if(decompression_areas[base])
 		return
-	// Одиночный пшик - цикл наружного шлюза, мгновенно осушенный карман - не
-	// пробоина: настоящая утечка перевзводит зону каждый фаер, пока кромку
-	// кормят соседи. Тревога (полновесная пожарная тревога базового ареала,
-	// которую никто не сбрасывает автоматически) ставится только по перевзводу
-	// более поздним фаером внутри подтверждающего окна; протухший первый замер
-	// считается новым первым разом.
+	// Одиночный выброс воздуха не поднимает тревогу: нужен повторный замер
+	// более поздним фаером внутри подтверждающего окна.
 	var/first_seen = decompression_pending[base]
 	if(isnull(first_seen) || times_fired - first_seen > DECOMPRESSION_PENDING_WINDOW_FIRES)
 		decompression_pending[base] = times_fired
+		decompression_started_at[base] = world.time
 		return
 	if(first_seen == times_fired)
 		return
@@ -330,8 +328,14 @@
 	if(!resumed)
 		values_cut_under(decompression_handled_at, world.time - DECOMPRESSION_AREA_ALARM_COOLDOWN, 1)
 		values_cut_under(decompression_pending, times_fired - DECOMPRESSION_PENDING_WINDOW_FIRES)
+		// Если полный проход не подтвердил утечку, локальная защита уже справилась.
+		for(var/area/pending_area as anything in decompression_started_at.Copy())
+			if(!decompression_seen[pending_area] || (!(pending_area in decompression_pending) && !decompression_areas[pending_area]))
+				decompression_pending -= pending_area
+				decompression_started_at -= pending_area
+				decompression_areas -= pending_area
+		decompression_seen.Cut()
 		currentrun = decompression_areas.Copy()
-		decompression_areas.Cut()
 		num_decompression_areas = 0
 	var/list/currentrun_copy = currentrun
 	while(currentrun_copy.len)
@@ -339,6 +343,15 @@
 		currentrun_copy.len--
 		if(!base)
 			continue
+		var/started_at = decompression_started_at[base]
+		if(isnull(started_at))
+			started_at = world.time
+			decompression_started_at[base] = started_at
+		// Очередь сохраняется до истечения паузы, пока каждый полный проход видит утечку.
+		if(world.time < started_at + DECOMPRESSION_AREA_ALARM_DELAY)
+			continue
+		decompression_areas -= base
+		decompression_started_at -= base
 		handle_decompression_area(base)
 		num_decompression_areas++
 		if(world.tick_usage > Master.current_ticklimit)

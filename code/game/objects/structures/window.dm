@@ -526,7 +526,7 @@
 	if(QDELETED(src))
 		return
 	if(!disassembled)
-		deploy_airbag()
+		deploy_window_safety()
 	if(!disassembled)
 		playsound(src, breaksound, 70, 1)
 		if(!(flags_1 & NODECONSTRUCT_1))
@@ -895,10 +895,18 @@
 	airbag_installed = TRUE
 	return TRUE
 
-/// Destruction by fire or acid can bypass deconstruct(), so deploy before the parent.
+// Огонь и кислота могут обойти deconstruct(), поэтому защита срабатывает до родителя.
 /obj/structure/window/obj_destruction(damage_flag)
-	deploy_airbag()
+	deploy_window_safety()
 	return ..()
+
+/obj/structure/window/proc/deploy_window_safety()
+	if(!isturf(loc))
+		return
+	// Заслонка у самого окна закрывается сразу, без общей тревоги отсека.
+	for(var/obj/machinery/door/firedoor/firelock in loc)
+		firelock.emergency_pressure_stop()
+	deploy_airbag()
 
 /obj/structure/window/proc/deploy_airbag()
 	if(!airbag_installed || !isturf(loc))

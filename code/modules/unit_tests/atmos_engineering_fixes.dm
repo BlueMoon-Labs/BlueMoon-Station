@@ -417,6 +417,8 @@
 
 	SSair.decompression_pending -= base
 	SSair.decompression_areas -= base
+	SSair.decompression_started_at -= base
+	SSair.decompression_seen -= base
 
 /// Дверь, закрытую мимо системы тревог (пожарная тревога зоны, разгерметизация,
 /// whack_a_mole), открыть было некому: recompute_atmos_alarm() выходит по
@@ -690,6 +692,8 @@
 	var/requeued = SSair.decompression_areas[base]
 	SSair.decompression_areas -= base
 	SSair.decompression_pending -= base
+	SSair.decompression_started_at -= base
+	SSair.decompression_seen -= base
 	old_area.contents += spot
 	TEST_ASSERT(!requeued, "a just-handled area was requeued for decompression within the alarm cooldown")
 

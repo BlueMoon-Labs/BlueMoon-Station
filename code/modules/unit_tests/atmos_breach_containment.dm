@@ -33,7 +33,7 @@
 			member.excited_group.garbage_collect()
 		SSair.remove_from_active(member)
 
-/// Обход зоны, стравливаемой в космос, не сводит газ через открытый файрлок и закрывает его.
+// Обход не смешивает газ через файрлок и ждёт общей тревоги перед закрытием границы зоны.
 /datum/unit_test/atmos_zone_walk_seals_firelock_on_breach
 
 /datum/unit_test/atmos_zone_walk_seals_firelock_on_breach/Run()
@@ -58,7 +58,17 @@
 		walk.advance(0)
 	var/far_side_moles = far_side.air.total_moles()
 	var/far_end_moles = far_end.air.total_moles()
-	var/sealed = firelock.density
+	var/sealed_before_alarm = firelock.density
+	var/area/base = get_base_area(doorway)
+	var/saved_fire = base.fire
+	base.fire = TRUE
+	fill_breach_row(row)
+	for(var/turf/open/member as anything in stamped)
+		member.equalize_cycle = cycle + 1
+	if(walk.begin(seed, cycle + 1))
+		walk.advance(0)
+	var/sealed_after_alarm = firelock.density
+	base.fire = saved_fire
 	if(firelock.operating)
 		wait_for_var(firelock, "operating", FALSE)
 	restore_zone_walk_turfs(row, stamped)
@@ -66,7 +76,8 @@
 	TEST_ASSERT(started, "the walk refused the breach seed")
 	TEST_ASSERT(abs(far_side_moles - TEST_BREACH_MOLES) < TEST_BREACH_EPSILON, "the walk mixed gas through an open firelock: [far_side_moles] mol behind it")
 	TEST_ASSERT(abs(far_end_moles - TEST_BREACH_MOLES) < TEST_BREACH_EPSILON, "the walk mixed gas through an open firelock: [far_end_moles] mol at the far end")
-	TEST_ASSERT(sealed, "a zone venting to space left the firelock on its border open")
+	TEST_ASSERT(!sealed_before_alarm, "пограничный файрлок закрылся до подтверждения общей тревоги")
+	TEST_ASSERT(sealed_after_alarm, "пограничный файрлок не закрылся при действующей общей тревоге")
 
 /// Без выхода в космос обход по-прежнему не идёт через файрлок, но и не закрывает его.
 /datum/unit_test/atmos_zone_walk_keeps_firelock_without_breach
@@ -150,6 +161,8 @@
 		SSair.decompression_areas -= test_area
 		SSair.decompression_handled_at -= test_area
 		SSair.decompression_pending -= test_area
+		SSair.decompression_started_at -= test_area
+		SSair.decompression_seen -= test_area
 
 /datum/unit_test/decompression_spreads_through_open_seam/Destroy()
 	if(feeding_area)
@@ -195,8 +208,135 @@
 		SSair.decompression_areas -= outdoor_area
 		SSair.decompression_handled_at -= outdoor_area
 		SSair.decompression_pending -= outdoor_area
+		SSair.decompression_started_at -= outdoor_area
+		SSair.decompression_seen -= outdoor_area
 		old_area.contents += spot
 	return ..()
+
+// Общая тревога ждёт локальную защиту, отменяется после герметизации и сохраняется для открытой пробоины.
+/datum/unit_test/decompression_alarm_grace
+	var/list/saved_air_state = list()
+	var/list/original_areas = list()
+	var/saved_count
+
+/datum/unit_test/decompression_alarm_grace/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair не инициализирована")
+	for(var/state_name in list("decompression_handled_at", "decompression_pending", "decompression_areas", "decompression_started_at", "decompression_seen", "currentrun"))
+		saved_air_state[state_name] = SSair.vars[state_name]
+		SSair.vars[state_name] = list()
+	saved_count = SSair.num_decompression_areas
+	var/turf/open/spot = run_loc_floor_bottom_left
+	var/area/unit_test_decompression/base = new
+	allocated += base
+	original_areas[spot] = get_area(spot)
+	base.contents += spot
+	var/obj/machinery/door/firedoor/door = allocate(/obj/machinery/door/firedoor, spot)
+	var/obj/machinery/airalarm/unit_test_decomp_probe/alarm = allocate(/obj/machinery/airalarm/unit_test_decomp_probe, spot)
+	alarm.set_is_operational(TRUE)
+	TEST_ASSERT(door in base.firedoors, "контроль: дверь не зарегистрирована в тестовом отсеке")
+
+	SSair.queue_decompression_area(spot)
+	SSair.process_decompression_areas_auxtools(FALSE)
+	TEST_ASSERT_EQUAL(alarm.decomp_calls, 0, "единственный замер вызвал общую тревогу")
+	SSair.decompression_pending[base] = SSair.times_fired - 1
+	SSair.decompression_started_at[base] = world.time - DECOMPRESSION_AREA_ALARM_DELAY + 1
+	SSair.queue_decompression_area(spot)
+	SSair.process_decompression_areas_auxtools(FALSE)
+	TEST_ASSERT_EQUAL(alarm.decomp_calls, 0, "общая тревога сработала до истечения задержки")
+	TEST_ASSERT(!door.density, "дверь отсека закрылась до истечения задержки")
+	TEST_ASSERT(SSair.decompression_areas[base], "подтверждённая пробоина потеряна во время задержки")
+
+	SSair.decompression_started_at[base] = world.time - DECOMPRESSION_AREA_ALARM_DELAY
+	SSair.queue_decompression_area(spot)
+	SSair.process_decompression_areas_auxtools(FALSE)
+	TEST_ASSERT_EQUAL(alarm.decomp_calls, 1, "постоянная пробоина не подняла тревогу на границе задержки")
+	TEST_ASSERT(door.density, "общая тревога не закрыла дверь отсека")
+	TEST_ASSERT(!(base in SSair.decompression_started_at), "обработанная пробоина сохранила время ожидания")
+	SSair.queue_decompression_area(spot)
+	SSair.process_decompression_areas_auxtools(FALSE)
+	TEST_ASSERT_EQUAL(alarm.decomp_calls, 1, "кулдаун не подавил повторную общую тревогу")
+
+	SSair.decompression_handled_at -= base
+	SSair.queue_decompression_area(spot)
+	SSair.decompression_pending[base] = SSair.times_fired - 1
+	SSair.queue_decompression_area(spot)
+	SSair.decompression_started_at[base] = world.time - DECOMPRESSION_AREA_ALARM_DELAY
+	// Полный проход без новой утечки соответствует уже загерметизированному проёму.
+	SSair.decompression_seen.Cut()
+	SSair.process_decompression_areas_auxtools(FALSE)
+	TEST_ASSERT_EQUAL(alarm.decomp_calls, 1, "загерметизированный проём вызвал отложенную тревогу")
+	TEST_ASSERT(!(base in SSair.decompression_areas), "отменённая тревога осталась в очереди")
+	TEST_ASSERT(!(base in SSair.decompression_pending), "отменённая тревога осталась в подтверждении")
+	TEST_ASSERT(!(base in SSair.decompression_started_at), "герметизация сохранила старый отсчёт задержки")
+	SSair.queue_decompression_area(spot)
+	TEST_ASSERT_EQUAL(SSair.decompression_started_at[base], world.time, "новая пробоина унаследовала старый отсчёт")
+
+	// Пустой карман с открытым выходом в космос продолжает подтверждать уже замеченную пробоину.
+	var/turf/open/drained = locate(spot.x + 3, spot.y + 2, spot.z)
+	original_areas[drained] = get_area(drained)
+	base.contents += drained
+	for(var/direction in GLOB.cardinals)
+		var/turf/neighbor = get_step(drained, direction)
+		neighbor.ChangeTurf(direction == WEST ? /turf/open/space/basic : /turf/closed/wall)
+	drained.ImmediateCalculateAdjacentTurfs()
+	drained.air.clear()
+	drained.air.set_temperature(TCMB)
+	SSair.decompression_started_at[base] = world.time - DECOMPRESSION_AREA_ALARM_DELAY
+	SSair.decompression_pending[base] = SSair.times_fired - 1
+	SSair.decompression_seen.Cut()
+	drained.process_cell(max(SSair.times_fired, drained.current_cycle) + 1)
+	SSair.process_decompression_areas_auxtools(FALSE)
+	TEST_ASSERT_EQUAL(alarm.decomp_calls, 2, "открытая пробоина ниже порога давления потеряла общую тревогу")
+
+/datum/unit_test/decompression_alarm_grace/Destroy()
+	for(var/turf/spot as anything in original_areas)
+		var/area/original = original_areas[spot]
+		original.contents += spot
+	for(var/state_name in saved_air_state)
+		SSair.vars[state_name] = saved_air_state[state_name]
+	if(length(saved_air_state))
+		SSair.num_decompression_areas = saved_count
+	saved_air_state.Cut()
+	original_areas.Cut()
+	return ..()
+
+// Разбитое окно немедленно закрывает собственный файрлок, не затрагивая удалённый.
+/datum/unit_test/window_breach_local_safety/Run()
+	var/turf/origin = run_loc_floor_bottom_left
+	var/turf/remote = run_loc_floor_top_right
+	var/obj/machinery/door/firedoor/window/local_door = allocate(/obj/machinery/door/firedoor/window, origin)
+	var/obj/machinery/door/firedoor/remote_door = allocate(/obj/machinery/door/firedoor, remote)
+	var/obj/machinery/airalarm/unit_test_decomp_probe/alarm = allocate(/obj/machinery/airalarm/unit_test_decomp_probe, origin)
+	var/obj/structure/window/window = allocate(/obj/structure/window, origin)
+	window.deconstruct(FALSE)
+	TEST_ASSERT(local_door.density, "разбитое окно не закрыло свой файрлок немедленно")
+	TEST_ASSERT(!remote_door.density, "локальная защита закрыла удалённую дверь")
+	TEST_ASSERT_EQUAL(alarm.decomp_calls, 0, "локальная защита вызвала общую тревогу")
+
+// Аирбаг разбитого окна разворачивается и герметизирует турф; аккуратная разборка его не активирует.
+/datum/unit_test/window_breach_airbag_safety/Run()
+	var/turf/open/spot = run_loc_floor_bottom_left
+	var/obj/structure/window/window = allocate(/obj/structure/window, spot)
+	window.airbag_installed = TRUE
+	window.deconstruct(FALSE)
+	var/obj/item/airbag_module/immediate_arm/module = locate() in spot
+	TEST_ASSERT_NOTNULL(module, "разбитое окно не выпустило аирбаг")
+	allocated += module
+	TEST_ASSERT(module.armed, "аирбаг разбитого окна не активирован")
+	TEST_ASSERT(module.detonate_time < DECOMPRESSION_AREA_ALARM_DELAY, "аирбаг не успевает развернуться до общей тревоги")
+	var/obj/structure/inflatable/airbag/barrier = module.bang()
+	TEST_ASSERT_NOTNULL(barrier, "аирбаг не развернул мембрану")
+	allocated += barrier
+	spot.ImmediateCalculateAdjacentTurfs()
+	TEST_ASSERT(!length(spot.atmos_adjacent_turfs), "мембрана аирбага пропускает воздух")
+	qdel(barrier)
+
+	var/obj/structure/window/disassembled = allocate(/obj/structure/window, spot)
+	disassembled.airbag_installed = TRUE
+	var/obj/machinery/door/firedoor/window/door = allocate(/obj/machinery/door/firedoor/window, spot)
+	disassembled.deconstruct(TRUE)
+	TEST_ASSERT(!(locate(/obj/item/airbag_module/immediate_arm) in spot), "аккуратная разборка активировала аирбаг")
+	TEST_ASSERT(!door.density, "аккуратная разборка закрыла файрлок")
 
 #undef TEST_BREACH_MOLES
 #undef TEST_BREACH_LEAN_MOLES

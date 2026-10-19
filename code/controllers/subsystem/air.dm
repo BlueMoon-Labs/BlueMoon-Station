@@ -131,6 +131,10 @@ SUBSYSTEM_DEF(air)
 	/// DECOMPRESSION_PENDING_WINDOW_FIRES (см. queue_decompression_area);
 	/// протухшие записи снимает уборка декомп-фазы.
 	var/list/decompression_pending = list()
+	// Базовая зона -> время первого замера непрерывной утечки.
+	var/list/decompression_started_at = list()
+	// Зоны, в которых утечка замечена за текущий полный проход обработки турфов.
+	var/list/decompression_seen = list()
 	/// Разобранные строки газа: сырая строка -> list(температура, list(газ -> моли)).
 	/// См. [/datum/controller/subsystem/air/proc/get_parsed_gas_string].
 	var/list/parsed_gas_strings = list()
