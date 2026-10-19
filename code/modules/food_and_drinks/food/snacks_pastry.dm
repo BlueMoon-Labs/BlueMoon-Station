@@ -842,7 +842,6 @@
 	desc = "Блестящая лапка! Сытнее обычной."
 	icon = 'icons/obj/food/food.dmi'
 	icon_state = "pawg"
-	cooked_type = /obj/item/reagent_containers/food/snacks/pawcookie
 	list_reagents = list(/datum/reagent/consumable/nutriment = 10)
 	tastes = list("cookie" = 1)
 	bitesize = 6
@@ -856,7 +855,7 @@ GLOBAL_LIST_INIT(paw_eater_progress, list()) // Ачивка pawlicker
 		return
 	var/state_index = text2num(copytext(icon_state, 4))
 	var/needed = 7
-	var/key = REF(user.client)
++	var/key = user.client.ckey
 	var/list/eaten = GLOB.paw_eater_progress[key]
 	if(!eaten)
 		eaten = list()

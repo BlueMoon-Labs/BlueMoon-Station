@@ -31,7 +31,7 @@
 
 /datum/gear/unlockable/pawlicker_medal
 	name = "Paw Medal"
-	description = "Разблокируется за достижение pawlicker. Не задвай лишних вопросов."
+	description = "Разблокируется за достижение pawlicker. Не задавай лишних вопросов."
 	path = /obj/item/clothing/accessory/medal/pawlicker
 
 	slot = ITEM_SLOT_ACCESSORY
