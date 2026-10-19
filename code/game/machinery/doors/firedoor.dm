@@ -774,6 +774,18 @@
 	// станционного пожара (раунд 9911).
 	INVOKE_ASYNC(src, TYPE_PROC_REF(/obj/machinery/door/firedoor, open))
 
+/obj/machinery/door/firedoor/rcd_vals(mob/user, obj/item/construction/rcd/the_rcd)
+	if(the_rcd.mode != RCD_DECONSTRUCT || (flags_1 & NODECONSTRUCT_1) || (resistance_flags & INDESTRUCTIBLE))
+		return FALSE
+	return list("mode" = RCD_DECONSTRUCT, "delay" = 2 SECONDS, "cost" = 16)
+
+/obj/machinery/door/firedoor/rcd_act(mob/user, obj/item/construction/rcd/the_rcd, passed_mode)
+	if(passed_mode != RCD_DECONSTRUCT || (flags_1 & NODECONSTRUCT_1) || (resistance_flags & INDESTRUCTIBLE))
+		return FALSE
+	to_chat(user, span_notice("Вы разбираете [src]."))
+	qdel(src)
+	return TRUE
+
 /obj/machinery/door/firedoor/deconstruct(disassembled = TRUE)
 	if(!(flags_1 & NODECONSTRUCT_1))
 		var/turf/targetloc = get_turf(src)
@@ -1151,13 +1163,15 @@
 	return ..()
 
 /obj/structure/firelock_frame/rcd_vals(mob/user, obj/item/construction/rcd/the_rcd)
-	if((constructionStep == CONSTRUCTION_NOCIRCUIT) && (the_rcd.upgrade & RCD_UPGRADE_SIMPLE_CIRCUITS))
+	if(constructionStep == CONSTRUCTION_NOCIRCUIT)
 		return list("mode" = RCD_UPGRADE_SIMPLE_CIRCUITS, "delay" = 20, "cost" = 1)
 	return FALSE
 
 /obj/structure/firelock_frame/rcd_act(mob/user, obj/item/construction/rcd/the_rcd, passed_mode)
 	switch(passed_mode)
 		if(RCD_UPGRADE_SIMPLE_CIRCUITS)
+			if(constructionStep != CONSTRUCTION_NOCIRCUIT)
+				return FALSE
 			user.visible_message(span_notice("[user] создаёт плату управления и устанавливает её в [src]."), \
 			span_notice("Вы создаёте плату управления фаерлока и устанавливаете её в каркас."))
 			constructionStep = CONSTRUCTION_GUTTED

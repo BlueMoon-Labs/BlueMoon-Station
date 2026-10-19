@@ -51,7 +51,7 @@ RLD
 	if(upgrade & RCD_UPGRADE_FRAMES)
 		. += "It contains the design for machine frames, computer frames and deconstruction."
 	if(upgrade & RCD_UPGRADE_SIMPLE_CIRCUITS)
-		. += "It contains the design for firelock, air alarm, fire alarm, apc circuits and crap power cells."
+		. += span_notice("Содержит чертежи плат воздушной и пожарной сигнализации, контроллеров питания и простых аккумуляторов.")
 
 /obj/item/construction/Destroy()
 	QDEL_NULL(spark_system)
@@ -182,6 +182,10 @@ RLD
 /obj/item/construction/rcd/suicide_act(mob/user)
 	user.visible_message("<span class='suicide'>[user] sets the RCD to 'Wall' and points it down [user.ru_ego()] throat! It looks like [user.p_theyre()] trying to commit suicide..</span>")
 	return (BRUTELOSS)
+
+/obj/item/construction/rcd/examine(mob/user)
+	. = ..()
+	. += span_notice("В радиальном меню выберите <b>«Фаерлок»</b>, затем стеклянный или оконный вариант. РЦД также может установить плату управления в пустой каркас фаерлока.")
 
 /obj/item/construction/rcd/verb/toggle_window_type_verb()
 	set name = "RCD : Toggle Window Type"
@@ -443,6 +447,26 @@ RLD
 			airlock_glass = FALSE
 
 
+/obj/item/construction/rcd/proc/change_firelock_setting(mob/user)
+	var/obj/machinery/door/firedoor/firelock_preview = /obj/machinery/door/firedoor
+	var/obj/machinery/door/firedoor/window/window_firelock_preview = /obj/machinery/door/firedoor/window
+	var/list/choices = list(
+		"Стеклянный фаерлок" = image(icon = initial(firelock_preview.icon), icon_state = "door_closed"),
+		"Оконный фаерлок" = image(icon = initial(window_firelock_preview.icon), icon_state = "door_closed")
+	)
+	var/choice = show_radial_menu(user, src, choices, custom_check = CALLBACK(src, PROC_REF(check_menu), user), require_near = TRUE, tooltips = TRUE)
+	if(!check_menu(user))
+		return
+	switch(choice)
+		if("Стеклянный фаерлок")
+			mode = RCD_FIRELOCK
+		if("Оконный фаерлок")
+			mode = RCD_WINDOW_FIRELOCK
+		else
+			return
+	playsound(src, 'sound/effects/pop.ogg', 50, FALSE)
+	to_chat(user, span_notice("Вы переключаете РЦД в режим «[choice]»."))
+
 /obj/item/construction/rcd/proc/rcd_create(atom/A, mob/user)
 	var/list/rcd_results = A.rcd_vals(user, src)
 	if(!rcd_results)
@@ -481,7 +505,8 @@ RLD
 	var/list/choices = list(
 		"Airlock" = image(icon = 'icons/mob/radial.dmi', icon_state = "airlock"),
 		"Grilles & Windows" = image(icon = 'icons/mob/radial.dmi', icon_state = "grillewindow"),
-		"Floors & Walls" = image(icon = 'icons/mob/radial.dmi', icon_state = "wallfloor")
+		"Floors & Walls" = image(icon = 'icons/mob/radial.dmi', icon_state = "wallfloor"),
+		"Firedoor" = image(icon = 'icons/mob/radial.dmi', icon_state = "firedoor")
 	)
 	if(upgrade & RCD_UPGRADE_FRAMES)
 		choices += list(
@@ -506,6 +531,9 @@ RLD
 			mode = RCD_FLOORWALL
 		if("Airlock")
 			mode = RCD_AIRLOCK
+		if("Firedoor")
+			change_firelock_setting(user)
+			return
 		if("Deconstruct")
 			mode = RCD_DECONSTRUCT
 		if("Grilles & Windows")
@@ -528,9 +556,11 @@ RLD
 		else
 			return
 	playsound(src, 'sound/effects/pop.ogg', 50, 0)
-	to_chat(user, "<span class='notice'>You change RCD's mode to '[choice]'.</span>")
+	to_chat(user, span_notice("Вы переключаете РЦД в режим «[choice]»."))
 
 /obj/item/construction/rcd/proc/target_check(atom/A, mob/user) // only returns true for stuff the device can actually work with
+	if(mode == RCD_DECONSTRUCT && istype(A, /obj/machinery/door/firedoor))
+		return TRUE
 	if((isturf(A) && A.density && mode==RCD_DECONSTRUCT) || (isturf(A) && !A.density) || (istype(A, /obj/machinery/door/airlock) && mode==RCD_DECONSTRUCT) || istype(A, /obj/structure/grille) || (istype(A, /obj/structure/window) && mode==RCD_DECONSTRUCT) || istype(A, /obj/structure/girder))
 		return TRUE
 	else
@@ -538,6 +568,12 @@ RLD
 
 /obj/item/construction/rcd/afterattack(atom/A, mob/user, proximity)
 	. = ..()
+	// Окна, решётки и двери не должны перекрывать выбор турфа под фаерлок.
+	if(mode == RCD_FIRELOCK || mode == RCD_WINDOW_FIRELOCK)
+		if(istype(A, /obj/structure/window) || istype(A, /obj/structure/grille) || istype(A, /obj/machinery/door))
+			A = get_turf(A)
+			if(!A)
+				return
 	if(!proximity)
 		if(!ranged || !range_check(A,user)) //early return not-in-range sanity.
 			return
@@ -866,7 +902,7 @@ RLD
 	upgrade = RCD_UPGRADE_FRAMES
 
 /obj/item/rcd_upgrade/simple_circuits
-	desc = "It contains the design for firelock, air alarm, fire alarm, apc circuits and crap power cells."
+	desc = "Содержит чертежи плат воздушной и пожарной сигнализации, контроллеров питания и простых аккумуляторов."
 	upgrade = RCD_UPGRADE_SIMPLE_CIRCUITS
 
 /obj/item/construction/plumbing
