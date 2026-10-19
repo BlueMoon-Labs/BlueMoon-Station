@@ -75,7 +75,7 @@
 			to_chat(user, span_warning("Для формовки нужна пачка сахара во второй руке!"))
 			return
 		if(!sugarpack.reagents || sugarpack.reagents.get_reagent_amount(/datum/reagent/consumable/sugar) < 1)
-			to_chat(user, span_warning("Пачка сахара пуста!</span>"))
+			to_chat(user, span_warning("Пачка сахара пуста!"))
 			return
 		to_chat(user, span_notice("Ты прижимаешь ногу к тесту, придавая ему форму лапки..."))
 		if(!do_after(user, 1 SECONDS, user))
@@ -85,7 +85,7 @@
 		var/obj/item/reagent_containers/food/snacks/pawcookie_raw/form = new(get_turf(user))
 		qdel(src)
 		user.put_in_hands(form)
-		to_chat(user, span_notice("Заготовка готова! Теперь её можно разогреть</span>"))
+		to_chat(user, span_notice("Заготовка готова! Теперь её можно разогреть"))
 
 /obj/item/reagent_containers/food/snacks/bun
 	name = "bun"
