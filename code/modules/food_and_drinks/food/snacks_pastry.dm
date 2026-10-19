@@ -863,7 +863,7 @@ GLOBAL_LIST_INIT(paw_eater_progress, list()) // Ачивка pawlicker
 		GLOB.paw_eater_progress[key] = eaten
 	if(!(state_index in eaten))
 		eaten |= state_index
-		if(eaten.len >= needed)
+		if(eaten.len == needed)
 			user.client.increment_progress("achievement_pawlicker", 1)
 			to_chat(user, span_warning("Ты съел половину от всех видов, но как можно остановиться?"))
 			user.client.give_award(/datum/award/achievement/misc/pawlicker, user)
