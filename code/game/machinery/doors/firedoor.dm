@@ -550,7 +550,7 @@
 			// не следовало. Разгерметизацию сдерживает whack_a_mole ниже.
 			to_chat(user, span_warning("Из щели [src] бьёт воздух - с той стороны другое давление."))
 			log_game("[key_name_admin(user)] has opened a firelock with a pressure difference at [AREACOORD(loc)]") // there bibby I made it logged just for you. Enjoy.
-			// since we have high-pressure-ness, close all other firedoors on the tile
+			// Ищем соседние заслонки, способные отсечь открываемую утечку.
 			whack_a_mole()
 		if(welded || operating || !density)
 			return // whack_a_mole мог задеть и эту дверь
@@ -629,8 +629,10 @@
 	. = ..()
 	latetoggle()
 
-/obj/machinery/door/firedoor/close(manual = FALSE)
-	if(!manual && !can_close_for_alarm())
+// alarm_checked действует только в текущей цепочке вызовов до начала анимации.
+// Отложенное закрытие через nextstate всегда проверяет состояние заново.
+/obj/machinery/door/firedoor/close(manual = FALSE, alarm_checked = FALSE)
+	if(!manual && (!can_auto_close() || (!alarm_checked && !can_close_for_alarm())))
 		return FALSE
 	playsound(loc, door_close_sound, 100, TRUE)
 	. = ..()
@@ -703,6 +705,8 @@
 /obj/machinery/door/firedoor/proc/whack_a_mole_part(turf/start_point, reconsider_immediately)
 	set waitfor = 0
 	var/list/doors_to_close = list()
+	// Обход не спит и не закрывает двери до конца сбора: результат здесь неизменен.
+	var/list/close_checks = list()
 	var/list/turfs = list()
 	turfs[start_point] = 1
 	for(var/i = 1; (i <= turfs.len && i <= 11); i++) // check up to 11 turfs.
@@ -718,7 +722,11 @@
 					continue
 				if(FD.operating || FD == src || FD.welded || FD.density)
 					continue
-				doors_to_close += FD
+				if(isnull(close_checks[FD]))
+					close_checks[FD] = FD.can_close_for_alarm()
+				if(!close_checks[FD])
+					continue
+				doors_to_close[FD] = TRUE
 				is_cut_by_unopen_door = TRUE
 
 			for(var/obj/machinery/door/firedoor/FD in T)
@@ -726,7 +734,11 @@
 					continue
 				if(FD.operating || FD == src || FD.welded || FD.density)
 					continue
-				doors_to_close += FD
+				if(isnull(close_checks[FD]))
+					close_checks[FD] = FD.can_close_for_alarm()
+				if(!close_checks[FD])
+					continue
+				doors_to_close[FD] = TRUE
 				is_cut_by_unopen_door= TRUE
 			if(!is_cut_by_unopen_door)
 				turfs[T2] = 1
@@ -743,15 +755,15 @@
 	set waitfor = 0
 	if(density || operating || welded || !can_close_for_alarm())
 		return
-	mark_auto_closed()
-	close()
+	mark_auto_closed(alarm_checked = TRUE)
+	close(alarm_checked = TRUE)
 
 /// Отмечает закрытие как сделанное автоматикой и взводит отложенную проверку на
 /// открытие. Без неё дверь, закрытую мимо системы тревог, открыть было некому:
 /// recompute_atmos_alarm() ходит только по фронту тревоги, а у такого закрытия
 /// фронта нет вовсе - тревога как была пустой, так и осталась.
-/obj/machinery/door/firedoor/proc/mark_auto_closed()
-	if(!can_close_for_alarm())
+/obj/machinery/door/firedoor/proc/mark_auto_closed(alarm_checked = FALSE)
+	if(!can_auto_close() || (!alarm_checked && !can_close_for_alarm()))
 		return
 	auto_closed = TRUE
 	schedule_auto_reopen()
@@ -839,7 +851,7 @@
 	opacity = TRUE
 	density = TRUE
 
-/obj/machinery/door/firedoor/border_only/close(manual = FALSE)
+/obj/machinery/door/firedoor/border_only/close(manual = FALSE, alarm_checked = FALSE)
 	if(!manual && !can_close_for_alarm())
 		return FALSE
 	if(density)
@@ -863,6 +875,7 @@
 				to_chat(M, span_notice("Вы успеваете протащить [M.pulling] через [src] перед закрытием."))
 				M.pulling.forceMove(T2)
 				M.start_pulling(M2)
+	// Перетаскивание могло изменить преграды на тайле: родитель проверяет их заново.
 	. = ..(manual)
 
 /obj/machinery/door/firedoor/border_only/allow_hand_open(mob/user)
@@ -933,6 +946,66 @@
 	assemblytype = /obj/structure/firelock_frame/window
 
 /obj/machinery/door/firedoor/window/allow_hand_open()
+	return TRUE
+
+/obj/machinery/door/firedoor/window/can_close_for_alarm()
+	if(!..())
+		return FALSE
+	if(density)
+		return TRUE
+	var/turf/open/door_turf = get_turf(src)
+	if(!isopenturf(door_turf) || door_turf.blocks_air)
+		return FALSE
+	// Читаем текущую проходимость без перестройки смежности, сброса кэшей атмосферы
+	// и обновления нативных привязок. Это также видит уже разбитое, но ещё не удалённое окно.
+	var/can_pass = CANATMOSPASS(door_turf, door_turf)
+	var/can_vertical_pass = CANVERTICALATMOSPASS(door_turf, door_turf)
+	var/list/neighbors = list()
+	for(var/direction in GLOB.cardinals_multiz)
+		var/turf/neighbor = get_step_multiz(door_turf, direction)
+		if(!isopenturf(neighbor) || neighbor.blocks_air)
+			continue
+		if(direction & (UP|DOWN))
+			if(!can_vertical_pass || !CANVERTICALATMOSPASS(neighbor, door_turf))
+				continue
+		else if(!can_pass || !CANATMOSPASS(neighbor, door_turf))
+			continue
+		// Прямой выход в космос нужно перекрывать даже при соседней открытой шторке.
+		if(isspaceturf(door_turf) || isspaceturf(neighbor))
+			return TRUE
+		neighbors += neighbor
+	// Шторка в тупике изолирует только собственный тайл.
+	if(length(neighbors) < 2)
+		return FALSE
+	for(var/turf/neighbor as anything in neighbors)
+		for(var/obj/machinery/door/firedoor/other in neighbor)
+			if(!other.welded && other.can_auto_close())
+				return TRUE
+	var/list/pending = list(neighbors[1])
+	var/list/seen = list()
+	seen[door_turf] = TRUE
+	seen[neighbors[1]] = TRUE
+	neighbors -= neighbors[1]
+	// Если все стороны связаны коротким обходом, закрытие шторки ничего не отсечёт.
+	// Другие заслонки могут закрыться вместе: обход через них не считаем надёжным.
+	for(var/index = 1; index <= length(pending) && index <= FIRELOCK_PASSAGE_CHECK_LIMIT; index++)
+		var/turf/current = pending[index]
+		for(var/turf/next as anything in current.atmos_adjacent_turfs)
+			if(seen[next])
+				continue
+			seen[next] = TRUE
+			var/blocked_by_firelock = FALSE
+			for(var/obj/machinery/door/firedoor/other in next)
+				if(!other.welded && other.can_auto_close())
+					blocked_by_firelock = TRUE
+					break
+			if(blocked_by_firelock)
+				continue
+			pending += next
+			neighbors -= next
+			if(!length(neighbors))
+				return FALSE
+	// Если локальная проверка не доказала наличие обхода, сохраняем защиту прохода.
 	return TRUE
 
 /obj/item/electronics/firelock

@@ -430,11 +430,15 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 				if(opening)
 					D.auto_closed = FALSE
 				else if(!D.density)
-					D.mark_auto_closed()
+					D.mark_auto_closed(alarm_checked = TRUE)
 				if(D.operating)
 					D.nextstate = opening ? FIREDOOR_OPEN : FIREDOOR_CLOSED
 				else if(!(D.density ^ opening))
-					INVOKE_ASYNC(D, (opening ? TYPE_PROC_REF(/obj/machinery/door/firedoor, open) : TYPE_PROC_REF(/obj/machinery/door/firedoor, close)))
+					if(opening)
+						INVOKE_ASYNC(D, TYPE_PROC_REF(/obj/machinery/door/firedoor, open))
+					else
+						// INVOKE_ASYNC начинает вызов сразу: используем проверку выше.
+						INVOKE_ASYNC(D, TYPE_PROC_REF(/obj/machinery/door/firedoor, close), FALSE, TRUE)
 
 /area/proc/firealert(obj/source)
 	if(always_unpowered == 1) //no fire alarms in space/asteroid

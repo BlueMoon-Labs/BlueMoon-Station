@@ -331,6 +331,9 @@
 // Один выбор на весь раунд; окна шаттлов и капсул всегда получают фаерлоки.
 #define STATION_WINDOW_FIRELOCKS_CHANCE 90
 
+// Предел локального поиска обхода оконной шторки без прохода через её тайл.
+#define FIRELOCK_PASSAGE_CHECK_LIMIT 16
+
 // Блокировка автоматического закрытия фаерлока по Ctrl-клику.
 #define FIRELOCK_CTRL_CLICK_OVERRIDE_TIME (3 MINUTES)
 
