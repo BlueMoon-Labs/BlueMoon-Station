@@ -35,7 +35,6 @@
 	attack_sound = 'sound/weapons/punch1.ogg'
 	a_intent = INTENT_HARM
 	loot = list(/obj/effect/mob_spawn/human/corpse/inteq_dead)
-	// Новая переменная для случайного лута (ассоциативный список: предмет -> вес)
 	atmos_requirements = list("min_oxy" = 5, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 1, "min_co2" = 0, "max_co2" = 5, "min_n2" = 0, "max_n2" = 0)
 	unsuitable_atmos_damage = 15
 	faction = list(ROLE_INTEQ)
@@ -147,7 +146,6 @@
 	status_flags = 0
 	var/obj/effect/light_emitter/red_energy_sword/sord
 	random_loot = list(
-		/obj/item/dualsaber = 1,
 		/obj/item/broken/dualsaber = 15,
 		/obj/item/melee/transforming/energy/sword/saber = 5,
 		/obj/item/broken/energy_sword = 40,
@@ -155,7 +153,7 @@
 		/obj/item/clothing/mask/gas/inteq = 5,
 		/obj/item/clothing/suit/armor/inteq = 5,
 		/obj/item/clothing/head/helmet/swat/inteq = 5,
-		null = 19   // ничего не выпадает
+		null = 20   // ничего не выпадает
 	)
 
 /mob/living/simple_animal/hostile/inteq/melee/sword/Initialize(mapload)
@@ -183,7 +181,6 @@
 	speed = 1
 	spacewalk = TRUE
 	random_loot = list(
-		/obj/item/dualsaber = 1,
 		/obj/item/broken/dualsaber = 15,
 		/obj/item/melee/transforming/energy/sword/saber = 5,
 		/obj/item/broken/energy_sword = 40,
@@ -191,7 +188,7 @@
 		/obj/item/clothing/mask/gas/inteq = 5,
 		/obj/item/clothing/head/helmet/space/syndicate/inteq = 5,
 		/obj/item/clothing/suit/space/syndicate/inteq = 5,
-		null = 19   // ничего не выпадает
+		null = 20   // ничего не выпадает
 	)
 
 /mob/living/simple_animal/hostile/inteq/melee/sword/space/Initialize(mapload)
@@ -210,7 +207,6 @@
 	maxHealth = 250
 	health = 250
 	random_loot = list(
-		/obj/item/dualsaber = 1,
 		/obj/item/broken/dualsaber = 15,
 		/obj/item/melee/transforming/energy/sword/saber = 5,
 		/obj/item/broken/energy_sword = 20,
@@ -218,7 +214,7 @@
 		/obj/item/clothing/mask/gas/inteq = 5,
 		/obj/item/clothing/suit/space/hardsuit/syndi/elite/inteq = 5,
 		/obj/item/broken/inteq_elite = 35,
-		null = 9   // ничего не выпадает
+		null = 10   // ничего не выпадает
 	)
 
 ///////////////Guns////////////
@@ -298,8 +294,7 @@
 	casingtype = /obj/item/ammo_casing/c45/lethal
 	projectilesound = 'sound/weapons/gunshot_smg.ogg'
 	random_loot = list(
-		/obj/item/gun/ballistic/automatic/c20r = 1,
-		/obj/item/broken/c20r = 34,
+		/obj/item/broken/c20r = 35,
 		/obj/item/ammo_box/magazine/smgm45 = 10,
 		/obj/item/clothing/under/inteq = 15,
 		/obj/item/clothing/mask/gas/inteq = 10,
@@ -324,8 +319,7 @@
 	speed = 1
 	spacewalk = TRUE
 	random_loot = list(
-		/obj/item/gun/ballistic/automatic/c20r = 1,
-		/obj/item/broken/c20r = 34,
+		/obj/item/broken/c20r = 35,
 		/obj/item/ammo_box/magazine/smgm45 = 10,
 		/obj/item/clothing/under/inteq = 15,
 		/obj/item/clothing/mask/gas/inteq = 10,
@@ -345,8 +339,7 @@
 	maxHealth = 250
 	health = 250
 	random_loot = list(
-		/obj/item/gun/ballistic/automatic/c20r = 1,
-		/obj/item/broken/c20r = 14,
+		/obj/item/broken/c20r = 15,
 		/obj/item/ammo_box/magazine/smgm45 = 10,
 		/obj/item/clothing/under/inteq = 15,
 		/obj/item/clothing/mask/gas/inteq = 10,
@@ -363,8 +356,7 @@
 	icon_living = "syndicate_shotgun"
 	casingtype = /obj/item/ammo_casing/shotgun/buckshot //buckshot (up to 72.5 brute) fired in a two-round burst
 	random_loot = list(
-		/obj/item/gun/ballistic/automatic/shotgun/bulldog = 1,
-		/obj/item/broken/bulldog = 34,
+		/obj/item/broken/bulldog = 35,
 		/obj/item/ammo_box/magazine/m12g = 10,
 		/obj/item/clothing/under/inteq = 15,
 		/obj/item/clothing/mask/gas/inteq = 10,
@@ -384,8 +376,7 @@
 	speed = 1
 	spacewalk = TRUE
 	random_loot = list(
-		/obj/item/gun/ballistic/automatic/shotgun/bulldog = 1,
-		/obj/item/broken/bulldog = 34,
+		/obj/item/broken/bulldog = 35,
 		/obj/item/ammo_box/magazine/m12g = 10,
 		/obj/item/clothing/under/inteq = 15,
 		/obj/item/clothing/mask/gas/inteq = 10,
@@ -405,8 +396,7 @@
 	maxHealth = 250
 	health = 250
 	random_loot = list(
-		/obj/item/gun/ballistic/automatic/shotgun/bulldog = 1,
-		/obj/item/broken/bulldog = 14,
+		/obj/item/broken/bulldog = 15,
 		/obj/item/ammo_box/magazine/m12g = 10,
 		/obj/item/clothing/under/inteq = 15,
 		/obj/item/clothing/mask/gas/inteq = 10,
