@@ -1306,23 +1306,9 @@
 
 /obj/structure/inflatable/airbag
 	name = "window airbag"
-	desc = "Аварийная мембрана, закрывающая проём разбитого окна. Автоматически сдувается через десять минут."
+	desc = "Аварийная мембрана, закрывающая проём разбитого окна."
 	icon_state = "airbag_wall"
 	max_integrity = 40
 	CanAtmosPass = ATMOS_PASS_NO
 	intact = /obj/item/airbag_module
 	torn = null
-	var/lifetime_timer
-
-/obj/structure/inflatable/airbag/Initialize(mapload)
-	. = ..()
-	lifetime_timer = addtimer(CALLBACK(src, PROC_REF(expire)), 10 MINUTES, TIMER_STOPPABLE)
-
-/obj/structure/inflatable/airbag/Destroy()
-	if(lifetime_timer)
-		deltimer(lifetime_timer)
-		lifetime_timer = null
-	return ..()
-
-/obj/structure/inflatable/airbag/proc/expire()
-	deconstruct(FALSE)

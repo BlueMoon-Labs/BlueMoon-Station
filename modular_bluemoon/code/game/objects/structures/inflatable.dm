@@ -47,6 +47,7 @@
 
 /obj/structure/inflatable/Initialize(mapload)
 	. = ..()
+	register_context()
 	air_update_turf(TRUE)
 
 /obj/structure/inflatable/Destroy()
@@ -60,6 +61,11 @@
 /obj/structure/inflatable/examine(mob/user)
 	. = ..()
 	. += span_notice("Alt-клик позволяет медленно сдуть и сложить конструкцию.")
+
+/obj/structure/inflatable/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
+	. = ..()
+	LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Сдуть")
+	return CONTEXTUAL_SCREENTIP_SET
 
 /obj/structure/inflatable/attackby(obj/item/used_item, mob/living/user, params)
 	. = ..()
@@ -118,6 +124,12 @@
 	intact = /obj/item/inflatable/door
 	var/state_closed = TRUE
 	var/is_operating = FALSE
+
+/obj/structure/inflatable/door/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
+	. = ..()
+	if(isnull(held_item))
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, state_closed ? "Открыть" : "Закрыть")
+	return CONTEXTUAL_SCREENTIP_SET
 
 /obj/structure/inflatable/door/attack_ai(mob/user)
 	if(iscyborg(user) && get_dist(user, src) <= 1)

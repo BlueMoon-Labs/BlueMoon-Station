@@ -88,13 +88,13 @@
 		. += "<span class='notice'>Детекция снята проводом на пожарной сигнализации зоны: дверь слушает только ручное управление.</span>"
 	. += span_notice("Alt-клик позволяет открыть дверь ручным приводом. Упершись в закрытую дверь, можно попробовать открыть её вручную.")
 	. += span_notice("Ручное открытие, в том числе ломом или при столкновении, блокирует автоматическое закрытие на [DisplayTimeText(FIRELOCK_MANUAL_OVERRIDE_GRACE)].")
-	. += span_notice("Ctrl-клик [can_auto_close() ? "блокирует автоматическое закрытие ([DisplayTimeText(FIRELOCK_CTRL_CLICK_OVERRIDE_TIME)])" : "снимает блокировку автоматического закрытия"].")
+	. += span_notice("Ctrl-клик [should_block_on_ctrl_click() ? "блокирует автоматическое закрытие ([DisplayTimeText(FIRELOCK_CTRL_CLICK_OVERRIDE_TIME)])" : "снимает блокировку автоматического закрытия"].")
 	if(!can_auto_close())
 		. += span_notice("Автоматическое закрытие заблокировано ещё на [DisplayTimeText(emergency_close_timer - world.time)].")
 
 /obj/machinery/door/firedoor/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
-	LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, can_auto_close() ? "Блокировать автозакрытие" : "Разблокировать автозакрытие")
+	LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, should_block_on_ctrl_click() ? "Блокировать автозакрытие" : "Разблокировать автозакрытие")
 	. = CONTEXTUAL_SCREENTIP_SET
 
 	if (isnull(held_item))
@@ -659,6 +659,9 @@
 /obj/machinery/door/firedoor/proc/can_auto_close()
 	return world.time >= emergency_close_timer
 
+/obj/machinery/door/firedoor/proc/should_block_on_ctrl_click()
+	return emergency_close_timer - world.time <= FIRELOCK_MANUAL_OVERRIDE_GRACE
+
 /obj/machinery/door/firedoor/proc/block_automatic_closing(duration)
 	emergency_close_timer = max(emergency_close_timer, world.time + duration)
 	nextstate = null
@@ -1185,23 +1188,15 @@
 	try_manual_override(user)
 
 /obj/machinery/door/firedoor/CtrlClick(mob/user)
-	if(!user.canUseTopic(src, be_close = TRUE) || (src in user.do_afters))
-		return
-	var/should_block = can_auto_close()
-	var/previous_close_timer = emergency_close_timer
-	balloon_alert(user, should_block ? "блокировка фаерлока" : "снятие блокировки")
-	if(!do_after(user, FIRELOCK_CTRL_CLICK_ACTION_TIME, target = src))
-		return
 	if(!user.canUseTopic(src, be_close = TRUE))
 		return
-	if(can_auto_close() != should_block || emergency_close_timer != previous_close_timer)
-		balloon_alert(user, "состояние изменилось")
-		return
 	add_fingerprint(user)
-	if(should_block)
+	if(should_block_on_ctrl_click())
 		block_automatic_closing(FIRELOCK_CTRL_CLICK_OVERRIDE_TIME)
+		balloon_alert(user, "фаерлок заблокирован")
 	else
 		unblock_automatic_closing()
+		balloon_alert(user, "блокировка снята")
 
 /obj/machinery/door/firedoor/proc/try_manual_override(mob/user, override_time = FIRELOCK_MANUAL_OVERRIDE_TIME)
 	if(density && !welded && !operating && !(src in user.do_afters))

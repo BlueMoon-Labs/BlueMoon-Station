@@ -327,9 +327,6 @@
 // Блокировка автоматического закрытия фаерлока по Ctrl-клику.
 #define FIRELOCK_CTRL_CLICK_OVERRIDE_TIME (3 MINUTES)
 
-// Длительность включения и снятия блокировки автозакрытия по Ctrl-клику.
-#define FIRELOCK_CTRL_CLICK_ACTION_TIME (0.5 SECONDS)
-
 /// Сколько длится ручной привод пожарного шлюза. Не зависит от способа:
 /// альт-клик и бамп открывают за одно и то же время.
 #define FIRELOCK_MANUAL_OVERRIDE_TIME (4 SECONDS)
