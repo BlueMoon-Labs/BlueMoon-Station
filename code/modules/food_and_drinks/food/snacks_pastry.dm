@@ -815,16 +815,19 @@
 
 /obj/item/reagent_containers/food/snacks/pawcookie_raw
 	name = "Raw paw form"
-	desc = "Заготовка из теста в форме лапки. Нужно запечь."
+	desc = "Заготовка из теста в форме лапки. Нужно разогреть."
 	icon = 'icons/obj/food/food_ingredients.dmi'
 	icon_state = "rawpaw"
-	w_class = WEIGHT_CLASS_SMALL
+	cooked_type = /obj/item/reagent_containers/food/snacks/pawcookie
+	list_reagents = list(/datum/reagent/consumable/nutriment = 3)
+	tastes = list("cookie" = 1)
+	foodtype = GRAIN | DAIRY
 
 /obj/item/reagent_containers/food/snacks/pawcookie
 	name = "PawCookie"
 	desc = "Печенька с отпечатком лапки."
 	icon = 'icons/obj/food/pawcookie.dmi'
-	icon_state = "paw2"
+	icon_state = "paw14"
 	tastes = list("cookie" = 1)
 	list_reagents = list(/datum/reagent/consumable/nutriment = 3)
 	bitesize = 3
@@ -832,6 +835,6 @@
 
 /obj/item/reagent_containers/food/snacks/pawcookie/Initialize()
 	..()
-	icon_state = pick("paw1", "paw2", "paw3", "paw4", "paw5", "paw6", "paw7")
+	icon_state = pick("paw1", "paw2", "paw3", "paw4", "paw5", "paw6", "paw7", "paw8", "paw9", "paw10", "paw11", "paw12", "paw13", "paw14")
 
 

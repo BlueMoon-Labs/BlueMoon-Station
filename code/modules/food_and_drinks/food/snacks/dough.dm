@@ -114,7 +114,7 @@
 
 /obj/item/reagent_containers/food/snacks/rawpastrybase
 	name = "raw pastry base"
-	desc = "Должно быть приготовлено перед употреблением. Можно попробовать наступить..."
+	desc = "Должно быть приготовлено перед употреблением. Или можно попробовать наступить и посыпать сахаром..."
 	icon = 'icons/obj/food/food_ingredients.dmi'
 	icon_state = "rawpastrybase"
 	cooked_type = /obj/item/reagent_containers/food/snacks/pastrybase
@@ -130,14 +130,28 @@
 		if(user.get_item_by_slot(ITEM_SLOT_FEET))
 			to_chat(user, "<span class='warning'>Нельзя работать с едой в обуви! Надо сначала снять её</span>")
 			return
+		var/obj/item/reagent_containers/food/condiment/sugar/sugarpack
+		for(var/obj/item/I in user.held_items)
+			if(I == src)
+				continue
+			if(istype(I, /obj/item/reagent_containers/food/condiment/sugar))
+				sugarpack = I
+				break
+		if(!sugarpack)
+			to_chat(user, "<span class='warning'>Для формовки нужна пачка сахара во второй руке!</span>")
+			return
+		if(!sugarpack.reagents || sugarpack.reagents.get_reagent_amount(/datum/reagent/consumable/sugar) < 1)
+			to_chat(user, "<span class='warning'>Пачка сахара пуста!</span>")
+			return
 		to_chat(user, "<span class='notice'>Ты прижимаешь ногу к тесту, придавая ему форму лапки...</span>")
-		if(!do_after(user, 3 SECONDS, user))
+		if(!do_after(user, 2 SECONDS, user))
 			to_chat(user, "<span class='warning'>Ты сбилися!</span>")
 			return
+		sugarpack.reagents.remove_reagent((/datum/reagent/consumable/sugar), 1)
 		var/obj/item/reagent_containers/food/snacks/pawcookie_raw/form = new(get_turf(user))
 		qdel(src)
 		user.put_in_hands(form)
-		to_chat(user, "<span class='notice'>Заготовка готова! Теперь её можно запечь</span>")
+		to_chat(user, "<span class='notice'>Заготовка готова! Теперь её можно разогреть</span>")
 
 
 /obj/item/reagent_containers/food/snacks/pastrybase
