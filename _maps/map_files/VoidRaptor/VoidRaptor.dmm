@@ -23027,7 +23027,7 @@
 "fkm" = (
 /obj/docking_port/stationary{
 	dir = 8;
-	dwidth = 2;
+	dwidth = 3;
 	height = 15;
 	shuttle_id = "arrivals_stationary";
 	name = "arrivals";
@@ -23115,6 +23115,22 @@
 /obj/effect/spawner/lootdrop/trashbin,
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/port/greater)
+"fly" = (
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
+	},
+/obj/machinery/power/solar{
+	id = "aftport";
+	name = "Aft-Port Solar Array"
+	},
+/turf/open/floor/plasteel/airless/solarpanel,
+/area/solars/port/fore)
 "flE" = (
 /obj/structure/shuttle/engine/heater,
 /obj/structure/window/reinforced{
@@ -35393,22 +35409,6 @@
 	dir = 1
 	},
 /area/security/checkpoint/science/research)
-"hVX" = (
-/obj/structure/cable/yellow{
-	icon_state = "0-1"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-8"
-	},
-/obj/machinery/power/solar{
-	id = "aftport";
-	name = "Aft-Port Solar Array"
-	},
-/turf/open/floor/plasteel/airless/solarpanel,
-/area/solars/port/fore)
 "hVZ" = (
 /obj/machinery/flasher{
 	id = "Cell 6";
@@ -131945,7 +131945,7 @@ nzY
 kde
 vXB
 vXB
-hVX
+fly
 rct
 xIT
 jgG
