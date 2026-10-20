@@ -124,7 +124,7 @@
 // 	Киборги
 	if(iscyborg(M))
 		if(amplification)
-			force = 30
+			force = 20
 			M.Paralyze(5 SECONDS)
 			proton_off()
 			proton_attack(M, user, 5)
@@ -135,7 +135,7 @@
 // 	Космонавтики
 	if(iscarbon(M) && !isalien(M))
 		if(amplification)
-			force = 25
+			force = 20
 			M.add_movespeed_modifier(/datum/movespeed_modifier/proton_cutter)
 			addtimer(CALLBACK(M, /mob/proc/remove_movespeed_modifier, /datum/movespeed_modifier/proton_cutter), 5 SECONDS, TIMER_UNIQUE | TIMER_OVERRIDE)
 			proton_off()

@@ -177,6 +177,11 @@ GLOBAL_PROTECT(exp_to_update)
 		play_records[exp_read.item[1]] = text2num(exp_read.item[2])
 	qdel(exp_read)
 
+	// старые названия/регистр ролей из БД приводим к актуальным,
+	// иначе часы не попадают ни в TrackedPlaytime, ни в требования работ
+	// (реализация и алиасы переименований — modular_bluemoon/code/modules/vanguard/vanguard_playtime.dm)
+	play_records = normalize_exp_records(play_records)
+
 	for(var/rtype in SSjob.name_occupations)
 		if(!play_records[rtype])
 			play_records[rtype] = 0

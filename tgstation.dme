@@ -5485,6 +5485,7 @@
 #include "modular_bluemoon\code\modules\vanguard\broken_stuff.dm"
 #include "modular_bluemoon\code\modules\vanguard\vanguard_clothing.dm"
 #include "modular_bluemoon\code\modules\vanguard\vanguard_equippment.dm"
+#include "modular_bluemoon\code\modules\vanguard\vanguard_playtime.dm"
 #include "modular_bluemoon\code\modules\vanguard\vanguard_weapons.dm"
 #include "modular_bluemoon\code\modules\vehicles\cardboard_tank.dm"
 #include "modular_bluemoon\code\modules\vehicles\pimpin_ride.dm"
