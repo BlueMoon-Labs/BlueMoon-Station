@@ -49,6 +49,8 @@
 	///Дверь закрыта автоматикой, а не руками. Только такую автоматика имеет право
 	///открыть обратно: закрытая на карте или ломом остаётся закрытой.
 	var/auto_closed = FALSE
+	// Перекрывающиеся локдауны запрещают автооткрытие до снятия последнего.
+	var/lockdown_count = 0
 	// Зоны, для которых дверь входит в подтверждённую границу изоляции пробоины.
 	var/list/decompression_seal_areas
 	///Таймер отложенной попытки открыться, см. try_auto_reopen().
@@ -470,7 +472,7 @@
 			// auto_closed обязателен: закрытую ломом или замапленную закрытой
 			// дверь автоматика открывать не имеет права (см. док у вара), иначе
 			// любой проходной фронт тревоги в группе распахивает ручную заслонку.
-			if(!area_alarm && door.density && door.auto_closed && !door.welded && !door.operating && !door.is_decompression_seal() && !door.is_holding_pressure())
+			if(!area_alarm && door.density && door.auto_closed && !door.welded && !door.operating && door.can_auto_reopen() && !door.is_holding_pressure())
 				// door/open() sleeps through its animation, and this proc runs
 				// from SIGNAL_HANDLER paths inside SSair's process_cell.
 				door.auto_closed = FALSE
@@ -637,7 +639,7 @@
 			return FIRELOCK_ALARM_TYPE_HOT
 		if(issue == FIRELOCK_ALARM_TYPE_COLD)
 			local_alarm = FIRELOCK_ALARM_TYPE_COLD
-	if(generic_alarm || auto_closed || is_decompression_seal())
+	if(generic_alarm || auto_closed || lockdown_count || is_decompression_seal())
 		return FIRELOCK_ALARM_TYPE_GENERIC
 	return local_alarm
 
@@ -660,6 +662,25 @@
 	playsound(loc, door_open_sound, 100, TRUE)
 	. = ..()
 	latetoggle()
+
+/obj/machinery/door/firedoor/hostile_lockdown(mob/origin)
+	lockdown_count++
+	if(machine_stat)
+		return
+	// Убираем старое открытие; уже идущую анимацию завершаем закрытием.
+	nextstate = operating ? FIREDOOR_CLOSED : null
+	if(!density || (operating && icon_state == "door_open"))
+		mark_auto_closed()
+	refresh_alarm_overlay()
+	if(!operating)
+		close()
+
+/obj/machinery/door/firedoor/disable_lockdown()
+	lockdown_count = max(0, lockdown_count - 1)
+	refresh_alarm_overlay()
+	// Снятие события не отменяет пробоину, пожар или ручное закрытие двери.
+	if(!lockdown_count && !machine_stat)
+		try_auto_reopen()
 
 // alarm_checked действует только в текущей цепочке вызовов до начала анимации.
 // Отложенное закрытие через nextstate всегда проверяет состояние заново.
@@ -830,7 +851,7 @@
 		if(affected.fire)
 			schedule_auto_reopen()
 			return
-	if(is_decompression_seal() || is_holding_pressure())
+	if(!can_auto_reopen() || is_holding_pressure())
 		schedule_auto_reopen()
 		return
 	auto_closed = FALSE
@@ -842,6 +863,10 @@
 // Локализация уже проверила связность до пробоины; таймеру не нужен новый обход карты.
 /obj/machinery/door/firedoor/proc/is_decompression_seal()
 	return length(decompression_seal_areas) > 0
+
+// Общие запреты для таймера, снятия тревоги и отложенных команд открытия.
+/obj/machinery/door/firedoor/proc/can_auto_reopen()
+	return !lockdown_count && !is_decompression_seal()
 
 /obj/machinery/door/firedoor/rcd_vals(mob/user, obj/item/construction/rcd/the_rcd)
 	if(the_rcd.mode != RCD_DECONSTRUCT || (flags_1 & NODECONSTRUCT_1) || (resistance_flags & INDESTRUCTIBLE))
@@ -876,7 +901,7 @@
 	switch(nextstate)
 		if(FIREDOOR_OPEN)
 			nextstate = null
-			if(!is_decompression_seal())
+			if(can_auto_reopen())
 				open()
 		if(FIREDOOR_CLOSED)
 			nextstate = null

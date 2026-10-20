@@ -422,7 +422,7 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 						cont = FALSE
 						break
 			if(cont && D.is_operational())
-				if(opening && D.is_decompression_seal())
+				if(opening && !D.can_auto_reopen())
 					continue
 				if(!opening && !D.can_close_for_alarm())
 					continue

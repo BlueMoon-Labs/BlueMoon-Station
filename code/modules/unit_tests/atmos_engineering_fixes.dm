@@ -546,9 +546,77 @@
 	door.alarm_type = null
 	door.auto_closed = FALSE
 
-/// Таймерный колбек переоткрытия обязан возвращаться без сна: door/open() спит
-/// анимацию целую секунду, и в раунде 9911 try_auto_reopen держал SStimer по
-/// 300-350мс на колбек в разгар станционного пожара.
+// Локдаун события блокирует все пути автооткрытия, сохраняя ручной привод и защиту пробоин.
+/datum/unit_test/firelock_hostile_lockdown/Run()
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/turf/open/center = locate(origin.x + 2, origin.y + 2, origin.z)
+	unit_test_normalize_exposure_window(center)
+	var/obj/machinery/door/firedoor/door = allocate(/obj/machinery/door/firedoor, center)
+	door.machine_stat &= ~NOPOWER
+	var/area/base = get_area(door)
+	door_runtime_set_lockdown(list(door), TRUE)
+	if(door.operating)
+		wait_for_var(door, "operating", FALSE)
+	TEST_ASSERT(door.lockdown_count && door.density && door.auto_closed, "событие не закрыло фаерлок с запретом автооткрытия")
+	TEST_ASSERT_EQUAL(door.displayed_alarm_state, FIRELOCK_ALARM_TYPE_GENERIC, "локдаун не показал общую угрозу")
+	TEST_ASSERT(!door.is_holding_pressure(), "контроль: перепад давления скрыл бы отсутствие запрета")
+	var/time_before = world.time
+	door.try_auto_reopen()
+	TEST_ASSERT_EQUAL(world.time, time_before, "таймер локдауна уснул")
+	TEST_ASSERT(door.density && !door.operating && door.auto_closed, "таймер открыл дверь во время локдауна")
+	base.ModifyFiredoors(TRUE)
+	TEST_ASSERT(door.density && !door.operating && door.auto_closed, "сброс тревоги зоны обошёл локдаун")
+	door.alarm_type = FIRELOCK_ALARM_TYPE_COLD
+	door.recompute_atmos_alarm()
+	TEST_ASSERT(door.density && !door.operating && door.auto_closed, "снятие тревоги датчика обошло локдаун")
+	door.nextstate = FIREDOOR_OPEN
+	door.latetoggle()
+	TEST_ASSERT(door.density && !door.operating, "отложенное открытие обошло локдаун")
+
+	door.try_to_crowbar(null, null)
+	TEST_ASSERT(!door.density && door.lockdown_count, "локдаун запретил ручное открытие")
+	TEST_ASSERT_NULL(door.displayed_alarm_state, "ручное открытие сохранило оверлей угрозы")
+	door.try_to_crowbar(null, null)
+	door_runtime_set_lockdown(list(door), FALSE)
+	TEST_ASSERT(!door.lockdown_count && door.density && !door.auto_closed, "снятие локдауна открыло вручную закрытую дверь")
+
+	// Событие во время открытия должно завершить анимацию повторным закрытием.
+	door.unblock_automatic_closing()
+	INVOKE_ASYNC(door, TYPE_PROC_REF(/obj/machinery/door/firedoor, open))
+	door_runtime_set_lockdown(list(door), TRUE)
+	if(door.operating)
+		wait_for_var(door, "operating", FALSE, 4 SECONDS)
+	TEST_ASSERT(door.lockdown_count && door.density && door.auto_closed, "начатое открытие отменило локдаун")
+	door.decompression_seal_areas = list()
+	door.decompression_seal_areas[base] = TRUE
+	door_runtime_set_lockdown(list(door), FALSE)
+	TEST_ASSERT(!door.lockdown_count && door.density && !door.operating && door.auto_closed, "конец события открыл границу сохраняющейся пробоины")
+	door.decompression_seal_areas = null
+	door.try_auto_reopen()
+	if(door.operating)
+		wait_for_var(door, "operating", FALSE)
+	TEST_ASSERT(!door.density && !door.auto_closed, "после локдауна и ремонта не восстановилось автооткрытие")
+
+	// Потеря питания за время события не должна оставить вечный запрет.
+	door_runtime_set_lockdown(list(door), TRUE)
+	door_runtime_set_lockdown(list(door), TRUE)
+	if(door.operating)
+		wait_for_var(door, "operating", FALSE)
+	door_runtime_set_lockdown(list(door), FALSE)
+	door.try_auto_reopen()
+	TEST_ASSERT(door.lockdown_count == 1 && door.density && !door.operating, "снятие одного из двух локдаунов открыло дверь")
+	door.machine_stat |= NOPOWER
+	door_runtime_set_lockdown(list(door), FALSE)
+	TEST_ASSERT(!door.lockdown_count && door.density, "локдаун не снялся с обесточенной двери")
+	door.machine_stat &= ~NOPOWER
+	door.try_auto_reopen()
+	if(door.operating)
+		wait_for_var(door, "operating", FALSE)
+	TEST_ASSERT(!door.density, "возврат питания не восстановил автооткрытие")
+
+// Таймерный колбек переоткрытия обязан возвращаться без сна: door/open() спит
+// анимацию целую секунду, и в раунде 9911 try_auto_reopen держал SStimer по
+// 300-350мс на колбек в разгар станционного пожара.
 /datum/unit_test/firelock_auto_reopen_nonblocking/Run()
 	var/turf/open/origin = run_loc_floor_bottom_left
 	var/turf/open/center = locate(origin.x + 2, origin.y + 2, origin.z)
