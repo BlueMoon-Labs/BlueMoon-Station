@@ -657,7 +657,7 @@
 			if(!(unsealed_directions & direction))
 				continue
 			var/turf/neighbor = get_step(door_turf, direction)
-			if(neighbor && !CANATMOSPASS(blocker, neighbor))
+			if(!neighbor || !CANATMOSPASS(blocker, neighbor))
 				unsealed_directions &= ~direction
 		if(!unsealed_directions)
 			return FALSE
