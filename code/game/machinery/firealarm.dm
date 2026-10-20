@@ -102,6 +102,9 @@
 
 /obj/machinery/firealarm/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
+	if(buildstage == 2 && is_operational() && !wire_override && !button_wire_cut)
+		LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Разблокировать фаерлоки зоны")
+		. = CONTEXTUAL_SCREENTIP_SET
 
 	if(isnull(held_item))
 		var/area/location = get_area(src)
@@ -170,7 +173,20 @@
 
 /obj/machinery/firealarm/examine(mob/user)
 	. = ..()
-	. += "<span class='notice'>Текущий уровень угрозы: <b><u>[SECURITY_LEVEL_COLORED_UPPERTEXT(GLOB.security_level)]</u></b>.</span>"
+	. += span_notice("Текущий уровень угрозы: <b><u>[SECURITY_LEVEL_COLORED_UPPERTEXT(GLOB.security_level)]</u></b>.")
+	. += span_notice("Фаерлоков с блокировкой автозакрытия дольше [DisplayTimeText(FIRELOCK_MANUAL_OVERRIDE_GRACE)] в зоне: <b>[length(get_blocked_firelocks())]</b>.")
+	. += span_notice("Ctrl-клик снимает все блокировки автозакрытия фаерлоков зоны, включая краткие.")
+
+/obj/machinery/firealarm/proc/get_blocked_firelocks(include_manual_grace = FALSE)
+	var/list/blocked_firelocks = list()
+	for(var/area/affected_area as anything in get_sub_areas(myarea))
+		for(var/obj/machinery/door/firedoor/firelock as anything in affected_area.firedoors)
+			if(QDELETED(firelock) || firelock.can_auto_close())
+				continue
+			if(!include_manual_grace && firelock.should_block_on_ctrl_click())
+				continue
+			blocked_firelocks[firelock] = TRUE
+	return blocked_firelocks
 
 /obj/machinery/firealarm/emp_act(severity)
 	. = ..()
@@ -285,6 +301,22 @@
 
 /obj/machinery/firealarm/attack_robot(mob/user)
 	return attack_hand(user)
+
+/obj/machinery/firealarm/CtrlClick(mob/user)
+	if(!user.canUseTopic(src, be_close = TRUE))
+		return
+	if(buildstage != 2 || !is_operational() || wire_override || button_wire_cut)
+		balloon_alert(user, "сигнализация не отвечает!")
+		return
+	add_fingerprint(user)
+	var/list/blocked_firelocks = get_blocked_firelocks(include_manual_grace = TRUE)
+	if(!length(blocked_firelocks))
+		balloon_alert(user, "заблокированных фаерлоков нет")
+		return
+	for(var/obj/machinery/door/firedoor/firelock as anything in blocked_firelocks)
+		firelock.unblock_automatic_closing()
+	balloon_alert(user, "блокировки фаерлоков сняты")
+	log_game("[key_name(user)] снял блокировки автозакрытия [length(blocked_firelocks)] фаерлоков через пожарную сигнализацию в [AREACOORD(src)]")
 
 /obj/machinery/firealarm/attackby(obj/item/W, mob/user, params)
 	add_fingerprint(user)
