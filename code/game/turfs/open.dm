@@ -372,8 +372,8 @@
 	return src
 
 /turf/open/proc/can_rcd_build_firelock(mob/user)
-	// За пределами пола заслонке нужна опора в виде уже установленного окна или решётки.
-	if(!isfloorturf(src) && !(locate(/obj/structure/window) in src) && !(locate(/obj/structure/grille) in src))
+	// За пределами пола опорой служит уже установленная преграда.
+	if(!isfloorturf(src) && !(locate(/obj/structure/window) in src) && !(locate(/obj/structure/grille) in src) && !(locate(/obj/machinery/door/airlock) in src) && !(locate(/obj/structure/inflatable/airbag) in src))
 		return FALSE
 	if(locate(/obj/machinery/door/firedoor) in src)
 		to_chat(user, span_warning("Здесь уже установлен фаерлок."))

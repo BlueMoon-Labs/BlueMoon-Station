@@ -562,14 +562,25 @@ RLD
 	else
 		return FALSE
 
+/obj/item/construction/rcd/proc/resolve_construction_target(atom/A)
+	// Конструкции на тайле не должны перекрывать выбор опоры под фаерлок.
+	if(mode == RCD_FIRELOCK || mode == RCD_WINDOW_FIRELOCK)
+		if(istype(A, /obj/structure/window) || istype(A, /obj/structure/grille) || istype(A, /obj/machinery/door) || istype(A, /obj/structure/inflatable/airbag) || istype(A, /obj/item/airbag_module))
+			return get_turf(A)
+	// Аирбаг скрывает решётку, на которую нужно поставить постоянное окно.
+	if(mode == RCD_WINDOWGRILLE && (isturf(A) || istype(A, /obj/structure/inflatable/airbag) || istype(A, /obj/item/airbag_module)))
+		var/turf/build_turf = get_turf(A)
+		if(!build_turf)
+			return null
+		var/obj/structure/grille/grille = locate() in build_turf
+		return grille || build_turf
+	return A
+
 /obj/item/construction/rcd/afterattack(atom/A, mob/user, proximity)
 	. = ..()
-	// Окна, решётки и двери не должны перекрывать выбор турфа под фаерлок.
-	if(mode == RCD_FIRELOCK || mode == RCD_WINDOW_FIRELOCK)
-		if(istype(A, /obj/structure/window) || istype(A, /obj/structure/grille) || istype(A, /obj/machinery/door))
-			A = get_turf(A)
-			if(!A)
-				return
+	A = resolve_construction_target(A)
+	if(!A)
+		return
 	if(!proximity)
 		if(!ranged || !range_check(A,user)) //early return not-in-range sanity.
 			return
