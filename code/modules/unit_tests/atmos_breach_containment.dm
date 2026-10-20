@@ -300,18 +300,41 @@
 	original_areas.Cut()
 	return ..()
 
-// Разбитое окно немедленно закрывает собственный файрлок, не затрагивая удалённый.
+// Разбитое окно закрывает собственную шторку только при риске разгерметизации, не затрагивая удалённую дверь.
 /datum/unit_test/window_breach_local_safety/Run()
-	var/turf/origin = run_loc_floor_bottom_left
+	var/turf/open/origin = run_loc_floor_bottom_left
 	var/turf/remote = run_loc_floor_top_right
+	for(var/turf/open/nearby in range(1, origin))
+		nearby.air.copy_from_turf(nearby)
 	var/obj/machinery/door/firedoor/window/local_door = allocate(/obj/machinery/door/firedoor/window, origin)
 	var/obj/machinery/door/firedoor/remote_door = allocate(/obj/machinery/door/firedoor, remote)
 	var/obj/machinery/airalarm/unit_test_decomp_probe/alarm = allocate(/obj/machinery/airalarm/unit_test_decomp_probe, origin)
-	var/obj/structure/window/window = allocate(/obj/structure/window, origin)
+	var/obj/structure/window/window = allocate(/obj/structure/window/fulltile, origin)
 	window.deconstruct(FALSE)
-	TEST_ASSERT(local_door.density, "разбитое окно не закрыло свой файрлок немедленно")
+	TEST_ASSERT(!local_door.density, "разбитое окно внутри герметичной комнаты закрыло шторку")
+	TEST_ASSERT(!remote_door.density, "окно без пробоины закрыло удалённую дверь")
+	TEST_ASSERT_EQUAL(alarm.decomp_calls, 0, "окно без пробоины вызвало общую тревогу")
+
+	// Космос по диагонали не создаёт прямого атмосферного соединения с оконным тайлом.
+	var/turf/diagonal = get_step(origin, SOUTHWEST)
+	diagonal.ChangeTurf(/turf/open/space/basic)
+	window = allocate(/obj/structure/window/fulltile, origin)
+	window.deconstruct(FALSE)
+	TEST_ASSERT(!local_door.density, "окно с космосом по диагонали закрыло шторку без перепада давления")
+	TEST_ASSERT(!remote_door.density, "диагональное соседство с космосом закрыло удалённую дверь")
+	TEST_ASSERT_EQUAL(alarm.decomp_calls, 0, "диагональное соседство с космосом вызвало общую тревогу")
+
+	// Прямой выход в космос после разрушения окна должен перекрываться немедленно.
+	var/turf/outside = get_step(origin, WEST)
+	outside.ChangeTurf(/turf/open/space/basic)
+	TEST_ASSERT(origin.air.return_pressure() > DOOR_PRESSURE_DIFFERENCE_TOLERANCE, "для проверки пробоины нужен воздух под шторкой")
+	window = allocate(/obj/structure/window/fulltile, origin)
+	window.deconstruct(FALSE)
+	TEST_ASSERT(local_door.density, "разбитое окно с выходом в космос не закрыло свою шторку немедленно")
 	TEST_ASSERT(!remote_door.density, "локальная защита закрыла удалённую дверь")
 	TEST_ASSERT_EQUAL(alarm.decomp_calls, 0, "локальная защита вызвала общую тревогу")
+	if(local_door.operating)
+		wait_for_var(local_door, "operating", FALSE)
 
 // Аирбаг разбитого окна разворачивается и герметизирует турф; аккуратная разборка его не активирует.
 /datum/unit_test/window_breach_airbag_safety/Run()
