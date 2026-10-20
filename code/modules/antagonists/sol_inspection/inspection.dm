@@ -25,10 +25,12 @@
 	var/return_available_at
 	/// Set once the berth opens, so the grace period before the unattended departure runs only once.
 	var/departure_scheduled_at
-	/// Guards the one-shot announcement that a rich haul bought out the mandatory stay.
-	var/early_return_announced = FALSE
 	/// Откуп, выплаченный станцией вместо инспекции.
 	var/bribe_paid = 0
+	/// Накопленная сумма взысканных штрафов (без откупа): за каждые 100 000 кредитов инспекция получает метадоллары.
+	var/fines_total = 0
+	/// Уже начисленные части по 100 000 кредитов, чтобы не платить дважды.
+	var/metadollars_awarded = 0
 	/// Snapshot of the inspectors who actually returned aboard the vessel.
 	var/list/returned_members = list()
 
@@ -46,39 +48,46 @@
 	return ..()
 
 #define SOL_INSPECTION_EARLY_RETURN_FINE 100000
-#define SOL_INSPECTION_MINIMUM_STAY 30 MINUTES
+#define SOL_INSPECTION_MINIMUM_STAY 60 MINUTES
 #define SOL_INSPECTION_RETURN_POLL 30 SECONDS
 /// Opening the berth does not pull the ship out from under the inspectors: they get a short grace
 /// period to finish the last scan or walk back aboard before the vessel leaves on its own.
 #define SOL_INSPECTION_DEPARTURE_DELAY 3 MINUTES
 
-/// World time at which the CentCom berth opens, or 0 when the haul already unlocked it.
+/// World time at which the CentCom berth opens, or 0 when fines already bought early return.
 /datum/team/sol_inspection/proc/return_unlock_at()
-	if(account?.account_balance >= SOL_INSPECTION_EARLY_RETURN_FINE)
+	if(fines_total >= SOL_INSPECTION_EARLY_RETURN_FINE)
 		return 0
 	return return_available_at
 
 /datum/team/sol_inspection/proc/return_time_left()
-	var/unlock_at = return_unlock_at()
-	if(!unlock_at)
+	if(!return_available_at)
 		return 0
-	return max(0, unlock_at - world.time)
+	return max(0, return_available_at - world.time)
 
 /datum/team/sol_inspection/proc/return_unlocked()
 	return visited_station && return_time_left() <= 0
 
-/// Tell everyone once, the first time the haul buys out the rest of the mandatory stay. This only
-/// opens an option; the inspection is not over and the station is not let off the hook yet.
-/datum/team/sol_inspection/proc/announce_early_return_if_unlocked()
-	if(early_return_announced || !return_unlocked())
+/// По окончании инспекции живые инспекторы отправляются обратно на ЦК со взрывами искр; мертвые остаются как есть.
+/datum/team/sol_inspection/proc/end_inspection()
+	for(var/datum/mind/member as anything in members)
+		var/mob/m = member.current
+		if(m && !QDELETED(m) && m.stat != DEAD)
+			do_fake_sparks(5, FALSE, get_turf(m))
+			qdel(m)
+
+/// За каждые 100 000 кредитов взысканных штрафов каждый член инспекции получает по одному метадоллару.
+/datum/team/sol_inspection/proc/award_inspector_metadollars()
+	if(!SSmetadollars)
 		return
-	// Once the stay simply ran out there is nothing to announce; only an early unlock counts.
-	if(!return_available_at || world.time >= return_available_at)
+	var/chunks = floor(fines_total / 100000)
+	var/new_chunks = chunks - metadollars_awarded
+	if(new_chunks <= 0)
 		return
-	early_return_announced = TRUE
-	var/message = "Общая сумма взысканий достигла [account?.account_balance || 0] кредитов. Бюро открывает досрочный вылет — пункт назначения доступен на бортовой консоли."
-	report_violation(message)
-	priority_announce(message, "Всеобщее Бюро Контроля")
+	metadollars_awarded = chunks
+	for(var/datum/mind/member as anything in members)
+		if(member.current && !QDELETED(member.current) && member.current.stat != DEAD)
+			SSmetadollars.metadollar_adjust(new_chunks, ckey(member.key))
 
 /// Unlike a fine, a bribe is an ordinary purchase: the station has to actually own the credits.
 /datum/team/sol_inspection/proc/pay_bribe(datum/bank_account/payer, amount, reason = "откуп от инспекции Всеобщего Бюро Контроля")
@@ -337,11 +346,16 @@
 	var/obj/docking_port/stationary/home_dock
 	/// Polls until the CentCom berth opens, then flies the vessel home unattended.
 	var/return_timer_id
+	/// Удаляет шаттл с искрами через три минуты после окончания инспекции.
+	var/end_timer_id
 
 /obj/docking_port/mobile/sol_inspection/Destroy(force)
 	if(return_timer_id)
 		deltimer(return_timer_id)
 		return_timer_id = null
+	if(end_timer_id)
+		deltimer(end_timer_id)
+		end_timer_id = null
 	if(force)
 		if(inspection_team?.shuttle == src)
 			inspection_team.shuttle = null
@@ -371,6 +385,8 @@
 		for(var/datum/mind/member as anything in inspection_team.members)
 			if(member.current && member.current.stat != DEAD && (get_area(member.current) in shuttle_areas))
 				inspection_team.returned_members |= member
+		inspection_team.end_inspection()
+		src.schedule_end_deletion()
 		priority_announce("Инспекция Всеобщего Бюро Контроля завершена. Инспекционный шаттл покидает [GLOB.station_name].", "Транс-Солнечная Федерация")
 
 /// The mandatory stay used to be armed by initiate_docking alone, so a single missed call stranded
@@ -390,7 +406,8 @@
 	return_timer_id = addtimer(CALLBACK(src, TYPE_PROC_REF(/obj/docking_port/mobile/sol_inspection, check_return)), max(1, delay), TIMER_STOPPABLE)
 
 /// The vessel leaves on its own once the berth opens, so an abandoned inspection still wraps up
-/// and stops blocking every later one.
+/// and stops blocking every later one. Досрочная разблокировка штрафом позволяет улететь вручную
+/// с консоли, но не инициирует автовылет — только истечение обязательного срока пребывания.
 /obj/docking_port/mobile/sol_inspection/proc/check_return()
 	return_timer_id = null
 	if(QDELETED(src) || !inspection_team || !home_dock || inspection_team.returned_home)
@@ -402,7 +419,13 @@
 		schedule_return_check()
 		return
 
-	if(!inspection_team.return_unlocked() || !canDock(home_dock))
+	// Автоотправка только по истечении обязательного срока пребывания. Досрочная разблокировка
+	// штрафом открывает причал для ручного отлёта с консоли, но не выкидывает шаттл сам.
+	if(!inspection_team.return_available_at || world.time < inspection_team.return_available_at)
+		schedule_return_check()
+		return
+
+	if(!canDock(home_dock))
 		schedule_return_check()
 		return
 
@@ -415,8 +438,22 @@
 
 	schedule_return_check(inspection_team.departure_scheduled_at - world.time)
 
+/obj/docking_port/mobile/sol_inspection/proc/schedule_end_deletion()
+	if(end_timer_id)
+		deltimer(end_timer_id)
+	end_timer_id = addtimer(CALLBACK(src, TYPE_PROC_REF(/obj/docking_port/mobile/sol_inspection, end_delete)), SOL_INSPECTION_DEPARTURE_DELAY, TIMER_STOPPABLE)
+
+/obj/docking_port/mobile/sol_inspection/proc/end_delete()
+	end_timer_id = null
+	if(QDELETED(src))
+		return
+	if(src.inspection_team)
+		src.inspection_team.shuttle = null
+	do_fake_sparks(5, FALSE, get_turf(src))
+	qdel(src)
+
 /obj/machinery/computer/shuttle/sol_inspection
-	desc = "Консоль полётов Всеобщего Бюро Контроля. Возврат на ЦК разрешён через 30 минут после прибытия в сектор станции либо досрочно, когда общая сумма взысканных штрафов достигнет 100 000 кредитов. По истечении срока шаттл уходит автоматически через 3 минуты."
+	desc = "Консоль полётов Всеобщего Бюро Контроля. Возврат на ЦК разрешён через 60 минут после прибытия в сектор станции. По истечении срока шаттл уходит автоматически через 3 минуты."
 	shuttleId = "sol_inspection"
 	possible_destinations = "sol_inspection_custom;sol_inspection_home"
 	no_destination_swap = TRUE
@@ -433,8 +470,10 @@
 		.["status_note"] = "Инспекция завершена."
 	else if(!team.visited_station)
 		.["status_note"] = "Инспекция ещё не прибыла в сектор станции."
+	else if(team.fines_total >= SOL_INSPECTION_EARLY_RETURN_FINE)
+		.["status_note"] = "Доступен досрочный вылет на ЦК (взыскано [team.fines_total] кредитов)."
 	else
-		.["status_note"] = "Возврат на ЦК через [DisplayTimeText(team.return_time_left())], затем шаттл уйдёт автоматически ещё через [DisplayTimeText(SOL_INSPECTION_DEPARTURE_DELAY, 1)]. Досрочный вылет открывается при [SOL_INSPECTION_EARLY_RETURN_FINE] кредитах взыскания (сейчас [team.account?.account_balance || 0])."
+		.["status_note"] = "Возврат на ЦК через [DisplayTimeText(team.return_time_left())], затем шаттл уйдёт автоматически ещё через [DisplayTimeText(SOL_INSPECTION_DEPARTURE_DELAY, 1)]."
 	return
 
 /obj/machinery/computer/shuttle/sol_inspection/ui_act(action, params)
@@ -452,7 +491,7 @@
 	if(!team.visited_station)
 		. += span_notice("Инспекция ещё не прибыла в сектор станции: таймер возврата на ЦК не запущен.")
 		return
-	. += span_notice("До разрешения вернуться на ЦК: [DisplayTimeText(team.return_time_left())], по истечении срока шаттл уйдёт автоматически ещё через [DisplayTimeText(SOL_INSPECTION_DEPARTURE_DELAY, 1)]. Досрочный вылет открывается при взыскании [SOL_INSPECTION_EARLY_RETURN_FINE] кредитов.")
+	. += span_notice("До разрешения вернуться на ЦК: [DisplayTimeText(team.return_time_left())], по истечении срока шаттл уйдёт автоматически ещё через [DisplayTimeText(SOL_INSPECTION_DEPARTURE_DELAY, 1)]. Досрочный вылет доступен при взыскании [SOL_INSPECTION_EARLY_RETURN_FINE] кредитов.")
 
 /obj/machinery/computer/camera_advanced/shuttle_docker/sol_inspection
 	desc = "Выбирает безопасную точку посадки в секторе станции."

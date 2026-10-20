@@ -18,6 +18,10 @@
 	new /obj/item/ammo_box/magazine/sig(src)
 	new /obj/item/ammo_box/magazine/sig(src)
 	new /obj/item/ammo_box/magazine/sig(src)
+	new /obj/item/gun/ballistic/automatic/pistol/sigsauer(src)
+	new /obj/item/ammo_box/magazine/sig(src)
+	new /obj/item/ammo_box/magazine/sig(src)
+	new /obj/item/ammo_box/magazine/sig(src)
 
 //наборы экипировки классов
 /obj/item/storage/box/demolition

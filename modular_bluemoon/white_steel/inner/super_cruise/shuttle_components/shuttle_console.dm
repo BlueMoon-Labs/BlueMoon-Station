@@ -40,25 +40,9 @@
 		/obj/item/organ/zombie_infection
 	)
 
-/obj/machinery/computer/shuttle_flight/Initialize(mapload, obj/item/circuitboard/C)
-	. = ..()
-	valid_docks = params2list(possible_destinations)
-	if(shuttleId)
-		shuttlePortId = "[shuttleId]_custom"
-	else
-		var/static/i = 0
-		shuttlePortId = "unlinked_shuttle_console_[i++]"
-
-/obj/machinery/computer/shuttle_flight/Destroy()
-	. = ..()
-	SSorbits.open_orbital_maps -= SStgui.get_all_open_uis(src)
-	//WHITE-STEEL FIX: разрываем цикл shuttle.controlling_computer <-> console.shuttleObject.
-	//Регистрация сигнала в /datum/Destroy уже снимается автоматически, но обратное поле
-	//controlling_computer у орбитального объекта нужно обнулить вручную, иначе удалённая
-	//консоль удерживается живым шаттлом и не собирается GC.
-	if(shuttleObject)
-		shuttleObject.controlling_computer = null
-		shuttleObject = null
+//WHITE-STEEL FIX: Initialize() и Destroy() этого типа перенесены в shuttle_docking.dm.
+//Оба файла объявляли одни и те же проки, а DreamMaker оставляет только последнее
+//объявление - часть инициализации (valid_docks, shuttlePortId) и уборки молча терялась.
 
 /obj/machinery/computer/shuttle_flight/process()
 	. = ..()

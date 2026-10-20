@@ -149,6 +149,8 @@
 	bound_width = 96
 	bound_height = 96
 	appearance_flags = 0
+	pixel_x = -32
+	pixel_y = -32
 
 #undef ENGINE_UNWRENCHED
 #undef ENGINE_WRENCHED
