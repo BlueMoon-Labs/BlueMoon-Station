@@ -2813,7 +2813,7 @@
 	name = "Mall Cop Chic"
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/donator/bm/mall_cop_chic
-	ckeywhitelist = list("sawwarrr")
+	ckeywhitelist = list("sawwarrr", "boroven")
 
 /datum/gear/donator/bm/arsmaid_suit
 	name = "Maid Suit"
