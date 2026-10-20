@@ -479,11 +479,33 @@ RLD
 		if(A.rcd_act(user, src, rcd_results["mode"]))
 			rcd_effect.end_animation()
 			useResource(rcd_results["cost"], user)
+			if(rcd_results["mode"] == RCD_WINDOWGRILLE && istype(cached, /obj/structure/grille))
+				recycle_window_debris(the_turf, user)
 			activate()
 			investigate_log("[user] used [src] on [cached] (loc [turf_coords] at [the_turf]) with cost [rcd_results["cost"]], delay [rcd_results["delay"]], mode [rcd_results["mode"]].", INVESTIGATE_RCD)
 			playsound(src, 'sound/machines/click.ogg', 50, 1)
 			return TRUE
 	qdel(rcd_effect)
+
+// Собираем только мусор на самом тайле; оплата окна уже освободила место в ёмкости.
+/obj/item/construction/rcd/proc/recycle_window_debris(turf/build_turf, mob/user)
+	var/recovered_matter = 0
+	for(var/obj/item/shard/shard in build_turf)
+		recovered_matter += sheetmultiplier
+		qdel(shard)
+	for(var/obj/item/stack/rods/rods in build_turf)
+		if(rods.is_cyborg)
+			continue
+		recovered_matter += rods.get_amount() * sheetmultiplier * 0.5
+		qdel(rods)
+	if(recovered_matter)
+		recover_matter(recovered_matter, user)
+
+// Мусор убирается целиком, но излишек не превышает вместимость РЦД.
+/obj/item/construction/rcd/proc/recover_matter(amount, mob/user)
+	. = min(amount, max(0, max_matter - matter))
+	matter += .
+	update_icon()
 
 /obj/item/construction/rcd/Initialize(mapload)
 	. = ..()
@@ -567,8 +589,8 @@ RLD
 	if(mode == RCD_FIRELOCK || mode == RCD_WINDOW_FIRELOCK)
 		if(istype(A, /obj/structure/window) || istype(A, /obj/structure/grille) || istype(A, /obj/machinery/door) || istype(A, /obj/structure/inflatable/airbag) || istype(A, /obj/item/airbag_module))
 			return get_turf(A)
-	// Аирбаг скрывает решётку, на которую нужно поставить постоянное окно.
-	if(mode == RCD_WINDOWGRILLE && (isturf(A) || istype(A, /obj/structure/inflatable/airbag) || istype(A, /obj/item/airbag_module)))
+	// Аирбаг и обломки скрывают решётку, на которую нужно поставить постоянное окно.
+	if(mode == RCD_WINDOWGRILLE && (isturf(A) || istype(A, /obj/structure/inflatable/airbag) || istype(A, /obj/item/airbag_module) || istype(A, /obj/item/shard) || istype(A, /obj/item/stack/rods)))
 		var/turf/build_turf = get_turf(A)
 		if(!build_turf)
 			return null
@@ -645,6 +667,13 @@ RLD
 	if(!. && user)
 		to_chat(user, no_ammo_message)
 	return .
+
+// Борговый РЦД тратит заряд вместо материи; возвращаем эквивалент в его батарею.
+/obj/item/construction/rcd/borg/recover_matter(amount, mob/user)
+	if(!iscyborg(user))
+		return 0
+	var/mob/living/silicon/robot/borg = user
+	return borg.cell?.give(amount * energyfactor) / energyfactor
 
 /obj/item/construction/rcd/borg/syndicate
 	icon_state = "ircd"
