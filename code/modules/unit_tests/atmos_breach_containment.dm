@@ -213,7 +213,7 @@
 		old_area.contents += spot
 	return ..()
 
-// Общая тревога ждёт локальную защиту, отменяется после герметизации и сохраняется для открытой пробоины.
+// Сначала изолируется повреждённый участок; общая тревога нужна при неудаче локализации.
 /datum/unit_test/decompression_alarm_grace
 	var/list/saved_air_state = list()
 	var/list/original_areas = list()
@@ -225,35 +225,101 @@
 		saved_air_state[state_name] = SSair.vars[state_name]
 		SSair.vars[state_name] = list()
 	saved_count = SSair.num_decompression_areas
-	var/turf/open/spot = run_loc_floor_bottom_left
+	for(var/state_name in list("decompression_context", "decompression_check"))
+		saved_air_state[state_name] = SSair.vars[state_name]
+		SSair.vars[state_name] = null
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/list/turf/open/row = list()
+	for(var/offset in 0 to 4)
+		row += locate(origin.x + offset, origin.y + 2, origin.z)
+	var/turf/open/spot = row[1]
+	var/turf/open/doorway = row[3]
+	var/turf/open/safe_side = row[4]
+	var/turf/open/far_end = row[5]
+	for(var/offset in -1 to 5)
+		var/turf/north_wall = locate(origin.x + offset, spot.y + 1, spot.z)
+		var/turf/south_wall = locate(origin.x + offset, spot.y - 1, spot.z)
+		north_wall.ChangeTurf(/turf/closed/wall)
+		south_wall.ChangeTurf(/turf/closed/wall)
+	var/turf/west_end = get_step(spot, WEST)
+	west_end.ChangeTurf(/turf/open/space/basic)
+	var/turf/east_end = get_step(far_end, EAST)
+	east_end.ChangeTurf(/turf/closed/wall)
 	var/area/unit_test_decompression/base = new
 	allocated += base
-	original_areas[spot] = get_area(spot)
-	base.contents += spot
-	var/obj/machinery/door/firedoor/door = allocate(/obj/machinery/door/firedoor, spot)
-	var/obj/machinery/airalarm/unit_test_decomp_probe/alarm = allocate(/obj/machinery/airalarm/unit_test_decomp_probe, spot)
+	for(var/turf/open/member as anything in row)
+		original_areas[member] = get_area(member)
+		base.contents += member
+		member.ImmediateCalculateAdjacentTurfs()
+	fill_breach_row(row)
+	var/obj/machinery/door/firedoor/door = allocate(/obj/machinery/door/firedoor, doorway)
+	var/obj/machinery/airalarm/unit_test_decomp_probe/alarm = allocate(/obj/machinery/airalarm/unit_test_decomp_probe, safe_side)
 	alarm.set_is_operational(TRUE)
 	TEST_ASSERT(door in base.firedoors, "контроль: дверь не зарегистрирована в тестовом отсеке")
 
 	SSair.queue_decompression_area(spot)
-	SSair.process_decompression_areas_auxtools(FALSE)
+	SSair.process_decompression_areas_auxtools(FALSE, 0)
 	TEST_ASSERT_EQUAL(alarm.decomp_calls, 0, "единственный замер вызвал общую тревогу")
 	SSair.decompression_pending[base] = SSair.times_fired - 1
 	SSair.decompression_started_at[base] = world.time - DECOMPRESSION_AREA_ALARM_DELAY + 1
 	SSair.queue_decompression_area(spot)
-	SSair.process_decompression_areas_auxtools(FALSE)
+	SSair.process_decompression_areas_auxtools(FALSE, 0)
 	TEST_ASSERT_EQUAL(alarm.decomp_calls, 0, "общая тревога сработала до истечения задержки")
-	TEST_ASSERT(!door.density, "дверь отсека закрылась до истечения задержки")
+	TEST_ASSERT(door.density, "ближайший фаерлок не отсёк повреждённый участок")
 	TEST_ASSERT(SSair.decompression_areas[base], "подтверждённая пробоина потеряна во время задержки")
 
 	SSair.decompression_started_at[base] = world.time - DECOMPRESSION_AREA_ALARM_DELAY
 	SSair.queue_decompression_area(spot)
-	SSair.process_decompression_areas_auxtools(FALSE)
-	TEST_ASSERT_EQUAL(alarm.decomp_calls, 1, "постоянная пробоина не подняла тревогу на границе задержки")
-	TEST_ASSERT(door.density, "общая тревога не закрыла дверь отсека")
+	SSair.process_decompression_areas_auxtools(FALSE, 0)
+	TEST_ASSERT_EQUAL(alarm.decomp_calls, 0, "пробоина в отсечённом участке вызвала общую тревогу")
+	TEST_ASSERT_EQUAL(SSair.decompression_started_at[base], world.time, "успешная локализация не сбросила задержку общей тревоги")
+	// Геометрия может переиспользоваться, но потеря давления за дверью отменяет защиту.
+	var/datum/decompression_context/contained_context = SSair.decompression_context
+	TEST_ASSERT_NOTNULL(contained_context, "стабильная локализация не сохранила геометрию")
+	safe_side.air.clear()
+	TEST_ASSERT(!SSair.contain_decompression(base, list(spot), contained_context), "кэш локализации скрыл потерю давления за дверью")
+	fill_breach_row(row)
+
+	// Закрытая дверь с обходом через соседнюю зону не считается локализацией.
+	var/list/bridge = list()
+	for(var/offset in 1 to 3)
+		var/turf/open/bypass = locate(origin.x + offset, spot.y + 1, spot.z)
+		bypass = bypass.ChangeTurf(/turf/open/floor/plasteel)
+		bypass.ImmediateCalculateAdjacentTurfs()
+		bridge += bypass
+	TEST_ASSERT(!SSair.contain_decompression(base, list(spot)), "обход закрытого фаерлока ошибочно признан локализацией")
+	for(var/turf/bypass as anything in bridge)
+		bypass.ChangeTurf(/turf/closed/wall)
+
+	// При пробоинах с обеих сторон двери целой части за ней больше нет.
+	east_end = get_step(far_end, EAST)
+	east_end.ChangeTurf(/turf/open/space/basic)
+	far_end.ImmediateCalculateAdjacentTurfs()
+	TEST_ASSERT(!SSair.contain_decompression(base, list(spot, far_end)), "две пробоины по разные стороны двери скрыли общую угрозу")
+	east_end = get_step(far_end, EAST)
+	east_end.ChangeTurf(/turf/closed/wall)
+
+	if(door.operating)
+		wait_for_var(door, "operating", FALSE)
+	door.open()
+	door.block_automatic_closing(FIRELOCK_MANUAL_OVERRIDE_GRACE)
+	fill_breach_row(row)
+	SSair.decompression_started_at[base] = world.time
+	SSair.decompression_pending[base] = SSair.times_fired - 1
+	SSair.queue_decompression_area(spot)
+	SSair.process_decompression_areas_auxtools(FALSE, 0)
+	TEST_ASSERT(!door.density, "локализация обошла блокировку ручного открытия")
+	TEST_ASSERT(SSair.decompression_areas[base], "контроль: повторная утечка не подтверждена после ожидания анимации")
+	TEST_ASSERT(!SSair.contain_decompression(base, list(spot)), "открытая заблокированная дверь ошибочно признана локализацией")
+	TEST_ASSERT_EQUAL(alarm.decomp_calls, 0, "общая тревога не дала времени на повторную локализацию")
+
+	SSair.decompression_started_at[base] = world.time - DECOMPRESSION_AREA_ALARM_DELAY
+	SSair.queue_decompression_area(spot)
+	SSair.process_decompression_areas_auxtools(FALSE, 0)
+	TEST_ASSERT_EQUAL(alarm.decomp_calls, 1, "неудачная локализация не вызвала общую тревогу после задержки")
 	TEST_ASSERT(!(base in SSair.decompression_started_at), "обработанная пробоина сохранила время ожидания")
 	SSair.queue_decompression_area(spot)
-	SSair.process_decompression_areas_auxtools(FALSE)
+	SSair.process_decompression_areas_auxtools(FALSE, 0)
 	TEST_ASSERT_EQUAL(alarm.decomp_calls, 1, "кулдаун не подавил повторную общую тревогу")
 
 	SSair.decompression_handled_at -= base
@@ -263,7 +329,7 @@
 	SSair.decompression_started_at[base] = world.time - DECOMPRESSION_AREA_ALARM_DELAY
 	// Полный проход без новой утечки соответствует уже загерметизированному проёму.
 	SSair.decompression_seen.Cut()
-	SSair.process_decompression_areas_auxtools(FALSE)
+	SSair.process_decompression_areas_auxtools(FALSE, 0)
 	TEST_ASSERT_EQUAL(alarm.decomp_calls, 1, "загерметизированный проём вызвал отложенную тревогу")
 	TEST_ASSERT(!(base in SSair.decompression_areas), "отменённая тревога осталась в очереди")
 	TEST_ASSERT(!(base in SSair.decompression_pending), "отменённая тревога осталась в подтверждении")
@@ -271,21 +337,14 @@
 	SSair.queue_decompression_area(spot)
 	TEST_ASSERT_EQUAL(SSair.decompression_started_at[base], world.time, "новая пробоина унаследовала старый отсчёт")
 
-	// Пустой карман с открытым выходом в космос продолжает подтверждать уже замеченную пробоину.
-	var/turf/open/drained = locate(spot.x + 3, spot.y + 2, spot.z)
-	original_areas[drained] = get_area(drained)
-	base.contents += drained
-	for(var/direction in GLOB.cardinals)
-		var/turf/neighbor = get_step(drained, direction)
-		neighbor.ChangeTurf(direction == WEST ? /turf/open/space/basic : /turf/closed/wall)
-	drained.ImmediateCalculateAdjacentTurfs()
-	drained.air.clear()
-	drained.air.set_temperature(TCMB)
+	// Пустая кромка всё ещё требует общей защиты, если изоляция остаётся открытой.
+	spot.air.clear()
+	spot.air.set_temperature(TCMB)
 	SSair.decompression_started_at[base] = world.time - DECOMPRESSION_AREA_ALARM_DELAY
 	SSair.decompression_pending[base] = SSair.times_fired - 1
 	SSair.decompression_seen.Cut()
-	drained.process_cell(max(SSair.times_fired, drained.current_cycle) + 1)
-	SSair.process_decompression_areas_auxtools(FALSE)
+	spot.process_cell(max(SSair.times_fired, spot.current_cycle) + 1)
+	SSair.process_decompression_areas_auxtools(FALSE, 0)
 	TEST_ASSERT_EQUAL(alarm.decomp_calls, 2, "открытая пробоина ниже порога давления потеряла общую тревогу")
 
 /datum/unit_test/decompression_alarm_grace/Destroy()

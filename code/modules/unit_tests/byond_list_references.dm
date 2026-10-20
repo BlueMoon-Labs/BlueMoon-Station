@@ -59,6 +59,8 @@
 	var/list/saved_seen
 	var/list/saved_currentrun
 	var/saved_count
+	var/datum/decompression_context/saved_context
+	var/datum/decompression_check/saved_check
 
 /datum/unit_test/decompression_native_pruning/Run()
 	saved_handled = SSair.decompression_handled_at
@@ -68,6 +70,8 @@
 	saved_seen = SSair.decompression_seen
 	saved_currentrun = SSair.currentrun
 	saved_count = SSair.num_decompression_areas
+	saved_context = SSair.decompression_context
+	saved_check = SSair.decompression_check
 	SSair.decompression_handled_at = list()
 	SSair.decompression_pending = list()
 	SSair.decompression_areas = list()
@@ -82,7 +86,7 @@
 /datum/unit_test/decompression_native_pruning/proc/check_pruning(area/expired, area/boundary, area/recent)
 	var/baseline = refcount(expired)
 	populate_logs(expired, boundary, recent)
-	SSair.process_decompression_areas_auxtools(FALSE)
+	SSair.process_decompression_areas_auxtools(FALSE, 0)
 	TEST_ASSERT_EQUAL(length(SSair.decompression_handled_at), 1, "Кулдаун должен истекать включительно")
 	TEST_ASSERT(recent in SSair.decompression_handled_at, "Свежий кулдаун удалён")
 	TEST_ASSERT_EQUAL(length(SSair.decompression_pending), 2, "Граница окна подтверждения должна сохраняться")
@@ -112,6 +116,8 @@
 	SSair.decompression_seen = saved_seen
 	SSair.currentrun = saved_currentrun
 	SSair.num_decompression_areas = saved_count
+	SSair.decompression_context = saved_context
+	SSair.decompression_check = saved_check
 	saved_handled = null
 	saved_pending = null
 	saved_areas = null

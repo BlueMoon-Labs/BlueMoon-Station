@@ -264,7 +264,7 @@
 	// field: their firelocks still close one by one on the pressure drop.
 	if(!base || istype(base, /area/space) || base.outdoors)
 		return
-	queue_decompression_base(base)
+	queue_decompression_base(base, get_turf(source))
 
 /// Ареал, который через проём без файрлока кормит стравливаемый ареал, течёт вместе с ним: этаж над тоннелем, зал без дверей между зонами.
 /datum/controller/subsystem/air/proc/spread_decompression(turf/open/feeding, turf/open/drained)
@@ -276,14 +276,21 @@
 
 /// Леджерная часть постановки зоны в декомп-очередь, отдельно от гарда космоса
 /// выше: тестам нужна ровно она - зона юнит-тестовой резервации это /area/space.
-/datum/controller/subsystem/air/proc/queue_decompression_base(area/base)
+/datum/controller/subsystem/air/proc/queue_decompression_base(area/base, turf/open/source)
 	// A breach keeps its edge turfs above the queue threshold for many fires;
 	// the first handling already alarmed and pressure-stopped the compartment,
 	// so re-sweeping it every SSair fire is pure waste.
 	var/last_handled = decompression_handled_at[base]
 	if(last_handled && world.time < last_handled + DECOMPRESSION_AREA_ALARM_COOLDOWN)
 		return
-	decompression_seen[base] = TRUE
+	if(istype(source))
+		var/list/sources = decompression_seen[base]
+		if(!islist(sources))
+			sources = list()
+			decompression_seen[base] = sources
+		sources[source] = TRUE
+	else if(!decompression_seen[base])
+		decompression_seen[base] = TRUE
 	if(decompression_areas[base])
 		return
 	// Одиночный выброс воздуха не поднимает тревогу: нужен повторный замер
@@ -324,7 +331,8 @@
 			seen_firedoors[firedoor] = TRUE
 			firedoor.emergency_pressure_stop()
 
-/datum/controller/subsystem/air/proc/process_decompression_areas_auxtools(resumed)
+/datum/controller/subsystem/air/proc/process_decompression_areas_auxtools(resumed, slice_ms = DECOMPRESSION_CHECK_SLICE_MS)
+	var/started = TICK_USAGE_REAL
 	if(!resumed)
 		values_cut_under(decompression_handled_at, world.time - DECOMPRESSION_AREA_ALARM_COOLDOWN, 1)
 		values_cut_under(decompression_pending, times_fired - DECOMPRESSION_PENDING_WINDOW_FIRES)
@@ -334,14 +342,38 @@
 				decompression_pending -= pending_area
 				decompression_started_at -= pending_area
 				decompression_areas -= pending_area
-		decompression_seen.Cut()
 		currentrun = decompression_areas.Copy()
+		for(var/area/base as anything in currentrun)
+			currentrun[base] = decompression_seen[base]
+		decompression_seen.Cut()
 		num_decompression_areas = 0
+		if(!length(currentrun))
+			decompression_context = null
+		else if(!decompression_context?.can_reuse(currentrun))
+			decompression_context = new(currentrun)
+		else
+			decompression_context.restarts = 0
+		decompression_check = null
 	var/list/currentrun_copy = currentrun
 	while(currentrun_copy.len)
+		// Проверяем бюджет и во время трёхсекундной задержки, и внутри одной большой зоны.
+		if(slice_ms && (TICK_USAGE_TO_MS(started) >= slice_ms || TICK_CHECK))
+			return TRUE
 		var/area/base = currentrun_copy[currentrun_copy.len]
-		currentrun_copy.len--
+		var/list/sources = currentrun_copy[base]
 		if(!base)
+			currentrun_copy.len--
+			continue
+		if(!decompression_check)
+			decompression_check = new(base, sources, decompression_context)
+		var/contained = decompression_check.advance(slice_ms, started)
+		if(isnull(contained))
+			return TRUE
+		decompression_check = null
+		currentrun_copy.len--
+		if(contained)
+			// Пока участок отсечён, не накапливаем задержку общей тревоги.
+			decompression_started_at[base] = world.time
 			continue
 		var/started_at = decompression_started_at[base]
 		if(isnull(started_at))
@@ -354,11 +386,8 @@
 		decompression_started_at -= base
 		handle_decompression_area(base)
 		num_decompression_areas++
-		if(world.tick_usage > Master.current_ticklimit)
-			// Остальные зоны перепроверяются после следующего полного прохода атмосферы.
-			currentrun.Cut()
-			pause()
-			return TRUE
+	if(decompression_context?.has_open_firelocks)
+		decompression_context = null
 	return FALSE
 
 /datum/controller/subsystem/air/proc/process_turfs_auxtools(remaining)
