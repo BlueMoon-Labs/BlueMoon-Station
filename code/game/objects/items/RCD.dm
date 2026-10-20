@@ -183,10 +183,6 @@ RLD
 	user.visible_message("<span class='suicide'>[user] sets the RCD to 'Wall' and points it down [user.ru_ego()] throat! It looks like [user.p_theyre()] trying to commit suicide..</span>")
 	return (BRUTELOSS)
 
-/obj/item/construction/rcd/examine(mob/user)
-	. = ..()
-	. += span_notice("В радиальном меню выберите <b>«Фаерлок»</b>, затем стеклянный или оконный вариант. РЦД также может установить плату управления в пустой каркас фаерлока.")
-
 /obj/item/construction/rcd/verb/toggle_window_type_verb()
 	set name = "RCD : Toggle Window Type"
 	set category = "Object"
