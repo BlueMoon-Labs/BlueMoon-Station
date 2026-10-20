@@ -1,4 +1,6 @@
 #define LUNGS_MAX_HEALTH 300
+#define NITROUS_SLEEP_EXTENSION_THRESHOLD (20 SECONDS)
+#define NITROUS_SLEEP_EXTENSION_DURATION (10 SECONDS)
 
 /obj/item/organ/lungs
 	name = "lungs"
@@ -277,8 +279,8 @@
 			H.Unconscious(6 SECONDS) // 60 gives them one second to wake up and run away a bit!
 			if(SA_pp > SA_sleep_min) // Enough to make us sleep as well
 				H.voluntary_sleep_until = 0 // Наркоз заменяет добровольный сон.
-				if(H.AmountSleeping() <= 20 SECONDS)
-					H.AdjustSleeping(10 SECONDS)
+				if(H.AmountSleeping() <= NITROUS_SLEEP_EXTENSION_THRESHOLD)
+					H.AdjustSleeping(NITROUS_SLEEP_EXTENSION_DURATION)
 		else if(SA_pp > 0.25)	// There is sleeping gas in their lungs, but only a little, so give them a bit of a warning
 			if(prob(20))
 				H.emote(pick("giggle", "laugh"))
@@ -762,3 +764,5 @@
 
 #undef PP
 #undef PP_MOLES
+#undef NITROUS_SLEEP_EXTENSION_THRESHOLD
+#undef NITROUS_SLEEP_EXTENSION_DURATION

@@ -511,7 +511,7 @@
 	if(welded && C.tool_behaviour == TOOL_WRENCH)
 		C.play_tool_sound(src)
 		user.visible_message(span_notice("[user] начинает откручивать крепёжные болты [src]..."), span_notice("Вы начинаете откручивать крепёжные болты [src]..."))
-		if(!C.use_tool(src, user, 50))
+		if(!C.use_tool(src, user, 5 SECONDS))
 			return
 		if(!welded || operating)
 			return
@@ -649,15 +649,18 @@
 	// Общая тревога не дублирует уже герметичную преграду. Проверяем её текущее
 	// состояние: открытый шлюз или откреплённое окно должны пропускать воздух.
 	var/turf/door_turf = get_turf(src)
+	var/unsealed_directions = (flags_1 & ON_BORDER_1) ? dir : (NORTH|SOUTH|EAST|WEST)
 	for(var/obj/blocker in door_turf)
 		if(blocker == src || blocker.CanAtmosPass == ATMOS_PASS_YES)
 			continue
 		for(var/direction in GLOB.cardinals)
-			if((flags_1 & ON_BORDER_1) && direction != dir)
+			if(!(unsealed_directions & direction))
 				continue
 			var/turf/neighbor = get_step(door_turf, direction)
 			if(neighbor && !CANATMOSPASS(blocker, neighbor))
-				return FALSE
+				unsealed_directions &= ~direction
+		if(!unsealed_directions)
+			return FALSE
 	return TRUE
 
 /obj/machinery/door/firedoor/proc/should_block_on_ctrl_click()

@@ -877,7 +877,7 @@
 			if(!do_after(user, 1 SECONDS, patient) || !check_patient())
 				return
 			user.visible_message("[user] отключает подачу анестетика к [patient].", span_notice("Вы проворачиваете клапан и отключаете подачу анестезии."))
-			eject_patient()
+			stop_process()
 	else
 		to_chat(user, span_warning("[src] не имеет прикрепленного к нему баллона или маски!"))
 		return

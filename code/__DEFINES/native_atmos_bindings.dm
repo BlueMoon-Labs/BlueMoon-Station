@@ -355,6 +355,8 @@
 		handle_decompression_area(base)
 		num_decompression_areas++
 		if(world.tick_usage > Master.current_ticklimit)
+			// Остальные зоны перепроверяются после следующего полного прохода атмосферы.
+			currentrun.Cut()
 			pause()
 			return TRUE
 	return FALSE
