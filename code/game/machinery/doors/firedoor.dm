@@ -511,7 +511,7 @@
 	if(welded && C.tool_behaviour == TOOL_WRENCH)
 		C.play_tool_sound(src)
 		user.visible_message(span_notice("[user] начинает откручивать крепёжные болты [src]..."), span_notice("Вы начинаете откручивать крепёжные болты [src]..."))
-		if(!C.use_tool(src, user, 5 SECONDS))
+		if(!C.use_tool(src, user, 3 SECONDS))
 			return
 		if(!welded || operating)
 			return
