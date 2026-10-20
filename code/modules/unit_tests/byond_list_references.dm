@@ -57,6 +57,7 @@
 	var/list/saved_areas
 	var/list/saved_started
 	var/list/saved_seen
+	var/list/saved_seals
 	var/list/saved_currentrun
 	var/saved_count
 	var/datum/decompression_context/saved_context
@@ -68,6 +69,7 @@
 	saved_areas = SSair.decompression_areas
 	saved_started = SSair.decompression_started_at
 	saved_seen = SSair.decompression_seen
+	saved_seals = SSair.decompression_seals
 	saved_currentrun = SSair.currentrun
 	saved_count = SSair.num_decompression_areas
 	saved_context = SSair.decompression_context
@@ -77,6 +79,7 @@
 	SSair.decompression_areas = list()
 	SSair.decompression_started_at = list()
 	SSair.decompression_seen = list()
+	SSair.decompression_seals = list()
 	var/area/byond_pruning_probe/expired = new
 	var/area/byond_pruning_probe/boundary = new
 	var/area/byond_pruning_probe/recent = new
@@ -114,6 +117,7 @@
 	SSair.decompression_areas = saved_areas
 	SSair.decompression_started_at = saved_started
 	SSair.decompression_seen = saved_seen
+	SSair.decompression_seals = saved_seals
 	SSair.currentrun = saved_currentrun
 	SSair.num_decompression_areas = saved_count
 	SSair.decompression_context = saved_context
@@ -123,5 +127,6 @@
 	saved_areas = null
 	saved_started = null
 	saved_seen = null
+	saved_seals = null
 	saved_currentrun = null
 	return ..()

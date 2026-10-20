@@ -627,17 +627,19 @@
 	TEST_ASSERT(SSair.contain_decompression(first, list(west), context), "общая дверь не локализовала пробоину первой зоны")
 	TEST_ASSERT(SSair.contain_decompression(second, list(north), context), "общая дверь не локализовала пробоину второй зоны")
 
-/datum/unit_test/decompression_containment_benchmark/proc/measure_pending_phase()
+/datum/unit_test/decompression_containment_benchmark/proc/measure_pending_phase(label = "25_areas_pending_phase", expected_contained = FALSE, reuse_context = FALSE)
 	var/list/saved_state = list()
-	for(var/state_name in list("decompression_handled_at", "decompression_pending", "decompression_areas", "decompression_started_at", "decompression_seen", "currentrun", "num_decompression_areas", "decompression_context", "decompression_check"))
+	for(var/state_name in list("decompression_handled_at", "decompression_pending", "decompression_areas", "decompression_started_at", "decompression_seen", "decompression_seals", "currentrun", "num_decompression_areas", "decompression_context", "decompression_check"))
 		saved_state[state_name] = SSair.vars[state_name]
 	var/list/pass_ms = list()
 	var/sum_ms = 0
 	var/paused_count = 0
 	var/max_tick_delta = 0
 	var/max_slice_ms = 0
+	var/auto_reopen_ms = 0
+	var/auto_reopen_calls = 0
 	for(var/round_index in 1 to 3)
-		for(var/state_name in list("decompression_handled_at", "decompression_pending", "decompression_areas", "decompression_started_at", "decompression_seen", "currentrun"))
+		for(var/state_name in list("decompression_handled_at", "decompression_pending", "decompression_areas", "decompression_started_at", "decompression_seen", "decompression_seals", "currentrun"))
 			SSair.vars[state_name] = list()
 		SSair.decompression_context = null
 		SSair.decompression_check = null
@@ -645,6 +647,8 @@
 			SSair.decompression_areas[part] = TRUE
 			SSair.decompression_started_at[part] = world.time
 			SSair.decompression_seen[part] = sources[part]
+		if(reuse_context)
+			SSair.process_decompression_areas_auxtools(FALSE, 0)
 		CHECK_TICK
 		var/total_ms = 0
 		var/resumed = FALSE
@@ -660,13 +664,30 @@
 			TEST_ASSERT(++attempts < 1000, "возобновляемая фаза не завершилась")
 			CHECK_TICK
 		while(resumed)
+		for(var/area/part as anything in benchmark_areas)
+			TEST_ASSERT_EQUAL(!!SSair.decompression_seals[part], expected_contained, "неожиданное удержание границы в [label]")
 		pass_ms += total_ms
 		sum_ms += total_ms
+		if(expected_contained)
+			for(var/obj/machinery/door/firedoor/door as anything in benchmark_doors)
+				door.auto_closed = TRUE
+				for(var/retry in 1 to 100)
+					var/reopen_started = TICK_USAGE_REAL
+					door.try_auto_reopen()
+					auto_reopen_ms += TICK_USAGE_TO_MS(reopen_started)
+					auto_reopen_calls++
+				TEST_ASSERT(door.density && door.auto_closed && !door.operating, "таймер открыл защитную границу в [label]")
+				door.auto_closed = FALSE
+				if(door.reopen_timer)
+					deltimer(door.reopen_timer)
+					door.reopen_timer = null
+		for(var/area/part as anything in SSair.decompression_seals.Copy())
+			SSair.set_decompression_seals(part)
 		CHECK_TICK
 	for(var/state_name in saved_state)
 		SSair.vars[state_name] = saved_state[state_name]
 	var/list/record = list(
-		"case" = "25_areas_pending_phase",
+		"case" = label,
 		"areas" = length(benchmark_areas),
 		"rounds" = 3,
 		"mean_pass_ms" = sum_ms / 3,
@@ -675,6 +696,8 @@
 		"max_tick_usage_delta" = max_tick_delta,
 		"max_slice_ms" = max_slice_ms,
 		"paused_calls" = paused_count,
+		"auto_reopen_mean_ms" = auto_reopen_calls ? auto_reopen_ms / auto_reopen_calls : 0,
+		"auto_reopen_calls" = auto_reopen_calls,
 	)
 	results += list(record)
 	log_test("CONTAINMENTBENCH [json_encode(record)]")
@@ -711,6 +734,8 @@
 	refresh_adjacency()
 	measure_case("sustained_localized", TRUE)
 	measure_case("sustained_localized_reused", TRUE, 7, TRUE)
+	measure_pending_phase("localized_pending_phase", TRUE)
+	measure_pending_phase("localized_pending_phase_reused", TRUE, TRUE)
 
 	for(var/door_count in list(0, 64, 256))
 		prepare_room(50)

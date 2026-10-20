@@ -422,6 +422,8 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 						cont = FALSE
 						break
 			if(cont && D.is_operational())
+				if(opening && D.is_decompression_seal())
+					continue
 				if(!opening && !D.can_close_for_alarm())
 					continue
 				// Закрытие зоной - тоже работа автоматики, и открывать обратно

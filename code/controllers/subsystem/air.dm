@@ -135,6 +135,8 @@ SUBSYSTEM_DEF(air)
 	var/list/decompression_started_at = list()
 	// Базовая зона -> набор турфов утечки за текущий полный проход обработки турфов.
 	var/list/decompression_seen = list()
+	// Базовая зона -> подтверждённая граница изоляции и источники её пробоин.
+	var/list/decompression_seals = list()
 	// Геометрия инвалидируется отдельно от давления и состава газа.
 	var/decompression_geometry_revision = 0
 	var/datum/decompression_context/decompression_context
@@ -1121,6 +1123,45 @@ SUBSYSTEM_DEF(air)
 	var/datum/decompression_check/check = new(base, sources, context)
 	return check.advance()
 
+// Удерживаем всю границу, включая параллельные проходы одного повреждённого компонента.
+// Перепад у отдельной двери может временно исчезнуть раньше самой пробоины.
+/datum/controller/subsystem/air/proc/set_decompression_seals(area/base, list/doors, list/sources)
+	var/datum/decompression_seal/previous = decompression_seals[base]
+	if(previous)
+		for(var/obj/machinery/door/firedoor/door as anything in previous.doors)
+			if(!QDELETED(door) && !doors?[door])
+				LAZYREMOVE(door.decompression_seal_areas, base)
+	if(!length(doors))
+		decompression_seals -= base
+		return
+	var/datum/decompression_seal/seal = previous
+	if(!seal)
+		seal = new
+	seal.doors = doors
+	seal.sources = sources
+	decompression_seals[base] = seal
+	for(var/obj/machinery/door/firedoor/door as anything in doors)
+		if(!QDELETED(door))
+			LAZYSET(door.decompression_seal_areas, base, TRUE)
+			if(door.nextstate == FIREDOOR_OPEN)
+				door.nextstate = null
+
+// Пустой отсечённый участок может уснуть в физике. Сама пробоина от этого
+// не исчезает: перепроверяем её прежние источники до реальной герметизации.
+/datum/controller/subsystem/air/proc/queue_decompression_seals()
+	for(var/area/base as anything in decompression_seals.Copy())
+		if(QDELETED(base))
+			set_decompression_seals(base)
+			continue
+		var/datum/decompression_seal/seal = decompression_seals[base]
+		var/list/sources = decompression_seen[base]
+		decompression_seen[base] = islist(sources) ? (sources | seal.sources) : seal.sources
+		decompression_areas[base] = TRUE
+
+/datum/decompression_seal
+	var/list/doors
+	var/list/sources
+
 // Геометрия общая для всех зон одного прохода. Давление и итог локализации не кэшируются.
 /datum/decompression_context
 	var/revision = -1
@@ -1267,6 +1308,7 @@ SUBSYSTEM_DEF(air)
 	var/door_cursor = 1
 	var/list/proof_doors = list()
 	var/list/proof_turfs = list()
+	var/list/sealing_doors = list()
 	var/proof_cursor = 1
 	var/visited = 0
 
@@ -1288,6 +1330,7 @@ SUBSYSTEM_DEF(air)
 	door_cursor = 1
 	proof_doors.Cut()
 	proof_turfs.Cut()
+	sealing_doors.Cut()
 	proof_cursor = 1
 	visited = 0
 
@@ -1393,7 +1436,7 @@ SUBSYSTEM_DEF(air)
 				if(region.has_space)
 					leaking[region] = TRUE
 					doors |= region.boundaries
-		else if(length(leaking) && door_cursor <= length(doors))
+		else if(door_cursor <= length(doors))
 			var/obj/machinery/door/firedoor/door = doors[door_cursor++]
 			var/list/bases = context.door_bases[door]
 			if(QDELETED(door) || !door.density || !bases?[base])
@@ -1414,6 +1457,8 @@ SUBSYSTEM_DEF(air)
 					safe_side = side
 			if(safe_side)
 				for(var/datum/decompression_region/region as anything in affected)
+					if(region.has_space)
+						sealing_doors[door] = TRUE
 					if(!leaking[region])
 						continue
 					leaking -= region

@@ -47,6 +47,8 @@
 	///Дверь закрыта автоматикой, а не руками. Только такую автоматика имеет право
 	///открыть обратно: закрытая на карте или ломом остаётся закрытой.
 	var/auto_closed = FALSE
+	// Зоны, для которых дверь входит в подтверждённую границу изоляции пробоины.
+	var/list/decompression_seal_areas
 	///Таймер отложенной попытки открыться, см. try_auto_reopen().
 	var/reopen_timer
 	var/merger_id = "firelocks"
@@ -170,6 +172,10 @@
 //see also turf/AfterChange for adjacency shennanigans
 
 /obj/machinery/door/firedoor/proc/remove_from_areas()
+	for(var/area/base as anything in decompression_seal_areas)
+		var/datum/decompression_seal/seal = SSair?.decompression_seals[base]
+		seal?.doors.Remove(src)
+	decompression_seal_areas = null
 	if(affecting_areas)
 		for(var/I in affecting_areas)
 			var/area/A = I
@@ -452,7 +458,7 @@
 			// auto_closed обязателен: закрытую ломом или замапленную закрытой
 			// дверь автоматика открывать не имеет права (см. док у вара), иначе
 			// любой проходной фронт тревоги в группе распахивает ручную заслонку.
-			if(!area_alarm && door.density && door.auto_closed && !door.welded && !door.operating && !door.is_holding_pressure())
+			if(!area_alarm && door.density && door.auto_closed && !door.welded && !door.operating && !door.is_decompression_seal() && !door.is_holding_pressure())
 				// door/open() sleeps through its animation, and this proc runs
 				// from SIGNAL_HANDLER paths inside SSair's process_cell.
 				door.auto_closed = FALSE
@@ -797,7 +803,7 @@
 		if(affected.fire)
 			schedule_auto_reopen()
 			return
-	if(is_holding_pressure())
+	if(is_decompression_seal() || is_holding_pressure())
 		schedule_auto_reopen()
 		return
 	auto_closed = FALSE
@@ -805,6 +811,10 @@
 	// синхронное открытие держало SStimer по 300-350мс на дверь в разгар
 	// станционного пожара (раунд 9911).
 	INVOKE_ASYNC(src, TYPE_PROC_REF(/obj/machinery/door/firedoor, open))
+
+// Локализация уже проверила связность до пробоины; таймеру не нужен новый обход карты.
+/obj/machinery/door/firedoor/proc/is_decompression_seal()
+	return length(decompression_seal_areas) > 0
 
 /obj/machinery/door/firedoor/rcd_vals(mob/user, obj/item/construction/rcd/the_rcd)
 	if(the_rcd.mode != RCD_DECONSTRUCT || (flags_1 & NODECONSTRUCT_1) || (resistance_flags & INDESTRUCTIBLE))
@@ -839,7 +849,8 @@
 	switch(nextstate)
 		if(FIREDOOR_OPEN)
 			nextstate = null
-			open()
+			if(!is_decompression_seal())
+				open()
 		if(FIREDOOR_CLOSED)
 			nextstate = null
 			close()

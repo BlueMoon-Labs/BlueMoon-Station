@@ -336,6 +336,7 @@
 	if(!resumed)
 		values_cut_under(decompression_handled_at, world.time - DECOMPRESSION_AREA_ALARM_COOLDOWN, 1)
 		values_cut_under(decompression_pending, times_fired - DECOMPRESSION_PENDING_WINDOW_FIRES)
+		queue_decompression_seals()
 		// Если полный проход не подтвердил утечку, локальная защита уже справилась.
 		for(var/area/pending_area as anything in decompression_started_at.Copy())
 			if(!decompression_seen[pending_area] || (!(pending_area in decompression_pending) && !decompression_areas[pending_area]))
@@ -369,18 +370,29 @@
 		var/contained = decompression_check.advance(slice_ms, started)
 		if(isnull(contained))
 			return TRUE
-		decompression_check = null
 		currentrun_copy.len--
 		if(contained)
-			// Пока участок отсечён, не накапливаем задержку общей тревоги.
-			decompression_started_at[base] = world.time
+			set_decompression_seals(base, decompression_check.sealing_doors, decompression_check.sources)
+			if(length(decompression_check.sealing_doors))
+				// Пока участок отсечён, не накапливаем задержку общей тревоги.
+				decompression_started_at[base] = world.time
+			else
+				// Источники больше не сообщаются с космосом: пробоины действительно закрыты.
+				decompression_pending -= base
+				decompression_started_at -= base
+				decompression_areas -= base
+			decompression_check = null
 			continue
+		decompression_check = null
 		var/started_at = decompression_started_at[base]
 		if(isnull(started_at))
 			started_at = world.time
 			decompression_started_at[base] = started_at
 		// Очередь сохраняется до истечения паузы, пока каждый полный проход видит утечку.
 		if(world.time < started_at + DECOMPRESSION_AREA_ALARM_DELAY)
+			continue
+		var/last_handled = decompression_handled_at[base]
+		if(last_handled && world.time < last_handled + DECOMPRESSION_AREA_ALARM_COOLDOWN)
 			continue
 		decompression_areas -= base
 		decompression_started_at -= base

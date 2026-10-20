@@ -221,7 +221,7 @@
 
 /datum/unit_test/decompression_alarm_grace/Run()
 	TEST_ASSERT(SSair?.initialized, "SSair не инициализирована")
-	for(var/state_name in list("decompression_handled_at", "decompression_pending", "decompression_areas", "decompression_started_at", "decompression_seen", "currentrun"))
+	for(var/state_name in list("decompression_handled_at", "decompression_pending", "decompression_areas", "decompression_started_at", "decompression_seen", "decompression_seals", "currentrun"))
 		saved_air_state[state_name] = SSair.vars[state_name]
 		SSair.vars[state_name] = list()
 	saved_count = SSair.num_decompression_areas
@@ -327,13 +327,19 @@
 	SSair.decompression_pending[base] = SSair.times_fired - 1
 	SSair.queue_decompression_area(spot)
 	SSair.decompression_started_at[base] = world.time - DECOMPRESSION_AREA_ALARM_DELAY
-	// Полный проход без новой утечки соответствует уже загерметизированному проёму.
+	// Отсутствие нового газа не закрывает пустую пробоину: герметизируем сам проём.
+	west_end = get_step(spot, WEST)
+	west_end.ChangeTurf(/turf/closed/wall)
+	spot.ImmediateCalculateAdjacentTurfs()
 	SSair.decompression_seen.Cut()
 	SSair.process_decompression_areas_auxtools(FALSE, 0)
 	TEST_ASSERT_EQUAL(alarm.decomp_calls, 1, "загерметизированный проём вызвал отложенную тревогу")
 	TEST_ASSERT(!(base in SSair.decompression_areas), "отменённая тревога осталась в очереди")
 	TEST_ASSERT(!(base in SSair.decompression_pending), "отменённая тревога осталась в подтверждении")
 	TEST_ASSERT(!(base in SSair.decompression_started_at), "герметизация сохранила старый отсчёт задержки")
+	west_end = get_step(spot, WEST)
+	west_end.ChangeTurf(/turf/open/space/basic)
+	spot.ImmediateCalculateAdjacentTurfs()
 	SSair.queue_decompression_area(spot)
 	TEST_ASSERT_EQUAL(SSair.decompression_started_at[base], world.time, "новая пробоина унаследовала старый отсчёт")
 
@@ -348,6 +354,8 @@
 	TEST_ASSERT_EQUAL(alarm.decomp_calls, 2, "открытая пробоина ниже порога давления потеряла общую тревогу")
 
 /datum/unit_test/decompression_alarm_grace/Destroy()
+	for(var/area/base as anything in SSair.decompression_seals.Copy())
+		SSair.set_decompression_seals(base)
 	for(var/turf/spot as anything in original_areas)
 		var/area/original = original_areas[spot]
 		original.contents += spot
@@ -357,6 +365,112 @@
 		SSair.num_decompression_areas = saved_count
 	saved_air_state.Cut()
 	original_areas.Cut()
+	return ..()
+
+// Три параллельных прохода удерживают две пробоины даже при малом перепаде у дверей.
+/datum/unit_test/decompression_parallel_seals
+	var/list/saved_air_state = list()
+	var/list/original_areas = list()
+	var/area/unit_test_decompression/base
+
+/datum/unit_test/decompression_parallel_seals/Run()
+	for(var/state_name in list("decompression_handled_at", "decompression_pending", "decompression_areas", "decompression_started_at", "decompression_seen", "decompression_seals", "currentrun"))
+		saved_air_state[state_name] = SSair.vars[state_name]
+		SSair.vars[state_name] = list()
+	for(var/state_name in list("decompression_context", "decompression_check", "num_decompression_areas", "can_fire"))
+		saved_air_state[state_name] = SSair.vars[state_name]
+	SSair.decompression_context = null
+	SSair.decompression_check = null
+	SSair.can_fire = FALSE
+	base = new
+	allocated += base
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/list/room = list()
+	for(var/dx in -1 to 3)
+		for(var/dy in -1 to 5)
+			var/turf/spot = locate(origin.x + dx, origin.y + dy, origin.z)
+			if(dx < 0 || dx > 2 || dy < 0 || dy > 4)
+				spot.ChangeTurf(/turf/closed/wall)
+				continue
+			var/turf/open/floor = spot.ChangeTurf(/turf/open/floor/plasteel)
+			original_areas[floor] = get_area(floor)
+			base.contents += floor
+			floor.air.copy_from_turf(floor)
+			SSair.remove_from_active(floor)
+			room += floor
+	var/turf/open/first_source = locate(origin.x, origin.y, origin.z)
+	var/turf/open/second_source = locate(origin.x + 2, origin.y, origin.z)
+	for(var/turf/open/source as anything in list(first_source, second_source))
+		var/turf/hole = get_step(source, SOUTH)
+		hole.ChangeTurf(/turf/open/space/basic)
+	var/list/doors = list()
+	for(var/dx in 0 to 2)
+		var/obj/machinery/door/firedoor/door = allocate(/obj/machinery/door/firedoor, locate(origin.x + dx, origin.y + 2, origin.z))
+		doors += door
+	for(var/turf/open/member as anything in room)
+		member.ImmediateCalculateAdjacentTurfs()
+	SSair.decompression_areas[base] = TRUE
+	SSair.decompression_started_at[base] = world.time
+	SSair.decompression_seen[base] = list(first_source, second_source)
+	SSair.process_decompression_areas_auxtools(FALSE, 0)
+	for(var/obj/machinery/door/firedoor/door as anything in doors)
+		TEST_ASSERT(door.density && door.is_decompression_seal(), "не все параллельные проходы вошли в границу изоляции")
+		if(door.operating)
+			wait_for_var(door, "operating", FALSE)
+		TEST_ASSERT(!door.is_holding_pressure(), "контроль: большой перепад скрыл бы ошибку таймера")
+		for(var/retry in 1 to 3)
+			door.try_auto_reopen()
+			TEST_ASSERT(door.density && door.auto_closed && !door.operating, "таймер открыл защитный проход при сохраняющейся пробоине")
+		// Снятие холодовой тревоги также не должно открывать защитную границу.
+		door.alarm_type = FIRELOCK_ALARM_TYPE_COLD
+	var/obj/machinery/door/firedoor/first_door = doors[1]
+	first_door.recompute_atmos_alarm()
+	base.ModifyFiredoors(TRUE)
+	for(var/obj/machinery/door/firedoor/door as anything in doors)
+		TEST_ASSERT(door.density && door.auto_closed && !door.operating, "снятие тревоги открыло защитный проход")
+
+	// Опустевшая кромка может перестать присылать новые события физики.
+	SSair.decompression_seen.Cut()
+	SSair.process_decompression_areas_auxtools(FALSE, 0)
+	for(var/obj/machinery/door/firedoor/door as anything in doors)
+		TEST_ASSERT(door.is_decompression_seal(), "пропуск замера снял защиту с незаделанной пробоины")
+
+	first_door.block_automatic_closing(FIRELOCK_MANUAL_OVERRIDE_GRACE)
+	first_door.open()
+	SSair.decompression_seen.Cut()
+	SSair.process_decompression_areas_auxtools(FALSE, 0)
+	TEST_ASSERT(!first_door.density && !first_door.can_auto_close(), "граница изоляции отменила ручное открытие на 8 секунд")
+	first_door.close(manual = TRUE)
+
+	// Только реальный ремонт обеих пробоин снимает удержание; ручная дверь остаётся закрытой.
+	for(var/turf/open/source as anything in list(first_source, second_source))
+		var/turf/hole = get_step(source, SOUTH)
+		hole.ChangeTurf(/turf/closed/wall)
+		source.ImmediateCalculateAdjacentTurfs()
+	SSair.decompression_seen.Cut()
+	SSair.process_decompression_areas_auxtools(FALSE, 0)
+	TEST_ASSERT(!(base in SSair.decompression_seals), "ремонт пробоин не снял удержание границы")
+	for(var/obj/machinery/door/firedoor/door as anything in doors)
+		TEST_ASSERT(!door.is_decompression_seal(), "ремонт сохранил ссылку на изоляцию в двери")
+		if(door != first_door)
+			door.try_auto_reopen()
+	for(var/retry in 1 to 30)
+		var/obj/machinery/door/firedoor/second_door = doors[2]
+		var/obj/machinery/door/firedoor/third_door = doors[3]
+		if(!second_door.density && !third_door.density)
+			break
+		sleep(1)
+	for(var/obj/machinery/door/firedoor/door as anything in doors)
+		TEST_ASSERT_EQUAL(door.density, door == first_door, "после ремонта нарушено автоматическое или ручное состояние двери")
+
+/datum/unit_test/decompression_parallel_seals/Destroy()
+	if(base && length(saved_air_state))
+		SSair.set_decompression_seals(base)
+	for(var/turf/spot as anything in original_areas)
+		var/area/original = original_areas[spot]
+		original.contents += spot
+	for(var/state_name in saved_air_state)
+		SSair.vars[state_name] = saved_air_state[state_name]
 	return ..()
 
 // Разбитое окно закрывает собственную шторку только при риске разгерметизации, не затрагивая удалённую дверь.
