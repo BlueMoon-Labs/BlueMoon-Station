@@ -237,7 +237,7 @@
 		playsound(L, 'sound/weapons/genhit.ogg', 50, 1)
 		return FALSE
 	final_stamina_loss_amount = block_calculate_resultant_damage(final_stamina_loss_amount, return_list)
-	var/zap_block = L.run_armor_check(BODY_ZONE_CHEST, MELEE, null, null, armor_pen)
+	var/zap_block = L.run_armor_check(BODY_ZONE_CHEST, ENERGY, null, null, armor_pen)
 	deductcharge(hitcost, FALSE)
 	if(QDELETED(src) || QDELETED(our_cell))
 		return FALSE

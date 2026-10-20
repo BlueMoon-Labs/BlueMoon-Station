@@ -6576,7 +6576,7 @@
 /turf/open/floor/wood,
 /area/service/lawoffice)
 "atb" = (
-/obj/machinery/bountyvend/plus,
+/obj/machinery/bountyvend,
 /turf/open/floor/plasteel,
 /area/command/gateway)
 "atc" = (

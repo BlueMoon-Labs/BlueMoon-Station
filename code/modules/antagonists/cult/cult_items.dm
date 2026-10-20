@@ -419,7 +419,7 @@
 	desc = "A heavily-armored helmet worn by warriors of the Nar'Sien cult. It can withstand hard vacuum."
 	icon_state = "cult_helmet"
 	item_state = "cult_helmet"
-	armor_type = /datum/armor/cult_helmet
+	armor_type = /datum/armor/cult
 	brightness_on = 0
 	actions_types = list()
 	alternate_screams = BLOOD_SCREAMS
@@ -437,7 +437,7 @@
 	desc = "A heavily-armored exosuit worn by warriors of the Nar'Sien cult. It can withstand hard vacuum."
 	w_class = WEIGHT_CLASS_BULKY
 	allowed = list(/obj/item/tome, /obj/item/melee/cultblade, /obj/item/tank/internals/)
-	armor_type = /datum/armor/cult_suit
+	armor_type = /datum/armor/cult
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/cult
 	alternate_screams = BLOOD_SCREAMS

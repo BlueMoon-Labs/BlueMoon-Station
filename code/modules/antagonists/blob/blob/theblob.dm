@@ -340,7 +340,7 @@
 /obj/structure/blob/examine(mob/user)
 	. = ..()
 	var/datum/atom_hud/hud_to_check = GLOB.huds[DATA_HUD_MEDICAL_ADVANCED]
-	if(user.research_scanner || hud_to_check.hudusers[user])
+	if(HAS_TRAIT(user, TRAIT_RESEARCH_SCANNER) || hud_to_check.hudusers[user])
 		. += "<b>Your HUD displays an extensive report...</b><br>"
 		if(overmind)
 			. += "<b>Progress to Critical Mass:</b> <span class='notice'>[overmind.blobs_legit.len]/[overmind.blobwincount].</span>"

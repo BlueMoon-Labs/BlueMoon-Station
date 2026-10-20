@@ -63,75 +63,83 @@
 	return (TOXLOSS)
 
 // BLUEMOON ADD START - введено мытье отдельных частей тела, чтобы смывать с них надписи
-/obj/item/soap/attack(mob/living/target, mob/living/user)
-	if(ishuman(target))
-		var/mob/living/carbon/human/H = target // BLUEMOON EDIT
+/obj/item/soap/proc/clean_human(mob/living/carbon/human/target, mob/living/user, tongue)
+	var/target_limb = zone2body_parts_covered_complicated(user.zone_selected)
+	if(!target_limb)
+		to_chat(user, span_warning("Вы должны выбрать часть тела чтобы её намыть!"))
+		return FALSE
 
-		var/target_limb
+	var/list/items_on_target = list()
+	items_on_target = target.get_equipped_items()
 
-		target_limb = zone2body_parts_covered_complicated(user.zone_selected)
+	for(var/A in items_on_target)
+		var/obj/item/worn_clothes = A
+		if(worn_clothes.body_parts_covered & target_limb)
+			to_chat(user, span_warning("Часть тела, что вы пытались намылить на [target], сейчас закрыта одеждой."))
+			return FALSE
 
-		if(!target_limb)
-			to_chat(user, span_warning("You must choose a bodypart on your doll to write on!"))
-			return
-
-		var/list/items_on_target = list()
-		items_on_target = H.get_equipped_items()
-
-		for(var/A in items_on_target)
-			var/obj/item/worn_clothes = A
-			if(worn_clothes.body_parts_covered & target_limb)
-				to_chat(user, span_warning("The target body part is covered with their clothes."))
-				return
-
-		var/try_to_clean_genitals = FALSE
-		switch(user.zone_selected)
-			if(BODY_ZONE_PRECISE_MOUTH)
-				H.visible_message("<span class='warning'>\the [user] begins to wash out \the [target]'s mouth with [src.name]!</span>", "<span class='danger'>[user] is starting to wash out your mouth with [src.name]! IT'S AWFUL!</span>") //washes mouth out with soap sounds better than 'the soap' here
-				if(do_after(user, 4 SECONDS, target = H))
-					H.visible_message("<span class='notice'>\the [user] washes \the [target]'s mouth out with [src.name]!</span>", "<span class='danger'>[user] washes out your mouth with [src.name]! IT WAS AWFUL!</span>") //washes mouth out with soap sounds better than 'the soap' here
-					H.lip_style = null //removes lipstick
-					H.update_body()
-					return
-			if(BODY_ZONE_PRECISE_EYES)
-				target_limb = BODY_ZONE_HEAD
-			if(BODY_ZONE_PRECISE_GROIN, BODY_ZONE_CHEST) // технически, у моба нет органа таза на момент написания
-				target_limb = BODY_ZONE_CHEST
-				try_to_clean_genitals = TRUE
+	var/try_to_clean_genitals = FALSE
+	switch(user.zone_selected)
+		if(BODY_ZONE_PRECISE_MOUTH)
+			if(!tongue)
+				target.visible_message(span_warning("[user] начинает намывать рот [target] при помощи [src.name]!"), span_danger("[user] начинает намывать ваш рот при помощи [src.name]! ЭТО УЖАСНО!"))
 			else
-				target_limb = user.zone_selected
-
-		var/obj/item/bodypart/affected = H.get_bodypart(target_limb)
-
-		if(try_to_clean_genitals)
-			if(user.zone_selected == BODY_ZONE_PRECISE_GROIN) // механически, моется не таз, а грудь
-				H.visible_message(span_lewd("[user] begins to wash [target]'s groin with [name], as well as taking in account their genitals there."), span_lewd("[user] is starting to wash your groin with [name]... And your genitals their."))
+				target.visible_message(span_warning("[user] начинает вылизать губы [target]!"), span_lewd("[user] начинает вылизывать ваши губы! ЭТо... странно?"))
+			if(!do_after(user, 4 SECONDS, target))
+				return FALSE
+			if(!tongue)
+				target.visible_message(span_notice("[user] заканчивает намыливать рот [target] при помощи [src.name]!"), span_danger("[user] заканчивает намыливать ваш рот при помощи [src.name]! ЭТО УЖАСНО!"))
 			else
-				H.visible_message(span_lewd("[user] begins to wash [target]'s [affected] with [name], as well as taking in account their private parts."), span_lewd("[user] is starting to wash your [affected] with [name]... And your private parts."))
+				target.visible_message(span_notice("[user] заканчивает вылизывать губы [target]!"), span_lewd("[user] заканчивает вылизывать ваши губы!"))
+			target.lip_style = null //removes lipstick
+			target.update_body()
+			return TRUE
+		if(BODY_ZONE_PRECISE_EYES)
+			target_limb = BODY_ZONE_HEAD
+		if(BODY_ZONE_PRECISE_GROIN, BODY_ZONE_CHEST) // технически, у моба нет органа таза на момент написания
+			target_limb = BODY_ZONE_CHEST
+			try_to_clean_genitals = TRUE
 		else
-			H.visible_message(span_notice("[user] begins to wash [target]'s [affected] with [name]!"), span_notice("[user] is starting to wash your [affected] with [name]!"))
+			target_limb = user.zone_selected
 
-		if(do_after(user, 4 SECONDS, target = H))
-			target.remove_atom_colour(WASHABLE_COLOUR_PRIORITY)
-			target.clean_blood()
-			target.clear_fingerprints()
-			SEND_SIGNAL(target, COMSIG_COMPONENT_CLEAN_ACT, CLEAN_MEDIUM)
-			target.wash_cream()
-			target.wash_cum()
-			if(affected)
-				affected.writtentext = ""
-			if(try_to_clean_genitals)
-				for(var/obj/item/organ/genital/G in H.internal_organs)
-					if(G.writtentext && G.is_exposed() && G.zone == user.zone_selected)
-						G.writtentext = ""
-				H.visible_message(span_lewd("[user] washed up [target]'s [affected]!... As well as personal belongings there."), span_lewd("[user] washed up your [affected], as well as your personal belongings there."))
+	var/obj/item/bodypart/affected = target.get_bodypart(target_limb)
+
+	if(try_to_clean_genitals)
+		if(user.zone_selected == BODY_ZONE_PRECISE_GROIN) // механически, моется не таз, а грудь
+			target.visible_message(span_lewd("[user] начинает намывать пах [target] [tongue ? "своим языком" : "при помощи [name]"], беря в учёт и чужие гениталии."), span_lewd("[user] начинает намывать ваш пах при помощи [tongue ? "языка" : name]... И заодно ваши гениталии."))
+		else
+			target.visible_message(span_lewd("[user] начинает намывать туловище [target] [tongue ? "своим языком" : "при помощи [name]"], беря в учёт и интимные части тела."), span_lewd("[user] начинает намывать вашу грудь [tongue ? "своим языком" : "при помощи [name]"]... Как и заодно интимные части тела."))
+	else
+		target.visible_message(span_notice("[user] начинает намывать [affected.ru_name_y] [target] [tongue ? "своим языком" : "при помощи [name]"]!"), span_notice("[user] начинает намывать вышу [affected.ru_name_y] [tongue ? "своим языком" : "при помощи [name]"]!"))
+
+	if(do_after(user, 4 SECONDS, target))
+		target.remove_atom_colour(WASHABLE_COLOUR_PRIORITY)
+		target.clean_blood()
+		target.clear_fingerprints()
+		SEND_SIGNAL(target, COMSIG_COMPONENT_CLEAN_ACT, CLEAN_MEDIUM)
+		target.wash_cream()
+		target.wash_cum()
+		if(affected)
+			affected.writtentext = ""
+		if(try_to_clean_genitals)
+			for(var/obj/item/organ/genital/G in target.internal_organs)
+				if(G.writtentext && G.is_exposed() && G.zone == user.zone_selected)
+					G.writtentext = ""
+			if(user.zone_selected == BODY_ZONE_PRECISE_GROIN)
+				target.visible_message(span_lewd("[user] вымывает пах [target]!... беря в учёт и чужие гениталии."), span_lewd("[user] вымывает ваш пах, беря в учёт и гениталии."))
 			else
-				H.visible_message(span_notice("[user] washed up [target]'s [affected]!"), span_notice("[user] washed up your [affected]!"))
+				target.visible_message(span_lewd("[user] вымывает туловище [target]!... беря в учёт и интимные части тела."), span_lewd("[user] вымывает ваше туловище, беря в учёт и интимные части тела."))
+		else if(user.zone_selected == BODY_ZONE_HEAD && tongue)
+			user.visible_message(span_warning("[user] нежно облизывает лицо [target]!"), span_notice("Вы нежно облизываете лицо [target]!"))
+		else
+			target.visible_message(span_notice("[user] вымывает [affected.ru_name_y] [target]!"), span_notice("[user] вымывает вашу [affected.ru_name_y]!"))
+		return TRUE
+	return FALSE
 // BLUEMOON ADD END
 
 /obj/item/soap/afterattack(atom/target, mob/user, proximity)
 	. = ..()
-	if(!proximity || !check_allowed_items(target))
+	if(!proximity || !check_allowed_items(target, target_self = TRUE))
 		return
 	//I couldn't feasibly  fix the overlay bugs caused by cleaning items we are wearing.
 	//So this is a workaround. This also makes more sense from an IC standpoint. ~Carn
@@ -142,14 +150,8 @@
 		if(do_after(user, src.cleanspeed, target = target))
 			to_chat(user, "<span class='notice'>You scrub \the [target.name] out.</span>")
 			qdel(target)
-	/* BLUEMOON REMOVAL START - технически, этот кусок не работает, т.к. прок не работает на хуманов
-	else if(ishuman(target) && user.zone_selected == BODY_ZONE_PRECISE_MOUTH)
-		var/mob/living/carbon/human/H = user
-		user.visible_message("<span class='warning'>\the [user] washes \the [target]'s mouth out with [src.name]!</span>", "<span class='notice'>You wash \the [target]'s mouth out with [src.name]!</span>") //washes mouth out with soap sounds better than 'the soap' here
-		H.lip_style = null //removes lipstick
-		H.update_body()
-		return
-	/ BLUEMOON REMOVAL END */
+	else if(ishuman(target))
+		clean_human(target, user)
 	else if(istype(target, /obj/structure/window))
 		user.visible_message("[user] begins to clean \the [target.name] with [src]...", "<span class='notice'>You begin to clean \the [target.name] with [src]...</span>")
 		if(do_after(user, src.cleanspeed, target = target))

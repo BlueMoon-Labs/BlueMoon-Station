@@ -2925,35 +2925,41 @@
 		)
 	)
 
-/datum/reagent/consumable/semen/reaction_turf(turf/location, reac_volume)
+/datum/reagent/consumable/semen/reaction_turf(turf/location, reac_volume, show_message, from_gas, from_liquid)
 	..()
+	// TODO: капли для всех жидкостей (отдельные объекты); убирание реагентов из holder'а (учитывай генерацию жидкости для разливания)
 	if(!istype(location))
 		return
 
 	if(istype(src, /datum/reagent/consumable/semen/femcum)) //let it be here
 		var/obj/effect/decal/cleanable/semen/femcum/F = (locate(/obj/effect/decal/cleanable/semen/femcum) in location) || new(location)
-		if(F.reagents?.add_reagent(type, volume, data))
-			F.cap_liquid_reagents() //BLUEMOON: puddle-created decals cap at LIQUID_DECAL_CAP
+		if(F.reagents?.add_reagent(type, reac_volume, data))
+			if(from_liquid)
+				F.cap_liquid_reagents() //BLUEMOON: puddle-created decals cap at LIQUID_DECAL_CAP
 			F.update_icon()
-			return
+		return
 
-	var/obj/effect/decal/cleanable/semen/S = locate(/obj/effect/decal/cleanable/semen) in location
-	if(S && !istype(S, /obj/effect/decal/cleanable/semen/femcum))
-		if(S.reagents?.add_reagent(type, volume, data))
-			S.cap_liquid_reagents() //BLUEMOON: puddle-created decals cap at LIQUID_DECAL_CAP
+	var/obj/effect/decal/cleanable/semen/S
+	for(S in location)
+		if(istype(S, /obj/effect/decal/cleanable/semen/femcum))
+			continue
+		if(S.reagents?.add_reagent(type, reac_volume, data))
+			if(from_liquid)
+				S.cap_liquid_reagents() //BLUEMOON: puddle-created decals cap at LIQUID_DECAL_CAP
 			S.update_icon()
 			return
 
 	var/obj/effect/decal/cleanable/semendrip/drip = (locate(/obj/effect/decal/cleanable/semendrip) in location) || new(location)
-	if(drip.reagents?.add_reagent(type, volume, data))
-		drip.cap_liquid_reagents() //BLUEMOON: puddle-created decals cap at LIQUID_DECAL_CAP
+	if(drip.reagents?.add_reagent(type, reac_volume, data))
+		if(from_liquid)
+			drip.cap_liquid_reagents() //BLUEMOON: puddle-created decals cap at LIQUID_DECAL_CAP
 		drip.update_icon()
 		if(drip.reagents.total_volume >= LIQUID_DECAL_CAP)
 			S = new(location)
 			drip.reagents.trans_to(S, drip.reagents.total_volume)
+			S.transfer_blood_dna(drip.blood_DNA)
 			S.update_icon()
 			qdel(drip)
-		return
 
 /datum/reagent/consumable/semen/reaction_mob(mob/living/M, method, reac_volume, affected_bodypart) //splashing or ingesting
 	. = ..()

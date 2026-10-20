@@ -136,7 +136,7 @@
 	if(user.get_active_held_item())
 		to_chat(user, span_warning("Ваша активная рука занята, и поэтому вы не можете ничего лизнуть! Не спрашивайте, почему!"))
 		return
-	var/obj/item/soap/tongue/organic/licky = new(user)
+	var/obj/item/soap/tongue/licky = new(user)
 	if(user.put_in_active_hand(licky))
 		to_chat(user, span_notice("Вы вытягиваете язык и готовитесь что-то лизнуть."))
 	else

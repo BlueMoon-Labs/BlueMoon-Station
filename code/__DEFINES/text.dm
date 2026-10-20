@@ -246,10 +246,11 @@ GLOBAL_LIST_INIT(ddlc_chars, list(
 GLOBAL_LIST_INIT(mat_ru_nominative, list(
     "iron" = "железо",
     "glass" = "стекло",
+	"solid plasma" = "плазма",
     "plasma" = "плазма",
     "gold" = "золото",
     "silver" = "серебро",
-    "diamond" = "алмазы",
+    "diamond" = "алмаз",
     "uranium" = "уран",
     "titanium" = "титан",
     "plasma glass" = "плазменное стекло",
@@ -260,10 +261,11 @@ GLOBAL_LIST_INIT(mat_ru_nominative, list(
 	"plastic" = "пластик",
 	"biomass" = "биомасса",
 	"wood" = "дерево",
+	"wooden plank" = "деревянные доски",
 	"cloth" = "ткань",
 	"adamantine" = "адамантин",
 	"mythril" = "мифрил",
-	"sand" = "песк",
+	"sand" = "песок",
 	"sandstone" = "песчаник",
 	"snow" = "снег",
 	"runed metal" = "рунный металл",
@@ -274,12 +276,19 @@ GLOBAL_LIST_INIT(mat_ru_nominative, list(
 	"bone" = "кость",
 	"bamboo" = "бамбук",
 	"rigid material" = "твёрдый материал",
+	"durathread" = "дюраткань",
+	"plasteel" = "пласталь",
+	"plastitanium" = "пластитан",
+	"plastitanium glass" = "пластитановое стекло",
+	"reinforced glass" = "укреплённое стекло",
+	"alien alloy" = "инопланетный сплав",
 ))
 
 /// Лист-словарь для examine string'а материалов в родительном падеже
 GLOBAL_LIST_INIT(mat_ru_genitive, list(
     "iron" = "железа",
     "glass" = "стекла",
+	"solid plasma" = "плазмы",
     "plasma" = "плазмы",
     "gold" = "золота",
     "silver" = "серебра",
@@ -294,6 +303,7 @@ GLOBAL_LIST_INIT(mat_ru_genitive, list(
 	"plastic" = "пластика",
 	"biomass" = "биомассы",
 	"wood" = "дерева",
+	"wooden plank" = "деревянных досок",
 	"cloth" = "ткани",
 	"adamantine" = "адамантина",
 	"mythril" = "мифрила",
@@ -308,6 +318,24 @@ GLOBAL_LIST_INIT(mat_ru_genitive, list(
 	"bone" = "кости",
 	"bamboo" = "бамбука",
 	"rigid material" = "твёрдого материала",
+	"durathread" = "дюраткани",
+	"plasteel" = "пластали",
+	"plastitanium" = "пластитана",
+	"plastitanium glass" = "пластитанового стекла",
+	"reinforced glass" = "укреплённого стекла",
+	"alien alloy" = "инопланетного сплава",
+))
+
+/// Лист-словарь для существительных сплавов, в рудной печи, ИЩЕТ ПО АЙДИ
+GLOBAL_LIST_INIT(alloys_ru_nominative, list(
+	"reinforced glass" = "Укреплённое стекло",
+    "plasma + iron alloy" = "Плазма + железо",
+    "plasma + titanium alloy" = "Плазма + титан",
+    "plasma + glass alloy" = "Плазма + стекло",
+    "plasma + metal + glass alloy" = "Плазма + железо + стекло",
+    "titanium + glass alloy" = "Титан + стекло",
+    "plasma + titanium + glass alloy" = "Плазма + титан + стекло",
+    "alien alloy" = "Инопланетный сплав",
 ))
 
 /// Лист-словарь для examine string'а бюджетов
@@ -358,6 +386,43 @@ GLOBAL_LIST_INIT(borgmodule_ru_adjective, list(
 	"spider saboteur" = "саботажный",
 	"slaver medical combat" = "медицинский боевой",
 	"roleplay" = "ролевой",
+))
+
+/// Лист-словарь для брони одежды
+GLOBAL_LIST_INIT(armor_rating_ru, list(
+	"melee" = "Рукопашная",
+	"bullet" = "Пулевая",
+	"laser" = "Лазерная",
+	"energy" = "Энергия",
+	"bomb" = "Взрывы",
+	"magic" = "Магия",
+	"wound" = "Увечья",
+	"fire" = "Огонь",
+	"acid" = "Кислота",
+	"bio" = "Токсины",
+	"rad" = "Радиация",
+))
+
+GLOBAL_LIST_INIT(armor_rating_genitive_ru, list(
+	"melee" = "рукопашных угроз",
+	"bullet" = "пуль",
+	"laser" = "лазеров",
+	"energy" = "энергии",
+	"bomb" = "взрывов",
+	"magic" = "магии",
+	"wound" = "увечий",
+	"fire" = "огня",
+	"acid" = "кислоты",
+	"bio" = "токсинов",
+	"rad" = "радиации",
+))
+
+/// Лист-чекер для сопротивлений одежды
+GLOBAL_LIST_INIT(armor_durability_ru, list(
+	"fire" = TRUE,
+	"acid" = TRUE,
+	"bio" = TRUE,
+	"rad" = TRUE,
 ))
 
 /// Лист-словарь для названий отделов в существительном

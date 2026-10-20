@@ -309,6 +309,8 @@ var/list/ru_strings = list(
 	"set_ooc_notes" = "Изменить",
 	"ass_photo" = "Снимок задницы",
 	"set_ass_photo" = "Установить снимок задницы",
+	"set_taste" = "Описание вкуса",
+	"set_smell" = "Описание запаха",
 	"records" = "Записи",
 	"records_header" = "Записи",
 	"security_records" = "Записи безопасности",
@@ -1174,6 +1176,8 @@ var/list/en_strings = list(
 	"ass_photo" = "Ass Shot",
 	"set_ass_photo" = "Set Ass Shot",
 
+	"set_taste" = "Set Taste Text",
+	"set_smell" = "Set Smell Text",
 	"records" = "Records",
 	"records_header" = "Records",
 	"security_records" = "Security Records",

@@ -21380,7 +21380,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
-/obj/machinery/bountyvend/plus,
+/obj/machinery/bountyvend,
 /turf/open/floor/plasteel/dark,
 /area/command/gateway)
 "eiW" = (

@@ -15,12 +15,12 @@
 		if(MOB_WEIGHT_HEAVY)
 			. += span_warning("Выглядит грузно. Тащить будет сложно.\n")
 		if(MOB_WEIGHT_LIGHT)
-			. += span_info("С виду [t_He] весит весьма немного.\n")
+			. += span_info("C виду весит весьма немного.\n")
 	// BLUEMOON ADDITION END
 
 	// BLUEMOON ADD START
 	if(HAS_TRAIT_FROM(src, TRAIT_MUTE, ORGAN_TRAIT))
-		. += span_warning("Его рот варварски зашит! Выглядит жутко...")
+		. += span_warning("[ru_ego(TRUE)] рот варварски зашит! Выглядит жутко...")
 	// BLUEMOON ADD END
 
 	// Empathy abilities escape clause

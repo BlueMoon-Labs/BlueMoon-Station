@@ -269,7 +269,7 @@
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 	resistance_flags = FIRE_PROOF
 	heat_protection = HEAD
-	armor_type = /datum/armor/mining_helmet
+	armor_type = /datum/armor/mining_suit
 	brightness_on = 7
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/resonator, /obj/item/mining_scanner, /obj/item/t_scanner/adv_mining_scanner, /obj/item/gun/energy/kinetic_accelerator)
 
@@ -1011,7 +1011,6 @@
 	tail_state = "ert_medical"
 	hardsuit_type = "ert_gmedical"
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/shielded/ctf
-	armor_type = /datum/armor/ctf
 	brc_mitigation_bonus = 10  // BLUEMOON ADD
 	slowdown = 0
 	max_charges = 5
@@ -1043,7 +1042,6 @@
 	icon_state = "hardsuit0-ert_medical"
 	item_state = "hardsuit0-ert_medical"
 	hardsuit_type = "ert_medical"
-	armor_type = /datum/armor/ctf
 
 /obj/item/clothing/head/helmet/space/hardsuit/shielded/ctf/red
 	icon_state = "hardsuit0-ert_security"
@@ -1066,7 +1064,7 @@
 	item_state = "syndie_hardsuit"
 	tail_state = "syndicate-blood"
 	hardsuit_type = "syndi"
-	armor_type = /datum/armor/shielded_hardsuit_syndi
+	armor_type = /datum/armor/hardsuit_syndi
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/melee/transforming/energy/sword/saber, /obj/item/restraints/handcuffs, /obj/item/tank/internals)
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/shielded/syndi
@@ -1084,7 +1082,7 @@
 	icon_state = "hardsuit1-syndi"
 	item_state = "syndie_helm"
 	hardsuit_type = "syndi"
-	armor_type = /datum/armor/shielded_hardsuit_syndi
+	armor_type = /datum/armor/hardsuit_syndi
 
 ///SWAT version
 /obj/item/clothing/suit/space/hardsuit/shielded/swat

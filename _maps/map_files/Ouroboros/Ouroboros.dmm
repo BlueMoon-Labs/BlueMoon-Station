@@ -14277,7 +14277,7 @@
 	dir = 4
 	},
 /obj/structure/railing,
-/obj/machinery/bountyvend/plus,
+/obj/machinery/bountyvend,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/command/gateway)
 "doL" = (

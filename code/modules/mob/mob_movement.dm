@@ -467,6 +467,11 @@
 	if(!current_turf)
 		return FALSE
 
+	// Движение в мехе
+	if(istype(loc, /obj/vehicle/sealed/mecha))
+		to_chat(src, span_warning("Вы не в состоянии двигаться находясь в мехе!"))
+		return FALSE
+
 	if(istype(loc, /obj/machinery/atmospherics))
 		var/obj/machinery/atmospherics/pipe = loc
 		if(pipe.relaymove(src, direction))
@@ -484,6 +489,19 @@
 				return FALSE
 			current_ladder.travel(direction == UP, src, isobserver(src), destination)
 			return TRUE
+
+	// Полет в космосе
+	if(!isobserver(src))
+		if(incapacitated())
+			to_chat(src, span_warning("Вы не в состоянии двигаться!"))
+			return FALSE
+
+		if(!can_z_move(direction, current_turf, null, ZMOVE_FLIGHT_FLAGS|ZMOVE_FEEDBACK))
+			return FALSE
+
+		to_chat(src, "<span class='notice'>Вы начинаете двигаться [direction == UP ? "вверх" : "вниз"]...</span>")
+		if(!do_after(src, 1.5 SECONDS, src))
+			return FALSE
 
 	if(!zMove(direction, null, ZMOVE_FLIGHT_FLAGS|ZMOVE_FEEDBACK))
 		return FALSE

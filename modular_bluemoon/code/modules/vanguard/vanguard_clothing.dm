@@ -34,7 +34,7 @@
 	desc = "An advanced helmet that will protect you from space and other threats."
 	icon_state = "hardsuit0-exploration"
 	item_state = "hardsuit0-exploration"
-	armor_type = /datum/armor/exploration
+	armor_type = /datum/armor/hardsuit_security
 	brightness_on = 12
 	hardsuit_type = "exploration"
 	obj_flags = NOT_VISIBLE_IN_STORAGE
@@ -48,7 +48,7 @@
 	name = "Ranger hardsuit"
 	desc = "An advanced suit that will protect you from space and other threats."
 	slowdown = 0.5
-	armor_type = /datum/armor/exploration
+	armor_type = /datum/armor/hardsuit_security
 	brc_mitigation_bonus = 10  // BLUEMOON ADD
 	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/melee/transforming/energy/sword/saber, /obj/item/restraints/handcuffs, /obj/item/tank/internals)
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/exploration

@@ -31160,6 +31160,9 @@
 /obj/machinery/light{
 	dir = 8
 	},
+/obj/machinery/computer/shuttle_flight/exploration{
+	dir = 4
+	},
 /turf/open/floor/mineral/plastitanium,
 /area/science/misc_lab)
 "bUl" = (
@@ -76502,7 +76505,7 @@
 /area/maintenance/aft)
 "uAC" = (
 /obj/effect/turf_decal/trimline/dark_blue/filled/line,
-/obj/machinery/bountyvend/plus,
+/obj/machinery/bountyvend,
 /turf/open/floor/mineral/plastitanium,
 /area/command/gateway)
 "uBa" = (

@@ -236,7 +236,7 @@
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/port/central)
 "L" = (
-/obj/machinery/bountyvend/plus,
+/obj/machinery/bountyvend,
 /obj/effect/turf_decal/bot,
 /obj/effect/turf_decal/trimline/dark_blue/filled/line{
 	dir = 4

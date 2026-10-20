@@ -442,8 +442,6 @@ const VoreUserPreferences = (props) => {
     allowmobvore,
     vore_sounds,
     digestion_sounds,
-    lickable,
-    smellable,
   } = data.prefs;
 
   const {
@@ -536,45 +534,6 @@ const VoreUserPreferences = (props) => {
               ? "Click here to turn off digestion sounds."
               : "Click here to turn on digestion sounds.")}
             content={digestion_sounds ? "Digestion Sounds Enabled" : "Digestion Sounds Disabled"} />
-        </Flex.Item>
-        <Flex.Item basis="25%">
-          <Button
-            onClick={() => act("toggle_lickable")}
-            icon={lickable ? "toggle-on" : "toggle-off"}
-            selected={lickable}
-            fluid
-            tooltip={"Be able to be licked by others. "
-            + (lickable
-              ? "Click here to turn off being able to be licked."
-              : "Click here to turn on being able to be licked.")}
-            tooltipPosition="bottom-start"
-            content={lickable ? "Lickable" : "Unlickable"} />
-        </Flex.Item>
-        <Flex.Item basis="25%">
-          <Button
-            fluid
-            content="Set Taste"
-            icon="grin-tongue"
-            onClick={() => act("setflavor")} />
-        </Flex.Item>
-        <Flex.Item basis="25%">
-          <Button
-            onClick={() => act("toggle_smellable")}
-            icon={smellable ? "toggle-on" : "toggle-off"}
-            selected={smellable}
-            fluid
-            tooltip={"Be able to be smelled by others. "
-            + (smellable
-              ? "Click here to turn off being able to be smelled."
-              : "Click here to turn on being able to be smelled.")}
-            content={smellable ? "Smellable" : "Unsmellable"} />
-        </Flex.Item>
-        <Flex.Item basis="25%">
-          <Button
-            fluid
-            content="Set Smell"
-            icon="wind"
-            onClick={() => act("setsmell")} />
         </Flex.Item>
       </Flex>
       <Section>
