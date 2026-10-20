@@ -18503,6 +18503,9 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 4
 	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
+	},
 /turf/open/floor/plasteel/rivets/edge{
 	dir = 4
 	},
@@ -23022,21 +23025,17 @@
 	},
 /area/service/hydroponics)
 "fkm" = (
-/obj/structure/cable/yellow{
-	icon_state = "0-1"
+/obj/docking_port/stationary{
+	dir = 8;
+	dwidth = 2;
+	height = 15;
+	shuttle_id = "arrivals_stationary";
+	name = "arrivals";
+	roundstart_template = /datum/map_template/shuttle/arrival/voidraptor;
+	width = 7
 	},
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-8"
-	},
-/obj/machinery/power/solar{
-	id = "aftport";
-	name = "Aft-Port Solar Array"
-	},
-/turf/open/floor/plasteel/airless/solarpanel,
-/area/solars/port/fore)
+/turf/open/space/basic,
+/area/space)
 "fkO" = (
 /obj/effect/turf_decal/trimline/green/filled/line,
 /obj/structure/cable/yellow{
@@ -31870,13 +31869,10 @@
 /area/service/hydroponics)
 "hhI" = (
 /obj/structure/cable/yellow{
-	icon_state = "0-8"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-8"
-	},
-/obj/structure/cable/yellow{
 	icon_state = "2-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
 	},
 /obj/machinery/power/terminal{
 	dir = 4
@@ -35397,6 +35393,22 @@
 	dir = 1
 	},
 /area/security/checkpoint/science/research)
+"hVX" = (
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
+	},
+/obj/machinery/power/solar{
+	id = "aftport";
+	name = "Aft-Port Solar Array"
+	},
+/turf/open/floor/plasteel/airless/solarpanel,
+/area/solars/port/fore)
 "hVZ" = (
 /obj/machinery/flasher{
 	id = "Cell 6";
@@ -49254,18 +49266,6 @@
 	dir = 1
 	},
 /area/hallway/secondary/entry)
-"leX" = (
-/obj/docking_port/stationary{
-	dir = 8;
-	dwidth = 2;
-	height = 15;
-	shuttle_id = "arrivals_stationary";
-	name = "arrivals";
-	roundstart_template = /datum/map_template/shuttle/arrival/voidraptor;
-	width = 7
-	},
-/turf/open/space/basic,
-/area/space)
 "leY" = (
 /obj/machinery/camera{
 	c_tag = "Dormitories - Lounge";
@@ -78445,12 +78445,9 @@
 /turf/open/floor/vault,
 /area/ai_monitored/turret_protected/aisat_interior)
 "rHD" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 1
 	},
 /turf/open/floor/plasteel/rivets/large,
 /area/engineering/engine_smes)
@@ -129428,7 +129425,7 @@ tro
 hLs
 xIT
 xIT
-leX
+fkm
 xIT
 xIT
 vUl
@@ -131948,7 +131945,7 @@ nzY
 kde
 vXB
 vXB
-fkm
+hVX
 rct
 xIT
 jgG
