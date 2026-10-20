@@ -14,6 +14,7 @@
 	a_intent = INTENT_HARM
 	stop_automated_movement = 1
 	status_flags = CANPUSH
+	move_resist = MOVE_FORCE_STRONG // как Prince of Terror: нельзя толкать обычным игрокам/мобам
 	pass_flags = PASSTABLE
 	atmos_requirements = list("min_oxy" = 0, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 0, "min_co2" = 0, "max_co2" = 0, "min_n2" = 0, "max_n2" = 0)
 	minbodytemp = 0
