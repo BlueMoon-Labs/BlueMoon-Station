@@ -22290,17 +22290,17 @@
 /turf/open/floor/catwalk_floor/iron_smooth,
 /area/maintenance/department/medical)
 "feA" = (
-/obj/machinery/power/terminal{
-	dir = 4
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-1"
-	},
 /obj/effect/turf_decal/trimline/yellow/filled/line,
 /obj/machinery/firealarm/directional/south,
 /obj/machinery/camera/autoname{
 	network = list("ss13","engine");
 	dir = 1
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
+	},
+/obj/machinery/power/terminal{
+	dir = 4
 	},
 /turf/open/floor/plasteel/rivets/edge{
 	dir = 1
@@ -23022,17 +23022,21 @@
 	},
 /area/service/hydroponics)
 "fkm" = (
-/obj/docking_port/stationary{
-	dir = 8;
-	dwidth = 2;
-	height = 15;
-	shuttle_id = "arrivals_stationary";
-	name = "arrivals";
-	roundstart_template = /datum/map_template/shuttle/arrival/voidraptor;
-	width = 7
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
 	},
-/turf/open/space/basic,
-/area/space)
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
+	},
+/obj/machinery/power/solar{
+	id = "aftport";
+	name = "Aft-Port Solar Array"
+	},
+/turf/open/floor/plasteel/airless/solarpanel,
+/area/solars/port/fore)
 "fkO" = (
 /obj/effect/turf_decal/trimline/green/filled/line,
 /obj/structure/cable/yellow{
@@ -31865,17 +31869,17 @@
 	},
 /area/service/hydroponics)
 "hhI" = (
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "2-8"
+	},
 /obj/machinery/power/terminal{
 	dir = 4
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-8"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-8"
 	},
 /turf/open/floor/plasteel/rivets/large,
 /area/engineering/engine_smes)
@@ -44202,17 +44206,14 @@
 	},
 /area/engineering/engine_smes)
 "jUw" = (
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
 /obj/machinery/power/terminal{
 	dir = 4
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-1"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-1"
 	},
 /turf/open/floor/plasteel/rivets/large,
 /area/engineering/engine_smes)
@@ -49253,6 +49254,18 @@
 	dir = 1
 	},
 /area/hallway/secondary/entry)
+"leX" = (
+/obj/docking_port/stationary{
+	dir = 8;
+	dwidth = 2;
+	height = 15;
+	shuttle_id = "arrivals_stationary";
+	name = "arrivals";
+	roundstart_template = /datum/map_template/shuttle/arrival/voidraptor;
+	width = 7
+	},
+/turf/open/space/basic,
+/area/space)
 "leY" = (
 /obj/machinery/camera{
 	c_tag = "Dormitories - Lounge";
@@ -70674,22 +70687,6 @@
 	},
 /turf/open/floor/catwalk_floor/iron_smooth,
 /area/maintenance/department/medical/central)
-"pWt" = (
-/obj/structure/cable/yellow{
-	icon_state = "0-1"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-8"
-	},
-/obj/machinery/power/solar{
-	id = "aftport";
-	name = "Aft-Port Solar Array"
-	},
-/turf/open/floor/plasteel/airless/solarpanel,
-/area/solars/port/fore)
 "pWF" = (
 /obj/effect/spawner/structure/window/plasma/reinforced,
 /obj/machinery/atmospherics/pipe/simple/dark/visible,
@@ -129431,7 +129428,7 @@ tro
 hLs
 xIT
 xIT
-fkm
+leX
 xIT
 xIT
 vUl
@@ -131951,7 +131948,7 @@ nzY
 kde
 vXB
 vXB
-pWt
+fkm
 rct
 xIT
 jgG
