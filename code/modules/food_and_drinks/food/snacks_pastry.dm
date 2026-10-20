@@ -829,7 +829,8 @@
 	icon = 'icons/obj/food/pawcookie.dmi'
 	icon_state = "paw14"
 	tastes = list("cookie" = 1)
-	list_reagents = list(/datum/reagent/consumable/nutriment = 6)
+	bonus_reagents = list(/datum/reagent/consumable/nutriment = 2, /datum/reagent/consumable/sugar = 1)
+	list_reagents = list(/datum/reagent/consumable/nutriment = 3)
 	bitesize = 3
 	foodtype = GRAIN | SUGAR
 
@@ -847,7 +848,7 @@
 	bitesize = 6
 	foodtype = GRAIN | SUGAR
 
-GLOBAL_LIST_INIT(paw_eater_progress, list()) // Ачивка pawlicker
+GLOBAL_LIST_INIT(paw_eater_progress, list()) 
 
 /obj/item/reagent_containers/food/snacks/pawcookie/On_Consume(mob/living/user)
 	. = ..()
