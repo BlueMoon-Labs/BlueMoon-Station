@@ -2826,3 +2826,9 @@
 	slot = ITEM_SLOT_OCLOTHING
 	path = /obj/item/clothing/suit/taxedo
 	ckeywhitelist = list("kumikoshouko")
+
+/datum/gear/donator/bm/crimson_dress
+	name = "Crimson Dress"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/donator/bm/crimson_dress
+	ckeywhitelist = list("sawwarrr", "angelnedemon", "hartty")
