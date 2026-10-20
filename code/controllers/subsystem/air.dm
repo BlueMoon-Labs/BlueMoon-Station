@@ -1131,6 +1131,7 @@ SUBSYSTEM_DEF(air)
 		for(var/obj/machinery/door/firedoor/door as anything in previous.doors)
 			if(!QDELETED(door) && !doors?[door])
 				LAZYREMOVE(door.decompression_seal_areas, base)
+				door.refresh_alarm_overlay()
 	if(!length(doors))
 		decompression_seals -= base
 		return
@@ -1142,7 +1143,10 @@ SUBSYSTEM_DEF(air)
 	decompression_seals[base] = seal
 	for(var/obj/machinery/door/firedoor/door as anything in doors)
 		if(!QDELETED(door))
+			var/was_decompression_seal = door.is_decompression_seal()
 			LAZYSET(door.decompression_seal_areas, base, TRUE)
+			if(!was_decompression_seal)
+				door.refresh_alarm_overlay()
 			if(door.nextstate == FIREDOOR_OPEN)
 				door.nextstate = null
 

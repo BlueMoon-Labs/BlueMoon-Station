@@ -37,6 +37,8 @@
 	///Turfs this firelock holds exposure registrations on (center + cardinals).
 	var/list/turf/watched_atmos_turfs
 	var/alarm_type
+	// Последний нарисованный оверлей: изменения датчика не должны перерисовывать неизменную лампу.
+	var/displayed_alarm_state
 	///Area fire alarms contribute the generic priority below hot/cold turf alarms.
 	var/generic_alarm = FALSE
 	///Агрегат "слушают ли датчики во всех зонах двери" - только для осмотра и
@@ -80,7 +82,7 @@
 	else
 		. += span_notice("Дверь закрыта. Её можно открыть <i>ломом</i>. Для разборки её необходимо <b>заварить</b>.")
 	if(alarm_type == FIRELOCK_ALARM_TYPE_COLD)
-		. += span_notice("Синяя лампа датчика: за дверью холоднее, чем задумано для этой комнаты. От холода дверь не закрывается - это предупреждение тому, кто собрался войти без скафандра.")
+		. += span_notice("Атмосферный датчик сообщает: за дверью холоднее, чем задумано для этой комнаты. От холода дверь не закрывается - это предупреждение тому, кто собрался войти без скафандра.")
 	else if(alarm_type)
 		. += span_warning("Атмосферный датчик сообщает: [alarm_type == FIRELOCK_ALARM_TYPE_HOT ? "опасный нагрев" : "общая угроза"].")
 	if(!fire_detection)
@@ -172,10 +174,13 @@
 //see also turf/AfterChange for adjacency shennanigans
 
 /obj/machinery/door/firedoor/proc/remove_from_areas()
+	var/was_decompression_seal = is_decompression_seal()
 	for(var/area/base as anything in decompression_seal_areas)
 		var/datum/decompression_seal/seal = SSair?.decompression_seals[base]
 		seal?.doors.Remove(src)
 	decompression_seal_areas = null
+	if(was_decompression_seal && !QDELING(src))
+		refresh_alarm_overlay()
 	if(affecting_areas)
 		for(var/I in affecting_areas)
 			var/area/A = I
@@ -218,6 +223,7 @@
 		door.issue_turfs = shared_issues
 	for(var/obj/machinery/door/firedoor/door as anything in group.members)
 		door.rescan_atmos_turfs()
+		door.refresh_alarm_overlay()
 	recompute_atmos_alarm()
 	// Ушедшие двери всё ещё держат ПРЕЖНИЙ общий журнал с чужими записями и
 	// защёлкнутую по нему тревогу, а собственного фронта, который бы их
@@ -292,6 +298,7 @@
 		// группу GENERIC-тревогой до конца смены.
 		door.derive_generic_alarm()
 		door.rescan_atmos_turfs()
+		door.refresh_alarm_overlay()
 	recompute_atmos_alarm()
 
 // /turf/return_temperature() is a null stub; the air mixture is the only
@@ -326,10 +333,8 @@
 		return limit
 	return min(limit, designed_temperature - FIRELOCK_ALARM_TEMPERATURE_HYSTERESIS)
 
-/// Закрывает ли дверь такая тревога. Жар и тревога зоны закрывают, холод только
-/// светит лампой: холодом в этой кодовой базе живут телекомы, серверная, крио и
-/// холодильник, и дверь, захлопнутая ими, не спасала никого - она просто не
-/// открывалась. Разгерметизацию по-прежнему ловит перепад давления, а не это.
+// Жар и тревога зоны закрывают дверь, холод лишь индицируется на уже закрытой.
+// Разгерметизацию по-прежнему ловит перепад давления, а не температурная тревога.
 /obj/machinery/door/firedoor/proc/firelock_alarm_seals(alarm)
 	return alarm && alarm != FIRELOCK_ALARM_TYPE_COLD
 
@@ -414,9 +419,9 @@
 		issue_turfs[source] = new_alarm
 	else
 		issue_turfs -= source
-	recompute_atmos_alarm()
+	recompute_atmos_alarm(source)
 
-/obj/machinery/door/firedoor/proc/recompute_atmos_alarm()
+/obj/machinery/door/firedoor/proc/recompute_atmos_alarm(turf/changed_turf)
 	if(!issue_turfs)
 		issue_turfs = list()
 	var/datum/merger/group = GetMergeGroup(merger_id, merger_typecache)
@@ -439,6 +444,13 @@
 				new_alarm = FIRELOCK_ALARM_TYPE_GENERIC
 				break
 	if(new_alarm == alarm_type)
+		// Общий вердикт группы мог остаться прежним, хотя местная угроза изменилась.
+		if(changed_turf)
+			for(var/obj/machinery/door/firedoor/door as anything in group_members)
+				if(changed_turf in door.watched_atmos_turfs)
+					door.refresh_alarm_overlay()
+		else
+			refresh_alarm_overlay()
 		return
 	var/seals = firelock_alarm_seals(new_alarm)
 	for(var/obj/machinery/door/firedoor/door as anything in group_members)
@@ -607,18 +619,31 @@
 	switch(animation)
 		if("opening")
 			icon_state = "door_open"
+			refresh_alarm_overlay()
 			flick("door_opening", src)
 		if("closing")
 			icon_state = "door_closed"
 			flick("door_closing", src)
 
-/// Which alarm lamp this firelock should be showing, or null for dark. The
-/// alarm type doubles as the icon state name, so the sensor's own verdict is
-/// what the crew sees on the door.
+// Общий журнал управляет группой, но индикация показывает местные датчики
+// и защитную работу конкретной двери. Открытие сразу гасит все оверлеи угроз.
 /obj/machinery/door/firedoor/proc/alarm_overlay_state()
-	if(!alarm_type || (machine_stat & NOPOWER))
+	if(!density || (operating && icon_state == "door_open") || (machine_stat & NOPOWER))
 		return null
-	return alarm_type
+	var/local_alarm
+	for(var/turf/checked as anything in watched_atmos_turfs)
+		var/issue = issue_turfs?[checked]
+		if(issue == FIRELOCK_ALARM_TYPE_HOT)
+			return FIRELOCK_ALARM_TYPE_HOT
+		if(issue == FIRELOCK_ALARM_TYPE_COLD)
+			local_alarm = FIRELOCK_ALARM_TYPE_COLD
+	if(generic_alarm || auto_closed || is_decompression_seal())
+		return FIRELOCK_ALARM_TYPE_GENERIC
+	return local_alarm
+
+/obj/machinery/door/firedoor/proc/refresh_alarm_overlay()
+	if(alarm_overlay_state() != displayed_alarm_state)
+		update_icon()
 
 /obj/machinery/door/firedoor/update_icon()
 	cut_overlays()
@@ -627,6 +652,7 @@
 	if(welded)
 		add_overlay(density ? "welded" : "welded_open")
 	var/lamp_state = alarm_overlay_state()
+	displayed_alarm_state = lamp_state
 	if(lamp_state)
 		add_overlay(lamp_state)
 
@@ -775,6 +801,7 @@
 	if(!can_auto_close() || (!alarm_checked && !can_close_for_alarm()))
 		return
 	auto_closed = TRUE
+	refresh_alarm_overlay()
 	schedule_auto_reopen()
 
 /obj/machinery/door/firedoor/proc/schedule_auto_reopen()

@@ -406,6 +406,7 @@
 	var/list/doors = list()
 	for(var/dx in 0 to 2)
 		var/obj/machinery/door/firedoor/door = allocate(/obj/machinery/door/firedoor, locate(origin.x + dx, origin.y + 2, origin.z))
+		door.machine_stat &= ~NOPOWER
 		doors += door
 	for(var/turf/open/member as anything in room)
 		member.ImmediateCalculateAdjacentTurfs()
@@ -440,7 +441,8 @@
 	SSair.decompression_seen.Cut()
 	SSair.process_decompression_areas_auxtools(FALSE, 0)
 	TEST_ASSERT(!first_door.density && !first_door.can_auto_close(), "граница изоляции отменила ручное открытие на 8 секунд")
-	first_door.close(manual = TRUE)
+	first_door.try_to_crowbar(null, null)
+	TEST_ASSERT_EQUAL(first_door.displayed_alarm_state, FIRELOCK_ALARM_TYPE_GENERIC, "ручная дверь на границе пробоины не показала местную угрозу")
 
 	// Только реальный ремонт обеих пробоин снимает удержание; ручная дверь остаётся закрытой.
 	for(var/turf/open/source as anything in list(first_source, second_source))
@@ -450,6 +452,7 @@
 	SSair.decompression_seen.Cut()
 	SSair.process_decompression_areas_auxtools(FALSE, 0)
 	TEST_ASSERT(!(base in SSair.decompression_seals), "ремонт пробоин не снял удержание границы")
+	TEST_ASSERT_NULL(first_door.displayed_alarm_state, "ремонт сохранил оверлей угрозы на ручной двери")
 	for(var/obj/machinery/door/firedoor/door as anything in doors)
 		TEST_ASSERT(!door.is_decompression_seal(), "ремонт сохранил ссылку на изоляцию в двери")
 		if(door != first_door)
@@ -480,6 +483,7 @@
 	for(var/turf/open/nearby in range(1, origin))
 		nearby.air.copy_from_turf(nearby)
 	var/obj/machinery/door/firedoor/window/local_door = allocate(/obj/machinery/door/firedoor/window, origin)
+	local_door.machine_stat &= ~NOPOWER
 	var/obj/machinery/door/firedoor/remote_door = allocate(/obj/machinery/door/firedoor, remote)
 	var/obj/machinery/airalarm/unit_test_decomp_probe/alarm = allocate(/obj/machinery/airalarm/unit_test_decomp_probe, origin)
 	var/obj/structure/window/window = allocate(/obj/structure/window/fulltile, origin)
@@ -508,6 +512,13 @@
 	TEST_ASSERT_EQUAL(alarm.decomp_calls, 0, "локальная защита вызвала общую тревогу")
 	if(local_door.operating)
 		wait_for_var(local_door, "operating", FALSE)
+	TEST_ASSERT(!local_door.alarm_type && !local_door.generic_alarm, "контроль: общая тревога скрыла бы отсутствие местной индикации")
+	TEST_ASSERT_EQUAL(local_door.alarm_overlay_state(), FIRELOCK_ALARM_TYPE_GENERIC, "защита разбитого окна не показала общую угрозу")
+	var/has_threat_overlay = FALSE
+	for(var/mutable_appearance/overlay as anything in local_door.overlays)
+		if(overlay.icon_state == FIRELOCK_ALARM_TYPE_GENERIC)
+			has_threat_overlay = TRUE
+	TEST_ASSERT(has_threat_overlay, "на закрытой оконной шторке нет оверлея локальной угрозы")
 
 // Аирбаг разбитого окна разворачивается и герметизирует турф; аккуратная разборка его не активирует.
 /datum/unit_test/window_breach_airbag_safety/Run()

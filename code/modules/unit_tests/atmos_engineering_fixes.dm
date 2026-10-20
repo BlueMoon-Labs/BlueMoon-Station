@@ -158,35 +158,110 @@
 			details += "[problem.type] at ([problem.x],[problem.y]) T=[problem.return_temperature()] -> [door.issue_turfs[problem]]"
 		TEST_FAIL("group alarm stayed [door.alarm_type]; live issue turfs: [details.len ? details.Join("; ") : "none"]")
 
-/// The sensor knows why it shut the door - hot, cold or a neighbour's generic
-/// alarm - but until now a closed firelock told the crew nothing. These pin the
-/// lamp decision (the icon states themselves are ported sprites, so a typo in
-/// the defines would silently render nothing at all).
+// Проверяем настоящие оверлеи: местные датчики, защитное закрытие и гашение при открытии.
 /datum/unit_test/firedoor_alarm_lamps/Run()
 	var/obj/machinery/door/firedoor/door = allocate(/obj/machinery/door/firedoor)
-	// The test zone has no APC, so the door lands unpowered: power it by hand,
-	// otherwise every lamp assertion below would pass for the wrong reason.
 	door.machine_stat &= ~NOPOWER
-	TEST_ASSERT_NULL(door.alarm_overlay_state(), "a firelock with no alarm lit a lamp")
-
-	door.alarm_type = FIRELOCK_ALARM_TYPE_HOT
-	TEST_ASSERT_EQUAL(door.alarm_overlay_state(), FIRELOCK_ALARM_TYPE_HOT, "a heat alarm did not light the heat lamp")
-
-	// Lamps are powered indicators: a firelock shut by a breach that also killed
-	// the APC must not keep glowing.
+	var/turf/open/source = get_turf(door)
+	unit_test_normalize_exposure_window(source)
+	door.issue_turfs = list()
+	door.density = TRUE
+	door.update_icon()
+	assert_alarm_overlay(door, null)
+	door.process_atmos_alarm(source, source.air, ATMOS_HEAT_ALARM_TEMPERATURE + 10)
+	assert_alarm_overlay(door, FIRELOCK_ALARM_TYPE_HOT)
 	door.machine_stat |= NOPOWER
-	TEST_ASSERT_NULL(door.alarm_overlay_state(), "an unpowered firelock lit its lamps")
+	door.update_icon()
+	assert_alarm_overlay(door, null)
 	door.machine_stat &= ~NOPOWER
-
-	door.alarm_type = FIRELOCK_ALARM_TYPE_COLD
-	TEST_ASSERT_EQUAL(door.alarm_overlay_state(), FIRELOCK_ALARM_TYPE_COLD, "a cold alarm did not light the cold lamp")
-
+	door.process_atmos_alarm(source, source.air, door.cold_alarm_limit(source) - 10)
+	assert_alarm_overlay(door, FIRELOCK_ALARM_TYPE_COLD)
+	door.generic_alarm = TRUE
+	door.recompute_atmos_alarm()
+	assert_alarm_overlay(door, FIRELOCK_ALARM_TYPE_GENERIC)
+	door.generic_alarm = FALSE
+	door.recompute_atmos_alarm()
+	assert_alarm_overlay(door, FIRELOCK_ALARM_TYPE_COLD)
+	// Ни один вид угрозы не рисуется на открытой двери.
+	for(var/state in list(FIRELOCK_ALARM_TYPE_HOT, FIRELOCK_ALARM_TYPE_COLD, FIRELOCK_ALARM_TYPE_GENERIC))
+		door.issue_turfs[source] = state
+		door.generic_alarm = state == FIRELOCK_ALARM_TYPE_GENERIC
+		door.alarm_type = state
+		door.density = FALSE
+		door.update_icon()
+		assert_alarm_overlay(door, null)
+	// Локальная автоматика показывает общую угрозу и без тревоги зоны или датчиков.
+	door.issue_turfs.Cut()
+	door.alarm_type = null
+	door.generic_alarm = FALSE
+	door.density = TRUE
+	door.mark_auto_closed()
+	assert_alarm_overlay(door, FIRELOCK_ALARM_TYPE_GENERIC)
+	door.process_atmos_alarm(source, source.air, ATMOS_HEAT_ALARM_TEMPERATURE + 10)
+	assert_alarm_overlay(door, FIRELOCK_ALARM_TYPE_HOT)
+	// Оверлей исчезает ещё до изменения плотности в анимации открытия.
+	door.operating = TRUE
+	door.do_animate("opening")
+	TEST_ASSERT(door.density, "контроль: плотность изменилась раньше проверки анимации")
+	assert_alarm_overlay(door, null)
+	door.process_atmos_alarm(source, source.air, door.cold_alarm_limit(source) - 10)
+	assert_alarm_overlay(door, null)
+	door.density = FALSE
+	door.operating = FALSE
+	door.auto_closed = FALSE
+	door.update_icon()
 	var/list/available_states = icon_states(door.icon)
 	for(var/state in list(FIRELOCK_ALARM_TYPE_HOT, FIRELOCK_ALARM_TYPE_COLD, FIRELOCK_ALARM_TYPE_GENERIC))
 		TEST_ASSERT(state in available_states, "[door.icon] has no icon state named [state]")
+	check_local_sensors()
 
-	door.alarm_type = null
-	TEST_ASSERT_NULL(door.alarm_overlay_state(), "clearing the alarm left the lamps on")
+/datum/unit_test/firedoor_alarm_lamps/proc/assert_alarm_overlay(obj/machinery/door/firedoor/door, expected)
+	TEST_ASSERT_EQUAL(door.alarm_overlay_state(), expected, "неверный выбор оверлея угрозы")
+	TEST_ASSERT_EQUAL(door.displayed_alarm_state, expected, "индикация не обновилась после изменения причины")
+	var/list/threat_states = list(FIRELOCK_ALARM_TYPE_HOT, FIRELOCK_ALARM_TYPE_COLD, FIRELOCK_ALARM_TYPE_GENERIC)
+	var/list/drawn = list()
+	for(var/mutable_appearance/overlay as anything in door.overlays)
+		if(overlay.icon_state in threat_states)
+			drawn += overlay.icon_state
+	TEST_ASSERT_EQUAL(length(drawn), expected ? 1 : 0, "на двери осталось неверное число оверлеев угрозы")
+	if(expected)
+		TEST_ASSERT_EQUAL(drawn[1], expected, "на двери нарисован другой оверлей угрозы")
+
+// Общая тревога группы сохраняется, а каждый закрытый шлюз показывает свои датчики.
+/datum/unit_test/firedoor_alarm_lamps/proc/check_local_sensors()
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/turf/open/first_turf = locate(origin.x + 1, origin.y + 2, origin.z)
+	var/turf/open/second_turf = get_step(first_turf, EAST)
+	unit_test_normalize_exposure_window(first_turf)
+	unit_test_normalize_exposure_window(second_turf)
+	var/obj/machinery/door/firedoor/first = allocate(/obj/machinery/door/firedoor, first_turf)
+	var/obj/machinery/door/firedoor/second = allocate(/obj/machinery/door/firedoor, second_turf)
+	var/turf/open/hot_turf = get_step(first_turf, WEST)
+	var/turf/open/cold_turf = get_step(second_turf, EAST)
+	TEST_ASSERT(first.GetMergeGroup(first.merger_id, first.merger_typecache) == second.GetMergeGroup(second.merger_id, second.merger_typecache), "контроль: двери не образовали одну группу")
+	TEST_ASSERT(!(hot_turf in second.watched_atmos_turfs) && !(cold_turf in first.watched_atmos_turfs), "контроль: источники видны обоим датчикам")
+	for(var/obj/machinery/door/firedoor/door as anything in list(first, second))
+		door.machine_stat &= ~NOPOWER
+		door.density = TRUE
+		door.update_icon()
+	first.process_atmos_alarm(hot_turf, hot_turf.air, ATMOS_HEAT_ALARM_TEMPERATURE + 10)
+	assert_alarm_overlay(first, FIRELOCK_ALARM_TYPE_HOT)
+	assert_alarm_overlay(second, null)
+	second.process_atmos_alarm(cold_turf, cold_turf.air, second.cold_alarm_limit(cold_turf) - 10)
+	TEST_ASSERT_EQUAL(second.alarm_type, FIRELOCK_ALARM_TYPE_HOT, "индикация изменила общий вердикт группы")
+	assert_alarm_overlay(first, FIRELOCK_ALARM_TYPE_HOT)
+	assert_alarm_overlay(second, FIRELOCK_ALARM_TYPE_COLD)
+	second.generic_alarm = TRUE
+	second.recompute_atmos_alarm()
+	assert_alarm_overlay(second, FIRELOCK_ALARM_TYPE_GENERIC)
+	second.generic_alarm = FALSE
+	second.recompute_atmos_alarm()
+	assert_alarm_overlay(second, FIRELOCK_ALARM_TYPE_COLD)
+	second.process_atmos_alarm(cold_turf, cold_turf.air, T20C)
+	assert_alarm_overlay(second, null)
+	second.mark_auto_closed()
+	assert_alarm_overlay(second, FIRELOCK_ALARM_TYPE_GENERIC)
+	assert_alarm_overlay(first, FIRELOCK_ALARM_TYPE_HOT)
 
 /// Хвостовой модульный блок файрлока переопределял процы, уже объявленные выше
 /// на том же типе. BYOND компилирует это молча и оставляет последнее
