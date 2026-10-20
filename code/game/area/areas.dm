@@ -408,20 +408,23 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 /**
  * Try to close all the firedoors in the area
  */
-/area/proc/ModifyFiredoors(opening)
+/area/proc/ModifyFiredoors(opening, manual = FALSE)
 	if(firedoors)
 		firedoors_last_closed_on = world.time
 		for(var/FD in firedoors)
 			var/obj/machinery/door/firedoor/D = FD
 			D.refresh_generic_alarm()
 			var/cont = !D.welded
-			if(cont && opening)	//don't open if adjacent area is on fire
+			if(cont && opening && !manual) // Автоматика учитывает пожар в соседней зоне.
 				for(var/I in D.affecting_areas)
 					var/area/A = I
 					if(A.fire)
 						cont = FALSE
 						break
 			if(cont && D.is_operational())
+				if(opening && manual)
+					INVOKE_ASYNC(D, TYPE_PROC_REF(/obj/machinery/door/firedoor, open_manually))
+					continue
 				if(opening && !D.can_auto_reopen())
 					continue
 				if(!opening && !D.can_close_for_alarm())
@@ -453,7 +456,7 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 
 	START_PROCESSING(SSobj, src)
 
-/area/proc/firereset(obj/source)
+/area/proc/firereset(obj/source, manual = FALSE)
 	var/should_reset_alarms = fire
 	if(source)
 		if(istype(source, /obj/machinery/firealarm))
@@ -467,7 +470,8 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 
 	if (should_reset_alarms) // if there's a source, make sure there's no fire alarms left
 		set_fire_alarm_effects(FALSE)
-		ModifyFiredoors(TRUE)
+	if(should_reset_alarms || manual)
+		ModifyFiredoors(TRUE, manual)
 	alarm_manager.clear_alarm(ALARM_FIRE, source)
 
 	STOP_PROCESSING(SSobj, src)

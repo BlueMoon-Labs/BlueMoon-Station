@@ -663,6 +663,19 @@
 	. = ..()
 	latetoggle()
 
+// Команда игрока через сигнализацию равнозначна ручному открытию с короткой защитой.
+/obj/machinery/door/firedoor/proc/open_manually()
+	if(welded)
+		return FALSE
+	auto_closed = FALSE
+	block_automatic_closing(FIRELOCK_ALARM_OVERRIDE_GRACE)
+	if(operating)
+		nextstate = FIREDOOR_OPEN_MANUAL
+		return TRUE
+	. = open()
+	if(.)
+		block_automatic_closing(FIRELOCK_ALARM_OVERRIDE_GRACE)
+
 /obj/machinery/door/firedoor/hostile_lockdown(mob/origin)
 	lockdown_count++
 	if(machine_stat)
@@ -899,9 +912,12 @@
 	if(operating || machine_stat & NOPOWER || !nextstate)
 		return
 	switch(nextstate)
-		if(FIREDOOR_OPEN)
+		if(FIREDOOR_OPEN, FIREDOOR_OPEN_MANUAL)
+			var/manual_open = nextstate == FIREDOOR_OPEN_MANUAL
 			nextstate = null
-			if(can_auto_reopen())
+			if(manual_open)
+				open_manually()
+			else if(can_auto_reopen())
 				open()
 		if(FIREDOOR_CLOSED)
 			nextstate = null

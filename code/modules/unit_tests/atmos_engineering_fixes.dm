@@ -614,6 +614,56 @@
 		wait_for_var(door, "operating", FALSE)
 	TEST_ASSERT(!door.density, "возврат питания не восстановил автооткрытие")
 
+// Нажатие пожарной кнопки игроком открывает даже защитную границу и переживает текущую анимацию.
+/datum/unit_test/firelock_manual_alarm_reset/Run()
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/turf/open/center = locate(origin.x + 2, origin.y + 2, origin.z)
+	unit_test_normalize_exposure_window(center)
+	var/obj/machinery/door/firedoor/door = allocate(/obj/machinery/door/firedoor, center)
+	var/obj/machinery/firealarm/alarm = allocate(/obj/machinery/firealarm, center)
+	var/mob/user = allocate(/mob/living/carbon/human, center)
+	door.machine_stat &= ~NOPOWER
+	alarm.machine_stat &= ~NOPOWER
+	var/area/base = get_base_area(alarm)
+	door_runtime_set_lockdown(list(door), TRUE)
+	if(door.operating)
+		wait_for_var(door, "operating", FALSE)
+	base.set_fire_alarm_effects(TRUE)
+	alarm.reset()
+	TEST_ASSERT(door.density && !door.operating && door.lockdown_count, "автоматический сброс пожарной кнопки обошёл локдаун")
+
+	door.decompression_seal_areas = list()
+	door.decompression_seal_areas[base] = TRUE
+	base.set_fire_alarm_effects(TRUE)
+	alarm.on_attack_hand(user)
+	if(door.operating)
+		wait_for_var(door, "operating", FALSE)
+	TEST_ASSERT(!door.density && !door.auto_closed, "нажатие пожарной кнопки игроком не открыло фаерлок")
+	TEST_ASSERT(door.lockdown_count && door.is_decompression_seal(), "ручная команда сняла локдаун или сведения о пробоине")
+	TEST_ASSERT(!door.can_auto_close(), "ручная команда не дала защиту от повторного закрытия")
+	TEST_ASSERT_NULL(door.displayed_alarm_state, "на открытой вручную двери остался оверлей угрозы")
+
+	// Заваренную дверь сигнализация по-прежнему не открывает.
+	door.try_to_crowbar(null, null)
+	door.welded = TRUE
+	base.set_fire_alarm_effects(TRUE)
+	alarm.on_attack_hand(user)
+	TEST_ASSERT(door.density && !door.operating, "пожарная кнопка открыла заваренный фаерлок")
+	door.welded = FALSE
+	door.open_manually()
+
+	// Ручная команда, пришедшая при закрытии, должна остаться ручной после анимации.
+	INVOKE_ASYNC(door, TYPE_PROC_REF(/obj/machinery/door/firedoor, close), TRUE)
+	base.set_fire_alarm_effects(TRUE)
+	alarm.on_attack_hand(user)
+	TEST_ASSERT_EQUAL(door.nextstate, FIREDOOR_OPEN_MANUAL, "отложенная команда потеряла признак ручного открытия")
+	if(door.operating)
+		wait_for_var(door, "operating", FALSE, 4 SECONDS)
+	TEST_ASSERT(!door.density && !door.auto_closed && !door.can_auto_close(), "после анимации локдаун отменил ручное открытие")
+	TEST_ASSERT_NULL(door.displayed_alarm_state, "отложенное ручное открытие сохранило оверлей угрозы")
+	door.decompression_seal_areas = null
+	door_runtime_set_lockdown(list(door), FALSE)
+
 // Таймерный колбек переоткрытия обязан возвращаться без сна: door/open() спит
 // анимацию целую секунду, и в раунде 9911 try_auto_reopen держал SStimer по
 // 300-350мс на колбек в разгар станционного пожара.

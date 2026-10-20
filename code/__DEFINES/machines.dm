@@ -134,6 +134,8 @@
 
 #define FIREDOOR_OPEN 1
 #define FIREDOOR_CLOSED 2
+// Ручное открытие сохраняет свой приоритет и после текущей анимации.
+#define FIREDOOR_OPEN_MANUAL 3
 
 
 

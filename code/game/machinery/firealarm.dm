@@ -278,7 +278,7 @@
 	if(istype(here) && here.air && here.air.return_temperature() > ATMOS_HEAT_ALARM_TEMPERATURE)
 		heat_alarm_latched = TRUE
 	var/area/A = get_base_area(src)
-	A.firereset()
+	A.firereset(manual = !!user)
 	if(user)
 		log_game("[user] reset a fire alarm at [COORD(src)]")
 
