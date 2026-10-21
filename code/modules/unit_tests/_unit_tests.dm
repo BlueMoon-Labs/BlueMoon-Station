@@ -370,6 +370,7 @@
 #include "round_10483_10486_fixes.dm"
 #include "round_10543_10547_fixes.dm"
 #include "roundtype_rotation.dm"
+#include "runechat_measure_refs.dm"
 #include "runechat_sanity.dm"
 #include "runtime_null_guards.dm"
 // #include "say.dm"
