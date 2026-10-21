@@ -436,12 +436,12 @@
 	var/turf/T = get_turf(src)
 	switch(passed_mode)
 		if(RCD_FLOORWALL)
-			to_chat(user, "<span class='notice'>You finish a wall.</span>")
+			to_chat(user, span_notice("Вы завершаете строительство стены."))
 			T.PlaceOnTop(/turf/closed/wall)
 			qdel(src)
 			return TRUE
 		if(RCD_DECONSTRUCT)
-			to_chat(user, "<span class='notice'>You deconstruct the girder.</span>")
+			to_chat(user, span_notice("Вы разбираете каркас стены."))
 			qdel(src)
 			return TRUE
 	return FALSE

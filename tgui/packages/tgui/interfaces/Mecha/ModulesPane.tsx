@@ -17,6 +17,13 @@ import {
 import type { MainData, MechModule } from './data';
 import { useHonk } from './honk';
 
+const cardinalDirections: Record<number, string> = {
+  1: 'Север',
+  2: 'Юг',
+  4: 'Восток',
+  8: 'Запад',
+};
+
 export const ModulesPane = () => {
   const { act, data } = useBackend<MainData>();
   const [tab, setTab] = useState(0);
@@ -179,6 +186,89 @@ const ModuleDetailsExtra = ({ module }: { module: MechModule }) => {
     return null;
   }
   switch (extra.kind) {
+    case 'rcd':
+      return (
+        <>
+          <LabeledList.Item label="Настройка РЦД">
+            <Button
+              fluid
+              icon="th"
+              content="Радиальное меню"
+              disabled={disabled}
+              onClick={() => control('menu')} />
+          </LabeledList.Item>
+          <LabeledList.Item label="Режим">
+            {extra.modes.map(mode => (
+              <Button
+                key={mode.id}
+                fluid
+                content={mode.name}
+                disabled={disabled}
+                selected={extra.mode === mode.id}
+                onClick={() => control('mode', { mode: mode.id })} />
+            ))}
+          </LabeledList.Item>
+          {!!extra.window_mode && (
+            <LabeledList.Item label="Окна">
+              <Button
+                fluid
+                content={extra.reinforced_windows ? 'Армированное стекло' : 'Обычное стекло'}
+                disabled={disabled}
+                onClick={() => control('window_type')} />
+            </LabeledList.Item>
+          )}
+          {!!extra.computer_mode && (
+            <LabeledList.Item label="Направление компьютера">
+              <Button
+                fluid
+                content={cardinalDirections[extra.computer_direction]}
+                disabled={disabled}
+                onClick={() => control('computer_direction')} />
+            </LabeledList.Item>
+          )}
+          {!!extra.airlock_mode && (
+            <>
+              <LabeledList.Item label="Тип шлюза">
+                <Box mb={1}>{extra.airlock_name}</Box>
+                <Button
+                  fluid
+                  icon="door-open"
+                  content="Выбрать тип"
+                  disabled={disabled}
+                  onClick={() => control('airlock_type')} />
+              </LabeledList.Item>
+              <LabeledList.Item label="Доступ к шлюзу">
+                <Button.Checkbox
+                  fluid
+                  content="Достаточно одного доступа"
+                  checked={extra.one_access}
+                  disabled={disabled}
+                  onClick={() => control('one_access')} />
+                <Button
+                  fluid
+                  icon="unlock"
+                  content="Сбросить ограничения"
+                  disabled={disabled || !extra.selected_accesses.length}
+                  onClick={() => control('clear_access')} />
+                {!extra.selected_accesses.length && <Box color="label" my={1}>Общий доступ</Box>}
+                {extra.access_regions.map(region => (
+                  <Collapsible key={region.name} title={region.name}>
+                    {region.accesses.map(access => (
+                      <Button.Checkbox
+                        key={access.id}
+                        fluid
+                        content={access.name}
+                        checked={extra.selected_accesses.includes(access.id)}
+                        disabled={disabled}
+                        onClick={() => control('access', { access: String(access.id) })} />
+                    ))}
+                  </Collapsible>
+                ))}
+              </LabeledList.Item>
+            </>
+          )}
+        </>
+      );
     case 'mode':
       return (
         <>

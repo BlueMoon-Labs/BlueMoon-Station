@@ -2,6 +2,7 @@ export type Reagent = { name: string; volume: number; id: string };
 
 export type ModuleExtra =
   | { kind: 'mode'; mode: number; modes: string[]; first_mode: number; target?: string }
+  | { kind: 'rcd'; mode: number; modes: { id: number; name: string }[]; airlock_mode: boolean; window_mode: boolean; computer_mode: boolean; airlock_name: string; reinforced_windows: boolean; computer_direction: number; one_access: boolean; access_regions: { name: string; accesses: { id: number; name: string }[] }[]; selected_accesses: number[] }
   | { kind: 'extinguisher'; reagents: number; total_reagents: number }
   | { kind: 'generator'; fuel_amount: number; max_fuel: number }
   | { kind: 'ballistic'; total_ammo: number; max_ammo: number; cache: number; cache_max: number; can_rearm: boolean; punching?: boolean; harmful?: boolean }

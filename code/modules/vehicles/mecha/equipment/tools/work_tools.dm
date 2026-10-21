@@ -251,97 +251,133 @@
 
 /obj/item/mecha_parts/mecha_equipment/rcd
 	name = "mounted RCD"
-	desc = "Устройство для быстрого строительства, установленное на экзокостюм."
+	desc = "Промышленное устройство для быстрого строительства, установленное на экзокостюм. Возводит стены, полы, шлюзы, окна, фаерлоки и каркасы оборудования. Работает от батареи меха."
 	icon_state = "mecha_rcd"
-	equip_cooldown = 10
-	energy_drain = 250
+	equip_cooldown = 0
+	energy_drain = 200
 	range = MECHA_MELEE|MECHA_RANGED
 	item_flags = NO_MAT_REDEMPTION
-	var/mode = 0 //0 - deconstruct, 1 - wall or floor, 2 - airlock.
+	var/energy_drain_deconstruct = 400
+	var/obj/item/construction/rcd/mecha/rcd
+	var/static/list/rcd_modes = list(
+		"Демонтаж" = RCD_DECONSTRUCT,
+		"Стены и пол" = RCD_FLOORWALL,
+		"Шлюзы" = RCD_AIRLOCK,
+		"Решётки и окна" = RCD_WINDOWGRILLE,
+		"Стеклянные фаерлоки" = RCD_FIRELOCK,
+		"Оконные фаерлоки" = RCD_WINDOW_FIRELOCK,
+		"Каркасы машин" = RCD_MACHINE,
+		"Каркасы компьютеров" = RCD_COMPUTER,
+	)
 
 /obj/item/mecha_parts/mecha_equipment/rcd/Initialize(mapload)
 	. = ..()
-	GLOB.rcd_list += src
+	rcd = new(src)
+	rcd.set_mode(rcd.mode)
 
 /obj/item/mecha_parts/mecha_equipment/rcd/Destroy()
-	GLOB.rcd_list -= src
+	QDEL_NULL(rcd)
 	return ..()
 
+/obj/item/mecha_parts/mecha_equipment/rcd/attack_self(mob/user)
+	if(!rcd.check_menu(user))
+		return
+	rcd.attack_self(user)
+	if(!QDELETED(src))
+		update_equip_info()
+
 /obj/item/mecha_parts/mecha_equipment/rcd/action(mob/source, atom/target, params)
-	if(istype(target, /turf/open/space/transit))//>implying these are ever made -Sieve
-		return
+	target = rcd.resolve_construction_target(target)
+	if(!action_checks(target) || !construction_checks(target, source))
+		return FALSE
+	// Каждая параллельная операция проверяет стоимость режима на момент запуска.
+	var/energy_cost = energy_drain
+	var/completed = rcd.rcd_create(target, source, CALLBACK(src, PROC_REF(construction_checks), target, source, energy_cost))
+	if(QDELETED(src))
+		return FALSE
+	if(completed && chassis)
+		chassis.spark_system.start()
+	update_equip_info()
+	return completed
 
-	if(!isturf(target) && !istype(target, /obj/machinery/door/airlock))
-		target = get_turf(target)
-	if(!action_checks(target) || get_dist(chassis, target)>3)
-		return
-	playsound(chassis, 'sound/machines/click.ogg', 50, TRUE)
+/obj/item/mecha_parts/mecha_equipment/rcd/proc/can_operate(mob/user)
+	return chassis && user?.loc == chassis && (chassis.occupants[user] & VEHICLE_CONTROL_EQUIPMENT) && !user.incapacitated() && !chassis.completely_disabled && !chassis.is_currently_ejecting && !chassis.equipment_disabled && !chassis.construction_state && !chassis.phasing && !(chassis.mecha_flags & CANNOT_INTERACT)
 
-	switch(mode)
-		if(0)
-			if(iswallturf(target))
-				var/turf/closed/wall/W = target
-				to_chat(source, "[icon2html(src, source)][span_notice("Разборка [W]...")]")
-				if(do_after_cooldown(W, source))
-					chassis.spark_system.start()
-					W.ScrapeAway(flags = CHANGETURF_INHERIT_AIR)
-					playsound(W, 'sound/items/deconstruct.ogg', 50, TRUE)
-			else if(isfloorturf(target))
-				var/turf/open/floor/F = target
-				to_chat(source, "[icon2html(src, source)][span_notice("Разборка [F]...")]")
-				if(do_after_cooldown(target, source))
-					chassis.spark_system.start()
-					F.ScrapeAway(flags = CHANGETURF_INHERIT_AIR)
-					playsound(F, 'sound/items/deconstruct.ogg', 50, TRUE)
-			else if (istype(target, /obj/machinery/door/airlock))
-				to_chat(source, "[icon2html(src, source)][span_notice("Разборка [target]...")]")
-				if(do_after_cooldown(target, source))
-					chassis.spark_system.start()
-					qdel(target)
-					playsound(target, 'sound/items/deconstruct.ogg', 50, TRUE)
-		if(1)
-			if(isspaceturf(target))
-				var/turf/open/space/S = target
-				to_chat(source, "[icon2html(src, source)][span_notice("Строительство пола...")]")
-				if(do_after_cooldown(S, source))
-					S.PlaceOnTop(/turf/open/floor/plating, flags = CHANGETURF_INHERIT_AIR)
-					playsound(S, 'sound/items/deconstruct.ogg', 50, TRUE)
-					chassis.spark_system.start()
-			else if(isfloorturf(target))
-				var/turf/open/floor/F = target
-				to_chat(source, "[icon2html(src, source)][span_notice("Строительство стены...")]")
-				if(do_after_cooldown(F, source))
-					F.PlaceOnTop(/turf/closed/wall)
-					playsound(F, 'sound/items/deconstruct.ogg', 50, TRUE)
-					chassis.spark_system.start()
-		if(2)
-			if(isfloorturf(target))
-				to_chat(source, "[icon2html(src, source)][span_notice("Строительство шлюза...")]")
-				if(do_after_cooldown(target, source))
-					chassis.spark_system.start()
-					var/obj/machinery/door/airlock/T = new /obj/machinery/door/airlock(target)
-					T.autoclose = TRUE
-					playsound(target, 'sound/items/deconstruct.ogg', 50, TRUE)
-					playsound(target, 'sound/effects/sparks2.ogg', 50, TRUE)
+/obj/item/mecha_parts/mecha_equipment/rcd/proc/construction_checks(atom/target, mob/user, energy_cost)
+	if(!can_operate(user) || QDELETED(target) || istype(target, /turf/open/space/transit))
+		return FALSE
+	var/turf/chassis_turf = get_turf(chassis)
+	var/turf/target_turf = get_turf(target)
+	return chassis_turf && target_turf && chassis_turf.z == target_turf.z && get_dist(chassis, target) <= rcd.custom_range && do_after_checks(target) && chassis.has_charge(isnull(energy_cost) ? energy_drain : energy_cost)
+
+/obj/item/mecha_parts/mecha_equipment/rcd/attackby(obj/item/W, mob/user, params)
+	if(istype(W, /obj/item/rcd_upgrade))
+		rcd.attackby(W, user, params)
+		update_equip_info()
+		return TRUE
 	return ..()
 
 /obj/item/mecha_parts/mecha_equipment/rcd/handle_ui_act(action, list/params)
 	. = ..()
 	if(.)
 		return TRUE
-	if(action != "mode")
+	if(!equip_ready || !can_operate(usr))
 		return FALSE
-	var/new_mode = text2num(params["mode"])
-	if(!(new_mode in list(0, 1, 2)))
-		return FALSE
-	mode = new_mode
-	energy_drain = initial(energy_drain) * (mode == 0 ? 1 : 2)
+	switch(action)
+		if("menu")
+			attack_self(usr)
+		if("mode")
+			var/new_mode = text2num(params["mode"])
+			if(!(new_mode in flatten_list(rcd_modes)))
+				return FALSE
+			rcd.set_mode(new_mode)
+		if("window_type")
+			rcd.toggle_window_type(usr)
+		if("airlock_type")
+			rcd.change_airlock_setting(usr)
+		if("computer_direction")
+			rcd.change_computer_dir(usr)
+		if("one_access")
+			rcd.toggle_access("one")
+		if("clear_access")
+			rcd.toggle_access("all")
+		if("access")
+			var/access = text2num(params["access"])
+			if(!(access in get_all_accesses()))
+				return FALSE
+			rcd.toggle_access(params["access"])
+		else
+			return FALSE
 	update_equip_info()
 	return TRUE
 
 /obj/item/mecha_parts/mecha_equipment/rcd/get_ui_data()
 	. = ..()
-	.["snowflake"] = list("kind" = "mode", "mode" = mode, "modes" = list("Демонтаж", "Стена / пол", "Шлюз"), "first_mode" = 0)
+	var/list/modes = list()
+	for(var/mode_name in rcd_modes)
+		modes += list(list("name" = mode_name, "id" = rcd_modes[mode_name]))
+	var/list/access_regions = list()
+	if(rcd.mode == RCD_AIRLOCK)
+		for(var/region in 1 to 7)
+			var/list/accesses = list()
+			for(var/access in get_region_accesses(region))
+				accesses += list(list("id" = access, "name" = get_access_desc(access)))
+			access_regions += list(list("name" = get_region_accesses_name(region), "accesses" = accesses))
+	var/obj/machinery/door/airlock/airlock = rcd.airlock_type
+	.["snowflake"] = list(
+		"kind" = "rcd",
+		"mode" = rcd.mode,
+		"modes" = modes,
+		"airlock_mode" = rcd.mode == RCD_AIRLOCK,
+		"window_mode" = rcd.mode == RCD_WINDOWGRILLE,
+		"computer_mode" = rcd.mode == RCD_COMPUTER,
+		"airlock_name" = initial(airlock.name),
+		"reinforced_windows" = rcd.window_type == /obj/structure/window/reinforced/fulltile,
+		"computer_direction" = rcd.computer_dir,
+		"one_access" = rcd.use_one_access,
+		"access_regions" = access_regions,
+		"selected_accesses" = rcd.conf_access || list(),
+	)
 
 //Dunno where else to put this so shrug
 /obj/item/mecha_parts/mecha_equipment/ripleyupgrade
