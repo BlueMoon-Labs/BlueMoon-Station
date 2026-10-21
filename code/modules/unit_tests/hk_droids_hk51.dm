@@ -103,7 +103,33 @@
 		if(entry["id"] == listing_type && entry["amount"] == 1)
 			.++
 
-/// Раскладка раунда сработала на старте и не берёт контейнеры станции, центкома и резерва.
+/// Одна часть ложится в шкаф техтоннелей станции, мотиватор туда не попадает, и след ведёт от неё дальше.
+/datum/unit_test/hk51_scatter_station_part
+
+/datum/unit_test/hk51_scatter_station_part/Run()
+	var/datum/hk51_part_scatter/scatter = new
+	var/turf/factory_spot = run_loc_floor_top_right
+	var/obj/structure/closet/stash = allocate(/obj/structure/closet, factory_spot)
+	var/obj/structure/closet/maint_closet = allocate(/obj/structure/closet)
+	var/list/containers = list(stash)
+	for(var/i in 1 to 3)
+		containers += allocate(/obj/structure/closet)
+	var/list/placed = scatter.scatter(containers, factory_spot, list(maint_closet))
+	TEST_ASSERT_EQUAL(length(placed), 5, "Раскладка разложила не пять частей")
+	var/list/station_parts = list()
+	for(var/obj/item/hk51_part/part in maint_closet)
+		station_parts += part
+	TEST_ASSERT_EQUAL(length(station_parts), 1, "В шкаф техтоннелей легла не одна часть")
+	var/obj/item/hk51_part/station_part = station_parts[1]
+	TEST_ASSERT(!istype(station_part, /obj/item/hk51_part/motivator), "Мотиватор ушёл с фабрики на станцию")
+	TEST_ASSERT_EQUAL(placed[station_part.type], maint_closet, "Раскладка не помнит часть станции")
+	TEST_ASSERT(length(station_part.next_node), "Часть станции не называет место следующей")
+	qdel(scatter)
+	for(var/obj/structure/closet/container as anything in containers + maint_closet)
+		for(var/obj/item/hk51_part/part in container)
+			qdel(part)
+
+/// Раскладка раунда сработала на старте и не берёт контейнеры центкома и резерва; на станции - не больше одной части и только в техтоннелях.
 /datum/unit_test/hk51_scatter_off_station
 
 /datum/unit_test/hk51_scatter_off_station/Run()
@@ -114,9 +140,14 @@
 		sleep(world.tick_lag)
 	TEST_ASSERT(scatter.scattered, "Раскладка не сработала на старте раунда")
 	TEST_ASSERT(length(scatter.market_listings) >= 1, "Раскладка раунда не выставила часть на рынок")
+	var/station_parts = 0
 	for(var/obj/item/hk51_part/part as anything in scatter.spawned_parts)
 		var/turf/part_turf = get_turf(part)
-		TEST_ASSERT(!is_station_level(part_turf.z), "[part] лежит на станции")
+		if(!is_station_level(part_turf.z))
+			continue
+		station_parts++
+		TEST_ASSERT(istype(get_area(part), /area/maintenance), "[part] лежит на станции вне техтоннелей")
+	TEST_ASSERT(station_parts <= 1, "На станции больше одной части: [station_parts]")
 
 	for(var/station_z in SSmapping.levels_by_trait(ZTRAIT_STATION))
 		TEST_ASSERT(!scatter.is_scatter_level(station_z), "Уровень станции [station_z] годится для частей")
@@ -316,6 +347,13 @@
 	TEST_ASSERT_EQUAL(card.assignment, HK51_ASSIGNMENT, "На карте не должность дроида")
 	TEST_ASSERT(!length(card.access), "Карта дроида что-то открывает")
 	TEST_ASSERT_NOTNULL(droid.has_status_effect(/datum/status_effect/hk51_master_tracker), "Нет встроенного датчика хозяина")
+	var/obj/item/organ/cyberimp/arm/gun/taser/hk51/taser = droid.getorganslot(ORGAN_SLOT_LEFT_ARM_AUG)
+	TEST_ASSERT(istype(taser), "В левом предплечье нет тазера")
+	TEST_ASSERT_NULL(droid.getorganslot(ORGAN_SLOT_RIGHT_ARM_AUG), "Правая рука занята: лазеру HK-50 некуда встать")
+	var/obj/item/gun/energy/e_gun/advtaser/mounted/hk51/taser_gun = locate() in taser
+	TEST_ASSERT(istype(taser_gun?.pin, /obj/item/firing_pin/hk_chassis), "Боёк тазера не сверяет шасси")
+	TEST_ASSERT(taser_gun.pin.pin_auth(droid), "Тазер не стреляет у самого HK-51")
+	TEST_ASSERT(!taser_gun.pin.pin_auth(roboticist), "Тазер стреляет у человека")
 	var/datum/species/ipc/hk/hk51/species = droid.dna.species
 	TEST_ASSERT_EQUAL(species.last_voice, "hk51_diagnostic", "Дроид загрузился без строки диагностики")
 	var/datum/data/record/record = GLOB.data_core.security_by_id[species.record_id]

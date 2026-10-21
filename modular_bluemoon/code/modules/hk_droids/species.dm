@@ -67,6 +67,7 @@
 	SIGNAL_HANDLER
 	if(HAS_TRAIT(droid, TRAIT_HK47_DISGUISED))
 		return
+	examine_list += span_notice("Корпус HK - сплошная бронеплита: держит удар не хуже бронежилета.")
 	if(eyes_reprogrammed && eyes_lit(droid))
 		examine_list += span_notice("Фотоприёмники светятся голубым: блок лояльности перепрошит.")
 	if(user != droid && is_hk_droid_disabled(droid))
