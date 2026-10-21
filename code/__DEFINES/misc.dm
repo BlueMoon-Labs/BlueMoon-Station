@@ -477,6 +477,11 @@ GLOBAL_LIST_INIT(payed_ert, list(
 #define ALT_CLICK "alt"
 #define SHIFT_CLICK "shift"
 
+// Обработчики колеса вызываются от большего приоритета к меньшему.
+#define MOUSEWHEEL_PRIORITY_DEFAULT 0
+#define MOUSEWHEEL_PRIORITY_IMPLANT 10
+#define MOUSEWHEEL_PRIORITY_MECHA 20
+
 //Pixel coordinates within the icon, in the icon's coordinate space
 #define ICON_X "icon-x"
 #define ICON_Y "icon-y"

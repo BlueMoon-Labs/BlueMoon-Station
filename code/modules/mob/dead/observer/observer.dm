@@ -59,6 +59,7 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	var/lastclienttime = 0 //BLUEMOON ADD фиксируем время выхода игрока
 
 /mob/dead/observer/Initialize(mapload, mob/body)
+	register_mousewheel_handler(src, PROC_REF(on_mousewheel))
 	set_invisibility(GLOB.observer_default_invisibility)
 
 	add_verb(src, GLOB.ghost_verbs)
@@ -137,6 +138,12 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	grant_all_languages()
 	show_data_huds()
 	data_huds_on = 1
+
+/mob/dead/observer/proc/on_mousewheel(mob/user, atom/target, delta_x, delta_y, list/modifiers)
+	if(!delta_y || !modifiers[SHIFT_CLICK])
+		return FALSE
+	add_view_range(delta_y > 0 ? -1 : 1)
+	return TRUE
 
 /mob/dead/observer/get_status_tab_items()
 	. = ..()

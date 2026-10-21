@@ -23,6 +23,9 @@
 	hook_args.Cut()
 
 /mob/Destroy()//This makes sure that mobs with clients/keys are not just deleted from the game.
+	var/list/old_mousewheel_handlers = mousewheel_handlers
+	mousewheel_handlers = null
+	QDEL_LIST(old_mousewheel_handlers)
 	// if(client)
 	// 	stack_trace("Mob with client has been deleted.")
 	// else if(ckey)

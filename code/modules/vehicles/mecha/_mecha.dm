@@ -586,30 +586,35 @@
 ///// Action processing ////
 ////////////////////////////
 
-/obj/vehicle/sealed/mecha/proc/on_mousewheel(mob/user, atom/target, delta_x, delta_y, params)
-	SIGNAL_HANDLER
+/obj/vehicle/sealed/mecha/proc/on_mousewheel(mob/user, atom/target, delta_x, delta_y, list/modifiers)
+	if(!is_occupant(user))
+		return FALSE
 	// В кабине колесо управляет модулями, а не имплантами или зоной прицеливания.
 	if(!delta_y || !(occupants[user] & VEHICLE_CONTROL_EQUIPMENT) || user.incapacitated())
-		return COMSIG_MOB_CANCEL_MOUSEWHEELON
-	var/list/selectable_equipment = list()
-	for(var/obj/item/mecha_parts/mecha_equipment/module as anything in equipment)
-		if(module.selectable && !module.ui_toggle_action)
-			selectable_equipment += module
-	if(!length(selectable_equipment))
-		return COMSIG_MOB_CANCEL_MOUSEWHEELON
-	var/list/modifiers = params2list(params)
+		return TRUE
+	var/module_count = length(equipment)
+	if(!module_count)
+		return TRUE
 	var/obj/item/mecha_parts/mecha_equipment/current = modifiers[SHIFT_CLICK] ? selected_right : selected
-	var/obj/item/mecha_parts/mecha_equipment/next_module
-	if(!(current in selectable_equipment))
-		next_module = delta_y < 0 ? selectable_equipment[1] : selectable_equipment[length(selectable_equipment)]
-	else
-		next_module = delta_y < 0 ? next_list_item(current, selectable_equipment) : previous_list_item(current, selectable_equipment)
-	if(modifiers[SHIFT_CLICK])
-		selected_right = next_module
-	else
-		selected = next_module
-	next_module.update_equip_info()
-	return COMSIG_MOB_CANCEL_MOUSEWHEELON
+	var/step = delta_y < 0 ? 1 : -1
+	var/index = equipment.Find(current)
+	if(!index || !current.selectable || current.ui_toggle_action)
+		index = step > 0 ? 0 : 1
+	// Обходим установленное оборудование без временного списка на каждом событии колеса.
+	for(var/attempt in 1 to module_count)
+		index = WRAP(index + step, 1, module_count + 1)
+		var/obj/item/mecha_parts/mecha_equipment/next_module = equipment[index]
+		if(!next_module.selectable || next_module.ui_toggle_action)
+			continue
+		if(next_module == current)
+			return TRUE
+		if(modifiers[SHIFT_CLICK])
+			selected_right = next_module
+		else
+			selected = next_module
+		next_module.update_equip_info()
+		return TRUE
+	return TRUE
 
 /obj/vehicle/sealed/mecha/proc/on_mouseclick(mob/user, atom/target, params)
 	SIGNAL_HANDLER
@@ -1374,7 +1379,7 @@
 		return
 	RegisterSignal(M, COMSIG_MOB_DEATH, PROC_REF(mob_exit))
 	RegisterSignal(M, COMSIG_MOB_CLICKON, PROC_REF(on_mouseclick))
-	RegisterSignal(M, COMSIG_MOB_MOUSEWHEELON, PROC_REF(on_mousewheel))
+	M.register_mousewheel_handler(src, PROC_REF(on_mousewheel), MOUSEWHEEL_PRIORITY_MECHA)
 	RegisterSignal(M, COMSIG_MOB_SAY, PROC_REF(display_speech_bubble))
 	RegisterSignal(M, COMSIG_MOVABLE_TELEPORTED, PROC_REF(on_occupant_displaced))
 	RegisterSignal(M, COMSIG_MOB_CLIENT_LOGIN, PROC_REF(disable_occupant_popup_menus))
@@ -1389,7 +1394,7 @@
 /obj/vehicle/sealed/mecha/remove_occupant(mob/M)
 	UnregisterSignal(M, COMSIG_MOB_DEATH)
 	UnregisterSignal(M, COMSIG_MOB_CLICKON)
-	UnregisterSignal(M, COMSIG_MOB_MOUSEWHEELON)
+	M.unregister_mousewheel_handler(src)
 	UnregisterSignal(M, COMSIG_MOB_SAY)
 	UnregisterSignal(M, COMSIG_MOVABLE_TELEPORTED)
 	UnregisterSignal(M, list(COMSIG_MOB_CLIENT_LOGIN, COMSIG_MOB_CLIENT_LOGOUT))

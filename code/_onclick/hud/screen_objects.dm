@@ -471,6 +471,23 @@
 	QDEL_LIST_ASSOC_VAL(hover_overlays_cache)
 	return ..()
 
+/atom/movable/screen/zone_sel/set_new_hud(datum/hud/hud_owner)
+	var/mob/previous_owner = get_mob()
+	if(previous_owner)
+		previous_owner.unregister_mousewheel_handler(src)
+	. = ..()
+	if(iscarbon(hud_owner?.mymob))
+		hud_owner.mymob.register_mousewheel_handler(src, PROC_REF(on_mousewheel))
+
+/atom/movable/screen/zone_sel/proc/on_mousewheel(mob/user, atom/target, delta_x, delta_y, list/modifiers)
+	if(!delta_y || user != get_mob() || user.hud_used?.zone_select != src)
+		return FALSE
+	var/static/list/zones = BODY_ZONE_LIST_ALL
+	if(!(user.zone_selected in zones))
+		return FALSE
+	var/next_zone = delta_y < 0 ? next_list_item(user.zone_selected, zones) : previous_list_item(user.zone_selected, zones)
+	return set_selected_zone(next_zone, user)
+
 /atom/movable/screen/zone_sel/Click(location, control,params)
 	if(isobserver(usr))
 		return

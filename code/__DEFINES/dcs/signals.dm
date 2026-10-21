@@ -302,9 +302,6 @@
 	#define COMPONENT_BLOCK_DEATH_BROADCAST 1					//stops the death from being broadcasted in deadchat.
 #define COMSIG_MOB_CLICKON "mob_clickon"						//from base of mob/clickon(): (atom/A, params)
 	#define COMSIG_MOB_CANCEL_CLICKON 1
-// Из /mob/MouseWheelOn(): (atom/target, delta_x, delta_y, params).
-#define COMSIG_MOB_MOUSEWHEELON "mob_mousewheelon"
-	#define COMSIG_MOB_CANCEL_MOUSEWHEELON 1
 #define COMSIG_MOB_GHOSTIZE "mob_ghostize"						//from base of mob/Ghostize(): (can_reenter_corpse, special, penalize)
 	#define COMPONENT_BLOCK_GHOSTING (1<<0)
 	#define COMPONENT_DO_NOT_PENALIZE_GHOSTING (1<<1)

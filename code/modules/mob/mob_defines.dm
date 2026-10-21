@@ -158,6 +158,8 @@
 	var/list/mousemove_intercept_objects
 
 	var/datum/click_intercept
+	// Постоянные обработчики колеса: колбек -> приоритет, по убыванию приоритета.
+	var/list/mousewheel_handlers
 
 	var/registered_z
 
