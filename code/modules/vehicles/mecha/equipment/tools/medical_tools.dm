@@ -357,7 +357,8 @@
 
 
 /obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/Topic(href,href_list)
-	..()
+	if(..())
+		return
 	if (href_list["toggle_mode"])
 		mode = !mode
 		update_equip_info()

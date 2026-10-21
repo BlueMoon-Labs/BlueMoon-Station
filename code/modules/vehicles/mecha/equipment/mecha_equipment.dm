@@ -135,7 +135,9 @@
 
 
 /obj/item/mecha_parts/mecha_equipment/Topic(href,href_list)
-	if(href_list["detach"])
+	if(!chassis || !(usr in chassis.occupants) || usr.incapacitated())
+		return TRUE
+	if(href_list["detach"] && detachable)
 		detach()
 
 /obj/item/mecha_parts/mecha_equipment/log_message(message, message_type=LOG_GAME, color=null, log_globally, atom/target = null)
