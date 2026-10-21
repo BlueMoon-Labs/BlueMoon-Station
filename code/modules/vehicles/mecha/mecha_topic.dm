@@ -255,7 +255,7 @@
 	return list(
 		"name" = name,
 		"mech_image" = ui_preview_icon,
-		"integrity" = obj_integrity,
+		"integrity" = round(obj_integrity),
 		"integrity_max" = max_integrity,
 		"power_level" = cell?.charge,
 		"power_max" = cell?.maxcharge,
