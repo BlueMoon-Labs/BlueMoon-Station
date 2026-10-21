@@ -506,7 +506,7 @@
 	id = "ripley_mk2_kit"
 	build_type = MECHFAB
 	build_path = /obj/item/mecha_parts/mecha_equipment/ripleyupgrade
-	materials = list(/datum/material/titanium=15000)
+	materials = list(/datum/material/iron=20000, /datum/material/plasma=20000)
 	construction_time = 200
 	category = list("Exosuit Equipment")
 
