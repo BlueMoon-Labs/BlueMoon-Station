@@ -97,11 +97,20 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 		// Create the heirloom item
 		heirloom = new heirloom_type(get_turf(quirk_holder))
 		heirloom.item_flags |= FAMILY_HEIRLOOM
-	// Новую реликвию надеваем или кладём в рюкзак; при необходимости общий прок создаст рюкзак.
-	if(spawn_items && !human_holder.contains_atom(heirloom))
-		if(human_holder.equip_to_appropriate_slot(heirloom))
+	// Лодаут может сразу положить реликвию в сумку; сначала всё равно пробуем надеть её.
+	var/already_equipped = (heirloom in human_holder.get_equipped_items(TRUE))
+	var/obj/item/clothing/accessory/accessory = heirloom
+	if(istype(accessory) && accessory.current_uniform)
+		already_equipped = human_holder.contains_atom(accessory.current_uniform)
+	if(spawn_items && !already_equipped)
+		var/attached = FALSE
+		if(istype(accessory))
+			var/obj/item/clothing/attach_target = human_holder.get_item_by_slot(accessory.accessory_slot)
+			if(istype(attach_target))
+				attached = attach_target.attach_accessory(accessory, human_holder, TRUE)
+		if(attached || human_holder.equip_to_appropriate_slot(heirloom))
 			where = "В твоём снаряжении"
-		else
+		else if(!human_holder.contains_atom(heirloom))
 			where = human_holder.equip_in_one_of_slots(heirloom, list("В рюкзаке" = ITEM_SLOT_BACKPACK), qdel_on_fail = FALSE, critical = TRUE)
 			if(where == ITEM_SLOT_BACK)
 				where = "В рюкзаке"
