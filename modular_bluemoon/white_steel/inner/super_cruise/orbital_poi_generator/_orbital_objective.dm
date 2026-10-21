@@ -224,7 +224,7 @@
 /datum/orbital_objective/proc/snapshot_expedition_crew()
 	var/obj/docking_port/mobile/exploration = SSshuttle.getShuttle("exploration")
 	if(!exploration)
-		expedition_crew_ckeys = null
+		expedition_crew_ckeys = list()
 		return
 	expedition_crew_ckeys = list()
 	for(var/mob/living/carbon/human/H as() in GLOB.human_list)

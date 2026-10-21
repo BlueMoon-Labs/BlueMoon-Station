@@ -169,6 +169,8 @@
 		return
 	if(mob_to_recover.stat == DEAD)
 		return
+	if(is_restrained_target())
+		return
 	objective_ended = TRUE
 	headhunt_target_escaped = TRUE
 	var/mob/living/M = mob_to_recover

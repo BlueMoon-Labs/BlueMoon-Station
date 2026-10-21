@@ -85,8 +85,10 @@
 			if(exploration_home)
 				var/obj/docking_port/mobile/exploration_port = SSshuttle.getShuttle("exploration")
 				if(exploration_port && exploration_port.mode == SHUTTLE_IDLE)
-					SSshuttle.moveShuttle("exploration", "exploration_home", 1)
-					return
+					if(exploration_port.destination != exploration_home)
+						return
+					if(SSshuttle.moveShuttle("exploration", "exploration_home", 1) == 0)
+						return
 		MOVE_ORBITAL_BODY(src, rand(-2000, 2000), rand(-2000, 2000))
 		velocity.x = 0
 		velocity.y = 0

@@ -174,6 +174,7 @@ PROCESSING_SUBSYSTEM_DEF(orbits)
 		return "Задание недоступно."
 	if(current_objective)
 		return "Задание уже выбрано и должно быть выполнено."
+	objective.snapshot_expedition_crew()
 	objective.on_assign(objective_computer)
 	objective.generate_attached_beacon()
 	current_objective = objective
