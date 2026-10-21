@@ -40,6 +40,36 @@
 	SSblackbox.record_feedback("tally", "mechas_created", 1, M.name)
 	QDEL_NULL(parent)
 
+/datum/component/construction/mecha/action(datum/source, obj/item/I, mob/living/user)
+	if(!istype(I, /obj/item/storage/part_replacer))
+		return ..()
+	var/obj/item/storage/part_replacer/replacer = I
+	if(!user.Adjacent(parent) || SEND_SIGNAL(replacer, COMSIG_IS_STORAGE_LOCKED, user, TRUE))
+		return COMPONENT_NO_AFTERATTACK
+	var/list/parts = replacer.get_sorted_parts()
+	var/installed = FALSE
+	// Не пропускаем этапы с инструментами и не выполняем обратные шаги сборки.
+	while(!QDELETED(src) && !QDELETED(parent))
+		var/list/current_step = steps[index]
+		var/part_type = current_step["key"]
+		if(!ispath(part_type, /obj/item))
+			break
+		var/step_completed = FALSE
+		for(var/obj/item/part as anything in parts)
+			if(QDELETED(part) || part.loc != replacer || !istype(part, part_type))
+				continue
+			if(check_step(part, user))
+				step_completed = TRUE
+				installed = TRUE
+				break
+		if(!step_completed)
+			break
+	if(installed)
+		replacer.play_rped_sound()
+	else
+		to_chat(user, span_warning("В RPED нет нужной детали либо текущий этап сборки требует инструмент."))
+	return COMPONENT_NO_AFTERATTACK
+
 // Default proc to generate mech steps.
 // Override if the mech needs an entirely custom process (See HONK mech)
 // Otherwise override specific steps as needed (Ripley, Clarke, Phazon)

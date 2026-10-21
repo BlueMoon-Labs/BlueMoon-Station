@@ -169,6 +169,21 @@
 
 /obj/vehicle/sealed/mecha/attackby(obj/item/W, mob/user, params)
 
+	if(istype(W, /obj/item/storage/part_replacer))
+		if(construction_state != MECHA_OPEN_HATCH)
+			to_chat(user, span_warning("Сначала откройте люк силового отсека."))
+			return
+		var/obj/item/storage/part_replacer/replacer = W
+		var/list/needed_parts = list()
+		if(!cell)
+			needed_parts[/obj/item/stock_parts/cell] = 1
+		if(!scanmod)
+			needed_parts[/obj/item/stock_parts/scanning_module] = 1
+		if(!capacitor)
+			needed_parts[/obj/item/stock_parts/capacitor] = 1
+		replacer.install_parts(src, user, needed_parts)
+		return
+
 	if(istype(W, /obj/item/mmi))
 		if(mmi_move_inside(W,user))
 			to_chat(user, span_notice("Соединение между [src] и [W] успешно установлено."))
@@ -187,13 +202,14 @@
 	if(istype(W, /obj/item/stock_parts/cell))
 		if(construction_state == MECHA_OPEN_HATCH)
 			if(!cell)
-				if(!user.transferItemToLoc(W, src, silent = FALSE))
+				if(!(istype(W.loc, /obj/item/storage/part_replacer) ? W.remove_item_from_storage(src) : user.transferItemToLoc(W, src, silent = FALSE)))
 					return
 				var/obj/item/stock_parts/cell/C = W
 				to_chat(user, span_notice("Вы устанавливаете батарею."))
 				playsound(src, 'sound/items/screwdriver2.ogg', 50, FALSE)
 				cell = C
 				log_message("Батарея установлена", LOG_MECHA)
+				return TRUE
 			else
 				to_chat(user, span_warning("Батарея уже установлена!"))
 		return
@@ -201,13 +217,14 @@
 	if(istype(W, /obj/item/stock_parts/scanning_module))
 		if(construction_state == MECHA_OPEN_HATCH)
 			if(!scanmod)
-				if(!user.transferItemToLoc(W, src))
+				if(!(istype(W.loc, /obj/item/storage/part_replacer) ? W.remove_item_from_storage(src) : user.transferItemToLoc(W, src)))
 					return
 				to_chat(user, span_notice("Вы устанавливаете сканирующий модуль."))
 				playsound(src, 'sound/items/screwdriver2.ogg', 50, FALSE)
 				scanmod = W
 				log_message("[W] установлен", LOG_MECHA)
 				update_part_values()
+				return TRUE
 			else
 				to_chat(user, span_warning("Сканирующий модуль уже установлен!"))
 		return
@@ -215,13 +232,14 @@
 	if(istype(W, /obj/item/stock_parts/capacitor))
 		if(construction_state == MECHA_OPEN_HATCH)
 			if(!capacitor)
-				if(!user.transferItemToLoc(W, src))
+				if(!(istype(W.loc, /obj/item/storage/part_replacer) ? W.remove_item_from_storage(src) : user.transferItemToLoc(W, src)))
 					return
 				to_chat(user, span_notice("Вы устанавливаете конденсатор."))
 				playsound(src, 'sound/items/screwdriver2.ogg', 50, FALSE)
 				capacitor = W
 				log_message("[W] установлен", LOG_MECHA)
 				update_part_values()
+				return TRUE
 			else
 				to_chat(user, span_warning("Конденсатор уже установлен!"))
 		return
@@ -307,17 +325,20 @@
 			return
 		clearInternalDamage(MECHA_INT_TANK_BREACH)
 		to_chat(user, span_notice("Вы починили повреждённую газовую канистру."))
-		return
+		if(obj_integrity >= max_integrity)
+			return
 	if(obj_integrity < max_integrity)
 		if(INTERACTING_WITH(user, src))
 			return
 		var/proficient_worker = HAS_TRAIT(user.mind, TRAIT_MECHA_EXPERT)
-		if(!W.use_tool(src, user, proficient_worker ? 3 SECONDS : 6 SECONDS, volume=50, amount=1))
+		if(!W.tool_start_check(user, amount = 1))
 			return
-		user.visible_message(span_notice("[user] чинит часть повреждений [name]."), span_notice("Вы чините часть повреждений [src]."))
-		obj_integrity += min(10, max_integrity-obj_integrity)
-		if(obj_integrity == max_integrity)
-			to_chat(user, span_notice("Похоже, повреждений больше нет."))
+		while(obj_integrity < max_integrity)
+			if(!W.use_tool(src, user, proficient_worker ? 3 SECONDS : 6 SECONDS, volume = 50, amount = 1))
+				return
+			user.visible_message(span_notice("[user] чинит часть повреждений [name]."), span_notice("Вы чините часть повреждений [src]."))
+			obj_integrity += min(10, max_integrity - obj_integrity)
+		to_chat(user, span_notice("Похоже, повреждений больше нет."))
 		return
 	to_chat(user, span_warning("Целостность [name] не нарушена!"))
 
