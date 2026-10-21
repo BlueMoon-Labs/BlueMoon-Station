@@ -123,7 +123,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/drill/can_attach(obj/vehicle/sealed/mecha/M as obj)
 	if(..())
-		if(istype(M, /obj/vehicle/sealed/mecha/working) || istype(M, /obj/vehicle/sealed/mecha/combat))
+		if(M.is_emagged() || istype(M, /obj/vehicle/sealed/mecha/working) || istype(M, /obj/vehicle/sealed/mecha/combat))
 			return TRUE
 	return FALSE
 
@@ -193,7 +193,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/mining_scanner/can_attach(obj/vehicle/sealed/mecha/M as obj)
 	if(..())
-		if(istype(M, /obj/vehicle/sealed/mecha/working))
+		if(M.is_emagged() || istype(M, /obj/vehicle/sealed/mecha/working))
 			return TRUE
 	return FALSE
 
@@ -201,7 +201,7 @@
 	if(!loc)
 		STOP_PROCESSING(SSfastprocess, src)
 		qdel(src)
-	if(istype(loc, /obj/vehicle/sealed/mecha/working) && scanning_time <= world.time)
+	if(chassis && scanning_time <= world.time)
 		if(!LAZYLEN(chassis?.occupants))
 			return
 		scanning_time = world.time + equip_cooldown

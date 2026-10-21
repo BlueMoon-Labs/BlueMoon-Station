@@ -108,6 +108,6 @@
 	fire_sound = 'sound/weapons/neovgre_laser.ogg'
 
 /obj/item/mecha_parts/mecha_equipment/weapon/energy/laser/heavy/neovgre/can_attach(obj/vehicle/sealed/mecha/combat/neovgre/M)
-	if(istype(M))
+	if(..() && (M.is_emagged() || istype(M)))
 		return TRUE
 	return FALSE

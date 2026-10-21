@@ -261,7 +261,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/banana_mortar/bombanana/can_attach(obj/vehicle/sealed/mecha/combat/honker/M)
 	if(..())
-		if(istype(M))
+		if(M.is_emagged() || istype(M))
 			return TRUE
 	return FALSE
 
@@ -279,7 +279,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/flashbang/tearstache/can_attach(obj/vehicle/sealed/mecha/combat/honker/M)
 	if(..())
-		if(istype(M))
+		if(M.is_emagged() || istype(M))
 			return TRUE
 	return FALSE
 

@@ -1106,19 +1106,20 @@
 	if(obj_flags & EMAGGED)
 		return FALSE
 	obj_flags |= EMAGGED
-	log_message("Emagged - DNA lock removed, one extra equipment slot installed.", LOG_MECHA)
+	log_message("Взлом емагом: снят ДНК-замок, добавлен слот снаряжения и отключены ограничения совместимости модулей.", LOG_MECHA)
 	log_combat(user, src, "emagged", E)
-	to_chat(user, "<span class='notice'>Вы замыкаете контрольную плату [src]. Блокировка ДНК снята, система управления снаряжением перекомпилирована под дополнительный слот.</span>")
+	to_chat(user, "<span class='notice'>Вы замыкаете контрольную плату [src]. Блокировка ДНК снята, добавлен слот снаряжения и отключены ограничения совместимости модулей.</span>")
 	if(dna_lock)
 		dna_lock = null
 		dna_lock_name = null
 	max_equip++
 	user.visible_message(
 		"<span class='warning'>[user] прикладывает что-то к контрольной панели [src]...</span>",
-		"<span class='notice'>Свободных слотов снаряжения теперь: [max_equip].</span>"
+		"<span class='notice'>Слотов снаряжения теперь: [max_equip].</span>"
 	)
 	do_sparks(5, TRUE, src)
 	playsound(src, 'sound/effects/sparks1.ogg', 50)
+	SStgui.update_uis(src)
 	return TRUE
 
 /obj/vehicle/sealed/mecha/proc/is_emagged()

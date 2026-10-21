@@ -8,7 +8,7 @@
 	START_PROCESSING(SSobj, src)
 
 /obj/item/mecha_parts/mecha_equipment/medical/can_attach(obj/vehicle/sealed/mecha/medical/M)
-	if(..() && istype(M))
+	if(..() && (M.is_emagged() || istype(M)))
 		return TRUE
 
 
@@ -219,7 +219,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/can_attach(obj/vehicle/sealed/mecha/medical/M)
 	. = ..()
-	if(!istype(M))
+	if(!M.is_emagged() && !istype(M))
 		return FALSE
 
 /obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/action(mob/source, atom/movable/target, params)

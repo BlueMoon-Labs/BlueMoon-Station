@@ -18,13 +18,14 @@
 
 /obj/item/mecha_parts/mecha_equipment/hydraulic_clamp/can_attach(obj/vehicle/sealed/mecha/working/ripley/M)
 	if(..())
-		if(istype(M))
+		if(M.is_emagged() || istype(M))
 			return TRUE
 	return FALSE
 
-/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp/attach(obj/vehicle/sealed/mecha/M)
+// Только у рипли есть карго отсек
+/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp/attach(/obj/vehicle/sealed/mecha/working/ripley/M)
 	..()
-	cargo_holder = M
+	cargo_holder = istype(M) ? M : null
 	return
 
 /obj/item/mecha_parts/mecha_equipment/hydraulic_clamp/detach(atom/moveto = null)
@@ -34,9 +35,10 @@
 /obj/item/mecha_parts/mecha_equipment/hydraulic_clamp/action(mob/source, atom/target, params)
 	if(!action_checks(target))
 		return
-	if(!cargo_holder)
-		return
 	if(ismecha(target))
+		if(!cargo_holder)
+			to_chat(source, span_warning("У этого меха нет грузового отсека с боезапасом."))
+			return
 		var/obj/vehicle/sealed/mecha/M = target
 		var/have_ammo
 		for(var/obj/item/mecha_ammo/box in cargo_holder.cargo)
@@ -60,6 +62,9 @@
 			D.try_to_crowbar(src, source)
 			return
 		if(!O.anchored)
+			if(!cargo_holder)
+				to_chat(source, span_warning("У этого меха нет грузового отсека для погрузки."))
+				return
 			if(cargo_holder.cargo.len < cargo_holder.cargo_capacity)
 				chassis.visible_message("<span class='notice'>[chassis] lifts [target] and starts to load it into cargo compartment.</span>")
 				O.set_anchored(TRUE)
@@ -115,11 +120,12 @@
 /obj/item/mecha_parts/mecha_equipment/hydraulic_clamp/kill/action(mob/source, atom/target, params)
 	if(!action_checks(target))
 		return
-	if(!cargo_holder)
-		return
 	if(isobj(target))
 		var/obj/O = target
 		if(!O.anchored)
+			if(!cargo_holder)
+				to_chat(source, span_warning("У этого меха нет грузового отсека для погрузки."))
+				return
 			if(cargo_holder.cargo.len < cargo_holder.cargo_capacity)
 				chassis.visible_message("<span class='notice'>[chassis] lifts [target] and starts to load it into cargo compartment.</span>")
 				O.set_anchored(TRUE)
@@ -247,7 +253,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/extinguisher/can_attach(obj/vehicle/sealed/mecha/working/M as obj)
 	if(..())
-		if(istype(M))
+		if(M.is_emagged() || istype(M))
 			return TRUE
 	return FALSE
 
@@ -401,6 +407,9 @@
 	N.dna_lock = M.dna_lock
 	N.dna_lock_name = M.dna_lock_name
 	N.mecha_flags = M.mecha_flags
+	if(M.is_emagged())
+		N.obj_flags |= EMAGGED
+		N.max_equip++
 	N.strafe = M.strafe
 	N.stabilizers = M.stabilizers
 	N.obj_integrity = M.obj_integrity //This is not a repair tool
