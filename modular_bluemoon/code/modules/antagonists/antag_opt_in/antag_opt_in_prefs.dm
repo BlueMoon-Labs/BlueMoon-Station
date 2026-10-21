@@ -19,7 +19,11 @@
 /datum/preferences/proc/antag_opt_in_pref_html()
 	var/level = get_antag_opt_in_pref_level()
 	var/default_suffix = isnull(antag_opt_in_level) ? " (по умолчанию)" : ""
-	return "<span title='Может ли персонаж выпасть целью в заданиях антагонистов. [GLOB.antag_opt_in_descriptions["[level]"]] [GLOB.antag_opt_in_disclaimer]'>Задания антагов : <a href='?_src_=prefs;preference=antag_opt_in_level;task=input'><font color='[antag_opt_in_level_color(level)]'>[antag_opt_in_level_name(level)][default_suffix]</font></a></span><br>"
+	var/forced_note = ""
+	var/forced_level = CONFIG_GET(number/antag_opt_in_antag_enabled_min)
+	if(forced_level > level && antag_opt_in_prefs_force_minimum(src))
+		forced_note = " <font color='[antag_opt_in_level_color(forced_level)]'>в раунде не ниже \"[antag_opt_in_level_name(forced_level)]\": включены антаг-роли</font>"
+	return "<span title='Может ли персонаж выпасть целью в заданиях антагонистов. [GLOB.antag_opt_in_descriptions["[level]"]] [GLOB.antag_opt_in_disclaimer] [antag_opt_in_thresholds_text()]'>Задания антагов : <a href='?_src_=prefs;preference=antag_opt_in_level;task=input'><font color='[antag_opt_in_level_color(level)]'>[antag_opt_in_level_name(level)][default_suffix]</font></a>[forced_note]</span><br>"
 
 /datum/preferences/proc/choose_antag_opt_in_level(mob/user)
 	var/list/choices = list()
