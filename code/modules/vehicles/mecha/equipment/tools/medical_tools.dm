@@ -26,17 +26,26 @@
 
 /obj/item/mecha_parts/mecha_equipment/medical/sleeper
 	name = "mounted sleeper"
-	desc = "Оборудование для медицинских экзокостюмов. Установленная медицинская капсула, стабилизирующая пациентов и способная вводить реагенты из резервуара экзокостюма."
+	desc = "Медицинская капсула c собственным микроклиматом и отключаемым стазисом. Вводит встроенные препараты и реагенты из резервуара экзокостюма."
 	icon = 'icons/obj/machines/sleeper.dmi'
 	icon_state = "sleeper"
 	energy_drain = 20
 	range = MECHA_MELEE
 	equip_cooldown = 20
+	salvageable = 0
 	var/mob/living/carbon/patient = null
 	var/inject_amount = 10
-	salvageable = 0
+	var/obj/machinery/sleeper/mecha/sleeper
+	var/stasis_enabled = FALSE
+	var/life_support_active = FALSE
+
+/obj/item/mecha_parts/mecha_equipment/medical/sleeper/Initialize(mapload)
+	. = ..()
+	sleeper = new(src)
 
 /obj/item/mecha_parts/mecha_equipment/medical/sleeper/Destroy()
+	go_out()
+	QDEL_NULL(sleeper)
 	for(var/atom/movable/AM in src)
 		AM.forceMove(get_turf(src))
 	return ..()
@@ -44,22 +53,32 @@
 /obj/item/mecha_parts/mecha_equipment/medical/sleeper/Exit(atom/movable/O)
 	return FALSE
 
+/obj/item/mecha_parts/mecha_equipment/medical/sleeper/attack_self(mob/user)
+	if(sleeper.ui_status(user) == UI_INTERACTIVE)
+		sleeper.ui_interact(user)
+
 /obj/item/mecha_parts/mecha_equipment/medical/sleeper/action(mob/source, mob/living/carbon/target, params)
 	if(!action_checks(target))
 		return
 	if(!istype(target))
 		return
-	if(!patient_insertion_check(target))
+	if(!patient_insertion_check(target, source))
 		return
 	to_chat(source, "[icon2html(src, source)][span_notice("Вы начинаете помещать [target] в [src]...")]")
 	chassis.visible_message(span_warning("[chassis] начинает помещать [target] в [src]."))
 	if(do_after(source, equip_cooldown, target=target))
-		if(!chassis || (src != chassis.selected && src != chassis.selected_right) || !(get_dir(chassis, target)&chassis.dir))
+		if(!action_checks(target) || !chassis.Adjacent(target) || (src != chassis.selected && src != chassis.selected_right) || !(get_dir(chassis, target)&chassis.dir))
 			return
 		if(!patient_insertion_check(target, source))
 			return
-		target.forceMove(src)
+		sleeper.close_machine(target)
+		if(sleeper.occupant != target)
+			return
 		patient = target
+		patient.ExtinguishMob()
+		set_life_support(TRUE)
+		if(stasis_enabled && life_support_active)
+			playsound(chassis, 'sound/effects/spray.ogg', 5, TRUE, 2, frequency = rand(24750, 26550))
 		START_PROCESSING(SSobj, src)
 		update_equip_info()
 		to_chat(source, "[icon2html(src, source)][span_notice("[target] помещён в [src]. Система жизнеобеспечения включена.")]")
@@ -82,11 +101,12 @@
 /obj/item/mecha_parts/mecha_equipment/medical/sleeper/proc/go_out()
 	if(!patient)
 		return
-	patient.forceMove(get_turf(src))
-	to_chat(chassis.occupants, "[icon2html(src, chassis.occupants)][span_notice("[patient] извлечён из капсулы. Система жизнеобеспечения отключена.")]")
-	log_message("[patient] извлечён из капсулы. Система жизнеобеспечения отключена.", LOG_MECHA)
-	STOP_PROCESSING(SSobj, src)
-	patient = null
+	var/mob/living/carbon/leaving_patient = patient
+	set_life_support(FALSE)
+	sleeper.open_machine()
+	if(chassis)
+		to_chat(chassis.occupants, "[icon2html(src, chassis.occupants)][span_notice("[leaving_patient] извлечён из капсулы. Система жизнеобеспечения отключена.")]")
+	log_message("[leaving_patient] извлечён из капсулы. Система жизнеобеспечения отключена.", LOG_MECHA)
 	update_equip_info()
 
 /obj/item/mecha_parts/mecha_equipment/medical/sleeper/detach()
@@ -104,7 +124,9 @@
 	if(patient)
 		patient_data = list(
 			"patient_name" = patient.name,
-			"patient_health" = patient.health / patient.maxHealth,
+			"patient_health" = patient.health,
+			"max_health" = patient.maxHealth,
+			"min_health" = HEALTH_THRESHOLD_DEAD,
 			"patient_state" = patient.stat == DEAD ? "Мёртв" : patient.stat == CONSCIOUS ? "В сознании" : "Без сознания",
 			"core_temp" = round(patient.bodytemperature - T0C, 0.1),
 			"brute_loss" = patient.getBruteLoss(),
@@ -118,7 +140,16 @@
 		if(gun)
 			for(var/datum/reagent/reagent as anything in gun.reagents.reagent_list)
 				injectible_reagents += list(list("name" = reagent.name, "volume" = round(reagent.volume, 0.1), "id" = REF(reagent)))
-	.["snowflake"] = list("kind" = "sleeper", "patient" = patient_data, "contained_reagents" = contained_reagents, "injectible_reagents" = injectible_reagents)
+	var/list/sleeper_data = sleeper.ui_data()
+	.["snowflake"] = list(
+		"kind" = "sleeper",
+		"patient" = patient_data,
+		"contained_reagents" = contained_reagents,
+		"injectible_reagents" = injectible_reagents,
+		"chems" = sleeper_data["chems"],
+		"stasis_enabled" = stasis_enabled,
+		"life_support_active" = life_support_active,
+	)
 
 /obj/item/mecha_parts/mecha_equipment/medical/sleeper/handle_ui_act(action, list/params)
 	. = ..()
@@ -127,6 +158,21 @@
 	if(action == "eject")
 		go_out()
 		return TRUE
+	if(action == "stasis")
+		stasis_enabled = !stasis_enabled
+		playsound(chassis, stasis_enabled ? 'sound/machines/synth_yes.ogg' : 'sound/machines/synth_no.ogg', 50, TRUE, frequency = rand(5120, 8800))
+		set_life_support(life_support_active && chassis && !chassis.equipment_disabled && chassis.has_charge(energy_drain))
+		update_equip_info()
+		return TRUE
+	if(action == "inject_chem")
+		if(!patient || !sleeper.is_operational())
+			return FALSE
+		var/chem = text2path(params["chem"])
+		if(!sleeper.chem_allowed(chem) || !(chem in sleeper.available_chems))
+			return FALSE
+		. = sleeper.inject_chem(chem, usr)
+		update_equip_info()
+		return
 	if(action == "inject_reagent")
 		var/obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/gun = locate() in chassis.equipment
 		if(!gun)
@@ -141,8 +187,10 @@
 /obj/item/mecha_parts/mecha_equipment/medical/sleeper/proc/inject_reagent(datum/reagent/R,obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/SG)
 	if(!R || !patient || !SG || !(SG in chassis.equipment))
 		return FALSE
+	if(!sleeper.is_operational() || !sleeper.chem_allowed(R.type))
+		return FALSE
 	var/to_inject = min(R.volume, inject_amount)
-	if(to_inject && patient.reagents.get_reagent_amount(R.type) + to_inject <= inject_amount*2)
+	if(to_inject)
 		to_chat(chassis.occupants, "[icon2html(src, chassis.occupants)][span_notice("Введение [to_inject] ед. реагента [R.name] пациенту [patient].")]")
 		log_message("Введение [to_inject] ед. реагента [R.name] пациенту [patient].", LOG_MECHA)
 		log_combat(chassis.occupants, patient, "injected", "[name] ([R] - [to_inject] units)")
@@ -155,26 +203,34 @@
 
 /obj/item/mecha_parts/mecha_equipment/medical/sleeper/process()
 	if(..())
+		set_life_support(FALSE)
+		return PROCESS_KILL
+	if(!patient)
 		return
-	if(!chassis.has_charge(energy_drain))
-		log_message("Выключен.", LOG_MECHA)
-		to_chat(chassis.occupants, "[icon2html(src, chassis.occupants)][span_warning("[src] отключён: нет питания.")]")
-		STOP_PROCESSING(SSobj, src)
-		return
-	var/mob/living/carbon/M = patient
-	if(!M)
-		return
-	if(M.health > 0)
-		M.adjustOxyLoss(-1)
-	M.AdjustStun(-80)
-	M.AdjustKnockdown(-80)
-	M.AdjustParalyzed(-80)
-	M.AdjustImmobilized(-80)
-	M.AdjustUnconscious(-80)
-	if(M.reagents.get_reagent_amount(/datum/reagent/medicine/epinephrine) < 5)
-		M.reagents.add_reagent(/datum/reagent/medicine/epinephrine, 5)
-	chassis.use_power(energy_drain)
+	var/powered = !chassis.equipment_disabled && chassis.has_charge(energy_drain) && chassis.use_power(energy_drain)
+	if(!powered && life_support_active)
+		to_chat(chassis.occupants, "[icon2html(src, chassis.occupants)][span_warning("[src] отключён: жизнеобеспечение и стазис недоступны.")]")
+	set_life_support(powered)
 	update_equip_info()
+
+/obj/item/mecha_parts/mecha_equipment/medical/sleeper/proc/set_life_support(enabled)
+	life_support_active = enabled && patient
+	if(life_support_active)
+		sleeper.refresh_air()
+	if(!patient)
+		return
+	if(life_support_active && stasis_enabled)
+		patient.apply_status_effect(/datum/status_effect/grouped/stasis, REF(src))
+		ADD_TRAIT(patient, TRAIT_PAINKILLER, REF(src))
+		patient.throw_alert("painkiller", /atom/movable/screen/alert/painkiller)
+	else
+		remove_patient_effects(patient)
+
+/obj/item/mecha_parts/mecha_equipment/medical/sleeper/proc/remove_patient_effects(mob/living/carbon/leaving_patient)
+	leaving_patient.remove_status_effect(/datum/status_effect/grouped/stasis, REF(src))
+	REMOVE_TRAIT(leaving_patient, TRAIT_PAINKILLER, REF(src))
+	if(!HAS_TRAIT(leaving_patient, TRAIT_PAINKILLER))
+		leaving_patient.clear_alert("painkiller")
 
 
 

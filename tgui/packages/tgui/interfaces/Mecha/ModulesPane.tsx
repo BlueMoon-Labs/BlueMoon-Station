@@ -361,30 +361,90 @@ const ModuleDetailsExtra = ({ module }: { module: MechModule }) => {
         </>
       );
     case 'sleeper':
-      return !extra.patient ? <LabeledList.Item label="Пациент">Отсутствует</LabeledList.Item> : (
+      return (
         <>
-          <LabeledList.Item label="Пациент">
-            {extra.patient.patient_name}
-            <Button icon="eject" ml={1} disabled={disabled} onClick={() => control('eject')} />
+          <LabeledList.Item label="Стазис">
+            <Button
+              icon="snowflake"
+              selected={extra.stasis_enabled}
+              content={extra.stasis_enabled ? 'Включён' : 'Выключен'}
+              tooltip="Приостанавливает биологические процессы и обмен лекарств, как стазис-стол. Требует питания."
+              disabled={disabled}
+              onClick={() => control('stasis')} />
           </LabeledList.Item>
-          <LabeledList.Item label="Здоровье">
-            <ProgressBar value={extra.patient.patient_health} />
-          </LabeledList.Item>
-          <LabeledList.Item label="Состояние">{extra.patient.patient_state}</LabeledList.Item>
-          <LabeledList.Item label="Температура">{extra.patient.core_temp} °C</LabeledList.Item>
-          <LabeledList.Item label="Травмы / ожоги">{extra.patient.brute_loss} / {extra.patient.burn_loss}</LabeledList.Item>
-          <LabeledList.Item label="Токсины / кислород">{extra.patient.toxin_loss} / {extra.patient.oxygen_loss}</LabeledList.Item>
-          {extra.contained_reagents.map(reagent => (
-            <LabeledList.Item key={reagent.name} label={reagent.name}>{reagent.volume} ед.</LabeledList.Item>
-          ))}
-          {extra.injectible_reagents.map(reagent => (
-            <LabeledList.Item key={reagent.id} label={reagent.name}>
-              <Button
-                content={`Ввести (${reagent.volume} ед.)`}
-                disabled={disabled}
-                onClick={() => control('inject_reagent', { reagent: reagent.id })} />
-            </LabeledList.Item>
-          ))}
+          {!extra.patient ? <LabeledList.Item label="Пациент">Отсутствует</LabeledList.Item> : (
+            <>
+              <LabeledList.Item label="Жизнеобеспечение">
+                <Box color={extra.life_support_active ? 'good' : 'bad'}>
+                  {extra.life_support_active ? 'Кислород и микроклимат в норме' : 'Нет питания'}
+                </Box>
+              </LabeledList.Item>
+              <LabeledList.Item label="Пациент">
+                {extra.patient.patient_name}
+                <Button icon="eject" ml={1} disabled={disabled} onClick={() => control('eject')} />
+              </LabeledList.Item>
+              <LabeledList.Item label="Здоровье">
+                <ProgressBar
+                  value={extra.patient.patient_health}
+                  minValue={extra.patient.min_health}
+                  maxValue={extra.patient.max_health}
+                  ranges={{
+                    good: [50, Infinity],
+                    average: [0, 50],
+                    bad: [-Infinity, 0],
+                  }} />
+              </LabeledList.Item>
+              <LabeledList.Item label="Состояние">{extra.patient.patient_state}</LabeledList.Item>
+              <LabeledList.Item label="Температура">{extra.patient.core_temp} °C</LabeledList.Item>
+              {[
+                { label: 'Травмы', value: extra.patient.brute_loss },
+                { label: 'Ожоги', value: extra.patient.burn_loss },
+                { label: 'Токсины', value: extra.patient.toxin_loss },
+                { label: 'Гипоксия', value: extra.patient.oxygen_loss },
+              ].map(damage => (
+                <LabeledList.Item key={damage.label} label={damage.label}>
+                  <ProgressBar
+                    value={damage.value}
+                    minValue={0}
+                    maxValue={extra.patient!.max_health}
+                    color="bad" />
+                </LabeledList.Item>
+              ))}
+              <LabeledList.Item label="Встроенные препараты">
+                {extra.chems.map(chem => (
+                  <Button
+                    key={chem.id}
+                    fluid
+                    content={`${chem.name} (10 ед.)`}
+                    tooltip={`Передозировка: ${chem.overdose_threshold ?? 'нет'}. Зависимость: ${chem.addiction_threshold ?? 'нет'}.`}
+                    disabled={disabled || !extra.life_support_active || !chem.allowed}
+                    onClick={() => control('inject_chem', { chem: chem.id })} />
+                ))}
+              </LabeledList.Item>
+              <LabeledList.Item>
+                <Section title="Реагенты">
+                  {extra.contained_reagents.length ? (
+                    <Table>
+                      {extra.contained_reagents.map(reagent => (
+                        <Table.Row key={reagent.name}>
+                          <Table.Cell>{reagent.name}</Table.Cell>
+                          <Table.Cell collapsing textAlign="right">{reagent.volume} ед.</Table.Cell>
+                        </Table.Row>
+                      ))}
+                    </Table>
+                  ) : <Box color="label">Отсутствуют</Box>}
+                </Section>
+              </LabeledList.Item>
+              {extra.injectible_reagents.map(reagent => (
+                <LabeledList.Item key={reagent.id} label={reagent.name}>
+                  <Button
+                    content={`Ввести (${reagent.volume} ед.)`}
+                    disabled={disabled || !extra.life_support_active}
+                    onClick={() => control('inject_reagent', { reagent: reagent.id })} />
+                </LabeledList.Item>
+              ))}
+            </>
+          )}
         </>
       );
     case 'syringe':

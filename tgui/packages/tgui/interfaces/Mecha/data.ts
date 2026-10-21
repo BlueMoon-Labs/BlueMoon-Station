@@ -7,7 +7,7 @@ export type ModuleExtra =
   | { kind: 'generator'; fuel_amount: number; max_fuel: number }
   | { kind: 'ballistic'; total_ammo: number; max_ammo: number; cache: number; cache_max: number; can_rearm: boolean; punching?: boolean; harmful?: boolean }
   | { kind: 'syringe'; mode: string; syringe: number; max_syringe: number; reagents: number; total_reagents: number; contained_reagents: Reagent[]; analyzed_reagents: { name: string; id: string; enabled: boolean }[]; synthesizing: boolean }
-  | { kind: 'sleeper'; patient: { patient_name: string; patient_health: number; patient_state: string; core_temp: number; brute_loss: number; burn_loss: number; toxin_loss: number; oxygen_loss: number } | null; contained_reagents: Reagent[]; injectible_reagents: Reagent[] };
+  | { kind: 'sleeper'; stasis_enabled: boolean; life_support_active: boolean; chems: { id: string; name: string; allowed: boolean; overdose_threshold: number | null; addiction_threshold: number | null }[]; patient: { patient_name: string; patient_health: number; max_health: number; min_health: number; patient_state: string; core_temp: number; brute_loss: number; burn_loss: number; toxin_loss: number; oxygen_loss: number } | null; contained_reagents: Reagent[]; injectible_reagents: Reagent[] };
 
 export type MechModule = {
   name: string;
