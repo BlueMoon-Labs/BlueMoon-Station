@@ -3,7 +3,6 @@
 
 
 /obj/item/mecha_parts/mecha_equipment/hydraulic_clamp
-	compatible_mecha_types = MECHA_TYPE_RIPLEY
 	name = "hydraulic clamp"
 	desc = "Оборудование для инженерных экзокостюмов. Поднимает объекты и загружает их в грузовой отсек."
 	icon_state = "mecha_clamp"
@@ -12,10 +11,11 @@
 	tool_behaviour = TOOL_RETRACTOR
 	range = MECHA_MELEE
 	toolspeed = 0.8
-	var/dam_force = 20
-	var/obj/vehicle/sealed/mecha/working/ripley/cargo_holder
 	harmful = TRUE
 	mech_flags = EXOSUIT_MODULE_RIPLEY
+	compatible_mecha_types = MECHA_TYPE_RIPLEY
+	var/dam_force = 20
+	var/obj/vehicle/sealed/mecha/working/ripley/cargo_holder
 
 // Только у рипли есть карго отсек
 /obj/item/mecha_parts/mecha_equipment/hydraulic_clamp/attach(obj/vehicle/sealed/mecha/working/ripley/M)
@@ -186,7 +186,6 @@
 
 
 /obj/item/mecha_parts/mecha_equipment/extinguisher
-	compatible_mecha_types = MECHA_TYPE_WORKING
 	name = "exosuit extinguisher"
 	desc = "Оборудование для инженерных экзокостюмов. Быстродействующий огнетушитель большой ёмкости."
 	icon_state = "mecha_exting"
@@ -194,6 +193,7 @@
 	energy_drain = 0
 	range = MECHA_MELEE|MECHA_RANGED
 	mech_flags = EXOSUIT_MODULE_WORKING
+	compatible_mecha_types = MECHA_TYPE_WORKING
 
 /obj/item/mecha_parts/mecha_equipment/extinguisher/Initialize(mapload)
 	. = ..()
@@ -345,11 +345,11 @@
 
 //Dunno where else to put this so shrug
 /obj/item/mecha_parts/mecha_equipment/ripleyupgrade
-	compatible_mecha_types = MECHA_TYPE_RIPLEY
 	name = "Ripley MK-II Conversion Kit"
 	desc = "Комплект для переоборудования автономного погрузчика APLU MK-I в более медлительную, но пригодную для космоса модель MK-II. Этот комплект нельзя удалить после установки."
 	icon_state = "tesla"
 	mech_flags = EXOSUIT_MODULE_RIPLEY
+	compatible_mecha_types = MECHA_TYPE_RIPLEY
 
 /obj/item/mecha_parts/mecha_equipment/ripleyupgrade/attach(obj/vehicle/sealed/mecha/M)
 	var/obj/vehicle/sealed/mecha/working/ripley/mkii/N = new /obj/vehicle/sealed/mecha/working/ripley/mkii(get_turf(M),1)

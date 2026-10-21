@@ -1,14 +1,9 @@
 /obj/vehicle/sealed/mecha/working/ripley
-	mecha_type = MECHA_TYPE_WORKING | MECHA_TYPE_RIPLEY
-	desc = "Автономный погрузочный агрегат MK-I. Разработан в первую очередь для тяжёлых подъёмов, Ripley может быть оснащён различным оборудованием для выполнения множества задач."
 	name = "\improper APLU MK-I \"Ripley\""
+	desc = "Автономный погрузочный агрегат MK-I. Разработан в первую очередь для тяжёлых подъёмов, Ripley может быть оснащён различным оборудованием для выполнения множества задач."
 	icon_state = "ripley"
 	silicon_icon_state = "ripley-empty"
 	movedelay = 1.5 //Move speed, lower is faster.
-	/// How fast the mech is in low pressure
-	var/fast_pressure_step_in = 1.5
-	/// How fast the mech is in normal pressure
-	var/slow_pressure_step_in = 2
 	max_temperature = 20000
 	max_integrity = 200
 	lights_power = 7
@@ -20,6 +15,11 @@
 	enclosed = FALSE //Normal ripley has an open cockpit design
 	enter_delay = 10 //can enter in a quarter of the time of other mechs
 	exit_delay = 10
+	mecha_type = MECHA_TYPE_WORKING | MECHA_TYPE_RIPLEY
+	/// How fast the mech is in low pressure
+	var/fast_pressure_step_in = 1.5
+	/// How fast the mech is in normal pressure
+	var/slow_pressure_step_in = 2
 	/// Amount of Goliath hides attached to the mech
 	var/hides = 0
 	/// List of all things in Ripley's Cargo Compartment

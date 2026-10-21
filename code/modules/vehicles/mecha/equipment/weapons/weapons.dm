@@ -2,6 +2,8 @@
 	name = "mecha weapon"
 	range = MECHA_RANGED
 	destroy_sound = 'sound/voice/borg_deathsound.ogg'
+	mech_flags = EXOSUIT_MODULE_COMBAT
+	compatible_mecha_types = MECHA_TYPE_COMBAT
 	var/projectile
 	var/fire_sound
 	var/projectiles_per_shot = 1
@@ -10,8 +12,6 @@
 	var/projectile_delay = 0
 	var/firing_effect_type = /obj/effect/temp_visual/dir_setting/firing_effect	//the visual effect appearing when the weapon is fired.
 	var/kickback = TRUE //Will using this weapon in no grav push mecha back.
-	mech_flags = EXOSUIT_MODULE_COMBAT
-	compatible_mecha_types = MECHA_TYPE_COMBAT
 
 /obj/item/mecha_parts/mecha_equipment/weapon/action(mob/source, atom/target, params)
 	if(!action_checks(target))
@@ -114,17 +114,17 @@
 	harmful = TRUE
 
 /obj/item/mecha_parts/mecha_equipment/weapon/energy/plasma
-	compatible_mecha_types = NONE
-	equip_cooldown = 10
 	name = "217-D Heavy Plasma Cutter"
 	desc = "Устройство, стреляющее резонансными плазменными импульсами на экстремальной скорости. Импульсы способны дробить камень и разрушать твёрдые препятствия."
 	icon_state = "mecha_plasmacutter"
 	lefthand_file = 'icons/mob/inhands/weapons/guns_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/guns_righthand.dmi'
+	equip_cooldown = 10
 	energy_drain = 30
 	projectile = /obj/item/projectile/plasma/adv/mech
 	fire_sound = 'sound/weapons/plasma_cutter.ogg'
 	harmful = TRUE
+	compatible_mecha_types = NONE
 
 /obj/item/mecha_parts/mecha_equipment/weapon/energy/taser
 	name = "\improper PBT \"Pacifier\" mounted taser"
@@ -137,7 +137,6 @@
 
 
 /obj/item/mecha_parts/mecha_equipment/weapon/honker
-	compatible_mecha_types = MECHA_TYPE_HONKER
 	name = "\improper HoNkER BlAsT 5000"
 	desc = "Оборудование для клоунских экзокостюмов. Распространяет веселье и радость вокруг. Хонк!"
 	icon_state = "mecha_honker"
@@ -146,6 +145,7 @@
 	range = MECHA_MELEE|MECHA_RANGED
 	kickback = FALSE
 	mech_flags = EXOSUIT_MODULE_HONK
+	compatible_mecha_types = MECHA_TYPE_HONKER
 
 /obj/item/mecha_parts/mecha_equipment/weapon/honker/action(mob/source, atom/target, params)
 	if(!action_checks(target))
@@ -413,7 +413,6 @@
 	ammo_type = "clusterbang"
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/banana_mortar
-	compatible_mecha_types = MECHA_TYPE_HONKER
 	name = "banana mortar"
 	desc = "Оборудование для клоунских экзокостюмов. Запускает банановые шкурки."
 	icon_state = "mecha_bananamrtr"
@@ -424,9 +423,9 @@
 	projectile_energy_cost = 100
 	equip_cooldown = 20
 	mech_flags = EXOSUIT_MODULE_HONK
+	compatible_mecha_types = MECHA_TYPE_HONKER
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/mousetrap_mortar
-	compatible_mecha_types = MECHA_TYPE_HONKER
 	name = "mousetrap mortar"
 	desc = "Оборудование для клоунских экзокостюмов. Запускает готовые мышеловки."
 	icon_state = "mecha_mousetrapmrtr"
@@ -437,6 +436,7 @@
 	projectile_energy_cost = 100
 	equip_cooldown = 10
 	mech_flags = EXOSUIT_MODULE_HONK
+	compatible_mecha_types = MECHA_TYPE_HONKER
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/mousetrap_mortar/proj_init(obj/item/assembly/mousetrap/armed/M)
 	M.secured = 1
@@ -444,7 +444,6 @@
 
 //Classic extending punching glove, but weaponised!
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/punching_glove
-	compatible_mecha_types = MECHA_TYPE_HONKER
 	name = "\improper Oingo Boingo Punch-face"
 	desc = "Оборудование для клоунских экзокостюмов. Доставляет веселье прямо в лицо!"
 	icon_state = "mecha_punching_glove"
@@ -458,11 +457,12 @@
 	projectile_energy_cost = 500
 	harmful = TRUE
 	diags_first = TRUE
+	mech_flags = EXOSUIT_MODULE_HONK
+	compatible_mecha_types = MECHA_TYPE_HONKER
 	/// Damage done by the glove on contact. Also used to determine throw distance (damage / 5)
 	var/punch_damage = 20
 	/// TRUE - Can toggle between lethal and non-lethal || FALSE - Cannot toggle
 	var/can_toggle_lethal = TRUE
-	mech_flags = EXOSUIT_MODULE_HONK
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/punching_glove/handle_ui_act(action, list/params)
 	. = ..()

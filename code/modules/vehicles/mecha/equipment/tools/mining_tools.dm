@@ -16,11 +16,11 @@
 	range = MECHA_MELEE
 	tool_behaviour = TOOL_DRILL
 	toolspeed = 0.9
+	mech_flags = EXOSUIT_MODULE_WORKING | EXOSUIT_MODULE_COMBAT
+	compatible_mecha_types = MECHA_TYPE_WORKING | MECHA_TYPE_COMBAT
 	var/drill_delay = 7
 	var/drill_level = DRILL_BASIC
 	var/is_drilling = 0;
-	mech_flags = EXOSUIT_MODULE_WORKING | EXOSUIT_MODULE_COMBAT
-	compatible_mecha_types = MECHA_TYPE_WORKING | MECHA_TYPE_COMBAT
 
 /obj/item/mecha_parts/mecha_equipment/drill/Initialize(mapload)
 	. = ..()
@@ -179,9 +179,9 @@
 	icon_state = "mecha_analyzer"
 	selectable = 0
 	equip_cooldown = 15
-	var/scanning_time = 0
 	mech_flags = EXOSUIT_MODULE_WORKING
 	compatible_mecha_types = MECHA_TYPE_WORKING
+	var/scanning_time = 0
 
 /obj/item/mecha_parts/mecha_equipment/mining_scanner/Initialize(mapload)
 	. = ..()

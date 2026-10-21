@@ -1,7 +1,6 @@
 /obj/vehicle/sealed/mecha/combat/honker
-	mecha_type = MECHA_TYPE_COMBAT | MECHA_TYPE_HONKER
-	desc = "Произведён \"Tyranny of Honk, INC\", этот экзокостюм разработан как тяжёлая поддержка клоунов. Используется для распространения веселья и радости жизни. ХОНК!"
 	name = "\improper H.O.N.K"
+	desc = "Произведён \"Tyranny of Honk, INC\", этот экзокостюм разработан как тяжёлая поддержка клоунов. Используется для распространения веселья и радости жизни. ХОНК!"
 	icon_state = "honker"
 	movedelay = 3
 	max_integrity = 140
@@ -14,6 +13,7 @@
 	wreckage = /obj/structure/mecha_wreckage/honker
 	mecha_flags = CANSTRAFE | IS_ENCLOSED | HAS_LIGHTS
 	max_equip = 3
+	mecha_type = MECHA_TYPE_COMBAT | MECHA_TYPE_HONKER
 	var/squeak = TRUE
 
 /obj/vehicle/sealed/mecha/combat/honker/play_stepsound()

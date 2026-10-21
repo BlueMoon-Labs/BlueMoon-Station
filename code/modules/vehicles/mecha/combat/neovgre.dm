@@ -1,9 +1,10 @@
 /obj/vehicle/sealed/mecha/combat/neovgre
-	mecha_type = MECHA_TYPE_COMBAT | MECHA_TYPE_NEOVGRE
 	name = "Neovgre, the Anima Bulwark"
 	desc = "Самое мощное творение Nezbere, могучая боевая машина несравненной мощи, о которой говорят, что она заканчивала войны за одну ночь. Вооружена тяжёлым лазером и генератором тесла-сфер. Требует пилота и стрелка."
 	icon = 'icons/mecha/neovgre.dmi'
 	icon_state = "neovgre"
+	pixel_x = -16
+	layer = ABOVE_MOB_LAYER
 	max_integrity = 500
 	deflect_chance = 40
 	armor_type = /datum/armor/neovgre
@@ -12,15 +13,14 @@
 	force = 50 //SMASHY SMASHY!!
 	movedelay = 4
 	internal_damage_threshold = 25
-	pixel_x = -16
-	layer = ABOVE_MOB_LAYER
-	var/breach_time = 100 //ten seconds till all goes to shit
-	var/recharge_rate = 100
 	internals_req_access = list()
 	wreckage = /obj/structure/mecha_wreckage/durand/neovgre
 	stepsound = 'sound/mecha/neostep2.ogg'
 	turnsound = 'sound/mecha/powerloader_step.ogg'
 	max_occupants = 2
+	mecha_type = MECHA_TYPE_COMBAT | MECHA_TYPE_NEOVGRE
+	var/breach_time = 100 //ten seconds till all goes to shit
+	var/recharge_rate = 100
 
 //override this proc if you need to split up mecha control between multiple people (see savannah_ivanov.dm)
 /obj/vehicle/sealed/mecha/combat/neovgre/auto_assign_occupant_flags(mob/M)
@@ -102,9 +102,9 @@
 	desc = "При ближайшем рассмотрении это выглядит как обломки Durand с примотанным картоном, разрисованным баллончиком!"
 
 /obj/item/mecha_parts/mecha_equipment/weapon/energy/laser/heavy/neovgre
-	equip_cooldown = 8 //Rapid fire heavy laser cannon, simple yet elegant
-	energy_drain = 30
 	name = "Arbiter Laser Cannon"
 	desc = "Пожалуйста, прикрепите это обратно к Neovgre и перестаньте спрашивать, почему оно выглядит как обычный лазерный пулемёт Solaris выпуска Nanotrasen — Nezbere"
+	equip_cooldown = 8 //Rapid fire heavy laser cannon, simple yet elegant
+	energy_drain = 30
 	fire_sound = 'sound/weapons/neovgre_laser.ogg'
 	compatible_mecha_types = MECHA_TYPE_NEOVGRE

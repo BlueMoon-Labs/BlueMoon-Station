@@ -260,7 +260,6 @@
 	projectile_energy_cost = 1000
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/flashbang/tearstache
-	compatible_mecha_types = MECHA_TYPE_HONKER
 	name = "\improper HONKeR-6 grenade launcher"
 	desc = "Оружие для боевых экзокостюмов. Запускает активированные слезоточивые гранаты, приклеивающие усы к лицам жертв."
 	icon_state = "mecha_grenadelnchr"
@@ -271,6 +270,7 @@
 	projectile_energy_cost = 800
 	equip_cooldown = 60
 	det_time = 20
+	compatible_mecha_types = MECHA_TYPE_HONKER
 
 /obj/vehicle/sealed/mecha/combat/honker/dark
 	desc = "Произведённый компанией \"Tyranny of Honk, INC\" экзокостюм тяжёлой поддержки клоунов. Эта модель окрашена в чёрный цвет для максимального веселья. ХОНК!"

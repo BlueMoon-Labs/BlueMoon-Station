@@ -15,8 +15,6 @@
 	var/range = MECHA_MELEE
 	/// Bitflag. Used by exosuit fabricator to assign sub-categories based on which exosuits can equip this.
 	var/mech_flags = NONE
-	// Допустимые категории шасси; NONE разрешает установку на любой мех.
-	var/compatible_mecha_types = NONE
 	var/salvageable = 1
 	var/detachable = TRUE // Set to FALSE for built-in equipment that cannot be removed
 	var/selectable = 1	// Set to 0 for passive equipment such as mining scanner or armor plates
@@ -27,6 +25,8 @@
 	var/ui_toggle_action
 	var/list/pilot_actions = list()
 	var/ui_icon
+	// Допустимые категории шасси; NONE разрешает установку на любой мех.
+	var/compatible_mecha_types = NONE
 
 /obj/item/mecha_parts/mecha_equipment/proc/update_chassis_page()
 	if(chassis)

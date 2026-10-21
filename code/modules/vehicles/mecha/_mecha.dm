@@ -26,10 +26,12 @@
 	max_integrity = 300
 	armor_type = /datum/armor/mecha
 	movedelay = 1 SECONDS
-	/// Cooldown between in-place rotations. Kept shorter than movedelay so turning stays responsive and isn't blocked by inability to move, but slow enough not to spin on the spot.
-	var/turn_delay = 0.4 SECONDS
 	anchored = TRUE
 	emulate_door_bumps = TRUE
+	hud_possible = list (DIAG_STAT_HUD, DIAG_BATT_HUD, DIAG_MECH_HUD, DIAG_TRACK_HUD)
+
+	/// Cooldown between in-place rotations. Kept shorter than movedelay so turning stays responsive and isn't blocked by inability to move, but slow enough not to spin on the spot.
+	var/turn_delay = 0.4 SECONDS
 	COOLDOWN_DECLARE(mecha_bump_smash)
 	COOLDOWN_DECLARE(cooldown_vehicle_turn)
 	///What direction will the mech face when entered/powered on? Defaults to South.
@@ -58,8 +60,6 @@
 	var/construction_state = MECHA_LOCKED
 	///Contains flags for the mecha
 	var/mecha_flags = ADDING_ACCESS_POSSIBLE | CANSTRAFE | IS_ENCLOSED | HAS_LIGHTS
-	// Категории шасси для проверки совместимости с модулями.
-	var/mecha_type = NONE
 	///Stores the DNA enzymes of a carbon so tht only they can access the mech
 	var/dna_lock
 	/// Имя владельца на момент установки ДНК-замка; в desc не добавляется.
@@ -185,9 +185,8 @@
 
 	var/nominalphrase = "sound/mecha/nominal.ogg"
 	var/imagenhphrase = "sound/mecha/imag_enh.ogg"
-
-
-	hud_possible = list (DIAG_STAT_HUD, DIAG_BATT_HUD, DIAG_MECH_HUD, DIAG_TRACK_HUD)
+	// Категории шасси для проверки совместимости с модулями.
+	var/mecha_type = NONE
 
 /obj/item/radio/mech //this has to go somewhere
 	subspace_transmission = TRUE
