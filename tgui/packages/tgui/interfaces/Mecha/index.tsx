@@ -18,6 +18,7 @@ import { ModulesPane } from './ModulesPane';
 export const Mecha = () => {
   const { act, data } = useBackend<MainData>();
   const honk = useHonk(data.ui_honked ? 0.4 : 0);
+  const powerRatio = data.power_max ? data.power_level / data.power_max : 0;
   const pressureHazard = data.cabin_pressure < data.cabin_pressure_hazard_min
     || data.cabin_pressure > data.cabin_pressure_hazard_max;
   const pressureWarning = data.cabin_pressure < data.cabin_pressure_warning_min
@@ -56,16 +57,26 @@ export const Mecha = () => {
                   <LabeledList>
                     <LabeledList.Item label={honk('Состояние')}>
                       <ProgressBar
+                        className="Mecha__statusBar"
                         value={data.integrity / data.integrity_max}
-                        ranges={{ good: [0.5, Infinity], average: [0.25, 0.5], bad: [-Infinity, 0.25] }}>
+                        ranges={{
+                          bad: [-Infinity, 0.3],
+                          average: [0.3, 0.7],
+                          good: [0.7, Infinity],
+                        }}>
                         {data.integrity} / {data.integrity_max}
                       </ProgressBar>
                     </LabeledList.Item>
                     <LabeledList.Item label={honk('Энергия')}>
                       <ProgressBar
-                        value={data.power_max ? data.power_level / data.power_max : 0}
-                        ranges={{ good: [0.5, Infinity], average: [0.25, 0.5], bad: [-Infinity, 0.25] }}>
-                        {data.power_max === null ? 'Нет батареи' : `${Math.round(data.power_level)} / ${data.power_max}`}
+                        className="Mecha__statusBar"
+                        value={powerRatio}
+                        ranges={{
+                          bad: [-Infinity, 0.2],
+                          average: [0.2, 0.6],
+                          good: [0.6, Infinity],
+                        }}>
+                        {data.power_max === null ? 'Нет батареи' : `${Math.round(powerRatio * 100)}%`}
                       </ProgressBar>
                     </LabeledList.Item>
                     <LabeledList.Item label={honk('Свет')}>

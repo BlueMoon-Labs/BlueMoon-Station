@@ -4,6 +4,7 @@ import { useBackend } from '../../backend';
 import {
   Box,
   Button,
+  Collapsible,
   LabeledList,
   NoticeBox,
   NumberInput,
@@ -84,17 +85,19 @@ export const ModulesPane = () => {
         {tab === 2 && <SettingsPane />}
       </Stack.Item>
       <Stack.Item>
-        <Section title="Управление" maxHeight="130px" scrollable>
-          {data.actions.map(action => (
-            <Button
-              key={action.ref}
-              maxWidth="220px"
-              ellipsis
-              tooltip={action.name}
-              content={action.name}
-              onClick={() => act('trigger_action', { ref: action.ref })} />
-          ))}
-        </Section>
+        <Collapsible title="Управление" marginBottom={0}>
+          <Section maxHeight="130px" scrollable>
+            {data.actions.map(action => (
+              <Button
+                key={action.ref}
+                maxWidth="220px"
+                ellipsis
+                tooltip={action.name}
+                content={action.name}
+                onClick={() => act('trigger_action', { ref: action.ref })} />
+            ))}
+          </Section>
+        </Collapsible>
       </Stack.Item>
     </Stack>
   );

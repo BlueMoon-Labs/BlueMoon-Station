@@ -185,9 +185,18 @@
 	)
 
 /obj/vehicle/sealed/mecha/ui_data(mob/user)
-	if(ui_preview_appearance != appearance)
-		ui_preview_icon = icon2base64(getFlatIcon(src, no_anim = TRUE))
-		ui_preview_appearance = appearance
+	var/current_appearance = appearance
+	if(ui_preview_appearance != current_appearance)
+		var/image/front_view = new
+		front_view.appearance = current_appearance
+		front_view.dir = SOUTH
+		front_view.transform = matrix()
+		front_view.pixel_x = 0
+		front_view.pixel_y = 0
+		// Браузеру нужен отдельный PNG-кадр, а не многодирекционная DMI-иконка.
+		var/icon/front_icon = getFlatIcon(front_view, defdir = SOUTH, no_anim = TRUE)
+		ui_preview_icon = icon2base64(icon(front_icon, "", SOUTH, 1, FALSE))
+		ui_preview_appearance = current_appearance
 	var/list/modules = list()
 	for(var/obj/item/mecha_parts/mecha_equipment/module as anything in equipment)
 		modules += list(module.get_ui_data())
@@ -201,6 +210,7 @@
 	var/list/accesses = list()
 	for(var/access in operation_req_access)
 		accesses += get_access_desc(access)
+	var/datum/gas_mixture/internal_air_contents = internal_tank?.return_air()
 	return list(
 		"name" = name,
 		"mech_image" = ui_preview_icon,
@@ -214,8 +224,8 @@
 		"use_internal_tank" = use_internal_tank,
 		"cabin_temp" = round(return_temperature() - T0C, 0.1),
 		"cabin_pressure" = round(return_pressure(), 0.1),
-		"tank_pressure" = internal_tank ? round(internal_tank.return_air().return_pressure(), 0.1) : null,
-		"tank_temp" = internal_tank ? round(internal_tank.return_air().return_temperature() - T0C, 0.1) : null,
+		"tank_pressure" = internal_air_contents ? round(internal_air_contents.return_pressure(), 0.1) : null,
+		"tank_temp" = internal_air_contents ? round(internal_air_contents.return_temperature() - T0C, 0.1) : null,
 		"port_connected" = !!internal_tank?.connected_port,
 		"internal_damage" = internal_damage,
 		"dna_lock" = dna_lock,
@@ -299,10 +309,11 @@
 				return FALSE
 			mecha_flags ^= ADDING_MAINT_ACCESS_POSSIBLE
 		if("changename")
-			var/new_name = stripped_input(user, "Новое название экзокостюма", "Переименование", name, MAX_NAME_LEN)
+			var/display_name = strip_html_tags(html_decode(format_text(name)))
+			var/new_name = tgui_input_text(user, "Новое название экзокостюма", "Переименование", default = display_name, max_length = MAX_NAME_LEN, encode = TRUE)
 			if(!new_name || !is_occupant(user) || user.incapacitated() || !(occupants[user] & VEHICLE_CONTROL_SETTINGS))
 				return FALSE
-			name = new_name
+			name = "\improper [new_name]"
 		if("dna_lock")
 			var/mob/living/carbon/carbon_user = user
 			if(!istype(carbon_user) || !carbon_user.dna || dna_lock)
