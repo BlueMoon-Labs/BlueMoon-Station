@@ -23,7 +23,7 @@
 	return FALSE
 
 // Только у рипли есть карго отсек
-/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp/attach(/obj/vehicle/sealed/mecha/working/ripley/M)
+/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp/attach(obj/vehicle/sealed/mecha/working/ripley/M)
 	..()
 	cargo_holder = istype(M) ? M : null
 	return

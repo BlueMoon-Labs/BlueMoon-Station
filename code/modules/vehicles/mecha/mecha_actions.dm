@@ -49,7 +49,7 @@
 		button.color = COLOR_GOLD
 	else if(equipment.ui_toggle_action ? equipment.is_ui_active() : chassis.selected == equipment)
 		button.color = "#aaffaa"
-	button.desc = equipment.ui_toggle_action ? "Включить или выключить модуль." : "ЛКМ: выбрать модуль для ЛКМ. ПКМ: выбрать модуль для ПКМ. Повторное нажатие снимает выбор."
+	button.desc = equipment.ui_toggle_action ? "Включить или выключить модуль." : "ЛКМ: выбрать модуль для ЛКМ. ПКМ: выбрать модуль для ПКМ. Повторное нажатие снимает выбор. Колесо мыши: сменить модуль для ЛКМ; Shift + колесо: для ПКМ."
 
 /obj/vehicle/sealed/mecha/add_control_flags(mob/controller, flags)
 	. = ..()

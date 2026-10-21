@@ -143,13 +143,13 @@ const ModuleDetails = ({ module }: { module: MechModule }) => {
                 selected={module.selected_left}
                 disabled={!data.can_equipment}
                 content="ЛКМ"
-                tooltip="Назначить на левую кнопку мыши. Повторное нажатие снимает назначение."
+                tooltip="Назначить на левую кнопку мыши. Колесо мыши переключает модуль для ЛКМ."
                 onClick={() => act('select_module', { ref: module.ref, button: 'left' })} />
               <Button
                 selected={module.selected_right}
                 disabled={!data.can_equipment}
                 content="ПКМ"
-                tooltip="Назначить на правую кнопку мыши. Повторное нажатие снимает назначение."
+                tooltip="Назначить на правую кнопку мыши. Shift + колесо мыши переключает модуль для ПКМ."
                 onClick={() => act('select_module', { ref: module.ref, button: 'right' })} />
             </LabeledList.Item>
           )}

@@ -581,10 +581,12 @@
 /* MouseWheelOn */
 
 /mob/proc/MouseWheelOn(atom/A, delta_x, delta_y, params)
-	return
+	return SEND_SIGNAL(src, COMSIG_MOB_MOUSEWHEELON, A, delta_x, delta_y, params)
 
 /mob/living/carbon/MouseWheelOn(atom/A, delta_x, delta_y, params)
 	. = ..()
+	if(. & COMSIG_MOB_CANCEL_MOUSEWHEELON)
+		return
 	var/obj/item/I = get_active_held_item()
 	var/obj/item/organ/cyberimp/arm/implant = getorganslot((active_hand_index % 2 == 0) ? ORGAN_SLOT_RIGHT_ARM_AUG : ORGAN_SLOT_LEFT_ARM_AUG)
 	// Смена инструментов импланта
