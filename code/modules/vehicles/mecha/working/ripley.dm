@@ -172,7 +172,7 @@
 		return FALSE
 	item.forceMove(drop_location())
 	cargo -= item
-	log_message("Unloaded [item]. Cargo compartment capacity: [cargo_capacity - length(cargo)]", LOG_MECHA)
+	log_message("Выгружен [item]. Свободных мест в грузовом отсеке: [cargo_capacity - length(cargo)]", LOG_MECHA)
 	return TRUE
 
 
@@ -185,19 +185,19 @@
 	. = ..()
 
 /obj/vehicle/sealed/mecha/working/ripley/relay_container_resist(mob/living/user, obj/O)
-	to_chat(user, "<span class='notice'>You lean on the back of [O] and start pushing so it falls out of [src].</span>")
+	to_chat(user, span_notice("Вы упираетесь в [O] и начинаете выталкивать его из [src]."))
 	if(INTERACTING_WITH(user, O))
-		to_chat(user, span_warning("You're already interacting with [O]!"))
+		to_chat(user, span_warning("Вы уже взаимодействуете с [O]!"))
 		return
 	if(do_after(user, 300, target = O))
 		if(!user || user.stat != CONSCIOUS || user.loc != src || O.loc != src )
 			return
-		to_chat(user, "<span class='notice'>You successfully pushed [O] out of [src]!</span>")
+		to_chat(user, span_notice("Вам удалось вытолкнуть [O] из [src]!"))
 		O.forceMove(drop_location())
 		cargo -= O
 	else
 		if(user.loc == src) //so we don't get the message if we resisted multiple times and succeeded.
-			to_chat(user, "<span class='warning'>You fail to push [O] out of [src]!</span>")
+			to_chat(user, span_warning("Вам не удалось вытолкнуть [O] из [src]!"))
 
 /**
   * Makes the mecha go faster and halves the mecha drill cooldown if in Lavaland pressure.

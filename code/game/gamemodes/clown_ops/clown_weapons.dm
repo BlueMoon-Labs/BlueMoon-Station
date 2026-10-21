@@ -253,7 +253,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/banana_mortar/bombanana
 	name = "bombanana mortar"
-	desc = "Equipment for clown exosuits. Launches exploding banana peels."
+	desc = "Оборудование для клоунских экзокостюмов. Запускает взрывающиеся банановые шкурки."
 	icon_state = "mecha_bananamrtr"
 	projectile = /obj/item/grown/bananapeel/bombanana
 	projectiles = 8
@@ -262,7 +262,7 @@
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/flashbang/tearstache
 	compatible_mecha_types = MECHA_TYPE_HONKER
 	name = "\improper HONKeR-6 grenade launcher"
-	desc = "A weapon for combat exosuits. Launches primed tear-stache grenades."
+	desc = "Оружие для боевых экзокостюмов. Запускает активированные слезоточивые гранаты, приклеивающие усы к лицам жертв."
 	icon_state = "mecha_grenadelnchr"
 	projectile = /obj/item/grenade/chem_grenade/teargas/moustache
 	fire_sound = 'sound/weapons/grenadelaunch.ogg'
@@ -273,7 +273,7 @@
 	det_time = 20
 
 /obj/vehicle/sealed/mecha/combat/honker/dark
-	desc = "Produced by \"Tyranny of Honk, INC\", this exosuit is designed as heavy clown-support. This one has been painted black for maximum fun. HONK!"
+	desc = "Произведённый компанией \"Tyranny of Honk, INC\" экзокостюм тяжёлой поддержки клоунов. Эта модель окрашена в чёрный цвет для максимального веселья. ХОНК!"
 	name = "\improper Dark H.O.N.K"
 	icon_state = "darkhonker"
 	max_integrity = 300

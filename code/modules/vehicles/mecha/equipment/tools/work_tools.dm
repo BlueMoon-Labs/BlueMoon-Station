@@ -42,9 +42,9 @@
 				if(M.ammo_resupply(box, source, TRUE))
 					return
 		if(have_ammo)
-			to_chat(source, "No further supplies can be provided to [M].")
+			to_chat(source, "Боезапас [M] уже заполнен.")
 		else
-			to_chat(source, "No providable supplies found in cargo hold")
+			to_chat(source, "В грузовом отсеке нет подходящих боеприпасов.")
 		return
 	if(isobj(target))
 		var/obj/O = target
@@ -61,20 +61,20 @@
 				to_chat(source, span_warning("У этого меха нет грузового отсека для погрузки."))
 				return
 			if(cargo_holder.cargo.len < cargo_holder.cargo_capacity)
-				chassis.visible_message("<span class='notice'>[chassis] lifts [target] and starts to load it into cargo compartment.</span>")
+				chassis.visible_message(span_notice("[chassis] поднимает [target] и начинает погрузку в грузовой отсек."))
 				O.set_anchored(TRUE)
 				if(do_after_cooldown(target, source))
 					cargo_holder.cargo += O
 					O.forceMove(chassis)
 					O.set_anchored(FALSE)
-					to_chat(source, "[icon2html(src, source)]<span class='notice'>[target] successfully loaded.</span>")
-					log_message("Loaded [O]. Cargo compartment capacity: [cargo_holder.cargo_capacity - cargo_holder.cargo.len]", LOG_MECHA)
+					to_chat(source, "[icon2html(src, source)][span_notice("[target] успешно погружен.")]")
+					log_message("Погружен [O]. Свободных мест в грузовом отсеке: [cargo_holder.cargo_capacity - cargo_holder.cargo.len]", LOG_MECHA)
 				else
 					O.set_anchored(initial(O.anchored))
 			else
-				to_chat(source, "[icon2html(src, source)]<span class='warning'>Not enough room in cargo compartment!</span>")
+				to_chat(source, "[icon2html(src, source)][span_warning("В грузовом отсеке недостаточно места!")]")
 		else
-			to_chat(source, "[icon2html(src, source)]<span class='warning'>[target] is firmly secured!</span>")
+			to_chat(source, "[icon2html(src, source)][span_warning("[target] надёжно закреплён!")]")
 
 	else if(isliving(target))
 		var/mob/living/M = target
@@ -86,14 +86,14 @@
 				return
 			M.adjustOxyLoss(round(dam_force/2))
 			M.updatehealth()
-			target.visible_message("<span class='danger'>[chassis] squeezes [target]!</span>", \
-								"<span class='userdanger'>[chassis] squeezes you!</span>",\
-								"<span class='hear'>You hear something crack.</span>")
+			target.visible_message(span_danger("[chassis] сдавливает [target]!"), \
+								span_userdanger("[chassis] сдавливает вас!"),\
+								span_hear("Вы слышите хруст."))
 			log_combat(source, M, "attacked", "[name]", "(INTENT: [uppertext(source.a_intent)]) (DAMTYPE: [uppertext(damtype)])")
 		else
 			step_away(M,chassis)
-			to_chat(source, "[icon2html(src, source)]<span class='notice'>You push [target] out of the way.</span>")
-			chassis.visible_message("<span class='notice'>[chassis] pushes [target] out of the way.</span>")
+			to_chat(source, "[icon2html(src, source)][span_notice("Вы отталкиваете [target] с дороги.")]")
+			chassis.visible_message(span_notice("[chassis] отталкивает [target] с дороги."))
 	return ..()
 
 
@@ -122,20 +122,20 @@
 				to_chat(source, span_warning("У этого меха нет грузового отсека для погрузки."))
 				return
 			if(cargo_holder.cargo.len < cargo_holder.cargo_capacity)
-				chassis.visible_message("<span class='notice'>[chassis] lifts [target] and starts to load it into cargo compartment.</span>")
+				chassis.visible_message(span_notice("[chassis] поднимает [target] и начинает погрузку в грузовой отсек."))
 				O.set_anchored(TRUE)
 				if(do_after_cooldown(target, source))
 					cargo_holder.cargo += O
 					O.forceMove(chassis)
 					O.set_anchored(FALSE)
-					to_chat(source, "[icon2html(src, source)]<span class='notice'>[target] successfully loaded.</span>")
-					log_message("Loaded [O]. Cargo compartment capacity: [cargo_holder.cargo_capacity - cargo_holder.cargo.len]", LOG_MECHA)
+					to_chat(source, "[icon2html(src, source)][span_notice("[target] успешно погружен.")]")
+					log_message("Погружен [O]. Свободных мест в грузовом отсеке: [cargo_holder.cargo_capacity - cargo_holder.cargo.len]", LOG_MECHA)
 				else
 					O.set_anchored(initial(O.anchored))
 			else
-				to_chat(source, "[icon2html(src, source)]<span class='warning'>Not enough room in cargo compartment!</span>")
+				to_chat(source, "[icon2html(src, source)][span_warning("В грузовом отсеке недостаточно места!")]")
 		else
-			to_chat(source, "[icon2html(src, source)]<span class='warning'>[target] is firmly secured!</span>")
+			to_chat(source, "[icon2html(src, source)][span_warning("[target] надёжно закреплён!")]")
 
 	else if(isliving(target))
 		var/mob/living/M = target
@@ -148,12 +148,12 @@
 					return
 				M.adjustOxyLoss(round(dam_force/2))
 				M.updatehealth()
-				target.visible_message("<span class='danger'>[chassis] destroys [target] in an unholy fury!</span>", \
-									"<span class='userdanger'>[chassis] destroys you in an unholy fury!</span>")
+				target.visible_message(span_danger("[chassis] в безумной ярости уничтожает [target]!"), \
+									span_userdanger("[chassis] в безумной ярости уничтожает вас!"))
 				log_combat(source, M, "attacked", "[name]", "(INTENT: [uppertext(source.a_intent)]) (DAMTYPE: [uppertext(damtype)])")
 			else
-				target.visible_message("<span class='danger'>[chassis] destroys [target] in an unholy fury!</span>", \
-									"<span class='userdanger'>[chassis] destroys you in an unholy fury!</span>")
+				target.visible_message(span_danger("[chassis] в безумной ярости уничтожает [target]!"), \
+									span_userdanger("[chassis] в безумной ярости уничтожает вас!"))
 		else if(source.a_intent == INTENT_DISARM)
 			if(real_clamp)
 				var/mob/living/carbon/C = target
@@ -171,16 +171,16 @@
 					limbs_gone = "[limbs_gone], [affected]"
 				if(play_sound)
 					playsound(src, get_dismember_sound(), 80, TRUE)
-					target.visible_message("<span class='danger'>[chassis] rips [target]'s arms off!</span>", \
-								   "<span class='userdanger'>[chassis] rips your arms off!</span>")
+					target.visible_message(span_danger("[chassis] отрывает руки [target]!"), \
+								   span_userdanger("[chassis] отрывает вам руки!"))
 					log_combat(source, M, "dismembered of[limbs_gone],", "[name]", "(INTENT: [uppertext(source.a_intent)]) (DAMTYPE: [uppertext(damtype)])")
 			else
-				target.visible_message("<span class='danger'>[chassis] rips [target]'s arms off!</span>", \
-								   "<span class='userdanger'>[chassis] rips your arms off!</span>")
+				target.visible_message(span_danger("[chassis] отрывает руки [target]!"), \
+								   span_userdanger("[chassis] отрывает вам руки!"))
 		else
 			step_away(M,chassis)
-			target.visible_message("<span class='danger'>[chassis] tosses [target] like a piece of paper!</span>", \
-								"<span class='userdanger'>[chassis] tosses you like a piece of paper!</span>")
+			target.visible_message(span_danger("[chassis] отбрасывает [target], словно лист бумаги!"), \
+								span_userdanger("[chassis] отбрасывает вас, словно лист бумаги!"))
 		return ..()
 
 
@@ -207,7 +207,7 @@
 	if(istype(target, /obj/structure/reagent_dispensers/watertank) && get_dist(chassis,target) <= 1)
 		var/obj/structure/reagent_dispensers/watertank/WT = target
 		WT.reagents.trans_to(src, 1000)
-		to_chat(chassis.occupants,"<span class='notice'>Extinguisher refilled.</span>")
+		to_chat(chassis.occupants,span_notice("Огнетушитель заправлен."))
 		playsound(chassis, 'sound/effects/refill.ogg', 50, 1, -6)
 	else
 		if(reagents.total_volume > 0)
@@ -281,20 +281,20 @@
 		if(0)
 			if(iswallturf(target))
 				var/turf/closed/wall/W = target
-				to_chat(source, "[icon2html(src, source)]<span class='notice'>Deconstructing [W]...</span>")
+				to_chat(source, "[icon2html(src, source)][span_notice("Разборка [W]...")]")
 				if(do_after_cooldown(W, source))
 					chassis.spark_system.start()
 					W.ScrapeAway(flags = CHANGETURF_INHERIT_AIR)
 					playsound(W, 'sound/items/deconstruct.ogg', 50, TRUE)
 			else if(isfloorturf(target))
 				var/turf/open/floor/F = target
-				to_chat(source, "[icon2html(src, source)]<span class='notice'>Deconstructing [F]...</span>")
+				to_chat(source, "[icon2html(src, source)][span_notice("Разборка [F]...")]")
 				if(do_after_cooldown(target, source))
 					chassis.spark_system.start()
 					F.ScrapeAway(flags = CHANGETURF_INHERIT_AIR)
 					playsound(F, 'sound/items/deconstruct.ogg', 50, TRUE)
 			else if (istype(target, /obj/machinery/door/airlock))
-				to_chat(source, "[icon2html(src, source)]<span class='notice'>Deconstructing [target]...</span>")
+				to_chat(source, "[icon2html(src, source)][span_notice("Разборка [target]...")]")
 				if(do_after_cooldown(target, source))
 					chassis.spark_system.start()
 					qdel(target)
@@ -302,21 +302,21 @@
 		if(1)
 			if(isspaceturf(target))
 				var/turf/open/space/S = target
-				to_chat(source, "[icon2html(src, source)]<span class='notice'>Building Floor...</span>")
+				to_chat(source, "[icon2html(src, source)][span_notice("Строительство пола...")]")
 				if(do_after_cooldown(S, source))
 					S.PlaceOnTop(/turf/open/floor/plating, flags = CHANGETURF_INHERIT_AIR)
 					playsound(S, 'sound/items/deconstruct.ogg', 50, TRUE)
 					chassis.spark_system.start()
 			else if(isfloorturf(target))
 				var/turf/open/floor/F = target
-				to_chat(source, "[icon2html(src, source)]<span class='notice'>Building Wall...</span>")
+				to_chat(source, "[icon2html(src, source)][span_notice("Строительство стены...")]")
 				if(do_after_cooldown(F, source))
 					F.PlaceOnTop(/turf/closed/wall)
 					playsound(F, 'sound/items/deconstruct.ogg', 50, TRUE)
 					chassis.spark_system.start()
 		if(2)
 			if(isfloorturf(target))
-				to_chat(source, "[icon2html(src, source)]<span class='notice'>Building Airlock...</span>")
+				to_chat(source, "[icon2html(src, source)][span_notice("Строительство шлюза...")]")
 				if(do_after_cooldown(target, source))
 					chassis.spark_system.start()
 					var/obj/machinery/door/airlock/T = new /obj/machinery/door/airlock(target)

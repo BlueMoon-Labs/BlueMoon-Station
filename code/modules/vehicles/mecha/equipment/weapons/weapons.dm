@@ -48,7 +48,7 @@
 	if(kickback && chassis)
 		chassis.newtonian_move(newtonian_target)
 	if(chassis)
-		chassis.log_message("Fired from [src], targeting [target].", LOG_MECHA)
+		chassis.log_message("Выстрел из [src] в цель [target].", LOG_MECHA)
 
 //Base energy weapon type
 /obj/item/mecha_parts/mecha_equipment/weapon/energy
@@ -151,14 +151,14 @@
 	if(!action_checks(target))
 		return
 	playsound(chassis, 'sound/items/airhorn.ogg', 100, TRUE)
-	to_chat(source, "[icon2html(src, source)]<font color='red' size='5'>HONK</font>")
+	to_chat(source, "[icon2html(src, source)][span_reallybig(span_red("ХОНК"))]")
 	for(var/mob/living/carbon/M in ohearers(6, chassis))
 		if(!M.can_hear())
 			continue
 		var/turf/turf_check = get_turf(M)
 		if(isspaceturf(turf_check) && !turf_check.Adjacent(src)) //in space nobody can hear you honk.
 			continue
-		to_chat(M, "<font color='red' size='7'>HONK</font>")
+		to_chat(M, span_extremelybig(span_red("ХОНК")))
 		M.SetSleeping(0)
 		M.stuttering += 20
 		var/obj/item/organ/ears/ears = M.getorganslot(ORGAN_SLOT_EARS)
@@ -171,10 +171,10 @@
 		else
 			M.Jitter(500)
 
-	log_message("Honked from [src.name]. HONK!", LOG_MECHA)
+	log_message("Гудок из [src.name]. ХОНК!", LOG_MECHA)
 	var/turf/T = get_turf(src)
-	message_admins("[ADMIN_LOOKUPFLW(source)] used a Mecha Honker in [ADMIN_VERBOSEJMP(T)]")
-	log_game("[key_name(source)] used a Mecha Honker in [AREACOORD(T)]")
+	message_admins("[ADMIN_LOOKUPFLW(source)] использует гудок меха в [ADMIN_VERBOSEJMP(T)]")
+	log_game("[key_name(source)] использует гудок меха в [AREACOORD(T)]")
 	return ..()
 
 
@@ -231,7 +231,7 @@
 				projectiles_cache = 0
 
 		SStgui.update_uis(chassis)
-		log_message("Rearmed [src.name].", LOG_MECHA)
+		log_message("Боезапас [src.name] пополнен.", LOG_MECHA)
 		return TRUE
 
 
@@ -370,7 +370,7 @@
 	TIMER_COOLDOWN_START(chassis, COOLDOWN_MECHA_EQUIPMENT, equip_cooldown)
 	var/obj/O = new projectile(chassis.loc)
 	playsound(chassis, fire_sound, 50, TRUE)
-	log_message("Launched a [O.name] from [name], targeting [target].", LOG_MECHA)
+	log_message("Запущен [O.name] из [name] в цель [target].", LOG_MECHA)
 	projectiles--
 	proj_init(O, source)
 	O.throw_at(target, missile_range, missile_speed, source, FALSE, diagonals_first = diags_first)
@@ -482,7 +482,7 @@
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/punching_glove/action(mob/source, atom/target, params)
 	. = ..()
 	if(.)
-		to_chat(usr, "[icon2html(src, usr)]<font color='red' size='5'>HONK</font>")
+		to_chat(usr, "[icon2html(src, usr)][span_reallybig(span_red("ХОНК"))]")
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/punching_glove/proj_init(obj/item/punching_glove/PG)
 	if(!istype(PG))

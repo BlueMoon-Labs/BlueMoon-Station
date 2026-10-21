@@ -60,8 +60,8 @@
 		return
 	var/list/obj/effect/portal/created = create_portal_pair(get_turf(src), target_turf, 300, 1, /obj/effect/portal/anom)
 	var/turf/T = get_turf(target)
-	message_admins("[ADMIN_LOOKUPFLW(source)] used a Wormhole Generator in [ADMIN_VERBOSEJMP(T)]")
-	log_game("[key_name(source)] used a Wormhole Generator in [AREACOORD(T)]")
+	message_admins("[ADMIN_LOOKUPFLW(source)] использует генератор червоточин в [ADMIN_VERBOSEJMP(T)]")
+	log_game("[key_name(source)] использует генератор червоточин в [AREACOORD(T)]")
 	QDEL_LIST_IN(created, rand(150,300))
 	return ..()
 
@@ -86,15 +86,15 @@
 		if(1)
 			if(!locked)
 				if(!istype(target) || target.anchored || target.move_resist >= MOVE_FORCE_EXTREMELY_STRONG)
-					to_chat(source, "[icon2html(src, source)]<span class='warning'>Unable to lock on [target]!</span>")
+					to_chat(source, "[icon2html(src, source)][span_warning("Не удалось захватить цель [target]!")]")
 					return
 				if(ismob(target))
 					var/mob/M = target
 					if(M.mob_negates_gravity())
-						to_chat(source, "[icon2html(src, source)]<span class='warning'>Unable to lock on [target]!</span>")
+						to_chat(source, "[icon2html(src, source)][span_warning("Не удалось захватить цель [target]!")]")
 						return
 				locked = target
-				to_chat(source, "[icon2html(src, source)]<span class='notice'>Locked on [target].</span>")
+				to_chat(source, "[icon2html(src, source)][span_notice("Цель [target] захвачена.")]")
 				SStgui.update_uis(chassis)
 			else if(target!=locked)
 				if(locked in view(chassis))
@@ -103,11 +103,11 @@
 					locked.throw_at(target, 14, 1.5)
 					locked = null
 					SStgui.update_uis(chassis)
-					log_game("[key_name(source)] used a Gravitational Catapult to throw [locked] (From [AREACOORD(orig)]) at [target] ([AREACOORD(targ)]).")
+					log_game("[key_name(source)] использует гравитационную катапульту, чтобы бросить [locked] из [AREACOORD(orig)] в [target] ([AREACOORD(targ)]).")
 					return ..()
 				else
 					locked = null
-					to_chat(source, "[icon2html(src, source)]<span class='notice'>Lock on [locked] disengaged.</span>")
+					to_chat(source, "[icon2html(src, source)][span_notice("Захват цели [locked] отменён.")]")
 					SStgui.update_uis(chassis)
 		if(2)
 			var/list/atoms = list()
@@ -125,7 +125,7 @@
 				INVOKE_ASYNC(src, PROC_REF(do_scatter), A, target)
 
 			var/turf/T = get_turf(target)
-			log_game("[key_name(source)] used a Gravitational Catapult repulse wave on [AREACOORD(T)]")
+			log_game("[key_name(source)] активирует отталкивающую волну гравитационной катапульты в [AREACOORD(T)]")
 			return ..()
 
 /obj/item/mecha_parts/mecha_equipment/gravcatapult/proc/do_scatter(atom/movable/A, atom/movable/target)
@@ -238,11 +238,11 @@
 	if(!is_ui_active())
 		START_PROCESSING(SSobj, src)
 		droid_overlay = new(icon, icon_state = "repair_droid_a")
-		log_message("Activated.", LOG_MECHA)
+		log_message("Включён.", LOG_MECHA)
 	else
 		STOP_PROCESSING(SSobj, src)
 		droid_overlay = new(icon, icon_state = "repair_droid")
-		log_message("Deactivated.", LOG_MECHA)
+		log_message("Выключен.", LOG_MECHA)
 	chassis.add_overlay(droid_overlay)
 	update_equip_info()
 	return TRUE
@@ -324,10 +324,10 @@
 		return FALSE
 	if(!is_ui_active())
 		START_PROCESSING(SSobj, src)
-		log_message("Activated.", LOG_MECHA)
+		log_message("Включён.", LOG_MECHA)
 	else
 		STOP_PROCESSING(SSobj, src)
-		log_message("Deactivated.", LOG_MECHA)
+		log_message("Выключен.", LOG_MECHA)
 	update_equip_info()
 	return TRUE
 
@@ -342,7 +342,7 @@
 	var/cur_charge = chassis.get_charge()
 	if(isnull(cur_charge) || !chassis.cell)
 		STOP_PROCESSING(SSobj, src)
-		to_chat(chassis.occupants, "[icon2html(src, chassis.occupants)]<span class='notice'>No power cell detected.</span>")
+		to_chat(chassis.occupants, "[icon2html(src, chassis.occupants)][span_notice("Батарея не обнаружена.")]")
 		return
 	if(cur_charge < chassis.cell.maxcharge)
 		var/area/A = get_area(chassis)
@@ -398,10 +398,10 @@
 		return FALSE
 	if(!is_ui_active())
 		START_PROCESSING(SSobj, src)
-		log_message("Activated.", LOG_MECHA)
+		log_message("Включён.", LOG_MECHA)
 	else
 		STOP_PROCESSING(SSobj, src)
-		log_message("Deactivated.", LOG_MECHA)
+		log_message("Выключен.", LOG_MECHA)
 	update_equip_info()
 	return TRUE
 
@@ -425,13 +425,13 @@
 			var/units = min(max(round(to_load / MINERAL_MATERIAL_AMOUNT),1),P.amount)
 			fuel.amount += units
 			P.use(units)
-			to_chat(user, "[icon2html(src, user)]<span class='notice'>[units] unit\s of [fuel] successfully loaded.</span>")
+			to_chat(user, "[icon2html(src, user)][span_notice("Загружено [units] ед. топлива [fuel].")]")
 			return units
 		else
-			to_chat(user, "[icon2html(src, user)]<span class='notice'>Unit is full.</span>")
+			to_chat(user, "[icon2html(src, user)][span_notice("Резервуар заполнен.")]")
 			return FALSE
 	else
-		to_chat(user, "[icon2html(src, user)]<span class='warning'>[fuel] traces in target minimal! [P] cannot be used as fuel.</span>")
+		to_chat(user, "[icon2html(src, user)][span_warning("Содержание [fuel] слишком мало! [P] нельзя использовать как топливо.")]")
 		return
 
 /obj/item/mecha_parts/mecha_equipment/generator/attackby(weapon,mob/user, params)
@@ -443,12 +443,12 @@
 		return
 	if(fuel.amount<=0)
 		STOP_PROCESSING(SSobj, src)
-		log_message("Deactivated - no fuel.", LOG_MECHA)
+		log_message("Отключён: нет топлива.", LOG_MECHA)
 		return
 	var/cur_charge = chassis.get_charge()
 	if(isnull(cur_charge))
-		to_chat(chassis.occupants, "[icon2html(src, chassis.occupants)]<span class='notice'>No power cell detected.</span>")
-		log_message("Deactivated.", LOG_MECHA)
+		to_chat(chassis.occupants, "[icon2html(src, chassis.occupants)][span_notice("Батарея не обнаружена.")]")
+		log_message("Выключен.", LOG_MECHA)
 		STOP_PROCESSING(SSobj, src)
 		return
 	var/use_fuel = fuel_per_cycle_idle
@@ -491,7 +491,7 @@
 /obj/item/mecha_parts/mecha_equipment/thrusters/try_attach_part(mob/user, obj/vehicle/sealed/mecha/M)
 	for(var/obj/item/I in M.equipment)
 		if(istype(I, src))
-			to_chat(user, "<span class='warning'>[M] already has this thruster package!</span>")
+			to_chat(user, span_warning("На [M] уже установлен такой набор двигателей!"))
 			return FALSE
 	. = ..()
 
@@ -526,13 +526,13 @@
 	if (chassis.active_thrusters == src)
 		return
 	chassis.active_thrusters = src
-	to_chat(chassis.occupants, "[icon2html(src, chassis.occupants)]<span class='notice'>[src] enabled.</span>")
+	to_chat(chassis.occupants, "[icon2html(src, chassis.occupants)][span_notice("[src] включён.")]")
 
 /obj/item/mecha_parts/mecha_equipment/thrusters/proc/disable()
 	if(chassis.active_thrusters != src)
 		return
 	chassis.active_thrusters = null
-	to_chat(chassis.occupants, "[icon2html(src, chassis.occupants)]<span class='notice'>[src] disabled.</span>")
+	to_chat(chassis.occupants, "[icon2html(src, chassis.occupants)][span_notice("[src] выключен.")]")
 
 /obj/item/mecha_parts/mecha_equipment/thrusters
 	ui_toggle_action = "toggle_thrusters"
@@ -565,7 +565,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/thrusters/gas/try_attach_part(mob/user, obj/vehicle/sealed/mecha/M)
 	if(!M.internal_tank)
-		to_chat(user, "<span class='warning'>[M] does not have an internal tank and cannot support this upgrade!</span>")
+		to_chat(user, span_warning("У [M] нет внутреннего баллона, установка этого модуля невозможна!"))
 		return FALSE
 	. = ..()
 

@@ -35,7 +35,7 @@
 
 /obj/vehicle/sealed/mecha/combat/neovgre/MouseDrop_T(mob/M, mob/user)
 	if(!is_servant_of_ratvar(user))
-		to_chat(user, "<span class='neovgre'>BEGONE HEATHEN!</span>")
+		to_chat(user, span_neovgre("ПРОЧЬ, НЕВЕРНЫЙ!"))
 		return
 	else
 		..()
@@ -43,16 +43,16 @@
 /obj/vehicle/sealed/mecha/combat/neovgre/moved_inside(mob/living/carbon/human/H)
 	var/list/Itemlist = H.get_contents()
 	for(var/obj/item/clockwork/slab/W in Itemlist)
-		to_chat(H, "<span class='brass'>You safely store [W] inside [src].</span>")
+		to_chat(H, span_brass("Вы убираете [W] в [src]."))
 		qdel(W)
 	. = ..()
 
 /obj/vehicle/sealed/mecha/combat/neovgre/obj_destruction()
 	for(var/mob/M in src)
-		to_chat(M, "<span class='brass'>You are consumed by the fires raging within Neovgre...</span>")
+		to_chat(M, span_brass("Вас поглощает пламя, бушующее внутри Neovgre..."))
 		M.dust()
 	playsound(src, 'sound/effects/neovgre_exploding.ogg', 100, 0)
-	src.visible_message("<span class = 'userdanger'>The reactor has gone critical, its going to blow!</span>")
+	src.visible_message(span_userdanger("Реактор в критическом состоянии! Сейчас рванёт!"))
 	addtimer(CALLBACK(src,PROC_REF(go_critical)),breach_time)
 
 /obj/vehicle/sealed/mecha/combat/neovgre/proc/go_critical()
@@ -61,7 +61,7 @@
 		qdel(src)
 
 /obj/vehicle/sealed/mecha/combat/neovgre/container_resist(mob/living/user)
-	to_chat(user, "<span class='brass'>Neovgre requires a lifetime commitment friend, no backing out now!</span>")
+	to_chat(user, span_brass("Neovgre требует пожизненной преданности, друг. Пути назад нет!"))
 	return
 
 /obj/vehicle/sealed/mecha/combat/neovgre/process()

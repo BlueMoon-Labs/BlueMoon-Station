@@ -50,9 +50,9 @@
 		if(chassis.selected_right == src)
 			chassis.selected_right = null
 		update_chassis_page()
-		log_message("[src] is destroyed.", LOG_MECHA)
+		log_message("[src] уничтожен.", LOG_MECHA)
 		if(!LAZYLEN(chassis?.occupants))
-			to_chat(chassis.occupants, "[icon2html(src, chassis.occupants)]<span class='danger'>[src] is destroyed!</span>")
+			to_chat(chassis.occupants, "[icon2html(src, chassis.occupants)][span_danger("[src] уничтожен!")]")
 			playsound(chassis, destroy_sound, 50)
 		if(!detachable) //If we're a built-in nondetachable equipment, let's lock up the slot that we were in.
 			chassis.max_equip--
@@ -64,9 +64,9 @@
 		if(!user.temporarilyRemoveItemFromInventory(src))
 			return FALSE
 		attach(M)
-		user.visible_message("<span class='notice'>[user] attaches [src] to [M].</span>", "<span class='notice'>You attach [src] to [M].</span>")
+		user.visible_message(span_notice("[user] устанавливает [src] на [M]."), span_notice("Вы устанавливаете [src] на [M]."))
 		return TRUE
-	to_chat(user, "<span class='warning'>You are unable to attach [src] to [M]!</span>")
+	to_chat(user, span_warning("Не удаётся установить [src] на [M]!"))
 	return FALSE
 
 /obj/item/mecha_parts/mecha_equipment/proc/action_checks(atom/target)
@@ -81,7 +81,7 @@
 	if(chassis.is_currently_ejecting)
 		return FALSE
 	if(chassis.equipment_disabled)
-		to_chat(chassis.occupants, "<span=warn>Error -- Equipment control unit is unresponsive.</span>")
+		to_chat(chassis.occupants, span_warning("Ошибка: блок управления оборудованием не отвечает."))
 		return FALSE
 	if(TIMER_COOLDOWN_CHECK(chassis, COOLDOWN_MECHA_EQUIPMENT))
 		return FALSE
@@ -143,7 +143,7 @@
 	forceMove(M)
 	for(var/mob/pilot as anything in M.occupants)
 		grant_pilot_action(pilot)
-	log_message("[src] initialized.", LOG_MECHA)
+	log_message("[src] подключён.", LOG_MECHA)
 	update_chassis_page()
 	return
 
@@ -157,14 +157,14 @@
 		if(chassis.selected_right == src)
 			chassis.selected_right = null
 		update_chassis_page()
-		log_message("[src] removed from equipment.", LOG_MECHA)
+		log_message("[src] снят с меха.", LOG_MECHA)
 		chassis = null
 	return
 
 
 /obj/item/mecha_parts/mecha_equipment/log_message(message, message_type=LOG_GAME, color=null, log_globally, atom/target = null)
 	if(chassis)
-		chassis.log_message("ATTACHMENT: [src] [message]", message_type, color, log_globally, target = target)
+		chassis.log_message("МОДУЛЬ: [src] [message]", message_type, color, log_globally, target = target)
 	else
 		..(message, message_type, color, log_globally, target)
 

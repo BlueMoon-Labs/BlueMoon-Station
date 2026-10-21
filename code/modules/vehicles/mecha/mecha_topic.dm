@@ -104,9 +104,9 @@
 		"has_tank" = !!chassis.internal_tank,
 		"pressure" = chassis.internal_tank_valve,
 		"cabin_pressure" = round(chassis.return_pressure(), 0.1),
-		"cell" = chassis.cell ? "Tier [chassis.cell.rating]" : null,
-		"scanmod" = chassis.scanmod ? "Tier [chassis.scanmod.rating]" : null,
-		"capacitor" = chassis.capacitor ? "Tier [chassis.capacitor.rating]" : null,
+		"cell" = chassis.cell ? "Уровень [chassis.cell.rating]" : null,
+		"scanmod" = chassis.scanmod ? "Уровень [chassis.scanmod.rating]" : null,
+		"capacitor" = chassis.capacitor ? "Уровень [chassis.capacitor.rating]" : null,
 		"accesses" = accesses,
 	)
 
@@ -188,11 +188,11 @@
 /obj/vehicle/sealed/mecha/proc/stationary_repair(location)
 	if(location == loc)
 		clearInternalDamage(MECHA_INT_CONTROL_LOST)
-		to_chat(occupants, "[icon2html(src, occupants)]<span class='notice'>Recalibration successful.</span>")
-		log_message("Recalibration of coordination system finished with 0 errors.", LOG_MECHA)
+		to_chat(occupants, "[icon2html(src, occupants)][span_notice("Калибровка завершена успешно.")]")
+		log_message("Калибровка системы координации завершена без ошибок.", LOG_MECHA)
 	else
-		to_chat(occupants, "[icon2html(src, occupants)]<span class='warning'>Recalibration failed!</span>")
-		log_message("Recalibration of coordination system failed with 1 error.", LOG_MECHA, color="red")
+		to_chat(occupants, "[icon2html(src, occupants)][span_warning("Калибровка не удалась!")]")
+		log_message("Калибровка системы координации завершилась с ошибкой.", LOG_MECHA, color="red")
 
 // Панель Paradise использует наши флаги управления и общий список модулей.
 /obj/vehicle/sealed/mecha/ui_status(mob/user, datum/ui_state/state)
@@ -368,7 +368,7 @@
 		if("repair_int_damage")
 			if(!(internal_damage & MECHA_INT_CONTROL_LOST))
 				return FALSE
-			log_message("Recalibration of coordination system started.", LOG_MECHA)
+			log_message("Начата калибровка системы координации.", LOG_MECHA)
 			addtimer(CALLBACK(src, PROC_REF(stationary_repair), loc), 10 SECONDS, TIMER_UNIQUE)
 			to_chat(user, span_notice("Начата калибровка. Не двигайтесь 10 секунд."))
 		if("toggle_port_connection")
