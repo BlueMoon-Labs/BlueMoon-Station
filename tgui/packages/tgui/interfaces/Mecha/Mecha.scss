@@ -1,0 +1,30 @@
+.Mecha__moduleHeader .Section__title {
+  padding-right: 2.5em;
+}
+
+.Mecha__moduleDetails {
+  .LabeledList,
+  .LabeledList > tbody,
+  .LabeledList__row,
+  .LabeledList__cell {
+    display: block;
+  }
+
+  .LabeledList {
+    width: auto;
+  }
+
+  .LabeledList__row {
+    margin-bottom: 0.5em;
+  }
+
+  .LabeledList__label {
+    width: auto;
+    min-width: 0;
+    white-space: normal;
+  }
+
+  .LabeledList__content {
+    overflow-wrap: anywhere;
+  }
+}

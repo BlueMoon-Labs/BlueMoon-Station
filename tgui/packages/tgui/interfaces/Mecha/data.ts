@@ -28,7 +28,7 @@ export type MechModule = {
 
 export type MainData = {
   name: string;
-  mech_view: string;
+  mech_image: string;
   integrity: number;
   integrity_max: number;
   power_level: number | null;

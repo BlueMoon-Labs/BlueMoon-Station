@@ -164,20 +164,8 @@
 		return
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
-		var/atom/movable/screen/map_view/preview = new
-		preview.generate_view("mecha_[REF(src)]_[REF(user)]")
-		ui_views[user] = preview
 		ui = new(user, src, "Mecha", name)
-		if(ui.open())
-			preview.display_to(user, ui.window)
-		else
-			ui_close(user)
-
-/obj/vehicle/sealed/mecha/ui_close(mob/user)
-	. = ..()
-	var/atom/movable/screen/map_view/preview = ui_views[user]
-	ui_views -= user
-	qdel(preview)
+		ui.open()
 
 /obj/vehicle/sealed/mecha/ui_static_data(mob/user)
 	return list(
@@ -197,9 +185,9 @@
 	)
 
 /obj/vehicle/sealed/mecha/ui_data(mob/user)
-	var/atom/movable/screen/map_view/preview = ui_views[user]
-	if(preview)
-		preview.appearance = appearance
+	if(ui_preview_appearance != appearance)
+		ui_preview_icon = icon2base64(getFlatIcon(src, no_anim = TRUE))
+		ui_preview_appearance = appearance
 	var/list/modules = list()
 	for(var/obj/item/mecha_parts/mecha_equipment/module as anything in equipment)
 		modules += list(module.get_ui_data())
@@ -215,7 +203,7 @@
 		accesses += get_access_desc(access)
 	return list(
 		"name" = name,
-		"mech_view" = preview?.assigned_map,
+		"mech_image" = ui_preview_icon,
 		"integrity" = obj_integrity,
 		"integrity_max" = max_integrity,
 		"power_level" = cell?.charge,
@@ -264,7 +252,8 @@
 		return FALSE
 	if(action == "trigger_action")
 		var/datum/action/vehicle/sealed/mecha/chosen = locate(params["ref"])
-		if(!istype(chosen) || LAZYACCESSASSOC(occupant_actions, user, chosen.type) != chosen || chosen.chassis != src)
+		var/list/user_actions = occupant_actions[user]
+		if(!istype(chosen) || !user_actions || user_actions[chosen.type] != chosen || chosen.chassis != src || chosen.owner != user)
 			return FALSE
 		chosen.Trigger()
 		return TRUE

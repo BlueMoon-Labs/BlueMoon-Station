@@ -29,9 +29,11 @@ export const ModulesPane = () => {
           <Tabs.Tab icon="table" selected={tab === 0} onClick={() => setTab(0)}>
             {honk('Модули')}
           </Tabs.Tab>
-          <Tabs.Tab icon="box" selected={tab === 1} onClick={() => setTab(1)}>
-            {honk('Груз')}
-          </Tabs.Tab>
+          {!!data.cargo && (
+            <Tabs.Tab icon="box" selected={tab === 1} onClick={() => setTab(1)}>
+              {honk('Груз')}
+            </Tabs.Tab>
+          )}
           <Tabs.Tab icon="cog" selected={tab === 2} onClick={() => setTab(2)}>
             {honk('Настройки')}
           </Tabs.Tab>
@@ -40,7 +42,7 @@ export const ModulesPane = () => {
       <Stack.Item grow>
         {tab === 0 && (
           <Stack fill>
-            <Stack.Item width="180px">
+            <Stack.Item width="225px" shrink={0}>
               <Section fill scrollable title={`${honk('Модули')} ${data.modules.length}/${data.max_equip}`}>
                 {data.modules.map(item => (
                   <Button
@@ -71,14 +73,14 @@ export const ModulesPane = () => {
                 {!data.modules.length && <Box color="label">Нет модулей</Box>}
               </Section>
             </Stack.Item>
-            <Stack.Item grow>
+            <Stack.Item grow minWidth="0px">
               <Section fill scrollable>
                 {module ? <ModuleDetails module={module} /> : <NoticeBox>Оборудование не установлено.</NoticeBox>}
               </Section>
             </Stack.Item>
           </Stack>
         )}
-        {tab === 1 && <CargoPane />}
+        {tab === 1 && !!data.cargo && <CargoPane />}
         {tab === 2 && <SettingsPane />}
       </Stack.Item>
       <Stack.Item>
@@ -104,6 +106,7 @@ const ModuleDetails = ({ module }: { module: MechModule }) => {
   return (
     <>
       <Section
+        className="Mecha__moduleHeader"
         title={module.name}
         buttons={module.detachable && (
           <Button.Confirm
@@ -114,7 +117,7 @@ const ModuleDetails = ({ module }: { module: MechModule }) => {
         )}>
         {module.desc}
       </Section>
-      <Section>
+      <Section className="Mecha__moduleDetails">
         <LabeledList>
           {module.integrity < 1 && (
             <LabeledList.Item label="Состояние">
@@ -357,15 +360,6 @@ const SettingsPane = () => {
         </LabeledList.Item>
         <LabeledList.Item label="Доступы">
           {data.accesses.join(', ') || 'Не требуются'}
-        </LabeledList.Item>
-        <LabeledList.Item label="Техобслуживание">
-          <Button
-            icon="wrench"
-            selected={data.maint_access}
-            content={data.maint_access ? 'Разрешено' : 'Запрещено'}
-            disabled={!data.can_settings || data.maintenance}
-            onClick={() => act('toggle_maint_access')} />
-          {!!data.maintenance && <Box color="average">Включён протокол обслуживания</Box>}
         </LabeledList.Item>
         {!!radio && (
           <LabeledList.Item label="Радио">

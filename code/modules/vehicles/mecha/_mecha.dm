@@ -110,8 +110,9 @@
 	var/obj/item/mecha_parts/mecha_equipment/selected
 	// Назначение на ПКМ не занимает отдельный слот оборудования.
 	var/obj/item/mecha_parts/mecha_equipment/selected_right
-	// Каждый член экипажа получает собственную карту предпросмотра.
-	var/list/ui_views = list()
+	// Превью пересобирается только при изменении внешности, без игрового transform.
+	var/ui_preview_appearance
+	var/ui_preview_icon
 	///Maximum amount of equipment we can have
 	var/max_equip = 3
 
@@ -238,7 +239,6 @@
 	QDEL_NULL(smoke_system)
 	QDEL_NULL(trackers)
 	QDEL_NULL(wires)
-	QDEL_LIST_ASSOC_VAL(ui_views)
 
 	GLOB.poi_list -= src
 	GLOB.mechas_list -= src //global mech list
@@ -582,11 +582,17 @@
 
 /obj/vehicle/sealed/mecha/proc/on_mouseclick(mob/user, atom/target, params)
 	SIGNAL_HANDLER
+	var/list/mouse_control = params2list(params)
+	// Контекстное меню пилота выключено, поэтому осмотр обрабатываем до оружия.
+	if(mouse_control[SHIFT_CLICK])
+		if(!mouse_control[CTRL_CLICK] && !mouse_control[MIDDLE_CLICK])
+			target.attempt_examinate(user)
+			return COMSIG_MOB_CANCEL_CLICKON
+		return
 	if(!locate(/turf) in list(target,target.loc)) // Prevents inventory from being drilled
 		return
 	if(completely_disabled || is_currently_ejecting || (mecha_flags & CANNOT_INTERACT))
 		return
-	var/list/mouse_control = params2list(params)
 	// ИИ сохраняет основное управление на СКМ и получает дополнительный модуль на ПКМ.
 	if(isAI(user) && !mouse_control[MIDDLE_CLICK] && !mouse_control[RIGHT_CLICK])
 		return

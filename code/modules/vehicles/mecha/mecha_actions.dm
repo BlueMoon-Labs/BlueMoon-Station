@@ -63,7 +63,7 @@
 			module.remove_pilot_action(controller)
 
 /datum/action/vehicle/sealed/mecha/mech_eject
-	name = "Eject From Mech"
+	name = "Выйти из меха"
 	button_icon_state = "mech_eject"
 
 /datum/action/vehicle/sealed/mecha/mech_eject/Trigger()
@@ -74,7 +74,7 @@
 	chassis.container_resist(owner)
 
 /datum/action/vehicle/sealed/mecha/mech_toggle_internals
-	name = "Toggle Internal Airtank Usage"
+	name = "Переключить источник воздуха"
 	button_icon_state = "mech_internals_off"
 
 /datum/action/vehicle/sealed/mecha/mech_toggle_internals/Trigger()
@@ -87,7 +87,7 @@
 	UpdateButtons()
 
 /datum/action/vehicle/sealed/mecha/mech_cycle_equip
-	name = "Cycle Equipment"
+	name = "Следующий модуль"
 	button_icon_state = "mech_cycle_equip_off"
 
 /datum/action/vehicle/sealed/mecha/mech_cycle_equip/Trigger()
@@ -131,7 +131,7 @@
 
 
 /datum/action/vehicle/sealed/mecha/mech_toggle_lights
-	name = "Toggle Lights"
+	name = "Переключить освещение"
 	button_icon_state = "mech_lights_off"
 
 /datum/action/vehicle/sealed/mecha/mech_toggle_lights/Trigger()
@@ -152,7 +152,7 @@
 	UpdateButtons()
 
 /datum/action/vehicle/sealed/mecha/mech_view_stats
-	name = "View Stats"
+	name = "Панель меха"
 	button_icon_state = "mech_view_stats"
 
 /datum/action/vehicle/sealed/mecha/mech_view_stats/Trigger()
@@ -162,7 +162,8 @@
 
 
 /datum/action/vehicle/sealed/mecha/strafe
-	name = "Toggle Strafing. Disabled when Alt is held."
+	name = "Боковое движение"
+	desc = "Позволяет двигаться боком. Отключается при зажатом Alt."
 	button_icon_state = "strafe"
 
 /datum/action/vehicle/sealed/mecha/strafe/Trigger()
@@ -190,7 +191,8 @@
 		action?.UpdateButtons()
 
 /datum/action/vehicle/sealed/mecha/toggle_stabilizers
-	name = "Toggle thruster stabilizers. Cancels space drift so the mech can hold position. Needs powered thrusters."
+	name = "Стабилизаторы"
+	desc = "Останавливают дрейф в космосе. Нужны работающие двигатели и питание."
 	button_icon_state = "mech_thrusters_off"
 
 /datum/action/vehicle/sealed/mecha/toggle_stabilizers/Trigger()
@@ -213,7 +215,8 @@
 //Need to be granted by the mech type, Not default abilities.
 
 /datum/action/vehicle/sealed/mecha/mech_defense_mode
-	name = "Toggle an energy shield that blocks all attacks from the faced direction at a heavy power cost."
+	name = "Энергетический щит"
+	desc = "Блокирует атаки спереди, расходуя большое количество энергии."
 	button_icon_state = "mech_defense_mode_off"
 
 ///Кнопка зовёт Trigger(trigger_flags) позиционно, поэтому silent - только именованный флаг.
@@ -222,7 +225,7 @@
 	SEND_SIGNAL(chassis, COMSIG_MECHA_ACTION_TRIGGER, owner, list(silent)) //Signal sent to the mech, to be handed to the shield. See durand.dm for more details
 
 /datum/action/vehicle/sealed/mecha/mech_overload_mode
-	name = "Toggle leg actuators overload"
+	name = "Форсаж приводов"
 	button_icon_state = "mech_overload_off"
 
 ///Кнопка нового пассажира обязана показывать состояние шасси, а не типовое "выключено"
@@ -246,7 +249,7 @@
 		to_chat(owner, "[icon2html(chassis, owner)]<span class='notice'>You disable leg actuators overload.</span>")
 
 /datum/action/vehicle/sealed/mecha/mech_smoke
-	name = "Smoke"
+	name = "Дымовая завеса"
 	button_icon_state = "mech_smoke"
 
 /datum/action/vehicle/sealed/mecha/mech_smoke/Trigger()
@@ -259,7 +262,7 @@
 
 
 /datum/action/vehicle/sealed/mecha/mech_zoom
-	name = "Zoom"
+	name = "Увеличение обзора"
 	button_icon_state = "mech_zoom_off"
 
 /datum/action/vehicle/sealed/mecha/mech_zoom/Trigger()
@@ -278,7 +281,7 @@
 		UpdateButtons()
 
 /datum/action/vehicle/sealed/mecha/mech_switch_damtype
-	name = "Reconfigure arm microtool arrays"
+	name = "Сменить тип урона"
 	button_icon_state = "mech_damtype_brute"
 
 /datum/action/vehicle/sealed/mecha/mech_switch_damtype/Trigger()
@@ -302,7 +305,7 @@
 
 ///swap seats, for two person mecha
 /datum/action/vehicle/sealed/mecha/swap_seat
-	name = "Switch Seats"
+	name = "Сменить место"
 	button_icon_state = "mech_seat_swap"
 
 /datum/action/vehicle/sealed/mecha/swap_seat/Trigger()
@@ -330,7 +333,7 @@
 	chassis.update_icon_state()
 
 /datum/action/vehicle/sealed/mecha/mech_toggle_phasing
-	name = "Toggle Phasing"
+	name = "Фазовый модуль"
 	button_icon_state = "mech_phasing_off"
 
 /datum/action/vehicle/sealed/mecha/mech_toggle_phasing/Trigger()
@@ -352,6 +355,7 @@
 		mecha.chassis = src
 
 /datum/action/vehicle/sealed/mecha/syndicate/mech_zoom
+	name = "Увеличение обзора"
 
 /datum/action/vehicle/sealed/mecha/syndicate/mech_zoom/Trigger()
     if(owner.client)
@@ -377,6 +381,7 @@
 		mecha.chassis = src
 
 /datum/action/vehicle/sealed/mecha/russian/mech_zoom
+	name = "Увеличение обзора"
 
 /datum/action/vehicle/sealed/mecha/russian/mech_zoom/Trigger()
     if(owner.client)
@@ -402,6 +407,7 @@
 		mecha.chassis = src
 
 /datum/action/vehicle/sealed/mecha/sol/mech_zoom
+	name = "Увеличение обзора"
 
 /datum/action/vehicle/sealed/mecha/sol/mech_zoom/Trigger()
     if(owner.client)

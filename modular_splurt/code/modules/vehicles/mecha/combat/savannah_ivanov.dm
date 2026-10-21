@@ -57,7 +57,7 @@
 
 ///Savannah Skyfall
 /datum/action/vehicle/sealed/mecha/skyfall
-	name = "Savannah Skyfall"
+	name = "Небесный удар «Саванны»"
 	icon_icon = 'modular_splurt/icons/mob/actions/actions_mecha.dmi'
 	button_icon_state = "mech_savannah"
 	///cooldown time between skyfall uses
@@ -223,7 +223,7 @@
 	UpdateButtons()
 
 /datum/action/vehicle/sealed/mecha/ivanov_strike
-	name = "Ivanov Strike"
+	name = "Удар «Иванова»"
 	icon_icon = 'modular_splurt/icons/mob/actions/actions_mecha.dmi'
 	button_icon_state = "mech_ivanov"
 	///cooldown time between strike uses

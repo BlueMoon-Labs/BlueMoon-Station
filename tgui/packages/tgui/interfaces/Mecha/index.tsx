@@ -1,8 +1,9 @@
+import './Mecha.scss';
+
 import { useBackend } from '../../backend';
 import {
   Box,
   Button,
-  ByondUi,
   LabeledList,
   ProgressBar,
   Section,
@@ -27,7 +28,7 @@ export const Mecha = () => {
     <Window width={900} height={680}>
       <Window.Content>
         <Stack fill>
-          <Stack.Item width="310px">
+          <Stack.Item width="310px" shrink={0}>
             <Stack vertical fill>
               <Stack.Item grow>
                 <Section
@@ -41,9 +42,17 @@ export const Mecha = () => {
                       disabled={!data.can_settings}
                       onClick={() => act('changename')} />
                   )}>
-                  <ByondUi
-                    height="170px"
-                    params={{ id: data.mech_view, zoom: 5, type: 'map' }} />
+                  <Box height="170px" textAlign="center" mb={1}>
+                    <img
+                      alt={data.name}
+                      src={`data:image/png;base64,${data.mech_image}`}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                        imageRendering: 'pixelated',
+                      }} />
+                  </Box>
                   <LabeledList>
                     <LabeledList.Item label={honk('Состояние')}>
                       <ProgressBar
@@ -98,13 +107,24 @@ export const Mecha = () => {
                           onClick={() => act('reset_dna')} />
                       )}
                     </LabeledList.Item>
+                    <LabeledList.Item label="Техобслуживание">
+                      <Button
+                        icon="wrench"
+                        selected={data.maint_access}
+                        content={data.maint_access ? 'Разрешено' : 'Запрещено'}
+                        disabled={!data.can_settings || data.maintenance}
+                        onClick={() => act('toggle_maint_access')} />
+                      {!!data.maintenance && (
+                        <Box color="average">Включён протокол обслуживания</Box>
+                      )}
+                    </LabeledList.Item>
                   </LabeledList>
                 </Section>
               </Stack.Item>
               <Stack.Item><AlertPane /></Stack.Item>
             </Stack>
           </Stack.Item>
-          <Stack.Item grow><ModulesPane /></Stack.Item>
+          <Stack.Item grow minWidth="0px"><ModulesPane /></Stack.Item>
         </Stack>
       </Window.Content>
     </Window>
