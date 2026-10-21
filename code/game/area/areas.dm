@@ -422,8 +422,11 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 						cont = FALSE
 						break
 			if(cont && D.is_operational())
-				if(opening && manual)
-					INVOKE_ASYNC(D, TYPE_PROC_REF(/obj/machinery/door/firedoor, open_manually))
+				if(manual)
+					if(opening)
+						INVOKE_ASYNC(D, TYPE_PROC_REF(/obj/machinery/door/firedoor, open_manually))
+					else
+						INVOKE_ASYNC(D, TYPE_PROC_REF(/obj/machinery/door/firedoor, close_manually))
 					continue
 				if(opening && !D.can_auto_reopen())
 					continue
@@ -445,13 +448,15 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 						// INVOKE_ASYNC начинает вызов сразу: используем проверку выше.
 						INVOKE_ASYNC(D, TYPE_PROC_REF(/obj/machinery/door/firedoor, close), FALSE, TRUE)
 
-/area/proc/firealert(obj/source)
+/area/proc/firealert(obj/source, manual = FALSE)
 	if(always_unpowered == 1) //no fire alarms in space/asteroid
 		return
 
 	if (!fire)
 		set_fire_alarm_effects(TRUE)
-		ModifyFiredoors(FALSE)
+		ModifyFiredoors(FALSE, manual)
+	else if(manual)
+		ModifyFiredoors(FALSE, TRUE)
 	alarm_manager.send_alarm(ALARM_FIRE, source)
 
 	START_PROCESSING(SSobj, src)

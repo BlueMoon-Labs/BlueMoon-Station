@@ -676,6 +676,17 @@
 	if(.)
 		block_automatic_closing(FIRELOCK_ALARM_OVERRIDE_GRACE)
 
+// Команда игрока через сигнализацию не снимает блокировку, но закрывает дверь вручную.
+/obj/machinery/door/firedoor/proc/close_manually()
+	if(welded)
+		return FALSE
+	auto_closed = FALSE
+	if(operating)
+		nextstate = FIREDOOR_CLOSED_MANUAL
+		return TRUE
+	nextstate = null
+	return close(manual = TRUE)
+
 /obj/machinery/door/firedoor/hostile_lockdown(mob/origin)
 	lockdown_count++
 	if(machine_stat)
@@ -922,6 +933,9 @@
 		if(FIREDOOR_CLOSED)
 			nextstate = null
 			close()
+		if(FIREDOOR_CLOSED_MANUAL)
+			nextstate = null
+			close_manually()
 
 /obj/machinery/door/firedoor/border_only
 	icon = 'icons/obj/doors/edge_Doorfire.dmi'

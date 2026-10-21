@@ -259,7 +259,7 @@
 		return
 	COOLDOWN_START(src, last_alarm, FIREALARM_COOLDOWN)
 	var/area/A = get_base_area(src)
-	A.firealert(src)
+	A.firealert(src, manual = !!user)
 	playsound(loc, 'goon/sound/machinery/FireAlarm.ogg', 75)
 	if(user)
 		log_game("[user] triggered a fire alarm at [COORD(src)]")
