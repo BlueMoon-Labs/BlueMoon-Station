@@ -1263,6 +1263,7 @@
 		return FALSE
 	else if(M.brainmob.stat)
 		to_chat(user, span_warning("Бета-ритм ниже допустимого уровня!"))
+		return FALSE
 
 	var/mob/living/brain/B = M.brainmob
 	if(!user.transferItemToLoc(M, src))
