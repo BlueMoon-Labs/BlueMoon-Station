@@ -90,6 +90,9 @@
 			var/choice = tgui_alert(user, "Вы УВЕРЕНЫ, что хотите удалить картину? ДЕЙСТВИЕ НЕОБРАТИМО!", "Удаление картины из БД", list("Нет", "Да"))
 			if(choice != "Да")
 				return
+			// Race condition safecheck: Перепроверка портрета на индексе, если не совпало, мы не трогаем ничего
+			if(!current_list[chosen_idx] || current_list[chosen_idx]["md5"] != chosen_portrait["md5"] || current_list[chosen_idx]["ckey"] != chosen_portrait["ckey"])
+				return
 			current_list.Cut(chosen_idx, chosen_idx + 1)
 			var/author = chosen_portrait["ckey"] || chosen_portrait["author"] || "unknown"
 			var/png = "data/paintings/[asset_prefix]/[md5].png"
