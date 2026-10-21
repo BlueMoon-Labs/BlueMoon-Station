@@ -63,8 +63,8 @@ export const ModulesPane = () => {
                       <Stack.Item grow style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {item.name}
                         <Box fontSize="11px" color="label">
-                          {item.selected_left ? 'ЛКМ ' : ''}
-                          {item.selected_right ? 'ПКМ ' : ''}
+                          {item.selected_left ? 'Левый манипулятор ' : ''}
+                          {item.selected_right ? 'Правый манипулятор ' : ''}
                           {item.active ? 'Вкл' : ''}
                         </Box>
                       </Stack.Item>
@@ -142,13 +142,13 @@ const ModuleDetails = ({ module }: { module: MechModule }) => {
               <Button
                 selected={module.selected_left}
                 disabled={!data.can_equipment}
-                content="ЛКМ"
+                content="Левый манипулятор"
                 tooltip="Назначить на левую кнопку мыши. Колесо мыши переключает модуль для ЛКМ."
                 onClick={() => act('select_module', { ref: module.ref, button: 'left' })} />
               <Button
                 selected={module.selected_right}
                 disabled={!data.can_equipment}
-                content="ПКМ"
+                content="Правый манипулятор"
                 tooltip="Назначить на правую кнопку мыши. Shift + колесо мыши переключает модуль для ПКМ."
                 onClick={() => act('select_module', { ref: module.ref, button: 'right' })} />
             </LabeledList.Item>
