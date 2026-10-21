@@ -282,7 +282,7 @@ function stop_updates() {
 		if(href_list["id_card"])
 			var/obj/item/card/id/id_card
 			id_card = locate(href_list["id_card"])
-			if(!istype(id_card))
+			if(!istype(id_card) || !(id_card in usr.GetAllContents()) || !internals_access_allowed(usr))
 				return
 
 			if(href_list["req_access"])

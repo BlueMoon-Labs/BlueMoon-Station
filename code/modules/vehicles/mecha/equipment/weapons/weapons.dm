@@ -254,7 +254,8 @@
 
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/Topic(href, href_list)
-	..()
+	if(..())
+		return
 	if (href_list["rearm"])
 		src.rearm()
 	return
@@ -499,7 +500,8 @@
 		return ..()
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/punching_glove/Topic(href, href_list)
-	..()
+	if(..())
+		return
 	if(href_list["lethalPunch"])
 		harmful = !harmful
 		if(harmful)

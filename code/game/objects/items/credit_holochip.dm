@@ -60,6 +60,8 @@
 	add_overlay(holochip_overlay)
 
 /obj/item/holochip/proc/spend(amount, pay_anyway = FALSE)
+	if(!isnum(amount) || amount <= 0)
+		return 0
 	if(credits >= amount)
 		credits -= amount
 		if(credits == 0)
