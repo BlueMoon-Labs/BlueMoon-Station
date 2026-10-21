@@ -18,7 +18,7 @@ import { ModulesPane } from './ModulesPane';
 export const Mecha = () => {
   const { act, data } = useBackend<MainData>();
   const honk = useHonk(data.ui_honked ? 0.4 : 0);
-  const powerRatio = data.power_max ? data.power_level / data.power_max : 0;
+  const powerRatio = data.power_max ? (data.power_level ?? 0) / data.power_max : 0;
   const pressureHazard = data.cabin_pressure < data.cabin_pressure_hazard_min
     || data.cabin_pressure > data.cabin_pressure_hazard_max;
   const pressureWarning = data.cabin_pressure < data.cabin_pressure_warning_min
@@ -58,7 +58,7 @@ export const Mecha = () => {
                     <LabeledList.Item label={honk('Состояние')}>
                       <ProgressBar
                         className="Mecha__statusBar"
-                        value={data.integrity / data.integrity_max}
+                        value={data.integrity_max ? data.integrity / data.integrity_max : 0}
                         ranges={{
                           bad: [-Infinity, 0.3],
                           average: [0.3, 0.7],

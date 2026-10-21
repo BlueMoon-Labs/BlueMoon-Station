@@ -504,7 +504,7 @@
 	. = ..()
 	if(.)
 		return TRUE
-	if(action != "lethalPunch")
+	if(action != "lethalPunch" || !can_toggle_lethal)
 		return FALSE
 	harmful = !harmful
 	update_equip_info()
@@ -512,7 +512,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/punching_glove/get_ui_data()
 	. = ..()
-	.["snowflake"]["punching"] = TRUE
+	.["snowflake"]["punching"] = can_toggle_lethal
 	.["snowflake"]["harmful"] = harmful
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/punching_glove/action(mob/source, atom/target, params)

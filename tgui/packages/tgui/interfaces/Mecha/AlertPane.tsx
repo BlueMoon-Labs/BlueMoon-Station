@@ -26,11 +26,15 @@ export const AlertPane = () => {
     <Section title={honk('Статус')}>
       <Stack vertical>
         {Object.entries(data.internal_damage_keys).map(([key, flag]) => {
+          const description = damageDescriptions[key];
+          if (!description) {
+            return null;
+          }
           const damaged = !!(data.internal_damage & flag);
           const status = (
             <Box color={damaged ? 'bad' : 'good'}>
               <Icon mr={1} name={damaged ? 'exclamation-triangle' : 'check'} />
-              {honk(damageDescriptions[key][damaged ? 1 : 0])}
+              {honk(description[damaged ? 1 : 0])}
             </Box>
           );
           return (

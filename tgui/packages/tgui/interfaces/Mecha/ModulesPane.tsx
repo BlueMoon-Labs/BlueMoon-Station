@@ -175,6 +175,9 @@ const ModuleDetailsExtra = ({ module }: { module: MechModule }) => {
   const extra = module.snowflake;
   const control = (gear_action: string, params = {}) => act('equip_act', { ref: module.ref, gear_action, ...params });
   const disabled = !data.can_equipment;
+  if (!extra) {
+    return null;
+  }
   switch (extra.kind) {
     case 'mode':
       return (
@@ -195,7 +198,7 @@ const ModuleDetailsExtra = ({ module }: { module: MechModule }) => {
     case 'extinguisher':
       return (
         <LabeledList.Item label="Вода">
-          <ProgressBar value={extra.reagents / extra.total_reagents}>
+          <ProgressBar value={extra.total_reagents ? extra.reagents / extra.total_reagents : 0}>
             {extra.reagents} / {extra.total_reagents}
           </ProgressBar>
         </LabeledList.Item>
@@ -270,7 +273,7 @@ const ModuleDetailsExtra = ({ module }: { module: MechModule }) => {
         <>
           <LabeledList.Item label="Шприцы">{extra.syringe} / {extra.max_syringe}</LabeledList.Item>
           <LabeledList.Item label="Реагенты">
-            <ProgressBar value={extra.reagents / extra.total_reagents}>
+            <ProgressBar value={extra.total_reagents ? extra.reagents / extra.total_reagents : 0}>
               {extra.reagents} / {extra.total_reagents} ед.
             </ProgressBar>
           </LabeledList.Item>
@@ -313,6 +316,8 @@ const ModuleDetailsExtra = ({ module }: { module: MechModule }) => {
           </LabeledList.Item>
         </>
       );
+    default:
+      return null;
   }
 };
 
