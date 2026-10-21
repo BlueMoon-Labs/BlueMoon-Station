@@ -1229,3 +1229,12 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
 	can_adjust = FALSE
+
+/obj/item/clothing/under/donator/bm/crimson_dress
+	name = "Crimson Dress"
+	desc = "A crimson dress with black sleeves and a corset included. Upon closer inspection, one can tell that the garment was custom-made from expensive, high-quality materials. It carries the scent of roses, which its color brings to mind."
+	icon_state = "crimson_dress"
+	item_state = "crimson_dress"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	can_adjust = FALSE
