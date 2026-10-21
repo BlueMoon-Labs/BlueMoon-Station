@@ -185,6 +185,8 @@
 	if(istype(hostile_pawn))
 		if(hostile_pawn.ranged_cooldown > world.time)
 			return FALSE
+		if(hostile_pawn.escape_if_confined())
+			return FALSE
 		if(hostile_pawn.CheckRangedFireLane(target))
 			return FALSE
 		controller.note_combat_exchange()
