@@ -533,6 +533,7 @@
 #include "round_10294_profile_icon_benchmark.dm"
 #include "preferences_save_deferral.dm"
 #include "preferences_single_pref_coalescing.dm"
+#include "preview_pooled_dummies.dm"
 #include "image_leak_audit.dm"
 #include "radiation_contamination.dm"
 #include "radiation_storm_station.dm"
