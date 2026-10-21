@@ -3,8 +3,10 @@
 	var/generated = FALSE
 	var/mob/mob_to_recover
 	//Relatively easy mission.
-	min_payout = 75 * CARGO_CRATE_VALUE
-	max_payout = 150 * CARGO_CRATE_VALUE
+	min_payout = 65 * CARGO_CRATE_VALUE
+	max_payout = 125 * CARGO_CRATE_VALUE
+	var/vip_timeout = 0
+	var/vip_timer_id
 
 /datum/orbital_objective/vip_recovery/get_text()
 	return "Кто-то, представляющий особый интерес, находится по адресу [station_name]. Мы требуем его немедленно спасти. \
@@ -15,8 +17,7 @@
 /datum/orbital_objective/vip_recovery/get_target()
 	return mob_to_recover
 
-//WHITE-STEEL PORT: при выдаче задания фёрри пригоняется к дока «port bay 2» (ferry_home),
-//чтобы VIP было куда садиться.
+
 /datum/orbital_objective/vip_recovery/on_assign(obj/machinery/computer/objective/objective_computer)
 	. = ..()
 	var/obj/docking_port/mobile/ferry = SSshuttle.getShuttle("ferry")
@@ -24,8 +25,9 @@
 		SSshuttle.moveShuttle("ferry", "ferry_home", 1)
 
 /datum/orbital_objective/vip_recovery/Destroy()
-	//WHITE-STEEL FIX: VIP был добавлен в GLOB.mob_spawners[real_name] и держался этим
-	//глобальным списком даже после удаления задания/руины — снимаем его.
+	if(vip_timer_id)
+		deltimer(vip_timer_id)
+		vip_timer_id = null
 	if(!QDELETED(mob_to_recover))
 		var/target_name = mob_to_recover.real_name
 		if(istext(target_name))
@@ -35,28 +37,38 @@
 	mob_to_recover = null
 	return ..()
 
-//If nobody takes up the ghost role, then we dont care if they died.
-//I know, its a bit sad.
+
 /datum/orbital_objective/vip_recovery/check_failed()
 	if(generated)
-		//Deleted
 		if(QDELETED(mob_to_recover))
 			return TRUE
-		//Left behind
 		if(mob_to_recover in SSzclear.nullspaced_mobs)
 			return TRUE
-		//WHITE-STEEL PORT: как только VIP оказывается на борту фёрри — фёрри сам стартует на ЦК.
 		send_ferry_if_loaded()
-		//WHITE-STEEL PORT: VIP доставлен на ЦК на фёрри — награда игроку и удаление тела.
 		if(is_centcom_level(mob_to_recover.z) && mob_to_recover.stat == CONSCIOUS)
 			finish_vip_recovery()
 	return FALSE
 
-//WHITE-STEEL PORT: успешное завершение VIP-миссии. Игроку начисляется 1 М$, личная цель
-//помечается выполненной (для гринтекста), тело удаляется сразу по прибытии на ЦК (без
-//крио-капсулы), затем задание закрывается штатным пайаутом. Моб кэшируется заранее:
-//complete_objective() удаляет задание, а его Destroy() обнуляет mob_to_recover.
+/datum/orbital_objective/vip_recovery/proc/vip_expired()
+	if(completed)
+		return
+	if(QDELETED(src))
+		return
+	if(generated && !QDELETED(mob_to_recover) && is_centcom_level(mob_to_recover.z) && mob_to_recover.stat == CONSCIOUS)
+		return
+	if(generated && !QDELETED(mob_to_recover))
+		var/mob/living/vip = mob_to_recover
+		to_chat(vip, span_userdanger("Время вышло. Вас больше не будут эвакуировать."))
+		if(vip.client)
+			vip.ghostize()
+		qdel(vip)
+		mob_to_recover = null
+	remove_objective()
+
 /datum/orbital_objective/vip_recovery/proc/finish_vip_recovery()
+	if(vip_timer_id)
+		deltimer(vip_timer_id)
+		vip_timer_id = null
 	var/mob/living/vip = mob_to_recover
 	if(!QDELETED(vip) && isliving(vip))
 		award_vip_metadollars(vip)
@@ -64,9 +76,7 @@
 		despawn_vip(vip)
 	complete_objective()
 
-//WHITE-STEEL PORT: мгновенное удаление VIP-тела на ЦК без крио-капсулы и очереди SSauto_cryo.
-//Если игрок ещё в теле — сначала гоустим (клиент не должен остаться в удаляемом мобе), затем
-//удаляем тело. Без штрафа и без реролла целей: миссия уже засчитана как выполненная.
+
 /datum/orbital_objective/vip_recovery/proc/despawn_vip(mob/living/vip)
 	if(vip.client)
 		vip.ghostize()
@@ -131,26 +141,18 @@
 		/datum/outfit/hsc/vip/assistant,
 	)
 	created_human.equipOutfit(pick(vip_outfits))
-	//WHITE-STEEL PORT: VIP безоружен — всё оружие и патроны из сумки/пояса убираются, чтобы гражданское
-	//лицо не воевало с авангардом. Лодауты ERT-MOPP общие с настоящим ERT, поэтому чистим пост-фактум.
 	strip_vip_weapons(created_human)
-	//WHITE-STEEL PORT: VIP не умирает в космосе от разгермы и холода (те же трейты, что даёт мутация
-	//space_adaptation). HSC-лодаут — хардсьют с неснятым шлемом, поэтому без этого VIP задыхался в вакууме.
 	grant_vip_space_adaptation(created_human)
-	//WHITE-STEEL PORT: снять с VIP снаряжение нельзя (кроме маски) — иначе первый же встречный
-	//раздевает уникальную VIP-персону до трусов. TRAIT_NODROP блокирует и strip, и сброс.
 	lock_vip_equipment(created_human)
-	//WHITE-STEEL PORT: у VIP настоящая цель в mind — выжить и вернуться на ЦК.
 	created_human.mind.add_antag_datum(/datum/antagonist/vip_recovery)
 	mob_to_recover = created_human
 	generated = TRUE
-	//WHITE-STEEL PORT: повторяющийся опрос призраков за роль VIP, пока тело не занято.
-	start_ghost_role_poll(created_human, "VIP эвакуация: занять роль VIP-персоны?", POLL_IGNORE_SPLITPERSONALITY, "VIP-персоны", "Вы — VIP-персона! Задача: выжить на руине и вернуться на ЦК живым.")
+	vip_timeout = world.time + 15 MINUTES
+	if(vip_timer_id)
+		deltimer(vip_timer_id)
+	vip_timer_id = addtimer(CALLBACK(src, PROC_REF(vip_expired)), 15 MINUTES, TIMER_STOPPABLE)
+	start_ghost_role_poll(created_human, "VIP эвакуация: занять роль VIP-персоны?", POLL_IGNORE_SPLITPERSONALITY, "VIP-персоны", "Вы — VIP-персона! Задача: выжить на руине и вернуться на ЦК живым. У вас есть 15 минут на эвакуацию! За успешную миссию вам выплатят 1 метадоллар!")
 
-//WHITE-STEEL PORT: фиксируем надетое на VIP снаряжение, кроме маски и пояса. TRAIT_NODROP
-//используется движком в /obj/item/proc/canStrip(), поэтому снять вещи через strip-меню
-//нельзя; маску оставляем снимаемой (доступ к дыханию/лицу), а пояс (макаров из лодаута) —
-//снимаемым, чтобы игрок мог убрать/сменить оружие. Сбросить остальные вещи VIP не сможет.
 /datum/orbital_objective/vip_recovery/proc/lock_vip_equipment(mob/living/carbon/human/H)
 	if(!ishuman(H))
 		return
@@ -161,8 +163,6 @@
 			continue
 		ADD_TRAIT(equipped, TRAIT_NODROP, "vip_equipment_lock")
 
-//WHITE-STEEL PORT: убираем у VIP всё оружие и боеприпасы — где бы они ни лежали (пояс, сумка,
-//карманы, вложенные контейнеры). GetAllContents() рекурсивно обходит всё содержимое моба.
 /datum/orbital_objective/vip_recovery/proc/strip_vip_weapons(mob/living/carbon/human/H)
 	if(!ishuman(H))
 		return
@@ -170,8 +170,6 @@
 		if(istype(I, /obj/item/gun) || istype(I, /obj/item/ammo_box) || istype(I, /obj/item/ammo_casing) || istype(I, /obj/item/storage/box/ammo))
 			qdel(I)
 
-//WHITE-STEEL PORT: VIP не гибнет в космосе от разгермы и переохлаждения. Трейты идентичны мутации
-//space_adaptation; кислород по-прежнему требуется (бак и маска выдаются рядом с VIP на полу).
 /datum/orbital_objective/vip_recovery/proc/grant_vip_space_adaptation(mob/living/carbon/human/H)
 	if(!ishuman(H))
 		return
@@ -258,15 +256,12 @@
 //=====================
 // VIP: цель и роль
 //=====================
-//WHITE-STEEL PORT: настоящая цель VIP — выжить и вернуться на Центральное Командование.
 /datum/objective/vip_return
 	name = "Возвращение на ЦК"
 	explanation_text = "Выжить и вернуться на Центральное Командование."
 	completable = TRUE
 
 /datum/objective/vip_return/check_completion()
-	//WHITE-STEEL PORT: завершение могло быть зафиксировано вручную (finish_vip_recovery):
-	//VIP удаляется сразу по прибытии на ЦК, поэтому проверять живое тело на раунд-энде нельзя.
 	if(completed)
 		return TRUE
 	var/mob/living/L = owner?.current
@@ -296,8 +291,6 @@
 //=====================
 // VIP: урезанные копии HSC-лодаутов
 //=====================
-//WHITE-STEEL PORT: отдельные копии HSC-лодаутов для VIP (свой post_equip, без пост-эффектов ERT),
-//с оружием, урезанным до уровня MOPP (глушёный пистолет + карабин + патроны).
 /datum/outfit/hsc/vip
 	name = "VIP HSC Security"
 	belt = /obj/item/gun/ballistic/automatic/pistol/suppressed

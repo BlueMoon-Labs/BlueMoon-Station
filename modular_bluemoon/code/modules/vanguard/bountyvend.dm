@@ -69,8 +69,9 @@
 
 		// ============ MEDICAL ============
 		new /datum/data/bounty_equipment("First-Aid Kit",					/obj/item/storage/firstaid/regular,								100,	"Medical"),
-		new /datum/data/bounty_equipment("Brute First-Aid Kit",				/obj/item/storage/firstaid/brute,								150,	"Medical"),
-		new /datum/data/bounty_equipment("Burn First-Aid Kit",				/obj/item/storage/firstaid/fire,								150,	"Medical"),
+		new /datum/data/bounty_equipment("Brute First-Aid Kit",				/obj/item/storage/firstaid/brute,								250,	"Medical"),
+		new /datum/data/bounty_equipment("Burn First-Aid Kit",				/obj/item/storage/firstaid/fire,								250,	"Medical"),
+		new /datum/data/bounty_equipment("toxin treatment kit",				/obj/item/storage/firstaid/toxin,								350,	"Medical"),
 		new /datum/data/bounty_equipment("Survival Medipen",				/obj/item/reagent_containers/hypospray/medipen/survival,		500,	"Medical"),
 		new /datum/data/bounty_equipment("CMS",								/obj/item/stack/medical/fracture_kit/cms,						750,	"Medical"),
 		new /datum/data/bounty_equipment("Surv12",							/obj/item/stack/medical/fracture_kit/surv12,					1500,	"Medical"),
@@ -108,7 +109,7 @@
 
 		// ============ ELITE EQUIPMENT =========
 		new /datum/data/bounty_equipment("ACR-5m26",						/obj/item/gun/ballistic/automatic/acr5m30/pinvanguard,			20000,		"Elite Equipment"),
-		new /datum/data/bounty_equipment("Budget tactical first aid",		/obj/item/storage/firstaid/tactical/vanguard,					5000,		"Elite Equipment"),
+		new /datum/data/bounty_equipment("Budget tactical first aid",		/obj/item/storage/firstaid/tactical/vanguard,					10000,		"Elite Equipment"),
 		new /datum/data/bounty_equipment("ACR-5m26 spare mag (empty)",		/obj/item/ammo_box/magazine/acr5m30/empty,						2500,		"Elite Equipment"),
 		new /datum/data/bounty_equipment("Hoshi modular laser",				/obj/item/gun/energy/modular_laser_rifle/carbine/pinvanguard,	25000,		"Elite Equipment"),
 		new /datum/data/bounty_equipment("С-02 Permit",						/obj/item/clothing/accessory/permit/special/c_02,				5000,		"Elite Equipment"),
@@ -272,7 +273,7 @@
 			new /obj/item/storage/belt/military/assault/demolition(drop_location)
 			new /obj/item/extinguisher/mini(drop_location)
 			new /obj/item/storage/box/demolition(drop_location)
-			new /obj/item/clothing/glasses/meson/night(drop_location)
+			new /obj/item/clothing/glasses/meson(drop_location)
 			new /obj/item/clothing/gloves/combat(drop_location)
 		if("Field Surgeon")
 			new /obj/item/stack/medical/fracture_kit/cms(drop_location)
@@ -281,7 +282,7 @@
 			new /obj/item/storage/firstaid/vanguard(drop_location)
 			new /obj/item/shield/riot/pointman(drop_location)
 			new /obj/item/defibrillator/compact/loaded(drop_location)
-			new /obj/item/clothing/glasses/hud/health/night(drop_location)
+			new /obj/item/clothing/glasses/hud/health(drop_location)
 			new /obj/item/clothing/gloves/color/latex/nitrile(drop_location)
 		if("Combatant")
 			new /obj/item/storage/secure/briefcase/vanguard/p320(drop_location)
