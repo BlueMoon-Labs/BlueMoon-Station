@@ -66,6 +66,10 @@
 	inspector.mind_initialize("sol_shuttle_test")
 	commander.equip(inspector)
 	commander.special(inspector)
+	var/datum/mind/inspector_mind = inspector.mind
+	var/datum/antagonist/sol_inspector/inspector_role = inspector_mind.has_antag_datum(/datum/antagonist/sol_inspector)
+	var/datum/objective/sol_inspection_return/return_objective = locate() in inspector_role?.objectives
+	TEST_ASSERT_NOTNULL(return_objective, "The commander must get the return objective.")
 	TEST_ASSERT(locate(/obj/item/sol_inspection_scanner) in inspector.GetAllContents(), "The commander's equipped outfit must include an inspection scanner.")
 	var/mob/living/carbon/human/crew_member = allocate(/mob/living/carbon/human, get_turf(inspector_spawner))
 	inspector_spawner.equip(crew_member)
@@ -130,7 +134,9 @@
 	TEST_ASSERT(home_destination_visible(flight_console), "The console must automatically offer the CentCom berth once the stay expires.")
 	TEST_ASSERT_EQUAL(vessel.initiate_docking(vessel.home_dock), DOCKING_SUCCESS, "The vessel must return once the inspection period expires.")
 	TEST_ASSERT(team.returned_home, "Returning to CentCom must finish the inspection.")
-	TEST_ASSERT(team.is_returned_inspector(inspector.mind), "A living inspector aboard the returning ship must complete the objective.")
+	TEST_ASSERT(team.is_returned_inspector(inspector_mind), "A living inspector aboard the returning ship must complete the objective.")
+	TEST_ASSERT(QDELETED(inspector), "The returned inspector's body must be removed with sparks.")
+	TEST_ASSERT(return_objective.check_completion(), "The return objective must stay completed after the body is removed.")
 
 /// Check the destination data actually rendered by ShuttleConsole.
 /datum/unit_test/sol_inspection_shuttle/proc/home_destination_visible(obj/machinery/computer/shuttle/sol_inspection/console)

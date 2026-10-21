@@ -342,9 +342,13 @@
 /obj/item/dest_tagger/Topic(href, href_list)
 	if(!usr.canUseTopic(src, BE_CLOSE))
 		return
+	if(locked_destination)
+		return
 	add_fingerprint(usr)
 	if(href_list["nextTag"])
 		var/n = text2num(href_list["nextTag"])
+		if(n != round(n) || n < 1 || n > length(GLOB.TAGGERLOCATIONS))
+			return
 		currTag = n
 	openwindow(usr)
 
