@@ -34,7 +34,6 @@ export const Mecha = () => {
               <Stack.Item grow>
                 <Section
                   fill
-                  scrollable
                   title={data.name}
                   buttons={(
                     <Button
