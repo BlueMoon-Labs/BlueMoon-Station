@@ -97,14 +97,15 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 		// Create the heirloom item
 		heirloom = new heirloom_type(get_turf(quirk_holder))
 		heirloom.item_flags |= FAMILY_HEIRLOOM
-		// Determine and assign item location
-		var/list/slots = list(
-			"В левом кармане" = ITEM_SLOT_LPOCKET,
-			"В правом кармане" = ITEM_SLOT_RPOCKET,
-			"В рюкзаке" = ITEM_SLOT_BACKPACK
-		)
-		where = human_holder.equip_in_one_of_slots(heirloom, slots, FALSE) || "под ногами"
-	// BLUEMOON EDIT END
+	// Новую реликвию надеваем или кладём в рюкзак; при необходимости общий прок создаст рюкзак.
+	if(spawn_items && !human_holder.contains_atom(heirloom))
+		if(human_holder.equip_to_appropriate_slot(heirloom))
+			where = "В твоём снаряжении"
+		else
+			where = human_holder.equip_in_one_of_slots(heirloom, list("В рюкзаке" = ITEM_SLOT_BACKPACK), qdel_on_fail = FALSE, critical = TRUE)
+			if(where == ITEM_SLOT_BACK)
+				where = "В рюкзаке"
+			where ||= "под ногами"
 	// Add to global list
 	GLOB.family_heirlooms += heirloom
 	RegisterSignal(heirloom, COMSIG_PARENT_QDELETING, PROC_REF(on_heirloom_deleted))

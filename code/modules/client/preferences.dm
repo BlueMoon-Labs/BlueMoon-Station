@@ -6252,11 +6252,13 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 		return 100
 
 // Административная выдача пересоздаёт квирки со всеми стартовыми эффектами и вещами.
-/datum/preferences/proc/apply_spawn_quirks(mob/living/character)
+/datum/preferences/proc/apply_spawn_quirks(mob/living/character, obj/item/new_heirloom)
 	if(QDELETED(character))
 		return FALSE
 	for(var/datum/quirk/quirk as anything in character.roundstart_quirks.Copy())
 		character.remove_quirk(quirk.type)
+	// Административная выдача использует только новую реликвию текущего комплекта, а не ссылку от прежнего тела.
+	character.mind?.set_assigned_heirloom(new_heirloom)
 	SSquirks.AssignQuirks(character, character.client, TRUE, TRUE, null, FALSE, character, spawn_items = TRUE, preferences_source = src)
 	return TRUE
 

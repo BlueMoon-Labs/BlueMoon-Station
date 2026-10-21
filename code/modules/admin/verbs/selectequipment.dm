@@ -288,15 +288,18 @@
 	SSblackbox.record_feedback("tally", "admin_verb", 1, "Select Equipment") //If you are copy-pasting this, ensure the 2nd parameter is unique to the new proc!
 	for(var/obj/item/item in human_target.get_equipped_items(delete_pocket))
 		qdel(item)
+	var/obj/item/new_heirloom
 	if(istype(dresscode, /datum/outfit/admin_loadout))
+		human_target.mind?.set_assigned_heirloom(null)
 		if(human_target.client?.prefs)
 			human_target.client.prefs.copy_to(human_target, icon_updates = TRUE, roundstart_checks = FALSE)
 		SSjob.equip_loadout(null, human_target, bypass_prereqs = TRUE)
+		new_heirloom = human_target.mind?.assigned_heirloom
 	else if(dresscode != "Naked")
 		human_target.equipOutfit(dresscode)
 
 	if(apply_quirks && human_target.client?.prefs)
-		human_target.client.prefs.apply_spawn_quirks(human_target)
+		human_target.client.prefs.apply_spawn_quirks(human_target, new_heirloom = new_heirloom)
 
 	human_target.regenerate_icons()
 
