@@ -135,20 +135,22 @@
 	))
 
 //Interdyne Uniforms
-// Worn-спрайты: modular_bluemoon/icons/mob/Interdyne/under/syndicate.dmi (есть и syndicate_digi.dmi для лапок, пока не подключён)
 /obj/item/clothing/under/syndicate/interdyne
 	name = "interdyne turtleneck"
 	desc = "Элегантная белая водолазка с оттенком фирменного зелёного Interdyne в паре с угольно-чёрными карго-штанами."
 	icon = 'modular_bluemoon/icons/obj/Interdyne/syndicate.dmi'
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/Interdyne/under/syndicate.dmi'
+	anthro_mob_worn_overlay = 'modular_bluemoon/icons/mob/Interdyne/under/syndicate_digi.dmi'
 	icon_state = "ip_turtleneck"
 	item_state = "ip_turtleneck"
 
+// В syndicate_digi.dmi нет ip_miner - на лапах обычный спрайт.
 /obj/item/clothing/under/syndicate/interdyne/miner
 	name = "interdyne jumpsuit"
 	desc = "Чёрно-зелёный комбинезон Interdyne Pharmaceutics с усиленными волокнами."
 	icon_state = "ip_miner"
 	item_state = "ip_miner"
+	mutantrace_variation = USE_TAUR_CLIP_MASK
 
 /obj/item/clothing/under/syndicate/interdyne/deckofficer
 	name = "deck officer's jumpsuit"
