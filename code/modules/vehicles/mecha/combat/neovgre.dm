@@ -1,4 +1,5 @@
 /obj/vehicle/sealed/mecha/combat/neovgre
+	mecha_type = MECHA_TYPE_COMBAT | MECHA_TYPE_NEOVGRE
 	name = "Neovgre, the Anima Bulwark"
 	desc = "Самое мощное творение Nezbere, могучая боевая машина несравненной мощи, о которой говорят, что она заканчивала войны за одну ночь. Вооружена тяжёлым лазером и генератором тесла-сфер. Требует пилота и стрелка."
 	icon = 'icons/mecha/neovgre.dmi'
@@ -106,8 +107,4 @@
 	name = "Arbiter Laser Cannon"
 	desc = "Пожалуйста, прикрепите это обратно к Neovgre и перестаньте спрашивать, почему оно выглядит как обычный лазерный пулемёт Solaris выпуска Nanotrasen — Nezbere"
 	fire_sound = 'sound/weapons/neovgre_laser.ogg'
-
-/obj/item/mecha_parts/mecha_equipment/weapon/energy/laser/heavy/neovgre/can_attach(obj/vehicle/sealed/mecha/combat/neovgre/M)
-	if(..() && (M.is_emagged() || istype(M)))
-		return TRUE
-	return FALSE
+	compatible_mecha_types = MECHA_TYPE_NEOVGRE

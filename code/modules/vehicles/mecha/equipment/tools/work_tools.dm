@@ -3,6 +3,7 @@
 
 
 /obj/item/mecha_parts/mecha_equipment/hydraulic_clamp
+	compatible_mecha_types = MECHA_TYPE_RIPLEY
 	name = "hydraulic clamp"
 	desc = "Оборудование для инженерных экзокостюмов. Поднимает объекты и загружает их в грузовой отсек."
 	icon_state = "mecha_clamp"
@@ -15,12 +16,6 @@
 	var/obj/vehicle/sealed/mecha/working/ripley/cargo_holder
 	harmful = TRUE
 	mech_flags = EXOSUIT_MODULE_RIPLEY
-
-/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp/can_attach(obj/vehicle/sealed/mecha/working/ripley/M)
-	if(..())
-		if(M.is_emagged() || istype(M))
-			return TRUE
-	return FALSE
 
 // Только у рипли есть карго отсек
 /obj/item/mecha_parts/mecha_equipment/hydraulic_clamp/attach(obj/vehicle/sealed/mecha/working/ripley/M)
@@ -191,6 +186,7 @@
 
 
 /obj/item/mecha_parts/mecha_equipment/extinguisher
+	compatible_mecha_types = MECHA_TYPE_WORKING
 	name = "exosuit extinguisher"
 	desc = "Оборудование для инженерных экзокостюмов. Быстродействующий огнетушитель большой ёмкости."
 	icon_state = "mecha_exting"
@@ -250,12 +246,6 @@
 /obj/item/mecha_parts/mecha_equipment/extinguisher/get_ui_data()
 	. = ..()
 	.["snowflake"] = list("kind" = "extinguisher", "reagents" = reagents.total_volume, "total_reagents" = reagents.maximum_volume)
-
-/obj/item/mecha_parts/mecha_equipment/extinguisher/can_attach(obj/vehicle/sealed/mecha/working/M as obj)
-	if(..())
-		if(M.is_emagged() || istype(M))
-			return TRUE
-	return FALSE
 
 
 
@@ -355,28 +345,11 @@
 
 //Dunno where else to put this so shrug
 /obj/item/mecha_parts/mecha_equipment/ripleyupgrade
+	compatible_mecha_types = MECHA_TYPE_RIPLEY
 	name = "Ripley MK-II Conversion Kit"
 	desc = "Комплект для переоборудования автономного погрузчика APLU MK-I в более медлительную, но пригодную для космоса модель MK-II. Этот комплект нельзя удалить после установки."
 	icon_state = "tesla"
 	mech_flags = EXOSUIT_MODULE_RIPLEY
-
-/obj/item/mecha_parts/mecha_equipment/ripleyupgrade/can_attach(obj/vehicle/sealed/mecha/working/ripley/M)
-	if(M.type != /obj/vehicle/sealed/mecha/working/ripley)
-		to_chat(loc, "<span class='warning'>This conversion kit can only be applied to APLU MK-I models.</span>")
-		return FALSE
-	if(M.cargo.len)
-		to_chat(loc, "<span class='warning'>[M]'s cargo hold must be empty before this conversion kit can be applied.</span>")
-		return FALSE
-	if(!(M.mecha_flags & ADDING_MAINT_ACCESS_POSSIBLE)) //non-removable upgrade, so lets make sure the pilot or owner has their say.
-		to_chat(loc, "<span class='warning'>[M] must have maintenance protocols active in order to allow this conversion kit.</span>")
-		return FALSE
-	if(LAZYLEN(M.occupants)) //We're actualy making a new mech and swapping things over, it might get weird if players are involved
-		to_chat(loc, "<span class='warning'>[M] must be unoccupied before this conversion kit can be applied.</span>")
-		return FALSE
-	if(!M.cell) //Turns out things break if the cell is missing
-		to_chat(loc, "<span class='warning'>The conversion process requires a cell installed.</span>")
-		return FALSE
-	return TRUE
 
 /obj/item/mecha_parts/mecha_equipment/ripleyupgrade/attach(obj/vehicle/sealed/mecha/M)
 	var/obj/vehicle/sealed/mecha/working/ripley/mkii/N = new /obj/vehicle/sealed/mecha/working/ripley/mkii(get_turf(M),1)

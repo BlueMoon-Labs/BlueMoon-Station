@@ -1,4 +1,5 @@
 /obj/vehicle/sealed/mecha/combat/honker
+	mecha_type = MECHA_TYPE_COMBAT | MECHA_TYPE_HONKER
 	desc = "Произведён \"Tyranny of Honk, INC\", этот экзокостюм разработан как тяжёлая поддержка клоунов. Используется для распространения веселья и радости жизни. ХОНК!"
 	name = "\improper H.O.N.K"
 	icon_state = "honker"

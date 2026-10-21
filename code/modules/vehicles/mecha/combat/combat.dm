@@ -1,4 +1,5 @@
 /obj/vehicle/sealed/mecha/combat
+	mecha_type = MECHA_TYPE_COMBAT
 	force = 30
 	internals_req_access = list(ACCESS_ROBOTICS, ACCESS_SECURITY)
 	internal_damage_threshold = 50

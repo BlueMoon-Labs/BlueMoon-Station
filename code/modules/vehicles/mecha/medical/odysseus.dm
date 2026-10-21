@@ -1,3 +1,6 @@
+/obj/vehicle/sealed/mecha/medical
+	mecha_type = MECHA_TYPE_MEDICAL
+
 /obj/vehicle/sealed/mecha/medical/odysseus
 	desc = "Эти экзокостюмы разработаны и произведены Vey-Med. (&copy; Все права защищены)."
 	name = "\improper Odysseus"

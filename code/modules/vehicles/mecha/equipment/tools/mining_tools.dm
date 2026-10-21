@@ -20,6 +20,7 @@
 	var/drill_level = DRILL_BASIC
 	var/is_drilling = 0;
 	mech_flags = EXOSUIT_MODULE_WORKING | EXOSUIT_MODULE_COMBAT
+	compatible_mecha_types = MECHA_TYPE_WORKING | MECHA_TYPE_COMBAT
 
 /obj/item/mecha_parts/mecha_equipment/drill/Initialize(mapload)
 	. = ..()
@@ -121,12 +122,6 @@
 		var/obj/vehicle/sealed/mecha/working/ripley/R = chassis //we could assume that it's a ripley because it has a clamp, but that's ~unsafe~ and ~bad practice~
 		R.collect_ore()
 
-/obj/item/mecha_parts/mecha_equipment/drill/can_attach(obj/vehicle/sealed/mecha/M as obj)
-	if(..())
-		if(M.is_emagged() || istype(M, /obj/vehicle/sealed/mecha/working) || istype(M, /obj/vehicle/sealed/mecha/combat))
-			return TRUE
-	return FALSE
-
 /obj/item/mecha_parts/mecha_equipment/drill/attach(obj/vehicle/sealed/mecha/M)
 	..()
 	var/datum/component/butchering/butchering = src.GetComponent(/datum/component/butchering)
@@ -186,16 +181,11 @@
 	equip_cooldown = 15
 	var/scanning_time = 0
 	mech_flags = EXOSUIT_MODULE_WORKING
+	compatible_mecha_types = MECHA_TYPE_WORKING
 
 /obj/item/mecha_parts/mecha_equipment/mining_scanner/Initialize(mapload)
 	. = ..()
 	START_PROCESSING(SSfastprocess, src)
-
-/obj/item/mecha_parts/mecha_equipment/mining_scanner/can_attach(obj/vehicle/sealed/mecha/M as obj)
-	if(..())
-		if(M.is_emagged() || istype(M, /obj/vehicle/sealed/mecha/working))
-			return TRUE
-	return FALSE
 
 /obj/item/mecha_parts/mecha_equipment/mining_scanner/process()
 	if(!loc)

@@ -1,4 +1,5 @@
 /obj/vehicle/sealed/mecha/working
+	mecha_type = MECHA_TYPE_WORKING
 	internal_damage_threshold = 60
 
 /obj/vehicle/sealed/mecha/working/Move()

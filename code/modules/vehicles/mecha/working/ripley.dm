@@ -1,4 +1,5 @@
 /obj/vehicle/sealed/mecha/working/ripley
+	mecha_type = MECHA_TYPE_WORKING | MECHA_TYPE_RIPLEY
 	desc = "Автономный погрузочный агрегат MK-I. Разработан в первую очередь для тяжёлых подъёмов, Ripley может быть оснащён различным оборудованием для выполнения множества задач."
 	name = "\improper APLU MK-I \"Ripley\""
 	icon_state = "ripley"

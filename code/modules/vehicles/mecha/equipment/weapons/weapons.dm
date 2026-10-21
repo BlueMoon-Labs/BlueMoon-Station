@@ -11,15 +11,7 @@
 	var/firing_effect_type = /obj/effect/temp_visual/dir_setting/firing_effect	//the visual effect appearing when the weapon is fired.
 	var/kickback = TRUE //Will using this weapon in no grav push mecha back.
 	mech_flags = EXOSUIT_MODULE_COMBAT
-
-/obj/item/mecha_parts/mecha_equipment/weapon/can_attach(obj/vehicle/sealed/mecha/M)
-	if(!..())
-		return FALSE
-	if(M.is_emagged() || istype(M, /obj/vehicle/sealed/mecha/combat))
-		return TRUE
-	if((locate(/obj/item/mecha_parts/concealed_weapon_bay) in M.contents) && !(locate(/obj/item/mecha_parts/mecha_equipment/weapon) in M.equipment))
-		return TRUE
-	return FALSE
+	compatible_mecha_types = MECHA_TYPE_COMBAT
 
 /obj/item/mecha_parts/mecha_equipment/weapon/action(mob/source, atom/target, params)
 	if(!action_checks(target))
@@ -122,6 +114,7 @@
 	harmful = TRUE
 
 /obj/item/mecha_parts/mecha_equipment/weapon/energy/plasma
+	compatible_mecha_types = NONE
 	equip_cooldown = 10
 	name = "217-D Heavy Plasma Cutter"
 	desc = "Устройство, стреляющее резонансными плазменными импульсами на экстремальной скорости. Импульсы способны дробить камень и разрушать твёрдые препятствия."
@@ -132,13 +125,6 @@
 	projectile = /obj/item/projectile/plasma/adv/mech
 	fire_sound = 'sound/weapons/plasma_cutter.ogg'
 	harmful = TRUE
-
-/obj/item/mecha_parts/mecha_equipment/weapon/energy/plasma/can_attach(obj/vehicle/sealed/mecha/M)
-	if(..()) //combat mech
-		return TRUE
-	else if(LAZYLEN(M.equipment) < M.max_equip)
-		return TRUE
-	return FALSE
 
 /obj/item/mecha_parts/mecha_equipment/weapon/energy/taser
 	name = "\improper PBT \"Pacifier\" mounted taser"
@@ -151,6 +137,7 @@
 
 
 /obj/item/mecha_parts/mecha_equipment/weapon/honker
+	compatible_mecha_types = MECHA_TYPE_HONKER
 	name = "\improper HoNkER BlAsT 5000"
 	desc = "Оборудование для клоунских экзокостюмов. Распространяет веселье и радость вокруг. Хонк!"
 	icon_state = "mecha_honker"
@@ -159,14 +146,6 @@
 	range = MECHA_MELEE|MECHA_RANGED
 	kickback = FALSE
 	mech_flags = EXOSUIT_MODULE_HONK
-
-/obj/item/mecha_parts/mecha_equipment/weapon/honker/can_attach(obj/vehicle/sealed/mecha/mecha)
-	. = ..()
-	if(!.)
-		return
-	if(!mecha.is_emagged() && !istype(mecha, /obj/vehicle/sealed/mecha/combat/honker))
-		return FALSE
-
 
 /obj/item/mecha_parts/mecha_equipment/weapon/honker/action(mob/source, atom/target, params)
 	if(!action_checks(target))
@@ -434,6 +413,7 @@
 	ammo_type = "clusterbang"
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/banana_mortar
+	compatible_mecha_types = MECHA_TYPE_HONKER
 	name = "banana mortar"
 	desc = "Оборудование для клоунских экзокостюмов. Запускает банановые шкурки."
 	icon_state = "mecha_bananamrtr"
@@ -445,13 +425,8 @@
 	equip_cooldown = 20
 	mech_flags = EXOSUIT_MODULE_HONK
 
-/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/banana_mortar/can_attach(obj/vehicle/sealed/mecha/combat/honker/M)
-	if(..())
-		if(M.is_emagged() || istype(M))
-			return TRUE
-	return FALSE
-
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/mousetrap_mortar
+	compatible_mecha_types = MECHA_TYPE_HONKER
 	name = "mousetrap mortar"
 	desc = "Оборудование для клоунских экзокостюмов. Запускает готовые мышеловки."
 	icon_state = "mecha_mousetrapmrtr"
@@ -463,18 +438,13 @@
 	equip_cooldown = 10
 	mech_flags = EXOSUIT_MODULE_HONK
 
-/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/mousetrap_mortar/can_attach(obj/vehicle/sealed/mecha/combat/honker/M)
-	if(..())
-		if(M.is_emagged() || istype(M))
-			return TRUE
-	return FALSE
-
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/mousetrap_mortar/proj_init(obj/item/assembly/mousetrap/armed/M)
 	M.secured = 1
 
 
 //Classic extending punching glove, but weaponised!
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/punching_glove
+	compatible_mecha_types = MECHA_TYPE_HONKER
 	name = "\improper Oingo Boingo Punch-face"
 	desc = "Оборудование для клоунских экзокостюмов. Доставляет веселье прямо в лицо!"
 	icon_state = "mecha_punching_glove"
@@ -493,12 +463,6 @@
 	/// TRUE - Can toggle between lethal and non-lethal || FALSE - Cannot toggle
 	var/can_toggle_lethal = TRUE
 	mech_flags = EXOSUIT_MODULE_HONK
-
-/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/punching_glove/can_attach(obj/vehicle/sealed/mecha/combat/honker/M)
-	if(..())
-		if(M.is_emagged() || istype(M))
-			return TRUE
-	return FALSE
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/punching_glove/handle_ui_act(action, list/params)
 	. = ..()

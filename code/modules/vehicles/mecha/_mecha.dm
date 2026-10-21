@@ -58,6 +58,8 @@
 	var/construction_state = MECHA_LOCKED
 	///Contains flags for the mecha
 	var/mecha_flags = ADDING_ACCESS_POSSIBLE | CANSTRAFE | IS_ENCLOSED | HAS_LIGHTS
+	// Категории шасси для проверки совместимости с модулями.
+	var/mecha_type = NONE
 	///Stores the DNA enzymes of a carbon so tht only they can access the mech
 	var/dna_lock
 	/// Имя владельца на момент установки ДНК-замка; в desc не добавляется.

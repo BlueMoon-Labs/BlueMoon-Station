@@ -15,6 +15,8 @@
 	var/range = MECHA_MELEE
 	/// Bitflag. Used by exosuit fabricator to assign sub-categories based on which exosuits can equip this.
 	var/mech_flags = NONE
+	// Допустимые категории шасси; NONE разрешает установку на любой мех.
+	var/compatible_mecha_types = NONE
 	var/salvageable = 1
 	var/detachable = TRUE // Set to FALSE for built-in equipment that cannot be removed
 	var/selectable = 1	// Set to 0 for passive equipment such as mining scanner or armor plates
@@ -105,8 +107,35 @@
 	return chassis && (get_dir(chassis, target) & chassis.dir)
 
 /obj/item/mecha_parts/mecha_equipment/proc/can_attach(obj/vehicle/sealed/mecha/M)
-	if(LAZYLEN(M.equipment)<M.max_equip)
+	if(!istype(M))
+		return FALSE
+	// Комплект заменяет шасси, не занимая слот: емаг не отменяет требования к переоборудованию.
+	if(istype(src, /obj/item/mecha_parts/mecha_equipment/ripleyupgrade))
+		if(M.type != /obj/vehicle/sealed/mecha/working/ripley)
+			to_chat(loc, span_warning("Этот комплект переоборудования подходит только для моделей APLU MK-I."))
+			return FALSE
+		var/obj/vehicle/sealed/mecha/working/ripley/ripley = M
+		if(length(ripley.cargo))
+			to_chat(loc, span_warning("Перед переоборудованием необходимо освободить грузовой отсек [M]."))
+			return FALSE
+		if(!(M.mecha_flags & ADDING_MAINT_ACCESS_POSSIBLE))
+			to_chat(loc, span_warning("Для переоборудования [M] необходимо разрешить техобслуживание."))
+			return FALSE
+		if(LAZYLEN(M.occupants))
+			to_chat(loc, span_warning("Перед переоборудованием все пассажиры должны покинуть [M]."))
+			return FALSE
+		if(!M.cell)
+			to_chat(loc, span_warning("Для переоборудования необходима установленная батарея."))
+			return FALSE
 		return TRUE
+	if(LAZYLEN(M.equipment) >= M.max_equip)
+		return FALSE
+	if(M.is_emagged() || !compatible_mecha_types || (compatible_mecha_types & M.mecha_type))
+		return TRUE
+	// Скрытый отсек разрешает одно обычное оружие, сохраняя ограничения специальных моделей.
+	if((compatible_mecha_types & MECHA_TYPE_COMBAT) && istype(src, /obj/item/mecha_parts/mecha_equipment/weapon))
+		return (locate(/obj/item/mecha_parts/concealed_weapon_bay) in M.contents) && !(locate(/obj/item/mecha_parts/mecha_equipment/weapon) in M.equipment)
+	return FALSE
 
 /obj/item/mecha_parts/mecha_equipment/proc/attach(obj/vehicle/sealed/mecha/M)
 	LAZYADD(M.equipment, src)
