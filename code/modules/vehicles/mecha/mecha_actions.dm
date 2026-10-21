@@ -45,8 +45,9 @@
 	. = ..()
 	if(!button || !equipment || !chassis || !IsAvailable(TRUE))
 		return
-	var/active = equipment.ui_toggle_action ? equipment.is_ui_active() : (chassis.selected == equipment || chassis.selected_right == equipment)
-	if(active)
+	if(!equipment.ui_toggle_action && chassis.selected_right == equipment)
+		button.color = COLOR_GOLD
+	else if(equipment.ui_toggle_action ? equipment.is_ui_active() : chassis.selected == equipment)
 		button.color = "#aaffaa"
 	button.desc = equipment.ui_toggle_action ? "Включить или выключить модуль." : "ЛКМ: выбрать модуль для ЛКМ. ПКМ: выбрать модуль для ПКМ. Повторное нажатие снимает выбор."
 
@@ -85,50 +86,6 @@
 	to_chat(chassis.occupants, "[icon2html(chassis, owner)]<span class='notice'>Now taking air from [chassis.use_internal_tank?"internal airtank":"environment"].</span>")
 	chassis.log_message("Now taking air from [chassis.use_internal_tank?"internal airtank":"environment"].", LOG_MECHA)
 	UpdateButtons()
-
-/datum/action/vehicle/sealed/mecha/mech_cycle_equip
-	name = "Следующий модуль"
-	button_icon_state = "mech_cycle_equip_off"
-
-/datum/action/vehicle/sealed/mecha/mech_cycle_equip/Trigger()
-	if(!owner || !chassis || !(owner in chassis.occupants))
-		return
-
-	var/list/available_equipment = list()
-	for(var/e in chassis.equipment)
-		var/obj/item/mecha_parts/mecha_equipment/equipment = e
-		if(equipment.selectable)
-			available_equipment += equipment
-
-	if(available_equipment.len == 0)
-		to_chat(owner, "[icon2html(chassis, owner)]<span class='warning'>No equipment available!</span>")
-		return
-	if(!chassis.selected)
-		chassis.selected = available_equipment[1]
-		to_chat(owner, "[icon2html(chassis, owner)]<span class='notice'>You select [chassis.selected].</span>")
-		chassis.update_equipment_buttons()
-		SStgui.update_uis(chassis)
-		button_icon_state = "mech_cycle_equip_on"
-		UpdateButtons()
-		return
-	var/number = 0
-	for(var/equipment in available_equipment)
-		number++
-		if(equipment != chassis.selected)
-			continue
-		if(available_equipment.len == number)
-			chassis.selected = null
-			to_chat(owner, "[icon2html(chassis, owner)]<span class='notice'>You switch to no equipment.</span>")
-			button_icon_state = "mech_cycle_equip_off"
-		else
-			chassis.selected = available_equipment[number+1]
-			to_chat(owner, "[icon2html(chassis, owner)]<span class='notice'>You switch to [chassis.selected].</span>")
-			button_icon_state = "mech_cycle_equip_on"
-		chassis.update_equipment_buttons()
-		SStgui.update_uis(chassis)
-		UpdateButtons()
-		return
-
 
 /datum/action/vehicle/sealed/mecha/mech_toggle_lights
 	name = "Переключить освещение"
@@ -263,14 +220,14 @@
 
 /datum/action/vehicle/sealed/mecha/mech_zoom
 	name = "Увеличение обзора"
-	button_icon_state = "mech_zoom_off"
+	icon_icon = 'icons/mob/actions/actions_items.dmi'
+	button_icon_state = "sniper_zoom"
 
 /datum/action/vehicle/sealed/mecha/mech_zoom/Trigger()
 	if(!owner || !chassis || !(owner in chassis.occupants))
 		return
 	if(owner.client)
 		chassis.zoom_mode = !chassis.zoom_mode
-		button_icon_state = "mech_zoom_[chassis.zoom_mode ? "on" : "off"]"
 		chassis.log_message("Toggled zoom mode.", LOG_MECHA)
 		to_chat(owner, "[icon2html(chassis, owner)]<font color='[chassis.zoom_mode?"blue":"red"]'>Zoom mode [chassis.zoom_mode?"en":"dis"]abled.</font>")
 		if(chassis.zoom_mode)
@@ -356,11 +313,12 @@
 
 /datum/action/vehicle/sealed/mecha/syndicate/mech_zoom
 	name = "Увеличение обзора"
+	icon_icon = 'icons/mob/actions/actions_items.dmi'
+	button_icon_state = "sniper_zoom"
 
 /datum/action/vehicle/sealed/mecha/syndicate/mech_zoom/Trigger()
     if(owner.client)
         chassis.zoom_mode = !chassis.zoom_mode
-        button_icon_state = "mech_zoom_[chassis.zoom_mode ? "on" : "off"]"
         chassis.log_message("Toggled zoom mode.", LOG_MECHA)
         to_chat(owner, "[icon2html(chassis, owner)]<font color='[chassis.zoom_mode?"blue":"red"]'>Zoom mode [chassis.zoom_mode?"en":"dis"]abled.</font>")
         if(chassis.zoom_mode)
@@ -382,11 +340,12 @@
 
 /datum/action/vehicle/sealed/mecha/russian/mech_zoom
 	name = "Увеличение обзора"
+	icon_icon = 'icons/mob/actions/actions_items.dmi'
+	button_icon_state = "sniper_zoom"
 
 /datum/action/vehicle/sealed/mecha/russian/mech_zoom/Trigger()
     if(owner.client)
         chassis.zoom_mode = !chassis.zoom_mode
-        button_icon_state = "mech_zoom_[chassis.zoom_mode ? "on" : "off"]"
         chassis.log_message("Toggled zoom mode.", LOG_MECHA)
         to_chat(owner, "[icon2html(chassis, owner)]<font color='[chassis.zoom_mode?"blue":"red"]'>Zoom mode [chassis.zoom_mode?"en":"dis"]abled.</font>")
         if(chassis.zoom_mode)
@@ -408,11 +367,12 @@
 
 /datum/action/vehicle/sealed/mecha/sol/mech_zoom
 	name = "Увеличение обзора"
+	icon_icon = 'icons/mob/actions/actions_items.dmi'
+	button_icon_state = "sniper_zoom"
 
 /datum/action/vehicle/sealed/mecha/sol/mech_zoom/Trigger()
     if(owner.client)
         chassis.zoom_mode = !chassis.zoom_mode
-        button_icon_state = "mech_zoom_[chassis.zoom_mode ? "on" : "off"]"
         chassis.log_message("Toggled zoom mode.", LOG_MECHA)
         to_chat(owner, "[icon2html(chassis, owner)]<font color='[chassis.zoom_mode?"blue":"red"]'>Zoom mode [chassis.zoom_mode?"en":"dis"]abled.</font>")
         if(chassis.zoom_mode)

@@ -202,8 +202,3 @@
 		for(var/pilot in module.pilot_actions)
 			var/datum/action/action = module.pilot_actions[pilot]
 			action.UpdateButtons()
-	for(var/pilot in occupants)
-		var/datum/action/vehicle/sealed/mecha/mech_cycle_equip/cycle = LAZYACCESSASSOC(occupant_actions, pilot, /datum/action/vehicle/sealed/mecha/mech_cycle_equip)
-		if(cycle)
-			cycle.button_icon_state = "mech_cycle_equip_[selected ? "on" : "off"]"
-			cycle.UpdateButtons()
