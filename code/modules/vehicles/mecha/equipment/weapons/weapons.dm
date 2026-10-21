@@ -182,19 +182,39 @@
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic
 	name = "general ballistic weapon"
 	fire_sound = 'sound/weapons/shot.ogg'
+	mecha_subcategory_flags = EXISUIT_WEAPON_MODULE_BALLISTIC // Баллистическое оружие.
 	var/projectiles
 	var/projectiles_cache //ammo to be loaded in, if possible.
 	var/projectiles_cache_max
 	var/projectile_energy_cost
 	var/disabledreload //For weapons with no cache (like the rockets) which are reloaded by hand
 	var/ammo_type
-	mecha_subcategory_flags = EXISUIT_WEAPON_MODULE_BALLISTIC // BLUEMOON ADD
+	var/self_reloading = FALSE
+
+/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/attack_self(mob/user)
+	if(self_reloading || !can_self_reload(user))
+		return
+	self_reloading = TRUE
+	playsound(user, 'modular_bluemoon/krashly/sound/items/shotgun_pickup.ogg', 60, 1)
+	to_chat(user, span_notice("Вы начинаете перезаряжать [src]."))
+	var/completed = do_after(user, 2 SECONDS, target = src, extra_checks = CALLBACK(src, PROC_REF(can_self_reload), user), progress_loc = chassis)
+	self_reloading = FALSE
+	if(!completed || !can_self_reload(user))
+		return
+	rearm(user)
+
+/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/proc/can_self_reload(mob/user)
+	if(!chassis || !(src in chassis.equipment) || !chassis.is_occupant(user) || !(chassis.occupants[user] & VEHICLE_CONTROL_EQUIPMENT))
+		return FALSE
+	if(user.shared_ui_interaction(chassis) != UI_INTERACTIVE || disabledreload || projectiles >= initial(projectiles))
+		return FALSE
+	return projectile_energy_cost ? chassis.has_charge(projectile_energy_cost) : projectiles_cache > 0
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/action_checks(target)
 	. = ..()
 	if(!.)
 		return FALSE
-	if(projectiles <= 0)
+	if(self_reloading || projectiles <= 0)
 		return FALSE
 	return TRUE
 
@@ -210,8 +230,9 @@
 	)
 
 
-/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/rearm()
+/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/rearm(mob/user)
 	if(projectiles < initial(projectiles))
+		var/previous_projectiles = projectiles
 		var/projectiles_to_add = initial(projectiles) - projectiles
 
 		if(projectile_energy_cost)
@@ -230,6 +251,10 @@
 				projectiles = projectiles + projectiles_cache
 				projectiles_cache = 0
 
+		if(projectiles == previous_projectiles)
+			return FALSE
+		if(user)
+			playsound(user, 'sound/weapons/sawclose.ogg', 60, 1)
 		SStgui.update_uis(chassis)
 		log_message("Боезапас [src.name] пополнен.", LOG_MECHA)
 		return TRUE
@@ -246,7 +271,7 @@
 		return TRUE
 	if(action != "rearm" || disabledreload)
 		return FALSE
-	rearm()
+	rearm(usr)
 	return TRUE
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/action(mob/source, atom/target, params)
