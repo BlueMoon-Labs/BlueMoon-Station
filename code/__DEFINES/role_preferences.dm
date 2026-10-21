@@ -64,7 +64,7 @@
 //(in game days played) to play that role
 GLOBAL_LIST_INIT(special_roles, list(
 	ROLE_TRAITOR = /datum/game_mode/traitor,
-	ROLE_BROTHER = /datum/game_mode/traitor/bros,
+	ROLE_BROTHER,
 	ROLE_OPERATIVE = /datum/game_mode/nuclear,
 	ROLE_SLAVER,
 	ROLE_CHANGELING = /datum/game_mode/changeling,

@@ -528,6 +528,9 @@ GENETICS SCANNER
 				var/datum/wound/W = k
 				msg += "<div class='ml-2'>Тип: [W.ru_name]\nТяжесть: [W.severity_text()]\nРекомендуемое лечение: [W.treat_text]</div>\n" // less lines than in woundscan() so we don't overload people trying to get basic med info
 			msg += "</span>\n"
+	var/palm_scan = blood_oath_palm_scan(M)
+	if(palm_scan)
+		msg += "<span class='info'>[palm_scan]</span>\n"
 
 	for(var/thing in M.diseases)
 		var/datum/disease/D = thing

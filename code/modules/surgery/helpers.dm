@@ -1,3 +1,5 @@
+#define SURGERY_VOLUNTARY_SLEEP_DURATION (6 SECONDS)
+
 /// Операции, которые можно начать этим инструментом на выбранной зоне пациента: имя -> операция.
 /proc/get_available_surgeries(obj/item/tool, mob/living/patient, mob/user, selected_zone)
 	. = list()
@@ -157,8 +159,11 @@
 				user.visible_message("[user] drapes [I] over [M]'s [parse_zone(selected_zone)] to prepare for surgery.", \
 					"<span class='notice'>You drape [I] over [M]'s [parse_zone(selected_zone)] to prepare for \an [procedure.name].</span>")
 				// BLUEMOON ADD START
-				if(M.AmountSleeping() > 60)
-					M.SetSleeping(60) //пациент не может уснуть через кнопку во вкладке
+				// Сокращаем только добровольный сон. Обрезание наркоза до шести секунд
+				// может разбудить пациента до следующего вдоха: обычно между ними восемь секунд.
+				if(M.voluntary_sleep_until > world.time && M.AmountSleeping() > SURGERY_VOLUNTARY_SLEEP_DURATION)
+					M.SetSleeping(SURGERY_VOLUNTARY_SLEEP_DURATION)
+					M.voluntary_sleep_until = world.time + SURGERY_VOLUNTARY_SLEEP_DURATION
 				if(!HAS_TRAIT(M, CAN_BE_OPERATED_WITHOUT_PAIN) && !isbloodfledge(M))
 					if(procedure.special_surgery_traits.len) // подсказка хирургу при начале процедуры
 						if(OPERATION_NEED_FULL_ANESTHETIC in procedure.special_surgery_traits)
@@ -279,3 +284,5 @@
 				return FALSE
 
 	return TRUE
+
+#undef SURGERY_VOLUNTARY_SLEEP_DURATION

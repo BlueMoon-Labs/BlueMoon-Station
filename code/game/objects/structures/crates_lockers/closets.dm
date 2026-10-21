@@ -61,7 +61,7 @@
 
 /obj/structure/closet/Initialize(mapload)
 	if(mapload && !opened) // if closed, any item at the crate's loc is put in the contents
-		addtimer(CALLBACK(src, PROC_REF(take_contents)), 0)
+		addtimer(CALLBACK(src, PROC_REF(take_initial_contents)), 0)
 	. = ..()
 	update_icon()
 	if(should_populate_contents)
@@ -73,6 +73,15 @@
 //USE THIS TO FILL IT, NOT INITIALIZE OR NEW
 /obj/structure/closet/proc/PopulateContents()
 	return
+
+/obj/structure/closet/proc/take_initial_contents()
+	// Шкаф могли открыть до отложенного сбора содержимого, например при раскладывании мешка.
+	if(!opened)
+		take_contents()
+
+/obj/structure/closet/hitby(atom/movable/hit_by, skipcatch, hitpush, blocked, datum/thrownthing/throwingdatum)
+	// Неплотный контейнер получает урон от попадания, но не сдвигается от него.
+	return ..(hit_by, skipcatch, hitpush && density, blocked, throwingdatum)
 
 /obj/structure/closet/Destroy()
 	dump_contents(override = FALSE)

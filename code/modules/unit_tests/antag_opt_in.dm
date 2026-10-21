@@ -384,14 +384,6 @@
 	ling.forge_objectives()
 	antag_opt_in_check_objectives(ling.objectives, "Генокрад")
 
-	var/datum/team/brother_team/brothers = new
-	allocated += brothers
-	brothers.add_member(brother_mind)
-	for(var/objective_number in 1 to 6)
-		brothers.forge_single_objective()
-	allocated += brothers.objectives
-	antag_opt_in_check_objectives(brothers.objectives, "Братья")
-
 	var/datum/antagonist/traitor/malf = new
 	allocated += malf
 	malf.owner = malf_mind
@@ -400,6 +392,18 @@
 	for(var/objective_number in 1 to 6)
 		ai_class.forge_single_objective(malf)
 	antag_opt_in_check_objectives(malf.objectives, "Малф")
+
+	var/datum/team/brother_team/brothers = new
+	allocated += brothers
+	brothers.add_member(brother_mind)
+	allocate(/datum/heretic_test_station_level, run_loc_floor_bottom_left.z)
+	for(var/oath_type in GLOB.blood_oath_types)
+		var/datum/blood_oath/oath = allocate(oath_type)
+		oath.prepare(brothers)
+		if(!oath.target_mind)
+			continue
+		TEST_ASSERT(antag_opt_in_allows(oath.target_mind, oath.target_opt_in_level), "Братья: [oath_type] выбрала несогласную цель")
+		TEST_ASSERT(!(oath.target_mind in brothers.members), "Братья: [oath_type] выбрала брата")
 
 /// Уровень согласия переживает сохранение персонажа, мусор в сейве сбрасывается к значению по умолчанию.
 /datum/unit_test/antag_opt_in_pref_saving

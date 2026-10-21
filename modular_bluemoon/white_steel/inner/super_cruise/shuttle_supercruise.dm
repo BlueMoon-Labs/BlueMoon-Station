@@ -13,7 +13,7 @@
 	else
 		orbital_body = z_level.orbital_body
 	//WHITE-STEEL PORT: не входим в круиз без орбитального тела, иначе вызов ниже рвётся
-	//на orbital_body.position и каскадом ломает RegisterReference у консоли.
+	//на orbital_body.position.
 	if(!orbital_body)
 		message_admins("Error: No orbital body available to enter supercruise from. Shuttle: [name]")
 		log_runtime("Error: No orbital body available to enter supercruise from. Shuttle: [name]")

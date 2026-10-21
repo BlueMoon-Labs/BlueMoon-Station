@@ -20,6 +20,9 @@
 	//WHITE-STEEL FIX: с какого момента (world.time) на руине не видно живых игроков.
 	//Шаттл уедет сам, только если это длится дольше MISSION_SHUTTLE_EMPTY_GRACE.
 	var/mission_shuttle_empty_since = 0
+	//WHITE-STEEL PORT: ckey'и авангардцев, зафиксированные на борту шаттла в момент старта миссии.
+	//null - снимок не сделан (ограничение по очкам не применяется), list() - на шаттле никого не было.
+	var/list/expedition_crew_ckeys
 
 /datum/orbital_objective/New()
 	. = ..()
@@ -218,6 +221,20 @@
 	if(!QDELETED(src) && !QDELETED(target) && !target.key && !target.client)
 		addtimer(CALLBACK(src, PROC_REF(run_ghost_role_poll), target, question, ignore_category, role_text, takeover_message), 30 SECONDS)
 
+/datum/orbital_objective/proc/snapshot_expedition_crew()
+	var/obj/docking_port/mobile/exploration = SSshuttle.getShuttle("exploration")
+	if(!exploration)
+		expedition_crew_ckeys = list()
+		return
+	expedition_crew_ckeys = list()
+	for(var/mob/living/carbon/human/H as() in GLOB.human_list)
+		if(QDELETED(H) || H.stat == DEAD || !H.mind || !H.ckey)
+			continue
+		var/area/A = get_area(H)
+		if(!A || !(A in exploration.shuttle_areas))
+			continue
+		expedition_crew_ckeys += H.ckey
+
 /datum/orbital_objective/proc/complete_objective()
 	if(completed)
 		//Delete
@@ -264,6 +281,8 @@
 			if(findtext(role_txt, "vanguard") || findtext(role_txt, "expeditor"))
 				is_vanguard = TRUE
 		if(!is_vanguard)
+			continue
+		if(!isnull(expedition_crew_ckeys) && (!H.ckey || !(H.ckey in expedition_crew_ckeys)))
 			continue
 		if(!id_card)
 			id_card = H.get_idcard(TRUE)

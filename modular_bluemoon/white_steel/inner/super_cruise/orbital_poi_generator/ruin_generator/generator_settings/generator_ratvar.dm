@@ -16,11 +16,15 @@
 		/obj/effect/spawner/lootdrop/maintenance = 3,
 		null = 50,
 		/obj/effect/clockwork/sigil/transgression = 2,
-		/obj/structure/destructible/clockwork/wall_gear/displaced = 10,
+		/obj/structure/destructible/clockwork/wall_gear/displaced = 1,
+		/mob/living/simple_animal/hostile/clockwork/marauder = 2,
+		/obj/structure/destructible/clockwork/ocular_warden = 2,
+		/obj/structure/destructible/clockwork/powered/mania_motor = 2,
+		/obj/structure/destructible/clockwork/heralds_beacon = 1,
 		/mob/living/simple_animal/hostile/clockcultistmelee = 3,
 		/mob/living/simple_animal/hostile/clockcultistranged = 2,
-		/mob/living/simple_animal/hostile/clockwork/clocktank = 1.5,
-		/mob/living/simple_animal/hostile/boss/clockcultistboss = 0.75,
+		/mob/living/simple_animal/hostile/clockwork/clocktank = 0.5,
+		/mob/living/simple_animal/hostile/boss/clockcultistboss = 0.25,
 	)
 	. += get_broken_stuff()
 	for(var/trash in subtypesof(/obj/item/trash))
@@ -42,6 +46,12 @@
 		var/per_part = total_weight * 0.05 / length(ratvar_parts)
 		for(var/part in ratvar_parts)
 			.[part] = per_part
+
+	var/matrigrass_weight = 0
+	for(var/trash_key in .)
+		matrigrass_weight += .[trash_key]
+	if(matrigrass_weight > 0)
+		.[/obj/item/seeds/matrigrass] = matrigrass_weight * 1.025 / 249
 
 /datum/generator_settings/ratvar/get_directional_walltrash()
 	return list(

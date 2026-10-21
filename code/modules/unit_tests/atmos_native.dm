@@ -1292,6 +1292,8 @@
 	SSair.decompression_areas -= drain_area
 	SSair.decompression_handled_at -= drain_area
 	SSair.decompression_pending -= drain_area
+	SSair.decompression_started_at -= drain_area
+	SSair.decompression_seen -= drain_area
 	drain_old_area.contents += drain
 
 /// Idle-heartbeat machines must wake instantly when air on their turf changes,

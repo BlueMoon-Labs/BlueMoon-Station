@@ -1,4 +1,6 @@
 //WHITE-STEEL PORT - упрощённая адаптация под bluemoon
+#define HEADHUNT_TARGET_FUSE (10 MINUTES)
+
 /datum/orbital_objective/headhunt
 	name = "Охота за головами"
 	var/generated = FALSE
@@ -8,6 +10,8 @@
 	var/frontier_shuttle_docked = FALSE
 	var/frontier_shuttle_left = FALSE
 	var/objective_ended = FALSE
+	var/headhunt_target_escaped = FALSE
+	var/headhunt_escape_at = 0
 	min_payout = 225 * CARGO_CRATE_VALUE
 	max_payout = 300 * CARGO_CRATE_VALUE
 
@@ -16,18 +20,14 @@
 			Живым или мертвым, его необходимо доставить на мостик и отправить к вашему нанимателю с помощью предоставленной системы доставки. \
 			Следует принять во внимание, что преступник может быть экипирован гораздо лучше обычного рейнджера. \
 			Возможно, может потребоваться помощь сотрудников службы безопасности. \
+			У вас есть 10 минут, чтобы доставить цель живой или мёртвой — после этого она скроется сама. \
 			Задание будет провалено в случае побега преступника со станции живым и без наручников, или в случае уничтожения его тела, \
-			а также если преступник продержится на руине до отлёта шаттла авангарда: подмога InteQ уже в пути!"
+			а также если преступник переживёт отлёт шаттла авангарда."
 
 /datum/orbital_objective/headhunt/get_target()
 	return mob_to_recover
 
 /datum/orbital_objective/headhunt/Destroy()
-	//WHITE-STEEL FIX: разрываем цепочку утечек вокруг преступника.
-	//1) Моб был добавлен в GLOB.mob_spawners[real_name] и держался этим глобальным списком
-	//   вечно — снимаем его.
-	//2) Личная цель преступника (mind -> antag -> objective) хранила linked_objective = src,
-	//   отчего живой моб удерживал удалённое задание. Обнуляем обратную ссылку.
 	if(!QDELETED(mob_to_recover))
 		var/target_name = mob_to_recover.real_name
 		if(istext(target_name))
@@ -44,8 +44,6 @@
 	return ..()
 
 /datum/orbital_objective/headhunt/on_assign(obj/machinery/computer/objective/objective_computer)
-	//WHITE-STEEL PORT: капсула должна прибывать на мостик шаттла к консоли заданий,
-	//а не на мостик станции (/area/command). Повторяем логику nuke_ruin.
 	var/turf/open/T
 	var/area/A = get_area(objective_computer)
 	if(A)
@@ -86,12 +84,9 @@
 			M.dropItemToGround(W)
 	var/obj/structure/closet/supplypod/extractionpod/pod = source
 	pod.startExitSequence(pod)
-	//WHITE-STEEL PORT: цель изымается из раунда (ghostize + qdel), а не остаётся живой в тюрьме.
 	despawn_target()
 	complete_objective()
 
-//WHITE-STEEL PORT: цель охоты отправлена через под захвата — изымаем её из раунда (ghostize + qdel).
-//Очищаем глобальные/обратные ссылки так же, как это делает Destroy().
 /datum/orbital_objective/headhunt/proc/despawn_target()
 	if(QDELETED(mob_to_recover))
 		mob_to_recover = null
@@ -117,38 +112,32 @@
 	objective_z_level = created_human.z
 	created_human.mind_initialize()
 	mob_to_recover = created_human
-	//WHITE-STEEL PORT: у преступника появляется личная цель — продержаться до подлёта подмоги.
 	var/datum/antagonist/headhunt_survive/antag = created_human.mind.add_antag_datum(/datum/antagonist/headhunt_survive)
 	for(var/datum/objective/headhunt_survive/hunt_objective in antag.objectives)
 		hunt_objective.linked_objective = src
-	//WHITE-STEEL PORT: объявляем призракам, что они могут занять роль преступника.
 	LAZYADD(GLOB.mob_spawners[created_human.real_name], created_human)
 	notify_ghosts("Охота за головами: преступник может быть занят.", source = created_human, action = NOTIFY_ORBIT, flashwindow = FALSE, ignore_key = POLL_IGNORE_HEADHUNT, ignore_dnr_observers = FALSE)
 	created_human.AddElement(/datum/element/point_of_interest)
 	for(var/mob/living/simple_animal/hostile/SA in range(10, created_human))
 		qdel(SA)
-	//Экипируем преступника набором InteQ Operative - Full Kit (без взрывного импланта).
 	created_human.equipOutfit(/datum/outfit/inteq/full/expedition)
-	//WHITE-STEEL PORT: цель охоты видит в темноте — руины часто не освещены, а преступник должен
-	//иметь шанс продержаться. spawn_effects=TRUE, чтобы сразу пересчитался sight (post_add).
 	created_human.add_quirk(/datum/quirk/night_vision, TRUE)
-	//WHITE-STEEL PORT: растворение в скелет при побеге (свободном прибытии на станцию).
 	created_human.AddComponent(/datum/component/headhunt_skeleton)
-	//WHITE-STEEL PORT: повторяющийся опрос призраков за роль преступника, пока тело не занято.
-	start_ghost_role_poll(created_human, "Охота за головами: занять роль преступника?", POLL_IGNORE_HEADHUNT, "преступника-нелегала", "Вы — нелегал, цель «Охота за головами»! Держитесь на руине, пока шаттл наёмников авангарда не улетит — подмога InteQ уже близко.")
+	start_ghost_role_poll(created_human, "Охота за головами: занять роль преступника?", POLL_IGNORE_HEADHUNT, "преступника-нелегала", "Вы — нелегал, цель «Охота за головами»! Продержитесь десять минут — ваше ручное телепортационное устройство уже поймало нужную частоту. По вашу голову выехал Авангард!")
 	generated = TRUE
+	headhunt_escape_at = world.time + HEADHUNT_TARGET_FUSE
+	addtimer(CALLBACK(src, PROC_REF(headhunt_target_escape)), HEADHUNT_TARGET_FUSE)
+	notify_vanguard_pda("У вас есть 10 минут, чтобы доставить цель живой или мёртвой. После она скроется.")
 
 /datum/orbital_objective/headhunt/check_failed()
 	if(objective_ended)
 		return TRUE
 	track_shuttle_state()
 	if(generated)
-		//WHITE-STEEL PORT: преступник схвачен и покинул руину вместе с шаттлом — охота успешно завершена.
 		if(frontier_shuttle_left && !QDELETED(mob_to_recover) && mob_to_recover.stat != DEAD && is_restrained_target())
 			objective_ended = TRUE
 			complete_objective()
 			return FALSE
-		//WHITE-STEEL PORT: преступник продержался на руине до отлёта шаттла авангарда — победа преступника, задание провалено.
 		if(frontier_shuttle_left && !QDELETED(mob_to_recover) && mob_to_recover.stat != DEAD && mob_to_recover.z == objective_z_level)
 			complete_target_survive()
 			objective_ended = TRUE
@@ -164,7 +153,6 @@
 		return
 	return FALSE
 
-//WHITE-STEEL PORT: отслеживаем, когда экспедиционный шаттл покидает руину.
 /datum/orbital_objective/headhunt/proc/track_shuttle_state()
 	if(!generated || objective_ended)
 		return
@@ -174,14 +162,80 @@
 	else if(frontier_shuttle_docked && !frontier_shuttle_left)
 		frontier_shuttle_left = TRUE
 
-//WHITE-STEEL PORT: цель преступника в наручниках (схвачен, а не победитель).
+/datum/orbital_objective/headhunt/proc/headhunt_target_escape()
+	if(QDELETED(src) || objective_ended)
+		return
+	if(!generated || QDELETED(mob_to_recover))
+		return
+	if(mob_to_recover.stat == DEAD)
+		return
+	if(is_restrained_target())
+		return
+	objective_ended = TRUE
+	headhunt_target_escaped = TRUE
+	var/mob/living/M = mob_to_recover
+	to_chat(M, span_userdanger("<b>Наконец то эта штука заработала! пора валить!</b>"))
+	M.visible_message(span_danger("[M] вспыхивает искрами и пропадает в телепортационном разряде!"), span_userdanger("Ваше ручное телепортационное устройство наконец сработало!"))
+	do_fake_sparks(8, FALSE, M)
+	complete_target_survive()
+
+/datum/orbital_objective/headhunt/proc/notify_vanguard_pda(text)
+	var/list/datum/computer_file/program/messenger/target_messengers = list()
+	for(var/obj/item/modular_computer/pda/pda_device in GLOB.PDAs)
+		if(pda_device.hidden || pda_device.toff)
+			continue
+		if(!is_vanguard_pda(pda_device))
+			continue
+		var/datum/computer_file/program/messenger/messenger = locate(/datum/computer_file/program/messenger) in pda_device.get_all_files()
+		if(!messenger || messenger.invisible)
+			continue
+		target_messengers += messenger
+	if(!length(target_messengers))
+		return
+	var/datum/signal/subspace/messaging/tablet_message/signal = new(mob_to_recover, list(
+		"ref" = null,
+		"message" = text,
+		"targets" = target_messengers,
+		"rigged" = FALSE,
+		"everyone" = FALSE,
+		"photo" = null,
+		"automated" = TRUE,
+		"fakename" = "Центральное Командование",
+		"fakejob" = "Диспетчер Авангарда",
+	))
+	signal.data["done"] = FALSE
+	signal.data["reject"] = FALSE
+	signal.send_to_receivers()
+	if(!signal.data["done"])
+		signal.broadcast()
+		signal.mark_done()
+
+/datum/orbital_objective/headhunt/proc/is_vanguard_pda(obj/item/modular_computer/pda/pda_device)
+	var/atom/holder = pda_device.loc
+	if(!ismob(holder))
+		holder = pda_device.loc?.loc
+	if(ismob(holder))
+		var/mob/M = holder
+		if(M.mind)
+			var/datum/job/J = SSjob.GetJob(M.mind.assigned_role)
+			if(istype(J, /datum/job/expeditor))
+				return TRUE
+			var/obj/item/card/id/id_card = M.get_idcard(TRUE)
+			if(id_card)
+				var/assign = lowertext(id_card.get_assignment_name() || "")
+				if(findtext(assign, "vanguard") || findtext(assign, "expeditor"))
+					return TRUE
+	var/job_txt = lowertext(pda_device.saved_job || "")
+	if(findtext(job_txt, "vanguard") || findtext(job_txt, "expeditor") || findtext(job_txt, "ranger"))
+		return TRUE
+	return FALSE
+
 /datum/orbital_objective/headhunt/proc/is_restrained_target()
 	if(!iscarbon(mob_to_recover))
 		return FALSE
 	var/mob/living/carbon/C = mob_to_recover
 	return !!C.get_item_by_slot(ITEM_SLOT_HANDCUFFED)
 
-//WHITE-STEEL PORT: преступник продержался до отлёта шаттла — засчитываем его цель.
 /datum/orbital_objective/headhunt/proc/complete_target_survive()
 	if(QDELETED(mob_to_recover) || mob_to_recover.stat == DEAD || !mob_to_recover.mind)
 		return
@@ -189,14 +243,14 @@
 	if(antag)
 		for(var/datum/objective/headhunt_survive/hunt_objective in antag.objectives)
 			hunt_objective.completed = TRUE
-	//WHITE-STEEL PORT: преступник-игрок получает 2 М$ за успешное выживание.
 	award_headhunt_metadollars(mob_to_recover)
-	to_chat(mob_to_recover, span_greentext("Шаттл наёмников авангарда покинул вашу локацию. Подмога InteQ уже близко — вы продержались!"))
-	//WHITE-STEEL PORT: шаттл авангарда улетел — цель охоты больше не нужна (иначе её тело держит
-	//уровень руины прогруженным). Награда и сообщение уже выданы, теперь гоустим и удаляем тело.
+	if(headhunt_target_escaped)
+		to_chat(mob_to_recover, span_greentext("Телепортационное устройство сработало. Вы скрылись с руины — охота за вашей головой сорвалась!"))
+	else
+		to_chat(mob_to_recover, span_greentext("Шаттл наёмников авангарда покинул вашу локацию. Вы пережили погоню!"))
 	despawn_target()
 
-//WHITE-STEEL PORT: награда игроку на цели охоты за то, что он продержался до отлёта шаттла.
+
 /datum/orbital_objective/headhunt/proc/award_headhunt_metadollars(mob/living/prey)
 	var/client/C = prey.client
 	var/prey_ckey = C?.ckey || prey.ckey
@@ -206,10 +260,8 @@
 		SSmetadollars.add_amount(C, 2, "ruin_headhunt")
 	else
 		SSmetadollars.metadollar_adjust(2, prey_ckey, null)
-	to_chat(prey, span_purple("Вы продержались до прибытия подмоги InteQ. Награда: 2 метадоллара."))
+	to_chat(prey, span_purple("Вы ушли от погони на руине. Награда: 2 метадоллара."))
 
-//WHITE-STEEL PORT: экспедиционный вариант полного набора InteQ. Без взрывного импланта и
-//без objective на захват шаттла: преступник не угоняет станцию, он ждёт подмогу InteQ.
 /datum/outfit/inteq/full/expedition
 	give_explosive_implant = FALSE
 	give_hijack_objective = FALSE
@@ -217,11 +269,11 @@
 //=====================
 // Цель преступника: продержаться до подлёта подмоги
 //=====================
-//WHITE-STEEL PORT: личная цель преступника — остаться в живых, пока шаттл наёмников авангарда не покинет руину.
+
 /datum/objective/headhunt_survive
-	name = "Продержаться до подлёта подмоги"
-	explanation_text = "Оставайтесь в живых на руине, пока шаттл наёмников авангарда не покинет вашу локацию. \
-		Как только он улетит, подмога InteQ будет рядом."
+	name = "Продержаться десять минут"
+	explanation_text = "Продержитесь десять минут на руине: ваше ручное телепортационное устройство поймало нужную частоту \
+		и сработает, уведя вас от погони. По вашу голову уже выехал Авангард."
 	completable = TRUE
 	var/datum/orbital_objective/headhunt/linked_objective
 
@@ -231,6 +283,8 @@
 	var/mob/living/L = owner?.current
 	if(!L || L.stat == DEAD)
 		return FALSE
+	if(linked_objective?.headhunt_target_escaped)
+		return TRUE
 	return !!linked_objective?.frontier_shuttle_left && L.z == linked_objective.objective_z_level
 
 /datum/antagonist/headhunt_survive
@@ -239,9 +293,9 @@
 	antagpanel_category = "Other"
 	roundend_category = "Ruin VIPs"
 	greentext_reward = 25
-	antag_memory = "Вы — цель «Охоты за головами» наёмников авангарда. \
-		Держитесь на руине и оставайтесь в живых до подлёта подмоги: как только шаттл наёмников \
-		покинет вашу локацию, подмога InteQ будет рядом."
+	antag_memory = "Вы - неудачливый наёмник InteQ что выпал из шаттла во время миссии.\
+Ваше ручное телепортоционное устройство поймало нужную частоту, но ему нужно время.\
+Продержитесь десять минут, по вашу голову уже выехал Авангард!"
 
 /datum/antagonist/headhunt_survive/on_gain()
 	var/datum/objective/headhunt_survive/survive_objective = new

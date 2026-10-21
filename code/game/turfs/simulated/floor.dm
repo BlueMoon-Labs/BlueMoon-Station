@@ -263,6 +263,8 @@
 
 /turf/open/floor/rcd_vals(mob/user, obj/item/construction/rcd/the_rcd)
 	switch(the_rcd.mode)
+		if(RCD_FIRELOCK, RCD_WINDOW_FIRELOCK)
+			return ..()
 		if(RCD_FLOORWALL)
 			return list("mode" = RCD_FLOORWALL, "delay" = 20, "cost" = 16)
 		if(RCD_AIRLOCK)
@@ -282,6 +284,8 @@
 
 /turf/open/floor/rcd_act(mob/user, obj/item/construction/rcd/the_rcd, passed_mode)
 	switch(passed_mode)
+		if(RCD_FIRELOCK, RCD_WINDOW_FIRELOCK)
+			return ..()
 		// DM язык "по-китайски" считает приоритет операторов (|| идёт раньше чем in), нежели интуитивно понятно
 		// и это приводит к тому, что 2+ locate() читается как ублюдское "locate(A) in (src || (locate(B) in src))"
 		// Решилось оно вложением locate() проверки в скобки

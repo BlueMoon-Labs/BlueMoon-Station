@@ -1,6 +1,6 @@
 GLOBAL_DATUM_INIT(hk51_scatter, /datum/hk51_part_scatter, new)
 
-/// Раскладывает части HK-51 на старте раунда: мотиватор на фабрику HK, одну часть на чёрный рынок, остальные по ящикам руин вне станции.
+/// Раскладывает части HK-51 на старте раунда: мотиватор на фабрику HK, одну часть на чёрный рынок, одну в шкаф техтоннелей станции, остальные по ящикам руин вне станции.
 /datum/hk51_part_scatter
 	/// Части на учёте раскладчика: разложенные и купленные на рынке. Пропавшая снова выставляется на рынок.
 	var/list/obj/item/hk51_part/spawned_parts = list()
@@ -33,7 +33,7 @@ GLOBAL_DATUM_INIT(hk51_scatter, /datum/hk51_part_scatter, new)
 /datum/hk51_part_scatter/proc/scatter_round_parts()
 	var/list/containers = collect_containers()
 	var/obj/effect/landmark/hk51_part_spot/factory/factory_landmark = locate() in GLOB.landmarks_list
-	var/list/placed = scatter(containers, get_turf(factory_landmark))
+	var/list/placed = scatter(containers, get_turf(factory_landmark), collect_station_containers())
 	for(var/obj/item/hk51_part/part_type as anything in placed)
 		var/atom/place = placed[part_type]
 		if(place == HK51_PLACE_BLACK_MARKET)
@@ -45,7 +45,7 @@ GLOBAL_DATUM_INIT(hk51_scatter, /datum/hk51_part_scatter, new)
 	scattered = TRUE
 
 /// Раскладывает пять частей и возвращает тип части -> контейнер, турф или HK51_PLACE_BLACK_MARKET. Мотиватор - в шкаф на точке фабрики, без шкафа - на пол.
-/datum/hk51_part_scatter/proc/scatter(list/containers, turf/factory_spot)
+/datum/hk51_part_scatter/proc/scatter(list/containers, turf/factory_spot, list/station_containers)
 	var/list/placed = list()
 	var/list/parts = list()
 	var/list/remaining = shuffle(subtypesof(/obj/item/hk51_part))
@@ -59,6 +59,12 @@ GLOBAL_DATUM_INIT(hk51_scatter, /datum/hk51_part_scatter, new)
 	var/market_part = pick(remaining - /obj/item/hk51_part/motivator)
 	remaining -= market_part
 	placed[market_part] = list_on_market(market_part)
+	if(length(station_containers))
+		var/station_part = pick(remaining - /obj/item/hk51_part/motivator)
+		remaining -= station_part
+		var/obj/structure/closet/station_container = pick(station_containers)
+		parts[station_part] = spawn_part(station_part, station_container)
+		placed[station_part] = station_container
 	var/list/targets = spread_over_levels(containers, length(remaining))
 	for(var/part_type in remaining)
 		if(!length(targets))
@@ -194,6 +200,22 @@ GLOBAL_DATUM_INIT(hk51_scatter, /datum/hk51_part_scatter, new)
 	if(!isturf(container_turf) || !istype(container_turf.loc, /area/ruin))
 		return FALSE
 	return is_scatter_level(container_turf.z)
+
+/// Закрытые шкафы техтоннелей станции: с найденной там части начинается след к остальным.
+/datum/hk51_part_scatter/proc/collect_station_containers()
+	var/list/containers = list()
+	for(var/area/maintenance/maint_area in GLOB.all_areas)
+		for(var/obj/structure/closet/container in maint_area)
+			if(is_station_container(container))
+				containers += container
+		CHECK_TICK
+	return containers
+
+/datum/hk51_part_scatter/proc/is_station_container(obj/structure/closet/container)
+	if(container.opened || is_type_in_list(container, HK51_EXCLUDED_CONTAINERS))
+		return FALSE
+	var/turf/container_turf = container.loc
+	return isturf(container_turf) && istype(container_turf.loc, /area/maintenance) && is_station_level(container_turf.z)
 
 /datum/hk51_part_scatter/proc/is_scatter_level(z)
 	return !is_station_level(z) && !is_centcom_level(z) && !is_reserved_level(z)

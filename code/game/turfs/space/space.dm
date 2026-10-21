@@ -341,6 +341,8 @@
 		return FALSE
 
 	switch(the_rcd.mode)
+		if(RCD_FIRELOCK, RCD_WINDOW_FIRELOCK)
+			return ..()
 		if(RCD_FLOORWALL)
 			var/obj/structure/lattice/L = locate(/obj/structure/lattice, src)
 			if(L)
@@ -351,6 +353,10 @@
 
 /turf/open/space/rcd_act(mob/user, obj/item/construction/rcd/the_rcd, passed_mode)
 	switch(passed_mode)
+		if(RCD_FIRELOCK, RCD_WINDOW_FIRELOCK)
+			if(!CanBuildHere())
+				return FALSE
+			return ..()
 		if(RCD_FLOORWALL)
 			to_chat(user, "<span class='notice'>You build a floor.</span>")
 			PlaceOnTop(/turf/open/floor/plating, flags = CHANGETURF_INHERIT_AIR)

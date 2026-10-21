@@ -715,13 +715,17 @@
 		if(pressure_drop > 0 && first_space)
 			edge_turf.consider_pressure_difference(first_space, pressure_drop)
 
-/// Отсек, стравливаемый в космос, закрывает файрлоки на своей границе: вне зоны его соседи держат давление.
+// Пограничные ставни закрываются общей тревогой только после подтверждения утечки.
 /datum/atmos_zone_walk/proc/seal_firelock_seams()
 	if(!space_edge_turfs.len)
 		return
 	for(var/index in 1 to firelock_seams.len step 2)
 		var/turf/seam_turf = firelock_seams[index]
-		seam_turf?.consider_firelocks(firelock_seams[index + 1])
+		var/turf/neighbor = firelock_seams[index + 1]
+		var/area/seam_area = get_base_area(seam_turf)
+		var/area/neighbor_area = get_base_area(neighbor)
+		if(seam_area?.fire || neighbor_area?.fire)
+			seam_turf?.consider_firelocks(neighbor)
 
 /// Сведение газа зоны к среднему и снимок молей/температуры для фильтра активации. Специализация equalize_all_gases_in_list() без промежуточных списков.
 /datum/atmos_zone_walk/proc/mix_zone()
@@ -990,6 +994,9 @@
 
 	ATMOS_TPROF_MARK
 	if(space_neighbor)
+		// Уже замеченная пробоина остаётся открытой и после падения давления у её кромки.
+		if(length(air_controller?.decompression_started_at) && (get_base_area(src) in air_controller.decompression_started_at))
+			air_controller.queue_decompression_area(src)
 		// Как share_end у tg: кромка отдаёт космосу всё за фаер, по живым значениям после парных шеров.
 		var/moles_before = our_air.total_moles()
 		var/temperature_before = our_air.temperature

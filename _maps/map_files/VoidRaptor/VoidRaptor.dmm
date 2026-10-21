@@ -16739,7 +16739,7 @@
 	dir = 1
 	},
 /obj/effect/turf_decal/stripes/yellow/corner{
-	dir = 1
+	dir = 4
 	},
 /turf/open/floor/plasteel/white/smooth/corner{
 	dir = 1
@@ -18502,6 +18502,9 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 4
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
+	dir = 1
 	},
 /turf/open/floor/plasteel/rivets/edge{
 	dir = 4
@@ -21241,7 +21244,7 @@
 /area/hallway/secondary/command)
 "eSZ" = (
 /obj/effect/turf_decal/stripes/yellow/corner{
-	dir = 1
+	dir = 4
 	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 8
@@ -22290,17 +22293,17 @@
 /turf/open/floor/catwalk_floor/iron_smooth,
 /area/maintenance/department/medical)
 "feA" = (
-/obj/machinery/power/terminal{
-	dir = 4
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-1"
-	},
 /obj/effect/turf_decal/trimline/yellow/filled/line,
 /obj/machinery/firealarm/directional/south,
 /obj/machinery/camera/autoname{
 	network = list("ss13","engine");
 	dir = 1
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
+	},
+/obj/machinery/power/terminal{
+	dir = 4
 	},
 /turf/open/floor/plasteel/rivets/edge{
 	dir = 1
@@ -23028,7 +23031,7 @@
 	height = 15;
 	shuttle_id = "arrivals_stationary";
 	name = "arrivals";
-	roundstart_template = /datum/map_template/shuttle/arrival/box;
+	roundstart_template = /datum/map_template/shuttle/arrival/voidraptor;
 	width = 7
 	},
 /turf/open/space/basic,
@@ -23112,6 +23115,22 @@
 /obj/effect/spawner/lootdrop/trashbin,
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/port/greater)
+"fly" = (
+/obj/structure/cable/yellow{
+	icon_state = "0-1"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
+	},
+/obj/machinery/power/solar{
+	id = "aftport";
+	name = "Aft-Port Solar Array"
+	},
+/turf/open/floor/plasteel/airless/solarpanel,
+/area/solars/port/fore)
 "flE" = (
 /obj/structure/shuttle/engine/heater,
 /obj/structure/window/reinforced{
@@ -25076,11 +25095,11 @@
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 1
 	},
+/obj/structure/fans/tiny,
 /obj/machinery/door/airlock/external/glass{
 	name = "Arrival Airlock";
-	unres_sides = 2
+	unres_sides = 1
 	},
-/obj/structure/fans/tiny,
 /turf/open/floor/catwalk_floor,
 /area/hallway/secondary/entry)
 "fIa" = (
@@ -31865,14 +31884,14 @@
 	},
 /area/service/hydroponics)
 "hhI" = (
-/obj/machinery/power/terminal{
-	dir = 4
-	},
 /obj/structure/cable/yellow{
-	icon_state = "0-2"
+	icon_state = "2-8"
 	},
 /obj/structure/cable/yellow{
 	icon_state = "0-8"
+	},
+/obj/machinery/power/terminal{
+	dir = 4
 	},
 /turf/open/floor/plasteel/rivets/large,
 /area/engineering/engine_smes)
@@ -33612,7 +33631,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
 /obj/machinery/door/airlock/external/glass{
 	name = "Arrival Airlock";
-	unres_sides = 1
+	unres_sides = 2
 	},
 /turf/open/floor/catwalk_floor,
 /area/hallway/secondary/entry)
@@ -33729,6 +33748,7 @@
 	},
 /obj/effect/turf_decal/bot,
 /obj/machinery/light/cold/directional/east,
+/obj/machinery/aug_manipulator,
 /turf/open/floor/plasteel/dark/smooth/edge{
 	dir = 8
 	},
@@ -37860,7 +37880,6 @@
 	name = "Blueshield's Equipment Room"
 	},
 /obj/machinery/door/firedoor,
-/obj/effect/mapping_helpers/airlock/access/all/command/captain,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 4
 	},
@@ -37874,6 +37893,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 8
 	},
+/obj/effect/mapping_helpers/airlock/access/any/command/blueshield,
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/command/blueshieldoffice)
 "iyi" = (
@@ -40447,11 +40467,11 @@
 "jbQ" = (
 /obj/effect/mapping_helpers/airlock/cyclelink_helper,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
+/obj/effect/landmark/navigate_destination/dockarrival,
 /obj/machinery/door/airlock/external/glass{
 	name = "Arrival Airlock";
-	unres_sides = 2
+	unres_sides = 1
 	},
-/obj/effect/landmark/navigate_destination/dockarrival,
 /turf/open/floor/catwalk_floor,
 /area/hallway/secondary/entry)
 "jbU" = (
@@ -42916,11 +42936,11 @@
 /area/medical/psychology)
 "jHJ" = (
 /obj/effect/mapping_helpers/airlock/cyclelink_helper,
+/obj/structure/fans/tiny,
 /obj/machinery/door/airlock/external/glass{
 	name = "Arrival Airlock";
-	unres_sides = 1
+	unres_sides = 2
 	},
-/obj/structure/fans/tiny,
 /turf/open/floor/catwalk_floor,
 /area/hallway/secondary/entry)
 "jHQ" = (
@@ -43886,10 +43906,6 @@
 /turf/open/floor/plasteel/rivets,
 /area/maintenance/department/electrical)
 "jRB" = (
-/obj/machinery/power/smes/engineering{
-	charge = 2.7e+006;
-	output_level = 90000
-	},
 /obj/structure/cable/yellow{
 	icon_state = "0-1"
 	},
@@ -43901,6 +43917,10 @@
 	},
 /obj/machinery/status_display/evac{
 	pixel_x = 32
+	},
+/obj/machinery/power/smes/engineering{
+	charge = 2.7e+006;
+	output_level = 90000
 	},
 /turf/open/floor/plasteel/rivets/edge{
 	dir = 8
@@ -44198,14 +44218,14 @@
 	},
 /area/engineering/engine_smes)
 "jUw" = (
-/obj/machinery/power/terminal{
-	dir = 4
-	},
 /obj/structure/cable/yellow{
 	icon_state = "0-1"
 	},
 /obj/structure/cable/yellow{
-	icon_state = "0-2"
+	icon_state = "1-2"
+	},
+/obj/machinery/power/terminal{
+	dir = 4
 	},
 /turf/open/floor/plasteel/rivets/large,
 /area/engineering/engine_smes)
@@ -51873,7 +51893,6 @@
 /obj/machinery/door/airlock/corporate{
 	name = "Blueshield's Quarters"
 	},
-/obj/effect/mapping_helpers/airlock/access/all/command/captain,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
 /obj/machinery/door/firedoor,
@@ -51891,6 +51910,7 @@
 	dir = 1
 	},
 /obj/effect/turf_decal/stripes/yellow/line,
+/obj/effect/mapping_helpers/airlock/access/any/command/blueshield,
 /turf/open/floor/wood/wood_large,
 /area/command/blueshieldoffice)
 "lKb" = (
@@ -55046,7 +55066,7 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
 /obj/machinery/door/airlock/external/glass{
 	name = "Arrival Airlock";
-	unres_sides = 2
+	unres_sides = 1
 	},
 /turf/open/floor/catwalk_floor,
 /area/hallway/secondary/entry)
@@ -63666,7 +63686,6 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
 	},
-/obj/machinery/aug_manipulator,
 /turf/open/floor/plasteel/dark/smooth/edge{
 	dir = 8
 	},
@@ -78426,12 +78445,9 @@
 /turf/open/floor/vault,
 /area/ai_monitored/turret_protected/aisat_interior)
 "rHD" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
-	dir = 1
 	},
 /turf/open/floor/plasteel/rivets/large,
 /area/engineering/engine_smes)
@@ -83374,6 +83390,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
 	},
+/obj/structure/cable/yellow{
+	icon_state = "0-2"
+	},
 /turf/open/floor/plating,
 /area/science/xenobiology)
 "sOG" = (
@@ -84437,7 +84456,6 @@
 	name = "Blueshield's Equipment Room"
 	},
 /obj/machinery/door/firedoor,
-/obj/effect/mapping_helpers/airlock/access/all/command/captain,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
 	dir = 4
 	},
@@ -84447,6 +84465,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 8
 	},
+/obj/effect/mapping_helpers/airlock/access/any/command/blueshield,
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/command/blueshieldoffice)
 "taS" = (
@@ -86844,7 +86863,7 @@
 /area/service/kitchen/abandoned)
 "tFB" = (
 /obj/effect/turf_decal/stripes/yellow/corner{
-	dir = 8
+	dir = 1
 	},
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2{
 	dir = 8
@@ -127460,7 +127479,7 @@ cSy
 ddj
 rjn
 vXv
-qVM
+vXv
 xIT
 xIT
 xIT
@@ -127716,7 +127735,7 @@ aDk
 cSy
 ohM
 rjn
-vXv
+qVM
 vXv
 xIT
 xIT
@@ -128489,7 +128508,7 @@ cSy
 ddj
 rjn
 vXv
-qVM
+vXv
 xIT
 xIT
 xIT
@@ -128745,7 +128764,7 @@ ndd
 cSy
 ohM
 rjn
-vXv
+qVM
 vXv
 xIT
 xIT
@@ -129159,12 +129178,12 @@ qDa
 kLX
 nwW
 nkw
+nzY
 vUl
-nkw
 xIT
 xIT
 xIT
-fkm
+xIT
 xIT
 xIT
 xIT
@@ -129406,7 +129425,7 @@ tro
 hLs
 xIT
 xIT
-xIT
+fkm
 xIT
 xIT
 vUl
@@ -131926,7 +131945,7 @@ nzY
 kde
 vXB
 vXB
-vXB
+fly
 rct
 xIT
 jgG
@@ -132092,7 +132111,7 @@ cDH
 moP
 rjn
 vXv
-qVM
+vXv
 xIT
 xIT
 xIT
@@ -132348,7 +132367,7 @@ kJb
 cDH
 qUA
 rjn
-vXv
+qVM
 vXv
 xIT
 xIT
@@ -135427,7 +135446,7 @@ jYY
 wxE
 rjn
 vXv
-qVM
+vXv
 xIT
 xIT
 xIT
@@ -135683,7 +135702,7 @@ pEA
 jYY
 uVa
 rjn
-vXv
+qVM
 vXv
 xIT
 xIT
@@ -137482,7 +137501,7 @@ ffO
 wxE
 rjn
 vXv
-qVM
+vXv
 xIT
 xIT
 xIT
@@ -137738,7 +137757,7 @@ sgo
 ffO
 uVa
 rjn
-vXv
+qVM
 vXv
 xIT
 xIT
@@ -138253,7 +138272,7 @@ ffO
 uVa
 rjn
 vXv
-qVM
+vXv
 xIT
 xIT
 xIT
@@ -138509,7 +138528,7 @@ tvK
 ffO
 uVa
 rjn
-vXv
+qVM
 vXv
 xIT
 xIT
@@ -139277,7 +139296,7 @@ axn
 ijD
 rjn
 vXv
-qVM
+vXv
 xIT
 xIT
 xIT
@@ -139533,7 +139552,7 @@ fpe
 axn
 vEk
 rjn
-vXv
+qVM
 vXv
 xIT
 xIT
@@ -140048,7 +140067,7 @@ axn
 vEk
 rjn
 vXv
-qVM
+vXv
 xIT
 xIT
 xIT
@@ -140304,7 +140323,7 @@ uOB
 axn
 vEk
 rjn
-vXv
+qVM
 vXv
 xIT
 xIT
@@ -141077,7 +141096,7 @@ axn
 ijD
 rjn
 vXv
-qVM
+vXv
 xIT
 xIT
 xIT
@@ -141333,7 +141352,7 @@ pHY
 axn
 vEk
 rjn
-vXv
+qVM
 vXv
 xIT
 xIT
@@ -142104,7 +142123,7 @@ axn
 ijD
 rjn
 vXv
-qVM
+vXv
 xIT
 xIT
 xIT
@@ -142360,7 +142379,7 @@ dXc
 axn
 vEk
 rjn
-vXv
+qVM
 vXv
 xIT
 xIT
@@ -142875,7 +142894,7 @@ axn
 vEk
 rjn
 vXv
-qVM
+vXv
 xIT
 xIT
 xIT
@@ -143131,7 +143150,7 @@ uOB
 axn
 vEk
 rjn
-vXv
+qVM
 vXv
 xIT
 xIT
@@ -143905,7 +143924,7 @@ axn
 ijD
 rjn
 vXv
-qVM
+vXv
 xIT
 xIT
 xIT
@@ -144161,7 +144180,7 @@ qIB
 axn
 vEk
 rjn
-vXv
+qVM
 vXv
 xIT
 xIT
@@ -144676,7 +144695,7 @@ axn
 vEk
 rjn
 vXv
-qVM
+vXv
 xIT
 xIT
 xIT
@@ -144932,7 +144951,7 @@ fdO
 tHg
 cfu
 rjn
-vXv
+qVM
 vXv
 xIT
 xIT
@@ -148024,7 +148043,7 @@ uaP
 aaN
 rjn
 vXv
-qVM
+vXv
 xIT
 xIT
 xIT
@@ -148280,7 +148299,7 @@ juK
 uaP
 ewY
 rjn
-vXv
+qVM
 vXv
 xIT
 xIT
@@ -151108,7 +151127,7 @@ act
 oij
 rjn
 vXv
-qVM
+vXv
 xIT
 xIT
 xIT
@@ -151364,7 +151383,7 @@ tVZ
 act
 oKf
 rjn
-vXv
+qVM
 vXv
 xIT
 xIT
@@ -152131,7 +152150,7 @@ rlQ
 tMT
 rjn
 vXv
-qVM
+vXv
 xIT
 xIT
 xIT
@@ -152387,7 +152406,7 @@ oZF
 rlQ
 pjc
 rjn
-vXv
+qVM
 vXv
 xIT
 xIT

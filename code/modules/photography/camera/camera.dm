@@ -193,6 +193,7 @@
 	temp.Blend(get_icon, ICON_OVERLAY)
 
 	var/datum/picture/P = new("picture", desc.Join(" "), temp, null, psize_x, psize_y, blueprints)
+	P.subjects_seen = photo_subjects_seen(mobs)
 	after_picture(user, P, flag)
 	blending = FALSE
 

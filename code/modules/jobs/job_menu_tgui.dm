@@ -546,7 +546,7 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 	if(istype(job_datum, /datum/job/cyborg))
 		return encode_preview_icon(icon('icons/mob/robots.dmi', "robot", SOUTH, 1))
 
-	var/icon/flat_icon = get_flat_human_icon(null, job_datum, preview_prefs, null, list(SOUTH))
+	var/icon/flat_icon = get_flat_human_icon(null, job_datum, preview_prefs, DUMMY_HUMAN_SLOT_JOB_MENU, list(SOUTH))
 	return encode_preview_icon(flat_icon)
 
 /// Превью гост роли
@@ -580,7 +580,9 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 		var/obj/effect/mob_spawn/human/human_spawn = spawn_landmark
 		var/outfit_path = istype(human_spawn.outfit) ? human_spawn.outfit.type : human_spawn.outfit
 		var/datum/preferences/role_prefs = (human_spawn.can_load_appearance && preview_prefs) ? preview_prefs : null
-		return encode_preview_icon(get_flat_human_icon(null, null, role_prefs, null, list(SOUTH), outfit_path))
+		// без префов общий манекен показал бы внешность из прошлого превью
+		var/dummy_key = role_prefs ? DUMMY_HUMAN_SLOT_JOB_MENU : null
+		return encode_preview_icon(get_flat_human_icon(null, null, role_prefs, dummy_key, list(SOUTH), outfit_path))
 
 	// остальное спрайт самого моба
 	if(!ispath(spawn_landmark.mob_type, /mob))

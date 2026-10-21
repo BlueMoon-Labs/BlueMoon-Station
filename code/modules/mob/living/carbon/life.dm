@@ -313,6 +313,7 @@
 		if(SA_partialpressure > SA_para_min)
 			Unconscious(60)
 			if(SA_partialpressure > SA_sleep_min)
+				voluntary_sleep_until = 0 // Наркоз заменяет добровольный сон.
 				Sleeping(max(AmountSleeping() + 60, 400)) // BLUEMOON EDIT, WAS H.Sleeping(max(H.AmountSleeping() + 40, 400)) - сервак лагает и под анестезией просыпаются
 		else if(SA_partialpressure > 0.01)
 			if(prob(20))

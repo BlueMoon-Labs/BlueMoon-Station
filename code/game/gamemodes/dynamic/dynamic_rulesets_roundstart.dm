@@ -42,59 +42,6 @@
 // Самоспавн слиперов из roundstart-трейтора удалён: InteQ Sleeper Agent теперь обычный
 // midround-рулсет в ANTAG-пуле SSdirector (weight 7).
 
-//////////////////////////////////////////
-//                                      //
-//           BLOOD BROTHERS             //
-//                                      //
-//////////////////////////////////////////
-
-/* /datum/dynamic_ruleset/roundstart/traitorbro
-	name = "Blood Brothers"
-	antag_flag = ROLE_BROTHER
-	antag_datum = /datum/antagonist/brother
-	protected_roles = list("Vanguard Operative", "NanoTrasen Representative", "Internal Affairs Agent", "Security Officer", "Blueshield", "Peacekeeper", "Brig Physician", "Warden", "Detective", "Head of Security","Bridge Officer", "Captain", "Head of Personnel", "Quartermaster", "Chief Engineer", "Chief Medical Officer", "Research Director") //BLUEMOON CHANGES
-	restricted_roles = list("Cyborg", "AI")
-	required_candidates = 2
-	weight = 6 //BLUEMOON CHANGES
-	// Команда из 2-3 без аплинка и снаряжения угрожает раунду меньше, чем один агент (cost 8/9),
-	// поэтому и стоит дешевле агентов, и в активной нагрузке директора весит ниже соло-антага:
-	// иначе братья съедали бюджет и глушили докупку контента, сами почти не создавая движа.
-	cost = 6
-	scaling_cost = 6
-	intensity = 10
-	required_round_type = list(ROUNDTYPE_DYNAMIC_TEAMBASED, ROUNDTYPE_DYNAMIC_HARD, ROUNDTYPE_DYNAMIC_MEDIUM) // BLUEMOON ADD
-	requirements = list(101,101,101,101,60,50,40,30,20,10) //BLUEMOON CHANGES
-	antag_cap = 2 // Can pick 3 per team, but rare enough it doesn't matter.
-	var/list/datum/team/brother_team/pre_brother_teams = list()
-	var/const/min_team_size = 2
-
-/datum/dynamic_ruleset/roundstart/traitorbro/pre_execute(population)
-	. = ..()
-	var/num_teams = (get_antag_cap(population)/min_team_size) * (scaled_times + 1) // 1 team per scaling
-	for(var/j = 1 to num_teams)
-		if(candidates.len < min_team_size || candidates.len < required_candidates)
-			break
-		var/datum/team/brother_team/team = new
-		var/team_size = prob(10) ? min(3, candidates.len) : 2
-		for(var/k = 1 to team_size)
-			var/mob/bro = pick_n_take(candidates)
-			assigned += bro.mind
-			team.add_member(bro.mind)
-			bro.mind.special_role = "brother"
-			bro.mind.restricted_roles = restricted_roles
-		pre_brother_teams += team
-	return TRUE
-
-/datum/dynamic_ruleset/roundstart/traitorbro/execute()
-	for(var/datum/team/brother_team/team in pre_brother_teams)
-		team.pick_meeting_area()
-		team.forge_brother_objectives()
-		for(var/datum/mind/M in team.members)
-			M.add_antag_datum(/datum/antagonist/brother, team)
-		team.update_name()
-	mode.brother_teams += pre_brother_teams
-	return TRUE */
-
 //////////////////////////////////////////////
 //                                          //
 //               CHANGELINGS                //
