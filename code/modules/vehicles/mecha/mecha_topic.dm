@@ -104,7 +104,7 @@
 		"has_tank" = !!chassis.internal_tank,
 		"pressure" = chassis.internal_tank_valve,
 		"cabin_pressure" = round(chassis.return_pressure(), 0.1),
-		"cell" = chassis.cell ? "Уровень [chassis.cell.rating]" : null,
+		"cell" = chassis.cell ? "[format_text(chassis.cell.name)] (Tier [chassis.cell.rating])" : null,
 		"scanmod" = chassis.scanmod ? "Уровень [chassis.scanmod.rating]" : null,
 		"capacitor" = chassis.capacitor ? "Уровень [chassis.capacitor.rating]" : null,
 		"accesses" = accesses,
@@ -226,18 +226,19 @@
 	)
 
 /obj/vehicle/sealed/mecha/ui_data(mob/user)
-	var/current_appearance = appearance
-	if(ui_preview_appearance != current_appearance)
-		var/image/front_view = new
-		front_view.appearance = current_appearance
-		front_view.dir = SOUTH
-		front_view.transform = matrix()
-		front_view.pixel_x = 0
-		front_view.pixel_y = 0
+	var/image/front_view = new
+	front_view.appearance = appearance
+	front_view.dir = SOUTH
+	front_view.transform = matrix()
+	front_view.pixel_x = 0
+	front_view.pixel_y = 0
+	// Повороты и смещения шасси не меняют вид превью и не должны сбрасывать его кэш.
+	var/normalized_appearance = front_view.appearance
+	if(ui_preview_appearance != normalized_appearance)
 		// Браузеру нужен отдельный PNG-кадр, а не многодирекционная DMI-иконка.
 		var/icon/front_icon = getFlatIcon(front_view, defdir = SOUTH, no_anim = TRUE)
 		ui_preview_icon = icon2base64(icon(front_icon, "", SOUTH, 1, FALSE))
-		ui_preview_appearance = current_appearance
+		ui_preview_appearance = normalized_appearance
 	var/list/modules = list()
 	for(var/obj/item/mecha_parts/mecha_equipment/module as anything in equipment)
 		modules += list(module.get_ui_data())
