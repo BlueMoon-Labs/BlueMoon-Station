@@ -51,14 +51,44 @@ export const ModulesPane = () => {
         {tab === 0 && (
           <Stack fill>
             <Stack.Item width="225px" shrink={0}>
-              <Section fill scrollable title={`${honk('Модули')} ${data.modules.length}/${data.max_equip}`}>
+              <Section
+                fill
+                scrollable
+                title={`${honk('Модули')} ${data.modules.length}/${data.max_equip}`}
+                buttons={(
+                  <Button
+                    icon="question"
+                    tooltip="Двойной клик по модулю: включить или выключить переключаемый модуль; назначить активный модуль на ЛКМ или снять назначение. ПКМ: включить или выключить переключаемый модуль; назначить активный модуль на ПКМ или снять назначение." />
+                )}>
                 {data.modules.map(item => (
                   <Button
                     key={item.ref}
                     fluid
                     selected={module?.ref === item.ref}
                     tooltip={item.name}
-                    onClick={() => setSelected(item.ref)}>
+                    onClick={() => setSelected(item.ref)}
+                    onContextMenu={(event: Event) => {
+                      event.preventDefault();
+                      event.stopPropagation();
+                      if (!data.can_equipment) {
+                        return;
+                      }
+                      if (item.can_be_toggled) {
+                        act('equip_act', { ref: item.ref, gear_action: item.toggle_action });
+                      } else if (item.can_be_triggered) {
+                        act('select_module', { ref: item.ref, button: 'right' });
+                      }
+                    }}
+                    onDoubleClick={() => {
+                      if (!data.can_equipment) {
+                        return;
+                      }
+                      if (item.can_be_toggled) {
+                        act('equip_act', { ref: item.ref, gear_action: item.toggle_action });
+                      } else if (item.can_be_triggered) {
+                        act('select_module', { ref: item.ref, button: 'left' });
+                      }
+                    }}>
                     <Stack align="center">
                       <Stack.Item>
                         <img
@@ -99,7 +129,6 @@ export const ModulesPane = () => {
                 key={action.ref}
                 maxWidth="220px"
                 ellipsis
-                tooltip={action.name}
                 content={action.name}
                 onClick={() => act('trigger_action', { ref: action.ref })} />
             ))}
