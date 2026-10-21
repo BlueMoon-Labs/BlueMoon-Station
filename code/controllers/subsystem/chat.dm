@@ -17,7 +17,9 @@ SUBSYSTEM_DEF(chat)
 		var/client/client = key
 		var/payload = payload_by_client[key]
 		payload_by_client -= key
-		if(client)
+		// Застывший во времени не получает сообщений, но окно чата продолжает отвечать на пинги
+		var/mob/client_mob = client?.mob
+		if(client && !(client_mob && HAS_TRAIT_FROM(client_mob, TRAIT_MUTE, TIMESTOP_TRAIT)))
 			// Send to tgchat
 			client.tgui_panel?.window.send_message("chat/message", payload)
 			// Send to old chat

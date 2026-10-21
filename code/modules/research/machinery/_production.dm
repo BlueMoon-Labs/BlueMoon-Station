@@ -394,7 +394,8 @@
 		return FALSE
 	if(istext(amount))
 		amount = text2num(amount)
-	if(amount <= 0)
+	amount = round(amount)
+	if(!(amount > 0))
 		amount = 1
 	if(amount > max_build_amount)
 		if(COOLDOWN_FINISHED(src, cooldown_say))

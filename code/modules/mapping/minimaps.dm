@@ -14,8 +14,12 @@
 
 	var/z_level
 	var/id = ""
+	/// Мировые координаты левого нижнего пикселя несрезанной иконки
+	var/origin_x
+	var/origin_y
 
-/datum/minimap/New(z, x1 = 1, y1 = 1, x2 = world.maxx, y2 = world.maxy, name = "minimap")
+/// autocrop = FALSE оставляет иконку несрезанной: группа этажей режет все этажи по общей рамке через finalize()
+/datum/minimap/New(z, x1 = 1, y1 = 1, x2 = world.maxx, y2 = world.maxy, name = "minimap", autocrop = TRUE)
 	if(!z)
 		CRASH("ERROR: new minimap requested without z level") //CRASH to halt the operatio
 
@@ -86,8 +90,19 @@
 
 			map_icon.DrawBox(color, img_x, img_y)
 
-	map_icon.Crop(crop_x1, crop_y1, crop_x2, crop_y2)
-	meta_icon.Crop(crop_x1, crop_y1, crop_x2, crop_y2)
+	origin_x = x1
+	origin_y = y1
+	minx = crop_x1
+	maxx = crop_x2
+	miny = crop_y1
+	maxy = crop_y2
+	if(autocrop)
+		finalize(minx, miny, maxx, maxy)
+
+/// Режет иконки по рамке в мировых координатах и регистрирует ассеты
+/datum/minimap/proc/finalize(crop_x1, crop_y1, crop_x2, crop_y2)
+	map_icon.Crop(crop_x1 - origin_x + 1, crop_y1 - origin_y + 1, crop_x2 - origin_x + 1, crop_y2 - origin_y + 1)
+	meta_icon.Crop(crop_x1 - origin_x + 1, crop_y1 - origin_y + 1, crop_x2 - origin_x + 1, crop_y2 - origin_y + 1)
 	minx = crop_x1
 	maxx = crop_x2
 	miny = crop_y1
@@ -138,7 +153,7 @@
 					<img id='map-[i]' src='[SSassets.transport.get_asset_url(map_name)]' />
 					<img id='map-[i]-meta' src='[SSassets.transport.get_asset_url(meta_name)]' style='display: none' />
 				</div>
-				[totalmaps <= 1 ? "<div class='statusDisplay' id='label-[i]'> </div>" : ""]
+				<div class='statusDisplay' id='label-[i]'> </div>
 			</div>
 		"}
 		datas += json_encode(M.color_area_names);
@@ -146,26 +161,6 @@
 
 	if(totalmaps > 1)
 		info += "<div class='block'><div class='statusDisplay'>[buttonfield]</div></div>"
-
-	//This is a hacky workaround; the status display is extremely buggy when multiple z-levels are present. We couldn't figure out how to fix this after 7 hours of banging our head against the wall
-	//We're coder
-	var/mousemove_bit = {"
-				canvas.onmousemove = function(e){
-					var rect = canvas.getBoundingClientRect();
-					var x = Math.floor(e.offsetX * img.width / rect.width);
-					var y = Math.floor(e.offsetY * img.height / rect.height);
-
-					var color_idx = x * 4 + (y * 4 * imagedata.width);
-					var color = "#" + hexify(imagedata.data\[color_idx]) + hexify(imagedata.data\[color_idx+1]) + hexify(imagedata.data\[color_idx+2]);
-
-					label.textContent = data\[color];
-					canvas.title = data\[color];
-				}
-				canvas.onmouseout = function(e){
-					label.textContent = " ";
-					canvas.title = "";
-				}
-	"}
 
 	info = info.Join()
 	//this is bad. Too bad!
@@ -197,41 +192,55 @@
 			}
 			var datas = \[[jointext(datas, ",")]]
 			for(var i = 0; i < [length(minimaps)]; i++) {
-				//the fuck is this wrapped?
-				var data = datas\[i];
-				var img = document.getElementById("map-" + (i + 1));
-				if(!img){
-					return; //if it does not exist, it means it's done!
-				}
-				var canvas = document.createElement("canvas");
-				canvas.width = img.width * 2;
-				canvas.height = img.height * 2;
-				canvas.id = "canvas-" + (i+1);
+				setup_layer(i + 1, datas\[i]);
+			}
+		}
+		// Отдельная функция на этаж: обработчики мыши должны держать свой холст, а не последний из цикла
+		function setup_layer(index, data) {
+			var img = document.getElementById("map-" + index);
+			if(!img){
+				return;
+			}
+			var width = img.naturalWidth;
+			var height = img.naturalHeight;
+			var canvas = document.createElement("canvas");
+			canvas.width = width * 2;
+			canvas.height = height * 2;
+			canvas.id = "canvas-" + index;
 
-				var ctx = canvas.getContext('2d');
-				ctx.msImageSmoothingEnabled = false;
-				ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-				img.parentNode.replaceChild(canvas, img);
-				ctx = document.createElement("canvas").getContext('2d');
-				ctx.canvas.width = img.width;
-				ctx.canvas.height = img.height;
-				ctx.id = "ctx-" + (i+1);
-				ctx.drawImage(document.getElementById("map-" + (i+1) + "-meta"), 0, 0);
+			var ctx = canvas.getContext('2d');
+			ctx.imageSmoothingEnabled = false;
+			ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+			img.parentNode.replaceChild(canvas, img);
+			var meta_ctx = document.createElement("canvas").getContext('2d');
+			meta_ctx.canvas.width = width;
+			meta_ctx.canvas.height = height;
+			meta_ctx.drawImage(document.getElementById("map-" + index + "-meta"), 0, 0);
+			var imagedata = meta_ctx.getImageData(0, 0, width, height);
 
-				var imagedata = ctx.getImageData(0, 0, img.width, img.height);
-
-				var label = document.getElementById("label-" + (i+1)); //label-String(n);
-				[totalmaps <= 1 ? mousemove_bit : ""]
+			var label = document.getElementById("label-" + index);
+			canvas.onmousemove = function(e){
+				var rect = canvas.getBoundingClientRect();
+				var x = Math.floor(e.offsetX * width / rect.width);
+				var y = Math.floor(e.offsetY * height / rect.height);
+				var color_idx = x * 4 + (y * 4 * width);
+				var color = "#" + hexify(imagedata.data\[color_idx]) + hexify(imagedata.data\[color_idx+1]) + hexify(imagedata.data\[color_idx+2]);
+				label.textContent = data\[color] || " ";
+				canvas.title = data\[color] || "";
+			}
+			canvas.onmouseout = function(e){
+				label.textContent = " ";
+				canvas.title = "";
 			}
 		}
 	</script>
 	<style>
 		img, canvas {
-			max-width: 100%;
-			width: auto;
+			width: 100%;
+			height: auto;
 			margin: auto;
-			display: flex;
-			justify-content: center;
+			display: block;
+			image-rendering: pixelated;
 			background-color: white;
 		}
 	</style>

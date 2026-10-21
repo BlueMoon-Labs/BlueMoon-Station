@@ -245,7 +245,9 @@
 			return TRUE
 
 		if("bellypick")
-			host.vore_selected = locate(params["bellypick"])
+			var/obj/belly/picked_belly = locate(params["bellypick"]) in host.vore_organs
+			if(picked_belly)
+				host.vore_selected = picked_belly
 			return TRUE
 		if("move_belly")
 			var/dir = text2num(params["dir"])
@@ -324,7 +326,7 @@
 	var/atom/movable/target = locate(params["pick"])
 	var/obj/belly/OB = locate(params["belly"])
 
-	if(!(target in OB))
+	if(!istype(OB) || user.loc != OB || !(target in OB))
 		return TRUE // Aren't here anymore, need to update menu
 
 	var/intent = "Examine"

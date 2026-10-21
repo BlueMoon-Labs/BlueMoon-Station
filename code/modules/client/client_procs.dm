@@ -295,6 +295,9 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	if(!target)
 		return
 	var/turf/listed = mob?.listed_turf
+	// Игрок кликает из панели только по осматриваемой клетке, админ и ментор - по ссылкам тикетов и SDQL
+	if(!holder && !mentor_datum && (!listed || (target != listed && target.loc != listed)))
+		return
 	var/refresh_listed_turf = listed && get_turf(target) == listed
 	if(refresh_listed_turf)
 		mark_listed_turf_dirty(force_icon_refresh = TRUE)

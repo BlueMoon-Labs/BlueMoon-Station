@@ -4,7 +4,7 @@
 	var/datum/antagonist/sol_inspector/inspector
 
 /datum/objective/sol_inspection_return/check_completion()
-	if(!inspector || inspector.suspended || !inspector.owner?.current || inspector.owner.current.stat == DEAD)
+	if(!inspector || inspector.suspended)
 		return FALSE
 	return inspector.inspection_team?.is_returned_inspector(inspector.owner)
 

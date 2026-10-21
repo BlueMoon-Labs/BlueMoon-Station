@@ -67,6 +67,9 @@
 	if(istype(W, /obj/item/holochip))
 		var/obj/item/holochip/H = W
 		var/cashmoney = input(user, "How much would you like to deposit?", "Money Deposit") as null|num
+		if(!(cashmoney >= 1))
+			to_chat(user, "<span class='warning'>ERROR: Invalid amount designated.</span>")
+			return
 		if(H.spend(cashmoney, FALSE))
 			purchase(user, cashmoney)
 			to_chat(user, "Thanks for purchasing! The vendor has been informed.")
