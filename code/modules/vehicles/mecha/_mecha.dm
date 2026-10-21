@@ -108,6 +108,10 @@
 	var/list/equipment = new
 	///Current active equipment
 	var/obj/item/mecha_parts/mecha_equipment/selected
+	// Назначение на ПКМ не занимает отдельный слот оборудования.
+	var/obj/item/mecha_parts/mecha_equipment/selected_right
+	// Каждый член экипажа получает собственную карту предпросмотра.
+	var/list/ui_views = list()
 	///Maximum amount of equipment we can have
 	var/max_equip = 3
 
@@ -234,6 +238,7 @@
 	QDEL_NULL(smoke_system)
 	QDEL_NULL(trackers)
 	QDEL_NULL(wires)
+	QDEL_LIST_ASSOC_VAL(ui_views)
 
 	GLOB.poi_list -= src
 	GLOB.mechas_list -= src //global mech list
@@ -582,7 +587,8 @@
 	if(completely_disabled || is_currently_ejecting || (mecha_flags & CANNOT_INTERACT))
 		return
 	var/list/mouse_control = params2list(params)
-	if(isAI(user) && !mouse_control["middle"])//AIs use MMB
+	// ИИ сохраняет основное управление на СКМ и получает дополнительный модуль на ПКМ.
+	if(isAI(user) && !mouse_control[MIDDLE_CLICK] && !mouse_control[RIGHT_CLICK])
 		return
 	if(phasing)
 		to_chat(occupants, "[icon2html(src, occupants)]<span class='warning'>Unable to interact with objects while phasing.</span>")
@@ -604,23 +610,28 @@
 		if(!target)
 			return
 	var/mob/living/L = user
-	if(selected && (L in return_controllers_with_flag(VEHICLE_CONTROL_EQUIPMENT)))
-		if(!Adjacent(target) && (selected.range & MECHA_RANGED))
-			if(HAS_TRAIT(L, TRAIT_PACIFISM) && selected.harmful)
+	var/obj/item/mecha_parts/mecha_equipment/active_equipment = mouse_control[RIGHT_CLICK] ? selected_right : selected
+	if(mouse_control[RIGHT_CLICK] && !active_equipment)
+		return
+	if(active_equipment && (L in return_controllers_with_flag(VEHICLE_CONTROL_EQUIPMENT)))
+		if(!Adjacent(target) && (active_equipment.range & MECHA_RANGED))
+			if(HAS_TRAIT(L, TRAIT_PACIFISM) && active_equipment.harmful)
 				to_chat(L, "<span class='warning'>You don't want to harm other living beings!</span>")
 				return
 			if(SEND_SIGNAL(src, COMSIG_MECHA_EQUIPMENT_CLICK, L, target) & COMPONENT_CANCEL_EQUIPMENT_CLICK)
 				return
-			INVOKE_ASYNC(selected, TYPE_PROC_REF(/obj/item/mecha_parts/mecha_equipment, action), user, target, params)
+			INVOKE_ASYNC(active_equipment, TYPE_PROC_REF(/obj/item/mecha_parts/mecha_equipment, action), user, target, params)
 			return
-		if((selected.range & MECHA_MELEE) && Adjacent(target))
-			if(isliving(target) && selected.harmful && HAS_TRAIT(L, TRAIT_PACIFISM))
+		if((active_equipment.range & MECHA_MELEE) && Adjacent(target))
+			if(isliving(target) && active_equipment.harmful && HAS_TRAIT(L, TRAIT_PACIFISM))
 				to_chat(L, "<span class='warning'>You don't want to harm other living beings!</span>")
 				return
 			if(SEND_SIGNAL(src, COMSIG_MECHA_EQUIPMENT_CLICK, L, target) & COMPONENT_CANCEL_EQUIPMENT_CLICK)
 				return
-			INVOKE_ASYNC(selected, TYPE_PROC_REF(/obj/item/mecha_parts/mecha_equipment, action), user, target, params)
+			INVOKE_ASYNC(active_equipment, TYPE_PROC_REF(/obj/item/mecha_parts/mecha_equipment, action), user, target, params)
 			return
+	if(mouse_control[RIGHT_CLICK])
+		return
 	if(!(L in return_controllers_with_flag(VEHICLE_CONTROL_MELEE)))
 		to_chat(L, "<span class='warning'>You're in the wrong seat to interact with your hands.</span>")
 		return
@@ -1151,7 +1162,7 @@
 	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/mech_toggle_internals, VEHICLE_CONTROL_SETTINGS)
 	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/mech_cycle_equip, VEHICLE_CONTROL_EQUIPMENT)
 	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/mech_toggle_lights, VEHICLE_CONTROL_SETTINGS)
-	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/mech_view_stats, VEHICLE_CONTROL_SETTINGS)
+	initialize_passenger_action_type(/datum/action/vehicle/sealed/mecha/mech_view_stats)
 	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/strafe, VEHICLE_CONTROL_DRIVE)
 	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/toggle_stabilizers, VEHICLE_CONTROL_DRIVE)
 	if(max_occupants > 1)
@@ -1328,6 +1339,9 @@
 	RegisterSignal(M, COMSIG_MOB_CLICKON, PROC_REF(on_mouseclick))
 	RegisterSignal(M, COMSIG_MOB_SAY, PROC_REF(display_speech_bubble))
 	RegisterSignal(M, COMSIG_MOVABLE_TELEPORTED, PROC_REF(on_occupant_displaced))
+	RegisterSignal(M, COMSIG_MOB_CLIENT_LOGIN, PROC_REF(disable_occupant_popup_menus))
+	RegisterSignal(M, COMSIG_MOB_CLIENT_LOGOUT, PROC_REF(restore_occupant_popup_menus))
+	disable_occupant_popup_menus(M)
 
 /obj/vehicle/sealed/mecha/after_add_occupant(mob/M)
 	. = ..()
@@ -1339,6 +1353,9 @@
 	UnregisterSignal(M, COMSIG_MOB_CLICKON)
 	UnregisterSignal(M, COMSIG_MOB_SAY)
 	UnregisterSignal(M, COMSIG_MOVABLE_TELEPORTED)
+	UnregisterSignal(M, list(COMSIG_MOB_CLIENT_LOGIN, COMSIG_MOB_CLIENT_LOGOUT))
+	restore_occupant_popup_menus(M)
+	SStgui.close_user_uis(M, src)
 	M.clear_alert("charge")
 	M.clear_alert("mech damage")
 	if(M.client)
@@ -1350,6 +1367,26 @@
 	. = ..()
 	update_icon()
 	M.update_mouse_pointer()
+
+/obj/vehicle/sealed/mecha/proc/disable_occupant_popup_menus(mob/pilot)
+	SIGNAL_HANDLER
+	var/client/pilot_client = pilot.client
+	if(!pilot_client)
+		return
+	if(isnull(pilot_client.show_popup_menus_before_disable))
+		pilot_client.show_popup_menus_before_disable = pilot_client.show_popup_menus
+	pilot_client.mecha_popup_menus_disabled = TRUE
+	pilot_client.show_popup_menus = FALSE
+
+/obj/vehicle/sealed/mecha/proc/restore_occupant_popup_menus(mob/pilot, client/pilot_client)
+	SIGNAL_HANDLER
+	pilot_client ||= pilot.client
+	if(!pilot_client)
+		return
+	pilot_client.mecha_popup_menus_disabled = FALSE
+	if(!isnull(pilot_client.show_popup_menus_before_disable))
+		pilot_client.show_popup_menus = pilot_client.show_popup_menus_before_disable
+		pilot_client.show_popup_menus_before_disable = null
 
 /////////////////////////
 ////// Access stuff /////

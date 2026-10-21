@@ -95,20 +95,20 @@
 						return
 				locked = target
 				to_chat(source, "[icon2html(src, source)]<span class='notice'>Locked on [target].</span>")
-				send_byjax(source,"exosuit.browser","[REF(src)]",src.get_equip_info())
+				SStgui.update_uis(chassis)
 			else if(target!=locked)
 				if(locked in view(chassis))
 					var/turf/targ = get_turf(target)
 					var/turf/orig = get_turf(locked)
 					locked.throw_at(target, 14, 1.5)
 					locked = null
-					send_byjax(source,"exosuit.browser","[REF(src)]",src.get_equip_info())
+					SStgui.update_uis(chassis)
 					log_game("[key_name(source)] used a Gravitational Catapult to throw [locked] (From [AREACOORD(orig)]) at [target] ([AREACOORD(targ)]).")
 					return ..()
 				else
 					locked = null
 					to_chat(source, "[icon2html(src, source)]<span class='notice'>Lock on [locked] disengaged.</span>")
-					send_byjax(source,"exosuit.browser","[REF(src)]",src.get_equip_info())
+					SStgui.update_uis(chassis)
 		if(2)
 			var/list/atoms = list()
 			if(isturf(target))
@@ -134,18 +134,22 @@
 		step_away(A,target)
 		sleep(2)
 
-/obj/item/mecha_parts/mecha_equipment/gravcatapult/get_equip_info()
-	return "[..()] [mode==1?"([locked||"Nothing"])":null] \[<a href='?src=[REF(src)];mode=1'>S</a>|<a href='?src=[REF(src)];mode=2'>P</a>\]"
+/obj/item/mecha_parts/mecha_equipment/gravcatapult/get_ui_data()
+	. = ..()
+	.["snowflake"] = list("kind" = "mode", "mode" = mode, "modes" = list("Бросок", "Отталкивание"), "first_mode" = 1, "target" = locked?.name)
 
-/obj/item/mecha_parts/mecha_equipment/gravcatapult/Topic(href, href_list)
-	..()
-	if(href_list["mode"])
-		mode = text2num(href_list["mode"])
-		send_byjax(chassis.occupants,"exosuit.browser","[REF(src)]",src.get_equip_info())
-	return
-
-
-
+/obj/item/mecha_parts/mecha_equipment/gravcatapult/handle_ui_act(action, list/params)
+	. = ..()
+	if(.)
+		return TRUE
+	if(action != "mode")
+		return FALSE
+	var/new_mode = text2num(params["mode"])
+	if(!(new_mode in list(1, 2)))
+		return FALSE
+	mode = new_mode
+	update_equip_info()
+	return TRUE
 
 //////////////////////////// ARMOR BOOSTER MODULES //////////////////////////////////////////////////////////
 
@@ -220,27 +224,28 @@
 	STOP_PROCESSING(SSobj, src)
 	..()
 
-/obj/item/mecha_parts/mecha_equipment/repair_droid/get_equip_info()
-	if(!chassis)
-		return
-	return "<span style=\"color:[equip_ready?"#0f0":"#f00"];\">*</span>&nbsp; [src.name] - <a href='?src=[REF(src)];toggle_repairs=1'>[equip_ready?"A":"Dea"]ctivate</a>"
+/obj/item/mecha_parts/mecha_equipment/repair_droid
+	ui_toggle_action = "toggle_repairs"
 
 
-/obj/item/mecha_parts/mecha_equipment/repair_droid/Topic(href, href_list)
-	..()
-	if(href_list["toggle_repairs"])
-		chassis.cut_overlay(droid_overlay)
-		if(equip_ready)
-			START_PROCESSING(SSobj, src)
-			droid_overlay = new(src.icon, icon_state = "repair_droid_a")
-			log_message("Activated.", LOG_MECHA)
-		else
-			STOP_PROCESSING(SSobj, src)
-			droid_overlay = new(src.icon, icon_state = "repair_droid")
-			log_message("Deactivated.", LOG_MECHA)
-		chassis.add_overlay(droid_overlay)
-		send_byjax(chassis.occupants,"exosuit.browser", "[REF(src)]", get_equip_info())
-
+/obj/item/mecha_parts/mecha_equipment/repair_droid/handle_ui_act(action, list/params)
+	. = ..()
+	if(.)
+		return TRUE
+	if(action != "toggle_repairs")
+		return FALSE
+	chassis.cut_overlay(droid_overlay)
+	if(!is_ui_active())
+		START_PROCESSING(SSobj, src)
+		droid_overlay = new(icon, icon_state = "repair_droid_a")
+		log_message("Activated.", LOG_MECHA)
+	else
+		STOP_PROCESSING(SSobj, src)
+		droid_overlay = new(icon, icon_state = "repair_droid")
+		log_message("Deactivated.", LOG_MECHA)
+	chassis.add_overlay(droid_overlay)
+	update_equip_info()
+	return TRUE
 
 /obj/item/mecha_parts/mecha_equipment/repair_droid/process()
 	if(!chassis)
@@ -267,6 +272,7 @@
 		chassis.cut_overlay(droid_overlay)
 		droid_overlay = new(src.icon, icon_state = "repair_droid")
 		chassis.add_overlay(droid_overlay)
+	update_equip_info()
 
 
 
@@ -293,7 +299,7 @@
 	return
 
 /obj/item/mecha_parts/mecha_equipment/tesla_energy_relay/proc/get_charge()
-	if(equip_ready) //disabled
+	if(!is_ui_active()) // Реле выключено.
 		return
 	var/area/A = get_area(chassis)
 	var/pow_chan = GET_MUTATION_POWER_channel(A)
@@ -310,20 +316,23 @@
 				break
 	return pow_chan
 
-/obj/item/mecha_parts/mecha_equipment/tesla_energy_relay/Topic(href, href_list)
-	..()
-	if(href_list["toggle_relay"])
-		if(equip_ready) //inactive
-			START_PROCESSING(SSobj, src)
-			log_message("Activated.", LOG_MECHA)
-		else
-			STOP_PROCESSING(SSobj, src)
-			log_message("Deactivated.", LOG_MECHA)
+/obj/item/mecha_parts/mecha_equipment/tesla_energy_relay/handle_ui_act(action, list/params)
+	. = ..()
+	if(.)
+		return TRUE
+	if(action != "toggle_relay")
+		return FALSE
+	if(!is_ui_active())
+		START_PROCESSING(SSobj, src)
+		log_message("Activated.", LOG_MECHA)
+	else
+		STOP_PROCESSING(SSobj, src)
+		log_message("Deactivated.", LOG_MECHA)
+	update_equip_info()
+	return TRUE
 
-/obj/item/mecha_parts/mecha_equipment/tesla_energy_relay/get_equip_info()
-	if(!chassis)
-		return
-	return "<span style=\"color:[equip_ready?"#0f0":"#f00"];\">*</span>&nbsp; [src.name] - <a href='?src=[REF(src)];toggle_relay=1'>[equip_ready?"A":"Dea"]ctivate</a>"
+/obj/item/mecha_parts/mecha_equipment/tesla_energy_relay
+	ui_toggle_action = "toggle_relay"
 
 
 /obj/item/mecha_parts/mecha_equipment/tesla_energy_relay/process()
@@ -381,25 +390,32 @@
 	STOP_PROCESSING(SSobj, src)
 	..()
 
-/obj/item/mecha_parts/mecha_equipment/generator/Topic(href, href_list)
-	..()
-	if(href_list["toggle"])
-		if(equip_ready) //inactive
-			START_PROCESSING(SSobj, src)
-			log_message("Activated.", LOG_MECHA)
-		else
-			STOP_PROCESSING(SSobj, src)
-			log_message("Deactivated.", LOG_MECHA)
+/obj/item/mecha_parts/mecha_equipment/generator/handle_ui_act(action, list/params)
+	. = ..()
+	if(.)
+		return TRUE
+	if(action != "toggle")
+		return FALSE
+	if(!is_ui_active())
+		START_PROCESSING(SSobj, src)
+		log_message("Activated.", LOG_MECHA)
+	else
+		STOP_PROCESSING(SSobj, src)
+		log_message("Deactivated.", LOG_MECHA)
+	update_equip_info()
+	return TRUE
 
-/obj/item/mecha_parts/mecha_equipment/generator/get_equip_info()
-	var/output = ..()
-	if(output)
-		return "[output] \[[fuel]: [round(fuel.amount*MINERAL_MATERIAL_AMOUNT,0.1)] cm<sup>3</sup>\] - <a href='?src=[REF(src)];toggle=1'>[equip_ready?"A":"Dea"]ctivate</a>"
+/obj/item/mecha_parts/mecha_equipment/generator
+	ui_toggle_action = "toggle"
+
+/obj/item/mecha_parts/mecha_equipment/generator/get_ui_data()
+	. = ..()
+	.["snowflake"] = list("kind" = "generator", "fuel_amount" = fuel.amount * MINERAL_MATERIAL_AMOUNT, "max_fuel" = max_fuel)
 
 /obj/item/mecha_parts/mecha_equipment/generator/action(mob/source, atom/movable/target, params)
 	if(chassis)
 		if(load_fuel(target, source))
-			send_byjax(chassis.occupants,"exosuit.browser","[REF(src)]",src.get_equip_info())
+			SStgui.update_uis(chassis)
 			return ..()
 
 /obj/item/mecha_parts/mecha_equipment/generator/proc/load_fuel(obj/item/stack/sheet/P, mob/user)
@@ -493,18 +509,18 @@
 		chassis.active_thrusters = null
 	. = ..()
 
-/obj/item/mecha_parts/mecha_equipment/thrusters/Topic(href,href_list)
-	..()
-	if(!chassis)
-		return
-	if(href_list["mode"])
-		var/mode = text2num(href_list["mode"])
-		switch(mode)
-			if(0)
-				enable()
-			if(1)
-				disable()
-	return
+/obj/item/mecha_parts/mecha_equipment/thrusters/handle_ui_act(action, list/params)
+	. = ..()
+	if(.)
+		return TRUE
+	if(action != "toggle_thrusters")
+		return FALSE
+	if(chassis.active_thrusters == src)
+		disable()
+	else
+		enable()
+	update_equip_info()
+	return TRUE
 
 /obj/item/mecha_parts/mecha_equipment/thrusters/proc/enable()
 	if (chassis.active_thrusters == src)
@@ -518,8 +534,15 @@
 	chassis.active_thrusters = null
 	to_chat(chassis.occupants, "[icon2html(src, chassis.occupants)]<span class='notice'>[src] disabled.</span>")
 
-/obj/item/mecha_parts/mecha_equipment/thrusters/get_equip_info()
-	return "[..()] \[<a href='?src=[REF(src)];mode=0'>Enable</a>|<a href='?src=[REF(src)];mode=1'>Disable</a>\]"
+/obj/item/mecha_parts/mecha_equipment/thrusters
+	ui_toggle_action = "toggle_thrusters"
+
+/obj/item/mecha_parts/mecha_equipment/thrusters/get_ui_data()
+	. = ..()
+	.["active"] = chassis.active_thrusters == src
+
+/obj/item/mecha_parts/mecha_equipment/thrusters/is_ui_active()
+	return chassis?.active_thrusters == src
 
 /obj/item/mecha_parts/mecha_equipment/thrusters/proc/thrust(movement_dir)
 	if(!chassis)

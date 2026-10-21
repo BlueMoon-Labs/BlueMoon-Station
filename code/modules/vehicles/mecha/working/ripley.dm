@@ -45,7 +45,7 @@
 		initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/mech_toggle_internals, VEHICLE_CONTROL_SETTINGS)
 	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/mech_cycle_equip, VEHICLE_CONTROL_EQUIPMENT)
 	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/mech_toggle_lights, VEHICLE_CONTROL_SETTINGS)
-	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/mech_view_stats, VEHICLE_CONTROL_SETTINGS)
+	initialize_passenger_action_type(/datum/action/vehicle/sealed/mecha/mech_view_stats)
 	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/strafe, VEHICLE_CONTROL_DRIVE)
 	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/toggle_stabilizers, VEHICLE_CONTROL_DRIVE)
 	if(max_occupants > 1)
@@ -156,16 +156,24 @@
 		return FALSE
 	return ..()
 
-/obj/vehicle/sealed/mecha/working/ripley/Topic(href, href_list)
-	..()
-	if(href_list["drop_from_cargo"])
-		var/obj/O = locate(href_list["drop_from_cargo"]) in cargo
-		if(O)
-			to_chat(occupants, "[icon2html(src, occupants)]<span class='notice'>You unload [O].</span>")
-			O.forceMove(drop_location())
-			cargo -= O
-			log_message("Unloaded [O]. Cargo compartment capacity: [cargo_capacity - src.cargo.len]", LOG_MECHA)
-	return
+/obj/vehicle/sealed/mecha/working/ripley/get_cargo_ui_data()
+	var/list/cargo_list = list()
+	for(var/atom/movable/item as anything in cargo)
+		var/obj/item/stack/stack = item
+		cargo_list += list(list("name" = item.name, "amount" = istype(stack) ? stack.amount : 1, "ref" = REF(item)))
+	return list("capacity" = cargo_capacity, "cargo_list" = cargo_list)
+
+/obj/vehicle/sealed/mecha/working/ripley/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	. = ..()
+	if(. || action != "drop_from_cargo" || ui_status(ui.user, state) != UI_INTERACTIVE || !(occupants[ui.user] & VEHICLE_CONTROL_EQUIPMENT))
+		return
+	var/atom/movable/item = locate(params["cargo_item"]) in cargo
+	if(!item)
+		return FALSE
+	item.forceMove(drop_location())
+	cargo -= item
+	log_message("Unloaded [item]. Cargo compartment capacity: [cargo_capacity - length(cargo)]", LOG_MECHA)
+	return TRUE
 
 
 /obj/vehicle/sealed/mecha/working/ripley/contents_explosion(severity, target, origin)
@@ -175,17 +183,6 @@
 			cargo -= O
 			O.forceMove(drop_location())
 	. = ..()
-
-/obj/vehicle/sealed/mecha/working/ripley/get_stats_part()
-	var/output = ..()
-	output += "<b>Cargo Compartment Contents:</b><div style=\"margin-left: 15px;\">"
-	if(cargo.len)
-		for(var/obj/O in cargo)
-			output += "<a href='?src=[REF(src)];drop_from_cargo=[REF(O)]'>Unload</a> : [O]<br>"
-	else
-		output += "Nothing"
-	output += "</div>"
-	return output
 
 /obj/vehicle/sealed/mecha/working/ripley/relay_container_resist(mob/living/user, obj/O)
 	to_chat(user, "<span class='notice'>You lean on the back of [O] and start pushing so it falls out of [src].</span>")

@@ -15,6 +15,53 @@
 	chassis = null
 	return ..()
 
+// Модули имеют отдельное действие на каждого оператора, в том числе в двухместных мехах.
+/datum/action/vehicle/sealed/mecha/module
+	var/obj/item/mecha_parts/mecha_equipment/equipment
+	button_block_right_click_context_menu = TRUE
+
+/datum/action/vehicle/sealed/mecha/module/Destroy()
+	if(equipment && owner)
+		equipment.pilot_actions -= owner
+	equipment = null
+	return ..()
+
+/datum/action/vehicle/sealed/mecha/module/IsAvailable(silent = FALSE)
+	return owner && equipment?.chassis == chassis && (chassis?.occupants[owner] & VEHICLE_CONTROL_EQUIPMENT) && !owner.incapacitated()
+
+/datum/action/vehicle/sealed/mecha/module/Trigger(trigger_flags)
+	if(!..())
+		return FALSE
+	if(equipment.ui_toggle_action)
+		equipment.handle_ui_act(equipment.ui_toggle_action, list())
+	else if(trigger_flags & TRIGGER_RIGHT_CLICK)
+		chassis.selected_right = chassis.selected_right == equipment ? null : equipment
+	else
+		chassis.selected = chassis.selected == equipment ? null : equipment
+	equipment.update_equip_info()
+	return TRUE
+
+/datum/action/vehicle/sealed/mecha/module/UpdateButton(atom/movable/screen/movable/action_button/button, status_only = FALSE, force = FALSE)
+	. = ..()
+	if(!button || !equipment || !chassis || !IsAvailable(TRUE))
+		return
+	var/active = equipment.ui_toggle_action ? equipment.is_ui_active() : (chassis.selected == equipment || chassis.selected_right == equipment)
+	if(active)
+		button.color = "#aaffaa"
+	button.desc = equipment.ui_toggle_action ? "Включить или выключить модуль." : "ЛКМ: выбрать модуль для ЛКМ. ПКМ: выбрать модуль для ПКМ. Повторное нажатие снимает выбор."
+
+/obj/vehicle/sealed/mecha/add_control_flags(mob/controller, flags)
+	. = ..()
+	if(.)
+		for(var/obj/item/mecha_parts/mecha_equipment/module as anything in equipment)
+			module.grant_pilot_action(controller)
+
+/obj/vehicle/sealed/mecha/remove_control_flags(mob/controller, flags)
+	. = ..()
+	if(. && !(occupants[controller] & VEHICLE_CONTROL_EQUIPMENT))
+		for(var/obj/item/mecha_parts/mecha_equipment/module as anything in equipment)
+			module.remove_pilot_action(controller)
+
 /datum/action/vehicle/sealed/mecha/mech_eject
 	name = "Eject From Mech"
 	button_icon_state = "mech_eject"
@@ -59,7 +106,8 @@
 	if(!chassis.selected)
 		chassis.selected = available_equipment[1]
 		to_chat(owner, "[icon2html(chassis, owner)]<span class='notice'>You select [chassis.selected].</span>")
-		send_byjax(chassis.occupants,"exosuit.browser","eq_list",chassis.get_equipment_list())
+		chassis.update_equipment_buttons()
+		SStgui.update_uis(chassis)
 		button_icon_state = "mech_cycle_equip_on"
 		UpdateButtons()
 		return
@@ -76,7 +124,8 @@
 			chassis.selected = available_equipment[number+1]
 			to_chat(owner, "[icon2html(chassis, owner)]<span class='notice'>You switch to [chassis.selected].</span>")
 			button_icon_state = "mech_cycle_equip_on"
-		send_byjax(chassis.occupants,"exosuit.browser","eq_list",chassis.get_equipment_list())
+		chassis.update_equipment_buttons()
+		SStgui.update_uis(chassis)
 		UpdateButtons()
 		return
 
@@ -109,12 +158,7 @@
 /datum/action/vehicle/sealed/mecha/mech_view_stats/Trigger()
 	if(!owner || !chassis || !(owner in chassis.occupants))
 		return
-	// nref обязателен: без него onclose() уходит в скин с "null", и крестик по окну
-	// сбрасывает лишь machine, а до Topic() меха "close=1" не доезжает - JS-таймер
-	// панели продолжает стучаться в сервер до конца раунда.
-	var/datum/browser/popup = new(owner, "exosuit", nref = chassis)
-	popup.set_content(chassis.get_stats_html(owner))
-	popup.open()
+	chassis.ui_interact(owner)
 
 
 /datum/action/vehicle/sealed/mecha/strafe

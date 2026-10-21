@@ -1,0 +1,112 @@
+import { useBackend } from '../../backend';
+import {
+  Box,
+  Button,
+  ByondUi,
+  LabeledList,
+  ProgressBar,
+  Section,
+  Stack,
+} from '../../components';
+import { Window } from '../../layouts';
+import { AlertPane } from './AlertPane';
+import type { MainData } from './data';
+import { useHonk } from './honk';
+import { ModulesPane } from './ModulesPane';
+
+export const Mecha = () => {
+  const { act, data } = useBackend<MainData>();
+  const honk = useHonk(data.ui_honked ? 0.4 : 0);
+  const pressureHazard = data.cabin_pressure < data.cabin_pressure_hazard_min
+    || data.cabin_pressure > data.cabin_pressure_hazard_max;
+  const pressureWarning = data.cabin_pressure < data.cabin_pressure_warning_min
+    || data.cabin_pressure > data.cabin_pressure_warning_max;
+  const tempWarning = data.cabin_temp < data.cabin_temp_warning_min
+    || data.cabin_temp > data.cabin_temp_warning_max;
+  return (
+    <Window width={900} height={680}>
+      <Window.Content>
+        <Stack fill>
+          <Stack.Item width="310px">
+            <Stack vertical fill>
+              <Stack.Item grow>
+                <Section
+                  fill
+                  scrollable
+                  title={data.name}
+                  buttons={(
+                    <Button
+                      icon="edit"
+                      tooltip="Переименовать"
+                      disabled={!data.can_settings}
+                      onClick={() => act('changename')} />
+                  )}>
+                  <ByondUi
+                    height="170px"
+                    params={{ id: data.mech_view, zoom: 5, type: 'map' }} />
+                  <LabeledList>
+                    <LabeledList.Item label={honk('Состояние')}>
+                      <ProgressBar
+                        value={data.integrity / data.integrity_max}
+                        ranges={{ good: [0.5, Infinity], average: [0.25, 0.5], bad: [-Infinity, 0.25] }}>
+                        {data.integrity} / {data.integrity_max}
+                      </ProgressBar>
+                    </LabeledList.Item>
+                    <LabeledList.Item label={honk('Энергия')}>
+                      <ProgressBar
+                        value={data.power_max ? data.power_level / data.power_max : 0}
+                        ranges={{ good: [0.5, Infinity], average: [0.25, 0.5], bad: [-Infinity, 0.25] }}>
+                        {data.power_max === null ? 'Нет батареи' : `${Math.round(data.power_level)} / ${data.power_max}`}
+                      </ProgressBar>
+                    </LabeledList.Item>
+                    <LabeledList.Item label={honk('Свет')}>
+                      <Button
+                        icon="lightbulb"
+                        content={honk(data.lights ? 'Вкл' : 'Выкл')}
+                        selected={data.lights}
+                        disabled={!data.can_settings || !data.has_lights}
+                        onClick={() => act('toggle_lights')} />
+                    </LabeledList.Item>
+                    <LabeledList.Item label={honk('Воздух')}>
+                      <Button
+                        icon={data.use_internal_tank ? 'lungs' : 'wind'}
+                        content={honk(data.use_internal_tank ? 'Баллон' : 'Атмосфера')}
+                        selected={data.use_internal_tank}
+                        disabled={!data.can_settings || !data.has_tank}
+                        onClick={() => act('toggle_internal_tank')} />
+                    </LabeledList.Item>
+                    <LabeledList.Item label="Кабина">
+                      <Box color={pressureHazard ? 'bad' : pressureWarning ? 'average' : 'good'}>
+                        {data.cabin_pressure} кПа
+                      </Box>
+                      <Box color={tempWarning ? 'average' : undefined}>
+                        {data.cabin_temp} °C
+                      </Box>
+                    </LabeledList.Item>
+                    <LabeledList.Item label={honk('ДНК блок')}>
+                      <Button
+                        icon="syringe"
+                        content={honk(data.dna_lock ? 'Установлен' : 'Отсутствует')}
+                        selected={!!data.dna_lock}
+                        disabled={!data.can_settings || !!data.dna_lock}
+                        onClick={() => act('dna_lock')} />
+                      {!!data.dna_lock && (
+                        <Button
+                          icon="ban"
+                          tooltip={`Снять замок: ${data.dna_lock_name || data.dna_lock}`}
+                          disabled={!data.can_settings}
+                          onClick={() => act('reset_dna')} />
+                      )}
+                    </LabeledList.Item>
+                  </LabeledList>
+                </Section>
+              </Stack.Item>
+              <Stack.Item><AlertPane /></Stack.Item>
+            </Stack>
+          </Stack.Item>
+          <Stack.Item grow><ModulesPane /></Stack.Item>
+        </Stack>
+      </Window.Content>
+    </Window>
+  );
+};

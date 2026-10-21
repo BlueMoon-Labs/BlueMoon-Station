@@ -219,8 +219,16 @@
 		return FALSE
 	return TRUE
 
-/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/get_equip_info()
-	return "[..()] \[[src.projectiles][projectiles_cache_max &&!projectile_energy_cost?"/[projectiles_cache]":""]\][!disabledreload &&(src.projectiles < initial(src.projectiles))?" - <a href='?src=[REF(src)];rearm=1'>Rearm</a>":null]"
+/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/get_ui_data()
+	. = ..()
+	.["snowflake"] = list(
+		"kind" = "ballistic",
+		"total_ammo" = projectiles,
+		"max_ammo" = initial(projectiles),
+		"cache" = projectiles_cache,
+		"cache_max" = projectiles_cache_max,
+		"can_rearm" = !disabledreload,
+	)
 
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/rearm()
@@ -243,7 +251,7 @@
 				projectiles = projectiles + projectiles_cache
 				projectiles_cache = 0
 
-		send_byjax(chassis.occupants,"exosuit.browser","[REF(src)]",src.get_equip_info())
+		SStgui.update_uis(chassis)
 		log_message("Rearmed [src.name].", LOG_MECHA)
 		return TRUE
 
@@ -253,11 +261,14 @@
 
 
 
-/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/Topic(href, href_list)
-	..()
-	if (href_list["rearm"])
-		src.rearm()
-	return
+/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/handle_ui_act(action, list/params)
+	. = ..()
+	if(.)
+		return TRUE
+	if(action != "rearm" || disabledreload)
+		return FALSE
+	rearm()
+	return TRUE
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/action(mob/source, atom/target, params)
 	. = ..()
@@ -265,7 +276,7 @@
 		return
 	projectiles -= projectiles_per_shot
 	if(chassis)
-		send_byjax(chassis.occupants,"exosuit.browser","[REF(src)]",src.get_equip_info())
+		SStgui.update_uis(chassis)
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/carbine
 	name = "\improper FNX-99 \"Hades\" Carbine"
@@ -489,23 +500,20 @@
 			return TRUE
 	return FALSE
 
-/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/punching_glove/get_equip_info()
-	if(!chassis)
-		return
+/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/punching_glove/handle_ui_act(action, list/params)
+	. = ..()
+	if(.)
+		return TRUE
+	if(action != "lethalPunch")
+		return FALSE
+	harmful = !harmful
+	update_equip_info()
+	return TRUE
 
-	if(can_toggle_lethal)
-		return "[..()] &nbsp; <a href='?src=[REF(src)];lethalPunch=1'>[harmful?"Punch":"Pat"] mode</a>"
-	else
-		return ..()
-
-/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/punching_glove/Topic(href, href_list)
-	..()
-	if(href_list["lethalPunch"])
-		harmful = !harmful
-		if(harmful)
-			to_chat(usr, "[icon2html(src, usr)]<span class='warning'>Lethal Fisting Enabled.</span>")
-		else
-			to_chat(usr, "[icon2html(src, usr)]<span class='warning'>Lethal Fisting Disabled.</span>")
+/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/punching_glove/get_ui_data()
+	. = ..()
+	.["snowflake"]["punching"] = TRUE
+	.["snowflake"]["harmful"] = harmful
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/punching_glove/action(mob/source, atom/target, params)
 	. = ..()

@@ -241,8 +241,9 @@
 						sleep(2)
 		return TRUE
 
-/obj/item/mecha_parts/mecha_equipment/extinguisher/get_equip_info()
-	return "[..()] \[[src.reagents.total_volume]\]"
+/obj/item/mecha_parts/mecha_equipment/extinguisher/get_ui_data()
+	. = ..()
+	.["snowflake"] = list("kind" = "extinguisher", "reagents" = reagents.total_volume, "total_reagents" = reagents.maximum_volume)
 
 /obj/item/mecha_parts/mecha_equipment/extinguisher/can_attach(obj/vehicle/sealed/mecha/working/M as obj)
 	if(..())
@@ -328,24 +329,23 @@
 					playsound(target, 'sound/effects/sparks2.ogg', 50, TRUE)
 	return ..()
 
-/obj/item/mecha_parts/mecha_equipment/rcd/Topic(href,href_list)
-	..()
-	if(href_list["mode"])
-		mode = text2num(href_list["mode"])
-		switch(mode)
-			if(0)
-				to_chat(chassis.occupants, "[icon2html(src, chassis.occupants)]<span class='notice'>Switched RCD to Deconstruct.</span>")
-				energy_drain = initial(energy_drain)
-			if(1)
-				to_chat(chassis.occupants, "[icon2html(src, chassis.occupants)]<span class='notice'>Switched RCD to Construct.</span>")
-				energy_drain = 2*initial(energy_drain)
-			if(2)
-				to_chat(chassis.occupants, "[icon2html(src, chassis.occupants)]<span class='notice'>Switched RCD to Construct Airlock.</span>")
-				energy_drain = 2*initial(energy_drain)
-	return
+/obj/item/mecha_parts/mecha_equipment/rcd/handle_ui_act(action, list/params)
+	. = ..()
+	if(.)
+		return TRUE
+	if(action != "mode")
+		return FALSE
+	var/new_mode = text2num(params["mode"])
+	if(!(new_mode in list(0, 1, 2)))
+		return FALSE
+	mode = new_mode
+	energy_drain = initial(energy_drain) * (mode == 0 ? 1 : 2)
+	update_equip_info()
+	return TRUE
 
-/obj/item/mecha_parts/mecha_equipment/rcd/get_equip_info()
-	return "[..()] \[<a href='?src=[REF(src)];mode=0'>D</a>|<a href='?src=[REF(src)];mode=1'>C</a>|<a href='?src=[REF(src)];mode=2'>A</a>\]"
+/obj/item/mecha_parts/mecha_equipment/rcd/get_ui_data()
+	. = ..()
+	.["snowflake"] = list("kind" = "mode", "mode" = mode, "modes" = list("Демонтаж", "Стена / пол", "Шлюз"), "first_mode" = 0)
 
 //Dunno where else to put this so shrug
 /obj/item/mecha_parts/mecha_equipment/ripleyupgrade

@@ -285,6 +285,8 @@
 
 	// null - Not used at this moment
 	var/show_popup_menus_before_disable
+	// Не даёт обработчику наведения вернуть контекстное меню до выхода из меха.
+	var/mecha_popup_menus_disabled = FALSE
 
 	/// The next point in time at which the client is allowed to send a mousemove() or mousedrag()
 	COOLDOWN_DECLARE(next_mousemove)

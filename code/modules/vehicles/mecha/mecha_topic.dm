@@ -1,196 +1,3 @@
-
-////////////////////////////////////
-///// Rendering stats window ///////
-////////////////////////////////////
-
-/// Пауза между тиками панели статистики, миллисекунды - значение уходит прямо в setTimeout.
-#define MECHA_STATS_UPDATE_INTERVAL 1000
-
-/**
- * Таймер панели статистики.
- *
- * Раньше здесь стоял голый setInterval. Окно, открытое browse(), переживает нажатие на
- * крестик: скин его прячет, но документ остаётся загружен и его JS продолжает работать -
- * панель стучалась в Topic до конца раунда. Теперь цепочку перезаводит сервер: каждый
- * ответ update_stats_panel() дёргает schedule_update() через byjax-колбэк, и стоит серверу
- * замолчать, как опрос обрывается сам.
- *
- * window.on_mecha_update - необязательный крючок для подтипов (см. хонкер), вызывается
- * ровно на тех тиках, которые сервер подтвердил.
- */
-#define js_mecha_stats_ticker {"
-var mecha_update_timer = null;
-
-function schedule_update() {
-	stop_updates();
-	if(window.on_mecha_update) {
-		window.on_mecha_update();
-	}
-	mecha_update_timer = window.setTimeout(function(){
-		window.location = 'byond://?src=[REF(src)]&update_content=1';
-	}, [MECHA_STATS_UPDATE_INTERVAL]);
-}
-
-function stop_updates() {
-	if(mecha_update_timer) {
-		window.clearTimeout(mecha_update_timer);
-		mecha_update_timer = null;
-	}
-}
-"}
-
-/obj/vehicle/sealed/mecha/proc/get_stats_html(mob/user)
-	. = {"<html>
-			<head>
-				<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
-				<title>[name] data</title>
-				<style>
-					body {color: #00ff00; background: #000000; font-family:"Lucida Console",monospace; font-size: 12px;}
-					hr {border: 1px solid #0f0; color: #0f0; background-color: #0f0;}
-					a {padding:2px 5px;;color:#0f0;}
-					.wr {margin-bottom: 5px;}
-					.header {cursor:pointer;}
-					.open, .closed {background: #32CD32; color:#000; padding:1px 2px;}
-					.links a {margin-bottom: 2px;padding-top:3px;}
-					.visible {display: block;}
-					.hidden {display: none;}
-				</style>
-				<script language='javascript' type='text/javascript'>
-					[js_byjax]
-					[js_dropdowns]
-					[js_mecha_stats_ticker]
-
-					window.onload = function() {
-						dropdowns();
-						schedule_update();
-					}
-				</script>
-			</head>
-			<body>
-				<div id='content'>
-					[get_stats_part(user)]
-				</div></div>
-				<div id='eq_list'>
-					[get_equipment_list()]
-				</div>
-				<hr>
-				<div id='commands'>
-					[get_commands()]
-				</div>
-				<div id='equipment_menu'>
-					[get_equipment_menu()]
-				</div>
-			</body>
-		</html>"}
-
-///Returns the status of the mech.
-/obj/vehicle/sealed/mecha/proc/get_stats_part(mob/user)
-	var/integrity = obj_integrity/max_integrity*100
-	var/cell_charge = get_charge()
-	var/datum/gas_mixture/int_tank_air = 0
-	var/tank_pressure = 0
-	var/tank_temperature = 0
-	var/cabin_pressure = 0
-	if (internal_tank)
-		int_tank_air = internal_tank.return_air()
-		tank_pressure = internal_tank ? round(int_tank_air.return_pressure(),0.01) : "None"
-		tank_temperature = internal_tank ? int_tank_air.return_temperature() : "Unknown"
-		cabin_pressure = round(return_pressure(),0.01)
-	. =	{"[report_internal_damage()]
-		[integrity<30?"<span class='userdanger'>DAMAGE LEVEL CRITICAL</span><br>":null]
-		<b>Integrity: </b> [integrity]%<br>
-		<b>Power cell charge: </b>[isnull(cell_charge)?"No power cell installed":"[cell.percent()]%"]<br>
-		<b>Air source: </b>[internal_tank?"[use_internal_tank?"Internal Airtank":"Environment"]":"Environment"]<br>
-		<b>Airtank pressure: </b>[internal_tank?"[tank_pressure]kPa":"N/A"]<br>
-		<b>Airtank temperature: </b>[internal_tank?"[tank_temperature]&deg;K|[tank_temperature - T0C]&deg;C":"N/A"]<br>
-		<b>Cabin pressure: </b>[internal_tank?"[cabin_pressure>WARNING_HIGH_PRESSURE ? "<span class='danger'>[cabin_pressure]</span>": cabin_pressure]kPa":"N/A"]<br>
-		<b>Cabin temperature: </b> [internal_tank?"[return_temperature()]&deg;K|[return_temperature() - T0C]&deg;C":"N/A"]<br>
-		[dna_lock?"<b>DNA-locked:</b><br> <span style='font-size:10px;letter-spacing:-1px;'>[dna_lock]</span> \[<a href='?src=[REF(src)];reset_dna=1'>Reset</a>\]<br>":""]<br>"}
-	. += "[get_actions(user)]<br>"
-
-///Returns HTML for mech actions. Ideally, this proc would be empty for the base mecha. Segmented for easy refactoring.
-/obj/vehicle/sealed/mecha/proc/get_actions(mob/user)
-	. = ""
-	. += "[LAZYACCESSASSOC(occupant_actions, user, /datum/action/vehicle/sealed/mecha/mech_defense_mode) ? "<b>Defense Mode: </b> [defense_mode ? "Enabled" : "Disabled"]<br>" : ""]"
-	. += "[LAZYACCESSASSOC(occupant_actions, user, /datum/action/vehicle/sealed/mecha/mech_overload_mode) ? "<b>Leg Actuators Overload: </b> [leg_overload_mode ? "Enabled" : "Disabled"]<br>" : ""]"
-	. += "[LAZYACCESSASSOC(occupant_actions, user, /datum/action/vehicle/sealed/mecha/mech_smoke) ? "<b>Smoke Charges remaining: </b> [smoke_charges]<br>" : ""]"
-	. += "[LAZYACCESSASSOC(occupant_actions, user, /datum/action/vehicle/sealed/mecha/mech_zoom) ? "<b>Zoom: </b> [zoom_mode ? "Enabled" : "Disabled"]<br>" : ""]"
-	. += "[LAZYACCESSASSOC(occupant_actions, user, /datum/action/vehicle/sealed/mecha/mech_switch_damtype) ? "<b>Damtype: </b> [damtype]<br>" : ""]"
-	. += "[LAZYACCESSASSOC(occupant_actions, user, /datum/action/vehicle/sealed/mecha/mech_toggle_phasing) ? "<b>Phase Modulator: </b> [phasing ? "Enabled" : "Disabled"]<br>" : ""]"
-
-///HTML for internal damage.
-/obj/vehicle/sealed/mecha/proc/report_internal_damage()
-	. = ""
-	//Раньше на каждый вызов собирался ассоциативный список из пяти строк, который тут же
-	//разбирался обратно через text2num. Панель дёргает этот прок раз в секунду, поэтому
-	//проверяем флаги напрямую - порядок строк сохранён прежний
-	if(internal_damage & MECHA_INT_FIRE)
-		. += "<span class='userdanger'>INTERNAL FIRE</span><br />"
-	if(internal_damage & MECHA_INT_TEMP_CONTROL)
-		. += "<span class='userdanger'>LIFE SUPPORT SYSTEM MALFUNCTION</span><br />"
-	if(internal_damage & MECHA_INT_TANK_BREACH)
-		. += "<span class='userdanger'>GAS TANK BREACH</span><br />"
-	if(internal_damage & MECHA_INT_CONTROL_LOST)
-		. += "<span class='userdanger'>COORDINATION SYSTEM CALIBRATION FAILURE</span> - <a href='?src=[REF(src)];repair_int_control_lost=1'>Recalibrate</a><br />"
-	if(internal_damage & MECHA_INT_SHORT_CIRCUIT)
-		. += "<span class='userdanger'>SHORT CIRCUIT</span><br />"
-	if(return_pressure() > WARNING_HIGH_PRESSURE)
-		. += "<span class='userdanger'>DANGEROUSLY HIGH CABIN PRESSURE</span><br />"
-
-///HTML for list of equipment.
-/obj/vehicle/sealed/mecha/proc/get_equipment_list() //outputs mecha equipment list in html
-	if(!LAZYLEN(equipment))
-		return
-	. = "<b>Equipment:</b><div style=\"margin-left: 15px;\">"
-	for(var/obj/item/mecha_parts/mecha_equipment/MT in equipment)
-		. += "<div id='[REF(MT)]'>[MT.get_equip_info()]</div>"
-	. += "</div>"
-
-///HTML for commands.
-/obj/vehicle/sealed/mecha/proc/get_commands()
-	. = {"
-	<div class='wr'>
-		<div class='header'>Electronics</div>
-		<div class='links'>
-			<b>Radio settings:</b><br>
-			Microphone:
-			[radio? "<a href='?src=[REF(src)];rmictoggle=1'>\
-			<span id=\"rmicstate\">[radio.broadcasting?"Engaged":"Disengaged"]</span></a>":"Error"]<br>
-			Speaker:
-			[radio? "<a href='?src=[REF(src)];rspktoggle=1'><span id=\"rspkstate\">\
-			[radio.listening?"Engaged":"Disengaged"]</span></a>":"Error"]<br>
-			Frequency:
-			[radio? "<a href='?src=[REF(src)];rfreq=-10'>-</a>":"-"]
-			[radio? "<a href='?src=[REF(src)];rfreq=-2'>-</a>":"-"]
-			<span id=\"rfreq\">[radio?"[format_frequency(radio.frequency)]":"Error"]</span>
-			[radio? "<a href='?src=[REF(src)];rfreq=2'>+</a>":"+"]
-			[radio? "<a href='?src=[REF(src)];rfreq=10'>+</a>":"+"]<br>
-		</div>
-	</div>
-	<div class='wr'>
-		<div class='header'>Permissions & Logging</div>
-		<div class='links'>
-			<a href='?src=[REF(src)];toggle_id_upload=1'><span id='t_id_upload'>[(mecha_flags & ADDING_ACCESS_POSSIBLE)?"L":"Unl"]ock ID upload panel</span></a><br>
-			<a href='?src=[REF(src)];toggle_maint_access=1'><span id='t_maint_access'>[(mecha_flags & ADDING_MAINT_ACCESS_POSSIBLE)?"Forbid":"Permit"] maintenance protocols</span></a><br>
-			[internal_tank?"<a href='?src=[REF(src)];toggle_port_connection=1'><span id='t_port_connection'>[internal_tank.connected_port?"Disconnect from":"Connect to"] gas port</span></a><br>":""]
-			<a href='?src=[REF(src)];dna_lock=1'>DNA-lock</a><br>
-			<a href='?src=[REF(src)];change_name=1'>Change exosuit name</a>
-		</div>
-	</div>"}
-
-
-/obj/vehicle/sealed/mecha/proc/get_equipment_menu() //outputs mecha html equipment menu
-	. = {"
-	<div class='wr'>
-	<div class='header'>Equipment</div>
-	<div class='links'>"}
-	for(var/e in equipment)
-		var/obj/item/mecha_parts/mecha_equipment/equipment = e
-		. += "[equipment.name] [equipment.detachable ? "<a href='?src=[REF(equipment)];detach=1'>Detach</a><br>" : "\[Non-removable\]<br>"]"
-	. += {"<b>Available equipment slots:</b> [max_equip-LAZYLEN(equipment)]
-	</div>
-	</div>"}
-
 /obj/vehicle/sealed/mecha/proc/output_access_dialog(obj/item/card/id/id_card, mob/user)
 	if(!id_card || !user)
 		return
@@ -256,24 +63,8 @@ function stop_updates() {
 
 /obj/vehicle/sealed/mecha/Topic(href, href_list)
 	..()
-
 	if(!usr)
 		return
-
-	//Крестик на окне панели: сносим документ, иначе его таймер продолжит стучаться сюда
-	if(href_list["close"])
-		close_stats_panel(usr)
-		return
-
-	//Тик самообновления панели. Обязан идти ДО проверки на incapacitated: JS перевзводит
-	//таймер только из byjax-колбэка schedule_update, поэтому один тик, пришедший пока
-	//пилота оглушило или ослепило, обрывал всю цепочку до переоткрытия окна.
-	if(href_list["update_content"])
-		if(!(usr in occupants))
-			return
-		update_stats_panel(usr)
-		return
-
 	if(usr.incapacitated())
 		return
 
@@ -351,138 +142,8 @@ function stop_updates() {
 			to_chat(usr, "<span class='notice'>The internal pressure valve has been set to [internal_tank_valve]kPa.</span>")
 			return
 
-	//Start of all internal topic stuff.
-	//Было "!locate(usr) in occupants": по приоритету операторов это (!locate(usr)) in occupants,
-	//то есть проверка всегда давала ноль и не защищала ничего. occupants - ассоциативный
-	//список моб -> биты управления, так что искать надо самого вызывающего
-	if(!(usr in occupants))
-		return
 
-	//Selects the mech equipment/weapon.
-	if(href_list["select_equip"])
-		var/obj/item/mecha_parts/mecha_equipment/equip = locate(href_list["select_equip"]) in src
-		if(!equip || !equip.selectable)
-			return
-		selected = equip
-		to_chat(occupants, "[icon2html(src, occupants)]<span class='notice'>You switch to [equip].</span>")
-		visible_message("<span class='notice'>[src] raises [equip].</span>")
-		send_byjax(usr, "exosuit.browser", "eq_list", get_equipment_list())
-		return
-
-	//Toggles radio broadcasting
-	if(href_list["rmictoggle"])
-		radio.broadcasting = !radio.broadcasting
-		send_byjax(usr,"exosuit.browser","rmicstate",(radio.broadcasting?"Engaged":"Disengaged"))
-		return
-
-	//Toggles radio listening
-	if(href_list["rspktoggle"])
-		radio.listening = !radio.listening
-		send_byjax(usr,"exosuit.browser","rspkstate",(radio.listening?"Engaged":"Disengaged"))
-		return
-
-	//Changes radio freqency.
-	if(href_list["rfreq"])
-		var/new_frequency = radio.frequency + text2num(href_list["rfreq"])
-		radio.set_frequency(sanitize_frequency(new_frequency, radio.freerange))
-		send_byjax(usr,"exosuit.browser","rfreq","[format_frequency(radio.frequency)]")
-		return
-
-	//Changes the exosuit name.
-	if(href_list["change_name"])
-		var/userinput = stripped_input(usr, "Choose a new exosuit name.", "Rename exosuit", "", MAX_NAME_LEN)
-		if(!userinput || !(usr in occupants) || usr.incapacitated())
-			return
-		name = userinput
-		return
-
-	//Toggles ID upload.
-	if (href_list["toggle_id_upload"])
-		mecha_flags ^= ADDING_ACCESS_POSSIBLE
-		send_byjax(usr,"exosuit.browser","t_id_upload","[(mecha_flags & ADDING_ACCESS_POSSIBLE)?"L":"Unl"]ock ID upload panel")
-		return
-
-	//Toggles main access.
-	if(href_list["toggle_maint_access"])
-		if(construction_state)
-			to_chat(occupants, "[icon2html(src, occupants)]<span class='danger'>Maintenance protocols in effect</span>")
-			return
-		mecha_flags ^= ADDING_MAINT_ACCESS_POSSIBLE
-		send_byjax(usr,"exosuit.browser","t_maint_access","[(mecha_flags & ADDING_MAINT_ACCESS_POSSIBLE)?"Forbid":"Permit"] maintenance protocols")
-		return
-
-	//Toggles connection port.
-	if (href_list["toggle_port_connection"])
-		if(internal_tank.connected_port)
-			if(internal_tank.disconnect())
-				to_chat(occupants, "[icon2html(src, occupants)]<span class='notice'>Disconnected from the air system port.</span>")
-				log_message("Disconnected from gas port.", LOG_MECHA)
-			else
-				to_chat(occupants, "[icon2html(src, occupants)]<span class='warning'>Unable to disconnect from the air system port!</span>")
-				return
-		else
-			var/obj/machinery/atmospherics/components/unary/portables_connector/possible_port = locate() in loc
-			if(internal_tank.connect(possible_port))
-				to_chat(occupants, "[icon2html(src, occupants)]<span class='notice'>Connected to the air system port.</span>")
-				log_message("Connected to gas port.", LOG_MECHA)
-			else
-				to_chat(occupants, "[icon2html(src, occupants)]<span class='warning'>Unable to connect with air system port!</span>")
-				return
-		send_byjax(occupants,"exosuit.browser","t_port_connection","[internal_tank.connected_port?"Disconnect from":"Connect to"] gas port")
-		return
-
-	//Turns on the DNA lock
-	if(href_list["dna_lock"])
-		var/mob/living/carbon/user = usr
-		if(!istype(user) || !user.dna)
-			to_chat(user, "[icon2html(src, occupants)]<span class='notice'>Вы не можете воспользоваться ДНК-замком, не имея ДНК!</span>")
-			return
-		if(dna_lock)
-			to_chat(user, "[icon2html(src, occupants)]<span class='notice'>Эта техника уже заблокирована ДНК-замком.</span>")
-			return
-		dna_lock = user.dna.unique_enzymes
-		dna_lock_name = user.name
-		to_chat(user, "[icon2html(src, occupants)]<span class='notice'>Вы чувствуете колкое ощущение, когда игла внутри меха берет ваш образец ДНК...</span>")
-		return
-
-	//Resets the DNA lock
-	if(href_list["reset_dna"])
-		dna_lock = null
-		dna_lock_name = null
-		return
-
-	//Repairs internal damage
-	if(href_list["repair_int_control_lost"])
-		to_chat(occupants, "[icon2html(src, occupants)]<span class='notice'>Recalibrating coordination system...</span>")
-		log_message("Recalibration of coordination system started.", LOG_MECHA)
-		addtimer(CALLBACK(src, PROC_REF(stationary_repair), loc), 100, TIMER_UNIQUE)
-
-/**
- * Отвечает на очередной тик панели статистики и заводит следующий.
- *
- * Пока сервер отвечает - цепочка таймеров живёт, замолчал - оборвалась. Поэтому окно
- * того, кто уже вылез из меха, гасить не нужно: до этого прока оно просто не дойдёт
- * (выше стоит проверка на пассажира) и замолчит само.
- *
- * Активно сносить документ надо ровно в одном случае: пассажир на месте, а окно закрыто
- * крестиком. Скин тогда прячет окно, но JS внутри продолжает работать, и остановить его
- * может только browse(null). Узнаём об этом через onclose() с ref на сам мех - он
- * навешивается один раз при открытии окна (см. mech_view_stats/Trigger). Раньше onclose()
- * дёргался отсюда каждый тик: лишний winset раз в секунду на каждую панель, а окно,
- * закрытое в первую секунду, "close=1" так и не присылало.
- */
-/obj/vehicle/sealed/mecha/proc/update_stats_panel(mob/user)
-	if(!user?.client)
-		return
-	send_byjax(user, "exosuit.browser", "content", get_stats_part(user), "schedule_update")
-
-///Сносит документ панели статистики - только так гаснет её JS-таймер.
-/obj/vehicle/sealed/mecha/proc/close_stats_panel(mob/user)
-	if(!user?.client)
-		return
-	user << browse(null, "window=exosuit")
-
-///Repairs internal damage if the mech hasn't moved.
+// Калибровка сохраняет прежнее требование: мех должен оставаться на месте.
 /obj/vehicle/sealed/mecha/proc/stationary_repair(location)
 	if(location == loc)
 		clearInternalDamage(MECHA_INT_CONTROL_LOST)
@@ -491,3 +152,193 @@ function stop_updates() {
 	else
 		to_chat(occupants, "[icon2html(src, occupants)]<span class='warning'>Recalibration failed!</span>")
 		log_message("Recalibration of coordination system failed with 1 error.", LOG_MECHA, color="red")
+
+// Панель Paradise использует наши флаги управления и общий список модулей.
+/obj/vehicle/sealed/mecha/ui_status(mob/user, datum/ui_state/state)
+	if(!is_occupant(user))
+		return UI_CLOSE
+	return user.shared_ui_interaction(src)
+
+/obj/vehicle/sealed/mecha/ui_interact(mob/user, datum/tgui/ui)
+	if(!is_occupant(user))
+		return
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		var/atom/movable/screen/map_view/preview = new
+		preview.generate_view("mecha_[REF(src)]_[REF(user)]")
+		ui_views[user] = preview
+		ui = new(user, src, "Mecha", name)
+		if(ui.open())
+			preview.display_to(user, ui.window)
+		else
+			ui_close(user)
+
+/obj/vehicle/sealed/mecha/ui_close(mob/user)
+	. = ..()
+	var/atom/movable/screen/map_view/preview = ui_views[user]
+	ui_views -= user
+	qdel(preview)
+
+/obj/vehicle/sealed/mecha/ui_static_data(mob/user)
+	return list(
+		"cabin_pressure_warning_min" = WARNING_LOW_PRESSURE,
+		"cabin_pressure_hazard_min" = HAZARD_LOW_PRESSURE,
+		"cabin_pressure_warning_max" = WARNING_HIGH_PRESSURE,
+		"cabin_pressure_hazard_max" = HAZARD_HIGH_PRESSURE,
+		"cabin_temp_warning_min" = BODYTEMP_COLD_DAMAGE_LIMIT - T0C,
+		"cabin_temp_warning_max" = BODYTEMP_HEAT_DAMAGE_LIMIT - T0C,
+		"internal_damage_keys" = list(
+			"MECHA_INT_FIRE" = MECHA_INT_FIRE,
+			"MECHA_INT_TEMP_CONTROL" = MECHA_INT_TEMP_CONTROL,
+			"MECHA_INT_TANK_BREACH" = MECHA_INT_TANK_BREACH,
+			"MECHA_INT_CONTROL_LOST" = MECHA_INT_CONTROL_LOST,
+			"MECHA_INT_SHORT_CIRCUIT" = MECHA_INT_SHORT_CIRCUIT,
+		),
+	)
+
+/obj/vehicle/sealed/mecha/ui_data(mob/user)
+	var/atom/movable/screen/map_view/preview = ui_views[user]
+	if(preview)
+		preview.appearance = appearance
+	var/list/modules = list()
+	for(var/obj/item/mecha_parts/mecha_equipment/module as anything in equipment)
+		modules += list(module.get_ui_data())
+	var/list/actions = list()
+	var/list/user_actions = occupant_actions[user]
+	for(var/action_type in user_actions)
+		var/datum/action/action = user_actions[action_type]
+		if(istype(action, /datum/action/vehicle/sealed/mecha/mech_view_stats))
+			continue
+		actions += list(list("name" = action.name, "ref" = REF(action)))
+	var/list/accesses = list()
+	for(var/access in operation_req_access)
+		accesses += get_access_desc(access)
+	return list(
+		"name" = name,
+		"mech_view" = preview?.assigned_map,
+		"integrity" = obj_integrity,
+		"integrity_max" = max_integrity,
+		"power_level" = cell?.charge,
+		"power_max" = cell?.maxcharge,
+		"lights" = !!(mecha_flags & LIGHTS_ON),
+		"has_lights" = !!(mecha_flags & HAS_LIGHTS),
+		"has_tank" = !!internal_tank,
+		"use_internal_tank" = use_internal_tank,
+		"cabin_temp" = round(return_temperature() - T0C, 0.1),
+		"cabin_pressure" = round(return_pressure(), 0.1),
+		"tank_pressure" = internal_tank ? round(internal_tank.return_air().return_pressure(), 0.1) : null,
+		"tank_temp" = internal_tank ? round(internal_tank.return_air().return_temperature() - T0C, 0.1) : null,
+		"port_connected" = !!internal_tank?.connected_port,
+		"internal_damage" = internal_damage,
+		"dna_lock" = dna_lock,
+		"dna_lock_name" = dna_lock_name,
+		"id_upload" = !!(mecha_flags & ADDING_ACCESS_POSSIBLE),
+		"accesses" = accesses,
+		"maint_access" = !!(mecha_flags & ADDING_MAINT_ACCESS_POSSIBLE),
+		"maintenance" = construction_state != MECHA_LOCKED,
+		"can_equipment" = !!(occupants[user] & VEHICLE_CONTROL_EQUIPMENT),
+		"can_settings" = !!(occupants[user] & VEHICLE_CONTROL_SETTINGS),
+		"modules" = modules,
+		"max_equip" = max_equip,
+		"actions" = actions,
+		"cargo" = get_cargo_ui_data(),
+		"ui_honked" = istype(src, /obj/vehicle/sealed/mecha/combat/honker),
+		"radio_data" = radio ? list(
+			"microphone" = radio.broadcasting,
+			"speaker" = radio.listening,
+			"frequency" = radio.frequency,
+			"minFrequency" = radio.freerange ? MIN_FREE_FREQ : MIN_FREQ,
+			"maxFrequency" = radio.freerange ? MAX_FREE_FREQ : MAX_FREQ,
+		) : null,
+	)
+
+/obj/vehicle/sealed/mecha/proc/get_cargo_ui_data()
+	return null
+
+/obj/vehicle/sealed/mecha/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	. = ..()
+	if(.)
+		return
+	var/mob/user = ui.user
+	if(!is_occupant(user) || user.incapacitated())
+		return FALSE
+	if(action == "trigger_action")
+		var/datum/action/vehicle/sealed/mecha/chosen = locate(params["ref"])
+		if(!istype(chosen) || LAZYACCESSASSOC(occupant_actions, user, chosen.type) != chosen || chosen.chassis != src)
+			return FALSE
+		chosen.Trigger()
+		return TRUE
+	if(action == "select_module" || action == "equip_act")
+		if(!(occupants[user] & VEHICLE_CONTROL_EQUIPMENT))
+			return FALSE
+		var/obj/item/mecha_parts/mecha_equipment/gear = locate(params["ref"])
+		if(!istype(gear) || gear.chassis != src || !(gear in equipment))
+			return FALSE
+		if(action == "equip_act")
+			return gear.handle_ui_act(params["gear_action"], params)
+		if(!gear.selectable)
+			return FALSE
+		if(params["button"] == "right")
+			selected_right = selected_right == gear ? null : gear
+		else if(params["button"] == "left")
+			selected = selected == gear ? null : gear
+		else
+			return FALSE
+		gear.update_equip_info()
+		return TRUE
+	if(!(occupants[user] & VEHICLE_CONTROL_SETTINGS))
+		return FALSE
+	switch(action)
+		if("toggle_lights", "toggle_internal_tank")
+			var/action_type = action == "toggle_lights" ? /datum/action/vehicle/sealed/mecha/mech_toggle_lights : /datum/action/vehicle/sealed/mecha/mech_toggle_internals
+			var/datum/action/control = LAZYACCESSASSOC(occupant_actions, user, action_type)
+			control?.Trigger()
+		if("toggle_microphone")
+			if(radio)
+				radio.broadcasting = !radio.broadcasting
+		if("toggle_speaker")
+			if(radio)
+				radio.listening = !radio.listening
+		if("set_frequency")
+			var/frequency = text2num(params["new_frequency"])
+			if(radio && !isnull(frequency))
+				radio.set_frequency(sanitize_frequency(frequency, radio.freerange))
+		if("toggle_id_upload")
+			mecha_flags ^= ADDING_ACCESS_POSSIBLE
+		if("toggle_maint_access")
+			if(construction_state != MECHA_LOCKED)
+				return FALSE
+			mecha_flags ^= ADDING_MAINT_ACCESS_POSSIBLE
+		if("changename")
+			var/new_name = stripped_input(user, "Новое название экзокостюма", "Переименование", name, MAX_NAME_LEN)
+			if(!new_name || !is_occupant(user) || user.incapacitated() || !(occupants[user] & VEHICLE_CONTROL_SETTINGS))
+				return FALSE
+			name = new_name
+		if("dna_lock")
+			var/mob/living/carbon/carbon_user = user
+			if(!istype(carbon_user) || !carbon_user.dna || dna_lock)
+				return FALSE
+			dna_lock = carbon_user.dna.unique_enzymes
+			dna_lock_name = user.name
+			to_chat(user, span_notice("Игла берёт образец вашей ДНК. ДНК-замок установлен."))
+		if("reset_dna")
+			dna_lock = null
+			dna_lock_name = null
+		if("repair_int_damage")
+			if(!(internal_damage & MECHA_INT_CONTROL_LOST))
+				return FALSE
+			log_message("Recalibration of coordination system started.", LOG_MECHA)
+			addtimer(CALLBACK(src, PROC_REF(stationary_repair), loc), 10 SECONDS, TIMER_UNIQUE)
+			to_chat(user, span_notice("Начата калибровка. Не двигайтесь 10 секунд."))
+		if("toggle_port_connection")
+			if(!internal_tank)
+				return FALSE
+			if(internal_tank.connected_port)
+				internal_tank.disconnect()
+			else
+				var/obj/machinery/atmospherics/components/unary/portables_connector/port = locate() in loc
+				if(!internal_tank.connect(port))
+					to_chat(user, span_warning("Не удалось подключиться к газовому порту."))
+		else
+			return FALSE
+	return TRUE

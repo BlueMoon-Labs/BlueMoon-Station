@@ -21,25 +21,32 @@
 	var/harmful = FALSE //Controls if equipment can be used to attack by a pacifist.
 	var/destroy_sound = 'sound/mecha/critdestr.ogg'
 	var/mecha_subcategory_flags // BLUEMOON ADD
+	// Действие для модулей, которые включаются без выбора цели.
+	var/ui_toggle_action
+	var/list/pilot_actions = list()
+	var/ui_icon
 
 /obj/item/mecha_parts/mecha_equipment/proc/update_chassis_page()
 	if(chassis)
-		send_byjax(chassis.occupants,"exosuit.browser","eq_list",chassis.get_equipment_list())
-		send_byjax(chassis.occupants,"exosuit.browser","equipment_menu",chassis.get_equipment_menu(),"dropdowns")
+		SStgui.update_uis(chassis)
 		return TRUE
 	return
 
 /obj/item/mecha_parts/mecha_equipment/proc/update_equip_info()
 	if(chassis)
-		send_byjax(chassis.occupants,"exosuit.browser","[REF(src)]",get_equip_info())
+		chassis.update_equipment_buttons()
+		SStgui.update_uis(chassis)
 		return TRUE
 	return
 
 /obj/item/mecha_parts/mecha_equipment/Destroy()
+	QDEL_LIST_ASSOC_VAL(pilot_actions)
 	if(chassis)
 		LAZYREMOVE(chassis.equipment, src)
 		if(chassis.selected == src)
 			chassis.selected = null
+		if(chassis.selected_right == src)
+			chassis.selected_right = null
 		update_chassis_page()
 		log_message("[src] is destroyed.", LOG_MECHA)
 		if(!LAZYLEN(chassis?.occupants))
@@ -59,19 +66,6 @@
 		return TRUE
 	to_chat(user, "<span class='warning'>You are unable to attach [src] to [M]!</span>")
 	return FALSE
-
-/obj/item/mecha_parts/mecha_equipment/proc/get_equip_info()
-	if(!chassis)
-		return
-	var/txt = "<span style=\"color:[equip_ready?"#0f0":"#f00"];\">*</span>&nbsp;"
-	if(chassis.selected == src)
-		txt += "<b>[src.name]</b>"
-	else if(selectable)
-		txt += "<a href='?src=[REF(chassis)];select_equip=[REF(src)]'>[src.name]</a>"
-	else
-		txt += "[src.name]"
-
-	return txt
 
 /obj/item/mecha_parts/mecha_equipment/proc/action_checks(atom/target)
 	if(!target)
@@ -93,7 +87,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/proc/action(mob/source, atom/target, params)
 	TIMER_COOLDOWN_START(chassis, COOLDOWN_MECHA_EQUIPMENT, equip_cooldown)//Cooldown is on the MECH so people dont bypass it by switching equipment
-	send_byjax(chassis.occupants,"exosuit.browser","[REF(src)]",src.get_equip_info())
+	SStgui.update_uis(chassis)
 	chassis.use_power(energy_drain)
 	return TRUE
 
@@ -118,6 +112,8 @@
 	LAZYADD(M.equipment, src)
 	chassis = M
 	forceMove(M)
+	for(var/mob/pilot as anything in M.occupants)
+		grant_pilot_action(pilot)
 	log_message("[src] initialized.", LOG_MECHA)
 	update_chassis_page()
 	return
@@ -125,18 +121,17 @@
 /obj/item/mecha_parts/mecha_equipment/proc/detach(atom/moveto=null)
 	moveto = moveto || get_turf(chassis)
 	if(src.Move(moveto))
+		QDEL_LIST_ASSOC_VAL(pilot_actions)
 		LAZYREMOVE(chassis.equipment, src)
 		if(chassis.selected == src)
 			chassis.selected = null
+		if(chassis.selected_right == src)
+			chassis.selected_right = null
 		update_chassis_page()
 		log_message("[src] removed from equipment.", LOG_MECHA)
 		chassis = null
 	return
 
-
-/obj/item/mecha_parts/mecha_equipment/Topic(href,href_list)
-	if(href_list["detach"])
-		detach()
 
 /obj/item/mecha_parts/mecha_equipment/log_message(message, message_type=LOG_GAME, color=null, log_globally, atom/target = null)
 	if(chassis)
@@ -152,3 +147,63 @@
 
 /obj/item/mecha_parts/mecha_equipment/proc/needs_rearm()
 	return FALSE
+
+/obj/item/mecha_parts/mecha_equipment/proc/get_ui_data()
+	if(!ui_icon)
+		ui_icon = icon2base64(icon(icon, icon_state, SOUTH))
+	return list(
+		"name" = name,
+		"desc" = desc,
+		"image" = ui_icon,
+		"ref" = REF(src),
+		"integrity" = obj_integrity / max_integrity,
+		"detachable" = detachable,
+		"can_be_triggered" = selectable,
+		"can_be_toggled" = !!ui_toggle_action,
+		"active" = is_ui_active(),
+		"toggle_action" = ui_toggle_action,
+		"selected_left" = chassis.selected == src,
+		"selected_right" = chassis.selected_right == src,
+		"equip_cooldown" = equip_cooldown && DisplayTimeText(equip_cooldown),
+		"energy_per_use" = energy_drain,
+		"snowflake" = null,
+	)
+
+/obj/item/mecha_parts/mecha_equipment/proc/handle_ui_act(action, list/params)
+	if(action == "detach")
+		if(!detachable)
+			return FALSE
+		detach()
+		return TRUE
+	return FALSE
+
+/obj/item/mecha_parts/mecha_equipment/proc/is_ui_active()
+	return ui_toggle_action && (datum_flags & DF_ISPROCESSING)
+
+/obj/item/mecha_parts/mecha_equipment/proc/grant_pilot_action(mob/pilot)
+	if((!selectable && !ui_toggle_action) || !(chassis.occupants[pilot] & VEHICLE_CONTROL_EQUIPMENT) || pilot_actions[pilot])
+		return
+	var/datum/action/vehicle/sealed/mecha/module/action = new(src)
+	action.chassis = chassis
+	action.equipment = src
+	action.name = "[ui_toggle_action ? "Включить/выключить" : "Выбрать"] [name]"
+	action.icon_icon = icon
+	action.button_icon_state = icon_state
+	pilot_actions[pilot] = action
+	action.Grant(pilot)
+
+/obj/item/mecha_parts/mecha_equipment/proc/remove_pilot_action(mob/pilot)
+	var/datum/action/action = pilot_actions[pilot]
+	pilot_actions -= pilot
+	qdel(action)
+
+/obj/vehicle/sealed/mecha/proc/update_equipment_buttons()
+	for(var/obj/item/mecha_parts/mecha_equipment/module as anything in equipment)
+		for(var/pilot in module.pilot_actions)
+			var/datum/action/action = module.pilot_actions[pilot]
+			action.UpdateButtons()
+	for(var/pilot in occupants)
+		var/datum/action/vehicle/sealed/mecha/mech_cycle_equip/cycle = LAZYACCESSASSOC(occupant_actions, pilot, /datum/action/vehicle/sealed/mecha/mech_cycle_equip)
+		if(cycle)
+			cycle.button_icon_state = "mech_cycle_equip_[selected ? "on" : "off"]"
+			cycle.UpdateButtons()

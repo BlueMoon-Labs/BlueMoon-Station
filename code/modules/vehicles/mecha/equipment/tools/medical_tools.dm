@@ -58,7 +58,7 @@
 	to_chat(source, "[icon2html(src, source)]<span class='notice'>You start putting [target] into [src]...</span>")
 	chassis.visible_message("<span class='warning'>[chassis] starts putting [target] into \the [src].</span>")
 	if(do_after(source, equip_cooldown, target=target))
-		if(!chassis || src != chassis.selected || !(get_dir(chassis, target)&chassis.dir))
+		if(!chassis || (src != chassis.selected && src != chassis.selected_right) || !(get_dir(chassis, target)&chassis.dir))
 			return
 		if(!patient_insertion_check(target, source))
 			return
@@ -100,101 +100,47 @@
 	STOP_PROCESSING(SSobj, src)
 	return ..()
 
-/obj/item/mecha_parts/mecha_equipment/medical/sleeper/get_equip_info()
-	var/output = ..()
-	if(output)
-		var/temp = ""
-		if(patient)
-			temp = "<br />\[Occupant: [patient] ([patient.stat > 1 ? "*DECEASED*" : "Health: [patient.health]%"])\]<br /><a href='?src=[REF(src)];view_stats=1'>View stats</a>|<a href='?src=[REF(src)];eject=1'>Eject</a>"
-		return "[output] [temp]"
+/obj/item/mecha_parts/mecha_equipment/medical/sleeper/get_ui_data()
+	. = ..()
+	var/list/patient_data
+	var/list/contained_reagents = list()
+	var/list/injectible_reagents = list()
+	if(patient)
+		patient_data = list(
+			"patient_name" = patient.name,
+			"patient_health" = patient.health / patient.maxHealth,
+			"patient_state" = patient.stat == DEAD ? "Мёртв" : patient.stat == CONSCIOUS ? "В сознании" : "Без сознания",
+			"core_temp" = round(patient.bodytemperature - T0C, 0.1),
+			"brute_loss" = patient.getBruteLoss(),
+			"burn_loss" = patient.getFireLoss(),
+			"toxin_loss" = patient.getToxLoss(),
+			"oxygen_loss" = patient.getOxyLoss(),
+		)
+		for(var/datum/reagent/reagent as anything in patient.reagents.reagent_list)
+			contained_reagents += list(list("name" = reagent.name, "volume" = round(reagent.volume, 0.1)))
+		var/obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/gun = locate() in chassis.equipment
+		if(gun)
+			for(var/datum/reagent/reagent as anything in gun.reagents.reagent_list)
+				injectible_reagents += list(list("name" = reagent.name, "volume" = round(reagent.volume, 0.1), "id" = REF(reagent)))
+	.["snowflake"] = list("kind" = "sleeper", "patient" = patient_data, "contained_reagents" = contained_reagents, "injectible_reagents" = injectible_reagents)
 
-/obj/item/mecha_parts/mecha_equipment/medical/sleeper/Topic(href,href_list)
+/obj/item/mecha_parts/mecha_equipment/medical/sleeper/handle_ui_act(action, list/params)
 	. = ..()
 	if(.)
-		return
-	if(!(usr in chassis.occupants))
-		return
-	if(href_list["eject"])
+		return TRUE
+	if(action == "eject")
 		go_out()
-	if(href_list["view_stats"])
-		var/datum/browser/popup = new(usr, "msleeper", "Sleeper")
-		popup.set_content(get_patient_stats())
-		popup.open()
-		return
-	if(href_list["inject"])
-		var/obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/SG = locate() in chassis
-		var/datum/reagent/R = locate(href_list["inject"]) in SG.reagents.reagent_list
-		if(istype(R))
-			inject_reagent(R, SG)
-
-/obj/item/mecha_parts/mecha_equipment/medical/sleeper/proc/get_patient_stats()
-	if(!patient)
-		return
-	return {"<html>
-				<head>
-				<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
-				<title>[patient] statistics</title>
-				<script language='javascript' type='text/javascript'>
-				[js_byjax]
-				</script>
-				<style>
-				h3 {margin-bottom:2px;font-size:14px;}
-				#lossinfo, #reagents, #injectwith {padding-left:15px;}
-				</style>
-				</head>
-				<body>
-				<h3>Health statistics</h3>
-				<div id="lossinfo">
-				[get_patient_dam()]
-				</div>
-				<h3>Reagents in bloodstream</h3>
-				<div id="reagents">
-				[get_patient_reagents()]
-				</div>
-				<div id="injectwith">
-				[get_available_reagents()]
-				</div>
-				</body>
-				</html>"}
-
-/obj/item/mecha_parts/mecha_equipment/medical/sleeper/proc/get_patient_dam()
-	var/t1
-	switch(patient.stat)
-		if(0)
-			t1 = "Conscious"
-		if(1)
-			t1 = "Unconscious"
-		if(2)
-			t1 = "*dead*"
-		else
-			t1 = "Unknown"
-	return {"<font color="[patient.health > 50 ? "#3d5bc3" : "#c51e1e"]"><b>Health:</b> [patient.stat > 1 ? "[t1]" : "[patient.health]% ([t1])"]</font><br />
-				<font color="[patient.bodytemperature > 50 ? "#3d5bc3" : "#c51e1e"]"><b>Core Temperature:</b> [patient.bodytemperature-T0C]&deg;C ([patient.bodytemperature*1.8-459.67]&deg;F)</font><br />
-				<font color="[patient.getBruteLoss() < 60 ? "#3d5bc3" : "#c51e1e"]"><b>Brute Damage:</b> [patient.getBruteLoss()]%</font><br />
-				<font color="[patient.getOxyLoss() < 60 ? "#3d5bc3" : "#c51e1e"]"><b>Respiratory Damage:</b> [patient.getOxyLoss()]%</font><br />
-				<font color="[patient.getToxLoss() < 60 ? "#3d5bc3" : "#c51e1e"]"><b>Toxin Content:</b> [patient.getToxLoss()]%</font><br />
-				<font color="[patient.getFireLoss() < 60 ? "#3d5bc3" : "#c51e1e"]"><b>Burn Severity:</b> [patient.getFireLoss()]%</font><br />
-				<span class='danger'>[patient.getCloneLoss() ? "Subject appears to have cellular damage." : ""]</span><br />
-				<span class='danger'>[patient.getOrganLoss(ORGAN_SLOT_BRAIN) ? "Significant brain damage detected." : ""]</span><br />
-				<span class='danger'>[length(patient.get_traumas()) ? "Brain Traumas detected." : ""]</span><br />
-				"}
-
-/obj/item/mecha_parts/mecha_equipment/medical/sleeper/proc/get_patient_reagents()
-	if(patient.reagents)
-		for(var/datum/reagent/R in patient.reagents.reagent_list)
-			if(R.volume > 0)
-				. += "[R]: [round(R.volume,0.01)]<br />"
-	return . || "None"
-
-/obj/item/mecha_parts/mecha_equipment/medical/sleeper/proc/get_available_reagents()
-	var/output
-	var/obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/SG = locate(/obj/item/mecha_parts/mecha_equipment/medical/syringe_gun) in chassis
-	if(SG && SG.reagents && islist(SG.reagents.reagent_list))
-		for(var/datum/reagent/R in SG.reagents.reagent_list)
-			if(R.volume > 0)
-				output += "<a href=\"?src=[REF(src)];inject=[REF(R)]\">Inject [R.name]</a><br />"
-	return output
-
+		return TRUE
+	if(action == "inject_reagent")
+		var/obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/gun = locate() in chassis.equipment
+		if(!gun)
+			return FALSE
+		var/datum/reagent/reagent = locate(params["reagent"]) in gun.reagents.reagent_list
+		if(!istype(reagent))
+			return FALSE
+		inject_reagent(reagent, gun)
+		return TRUE
+	return FALSE
 
 /obj/item/mecha_parts/mecha_equipment/medical/sleeper/proc/inject_reagent(datum/reagent/R,obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/SG)
 	if(!R || !patient || !SG || !(SG in chassis.equipment))
@@ -206,15 +152,6 @@
 		log_combat(chassis.occupants, patient, "injected", "[name] ([R] - [to_inject] units)")
 		SG.reagents.trans_id_to(patient,R.type,to_inject)
 		update_equip_info()
-	return
-
-/obj/item/mecha_parts/mecha_equipment/medical/sleeper/update_equip_info()
-	if(..())
-		if(patient)
-			send_byjax(chassis.occupants,"msleeper.browser","lossinfo",get_patient_dam())
-			send_byjax(chassis.occupants,"msleeper.browser","reagents",get_patient_reagents())
-			send_byjax(chassis.occupants,"msleeper.browser","injectwith",get_available_reagents())
-		return TRUE
 	return
 
 /obj/item/mecha_parts/mecha_equipment/medical/sleeper/container_resist(mob/living/user)
@@ -285,11 +222,6 @@
 	if(!istype(M))
 		return FALSE
 
-/obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/get_equip_info()
-	var/output = ..()
-	if(output)
-		return "[output] \[<a href=\"?src=[REF(src)];toggle_mode=1\">[mode? "Analyze" : "Launch"]</a>\]<br />\[Syringes: [syringes.len]/[max_syringes] | Reagents: [reagents.total_volume]/[reagents.maximum_volume]\]<br /><a href='?src=[REF(src)];show_reagents=1'>Reagents list</a>"
-
 /obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/action(mob/source, atom/movable/target, params)
 	if(!action_checks(target))
 		return
@@ -356,104 +288,57 @@
 	return ..()
 
 
-/obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/Topic(href,href_list)
-	..()
-	if (href_list["toggle_mode"])
-		mode = !mode
-		update_equip_info()
-		return
-	if (href_list["select_reagents"])
-		processed_reagents.len = 0
-		var/m = 0
-		var/message
-		for(var/i=1 to known_reagents.len)
-			if(m>=synth_speed)
-				break
-			var/reagent = text2path(href_list["reagent_[i]"])
-			if(reagent && (reagent in known_reagents))
-				message = "[m ? ", " : null][known_reagents[reagent]]"
-				processed_reagents += reagent
-				m++
-		if(processed_reagents.len)
-			message += " added to production"
-			START_PROCESSING(SSobj, src)
-			to_chat(usr, message)
-			to_chat(usr, "[icon2html(src, usr)]<span class='notice'>Reagent processing started.</span>")
-			log_message("Reagent processing started.", LOG_MECHA)
-		return
-	if (href_list["show_reagents"])
-		if(!(usr in chassis.occupants))
-			return
-		var/datum/browser/popup = new(usr, "msyringegun", "Syringe Gun")
-		popup.set_content(get_reagents_page())
-		popup.open()
-	if (href_list["purge_reagent"])
-		var/reagent = href_list["purge_reagent"]
-		if(reagent)
-			reagents.del_reagent(reagent)
-		return
-	if (href_list["purge_all"])
-		reagents.clear_reagents()
+/obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/get_ui_data()
+	. = ..()
+	var/list/contained_reagents = list()
+	var/list/analyzed_reagents = list()
+	for(var/datum/reagent/reagent as anything in reagents.reagent_list)
+		contained_reagents += list(list("name" = reagent.name, "volume" = round(reagent.volume, 0.1), "id" = "[reagent.type]"))
+	for(var/reagent_type in known_reagents)
+		analyzed_reagents += list(list("name" = known_reagents[reagent_type], "id" = "[reagent_type]", "enabled" = (reagent_type in processed_reagents)))
+	.["snowflake"] = list(
+		"kind" = "syringe",
+		"mode" = mode ? "Анализ" : "Стрельба",
+		"syringe" = length(syringes),
+		"max_syringe" = max_syringes,
+		"reagents" = reagents.total_volume,
+		"total_reagents" = reagents.maximum_volume,
+		"contained_reagents" = contained_reagents,
+		"analyzed_reagents" = analyzed_reagents,
+		"synthesizing" = !!(datum_flags & DF_ISPROCESSING),
+	)
 
-/obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/proc/get_reagents_page()
-	var/output = {"<html>
-						<head>
-						<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
-						<title>Reagent Synthesizer</title>
-						<script language='javascript' type='text/javascript'>
-						[js_byjax]
-						</script>
-						<style>
-						h3 {margin-bottom:2px;font-size:14px;}
-						#reagents, #reagents_form {}
-						form {width: 90%; margin:10px auto; border:1px dotted #999; padding:6px;}
-						#submit {margin-top:5px;}
-						</style>
-						</head>
-						<body>
-						<h3>Current reagents:</h3>
-						<div id="reagents">
-						[get_current_reagents()]
-						</div>
-						<h3>Reagents production:</h3>
-						<div id="reagents_form">
-						[get_reagents_form()]
-						</div>
-						</body>
-						</html>
-						"}
-	return output
-
-/obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/proc/get_reagents_form()
-	var/r_list = get_reagents_list()
-	var/inputs
-	if(r_list)
-		inputs += "<input type=\"hidden\" name=\"src\" value=\"[REF(src)]\">"
-		inputs += "<input type=\"hidden\" name=\"select_reagents\" value=\"1\">"
-		inputs += "<input id=\"submit\" type=\"submit\" value=\"Apply settings\">"
-	var/output = {"<form action="byond://" method="get">
-						[r_list || "No known reagents"]
-						[inputs]
-						</form>
-						[r_list? "<span style=\"font-size:80%;\">Only the first [synth_speed] selected reagent\s will be added to production</span>" : null]
-						"}
-	return output
-
-/obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/proc/get_reagents_list()
-	var/output
-	for(var/i=1 to known_reagents.len)
-		var/reagent_id = known_reagents[i]
-		output += {"<input type="checkbox" value="[reagent_id]" name="reagent_[i]" [(reagent_id in processed_reagents)? "checked=\"1\"" : null]> [known_reagents[reagent_id]]<br />"}
-	return output
-
-/obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/proc/get_current_reagents()
-	var/output
-	for(var/datum/reagent/R in reagents.reagent_list)
-		if(R.volume > 0)
-			output += "[R]: [round(R.volume,0.001)] - <a href=\"?src=[REF(src)];purge_reagent=[R]\">Purge Reagent</a><br />"
-	if(output)
-		output += "Total: [round(reagents.total_volume,0.001)]/[reagents.maximum_volume] - <a href=\"?src=[REF(src)];purge_all=1\">Purge All</a>"
-	return output || "None"
+/obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/handle_ui_act(action, list/params)
+	. = ..()
+	if(.)
+		return TRUE
+	switch(action)
+		if("change_mode")
+			mode = !mode
+		if("toggle_reagent")
+			var/reagent_type = text2path(params["reagent"])
+			if(!(reagent_type in known_reagents))
+				return FALSE
+			if(reagent_type in processed_reagents)
+				processed_reagents -= reagent_type
+			else if(length(processed_reagents) < synth_speed)
+				processed_reagents += reagent_type
+		if("synthesize")
+			if(datum_flags & DF_ISPROCESSING)
+				STOP_PROCESSING(SSobj, src)
+			else if(length(processed_reagents))
+				START_PROCESSING(SSobj, src)
+		if("purge_reagent")
+			var/reagent_type = text2path(params["reagent"])
+			if(!ispath(reagent_type, /datum/reagent))
+				return FALSE
+			reagents.del_reagent(reagent_type)
+		if("purge_all")
+			reagents.clear_reagents()
+		else
+			return FALSE
+	update_equip_info()
+	return TRUE
 
 /obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/proc/load_syringe(obj/item/reagent_containers/syringe/S, mob/user)
 	if(syringes.len<max_syringes)
@@ -488,7 +373,7 @@
 	for(var/datum/reagent/R in A.reagents.reagent_list)
 		if(R.can_synth && add_known_reagent(R.type,R.name))
 			to_chat(user, "[icon2html(src, user)]<span class='notice'>Reagent analyzed, identified as [R.name] and added to database.</span>")
-			send_byjax(chassis.occupants,"msyringegun.browser","reagents_form",get_reagents_form())
+			update_equip_info()
 	to_chat(user, "[icon2html(src, user)]<span class='notice'>Analysis complete.</span>")
 	return TRUE
 
@@ -498,12 +383,6 @@
 		known_reagents[r_id] = r_name
 		return TRUE
 	return FALSE
-
-/obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/update_equip_info()
-	if(..())
-		send_byjax(chassis.occupants,"msyringegun.browser","reagents",get_current_reagents())
-		send_byjax(chassis.occupants,"msyringegun.browser","reagents_form",get_reagents_form())
-		return TRUE
 
 /obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/on_reagent_change(changetype)
 	..()
