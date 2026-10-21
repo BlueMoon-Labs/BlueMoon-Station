@@ -275,9 +275,9 @@ const PhysicalActions = (props) => {
           <Button
             width="100%"
             icon="user-cog"
-            content="Внешность"
+            content="Персонаж из настроек"
             disabled={!mob_type.includes("/mob/living/carbon/human")}
-            tooltip="Обновить name, desc и icon игрока"
+            tooltip="Применить внешность, конечности, квирки и их стартовые предметы из настроек игрока"
             onClick={() => act("update_appearance")}
           />
         </Flex>

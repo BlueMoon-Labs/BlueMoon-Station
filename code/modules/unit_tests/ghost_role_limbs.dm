@@ -139,3 +139,78 @@
 
 	var/obj/item/bodypart/r_leg = H.get_bodypart(BODY_ZONE_R_LEG)
 	TEST_ASSERT_NULL(r_leg, "Right leg should be amputated on ghost-role spawn")
+
+// Настройки для сравнения административной выдачи и восстановления без стартовых вещей.
+/datum/unit_test/proc/create_quirk_spawn_preferences()
+	var/datum/preferences/prefs = new
+	allocated += prefs
+	prefs.pref_species = new /datum/species/human
+	prefs.random_character(MALE)
+	prefs.be_random_name = FALSE
+	prefs.be_random_body = FALSE
+	prefs.real_name = "Quirk Spawn Test"
+	prefs.modified_limbs = list()
+	prefs.all_quirks = list(/datum/quirk/family_heirloom::name, /datum/quirk/nearsighted::name, /datum/quirk/breathing_tube::name)
+	return prefs
+
+// «Персонаж из настроек» пересоздаёт квирки со всеми вещами и применяет конечности из настроек.
+/datum/unit_test/admin_character_preferences_restore_spawn_effects/Run()
+	var/mob/living/carbon/human/character = allocate(/mob/living/carbon/human)
+	character.mind_initialize()
+	character.equip_to_slot(new /obj/item/clothing/under/color/grey(character), ITEM_SLOT_ICLOTHING)
+	var/datum/preferences/prefs = create_quirk_spawn_preferences()
+	prefs.modified_limbs[BODY_ZONE_R_ARM] = list(LOADOUT_LIMB_PROSTHETIC, "prosthetic")
+	prefs.modified_limbs[BODY_ZONE_L_LEG] = list(LOADOUT_LIMB_AMPUTATED)
+	SSquirks.AssignQuirks(character, null, TRUE, TRUE, preferences_source = prefs, spawn_items = FALSE)
+	var/datum/quirk/family_heirloom/old_quirk = character.get_quirk(/datum/quirk/family_heirloom)
+	TEST_ASSERT_NOTNULL(old_quirk, "Контроль: квирк реликвии не назначен")
+	TEST_ASSERT_NULL(old_quirk.heirloom, "Контроль: восстановление без вещей создало реликвию")
+
+	TEST_ASSERT(prefs.apply_to_existing_character(character), "Административное применение настроек не выполнено")
+	var/datum/quirk/family_heirloom/new_quirk = character.get_quirk(/datum/quirk/family_heirloom)
+	TEST_ASSERT_NOTNULL(new_quirk, "Квирк реликвии потерян")
+	TEST_ASSERT(new_quirk != old_quirk && QDELETED(old_quirk), "Сохранился квирк с ограничениями актуализатора")
+	TEST_ASSERT(new_quirk.spawn_items && !QDELETED(new_quirk.heirloom), "Не выдана семейная реликвия")
+	TEST_ASSERT(character.contains_atom(new_quirk.heirloom), "Реликвия не попала в инвентарь персонажа")
+	TEST_ASSERT(istype(character.glasses, /obj/item/clothing/glasses/regular), "Не выданы стартовые очки")
+	TEST_ASSERT(istype(character.getorganslot(ORGAN_SLOT_BREATHING_TUBE), /obj/item/organ/cyberimp/mouth/breathing_tube), "Не восстановлена горловая трубка")
+	var/obj/item/bodypart/arm = character.get_bodypart(BODY_ZONE_R_ARM)
+	TEST_ASSERT(arm?.is_robotic_limb(FALSE), "Не применён протез из настроек")
+	TEST_ASSERT_NULL(character.get_bodypart(BODY_ZONE_L_LEG), "Не применена ампутация из настроек")
+	TEST_ASSERT_EQUAL(length(character.roundstart_quirks), length(prefs.all_quirks), "Квирки продублировались")
+
+	prefs.all_quirks = list(/datum/quirk/nearsighted::name)
+	TEST_ASSERT(prefs.apply_to_existing_character(character), "Повторное применение настроек не выполнено")
+	TEST_ASSERT_EQUAL(length(character.roundstart_quirks), 1, "Остались квирки предыдущего персонажа")
+	TEST_ASSERT(character.has_quirk(/datum/quirk/nearsighted), "Не назначен квирк нового персонажа")
+
+// Выдача квирков после выбора экипировки не подменяет имя, тело и уже выбранное снаряжение.
+/datum/unit_test/admin_equipment_quirks_preserve_character/Run()
+	var/mob/living/carbon/human/character = allocate(/mob/living/carbon/human)
+	character.mind_initialize()
+	var/original_name = character.real_name
+	var/obj/item/clothing/under/uniform = new /obj/item/clothing/under/color/grey(character)
+	character.equip_to_slot(uniform, ITEM_SLOT_ICLOTHING)
+	var/datum/preferences/prefs = create_quirk_spawn_preferences()
+	prefs.modified_limbs[BODY_ZONE_R_ARM] = list(LOADOUT_LIMB_PROSTHETIC, "prosthetic")
+	TEST_ASSERT(prefs.apply_spawn_quirks(character), "Квирки после экипировки не применены")
+	TEST_ASSERT_EQUAL(character.real_name, original_name, "Выдача квирков изменила имя")
+	TEST_ASSERT_EQUAL(character.w_uniform, uniform, "Выдача квирков заменила снаряжение")
+	var/obj/item/bodypart/arm = character.get_bodypart(BODY_ZONE_R_ARM)
+	TEST_ASSERT(!arm.is_robotic_limb(FALSE), "Выдача квирков подменила конечности настройками другого тела")
+	TEST_ASSERT(istype(character.glasses, /obj/item/clothing/glasses/regular), "Квирки после экипировки не выдали предметы")
+	var/datum/quirk/family_heirloom/heirloom = character.get_quirk(/datum/quirk/family_heirloom)
+	TEST_ASSERT(heirloom && !QDELETED(heirloom.heirloom), "Квирки после экипировки не выдали реликвию")
+
+// Актуализатор по-прежнему не выдаёт ни стартовые предметы, ни горловую трубку.
+/datum/unit_test/actualization_preferences_suppress_spawn_items/Run()
+	var/mob/living/carbon/human/character = allocate(/mob/living/carbon/human)
+	character.mind_initialize()
+	var/datum/preferences/prefs = create_quirk_spawn_preferences()
+	SSquirks.AssignQuirks(character, null, TRUE, TRUE, preferences_source = prefs, spawn_items = FALSE)
+	TEST_ASSERT_EQUAL(length(character.roundstart_quirks), length(prefs.all_quirks), "Ограничение вещей удалило квирки")
+	var/datum/quirk/family_heirloom/heirloom = character.get_quirk(/datum/quirk/family_heirloom)
+	TEST_ASSERT_NOTNULL(heirloom, "Не назначен квирк семейной реликвии")
+	TEST_ASSERT_NULL(heirloom.heirloom, "Актуализатор создал реликвию")
+	TEST_ASSERT_NULL(character.glasses, "Актуализатор выдал очки")
+	TEST_ASSERT_NULL(character.getorganslot(ORGAN_SLOT_BREATHING_TUBE), "Актуализатор восстановил горловую трубку")

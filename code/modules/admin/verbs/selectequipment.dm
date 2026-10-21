@@ -205,7 +205,7 @@
 	return data
 
 
-/// Кукла в первью показывается голой, не баг и не фича, просто вид всегда будет изменчив. Человек появляется сразу с квирками.
+// Превью показывает выбранное снаряжение; квирки выдаются только по отдельному флажку после Confirm.
 /datum/outfit/admin_loadout
 	name = "Loadout"
 
@@ -247,7 +247,7 @@
 				new_outfit = new new_outfit
 			if(!istype(new_outfit))
 				return
-			user.admin_apply_outfit(target_mob, new_outfit, params["delete_pocket"], params["spawn_method"], params["random_char"], params["give_return"])
+			user.admin_apply_outfit(target_mob, new_outfit, params["delete_pocket"], params["spawn_method"], params["random_char"], params["give_return"], apply_quirks = !!params["apply_quirks"])
 
 		if("customoutfit")
 			user.outfit_manager()
@@ -263,7 +263,7 @@
 				user.prefs.favorite_outfits += outfit_path
 			user.prefs.save_preferences()
 
-/client/proc/admin_apply_outfit(mob/target, dresscode, delete_pocket, spawn_method, random_char, give_return)
+/client/proc/admin_apply_outfit(mob/target, dresscode, delete_pocket, spawn_method, random_char, give_return, apply_quirks = FALSE)
 	if(!ishuman(target) && !isobserver(target))
 		alert("Invalid mob")
 		return
@@ -292,10 +292,11 @@
 		if(human_target.client?.prefs)
 			human_target.client.prefs.copy_to(human_target, icon_updates = TRUE, roundstart_checks = FALSE)
 		SSjob.equip_loadout(null, human_target, bypass_prereqs = TRUE)
-		if(human_target.client)
-			SSquirks.AssignQuirks(human_target, human_target.client, TRUE, TRUE, null, FALSE)
 	else if(dresscode != "Naked")
 		human_target.equipOutfit(dresscode)
+
+	if(apply_quirks && human_target.client?.prefs)
+		human_target.client.prefs.apply_spawn_quirks(human_target)
 
 	human_target.regenerate_icons()
 
@@ -320,8 +321,8 @@
 
 				new /obj/effect/pod_landingzone(current_turf, empty_pod)
 
-	log_admin("[key_name(usr)] changed the equipment of [key_name(human_target)] to [dresscode][was_observer ? ", spawning them" : ""].")
-	message_admins(span_adminnotice("[key_name_admin(usr)] changed the equipment of [ADMIN_LOOKUPFLW(human_target)] to [dresscode][was_observer ? ", spawning them" : ""]."))
+	log_admin("[key_name(usr)] changed the equipment of [key_name(human_target)] to [dresscode][was_observer ? ", spawning them" : ""][apply_quirks ? ", applying preference quirks" : ""].")
+	message_admins(span_adminnotice("[key_name_admin(usr)] changed the equipment of [ADMIN_LOOKUPFLW(human_target)] to [dresscode][was_observer ? ", spawning them" : ""][apply_quirks ? ", applying preference quirks" : ""]."))
 
 	return dresscode
 
