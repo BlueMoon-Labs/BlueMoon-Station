@@ -73,7 +73,8 @@
 	LAZYADD(myarea.firealarms, src)
 	myarea.refresh_fire_detect()
 
-	set_wires(new /datum/wires/firealarm(src))
+	if(buildstage == 2)
+		set_wires(new /datum/wires/firealarm(src))
 	register_context()
 	// Hot AIR detection: temperature_expose only fires from a hotspot touching
 	// this very tile, so a room could be lethally hot with no flame and no
@@ -102,13 +103,13 @@
 
 /obj/machinery/firealarm/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
-	if(buildstage == 2 && is_operational() && !wire_override && !button_wire_cut)
+	if(can_use_button())
 		LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Разблокировать фаерлоки зоны")
 		. = CONTEXTUAL_SCREENTIP_SET
 
-	if(isnull(held_item))
+	if(isnull(held_item) && can_use_button())
 		var/area/location = get_area(src)
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, (location.fire ? "Turn off" : "Turn on"))
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, (location.fire ? "Выключить тревогу" : "Включить тревогу"))
 		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/machinery/firealarm/Destroy()
@@ -173,9 +174,28 @@
 
 /obj/machinery/firealarm/examine(mob/user)
 	. = ..()
+	switch(buildstage)
+		if(0)
+			. += span_notice("В корпусе отсутствует <b>электроника</b>. Корпус прикручен к стене <b>болтами</b>.")
+		if(1)
+			. += span_notice("Плата управления установлена, но <b>проводка отсутствует</b>. Плата <b>плохо закреплена</b> в корпусе.")
+		if(2)
+			if(panel_open)
+				. += span_notice("Панель обслуживания <b>открыта</b>, наружу свисают <b>провода</b>.")
+			else
+				. += span_notice("Панель обслуживания <b>закрыта</b>.")
+	if(machine_stat & BROKEN)
+		. += span_warning("Плата управления <b>разрушена</b> и требует замены.")
+	else if(panel_open && obj_integrity < max_integrity)
+		. += span_notice("<b>Сварные швы</b> на корпусе повреждены.")
 	. += span_notice("Текущий уровень угрозы: <b><u>[SECURITY_LEVEL_COLORED_UPPERTEXT(GLOB.security_level)]</u></b>.")
 	. += span_notice("Фаерлоков с блокировкой автозакрытия дольше [DisplayTimeText(FIRELOCK_MANUAL_OVERRIDE_GRACE)] в зоне: <b>[length(get_blocked_firelocks())]</b>.")
-	. += span_notice("Ctrl-клик снимает все блокировки автозакрытия фаерлоков зоны, включая краткие.")
+	if(buildstage == 2 && !panel_open)
+		. += span_notice("Ctrl-клик снимает все блокировки автозакрытия фаерлоков зоны, включая краткие.")
+
+// Кнопка доступна только у полностью собранной сигнализации с закрытой панелью.
+/obj/machinery/firealarm/proc/can_use_button()
+	return buildstage == 2 && !panel_open && is_operational() && !wire_override && !button_wire_cut
 
 /obj/machinery/firealarm/proc/get_blocked_firelocks(include_manual_grace = FALSE)
 	var/list/blocked_firelocks = list()
@@ -226,7 +246,7 @@
 // тревога поднималась заново. Пока взвод стоит, слушаем только возврат воздуха
 // ниже полосы: он и перевзводит детектор на следующую серию.
 /obj/machinery/firealarm/should_atmos_process(datum/gas_mixture/exposed_air, exposed_temperature)
-	if(!detecting || (obj_flags & EMAGGED) || machine_stat)
+	if(buildstage != 2 || !detecting || (obj_flags & EMAGGED) || machine_stat)
 		return FALSE
 	if(heat_alarm_latched)
 		return exposed_temperature < ATMOS_HEAT_ALARM_TEMPERATURE - ATMOS_HEAT_ALARM_HYSTERESIS
@@ -255,7 +275,7 @@
 	myarea?.refresh_fire_detect()
 
 /obj/machinery/firealarm/proc/alarm(mob/user)
-	if(!is_operational() || !COOLDOWN_FINISHED(src, last_alarm))
+	if(buildstage != 2 || !is_operational() || !COOLDOWN_FINISHED(src, last_alarm))
 		return
 	COOLDOWN_START(src, last_alarm, FIREALARM_COOLDOWN)
 	var/area/A = get_base_area(src)
@@ -267,7 +287,7 @@
 	alarm_active = TRUE
 
 /obj/machinery/firealarm/proc/reset(mob/user)
-	if(!is_operational())
+	if(buildstage != 2 || !is_operational())
 		return
 	// Нажатие кнопки - это подтверждение "я знаю, здесь горячо". Взводим
 	// беспламенный детектор, чтобы он не поднял ту же тревогу заново, пока
@@ -285,12 +305,12 @@
 	alarm_active = FALSE
 
 /obj/machinery/firealarm/on_attack_hand(mob/user, act_intent = user.a_intent, unarmed_attack_flags)
-	if(buildstage != 2)
-		return ..()
+	if(buildstage != 2 || panel_open)
+		return
 	add_fingerprint(user)
 	var/area/A = get_base_area(src)
-	if(wire_override || button_wire_cut)
-		to_chat(user, "<span class='warning'>The fire alarm doesn't respond!</span>")
+	if(!can_use_button())
+		to_chat(user, span_warning("Пожарная сигнализация не отвечает!"))
 	else if(A.fire)
 		reset(user)
 	else
@@ -305,7 +325,7 @@
 /obj/machinery/firealarm/CtrlClick(mob/user)
 	if(!user.canUseTopic(src, be_close = TRUE))
 		return
-	if(buildstage != 2 || !is_operational() || wire_override || button_wire_cut)
+	if(!can_use_button())
 		balloon_alert(user, "сигнализация не отвечает!")
 		return
 	add_fingerprint(user)
@@ -330,7 +350,7 @@
 
 	if(panel_open)
 
-		if(panel_open && is_wire_tool(W) && user.a_intent == INTENT_HELP)
+		if(buildstage == 2 && is_wire_tool(W) && user.a_intent == INTENT_HELP)
 			wires.interact(user)
 			return
 
@@ -360,14 +380,9 @@
 					button_wire_cut = FALSE
 					qdel(wires)
 					wires = null
+					atmos_conditions_changed()
 
 					update_icon()
-					return
-				else if(W.force) //hit and turn it on
-					..()
-					var/area/A = get_base_area(src)
-					if(A && !A.fire)
-						alarm()
 					return
 			if(1)
 				if(istype(W, /obj/item/stack/cable_coil))
@@ -378,6 +393,7 @@
 						to_chat(user, "<span class='notice'>You wire \the [src].</span>")
 
 						set_wires(new /datum/wires/firealarm(src))
+						atmos_conditions_changed()
 
 						update_icon()
 					return
@@ -441,8 +457,8 @@
 
 /obj/machinery/firealarm/take_damage(damage_amount, damage_type = BRUTE, damage_flag = 0, sound_effect = 1, attack_dir)
 	. = ..()
-	if(.) //damage received
-		if(obj_integrity > 0 && !(machine_stat & BROKEN) && buildstage != 0)
+	if(.) // Получено повреждение.
+		if(obj_integrity > 0 && !(machine_stat & BROKEN) && buildstage == 2 && !panel_open)
 			if(prob(33))
 				alarm()
 
