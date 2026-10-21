@@ -187,65 +187,64 @@
 
 /obj/item/mecha_parts/mecha_equipment/extinguisher
 	name = "exosuit extinguisher"
-	desc = "Оборудование для инженерных экзокостюмов. Быстродействующий огнетушитель большой ёмкости."
+	desc = "Пенный огнетушитель для инженерных экзокостюмов с резервуаром на 1000 единиц. Восстанавливает полный запас за 10 минут, расходуя около 10 000 энергии батареи меха."
 	icon_state = "mecha_exting"
 	equip_cooldown = 5
 	energy_drain = 0
 	range = MECHA_MELEE|MECHA_RANGED
 	mech_flags = EXOSUIT_MODULE_WORKING
 	compatible_mecha_types = MECHA_TYPE_WORKING
+	var/foam_regeneration_rate = 1000 / 600
+	var/energy_per_unit = 10
 
 /obj/item/mecha_parts/mecha_equipment/extinguisher/Initialize(mapload)
 	. = ..()
 	create_reagents(1000)
-	reagents.add_reagent(/datum/reagent/water, 1000)
+	reagents.add_reagent(/datum/reagent/firefighting_foam, reagents.maximum_volume)
 
-/obj/item/mecha_parts/mecha_equipment/extinguisher/action(mob/source, atom/target, params) //copypasted from extinguisher. TODO: Rewrite from scratch.//Still todo
-	if(!action_checks(target) || get_dist(chassis, target)>3)
+/obj/item/mecha_parts/mecha_equipment/extinguisher/attach(obj/vehicle/sealed/mecha/M)
+	. = ..()
+	START_PROCESSING(SSobj, src)
+
+/obj/item/mecha_parts/mecha_equipment/extinguisher/detach(atom/moveto)
+	. = ..()
+	if(!chassis)
+		STOP_PROCESSING(SSobj, src)
+
+/obj/item/mecha_parts/mecha_equipment/extinguisher/Destroy()
+	STOP_PROCESSING(SSobj, src)
+	return ..()
+
+/obj/item/mecha_parts/mecha_equipment/extinguisher/process(delta_time)
+	if(!chassis)
+		return PROCESS_KILL
+	if(chassis.equipment_disabled)
+		return
+	var/amount = min(reagents.maximum_volume - reagents.total_volume, foam_regeneration_rate * delta_time, max(0, chassis.get_charge()) / energy_per_unit)
+	if(amount < CHEMICAL_QUANTISATION_LEVEL || !chassis.has_charge(amount * energy_per_unit) || !chassis.use_power(amount * energy_per_unit))
+		return
+	reagents.add_reagent(/datum/reagent/firefighting_foam, amount)
+	update_equip_info()
+
+/obj/item/mecha_parts/mecha_equipment/extinguisher/action(mob/source, atom/target, params)
+	if(!action_checks(target))
 		return
 
-	if(istype(target, /obj/structure/reagent_dispensers/watertank) && get_dist(chassis,target) <= 1)
-		var/obj/structure/reagent_dispensers/watertank/WT = target
-		WT.reagents.trans_to(src, 1000)
-		to_chat(chassis.occupants,span_notice("Огнетушитель заправлен."))
+	if(istype(target, /obj/structure/reagent_dispensers/foamtank) && get_dist(chassis, target) <= 1)
+		var/obj/structure/reagent_dispensers/foamtank/foam_tank = target
+		foam_tank.reagents.trans_to(src, reagents.maximum_volume)
+		to_chat(chassis.occupants, span_notice("Огнетушитель заправлен."))
 		playsound(chassis, 'sound/effects/refill.ogg', 50, 1, -6)
 	else
-		if(reagents.total_volume > 0)
-			playsound(chassis, 'sound/effects/extinguish.ogg', 75, 1, -3)
-			var/direction = get_dir(chassis,target)
-			var/turf/T = get_turf(target)
-			var/turf/T1 = get_step(T,turn(direction, 90))
-			var/turf/T2 = get_step(T,turn(direction, -90))
-
-			var/list/the_targets = list(T,T1,T2)
-			spawn(0)
-				for(var/a=0, a<5, a++)
-					var/obj/effect/particle_effect/water/W = new /obj/effect/particle_effect/water(get_turf(chassis))
-					if(!W)
-						return
-					var/turf/my_target = pick(the_targets)
-					var/datum/reagents/R = new/datum/reagents(5)
-					W.reagents = R
-					R.my_atom = W
-					reagents.trans_to(W,1)
-					for(var/b=0, b<4, b++)
-						if(!W)
-							return
-						step_towards(W,my_target)
-						if(!W)
-							return
-						var/turf/W_turf = get_turf(W)
-						W.reagents.reaction(W_turf)
-						for(var/atom/atm in W_turf)
-							W.reagents.reaction(atm)
-						if(W.loc == my_target)
-							break
-						sleep(2)
-		return TRUE
+		if(reagents.total_volume < 1)
+			return
+		playsound(chassis, 'sound/effects/extinguish.ogg', 75, 1, -3)
+		spray_extinguisher(chassis, target, reagents, precision = TRUE)
+	return ..()
 
 /obj/item/mecha_parts/mecha_equipment/extinguisher/get_ui_data()
 	. = ..()
-	.["snowflake"] = list("kind" = "extinguisher", "reagents" = reagents.total_volume, "total_reagents" = reagents.maximum_volume)
+	.["snowflake"] = list("kind" = "extinguisher", "reagents" = round(reagents.total_volume, 0.1), "total_reagents" = reagents.maximum_volume)
 
 
 

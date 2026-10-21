@@ -316,7 +316,7 @@ const ModuleDetailsExtra = ({ module }: { module: MechModule }) => {
       );
     case 'extinguisher':
       return (
-        <LabeledList.Item label="Вода">
+        <LabeledList.Item label="Противопожарная пена">
           <ProgressBar value={extra.total_reagents ? extra.reagents / extra.total_reagents : 0}>
             {extra.reagents} / {extra.total_reagents}
           </ProgressBar>
