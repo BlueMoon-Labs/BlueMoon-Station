@@ -16,6 +16,7 @@ export const NtosPortraitPrinter = (props) => {
     library_large_private,
     favorite_paintings_md5 = [],
     is_admin = false,
+    user_ckey = null,
   } = data;
 
   const allPortraits = [
@@ -95,6 +96,8 @@ export const NtosPortraitPrinter = (props) => {
     ? current_portrait_asset_prefix + '_' + currentPortrait.md5
     : '';
 
+  const isAdminOrOwner = !!currentPortrait && (is_admin || user_ckey === currentPortrait.ckey);
+
   return (
     <NtosWindow
       title="Art Galaxy"
@@ -146,11 +149,11 @@ export const NtosPortraitPrinter = (props) => {
                       })}
                     />
                   )}
-                  {hasPortraits && is_admin && (
+                  {hasPortraits && isAdminOrOwner && (
                     <Button.Confirm
                       icon="trash"
                       color="bad"
-                      tooltip="Delete this painting from the database"
+                      tooltip={is_admin ? "Delete this painting from the database (admin)" : "Delete your own painting"}
                       tooltipPosition="bottom"
                       confirmContent="Are you sure?"
                       onClick={() => act('delete_painting', {
