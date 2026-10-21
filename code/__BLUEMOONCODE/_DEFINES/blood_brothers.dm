@@ -81,9 +81,8 @@
 #define BROTHER_FURY_RESIST_MULT 0.5
 #define BROTHER_FURY_VOLUME 50
 #define BROTHER_FALLEN_VOLUME 70
-#define BROTHER_GRIEF_KNOCKDOWN (2 SECONDS)
-/// Дрожь при смерти брата; Life снимает её примерно по единице в секунду
-#define BROTHER_GRIEF_JITTER 10
+/// Слёзы в глазах при смерти брата; со стороны их не видно
+#define BROTHER_GRIEF_BLUR 8
 #define BROTHER_GRIEF_MOOD_TIME (20 MINUTES)
 
 #define BROTHER_MARK_DURATION (30 SECONDS)

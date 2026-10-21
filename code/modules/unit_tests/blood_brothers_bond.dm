@@ -363,7 +363,7 @@
 	if(thread)
 		thread_seen = list(thread.icon_state, thread.origin, thread.target)
 
-/// Смерть брата: шок, настроение, алерт и Ярость у выжившего, заглушённый не чувствует; оживление, новое тело и уход снимают горе, разрыв даёт своё
+/// Смерть брата: настроение, алерт, слёзы и Ярость у выжившего без видимых со стороны признаков, заглушённый не чувствует; оживление, новое тело и уход снимают горе, разрыв даёт своё
 /datum/unit_test/blood_brothers_grief
 
 /datum/unit_test/blood_brothers_grief/Run()
@@ -381,9 +381,12 @@
 	TEST_ASSERT(grief_timer && abs(timeleft(grief_timer) - BROTHER_GRIEF_MOOD_TIME) < 1 SECONDS, "Горе проходит само через [DisplayTimeText(BROTHER_GRIEF_MOOD_TIME)]")
 	var/atom/movable/screen/alert/fallen_alert = survivor_body.alerts["brother_fallen"]
 	TEST_ASSERT(abs(fallen_alert.timeout - world.time - BROTHER_GRIEF_MOOD_TIME) < 1 SECONDS, "Алерт горя уходит вместе с настроением")
-	TEST_ASSERT(survivor_body.IsKnockdown(), "Смерть брата сбивает с ног")
-	TEST_ASSERT(survivor_body.jitteriness >= BROTHER_GRIEF_JITTER, "Смерть брата бросает в дрожь")
-	TEST_ASSERT_NOTNULL(survivor_body.has_status_effect(/datum/status_effect/brother_fury), "Смерть брата будит Ярость даже до второй ступени")
+	TEST_ASSERT(!survivor_body.IsKnockdown(), "Горе не сбивает с ног")
+	TEST_ASSERT(!survivor_body.jitteriness, "Горе не бросает в дрожь")
+	TEST_ASSERT(survivor_body.eye_blurry >= BROTHER_GRIEF_BLUR, "Смерть брата застилает глаза")
+	var/datum/status_effect/brother_fury/grief_fury = survivor_body.has_status_effect(/datum/status_effect/brother_fury)
+	TEST_ASSERT_NOTNULL(grief_fury, "Смерть брата будит Ярость даже до второй ступени")
+	TEST_ASSERT(!(shielded.current in blood_brothers_aura_viewers(grief_fury)), "Заглушённый брат ауры не видит")
 	TEST_ASSERT_NULL(shielded.current.has_status_effect(/datum/status_effect/brother_fury), "Заглушённый не чувствует смерти")
 	TEST_ASSERT_NULL(shielded.current.alerts["brother_fallen"], "Заглушённому нечего оплакивать")
 	fallen.current.revive(full_heal = TRUE, admin_revive = TRUE)
@@ -404,6 +407,11 @@
 	TEST_ASSERT_NULL(survivor_body.alerts["brother_fallen"], "Алерт ушедшего снят")
 	team.sever(shielded, "тест")
 	TEST_ASSERT_NOTNULL(mood.mood_events["brother_severed"], "Разрыв клятвы бьёт по оставшимся")
+
+/proc/blood_brothers_aura_viewers(datum/status_effect/brother_fury/fury)
+	. = list()
+	for(var/datum/weakref/viewer_ref as anything in fury?.aura_viewers)
+		. += viewer_ref.resolve()
 
 /proc/blood_brothers_has_overlay(atom/thing, state)
 	for(var/mutable_appearance/overlay as anything in thing.overlays)
@@ -474,16 +482,20 @@
 	TEST_ASSERT(abs(furious.physiology.stun_mod - stun_mod * BROTHER_FURY_RESIST_MULT) < 0.01, "Ярость укорачивает оглушение")
 	TEST_ASSERT(abs(furious.physiology.stamina_mod - stamina_mod * BROTHER_FURY_RESIST_MULT) < 0.01, "Ярость бережёт выносливость")
 	TEST_ASSERT(furious.has_movespeed_modifier(/datum/movespeed_modifier/brother_fury), "Ярость ускоряет")
-	TEST_ASSERT(blood_brothers_has_overlay(furious, "fury_aura"), "Под яростным горит аура")
-	for(var/mutable_appearance/overlay as anything in furious.overlays)
-		if(overlay.icon_state == "fury_aura")
-			TEST_ASSERT(overlay.appearance_flags & RESET_TRANSFORM, "Аура не поворачивается вместе с лежащим")
-			TEST_ASSERT(overlay.appearance_flags & KEEP_APART, "Аура не сливается с телом")
+	var/datum/status_effect/brother_fury/fury = furious.has_status_effect(/datum/status_effect/brother_fury)
+	var/image/aura = fury.aura
+	TEST_ASSERT(!blood_brothers_has_overlay(furious, "fury_aura"), "Аура не оверлей: посторонние её не видят")
+	TEST_ASSERT_EQUAL(aura?.loc, furious, "Аура горит под яростным")
+	TEST_ASSERT(aura.appearance_flags & RESET_TRANSFORM, "Аура не поворачивается вместе с лежащим")
+	TEST_ASSERT(aura.appearance_flags & KEEP_APART, "Аура не сливается с телом")
+	var/list/aura_viewers = blood_brothers_aura_viewers(fury)
+	TEST_ASSERT((furious in aura_viewers) && (cuffed in aura_viewers), "Ауру видят сам яростный и его брат")
+	TEST_ASSERT_EQUAL(length(aura_viewers), 2, "Кроме братьев ауру никто не видит")
 	furious.remove_status_effect(/datum/status_effect/brother_fury)
+	TEST_ASSERT_NULL(aura.loc, "Аура погасла")
 	TEST_ASSERT(abs(furious.physiology.stun_mod - stun_mod) < 0.01, "Оглушение вернулось")
 	TEST_ASSERT(abs(furious.physiology.stamina_mod - stamina_mod) < 0.01, "Выносливость вернулась")
 	TEST_ASSERT(!furious.has_movespeed_modifier(/datum/movespeed_modifier/brother_fury), "Ускорение снято")
-	TEST_ASSERT(!blood_brothers_has_overlay(furious, "fury_aura"), "Аура погасла")
 	cuffed.uncuff()
 	team.next_sense_at = 0
 	team.process()

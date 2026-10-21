@@ -14,13 +14,12 @@
 	icon = 'modular_bluemoon/icons/mob/blood_brothers/alerts.dmi'
 	icon_state = "fallen"
 
-/// Смерть брата бьёт по живому незаглушённому брату; без сна
+/// Смерть брата бьёт по живому незаглушённому брату; со стороны горе не видно
 /datum/antagonist/brother/proc/grieve(datum/mind/fallen)
 	var/mob/living/body = owner.current
 	if(!isliving(body) || body.stat == DEAD || is_muted())
 		return FALSE
-	body.Knockdown(BROTHER_GRIEF_KNOCKDOWN)
-	body.Jitter(BROTHER_GRIEF_JITTER)
+	body.blur_eyes(BROTHER_GRIEF_BLUR)
 	SEND_SIGNAL(body, COMSIG_ADD_MOOD_EVENT, "brother_fallen", /datum/mood_event/brother_fallen)
 	body.throw_alert("brother_fallen", /atom/movable/screen/alert/brother_fallen, duration_ds = BROTHER_GRIEF_MOOD_TIME)
 	to_chat(body, span_userdanger("[fallen.name] пал[fallen.current?.ru_a()]. Нить между вами провисла."))

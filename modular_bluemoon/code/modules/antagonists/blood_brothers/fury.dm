@@ -1,6 +1,6 @@
 /datum/blood_bond_passive/fury
 	name = "Ярость за брата"
-	desc = "Когда брат падает без сознания или на него надевают наручники, вы на 20 секунд становитесь быстрее, устойчивее к оглушению и вдвое меньше устаёте от ударов. Смерть брата будит Ярость сразу, без перезарядки и даже до второй печати. Пока Ярость горит, у ваших ног видна кровавая аура."
+	desc = "Когда брат падает без сознания или на него надевают наручники, вы на 20 секунд становитесь быстрее, устойчивее к оглушению и вдвое меньше устаёте от ударов. Смерть брата будит Ярость сразу, без перезарядки и даже до второй печати. Пока Ярость горит, братья видят у ваших ног кровавую ауру; посторонним она не видна."
 	bond_how = "Работает само, пока связь не заглушена."
 	cooldown_time = BROTHER_FURY_COOLDOWN
 
@@ -15,14 +15,14 @@
 	alert_type = /atom/movable/screen/alert/status_effect/brother_fury
 	/// Множители физиологии поставлены этим эффектом и снимаются им же
 	var/physiology_applied = FALSE
-	var/mutable_appearance/aura
+	/// Аура видна только братьям: картинка в их клиентах, а не оверлей
+	var/image/aura
+	var/list/datum/weakref/aura_viewers
 
 /datum/status_effect/brother_fury/on_apply()
 	. = ..()
 	owner.add_movespeed_modifier(/datum/movespeed_modifier/brother_fury)
-	aura = mutable_appearance('modular_bluemoon/icons/effects/blood_brothers.dmi', "fury_aura", BELOW_MOB_LAYER)
-	aura.appearance_flags |= RESET_TRANSFORM | KEEP_APART
-	owner.add_overlay(aura)
+	show_aura()
 	if(ishuman(owner))
 		var/mob/living/carbon/human/human_owner = owner
 		human_owner.physiology.stun_mod *= BROTHER_FURY_RESIST_MULT
@@ -31,8 +31,7 @@
 
 /datum/status_effect/brother_fury/on_remove()
 	owner.remove_movespeed_modifier(/datum/movespeed_modifier/brother_fury)
-	owner.cut_overlay(aura)
-	aura = null
+	hide_aura()
 	if(physiology_applied && ishuman(owner))
 		var/mob/living/carbon/human/human_owner = owner
 		human_owner.physiology.stun_mod /= BROTHER_FURY_RESIST_MULT
@@ -40,9 +39,33 @@
 	physiology_applied = FALSE
 	return ..()
 
+/datum/status_effect/brother_fury/proc/show_aura()
+	aura = image('modular_bluemoon/icons/effects/blood_brothers.dmi', owner, "fury_aura", BELOW_MOB_LAYER)
+	aura.appearance_flags |= RESET_TRANSFORM | KEEP_APART
+	var/list/mob/living/viewers = list(owner)
+	var/datum/antagonist/brother/fury_brother = owner.mind?.has_antag_datum(/datum/antagonist/brother)
+	var/datum/team/brother_team/team = fury_brother?.team
+	for(var/datum/antagonist/brother/other as anything in team?.brother_antags())
+		var/mob/living/body = other.owner.current
+		if(isliving(body) && !other.is_muted() && !(other.owner in team.departed_minds))
+			viewers |= body
+	aura_viewers = list()
+	for(var/mob/living/viewer as anything in viewers)
+		aura_viewers += WEAKREF(viewer)
+		viewer.client?.images += aura
+
+/datum/status_effect/brother_fury/proc/hide_aura()
+	for(var/datum/weakref/viewer_ref as anything in aura_viewers)
+		var/mob/living/viewer = viewer_ref.resolve()
+		viewer?.client?.images -= aura
+	aura_viewers = null
+	if(aura)
+		aura.loc = null
+	aura = null
+
 /atom/movable/screen/alert/status_effect/brother_fury
 	name = "Ярость за брата"
-	desc = "Кровь брата стучит в висках: вы быстрее и устойчивее к оглушению и усталости. Аура у ног видна всем."
+	desc = "Кровь брата стучит в висках: вы быстрее и устойчивее к оглушению и усталости. Ауру у ваших ног видят только братья."
 	icon = 'modular_bluemoon/icons/mob/blood_brothers/alerts.dmi'
 	icon_state = "fury"
 
