@@ -181,19 +181,7 @@
 		return
 
 	if(W.GetID())
-		if((mecha_flags & ADDING_ACCESS_POSSIBLE) || (mecha_flags & ADDING_MAINT_ACCESS_POSSIBLE))
-			if(internals_access_allowed(user))
-				var/obj/item/card/id/id_card
-				if(istype(W, /obj/item/card/id))
-					id_card = W
-				else
-					var/obj/item/modular_computer/pda/pda = W
-					id_card = pda.id
-				output_maintenance_dialog(id_card, user)
-				return
-			to_chat(user, "<span class='warning'>Invalid ID: Access denied.</span>")
-			return
-		to_chat(user, "<span class='warning'>Maintenance protocols disabled by operator.</span>")
+		open_maintenance_panel(W, user)
 		return
 
 	if(istype(W, /obj/item/stock_parts/cell))
@@ -267,6 +255,10 @@
 	if(user.a_intent == INTENT_HARM)
 		return
 	. = TRUE
+	if(construction_state != MECHA_SECURE_BOLTS && construction_state != MECHA_LOOSE_BOLTS)
+		return
+	if(!I.use_tool(src, user, 0, volume = 50))
+		return
 	if(construction_state == MECHA_SECURE_BOLTS)
 		construction_state = MECHA_LOOSE_BOLTS
 		to_chat(user, "<span class='notice'>You undo the securing bolts.</span>")
@@ -280,6 +272,10 @@
 	if(user.a_intent == INTENT_HARM)
 		return
 	. = TRUE
+	if(construction_state != MECHA_LOOSE_BOLTS && construction_state != MECHA_OPEN_HATCH)
+		return
+	if(!I.use_tool(src, user, 0, volume = 50))
+		return
 	if(construction_state == MECHA_LOOSE_BOLTS)
 		construction_state = MECHA_OPEN_HATCH
 		to_chat(user, "<span class='notice'>You open the hatch to the power unit.</span>")

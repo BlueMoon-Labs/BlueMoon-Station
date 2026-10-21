@@ -129,13 +129,43 @@
 	chassis.toggle_strafe()
 
 /obj/vehicle/sealed/mecha/AltClick(mob/living/user)
-	if(!(user in occupants) || !user.canUseTopic(src))
+	if(!is_occupant(user))
+		open_maintenance_panel(user.get_idcard(TRUE), user)
+		return
+	if(!user.canUseTopic(src))
 		return
 	if(!(user in return_controllers_with_flag(VEHICLE_CONTROL_DRIVE)))
 		to_chat(user, "<span class='warning'>You're in the wrong seat to control movement.</span>")
 		return
 
 	toggle_strafe()
+
+/obj/vehicle/sealed/mecha/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
+	. = ..()
+	if(is_occupant(user))
+		if(occupants[user] & VEHICLE_CONTROL_DRIVE)
+			LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Переключить боковое движение")
+			return CONTEXTUAL_SCREENTIP_SET
+		return
+	LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Панель обслуживания (ID)")
+	if(held_item?.GetID())
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Панель обслуживания")
+	else if(held_item && user.a_intent != INTENT_HARM)
+		var/tool_hint
+		switch(held_item.tool_behaviour)
+			if(TOOL_WRENCH)
+				if(construction_state == MECHA_SECURE_BOLTS)
+					tool_hint = "Ослабить болты"
+				else if(construction_state == MECHA_LOOSE_BOLTS)
+					tool_hint = "Затянуть болты"
+			if(TOOL_CROWBAR)
+				if(construction_state == MECHA_LOOSE_BOLTS)
+					tool_hint = "Открыть люк"
+				else if(construction_state == MECHA_OPEN_HATCH)
+					tool_hint = "Закрыть люк"
+		if(tool_hint)
+			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, tool_hint)
+	return CONTEXTUAL_SCREENTIP_SET
 
 /obj/vehicle/sealed/mecha/proc/toggle_strafe()
 	strafe = !strafe

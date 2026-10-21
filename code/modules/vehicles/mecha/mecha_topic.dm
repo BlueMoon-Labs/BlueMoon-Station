@@ -1,146 +1,187 @@
-/obj/vehicle/sealed/mecha/proc/output_access_dialog(obj/item/card/id/id_card, mob/user)
-	if(!id_card || !user)
+// У внешней панели свой владелец TGUI, чтобы она не подменяла интерфейс пилота.
+/obj/vehicle/sealed/mecha/proc/open_maintenance_panel(obj/item/id_source, mob/user)
+	if(!user.canUseTopic(src, be_close = TRUE, no_tk = TRUE))
 		return
-	. = {"<html>
-			<head>
-				<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
-				<style>
-					h1 {font-size:15px;margin-bottom:4px;}
-					body {color: #00ff00; background: #000000; font-family:"Courier New", Courier, monospace; font-size: 12px;}
-					a {color:#0f0;}
-				</style>
-			</head>
-			<body>
-				<h1>Following keycodes are present in this system:</h1>"}
-	for(var/a in operation_req_access)
-		. += "[get_access_desc(a)] - <a href='?src=[REF(src)];del_req_access=[a];user=[REF(user)];id_card=[REF(id_card)]'>Delete</a><br>"
-	. += "<hr><h1>Following keycodes were detected on portable device:</h1>"
-	for(var/a in id_card.access)
-		if(a in operation_req_access)
-			continue
-		var/a_name = get_access_desc(a)
-		if(!a_name)
-			continue //there's some strange access without a name
-		. += "[a_name] - <a href='?src=[REF(src)];add_req_access=[a];user=[REF(user)];id_card=[REF(id_card)]'>Add</a><br>"
-	. +={"<hr><a href='?src=[REF(src)];finish_req_access=1;user=[REF(user)]'>Lock ID panel</a><br>
-		<span class='danger'>(Warning! The ID upload panel can be unlocked only through Exosuit Interface.)</span>"}
-	var/datum/browser/popup = new(user, "exosuit_add_access", "Exosuit Access")
-	popup.set_content(.)
-	popup.open()
-
-
-/obj/vehicle/sealed/mecha/proc/output_maintenance_dialog(obj/item/card/id/id_card,mob/user)
-	if(!id_card || !user)
+	if(!(mecha_flags & (ADDING_ACCESS_POSSIBLE | ADDING_MAINT_ACCESS_POSSIBLE)))
+		to_chat(user, span_warning("Оператор запретил изменение доступа и техобслуживание."))
 		return
-	. = {"<html>
-			<head>
-				<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
-				<style>
-					body {color: #00ff00; background: #000000; font-family:"Courier New", Courier, monospace; font-size: 12px;}
-					a {padding:2px 5px; background:#32CD32;color:#000;display:block;margin:2px;text-align:center;text-decoration:none;}
-				</style>
-			</head>
-			<body>
-				[(mecha_flags & ADDING_ACCESS_POSSIBLE)?"<a href='?src=[REF(src)];req_access=1;id_card=[REF(id_card)];user=[REF(user)]'>Edit operation keycodes</a>":null]
-				[(mecha_flags & ADDING_MAINT_ACCESS_POSSIBLE)?"<a href='?src=[REF(src)];maint_access=1;id_card=[REF(id_card)];user=[REF(user)]'>[(construction_state > MECHA_LOCKED) ? "Terminate" : "Initiate"] maintenance protocol</a>":null]
-				[(construction_state == MECHA_OPEN_HATCH) ?"--------------------</br>":null]
-				[(construction_state == MECHA_OPEN_HATCH) ?"[cell?"<a href='?src=[REF(src)];drop_cell=1;id_card=[REF(id_card)];user=[REF(user)]'>Drop power cell</a>":"No cell installed</br>"]":null]
-				[(construction_state == MECHA_OPEN_HATCH) ?"[scanmod?"<a href='?src=[REF(src)];drop_scanmod=1;id_card=[REF(id_card)];user=[REF(user)]'>Drop scanning module</a>":"No scanning module installed</br>"]":null]
-				[(construction_state == MECHA_OPEN_HATCH) ?"[capacitor?"<a href='?src=[REF(src)];drop_cap=1;id_card=[REF(id_card)];user=[REF(user)]'>Drop capacitor</a>":"No capacitor installed</br>"]":null]
-				[(construction_state == MECHA_OPEN_HATCH) ?"--------------------</br>":null]
-				[(construction_state > MECHA_LOCKED) ?"<a href='?src=[REF(src)];set_internal_tank_valve=1;user=[REF(user)]'>Set Cabin Air Pressure</a>":null]
-			</body>
-		</html>"}
-	user << browse(., "window=exosuit_maint_console")
-	onclose(user, "exosuit_maint_console")
-
-
-
-
-/////////////////
-///// Topic /////
-/////////////////
-
-/obj/vehicle/sealed/mecha/Topic(href, href_list)
-	..()
-	if(!usr)
+	if(!id_source?.GetID() || !user.contains(id_source))
+		to_chat(user, span_warning("Для открытия панели нужна ID-карта в руке или надетая на вас."))
 		return
-	if(usr.incapacitated())
+	if(!internals_access_allowed(user))
+		to_chat(user, span_warning("Недостаточно прав для обслуживания меха."))
 		return
+	if(!maintenance_panel)
+		maintenance_panel = new(src)
+	maintenance_panel.id_sources[user] = WEAKREF(id_source)
+	maintenance_panel.ui_interact(user)
 
-	if(in_range(src, usr))
-		//Start of ID requirements.
-		if(href_list["id_card"])
-			var/obj/item/card/id/id_card
-			id_card = locate(href_list["id_card"])
-			if(!istype(id_card))
-				return
+/datum/mecha_maintenance
+	var/obj/vehicle/sealed/mecha/chassis
+	// Карта берётся из предъявленного предмета заново, в том числе из КПК.
+	var/list/id_sources = list()
 
-			if(href_list["req_access"])
-				if(!(mecha_flags & ADDING_ACCESS_POSSIBLE))
-					return
-				output_access_dialog(id_card,usr)
-				return
+/datum/mecha_maintenance/New(obj/vehicle/sealed/mecha/chassis)
+	src.chassis = chassis
+	return ..()
 
-			if(href_list["maint_access"])
-				if(!(mecha_flags & ADDING_MAINT_ACCESS_POSSIBLE))
-					return
-				if(construction_state == MECHA_LOCKED)
-					construction_state = MECHA_SECURE_BOLTS
-					to_chat(usr, "<span class='notice'>The securing bolts are now exposed.</span>")
-				else if(construction_state == MECHA_SECURE_BOLTS)
-					construction_state = MECHA_LOCKED
-					to_chat(usr, "<span class='notice'>The securing bolts are now hidden.</span>")
-				output_maintenance_dialog(id_card,usr)
-				return
-			if(href_list["drop_cell"])
-				if(construction_state == MECHA_OPEN_HATCH)
-					cell.forceMove(get_turf(src))
-					cell = null
-				output_maintenance_dialog(id_card,usr)
-				return
-			if(href_list["drop_scanmod"])
-				if(construction_state == MECHA_OPEN_HATCH)
-					scanmod.forceMove(get_turf(src))
-					scanmod = null
-				output_maintenance_dialog(id_card,usr)
-				return
-			if(href_list["drop_cap"])
-				if(construction_state == MECHA_OPEN_HATCH)
-					capacitor.forceMove(get_turf(src))
-					capacitor = null
-				output_maintenance_dialog(id_card,usr)
-				return
+/datum/mecha_maintenance/Destroy()
+	SStgui.close_uis(src)
+	id_sources.Cut()
+	chassis = null
+	return ..()
 
-			if(href_list["add_req_access"])
-				if(!(mecha_flags & ADDING_ACCESS_POSSIBLE))
-					return
-				operation_req_access += text2num(href_list["add_req_access"])
-				output_access_dialog(id_card,usr)
-				return
+/datum/mecha_maintenance/proc/get_id_card(mob/user)
+	var/datum/weakref/id_source_ref = id_sources[user]
+	var/obj/item/id_source = id_source_ref?.resolve()
+	if(QDELETED(id_source) || !user.contains(id_source))
+		return null
+	return id_source.GetID()
 
-			if(href_list["del_req_access"])
-				if(!(mecha_flags & ADDING_ACCESS_POSSIBLE))
-					return
-				operation_req_access -= text2num(href_list["del_req_access"])
-				output_access_dialog(id_card, usr)
-				return
-			return //Here end everything requiring an ID.
+/datum/mecha_maintenance/ui_host(mob/user)
+	return chassis
 
-		//Here ID access stuff goes to die.
-		if(href_list["finish_req_access"])
-			mecha_flags &= ~ADDING_ACCESS_POSSIBLE
-			usr << browse(null,"window=exosuit_add_access")
-			return
+/datum/mecha_maintenance/ui_state(mob/user)
+	return GLOB.physical_state
 
-		//Set pressure.
-		if(href_list["set_internal_tank_valve"] && construction_state)
-			var/new_pressure = input(usr,"Input new output pressure","Pressure setting",internal_tank_valve) as num|null
-			if(isnull(new_pressure) || usr.incapacitated() || !construction_state)
-				return
-			internal_tank_valve = new_pressure
-			to_chat(usr, "<span class='notice'>The internal pressure valve has been set to [internal_tank_valve]kPa.</span>")
-			return
+/datum/mecha_maintenance/ui_status(mob/user, datum/ui_state/state)
+	if(QDELETED(chassis) || !user.Adjacent(chassis) || !get_id_card(user) || !chassis.internals_access_allowed(user))
+		return UI_CLOSE
+	if(!(chassis.mecha_flags & (ADDING_ACCESS_POSSIBLE | ADDING_MAINT_ACCESS_POSSIBLE)))
+		return UI_CLOSE
+	return ..()
+
+/datum/mecha_maintenance/ui_close(mob/user)
+	id_sources -= user
+
+/datum/mecha_maintenance/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "MechaMaintenance", "Обслуживание меха")
+		if(!ui.open())
+			id_sources -= user
+			qdel(ui)
+
+/datum/mecha_maintenance/ui_data(mob/user)
+	var/obj/item/card/id/id_card = get_id_card(user)
+	if(QDELETED(chassis) || !id_card)
+		return list("accesses" = list())
+	var/list/accesses = list()
+	for(var/access in (chassis.operation_req_access | id_card.access))
+		accesses += list(list(
+			"id" = access,
+			"name" = get_access_desc(access),
+			"required" = (access in chassis.operation_req_access),
+			"on_card" = (access in id_card.access),
+		))
+	var/state_name
+	var/state_hint
+	switch(chassis.construction_state)
+		if(MECHA_LOCKED)
+			state_name = "Отключено"
+			state_hint = "Начните техобслуживание, чтобы получить доступ к крепёжным болтам."
+		if(MECHA_SECURE_BOLTS)
+			state_name = "Болты закреплены"
+			state_hint = "Ослабьте болты гаечным ключом, чтобы открыть люк."
+		if(MECHA_LOOSE_BOLTS)
+			state_name = "Болты ослаблены"
+			state_hint = "Откройте люк ломом или затяните болты гаечным ключом."
+		if(MECHA_OPEN_HATCH)
+			state_name = "Люк открыт"
+			state_hint = "Можно извлекать компоненты. Перед завершением закройте люк ломом и затяните болты гаечным ключом."
+	return list(
+		"name" = format_text(chassis.name),
+		"card_name" = id_card.registered_name || format_text(id_card.name),
+		"card_assignment" = id_card.get_assignment_name(),
+		"maintenance_allowed" = !!(chassis.mecha_flags & ADDING_MAINT_ACCESS_POSSIBLE),
+		"access_edit_allowed" = !!(chassis.mecha_flags & ADDING_ACCESS_POSSIBLE),
+		"one_access" = chassis.operation_one_access,
+		"maintenance_active" = chassis.construction_state != MECHA_LOCKED,
+		"can_toggle_maintenance" = chassis.construction_state <= MECHA_SECURE_BOLTS,
+		"hatch_open" = chassis.construction_state == MECHA_OPEN_HATCH,
+		"state_name" = state_name,
+		"state_hint" = state_hint,
+		"has_tank" = !!chassis.internal_tank,
+		"pressure" = chassis.internal_tank_valve,
+		"cabin_pressure" = round(chassis.return_pressure(), 0.1),
+		"cell" = chassis.cell ? "Tier [chassis.cell.rating]" : null,
+		"scanmod" = chassis.scanmod ? "Tier [chassis.scanmod.rating]" : null,
+		"capacitor" = chassis.capacitor ? "Tier [chassis.capacitor.rating]" : null,
+		"accesses" = accesses,
+	)
+
+/datum/mecha_maintenance/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	. = ..()
+	if(.)
+		return
+	var/mob/user = ui.user
+	if(ui_status(user, state) != UI_INTERACTIVE)
+		return FALSE
+	var/obj/item/card/id/id_card = get_id_card(user)
+	switch(action)
+		if("toggle_maintenance")
+			if(!(chassis.mecha_flags & ADDING_MAINT_ACCESS_POSSIBLE))
+				return FALSE
+			if(chassis.construction_state == MECHA_LOCKED)
+				chassis.construction_state = MECHA_SECURE_BOLTS
+				to_chat(user, span_notice("Протокол техобслуживания активирован. Крепёжные болты доступны."))
+			else if(chassis.construction_state == MECHA_SECURE_BOLTS)
+				chassis.construction_state = MECHA_LOCKED
+				to_chat(user, span_notice("Протокол техобслуживания отключён."))
+			else
+				return FALSE
+		if("set_pressure")
+			if(!chassis.internal_tank || chassis.construction_state == MECHA_LOCKED)
+				return FALSE
+			var/pressure = text2num(params["pressure"])
+			if(isnull(pressure))
+				return FALSE
+			chassis.internal_tank_valve = max(0, pressure)
+		if("eject_component")
+			if(chassis.construction_state != MECHA_OPEN_HATCH)
+				return FALSE
+			var/obj/item/component
+			switch(params["component"])
+				if("cell")
+					component = chassis.cell
+					chassis.cell = null
+				if("scanmod")
+					component = chassis.scanmod
+					chassis.scanmod = null
+				if("capacitor")
+					component = chassis.capacitor
+					chassis.capacitor = null
+			if(!component)
+				return FALSE
+			component.forceMove(get_turf(chassis))
+			chassis.update_part_values()
+		if("toggle_access")
+			if(!(chassis.mecha_flags & ADDING_ACCESS_POSSIBLE))
+				return FALSE
+			var/access = params["access"]
+			// Сохраняем строковые коды доступов, а числовые строки приводим к числам.
+			if(istext(access) && !(access in chassis.operation_req_access) && !(access in id_card.access))
+				access = text2num(access)
+			if(isnull(access))
+				return FALSE
+			if(access in chassis.operation_req_access)
+				chassis.operation_req_access -= access
+			else if(access in id_card.access)
+				chassis.operation_req_access |= access
+			else
+				return FALSE
+		if("toggle_one_access")
+			if(!(chassis.mecha_flags & ADDING_ACCESS_POSSIBLE))
+				return FALSE
+			chassis.operation_one_access = !chassis.operation_one_access
+		if("lock_access")
+			if(!(chassis.mecha_flags & ADDING_ACCESS_POSSIBLE))
+				return FALSE
+			chassis.mecha_flags &= ~ADDING_ACCESS_POSSIBLE
+		else
+			return FALSE
+	SStgui.update_uis(chassis)
+	return TRUE
 
 
 // Калибровка сохраняет прежнее требование: мех должен оставаться на месте.

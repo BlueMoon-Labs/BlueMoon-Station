@@ -99,8 +99,12 @@
 
 	///required access level for mecha operation
 	var/list/operation_req_access = list()
+	// Для входа по умолчанию достаточно любого из выбранных доступов.
+	var/operation_one_access = TRUE
 	///required access to change internal components
 	var/list/internals_req_access = list(ACCESS_ENGINE, ACCESS_ROBOTICS)
+	// Внешняя панель доступа и техобслуживания, открываемая ID-картой.
+	var/datum/mecha_maintenance/maintenance_panel
 
 	///Typepath for the wreckage it spawns when destroyed
 	var/wreckage
@@ -188,6 +192,7 @@
 
 /obj/vehicle/sealed/mecha/Initialize(mapload)
 	. = ..()
+	register_context()
 	add_radio()
 	add_cabin()
 	if(enclosed)
@@ -239,6 +244,7 @@
 	QDEL_NULL(smoke_system)
 	QDEL_NULL(trackers)
 	QDEL_NULL(wires)
+	QDEL_NULL(maintenance_panel)
 
 	GLOB.poi_list -= src
 	GLOB.mechas_list -= src //global mech list
@@ -430,7 +436,7 @@
 					if(istype(O, /obj/item/gun))
 						. += span_warning("Похоже, вы можете попасть в пилота, если прицелитесь в центр или выше.")
 						break //in case user is holding two guns
-	. += span_notice("Используйте отвёртку, чтобы открыть панель техобслуживания. Ломом можно извлечь батарею или экипировку при открытой панели.")
+	. += span_notice("Используйте гаечный ключ и лом для вскрытия панели обслуживания и манипуляции внутренностями.")
 
 /obj/vehicle/sealed/mecha/generate_integrity_message()
 	return
@@ -1398,8 +1404,8 @@
 /////////////////////////
 
 /obj/vehicle/sealed/mecha/proc/operation_allowed(mob/M)
-	req_access = operation_req_access
-	req_one_access = list()
+	req_access = operation_one_access ? list() : operation_req_access
+	req_one_access = operation_one_access ? operation_req_access : list()
 	return allowed(M)
 
 /obj/vehicle/sealed/mecha/proc/internals_access_allowed(mob/M)
