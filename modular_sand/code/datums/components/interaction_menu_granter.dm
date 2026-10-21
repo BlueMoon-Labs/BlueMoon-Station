@@ -996,13 +996,13 @@
 					prefs.use_arousal_multiplier = !prefs.use_arousal_multiplier
 					dirty_var = "use_arousal_multiplier"
 				if("arousal_multiplier")
-					prefs.arousal_multiplier = params["amount"]
+					prefs.arousal_multiplier = sanitize_integer(params["amount"], 0, 300, prefs.arousal_multiplier)
 					dirty_var = "arousal_multiplier"
 				if("use_moaning_multiplier")
 					prefs.use_moaning_multiplier = !prefs.use_moaning_multiplier
 					dirty_var = "use_moaning_multiplier"
 				if("moaning_multiplier")
-					prefs.moaning_multiplier = params["amount"]
+					prefs.moaning_multiplier = sanitize_integer(params["amount"], 0, 100, prefs.moaning_multiplier)
 					dirty_var = "moaning_multiplier"
 				if("use_custom_moan_sounds")
 					prefs.use_custom_moan_sounds = !prefs.use_custom_moan_sounds

@@ -122,7 +122,7 @@
 /obj/machinery/rnd/bepis/proc/withdrawcash()
 	var/withdraw_value = 0
 	withdraw_value = banking_amount
-	if(withdraw_value > banked_cash)
+	if(withdraw_value <= 0 || withdraw_value > banked_cash)
 		say("Cannot withdraw more than stored funds. Aborting.")
 	else
 		banked_cash -= withdraw_value
@@ -266,7 +266,7 @@
 		if("amount")
 			var/input = text2num(params["amount"])
 			if(input)
-				banking_amount = input
+				banking_amount = clamp(round(input), 1, 15000)
 		if("toggle_power")
 			if(use_power == ACTIVE_POWER_USE)
 				use_power = IDLE_POWER_USE

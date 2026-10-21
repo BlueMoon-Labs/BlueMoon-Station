@@ -170,6 +170,8 @@ GLOBAL_VAR_INIT(next_account_number, 0)
 	return account_balance >= amt
 
 /datum/bank_account/proc/transfer_money(datum/bank_account/from, amount)
+	if(!isnum(amount) || amount <= 0)
+		return FALSE
 	if(!from.transferable || !from.has_money(amount))
 		return FALSE
 

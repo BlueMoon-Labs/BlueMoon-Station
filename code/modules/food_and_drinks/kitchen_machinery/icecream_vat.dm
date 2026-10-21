@@ -206,7 +206,7 @@
 			to_chat(usr, "<span class='warning'>There are no [cone_name] cones left!</span>")
 
 	if(href_list["make"])
-		var/amount = (text2num(href_list["amount"]))
+		var/amount = clamp(round(text2num(href_list["amount"])), 1, 5)
 		var/C = text2num(href_list["make"])
 		make(usr, C, amount)
 
