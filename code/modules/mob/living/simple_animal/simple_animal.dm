@@ -523,6 +523,8 @@
 /mob/living/simple_animal/proc/CanAttack(atom/the_target)
 	if(see_invisible < the_target.invisibility)
 		return FALSE
+	if(istype(the_target.loc, /obj/effect/dummy/phased_mob))
+		return FALSE
 	if(ismob(the_target))
 		var/mob/M = the_target
 		if(M.status_flags & GODMODE)

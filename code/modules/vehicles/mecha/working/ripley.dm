@@ -158,6 +158,8 @@
 
 /obj/vehicle/sealed/mecha/working/ripley/Topic(href, href_list)
 	..()
+	if(!(usr in occupants) || usr.incapacitated())
+		return
 	if(href_list["drop_from_cargo"])
 		var/obj/O = locate(href_list["drop_from_cargo"]) in cargo
 		if(O)

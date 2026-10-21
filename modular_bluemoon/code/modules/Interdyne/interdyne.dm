@@ -181,6 +181,7 @@
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/Interdyne/head.dmi'
 	icon_state = "ip_biosuit_head"
 	item_state = "ip_biosuit_head"
+	mutantrace_variation = NONE
 
 /obj/item/clothing/suit/bio_suit/interdyne
 	name = "interdyne biosuit"

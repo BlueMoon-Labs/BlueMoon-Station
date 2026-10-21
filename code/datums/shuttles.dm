@@ -68,7 +68,8 @@
 */
 
 /datum/map_template/shuttle/load(turf/T, centered = FALSE, orientation = SOUTH, annihilate = default_annihilate, force_cache = FALSE, rotate_placement_to_orientation = FALSE, register = TRUE)
-	. = ..()
+	// Голый ..() отдал бы register родительскому no_changeturf_override
+	. = ..(T, centered, orientation, annihilate, force_cache, rotate_placement_to_orientation)
 	if(!.)
 		return
 	// Границы приезжают возвратом родительского load(). get_last_loaded_turf_block() читает их

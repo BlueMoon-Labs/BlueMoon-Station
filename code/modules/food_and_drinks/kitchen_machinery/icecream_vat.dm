@@ -7,6 +7,7 @@
 #define ICECREAM_CUSTOM 7
 #define CONE_WAFFLE 8
 #define CONE_CHOC 9
+#define ICECREAM_MAX_BATCH 5
 
 /obj/machinery/icecream_vat
 	name = "ice cream vat"
@@ -93,19 +94,19 @@
 	var/dat
 	dat += "<b>ICE CREAM</b><br><div class='statusDisplay'>"
 	dat += "<b>Dispensing: [flavour_name] icecream </b> <br><br>"
-	dat += "<b>Vanilla ice cream:</b> <a href='?src=[REF(src)];select=[ICECREAM_VANILLA]'><b>Select</b></a> <a href='?src=[REF(src)];make=[ICECREAM_VANILLA];amount=1'><b>Make</b></a> <a href='?src=[REF(src)];make=[ICECREAM_VANILLA];amount=5'><b>x5</b></a> [product_types[ICECREAM_VANILLA]] scoops left. (Ingredients: milk, ice, vanilla)<br>"
-	dat += "<b>Strawberry ice cream:</b> <a href='?src=[REF(src)];select=[ICECREAM_STRAWBERRY]'><b>Select</b></a> <a href='?src=[REF(src)];make=[ICECREAM_STRAWBERRY];amount=1'><b>Make</b></a> <a href='?src=[REF(src)];make=[ICECREAM_STRAWBERRY];amount=5'><b>x5</b></a> [product_types[ICECREAM_STRAWBERRY]] dollops left. (Ingredients: milk, ice, berry juice)<br>"
-	dat += "<b>Chocolate ice cream:</b> <a href='?src=[REF(src)];select=[ICECREAM_CHOCOLATE]'><b>Select</b></a> <a href='?src=[REF(src)];make=[ICECREAM_CHOCOLATE];amount=1'><b>Make</b></a> <a href='?src=[REF(src)];make=[ICECREAM_CHOCOLATE];amount=5'><b>x5</b></a> [product_types[ICECREAM_CHOCOLATE]] dollops left. (Ingredients: milk, ice, coco powder)<br>"
-	dat += "<b>Peach ice cream:</b> <a href='?src=[REF(src)];select=[ICECREAM_PEACH]'><b>Select</b></a> <a href='?src=[REF(src)];make=[ICECREAM_PEACH];amount=1'><b>Make</b></a> <a href='?src=[REF(src)];make=[ICECREAM_PEACH];amount=5'><b>x5</b></a> [product_types[ICECREAM_PEACH]] dollops left. (Ingredients: milk, ice, peach juice)<br>"
-	dat += "<b>Grape ice cream:</b> <a href='?src=[REF(src)];select=[ICECREAM_GRAPE]'><b>Select</b></a> <a href='?src=[REF(src)];make=[ICECREAM_GRAPE];amount=1'><b>Make</b></a> <a href='?src=[REF(src)];make=[ICECREAM_GRAPE];amount=5'><b>x5</b></a> [product_types[ICECREAM_GRAPE]] dollops left. (Ingredients: milk, ice, grape juice)<br>"
-	dat += "<b>Blue ice cream:</b> <a href='?src=[REF(src)];select=[ICECREAM_BLUE]'><b>Select</b></a> <a href='?src=[REF(src)];make=[ICECREAM_BLUE];amount=1'><b>Make</b></a> <a href='?src=[REF(src)];make=[ICECREAM_BLUE];amount=5'><b>x5</b></a> [product_types[ICECREAM_BLUE]] dollops left. (Ingredients: milk, ice, singulo)<br>"
-	dat += "<b>Custom ice cream:</b> <a href='?src=[REF(src)];select=[ICECREAM_CUSTOM]'><b>Select</b></a> <a href='?src=[REF(src)];make=[ICECREAM_CUSTOM];amount=1'><b>Make</b></a> <a href='?src=[REF(src)];make=[ICECREAM_CUSTOM];amount=5'><b>x5</b></a> [product_types[ICECREAM_CUSTOM]] dollops left. (Ingredients: milk, ice, optional flavoring)<br>"
+	dat += "<b>Vanilla ice cream:</b> <a href='?src=[REF(src)];select=[ICECREAM_VANILLA]'><b>Select</b></a> <a href='?src=[REF(src)];make=[ICECREAM_VANILLA];amount=1'><b>Make</b></a> <a href='?src=[REF(src)];make=[ICECREAM_VANILLA];amount=[ICECREAM_MAX_BATCH]'><b>x[ICECREAM_MAX_BATCH]</b></a> [product_types[ICECREAM_VANILLA]] scoops left. (Ingredients: milk, ice, vanilla)<br>"
+	dat += "<b>Strawberry ice cream:</b> <a href='?src=[REF(src)];select=[ICECREAM_STRAWBERRY]'><b>Select</b></a> <a href='?src=[REF(src)];make=[ICECREAM_STRAWBERRY];amount=1'><b>Make</b></a> <a href='?src=[REF(src)];make=[ICECREAM_STRAWBERRY];amount=[ICECREAM_MAX_BATCH]'><b>x[ICECREAM_MAX_BATCH]</b></a> [product_types[ICECREAM_STRAWBERRY]] dollops left. (Ingredients: milk, ice, berry juice)<br>"
+	dat += "<b>Chocolate ice cream:</b> <a href='?src=[REF(src)];select=[ICECREAM_CHOCOLATE]'><b>Select</b></a> <a href='?src=[REF(src)];make=[ICECREAM_CHOCOLATE];amount=1'><b>Make</b></a> <a href='?src=[REF(src)];make=[ICECREAM_CHOCOLATE];amount=[ICECREAM_MAX_BATCH]'><b>x[ICECREAM_MAX_BATCH]</b></a> [product_types[ICECREAM_CHOCOLATE]] dollops left. (Ingredients: milk, ice, coco powder)<br>"
+	dat += "<b>Peach ice cream:</b> <a href='?src=[REF(src)];select=[ICECREAM_PEACH]'><b>Select</b></a> <a href='?src=[REF(src)];make=[ICECREAM_PEACH];amount=1'><b>Make</b></a> <a href='?src=[REF(src)];make=[ICECREAM_PEACH];amount=[ICECREAM_MAX_BATCH]'><b>x[ICECREAM_MAX_BATCH]</b></a> [product_types[ICECREAM_PEACH]] dollops left. (Ingredients: milk, ice, peach juice)<br>"
+	dat += "<b>Grape ice cream:</b> <a href='?src=[REF(src)];select=[ICECREAM_GRAPE]'><b>Select</b></a> <a href='?src=[REF(src)];make=[ICECREAM_GRAPE];amount=1'><b>Make</b></a> <a href='?src=[REF(src)];make=[ICECREAM_GRAPE];amount=[ICECREAM_MAX_BATCH]'><b>x[ICECREAM_MAX_BATCH]</b></a> [product_types[ICECREAM_GRAPE]] dollops left. (Ingredients: milk, ice, grape juice)<br>"
+	dat += "<b>Blue ice cream:</b> <a href='?src=[REF(src)];select=[ICECREAM_BLUE]'><b>Select</b></a> <a href='?src=[REF(src)];make=[ICECREAM_BLUE];amount=1'><b>Make</b></a> <a href='?src=[REF(src)];make=[ICECREAM_BLUE];amount=[ICECREAM_MAX_BATCH]'><b>x[ICECREAM_MAX_BATCH]</b></a> [product_types[ICECREAM_BLUE]] dollops left. (Ingredients: milk, ice, singulo)<br>"
+	dat += "<b>Custom ice cream:</b> <a href='?src=[REF(src)];select=[ICECREAM_CUSTOM]'><b>Select</b></a> <a href='?src=[REF(src)];make=[ICECREAM_CUSTOM];amount=1'><b>Make</b></a> <a href='?src=[REF(src)];make=[ICECREAM_CUSTOM];amount=[ICECREAM_MAX_BATCH]'><b>x[ICECREAM_MAX_BATCH]</b></a> [product_types[ICECREAM_CUSTOM]] dollops left. (Ingredients: milk, ice, optional flavoring)<br>"
 	dat += "<a href='?src=[REF(src)];custom_taste=1;'><b>Change custom taste: [custom_taste ? custom_taste : "Default"]</b></a>"
 	dat += "<br><a href='?src=[REF(src)];custom_color=1;'><b>Change custom color: [custom_color ? custom_color : "Default"]</b></a>"
 	dat += "<br><a href='?src=[REF(src)];reset_custom=1;'><b>Reset custom ice cream taste and color to defaults</b></a></div>"
 	dat += "<br><b>CONES</b><br><div class='statusDisplay'>"
-	dat += "<b>Waffle cones:</b> <a href='?src=[REF(src)];cone=[CONE_WAFFLE]'><b>Dispense</b></a> <a href='?src=[REF(src)];make=[CONE_WAFFLE];amount=1'><b>Make</b></a> <a href='?src=[REF(src)];make=[CONE_WAFFLE];amount=5'><b>x5</b></a> [product_types[CONE_WAFFLE]] cones left. (Ingredients: flour, sugar)<br>"
-	dat += "<b>Chocolate cones:</b> <a href='?src=[REF(src)];cone=[CONE_CHOC]'><b>Dispense</b></a> <a href='?src=[REF(src)];make=[CONE_CHOC];amount=1'><b>Make</b></a> <a href='?src=[REF(src)];make=[CONE_CHOC];amount=5'><b>x5</b></a> [product_types[CONE_CHOC]] cones left. (Ingredients: flour, sugar, coco powder)<br></div>"
+	dat += "<b>Waffle cones:</b> <a href='?src=[REF(src)];cone=[CONE_WAFFLE]'><b>Dispense</b></a> <a href='?src=[REF(src)];make=[CONE_WAFFLE];amount=1'><b>Make</b></a> <a href='?src=[REF(src)];make=[CONE_WAFFLE];amount=[ICECREAM_MAX_BATCH]'><b>x[ICECREAM_MAX_BATCH]</b></a> [product_types[CONE_WAFFLE]] cones left. (Ingredients: flour, sugar)<br>"
+	dat += "<b>Chocolate cones:</b> <a href='?src=[REF(src)];cone=[CONE_CHOC]'><b>Dispense</b></a> <a href='?src=[REF(src)];make=[CONE_CHOC];amount=1'><b>Make</b></a> <a href='?src=[REF(src)];make=[CONE_CHOC];amount=[ICECREAM_MAX_BATCH]'><b>x[ICECREAM_MAX_BATCH]</b></a> [product_types[CONE_CHOC]] cones left. (Ingredients: flour, sugar, coco powder)<br></div>"
 	dat += "<br>"
 	if(beaker)
 		dat += "<b>BEAKER CONTENT</b><br><div class='statusDisplay'>"
@@ -206,7 +207,7 @@
 			to_chat(usr, "<span class='warning'>There are no [cone_name] cones left!</span>")
 
 	if(href_list["make"])
-		var/amount = (text2num(href_list["amount"]))
+		var/amount = clamp(round(text2num(href_list["amount"])), 1, ICECREAM_MAX_BATCH)
 		var/C = text2num(href_list["make"])
 		make(usr, C, amount)
 
@@ -354,3 +355,4 @@
 #undef ICECREAM_CUSTOM
 #undef CONE_WAFFLE
 #undef CONE_CHOC
+#undef ICECREAM_MAX_BATCH

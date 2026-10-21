@@ -37,6 +37,7 @@
 /datum/team/sol_inspection/New()
 	. = ..()
 	account = new("Всеобщее Бюро Контроля")
+	account.offstation = TRUE
 	account.setup_unique_account_id()
 
 /datum/team/sol_inspection/Destroy()
@@ -54,19 +55,13 @@
 /// period to finish the last scan or walk back aboard before the vessel leaves on its own.
 #define SOL_INSPECTION_DEPARTURE_DELAY 3 MINUTES
 
-/// World time at which the CentCom berth opens, or 0 when fines already bought early return.
-/datum/team/sol_inspection/proc/return_unlock_at()
-	if(fines_total >= SOL_INSPECTION_EARLY_RETURN_FINE)
-		return 0
-	return return_available_at
-
 /datum/team/sol_inspection/proc/return_time_left()
 	if(!return_available_at)
 		return 0
 	return max(0, return_available_at - world.time)
 
 /datum/team/sol_inspection/proc/return_unlocked()
-	return visited_station && return_time_left() <= 0
+	return visited_station && (fines_total >= SOL_INSPECTION_EARLY_RETURN_FINE || return_time_left() <= 0)
 
 /// По окончании инспекции живые инспекторы отправляются обратно на ЦК со взрывами искр; мертвые остаются как есть.
 /datum/team/sol_inspection/proc/end_inspection()
@@ -115,8 +110,9 @@
 		inspection_radio.talk_into(shuttle, message, RADIO_CHANNEL_SUPPLY)
 	log_game("Sol inspection: [message]")
 
+/// returned_members пишется живыми на момент возвращения: end_inspection() потом удаляет их тела
 /datum/team/sol_inspection/proc/is_returned_inspector(datum/mind/inspector)
-	return returned_home && visited_station && (inspector in returned_members) && inspector.current && inspector.current.stat != DEAD
+	return returned_home && visited_station && (inspector in returned_members)
 
 /datum/team/sol_inspection/roundend_report()
 	var/list/report = list("<b>Всеобщее Бюро Контроля</b>", printplayerlist(members))

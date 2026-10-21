@@ -329,7 +329,8 @@
 	return ..()
 
 /obj/item/mecha_parts/mecha_equipment/rcd/Topic(href,href_list)
-	..()
+	if(..())
+		return
 	if(href_list["mode"])
 		mode = text2num(href_list["mode"])
 		switch(mode)
