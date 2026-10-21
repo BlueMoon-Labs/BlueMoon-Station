@@ -977,10 +977,16 @@
 	icon_state = "witchwinggrey"
 	upgrade_to = SPECIES_WINGS_MOTH
 
+/// Маркинги молей под обычными маркингами, но над телом
+#define INSECT_MARKINGS_UNDER_MARKINGS 0.5
+
 /datum/sprite_accessory/insect_markings // Extra markings for insects ported from tg.
 	icon = 'icons/mob/insect_markings.dmi'
 	color_src = WINGCOLOR
 	relevant_layers = list(BODY_ADJ_LAYER)
+	overlay_layer = -(MARKING_LAYER + INSECT_MARKINGS_UNDER_MARKINGS)
+
+#undef INSECT_MARKINGS_UNDER_MARKINGS
 
 /datum/sprite_accessory/insect_markings/none
 	name = "None"

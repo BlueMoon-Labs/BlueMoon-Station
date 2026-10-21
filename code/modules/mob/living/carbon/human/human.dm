@@ -409,6 +409,8 @@
 
 	if(href_list["lookitem"]) //It's for the show item at modular_sand/code/modules/mob/living/carbon/show.dm
 		var/obj/item/I = locate(href_list["lookitem"])
+		if(!istype(I))
+			return
 		if(I.loc in view(4))
 			examinate(I)
 		else

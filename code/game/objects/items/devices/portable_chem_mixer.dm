@@ -199,6 +199,8 @@
 			. = TRUE
 		if("remove")
 			var/amount = text2num(params["amount"])
+			if(!(amount > 0))
+				return
 			beaker.reagents.remove_all(amount)
 			. = TRUE
 		if("eject")

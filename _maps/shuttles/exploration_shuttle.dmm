@@ -8,6 +8,44 @@
 	},
 /turf/open/floor/mineral/titanium,
 /area/shuttle/exploration)
+"b" = (
+/obj/docking_port/mobile{
+	dir = 4;
+	dwidth = 5;
+	height = 7;
+	shuttle_id = "exploration";
+	name = "Vanguard Igla shuttle";
+	port_direction = 8;
+	width = 13
+	},
+/obj/structure/fans/tiny,
+/obj/machinery/door/airlock/shuttle{
+	req_access_txt = "62"
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/exploration)
+"c" = (
+/obj/machinery/power/apc/auto_name/north{
+	cell_type = /obj/item/stock_parts/cell/high/plus;
+	req_access = list(62)
+	},
+/obj/machinery/button/door{
+	id = "ex_cab";
+	name = "Cabin Bolt Control";
+	normaldoorcontrol = 1;
+	pixel_y = -25;
+	req_access_txt = "62";
+	specialfunctions = 4
+	},
+/obj/machinery/light/small,
+/obj/machinery/camera/autoname{
+	dir = 1
+	},
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
+/turf/open/floor/mineral/titanium,
+/area/shuttle/exploration)
 "d" = (
 /obj/machinery/computer/shuttle_flight/exploration,
 /turf/open/floor/mineral/titanium/white,
@@ -43,16 +81,6 @@
 /obj/machinery/airalarm{
 	pixel_y = 23;
 	req_access = list(62)
-	},
-/turf/open/floor/plating,
-/area/shuttle/exploration)
-"j" = (
-/obj/machinery/power/port_gen/pacman,
-/obj/effect/turf_decal/bot,
-/obj/structure/cable,
-/obj/machinery/firealarm{
-	dir = 1;
-	pixel_y = -24
 	},
 /turf/open/floor/plating,
 /area/shuttle/exploration)
@@ -96,14 +124,6 @@
 /obj/effect/turf_decal/bot,
 /turf/open/floor/plating,
 /area/shuttle/exploration)
-"p" = (
-/obj/structure/cable,
-/obj/machinery/door/airlock/shuttle{
-	id_tag = "ex_cab";
-	req_access_txt = "62"
-	},
-/turf/open/floor/mineral/titanium,
-/area/shuttle/exploration)
 "q" = (
 /obj/structure/fans/tiny,
 /obj/machinery/door/poddoor/shutters{
@@ -128,20 +148,13 @@
 	},
 /turf/open/floor/plating,
 /area/shuttle/exploration)
-"t" = (
-/obj/docking_port/mobile{
-	dir = 4;
-	dwidth = 5;
-	height = 7;
-	shuttle_id = "exploration";
-	name = "Vanguard Igla shuttle";
-	port_direction = 8;
-	width = 13
-	},
-/obj/structure/cable,
-/obj/structure/fans/tiny,
+"s" = (
 /obj/machinery/door/airlock/shuttle{
+	id_tag = "ex_cab";
 	req_access_txt = "62"
+	},
+/obj/structure/cable{
+	icon_state = "1-2"
 	},
 /turf/open/floor/mineral/titanium,
 /area/shuttle/exploration)
@@ -177,33 +190,30 @@
 /obj/effect/turf_decal/delivery,
 /turf/open/floor/plating,
 /area/shuttle/exploration)
-"y" = (
-/obj/machinery/power/apc/auto_name/north{
-	cell_type = /obj/item/stock_parts/cell/high/plus;
-	req_access = list(62)
+"x" = (
+/obj/machinery/power/port_gen/pacman{
+	anchored = 1
 	},
-/obj/machinery/button/door{
-	id = "ex_cab";
-	name = "Cabin Bolt Control";
-	normaldoorcontrol = 1;
-	pixel_y = -25;
-	req_access_txt = "62";
-	specialfunctions = 4
+/obj/effect/turf_decal/bot,
+/obj/machinery/firealarm{
+	dir = 1;
+	pixel_y = -24
 	},
-/obj/machinery/light/small,
-/obj/machinery/camera/autoname{
-	dir = 1
+/obj/structure/cable{
+	icon_state = "0-8"
 	},
-/turf/open/floor/mineral/titanium,
+/turf/open/floor/plating,
 /area/shuttle/exploration)
 "z" = (
 /turf/closed/wall/mineral/titanium/nodiagonal,
 /area/shuttle/exploration)
 "A" = (
-/obj/structure/cable,
 /obj/machinery/door/airlock/shuttle{
 	id_tag = "ex_cab";
 	req_access_txt = "62"
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
 	},
 /turf/open/floor/mineral/titanium,
 /area/shuttle/exploration)
@@ -253,31 +263,27 @@
 "I" = (
 /turf/closed/wall/mineral/plastitanium,
 /area/shuttle/exploration)
-"J" = (
-/obj/structure/cable,
+"M" = (
+/obj/effect/turf_decal/bot,
+/obj/machinery/camera/autoname,
+/turf/open/floor/plating,
+/area/shuttle/exploration)
+"N" = (
 /obj/machinery/atmospherics/components/unary/tank/air{
 	dir = 1;
 	piping_layer = 4
 	},
 /obj/effect/turf_decal/bot,
+/obj/structure/cable{
+	icon_state = "1-4"
+	},
 /turf/open/floor/plating,
 /area/shuttle/exploration)
-"L" = (
-/obj/structure/cable,
-/obj/structure/closet/crate/science,
-/obj/item/stack/sheet/mineral/plasma/five,
-/obj/item/tank/internals/tactical,
-/obj/item/tank/internals/tactical,
-/obj/item/tank/internals/tactical,
-/obj/item/clothing/mask/breath,
-/obj/item/clothing/mask/breath,
-/obj/item/clothing/mask/breath,
+"O" = (
 /obj/effect/turf_decal/bot,
-/turf/open/floor/plating,
-/area/shuttle/exploration)
-"M" = (
-/obj/effect/turf_decal/bot,
-/obj/machinery/camera/autoname,
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
 /turf/open/floor/plating,
 /area/shuttle/exploration)
 "P" = (
@@ -298,7 +304,19 @@
 /turf/open/floor/plating,
 /area/shuttle/exploration)
 "S" = (
-/turf/open/floor/mineral/titanium,
+/obj/structure/closet/crate/science,
+/obj/item/stack/sheet/mineral/plasma/five,
+/obj/item/tank/internals/tactical,
+/obj/item/tank/internals/tactical,
+/obj/item/tank/internals/tactical,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/mask/breath,
+/obj/effect/turf_decal/bot,
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plating,
 /area/shuttle/exploration)
 "T" = (
 /obj/machinery/light/directional/east,
@@ -306,6 +324,12 @@
 /area/shuttle/exploration)
 "U" = (
 /turf/open/floor/mineral/plastitanium,
+/area/shuttle/exploration)
+"V" = (
+/obj/structure/cable{
+	icon_state = "2-8"
+	},
+/turf/open/floor/mineral/titanium,
 /area/shuttle/exploration)
 "W" = (
 /obj/machinery/computer/objective,
@@ -318,6 +342,12 @@
 	},
 /obj/effect/turf_decal/delivery,
 /turf/open/floor/mineral/titanium/blue,
+/area/shuttle/exploration)
+"Y" = (
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
+/turf/open/floor/mineral/plastitanium,
 /area/shuttle/exploration)
 "Z" = (
 /obj/machinery/light/directional/north,
@@ -339,7 +369,7 @@ R
 R
 z
 z
-t
+b
 z
 z
 r
@@ -354,7 +384,7 @@ R
 D
 a
 z
-y
+c
 z
 i
 U
@@ -369,7 +399,7 @@ W
 P
 f
 z
-p
+A
 z
 Z
 U
@@ -382,14 +412,14 @@ G
 R
 d
 P
-S
 g
-S
-A
-Q
-U
-U
-J
+g
+V
+s
+O
+Y
+Y
+N
 n
 G
 "}
@@ -397,14 +427,14 @@ G
 R
 m
 P
-S
+g
 k
 H
 z
 M
 U
 U
-L
+S
 n
 G
 "}
@@ -419,7 +449,7 @@ z
 Q
 U
 U
-j
+x
 E
 I
 "}

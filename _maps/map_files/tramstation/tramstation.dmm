@@ -49076,6 +49076,12 @@
 	},
 /turf/open/floor/plasteel/checker,
 /area/commons/lounge)
+"nHm" = (
+/obj/machinery/computer/rdconsole/experiment{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/science/explab)
 "nHr" = (
 /obj/structure/sign/poster/official/random{
 	pixel_y = 32
@@ -136304,7 +136310,7 @@ rxq
 oZb
 dNb
 dNb
-dNb
+nHm
 dNb
 stw
 sAL

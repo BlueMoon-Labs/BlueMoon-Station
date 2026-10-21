@@ -138,7 +138,8 @@
 	return "[..()] [mode==1?"([locked||"Nothing"])":null] \[<a href='?src=[REF(src)];mode=1'>S</a>|<a href='?src=[REF(src)];mode=2'>P</a>\]"
 
 /obj/item/mecha_parts/mecha_equipment/gravcatapult/Topic(href, href_list)
-	..()
+	if(..())
+		return
 	if(href_list["mode"])
 		mode = text2num(href_list["mode"])
 		send_byjax(chassis.occupants,"exosuit.browser","[REF(src)]",src.get_equip_info())
@@ -227,7 +228,8 @@
 
 
 /obj/item/mecha_parts/mecha_equipment/repair_droid/Topic(href, href_list)
-	..()
+	if(..())
+		return
 	if(href_list["toggle_repairs"])
 		chassis.cut_overlay(droid_overlay)
 		if(equip_ready)
@@ -311,7 +313,8 @@
 	return pow_chan
 
 /obj/item/mecha_parts/mecha_equipment/tesla_energy_relay/Topic(href, href_list)
-	..()
+	if(..())
+		return
 	if(href_list["toggle_relay"])
 		if(equip_ready) //inactive
 			START_PROCESSING(SSobj, src)
@@ -382,7 +385,8 @@
 	..()
 
 /obj/item/mecha_parts/mecha_equipment/generator/Topic(href, href_list)
-	..()
+	if(..())
+		return
 	if(href_list["toggle"])
 		if(equip_ready) //inactive
 			START_PROCESSING(SSobj, src)
@@ -494,7 +498,8 @@
 	. = ..()
 
 /obj/item/mecha_parts/mecha_equipment/thrusters/Topic(href,href_list)
-	..()
+	if(..())
+		return
 	if(!chassis)
 		return
 	if(href_list["mode"])

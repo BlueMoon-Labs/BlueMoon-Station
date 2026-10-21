@@ -467,16 +467,19 @@
 	if(!current_turf)
 		return FALSE
 
-	// Движение в мехе
-	if(istype(loc, /obj/vehicle/sealed/mecha))
-		to_chat(src, span_warning("Вы не в состоянии двигаться находясь в мехе!"))
-		return FALSE
-
 	if(istype(loc, /obj/machinery/atmospherics))
 		var/obj/machinery/atmospherics/pipe = loc
 		if(pipe.relaymove(src, direction))
 			return TRUE
 		to_chat(src, span_warning("По трубам на другой этаж можно попасть только через переходник между палубами."))
+		return FALSE
+
+	// Мех, шкаф, капсула: zMove() вытащил бы моба наружу и оставил контейнер на месте
+	if(!isturf(loc) && !isobserver(src))
+		if(istype(loc, /obj/vehicle/sealed/mecha))
+			to_chat(src, span_warning("Вы не в состоянии двигаться находясь в мехе!"))
+		else
+			to_chat(src, span_warning("Отсюда на другой этаж не перебраться."))
 		return FALSE
 
 	var/obj/structure/ladder/current_ladder = locate() in current_turf

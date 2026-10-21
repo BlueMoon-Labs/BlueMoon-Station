@@ -495,7 +495,7 @@
 		unset_machine()
 		src << browse(null, t1)
 	if (href_list["switchcamera"])
-		switchCamera(locate(href_list["switchcamera"])) in GLOB.cameranet.cameras
+		switchCamera(locate(href_list["switchcamera"]) in GLOB.cameranet.cameras)
 	if (href_list["showalerts"])
 		alert_control.ui_interact(src)
 #ifdef AI_VOX
@@ -510,7 +510,7 @@
 	//Carn: holopad requests
 	if(href_list["jumptoholopad"])
 		var/obj/machinery/holopad/H = locate(href_list["jumptoholopad"])
-		if(H)
+		if(istype(H))
 			H.attack_ai(src) //may as well recycle
 		else
 			to_chat(src, "<span class='notice'>Unable to locate the holopad.</span>")

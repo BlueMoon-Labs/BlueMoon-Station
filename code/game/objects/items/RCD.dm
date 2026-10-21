@@ -246,7 +246,7 @@ RLD
 
 /obj/item/construction/rcd/Topic(href, href_list)
 	..()
-	if (usr.stat || usr.restrained())
+	if (usr.stat || usr.restrained() || !usr.is_holding(src))
 		return
 	if (href_list["close"])
 		usr << browse(null, "window=rcd_access")
