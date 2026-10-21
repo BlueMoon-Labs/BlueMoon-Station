@@ -70,14 +70,14 @@
 GLOBAL_LIST_EMPTY(family_heirlooms)
 
 /datum/quirk/family_heirloom/on_spawn()
-	// Define holder and type
+	// Уже выданную реликвию используем повторно, не создавая копию при спавне или восстановлении.
 	var/mob/living/carbon/human/human_holder = quirk_holder
 	var/obj/item/heirloom_type
-	// BLUEMOON EDIT START - выбор вещей из лодаута как family heirloom
-	if(human_holder && istype(human_holder) && human_holder.mind && !isnull(human_holder.mind.assigned_heirloom))
+	if(!QDELETED(human_holder.mind?.assigned_heirloom))
 		heirloom = human_holder.mind.assigned_heirloom
-		if(heirloom && istype(heirloom))
-			loadout_heirloom = TRUE
+	else if(spawn_items)
+		heirloom = SSjob.equip_loadout_heirloom(human_holder)
+	loadout_heirloom = !QDELETED(heirloom)
 	if(!loadout_heirloom)
 		if(!spawn_items)
 			return
