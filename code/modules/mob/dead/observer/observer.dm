@@ -92,12 +92,13 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 
 		if(ishuman(body))
 			var/mob/living/carbon/human/body_human = body
-			if(HAIR in body_human.dna.species.species_traits)
-				hair_style = body_human.hair_style
-				hair_color = brighten_color(body_human.hair_color)
-			if(FACEHAIR in body_human.dna.species.species_traits)
-				facial_hair_style = body_human.facial_hair_style
-				facial_hair_color = brighten_color(body_human.facial_hair_color)
+			if(body_human.dna?.species)
+				if(HAIR in body_human.dna.species.species_traits)
+					hair_style = body_human.hair_style
+					hair_color = brighten_color(body_human.hair_color)
+				if(FACEHAIR in body_human.dna.species.species_traits)
+					facial_hair_style = body_human.facial_hair_style
+					facial_hair_color = brighten_color(body_human.facial_hair_color)
 
 	update_icon()
 
@@ -236,7 +237,7 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
  */
 /mob/dead/observer/update_icon(updates=ALL, new_form=null)
 	. = ..()
-	if(client) //We update our preferences in case they changed right before update_icon was called.
+	if(client?.prefs) //We update our preferences in case they changed right before update_icon was called.
 		ghost_accs = client.prefs.ghost_accs
 		ghost_others = client.prefs.ghost_others
 
@@ -754,7 +755,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		O.updateghostimages()
 
 /mob/dead/observer/proc/updateghostimages()
-	if (!client)
+	if (!client?.prefs)
 		return
 
 	if(lastsetting)
@@ -930,13 +931,13 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		client.prefs.real_name = random_unique_name(gender)
 	if(client.prefs.be_random_body)
 		client.prefs.random_character(gender)
-
-	if(HAIR in client.prefs.pref_species.species_traits)
-		hair_style = client.prefs.hair_style
-		hair_color = brighten_color(client.prefs.hair_color)
-	if(FACEHAIR in client.prefs.pref_species.species_traits)
-		facial_hair_style = client.prefs.facial_hair_style
-		facial_hair_color = brighten_color(client.prefs.facial_hair_color)
+	if(client.prefs.pref_species)
+		if(HAIR in client.prefs.pref_species.species_traits)
+			hair_style = client.prefs.hair_style
+			hair_color = brighten_color(client.prefs.hair_color)
+		if(FACEHAIR in client.prefs.pref_species.species_traits)
+			facial_hair_style = client.prefs.facial_hair_style
+			facial_hair_color = brighten_color(client.prefs.facial_hair_color)
 
 	update_icon()
 
@@ -950,11 +951,13 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	. = ..()
 	switch(var_name)
 		if(NAMEOF(src, icon))
-			ghostimage_default.icon = icon
-			ghostimage_simple.icon = icon
+			if(ghostimage_default && ghostimage_simple)
+				ghostimage_default.icon = icon
+				ghostimage_simple.icon = icon
 		if(NAMEOF(src, icon_state))
-			ghostimage_default.icon_state = icon_state
-			ghostimage_simple.icon_state = icon_state
+			if(ghostimage_default && ghostimage_simple)
+				ghostimage_default.icon_state = icon_state
+				ghostimage_simple.icon_state = icon_state
 		if(NAMEOF(src, fun_verbs))
 			if(fun_verbs)
 				add_verb(src, /mob/dead/observer/verb/boo)
@@ -962,6 +965,8 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 			else
 				remove_verb(src, /mob/dead/observer/verb/boo)
 				remove_verb(src, /mob/dead/observer/verb/possess)
+		if(NAMEOF(src, invisibility))
+			set_invisibility(invisibility) // updates light
 
 /mob/dead/observer/reset_perspective(atom/A)
 	// Отвязываемся по observetarget, а не по client.eye. Прежнее условие требовало, чтобы
@@ -1084,11 +1089,6 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 // Ghosts have no momentum, being massless ectoplasm
 /mob/dead/observer/Process_Spacemove(movement_dir)
 	return TRUE
-
-/mob/dead/observer/vv_edit_var(var_name, var_value)
-	. = ..()
-	if(var_name == NAMEOF(src, invisibility))
-		set_invisibility(invisibility) // updates light
 
 /proc/set_observer_default_invisibility(amount, message=null)
 	for(var/mob/dead/observer/G in GLOB.player_list)

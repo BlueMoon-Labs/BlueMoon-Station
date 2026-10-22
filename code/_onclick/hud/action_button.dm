@@ -49,12 +49,13 @@
 
 /atom/movable/screen/movable/action_button/Click(location,control,params)
 	var/mob/user = usr
-	if(!can_use(user))
+	if(!can_use(user) || !our_hud)
 		return
-
 	var/list/modifiers = params2list(params)
 	if(LAZYACCESS(modifiers, CTRL_CLICK))
 		var/datum/hud/our_hud = user.hud_used
+		if(!our_hud)
+			return
 		if(src.location == SCRN_OBJ_IN_PALETTE)
 			our_hud.position_action(src, SCRN_OBJ_IN_LIST)
 		else
@@ -63,6 +64,8 @@
 		return TRUE
 	if(LAZYACCESS(modifiers, SHIFT_CLICK))
 		var/datum/hud/our_hud = user.hud_used
+		if(!our_hud)
+			return
 		our_hud.position_action(src, SCRN_OBJ_DEFAULT)
 		return TRUE
 	if(LAZYACCESS(modifiers, ALT_CLICK))
@@ -76,7 +79,7 @@
 	var/trigger_flags = NONE
 	if(LAZYACCESS(modifiers, RIGHT_CLICK))
 		TOGGLE_BITFIELD(trigger_flags, TRIGGER_RIGHT_CLICK)
-	
+
 	// SFX
 	if(user.client)
 		if(CHECK_BITFIELD(user.client.prefs.sound_toggles, SOUND_BUTTONS))
@@ -142,6 +145,8 @@
 	if(!can_use(usr))
 		return
 	var/datum/hud/our_hud = usr.hud_used
+	if(!our_hud)
+		return
 	if(over_object == src)
 		our_hud.hide_landings()
 		return
@@ -168,7 +173,7 @@
 
 /atom/movable/screen/movable/action_button/proc/save_position()
 	var/mob/user = our_hud?.mymob
-	if(!user?.client)
+	if(!user?.client?.prefs)
 		return
 	var/position_info = ""
 	switch(location)
@@ -202,7 +207,7 @@
 
 /atom/movable/screen/movable/action_button/proc/dump_save()
 	var/mob/user = our_hud?.mymob
-	if(!user?.client)
+	if(!user?.client?.prefs)
 		return
 	user.client.prefs.action_buttons_screen_locs -= "[name]_[id]"
 	user.client.prefs.save_single_pref("action_buttons_screen_locs", sanitize_action_button_positions(user.client.prefs.action_buttons_screen_locs))

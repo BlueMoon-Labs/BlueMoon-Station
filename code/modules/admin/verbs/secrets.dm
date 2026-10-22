@@ -125,6 +125,10 @@ proc/check_user_confimation(confirmation_data)
 			if(choice == "Да")
 				message_admins("[key_name_admin(holder)] has rejuvenated all players.")
 				for(var/mob/living/M in GLOB.mob_list)
+					if(QDELETED(M))
+						continue
+					if(!M.mind)
+						continue
 					M.revive(full_heal = 1, admin_revive = 1)
 		if("list_bombers")
 			var/dat = "<B>Bombing List</B><HR>"
