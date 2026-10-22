@@ -1,7 +1,7 @@
 /datum/minimap
 	var/name = "minimap"
 	var/icon/overlay_icon
-	// The map icons
+	// Готовый PNG NanoMap или иконка старой схемы.
 	var/icon/map_icon
 	var/icon/meta_icon
 
@@ -14,28 +14,41 @@
 
 	var/z_level
 	var/id = ""
-	/// Мировые координаты левого нижнего пикселя несрезанной иконки
+	// Мировые координаты левого нижнего пикселя несрезанной иконки.
 	var/origin_x
 	var/origin_y
+	var/source_icon
 
-/// autocrop = FALSE оставляет иконку несрезанной: группа этажей режет все этажи по общей рамке через finalize()
-/datum/minimap/New(z, x1 = 1, y1 = 1, x2 = world.maxx, y2 = world.maxy, name = "minimap", autocrop = TRUE)
+// Группа этажей обрезается по общей рамке; цветовая схема зон сохранена, но отключена.
+/datum/minimap/New(z, x1 = 1, y1 = 1, x2 = world.maxx, y2 = world.maxy, name = "minimap", autocrop = TRUE, source_icon, area_colors = FALSE)
 	if(!z)
 		CRASH("ERROR: new minimap requested without z level") //CRASH to halt the operatio
 
 	src.name = name
 	z_level = z
 	id = "[md5("[z_level]" + src.name + REF(src))]" //use it's own md5 as a special identifier
+	origin_x = x1
+	origin_y = y1
+	// Готовый PNG отправляется как ресурс, без повторной растеризации и копий большой иконки.
+	if(source_icon && !area_colors)
+		src.source_icon = source_icon
+		map_icon = source_icon
+		minx = x1
+		miny = y1
+		maxx = x2
+		maxy = y2
+		SSassets.transport.register_asset("minimap-[id].png", source_icon)
+		return
 
 	var/crop_x1 = x2
 	var/crop_x2 = x1
 	var/crop_y1 = y2
 	var/crop_y2 = y1
 
-	// do the generating
+	// Старая схема зон и построение метаданных оставлены для явного запроса.
 	map_icon = new('html/blank.png')
 	meta_icon = new('html/blank.png')
-	map_icon.Scale(x2 - x1 + 1, y2 - y1 + 1) // arrays start at 1
+	map_icon.Scale(x2 - x1 + 1, y2 - y1 + 1)
 	meta_icon.Scale(x2 - x1 + 1, y2 - y1 + 1)
 
 	var/list/area_to_color = list()
@@ -58,6 +71,8 @@
 			area_to_color[A] = meta_color
 			color_area_names[meta_color] = A.name
 		meta_icon.DrawBox(meta_color, img_x, img_y)
+		if(!area_colors)
+			continue
 
 		if(A.minimap_show_walls && istype(T, /turf/closed/wall))
 			map_icon.DrawBox("#000000", img_x, img_y)
@@ -76,9 +91,7 @@
 						overridden = TRUE
 						break
 
-				//In an ideal world, we'd be able to get away with just doing for(var/obj/O in T) up there, and calling it a day. However. HOWEVER!
-				//Doing that causes the code to also loop through items. and that uh. Kinda bloats minimap gen time. A LOT. We're talking straight-up doubling the time it takes to gen.
-				//So instead we take our ctrl+c. We copy the above code. And we ctrl+v. It's awful. We hate it. But it works. It's faster. Funny mapgen go vroom
+				// Структуры и машины обходятся отдельно, чтобы не перебирать все лежащие предметы.
 				if(!overridden)
 					for(var/obj/machinery/O in T)
 						if(O.minimap_override_color)
@@ -99,8 +112,10 @@
 	if(autocrop)
 		finalize(minx, miny, maxx, maxy)
 
-/// Режет иконки по рамке в мировых координатах и регистрирует ассеты
+// Обрезает старую карту и метаданные по общей рамке; готовые NanoMap сохраняют координаты DMM.
 /datum/minimap/proc/finalize(crop_x1, crop_y1, crop_x2, crop_y2)
+	if(source_icon)
+		return
 	map_icon.Crop(crop_x1 - origin_x + 1, crop_y1 - origin_y + 1, crop_x2 - origin_x + 1, crop_y2 - origin_y + 1)
 	meta_icon.Crop(crop_x1 - origin_x + 1, crop_y1 - origin_y + 1, crop_x2 - origin_x + 1, crop_y2 - origin_y + 1)
 	minx = crop_x1
@@ -118,6 +133,13 @@
 /datum/minimap/proc/send(mob/user)
 	if(!id)
 		CRASH("ERROR: send called, but the minimap id is null/missing. ID: [id]")
+	// Подсказки зон нужны только обычной миникарте; крю-монитор не запускает этот обход турфов.
+	if(source_icon && !meta_icon)
+		var/datum/minimap/metadata = new(z_level, minx, miny, maxx, maxy, autocrop = FALSE)
+		meta_icon = metadata.meta_icon
+		color_area_names = metadata.color_area_names
+		SSassets.transport.register_asset("minimap-[id]-meta.png", meta_icon)
+		qdel(metadata)
 	SSassets.transport.send_assets(user, list("minimap-[id].png" = map_icon, "minimap-[id]-meta.png" = meta_icon))
 
 /datum/minimap_group
@@ -148,7 +170,7 @@
 		M.send(user)
 		info += {"
 			<div class="block" id='layer-[i]' [i == 1 ? "" : "style='display:none'"]>
-				[totalmaps > 1 ? "<h3>Layer [i]</h3>" : ""]
+				[totalmaps > 1 ? "<h3>[M.name]</h3>" : ""]
 				<div> <!-- The div is in here to fit it both in the block div -->
 					<img id='map-[i]' src='[SSassets.transport.get_asset_url(map_name)]' />
 					<img id='map-[i]-meta' src='[SSassets.transport.get_asset_url(meta_name)]' style='display: none' />
@@ -157,7 +179,7 @@
 			</div>
 		"}
 		datas += json_encode(M.color_area_names);
-		buttonfield += "<a onclick='switchmap(\"layer-[i]\")'>Layer [i]</a> "
+		buttonfield += "<a onclick='switchmap(\"layer-[i]\")'>[M.name]</a> "
 
 	if(totalmaps > 1)
 		info += "<div class='block'><div class='statusDisplay'>[buttonfield]</div></div>"
@@ -201,8 +223,9 @@
 			if(!img){
 				return;
 			}
-			var width = img.naturalWidth;
-			var height = img.naturalHeight;
+			var meta_img = document.getElementById("map-" + index + "-meta");
+			var width = meta_img.naturalWidth;
+			var height = meta_img.naturalHeight;
 			var canvas = document.createElement("canvas");
 			canvas.width = width * 2;
 			canvas.height = height * 2;
@@ -215,7 +238,7 @@
 			var meta_ctx = document.createElement("canvas").getContext('2d');
 			meta_ctx.canvas.width = width;
 			meta_ctx.canvas.height = height;
-			meta_ctx.drawImage(document.getElementById("map-" + index + "-meta"), 0, 0);
+			meta_ctx.drawImage(meta_img, 0, 0);
 			var imagedata = meta_ctx.getImageData(0, 0, width, height);
 
 			var label = document.getElementById("label-" + index);

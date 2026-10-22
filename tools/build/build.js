@@ -92,10 +92,31 @@ export const StatbrowserTarget = new Juke.Target({
   },
 });
 
+export const NanomapsTarget = new Juke.Target({
+  inputs: () => [
+    'SpacemanDMM.toml',
+    'tools/nanomaps/render.cjs',
+    `${DME_NAME}.dme`,
+    ...Juke.glob('_maps/*.json'),
+    ...Juke.glob('_maps/map_files/**/*.dmm'),
+    ...Juke.glob('code/**/*.dm').filter(file => !file.endsWith('/asset_cache/assets/nanomaps.dm')),
+    ...Juke.glob('icons/**/*.dmi'),
+    ...Juke.glob('modular_*/**/*.+(dm|dmi)'),
+  ],
+  outputs: () => [
+    'code/modules/asset_cache/assets/nanomaps.dm',
+    ...Juke.glob('icons/_nanomaps/*.png'),
+  ],
+  executes: async () => {
+    await Juke.exec('node', ['tools/nanomaps/render.cjs']);
+  },
+});
+
 export const DmTarget = new Juke.Target({
   dependsOn: ({ get }) => [
     LoadoutCryptoRuntimeTarget,
     StatbrowserTarget,
+    NanomapsTarget,
     get(DefineParameter).includes('ALL_TEMPLATES') && DmMapsIncludeTarget,
   ],
   inputs: async () => [

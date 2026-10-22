@@ -154,6 +154,7 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 			continue
 		maps += list(list(
 			"z" = floor_map.z_level,
+			"floor" = monitored_levels.Find(floor_map.z_level),
 			"image" = SSassets.transport.get_asset_url("minimap-[floor_map.id].png"),
 			"min_x" = floor_map.minx,
 			"min_y" = floor_map.miny,
@@ -256,7 +257,7 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 					pos_y = null
 					pos_z = null
 
-				var/total_list = list("name" = name, "assignment" = assignment, "ijob" = ijob, "life_status" = life_status, "oxydam" = oxydam, "toxdam" = toxdam, "burndam" = burndam, "brutedam" = brutedam, "totaldam" = totaldam, "area" = area, "pos_x" = pos_x, "pos_y" = pos_y, "pos_z" = pos_z, "can_track" = H.can_track(null))
+				var/total_list = list("name" = name, "assignment" = assignment, "ijob" = ijob, "life_status" = life_status, "oxydam" = oxydam, "toxdam" = toxdam, "burndam" = burndam, "brutedam" = brutedam, "totaldam" = totaldam, "area" = area, "pos_x" = pos_x, "pos_y" = pos_y, "pos_z" = pos_z, "floor" = pos_z ? SSmapping.get_connected_levels(pos_z).Find(pos_z) : null, "can_track" = H.can_track(null))
 
 				if(totaldam)
 					results_damaged[++results_damaged.len] = total_list
@@ -408,7 +409,7 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 			pos_y = null
 			pos_z = null
 
-		var/total_list = list("name" = name, "assignment" = "Защитник", "ijob" = 0, "life_status" = life_status, "oxydam" = oxydam, "toxdam" = toxdam, "burndam" = burndam, "brutedam" = brutedam, "totaldam" = totaldam, "area" = area, "pos_x" = pos_x, "pos_y" = pos_y, "pos_z" = pos_z, "can_track" = H.can_track(null))
+		var/total_list = list("name" = name, "assignment" = "Защитник", "ijob" = 0, "life_status" = life_status, "oxydam" = oxydam, "toxdam" = toxdam, "burndam" = burndam, "brutedam" = brutedam, "totaldam" = totaldam, "area" = area, "pos_x" = pos_x, "pos_y" = pos_y, "pos_z" = pos_z, "floor" = pos_z ? SSmapping.get_connected_levels(pos_z).Find(pos_z) : null, "can_track" = H.can_track(null))
 
 		if(totaldam)
 			results_damaged[++results_damaged.len] = total_list

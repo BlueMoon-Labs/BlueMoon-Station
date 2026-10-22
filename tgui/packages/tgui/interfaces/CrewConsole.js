@@ -185,6 +185,7 @@ const CrewTableEntry = (props) => {
     pos_x,
     pos_y,
     pos_z,
+    floor,
     can_track,
   } = sensor_data;
 
@@ -227,7 +228,7 @@ const CrewTableEntry = (props) => {
       </Table.Cell>
       <Table.Cell>
         {area || 'Нет данных'}
-        {!!pos_z && ` (${pos_x}, ${pos_y}, Z: ${pos_z})`}
+        {!!pos_z && ` (${pos_x}, ${pos_y}, этаж ${floor})`}
       </Table.Cell>
       {!!link_allowed && (
         <Table.Cell collapsing>
@@ -255,7 +256,7 @@ const CrewMap = (props) => {
   const floor = maps.find(map => map.z === selectedZ)
     || maps.find(map => map.z === data.z) || maps[0];
   if (!floor) {
-    return <NoticeBox>Карта этого уровня недоступна.</NoticeBox>;
+    return <NoticeBox>Карта этого этажа недоступна.</NoticeBox>;
   }
   const floorIndex = maps.indexOf(floor);
   const scale = 2 * zoom;
@@ -270,17 +271,17 @@ const CrewMap = (props) => {
           <Stack.Item>
             <Button
               icon="arrow-down"
-              tooltip="Уровнем ниже"
+              tooltip="Этажом ниже"
               disabled={floorIndex === 0}
               onClick={() => setSelectedZ(maps[floorIndex - 1].z)} />
             <Button
               icon="arrow-up"
-              tooltip="Уровнем выше"
+              tooltip="Этажом выше"
               disabled={floorIndex === maps.length - 1}
               onClick={() => setSelectedZ(maps[floorIndex + 1].z)} />
           </Stack.Item>
           <Stack.Item grow>
-            {`Уровень Z: ${floor.z}`}
+            {`Этаж: ${floor.floor}`}
           </Stack.Item>
           <Stack.Item>Масштаб:</Stack.Item>
           <Stack.Item>
@@ -348,7 +349,7 @@ const CrewMap = (props) => {
                   }}>
                   <img
                     src={floor.image}
-                    alt={`Карта уровня Z: ${floor.z}`}
+                    alt={`Карта этажа ${floor.floor}`}
                     draggable={false} />
                   {sensors.map((sensor, index) => (
                     <CrewMapMarker
@@ -367,7 +368,7 @@ const CrewMap = (props) => {
       </Stack.Item>
       <Stack.Item color="label">
         Колесо мыши — масштаб; перетаскивание — сдвиг; нажатие на метку — выделение.
-        Полупрозрачные метки — персонажи на других уровнях.
+        Полупрозрачные метки — персонажи на других этажах.
       </Stack.Item>
     </Stack>
   );
@@ -380,7 +381,7 @@ const CrewMapMarker = (props) => {
     sensor.oxydam, sensor.toxdam, sensor.burndam, sensor.brutedam, sensor.life_status,
   );
   const tooltip = `${sensor.name}${sensor.assignment ? ` (${sensor.assignment})` : ''}`
-    + `${otherLevel ? ` (уровень Z: ${sensor.pos_z})` : ''}`
+    + `${otherLevel ? ` (этаж ${sensor.floor})` : ''}`
     + ` — ${sensor.area} (${sensor.pos_x}, ${sensor.pos_y})`;
   return (
     <Tooltip content={tooltip}>
