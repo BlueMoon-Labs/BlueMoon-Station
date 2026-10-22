@@ -93,15 +93,14 @@ export const StatbrowserTarget = new Juke.Target({
 });
 
 export const NanomapsTarget = new Juke.Target({
+  // Обычные правки DM не меняют PNG. Изменения внешности типов в DM требуют явной генерации.
   inputs: () => [
     'SpacemanDMM.toml',
     'tools/nanomaps/render.cjs',
-    `${DME_NAME}.dme`,
     ...Juke.glob('_maps/*.json'),
     ...Juke.glob('_maps/map_files/**/*.dmm'),
-    ...Juke.glob('code/**/*.dm').filter(file => !file.endsWith('/asset_cache/assets/nanomaps.dm')),
     ...Juke.glob('icons/**/*.dmi'),
-    ...Juke.glob('modular_*/**/*.+(dm|dmi)'),
+    ...Juke.glob('modular_*/**/*.dmi'),
   ],
   outputs: () => [
     'code/modules/asset_cache/assets/nanomaps.dm',
