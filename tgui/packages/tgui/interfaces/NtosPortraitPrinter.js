@@ -66,11 +66,20 @@ export const NtosPortraitPrinter = (props) => {
 
   const filteredList = !query
     ? baseList
-    : baseList.filter(p =>
-      String(p.title)
-        .toLowerCase()
-        .includes(query.toLowerCase()),
-    );
+    : baseList.filter(p => {
+        // Админы могут искать по названию ИЛИ сикею
+        if (is_admin) {
+          return String(p.title).toLowerCase().includes(query.toLowerCase()) ||
+                 String(p.ckey).toLowerCase().includes(query.toLowerCase());
+        }
+        // Обычные игроки видят только свои картины при поиске по сикею и должны написать его полностью
+        const isCkeySearch = user_ckey && query.toLowerCase() === user_ckey.toLowerCase();
+        if (isCkeySearch) {
+          return p.ckey === user_ckey;
+        }
+        // По умолчанию поиск только по названию
+        return String(p.title).toLowerCase().includes(query.toLowerCase());
+      });
 
   const hasPortraits = filteredList.length > 0;
   const safeIndex = hasPortraits
