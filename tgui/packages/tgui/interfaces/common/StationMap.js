@@ -1,11 +1,23 @@
+import { useRef, useState } from 'react';
+
 import { useLocalState } from '../../backend';
-import { Box, Button, NoticeBox, OrbitalMapComponent, Slider, Stack } from '../../components';
+import { Box, Button, NoticeBox, Slider, Stack } from '../../components';
 
 export const StationMap = (props) => {
   const { maps = [], initialZ, statePrefix = 'stationMap', renderMarkers, hint } = props;
   const [selectedZ, setSelectedZ] = useLocalState(`${statePrefix}Z`, initialZ);
   const [zoom, setZoom] = useLocalState(`${statePrefix}Zoom`, 1);
   const [offset, setOffset] = useLocalState(`${statePrefix}Offset`, [0, 0]);
+  const [viewOffset, setViewOffset] = useState(offset);
+  const drag = useRef(null);
+  const currentOffset = useRef(offset);
+  const finishDrag = () => {
+    if (!drag.current) {
+      return;
+    }
+    drag.current = null;
+    setOffset(currentOffset.current);
+  };
   const [showDepartments, setShowDepartments] = useLocalState(`${statePrefix}Departments`, false);
   const floor = maps.find(map => map.z === selectedZ)
     || maps.find(map => map.z === initialZ) || maps[0];
@@ -73,6 +85,8 @@ export const StationMap = (props) => {
               tooltip="Сбросить масштаб и положение карты"
               onClick={() => {
                 setZoom(1);
+                currentOffset.current = [0, 0];
+                setViewOffset([0, 0]);
                 setOffset([0, 0]);
               }} />
           </Stack.Item>
@@ -87,35 +101,60 @@ export const StationMap = (props) => {
               setMapZoom(zoom + (e.deltaY < 0 ? 0.5 : -0.5));
             }
           }}>
-          <OrbitalMapComponent
-            valueX={offset[0]}
-            valueY={offset[1]}
-            step={1}
-            stepPixelSize={1}
-            onDrag={(e, x, y) => setOffset([x, y])}>
-            {({ xOffset, yOffset, handleDragStart }) => (
-              <Box fillPositionedParent onMouseDown={e => {
-                if (e.button === 0) {
-                  e.preventDefault();
-                  handleDragStart(e);
-                }
+          <Box
+            fillPositionedParent
+            onPointerDown={e => {
+              if (e.button !== 0 || drag.current
+                || e.target.closest('.CrewConsole__marker, button, [role="button"]')) {
+                return;
+              }
+              e.preventDefault();
+              const viewport = e.currentTarget;
+              // Переводим экранное смещение в пиксели карты с учётом CSS zoom TGUI.
+              const pixelScale = viewport.getBoundingClientRect().width / viewport.clientWidth;
+              drag.current = {
+                pointerId: e.pointerId,
+                x: e.clientX,
+                y: e.clientY,
+                offset: currentOffset.current,
+                pixelScale,
+              };
+              viewport.setPointerCapture(e.pointerId);
+            }}
+            onPointerMove={e => {
+              const session = drag.current;
+              if (!session || session.pointerId !== e.pointerId) {
+                return;
+              }
+              if (!(e.buttons & 1)) {
+                finishDrag();
+                return;
+              }
+              const nextOffset = [
+                session.offset[0] - (e.clientX - session.x) / session.pixelScale,
+                session.offset[1] - (e.clientY - session.y) / session.pixelScale,
+              ];
+              currentOffset.current = nextOffset;
+              // Обновляем обе оси вместе; общее состояние TGUI сохраняем только в конце жеста.
+              setViewOffset(nextOffset);
+            }}
+            onPointerUp={finishDrag}
+            onPointerCancel={finishDrag}
+            onLostPointerCapture={finishDrag}>
+            <div
+              className="StationMap__map"
+              style={{
+                width: `${(floor.max_x - floor.min_x + 1) * scale}px`,
+                height: `${(floor.max_y - floor.min_y + 1) * scale}px`,
+                transform: `translate(calc(-50% - ${viewOffset[0]}px), calc(-50% - ${viewOffset[1]}px))`,
               }}>
-                <div
-                  className="StationMap__map"
-                  style={{
-                    width: `${(floor.max_x - floor.min_x + 1) * scale}px`,
-                    height: `${(floor.max_y - floor.min_y + 1) * scale}px`,
-                    transform: `translate(calc(-50% - ${xOffset}px), calc(-50% - ${yOffset}px))`,
-                  }}>
-                  <img
-                    src={showDepartments ? floor.department_image : floor.image}
-                    alt={`Карта этажа ${floor.floor}`}
-                    draggable={false} />
-                  {renderMarkers?.(floor, scale)}
-                </div>
-              </Box>
-            )}
-          </OrbitalMapComponent>
+              <img
+                src={showDepartments ? floor.department_image : floor.image}
+                alt={`Карта этажа ${floor.floor}`}
+                draggable={false} />
+              {renderMarkers?.(floor, scale)}
+            </div>
+          </Box>
         </Box>
       </Stack.Item>
       <Stack.Item color="label">

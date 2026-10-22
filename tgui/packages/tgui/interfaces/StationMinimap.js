@@ -63,7 +63,7 @@ const StationAreaTooltip = ({ areas }) => {
     <div
       className="StationMinimap__areaOverlay"
       onMouseLeave={() => setAreaName('')}
-      onMouseDown={() => setAreaName('')}
+      onPointerDown={() => setAreaName('')}
       onWheel={() => setAreaName('')}
       onMouseMove={e => {
         const image = pixels.current;
