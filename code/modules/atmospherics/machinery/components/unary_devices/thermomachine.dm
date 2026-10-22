@@ -245,7 +245,6 @@
 	name = "freezer"
 	base_cooling = 170
 	base_heating = 140
-	circuit = /obj/item/circuitboard/machine/thermomachine/freezer
 
 /obj/machinery/atmospherics/components/unary/thermomachine/freezer/on
 	on = TRUE
@@ -267,7 +266,6 @@
 	name = "heater"
 	base_cooling = 170
 	base_heating = 140
-	circuit = /obj/item/circuitboard/machine/thermomachine/heater
 
 /obj/machinery/atmospherics/components/unary/thermomachine/heater/on
 	on = TRUE
