@@ -24,6 +24,64 @@
 	STOP_PROCESSING(SSobj, src)
 	return ..()
 
+/obj/item/mecha_parts/mecha_equipment/medical/rescue_jaw
+	name = "mounted rescue jaws"
+	desc = "Спасательный гидравлический захват для медицинских экзокостюмов. Вскрывает двери и помещает пациентов в установленный слипер. Не вскрывает заваренные шлюзы и шлюзы с опущенными болтами."
+	icon_state = "rescue_clamp"
+	range = MECHA_MELEE
+	energy_drain = 20
+	equip_cooldown = 10
+	tool_behaviour = TOOL_CROWBAR
+	can_force_powered = TRUE
+
+/obj/item/mecha_parts/mecha_equipment/medical/rescue_jaw/action(mob/source, atom/target, params)
+	if(!action_checks(target) || !chassis.Adjacent(target))
+		return FALSE
+	if(iscarbon(target))
+		for(var/obj/item/mecha_parts/mecha_equipment/medical/sleeper/capsule in chassis.equipment)
+			if(!capsule.patient)
+				return capsule.action(source, target, params, src)
+		to_chat(source, span_warning("Для загрузки пациента необходим свободный слипер."))
+		return FALSE
+	if(!istype(target, /obj/machinery/door/airlock) && !istype(target, /obj/machinery/door/firedoor) && !istype(target, /obj/machinery/door/window))
+		return FALSE
+	var/obj/machinery/door/door = target
+	if(!door.density || door.operating)
+		return FALSE
+	var/open_delay = 0
+	var/forced_open = 2
+	if(istype(door, /obj/machinery/door/airlock))
+		var/obj/machinery/door/airlock/airlock = door
+		if(airlock.locked || airlock.welded)
+			to_chat(source, span_warning("Нельзя вскрыть [airlock]: шлюз заварен или заблокирован болтами."))
+			return FALSE
+		if(airlock.hasPower())
+			if(airlock.allowed(source))
+				forced_open = 0
+			else
+				open_delay = 3 SECONDS
+	if(open_delay)
+		to_chat(source, span_notice("Вы начинаете вскрывать [door] спасательным захватом."))
+		equip_ready = FALSE
+		var/turf/starting_turf = get_turf(chassis)
+		playsound(src, 'sound/machines/airlock_alien_prying.ogg', 100, 1)
+		var/completed = use_tool(door, source, open_delay, extra_checks = CALLBACK(src, PROC_REF(rescue_checks), source, door, starting_turf))
+		equip_ready = TRUE
+		if(!completed || !rescue_checks(source, door, starting_turf) || !action_checks(door))
+			return FALSE
+	if(istype(door, /obj/machinery/door/airlock))
+		if(!door.open(forced_open))
+			return FALSE
+	else
+		door.try_to_crowbar(src, source)
+		if(door.density && !door.operating)
+			return FALSE
+	log_message("Вскрыта дверь [door].", LOG_MECHA)
+	return ..()
+
+/obj/item/mecha_parts/mecha_equipment/medical/rescue_jaw/proc/rescue_checks(mob/user, obj/machinery/door/door, turf/starting_turf)
+	return chassis && get_turf(chassis) == starting_turf && (src in chassis.equipment) && chassis.is_occupant(user) && (chassis.occupants[user] & VEHICLE_CONTROL_EQUIPMENT) && !chassis.equipment_disabled && chassis.has_charge(energy_drain) && chassis.Adjacent(door) && (src == chassis.selected || src == chassis.selected_right) && (get_dir(chassis, door) & chassis.dir)
+
 /obj/item/mecha_parts/mecha_equipment/medical/sleeper
 	name = "mounted sleeper"
 	desc = "Медицинская капсула c собственным микроклиматом и отключаемым стазисом. Вводит встроенные препараты и реагенты из резервуара экзокостюма."
@@ -57,8 +115,8 @@
 	if(sleeper.ui_status(user) == UI_INTERACTIVE)
 		sleeper.ui_interact(user)
 
-/obj/item/mecha_parts/mecha_equipment/medical/sleeper/action(mob/source, mob/living/carbon/target, params)
-	if(!action_checks(target))
+/obj/item/mecha_parts/mecha_equipment/medical/sleeper/action(mob/source, mob/living/carbon/target, params, obj/item/mecha_parts/mecha_equipment/loading_module = src)
+	if(!action_checks(target) || !loading_module.action_checks(target) || loading_module.chassis != chassis)
 		return
 	if(!istype(target))
 		return
@@ -67,7 +125,7 @@
 	to_chat(source, "[icon2html(src, source)][span_notice("Вы начинаете помещать [target] в [src]...")]")
 	chassis.visible_message(span_warning("[chassis] начинает помещать [target] в [src]."))
 	if(do_after(source, equip_cooldown, target=target))
-		if(!action_checks(target) || !chassis.Adjacent(target) || (src != chassis.selected && src != chassis.selected_right) || !(get_dir(chassis, target)&chassis.dir))
+		if(!action_checks(target) || QDELETED(loading_module) || !loading_module.action_checks(target) || loading_module.chassis != chassis || !chassis.is_occupant(source) || !(chassis.occupants[source] & VEHICLE_CONTROL_EQUIPMENT) || !chassis.Adjacent(target) || (loading_module != chassis.selected && loading_module != chassis.selected_right) || !(get_dir(chassis, target)&chassis.dir))
 			return
 		if(!patient_insertion_check(target, source))
 			return

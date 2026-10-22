@@ -501,7 +501,9 @@
 		var/mob/living/carbon/L = AM
 		if(!density || (src in L.do_afters))
 			return FALSE
-		var/obj/item/crowbar = L.is_holding_tool_quality(TOOL_CROWBAR)
+		if(try_mecha_bump_open(L))
+			return FALSE
+		var/obj/item/crowbar = istype(L.loc, /obj/vehicle/sealed/mecha) ? null : L.is_holding_tool_quality(TOOL_CROWBAR)
 		if(crowbar)
 			try_to_crowbar(crowbar, L)
 		else
@@ -1429,7 +1431,8 @@
 /obj/machinery/door/firedoor/proc/try_manual_override(mob/user, override_time = FIRELOCK_MANUAL_OVERRIDE_TIME)
 	if(density && !welded && !operating && !(src in user.do_afters))
 		balloon_alert(user, "открывание...")
-		if(do_after(user, override_time, target = src))
+		var/turf/starting_turf = get_turf(user)
+		if(do_after(user, override_time, target = src, extra_checks = CALLBACK(src, PROC_REF(bump_open_checks), user, starting_turf)))
 			try_to_crowbar(null, user)
 			return TRUE
 	return FALSE

@@ -31,7 +31,7 @@
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_tracking(src)
 	ME.attach(src)
-	ME = new /obj/item/mecha_parts/mecha_equipment/medical/syringe_gun(src)
+	ME = new /obj/item/mecha_parts/mecha_equipment/medical/rescue_jaw(src)
 	ME.attach(src)
 	ME = new /obj/item/mecha_parts/mecha_equipment/medical/sleeper(src)
 	ME.attach(src)

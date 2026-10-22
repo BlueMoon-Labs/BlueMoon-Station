@@ -899,17 +899,20 @@
 		use_power(phasing_energy_drain)
 		addtimer(VARSET_CALLBACK(src, movedelay, TRUE), movedelay*3)
 		return
+	var/turf/bump_turf = get_turf(src)
 	. = ..()
-	if(.) //mech was thrown/door/whatever
+	// Открывание двери может ждать пилота; после перемещения старое столкновение уже не актуально.
+	if(. || get_turf(src) != bump_turf)
 		return
 	if(bumpsmash) //Need a pilot to push the PUNCH button.
 		if(COOLDOWN_FINISHED(src, mecha_bump_smash))
 			var/list/controllers = return_controllers_with_flag(VEHICLE_CONTROL_MELEE)
 			var/mob/driver = length(controllers) ? controllers[1] : null
-			obstacle.mech_melee_attack(src, driver)
-			COOLDOWN_START(src, mecha_bump_smash, smashcooldown)
-			if(!obstacle || obstacle.CanPass(src,get_step(src,dir)))
-				step(src,dir)
+			if(can_bump_smash(obstacle, driver))
+				obstacle.mech_melee_attack(src, driver)
+				COOLDOWN_START(src, mecha_bump_smash, smashcooldown)
+				if(!obstacle || obstacle.CanPass(src,get_step(src,dir)))
+					step(src,dir)
 	if(isobj(obstacle))
 		var/obj/obj_obstacle = obstacle
 		if(!obj_obstacle.anchored && obj_obstacle.move_resist <= move_force)
@@ -919,9 +922,8 @@
 		if(mob_obstacle.move_resist <= move_force)
 			step(obstacle, dir)
 
-
-
-
+/obj/vehicle/sealed/mecha/proc/can_bump_smash(atom/obstacle, mob/driver)
+	return TRUE
 
 ///////////////////////////////////
 ////////  Internal damage  ////////
