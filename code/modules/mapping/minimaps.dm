@@ -19,6 +19,7 @@
 	var/origin_y
 	var/source_icon
 	var/icon/department_map_icon
+	var/list/area_ui_data
 
 // Готовые NanoMap можно дополнить полупрозрачной раскраской станционных полов.
 /datum/minimap/New(z, x1 = 1, y1 = 1, x2 = world.maxx, y2 = world.maxy, name = "minimap", autocrop = TRUE, source_icon, area_colors = FALSE, list/source_tiles)
@@ -262,16 +263,30 @@
 	if (!SSassets.cache["minimap-[id]-meta.png"])
 		SSassets.transport.register_asset("minimap-[id]-meta.png", meta_icon)
 
+// Метаданные зон нужны только OOC-миникарте и старой отправке через send().
+/datum/minimap/proc/ensure_area_metadata()
+	if(meta_icon)
+		return
+	var/datum/minimap/metadata = new(z_level, minx, miny, maxx, maxy, autocrop = FALSE)
+	meta_icon = metadata.meta_icon
+	color_area_names = metadata.color_area_names
+	SSassets.transport.register_asset("minimap-[id]-meta.png", meta_icon)
+	qdel(metadata)
+
+/datum/minimap/proc/get_area_ui_data()
+	if(!area_ui_data)
+		ensure_area_metadata()
+		// Встроенное изображение позволяет читать пиксели при любом транспорте ассетов.
+		area_ui_data = list(
+			"image" = "data:image/png;base64,[icon2base64(meta_icon)]",
+			"names" = color_area_names,
+		)
+	return area_ui_data
+
 /datum/minimap/proc/send(mob/user)
 	if(!id)
 		CRASH("ERROR: send called, but the minimap id is null/missing. ID: [id]")
-	// Подсказки зон нужны только обычной миникарте; крю-монитор не запускает этот обход турфов.
-	if(source_icon && !meta_icon)
-		var/datum/minimap/metadata = new(z_level, minx, miny, maxx, maxy, autocrop = FALSE)
-		meta_icon = metadata.meta_icon
-		color_area_names = metadata.color_area_names
-		SSassets.transport.register_asset("minimap-[id]-meta.png", meta_icon)
-		qdel(metadata)
+	ensure_area_metadata()
 	SSassets.transport.send_assets(user, list("minimap-[id].png" = map_icon, "minimap-[id]-meta.png" = meta_icon))
 
 /datum/minimap_group
@@ -288,120 +303,45 @@
 
 /datum/minimap_group/proc/show(mob/user)
 	if(!length(minimaps))
-		to_chat(user, "<span class='boldwarning'>ERROR: Attempted to access an empty datum/minimap_group. This should probably not happen.</span>")
+		to_chat(user, span_boldwarning("Карта станции недоступна."))
 		return
+	ui_interact(user)
 
-	var/list/datas = list()
-	var/list/info = list()
-	var/buttonfield = ""
-	var/totalmaps = length(minimaps)
-	for(var/i in 1 to totalmaps)// OLD: for(var/i in 1 to length(minimaps))
-		var/datum/minimap/M = minimaps[i]
-		var/map_name = "minimap-[M.id].png"
-		var/meta_name = "minimap-[M.id]-meta.png"
-		M.send(user)
-		info += {"
-			<div class="block" id='layer-[i]' [i == 1 ? "" : "style='display:none'"]>
-				[totalmaps > 1 ? "<h3>[M.name]</h3>" : ""]
-				<div> <!-- The div is in here to fit it both in the block div -->
-					<img id='map-[i]' src='[SSassets.transport.get_asset_url(map_name)]' />
-					<img id='map-[i]-meta' src='[SSassets.transport.get_asset_url(meta_name)]' style='display: none' />
-				</div>
-				<div class='statusDisplay' id='label-[i]'> </div>
-			</div>
-		"}
-		datas += json_encode(M.color_area_names);
-		buttonfield += "<a onclick='switchmap(\"layer-[i]\")'>[M.name]</a> "
+/datum/minimap_group/ui_state(mob/user)
+	return GLOB.always_state
 
-	if(totalmaps > 1)
-		info += "<div class='block'><div class='statusDisplay'>[buttonfield]</div></div>"
+/datum/minimap_group/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		var/list/map_assets = list()
+		for(var/datum/minimap/floor_map as anything in minimaps)
+			map_assets += "minimap-[floor_map.id].png"
+			if(floor_map.department_map_icon)
+				map_assets += "minimap-[floor_map.id]-departments.png"
+		SSassets.transport.send_assets(user, map_assets)
+		ui = new(user, src, "StationMinimap", name)
+		ui.set_autoupdate(FALSE)
+		ui.open()
 
-	info = info.Join()
-	//this is bad. Too bad!
-	var/headerJS = {"
-	<script>
-		function hexify(num) {
-			if(!num){
-				num = 0;
-			}
-			num = num.toString(16);
-			if(num.length == 1){
-				num = "0" + num;
-			}
-			return num;
-		}
-		function switchmap(mapid) {
-			var targetblock = document.getElementById(mapid);
-			for(var i = 0; i < [length(minimaps)]; i++) {
-				var currentblock = document.getElementById("layer-" + (i + 1));
-				currentblock.style.display = 'none';
-			}
-			targetblock.style.display = '';
-		}
-		window.onload = function() {
-			if(!window.HTMLCanvasElement) {
-				var label = document.getElementById("label-1");
-				label.textContent = "<h1>WARNING! HTMLCanvasElement not found!</h1>"
-				return false
-			}
-			var datas = \[[jointext(datas, ",")]]
-			for(var i = 0; i < [length(minimaps)]; i++) {
-				setup_layer(i + 1, datas\[i]);
-			}
-		}
-		// Отдельная функция на этаж: обработчики мыши должны держать свой холст, а не последний из цикла
-		function setup_layer(index, data) {
-			var img = document.getElementById("map-" + index);
-			if(!img){
-				return;
-			}
-			var meta_img = document.getElementById("map-" + index + "-meta");
-			var width = meta_img.naturalWidth;
-			var height = meta_img.naturalHeight;
-			var canvas = document.createElement("canvas");
-			canvas.width = width * 2;
-			canvas.height = height * 2;
-			canvas.id = "canvas-" + index;
+/datum/minimap_group/ui_static_data(mob/user)
+	var/list/maps = list()
+	for(var/datum/minimap/floor_map as anything in minimaps)
+		var/list/stack = SSmapping.get_connected_levels(floor_map.z_level)
+		var/list/floor_data = floor_map.get_ui_data(stack.Find(floor_map.z_level))
+		floor_data["areas"] = floor_map.get_area_ui_data()
+		maps += list(floor_data)
+	var/turf/user_turf = get_turf(user)
+	return list("maps" = maps, "z" = user_turf?.z)
 
-			var ctx = canvas.getContext('2d');
-			ctx.imageSmoothingEnabled = false;
-			ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-			img.parentNode.replaceChild(canvas, img);
-			var meta_ctx = document.createElement("canvas").getContext('2d');
-			meta_ctx.canvas.width = width;
-			meta_ctx.canvas.height = height;
-			meta_ctx.drawImage(meta_img, 0, 0);
-			var imagedata = meta_ctx.getImageData(0, 0, width, height);
-
-			var label = document.getElementById("label-" + index);
-			canvas.onmousemove = function(e){
-				var rect = canvas.getBoundingClientRect();
-				var x = Math.floor(e.offsetX * width / rect.width);
-				var y = Math.floor(e.offsetY * height / rect.height);
-				var color_idx = x * 4 + (y * 4 * width);
-				var color = "#" + hexify(imagedata.data\[color_idx]) + hexify(imagedata.data\[color_idx+1]) + hexify(imagedata.data\[color_idx+2]);
-				label.textContent = data\[color] || " ";
-				canvas.title = data\[color] || "";
-			}
-			canvas.onmouseout = function(e){
-				label.textContent = " ";
-				canvas.title = "";
-			}
-		}
-	</script>
-	<style>
-		img, canvas {
-			width: 100%;
-			height: auto;
-			margin: auto;
-			display: block;
-			image-rendering: pixelated;
-			background-color: white;
-		}
-	</style>
-	"}
-
-	var/datum/browser/popup = new(user, "minimap_[id]", name, 500, 700)
-	popup.add_head_content(headerJS) //set the head
-	popup.set_content(info)
-	popup.open(FALSE)
+// Оба интерфейса используют одинаковые изображения и координаты карты.
+/datum/minimap/proc/get_ui_data(floor_number)
+	return list(
+		"z" = z_level,
+		"floor" = floor_number,
+		"image" = SSassets.transport.get_asset_url("minimap-[id].png"),
+		"department_image" = SSassets.transport.get_asset_url(department_map_icon ? "minimap-[id]-departments.png" : "minimap-[id].png"),
+		"min_x" = minx,
+		"min_y" = miny,
+		"max_x" = maxx,
+		"max_y" = maxy,
+	)

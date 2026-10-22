@@ -1,26 +1,3 @@
-.CrewConsole__mapViewport {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  background: #111820;
-  cursor: move;
-  user-select: none;
-}
-
-.CrewConsole__map {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-
-  > img {
-    width: 100%;
-    height: 100%;
-    image-rendering: pixelated;
-    pointer-events: none;
-  }
-}
-
 .CrewConsole__marker {
   position: absolute;
   width: 10px;

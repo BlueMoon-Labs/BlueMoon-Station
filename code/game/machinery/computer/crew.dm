@@ -166,16 +166,7 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 	for(var/datum/minimap/floor_map as anything in SSminimaps.station_minimaps)
 		if(!(floor_map.z_level in monitored_levels))
 			continue
-		maps += list(list(
-			"z" = floor_map.z_level,
-			"floor" = monitored_levels.Find(floor_map.z_level),
-			"image" = SSassets.transport.get_asset_url("minimap-[floor_map.id].png"),
-			"department_image" = SSassets.transport.get_asset_url("minimap-[floor_map.id]-departments.png"),
-			"min_x" = floor_map.minx,
-			"min_y" = floor_map.miny,
-			"max_x" = floor_map.maxx,
-			"max_y" = floor_map.maxy,
-		))
+		maps += list(floor_map.get_ui_data(monitored_levels.Find(floor_map.z_level)))
 	for(var/level in monitored_levels)
 		maps_by_z["[level]"] = maps
 	return maps
