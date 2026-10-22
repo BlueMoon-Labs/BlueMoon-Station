@@ -120,6 +120,10 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 /datum/crewmonitor/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
 	if (!ui)
+		var/list/map_assets = list()
+		for(var/datum/minimap/floor_map as anything in SSminimaps.station_minimaps)
+			map_assets += "minimap-[floor_map.id].png"
+		SSassets.transport.send_assets(user, map_assets)
 		ui = new(user, src, "CrewConsole")
 		ui.open()
 
@@ -137,14 +141,27 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 	return ..()
 
 /datum/crewmonitor/ui_data(mob/user)
-	var/z = user.z
-	if(!z)
-		var/turf/T = get_turf(user)
-		z = T.z
-	var/list/zdata = update_data(z)
-	. = list()
-	.["sensors"] = zdata
-	.["link_allowed"] = isAI(user)
+	var/turf/user_turf = get_turf(user)
+	. = list("sensors" = list(), "maps" = list(), "link_allowed" = isAI(user))
+	if(!user_turf)
+		return
+	.["sensors"] = update_data(user_turf.z)
+	.["z"] = user_turf.z
+	var/list/monitored_levels = SSmapping.get_connected_levels(user_turf.z)
+	var/list/maps = list()
+	for(var/datum/minimap/floor_map as anything in SSminimaps.station_minimaps)
+		if(!(floor_map.z_level in monitored_levels))
+			continue
+		maps += list(list(
+			"z" = floor_map.z_level,
+			"image" = SSassets.transport.get_asset_url("minimap-[floor_map.id].png"),
+			"min_x" = floor_map.minx,
+			"min_y" = floor_map.miny,
+			"max_x" = floor_map.maxx,
+			"max_y" = floor_map.maxy,
+		))
+	.["maps"] = maps
+	.["levels"] = monitored_levels
 
 /datum/crewmonitor/proc/update_data(z)
 	if(data_by_z["[z]"] && last_update["[z]"] && world.time <= last_update["[z]"] + SENSORS_UPDATE_PERIOD)
@@ -167,6 +184,7 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 	var/area
 	var/pos_x
 	var/pos_y
+	var/pos_z
 	var/life_status
 	var/list/monitored_levels = SSmapping.get_connected_levels(z)
 
@@ -231,12 +249,14 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 						area = get_area_name(H, TRUE)
 					pos_x = pos.x
 					pos_y = pos.y
+					pos_z = pos.z
 				else
 					area = null
 					pos_x = null
 					pos_y = null
+					pos_z = null
 
-				var/total_list = list("name" = name, "assignment" = assignment, "ijob" = ijob, "life_status" = life_status, "oxydam" = oxydam, "toxdam" = toxdam, "burndam" = burndam, "brutedam" = brutedam, "totaldam" = totaldam, "area" = area, "pos_x" = pos_x, "pos_y" = pos_y, "can_track" = H.can_track(null))
+				var/total_list = list("name" = name, "assignment" = assignment, "ijob" = ijob, "life_status" = life_status, "oxydam" = oxydam, "toxdam" = toxdam, "burndam" = burndam, "brutedam" = brutedam, "totaldam" = totaldam, "area" = area, "pos_x" = pos_x, "pos_y" = pos_y, "pos_z" = pos_z, "can_track" = H.can_track(null))
 
 				if(totaldam)
 					results_damaged[++results_damaged.len] = total_list
@@ -336,6 +356,7 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 	var/area
 	var/pos_x
 	var/pos_y
+	var/pos_z
 	var/life_status
 	var/list/monitored_levels = SSmapping.get_connected_levels(z)
 
@@ -380,12 +401,14 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 			area = get_area_name(H, TRUE)
 			pos_x = pos.x
 			pos_y = pos.y
+			pos_z = pos.z
 		else
 			area = null
 			pos_x = null
 			pos_y = null
+			pos_z = null
 
-		var/total_list = list("name" = name, "assignment" = "Defender", "ijob" = 0, "life_status" = life_status, "oxydam" = oxydam, "toxdam" = toxdam, "burndam" = burndam, "brutedam" = brutedam, "totaldam" = totaldam, "area" = area, "pos_x" = pos_x, "pos_y" = pos_y, "can_track" = H.can_track(null))
+		var/total_list = list("name" = name, "assignment" = "Защитник", "ijob" = 0, "life_status" = life_status, "oxydam" = oxydam, "toxdam" = toxdam, "burndam" = burndam, "brutedam" = brutedam, "totaldam" = totaldam, "area" = area, "pos_x" = pos_x, "pos_y" = pos_y, "pos_z" = pos_z, "can_track" = H.can_track(null))
 
 		if(totaldam)
 			results_damaged[++results_damaged.len] = total_list
