@@ -389,26 +389,16 @@
 			var/split_loc = splittext(objective_turf, "_")
 			new /obj/effect/spawner/lootdrop/ruinloot/important(locate(text2num(split_loc[1]), text2num(split_loc[2]), center_z))
 
-		//Spawn dead mosb
-		for(var/mob/M as() in SSzclear.nullspaced_mobs)
-			//WHITE-STEEL FIX: список может держать удалённые/пустые записи, из-за чего раньше
-			//генерация руины падала с "Cannot execute null.forceMove()".
-			if(QDELETED(M))
-				continue
-			var/objective_turf = pick(floor_turfs)
-			var/split_loc = splittext(objective_turf, "_")
-			var/turf/spawn_turf = locate(text2num(split_loc[1]), text2num(split_loc[2]), center_z)
-			if(!spawn_turf)
-				continue
-			M.forceMove(spawn_turf)
+		//WHITE-STEEL PORT: перенос трупов из буфера nullspaced_mobs в новую руину удалён.
+		//Именно он заставлял тела кочествовать от миссии к миссии бесконечно: тело, пережившее
+		//вайп своего z-уровня, «воскресало» на каждой следующей руине, пока его не удаляли
+		//вручную. Теперь тела удаляются вместе с уровнем (см. SSzclear.clear_turf_atoms).
 
 	ruin_event?.post_spawn(floor_turfs, center_z)
 
 	//Start running event
 	if(ruin_event)
 		SSorbits.ruin_events += ruin_event
-
-	SSzclear.nullspaced_mobs.Cut()
 
 	//WHITE-STEEL PORT: возвращаем атмосферу только на полах руины, а не на всём Z.
 	//unpause_z без списка гонял Initalize_Atmos по ~65k турфов уровня.

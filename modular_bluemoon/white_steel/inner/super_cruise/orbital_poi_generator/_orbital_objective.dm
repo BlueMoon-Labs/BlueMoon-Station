@@ -56,6 +56,26 @@
 /datum/orbital_objective/proc/get_target()
 	return null
 
+/datum/orbital_objective/proc/unregister_mission_body(mob/target)
+	if(!ismob(target))
+		return
+	var/target_name = target.real_name
+	if(istext(target_name))
+		LAZYREMOVE(GLOB.mob_spawners[target_name], target)
+		if(!LAZYLEN(GLOB.mob_spawners[target_name]))
+			GLOB.mob_spawners -= target_name
+/datum/orbital_objective/proc/cleanup_undelivered_body(mob/target, force_delete = FALSE)
+	if(!ismob(target))
+		return
+	unregister_mission_body(target)
+	if(QDELETED(target))
+		return
+	if(!force_delete && (is_station_level(target.z) || is_centcom_level(target.z)))
+		return
+	if(target.client)
+		target.ghostize()
+	qdel(target)
+
 /datum/orbital_objective/proc/generate_payout()
 	payout = rand(min_payout, max_payout)
 

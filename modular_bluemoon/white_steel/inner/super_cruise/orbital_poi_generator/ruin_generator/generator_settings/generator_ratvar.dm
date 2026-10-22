@@ -47,11 +47,19 @@
 		for(var/part in ratvar_parts)
 			.[part] = per_part
 
-	var/matrigrass_weight = 0
+
+	var/matrigrass_chance = 0.001
+	var/salvage_factor = 1
+	if(length(subtypesof(/obj/structure/salvage)))
+		salvage_factor = 1.025
+	var/trash_weight = 0
 	for(var/trash_key in .)
-		matrigrass_weight += .[trash_key]
-	if(matrigrass_weight > 0)
-		.[/obj/item/seeds/matrigrass] = matrigrass_weight * 1.025 / 249
+		trash_weight += .[trash_key]
+	var/existing_matrigrass_weight = .[/obj/item/seeds/matrigrass]
+	if(existing_matrigrass_weight)
+		trash_weight -= existing_matrigrass_weight
+	if(trash_weight > 0)
+		.[/obj/item/seeds/matrigrass] = trash_weight * salvage_factor * matrigrass_chance / (1 - matrigrass_chance * salvage_factor)
 
 /datum/generator_settings/ratvar/get_directional_walltrash()
 	return list(
