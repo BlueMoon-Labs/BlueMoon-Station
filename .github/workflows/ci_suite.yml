@@ -38,6 +38,10 @@ jobs:
           tools/bootstrap/python -c ''
       - name: Generate NanoMaps
         run: tools/build/build nanomaps
+      - name: Test NanoMaps
+        run: |
+          tools/bootstrap/node --test tools/nanomaps/ci.test.cjs
+          git diff --exit-code -- code/modules/asset_cache/assets/nanomaps.dm
       - name: Run Linters
         run: |
           bash tools/ci/check_filedirs.sh tgstation.dme
