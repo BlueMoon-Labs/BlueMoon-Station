@@ -538,7 +538,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	//Listening gets trimmed here if a vocal bark's present. If anyone ever makes this proc return listening, make sure to instead initialize a copy of listening in here to avoid wonkiness
 	if(SEND_SIGNAL(src, COMSIG_MOVABLE_QUEUE_BARK, listening, args) || vocal_bark || vocal_bark_id)
 		for(var/mob/M in listening)
-			if(!M.client?.prefs)
+			if(!M.client)
 				continue
 			if(!(M.client.prefs.toggles & SOUND_BARK))
 				listening -= M
