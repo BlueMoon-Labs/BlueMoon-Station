@@ -286,6 +286,7 @@
 /datum/outfit/inteq/full/expedition
 	give_explosive_implant = FALSE
 	give_hijack_objective = FALSE
+	ears = null
 
 //=====================
 // Цель преступника: продержаться до подлёта подмоги
