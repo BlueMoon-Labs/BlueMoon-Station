@@ -133,7 +133,7 @@
 	user.client?.ForceAllKeysUp()
 	window.acquire_lock(src)
 	if(!window.is_ready())
-		if(!user?.client?.prefs)
+		if(!user?.client)
 			close(can_be_suspended = FALSE)   // окно уже залочено, надо отдать в пул
 			return FALSE
 		window.initialize(
@@ -354,7 +354,7 @@
  * return list
  */
 /datum/tgui/proc/get_payload(custom_data, with_data, with_static_data)
-	if(!user?.client?.prefs || QDELETED(src_object))
+	if(!user?.client || QDELETED(src_object))
 		return
 	var/list/json_data = list()
 	json_data["config"] = list(

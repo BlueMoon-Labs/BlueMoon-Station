@@ -237,7 +237,7 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
  */
 /mob/dead/observer/update_icon(updates=ALL, new_form=null)
 	. = ..()
-	if(client?.prefs) //We update our preferences in case they changed right before update_icon was called.
+	if(client) //We update our preferences in case they changed right before update_icon was called.
 		ghost_accs = client.prefs.ghost_accs
 		ghost_others = client.prefs.ghost_others
 
@@ -735,7 +735,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 			request_ghost_lighting_init(visible_z)
 
 /mob/dead/observer/update_sight(forced = TRUE)
-	if(client?.prefs)
+	if(client)
 		ghost_others = client.prefs.ghost_others //A quick update just in case this setting was changed right before calling the proc
 
 	if (!ghostvision)
@@ -755,7 +755,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		O.updateghostimages()
 
 /mob/dead/observer/proc/updateghostimages()
-	if (!client?.prefs)
+	if (!client)
 		return
 
 	if(lastsetting)

@@ -173,7 +173,7 @@
 
 /atom/movable/screen/movable/action_button/proc/save_position()
 	var/mob/user = our_hud?.mymob
-	if(!user?.client?.prefs)
+	if(!user?.client)
 		return
 	var/position_info = ""
 	switch(location)
@@ -207,7 +207,7 @@
 
 /atom/movable/screen/movable/action_button/proc/dump_save()
 	var/mob/user = our_hud?.mymob
-	if(!user?.client?.prefs)
+	if(!user?.client)
 		return
 	user.client.prefs.action_buttons_screen_locs -= "[name]_[id]"
 	user.client.prefs.save_single_pref("action_buttons_screen_locs", sanitize_action_button_positions(user.client.prefs.action_buttons_screen_locs))

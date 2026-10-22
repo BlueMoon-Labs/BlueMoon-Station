@@ -354,7 +354,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 
 	if(pressure < ONE_ATMOSPHERE*0.4) //Thin air, let's italicise the message
 		spans |= SPAN_ITALICS
-	if(src?.client?.prefs?.auto_capitalize_enabled)
+	if(src?.client?.prefs.auto_capitalize_enabled)
 		message=auto_capitalize(message)
 	send_speech(message, message_range, src, bubble_type, spans, language, message_mode)
 
@@ -399,7 +399,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 
 	// Create map text prior to modifying message for goonchat
 	// BLUEMOON EDIT - sign language uses vision instead of hearing for map text
-	if (client?.prefs?.chat_on_map && stat != UNCONSCIOUS && (client.prefs.see_chat_non_mob || ismob(speaker)) && (is_sign_language ? !eye_blind : can_hear()))
+	if (client?.prefs.chat_on_map && stat != UNCONSCIOUS && (client.prefs.see_chat_non_mob || ismob(speaker)) && (is_sign_language ? !eye_blind : can_hear()))
 		create_chat_message(speaker, message_language, raw_message, spans, message_mode)
 
 	// Recompose message for AI hrefs, language incomprehension.
@@ -524,7 +524,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	//speech bubble
 	var/list/speech_bubble_recipients = list()
 	for(var/mob/M in listening)
-		if(M.client?.prefs && !M.client.prefs.chat_on_map)
+		if(M.client && !M.client.prefs.chat_on_map)
 			speech_bubble_recipients.Add(M.client)
 	var/image/I = image('icons/mob/talk.dmi', src, "[bubble_type][say_test(message)]", FLY_LAYER)
 	I.appearance_flags = APPEARANCE_UI_IGNORE_ALPHA
