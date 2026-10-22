@@ -345,7 +345,7 @@
 
 /obj/item/circuitboard/machine/thermomachine
 	name = "Thermomachine (Machine Board)"
-	desc = "You can use a screwdriver to switch between heater and freezer."
+	desc = "You can use a multitool to switch pipe layer."
 	build_path = /obj/machinery/atmospherics/components/unary/thermomachine
 	var/pipe_layer = PIPING_LAYER_DEFAULT
 	req_components = list(

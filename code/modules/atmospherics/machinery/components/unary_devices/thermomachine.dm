@@ -236,7 +236,7 @@
 	else
 		target_temperature = T20C
 	investigate_log("was set to [target_temperature] K by [key_name(user)]", INVESTIGATE_ATMOS)
-	balloon_alert(user, "температура сброшена до [target_temperature] K")
+	balloon_alert(user, "целевая температура [target_temperature] K")
 	update_icon()
 
 // Пресеты. Различаются только стартовой целью
