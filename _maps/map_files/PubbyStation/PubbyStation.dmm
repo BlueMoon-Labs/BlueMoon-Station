@@ -6074,7 +6074,7 @@
 	roundstart_template = /datum/map_template/shuttle/escape_pod/large;
 	shuttle_id = "monastery_shuttle_station";
 	width = 5;
-	enforce_specific_pod = TRUE
+	enforce_specific_pod = 1
 	},
 /turf/open/space/basic,
 /area/space)
