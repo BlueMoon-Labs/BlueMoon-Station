@@ -220,6 +220,13 @@
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/get_ui_data()
 	. = ..()
+	var/rearm_reason
+	if(disabledreload)
+		rearm_reason = "Это орудие заряжается вручную снаружи меха."
+	else if(projectiles >= initial(projectiles))
+		rearm_reason = "Боезапас уже полный."
+	else if(projectile_energy_cost ? !chassis.has_charge(projectile_energy_cost) : projectiles_cache <= 0)
+		rearm_reason = projectile_energy_cost ? "Недостаточно энергии для пополнения боезапаса." : "Резерв боеприпасов пуст."
 	.["snowflake"] = list(
 		"kind" = "ballistic",
 		"total_ammo" = projectiles,
@@ -227,6 +234,7 @@
 		"cache" = projectiles_cache,
 		"cache_max" = projectiles_cache_max,
 		"can_rearm" = !disabledreload,
+		"rearm_reason" = rearm_reason,
 	)
 
 

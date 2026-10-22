@@ -179,7 +179,17 @@
 
 /obj/item/mecha_parts/mecha_equipment/proc/get_ui_data()
 	if(!ui_icon)
-		ui_icon = icon2base64(icon(icon, icon_state, SOUTH))
+		// Браузеру нужен один PNG-кадр, иначе он показывает всю сетку кадров DMI.
+		ui_icon = icon2base64(icon(icon, icon_state, SOUTH, 1, FALSE))
+	var/unavailable_reason
+	if(chassis.equipment_disabled)
+		unavailable_reason = "Блок управления оборудованием отключён."
+	else if(selectable && !equip_ready)
+		unavailable_reason = "Модуль занят."
+	else if(selectable && chassis.construction_state != MECHA_LOCKED)
+		unavailable_reason = "Активирован протокол техобслуживания."
+	else if(energy_drain && !chassis.has_charge(energy_drain))
+		unavailable_reason = "Недостаточно энергии."
 	return list(
 		"name" = name,
 		"desc" = desc,
@@ -195,6 +205,8 @@
 		"selected_right" = chassis.selected_right == src,
 		"equip_cooldown" = equip_cooldown && DisplayTimeText(equip_cooldown),
 		"energy_per_use" = energy_drain,
+		"unavailable_reason" = unavailable_reason,
+		"detach_reason" = null,
 		"snowflake" = null,
 	)
 

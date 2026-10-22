@@ -51,6 +51,7 @@ export const AlertPane = () => {
                       color="bad"
                       content="Калибровать"
                       disabled={!data.can_settings}
+                      tooltip={!data.can_settings ? 'С этого места нельзя управлять настройками меха.' : undefined}
                       onClick={() => act('repair_int_damage')} />
                   </Stack.Item>
                 )}

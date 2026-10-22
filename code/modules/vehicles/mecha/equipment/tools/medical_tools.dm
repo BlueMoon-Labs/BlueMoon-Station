@@ -176,6 +176,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/medical/sleeper/get_ui_data()
 	. = ..()
+	.["detach_reason"] = patient ? "Сначала извлеките пациента из слипера." : null
 	var/list/patient_data
 	var/list/contained_reagents = list()
 	var/list/injectible_reagents = list()
@@ -197,7 +198,7 @@
 		var/obj/item/mecha_parts/mecha_equipment/medical/syringe_gun/gun = locate() in chassis.equipment
 		if(gun)
 			for(var/datum/reagent/reagent as anything in gun.reagents.reagent_list)
-				injectible_reagents += list(list("name" = reagent.name, "volume" = round(reagent.volume, 0.1), "id" = REF(reagent)))
+				injectible_reagents += list(list("name" = reagent.name, "volume" = round(reagent.volume, 0.1), "id" = REF(reagent), "allowed" = sleeper.chem_allowed(reagent.type)))
 	var/list/sleeper_data = sleeper.ui_data()
 	.["snowflake"] = list(
 		"kind" = "sleeper",
@@ -207,6 +208,7 @@
 		"chems" = sleeper_data["chems"],
 		"stasis_enabled" = stasis_enabled,
 		"life_support_active" = life_support_active,
+		"injection_reason" = !patient ? "В слипере нет пациента." : !sleeper.is_operational() ? "Нет питания для введения препаратов." : null,
 	)
 
 /obj/item/mecha_parts/mecha_equipment/medical/sleeper/handle_ui_act(action, list/params)

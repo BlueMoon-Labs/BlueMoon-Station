@@ -253,6 +253,7 @@
 	for(var/access in operation_req_access)
 		accesses += get_access_desc(access)
 	var/datum/gas_mixture/internal_air_contents = internal_tank?.return_air()
+	var/mob/living/carbon/carbon_user = user
 	return list(
 		"name" = name,
 		"mech_image" = ui_preview_icon,
@@ -278,6 +279,8 @@
 		"maintenance" = construction_state != MECHA_LOCKED,
 		"can_equipment" = !!(occupants[user] & VEHICLE_CONTROL_EQUIPMENT),
 		"can_settings" = !!(occupants[user] & VEHICLE_CONTROL_SETTINGS),
+		"can_dna_lock" = istype(carbon_user) && !!carbon_user.dna,
+		"has_port" = !!(locate(/obj/machinery/atmospherics/components/unary/portables_connector) in loc),
 		"modules" = modules,
 		"max_equip" = max_equip,
 		"actions" = actions,
@@ -361,7 +364,7 @@
 			if(!istype(carbon_user) || !carbon_user.dna || dna_lock)
 				return FALSE
 			dna_lock = carbon_user.dna.unique_enzymes
-			dna_lock_name = user.name
+			dna_lock_name = carbon_user.real_name
 			to_chat(user, span_notice("Игла берёт образец вашей ДНК. ДНК-замок установлен."))
 		if("reset_dna")
 			dna_lock = null
