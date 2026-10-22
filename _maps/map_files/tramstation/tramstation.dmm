@@ -19222,6 +19222,15 @@
 	},
 /turf/open/floor/carpet,
 /area/service/library)
+"fup" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/structure/fulton_beacon,
+/turf/open/floor/plasteel,
+/area/command/teleporter)
 "fux" = (
 /obj/effect/landmark/secequipment,
 /obj/effect/turf_decal/bot,
@@ -169177,7 +169186,7 @@ sNs
 xIP
 jNV
 iEq
-iEq
+fup
 wuq
 iEq
 dXF

@@ -351,13 +351,6 @@
 	},
 /turf/open/floor/plasteel/white,
 /area/science/robotics/lab)
-"aev" = (
-/obj/effect/spawner/structure/window/reinforced,
-/obj/structure/cable/yellow{
-	icon_state = "2-8"
-	},
-/turf/open/floor/plating,
-/area/hallway/secondary/entry)
 "aeA" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/door/airlock/external{
@@ -44428,13 +44421,6 @@
 /obj/machinery/holopad,
 /turf/open/floor/plasteel/white,
 /area/science/xenobiology)
-"jPz" = (
-/obj/effect/spawner/structure/window/reinforced,
-/obj/structure/cable/yellow{
-	icon_state = "2-4"
-	},
-/turf/open/floor/plating,
-/area/hallway/secondary/entry)
 "jPG" = (
 /obj/machinery/seed_extractor,
 /obj/machinery/camera{
@@ -96836,6 +96822,7 @@
 	},
 /obj/machinery/holopad,
 /obj/effect/landmark/navigate_destination/gateway,
+/obj/structure/fulton_beacon,
 /turf/open/floor/plasteel/smooth/large,
 /area/command/gateway)
 "vmk" = (

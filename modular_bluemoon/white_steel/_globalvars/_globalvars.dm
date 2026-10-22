@@ -10,3 +10,5 @@ GLOBAL_LIST_EMPTY(decomission_bombs)
 GLOBAL_VAR_INIT(cargo_objective_points, 0)
 GLOBAL_LIST_EMPTY(loaded_ruin_parts)
 GLOBAL_LIST_EMPTY(scanned_atom_types)
+//Маяки приёма тел экспедиции (/obj/structure/fulton_beacon), поставленные на карте.
+GLOBAL_LIST_EMPTY(expedition_body_beacons)

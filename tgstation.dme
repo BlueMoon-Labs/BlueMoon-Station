@@ -5690,6 +5690,7 @@
 #include "modular_bluemoon\white_steel\_support\tactical.dm"
 #include "modular_bluemoon\white_steel\exploration\exploration_explosives.dm"
 #include "modular_bluemoon\white_steel\exploration\exploration_shuttle.dm"
+#include "modular_bluemoon\white_steel\exploration\fulton_beacon.dm"
 #include "modular_bluemoon\white_steel\exploration\research_locator.dm"
 #include "modular_bluemoon\white_steel\inner\discovery_research\discoverable_component.dm"
 #include "modular_bluemoon\white_steel\inner\discovery_research\discovery_scanner.dm"
