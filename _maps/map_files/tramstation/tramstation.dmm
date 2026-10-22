@@ -44165,6 +44165,7 @@
 	dir = 8
 	},
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/obj/machinery/autolathe,
 /turf/open/floor/plasteel,
 /area/cargo/lobby)
 "mon" = (
@@ -44434,6 +44435,9 @@
 /obj/effect/turf_decal/trimline/neutral/filled/corner,
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 4
 	},
 /turf/open/floor/plasteel,
 /area/hallway/secondary/service)
@@ -45447,9 +45451,6 @@
 	},
 /obj/structure/disposalpipe/segment{
 	dir = 4
-	},
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
 	},
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
@@ -56928,13 +56929,6 @@
 /obj/effect/turf_decal/weather/sand/floor,
 /turf/open/floor/plasteel,
 /area/security/prison/workout)
-"pPr" = (
-/obj/effect/turf_decal/trimline/neutral/filled/line,
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/turf/open/floor/plasteel,
-/area/hallway/secondary/service)
 "pPs" = (
 /obj/machinery/atmospherics/pipe/manifold/cyan/visible{
 	dir = 8
@@ -63497,6 +63491,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 4
+	},
 /turf/open/floor/wood/wood_large,
 /area/service/barbershop)
 "rBj" = (
@@ -65841,6 +65838,9 @@
 	},
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 4
 	},
 /turf/open/floor/wood/wood_large,
 /area/service/barbershop)
@@ -77866,7 +77866,6 @@
 /area/hallway/primary/tram/center)
 "vrm" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
 /obj/structure/disposalpipe/segment{
 	dir = 5
 	},
@@ -77875,6 +77874,9 @@
 	},
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
+	},
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer4{
+	dir = 8
 	},
 /turf/open/floor/plasteel,
 /area/hallway/secondary/service)
@@ -83736,6 +83738,13 @@
 	},
 /turf/open/floor/plasteel,
 /area/service/hydroponics/garden)
+"wUS" = (
+/obj/effect/turf_decal/trimline/neutral/filled/line,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel,
+/area/hallway/secondary/service)
 "wVa" = (
 /obj/effect/decal/cleanable/dirt,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
@@ -120919,7 +120928,7 @@ ana
 kEv
 heJ
 hnb
-pPr
+wUS
 pdl
 pdl
 pdl
