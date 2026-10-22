@@ -126,7 +126,9 @@
 					var/author = CB.author
 					var/controls =  "<A href='?src=[UID()];id=[CB.id]'>\[Order\]</A>"
 					controls += {" <A href="?src=[UID()];flag=[CB.id]">\[Flag[CB.flagged ? "ged" : ""]\]</A>"}
-					if(check_rights(R_ADMIN, 0))
+					var/is_admin = check_rights(R_ADMIN, 0)
+					var/is_owner = usr?.ckey == CB.ckey
+					if(is_admin || is_owner)
 						controls +=  " <A style='color:red' href='?src=[UID()];del=[CB.id]'>\[Delete\]</A>"
 						author += " (<A style='color:red' href='?src=[UID()];delbyckey=[ckey(CB.ckey)]'>[ckey(CB.ckey)])</A>)"
 					dat += {"<tr>
@@ -263,9 +265,10 @@
 
 		screenstate = 4
 	if(href_list["del"])
-		if(!check_rights(R_ADMIN))
-			return
 		var/datum/cachedbook/target = getBookByID(href_list["del"]) // Sanitized in getBookByID
+		var/is_admin = check_rights_for(usr?.client, R_ADMIN)
+		if(!is_admin && usr?.ckey != target.ckey)
+			return
 		var/ans = alert(usr, "Are you sure you wish to delete \"[target.title]\", by [target.author]? This cannot be undone.", "Library System", "Yes", "No")
 		if(ans=="Yes")
 			var/datum/db_query/query = SSdbcore.NewQuery("DELETE FROM [format_table_name("library")] WHERE id=:id", list(
@@ -281,9 +284,9 @@
 			return
 
 	if(href_list["delbyckey"])
-		if(!check_rights(R_ADMIN))
-			return
 		var/tckey = ckey(href_list["delbyckey"])
+		if(!check_rights_for(usr?.client, R_ADMIN) && usr?.ckey != tckey)
+			return
 		var/ans = alert(usr,"Are you sure you wish to delete all books by [tckey]? This cannot be undone.", "Library System", "Yes", "No")
 		if(ans=="Yes")
 			var/datum/db_query/query = SSdbcore.NewQuery("DELETE FROM [format_table_name("library")] WHERE ckey=:ckey", list(
@@ -298,8 +301,9 @@
 				qdel(query)
 				return
 			qdel(query)
-			log_admin("LIBRARY: [key_name(usr)] has deleted [query.affected] books written by [tckey]!")
-			message_admins("[key_name_admin(usr)] has deleted [query.affected] books written by [tckey]!")
+			var/deleted_by_owner = usr?.ckey == tckey
+			log_admin("LIBRARY: [key_name(usr)] has deleted [query.affected] books written by [tckey].")
+			message_admins("[key_name_admin(usr)] has deleted [query.affected] books written by [tckey][deleted_by_owner ? " (owner action)" : ""].")
 			src.updateUsrDialog()
 			return
 
