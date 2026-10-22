@@ -59,7 +59,6 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	var/lastclienttime = 0 //BLUEMOON ADD фиксируем время выхода игрока
 
 /mob/dead/observer/Initialize(mapload, mob/body)
-	register_mousewheel_handler(src, PROC_REF(on_mousewheel))
 	set_invisibility(GLOB.observer_default_invisibility)
 
 	add_verb(src, GLOB.ghost_verbs)
@@ -132,6 +131,7 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 		AA.onNewMob(src)
 
 	. = ..()
+	register_mousewheel_handler(src, PROC_REF(on_mousewheel))
 	AddElement(/datum/element/ghost_role_eligibility)
 	var/datum/action/join_shift/join_action = new(src)
 	join_action.Grant(src)
