@@ -361,6 +361,7 @@
 		/obj/item/clothing/under/syndicate/combat/civil = 0,
 		/obj/item/clothing/head/soft/sec/syndicate/civil = 0,
 		/obj/item/clothing/head/beret/sec/syndicate/civil = 0,
+		/obj/item/gun/ballistic/revolver/gatfruit = 0, //Спасибо дорогой публику ДС-1!
 		/obj/item/clothing/under/syndicate/maid/civil = 0,
 		/obj/item/gun/ballistic/automatic/ak12/r = 0, // ПОШЁЛ НАХУЙ НОКС!!!
 		//Mechs
