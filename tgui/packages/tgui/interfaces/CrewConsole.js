@@ -66,12 +66,12 @@ const HealthStat = props => {
 
 export const CrewConsole = () => {
   const [tab, setTab] = useLocalState('crewTab', 'list');
-  // Отметки хранятся у пользователя по отображаемому имени, без ссылок на мобов.
-  const [highlightedNames, setHighlightedNames] = useLocalState('crewHighlights', []);
-  const toggleHighlight = name => setHighlightedNames(names => (
-    names.includes(name) ? names.filter(entry => entry !== name) : [...names, name]
+  // Отметки привязаны к UID моба: одинаковые имена не объединяются, переименование сохраняет отметку.
+  const [highlightedIds, setHighlightedIds] = useLocalState('crewHighlightedIds', []);
+  const toggleHighlight = id => setHighlightedIds(ids => (
+    ids.includes(id) ? ids.filter(entry => entry !== id) : [...ids, id]
   ));
-  const highlightProps = { highlightedNames, setHighlightedNames, toggleHighlight };
+  const highlightProps = { highlightedIds, setHighlightedIds, toggleHighlight };
   return (
     <Window
       title="Монитор экипажа"
@@ -112,13 +112,18 @@ export const CrewConsole = () => {
 
 const CrewTable = (props) => {
   const { data } = useBackend();
-  const { highlightedNames, setHighlightedNames, toggleHighlight } = props;
+  const { highlightedIds, setHighlightedIds, toggleHighlight } = props;
   const [search, setSearch] = useLocalState('crewSearch', '');
   const sensors = data.sensors || [];
   const searcher = createSearch(search, sensor => (
     `${sensor.name}|${sensor.assignment || ''}|${sensor.area || ''}`
   ));
-  const filteredSensors = sensors.filter(searcher);
+  const highlighted = new Set(highlightedIds);
+  const matchingSensors = sensors.filter(searcher);
+  const filteredSensors = [
+    ...matchingSensors.filter(sensor => highlighted.has(sensor.id)),
+    ...matchingSensors.filter(sensor => !highlighted.has(sensor.id)),
+  ];
   return (
     <>
       <Input
@@ -135,8 +140,8 @@ const CrewTable = (props) => {
               color="transparent"
               icon="times"
               tooltip="Снять все отметки"
-              disabled={!highlightedNames.length}
-              onClick={() => setHighlightedNames([])} />
+              disabled={!highlightedIds.length}
+              onClick={() => setHighlightedIds([])} />
           </Table.Cell>
           <Table.Cell bold>
             Имя
@@ -157,11 +162,11 @@ const CrewTable = (props) => {
             </Table.Cell>
           )}
         </Table.Row>
-        {filteredSensors.map((sensor, index) => (
+        {filteredSensors.map(sensor => (
           <CrewTableEntry
             sensor_data={sensor}
-            key={`${sensor.name}-${index}`}
-            highlighted={highlightedNames.includes(sensor.name)}
+            key={sensor.id}
+            highlighted={highlighted.has(sensor.id)}
             toggleHighlight={toggleHighlight} />
         ))}
       </Table>
@@ -179,6 +184,7 @@ const CrewTableEntry = (props) => {
   const { link_allowed } = data;
   const { sensor_data, highlighted, toggleHighlight } = props;
   const {
+    id,
     name,
     assignment,
     ijob,
@@ -202,7 +208,7 @@ const CrewTableEntry = (props) => {
           className="CrewConsole__plainButton"
           checked={highlighted}
           tooltip="Отметить персонажа на карте"
-          onClick={() => toggleHighlight(name)} />
+          onClick={() => toggleHighlight(id)} />
       </Table.Cell>
       <Table.Cell
         bold={jobIsHead(ijob)}
@@ -246,7 +252,7 @@ const CrewTableEntry = (props) => {
             content="Следить"
             disabled={!can_track}
             onClick={() => act('select_person', {
-              name: name,
+              id,
             })} />
         </Table.Cell>
       )}
@@ -265,13 +271,14 @@ const CrewDirection = ({ sensor, position }) => {
   const distance = Math.round(vecLength(vecSubtract(
     [position.x, position.y], [sensor.pos_x, sensor.pos_y],
   )));
+  const degrees = Math.atan2(sensor.pos_x - position.x, sensor.pos_y - position.y) * 180 / Math.PI;
   return (
     <Box nowrap>
       <Icon
         mr={1}
         size={1.2}
         name={distance ? 'arrow-up' : 'map-marker-alt'}
-        rotation={distance ? sensor.degrees : 0} />
+        rotation={distance ? degrees : 0} />
       {`${distance} м`}
     </Box>
   );
@@ -279,7 +286,7 @@ const CrewDirection = ({ sensor, position }) => {
 
 const CrewMap = (props) => {
   const { data } = useBackend();
-  const { highlightedNames, toggleHighlight } = props;
+  const { highlightedIds, toggleHighlight } = props;
   const [selectedZ, setSelectedZ] = useLocalState('crewMapZ', data.z);
   const [zoom, setZoom] = useLocalState('crewMapZoom', 1);
   const [offset, setOffset] = useLocalState('crewMapOffset', [0, 0]);
@@ -321,7 +328,6 @@ const CrewMap = (props) => {
           </Stack.Item>
           <Stack.Item>
             <Button.Checkbox
-              className="CrewConsole__plainButton"
               checked={showDepartments}
               onClick={() => setShowDepartments(!showDepartments)}>
               Отделы
@@ -395,13 +401,13 @@ const CrewMap = (props) => {
                     src={showDepartments ? floor.department_image : floor.image}
                     alt={`Карта этажа ${floor.floor}`}
                     draggable={false} />
-                  {sensors.map((sensor, index) => (
+                  {sensors.map(sensor => (
                     <CrewMapMarker
-                      key={`${sensor.name}-${index}`}
+                      key={sensor.id}
                       sensor={sensor}
                       floor={floor}
                       scale={scale}
-                      highlighted={highlightedNames.includes(sensor.name)}
+                      highlighted={highlightedIds.includes(sensor.id)}
                       toggleHighlight={toggleHighlight} />
                   ))}
                   {!!data.position && (
@@ -449,11 +455,11 @@ const CrewMapMarker = (props) => {
         aria-label={tooltip}
         tabIndex={0}
         onMouseDown={e => e.stopPropagation()}
-        onClick={() => toggleHighlight(sensor.name)}
+        onClick={() => toggleHighlight(sensor.id)}
         onKeyDown={e => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
-            toggleHighlight(sensor.name);
+            toggleHighlight(sensor.id);
           }
         }}
         style={{
