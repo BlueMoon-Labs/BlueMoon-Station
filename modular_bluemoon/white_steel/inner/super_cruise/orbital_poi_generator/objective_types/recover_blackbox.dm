@@ -4,8 +4,8 @@
 	//The blackbox required to recover.
 	var/obj/item/blackbox/objective/linked_blackbox
 	//Relatively easy mission.
-	min_payout = 50 * CARGO_CRATE_VALUE
-	max_payout = 125 * CARGO_CRATE_VALUE
+	min_payout = 25 * CARGO_CRATE_VALUE
+	max_payout = 85 * CARGO_CRATE_VALUE
 
 /datum/orbital_objective/recover_blackbox/generate_objective_stuff(turf/chosen_turf)
 	generated = TRUE
@@ -26,8 +26,6 @@
 	return TRUE
 
 /datum/orbital_objective/recover_blackbox/Destroy()
-	//WHITE-STEEL FIX: компонент recoverable на чёрном ящике хранит linked_obj = задание.
-	//Живой ящик удерживал задание (и наоборот) — обнуляем обратную ссылку перед удалением.
 	if(!QDELETED(linked_blackbox))
 		var/datum/component/recoverable/recoverable = linked_blackbox.GetComponent(/datum/component/recoverable)
 		if(recoverable)

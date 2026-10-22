@@ -48,7 +48,7 @@
 	SSorbits.open_orbital_maps -= SStgui.get_all_open_uis(src)
 	if(shuttleObject)
 		shuttleObject.controlling_computer = null
-		shuttleObject = null
+		set_shuttle_object(null)
 	. = ..()
 	GLOB.navigation_computers -= src
 

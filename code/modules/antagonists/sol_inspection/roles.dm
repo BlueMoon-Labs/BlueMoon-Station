@@ -79,7 +79,6 @@
 
 	var/obj/item/card/id/id_card = inspector.wear_id
 	if(id_card)
-		id_card.access = get_all_accesses()
 		id_card.registered_name = inspector.real_name
 		id_card.assignment = "Всеобщее Бюро Контроля"
 		id_card.update_label()

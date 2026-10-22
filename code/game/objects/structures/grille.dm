@@ -75,6 +75,11 @@
 			var/obj/structure/window/WD = new the_rcd.window_type(drop_location())
 			WD.setAnchored(TRUE)
 			WD.install_airbag()
+			// Новое окно заменяет аварийную защиту, включая ещё не сработавшие модули.
+			for(var/obj/item/airbag_module/module in WD.loc)
+				qdel(module)
+			for(var/obj/structure/inflatable/airbag/barrier in WD.loc)
+				qdel(barrier)
 			return TRUE
 	return FALSE
 

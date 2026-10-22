@@ -628,6 +628,10 @@
 	suffix = "box"
 	name = "labour shuttle (Box)"
 
+/datum/map_template/shuttle/arrival/voidraptor
+	suffix = "voidraptor"
+	name = "arrival shuttle (voidraptor)"
+
 /datum/map_template/shuttle/labour/cog
 	suffix = "cog"
 	name = "labour shuttle (Cog)"

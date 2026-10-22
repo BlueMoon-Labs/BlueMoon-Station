@@ -861,6 +861,14 @@ GLOBAL_DATUM_INIT(ahelp_tickets, /datum/admin_help_tickets, new)
 			msglist[i] = "<u>[word]</u>"
 			admins_to_ping[ckey_check] = client_check
 
+		if(!length(ckey_check)) //проверка на роль для пинга. роль берется из admin_ranks.txt
+			continue
+		for(var/client/arank in GLOB.admins)
+			if(findtext(lowertext(arank.holder.rank.name), ckey_check))
+				msglist[i] = "<u>[word]</u>"
+				admins_to_ping[arank.ckey] = arank
+				continue
+
 	if(length(admins_to_ping))
 		admins_to_ping[ADMINSAY_PING_UNDERLINE_NAME_INDEX] = jointext(msglist, " ") // without tuples, we must make do!
 		return admins_to_ping

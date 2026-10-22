@@ -206,8 +206,31 @@
 /obj/machinery/door/proc/try_to_crowbar(obj/item/I, mob/user)
 	return
 
-/// Удерживает ли закрытая дверь опасный перепад давления между своей плиткой и
-/// соседними. Порог задан в кПа, см. DOOR_PRESSURE_DIFFERENCE_TOLERANCE.
+// Соседи при открытой двери: читаем текущие преграды без перестройки кэша атмосферы.
+/obj/machinery/door/proc/get_open_atmos_neighbors()
+	var/list/neighbors = list()
+	var/turf/open/our_turf = loc
+	if(!isopenturf(our_turf) || our_turf.blocks_air)
+		return neighbors
+	var/was_dense = density
+	density = FALSE
+	for(var/direction in GLOB.cardinals_multiz)
+		if((flags_1 & ON_BORDER_1) && direction != dir)
+			continue
+		var/turf/open/neighbor = get_step_multiz(our_turf, direction)
+		if(!isopenturf(neighbor) || neighbor.blocks_air)
+			continue
+		if(direction & (UP|DOWN))
+			if(!CANVERTICALATMOSPASS(our_turf, neighbor))
+				continue
+		else if(!CANATMOSPASS(our_turf, neighbor))
+			continue
+		neighbors += neighbor
+	density = was_dense
+	return neighbors
+
+// Удерживает ли закрытая дверь опасный перепад давления между своей плиткой и
+// соседними. Порог задан в кПа, см. DOOR_PRESSURE_DIFFERENCE_TOLERANCE.
 /obj/machinery/door/proc/is_holding_pressure(pressure_tolerance = DOOR_PRESSURE_DIFFERENCE_TOLERANCE, include_open = FALSE)
 	if(!density && !include_open)
 		return FALSE
@@ -219,16 +242,7 @@
 	if(!isopenturf(our_turf) || !our_turf.air)
 		return FALSE
 
-	// Соседей надо видеть так, как если бы дверь уже была открыта, иначе
-	// удерживаемый перепад не виден вовсе. Список снимаем копией и сразу
-	// возвращаем плотность: если чтение смесей ниже когда-нибудь упадёт, дверь
-	// не должна остаться проходимой навсегда.
-	var/was_dense = density
-	density = FALSE
-	our_turf.ImmediateCalculateAdjacentTurfs()
-	var/list/neighbors = our_turf.atmos_adjacent_turfs?.Copy()
-	density = was_dense
-	our_turf.ImmediateCalculateAdjacentTurfs()
+	var/list/neighbors = get_open_atmos_neighbors()
 	if(!length(neighbors))
 		return FALSE
 
@@ -236,8 +250,6 @@
 	var/max_pressure = min_pressure
 	for(var/turf/open/adjacent in neighbors)
 		if(!adjacent.air)
-			continue
-		if((flags_1 & ON_BORDER_1) && get_dir(src, adjacent) != dir)
 			continue
 		var/pressure = adjacent.air.return_pressure()
 		min_pressure = min(min_pressure, pressure)
@@ -350,6 +362,9 @@
 	layer = closingLayer
 	if(air_tight)
 		density = TRUE
+		// Плотность меняется раньше смежности: сохранённый обход уже недействителен.
+		if(SSair)
+			SSair.decompression_geometry_revision = (SSair.decompression_geometry_revision + 1) % SHORT_REAL_LIMIT
 	sleep(5)
 	density = TRUE
 	sleep(5)

@@ -731,22 +731,31 @@ SUBSYSTEM_DEF(job)
 	destination = get_last_resort_spawn_points()
 	destination.JoinPlayerHere(M, buckle)
 
-/datum/controller/subsystem/job/proc/equip_loadout(mob/dead/new_player/N, mob/living/M, bypass_prereqs = FALSE, can_drop = TRUE, is_dummy = FALSE)
+// Выдаём только отмеченную реликвию, сохраняя настройки предмета и обычные ограничения лодаута.
+/datum/controller/subsystem/job/proc/equip_loadout_heirloom(mob/living/carbon/human/character, datum/preferences/prefs = character.client?.prefs)
+	if(!prefs)
+		return
+	var/obj/item/heirloom = equip_loadout(null, character, heirloom_only = TRUE, preferences_source = prefs)
+	if(!heirloom)
+		heirloom = post_equip_loadout(null, character, heirloom_only = TRUE, preferences_source = prefs)
+	return heirloom
+
+/datum/controller/subsystem/job/proc/equip_loadout(mob/dead/new_player/N, mob/living/M, bypass_prereqs = FALSE, can_drop = TRUE, is_dummy = FALSE, heirloom_only = FALSE, datum/preferences/preferences_source)
 	var/mob/the_mob = N
 	if(!the_mob)
 		the_mob = M // cause this doesn't get assigned if player is a latejoiner
-	// BLUEMOON FIX — null-check client/prefs BEFORE accessing loadout_data and all_quirks
-	if(!the_mob?.client?.prefs)
+	var/datum/preferences/prefs = preferences_source || the_mob?.client?.prefs
+	if(!prefs)
 		return
 	// BLUEMOON ADD — заменять ли стандартную одежду лодаутной
-	var/replace_clothing = !is_dummy && the_mob.client.prefs.loadout_enabled
+	var/replace_clothing = !is_dummy && !heirloom_only && prefs.loadout_enabled
 	// BLUEMOON ADD END
 	var/list/chosen_gear
-	if(the_mob.client.prefs.loadout_data)
-		chosen_gear = the_mob.client.prefs.loadout_data["SAVE_[the_mob.client.prefs.loadout_slot]"]
-	var/heirloomer = FALSE
+	if(prefs.loadout_data)
+		chosen_gear = prefs.loadout_data["SAVE_[prefs.loadout_slot]"]
+	var/heirloomer = heirloom_only
 	if(!is_dummy)
-		var/list/my_quirks = the_mob.client.prefs.all_quirks
+		var/list/my_quirks = prefs.all_quirks
 		if(islist(my_quirks) && (/datum/quirk/family_heirloom::name in my_quirks))
 			heirloomer = TRUE
 	if(!(chosen_gear && chosen_gear.len))
@@ -755,6 +764,8 @@ SUBSYSTEM_DEF(job)
 		return
 	for(var/i in chosen_gear)
 		if(!islist(i))
+			continue
+		if(heirloom_only && !i[LOADOUT_IS_HEIRLOOM])
 			continue
 		var/datum/gear/G = istext(i[LOADOUT_ITEM]) ? text2path(i[LOADOUT_ITEM]) : i[LOADOUT_ITEM]
 		if(!ispath(G, /datum/gear))
@@ -770,7 +781,7 @@ SUBSYSTEM_DEF(job)
 		var/permitted = TRUE
 		if(!bypass_prereqs && G.restricted_roles && G.restricted_roles.len && M.mind && !(M.mind.assigned_role in G.restricted_roles))
 			permitted = FALSE
-		if(G.donoritem && !G.donator_ckey_check(the_mob.client.key))
+		if(G.donoritem && !G.donator_ckey_check(prefs.parent?.key))
 			permitted = FALSE
 		if(G.handle_post_equip)
 			permitted = FALSE
@@ -877,6 +888,8 @@ SUBSYSTEM_DEF(job)
 		if(!QDELETED(I))
 			G.on_spawn(M, I)
 		// BLUEMOON ADD END
+		if(heirloom_only && !QDELETED(I))
+			return I
 
 
 /datum/controller/subsystem/job/proc/apply_loadout_colors(obj/item/item, datum/gear/gear, list/colors)
@@ -891,22 +904,22 @@ SUBSYSTEM_DEF(job)
 	item.add_atom_colour(colors[1], FIXED_COLOUR_PRIORITY)
 	item.update_icon()
 
-/datum/controller/subsystem/job/proc/post_equip_loadout(mob/dead/new_player/N, mob/living/M, bypass_prereqs = FALSE, can_drop = TRUE, is_dummy = FALSE)
+/datum/controller/subsystem/job/proc/post_equip_loadout(mob/dead/new_player/N, mob/living/M, bypass_prereqs = FALSE, can_drop = TRUE, is_dummy = FALSE, heirloom_only = FALSE, datum/preferences/preferences_source)
 	var/mob/the_mob = N
 	if(!the_mob)
 		the_mob = M // cause this doesn't get assigned if player is a latejoiner
-	// BLUEMOON FIX — null-check client/prefs BEFORE accessing loadout_data and all_quirks
-	if(!the_mob?.client?.prefs)
+	var/datum/preferences/prefs = preferences_source || the_mob?.client?.prefs
+	if(!prefs)
 		return
 	// BLUEMOON ADD — заменять ли стандартную одежду лодаутной
-	var/replace_clothing = !is_dummy && the_mob.client.prefs.loadout_enabled
+	var/replace_clothing = !is_dummy && !heirloom_only && prefs.loadout_enabled
 	// BLUEMOON ADD END
 	var/list/chosen_gear
-	if(the_mob.client.prefs.loadout_data)
-		chosen_gear = the_mob.client.prefs.loadout_data["SAVE_[the_mob.client.prefs.loadout_slot]"]
-	var/heirloomer = FALSE
+	if(prefs.loadout_data)
+		chosen_gear = prefs.loadout_data["SAVE_[prefs.loadout_slot]"]
+	var/heirloomer = heirloom_only
 	if(!is_dummy)
-		var/list/my_quirks = the_mob.client.prefs.all_quirks
+		var/list/my_quirks = prefs.all_quirks
 		if(islist(my_quirks) && (/datum/quirk/family_heirloom::name in my_quirks))
 			heirloomer = TRUE
 	if(!(chosen_gear && chosen_gear.len))
@@ -915,6 +928,8 @@ SUBSYSTEM_DEF(job)
 		return
 	for(var/i in chosen_gear)
 		if(!islist(i))
+			continue
+		if(heirloom_only && !i[LOADOUT_IS_HEIRLOOM])
 			continue
 		var/datum/gear/G = istext(i[LOADOUT_ITEM]) ? text2path(i[LOADOUT_ITEM]) : i[LOADOUT_ITEM]
 		if(!ispath(G, /datum/gear))
@@ -930,7 +945,7 @@ SUBSYSTEM_DEF(job)
 		var/permitted = TRUE
 		if(!bypass_prereqs && G.restricted_roles && G.restricted_roles.len && M.mind && !(M.mind.assigned_role in G.restricted_roles))
 			permitted = FALSE
-		if(G.donoritem && !G.donator_ckey_check(the_mob.client.key))
+		if(G.donoritem && !G.donator_ckey_check(prefs.parent?.key))
 			permitted = FALSE
 		if(!G.handle_post_equip)
 			permitted = FALSE
@@ -1027,6 +1042,9 @@ SUBSYSTEM_DEF(job)
 		if(!QDELETED(I))
 			G.on_spawn(M, I)
 		// BLUEMOON ADD END
+		if(heirloom_only && !QDELETED(I))
+			. = I
+			break
 
 	M.update_inv_wear_id() // Фикс не отображения стикеров и карточек из лодаута
 

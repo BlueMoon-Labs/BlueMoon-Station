@@ -11,7 +11,7 @@
 // ============================================
 /obj/machinery/vanguard/contraband
 	name = "contraband exchange pad"
-	desc = "A machine designed to send contraband to CentCom for processing. Can be upgraded with better parts."
+	desc = "Приёмник для отправки контрабанды на ЦентКом, для обработки и изучения, конечно же."
 	icon = 'icons/obj/telescience.dmi'
 	icon_state = "lpad-idle"
 	density = FALSE
@@ -67,9 +67,8 @@
 // ОСМОТР
 // ============================================
 
-/obj/machinery/vanguard/contraband/examine(mob/user)
-	. = ..()
-	. += "\nDisplay shows you current efficiency of the exchange pad: [span_green("[get_efficiency() * 100]% bonus")]"
+/obj/machinery/vanguard/contraband/examine_display_content(mob/user)
+	. += "– Бонусных очков при обмене: [span_green("+[get_efficiency() * 100]%")]"
 
 // ============================================
 // СБОРКА / РАЗБОРКА (стандартные процедуры)
@@ -99,7 +98,7 @@
 // ============================================
 /obj/machinery/computer/vanguard_control/contraband
 	name = "contraband exchange terminal"
-	desc = "A console for exchanging contraband for bounty points. Points are credited to the ID card of the user."
+	desc = "Терминал обмена контрабанды на очки награды. Очки зачисляются на счёт ID-карты пользователя."
 	icon = 'icons/obj/computer.dmi'
 	icon_state = "computer"
 	icon_screen = "request"
@@ -110,7 +109,7 @@
 
 	var/obj/machinery/vanguard/contraband/pad
 	var/sending = FALSE
-	var/status_report = "Ready for delivery."
+	var/status_report = "готово к отправке"
 	var/mob/living/last_user
 
 	// Таблица стоимости контрабанды в очках
@@ -392,11 +391,11 @@
 		return FALSE
 
 	if(!istype(I.buffer, /obj/machinery/vanguard/contraband))
-		to_chat(user, "<span class='warning'>Your multitool doesn't have a valid contraband pad in its buffer!</span>")
+		to_chat(user, span_warning("Внутри буфера [I] нет корректного адреса контрабандного приёмника!"))
 		return TRUE
 
 	pad = I.buffer
-	to_chat(user, "<span class='notice'>You link [src] with [pad] using [I].</span>")
+	to_chat(user, span_notice("Вы подключили [src] к приёмнику при помощи [I]."))
 	return TRUE
 
 /obj/machinery/computer/vanguard_control/contraband/proc/get_contraband_value(atom/movable/AM)
@@ -417,7 +416,7 @@
 		return TRUE
 
 	I.buffer = src
-	to_chat(user, "<span class='notice'>You add [src] to [I]'s buffer. Now use the multitool on a contraband exchange terminal to link them.</span>")
+	to_chat(user, span_notice("Вы добавили данные [src] к буферу [I]. Теперь перенесите их в контрабандный терминал для взаимосвязи."))
 	return TRUE
 
 /obj/machinery/computer/vanguard_control/contraband/proc/recalc()
@@ -440,23 +439,20 @@
 				total_value += pad.get_adjusted_value(AM, base_value)
 
 	if(has_blackbox)
-		status_report = "Objective blackbox detected. Ready to transmit data."
+		status_report = "чёрный ящик был обнаружен. Данные самописца готовы к передаче"
 		playsound(loc, 'sound/machines/synth_yes.ogg', 30, TRUE)
 	else if(total_value > 0)
-		var/mult_text = ""
-		if(pad && pad.efficiency_multiplier > 1.0)
-			mult_text = " (with [pad.efficiency_multiplier]x efficiency bonus)"
-		status_report = "Contraband detected. Value: [total_value] points[mult_text]."
+		status_report = "контрабанда обнаружена. Общая ценность: [total_value] [ru_plural(total_value, "очко", "очка", "очков")]"
 		playsound(loc, 'sound/machines/synth_yes.ogg', 30, TRUE)
 	else
-		status_report = "No applicable contraband found."
+		status_report = "не обнаружено подходящей контрабанды"
 		playsound(loc, 'sound/machines/synth_no.ogg', 30, TRUE)
 
 /obj/machinery/computer/vanguard_control/contraband/proc/start_sending()
 	if(sending)
 		return
 	sending = TRUE
-	status_report = "Sending contraband..."
+	status_report = "отправка контрабанды..."
 
 	if(pad)
 		pad.icon_state = pad.warmup_state
@@ -481,13 +477,13 @@
 	if(last_user && !QDELETED(last_user))
 		user_id = last_user.get_idcard()
 	else
-		status_report = "User has left!"
+		status_report = "пользователь вышел!"
 		last_user = null
 		stop_sending()
 		return
 
 	if(!user_id)
-		status_report = "No ID card found on user!"
+		status_report = "не обнаружено ID-карты на пользователе!"
 		last_user = null
 		stop_sending()
 		return
@@ -521,19 +517,19 @@
 	if(blackbox_recovery)
 		if(items_sent > 0)
 			user_id.contraband_points += total_value
-			to_chat(last_user, "<span class='notice'>[total_value] bounty point\s credited to your ID card.</span>")
-		status_report = "Blackbox recovered! Objective data transmitted to NanoTrasen."
-		pad.visible_message("<span class='notice'>[pad] activates and beams away the recovered blackbox!</span>")
+			to_chat(last_user, span_notice("[total_value] [ru_plural(total_value, "очко", "очка", "очков")] было начислено на вашу ID-карту."))
+		status_report = "данные чёрного ящика были извлечены! Данные самописца пересланы NanoTrasen"
+		pad.visible_message(span_notice("[pad] активируется и испаряет извлечённый чёрный ящик!"))
 		playsound(loc, 'sound/machines/synth_yes.ogg', 30, TRUE)
 		blackbox_recovery.initiate_recovery()
 	else if(items_sent > 0)
 		user_id.contraband_points += total_value
-		to_chat(last_user, "<span class='notice'>[total_value] bounty point\s credited to your ID card.</span>")
-		status_report = "Contraband processed! [total_value] points distributed."
-		pad.visible_message("<span class='notice'>[pad] activates and beams away the contraband!</span>")
+		to_chat(last_user, span_notice("[total_value] [ru_plural(total_value, "очко", "очка", "очков")] было начислено на вашу ID-карту."))
+		status_report = "контрабанда обработана! [total_value] [ru_plural(total_value, "очко", "очка", "очков")] выдано"
+		pad.visible_message(span_notice("[pad] активируется и испаряет контрабанду!"))
 		playsound(loc, 'sound/machines/synth_yes.ogg', 30, TRUE)
 	else
-		status_report = "No applicable contraband found. Aborting."
+		status_report = "не обнаружено подходящей контрабанды, отмена"
 
 	last_user = null
 	stop_sending()
@@ -622,52 +618,52 @@
 
 /obj/item/card/contraband_point_card
 	name = "Bounty points card"
-	desc = "A small card for transferring bounty points. Swipe your ID card over it to start the process."
+	desc = "Небольшая карточка для магнитного переноса очков награды. Просто проведите своей ID-картой по ней."
 	icon_state = "data_1"
 	var/points = 100
 
 /obj/item/card/contraband_point_card/attackby(obj/item/I, mob/user, params)
 	if(istype(I, /obj/item/card/id))
 		var/obj/item/card/id/id_card = I
-		to_chat(user, span_info("You swipe [id_card] on [src] and start the transfer process."))
-		var/choice = alert(user, "Do you want to transfer points to or from the point card's storage?", "Bounty Points Transfer", "From Point Card/Storage", "To Point Card/Storage", "Cancel")
-		if(choice != "Cancel")
-			var/amount = input(user, "How much do you want to transfer? ID Balance: [id_card.contraband_points], Transfer Card Balance: [points]", "Transfer Points") as num|null
+		to_chat(user, span_info("Вы проводите [id_card] по [src]  и начинаете процесс передачи."))
+		var/choice = alert(user, "Вы желаете перенести очки на или со счёта карты?", "Передача очков награды", "Со счёта карточки", "На счёт карточки", "Отменить")
+		if(choice != "Отменить")
+			var/amount = input(user, "Сколько очков вы желаете перенести? Баланс ID-карты: [id_card.contraband_points], баланс карточки: [points]", "Перенос очков") as num|null
 			if(!amount || amount <= 0)
 				return
 			amount = round(amount, 1)
-			if(choice == "To Point Card/Storage")
+			if(choice == "На счёт карточки")
 				if(amount && amount <= id_card.contraband_points)
 					id_card.contraband_points -= amount
 					points += amount
-					to_chat(user, span_info("You transfer [amount] points to [src] from [id_card]."))
-			else if(choice == "From Point Card/Storage")
+					to_chat(user, span_info("Вы перенесли [amount] [ru_plural(amount, "очко", "очка", "очков")] на [src] со счёта [id_card]."))
+			else if(choice == "Со счёта карточки")
 				if(amount && amount <= points)
 					id_card.contraband_points += amount
 					points -= amount
-					to_chat(user, span_info("You transfer [amount] points to [id_card] from [src]."))
+					to_chat(user, span_info("ВЫ перенесли [amount] [ru_plural(amount, "очко", "очка", "очков")] на [id_card] со счёта [src]."))
 	..()
 
 /obj/item/card/contraband_point_card/examine(mob/user)
 	. = ..()
-	. += "There's [points] point\s on the card."
+	. += "На счету карты находится [points] очков."
 
 //диски награды авангарда на сдачу
 
 /obj/item/disk/gatereward
 	name = "Central Comand Lost data"
-	desc = "It must cost a fortune! Send it with terminal to get your reward"
+	desc = "Это должно стоить состояние! Нужно срочно отправить через приёмный терминал."
 	icon_state = "datadisk6"
 
 /obj/item/disk/gatereward/bigger
-	name = "InteQ suply routes"
-	desc = "Those disk contains encoded suply routes of enemy PMC! Send it with terminal to get your significant reward"
+	name = "InteQ supply routes"
+	desc = "В этих дисках есть закодированные маршруты линий снабжения вражеской ЧВК! Их точно стоит отправить через приёмный терминал."
 	icon_state = "shuttledisk_better"
 
 
 /obj/item/disk/gatereward/bigest
 	name = "Paralel datadisk"
-	desc = "That rare sample contains all knowledge about paralels that rangers gather around gateways. Send it with terminal to get your magnificent reward"
+	desc = "Этот редкий экземплярчик содержит знания о всём иномирье, которое рейнджеры изучают в путеводных вратах. Явно стоит к отправке через приёмный терминал."
 	icon_state = "shuttledisk_void"
 
 #undef CONTRABAND_PAD_WARMUP_TIME

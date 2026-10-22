@@ -31,6 +31,7 @@
 
 	//Semi-Autopilot controls
 	var/datum/orbital_vector/shuttleTargetPos
+	var/last_bluespace_tear = 0
 
 	//AUTOPILOT CONTROLS.
 	//Is autopilot enabled.
@@ -76,11 +77,25 @@
 		docking_target = null
 	//I hate that I have to do this, but people keep flying them away.
 	if(position.x > 20000 || position.x < -20000 || position.y > 20000 || position.y < -20000)
-		priority_announce("Разрыв блюспейс ткани обнаружен, источник: [name].")
+		if(world.time - last_bluespace_tear > 30 SECONDS)
+			last_bluespace_tear = world.time
+			priority_announce("Разрыв блюспейс ткани обнаружен, источник: [name].")
+		if(shuttle_port_id == "exploration")
+			var/obj/docking_port/stationary/exploration_home = SSshuttle.getDock("exploration_home")
+			if(exploration_home)
+				var/obj/docking_port/mobile/exploration_port = SSshuttle.getShuttle("exploration")
+				if(exploration_port && exploration_port.mode == SHUTTLE_IDLE)
+					if(exploration_port.destination != exploration_home)
+						return
+					if(SSshuttle.moveShuttle("exploration", "exploration_home", 1) == 0)
+						return
 		MOVE_ORBITAL_BODY(src, rand(-2000, 2000), rand(-2000, 2000))
 		velocity.x = 0
 		velocity.y = 0
 		thrust = 0
+		autopilot = FALSE
+		shuttleTarget = null
+		shuttleTargetPos = null
 	//AUTOPILOT
 	handle_autopilot()
 	//Do thrust

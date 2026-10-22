@@ -64276,6 +64276,10 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/commons/locker)
+"ocM" = (
+/obj/structure/fulton_beacon,
+/turf/open/floor/mineral/plastitanium,
+/area/command/gateway)
 "ocR" = (
 /turf/closed/wall/r_wall/r_plastitanium,
 /area/science/xenobiology)
@@ -109811,7 +109815,7 @@ cCb
 cCb
 cCb
 cCb
-cCb
+ocM
 ykT
 uAC
 wql

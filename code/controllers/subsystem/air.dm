@@ -131,6 +131,16 @@ SUBSYSTEM_DEF(air)
 	/// DECOMPRESSION_PENDING_WINDOW_FIRES (см. queue_decompression_area);
 	/// протухшие записи снимает уборка декомп-фазы.
 	var/list/decompression_pending = list()
+	// Базовая зона -> время первого замера непрерывной утечки.
+	var/list/decompression_started_at = list()
+	// Базовая зона -> набор турфов утечки за текущий полный проход обработки турфов.
+	var/list/decompression_seen = list()
+	// Базовая зона -> подтверждённая граница изоляции и источники её пробоин.
+	var/list/decompression_seals = list()
+	// Геометрия инвалидируется отдельно от давления и состава газа.
+	var/decompression_geometry_revision = 0
+	var/datum/decompression_context/decompression_context
+	var/datum/decompression_check/decompression_check
 	/// Разобранные строки газа: сырая строка -> list(температура, list(газ -> моли)).
 	/// См. [/datum/controller/subsystem/air/proc/get_parsed_gas_string].
 	var/list/parsed_gas_strings = list()
@@ -1102,6 +1112,372 @@ SUBSYSTEM_DEF(air)
 /datum/controller/subsystem/air/proc/process_turf_equalize(resumed = 0)
 	if(process_turf_equalize_auxtools(TICK_REMAINING_MS))
 		pause()
+
+// Сначала отсекаем повреждённый участок. Общая тревога нужна, только если
+// не удалось доказать, что все замеченные пробоины отделены от целой части зоны.
+/datum/controller/subsystem/air/proc/contain_decompression(area/base, list/sources, datum/decompression_context/context)
+	if(!islist(sources) || !length(sources))
+		return FALSE
+	if(!context)
+		context = new(list(base))
+	var/datum/decompression_check/check = new(base, sources, context)
+	return check.advance()
+
+// Удерживаем всю границу, включая параллельные проходы одного повреждённого компонента.
+// Перепад у отдельной двери может временно исчезнуть раньше самой пробоины.
+/datum/controller/subsystem/air/proc/set_decompression_seals(area/base, list/doors, list/sources)
+	var/datum/decompression_seal/previous = decompression_seals[base]
+	if(previous)
+		for(var/obj/machinery/door/firedoor/door as anything in previous.doors)
+			if(!QDELETED(door) && !doors?[door])
+				LAZYREMOVE(door.decompression_seal_areas, base)
+				door.refresh_alarm_overlay()
+	if(!length(doors))
+		decompression_seals -= base
+		return
+	var/datum/decompression_seal/seal = previous
+	if(!seal)
+		seal = new
+	seal.doors = doors
+	seal.sources = sources
+	decompression_seals[base] = seal
+	for(var/obj/machinery/door/firedoor/door as anything in doors)
+		if(!QDELETED(door))
+			var/was_decompression_seal = door.is_decompression_seal()
+			LAZYSET(door.decompression_seal_areas, base, TRUE)
+			if(!was_decompression_seal)
+				door.refresh_alarm_overlay()
+			if(door.nextstate == FIREDOOR_OPEN)
+				door.nextstate = null
+
+// Пустой отсечённый участок может уснуть в физике. Сама пробоина от этого
+// не исчезает: перепроверяем её прежние источники до реальной герметизации.
+/datum/controller/subsystem/air/proc/queue_decompression_seals()
+	for(var/area/base as anything in decompression_seals.Copy())
+		if(QDELETED(base))
+			set_decompression_seals(base)
+			continue
+		var/datum/decompression_seal/seal = decompression_seals[base]
+		var/list/sources = decompression_seen[base]
+		decompression_seen[base] = islist(sources) ? (sources | seal.sources) : seal.sources
+		decompression_areas[base] = TRUE
+
+/datum/decompression_seal
+	var/list/doors
+	var/list/sources
+
+// Геометрия общая для всех зон одного прохода. Давление и итог локализации не кэшируются.
+/datum/decompression_context
+	var/revision = -1
+	var/restarts = 0
+	var/list/areas
+	var/area_cursor = 1
+	var/subarea_cursor = 1
+	var/door_cursor = 1
+	var/list/subareas
+	var/list/regions = list()
+	var/list/attempted_turfs = list()
+	var/list/firelock_turfs = list()
+	var/list/boundaries = list()
+	var/list/door_bases = list()
+	var/index_ready = FALSE
+	var/has_open_firelocks = FALSE
+
+/datum/decompression_context/New(list/ready_areas)
+	areas = list()
+	for(var/area/base as anything in ready_areas)
+		areas[base] = TRUE
+
+// Только стабильный граф без открытых створок можно перенести в следующий проход.
+// Открытая дверь требует повторной попытки закрытия после ручной блокировки или смены давления.
+/datum/decompression_context/proc/can_reuse(list/ready_areas)
+	if(!index_ready || has_open_firelocks || revision != SSair.decompression_geometry_revision || restarts >= DECOMPRESSION_CHECK_MAX_RESTARTS || length(areas) != length(ready_areas))
+		return FALSE
+	for(var/area/base as anything in ready_areas)
+		if(!areas[base])
+			return FALSE
+	return TRUE
+
+/datum/decompression_context/proc/reset()
+	if(revision != -1)
+		restarts++
+	revision = SSair.decompression_geometry_revision
+	area_cursor = 1
+	subarea_cursor = 1
+	door_cursor = 1
+	subareas = null
+	regions = list()
+	attempted_turfs = list()
+	firelock_turfs = list()
+	boundaries = list()
+	door_bases = list()
+	index_ready = FALSE
+	has_open_firelocks = FALSE
+
+// Индекс строится один раз: дорогая проверка сторон нужна лишь на границе пробоины.
+/datum/decompression_context/proc/prepare(started, slice_ms)
+	if(revision != SSair.decompression_geometry_revision)
+		reset()
+	var/work = 0
+	while(area_cursor <= length(areas))
+		var/area/base = areas[area_cursor]
+		if(!subareas)
+			subareas = get_sub_areas(base)
+		while(subarea_cursor <= length(subareas))
+			var/area/part = subareas[subarea_cursor]
+			while(door_cursor <= length(part.firedoors))
+				var/obj/machinery/door/firedoor/door = part.firedoors[door_cursor++]
+				var/turf/spot = QDELETED(door) ? null : get_turf(door)
+				if(spot)
+					firelock_turfs[spot] = TRUE
+				if(!QDELETED(door) && door.density)
+					var/list/bases = door_bases[door]
+					if(!bases)
+						bases = list()
+						door_bases[door] = bases
+						if(spot)
+							add_boundary(spot, door)
+							for(var/direction in GLOB.cardinals_multiz)
+								var/turf/neighbor = get_step_multiz(spot, direction)
+								if(neighbor)
+									add_boundary(neighbor, door)
+					bases[base] = TRUE
+				if(!(++work % 16) && slice_ms && (TICK_USAGE_TO_MS(started) >= slice_ms || TICK_CHECK))
+					return FALSE
+			door_cursor = 1
+			subarea_cursor++
+		subareas = null
+		subarea_cursor = 1
+		area_cursor++
+	index_ready = TRUE
+	return TRUE
+
+/datum/decompression_context/proc/add_boundary(turf/spot, obj/machinery/door/firedoor/door)
+	var/entry = boundaries[spot]
+	if(!entry)
+		boundaries[spot] = door
+	else if(islist(entry))
+		var/list/doors = entry
+		doors[door] = TRUE
+	else if(entry != door)
+		var/list/doors = list()
+		doors[entry] = TRUE
+		doors[door] = TRUE
+		boundaries[spot] = doors
+
+// На одном турфе пробуем закрыть двери один раз, даже если к нему ведут несколько рёбер.
+/datum/decompression_context/proc/try_firelocks(turf/open/spot)
+	var/cached = attempted_turfs[spot]
+	if(cached)
+		return cached == 2
+	var/has_firelock = FALSE
+	for(var/obj/machinery/door/firedoor/door in spot)
+		has_firelock = TRUE
+		door.emergency_pressure_stop()
+		if(!door.density)
+			has_open_firelocks = TRUE
+	if(has_firelock)
+		firelock_turfs[spot] = TRUE
+	attempted_turfs[spot] = has_firelock ? 2 : 1
+	return has_firelock
+
+/datum/decompression_region
+	var/datum/decompression_region/parent
+	var/count = 1
+	var/has_space = FALSE
+	var/overflow = FALSE
+	var/complete = FALSE
+	var/list/boundaries = list()
+
+/datum/decompression_region/proc/root()
+	if(parent)
+		parent = parent.root()
+		return parent
+	return src
+
+// Сохраняется между срезами; положительный ответ требует живой проверки безопасной стороны.
+/datum/decompression_check
+	var/area/base
+	var/list/sources
+	var/datum/decompression_context/context
+	var/revision = -1
+	var/source_cursor = 1
+	var/list/pending = list()
+	var/datum/decompression_region/working
+	var/list/active = list()
+	var/list/active_roots = list()
+	var/classify_cursor = 1
+	var/list/leaking = list()
+	var/list/doors = list()
+	var/door_cursor = 1
+	var/list/proof_doors = list()
+	var/list/proof_turfs = list()
+	var/list/sealing_doors = list()
+	var/proof_cursor = 1
+	var/visited = 0
+
+/datum/decompression_check/New(area/checked_area, list/checked_sources, datum/decompression_context/shared_context)
+	base = checked_area
+	sources = islist(checked_sources) ? checked_sources.Copy() : list()
+	context = shared_context
+
+/datum/decompression_check/proc/reset()
+	revision = context.revision
+	source_cursor = 1
+	pending.Cut()
+	working = null
+	active.Cut()
+	active_roots.Cut()
+	classify_cursor = 1
+	leaking.Cut()
+	doors.Cut()
+	door_cursor = 1
+	proof_doors.Cut()
+	proof_turfs.Cut()
+	sealing_doors.Cut()
+	proof_cursor = 1
+	visited = 0
+
+// Ноль оставляет атомарный режим для прямых вызовов; рабочая фаза передаёт бюджет в мс.
+// null означает незавершённый обход, FALSE — локализация не доказана.
+/datum/decompression_check/proc/advance(slice_ms = 0, started = TICK_USAGE_REAL)
+	while(TRUE)
+		// Если граф непрерывно меняется, локализация не доказана: остаётся общая защита.
+		if(context.restarts >= DECOMPRESSION_CHECK_MAX_RESTARTS)
+			return FALSE
+		if(context.revision != SSair.decompression_geometry_revision || !context.index_ready)
+			if(!context.prepare(started, slice_ms))
+				return context.restarts >= DECOMPRESSION_CHECK_MAX_RESTARTS ? FALSE : null
+		if(revision != context.revision)
+			reset()
+		if(slice_ms && (TICK_USAGE_TO_MS(started) >= slice_ms || TICK_CHECK))
+			return null
+		if(!length(sources))
+			return FALSE
+		if(source_cursor <= length(sources) || length(pending))
+			if(!length(pending))
+				var/turf/open/source = sources[source_cursor++]
+				if(!isopenturf(source) || source.blocks_air || !source.air || get_base_area(source) != base)
+					continue
+				working = context.regions[source]
+				if(working)
+					working = working.root()
+				else
+					working = new
+					context.regions[source] = working
+					pending += source
+				active[working] = TRUE
+				if(working.overflow)
+					return FALSE
+				if(working.complete)
+					continue
+			var/turf/open/current = pending[length(pending)]
+			pending.len--
+			var/boundary_doors = context.boundaries[current]
+			if(islist(boundary_doors))
+				working.boundaries |= boundary_doors
+			else if(boundary_doors)
+				working.boundaries[boundary_doors] = TRUE
+			var/has_firelock = context.firelock_turfs[current]
+			if(has_firelock)
+				context.try_firelocks(current)
+			for(var/turf/open/neighbor as anything in current.atmos_adjacent_turfs)
+				if(!isopenturf(neighbor) || neighbor.blocks_air || !neighbor.air)
+					continue
+				var/is_firelock_seam = current.atmos_adjacent_turfs[neighbor] & ATMOS_ADJACENT_FIRELOCK
+				if(is_firelock_seam)
+					if(!has_firelock)
+						has_firelock = context.try_firelocks(current)
+					context.try_firelocks(neighbor)
+				if(has_firelock || boundary_doors || is_firelock_seam || isspaceturf(neighbor))
+					if(current.z != neighbor.z)
+						if(!CANVERTICALATMOSPASS(current, neighbor))
+							continue
+					else if(!CANATMOSPASS(current, neighbor))
+						continue
+				if(isspaceturf(neighbor))
+					working.has_space = TRUE
+					continue
+				var/datum/decompression_region/other = context.regions[neighbor]
+				if(other == working)
+					continue
+				if(other)
+					if(other.parent)
+						other = other.root()
+					if(other != working)
+						working.parent = other
+						other.count += working.count
+						other.has_space |= working.has_space
+						other.boundaries |= working.boundaries
+						other.overflow |= working.overflow
+						other.complete = FALSE
+						working = other
+						if(working.overflow || working.count > SSair.equalize_hard_turf_limit)
+							working.overflow = TRUE
+							break
+					continue
+				if(working.count >= SSair.equalize_hard_turf_limit)
+					working.overflow = TRUE
+					break
+				context.regions[neighbor] = working
+				working.count++
+				pending += neighbor
+			// Закрытие двери меняет граф немедленно, раньше обновления кэша смежности.
+			if(context.revision != SSair.decompression_geometry_revision)
+				continue
+			if(working.overflow)
+				return FALSE
+			if(!length(pending))
+				working.complete = TRUE
+		else if(classify_cursor <= length(active))
+			var/datum/decompression_region/region = active[classify_cursor++]
+			region = region.root()
+			if(!active_roots[region])
+				active_roots[region] = TRUE
+				visited += region.count
+				if(region.overflow || visited > SSair.equalize_hard_turf_limit)
+					return FALSE
+				if(region.has_space)
+					leaking[region] = TRUE
+					doors |= region.boundaries
+		else if(door_cursor <= length(doors))
+			var/obj/machinery/door/firedoor/door = doors[door_cursor++]
+			var/list/bases = context.door_bases[door]
+			if(QDELETED(door) || !door.density || !bases?[base])
+				continue
+			var/list/sides = door.get_open_atmos_neighbors()
+			if(door.flags_1 & ON_BORDER_1)
+				sides += get_turf(door)
+			var/turf/open/safe_side
+			var/list/affected = list()
+			for(var/turf/open/side as anything in sides)
+				if(!isopenturf(side) || !side.air || isspaceturf(side) || get_base_area(side) != base)
+					continue
+				var/datum/decompression_region/region = context.regions[side]
+				region = region?.root()
+				if(active_roots[region])
+					affected[region] = TRUE
+				else if(side.air.return_pressure() >= HAZARD_LOW_PRESSURE)
+					safe_side = side
+			if(safe_side)
+				for(var/datum/decompression_region/region as anything in affected)
+					if(region.has_space)
+						sealing_doors[door] = TRUE
+					if(!leaking[region])
+						continue
+					leaking -= region
+					proof_doors[region] = door
+					proof_turfs[region] = safe_side
+		else if(length(leaking))
+			return FALSE
+		else if(proof_cursor <= length(proof_doors))
+			var/datum/decompression_region/region = proof_doors[proof_cursor++]
+			var/obj/machinery/door/firedoor/door = proof_doors[region]
+			var/turf/open/safe_side = proof_turfs[region]
+			if(QDELETED(door) || !door.density || !isopenturf(safe_side) || !safe_side.air || safe_side.air.return_pressure() < HAZARD_LOW_PRESSURE)
+				return FALSE
+		else
+			return TRUE
 
 /datum/controller/subsystem/air/proc/process_decompression_areas(resumed = 0)
 	if(process_decompression_areas_auxtools(resumed))

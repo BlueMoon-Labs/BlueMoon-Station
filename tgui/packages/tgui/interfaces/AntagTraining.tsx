@@ -179,7 +179,7 @@ const TrainingStart = ({ navigate }: { navigate: (tab: string) => void }) => {
       <Section title="1. Подготовка">
         <div className="AntagTraining__categories">
           {data.kits.map((kit) => <Button key={kit.id} icon="toolbox" disabled={blocked || !data.supply_ready} selected={data.last_kit === kit.id} onClick={() => act('kit', { id: kit.id })}>{kit.name}</Button>)}
-          <Button icon="book" onClick={() => navigate('Моя роль')}>Путь и рецепты еретика</Button>
+          <Button icon="book" onClick={() => navigate('Моя роль')}>{data.heretic ? 'Путь и рецепты еретика' : 'Возможности роли'}</Button>
         </div>
         <Box color="label">Комплект перенесёт вас в подходящий сектор и положит вещи рядом. Для личного набора откройте «Снаряжение».</Box>
       </Section>
@@ -430,7 +430,7 @@ const TrainingProgram = () => {
         <div className="AntagTraining__catalog">
           {data.options.map((option) => <Button key={option} fluid disabled={!!data.busy} tooltip={data.option_hints?.[option]} onClick={() => act('program_option', { option })}>{option}</Button>)}
         </div>
-        {!data.options.length && <Box>Свободная тренировка: снаряжение, бой, строительство и медицина. Для способностей еретика или HK-47 выберите учебную роль ниже.</Box>}
+        {!data.options.length && <Box>Свободная тренировка: снаряжение, бой, строительство и медицина. Для способностей антагонистов выберите учебную роль ниже.</Box>}
       </Section>
       <Section title="Убрать свои объекты">
         <Box mb={1.5} color="label">Удалит ваши выданные предметы, цели и созданные объекты. Предметы в руках и инвентаре других участников сохранятся. Обстановка сектора и ваш персонаж останутся.</Box>

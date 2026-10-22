@@ -33,6 +33,10 @@
 	remove_from_mob_list()
 	remove_from_dead_mob_list()
 	remove_from_alive_mob_list()
+	if(istext(real_name))
+		LAZYREMOVE(GLOB.mob_spawners[real_name], src)
+		if(!LAZYLEN(GLOB.mob_spawners[real_name]))
+			GLOB.mob_spawners -= real_name
 	QDEL_LIST(mob_spell_list)
 	QDEL_LAZYLIST(actions)
 	GLOB.all_clockwork_mobs -= src

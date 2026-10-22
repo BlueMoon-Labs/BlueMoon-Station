@@ -51,7 +51,7 @@ RLD
 	if(upgrade & RCD_UPGRADE_FRAMES)
 		. += "It contains the design for machine frames, computer frames and deconstruction."
 	if(upgrade & RCD_UPGRADE_SIMPLE_CIRCUITS)
-		. += "It contains the design for firelock, air alarm, fire alarm, apc circuits and crap power cells."
+		. += span_notice("Содержит чертежи плат воздушной и пожарной сигнализации, контроллеров питания и простых аккумуляторов.")
 
 /obj/item/construction/Destroy()
 	QDEL_NULL(spark_system)
@@ -443,6 +443,26 @@ RLD
 			airlock_glass = FALSE
 
 
+/obj/item/construction/rcd/proc/change_firelock_setting(mob/user)
+	var/obj/machinery/door/firedoor/firelock_preview = /obj/machinery/door/firedoor
+	var/obj/machinery/door/firedoor/window/window_firelock_preview = /obj/machinery/door/firedoor/window
+	var/list/choices = list(
+		"Стеклянный фаерлок" = image(icon = initial(firelock_preview.icon), icon_state = "door_closed"),
+		"Оконный фаерлок" = image(icon = initial(window_firelock_preview.icon), icon_state = "door_closed")
+	)
+	var/choice = show_radial_menu(user, src, choices, custom_check = CALLBACK(src, PROC_REF(check_menu), user), require_near = TRUE, tooltips = TRUE)
+	if(!check_menu(user))
+		return
+	switch(choice)
+		if("Стеклянный фаерлок")
+			mode = RCD_FIRELOCK
+		if("Оконный фаерлок")
+			mode = RCD_WINDOW_FIRELOCK
+		else
+			return
+	playsound(src, 'sound/effects/pop.ogg', 50, FALSE)
+	to_chat(user, span_notice("Вы переключаете РЦД в режим «[choice]»."))
+
 /obj/item/construction/rcd/proc/rcd_create(atom/A, mob/user)
 	var/list/rcd_results = A.rcd_vals(user, src)
 	if(!rcd_results)
@@ -459,11 +479,33 @@ RLD
 		if(A.rcd_act(user, src, rcd_results["mode"]))
 			rcd_effect.end_animation()
 			useResource(rcd_results["cost"], user)
+			if(rcd_results["mode"] == RCD_WINDOWGRILLE && istype(cached, /obj/structure/grille))
+				recycle_window_debris(the_turf, user)
 			activate()
 			investigate_log("[user] used [src] on [cached] (loc [turf_coords] at [the_turf]) with cost [rcd_results["cost"]], delay [rcd_results["delay"]], mode [rcd_results["mode"]].", INVESTIGATE_RCD)
 			playsound(src, 'sound/machines/click.ogg', 50, 1)
 			return TRUE
 	qdel(rcd_effect)
+
+// Собираем только мусор на самом тайле; оплата окна уже освободила место в ёмкости.
+/obj/item/construction/rcd/proc/recycle_window_debris(turf/build_turf, mob/user)
+	var/recovered_matter = 0
+	for(var/obj/item/shard/shard in build_turf)
+		recovered_matter += sheetmultiplier
+		qdel(shard)
+	for(var/obj/item/stack/rods/rods in build_turf)
+		if(rods.is_cyborg)
+			continue
+		recovered_matter += rods.get_amount() * sheetmultiplier * 0.5
+		qdel(rods)
+	if(recovered_matter)
+		recover_matter(recovered_matter, user)
+
+// Мусор убирается целиком, но излишек не превышает вместимость РЦД.
+/obj/item/construction/rcd/proc/recover_matter(amount, mob/user)
+	. = min(amount, max(0, max_matter - matter))
+	matter += .
+	update_icon()
 
 /obj/item/construction/rcd/Initialize(mapload)
 	. = ..()
@@ -481,7 +523,8 @@ RLD
 	var/list/choices = list(
 		"Airlock" = image(icon = 'icons/mob/radial.dmi', icon_state = "airlock"),
 		"Grilles & Windows" = image(icon = 'icons/mob/radial.dmi', icon_state = "grillewindow"),
-		"Floors & Walls" = image(icon = 'icons/mob/radial.dmi', icon_state = "wallfloor")
+		"Floors & Walls" = image(icon = 'icons/mob/radial.dmi', icon_state = "wallfloor"),
+		"Firedoor" = image(icon = 'icons/mob/radial.dmi', icon_state = "firedoor")
 	)
 	if(upgrade & RCD_UPGRADE_FRAMES)
 		choices += list(
@@ -506,6 +549,9 @@ RLD
 			mode = RCD_FLOORWALL
 		if("Airlock")
 			mode = RCD_AIRLOCK
+		if("Firedoor")
+			change_firelock_setting(user)
+			return
 		if("Deconstruct")
 			mode = RCD_DECONSTRUCT
 		if("Grilles & Windows")
@@ -528,16 +574,35 @@ RLD
 		else
 			return
 	playsound(src, 'sound/effects/pop.ogg', 50, 0)
-	to_chat(user, "<span class='notice'>You change RCD's mode to '[choice]'.</span>")
+	to_chat(user, span_notice("Вы переключаете РЦД в режим «[choice]»."))
 
 /obj/item/construction/rcd/proc/target_check(atom/A, mob/user) // only returns true for stuff the device can actually work with
+	if(mode == RCD_DECONSTRUCT && istype(A, /obj/machinery/door/firedoor))
+		return TRUE
 	if((isturf(A) && A.density && mode==RCD_DECONSTRUCT) || (isturf(A) && !A.density) || (istype(A, /obj/machinery/door/airlock) && mode==RCD_DECONSTRUCT) || istype(A, /obj/structure/grille) || (istype(A, /obj/structure/window) && mode==RCD_DECONSTRUCT) || istype(A, /obj/structure/girder))
 		return TRUE
 	else
 		return FALSE
 
+/obj/item/construction/rcd/proc/resolve_construction_target(atom/A)
+	// Конструкции на тайле не должны перекрывать выбор опоры под фаерлок.
+	if(mode == RCD_FIRELOCK || mode == RCD_WINDOW_FIRELOCK)
+		if(istype(A, /obj/structure/window) || istype(A, /obj/structure/grille) || istype(A, /obj/machinery/door) || istype(A, /obj/structure/inflatable/airbag) || istype(A, /obj/item/airbag_module))
+			return get_turf(A)
+	// Аирбаг и обломки скрывают решётку, на которую нужно поставить постоянное окно.
+	if(mode == RCD_WINDOWGRILLE && (isturf(A) || istype(A, /obj/structure/inflatable/airbag) || istype(A, /obj/item/airbag_module) || istype(A, /obj/item/shard) || istype(A, /obj/item/stack/rods)))
+		var/turf/build_turf = get_turf(A)
+		if(!build_turf)
+			return null
+		var/obj/structure/grille/grille = locate() in build_turf
+		return grille || build_turf
+	return A
+
 /obj/item/construction/rcd/afterattack(atom/A, mob/user, proximity)
 	. = ..()
+	A = resolve_construction_target(A)
+	if(!A)
+		return
 	if(!proximity)
 		if(!ranged || !range_check(A,user)) //early return not-in-range sanity.
 			return
@@ -602,6 +667,13 @@ RLD
 	if(!. && user)
 		to_chat(user, no_ammo_message)
 	return .
+
+// Борговый РЦД тратит заряд вместо материи; возвращаем эквивалент в его батарею.
+/obj/item/construction/rcd/borg/recover_matter(amount, mob/user)
+	if(!iscyborg(user))
+		return 0
+	var/mob/living/silicon/robot/borg = user
+	return borg.cell?.give(amount * energyfactor) / energyfactor
 
 /obj/item/construction/rcd/borg/syndicate
 	icon_state = "ircd"
@@ -866,7 +938,7 @@ RLD
 	upgrade = RCD_UPGRADE_FRAMES
 
 /obj/item/rcd_upgrade/simple_circuits
-	desc = "It contains the design for firelock, air alarm, fire alarm, apc circuits and crap power cells."
+	desc = "Содержит чертежи плат воздушной и пожарной сигнализации, контроллеров питания и простых аккумуляторов."
 	upgrade = RCD_UPGRADE_SIMPLE_CIRCUITS
 
 /obj/item/construction/plumbing

@@ -6251,6 +6251,32 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	if(isnull(.))
 		return 100
 
+// Административная выдача пересоздаёт квирки со всеми стартовыми эффектами и вещами.
+/datum/preferences/proc/apply_spawn_quirks(mob/living/character, obj/item/new_heirloom)
+	if(QDELETED(character))
+		return FALSE
+	for(var/datum/quirk/quirk as anything in character.roundstart_quirks.Copy())
+		character.remove_quirk(quirk.type)
+	// Административная выдача использует только новую реликвию текущего комплекта, а не ссылку от прежнего тела.
+	character.mind?.set_assigned_heirloom(new_heirloom)
+	SSquirks.AssignQuirks(character, character.client, TRUE, TRUE, null, FALSE, character, spawn_items = TRUE, preferences_source = src)
+	return TRUE
+
+// Полное применение персонажа из админской панели; VV и актуализатор используют copy_to().
+/datum/preferences/proc/apply_to_existing_character(mob/living/carbon/human/character)
+	if(QDELETED(character))
+		return FALSE
+	for(var/datum/quirk/quirk as anything in character.roundstart_quirks.Copy())
+		character.remove_quirk(quirk.type)
+	copy_to(character, icon_updates = FALSE, roundstart_checks = FALSE, initial_spawn = TRUE)
+	apply_spawn_quirks(character)
+	SSlanguage.AssignLanguage(character, character.client)
+	apply_tattoos_to_human(character)
+	post_copy_to(character)
+	character.dna.update_dna_identity()
+	character.regenerate_icons()
+	return TRUE
+
 /datum/preferences/proc/copy_to(mob/living/carbon/human/character, icon_updates = 1, roundstart_checks = TRUE, initial_spawn = FALSE)
 	if(be_random_name)
 		real_name = pref_species.random_name(gender)

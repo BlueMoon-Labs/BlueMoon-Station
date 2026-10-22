@@ -177,22 +177,36 @@
 
 //Interdyne Biosuit
 /obj/item/clothing/head/bio_hood/interdyne
-	name = "interdyne biosuit helmet"
-	desc = "Шлем биокостюма Interdyne Pharmaceutics, защищающий владельца от биологически опасных материалов."
+	name = "interdyne paramedic hood"
+	desc = "Лёгкий капюшон парамедиков Interdyne Pharmaceutics из комплекта защитного костюма. Защищает не хуже армейского шлема MOPP."
 	icon = 'modular_bluemoon/icons/obj/Interdyne/hats.dmi'
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/Interdyne/head.dmi'
 	icon_state = "ip_biosuit_head"
 	item_state = "ip_biosuit_head"
+	// Статы и защита как у advance MOPP hood.
+	armor_type = /datum/armor/head_advance
+	clothing_flags = STOPSPRESSUREDAMAGE | THICKMATERIAL
+	max_heat_protection_temperature = FIRE_SUIT_MIN_TEMP_PROTECT
+	cold_protection = HEAD
+	min_cold_protection_temperature = FIRE_SUIT_MIN_TEMP_PROTECT
 	mutantrace_variation = NONE
 
 /obj/item/clothing/suit/bio_suit/interdyne
-	name = "interdyne biosuit"
-	desc = "Биокостюм Interdyne Pharmaceutics, защищающий владельца от биологически опасных материалов. Легче обычного биокостюма."
+	name = "interdyne paramedic suit"
+	desc = "Лёгкий защитный костюм парамедиков Interdyne Pharmaceutics. Мягкая дышащая ткань и свободный крой на спине не стесняют движений, поэтому его особенно ценят мотыльки. Защищает не хуже армейских костюмов MOPP."
 	icon = 'modular_bluemoon/icons/obj/Interdyne/suits.dmi'
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/Interdyne/suit.dmi'
 	icon_state = "ip_biosuit"
 	item_state = "ip_biosuit"
-	slowdown = 0.3
+	// Статы как у advance MOPP suit 'Medical': тот же armor datum и без замедления.
+	armor_type = /datum/armor/suit_advance
+	slowdown = 0
+	clothing_flags = STOPSPRESSUREDAMAGE | THICKMATERIAL
+	heat_protection = CHEST|GROIN|LEGS|ARMS
+	max_heat_protection_temperature = FIRE_SUIT_MIN_TEMP_PROTECT
+	cold_protection = CHEST|GROIN|LEGS|ARMS
+	min_cold_protection_temperature = FIRE_SUIT_MIN_TEMP_PROTECT
+	allowed = list(/obj/item/flashlight, /obj/item/tank/internals/doubleoxygen, /obj/item/tank/internals/oxygen, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/plasmaman, /obj/item/geiger_counter, /obj/item/tank/internals/emergency_nitrogen_ext, /obj/item/gun/medbeam, /obj/item/healthanalyzer, /obj/item/stack/medical, /obj/item/storage/firstaid, /obj/item/analyzer, /obj/item/reagent_containers/syringe, /obj/item/reagent_containers/hypospray, /obj/item/defibrillator)
 
 //Interdyne Labcoats
 /obj/item/clothing/suit/toggle/labcoat/interdyne_labcoat_black
@@ -259,5 +273,128 @@
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/Interdyne/clothing/backpack_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/Interdyne/clothing/backpack_righthand.dmi'
 
+//Interdyne Belts
+// Состояния: ert_ntrauma и belt_white есть и в obj/Interdyne/belts.dmi, и в mob/Interdyne/belt.dmi
+// Подтипы, чтобы не менять общий ntrauma-пояс у остальных.
+/obj/item/storage/belt/medical/ntrauma/interdyne
+	name = "interdyne trauma chest rig"
+	desc = "Тактический разгрузочный жилет Interdyne Pharmaceutics для работы в зонах с травмами."
+	icon = 'modular_bluemoon/icons/obj/Interdyne/belts.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/Interdyne/belt.dmi'
+	icon_state = "ert_ntrauma"
+	item_state = "ert_ntrauma"
+
+/obj/item/storage/belt/medical/interdyne
+	name = "interdyne medical belt"
+	desc = "Белый медицинский пояс Interdyne Pharmaceutics."
+	icon = 'modular_bluemoon/icons/obj/Interdyne/belts.dmi'
+	mob_overlay_icon = 'modular_bluemoon/icons/mob/Interdyne/belt.dmi'
+	icon_state = "belt_white"
+	item_state = "belt_white"
+
+//Interdyne Defibrillator
+// Оставлен только боевой поясной дефибриллятор. Обычный рюкзачный убран.
+// defib.dmi: defibip, defibip-powered, defibip-emagged, defibip-nocell, defibip-charge100/75/50/25, defibip-paddles,
+// ippaddles0/1 и ippaddles0/1_cooldown (лопатки).
+// Имена оверлеев (paddle_state, powered_state и т.д.) и base_icon_state лопаток подогнаны под эти состояния.
+// Свойства как у /obj/item/defibrillator/compact/combat (без предохранителя, реанимация сквозь скафандры,
+// удар без задержки), носится на поясе. Лучше обычного боевого: лучше батарея, быстрее заряд,
+// дольше окно реанимации, встроенное лечение после реанимации и защита от удара по тому, кто тащит тело.
+/obj/item/defibrillator/interdyne/combat
+	name = "interdyne combat defibrillator"
+	desc = "Поясной дефибриллятор, который Interdyne Pharmaceutics выдаёт своим парамедикам в местах, откуда не принято возвращаться. Предохранители выпаяны, лопатки пробивают даже скафандр, а конденсаторы заряжаются быстрее, чем пациент успевает остыть. На корпусе выцарапан слоган: «Trauma Team Interdyne: прилетим на свет вашей беды за семь минут или вернём деньги! Мотыльки-парамедики не опаздывают.»"
+	icon = 'modular_bluemoon/icons/obj/Interdyne/defib.dmi'
+	icon_state = "defibip"
+	// Worn-спрайт на поясе: стандартный от компактного дефиба.
+	// Объектный defib.dmi в mob_overlay_icon ставить нельзя, на персонаже рисуется огромный спрайт.
+	// Когда нарисуете свой: положите состояние "defibip-belt" в mob/Interdyne/belt.dmi и раскомментируйте две строки ниже.
+	mob_overlay_icon = null
+	item_state = "defibcompact"
+	// mob_overlay_icon = 'modular_bluemoon/icons/mob/Interdyne/belt.dmi'
+	// item_state = "defibip-belt"
+	paddle_state = "defibip-paddles"
+	powered_state = "defibip-powered"
+	charge_state = "defibip-charge"
+	nocell_state = "defibip-nocell"
+	emagged_state = "defibip-emagged"
+	slot_flags = ITEM_SLOT_BELT
+	w_class = WEIGHT_CLASS_NORMAL
+	combat = TRUE
+	safety = FALSE
+	always_emagged = TRUE
+	disarm_shock_time = 0
+	primetime = 10
+	timedeath = 20
+	healdisk = TRUE
+	pullshocksafely = TRUE
+	cell = /obj/item/stock_parts/cell/bluespace
+
+/obj/item/defibrillator/interdyne/combat/make_paddles()
+	return new /obj/item/shockpaddles/interdyne(src)
+
+/obj/item/defibrillator/interdyne/combat/item_action_slot_check(slot, mob/user, datum/action/A)
+	if(slot == user.getBeltSlot())
+		return TRUE
+
+// Оверлей "defibip-emagged" (предохранитель выпаян, safety = FALSE) родитель рисует всегда.
+// Здесь он используется как индикатор низкого заряда: виден только когда батарея на 20% и ниже.
+/obj/item/defibrillator/interdyne/combat/update_overlays()
+	. = ..()
+	. -= emagged_state
+	if(cell && cell.maxcharge && (cell.charge / cell.maxcharge) <= 0.2)
+		. += emagged_state
+
+/obj/item/shockpaddles/interdyne
+	name = "interdyne defibrillator paddles"
+	desc = "Лопатки дефибриллятора Interdyne Pharmaceutics."
+	icon = 'modular_bluemoon/icons/obj/Interdyne/defib.dmi'
+	icon_state = "ippaddles0"
+	item_state = "ippaddles0"
+	base_icon_state = "ippaddles"
+
+//Interdyne Wardrobe (вендор)
+// Состояния в vending.dmi: ipdrobe, ipdrobe-panel, ipdrobe-off, ipdrobe-broken
+// TODO: если у вас у остальных вендоров-гардеробов задан refill_canister, добавьте свой, иначе перезарядка не потребуется.
+/obj/machinery/vending/wardrobe/interdyne
+	name = "InterDrobe"
+	desc = "Автомат с одеждой и снаряжением Interdyne Pharmaceutics."
+	icon = 'modular_bluemoon/icons/obj/Interdyne/vending.dmi'
+	icon_state = "ipdrobe"
+	product_ads = "Фирменный зелёный всегда в моде!;Interdyne заботится о вашем здоровье!;Безопасность прежде всего, стиль сразу после."
+	vend_reply = "Спасибо, что выбрали Interdyne Pharmaceutics!"
+	products = list(
+		// Форма
+		/obj/item/clothing/under/syndicate/interdyne = 3,
+		/obj/item/clothing/under/syndicate/interdyne/miner = 3,
+		/obj/item/clothing/under/syndicate/interdyne/deckofficer = 2,
+		// Головные уборы
+		/obj/item/clothing/head/interdyne_deckofficer_black = 2,
+		/obj/item/clothing/head/interdyne_deckofficer_white = 2,
+		// Биокостюм
+		/obj/item/clothing/head/bio_hood/interdyne = 2,
+		/obj/item/clothing/suit/bio_suit/interdyne = 2,
+		// Халаты и куртка
+		/obj/item/clothing/suit/toggle/labcoat/interdyne_labcoat_black = 3,
+		/obj/item/clothing/suit/toggle/labcoat/interdyne_labcoat_white = 3,
+		/obj/item/clothing/suit/toggle/labcoat/interdyne_officer_labcoat = 2,
+		/obj/item/clothing/suit/toggle/labcoat/interdyne_jacket = 3,
+		// Сумки
+		/obj/item/storage/backpack/interdyne = 3,
+		/obj/item/storage/backpack/satchel/interdyne = 3,
+		/obj/item/storage/backpack/duffelbag/syndie/interdyne = 2,
+		// Пояса
+		/obj/item/storage/belt/medical/ntrauma/interdyne = 2,
+		/obj/item/storage/belt/medical/interdyne = 3,
+		// Аптечки
+		/obj/item/storage/firstaid/tactical/interdyne_medium_empty = 2,
+		/obj/item/storage/firstaid/tactical/interdyne = 2,
+		/obj/item/storage/firstaid/o2/interdyne = 2,
+		/obj/item/storage/firstaid/brute/interdyne = 2,
+		/obj/item/storage/firstaid/fire/interdyne = 2,
+		/obj/item/storage/firstaid/toxin/interdyne = 2,
+		// Дефиб
+		/obj/item/defibrillator/interdyne/combat = 2,
+	)
 
 //Viva la InterMothFarm
+//ёбаный рот этого казино блять, мне ещё аванпост ДСам доделывать и искать мыш для тестов, так ещё и кодекс и НРП писать, убейтее меняяяяя

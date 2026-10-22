@@ -4,6 +4,7 @@
 	desc = "A folded membrane which rapidly expands into a large cubical shape on activation."
 	icon = 'modular_bluemoon/icons/obj/structures/inflatable.dmi'
 	icon_state = "folded_wall"
+	w_class = WEIGHT_CLASS_SMALL
 	var/structure_path = /obj/structure/inflatable
 	var/inflating = FALSE
 
@@ -47,6 +48,7 @@
 
 /obj/structure/inflatable/Initialize(mapload)
 	. = ..()
+	register_context()
 	air_update_turf(TRUE)
 
 /obj/structure/inflatable/Destroy()
@@ -60,6 +62,11 @@
 /obj/structure/inflatable/examine(mob/user)
 	. = ..()
 	. += span_notice("Alt-клик позволяет медленно сдуть и сложить конструкцию.")
+
+/obj/structure/inflatable/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
+	. = ..()
+	LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Сдуть")
+	return CONTEXTUAL_SCREENTIP_SET
 
 /obj/structure/inflatable/attackby(obj/item/used_item, mob/living/user, params)
 	. = ..()
@@ -118,6 +125,12 @@
 	intact = /obj/item/inflatable/door
 	var/state_closed = TRUE
 	var/is_operating = FALSE
+
+/obj/structure/inflatable/door/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
+	. = ..()
+	if(isnull(held_item))
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, state_closed ? "Открыть" : "Закрыть")
+	return CONTEXTUAL_SCREENTIP_SET
 
 /obj/structure/inflatable/door/attack_ai(mob/user)
 	if(iscyborg(user) && get_dist(user, src) <= 1)
@@ -191,10 +204,10 @@
 	desc = "Contains inflatable walls and doors."
 	icon_state = "inf_box"
 	item_state = "syringe_kit"
+	w_class = WEIGHT_CLASS_SMALL
 	resistance_flags = NONE
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
-	w_class = WEIGHT_CLASS_NORMAL
 
 /obj/item/storage/briefcase/inflatable/ComponentInitialize()
 	. = ..()
@@ -214,10 +227,10 @@
 	icon = 'icons/obj/storage.dmi'
 	icon_state = "inf_box_mini"
 	item_state = "syringe_kit"
+	w_class = WEIGHT_CLASS_SMALL
 	resistance_flags = NONE
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'
-	w_class = WEIGHT_CLASS_NORMAL
 
 /obj/item/storage/briefcase/inflatable_mini/ComponentInitialize()
 	. = ..()
@@ -237,6 +250,7 @@
 	icon_state = "inf_box_airbag"
 	item_state = "syringe_kit"
 	custom_price = PRICE_NORMAL
+	w_class = WEIGHT_CLASS_SMALL
 	resistance_flags = NONE
 	lefthand_file = 'icons/mob/inhands/equipment/medical_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/medical_righthand.dmi'

@@ -506,6 +506,8 @@ GLOBAL_LIST_INIT(payed_ert, list(
 #define DUMMY_HUMAN_SLOT_MANIFEST "dummy_manifest_generation"
 #define DUMMY_HUMAN_SLOT_HALLUCINATION "dummy_hallucination"
 #define DUMMY_HUMAN_SLOT_EXAMINER "dummy_examiner"
+#define DUMMY_HUMAN_SLOT_JOB_MENU "dummy_job_menu"
+#define DUMMY_HUMAN_SLOT_HAIR_PICKER "dummy_hair_picker"
 
 #define PR_ANNOUNCEMENTS_PER_ROUND 5 //The number of unique PR announcements allowed per round
 									//This makes sure that a single person can only spam 3 reopens and 3 closes before being ignored

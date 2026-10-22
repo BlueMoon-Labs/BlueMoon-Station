@@ -290,33 +290,3 @@
 
 /datum/orbital_object/proc/post_map_setup()
 	return
-
-//Registers that something references this object, prevents potential hard dels
-//Simple system, variable name must be constant
-//This is super weird but helps prevent hard dels in an easier way that doesn't require
-//repeating register signal code.
-/datum/orbital_object/proc/RegisterReference(datum/source_object)
-	if(QDELETED(source_object) || QDELETED(src))
-		return
-	source_object.RegisterSignal(src, COMSIG_PARENT_QDELETING, /datum/orbital_object.proc/UnregisterReference)
-	if(source_object.vars?.Find("referencedOrbitalObjectVarName"))
-		var/var_name = source_object.vars["referencedOrbitalObjectVarName"]
-		if(var_name)
-			source_object.vars[var_name] = src
-
-/datum/orbital_object/proc/UnregisterReference(datum/source_object)
-	if(!src || !source_object)
-		return
-	source_object.UnregisterSignal(src, COMSIG_PARENT_QDELETING)
-	//WHITE-STEEL PORT: по сигнальной схеме прок вызывается НА хранителе ссылки (src),
-	//а переданный source_object - удаляемый орбитальный объект, у которого может не быть
-	//переменной referencedOrbitalObjectVarName (например, у /datum/orbital_object/shuttle).
-	//Старый код читал source_object.vars[...] и падал с "undefined variable <орб.объект>/var/referencedOrbitalObjectVarName".
-	//Разрешаем хранителя через src, с фолбэком на аргумент и защитой от отсутствия переменной.
-	var/datum/holder = src
-	if(QDELETED(holder))
-		holder = source_object
-	if(holder && holder.vars?.Find("referencedOrbitalObjectVarName"))
-		var/var_name = holder.vars["referencedOrbitalObjectVarName"]
-		if(var_name)
-			holder.vars[var_name] = null

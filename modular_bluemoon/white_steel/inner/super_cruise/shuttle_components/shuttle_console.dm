@@ -30,7 +30,6 @@
 	var/orbital_map_index = PRIMARY_ORBITAL_MAP
 
 	//Our orbital body.
-	var/referencedOrbitalObjectVarName = "shuttleObject"
 	var/datum/orbital_object/shuttle/shuttleObject
 
 	var/list/banned_types = list(
@@ -49,8 +48,7 @@
 
 	//Check to see if the shuttleObject was launched by another console.
 	if(QDELETED(shuttleObject) && SSorbits.assoc_shuttles.Find(shuttleId))
-		var/datum/orbital_object/O = SSorbits.assoc_shuttles[shuttleId]
-		O.RegisterReference(src)
+		set_shuttle_object(SSorbits.assoc_shuttles[shuttleId])
 
 	if(recall_docking_port_id && shuttleObject?.docking_target && shuttleObject.autopilot && shuttleObject.shuttleTarget == shuttleObject.docking_target && shuttleObject.controlling_computer == src)
 		//We are at destination, dock.
@@ -223,8 +221,7 @@
 									return
 							if(shuttleObject.shuttleTarget == z_linked && shuttleObject.controlling_computer == src)
 								return
-							var/datum/orbital_object/O = SSorbits.assoc_shuttles[shuttleId]
-							O.RegisterReference(src)
+							set_shuttle_object(SSorbits.assoc_shuttles[shuttleId])
 							shuttleObject.shuttleTarget = z_linked
 							shuttleObject.autopilot = TRUE
 							shuttleObject.controlling_computer = src
@@ -439,13 +436,12 @@
 		return
 	if(SSorbits.assoc_shuttles.Find(shuttleId))
 		say("Перехват управления из внешнего ПУ, обновление телеметрии.")
-		var/datum/orbital_object/O = SSorbits.assoc_shuttles[shuttleId]
-		O.RegisterReference(src)
+		set_shuttle_object(SSorbits.assoc_shuttles[shuttleId])
 		return shuttleObject
-	var/datum/orbital_object/O = mobile_port.enter_supercruise()
-	if(!O)
+	var/datum/orbital_object/shuttle/launched = mobile_port.enter_supercruise()
+	if(!launched)
 		return
-	O.RegisterReference(src)
+	set_shuttle_object(launched)
 	if(!shuttleObject)
 		say("БЛЯТЬ?")
 		return
@@ -549,10 +545,15 @@
 	obj_flags |= EMAGGED
 	to_chat(user, span_notice("Сжигаю консоль."))
 
-// temp solution
+/obj/machinery/computer/shuttle_flight/proc/set_shuttle_object(datum/orbital_object/shuttle/new_object)
+	if(shuttleObject == new_object)
+		return
+	if(shuttleObject)
+		UnregisterSignal(shuttleObject, COMSIG_PARENT_QDELETING)
+	shuttleObject = new_object
+	if(shuttleObject)
+		RegisterSignal(shuttleObject, COMSIG_PARENT_QDELETING, PROC_REF(on_shuttle_object_deleted))
 
-/obj/machinery/computer/shuttle_flight/proc/RegisterReference(datum/source_object)
-	return
-
-/obj/machinery/computer/shuttle_flight/proc/UnregisterReference(datum/source_object)
-	return
+/obj/machinery/computer/shuttle_flight/proc/on_shuttle_object_deleted(datum/source)
+	SIGNAL_HANDLER
+	set_shuttle_object(null)
