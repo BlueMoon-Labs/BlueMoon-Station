@@ -239,6 +239,10 @@
 /obj/machinery/sleeper/ui_act(action, params)
 	if(..())
 		return
+	return handle_ui_act(action, params)
+
+// Подтипы меняют действия панели, сохраняя общую цепочку проверок и сигналов TGUI.
+/obj/machinery/sleeper/proc/handle_ui_act(action, list/params)
 	var/mob/living/mob_occupant = occupant
 	check_nap_violations()
 	switch(action)
@@ -433,10 +437,9 @@
 	.["stasis_enabled"] = module.stasis_enabled
 	.["life_support_active"] = module.life_support_active
 
-/obj/machinery/sleeper/mecha/ui_act(action, list/params)
+/obj/machinery/sleeper/mecha/handle_ui_act(action, list/params)
 	if(ui_status(usr) != UI_INTERACTIVE)
 		return FALSE
-	add_fingerprint(usr)
 	var/obj/item/mecha_parts/mecha_equipment/medical/sleeper/module = loc
 	switch(action)
 		if("door")
