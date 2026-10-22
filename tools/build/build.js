@@ -104,7 +104,11 @@ export const NanomapsTarget = new Juke.Target({
   ],
   outputs: () => [
     'code/modules/asset_cache/assets/nanomaps.dm',
-    ...Juke.glob('icons/_nanomaps/*.png'),
+    // Список из манифеста позволяет заметить отсутствующие PNG даже в чистой копии репозитория.
+    ...(fs.existsSync('code/modules/asset_cache/assets/nanomaps.dm')
+      ? [...fs.readFileSync('code/modules/asset_cache/assets/nanomaps.dm', 'utf8')
+        .matchAll(/'(icons\/_nanomaps\/[^']+\.png)'/g)].map(match => match[1])
+      : []),
   ],
   executes: async () => {
     await Juke.exec('node', ['tools/nanomaps/render.cjs']);
