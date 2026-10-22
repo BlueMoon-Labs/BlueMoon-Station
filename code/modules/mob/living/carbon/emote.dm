@@ -16,6 +16,7 @@
 	message = "быстро моргает."
 
 /datum/emote/sound/human/clap
+	echolocation_pulse = TRUE
 	name = "Хлопать"
 	key = "clap"
 	key_third_person = "claps"

@@ -1339,6 +1339,7 @@
 	layer = OPEN_DOOR_LAYER
 	update_icon(ALL, AIRLOCK_OPEN, 1)
 	operating = FALSE
+	emit_echolocation_pulse(src, hearing_range = 5)
 	if(delayed_close_requested)
 		delayed_close_requested = FALSE
 		addtimer(CALLBACK(src, PROC_REF(close)), 1 DECISECONDS)
