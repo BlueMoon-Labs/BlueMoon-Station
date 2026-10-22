@@ -131,6 +131,19 @@
 	///Mobs that are currently do_after'ing this atom, to be cleared from on Destroy()
 	///Остаётся на /atom, а не уезжает к движимому: do_after() принимает и турфы.
 	var/list/targeted_by
+	// Необязательный отдельный спрайт для миникарты.
+	var/minimap_icon
+	var/minimap_icon_state
+
+// Тип источника нужен для статической геометрии DMM, изменённой генерацией мира.
+/atom/proc/get_minimap_icon(atom/source_type)
+	if(source_type)
+		if(initial(source_type.minimap_icon))
+			return icon(initial(source_type.minimap_icon), initial(source_type.minimap_icon_state))
+		return null
+	if(minimap_icon)
+		return icon(minimap_icon, minimap_icon_state)
+	return getFlatIcon(image(src), no_anim = TRUE)
 
 /**
  * Called when an atom is created in byond (built in engine proc)

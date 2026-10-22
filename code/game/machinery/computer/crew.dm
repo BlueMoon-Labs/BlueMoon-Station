@@ -123,6 +123,7 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 		var/list/map_assets = list()
 		for(var/datum/minimap/floor_map as anything in SSminimaps.station_minimaps)
 			map_assets += "minimap-[floor_map.id].png"
+			map_assets += "minimap-[floor_map.id]-departments.png"
 		SSassets.transport.send_assets(user, map_assets)
 		ui = new(user, src, "CrewConsole")
 		ui.open()
@@ -141,11 +142,21 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 	return ..()
 
 /datum/crewmonitor/ui_data(mob/user)
-	var/turf/user_turf = get_turf(user)
+	var/turf/user_turf = get_turf(ui_host(user)) || get_turf(user)
 	. = list("sensors" = list(), "maps" = list(), "link_allowed" = isAI(user))
 	if(!user_turf)
 		return
-	.["sensors"] = update_data(user_turf.z)
+	.["position"] = list("x" = user_turf.x, "y" = user_turf.y, "z" = user_turf.z)
+	// Направление зависит от открытого монитора; общий кэш датчиков не изменяем.
+	var/list/sensors = list()
+	for(var/list/cached_sensor as anything in update_data(user_turf.z))
+		var/list/sensor = cached_sensor.Copy()
+		if(sensor["pos_z"] == user_turf.z && sensor["pos_x"] && sensor["pos_y"])
+			var/turf/target = locate(sensor["pos_x"], sensor["pos_y"], sensor["pos_z"])
+			if(target)
+				sensor["degrees"] = round(Get_Angle(user_turf, target))
+		sensors += list(sensor)
+	.["sensors"] = sensors
 	.["z"] = user_turf.z
 	var/list/monitored_levels = SSmapping.get_connected_levels(user_turf.z)
 	var/list/maps = list()
@@ -156,6 +167,7 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 			"z" = floor_map.z_level,
 			"floor" = monitored_levels.Find(floor_map.z_level),
 			"image" = SSassets.transport.get_asset_url("minimap-[floor_map.id].png"),
+			"department_image" = SSassets.transport.get_asset_url("minimap-[floor_map.id]-departments.png"),
 			"min_x" = floor_map.minx,
 			"min_y" = floor_map.miny,
 			"max_x" = floor_map.maxx,

@@ -50,6 +50,23 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
+.Button.CrewConsole__plainButton {
+  &,
+  &:hover,
+  &:focus,
+  &:active {
+    background: transparent !important;
+    box-shadow: none;
+  }
+}
+
+.CrewConsole__marker--observer {
+  color: #ffd45c;
+  background-color: #ffd45c;
+  z-index: 6;
+  cursor: default;
+}
+
 @keyframes crew-highlight {
   from {
     transform: scale(0.8);

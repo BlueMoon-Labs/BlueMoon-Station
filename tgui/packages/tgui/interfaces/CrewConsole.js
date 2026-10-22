@@ -1,7 +1,8 @@
 import { createSearch } from 'common/string';
+import { vecLength, vecSubtract } from 'common/vector';
 
 import { useBackend, useLocalState } from '../backend';
-import { Box, Button, ColorBox, Input, NoticeBox, OrbitalMapComponent, Section, Slider, Stack, Table, Tabs, Tooltip } from '../components';
+import { Box, Button, ColorBox, Icon, Input, NoticeBox, OrbitalMapComponent, Section, Slider, Stack, Table, Tabs, Tooltip } from '../components';
 import { COLORS } from '../constants';
 import { Window } from '../layouts';
 
@@ -130,6 +131,8 @@ const CrewTable = (props) => {
         <Table.Row>
           <Table.Cell collapsing>
             <Button
+              className="CrewConsole__plainButton"
+              color="transparent"
               icon="times"
               tooltip="Снять все отметки"
               disabled={!highlightedNames.length}
@@ -144,6 +147,9 @@ const CrewTable = (props) => {
           </Table.Cell>
           <Table.Cell bold>
             Локация
+          </Table.Cell>
+          <Table.Cell bold collapsing>
+            Направление
           </Table.Cell>
           {!!data.link_allowed && (
             <Table.Cell bold collapsing>
@@ -193,6 +199,7 @@ const CrewTableEntry = (props) => {
     <Table.Row className={highlighted && 'CrewConsole__highlightedRow'}>
       <Table.Cell collapsing>
         <Button.Checkbox
+          className="CrewConsole__plainButton"
           checked={highlighted}
           tooltip="Отметить персонажа на карте"
           onClick={() => toggleHighlight(name)} />
@@ -228,7 +235,10 @@ const CrewTableEntry = (props) => {
       </Table.Cell>
       <Table.Cell>
         {area || 'Нет данных'}
-        {!!pos_z && ` (${pos_x}, ${pos_y}, этаж ${floor})`}
+        {!!pos_z && ` (${pos_x}, ${pos_y}${data.levels?.length > 1 ? `, этаж ${floor}` : ''})`}
+      </Table.Cell>
+      <Table.Cell collapsing>
+        <CrewDirection sensor={sensor_data} position={data.position} />
       </Table.Cell>
       {!!link_allowed && (
         <Table.Cell collapsing>
@@ -244,12 +254,36 @@ const CrewTableEntry = (props) => {
   );
 };
 
+const CrewDirection = ({ sensor, position }) => {
+  if (!position || !sensor.pos_z) {
+    return <Box color="label">—</Box>;
+  }
+  if (sensor.pos_z !== position.z) {
+    return <Box color="label">{`Этаж ${sensor.floor}`}</Box>;
+  }
+  // Расстояние считаем как в GPS, без ограничения BYOND в 127 тайлов.
+  const distance = Math.round(vecLength(vecSubtract(
+    [position.x, position.y], [sensor.pos_x, sensor.pos_y],
+  )));
+  return (
+    <Box nowrap>
+      <Icon
+        mr={1}
+        size={1.2}
+        name={distance ? 'arrow-up' : 'map-marker-alt'}
+        rotation={distance ? sensor.degrees : 0} />
+      {`${distance} м`}
+    </Box>
+  );
+};
+
 const CrewMap = (props) => {
   const { data } = useBackend();
   const { highlightedNames, toggleHighlight } = props;
   const [selectedZ, setSelectedZ] = useLocalState('crewMapZ', data.z);
   const [zoom, setZoom] = useLocalState('crewMapZoom', 1);
   const [offset, setOffset] = useLocalState('crewMapOffset', [0, 0]);
+  const [showDepartments, setShowDepartments] = useLocalState('crewMapDepartments', false);
   const maps = (data.levels || [])
     .map(z => (data.maps || []).find(map => map.z === z))
     .filter(Boolean);
@@ -268,20 +302,30 @@ const CrewMap = (props) => {
     <Stack fill vertical>
       <Stack.Item>
         <Stack align="center">
-          <Stack.Item>
-            <Button
-              icon="arrow-down"
-              tooltip="Этажом ниже"
-              disabled={floorIndex === 0}
-              onClick={() => setSelectedZ(maps[floorIndex - 1].z)} />
-            <Button
-              icon="arrow-up"
-              tooltip="Этажом выше"
-              disabled={floorIndex === maps.length - 1}
-              onClick={() => setSelectedZ(maps[floorIndex + 1].z)} />
-          </Stack.Item>
+          {data.levels?.length > 1 && (
+            <Stack.Item>
+              <Button
+                icon="arrow-down"
+                tooltip="Этажом ниже"
+                disabled={floorIndex === 0}
+                onClick={() => setSelectedZ(maps[floorIndex - 1].z)} />
+              <Button
+                icon="arrow-up"
+                tooltip="Этажом выше"
+                disabled={floorIndex === maps.length - 1}
+                onClick={() => setSelectedZ(maps[floorIndex + 1].z)} />
+            </Stack.Item>
+          )}
           <Stack.Item grow>
-            {`Этаж: ${floor.floor}`}
+            {data.levels?.length > 1 && `Этаж: ${floor.floor}`}
+          </Stack.Item>
+          <Stack.Item>
+            <Button.Checkbox
+              className="CrewConsole__plainButton"
+              checked={showDepartments}
+              onClick={() => setShowDepartments(!showDepartments)}>
+              Отделы
+            </Button.Checkbox>
           </Stack.Item>
           <Stack.Item>Масштаб:</Stack.Item>
           <Stack.Item>
@@ -348,7 +392,7 @@ const CrewMap = (props) => {
                     transform: `translate(calc(-50% - ${xOffset}px), calc(-50% - ${yOffset}px))`,
                   }}>
                   <img
-                    src={floor.image}
+                    src={showDepartments ? floor.department_image : floor.image}
                     alt={`Карта этажа ${floor.floor}`}
                     draggable={false} />
                   {sensors.map((sensor, index) => (
@@ -360,6 +404,20 @@ const CrewMap = (props) => {
                       highlighted={highlightedNames.includes(sensor.name)}
                       toggleHighlight={toggleHighlight} />
                   ))}
+                  {!!data.position && (
+                    <Tooltip content="Ваше местоположение">
+                      <div
+                        className="CrewConsole__marker CrewConsole__marker--highlighted CrewConsole__marker--observer"
+                        aria-label="Ваше местоположение"
+                        tabIndex={0}
+                        onMouseDown={e => e.stopPropagation()}
+                        style={{
+                          left: `${(data.position.x - floor.min_x + 0.5) * scale}px`,
+                          bottom: `${(data.position.y - floor.min_y + 0.5) * scale}px`,
+                          opacity: data.position.z === floor.z ? 1 : 0.4,
+                        }} />
+                    </Tooltip>
+                  )}
                 </div>
               </Box>
             )}

@@ -32,6 +32,8 @@ GLOBAL_LIST_INIT(closed_turf_smooth_targets, list(/turf/closed))
 	layer = EDGED_TURF_LAYER
 	initial_temperature = 293.15
 	temperature = 293.15
+	minimap_icon = 'icons/minimap/turfs.dmi'
+	minimap_icon_state = "rock"
 	// base_icon_state = "smoothrocks"
 	var/smooth_icon = 'icons/turf/smoothrocks.dmi'
 	var/turf/open/floor/plating/turf_type = /turf/open/floor/plating/asteroid/airless
