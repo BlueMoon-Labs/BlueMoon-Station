@@ -35,7 +35,7 @@ export const Mecha = () => {
   const tempWarning = data.cabin_temp < data.cabin_temp_warning_min
     || data.cabin_temp > data.cabin_temp_warning_max;
   return (
-    <Window width={1000} height={720}>
+    <Window width={1000} height={720} theme={data.ui_theme}>
       <Window.Content className="Mecha">
         <Stack fill>
           <Stack.Item width="260px" shrink={0}>
@@ -43,13 +43,20 @@ export const Mecha = () => {
               <Stack.Item grow>
                 <Section
                   fill
+                  className="Mecha__chassis"
                   title={data.name}
                   buttons={(
-                    <Button
-                      icon="edit"
-                      tooltip={settingsReason || 'Переименовать'}
-                      disabled={!data.can_settings}
-                      onClick={() => act('changename')} />
+                    <>
+                      <Button
+                        icon="palette"
+                        tooltip="Выбрать тему"
+                        onClick={() => act('theme')} />
+                      <Button
+                        icon="edit"
+                        tooltip={settingsReason || 'Переименовать'}
+                        disabled={!data.can_settings}
+                        onClick={() => act('changename')} />
+                    </>
                   )}>
                   <Box height="96px" textAlign="center" mb={1}>
                     <img

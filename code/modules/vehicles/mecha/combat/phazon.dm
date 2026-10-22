@@ -14,6 +14,7 @@
 	force = 15
 	max_equip = 3
 	phase_state = "phazon-phase"
+	ui_theme = "science"
 
 /obj/vehicle/sealed/mecha/combat/phazon/generate_actions()
 	. = ..()

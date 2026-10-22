@@ -2,6 +2,21 @@
   text-align: left;
 }
 
+.Mecha__chassis > .Section__title {
+  padding-right: 4em;
+
+  > .Section__titleText {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  > .Section__buttons {
+    top: 0.5em;
+  }
+}
+
 .Mecha__ellipsis {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -14,7 +29,7 @@
 
 .Mecha__manipulatorLabel {
   margin-bottom: 0.4em;
-  color: #a4b5c2;
+  color: var(--theme-label, #a4b5c2);
   font-size: 10px;
 }
 
@@ -22,7 +37,7 @@
   height: 100px;
   margin: 0;
   padding: 0.4em;
-  border: 1px solid rgba(128, 180, 210, 0.3);
+  border: 1px solid var(--theme-border, rgba(128, 180, 210, 0.3));
   text-align: center;
   white-space: normal;
   line-height: 1.5;
@@ -40,17 +55,18 @@
   }
 }
 
-.Mecha__moduleRow,
-.Mecha__manipulator {
-  background-color: rgba(69, 93, 112, 0.35);
+.Mecha .Mecha__moduleRow.Button,
+.Mecha .Mecha__manipulator.Button {
+  background-color: var(--theme-card, rgba(69, 93, 112, 0.35));
 
-  &:hover {
-    background-color: rgba(69, 113, 141, 0.55);
+  &:hover,
+  &:focus {
+    background-color: var(--theme-card-hover, rgba(69, 113, 141, 0.55));
   }
 }
 
 .Mecha__manipulator.Button--disabled {
-  background-color: rgba(69, 93, 112, 0.15) !important;
+  background-color: var(--theme-card-empty, rgba(69, 93, 112, 0.15)) !important;
 }
 
 .Mecha__moduleRow {
@@ -60,18 +76,18 @@
   line-height: 1.4;
   text-align: left;
   white-space: normal;
+}
 
-  &.Button--selected {
-    border-left-color: #88c9e8;
-    background-color: rgba(60, 113, 141, 0.55);
-  }
+.Mecha .Mecha__moduleRow.Button--selected {
+  border-left-color: var(--theme-accent, #88c9e8);
+  background-color: var(--theme-card-selected, rgba(60, 113, 141, 0.55));
 }
 
 .Mecha__assignment {
   display: inline-block;
   margin-top: 0.3em;
   padding: 0 0.4em;
-  border: 1px solid rgba(140, 190, 220, 0.4);
+  border: 1px solid var(--theme-border, rgba(140, 190, 220, 0.4));
   border-radius: 2px;
   font-size: 10px;
 }

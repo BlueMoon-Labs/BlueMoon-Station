@@ -14,6 +14,7 @@
 	mecha_flags = CANSTRAFE | IS_ENCLOSED | HAS_LIGHTS
 	max_equip = 3
 	mecha_type = MECHA_TYPE_COMBAT | MECHA_TYPE_HONKER
+	ui_theme = "abductor"
 	var/squeak = TRUE
 
 /obj/vehicle/sealed/mecha/combat/honker/play_stepsound()

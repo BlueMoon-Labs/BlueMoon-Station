@@ -225,6 +225,26 @@
 		),
 	)
 
+/obj/vehicle/sealed/mecha/proc/get_default_ui_theme()
+	var/list/accesses = operation_req_access | internals_req_access
+	if((ACCESS_INTEQ in accesses) || (ACCESS_INTEQ_LEADER in accesses))
+		return "inteq"
+	if((ACCESS_SYNDICATE in accesses) || (ACCESS_SYNDICATE_LEADER in accesses))
+		return "syndicate"
+	if(ACCESS_CLOCKCULT in accesses)
+		return "clockcult"
+	if(initial(ui_theme))
+		return initial(ui_theme)
+	if(mecha_type & MECHA_TYPE_MEDICAL)
+		return "medical"
+	if(mecha_type & MECHA_TYPE_COMBAT)
+		return "security"
+	if(ACCESS_MINING in accesses)
+		return "mining"
+	if((mecha_type & MECHA_TYPE_WORKING) || (ACCESS_ENGINE in accesses))
+		return "engineering"
+	return "nanotrasen"
+
 /obj/vehicle/sealed/mecha/ui_data(mob/user)
 	var/image/front_view = new
 	front_view.appearance = appearance
@@ -256,6 +276,7 @@
 	var/mob/living/carbon/carbon_user = user
 	return list(
 		"name" = name,
+		"ui_theme" = ui_theme ? ui_theme : get_default_ui_theme(),
 		"mech_image" = ui_preview_icon,
 		"integrity" = round(obj_integrity),
 		"integrity_max" = max_integrity,
@@ -305,6 +326,47 @@
 	var/mob/user = ui.user
 	if(!is_occupant(user) || user.incapacitated())
 		return FALSE
+	if(action == "theme")
+		var/static/list/themes = list(
+			"По назначению меха" = "auto",
+			"Нанотрейзен" = "nanotrasen",
+			"Медицинская" = "medical",
+			"Инженерная" = "engineering",
+			"Шахтёрская" = "mining",
+			"Научная" = "science",
+			"Служба безопасности" = "security",
+			"Syndicate" = "syndicate",
+			"InteQ" = "inteq",
+			"Пакт" = "pact",
+			"Нейтральная" = "neutral",
+			"НТОС" = "ntos",
+			"НТОС: тёмная" = "ntos_darkmode",
+			"НТОС: светлая" = "ntos_lightmode",
+			"НТОС: синтетическая" = "ntos_synth",
+			"НТОС: терминал" = "ntos_terminal",
+			"НТОС: кошачья" = "ntos_cat",
+			"Ретро" = "retro",
+			"Хакерская" = "hackerman",
+			"Розовая" = "hotpink",
+			"Пришельцы" = "abductor",
+			"Волшебник" = "wizard",
+			"Культ Ратвара" = "clockcult",
+			"Еретическая" = "heretic",
+			"Сбой ИИ" = "malfunction",
+			"Бумажная" = "paper",
+			"Карточный стол" = "cardtable",
+			"Предупреждение" = "disclaimer",
+		)
+		var/current_theme = "По назначению меха"
+		for(var/theme_name in themes)
+			if(themes[theme_name] == ui_theme)
+				current_theme = theme_name
+				break
+		var/choice = tgui_input_list(user, "Выберите оформление панели управления.", "Тема меха", themes, current_theme)
+		if(!choice || !(choice in themes) || !is_occupant(user) || user.incapacitated())
+			return FALSE
+		ui_theme = themes[choice] == "auto" ? null : themes[choice]
+		return TRUE
 	if(action == "trigger_action")
 		var/datum/action/vehicle/sealed/mecha/chosen = locate(params["ref"])
 		var/list/user_actions = occupant_actions[user]

@@ -187,6 +187,8 @@
 	var/imagenhphrase = "sound/mecha/imag_enh.ogg"
 	// Категории шасси для проверки совместимости с модулями.
 	var/mecha_type = NONE
+	// Тема панели; null восстанавливает тему типа или выбирает её по доступам и категории.
+	var/ui_theme = null
 
 /obj/item/radio/mech //this has to go somewhere
 	subspace_transmission = TRUE

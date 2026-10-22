@@ -284,6 +284,7 @@
 	internals_req_access = list(ACCESS_SYNDICATE)
 	wreckage = /obj/structure/mecha_wreckage/honker/dark
 	max_equip = 3
+	ui_theme = "syndicate"
 
 /obj/vehicle/sealed/mecha/combat/honker/dark/add_cell(obj/item/stock_parts/cell/C)
 	if(C)

@@ -7,6 +7,7 @@
 	destruction_sleep_duration = 40
 	exit_delay = 40
 	mecha_type = MECHA_TYPE_COMBAT
+	ui_theme = "security"
 
 /obj/vehicle/sealed/mecha/combat/restore_equipment()
 	mouse_pointer = 'icons/mecha/mecha_mouse.dmi'

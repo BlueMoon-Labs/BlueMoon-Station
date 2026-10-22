@@ -16,6 +16,7 @@
 	enter_delay = 10 //can enter in a quarter of the time of other mechs
 	exit_delay = 10
 	mecha_type = MECHA_TYPE_WORKING | MECHA_TYPE_RIPLEY
+	ui_theme = "engineering"
 	/// How fast the mech is in low pressure
 	var/fast_pressure_step_in = 1.5
 	/// How fast the mech is in normal pressure
@@ -72,6 +73,7 @@
 	enclosed = TRUE
 	enter_delay = 40
 	silicon_icon_state = null
+	ui_theme = "mining"
 
 /obj/vehicle/sealed/mecha/working/ripley/firefighter
 	desc = "Автономный погрузочный агрегат MK-II-F. Эта модель оснащена дополнительной термозащитой."
@@ -86,6 +88,7 @@
 	armor_type = /datum/armor/firefighter_and_mkii
 	enclosed = TRUE
 	enter_delay = 40
+	ui_theme = "mining"
 
 /obj/vehicle/sealed/mecha/working/ripley/deathripley
 	desc = "ОХ ЧЁРТ, ЭТО ОТРЯД СМЕРТИ, НАМ ВСЕМ КАБЗДА"
