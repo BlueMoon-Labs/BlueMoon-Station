@@ -49,7 +49,7 @@
 
 /atom/movable/screen/movable/action_button/Click(location,control,params)
 	var/mob/user = usr
-	if(!can_use(user) || !our_hud)
+	if(!can_use(user))
 		return
 	var/list/modifiers = params2list(params)
 	if(LAZYACCESS(modifiers, CTRL_CLICK))
