@@ -288,6 +288,7 @@ const CrewDirection = ({ sensor, position }) => {
 const CrewMap = (props) => {
   const { data } = useBackend();
   const { highlightedIds, toggleHighlight } = props;
+  const [showNames, setShowNames] = useLocalState('crewMapHighlightedNames', true);
   const maps = (data.levels || [])
     .map(z => (data.maps || []).find(map => map.z === z))
     .filter(Boolean);
@@ -299,6 +300,11 @@ const CrewMap = (props) => {
       maps={maps}
       initialZ={data.z}
       statePrefix="crewMap"
+      controls={(
+        <Button.Checkbox checked={showNames} onClick={() => setShowNames(!showNames)}>
+          Имена
+        </Button.Checkbox>
+      )}
       hint=" Нажатие на метку — выделение. Полупрозрачные метки — персонажи на других этажах."
       renderMarkers={(floor, scale) => (
         <>
@@ -309,6 +315,7 @@ const CrewMap = (props) => {
               floor={floor}
               scale={scale}
               highlighted={highlightedIds.includes(sensor.id)}
+              showName={showNames}
               toggleHighlight={toggleHighlight} />
           ))}
           {!!data.position && (
@@ -331,7 +338,7 @@ const CrewMap = (props) => {
 };
 
 const CrewMapMarker = (props) => {
-  const { sensor, floor, scale, highlighted, toggleHighlight } = props;
+  const { sensor, floor, scale, highlighted, showName, toggleHighlight } = props;
   const otherLevel = sensor.pos_z !== floor.z;
   const color = healthToColor(
     sensor.oxydam, sensor.toxdam, sensor.burndam, sensor.brutedam, sensor.life_status,
@@ -361,7 +368,13 @@ const CrewMapMarker = (props) => {
           backgroundColor: color,
           opacity: otherLevel ? 0.4 : 1,
           zIndex: (otherLevel ? 1 : 2) + (highlighted ? 2 : 0),
-        }} />
+        }}>
+        {highlighted && showName && (
+          <span className="CrewConsole__markerLabel">
+            {sensor.name}{otherLevel ? ` (этаж ${sensor.floor})` : ''}
+          </span>
+        )}
+      </div>
     </Tooltip>
   );
 };

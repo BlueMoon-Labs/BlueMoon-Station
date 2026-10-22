@@ -4,7 +4,7 @@ import { useLocalState } from '../../backend';
 import { Box, Button, NoticeBox, Slider, Stack } from '../../components';
 
 export const StationMap = (props) => {
-  const { maps = [], initialZ, statePrefix = 'stationMap', renderMarkers, hint } = props;
+  const { maps = [], initialZ, statePrefix = 'stationMap', renderMarkers, controls, hint } = props;
   const [selectedZ, setSelectedZ] = useLocalState(`${statePrefix}Z`, initialZ);
   const [zoom, setZoom] = useLocalState(`${statePrefix}Zoom`, 1);
   const [offset, setOffset] = useLocalState(`${statePrefix}Offset`, [0, 0]);
@@ -48,6 +48,7 @@ export const StationMap = (props) => {
           <Stack.Item grow>
             {maps.length > 1 && `Этаж: ${floor.floor}`}
           </Stack.Item>
+          {controls && <Stack.Item>{controls}</Stack.Item>}
           <Stack.Item>
             <Button.Checkbox
               checked={showDepartments}
