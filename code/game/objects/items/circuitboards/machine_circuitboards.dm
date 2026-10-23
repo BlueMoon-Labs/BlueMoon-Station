@@ -366,6 +366,27 @@
 	. = ..()
 	. += "<span class='notice'>It is set to layer [pipe_layer]. Use a Multitool on the circuit to change this.</span>"
 
+/obj/item/circuitboard/machine/scrubber
+	name = "Portable Air Scrubber"
+	build_path = /obj/machinery/portable_atmospherics/scrubber
+	needs_anchored = FALSE
+	req_components = list(
+		/obj/machinery/atmospherics/components/unary/vent_scrubber = 1,
+		/obj/item/tank/internals/plasma = 1,
+		/obj/item/tank/internals/oxygen = 1,
+		/obj/item/stack/sheet/plasteel = 5)
+
+
+/obj/item/circuitboard/machine/pump
+	name = "Portable Air Pump"
+	build_path = /obj/machinery/portable_atmospherics/pump
+	needs_anchored = FALSE
+	req_components = list(
+		/obj/machinery/atmospherics/components/unary/vent_pump = 1,
+		/obj/item/tank/internals/plasma = 1,
+		/obj/item/tank/internals/oxygen = 1,
+		/obj/item/stack/sheet/plasteel = 5)
+
 /obj/item/circuitboard/machine/crystallizer
 	name = "Crystallizer (Machine Board)"
 	icon_state = "engineering"
