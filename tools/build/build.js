@@ -623,7 +623,6 @@ const prependDefines = (...defines) => {
 };
 
 export const TgsTarget = new Juke.Target({
-  // TGS запускает DM сам, поэтому все отсутствующие PNG нужно подготовить здесь.
   dependsOn: [TguiTarget, TgFontTarget, NanomapsTarget],
   executes: async () => {
     Juke.logger.info('Prepending TGS define');
