@@ -35,6 +35,8 @@
 	return ..()
 
 /atom/movable/screen/movable/action_button/proc/can_use(mob/user)
+	if(!user)
+		return FALSE
 	if(isobserver(user))
 		var/mob/dead/observer/dead_mob = user
 		if(dead_mob.observetarget) // Observers can only click on action buttons if they're not observing something
@@ -49,6 +51,8 @@
 
 /atom/movable/screen/movable/action_button/Click(location,control,params)
 	var/mob/user = usr
+	if(QDELETED(src))
+		return
 	if(!can_use(user))
 		return
 	var/list/modifiers = params2list(params)
@@ -106,6 +110,8 @@
 // Very much byond logic, but I want nice behavior, so we fake it with drag
 /atom/movable/screen/movable/action_button/MouseDrag(atom/over_object, atom/src_location, atom/over_location, src_control, over_control, params)
 	. = ..()
+	if(QDELETED(src))
+		return
 	if(!can_use(usr))
 		return
 	if(IS_WEAKREF_OF(over_object, last_hovored_ref))
@@ -142,33 +148,34 @@
 
 /atom/movable/screen/movable/action_button/MouseDrop(atom/over_object, mob/user, src_location, over_location, params)
 	last_hovored_ref = null
+	if(QDELETED(src))
+		return
 	if(!can_use(usr))
 		return
-	var/datum/hud/our_hud = usr.hud_used
-	if(!our_hud)
+	var/datum/hud/active_hud = usr?.hud_used
+	if(!active_hud)
 		return
 	if(over_object == src)
-		our_hud.hide_landings()
+		active_hud.hide_landings()
 		return
 	if(istype(over_object, /atom/movable/screen/action_landing))
 		var/atom/movable/screen/action_landing/reserve = over_object
 		reserve.hit_by(src)
-		our_hud.hide_landings()
+		active_hud.hide_landings()
 		save_position()
 		return
-
-	our_hud.hide_landings()
+	active_hud.hide_landings()
 	if(istype(over_object, /atom/movable/screen/button_palette) || istype(over_object, /atom/movable/screen/palette_scroll))
-		our_hud.position_action(src, SCRN_OBJ_IN_PALETTE)
+		active_hud.position_action(src, SCRN_OBJ_IN_PALETTE)
 		save_position()
 		return
 	if(istype(over_object, /atom/movable/screen/movable/action_button))
 		var/atom/movable/screen/movable/action_button/button = over_object
-		our_hud.position_action_relative(src, button)
+		active_hud.position_action_relative(src, button)
 		save_position()
 		return
 	. = ..()
-	our_hud.position_action(src, screen_loc)
+	active_hud.position_action(src, screen_loc)
 	save_position()
 
 /atom/movable/screen/movable/action_button/proc/save_position()
@@ -203,6 +210,8 @@
 
 	if(!position_info)
 		position_info = SCRN_OBJ_DEFAULT
+	if(!user.hud_used)
+		return
 	user.hud_used.position_action(src, position_info)
 
 /atom/movable/screen/movable/action_button/proc/dump_save()
@@ -252,7 +261,7 @@
 	for(var/datum/action/action as anything in actions)
 		var/atom/movable/screen/movable/action_button/button = action.viewers[hud_used]
 		action.UpdateButtons()
-		if(reload_screen)
+		if(reload_screen && button)
 			client.screen += button
 
 	if(reload_screen)
