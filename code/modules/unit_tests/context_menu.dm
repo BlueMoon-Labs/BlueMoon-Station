@@ -186,6 +186,32 @@
 	TEST_ASSERT_NULL(menu.target, "ПКМ по полу с вещами должен начинаться со списка клетки")
 	user.close_context_menu()
 
+/// Длинный список листается пунктом «Ещё…» по кругу, и на экране именно он
+/datum/unit_test/context_menu_paging
+
+/datum/unit_test/context_menu_paging/Run()
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent)
+	var/turf/next_turf = get_step(user, EAST)
+	for(var/i in 1 to CONTEXT_MENU_MAX_ROWS + 2)
+		allocate(/obj/item/pen, next_turf)
+	var/datum/context_menu/menu = user.open_context_menu(next_turf, "right=1;shift=1")
+	TEST_ASSERT_EQUAL(menu.page_count(), 2, "Список клетки должен занять две страницы")
+	var/datum/context_menu_entry/more
+	for(var/atom/movable/screen/context_menu/row in menu.screen_objects)
+		if(istype(row.entry, /datum/context_menu_entry/page))
+			more = row.entry
+	TEST_ASSERT_NOTNULL(more, "На экране нет пункта «Ещё…»")
+	menu.choose(more)
+	TEST_ASSERT_EQUAL(menu.page, 2, "«Ещё…» не перелистнул на вторую страницу")
+	more = null
+	for(var/atom/movable/screen/context_menu/row in menu.screen_objects)
+		if(istype(row.entry, /datum/context_menu_entry/page))
+			more = row.entry
+	TEST_ASSERT_NOTNULL(more, "На второй странице нет пункта «Ещё…»")
+	menu.choose(more)
+	TEST_ASSERT_EQUAL(menu.page, 1, "«Ещё…» на последней странице не вернул к первой")
+	user.close_context_menu()
+
 /// Вербы предмета в руке доступны из меню
 /datum/unit_test/context_menu_item_verbs
 

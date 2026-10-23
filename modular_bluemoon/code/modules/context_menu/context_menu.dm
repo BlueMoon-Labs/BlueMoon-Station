@@ -106,6 +106,8 @@
 	var/list/click_position
 	var/list/datum/context_menu_entry/entries = list()
 	var/page = 1
+	/// «Ещё…» текущей страницы: его нет в entries, он собирается заново при каждой отрисовке
+	var/datum/context_menu_entry/page/page_entry
 	/// Левый верхний угол меню в пикселях от левого нижнего угла вьюпорта
 	var/origin_x = 0
 	var/origin_y = 0
@@ -146,6 +148,7 @@
 	tile = null
 	clicked = null
 	entries = null
+	page_entry = null
 	return ..()
 
 /// Объекты клетки, из которых игрок выбирает: верхние первыми, мобы раньше вещей
@@ -181,7 +184,7 @@
 		RegisterSignal(target, COMSIG_PARENT_QDELETING, PROC_REF(on_target_deleted))
 
 /datum/context_menu/proc/choose(datum/context_menu_entry/entry)
-	if(!(entry in entries))
+	if(!(entry in entries) && entry != page_entry)
 		return
 	if(istype(entry, /datum/context_menu_entry/pick))
 		var/datum/context_menu_entry/pick/pick_entry = entry
@@ -210,11 +213,13 @@
 /// Пункты текущей страницы, с «Ещё…» в конце, если страниц несколько
 /datum/context_menu/proc/visible_entries()
 	if(page_count() == 1)
+		page_entry = null
 		return entries.Copy()
 	var/per_page = CONTEXT_MENU_MAX_ROWS - 1
 	var/first = (page - 1) * per_page + 1
 	. = entries.Copy(first, min(first + per_page, length(entries) + 1))
-	. += new /datum/context_menu_entry/page("Ещё… ([page]/[page_count()])", null, CONTEXT_ENTRY_SERVICE)
+	page_entry = new /datum/context_menu_entry/page("Ещё… ([page]/[page_count()])", null, CONTEXT_ENTRY_SERVICE)
+	. += page_entry
 
 /datum/context_menu/proc/on_user_moved(datum/source)
 	SIGNAL_HANDLER
