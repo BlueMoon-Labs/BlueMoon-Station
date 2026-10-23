@@ -1451,7 +1451,9 @@
 		L[++L.len] = list("[A.panel]",A.get_panel_text(),A.name,"[REF(A)]")
 	return L
 
-/mob/living/lingcheck()
+/mob/living/lingcheck(mob/speaker)
+	if(speaker && speaker.training_origin != training_origin)
+		return LINGHIVE_NONE
 	if(mind)
 		var/datum/antagonist/changeling/changeling = mind.has_antag_datum(/datum/antagonist/changeling)
 		if(changeling)

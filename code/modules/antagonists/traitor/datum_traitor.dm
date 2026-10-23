@@ -72,14 +72,18 @@
 
 /datum/antagonist/traitor/on_gain()
 	owner.special_role = job_rank
+	assign_traitor_kind()
+	finalize_traitor()
+	uplink = owner.find_syndicate_uplink()
+	return ..()
+
+/// Класс по весам раунда и учёт в режиме; учебный подтип ставит выбранный класс без учёта.
+/datum/antagonist/traitor/proc/assign_traitor_kind()
 	if(owner.current && isAI(owner.current))
 		set_traitor_kind(TRAITOR_AI)
 	else
 		set_traitor_kind(get_random_traitor_kind())
 	SSticker.mode.traitors += owner
-	finalize_traitor()
-	uplink = owner.find_syndicate_uplink()
-	return ..()
 
 /datum/antagonist/traitor/on_removal()
 	if(!silent && owner.current)

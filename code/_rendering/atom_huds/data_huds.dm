@@ -369,7 +369,7 @@
 	holder.pixel_y = get_hud_pixel_offset(icon, icon_state, dir)
 	var/perpname = get_face_name(get_id_name(""))
 	if(perpname && GLOB.data_core)
-		var/datum/data/record/R = GLOB.data_core.security_by_name[perpname]
+		var/datum/data/record/R = antag_training_station_record(GLOB.data_core.security_by_name, perpname, src)
 		if(R)
 			switch(R.fields["criminal"])
 				if(SEC_RECORD_STATUS_EXECUTE)
@@ -667,9 +667,9 @@
 	var/datum/data/record/R
 	switch(comment_kind)
 		if("security")
-			R = GLOB.data_core.security_by_name[perpname]
+			R = antag_training_station_record(GLOB.data_core.security_by_name, perpname, src)
 		if("medical")
-			R = GLOB.data_core.medical_by_name[perpname]
+			R = antag_training_station_record(GLOB.data_core.medical_by_name, perpname, src)
 	if(!R)
 		return
 

@@ -63,6 +63,10 @@
  *     html = "You have found <strong>[object]</strong>")
  * ```
  */
+#if defined(UNIT_TESTS) || defined(SPACEMAN_DMM)
+/// Пока тест держит здесь список, каждый to_chat дописывает в него пару (получатель, html).
+GLOBAL_LIST(unit_test_chat_capture)
+#endif
 /proc/to_chat(
 	target,
 	html,
@@ -74,6 +78,10 @@
 	trailing_newline = TRUE,
 	confidential = FALSE
 )
+#if defined(UNIT_TESTS) || defined(SPACEMAN_DMM)
+	if(GLOB.unit_test_chat_capture && target)
+		GLOB.unit_test_chat_capture += list(list(target, "[html]"))
+#endif
 	if(isnull(Master) || Master.current_runlevel == RUNLEVEL_INIT || !SSchat?.initialized)
 		to_chat_immediate(target, html, type, text, avoid_highlighting)
 		return

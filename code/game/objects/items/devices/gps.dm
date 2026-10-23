@@ -9,10 +9,11 @@
 	var/gpstag = "COM0"
 	var/emp_proof = FALSE
 	var/starton = TRUE
+	var/gps_component = /datum/component/gps/item
 
 /obj/item/gps/Initialize(mapload)
 	. = ..()
-	AddComponent(/datum/component/gps/item, gpstag, emp_proof, starton)
+	AddComponent(gps_component, gpstag, emp_proof, starton)
 
 /obj/item/gps/attack_self(mob/user)
 	if(HAS_TRAIT(user, TRAIT_CHUNKYFINGERS))

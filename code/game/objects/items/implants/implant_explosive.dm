@@ -65,7 +65,10 @@
 	to_chat(imp_in, "<span class='notice'>You activate your [name].</span>")
 	active = TRUE
 	var/turf/boomturf = get_turf(imp_in)
-	message_admins("[ADMIN_LOOKUPFLW(imp_in)] has activated their [name] at [ADMIN_VERBOSEJMP(boomturf)], with cause of [cause].")
+	if(is_antag_training_atom(boomturf))
+		log_game("[key_name(imp_in)] has activated their [name] at [AREACOORD(boomturf)], with cause of [cause].")
+	else
+		message_admins("[ADMIN_LOOKUPFLW(imp_in)] has activated their [name] at [ADMIN_VERBOSEJMP(boomturf)], with cause of [cause].")
 	if(delay > 7)
 		imp_in?.visible_message("<span class='warning'>[imp_in] starts beeping ominously!</span>")
 		playsound(get_turf(imp_in ? imp_in : src), 'sound/items/timer.ogg', 30, 0)

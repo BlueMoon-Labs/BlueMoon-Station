@@ -26,6 +26,9 @@
 	var/datum/status_effect/brother_sense/sense = avatar.has_status_effect(/datum/status_effect/brother_sense)
 	TEST_ASSERT_EQUAL(sense?.tracked, dummy_mind, "Чутьё ведёт болванчика")
 	var/datum/antag_training_program/blood_brother/program = session.program
+	var/list/data = session.ui_data(avatar)
+	for(var/option in program.options)
+		TEST_ASSERT(length(data["option_hints"][option]), "У кнопки «[option]» есть подсказка")
 	program.handle_choice(session, avatar, "Поднять связь")
 	TEST_ASSERT_EQUAL(team.bond_tier, 1, "Ступень поднялась")
 	program.handle_choice(session, avatar, "Ранить брата")

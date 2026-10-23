@@ -708,7 +708,7 @@ or shoot a gun to move around via Newton's 3rd Law of Motion."
 		var/servants = 0
 		var/list/textlist = list()
 		for(var/mob/living/L in GLOB.alive_mob_list)
-			if(is_servant_of_ratvar(L))
+			if(is_servant_of_ratvar(L) && !is_antag_training_atom(L))
 				servants++
 		var/datum/antagonist/clockcult/C = owner.mind.has_antag_datum(/datum/antagonist/clockcult,TRUE)
 		if(C && C.clock_team)

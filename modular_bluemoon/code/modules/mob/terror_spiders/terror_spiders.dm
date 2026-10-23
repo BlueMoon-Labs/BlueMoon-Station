@@ -287,7 +287,9 @@ GLOBAL_LIST_EMPTY(ts_spiderling_list)
 	name += " ([rand(1, 1000)])"
 	real_name = name
 	msg_terrorspiders("[src] has grown in [get_area(src)].")
-	if(is_away_level(z))
+	if(training_origin)
+		spider_awaymission = 1
+	else if(is_away_level(z))
 		spider_awaymission = 1
 		GLOB.ts_count_alive_awaymission++
 		if(spider_tier >= 3)
@@ -324,6 +326,21 @@ GLOBAL_LIST_EMPTY(ts_spiderling_list)
 	// lineage links. None of those relationships may survive mob teardown.
 	spider_myqueen = null
 	spider_mymother = null
+	for(var/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/spider as anything in GLOB.ts_spiderlist)
+		if(spider.spider_myqueen == src)
+			spider.spider_myqueen = null
+		if(spider.spider_mymother == src)
+			spider.spider_mymother = null
+	for(var/obj/structure/spider/eggcluster/terror_eggcluster/cluster as anything in GLOB.ts_egg_list)
+		if(cluster.spider_myqueen == src)
+			cluster.spider_myqueen = null
+		if(cluster.spider_mymother == src)
+			cluster.spider_mymother = null
+	for(var/obj/structure/spider/spiderling/terror_spiderling/spiderling as anything in GLOB.ts_spiderling_list)
+		if(spiderling.spider_myqueen == src)
+			spiderling.spider_myqueen = null
+		if(spiderling.spider_mymother == src)
+			spiderling.spider_mymother = null
 	handle_dying()
 	return ..()
 
@@ -345,6 +362,8 @@ GLOBAL_LIST_EMPTY(ts_spiderling_list)
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/proc/handle_dying()
 	if(!hasdied)
 		hasdied = 1
+		if(training_origin)
+			return
 		GLOB.ts_count_dead++
 		GLOB.ts_death_last = world.time
 		if(spider_awaymission)
@@ -383,7 +402,7 @@ GLOBAL_LIST_EMPTY(ts_spiderling_list)
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/proc/msg_terrorspiders(msgtext)
 	for(var/thing in GLOB.ts_spiderlist)
 		var/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/T = thing
-		if(T.stat != DEAD)
+		if(T.stat != DEAD && T.training_origin == training_origin)
 			to_chat(T, "<span class='terrorspider'>TerrorSense: [msgtext]</span>")
 
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/proc/CheckFaction()
@@ -445,7 +464,7 @@ GLOBAL_LIST_EMPTY(ts_spiderling_list)
 		var/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/T = thing
 		if(T.stat == DEAD)
 			continue
-		if(T.spider_awaymission != spider_awaymission)
+		if(T.spider_awaymission != spider_awaymission || T.training_origin != training_origin)
 			continue
 		targets |= T // we use |= instead of += to avoid adding src to the list twice
 	var/mob/living/L = input("Choose a terror to watch.", "Selection") in targets

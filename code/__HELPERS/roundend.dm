@@ -551,10 +551,14 @@
 	parts += span_header("Информация о кремниевых формах жизни")
 	parts += "<hr><b><font color=\"#60b6ff\">ИНФОРМАЦИЯ ОБ ИСКУСТВЕННЫХ ИНТЕЛЛЕКТАХ //</font></b>"
 	var/count_ai = 0
-	var/total_ai = GLOB.ai_list.len
+	var/list/reported_ais = list()
+	for(var/mob/living/silicon/ai/listed_ai as anything in GLOB.ai_list)
+		if(!listed_ai.training_origin)
+			reported_ais += listed_ai
+	var/total_ai = reported_ais.len
 	if(total_ai)
 		count_ai = 0
-		for(var/i in GLOB.ai_list)
+		for(var/i in reported_ais)
 			var/mob/living/silicon/ai/aiPlayer = i
 			if(aiPlayer.mind)
 				count_ai++
@@ -585,10 +589,14 @@
 
 	parts += "<hr><b><font color=\"#60b6ff\">ИНФОРМАЦИЯ О САМОСТОЯТЕЛЬНЫХ КИБОРГАХ //</font></b>"
 	var/count_silicon = 0
-	var/total_silicon = GLOB.silicon_mobs.len
+	var/list/reported_silicons = list()
+	for(var/mob/living/silicon/silicon as anything in GLOB.silicon_mobs)
+		if(!silicon.training_origin)
+			reported_silicons += silicon
+	var/total_silicon = reported_silicons.len
 	if(total_silicon)
 		count_silicon = 0
-		for(var/mob/living/silicon/robot/standalone_silicon in GLOB.silicon_mobs)
+		for(var/mob/living/silicon/robot/standalone_silicon in reported_silicons)
 			count_silicon++
 			if (!standalone_silicon.connected_ai && standalone_silicon.mind)
 				parts += "▶ ([count_silicon]/[total_silicon]) [minion_spacer ? "<br>" : ""]<b><font color=\"#60b6ff\">[standalone_silicon.name]</font></b>[standalone_silicon.mind.hide_ckey ? "" : " (игрок: <b>[standalone_silicon.mind.key]</b>)"]"

@@ -470,6 +470,8 @@ GLOBAL_LIST_EMPTY(parasites) //all currently existing/living guardians
 		for(var/para in guardians)
 			to_chat(para, my_message)
 		for(var/M in GLOB.dead_mob_list)
+			if(!antag_training_observer_hears(M, src))
+				continue
 			var/link = FOLLOW_LINK(M, src)
 			to_chat(M, "[link] [my_message]")
 
@@ -492,6 +494,8 @@ GLOBAL_LIST_EMPTY(parasites) //all currently existing/living guardians
 		var/mob/living/simple_animal/hostile/guardian/G = para
 		to_chat(G, "<font color=\"[G.guardiancolor]\"><b><i>[src]:</i></b></font> [preliminary_message]" )
 	for(var/M in GLOB.dead_mob_list)
+		if(!antag_training_observer_hears(M, src))
+			continue
 		var/link = FOLLOW_LINK(M, src)
 		to_chat(M, "[link] [my_message]")
 
