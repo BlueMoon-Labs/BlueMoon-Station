@@ -12,3 +12,15 @@ disallow_relative_proc_definitions = true
 
 [dmdoc]
 use_typepath_names = true
+
+[map_renderer]
+hide_invisible = [
+    "/obj/effect/landmark",
+    "/obj/effect/mapping_helpers",
+    "/obj/effect/spawner/random_barrier",
+    "/turf/open/genturf",
+    "/turf/open/openspace",
+]
+
+[map_renderer.render_passes]
+smart-cables = false

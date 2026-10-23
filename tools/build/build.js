@@ -16,7 +16,10 @@ import crypto from 'crypto';
 import { spawn } from 'child_process';
 import { DreamDaemon, DreamMaker, getDmPath, getDreamDaemonPath } from './lib/byond.js';
 import { yarn } from './lib/yarn.js';
+import { NanomapsTarget } from './lib/nanomaps.js';
 import Juke from './juke/index.js';
+
+export { NanomapsTarget };
 
 Juke.chdir('../..', import.meta.url);
 Juke.setup({ file: import.meta.url }).then((code) => process.exit(code));
@@ -113,10 +116,12 @@ export const StatbrowserTarget = new Juke.Target({
   },
 });
 
+
 export const DmTarget = new Juke.Target({
   dependsOn: ({ get }) => [
     LoadoutCryptoRuntimeTarget,
     StatbrowserTarget,
+    NanomapsTarget,
     get(DefineParameter).includes('ALL_TEMPLATES') && DmMapsIncludeTarget,
   ],
   inputs: async () => [
@@ -640,7 +645,7 @@ const prependDefines = (...defines) => {
 };
 
 export const TgsTarget = new Juke.Target({
-  dependsOn: [TguiTarget, TgFontTarget],
+  dependsOn: [TguiTarget, TgFontTarget, NanomapsTarget],
   executes: async () => {
     Juke.logger.info('Prepending TGS define');
     prependDefines('TGS');
