@@ -32,7 +32,6 @@
 	name = "Activate Hardlight field"
 	icon_icon = 'modular_bluemoon/icons/mob/actions/mod_radial.dmi'
 	button_icon_state = "open"
-	button_block_right_click_context_menu = TRUE
 	var/list/standart_overlay_choices = list()
 	var/list/genital_overlay_choices = list()
 

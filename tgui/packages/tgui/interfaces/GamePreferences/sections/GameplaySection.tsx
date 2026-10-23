@@ -17,6 +17,7 @@ type GameplayData = {
   action_buttons_hide: boolean;
   autostand: boolean;
   long_strip_menu: boolean;
+  right_click_menu: boolean;
   shift_invites: boolean;
 };
 
@@ -37,6 +38,7 @@ const GAMEPLAY_TOGGLES: { key: string; label: string; flag: string; invert?: boo
   { key: 'disable_combat_mouse_lock', label: 'Отключить захват мыши в бою', flag: 'disable_combat_mouse_lock', tooltip: 'Не блокировать курсор мыши в пределах окна при входе в боевой режим' },
   { key: 'smartlink', label: 'Смартлинк (боевой HUD)', flag: 'smartlink', tooltip: 'Показывать боевой HUD со счётчиком патронов и зарядом энергии при удержании оружия в руках' },
   { key: 'autostand', label: 'Автоматическое вставание', flag: 'autostand', tooltip: 'Автоматически вставать после падения или когда вас поднимают' },
+  { key: 'right_click_menu', label: 'ПКМ открывает меню действий', flag: 'right_click_menu', tooltip: 'Включено: ПКМ - меню действий, Shift+ПКМ - второе действие (толчок, открыть сумку, постучать). Выключено: наоборот, ПКМ сразу действует, меню на Shift+ПКМ. В комбат-режиме ПКМ всегда действие. Быстро переключить - верб «Режим ПКМ» во вкладке OOC' },
   { key: 'long_strip_menu', label: 'Длинное меню раздевания', flag: 'long_strip_menu', tooltip: 'Показывать расширенное меню взаимодействия с одеждой' },
   { key: 'shift_invites', label: 'Приглашения в смену', flag: 'shift_invites', tooltip: 'Если на станции не осталось ни одного сотрудника СБ, медика или инженера, наблюдатели, гости гост-кафе и игроки в лобби получают приглашение со ссылкой "Войти в смену". Вход в пустой отдел приносит 3 М$ в конце раунда, если продержаться в смене 30 минут или до эвакуации' },
 ];

@@ -65,9 +65,6 @@ GLOBAL_LIST_INIT(bitflags, list(
 /// Any-atom flag; do not move into the turf-only block below.
 #define ATMOS_IS_PROCESSING_1 (1<<21)
 
-/// Disables the right click context menu in MouseEntered()
-#define PREVENT_RIGHT_CLICK_CONTEXT_MENU_1 (1<<22)
-
 
 //turf-only flags
 #define NOJAUNT_1 (1<<14)

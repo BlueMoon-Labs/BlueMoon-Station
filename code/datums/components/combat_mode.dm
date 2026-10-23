@@ -136,7 +136,7 @@
 
 ///Changes the user direction to (try) match the pointer.
 /datum/component/combat_mode/proc/onMouseMove(mob/source, object, location, control, params)
-	if(source.client.show_popup_menus)
+	if(!(mode_flags & COMBAT_MODE_TOGGLED))
 		return
 	source.face_atom(object, TRUE)
 	lastmousedir = source.dir
@@ -154,8 +154,6 @@
 		return TRUE
 	mode_flags |= COMBAT_MODE_TOGGLED
 	enable_combat_mode(source, silent, FALSE, visible, HAS_TRAIT(source, TRAIT_COMBAT_MODE_LOCKED), TRUE)
-	if(source.client)
-		source.client.show_popup_menus = FALSE
 	if(iscarbon(source)) //I dislike this typecheck. It probably should be removed once that spoiled apple is componentized too.
 		var/mob/living/carbon/C = source
 		if(C.voremode)
@@ -168,8 +166,6 @@
 		return TRUE
 	mode_flags &= ~COMBAT_MODE_TOGGLED
 	disable_combat_mode(source, silent, FALSE, visible, !(mode_flags & COMBAT_MODE_ACTIVE), TRUE)
-	if(source.client)
-		source.client.show_popup_menus = TRUE
 	return TRUE
 
 /// Returns a field of flags that are contained in both the second arg and our bitfield variable.

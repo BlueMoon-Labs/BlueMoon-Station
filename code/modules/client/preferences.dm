@@ -397,6 +397,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/widescreenpref = TRUE
 	///Strip menu style
 	var/long_strip_menu = TRUE
+	/// ПКМ открывает меню действий, а Shift+ПКМ - действие. FALSE - наоборот.
+	var/right_click_menu = TRUE
 	///What size should pixels be displayed as? 0 is strech to fit
 	var/pixel_size = 0
 	///What scaling method should we use?
