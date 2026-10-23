@@ -6,7 +6,9 @@ import { Box, Button, NoticeBox, Slider, Stack } from '../../components';
 export const StationMap = (props) => {
   const { maps = [], initialZ, statePrefix = 'stationMap', renderMarkers, controls, hint } = props;
   const [selectedZ, setSelectedZ] = useLocalState(`${statePrefix}Z`, initialZ);
-  const [zoom, setZoom] = useLocalState(`${statePrefix}Zoom`, 1);
+  const [savedZoom, setSavedZoom] = useLocalState(`${statePrefix}Zoom`, 1);
+  const [zoom, setZoom] = useState(savedZoom);
+  const currentZoom = useRef(savedZoom);
   const [offset, setOffset] = useLocalState(`${statePrefix}Offset`, [0, 0]);
   const [viewOffset, setViewOffset] = useState(offset);
   const drag = useRef(null);
@@ -26,7 +28,28 @@ export const StationMap = (props) => {
   }
   const floorIndex = maps.indexOf(floor);
   const scale = 2 * zoom;
-  const setMapZoom = value => setZoom(Math.min(8, Math.max(1, value)));
+  const setMapZoom = (value, anchor = [0, 0]) => {
+    const nextZoom = Math.min(8, Math.max(1, value));
+    if (nextZoom === currentZoom.current) {
+      return;
+    }
+    const ratio = nextZoom / currentZoom.current;
+    // Сохраняем под якорем ту же точку карты; без курсора якорь — центр видимой области.
+    const nextOffset = currentOffset.current.map((position, axis) => (
+      (position + anchor[axis]) * ratio - anchor[axis]
+    ));
+    currentZoom.current = nextZoom;
+    currentOffset.current = nextOffset;
+    if (drag.current) {
+      drag.current.offset = nextOffset;
+      drag.current.x = drag.current.lastX;
+      drag.current.y = drag.current.lastY;
+    }
+    setZoom(nextZoom);
+    setViewOffset(nextOffset);
+    setSavedZoom(nextZoom);
+    setOffset(nextOffset);
+  };
   return (
     <Stack fill vertical>
       <Stack.Item>
@@ -85,7 +108,9 @@ export const StationMap = (props) => {
               icon="sync"
               tooltip="Сбросить масштаб и положение карты"
               onClick={() => {
+                currentZoom.current = 1;
                 setZoom(1);
+                setSavedZoom(1);
                 currentOffset.current = [0, 0];
                 setViewOffset([0, 0]);
                 setOffset([0, 0]);
@@ -99,7 +124,13 @@ export const StationMap = (props) => {
           onWheel={e => {
             if (e.deltaY) {
               e.preventDefault();
-              setMapZoom(zoom + (e.deltaY < 0 ? 0.5 : -0.5));
+              const viewport = e.currentTarget;
+              const rect = viewport.getBoundingClientRect();
+              const pixelScale = rect.width / viewport.clientWidth;
+              setMapZoom(currentZoom.current + (e.deltaY < 0 ? 0.5 : -0.5), [
+                (e.clientX - rect.left - rect.width / 2) / pixelScale,
+                (e.clientY - rect.top - rect.height / 2) / pixelScale,
+              ]);
             }
           }}>
           <Box
@@ -117,6 +148,8 @@ export const StationMap = (props) => {
                 pointerId: e.pointerId,
                 x: e.clientX,
                 y: e.clientY,
+                lastX: e.clientX,
+                lastY: e.clientY,
                 offset: currentOffset.current,
                 pixelScale,
               };
@@ -135,6 +168,8 @@ export const StationMap = (props) => {
                 session.offset[0] - (e.clientX - session.x) / session.pixelScale,
                 session.offset[1] - (e.clientY - session.y) / session.pixelScale,
               ];
+              session.lastX = e.clientX;
+              session.lastY = e.clientY;
               currentOffset.current = nextOffset;
               // Обновляем обе оси вместе; общее состояние TGUI сохраняем только в конце жеста.
               setViewOffset(nextOffset);
@@ -159,7 +194,7 @@ export const StationMap = (props) => {
         </Box>
       </Stack.Item>
       <Stack.Item color="label">
-        Колесо мыши — масштаб; перетаскивание — сдвиг.
+        Колесо мыши — масштаб к курсору; перетаскивание — сдвиг.
         {hint}
       </Stack.Item>
     </Stack>
