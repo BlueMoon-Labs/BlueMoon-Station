@@ -1,5 +1,6 @@
 """Какие ассеты используются, какие нет, и какие ссылки ведут в пустоту."""
 
+import os
 import re
 
 from . import inventory, references
@@ -83,6 +84,8 @@ class Audit:
         compiled = references.included_sources(self.dme)
         for path, origins in self.references.exact.items():
             if path.lower() in known or path.lstrip('/').split('/', 1)[0] not in roots:
+                continue
+            if inventory.is_generated_asset(path) and os.path.isfile(path):
                 continue
             live = sorted(origin for origin in origins if origin in compiled or origin.endswith(('.dmm', '.dmf')))
             if live:

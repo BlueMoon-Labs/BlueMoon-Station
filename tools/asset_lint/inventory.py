@@ -20,6 +20,10 @@ EXCLUDED_PREFIXES = (
 PNG_MAGIC = b'\x89PNG\r\n\x1a\n'
 
 
+def is_generated_asset(path):
+    return path.startswith('icons/_nanomaps/') and path.endswith('.png')
+
+
 def repository_files():
     """Файлы под git плюс новые неигнорируемые, чтобы локальный прогон видел их до git add."""
     try:
@@ -41,7 +45,7 @@ def repository_files():
 
 
 def is_checked_asset(path):
-    return is_asset_path(path) and not path.startswith(EXCLUDED_PREFIXES)
+    return is_asset_path(path) and not path.startswith(EXCLUDED_PREFIXES) and not is_generated_asset(path)
 
 
 def directories_of(files):
