@@ -569,6 +569,23 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/new_character_creator = TRUE
 	var/list/gfluid_blacklist = list()
 	var/fuzzy = FALSE
+	var/list/vending_layouts = list()
+
+/datum/preferences/proc/get_vending_layout(machine_type)
+	return vending_layouts["[machine_type]"] || "grid"
+
+/datum/preferences/proc/set_vending_layout(machine_type, layout)
+	if(!(ispath(machine_type, /obj/machinery/vending) || ispath(machine_type, /obj/machinery/smartfridge) || ispath(machine_type, /obj/machinery/equipment_vendor)))
+		return FALSE
+	if(!(layout in list("grid", "list")) || get_vending_layout(machine_type) == layout)
+		return FALSE
+	vending_layouts["[machine_type]"] = layout
+	save_single_pref("vending_layouts", vending_layouts.Copy())
+	var/list/open_uis = parent?.mob?.tgui_open_uis
+	for(var/datum/tgui/ui as anything in open_uis?.Copy())
+		if(ui.src_object?.type == machine_type)
+			ui.send_update()
+	return TRUE
 
 /datum/preferences/New(client/C)
 	if(!GLOB.genital_fluids_list)

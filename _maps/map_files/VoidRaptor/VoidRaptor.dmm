@@ -16222,7 +16222,7 @@
 	dir = 4
 	},
 /obj/machinery/light/cold/directional/east,
-/obj/machinery/bountyvend,
+/obj/machinery/equipment_vendor/vanguard,
 /turf/open/floor/plasteel/dark/smooth/edge{
 	dir = 8
 	},
@@ -21675,7 +21675,7 @@
 /obj/structure/window{
 	dir = 8
 	},
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /turf/open/floor/plasteel/rivets/large,
 /area/cargo/miningdock)
 "eZp" = (

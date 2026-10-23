@@ -840,6 +840,17 @@
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 	min_security_level = SEC_LEVEL_BLUE
 
+/datum/design/cal41_anathema
+	name = "Apostle to Anathema upgrade kit"
+	desc = "A set of spare parts for upgrading Apostle. Can be used only on empty gun"
+	id = "anathema"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 7500, /datum/material/titanium = 1000 )
+	build_path = /obj/item/weaponcrafting/gunkit/anathema
+	category = list("Weapons")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_BLUE
+
 // 410 cal дробь
 
 /datum/design/exorcist_rubber

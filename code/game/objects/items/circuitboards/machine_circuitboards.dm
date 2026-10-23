@@ -366,6 +366,27 @@
 	. = ..()
 	. += "<span class='notice'>It is set to layer [pipe_layer]. Use a Multitool on the circuit to change this.</span>"
 
+/obj/item/circuitboard/machine/scrubber
+	name = "Portable Air Scrubber"
+	build_path = /obj/machinery/portable_atmospherics/scrubber
+	needs_anchored = FALSE
+	req_components = list(
+		/obj/machinery/atmospherics/components/unary/vent_scrubber = 1,
+		/obj/item/tank/internals/plasma = 1,
+		/obj/item/tank/internals/oxygen = 1,
+		/obj/item/stack/sheet/plasteel = 5)
+
+
+/obj/item/circuitboard/machine/pump
+	name = "Portable Air Pump"
+	build_path = /obj/machinery/portable_atmospherics/pump
+	needs_anchored = FALSE
+	req_components = list(
+		/obj/machinery/atmospherics/components/unary/vent_pump = 1,
+		/obj/item/tank/internals/plasma = 1,
+		/obj/item/tank/internals/oxygen = 1,
+		/obj/item/stack/sheet/plasteel = 5)
+
 /obj/item/circuitboard/machine/crystallizer
 	name = "Crystallizer (Machine Board)"
 	icon_state = "engineering"
@@ -1408,14 +1429,14 @@
 /obj/item/circuitboard/machine/mining_equipment_vendor
 	name = "Mining Equipment Vendor (Machine Board)"
 	icon_state = "supply"
-	build_path = /obj/machinery/mineral/equipment_vendor
+	build_path = /obj/machinery/equipment_vendor
 	req_components = list(
 		/obj/item/stack/sheet/glass = 1,
 		/obj/item/stock_parts/matter_bin = 3)
 
 /obj/item/circuitboard/machine/mining_equipment_vendor/golem
 	name = "Golem Ship Equipment Vendor (Machine Board)"
-	build_path = /obj/machinery/mineral/equipment_vendor/golem
+	build_path = /obj/machinery/equipment_vendor/golem
 
 /obj/item/circuitboard/machine/ore_redemption
 	name = "Ore Redemption (Machine Board)"

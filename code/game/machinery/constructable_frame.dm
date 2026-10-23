@@ -161,14 +161,14 @@
 						continue
 					board_list += co
 					board_type_list += co.type
-				
+
 				reverseList(board_list)
 
 				if(board_list.len)
 					var/const/max_radial_len = 8
 					if(board_list.len == 1)
-						B = board_list[1]		
-					// Radial menu	
+						B = board_list[1]
+					// Radial menu
 					else if(board_list.len <= max_radial_len)
 						var/list/choices = list()
 						for(var/obj/item/circuitboard/machine/co in board_list)
@@ -224,6 +224,9 @@
 				else
 					to_chat(user, "<span class='notice'>You remove the circuit board and other components.</span>")
 					for(var/atom/movable/AM in components)
+						if(istype(AM, /obj/machinery/atmospherics))
+							machine_to_fitting(AM, drop_location())
+							continue
 						AM.forceMove(drop_location())
 				desc = initial(desc)
 				req_components = null
@@ -287,7 +290,18 @@
 
 			if(istype(P, /obj/item/storage/part_replacer) && P.contents.len && get_req_components_amt())
 				replacer_add_components(P, user)
-				
+
+			if(istype(P, /obj/item/pipe) && get_req_components_amt())
+				var/obj/item/pipe/pipe_item = P
+				for(var/I in req_components)
+					if(ispath(pipe_item.pipe_type, I) && (req_components[I] > 0))
+						var/obj/machinery/atmospherics/part = new pipe_item.pipe_type(src)
+						part.anchored = FALSE
+						components += part
+						req_components[I]--
+						qdel(P)
+						return TRUE
+
 			if(isitem(P) && get_req_components_amt())
 				for(var/I in req_components)
 					if(istype(P, I) && (req_components[I] > 0))
@@ -378,3 +392,7 @@
 			var/obj/item/I = X
 			I.forceMove(loc)
 	..()
+
+/proc/machine_to_fitting(obj/machinery/atmospherics/pipe, drop_loc)
+	new /obj/item/pipe(drop_loc, null, null, pipe)
+	qdel(pipe)
