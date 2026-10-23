@@ -115,7 +115,7 @@
 		if(accept_check(O))
 			load(O)
 			user.visible_message("<span class='notice'>[user] загружает \the [O] в \the [src].</span>", "<span class='notice'>Вы загрузили \the [O] в \the [src].</span>")
-			updateUsrDialog()
+			SStgui.update_uis(src)
 			if (visible_contents)
 				update_icon()
 			return TRUE
@@ -129,7 +129,7 @@
 				if(accept_check(G))
 					load(G)
 					loaded++
-			updateUsrDialog()
+			SStgui.update_uis(src)
 
 			if(loaded)
 				if(contents.len >= max_n_of_items)
