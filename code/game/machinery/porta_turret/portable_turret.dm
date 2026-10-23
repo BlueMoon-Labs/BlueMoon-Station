@@ -1024,8 +1024,8 @@ DEFINE_BITFIELD(turret_flags, list(
 /obj/machinery/turretid/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
 	if(issilicon(user) && !(machine_stat & BROKEN))
-		LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, enabled ? "Disable" : "Enable")
-		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, lethal ? "Set to stun" : "Set to kill")
+		LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, enabled ? "Выключить" : "Включить")
+		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, lethal ? "Режим оглушения" : "Режим поражения")
 		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/machinery/turretid/Destroy()

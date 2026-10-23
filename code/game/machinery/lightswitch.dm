@@ -50,11 +50,11 @@
 /obj/machinery/light_switch/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
 	if(isnull(held_item))
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, (area?.lightswitch ? "Flick off" : "Flick on"))
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, (area?.lightswitch ? "Выключить свет" : "Включить свет"))
 		return CONTEXTUAL_SCREENTIP_SET
 	if(held_item.tool_behaviour == TOOL_SCREWDRIVER)
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Deconstruct")
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_DISARM, "Disconnect lights")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Разобрать")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_DISARM, "Отключить лампы")
 		return CONTEXTUAL_SCREENTIP_SET
 	return
 

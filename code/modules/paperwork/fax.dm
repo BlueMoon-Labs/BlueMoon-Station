@@ -675,48 +675,48 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
 	. = ..()
 	if (!held_item)
 		if (!panel_open)
-			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Open interface")
+			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Открыть интерфейс")
 			return CONTEXTUAL_SCREENTIP_SET
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Manipulate wires")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Работать с проводами")
 		return CONTEXTUAL_SCREENTIP_SET
 
 	switch (held_item.tool_behaviour)
 		if (TOOL_SCREWDRIVER)
 			if (panel_open)
-				LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Close maintenance panel")
+				LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Закрыть панель")
 				return CONTEXTUAL_SCREENTIP_SET
-			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Open maintenance panel")
+			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Открыть панель")
 			return CONTEXTUAL_SCREENTIP_SET
 		if (TOOL_WRENCH)
 			if (anchored)
-				LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Unsecure")
+				LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Открутить")
 				return CONTEXTUAL_SCREENTIP_SET
-			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Secure")
+			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Закрепить")
 			return CONTEXTUAL_SCREENTIP_SET
 		if (TOOL_MULTITOOL)
 			if (panel_open)
-				LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Pulse wires")
+				LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Импульс по проводам")
 				return CONTEXTUAL_SCREENTIP_SET
-			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Rename in network")
+			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Переименовать в сети")
 			return CONTEXTUAL_SCREENTIP_SET
 		if (TOOL_WIRECUTTER)
 			if (!panel_open)
 				return .
-			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Manipulate wires")
+			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Работать с проводами")
 			return CONTEXTUAL_SCREENTIP_SET
 
 	if (jammed && is_type_in_list(held_item, list(/obj/item/reagent_containers/spray, /obj/item/soap, /obj/item/reagent_containers/rag)))
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Clean output tray")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Очистить лоток")
 		return CONTEXTUAL_SCREENTIP_SET
 
 	if (panel_open)
 		if (istype(held_item, /obj/item/card/emag))
-			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Remove network safeties")
+			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Снять сетевые ограничения")
 			return CONTEXTUAL_SCREENTIP_SET
 		return .
 
 	if (is_allowed_type(held_item))
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Insert into fax machine")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Вставить в факс")
 		return CONTEXTUAL_SCREENTIP_SET
 
 	return .

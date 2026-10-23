@@ -22,7 +22,7 @@
 /obj/item/reagent_containers/add_item_context(obj/item/source, list/context, atom/target, mob/living/user)
 	. = ..()
 	if(iscarbon(target))
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Inject")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Ввести")
 		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/item/reagent_containers/hypospray/attack_paw(mob/user)
