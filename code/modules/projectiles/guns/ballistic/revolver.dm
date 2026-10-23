@@ -920,7 +920,7 @@
 	w_class = WEIGHT_CLASS_NORMAL
 	weapon_weight = WEAPON_HEAVY
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/apostle
-	fire_delay = 3
+	fire_delay = 5
 	fire_select_modes = list(SELECT_SEMI_AUTOMATIC, SELECT_FULLY_AUTOMATIC)
 	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
 	item_state = "apostle"
