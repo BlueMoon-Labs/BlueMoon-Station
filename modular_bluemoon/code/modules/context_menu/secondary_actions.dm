@@ -5,16 +5,36 @@
 /atom/proc/secondary_action_hint(mob/living/user, obj/item/held_item)
 	return null
 
-/// Собирает контекст скринтипа: сигналы атома и предмета в руке плюс ПКМ-действие
+/// Что сделает ПКМ этим предметом в руке по цели (alt_pre_attack, altafterattack). null - своего действия нет.
+/obj/item/proc/secondary_attack_hint(atom/target, mob/living/user)
+	return null
+
+/// Что сделает ПКМ по атому любым предметом в руке (altattackby). null - своего действия нет.
+/atom/proc/secondary_attackby_hint(obj/item/held_item, mob/living/user)
+	return null
+
+/// Собирает контекст скринтипа: сигналы атома и предмета в руке плюс ПКМ-действие.
+/// Из него же строится меню действий, так что ПКМ-действие без подписи в меню не попадёт.
 /atom/proc/collect_screentip_context(mob/living/user, obj/item/held_item, list/context)
 	. = NONE
 	if(flags_1 & HAS_CONTEXTUAL_SCREENTIPS_1 || held_item?.item_flags & ITEM_HAS_CONTEXTUAL_SCREENTIPS)
 		. |= SEND_SIGNAL(src, COMSIG_ATOM_REQUESTING_CONTEXT_FROM_ITEM, context, held_item, user)
 		if(held_item)
 			. |= SEND_SIGNAL(held_item, COMSIG_ITEM_REQUESTING_CONTEXT_FOR_TARGET, context, src, user)
-	if(context[SCREENTIP_CONTEXT_RMB] || (held_item && held_item != src))
-		return
-	var/hint = secondary_action_hint(user, held_item)
+	var/hint
+	if(held_item && held_item != src)
+		// порядок как у rightclick_melee_attack_chain: действие предмета перебивает действие цели (например, передачу)
+		hint = held_item.secondary_attack_hint(src, user)
+		if(hint)
+			context[SCREENTIP_CONTEXT_RMB] = hint
+			return . | CONTEXTUAL_SCREENTIP_SET
+		if(context[SCREENTIP_CONTEXT_RMB] || !user.CanReach(src, held_item))
+			return
+		hint = secondary_attackby_hint(held_item, user)
+	else
+		if(context[SCREENTIP_CONTEXT_RMB])
+			return
+		hint = secondary_action_hint(user, held_item)
 	if(hint)
 		context[SCREENTIP_CONTEXT_RMB] = hint
 		. |= CONTEXTUAL_SCREENTIP_SET
@@ -225,4 +245,64 @@
 /obj/machinery/disposal/bin/secondary_action_hint(mob/living/user, obj/item/held_item)
 	if(!held_item)
 		return flush ? "Убрать смыв" : "Включить смыв"
+	return ..()
+
+/obj/item/spear/secondary_action_hint(mob/living/user, obj/item/held_item)
+	if(held_item == src && explosive)
+		return "Взвести бомбу"
+	return ..()
+
+/obj/structure/chair/secondary_action_hint(mob/living/user, obj/item/held_item)
+	if(!held_item && isliving(user) && user.a_intent != INTENT_HELP && item_chair && length(buckled_mobs) == 1 && dir == user.dir && !(flags_1 & NODECONSTRUCT_1))
+		return "Выдернуть стул"
+	return ..()
+
+// Подсказки к ПКМ предметом в руке по цели. altafterattack срабатывает только вне досягаемости.
+
+/obj/item/gun/energy/secondary_attack_hint(atom/target, mob/living/user)
+	if(!right_click_overridden && length(ammo_type) > 1 && !user.CanReach(target, src))
+		return "Сменить режим"
+	return ..()
+
+/obj/item/gun/energy/broom/secondary_attack_hint(atom/target, mob/living/user)
+	return null
+
+/obj/item/gun/energy/e_gun/hos/secondary_attack_hint(atom/target, mob/living/user)
+	return user.CanReach(target, src) ? null : "Выстрелить электродом"
+
+/obj/item/gun/energy/e_gun/advtaser/secondary_attack_hint(atom/target, mob/living/user)
+	return user.CanReach(target, src) ? null : "Выстрелить электродом"
+
+/obj/item/gun/ballistic/automatic/m90/secondary_attack_hint(atom/target, mob/living/user)
+	if(underbarrel && !user.CanReach(target, src))
+		return "Выстрелить из подствольника"
+	return ..()
+
+/obj/item/gun/ballistic/automatic/ak12/secondary_attack_hint(atom/target, mob/living/user)
+	if(underbarrel && !user.CanReach(target, src))
+		return "Выстрелить из подствольника"
+	return ..()
+
+/obj/item/shield/secondary_attack_hint(atom/target, mob/living/user)
+	if(shield_flags & SHIELD_CAN_BASH)
+		return "Удар щитом"
+	return ..()
+
+/obj/item/melee/transforming/cleaving_saw/secondary_attack_hint(atom/target, mob/living/user)
+	if(!user.CanReach(target, src))
+		return "Кувырок"
+	return ..()
+
+/obj/item/toy/fluff/secondary_attack_hint(atom/target, mob/living/user)
+	return "Помахать"
+
+/obj/item/reagent_containers/rag/secondary_attack_hint(atom/target, mob/living/user)
+	if(isliving(target) && user.a_intent == INTENT_HELP && user.CanReach(target, src))
+		var/mob/living/living_target = target
+		return living_target.on_fire ? "Сбить пламя" : "Вытереть насухо"
+	return ..()
+
+/obj/structure/deployable_barricade/secondary_attackby_hint(obj/item/held_item, mob/living/user)
+	if(!anchored)
+		return "Повернуть"
 	return ..()

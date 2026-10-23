@@ -121,7 +121,7 @@
 	.["action_buttons_hide"] = action_buttons_hide_on_spawn
 	.["autostand"] = autostand
 	.["long_strip_menu"] = long_strip_menu
-	.["right_click_menu"] = right_click_menu
+	.["right_click_menu"] = right_click_menu_enabled()
 	.["shift_invites"] = shift_invites
 
 	// Gameplay: combat
@@ -492,7 +492,7 @@
 					long_strip_menu = !long_strip_menu
 					dirty_var = "long_strip_menu"
 				if("right_click_menu")
-					right_click_menu = !right_click_menu
+					right_click_menu = !right_click_menu_enabled()
 					dirty_var = "right_click_menu"
 				if("shift_invites")
 					shift_invites = !shift_invites

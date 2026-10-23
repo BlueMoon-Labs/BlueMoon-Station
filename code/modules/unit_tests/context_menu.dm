@@ -335,3 +335,88 @@
 	var/static/regex/tags = regex(@"<[^>]*>", "g")
 	TEST_ASSERT_EQUAL(replacetext(build_context(context, SCREENTIP_CONTEXT_RMB, FALSE), tags, ""), "ПКМ (дизарм): Толкнуть", "ПКМ с интентом подписан не по-русски")
 	TEST_ASSERT_EQUAL(replacetext(build_context(context, SCREENTIP_CONTEXT_CTRL_LMB, FALSE), tags, ""), "Ctrl-ЛКМ: Потянуть", "Ctrl-ЛКМ подписан не по-русски")
+
+/// ПКМ предметом в руке попадает в меню: действие предмета перебивает передачу, а альт-выстрел подписан только вне досягаемости
+/datum/unit_test/context_menu_secondary_held_item
+
+/datum/unit_test/context_menu_secondary_held_item/Run()
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent)
+	var/mob/living/carbon/human/near = allocate(/mob/living/carbon/human/dummy/consistent, get_step(user, EAST))
+	var/mob/living/carbon/human/far = allocate(/mob/living/carbon/human/dummy/consistent, locate(user.x + 3, user.y, user.z))
+	user.a_intent = INTENT_HELP
+
+	var/obj/item/shield/riot/shield = allocate(/obj/item/shield/riot)
+	user.put_in_active_hand(shield)
+	var/datum/context_menu/menu = user.open_context_menu(near, "right=1;shift=1")
+	var/datum/context_menu_entry/click/bash = find_context_entry(menu, "Удар щитом")
+	TEST_ASSERT_NOTNULL(bash, "Удара щитом нет в меню")
+	TEST_ASSERT_EQUAL(bash.hint, "Shift-ПКМ", "Удар щитом не подписан как второе действие")
+	TEST_ASSERT_NULL(find_context_entry(menu, "Передать"), "Щит на ПКМ бьёт, а меню предлагает передать")
+	user.close_context_menu()
+	qdel(shield)
+
+	var/obj/item/gun/energy/e_gun/gun = allocate(/obj/item/gun/energy/e_gun)
+	user.put_in_active_hand(gun)
+	menu = user.open_context_menu(far, "right=1;shift=1")
+	TEST_ASSERT_NOTNULL(find_context_entry(menu, "Сменить режим"), "Смены режима энергопушки нет в меню")
+	user.close_context_menu()
+	menu = user.open_context_menu(near, "right=1;shift=1")
+	TEST_ASSERT_NULL(find_context_entry(menu, "Сменить режим"), "Смена режима подписана вплотную, где ПКМ стреляет")
+	user.close_context_menu()
+	qdel(gun)
+
+	var/obj/item/melee/sabre/sabre = allocate(/obj/item/melee/sabre)
+	user.put_in_active_hand(sabre)
+	var/list/context = list()
+	far.collect_screentip_context(user, sabre, context)
+	var/list/rmb = context[SCREENTIP_CONTEXT_RMB]
+	TEST_ASSERT_EQUAL(rmb?[INTENT_ANY], "Указать клинком", "Указание клинком не подписано")
+
+/// ПКМ по структурам без своих подписей раньше не попадал в меню: стул из-под сидящего, поворот баррикады
+/datum/unit_test/context_menu_secondary_structures
+
+/datum/unit_test/context_menu_secondary_structures/Run()
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent)
+	var/turf/next_turf = get_step(user, EAST)
+	var/obj/structure/chair/chair = allocate(/obj/structure/chair, next_turf)
+	var/mob/living/carbon/human/sitter = allocate(/mob/living/carbon/human/dummy/consistent, next_turf)
+	chair.setDir(user.dir)
+	TEST_ASSERT(chair.buckle_mob(sitter, TRUE), "Не удалось усадить на стул")
+	user.a_intent = INTENT_HELP
+	TEST_ASSERT_NULL(chair.secondary_action_hint(user, null), "На помощи стул не выдёргивают, а подпись есть")
+	user.a_intent = INTENT_HARM
+	TEST_ASSERT_EQUAL(chair.secondary_action_hint(user, null), "Выдернуть стул", "Нет подписи выдёргивания стула")
+	chair.unbuckle_all_mobs(TRUE)
+	qdel(chair)
+
+	var/obj/structure/deployable_barricade/barricade = allocate(/obj/structure/deployable_barricade, get_step(user, NORTH))
+	barricade.anchored = FALSE
+	var/obj/item/pen/pen = allocate(/obj/item/pen)
+	user.put_in_active_hand(pen)
+	user.a_intent = INTENT_HELP
+	var/datum/context_menu/menu = user.open_context_menu(barricade, "right=1;shift=1")
+	var/datum/context_menu_entry/click/rotate = find_context_entry(menu, "Повернуть")
+	TEST_ASSERT_NOTNULL(rotate, "Поворота баррикады нет в меню")
+	var/old_dir = barricade.dir
+	menu.choose(rotate)
+	TEST_ASSERT(barricade.dir != old_dir, "Пункт меню не повернул баррикаду")
+
+/// Режим ПКМ, который игрок не выбирал, берётся из конфига; выбранный - нет
+/datum/unit_test/context_menu_default_from_config
+	var/old_default
+
+/datum/unit_test/context_menu_default_from_config/Run()
+	old_default = CONFIG_GET(flag/right_click_menu_default)
+	var/datum/preferences/prefs = new
+	TEST_ASSERT_NULL(prefs.right_click_menu, "Новый игрок уже с выбранным режимом ПКМ")
+	CONFIG_SET(flag/right_click_menu_default, FALSE)
+	TEST_ASSERT(!prefs.right_click_menu_enabled(), "Дефолт из конфига не дошёл до невыбравшего")
+	CONFIG_SET(flag/right_click_menu_default, TRUE)
+	TEST_ASSERT(prefs.right_click_menu_enabled(), "Дефолт из конфига не дошёл до невыбравшего")
+	prefs.right_click_menu = FALSE
+	TEST_ASSERT(!prefs.right_click_menu_enabled(), "Дефолт конфига перебил выбор игрока")
+	qdel(prefs)
+
+/datum/unit_test/context_menu_default_from_config/Destroy()
+	CONFIG_SET(flag/right_click_menu_default, old_default)
+	return ..()

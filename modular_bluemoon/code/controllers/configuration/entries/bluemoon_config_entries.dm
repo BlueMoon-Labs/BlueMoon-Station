@@ -35,3 +35,8 @@
 	default = 100
 	integer = TRUE
 	min_val = 0
+
+/// ПКМ по умолчанию открывает меню действий (Shift+ПКМ - второе действие). Выключено - ПКМ сразу действует.
+/// Касается только игроков, которые сами не переключали режим.
+/datum/config_entry/flag/right_click_menu_default
+	default = TRUE

@@ -48,7 +48,11 @@
 	return right_click_opens_menu(list("right" = 1)) ? "Shift-ПКМ" : "ПКМ"
 
 /mob/proc/right_click_menu_preferred()
-	return client?.prefs ? client.prefs.right_click_menu : TRUE
+	return client?.prefs ? client.prefs.right_click_menu_enabled() : CONFIG_GET(flag/right_click_menu_default)
+
+/// Выбор игрока, а если он не выбирал - дефолт сервера: смена дефолта в конфиге доходит до всех, кто не переключал сам
+/datum/preferences/proc/right_click_menu_enabled()
+	return isnull(right_click_menu) ? CONFIG_GET(flag/right_click_menu_default) : right_click_menu
 
 /client/verb/toggle_right_click_mode()
 	set category = "OOC"
@@ -56,7 +60,7 @@
 	set desc = "Что делает ПКМ: открывает меню действий или сразу действует"
 	if(!prefs)
 		return
-	prefs.right_click_menu = !prefs.right_click_menu
+	prefs.right_click_menu = !prefs.right_click_menu_enabled()
 	prefs.save_pref_var("right_click_menu")
 	if(prefs.right_click_menu)
 		to_chat(src, span_notice("ПКМ открывает меню действий, Shift+ПКМ - второе действие (в комбат-режиме ПКМ всё равно действует)."))
