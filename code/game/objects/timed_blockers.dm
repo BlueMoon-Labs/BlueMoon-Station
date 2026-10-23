@@ -99,10 +99,6 @@ GLOBAL_LIST_EMPTY(trespass_warns) // to avoid spamming the bandit's chat
 	if(target)
 		GLOB.trespass_warns -= target
 
-/obj/structure/shield/yellow
-	icon_state = "shield-yellow"
-	antag_type = /datum/antagonist/ghost_role/inteq/comms
-
 /obj/structure/shield/golden
 	icon_state = "shield-golden"
 
@@ -119,7 +115,7 @@ GLOBAL_LIST_EMPTY(trespass_warns) // to avoid spamming the bandit's chat
 /obj/structure/shield/bloodward
 	name = "Blood Shield"
 	desc = "Густой, плотный, энергетический щит алого оттенка. Плетения Кровавого Геометра без присмотра живых культистов быстро тают."
-	icon_state = "shield-red"
+	icon_state = "shield-cult"
 	antag_type = /datum/antagonist/cult/neutered/ghost_role
 
 /obj/structure/shield/clockward
@@ -127,6 +123,11 @@ GLOBAL_LIST_EMPTY(trespass_warns) // to avoid spamming the bandit's chat
 	desc = "Густой, плотный, энергетический щит золотистого оттенка. Шестерни Всемогущего Двигателя без присмотра слуг быстро останавливаются."
 	icon_state = "shield-yellow"
 	antag_type = /datum/antagonist/clockcult/neutered/ghost_role
+
+/obj/structure/shield/yellow
+	icon_state = "shield-yellow"
+	desc = "Густой, плотный, энергетический щит золотистого оттенка."
+	antag_type = /datum/antagonist/ghost_role/inteq/comms
 
 /datum/antagonist/cult/neutered/ghost_role
 	name = "Cultist Remnant"
