@@ -1,5 +1,4 @@
 @use '../base.scss';
-@use './Button.scss';
 
 .ImageButton {
   overflow: hidden;
@@ -13,8 +12,11 @@
   border-radius: base.$border-radius;
 
   &:not(.ImageButton--disabled) {
-    @include Button.button-color(Button.$color-default);
-    background-color: transparent;
+    transition: background-color 50ms;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.08);
+    }
   }
 
   &__container {
