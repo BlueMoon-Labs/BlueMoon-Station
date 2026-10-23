@@ -559,15 +559,15 @@
 			LAZYSET(quick_split, "[option]", option_display)
 	var/stackmaterial
 	if(length(quick_split) <= 2)
-		stackmaterial = round(input(user, "How many sheets do you wish to take out of this stack?\nMax: [max]") as null|num)
+		stackmaterial = tgui_input_number(user, "Сколько листов вы хотите взять из этого стака?", "Разделение стака", max_value = max, min_value = 1, round_value = TRUE)
 	else
 		stackmaterial = show_radial_menu(user, get_atom_on_turf(src), quick_split, require_near = TRUE, tooltips = TRUE)
 		if(stackmaterial == "Custom")
-			stackmaterial = round(input(user, "How many sheets do you wish to take out of this stack?\nMax: [max]") as null|num)
+			stackmaterial = tgui_input_number(user, "Сколько листов вы хотите взять из этого стака?", "Разделение стака", max_value = max, min_value = 1, round_value = TRUE)
 		stackmaterial = isnum(stackmaterial) ? stackmaterial : text2num(stackmaterial)
-	stackmaterial = min(get_amount(), stackmaterial)
 	if(stackmaterial == null || stackmaterial <= 0 || !user.canUseTopic(src, BE_CLOSE, TRUE, FALSE)) //, !iscyborg(user)
 		return
+	stackmaterial = min(get_amount(), stackmaterial)
 	split_stack(user, stackmaterial)
 	to_chat(user, "<span class='notice'>You take [stackmaterial] sheets out of the stack.</span>")
 
