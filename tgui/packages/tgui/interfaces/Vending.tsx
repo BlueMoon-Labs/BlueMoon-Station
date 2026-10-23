@@ -3,9 +3,9 @@ import { capitalizeAll, createSearch } from 'common/string';
 import { useState } from 'react';
 
 import { useBackend } from '../backend';
-import { Button, Icon, ImageButton, Input, NoticeBox, Section, Stack } from '../components';
+import { Box, Button, Icon, ImageButton, Input, NoticeBox, Section, Stack } from '../components';
 import { Window } from '../layouts';
-import { LayoutToggle, VendingLayout } from './common/LayoutToggle';
+import { LayoutToggle, useLayoutScroll, VendingLayout } from './common/LayoutToggle';
 
 type Category = { icon: string };
 
@@ -52,6 +52,7 @@ type VendingData = {
 
 export const Vending = () => {
   const { data } = useBackend<VendingData>();
+  const { scrollableRef, onScroll } = useLayoutScroll(data.vending_layout);
   const {
     onstation,
     product_records = [],
@@ -65,7 +66,7 @@ export const Vending = () => {
     Object.keys(categories)[0]
   );
   const [stockSearch, setStockSearch] = useState('');
-  const searching = stockSearch.length >= 2;
+  const searching = stockSearch.trim().length > 0;
   const search = createSearch(stockSearch, (product: Product) => product.name);
   const custom = !!vending_machine_input;
   const inventory: Product[] = (
@@ -102,6 +103,8 @@ export const Vending = () => {
             <Section
               fill
               scrollable
+              scrollableRef={scrollableRef}
+              onScroll={onScroll}
               title="Ассортимент"
               buttons={
                 <Stack align="center">
@@ -116,11 +119,22 @@ export const Vending = () => {
                       onInput={(_, value) => setStockSearch(value)}
                       placeholder="Поиск..."
                       value={stockSearch}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Escape') {
+                          setStockSearch('');
+                        }
+                      }}
                     />
                   </Stack.Item>
+                  {!!stockSearch && (
+                    <Stack.Item>
+                      <Button icon="times" tooltip="Очистить поиск" onClick={() => setStockSearch('')} />
+                    </Stack.Item>
+                  )}
                   <LayoutToggle />
                 </Stack>
               }>
+              <Box color="label" fontSize={0.9} mb={1}>{searching ? 'Найдено' : 'Позиций'}: {products.length}</Box>
               {!products.length && <NoticeBox>Ничего не найдено.</NoticeBox>}
               {products.map((product) => (
                 <VendingProduct
@@ -182,25 +196,30 @@ const VendingProduct = (props: { custom: boolean; product: Product }) => {
     : !onstation || product.price === 0 || !!(record && free_stock[record.ref]);
   const discount = !custom && !record?.premium && !!user && department === user.department;
   const price = discount ? Math.max(Math.round(product.price * jobDiscount), 1) : product.price;
-  const disabled = remaining <= 0
-    || (!!onstation && !user)
-    || (!free && price > (user?.cash ?? 0));
+  const disabledReason = remaining <= 0 ? 'Закончился'
+    : onstation && !user ? 'Нужна ID-карта с банковским счётом'
+    : !free && price > (user?.cash ?? 0) ? 'Недостаточно средств'
+    : '';
+  const disabled = !!disabledReason;
   const fluid = data.vending_layout === 'list';
   const priceLabel = free ? 'Бесплатно' : `${price} кр.`;
   const displayName = capitalizeAll(product.name);
 
   return (
     <ImageButton
+      data-product-key={record?.ref || product.name}
       fluid={fluid}
       imageSize={fluid ? 32 : 64}
       base64={'img' in product ? product.img : undefined}
       asset={record ? ['vending32x32', record.path] : undefined}
       disabled={disabled}
-      tooltip={`${displayName} — ${priceLabel}, ${remaining} шт.`}
+      tooltip={`${displayName} — ${priceLabel}, ${remaining} шт.${disabledReason ? ` — ${disabledReason}` : ''}`}
       tooltipPosition="bottom"
       buttonsAlt={!fluid && (
         <Stack fontSize={0.8}>
-          <Stack.Item grow minWidth={0} textAlign="left" color="gold" style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{priceLabel}</Stack.Item>
+          <Stack.Item grow minWidth={0} textAlign="left" color="gold" style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            {free ? <Icon name="gift" /> : priceLabel}
+          </Stack.Item>
           <Stack.Item shrink={0} color="lightgray">x{remaining}</Stack.Item>
         </Stack>
       )}
@@ -211,7 +230,7 @@ const VendingProduct = (props: { custom: boolean; product: Product }) => {
         <Stack align="center" textAlign="right">
           <Stack.Item grow textAlign="left">{displayName}</Stack.Item>
           <Stack.Item color="label" fontSize={0.8}>{remaining} шт.</Stack.Item>
-          <Stack.Item color="gold" fontSize={0.85}>{priceLabel}</Stack.Item>
+          <Stack.Item color="gold" fontSize={0.85}>{free ? <Icon name="gift" /> : priceLabel}</Stack.Item>
         </Stack>
       ) : displayName}
     </ImageButton>
