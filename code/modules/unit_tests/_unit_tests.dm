@@ -152,6 +152,7 @@
 // #include "connect_loc.dm"
 // #include "confusion.dm"
 // #include "crayons.dm"
+#include "context_menu.dm"
 #include "create_and_destroy.dm"
 #include "custom_emote_panel.dm"
 #include "custom_portal_station.dm"

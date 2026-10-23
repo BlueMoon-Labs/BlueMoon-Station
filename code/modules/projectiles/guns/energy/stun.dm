@@ -18,7 +18,7 @@
 
 /obj/item/gun/energy/e_gun/advtaser
 	name = "hybrid taser"
-	desc = "A dual-mode taser designed to fire both short-range high-power electrodes and long-range disabler beams. <span class='boldnotice'>Right click in combat mode to fire a taser shot with a cooldown.</span>"
+	desc = "A dual-mode taser designed to fire both short-range high-power electrodes and long-range disabler beams. <span class='boldnotice'>Right click to fire a taser shot with a cooldown.</span>"
 	icon_state = "advtaser"
 	ammo_type = list(/obj/item/ammo_casing/energy/disabler, /obj/item/ammo_casing/energy/electrode/security = FALSE)
 	ammo_x_offset = 2
