@@ -93,7 +93,14 @@
 
 /obj/machinery/atmospherics/components/unary/thermomachine/examine(mob/user)
 	. = ..()
-	. += span_notice("Термостат настроен на [target_temperature]K ([target_temperature-T0C]C).")
+	. += span_notice("<b>При закрытой панели:</b>")
+	. += span_notice(" -<b>AltClick</b> меняет настройку температуры.")
+	. += span_notice(" -<b>CtrlClick</b> включает/выключает машину.")
+	. += span_notice("<b>При открытой панели:</b>")
+	. += span_notice(" -<b>Мультитул</b> переключает слой входной трубы.")
+	. += span_notice(" -<b>Ключ</b> вращает входную трубу.")
+	. += span_notice(" -<b>Ключ (disarm)</b> откручивает машину от пола.")
+	. += span_notice("Термостат настроен на <b>[target_temperature]K ([target_temperature-T0C]C)</b>.")
 
 /obj/machinery/atmospherics/components/unary/thermomachine/examine_display_content(mob/user)
 	. += "\
