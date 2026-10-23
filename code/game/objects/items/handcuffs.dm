@@ -79,7 +79,7 @@
 								"<span class='userdanger'>[user] пытается надеть [src.name] на [C]!</span>")
 
 			playsound(loc, cuffsound, 30, 1, -2)
-			if(do_mob(user, C, 30) && (C.get_num_arms(FALSE) >= 2 || C.get_arm_ignore()))
+			if(do_mob(user, C, 3 SECONDS * (HAS_TRAIT(user, TRAIT_FAST_CUFFING) ? MOD_CUFF_SPEED : 1)) && (C.get_num_arms(FALSE) >= 2 || C.get_arm_ignore()))
 				if(C.handcuffed)
 					to_chat(user, "<span class='warning'>Вы не смогли надеть наручники на [C]!</span>")
 					return

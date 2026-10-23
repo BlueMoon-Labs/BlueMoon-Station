@@ -58,6 +58,7 @@
 	log_admin("INTEGRAL BITCH [user?.ckey] завершил печать программы на [src]. Созданная сборка: [assembly], Программа: [program]")
 	assembly.creator = key_name(user)
 	assembly.investigate_log("was printed by [assembly.creator].", INVESTIGATE_CIRCUIT)
+	assembly.get_printed_item()
 	cloning = FALSE
 	print_start_time = NONE
 	print_end_time = NONE
@@ -275,8 +276,6 @@
 
 			var/obj/item/built = new build_type(drop_location())
 
-			usr?.put_in_hands(built)
-
 			if(istype(built, /obj/item/electronic_assembly))
 				var/obj/item/electronic_assembly/E = built
 				E.creator = key_name(usr)
@@ -289,6 +288,9 @@
 				E.diag_hud_set_circuittracking()
 				E.last_diag_process_key = E.compute_diagnostic_hud_process_key()
 				E.investigate_log("was printed by [E.creator].", INVESTIGATE_CIRCUIT)
+				built = E.get_printed_item()
+
+			usr?.put_in_hands(built)
 
 			to_chat(usr, "<span class='notice'>[capitalize(built.name)] printed.</span>")
 			playsound(src, 'sound/items/jaws_pry.ogg', 50, TRUE)

@@ -419,7 +419,7 @@
 
 /datum/spellbook_entry/item/mod
 	name = "Magic MODsuit"
-	desc = "Особым образом зачарованный и улучшенный МОД костюм с щитом и возможностью колдовать"
+	desc = "Зачарованный MOD с щитом и возможностью колдовать. Привязывается к владельцу при призыве; чужой носитель будет стёрт из временной линии."
 	item_path = /obj/item/mod/control/pre_equipped/mage
 	category = SPELL_CATEGORY_DEFEND
 	cost = 3

@@ -1334,6 +1334,8 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 		riding_datum.unequip_buckle_inhands(target)
 
 /mob/living/carbon/human/proc/is_shove_knockdown_blocked() //If you want to add more things that block shove knockdown, extend this
+	if(HAS_TRAIT(src, TRAIT_BRAWLING_KNOCKDOWN_BLOCKED))
+		return TRUE
 	for(var/obj/item/clothing/C in get_equipped_items()) //doesn't include pockets
 		if(C.blocks_shove_knockdown)
 			return TRUE

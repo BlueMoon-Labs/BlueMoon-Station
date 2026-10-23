@@ -11,6 +11,7 @@
 	incompatible_modules = list(/obj/item/mod/module/welding)
 	overlay_state_inactive = "module_welding"
 	mod_module_flags = MOD_MODULE_ENGINEERING // BLUEMOON ADD
+	required_modpart_index = MOD_PART_HEAD
 
 /obj/item/mod/module/welding/on_suit_activation()
 	var/obj/item/clothing/mod_part/head/helmet = mod.get_helmet()
@@ -96,7 +97,7 @@
 		эти работают только в условиях невесомости, что является благословением для некоторых инженеров."
 	icon_state = "tether"
 	module_type = MODULE_ACTIVE
-	complexity = 3
+	complexity = 2
 	use_power_cost = DEFAULT_CHARGE_DRAIN
 	incompatible_modules = list(/obj/item/mod/module/tether)
 	cooldown_time = 1.5 SECONDS
@@ -159,15 +160,29 @@
 	incompatible_modules = list(/obj/item/mod/module/rad_protection)
 	mod_module_flags = MOD_MODULE_ENGINEERING // BLUEMOON ADD
 
+/obj/item/mod/module/rad_protection
+	var/list/protected_parts
+
 /obj/item/mod/module/rad_protection/on_suit_activation()
+	if(protected_parts)
+		return
+	protected_parts = list()
 	for(var/obj/item/part as anything in mod.get_mod_parts(include_cell = FALSE, include_mod = TRUE))
-		part.normal_set_armor(part.armor.modifyRating(rad = 65))
-		part.rad_flags = RAD_PROTECT_CONTENTS|RAD_NO_CONTAMINATE
+		protected_parts[part] = part.rad_flags
+		part.normal_set_armor(part.armor.modifyRating(rad = MOD_RADIATION_BONUS))
+		part.rad_flags |= RAD_PROTECT_CONTENTS | RAD_NO_CONTAMINATE
 
 /obj/item/mod/module/rad_protection/on_suit_deactivation(deleting = FALSE)
-	for(var/obj/item/part as anything in mod.get_mod_parts(include_cell = FALSE, include_mod = TRUE))
-		part.normal_set_armor(part.armor.modifyRating(rad = -65))
-		part.rad_flags = NONE
+	for(var/obj/item/part as anything in protected_parts)
+		if(QDELETED(part))
+			continue
+		part.normal_set_armor(part.armor.modifyRating(rad = -MOD_RADIATION_BONUS))
+		part.rad_flags = protected_parts[part]
+	protected_parts = null
+
+/obj/item/mod/module/rad_protection/Destroy()
+	on_suit_deactivation(TRUE)
+	return ..()
 
 ///Constructor - Lets you build quicker and create RCD holograms.
 /obj/item/mod/module/constructor
@@ -249,6 +264,10 @@
 	return ..()
 
 ///Resin Mister - Sprays resin over an area.
+/obj/item/mod/module/mister/Destroy()
+	. = ..()
+	tank = null
+
 /obj/item/mod/module/mister/atmos
 	name = "MOD resin mister module"
 	desc = "Атмосферный опрыскиватель смолой, способный быстро ремонтировать территории."

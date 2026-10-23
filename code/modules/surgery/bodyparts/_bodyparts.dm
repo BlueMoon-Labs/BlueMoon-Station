@@ -369,6 +369,7 @@
 	consider_processing()
 	update_disabled()
 	update_threshhold_state()
+	SEND_SIGNAL(src, COMSIG_PROTEAN_LIMB_DAMAGE)
 	return update_bodypart_damage_state()
 
 /// Allows us to roll for and apply a wound without actually dealing damage. Used for aggregate wounding power with pellet clouds

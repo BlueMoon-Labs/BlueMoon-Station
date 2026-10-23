@@ -26,6 +26,7 @@
 	var/shoes_type = null
 	/// What type of MOD the unit starts with when spawned.
 	var/mod_type = null
+	var/pending_suit_choice = FALSE
 	/// What type of additional item the unit starts with when spawned.
 	var/storage_type = null
 
@@ -233,6 +234,7 @@
 		shoes = new shoes_type(src)
 	if(mod_type)
 		mod = new mod_type(src)
+	pending_suit_choice = suit && mod
 	if(storage_type)
 		storage = new storage_type(src)
 	update_icon()
@@ -292,6 +294,7 @@
 	update_icon()
 
 /obj/machinery/suit_storage_unit/proc/dump_contents()
+	resolve_suit_choice()
 	dropContents()
 	helmet = null
 	suit = null
@@ -350,20 +353,25 @@
 		new /obj/item/stack/sheet/metal(loc, 2)
 	qdel(src)
 
+/obj/machinery/suit_storage_unit/proc/resolve_suit_choice(use_mod = TRUE)
+	if(!pending_suit_choice)
+		return FALSE
+	pending_suit_choice = FALSE
+	if(use_mod)
+		QDEL_NULL(suit)
+	else
+		QDEL_NULL(mod)
+	return TRUE
+
 /obj/machinery/suit_storage_unit/proc/choice_type_of_suit(mob/living/user)
 	var/user_choice = tgui_input_list(user, "Выберите тип скафандра:", "МОД или Обычный скафандр", list("MODsuit", "Hardsuit"))
-	var/obj/item/suit_to_delete
-	if(user_choice == "MODsuit")
-		suit_to_delete = suit
-	else
-		suit_to_delete = mod
-	if(user_choice) //если пользователь хоть что-то выбрал, то можно удалять.
-		QDEL_NULL(suit_to_delete)
-		return suit_to_delete
+	if(!user_choice || QDELETED(src) || !user.canUseTopic(src, BE_CLOSE))
+		return FALSE
+	return resolve_suit_choice(user_choice == "MODsuit")
 
 /obj/machinery/suit_storage_unit/interact(mob/living/user)
 	var/static/list/items
-	if(suit && mod)
+	if(pending_suit_choice)
 		var/choice_confirm = choice_type_of_suit(user)
 		if(!choice_confirm)
 			return

@@ -114,10 +114,12 @@
 	emote_cooldown = 3 SECONDS
 
 /datum/emote/sound/human/dance/run_emote(mob/user, params, type_override, intentional)
-	. = ..()
+	if(HAS_TRAIT(user, TRAIT_MOD_INVERTED) || !..())
+		return FALSE
 	if(ishuman(user))
 		user.SpinAnimation(8,4)
 		user.spin(30, 1)
+	return TRUE
 
 /datum/emote/sound/human/deathgasp
 	name = "Притвориться Мёртвым"

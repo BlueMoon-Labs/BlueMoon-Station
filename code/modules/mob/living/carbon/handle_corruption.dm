@@ -140,7 +140,7 @@
 		if("hallucinate")
 			hallucination += 20 //Doesn't give a cue
 		if("jamcoolanthud")
-			hud_used.coolant_display.jam(10)
+			hud_used?.coolant_display?.jam(10)
 		if("receporgandamage")
 			adjustOrganLoss(ORGAN_SLOT_EARS, rand(10, 20))
 			adjustOrganLoss(ORGAN_SLOT_EYES, rand(10, 20))

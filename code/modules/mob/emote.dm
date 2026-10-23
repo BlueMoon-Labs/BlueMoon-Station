@@ -54,6 +54,8 @@
 	mob_type_ignore_stat_typecache = list(/mob/dead/observer)
 
 /datum/emote/flip/run_emote(mob/user, params)
+	if(HAS_TRAIT(user, TRAIT_MOD_INVERTED))
+		return FALSE
 	. = ..()
 	if(.)
 		user.SpinAnimation(7,1)

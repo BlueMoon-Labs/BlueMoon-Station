@@ -75,6 +75,19 @@ const ConfigureListEntry = (props) => {
   );
 };
 
+const ConfigureTextEntry = (props) => {
+  const { name, value, module_ref } = props;
+  const { act } = useBackend();
+  return (
+    <Button
+      icon="pen"
+      tooltip={value}
+      onClick={() => act('configure', { key: name, ref: module_ref })}>
+      {value ? 'Изменить' : 'Настроить'}
+    </Button>
+  );
+};
+
 const ConfigureDataEntry = (props) => {
   const { name, display_name, type, value, values, module_ref } = props;
   const configureEntryTypes = {
@@ -82,6 +95,7 @@ const ConfigureDataEntry = (props) => {
     bool: <ConfigureBoolEntry {...props} />,
     color: <ConfigureColorEntry {...props} />,
     list: <ConfigureListEntry {...props} />,
+    text: <ConfigureTextEntry {...props} />,
   };
   return (
     <Box>
@@ -491,6 +505,21 @@ const ParametersSection = (props) => {
           }>
           {status}
         </LabeledList.Item>
+        <LabeledList.Item
+          label="MODlink"
+          buttons={
+            <>
+              <Button icon="pen" tooltip="Имя MODlink" onClick={() => act('rename_link')} />
+              <Button
+                icon={data.link_call ? 'phone-slash' : 'phone'}
+                content={data.link_call ? 'Завершить' : 'Позвонить'}
+                disabled={!data.link_freq}
+                onClick={() => act('call')}
+              />
+            </>
+          }>
+          {data.link_name} / {data.link_freq || 'Частота не задана'}
+        </LabeledList.Item>
         <LabeledList.Item label="Cover">
           {open ? 'Open' : 'Closed'}
         </LabeledList.Item>
@@ -693,6 +722,12 @@ const ModuleSection = (props) => {
                             tooltip={displayText(module.module_type)}
                             tooltipPosition="left"
                             disabled={!module.module_type}
+                          />
+                          <Button
+                            onClick={() => act('pin', { ref: module.ref })}
+                            icon="thumbtack"
+                            tooltip="Добавить на хотбар"
+                            disabled={!module.can_pin}
                           />
                           <Button
                             onClick={() => setConfigureState(module.ref)}

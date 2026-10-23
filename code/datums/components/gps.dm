@@ -25,6 +25,7 @@ GLOBAL_LIST_EMPTY(GPS_list)
 	/// UI state of GPS, altering when it can be used.
 	var/datum/ui_state/state = null
 	var/need_use_overlay
+	var/rename_parent = TRUE
 
 /datum/component/gps/item/Initialize(_gpstag = "COM0", emp_proof = FALSE, starton = TRUE, state = null, overlay_state = "working", not_use_overlay = FALSE)
 	. = ..()
@@ -43,7 +44,8 @@ GLOBAL_LIST_EMPTY(GPS_list)
 			A.add_overlay(overlay_state)
 	else
 		tracking = FALSE
-	A.name = "[initial(A.name)] ([gpstag])"
+	if(rename_parent)
+		A.name = "[initial(A.name)] ([gpstag])"
 	RegisterSignal(parent, COMSIG_ITEM_ATTACK_SELF, PROC_REF(interact))
 	if(!emp_proof)
 		RegisterSignal(parent, COMSIG_ATOM_EMP_ACT, PROC_REF(on_emp_act))
@@ -182,7 +184,8 @@ GLOBAL_LIST_EMPTY(GPS_list)
 
 			gpstag = a
 			. = TRUE
-			parentasatom.name = "global positioning system ([gpstag])"
+			if(rename_parent)
+				parentasatom.name = "global positioning system ([gpstag])"
 
 		if("power")
 			toggletracking(usr)
@@ -193,3 +196,6 @@ GLOBAL_LIST_EMPTY(GPS_list)
 		if("globalmode")
 			global_mode = !global_mode
 			. = TRUE
+
+/datum/component/gps/item/modsuit
+	rename_parent = FALSE

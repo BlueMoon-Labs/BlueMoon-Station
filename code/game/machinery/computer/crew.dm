@@ -176,7 +176,7 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 			nanite_sensors = TRUE
 		// Check if their z-level is correct and if they are wearing a uniform.
 		// Accept H.z==0 as well in case the mob is inside an object.
-		if ((H.z == 0 || (H.z in monitored_levels)) && istype(H.w_uniform, /obj/item/clothing/under) || nanite_sensors)
+		if ((H.z == 0 || (H.z in monitored_levels) || HAS_TRAIT(H, TRAIT_MULTIZ_SUIT_SENSORS)) && istype(H.w_uniform, /obj/item/clothing/under) || nanite_sensors)
 			U = H.w_uniform
 
 			// Are the suit sensors on?
@@ -184,7 +184,7 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 				pos = H.z == 0 || (nanite_sensors || U.sensor_mode == SENSOR_COORDS) ? get_turf(H) : null
 
 				// Special case: If the mob is inside an object confirm the z-level on turf level.
-				if (H.z == 0 && (!pos || !(pos.z in monitored_levels)))
+				if (H.z == 0 && (!pos || (!(pos.z in monitored_levels) && !HAS_TRAIT(H, TRAIT_MULTIZ_SUIT_SENSORS))))
 					continue
 
 				I = H.wear_id ? H.wear_id.GetID() : null

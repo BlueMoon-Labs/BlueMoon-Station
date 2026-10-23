@@ -301,6 +301,11 @@ hr {
   }
 }
 
+.upside_down {
+  display: inline-block;
+  transform: scale(-1, -1);
+}
+
 @keyframes cs-rainbow {
   0%, 100% {
     color: #f06a6a;

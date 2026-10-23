@@ -1,9 +1,17 @@
 /obj/item/mod/control/pre_equipped
+	starting_frequency = MODLINK_FREQ_NANOTRASEN
 	var/applied_skin
 	var/equip_cell = /obj/item/stock_parts/cell/high/plus
 
 /obj/item/mod/control/pre_equipped/Initialize(mapload, new_theme, new_skin)
 	new_skin = applied_skin
+	var/theme_path = new_theme || theme
+	if(ispath(theme_path, /datum/mod_theme/antagonist/spider_clan) || ispath(theme_path, /datum/mod_theme/antagonist/mage))
+		starting_frequency = null
+	else if(ispath(theme_path, /datum/mod_theme/antagonist))
+		starting_frequency = MODLINK_FREQ_SYNDICATE
+	else if(ispath(theme_path, /datum/mod_theme/centcom))
+		starting_frequency = MODLINK_FREQ_CENTCOM
 	MOD_CELL = equip_cell
 	return ..()
 
@@ -54,7 +62,6 @@
 /obj/item/mod/control/pre_equipped/mining
 	theme = /datum/mod_theme/cargo_default/mining
 	equip_cell = /obj/item/stock_parts/cell/high/plus
-	complexity_max = ANTAG_MAX_COMPLEXITY
 	initial_modules = list(
 		/obj/item/mod/module/storage,
 		/obj/item/mod/module/welding,
@@ -66,11 +73,16 @@
 
 /obj/item/mod/control/pre_equipped/medical
 	theme = /datum/mod_theme/station_medbay/medical
+	starting_frequency = MODLINK_FREQ_CENTCOM
+	equip_cell = /obj/item/stock_parts/cell/hyper
 	initial_modules = list(
-		/obj/item/mod/module/storage,
+		/obj/item/mod/module/organizer,
+		/obj/item/mod/module/defibrillator,
 		/obj/item/mod/module/flashlight,
 		/obj/item/mod/module/health_analyzer,
-		/obj/item/mod/module/quick_carry,
+		/obj/item/mod/module/injector,
+		/obj/item/mod/module/surgical_processor/emergency,
+		/obj/item/mod/module/storage/extended,
 	)
 
 /obj/item/mod/control/pre_equipped/rescue
@@ -142,8 +154,8 @@
 	theme = /datum/mod_theme/antagonist/syndicate
 	equip_cell = /obj/item/stock_parts/cell/super
 	initial_modules = list(
+		/obj/item/mod/module/pathfinder,
 		/obj/item/mod/module/storage/syndicate,
-		/obj/item/mod/module/welding,
 		/obj/item/mod/module/flashlight,
 		/obj/item/mod/module/dna_lock,
 		/obj/item/mod/module/jetpack/advanced,
@@ -154,7 +166,6 @@
 	equip_cell = /obj/item/stock_parts/cell/bluespace
 	initial_modules = list(
 		/obj/item/mod/module/storage/extended/syndicate,
-		/obj/item/mod/module/welding,
 		/obj/item/mod/module/visor/thermal,
 		/obj/item/mod/module/flashlight,
 		/obj/item/mod/module/jetpack/advanced,
@@ -169,8 +180,8 @@
 	theme = /datum/mod_theme/antagonist/elite
 	equip_cell = /obj/item/stock_parts/cell/bluespace
 	initial_modules = list(
+		/obj/item/mod/module/pathfinder,
 		/obj/item/mod/module/storage/extended/syndicate,
-		/obj/item/mod/module/welding,
 		/obj/item/mod/module/emp_shield,
 		/obj/item/mod/module/visor/thermal,
 		/obj/item/mod/module/jetpack/advanced,
@@ -187,7 +198,7 @@
 		/obj/item/mod/module/rad_protection,
 		/obj/item/mod/module/flashlight,
 		/obj/item/mod/module/tether,
-		/obj/item/mod/module/kinesis,
+		/obj/item/mod/module/anomaly_locked/kinesis/prototype,
 	)
 
 /obj/item/mod/control/pre_equipped/responsory
@@ -224,6 +235,21 @@
 	insignia_type = /obj/item/mod/module/insignia/engineer
 	additional_module = /obj/item/mod/module/rad_protection
 
+/obj/item/mod/control/pre_equipped/marine
+	theme = /datum/mod_theme/centcom/responsory/marine
+	applied_skin = "marine"
+	equip_cell = /obj/item/stock_parts/cell/bluespace
+	initial_modules = list(
+		/obj/item/mod/module/storage/extended,
+		/obj/item/mod/module/emp_shield/advanced,
+		/obj/item/mod/module/flashlight,
+		/obj/item/mod/module/jetpack,
+		/obj/item/mod/module/noslip,
+		/obj/item/mod/module/dna_lock,
+		/obj/item/mod/module/visor/sechud,
+		/obj/item/mod/module/smartgun/marines,
+	)
+
 /obj/item/mod/control/pre_equipped/responsory/medic
 	insignia_type = /obj/item/mod/module/insignia/medic
 	additional_module = /obj/item/mod/module/quick_carry
@@ -254,6 +280,29 @@
 /obj/item/mod/control/pre_equipped/responsory/inquisitory/commander
 	insignia_type = /obj/item/mod/module/insignia/commander
 	additional_module = /obj/item/mod/module/noslip
+
+/obj/item/mod/control/pre_equipped/responsory/inquisitory/syndie
+	theme = /datum/mod_theme/centcom/responsory/traitor
+	insignia_type = /obj/item/mod/module/insignia/syndie
+	req_access = null
+	equip_cell = /obj/item/stock_parts/cell/super
+	initial_modules = list(
+		/obj/item/mod/module/storage/syndicate,
+		/obj/item/mod/module/emp_shield,
+		/obj/item/mod/module/magnetic_harness,
+		/obj/item/mod/module/jetpack,
+		/obj/item/mod/module/pathfinder,
+		/obj/item/mod/module/flashlight/darkness,
+		/obj/item/mod/module/dna_lock,
+		/obj/item/mod/module/quick_cuff,
+		/obj/item/mod/module/shove_blocker,
+		/obj/item/mod/module/noslip,
+	)
+
+/obj/item/mod/control/pre_equipped/responsory/inquisitory/syndie/Initialize(mapload, new_theme, new_skin)
+	. = ..()
+	starting_frequency = MODLINK_FREQ_SYNDICATE
+	mod_link.frequency = starting_frequency
 
 /obj/item/mod/control/pre_equipped/responsory/inquisitory/security
 	insignia_type = /obj/item/mod/module/insignia/security
@@ -310,6 +359,7 @@
 		/obj/item/mod/module/quick_carry/advanced,
 		/obj/item/mod/module/magboot/advanced,
 		/obj/item/mod/module/jetpack/advanced,
+		/obj/item/mod/module/anomaly_locked/kinesis/admin,
 	)
 
 /obj/item/mod/control/pre_equipped/inteq
@@ -320,8 +370,6 @@
 		/obj/item/mod/module/welding,
 		/obj/item/mod/module/flashlight,
 		/obj/item/mod/module/jetpack/advanced,
-		/obj/item/mod/module/armor/prebuild/bullet,
-		/obj/item/mod/module/armor/prebuild/laser,
 		/obj/item/mod/module/magnetic_harness,
 		/obj/item/mod/module/holster,
 	)
@@ -346,7 +394,6 @@
 	equip_cell = /obj/item/stock_parts/cell/bluespace
 	theme = /datum/mod_theme/antagonist/infiltrator
 	initial_modules = list(
-		/obj/item/mod/module/storage/extended/syndicate,
 		/obj/item/mod/module/welding,
 		/obj/item/mod/module/noslip,
 		/obj/item/mod/module/stealth,
@@ -387,12 +434,10 @@
 	name = "Blueshield souless MODsuit theme Kit"
 	// icon_state = "souless"
 	new_theme = /datum/mod_theme/station_combat/security/blueshied/souless
-	from_theme = /datum/mod_theme/station_combat/security/blueshied
 
 /obj/item/modsuit_modkit/blacksec
 	name = "Blueshield blacksec MODsuit theme Kit"
 	new_theme = /datum/mod_theme/station_combat/security/blueshied/blacksec
-	from_theme = /datum/mod_theme/station_combat/security/blueshied
 
 /obj/item/choice_beacon/blueshied_suit
 	name = "blueshied Suit Beacon"
@@ -426,18 +471,20 @@
 	theme = /datum/mod_theme/antagonist/spider_clan
 	equip_cell = /obj/item/stock_parts/cell/hyper
 	initial_modules = list(
-		/obj/item/mod/module/dna_lock/antag,
+		/obj/item/mod/module/dna_lock/reinforced,
 		/obj/item/mod/module/storage/extended/syndicate,
 		/obj/item/mod/module/storage_upgrader,
 		/obj/item/mod/module/jetpack/advanced,
-		/obj/item/mod/module/stealth/adv/ninja,
+		/obj/item/mod/module/stealth/ninja,
+		/obj/item/mod/module/dispenser/ninja,
+		/obj/item/mod/module/status_readout/ninja,
 	)
 
 /obj/item/mod/control/pre_equipped/mage
 	theme = /datum/mod_theme/antagonist/mage
 	equip_cell = /obj/item/stock_parts/cell/vortex
 	initial_modules = list(
-		/obj/item/mod/module/dna_lock/antag,
+		/obj/item/mod/module/eradication_lock,
 		/obj/item/mod/module/storage/extended/syndicate,
 		/obj/item/mod/module/storage_upgrader,
 		/obj/item/mod/module/jetpack/advanced,
@@ -452,6 +499,7 @@
 		/obj/item/mod/module/waddle,
 		/obj/item/mod/module/bikehorn,
 		/obj/item/mod/module/flashlight,
+		/obj/item/mod/module/balloon/advanced,
 	)
 
 /obj/item/mod/control/pre_equipped/cargo
@@ -464,3 +512,18 @@
 	)
 
 INITIALIZE_IMMEDIATE(/obj/item/mod/control/pre_equipped/syndicate_empty)
+
+/obj/item/mod/control/pre_equipped/chrono
+	theme = /datum/mod_theme/chrono
+	starting_frequency = null
+	applied_core = /obj/item/mod/core/infinite
+	equip_cell = null
+	initial_modules = list(
+		/obj/item/mod/module/eradication_lock,
+		/obj/item/mod/module/emp_shield,
+		/obj/item/mod/module/timeline_jumper,
+		/obj/item/mod/module/timestopper,
+		/obj/item/mod/module/rewinder,
+		/obj/item/mod/module/tem,
+		/obj/item/mod/module/anomaly_locked/kinesis/plus,
+	)

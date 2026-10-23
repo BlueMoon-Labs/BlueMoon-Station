@@ -26,6 +26,24 @@
 					/obj/item/paper/guides/conveyor)
 	crate_name = "conveyor assembly crate"
 
+/datum/supply_pack/engineering/modsuit
+	name = "Инженерный MOD"
+	desc = "Один инженерный MOD с батареей и установленными штатными модулями."
+	cost = 2500
+	access = ACCESS_ENGINE_EQUIP
+	contains = list(/obj/item/mod/control/pre_equipped/engineering)
+	crate_name = "инженерный MOD"
+	crate_type = /obj/structure/closet/crate/secure/engineering
+
+/datum/supply_pack/engineering/modsuit_atmos
+	name = "Атмосферный MOD"
+	desc = "Один атмосферный MOD с батареей и установленными штатными модулями."
+	cost = 2500
+	access = ACCESS_ATMOSPHERICS
+	contains = list(/obj/item/mod/control/pre_equipped/atmospheric)
+	crate_name = "атмосферный MOD"
+	crate_type = /obj/structure/closet/crate/secure/engineering
+
 /datum/supply_pack/engineering/engiequipment
 	name = "Engineering Gear Crate"
 	desc = "Вооружитесь тремя поясами для инструментов, жилетами повышенной видимости, сварочными шлемами, касками и двумя парами мезонных очков!"

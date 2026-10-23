@@ -592,6 +592,18 @@
 	subcategory = CAT_MISCELLANEOUS
 	category = CAT_MISCELLANEOUS
 
+/datum/crafting_recipe/mod_hydraulic
+	name = "MOD hydraulic module"
+	result = /obj/item/mod/module/hydraulic
+	time = 10 SECONDS
+	reqs = list(
+		/obj/item/mod/module/clamp/loader = 1,
+		/obj/item/stack/cable_coil = 30,
+		/obj/item/assembly/signaler = 1,
+		/obj/item/analyzer = 1,
+	)
+	category = CAT_TOOL
+
 /datum/crafting_recipe/egg_bag
 	name = "Egg bag"
 	result = /obj/item/storage/bag/egg

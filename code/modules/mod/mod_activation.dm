@@ -2,6 +2,8 @@
 
 /// Creates a radial menu from which the user chooses parts of the suit to deploy/retract. Repeats until all parts are extended or retracted.
 /obj/item/mod/control/proc/choose_deploy(mob/user)
+	if(!wearer || (user != wearer && user != ai))
+		return FALSE
 	var/list/display_names = list()
 	var/list/items = list()
 	for(var/obj/item/piece as anything in get_mod_parts(include_cell = FALSE))
@@ -16,20 +18,20 @@
 		return
 	var/obj/item/part = display_names[pick]
 
-	if(!istype(part) || user.incapacitated())
+	if(!istype(part) || user.incapacitated() || !wearer || (user != wearer && user != ai))
 		return
 	var/list/parts_to_check = get_mod_parts(include_cell = FALSE) - part
-	if(part.loc != user)
+	if(part.loc != wearer)
 		deploy(user, part)
 		for(var/obj/item/piece as anything in parts_to_check)
-			if(piece.loc == user)
+			if(piece.loc == wearer)
 				continue
 			choose_deploy(user)
 			break
 	else
 		conceal(user, part)
 		for(var/obj/item/piece as anything in parts_to_check)
-			if(piece.loc != user)
+			if(piece.loc != wearer)
 				continue
 			choose_deploy(user)
 			break
@@ -45,6 +47,7 @@
 	if(wearer.equip_to_slot_if_possible(piece, piece.slot_flags, qdel_on_fail = FALSE, disable_warning = TRUE))
 		piece.notify_user(FALSE, user)
 		equip_suit_store_item_if_it_possible(piece, target_item)
+		update_control_overlay()
 		return TRUE
 
 	else if(piece.loc != src)
@@ -66,17 +69,22 @@
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return balloon_alert(user, "Отключите костюм!")
 	var/obj/item/clothing/mod_part/piece = part
+	var/obj/item/stored_item
+	if(piece.slot_flags == ITEM_SLOT_OCLOTHING && wearer.s_store)
+		stored_item = wearer.s_store
+		wearer.transferItemToLoc(stored_item, src, TRUE)
 	wearer.transferItemToLoc(piece, null, TRUE)
 	piece.equip_item_from_overslot()
-	if(!user)
-		return
-	piece.notify_user(TRUE, wearer)
-	remove_hardlight()
+	if(stored_item && !wearer.equip_to_slot_if_possible(stored_item, ITEM_SLOT_SUITSTORE, qdel_on_fail = FALSE, disable_warning = TRUE))
+		stored_item.forceMove(wearer.drop_location())
 	piece.toggle_all_linked_modules(MODPART_CONSEALED)
 	piece.restore_normal_features()
+	update_control_overlay()
+	update_hardlight()
+	if(user)
+		piece.notify_user(TRUE, wearer)
 
 /obj/item/mod/control/proc/toggle_activate(mob/user, force_deactivate = FALSE)
-	var/obj/item/stock_parts/cell/cell = get_cell()
 	if(!wearer)
 		if(!force_deactivate)
 			balloon_alert(user, "put suit on back!")
@@ -89,7 +97,7 @@
 	if(!force_deactivate && (SEND_SIGNAL(src, COMSIG_MOD_ACTIVATE, user) & MOD_CANCEL_ACTIVATE))
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return FALSE
-	if(!cell?.charge && !force_deactivate)
+	if(!check_charge(cell_drain) && !force_deactivate)
 		balloon_alert(user, "костюм обесточен!")
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return FALSE
@@ -107,8 +115,6 @@
 			continue
 		module.on_deactivation()
 	ENABLE_BITFIELD(status_flags, MOD_ACTIVATING)
-	if(is_active())
-		remove_hardlight()
 	to_chat(wearer, span_notice("MODsuit [is_active() ? "shutting down" : "starting up"]."))
 	if(ai)
 		to_chat(ai, span_notice("MODsuit [is_active() ? "shutting down" : "starting up"]."))
@@ -148,7 +154,7 @@
 
 /obj/item/mod/control/proc/toggle_activate_fail()
 	for(var/obj/item/clothing/mod_part/MOD_PART as anything in get_mod_parts(include_cell = FALSE))
-		MOD_PART.seal_part(TRUE)
+		MOD_PART.seal_part(is_active())
 	to_chat(wearer, span_warning("[is_active() ? "Shut down" : "Start up"] cancelled."))
 	finish_activation(on = is_active())
 	DISABLE_BITFIELD(status_flags, MOD_ACTIVATING)
@@ -161,6 +167,10 @@
 	mod_storage.set_locked(src, !on)
 
 /obj/item/mod/control/proc/finish_activation(on)
+	if(on == is_active())
+		return
+	if(!on)
+		mod_link?.end_call()
 	if(theme?.need_block_storage_when_not_active)
 		toggle_storage(on)
 	if(on == TRUE)
@@ -173,17 +183,18 @@
 		START_PROCESSING(SSobj, src)
 	else
 		for(var/obj/item/mod/module/module as anything in modules)
+			if(module.active && !module.allowed_inactive)
+				module.on_deactivation()
 			module.on_suit_deactivation()
 		STOP_PROCESSING(SSobj, src)
-	if(on == TRUE && all_parts_deployed())
-		update_hardlight()
+	update_hardlight()
 	update_speed()
 	update_icon_state()
 
 	wearer?.update_inv_back()
 
 /obj/item/mod/control/update_icon_state()
-	icon_state = "[skin]-control[is_active() ? "-sealed" : ""]"
+	icon_state = "[get_visual_skin()]-control[is_active() && all_parts_deployed() ? "-sealed" : ""]"
 	return ..()
 
 /obj/item/mod/control/proc/quick_activation()
@@ -196,3 +207,12 @@
 	for(var/obj/item/clothing/mod_part/part as anything in get_mod_parts(include_cell = FALSE))
 		part.seal_part(TRUE)
 	finish_activation(on = TRUE)
+
+/obj/item/mod/control/proc/update_control_overlay()
+	update_icon_state()
+	if(!wearer)
+		return
+	if(slot_flags == ITEM_SLOT_BACK)
+		wearer.update_inv_back()
+	else if(slot_flags == ITEM_SLOT_BELT)
+		wearer.update_inv_belt()

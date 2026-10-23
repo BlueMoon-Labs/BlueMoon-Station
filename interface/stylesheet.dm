@@ -199,5 +199,6 @@ h1.alert, h2.alert		{color: #000000;}
 .monkeyhive				{color: #774704;}
 .monkeylead				{color: #774704;	font-size: 2;}
 .pnarrate				{color: #009AB2;}
+.upside_down {display: inline-block; -ms-transform: scale(-1, -1); transform: scale(-1, -1);}
 </style>
 <script>(function(){var s=document.createElement('style');s.textContent='@keyframes velvet{0%{color:#400020}40%{color:#FF0000}50%{color:#FF8888}60%{color:#FF0000}100%{color:#400020}}@keyframes hypnocolor{0%{color:#0d0d0d}25%{color:#410194}50%{color:#7f17d8}75%{color:#410194}100%{color:#3bb5d3}}@keyframes phobia{0%{color:#0d0d0d}50%{color:#dd0000}100%{color:#0d0d0d}}';document.head.appendChild(s);})();</script>"}

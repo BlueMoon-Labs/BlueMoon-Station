@@ -207,7 +207,7 @@
 		QDEL_NULL(cable)
 
 /mob/living/silicon/pai/proc/process_heartbeat()
-	var/mob/living/M = card.loc
+	var/mob/living/M = remote_control || card.loc
 	var/count = 0
 	while(!isliving(M))
 		if(!M || !M.loc || count >= 6)
@@ -228,12 +228,16 @@
 /mob/living/silicon/pai/Login()
 	..()
 	usr << browse_rsc('html/paigrid.png')			// Go ahead and cache the interface resources as early as possible
-	if(client)
-		client.perspective = EYE_PERSPECTIVE
-		if(holoform)
-			client.set_eye(src)
-		else
-			client.set_eye(card)
+	reset_perspective()
+
+/mob/living/silicon/pai/proc/get_camera_target()
+	var/obj/item/mod/control/mod = remote_control
+	if(istype(mod) && mod.ai == src && loc == mod)
+		return mod
+	return holoform ? src : card
+
+/mob/living/silicon/pai/reset_perspective(atom/target)
+	return ..(target || get_camera_target())
 
 /mob/living/silicon/pai/get_status_tab_items()
 	. += ..()
@@ -924,7 +928,7 @@
 	// Bioscan data
 	data["bioscan"] = null
 	if(subscreen == 1 && screen == "medicalhud")
-		var/mob/living/M = card.loc
+		var/mob/living/M = remote_control || card.loc
 		var/count = 0
 		while(!isliving(M))
 			if(!M || !M.loc || count >= 6)
@@ -1106,7 +1110,7 @@
 			signaler.code = max(1, signaler.code)
 			return TRUE
 		if("directive_dna")
-			var/mob/living/M = card.loc
+			var/mob/living/M = remote_control || card.loc
 			var/count = 0
 			while(!isliving(M))
 				if(!M || !M.loc)

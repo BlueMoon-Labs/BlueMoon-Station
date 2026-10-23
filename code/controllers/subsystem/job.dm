@@ -808,7 +808,7 @@ SUBSYSTEM_DEF(job)
 				collar.tagname = i["loadout_custom_tagname"]
 				collar.name = "[initial(collar.name)] - [collar.tagname]"
 
-		var/already_equiped = FALSE
+		var/already_equiped = store_protean_loadout(M, I, G.slot)
 		var/list/bag_contents = null
 		if(G.slot == ITEM_SLOT_ACCESSORY && istype(I, /obj/item/clothing/accessory))
 			var/obj/item/clothing/accessory/A = I
@@ -972,7 +972,7 @@ SUBSYSTEM_DEF(job)
 				collar.tagname = i["loadout_custom_tagname"]
 				collar.name = "[initial(collar.name)] - [collar.tagname]"
 
-		var/already_equiped = FALSE
+		var/already_equiped = store_protean_loadout(M, I, G.slot)
 		if(G.slot == ITEM_SLOT_ACCESSORY && istype(I, /obj/item/clothing/accessory))
 			var/obj/item/clothing/accessory/A = I
 			var/obj/item/clothing/wear = M.get_item_by_slot(A.accessory_slot)

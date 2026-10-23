@@ -144,6 +144,8 @@ DEFINE_BITFIELD(turret_flags, list(
 	apply_aperture_turret_skin(src)
 
 /obj/machinery/porta_turret/proc/toggle_on(var/set_to)
+	if(HAS_TRAIT(src, TRAIT_MOD_DISRUPTED) && (isnull(set_to) || set_to))
+		return
 	var/current = on
 	if (!isnull(set_to))
 		on = set_to

@@ -58,6 +58,11 @@
 /obj/item/bodypart/chest/dismember(dam_type = BRUTE, silent=TRUE, harmless=FALSE)
 	if(!owner)
 		return FALSE
+	if(GetComponent(/datum/component/protean_limb) && get_protean_modsuit(owner))
+		var/obj/item/organ/brain/protean/brain = owner.getorganslot(ORGAN_SLOT_BRAIN)
+		if(istype(brain) && !brain.dead)
+			owner.death()
+			return FALSE
 	var/mob/living/carbon/C = owner
 	if(!dismemberable)
 		return FALSE
@@ -94,6 +99,7 @@
 	var/atom/Tsec = owner.drop_location()
 	var/mob/living/carbon/C = owner
 	SEND_SIGNAL(C, COMSIG_CARBON_REMOVE_LIMB, src, dismembered)
+	SEND_SIGNAL(src, COMSIG_PROTEAN_LIMB_REMOVED, special)
 	update_limb(1)
 	C.bodyparts -= src
 
@@ -385,6 +391,8 @@
 	C.update_damage_overlays()
 	C.update_wound_overlays()
 	C.update_mobility()
+	SEND_SIGNAL(src, COMSIG_PROTEAN_LIMB_OWNER)
+	SEND_SIGNAL(C, COMSIG_PROTEAN_LIMB_ATTACHED, src, special)
 
 /obj/item/bodypart/head/attach_limb(mob/living/carbon/C, special)
 	//Transfer some head appearance vars over
