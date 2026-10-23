@@ -617,6 +617,8 @@
 
 //Used for new human mobs created by cloning/goleming/podding
 /mob/living/carbon/human/proc/set_cloned_appearance()
+	if(!dna?.features)
+		return
 	if(dna.features["body_model"] == MALE)
 		facial_hair_style = "Full Beard"
 	else
@@ -781,7 +783,7 @@
 			to_chat(src, "<span class='warning'>You can't do that right now!</span>")
 		return FALSE
 	if(!Adjacent(M) && (M.loc != src) && !(M in src.GetAllContents()))
-		if((be_close == 0) || (!no_tk && (dna.check_mutation(TK) && tkMaxRangeCheck(src, M))))
+		if((be_close == 0) || (!no_tk && (dna?.check_mutation(TK) && tkMaxRangeCheck(src, M))))
 			return TRUE
 		if(!silent)
 			to_chat(src, "<span class='warning'>You are too far away!</span>")
@@ -891,7 +893,7 @@
 	if(hud_signature == cached_health_hud_signature && (isnull(existing_doll) || existing_doll.doll_cache_key))
 		return
 	cached_health_hud_signature = hud_signature
-	if(dna.species.update_health_hud())
+	if(dna?.species?.update_health_hud())
 		return
 	else
 		if(hud_used.healths)
@@ -933,7 +935,7 @@
 		regenerate_organs()
 	remove_all_embedded_objects()
 	drunkenness = 0
-	for(var/datum/mutation/human/HM in dna.mutations)
+	for(var/datum/mutation/human/HM in dna?.mutations)
 		if(HM.quality != POSITIVE)
 			dna.remove_mutation(HM.name)
 	if(blood_volume < (BLOOD_VOLUME_NORMAL*blood_ratio))
@@ -1339,7 +1341,7 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 
 /mob/living/carbon/human/updatehealth()
 	. = ..()
-	dna?.species.spec_updatehealth(src)
+	dna?.species?.spec_updatehealth(src)
 	if(HAS_TRAIT(src, TRAIT_IGNORESLOWDOWN))	//if we want to ignore slowdown from damage and equipment
 		remove_movespeed_modifier(/datum/movespeed_modifier/damage_slowdown)
 		remove_movespeed_modifier(/datum/movespeed_modifier/damage_slowdown_flying)
@@ -1358,12 +1360,12 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 		remove_movespeed_modifier(/datum/movespeed_modifier/damage_slowdown_flying)
 
 /mob/living/carbon/human/is_bleeding()
-	if(NOBLOOD in dna.species.species_traits || bleedsuppress)
+	if(!dna?.species || (NOBLOOD in dna.species.species_traits) || bleedsuppress)
 		return FALSE
 	return ..()
 
 /mob/living/carbon/human/get_total_bleed_rate()
-	if(NOBLOOD in dna.species.species_traits)
+	if(!dna?.species || (NOBLOOD in dna.species.species_traits))
 		return FALSE
 	return ..()
 

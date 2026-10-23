@@ -16302,7 +16302,7 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
 	},
-/obj/machinery/bountyvend,
+/obj/machinery/equipment_vendor/vanguard,
 /turf/open/floor/plasteel/dark/smooth/edge{
 	dir = 4
 	},
@@ -44736,7 +44736,7 @@
 /turf/open/floor/plasteel/freezer/coldroom,
 /area/service/kitchen/coldroom)
 "jBP" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /obj/effect/turf_decal/trimline/brown/filled/line{
 	dir = 5
 	},

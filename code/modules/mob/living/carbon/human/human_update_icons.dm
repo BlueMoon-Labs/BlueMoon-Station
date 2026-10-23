@@ -56,7 +56,7 @@ There are several things that need to be remembered:
 //HAIR OVERLAY
 /mob/living/carbon/human/update_hair()
 	if(!HAS_TRAIT(src, TRAIT_HUMAN_NO_RENDER))
-		dna.species.handle_hair(src)
+		dna?.species?.handle_hair(src)
 
 ///Глубина отсрочки пересборки мутантных частей тела. Пока больше нуля,
 ///update_mutant_bodyparts() только помечает заявку. Полная перерисовка
@@ -79,7 +79,7 @@ There are several things that need to be remembered:
 /mob/living/carbon/human/update_body(update_genitals = FALSE, block_recursive_calls = FALSE)
 	if(!HAS_TRAIT(src, TRAIT_HUMAN_NO_RENDER))
 		remove_overlay(BODY_LAYER)
-		dna.species.handle_body(src, block_recursive_calls)
+		dna?.species?.handle_body(src, block_recursive_calls)
 		..()
 		if(update_genitals)
 			update_genitals()

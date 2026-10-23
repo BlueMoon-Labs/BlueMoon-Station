@@ -13,6 +13,14 @@
 #define ECHO_WAVE_LAYER 4
 #define ECHO_SOUND_LAYER 5
 
+/// Send only to nearby, unobstructed listeners; the quirk checks air and perception.
+/proc/emit_echolocation_pulse(atom/center, hearing_range = 7)
+	var/turf/origin = get_turf(center)
+	if(!origin)
+		return
+	for(var/mob/living/listener in hearers(hearing_range, origin))
+		SEND_SIGNAL(listener, COMSIG_MOB_ECHOLOCATION_PULSE, center)
+
 /**
  * Personal acoustic snapshots never reveal names or track moving shapes.
  * Only ongoing typing indicators follow their audible source until input ends.
@@ -39,6 +47,7 @@
 	snap_action = new(src)
 	RegisterSignal(quirk_holder, COMSIG_MOB_EMOTE, PROC_REF(on_emote))
 	RegisterSignal(quirk_holder, COMSIG_MOB_SOUND_INDICATOR, PROC_REF(on_sound_indicator))
+	RegisterSignal(quirk_holder, COMSIG_MOB_ECHOLOCATION_PULSE, PROC_REF(on_external_pulse))
 	RegisterSignal(quirk_holder, COMSIG_MOB_BLINDNESS_CHANGED, PROC_REF(on_state_changed))
 	RegisterSignal(quirk_holder, COMSIG_MOB_STATCHANGE, PROC_REF(on_state_changed))
 	RegisterSignal(quirk_holder, COMSIG_MOB_LOGIN, PROC_REF(on_state_changed))
@@ -49,6 +58,7 @@
 /datum/quirk/echolocation/remove()
 	clear_echoes()
 	if(quirk_holder)
+		UnregisterSignal(quirk_holder, COMSIG_MOB_ECHOLOCATION_PULSE)
 		UnregisterSignal(quirk_holder, list(COMSIG_MOB_EMOTE, COMSIG_MOB_SOUND_INDICATOR, COMSIG_MOB_BLINDNESS_CHANGED, COMSIG_MOB_STATCHANGE, COMSIG_MOB_LOGIN, COMSIG_MOVABLE_MOVED, COMSIG_MOB_CLIENT_LOGOUT, COMSIG_MOB_RESET_PERSPECTIVE, COMSIG_MOB_CLIENT_CHANGE_VIEW))
 		quirk_holder.clear_fullscreen(ECHO_CLOSED_EYES, 0)
 		if(eyes_closed)
@@ -242,7 +252,7 @@
 	return FALSE
 
 /// Negative distances mark reflecting boundaries. A later open edge may still reach them.
-/datum/quirk/echolocation/proc/collect_echo_turfs(turf/origin, width, height)
+/datum/quirk/echolocation/proc/collect_echo_turfs(turf/origin, width, height, turf/bounds_center = origin)
 	var/list/reached = list()
 	reached[origin] = 0
 	var/list/queue = list(origin)
@@ -256,7 +266,7 @@
 			if(blocks_echo(current, direction))
 				continue
 			var/turf/next = get_step(current, direction)
-			if(!next || abs(next.x - origin.x) > (width - 1) / 2 || abs(next.y - origin.y) > (height - 1) / 2)
+			if(!next || abs(next.x - bounds_center.x) > (width - 1) / 2 || abs(next.y - bounds_center.y) > (height - 1) / 2)
 				continue
 			if((next in reached) && reached[next] >= 0)
 				continue
@@ -271,23 +281,79 @@
 /datum/quirk/echolocation/proc/can_echo_atom(atom/movable/thing, boundary = FALSE)
 	if(!isturf(thing.loc) || thing.invisibility || thing.alpha <= 0)
 		return FALSE
-	if(!isliving(thing) && !isstructure(thing) && !ismachinery(thing) && !isitem(thing))
+	if(!isliving(thing) && !isstructure(thing) && !ismachinery(thing) && !isitem(thing) && !ismecha(thing))
 		return FALSE
 	if(boundary && !istype(thing, /obj/machinery/door) && !istype(thing, /obj/structure/window))
 		return FALSE
 	return !isliving(thing) || !blocks_echo(thing.loc, NONE)
 
-/datum/quirk/echolocation/proc/pulse(pulses)
+/// External sounds never spend or check the voluntary clicking cooldown.
+/datum/quirk/echolocation/proc/on_external_pulse(datum/source, atom/center)
+	SIGNAL_HANDLER
+	pulse(1, get_turf(center))
+
+/// Both legs of an external echo must be reachable, and walls must hide their far side.
+/datum/quirk/echolocation/proc/collect_pulse_turfs(turf/origin, width, height)
+	var/turf/listener_turf = quirk_holder.loc
+	if(!isturf(listener_turf) || !origin || origin.z != listener_turf.z || !carries_sound(origin))
+		return list()
+	if(abs(origin.x - listener_turf.x) > (width - 1) / 2 || abs(origin.y - listener_turf.y) > (height - 1) / 2)
+		return list()
+	var/list/listener_reached = collect_echo_turfs(listener_turf, width, height)
+	if(!(origin in listener_reached) || listener_reached[origin] < 0)
+		return list()
+	if(origin == listener_turf)
+		return listener_reached
+	if(!has_direct_echo_path(listener_turf, origin))
+		return list()
+	var/list/visible_turfs = list()
+	for(var/turf/visible in get_hear("[width]x[height]", listener_turf))
+		visible_turfs[visible] = TRUE
+	if(!(origin in visible_turfs))
+		return list()
+	var/list/reached = collect_echo_turfs(origin, width, height, listener_turf)
+	for(var/turf/where as anything in reached.Copy())
+		if(!(where in listener_reached) || !(where in visible_turfs) || !has_direct_echo_path(listener_turf, where, include_boundary = TRUE))
+			reached -= where
+		else if(listener_reached[where] < 0)
+			reached[where] = -max(1, abs(reached[where]))
+	return reached
+
+/// Transparent windows still block sound, and diagonals cannot slip between barriers.
+/datum/quirk/echolocation/proc/has_direct_echo_path(turf/start, turf/finish, include_boundary = FALSE)
+	var/list/path = get_line(start, finish)
+	var/turf/current = start
+	for(var/index in 2 to length(path))
+		var/turf/next = path[index]
+		var/direction = get_dir(current, next)
+		for(var/cardinal in GLOB.cardinals)
+			if(!(direction & cardinal))
+				continue
+			if(blocks_echo(current, cardinal))
+				return FALSE
+			if(ISDIAGONALDIR(direction))
+				var/turf/side = get_step(current, cardinal)
+				if(!side || blocks_echo(side, NONE) || !carries_sound(side))
+					return FALSE
+			if(blocks_echo(next, turn(cardinal, 180)))
+				return include_boundary && next == finish
+		if(!carries_sound(next))
+			return include_boundary && next == finish
+		current = next
+	return TRUE
+
+/datum/quirk/echolocation/proc/pulse(pulses, turf/origin = quirk_holder.loc)
 	if(!quirk_holder.client || !can_listen())
+		return
+	var/list/view_size = getviewsize(quirk_holder.client.view)
+	var/list/reached = collect_pulse_turfs(origin, view_size[1], view_size[2])
+	if(!length(reached))
 		return
 	// A fresh pulse replaces remembered shapes, not an ongoing conversation's bubble.
 	for(var/atom/movable/screen/echolocation_echo/old_echo as anything in echoes.Copy())
 		if(!old_echo.sound_kind)
 			remove_echo(old_echo)
-	var/turf/origin = quirk_holder.loc
-	var/list/view_size = getviewsize(quirk_holder.client.view)
-	var/list/reached = collect_echo_turfs(origin, view_size[1], view_size[2])
-	var/max_radius = sqrt(((view_size[1] - 1) / 2) ** 2 + ((view_size[2] - 1) / 2) ** 2) + 1
+	var/max_radius = sqrt((((view_size[1] - 1) / 2) + abs(origin.x - quirk_holder.x)) ** 2 + (((view_size[2] - 1) / 2) + abs(origin.y - quirk_holder.y)) ** 2) + 1
 	for(var/pulse_index in 1 to pulses)
 		var/atom/movable/screen/echolocation_echo/wave = create_echo(origin)
 		if(!wave)

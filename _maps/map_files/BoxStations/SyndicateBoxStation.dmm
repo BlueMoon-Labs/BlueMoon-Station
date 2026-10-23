@@ -22799,7 +22799,7 @@
 /turf/open/floor/plating,
 /area/security/checkpoint/supply)
 "bwe" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /obj/effect/turf_decal/tile/brown/half,
 /turf/open/floor/mineral/plastitanium,
 /area/cargo/miningdock)
@@ -76509,7 +76509,7 @@
 /area/maintenance/aft)
 "uAC" = (
 /obj/effect/turf_decal/trimline/dark_blue/filled/line,
-/obj/machinery/bountyvend,
+/obj/machinery/equipment_vendor/vanguard,
 /turf/open/floor/mineral/plastitanium,
 /area/command/gateway)
 "uBa" = (

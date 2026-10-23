@@ -127049,7 +127049,7 @@
 /obj/structure/railing{
 	dir = 8
 	},
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/cargo/miningoffice)
 "pRw" = (
@@ -169312,7 +169312,7 @@
 "vbr" = (
 /obj/effect/turf_decal/siding/dark,
 /obj/effect/turf_decal/trimline/dark_blue/filled/line,
-/obj/machinery/bountyvend,
+/obj/machinery/equipment_vendor/vanguard,
 /obj/machinery/vending/wallmed/directional/south,
 /obj/structure/cable/yellow{
 	icon_state = "1-4"

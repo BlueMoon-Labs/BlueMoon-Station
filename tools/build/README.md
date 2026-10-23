@@ -26,6 +26,9 @@ tools/build/build dm-test-run
 Use `--unit-test-profile=hermetic` for the LOWMEMORYMODE-compatible suite and
 `--unit-test-profile=full-map` for tests explicitly marked as requiring the
 production map. The default `all` profile runs every test on the production map.
+For a faster world start, `hermetic` compiles CentCom without its empty event
+z-levels (`CentCom_hermetic.dmm`, generated from `CentCom.dmm`) and builds the
+batched spritesheets on first use instead of during SSassets init.
 Compiled artifacts are separated by profile and define set, and are invalidated
 when sources or the local BYOND compiler change.
 

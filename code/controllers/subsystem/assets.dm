@@ -26,6 +26,11 @@ SUBSYSTEM_DEF(assets)
 	for(var/type in typesof(/datum/asset))
 		var/datum/asset/A = type
 		if (type != initial(A._abstract))
+#ifdef UNIT_TEST_PROFILE_HERMETIC
+			// Локальный профиль тестов: листы (~6 с на каждый запуск мира) собирает первый get_asset_datum().
+			if (ispath(type, /datum/asset/spritesheet_batched) || type == /datum/asset/json/spawnpanel)
+				continue
+#endif
 			// load_asset_datum, а не get_asset_datum: батчёвые спрайтшиты должны
 			// успеть встать в очередь SSasset_loading, а не собраться прямо здесь.
 			load_asset_datum(type)

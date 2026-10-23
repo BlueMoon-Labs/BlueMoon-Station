@@ -329,6 +329,8 @@
 /// A listener's sound/typing marker: (atom/source, kind, direction, duration).
 #define COMSIG_MOB_SOUND_INDICATOR "mob_sound_indicator"
 	#define COMPONENT_SOUND_INDICATOR_HANDLED (1<<0)
+/// An audible nearby event that produces an acoustic snapshot: (atom/center).
+#define COMSIG_MOB_ECHOLOCATION_PULSE "mob_echolocation_pulse"
 #define COMSIG_MOB_ON_NEW_MIND "mob_on_new_mind"			//called when a new mind is assigned to a mob: ()
 #define COMSIG_MOB_SAY "mob_say" // from /mob/living/say(): (proc args list)
 	#define COMPONENT_UPPERCASE_SPEECH 1
