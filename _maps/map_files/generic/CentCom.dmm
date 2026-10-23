@@ -18680,6 +18680,12 @@
 	icon_state = "textured_white_large"
 	},
 /area/tdome/arena_source)
+"kas" = (
+/obj/machinery/antag_training_pod{
+	dir = 4
+	},
+/turf/open/indestructible/hotelwood,
+/area/centcom/holding)
 "kaS" = (
 /turf/open/floor/plating/ironsand,
 /area/centcom/holding/shootingrange)
@@ -27747,6 +27753,12 @@
 	},
 /obj/machinery/light/small/directional/west,
 /turf/open/floor/wood,
+/area/centcom/holding)
+"sev" = (
+/obj/machinery/antag_training_pod{
+	dir = 8
+	},
+/turf/open/indestructible/hotelwood,
 /area/centcom/holding)
 "seI" = (
 /obj/machinery/vending/snack/random{
@@ -58768,7 +58780,7 @@ wJH
 wUA
 rnA
 aGK
-oom
+sev
 fcu
 kvK
 mSw
@@ -59025,7 +59037,7 @@ wJH
 isQ
 rnA
 aGK
-oom
+kas
 wJH
 sYm
 rvs
