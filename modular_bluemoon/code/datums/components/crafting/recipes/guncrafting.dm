@@ -49,3 +49,7 @@
 /obj/item/weaponcrafting/gunkit/dies_irae
 	name = "Dies Irae gun conversion kit"
 	desc = "A set of spare parts for upgrading the Apostle to the Dies Irae version. Can be used only on empty gun"
+
+/obj/item/weaponcrafting/gunkit/anathema
+	name = "Anathema gun conversion kit"
+	desc = "A set of spare parts for upgrading the Apostle to the anathema. Can be used only on empty gun"
