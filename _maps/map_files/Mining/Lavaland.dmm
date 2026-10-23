@@ -537,7 +537,7 @@
 /area/mine/storage)
 "asr" = (
 /obj/machinery/button/door{
-	id = "xenobio6";
+	id = "dsxenobio6";
 	layer = 3.3;
 	name = "Containment Blast Doors";
 	pixel_y = 28;
@@ -2874,7 +2874,7 @@
 /area/mine/xenoarch)
 "bMq" = (
 /obj/machinery/door/poddoor/preopen{
-	id = "xenobio5";
+	id = "dsxenobio6";
 	name = "containment blast door"
 	},
 /obj/machinery/door/window/northleft{
@@ -3580,7 +3580,7 @@
 /area/mine/living_quarters)
 "cfV" = (
 /obj/machinery/door/poddoor/preopen{
-	id = "xenobio7";
+	id = "dsxenobio4";
 	name = "containment blast door"
 	},
 /obj/effect/spawner/structure/window/plastitanium,
@@ -3936,6 +3936,15 @@
 /obj/structure/flora/junglebush/large,
 /turf/open/floor/plating/dirt/dark/jungle,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
+"cnP" = (
+/obj/machinery/door/poddoor/preopen{
+	id = "dsxenobio5";
+	name = "containment blast door"
+	},
+/obj/structure/disposalpipe/segment,
+/obj/effect/spawner/structure/window/plastitanium,
+/turf/open/floor/plating,
+/area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "cop" = (
 /obj/structure/railing/corner,
 /turf/open/floor/plasteel/dark,
@@ -5796,7 +5805,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "dzy" = (
 /obj/machinery/door/poddoor/preopen{
-	id = "xenobio6";
+	id = "dsxenobio5";
 	name = "containment blast door"
 	},
 /obj/machinery/door/window/northleft{
@@ -7720,7 +7729,7 @@
 /area/mine/storage)
 "eMf" = (
 /obj/machinery/door/poddoor/preopen{
-	id = "xenobio3";
+	id = "dsxenobio3";
 	name = "containment blast door"
 	},
 /obj/effect/spawner/structure/window/plastitanium,
@@ -15061,7 +15070,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "jgv" = (
 /obj/machinery/door/poddoor/preopen{
-	id = "xenobio4";
+	id = "dsxenobio1";
 	name = "containment blast door"
 	},
 /obj/effect/spawner/structure/window/plastitanium,
@@ -15987,7 +15996,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
 "jGu" = (
 /obj/machinery/door/poddoor/preopen{
-	id = "xenobio5";
+	id = "dsxenobio6";
 	name = "containment blast door"
 	},
 /obj/effect/spawner/structure/window/plastitanium,
@@ -16310,6 +16319,19 @@
 	},
 /turf/open/floor/plasteel,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
+"jNf" = (
+/obj/machinery/door/poddoor/preopen{
+	id = "dsxenobio3";
+	name = "containment blast door"
+	},
+/obj/machinery/door/window/northleft{
+	dir = 2;
+	name = "Containment Pen";
+	req_access_txt = "150"
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/turf/open/floor/engine,
+/area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "jNA" = (
 /obj/structure/table/glass,
 /obj/item/storage/box/monkeycubes,
@@ -17020,7 +17042,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "kkz" = (
 /obj/machinery/door/poddoor/preopen{
-	id = "xenobio4";
+	id = "dsxenobio1";
 	name = "containment blast door"
 	},
 /obj/machinery/door/window/northleft{
@@ -18789,7 +18811,7 @@
 /area/mine/xenoarch)
 "lnS" = (
 /obj/machinery/button/door{
-	id = "xenobio3";
+	id = "dsxenobio3";
 	layer = 3.3;
 	name = "Containment Blast Doors";
 	pixel_y = -28;
@@ -22051,6 +22073,14 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/mine/storage)
+"mYO" = (
+/obj/machinery/door/poddoor/preopen{
+	id = "dsxenobio2";
+	name = "containment blast door"
+	},
+/obj/effect/spawner/structure/window/plastitanium,
+/turf/open/floor/plating,
+/area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "mYP" = (
 /obj/structure/table/reinforced,
 /obj/item/disk/tech_disk{
@@ -22873,7 +22903,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
 "nvr" = (
 /obj/machinery/button/door{
-	id = "xenobio4";
+	id = "dsxenobio2";
 	layer = 3.3;
 	name = "Containment Blast Doors";
 	pixel_y = -28;
@@ -25671,6 +25701,15 @@
 "oTq" = (
 /turf/open/floor/circuit/telecomms,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
+"oTz" = (
+/obj/machinery/door/poddoor/preopen{
+	id = "dsxenobio2";
+	name = "containment blast door"
+	},
+/obj/structure/disposalpipe/segment,
+/obj/effect/spawner/structure/window/plastitanium,
+/turf/open/floor/plating,
+/area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "oTJ" = (
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
 	dir = 1
@@ -28249,6 +28288,15 @@
 	},
 /turf/open/floor/plasteel,
 /area/mine/storage)
+"qAi" = (
+/obj/machinery/door/poddoor/preopen{
+	id = "dsxenobio6";
+	name = "containment blast door"
+	},
+/obj/structure/disposalpipe/segment,
+/obj/effect/spawner/structure/window/plastitanium,
+/turf/open/floor/plating,
+/area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "qAL" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
@@ -29375,7 +29423,7 @@
 /area/lavaland/surface/outdoors)
 "rgi" = (
 /obj/machinery/door/poddoor/preopen{
-	id = "xenobio7";
+	id = "dsxenobio4";
 	name = "containment blast door"
 	},
 /obj/machinery/door/window/northleft{
@@ -32076,7 +32124,7 @@
 /area/mine/living_quarters)
 "sLM" = (
 /obj/machinery/door/poddoor/preopen{
-	id = "xenobio6";
+	id = "dsxenobio5";
 	name = "containment blast door"
 	},
 /obj/effect/spawner/structure/window/plastitanium,
@@ -32292,7 +32340,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
 "sTm" = (
 /obj/machinery/door/poddoor/preopen{
-	id = "xenobio5";
+	id = "dsxenobio4";
 	name = "containment blast door"
 	},
 /obj/structure/disposalpipe/segment,
@@ -32630,8 +32678,7 @@
 /obj/structure/window/reinforced{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/turf/open/floor/plasteel/dark,
+/turf/open/floor/plating,
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "tdG" = (
 /obj/structure/stone_tile/surrounding,
@@ -36140,6 +36187,15 @@
 /obj/structure/fans/tiny,
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/ruin/lavaland/unpowered/deepspaceone/engineering)
+"vfJ" = (
+/obj/machinery/door/poddoor/preopen{
+	id = "dsxenobio1";
+	name = "containment blast door"
+	},
+/obj/structure/disposalpipe/segment,
+/obj/effect/spawner/structure/window/plastitanium,
+/turf/open/floor/plating,
+/area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "vgF" = (
 /obj/effect/turf_decal/trimline/dark_green/filled/line{
 	dir = 10
@@ -37476,7 +37532,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
 "wdg" = (
 /obj/machinery/door/poddoor/preopen{
-	id = "xenobio3";
+	id = "dsxenobio2";
 	name = "containment blast door"
 	},
 /obj/machinery/door/window/northleft{
@@ -39966,7 +40022,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/virology)
 "xBj" = (
 /obj/machinery/button/door{
-	id = "xenobio7";
+	id = "dsxenobio4";
 	layer = 3.3;
 	name = "Containment Blast Doors";
 	pixel_y = 28;
@@ -39991,7 +40047,7 @@
 /area/mine/living_quarters)
 "xBR" = (
 /obj/machinery/button/door{
-	id = "xenobio7";
+	id = "dsxenobio5";
 	layer = 3.3;
 	name = "Containment Blast Doors";
 	pixel_y = 28;
@@ -40131,13 +40187,6 @@
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "xEQ" = (
-/obj/machinery/button/door{
-	id = "xenobio4";
-	layer = 3.3;
-	name = "Containment Blast Doors";
-	pixel_y = -28;
-	req_access_txt = "150"
-	},
 /obj/effect/turf_decal/trimline/purple/filled/line,
 /obj/effect/turf_decal/stripes/yellow/corner{
 	dir = 1
@@ -40145,6 +40194,13 @@
 /obj/effect/turf_decal/stripes/yellow/corner,
 /obj/effect/turf_decal/delivery,
 /obj/machinery/door/firedoor,
+/obj/machinery/button/door{
+	id = "dsxenobio1";
+	layer = 3.3;
+	name = "Containment Blast Doors";
+	pixel_y = -28;
+	req_access_txt = "150"
+	},
 /turf/open/floor/plasteel/smooth/edge{
 	dir = 1
 	},
@@ -40281,8 +40337,8 @@
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/lavaland/surface/outdoors)
 "xIp" = (
-/obj/effect/spawner/structure/window/plastitanium,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/effect/spawner/structure/window/plastitanium,
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "xIy" = (
@@ -40900,7 +40956,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "ycZ" = (
 /obj/machinery/door/poddoor/preopen{
-	id = "xenobio2";
+	id = "dsxenobio3";
 	name = "containment blast door"
 	},
 /obj/structure/disposalpipe/segment,
@@ -52046,7 +52102,7 @@ kHe
 tFV
 iST
 pxb
-sTm
+qAi
 dzE
 wRF
 wBH
@@ -52309,7 +52365,7 @@ eNP
 uvh
 aCg
 kke
-wdg
+jNf
 xPw
 fCd
 sll
@@ -53074,13 +53130,13 @@ kHe
 tFV
 iST
 pxb
-sTm
+cnP
 dzE
 wRF
 eEq
 oBv
 uYX
-eMf
+mYO
 tFV
 aPP
 aWE
@@ -53594,7 +53650,7 @@ wRF
 eEq
 oBv
 rFM
-ycZ
+oTz
 qhj
 eto
 iQS
@@ -54622,7 +54678,7 @@ uAb
 bWq
 cAH
 rFM
-ycZ
+vfJ
 qhj
 eto
 iQS
