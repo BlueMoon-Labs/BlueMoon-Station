@@ -1,112 +1,96 @@
-// Bluemoon Edit:  Vending Update
+import { BooleanLike } from 'common/react';
+import { capitalizeAll, createSearch } from 'common/string';
 import { useState } from 'react';
 
-import { BooleanLike, classes } from '../../common/react';
-import { capitalizeAll, createSearch } from '../../common/string';
 import { useBackend } from '../backend';
-import { Box, Button, Icon, Input, LabeledList, NoticeBox, Section, Stack, Table } from '../components';
+import { Button, Icon, ImageButton, Input, NoticeBox, Section, Stack } from '../components';
 import { Window } from '../layouts';
+import { LayoutToggle, VendingLayout } from './common/LayoutToggle';
 
-type VendingData = {
-  onstation: boolean;
-  department: string;
-  jobDiscount: number;
-  product_records: ProductRecord[];
-  coin_records: CoinRecord[];
-  hidden_records: HiddenRecord[];
-  user?: UserData;
-  stock: Record<string, number>;
-  free_stock: Record<string, BooleanLike>;
-  extended_inventory: boolean;
-  access: boolean;
-  vending_machine_input?: CustomInput[];
-  categories?: Record<string, Category>;
-};
-
-type Category = {
-  icon: string;
-};
+type Category = { icon: string };
 
 type ProductRecord = {
   path: string;
   name: string;
   price: number;
   max_amount: number;
-  colorable: boolean;
   ref: string;
   category: string;
-};
-
-type CoinRecord = ProductRecord & {
-  premium: boolean;
-};
-
-type HiddenRecord = ProductRecord & {
-  premium: boolean;
-};
-
-type UserData = {
-  name: string;
-  cash: number;
-  job: string;
-  department: string;
+  premium?: BooleanLike;
 };
 
 type CustomInput = {
   name: string;
   price: number;
   img: string;
+  amount: number;
 };
 
-export const Vending = (props) => {
-  const { data } = useBackend<VendingData>();
-  const categories = data.categories || {};
+type Product = ProductRecord | CustomInput;
 
+type VendingData = {
+  onstation: BooleanLike;
+  department: string;
+  jobDiscount: number;
+  product_records: ProductRecord[];
+  coin_records: ProductRecord[];
+  hidden_records: ProductRecord[];
+  user?: {
+    name: string;
+    cash: number;
+    job: string;
+    department: string;
+  };
+  stock: Record<string, number>;
+  free_stock: Record<string, BooleanLike>;
+  extended_inventory: BooleanLike;
+  access: BooleanLike;
+  vending_machine_input?: CustomInput[];
+  categories?: Record<string, Category>;
+  vending_layout: VendingLayout;
+};
+
+export const Vending = () => {
+  const { data } = useBackend<VendingData>();
   const {
     onstation,
     product_records = [],
     coin_records = [],
     hidden_records = [],
-    stock,
+    categories = {},
+    vending_machine_input,
+    extended_inventory,
   } = data;
-
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(
-    Object.keys(categories)[0] || null
+  const [selectedCategory, setSelectedCategory] = useState(
+    Object.keys(categories)[0]
   );
-
-  let inventory: (ProductRecord | CustomInput)[];
-  let custom = false;
-  if (data.vending_machine_input) {
-    inventory = data.vending_machine_input;
-    custom = true;
-  } else {
-    inventory = [...product_records, ...coin_records];
-    if (data.extended_inventory) {
-      inventory = [...inventory, ...hidden_records];
-    }
-  }
-
-  inventory = inventory
-    // Just in case we still have undefined values in the list
-    .filter((item) => !!item);
-
+  const [stockSearch, setStockSearch] = useState('');
+  const searching = stockSearch.length >= 2;
+  const search = createSearch(stockSearch, (product: Product) => product.name);
+  const custom = !!vending_machine_input;
+  const inventory: Product[] = (
+    vending_machine_input || [
+      ...product_records,
+      ...coin_records,
+      ...(extended_inventory ? hidden_records : []),
+    ]
+  ).filter(Boolean);
   const filteredCategories = Object.fromEntries(
-    Object.entries(categories).filter(([categoryName]) => {
-      return inventory.find((product) => {
-        if ('category' in product) {
-          return product.category === categoryName;
-        } else {
-          return false;
-        }
-      });
-    })
+    Object.entries(categories).filter(([name]) =>
+      inventory.some((product) => 'category' in product && product.category === name)
+    )
   );
-  const effectiveSelectedCategory = selectedCategory
-    || Object.keys(filteredCategories)[0]
-    || null;
+  const effectiveCategory = selectedCategory in filteredCategories
+    ? selectedCategory
+    : Object.keys(filteredCategories)[0];
+  const products = searching
+    ? inventory.filter(search)
+    : inventory.filter((product) =>
+      !effectiveCategory || !('category' in product) || product.category === effectiveCategory
+    );
 
   return (
-    <Window width={450} height={600}>
+    <Window width={440} height={635}>
       <Window.Content>
         <Stack fill vertical>
           {!!onstation && (
@@ -115,20 +99,52 @@ export const Vending = (props) => {
             </Stack.Item>
           )}
           <Stack.Item grow>
-            <ProductDisplay
-              custom={custom}
-              inventory={inventory}
-              selectedCategory={effectiveSelectedCategory}
-            />
+            <Section
+              fill
+              scrollable
+              title="Ассортимент"
+              buttons={
+                <Stack align="center">
+                  {!!onstation && data.user && (
+                    <Stack.Item color="green">
+                      {data.user.cash || 0} кр. <Icon name="coins" color="gold" />
+                    </Stack.Item>
+                  )}
+                  <Stack.Item>
+                    <Input
+                      width="110px"
+                      onInput={(_, value) => setStockSearch(value)}
+                      placeholder="Поиск..."
+                      value={stockSearch}
+                    />
+                  </Stack.Item>
+                  <LayoutToggle />
+                </Stack>
+              }>
+              {!products.length && <NoticeBox>Ничего не найдено.</NoticeBox>}
+              {products.map((product) => (
+                <VendingProduct
+                  key={'ref' in product ? product.ref : product.name}
+                  custom={custom}
+                  product={product}
+                />
+              ))}
+            </Section>
           </Stack.Item>
-
-          {Object.keys(filteredCategories).length > 1 && effectiveSelectedCategory && (
+          {!searching && Object.keys(filteredCategories).length > 1 && (
             <Stack.Item>
-              <CategorySelector
-                categories={filteredCategories}
-                selectedCategory={effectiveSelectedCategory}
-                onSelect={setSelectedCategory}
-              />
+              <Section>
+                {Object.entries(filteredCategories).map(([name, category]) => (
+                  <Button
+                    key={name}
+                    selected={name === effectiveCategory}
+                    color={CATEGORY_COLORS[name]}
+                    icon={category.icon}
+                    onClick={() => setSelectedCategory(name)}>
+                    {name}
+                  </Button>
+                ))}
+              </Section>
             </Stack.Item>
           )}
         </Stack>
@@ -137,276 +153,72 @@ export const Vending = (props) => {
   );
 };
 
-/** Displays user details if an ID is present and the user is on the station */
-export const UserDetails = (props) => {
+export const UserDetails = () => {
   const { data } = useBackend<VendingData>();
   const { user } = data;
-
-  if (!user) {
-    return (
-      <NoticeBox>Не обнаружена ID-карта! Свяжитесь с Главой Персонала.</NoticeBox>
-    );
-  } else {
-    return (
-      <Section>
-        <Stack>
-          <Stack.Item>
-            <Icon name="id-card" size={3} mr={1} />
-          </Stack.Item>
-          <Stack.Item>
-            <LabeledList>
-              <LabeledList.Item label="Пользователь">{user.name}</LabeledList.Item>
-              <LabeledList.Item label="Должность">
-                {user.job || 'БЕЗ РАБОТЫ'}
-              </LabeledList.Item>
-            </LabeledList>
-          </Stack.Item>
-        </Stack>
-      </Section>
-    );
-  }
-};
-
-/** Displays  products in a section, with user balance at top */
-const ProductDisplay = (
-  props: {
-    custom: boolean;
-    selectedCategory: string | null;
-    inventory: (ProductRecord | CustomInput)[];
-  }) => {
-  const { data } = useBackend<VendingData>();
-  const { custom, inventory, selectedCategory } = props;
-  const { stock, free_stock, onstation, user } = data;
-
-  const [stockSearch, setStockSearch] = useState<string>('');
-  const stockSearchFn = createSearch(stockSearch, (item: ProductRecord | CustomInput) => item.name);
-
-  let filteredInventory = inventory;
-
-  if (!(stockSearch.length >= 2) && selectedCategory) {
-    filteredInventory = filteredInventory.filter((product) => {
-      if ('category' in product) {
-        return product.category === selectedCategory;
-      } else {
-        return true;
-      }
-    });
-  }
-
-  if (stockSearch.length >= 2) {
-    filteredInventory = filteredInventory.filter(stockSearchFn);
-  }
-  // Ключ - ref записи автомата: имена товаров могут совпадать, и остаток
-  // одного товара перекрывал другой (цифра в UI замирала до "распродано").
-  const stockByRef = stock || {};
-  const freeStockByRef = free_stock || {};
-
   return (
-    <Section
-      fill
-      scrollable
-      title="Ассортимент"
-      buttons={
-        <Stack>
-          {!!onstation && user && (
-            <Stack.Item>
-              <Box fontSize="16px" color="green">
-                {(user && user.cash) || 0} cr <Icon name="coins" color="gold" />
-              </Box>
-            </Stack.Item>
-          )}
-          <Stack.Item>
-            <Input
-              onInput={(_, value) => setStockSearch(value)}
-              placeholder="Поиск..."
-              value={stockSearch}
-            />
-          </Stack.Item>
-        </Stack>
-      }
-    >
-      <Table>
-          {filteredInventory.map((product) => (
-            <VendingRow
-              key={'ref' in product ? product.ref : product.name}
-              custom={custom}
-              product={product}
-              productStock={'ref' in product ? stockByRef[product.ref] : undefined}
-              productIsFree={'ref' in product ? freeStockByRef[product.ref] : false}
-            />
-          ))}
-      </Table>
-    </Section>
+    <NoticeBox m={0} color={user ? 'blue' : undefined}>
+      <Stack align="center">
+        <Stack.Item><Icon name="id-card" size={1.5} /></Stack.Item>
+        <Stack.Item>
+          {user
+            ? `${user.name || 'Неизвестно'} | ${user.job || 'БЕЗ РАБОТЫ'}`
+            : 'Не обнаружена ID-карта! Свяжитесь с Главой Персонала.'}
+        </Stack.Item>
+      </Stack>
+    </NoticeBox>
   );
 };
 
-/** An individual listing for an item.
- * Uses a table layout. Labeledlist might be better,
- * but you cannot use item icons as labels currently.
- */
-const VendingRow = (props) => {
-  const { data } = useBackend<VendingData>();
-  const { custom, product, productStock, productIsFree } = props;
-  const { access, department, jobDiscount, onstation, user } = data;
-  const free = !onstation || product.price === 0 || productIsFree;
-  const discount = !product.premium && department === user?.department;
-  const remaining = custom ? product.amount : (productStock ?? 0);
-  const redPrice = Math.round(product.price * jobDiscount);
-  const disabled =
-    remaining === 0 ||
-    (onstation && !user) ||
-    (onstation &&
-      !access &&
-      (discount ? redPrice : product.price) > user?.cash);
-
-  return (
-    <Table.Row>
-      <Table.Cell collapsing>
-        <ProductImage product={product} />
-      </Table.Cell>
-      <Table.Cell bold>{capitalizeAll(product.name)}</Table.Cell>
-      <Table.Cell>
-        {!!('colorable' in product && product.colorable) && (
-          <ProductColorSelect disabled={disabled} product={product} />
-        )}
-      </Table.Cell>
-      <Table.Cell collapsing textAlign="right">
-        <ProductStock custom={custom} product={product} remaining={remaining} />
-      </Table.Cell>
-      <Table.Cell collapsing textAlign="center">
-        <ProductButton
-          custom={custom}
-          disabled={disabled}
-          discount={discount}
-          free={free}
-          product={product}
-          redPrice={redPrice}
-        />
-      </Table.Cell>
-    </Table.Row>
-  );
-};
-
-/** Displays the product image. Displays a default if there is none. */
-const ProductImage = (props) => {
-  const { product } = props;
-
-  return product.img ? (
-    <img
-      src={`data:image/png;base64,${product.img}`}
-      style={{
-        verticalAlign: 'middle',
-        imageRendering: 'pixelated',
-      }}
-    />
-  ) : (
-    <span
-      className={classes(['vending32x32', product.path])}
-      style={{
-        verticalAlign: 'middle',
-      }}
-    />
-  );
-};
-
-/** In the case of customizable items, ie: shoes,
- * this displays a color wheel button that opens another window.
- */
-const ProductColorSelect = (props) => {
-  const { act } = useBackend<VendingData>();
-  const { disabled, product } = props;
-
-  return (
-    <Button
-      icon="palette"
-      tooltip="Change color"
-      disabled={disabled}
-      onClick={() => act('select_colors', { ref: product.ref })}
-    />
-  );
-};
-
-/** Displays a colored indicator for remaining stock */
-const ProductStock = (props) => {
-  const { custom, product, remaining } = props;
-
-  return (
-    <Box
-      color={
-        (remaining <= 0 && 'bad') ||
-        (!custom && remaining <= product.max_amount / 2 && 'average') ||
-        'good'
-      }>
-      {remaining} шт.
-    </Box>
-  );
-};
-
-/** The main button to purchase an item. */
-const ProductButton = (props) => {
+const VendingProduct = (props: { custom: boolean; product: Product }) => {
   const { act, data } = useBackend<VendingData>();
-  const { access } = data;
-  const { custom, discount, disabled, free, product, redPrice } = props;
-  const customPrice = access ? 'НОЛЬ' : product.price + ' кр.';
-  let standardPrice = product.price + ' кр.';
-  if (free) {
-    standardPrice = 'FREE';
-  } else if (discount) {
-    standardPrice = redPrice + ' кр.';
-  }
-  return custom ? (
-    <Button
-      fluid
+  const { custom, product } = props;
+  const { access, department, jobDiscount, onstation, user, stock = {}, free_stock = {} } = data;
+  const record = 'ref' in product ? product : undefined;
+  // Остатки привязаны к записи: одинаковые названия и пути не объединяют товары.
+  const remaining = 'amount' in product ? product.amount : stock[product.ref] ?? 0;
+  const free = custom
+    ? !!access || product.price === 0
+    : !onstation || product.price === 0 || !!(record && free_stock[record.ref]);
+  const discount = !custom && !record?.premium && !!user && department === user.department;
+  const price = discount ? Math.max(Math.round(product.price * jobDiscount), 1) : product.price;
+  const disabled = remaining <= 0
+    || (!!onstation && !user)
+    || (!free && price > (user?.cash ?? 0));
+  const fluid = data.vending_layout === 'list';
+  const priceLabel = free ? 'Бесплатно' : `${price} кр.`;
+  const displayName = capitalizeAll(product.name);
+
+  return (
+    <ImageButton
+      fluid={fluid}
+      imageSize={fluid ? 32 : 64}
+      base64={'img' in product ? product.img : undefined}
+      asset={record ? ['vending32x32', record.path] : undefined}
       disabled={disabled}
-      onClick={() =>
-        act('dispense', {
-          'item': product.name,
-        })
-      }>
-      {customPrice}
-    </Button>
-  ) : (
-    <Button
-      fluid
-      disabled={disabled}
-      onClick={() =>
-        act('vend', {
-          'ref': product.ref,
-        })
-      }>
-      {standardPrice}
-    </Button>
+      tooltip={`${displayName} — ${priceLabel}, ${remaining} шт.`}
+      tooltipPosition="bottom"
+      buttonsAlt={!fluid && (
+        <Stack fontSize={0.8}>
+          <Stack.Item grow minWidth={0} textAlign="left" color="gold" style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{priceLabel}</Stack.Item>
+          <Stack.Item shrink={0} color="lightgray">x{remaining}</Stack.Item>
+        </Stack>
+      )}
+      onClick={() => custom
+        ? act('dispense', { item: product.name })
+        : act('vend', { ref: record?.ref })}>
+      {fluid ? (
+        <Stack align="center" textAlign="right">
+          <Stack.Item grow textAlign="left">{displayName}</Stack.Item>
+          <Stack.Item color="label" fontSize={0.8}>{remaining} шт.</Stack.Item>
+          <Stack.Item color="gold" fontSize={0.85}>{priceLabel}</Stack.Item>
+        </Stack>
+      ) : displayName}
+    </ImageButton>
   );
 };
 
 const CATEGORY_COLORS = {
   'Контрабанда': 'red',
   'Премиум': 'yellow',
-};
-
-const CategorySelector = (props: {
-  categories: Record<string, Category>;
-  selectedCategory: string;
-  onSelect: (category: string) => void;
-}) => {
-  const { categories, selectedCategory, onSelect } = props;
-
-  return (
-    <Section>
-      <Stack grow>
-        <Stack.Item>
-          {Object.entries(categories).map(([name, category]) => (
-            <Button
-              key={name}
-              selected={name === selectedCategory}
-              color={CATEGORY_COLORS[name]}
-              icon={category.icon}
-              onClick={() => onSelect(name)}>
-              {name}
-            </Button>
-          ))}
-        </Stack.Item>
-      </Stack>
-    </Section>
-  );
 };

@@ -173,20 +173,28 @@
 
 /obj/machinery/smartfridge/ui_data(mob/user)
 	. = list()
+	.["vending_layout"] = user.client?.prefs?.vending_layout || "grid"
 
 	var/listofitems = list()
 	for (var/I in src)
-		// We do not vend our own components.
+		// Детали самого холодильника не выдаются.
 		if(I in component_parts)
 			continue
 
 		var/atom/movable/O = I
 		if (!QDELETED(O))
-			var/md5name = md5(O.name)				// This needs to happen because of a bug in a TGUI component, https://github.com/ractivejs/ractive/issues/744
-			if (listofitems[md5name])				// which is fixed in a version we cannot use due to ie8 incompatibility
-				listofitems[md5name]["amount"]++	// The good news is, #30519 made smartfridge UIs non-auto-updating
+			// Тип входит в ключ, чтобы одноимённые предметы не смешивались.
+			var/item_key = md5("[O.type]-[O.name]")
+			if (listofitems[item_key])
+				listofitems[item_key]["amount"]++
 			else
-				listofitems[md5name] = list("name" = O.name, "type" = O.type, "amount" = 1)
+				listofitems[item_key] = list(
+					"path" = item_key,
+					"name" = O.name,
+					"type" = O.type,
+					"image" = icon2html(O, user.client, sourceonly = TRUE),
+					"amount" = 1,
+				)
 	sort_list(listofitems)
 
 	.["contents"] = listofitems
@@ -202,24 +210,31 @@
 	if(.)
 		return
 	switch(action)
+		if("set_vending_layout")
+			usr.client?.prefs?.set_vending_layout(params["layout"])
+			return TRUE
 		if("Release")
 			var/desired = 0
 
 			if(!allow_ai_retrieve && isAI(usr))
-				to_chat(usr, "<span class='warning'>[src], похоже, не признаёт ваши полномочия!</span>")
+				to_chat(usr, span_warning("[src], похоже, не признаёт ваши полномочия!"))
 				return
 
 			if (params["amount"])
 				desired = text2num(params["amount"])
 			else
-				desired = input("Сколько?", "Сколько предметов хотите вытащить?", 1) as null|num
+				desired = tgui_input_number(usr, "Сколько предметов хотите вытащить?", "Выдача предметов", 1, contents.len, 1)
 
-			if(QDELETED(src) || QDELETED(usr) || !usr.Adjacent(src)) // Sanity checkin' in case stupid stuff happens while we wait for input()
+			// После диалога пользователь или холодильник могут исчезнуть.
+			if(QDELETED(src) || QDELETED(usr) || !usr.Adjacent(src))
 				return FALSE
+			if(!isnum(desired) || desired < 1)
+				return FALSE
+			desired = min(floor(desired), contents.len)
 
 			if(desired == 1 && Adjacent(usr) && !issilicon(usr))
 				for(var/obj/item/O in src)
-					if(O.name == params["name"])
+					if(md5("[O.type]-[O.name]") == params["path"])
 						if(O in component_parts)
 							CRASH("Attempted removal of [O] component_part from vending machine via vending interface.")
 						dispense(O, usr)
@@ -231,7 +246,7 @@
 			for(var/obj/item/O in src)
 				if(desired <= 0)
 					break
-				if(O.name == params["name"])
+				if(md5("[O.type]-[O.name]") == params["path"])
 					if(O in component_parts)
 						CRASH("Attempted removal of [O] component_part from vending machine via vending interface.")
 					dispense(O, usr)

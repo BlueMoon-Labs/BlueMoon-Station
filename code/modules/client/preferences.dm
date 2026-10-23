@@ -569,6 +569,18 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/new_character_creator = TRUE
 	var/list/gfluid_blacklist = list()
 	var/fuzzy = FALSE
+	// Единый вид товаров для всех вендоматов и умных холодильников игрока.
+	var/vending_layout = "grid"
+
+/datum/preferences/proc/set_vending_layout(layout)
+	if(!(layout in list("grid", "list")) || vending_layout == layout)
+		return FALSE
+	vending_layout = layout
+	save_pref_var("vending_layout")
+	for(var/datum/tgui/ui as anything in parent?.mob?.tgui_open_uis)
+		if(istype(ui.src_object, /obj/machinery/vending) || istype(ui.src_object, /obj/machinery/smartfridge))
+			ui.send_update()
+	return TRUE
 
 /datum/preferences/New(client/C)
 	if(!GLOB.genital_fluids_list)

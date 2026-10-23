@@ -38,8 +38,6 @@ GLOBAL_LIST_EMPTY(vending_machines_to_restock)
 	var/custom_premium_price
 	///Whether spessmen with an ID with an age below AGE_MINOR (20 by default) can buy this item
 	var/age_restricted = FALSE
-	///Whether the product can be recolored by the GAGS system
-	var/colorable
 	/// The category the product was in, if any.
 	/// Sourced directly from product_categories.
 	var/category
@@ -414,7 +412,6 @@ GLOBAL_LIST_EMPTY(vending_products)
 		R.custom_price = round(initial(temp.custom_price) * SSeconomy.inflation_value())
 		R.custom_premium_price = round(initial(temp.custom_premium_price) * SSeconomy.inflation_value())
 		//R.age_restricted = initial(temp.age_restricted)
-		//R.colorable = !!(initial(temp.greyscale_config) && initial(temp.greyscale_colors) && (initial(temp.flags_1))
 		R.category = product_to_category[typepath]
 		recordlist += R
 
@@ -985,7 +982,6 @@ GLOBAL_LIST_EMPTY(vending_products)
 			name = record.name,
 			price = premium ? (record.custom_premium_price || extra_price) : (record.custom_price || default_price),
 			max_amount = record.max_amount,
-			colorable = record.colorable,
 			ref = REF(record),
 		)
 
@@ -1025,6 +1021,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 
 /obj/machinery/vending/ui_data(mob/user)
 	. = list()
+	.["vending_layout"] = user.client?.prefs?.vending_layout || "grid"
 	var/obj/item/card/id/C
 	if(iscyborg(user) || isAI(user) || isdrone(user))
 		var/datum/bank_account/Civ = SSeconomy.get_dep_account(ACCOUNT_SCI)
@@ -1061,8 +1058,9 @@ GLOBAL_LIST_EMPTY(vending_products)
 	switch(action)
 		if("vend")
 			. = vend(params)
-		//if("select_colors")
-		//	. = select_colors(params)
+		if("set_vending_layout")
+			usr.client?.prefs?.set_vending_layout(params["layout"])
+			return TRUE
 
 /obj/machinery/vending/proc/can_vend(user, silent=FALSE)
 	. = FALSE
@@ -1073,45 +1071,8 @@ GLOBAL_LIST_EMPTY(vending_products)
 		return
 	return TRUE
 
-/*
-/obj/machinery/vending/proc/select_colors(list/params)
-	. = TRUE
-	if(!can_vend(usr))
-		return
-	var/datum/data/vending_product/product = locate(params["ref"])
-	var/atom/fake_atom = product.product_path
 
-	var/list/allowed_configs = list()
-	var/config = initial(fake_atom.greyscale_config)
-	if(!config)
-		return
-	allowed_configs += "[config]"
-	if(ispath(fake_atom, /obj/item))
-		var/obj/item/item = fake_atom
-		if(initial(item.greyscale_config_worn))
-			allowed_configs += "[initial(item.greyscale_config_worn)]"
-		if(initial(item.greyscale_config_inhand_left))
-			allowed_configs += "[initial(item.greyscale_config_inhand_left)]"
-		if(initial(item.greyscale_config_inhand_right))
-			allowed_configs += "[initial(item.greyscale_config_inhand_right)]"
-
-	var/datum/greyscale_modify_menu/menu = new(
-		src, usr, allowed_configs, CALLBACK(src, PROC_REF(vend_greyscale), params),
-		starting_icon_state=initial(fake_atom.icon_state),
-		starting_config=initial(fake_atom.greyscale_config),
-		starting_colors=initial(fake_atom.greyscale_colors)
-	)
-	menu.ui_interact(usr)
-
-/obj/machinery/vending/proc/vend_greyscale(list/params, datum/greyscale_modify_menu/menu)
-	if(usr != menu.user)
-		return
-	if(!menu.target.can_interact(usr))
-		return
-	vend(params, menu.split_colors)
-*/
-
-/obj/machinery/vending/proc/vend(list/params, list/greyscale_colors)
+/obj/machinery/vending/proc/vend(list/params)
 	. = TRUE
 	if(!can_vend(usr))
 		return
@@ -1216,8 +1177,6 @@ GLOBAL_LIST_EMPTY(vending_products)
 		vended_item = LAZYACCESS(R.returned_products, LAZYLEN(R.returned_products)) //first in, last out
 		R.untrack_returned_product(vended_item)
 		vended_item.forceMove(get_turf(src))
-	//if(greyscale_colors)
-	//	vended_item.set_greyscale(colors=greyscale_colors)
 	R.amount--
 	if(usr.CanReach(src) && usr.put_in_hands(vended_item))
 		to_chat(usr, span_notice("Вы достали [R.name] из слота."))
@@ -1455,8 +1414,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 				name = O,
 				price = price,
 				img = base64,
-				amount = vending_machine_input[O],
-				colorable = FALSE
+				amount = vending_machine_input[O]
 			)
 			.["vending_machine_input"] += list(data)
 

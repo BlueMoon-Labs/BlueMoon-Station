@@ -2,100 +2,109 @@ import { createSearch } from 'common/string';
 import { useState } from 'react';
 
 import { useBackend } from '../backend';
-import { Button, Input, NoticeBox, Section, Table } from '../components';
+import { Button, ImageButton, Input, NoticeBox, NumberInput, Section, Stack } from '../components';
 import { Window } from '../layouts';
+import { LayoutToggle } from './common/LayoutToggle';
 
-export const SmartVend = (props) => {
+export const SmartVend = () => {
   const { act, data } = useBackend();
   const [searchQuery, setSearchQuery] = useState('');
-  const rawContents = data.contents || {};
-  const contentEntries = Object.entries(rawContents);
-  const searchable = !!data.searchable;
-  const testSearch = searchable
-    ? createSearch(searchQuery, ([, row]) => row.name + (row?.type ?? ''))
-    : null;
-  const filteredEntries = searchable && searchQuery.length
-    ? contentEntries.filter((entry) => testSearch(entry))
-    : contentEntries;
-  const empty = contentEntries.length === 0;
-  const searchEmpty = searchable && !!searchQuery && filteredEntries.length === 0 && !empty;
-  const windowWidth = searchable ? 480 : 440;
+  const contentEntries = Object.entries(data.contents || {});
+  const search = createSearch(searchQuery, ([, item]) => item.name + (item.type || ''));
+  const filteredEntries = contentEntries.filter(search);
+
   return (
-    <Window
-      width={windowWidth}
-      height={560}>
-      <Window.Content overflow="auto">
+    <Window width={440} height={575}>
+      <Window.Content>
         <Section
+          fill
+          scrollable
           title="Хранилище"
-          buttons={!!data.isdryer && (
-            <Button
-              icon={data.drying ? 'stop' : 'tint'}
-              onClick={() => act('Dry')}>
-              {data.drying ? 'Stop drying' : 'Dry'}
-            </Button>
-          )}>
-          {searchable && (
-            <Input
-              fluid
-              placeholder="Поиск по названию или типу..."
-              value={searchQuery}
-              onInput={(e, val) => setSearchQuery(val)}
-              mb={1}
+          buttons={
+            <Stack>
+              {!!data.isdryer && (
+                <Stack.Item>
+                  <Button
+                    icon={data.drying ? 'stop' : 'tint'}
+                    onClick={() => act('Dry')}>
+                    {data.drying ? 'Остановить сушку' : 'Сушить'}
+                  </Button>
+                </Stack.Item>
+              )}
+              {!!data.vending_layout && <LayoutToggle />}
+              <Stack.Item>
+                <Button
+                  icon="question"
+                  tooltip={<>ЛКМ — выдать один предмет.<br />ПКМ — выдать все.<br />Поле числа — выдать указанное количество.</>}
+                  tooltipPosition="bottom-end"
+                />
+              </Stack.Item>
+            </Stack>
+          }>
+          <Input
+            fluid
+            placeholder="Поиск по названию или типу..."
+            value={searchQuery}
+            onInput={(_, value) => setSearchQuery(value)}
+            mb={1}
+          />
+          {!contentEntries.length ? (
+            <NoticeBox>К несчастью, внутри {data.name} пусто.</NoticeBox>
+          ) : !filteredEntries.length ? (
+            <NoticeBox>Ничего не найдено.</NoticeBox>
+          ) : filteredEntries.map(([key, item]) => (
+            <FridgeItem
+              key={key}
+              item={item}
+              fluid={data.vending_layout !== 'grid'}
             />
-          )}
-          {empty ? (
-            <NoticeBox>
-              К несчастью, внутри {data.name} пусто.
-            </NoticeBox>
-          ) : (
-            <>
-              {searchEmpty && (
-                <NoticeBox>
-                  Ничего не найдено.
-                </NoticeBox>
-              )}
-              {(searchEmpty ? [] : filteredEntries).length > 0 && (
-                <Table>
-                  <Table.Row header>
-                    <Table.Cell>
-                      Содержимое:
-                    </Table.Cell>
-                    <Table.Cell collapsing />
-                    <Table.Cell collapsing textAlign="center">
-                      {data.verb ? data.verb : 'Выдать'}
-                    </Table.Cell>
-                  </Table.Row>
-                  {(searchEmpty ? [] : filteredEntries).map(([key, value]) => (
-                    <Table.Row key={key}>
-                      <Table.Cell>
-                        {value.name}
-                      </Table.Cell>
-                      <Table.Cell collapsing textAlign="right">
-                        {value.amount}
-                      </Table.Cell>
-                      <Table.Cell collapsing>
-                        <Button
-                          content="Одно"
-                          disabled={value.amount < 1}
-                          onClick={() => act('Release', {
-                            name: value.name,
-                            amount: 1,
-                          })} />
-                        <Button
-                          content="Неск."
-                          disabled={value.amount <= 1}
-                          onClick={() => act('Release', {
-                            name: value.name,
-                          })} />
-                      </Table.Cell>
-                    </Table.Row>
-                  ))}
-                </Table>
-              )}
-            </>
-          )}
+          ))}
         </Section>
       </Window.Content>
     </Window>
+  );
+};
+
+const FridgeItem = ({ item, fluid }) => {
+  const { act } = useBackend();
+  const release = (amount) => act('Release', {
+    path: item.path,
+    name: item.name,
+    amount,
+  });
+  return (
+    <ImageButton
+      fluid={fluid}
+      imageSize={fluid ? 32 : 64}
+      base64={item.img}
+      imageSrc={item.image}
+      disabled={item.amount < 1}
+      tooltip={item.name}
+      tooltipPosition="bottom"
+      buttons={item.amount > 1 && (
+        <NumberInput
+          width={fluid ? '40px' : '28px'}
+          minValue={1}
+          maxValue={item.amount}
+          step={1}
+          value={1}
+          onChange={(_, value) => release(value)}
+        />
+      )}
+      buttonsAlt={!fluid && (
+        <Stack bold color="lightgray" fontSize={0.8}>
+          <Stack.Item grow />
+          <Stack.Item>x{item.amount}</Stack.Item>
+        </Stack>
+      )}
+      onClick={() => release(1)}
+      onRightClick={() => release(item.amount)}>
+      {fluid ? (
+        <Stack align="center">
+          <Stack.Item grow textAlign="left">{item.name}</Stack.Item>
+          <Stack.Item opacity={0.5} fontSize={0.8}>x{item.amount}</Stack.Item>
+        </Stack>
+      ) : item.name}
+    </ImageButton>
   );
 };
