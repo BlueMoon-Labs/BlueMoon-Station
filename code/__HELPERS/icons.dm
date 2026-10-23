@@ -1264,23 +1264,29 @@ GLOBAL_LIST_EMPTY(humanoid_icon_cache)
 		if(prefs)
 			prefs.copy_to(body,TRUE,FALSE)
 			CHECK_TICK
+		// Закрытие интерфейса может удалить манекен, пока генерация уступает тик.
+		if(QDELETED(body))
+			return icon('icons/effects/effects.dmi', "nothing")
 		if(J)
 			J.equip(body, TRUE, FALSE, outfit_override = outfit_override)
 			CHECK_TICK
 		else if (outfit_override)
 			body.equipOutfit(outfit_override,visualsOnly = TRUE)
 			CHECK_TICK
+		if(QDELETED(body))
+			return icon('icons/effects/effects.dmi', "nothing")
 
 		// Синхронизация превью моба, без этого именно эти части почему-то ломает. Костыль.
 		body.update_body(update_genitals = TRUE)
 		body.update_hair()
 		body.update_mutations_overlay()
 		CHECK_TICK
+		if(QDELETED(body))
+			return icon('icons/effects/effects.dmi', "nothing")
 
-		// Манекен на время съёмки остаётся занятым, но остальные вызывающие и так
-		// ждут его на in_use. Дирекцию не форсируем: манекен всегда смотрит на юг,
-		// и getFlatIcon возьмёт запрошенную.
-		var/icon/out_icon = build_flat_multidir_icon(body, showDirs, no_anim)
+		// Снимок переживает удаление манекена между кадрами. Дирекцию сохраняем:
+		// манекен смотрит на юг, и getFlatIcon сам возьмёт запрошенную.
+		var/icon/out_icon = build_flat_multidir_icon(body, showDirs, no_anim, snapshot_appearance = body.appearance)
 
 		// Без ключа кэшировать нечего: запись легла бы под индекс null, куда ни один
 		// lookup не придёт, зато вытесняла бы настоящие записи при переполнении.
@@ -1288,7 +1294,12 @@ GLOBAL_LIST_EMPTY(humanoid_icon_cache)
 			GLOB.humanoid_icon_cache[icon_id] = out_icon
 			if(length(GLOB.humanoid_icon_cache) > HUMANOID_ICON_CACHE_MAX)
 				GLOB.humanoid_icon_cache.Cut(1, (HUMANOID_ICON_CACHE_MAX / 4) + 1) // Evict oldest 25%
-		dummy_key? unset_busy_human_dummy(dummy_key) : qdel(body)
+		if(dummy_key)
+			// Пока снимались кадры, старый манекен могли удалить и заменить в том же слоте.
+			if(GLOB.human_dummy_list[dummy_key] == body)
+				unset_busy_human_dummy(dummy_key)
+		else
+			qdel(body)
 		return out_icon
 	else
 		return GLOB.humanoid_icon_cache[icon_id]

@@ -22,10 +22,10 @@
 	var/list/product_type_order = list()
 	var/vending_sound = 'sound/machines/machine_vend.ogg'
 
-/obj/machinery/smartfridge/Entered(atom/movable/arrived, atom/old_loc)
-	. = ..()
-	if(istype(arrived, /obj/item))
-		product_type_order |= arrived.type
+/obj/machinery/smartfridge/proc/on_product_added(datum/source, obj/item/item)
+	SIGNAL_HANDLER
+	if(istype(item) && !QDELETED(item) && !(item in component_parts))
+		product_type_order |= item.type
 
 /obj/machinery/smartfridge/Exited(atom/movable/departed, atom/new_loc)
 	. = ..()
@@ -40,6 +40,10 @@
 
 /obj/machinery/smartfridge/Initialize(mapload)
 	. = ..()
+	// Создание предмета сразу внутри не вызывает Entered(), в том числе после сушки.
+	RegisterSignal(src, list(COMSIG_ATOM_CREATED, COMSIG_ATOM_ENTERED), PROC_REF(on_product_added))
+	for(var/obj/item/item in contents)
+		on_product_added(src, item)
 	create_reagents(100, NO_REACT)
 
 	if(islist(initial_contents))
@@ -363,8 +367,9 @@
 	if(!drying)
 		return
 
-	for(var/obj/item/item_iterator in src)
-		if(!accept_check(item_iterator))
+	// Сушка заменяет и удаляет предметы: новые результаты обработаем на следующем проходе.
+	for(var/obj/item/item_iterator in contents.Copy())
+		if(QDELETED(item_iterator) || item_iterator.loc != src || !accept_check(item_iterator))
 			continue
 		SEND_SIGNAL(item_iterator, COMSIG_ITEM_DRIED, current_user)
 

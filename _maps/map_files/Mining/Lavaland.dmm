@@ -40481,7 +40481,6 @@
 	contraband = list(/obj/item/knife/combat=1, /obj/item/clothing/under/syndicate/coldres=6, /obj/item/clothing/shoes/combat/coldres=6, /obj/item/flashlight/lantern/syndicate=4);
 	extended_inventory = 1;
 	onstation = 0;
-	all_products_free = 1;
 	pixel_y = 2
 	},
 /obj/effect/turf_decal/bot,

@@ -570,6 +570,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/list/gfluid_blacklist = list()
 	var/fuzzy = FALSE
 	var/list/vending_layouts = list()
+	// Пресеты капсул сохраняются в профиле пользователя между раундами.
+	var/list/podlauncher_presets = list()
 
 /datum/preferences/proc/get_vending_layout(machine_type)
 	return vending_layouts["[machine_type]"] || "grid"
