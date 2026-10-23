@@ -960,19 +960,73 @@ GLOBAL_LIST_EMPTY(vending_products)
 
 	var/list/categories = list()
 
-	data["product_records"] = collect_records_for_static_data(product_records, categories)
-	data["coin_records"] = collect_records_for_static_data(coin_records, categories, premium = TRUE)
-	data["hidden_records"] = collect_records_for_static_data(hidden_records, categories, premium = TRUE)
+	data["product_records"] = collect_records_for_static_data(product_records, categories, user)
+	data["coin_records"] = collect_records_for_static_data(coin_records, categories, user, premium = TRUE)
+	data["hidden_records"] = collect_records_for_static_data(hidden_records, categories, user, premium = TRUE)
 
 	data["categories"] = categories
 
 	return data
 
-/obj/machinery/vending/proc/collect_records_for_static_data(list/records, list/categories, premium)
+/obj/machinery/vending/proc/collect_records_for_static_data(list/records, list/categories, mob/user, premium)
 	var/static/list/default_category = list(
 		"name" = "Ассортимент",
 		"icon" = "cart-shopping",
 	)
+	// Переводим подпись для зрителя, сохраняя ключ категории и исходный ассортимент.
+	var/static/list/category_translations = list(
+		"Ассортимент" = list("Inventory", "Ассортимент"),
+		"Премиум" = list("Premium", "Премиум"),
+		"Контрабанда" = list("Contraband", "Контрабанда"),
+		"Kitchen Utensils" = list("Kitchen Utensils", "Кухонные принадлежности"),
+		"Eating Utensils" = list("Eating Utensils", "Столовые приборы"),
+		"Dinnerware" = list("Dinnerware", "Посуда"),
+		"Condiments" = list("Condiments", "Приправы"),
+		"Recipes" = list("Recipes", "Рецепты"),
+		"Costumes" = list("Costumes", "Костюмы"),
+		"Supernatural" = list("Supernatural", "Сверхъестественное"),
+		"Entertainers" = list("Entertainers", "Артисты"),
+		"Fancy" = list("Fancy", "Нарядное"),
+		"Animals" = list("Animals", "Животные"),
+		"Service" = list("Service", "Сервис"),
+		"Other" = list("Other", "Прочее"),
+		"Alcoholic" = list("Alcoholic", "Алкоголь"),
+		"Non-Alcoholic" = list("Non-Alcoholic", "Безалкогольное"),
+		"Glassware" = list("Glassware", "Бокалы"),
+		"General" = list("General", "Основное"),
+		"Head" = list("Head", "Головные уборы"),
+		"Accessories" = list("Accessories", "Аксессуары"),
+		"Under" = list("Under", "Униформа"),
+		"Suits & Skirts" = list("Suits & Skirts", "Костюмы и юбки"),
+		"Shoes" = list("Shoes", "Обувь"),
+		"Special" = list("Special", "Особое"),
+		"Backpacks" = list("Backpacks", "Рюкзаки"),
+		"Undershirt" = list("Undershirt", "Майки"),
+		"Underwear" = list("Underwear", "Бельё"),
+		"Undersocks" = list("Undersocks", "Носки"),
+		"Roleplay Clothing" = list("Roleplay Clothing", "Ролевая одежда"),
+		"BDSM and Restraints" = list("BDSM and Restraints", "БДСМ и фиксаторы"),
+		"Latex and Fetish" = list("Latex and Fetish", "Латекс и фетиш"),
+		"Toys and Devices" = list("Toys and Devices", "Игрушки и устройства"),
+		"Medications and Protection" = list("Medications and Protection", "Медицина и защита"),
+		"Miscellaneous" = list("Miscellaneous", "Прочее"),
+		"MOD parts" = list("MOD parts", "Детали МОД"),
+		"Дробовики" = list("Shotguns", "Дробовики"),
+		"SMG" = list("SMGs", "Пистолеты-пулемёты"),
+		"Тяжёлое оружие" = list("Heavy Weapons", "Тяжёлое оружие"),
+		"Пистолеты" = list("Pistols", "Пистолеты"),
+		"Ближнее оружие" = list("Melee Weapons", "Ближнее оружие"),
+		"Боевые искусства" = list("Martial Arts", "Боевые искусства"),
+		"Медикаменты" = list("Medication", "Медикаменты"),
+		"Fruits" = list("Fruits", "Фрукты"),
+		"Vegetables" = list("Vegetables", "Овощи"),
+		"Flowers" = list("Flowers", "Цветы"),
+		"Cards" = list("Cards", "Карты"),
+		"Art" = list("Art", "Творчество"),
+		"cosmetic" = list("Cosmetics", "Косметика"),
+	)
+	var/datum/preferences/lang_prefs = user?.client?.prefs
+	var/is_russian = lang_prefs?.use_modern_translations && lang_prefs?.modern_ui_language == 1
 
 	var/list/out_records = list()
 
@@ -988,7 +1042,9 @@ GLOBAL_LIST_EMPTY(vending_products)
 		var/list/category = record.category || default_category
 		if (!isnull(category))
 			if (!(category["name"] in categories))
+				var/list/labels = category_translations[category["name"]]
 				categories[category["name"]] = list(
+					"name" = labels ? labels[is_russian ? 2 : 1] : category["name"],
 					"icon" = category["icon"],
 				)
 
@@ -1020,7 +1076,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 	)
 
 /obj/machinery/vending/ui_data(mob/user)
-	. = list()
+	. = list("user" = null)
 	.["vending_layout"] = user.client?.prefs?.get_vending_layout(type) || "grid"
 	var/obj/item/card/id/C
 	if(iscyborg(user) || isAI(user) || isdrone(user))

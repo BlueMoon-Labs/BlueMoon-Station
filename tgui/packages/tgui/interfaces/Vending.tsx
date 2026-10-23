@@ -7,7 +7,7 @@ import { Box, Button, Icon, ImageButton, Input, NoticeBox, Section, Stack } from
 import { Window } from '../layouts';
 import { LayoutToggle, useLayoutScroll, VendingLayout } from './common/LayoutToggle';
 
-type Category = { icon: string };
+type Category = { icon: string; name?: string };
 
 type ProductRecord = {
   path: string;
@@ -48,6 +48,9 @@ type VendingData = {
   vending_machine_input?: CustomInput[];
   categories?: Record<string, Category>;
   vending_layout: VendingLayout;
+  point_vendor?: BooleanLike;
+  point_label?: string;
+  discount?: number;
 };
 
 export const Vending = () => {
@@ -76,6 +79,9 @@ export const Vending = () => {
       ...(extended_inventory ? hidden_records : []),
     ]
   ).filter(Boolean);
+  if (data.point_vendor) {
+    inventory.sort((a, b) => a.price - b.price);
+  }
   const filteredCategories = Object.fromEntries(
     Object.entries(categories).filter(([name]) =>
       inventory.some((product) => 'category' in product && product.category === name)
@@ -110,7 +116,9 @@ export const Vending = () => {
                 <Stack align="center">
                   {!!onstation && data.user && (
                     <Stack.Item color="green">
-                      {data.user.cash || 0} кр. <Icon name="coins" color="gold" />
+                      <Box title={data.point_label}>
+                        {data.user.cash || 0} {data.point_vendor ? 'оч.' : 'кр.'} <Icon name="coins" color="gold" />
+                      </Box>
                     </Stack.Item>
                   )}
                   <Stack.Item>
@@ -134,7 +142,12 @@ export const Vending = () => {
                   <LayoutToggle />
                 </Stack>
               }>
-              <Box color="label" fontSize={0.9} mb={1}>{searching ? 'Найдено' : 'Позиций'}: {products.length}</Box>
+              <Stack mb={1} fontSize={0.9}>
+                <Stack.Item grow color="label">{searching ? 'Найдено' : 'Позиций'}: {products.length}</Stack.Item>
+                {!!data.point_vendor && (
+                  <Stack.Item color="good">Скидка: {Math.round((data.discount || 0) * 1000) / 10}%</Stack.Item>
+                )}
+              </Stack>
               {!products.length && <NoticeBox>Ничего не найдено.</NoticeBox>}
               {products.map((product) => (
                 <VendingProduct
@@ -155,7 +168,7 @@ export const Vending = () => {
                     color={CATEGORY_COLORS[name]}
                     icon={category.icon}
                     onClick={() => setSelectedCategory(name)}>
-                    {name}
+                    {category.name || name}
                   </Button>
                 ))}
               </Section>
@@ -187,22 +200,24 @@ export const UserDetails = () => {
 const VendingProduct = (props: { custom: boolean; product: Product }) => {
   const { act, data } = useBackend<VendingData>();
   const { custom, product } = props;
-  const { access, department, jobDiscount, onstation, user, stock = {}, free_stock = {} } = data;
+  const { access, department, jobDiscount, onstation, user, stock = {}, free_stock = {}, point_vendor } = data;
   const record = 'ref' in product ? product : undefined;
   // Остатки привязаны к записи: одинаковые названия и пути не объединяют товары.
-  const remaining = 'amount' in product ? product.amount : stock[product.ref] ?? 0;
+  const remaining = point_vendor ? Infinity : 'amount' in product ? product.amount : stock[product.ref] ?? 0;
   const free = custom
     ? !!access || product.price === 0
     : !onstation || product.price === 0 || !!(record && free_stock[record.ref]);
-  const discount = !custom && !record?.premium && !!user && department === user.department;
+  const discount = !point_vendor && !custom && !record?.premium && !!user && department === user.department;
   const price = discount ? Math.max(Math.round(product.price * jobDiscount), 1) : product.price;
+  const insufficientFunds = !free && price > (user?.cash ?? 0);
+  const priceColor = free ? 'green' : insufficientFunds ? 'red' : 'gold';
   const disabledReason = remaining <= 0 ? 'Закончился'
-    : onstation && !user ? 'Нужна ID-карта с банковским счётом'
-    : !free && price > (user?.cash ?? 0) ? 'Недостаточно средств'
+    : onstation && !user ? point_vendor ? 'Нужна ID-карта' : 'Нужна ID-карта с банковским счётом'
+    : insufficientFunds ? 'Недостаточно средств'
     : '';
   const disabled = !!disabledReason;
   const fluid = data.vending_layout === 'list';
-  const priceLabel = free ? 'Бесплатно' : `${price} кр.`;
+  const priceLabel = free ? 'Бесплатно' : `${price} ${point_vendor ? 'оч.' : 'кр.'}`;
   const displayName = capitalizeAll(product.name);
 
   return (
@@ -213,24 +228,24 @@ const VendingProduct = (props: { custom: boolean; product: Product }) => {
       base64={'img' in product ? product.img : undefined}
       asset={record ? ['vending32x32', record.path] : undefined}
       disabled={disabled}
-      tooltip={`${displayName} — ${priceLabel}, ${remaining} шт.${disabledReason ? ` — ${disabledReason}` : ''}`}
+      tooltip={`${displayName} — ${priceLabel}${point_vendor ? '' : `, ${remaining} шт.`}${disabledReason ? ` — ${disabledReason}` : ''}`}
       tooltipPosition="bottom"
       buttonsAlt={!fluid && (
         <Stack fontSize={0.8}>
-          <Stack.Item grow minWidth={0} textAlign="left" color="gold" style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <Stack.Item grow minWidth={0} textAlign="left" color={priceColor} style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {free ? <Icon name="gift" /> : priceLabel}
           </Stack.Item>
-          <Stack.Item shrink={0} color="lightgray">x{remaining}</Stack.Item>
+          {!point_vendor && <Stack.Item shrink={0} color={remaining <= 0 ? 'red' : 'lightgray'}>x{remaining}</Stack.Item>}
         </Stack>
       )}
       onClick={() => custom
         ? act('dispense', { item: product.name })
-        : act('vend', { ref: record?.ref })}>
+        : act(point_vendor ? 'purchase' : 'vend', { ref: record?.ref })}>
       {fluid ? (
         <Stack align="center" textAlign="right">
           <Stack.Item grow textAlign="left">{displayName}</Stack.Item>
-          <Stack.Item color="label" fontSize={0.8}>{remaining} шт.</Stack.Item>
-          <Stack.Item color="gold" fontSize={0.85}>{free ? <Icon name="gift" /> : priceLabel}</Stack.Item>
+          {!point_vendor && <Stack.Item color={remaining <= 0 ? 'red' : 'label'} fontSize={0.8}>{remaining} шт.</Stack.Item>}
+          <Stack.Item color={priceColor} fontSize={0.85}>{free ? <Icon name="gift" /> : priceLabel}</Stack.Item>
         </Stack>
       ) : displayName}
     </ImageButton>

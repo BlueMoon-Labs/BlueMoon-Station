@@ -67,7 +67,7 @@
 /obj/item/circuitboard/machine/bountyvend
 	name = "BountyVend (Machine Board)"
 	icon_state = "generic"
-	build_path = /obj/machinery/bountyvend
+	build_path = /obj/machinery/equipment_vendor/vanguard
 	desc = "Машинная плата автомата BountyVend."
 	req_components = list(
 		/obj/item/stock_parts/matter_bin = 3

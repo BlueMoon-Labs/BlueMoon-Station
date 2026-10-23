@@ -2106,7 +2106,7 @@
 /turf/open/floor/plasteel/white,
 /area/science/mixing)
 "jr" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /turf/open/floor/plasteel,
 /area/mine/production)
 "js" = (
@@ -3243,7 +3243,7 @@
 /turf/open/floor/plating/asteroid/snow/icemoon,
 /area/icemoon/surface/outdoors)
 "pi" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /obj/effect/turf_decal/tile/brown{
 	dir = 1
 	},
@@ -4630,7 +4630,7 @@
 /turf/open/floor/plating,
 /area/icemoon/surface/outdoors)
 "vb" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /obj/effect/turf_decal/tile/purple,
 /obj/effect/turf_decal/tile/purple{
 	dir = 4

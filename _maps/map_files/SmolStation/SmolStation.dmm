@@ -17709,7 +17709,7 @@
 /turf/open/floor/plasteel,
 /area/hallway/primary/central)
 "mPv" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /obj/effect/turf_decal/stripes/yellow/line,
 /obj/machinery/camera{
 	c_tag = "Mining"

@@ -85936,7 +85936,7 @@
 /turf/open/floor/wood,
 /area/service/bar/backroom)
 "xyn" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /obj/effect/turf_decal/tile/brown/fourcorners,
 /turf/open/floor/plasteel,
 /area/cargo/miningdock)

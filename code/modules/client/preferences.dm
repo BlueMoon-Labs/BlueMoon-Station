@@ -575,7 +575,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	return vending_layouts["[machine_type]"] || "grid"
 
 /datum/preferences/proc/set_vending_layout(machine_type, layout)
-	if(!(ispath(machine_type, /obj/machinery/vending) || ispath(machine_type, /obj/machinery/smartfridge)))
+	if(!(ispath(machine_type, /obj/machinery/vending) || ispath(machine_type, /obj/machinery/smartfridge) || ispath(machine_type, /obj/machinery/equipment_vendor)))
 		return FALSE
 	if(!(layout in list("grid", "list")) || get_vending_layout(machine_type) == layout)
 		return FALSE

@@ -789,7 +789,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 			if(!istext(machine_key))
 				continue
 			var/machine_type = text2path(machine_key)
-			if(!(ispath(machine_type, /obj/machinery/vending) || ispath(machine_type, /obj/machinery/smartfridge)))
+			if(!(ispath(machine_type, /obj/machinery/vending) || ispath(machine_type, /obj/machinery/smartfridge) || ispath(machine_type, /obj/machinery/equipment_vendor)))
 				continue
 			if(vending_layouts[machine_key] in list("grid", "list"))
 				sanitized_vending_layouts[machine_key] = vending_layouts[machine_key]

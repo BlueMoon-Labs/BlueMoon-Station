@@ -2475,7 +2475,7 @@
 /turf/open/floor/plasteel,
 /area/maintenance/port/aft)
 "aGq" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /obj/machinery/light_switch/directional/north,
 /obj/effect/turf_decal/tile/brown/half/contrasted{
 	dir = 4
@@ -11559,7 +11559,7 @@
 /turf/open/floor/plasteel,
 /area/mine/living_quarters)
 "cFw" = (
-/obj/machinery/bountyvend,
+/obj/machinery/equipment_vendor/vanguard,
 /obj/machinery/vending/wallmed/directional/west,
 /obj/effect/turf_decal/tile/blue/opposingcorners,
 /obj/machinery/newscaster{
@@ -76801,7 +76801,7 @@
 /turf/open/floor/plasteel,
 /area/security/brig/upper)
 "qVP" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /obj/machinery/light/small/directional/south,
 /obj/machinery/light_switch/directional/south,
 /obj/machinery/newscaster{
@@ -103494,7 +103494,7 @@
 /turf/open/floor/plating,
 /area/maintenance/department/medical/morgue)
 "wLL" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/dark/side{
 	dir = 4
@@ -105484,7 +105484,7 @@
 /turf/open/floor/plasteel/dark/textured,
 /area/command/bridge)
 "xiA" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /obj/effect/turf_decal/tile/brown/half/contrasted{
 	dir = 4
 	},

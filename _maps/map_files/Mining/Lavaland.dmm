@@ -3641,7 +3641,7 @@
 /turf/open/floor/plasteel,
 /area/mine/xenoarch)
 "cFa" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /turf/open/floor/plasteel/dark,
 /area/mine/production)
 "cGZ" = (
@@ -23804,7 +23804,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-8"
 	},
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /obj/effect/turf_decal/bot/yellow,
 /obj/structure/railing{
 	dir = 4
