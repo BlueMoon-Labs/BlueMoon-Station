@@ -68,7 +68,7 @@
 		user.client.screen -= screen_objects
 	QDEL_LIST(screen_objects)
 	var/list/rows = visible_entries()
-	var/header = target ? capitalize(target.name) : "Что здесь"
+	var/header = target ? capitalize(target.name) : "На клетке"
 	var/total_height = (length(rows) + 1) * CONTEXT_MENU_ROW_HEIGHT
 	var/list/view_pixels = view_to_pixels(user.client?.view || world.view)
 	var/left = clamp(origin_x + 4, 0, max(view_pixels[1] - CONTEXT_MENU_WIDTH, 0))

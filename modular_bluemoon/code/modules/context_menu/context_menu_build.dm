@@ -29,7 +29,8 @@ GLOBAL_LIST_INIT(context_menu_intent_short, list(
 	/// "модификаторы|интент" уже показанных кликов
 	var/list/shown_clicks = list()
 	if(tile)
-		result += new /datum/context_menu_entry/pick("Назад", null, CONTEXT_ENTRY_SERVICE, null)
+		var/entry_name = tile_list_shown ? "Назад" : "Другие на клетке ([length(get_tile_candidates(tile) - A)])"
+		result += new /datum/context_menu_entry/pick(entry_name, null, CONTEXT_ENTRY_SERVICE, null)
 	add_basic_entries(A, result, shown_clicks)
 	// подписи скринтипа точнее общих названий интентов, поэтому собираются раньше них
 	var/list/main_clicks = list()

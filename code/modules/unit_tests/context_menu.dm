@@ -145,7 +145,7 @@
 	TEST_ASSERT_NULL(user.active_context_menu, "Меню не закрылось после выбора")
 	TEST_ASSERT(QDELETED(menu), "Меню не удалено после выбора")
 
-/// Куча на клетке: сперва выбор объекта, потом его действия; одиночный предмет можно взять
+/// Куча на клетке: меню сразу по объекту под курсором, остальные - пунктом «Другие на клетке»; по полу - список клетки
 /datum/unit_test/context_menu_tile_pick
 
 /datum/unit_test/context_menu_tile_pick/Run()
@@ -156,10 +156,16 @@
 	var/datum/context_menu/menu = user.open_context_menu(pen, "right=1;shift=1")
 	TEST_ASSERT_EQUAL(menu.target, pen, "Одиночный предмет должен открываться сразу")
 	TEST_ASSERT_NOTNULL(find_context_entry(menu, "Взять"), "Нет пункта «Взять»")
+	TEST_ASSERT_NULL(menu.tile, "У одиночного предмета не из чего выбирать, а список клетки есть")
 
 	var/obj/item/paper/paper = allocate(/obj/item/paper, next_turf)
 	menu = user.open_context_menu(pen, "right=1;shift=1")
-	TEST_ASSERT_NULL(menu.target, "В куче меню должно начинаться с выбора объекта")
+	TEST_ASSERT_EQUAL(menu.target, pen, "В куче меню должно открываться по объекту под курсором")
+	TEST_ASSERT_NOTNULL(find_context_entry(menu, "Взять"), "В куче нет «Взять» у предмета под курсором")
+	var/datum/context_menu_entry/others = find_context_entry(menu, "Другие на клетке (1)")
+	TEST_ASSERT_NOTNULL(others, "Нет пункта «Другие на клетке» со счётом остальных")
+	menu.choose(others)
+	TEST_ASSERT_NULL(menu.target, "«Другие на клетке» не открыл список клетки")
 	var/datum/context_menu_entry/pick/pick_pen
 	var/found_paper = FALSE
 	for(var/datum/context_menu_entry/pick/entry in menu.entries)
@@ -175,6 +181,9 @@
 	TEST_ASSERT_NOTNULL(find_context_entry(menu, "Назад"), "Нет пункта «Назад»")
 	menu.choose(find_context_entry(menu, "Назад"))
 	TEST_ASSERT_NULL(menu.target, "«Назад» не вернул к списку клетки")
+
+	menu = user.open_context_menu(next_turf, "right=1;shift=1")
+	TEST_ASSERT_NULL(menu.target, "ПКМ по полу с вещами должен начинаться со списка клетки")
 	user.close_context_menu()
 
 /// Вербы предмета в руке доступны из меню

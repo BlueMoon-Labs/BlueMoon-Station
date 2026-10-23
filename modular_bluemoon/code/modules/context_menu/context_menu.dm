@@ -14,6 +14,10 @@
 /mob/living/simple_animal/revenant
 	right_click_actions = FALSE
 
+/client
+	/// Подсказка, как переключить режим ПКМ, уже была в этой сессии
+	var/context_menu_hint_shown = FALSE
+
 /client/proc/update_right_click_mode()
 	winset(src, "mapwindow.map", "right-click=[mob?.right_click_actions ? "true" : "false"]")
 
@@ -72,6 +76,9 @@
 	if(QDELETED(target) || !right_click_actions)
 		return
 	active_context_menu = new /datum/context_menu(src, target, params)
+	if(client && !client.context_menu_hint_shown && right_click_menu_preferred())
+		client.context_menu_hint_shown = TRUE
+		to_chat(src, span_notice("Это меню действий. Чтобы ПКМ сразу действовал, а меню открывалось на Shift+ПКМ, переключите «Режим ПКМ» во вкладке OOC или в настройках игры."))
 	return active_context_menu
 
 /mob/proc/close_context_menu()
@@ -79,10 +86,11 @@
 		qdel(active_context_menu)
 
 /**
- * Меню действий у курсора (Shift+ПКМ).
+ * Меню действий у курсора.
  *
  * Пункты - обычные клики с модификаторами и интентом, вербы и колбэки.
- * Если в клетке клика несколько объектов, сперва выбирается объект.
+ * Открывается сразу по объекту под курсором, остальные объекты клетки - пунктом «Другие на клетке».
+ * По полу с вещами сперва список клетки.
  */
 /datum/context_menu
 	var/mob/user
@@ -90,6 +98,8 @@
 	var/atom/target
 	/// Клетка клика, если на ней есть из чего выбирать
 	var/turf/tile
+	/// Игрок уже видел список клетки: из действий объекта к нему ведёт «Назад»
+	var/tile_list_shown = FALSE
 	/// Атом, по которому кликнули на самом деле: ему достаются icon-x/icon-y клика
 	var/atom/clicked
 	/// icon-x, icon-y и screen-loc исходного клика
@@ -117,10 +127,12 @@
 	var/turf/target_turf = isturf(target) ? target : (isturf(target.loc) ? target.loc : null)
 	if(target_turf && target != user)
 		var/list/candidates = get_tile_candidates(target_turf)
-		if(isturf(target) ? length(candidates) : length(candidates) > 1)
+		if(isturf(target) && length(candidates))
 			tile = target_turf
 			show_tile()
 			return
+		if(!isturf(target) && length(candidates) > 1)
+			tile = target_turf
 	show_target(target)
 
 /datum/context_menu/Destroy()
@@ -147,6 +159,7 @@
 
 /datum/context_menu/proc/show_tile()
 	set_target(null)
+	tile_list_shown = TRUE
 	entries = list()
 	for(var/atom/movable/thing as anything in get_tile_candidates(tile))
 		entries += new /datum/context_menu_entry/pick(capitalize(thing.name), null, CONTEXT_ENTRY_NORMAL, thing)
