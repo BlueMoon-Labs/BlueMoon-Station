@@ -566,7 +566,7 @@
 	},
 /obj/machinery/door/firedoor,
 /obj/machinery/door/window/survival_pod{
-	req_access_txt = "150";
+	req_access_txt = "151";
 	dir = 8
 	},
 /turf/open/floor/mineral/plastitanium/red,
@@ -12700,7 +12700,8 @@
 	dir = 8
 	},
 /obj/machinery/recharger,
-/turf/open/space/basic,
+/obj/machinery/door/firedoor,
+/turf/open/floor/mineral/plastitanium/red,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "hJS" = (
 /obj/structure/stone_tile/block/cracked{
