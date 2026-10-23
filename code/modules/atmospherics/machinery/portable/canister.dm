@@ -259,6 +259,9 @@
 /// admin_source/log_source - кто открыл, в оформлении message_admins и log_admin
 /// соответственно (ручное открытие даёт кликабельный ADMIN_LOOKUPFLW).
 /obj/machinery/portable_atmospherics/canister/proc/report_dangerous_release(admin_source, log_source)
+	if(is_antag_training_atom(src))
+		log_game("[log_source] opened [src] on the training grounds at [AREACOORD(src)].")
+		return
 	var/list/danger = list()
 	for(var/id in air_contents.get_gases())
 		var/gas = air_contents.get_moles(id)
@@ -425,8 +428,10 @@
 	to_chat(user, "<span class='notice'>You begin cutting \the [src] apart...</span>")
 	if(I.use_tool(src, user, 3 SECONDS, volume=50))
 		to_chat(user, "<span class='notice'>You cut \the [src] apart.</span>")
+		var/training = is_antag_training_atom(src)
 		deconstruct(TRUE)
-		message_admins("[src] deconstructed by [ADMIN_LOOKUPFLW(user)]")
+		if(!training)
+			message_admins("[src] deconstructed by [ADMIN_LOOKUPFLW(user)]")
 		log_game("[src] deconstructed by [key_name(user)]")
 
 	return TRUE
@@ -519,7 +524,7 @@
 		ui.open()
 
 		var/client/client = user.client
-		if (CONFIG_GET(flag/use_exp_tracking) && client && client.get_exp_living(TRUE) < 480) // Player with less than 8 hours playtime is interacting with this canister.
+		if (CONFIG_GET(flag/use_exp_tracking) && client && client.get_exp_living(TRUE) < 480 && !is_antag_training_atom(src)) // Player with less than 8 hours playtime is interacting with this canister.
 			if(client.next_canister_grief_warning < world.time)
 				var/turf/T = get_turf(src)
 				client.next_canister_grief_warning = world.time + 15 MINUTES // Wait 15 minutes before alerting admins again
@@ -660,7 +665,8 @@
 					// надо), но до сих пор о ней узнавали только админы: игрок
 					// видел, как канистра "сама" продолжила выпускать газ.
 					to_chat(usr, span_warning("Вы вынимаете [holding] при открытом клапане - [src] продолжит стравливать содержимое прямо в воздух! Закройте клапан или доставайте баллон alt-кликом, он закрывает его сам."))
-					message_admins("[ADMIN_LOOKUPFLW(usr)] removed [holding] from [src] with valve still open at [ADMIN_VERBOSEJMP(src)] releasing contents into the [span_antigrif("AIR")].")
+					if(!is_antag_training_atom(src))
+						message_admins("[ADMIN_LOOKUPFLW(usr)] removed [holding] from [src] with valve still open at [ADMIN_VERBOSEJMP(src)] releasing contents into the [span_antigrif("AIR")].")
 					investigate_log("[key_name(usr)] removed the [holding], leaving the valve open and transferring into the [span_antigrif("AIR")].", INVESTIGATE_ATMOS)
 				replace_tank(usr, FALSE)
 				. = TRUE

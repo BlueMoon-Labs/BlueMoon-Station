@@ -587,7 +587,7 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 		if(istype(H.glasses, /obj/item/clothing/glasses/hud) || CIH)
 			var/perpname = get_face_name(get_id_name(""))
 			if(perpname)
-				var/datum/data/record/R = GLOB.data_core.general_by_name[perpname]
+				var/datum/data/record/R = antag_training_station_record(GLOB.data_core.general_by_name, perpname, src)
 				if(R)
 					var/rank_tooltip = ""
 					if(R.fields["real_rank"] && R.fields["rank"] != R.fields["real_rank"])
@@ -606,7 +606,7 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 						. += "<a href='?src=[REF(src)];hud=m;p_stat=1'>\[[health_r]\]</a>"
 						health_r = R.fields["m_stat"]
 						. += "<a href='?src=[REF(src)];hud=m;m_stat=1'>\[[health_r]\]</a>"
-					R = GLOB.data_core.medical_by_name[perpname]
+					R = antag_training_station_record(GLOB.data_core.medical_by_name, perpname, src)
 					if(R)
 						. += "<a href='?src=[REF(src)];hud=m;evaluation=1'>\[Medical evaluation\]</a>"
 					traitstring = get_trait_string(FALSE, TRUE)
@@ -620,7 +620,7 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 					//|| !user.canmove || user.restrained()) Fluff: Sechuds have eye-tracking technology and sets 'arrest' to people that the wearer looks and blinks at.
 						var/criminal = "None"
 
-						R = GLOB.data_core.security_by_name[perpname]
+						R = antag_training_station_record(GLOB.data_core.security_by_name, perpname, src)
 						if(R)
 							criminal = R.fields["criminal"]
 

@@ -45,6 +45,10 @@
 #define TURF_HAS_OPAQUE_ATOM				(1<<0)
 /// Углы освещения турфа уже разложены.
 #define TURF_LIGHTING_CORNERS_INITIALISED	(1<<1)
+/// Клетка стоит в GLOB.lighting_starlight_queue.
+#define TURF_STARLIGHT_QUEUED				(1<<2)
+/// Клетка записана в GLOB.starlight.
+#define TURF_STARLIT						(1<<3)
 
 #define CHANGETURF_DEFER_CHANGE		1
 #define CHANGETURF_IGNORE_AIR		2 // This flag prevents changeturf from gathering air from nearby turfs to fill the new turf with an approximation of local air

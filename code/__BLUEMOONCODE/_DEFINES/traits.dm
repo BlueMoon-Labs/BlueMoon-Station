@@ -26,6 +26,8 @@
 #define TRAIT_RETRACTABLE_CLAWS				"claws"
 #define TRAIT_CHAMELEON_QUIRK				"chameleon_quirk"
 #define TRAIT_KNOWS_RESEARCH 				"parchment_knowledge"
+/// Тело ждёт игрока в капсуле полигона: dusts_on_catatonia его не трогает.
+#define TRAIT_TRAINING_DREAMER				"training_dreamer"
 #define BLUEMOON_TRAIT_NAME_PHOBIA			"Фобия"
 
 // Трейты для рас

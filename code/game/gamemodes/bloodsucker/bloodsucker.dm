@@ -213,8 +213,15 @@
 				//if (!am_addicted)
 					//message_admins("DEBUG4: can_make_vassal() Abort: No Blood")
 				//	return FALSE
+	// На полигоне вассалом становится только манекен сессии самого кровососа: игрока у него нет.
+	var/mob/living/creator_body = istype(creator) ? creator.current : creator
+	var/datum/antag_training_session/target_session = target.training_owner?.resolve()
+	var/training_target = target.training_origin && target_session && target_session.current_body == creator_body
+	if(target.training_origin && !training_target && creator_body?.training_origin)
+		to_chat(creator_body, span_warning("[target] не поддаётся: на полигоне вассалом становится только учебная цель, созданная вашим пультом."))
+		return FALSE
 	// No Mind!
-	if(!target.mind || !target.mind.key)
+	if(!target.mind || (!target.mind.key && !training_target))
 		if(display_warning)
 			to_chat(creator, "<span class='danger'>[target] isn't self-aware enough to be made into a Vassal.</span>")
 		return FALSE
@@ -229,7 +236,7 @@
 				to_chat(creator, "<span class='danger'>[target] is the loyal Vassal of another Bloodsucker!</span>")
 		return FALSE
 	// Already Antag or Loyal (Vamp Hunters count as antags)
-	if(target.mind.enslaved_to || AmInvalidAntag(target.mind)) //!VassalCheckAntagValid(target.mind, check_antag_or_loyal)) // HAS_TRAIT(target, TRAIT_MINDSHIELD, "implant") ||
+	if(target.mind.enslaved_to || AmInvalidAntag(target.mind, training_target)) //!VassalCheckAntagValid(target.mind, check_antag_or_loyal)) // HAS_TRAIT(target, TRAIT_MINDSHIELD, "implant") ||
 		if(display_warning)
 			to_chat(creator, "<span class='danger'>[target] resists the power of your blood to dominate their mind!</span>")
 		return FALSE
@@ -243,12 +250,14 @@
 	// Am I NOT an invalid Antag?    NOTE: We already excluded non-antags above. Don't worry about the "No List?" check in AmInvalidIntag()
 	return !AmInvalidAntag(M)
 
-/datum/game_mode/proc/AmInvalidAntag(datum/mind/M)
+/datum/game_mode/proc/AmInvalidAntag(datum/mind/M, allow_training = FALSE)
 	// No List?
 	if(!islist(M.antag_datums) || M.antag_datums.len == 0)
 		return FALSE
 	// Does even ONE antag appear in this mind that isn't in the list? Then FAIL!
 	for(var/datum/antagonist/antag_datum in M.antag_datums)
+		if(allow_training && istype(antag_datum, /datum/antagonist/ghost_role/antag_training))
+			continue
 		if(!(antag_datum.type in vassal_allowed_antags))  // vassal_allowed_antags is a list stored in the game mode, above.
 			//message_admins("DEBUG VASSAL: Found Invalid: [antag_datum] // [antag_datum.type]")
 			return TRUE

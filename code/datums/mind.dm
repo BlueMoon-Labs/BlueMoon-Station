@@ -301,6 +301,7 @@
 		qdel(A)
 		return
 	A.owner = src
+	A.sync_training_listing()
 //ambition start
 	do_add_antag_datum(A)
 //ambition end

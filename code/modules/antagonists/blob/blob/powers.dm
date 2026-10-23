@@ -47,7 +47,7 @@
 	if(placed && blob_core)
 		blob_core.forceMove(loc)
 	else
-		var/obj/structure/blob/core/core = new(get_turf(src), src, 1)
+		var/obj/structure/blob/core/core = new core_type(get_turf(src), src, 1)
 		core.overmind = src
 		blobs_legit += src
 		blob_core = core
@@ -67,15 +67,20 @@
 	set category = "Blob"
 	set name = "Jump to Node"
 	set desc = "Move your camera to a selected node."
-	if(GLOB.blob_nodes.len)
-		var/list/nodes = list()
-		for(var/i in 1 to GLOB.blob_nodes.len)
-			var/obj/structure/blob/node/B = GLOB.blob_nodes[i]
-			nodes["Blob Node #[i] ([get_area_name(B)])"] = B
+	var/list/nodes = node_choices()
+	if(length(nodes))
 		var/node_name = input(src, "Choose a node to jump to.", "Node Jump") in nodes
 		var/obj/structure/blob/node/chosen_node = nodes[node_name]
 		if(chosen_node)
 			forceMove(chosen_node.loc)
+
+/// Узлы, к которым может перейти этот разум: узлы блоба полигона и станции в общем списке не смешиваются.
+/mob/camera/blob/proc/node_choices()
+	. = list()
+	for(var/i in 1 to GLOB.blob_nodes.len)
+		var/obj/structure/blob/node/B = GLOB.blob_nodes[i]
+		if(B.training_origin == training_origin)
+			.["Blob Node #[i] ([get_area_name(B)])"] = B
 
 /mob/camera/blob/proc/createSpecial(price, blobstrain, nearEquals, needsNode, turf/T)
 	if(!T)

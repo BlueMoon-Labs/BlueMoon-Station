@@ -588,13 +588,10 @@ SUBSYSTEM_DEF(shuttle)
 	GLOB.lighting_defer_active = FALSE
 
 	// Expand deferred starlight into space turfs, queue for SSlighting Phase -1
-	var/list/starlight_batch = list()
 	for(var/turf/deferred_turf as anything in GLOB.lighting_deferred_starlight)
 		for(var/turf/open/space/space_tile in RANGE_TURFS(1, deferred_turf))
-			starlight_batch |= space_tile
+			space_tile.queue_starlight()
 	GLOB.lighting_deferred_starlight.Cut()
-	if(starlight_batch.len)
-		GLOB.lighting_starlight_queue |= starlight_batch
 
 	// Boost SSlighting processing cap to drain post-transit queues faster
 	SSlighting.temp_cap_boost = 50

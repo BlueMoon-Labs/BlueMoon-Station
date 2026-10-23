@@ -149,8 +149,10 @@
 	// От истинной плоскости: компонент из ComponentInitialize() мог уже переставить атом на этаж (stationloving).
 	if(SSmapping.max_plane_offset)
 		SET_PLANE_IMPLICIT(src, PLANE_TO_TRUE(plane))
-	if(length(GLOB.antag_training_arenas))
-		register_training_atom()
+	if(length(GLOB.antag_training_z))
+		var/turf/spot = get_turf(src)
+		if(spot && GLOB.antag_training_z[spot.z])
+			register_training_atom()
 	switch(blocks_emissive)
 		if(EMISSIVE_BLOCK_GENERIC)
 			var/mutable_appearance/gen_emissive_blocker = mutable_appearance(icon, icon_state, plane = EMISSIVE_PLANE, alpha = src.alpha)

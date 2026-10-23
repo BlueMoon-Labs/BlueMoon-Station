@@ -166,7 +166,7 @@ There are several things that need to be remembered:
 		var/mutable_appearance/new_cult_overlay = mutable_appearance('icons/effects/32x64.dmi', istate, -ANTAG_LAYER)
 		overlays_standing[ANTAG_LAYER] = new_cult_overlay
 	var/datum/antagonist/clockcult/C = src?.mind?.has_antag_datum(/datum/antagonist/clockcult) //check for clockcultism - surely one can't be both cult and clockie, right?
-	if(C)
+	if(C && !istype(C, /datum/antagonist/clockcult/training))
 		var/obj/structure/destructible/clockwork/massive/celestial_gateway/G = GLOB.ark_of_the_clockwork_justiciar
 		if(G && G.active && ishuman(src))
 			var/mutable_appearance/new_cult_overlay = mutable_appearance('icons/effects/genetics.dmi', "servitude", -MUTATIONS_LAYER)
