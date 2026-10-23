@@ -192,8 +192,10 @@
 /datum/unit_test/context_menu_paging/Run()
 	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent)
 	var/turf/next_turf = get_step(user, EAST)
+	// разные имена, иначе одинаковые ручки свернутся в одну строку
 	for(var/i in 1 to CONTEXT_MENU_MAX_ROWS + 2)
-		allocate(/obj/item/pen, next_turf)
+		var/obj/item/pen/pen = allocate(/obj/item/pen, next_turf)
+		pen.name = "pen [i]"
 	var/datum/context_menu/menu = user.open_context_menu(next_turf, "right=1;shift=1")
 	TEST_ASSERT_EQUAL(menu.page_count(), 2, "Список клетки должен занять две страницы")
 	var/datum/context_menu_entry/more
@@ -210,6 +212,46 @@
 	TEST_ASSERT_NOTNULL(more, "На второй странице нет пункта «Ещё…»")
 	menu.choose(more)
 	TEST_ASSERT_EQUAL(menu.page, 1, "«Ещё…» на последней странице не вернул к первой")
+	user.close_context_menu()
+
+/// Одинаковые объекты клетки - одна строка со счётом и своим списком; у объектов есть значки; меню уже максимума под короткие имена
+/datum/unit_test/context_menu_tile_groups
+
+/datum/unit_test/context_menu_tile_groups/Run()
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent)
+	var/turf/next_turf = get_step(user, EAST)
+	var/list/pens = list()
+	for(var/i in 1 to CONTEXT_MENU_GROUP_MIN + 1)
+		pens += allocate(/obj/item/pen, next_turf)
+	var/obj/item/paper/paper = allocate(/obj/item/paper, next_turf)
+	var/obj/item/pen/first_pen = pens[1]
+	var/group_name = "[capitalize(first_pen.name)] ([length(pens)])"
+
+	var/datum/context_menu/menu = user.open_context_menu(next_turf, "right=1;shift=1")
+	var/datum/context_menu_entry/group = find_context_entry(menu, group_name)
+	TEST_ASSERT_NOTNULL(group, "Одинаковые ручки не свернулись в «[group_name]»")
+	TEST_ASSERT_NOTNULL(find_context_entry(menu, capitalize(paper.name)), "Бумаги нет в списке клетки")
+	TEST_ASSERT_EQUAL(length(menu.entries), 3, "В списке клетки должны быть ручки строкой, бумага и пол")
+	var/icons = 0
+	for(var/atom/movable/screen/context_menu_icon/icon_object in menu.screen_objects)
+		icons++
+	TEST_ASSERT_EQUAL(icons, 3, "У каждой строки списка клетки должен быть значок")
+	TEST_ASSERT(menu.width < CONTEXT_MENU_WIDTH, "Меню с короткими именами растянуто на всю ширину")
+
+	menu.choose(group)
+	TEST_ASSERT_EQUAL(menu.header_text, group_name, "Список одинаковых без своей шапки")
+	var/list/picked_pens = list()
+	for(var/datum/context_menu_entry/pick/entry in menu.entries)
+		var/atom/picked = entry.picked_ref?.resolve()
+		if(picked)
+			picked_pens += picked
+	TEST_ASSERT_EQUAL(length(picked_pens), length(pens), "В списке одинаковых не все ручки")
+	var/datum/context_menu_entry/pick/pick_pen
+	for(var/datum/context_menu_entry/pick/entry in menu.entries)
+		if(entry.picked_ref?.resolve() == first_pen)
+			pick_pen = entry
+	menu.choose(pick_pen)
+	TEST_ASSERT_EQUAL(menu.target, first_pen, "Выбор ручки из списка одинаковых не открыл её действия")
 	user.close_context_menu()
 
 /// Вербы предмета в руке доступны из меню
@@ -242,7 +284,7 @@
 	TEST_ASSERT_EQUAL(slam.intent, INTENT_HARM, "Пункт другого интента не меняет интент")
 	user.close_context_menu()
 
-/// Движение закрывает меню и убирает его с экрана
+/// На ходу меню остаётся, а пропавший или далёкий объект закрывает его и убирает с экрана
 /datum/unit_test/context_menu_close_on_move
 
 /datum/unit_test/context_menu_close_on_move/Run()
@@ -252,7 +294,10 @@
 	var/list/screen_objects = menu.screen_objects.Copy()
 	TEST_ASSERT(length(screen_objects), "Меню без экранных объектов")
 	user.forceMove(get_step(user, NORTH))
-	TEST_ASSERT_NULL(user.active_context_menu, "Движение не закрыло меню")
+	TEST_ASSERT_EQUAL(user.active_context_menu, menu, "Шаг рядом с объектом закрыл меню")
+	target.moveToNullspace()
+	user.forceMove(get_step(user, SOUTH))
+	TEST_ASSERT_NULL(user.active_context_menu, "Шаг после пропажи объекта не закрыл меню")
 	TEST_ASSERT(QDELETED(menu), "Меню не удалено")
 	for(var/atom/movable/screen/object as anything in screen_objects)
 		TEST_ASSERT(QDELETED(object), "Экранный объект меню пережил закрытие")

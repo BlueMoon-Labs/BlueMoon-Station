@@ -100,6 +100,8 @@
 	var/turf/tile
 	/// Игрок уже видел список клетки: из действий объекта к нему ведёт «Назад»
 	var/tile_list_shown = FALSE
+	/// Шапка вместо имени цели, например у списка одинаковых объектов
+	var/header_text
 	/// Атом, по которому кликнули на самом деле: ему достаются icon-x/icon-y клика
 	var/atom/clicked
 	/// icon-x, icon-y и screen-loc исходного клика
@@ -111,6 +113,8 @@
 	/// Левый верхний угол меню в пикселях от левого нижнего угла вьюпорта
 	var/origin_x = 0
 	var/origin_y = 0
+	/// Ширина последней отрисовки
+	var/width = CONTEXT_MENU_WIDTH
 	var/list/atom/movable/screen/context_menu/screen_objects = list()
 
 /datum/context_menu/New(mob/user, atom/target, params)
@@ -160,18 +164,44 @@
 		candidates += thing
 	return sort_list(candidates, GLOBAL_PROC_REF(cmp_context_menu_order))
 
+/// Список клетки; одинаковые объекты (тип и имя) от CONTEXT_MENU_GROUP_MIN штук - одной строкой со счётом
 /datum/context_menu/proc/show_tile()
 	set_target(null)
 	tile_list_shown = TRUE
+	header_text = null
 	entries = list()
+	var/list/same_things = list()
 	for(var/atom/movable/thing as anything in get_tile_candidates(tile))
-		entries += new /datum/context_menu_entry/pick(capitalize(thing.name), null, CONTEXT_ENTRY_NORMAL, thing)
+		var/key = "[thing.type]|[thing.name]"
+		if(!same_things[key])
+			same_things[key] = list()
+		same_things[key] += thing
+	for(var/key in same_things)
+		var/list/atom/movable/things = same_things[key]
+		var/atom/movable/first = things[1]
+		if(length(things) >= CONTEXT_MENU_GROUP_MIN)
+			entries += new /datum/context_menu_entry/pick_group("[capitalize(first.name)] ([length(things)])", null, CONTEXT_ENTRY_NORMAL, things)
+			continue
+		for(var/atom/movable/thing as anything in things)
+			entries += new /datum/context_menu_entry/pick(capitalize(thing.name), null, CONTEXT_ENTRY_NORMAL, thing)
 	entries += new /datum/context_menu_entry/pick(capitalize(tile.name), null, CONTEXT_ENTRY_NORMAL, tile)
+	page = 1
+	render()
+
+/datum/context_menu/proc/show_group(datum/context_menu_entry/pick_group/group)
+	set_target(null)
+	header_text = group.name
+	entries = list(new /datum/context_menu_entry/pick("Назад", null, CONTEXT_ENTRY_SERVICE, null))
+	for(var/datum/weakref/ref as anything in group.refs)
+		var/atom/movable/thing = ref.resolve()
+		if(thing?.loc == tile)
+			entries += new /datum/context_menu_entry/pick(capitalize(thing.name), null, CONTEXT_ENTRY_NORMAL, thing)
 	page = 1
 	render()
 
 /datum/context_menu/proc/show_target(atom/new_target)
 	set_target(new_target)
+	header_text = null
 	entries = build_entries(new_target)
 	page = 1
 	render()
@@ -185,6 +215,9 @@
 
 /datum/context_menu/proc/choose(datum/context_menu_entry/entry)
 	if(!(entry in entries) && entry != page_entry)
+		return
+	if(istype(entry, /datum/context_menu_entry/pick_group))
+		show_group(entry)
 		return
 	if(istype(entry, /datum/context_menu_entry/pick))
 		var/datum/context_menu_entry/pick/pick_entry = entry
@@ -221,9 +254,13 @@
 	page_entry = new /datum/context_menu_entry/page("Ещё… ([page]/[page_count()])", null, CONTEXT_ENTRY_SERVICE)
 	. += page_entry
 
+/// На ходу меню остаётся, пока его объект рядом и на том же уровне
 /datum/context_menu/proc/on_user_moved(datum/source)
 	SIGNAL_HANDLER
-	qdel(src)
+	var/turf/anchor = get_turf(target || tile)
+	var/turf/user_turf = get_turf(user)
+	if(!anchor || !user_turf || anchor.z != user_turf.z || get_dist(user_turf, anchor) > CONTEXT_MENU_MAX_DISTANCE)
+		qdel(src)
 
 /datum/context_menu/proc/on_user_lost(datum/source)
 	SIGNAL_HANDLER

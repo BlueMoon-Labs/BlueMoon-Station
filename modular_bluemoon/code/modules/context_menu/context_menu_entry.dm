@@ -13,6 +13,10 @@
 /datum/context_menu_entry/proc/execute(mob/user, atom/target)
 	return
 
+/// Чей значок рисуется в строке
+/datum/context_menu_entry/proc/icon_source()
+	return null
+
 /// Повторяет клик игрока с модификаторами и, если задан, разово с другим интентом
 /datum/context_menu_entry/click
 	var/params
@@ -63,5 +67,23 @@
 /datum/context_menu_entry/pick/New(name, hint, style, atom/picked)
 	..()
 	picked_ref = WEAKREF(picked)
+
+/datum/context_menu_entry/pick/icon_source()
+	return picked_ref?.resolve()
+
+/// Несколько одинаковых объектов клетки одной строкой: открывает их список
+/datum/context_menu_entry/pick_group
+	var/list/datum/weakref/refs = list()
+
+/datum/context_menu_entry/pick_group/New(name, hint, style, list/atom/things)
+	..()
+	for(var/atom/thing as anything in things)
+		refs += WEAKREF(thing)
+
+/datum/context_menu_entry/pick_group/icon_source()
+	for(var/datum/weakref/ref as anything in refs)
+		var/atom/thing = ref.resolve()
+		if(thing)
+			return thing
 
 /datum/context_menu_entry/page
