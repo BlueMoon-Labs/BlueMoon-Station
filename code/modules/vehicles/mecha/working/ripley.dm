@@ -1,13 +1,9 @@
 /obj/vehicle/sealed/mecha/working/ripley
-	desc = "Автономный погрузочный агрегат MK-I. Разработан в первую очередь для тяжёлых подъёмов, Ripley может быть оснащён различным оборудованием для выполнения множества задач."
 	name = "\improper APLU MK-I \"Ripley\""
+	desc = "Автономный погрузочный агрегат MK-I. Разработан в первую очередь для тяжёлых подъёмов, Ripley может быть оснащён различным оборудованием для выполнения множества задач."
 	icon_state = "ripley"
 	silicon_icon_state = "ripley-empty"
 	movedelay = 1.5 //Move speed, lower is faster.
-	/// How fast the mech is in low pressure
-	var/fast_pressure_step_in = 1.5
-	/// How fast the mech is in normal pressure
-	var/slow_pressure_step_in = 2
 	max_temperature = 20000
 	max_integrity = 200
 	lights_power = 7
@@ -19,6 +15,12 @@
 	enclosed = FALSE //Normal ripley has an open cockpit design
 	enter_delay = 10 //can enter in a quarter of the time of other mechs
 	exit_delay = 10
+	mecha_type = MECHA_TYPE_WORKING | MECHA_TYPE_RIPLEY
+	ui_theme = "engineering"
+	/// How fast the mech is in low pressure
+	var/fast_pressure_step_in = 1.5
+	/// How fast the mech is in normal pressure
+	var/slow_pressure_step_in = 2
 	/// Amount of Goliath hides attached to the mech
 	var/hides = 0
 	/// List of all things in Ripley's Cargo Compartment
@@ -43,9 +45,8 @@
 	initialize_passenger_action_type(/datum/action/vehicle/sealed/mecha/mech_eject)
 	if(enclosed)
 		initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/mech_toggle_internals, VEHICLE_CONTROL_SETTINGS)
-	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/mech_cycle_equip, VEHICLE_CONTROL_EQUIPMENT)
 	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/mech_toggle_lights, VEHICLE_CONTROL_SETTINGS)
-	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/mech_view_stats, VEHICLE_CONTROL_SETTINGS)
+	initialize_passenger_action_type(/datum/action/vehicle/sealed/mecha/mech_view_stats)
 	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/strafe, VEHICLE_CONTROL_DRIVE)
 	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/toggle_stabilizers, VEHICLE_CONTROL_DRIVE)
 	if(max_occupants > 1)
@@ -72,6 +73,7 @@
 	enclosed = TRUE
 	enter_delay = 40
 	silicon_icon_state = null
+	ui_theme = "mining"
 
 /obj/vehicle/sealed/mecha/working/ripley/firefighter
 	desc = "Автономный погрузочный агрегат MK-II-F. Эта модель оснащена дополнительной термозащитой."
@@ -86,6 +88,7 @@
 	armor_type = /datum/armor/firefighter_and_mkii
 	enclosed = TRUE
 	enter_delay = 40
+	ui_theme = "mining"
 
 /obj/vehicle/sealed/mecha/working/ripley/deathripley
 	desc = "ОХ ЧЁРТ, ЭТО ОТРЯД СМЕРТИ, НАМ ВСЕМ КАБЗДА"
@@ -156,18 +159,24 @@
 		return FALSE
 	return ..()
 
-/obj/vehicle/sealed/mecha/working/ripley/Topic(href, href_list)
-	..()
-	if(!(usr in occupants) || usr.incapacitated())
+/obj/vehicle/sealed/mecha/working/ripley/get_cargo_ui_data()
+	var/list/cargo_list = list()
+	for(var/atom/movable/item as anything in cargo)
+		var/obj/item/stack/stack = item
+		cargo_list += list(list("name" = item.name, "amount" = istype(stack) ? stack.amount : 1, "ref" = REF(item)))
+	return list("capacity" = cargo_capacity, "cargo_list" = cargo_list)
+
+/obj/vehicle/sealed/mecha/working/ripley/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	. = ..()
+	if(. || action != "drop_from_cargo" || ui_status(ui.user, state) != UI_INTERACTIVE || !(occupants[ui.user] & VEHICLE_CONTROL_EQUIPMENT))
 		return
-	if(href_list["drop_from_cargo"])
-		var/obj/O = locate(href_list["drop_from_cargo"]) in cargo
-		if(O)
-			to_chat(occupants, "[icon2html(src, occupants)]<span class='notice'>You unload [O].</span>")
-			O.forceMove(drop_location())
-			cargo -= O
-			log_message("Unloaded [O]. Cargo compartment capacity: [cargo_capacity - src.cargo.len]", LOG_MECHA)
-	return
+	var/atom/movable/item = locate(params["cargo_item"]) in cargo
+	if(!item)
+		return FALSE
+	item.forceMove(drop_location())
+	cargo -= item
+	log_message("Выгружен [item]. Свободных мест в грузовом отсеке: [cargo_capacity - length(cargo)]", LOG_MECHA)
+	return TRUE
 
 
 /obj/vehicle/sealed/mecha/working/ripley/contents_explosion(severity, target, origin)
@@ -178,31 +187,20 @@
 			O.forceMove(drop_location())
 	. = ..()
 
-/obj/vehicle/sealed/mecha/working/ripley/get_stats_part()
-	var/output = ..()
-	output += "<b>Cargo Compartment Contents:</b><div style=\"margin-left: 15px;\">"
-	if(cargo.len)
-		for(var/obj/O in cargo)
-			output += "<a href='?src=[REF(src)];drop_from_cargo=[REF(O)]'>Unload</a> : [O]<br>"
-	else
-		output += "Nothing"
-	output += "</div>"
-	return output
-
 /obj/vehicle/sealed/mecha/working/ripley/relay_container_resist(mob/living/user, obj/O)
-	to_chat(user, "<span class='notice'>You lean on the back of [O] and start pushing so it falls out of [src].</span>")
+	to_chat(user, span_notice("Вы упираетесь в [O] и начинаете выталкивать его из [src]."))
 	if(INTERACTING_WITH(user, O))
-		to_chat(user, span_warning("You're already interacting with [O]!"))
+		to_chat(user, span_warning("Вы уже взаимодействуете с [O]!"))
 		return
 	if(do_after(user, 300, target = O))
 		if(!user || user.stat != CONSCIOUS || user.loc != src || O.loc != src )
 			return
-		to_chat(user, "<span class='notice'>You successfully pushed [O] out of [src]!</span>")
+		to_chat(user, span_notice("Вам удалось вытолкнуть [O] из [src]!"))
 		O.forceMove(drop_location())
 		cargo -= O
 	else
 		if(user.loc == src) //so we don't get the message if we resisted multiple times and succeeded.
-			to_chat(user, "<span class='warning'>You fail to push [O] out of [src]!</span>")
+			to_chat(user, span_warning("Вам не удалось вытолкнуть [O] из [src]!"))
 
 /**
   * Makes the mecha go faster and halves the mecha drill cooldown if in Lavaland pressure.

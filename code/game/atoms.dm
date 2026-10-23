@@ -1675,7 +1675,7 @@
 	var/client/user_client = usr.client
 	if(!user_client)
 		return
-	if(!isnull(user_client.show_popup_menus_before_disable))
+	if(!user_client.mecha_popup_menus_disabled && !isnull(user_client.show_popup_menus_before_disable))
 		user_client.show_popup_menus = user_client.show_popup_menus_before_disable
 		user_client.show_popup_menus_before_disable = null
 

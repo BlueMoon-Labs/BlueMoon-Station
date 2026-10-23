@@ -345,7 +345,8 @@
 
 /obj/item/circuitboard/machine/thermomachine
 	name = "Thermomachine (Machine Board)"
-	desc = "You can use a screwdriver to switch between heater and freezer."
+	desc = "You can use a multitool to switch pipe layer."
+	build_path = /obj/machinery/atmospherics/components/unary/thermomachine
 	var/pipe_layer = PIPING_LAYER_DEFAULT
 	req_components = list(
 		/obj/item/stock_parts/matter_bin = 2,
@@ -353,36 +354,7 @@
 		/obj/item/stack/cable_coil = 1,
 		/obj/item/stack/sheet/glass = 1)
 
-#define PATH_FREEZER /obj/machinery/atmospherics/components/unary/thermomachine/freezer
-#define PATH_HEATER  /obj/machinery/atmospherics/components/unary/thermomachine/heater
-
-/obj/item/circuitboard/machine/thermomachine/Initialize(mapload)
-	. = ..()
-	if(!build_path)
-		if(prob(50))
-			name = "Freezer (Machine Board)"
-			build_path = PATH_FREEZER
-		else
-			name = "Heater (Machine Board)"
-			build_path = PATH_HEATER
-
 /obj/item/circuitboard/machine/thermomachine/attackby(obj/item/I, mob/user, params)
-	if(I.tool_behaviour == TOOL_SCREWDRIVER)
-		var/obj/item/circuitboard/new_type
-		var/new_setting
-		switch(build_path)
-			if(PATH_FREEZER)
-				new_type = /obj/item/circuitboard/machine/thermomachine/heater
-				new_setting = "Heater"
-			if(PATH_HEATER)
-				new_type = /obj/item/circuitboard/machine/thermomachine/freezer
-				new_setting = "Freezer"
-		name = initial(new_type.name)
-		build_path = initial(new_type.build_path)
-		I.play_tool_sound(src)
-		to_chat(user, "<span class='notice'>You change the circuitboard setting to \"[new_setting]\".</span>")
-		return
-
 	if(I.tool_behaviour == TOOL_MULTITOOL)
 		pipe_layer = (pipe_layer >= PIPING_LAYER_MAX) ? PIPING_LAYER_MIN : (pipe_layer + 1)
 		to_chat(user, "<span class='notice'>You change the circuitboard to layer [pipe_layer].</span>")
@@ -393,17 +365,6 @@
 /obj/item/circuitboard/machine/thermomachine/examine()
 	. = ..()
 	. += "<span class='notice'>It is set to layer [pipe_layer]. Use a Multitool on the circuit to change this.</span>"
-
-/obj/item/circuitboard/machine/thermomachine/heater
-	name = "Heater (Machine Board)"
-	build_path = PATH_HEATER
-
-/obj/item/circuitboard/machine/thermomachine/freezer
-	name = "Freezer (Machine Board)"
-	build_path = PATH_FREEZER
-
-#undef PATH_FREEZER
-#undef PATH_HEATER
 
 /obj/item/circuitboard/machine/crystallizer
 	name = "Crystallizer (Machine Board)"

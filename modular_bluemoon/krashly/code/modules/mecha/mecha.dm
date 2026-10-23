@@ -8,6 +8,7 @@
 	internals_req_access = list(ACCESS_INTEQ)
 	armor_type = /datum/armor/durand_tu802_and_ares
 	wreckage = /obj/structure/mecha_wreckage/ares
+	ui_theme = "inteq"
 
 /obj/vehicle/sealed/mecha/combat/marauder/mauler/ares/generate_actions()
 	. = ..()
@@ -36,6 +37,7 @@
 	armor_type = /datum/armor/hermes
 	max_temperature = 60000
 	wreckage = /obj/structure/mecha_wreckage/hermes
+	ui_theme = "inteq"
 
 /obj/vehicle/sealed/mecha/combat/gygax/dark/hermes/generate_actions()
 	. = ..()

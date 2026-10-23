@@ -23,6 +23,9 @@
 	hook_args.Cut()
 
 /mob/Destroy()//This makes sure that mobs with clients/keys are not just deleted from the game.
+	var/list/old_mousewheel_handlers = mousewheel_handlers
+	mousewheel_handlers = null
+	QDEL_LIST(old_mousewheel_handlers)
 	// if(client)
 	// 	stack_trace("Mob with client has been deleted.")
 	// else if(ckey)
@@ -566,16 +569,22 @@
  */
 /mob/proc/execute_mode(obj/item/expected_item, expected_active_hand_index, force = FALSE)
 	if(ismecha(loc))
-		return FALSE
+		// В кабине активируем модуль манипулятора, а не настоящий предмет в руке пилота.
+		var/obj/vehicle/sealed/mecha/chassis = loc
+		var/obj/item/mecha_parts/mecha_equipment/module = chassis.selected
+		if(!module || module.chassis != chassis || !(chassis.occupants[src] & VEHICLE_CONTROL_EQUIPMENT))
+			return FALSE
+		module.attack_self(src)
+		return TRUE
 	if(incapacitated())
 		return FALSE
 	if(!force && expected_active_hand_index != active_hand_index) // рука сменилась, пока верб ждал в очереди
 		return FALSE
 
 	var/obj/item/I = get_active_held_item()
+	if(!force && I != expected_item) // предмет сменился, пока верб ждал в очереди
+		return FALSE
 	if(I)
-		if(!force && I != expected_item) // предмет сменился, пока верб ждал в очереди
-			return FALSE
 		I.attack_self(src)
 		update_inv_hands()
 		return TRUE

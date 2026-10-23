@@ -206,6 +206,23 @@
 /obj/machinery/door/proc/try_to_crowbar(obj/item/I, mob/user)
 	return
 
+// Бамп меха использует выбранный захват, а не предметы в руках пилота.
+/obj/machinery/door/proc/try_mecha_bump_open(mob/user)
+	if(!istype(user.loc, /obj/vehicle/sealed/mecha))
+		return FALSE
+	var/obj/vehicle/sealed/mecha/mecha = user.loc
+	if(!(mecha.occupants[user] & VEHICLE_CONTROL_EQUIPMENT))
+		return FALSE
+	for(var/obj/item/mecha_parts/mecha_equipment/medical/rescue_jaw/jaws in list(mecha.selected, mecha.selected_right))
+		if(jaws.chassis == mecha)
+			jaws.action(user, src)
+			return TRUE
+	return FALSE
+
+// Пилот остаётся внутри меха при движении, поэтому проверяем и клетку.
+/obj/machinery/door/proc/bump_open_checks(mob/user, turf/starting_turf)
+	return !QDELETED(user) && get_turf(user) == starting_turf && get_dist(src, user) <= 1
+
 // Соседи при открытой двери: читаем текущие преграды без перестройки кэша атмосферы.
 /obj/machinery/door/proc/get_open_atmos_neighbors()
 	var/list/neighbors = list()

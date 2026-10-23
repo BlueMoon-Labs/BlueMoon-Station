@@ -239,6 +239,10 @@
 /obj/machinery/sleeper/ui_act(action, params)
 	if(..())
 		return
+	return handle_ui_act(action, params)
+
+// Подтипы меняют действия панели, сохраняя общую цепочку проверок и сигналов TGUI.
+/obj/machinery/sleeper/proc/handle_ui_act(action, list/params)
 	var/mob/living/mob_occupant = occupant
 	check_nap_violations()
 	switch(action)
@@ -388,3 +392,97 @@
 			L.adjustBruteLoss(-1)
 			L.adjustFireLoss(-1)
 			L.adjustOxyLoss(-5)
+
+// Встроенная капсула использует обычные инъекции слипера и питание модуля меха.
+/obj/machinery/sleeper/mecha
+	desc = "Встроенная медицинская капсула экзокостюма."
+	circuit = null
+	init_process = FALSE
+	use_power = NO_POWER_USE
+	var/datum/gas_mixture/cabin_air
+
+/obj/machinery/sleeper/mecha/Initialize(mapload)
+	. = ..()
+	component_parts = list(new /obj/item/stock_parts/matter_bin/bluespace(null), new /obj/item/stock_parts/manipulator/femto(null))
+	RefreshParts()
+	cabin_air = new
+	refresh_air()
+
+/obj/machinery/sleeper/mecha/Destroy()
+	open_machine()
+	QDEL_NULL(cabin_air)
+	return ..()
+
+/obj/machinery/sleeper/mecha/is_operational()
+	var/obj/item/mecha_parts/mecha_equipment/medical/sleeper/module = loc
+	return ..() && istype(module) && module.life_support_active && module.chassis && !module.chassis.equipment_disabled && module.chassis.has_charge(module.energy_drain)
+
+/obj/machinery/sleeper/mecha/process()
+	return PROCESS_KILL
+
+/obj/machinery/sleeper/mecha/ui_host(mob/user)
+	var/obj/item/mecha_parts/mecha_equipment/medical/sleeper/module = loc
+	return istype(module) ? module.chassis : null
+
+/obj/machinery/sleeper/mecha/ui_status(mob/user, datum/ui_state/state)
+	var/obj/item/mecha_parts/mecha_equipment/medical/sleeper/module = loc
+	if(!istype(module) || !module.chassis || !(module in module.chassis.equipment) || !module.chassis.is_occupant(user) || !(module.chassis.occupants[user] & VEHICLE_CONTROL_EQUIPMENT))
+		return UI_CLOSE
+	return user.shared_ui_interaction(module.chassis)
+
+/obj/machinery/sleeper/mecha/ui_data(mob/user)
+	. = ..()
+	var/obj/item/mecha_parts/mecha_equipment/medical/sleeper/module = loc
+	.["mounted"] = TRUE
+	.["stasis_enabled"] = module.stasis_enabled
+	.["life_support_active"] = module.life_support_active
+
+/obj/machinery/sleeper/mecha/handle_ui_act(action, list/params)
+	if(ui_status(usr) != UI_INTERACTIVE)
+		return FALSE
+	var/obj/item/mecha_parts/mecha_equipment/medical/sleeper/module = loc
+	switch(action)
+		if("door")
+			return module.handle_ui_act("eject", params)
+		if("inject")
+			return module.handle_ui_act("inject_chem", params)
+		if("stasis")
+			return module.handle_ui_act(action, params)
+	return FALSE
+
+/obj/machinery/sleeper/mecha/Exited(atom/movable/gone, atom/newloc)
+	var/obj/item/mecha_parts/mecha_equipment/medical/sleeper/module = loc
+	var/patient_left = gone == occupant && istype(module)
+	if(patient_left)
+		module.remove_patient_effects(gone)
+		module.patient = null
+		module.life_support_active = FALSE
+		// Телепортация и административное перемещение тоже открывают пустую капсулу.
+		state_open = TRUE
+	. = ..()
+	if(patient_left && !QDELETED(module))
+		module.update_equip_info()
+
+/obj/machinery/sleeper/mecha/container_resist(mob/living/user)
+	var/obj/item/mecha_parts/mecha_equipment/medical/sleeper/module = loc
+	if(istype(module) && user == module.patient)
+		module.go_out()
+
+/obj/machinery/sleeper/mecha/proc/refresh_air()
+	cabin_air.clear()
+	cabin_air.parse_gas_string(OPENTURF_DEFAULT_ATMOS)
+
+/obj/machinery/sleeper/mecha/return_air()
+	return cabin_air
+
+/obj/machinery/sleeper/mecha/return_temperature()
+	return cabin_air.return_temperature()
+
+/obj/machinery/sleeper/mecha/remove_air(amount)
+	return cabin_air.remove(amount)
+
+/obj/machinery/sleeper/mecha/remove_air_ratio(ratio)
+	return cabin_air.remove_ratio(ratio)
+
+/obj/machinery/sleeper/mecha/assume_air(datum/gas_mixture/giver)
+	return cabin_air.merge(giver)
