@@ -18,8 +18,18 @@
 	/// Подсказка, как переключить режим ПКМ, уже была в этой сессии
 	var/context_menu_hint_shown = FALSE
 
+/// В режиме «меню BYOND» ПКМ кликом приходит только через show_popup_menus, поэтому карта тогда без right-click
 /client/proc/update_right_click_mode()
-	winset(src, "mapwindow.map", "right-click=[mob?.right_click_actions ? "true" : "false"]")
+	var/map_clicks = mob?.right_click_actions && prefs?.right_click_mode() != RIGHT_CLICK_MODE_NATIVE
+	winset(src, "mapwindow.map", "right-click=[map_clicks ? "true" : "false"]")
+	refresh_popup_menus()
+
+/// Меню BYOND на ПКМ только у тех, кто его выбрал, и только вне боя и мехов
+/client/proc/refresh_popup_menus()
+	show_popup_menus = !mob?.right_click_actions || (prefs?.right_click_mode() == RIGHT_CLICK_MODE_NATIVE && !mob.right_click_needs_clicks())
+
+/mob/proc/right_click_needs_clicks()
+	return SEND_SIGNAL(src, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE) || istype(loc, /obj/vehicle/sealed/mecha)
 
 /// ПКМ открывает меню или делает второе действие - по настройке игрока; Shift меняет одно на другое.
 /// В комбат-режиме ПКМ всегда действие. Клики, которые повторяет само меню, всегда действие.
@@ -49,27 +59,49 @@
 
 /// Как нажать второе действие при текущих настройках и режиме
 /mob/proc/right_click_action_hint()
+	if(right_click_mode() == RIGHT_CLICK_MODE_NATIVE && !right_click_needs_clicks())
+		return "ПКМ в бою"
 	return right_click_opens_menu(list("right" = 1)) ? "Shift-ПКМ" : "ПКМ"
 
+/mob/proc/right_click_mode()
+	if(client?.prefs)
+		return client.prefs.right_click_mode()
+	return CONFIG_GET(flag/right_click_menu_default) ? RIGHT_CLICK_MODE_MENU : RIGHT_CLICK_MODE_ACTION
+
+/// ПКМ, дошедший кликом, открывает меню только в режиме меню; в режиме BYOND он доходит лишь в бою, и это действие
 /mob/proc/right_click_menu_preferred()
-	return client?.prefs ? client.prefs.right_click_menu_enabled() : CONFIG_GET(flag/right_click_menu_default)
+	return right_click_mode() == RIGHT_CLICK_MODE_MENU
 
 /// Выбор игрока, а если он не выбирал - дефолт сервера: смена дефолта в конфиге доходит до всех, кто не переключал сам
-/datum/preferences/proc/right_click_menu_enabled()
-	return isnull(right_click_menu) ? CONFIG_GET(flag/right_click_menu_default) : right_click_menu
+/datum/preferences/proc/right_click_mode()
+	if(isnull(right_click_menu))
+		return CONFIG_GET(flag/right_click_menu_default) ? RIGHT_CLICK_MODE_MENU : RIGHT_CLICK_MODE_ACTION
+	return right_click_menu
+
+/client/proc/set_right_click_mode(new_mode)
+	if(!prefs || !(new_mode in list(RIGHT_CLICK_MODE_ACTION, RIGHT_CLICK_MODE_MENU, RIGHT_CLICK_MODE_NATIVE)))
+		return
+	prefs.right_click_menu = new_mode
+	prefs.save_pref_var("right_click_menu")
+	mob?.close_context_menu()
+	update_right_click_mode()
 
 /client/verb/toggle_right_click_mode()
 	set category = "OOC"
 	set name = "Режим ПКМ"
-	set desc = "Что делает ПКМ: открывает меню действий или сразу действует"
+	set desc = "По кругу: меню действий, сразу действие, меню BYOND как раньше"
 	if(!prefs)
 		return
-	prefs.right_click_menu = !prefs.right_click_menu_enabled()
-	prefs.save_pref_var("right_click_menu")
-	if(prefs.right_click_menu)
-		to_chat(src, span_notice("ПКМ открывает меню действий, Shift+ПКМ - второе действие (в комбат-режиме ПКМ всё равно действует)."))
-	else
-		to_chat(src, span_notice("ПКМ сразу действует, меню действий - на Shift+ПКМ."))
+	switch(prefs.right_click_mode())
+		if(RIGHT_CLICK_MODE_MENU)
+			set_right_click_mode(RIGHT_CLICK_MODE_ACTION)
+			to_chat(src, span_notice("ПКМ сразу действует, меню действий - на Shift+ПКМ."))
+		if(RIGHT_CLICK_MODE_ACTION)
+			set_right_click_mode(RIGHT_CLICK_MODE_NATIVE)
+			to_chat(src, span_notice("ПКМ открывает меню BYOND, как раньше; в комбат-режиме и в мехе ПКМ действует."))
+		else
+			set_right_click_mode(RIGHT_CLICK_MODE_MENU)
+			to_chat(src, span_notice("ПКМ открывает меню действий, Shift+ПКМ - второе действие (в комбат-режиме ПКМ всё равно действует)."))
 
 /mob/proc/open_context_menu(atom/target, params)
 	close_context_menu()
@@ -199,6 +231,14 @@
 	page = 1
 	render()
 
+/datum/context_menu/proc/show_admin_verbs()
+	header_text = "Админ: [target.name]"
+	entries = list(new /datum/context_menu_entry/back("Назад", null, CONTEXT_ENTRY_SERVICE))
+	for(var/procpath/verb_path as anything in context_menu_admin_verbs_for(target, user.client?.verbs))
+		entries += new /datum/context_menu_entry/admin_verb(verb_path.name, null, CONTEXT_ENTRY_NORMAL, verb_path)
+	page = 1
+	render()
+
 /datum/context_menu/proc/show_target(atom/new_target)
 	set_target(new_target)
 	header_text = null
@@ -218,6 +258,12 @@
 		return
 	if(istype(entry, /datum/context_menu_entry/pick_group))
 		show_group(entry)
+		return
+	if(istype(entry, /datum/context_menu_entry/admin_list))
+		show_admin_verbs()
+		return
+	if(istype(entry, /datum/context_menu_entry/back))
+		show_target(target)
 		return
 	if(istype(entry, /datum/context_menu_entry/pick))
 		var/datum/context_menu_entry/pick/pick_entry = entry

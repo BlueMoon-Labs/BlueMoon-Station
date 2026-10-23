@@ -4,10 +4,10 @@
 	/// Интент, с которым пришёл последний обычный клик (ловится только при record_clicks)
 	var/seen_intent
 	var/record_clicks = FALSE
-	var/menu_on_plain_click = TRUE
+	var/click_mode = RIGHT_CLICK_MODE_MENU
 
-/mob/living/carbon/human/dummy/consistent/context_menu_probe/right_click_menu_preferred()
-	return menu_on_plain_click
+/mob/living/carbon/human/dummy/consistent/context_menu_probe/right_click_mode()
+	return click_mode
 
 /mob/living/carbon/human/dummy/consistent/context_menu_probe/RightClickOn(atom/A, params)
 	right_clicked = TRUE
@@ -76,7 +76,7 @@
 	TEST_ASSERT_NOTNULL(user.active_context_menu, "Следующий ПКМ после комбинации не открыл меню")
 	user.close_context_menu()
 
-	user.menu_on_plain_click = FALSE
+	user.click_mode = RIGHT_CLICK_MODE_ACTION
 	user.right_clicked = FALSE
 	user.CommonClickOn(target, "right=1")
 	TEST_ASSERT(user.right_clicked, "ПКМ в режиме действий не сделал действие")
@@ -86,7 +86,7 @@
 	TEST_ASSERT_EQUAL(user.right_click_action_hint(), "ПКМ", "Подсказка действия в режиме действий")
 	user.close_context_menu()
 
-	user.menu_on_plain_click = TRUE
+	user.click_mode = RIGHT_CLICK_MODE_MENU
 	TEST_ASSERT_EQUAL(user.right_click_action_hint(), "Shift-ПКМ", "Подсказка действия в режиме меню")
 	SEND_SIGNAL(user, COMSIG_TOGGLE_COMBAT_MODE)
 	TEST_ASSERT(SEND_SIGNAL(user, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE), "Не удалось включить комбат-режим")
@@ -490,13 +490,46 @@
 	var/datum/preferences/prefs = new
 	TEST_ASSERT_NULL(prefs.right_click_menu, "Новый игрок уже с выбранным режимом ПКМ")
 	CONFIG_SET(flag/right_click_menu_default, FALSE)
-	TEST_ASSERT(!prefs.right_click_menu_enabled(), "Дефолт из конфига не дошёл до невыбравшего")
+	TEST_ASSERT_EQUAL(prefs.right_click_mode(), RIGHT_CLICK_MODE_ACTION, "Дефолт из конфига не дошёл до невыбравшего")
 	CONFIG_SET(flag/right_click_menu_default, TRUE)
-	TEST_ASSERT(prefs.right_click_menu_enabled(), "Дефолт из конфига не дошёл до невыбравшего")
-	prefs.right_click_menu = FALSE
-	TEST_ASSERT(!prefs.right_click_menu_enabled(), "Дефолт конфига перебил выбор игрока")
+	TEST_ASSERT_EQUAL(prefs.right_click_mode(), RIGHT_CLICK_MODE_MENU, "Дефолт из конфига не дошёл до невыбравшего")
+	prefs.right_click_menu = RIGHT_CLICK_MODE_NATIVE
+	TEST_ASSERT_EQUAL(prefs.right_click_mode(), RIGHT_CLICK_MODE_NATIVE, "Дефолт конфига перебил выбор игрока")
 	qdel(prefs)
 
 /datum/unit_test/context_menu_default_from_config/Destroy()
 	CONFIG_SET(flag/right_click_menu_default, old_default)
 	return ..()
+
+/// Режим «меню BYOND»: дошедший ПКМ (в бою) - действие, Shift+ПКМ - меню действий, подсказка зовёт в бой
+/datum/unit_test/context_menu_native_mode
+
+/datum/unit_test/context_menu_native_mode/Run()
+	var/mob/living/carbon/human/dummy/consistent/context_menu_probe/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_probe)
+	var/mob/living/carbon/human/target = allocate(/mob/living/carbon/human/dummy/consistent, get_step(user, EAST))
+	user.click_mode = RIGHT_CLICK_MODE_NATIVE
+	TEST_ASSERT_EQUAL(user.right_click_action_hint(), "ПКМ в бою", "Вне боя второе действие в режиме BYOND доступно только в бою")
+	SEND_SIGNAL(user, COMSIG_TOGGLE_COMBAT_MODE)
+	TEST_ASSERT(user.right_click_needs_clicks(), "В комбат-режиме ПКМ должен приходить кликом")
+	TEST_ASSERT_EQUAL(user.right_click_action_hint(), "ПКМ", "В бою второе действие - на ПКМ")
+	user.CommonClickOn(target, "right=1")
+	TEST_ASSERT(user.right_clicked, "ПКМ в бою в режиме BYOND не сделал действие")
+	TEST_ASSERT_NULL(user.active_context_menu, "ПКМ в бою в режиме BYOND открыл меню действий")
+	user.CommonClickOn(target, "right=1;shift=1")
+	TEST_ASSERT_NOTNULL(user.active_context_menu, "Shift+ПКМ в бою не открыл меню действий")
+	user.close_context_menu()
+	SEND_SIGNAL(user, COMSIG_TOGGLE_COMBAT_MODE)
+	TEST_ASSERT(!user.right_click_needs_clicks(), "Вне боя и меха ПКМ в режиме BYOND - меню BYOND")
+
+/// Админ-вербы меню BYOND попадают в «Админ…» только по подходящим атомам и только выданные
+/datum/unit_test/context_menu_admin_verbs
+
+/datum/unit_test/context_menu_admin_verbs/Run()
+	var/mob/living/carbon/human/mob_target = allocate(/mob/living/carbon/human/dummy/consistent)
+	var/obj/item/pen/obj_target = allocate(/obj/item/pen)
+	var/turf/turf_target = get_turf(mob_target)
+	var/list/granted = list(/client/proc/debug_variables, /datum/admins/proc/show_player_panel, /client/proc/jumptoturf, /client/proc/object_say)
+	TEST_ASSERT(context_menu_admin_verbs_for(mob_target, granted) ~= list(/datum/admins/proc/show_player_panel, /client/proc/debug_variables), "Неверные админ-вербы по мобу")
+	TEST_ASSERT(context_menu_admin_verbs_for(obj_target, granted) ~= list(/client/proc/debug_variables, /client/proc/object_say), "Неверные админ-вербы по предмету")
+	TEST_ASSERT(context_menu_admin_verbs_for(turf_target, granted) ~= list(/client/proc/debug_variables, /client/proc/jumptoturf), "Неверные админ-вербы по турфу")
+	TEST_ASSERT(!length(context_menu_admin_verbs_for(mob_target, list())), "Админ-вербы без выданных вербов")

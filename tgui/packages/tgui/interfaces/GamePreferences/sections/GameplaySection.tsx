@@ -17,9 +17,15 @@ type GameplayData = {
   action_buttons_hide: boolean;
   autostand: boolean;
   long_strip_menu: boolean;
-  right_click_menu: boolean;
+  right_click_mode: number;
   shift_invites: boolean;
 };
+
+const RIGHT_CLICK_MODE_OPTIONS = [
+  { value: 1, label: 'Меню действий' },
+  { value: 0, label: 'Сразу действие' },
+  { value: 2, label: 'Меню BYOND' },
+];
 
 const DAMAGE_SHAKE_OPTIONS = [
   { value: 0, label: 'Отключено' },
@@ -38,7 +44,6 @@ const GAMEPLAY_TOGGLES: { key: string; label: string; flag: string; invert?: boo
   { key: 'disable_combat_mouse_lock', label: 'Отключить захват мыши в бою', flag: 'disable_combat_mouse_lock', tooltip: 'Не блокировать курсор мыши в пределах окна при входе в боевой режим' },
   { key: 'smartlink', label: 'Смартлинк (боевой HUD)', flag: 'smartlink', tooltip: 'Показывать боевой HUD со счётчиком патронов и зарядом энергии при удержании оружия в руках' },
   { key: 'autostand', label: 'Автоматическое вставание', flag: 'autostand', tooltip: 'Автоматически вставать после падения или когда вас поднимают' },
-  { key: 'right_click_menu', label: 'ПКМ открывает меню действий', flag: 'right_click_menu', tooltip: 'Включено: ПКМ - меню действий, Shift+ПКМ - второе действие (толчок, открыть сумку, постучать). Выключено: наоборот, ПКМ сразу действует, меню на Shift+ПКМ. В комбат-режиме ПКМ всегда действие. Быстро переключить - верб «Режим ПКМ» во вкладке OOC' },
   { key: 'long_strip_menu', label: 'Длинное меню раздевания', flag: 'long_strip_menu', tooltip: 'Показывать расширенное меню взаимодействия с одеждой' },
   { key: 'shift_invites', label: 'Приглашения в смену', flag: 'shift_invites', tooltip: 'Если на станции не осталось ни одного сотрудника СБ, медика или инженера, наблюдатели, гости гост-кафе и игроки в лобби получают приглашение со ссылкой "Войти в смену". Вход в пустой отдел приносит 3 М$ в конце раунда, если продержаться в смене 30 минут или до эвакуации' },
 ];
@@ -46,6 +51,7 @@ const GAMEPLAY_TOGGLES: { key: string; label: string; flag: string; invert?: boo
 export const GameplaySection = (props) => {
   const { act, data } = useBackend<GameplayData>();
   const damageShakeValue = Number(data.damage_screenshake ?? 2);
+  const rightClickMode = Number(data.right_click_mode ?? 1);
 
   return (
     <Stack vertical>
@@ -58,6 +64,27 @@ export const GameplaySection = (props) => {
           onClick={() => act('toggle_gameplay', { flag })}
         />
       ))}
+      <Stack.Item>
+        <Stack align="center" fill className="GamePreferences__row">
+          <Stack.Item grow basis={0}>
+            <div className="GamePreferences__label">ПКМ</div>
+            <div className="GamePreferences__hint">
+              Меню действий: ПКМ - меню, Shift+ПКМ - второе действие (толчок, открыть сумку, постучать). Сразу действие: наоборот. Меню BYOND: как раньше, вне боя ПКМ открывает меню BYOND. В комбат-режиме ПКМ всегда действие. Быстро переключить - верб «Режим ПКМ» во вкладке OOC
+            </div>
+          </Stack.Item>
+          <Stack.Item>
+            <Dropdown
+              width="160px"
+              options={RIGHT_CLICK_MODE_OPTIONS.map(o => o.label)}
+              selected={RIGHT_CLICK_MODE_OPTIONS.find(o => o.value === rightClickMode)?.label || 'Меню действий'}
+              onSelected={value => {
+                const opt = RIGHT_CLICK_MODE_OPTIONS.find(o => o.label === value);
+                if (opt) act('set_right_click_mode', { value: opt.value });
+              }}
+            />
+          </Stack.Item>
+        </Stack>
+      </Stack.Item>
       <Stack.Item>
         <Stack align="center" fill className="GamePreferences__row">
           <Stack.Item grow basis={0}>

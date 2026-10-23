@@ -1423,6 +1423,7 @@
 	SIGNAL_HANDLER
 	if(pilot.client)
 		winset(pilot.client, "mapwindow.map", "right-click=true")
+		pilot.client.show_popup_menus = FALSE
 
 /obj/vehicle/sealed/mecha/proc/restore_occupant_popup_menus(mob/pilot, client/pilot_client)
 	SIGNAL_HANDLER

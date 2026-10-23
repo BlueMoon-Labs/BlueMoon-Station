@@ -846,7 +846,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	widescreenpref = sanitize_integer(widescreenpref, 0, 1, initial(widescreenpref))
 	fullscreen = sanitize_integer(fullscreen, 0, 1, initial(fullscreen))
 	long_strip_menu = sanitize_integer(long_strip_menu, 0, 1, initial(long_strip_menu))
-	right_click_menu = sanitize_integer(right_click_menu, 0, 1, null)
+	right_click_menu = sanitize_integer(right_click_menu, RIGHT_CLICK_MODE_ACTION, RIGHT_CLICK_MODE_NATIVE, null)
 	pixel_size = sanitize_integer(pixel_size, PIXEL_SCALING_AUTO, PIXEL_SCALING_3X, initial(pixel_size))
 	scaling_method = sanitize_text(scaling_method, initial(scaling_method))
 	hud_toggle_flash = sanitize_integer(hud_toggle_flash, 0, 1, initial(hud_toggle_flash))

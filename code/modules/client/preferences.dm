@@ -397,7 +397,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/widescreenpref = TRUE
 	///Strip menu style
 	var/long_strip_menu = TRUE
-	/// ПКМ открывает меню действий, а Shift+ПКМ - действие. FALSE - наоборот. null - игрок не выбирал, решает конфиг.
+	/// Режим ПКМ, RIGHT_CLICK_MODE_*. null - игрок не выбирал, решает конфиг.
 	var/right_click_menu = null
 	///What size should pixels be displayed as? 0 is strech to fit
 	var/pixel_size = 0

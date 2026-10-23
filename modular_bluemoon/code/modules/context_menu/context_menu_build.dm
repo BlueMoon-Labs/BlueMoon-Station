@@ -10,6 +10,33 @@ GLOBAL_LIST_INIT(context_menu_screentip_keys, list(
 	SCREENTIP_CONTEXT_CTRL_SHIFT_LMB = list("ctrl=1;shift=1;left=1", "Ctrl-Shift-ЛКМ"),
 ))
 
+/// Админ-вербы, которые меню BYOND показывало по атому: верб -> тип атома, которому он подходит
+GLOBAL_LIST_INIT(context_menu_admin_verbs, list(
+	/datum/admins/proc/show_player_panel = /mob,
+	/client/proc/debug_variables = /datum,
+	/client/proc/cmd_admin_pm_context = /mob,
+	/client/proc/jumptomob = /mob,
+	/client/proc/jumptoturf = /turf,
+	/client/proc/Getmob = /mob,
+	/client/proc/cmd_admin_subtle_message = /mob,
+	/datum/admins/proc/show_traitor_panel = /mob,
+	/client/proc/cmd_admin_check_contents = /mob/living,
+	/client/proc/cmd_select_equipment = /mob,
+	/client/proc/cmd_admin_rejuvenate = /mob/living,
+	/client/proc/cmd_admin_godmode = /mob,
+	/client/proc/manipulate_organs = /mob/living/carbon,
+	/client/proc/object_say = /obj,
+	/client/proc/mark_datum_mapview = /datum,
+	/client/proc/fix_air = /turf/open,
+))
+
+/// Админ-вербы из available_verbs, подходящие атому, в порядке списка
+/proc/context_menu_admin_verbs_for(atom/A, list/available_verbs)
+	. = list()
+	for(var/verb_path in GLOB.context_menu_admin_verbs)
+		if((verb_path in available_verbs) && istype(A, GLOB.context_menu_admin_verbs[verb_path]))
+			. += verb_path
+
 GLOBAL_LIST_INIT(context_menu_intent_names, list(
 	INTENT_HELP = "Помочь",
 	INTENT_DISARM = "Обезоружить",
@@ -40,6 +67,8 @@ GLOBAL_LIST_INIT(context_menu_intent_short, list(
 	result += main_clicks
 	result += other_clicks
 	add_verb_entries(A, result)
+	if(user.client?.holder && length(context_menu_admin_verbs_for(A, user.client.verbs)))
+		result += new /datum/context_menu_entry/admin_list("Админ…", null, CONTEXT_ENTRY_SERVICE)
 	SEND_SIGNAL(A, COMSIG_ATOM_CONTEXT_MENU, user, result)
 	return result
 

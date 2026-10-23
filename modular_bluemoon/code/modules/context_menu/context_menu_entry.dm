@@ -87,3 +87,23 @@
 			return thing
 
 /datum/context_menu_entry/page
+
+/// Открывает админ-вербы по цели
+/datum/context_menu_entry/admin_list
+
+/// Из вложенного списка - к действиям цели
+/datum/context_menu_entry/back
+
+/// Админ-верб по цели, как его звало меню BYOND
+/datum/context_menu_entry/admin_verb
+	var/verb_path
+
+/datum/context_menu_entry/admin_verb/New(name, hint, style, verb_path)
+	..()
+	src.verb_path = verb_path
+
+/datum/context_menu_entry/admin_verb/execute(mob/user, atom/target)
+	var/client/admin_client = user.client
+	if(!admin_client?.holder || !(verb_path in admin_client.verbs))
+		return
+	INVOKE_ASYNC(admin_client, verb_path, target)

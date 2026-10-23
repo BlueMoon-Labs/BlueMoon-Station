@@ -23,3 +23,10 @@
 #define CONTEXT_MENU_GROUP_MIN 3
 /// Меню переживает ходьбу, пока его объект не дальше этого
 #define CONTEXT_MENU_MAX_DISTANCE 7
+
+/// Режимы ПКМ (преф right_click_menu): ПКМ сразу действует, меню на Shift+ПКМ
+#define RIGHT_CLICK_MODE_ACTION 0
+/// ПКМ - меню действий, Shift+ПКМ - второе действие
+#define RIGHT_CLICK_MODE_MENU 1
+/// Как раньше: вне боя ПКМ - меню BYOND, в комбат-режиме и в мехе - действие
+#define RIGHT_CLICK_MODE_NATIVE 2
