@@ -104,14 +104,11 @@
 				create_lighting_for_zlevel(dest_z, LIGHTING_INIT_REASON_DOCKING)
 
 	// Expand deferred starlight into space turfs, queue for SSlighting Phase -1
-	// (expansion is cheap list-building; actual update_starlight() runs in SSlighting's budget)
-	var/list/starlight_batch = list()
+	// (queueing is cheap; actual update_starlight() runs in SSlighting's budget)
 	for(var/turf/deferred_turf as anything in GLOB.lighting_deferred_starlight)
 		for(var/turf/open/space/space_tile in RANGE_TURFS(1, deferred_turf))
-			starlight_batch |= space_tile
+			space_tile.queue_starlight()
 	GLOB.lighting_deferred_starlight.Cut()
-	if(starlight_batch.len)
-		GLOB.lighting_starlight_queue |= starlight_batch
 
 	// Queue shadow + blend recalc for SSlighting Phase -0.5
 	// (deferred from Entered/Exited/ChangeTurf/change_area during shuttle move)

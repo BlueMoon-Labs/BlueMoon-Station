@@ -402,6 +402,7 @@
 #include "spawners_menu.dm"
 #include "spritesheet_asset_snapshot.dm"
 #include "spritesheet_batched.dm"
+#include "starlight_queue.dm"
 #include "startup_bootstrap.dm"
 #include "station_incidents.dm"
 #include "station_map_equipment.dm"
