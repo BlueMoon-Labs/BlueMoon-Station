@@ -128,24 +128,35 @@
 	var/obj/item/stock_parts/cell/cell = null
 
 /obj/item/bodypart/chest/robot/attackby(obj/item/W, mob/user, params)
+	if(istype(W, /obj/item/storage/part_replacer))
+		var/obj/item/storage/part_replacer/replacer = W
+		var/list/needed_parts = list()
+		if(!cell)
+			needed_parts[/obj/item/stock_parts/cell] = 1
+		if(!wired)
+			needed_parts[/obj/item/stack/cable_coil] = 1
+		replacer.install_parts(src, user, needed_parts)
+		return
 	if(istype(W, /obj/item/stock_parts/cell))
 		if(src.cell)
-			to_chat(user, "<span class='warning'>You have already inserted a cell!</span>")
+			to_chat(user, span_warning("Батарея уже установлена!"))
 			return
 		else
-			if(!user.transferItemToLoc(W, src))
+			if(!(istype(W.loc, /obj/item/storage/part_replacer) ? W.remove_item_from_storage(src) : user.transferItemToLoc(W, src)))
 				return
 			src.cell = W
-			to_chat(user, "<span class='notice'>You insert the cell.</span>")
+			to_chat(user, span_notice("Вы устанавливаете батарею."))
+			return TRUE
 	else if(istype(W, /obj/item/stack/cable_coil))
 		if(src.wired)
-			to_chat(user, "<span class='warning'>You have already inserted wire!</span>")
+			to_chat(user, span_warning("Проводка уже установлена!"))
 			return
 		if (W.use_tool(src, user, 0, 1))
 			src.wired = 1
-			to_chat(user, "<span class='notice'>You insert the wire.</span>")
+			to_chat(user, span_notice("Вы устанавливаете проводку."))
+			return TRUE
 		else
-			to_chat(user, "<span class='warning'>You need one length of coil to wire it!</span>")
+			to_chat(user, span_warning("Для проводки нужен один отрезок кабеля!"))
 	else
 		return ..()
 
@@ -193,22 +204,31 @@
 
 
 /obj/item/bodypart/head/robot/attackby(obj/item/W, mob/user, params)
+	if(istype(W, /obj/item/storage/part_replacer))
+		var/obj/item/storage/part_replacer/replacer = W
+		var/list/needed_parts = list()
+		var/missing_flashes = (!flash1) + (!flash2)
+		if(missing_flashes)
+			needed_parts[/obj/item/assembly/flash/handheld] = missing_flashes
+		replacer.install_parts(src, user, needed_parts)
+		return
 	if(istype(W, /obj/item/assembly/flash/handheld))
 		var/obj/item/assembly/flash/handheld/F = W
 		if(src.flash1 && src.flash2)
-			to_chat(user, "<span class='warning'>You have already inserted the eyes!</span>")
+			to_chat(user, span_warning("Обе вспышки уже установлены!"))
 			return
 		else if(F.crit_fail)
-			to_chat(user, "<span class='warning'>You can't use a broken flash!</span>")
+			to_chat(user, span_warning("Нельзя использовать сломанную вспышку!"))
 			return
 		else
-			if(!user.transferItemToLoc(F, src))
+			if(!(istype(F.loc, /obj/item/storage/part_replacer) ? F.remove_item_from_storage(src) : user.transferItemToLoc(F, src)))
 				return
 			if(src.flash1)
 				src.flash2 = F
 			else
 				src.flash1 = F
-			to_chat(user, "<span class='notice'>You insert the flash into the eye socket.</span>")
+			to_chat(user, span_notice("Вы устанавливаете вспышку в глазницу."))
+			return TRUE
 	else if(W.tool_behaviour == TOOL_CROWBAR)
 		if(flash1 || flash2)
 			W.play_tool_sound(src)

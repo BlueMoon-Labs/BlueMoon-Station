@@ -75267,6 +75267,10 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/security/warden)
+"qfy" = (
+/obj/structure/fulton_beacon,
+/turf/open/floor/plasteel/white,
+/area/command/gateway)
 "qfD" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
@@ -126355,7 +126359,7 @@ wYE
 lJx
 krJ
 kPM
-kPM
+qfy
 clW
 lJx
 cck

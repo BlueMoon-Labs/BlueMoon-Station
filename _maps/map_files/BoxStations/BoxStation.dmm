@@ -56832,6 +56832,10 @@
 	dir = 8
 	},
 /area/medical/medbay/central)
+"lyy" = (
+/obj/structure/fulton_beacon,
+/turf/open/floor/plasteel/dark/textured/half,
+/area/command/gateway)
 "lyF" = (
 /obj/machinery/autolathe,
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
@@ -114325,7 +114329,7 @@ efb
 cau
 bJh
 bJk
-bKs
+lyy
 uOJ
 wql
 bLu

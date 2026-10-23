@@ -131,12 +131,19 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 		AA.onNewMob(src)
 
 	. = ..()
+	register_mousewheel_handler(src, PROC_REF(on_mousewheel))
 	AddElement(/datum/element/ghost_role_eligibility)
 	var/datum/action/join_shift/join_action = new(src)
 	join_action.Grant(src)
 	grant_all_languages()
 	show_data_huds()
 	data_huds_on = 1
+
+/mob/dead/observer/proc/on_mousewheel(mob/user, atom/target, delta_x, delta_y, list/modifiers)
+	if(!delta_y || !modifiers[SHIFT_CLICK])
+		return FALSE
+	add_view_range(delta_y > 0 ? -1 : 1)
+	return TRUE
 
 /mob/dead/observer/get_status_tab_items()
 	. = ..()

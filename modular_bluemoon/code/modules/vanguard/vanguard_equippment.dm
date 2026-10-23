@@ -1,7 +1,7 @@
 //наборы оружия
 /obj/item/storage/secure/briefcase/vanguard/lasgun
 	name = "\improper Energy gun kit"
-	desc = "A storage case for a Vanguard energy Handgun. Lasers flying everywhere !"
+	desc = "Кейс для хранения энергопистолета Авангарда. Да будет лазер-шоу!"
 
 /obj/item/storage/secure/briefcase/vanguard/lasgun/PopulateContents()
 	new /obj/item/gun/ballistic/automatic/laser/vanguard(src)
@@ -11,7 +11,7 @@
 
 /obj/item/storage/secure/briefcase/vanguard/p320
 	name = "\improper P320 gun kit"
-	desc = "A storage case for a Vanguard P320 sevice pistol. One bullet per bastard !"
+	desc = "Кейс для хранения табельного пистолета Авангарда P320. Подходите по одному!"
 
 /obj/item/storage/secure/briefcase/vanguard/p320/PopulateContents()
 	new /obj/item/gun/ballistic/automatic/pistol/sigsauer(src)
@@ -26,7 +26,7 @@
 //наборы экипировки классов
 /obj/item/storage/box/demolition
 	name = "Breaching & Reinforcment"
-	desc = "All you need to brake something!"
+	desc = "Всё что нужно, чтобы куда-нибудь вломиться!"
 	icon_state = "satchel_demolition"
 	item_state = "satchel"
 
@@ -44,8 +44,8 @@
 	default_raw_text = "<b>*Свяжите заряд с детонатором. Установите заряд на стену. Отойдите на безопасную дистанцию. Подорвите заряд. НЕ РАБОТАЕТ НА ТЕРИТОРИИ СТАНЦИИ*</b>"
 
 /obj/item/storage/firstaid/vanguard
-	name = "Frontier surgion kit "
-	desc = "Lort let me save another one"
+	name = "Frontier surgion kit"
+	desc = "Господи, дай мне спасти еще одного."
 	icon_state = "frontier"
 	item_state = "frontier"
 
@@ -68,7 +68,7 @@
 
 /obj/item/storage/firstaid/frontier
 	name = "Field surgery suply"
-	desc = "For those in need"
+	desc = "Для тех, кто в нужде."
 	icon_state = "medkit_surgery"
 	item_state = "medkit-surgical"
 
@@ -82,7 +82,7 @@
 
 /obj/item/storage/bag/marksman
 	name = "marksman's knife pouch"
-	desc = "A pouch for throwing knifes, alowing to quickdraw the best solution in combat."
+	desc = "Кармашек для метательных ножей, позволяет удобно доставать их для быстрой шинковки."
 	icon = 'icons/obj/items_and_weapons.dmi'
 	icon_state = "ammopouch"
 	slot_flags = ITEM_SLOT_POCKETS
@@ -107,7 +107,7 @@
 
 /obj/item/storage/bag/medpen
 	name = "Medipen pouch"
-	desc = "Simmilar to ammo pouch - this one designed to contain variety of autoinjectors."
+	desc = "Паритетно к патронному варианту - этот может держать всевозможные автоинъекторы."
 	icon = 'icons/obj/storage.dmi'
 	icon_state = "firstaid_pouch"
 	slot_flags = ITEM_SLOT_POCKETS
@@ -124,7 +124,7 @@
 
 /obj/item/storage/bag/medpen/combatant
 	name = "Stay alive pouch"
-	desc = "A pouch that contains variety of auto injectors to fix most unfixable situations."
+	desc = "Мешочек для хранения всевозможных автоинъекторов, для решения самых нерешаемых ситуаций."
 	slot_flags = ITEM_SLOT_POCKETS
 	w_class = WEIGHT_CLASS_NORMAL
 	resistance_flags = FLAMMABLE

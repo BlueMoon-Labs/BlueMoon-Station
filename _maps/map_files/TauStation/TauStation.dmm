@@ -60746,7 +60746,7 @@
 	},
 /obj/item/circuitboard/computer/rdconsole,
 /obj/item/circuitboard/machine/cell_charger,
-/obj/item/circuitboard/machine/thermomachine/freezer,
+/obj/item/circuitboard/machine/thermomachine,
 /obj/item/stack/cable_coil,
 /obj/item/multitool,
 /obj/item/integrated_electronics/debugger,

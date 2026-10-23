@@ -1,9 +1,12 @@
 import { classes } from 'common/react';
+import { plural } from 'common/ru/plural';
 import { useState } from 'react';
 
 import { useBackend } from '../backend';
 import { Box, Button, Section, Stack, Table } from '../components';
 import { Window } from '../layouts';
+
+const pointsWord = (n) => plural(n, 'очко', 'очка', 'очков');
 
 export const MiningVendor = (props) => {
   const { act, data } = useBackend();
@@ -27,7 +30,8 @@ export const MiningVendor = (props) => {
   return (
     <Window
       width={640}
-      height={510}>
+      height={510}
+      title="Шахтёрский автомат снаряжения">
       <Window.Content>
         <Stack fill vertical>
           <Stack.Item>
@@ -88,7 +92,7 @@ export const MiningVendor = (props) => {
                               onClick={() => act('purchase', {
                                 ref: product.ref,
                               })} >
-                              {product.price} очков
+                              {product.price} {pointsWord(product.price)}
                             </Button>
                           </Table.Cell>
                         </Table.Row>

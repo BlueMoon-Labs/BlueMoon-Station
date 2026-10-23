@@ -449,6 +449,37 @@
 		user.drop_all_held_items()
 		user.DefaultCombatKnockdown(80)
 
+// -------------- Gatfruit Revolver -------------
+// Вырастает из гатфрута. Барабан намертво запечатан смолой, поэтому перезарядить его нельзя.
+/obj/item/gun/ballistic/revolver/gatfruit
+	name = "\improper .357 gatfruit revolver"
+	desc = "A suspicious revolver grown from a gatfruit. Its cylinder is fused shut by hardened plant resin, making reloading impossible."
+
+/obj/item/gun/ballistic/revolver/gatfruit/attackby(obj/item/A, mob/user, params)
+	if(istype(A, /obj/item/ammo_box) || istype(A, /obj/item/ammo_casing))
+		to_chat(user, span_warning("The [src]'s cylinder is fused shut — you can't reload it!"))
+		return TRUE
+	return ..()
+
+/obj/item/gun/ballistic/revolver/gatfruit/examine(mob/user)
+	. = ..()
+	. += span_notice("The cylinder is sealed with hardened plant resin. It cannot be reloaded.")
+
+// Испорченный плод. Внешне неотличим от обычного револьвера: имя, описание и иконка наследуются.
+/obj/item/gun/ballistic/revolver/gatfruit/bad
+
+/obj/item/gun/ballistic/revolver/gatfruit/bad/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0, stam_cost = 0)
+	if(user && chambered?.BB)
+		user.visible_message(
+			span_danger("[user]'s [src] jerks in [user.ru_ego()] hands and goes off right in [user.ru_ego()] face!"),
+			span_userdanger("The [src] jerks in your hands and fires straight into your face!"),
+			span_italics("You hear a gunshot!"),
+		)
+		target = user
+		zone_override = BODY_ZONE_HEAD
+		message = FALSE
+	return ..()
+
 // -------------- HoS Modular Weapon System -------------
 // ---------- Code originally from VoreStation ----------
 /obj/item/gun/ballistic/revolver/mws

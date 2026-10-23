@@ -16743,6 +16743,7 @@
 /obj/effect/turf_decal/tile/blue,
 /obj/effect/turf_decal/tile/neutral,
 /obj/effect/landmark/event_spawn,
+/obj/structure/fulton_beacon,
 /turf/open/floor/plasteel,
 /area/command/gateway)
 "aGS" = (

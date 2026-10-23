@@ -47,11 +47,22 @@
 		for(var/part in ratvar_parts)
 			.[part] = per_part
 
-	var/matrigrass_weight = 0
+
+	//WHITE-STEEL PORT: матрigrass — шанс ровно MATRIGRASS_SPAWN_CHANCE (1/1000) от общего
+	//веса мусора руины. add_rare_salvage() добавляет обломки сверху (доля
+	//RARELY_SALVAGE_SHARE от суммы весов), поэтому итоговая сумма весов умножается на
+	//salvage_factor - его и учитываем в формуле.
+	var/salvage_factor = 1
+	if(length(subtypesof(/obj/structure/salvage)))
+		salvage_factor = 1 + RARELY_SALVAGE_SHARE
+	var/trash_weight = 0
 	for(var/trash_key in .)
-		matrigrass_weight += .[trash_key]
-	if(matrigrass_weight > 0)
-		.[/obj/item/seeds/matrigrass] = matrigrass_weight * 1.025 / 249
+		trash_weight += .[trash_key]
+	var/existing_matrigrass_weight = .[/obj/item/seeds/matrigrass]
+	if(existing_matrigrass_weight)
+		trash_weight -= existing_matrigrass_weight
+	if(trash_weight > 0)
+		.[/obj/item/seeds/matrigrass] = trash_weight * salvage_factor * MATRIGRASS_SPAWN_CHANCE / (1 - MATRIGRASS_SPAWN_CHANCE * salvage_factor)
 
 /datum/generator_settings/ratvar/get_directional_walltrash()
 	return list(

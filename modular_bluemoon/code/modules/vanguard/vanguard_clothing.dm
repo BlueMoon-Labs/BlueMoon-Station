@@ -3,7 +3,7 @@
 // ============================================
 
 /obj/item/clothing/suit/space/vanguard
-	name = "Vanguard EVA suit"
+	name = "vanguard EVA suit"
 	desc = "Укреплённый тонколистыми сплавами и молитвами стандартный костюм для иследования космоса эксадронов Авангарда"
 	armor_type = /datum/armor/spacesuit_vanguard
 	icon_state = "hardsuit-explorer"
@@ -20,8 +20,8 @@
 	storage.max_items = 5
 
 /obj/item/clothing/head/helmet/space/vanguard
-	name = "Vanguard EVA helmet"
-	desc = "Укреплённый тонколистыми сплавами и молитвами стандартный щлем для иследования космоса эксадронов Авангарда"
+	name = "vanguard EVA helmet"
+	desc = "Укреплённый тонколистыми сплавами и молитвами стандартный шлем для иследования космоса эксадронов Авангарда"
 	icon_state = "hardsuit0-explorer"
 	item_state = "hardsuit0-explorer"
 	armor_type = /datum/armor/spacesuit_vanguard
@@ -30,8 +30,8 @@
 	anthro_mob_worn_overlay = 'modular_sand/icons/mob/clothing/head_muzzled.dmi'
 
 /obj/item/clothing/head/helmet/space/hardsuit/exploration
-	name = "Ranger hardsuit helmet"
-	desc = "An advanced helmet that will protect you from space and other threats."
+	name = "ranger hardsuit helmet"
+	desc = "Выдвижной шлем скафандра Авангарда для истинных интровертов эскадрона."
 	icon_state = "hardsuit0-exploration"
 	item_state = "hardsuit0-exploration"
 	armor_type = /datum/armor/hardsuit_security
@@ -46,7 +46,7 @@
 	icon_state = "hardsuit-exploration"
 	item_state = "hardsuit-exploration"
 	name = "Ranger hardsuit"
-	desc = "An advanced suit that will protect you from space and other threats."
+	desc = "Продвинутый скафандр для защиты от космоса, его угроз, шальных пуль членов эскадрона и пролитого виски."
 	slowdown = 0.5
 	armor_type = /datum/armor/hardsuit_security
 	brc_mitigation_bonus = 10  // BLUEMOON ADD
@@ -62,8 +62,8 @@
 	storage.max_items = 5
 
 /obj/item/clothing/suit/armor/vanguard
-	name = "Combined suit "
-	desc = "A combined armor set used by the Vanguard squadrons. The combination of movable plates and kevlar fabrics made it equally ineffective against firearms and blunt force, but it’s better than nothing."
+	name = "combined suit"
+	desc = "Комбенизон для эскадронов Авангарда. Комбинирование подвижных пластин и кевлара сделало его одинаково убогим что против пуль, что против ударов, но это лучше, чем ничего."
 	icon_state = "combined"
 	item_state = "combined"
 	slowdown = 0.1
@@ -76,13 +76,13 @@
 	icon = 'modular_bluemoon/icons/obj/clothing/suit.dmi'
 
 /obj/item/clothing/head/helmet/vanguard
-	name = "Combined helmet"
-	desc = "Someone just take old Altyn helmet, recolor it, and strap some shutter-proof glass,"
+	name = "combined helmet"
+	desc = "Кто-то просто взял старый Алтын, перекрасил, и присобачил ударопрочное стекло?"
 	icon_state = "combined"
 	item_state = "combined"
 	can_flashlight = 0
-	toggle_message = "You pull the visor down on"
-	alt_toggle_message = "You push the visor up on"
+	toggle_message = "Вы опустили визор"
+	alt_toggle_message = "Вы подняли визор"
 	can_toggle = 1
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR
 	strip_delay = 80

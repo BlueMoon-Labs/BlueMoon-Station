@@ -267,7 +267,7 @@
 
 /obj/item/firing_pin/access/pin_auth(mob/living/user)
 	return !gun.chambered || allowed(user)
-	
+
 /obj/item/firing_pin/access/med
 	name = "medical emergency firing pin"
 	req_one_access = list(ACCESS_MEDICAL)
@@ -364,9 +364,9 @@
 // Explorer Firing Pin- Prevents use on station Z-Level, so it's justifiable to give Explorers guns that don't suck.
 /obj/item/firing_pin/explorer
 	name = "outback firing pin"
-	desc = "A firing pin used by the austrailian defense force, retrofit to prevent weapon discharge on the station."
+	desc = "Боёк для оружия, когда-то использовавшийся австралийскими силами обороны, модернизированный для предотвращения выстрелов на станции."
 	icon_state = "firing_pin_explorer"
-	fail_message = "<span class='warning'>CANNOT FIRE WHILE ON STATION, MATE!</span>"
+	fail_message = "<span class='boldwarning'>НЕЛЬЗЯ ШМАЛЯТЬ НА СТАНЦИИ, ПРИЯТЕЛЬ!</span>"
 	pin_removeable = FALSE
 	emag_removeable = TRUE
 
@@ -376,7 +376,7 @@
 	if(!station_check)
 		return FALSE
 	if(is_station_level(station_check.z) && GLOB.security_level < SEC_LEVEL_RED)
-		to_chat(user, "<span class='warning'>You cannot use your weapon while on the station!</span>")
+		to_chat(user, span_warning("Боёк воспрепятствовал выстрелу!"))
 		return FALSE
 	return TRUE
 

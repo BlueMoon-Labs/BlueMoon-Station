@@ -160,7 +160,7 @@
 		for(var/material in efficient_casing_mats)
 			i++
 			var/datum/material/our_material = material
-			mat_string += "[efficient_casing_mats[our_material]] см³ [our_material.name]"
+			mat_string += "[efficient_casing_mats[our_material]] см³ [vocabulary_to_ru(GLOB.mat_ru_genitive, our_material.name)]"
 			if(i < length(efficient_casing_mats))
 				mat_string += ", "
 		mat_string += " на патрон"
@@ -207,7 +207,7 @@
 			var/amount = mat_container.materials[M]
 			var/sheet_amount = amount / MINERAL_MATERIAL_AMOUNT
 			var/ref = REF(M)
-			data["materials"] += list(list("name" = M.name, "id" = ref, "amount" = sheet_amount))
+			data["materials"] += list(list("name" = capitalize(vocabulary_to_ru(GLOB.mat_ru_nominative, M.name)), "id" = ref, "amount" = sheet_amount))
 
 	if(error_message)
 		data["error"] = error_message
@@ -602,7 +602,7 @@
 
 /obj/machinery/ammo_workbench/proc/is_insertion_ready(mob/user, obj/item/O)
 	if(panel_open)
-		to_chat(user, span_warning("Нельзя загружать [src], пока открыта панель!"))
+		to_chat(user, span_warning("Нельзя вставить что-либо в [src], пока открыта панель!"))
 		return FALSE
 	if(disabled)
 		to_chat(user, span_warning("Загрузочные ленты [src] не включаются!"))
@@ -700,7 +700,7 @@
 
 /obj/item/disk/ammo_workbench/advanced
 	name = "advanced munitions datadisk"
-	desc = "Дата-диск с данными о производстве продвинутых боеприпасов для верстака боеприпасов, включая смертоносные типы, если они ещё не были разблокированы. Никто не несёт ответственности за любые происшествия, если защита была обойдена ранее."
+	desc = "Диск с данными о производстве продвинутых боеприпасов для верстака боеприпасов, включая смертоносные типы, если они ещё не были разблокированы. ARMADYNE не несут ответственности за любые происшествия, если защиту обошли ранее."
 
 /obj/item/disk/ammo_workbench/advanced/on_bench_install(obj/machinery/ammo_workbench/ammobench)
 	ammobench.allowed_harmful = TRUE

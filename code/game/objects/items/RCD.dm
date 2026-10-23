@@ -11,7 +11,7 @@ RLD
 
 /obj/item/construction
 	name = "not for ingame use"
-	desc = "A device used to rapidly build and deconstruct. Reload with metal, plasteel, glass or compressed matter cartridges."
+	desc = "Устройство для быстрого строительства и демонтажа. Заправляется металлом, пласталью, стеклом или картриджами со сжатой материей."
 	opacity = 0
 	density = FALSE
 	anchored = FALSE
@@ -33,7 +33,7 @@ RLD
 	var/plasteelmultiplier = 3 //Plasteel is worth 3 times more than glass or metal
 	var/plasmarglassmultiplier = 2 //50% less plasma than in plasteel
 	var/rglassmultiplier = 1.5 //One metal sheet, half a glass sheet
-	var/no_ammo_message = "<span class='warning'>The \'Low Ammo\' light on the device blinks yellow.</span>"
+	var/no_ammo_message = span_warning("Индикатор нехватки материи на устройстве мигает жёлтым.")
 	var/has_ammobar = FALSE	//controls whether or not does update_icon apply ammo indicator overlays
 	var/ammo_sections = 10	//amount of divisions in the ammo indicator overlay/number of ammo indicator states
 	var/custom_range = 7
@@ -47,9 +47,9 @@ RLD
 
 /obj/item/construction/examine(mob/user)
 	. = ..()
-	. += "It currently holds [matter]/[max_matter] matter-units."
+	. += "Запас материи: [matter]/[max_matter] ед."
 	if(upgrade & RCD_UPGRADE_FRAMES)
-		. += "It contains the design for machine frames, computer frames and deconstruction."
+		. += "Содержит чертежи каркасов машин и компьютеров, а также программу демонтажа."
 	if(upgrade & RCD_UPGRADE_SIMPLE_CIRCUITS)
 		. += span_notice("Содержит чертежи плат воздушной и пожарной сигнализации, контроллеров питания и простых аккумуляторов.")
 
@@ -65,7 +65,7 @@ RLD
 		var/obj/item/rcd_ammo/R = W
 		var/load = min(R.ammoamt, max_matter - matter)
 		if(load <= 0)
-			to_chat(user, "<span class='warning'>[src] can't hold any more matter-units!</span>")
+			to_chat(user, span_warning("Хранилище материи [src] заполнено!"))
 			return
 		R.ammoamt -= load
 		if(R.ammoamt <= 0)
@@ -86,9 +86,9 @@ RLD
 	else if(istype(W, /obj/item/stack/tile/plasteel))
 		loaded = loadwithsheets(W, sheetmultiplier * 0.25, user) // 1 matter for 1 floortile, as 4 tiles are produced from 1 metal
 	if(loaded)
-		to_chat(user, "<span class='notice'>[src] now holds [matter]/[max_matter] matter-units.</span>")
+		to_chat(user, span_notice("Запас материи [src]: [matter]/[max_matter] ед."))
 	else if(istype(W, /obj/item/rcd_upgrade))
-		to_chat(user, "<span class='notice'>You upgrade the RCD with the [W]!</span>")
+		to_chat(user, span_notice("Вы улучшаете РЦД с помощью [W]!"))
 		var/obj/item/rcd_upgrade/rcd_up = W
 		if(!(upgrade & rcd_up.upgrade))
 			upgrade |= rcd_up.upgrade
@@ -105,9 +105,9 @@ RLD
 		S.use(amount_to_use)
 		matter += value*amount_to_use
 		playsound(src.loc, 'sound/machines/click.ogg', 50, 1)
-		to_chat(user, "<span class='notice'>You insert [amount_to_use] [S.name] sheets into [src]. </span>")
+		to_chat(user, span_notice("Вы загружаете в [src] [amount_to_use] ед. [S.name]."))
 		return TRUE
-	to_chat(user, "<span class='warning'>You can't insert any more [S.name] sheets into [src]!</span>")
+	to_chat(user, span_warning("В [src] больше не помещается [S.name]!"))
 	return FALSE
 
 /obj/item/construction/proc/activate()
@@ -145,14 +145,14 @@ RLD
 
 /obj/item/construction/proc/range_check(atom/A, mob/user)
 	if(!(A in range(custom_range, get_turf(user))))
-		to_chat(user, "<span class='warning'>The \'Out of Range\' light on [src] blinks red.</span>")
+		to_chat(user, span_warning("Индикатор превышения дальности на [src] мигает красным."))
 		return FALSE
 	var/view_range = user.client ? user.client.view : world.view
 	//if user can't be seen from A (only checks surroundings' opaqueness) and can't see A.
 	//jarring, but it should stop people from targetting atoms they can't see...
 	//excluding darkness, to allow RLD to be used to light pitch black dark areas.
 	if(!((user in view(view_range, A)) || (user in fov_viewers(view_range, A))))
-		to_chat(user, "<span class='warning'>You focus, pointing \the [src] at whatever outside your field of vision in that direction... to no avail.</span>")
+		to_chat(user, span_warning("Вы направляете [src] на цель за пределами видимости, но ничего не происходит."))
 		return FALSE
 	return TRUE
 
@@ -180,11 +180,11 @@ RLD
 	var/canRturf = FALSE //Variable for R walls to deconstruct them
 
 /obj/item/construction/rcd/suicide_act(mob/user)
-	user.visible_message("<span class='suicide'>[user] sets the RCD to 'Wall' and points it down [user.ru_ego()] throat! It looks like [user.p_theyre()] trying to commit suicide..</span>")
+	user.visible_message(span_suicide("[user] переключает РЦД в режим строительства стен и направляет его себе в горло! Похоже, это попытка самоубийства!"))
 	return (BRUTELOSS)
 
 /obj/item/construction/rcd/verb/toggle_window_type_verb()
-	set name = "RCD : Toggle Window Type"
+	set name = "РЦД: материал окон"
 	set category = "Object"
 	set src in view(1)
 
@@ -197,30 +197,31 @@ RLD
 	var/window_type_name
 	if (window_type == /obj/structure/window/fulltile)
 		window_type = /obj/structure/window/reinforced/fulltile
-		window_type_name = "reinforced glass"
+		window_type_name = "Армированное окно"
 	else
 		window_type = /obj/structure/window/fulltile
-		window_type_name = "glass"
+		window_type_name = "Обычное окно"
 
-	to_chat(user, "<span class='notice'>You change \the [src]'s window mode to [window_type_name].</span>")
+	to_chat(user, span_notice("Вы выбираете материал окон: [window_type_name]."))
 
 /obj/item/construction/rcd/verb/change_airlock_access(mob/user)
+	set name = "РЦД: доступ к шлюзам"
 
-	if (!ishuman(user) && !user.silicon_privileges)
+	if(!can_configure_access(user))
 		return
 
 	var/t1 = ""
 
 
 	if(use_one_access)
-		t1 += "Restriction Type: <a href='?src=[REF(src)];access=one'>At least one access required</a><br>"
+		t1 += "Условие доступа: <a href='?src=[REF(src)];access=one'>Достаточно одного из выбранных доступов</a><br>"
 	else
-		t1 += "Restriction Type: <a href='?src=[REF(src)];access=one'>All accesses required</a><br>"
+		t1 += "Условие доступа: <a href='?src=[REF(src)];access=one'>Нужны все выбранные доступы</a><br>"
 
-	t1 += "<a href='?src=[REF(src)];access=all'>Remove All</a><br>"
+	t1 += "<a href='?src=[REF(src)];access=all'>Сбросить ограничения</a><br>"
 
 	var/accesses = ""
-	accesses += "<div align='center'><b>Access</b></div>"
+	accesses += "<div align='center'><b>Доступ</b></div>"
 	accesses += "<table style='width:100%'>"
 	accesses += "<tr>"
 	for(var/i = 1; i <= 7; i++)
@@ -238,15 +239,15 @@ RLD
 	accesses += "</tr></table>"
 	t1 += "<tt>[accesses]</tt>"
 
-	t1 += "<p><a href='?src=[REF(src)];close=1'>Close</a></p>\n"
+	t1 += "<p><a href='?src=[REF(src)];close=1'>Закрыть</a></p>\n"
 
-	var/datum/browser/popup = new(user, "rcd_access", "Access Control", 900, 500, src)
+	var/datum/browser/popup = new(user, "rcd_access", "Настройка доступа", 900, 500, src)
 	popup.set_content(t1)
 	popup.open()
 
 /obj/item/construction/rcd/Topic(href, href_list)
 	..()
-	if (usr.stat || usr.restrained() || !usr.is_holding(src))
+	if(usr.stat || usr.restrained() || !can_configure_access(usr))
 		return
 	if (href_list["close"])
 		usr << browse(null, "window=rcd_access")
@@ -255,6 +256,9 @@ RLD
 	if (href_list["access"])
 		toggle_access(href_list["access"])
 		change_airlock_access(usr)
+
+/obj/item/construction/rcd/proc/can_configure_access(mob/user)
+	return user && (ishuman(user) || user.silicon_privileges) && user.is_holding(src)
 
 /obj/item/construction/rcd/proc/toggle_access(acc)
 	if (acc == "all")
@@ -287,22 +291,22 @@ RLD
 	if(!user)
 		return
 	var/list/computer_dirs = list(
-		"NORTH" = image(icon = 'icons/mob/radial.dmi', icon_state = "cnorth"),
-		"EAST" = image(icon = 'icons/mob/radial.dmi', icon_state = "ceast"),
-		"SOUTH" = image(icon = 'icons/mob/radial.dmi', icon_state = "csouth"),
-		"WEST" = image(icon = 'icons/mob/radial.dmi', icon_state = "cwest")
+		"Север" = image(icon = 'icons/mob/radial.dmi', icon_state = "cnorth"),
+		"Восток" = image(icon = 'icons/mob/radial.dmi', icon_state = "ceast"),
+		"Юг" = image(icon = 'icons/mob/radial.dmi', icon_state = "csouth"),
+		"Запад" = image(icon = 'icons/mob/radial.dmi', icon_state = "cwest")
 		)
-	var/computerdirs = show_radial_menu(user, src, computer_dirs, custom_check = CALLBACK(src, PROC_REF(check_menu), user), require_near = TRUE, tooltips = TRUE)
+	var/computerdirs = show_radial_menu(user, get_atom_on_turf(src), computer_dirs, custom_check = CALLBACK(src, PROC_REF(check_menu), user), require_near = TRUE, tooltips = TRUE)
 	if(!check_menu(user))
 		return
 	switch(computerdirs)
-		if("NORTH")
+		if("Север")
 			computer_dir = 1
-		if("EAST")
+		if("Восток")
 			computer_dir = 4
-		if("SOUTH")
+		if("Юг")
 			computer_dir = 2
-		if("WEST")
+		if("Запад")
 			computer_dir = 8
 
 /obj/item/construction/rcd/proc/change_airlock_setting(mob/user)
@@ -310,129 +314,129 @@ RLD
 		return
 
 	var/list/solid_or_glass_choices = list(
-		"Solid" = get_airlock_image(/obj/machinery/door/airlock),
-		"Glass" = get_airlock_image(/obj/machinery/door/airlock/glass)
+		"Цельный" = get_airlock_image(/obj/machinery/door/airlock),
+		"Стеклянный" = get_airlock_image(/obj/machinery/door/airlock/glass)
 	)
 
 	var/list/solid_choices = list(
-		"Standard" = get_airlock_image(/obj/machinery/door/airlock),
-		"Public" = get_airlock_image(/obj/machinery/door/airlock/public),
-		"Engineering" = get_airlock_image(/obj/machinery/door/airlock/engineering),
-		"Atmospherics" = get_airlock_image(/obj/machinery/door/airlock/atmos),
-		"Security" = get_airlock_image(/obj/machinery/door/airlock/security),
-		"Command" = get_airlock_image(/obj/machinery/door/airlock/command),
-		"Medical" = get_airlock_image(/obj/machinery/door/airlock/medical),
-		"Research" = get_airlock_image(/obj/machinery/door/airlock/research),
-		"Freezer" = get_airlock_image(/obj/machinery/door/airlock/freezer),
-		"Science" = get_airlock_image(/obj/machinery/door/airlock/science),
-		"Virology" = get_airlock_image(/obj/machinery/door/airlock/virology),
-		"Mining" = get_airlock_image(/obj/machinery/door/airlock/mining),
-		"Maintenance" = get_airlock_image(/obj/machinery/door/airlock/maintenance),
-		"External" = get_airlock_image(/obj/machinery/door/airlock/external),
-		"External Maintenance" = get_airlock_image(/obj/machinery/door/airlock/maintenance/external),
-		"Airtight Hatch" = get_airlock_image(/obj/machinery/door/airlock/hatch),
-		"Maintenance Hatch" = get_airlock_image(/obj/machinery/door/airlock/maintenance_hatch)
+		"Стандартный" = get_airlock_image(/obj/machinery/door/airlock),
+		"Общий" = get_airlock_image(/obj/machinery/door/airlock/public),
+		"Инженерный" = get_airlock_image(/obj/machinery/door/airlock/engineering),
+		"Атмосферный" = get_airlock_image(/obj/machinery/door/airlock/atmos),
+		"Служба безопасности" = get_airlock_image(/obj/machinery/door/airlock/security),
+		"Командование" = get_airlock_image(/obj/machinery/door/airlock/command),
+		"Медицинский" = get_airlock_image(/obj/machinery/door/airlock/medical),
+		"Исследовательский" = get_airlock_image(/obj/machinery/door/airlock/research),
+		"Морозильник" = get_airlock_image(/obj/machinery/door/airlock/freezer),
+		"Научный" = get_airlock_image(/obj/machinery/door/airlock/science),
+		"Вирусология" = get_airlock_image(/obj/machinery/door/airlock/virology),
+		"Шахтёрский" = get_airlock_image(/obj/machinery/door/airlock/mining),
+		"Технический" = get_airlock_image(/obj/machinery/door/airlock/maintenance),
+		"Внешний" = get_airlock_image(/obj/machinery/door/airlock/external),
+		"Внешний технический" = get_airlock_image(/obj/machinery/door/airlock/maintenance/external),
+		"Герметичный люк" = get_airlock_image(/obj/machinery/door/airlock/hatch),
+		"Технический люк" = get_airlock_image(/obj/machinery/door/airlock/maintenance_hatch)
 	)
 
 	var/list/glass_choices = list(
-		"Standard" = get_airlock_image(/obj/machinery/door/airlock/glass),
-		"Public" = get_airlock_image(/obj/machinery/door/airlock/public/glass),
-		"Engineering" = get_airlock_image(/obj/machinery/door/airlock/engineering/glass),
-		"Atmospherics" = get_airlock_image(/obj/machinery/door/airlock/atmos/glass),
-		"Security" = get_airlock_image(/obj/machinery/door/airlock/security/glass),
-		"Command" = get_airlock_image(/obj/machinery/door/airlock/command/glass),
-		"Medical" = get_airlock_image(/obj/machinery/door/airlock/medical/glass),
-		"Research" = get_airlock_image(/obj/machinery/door/airlock/research/glass),
-		"Science" = get_airlock_image(/obj/machinery/door/airlock/science/glass),
-		"Virology" = get_airlock_image(/obj/machinery/door/airlock/virology/glass),
-		"Mining" = get_airlock_image(/obj/machinery/door/airlock/mining/glass),
-		"Maintenance" = get_airlock_image(/obj/machinery/door/airlock/maintenance/glass),
-		"External" = get_airlock_image(/obj/machinery/door/airlock/external/glass),
-		"External Maintenance" = get_airlock_image(/obj/machinery/door/airlock/maintenance/external/glass)
+		"Стандартный" = get_airlock_image(/obj/machinery/door/airlock/glass),
+		"Общий" = get_airlock_image(/obj/machinery/door/airlock/public/glass),
+		"Инженерный" = get_airlock_image(/obj/machinery/door/airlock/engineering/glass),
+		"Атмосферный" = get_airlock_image(/obj/machinery/door/airlock/atmos/glass),
+		"Служба безопасности" = get_airlock_image(/obj/machinery/door/airlock/security/glass),
+		"Командование" = get_airlock_image(/obj/machinery/door/airlock/command/glass),
+		"Медицинский" = get_airlock_image(/obj/machinery/door/airlock/medical/glass),
+		"Исследовательский" = get_airlock_image(/obj/machinery/door/airlock/research/glass),
+		"Научный" = get_airlock_image(/obj/machinery/door/airlock/science/glass),
+		"Вирусология" = get_airlock_image(/obj/machinery/door/airlock/virology/glass),
+		"Шахтёрский" = get_airlock_image(/obj/machinery/door/airlock/mining/glass),
+		"Технический" = get_airlock_image(/obj/machinery/door/airlock/maintenance/glass),
+		"Внешний" = get_airlock_image(/obj/machinery/door/airlock/external/glass),
+		"Внешний технический" = get_airlock_image(/obj/machinery/door/airlock/maintenance/external/glass)
 	)
 
-	var/airlockcat = show_radial_menu(user, src, solid_or_glass_choices, custom_check = CALLBACK(src, PROC_REF(check_menu), user), require_near = TRUE)
+	var/airlockcat = show_radial_menu(user, get_atom_on_turf(src), solid_or_glass_choices, custom_check = CALLBACK(src, PROC_REF(check_menu), user), require_near = TRUE)
 	if(!check_menu(user))
 		return
 	switch(airlockcat)
-		if("Solid")
+		if("Цельный")
 			if(advanced_airlock_setting == 1)
-				var/airlockpaint = show_radial_menu(user, src, solid_choices, radius = 42, custom_check = CALLBACK(src, PROC_REF(check_menu), user), require_near = TRUE)
+				var/airlockpaint = show_radial_menu(user, get_atom_on_turf(src), solid_choices, radius = 42, custom_check = CALLBACK(src, PROC_REF(check_menu), user), require_near = TRUE)
 				if(!check_menu(user))
 					return
 				switch(airlockpaint)
-					if("Standard")
+					if("Стандартный")
 						airlock_type = /obj/machinery/door/airlock
-					if("Public")
+					if("Общий")
 						airlock_type = /obj/machinery/door/airlock/public
-					if("Engineering")
+					if("Инженерный")
 						airlock_type = /obj/machinery/door/airlock/engineering
-					if("Atmospherics")
+					if("Атмосферный")
 						airlock_type = /obj/machinery/door/airlock/atmos
-					if("Security")
+					if("Служба безопасности")
 						airlock_type = /obj/machinery/door/airlock/security
-					if("Command")
+					if("Командование")
 						airlock_type = /obj/machinery/door/airlock/command
-					if("Medical")
+					if("Медицинский")
 						airlock_type = /obj/machinery/door/airlock/medical
-					if("Research")
+					if("Исследовательский")
 						airlock_type = /obj/machinery/door/airlock/research
-					if("Freezer")
+					if("Морозильник")
 						airlock_type = /obj/machinery/door/airlock/freezer
-					if("Science")
+					if("Научный")
 						airlock_type = /obj/machinery/door/airlock/science
-					if("Virology")
+					if("Вирусология")
 						airlock_type = /obj/machinery/door/airlock/virology
-					if("Mining")
+					if("Шахтёрский")
 						airlock_type = /obj/machinery/door/airlock/mining
-					if("Maintenance")
+					if("Технический")
 						airlock_type = /obj/machinery/door/airlock/maintenance
-					if("External")
+					if("Внешний")
 						airlock_type = /obj/machinery/door/airlock/external
-					if("External Maintenance")
+					if("Внешний технический")
 						airlock_type = /obj/machinery/door/airlock/maintenance/external
-					if("Airtight Hatch")
+					if("Герметичный люк")
 						airlock_type = /obj/machinery/door/airlock/hatch
-					if("Maintenance Hatch")
+					if("Технический люк")
 						airlock_type = /obj/machinery/door/airlock/maintenance_hatch
 				airlock_glass = FALSE
 			else
 				airlock_type = /obj/machinery/door/airlock
 				airlock_glass = FALSE
 
-		if("Glass")
+		if("Стеклянный")
 			if(advanced_airlock_setting == 1)
-				var/airlockpaint = show_radial_menu(user, src , glass_choices, radius = 42, custom_check = CALLBACK(src, PROC_REF(check_menu), user), require_near = TRUE)
+				var/airlockpaint = show_radial_menu(user, get_atom_on_turf(src), glass_choices, radius = 42, custom_check = CALLBACK(src, PROC_REF(check_menu), user), require_near = TRUE)
 				if(!check_menu(user))
 					return
 				switch(airlockpaint)
-					if("Standard")
+					if("Стандартный")
 						airlock_type = /obj/machinery/door/airlock/glass
-					if("Public")
+					if("Общий")
 						airlock_type = /obj/machinery/door/airlock/public/glass
-					if("Engineering")
+					if("Инженерный")
 						airlock_type = /obj/machinery/door/airlock/engineering/glass
-					if("Atmospherics")
+					if("Атмосферный")
 						airlock_type = /obj/machinery/door/airlock/atmos/glass
-					if("Security")
+					if("Служба безопасности")
 						airlock_type = /obj/machinery/door/airlock/security/glass
-					if("Command")
+					if("Командование")
 						airlock_type = /obj/machinery/door/airlock/command/glass
-					if("Medical")
+					if("Медицинский")
 						airlock_type = /obj/machinery/door/airlock/medical/glass
-					if("Research")
+					if("Исследовательский")
 						airlock_type = /obj/machinery/door/airlock/research/glass
-					if("Science")
+					if("Научный")
 						airlock_type = /obj/machinery/door/airlock/science/glass
-					if("Virology")
+					if("Вирусология")
 						airlock_type = /obj/machinery/door/airlock/virology/glass
-					if("Mining")
+					if("Шахтёрский")
 						airlock_type = /obj/machinery/door/airlock/mining/glass
-					if("Maintenance")
+					if("Технический")
 						airlock_type = /obj/machinery/door/airlock/maintenance/glass
-					if("External")
+					if("Внешний")
 						airlock_type = /obj/machinery/door/airlock/external/glass
-					if("External Maintenance")
+					if("Внешний технический")
 						airlock_type = /obj/machinery/door/airlock/maintenance/external/glass
 				airlock_glass = TRUE
 			else
@@ -450,35 +454,36 @@ RLD
 		"Стеклянный фаерлок" = image(icon = initial(firelock_preview.icon), icon_state = "door_closed"),
 		"Оконный фаерлок" = image(icon = initial(window_firelock_preview.icon), icon_state = "door_closed")
 	)
-	var/choice = show_radial_menu(user, src, choices, custom_check = CALLBACK(src, PROC_REF(check_menu), user), require_near = TRUE, tooltips = TRUE)
+	var/choice = show_radial_menu(user, get_atom_on_turf(src), choices, custom_check = CALLBACK(src, PROC_REF(check_menu), user), require_near = TRUE, tooltips = TRUE)
 	if(!check_menu(user))
 		return
 	switch(choice)
 		if("Стеклянный фаерлок")
-			mode = RCD_FIRELOCK
+			set_mode(RCD_FIRELOCK)
 		if("Оконный фаерлок")
-			mode = RCD_WINDOW_FIRELOCK
+			set_mode(RCD_WINDOW_FIRELOCK)
 		else
 			return
 	playsound(src, 'sound/effects/pop.ogg', 50, FALSE)
 	to_chat(user, span_notice("Вы переключаете РЦД в режим «[choice]»."))
 
-/obj/item/construction/rcd/proc/rcd_create(atom/A, mob/user)
+/obj/item/construction/rcd/proc/rcd_create(atom/A, mob/user, datum/callback/extra_checks)
 	var/list/rcd_results = A.rcd_vals(user, src)
 	if(!rcd_results)
 		return FALSE
-	if(!checkResource(rcd_results["cost"], user))
+	var/resource_cost = get_resource_cost(rcd_results)
+	if(!checkResource(resource_cost, user))
 		return FALSE
 	var/delay = rcd_results["delay"] * delay_mod
 	var/obj/effect/constructing_effect/rcd_effect = new(get_turf(A), delay, src.mode)
 	var/turf/the_turf = get_turf(A)
 	var/turf_coords = "[COORD(the_turf)]"
 	investigate_log("[user] is attempting to use [src] on [A] (loc [turf_coords] at [the_turf]) with cost [rcd_results["cost"]], delay [rcd_results["delay"]], mode [rcd_results["mode"]].", INVESTIGATE_RCD)
-	if(do_after(user, delay, target = A))
+	if(do_after(user, delay, target = A, extra_checks = extra_checks) && !QDELETED(src) && checkResource(resource_cost, user) && (!extra_checks || extra_checks.Invoke()))
 		var/atom/cached = A
 		if(A.rcd_act(user, src, rcd_results["mode"]))
 			rcd_effect.end_animation()
-			useResource(rcd_results["cost"], user)
+			useResource(resource_cost, user)
 			if(rcd_results["mode"] == RCD_WINDOWGRILLE && istype(cached, /obj/structure/grille))
 				recycle_window_debris(the_turf, user)
 			activate()
@@ -486,6 +491,9 @@ RLD
 			playsound(src, 'sound/machines/click.ogg', 50, 1)
 			return TRUE
 	qdel(rcd_effect)
+
+/obj/item/construction/rcd/proc/get_resource_cost(list/rcd_results)
+	return rcd_results["cost"]
 
 // Собираем только мусор на самом тайле; оплата окна уже освободила место в ёмкости.
 /obj/item/construction/rcd/proc/recycle_window_debris(turf/build_turf, mob/user)
@@ -519,62 +527,67 @@ RLD
 	return TRUE
 
 /obj/item/construction/rcd/attack_self(mob/user)
+	if(!check_menu(user))
+		return
 	..()
 	var/list/choices = list(
-		"Airlock" = image(icon = 'icons/mob/radial.dmi', icon_state = "airlock"),
-		"Grilles & Windows" = image(icon = 'icons/mob/radial.dmi', icon_state = "grillewindow"),
-		"Floors & Walls" = image(icon = 'icons/mob/radial.dmi', icon_state = "wallfloor"),
-		"Firedoor" = image(icon = 'icons/mob/radial.dmi', icon_state = "firedoor")
+		"Шлюзы" = image(icon = 'icons/mob/radial.dmi', icon_state = "airlock"),
+		"Решётки и окна" = image(icon = 'icons/mob/radial.dmi', icon_state = "grillewindow"),
+		"Стены и пол" = image(icon = 'icons/mob/radial.dmi', icon_state = "wallfloor"),
+		"Фаерлоки" = image(icon = 'icons/mob/radial.dmi', icon_state = "firedoor")
 	)
 	if(upgrade & RCD_UPGRADE_FRAMES)
 		choices += list(
-		"Deconstruct" = image(icon= 'icons/mob/radial.dmi', icon_state = "delete"),
-		"Machine Frames" = image(icon = 'icons/mob/radial.dmi', icon_state = "machine"),
-		"Computer Frames" = image(icon = 'icons/mob/radial.dmi', icon_state = "computer_dir"),
+		"Демонтаж" = image(icon= 'icons/mob/radial.dmi', icon_state = "delete"),
+		"Каркасы машин" = image(icon = 'icons/mob/radial.dmi', icon_state = "machine"),
+		"Каркасы компьютеров" = image(icon = 'icons/mob/radial.dmi', icon_state = "computer_dir"),
 		)
 	if(mode == RCD_AIRLOCK)
 		choices += list(
-		"Change Access" = image(icon = 'icons/mob/radial.dmi', icon_state = "access"),
-		"Change Airlock Type" = image(icon = 'icons/mob/radial.dmi', icon_state = "airlocktype")
+		"Настроить доступ" = image(icon = 'icons/mob/radial.dmi', icon_state = "access"),
+		"Тип шлюза" = image(icon = 'icons/mob/radial.dmi', icon_state = "airlocktype")
 		)
 	else if(mode == RCD_WINDOWGRILLE)
 		choices += list(
-			"Change Window Type" = image(icon = 'icons/mob/radial.dmi', icon_state = "windowtype")
+			"Материал окон" = image(icon = 'icons/mob/radial.dmi', icon_state = "windowtype")
 		)
-	var/choice = show_radial_menu(user,src,choices, custom_check = CALLBACK(src,PROC_REF(check_menu),user))
+	var/choice = show_radial_menu(user, get_atom_on_turf(src), choices, custom_check = CALLBACK(src, PROC_REF(check_menu), user), tooltips = TRUE)
 	if(!check_menu(user))
 		return
 	switch(choice)
-		if("Floors & Walls")
-			mode = RCD_FLOORWALL
-		if("Airlock")
-			mode = RCD_AIRLOCK
-		if("Firedoor")
+		if("Стены и пол")
+			set_mode(RCD_FLOORWALL)
+		if("Шлюзы")
+			set_mode(RCD_AIRLOCK)
+		if("Фаерлоки")
 			change_firelock_setting(user)
 			return
-		if("Deconstruct")
-			mode = RCD_DECONSTRUCT
-		if("Grilles & Windows")
-			mode = RCD_WINDOWGRILLE
-		if("Machine Frames")
-			mode = RCD_MACHINE
-		if("Computer Frames")
-			mode = RCD_COMPUTER
+		if("Демонтаж")
+			set_mode(RCD_DECONSTRUCT)
+		if("Решётки и окна")
+			set_mode(RCD_WINDOWGRILLE)
+		if("Каркасы машин")
+			set_mode(RCD_MACHINE)
+		if("Каркасы компьютеров")
+			set_mode(RCD_COMPUTER)
 			change_computer_dir(user)
 			return
-		if("Change Access")
+		if("Настроить доступ")
 			change_airlock_access(user)
 			return
-		if("Change Airlock Type")
+		if("Тип шлюза")
 			change_airlock_setting(user)
 			return
-		if("Change Window Type")
+		if("Материал окон")
 			toggle_window_type(user)
 			return
 		else
 			return
 	playsound(src, 'sound/effects/pop.ogg', 50, 0)
 	to_chat(user, span_notice("Вы переключаете РЦД в режим «[choice]»."))
+
+/obj/item/construction/rcd/proc/set_mode(new_mode)
+	mode = new_mode
 
 /obj/item/construction/rcd/proc/target_check(atom/A, mob/user) // only returns true for stuff the device can actually work with
 	if(mode == RCD_DECONSTRUCT && istype(A, /obj/machinery/door/firedoor))
@@ -613,10 +626,8 @@ RLD
 	rcd_create(A, user)
 
 /obj/item/construction/rcd/proc/detonate_pulse()
-	audible_message("<span class='danger'><b>[src] begins to vibrate and \
-		buzz loudly!</b></span>","<span class='danger'><b>[src] begins \
-		vibrating violently!</b></span>")
-	// 5 seconds to get rid of it
+	audible_message(span_danger("<b>[src] начинает вибрировать и громко гудеть!</b>"), span_danger("<b>[src] начинает сильно вибрировать!</b>"))
+	// До взрыва остаётся пять секунд.
 	addtimer(CALLBACK(src, PROC_REF(detonate_pulse_explode)), 50)
 
 /obj/item/construction/rcd/proc/detonate_pulse_explode()
@@ -635,8 +646,8 @@ RLD
 	update_icon()
 
 /obj/item/construction/rcd/borg
-	no_ammo_message = "<span class='warning'>Insufficient charge.</span>"
-	desc = "A device used to rapidly build walls and floors."
+	desc = "Устройство для быстрого строительства стен и полов."
+	no_ammo_message = span_warning("Недостаточно заряда.")
 	canRturf = TRUE
 	upgrade = TRUE
 	var/energyfactor = 72
@@ -690,7 +701,7 @@ RLD
 
 /obj/item/construction/rcd/combat
 	name = "combat RCD"
-	desc = "A device used to rapidly build and deconstruct. Reload with metal, plasteel, glass or compressed matter cartridges."
+	desc = "Устройство для быстрого строительства и демонтажа. Заправляется металлом, пласталью, стеклом или картриджами со сжатой материей."
 	icon_state = "ircd"
 	item_state = "ircd"
 	max_matter = 500
@@ -700,7 +711,7 @@ RLD
 
 /obj/item/construction/rcd/combat/examine(mob/user)
 	. = ..()
-	. += "The [name] has a wavelength penetrator installed, allowing it to deconstruct reinforced walls."
+	. += "В [name] установлен волновой пробойник, позволяющий разбирать укреплённые стены."
 
 /obj/item/construction/rcd/industrial
 	name = "industrial RCD"
@@ -712,9 +723,65 @@ RLD
 	sheetmultiplier	= 8
 	upgrade = TRUE
 
+// Встроенный промышленный РЦД использует питание и разрешения модуля меха.
+/obj/item/construction/rcd/mecha
+	name = "exosuit RCD"
+	desc = "Встроенный промышленный РЦД экзокостюма. Работает от батареи меха."
+	icon_state = "ircd"
+	item_state = "ircd"
+	max_matter = 500
+	matter = 500
+	delay_mod = 0.35
+	sheetmultiplier = 8
+	upgrade = TRUE
+	mode = RCD_DECONSTRUCT
+	canRturf = TRUE
+	has_ammobar = FALSE
+	custom_range = 3
+
+/obj/item/construction/rcd/mecha/check_menu(mob/living/user)
+	var/obj/item/mecha_parts/mecha_equipment/rcd/module = loc
+	return istype(module) && module.equip_ready && module.can_operate(user)
+
+/obj/item/construction/rcd/mecha/can_configure_access(mob/user)
+	return check_menu(user)
+
+/obj/item/construction/rcd/mecha/set_mode(new_mode)
+	..()
+	var/obj/item/mecha_parts/mecha_equipment/rcd/module = loc
+	if(istype(module))
+		module.energy_drain = mode == RCD_DECONSTRUCT ? module.energy_drain_deconstruct : initial(module.energy_drain)
+		module.update_equip_info()
+
+/obj/item/construction/rcd/mecha/get_resource_cost(list/rcd_results)
+	var/obj/item/mecha_parts/mecha_equipment/rcd/module = loc
+	return module.energy_drain
+
+/obj/item/construction/rcd/mecha/checkResource(amount, mob/user)
+	var/obj/item/mecha_parts/mecha_equipment/rcd/module = loc
+	. = istype(module) && module.can_operate(user) && module.chassis.has_charge(amount)
+	if(!. && user)
+		to_chat(user, span_warning("Недостаточно энергии либо модуль РЦД недоступен."))
+
+/obj/item/construction/rcd/mecha/useResource(amount, mob/user)
+	if(!checkResource(amount, user))
+		return FALSE
+	var/obj/item/mecha_parts/mecha_equipment/rcd/module = loc
+	return module.chassis.use_power(amount)
+
+// Сбор обломков не заряжает батарею: модуль оплачивает целую операцию, а не единицы материи.
+/obj/item/construction/rcd/mecha/recover_matter(amount, mob/user)
+	return 0
+
+/obj/item/construction/rcd/mecha/detonate_pulse_explode()
+	var/obj/item/mecha_parts/mecha_equipment/rcd/module = loc
+	..()
+	if(istype(module))
+		qdel(module)
+
 /obj/item/rcd_ammo
 	name = "compressed matter cartridge"
-	desc = "Highly compressed matter for the RCD."
+	desc = "Сильно сжатая материя для РЦД."
 	icon = 'icons/obj/ammo.dmi'
 	icon_state = "rcd"
 	item_state = "rcdammo"
@@ -725,7 +792,7 @@ RLD
 
 /obj/item/rcd_ammo/large
 	name = "large compressed matter cartridge"
-	desc = "Highly compressed matter for the RCD. Has four times the matter packed into the same space as a normal cartridge."
+	desc = "Сильно сжатая материя для РЦД. В том же объёме помещается вчетверо больше материи, чем в обычном картридже."
 	custom_materials = list(/datum/material/iron=96000, /datum/material/glass=64000)
 	ammoamt = 320
 
@@ -742,7 +809,7 @@ RLD
 
 /obj/item/construction/rcd/arcd
 	name = "advanced rapid-construction-device (ARCD)"
-	desc = "A prototype RCD with ranged capability and extended capacity. Reload with metal, plasteel, glass or compressed matter cartridges."
+	desc = "Прототип РЦД с увеличенным запасом материи и возможностью работы на расстоянии. Заправляется металлом, пласталью, стеклом или картриджами со сжатой материей."
 	max_matter = 300
 	matter = 300
 	delay_mod = 0.6

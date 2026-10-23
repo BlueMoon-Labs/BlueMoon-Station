@@ -30,6 +30,32 @@
 	QDEL_NULL(holder)
 	return ..()
 
+/obj/item/organ/cyberimp/arm/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = TRUE)
+	. = ..()
+	if(.)
+		M.register_mousewheel_handler(src, PROC_REF(on_mousewheel), MOUSEWHEEL_PRIORITY_IMPLANT)
+
+/obj/item/organ/cyberimp/arm/Remove(special = FALSE)
+	owner?.unregister_mousewheel_handler(src)
+	return ..()
+
+/obj/item/organ/cyberimp/arm/proc/on_mousewheel(mob/living/carbon/user, atom/target, delta_x, delta_y, list/modifiers)
+	if(owner != user || !delta_y)
+		return FALSE
+	var/active_slot = (user.active_hand_index % 2 == 0) ? ORGAN_SLOT_RIGHT_ARM_AUG : ORGAN_SLOT_LEFT_ARM_AUG
+	if(user.getorganslot(active_slot) != src)
+		return FALSE
+	var/obj/item/active_item = user.get_active_held_item()
+	if(!active_item || length(items_list) <= 1 || !(active_item in items_list))
+		return FALSE
+	// Активный имплант забирает событие и при отказе активации, чтобы не менять зону прицеливания.
+	if(!activate_allowed(user = user, silent = FALSE))
+		return TRUE
+	var/obj/item/next_item = delta_y < 0 ? next_list_item(active_item, items_list) : previous_list_item(active_item, items_list)
+	if(Retract(TRUE))
+		Extend(next_item)
+	return TRUE
+
 /// Arm augments use directional sprites (_left/_right) determined by which arm the implant is in.
 /obj/item/organ/cyberimp/arm/get_overlay_state(image_layer, obj/item/bodypart/limb)
 	return "[aug_overlay][zone == BODY_ZONE_L_ARM ? "_left" : "_right"]"

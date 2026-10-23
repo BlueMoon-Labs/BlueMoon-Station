@@ -107619,6 +107619,7 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/structure/fulton_beacon,
 /turf/open/floor/plasteel,
 /area/command/gateway)
 "tyO" = (
