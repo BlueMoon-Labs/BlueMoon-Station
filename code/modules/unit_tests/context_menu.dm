@@ -547,3 +547,51 @@
 	TEST_ASSERT(context_menu_admin_verbs_for(obj_target, granted) ~= list(/client/proc/debug_variables, /client/proc/object_say), "Неверные админ-вербы по предмету")
 	TEST_ASSERT(context_menu_admin_verbs_for(turf_target, granted) ~= list(/client/proc/debug_variables, /client/proc/jumptoturf), "Неверные админ-вербы по турфу")
 	TEST_ASSERT(!length(context_menu_admin_verbs_for(mob_target, list())), "Админ-вербы без выданных вербов")
+
+/// Пилоту меха ПКМ - модуль меха, а не меню; после высадки, ещё внутри меха, ПКМ снова по настройке
+/datum/unit_test/context_menu_mecha_pilot
+
+/datum/unit_test/context_menu_mecha_pilot/Run()
+	var/obj/vehicle/sealed/mecha/combat/gygax/mech = allocate(/obj/vehicle/sealed/mecha/combat/gygax, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/dummy/consistent/context_menu_probe/pilot = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_probe, run_loc_floor_bottom_left)
+	var/obj/item/pen/target = allocate(/obj/item/pen, get_step(mech, EAST))
+	pilot.forceMove(mech)
+	mech.add_occupant(pilot)
+	TEST_ASSERT(pilot.piloting_mecha(), "Посаженный в мех не считается пилотом")
+	TEST_ASSERT(pilot.right_click_needs_clicks(), "В мехе ПКМ должен приходить кликом")
+	pilot.CommonClickOn(target, "right=1")
+	TEST_ASSERT_NULL(pilot.active_context_menu, "ПКМ пилота открыл меню действий вместо модуля меха")
+	TEST_ASSERT(pilot.right_clicked, "ПКМ пилота не дошёл как действие")
+	mech.remove_occupant(pilot)
+	TEST_ASSERT_EQUAL(pilot.loc, mech, "Санити: remove_occupant не двигает моба")
+	TEST_ASSERT(!pilot.piloting_mecha(), "Высаженный пилот всё ещё считается пилотом")
+	TEST_ASSERT(pilot.right_click_opens_menu(list("right" = 1)), "После высадки ПКМ не вернулся к меню")
+	pilot.forceMove(run_loc_floor_bottom_left)
+
+/// Shift+ПКМ киборга в режиме меню - второе действие, а не Shift-клик (у шлюза это открыть дверь)
+/datum/unit_test/context_menu_cyborg_shift_right_click
+	var/old_default
+	var/shift_clicked = FALSE
+
+/datum/unit_test/context_menu_cyborg_shift_right_click/Run()
+	old_default = CONFIG_GET(flag/right_click_menu_default)
+	CONFIG_SET(flag/right_click_menu_default, TRUE)
+	var/mob/living/silicon/robot/borg = allocate(/mob/living/silicon/robot)
+	var/obj/item/pen/target = allocate(/obj/item/pen, get_step(borg, EAST))
+	RegisterSignal(target, COMSIG_CLICK_SHIFT, PROC_REF(on_shift_click))
+	borg.CommonClickOn(target, "right=1;shift=1")
+	TEST_ASSERT(!shift_clicked, "Shift+ПКМ киборга ушёл в Shift-клик")
+	TEST_ASSERT_NULL(borg.active_context_menu, "Shift+ПКМ киборга в режиме меню открыл меню")
+	borg.CommonClickOn(target, "left=1;shift=1")
+	TEST_ASSERT(shift_clicked, "Shift+ЛКМ киборга перестал быть Shift-кликом")
+	borg.CommonClickOn(target, "right=1")
+	TEST_ASSERT_NOTNULL(borg.active_context_menu, "ПКМ киборга в режиме меню не открыл меню")
+	borg.close_context_menu()
+
+/datum/unit_test/context_menu_cyborg_shift_right_click/proc/on_shift_click(datum/source)
+	SIGNAL_HANDLER
+	shift_clicked = TRUE
+
+/datum/unit_test/context_menu_cyborg_shift_right_click/Destroy()
+	CONFIG_SET(flag/right_click_menu_default, old_default)
+	return ..()

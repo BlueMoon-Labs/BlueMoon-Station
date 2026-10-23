@@ -64,8 +64,8 @@
 	var/mutable_appearance/look = new(source)
 	// свечение и блокеры света висят на своих планах и на экране рисовались бы поверх карты
 	var/list/kept_overlays = list()
-	for(var/overlay in look.overlays)
-		if(overlay:plane == FLOAT_PLANE)
+	for(var/mutable_appearance/overlay as anything in look.overlays)
+		if(overlay.plane == FLOAT_PLANE)
 			kept_overlays += overlay
 	look.overlays = kept_overlays
 	look.underlays = list()

@@ -20,19 +20,27 @@
 
 /// В режиме «меню BYOND» ПКМ кликом приходит только через show_popup_menus, поэтому карта тогда без right-click
 /client/proc/update_right_click_mode()
-	var/map_clicks = mob?.right_click_actions && prefs?.right_click_mode() != RIGHT_CLICK_MODE_NATIVE
+	var/map_clicks = mob?.piloting_mecha() || (mob?.right_click_actions && prefs?.right_click_mode() != RIGHT_CLICK_MODE_NATIVE)
 	winset(src, "mapwindow.map", "right-click=[map_clicks ? "true" : "false"]")
 	refresh_popup_menus()
 
 /// Меню BYOND на ПКМ только у тех, кто его выбрал, и только вне боя и мехов
 /client/proc/refresh_popup_menus()
+	if(mob?.piloting_mecha())
+		show_popup_menus = FALSE
+		return
 	show_popup_menus = !mob?.right_click_actions || (prefs?.right_click_mode() == RIGHT_CLICK_MODE_NATIVE && !mob.right_click_needs_clicks())
 
 /mob/proc/right_click_needs_clicks()
-	return SEND_SIGNAL(src, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE) || istype(loc, /obj/vehicle/sealed/mecha)
+	return SEND_SIGNAL(src, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE) || piloting_mecha()
+
+/// Пилот меха, пока мех считает его своим: ПКМ у него - модуль меха, в том числе у ИИ
+/mob/proc/piloting_mecha()
+	var/obj/vehicle/sealed/mecha/mech = loc
+	return ismecha(mech) && mech.is_occupant(src)
 
 /// ПКМ открывает меню или делает второе действие - по настройке игрока; Shift меняет одно на другое.
-/// В комбат-режиме ПКМ всегда действие. Клики, которые повторяет само меню, всегда действие.
+/// В комбат-режиме и в мехе ПКМ всегда действие. Клики, которые повторяет само меню, всегда действие.
 /mob/proc/right_click_opens_menu(list/modifiers)
 	if(!modifiers["right"] || modifiers["ctrl"] || modifiers["alt"] || modifiers["middle"] || modifiers["context_menu"] || !right_click_actions)
 		return FALSE
@@ -40,7 +48,7 @@
 	if(modifiers["button"] && modifiers["button"] != "right")
 		return FALSE
 	var/menu_on_plain_click = right_click_menu_preferred()
-	if(menu_on_plain_click && SEND_SIGNAL(src, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE))
+	if(menu_on_plain_click && right_click_needs_clicks())
 		menu_on_plain_click = FALSE
 	return modifiers["shift"] ? !menu_on_plain_click : menu_on_plain_click
 
@@ -105,7 +113,7 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	for(var/mode_name in GLOB.right_click_mode_names)
 		if(GLOB.right_click_mode_names[mode_name] == prefs.right_click_mode())
 			current = mode_name
-	var/choice = tgui_input_list(mob, "Меню действий: ПКМ - меню, Shift+ПКМ - второе действие. Сразу действие: наоборот. Меню BYOND: вне боя ПКМ открывает меню BYOND. В комбат-режиме ПКМ всегда действие.", "Режим ПКМ", GLOB.right_click_mode_names, current)
+	var/choice = tgui_input_list(mob, "Меню действий: ПКМ - меню, Shift+ПКМ - второе действие. Сразу действие: наоборот. Меню BYOND: вне боя ПКМ открывает меню BYOND. В комбат-режиме и в мехе ПКМ всегда действие.", "Режим ПКМ", GLOB.right_click_mode_names, current)
 	if(!choice || QDELETED(src) || isnull(GLOB.right_click_mode_names[choice]))
 		return
 	set_right_click_mode(GLOB.right_click_mode_names[choice])
@@ -115,7 +123,7 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 		if(RIGHT_CLICK_MODE_NATIVE)
 			to_chat(src, span_notice("ПКМ открывает меню BYOND, как раньше; в комбат-режиме и в мехе ПКМ действует."))
 		else
-			to_chat(src, span_notice("ПКМ открывает меню действий, Shift+ПКМ - второе действие (в комбат-режиме ПКМ всё равно действует)."))
+			to_chat(src, span_notice("ПКМ открывает меню действий, Shift+ПКМ - второе действие (в комбат-режиме и в мехе ПКМ всё равно действует)."))
 
 /mob/proc/open_context_menu(atom/target, params)
 	close_context_menu()

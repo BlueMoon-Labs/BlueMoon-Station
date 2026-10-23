@@ -23,7 +23,7 @@
 	if(right_click_opens_menu(modifiers))
 		open_context_menu(A, params)
 		return
-	if(modifiers["shift"])
+	if(modifiers["shift"] && !modifiers["right"])
 		return ShiftClickOn(A)
 	if(modifiers["alt"]) // alt and alt-gr (rightalt)
 		return AltClickOn(A)

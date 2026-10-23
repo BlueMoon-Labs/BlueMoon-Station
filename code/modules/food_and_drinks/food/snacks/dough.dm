@@ -33,7 +33,7 @@
 
 /obj/item/reagent_containers/food/snacks/flatdough/make_processable()
 	..()
-	AddElement(/datum/element/processable, TOOL_UNROLLINGPIN, /obj/item/reagent_containers/food/snacks/dough, 1, 3 SECONDS, table_required = TRUE, screentip_verb = "Раскатать", sound_to_play = SFX_ROLLING_PIN_ROLLING)
+	AddElement(/datum/element/processable, TOOL_UNROLLINGPIN, /obj/item/reagent_containers/food/snacks/dough, 1, 3 SECONDS, table_required = TRUE, screentip_verb = "Скатать обратно", sound_to_play = SFX_ROLLING_PIN_ROLLING)
 
 /obj/item/reagent_containers/food/snacks/pizzabread
 	name = "pizza bread"
@@ -126,7 +126,7 @@
 
 /obj/item/reagent_containers/food/snacks/piedough/make_processable()
 	..()
-	AddElement(/datum/element/processable, TOOL_UNROLLINGPIN, /obj/item/reagent_containers/food/snacks/cakebatter, 1, 3 SECONDS, table_required = TRUE, screentip_verb = "Раскатать", sound_to_play = SFX_ROLLING_PIN_ROLLING)
+	AddElement(/datum/element/processable, TOOL_UNROLLINGPIN, /obj/item/reagent_containers/food/snacks/cakebatter, 1, 3 SECONDS, table_required = TRUE, screentip_verb = "Скатать обратно", sound_to_play = SFX_ROLLING_PIN_ROLLING)
 
 /obj/item/reagent_containers/food/snacks/piedough
 	name = "pie dough"

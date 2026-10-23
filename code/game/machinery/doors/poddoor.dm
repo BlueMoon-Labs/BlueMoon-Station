@@ -53,7 +53,7 @@
 	//with feedback on what they have to do in order to do so.
 	switch(held_item.tool_behaviour)
 		if(TOOL_SCREWDRIVER)
-			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Открыть панель")
+			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, panel_open ? "Закрыть панель" : "Открыть панель")
 			return CONTEXTUAL_SCREENTIP_SET
 		if(TOOL_MULTITOOL)
 			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Настроить ID")
