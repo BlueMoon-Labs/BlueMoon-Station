@@ -28577,11 +28577,21 @@
 /turf/open/floor/plating,
 /area/mine/laborcamp)
 "qKK" = (
-/obj/effect/turf_decal/siding/dark{
+/obj/structure/railing/corner{
+	dir = 4;
+	layer = 4.8
+	},
+/obj/effect/turf_decal/trimline/purple/filled/warning{
 	dir = 4
 	},
-/turf/closed/wall/r_wall/syndicate/nodiagonal,
-/area/ruin/lavaland/unpowered/deepspaceone/dormitories)
+/obj/effect/turf_decal/siding/white/corner{
+	dir = 4
+	},
+/obj/machinery/firealarm/directional/south,
+/turf/open/floor/plasteel/smooth/edge{
+	dir = 8
+	},
+/area/ruin/lavaland/unpowered/deepspaceone/main)
 "qKP" = (
 /obj/effect/turf_decal/siding/dark,
 /obj/effect/turf_decal/siding/dark{
@@ -39836,6 +39846,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
 "xzb" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on,
+/obj/machinery/firealarm/directional/north,
 /turf/open/floor/plasteel/dark/corner,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "xzp" = (
@@ -58472,7 +58483,7 @@ tsd
 uaT
 uaT
 uaT
-tNq
+qKK
 bnw
 swD
 ugd
@@ -58490,7 +58501,7 @@ xnL
 xnL
 xnL
 xnL
-qKK
+xnL
 hTh
 siE
 shX
