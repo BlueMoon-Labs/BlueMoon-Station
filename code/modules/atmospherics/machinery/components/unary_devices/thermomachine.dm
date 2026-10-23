@@ -11,6 +11,7 @@
 	layer = OBJ_LAYER
 	plane = GAME_PLANE
 	circuit = /obj/item/circuitboard/machine/thermomachine
+	move_resist = 1000
 
 	pipe_flags = PIPING_ONE_PER_TURF
 
@@ -126,6 +127,15 @@
 	update_icon()
 
 /obj/machinery/atmospherics/components/unary/thermomachine/attackby(obj/item/I, mob/user, params)
+	if(istype(I, /obj/item/wrench) && user.a_intent == INTENT_DISARM && !(flags_1 & NODECONSTRUCT_1) && panel_open)
+		to_chat(user, span_notice("Вы [anchored ? "откручиваете" : "прикручиваете"] [src]..."))
+		if(I.use_tool(src, user, 40, volume = 75))
+			to_chat(user, span_notice("Вы [anchored ? "открутили" : "прикрутили"] [src]."))
+			set_anchored(!anchored)
+		return
+	if(panel_open && !anchored && istype(I, /obj/item/screwdriver))
+		balloon_alert(user, "Сначала прикрути ключом")
+		return
 	if(panel_open && istype(I, /obj/item/multitool))
 		piping_layer = (piping_layer >= PIPING_LAYER_MAX) ? PIPING_LAYER_MIN : (piping_layer + 1)
 		to_chat(user, span_notice("Входная труба переключёна на слой [piping_layer]."))
@@ -221,9 +231,16 @@
 	var/turf/T = get_turf(src)
 	if(!istype(user) || !user.canUseTopic(src, BE_CLOSE))
 		return
+	if(!anchored)
+		user.start_pulling(src)
+		return
+	if(panel_open)
+		to_chat(user, span_warning("Сначала закройте панель обслуживания!"))
+		return
 	on = !on
 	update_icon()
-	investigate_log("was turned [on ? "on" : "off"] by [key_name(usr)]", INVESTIGATE_ATMOS)
+	balloon_alert(user, "[on ? "включено" : "выключено"]")
+	investigate_log("was turned [on ? "on" : "off"] by [key_name(user)]", INVESTIGATE_ATMOS)
 	message_admins("[src.name] was turned [on ? "on" : "off"] [ADMIN_LOOKUPFLW(usr)] at [ADMIN_COORDJMP(T)], [A]")
 
 /obj/machinery/atmospherics/components/unary/thermomachine/AltClick(mob/living/user)
@@ -238,6 +255,11 @@
 	investigate_log("was set to [target_temperature] K by [key_name(user)]", INVESTIGATE_ATMOS)
 	balloon_alert(user, "целевая температура [target_temperature] K")
 	update_icon()
+
+/obj/machinery/atmospherics/components/unary/thermomachine/Move(atom/newloc, direct)
+	var/old_dir = dir
+	. = ..()
+	dir = old_dir
 
 // Пресеты. Различаются только стартовой целью
 
