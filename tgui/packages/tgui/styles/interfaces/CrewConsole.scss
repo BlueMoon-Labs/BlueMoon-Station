@@ -72,10 +72,8 @@
   top: 50%;
   left: calc(100% + 10px);
   transform: translateY(-50%);
-  max-width: 180px;
+  width: max-content;
   padding: 2px 5px;
-  overflow: hidden;
-  text-overflow: ellipsis;
   white-space: nowrap;
   color: white;
   background: rgba(0, 0, 0, 0.85);

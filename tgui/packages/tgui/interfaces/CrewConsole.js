@@ -237,12 +237,14 @@ const CrewTableEntry = (props) => {
             <HealthStat type="brute" value={brutedam} />
           </Box>
         ) : (
-          life_status ? 'Жив' : 'Мёртв'
+          <Box inline color={life_status ? 'good' : 'bad'}>
+            {life_status ? 'Жив' : 'Мёртв'}
+          </Box>
         )}
       </Table.Cell>
       <Table.Cell>
         {area || 'Нет данных'}
-        {!!pos_z && ` (${pos_x}, ${pos_y}${data.levels?.length > 1 ? `, этаж ${floor}` : ''})`}
+        {!!pos_z && ` (${pos_x}, ${pos_y}${data.levels?.length > 1 ? `, Этаж ${floor}` : ''})`}
       </Table.Cell>
       <Table.Cell collapsing>
         <CrewDirection sensor={sensor_data} position={data.position} />
@@ -265,9 +267,7 @@ const CrewDirection = ({ sensor, position }) => {
   if (!position || !sensor.pos_z) {
     return <Box color="label">—</Box>;
   }
-  if (sensor.pos_z !== position.z) {
-    return <Box color="label">{`Этаж ${sensor.floor}`}</Box>;
-  }
+  const otherLevel = sensor.pos_z !== position.z;
   // Расстояние считаем как в GPS, без ограничения BYOND в 127 тайлов.
   const distance = Math.round(vecLength(vecSubtract(
     [position.x, position.y], [sensor.pos_x, sensor.pos_y],
@@ -280,7 +280,7 @@ const CrewDirection = ({ sensor, position }) => {
         size={1.2}
         name={distance ? 'arrow-up' : 'map-marker-alt'}
         rotation={distance ? degrees : 0} />
-      {`${distance} м`}
+      {`${distance} м${otherLevel ? ` (Э: ${sensor.floor})` : ''}`}
     </Box>
   );
 };
@@ -344,7 +344,7 @@ const CrewMapMarker = (props) => {
     sensor.oxydam, sensor.toxdam, sensor.burndam, sensor.brutedam, sensor.life_status,
   );
   const tooltip = `${sensor.name}${sensor.assignment ? ` (${sensor.assignment})` : ''}`
-    + `${otherLevel ? ` (этаж ${sensor.floor})` : ''}`
+    + `${otherLevel ? ` (Этаж ${sensor.floor})` : ''}`
     + ` — ${sensor.area} (${sensor.pos_x}, ${sensor.pos_y})`;
   return (
     <Tooltip content={tooltip}>
@@ -371,7 +371,7 @@ const CrewMapMarker = (props) => {
         }}>
         {highlighted && showName && (
           <span className="CrewConsole__markerLabel">
-            {sensor.name}{otherLevel ? ` (этаж ${sensor.floor})` : ''}
+            {sensor.name}{otherLevel ? ` (Этаж ${sensor.floor})` : ''}
           </span>
         )}
       </div>
