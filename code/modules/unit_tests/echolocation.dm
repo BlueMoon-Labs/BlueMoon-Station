@@ -748,6 +748,7 @@
 	var/obj/item/stack/rods/rods = allocate(/obj/item/stack/rods, test_turf)
 	var/obj/item/storage/backpack/backpack = allocate(/obj/item/storage/backpack, test_turf)
 	var/obj/machinery/door/airlock/door = allocate(/obj/machinery/door/airlock, get_step(test_turf, NORTH))
+	var/obj/vehicle/sealed/mecha/working/ripley/mecha = allocate(/obj/vehicle/sealed/mecha/working/ripley, get_step(test_turf, EAST))
 
 	TEST_ASSERT(sense.can_echo_atom(rods), "Rods on a turf must produce an echo shape")
 	TEST_ASSERT(holder.put_in_hands(rods), "Test premise: the rods must fit in the holder's hand")
@@ -767,6 +768,119 @@
 
 	TEST_ASSERT(!sense.can_echo_atom(rods, TRUE), "Items on a reflecting boundary must not produce a duplicate echo shape")
 	TEST_ASSERT(sense.can_echo_atom(door, TRUE), "A door on a reflecting boundary must produce its boundary echo shape")
+	TEST_ASSERT(!LAZYLEN(mecha.occupants), "Test premise: the mecha must not contain an occupant")
+	TEST_ASSERT(sense.can_echo_atom(mecha), "An unoccupied mecha must produce its own echolocation silhouette")
+	TEST_ASSERT(!sense.can_echo_atom(mecha, TRUE), "A mecha on a reflecting boundary must not produce a duplicate silhouette")
+	var/mob/living/carbon/human/pilot = allocate(/mob/living/carbon/human, test_turf)
+	pilot.forceMove(mecha)
+	TEST_ASSERT(mecha.add_occupant(pilot), "Test premise: the pilot must become a mecha occupant")
+	TEST_ASSERT(!sense.can_echo_atom(pilot), "A mecha occupant must not produce an independent echolocation silhouette")
+
+/datum/unit_test/echolocation_external_pulse_propagation
+
+/datum/unit_test/echolocation_external_pulse_propagation/Run()
+	var/turf/listener_turf = run_loc_floor_bottom_left
+	var/turf/east = get_step(listener_turf, EAST)
+	var/turf/source_turf = get_step(east, EAST)
+	var/east_type = east.type
+	var/datum/gas_mixture/saved_source_air = new
+	saved_source_air.copy_from(source_turf.return_air())
+	var/mob/living/carbon/human/holder = allocate(/mob/living/carbon/human, listener_turf)
+	var/datum/quirk/echolocation/sense = allocate(/datum/quirk/echolocation, holder)
+
+	var/list/reached = sense.collect_pulse_turfs(source_turf, 7, 7)
+	TEST_ASSERT(source_turf in reached, "An external pulse must reach a listener through open air")
+	TEST_ASSERT(listener_turf in reached, "An external pulse must retain the listener's reachable turf")
+
+	east = east.ChangeTurf(/turf/closed/wall, flags = CHANGETURF_INHERIT_AIR)
+	reached = sense.collect_pulse_turfs(source_turf, 7, 7)
+	TEST_ASSERT(!length(reached), "A wall between source and listener must block an external pulse")
+	east = east.ChangeTurf(east_type, flags = CHANGETURF_INHERIT_AIR)
+
+	var/obj/structure/window/fulltile/window = allocate(/obj/structure/window/fulltile, east)
+	reached = sense.collect_pulse_turfs(source_turf, 7, 7)
+	TEST_ASSERT(!length(reached), "A fulltile window between source and listener must block an external pulse")
+	qdel(window)
+
+	source_turf.return_air().clear()
+	reached = sense.collect_pulse_turfs(source_turf, 7, 7)
+	TEST_ASSERT(!length(reached), "A source in vacuum must not produce an external pulse")
+	source_turf.return_air().copy_from(saved_source_air)
+	qdel(saved_source_air)
+
+	reached = sense.collect_pulse_turfs(source_turf, 3, 3)
+	TEST_ASSERT(!length(reached), "An external source outside the listener viewport must not produce a pulse")
+
+	var/turf/north = get_step(listener_turf, NORTH)
+	var/turf/hidden_turf = get_step(north, NORTH)
+	var/north_type = north.type
+	north = north.ChangeTurf(/turf/closed/wall, flags = CHANGETURF_INHERIT_AIR)
+	// The visible source can reach around the wall, but the listener cannot see its far side.
+	var/list/source_reached = sense.collect_echo_turfs(source_turf, 7, 7, listener_turf)
+	reached = sense.collect_pulse_turfs(source_turf, 7, 7)
+	var/source_visible = (source_turf in reached)
+	var/hidden_revealed = (hidden_turf in reached)
+	north.ChangeTurf(north_type, flags = CHANGETURF_INHERIT_AIR)
+	TEST_ASSERT(hidden_turf in source_reached, "Test premise: the external source must reach the hidden side of the wall")
+	TEST_ASSERT(source_visible, "The wall must not hide an unrelated external source")
+	TEST_ASSERT(!hidden_revealed, "A visible external source must not reveal turfs behind the listener's wall")
+
+	var/obj/machinery/door/airlock/door = allocate(/obj/machinery/door/airlock, east)
+	reached = sense.collect_pulse_turfs(source_turf, 7, 7)
+	TEST_ASSERT(!length(reached), "A closed airlock must block an external pulse")
+	TEST_ASSERT(door.open(2), "Test premise: the forced airlock must finish opening")
+	reached = sense.collect_pulse_turfs(source_turf, 7, 7)
+	TEST_ASSERT(source_turf in reached, "An external pulse snapshot after an airlock opens must use the open path")
+	door.close()
+	TEST_ASSERT(source_turf in reached, "An external pulse snapshot must remain stable after the airlock closes")
+
+/datum/unit_test/echolocation_external_pulse_events
+	var/pulse_count = 0
+	var/atom/last_pulse_center
+
+/datum/unit_test/echolocation_external_pulse_events/Run()
+	var/turf/listener_turf = run_loc_floor_bottom_left
+	var/mob/living/carbon/human/holder = allocate(/mob/living/carbon/human, listener_turf)
+	var/obj/machinery/door/airlock/door = allocate(/obj/machinery/door/airlock, get_step(listener_turf, NORTH))
+	RegisterSignal(holder, COMSIG_MOB_ECHOLOCATION_PULSE, PROC_REF(on_echolocation_pulse))
+
+	holder.nextsoundemote = -1
+	TEST_ASSERT(holder.emote("clap", intentional = TRUE), "Test premise: clap must play successfully")
+	TEST_ASSERT_EQUAL(pulse_count, 1, "A successful clap must emit one echolocation pulse")
+	TEST_ASSERT_EQUAL(last_pulse_center, holder, "A clap pulse must use the clapping mob as its center")
+
+	holder.nextsoundemote = -1
+	TEST_ASSERT(holder.emote("clap1", intentional = TRUE), "Test premise: clap1 must play successfully")
+	TEST_ASSERT_EQUAL(pulse_count, 2, "A successful clap1 must emit one echolocation pulse")
+	TEST_ASSERT_EQUAL(last_pulse_center, holder, "A clap1 pulse must use the clapping mob as its center")
+
+	TEST_ASSERT(door.open(2), "Test premise: the forced airlock must finish opening")
+	TEST_ASSERT(!door.density, "An airlock pulse must be emitted after opening completes")
+	TEST_ASSERT_EQUAL(pulse_count, 3, "A completed airlock opening must emit one echolocation pulse")
+	TEST_ASSERT_EQUAL(last_pulse_center, door, "An airlock pulse must use the opened door as its center")
+
+	var/datum/quirk/echolocation/sense = allocate(/datum/quirk/echolocation, holder)
+	var/obj/item/clothing/neck/petcollar/collar = allocate(/obj/item/clothing/neck/petcollar, listener_turf)
+	sense.next_echo = world.time + 1 MINUTES
+	var/cooldown_deadline = sense.next_echo
+	collar.ring_bell()
+	TEST_ASSERT_EQUAL(pulse_count, 4, "A collar jingle must emit an echolocation pulse despite an active click cooldown")
+	TEST_ASSERT_EQUAL(last_pulse_center, collar, "A collar pulse must use the ringing collar as its center")
+	var/collar_deadline = collar.echolocation_pulse_cooldown
+	TEST_ASSERT_EQUAL(collar_deadline, world.time + 1 SECONDS, "A collar pulse must start a one-second cooldown")
+	collar.ring_bell()
+	TEST_ASSERT_EQUAL(pulse_count, 4, "A jingle during the collar cooldown must not emit another pulse")
+	TEST_ASSERT_EQUAL(collar.echolocation_pulse_cooldown, collar_deadline, "Suppressed pulses must not extend the collar cooldown")
+	sleep(1 SECONDS + world.tick_lag)
+	collar.ring_bell()
+	TEST_ASSERT_EQUAL(pulse_count, 5, "A collar jingle must emit another pulse after one second")
+	TEST_ASSERT_EQUAL(sense.next_echo, cooldown_deadline, "Collar jingles must not change the voluntary echolocation cooldown")
+	UnregisterSignal(holder, COMSIG_MOB_ECHOLOCATION_PULSE)
+
+/datum/unit_test/echolocation_external_pulse_events/proc/on_echolocation_pulse(datum/source, atom/center)
+	SIGNAL_HANDLER
+	pulse_count++
+	last_pulse_center = center
 
 /datum/unit_test/echolocation_typing_echo_lifecycle
 
