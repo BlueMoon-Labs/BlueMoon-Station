@@ -569,16 +569,21 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/new_character_creator = TRUE
 	var/list/gfluid_blacklist = list()
 	var/fuzzy = FALSE
-	// Единый вид товаров для всех вендоматов и умных холодильников игрока.
-	var/vending_layout = "grid"
+	var/list/vending_layouts = list()
 
-/datum/preferences/proc/set_vending_layout(layout)
-	if(!(layout in list("grid", "list")) || vending_layout == layout)
+/datum/preferences/proc/get_vending_layout(machine_type)
+	return vending_layouts["[machine_type]"] || "grid"
+
+/datum/preferences/proc/set_vending_layout(machine_type, layout)
+	if(!(ispath(machine_type, /obj/machinery/vending) || ispath(machine_type, /obj/machinery/smartfridge)))
 		return FALSE
-	vending_layout = layout
-	save_pref_var("vending_layout")
-	for(var/datum/tgui/ui as anything in parent?.mob?.tgui_open_uis)
-		if(istype(ui.src_object, /obj/machinery/vending) || istype(ui.src_object, /obj/machinery/smartfridge))
+	if(!(layout in list("grid", "list")) || get_vending_layout(machine_type) == layout)
+		return FALSE
+	vending_layouts["[machine_type]"] = layout
+	save_single_pref("vending_layouts", vending_layouts.Copy())
+	var/list/open_uis = parent?.mob?.tgui_open_uis
+	for(var/datum/tgui/ui as anything in open_uis?.Copy())
+		if(ui.src_object?.type == machine_type)
 			ui.send_update()
 	return TRUE
 

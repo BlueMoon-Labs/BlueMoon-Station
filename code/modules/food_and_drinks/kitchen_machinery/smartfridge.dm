@@ -18,6 +18,25 @@
 	var/allow_ai_retrieve = FALSE
 	var/list/initial_contents
 	var/visible_contents = TRUE
+	// Тип сохраняет место до исчезновения последнего его предмета.
+	var/list/product_type_order = list()
+	var/vending_sound = 'sound/machines/machine_vend.ogg'
+
+/obj/machinery/smartfridge/Entered(atom/movable/arrived, atom/old_loc)
+	. = ..()
+	if(istype(arrived, /obj/item))
+		product_type_order |= arrived.type
+
+/obj/machinery/smartfridge/Exited(atom/movable/departed, atom/new_loc)
+	. = ..()
+	if(istype(departed, /obj/item))
+		forget_empty_product_type(departed)
+
+/obj/machinery/smartfridge/proc/forget_empty_product_type(atom/movable/departed)
+	for(var/obj/item/remaining in contents)
+		if(remaining != departed && !QDELETED(remaining) && remaining.type == departed.type)
+			return
+	product_type_order -= departed.type
 
 /obj/machinery/smartfridge/Initialize(mapload)
 	. = ..()
@@ -173,9 +192,10 @@
 
 /obj/machinery/smartfridge/ui_data(mob/user)
 	. = list()
-	.["vending_layout"] = user.client?.prefs?.vending_layout || "grid"
+	.["vending_layout"] = user.client?.prefs?.get_vending_layout(type) || "grid"
 
 	var/listofitems = list()
+	var/list/groups_by_type = list()
 	for (var/I in src)
 		// Детали самого холодильника не выдаются.
 		if(I in component_parts)
@@ -188,6 +208,7 @@
 			if (listofitems[item_key])
 				listofitems[item_key]["amount"]++
 			else
+				LAZYADD(groups_by_type[O.type], item_key)
 				listofitems[item_key] = list(
 					"path" = item_key,
 					"name" = O.name,
@@ -195,14 +216,18 @@
 					"image" = icon2html(O, user.client, sourceonly = TRUE),
 					"amount" = 1,
 				)
-	sort_list(listofitems)
-
-	.["contents"] = listofitems
+	var/list/ordered_items = list()
+	for(var/product_type in product_type_order)
+		for(var/item_key in groups_by_type[product_type])
+			ordered_items[item_key] = listofitems[item_key]
+	.["contents"] = ordered_items
 	.["name"] = name
 	.["isdryer"] = FALSE
 
 
-/obj/machinery/smartfridge/handle_atom_del(atom/A) // Update the UIs in case something inside gets deleted
+/obj/machinery/smartfridge/handle_atom_del(atom/A)
+	if(istype(A, /obj/item))
+		forget_empty_product_type(A)
 	SStgui.update_uis(src)
 
 /obj/machinery/smartfridge/ui_act(action, params)
@@ -211,7 +236,7 @@
 		return
 	switch(action)
 		if("set_vending_layout")
-			usr.client?.prefs?.set_vending_layout(params["layout"])
+			usr.client?.prefs?.set_vending_layout(type, params["layout"])
 			return TRUE
 		if("Release")
 			var/desired = 0
@@ -232,17 +257,7 @@
 				return FALSE
 			desired = min(floor(desired), contents.len)
 
-			if(desired == 1 && Adjacent(usr) && !issilicon(usr))
-				for(var/obj/item/O in src)
-					if(md5("[O.type]-[O.name]") == params["path"])
-						if(O in component_parts)
-							CRASH("Attempted removal of [O] component_part from vending machine via vending interface.")
-						dispense(O, usr)
-						break
-				if (visible_contents)
-					update_icon()
-				return TRUE
-
+			var/dispensed_amount = 0
 			for(var/obj/item/O in src)
 				if(desired <= 0)
 					break
@@ -250,7 +265,11 @@
 					if(O in component_parts)
 						CRASH("Attempted removal of [O] component_part from vending machine via vending interface.")
 					dispense(O, usr)
-					desired--
+					if(O.loc != src)
+						desired--
+						dispensed_amount++
+			if(dispensed_amount)
+				playsound(src, vending_sound, 50, TRUE, extrarange = -3)
 			if (visible_contents)
 				update_icon()
 			return TRUE

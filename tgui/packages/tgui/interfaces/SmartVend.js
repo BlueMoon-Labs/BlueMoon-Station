@@ -10,7 +10,7 @@ export const SmartVend = () => {
   const { act, data } = useBackend();
   const [searchQuery, setSearchQuery] = useState('');
   const contentEntries = Object.entries(data.contents || {});
-  const search = createSearch(searchQuery, ([, item]) => item.name + (item.type || ''));
+  const search = createSearch(searchQuery, ([, item]) => item.name);
   const filteredEntries = contentEntries.filter(search);
 
   return (
@@ -43,7 +43,7 @@ export const SmartVend = () => {
           }>
           <Input
             fluid
-            placeholder="Поиск по названию или типу..."
+            placeholder="Поиск по названию..."
             value={searchQuery}
             onInput={(_, value) => setSearchQuery(value)}
             mb={1}

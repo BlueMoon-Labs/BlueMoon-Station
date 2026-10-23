@@ -1021,7 +1021,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 
 /obj/machinery/vending/ui_data(mob/user)
 	. = list()
-	.["vending_layout"] = user.client?.prefs?.vending_layout || "grid"
+	.["vending_layout"] = user.client?.prefs?.get_vending_layout(type) || "grid"
 	var/obj/item/card/id/C
 	if(iscyborg(user) || isAI(user) || isdrone(user))
 		var/datum/bank_account/Civ = SSeconomy.get_dep_account(ACCOUNT_SCI)
@@ -1059,7 +1059,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 		if("vend")
 			. = vend(params)
 		if("set_vending_layout")
-			usr.client?.prefs?.set_vending_layout(params["layout"])
+			usr.client?.prefs?.set_vending_layout(type, params["layout"])
 			return TRUE
 
 /obj/machinery/vending/proc/can_vend(user, silent=FALSE)
