@@ -108,7 +108,7 @@
 	TEST_ASSERT(!initial(ai_type.right_click_actions), "У ИИ ПКМ должен открывать меню BYOND")
 	TEST_ASSERT(!initial(ghost_type.right_click_actions), "У призрака ПКМ должен открывать меню BYOND")
 
-/// Меню по человеку: осмотр, четыре интента, текущий помечен
+/// Меню по человеку: осмотр, текущий интент помечен, остальные интенты - в подменю «Интенты…»; шапка открывает выбор режима
 /datum/unit_test/context_menu_human_entries
 
 /datum/unit_test/context_menu_human_entries/Run()
@@ -117,12 +117,25 @@
 	user.a_intent = INTENT_HELP
 	var/datum/context_menu/menu = user.open_context_menu(target, "right=1;shift=1")
 	TEST_ASSERT_NOTNULL(menu, "Меню не открылось")
-	for(var/name in list("Осмотреть", "Указать", "Потянуть", "Утешить", "Обезоружить", "Схватить", "Ударить", "Толкнуть"))
+	for(var/name in list("Осмотреть", "Указать", "Потянуть", "Утешить", "Толкнуть", "Интенты…"))
 		TEST_ASSERT_NOTNULL(find_context_entry(menu, name), "Нет пункта «[name]»")
+	for(var/name in list("Обезоружить", "Схватить", "Ударить"))
+		TEST_ASSERT_NULL(find_context_entry(menu, name), "Пункт другого интента «[name]» не убран в «Интенты…»")
 	var/datum/context_menu_entry/help_entry = find_context_entry(menu, "Утешить")
 	TEST_ASSERT_EQUAL(help_entry.style, CONTEXT_ENTRY_CURRENT, "Текущий интент не помечен")
+	TEST_ASSERT_NOTNULL(menu.header_entry, "Шапка меню не кликабельна")
+	var/header_row_found = FALSE
+	for(var/atom/movable/screen/context_menu/row in menu.screen_objects)
+		if(row.entry == menu.header_entry)
+			header_row_found = TRUE
+	TEST_ASSERT(header_row_found, "Шапка меню не нарисована как пункт")
+	menu.choose(find_context_entry(menu, "Интенты…"))
+	for(var/name in list("Назад", "Обезоружить", "Схватить", "Ударить"))
+		TEST_ASSERT_NOTNULL(find_context_entry(menu, name), "В «Интенты…» нет «[name]»")
 	var/datum/context_menu_entry/harm_entry = find_context_entry(menu, "Ударить")
 	TEST_ASSERT_EQUAL(harm_entry.style, CONTEXT_ENTRY_DANGER, "Удар не помечен как агрессивный")
+	menu.choose(find_context_entry(menu, "Назад"))
+	TEST_ASSERT_NOTNULL(find_context_entry(menu, "Утешить"), "«Назад» из интентов не вернул действия цели")
 	if(user.GetComponent(/datum/component/interaction_menu_granter))
 		TEST_ASSERT_NOTNULL(find_context_entry(menu, "Взаимодействовать"), "Нет пункта взаимодействий")
 	for(var/datum/context_menu_entry/entry as anything in menu.entries)
@@ -139,6 +152,7 @@
 	user.a_intent = INTENT_HELP
 	var/datum/context_menu/menu = user.open_context_menu(target, "right=1;shift=1")
 	user.record_clicks = TRUE
+	menu.choose(find_context_entry(menu, "Интенты…"))
 	menu.choose(find_context_entry(menu, "Ударить"))
 	TEST_ASSERT_EQUAL(user.seen_intent, INTENT_HARM, "Клик из меню пришёл не с интентом вреда")
 	TEST_ASSERT_EQUAL(user.a_intent, INTENT_HELP, "Интент игрока не вернулся")

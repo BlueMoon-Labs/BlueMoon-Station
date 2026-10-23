@@ -62,10 +62,13 @@ GLOBAL_LIST_INIT(context_menu_intent_short, list(
 	// подписи скринтипа точнее общих названий интентов, поэтому собираются раньше них
 	var/list/main_clicks = list()
 	var/list/other_clicks = list()
-	add_screentip_entries(A, main_clicks, other_clicks, shown_clicks)
-	add_intent_entries(A, main_clicks, shown_clicks)
+	intent_entries = list()
+	add_screentip_entries(A, main_clicks, other_clicks, shown_clicks, intent_entries)
+	add_intent_entries(A, main_clicks, shown_clicks, intent_entries)
 	result += main_clicks
 	result += other_clicks
+	if(length(intent_entries))
+		result += new /datum/context_menu_entry/intent_list("Интенты…", null, CONTEXT_ENTRY_SERVICE)
 	add_verb_entries(A, result)
 	if(user.client?.holder && length(context_menu_admin_verbs_for(A, user.client.verbs)))
 		result += new /datum/context_menu_entry/admin_list("Админ…", null, CONTEXT_ENTRY_SERVICE)
@@ -99,8 +102,8 @@ GLOBAL_LIST_INIT(context_menu_intent_short, list(
 	if(A != user)
 		add_click(result, shown_clicks, A, "Указать", "Shift-СКМ", "shift=1;middle=1")
 
-/// Разовые действия каждым интентом. С предметом в руке - только «использовать» и удар им.
-/datum/context_menu/proc/add_intent_entries(atom/A, list/result, list/shown_clicks)
+/// Разовые действия каждым интентом: текущий - в меню, остальные - в подменю «Интенты…». С предметом в руке - только «использовать» и удар им.
+/datum/context_menu/proc/add_intent_entries(atom/A, list/result, list/shown_clicks, list/other_intents)
 	var/obj/item/held_item = user.get_active_held_item()
 	if(held_item && held_item != A)
 		add_click(result, shown_clicks, A, "Использовать: [held_item.name]", "ЛКМ", "left=1", null, CONTEXT_ENTRY_CURRENT)
@@ -115,10 +118,10 @@ GLOBAL_LIST_INIT(context_menu_intent_short, list(
 		if(user.a_intent == intent)
 			add_click(result, shown_clicks, A, GLOB.context_menu_intent_names[intent], "ЛКМ", "left=1", null, CONTEXT_ENTRY_CURRENT)
 		else
-			add_click(result, shown_clicks, A, GLOB.context_menu_intent_names[intent], null, "left=1", intent)
+			add_click(other_intents, shown_clicks, A, GLOB.context_menu_intent_names[intent], null, "left=1", intent)
 
-/// Строки скринтипа цели и предмета в руке: каждая - тот самый клик. ЛКМ - в main, остальное - в other.
-/datum/context_menu/proc/add_screentip_entries(atom/A, list/main, list/other, list/shown_clicks)
+/// Строки скринтипа цели и предмета в руке: каждая - тот самый клик. ЛКМ - в main (другим интентом - в other_intents), остальное - в other.
+/datum/context_menu/proc/add_screentip_entries(atom/A, list/main, list/other, list/shown_clicks, list/other_intents)
 	var/list/context = list()
 	if(!(A.collect_screentip_context(user, user.get_active_held_item(), context) & CONTEXTUAL_SCREENTIP_SET))
 		return
@@ -143,7 +146,10 @@ GLOBAL_LIST_INIT(context_menu_intent_short, list(
 			if(intent == INTENT_ANY || intent == user.a_intent)
 				add_click(result, shown_clicks, A, capitalize(text), key_hint, key_info[1], null, key == SCREENTIP_CONTEXT_LMB ? CONTEXT_ENTRY_CURRENT : null)
 			else if(intent in user.possible_a_intents)
-				add_click(result, shown_clicks, A, capitalize(text), key == SCREENTIP_CONTEXT_LMB ? null : "[key_hint], [GLOB.context_menu_intent_short[intent]]", key_info[1], intent)
+				if(key == SCREENTIP_CONTEXT_LMB)
+					add_click(other_intents, shown_clicks, A, capitalize(text), null, key_info[1], intent)
+				else
+					add_click(result, shown_clicks, A, capitalize(text), "[key_hint], [GLOB.context_menu_intent_short[intent]]", key_info[1], intent)
 
 /// Вербы предмета в руках/на себе или структуры рядом. У мобов и турфов вербы почти все про себя, их не трогаем.
 /datum/context_menu/proc/add_verb_entries(atom/A, list/result)

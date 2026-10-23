@@ -89,18 +89,32 @@
 /client/verb/toggle_right_click_mode()
 	set category = "OOC"
 	set name = "Режим ПКМ"
-	set desc = "По кругу: меню действий, сразу действие, меню BYOND как раньше"
+	set desc = "Меню действий, сразу действие или меню BYOND как раньше"
+	choose_right_click_mode()
+
+GLOBAL_LIST_INIT(right_click_mode_names, list(
+	"Меню действий" = RIGHT_CLICK_MODE_MENU,
+	"Сразу действие" = RIGHT_CLICK_MODE_ACTION,
+	"Меню BYOND, как раньше" = RIGHT_CLICK_MODE_NATIVE,
+))
+
+/client/proc/choose_right_click_mode()
 	if(!prefs)
 		return
+	var/current
+	for(var/mode_name in GLOB.right_click_mode_names)
+		if(GLOB.right_click_mode_names[mode_name] == prefs.right_click_mode())
+			current = mode_name
+	var/choice = tgui_input_list(mob, "Меню действий: ПКМ - меню, Shift+ПКМ - второе действие. Сразу действие: наоборот. Меню BYOND: вне боя ПКМ открывает меню BYOND. В комбат-режиме ПКМ всегда действие.", "Режим ПКМ", GLOB.right_click_mode_names, current)
+	if(!choice || QDELETED(src) || isnull(GLOB.right_click_mode_names[choice]))
+		return
+	set_right_click_mode(GLOB.right_click_mode_names[choice])
 	switch(prefs.right_click_mode())
-		if(RIGHT_CLICK_MODE_MENU)
-			set_right_click_mode(RIGHT_CLICK_MODE_ACTION)
-			to_chat(src, span_notice("ПКМ сразу действует, меню действий - на Shift+ПКМ."))
 		if(RIGHT_CLICK_MODE_ACTION)
-			set_right_click_mode(RIGHT_CLICK_MODE_NATIVE)
+			to_chat(src, span_notice("ПКМ сразу действует, меню действий - на Shift+ПКМ."))
+		if(RIGHT_CLICK_MODE_NATIVE)
 			to_chat(src, span_notice("ПКМ открывает меню BYOND, как раньше; в комбат-режиме и в мехе ПКМ действует."))
 		else
-			set_right_click_mode(RIGHT_CLICK_MODE_MENU)
 			to_chat(src, span_notice("ПКМ открывает меню действий, Shift+ПКМ - второе действие (в комбат-режиме ПКМ всё равно действует)."))
 
 /mob/proc/open_context_menu(atom/target, params)
@@ -110,7 +124,7 @@
 	active_context_menu = new /datum/context_menu(src, target, params)
 	if(client && !client.context_menu_hint_shown && right_click_menu_preferred())
 		client.context_menu_hint_shown = TRUE
-		to_chat(src, span_notice("Это меню действий. Чтобы ПКМ сразу действовал, а меню открывалось на Shift+ПКМ, переключите «Режим ПКМ» во вкладке OOC или в настройках игры."))
+		to_chat(src, span_notice("Это меню действий. Чтобы ПКМ сразу действовал или открывал меню BYOND, как раньше, щёлкните по заголовку меню, вербу «Режим ПКМ» во вкладке OOC или выберите в настройках игры."))
 	return active_context_menu
 
 /mob/proc/close_context_menu()
@@ -134,6 +148,10 @@
 	var/tile_list_shown = FALSE
 	/// Шапка вместо имени цели, например у списка одинаковых объектов
 	var/header_text
+	/// Разовые действия другими интентами, их показывает «Интенты…»
+	var/list/datum/context_menu_entry/intent_entries = list()
+	/// Шапка текущей отрисовки: по клику выбор режима ПКМ
+	var/datum/context_menu_entry/mode_choice/header_entry
 	/// Атом, по которому кликнули на самом деле: ему достаются icon-x/icon-y клика
 	var/atom/clicked
 	/// icon-x, icon-y и screen-loc исходного клика
@@ -185,6 +203,8 @@
 	clicked = null
 	entries = null
 	page_entry = null
+	intent_entries = null
+	header_entry = null
 	return ..()
 
 /// Объекты клетки, из которых игрок выбирает: верхние первыми, мобы раньше вещей
@@ -254,7 +274,19 @@
 		RegisterSignal(target, COMSIG_PARENT_QDELETING, PROC_REF(on_target_deleted))
 
 /datum/context_menu/proc/choose(datum/context_menu_entry/entry)
-	if(!(entry in entries) && entry != page_entry)
+	if(!(entry in entries) && entry != page_entry && entry != header_entry)
+		return
+	if(istype(entry, /datum/context_menu_entry/mode_choice))
+		var/client/chooser_client = user.client
+		qdel(src)
+		if(chooser_client)
+			INVOKE_ASYNC(chooser_client, TYPE_PROC_REF(/client, choose_right_click_mode))
+		return
+	if(istype(entry, /datum/context_menu_entry/intent_list))
+		header_text = "Интенты: [target.name]"
+		entries = list(new /datum/context_menu_entry/back("Назад", null, CONTEXT_ENTRY_SERVICE)) + intent_entries
+		page = 1
+		render()
 		return
 	if(istype(entry, /datum/context_menu_entry/pick_group))
 		show_group(entry)

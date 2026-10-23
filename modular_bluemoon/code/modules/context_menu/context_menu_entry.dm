@@ -107,3 +107,9 @@
 	if(!admin_client?.holder || !(verb_path in admin_client.verbs))
 		return
 	INVOKE_ASYNC(admin_client, verb_path, target)
+
+/// Открывает разовые действия другими интентами
+/datum/context_menu_entry/intent_list
+
+/// Шапка меню: выбор режима ПКМ
+/datum/context_menu_entry/mode_choice
