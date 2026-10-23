@@ -5,6 +5,7 @@ const { spawnSync } = require('node:child_process');
 const { test } = require('node:test');
 const { pathToFileURL } = require('node:url');
 const { crc32, inflateSync } = require('node:zlib');
+const { selectCompatibleRenderer } = require('./renderer.cjs');
 
 const root = path.resolve(__dirname, '../..');
 const manifest = 'code/modules/asset_cache/assets/nanomaps.dm';
@@ -32,6 +33,7 @@ function fixture(t) {
   write('_maps/map_files/test.dmm', '');
   write('icons/test.dmi', '');
   write('modular_test/icons/test.dmi', '');
+  write('tools/nanomaps/renderer.cjs', '');
   write(manifest, fakeManifest);
   // Подменяем только дорогой рендер; проверяется настоящая цель NanoMap и механизм Juke.
   write('tools/nanomaps/render.cjs', `
@@ -103,7 +105,7 @@ for (const output of [image, secondImage, manifest]) {
 
 for (const input of [
   '_maps/map_files/test.dmm', '_maps/test.json', 'icons/test.dmi',
-  'modular_test/icons/test.dmi', 'SpacemanDMM.toml',
+  'modular_test/icons/test.dmi', 'SpacemanDMM.toml', 'tools/nanomaps/renderer.cjs',
 ]) {
   test(`изменение входного файла запускает рендер: ${input}`, t => {
     const f = fixture(t);
@@ -160,4 +162,47 @@ test('настоящие PNG целы и соответствуют размер
     assert.ok(ended && idat.length > 0, `Незавершённый PNG: ${name}`);
     assert.ok(inflateSync(Buffer.concat(idat)).length > 0, name);
   }
+});
+
+test('совместимый Linux-релиз не требует Cargo', async () => {
+  let builds = 0;
+  const selected = await selectCompatibleRenderer('release', {
+    platform: 'linux', run: () => {}, build: () => { builds++; },
+  });
+  assert.equal(selected, 'release');
+  assert.equal(builds, 0);
+});
+
+test('ошибка GLIBC_2.39 включает локальную сборку и проверку её результата', async () => {
+  const checked = [];
+  const selected = await selectCompatibleRenderer('release', {
+    platform: 'linux',
+    run: file => {
+      checked.push(file);
+      if (file === 'release') {
+        const error = new Error('Command failed');
+        error.stderr = Buffer.from("libc.so.6: version `GLIBC_2.39' not found");
+        throw error;
+      }
+    },
+    build: async () => 'local',
+  });
+  assert.equal(selected, 'local');
+  assert.deepEqual(checked, ['release', 'local']);
+});
+
+test('посторонние ошибки запуска не скрываются локальной сборкой', async () => {
+  const error = new Error('Permission denied');
+  await assert.rejects(selectCompatibleRenderer('release', {
+    platform: 'linux', run: () => { throw error; },
+    build: () => assert.fail('Сборка не должна запускаться'),
+  }), candidate => candidate === error);
+});
+
+test('ошибка самой локальной сборки передаётся вызывающему коду', async () => {
+  const error = new Error('Cargo build failed');
+  await assert.rejects(selectCompatibleRenderer('release', {
+    platform: 'linux', run: () => { throw new Error('GLIBC_2.39 not found'); },
+    build: async () => { throw error; },
+  }), candidate => candidate === error);
 });

@@ -7,6 +7,7 @@ export const NanomapsTarget = new Juke.Target({
   inputs: () => [
     'SpacemanDMM.toml',
     'tools/nanomaps/render.cjs',
+    'tools/nanomaps/renderer.cjs',
     ...Juke.glob('_maps/*.json'),
     ...Juke.glob('_maps/map_files/**/*.dmm'),
     ...Juke.glob('icons/**/*.dmi'),

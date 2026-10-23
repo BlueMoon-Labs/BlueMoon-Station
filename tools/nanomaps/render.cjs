@@ -1,17 +1,10 @@
-const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 const { execFileSync } = require('node:child_process');
 const { crc32, deflateSync, inflateSync } = require('node:zlib');
 
 const root = path.resolve(__dirname, '../..');
-const version = 'suite-1.11-P';
-const executable = process.platform === 'win32' ? 'dmm-tools-para.exe' : 'dmm-tools-para';
-const checksums = {
-  'dmm-tools-para': 'ee85def74b92c847a545ec8c9bfe3da777f63ed0611dba537930e279b4f429d2',
-  'dmm-tools-para.exe': '27cd4f572898aae415f7fefb45ef0b739a570cfffd041d4327d5280fb47100eb',
-};
-const renderer = path.join(root, 'tools/bootstrap/.cache/nanomaps', version, executable);
+const { ensureRenderer } = require('./renderer.cjs');
 const outputDirectory = path.join(root, 'icons/_nanomaps');
 const assetFile = path.join(root, 'code/modules/asset_cache/assets/nanomaps.dm');
 
@@ -49,23 +42,7 @@ function compressPng(input) {
 
 async function main() {
   process.chdir(root);
-  if (!fs.existsSync(renderer)) {
-    const url = `https://github.com/ParadiseSS13/SpacemanDMM-Para/releases/download/${version}/${executable}`;
-    console.log(`Загрузка рендерера NanoMap ${version}...`);
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Не удалось загрузить рендерер: HTTP ${response.status}`);
-    }
-    const binary = Buffer.from(await response.arrayBuffer());
-    if (crypto.createHash('sha256').update(binary).digest('hex') !== checksums[executable]) {
-      throw new Error('Контрольная сумма загруженного рендерера не совпала.');
-    }
-    fs.mkdirSync(path.dirname(renderer), { recursive: true });
-    fs.writeFileSync(renderer, binary, { mode: 0o755 });
-  }
-  if (crypto.createHash('sha256').update(fs.readFileSync(renderer)).digest('hex') !== checksums[executable]) {
-    throw new Error('Контрольная сумма рендерера в кэше не совпала.');
-  }
+  const renderer = await ensureRenderer();
 
   const sources = new Map();
   for (const filename of fs.readdirSync('_maps').filter(name => name.endsWith('.json')).sort()) {
