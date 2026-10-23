@@ -16,6 +16,7 @@ export const NtosPortraitPrinter = (props) => {
     library_large_private,
     favorite_paintings_md5 = [],
     is_admin = false,
+    user_ckey = null,
   } = data;
 
   const allPortraits = [
@@ -65,11 +66,20 @@ export const NtosPortraitPrinter = (props) => {
 
   const filteredList = !query
     ? baseList
-    : baseList.filter(p =>
-      String(p.title)
-        .toLowerCase()
-        .includes(query.toLowerCase()),
-    );
+    : baseList.filter(p => {
+        // Админы могут искать по названию ИЛИ сикею
+        if (is_admin) {
+          return String(p.title).toLowerCase().includes(query.toLowerCase()) ||
+                 String(p.ckey).toLowerCase().includes(query.toLowerCase());
+        }
+        // Обычные игроки видят только свои картины при поиске по сикею и должны написать его полностью
+        const isCkeySearch = user_ckey && query.toLowerCase() === user_ckey.toLowerCase();
+        if (isCkeySearch) {
+          return p.ckey === user_ckey;
+        }
+        // По умолчанию поиск только по названию
+        return String(p.title).toLowerCase().includes(query.toLowerCase());
+      });
 
   const hasPortraits = filteredList.length > 0;
   const safeIndex = hasPortraits
@@ -94,6 +104,8 @@ export const NtosPortraitPrinter = (props) => {
   const current_portrait_asset_name = currentPortrait
     ? current_portrait_asset_prefix + '_' + currentPortrait.md5
     : '';
+
+  const isAdminOrOwner = !!currentPortrait && (is_admin || user_ckey === currentPortrait.ckey);
 
   return (
     <NtosWindow
@@ -146,11 +158,11 @@ export const NtosPortraitPrinter = (props) => {
                       })}
                     />
                   )}
-                  {hasPortraits && is_admin && (
+                  {hasPortraits && isAdminOrOwner && (
                     <Button.Confirm
                       icon="trash"
                       color="bad"
-                      tooltip="Delete this painting from the database"
+                      tooltip={is_admin ? "Delete this painting from the database (admin)" : "Delete your own painting"}
                       tooltipPosition="bottom"
                       confirmContent="Are you sure?"
                       onClick={() => act('delete_painting', {
