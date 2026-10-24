@@ -283,3 +283,21 @@
 	dummy = run.find_prop(/mob/living/carbon/human)
 	dummy.death()
 	TEST_ASSERT(run.ended && !run.success && findtext(run.result_text, "раньше поглощения"), "Смерть цели до поглощения проваливает упражнение: [run.result_text]")
+
+/// Выход с полигона в хитиновой броне и с рукой-клинком: кукла удаляется уже без разума, снятие способностей не падает на mind (10600).
+/datum/unit_test/antag_training_changeling_exit_mutations/Run()
+	var/datum/antag_training_session/session = allocate_training_session(/datum/antag_training_program/antag/changeling)
+	TEST_ASSERT(session.prepare(), "Полигон готовит генокрада.")
+	var/datum/antag_training_program/antag/changeling/program = session.program
+	var/mob/living/carbon/human/body = session.current_body
+	var/datum/antagonist/changeling/training/role = program.role(session)
+	for(var/power_type in list(/datum/action/changeling/suit/armor, /datum/action/changeling/weapon/arm_blade))
+		var/datum/action/changeling/power_path = power_type
+		antag_training_ling_evolve(role, body, initial(power_path.name))
+		var/datum/action/changeling/power = antag_training_ling_power(role, power_type)
+		TEST_ASSERT_NOTNULL(power, "Эмпориум продаёт [initial(power_path.name)].")
+		power.Trigger()
+	TEST_ASSERT(istype(body.wear_suit, /obj/item/clothing/suit/armor/changeling), "Броня выросла.")
+	TEST_ASSERT(locate(/obj/item/melee/arm_blade) in body.held_items, "Клинок вырос.")
+	session.finish()
+	TEST_ASSERT(QDELETED(body), "Выход удаляет куклу.")
