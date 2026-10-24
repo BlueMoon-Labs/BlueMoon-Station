@@ -4,6 +4,9 @@
 
 #ifdef ABSOLUTE_MINIMUM_MODE
 #include "map_files\generic\CentCom_minimal.dmm"
+#elif defined(UNIT_TEST_PROFILE_HERMETIC)
+// Генерирует tools/build/build.js (CentComHermeticTarget)
+#include "map_files\generic\CentCom_hermetic.dmm"
 #else
 #include "map_files\generic\CentCom.dmm"
 #endif
@@ -22,10 +25,21 @@
 		#include "map_files\CogStation\CogStation.dmm"
 		#include "map_files\TauStation\TauStation.dmm"
 		#include "map_files\bluemoon_maps\icemoonstation.dmm"
+		#include "map_files\tramstation\tramstation.dmm"
+		#include "map_files\NorthStar\north_star.dmm"
+		#include "map_files\VoidRaptor\VoidRaptor.dmm"
+		#include "map_files\IceBoxStation\IceBoxStation.dmm"
+		#include "map_files\Blueshift\Blueshift.dmm"
+		#include "map_files\NebulaStation\NebulaStation.dmm"
+		#include "map_files\CatwalkStation\CatwalkStation_2023.dmm"
+		#include "map_files\wawastation\wawastation.dmm"
+		#include "map_files\biodome\biodome.dmm"
+		#include "map_files\Ouroboros\Ouroboros.dmm"
+		#include "map_files\KiloStation\KiloStation.dmm"
 		// #include "modular_bluemoon\_maps\PrisonStation\PrisonStation.dmm"
-		#ifdef CIBUILDING
-			#include "templates.dm"
-		#endif
+	#endif
+	#ifdef ALL_TEMPLATES
+		#include "templates.dm"
 	#endif
 #endif
 

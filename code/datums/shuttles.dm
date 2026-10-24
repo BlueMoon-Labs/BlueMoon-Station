@@ -68,7 +68,8 @@
 */
 
 /datum/map_template/shuttle/load(turf/T, centered = FALSE, orientation = SOUTH, annihilate = default_annihilate, force_cache = FALSE, rotate_placement_to_orientation = FALSE, register = TRUE)
-	. = ..()
+	// Голый ..() отдал бы register родительскому no_changeturf_override
+	. = ..(T, centered, orientation, annihilate, force_cache, rotate_placement_to_orientation)
 	if(!.)
 		return
 	// Границы приезжают возвратом родительского load(). get_last_loaded_turf_block() читает их
@@ -627,6 +628,10 @@
 	suffix = "box"
 	name = "labour shuttle (Box)"
 
+/datum/map_template/shuttle/arrival/voidraptor
+	suffix = "voidraptor"
+	name = "arrival shuttle (voidraptor)"
+
 /datum/map_template/shuttle/labour/cog
 	suffix = "cog"
 	name = "labour shuttle (Cog)"
@@ -732,7 +737,7 @@
 	name = "assault pod (Default)"
 
 /datum/map_template/shuttle/pirate/default
-	suffix = "default"
+	suffix = "dutchman"
 	name = "Pirate ship (Default)"
 
 /datum/map_template/shuttle/hunter/space_cop

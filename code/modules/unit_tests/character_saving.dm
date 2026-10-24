@@ -1,6 +1,7 @@
 #define UNIT_TEST_SAVING_FLAVOR_TEXT "Space"
 #define UNIT_TEST_SAVING_SILICON_FLAVOR_TEXT "Station"
 #define UNIT_TEST_SAVING_OOC_NOTES "Thirteen"
+#define UNIT_TEST_SAVING_ASS_PHOTO ""
 
 /datum/unit_test/character_saving/Run()
 	try
@@ -9,6 +10,7 @@
 		P.features["flavor_text"] = UNIT_TEST_SAVING_FLAVOR_TEXT
 		P.features["silicon_flavor_text"] = UNIT_TEST_SAVING_SILICON_FLAVOR_TEXT
 		P.features["ooc_notes"] = UNIT_TEST_SAVING_OOC_NOTES
+		P.features["ass_photo"] = UNIT_TEST_SAVING_ASS_PHOTO
 		P.save_character()
 		P.load_character()
 		if(P.features["flavor_text"] != UNIT_TEST_SAVING_FLAVOR_TEXT)
@@ -17,9 +19,11 @@
 			TEST_FAIL("Silicon flavor text is failing to save.")
 		if(P.features["ooc_notes"] != UNIT_TEST_SAVING_OOC_NOTES)
 			TEST_FAIL("OOC text is failing to save.")
+		if(P.features["ass_photo"] != UNIT_TEST_SAVING_ASS_PHOTO)
+			TEST_FAIL("Ass photo link is failing to save.")
 		P.save_character()
 		P.load_character()
-		if((P.features["flavor_text"] != UNIT_TEST_SAVING_FLAVOR_TEXT) || (P.features["silicon_flavor_text"] != UNIT_TEST_SAVING_SILICON_FLAVOR_TEXT) || (P.features["ooc_notes"] != UNIT_TEST_SAVING_OOC_NOTES))
+		if((P.features["flavor_text"] != UNIT_TEST_SAVING_FLAVOR_TEXT) || (P.features["silicon_flavor_text"] != UNIT_TEST_SAVING_SILICON_FLAVOR_TEXT) || (P.features["ooc_notes"] != UNIT_TEST_SAVING_OOC_NOTES) || (P.features["ass_photo"] != UNIT_TEST_SAVING_ASS_PHOTO))
 			TEST_FAIL("Repeated saving and loading possibly causing save deletion.")
 	catch(var/exception/e)
 		TEST_FAIL("Failed to save and load character due to exception [e.file]:[e.line], [e.name]")
@@ -27,3 +31,4 @@
 #undef UNIT_TEST_SAVING_FLAVOR_TEXT
 #undef UNIT_TEST_SAVING_SILICON_FLAVOR_TEXT
 #undef UNIT_TEST_SAVING_OOC_NOTES
+#undef UNIT_TEST_SAVING_ASS_PHOTO

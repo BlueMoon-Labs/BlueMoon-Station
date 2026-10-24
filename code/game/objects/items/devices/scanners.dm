@@ -528,6 +528,9 @@ GENETICS SCANNER
 				var/datum/wound/W = k
 				msg += "<div class='ml-2'>Тип: [W.ru_name]\nТяжесть: [W.severity_text()]\nРекомендуемое лечение: [W.treat_text]</div>\n" // less lines than in woundscan() so we don't overload people trying to get basic med info
 			msg += "</span>\n"
+	var/palm_scan = blood_oath_palm_scan(M)
+	if(palm_scan)
+		msg += "<span class='info'>[palm_scan]</span>\n"
 
 	for(var/thing in M.diseases)
 		var/datum/disease/D = thing
@@ -970,18 +973,18 @@ GENETICS SCANNER
 
 		if(total_moles > 0)
 			//WS Start -- Atmos Analyzer Reformat (Issue #419)
-			render_list += "<span class='notice'>Молей: [round(total_moles, 0.01)] mol</span>\
-							\n<span class='notice'>Объём: [volume] L</span>\
-							\n<span class='notice'>Давление: [round(pressure,0.01)] кПа</span>\
-							\n<span class='notice'>Температура: [round(temperature - T0C,0.01)] &deg;C ([round(temperature, 0.01)] K)</span>"
+			render_list += span_notice("Молей: [round(total_moles, 0.01)] mol\n\
+									Объём: [volume] L\n\
+									Давление: [round(pressure,0.01)] кПа\n\
+									Температура: [round(temperature - T0C,0.01)] &deg;C ([round(temperature, 0.01)] K)")
 			//WS End
 
 			for(var/id in air_contents.get_gases())
 				var/gas_concentration = air_contents.get_moles(id)/total_moles
-				render_list += "<span class='notice'>[GLOB.gas_data.names[id]]: [round(gas_concentration*100, 0.01)] % ([round(air_contents.get_moles(id), 0.01)] mol)</span>"  //WS Edit -- Atmos Analyzer Reformat (Issue #419)
+				render_list += span_notice("[GLOB.gas_data.names[id]]: [round(gas_concentration*100, 0.01)] % ([round(air_contents.get_moles(id), 0.01)] mol)")  //WS Edit -- Atmos Analyzer Reformat (Issue #419)
 
 		else
-			render_list += airs.len > 1 ? "<span class='notice'>This node is empty!</span>" : "<span class='notice'>[target] is empty!</span>"
+			render_list += airs.len > 1 ? span_notice("Этот узел пуст!") : span_notice("Внутри [target] пусто!")
 
 		if(cached_scan_results && cached_scan_results["fusion"]) //notify the user if a fusion reaction was detected
 			render_list += "<span class='boldnotice'>Большое количество свободных нейтронов зафиксировано в воздухе, свидетельствуя, что реакция синтеза была поблизости.</span>\

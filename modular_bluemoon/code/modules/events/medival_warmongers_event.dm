@@ -50,23 +50,23 @@
 		payoff = max(payoff_min, FLOOR(D.account_balance * 0.85, 1000))
 	else
 		payoff = payoff_min
-	threat_msg.content = "ПРИВЕТСТВУЮ ВАС, ЭТО [ship_name] И МЫ СОБИРАЕМ ДЕНЬГИ ИЗ ВАССАЛОВ НА НАШЕЙ ТЕРРИТОРИИ, ТАК УЖ СЛУЧИЛОСЬ, ЧТО ВЫ ТОЖЕ ТАМ ОКАЗАЛИСЬ!! ОБЫЧНО МЫ УБИВАЕМ ТАКИХ СЛАБАКОВ, КАК ВЫ, ЗА ТО, ЧТО ОНИ ВТОРГЛИСЬ НА НАШУ ЗЕМЛЮ, НО МЫ ГОТОВЫ ПРИВЕТСТВОВАТЬ ВАС В НАШЕМ ПРОСТРАНСТВЕ, ЕСЛИ ВЫ ЗАПЛАТИТЕ [payoff] В ЗНАК УВАЖЕНИЯ К НАШЕМУ ЗАКОНУ. БУДЬТЕ МУДРЫ В СВОЕМ ВЫБОРЕ!! (отправить сообщение. отправить сообщение. почему сообщение не отправлено?)."
+	threat_msg.content = "ПРИВЕТСТВУЮ ВАС, ЭТО [ship_name] И МЫ СОБИРАЕМ ДЕНЬГИ ИЗ ВАССАЛОВ НА НАШЕЙ ТЕРРИТОРИИ, ТАК УЖ СЛУЧИЛОСЬ, ЧТО ВЫ ТОЖЕ ТАМ ОКАЗАЛИСЬ!! ОБЫЧНО МЫ УБИВАЕМ ТАКИХ СЛАБАКОВ, КАК ВЫ, ЗА ТО, ЧТО ОНИ ВТОРГЛИСЬ НА НАШУ ЗЕМЛЮ, НО МЫ ГОТОВЫ ПРИВЕТСТВОВАТЬ ВАС В НАШЕМ ПРОСТРАНСТВЕ, ЕСЛИ ВЫ ЗАПЛАТИТЕ [payoff] В ЗНАК УВАЖЕНИЯ К НАШЕМУ ЗАКОНУ. БУДЬТЕ МУДРЫ В СВОЕМ ВЫБОРЕ!! У ВАС ЕСТЬ РОВНО ПЯТЬ МИНУТ С МОМЕНТА ПОЛУЧЕНИЯ СООБЩЕНИЯ. (отправить сообщение. отправить сообщение. почему сообщение не отправлено?)."
 
 	threat_msg.answer_callback = CALLBACK(src, PROC_REF(warmongers_answered), threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
 	SScommunications.send_message(threat_msg, unique = TRUE)
 	spawn_timer_id = addtimer(CALLBACK(src, PROC_REF(spawn_warmongers), threat_msg, ship_template), response_max_time, TIMER_STOPPABLE)
 
 /datum/round_event/medieval_warmongers/proc/warmongers_answered(datum/comm_message/threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
-	if(world.time > initial_send_time + response_max_time)
+	if(world.time >= initial_send_time + response_max_time)
 		priority_announce("ВЫ УЖЕ ПОД ОСАДОЙ ОСТОЛОПЫ, ВЫ ЛИБО ТУПЫЕ ЛИБО НЕВЕЖЕСТВЕННЫЕ?!!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_warmongers(threat_msg, ship_template, TRUE)
 		return
 	if(threat_msg && threat_msg.answered == 1)
 		var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
 		if(D && D.adjust_money(-payoff))
+			resolve_threat_peacefully()
 			priority_announce("ЭТОГО БУДЕТ ДОСТАТОЧНО, ПОМНИ, КОМУ ТЫ ПРИНАДЛЕЖИШЬ!!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_yespeacedecision.ogg', "Priority")
 			SSdirector.complete_deferred_action_without_roles(control, "угроза снята выкупом; назначено ролей: 0")
-			resolve_threat_peacefully()
 			return
 		priority_announce("ТЫ СЧИТАЕШЬ МЕНЯ ШУТОМ? ТЕБЕ КОНЕЦ!!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_warmongers(threat_msg, ship_template, TRUE)
@@ -245,10 +245,47 @@
 /obj/structure/fermenting_barrel/black_powder
 	name = "gunpowder barrel"
 	desc = "A large wooden barrel for holding gunpowder. You'll need to take from this to load the cannons."
+	var/mob/living/last_attacker
 
 /obj/structure/fermenting_barrel/black_powder/Initialize(mapload)
 	. = ..()
+	// Базовая бочка вмещает только 300 единиц, поэтому add_reagent(..., 500) молча
+	// обрезал заряд до 300 и бочка взрывалась слабее, чем должна. Даём ей 500.
+	create_reagents(500, DRAINABLE | AMOUNT_VISIBLE)
 	reagents.add_reagent(/datum/reagent/blackpowder, 500)
+
+// Бочка с порохом детонирует от выстрела/огня/взрыва. Сила взрыва зависит от
+// оставшегося пороха, поэтому соседние бочки цепляются друг за другом.
+/obj/structure/fermenting_barrel/black_powder/proc/boom()
+	if(QDELETED(src))
+		return
+	var/volume = reagents ? reagents.get_reagent_amount(/datum/reagent/blackpowder) : 0
+	if(volume <= 0)
+		qdel(src)
+		return
+	// Сила взрыва пропорциональна оставшемуся пороху. 500 единиц -> серьёзный,
+	// но не сносящий полкарты взрыв (соседние бочки при этом детонируют цепочкой).
+	var/heavy_range = clamp(round(volume / 150), 1, 4)
+	var/light_range = clamp(round(volume / 70), 2, 8)
+	var/flame_range = clamp(round(volume / 55), 3, 10)
+	var/turf/epicenter = get_turf(src)
+	visible_message(span_danger("[capitalize(name)] детонирует!"))
+	explosion(epicenter, 0, heavy_range, light_range, flame_range = flame_range, attacker = last_attacker)
+	qdel(src)
+
+/obj/structure/fermenting_barrel/black_powder/bullet_act(obj/item/projectile/hitting_projectile)
+	if(hitting_projectile.damage > 0 && ((hitting_projectile.damage_type == BURN) || (hitting_projectile.damage_type == BRUTE)))
+		if(isliving(hitting_projectile.firer))
+			last_attacker = hitting_projectile.firer
+		boom()
+	else
+		return ..()
+
+/obj/structure/fermenting_barrel/black_powder/fire_act(exposed_temperature, exposed_volume)
+	boom()
+
+/obj/structure/fermenting_barrel/black_powder/ex_act(severity, target, origin)
+	boom()
 
 /obj/structure/fermenting_barrel/thermite
 	name = "thermite barrel"

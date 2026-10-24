@@ -68,7 +68,7 @@
 	build_path = /obj/item/circuitboard/mecha/durand/main
 	category = list("Exosuit Modules")
 	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
-	min_security_level = SEC_LEVEL_AMBER
+	min_security_level = SEC_LEVEL_RED
 
 /datum/design/board/durand_peri
 	name = "\"Durand\" Peripherals Control module"
@@ -77,7 +77,7 @@
 	build_path = /obj/item/circuitboard/mecha/durand/peripherals
 	category = list("Exosuit Modules")
 	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
-	min_security_level = SEC_LEVEL_AMBER
+	min_security_level = SEC_LEVEL_RED
 
 /datum/design/board/durand_targ
 	name = "\"Durand\" Weapons & Targeting Control module"
@@ -86,7 +86,7 @@
 	build_path = /obj/item/circuitboard/mecha/durand/targeting
 	category = list("Exosuit Modules")
 	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE
-	min_security_level = SEC_LEVEL_AMBER
+	min_security_level = SEC_LEVEL_RED
 
 /datum/design/board/honker_main
 	name = "\"H.O.N.K\" Central Control module"
@@ -460,6 +460,16 @@
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 	//min_security_level = SEC_LEVEL_RED
 
+/datum/design/mech_rescue_jaw
+	name = "Спасательный захват экзокостюма"
+	desc = "Гидравлический захват для вскрытия дверей и загрузки пациентов в слипер медицинского экзокостюма."
+	id = "mech_rescue_jaw"
+	build_type = MECHFAB
+	build_path = /obj/item/mecha_parts/mecha_equipment/medical/rescue_jaw
+	materials = list(/datum/material/iron = 10000, /datum/material/titanium = 5000, /datum/material/silver = 2000)
+	construction_time = 100
+	category = list("Exosuit Equipment")
+
 /datum/design/mech_sleeper
 	name = "Exosuit Medical Equipment (Mounted Sleeper)"
 	desc = "Equipment for medical exosuits. A mounted sleeper that stabilizes patients and can inject reagents in the exosuit's reserves."
@@ -506,7 +516,7 @@
 	id = "ripley_mk2_kit"
 	build_type = MECHFAB
 	build_path = /obj/item/mecha_parts/mecha_equipment/ripleyupgrade
-	materials = list(/datum/material/titanium=15000)
+	materials = list(/datum/material/iron=20000, /datum/material/plasma=20000)
 	construction_time = 200
 	category = list("Exosuit Equipment")
 

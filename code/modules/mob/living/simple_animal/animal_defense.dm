@@ -127,7 +127,8 @@
 /mob/living/simple_animal/bullet_act(obj/item/projectile/Proj, def_zone, piercing_hit = FALSE)
 	if(!Proj)
 		return
-	apply_damage(Proj.damage, Proj.damage_type, 0, piercing_hit)
+	SEND_SIGNAL(src, COMSIG_ATOM_BULLET_ACT, Proj, def_zone)
+	apply_damage(Proj.damage * Proj.simple_mob_damage_multiplier, Proj.damage_type, 0, piercing_hit)
 	Proj.on_hit(src)
 	return BULLET_ACT_HIT
 

@@ -268,7 +268,7 @@
 	name = "warped arm blade"
 	desc = "Неправильно срощенные кости и сухожилия — все ещё голодные."
 	force = 22
-	armour_penetration = 10
+	armour_penetration = MELEE_AP_COMBAT
 	wound_bonus = 5
 	bare_wound_bonus = 5
 	can_dismember = FALSE
@@ -281,8 +281,8 @@
 		COOLDOWN_START(src, sound_cooldown, 3 SECONDS)
 
 /obj/item/clothing/suit/armor/changeling/weak
-	armor = list(MELEE = 35, BULLET = 30, LASER = 15, ENERGY = 20, BOMB = 5, BIO = 4, RAD = 0, FIRE = 100, ACID = 100)
+	armor_type = /datum/armor/weak
 	brc_mitigation_bonus = 10  // BLUEMOON ADD
 
 /obj/item/clothing/head/helmet/changeling/weak
-	armor = list(MELEE = 35, BULLET = 30, LASER = 15, ENERGY = 20, BOMB = 5, BIO = 4, RAD = 0, FIRE = 100, ACID = 100)
+	armor_type = /datum/armor/weak

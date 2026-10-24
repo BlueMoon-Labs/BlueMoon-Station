@@ -2,6 +2,8 @@
 	name = "navigation computer"
 	desc = "Used to designate a precise transit location for a spacecraft."
 	jump_action = null
+	move_up_action = null
+	move_down_action = null
 	should_supress_view_changes = FALSE
 
 	var/shuttleId = ""
@@ -104,7 +106,7 @@
 			var/y_off = shuttle_turf.y - origin.y
 			I.loc = locate(origin.x + x_off, origin.y + y_off, origin.z) //we have to set this after creating the image because it might be null, and images created in nullspace are immutable.
 			I.layer = ABOVE_NORMAL_TURF_LAYER
-			I.plane = 0
+			SET_PLANE(I, ABOVE_LIGHTING_PLANE, origin)
 			I.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 			the_eye.placement_images[I] = list(x_off, y_off)
 
@@ -191,7 +193,7 @@
 		var/image/newI = image('icons/effects/alphacolors.dmi', the_eye.loc, "blue")
 		newI.loc = place_spots.loc //It is highly unlikely that any landing spot including a null tile will get this far, but better safe than sorry.
 		newI.layer = ABOVE_OPEN_TURF_LAYER
-		newI.plane = 0
+		newI.plane = place_spots.plane
 		newI.mouse_opacity = 0
 		the_eye.placed_images += newI
 
@@ -233,11 +235,14 @@
 	var/list/bounds = shuttle_port.return_coords(the_eye.x - x_offset, the_eye.y - y_offset, the_eye.dir)
 	var/list/overlappers = SSshuttle.get_dock_overlap(bounds[1], bounds[2], bounds[3], bounds[4], the_eye.z)
 	var/list/image_cache = the_eye.placement_images
+	var/preview_plane = MUTATE_PLANE(ABOVE_LIGHTING_PLANE, eyeturf)
 	for(var/i in 1 to image_cache.len)
 		var/image/I = image_cache[i]
 		var/list/coords = image_cache[I]
 		var/turf/T = locate(eyeturf.x + coords[1], eyeturf.y + coords[2], eyeturf.z)
 		I.loc = T
+		if(I.plane != preview_plane)
+			I.plane = preview_plane
 		var/new_state = "green"
 		switch(checkLandingTurf(T, overlappers))
 			if(SHUTTLE_DOCKER_LANDING_CLEAR)

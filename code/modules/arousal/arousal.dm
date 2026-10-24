@@ -90,6 +90,8 @@
 		condomning = locate(/obj/item/genital_equipment/condom) in P.contents
 	sender.generate_fluid(R)
 	last_climax = world.time // BLUEMOON ADD
+	sender.last_orgasmed = world.time
+	sender.linked_organ?.last_orgasmed = sender.last_orgasmed
 	log_message("Кончает [sender] благодаря [target]", LOG_EMOTE)
 
 	client?.plug13.send_emote(PLUG13_EMOTE_GROIN, PLUG13_STRENGTH_MAX, PLUG13_DURATION_ORGASM)
@@ -107,50 +109,25 @@
 				R.clear_reagents()
 				return
 			// BLUEMOON ADD END
-			var/obj/effect/decal/cleanable/semen/S = locate(/obj/effect/decal/cleanable/semen) in location
-			var/obj/effect/decal/cleanable/semen/femcum/F = locate(/obj/effect/decal/cleanable/semen/femcum) in location
-			if(istype(sender, /obj/item/organ/genital/penis))
-				if(S && !istype(S, /obj/effect/decal/cleanable/semen/femcum))
-					if(R.trans_to(S, R.total_volume))
-						LAZYINITLIST(S.blood_DNA)
-						S.blood_DNA |= get_blood_dna_list()
-						S.update_icon()
-						return
-				else
-					var/obj/effect/decal/cleanable/semendrip/drip = (locate(/obj/effect/decal/cleanable/semendrip) in location) || new(location)
-					if(R.trans_to(drip, R.total_volume))
-						LAZYINITLIST(drip.blood_DNA)
-						drip.blood_DNA |= get_blood_dna_list()
-						drip.update_icon()
-						if(drip.reagents.total_volume >= 10)
-							S = new(location)
-							drip.reagents.trans_to(S, drip.reagents.total_volume)
-							LAZYINITLIST(S.blood_DNA)
-							S.blood_DNA |= drip.blood_DNA
-							S.update_icon()
-							qdel(drip)
-						return
-			if(istype(sender, /obj/item/organ/genital/vagina))
-				if(F)
-					if(R.trans_to(F, R.total_volume))
-						LAZYINITLIST(F.blood_DNA)
-						F.blood_DNA |= get_blood_dna_list()
-						F.update_icon()
-						return
-				else
-					F = new(location)
-					if(R.trans_to(F, R.total_volume))
-						LAZYINITLIST(F.blood_DNA)
-						F.blood_DNA |= get_blood_dna_list()
-						F.update_icon()
-						return
-
+			if(is_type_in_list(sender, list(/obj/item/organ/genital/penis, /obj/item/organ/genital/vagina)))
+				var/spilled_modifier = ishuman(target) ? 0.1 : 1 // обливаем ли мы кого то или нет?
+				R.reaction(location, volume_modifier = spilled_modifier, show_message = FALSE)
+				for(var/obj/effect/decal/cleanable/c in location)
+					if(is_type_in_list(c, list(/obj/effect/decal/cleanable/semen, /obj/effect/decal/cleanable/semendrip)))
+						c.transfer_blood_dna(get_blood_dna_list())
 		if(!turfing)
 			// sandstorm edit - advanced cum drip
 			var/amount_to_transfer = R.total_volume * (spill ? sender.fluid_transfer_factor : 1)
 			var/mob/living/carbon/human/cummed_on = target
 			if(!istype(cummed_on)) // not human
 				R.trans_to(target, amount_to_transfer, log = TRUE)
+				if(R.total_volume > 0 && cummed_on.is_open_container())
+					visible_message(span_lewd("<b>[src] переполняет [cummed_on], расплёскивая излишки на пол.</b>"))
+					// к сожалению готовые решения генерации капель расплескавшихся жидкостей есть далеко не для всех реагентов, но это уже совсем другая история.
+					R.reaction(get_turf(target), show_message = FALSE)
+					for(var/obj/effect/decal/cleanable/c in get_turf(target))
+						if(is_type_in_list(c, list(/obj/effect/decal/cleanable/semen, /obj/effect/decal/cleanable/semendrip)))
+							c.transfer_blood_dna(get_blood_dna_list())
 			else // if human
 				var/datum/reagents/copy = new()
 				R.copy_to(copy, R.total_volume)
@@ -235,8 +212,6 @@
 						if(istype(receiver, /obj/item/organ/genital/vagina) || istype(receiver, /obj/item/organ/genital/anus))
 							if(copy.total_volume > 0)
 								cummed_on.apply_status_effect(STATUS_EFFECT_DRIPPING_CUM, copy, get_blood_dna_list(), receiver)
-
-	sender.last_orgasmed = world.time
 	R.clear_reagents()
 	//sandstorm edit - gain momentum from dirty deeds.
 	if(!Process_Spacemove(turn(dir, 180)))
@@ -290,6 +265,8 @@
 			genitals_list[listed] = new /mutable_appearance(listed)
 		var/obj/item/organ/genital/ret_organ = genitals_list.len == 1 ? genitals_list[1] : show_radial_menu(src, src, genitals_list)
 		// BLUEMOON EDIT END
+		if(!ret_organ)
+			return
 		//SPLURT edit
 		if(CHECK_BITFIELD(ret_organ.genital_flags, GENITAL_CHASTENED))
 			visible_message("<span class='userlove'><b>\The [src]</b> fumbles with their cage with a whine!</span>",

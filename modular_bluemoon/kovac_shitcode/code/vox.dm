@@ -76,7 +76,7 @@
 	name = "Vox"
 	id = SPECIES_VOX
 	inherent_biotypes = MOB_ROBOTIC|MOB_ORGANIC|MOB_HUMANOID|MOB_REPTILE // Их биология гибридна
-	say_mod = "says"
+	say_mod = "говорит"
 	eye_type = "vox"
 	mutant_bodyparts = list("mcolor" = "F8F8F8", "mcolor2" = "F8F8F8", "mcolor3" = "F8F8F8", "mam_snouts" = "Vox",  "mam_tail" = "Vox", "deco_wings" = "None",
 						"horns" = "None", "legs" = "Digitigrade", "meat_type" = "Mammalian", "mam_body_markings" = list())

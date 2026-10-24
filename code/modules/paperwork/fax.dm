@@ -297,36 +297,40 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
 
 			fax_paper.request_state = TRUE
 			fax_paper.loc = null
+			loaded_item_ref = null
+			update_appearance()
 
 			INVOKE_ASYNC(src, PROC_REF(animate_object_travel), fax_paper, "fax_receive", find_overlay_state(fax_paper, "send"))
 			playsound(src, 'sound/machines/high_tech_confirm.ogg', 50, vary = FALSE)
 
 			history_add("Send", params["name"])
 
-			GLOB.requests.fax_request(usr.client, "sent a fax message from [fax_name]/[fax_id] to [params["name"]]", fax_paper)
+			var/auto_note = fax_paper.special_fax_auto_note(params["id"])
+			var/note_suffix = auto_note ? " ([auto_note])" : ""
+			GLOB.requests.fax_request(usr.client, "sent a fax message from [fax_name]/[fax_id] to [params["name"]][note_suffix]", fax_paper)
 			var/mob/living/sender_mob = usr.client?.mob
 			var/sender_real_name = sender_mob?.real_name || usr.client?.ckey || "Unknown"
 			var/sender_job = sender_mob?.mind?.assigned_role || null
 			var/list/message_log = list()
 			message_log["id"] = GLOB.next_command_message_id++
-			message_log["message"] = "Факс от [sender_real_name]"
+			message_log["message"] = "Факс от [sender_real_name][note_suffix]"
 			message_log["sender_name"] = sender_real_name
 			message_log["sender_job"] = sender_job
 			message_log["sender_ckey"] = usr.client?.ckey
 			message_log["time_sent"] = world.time
-			message_log["handled"] = FALSE
+			message_log["handled"] = !!auto_note
 			message_log["paper_name"] = fax_paper.name
 			message_log["paper_text"] = fax_paper.get_raw_text()
 			message_log["paper_html"] = get_paper_html(fax_paper)
 			LAZYADD(GLOB.centcom_communications_messages, list(message_log))
-			to_chat(GLOB.admins, span_adminnotice("[icon2html(src.icon, GLOB.admins)]<b><font color=green>FAX REQUEST: </font>[ADMIN_FULLMONTY(usr)]:</b> [span_linkify("sent a fax message from [fax_name]/[fax_id][ADMIN_FLW(src)] to [html_encode(params["name"])]")] [ADMIN_SHOW_PAPER(fax_paper)]"), confidential = TRUE)
-			for(var/client/staff as anything in GLOB.admins)
-				if(staff.prefs?.toggles & SOUND_FAX)
-					var/fax_vol = staff.prefs?.get_sound_volume("fax")
-					SEND_SOUND(staff, sound('sound/misc/server-ready.ogg', volume = fax_vol))
+			to_chat(GLOB.admins, span_adminnotice("[icon2html(src.icon, GLOB.admins)]<b><font color=green>FAX REQUEST: </font>[ADMIN_FULLMONTY(usr)]:</b> [span_linkify("sent a fax message from [fax_name]/[fax_id][ADMIN_FLW(src)] to [html_encode(params["name"])][note_suffix]")] [ADMIN_SHOW_PAPER(fax_paper)]"), confidential = TRUE)
+			if(!auto_note)
+				for(var/client/staff as anything in GLOB.admins)
+					if(staff.prefs?.toggles & SOUND_FAX)
+						var/fax_vol = staff.prefs?.get_sound_volume("fax")
+						SEND_SOUND(staff, sound('sound/misc/server-ready.ogg', volume = fax_vol))
 			log_fax(fax_paper, params["id"], params["name"])
-			loaded_item_ref = null
-			update_appearance()
+			fax_paper.on_special_fax(src, params["id"], usr)
 
 		if("history_clear")
 			history_clear()
@@ -397,8 +401,9 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
  * * sender_name - The sender's name, which will be displayed in the message and recorded in the history of operations. Renameable with a multitool, so it proves nothing.
  * * sender_id - The sender's network ID, if the fax came from an actual machine. Assigned on init and not user-editable.
  * * sender_announces - Whether the sending machine is allowed on the air itself. Central Command and admin faxes are, hidden machines are not.
+ * * automated - автоответ кода без участия администрации: в панели связи сразу обработан, админам не звенит.
  */
-/obj/machinery/fax/proc/receive(obj/item/loaded, sender_name, sender_id, sender_announces = TRUE)
+/obj/machinery/fax/proc/receive(obj/item/loaded, sender_name, sender_id, sender_announces = TRUE, automated = FALSE)
 	playsound(src, 'sound/effects/printer.ogg', 50, FALSE)
 	INVOKE_ASYNC(src, PROC_REF(animate_object_travel), loaded, "fax_receive", find_overlay_state(loaded, "receive"))
 	say("Получена корреспонденция от [sender_name].")
@@ -422,20 +427,21 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
 	message_log["sender_job"] = null
 	message_log["sender_ckey"] = null
 	message_log["time_sent"] = world.time
-	message_log["handled"] = FALSE
+	message_log["handled"] = automated
 	message_log["paper_name"] = paper_name
 	message_log["paper_text"] = paper_text
 	message_log["paper_html"] = istype(paper) ? get_paper_html(paper) : null
 	LAZYADD(GLOB.centcom_communications_messages, list(message_log))
 
 	// Уведомление администрации
-	to_chat(GLOB.admins, span_adminnotice("<b><font color=green>ПОЛУЧЕН ФАКС: </font>[sender_name]</b>: [loaded.name]"))
-	for(var/client/staff as anything in GLOB.admins)
-		if(staff.prefs?.toggles & SOUND_FAX)
-			var/fax_vol = staff.prefs?.get_sound_volume("fax")
-			SEND_SOUND(staff, sound('sound/machines/twobeep_high.ogg', volume = fax_vol))
-		if(staff.prefs?.adminhelp_windowflash)
-			window_flash(staff, ignorepref = TRUE)
+	if(!automated)
+		to_chat(GLOB.admins, span_adminnotice("<b><font color=green>ПОЛУЧЕН ФАКС: </font>[sender_name]</b>: [loaded.name]"))
+		for(var/client/staff as anything in GLOB.admins)
+			if(staff.prefs?.toggles & SOUND_FAX)
+				var/fax_vol = staff.prefs?.get_sound_volume("fax")
+				SEND_SOUND(staff, sound('sound/machines/twobeep_high.ogg', volume = fax_vol))
+			if(staff.prefs?.adminhelp_windowflash)
+				window_flash(staff, ignorepref = TRUE)
 
 	notify_heads_on_fax(sender_name)
 

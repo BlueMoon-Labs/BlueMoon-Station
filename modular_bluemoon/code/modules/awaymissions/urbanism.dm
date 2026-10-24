@@ -60,7 +60,7 @@
 	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism.dmi'
 	icon_state = "oldfloodlight"
 	anchored = TRUE
-	armor = list(MELEE = 30, BULLET =30, LASER = 20, ENERGY = 10, BOMB = 30, BIO = 10, RAD = 0, FIRE = 50, ACID = 50)
+	armor_type = /datum/armor/urbanism_lights_and_barrels
 
 /obj/machinery/power/floodlight/urbanismlight/mesaspec
 	icon_state = "oldfloodlight_on"
@@ -92,7 +92,7 @@
 	icon_state = "drumfire"
 	anchored = TRUE
 	density = TRUE
-	armor = list(MELEE = 30, BULLET =30, LASER = 20, ENERGY = 10, BOMB = 30, BIO = 10, RAD = 0, FIRE = 50, ACID = 50)
+	armor_type = /datum/armor/urbanism_lights_and_barrels
 
 /obj/structure/reagent_dispensers/urbanismbarrel
 	name = "Barrel"
@@ -100,7 +100,7 @@
 	icon = 'modular_bluemoon/icons/obj/urbanism/urbanism.dmi'
 	icon_state = "barrel"
 	anchored = TRUE
-	armor = list(MELEE = 60, BULLET =50, LASER = 10, ENERGY = 10, BOMB = 30, BIO = 10, RAD = 0, FIRE = 50, ACID = 50)
+	armor_type = /datum/armor/urbanismbarrel
 
 /obj/structure/reagent_dispensers/urbanismbarrel/red
 	icon_state = "redbarrel"
@@ -125,7 +125,7 @@
 	max_integrity = 280
 	proj_pass_rate = 20
 	climbable = TRUE
-	armor = list(MELEE = 30, BULLET =40, LASER = 10, ENERGY = 10, BOMB = 30, BIO = 10, RAD = 0, FIRE = 50, ACID = 50)
+	armor_type = /datum/armor/urbanism
 
 /obj/structure/barricade/urbanism/roadblock
 	resistance_flags = INDESTRUCTIBLE
@@ -147,7 +147,7 @@
 	icon_state = "shina"
 	anchored = TRUE
 	density = TRUE
-	armor = list(MELEE = 20, BULLET =40, LASER = 10, ENERGY = 10, BOMB = 30, BIO = 10, RAD = 0, FIRE = 50, ACID = 50)
+	armor_type = /datum/armor/urbanismtire
 
 /obj/structure/urbanismpower
 	name = "Power Line"
@@ -156,7 +156,7 @@
 	icon_state = "powerline"
 	anchored = TRUE
 	density = TRUE
-	armor = list(MELEE = 50, BULLET =40, LASER = 50, ENERGY = 60, BOMB = 50, BIO = 10, RAD = 0, FIRE = 50, ACID = 50)
+	armor_type = /datum/armor/urbanism_reinforced
 	layer = SPACEVINE_LAYER
 
 /obj/structure/urbanismpower/transformer
@@ -172,7 +172,7 @@
 	icon_state = "crate"
 	anchored = TRUE
 	density = TRUE
-	armor = list(MELEE = 50, BULLET =40, LASER = 50, ENERGY = 60, BOMB = 50, BIO = 10, RAD = 0, FIRE = 50, ACID = 50)
+	armor_type = /datum/armor/urbanism_reinforced
 	layer = SPACEVINE_LAYER
 
 /obj/structure/urbanismbigcrate/alt
@@ -188,7 +188,7 @@
 	icon_state = "car_wreck"
 	anchored = TRUE
 	density = TRUE
-	armor = list(MELEE = 70, BULLET =60, LASER = 50, ENERGY = 80, BOMB = 50, BIO = 10, RAD = 10, FIRE = 50, ACID = 50)
+	armor_type = /datum/armor/urbanismcars
 	layer = SPACEVINE_LAYER
 
 /obj/structure/urbanismradio
@@ -198,7 +198,7 @@
 	icon_state = "radio"
 	anchored = TRUE
 	density = TRUE
-	armor = list(MELEE = 50, BULLET =40, LASER = 50, ENERGY = 60, BOMB = 50, BIO = 10, RAD = 0, FIRE = 50, ACID = 50)
+	armor_type = /datum/armor/urbanism_reinforced
 	layer = SPACEVINE_LAYER
 
 
@@ -209,7 +209,7 @@
 	icon_state = "display_broken"
 	anchored = TRUE
 	density = FALSE
-	armor = list(MELEE = 50, BULLET =40, LASER = 50, ENERGY = 60, BOMB = 50, BIO = 10, RAD = 0, FIRE = 50, ACID = 50)
+	armor_type = /datum/armor/urbanism_reinforced
 	light_range = 5
 	light_color = "#2652e2"
 	max_integrity = 9999999
@@ -222,7 +222,7 @@
 	icon_state = "chalkboard"
 	anchored = TRUE
 	density = FALSE
-	armor = list(MELEE = 50, BULLET =40, LASER = 50, ENERGY = 60, BOMB = 50, BIO = 10, RAD = 0, FIRE = 50, ACID = 50)
+	armor_type = /datum/armor/urbanism_reinforced
 	light_range = FALSE
 	light_color = FALSE
 	max_integrity = 9999999
@@ -235,7 +235,7 @@
 	icon_state = "server_desrtoyed"
 	anchored = TRUE
 	density = TRUE
-	armor = list(MELEE = 30, BULLET =50, LASER = 30, ENERGY = 20, BOMB = 70, BIO = 15, RAD = 10, FIRE = 40, ACID = 30)
+	armor_type = /datum/armor/urbanism_machinery
 
 /obj/structure/urbanismmachines/hecucamp
 
@@ -272,7 +272,7 @@
 	icon_state = "terminal_broken"
 	anchored = TRUE
 	density = FALSE
-	armor = list(MELEE = 30, BULLET =50, LASER = 30, ENERGY = 20, BOMB = 70, BIO = 15, RAD = 10, FIRE = 40, ACID = 30)
+	armor_type = /datum/armor/urbanism_machinery
 
 
 /obj/structure/urbanismbillboard
@@ -282,7 +282,7 @@
 	icon_state = "bilboard1"
 	anchored = TRUE
 	density = TRUE
-	armor = list(MELEE = 80, BULLET =80, LASER = 70, ENERGY = 60, BOMB = 80, BIO = 10, RAD = 0, FIRE = 50, ACID = 50)
+	armor_type = /datum/armor/urbanismbillboard
 	light_range = FALSE
 	light_color = FALSE
 	max_integrity = 9999999
@@ -325,7 +325,7 @@
 	icon_state = "deadhecu"
 	anchored = TRUE
 	density = FALSE
-	armor = list(MELEE = 50, BULLET =40, LASER = 50, ENERGY = 60, BOMB = 50, BIO = 10, RAD = 0, FIRE = 50, ACID = 50)
+	armor_type = /datum/armor/urbanism_reinforced
 	var/loot_amount = 2
 	var/scavenge_time = 5 SECONDS
 	var/can_use_hands = TRUE

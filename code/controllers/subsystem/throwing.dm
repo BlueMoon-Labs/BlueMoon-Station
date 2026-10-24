@@ -201,7 +201,15 @@ SUBSYSTEM_DEF(throwing)
 
 		if(!AM.Move(step, get_dir(AM, step), DELAY_TO_GLIDE_SIZE(1 / speed))) // we hit something during our move...
 			if(AM.throwing) // ...but finalize() wasn't called on Bump() because of a higher level definition that doesn't always call parent.
-				finalize()
+				// BLUEMOON CHANGE START - Bump() до finalize() доходит не всегда: его
+				// перекрывают timestop, COMPONENT_MOVABLE_BLOCK_PRE_MOVE, отказы ON_BORDER_1
+				// в Exit() и путь "переползти" в MobBump(). finalize() без цели бьёт
+				// throw_impact() по своему турфу - из-за этого улетевший в моба персонаж
+				// получал урон об пол сам, а тот, в кого он врезался, не получал ничего.
+				// Называем то, что на самом деле остановило бросок.
+				var/atom/movable/blocker = find_step_blocker(step)
+				finalize(isnull(blocker) ? FALSE : TRUE, blocker)
+			// BLUEMOON CHANGE END
 			return
 
 		dist_travelled++
@@ -213,6 +221,29 @@ SUBSYSTEM_DEF(throwing)
 		if (dist_travelled > MAX_THROWING_DIST)
 			finalize()
 			return
+
+/**
+ * Что именно остановило бросок на клетке `dest`, когда Move() провалился, а finalize()
+ * не вызвал Bump(). Нужна, чтобы потерянный удар не уходил в пол.
+ *
+ * Углы и столы пропускаем - их урон не интересует. Лежащий карбонат берём даже без
+ * density: в него не обо что стукнуться, но тело, прилетевшее на скорости, всё равно
+ * должно сбить его с ног.
+ *
+ * Возвращает null, если на клетке нечего бить - тогда finalize() отработает как раньше,
+ * удар придётся по полу.
+ */
+/datum/thrownthing/proc/find_step_blocker(atom/dest)
+	if(!dest)
+		return null
+	for(var/atom/movable/obstacle as anything in dest)
+		if(obstacle == thrownthing || obstacle == thrower)
+			continue
+		if(obstacle.pass_flags_self & LETPASSTHROW)
+			continue
+		if(iscarbon(obstacle) || (obstacle.density && !(obstacle.flags_1 & ON_BORDER_1)))
+			return obstacle
+	return null
 
 /datum/thrownthing/proc/finalize(hit = FALSE, target=null)
 	set waitfor = FALSE
@@ -244,9 +275,8 @@ SUBSYSTEM_DEF(throwing)
 	if (callback)
 		callback.Invoke()
 
-	if(!thrownthing.zfalling) // I don't think you can zfall while thrown but hey, just in case.
+	if(!thrownthing.currently_z_moving) // I don't think you can zfall while thrown but hey, just in case.
 		var/turf/T = get_turf(thrownthing)
-		if(T && thrownthing.has_gravity(T))
-			T.zFall(thrownthing)
+		T?.zFall(thrownthing) //гравитацию и throwing проверяет can_z_move()
 
 	qdel(src)

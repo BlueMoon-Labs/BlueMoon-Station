@@ -8,8 +8,8 @@
 	icon = 'icons/turf/areas.dmi'
 	icon_state = "unknown"
 	layer = AREA_LAYER
-	//Keeping this on the default plane, GAME_PLANE, will make area overlays fail to render on FLOOR_PLANE.
-	plane = BLACKNESS_PLANE
+	//Своя плоскость с мастером: без него область лежала под собранной картинкой мира.
+	plane = AREA_PLANE
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	invisibility = INVISIBILITY_LIGHTING
 
@@ -38,6 +38,8 @@
 
 	/// Size of the area in open turfs, only calculated for indoors areas.
 	var/areasize = 0
+	/// z-уровни, где у области есть турфы. area.z у BYOND - только z нижнего турфа. Заполняет reg_in_areas_in_z().
+	var/list/z_levels
 
 	/// Bonus mood for being in this area
 	var/mood_bonus = 0
@@ -329,21 +331,43 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 		map_generator.generate_terrain(turfs)
 
 /**
- * Register this area as belonging to a z level
+ * Register this area as belonging to its z levels
  *
- * Ensures the item is added to the SSmapping.areas_in_z list for this z
+ * Ensures the item is added to the SSmapping.areas_in_z list for every z where it has turfs
  */
 /area/proc/reg_in_areas_in_z()
 	if(!length(contents))
 		return
-	var/list/areas_in_z = SSmapping.areas_in_z
+	unreg_from_areas_in_z()
 	update_areasize()
-	if(!z)
+	update_z_levels()
+	if(!length(z_levels))
 		WARNING("No z found for [src]")
 		return
-	if(!areas_in_z["[z]"])
-		areas_in_z["[z]"] = list()
-	areas_in_z["[z]"] += src
+	var/list/areas_in_z = SSmapping.areas_in_z
+	for(var/floor_z in z_levels)
+		var/list/on_z = areas_in_z["[floor_z]"]
+		if(!on_z)
+			on_z = list()
+			areas_in_z["[floor_z]"] = on_z
+		on_z |= src
+
+/// Снимает область из SSmapping.areas_in_z под всеми z, где она стояла.
+/area/proc/unreg_from_areas_in_z()
+	if(!z_levels)
+		return
+	var/list/areas_in_z = SSmapping.areas_in_z
+	for(var/floor_z in z_levels)
+		var/list/on_z = areas_in_z["[floor_z]"]
+		if(on_z)
+			on_z -= src
+	z_levels = null
+
+/area/proc/update_z_levels()
+	var/list/found = list()
+	for(var/turf/area_turf in contents)
+		found |= area_turf.z
+	z_levels = found
 
 /**
  * Destroy an area and clean it up
@@ -362,6 +386,7 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 	GLOB.sortedAreas -= src
 	if(istype(src, /area/maintenance))
 		GLOB.maintenance_areas -= src
+	unreg_from_areas_in_z()
 	power_apc = null
 	if(base_area)
 		LAZYREMOVE(base_area, src)
@@ -383,44 +408,60 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 /**
  * Try to close all the firedoors in the area
  */
-/area/proc/ModifyFiredoors(opening)
+/area/proc/ModifyFiredoors(opening, manual = FALSE)
 	if(firedoors)
 		firedoors_last_closed_on = world.time
 		for(var/FD in firedoors)
 			var/obj/machinery/door/firedoor/D = FD
 			D.refresh_generic_alarm()
 			var/cont = !D.welded
-			if(cont && opening)	//don't open if adjacent area is on fire
+			if(cont && opening && !manual) // Автоматика учитывает пожар в соседней зоне.
 				for(var/I in D.affecting_areas)
 					var/area/A = I
 					if(A.fire)
 						cont = FALSE
 						break
 			if(cont && D.is_operational())
+				if(manual)
+					if(opening)
+						INVOKE_ASYNC(D, TYPE_PROC_REF(/obj/machinery/door/firedoor, open_manually))
+					else
+						INVOKE_ASYNC(D, TYPE_PROC_REF(/obj/machinery/door/firedoor, close_manually))
+					continue
+				if(opening && !D.can_auto_reopen())
+					continue
+				if(!opening && !D.can_close_for_alarm())
+					continue
 				// Закрытие зоной - тоже работа автоматики, и открывать обратно
 				// обязана она же: собственной тревоги у такой двери нет, а
 				// пересчёт тревоги ходит только по фронту тревоги.
 				if(opening)
 					D.auto_closed = FALSE
 				else if(!D.density)
-					D.mark_auto_closed()
+					D.mark_auto_closed(alarm_checked = TRUE)
 				if(D.operating)
 					D.nextstate = opening ? FIREDOOR_OPEN : FIREDOOR_CLOSED
 				else if(!(D.density ^ opening))
-					INVOKE_ASYNC(D, (opening ? TYPE_PROC_REF(/obj/machinery/door/firedoor, open) : TYPE_PROC_REF(/obj/machinery/door/firedoor, close)))
+					if(opening)
+						INVOKE_ASYNC(D, TYPE_PROC_REF(/obj/machinery/door/firedoor, open))
+					else
+						// INVOKE_ASYNC начинает вызов сразу: используем проверку выше.
+						INVOKE_ASYNC(D, TYPE_PROC_REF(/obj/machinery/door/firedoor, close), FALSE, TRUE)
 
-/area/proc/firealert(obj/source)
+/area/proc/firealert(obj/source, manual = FALSE)
 	if(always_unpowered == 1) //no fire alarms in space/asteroid
 		return
 
 	if (!fire)
 		set_fire_alarm_effects(TRUE)
-		ModifyFiredoors(FALSE)
+		ModifyFiredoors(FALSE, manual)
+	else if(manual)
+		ModifyFiredoors(FALSE, TRUE)
 	alarm_manager.send_alarm(ALARM_FIRE, source)
 
 	START_PROCESSING(SSobj, src)
 
-/area/proc/firereset(obj/source)
+/area/proc/firereset(obj/source, manual = FALSE)
 	var/should_reset_alarms = fire
 	if(source)
 		if(istype(source, /obj/machinery/firealarm))
@@ -434,7 +475,8 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 
 	if (should_reset_alarms) // if there's a source, make sure there's no fire alarms left
 		set_fire_alarm_effects(FALSE)
-		ModifyFiredoors(TRUE)
+	if(should_reset_alarms || manual)
+		ModifyFiredoors(TRUE, manual)
 	alarm_manager.clear_alarm(ALARM_FIRE, source)
 
 	STOP_PROCESSING(SSobj, src)
@@ -508,26 +550,8 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 		INVOKE_ASYNC(L, TYPE_PROC_REF(/obj/machinery/light, update), TRUE, TRUE)
 
 /area/proc/updateicon()
-/**
-  * Update the icon state of the area
-  *
-  * Im not sure what the heck this does, somethign to do with weather being able to set icon
-  * states on areas?? where the heck would that even display?
-  */
+/// Погода лежит обычными оверлеями, а update_icon() снимает только managed_overlays: переукладывать бурю здесь незачем.
 /area/update_icon_state()
-	var/weather_icon
-	for(var/V in SSweather.processing)
-		var/datum/weather/W = V
-		if(W.stage != END_STAGE && (src in W.impacted_areas))
-			W.update_areas()
-			weather_icon = TRUE
-	if(!weather_icon)
-		icon_state = null
-
-/**
-  * Update the icon of the area (overridden to always be null for space
-  */
-/area/space/update_icon_state()
 	icon_state = null
 
 /*

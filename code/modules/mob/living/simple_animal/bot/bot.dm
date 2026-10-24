@@ -185,7 +185,6 @@
 	bot_core = new bot_core_type(src)
 
 	//Adds bot to the diagnostic HUD system
-	prepare_huds()
 	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.all_huds)
 		diag_hud.add_to_hud(src)
 	diag_hud_set_bothealth()
@@ -341,7 +340,7 @@
 			open = !open
 			to_chat(user, "<span class='notice'>Панель технического обслуживания [open ? "открыта" : "закрыта"].</span>")
 		else
-			to_chat(user, "<span class='warning'>Панель тех-обслуживания закрыта.</span>")
+			to_chat(user, "<span class='warning'>Панель техобслуживания закрыта.</span>")
 	else if(istype(W, /obj/item/card/id) || istype(W, /obj/item/modular_computer/pda))
 		if(bot_core.allowed(user) && !open && !emagged)
 			locked = !locked
@@ -370,7 +369,7 @@
 				to_chat(user, "<span class='warning'>[src] не требует ремонта!</span>")
 				return
 			if(!open)
-				to_chat(user, "<span class='warning'>Невозможно чинить с закрытой панелью тех-обслуживания!</span>")
+				to_chat(user, "<span class='warning'>Невозможно чинить с закрытой панелью техобслуживания!</span>")
 				return
 
 			if(W.use_tool(src, user, 0, volume=40))
@@ -1089,7 +1088,7 @@ Pass a positive integer as an argument to override a bot's default speed.
 			MA.icon = path_image_icon
 			MA.icon_state = path_image_icon_state
 			MA.layer = ABOVE_OPEN_TURF_LAYER
-			MA.plane = 0
+			SET_PLANE(MA, GAME_PLANE, T)
 			MA.appearance_flags = RESET_COLOR|RESET_TRANSFORM
 			MA.color = path_image_color
 			MA.dir = direction

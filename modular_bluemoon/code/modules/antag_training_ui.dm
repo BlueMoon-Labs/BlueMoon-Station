@@ -74,6 +74,8 @@
 		var/list/zone = arena.zones[zone_id]
 		data["zones"] += list(list("id" = zone_id, "name" = zone["name"], "desc" = zone["desc"], "members" = member_counts[zone_id] || 0, "targets" = target_counts[zone_id] || 0, "current" = arena.inside_bounds(get_turf(user), zone["bounds"])))
 	data["options"] = program.options
+	data["option_hints"] = program.option_hints
+	data["target_action"] = program.target_action
 	data["preparing"] = preparing
 	data["supply_ready"] = world.time >= next_supply_at && !preparing
 	data["practice_ready"] = world.time >= arena.next_spawn_at && !preparing
@@ -81,16 +83,18 @@
 	data["last_kit"] = last_kit
 	data["recipes"] = training_recipes()
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(current_body)
+	data["heretic"] = !!heretic
 	data["selected_path"] = heretic?.selected_path
 	data["path_stage"] = heretic?.path_stage || 0
 	data["dance_lesson"] = !!dance_knowledge()
+	data["spirit_lesson"] = !!spirit_knowledge()
 	var/datum/heretic_path/path = GLOB.heretic_paths[heretic?.selected_path]
 	var/datum/eldritch_knowledge/base = path ? heretic.get_knowledge(path.knowledge[1]) : null
 	data["resource"] = base?.get_combat_resource_data()
 	data["practice"] = null
 	if(practice_id)
 		var/mob/living/target = practice_target?.resolve()
-		data["practice"] = list("id" = practice_id, "target" = target?.name || "Цель недоступна", "complete" = practice_complete, "hint" = practice_hint, "damage" = measurement?.damage || 0, "healing" = measurement?.healing || 0, "last_damage" = measurement?.last_damage || 0, "critical_seconds" = isnull(measurement?.critical_after) ? null : measurement.critical_after / (1 SECONDS), "steps" = dance_lesson?.steps())
+		data["practice"] = list("id" = practice_id, "target" = target?.name || "Цель недоступна", "complete" = practice_complete, "hint" = practice_hint, "damage" = measurement?.damage || 0, "healing" = measurement?.healing || 0, "last_damage" = measurement?.last_damage || 0, "critical_seconds" = isnull(measurement?.critical_after) ? null : measurement.critical_after / (1 SECONDS), "steps" = dance_lesson?.steps() || spirit_lesson?.steps())
 	data["duel"] = null
 	data["last_duel_result"] = last_duel_result
 	data["duel_ready"] = world.time >= next_duel_at

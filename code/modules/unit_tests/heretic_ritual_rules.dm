@@ -169,7 +169,7 @@
 	TEST_ASSERT(findtext(offering.finish_failure_reason, "Подношение не принято."), "Причина заполнена: [offering.finish_failure_reason]")
 	TEST_ASSERT(findtext(offering.finish_failure_reason, "Цель охоты не назначена"), "Причина называет, чего не хватает.")
 
-/// Пустой опрос призраков закрывает призыв слуги на паузу, и тексты призывов называют её длину.
+/// Пустой опрос призраков закрывает чужой призыв на паузу, а слуги Плоти в паузу встают пустыми без опроса; тексты называют длину паузы.
 /datum/unit_test/heretic_servant_poll_cooldown/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	var/mob/living/user = heretic.owner.current
@@ -177,13 +177,16 @@
 	var/datum/eldritch_knowledge/summon/raw_prophet/ghost_poll_probe/summon = allocate(/datum/eldritch_knowledge/summon/raw_prophet/ghost_poll_probe)
 	heretic.researched_knowledge[summon.type] = summon
 	TEST_ASSERT_NULL(summon.recipe_block_reason(user), "До опроса призыв открыт.")
-	TEST_ASSERT(!summon.on_finished_recipe(user, list(), run_loc_floor_top_right), "Без отклика призыв не удаётся.")
+	TEST_ASSERT(!summon.on_finished_recipe(user, list(), run_loc_floor_top_right), "Без отклика и вдали от руны призыв не удаётся.")
 	TEST_ASSERT(findtext(summon.finish_failure_reason, "Позвать снова можно через"), "Отказ говорит, когда звать снова: [summon.finish_failure_reason]")
-	TEST_ASSERT(findtext(summon.recipe_block_reason(user), "Позвать снова можно через"), "Повторный призыв закрыт на паузу.")
-	TEST_ASSERT(!summon.recipe_snowflake_check(list(), run_loc_floor_top_right, list(), user), "Руна не начинает призыв во время паузы.")
-	COOLDOWN_RESET(summon, servant_poll_cooldown)
-	TEST_ASSERT(summon.recipe_snowflake_check(list(), run_loc_floor_top_right, list(), user), "После паузы призыв снова доступен.")
+	TEST_ASSERT_NULL(summon.recipe_block_reason(user), "Призыв Плоти в паузу открыт: слуга встанет пустым.")
 	heretic.researched_knowledge -= summon.type
+	var/datum/eldritch_knowledge/summon/ashy/ash_summon = allocate(/datum/eldritch_knowledge/summon/ashy)
+	COOLDOWN_START(ash_summon, servant_poll_cooldown, HERETIC_SERVANT_POLL_COOLDOWN)
+	TEST_ASSERT(findtext(ash_summon.recipe_block_reason(user), "Позвать снова можно через"), "Чужой призыв закрыт на паузу.")
+	TEST_ASSERT(!ash_summon.recipe_snowflake_check(list(), run_loc_floor_top_right, list(), user), "Руна не начинает чужой призыв во время паузы.")
+	COOLDOWN_RESET(ash_summon, servant_poll_cooldown)
+	TEST_ASSERT(ash_summon.recipe_snowflake_check(list(), run_loc_floor_top_right, list(), user), "После паузы призыв снова доступен.")
 
 	heretic.selected_path = PATH_FLESH
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_flesh)
@@ -193,10 +196,14 @@
 	var/mob/living/carbon/human/corpse = allocate(/mob/living/carbon/human, get_step(user, EAST))
 	corpse.death()
 	TEST_ASSERT(grasp.on_mansus_grasp(corpse, user, TRUE), "Хватка зовёт духов в пустое тело.")
+	allocated += corpse.mind
 	TEST_ASSERT(grasp.servant_poll_wait_reason(), "Пустой зов гуля включает паузу.")
 	grasp.last_poll_duration = null
-	TEST_ASSERT(!grasp.on_mansus_grasp(corpse, user, TRUE), "Во время паузы хватка не зовёт духов.")
-	TEST_ASSERT_NULL(grasp.last_poll_duration, "Второй опрос не запущен.")
+	var/mob/living/carbon/human/second_corpse = allocate(/mob/living/carbon/human, get_step(user, NORTH))
+	second_corpse.death()
+	TEST_ASSERT(grasp.on_mansus_grasp(second_corpse, user, TRUE), "Во время паузы тело встаёт пустым сразу.")
+	allocated += second_corpse.mind
+	TEST_ASSERT_NULL(grasp.last_poll_duration, "Во время паузы хватка не зовёт духов.")
 
 	var/datum/eldritch_knowledge/summon/summon_type = /datum/eldritch_knowledge/summon
 	var/datum/eldritch_knowledge/summon/summon_base = allocate(summon_type)

@@ -1,0 +1,106 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"e" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/turf/open/floor/material{
+	custom_materials = list(/datum/material/meat = 500)
+	},
+/area/maintenance/aft/upper)
+"j" = (
+/turf/open/floor/material{
+	custom_materials = list(/datum/material/meat = 500)
+	},
+/area/maintenance/aft/upper)
+"n" = (
+/mob/living/carbon/monkey,
+/turf/open/floor/material{
+	custom_materials = list(/datum/material/meat = 500)
+	},
+/area/maintenance/aft/upper)
+"p" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/material{
+	custom_materials = list(/datum/material/meat = 500)
+	},
+/area/maintenance/aft/upper)
+"v" = (
+/mob/living/simple_animal/slime/random,
+/turf/open/floor/material{
+	custom_materials = list(/datum/material/meat = 500)
+	},
+/area/maintenance/aft/upper)
+"z" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
+/turf/open/floor/material{
+	custom_materials = list(/datum/material/meat = 500)
+	},
+/area/maintenance/aft/upper)
+"D" = (
+/mob/living/simple_animal/slime,
+/turf/open/floor/material{
+	custom_materials = list(/datum/material/meat = 500)
+	},
+/area/maintenance/aft/upper)
+"E" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 9
+	},
+/turf/open/floor/material{
+	custom_materials = list(/datum/material/meat = 500)
+	},
+/area/maintenance/aft/upper)
+"J" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
+/turf/open/floor/material{
+	custom_materials = list(/datum/material/meat = 500)
+	},
+/area/maintenance/aft/upper)
+"R" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 10
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 6
+	},
+/obj/modular_map_connector,
+/turf/open/floor/material{
+	custom_materials = list(/datum/material/meat = 500)
+	},
+/area/maintenance/aft/upper)
+"U" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 5
+	},
+/obj/machinery/light/cold/directional/south,
+/turf/open/floor/material{
+	custom_materials = list(/datum/material/meat = 500)
+	},
+/area/maintenance/aft/upper)
+"Z" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/material{
+	custom_materials = list(/datum/material/meat = 500)
+	},
+/area/maintenance/aft/upper)
+
+(1,1,1) = {"
+e
+z
+U
+"}
+(2,1,1) = {"
+v
+n
+R
+"}
+(3,1,1) = {"
+j
+D
+Z
+"}
+(4,1,1) = {"
+p
+J
+E
+"}

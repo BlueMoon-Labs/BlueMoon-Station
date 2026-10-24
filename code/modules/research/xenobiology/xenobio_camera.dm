@@ -331,6 +331,17 @@
 	SEND_SIGNAL(user, COMSIG_XENO_TURF_CLICK_CTRL, src)
 	..()
 
+//Платформа лифта забирает клик у пола под собой
+/obj/structure/transport/linear/ShiftClick(mob/user)
+	if(isopenturf(loc))
+		SEND_SIGNAL(user, COMSIG_XENO_TURF_CLICK_SHIFT, loc)
+	..()
+
+/obj/structure/transport/linear/CtrlClick(mob/user)
+	if(isopenturf(loc))
+		SEND_SIGNAL(user, COMSIG_XENO_TURF_CLICK_CTRL, loc)
+	..()
+
 //Pick up monkey
 /mob/living/carbon/monkey/CtrlClick(mob/user)
 	SEND_SIGNAL(user, COMSIG_XENO_MONKEY_CLICK_CTRL, src)

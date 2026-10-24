@@ -23,6 +23,9 @@
 	hook_args.Cut()
 
 /mob/Destroy()//This makes sure that mobs with clients/keys are not just deleted from the game.
+	var/list/old_mousewheel_handlers = mousewheel_handlers
+	mousewheel_handlers = null
+	QDEL_LIST(old_mousewheel_handlers)
 	// if(client)
 	// 	stack_trace("Mob with client has been deleted.")
 	// else if(ckey)
@@ -33,6 +36,10 @@
 	remove_from_mob_list()
 	remove_from_dead_mob_list()
 	remove_from_alive_mob_list()
+	if(istext(real_name))
+		LAZYREMOVE(GLOB.mob_spawners[real_name], src)
+		if(!LAZYLEN(GLOB.mob_spawners[real_name]))
+			GLOB.mob_spawners -= real_name
 	QDEL_LIST(mob_spell_list)
 	QDEL_LAZYLIST(actions)
 	GLOB.all_clockwork_mobs -= src
@@ -59,8 +66,6 @@
 		// держат удалённого моба (утечка обсерверов при наблюдении друг за другом).
 		for(var/mob/dead/observer/observe as anything in observers.Copy())
 			observe.reset_perspective(null)
-			// У бесклиентных наблюдателей reset_perspective не чистит observetarget.
-			observe.observetarget = null
 		observers = null
 	dispose_rendering()
 	qdel(hud_used)
@@ -339,30 +344,29 @@
 			//Set the the thing unless it's us
 			if(A != src)
 				client.perspective = EYE_PERSPECTIVE
-				client.eye = A
+				client.set_eye(A)
 			else
-				client.eye = client.mob
+				client.set_eye(client.mob)
 				client.perspective = MOB_PERSPECTIVE
 		else if(isturf(A))
 			//Set to the turf unless it's our current turf
 			if(A != loc)
 				client.perspective = EYE_PERSPECTIVE
-				client.eye = A
+				client.set_eye(A)
 			else
-				client.eye = client.mob
+				client.set_eye(client.mob)
 				client.perspective = MOB_PERSPECTIVE
 		else
 			//Do nothing
 	else
 		//Reset to common defaults: mob if on turf, otherwise current loc
 		if(isturf(loc))
-			client.eye = client.mob
+			client.set_eye(client.mob)
 			client.perspective = MOB_PERSPECTIVE
 		else
 			client.perspective = EYE_PERSPECTIVE
-			client.eye = loc
+			client.set_eye(loc)
 	SEND_SIGNAL(src, COMSIG_MOB_RESET_PERSPECTIVE, A)
-	refresh_hud_view_group()
 	return TRUE
 
 //view() but with a signal, to allow blacklisting some of the otherwise visible atoms.
@@ -402,13 +406,15 @@
 	var/examine_more = FALSE
 	if(client)
 		LAZYINITLIST(client.recent_examines)
-		if(isnull(client.recent_examines[A]) || client.recent_examines[A] < world.time)
+		// Keyed by ref, not by the atom: a COMSIG_PARENT_QDELETING subscription here would
+		// replace any handler this mob already holds on the target (hostile enemy tracking).
+		var/examined_ref = REF(A)
+		if(isnull(client.recent_examines[examined_ref]) || client.recent_examines[examined_ref] < world.time)
 			result = A.examine(src)
 			if(!client)
 				return
-			client.recent_examines[A] = world.time + EXAMINE_MORE_TIME // set the value to when the examine cooldown ends
-			RegisterSignal(A, COMSIG_PARENT_QDELETING, PROC_REF(clear_from_recent_examines), override=TRUE) // to flush the value if deleted early
-			addtimer(CALLBACK(src, PROC_REF(clear_from_recent_examines), A), EXAMINE_MORE_TIME)
+			client.recent_examines[examined_ref] = world.time + EXAMINE_MORE_TIME // set the value to when the examine cooldown ends
+			addtimer(CALLBACK(src, PROC_REF(clear_from_recent_examines), examined_ref), EXAMINE_MORE_TIME)
 			handle_eye_contact(A)
 		else
 			examine_more = TRUE
@@ -485,11 +491,10 @@
 
 // BLINDNESS CHECK END
 
-/mob/proc/clear_from_recent_examines(atom/A)
+/mob/proc/clear_from_recent_examines(examined_ref)
 	if(!client)
 		return
-	UnregisterSignal(A, COMSIG_PARENT_QDELETING)
-	LAZYREMOVE(client.recent_examines, A)
+	LAZYREMOVE(client.recent_examines, examined_ref)
 
 /**
   * handle_eye_contact() is called when we examine() something. If we examine an alive mob with a mind who has examined us in the last second within 5 tiles, we make eye contact!
@@ -502,7 +507,7 @@
 	return
 
 /mob/living/handle_eye_contact(mob/living/examined_mob)
-	if(!istype(examined_mob) || src == examined_mob || examined_mob.stat >= UNCONSCIOUS || !client || !examined_mob.client?.recent_examines || !(src in examined_mob.client.recent_examines))
+	if(!istype(examined_mob) || src == examined_mob || examined_mob.stat >= UNCONSCIOUS || !client || !examined_mob.client?.recent_examines || !(REF(src) in examined_mob.client.recent_examines))
 		return
 
 	if(get_dist(src, examined_mob) > EYE_CONTACT_RANGE)
@@ -564,16 +569,22 @@
  */
 /mob/proc/execute_mode(obj/item/expected_item, expected_active_hand_index, force = FALSE)
 	if(ismecha(loc))
-		return FALSE
+		// В кабине активируем модуль манипулятора, а не настоящий предмет в руке пилота.
+		var/obj/vehicle/sealed/mecha/chassis = loc
+		var/obj/item/mecha_parts/mecha_equipment/module = chassis.selected
+		if(!module || module.chassis != chassis || !(chassis.occupants[src] & VEHICLE_CONTROL_EQUIPMENT))
+			return FALSE
+		module.attack_self(src)
+		return TRUE
 	if(incapacitated())
 		return FALSE
 	if(!force && expected_active_hand_index != active_hand_index) // рука сменилась, пока верб ждал в очереди
 		return FALSE
 
 	var/obj/item/I = get_active_held_item()
+	if(!force && I != expected_item) // предмет сменился, пока верб ждал в очереди
+		return FALSE
 	if(I)
-		if(!force && I != expected_item) // предмет сменился, пока верб ждал в очереди
-			return FALSE
 		I.attack_self(src)
 		update_inv_hands()
 		return TRUE
@@ -720,6 +731,12 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 
 /mob/proc/get_muzzle_strength()
 	return MUFFLE_NONE
+
+/// Уровень сенсорной депривации слуха на основе TRAIT_HEARING_DEPRIVED
+/mob/proc/get_hearing_deprivation_strength()
+	if(HAS_TRAIT(src, TRAIT_HEARING_DEPRIVED))
+		return HEARING_DEPRIV_LOW
+	return HEARING_DEPRIV_NONE
 
 /// Adds this list to the output to the stat browser
 /mob/proc/get_status_tab_items()
@@ -1040,16 +1057,11 @@ GLOBAL_VAR_INIT(exploit_warn_spam_prevention, 0)
 	sync_lighting_plane_alpha()
 
 /mob/proc/sync_lighting_plane_alpha()
-	if(hud_used)
-		var/atom/movable/screen/plane_master/lighting/L = hud_used.plane_masters["[LIGHTING_PLANE]"]
-		if(L)
-			L.alpha = lighting_alpha
-			L.apply_light_cutoff(lighting_cutoff, lighting_color_cutoffs)
-		// Плоскость оверлейного света обязана гаснуть синхронно с тьмой: при прозрачной
-		// lighting plane (мезоны/НВ) цветной множитель света без тьмы под ним - визуальный мусор
-		var/atom/movable/screen/plane_master/o_light_visual/O = hud_used.plane_masters["[O_LIGHTING_VISUAL_PLANE]"]
-		if(O)
-			O.alpha = lighting_alpha
+	if(!hud_used)
+		return
+	for(var/atom/movable/screen/plane_master/lighting/L as anything in hud_used.get_true_plane_masters(LIGHTING_PLANE))
+		L.set_alpha(lighting_alpha)
+		L.apply_light_cutoff(lighting_cutoff, lighting_color_cutoffs)
 
 /mob/proc/update_mouse_pointer()
 	if (!client)

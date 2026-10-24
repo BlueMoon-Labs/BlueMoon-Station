@@ -133,6 +133,7 @@
 	var/tc = 30
 	var/command_radio = FALSE
 	var/uplink_type = /obj/item/inteq/uplink/radio/nuclear
+	var/give_explosive_implant = TRUE //WHITE-STEEL PORT: экспедиционная версия может не получать взрывной имплант.
 
 	give_space_cooler_if_synth = TRUE // BLUEMOON ADD
 
@@ -177,7 +178,7 @@
 		if(!LAZYLEN(H.implants) || !(locate(/obj/item/implant/weapons_auth) in H.implants))
 			var/obj/item/implant/weapons_auth/W = new
 			W.implant(H)
-		if(!LAZYLEN(H.implants) || !(locate(/obj/item/implant/explosive) in H.implants))
+		if(give_explosive_implant && (!LAZYLEN(H.implants) || !(locate(/obj/item/implant/explosive) in H.implants)))
 			var/obj/item/implant/explosive/E = new
 			E.implant(H)
 
@@ -187,21 +188,32 @@
 /datum/outfit/inteq/full
 	name = "InteQ Operative - Full Kit"
 
-	glasses = /obj/item/clothing/glasses/night/syndicate
+	glasses = /obj/item/clothing/glasses/syndicate_eyepatch
 	mask = /obj/item/clothing/mask/gas/sechailer
 	suit = /obj/item/clothing/suit/space/hardsuit/syndi/elite/inteq
+	suit_store = /obj/item/tank/internals/doubleoxygen
 	l_pocket = /obj/item/melee/transforming/plasmasword
 	r_pocket = /obj/item/tank/internals/emergency_oxygen/double
 	internals_slot = ITEM_SLOT_RPOCKET
 	belt = /obj/item/storage/belt/military/inteq/full
 	r_hand = /obj/item/gun/ballistic/automatic/ak12
 	backpack_contents = list(/obj/item/storage/box/survival/command=1,\
-		/obj/item/tank/jetpack/oxygen/harness=1,\
-		/obj/item/storage/firstaid/tactical/slaver=1,\
-		/obj/item/reagent_containers/syringe/stimulants=1)
+		/obj/item/storage/firstaid/tactical=1,\
+		/obj/item/reagent_containers/hypospray/medipen/stimulants=1)
+
+	cybernetic_implants = list(
+		/obj/item/organ/cyberimp/eyes/hud/medical,
+		/obj/item/organ/cyberimp/chest/nutrimentextreme,
+		/obj/item/organ/heart/bioaegis/t3/antag,
+		/obj/item/organ/liver/bioaegis/t3/antag,
+		/obj/item/organ/lungs/bioaegis/t3/antag,
+	)
 
 	tc = null
 	uplink_type = null
+	//WHITE-STEEL PORT: expedition-вариант набора (цель охоты) не должен получать objective
+	//на захват шаттла. Флаг позволяет переиспользовать весь набор InteQ, отключив только его.
+	var/give_hijack_objective = TRUE
 
 /datum/outfit/inteq/full/pre_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
 	. = ..()
@@ -210,8 +222,8 @@
 	if(!(ROLE_INTEQ in H.faction))
 		H.faction |= ROLE_INTEQ
 
-/// Silent holder for martyr objective on inteq/full when the mob is not a nuke operative (ghost hitchhikers). Do not use datum/antagonist/traitor — it rolls random classes and corrupts minds.
-/datum/antagonist/inteq_martyr_objective_holder
+/// Silent holder for the hijack objective on inteq/full when the mob is not a nuke operative (ghost hitchhikers). Do not use datum/antagonist/traitor — it rolls random classes and corrupts minds.
+/datum/antagonist/inteq_hijack_objective_holder
 	name = "InteQ operative directive"
 	soft_antag = TRUE
 	silent = TRUE
@@ -224,26 +236,41 @@
 
 /datum/outfit/inteq/full/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
 	. = ..()
+	if(visualsOnly)
+		return
+
+	// Ранец хардсьюта живёт внутри скафандра (hardsuit.jetpack), а не в слоте спины:
+	// спину занимает рюкзак из /datum/outfit/inteq, поэтому H.back тут всегда был рюкзаком.
+	// get_jetpack() сам достаёт ранец из скафандра, а cycle() подтягивает баллон из suit_store,
+	// ставит иконку и обновляет кнопки - руками выставлять on/icon_state не нужно.
+	var/obj/item/tank/jetpack/J = H.get_jetpack()
+	if(istype(J, /obj/item/tank/jetpack/suit) && !J.on)
+		J.cycle(H)
+
+	//WHITE-STEEL PORT: expedition-вариант (цель охоты) не получает objective на захват шаттла.
+	if(!give_hijack_objective)
+		return
+
 	//превью в панели спавна одевает безмозглого дамми: цели ему выдавать некому
 	//("Cannot execute null.get all objectives()", раунд 9827)
-	if(visualsOnly || !H.mind)
+	if(!H.mind)
 		return
 	for(var/datum/objective/obj in H.mind.get_all_objectives())
-		if(istype(obj, /datum/objective/martyr))
+		if(istype(obj, /datum/objective/hijack))
 			return
-	var/datum/objective/martyr/martyr_obj = new
-	martyr_obj.owner = H.mind
+	var/datum/objective/hijack/hijack_obj = new
+	hijack_obj.owner = H.mind
 	var/datum/antagonist/nukeop/nuke_datum = H.mind.has_antag_datum(/datum/antagonist/nukeop)
 	if(nuke_datum)
-		nuke_datum.objectives += martyr_obj
+		nuke_datum.objectives += hijack_obj
 	else
-		var/datum/antagonist/inteq_martyr_objective_holder/holder = H.mind.has_antag_datum(/datum/antagonist/inteq_martyr_objective_holder)
+		var/datum/antagonist/inteq_hijack_objective_holder/holder = H.mind.has_antag_datum(/datum/antagonist/inteq_hijack_objective_holder)
 		if(!holder)
-			holder = H.mind.add_antag_datum(/datum/antagonist/inteq_martyr_objective_holder)
+			holder = H.mind.add_antag_datum(/datum/antagonist/inteq_hijack_objective_holder)
 			if(!holder)
-				qdel(martyr_obj)
+				qdel(hijack_obj)
 				return
-		holder.objectives += martyr_obj
+		holder.objectives += hijack_obj
 	H.mind.announce_objectives()
 
 /datum/outfit/inteq/lone/inteq

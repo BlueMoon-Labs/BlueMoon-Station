@@ -27,10 +27,11 @@
 	return CINEMATIC_NUKE_FAKE
 
 /obj/machinery/nuclearbomb/syndicate/bananium/really_actually_explode(off_station)
+	var/list/clowned_levels = SSmapping.get_connected_levels(get_turf(src))
 	Cinematic(get_cinematic_type(off_station), world)
 	for(var/mob/living/carbon/human/H in GLOB.carbon_list)
 		var/turf/T = get_turf(H)
-		if(!T || T.z != z)
+		if(!T || !(T.z in clowned_levels))
 			continue
 		H.Stun(10)
 		var/obj/item/clothing/C

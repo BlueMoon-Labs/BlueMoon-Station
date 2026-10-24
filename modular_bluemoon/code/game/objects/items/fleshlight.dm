@@ -486,23 +486,21 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 				worn_target_action = new /datum/action/portal_target_switch(src)
 			worn_target_action.Grant(user)
 			// Notify connected portallights that panties are back on
-			if(LAZYLEN(portallight))
-				for(var/obj/item/portallight/PL in portallight)
-					var/mob/living/carbon/human/holder = get_fleshlight_holder(PL)
-					if(holder)
-						to_chat(holder, span_notice("Портальные трусики надеты снова — соединение восстановлено."))
+			for(var/obj/item/portallight/PL in portallight)
+				var/mob/living/carbon/human/holder = get_fleshlight_holder(PL)
+				if(holder)
+					to_chat(holder, span_notice("Портальные трусики надеты снова — соединение восстановлено."))
 
 /obj/item/clothing/underwear/briefs/panties/portalpanties/dropped(mob/user)
 	. = ..()
 	UnregisterSignal(user, COMSIG_MOVABLE_HEAR)
 	// Suspend (not destroy) connection on undress - reconnects automatically when re-equipped
-	if(LAZYLEN(portallight))
-		for(var/obj/item/portallight/PL in portallight)
-			unregister_remote_vibration(PL)
-			// Keep PL.portalunderwear and portallight list intact
-			var/mob/living/carbon/human/holder = get_fleshlight_holder(PL)
-			if(holder)
-				to_chat(holder, span_warning("Портальные трусики сняты — соединение приостановлено."))
+	for(var/obj/item/portallight/PL in portallight)
+		unregister_remote_vibration(PL)
+		// Keep PL.portalunderwear and portallight list intact
+		var/mob/living/carbon/human/holder = get_fleshlight_holder(PL)
+		if(holder)
+			to_chat(holder, span_warning("Портальные трусики сняты — соединение приостановлено."))
 	// Clear any remaining remote vibrations
 	LAZYCLEARLIST(remote_vibrations)
 	portal_settings?.owner = null
@@ -527,22 +525,20 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 	available_panties = GLOB.public_portal_panties.Copy()
 
 /obj/item/portallight/Destroy()
-	// Clean up connections before destruction
-	if(portalunderwear)
-		portalunderwear.unregister_remote_vibration(src)
-		portalunderwear.portallight -= src
-		portalunderwear = null
-	if(available_panties.len)
-		for(var/obj/item/clothing/underwear/briefs/panties/portalpanties/temp in available_panties)
-			temp.portallight -= src
-	QDEL_NULL(portal_settings)
-	QDEL_NULL(held_target_action)
-	for(var/obj/item/clothing/underwear/briefs/panties/portalpanties/panties as anything in GLOB.portalpanties)
-		LAZYREMOVE(panties.portallight, src)
+	GLOB.fleshlight_portallight -= src
+	// Переподключение не вычёркивает фонарик из списка прежних трусиков, поэтому обходим все.
+	var/vibration_ref = REF(src)
+	for(var/obj/item/clothing/underwear/briefs/panties/portalpanties/panties in GLOB.portalpanties)
+		panties.portallight -= src
 		if(panties.private_pair == src)
 			panties.private_pair = null
+		if(LAZYACCESS(panties.remote_vibrations, vibration_ref))
+			panties.unregister_remote_vibration(src)
+	portalunderwear = null
 	private_pair = null
-	GLOB.fleshlight_portallight -= src
+	available_panties.Cut()
+	QDEL_NULL(portal_settings)
+	QDEL_NULL(held_target_action)
 	return ..()
 
 /obj/item/clothing/underwear/briefs/panties/portalpanties/New()
@@ -550,33 +546,28 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 	GLOB.portalpanties += src
 
 /obj/item/clothing/underwear/briefs/panties/portalpanties/Destroy()
+	GLOB.portalpanties -= src
+	GLOB.public_portal_panties -= src
 	QDEL_NULL(worn_control_action)
 	QDEL_NULL(worn_target_action)
 	QDEL_NULL(inserted_control_action)
 	QDEL_NULL(inserted_target_action)
+	// remove_member() не находит через weakref уже удаляемые трусики
+	if(portal_settings?.network)
+		portal_settings.network.group_mode_panties -= src
 	QDEL_NULL(portal_settings)
-	private_pair = null
-	// Disconnect all connected portallights before deletion
-	if(LAZYLEN(portallight))
-		for(var/obj/item/portallight/PL in portallight)
-			unregister_remote_vibration(PL)
-			PL.portalunderwear = null
-			PL.icon_state = "unpaired"
-			PL.update_appearance()
-		LAZYCLEARLIST(portallight)
-	LAZYCLEARLIST(remote_vibrations)
-	GLOB.portalpanties -= src
-	GLOB.public_portal_panties -= src
-	// Публичные трусики раздаются по available_panties всем фонарикам (_portal_toys.dm), а
-	// снимались оттуда только при штатном отключении публичности. Один удалённый экземпляр
-	// оставался жить в списке каждого фонарика - и это был самый дорогой del() раунда среди
-	// предметов. Проходим по всем владельцам списка сами.
-	for(var/obj/item/portallight/light as anything in GLOB.fleshlight_portallight)
+	for(var/obj/item/portallight/light in GLOB.fleshlight_portallight)
 		light.available_panties -= src
-		if(light.portalunderwear == src)
-			light.portalunderwear = null
 		if(light.private_pair == src)
 			light.private_pair = null
+		if(light.portalunderwear != src)
+			continue
+		light.portalunderwear = null
+		light.icon_state = "unpaired"
+		light.update_appearance()
+	portallight.Cut()
+	private_pair = null
+	LAZYNULL(remote_vibrations)
 	return ..()
 
 // Переименование трусиков
@@ -696,17 +687,16 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 	targetting = CUM_TARGET_VAGINA
 	update_portal()
 	// Notify connected flashlights that panties are being removed
-	if(LAZYLEN(portallight))
-		for(var/obj/item/portallight/PL in portallight)
-			var/mob/living/carbon/human/holder = get_fleshlight_holder(PL)
-			if(holder)
-				to_chat(holder, span_warning("Портальное соединение потеряно - трусики были извлечены!"))
-			// Clear the flashlight's connection to us
-			unregister_remote_vibration(PL)
-			PL.portalunderwear = null
-			PL.icon_state = "unpaired"
-			PL.update_appearance()
-		LAZYCLEARLIST(portallight)
+	for(var/obj/item/portallight/PL in portallight)
+		var/mob/living/carbon/human/holder = get_fleshlight_holder(PL)
+		if(holder)
+			to_chat(holder, span_warning("Портальное соединение потеряно - трусики были извлечены!"))
+		// Clear the flashlight's connection to us
+		unregister_remote_vibration(PL)
+		PL.portalunderwear = null
+		PL.icon_state = "unpaired"
+		PL.update_appearance()
+	portallight.Cut()
 	// Clear any remaining remote vibrations
 	LAZYCLEARLIST(remote_vibrations)
 	// Remove control action and unregister signals
@@ -879,7 +869,7 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 
 // Portal panties relay - sends sensations to all connected fleshlights
 /obj/item/clothing/underwear/briefs/panties/portalpanties/proc/relay_intercourse_sensations(mob/living/wearer, mob/living/partner, lust_amount, orifice_type, is_climax, genital_slot)
-	if(!portallight?.len)
+	if(!portallight.len)
 		return
 	var/panty_location_text = get_insertion_location_text()
 	var/panties_are_inserted = !!panty_location_text
@@ -1029,7 +1019,7 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 	if(equipment?.holder_genital)
 		var/obj/item/organ/genital/G = equipment.holder_genital
 		. += span_purple("В данный момент вставлены в [G.name].")
-		if(portallight?.len)
+		if(portallight.len)
 			. += span_notice("Подключено фонариков: [portallight.len]")
 	if(seamless)
 		. += span_warning("Заблокированы латексным ключом.")
@@ -1059,7 +1049,7 @@ GLOBAL_LIST_EMPTY(public_portal_panties)
 			device_info["name"] = PP.name
 			device_info["key"] = REF(PP)
 			device_info["type"] = "panties"
-			device_info["connected"] = PP.portallight?.len || 0
+			device_info["connected"] = PP.portallight.len
 			device_info["connection_mode"] = PP.portal_settings?.connection_mode || PORTAL_MODE_DISABLED
 			portal_devices += list(device_info)
 		for(var/obj/item/portallight/PL in genital.contents)

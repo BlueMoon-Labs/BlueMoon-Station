@@ -34,7 +34,7 @@
 	var/glass_amount = 1
 	can_be_unanchored = TRUE
 	resistance_flags = ACID_PROOF
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 80, ACID = 100)
+	armor_type = /datum/armor/fire80_acid100
 	CanAtmosPass = ATMOS_PASS_PROC
 	var/real_explosion_block	//ignore this, just use explosion_block
 	var/breaksound = "shatter"
@@ -59,10 +59,15 @@
 	///Datum that the shard and debris type is pulled from for when the glass is broken.
 	var/cleanable_type = /obj/effect/decal/cleanable/glass
 	var/datum/material/glass_material_datum = /datum/material/glass
+	/// Emergency package installed explicitly by a window spawner or RCD.
+	var/airbag_installed = FALSE
+	/// Prevent two simultaneous Alt-clicks from removing the same package twice.
+	var/airbag_disarming = FALSE
 
 /obj/structure/window/examine(mob/user)
 	. = ..()
-	. += airbag_examine()
+	if(airbag_installed)
+		. += span_warning("Мигающий красный индикатор указывает на установленный аирбаг. <b>Alt-клик</b>, чтобы обезвредить и снять его.")
 	if(electrochromatic_status != NOT_ELECTROCHROMATIC)
 		. += "<span class='notice'>The window has electrochromatic circuitry on it.</span>"
 	if(reinf)
@@ -147,7 +152,7 @@
 /obj/structure/window/rcd_act(mob/user, var/obj/item/construction/rcd/the_rcd)
 	switch(the_rcd.mode)
 		if(RCD_DECONSTRUCT)
-			to_chat(user, "<span class='notice'>You deconstruct the window.</span>")
+			to_chat(user, span_notice("Вы разбираете окно."))
 			qdel(src)
 			return TRUE
 	return FALSE
@@ -248,8 +253,24 @@
 
 	add_fingerprint(user)
 
-	if(airbag_attackby(I, user))
-		return TRUE
+	if(istype(I, /obj/item/airbag_module))
+		var/obj/item/airbag_module/module = I
+		if(airbag_installed)
+			balloon_alert(user, "Airbag уже установлен")
+			return STOP_ATTACK_PROC_CHAIN
+		if(module.armed)
+			balloon_alert(user, "Airbag уже активирован!")
+			return STOP_ATTACK_PROC_CHAIN
+		if(!user.transferItemToLoc(module, src))
+			return STOP_ATTACK_PROC_CHAIN
+		if(!install_airbag())
+			user.put_in_hands(module)
+			return STOP_ATTACK_PROC_CHAIN
+		module.transfer_fingerprints_to(src)
+		qdel(module)
+		playsound(src, 'sound/machines/click.ogg', 50, TRUE)
+		balloon_alert(user, "Airbag установлен")
+		return STOP_ATTACK_PROC_CHAIN
 
 	if(I.tool_behaviour == TOOL_WELDER && user.a_intent == INTENT_HELP)
 		if(obj_integrity < max_integrity)
@@ -504,7 +525,8 @@
 /obj/structure/window/deconstruct(disassembled = TRUE)
 	if(QDELETED(src))
 		return
-	airbag_on_deconstruct(disassembled)
+	if(!disassembled)
+		deploy_window_safety()
 	if(!disassembled)
 		playsound(src, breaksound, 70, 1)
 		if(!(flags_1 & NODECONSTRUCT_1))
@@ -554,7 +576,6 @@
 	add_fingerprint(user)
 
 /obj/structure/window/Destroy()
-	airbag_drop()
 	density = FALSE
 	air_update_turf(TRUE)
 	update_nearby_icons()
@@ -584,9 +605,6 @@
 //merges adjacent full-tile windows into one
 /obj/structure/window/update_overlays()
 	. = ..()
-	var/mutable_appearance/airbag_light = airbag_overlay()
-	if(airbag_light)
-		. += airbag_light
 	if(QDELETED(src) || !fulltile)
 		return
 	var/ratio = obj_integrity / max_integrity
@@ -645,7 +663,7 @@
 	icon_state = "rwindow"
 	reinf = TRUE
 	heat_resistance = 1600
-	armor = list(MELEE = 50, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 25, BIO = 100, RAD = 100, FIRE = 80, ACID = 100)
+	armor_type = /datum/armor/structure_window_reinforced
 	max_integrity = 50
 	explosion_block = 1
 	wave_explosion_block = EXPLOSION_BLOCK_REINFORCED_WINDOW
@@ -673,7 +691,7 @@
 	icon_state = "plasmawindow"
 	reinf = FALSE
 	heat_resistance = 25000
-	armor = list(MELEE = 75, BULLET = 5, LASER = 0, ENERGY = 0, BOMB = 45, BIO = 100, RAD = 100, FIRE = 99, ACID = 100)
+	armor_type = /datum/armor/window_plasma
 	max_integrity = 150
 	explosion_block = 1
 	wave_explosion_block = EXPLOSION_BLOCK_BOROSILICATE_WINDOW
@@ -718,7 +736,7 @@
 	reinf = TRUE
 	extra_reinforced = TRUE
 	heat_resistance = 50000
-	armor = list(MELEE = 85, BULLET = 20, LASER = 0, ENERGY = 0, BOMB = 60, BIO = 100, RAD = 100, FIRE = 99, ACID = 100)
+	armor_type = /datum/armor/plasma_window_reinforced
 	max_integrity = 500
 	explosion_block = 2
 	wave_explosion_block = EXPLOSION_BLOCK_EXTREME
@@ -870,6 +888,58 @@
 /obj/structure/window/reinforced/fulltile/unanchored
 	anchored = FALSE
 
+/obj/structure/window/proc/install_airbag()
+	if(airbag_installed || QDELETED(src))
+		return FALSE
+	qdel(GetComponent(/datum/component/simple_rotation))
+	airbag_installed = TRUE
+	return TRUE
+
+// Огонь и кислота могут обойти deconstruct(), поэтому защита срабатывает до родителя.
+/obj/structure/window/obj_destruction(damage_flag)
+	deploy_window_safety()
+	return ..()
+
+/obj/structure/window/proc/deploy_window_safety()
+	if(!isturf(loc))
+		return
+	// Окно уже разбивается: проверяем перепад через открывшийся проём,
+	// учитывая реальные атмосферные соединения и остальные преграды.
+	density = FALSE
+	for(var/obj/machinery/door/firedoor/firelock in loc)
+		if(!firelock.density && firelock.is_holding_pressure(include_open = TRUE))
+			firelock.emergency_pressure_stop()
+	deploy_airbag()
+
+/obj/structure/window/proc/deploy_airbag()
+	if(!airbag_installed || !isturf(loc))
+		return
+	airbag_installed = FALSE
+	new /obj/item/airbag_module/immediate_arm(get_turf(src))
+
+/obj/structure/window/AltClick(mob/user)
+	if(!airbag_installed)
+		return ..()
+	if(airbag_disarming || !isliving(user) || !user.canUseTopic(src, BE_CLOSE, FALSE, TRUE, FALSE))
+		return
+	airbag_disarming = TRUE
+	balloon_alert(user, "Обезвреживание airbag...")
+	if(!do_after(user, 3 SECONDS, target = src))
+		airbag_disarming = FALSE
+		return TRUE
+	if(QDELETED(src))
+		return TRUE
+	airbag_disarming = FALSE
+	if(!airbag_installed)
+		return TRUE
+	airbag_installed = FALSE
+	add_fingerprint(user)
+	var/obj/item/airbag_module/module = new(drop_location())
+	transfer_fingerprints_to(module)
+	user.put_in_hands(module)
+	balloon_alert(user, "Airbag снят")
+	return TRUE
+
 /obj/structure/window/reinforced/tinted/fulltile
 	icon = 'icons/obj/smooth_structures/tinted_window.dmi'
 	icon_state = "tinted_window"
@@ -934,7 +1004,7 @@
 	flags_1 = PREVENT_CLICK_UNDER_1
 	reinf = TRUE
 	heat_resistance = 1600
-	armor = list(MELEE = 50, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 50, BIO = 100, RAD = 100, FIRE = 80, ACID = 100)
+	armor_type = /datum/armor/plastitanium_and_shuttle
 	smooth = SMOOTH_MORE|SMOOTH_TRUE
 	canSmoothWith = list(/turf/closed/wall/mineral/titanium, /obj/machinery/door/airlock/shuttle, /obj/machinery/door/airlock, /obj/structure/window/shuttle, /obj/structure/shuttle/engine/heater, /obj/structure/falsewall/titanium, /turf/closed/indestructible/riveted)
 	explosion_block = 3
@@ -972,9 +1042,9 @@
 	reinf = TRUE
 	extra_reinforced = TRUE
 	heat_resistance = 1600
-	armor = list(MELEE = 50, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 50, BIO = 100, RAD = 100, FIRE = 80, ACID = 100)
+	armor_type = /datum/armor/plastitanium_and_shuttle
 	smooth = SMOOTH_MORE|SMOOTH_TRUE
-	canSmoothWith = list(/turf/closed/wall/r_wall/syndicate, /turf/closed/wall/mineral/plastitanium, /obj/machinery/door/airlock/shuttle, /obj/machinery/door/airlock, /obj/structure/window/plastitanium, /obj/structure/shuttle/engine, /obj/structure/falsewall/plastitanium, /turf/closed/indestructible/riveted)
+	canSmoothWith = list(/turf/closed/wall/r_wall/syndicate, /turf/closed/wall/r_wall/r_plastitanium, /turf/closed/wall/mineral/plastitanium, /obj/structure/window/plastitanium, /obj/structure/shuttle/engine, /obj/structure/falsewall/plastitanium, /turf/closed/indestructible/riveted)
 	explosion_block = 3
 	level = 3
 	glass_type = /obj/item/stack/sheet/plastitaniumglass
@@ -1003,7 +1073,7 @@
 	icon_state = "clockwork_window_single"
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	max_integrity = 80
-	armor = list(MELEE = 60, BULLET = 25, LASER = 0, ENERGY = 0, BOMB = 25, BIO = 100, RAD = 100, FIRE = 80, ACID = 100)
+	armor_type = /datum/armor/window_clockwork
 	explosion_block = 2 //fancy AND hard to destroy. the most useful combination.
 	wave_explosion_block = EXPLOSION_BLOCK_BOROSILICATE_WINDOW
 	wave_explosion_multiply = EXPLOSION_DAMPEN_BOROSILICATE_WINDOW
@@ -1072,6 +1142,7 @@
 	anchored = FALSE
 
 /obj/structure/window/paperframe
+	armor_type = /datum/armor/none
 	name = "paper frame"
 	desc = "A fragile separator made of thin wood and paper."
 	icon = 'icons/obj/smooth_structures/paperframes.dmi'
@@ -1089,7 +1160,6 @@
 	decon_speed = 10
 	CanAtmosPass = ATMOS_PASS_YES
 	resistance_flags = FLAMMABLE
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0)
 	breaksound = 'sound/items/poster_ripped.ogg'
 	hitsound = 'sound/weapons/slashmiss.ogg'
 	var/static/mutable_appearance/torn = mutable_appearance('icons/obj/smooth_structures/paperframes.dmi',icon_state = "torn", layer = ABOVE_OBJ_LAYER - 0.1)
@@ -1168,3 +1238,88 @@
 
 /obj/structure/window/bronze/fulltile/unanchored
 	anchored = FALSE
+
+// Window airbags, ported from WhiteMoon (Gandalf2k15; original sprites by TauCeti).
+/obj/item/airbag_module
+	name = "airbag"
+	desc = "Небольшой пакет с пиропатроном. Нажмите им по окну, чтобы установить аирбаг. Либо активируйте его и отойдите: через две секунды он развернёт аварийную мембрану."
+	icon = 'modular_bluemoon/icons/obj/structures/inflatable.dmi'
+	icon_state = "airbag_safe"
+	w_class = WEIGHT_CLASS_SMALL
+	max_integrity = 10
+	var/detonate_time = 2 SECONDS
+	var/drop_type = /obj/structure/inflatable/airbag
+	var/immediate_arm = FALSE
+	var/armed = FALSE
+	var/armed_sound = 'sound/items/airbag_arm.ogg'
+	var/bang_sound = 'sound/effects/airbag_bang.ogg'
+	var/anchor_timer
+	var/detonate_timer
+
+/obj/item/airbag_module/Initialize(mapload)
+	. = ..()
+	if(immediate_arm)
+		anchored = TRUE
+		arm()
+
+/obj/item/airbag_module/Destroy()
+	if(anchor_timer)
+		deltimer(anchor_timer)
+		anchor_timer = null
+	if(detonate_timer)
+		deltimer(detonate_timer)
+		detonate_timer = null
+	return ..()
+
+/obj/item/airbag_module/update_icon_state()
+	. = ..()
+	icon_state = "airbag_[armed ? "armed" : "safe"]"
+
+/obj/item/airbag_module/attack_self(mob/user)
+	. = ..()
+	arm()
+
+/obj/item/airbag_module/proc/arm()
+	if(armed || QDELETED(src))
+		return FALSE
+	armed = TRUE
+	balloon_alert_to_viewers("активирован!")
+	if(!anchored)
+		anchor_timer = addtimer(CALLBACK(src, PROC_REF(deploy_anchor)), 1 SECONDS, TIMER_STOPPABLE)
+	detonate_timer = addtimer(CALLBACK(src, PROC_REF(bang)), detonate_time, TIMER_STOPPABLE)
+	playsound(src, armed_sound, 50)
+	update_icon()
+	return TRUE
+
+/obj/item/airbag_module/proc/deploy_anchor()
+	if(!isturf(loc) || anchored)
+		return
+	balloon_alert_to_viewers("якорь развёрнут!")
+	anchored = TRUE
+
+/obj/item/airbag_module/proc/bang()
+	if(!armed || QDELETED(src))
+		return
+	armed = FALSE
+	var/turf/deployment_turf = get_turf(src)
+	if(!deployment_turf)
+		qdel(src)
+		return
+	var/obj/structure/inflatable/created_object = new drop_type(deployment_turf)
+	transfer_fingerprints_to(created_object)
+	playsound(src, bang_sound, 50, pressure_affected = FALSE)
+	do_smoke(range = 1, location = deployment_turf)
+	qdel(src)
+	return created_object
+
+/obj/item/airbag_module/immediate_arm
+	immediate_arm = TRUE
+
+/obj/structure/inflatable/airbag
+	name = "window airbag"
+	desc = "Аварийная мембрана, закрывающая проём разбитого окна."
+	icon_state = "airbag_wall"
+	max_integrity = 40
+	CanAtmosPass = ATMOS_PASS_NO
+	intact = /obj/item/airbag_module
+	torn = null

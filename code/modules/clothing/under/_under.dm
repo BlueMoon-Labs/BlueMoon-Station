@@ -5,7 +5,7 @@
 	permeability_coefficient = 0.9
 	block_priority = BLOCK_PRIORITY_UNIFORM
 	slot_flags = ITEM_SLOT_ICLOTHING
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 5)
+	armor_type = /datum/armor/under
 	equip_sound = 'sound/items/equip/jumpsuit_equip.ogg'
 	drop_sound = 'sound/items/handling/cloth_drop.ogg'
 	pickup_sound = 'sound/items/handling/cloth_pickup.ogg'
@@ -294,12 +294,14 @@
 		to_chat(usr, "На униформе нет сенсоров.")
 		return FALSE
 
-	var/list/modes = list("Off", "Binary vitals", "Exact vitals", "Tracking beacon")
-	var/switchMode = input("Выберите режим сенсоров:", "Режим сенсоров униформы", modes[sensor_mode + 1]) in modes
+	var/list/modes = list("Выключены", "Бинарные показатели", "Точные показатели", "Маяк слежения")
+	var/switch_mode = tgui_input_list(usr, "Выберите режим сенсоров:", "Режим сенсоров униформы", modes, modes[sensor_mode + 1])
+	if(!switch_mode)
+		return
 	if(get_dist(usr, src) > 1)
 		to_chat(usr, "<span class='warning'>Вы отошли слишком далеко!</span>")
 		return
-	sensor_mode_intended = modes.Find(switchMode) - 1
+	sensor_mode_intended = modes.Find(switch_mode) - 1
 
 	if (src.loc == usr)
 		switch(sensor_mode_intended)

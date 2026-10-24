@@ -25,6 +25,11 @@ SUBSYSTEM_DEF(mapping)
 	var/list/shelter_templates = list()
 
 	var/list/areas_in_z = list()
+	/// z -> вся его связка снизу вверх, сосед снизу, сосед сверху (0, если соседа нет). Списки общие для связки, только на чтение.
+	var/list/z_level_to_stack = list()
+	var/list/z_level_below = list()
+	var/list/z_level_above = list()
+	var/list/transparent_space_applied = list()
 	/// List of z level (as number) -> plane offset of that z level
 	/// Used to maintain the plane cube
 	var/list/z_level_to_plane_offset = list()
@@ -76,6 +81,8 @@ SUBSYSTEM_DEF(mapping)
 	var/list/z_to_station_z_index
 
 	var/stat_map_name = "Loading..."
+	// Единый выбор защиты внешних станционных окон на весь раунд.
+	var/station_window_firelocks = FALSE
 
 	/// Lookup list for random generated IDs.
 	var/list/random_generated_ids_by_original = list()
@@ -109,6 +116,7 @@ SUBSYSTEM_DEF(mapping)
 	HACK_LoadMapConfig()
 	if(initialized)
 		return
+	station_window_firelocks = prob(STATION_WINDOW_FIRELOCKS_CHANCE)
 	if(config.defaulted)
 		var/old_config = config
 		config = global.config.defaultmap
@@ -123,6 +131,8 @@ SUBSYSTEM_DEF(mapping)
 	preloadTemplates()
 
 #ifndef LOWMEMORYMODE
+	load_space_sectors()
+
 	// Create space ruin levels
 	while (space_levels_so_far < config.space_ruin_levels)
 		++space_levels_so_far
@@ -173,9 +183,11 @@ SUBSYSTEM_DEF(mapping)
 	if (space_ruins.len)
 		seedRuins(space_ruins, CONFIG_GET(number/space_budget), list(/area/space), space_ruins_templates)
 
+	seed_space_sector_ruins()
+
 	// Generate station space ruins
 	var/list/station_ruins = levels_by_trait(ZTRAIT_STATION)
-	if (station_ruins.len)
+	if (station_ruins.len && GLOB.areas_by_type[/area/space/station_ruins])
 		seedRuins(station_ruins, (SSmapping.config.station_ruin_budget < 0) ? CONFIG_GET(number/station_space_budget) : SSmapping.config.station_ruin_budget, list(/area/space/station_ruins), station_ruins_templates)
 	SSmapping.seedStation()
 
@@ -246,6 +258,7 @@ SUBSYSTEM_DEF(mapping)
 /datum/controller/subsystem/mapping/Recover()
 	flags |= SS_NO_INIT
 	initialized = SSmapping.initialized
+	station_window_firelocks = SSmapping.station_window_firelocks
 	map_templates = SSmapping.map_templates
 	ruins_templates = SSmapping.ruins_templates
 	space_ruins_templates = SSmapping.space_ruins_templates
@@ -267,7 +280,23 @@ SUBSYSTEM_DEF(mapping)
 	z_list = SSmapping.z_list
 	gravity_by_z_level = SSmapping.gravity_by_z_level
 
-/datum/controller/subsystem/mapping/proc/LoadGroup(list/errorList, name, path, files, list/traits, list/default_traits, silent = FALSE, orientation = SOUTH)
+	space_sectors = SSmapping.space_sectors
+	space_sector_sets = SSmapping.space_sector_sets
+	space_grid = SSmapping.space_grid
+
+	plane_offset_to_true = SSmapping.plane_offset_to_true
+	true_to_offset_planes = SSmapping.true_to_offset_planes
+	plane_to_offset = SSmapping.plane_to_offset
+	plane_offset_blacklist = SSmapping.plane_offset_blacklist
+	render_offset_blacklist = SSmapping.render_offset_blacklist
+	critical_planes = SSmapping.critical_planes
+	max_plane_offset = SSmapping.max_plane_offset
+	transparent_space_applied = SSmapping.transparent_space_applied
+	//Вертикаль дешевле пересобрать из z_list, чем переносить по списку и забыть один.
+	build_z_stacks()
+
+/datum/controller/subsystem/mapping/proc/LoadGroup(list/errorList, name, path, files, list/traits, list/default_traits, silent = FALSE, orbital_body_type, orientation = SOUTH)
+
 	. = list()
 	var/start_time = REALTIMEOFDAY
 
@@ -300,9 +329,16 @@ SUBSYSTEM_DEF(mapping)
 	// preload the relevant space_level datums
 	var/start_z = world.maxz + 1
 	var/i = 0
+	var/list/datum/space_level/space_levels = list()
 	for (var/level in traits)
-		add_new_zlevel("[name][i ? " [i + 1]" : ""]", level)
+		space_levels += add_new_zlevel("[name][i ? " [i + 1]" : ""]", level)
 		++i
+	// Shared orbital body for the whole group (supercruise system)
+	if(orbital_body_type)
+		var/datum/orbital_object/z_linked/orbital_body = new orbital_body_type()
+		for(var/datum/space_level/level as() in space_levels)
+			level.orbital_body = orbital_body
+			orbital_body.link_to_z(level)
 
 	// load the maps
 	for (var/P in parsed_maps)
@@ -315,13 +351,10 @@ SUBSYSTEM_DEF(mapping)
 
 /datum/controller/subsystem/mapping/proc/setup_station_z_index()
 	z_to_station_z_index = list()
-	var/sz = 1
-	var/cz = station_start
-	if(islist(config.map_file))
-		for(var/map in config.map_file)
-			z_to_station_z_index["[cz++]"] = sz++
-	else
-		z_to_station_z_index["[station_start]"] = 1
+	//Один файл карты может нести несколько этажей: номер нужен каждому станционному z, а не каждому файлу.
+	var/station_index = 1
+	for(var/station_z in levels_by_trait(ZTRAIT_STATION))
+		z_to_station_z_index["[station_z]"] = station_index++
 
 /datum/controller/subsystem/mapping/proc/loadWorld()
 	//if any of these fail, something has gone horribly, HORRIBLY, wrong
@@ -333,7 +366,8 @@ SUBSYSTEM_DEF(mapping)
 	// load the station
 	station_start = world.maxz + 1
 	INIT_ANNOUNCE("Loading [config.map_name]...")
-	LoadGroup(FailedZs, "Station", config.map_path, config.map_file, config.traits, ZTRAITS_STATION, FALSE, config.orientation)
+	LoadGroup(FailedZs, "Station", config.map_path, config.map_file, config.traits, ZTRAITS_STATION, FALSE, orbital_body_type = /datum/orbital_object/z_linked/station, orientation = config.orientation)
+	load_queued_map_modules()
 
 	setup_station_z_index()
 
@@ -352,7 +386,7 @@ SUBSYSTEM_DEF(mapping)
 
 	// load mining
 	if(config.minetype == "lavaland")
-		LoadGroup(FailedZs, "Lavaland", "map_files/Mining", "Lavaland.dmm", traits = list(ZTRAITS_LAVALAND_JUNGLE, ZTRAITS_LAVALAND), default_traits = ZTRAITS_LAVALAND)
+		LoadGroup(FailedZs, "Lavaland", "map_files/Mining", "Lavaland.dmm", traits = list(ZTRAITS_LAVALAND_JUNGLE, ZTRAITS_LAVALAND), default_traits = ZTRAITS_LAVALAND, orbital_body_type = /datum/orbital_object/z_linked/lavaland)
 	else if (!isnull(config.minetype) && config.minetype != "none")
 		INIT_ANNOUNCE("WARNING: An unknown minetype '[config.minetype]' was set! This is being ignored! Update the maploader code!")
 #endif
@@ -481,10 +515,13 @@ GLOBAL_LIST_EMPTY(the_station_areas)
 
 /datum/controller/subsystem/mapping/proc/preloadRuinTemplates()
 	// Still supporting bans by filename
-	var/list/banned = generateMapList("[global.config.directory]/lavaruinblacklist.txt")
-	banned += generateMapList("[global.config.directory]/spaceruinblacklist.txt")
-	banned += generateMapList("[global.config.directory]/iceruinblacklist.txt")
-	banned += generateMapList("[global.config.directory]/stationruinblacklist.txt")
+	var/list/banned = list()
+	// Имена в config/ в смешанном регистре, а на Linux регистр важен; конфиг сервера может быть и в нижнем.
+	for(var/blacklist in list("lavaRuinBlacklist.txt", "spaceRuinBlacklist.txt", "iceruinblacklist.txt", "stationRuinBlacklist.txt"))
+		var/blacklist_path = "[global.config.directory]/[blacklist]"
+		if(!fexists(blacklist_path))
+			blacklist_path = "[global.config.directory]/[lowertext(blacklist)]"
+		banned += generateMapList(blacklist_path)
 
 	for(var/item in sort_list(subtypesof(/datum/map_template/ruin), GLOBAL_PROC_REF(cmp_ruincost_priority)))
 		var/datum/map_template/ruin/ruin_type = item
@@ -576,13 +613,14 @@ GLOBAL_LIST_EMPTY(the_station_areas)
 				return
 			away_name = "[mapfile] custom"
 			to_chat(usr,"<span class='notice'>Loading [away_name]...</span>")
-			var/datum/map_template/template = new(mapfile, choice, ztraits)
-			away_level = template.load_new_z(ztraits)
+			// ztraits только именованным: третий позиционный у New() - кэш разбора, а у load_new_z() - ориентация.
+			var/datum/map_template/template = new(mapfile, choice)
+			away_level = template.load_new_z(ztraits = ztraits)
 		else
 			away_name = answer
 			to_chat(usr,"<span class='notice'>Loading [away_name]...</span>")
 			var/datum/map_template/template = new(away_name, choice)
-			away_level = template.load_new_z(ztraits)
+			away_level = template.load_new_z(ztraits = ztraits)
 
 	message_admins("Admin [key_name_admin(usr)] has loaded [away_name] away mission.")
 	log_admin("Admin [key_name(usr)] has loaded [away_name] away mission.")

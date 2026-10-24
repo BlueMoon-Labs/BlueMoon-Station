@@ -6,9 +6,9 @@
 	random_gain = TRUE
 
 /datum/brain_trauma/severe/dark_passenger/on_gain()
-	owner.mind.add_antag_datum(/datum/antagonist/dark_passenger)
+	owner.mind?.add_antag_datum(/datum/antagonist/dark_passenger)
 	. = ..()
 
 /datum/brain_trauma/severe/dark_passenger/on_lose(silent)
-	owner.mind.remove_antag_datum(/datum/antagonist/dark_passenger)
+	owner.mind?.remove_antag_datum(/datum/antagonist/dark_passenger)
 	. = ..()

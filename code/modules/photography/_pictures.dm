@@ -4,9 +4,12 @@
 	var/caption
 	var/icon/picture_image
 	var/icon/picture_icon
+	var/picture_url
 	var/psize_x = 96
 	var/psize_y = 96
 	var/has_blueprints = FALSE
+	/// WEAKREF(mind) -> list("restrained", "unconscious", "foreign_area"): кто попал в кадр и в каком виде
+	var/list/subjects_seen
 	var/logpath						//If the picture has been logged this is the path.
 	/// Кэш base64-кодировки picture_image для tgui и иконка, с которой он снят.
 	/// Консоли записей кодировали фото на КАЖДЫЙ ui_data (список записей охраны -
@@ -172,9 +175,11 @@
 		P.picture_image = icon(picture_image)	//Copy, not reference.
 	if(picture_icon)
 		P.picture_icon = icon(picture_icon)
+	P.picture_url = picture_url
 	P.psize_x = psize_x - cropx * 2
 	P.psize_y = psize_y - cropy * 2
 	P.has_blueprints = has_blueprints
+	P.subjects_seen = subjects_seen?.Copy()
 	if(greyscale)
 		if(picture_image)
 			P.picture_image.MapColors(rgb(77,77,77), rgb(150,150,150), rgb(28,28,28), rgb(0,0,0))

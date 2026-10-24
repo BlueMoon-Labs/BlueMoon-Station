@@ -60,9 +60,16 @@
 	if((training_origin || length(GLOB.antag_training_arenas)) && !training_move_allowed(new_loc))
 		return FALSE
 	var/atom/old_loc = loc
-	// move_stacks++
+	var/turf/old_turf = get_turf(old_loc)
+	var/turf/new_turf = get_turf(new_loc)
 	loc = new_loc
+	//Порядок как в doMove(): loc уже новый, слушатели читают get_turf(src).
+	if(old_turf && !new_turf)
+		onEnteredNullspace(old_turf.z)
+	else if(old_turf?.z != new_turf?.z)
+		onTransitZ(old_turf?.z, new_turf?.z)
 	Moved(old_loc)
+	return TRUE
 
 /atom/movable/Move(atom/newloc, direct, glide_size_override = 0)
 	var/atom/movable/pullee = pulling
@@ -135,6 +142,8 @@
 
 	if(!loc || (loc == oldloc && oldloc != newloc))
 		last_move = 0
+		if(currently_z_moving)
+			set_currently_z_moving(FALSE, TRUE)
 		return
 
 	setDir(direct)
@@ -160,7 +169,17 @@
 
 	last_move = direct
 	if(. && has_buckled_mobs() && !handle_buckled_mob_movement(loc, direct, glide_size_override)) //movement failed due to buckled mob(s)
+		if(currently_z_moving)
+			set_currently_z_moving(FALSE, TRUE)
 		return FALSE
+
+	// Флаг взводит Enter() у openspace, а роняем уже здесь: падать можно только после состоявшегося шага.
+	if(currently_z_moving)
+		if(. && loc == newloc)
+			var/turf/pitfall = get_turf(src)
+			pitfall?.zFall(src, falling_from_move = TRUE)
+		else
+			set_currently_z_moving(FALSE, TRUE)
 
 /atom/movable/proc/handle_buckled_mob_movement(newloc, direct, glide_size_override)
 	for(var/mob/living/buckled_mob as anything in buckled_mobs)
@@ -175,6 +194,8 @@
 //Called after a successful Move(). By this point, we've already moved
 /atom/movable/proc/Moved(atom/OldLoc, Dir, Forced = FALSE)
 	SHOULD_CALL_PARENT(TRUE)
+	if(plane_offset_stale && isturf(loc))
+		update_plane_offset(null, loc.z)
 	SEND_SIGNAL(src, COMSIG_MOVABLE_MOVED, OldLoc, Dir, Forced)
 
 	//спатиал-грид: перекладываем содержимое наших каналов при пересечении
@@ -249,6 +270,13 @@
 
 /atom/movable/proc/onTransitZ(old_z,new_z)
 	SEND_SIGNAL(src, COMSIG_MOVABLE_Z_CHANGED, old_z, new_z)
+	if(SSmapping.max_plane_offset)
+		//Вещи в руках, в рюкзаке и органы на карте не рисуются, а пересчёт их оверлеев - основная цена смены этажа.
+		var/atom/movable/holder = loc
+		if(isturf(loc) || ismob(src) || (ismovable(holder) && (src in holder.vis_contents)))
+			update_plane_offset(old_z, new_z)
+		else if(!plane_offset_stale && (old_z ? GET_Z_PLANE_OFFSET(old_z) : 0) != (new_z ? GET_Z_PLANE_OFFSET(new_z) : 0))
+			plane_offset_stale = TRUE
 	if(hud_memberships)
 		update_hud_z_group(new_z)
 	for (var/atom/movable/AM as anything in src) // Notify contents of Z-transition. This can be overridden IF we know the items contents do not care.
@@ -295,7 +323,8 @@
 		if(QDELETED(src))
 			stack_trace("doMove qdel-нутого [type] в [destination] ([destination.type])")
 			return
-		if(pulledby)
+		//Внутри вертикальной группы захват не рвём: разрыв решает ZMOVE_CHECK_PULLEDBY, когда переедут все.
+		if(pulledby && !currently_z_moving)
 			pulledby.stop_pulling()
 		var/atom/oldloc = loc
 		var/same_loc = oldloc == destination

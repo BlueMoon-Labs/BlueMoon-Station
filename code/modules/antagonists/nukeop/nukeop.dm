@@ -39,6 +39,10 @@
 /datum/antagonist/nukeop/proc/equip_op()
 	var/mob/living/carbon/human/H = owner.current
 	title = pick("Царь", "Босс", "Лидер", "Шеф", "Король", "Пингвин", "Директор", "Лорд", "Оверлорд", "Глав", "Альфа", "Первый", "Bождь", "Бонза", "Айко", "Русич", "Сек", "Мёртвый")
+	if(is_syndicate) // Syndicate
+		owner.current?.grant_language(/datum/language/codespeak, source = LANGUAGE_MIND)
+	else // InteQ
+		owner.current?.grant_language(/datum/language/old_codes, source = LANGUAGE_MIND)
 	if(!ishuman(owner.current))
 		return
 	if(!istype(H))
@@ -48,11 +52,6 @@
 
 	if(is_lone && tgui_alert(H.client, "Желаете загрузить текущего своего выбранного персонажа?", "Играть своим персонажем!", list("Да", "Нет"), 15 SECONDS, TRUE) == "Да")
 		H.load_client_appearance(H.client, FALSE)
-
-	if(is_syndicate) // Syndicate
-		H.grant_language(/datum/language/codespeak, source = LANGUAGE_MIND)
-	else // InteQ
-		H.grant_language(/datum/language/old_codes, source = LANGUAGE_MIND)
 
 	give_alias()
 
@@ -428,30 +427,38 @@
 
 	return "<div class='panel redborder'>[parts.Join("<br>")]</div>"
 
-/datum/team/nuclear/antag_listing_name()
+/datum/team/nuclear/antag_check_name()
 	if(syndicate_name)
 		return "[syndicate_name] InteQ"
 	else
 		return "InteQ"
 
-/datum/team/nuclear/antag_listing_entry()
-	var/disk_report = "<b>Nuclear Disk(s)</b><br>"
-	disk_report += "<table cellspacing=5>"
-	for(var/obj/item/disk/nuclear/N in GLOB.poi_list)
-		disk_report += "<tr><td>[N.name], "
-		var/atom/disk_loc = N.loc
-		while(!isturf(disk_loc))
+/// Положение диска
+/datum/team/nuclear/antag_check_extras()
+	var/list/rows = list()
+	for(var/obj/item/disk/nuclear/disk in GLOB.poi_list)
+		var/list/holders = list()
+		var/mob/carrier
+		var/atom/disk_loc = disk.loc
+		while(disk_loc && !isturf(disk_loc))
 			if(ismob(disk_loc))
-				var/mob/M = disk_loc
-				disk_report += "carried by <a href='?_src_=holder;[HrefToken()];adminplayeropts=[REF(M)]'>[M.real_name]</a> "
-			if(isobj(disk_loc))
-				var/obj/O = disk_loc
-				disk_report += "in \a [O.name] "
+				carrier = disk_loc
+				holders += "с собой у [carrier.real_name]"
+			else if(isobj(disk_loc))
+				holders += "в [disk_loc.name]"
 			disk_loc = disk_loc.loc
-		disk_report += "in [disk_loc.loc] at ([disk_loc.x], [disk_loc.y], [disk_loc.z])</td><td><a href='?_src_=holder;[HrefToken()];adminplayerobservefollow=[REF(N)]'>FLW</a></td></tr>"
-	disk_report += "</table>"
-	var/common_part = ..()
-	return common_part + disk_report
+		var/row_text = disk.name
+		if(length(holders))
+			row_text += ", [holders.Join(", ")]"
+		if(isturf(disk_loc))
+			row_text += " — [disk_loc.loc] ([disk_loc.x], [disk_loc.y], [disk_loc.z])"
+		var/list/row = list("text" = row_text, "follow_ref" = REF(disk))
+		if(carrier)
+			row["player_ref"] = REF(carrier)
+		rows += list(row)
+	if(!length(rows))
+		return null
+	return list(list("title" = "Ядерные диски", "rows" = rows))
 
 /datum/team/nuclear/is_gamemode_hero()
 	return SSticker.mode.name == "nuclear emergency"

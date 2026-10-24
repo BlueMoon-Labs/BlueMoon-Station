@@ -6,7 +6,7 @@
 	density = TRUE
 	anchored = TRUE
 	resistance_flags = ACID_PROOF
-	armor = list(MELEE = 30, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 10, BIO = 0, RAD = 0, FIRE = 70, ACID = 100)
+	armor_type = /datum/armor/displaycase
 	max_integrity = 200
 	integrity_failure = 0.25
 	attack_hand_speed = CLICK_CD_MELEE
@@ -380,15 +380,12 @@
 	var/sale_price = 20
 	///The Account which will receive payment for purchases. Set by the first ID to swipe the tray.
 	var/datum/bank_account/payments_acc = null
-	///We're using the same trick as paper does in order to cache the image, and only load the UI when messed with.
-	var/list/viewing_ui = list()
 
 /obj/structure/displaycase/forsale/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
 		ui = new(user, src, "Vendatray", name)
 		ui.set_autoupdate(FALSE)
-		viewing_ui[user] = ui
 		ui.open()
 
 /obj/structure/displaycase/forsale/update_icon_state()

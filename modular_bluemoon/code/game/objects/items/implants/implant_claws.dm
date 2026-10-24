@@ -24,7 +24,7 @@
 	hitsound = 'sound/weapons/bladeslice.ogg'
 	attack_verb = list("slashed", "sliced", "cut", "clawed", "ripped")
 	sharpness = SHARP_EDGED
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 100)
+	armor_type = /datum/armor/fireproof_and_acidproof_misc
 
 	wound_bonus = CLAW_WOUND_BONUS
 	bare_wound_bonus = CLAW_BARE_WOUND_BONUS
@@ -120,7 +120,7 @@
 		knife_force = clamp(knife_force + whetstone.increment, 0, whetstone.max)
 		knife_wound_bonus += whetstone.increment
 		knife_bare_wound_bonus += whetstone.increment
-		armour_penetration += 20
+		armour_penetration = max(armour_penetration, MELEE_AP_COMBAT)
 
 		if(knife_mode)
 			force = knife_force
@@ -162,7 +162,7 @@
 	wound_bonus = 15
 	knife_bare_wound_bonus = 15
 	bare_wound_bonus = 15
-	armour_penetration = 10
+	armour_penetration = MELEE_AP_COMBAT
 
 	icon_state = "wolverine_emag"
 	item_state = "wolverine_emag"
@@ -244,7 +244,7 @@
 	hitsound = 'sound/weapons/bladeslice.ogg'
 	attack_verb = list("slashed", "sliced", "cut", "clawed", "ripped")
 	sharpness = SHARP_EDGED
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 100)
+	armor_type = /datum/armor/fireproof_and_acidproof_misc
 
 	wound_bonus = CLAW_WOUND_BONUS
 	bare_wound_bonus = 5
@@ -336,7 +336,7 @@
 		knife_force = clamp(knife_force + whetstone.increment, 0, whetstone.max)
 		knife_wound_bonus += whetstone.increment
 		knife_bare_wound_bonus += whetstone.increment
-		armour_penetration += 20
+		armour_penetration = max(armour_penetration, MELEE_AP_COMBAT)
 
 		if(knife_mode)
 			force = knife_force
@@ -377,7 +377,7 @@
 	wound_bonus = 15
 	knife_bare_wound_bonus = 15
 	bare_wound_bonus = 15
-	armour_penetration = 10
+	armour_penetration = MELEE_AP_COMBAT
 
 	icon_state = "wolverine_emag"
 	item_state = "wolverine_emag"

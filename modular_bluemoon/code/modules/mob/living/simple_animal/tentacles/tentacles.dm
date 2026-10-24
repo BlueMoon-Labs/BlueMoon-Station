@@ -102,7 +102,7 @@
 		tired -= 1
 
 	timer -= delta_time
-	if(timer >= 0) // chech interval
+	if(timer > 0)
 	else
 		timer = rand(5,20)
 		if(target != null)
@@ -135,6 +135,8 @@
 //BLUEMOON ADD END
 
 /mob/living/simple_animal/hostile/tentacles/AttackingTarget()
+	if(!isliving(target))
+		return ..()
 	var/mob/living/M = target
 
 	var/onLewdCooldown = FALSE

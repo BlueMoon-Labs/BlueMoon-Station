@@ -12,8 +12,11 @@ again.
 	. = ..()
 	if(spawn_list && spawn_list.len)
 		for(var/I in spawn_list)
-			new I(get_turf(src))
+			spawn_structure(I, get_turf(src))
 	return INITIALIZE_HINT_QDEL
+
+/obj/effect/spawner/structure/proc/spawn_structure(structure_type, turf/location)
+	return new structure_type(location)
 
 
 //normal windows
@@ -26,9 +29,14 @@ again.
 	dir = SOUTH
 	var/electrochromatic
 	var/electrochromatic_id
+	// Автоматическое оснащение аирбагами или оконными фаерлоками.
+	var/install_airbags = TRUE
+	// Защиту получают только окна, созданные этим спавнером.
+	var/list/spawned_windows
 
 /obj/effect/spawner/structure/window/Initialize(mapload)
-	. = ..()
+	..()
+	. = INITIALIZE_HINT_LATELOAD
 	if(!electrochromatic)
 		return
 	if(!electrochromatic_id)
@@ -36,17 +44,54 @@ again.
 		return
 	if(electrochromatic_id[1] == "!")
 		electrochromatic_id = SSmapping.get_obfuscated_id(electrochromatic_id)
-	for(var/obj/structure/window/W in get_turf(src))
+	for(var/obj/structure/window/W as anything in spawned_windows)
 		W.electrochromatic_id = electrochromatic_id
 		W.make_electrochromatic()
 		if(electrochromatic == ELECTROCHROMATIC_DIMMED)
 			W.electrochromatic_dim()
 
+/obj/effect/spawner/structure/window/LateInitialize()
+	. = ..()
+	// Соседние турфы и все окна спавнера уже готовы к выбору защиты.
+	for(var/obj/structure/window/window as anything in spawned_windows)
+		if(install_airbags && !QDELETED(window))
+			setup_window_safety(window)
+	qdel(src)
+
+/obj/effect/spawner/structure/window/spawn_structure(structure_type, turf/location)
+	var/atom/movable/spawned_structure = ..()
+	if(istype(spawned_structure, /obj/structure/window))
+		LAZYADD(spawned_windows, spawned_structure)
+	return spawned_structure
+
+/obj/effect/spawner/structure/window/proc/setup_window_safety(obj/structure/window/window)
+	if(!window.anchored || !window.density || !isturf(window.loc) || window.CanAtmosPass == ATMOS_PASS_YES)
+		return
+	var/turf/window_turf = get_turf(window)
+	var/area/window_area = get_area(window)
+	// Тип стекла не определяет принадлежность шаттлу: в капсулах бывает обычное окно.
+	var/use_firelock = istype(window, /obj/structure/window/shuttle) || istype(window_area, /area/survivalpod) || isshuttleturf(window_turf) || SSshuttle.is_in_shuttle_bounds(window)
+	if(!use_firelock && SSmapping.station_window_firelocks && is_station_level(window_turf.z))
+		var/station_window = window_area.is_station_member()
+		var/borders_space = isspaceturf(window_turf)
+		for(var/turf/neighbor in range(1, window_turf))
+			if(!station_window && istype(window_area, /area/space))
+				var/area/neighbor_area = get_area(neighbor)
+				station_window = neighbor_area.is_station_member()
+			borders_space = borders_space || isspaceturf(neighbor)
+		use_firelock = station_window && borders_space
+
+	if(use_firelock)
+		if(!(locate(/obj/machinery/door/firedoor/window) in window_turf))
+			new /obj/machinery/door/firedoor/window(window_turf)
+		return
+	window.install_airbag()
+
 //shutter
 /obj/effect/spawner/structure/window/shutter
 	name = "shutter window spawner"
 	icon_state = "shwindow_spawner"
-	spawn_list = list(/obj/machinery/door/firedoor/window, /obj/structure/grille, /obj/structure/window/fulltile)
+	spawn_list = list(/obj/structure/grille, /obj/structure/window/fulltile)
 
 //reinforced
 
@@ -59,7 +104,7 @@ again.
 /obj/effect/spawner/structure/window/reinforced/shutter
 	name = "reinforced shutter window spawner"
 	icon_state = "shrwindow_spawner"
-	spawn_list = list(/obj/machinery/door/firedoor/window, /obj/structure/grille, /obj/structure/window/reinforced/fulltile)
+	spawn_list = list(/obj/structure/grille, /obj/structure/window/reinforced/fulltile)
 
 /obj/effect/spawner/structure/window/hollow
 	name = "hollow Window Spawner"
@@ -120,7 +165,7 @@ again.
 /obj/effect/spawner/structure/window/reinforced
 	name = "reinforced Window Spawner"
 	icon_state = "rwindow_spawner"
-	spawn_list = list(/obj/machinery/door/firedoor/heavy, /obj/structure/grille, /obj/structure/window/reinforced/fulltile)
+	spawn_list = list(/obj/structure/grille, /obj/structure/window/reinforced/fulltile)
 
 /obj/effect/spawner/structure/window/reinforced/no_firelock
 	spawn_list = list(/obj/structure/grille, /obj/structure/window/reinforced/fulltile)
@@ -195,7 +240,7 @@ again.
 /obj/effect/spawner/structure/window/shuttle
 	name = "shuttle Window Spawner"
 	icon_state = "swindow_spawner"
-	spawn_list = list(/obj/machinery/door/firedoor/heavy, /obj/structure/grille, /obj/structure/window/shuttle)
+	spawn_list = list(/obj/structure/grille, /obj/structure/window/shuttle)
 
 
 //plastitanium window
@@ -203,7 +248,7 @@ again.
 /obj/effect/spawner/structure/window/plastitanium
 	name = "plastitanium Window Spawner"
 	icon_state = "plastitaniumwindow_spawner"
-	spawn_list = list(/obj/machinery/door/firedoor/heavy, /obj/structure/grille, /obj/structure/window/plastitanium)
+	spawn_list = list(/obj/structure/grille, /obj/structure/window/plastitanium)
 
 //plastitanium pirate window
 
@@ -223,7 +268,7 @@ again.
 /obj/effect/spawner/structure/window/survival_pod
 	name = "pod Window Spawner"
 	icon_state = "podwindow_spawner"
-	spawn_list = list(/obj/machinery/door/firedoor/heavy, /obj/structure/grille, /obj/structure/window/shuttle/survival_pod)
+	spawn_list = list(/obj/structure/grille, /obj/structure/window/shuttle/survival_pod)
 
 /obj/effect/spawner/structure/window/hollow/survival_pod
 	name = "hollow pod Window Spawner"
@@ -285,7 +330,7 @@ again.
 /obj/effect/spawner/structure/window/plasma
 	name = "plasma Window Spawner"
 	icon_state = "pwindow_spawner"
-	spawn_list = list(/obj/machinery/door/firedoor/heavy, /obj/structure/grille, /obj/structure/window/plasma/fulltile)
+	spawn_list = list(/obj/structure/grille, /obj/structure/window/plasma/fulltile)
 
 /obj/effect/spawner/structure/window/hollow/plasma
 	name = "hollow plasma Window Spawner"

@@ -11,20 +11,16 @@
 	tool_behaviour = TOOL_RETRACTOR
 	range = MECHA_MELEE
 	toolspeed = 0.8
-	var/dam_force = 20
-	var/obj/vehicle/sealed/mecha/working/ripley/cargo_holder
 	harmful = TRUE
 	mech_flags = EXOSUIT_MODULE_RIPLEY
+	compatible_mecha_types = MECHA_TYPE_RIPLEY
+	var/dam_force = 20
+	var/obj/vehicle/sealed/mecha/working/ripley/cargo_holder
 
-/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp/can_attach(obj/vehicle/sealed/mecha/working/ripley/M)
-	if(..())
-		if(istype(M))
-			return TRUE
-	return FALSE
-
-/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp/attach(obj/vehicle/sealed/mecha/M)
+// Только у рипли есть карго отсек
+/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp/attach(obj/vehicle/sealed/mecha/working/ripley/M)
 	..()
-	cargo_holder = M
+	cargo_holder = istype(M) ? M : null
 	return
 
 /obj/item/mecha_parts/mecha_equipment/hydraulic_clamp/detach(atom/moveto = null)
@@ -34,9 +30,10 @@
 /obj/item/mecha_parts/mecha_equipment/hydraulic_clamp/action(mob/source, atom/target, params)
 	if(!action_checks(target))
 		return
-	if(!cargo_holder)
-		return
 	if(ismecha(target))
+		if(!cargo_holder)
+			to_chat(source, span_warning("У этого меха нет грузового отсека с боезапасом."))
+			return
 		var/obj/vehicle/sealed/mecha/M = target
 		var/have_ammo
 		for(var/obj/item/mecha_ammo/box in cargo_holder.cargo)
@@ -45,9 +42,9 @@
 				if(M.ammo_resupply(box, source, TRUE))
 					return
 		if(have_ammo)
-			to_chat(source, "No further supplies can be provided to [M].")
+			to_chat(source, "Боезапас [M] уже заполнен.")
 		else
-			to_chat(source, "No providable supplies found in cargo hold")
+			to_chat(source, "В грузовом отсеке нет подходящих боеприпасов.")
 		return
 	if(isobj(target))
 		var/obj/O = target
@@ -60,21 +57,24 @@
 			D.try_to_crowbar(src, source)
 			return
 		if(!O.anchored)
+			if(!cargo_holder)
+				to_chat(source, span_warning("У этого меха нет грузового отсека для погрузки."))
+				return
 			if(cargo_holder.cargo.len < cargo_holder.cargo_capacity)
-				chassis.visible_message("<span class='notice'>[chassis] lifts [target] and starts to load it into cargo compartment.</span>")
+				chassis.visible_message(span_notice("[chassis] поднимает [target] и начинает погрузку в грузовой отсек."))
 				O.set_anchored(TRUE)
 				if(do_after_cooldown(target, source))
 					cargo_holder.cargo += O
 					O.forceMove(chassis)
 					O.set_anchored(FALSE)
-					to_chat(source, "[icon2html(src, source)]<span class='notice'>[target] successfully loaded.</span>")
-					log_message("Loaded [O]. Cargo compartment capacity: [cargo_holder.cargo_capacity - cargo_holder.cargo.len]", LOG_MECHA)
+					to_chat(source, "[icon2html(src, source)][span_notice("[target] успешно погружен.")]")
+					log_message("Погружен [O]. Свободных мест в грузовом отсеке: [cargo_holder.cargo_capacity - cargo_holder.cargo.len]", LOG_MECHA)
 				else
 					O.set_anchored(initial(O.anchored))
 			else
-				to_chat(source, "[icon2html(src, source)]<span class='warning'>Not enough room in cargo compartment!</span>")
+				to_chat(source, "[icon2html(src, source)][span_warning("В грузовом отсеке недостаточно места!")]")
 		else
-			to_chat(source, "[icon2html(src, source)]<span class='warning'>[target] is firmly secured!</span>")
+			to_chat(source, "[icon2html(src, source)][span_warning("[target] надёжно закреплён!")]")
 
 	else if(isliving(target))
 		var/mob/living/M = target
@@ -86,14 +86,14 @@
 				return
 			M.adjustOxyLoss(round(dam_force/2))
 			M.updatehealth()
-			target.visible_message("<span class='danger'>[chassis] squeezes [target]!</span>", \
-								"<span class='userdanger'>[chassis] squeezes you!</span>",\
-								"<span class='hear'>You hear something crack.</span>")
+			target.visible_message(span_danger("[chassis] сдавливает [target]!"), \
+								span_userdanger("[chassis] сдавливает вас!"),\
+								span_hear("Вы слышите хруст."))
 			log_combat(source, M, "attacked", "[name]", "(INTENT: [uppertext(source.a_intent)]) (DAMTYPE: [uppertext(damtype)])")
 		else
 			step_away(M,chassis)
-			to_chat(source, "[icon2html(src, source)]<span class='notice'>You push [target] out of the way.</span>")
-			chassis.visible_message("<span class='notice'>[chassis] pushes [target] out of the way.</span>")
+			to_chat(source, "[icon2html(src, source)][span_notice("Вы отталкиваете [target] с дороги.")]")
+			chassis.visible_message(span_notice("[chassis] отталкивает [target] с дороги."))
 	return ..()
 
 
@@ -115,26 +115,27 @@
 /obj/item/mecha_parts/mecha_equipment/hydraulic_clamp/kill/action(mob/source, atom/target, params)
 	if(!action_checks(target))
 		return
-	if(!cargo_holder)
-		return
 	if(isobj(target))
 		var/obj/O = target
 		if(!O.anchored)
+			if(!cargo_holder)
+				to_chat(source, span_warning("У этого меха нет грузового отсека для погрузки."))
+				return
 			if(cargo_holder.cargo.len < cargo_holder.cargo_capacity)
-				chassis.visible_message("<span class='notice'>[chassis] lifts [target] and starts to load it into cargo compartment.</span>")
+				chassis.visible_message(span_notice("[chassis] поднимает [target] и начинает погрузку в грузовой отсек."))
 				O.set_anchored(TRUE)
 				if(do_after_cooldown(target, source))
 					cargo_holder.cargo += O
 					O.forceMove(chassis)
 					O.set_anchored(FALSE)
-					to_chat(source, "[icon2html(src, source)]<span class='notice'>[target] successfully loaded.</span>")
-					log_message("Loaded [O]. Cargo compartment capacity: [cargo_holder.cargo_capacity - cargo_holder.cargo.len]", LOG_MECHA)
+					to_chat(source, "[icon2html(src, source)][span_notice("[target] успешно погружен.")]")
+					log_message("Погружен [O]. Свободных мест в грузовом отсеке: [cargo_holder.cargo_capacity - cargo_holder.cargo.len]", LOG_MECHA)
 				else
 					O.set_anchored(initial(O.anchored))
 			else
-				to_chat(source, "[icon2html(src, source)]<span class='warning'>Not enough room in cargo compartment!</span>")
+				to_chat(source, "[icon2html(src, source)][span_warning("В грузовом отсеке недостаточно места!")]")
 		else
-			to_chat(source, "[icon2html(src, source)]<span class='warning'>[target] is firmly secured!</span>")
+			to_chat(source, "[icon2html(src, source)][span_warning("[target] надёжно закреплён!")]")
 
 	else if(isliving(target))
 		var/mob/living/M = target
@@ -147,12 +148,12 @@
 					return
 				M.adjustOxyLoss(round(dam_force/2))
 				M.updatehealth()
-				target.visible_message("<span class='danger'>[chassis] destroys [target] in an unholy fury!</span>", \
-									"<span class='userdanger'>[chassis] destroys you in an unholy fury!</span>")
+				target.visible_message(span_danger("[chassis] в безумной ярости уничтожает [target]!"), \
+									span_userdanger("[chassis] в безумной ярости уничтожает вас!"))
 				log_combat(source, M, "attacked", "[name]", "(INTENT: [uppertext(source.a_intent)]) (DAMTYPE: [uppertext(damtype)])")
 			else
-				target.visible_message("<span class='danger'>[chassis] destroys [target] in an unholy fury!</span>", \
-									"<span class='userdanger'>[chassis] destroys you in an unholy fury!</span>")
+				target.visible_message(span_danger("[chassis] в безумной ярости уничтожает [target]!"), \
+									span_userdanger("[chassis] в безумной ярости уничтожает вас!"))
 		else if(source.a_intent == INTENT_DISARM)
 			if(real_clamp)
 				var/mob/living/carbon/C = target
@@ -170,182 +171,212 @@
 					limbs_gone = "[limbs_gone], [affected]"
 				if(play_sound)
 					playsound(src, get_dismember_sound(), 80, TRUE)
-					target.visible_message("<span class='danger'>[chassis] rips [target]'s arms off!</span>", \
-								   "<span class='userdanger'>[chassis] rips your arms off!</span>")
+					target.visible_message(span_danger("[chassis] отрывает руки [target]!"), \
+								   span_userdanger("[chassis] отрывает вам руки!"))
 					log_combat(source, M, "dismembered of[limbs_gone],", "[name]", "(INTENT: [uppertext(source.a_intent)]) (DAMTYPE: [uppertext(damtype)])")
 			else
-				target.visible_message("<span class='danger'>[chassis] rips [target]'s arms off!</span>", \
-								   "<span class='userdanger'>[chassis] rips your arms off!</span>")
+				target.visible_message(span_danger("[chassis] отрывает руки [target]!"), \
+								   span_userdanger("[chassis] отрывает вам руки!"))
 		else
 			step_away(M,chassis)
-			target.visible_message("<span class='danger'>[chassis] tosses [target] like a piece of paper!</span>", \
-								"<span class='userdanger'>[chassis] tosses you like a piece of paper!</span>")
+			target.visible_message(span_danger("[chassis] отбрасывает [target], словно лист бумаги!"), \
+								span_userdanger("[chassis] отбрасывает вас, словно лист бумаги!"))
 		return ..()
 
 
 
 /obj/item/mecha_parts/mecha_equipment/extinguisher
 	name = "exosuit extinguisher"
-	desc = "Оборудование для инженерных экзокостюмов. Быстродействующий огнетушитель большой ёмкости."
+	desc = "Пенный огнетушитель для инженерных экзокостюмов с резервуаром на 1000 единиц. Восстанавливает полный запас за 10 минут, расходуя около 10 000 энергии батареи меха."
 	icon_state = "mecha_exting"
 	equip_cooldown = 5
 	energy_drain = 0
 	range = MECHA_MELEE|MECHA_RANGED
 	mech_flags = EXOSUIT_MODULE_WORKING
+	compatible_mecha_types = MECHA_TYPE_WORKING
+	var/foam_regeneration_rate = 1000 / 600
+	var/energy_per_unit = 10
 
 /obj/item/mecha_parts/mecha_equipment/extinguisher/Initialize(mapload)
 	. = ..()
 	create_reagents(1000)
-	reagents.add_reagent(/datum/reagent/water, 1000)
+	reagents.add_reagent(/datum/reagent/firefighting_foam, reagents.maximum_volume)
 
-/obj/item/mecha_parts/mecha_equipment/extinguisher/action(mob/source, atom/target, params) //copypasted from extinguisher. TODO: Rewrite from scratch.//Still todo
-	if(!action_checks(target) || get_dist(chassis, target)>3)
+/obj/item/mecha_parts/mecha_equipment/extinguisher/attach(obj/vehicle/sealed/mecha/M)
+	. = ..()
+	START_PROCESSING(SSobj, src)
+
+/obj/item/mecha_parts/mecha_equipment/extinguisher/detach(atom/moveto)
+	. = ..()
+	if(!chassis)
+		STOP_PROCESSING(SSobj, src)
+
+/obj/item/mecha_parts/mecha_equipment/extinguisher/Destroy()
+	STOP_PROCESSING(SSobj, src)
+	return ..()
+
+/obj/item/mecha_parts/mecha_equipment/extinguisher/process(delta_time)
+	if(!chassis)
+		return PROCESS_KILL
+	if(chassis.equipment_disabled)
+		return
+	var/amount = min(reagents.maximum_volume - reagents.total_volume, foam_regeneration_rate * delta_time, max(0, chassis.get_charge()) / energy_per_unit)
+	if(amount < CHEMICAL_QUANTISATION_LEVEL || !chassis.has_charge(amount * energy_per_unit) || !chassis.use_power(amount * energy_per_unit))
+		return
+	reagents.add_reagent(/datum/reagent/firefighting_foam, amount)
+	update_equip_info()
+
+/obj/item/mecha_parts/mecha_equipment/extinguisher/action(mob/source, atom/target, params)
+	if(!action_checks(target))
 		return
 
-	if(istype(target, /obj/structure/reagent_dispensers/watertank) && get_dist(chassis,target) <= 1)
-		var/obj/structure/reagent_dispensers/watertank/WT = target
-		WT.reagents.trans_to(src, 1000)
-		to_chat(chassis.occupants,"<span class='notice'>Extinguisher refilled.</span>")
+	if(istype(target, /obj/structure/reagent_dispensers/foamtank) && get_dist(chassis, target) <= 1)
+		var/obj/structure/reagent_dispensers/foamtank/foam_tank = target
+		foam_tank.reagents.trans_to(src, reagents.maximum_volume)
+		to_chat(chassis.occupants, span_notice("Огнетушитель заправлен."))
 		playsound(chassis, 'sound/effects/refill.ogg', 50, 1, -6)
 	else
-		if(reagents.total_volume > 0)
-			playsound(chassis, 'sound/effects/extinguish.ogg', 75, 1, -3)
-			var/direction = get_dir(chassis,target)
-			var/turf/T = get_turf(target)
-			var/turf/T1 = get_step(T,turn(direction, 90))
-			var/turf/T2 = get_step(T,turn(direction, -90))
+		if(reagents.total_volume < 1)
+			return
+		playsound(chassis, 'sound/effects/extinguish.ogg', 75, 1, -3)
+		spray_extinguisher(chassis, target, reagents, precision = TRUE)
+	return ..()
 
-			var/list/the_targets = list(T,T1,T2)
-			spawn(0)
-				for(var/a=0, a<5, a++)
-					var/obj/effect/particle_effect/water/W = new /obj/effect/particle_effect/water(get_turf(chassis))
-					if(!W)
-						return
-					var/turf/my_target = pick(the_targets)
-					var/datum/reagents/R = new/datum/reagents(5)
-					W.reagents = R
-					R.my_atom = W
-					reagents.trans_to(W,1)
-					for(var/b=0, b<4, b++)
-						if(!W)
-							return
-						step_towards(W,my_target)
-						if(!W)
-							return
-						var/turf/W_turf = get_turf(W)
-						W.reagents.reaction(W_turf)
-						for(var/atom/atm in W_turf)
-							W.reagents.reaction(atm)
-						if(W.loc == my_target)
-							break
-						sleep(2)
-		return TRUE
-
-/obj/item/mecha_parts/mecha_equipment/extinguisher/get_equip_info()
-	return "[..()] \[[src.reagents.total_volume]\]"
-
-/obj/item/mecha_parts/mecha_equipment/extinguisher/can_attach(obj/vehicle/sealed/mecha/working/M as obj)
-	if(..())
-		if(istype(M))
-			return TRUE
-	return FALSE
+/obj/item/mecha_parts/mecha_equipment/extinguisher/get_ui_data()
+	. = ..()
+	.["snowflake"] = list("kind" = "extinguisher", "reagents" = round(reagents.total_volume, 0.1), "total_reagents" = reagents.maximum_volume)
 
 
 
 /obj/item/mecha_parts/mecha_equipment/rcd
 	name = "mounted RCD"
-	desc = "Устройство для быстрого строительства, установленное на экзокостюм."
+	desc = "Промышленное устройство для быстрого строительства, установленное на экзокостюм. Возводит стены, полы, шлюзы, окна, фаерлоки и каркасы оборудования. Работает от батареи меха."
 	icon_state = "mecha_rcd"
-	equip_cooldown = 10
-	energy_drain = 250
+	equip_cooldown = 0
+	energy_drain = 200
 	range = MECHA_MELEE|MECHA_RANGED
 	item_flags = NO_MAT_REDEMPTION
-	var/mode = 0 //0 - deconstruct, 1 - wall or floor, 2 - airlock.
+	var/energy_drain_deconstruct = 400
+	var/obj/item/construction/rcd/mecha/rcd
+	var/static/list/rcd_modes = list(
+		"Демонтаж" = RCD_DECONSTRUCT,
+		"Стены и пол" = RCD_FLOORWALL,
+		"Шлюзы" = RCD_AIRLOCK,
+		"Решётки и окна" = RCD_WINDOWGRILLE,
+		"Стеклянные фаерлоки" = RCD_FIRELOCK,
+		"Оконные фаерлоки" = RCD_WINDOW_FIRELOCK,
+		"Каркасы машин" = RCD_MACHINE,
+		"Каркасы компьютеров" = RCD_COMPUTER,
+	)
 
 /obj/item/mecha_parts/mecha_equipment/rcd/Initialize(mapload)
 	. = ..()
-	GLOB.rcd_list += src
+	rcd = new(src)
+	rcd.set_mode(rcd.mode)
 
 /obj/item/mecha_parts/mecha_equipment/rcd/Destroy()
-	GLOB.rcd_list -= src
+	QDEL_NULL(rcd)
 	return ..()
+
+/obj/item/mecha_parts/mecha_equipment/rcd/attack_self(mob/user)
+	if(!rcd.check_menu(user))
+		return
+	rcd.attack_self(user)
+	if(!QDELETED(src))
+		update_equip_info()
 
 /obj/item/mecha_parts/mecha_equipment/rcd/action(mob/source, atom/target, params)
-	if(istype(target, /turf/open/space/transit))//>implying these are ever made -Sieve
-		return
+	target = rcd.resolve_construction_target(target)
+	if(!action_checks(target) || !construction_checks(target, source))
+		return FALSE
+	// Каждая параллельная операция проверяет стоимость режима на момент запуска.
+	var/energy_cost = energy_drain
+	var/completed = rcd.rcd_create(target, source, CALLBACK(src, PROC_REF(construction_checks), target, source, energy_cost))
+	if(QDELETED(src))
+		return FALSE
+	if(completed && chassis)
+		chassis.spark_system.start()
+	update_equip_info()
+	return completed
 
-	if(!isturf(target) && !istype(target, /obj/machinery/door/airlock))
-		target = get_turf(target)
-	if(!action_checks(target) || get_dist(chassis, target)>3)
-		return
-	playsound(chassis, 'sound/machines/click.ogg', 50, TRUE)
+/obj/item/mecha_parts/mecha_equipment/rcd/proc/can_operate(mob/user)
+	return chassis && user?.loc == chassis && (chassis.occupants[user] & VEHICLE_CONTROL_EQUIPMENT) && !user.incapacitated() && !chassis.completely_disabled && !chassis.is_currently_ejecting && !chassis.equipment_disabled && !chassis.construction_state && !chassis.phasing && !(chassis.mecha_flags & CANNOT_INTERACT)
 
-	switch(mode)
-		if(0)
-			if(iswallturf(target))
-				var/turf/closed/wall/W = target
-				to_chat(source, "[icon2html(src, source)]<span class='notice'>Deconstructing [W]...</span>")
-				if(do_after_cooldown(W, source))
-					chassis.spark_system.start()
-					W.ScrapeAway(flags = CHANGETURF_INHERIT_AIR)
-					playsound(W, 'sound/items/deconstruct.ogg', 50, TRUE)
-			else if(isfloorturf(target))
-				var/turf/open/floor/F = target
-				to_chat(source, "[icon2html(src, source)]<span class='notice'>Deconstructing [F]...</span>")
-				if(do_after_cooldown(target, source))
-					chassis.spark_system.start()
-					F.ScrapeAway(flags = CHANGETURF_INHERIT_AIR)
-					playsound(F, 'sound/items/deconstruct.ogg', 50, TRUE)
-			else if (istype(target, /obj/machinery/door/airlock))
-				to_chat(source, "[icon2html(src, source)]<span class='notice'>Deconstructing [target]...</span>")
-				if(do_after_cooldown(target, source))
-					chassis.spark_system.start()
-					qdel(target)
-					playsound(target, 'sound/items/deconstruct.ogg', 50, TRUE)
-		if(1)
-			if(isspaceturf(target))
-				var/turf/open/space/S = target
-				to_chat(source, "[icon2html(src, source)]<span class='notice'>Building Floor...</span>")
-				if(do_after_cooldown(S, source))
-					S.PlaceOnTop(/turf/open/floor/plating, flags = CHANGETURF_INHERIT_AIR)
-					playsound(S, 'sound/items/deconstruct.ogg', 50, TRUE)
-					chassis.spark_system.start()
-			else if(isfloorturf(target))
-				var/turf/open/floor/F = target
-				to_chat(source, "[icon2html(src, source)]<span class='notice'>Building Wall...</span>")
-				if(do_after_cooldown(F, source))
-					F.PlaceOnTop(/turf/closed/wall)
-					playsound(F, 'sound/items/deconstruct.ogg', 50, TRUE)
-					chassis.spark_system.start()
-		if(2)
-			if(isfloorturf(target))
-				to_chat(source, "[icon2html(src, source)]<span class='notice'>Building Airlock...</span>")
-				if(do_after_cooldown(target, source))
-					chassis.spark_system.start()
-					var/obj/machinery/door/airlock/T = new /obj/machinery/door/airlock(target)
-					T.autoclose = TRUE
-					playsound(target, 'sound/items/deconstruct.ogg', 50, TRUE)
-					playsound(target, 'sound/effects/sparks2.ogg', 50, TRUE)
+/obj/item/mecha_parts/mecha_equipment/rcd/proc/construction_checks(atom/target, mob/user, energy_cost)
+	if(!can_operate(user) || QDELETED(target) || istype(target, /turf/open/space/transit))
+		return FALSE
+	var/turf/chassis_turf = get_turf(chassis)
+	var/turf/target_turf = get_turf(target)
+	return chassis_turf && target_turf && chassis_turf.z == target_turf.z && get_dist(chassis, target) <= rcd.custom_range && do_after_checks(target) && chassis.has_charge(isnull(energy_cost) ? energy_drain : energy_cost)
+
+/obj/item/mecha_parts/mecha_equipment/rcd/attackby(obj/item/W, mob/user, params)
+	if(istype(W, /obj/item/rcd_upgrade))
+		rcd.attackby(W, user, params)
+		update_equip_info()
+		return TRUE
 	return ..()
 
-/obj/item/mecha_parts/mecha_equipment/rcd/Topic(href,href_list)
-	..()
-	if(href_list["mode"])
-		mode = text2num(href_list["mode"])
-		switch(mode)
-			if(0)
-				to_chat(chassis.occupants, "[icon2html(src, chassis.occupants)]<span class='notice'>Switched RCD to Deconstruct.</span>")
-				energy_drain = initial(energy_drain)
-			if(1)
-				to_chat(chassis.occupants, "[icon2html(src, chassis.occupants)]<span class='notice'>Switched RCD to Construct.</span>")
-				energy_drain = 2*initial(energy_drain)
-			if(2)
-				to_chat(chassis.occupants, "[icon2html(src, chassis.occupants)]<span class='notice'>Switched RCD to Construct Airlock.</span>")
-				energy_drain = 2*initial(energy_drain)
-	return
+/obj/item/mecha_parts/mecha_equipment/rcd/handle_ui_act(action, list/params)
+	. = ..()
+	if(.)
+		return TRUE
+	if(!equip_ready || !can_operate(usr))
+		return FALSE
+	switch(action)
+		if("menu")
+			attack_self(usr)
+		if("mode")
+			var/new_mode = text2num(params["mode"])
+			if(!(new_mode in flatten_list(rcd_modes)))
+				return FALSE
+			rcd.set_mode(new_mode)
+		if("window_type")
+			rcd.toggle_window_type(usr)
+		if("airlock_type")
+			rcd.change_airlock_setting(usr)
+		if("computer_direction")
+			rcd.change_computer_dir(usr)
+		if("one_access")
+			rcd.toggle_access("one")
+		if("clear_access")
+			rcd.toggle_access("all")
+		if("access")
+			var/access = text2num(params["access"])
+			if(!(access in get_all_accesses()))
+				return FALSE
+			rcd.toggle_access(params["access"])
+		else
+			return FALSE
+	update_equip_info()
+	return TRUE
 
-/obj/item/mecha_parts/mecha_equipment/rcd/get_equip_info()
-	return "[..()] \[<a href='?src=[REF(src)];mode=0'>D</a>|<a href='?src=[REF(src)];mode=1'>C</a>|<a href='?src=[REF(src)];mode=2'>A</a>\]"
+/obj/item/mecha_parts/mecha_equipment/rcd/get_ui_data()
+	. = ..()
+	var/list/modes = list()
+	for(var/mode_name in rcd_modes)
+		modes += list(list("name" = mode_name, "id" = rcd_modes[mode_name]))
+	var/list/access_regions = list()
+	if(rcd.mode == RCD_AIRLOCK)
+		for(var/region in 1 to 7)
+			var/list/accesses = list()
+			for(var/access in get_region_accesses(region))
+				accesses += list(list("id" = access, "name" = get_access_desc(access)))
+			access_regions += list(list("name" = get_region_accesses_name(region), "accesses" = accesses))
+	var/obj/machinery/door/airlock/airlock = rcd.airlock_type
+	.["snowflake"] = list(
+		"kind" = "rcd",
+		"mode" = rcd.mode,
+		"modes" = modes,
+		"airlock_mode" = rcd.mode == RCD_AIRLOCK,
+		"window_mode" = rcd.mode == RCD_WINDOWGRILLE,
+		"computer_mode" = rcd.mode == RCD_COMPUTER,
+		"airlock_name" = initial(airlock.name),
+		"reinforced_windows" = rcd.window_type == /obj/structure/window/reinforced/fulltile,
+		"computer_direction" = rcd.computer_dir,
+		"one_access" = rcd.use_one_access,
+		"access_regions" = access_regions,
+		"selected_accesses" = rcd.conf_access || list(),
+	)
 
 //Dunno where else to put this so shrug
 /obj/item/mecha_parts/mecha_equipment/ripleyupgrade
@@ -353,24 +384,7 @@
 	desc = "Комплект для переоборудования автономного погрузчика APLU MK-I в более медлительную, но пригодную для космоса модель MK-II. Этот комплект нельзя удалить после установки."
 	icon_state = "tesla"
 	mech_flags = EXOSUIT_MODULE_RIPLEY
-
-/obj/item/mecha_parts/mecha_equipment/ripleyupgrade/can_attach(obj/vehicle/sealed/mecha/working/ripley/M)
-	if(M.type != /obj/vehicle/sealed/mecha/working/ripley)
-		to_chat(loc, "<span class='warning'>This conversion kit can only be applied to APLU MK-I models.</span>")
-		return FALSE
-	if(M.cargo.len)
-		to_chat(loc, "<span class='warning'>[M]'s cargo hold must be empty before this conversion kit can be applied.</span>")
-		return FALSE
-	if(!(M.mecha_flags & ADDING_MAINT_ACCESS_POSSIBLE)) //non-removable upgrade, so lets make sure the pilot or owner has their say.
-		to_chat(loc, "<span class='warning'>[M] must have maintenance protocols active in order to allow this conversion kit.</span>")
-		return FALSE
-	if(LAZYLEN(M.occupants)) //We're actualy making a new mech and swapping things over, it might get weird if players are involved
-		to_chat(loc, "<span class='warning'>[M] must be unoccupied before this conversion kit can be applied.</span>")
-		return FALSE
-	if(!M.cell) //Turns out things break if the cell is missing
-		to_chat(loc, "<span class='warning'>The conversion process requires a cell installed.</span>")
-		return FALSE
-	return TRUE
+	compatible_mecha_types = MECHA_TYPE_RIPLEY
 
 /obj/item/mecha_parts/mecha_equipment/ripleyupgrade/attach(obj/vehicle/sealed/mecha/M)
 	var/obj/vehicle/sealed/mecha/working/ripley/mkii/N = new /obj/vehicle/sealed/mecha/working/ripley/mkii(get_turf(M),1)
@@ -401,6 +415,9 @@
 	N.dna_lock = M.dna_lock
 	N.dna_lock_name = M.dna_lock_name
 	N.mecha_flags = M.mecha_flags
+	if(M.is_emagged())
+		N.obj_flags |= EMAGGED
+		N.max_equip++
 	N.strafe = M.strafe
 	N.stabilizers = M.stabilizers
 	N.obj_integrity = M.obj_integrity //This is not a repair tool

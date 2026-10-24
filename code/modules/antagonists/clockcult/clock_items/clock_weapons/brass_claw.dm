@@ -14,7 +14,7 @@
 	throwforce = 0 //haha yes lets be safe about this
 	throw_range = 0
 	throw_speed = 0
-	armour_penetration = 20
+	armour_penetration = MELEE_AP_ANTAGONIST
 	hitsound = 'sound/weapons/bladeslice.ogg'
 	attack_verb = list("атакует", "рубит", "колит", "режет")
 	sharpness = SHARP_EDGED

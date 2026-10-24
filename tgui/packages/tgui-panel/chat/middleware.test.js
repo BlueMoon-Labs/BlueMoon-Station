@@ -17,6 +17,7 @@ const mockChatRenderer = {
   setBgAnimation: jest.fn(),
   setCustomColors: jest.fn(),
   setCustomProperties: jest.fn(),
+  setRadioJobsVisible: jest.fn(),
   setStyleOverrides: jest.fn(),
   setTimestamps: jest.fn(),
   setTimeDividers: jest.fn(),
@@ -110,6 +111,7 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(mockChatRenderer.setBgAnimation).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setCustomColors).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setCustomProperties).toHaveBeenCalledTimes(1);
+    expect(mockChatRenderer.setRadioJobsVisible).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setStyleOverrides).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setTimestamps).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setTimeDividers).toHaveBeenCalledTimes(1);

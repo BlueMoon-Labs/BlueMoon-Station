@@ -7,7 +7,6 @@
 	shadow_weight = 0.5
 	max_integrity = 200
 	integrity_failure = 0.25
-	armor = list(MELEE = 20, BULLET = 10, LASER = 10, ENERGY = 0, BOMB = 10, BIO = 0, RAD = 0, FIRE = 70, ACID = 60)
 
 	/// The overlay for the closet's door
 	var/obj/effect/overlay/closet_door/door_obj
@@ -62,7 +61,7 @@
 
 /obj/structure/closet/Initialize(mapload)
 	if(mapload && !opened) // if closed, any item at the crate's loc is put in the contents
-		addtimer(CALLBACK(src, PROC_REF(take_contents)), 0)
+		addtimer(CALLBACK(src, PROC_REF(take_initial_contents)), 0)
 	. = ..()
 	update_icon()
 	if(should_populate_contents)
@@ -74,6 +73,15 @@
 //USE THIS TO FILL IT, NOT INITIALIZE OR NEW
 /obj/structure/closet/proc/PopulateContents()
 	return
+
+/obj/structure/closet/proc/take_initial_contents()
+	// Шкаф могли открыть до отложенного сбора содержимого, например при раскладывании мешка.
+	if(!opened)
+		take_contents()
+
+/obj/structure/closet/hitby(atom/movable/hit_by, skipcatch, hitpush, blocked, datum/thrownthing/throwingdatum)
+	// Неплотный контейнер получает урон от попадания, но не сдвигается от него.
+	return ..(hit_by, skipcatch, hitpush && density, blocked, throwingdatum)
 
 /obj/structure/closet/Destroy()
 	dump_contents(override = FALSE)
@@ -111,7 +119,7 @@
 			. += "off"
 			. += "sparking"
 		//Overlay is similar enough for both that we can use the same mask for both
-		. += emissive_appearance(icon, "locked", alpha = src.alpha)
+		. += emissive_appearance(icon, "locked", alpha = src.alpha, offset_spokesman = src)
 		. += locked ? "locked" : "unlocked"
 
 /// Animates the closet door opening and closing

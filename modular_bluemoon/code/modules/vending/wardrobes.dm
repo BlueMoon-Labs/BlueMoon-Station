@@ -583,7 +583,6 @@
 	vend_reply = "Спасибо за использование DeusVend!"
 	products = list(
 		/obj/item/choice_beacon/holy = 1,
-		// /obj/item/staff/bostaff/chaplain = 1,
 		/obj/item/storage/backpack/cultpack = 2,
 		/obj/item/clothing/accessory/pocketprotector/cosmetology = 2,
 		/obj/item/clothing/under/rank/civilian/chaplain = 2,
@@ -606,8 +605,8 @@
 		/obj/item/clothing/suit/hooded/chaplain_hoodie/monk_robe = 2, //BlueMoon changes,
 		/obj/item/clothing/suit/hooded/genetor = 2, //BlueMoon changes,
 		/obj/item/clothing/suit/hooded/genetor_follower = 4, //BlueMoon changes,
-		/obj/item/clothing/neck/oldcross = 6,  //BlueMoon changes,
-		/obj/item/clothing/neck/epitrachelion = 1, //BlueMoon changes,
+		/obj/item/clothing/neck/bm/oldcross = 6,  //BlueMoon changes,
+		/obj/item/clothing/neck/bm/epitrachelion = 1, //BlueMoon changes,
 		/obj/item/clothing/neck/cloak/bishop = 1, //BlueMoon changes,
 		/obj/item/clothing/neck/cloak/bishopblack= 1, //BlueMoon changes,
 		/obj/item/reagent_containers/glass/mortar/urn = 10,

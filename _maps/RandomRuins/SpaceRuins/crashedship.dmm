@@ -1443,9 +1443,6 @@
 	icon_state = "0-2"
 	},
 /obj/structure/cable,
-/obj/structure/cable{
-	icon_state = "0-2"
-	},
 /turf/open/floor/plating,
 /area/awaymission/BMPship/Aft)
 "eb" = (
@@ -1778,7 +1775,6 @@
 	desc = "A high-capacity superconducting magnetic energy storage (SMES) unit.";
 	name = "power storage unit"
 	},
-/obj/structure/cable,
 /obj/structure/cable,
 /turf/open/floor/plating,
 /area/awaymission/BMPship/Aft)
@@ -4056,9 +4052,6 @@
 /turf/open/floor/plasteel,
 /area/awaymission/BMPship/Midship)
 "Wp" = (
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
 /obj/structure/cable{
 	icon_state = "1-2"
 	},

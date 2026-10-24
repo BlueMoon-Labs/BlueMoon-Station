@@ -78,7 +78,7 @@
 /obj/item/chainsaw/doomslayer
 	name = "THE GREAT COMMUNICATOR"
 	desc = "<span class='warning'>VRRRRRRR!!!</span>"
-	armour_penetration = 75
+	armour_penetration = MELEE_AP_EXCLUSIVE
 	block_chance = 60 //bluemoon add
 	force_on = 45
 	var/laser_defl = 1 //bluemoon add

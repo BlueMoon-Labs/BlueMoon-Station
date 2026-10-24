@@ -384,6 +384,7 @@
 	. = ..()
 	if(. & EMP_PROTECT_CONTENTS)
 		return
+	dna.species.spec_emp_act(src, severity)
 	var/informed = FALSE
 	if(isrobotic(src))
 		apply_status_effect(/datum/status_effect/robotic_emp, severity / 20)

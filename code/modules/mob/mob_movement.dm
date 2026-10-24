@@ -55,6 +55,15 @@
 		return FALSE
 	if(mob.force_moving)
 		return FALSE
+	// BLUEMOON CHANGE START - Брошенного персонажа нельзя вести собственными шагами:
+	// ниже, после успешного шага, вызывается throwing.finalize(FALSE), то есть любой
+	// нажатый ключ обрывал полёт на самой клетке. У поля сдерживания Shock() даёт
+	// Stun(40) - 4 секунды, а бросок живёт до range/speed = 200/4 = 5 секунд, так что
+	// последнюю секунду игрок успевал перехватить управление. Ловим на входе, рядом с
+	// force_moving - оба означают "движением игнорируют".
+	if(mob.throwing)
+		return FALSE
+	// BLUEMOON CHANGE END
 
 	// Sandstorm Edit
 	if(mob.shifting || mob.tilting)
@@ -444,33 +453,68 @@
 	set name = "Move Upwards"
 	set category = "IC.Z Layer Move"
 
-	if(zMove(UP, TRUE))
-		to_chat(src, "<span class='notice'>You move upwards.</span>")
+	move_vertically(UP)
 
 /mob/verb/down()
 	set name = "Move Down"
 	set category = "IC.Z Layer Move"
 
-	if(zMove(DOWN, TRUE))
-		to_chat(src, "<span class='notice'>You move down.</span>")
+	move_vertically(DOWN)
 
-/mob/proc/zMove(dir, feedback = FALSE)
-	if(dir != UP && dir != DOWN)
+/// Общий путь вертикальных вербов: сначала лестница под ногами, потом полёт.
+/mob/proc/move_vertically(direction)
+	var/turf/current_turf = get_turf(src)
+	if(!current_turf)
 		return FALSE
-	var/turf/target = get_step_multiz(src, dir)
-	if(!target)
-		if(feedback)
-			to_chat(src, "<span class='warning'>There's nothing in that direction!</span>")
+
+	if(istype(loc, /obj/machinery/atmospherics))
+		var/obj/machinery/atmospherics/pipe = loc
+		if(pipe.relaymove(src, direction))
+			return TRUE
+		to_chat(src, span_warning("По трубам на другой этаж можно попасть только через переходник между палубами."))
 		return FALSE
-	if(!canZMove(dir, target))
-		if(feedback)
-			to_chat(src, "<span class='warning'>You couldn't move there!</span>")
+
+	// Мех, шкаф, капсула: zMove() вытащил бы моба наружу и оставил контейнер на месте
+	if(!isturf(loc) && !isobserver(src))
+		if(istype(loc, /obj/vehicle/sealed/mecha))
+			to_chat(src, span_warning("Вы не в состоянии двигаться находясь в мехе!"))
+		else
+			to_chat(src, span_warning("Отсюда на другой этаж не перебраться."))
 		return FALSE
-	forceMove(target)
+
+	var/obj/structure/ladder/current_ladder = locate() in current_turf
+	if(current_ladder)
+		var/obj/structure/ladder/destination = (direction == UP) ? current_ladder.up : current_ladder.down
+		if(destination)
+			//Лестница не спрашивает can_z_move(), поэтому дееспособность проверяем здесь; при клике те же ворота стоят в check_menu().
+			if(!isobserver(src) && incapacitated())
+				to_chat(src, "<span class='warning'>Вы не в состоянии лезть по лестнице!</span>")
+				return FALSE
+			current_ladder.travel(direction == UP, src, isobserver(src), destination)
+			return TRUE
+
+	// Полет в космосе
+	if(!isobserver(src))
+		if(incapacitated())
+			to_chat(src, span_warning("Вы не в состоянии двигаться!"))
+			return FALSE
+
+		if(!can_z_move(direction, current_turf, null, ZMOVE_FLIGHT_FLAGS|ZMOVE_FEEDBACK))
+			return FALSE
+
+		to_chat(src, "<span class='notice'>Вы начинаете двигаться [direction == UP ? "вверх" : "вниз"]...</span>")
+		if(!do_after(src, 1.5 SECONDS, src))
+			return FALSE
+
+	if(!zMove(direction, null, ZMOVE_FLIGHT_FLAGS|ZMOVE_FEEDBACK))
+		return FALSE
+	to_chat(src, "<span class='notice'>Вы перемещаетесь [direction == UP ? "вверх" : "вниз"].</span>")
 	return TRUE
 
-/mob/proc/canZMove(direction, turf/target)
-	return FALSE
+/mob/set_currently_z_moving(new_z_moving_value, forced = FALSE)
+	if(buckled)
+		return buckled.set_currently_z_moving(new_z_moving_value, forced)
+	return ..()
 
 /mob/Moved(atom/old_loc, Dir, Forced = FALSE)
 	. = ..()

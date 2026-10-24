@@ -13,7 +13,7 @@
 	unique_reskin = list()
 
 /obj/item/clothing/under/rank/security/officer/formal/sol/armorless
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0,  WOUND = 0)
+	armor_type = /datum/armor/none
 
 /obj/item/clothing/under/rank/security/officer/solfed_military
 	name = "solfed military uniform"
@@ -72,7 +72,7 @@
 	icon = 'modular_bluemoon/kovac_shitcode/icons/solfed/obj_sol.dmi'
 	mob_overlay_icon = 'modular_bluemoon/kovac_shitcode/icons/solfed/mob_sol.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
-	armor = list(MELEE = 55, BULLET = 65, LASER = 65, ENERGY = 65, BOMB = 40, BIO = 50, RAD = 100, FIRE = 40, ACID = 50,  WOUND = 40)
+	armor_type = /datum/armor/nri_and_solfed
 	brc_mitigation_bonus = BRC_MITIGATION_20  // BLUEMOON ADD
 
 // Cloaks
@@ -103,7 +103,7 @@
 	mob_overlay_icon = 'modular_bluemoon/kovac_shitcode/icons/solfed/mob_sol_head.dmi'
 
 /obj/item/clothing/head/HoS/beret/sol/security
-	armor = list(MELEE = 40, BULLET = 30, LASER = 30,ENERGY = 10, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50)
+	armor_type = /datum/armor/armored_headgear
 
 /obj/item/clothing/head/HoS/beret/sol/plain
 	name = "solfed beret"
@@ -113,7 +113,7 @@
 
 /obj/item/clothing/head/HoS/beret/sol/plain/armorless
 	desc = "A blue beret made in SolFed style."
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0,  WOUND = 0)
+	armor_type = /datum/armor/none
 
 /obj/item/clothing/head/HoS/beret/sol/cap
 	name = "solfed cap"
@@ -123,7 +123,7 @@
 
 /obj/item/clothing/head/HoS/beret/sol/cap/armorless
 	desc = "A blue SolFed Cap without any protection."
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0,  WOUND = 0)
+	armor_type = /datum/armor/none
 
 /obj/item/radio/headset/sol
 	name = "SolFed Headset"
@@ -163,10 +163,9 @@
 	icon_state = "hardsuit0-solfed"
 	item_state = "hardsuit0-solfed"
 	hardsuit_type = "solfed"
-	armor = list(MELEE = 70, BULLET = 55, LASER = 50, ENERGY = 50, BOMB = 65, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 50)
+	armor_type = /datum/armor/ert_alert
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
-	actions_types = list()
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	icon = 'modular_bluemoon/kovac_shitcode/icons/solfed/obj_sol_head.dmi'
 	mob_overlay_icon = 'modular_bluemoon/kovac_shitcode/icons/solfed/mob_sol_head.dmi'
@@ -178,7 +177,7 @@
 	item_state = "hardsuit0-solfed"
 	hardsuit_type = "solfed"
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/alert/sol
-	armor = list(MELEE = 70, BULLET = 55, LASER = 50, ENERGY = 50, BOMB = 65, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 50)
+	armor_type = /datum/armor/ert_alert
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	//mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
@@ -195,7 +194,7 @@
 	item_state = "hardsuit0-solfeds"
 	hardsuit_type = "solfeds"
 	tail_state = "ert-alert"
-	armor = list(MELEE = 75, BULLET = 75, LASER = 75, ENERGY = 75, BOMB = 100, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 75)
+	armor_type = /datum/armor/sol_hardsuit_adv
 
 /obj/item/clothing/suit/space/hardsuit/ert/alert/sol/adv
 	name = "FCS-B SolFed hardsuit"
@@ -204,7 +203,8 @@
 	item_state = "hardsuit0-solfeds"
 	hardsuit_type = "solfeds"
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/alert/sol/adv
-	armor = list(MELEE = 75, BULLET = 75, LASER = 75, ENERGY = 75, BOMB = 100, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 75)
+	armor_type = /datum/armor/sol_hardsuit_adv
+	tail_state = "inteq-elite"
 	brc_mitigation_bonus = 25  // BLUEMOON ADD
 
 /// Outfits (ERT military suits were stored in ert.dm)

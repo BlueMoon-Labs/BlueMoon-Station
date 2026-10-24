@@ -83,6 +83,8 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 	var/ui_name
 	///button to access antag interface
 	var/datum/action/antag_info/info_button
+	///Английские строки «You are ...» при получении роли; окно со своим приветствием их выключает
+	var/ui_intro = TRUE
 
 	// BLUEMOON ADD START
 	var/time_of_last_antag_remind = 0 // время последнего напоминания антагонисту о том, что ему нужно проявлять активность
@@ -225,8 +227,9 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 	if(!silent)
 		greet()
 		if(ui_name)
-			to_chat(owner.current, span_big("You are [src]."))
-			to_chat(owner.current, span_boldnotice("For more info, read the panel. you can always come back to it using the button in the top left."))
+			if(ui_intro)
+				to_chat(owner.current, span_big("You are [src]."))
+				to_chat(owner.current, span_boldnotice("For more info, read the panel. you can always come back to it using the button in the top left."))
 			info_button.Trigger()
 	apply_innate_effects()
 	give_antag_moodies()
@@ -289,14 +292,15 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 	if(!owner)
 		CRASH("Antag datum with no owner.")
 
-	remove_innate_effects()
+	if(owner.current)
+		remove_innate_effects()
 	clear_antag_moodies()
 	owner?.do_remove_antag_datum(src)
 	// cit skill
 	for(var/A in skill_modifiers)
 		owner.remove_skill_modifier(GET_SKILL_MOD_ID(A, type))
 	// end
-	if(!LAZYLEN(owner.antag_datums) && !soft_antag)
+	if(!LAZYLEN(owner.antag_datums) && !soft_antag && owner.current)
 		owner.current.remove_from_current_living_antags()
 	if(info_button)
 		QDEL_NULL(info_button)
@@ -335,7 +339,7 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
  * Proc that removes this antagonist's ascribed moodlet from the player.
  */
 /datum/antagonist/proc/clear_antag_moodies()
-	if(!antag_moodlet)
+	if(!antag_moodlet || !owner.current)
 		return
 	SEND_SIGNAL(owner.current, COMSIG_CLEAR_MOOD_EVENT, "antag_moodlet")
 

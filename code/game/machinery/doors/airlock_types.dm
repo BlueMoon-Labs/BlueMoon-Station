@@ -16,6 +16,8 @@
 	assemblytype = /obj/structure/door_assembly/door_assembly_sec
 	wiretypepath = /datum/wires/airlock/security
 	normal_integrity = 450
+	/// id таймера камеры (/obj/machinery/door_timer), который закрывает и открывает этот шлюз
+	var/id = null
 
 /obj/machinery/door/airlock/engineering
 	icon = 'icons/obj/doors/airlocks/station/engineering.dmi'
@@ -592,7 +594,7 @@
 	desc = "An airlock hastily corrupted by blood magic, it is unusually brittle in this state."
 	normal_integrity = 150
 	damage_deflection = 5
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0)
+	armor_type = /datum/armor/none
 
 //Pinion airlocks: Clockwork doors that only let servants of Ratvar through.
 /obj/machinery/door/airlock/clockwork

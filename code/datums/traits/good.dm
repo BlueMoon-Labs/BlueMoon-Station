@@ -116,6 +116,8 @@
 	medical_record_text = "Снимки мозга пациента показывают высокоразвитые слуховые пути."
 
 /datum/quirk/musician/on_spawn()
+	if(!spawn_items)
+		return
 	var/mob/living/carbon/human/H = quirk_holder
 	var/obj/item/choice_beacon/music/B = new(get_turf(H))
 	H.put_in_hands(B)
@@ -162,6 +164,8 @@
 	medical_record_text = "Пациент был недавно замечен за вдыханием паров краски."
 
 /datum/quirk/tagger/on_spawn()
+	if(!spawn_items)
+		return
 	var/mob/living/carbon/human/H = quirk_holder
 	var/obj/item/toy/crayon/spraycan/spraycan = new(get_turf(H))
 	H.put_in_hands(spraycan)
@@ -300,9 +304,12 @@
 
 /datum/quirk/breathing_tube/on_spawn()
 	. = ..()
+	if(!spawn_items)
+		return
+	if(quirk_holder.getorganslot(ORGAN_SLOT_BREATHING_TUBE))
+		return
 
-	// Create a new augment item
+	// Выдаём трубку при появлении персонажа; актуализатор её не восстанавливает.
 	var/obj/item/organ/cyberimp/mouth/breathing_tube/put_in = new
 
-	// Apply the augment to the quirk holder
 	put_in.Insert(quirk_holder, null, TRUE, TRUE)

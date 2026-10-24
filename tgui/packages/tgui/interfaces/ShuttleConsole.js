@@ -7,7 +7,7 @@ export const ShuttleConsole = (props) => {
   return (
     <Window
       width={350}
-      height={230}>
+      height={260}>
       <Window.Content>
         <ShuttleConsoleContent
           type={type}
@@ -45,6 +45,7 @@ export const ShuttleConsoleContent = (props) => {
     timer_str,
     locations = [],
     pod_depart_locked,
+    status_note,
   } = data;
   return (
     <Section>
@@ -117,6 +118,11 @@ export const ShuttleConsoleContent = (props) => {
         {!!pod_depart_locked && (
           <Box color="bad" mb={1} textAlign="center" fontSize="12px">
             Security lock: Code Red alert required.
+          </Box>
+        )}
+        {!!status_note && (
+          <Box color="bad" mb={1} textAlign="center" fontSize="12px">
+            {status_note}
           </Box>
         )}
         <Button

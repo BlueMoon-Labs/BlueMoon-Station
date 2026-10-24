@@ -77,6 +77,14 @@ GLOBAL_LIST_EMPTY(cached_previews)
 	icon = 'icons/turf/floors.dmi'
 	icon_state = "plating"
 	var/cached_target_appearance
+	/// Этаж, на плоскостях которого нарисована показанная внешность.
+	var/shown_offset = 0
+
+/atom/movable/screen/map_view/examine_panel_screen/ensure_plane_group()
+	if(!popup_plane_group)
+		popup_plane_group = new /datum/plane_master_group/popup/on_demand(PLANE_GROUP_POPUP_WINDOW(src), assigned_map)
+	popup_plane_group.ensure_popup_depth(shown_offset)
+	return popup_plane_group
 
 /atom/movable/screen/map_view/examine_panel_screen/Destroy()
 	cached_target_appearance = null
@@ -94,6 +102,8 @@ GLOBAL_LIST_EMPTY(cached_previews)
 	cut_overlays()
 	add_overlay(current_mob_appearance)
 	cached_target_appearance = target_appearance
+	shown_offset = PLANE_TO_OFFSET(target.plane)
+	popup_plane_group?.ensure_popup_depth(shown_offset)
 
 /datum/description_profile/ui_static_data(mob/user, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
@@ -126,8 +136,15 @@ GLOBAL_LIST_EMPTY(cached_previews)
 	data["extreme_tag"] = M?.client?.prefs?.extremepref || "No"
 	data["very_extreme_tag"] = M?.client?.prefs?.extremeharm || "No"
 	data["tattoo_tag"] = M?.client?.prefs?.tattoopref || "No"
+	add_antag_opt_in_data(data, M)
 
 	return data
+
+/datum/description_profile/proc/add_antag_opt_in_data(list/data, mob/living/target)
+	var/level = target?.mind ? target.mind.get_effective_antag_opt_in_level() : antag_opt_in_default_level()
+	data["antag_opt_in"] = antag_opt_in_level_name(level)
+	data["antag_opt_in_color"] = antag_opt_in_level_color(level)
+	data["antag_opt_in_desc"] = GLOB.antag_opt_in_descriptions["[level]"]
 
 /proc/format_flavor_for_tgui(text)
 	if(!text)
@@ -164,7 +181,12 @@ GLOBAL_LIST_EMPTY(cached_previews)
 		data["flavortext"] = (!unknown) ? format_text("flavortext", C.dna?.flavor_text) : "Скрыто"
 		data["headshot_links"] = (!unknown) ? (C.dna.headshot_links.Copy() || "") : list()
 		data["species_name"] = (!unknown) ? (C.dna?.custom_species || C.dna?.species) : "????"
-		data["custom_species_lore"] = (!unknown) ? format_text("custom_species_lore", C.dna?.custom_species_lore) : ""
+		var/race_lore = C.dna?.custom_species_lore
+		if(!length(race_lore) && !length(C.dna?.custom_species)) // BLUEMOON ADD - лор вида подставляем только без своего названия вида, иначе профиль описывал бы другой вид
+			var/datum/species/species_datum = C.dna?.species
+			if(species_datum)
+				race_lore = species_datum.get_species_lore_text() // BLUEMOON ADD - лор вида, если игрок не задал свой
+		data["custom_species_lore"] = (!unknown) ? format_text("custom_species_lore", race_lore) : ""
 		if (istype(M, /mob/living/carbon/human))
 			var/mob/living/carbon/human/H = C
 			var/can_see_naked = TRUE
@@ -280,5 +302,6 @@ GLOBAL_LIST_EMPTY(cached_previews)
 		data["tattoo_tag"] = prefs.tattoopref
 	else for(var/i in list("vore_tag", "erp_tag", "mob_tag", "nc_tag", "unholy_tag", "unholy_hard_tag", "extreme_tag", "very_extreme_tag", "tattoo_tag"))
 		data[i] = "No"
+	add_antag_opt_in_data(data, M)
 
 	return data

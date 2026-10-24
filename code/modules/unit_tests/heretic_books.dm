@@ -73,12 +73,18 @@
 		titles += path.book_title
 		page_sounds |= path.book_page_sound
 		var/list/states = icon_states(book.icon)
-		for(var/suffix in list("", "_open", "_opening", "_closing"))
+		for(var/suffix in list("", "_open", "_opening", "_closing", "_seal"))
 			TEST_ASSERT("[path.book_cover][suffix]" in states, "У книги [path_id] отсутствует состояние [suffix].")
 		TEST_ASSERT(book.item_state in icon_states(book.lefthand_file), "Нет левого спрайта книги [path_id] в руках.")
 		TEST_ASSERT(book.item_state in icon_states(book.righthand_file), "Нет правого спрайта книги [path_id] в руках.")
 		TEST_ASSERT(isfile(path.book_open_sound) && isfile(path.book_page_sound), "Звуки книги должны быть ресурсами сборки.")
 	TEST_ASSERT_EQUAL(length(covers), length(GLOB.heretic_paths), "У каждого пути должна быть своя обложка.")
+	TEST_ASSERT("seal_shine" in icon_states('modular_bluemoon/icons/obj/heretic_books.dmi'), "Нет общего блика печати.")
+	var/obj/item/forbidden_book/codex = allocate(/obj/item/forbidden_book)
+	for(var/suffix in list("", "_open", "_opening", "_closing"))
+		TEST_ASSERT("codex[suffix]" in icon_states(codex.icon), "У кодекса отсутствует состояние [suffix].")
+	TEST_ASSERT(codex.item_state in icon_states(codex.lefthand_file), "Нет левого спрайта кодекса в руках.")
+	TEST_ASSERT(codex.item_state in icon_states(codex.righthand_file), "Нет правого спрайта кодекса в руках.")
 	TEST_ASSERT_EQUAL(length(page_sounds), length(GLOB.heretic_paths), "У каждого материала должен быть свой звук страницы.")
 
 /// Предметы, мобы, структуры и турфы еретика называются латиницей.

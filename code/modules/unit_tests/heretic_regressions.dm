@@ -108,7 +108,7 @@
 	place = locate(target_x, target_y, target_z)
 	TEST_ASSERT(isopenturf(place), "Второе касание обрушает обычную стену.")
 	TEST_ASSERT_EQUAL(rust.combat_resource, 1, "Повторное касание не выдаёт ещё один нарост.")
-	heretic.gain_knowledge(/datum/eldritch_knowledge/rust_fist)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/rust_formation)
 	place = place.ChangeTurf(/turf/closed/wall)
 	COOLDOWN_RESET(rust, resource_harvest)
 	fist = allocate(/obj/item/melee/touch_attack/mansus_fist)
@@ -201,7 +201,7 @@
 
 /// Боевые посохи учитывают защиту капюшона при настоящем ударе в голову.
 /datum/unit_test/heretic_staff_armor/Run()
-	for(var/staff_type in list(/obj/item/staff/bostaff, /obj/item/staff/bostaff/chaplain))
+	for(var/staff_type in list(/obj/item/staff/bostaff))
 		var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human)
 		var/mob/living/carbon/human/unarmored = allocate(/mob/living/carbon/human, get_step(user, EAST))
 		var/mob/living/carbon/human/armored = allocate(/mob/living/carbon/human, get_step(user, NORTH))
@@ -281,7 +281,7 @@
 	var/datum/mind/soul = heretic.owner
 	var/mob/living/old_body = soul.current
 	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/basic)
-	heretic.gain_knowledge(/datum/eldritch_knowledge/cold_snap)
+	heretic.gain_knowledge(/datum/eldritch_knowledge/spell/void_prison)
 	heretic.gain_knowledge(/datum/eldritch_knowledge/flame_immunity)
 	var/datum/eldritch_knowledge/spell/basic/grasp = heretic.get_knowledge(/datum/eldritch_knowledge/spell/basic)
 	var/obj/effect/proc_holder/spell/old_grasp = grasp.granted_spell
@@ -1084,12 +1084,16 @@
 	var/datum/action/ordinary = allocate(/datum/action)
 	TEST_ASSERT_EQUAL(ordinary.format_tooltip(user, "Обычная кнопка"), "Обычная кнопка", "Другие действия сохраняют прежний текст.")
 
-/// Новый еретик не появляется под эвак и сверх одного на двадцать живых.
+/// Новый еретик не появляется под эвак, при живом вознёсшемся и сверх одного на двадцать живых.
 /datum/unit_test/heretic_injection_pacing/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	TEST_ASSERT(heretic_injection_block_reason(HERETIC_CREW_PER_HERETIC - 1), "Живой еретик закрывает второго на малом онлайне.")
 	TEST_ASSERT_NULL(heretic_injection_block_reason(HERETIC_CREW_PER_HERETIC * 2), "Двойной онлайн допускает второго.")
+	heretic.ascended = TRUE
+	TEST_ASSERT(heretic_injection_block_reason(HERETIC_CREW_PER_HERETIC * 4), "Живой вознёсшийся закрывает появление еретика при любом онлайне.")
 	heretic.owner.current.death()
+	TEST_ASSERT_NULL(heretic_injection_block_reason(HERETIC_CREW_PER_HERETIC * 4), "Погибший вознёсшийся больше не держит место.")
+	heretic.ascended = FALSE
 	TEST_ASSERT_NULL(heretic_injection_block_reason(HERETIC_CREW_PER_HERETIC - 1), "Погибший еретик не занимает место.")
 	if(!SSshuttle.emergency)
 		return

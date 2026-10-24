@@ -29,11 +29,15 @@
 	install_titanfall_premium_parts()
 	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/medical/mechmedbeam(src)
 	ME.attach(src)
+	selected = ME
 	ME = new /obj/item/mecha_parts/mecha_tracking(src)
 	ME.attach(src)
-	ME = new /obj/item/mecha_parts/mecha_equipment/medical/syringe_gun(src)
+	ME = new /obj/item/mecha_parts/mecha_equipment/medical/rescue_jaw(src)
 	ME.attach(src)
+	selected_right = ME
 	ME = new /obj/item/mecha_parts/mecha_equipment/medical/sleeper(src)
+	ME.attach(src)
+	ME = new /obj/item/mecha_parts/mecha_equipment/thrusters/ion(src)
 	ME.attach(src)
 
 /obj/vehicle/sealed/mecha/medical/medigax/loaded/Initialize(mapload)
@@ -41,11 +45,15 @@
 	install_titanfall_premium_parts()
 	var/obj/item/mecha_parts/mecha_equipment/ME = new /obj/item/mecha_parts/mecha_equipment/medical/mechmedbeam(src)
 	ME.attach(src)
+	selected = ME
 	ME = new /obj/item/mecha_parts/mecha_tracking(src)
 	ME.attach(src)
-	ME = new /obj/item/mecha_parts/mecha_equipment/thrusters/ion(src)
+	ME = new /obj/item/mecha_parts/mecha_equipment/medical/rescue_jaw(src)
 	ME.attach(src)
+	selected_right = ME
 	ME = new /obj/item/mecha_parts/mecha_equipment/medical/sleeper(src)
+	ME.attach(src)
+	ME = new /obj/item/mecha_parts/mecha_equipment/thrusters/ion(src)
 	ME.attach(src)
 
 /obj/vehicle/sealed/mecha/working/ripley/loaded/Initialize(mapload)

@@ -133,7 +133,7 @@
 			new	/obj/item/clothing/accessory/kevlar(src)
 			new	/obj/item/clothing/accessory/kevlar(src)
 			new	/obj/item/clothing/accessory/kevlar(src)
-			new /obj/item/reagent_containers/syringe/stimulants(src)
+			new /obj/item/reagent_containers/hypospray/medipen/stimulants(src)
 			new /obj/item/clothing/neck/tie/red(src)
 
 /* 		if("screwed") // 29 tc
@@ -166,7 +166,7 @@
 			new /obj/item/encryptionkey/inteq(src)
 			new /obj/item/grenade/syndieminibomb(src)
 			new /obj/item/clothing/glasses/phantomthief/syndicate(src)
-			new /obj/item/reagent_containers/syringe/stimulants(src)
+			new /obj/item/reagent_containers/hypospray/medipen/stimulants(src)
 
 		if("baseball") // 41~ tc
 			new /obj/item/melee/baseball_bat/ablative/inteq(src) //Lets say 12 tc, lesser sleeping carp

@@ -24,7 +24,7 @@
 	var/outer_plating
 	var/outer_plating_amount
 
-/datum/component/construction/mecha/spawn_result()
+/datum/component/construction/mecha/spawn_result(mob/living/user)
 	if(!result)
 		return
 	// Remove default mech power cell, as we replace it with a new one.
@@ -35,9 +35,40 @@
 
 	var/obj/item/mecha_parts/chassis/parent_chassis = parent
 	M.CheckParts(parent_chassis.contents)
+	record_sol_inspection_builder(M, user)
 
 	SSblackbox.record_feedback("tally", "mechas_created", 1, M.name)
 	QDEL_NULL(parent)
+
+/datum/component/construction/mecha/action(datum/source, obj/item/I, mob/living/user)
+	if(!istype(I, /obj/item/storage/part_replacer))
+		return ..()
+	var/obj/item/storage/part_replacer/replacer = I
+	if(!user.Adjacent(parent) || SEND_SIGNAL(replacer, COMSIG_IS_STORAGE_LOCKED, user, TRUE))
+		return COMPONENT_NO_AFTERATTACK
+	var/list/parts = replacer.get_sorted_parts()
+	var/installed = FALSE
+	// Не пропускаем этапы с инструментами и не выполняем обратные шаги сборки.
+	while(!QDELETED(src) && !QDELETED(parent))
+		var/list/current_step = steps[index]
+		var/part_type = current_step["key"]
+		if(!ispath(part_type, /obj/item))
+			break
+		var/step_completed = FALSE
+		for(var/obj/item/part as anything in parts)
+			if(QDELETED(part) || part.loc != replacer || !istype(part, part_type))
+				continue
+			if(check_step(part, user))
+				step_completed = TRUE
+				installed = TRUE
+				break
+		if(!step_completed)
+			break
+	if(installed)
+		replacer.play_rped_sound()
+	else
+		to_chat(user, span_warning("В RPED нет нужной детали либо текущий этап сборки требует инструмент."))
+	return COMPONENT_NO_AFTERATTACK
 
 // Default proc to generate mech steps.
 // Override if the mech needs an entirely custom process (See HONK mech)
@@ -120,12 +151,12 @@
 		parent_atom.add_overlay(I.icon_state+"+o")
 		qdel(I)
 
-/datum/component/construction/unordered/mecha_chassis/spawn_result()
+/datum/component/construction/unordered/mecha_chassis/spawn_result(mob/living/user)
 	var/atom/parent_atom = parent
 	parent_atom.icon = 'icons/mecha/mech_construction.dmi'
 	parent_atom.density = TRUE
 	parent_atom.cut_overlays()
-	..()
+	..(user)
 
 // Default proc for the first steps of mech construction.
 /datum/component/construction/mecha/proc/get_frame_steps()
@@ -336,17 +367,38 @@
 /datum/component/construction/mecha/ripley/get_outer_plating_steps()
 	return list(
 		list(
-			"key" = /obj/item/stack/rods,
-			"amount" = 10,
+			"key" = outer_plating,
+			"amount" = outer_plating_amount,
 			"back_key" = TOOL_WELDER,
-			"desc" = "Outer Plating is welded."
+			"desc" = "Внутренняя обшивка приварена. Для кабины MK-I нужны 10 прутьев, для кабины MK-II — 10 листов пластали."
 		),
 		list(
 			"key" = TOOL_WELDER,
 			"back_key" = TOOL_WIRECUTTER,
-			"desc" = "Cockpit wire screen is installed."
+			"desc" = outer_plating == /obj/item/stack/sheet/plasteel ? "Установлена обшивка герметичной кабины MK-II." : "Установлена защитная решётка кабины MK-I."
 		),
 	)
+
+/datum/component/construction/mecha/ripley/get_step_hint(key)
+	if(index == steps.len - 1)
+		return "Добавьте 10 прутьев для Ripley MK-I или 10 листов пластали для Ripley MK-II."
+	return ..()
+
+/datum/component/construction/mecha/ripley/check_step(obj/item/I, mob/living/user)
+	if(index != steps.len - 1 || (!istype(I, /obj/item/stack/rods) && !istype(I, /obj/item/stack/sheet/plasteel)))
+		return ..()
+	var/previous_plating = outer_plating
+	var/previous_result = result
+	outer_plating = istype(I, /obj/item/stack/sheet/plasteel) ? /obj/item/stack/sheet/plasteel : /obj/item/stack/rods
+	result = outer_plating == /obj/item/stack/sheet/plasteel ? /obj/vehicle/sealed/mecha/working/ripley/mkii : /obj/vehicle/sealed/mecha/working/ripley
+	var/list/current_step = steps[index]
+	current_step["key"] = outer_plating
+	. = ..()
+	// Не меняем выбранную модель, если материалов не хватило.
+	if(!.)
+		outer_plating = previous_plating
+		result = previous_result
+		current_step["key"] = previous_plating
 
 /datum/component/construction/mecha/ripley/custom_action(obj/item/I, mob/living/user, diff)
 	if(!..())
@@ -437,14 +489,14 @@
 				user.visible_message("<span class='notice'>[user] unfastens the internal armor layer.</span>", "<span class='notice'>You unfasten the internal armor layer.</span>")
 		if(18)
 			if(diff==FORWARD)
-				user.visible_message("<span class='notice'>[user] installs the external reinforced armor layer to [parent].</span>", "<span class='notice'>You install the external reinforced armor layer to [parent].</span>")
+				user.visible_message(span_notice("[user] устанавливает внешнюю обшивку кабины [parent]."), span_notice("Вы устанавливаете внешнюю обшивку кабины [parent]."))
 			else
-				user.visible_message("<span class='notice'>[user] cuts the internal armor layer from [parent].</span>", "<span class='notice'>You cut the internal armor layer from [parent].</span>")
+				user.visible_message(span_notice("[user] срезает внутреннюю обшивку [parent]."), span_notice("Вы срезаете внутреннюю обшивку [parent]."))
 		if(19)
 			if(diff==FORWARD)
-				user.visible_message("<span class='notice'>[user] secures the external armor layer.</span>", "<span class='notice'>You secure the external reinforced armor layer.</span>")
+				user.visible_message(span_notice("[user] приваривает внешнюю обшивку кабины [parent]."), span_notice("Вы привариваете внешнюю обшивку кабины [parent]."))
 			else
-				user.visible_message("<span class='notice'>[user] pries external armor layer from [parent].</span>", "<span class='notice'>You pry external armor layer from [parent].</span>")
+				user.visible_message(span_notice("[user] снимает внешнюю обшивку кабины [parent]."), span_notice("Вы снимаете внешнюю обшивку кабины [parent]."))
 		if(20)
 			if(diff==FORWARD)
 				user.visible_message("<span class='notice'>[user] welds the external armor layer to [parent].</span>", "<span class='notice'>You weld the external armor layer to [parent].</span>")

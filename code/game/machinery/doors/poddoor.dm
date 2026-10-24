@@ -13,7 +13,7 @@
 	heat_proof = TRUE
 	safe = FALSE
 	max_integrity = 600
-	armor = list(MELEE = 50, BULLET = 100, LASER = 100, ENERGY = 100, BOMB = 50, BIO = 100, RAD = 100, FIRE = 100, ACID = 70)
+	armor_type = /datum/armor/poddoor
 	resistance_flags = FIRE_PROOF
 	damage_deflection = 70
 	can_open_with_hands = FALSE
@@ -244,7 +244,7 @@
 		return
 	..()
 
-/obj/machinery/door/poddoor/do_animate(animation)
+/obj/machinery/door/poddoor/do_animate(animation, from_bump = FALSE)
 	switch(animation)
 		if("opening")
 			flick("opening", src)

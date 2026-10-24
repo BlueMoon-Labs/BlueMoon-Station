@@ -48199,9 +48199,6 @@
 /obj/structure/cable{
 	icon_state = "1-4"
 	},
-/obj/structure/cable{
-	icon_state = "1-4"
-	},
 /obj/effect/turf_decal/tile/red,
 /obj/effect/turf_decal/tile/red{
 	dir = 4
@@ -60749,7 +60746,7 @@
 	},
 /obj/item/circuitboard/computer/rdconsole,
 /obj/item/circuitboard/machine/cell_charger,
-/obj/item/circuitboard/machine/thermomachine/freezer,
+/obj/item/circuitboard/machine/thermomachine,
 /obj/item/stack/cable_coil,
 /obj/item/multitool,
 /obj/item/integrated_electronics/debugger,
@@ -69427,7 +69424,7 @@
 /turf/open/floor/plasteel/white,
 /area/medical/chemistry)
 "xIc" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
 	},

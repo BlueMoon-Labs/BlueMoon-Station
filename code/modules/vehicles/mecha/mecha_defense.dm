@@ -18,8 +18,8 @@
 			else
 				check_for_internal_damage(list(MECHA_INT_FIRE,MECHA_INT_TEMP_CONTROL,MECHA_INT_TANK_BREACH,MECHA_INT_CONTROL_LOST,MECHA_INT_SHORT_CIRCUIT))
 		if(. >= 5 || prob(33))
-			to_chat(occupants, "[icon2html(src, occupants)]<span class='userdanger'>Taking damage!</span>")
-		log_message("Took [damage_amount] points of damage. Damage type: [damage_type]", LOG_MECHA)
+			to_chat(occupants, "[icon2html(src, occupants)][span_userdanger("Мех получает повреждения!")]")
+		log_message("Получено [damage_amount] ед. урона. Тип урона: [damage_type]", LOG_MECHA)
 
 /obj/vehicle/sealed/mecha/run_obj_armor(damage_amount, damage_type, damage_flag = 0, attack_dir)
 	. = ..()
@@ -45,8 +45,8 @@
 		booster_damage_modifier /= facing_modifier
 		booster_deflection_modifier *= facing_modifier
 	if(prob(deflect_chance * booster_deflection_modifier))
-		visible_message("<span class='danger'>[src]'s armour deflects the attack!</span>")
-		log_message("Armor saved.", LOG_MECHA)
+		visible_message(span_danger("Броня [src] отражает атаку!"))
+		log_message("Броня отразила удар.", LOG_MECHA)
 		return FALSE
 	if(.)
 		. *= booster_damage_modifier
@@ -57,19 +57,19 @@
 		return
 	user.do_attack_animation(src, ATTACK_EFFECT_PUNCH)
 	playsound(loc, 'sound/weapons/tap.ogg', 40, TRUE, -1)
-	user.visible_message("<span class='danger'>[user] hits [name]. Nothing happens.</span>", null, null, COMBAT_MESSAGE_RANGE)
-	log_message("Attack by hand/paw. Attacker - [user].", LOG_MECHA, color="red")
+	user.visible_message(span_danger("[user] ударяет [name]. Ничего не происходит."), null, null, COMBAT_MESSAGE_RANGE)
+	log_message("Удар рукой или лапой. Нападавший: [user].", LOG_MECHA, color="red")
 
 /obj/vehicle/sealed/mecha/attack_paw(mob/user as mob)
 	return attack_hand(user)
 
 /obj/vehicle/sealed/mecha/attack_alien(mob/living/user)
-	log_message("Attack by alien. Attacker - [user].", LOG_MECHA, color="red")
+	log_message("Атака ксеноморфа. Нападавший: [user].", LOG_MECHA, color="red")
 	playsound(src.loc, 'sound/weapons/slash.ogg', 100, TRUE)
 	attack_generic(user, 15, BRUTE, MELEE, 0)
 
 /obj/vehicle/sealed/mecha/attack_animal(mob/living/simple_animal/user)
-	log_message("Attack by simple animal. Attacker - [user].", LOG_MECHA, color="red")
+	log_message("Атака животного. Нападавший: [user].", LOG_MECHA, color="red")
 	if(!user.melee_damage_upper && !user.obj_damage)
 		user.emote("custom", message = "[user.friendly_verb_continuous] [src].")
 		return FALSE
@@ -93,18 +93,18 @@
 /obj/vehicle/sealed/mecha/attack_hulk(mob/living/carbon/human/user)
 	. = ..()
 	if(.)
-		log_message("Attack by hulk. Attacker - [user].", LOG_MECHA, color="red")
+		log_message("Атака халка. Нападавший: [user].", LOG_MECHA, color="red")
 		log_combat(user, src, "punched", "hulk powers")
 
 /obj/vehicle/sealed/mecha/blob_act(obj/structure/blob/B)
-	log_message("Attack by blob. Attacker - [B].", LOG_MECHA, color="red")
+	log_message("Атака блоба. Нападавший: [B].", LOG_MECHA, color="red")
 	take_damage(30, BRUTE, MELEE, 0, get_dir(src, B))
 
 /obj/vehicle/sealed/mecha/attack_tk()
 	return
 
 /obj/vehicle/sealed/mecha/hitby(atom/movable/AM, skipcatch, hitpush, blocked, datum/thrownthing/throwingdatum) //wrapper
-	log_message("Hit by [AM].", LOG_MECHA, color="red")
+	log_message("Попадание [AM].", LOG_MECHA, color="red")
 	return ..()
 
 /obj/vehicle/sealed/mecha/bullet_act(obj/item/projectile/Proj) //wrapper
@@ -113,14 +113,14 @@
 			var/mob/living/hitmob = m
 			hitmob.bullet_act(Proj) //If the sides are open, the occupant can be hit
 		return BULLET_ACT_HIT
-	log_message("Hit by projectile. Type: [Proj.name]([Proj.flag]).", LOG_MECHA, color="red")
+	log_message("Попадание снаряда. Тип: [Proj.name] ([Proj.flag]).", LOG_MECHA, color="red")
 	. = ..()
 
 /obj/vehicle/sealed/mecha/ex_act(severity, target)
-	log_message("Affected by explosion of severity: [severity].", LOG_MECHA, color="red")
+	log_message("Попадание под взрыв. Сила воздействия: [severity].", LOG_MECHA, color="red")
 	if(prob(deflect_chance))
 		severity++
-		log_message("Armor saved, changing severity to [severity]", LOG_MECHA)
+		log_message("Броня снизила силу воздействия до [severity]", LOG_MECHA)
 	. = ..()
 
 
@@ -149,7 +149,7 @@
 	if(get_charge())
 		use_power((cell.charge/3)*(severity*0.005))
 		take_damage(severity/3, BURN, ENERGY, 1)
-	log_message("EMP detected", LOG_MECHA, color="red")
+	log_message("Обнаружен электромагнитный импульс", LOG_MECHA, color="red")
 
 	if(istype(src, /obj/vehicle/sealed/mecha/combat))
 		mouse_pointer = 'icons/effects/mouse_pointers/mecha_mouse-disable.dmi'
@@ -157,23 +157,38 @@
 			var/mob/living/occupant = occus
 			occupant.update_mouse_pointer()
 	if(!equipment_disabled && LAZYLEN(occupants)) //prevent spamming this message with back-to-back EMPs
-		to_chat(occupants, "<span=danger>Error -- Connection to equipment control unit has been lost.</span>")
+		to_chat(occupants, span_danger("Ошибка: связь с блоком управления оборудованием потеряна."))
 	if(!QDELETED(src))
 		addtimer(CALLBACK(src, TYPE_PROC_REF(/obj/vehicle/sealed/mecha, restore_equipment)), 3 SECONDS, TIMER_UNIQUE | TIMER_OVERRIDE)
 	equipment_disabled = 1
 
 /obj/vehicle/sealed/mecha/temperature_expose(datum/gas_mixture/air, exposed_temperature, exposed_volume)
 	if(exposed_temperature>max_temperature)
-		log_message("Exposed to dangerous temperature.", LOG_MECHA, color="red")
+		log_message("Воздействие опасной температуры.", LOG_MECHA, color="red")
 		take_damage(5, BURN, 0, 1)
 
 /obj/vehicle/sealed/mecha/attackby(obj/item/W, mob/user, params)
 
+	if(istype(W, /obj/item/storage/part_replacer))
+		if(construction_state != MECHA_OPEN_HATCH)
+			to_chat(user, span_warning("Сначала откройте люк силового отсека."))
+			return
+		var/obj/item/storage/part_replacer/replacer = W
+		var/list/needed_parts = list()
+		if(!cell)
+			needed_parts[/obj/item/stock_parts/cell] = 1
+		if(!scanmod)
+			needed_parts[/obj/item/stock_parts/scanning_module] = 1
+		if(!capacitor)
+			needed_parts[/obj/item/stock_parts/capacitor] = 1
+		replacer.install_parts(src, user, needed_parts)
+		return
+
 	if(istype(W, /obj/item/mmi))
 		if(mmi_move_inside(W,user))
-			to_chat(user, "<span class='notice'>[src]-[W] interface initialized successfully.</span>")
+			to_chat(user, span_notice("Соединение между [src] и [W] успешно установлено."))
 		else
-			to_chat(user, "<span class='warning'>[src]-[W] interface initialization failed.</span>")
+			to_chat(user, span_warning("Не удалось установить соединение между [src] и [W]."))
 		return
 
 	if(istype(W, /obj/item/mecha_ammo))
@@ -181,61 +196,52 @@
 		return
 
 	if(W.GetID())
-		if((mecha_flags & ADDING_ACCESS_POSSIBLE) || (mecha_flags & ADDING_MAINT_ACCESS_POSSIBLE))
-			if(internals_access_allowed(user))
-				var/obj/item/card/id/id_card
-				if(istype(W, /obj/item/card/id))
-					id_card = W
-				else
-					var/obj/item/modular_computer/pda/pda = W
-					id_card = pda.id
-				output_maintenance_dialog(id_card, user)
-				return
-			to_chat(user, "<span class='warning'>Invalid ID: Access denied.</span>")
-			return
-		to_chat(user, "<span class='warning'>Maintenance protocols disabled by operator.</span>")
+		open_maintenance_panel(W, user)
 		return
 
 	if(istype(W, /obj/item/stock_parts/cell))
 		if(construction_state == MECHA_OPEN_HATCH)
 			if(!cell)
-				if(!user.transferItemToLoc(W, src, silent = FALSE))
+				if(!(istype(W.loc, /obj/item/storage/part_replacer) ? W.remove_item_from_storage(src) : user.transferItemToLoc(W, src, silent = FALSE)))
 					return
 				var/obj/item/stock_parts/cell/C = W
-				to_chat(user, "<span class='notice'>You install the power cell.</span>")
+				to_chat(user, span_notice("Вы устанавливаете батарею."))
 				playsound(src, 'sound/items/screwdriver2.ogg', 50, FALSE)
 				cell = C
-				log_message("Power cell installed", LOG_MECHA)
+				log_message("Батарея установлена", LOG_MECHA)
+				return TRUE
 			else
-				to_chat(user, "<span class='warning'>There's already a power cell installed!</span>")
+				to_chat(user, span_warning("Батарея уже установлена!"))
 		return
 
 	if(istype(W, /obj/item/stock_parts/scanning_module))
 		if(construction_state == MECHA_OPEN_HATCH)
 			if(!scanmod)
-				if(!user.transferItemToLoc(W, src))
+				if(!(istype(W.loc, /obj/item/storage/part_replacer) ? W.remove_item_from_storage(src) : user.transferItemToLoc(W, src)))
 					return
-				to_chat(user, "<span class='notice'>You install the scanning module.</span>")
+				to_chat(user, span_notice("Вы устанавливаете сканирующий модуль."))
 				playsound(src, 'sound/items/screwdriver2.ogg', 50, FALSE)
 				scanmod = W
-				log_message("[W] installed", LOG_MECHA)
+				log_message("[W] установлен", LOG_MECHA)
 				update_part_values()
+				return TRUE
 			else
-				to_chat(user, "<span class='warning'>There's already a scanning module installed!</span>")
+				to_chat(user, span_warning("Сканирующий модуль уже установлен!"))
 		return
 
 	if(istype(W, /obj/item/stock_parts/capacitor))
 		if(construction_state == MECHA_OPEN_HATCH)
 			if(!capacitor)
-				if(!user.transferItemToLoc(W, src))
+				if(!(istype(W.loc, /obj/item/storage/part_replacer) ? W.remove_item_from_storage(src) : user.transferItemToLoc(W, src)))
 					return
-				to_chat(user, "<span class='notice'>You install the capacitor.</span>")
+				to_chat(user, span_notice("Вы устанавливаете конденсатор."))
 				playsound(src, 'sound/items/screwdriver2.ogg', 50, FALSE)
 				capacitor = W
-				log_message("[W] installed", LOG_MECHA)
+				log_message("[W] установлен", LOG_MECHA)
 				update_part_values()
+				return TRUE
 			else
-				to_chat(user, "<span class='warning'>There's already a capacitor installed!</span>")
+				to_chat(user, span_warning("Конденсатор уже установлен!"))
 		return
 
 	if(istype(W, /obj/item/stack/cable_coil))
@@ -243,9 +249,9 @@
 			var/obj/item/stack/cable_coil/CC = W
 			if(CC.use(2))
 				clearInternalDamage(MECHA_INT_SHORT_CIRCUIT)
-				to_chat(user, "<span class='notice'>You replace the fused wires.</span>")
+				to_chat(user, span_notice("Вы заменяете оплавленные провода."))
 			else
-				to_chat(user, "<span class='warning'>You need two lengths of cable to fix this mech!</span>")
+				to_chat(user, span_warning("Для ремонта меха нужны два отрезка кабеля!"))
 		return
 
 	if(istype(W, /obj/item/mecha_parts))
@@ -259,7 +265,7 @@
 		else
 			atmosanalyzer_scan(cabin_air,user,src,TRUE)
 		return
-	log_message("Attacked by [W]. Attacker - [user]", LOG_MECHA)
+	log_message("Атака с помощью [W]. Нападавший: [user]", LOG_MECHA)
 	return ..()
 
 /obj/vehicle/sealed/mecha/wrench_act(mob/living/user, obj/item/I)
@@ -267,26 +273,34 @@
 	if(user.a_intent == INTENT_HARM)
 		return
 	. = TRUE
+	if(construction_state != MECHA_SECURE_BOLTS && construction_state != MECHA_LOOSE_BOLTS)
+		return
+	if(!I.use_tool(src, user, 0, volume = 50))
+		return
 	if(construction_state == MECHA_SECURE_BOLTS)
 		construction_state = MECHA_LOOSE_BOLTS
-		to_chat(user, "<span class='notice'>You undo the securing bolts.</span>")
+		to_chat(user, span_notice("Вы ослабляете крепёжные болты."))
 		return
 	if(construction_state == MECHA_LOOSE_BOLTS)
 		construction_state = MECHA_SECURE_BOLTS
-		to_chat(user, "<span class='notice'>You tighten the securing bolts.</span>")
+		to_chat(user, span_notice("Вы затягиваете крепёжные болты."))
 
 /obj/vehicle/sealed/mecha/crowbar_act(mob/living/user, obj/item/I)
 	..()
 	if(user.a_intent == INTENT_HARM)
 		return
 	. = TRUE
+	if(construction_state != MECHA_LOOSE_BOLTS && construction_state != MECHA_OPEN_HATCH)
+		return
+	if(!I.use_tool(src, user, 0, volume = 50))
+		return
 	if(construction_state == MECHA_LOOSE_BOLTS)
 		construction_state = MECHA_OPEN_HATCH
-		to_chat(user, "<span class='notice'>You open the hatch to the power unit.</span>")
+		to_chat(user, span_notice("Вы открываете люк силового отсека."))
 		return
 	if(construction_state == MECHA_OPEN_HATCH)
 		construction_state = MECHA_LOOSE_BOLTS
-		to_chat(user, "<span class='notice'>You close the hatch to the power unit.</span>")
+		to_chat(user, span_notice("Вы закрываете люк силового отсека."))
 
 /obj/vehicle/sealed/mecha/screwdriver_act(mob/living/user, obj/item/I)
 	..()
@@ -295,7 +309,7 @@
 	. = TRUE
 	if(internal_damage & MECHA_INT_TEMP_CONTROL)
 		clearInternalDamage(MECHA_INT_TEMP_CONTROL)
-		to_chat(user, "<span class='notice'>You repair the damaged temperature controller.</span>")
+		to_chat(user, span_notice("Вы чините повреждённый терморегулятор."))
 		return
 
 /obj/vehicle/sealed/mecha/welder_act(mob/living/user, obj/item/W)
@@ -304,26 +318,29 @@
 		return
 	. = TRUE
 	if (user in occupants)
-		to_chat(user, "<span class='notice'>Внешние повреждения не починить изнутри!</span>")
+		to_chat(user, span_notice("Внешние повреждения не починить изнутри!"))
 		return
 	if(internal_damage & MECHA_INT_TANK_BREACH)
 		if(!W.use_tool(src, user, 0, volume=50, amount=1))
 			return
 		clearInternalDamage(MECHA_INT_TANK_BREACH)
-		to_chat(user, "<span class='notice'>Вы починили повреждённую газовую канистру.</span>")
-		return
+		to_chat(user, span_notice("Вы починили повреждённую газовую канистру."))
+		if(obj_integrity >= max_integrity)
+			return
 	if(obj_integrity < max_integrity)
 		if(INTERACTING_WITH(user, src))
 			return
 		var/proficient_worker = HAS_TRAIT(user.mind, TRAIT_MECHA_EXPERT)
-		if(!W.use_tool(src, user, proficient_worker ? 3 SECONDS : 6 SECONDS, volume=50, amount=1))
+		if(!W.tool_start_check(user, amount = 1))
 			return
-		user.visible_message("<span class='notice'>[user] чинит часть повреждений [name].</span>", "<span class='notice'>Вы чините часть повреждений [src].</span>")
-		obj_integrity += min(10, max_integrity-obj_integrity)
-		if(obj_integrity == max_integrity)
-			to_chat(user, "<span class='notice'>Похоже, повреждений больше нет.</span>")
+		while(obj_integrity < max_integrity)
+			if(!W.use_tool(src, user, proficient_worker ? 3 SECONDS : 6 SECONDS, volume = 50, amount = 1))
+				return
+			user.visible_message(span_notice("[user] чинит часть повреждений [name]."), span_notice("Вы чините часть повреждений [src]."))
+			obj_integrity += min(10, max_integrity - obj_integrity)
+		to_chat(user, span_notice("Похоже, повреждений больше нет."))
 		return
-	to_chat(user, "<span class='warning'>Целостность [name] не нарушена!</span>")
+	to_chat(user, span_warning("Целостность [name] не нарушена!"))
 
 /obj/vehicle/sealed/mecha/proc/mech_toxin_damage(mob/living/target)
 	playsound(src, 'sound/effects/spray2.ogg', 50, TRUE)

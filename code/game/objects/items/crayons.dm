@@ -788,20 +788,21 @@
 /obj/item/toy/crayon/spraycan/draw_on(atom/target, mob/user, proximity, params)
 	if(!proximity)
 		return
-
 	if(is_capped)
-		to_chat(user, "<span class='warning'>Take the cap off first!</span>")
+		to_chat(user, span_warning("Снимите сперва крышку!"))
 		return
-
 	if(check_empty(user))
 		return
+	if(flags_1 & HOLOGRAM_1 && !istype(target, /turf/open/floor/holofloor))
+		to_chat(user, span_warning("[name] - голограмма, рисовать можно только на полу голодека!"))
+		return
 
-	if(iscarbon(target) && !(flags_1 & HOLOGRAM_1))
+	if(iscarbon(target))
+		var/mob/living/carbon/C = target
 		if(pre_noise || post_noise)
 			playsound(user.loc, 'sound/effects/spray.ogg', 25, 1, 5)
 
-		var/mob/living/carbon/C = target
-		C.visible_message("<span class='danger'>[user] sprays [src] into the face of [C]!</span>", "<span class='userdanger'>[user] sprays [src] into your face!</span>")
+		C.visible_message(span_danger("[user] пшикает [name] в лицо [C]!"), span_userdanger("[user] пшикает [name] в ваше лицо!"))
 
 		if(C.client)
 			C.blur_eyes(3)
@@ -822,25 +823,30 @@
 		reagents.reaction(C, VAPOR, fraction * volume_multiplier)
 		return
 
-	if(flags_1 & HOLOGRAM_1)
-		if(!istype(target, /turf/open/floor/holofloor))
-			to_chat(user, "<span class='warning'>[src] - голограмма, рисовать можно только на полу голодека!</span>")
-			return FALSE
-
 	if(isobj(target) && !istype(target, /obj/effect/decal/cleanable/crayon/gang))
 		if(actually_paints)
 			if(istype(target, /obj/item/canvas)) //dont color our canvas neon green when im trying to paint please
 				return
 			var/list/hsl = rgb2hsl(hex2num(copytext(paint_color,2,4)),hex2num(copytext(paint_color,4,6)),hex2num(copytext(paint_color,6,8)))
+			var/allowed_lightness = 0.25
+			var/colour_priority = WASHABLE_COLOUR_PRIORITY
 			var/static/list/whitelisted = typecacheof(list(/obj/structure/window,
 										/obj/effect/decal/cleanable/crayon,
-										/obj/machinery/door/window)
+										/obj/machinery/door/window,
+										/obj/structure/chair,
+										/obj/structure/table)
 									)
-			if(hsl[3] < 0.25 && !whitelisted[target]) //Colors too dark are rejected
-				to_chat(usr, "<span class='warning'>A color that dark on an object like this? Surely not...</span>")
+			if(whitelisted[target.type])
+				allowed_lightness = 0.1
+				colour_priority = FIXED_COLOUR_PRIORITY
+
+			if(hsl[3] < allowed_lightness)
+				var/list/allowed_rgb = hsl2rgb(0, 0, allowed_lightness + 0.01) // небольшой зазор по погрешности
+				var/allowed_color = "#[num2hex(allowed_rgb[1])][num2hex(allowed_rgb[2])][num2hex(allowed_rgb[3])]"
+				to_chat(usr, span_warning("Столь тёмный цвет на [target.name]? Уж точно нет. Минимальная яркость цвета это ~[allowed_lightness * 100]% ([allowed_color])"))
 				return FALSE
 
-			target.add_atom_colour(paint_color, WASHABLE_COLOUR_PRIORITY)
+			target.add_atom_colour(paint_color, colour_priority)
 
 		var/const/transfer_amount = 2
 		var/fraction = min(1, transfer_amount / reagents.maximum_volume)
@@ -849,7 +855,7 @@
 
 		if(pre_noise || post_noise)
 			playsound(user.loc, 'sound/effects/spray.ogg', 5, 1, 5)
-		user.visible_message("[user] coats [target] with spray paint!", "<span class='notice'>You coat [target] with spray paint.</span>")
+		user.visible_message("[user] покрывает [target.name] краской из баллоничика!", span_notice("Вы покрываете [target.name] краской из баллоничика."))
 		return
 
 	. = ..()

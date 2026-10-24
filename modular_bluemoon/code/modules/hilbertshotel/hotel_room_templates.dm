@@ -13,7 +13,10 @@
 	var/landingZoneRelativeY = 8
 	var/category = GHC_MISC //Room categorizing
 	var/donator_tier = DONATOR_GROUP_NONE //For donator rooms // WIP content
-	var/list/ckeywhitelist = list() //For ckey locked donator rooms // WIP content
+	var/list/ckeywhitelist = list() // Original keys, normalized ckeys and enc1 IDs; empty allows everyone.
+
+/datum/map_template/hilbertshotel/proc/is_allowed_for(user_key)
+	return is_key_in_whitelist(user_key, ckeywhitelist)
 
 /datum/map_template/hilbertshotel/lore
 	name = "Doctor Hilbert's Deathbed"

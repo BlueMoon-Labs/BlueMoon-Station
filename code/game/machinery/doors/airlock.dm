@@ -52,6 +52,8 @@
 #define NOT_ELECTRIFIED 0
 #define ELECTRIFIED_PERMANENT -1
 #define AI_ELECTRIFY_DOOR_TIME 30
+/// How far an airlock looks for its cyclelink partner
+#define CYCLELINK_SEARCH_DISTANCE 11
 
 /// Пауза перед первой повторной попыткой автозакрытия, когда проём занят плотным объектом
 #define AIRLOCK_OBSTRUCTED_RETRY_DELAY (6 SECONDS)
@@ -65,6 +67,7 @@
 #define AIRLOCK_OBSTRUCTION_CLEARED_DELAY (1 SECONDS)
 
 /obj/machinery/door/airlock
+	opening_passable_delay = DOOR_OPENING_PASSABLE_DELAY
 	name = "airlock"
 	icon = 'icons/obj/doors/airlocks/station/public.dmi'
 	icon_state = "closed"
@@ -106,6 +109,7 @@
 	var/doorOpen = 'sound/machines/airlock.ogg'
 	var/doorClose = 'sound/machines/airlockclose.ogg'
 	var/doorDeni = 'sound/machines/deniedbeep.ogg' // i'm thinkin' Deni's
+	COOLDOWN_DECLARE(deny_cooldown)
 	var/boltUp = 'sound/machines/boltsup.ogg'
 	var/boltDown = 'sound/machines/boltsdown.ogg'
 	var/noPower = 'sound/machines/doorclick.ogg'
@@ -185,7 +189,7 @@
 		cyclelinkedairlock = null
 	if (!cyclelinkeddir)
 		return
-	var/limit = world.view
+	var/limit = CYCLELINK_SEARCH_DISTANCE
 	var/turf/T = get_turf(src)
 	var/obj/machinery/door/airlock/FoundDoor
 	do
@@ -372,15 +376,23 @@
 	if(iscarbon(user) && density && !operating && !welded && !locked && !hasPower())
 		try_bump_open(user)
 		return
+	if(density && !operating && !welded && !locked && !(src in user.do_afters) && !allowed(user) && try_mecha_bump_open(user))
+		return
 	..()
 
 /obj/machinery/door/airlock/proc/try_bump_open(mob/living/user)
 	if(!density || operating || welded || locked || hasPower() || (src in user.do_afters))
 		return FALSE
-	balloon_alert(user, "forcing open...")
-	user.visible_message("<span class='notice'>[user] starts forcing [src] open...</span>", \
-						"<span class='notice'>You start forcing [src] open...</span>")
-	if(do_after(user, DOOR_BUMP_OVERRIDE_TIME, target = src))
+	if(try_mecha_bump_open(user))
+		return TRUE
+	var/obj/item/crowbar = istype(user.loc, /obj/vehicle/sealed/mecha) ? null : user.is_holding_tool_quality(TOOL_CROWBAR)
+	if(crowbar)
+		try_to_crowbar(crowbar, user)
+		return TRUE
+	balloon_alert(user, "открывание...")
+	user.visible_message(span_notice("[user] начинает принудительно вскрывать [src]..."), span_notice("Вы начинаете принудительно вскрывать [src]..."))
+	var/turf/starting_turf = get_turf(user)
+	if(do_after(user, DOOR_BUMP_OVERRIDE_TIME, target = src, extra_checks = CALLBACK(src, PROC_REF(bump_open_checks), user, starting_turf)))
 		if(!density || operating || welded || locked)
 			return FALSE
 		open(2)
@@ -518,17 +530,17 @@
 			if(welded)
 				weld_overlay = get_airlock_overlay("welded", overlays_file)
 			if(obj_integrity < integrity_failure * max_integrity)
-				damag_overlay = get_airlock_overlay("sparks_broken", overlays_file, ABOVE_LIGHTING_LAYER, ABOVE_LIGHTING_PLANE)
+				damag_overlay = get_airlock_overlay("sparks_broken", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
 			else if(obj_integrity < (0.75 * max_integrity))
-				damag_overlay = get_airlock_overlay("sparks_damaged", overlays_file, ABOVE_LIGHTING_LAYER, ABOVE_LIGHTING_PLANE)
+				damag_overlay = get_airlock_overlay("sparks_damaged", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
 			if(lights && hasPower())
 
 				if(locked)
-					lights_overlay = get_airlock_overlay("lights_bolts", overlays_file, ABOVE_LIGHTING_LAYER, ABOVE_LIGHTING_PLANE)
+					lights_overlay = get_airlock_overlay("lights_bolts", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
 				else if(emergency)
-					lights_overlay = get_airlock_overlay("lights_emergency", overlays_file, ABOVE_LIGHTING_LAYER, ABOVE_LIGHTING_PLANE)
+					lights_overlay = get_airlock_overlay("lights_emergency", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
 				else
-					lights_overlay = get_airlock_overlay("lights_poweron", overlays_file, ABOVE_LIGHTING_LAYER, ABOVE_LIGHTING_PLANE)
+					lights_overlay = get_airlock_overlay("lights_poweron", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
 					light_color = LIGHT_COLOR_BLUE
 					if(engineering_override || medical_override || security_override)
 						code_override_overlay = get_airlock_overlay("lights_code_override", overlays_file)
@@ -555,18 +567,18 @@
 				else
 					panel_overlay = get_airlock_overlay("panel_closed", overlays_file)
 			if(obj_integrity < integrity_failure * max_integrity)
-				damag_overlay = get_airlock_overlay("sparks_broken", overlays_file, ABOVE_LIGHTING_LAYER, ABOVE_LIGHTING_PLANE)
+				damag_overlay = get_airlock_overlay("sparks_broken", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
 			else if(obj_integrity < (0.75 * max_integrity))
-				damag_overlay = get_airlock_overlay("sparks_damaged", overlays_file, ABOVE_LIGHTING_LAYER, ABOVE_LIGHTING_PLANE)
+				damag_overlay = get_airlock_overlay("sparks_damaged", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
 			if(welded)
 				weld_overlay = get_airlock_overlay("welded", overlays_file)
-			lights_overlay = get_airlock_overlay("lights_denied", overlays_file, ABOVE_LIGHTING_LAYER, ABOVE_LIGHTING_PLANE)
+			lights_overlay = get_airlock_overlay("lights_denied", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
 			if(note)
 				note_overlay = get_airlock_overlay(notetype, note_overlay_file)
 
 		if(AIRLOCK_EMAG)
 			frame_overlay = get_airlock_overlay("closed", icon)
-			sparks_overlay = get_airlock_overlay("sparks", overlays_file, ABOVE_LIGHTING_LAYER, ABOVE_LIGHTING_PLANE)
+			sparks_overlay = get_airlock_overlay("sparks", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
 			if(airlock_material)
 				filling_overlay = get_airlock_overlay("[airlock_material]_closed", overlays_file)
 			else
@@ -577,9 +589,9 @@
 				else
 					panel_overlay = get_airlock_overlay("panel_closed", overlays_file)
 			if(obj_integrity < integrity_failure * max_integrity)
-				damag_overlay = get_airlock_overlay("sparks_broken", overlays_file, ABOVE_LIGHTING_LAYER, ABOVE_LIGHTING_PLANE)
+				damag_overlay = get_airlock_overlay("sparks_broken", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
 			else if(obj_integrity < (0.75 * max_integrity))
-				damag_overlay = get_airlock_overlay("sparks_damaged", overlays_file, ABOVE_LIGHTING_LAYER, ABOVE_LIGHTING_PLANE)
+				damag_overlay = get_airlock_overlay("sparks_damaged", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
 			if(welded)
 				weld_overlay = get_airlock_overlay("welded", overlays_file)
 			if(note)
@@ -592,7 +604,7 @@
 			else
 				filling_overlay = get_airlock_overlay("fill_closing", icon)
 			if(lights && hasPower())
-				lights_overlay = get_airlock_overlay("lights_closing", overlays_file, ABOVE_LIGHTING_LAYER, ABOVE_LIGHTING_PLANE)
+				lights_overlay = get_airlock_overlay("lights_closing", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
 			if(panel_open)
 				if(security_level)
 					panel_overlay = get_airlock_overlay("panel_closing_protected", overlays_file)
@@ -609,11 +621,11 @@
 				filling_overlay = get_airlock_overlay("fill_open", icon)
 			if(lights && hasPower())
 				if(locked)
-					lights_overlay = get_airlock_overlay("lights_bolts_open", overlays_file, ABOVE_LIGHTING_LAYER, ABOVE_LIGHTING_PLANE)
+					lights_overlay = get_airlock_overlay("lights_bolts_open", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
 				else if(emergency)
-					lights_overlay = get_airlock_overlay("lights_emergency_open", overlays_file, ABOVE_LIGHTING_LAYER, ABOVE_LIGHTING_PLANE)
+					lights_overlay = get_airlock_overlay("lights_emergency_open", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
 				else
-					lights_overlay = get_airlock_overlay("lights_poweron_open", overlays_file, ABOVE_LIGHTING_LAYER, ABOVE_LIGHTING_PLANE)
+					lights_overlay = get_airlock_overlay("lights_poweron_open", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
 					light_color = LIGHT_COLOR_BLUE
 					if(engineering_override || medical_override || security_override)
 						code_override_overlay = get_airlock_overlay("lights_code_override_open", overlays_file)
@@ -629,7 +641,7 @@
 				else
 					panel_overlay = get_airlock_overlay("panel_open", overlays_file)
 			if(obj_integrity < (0.75 * max_integrity))
-				damag_overlay = get_airlock_overlay("sparks_open", overlays_file, ABOVE_LIGHTING_LAYER, ABOVE_LIGHTING_PLANE)
+				damag_overlay = get_airlock_overlay("sparks_open", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
 			if(note)
 				note_overlay = get_airlock_overlay("[notetype]_open", note_overlay_file)
 
@@ -640,7 +652,7 @@
 			else
 				filling_overlay = get_airlock_overlay("fill_opening", icon)
 			if(lights && hasPower())
-				lights_overlay = get_airlock_overlay("lights_opening", overlays_file, ABOVE_LIGHTING_LAYER, ABOVE_LIGHTING_PLANE)
+				lights_overlay = get_airlock_overlay("lights_opening", overlays_file, ABOVE_LIGHTING_LAYER, MUTATE_PLANE(ABOVE_LIGHTING_PLANE, src))
 			if(panel_open)
 				if(security_level)
 					panel_overlay = get_airlock_overlay("panel_opening_protected", overlays_file)
@@ -672,7 +684,8 @@
 	var/obj/machinery/door/airlock/A
 	pass(A)	//suppress unused warning
 	var/list/airlock_overlays = A.airlock_overlays
-	var/iconkey = "[icon_state][icon_file]"
+	//Плоскость обязана входить в ключ: у надсветовой свой мастер на каждый этаж стопки.
+	var/iconkey = "[icon_state][icon_file][targetplane]"
 	if((!(. = airlock_overlays[iconkey])))
 		. = airlock_overlays[iconkey] = mutable_appearance(icon_file, icon_state, targetlayer, targetplane)
 
@@ -709,7 +722,7 @@
 		else
 			set_light(0)
 
-/obj/machinery/door/airlock/do_animate(animation)
+/obj/machinery/door/airlock/do_animate(animation, from_bump = FALSE)
 	switch(animation)
 		if("opening")
 			update_icon(ALL, AIRLOCK_OPENING)
@@ -718,7 +731,10 @@
 		if("deny")
 			if(machine_stat)
 				return
-
+			if(from_bump)
+				if(!COOLDOWN_FINISHED(src, deny_cooldown))
+					return
+				COOLDOWN_START(src, deny_cooldown, AIRLOCK_DENY_COOLDOWN)
 			update_icon(ALL, AIRLOCK_DENY)
 			playsound(src, doorDeni, 50, 0, 3)
 			addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_icon), AIRLOCK_CLOSED), 6 DECISECONDS, TIMER_DELETE_ME)
@@ -1317,7 +1333,7 @@
 	operating = TRUE
 	play_fov_effect(src, 5, "forcefield")
 	update_icon(ALL, AIRLOCK_OPENING, 1)
-	sleep(1)
+	sleep(opening_passable_delay)
 	set_opacity(0)
 	density = FALSE
 	air_update_turf(TRUE)
@@ -1327,6 +1343,7 @@
 	layer = OPEN_DOOR_LAYER
 	update_icon(ALL, AIRLOCK_OPEN, 1)
 	operating = FALSE
+	emit_echolocation_pulse(src, hearing_range = 5)
 	if(delayed_close_requested)
 		delayed_close_requested = FALSE
 		addtimer(CALLBACK(src, PROC_REF(close)), 1 DECISECONDS)
@@ -1651,7 +1668,7 @@
 /obj/machinery/door/airlock/rcd_act(mob/user, obj/item/construction/rcd/the_rcd, passed_mode)
 	switch(passed_mode)
 		if(RCD_DECONSTRUCT)
-			to_chat(user, "<span class='notice'>You deconstruct the airlock.</span>")
+			to_chat(user, span_notice("Вы разбираете шлюз."))
 			qdel(src)
 			return TRUE
 	return FALSE
@@ -1720,15 +1737,25 @@
 /obj/machinery/door/airlock/ui_act(action, params)
 	if(..())
 		return
+	// usr у интегралки пустой: оператора и тип устройства берём из params,
+	// которые advactivator подкладывает перед вызовом.
+	var/mob/remote_operator = usr
+	var/remote_device = "airlock interface"
 	if(params["ic_advactivator"])
 		advactivator_action = TRUE
+		remote_device = "integrated circuit"
+		var/circuit_operator = params["ic_advactivator_user"]
+		if(ismob(circuit_operator))
+			remote_operator = circuit_operator
 	if(!user_allowed(usr))
 		return
+	var/action_text
 	switch(action)
 		if("disrupt-main")
 			if(!secondsMainPowerLost)
 				loseMainPower()
 				update_icon()
+				action_text = "cut the main power of"
 			else
 				to_chat(usr, "<span class='warning'>Main power is already offline.</span>")
 			. = TRUE
@@ -1736,41 +1763,61 @@
 			if(!secondsBackupPowerLost)
 				loseBackupPower()
 				update_icon()
+				action_text = "cut the backup power of"
 			else
 				to_chat(usr, "<span class='warning'>Backup power is already offline.</span>")
 			. = TRUE
 		if("shock-restore")
+			if(isElectrified() && !wires.is_cut(WIRE_SHOCK))
+				action_text = "removed electrification from"
 			shock_restore(usr)
 			. = TRUE
 		if("shock-temp")
+			if(!wires.is_cut(WIRE_SHOCK))
+				action_text = "electrified"
 			shock_temp(usr)
 			. = TRUE
 		if("shock-perm")
+			if(!wires.is_cut(WIRE_SHOCK))
+				action_text = "electrified"
 			shock_perm(usr)
 			. = TRUE
 		if("idscan-toggle")
 			aiDisabledIdScanner = !aiDisabledIdScanner
+			action_text = aiDisabledIdScanner ? "disabled the ID scanner of" : "enabled the ID scanner of"
 			. = TRUE
 		if("emergency-toggle")
 			toggle_emergency(usr)
+			action_text = emergency ? "enabled emergency access on" : "disabled emergency access on"
 			. = TRUE
 		if("bolt-toggle")
+			var/was_locked = locked
 			toggle_bolt(usr)
+			if(locked != was_locked)
+				action_text = locked ? "bolted" : "unbolted"
 			. = TRUE
 		if("light-toggle")
 			lights = !lights
 			update_icon()
+			action_text = lights ? "enabled the lights of" : "disabled the lights of"
 			. = TRUE
 		if("safe-toggle")
 			safe = !safe
+			action_text = safe ? "enabled the safety of" : "disabled the safety of"
 			. = TRUE
 		if("speed-toggle")
 			normalspeed = !normalspeed
+			action_text = "changed the closing speed of"
 			. = TRUE
 		if("open-close")
+			var/was_closed = density
 			user_toggle_open(usr)
+			if(density != was_closed)
+				action_text = was_closed ? "opened" : "closed"
 			. = TRUE
 	advactivator_action = FALSE
+	if(action_text)
+		log_remote_use(remote_operator, action_text, remote_device)
 
 /obj/machinery/door/airlock/proc/user_allowed(mob/user)
 	return (hasSiliconAccessInArea(user) && canAIControl(user)) || IsAdminGhost(user) || advactivator_action
@@ -1916,6 +1963,7 @@
 #undef NOT_ELECTRIFIED
 #undef ELECTRIFIED_PERMANENT
 #undef AI_ELECTRIFY_DOOR_TIME
+#undef CYCLELINK_SEARCH_DISTANCE
 
 #undef AIRLOCK_OBSTRUCTED_RETRY_DELAY
 #undef AIRLOCK_OBSTRUCTED_RETRY_DELAY_MAX

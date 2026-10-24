@@ -38,27 +38,11 @@
 	if(ishuman(user))
 		var/mob/living/carbon/human/H = user
 		//see code/modules/mob/dead/new_player/preferences.dm at approx line 545 for comments!
-		//this is largely copypasted from there.
-
-		//handle facial hair (if necessary)
-		if(H.gender != FEMALE)
-			var/new_style = tgui_input_list(user, "Select a facial hair style", "Grooming", GLOB.facial_hair_styles_list)
-			if(!user.canUseTopic(src, BE_CLOSE, FALSE, NO_TK))
-				return	//no tele-grooming
-			if(new_style)
-				H.facial_hair_style = new_style
-		else
+		if(H.gender == FEMALE)
 			H.facial_hair_style = "Shaved"
-
-		//handle normal hair
-		var/new_style = tgui_input_list(user, "Select a hair style", "Grooming", GLOB.hair_styles_list)
-		if(!user.canUseTopic(src, BE_CLOSE, FALSE, NO_TK))
-			return	//no tele-grooming
-		if(new_style)
-			H.hair_style = new_style
-
-		H.update_mutant_bodyparts()
-		H.update_hair()
+			H.update_mutant_bodyparts()
+			H.update_hair()
+		open_mirror_hair_picker(user, H, src)
 
 /obj/structure/mirror/examine_status(mob/user)
 	if(broken)
@@ -131,7 +115,7 @@
 	name = "magic mirror"
 	desc = "Turn and face the strange... face."
 	icon_state = "magic_mirror"
-	var/list/races_blacklist = list("skeleton", "agent", "military_synth", "memezombies", "clockwork golem servant", "android", "synth", "mush", "zombie", "memezombie")
+	var/list/races_blacklist = list("skeleton", "agent", "military_synth", "memezombies", "clockwork golem servant", "android", "synth", "mush", "zombie", "memezombie", SPECIES_HK, SPECIES_HK47, SPECIES_HK50, SPECIES_HK51)
 	var/list/choosable_races = list()
 
 /obj/structure/mirror/magic/Initialize(mapload)

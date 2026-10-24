@@ -20,10 +20,10 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 
 /* Returns user-friendly description why you can't connect to this destination, displayed in UI */
 /datum/gateway_destination/proc/get_available_reason()
-	. = "Unreachable"
+	. = "Недостижимо"
 	if(world.time - SSticker.round_start_time < wait)
 		playsound(src, 'sound/machines/gateway/gateway_calibrating.ogg', 80, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
-		. = "Connection desynchronized. Recalibration in progress."
+		. = "Соединение десинхронизировано. Рекалибровка в процессе."
 
 /* Check if the movable is allowed to arrive at this destination (exile implants mostly) */
 /datum/gateway_destination/proc/incoming_pass_check(atom/movable/AM)
@@ -79,11 +79,11 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 /datum/gateway_destination/gateway/get_available_reason()
 	. = ..()
 	if(!target_gateway.calibrated)
-		. = "Exit gateway malfunction. Manual recalibration required."
+		. = "Сбой шлюза путевых врат. Необходима ручная рекалибровка."
 	if(target_gateway.target)
-		. = "Exit gateway in use."
+		. = "Сбой: путевые врата сейчас используются."
 	if(!target_gateway.powered())
-		. = "Exit gateway unpowered."
+		. = "Сбой: у путевых врат отсутствует питание."
 
 /datum/gateway_destination/gateway/get_target_turf()
 	return get_step(target_gateway.portal, target_gateway.dir)
@@ -102,18 +102,18 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	else
 		for(var/mob/living/L in AM.contents)
 			if(check_exile_implant(L))
-				target_gateway.say("Rejecting [AM]: Exile implant detected in contained lifeform.")
+				target_gateway.say("Отказ транспортировки: [AM] содержит внутри себя имплант изгнания.")
 				return FALSE
 	if(AM.has_buckled_mobs())
 		for(var/mob/living/L in AM.buckled_mobs)
 			if(check_exile_implant(L))
-				target_gateway.say("Rejecting [AM]: Exile implant detected in close proximity lifeform.")
+				target_gateway.say("Отказ транспортировки: вблизи жизненной формы \"[AM]\" обнаружен имплант изгнания.")
 				return FALSE
 	return TRUE
 
 /datum/gateway_destination/gateway/home/proc/check_exile_implant(mob/living/L)
 	for(var/obj/item/implant/exile/E in L.implants)//Checking that there is an exile implant
-		to_chat(L, span_userdanger("The station gate has detected your exile implant and is blocking your entry."))
+		to_chat(L, span_userdanger("Станционные путевые врата обнаружили ваш имплант изгнания и воспрепятствовали входу."))
 		return TRUE
 	return FALSE
 
@@ -144,7 +144,7 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 
 /obj/machinery/gateway
 	name = "gateway"
-	desc = "A mysterious gateway built by unknown hands, it allows for faster than light travel to far-flung locations."
+	desc = "Мистический гейтвей, технология неизвестных лиц, позволяющая сверхсветовые путешествия к особо отдалённым местам."
 	icon = 'icons/obj/machines/gateway.dmi'
 	icon_state = "portal_frame"
 	resistance_flags = INDESTRUCTIBLE | LAVA_PROOF | FIRE_PROOF | UNACIDABLE | ACID_PROOF
@@ -192,7 +192,7 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 /obj/machinery/gateway/attacked_by(obj/item/I, mob/living/user)
 	. = ..()
 	if(istype(I, /obj/item/key/gateway) && requires_key)
-		to_chat(user, "<span class='notice'>You insert [src] into the keyway, unlocking the gateway!</span>")
+		to_chat(user, span_notice("Вы вставили [src] в путевой замок, разблокировав врата!"))
 		key_used = TRUE
 		qdel(I)
 		return
@@ -298,7 +298,7 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 		var/mutable_appearance/glow = mutable_appearance(icon, "portal_light")
 		glow.color = "#ff2525"
 		. += glow
-		. += emissive_appearance(icon, "portal_light", src)
+		. += emissive_appearance(icon, "portal_light", offset_spokesman = src)
 		if(pact_siege_visual == "calibrating")
 			/// Drawn last so it sits in front of the frame / red light
 			var/mutable_appearance/loading = mutable_appearance(icon, "portal_loading")
@@ -348,7 +348,7 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 		return
 	var/turf/tar_turf = target?.get_target_turf()
 	if(isnull(tar_turf))
-		to_chat(user, span_warning("There's no active destination for the gateway... or it's broken. Maybe try again later?"))
+		to_chat(user, span_warning("Доступные пути назначения путевых врат отсутствуют... Или они сломаны. Может, стоит попробовать позже?"))
 		return
 	Transfer(user)
 
@@ -369,10 +369,10 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 
 /obj/machinery/gateway/multitool_act(mob/living/user, obj/item/I)
 	if(calibrated)
-		to_chat(user, span_alert("The gate is already calibrated, there is no work for you to do here."))
+		to_chat(user, span_alert("Путевые врата уже откалиброваны, здесь уже ничего сделать нельзя."))
 	else
 		playsound(src, 'sound/machines/gateway/gateway_calibrated.ogg', 80, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
-		to_chat(user, "[span_boldnotice("Recalibration successful!")]: \black This gate's systems have been fine tuned. Travel to this gate will now be on target.")
+		to_chat(user, "[span_boldnotice("Рекалибровка успешна!")]: системы путевых врат были налажены. Путешествия через эти врата теперь производятся точно по цели.")
 		calibrated = TRUE
 	return TRUE
 
@@ -392,6 +392,7 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	if(!target)
 		if(!GLOB.the_gateway)
 			to_chat(user,span_warning("Home gateway is not responding!"))
+			return
 		if(GLOB.the_gateway.target)
 			GLOB.the_gateway.deactivate() //this will turn the home gateway off so that it's free for us to connect to
 		activate(GLOB.the_gateway.destination)
@@ -405,7 +406,7 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 /* Gateway control computer */
 /obj/machinery/computer/gateway_control
 	name = "Gateway Control"
-	desc = "Human friendly interface to the mysterious gate next to it."
+	desc = "Удобный и понятный интерфейс для работы с неизученными и непонятными вратами рядом с ним."
 	var/obj/machinery/gateway/G
 
 /obj/machinery/computer/gateway_control/Initialize(mapload, obj/item/circuitboard/C)
@@ -418,14 +419,14 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	if(!ui)
 		ui = new(user, src, "Gateway", name)
 		ui.open()
-		G.portal_visuals.display_to(user, ui.window)
+		G?.portal_visuals.display_to(user, ui.window)
 
 /obj/machinery/computer/gateway_control/ui_data(mob/user)
 	. = ..()
 	.["gateway_present"] = G
 	.["gateway_status"] = G ? G.powered() : FALSE
 	.["current_target"] = G?.target?.get_ui_data()
-	.["gateway_mapkey"] = G.portal_visuals.assigned_map
+	.["gateway_mapkey"] = G?.portal_visuals.assigned_map
 	var/list/destinations = list()
 	if(G)
 		for(var/datum/gateway_destination/possible_destination in GLOB.gateway_destinations)
@@ -471,7 +472,10 @@ GLOBAL_LIST_EMPTY(gateway_destinations)
 	G.activate(D)
 
 /obj/item/paper/fluff/gateway
-	default_raw_text = "Congratulations,<br><br>Your station has been selected to carry out the Gateway Project.<br><br>The equipment will be shipped to you at the start of the next quarter.<br> You are to prepare a secure location to house the equipment as outlined in the attached documents.<br><br>--Nanotrasen Bluespace Research"
+	default_raw_text = "Поздравляем,<br><br>Ваша станция была избрана для работы с Проектом \"Путеводные Врата\".<br><br>\
+	Оборудование будет доставлено к вам с началом следующего квартала.<br>\
+	Ваша задача: подготовить и закрепить помещение для дислокации оборудования, как обозначено в прикреплённых документах.<br><br>\
+	--Отдел блюспейс-изучений Nanotrasen"
 	name = "Confidential Correspondence, Pg 1"
 
 /atom/movable/screen/map_view/gateway_port

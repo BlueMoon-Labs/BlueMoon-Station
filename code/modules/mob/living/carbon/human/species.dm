@@ -89,7 +89,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 	var/blacklisted = 0 //Flag to exclude from green slime core species.
 	var/dangerous_existence //A flag for transformation spells that tells them "hey if you turn a person into one of these without preperation, they'll probably die!"
 	///Affects the speech message, for example: Motharula flutters, "My speech message is flutters!"
-	var/say_mod = "says"
+	var/say_mod = "говорит"
 	/// What languages this species can understand and say.
 	/// Use a [language holder datum][/datum/language_holder] typepath in this var.
 	/// Should never be null.
@@ -293,6 +293,33 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 	if(id in (CONFIG_GET(keyed_list/roundstart_races)))
 		return TRUE
 	return FALSE
+
+/**
+ * Короткое описание вида для панели профиля персонажа.
+ * Возвращает список абзацев или null, если у вида нет описания.
+ */
+/datum/species/proc/get_species_description()
+	return null
+
+/**
+ * Полный лор вида для панели профиля персонажа.
+ * Возвращает список абзацев или null, если у вида нет лора.
+ */
+/datum/species/proc/get_species_lore()
+	return null
+
+/// Склеивает описание и лор вида в один текст для панели профиля.
+/datum/species/proc/get_species_lore_text()
+	var/list/parts = list()
+	var/list/description = get_species_description()
+	var/list/lore = get_species_lore()
+	if(description)
+		parts += description
+	if(lore)
+		parts += lore
+	if(!length(parts))
+		return ""
+	return jointext(parts, "\n\n")
 
 /**
  * Generates a random name for a carbon.
@@ -928,14 +955,8 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 				// Свечение глаз — pixel-accurate glow copying the eye's exact icon/state/pixels
 				// via emissive_copy (BlueMoon white emissive convention against the lighting mask)
 				if(has_emissive_part(H.dna?.features, "eyes"))
-					// Don't glow eyes that are visually covered by hair (e.g. "Bedhead (Long)" hides
-					// the right eye): a hidden eye shouldn't punch a bright glow through the hairstyle.
-					// Left and right eyes are handled independently via the hair's per-side flags.
-					var/datum/sprite_accessory/hair/hairstyle = GLOB.hair_styles_list[H.hair_style]
-					if(!istype(hairstyle) || !hairstyle.hides_left_eye)
-						standing += emissive_copy(left_eye)
-					if(!istype(hairstyle) || !hairstyle.hides_right_eye)
-						standing += emissive_copy(right_eye)
+					standing += emissive_copy(left_eye, offset_spokesman = H)
+					standing += emissive_copy(right_eye, offset_spokesman = H)
 
 	if(H.nail_style)
 		var/mutable_appearance/nail_overlay = mutable_appearance('modular_splurt/icons/mobs/nails.dmi', "nails", -HANDS_PART_LAYER)
@@ -1017,7 +1038,8 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 		var/layernum = text2num(layer)
 		for(var/bodypart in relevant_layers[layer])
 			var/datum/sprite_accessory/S = bodypart
-			var/mutable_appearance/accessory_overlay = mutable_appearance(S.icon, layer = -layernum)
+			var/part_layer = isnull(S.overlay_layer) ? -layernum : S.overlay_layer
+			var/mutable_appearance/accessory_overlay = mutable_appearance(S.icon, layer = part_layer)
 			accessory_overlay.category = S.mutable_category
 			bodypart = S.mutant_part_string || dna_feature_as_text_string[S]
 			var/wing_color = H.dna.features[GLOB.colored_mutant_parts[bodypart]] || H.dna.features["wings_color"]
@@ -1126,7 +1148,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 				standing += emissive_copy(accessory_overlay)
 
 			if(S.extra) //apply the extra overlay, if there is one
-				var/mutable_appearance/extra_accessory_overlay = mutable_appearance(S.icon, layer = -layernum)
+				var/mutable_appearance/extra_accessory_overlay = mutable_appearance(S.icon, layer = part_layer)
 				extra_accessory_overlay.category = S.mutable_category
 				if(S.gender_specific)
 					extra_accessory_overlay.icon_state = "[g]_[bodypart]_extra_[S.icon_state]_[layertext]"
@@ -1176,7 +1198,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 					standing += emissive_copy(extra_accessory_overlay)
 
 			if(S.extra2) //apply the extra overlay, if there is one
-				var/mutable_appearance/extra2_accessory_overlay = mutable_appearance(S.icon, layer = -layernum)
+				var/mutable_appearance/extra2_accessory_overlay = mutable_appearance(S.icon, layer = part_layer)
 				extra2_accessory_overlay.category = S.mutable_category
 				if(S.gender_specific)
 					extra2_accessory_overlay.icon_state = "[g]_[bodypart]_extra2_[S.icon_state]_[layertext]"
@@ -2070,6 +2092,10 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 /datum/species/proc/spec_hitby(atom/movable/AM, mob/living/carbon/human/H)
 	return
 
+/// ЭМИ, прошедший защиту носителя.
+/datum/species/proc/spec_emp_act(mob/living/carbon/human/H, severity)
+	return
+
 /datum/species/proc/spec_attack_hand(mob/living/carbon/human/M, mob/living/carbon/human/H, datum/martial_art/attacker_style, act_intent, attackchain_flags)
 	if(!istype(M))
 		return
@@ -2805,8 +2831,17 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 /datum/species/proc/can_wag_tail(mob/living/carbon/human/H)
 	if(!tail_type || !wagging_type)
 		return FALSE
-	else
-		return mutant_bodyparts[tail_type] || mutant_bodyparts[wagging_type]
+	// BLUEMOON ADD START - проверка наличия wag-спрайта, иначе хвост без анимации (напр. Shadekin Big and Fluffy) пропадает при вилянии
+	if(is_wagging_tail())
+		return TRUE
+	if(H && H.dna && H.dna.features)
+		var/tail_name = H.dna.features[tail_type]
+		if(tail_name && tail_name != "None")
+			var/list/animated_list = GLOB.mutant_reference_list[wagging_type]
+			if(!animated_list || !(tail_name in animated_list))
+				return FALSE
+	// BLUEMOON ADD END
+	return mutant_bodyparts[tail_type] || mutant_bodyparts[wagging_type]
 
 /datum/species/proc/is_wagging_tail(mob/living/carbon/human/H)
 	return mutant_bodyparts[wagging_type]
@@ -2831,6 +2866,14 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 
 /datum/species/proc/start_wagging_tail(mob/living/carbon/human/H)
 	if(tail_type && wagging_type)
+		// BLUEMOON ADD START - не начинаем виляние без wag-спрайта, иначе хвост исчезнет до остановки через эмоут
+		if(H && H.dna && H.dna.features)
+			var/tail_name = H.dna.features[tail_type]
+			if(tail_name && tail_name != "None")
+				var/list/animated_list = GLOB.mutant_reference_list[wagging_type]
+				if(!animated_list || !(tail_name in animated_list))
+					return
+		// BLUEMOON ADD END
 		if(mutant_bodyparts[tail_type])
 			swap_mutant_bodypart_key(tail_type, wagging_type)
 			if(tail_type == "tail_lizard") //special lizard thing

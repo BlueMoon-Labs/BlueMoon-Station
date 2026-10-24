@@ -428,18 +428,6 @@
 	},
 /turf/open/floor/plating/rust,
 /area/lavaland/surface/outdoors)
-"bq" = (
-/obj/machinery/atmospherics/pipe/simple/supply/visible{
-	dir = 8
-	},
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
-/turf/open/floor/plating/rust,
-/area/lavaland/surface/outdoors)
 "br" = (
 /obj/machinery/atmospherics/pipe/simple/supply/visible{
 	dir = 8
@@ -1830,7 +1818,7 @@ aa
 aa
 aa
 ae
-bq
+br
 bH
 aO
 aa
@@ -1851,7 +1839,7 @@ aa
 aa
 aa
 ae
-bq
+br
 bJ
 ae
 ae

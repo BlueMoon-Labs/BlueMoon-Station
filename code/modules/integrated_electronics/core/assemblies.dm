@@ -2,6 +2,7 @@
 #define IC_COMPLEXITY_BASE		75
 
 /obj/item/electronic_assembly
+	armor_type = /datum/armor/electronic_assembly
 	name = "electronic assembly"
 	obj_flags = CAN_BE_HIT | UNIQUE_RENAME
 	desc = "It's a case, for building small electronics with."
@@ -58,7 +59,6 @@
 	hud_possible = list(DIAG_STAT_HUD, DIAG_BATT_HUD, DIAG_TRACK_HUD, DIAG_CIRCUIT_HUD) //diagnostic hud overlays
 	max_integrity = 50
 	pass_flags = 0
-	armor = list(MELEE = 50, BULLET = 70, LASER = 70, ENERGY = 100, BOMB = 10, BIO = 100, RAD = 100, FIRE = 0, ACID = 0)
 	anchored = FALSE
 	var/can_anchor = TRUE
 	var/detail_color = COLOR_ASSEMBLY_BLACK
@@ -981,8 +981,8 @@
 			pixel_x = -31
 		if(WEST)
 			pixel_x = 31
-	plane = ABOVE_WALL_PLANE
+	SET_PLANE_IMPLICIT(src, ABOVE_WALL_PLANE)
 
 /obj/item/electronic_assembly/wallmount/Moved(atom/OldLoc, Dir, Forced = FALSE) //reset the plane if moved off the wall.
 	. = ..()
-	plane = GAME_PLANE
+	SET_PLANE_IMPLICIT(src, GAME_PLANE)

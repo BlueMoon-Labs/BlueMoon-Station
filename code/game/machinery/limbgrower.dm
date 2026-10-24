@@ -2,7 +2,7 @@
 /// See [limbgrower_designs.dm] for everything we can make.
 /obj/machinery/limbgrower
 	name = "limb grower"
-	desc = "It grows new limbs using Synthflesh."
+	desc = "Биорепликатор, способный выращивать органы и конечности, используя синтплоть в качестве сырья."
 	icon = 'icons/obj/machines/limbgrower.dmi'
 	icon_state = "limbgrower_idleoff"
 	density = TRUE
@@ -318,6 +318,10 @@
 					balls.size = features["balls_size"]
 					balls.fluid_rate = features["balls_cum_rate"]
 					balls.fluid_mult = features["balls_cum_mult"]
+					if(features["balls_cum_max"])
+						balls.fluid_max_volume = features["balls_cum_max"]
+					else if(balls.size)
+						balls.fluid_max_volume = initial(balls.fluid_max_volume) * balls.size
 					balls.fluid_efficiency = features["balls_efficiency"]
 					balls.update()
 			if(/obj/item/organ/genital/vagina)
@@ -414,13 +418,14 @@
 /obj/machinery/limbgrower/examine(mob/user)
 	. = ..()
 	if(!panel_open)
-		. += "<span class='notice'>При открытой панели техобслуживания, машину можно было бы повернуть <b>гаечным ключом</b>.</span>"
+		. += span_notice("При открытой панели техобслуживания, машину можно было бы повернуть <b>гаечным ключом</b>.")
 	else
-		. += "<span class='notice'>Панель техобслуживания открыта.</span>"
-	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>Статус-дисплей сообщает: \n\
-		- Хранится до <b>[reagents.maximum_volume]u</b> реагентов.\n\
-		- Затраты реагентов: <b>[production_coefficient * 100]%</b>.</span>"
+		. += span_notice("Панель техобслуживания открыта.")
+
+/obj/machinery/limbgrower/examine_display_content(mob/user)
+	. += "\
+	– Хранится до <b>[reagents.maximum_volume]u</b> реагентов.\n\
+	– Затраты реагентов: <b>[production_coefficient * 100]%</b>."
 
 /*
  * Checks our reagent list to see if a design can be built.

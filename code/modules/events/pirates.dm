@@ -49,11 +49,13 @@
 	var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
 	if(D)
 		payoff = max(payoff_min, FLOOR(D.account_balance * 0.80, 1000))
+	else
+		payoff = payoff_min
 	switch(pirate_type)
 		if(PIRATES_ROGUES)
 			ship_template = /datum/map_template/shuttle/pirate/default
 			threat_msg.title = "Предложение о Защите Сектора"
-			threat_msg.content = "Приветствуем вас с корабля [ship_name]. Ваш сектор нуждается в защите, заплатите нам [payoff] кредитов или на вас наверняка кто-то нападёт."
+			threat_msg.content = "Приветствуем вас с корабля [ship_name]. Ваш сектор нуждается в защите, заплатите нам [payoff] кредитов или на вас наверняка кто-то нападёт. У вас есть ровно пять минут с момента получения сообщения."
 			threat_msg.possible_answers = list("Мы заплатим.","Мы заплатим, но на самом деле нет.")
 
 	threat_msg.answer_callback = CALLBACK(src, PROC_REF(pirates_answered), threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
@@ -61,16 +63,16 @@
 	spawn_timer_id = addtimer(CALLBACK(src, PROC_REF(spawn_pirates), threat_msg, ship_template), response_max_time, TIMER_STOPPABLE)
 
 /datum/round_event/pirates/proc/pirates_answered(datum/comm_message/threat_msg, payoff, ship_name, initial_send_time, response_max_time, ship_template)
-	if(world.time > initial_send_time + response_max_time)
+	if(world.time >= initial_send_time + response_max_time)
 		priority_announce("Слишком поздно умолять о пощаде!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_pirates(threat_msg, ship_template, TRUE)
 		return
 	if(threat_msg && threat_msg.answered == 1)
 		var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
 		if(D && D.adjust_money(-payoff))
+			resolve_threat_peacefully()
 			priority_announce("Спасибо за кредиты, сухопутные крысы!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_yespeacedecision.ogg', "Priority")
 			SSdirector.complete_deferred_action_without_roles(control, "угроза снята выкупом; назначено ролей: 0")
-			resolve_threat_peacefully()
 			return
 		priority_announce("Пытаешься нас обмануть? Ты пожалеешь об этом!", ship_name, 'modular_bluemoon/phenyamomota/sound/announcer/pirate_nopeacedecision.ogg', "Priority")
 		spawn_pirates(threat_msg, ship_template, TRUE)
@@ -138,6 +140,14 @@
 		fail_spawn("корабль не удалось загрузить на карту")
 		return
 
+	// load() проставляет габариты мобильного порта уже после Initialize(), поэтому
+	// добиваем зоны корпуса, движки и привязку консолей (linkup) через post_load.
+	var/obj/docking_port/mobile/pirate/pirate_port = SSshuttle.getShuttle("pirateship")
+	if(pirate_port)
+		ship.post_load(pirate_port)
+
+	ensure_pirates_away(z)
+
 	var/list/spawners_list = list()
 	for(var/turf/A in ship.get_affected_turfs(T))
 		for(var/obj/effect/mob_spawn/human/pirate/spawner in A)
@@ -182,6 +192,24 @@
 
 	priority_announce("В секторе обнаружен вооруженный корабль.", "Отдел ССО ПАКТа Синих Лун", 'modular_bluemoon/phenyamomota/sound/announcer/pirate_incoming.ogg')
 
+/// Создаёт реальный порт "pirateship_away" в дальнем углу Z-уровня спавна. Без него
+/// консоль корабля на старте не имеет валидных точек назначения и заблокирована.
+/datum/round_event/pirates/proc/ensure_pirates_away(z)
+	for(var/obj/docking_port/stationary/existing as anything in SSshuttle.stationary)
+		if(existing.shuttle_id == "pirateship_away")
+			return
+	var/obj/docking_port/mobile/M = SSshuttle.getShuttle("pirateship")
+	if(!M)
+		return
+	var/obj/docking_port/stationary/away = new /obj/docking_port/stationary/pirates_away()
+	away.width = M.width
+	away.height = M.height
+	away.dwidth = M.dwidth
+	away.dheight = M.dheight
+	var/turf/spot = locate(world.maxx - 20, world.maxy - 20, z)
+	if(spot)
+		away.forceMove(spot)
+
 //Shuttle equipment
 
 /obj/machinery/shuttle_scrambler
@@ -203,7 +231,7 @@
 		if(is_station_level(z))
 			var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
 			if(D)
-				var/siphoned = min(D.account_balance,siphon_per_tick)
+				var/siphoned = clamp(D.account_balance, 0, siphon_per_tick)
 				D.adjust_money(-siphoned)
 				credits_stored += siphoned
 			interrupt_research()
@@ -287,6 +315,34 @@
 	name = "pirate shuttle"
 	shuttle_id = "pirateship"
 	rechargeTime = 3 MINUTES
+	// Габариты обязаны быть известны уже к Initialize(). Карта их не задаёт, а load()
+	// выставляет размеры только ПОСЛЕ инициализации атомов, поэтому shuttle_areas
+	// собиралась пустой: beforeShuttleMove возвращал NONE, корпус не двигался
+	// (докинг "проходил", шаттл стоял и уходил в КД), а навигатор не рисовал силуэт.
+	// Значения соответствуют pirate_dutchman.dmm (21x25, порт на x=14,y=19, dir=WEST).
+	width = 25
+	height = 21
+	dwidth = 18
+	dheight = 7
+
+/datum/map_template/shuttle/pirate/post_load(obj/docking_port/mobile/vessel)
+	// Страховка на случай, если load() не смог проставить габариты (турф порта в космосе):
+	// пересобираем зоны корпуса и движки уже после загрузки карты.
+	vessel.shuttle_areas.Cut()
+	for(var/turf/place as anything in vessel.return_turfs())
+		var/area/shuttle_area = get_area(place)
+		if(istype(shuttle_area, vessel.area_type))
+			vessel.shuttle_areas[shuttle_area] = TRUE
+	vessel.initial_engines = vessel.count_engines()
+	vessel.current_engines = vessel.initial_engines
+	return ..()
+
+// Консоль корабля пиратов перечисляет "pirateship_away", но такого порта нет ни в одной
+// карте — из-за этого на спавне нет ни одной валидной точки назначения и консоль
+// заблокирована ("Locked"). Этот порт создаётся кодом при спавне корабля (spawn_pirates).
+/obj/docking_port/stationary/pirates_away
+	name = "Deep Space"
+	shuttle_id = "pirateship_away"
 
 /obj/machinery/suit_storage_unit/pirate
 	helmet_type = /obj/item/clothing/head/helmet/space/pirate/bandana/eva
@@ -677,7 +733,7 @@
 	desc = "A modified helmet to allow space pirates to intimidate their customers whilst staying safe from the void. Comes with some additional protection."
 	icon_state = "spacepirate"
 	item_state = "space_pirate_helmet"
-	armor = list(MELEE = 20, BULLET = 40, LASER = 30, ENERGY = 25, BOMB = 50, BIO = 100, RAD = 50, FIRE = 80, ACID = 80, WOUND = 20)
+	armor_type = /datum/armor/pirate_spacesuit_eva
 	strip_delay = 40
 	equip_delay_other = 20
 	//species_restricted = list("Vox")
@@ -693,7 +749,7 @@
 	w_class = WEIGHT_CLASS_NORMAL
 	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/tank/internals, /obj/item/melee/transforming/energy/sword/pirate, /obj/item/clothing/glasses/cover/eyepatch, /obj/item/reagent_containers/food/drinks/bottle/rum)
 	slowdown = 0
-	armor = list(MELEE = 20, BULLET = 40, LASER = 30,ENERGY = 25, BOMB = 50, BIO = 100, RAD = 50, FIRE = 80, ACID = 80, WOUND = 20)
+	armor_type = /datum/armor/pirate_spacesuit_eva
 	strip_delay = 40
 	equip_delay_other = 20
 	//species_restricted = list("Vox")

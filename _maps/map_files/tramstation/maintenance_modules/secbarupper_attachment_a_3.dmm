@@ -1,0 +1,222 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet,
+/obj/structure/window{
+	dir = 1
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/wrench = 2, /obj/item/wirecutters = 2, /obj/item/screwdriver = 2, /obj/item/crowbar = 2, /obj/item/weldingtool = 2, /obj/item/stack/cable_coil = 2, /obj/item/analyzer = 2, /obj/item/t_scanner = 2, /obj/item/multitool = 1, /obj/item/clothing/glasses/meson = 1, /obj/item/storage/belt/utility = 1, /obj/item/clothing/head/welding = 1)
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/stack/sheet/mineral/wood/twenty = 1, /obj/item/stack/sheet/cardboard/fifty = 1, /obj/item/stack/sheet/mineral/sandstone/thirty = 1)
+	},
+/obj/effect/spawner/lootdrop/maintenance/two,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"d" = (
+/turf/closed/wall,
+/area/maintenance/department/security)
+"m" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/extinguisher_cabinet/directional/south,
+/obj/structure/railing/corner{
+	dir = 4
+	},
+/obj/structure/railing/corner{
+	dir = 1
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"o" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/cigbutt = 25, /obj/item/cigbutt/roach = 25, /obj/effect/decal/cleanable/ash = 25, /obj/item/cigbutt/cigarbutt = 15)
+	},
+/obj/structure/sign/poster/contraband/random{
+	pixel_x = 32
+	},
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"s" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/stack/medical/suture = 1, /obj/item/stack/medical/mesh = 1, /obj/item/stack/medical/gauze = 1)
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/implanter = 1, /obj/item/reagent_containers/dropper = 1, /obj/item/reagent_containers/syringe = 1)
+	},
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"w" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/railing/corner{
+	dir = 4
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"x" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/railing{
+	dir = 8
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"D" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"H" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"I" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate/trashcart,
+/obj/effect/spawner/lootdrop/trashbin,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"K" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/cigbutt = 25, /obj/item/cigbutt/roach = 25, /obj/effect/decal/cleanable/ash = 25, /obj/item/cigbutt/cigarbutt = 15)
+	},
+/obj/structure/railing/corner{
+	dir = 1
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"M" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/modular_map_connector,
+/obj/machinery/door/airlock/maintenance_hatch,
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"N" = (
+/obj/structure/falsewall,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"O" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop/trashbin,
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"Q" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/stool/directional,
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"S" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/railing{
+	dir = 4
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/security)
+"T" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop{
+	lootcount = 2;
+	loot = list(/obj/item/clothing/head/cone = 7, /obj/item/clothing/suit/caution = 3, /obj/item/reagent_containers/rag = 2, /obj/item/reagent_containers/glass/bucket = 2, /obj/effect/decal/cleanable/blood/old = 2, /obj/structure/mopbucket = 2)
+	},
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"W" = (
+/turf/template_noop,
+/area/template_noop)
+"X" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/bed/matress,
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+"Y" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/reagent_containers/food/snacks/grown/cannabis = 25, /obj/item/reagent_containers/food/snacks/grown/cannabis/white = 25, /obj/item/reagent_containers/food/snacks/grown/cannabis/death = 24, /obj/item/reagent_containers/food/snacks/grown/cannabis/rainbow = 25, /obj/item/reagent_containers/food/snacks/grown/cannabis/ultimate = 1)
+	},
+/obj/effect/spawner/lootdrop/druggie_pill,
+/turf/open/floor/plating,
+/area/maintenance/department/security)
+
+(1,1,1) = {"
+W
+W
+W
+W
+W
+"}
+(2,1,1) = {"
+M
+S
+w
+d
+W
+"}
+(3,1,1) = {"
+W
+T
+m
+d
+W
+"}
+(4,1,1) = {"
+W
+x
+K
+d
+W
+"}
+(5,1,1) = {"
+W
+D
+D
+d
+W
+"}
+(6,1,1) = {"
+W
+I
+a
+d
+W
+"}
+(7,1,1) = {"
+W
+d
+N
+d
+d
+"}
+(8,1,1) = {"
+W
+O
+H
+H
+d
+"}
+(9,1,1) = {"
+W
+H
+Q
+Y
+d
+"}
+(10,1,1) = {"
+W
+X
+o
+s
+d
+"}
+(11,1,1) = {"
+W
+d
+d
+d
+d
+"}

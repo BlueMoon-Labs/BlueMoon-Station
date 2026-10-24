@@ -11,7 +11,7 @@
 	throw_range = 7
 	attack_verb = list("banned")
 	max_integrity = 200
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 70)
+	armor_type = /datum/armor/weapons_and_plasteel_tiles
 	resistance_flags = FIRE_PROOF
 
 /obj/item/banhammer/suicide_act(mob/user)
@@ -67,7 +67,7 @@ for further reading, please see: https://github.com/tgstation/tgstation/pull/301
 	block_chance = 50
 	sharpness = SHARP_EDGED
 	max_integrity = 200
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 50)
+	armor_type = /datum/armor/weapons_and_construction_tools
 	resistance_flags = FIRE_PROOF
 	total_mass = TOTAL_MASS_MEDIEVAL_WEAPON
 
@@ -259,7 +259,7 @@ for further reading, please see: https://github.com/tgstation/tgstation/pull/301
 	block_chance = 50
 	sharpness = SHARP_EDGED
 	max_integrity = 200
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 50)
+	armor_type = /datum/armor/weapons_and_construction_tools
 	resistance_flags = FIRE_PROOF
 	total_mass = TOTAL_MASS_MEDIEVAL_WEAPON
 
@@ -646,7 +646,7 @@ for further reading, please see: https://github.com/tgstation/tgstation/pull/301
 	throwforce = 10 //10 + 2 (WEIGHT_CLASS_SMALL) * 4 (EMBEDDED_IMPACT_PAIN_MULTIPLIER) = 18 damage on hit due to guaranteed embedding
 	throw_speed = 4
 	embedding = list("pain_mult" = 4, "embed_chance" = 100, "fall_chance" = 0, "embed_chance_turf_mod" = 15)
-	armour_penetration = 40
+	armour_penetration = MELEE_AP_EXCLUSIVE
 
 	w_class = WEIGHT_CLASS_SMALL
 	sharpness = SHARP_POINTY
@@ -770,7 +770,7 @@ for further reading, please see: https://github.com/tgstation/tgstation/pull/301
 	throw_speed = 2
 	throw_range = 5
 	w_class = WEIGHT_CLASS_SMALL
-	armour_penetration = 100
+	armour_penetration = MELEE_AP_EXCLUSIVE
 	attack_verb = list("bludgeoned", "whacked", "disciplined")
 	resistance_flags = FLAMMABLE
 
@@ -1074,7 +1074,7 @@ for further reading, please see: https://github.com/tgstation/tgstation/pull/301
 	off_icon_state = "baseball_bat_telescopic_0"
 	on_item_state = "baseball_bat_telescopic"
 	force_on = 23 // better then toolbox
-	armour_penetration =  10
+	armour_penetration = MELEE_AP_COMBAT
 	force_off = 5
 	throwforce_on = 20
 	throwforce_off = 10
@@ -1192,7 +1192,7 @@ for further reading, please see: https://github.com/tgstation/tgstation/pull/301
 	righthand_file = 'icons/mob/inhands/weapons/swords_righthand.dmi'
 	name = "vibro sword"
 	desc = "A potent weapon capable of cutting through nearly anything. Wielding it in two hands will allow you to deflect gunfire."
-	armour_penetration = 100
+	armour_penetration = MELEE_AP_EXCLUSIVE
 	block_chance = 40
 	force = 20
 	throwforce = 20
@@ -1245,64 +1245,58 @@ for further reading, please see: https://github.com/tgstation/tgstation/pull/301
 				return BLOCK_SUCCESS | BLOCK_PHYSICAL_EXTERNAL
 	return NONE
 
-/obj/item/soap/tongue/organic
+/obj/item/soap/tongue
 	name = "tongue"
 	desc = "Mlem."
 	icon = 'icons/obj/surgery.dmi'
 	icon_state = "tonguenormal"
-	force = 0
-	throwforce = 0
-	item_flags = DROPDEL | ABSTRACT | HAND_ITEM
+	item_flags = DROPDEL | ABSTRACT | HAND_ITEM | NOBLUDGEON
 	attack_verb = list("licked", "lapped", "mlemmed")
 	hitsound = 'sound/effects/gib_step.ogg'
 
-/obj/item/soap/tongue/organic/afterattack(atom/target, mob/user, proximity)
-	var/mob/living/R = user
-	if(!proximity || !check_allowed_items(target))
+/obj/item/soap/tongue/afterattack(atom/target, mob/living/user, proximity)
+	if(!proximity || !check_allowed_items(target, target_self = TRUE))
 		return
-	if(R.client && (target in R.client.screen))
-		to_chat(R, "<span class='warning'>You need to take that [target.name] off before cleaning it!</span>")
+	if(user.client && (target in user.client.screen))
+		to_chat(user, "<span class='warning'>You need to take that [target.name] off before cleaning it!</span>")
 	else if(is_cleanable(target))
-		R.visible_message("[R] begins to lick off \the [target.name].", "<span class='warning'>You begin to lick off \the [target.name]...</span>")
-		if(do_after(R, src.cleanspeed, target = target))
+		user.visible_message("[user] begins to lick off \the [target.name].", "<span class='warning'>You begin to lick off \the [target.name]...</span>")
+		if(do_after(user, src.cleanspeed, target = target))
 			if(!in_range(src, target)) //Proximity is probably old news by now, do a new check.
 				return //If they moved away, you can't eat them.
-			to_chat(R, "<span class='notice'>You finish licking off \the [target.name].</span>")
+			to_chat(user, "<span class='notice'>You finish licking off \the [target.name].</span>")
 			if(target?.reagents && target.reagents.total_volume > 0)
-				target.reagents.reaction(R, INGEST, min(5/target.reagents.total_volume, 1))
-				target.reagents.trans_to(R, target.reagents.total_volume, log = TRUE)
+				target.reagents.reaction(user, INGEST, min(5/target.reagents.total_volume, 1))
+				target.reagents.trans_to(user, target.reagents.total_volume, log = TRUE)
 			qdel(target)
 	else if(isobj(target)) //hoo boy. danger zone man
 		if(istype(target,/obj/item/trash))
-			R.visible_message("[R] nibbles away at \the [target.name].", "<span class='warning'>You begin to nibble away at \the [target.name]...</span>")
-			if(!do_after(R, src.cleanspeed, target = target))
+			user.visible_message("[user] nibbles away at \the [target.name].", "<span class='warning'>You begin to nibble away at \the [target.name]...</span>")
+			if(!do_after(user, src.cleanspeed, target = target))
 				return //If they moved away, you can't eat them.
-			to_chat(R, "<span class='notice'>You finish off \the [target.name].</span>")
+			to_chat(user, "<span class='notice'>You finish off \the [target.name].</span>")
 			qdel(target)
 			return
-		R.visible_message("[R] begins to lick \the [target.name] clean...", "<span class='notice'>You begin to lick \the [target.name] clean...</span>")
-	else if(ishuman(target))
+		user.visible_message("[user] begins to lick \the [target.name] clean...", "<span class='notice'>You begin to lick \the [target.name] clean...</span>")
+
+	else if(isliving(target))
+		if(ishuman(target) && !clean_human(target, user, TRUE))
+			return
 		var/mob/living/L = target
-		if(status == 0 && check_zone(R.zone_selected) == "head")
-			R.visible_message("<span class='warning'>\the [R] affectionally licks \the [L]'s face!</span>", "<span class='notice'>You affectionally lick \the [L]'s face!</span>")
-			playsound(src.loc, 'sound/effects/attackblob.ogg', 50, 1)
-			if(istype(L) && L.fire_stacks > 0)
-				L.adjust_fire_stacks(-10)
-			return
-		else if(status == 0)
-			R.visible_message("<span class='warning'>\the [R] affectionally licks \the [L]!</span>", "<span class='notice'>You affectionally lick \the [L]!</span>")
-			playsound(src.loc, 'sound/effects/attackblob.ogg', 50, 1)
-			if(istype(L) && L.fire_stacks > 0)
-				L.adjust_fire_stacks(-10)
-			return
+		if(!HAS_TRAIT(user, TRAIT_AGEUSIA))
+			user.show_message(span_notice("На вкус [L.name] можно описать как [L.get_taste_message()]."))
+		playsound(src.loc, 'sound/effects/attackblob.ogg', 50, 1)
+		if(L.fire_stacks > 0)
+			L.adjust_fire_stacks(-10)
+
 	else if(istype(target, /obj/structure/window))
-		R.visible_message("[R] begins to lick \the [target.name] clean...", "<span class='notice'>You begin to lick \the [target.name] clean...</span>")
+		user.visible_message("[user] begins to lick \the [target.name] clean...", "<span class='notice'>You begin to lick \the [target.name] clean...</span>")
 		if(do_after(user, src.cleanspeed, target = target))
 			to_chat(user, "<span class='notice'>You clean \the [target.name].</span>")
 			target.remove_atom_colour(WASHABLE_COLOUR_PRIORITY)
 			target.set_opacity(initial(target.opacity))
 	else
-		R.visible_message("[R] begins to lick \the [target.name] clean...", "<span class='notice'>You begin to lick \the [target.name] clean...</span>")
+		user.visible_message("[user] begins to lick \the [target.name] clean...", "<span class='notice'>You begin to lick \the [target.name] clean...</span>")
 		if(do_after(user, src.cleanspeed, target = target))
 			to_chat(user, "<span class='notice'>You clean \the [target.name].</span>")
 			var/obj/effect/decal/cleanable/C = locate() in target

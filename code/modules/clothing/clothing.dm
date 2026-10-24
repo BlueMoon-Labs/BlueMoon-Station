@@ -317,32 +317,21 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 	if(armor)
 		if(LAZYLEN(armor_list))
 			armor_list.Cut()
-		if(armor.melee)
-			armor_list += list("Рукопашная" = armor.melee)
-		if(armor.bullet)
-			armor_list += list("Пулевая" = armor.bullet)
-		if(armor.laser)
-			armor_list += list("Лазерная" = armor.laser)
-		if(armor.energy)
-			armor_list += list("Энергия" = armor.energy)
-		if(armor.bomb)
-			armor_list += list("Взрывы" = armor.bomb)
-		if(armor.magic)
-			armor_list += list("Магия" = armor.magic)
-
 		if(LAZYLEN(durability_list))
 			durability_list.Cut()
-		if(armor.fire)
-			durability_list += list("Огонь" = armor.fire)
-		if(armor.acid)
-			durability_list += list("Кислота" = armor.acid)
-		if(armor.bio)
-			durability_list += list("Токсины" = armor.bio)
-		if(armor.rad)
-			durability_list += list("Радиация" = armor.rad)
+
+		for(var/type in GLOB.armor_rating_ru)
+			var/rating = armor.vars[type]
+			if(!rating)
+				continue
+			var/name = vocabulary_to_ru(GLOB.armor_rating_ru, type)
+			if(GLOB.armor_durability_ru[type])
+				LAZYSET(durability_list, name, rating)
+			else
+				LAZYSET(armor_list, name, rating)
 
 	if(LAZYLEN(armor_list) || LAZYLEN(durability_list))
-		. += "<span class='notice'>Видно <a href='?src=[REF(src)];list_armor=1'>бирку</a> со списком классов защиты.</span>"
+		. += span_notice("Видно <a href='?src=[REF(src)];list_armor=1'>бирку</a> со списком классов защиты.")
 
 /// Adds contamination in proportion to fabric permeability. Properly sealed
 /// gear remains useful protection and never becomes a hidden poison source.
@@ -356,71 +345,47 @@ MOVED TO: modular_splurt/code/module/clothing/clothing.dm
 	. = ..()
 
 	if(href_list["list_armor"])
+		var/armor_count = LAZYLEN(armor_list)
+		var/durability_count = LAZYLEN(durability_list)
 		var/list/readout = list("<span class='notice'><u><b>КЛАССЫ ЗАЩИТЫ (I-X; s - ПОЛОВИНА)</b></u></span><br>")
-		var/has_armor = LAZYLEN(armor_list)
-		var/has_durability = LAZYLEN(durability_list)
 
-		// Если у нас есть и броня, и устойчивость айтема - таблично две ячейки в чат отпрвляем
-		if(has_armor && has_durability)
+		// Есть и броня, и устойчивость: две колонки
+		if(armor_count && durability_count)
 			readout += "<table style='width:100%;margin-top:4px;font-size:13px;line-height:1.2;'>"
-			readout += "<tr style='border-bottom:1px solid `#555`;'>"
+			readout += "<tr style='border-bottom:1px solid #555;'>"
 			readout += "<td style='width:45%;padding:2px 8px;'><b>БРОНЯ</b></td>"
 			readout += "<td style='width:55%;padding:2px 8px;'><b>УСТОЙЧИВОСТЬ</b></td>"
 			readout += "</tr>"
-			var/list/armor_types = list()
-			var/list/durability_types = list()
-			for(var/dam_type in armor_list)
-				armor_types += dam_type
-			for(var/dam_type in durability_list)
-				durability_types += dam_type
-			// Вместо старой системы мы определим кол-во строк по кол-ву имеющихся у айтема арморов/устойчивостей
-			var/armor_count = armor_types.len
-			var/durability_count = durability_types.len
-			var/max_rows = max(armor_count, durability_count)
-			var/current_row = 1
-
-			while(current_row <= max_rows)
-				readout += "<tr>"
-				// Броня по левой колонке
-				if(current_row <= armor_count)
-					var/dam_type = armor_types[current_row]
-					var/armor_value = armor_list[dam_type]
-					var/protection_class = armor_to_protection_class(armor_value)
-					readout += "<td style='padding:2px 8px;text-align-last:justify;'>[dam_type]: [protection_class]</td>"
-				else
-					readout += "<td style='padding:2px 8px;'></td>"
-				// Устойчивость по правой колонке
-				if(current_row <= durability_count)
-					var/dam_type = durability_types[current_row]
-					var/durability_value = durability_list[dam_type]
-					var/protection_class = armor_to_protection_class(durability_value)
-					readout += "<td style='padding:2px 8px;text-align-last:justify;'>[dam_type]: [protection_class]</td>"
-				else
-					readout += "<td style='padding:2px 8px;'></td>"
-
-				readout += "</tr>"
-				current_row++
+			for(var/row in 1 to max(armor_count, durability_count))
+				readout += "<tr>[protection_table_cell(armor_list, row)][protection_table_cell(durability_list, row)]</tr>"
 			readout += "</table>"
 
-		// Если у айтема нет отдельно брони или устойчивостей - выведем инфо в старом стиле (Одинарно, подходит хорошо)
+		// Что-то одно: одинарная таблица
 		else
 			readout += "<table style='margin-top:2px;margin-bottom:2px;font-size:13px;line-height:1.1;'>"
-			if(has_armor)
-				readout += "<tr><td colspan='2' style='padding:2px 4px;'><b>БРОНЯ</b></td></tr>"
-				for(var/dam_type in armor_list)
-					var/armor_value = armor_list[dam_type]
-					var/protection_class = armor_to_protection_class(armor_value)
-					readout += "<tr><td style='padding:1px 8px 1px 0;'>[dam_type]</td><td style='padding:1px 0 1px 0;'>[protection_class]</td></tr>"
-			if(has_durability)
-				readout += "<tr><td colspan='2' style='padding:2px 4px;'><b>УСТОЙЧИВОСТЬ</b></td></tr>"
-				for(var/dam_type in durability_list)
-					var/durability_value = durability_list[dam_type]
-					var/protection_class = armor_to_protection_class(durability_value)
-					readout += "<tr><td style='padding:1px 8px 1px 0;'>[dam_type]</td><td style='padding:1px 0 1px 0;'>[protection_class]</td></tr>"
+			if(armor_count)
+				readout += protection_table_section("БРОНЯ", armor_list)
+			if(durability_count)
+				readout += protection_table_section("УСТОЙЧИВОСТЬ", durability_list)
 			readout += "</table>"
 
-		var/result = readout.Join()
-		to_chat(usr, examine_block(result))
+		to_chat(usr, examine_block(readout.Join()))
+
+/// Ячейка "Название: класс" для строки row списка source. Если строки нет, пустая ячейка
+/obj/item/clothing/proc/protection_table_cell(list/source, row)
+	if(row > LAZYLEN(source))
+		return "<td style='padding:2px 8px;'></td>"
+	var/dam_type = source[row]
+	var/protection_class = armor_to_protection_class(source[dam_type])
+	return "<td style='padding:2px 8px;text-align-last:justify;'>[dam_type]: [protection_class]</td>"
+
+/// Секция одиночной таблицы: заголовок и строки "название | класс"
+/obj/item/clothing/proc/protection_table_section(title, list/source)
+	var/list/rows = list("<tr><td colspan='2' style='padding:2px 4px;'><b>[title]</b></td></tr>")
+	for(var/dam_type in source)
+		var/protection_class = armor_to_protection_class(source[dam_type])
+		rows += "<tr><td style='padding:1px 8px 1px 0;'>[dam_type]</td><td style='padding:1px 0 1px 0;'>[protection_class]</td></tr>"
+	return rows.Join()
 
 /**
   * Rounds armor_value to nearest 10, divides it by 10 and then expresses it in roman numerals up to 10

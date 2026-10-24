@@ -9,6 +9,9 @@
 	icon_state = "apron"
 	item_state = "apron"
 	blood_overlay_type = "armor"
+	icon = 'icons/obj/clothing/suits/apron.dmi'
+	mob_overlay_icon = 'icons/mob/clothing/suit/apron/apron.dmi'
+	anthro_mob_worn_overlay = 'icons/mob/clothing/suit/apron/apron_digi.dmi'
 	body_parts_covered = CHEST|GROIN
 	allowed = list(/obj/item/reagent_containers/spray/plantbgone, /obj/item/plant_analyzer, /obj/item/seeds, /obj/item/reagent_containers/glass/bottle, /obj/item/reagent_containers/glass/beaker, /obj/item/cultivator, /obj/item/reagent_containers/spray/pestspray, /obj/item/hatchet, /obj/item/storage/bag/plants)
 
@@ -91,7 +94,7 @@
 /obj/item/clothing/suit/apron/chef
 	name = "cook's apron"
 	desc = "A basic, dull, white chef's apron."
-	icon_state = "apronchef"
+	icon_state = "chef"
 	item_state = "apronchef"
 	blood_overlay_type = "armor"
 	body_parts_covered = CHEST|GROIN
@@ -105,7 +108,7 @@
 	item_state = "det_suit"
 	blood_overlay_type = "coat"
 	body_parts_covered = CHEST|GROIN|LEGS|ARMS
-	armor = list(MELEE = 25, BULLET = 10, LASER = 25, ENERGY = 10, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 45)
+	armor_type = /datum/armor/curator_and_det_suit
 	cold_protection = CHEST|GROIN|LEGS|ARMS
 	heat_protection = CHEST|GROIN|LEGS|ARMS
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
@@ -176,7 +179,7 @@
 
 /obj/item/clothing/suit/toggle/lawyer/black/syndie
 	desc = "A snappy dress jacket. Suspiciously has no tags or branding."
-	armor = list(MELEE = 10, BULLET = 10, LASER = 10, ENERGY = 10, BOMB = 10, BIO = 10, RAD = 10, FIRE = 40, ACID = 40)
+	armor_type = /datum/armor/syndie
 
 //Mime
 /obj/item/clothing/suit/suspenders
@@ -204,7 +207,7 @@
 	blood_overlay_type = "coat"
 	body_parts_covered = CHEST|ARMS
 	allowed = list(/obj/item/tank/internals, /obj/item/melee/curator_whip)
-	armor = list(MELEE = 25, BULLET = 10, LASER = 25, ENERGY = 10, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 45)
+	armor_type = /datum/armor/curator_and_det_suit
 	cold_protection = CHEST|ARMS
 	heat_protection = CHEST|ARMS
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON

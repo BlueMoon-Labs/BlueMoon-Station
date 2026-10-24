@@ -1,0 +1,515 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"a" = (
+/obj/modular_map_connector,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+"b" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate,
+/obj/item/relic,
+/obj/effect/spawner/lootdrop/maintenance/two,
+/turf/open/floor/plating,
+/area/maintenance/port/central)
+"c" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/trimline/yellow/warning{
+	dir = 1
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+"d" = (
+/obj/effect/turf_decal/delivery,
+/obj/machinery/door/poddoor/preopen{
+	id = "tomatotown"
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/maintenance/port/central)
+"e" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/wrench = 2, /obj/item/wirecutters = 2, /obj/item/screwdriver = 2, /obj/item/crowbar = 2, /obj/item/weldingtool = 2, /obj/item/stack/cable_coil = 2, /obj/item/analyzer = 2, /obj/item/t_scanner = 2, /obj/item/multitool = 1, /obj/item/clothing/glasses/meson = 1, /obj/item/storage/belt/utility = 1, /obj/item/clothing/head/welding = 1)
+	},
+/obj/effect/spawner/lootdrop/maintenance/five,
+/turf/open/floor/plating,
+/area/maintenance/port/central)
+"f" = (
+/obj/structure/closet/secure_closet/vanguard,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line,
+/turf/open/floor/plasteel,
+/area/command/gateway)
+"g" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Maintenance Hatch"
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+"h" = (
+/obj/effect/turf_decal/trimline/yellow/warning,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+"i" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/closed/wall,
+/area/maintenance/port/central)
+"j" = (
+/turf/open/floor/plasteel/dark/textured/half{
+	dir = 1
+	},
+/area/command/gateway)
+"k" = (
+/obj/machinery/ammo_workbench,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/command/gateway)
+"l" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/stool/directional/north,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+"m" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/trimline/yellow/warning,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+"n" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+"o" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Maintenance Hatch"
+	},
+/turf/open/floor/plating,
+/area/maintenance/port/central)
+"p" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/reagent_dispensers/fueltank/high,
+/turf/open/floor/plating,
+/area/maintenance/port/central)
+"q" = (
+/turf/closed/wall/r_wall,
+/area/command/gateway)
+"r" = (
+/obj/machinery/computer/vanguard_control/contraband,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/command/gateway)
+"s" = (
+/obj/structure/closet/secure_closet/vanguard,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 10
+	},
+/turf/open/floor/plasteel,
+/area/command/gateway)
+"t" = (
+/turf/open/floor/plasteel/dark/textured/large,
+/area/command/gateway)
+"u" = (
+/obj/structure/table,
+/obj/item/storage/firstaid/regular{
+	pixel_x = 3;
+	pixel_y = 3
+	},
+/obj/machinery/recharger,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/command/gateway)
+"v" = (
+/obj/structure/bed/roller,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/command/gateway)
+"w" = (
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/structure/reagent_dispensers/fueltank = 5, /obj/structure/reagent_dispensers/watertank = 4, /obj/structure/reagent_dispensers/watertank/high = 1)
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/maintenance/port/central)
+"x" = (
+/obj/structure/closet/crate/freezer/blood,
+/obj/machinery/iv_drip,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 6
+	},
+/turf/open/floor/plasteel,
+/area/command/gateway)
+"z" = (
+/obj/effect/landmark/start/expeditor,
+/turf/open/floor/plasteel/dark/textured/corner{
+	dir = 4
+	},
+/area/command/gateway)
+"A" = (
+/obj/machinery/vanguard/contraband,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 1
+	},
+/turf/open/floor/plasteel,
+/area/command/gateway)
+"B" = (
+/obj/effect/landmark/start/expeditor,
+/turf/open/floor/plasteel/dark/textured/half{
+	dir = 4
+	},
+/area/command/gateway)
+"C" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/window{
+	dir = 4
+	},
+/obj/structure/closet/crate,
+/obj/effect/spawner/lootdrop/maintenance/five,
+/turf/open/floor/plating,
+/area/maintenance/port/central)
+"D" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 8
+	},
+/obj/machinery/recharge_station,
+/obj/effect/turf_decal/bot,
+/obj/machinery/light/cold/directional/west,
+/turf/open/floor/plasteel,
+/area/command/gateway)
+"E" = (
+/turf/open/floor/plasteel/dark/textured/corner,
+/area/command/gateway)
+"F" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate,
+/obj/effect/spawner/lootdrop/maintenance/three,
+/obj/effect/spawner/lootdrop{
+	lootcount = 5;
+	loot = list(/obj/item/seeds/random = 30, /obj/item/seeds/replicapod = 5, /obj/item/seeds/reishi = 5, /obj/item/seeds/cannabis/death = 1, /obj/item/seeds/cannabis/rainbow = 1, /obj/item/seeds/cannabis/white = 1, /obj/item/seeds/kudzu = 1, /obj/item/seeds/angel = 1, /obj/item/seeds/glowshroom/glowcap = 1, /obj/item/seeds/glowshroom/shadowshroom = 1)
+	},
+/turf/open/floor/plating,
+/area/maintenance/port/central)
+"G" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 8
+	},
+/obj/effect/landmark/start/expeditor,
+/turf/open/floor/plasteel,
+/area/command/gateway)
+"H" = (
+/turf/template_noop,
+/area/template_noop)
+"I" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/effect/spawner/lootdrop/cig_packs,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/dice/d4 = 1, /obj/item/dice/d6 = 1, /obj/item/dice/d8 = 1, /obj/item/dice/d10 = 1, /obj/item/dice/d12 = 1, /obj/item/dice/d20 = 1)
+	},
+/obj/effect/spawner/lootdrop{
+	lootcount = 3;
+	fan_out_items = 1;
+	loot = list(/obj/item/stack/spacecash/c1 = 5, /obj/item/stack/spacecash/c10 = 3, /obj/item/stack/spacecash/c20 = 2)
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+"J" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/girder,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+"K" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/stool/directional/south,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+"L" = (
+/obj/machinery/equipment_vendor/vanguard,
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 4
+	},
+/obj/machinery/light/cold/directional/east,
+/turf/open/floor/plasteel,
+/area/command/gateway)
+"M" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/spawner/lootdrop/syndicate_present,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+"N" = (
+/obj/structure/table,
+/obj/item/radio/off,
+/obj/item/radio/off{
+	pixel_x = 6;
+	pixel_y = 4
+	},
+/obj/item/radio/off{
+	pixel_x = -6;
+	pixel_y = 4
+	},
+/obj/item/radio/off{
+	pixel_y = 6
+	},
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 5
+	},
+/turf/open/floor/plasteel,
+/area/command/gateway)
+"P" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/firecloset,
+/turf/open/floor/plating,
+/area/maintenance/port/central)
+"Q" = (
+/obj/structure/ladder,
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 9
+	},
+/turf/open/floor/plasteel,
+/area/command/gateway)
+"R" = (
+/obj/effect/turf_decal/trimline/dark_blue/filled/line{
+	dir = 8
+	},
+/obj/machinery/camera/autoname{
+	dir = 4
+	},
+/turf/open/floor/plasteel,
+/area/command/gateway)
+"S" = (
+/turf/open/floor/plasteel/dark/textured/half{
+	dir = 4
+	},
+/area/command/gateway)
+"T" = (
+/turf/open/floor/plasteel/dark/textured/corner{
+	dir = 8
+	},
+/area/command/gateway)
+"U" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/maintenance/port/central)
+"V" = (
+/turf/closed/wall,
+/area/maintenance/port/central)
+"W" = (
+/turf/open/floor/plasteel/dark/textured/corner{
+	dir = 1
+	},
+/area/command/gateway)
+"X" = (
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Maintenance Hatch"
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/space/basic,
+/area/maintenance/port/central)
+"Y" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/cardboard,
+/obj/effect/spawner/lootdrop/maintenance/three,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/stack/sheet/metal/fifty = 5, /obj/item/stack/sheet/glass/fifty = 5, /obj/item/stack/rods/fifty = 3, /obj/item/stack/sheet/rglass/fifty = 2)
+	},
+/turf/open/floor/plating,
+/area/maintenance/port/central)
+"Z" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/landmark/blobstart,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/port/central)
+
+(1,1,1) = {"
+q
+q
+q
+q
+q
+q
+q
+V
+V
+V
+V
+H
+H
+"}
+(2,1,1) = {"
+q
+Q
+R
+D
+G
+s
+q
+n
+n
+n
+V
+V
+H
+"}
+(3,1,1) = {"
+q
+A
+E
+j
+z
+f
+q
+n
+n
+n
+V
+Y
+n
+"}
+(4,1,1) = {"
+q
+r
+S
+t
+B
+f
+q
+i
+g
+V
+V
+C
+M
+"}
+(5,1,1) = {"
+q
+u
+T
+j
+W
+f
+q
+h
+n
+d
+c
+n
+n
+"}
+(6,1,1) = {"
+q
+N
+k
+L
+v
+x
+q
+m
+n
+d
+c
+n
+n
+"}
+(7,1,1) = {"
+q
+q
+q
+q
+q
+q
+q
+g
+V
+V
+K
+I
+l
+"}
+(8,1,1) = {"
+H
+V
+P
+V
+n
+V
+n
+n
+V
+w
+n
+n
+n
+"}
+(9,1,1) = {"
+H
+V
+U
+o
+n
+X
+J
+J
+V
+J
+a
+H
+H
+"}
+(10,1,1) = {"
+H
+V
+p
+V
+Z
+V
+b
+F
+V
+e
+n
+H
+H
+"}
+(11,1,1) = {"
+H
+V
+V
+V
+V
+V
+V
+V
+V
+V
+V
+H
+H
+"}
+(12,1,1) = {"
+H
+H
+H
+H
+H
+H
+H
+H
+H
+H
+H
+H
+H
+"}

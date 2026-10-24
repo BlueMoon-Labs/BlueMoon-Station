@@ -55,7 +55,7 @@ GLOBAL_LIST_EMPTY(allConsoles)
 	var/emergency //If an emergency has been called by this device. Acts as both a cooldown and lets the responder know where it the emergency was triggered from
 	var/receive_ore_updates = FALSE //If ore redemption machines will send an update when it receives new ores.
 	max_integrity = 300
-	armor = list(MELEE = 70, BULLET = 30, LASER = 30, ENERGY = 30, BOMB = 0, BIO = 0, RAD = 0, FIRE = 90, ACID = 90)
+	armor_type = /datum/armor/requests_console
 
 /obj/machinery/requests_console/power_change()
 	..()
@@ -281,7 +281,7 @@ GLOBAL_LIST_EMPTY(allConsoles)
 
 	if(href_list["write"])
 		dpt = ckey(reject_bad_text(href_list["write"])) //write contains the string of the receiving department's name
-		var/new_message = stripped_input(usr, "Напишите сообщение:", "Ввод", "", MAX_MESSAGE_LEN)
+		var/new_message = tgui_input_text(usr, "Напишите сообщение:", "Ввод", "", MAX_MESSAGE_LEN, FALSE, TRUE)
 		if(new_message)
 			message = new_message
 			screen = 9
@@ -294,7 +294,7 @@ GLOBAL_LIST_EMPTY(allConsoles)
 			priority = NORMAL_MESSAGE_PRIORITY //:salt:
 
 	if(href_list["writeAnnouncement"])
-		var/new_message = reject_bad_text(stripped_input(usr, "Напишите сообщение:", "Ввод", "", MAX_MESSAGE_LEN))
+		var/new_message = reject_bad_text(tgui_input_text(usr, "Напишите сообщение:", "Ввод", "", MAX_MESSAGE_LEN, FALSE, TRUE))
 		if(new_message)
 			message = new_message
 			priority = text2num(href_list["priority"])

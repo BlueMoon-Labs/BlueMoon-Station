@@ -15,7 +15,7 @@
 
 	resistance_flags = FIRE_PROOF
 
-	armor = list(MELEE = 50, BULLET = 20, LASER = 20, ENERGY = 20, BOMB = 0, BIO = 0, RAD = 0, FIRE = 90, ACID = 50)
+	armor_type = /datum/armor/camera
 	max_integrity = 100
 	integrity_failure = 0.5
 	var/list/network = list("ss13")
@@ -322,7 +322,7 @@
 /obj/machinery/camera/update_overlays()
 	. = ..()
 	if(status && in_use_lights > 0)
-		. += emissive_appearance(icon, "[initial(icon_state)]_in_use", src, alpha = src.alpha)
+		. += emissive_appearance(icon, "[initial(icon_state)]_in_use", alpha = src.alpha, offset_spokesman = src)
 
 /obj/machinery/camera/proc/toggle_cam(mob/user, displaymessage = 1)
 	status = !status

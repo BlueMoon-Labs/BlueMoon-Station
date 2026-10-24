@@ -22,6 +22,13 @@
 	var/list/data = list()
 	data["spawners"] = list()
 	for(var/spawner in GLOB.mob_spawners)
+		var/list/spawner_objs = GLOB.mob_spawners[spawner]
+		// del() контейнера удаляет лежащий в нём спавнер без Destroy(), и в списке остаётся null.
+		if(spawner_objs)
+			listclearnulls(spawner_objs)
+		if(!length(spawner_objs))
+			GLOB.mob_spawners -= spawner
+			continue
 		var/list/this = list()
 		this["name"] = spawner
 		this["short_desc"] = ""
@@ -30,7 +37,11 @@
 		this["category"] = ""
 		this["refs"] = list()
 		this["can_jump"] = FALSE
-		for(var/spawner_obj in GLOB.mob_spawners[spawner])
+		var/amount_left = 0
+		for(var/obj/spawner_obj in spawner_objs)
+			if(QDELETED(spawner_obj))
+				continue
+			amount_left++
 			if(get_turf(spawner_obj) || (istype(spawner_obj, /obj/effect/mob_spawn/antag_training) && shared?.ready))
 				this["can_jump"] = TRUE
 			this["refs"] += "[REF(spawner_obj)]"
@@ -45,7 +56,9 @@
 				else
 					var/obj/O = spawner_obj
 					this["desc"] = strip_html_tags(O.desc)
-		this["amount_left"] = LAZYLEN(GLOB.mob_spawners[spawner])
+		if(!amount_left)
+			continue
+		this["amount_left"] = amount_left
 		data["spawners"] += list(this)
 
 	return data
@@ -57,11 +70,14 @@
 	var/group_name = params["name"]
 	if(!group_name || !(group_name in GLOB.mob_spawners))
 		return
-	var/list/spawnerlist = GLOB.mob_spawners[group_name]
-	if(!spawnerlist.len)
+	var/list/spawnerlist = list()
+	for(var/obj/effect/mob_spawn/candidate in GLOB.mob_spawners[group_name])
+		if(!QDELETED(candidate))
+			spawnerlist += candidate
+	if(!length(spawnerlist))
 		return
 	var/obj/effect/mob_spawn/MS = pick(spawnerlist)
-	if(!istype(MS) || !(MS in GLOB.poi_list))
+	if(!(MS in GLOB.poi_list))
 		return
 	switch(action)
 		if("jump")

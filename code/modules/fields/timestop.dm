@@ -205,9 +205,6 @@
 		L.client.images += images_to_add
 		mirage_images_by_mob[L] = images_to_add
 
-		var/datum/tgui_window/user_chat = L.client.tgui_windows["browseroutput"]
-		user_chat.client = null //временно делаем null чтобы юзер ничего не мог получить
-
 	if(isanimal(L))
 		var/mob/living/simple_animal/S = L
 		S.toggle_ai(AI_OFF)
@@ -220,7 +217,7 @@
 	timestop_effect.pixel_y = -64
 	timestop_effect.transform = matrix().Scale(resize, resize)
 	if(use_plane)
-		timestop_effect.plane = GRAVITY_PULSE_PLANE
+		SET_PLANE_EXPLICIT(timestop_effect, GRAVITY_PULSE_PLANE, timestop_effect.loc)
 
 /datum/proximity_monitor/advanced/timestop/proc/unfreeze_mob(mob/living/L)
 	L.AdjustStun(-20, ignore_canstun = TRUE)
@@ -232,8 +229,6 @@
 		var/list/given_images = mirage_images_by_mob[L]
 		if(given_images)
 			L.client.images -= given_images
-		var/datum/tgui_window/user_chat = L.client.tgui_windows["browseroutput"]
-		user_chat.client = L.client
 	frozen_mobs -= L
 	mirage_images_by_mob -= L
 	if(isanimal(L))

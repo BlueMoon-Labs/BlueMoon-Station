@@ -57,7 +57,7 @@
 			be defused, and some crew may attempt to do so. \
 			The bomb core can be pried out and manually detonated with other explosives."
 	item = /obj/item/sbeacondrop/clownbomb
-	cost = 15
+	cost = 10
 	restricted_roles = list("Clown")
 
 /datum/uplink_item/role_restricted/clowncar
@@ -68,7 +68,15 @@
 			someone saves them or they manage to crawl out. Be sure not to ram into any walls or vending machines, as the springloaded seats \
 			are very sensetive. Now with our included lube defense mechanism which will protect you against any angry shitcurity!"
 	item = /obj/item/choice_beacon/vehicle/clown_car
-	cost = 16
+	cost = 15
+	restricted_roles = list("Clown")
+
+
+/datum/uplink_item/role_restricted/honker
+	name = "Dark H.O.N.K."
+	desc = "Клоунский боевой мех с пусковыми установками для банановых шкурок и слезогранат, а также с незаменимым HoNkER BlAsT 5000."
+	item = /obj/vehicle/sealed/mecha/combat/honker/dark/loaded
+	cost = 20
 	restricted_roles = list("Clown")
 
 /datum/uplink_item/role_restricted/haunted_magic_eightball
@@ -170,7 +178,7 @@
 	desc = "A single firing pin made for Clown agents, this firing pin makes any gun honk when fired if not a true clown! \
 	This firing pin also helps you fire the gun correctly. May the HonkMother HONK you agent."
 	item = /obj/item/firing_pin/clown/ultra
-	cost = 2
+	cost = 1
 	restricted_roles = list("Clown")
 
 /datum/uplink_item/role_restricted/pressure_mod

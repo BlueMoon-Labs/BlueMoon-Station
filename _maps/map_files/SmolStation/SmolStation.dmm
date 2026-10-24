@@ -17709,7 +17709,7 @@
 /turf/open/floor/plasteel,
 /area/hallway/primary/central)
 "mPv" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /obj/effect/turf_decal/stripes/yellow/line,
 /obj/machinery/camera{
 	c_tag = "Mining"
@@ -32414,16 +32414,6 @@
 	},
 /obj/machinery/power/grounding_rod,
 /turf/open/floor/engine/airless,
-/area/space/nearstation)
-"xUu" = (
-/obj/structure/lattice/catwalk,
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/turf/open/space/basic,
 /area/space/nearstation)
 "xUB" = (
 /obj/machinery/door/firedoor,
@@ -88082,7 +88072,7 @@ qKc
 qKc
 rXE
 qKc
-xUu
+qKc
 qKc
 vis
 qKc

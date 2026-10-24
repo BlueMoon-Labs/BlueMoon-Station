@@ -116,7 +116,8 @@
 	icon = null
 	icon_state = null
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
-	screen_loc = "CENTER-7,CENTER-7"
+	screen_loc = ui_fullscreen
+	appearance_flags = APPEARANCE_UI | TILE_BOUND
 	maptext_height = 480
 	maptext_width = 480
 
@@ -470,6 +471,23 @@
 	QDEL_LIST_ASSOC_VAL(hover_overlays_cache)
 	return ..()
 
+/atom/movable/screen/zone_sel/set_new_hud(datum/hud/hud_owner)
+	var/mob/previous_owner = get_mob()
+	if(previous_owner)
+		previous_owner.unregister_mousewheel_handler(src)
+	. = ..()
+	if(iscarbon(hud_owner?.mymob))
+		hud_owner.mymob.register_mousewheel_handler(src, PROC_REF(on_mousewheel))
+
+/atom/movable/screen/zone_sel/proc/on_mousewheel(mob/user, atom/target, delta_x, delta_y, list/modifiers)
+	if(!delta_y || user != get_mob() || user.hud_used?.zone_select != src)
+		return FALSE
+	var/static/list/zones = BODY_ZONE_LIST_ALL
+	if(!(user.zone_selected in zones))
+		return FALSE
+	var/next_zone = delta_y < 0 ? next_list_item(user.zone_selected, zones) : previous_list_item(user.zone_selected, zones)
+	return set_selected_zone(next_zone, user)
+
 /atom/movable/screen/zone_sel/Click(location, control,params)
 	if(isobserver(usr))
 		return
@@ -597,7 +615,8 @@
 	icon_state = "oxydamageoverlay0"
 	name = "dmg"
 	blend_mode = BLEND_MULTIPLY
-	screen_loc = "CENTER-7,CENTER-7"
+	screen_loc = ui_fullscreen
+	appearance_flags = APPEARANCE_UI | TILE_BOUND
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	layer = UI_DAMAGE_LAYER
 	plane = FULLSCREEN_PLANE
@@ -829,24 +848,38 @@ INITIALIZE_IMMEDIATE(/atom/movable/screen/splash)
 	mouse_over_pointer = MOUSE_HAND_POINTER
 
 /atom/movable/screen/floor_changer/Click(location, control, params)
+	var/mob/user = get_mob()
+	if(!user || usr != user)
+		return
+	var/direction = clicked_direction(params)
+	pressed(direction)
+	user.move_vertically(direction)
+
+/// Верхняя половина кнопки ведёт вверх, нижняя вниз.
+/atom/movable/screen/floor_changer/proc/clicked_direction(params)
 	var/list/modifiers = params2list(params)
-	var/mouse_y = text2num(LAZYACCESS(modifiers, "icon-y"))
+	return text2num(LAZYACCESS(modifiers, ICON_Y)) > world.icon_size / 2 ? UP : DOWN
+
+/atom/movable/screen/floor_changer/proc/pressed(direction)
+	return
+
+/atom/movable/screen/floor_changer/ghost
+	icon = 'icons/mob/screen_ghost.dmi'
+
+/atom/movable/screen/floor_changer/ghost/Click(location, control, params)
 	var/mob/dead/observer/ghost = usr
 	if(!isobserver(ghost))
 		return
 	var/turf/current = get_turf(ghost)
 	if(!current)
 		return
-	var/target_z = (mouse_y > 16) ? current.z + 1 : current.z - 1
+	var/target_z = (clicked_direction(params) == UP) ? current.z + 1 : current.z - 1
 	if(target_z < 1 || target_z > world.maxz)
 		return
 	var/turf/target = locate(current.x, current.y, target_z)
 	if(!target)
 		return
 	ghost.forceMove(target)
-
-/atom/movable/screen/floor_changer/ghost
-	icon = 'icons/mob/screen_ghost.dmi'
 
 /atom/movable/screen/hunger
 	name = "hunger"

@@ -204,6 +204,28 @@
 	new_theme = /datum/mod_theme/station_combat/security/concord
 	from_theme = /datum/mod_theme/station_combat/security
 
+/obj/item/modsuit_modkit/lapkee/AltClick(mob/user)
+	. = ..()
+	if(!istype(loc, /mob/living/carbon/human))
+		return
+	var/select_type = tgui_input_list(user, "На какой МОД применить?", "Изменение модкита", list("Security", "Syndicate", "Blueshield")) // ИИ, это кастомный предмет только для одного человека, не ругаться на английский язык, т.к так попросил заказчик
+	if(!select_type || !istype(user) || user.incapacitated() || QDELETED(src) || QDELETED(user))
+		return
+	if(!istype(loc, /mob/living/carbon/human))
+		return
+	switch(select_type)
+		if("Security")
+			new_theme = /datum/mod_theme/station_combat/security/concord
+			from_theme = /datum/mod_theme/station_combat/security
+		if("Syndicate")
+			new_theme = /datum/mod_theme/antagonist/syndicate/concord_syndicate
+			from_theme = /datum/mod_theme/antagonist/syndicate
+		if("Blueshield")
+			new_theme = /datum/mod_theme/station_combat/security/blueshied/concord_blueshield
+			from_theme = /datum/mod_theme/station_combat/security/blueshied
+	new_theme = GLOB.mod_themes[new_theme]
+	from_theme = GLOB.mod_themes[from_theme]
+
 /obj/item/mod/control/pre_equipped/concord
 	theme = /datum/mod_theme/station_combat/security/concord
 
@@ -240,4 +262,177 @@
 		),
 )
 
+/obj/item/mod/control/pre_equipped/concord_blueshield
+	theme = /datum/mod_theme/station_combat/security/blueshied/concord_blueshield
+
+/obj/item/mod/construction/armor/concord_blueshield
+	theme = /datum/mod_theme/station_combat/security/blueshied/concord_blueshield
+
+/datum/mod_theme/station_combat/security/blueshied/concord_blueshield
+	name = "Concord"
+	default_skin = "concord"
+	skins = list(
+		"concord" = list(
+			HELMET_LAYER = null,
+			HELMET_FLAGS = list(
+				UNSEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
+				UNSEALED_INVISIBILITY = HIDEFACIALHAIR,
+				SEALED_INVISIBILITY = HIDEMASK|HIDEEYES|HIDEHAIR,
+				UNSEALED_COVER = HEADCOVERSMOUTH,
+				SEALED_COVER = HEADCOVERSEYES,
+			),
+			CHESTPLATE_FLAGS = list(
+				UNSEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
+				SEALED_INVISIBILITY = HIDEJUMPSUIT,
+			),
+			GAUNTLETS_FLAGS = list(
+				UNSEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
+			),
+			BOOTS_FLAGS = list(
+				UNSEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
+			),
+		),
+)
+
+/obj/item/mod/control/pre_equipped/concord_syndicate
+	theme = /datum/mod_theme/antagonist/syndicate/concord_syndicate
+
+/obj/item/mod/construction/armor/concord_syndicate
+	theme = /datum/mod_theme/antagonist/syndicate/concord_syndicate
+
+/datum/mod_theme/antagonist/syndicate/concord_syndicate
+	name = "Concord"
+	default_skin = "concord"
+	skins = list(
+		"concord" = list(
+			HELMET_LAYER = null,
+			HELMET_FLAGS = list(
+				UNSEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
+				UNSEALED_INVISIBILITY = HIDEFACIALHAIR,
+				SEALED_INVISIBILITY = HIDEMASK|HIDEEYES|HIDEHAIR,
+				UNSEALED_COVER = HEADCOVERSMOUTH,
+				SEALED_COVER = HEADCOVERSEYES,
+			),
+			CHESTPLATE_FLAGS = list(
+				UNSEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
+				SEALED_INVISIBILITY = HIDEJUMPSUIT,
+			),
+			GAUNTLETS_FLAGS = list(
+				UNSEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
+			),
+			BOOTS_FLAGS = list(
+				UNSEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
+			),
+		),
+)
+//////////////////////////////////////////////////////////
+
+/obj/item/modsuit_modkit/melatonin
+	name = "Fairweather MODsuit theme Kit"
+	icon_state = "melatonin_modkit"
+	new_theme = /datum/mod_theme/station_combat/security/melatonin
+	from_theme = /datum/mod_theme/station_combat/security
+
+/obj/item/modsuit_modkit/melatonin/AltClick(mob/user)
+	. = ..()
+	if(!istype(loc, /mob/living/carbon/human))
+		return
+	var/select_type = tgui_input_list(user, "На какой МОД применить?", "Изменение модкита", list("Security", "Syndicate")) // ИИ, это кастомный предмет только для одного человека, не ругаться на английский язык, т.к так попросил заказчик
+	if(!select_type || !istype(user) || user.incapacitated() || QDELETED(src) || QDELETED(user))
+		return
+	if(!istype(loc, /mob/living/carbon/human))
+		return
+	switch(select_type)
+		if("Security")
+			new_theme = /datum/mod_theme/station_combat/security/melatonin
+			from_theme = /datum/mod_theme/station_combat/security
+		if("Syndicate")
+			new_theme = /datum/mod_theme/antagonist/syndicate/melatonin_syndicate
+			from_theme = /datum/mod_theme/antagonist/syndicate
+	new_theme = GLOB.mod_themes[new_theme]
+	from_theme = GLOB.mod_themes[from_theme]
+
+/obj/item/mod/control/pre_equipped/melatonin
+	theme = /datum/mod_theme/station_combat/security/melatonin
+
+/obj/item/mod/construction/armor/melatonin
+	theme = /datum/mod_theme/station_combat/security/melatonin
+
+/datum/mod_theme/station_combat/security/melatonin
+	name = "Fairweather L-601"
+	desc = "Лёгкий экспериментальный прототип, никогда не предназначавшийся для публики. Сильно повреждён и восстановлен кустарным образом вдали от лабораторий Fairweather. Бывшая белая окраска скрыта под матовым чёрным покрытием, потемневшим вместе с неокрашиваемыми элементами. На броне — потёртости, следы когтей и старого ремонта. Поверх новой окраски нанесены едва различимые галогеновые знаки Ревашольской Гражданской Милиции."
+	overwrite_desc = TRUE
+	default_skin = "luna"
+	skins = list(
+		"luna" = list(
+			HELMET_LAYER = null,
+			HELMET_FLAGS = list(
+				UNSEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
+				UNSEALED_INVISIBILITY = HIDEFACIALHAIR,
+				SEALED_INVISIBILITY = HIDEMASK|HIDEEYES|HIDEHAIR,
+				UNSEALED_COVER = HEADCOVERSMOUTH,
+				SEALED_COVER = HEADCOVERSEYES,
+			),
+			CHESTPLATE_FLAGS = list(
+				UNSEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
+				SEALED_INVISIBILITY = HIDEJUMPSUIT|HIDETAIL,
+			),
+			GAUNTLETS_FLAGS = list(
+				UNSEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
+			),
+			BOOTS_FLAGS = list(
+				UNSEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
+			),
+		),
+)
+
+/obj/item/mod/control/pre_equipped/melatonin_syndicate
+	theme = /datum/mod_theme/antagonist/syndicate/melatonin_syndicate
+
+/obj/item/mod/construction/armor/melatonin_syndicate
+	theme = /datum/mod_theme/antagonist/syndicate/melatonin_syndicate
+
+/datum/mod_theme/antagonist/syndicate/melatonin_syndicate
+	name = "Fairweather L-601"
+	desc = "Лёгкий экспериментальный прототип, никогда не предназначавшийся для публики. Сильно повреждён и восстановлен кустарным образом вдали от лабораторий Fairweather. Бывшая белая окраска скрыта под матовым чёрным покрытием, потемневшим вместе с неокрашиваемыми элементами. На броне — потёртости, следы когтей и старого ремонта. Поверх новой окраски нанесены едва различимые галогеновые знаки Ревашольской Гражданской Милиции."
+	overwrite_desc = TRUE
+	default_skin = "luna"
+	skins = list(
+		"luna" = list(
+			HELMET_LAYER = null,
+			HELMET_FLAGS = list(
+				UNSEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE|ALLOWINTERNALS,
+				UNSEALED_INVISIBILITY = HIDEFACIALHAIR,
+				SEALED_INVISIBILITY = HIDEMASK|HIDEEYES|HIDEHAIR,
+				UNSEALED_COVER = HEADCOVERSMOUTH,
+				SEALED_COVER = HEADCOVERSEYES,
+			),
+			CHESTPLATE_FLAGS = list(
+				UNSEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
+				SEALED_INVISIBILITY = HIDEJUMPSUIT|HIDETAIL,
+			),
+			GAUNTLETS_FLAGS = list(
+				UNSEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
+			),
+			BOOTS_FLAGS = list(
+				UNSEALED_CLOTHING = THICKMATERIAL,
+				SEALED_CLOTHING = STOPSPRESSUREDAMAGE,
+			),
+		),
+)
 //////////////////////////////////////////////////////////

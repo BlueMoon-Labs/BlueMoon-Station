@@ -13,9 +13,24 @@
 
 INITIALIZE_IMMEDIATE(/obj/modular_map_root)
 
+GLOBAL_LIST_EMPTY(queued_map_modules)
+GLOBAL_VAR_INIT(map_modules_loaded, FALSE)
+
 /obj/modular_map_root/Initialize(mapload)
 	. = ..()
-	INVOKE_ASYNC(src, PROC_REF(load_map))
+	if(GLOB.map_modules_loaded)
+		INVOKE_ASYNC(src, PROC_REF(load_map))
+		return
+	GLOB.queued_map_modules += src
+
+/// Loads the station's modules right after the station itself, the way ruins are placed: async loads overlapping SSmapping and SSatoms corrupted SSatoms' single init state.
+/proc/load_queued_map_modules()
+	while(length(GLOB.queued_map_modules))
+		var/obj/modular_map_root/root = GLOB.queued_map_modules[1]
+		GLOB.queued_map_modules.Cut(1, 2)
+		if(!QDELETED(root))
+			root.load_map()
+	GLOB.map_modules_loaded = TRUE
 
 /// Randonly selects a map file from the TOML config specified in config_file, loads it, then deletes itself.
 /obj/modular_map_root/proc/load_map()
@@ -53,7 +68,7 @@ INITIALIZE_IMMEDIATE(/obj/modular_map_root)
 	preload_size(mappath) // We need to run this here as the map path has been null until now
 
 	T = locate(T.x - x_offset, T.y - y_offset, T.z)
-	. = ..()
+	. = ..(T, centered, orientation, annihilate, force_cache, rotate_placement_to_orientation)
 
 /datum/map_template/map_module/preload_size(path, cache)
 	. = ..(path, TRUE) // Done this way because we still want to know if someone actualy wanted to cache the map

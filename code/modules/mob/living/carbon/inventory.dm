@@ -24,7 +24,9 @@
 		if(!backpack)
 			//nothing on their back
 			backpack = new /obj/item/storage/backpack(get_turf(src))
-			if(equip_to_slot(backpack, ITEM_SLOT_BACK)) //worst-case-scenario, something that shouldnt wear a backpack gets one
+			// equip_to_slot() возвращает признак необработанного слота, а не успех экипировки.
+			equip_to_slot(backpack, ITEM_SLOT_BACK)
+			if(get_item_by_slot(ITEM_SLOT_BACK) == backpack)
 				if(!SEND_SIGNAL(backpack, COMSIG_TRY_STORAGE_INSERT, I, src, TRUE, TRUE))
 					I.forceMove(backpack)
 				return ITEM_SLOT_BACK

@@ -6,5 +6,8 @@
 
 /datum/quirk/fluid_infuser/on_spawn()
 	. = ..()
+	if(locate(/obj/item/implant/genital_fluid) in quirk_holder.implants)
+		return
 	var/obj/item/implant/genital_fluid/put_in = new
-	put_in.implant(quirk_holder, null, TRUE, TRUE)
+	if(!put_in.implant(quirk_holder, null, TRUE, TRUE))
+		qdel(put_in)

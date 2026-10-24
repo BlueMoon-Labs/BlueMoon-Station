@@ -887,6 +887,10 @@
 	..()
 	return TRUE
 
+#define EPHEDRINE_DROPCHANCE_BASIC 3 / 10 // 0.3%
+#define EPHEDRINE_DROPCHANCE_STEP 1 / 10 // 0.1%
+#define EPHEDRINE_DROPCHANCE_CAP 7.5
+
 /datum/reagent/medicine/ephedrine
 	name = "Ephedrine"
 	description = "Increases stun resistance. Overdose deals toxin damage and inhibits breathing."
@@ -908,15 +912,16 @@
 	..()
 
 /datum/reagent/medicine/ephedrine/on_mob_life(mob/living/carbon/M, delta_time, times_fired)
-	if(DT_PROB(7.5, delta_time) && iscarbon(M))
+	var/drop_chance = min(EPHEDRINE_DROPCHANCE_BASIC + (current_cycle * EPHEDRINE_DROPCHANCE_STEP), EPHEDRINE_DROPCHANCE_CAP)
+	if(DT_PROB(drop_chance, delta_time) && iscarbon(M))
 		var/obj/item/Iactive = M.get_active_held_item()
 		if(Iactive && M.dropItemToGround(Iactive))
-			to_chat(M, span_notice("Your hands spaz out and you drop what you were holding!"))
+			to_chat(M, span_danger("Спазм настигает вашу руку и вы роняете то, что держали!"))
 			M.Jitter(10)
-	if(DT_PROB(5, delta_time) && iscarbon(M))
+	if(DT_PROB((drop_chance / 2), delta_time) && iscarbon(M))
 		var/obj/item/Isecond = M.get_inactive_held_item()
 		if(Isecond && M.dropItemToGround(Isecond))
-			to_chat(M, span_notice("Your hands spaz out and you drop what you were holding!"))
+			to_chat(M, span_danger("Спазм настигает вашу руку и вы роняете то, что держали!"))
 			M.Jitter(10)
 
 	M.AdjustAllImmobility(-20 * REM * delta_time)
@@ -928,11 +933,11 @@
 	if(DT_PROB(1, delta_time) && iscarbon(M))
 		var/datum/disease/D = new /datum/disease/heart_failure
 		M.ForceContractDisease(D)
-		to_chat(M, span_userdanger("You're pretty sure you just felt your heart stop for a second there.."))
+		to_chat(M, span_userdanger("Вы абсолютно уверены, что ваше сердце на секунду остановилось.."))
 		M.playsound_local(M, 'sound/effects/singlebeat.ogg', 100, 0)
 
 	if(DT_PROB(3.5, delta_time))
-		to_chat(M, span_notice("[pick("Your head pounds.", "You feel a tight pain in your chest.", "You find it hard to stay still.", "You feel your heart practically beating out of your chest.")]"))
+		to_chat(M, span_notice("[pick("Ваша голова гудит.", "Вы ощущаете боль в узкой области вашей груди.", "Вам становится трудно стоять на месте.", "Вы ощущаете, как ваше сердце буквально пытается вырваться наружу из вашей груди.")]"))
 
 	if(DT_PROB(18, delta_time))
 		M.adjustToxLoss(1, 0)
@@ -967,6 +972,10 @@
 		M.losebreath += 5
 		. = 1
 	..()
+
+#undef EPHEDRINE_DROPCHANCE_BASIC
+#undef EPHEDRINE_DROPCHANCE_STEP
+#undef EPHEDRINE_DROPCHANCE_CAP
 
 /datum/reagent/medicine/diphenhydramine
 	name = "Diphenhydramine"

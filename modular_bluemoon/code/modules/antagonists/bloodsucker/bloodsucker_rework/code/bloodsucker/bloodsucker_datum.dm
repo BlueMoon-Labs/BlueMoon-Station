@@ -451,14 +451,14 @@
 	user.update_sight()
 
 /// Name shown on antag list
-/datum/antagonist/bloodsucker/antag_listing_name()
+/datum/antagonist/bloodsucker/antag_check_name()
 	return ..() + "([return_full_name()])"
 
 /// Whatever interesting things happened to the antag admins should know about
 /// Include additional information about antag in this part
-/datum/antagonist/bloodsucker/antag_listing_status()
+/datum/antagonist/bloodsucker/antag_check_status()
 	if(owner && !considered_alive(owner))
-		return "<font color=red>Final Death</font>"
+		return list("key" = "final_death")
 	return ..()
 
 /datum/antagonist/bloodsucker/proc/forge_bloodsucker_objectives()

@@ -8,12 +8,14 @@
 
 /datum/quirk/storage_concealment/on_spawn()
 	. = ..()
+	if(locate(/obj/item/implant/hide_backpack) in quirk_holder.implants)
+		return
 
-	// Create a new augment item
+	// Восстанавливаем встроенный имплант, только если его ещё нет в теле.
 	var/obj/item/implant/hide_backpack/put_in = new
 
-	// Apply the augment to the quirk holder
-	put_in.implant(quirk_holder, null, TRUE, TRUE)
+	if(!put_in.implant(quirk_holder, null, TRUE, TRUE))
+		qdel(put_in)
 
 /datum/quirk/storage_concealment/on_process()
 	// This trait should only be applied by the augment

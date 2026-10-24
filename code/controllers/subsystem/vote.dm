@@ -25,6 +25,9 @@ SUBSYSTEM_DEF(vote)
 	var/list/saved = list()
 	var/list/generated_actions = list()
 	var/roundtype_prime_runoff_ballot = FALSE
+	// BLUEMOON MAP VOTE RUNOFF ADD
+	var/map_runoff_active = FALSE
+	var/map_runoff_initiated = FALSE
 
 	var/setting_up_custom = FALSE
 	var/custom_question = ""
@@ -94,6 +97,8 @@ SUBSYSTEM_DEF(vote)
 	_clear_custom_setup()
 	remove_action_buttons()
 	roundtype_prime_runoff_ballot = FALSE
+	map_runoff_active = FALSE
+	map_runoff_initiated = FALSE
 
 /datum/controller/subsystem/vote/proc/_clear_custom_setup()
 	setting_up_custom = FALSE
@@ -185,6 +190,10 @@ SUBSYSTEM_DEF(vote)
 	var/votes = choices[option]
 	if(mode == "roundtype" && option == ROUNDTYPE_DYNAMIC_LIGHT)
 		votes *= CONFIG_GET(number/dynamic_light_vote_multiplier)
+	if(mode == "map")
+		var/datum/map_config/MC = config.maplist[option]
+		if(MC && MC.voteweight > 0)
+			votes *= MC.voteweight
 	return votes
 
 /datum/controller/subsystem/vote/proc/calculate_condorcet_votes(var/blackbox_text)
@@ -493,6 +502,19 @@ SUBSYSTEM_DEF(vote)
 						SSticker.SetTimeLeft(2400)
 					return .
 
+				// Map runoff logic: if first vote picked boxstation_variants_rand and players > 100, do second vote including syndicatestation
+				var/syn_players_req = 100
+				var/datum/map_config/syn_check = config.maplist["syndicatestation"] || config.maplist["Syndicate Station"]
+				if(syn_check && syn_check.config_min_users > 0)
+					syn_players_req = syn_check.config_min_users
+				if(!map_runoff_initiated && ( . == "boxstation_variants_rand" || . == "Box Stations" ) && GLOB.clients.len >= syn_players_req)
+					map_runoff_active = TRUE
+					map_runoff_initiated = TRUE
+					message_admins("Map vote runoff triggered: boxstation variants won first round with >= [syn_players_req] players, starting second round including syndicatestation.")
+					log_admin("Map vote runoff triggered for boxstation variants with syndicatestation option.")
+					SSvote.initiate_vote("map", "server", display = SHOW_RESULTS|SHOW_WINNER, votesystem = vote_system, forced = TRUE)
+					return .
+
 				var/datum/map_config/VM = config.maplist[.]
 				message_admins("The map has been voted for and will change to: [VM.map_name]")
 				log_admin("The map has been voted for and will change to: [VM.map_name]")
@@ -536,7 +558,7 @@ SUBSYSTEM_DEF(vote)
 		if(SSticker.current_state > GAME_STATE_PREGAME)
 			reset()
 			return .
-		var/fallback = pick_dynamic_type_by_chaos(GLOB.player_list, allow_light = !use_dynamic_light_roundtype_vote_window())
+		var/fallback = pick_roundtype_without_votes()
 		SSpersistence.RecordDynamicType(fallback)
 		GLOB.round_type = fallback
 		GLOB.master_mode = fallback
@@ -662,7 +684,29 @@ SUBSYSTEM_DEF(vote)
 						continue
 					if(targetmap.max_round_search_span && count_occurences_of_value(lastmaps, M, targetmap.max_round_search_span) >= targetmap.max_rounds_played)
 						continue
+					// BLUEMOON MAP RUNOFF: if this is a second round of voting for boxstation_variants_rand context,
+					// allow syndicatestation to appear when players > 100
+					var/syn_players_req2 = 100
+					var/datum/map_config/syn_check2 = config.maplist["syndicatestation"] || config.maplist["Syndicate Station"]
+					if(syn_check2 && syn_check2.config_min_users > 0)
+						syn_players_req2 = syn_check2.config_min_users
+					if(M == "syndicatestation" || M == "Syndicate Station")
+						if(map_runoff_active && players >= syn_players_req2)
+							choices |= M
+						continue  // never add syndicatestation as a separate option outside of runoff
 					choices |= M
+				// If it's a map runoff and syndicatestation wasn't added normally but should be, ensure it's added
+				var/syn_players_req3 = 100
+				var/datum/map_config/syn_check3 = config.maplist["syndicatestation"] || config.maplist["Syndicate Station"]
+				if(syn_check3 && syn_check3.config_min_users > 0)
+					syn_players_req3 = syn_check3.config_min_users
+				if(map_runoff_active && players >= syn_players_req3 && !("syndicatestation" in choices) && !("Syndicate Station" in choices))
+					// check if it's valid - try both keys
+					var/datum/map_config/syn = config.maplist["syndicatestation"] || config.maplist["Syndicate Station"]
+					var/syn_key = config.maplist["syndicatestation"] ? "syndicatestation" : (config.maplist["Syndicate Station"] ? "Syndicate Station" : null)
+					if(syn && syn_key && istype(syn) && syn.voteweight && !(syn.config_max_users && players > syn.config_max_users) && !(syn.config_min_users && players < syn.config_min_users))
+						if(!(syn.max_round_search_span && count_occurences_of_value(lastmaps, syn_key, syn.max_round_search_span) >= syn.max_rounds_played))
+							choices |= syn_key
 				shuffle_inplace(choices)
 			if("transfer") // austation begin -- Crew autotranfer vote
 				choices.Add(VOTE_TRANSFER,VOTE_CONTINUE) // austation end
@@ -670,20 +714,8 @@ SUBSYSTEM_DEF(vote)
 				if(roundtype_prime_runoff_ballot)
 					choices |= list(ROUNDTYPE_DYNAMIC_LIGHT, ROUNDTYPE_EXTENDED)
 				else
-					var/combo = check_combo()
-					var/secondary_roundtype
-					var/list/roundtype_choices
-					if(use_dynamic_light_roundtype_vote_window())
-						secondary_roundtype = ROUNDTYPE_EXTENDED
-						roundtype_choices = list(ROUNDTYPE_DYNAMIC, secondary_roundtype)
-					else
-						secondary_roundtype = get_roundtype_vote_secondary_choice()
-						roundtype_choices = list(ROUNDTYPE_DYNAMIC, secondary_roundtype)
-					if(combo == ROUNDTYPE_ROTATION_HEAVY)
-						roundtype_choices = list(secondary_roundtype)
-					else if(combo == ROUNDTYPE_ROTATION_LIGHT)
-						roundtype_choices = list(ROUNDTYPE_DYNAMIC)
-					choices |= roundtype_choices
+					var/rotation_applies = update_round_rotation_eligibility()
+					choices |= roundtype_ballot_choices(check_combo(), rotation_applies)
 				sanitize_roundtype_vote_choices()
 			if("custom")
 				question = saved_custom_question
@@ -765,6 +797,43 @@ SUBSYSTEM_DEF(vote)
 		if(group_counts[group] >= ROUNDTYPE_MAX_COMBO)
 			return group
 	return FALSE
+
+/// Полноценный раунд: онлайн не ниже порога и час вне ночного окна. Онлайн и час передаются явно ради тестов.
+/datum/controller/subsystem/vote/proc/roundtype_rotation_applies(player_count, current_hour)
+	if(player_count < CONFIG_GET(number/roundtype_rotation_min_players))
+		return FALSE
+	return !is_roundtype_vote_hour_in_window(
+		current_hour,
+		CONFIG_GET(number/roundtype_rotation_night_start_hour),
+		CONFIG_GET(number/roundtype_rotation_night_end_hour)
+	)
+
+/// Засчитывается ли будущий раунд в ротацию, по онлайну и часу на момент выбора режима: голосованием или админом.
+/datum/controller/subsystem/vote/proc/update_round_rotation_eligibility()
+	var/player_count = get_total_player_count()
+	var/current_hour = text2num(time2text(world.timeofday, "hh"))
+	. = roundtype_rotation_applies(player_count, current_hour)
+	if(!SSticker.HasRoundStarted())
+		GLOB.round_counts_for_rotation = .
+	log_vote("Ротация режимов [. ? "применяется" : "не применяется"]: онлайн [player_count], час [current_hour], серия [check_combo() || "нет"].")
+
+/datum/controller/subsystem/vote/proc/roundtype_ballot_choices(combo, rotation_applies)
+	var/secondary_roundtype = use_dynamic_light_roundtype_vote_window() ? ROUNDTYPE_EXTENDED : get_roundtype_vote_secondary_choice()
+	if(rotation_applies)
+		if(combo == ROUNDTYPE_ROTATION_HEAVY)
+			return list(secondary_roundtype)
+		if(combo == ROUNDTYPE_ROTATION_LIGHT)
+			return list(ROUNDTYPE_DYNAMIC)
+	return list(ROUNDTYPE_DYNAMIC, secondary_roundtype)
+
+/datum/controller/subsystem/vote/proc/pick_roundtype_without_votes()
+	if(GLOB.round_counts_for_rotation)
+		switch(check_combo())
+			if(ROUNDTYPE_ROTATION_HEAVY)
+				return get_roundtype_vote_secondary_choice()
+			if(ROUNDTYPE_ROTATION_LIGHT)
+				return pick_dynamic_type_by_chaos(GLOB.player_list, allow_light = FALSE)
+	return pick_dynamic_type_by_chaos(GLOB.player_list, allow_light = !use_dynamic_light_roundtype_vote_window())
 
 /datum/controller/subsystem/vote/proc/is_roundtype_vote_hour_in_window(current_hour, start_hour, end_hour)
 	if(start_hour == end_hour)
@@ -949,6 +1018,10 @@ SUBSYSTEM_DEF(vote)
 	if(mode == "roundtype")
 		data["last_modes"] = length(SSpersistence.saved_round_types) ? jointext(SSpersistence.saved_round_types, ", ") : (length(SSpersistence.saved_modes) ? jointext(SSpersistence.saved_modes, ", ") : null)
 		data["combo_threshold"] = ROUNDTYPE_MAX_COMBO
+		data["rotation_min_players"] = CONFIG_GET(number/roundtype_rotation_min_players)
+		data["rotation_night_start"] = server_hour_to_msk(CONFIG_GET(number/roundtype_rotation_night_start_hour))
+		data["rotation_night_end"] = server_hour_to_msk(CONFIG_GET(number/roundtype_rotation_night_end_hour))
+		data["rotation_applies"] = GLOB.round_counts_for_rotation
 		// Пояснения о вариантах динамика
 		var/list/roundtype_descs = list()
 		roundtype_descs += list(list("name" = ROUNDTYPE_DYNAMIC, "desc" = "Одна из вариаций динамика выбирается автоматически."))
@@ -1139,7 +1212,7 @@ SUBSYSTEM_DEF(vote)
 		if(isnum(chaos))
 			total_chaos += chaos
 
-	var/list/available_hard = list(ROUNDTYPE_DYNAMIC_HARD)
+	var/list/available_hard = list(ROUNDTYPE_DYNAMIC_TEAMBASED)
 	var/list/available_medium = list(ROUNDTYPE_DYNAMIC_MEDIUM)
 	// var/list/available_medium = list(ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT) - last_dynamic_type
 

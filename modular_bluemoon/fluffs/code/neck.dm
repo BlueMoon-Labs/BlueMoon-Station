@@ -53,7 +53,7 @@
 
 /obj/item/clothing/neck/cloak/cybersun/civil
 	desc = "Souvenir version without protection of cloack worn by High-Ranking Cybersun Personnel, the cybersun shall rise!"
-	armor = null
+	armor_type = /datum/armor/none
 
 ///////////////////////////////////////////////
 
@@ -102,7 +102,7 @@
 	desc = "Тряпки, тряпки и ещё раз тряпки. Ни функционала, ни цели, только стиль."
 	icon_state = "concord-cloak"
 	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/neck.dmi'
-	alternate_worn_layer = HORNS_LAYER // опять меняем слой... надо чтоб был над волосами
+	alternate_worn_layer = SUIT_STORE_LAYER // опять меняем слой... надо чтоб был над оружием на спине
 	var/selected_type = "Cloak"
 
 /obj/item/clothing/neck/donator/bm/concord_cloak/equipped(mob/user, slot) //оверрайдим этот прок, дабы у нас вызывалась обнова иконки в момент одевания
@@ -167,3 +167,9 @@
 	wearer.update_inv_neck()
 	wearer.update_body()
 	wearer.update_hair()
+
+/obj/item/clothing/neck/donator/bm/baron
+	name = "terrifying cloak"
+	desc = "A black cloak of expensive fabric with loose hair from some strange creature around the neck."
+	icon_state = "baron"
+	w_class = WEIGHT_CLASS_NORMAL

@@ -133,6 +133,9 @@
 	user.client?.ForceAllKeysUp()
 	window.acquire_lock(src)
 	if(!window.is_ready())
+		if(!user?.client)
+			close(can_be_suspended = FALSE)   // окно уже залочено, надо отдать в пул
+			return FALSE
 		window.initialize(
 			fancy = user.client.prefs.tgui_fancy,
 			assets = list(

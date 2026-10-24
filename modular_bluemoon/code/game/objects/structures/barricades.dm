@@ -4,7 +4,9 @@
 /// Get the atom's armor reference
 /obj/proc/get_armor()
 	RETURN_TYPE(/datum/armor)
-	return (armor ||= getArmor(type))
+	if(!armor)
+		initialize_armor()
+	return armor
 
 /// Helper to get a specific rating for the atom's armor
 /obj/proc/get_armor_rating(damage_type)
@@ -13,15 +15,7 @@
 
 /// Sets the armor of this atom to the specified armor
 /obj/proc/set_armor(datum/armor/armor)
-	if(src.armor == armor)
-		return
-	var/datum/armor/old_armor = src.armor
-	var/datum/armor/new_armor = ispath(armor) ? getArmor(armor) : armor
-	src.armor = new_armor
-	// getArmor() и GLOB.armor_by_type шарят помеченные tag-ом датумы. Генераторы
-	// приватных модифицированных armor снимают tag: их после замены нужно удалить.
-	if(old_armor && old_armor != new_armor && !old_armor.tag)
-		qdel(old_armor)
+	normal_set_armor(armor)
 
 /// Helper to update the atom's armor to a new armor with the specified rating
 /obj/proc/set_armor_rating(damage_type, rating)
@@ -154,7 +148,7 @@
 		span_userdanger("The barbed wire on [src] tears into your legs!")
 	)
 	playsound(src, 'sound/weapons/slice.ogg', 50, TRUE)
-	jumper.emote("agony")
+	jumper.emote("realagony")
 
 	var/hit_a_leg = FALSE
 	if(iscarbon(jumper))
@@ -375,7 +369,7 @@
 	desc = "A small barricade made from metal posting, designed to stop you from going places you aren't supposed to."
 	icon_state = "railing_0"
 	max_integrity = 150
-	armor = list(MELEE = 50, BULLET = 50, LASER = 50, ENERGY = 50, BOMB = 25, BIO = 100, RAD = 100, FIRE = 100, ACID = 25)
+	armor_type = /datum/armor/guardrail
 	stack_type = /obj/item/stack/rods
 	destroyed_stack_amount = 2
 	barricade_type = "railing"
@@ -447,7 +441,7 @@
 	desc = "A durable and easily mounted barricade made from metal plates, often used for rapid fortification. Repairing it requires a welder."
 	icon_state = "metal_0"
 	max_integrity = 200
-	armor = list(MELEE = 50, BULLET = 50, LASER = 50, ENERGY = 50, BOMB = 25, BIO = 100, RAD = 100, FIRE = 50, ACID = 75)
+	armor_type = /datum/armor/metal
 	stack_type = /obj/item/stack/sheet/metal
 	stack_amount = 2
 	destroyed_stack_amount = 1

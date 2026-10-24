@@ -49,7 +49,7 @@
 	target.icon = icon
 	target.icon_state = icon_state
 	target.mob_overlay_icon = mob_overlay_icon
-	target.color = color
+	target.add_atom_colour(color, FIXED_COLOUR_PRIORITY)
 	RegisterSignal(target, COMSIG_ATOM_TOOL_ACT(TOOL_SCREWDRIVER), PROC_REF(remove))
 	RegisterSignal(target, COMSIG_CLICK_CTRL_SHIFT, PROC_REF(wrapped_on_CtrlShiftClick))
 	RegisterSignal(target, COMSIG_PARENT_EXAMINE, PROC_REF(wrapped_on_examine))
@@ -81,7 +81,7 @@
 	target.icon = previous_icon_data[DATA_ICON] || null
 	target.icon_state = previous_icon_data[DATA_ICON_STATE] || null
 	target.mob_overlay_icon = previous_icon_data[DATA_ICON_WORN_OVERLAY] || null
-	target.color = previous_icon_data[DATA_COLOR] || null
+	target.add_atom_colour(previous_icon_data[DATA_COLOR], FIXED_COLOUR_PRIORITY)
 	previous_icon_data = alist(
 		DATA_ICON = null,
 		DATA_ICON_STATE = null,
@@ -156,6 +156,14 @@
 	desc = "A blindfold made from black silk, it feels nice to the touch."
 	icon_state = "fold_silk"
 	base_icon_state = "fold_silk"
+	can_switch_eye = FALSE
+	has_adapt_icon_states = FALSE
+
+/obj/item/clothing/glasses/cover/tac_veil
+	name = "Veil (adaptive)"
+	desc = "Furui's company have brought this from far lands using culture of Jingdai."
+	icon_state = "aveil"
+	base_icon_state = "aveil"
 	can_switch_eye = FALSE
 	has_adapt_icon_states = FALSE
 

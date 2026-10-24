@@ -37,9 +37,13 @@ Will print: "/mob/living/carbon/human/death" (you can optionally embed it in a s
 //Human Overlays Indexes/////////
 //LOTS OF CIT CHANGES HERE. BE CAREFUL WHEN UPSTREAM ADDS MORE LAYERS
 
-#define MUTATIONS_LAYER           45 // mutations. Tk headglows, cold resistance glow, etc
-#define GENITALS_BEHIND_LAYER     44 // Some genitalia needs to be behind everything, such as with taurs
-#define BODY_BEHIND_LAYER         43 // certain mutantrace features, such as tail when looking south
+#define MUTATIONS_LAYER           49 // mutations. Tk headglows, cold resistance glow, etc
+#define BODY_BEHIND_LAYER         48 // certain mutantrace features, such as tail when looking south
+#define	LEGS_PART_LAYER           47 // legs bodyparts
+#define	CHEST_PART_LAYER          46 // chest bodypart
+#define GENITALS_BEHIND_LAYER     45 // Some genitalia needs to be behind everything, such as with taurs
+#define	ARMS_PART_LAYER           44 // arms bodypart
+#define	HEAD_PART_LAYER           43 // head bodypart
 #define BODYPARTS_LAYER           42 // catch-all bodyparts flag
 #define MARKING_LAYER             41 // Matrixed body markings
 #define BODY_ADJ_LAYER            40 // snout, body markings, etc.
@@ -54,14 +58,14 @@ Will print: "/mob/living/carbon/human/death" (you can optionally embed it in a s
 #define SHOES_LAYER               31
 #define DRESS_LAYER               30 // uniforms drawn on top of shoes
 #define ID_LAYER                  29
-#define GENITALS_EXPOSED_LAYER    28
-#define HANDS_PART_LAYER          27
-#define DAMAGE_LAYER              26 // damage indicators
-#define WOUND_LAYER               25 // bleeding wound icons
-#define LOWER_MEDICINE_LAYER      24
-#define MEDICINE_LAYER            23
-#define GLOVES_LAYER              22
-#define WRISTS_LAYER              21
+#define HANDS_PART_LAYER          28
+#define GLOVES_LAYER              27
+#define WRISTS_LAYER              26
+#define GENITALS_EXPOSED_LAYER    25
+#define DAMAGE_LAYER              24 // damage indicators
+#define WOUND_LAYER               23 // bleeding wound icons
+#define LOWER_MEDICINE_LAYER      22
+#define MEDICINE_LAYER            21
 #define EAR_RIGHT_LAYER           20
 #define EAR_LEFT_LAYER            19
 #define SUIT_LAYER                18
@@ -83,7 +87,7 @@ Will print: "/mob/living/carbon/human/death" (you can optionally embed it in a s
 #define ANTAG_LAYER                2
 #define FIRE_LAYER                 1
 
-#define TOTAL_LAYERS              45
+#define TOTAL_LAYERS              49
 
 /// Потолок общего кэша наборов конечностей (limb_icon_cache, см. cache_limb_icons).
 /// Двух тысяч записей хватает на популяцию прода с запасом: ключ разный у каждого
@@ -473,6 +477,11 @@ GLOBAL_LIST_INIT(payed_ert, list(
 #define ALT_CLICK "alt"
 #define SHIFT_CLICK "shift"
 
+// Обработчики колеса вызываются от большего приоритета к меньшему.
+#define MOUSEWHEEL_PRIORITY_DEFAULT 0
+#define MOUSEWHEEL_PRIORITY_IMPLANT 10
+#define MOUSEWHEEL_PRIORITY_MECHA 20
+
 //Pixel coordinates within the icon, in the icon's coordinate space
 #define ICON_X "icon-x"
 #define ICON_Y "icon-y"
@@ -502,6 +511,8 @@ GLOBAL_LIST_INIT(payed_ert, list(
 #define DUMMY_HUMAN_SLOT_MANIFEST "dummy_manifest_generation"
 #define DUMMY_HUMAN_SLOT_HALLUCINATION "dummy_hallucination"
 #define DUMMY_HUMAN_SLOT_EXAMINER "dummy_examiner"
+#define DUMMY_HUMAN_SLOT_JOB_MENU "dummy_job_menu"
+#define DUMMY_HUMAN_SLOT_HAIR_PICKER "dummy_hair_picker"
 
 #define PR_ANNOUNCEMENTS_PER_ROUND 5 //The number of unique PR announcements allowed per round
 									//This makes sure that a single person can only spam 3 reopens and 3 closes before being ignored
@@ -564,11 +575,17 @@ GLOBAL_LIST_INIT(payed_ert, list(
 #define NO_INIT_PARAMETER "no-init"
 //Force the config directory to be something other than "config"
 #define OVERRIDE_CONFIG_DIRECTORY_PARAMETER "config-directory"
+//Run only the unit tests listed in this file, one type path per line
+#define UNIT_TEST_LIST_PARAMETER "unit-test-list"
+//Run only part K of N of the unit tests ("K/N")
+#define UNIT_TEST_SHARD_PARAMETER "unit-test-shard"
+//JSON of past wall times per test, used to balance the shards
+#define UNIT_TEST_DURATIONS_PARAMETER "unit-test-durations"
 
 #define EGG_LAYING_MESSAGES list("lays an egg.","squats down and croons.","begins making a huge racket.","begins clucking raucously.")
 
 // list of all null rod weapons
-#define HOLY_WEAPONS /obj/item/nullrod, /obj/item/dualsaber/hypereutactic/chaplain, /obj/item/gun/energy/laser/redtag/hitscan/chaplain, /obj/item/multitool/chaplain, /obj/item/clothing/gloves/fingerless/pugilist/chaplain, /obj/item/melee/baseball_bat/chaplain, /obj/item/staff/bostaff/chaplain
+#define HOLY_WEAPONS /obj/item/nullrod, /obj/item/dualsaber/hypereutactic/chaplain, /obj/item/gun/energy/laser/redtag/hitscan/chaplain, /obj/item/multitool/chaplain, /obj/item/clothing/gloves/fingerless/pugilist/chaplain, /obj/item/melee/baseball_bat/chaplain
 
 // Used by PDA and cartridge code to reduce repetitiveness of spritesheets
 #define PDAIMG(what) {"<span class="pda16x16 [#what]"></span>"}
@@ -580,6 +597,8 @@ GLOBAL_LIST_INIT(payed_ert, list(
 #define GRAVITY_MOTION_BLUR list("type"="motion_blur","x"=0,"y"=0)
 
 #define STANDARD_GRAVITY 1 //Anything above this is high gravity, anything below no grav
+/// Гравитация, тянущая вверх: has_gravity() <= этого значит, что падают в потолок.
+#define NEGATIVE_GRAVITY -1
 #define GRAVITY_DAMAGE_TRESHOLD 3 //Starting with this value gravity will start to damage mobs
 
 #define CAMERA_NO_GHOSTS 0

@@ -88,6 +88,8 @@
 			CRASH("Invalid rediretion mode [redirection_mode]")
 
 /mob/living/bullet_act(obj/item/projectile/P, def_zone, piercing_hit = FALSE)
+	// Родитель /atom не вызывается (он зовёт on_hit), поэтому его сигнал шлём здесь, до блоков и урона.
+	SEND_SIGNAL(src, COMSIG_ATOM_BULLET_ACT, P, def_zone)
 	var/totaldamage = P.damage
 	var/final_percent = 0
 	if(P.original != src || P.firer != src)
@@ -104,6 +106,7 @@
 			return BULLET_ACT_BLOCK
 		totaldamage = block_calculate_resultant_damage(totaldamage, returnlist)
 
+	SEND_SIGNAL(src, COMSIG_LIVING_HIT_BY_PROJECTILE, P, def_zone)
 	var/armor = run_armor_check(def_zone, P.flag, null, null, P.armour_penetration, null)
 
 	// BLUEMOON ADD START - больших и тяжёлых существ проблематично нормально оглушить

@@ -176,7 +176,7 @@
 		TEST_ASSERT(!QDELETED(seal) && !seal.collecting, "Оставшаяся связь снова доступна.")
 		TEST_ASSERT_EQUAL(seal.debt, 25 - index * 10, "Взыскание сохраняет точный остаток долга.")
 		TEST_ASSERT_EQUAL(seal.expires_at, expiry, "Частичное взыскание не обновляет срок.")
-		TEST_ASSERT_EQUAL(seal.seal_overlay.icon_state, "blood_mark", "Предупреждение уступает место обычной метке.")
+		TEST_ASSERT_EQUAL(seal.seal_overlay.icon_state, "blood_seal", "Предупреждение уступает место обычной печати связи.")
 		TEST_ASSERT(!seal.detonate(), "Завершённый таймер не взыскивает остаток повторно.")
 	TEST_ASSERT(abs(user.getBruteLoss() - 20) <= DAMAGE_PRECISION, "Две части исчерпали общий предел десять лечения.")
 	seal.expires_at = world.time + 0.5 SECONDS
@@ -190,7 +190,7 @@
 	TEST_ASSERT_NULL(seal.collection_ready_at, "Отказ не назначает время взыскания.")
 	TEST_ASSERT_NULL(seal.collection_timer, "Отказ не создаёт отложенный таймер.")
 	TEST_ASSERT_NULL(seal.collection_knowledge_ref, "Отказ не сохраняет знание взыскания.")
-	TEST_ASSERT_EQUAL(seal.seal_overlay.icon_state, "blood_mark", "Отказ не показывает предупреждение о взыскании.")
+	TEST_ASSERT_EQUAL(seal.seal_overlay.icon_state, "blood_seal", "Отказ не показывает предупреждение о взыскании.")
 	TEST_ASSERT_EQUAL(spell.charge_counter, spell.charge_max, "Отклонённое взыскание возвращает перезарядку.")
 	seal.expires_at = world.time + 1 SECONDS
 	TEST_ASSERT(!blood.release(user, victim, partial = TRUE), "Взыскание точно в момент истечения тоже отклоняется.")
@@ -352,8 +352,17 @@
 	TEST_ASSERT(blood.lance(user, victim), "Натяжение поражает несвязанного врага.")
 	TEST_ASSERT_EQUAL(user.getBruteLoss(), 0, "Натяжение не требует саморанения.")
 	TEST_ASSERT_EQUAL(get_turf(victim), destination, "Закрепление предотвращает перемещение.")
+	TEST_ASSERT_NULL(victim.has_status_effect(/datum/status_effect/heretic_blood_reel), "Закреплённую цель жила не тянет.")
 	victim.anchored = FALSE
 	TEST_ASSERT(blood.lance(user, victim), "Свободного должника можно подтянуть.")
+	var/datum/status_effect/heretic_blood_reel/reel = victim.has_status_effect(/datum/status_effect/heretic_blood_reel)
+	TEST_ASSERT_NOTNULL(reel, "Жила тянет цель, а не переставляет её мгновенно.")
+	TEST_ASSERT_EQUAL(get_turf(victim), destination, "В миг удара цель ещё на месте.")
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/temp_visual/heretic_blood/lance) in destination, "Шип бьёт из-под цели.")
+	var/obj/effect/temp_visual/heretic_vfx/thread/vein = locate() in destination
+	TEST_ASSERT_NOTNULL(vein, "От цели к еретику натянута жила.")
+	TEST_ASSERT_EQUAL(round(vein?.angle), round(Get_Angle(destination, get_turf(user))), "Жила тянется к еретику.")
+	TEST_ASSERT(wait_for_qdeleted(reel, 3 SECONDS), "Жила дотягивает цель.")
 	TEST_ASSERT_EQUAL(get_dist(user, victim), 1, "Натяжение притягивает на три клетки.")
 	TEST_ASSERT(abs(victim.getBruteLoss() - 36) < 0.01, "Два натяжения нанесли по восемнадцать ушибов.")
 	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
@@ -460,6 +469,7 @@
 	var/datum/status_effect/heretic_blood_seal/second_seal = second.has_status_effect(/datum/status_effect/heretic_blood_seal)
 	var/paid = user.getBruteLoss()
 	TEST_ASSERT(blood.reckoning(user), "Взыскание запускается по обеим связям.")
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/temp_visual/heretic_blood/reckoning) in get_turf(user), "Знак Крови сжимается и лопается на самом еретике.")
 	TEST_ASSERT(first_seal.collecting && second_seal.collecting, "Каждый должник получает собственное предупреждение.")
 	TEST_ASSERT_EQUAL(user.getBruteLoss(), paid, "Взыскание не создаёт новую плату.")
 	TEST_ASSERT_NULL(first.has_status_effect(/datum/status_effect/heretic_blood_exsanguinated), "До удара никто не обескровлен.")
@@ -1317,6 +1327,7 @@
 	witness.put_in_hands(rod)
 	rod.melee_attack_chain(witness, rodded)
 	TEST_ASSERT_NULL(heretic_craft_on(rodded, "blood_sign"), "Нулевой жезл снимает метку.")
+	TEST_ASSERT_NULL(rodded.get_filter(HERETIC_BLOOD_SIGN_FILTER), "Снятая метка больше не пульсирует.")
 	TEST_ASSERT(!(rodded in blood.signs), "Снятая жезлом метка уходит из списка.")
 	TEST_ASSERT(!QDELETED(rodded), "Жезл снимает метку, а не кровь.")
 	var/obj/effect/decal/cleanable/blood/mopped = pools[3]
@@ -1429,11 +1440,14 @@
 	var/obj/effect/decal/cleanable/blood/pool = blood_tide_stain(trap_turf, donor = "blood trap donor")
 	user.a_intent = INTENT_HELP
 	TEST_ASSERT(blood.read_blood(user, pool), "Пятно помечено.")
+	TEST_ASSERT_NOTNULL(pool.get_filter(HERETIC_BLOOD_SIGN_FILTER), "Помеченная кровь видимо пульсирует.")
 	var/datum/heretic_blood_sign/sign = blood.signs[pool]
 	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, beside)
+	TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/heretic_blood/snare) in trap_turf, "До шага ловушка тиха.")
 	victim.forceMove(trap_turf)
 	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
 	TEST_ASSERT_NOTNULL(seal, "Ступивший в метку связан.")
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/temp_visual/heretic_blood/snare) in trap_turf, "Сработавшая метка вспыхивает жилами у ног.")
 	TEST_ASSERT_EQUAL(seal?.debt, HERETIC_BLOOD_TRAP_DEBT, "Метка даёт 6 долга.")
 	TEST_ASSERT(abs(COOLDOWN_TIMELEFT(sign, trap_cooldown) - HERETIC_BLOOD_TRAP_COOLDOWN) <= world.tick_lag, "Метка перезаряжается 10 секунд.")
 	victim.forceMove(beside)
@@ -1507,6 +1521,16 @@
 	TEST_ASSERT(!HAS_TRAIT(victim, TRAIT_MUTE), "Во время предупреждения цель ещё говорит.")
 	drain.start_channel()
 	TEST_ASSERT(drain.channel_started, "После предупреждения кровь уходит.")
+	TEST_ASSERT_NOTNULL(victim.get_filter(HERETIC_BLOOD_PALE_FILTER), "Цель бледнеет за время Кровопускания.")
+	TEST_ASSERT(drain.heartbeats >= 1 && drain.heartbeat_timer, "Сердце цели слышно, следующий удар уже назначен.")
+	TEST_ASSERT(drain.beat_interval(1) > drain.beat_interval(0), "К концу сердце бьётся реже.")
+	var/turf/drained_turf = get_turf(victim)
+	var/list/bursts_before = list_vfx_bursts(drained_turf)
+	drain.show_flow(TRUE)
+	var/obj/effect/temp_visual/heretic_vfx/burst/flow = find_vfx_burst(drained_turf, /particles/heretic_ascension/blood/drain_flow, bursts_before)
+	TEST_ASSERT_NOTNULL(flow, "Кровь каплями течёт по нити.")
+	var/list/flow_velocity = flow?.particles.velocity
+	TEST_ASSERT(flow_velocity && flow_velocity[1] < 0, "Капли текут от цели к еретику.")
 	TEST_ASSERT(HAS_TRAIT(victim, TRAIT_MUTE), "На время канала цель немеет полностью.")
 	victim.say(";Помогите!", language = /datum/language/common, ignore_spam = TRUE)
 	TEST_ASSERT_EQUAL(headset.transmissions, 0, "Немая цель не зовёт по рации.")
@@ -1530,13 +1554,15 @@
 	TEST_ASSERT(abs(victim.blood_volume - BLOOD_VOLUME_NORMAL * (1 - HERETIC_BLOOD_DRAIN_FRACTION)) <= 3, "Итог - минус 15% крови: [victim.blood_volume].")
 	TEST_ASSERT(victim.blood_volume >= BLOOD_VOLUME_SAFE, "Полная кровь не опускается ниже безопасного уровня: [victim.blood_volume].")
 	TEST_ASSERT(victim.IsUnconscious(), "Цель в обмороке.")
+	TEST_ASSERT_NULL(drain.heartbeat_timer, "Сердце больше не отсчитывается.")
+	TEST_ASSERT_NOTNULL(victim.get_filter(HERETIC_BLOOD_PALE_FILTER), "В обмороке цель остаётся бледной и розовеет постепенно.")
 	TEST_ASSERT(!HAS_TRAIT(victim, TRAIT_MUTE), "После канала немота снята.")
 	TEST_ASSERT(!(SEND_SIGNAL(victim, COMSIG_MOVABLE_USING_RADIO, headset) & COMPONENT_CANNOT_USE_RADIO), "После канала рация снова работает.")
 	TEST_ASSERT(abs(victim.AmountUnconscious() - HERETIC_BLOOD_DRAIN_FAINT) < 1 SECONDS, "Обморок 10 секунд: [victim.AmountUnconscious()] дс.")
 	TEST_ASSERT(heretic.hunt_target_ready(victim), "Цель в обмороке готова к обряду.")
 	TEST_ASSERT(victim.stat != DEAD, "Кровопускание не убивает.")
 	TEST_ASSERT(!QDELETED(seal), "Связь пережила Кровопускание.")
-	TEST_ASSERT_EQUAL(seal.seal_overlay.icon_state, "blood_mark", "Нить снова обычная.")
+	TEST_ASSERT_EQUAL(seal.seal_overlay.icon_state, "blood_seal", "Нить снова обычная.")
 	var/datum/status_effect/heretic_capture_immunity/immunity = capture_immunity(victim, "blood")
 	TEST_ASSERT(abs(immunity?.duration - world.time - victim.AmountUnconscious() - HERETIC_CAPTURE_IMMUNITY) < 1, "Минута невосприимчивости отсчитывается от пробуждения: [immunity?.duration - world.time] дс.")
 	var/reason = heretic_capture_block_reason(user, victim, "sand")
@@ -1590,6 +1616,13 @@
 			if("смерть еретика")
 				blood.on_death(user)
 		TEST_ASSERT(QDELETED(drain), "Кровопускание обрывается: [method].")
+		TEST_ASSERT_NULL(drain.heartbeat_timer, "После срыва ([method]) сердце не отсчитывается.")
+		if(method == "стена")
+			var/list/budget = new_wait_budget(2 SECONDS, "цвет возвращается после срыва")
+			while(victim.get_filter(HERETIC_BLOOD_PALE_FILTER))
+				if(!wait_budget_tick(budget))
+					break
+			TEST_ASSERT_NULL(victim.get_filter(HERETIC_BLOOD_PALE_FILTER), "После срыва цвет возвращается за секунду.")
 		TEST_ASSERT(!victim.IsUnconscious(), "После срыва ([method]) обморока нет.")
 		TEST_ASSERT_NOTNULL(capture_immunity(victim, "blood"), "После срыва ([method]) цель минуту невосприимчива.")
 		qdel(blocker)
@@ -1714,6 +1747,8 @@
 	user.forceMove(north)
 	var/obj/effect/heretic_blood_slick/slick = locate() in start
 	TEST_ASSERT_NOTNULL(slick, "За еретиком тянется скользкая кровь.")
+	TEST_ASSERT(slick?.icon == 'modular_bluemoon/icons/obj/heretic_blood_effects.dmi' && slick.icon_state == "blood_slick", "След нарисован своим мазком, а не следами ботинок.")
+	TEST_ASSERT_EQUAL(slick?.dir, NORTH, "Мазок тянется туда, куда ушёл еретик.")
 	TEST_ASSERT(abs(timeleft(slick.expiry_timer) - HERETIC_BLOOD_SLICK_LIFETIME) <= world.tick_lag, "Скользкая кровь впитывается через 10 секунд.")
 	var/mob/living/carbon/human/walker = allocate(/mob/living/carbon/human, locate(start.x + 2, start.y, start.z))
 	walker.m_intent = MOVE_INTENT_WALK
@@ -2073,3 +2108,157 @@
 	brute_before = user.getBruteLoss()
 	TEST_ASSERT(collect_all(blood, user, victim, seal), "Взыскание после смерти еретика завершено.")
 	TEST_ASSERT_EQUAL(user.getBruteLoss(), brute_before, "Смерть еретика не обнуляет предел лечения.")
+
+/// «Связать / взыскать» в «Захвате» по своему должнику тратит 8 долга на путы: 3 секунды должник не отходит от еретика, но может подойти; без долга и поверх пут отказ; путы кончаются по сроку и с потерей связи.
+/datum/unit_test/heretic_blood_tether/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	var/datum/antagonist/heretic/heretic = allocate_heretic(start)
+	heretic.selected_path = PATH_BLOOD
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/obj/effect/proc_holder/spell/pointed/heretic_blood/release/release = blood.combat_power
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, locate(start.x + 2, start.y, start.z))
+	user.a_intent = INTENT_GRAB
+	release.cast(list(victim), user)
+	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	TEST_ASSERT_NOTNULL(seal, "Нового врага «Захват» просто связывает.")
+	TEST_ASSERT_NULL(victim.has_status_effect(/datum/status_effect/heretic_blood_tether), "Новая связь не накладывает путы.")
+	seal.debt = HERETIC_BLOOD_TETHER_COST - 1
+	blood.update_debt()
+	TEST_ASSERT(!blood.release(user, victim, tether = TRUE), "Без 8 долга путы не накладываются.")
+	TEST_ASSERT(findtext(blood.ability_failure, "[HERETIC_BLOOD_TETHER_COST] долга"), "Отказ называет цену: [blood.ability_failure]")
+	seal.debt = HERETIC_BLOOD_TETHER_COST + 4
+	blood.update_debt()
+	release.cast(list(victim), user)
+	var/datum/status_effect/heretic_blood_tether/tether = victim.has_status_effect(/datum/status_effect/heretic_blood_tether)
+	TEST_ASSERT_NOTNULL(tether, "В «Захвате» своего должника опутывают жилы.")
+	TEST_ASSERT_EQUAL(seal.debt, 4, "Путы стоят 8 долга.")
+	TEST_ASSERT_EQUAL(blood.combat_resource, 4, "Индикатор долга уменьшен.")
+	TEST_ASSERT(!seal.collecting, "Путы не начинают взыскание.")
+	TEST_ASSERT(abs(tether.duration - world.time - HERETIC_BLOOD_TETHER_DURATION) < 1, "Путы держат 3 секунды.")
+	TEST_ASSERT_NOTNULL(tether.linked_alert, "Должник видит, что опутан.")
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/abstract/heretic_vfx_attached) in victim.vis_contents, "Жилы видны на ногах должника.")
+	TEST_ASSERT(!blood.release(user, victim, tether = TRUE), "Вторые путы поверх первых не ложатся.")
+	TEST_ASSERT_EQUAL(seal.debt, 4, "Отказ не тратит долг.")
+	var/turf/held = get_turf(victim)
+	TEST_ASSERT(!step(victim, EAST), "Должник в путах не отходит от еретика.")
+	TEST_ASSERT_EQUAL(get_turf(victim), held, "Должник остался на месте.")
+	TEST_ASSERT(step(victim, WEST), "К еретику должник подойти может.")
+	var/obj/effect/abstract/heretic_vfx_attached/snare = tether.snare
+	tether.duration = world.time
+	TEST_ASSERT(wait_for_qdeleted(tether, 1 SECONDS), "Путы кончаются по сроку.")
+	TEST_ASSERT(wait_for_qdeleted(snare, 1 SECONDS), "Жилы сходят с ног.")
+	TEST_ASSERT(step(victim, EAST), "Без пут должник снова отходит.")
+	seal.debt = HERETIC_BLOOD_TETHER_COST
+	blood.update_debt()
+	TEST_ASSERT(blood.release(user, victim, tether = TRUE), "Путы накладываются снова.")
+	TEST_ASSERT_EQUAL(seal.debt, 0, "Последние 8 долга уходят в путы.")
+	TEST_ASSERT(!seal.spent && (seal in blood.seals), "Связь без долга после пут держится.")
+	tether = victim.has_status_effect(/datum/status_effect/heretic_blood_tether)
+	qdel(seal)
+	TEST_ASSERT(wait_for_qdeleted(tether, 1 SECONDS), "Без кровной связи путы спадают.")
+
+/datum/unit_test/heretic_blood_pool_spike/proc/collect(datum/eldritch_knowledge/base_blood/blood, mob/living/user, mob/living/victim)
+	victim.adjustBruteLoss(-victim.getBruteLoss())
+	victim.SetImmobilized(0)
+	if(!blood.release(user, victim) || !blood.release(user, victim))
+		return FALSE
+	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	seal.collection_ready_at = world.time
+	return seal.detonate()
+
+/// Взыскание с должника на свежей крови бьёт шипом из лужи: лужа уходит в шип, должник на секунду прибит; помеченная лужа остаётся меткой, след Скользкой крови тоже годится; без крови шипа нет.
+/datum/unit_test/heretic_blood_pool_spike/Run()
+	var/turf/start = run_loc_floor_bottom_left
+	var/datum/antagonist/heretic/heretic = allocate_heretic(start)
+	heretic.selected_path = PATH_BLOOD
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/mob/living/carbon/human/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/turf/spot = locate(start.x + 2, start.y, start.z)
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, spot)
+	TEST_ASSERT(collect(blood, user, victim), "Взыскание с должника без крови под ногами.")
+	TEST_ASSERT(!victim.IsImmobilized(), "Без крови под ногами должник не прибит.")
+	TEST_ASSERT_NULL(locate(/obj/effect/temp_visual/heretic_blood/lance) in spot, "Без крови шип не бьёт.")
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/temp_visual/heretic_blood/burst) in spot, "Обычное взыскание - выброс крови.")
+	var/obj/effect/decal/cleanable/blood/pool = blood_tide_stain(spot)
+	TEST_ASSERT(collect(blood, user, victim), "Взыскание с должника на крови.")
+	TEST_ASSERT(victim.IsImmobilized(), "Шип из лужи прибивает должника.")
+	TEST_ASSERT(abs(victim.AmountImmobilized() - HERETIC_BLOOD_SPIKE_PIN) <= 1, "Должник прибит на секунду: [victim.AmountImmobilized()] дс.")
+	TEST_ASSERT_NOTNULL(locate(/obj/effect/temp_visual/heretic_blood/lance) in spot, "Из лужи бьёт шип.")
+	TEST_ASSERT(QDELETED(pool), "Лужа ушла в шип.")
+	var/obj/effect/decal/cleanable/blood/marked = blood_tide_stain(spot, donor = "blood spike donor")
+	user.a_intent = INTENT_HELP
+	TEST_ASSERT(blood.read_blood(user, marked), "Лужа под должником помечена.")
+	TEST_ASSERT(collect(blood, user, victim), "Взыскание на помеченной луже.")
+	TEST_ASSERT(victim.IsImmobilized(), "Помеченная лужа тоже бьёт шипом.")
+	TEST_ASSERT(!QDELETED(marked) && (marked in blood.signs), "Метка на луже остаётся.")
+	blood.unmark_sign(marked)
+	qdel(marked)
+	var/obj/effect/heretic_blood_slick/slick = new(spot, user, NORTH)
+	TEST_ASSERT(collect(blood, user, victim), "Взыскание на следе Скользкой крови.")
+	TEST_ASSERT(victim.IsImmobilized(), "След Скользкой крови тоже бьёт шипом.")
+	TEST_ASSERT(QDELETED(slick), "След ушёл в шип.")
+	var/obj/effect/decal/cleanable/blood/old/dried = blood_tide_stain(spot, /obj/effect/decal/cleanable/blood/old)
+	TEST_ASSERT(collect(blood, user, victim), "Взыскание на засохшей крови.")
+	TEST_ASSERT(!victim.IsImmobilized(), "Засохшая кровь шипа не даёт.")
+	TEST_ASSERT(!QDELETED(dried), "Засохшая кровь остаётся.")
+
+/// Взыскание бьёт мокрым ударом из трёх вариантов, сердце под Кровопусканием - обычным ударом, к концу тяжёлым.
+/datum/unit_test/heretic_blood_sounds/Run()
+	TEST_ASSERT_EQUAL(length(uniqueList(GLOB.heretic_blood_collect_sounds)), 3, "У взыскания три разных варианта удара.")
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_BLOOD
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
+	TEST_ASSERT(blood.collect_sound() in GLOB.heretic_blood_collect_sounds, "Взыскание берёт удар из набора.")
+	TEST_ASSERT_EQUAL(length(uniqueList(GLOB.heretic_blood_heartbeat_sounds)), 2, "У сердца два удара: обычный и тяжёлый.")
+	var/first_beat = heretic_blood_beat_sound(0)
+	var/last_beat = heretic_blood_beat_sound(1)
+	TEST_ASSERT((first_beat in GLOB.heretic_blood_heartbeat_sounds) && (last_beat in GLOB.heretic_blood_heartbeat_sounds), "Удары сердца из набора.")
+	TEST_ASSERT(first_beat != last_beat, "К концу Кровопускания сердце бьёт тяжелее.")
+
+/// Каждый рисунок, который показывает код пути, есть в листе эффектов Крови.
+/datum/unit_test/heretic_blood_effect_states/Run()
+	var/list/states = icon_states('modular_bluemoon/icons/obj/heretic_blood_effects.dmi')
+	for(var/state in list("blood_grasp", "blood_mark", "blood_seal", "blood_lance", "blood_pact", "blood_burst", "blood_warning", "blood_reckoning", "blood_link", "blood_slick", "blood_snare"))
+		TEST_ASSERT(state in states, "В листе эффектов Крови есть [state].")
+
+/// Метка отсрочки лежит поверх фигуры своим рисунком, а печать кровной связи остаётся своей.
+/datum/unit_test/heretic_blood_mark_on_body/Run()
+	var/datum/status_effect/eldritch/blood/mark = /datum/status_effect/eldritch/blood
+	TEST_ASSERT_EQUAL(initial(mark.effect_sprite_layer), ABOVE_MOB_LAYER, "Метка Крови лежит поверх тела.")
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_BLOOD
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/mob/living/user = heretic.owner.current
+	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/mob/living/victim = blood_minded_victim(get_step(user, EAST))
+	TEST_ASSERT(blood.release(user, victim), "Связь создана.")
+	var/datum/status_effect/heretic_blood_seal/seal = victim.has_status_effect(/datum/status_effect/heretic_blood_seal)
+	TEST_ASSERT_EQUAL(seal.seal_overlay.icon_state, "blood_seal", "Связь рисуется печатью связи.")
+	TEST_ASSERT(initial(mark.effect_sprite) != seal.seal_overlay.icon_state, "Метка и связь рисуются разными стейтами.")
+
+/// Телеграф взыскания, удар приговора, разрыв связи и выпитая лужа звучат своими файлами, не повторяя другие звуки Крови.
+/datum/unit_test/heretic_blood_cue_sounds/Run()
+	var/list/others = GLOB.heretic_blood_collect_sounds + GLOB.heretic_blood_heartbeat_sounds + list(
+		'modular_bluemoon/sound/heretic/blood_reckoning.ogg',
+		'modular_bluemoon/sound/heretic/blood_release.ogg',
+		'modular_bluemoon/sound/heretic/blood_drink.ogg',
+		'modular_bluemoon/sound/heretic/blood_bind.ogg',
+		'modular_bluemoon/sound/heretic/blood_grasp.ogg',
+	)
+	var/list/seen = list()
+	for(var/cue in list("warning", "verdict", "sever", "absorb"))
+		var/sound_file = GLOB.heretic_blood_cue_sounds[cue]
+		TEST_ASSERT(isfile(sound_file), "У события [cue] есть звук.")
+		TEST_ASSERT(!(sound_file in others), "[cue] не повторяет другой звук Крови.")
+		TEST_ASSERT(!seen["[sound_file]"], "[cue] и [seen["[sound_file]"]] звучат одним файлом.")
+		seen["[sound_file]"] = cue
+	var/datum/antagonist/heretic/heretic = allocate_heretic()
+	heretic.selected_path = PATH_BLOOD
+	heretic.gain_knowledge(/datum/eldritch_knowledge/base_blood)
+	var/datum/eldritch_knowledge/base_blood/blood = heretic.get_knowledge(/datum/eldritch_knowledge/base_blood)
+	TEST_ASSERT(blood.collect_sound() in GLOB.heretic_blood_collect_sounds, "Обычное взыскание бьёт ударом из набора.")
+	TEST_ASSERT_EQUAL(blood.collect_sound(verdict = TRUE), GLOB.heretic_blood_cue_sounds["verdict"], "Кровный приговор бьёт своим ударом.")

@@ -56,7 +56,7 @@ There are several things that need to be remembered:
 //HAIR OVERLAY
 /mob/living/carbon/human/update_hair()
 	if(!HAS_TRAIT(src, TRAIT_HUMAN_NO_RENDER))
-		dna.species.handle_hair(src)
+		dna?.species?.handle_hair(src)
 
 ///Глубина отсрочки пересборки мутантных частей тела. Пока больше нуля,
 ///update_mutant_bodyparts() только помечает заявку. Полная перерисовка
@@ -79,10 +79,14 @@ There are several things that need to be remembered:
 /mob/living/carbon/human/update_body(update_genitals = FALSE, block_recursive_calls = FALSE)
 	if(!HAS_TRAIT(src, TRAIT_HUMAN_NO_RENDER))
 		remove_overlay(BODY_LAYER)
-		dna.species.handle_body(src, block_recursive_calls)
+		dna?.species?.handle_body(src, block_recursive_calls)
 		..()
 		if(update_genitals)
 			update_genitals()
+
+/mob/living/carbon/human/set_plane_offset(new_offset)
+	. = ..()
+	update_genitals()
 
 /mob/living/carbon/human/update_fire()
 	..((fire_stacks > 3) ? "Standing" : "Generic_mob_burning")
@@ -1043,8 +1047,10 @@ use_mob_overlay_icon: if FALSE, it will always use the default_icon_file even if
 
 
 //produces a key based on the human's limbs
-/mob/living/carbon/human/generate_icon_render_key()
+/mob/living/carbon/human/generate_icon_render_key(plane_offset = LIMB_PLANE_OFFSET(src))
 	. = "[dna.species.mutant_bodyparts["limbs_id"]]"
+	if(plane_offset)
+		. += "-floor[plane_offset]"
 	. += "[dna.features["color_scheme"]]"
 
 	if(dna.check_mutation(HULK))

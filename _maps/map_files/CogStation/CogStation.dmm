@@ -6576,7 +6576,7 @@
 /turf/open/floor/wood,
 /area/service/lawoffice)
 "atb" = (
-/obj/machinery/bountyvend/plus,
+/obj/machinery/equipment_vendor/vanguard,
 /turf/open/floor/plasteel,
 /area/command/gateway)
 "atc" = (
@@ -25289,9 +25289,6 @@
 	dir = 4;
 	alpha = 150
 	},
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	name = "low pressure supply"
 	},
@@ -35651,9 +35648,6 @@
 /obj/effect/turf_decal/tile/purple{
 	dir = 8;
 	alpha = 150
-	},
-/obj/structure/cable{
-	icon_state = "2-4"
 	},
 /obj/structure/cable{
 	icon_state = "2-4"
@@ -55684,15 +55678,6 @@
 	},
 /turf/open/floor/plating,
 /area/maintenance/starboard/aft)
-"eVT" = (
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/turf/open/floor/engine,
-/area/engineering/supermatter)
 "eWs" = (
 /obj/structure/cable{
 	icon_state = "2-4"
@@ -61294,7 +61279,7 @@
 /turf/open/floor/plasteel/dark,
 /area/science/xenobiology)
 "hnA" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /obj/effect/turf_decal/tile/brown{
 	dir = 8;
 	alpha = 150
@@ -72625,9 +72610,6 @@
 	},
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 1
-	},
-/obj/structure/cable{
-	icon_state = "4-8"
 	},
 /turf/open/floor/plasteel/dark,
 /area/security/prison/mess)
@@ -94889,9 +94871,6 @@
 /turf/open/floor/plasteel,
 /area/maintenance/port/fore)
 "tjr" = (
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
@@ -157691,7 +157670,7 @@ whg
 bUa
 rRT
 cgz
-eVT
+cgz
 cgz
 rRT
 pIf

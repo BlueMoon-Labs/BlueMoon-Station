@@ -71,6 +71,7 @@ htmlcov/
 .coverage
 .coverage.*
 .cache
+tools/loadout_crypto/node_path.txt
 nosetests.xml
 coverage.xml
 .hypothesis/
@@ -178,6 +179,7 @@ Temporary Items
 #extra map stuff
 /_maps/**/backup/
 /_maps/templates.dm
+/_maps/map_files/generic/CentCom_hermetic.dmm
 
 #dmdoc default folder
 /dmdoc

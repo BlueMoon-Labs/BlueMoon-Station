@@ -1,3 +1,14 @@
+/// Реестр скафандров, которые для оказания первой помощи считаются обычной бронёй.
+/// Медицина сквозь них проходит (хоть и медленнее, чем на голом теле), как сквозь бронежилет.
+GLOBAL_LIST_INIT(medical_armor_as_regular_list, typecacheof(list(
+	/obj/item/clothing/suit/space/pirate,
+	/obj/item/clothing/head/helmet/space/pirate,
+)))
+
+/// Возвращает TRUE, если одежда числится в реестре скафандров, считающихся обычной бронёй для медицины
+/proc/is_medical_armor_as_regular(obj/item/clothing/covering)
+	return covering && is_type_in_typecache(covering, GLOB.medical_armor_as_regular_list)
+
 /obj/item/stack/medical
 	name = "medical pack"
 	singular_name = "medical pack"
@@ -29,6 +40,10 @@
 	var/heal_dead_multiplier = 1 // Эффективность лечения мёртвых
 	/// Игнорирование БРОНИ. Не забывайте, пожалуйста, добавлять bypass_armor = TRUE в предметы, которые должны игнорвироать броню. Т.е. скафандры/= броня.
 	var/bypass_armor = FALSE
+	/// Множитель задержки применения, если лечимая зона защищена бронёй
+	var/armored_delay_multiplier = 1
+	/// Множитель задержки применения на голом теле (без брони)
+	var/bare_delay_multiplier = 1
 
 /obj/item/stack/medical/attack(mob/living/M, mob/user)
 	. = ..()
@@ -128,7 +143,7 @@
 	if(patient == user)
 		if(!silent)
 			user.visible_message("<span class='notice'>[user] начинает наносить \the [src] на себя...</span>", "<span class='notice'>Вы начали наносить \the [src] на себя...</span>")
-		if(!do_mob(user, patient, self_delay * (auto_change_zone ? 1 : 0.9), extra_checks=CALLBACK(src, PROC_REF(can_heal), patient, user, healed_zone)))
+		if(!do_mob(user, patient, self_delay * (auto_change_zone ? 1 : 0.9) * get_heal_delay_multiplier(patient, healed_zone), extra_checks=CALLBACK(src, PROC_REF(can_heal), patient, user, healed_zone)))
 			return
 		if(!auto_change_zone)
 			healed_zone = check_zone(user.zone_selected)
@@ -137,7 +152,7 @@
 	else if(other_delay)
 		if(!silent)
 			user.visible_message("<span class='notice'>[user] начинает наносить \the [src] на [patient].</span>", "<span class='notice'>Вы начали наносить \the [src] на [patient]...</span>")
-		if(!do_mob(user, patient, other_delay * (auto_change_zone ? 1 : 0.9), extra_checks=CALLBACK(src, PROC_REF(can_heal), patient, user, healed_zone)))
+		if(!do_mob(user, patient, other_delay * (auto_change_zone ? 1 : 0.9) * get_heal_delay_multiplier(patient, healed_zone), extra_checks=CALLBACK(src, PROC_REF(can_heal), patient, user, healed_zone)))
 			return
 		if(!auto_change_zone)
 			healed_zone = check_zone(user.zone_selected)
@@ -232,12 +247,25 @@
 		var/obj/item/bodypart/BP = H.get_bodypart(healed_zone)
 		if(BP)
 			var/obj/item/clothing/covering = get_bodypart_protecting_clothing_by_coverage(H, BP)
-			if(covering && (covering.clothing_flags & THICKMATERIAL) && istype(covering, /obj/item/clothing/suit/space) && !istype(covering, /obj/item/clothing/suit/space/space_ninja))
+			if(covering && (covering.clothing_flags & THICKMATERIAL) && istype(covering, /obj/item/clothing/suit/space) && !istype(covering, /obj/item/clothing/suit/space/space_ninja) && !is_medical_armor_as_regular(covering))
 				if(!silent)
 					patient.balloon_alert(user, "[ru_parse_zone(healed_zone)] закрыта скафандром!")
 				return FALSE
 		return patient.can_inject(user, !silent, healed_zone, penetrate_thick = TRUE, bypass_immunity = TRUE)
 	return patient.can_inject(user, !silent, healed_zone, bypass_immunity = TRUE)
+
+/// Возвращает множитель задержки применения в зависимости от того, защищена ли лечимая зона бронёй
+/obj/item/stack/medical/proc/get_heal_delay_multiplier(mob/living/patient, healed_zone)
+	if(!ishuman(patient))
+		return 1
+	var/mob/living/carbon/human/H = patient
+	var/obj/item/bodypart/BP = H.get_bodypart(healed_zone)
+	if(!BP)
+		return 1
+	var/obj/item/clothing/covering = get_bodypart_protecting_clothing_by_coverage(H, BP)
+	if(covering && (covering.clothing_flags & THICKMATERIAL))
+		return armored_delay_multiplier
+	return bare_delay_multiplier
 
 /obj/item/stack/medical/proc/has_healable_damage(mob/living/carbon/patient)
 	if(heal_brute && patient.getBruteLoss_nonProsthetic() > 0)
@@ -426,6 +454,7 @@
 	heal_brute = 5
 	heal_burn = 5
 	bypass_armor = TRUE // Лечит сквозь бронежилеты, но не сквозь скафандры.
+	armored_delay_multiplier = 1.5 // Под бронёй перевязываем в полтора раза дольше.
 	self_delay = 50
 	other_delay = 20
 	amount = 15
@@ -506,7 +535,7 @@
 		M.balloon_alert(user, pick("уже перевязано!", "повязка чистая!"))
 		return
 
-	var/treatment_delay = (user == M ? self_delay : other_delay)
+	var/treatment_delay = (user == M ? self_delay : other_delay) * get_heal_delay_multiplier(M, healed_zone)
 	user.visible_message(
 		"<span class='warning'>[user] пытается перевязать рану на [limb.ru_name_v] персонажа [M] с помощью [src]...</span>",
 		"<span class='warning'>Вы пытаетесь перевязать раны на [user == M ? "вашей [limb.ru_name_v]" : "[limb.ru_name_v] персонажа [M]"] с помощью [src]...</span>",
@@ -604,8 +633,11 @@
 	singular_name = "sterilized medical gauze"
 	desc = "Моток эластичной стерилизованной ткани. Экстремально эффективна для остановки кровотечений и стабилизации ожогов."
 	icon = 'icons/obj/medical/stack_medical.dmi'
-	icon_state = "gauze"
-	heal_brute = 7
+	icon_state = "gauze_adv"
+	heal_brute = 10
+	heal_burn = 10
+	armored_delay_multiplier = 1 // Под бронёй шила с обычной скоростью.
+	bare_delay_multiplier = 0.75 // На голом теле — на четверть быстрее.
 	self_delay = 45
 	other_delay = 15
 	absorption_rate = 0.175
@@ -636,6 +668,7 @@
 	max_amount = 15
 	repeating = TRUE
 	bypass_armor = TRUE // Лечит сквозь бронежилеты, но не сквозь скафандры.
+	armored_delay_multiplier = 1.5 // Под бронёй шила в полтора раза дольше.
 	heal_brute = 13
 	stop_bleeding = 0.6
 	grind_results = list(/datum/reagent/medicine/spaceacillin = 2)
@@ -663,6 +696,8 @@
 	heal_dead = TRUE
 	heal_dead_multiplier = 0.65
 	bypass_armor = TRUE // Лечит сковозь броню.
+	armored_delay_multiplier = 1 // Под бронёй шила с обычной скоростью.
+	bare_delay_multiplier = 0.75 // На голом теле — на четверть быстрее.
 
 /obj/item/stack/medical/suture/medicated/one
 	amount = 1
@@ -705,6 +740,7 @@
 	heal_burn = 13
 	repeating = TRUE
 	bypass_armor = TRUE // Лечит сквозь бронежилеты, но не сквозь скафандры.
+	armored_delay_multiplier = 1.5 // Под бронёй шила в полтора раза дольше.
 	sanitization = 0.75
 	flesh_regeneration = 3
 	var/is_open = TRUE /// Эта переменная определяет, была ли открыта стерильная упаковка сетки.
@@ -729,6 +765,8 @@
 	heal_dead = TRUE
 	heal_dead_multiplier = 0.65
 	bypass_armor = TRUE // Лечит сквозь броню.
+	armored_delay_multiplier = 1 // Под бронёй шила с обычной скоростью.
+	bare_delay_multiplier = 0.75 // На голом теле — на четверть быстрее.
 
 /obj/item/stack/medical/mesh/advanced/one
 	amount = 1

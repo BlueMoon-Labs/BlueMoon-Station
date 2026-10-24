@@ -60,7 +60,7 @@ export const NumberInputModal = (_) => {
         <Section fill>
           <Stack fill vertical>
             <Stack.Item grow>
-            <Box color="label" preserveWhitespace> {message} </Box>
+            <Box color="label" preserveWhitespace>{message}</Box>
             </Stack.Item>
             <Stack.Item>
               <InputArea input={input} onClick={onClick} onChange={onChange} />

@@ -7,7 +7,7 @@
 
 /obj/machinery/power/rad_collector
 	name = "Radiation Collector Array"
-	desc = "A device which uses Hawking Radiation and plasma to produce power."
+	desc = "Преобразователь энергии, работающий на принципе хокинговского излучения и энергосвойств плазмы. Оснащён научным оборудованием для соответствующих исследований."
 	icon = 'icons/obj/singularity.dmi'
 	icon_state = "ca"
 	anchored = FALSE
@@ -53,7 +53,7 @@
 		if(loaded_tank.air_contents.get_moles(GAS_PLASMA) < 0.0001)
 			investigate_log("<font color='red'>out of fuel</font>.", INVESTIGATE_SINGULO)
 			playsound(src, 'sound/machines/ding.ogg', 50, 1)
-			Radio.talk_into(src, "Insufficient plasma in [get_area(src)] [src], ejecting \the [loaded_tank].", FREQ_ENGINEERING)
+			Radio.talk_into(src, "Недостаточно плазмы в [get_area(src)] [src], наружу извлекается \the [loaded_tank].", FREQ_ENGINEERING)
 			eject()
 		else
 			var/gasdrained = min(powerproduction_drain*drainratio,loaded_tank.air_contents.get_moles(GAS_PLASMA))
@@ -66,7 +66,7 @@
 	else if(is_station_level(z) && SSresearch.science_tech)
 		if(!loaded_tank.air_contents.get_moles(GAS_TRITIUM) || !loaded_tank.air_contents.get_moles(GAS_O2))
 			playsound(src, 'sound/machines/ding.ogg', 50, 1)
-			Radio.talk_into(src, "Insufficient oxygen and tritium in [get_area(src)] [src] to produce research points, ejecting \the [loaded_tank].", FREQ_ENGINEERING)
+			Radio.talk_into(src, "Недостаточно тритий-кислородной смеси в [get_area(src)] [src] для производства научных очков, наружу извлекается \the [loaded_tank].", FREQ_ENGINEERING)
 			eject()
 		else
 			var/gasdrained = bitcoinproduction_drain*drainratio
@@ -85,19 +85,19 @@
 	if(anchored)
 		if(!src.locked)
 			toggle_power()
-			user.visible_message("[user.name] turns the [src.name] [active? "on":"off"].", \
-			"<span class='notice'>You turn the [src.name] [active? "on":"off"].</span>")
+			user.visible_message("[user.name] [active? "вк":"вык"]лючает [src.name].", \
+			span_notice("Вы [active? "вк":"вык"]лючили [src.name]."))
 			var/fuel = loaded_tank?.air_contents.get_moles(GAS_PLASMA)
 			investigate_log("turned [active?"<font color='green'>on</font>":"<font color='red'>off</font>"] by [key_name(user)]. [loaded_tank?"Fuel: [round(fuel/0.29)]%":"<font color='red'>It is empty</font>"].", INVESTIGATE_SINGULO)
 			return
 		else
-			to_chat(user, "<span class='warning'>The controls are locked!</span>")
+			to_chat(user, span_warning("Механизмы коллектора заблокированы!"))
 			return
 
 /obj/machinery/power/rad_collector/can_be_unfasten_wrench(mob/user, silent)
 	if(loaded_tank)
 		if(!silent)
-			to_chat(user, "<span class='warning'>Remove the plasma tank first!</span>")
+			to_chat(user, span_warning("Для начала извлеките газовый бак!"))
 		return FAILED_UNFASTEN
 	return ..()
 
@@ -112,13 +112,13 @@
 /obj/machinery/power/rad_collector/attackby(obj/item/W, mob/user, params)
 	if(istype(W, /obj/item/tank/internals/plasma))
 		if(!anchored)
-			to_chat(user, "<span class='warning'>[src] needs to be secured to the floor first!</span>")
+			to_chat(user, span_warning("Для начала [src] нужно надёжно прикрепить к поверхности!"))
 			return TRUE
 		if(loaded_tank)
-			to_chat(user, "<span class='warning'>There's already a plasma tank loaded!</span>")
+			to_chat(user, span_warning("Внутри уже вставлен газовый бак!"))
 			return TRUE
 		if(panel_open)
-			to_chat(user, "<span class='warning'>Close the maintenance panel first!</span>")
+			to_chat(user, span_warning("Для начала закройте панель техобслуживания!"))
 			return TRUE
 		if(!user.transferItemToLoc(W, src))
 			return
@@ -128,11 +128,11 @@
 		if(allowed(user))
 			if(active)
 				locked = !locked
-				to_chat(user, "<span class='notice'>You [locked ? "lock" : "unlock"] the controls.</span>")
+				to_chat(user, span_notice("Вы [locked ? "за" : "раз"]блокировали коллектор."))
 			else
-				to_chat(user, "<span class='warning'>The controls can only be locked when \the [src] is active!</span>")
+				to_chat(user, span_warning("Механизмы устройства могут быть заблокированы только во время работы [src]!"))
 		else
-			to_chat(user, "<span class='danger'>Доступ запрещён.</span>")
+			to_chat(user, span_danger("Доступ запрещён."))
 			return TRUE
 	else
 		return ..()
@@ -145,7 +145,7 @@
 	if(..())
 		return TRUE
 	if(loaded_tank)
-		to_chat(user, "<span class='warning'>Remove the plasma tank first!</span>")
+		to_chat(user, span_warning("Для начала извлеките газовый бак!"))
 	else
 		default_deconstruction_screwdriver(user, icon_state, icon_state, I)
 	return TRUE
@@ -153,27 +153,27 @@
 /obj/machinery/power/rad_collector/crowbar_act(mob/living/user, obj/item/I)
 	if(loaded_tank)
 		if(locked)
-			to_chat(user, "<span class='warning'>The controls are locked!</span>")
+			to_chat(user, span_warning("Механизмы коллектора заблокированы!"))
 			return TRUE
 		eject()
 		return TRUE
 	if(default_deconstruction_crowbar(I))
 		return TRUE
-	to_chat(user, "<span class='warning'>There isn't a tank loaded!</span>")
+	to_chat(user, span_warning("Отсутствует бак с газом!"))
 	return TRUE
 
 /obj/machinery/power/rad_collector/multitool_act(mob/living/user, obj/item/I)
 	if(!is_station_level(z) && !SSresearch.science_tech)
-		to_chat(user, "<span class='warning'>[src] isn't linked to a research system!</span>")
+		to_chat(user, span_warning("[src] не имеет связи с исследовательской системой!"))
 		return TRUE
 	if(locked)
-		to_chat(user, "<span class='warning'>[src] is locked!</span>")
+		to_chat(user, span_warning("Механизмы коллектора заблокированы!"))
 		return TRUE
 	if(active)
-		to_chat(user, "<span class='warning'>[src] is currently active, producing [bitcoinmining ? "research points":"power"].</span>")
+		to_chat(user, span_warning("[src] в процессе работы, идёт выработка [bitcoinmining ? "очков исследования" : "энергии"]."))
 		return TRUE
 	bitcoinmining = !bitcoinmining
-	to_chat(user, "<span class='warning'>You [bitcoinmining ? "enable":"disable"] the research point production feature of [src].</span>")
+	to_chat(user, span_warning("Вы [bitcoinmining ? "вк":"вык"]лючили исследовательский функционал коллектора."))
 	return TRUE
 
 /obj/machinery/power/rad_collector/analyzer_act(mob/living/user, obj/item/I)
@@ -189,16 +189,24 @@
 
 /obj/machinery/power/rad_collector/examine(mob/user)
 	. = ..()
+	if(!active)
+		if(!bitcoinmining)
+			. += span_notice("<b>Таблоид коллектора сообщает:</b>\n\
+			\"Включён режим производства энергии. Пожалуйста, вставьте бак с <b>плазмой</b>. Используйте мультитул для смены режима работы.\"")
+		else
+			. += span_notice("– <b>Таблоид коллектора сообщает:</b>\n\
+			\"Включён режим производства научных очков. Пожалуйста, вставьте бак с <b>тритием</b> и <b>кислородом</b>. Используйте мультитул для смены режима работы.\"")
+
+/obj/machinery/power/rad_collector/examine_display_content()
 	if(active)
 		if(!bitcoinmining)
-			. += "<span class='notice'>[src]'s display states that it has stored <b>[DisplayEnergy(stored_power)]</b>, and is processing <b>[DisplayPower((RAD_COLLECTOR_OUTPUT)*((1 SECONDS)/SSmachines.wait))]</b>. <br>The <b>plasma</b> within it's tank is being irradiated into <b>tritium</b>.</span>"
+			. += "\
+			– Хранится <b>[DisplayEnergy(stored_power)]</b>, обрабатывается <b>[DisplayPower((RAD_COLLECTOR_OUTPUT)*((1 SECONDS)/SSmachines.wait))]</b> энергии от излучения.\n\
+			– <b>Плазма</b> внутри бака радиотрансмутируется в <b>тритий</b>."
 		else
-			. += "<span class='notice'>[src]'s display states that it's producing a total of <b>[(last_push*RAD_COLLECTOR_MINING_CONVERSION_RATE)*((60 SECONDS)/SSmachines.wait)]</b> research points per minute. <br>The <b>tritium</b> and <b>oxygen</b> within it's tank is being combusted into <b>carbon dioxide</b>.</span>"
-	else
-		if(!bitcoinmining)
-			. += "<span class='notice'><b>[src]'s display displays the words:</b> \"Power production mode. Please insert <b>Plasma</b>. Use a multitool to change production modes.\"</span>"
-		else
-			. += "<span class='notice'><b>[src]'s display displays the words:</b> \"Research point production mode. Please insert <b>Tritium</b> and <b>Oxygen</b>. Use a multitool to change production modes.\"</span>"
+			. += "\
+			– Производится <b>[(last_push*RAD_COLLECTOR_MINING_CONVERSION_RATE)*((60 SECONDS)/SSmachines.wait)]</b> научных очков в минуту.\n\
+			– <b>Тритий</b> и <b>кислород</b> внутри бака сжигаются в <b>углекислый газ</b>."
 
 /obj/machinery/power/rad_collector/obj_break(damage_flag)
 	if(!(machine_stat & BROKEN) && !(flags_1 & NODECONSTRUCT_1))
@@ -212,7 +220,7 @@
 		return
 	Z.forceMove(drop_location())
 	Z.layer = initial(Z.layer)
-	Z.plane = initial(Z.plane)
+	RESET_PLANE_EXPLICIT(Z, Z)
 	src.loaded_tank = null
 	if(active)
 		toggle_power()

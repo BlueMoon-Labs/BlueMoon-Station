@@ -1802,7 +1802,7 @@
 /turf/open/floor/grass/grass0,
 /area/survivalpod)
 "TB" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /turf/open/floor/pod/dark,
 /area/survivalpod)
 "TC" = (

@@ -189,7 +189,7 @@
 	if(iscarbon(owner))
 		var/mob/living/carbon/C = owner
 		var/held_index = C.get_held_index_of_item(src)
-		var/obj/item/bodypart/BP = C.hand_bodyparts[held_index]
+		var/obj/item/bodypart/BP = held_index ? C.hand_bodyparts[held_index] : null
 		if(!BP?.body_zone)
 			return C.adjustStaminaLoss(stamina_amount)		//nah
 		var/zone = BP.body_zone

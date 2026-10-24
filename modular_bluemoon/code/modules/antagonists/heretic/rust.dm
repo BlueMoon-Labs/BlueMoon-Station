@@ -39,6 +39,14 @@
 #define HERETIC_RUST_HEART_BREAK_SOUND_RANGE 10
 #define HERETIC_RUST_WAVE_VOLUME 80
 #define HERETIC_RUST_WAVE_SOUND_RANGE 5
+#define HERETIC_RUST_WAVE_COLLAPSE_VOLUME 70
+#define HERETIC_RUST_ROOTS_RELEASE_VOLUME 45
+#define HERETIC_RUST_FX_ICON 'modular_bluemoon/icons/obj/heretic_rust_fx.dmi'
+#define HERETIC_RUST_ROOTS_GROW (1 SECONDS)
+#define HERETIC_RUST_ROOTS_VOLUME 50
+#define HERETIC_RUST_PRY_VOLUME 50
+#define HERETIC_RUST_FORMATION_VOLUME 60
+#define HERETIC_RUST_FORMATION_FALL (1 SECONDS)
 
 GLOBAL_LIST_INIT(heretic_rust_heart_rise_sounds, list(
 	'modular_bluemoon/sound/heretic/rust_heart_rise_1.ogg',
@@ -54,6 +62,23 @@ GLOBAL_LIST_INIT(heretic_rust_heart_break_sounds, list(
 	'modular_bluemoon/sound/heretic/rust_heart_break_1.ogg',
 	'modular_bluemoon/sound/heretic/rust_heart_break_2.ogg',
 	'modular_bluemoon/sound/heretic/rust_heart_break_3.ogg',
+))
+GLOBAL_LIST_INIT(heretic_rust_grasp_sounds, list(
+	'modular_bluemoon/sound/heretic/rust_grasp_1.ogg',
+	'modular_bluemoon/sound/heretic/rust_grasp_2.ogg',
+	'modular_bluemoon/sound/heretic/rust_grasp_3.ogg',
+))
+GLOBAL_LIST_INIT(heretic_rust_root_sounds, list(
+	'modular_bluemoon/sound/heretic/rust_root_1.ogg',
+	'modular_bluemoon/sound/heretic/rust_root_2.ogg',
+))
+GLOBAL_LIST_INIT(heretic_rust_mark_sounds, list(
+	'modular_bluemoon/sound/heretic/rust_mark_1.ogg',
+	'modular_bluemoon/sound/heretic/rust_mark_2.ogg',
+))
+GLOBAL_LIST_INIT(heretic_rust_formation_sounds, list(
+	'modular_bluemoon/sound/heretic/rust_formation_1.ogg',
+	'modular_bluemoon/sound/heretic/rust_formation_2.ogg',
 ))
 GLOBAL_LIST_INIT(heretic_rust_wave_sounds, list(
 	'modular_bluemoon/sound/heretic/rust_wave_1.ogg',
@@ -181,16 +206,412 @@ GLOBAL_LIST_INIT(heretic_rust_wave_sounds, list(
 /datum/eldritch_knowledge/base_rust/pocket_door(mob/living/user, mob/living/victim)
 	if(!door_holds(user, victim))
 		return null
-	return list("name" = "в очаг", "text" = "Ржавый пол под [victim] расходится, как гнилая доска.", "time" = HERETIC_POCKET_PULL_TIME, "check" = CALLBACK(src, PROC_REF(door_holds), user, victim))
+	var/list/door = list("name" = "в очаг", "text" = "Ржавый пол под [victim] расходится, как гнилая доска.", "time" = HERETIC_POCKET_PULL_TIME, "check" = CALLBACK(src, PROC_REF(door_holds), user, victim))
+	if(rooted_hold(victim))
+		door["remote"] = TRUE
+	return door
 
-/// Готовая цель на ржавом полу в границе своего очага, еретик рядом с ней.
+/// Готовая цель на ржавом полу в границе своего очага; еретик рядом с ней, а с пленником корней - на любой клетке того же очага.
 /datum/eldritch_knowledge/base_rust/proc/door_holds(mob/living/user, mob/living/victim)
-	if(!door_user_ready(user) || QDELETED(victim) || !isturf(victim.loc) || victim.z != user.z || get_dist(user, victim) > 1)
+	if(!door_user_ready(user) || QDELETED(victim) || !isturf(victim.loc) || victim.z != user.z)
 		return FALSE
-	if(!istype(victim.loc, /turf/open/floor/plating/rust) || !door_zone_under(victim, /obj/effect/heretic_combat_zone/rust))
+	if(!istype(victim.loc, /turf/open/floor/plating/rust))
+		return FALSE
+	var/obj/effect/heretic_combat_zone/rust/hearth = door_zone_under(victim, /obj/effect/heretic_combat_zone/rust)
+	if(!hearth)
+		return FALSE
+	if(get_dist(user, victim) > 1 && !(rooted_hold(victim) && (user.loc in hearth.field_turfs)))
 		return FALSE
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
 	return heretic.hunt_target_ready(victim)
+
+/datum/eldritch_knowledge/base_rust
+	var/list/roots = list()
+	var/roots_failure
+
+/datum/eldritch_knowledge/base_rust/Destroy()
+	release_roots()
+	return ..()
+
+/datum/eldritch_knowledge/base_rust/on_death(mob/user)
+	release_roots()
+	return ..()
+
+/datum/eldritch_knowledge/base_rust/proc/release_roots()
+	QDEL_LIST(roots)
+
+/datum/eldritch_knowledge/base_rust/proc/rooted_hold(mob/living/victim)
+	for(var/datum/status_effect/heretic_rust_roots/hold as anything in roots)
+		if(hold.owner == victim)
+			return hold
+	return null
+
+/datum/eldritch_knowledge/base_rust/proc/roots_block_reason(mob/living/user, atom/target, check_ready = TRUE)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/required = heretic?.get_knowledge(/datum/eldritch_knowledge/spell/rust_roots)
+	if(!door_user_ready(user) || QDELETED(required))
+		return "Способность недоступна вашему пути или текущему телу."
+	var/reason = heretic_capture_block_reason(user, target, HERETIC_RUST_CAPTURE)
+	if(reason)
+		return reason
+	var/mob/living/victim = target
+	if(!isturf(victim.loc) || victim.z != user.z || get_dist(user, victim) > HERETIC_RUST_ROOTS_RANGE)
+		return "Цель должна лежать на полу не дальше [HERETIC_RUST_ROOTS_RANGE] клеток."
+	if(rooted_hold(victim))
+		return "Цель уже в корнях."
+	if(!istype(victim.loc, /turf/open/floor/plating/rust) || !door_zone_under(victim, /obj/effect/heretic_combat_zone/rust))
+		return "Корни растут только из ржавого пола в границе вашего очага."
+	if(check_ready && !heretic_capture_downed(victim))
+		return "Корни держат только сбитую с ног или обессиленную цель: сон и добровольный отдых сами по себе не в счёт."
+	return null
+
+/datum/eldritch_knowledge/base_rust/proc/start_roots(mob/living/user, mob/living/victim)
+	roots_failure = roots_block_reason(user, victim)
+	if(roots_failure)
+		return FALSE
+	var/turf/place = get_turf(victim)
+	new /obj/effect/temp_visual/heretic_rust_roots_sprout(place)
+	playsound(place, 'modular_bluemoon/sound/heretic/rust_roots.ogg', HERETIC_RUST_ROOTS_VOLUME, TRUE)
+	user.visible_message(span_danger("Ржавый пол под [victim] трескается, и к ногам ползут корни!"), span_notice("Корни ползут к [victim]."))
+	addtimer(CALLBACK(src, PROC_REF(seal_roots), user, victim, place), HERETIC_RUST_ROOTS_TELEGRAPH)
+	return TRUE
+
+/datum/eldritch_knowledge/base_rust/proc/seal_roots(mob/living/user, mob/living/victim, turf/place)
+	if(QDELETED(src) || QDELETED(user))
+		return FALSE
+	if(QDELETED(victim) || victim.loc != place)
+		heretic_refund_capture(user, /obj/effect/proc_holder/spell/pointed/rust_roots, "Цель ушла с клетки, и корни опали.")
+		return FALSE
+	var/reason = roots_block_reason(user, victim, check_ready = FALSE)
+	if(reason)
+		heretic_refund_capture(user, /obj/effect/proc_holder/spell/pointed/rust_roots, "Корни опали: [reason]")
+		return FALSE
+	if(!victim.apply_status_effect(/datum/status_effect/heretic_rust_roots, src, door_zone_under(victim, /obj/effect/heretic_combat_zone/rust)))
+		return FALSE
+	log_combat(user, victim, "оплетает Ржавыми корнями")
+	return TRUE
+
+/proc/heretic_rust_pry_tool(obj/item/tool)
+	if(tool?.tool_behaviour == TOOL_CROWBAR)
+		return TRUE
+	var/obj/item/weldingtool/welder = tool
+	return istype(welder) && welder.isOn()
+
+/proc/heretic_rust_pry_sound(obj/item/tool)
+	return tool.tool_behaviour == TOOL_CROWBAR ? 'sound/items/crowbar.ogg' : 'sound/items/welder.ogg'
+
+/datum/status_effect/heretic_rust_roots
+	id = "heretic_rust_roots"
+	duration = HERETIC_RUST_ROOTS_DURATION
+	tick_interval = -1
+	status_type = STATUS_EFFECT_UNIQUE
+	on_remove_on_mob_delete = TRUE
+	alert_type = /atom/movable/screen/alert/status_effect/heretic_rust_roots
+	examine_text = span_warning("SUBJECTPRONOUN врастает в ржавый пол: корни оплели ноги. Их рвёт нулевой жезл, а лом или зажжённая сварка - за 2 секунды; пленника можно растолкать.")
+	var/datum/weakref/rust_ref
+	var/obj/effect/heretic_combat_zone/rust/hearth
+	var/turf/rooted_turf
+	var/datum/status_effect/incapacitating/paralyzed/heretic_ritual/restraint
+	var/obj/effect/abstract/heretic_vfx_attached/roots_visual
+	var/held_since = 0
+	var/was_anchored = FALSE
+	var/applied = FALSE
+
+/datum/status_effect/heretic_rust_roots/on_creation(mob/living/new_owner, datum/eldritch_knowledge/base_rust/rust, obj/effect/heretic_combat_zone/rust/hold_zone)
+	rust_ref = WEAKREF(rust)
+	hearth = hold_zone
+	return ..()
+
+/datum/status_effect/heretic_rust_roots/on_apply()
+	. = ..()
+	var/datum/eldritch_knowledge/base_rust/rust = rust_ref?.resolve()
+	if(!. || !rust || QDELETED(hearth) || !isturf(owner.loc))
+		return FALSE
+	rust.roots += src
+	applied = TRUE
+	held_since = world.time
+	rooted_turf = owner.loc
+	owner.pulledby?.stop_pulling()
+	owner.buckled?.unbuckle_mob(owner, TRUE)
+	owner.stop_pulling()
+	was_anchored = owner.anchored
+	owner.set_anchored(TRUE)
+	// Свой экземпляр не продлевает и не снимает чужой паралич.
+	restraint = new(list(owner, HERETIC_RUST_ROOTS_DURATION, TRUE))
+	roots_visual = heretic_vfx_attach(owner, HERETIC_RUST_FX_ICON, "rust_roots_grow", fade_in = 0, glow = FALSE, upright = FALSE)
+	if(roots_visual)
+		roots_visual.vis_flags |= VIS_INHERIT_DIR
+		addtimer(CALLBACK(src, PROC_REF(settle_roots)), HERETIC_RUST_ROOTS_GROW)
+	RegisterSignal(owner, COMSIG_MOVABLE_MOVED, PROC_REF(on_owner_moved))
+	RegisterSignal(owner, COMSIG_PARENT_ATTACKBY, PROC_REF(on_attackby))
+	RegisterSignals(owner, list(COMSIG_LIVING_HERETIC_SACRIFICE_STARTING, COMSIG_LIVING_HERETIC_CAPTURE_SHAKEN, COMSIG_LIVING_DEATH), PROC_REF(end_roots))
+	RegisterSignal(hearth, COMSIG_PARENT_QDELETING, PROC_REF(end_roots))
+	heretic_capture_hold(owner, HERETIC_RUST_CAPTURE)
+	owner.visible_message(span_danger("Ржавые корни оплетают ноги [owner] и врастают в пол!"), span_userdanger("Ржавчина ползёт по ногам: вы вросли в пол!"))
+
+/datum/status_effect/heretic_rust_roots/proc/settle_roots()
+	if(!QDELETED(roots_visual))
+		roots_visual.icon_state = "rust_roots"
+
+/datum/status_effect/heretic_rust_roots/proc/on_owner_moved(datum/source)
+	SIGNAL_HANDLER
+	if(owner.loc != rooted_turf)
+		qdel(src)
+
+/datum/status_effect/heretic_rust_roots/proc/end_roots(datum/source)
+	SIGNAL_HANDLER
+	qdel(src)
+
+/datum/status_effect/heretic_rust_roots/proc/on_attackby(mob/living/source, obj/item/item, mob/living/user, params)
+	SIGNAL_HANDLER
+	if(istype(item, /obj/item/nullrod))
+		user.visible_message(span_warning("[user] касается [source] нулевым жезлом, и ржавые корни рассыпаются трухой."), span_notice("Вы касаетесь [source] нулевым жезлом, и корни рассыпаются."))
+		log_game("[key_name(user)] снимает Ржавые корни с [key_name(source)] нулевым жезлом в [AREACOORD(source)].")
+		qdel(src)
+		return COMPONENT_NO_AFTERATTACK
+	if(!heretic_rust_pry_tool(item) || IS_HERETIC(user) || IS_HERETIC_MONSTER(user))
+		return NONE
+	INVOKE_ASYNC(src, PROC_REF(pry), user, item)
+	return COMPONENT_NO_AFTERATTACK
+
+/datum/status_effect/heretic_rust_roots/proc/pry(mob/living/user, obj/item/tool)
+	if(LAZYFIND(user.do_afters, owner))
+		return FALSE
+	user.visible_message(span_warning("[user] поддевает [tool] ржавые корни на ногах [owner]."), span_notice("Вы рвёте корни. Не отходите [DisplayTimeText(HERETIC_RUST_PRY_TIME)]."))
+	playsound(owner, heretic_rust_pry_sound(tool), HERETIC_RUST_PRY_VOLUME, TRUE)
+	if(!do_after(user, HERETIC_RUST_PRY_TIME, owner, extra_checks = CALLBACK(src, PROC_REF(still_rooted))))
+		return FALSE
+	if(QDELETED(src))
+		return FALSE
+	user.visible_message(span_notice("[user] выдирает корни из пола, и [owner] снова может двигаться."))
+	log_game("[key_name(user)] вырывает [key_name(owner)] из Ржавых корней в [AREACOORD(owner)].")
+	qdel(src)
+	return TRUE
+
+/datum/status_effect/heretic_rust_roots/proc/still_rooted()
+	return !QDELETED(src)
+
+/datum/status_effect/heretic_rust_roots/on_remove()
+	var/datum/eldritch_knowledge/base_rust/rust = rust_ref?.resolve()
+	rust?.roots -= src
+	if(applied)
+		UnregisterSignal(owner, list(COMSIG_MOVABLE_MOVED, COMSIG_PARENT_ATTACKBY, COMSIG_LIVING_HERETIC_SACRIFICE_STARTING, COMSIG_LIVING_HERETIC_CAPTURE_SHAKEN, COMSIG_LIVING_DEATH))
+		if(hearth)
+			UnregisterSignal(hearth, COMSIG_PARENT_QDELETING)
+		heretic_capture_unhold(owner, HERETIC_RUST_CAPTURE)
+		// Чужой Paralyze мог продлить этот экземпляр: тогда он остаётся.
+		if(!QDELETED(restraint) && restraint.duration <= duration)
+			qdel(restraint)
+		owner.set_anchored(was_anchored)
+		if(QDELETED(owner))
+			qdel(roots_visual)
+		else
+			roots_visual?.fade_out()
+			heretic_vfx_burst(owner, /particles/heretic_ascension/rust/heart_wound)
+			if(isturf(owner.loc))
+				playsound(owner, HERETIC_RUST_ROOTS_RELEASE_SOUND, HERETIC_RUST_ROOTS_RELEASE_VOLUME, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
+		heretic_capture_release(owner, HERETIC_RUST_CAPTURE, held_for = heretic_capture_held_for(held_since))
+	restraint = null
+	roots_visual = null
+	hearth = null
+	rooted_turf = null
+	rust_ref = null
+	return ..()
+
+/atom/movable/screen/alert/status_effect/heretic_rust_roots
+	name = "Ржавые корни"
+	desc = "Корни вросли в ноги: до 10 секунд вы не двигаетесь. Товарищ сорвёт их нулевым жезлом сразу, ломом или зажжённой сваркой за 2 секунды или растолкает вас. Если очаг угаснет или его разобьют, корни отпустят."
+	icon = HERETIC_RUST_FX_ICON
+	icon_state = "rust_roots_alert"
+
+/// Пол трескается, и корни тянутся к цели всю секунду телеграфа.
+/obj/effect/temp_visual/heretic_rust_roots_sprout
+	icon = HERETIC_RUST_FX_ICON
+	icon_state = "rust_roots_sprout"
+	layer = BELOW_MOB_LAYER
+	randomdir = FALSE
+	duration = HERETIC_RUST_ROOTS_TELEGRAPH
+
+/obj/effect/proc_holder/spell/pointed/rust_roots
+	name = "Ржавые корни"
+	desc = "Сбитый с ног или обессиленный враг в 5 клетках на ржавом полу вашего очага через секунду врастает в пол: до 10 секунд он не действует и его не сдвинуть, а сердце уводит его в изнанку из любой клетки очага. Корни рвёт нулевой жезл, лом или зажжённая сварка за 2 секунды, пленника можно растолкать. Перезарядка 40 секунд."
+	summary = "Сбитый враг на ржавчине очага на 10 секунд врастает в пол; увод из любой клетки очага."
+	school = "transmutation"
+	charge_max = HERETIC_RUST_ROOTS_COOLDOWN
+	range = HERETIC_RUST_ROOTS_RANGE
+	clothes_req = FALSE
+	heretic_stun_check = TRUE
+	selection_type = "view"
+	aim_assist = FALSE
+	invocation = "SAK'NYS LAI'KO"
+	invocation_type = "whisper"
+	action_icon = HERETIC_RUST_FX_ICON
+	action_icon_state = "rust_roots_action"
+	action_background_icon_state = "bg_ecult"
+	active_msg = "Вы слушаете корни под ржавым полом. Укажите сбитого врага."
+	deactive_msg = "Корни затихают."
+
+/obj/effect/proc_holder/spell/pointed/rust_roots/can_target(atom/target, mob/user, silent)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_rust/rust = heretic?.get_knowledge(/datum/eldritch_knowledge/base_rust)
+	var/reason = rust ? rust.roots_block_reason(user, target) : "Способность недоступна вашему пути или текущему телу."
+	return heretic_check(user, !reason, silent, reason, target = target)
+
+/obj/effect/proc_holder/spell/pointed/rust_roots/cast(list/targets, mob/living/user)
+	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
+	var/datum/eldritch_knowledge/base_rust/rust = heretic?.get_knowledge(/datum/eldritch_knowledge/base_rust)
+	if(!length(targets) || !rust?.start_roots(user, targets[1]))
+		heretic_revert_cast(user, rust?.roots_failure)
+
+/obj/effect/proc_holder/spell/pointed/rust_formation
+	name = "Ржавая формация"
+	desc = "Поднимите стену из ржавого пола в 4 клетках: 20 секунд она держит пули и закрывает обзор, а вы и ваши слуги проходите сквозь неё. Врага на этой клетке отбросит в сторону: 10 ушибов и 2 секунды на полу. Стену разбивают оружием, а ломом или зажжённой сваркой разбирают за 2 секунды. Перезарядка 15 секунд."
+	summary = "Стена из ржавого пола на 20 секунд: держит пули, пропускает своих, врага отбрасывает."
+	school = "transmutation"
+	charge_max = HERETIC_RUST_FORMATION_COOLDOWN
+	range = HERETIC_RUST_FORMATION_RANGE
+	clothes_req = FALSE
+	heretic_stun_check = TRUE
+	selection_type = "view"
+	aim_assist = FALSE
+	invocation = "SIE'NA RU'DIS"
+	invocation_type = "whisper"
+	action_icon = HERETIC_RUST_FX_ICON
+	action_icon_state = "rust_formation_action"
+	action_background_icon_state = "bg_ecult"
+	active_msg = "Вы тянете ржавчину из пола. Укажите ржавую клетку."
+	deactive_msg = "Ржавчина оседает обратно в пол."
+
+/obj/effect/proc_holder/spell/pointed/rust_formation/can_target(atom/target, mob/user, silent)
+	var/reason = heretic_rust_formation_block_reason(user, target)
+	return heretic_check(user, !reason, silent, reason)
+
+/obj/effect/proc_holder/spell/pointed/rust_formation/cast(list/targets, mob/living/user)
+	if(!length(targets) || !heretic_rust_raise_formation(user, get_turf(targets[1])))
+		heretic_revert_cast(user, heretic_rust_formation_block_reason(user, length(targets) ? targets[1] : null))
+
+/proc/heretic_rust_formation_block_reason(mob/living/user, atom/target)
+	var/turf/place = get_turf(target)
+	if(!istype(place, /turf/open/floor/plating/rust))
+		return "Стена встаёт только из ржавого пола."
+	if(place.z != user.z || get_dist(user, place) > HERETIC_RUST_FORMATION_RANGE || !can_see(user, place, HERETIC_RUST_FORMATION_RANGE))
+		return "Нужен видимый ржавый пол не дальше [HERETIC_RUST_FORMATION_RANGE] клеток."
+	if(place.is_blocked_turf(exclude_mobs = TRUE))
+		return "Клетку уже занимает что-то плотное."
+	for(var/mob/living/stander in place)
+		if(!heretic_rust_formation_spares(stander) && !heretic_rust_formation_aside(user, place))
+			return "[stander] некуда отбросить."
+	return null
+
+/proc/heretic_rust_formation_spares(mob/living/stander)
+	return IS_HERETIC(stander) || IS_HERETIC_MONSTER(stander)
+
+/// Свободная клетка рядом с местом стены, сначала - прочь от еретика.
+/proc/heretic_rust_formation_aside(mob/living/user, turf/place)
+	var/list/directions = list(get_dir(user, place)) | GLOB.alldirs
+	for(var/direction in directions)
+		if(!direction)
+			continue
+		var/turf/aside = get_step(place, direction)
+		if(isopenturf(aside) && !aside.is_blocked_turf(exclude_mobs = TRUE) && heretic_step_open(place, aside))
+			return aside
+	return null
+
+/proc/heretic_rust_raise_formation(mob/living/user, turf/place)
+	if(heretic_rust_formation_block_reason(user, place))
+		return null
+	for(var/mob/living/stander in place)
+		if(heretic_rust_formation_spares(stander))
+			continue
+		stander.forceMove(heretic_rust_formation_aside(user, place))
+		if(!heretic_can_affect(user, stander))
+			continue
+		stander.apply_damage(HERETIC_RUST_FORMATION_DAMAGE, BRUTE)
+		stander.Knockdown(HERETIC_RUST_FORMATION_KNOCKDOWN)
+		stander.visible_message(span_danger("Ржавая глыба вырывается из пола и отшвыривает [stander]!"), span_userdanger("Из пола под вами вырывается ржавая глыба и отшвыривает вас!"))
+		log_combat(user, stander, "отбрасывает Ржавой формацией")
+	user.visible_message(span_danger("[user] тянет руку вверх, и из ржавого пола встаёт глыба!"), span_notice("Вы поднимаете ржавую стену."))
+	return new /obj/structure/heretic_rust_formation(place)
+
+/obj/structure/heretic_rust_formation
+	name = "rust formation"
+	desc = "Глыба ржавых листов, вырванная из пола. Простоит 20 секунд и осыплется; её можно разбить оружием, а ломом или зажжённой сваркой разобрать за 2 секунды. Еретик и его слуги проходят сквозь неё."
+	icon = HERETIC_RUST_FX_ICON
+	icon_state = "rust_formation"
+	density = TRUE
+	opacity = TRUE
+	anchored = TRUE
+	max_integrity = HERETIC_RUST_FORMATION_INTEGRITY
+	armor_type = /datum/armor/heretic_rust
+	var/prying = FALSE
+
+/obj/structure/heretic_rust_formation/Initialize(mapload)
+	. = ..()
+	flick("rust_formation_rise", src)
+	playsound(src, pick(GLOB.heretic_rust_formation_sounds), HERETIC_RUST_FORMATION_VOLUME, TRUE)
+	heretic_vfx_burst(src, /particles/heretic_ascension/rust/heart_wound)
+	QDEL_IN(src, HERETIC_RUST_FORMATION_LIFETIME)
+
+/obj/structure/heretic_rust_formation/CanAllowThrough(atom/movable/mover, turf/target)
+	. = ..()
+	if(isliving(mover) && heretic_rust_formation_spares(mover))
+		return TRUE
+
+/obj/structure/heretic_rust_formation/attackby(obj/item/tool, mob/living/user, params)
+	if(!heretic_rust_pry_tool(tool) || heretic_rust_formation_spares(user))
+		return ..()
+	INVOKE_ASYNC(src, PROC_REF(pry), user, tool)
+	return TRUE
+
+/obj/structure/heretic_rust_formation/proc/pry(mob/living/user, obj/item/tool)
+	if(prying)
+		return FALSE
+	prying = TRUE
+	user.visible_message(span_warning("[user] поддевает [tool] ржавые листы [src]."), span_notice("Вы разбираете ржавую глыбу. Не отходите [DisplayTimeText(HERETIC_RUST_PRY_TIME)]."))
+	playsound(src, heretic_rust_pry_sound(tool), HERETIC_RUST_PRY_VOLUME, TRUE)
+	. = do_after(user, HERETIC_RUST_PRY_TIME, src)
+	if(QDELETED(src))
+		return
+	prying = FALSE
+	if(!.)
+		return
+	user.visible_message(span_notice("[user] разбирает ржавую глыбу."))
+	qdel(src)
+
+/obj/structure/heretic_rust_formation/rust_heretic_act()
+	return
+
+/obj/structure/heretic_rust_formation/Destroy()
+	var/turf/place = get_turf(src)
+	if(place)
+		new /obj/effect/temp_visual/heretic_rust_formation_fall(place)
+		playsound(place, HERETIC_RUST_COLLAPSE_SOUND, HERETIC_RUST_FORMATION_VOLUME, TRUE)
+	return ..()
+
+/// Глыба оседает трухой в пол.
+/obj/effect/temp_visual/heretic_rust_formation_fall
+	icon = HERETIC_RUST_FX_ICON
+	icon_state = "rust_formation_fall"
+	randomdir = FALSE
+	duration = HERETIC_RUST_FORMATION_FALL
+
+/atom/movable/screen/alert/status_effect/heretic_rust_corrosion
+	name = "Ржавый пол"
+	desc = "Ржавчина еретика под ногами разъедает вас: 2 урона коррозией в секунду, тошнота, химия вымывается из крови, протезы ржавеют, а ботов и роботов пол ломает. Сойдите с ржавого пола; защита от магии спасает."
+	icon = HERETIC_RUST_FX_ICON
+	icon_state = "rust_corrosion_alert"
+
+/// Ржавчина: пыль у ног того, кого разъедает ржавый пол.
+/particles/heretic_ascension/rust/dust
+	count = 8
+	spawning = 0.35
+	position = generator("box", list(-9, -15, 0), list(9, -11, 0))
+	velocity = generator("box", list(-0.25, 0.2, 0), list(0.25, 0.6, 0))
+	gravity = list(0, -0.04)
+	friction = 0.04
+	lifespan = 1.4 SECONDS
+	fade = 0.6 SECONDS
+	fadein = 0.2 SECONDS
 
 /// Пока сердце вознесения цело, ржавый пол вдвое снижает урон выносливости вознесённому.
 /datum/component/heretic_rust_ascension
@@ -251,11 +672,11 @@ GLOBAL_LIST_INIT(heretic_rust_wave_sounds, list(
 	icon = 'modular_bluemoon/icons/obj/heretic_rust_heart.dmi'
 	icon_state = "tumor"
 	pixel_x = -16
-	color = "#a8552e"
+	color = COLOR_WHITE
 	anchored = TRUE
 	density = FALSE
 	max_integrity = HERETIC_RUST_HEART_INTEGRITY
-	armor = list(MELEE = 20, BULLET = 20, LASER = 20, ENERGY = 20, BOMB = 20, BIO = 100, RAD = 100, FIRE = 50, ACID = 50)
+	armor_type = /datum/armor/heretic_rust_reinforced
 	appearance_flags = PIXEL_SCALE
 	var/obj/effect/abstract/heretic_particle_holder/flakes
 	COOLDOWN_DECLARE(wound_cooldown)
@@ -268,7 +689,7 @@ GLOBAL_LIST_INIT(heretic_rust_wave_sounds, list(
 	veins.alpha = HERETIC_RUST_HEART_VEINS
 	veins.appearance_flags = RESET_COLOR
 	add_overlay(veins)
-	add_overlay(emissive_appearance(icon, "tumor_glow", alpha = HERETIC_RUST_HEART_GLOW))
+	add_overlay(emissive_appearance(icon, "tumor_glow", alpha = HERETIC_RUST_HEART_GLOW, offset_spokesman = src))
 	flakes = heretic_vfx_attach_particles(src, /particles/heretic_ascension/rust/heart, FALSE)
 	if(flakes)
 		flakes.pixel_x = -pixel_x
@@ -358,7 +779,7 @@ GLOBAL_LIST_INIT(heretic_rust_wave_sounds, list(
 	invocation = "FERR'UM UN'DA"
 	invocation_type = "shout"
 	action_icon = 'modular_bluemoon/icons/obj/heretic_actions.dmi'
-	action_icon_state = "corrode"
+	action_icon_state = "rust_corrosive_wave"
 	action_background_icon_state = "bg_ecult"
 	var/static/list/hull_walls = typecacheof(list(/turf/closed/wall/mineral/titanium, /turf/closed/wall/mineral/plastitanium))
 
@@ -374,12 +795,14 @@ GLOBAL_LIST_INIT(heretic_rust_wave_sounds, list(
 		heretic_corrosion(victim, HERETIC_RUST_WAVE_CORROSION)
 		log_combat(user, victim, "поражает Коррозийным валом")
 	var/list/rings = list()
+	var/walls_fell = FALSE
 	for(var/turf/surface in field)
 		if(istype(surface, /turf/closed/wall/r_wall/rust) || is_type_in_typecache(surface, hull_walls) || (iswallturf(surface) && faces_void(surface)))
 			continue
 		if(iswallturf(surface) && !istype(surface, /turf/closed/wall/r_wall))
 			var/turf/closed/wall/wall = surface
-			wall.dismantle_wall()
+			wall.dismantle_wall(silent = TRUE)
+			walls_fell = TRUE
 			heretic_vfx_burst(surface, /particles/heretic_ascension/rust/heart_wound)
 			continue
 		var/was_rust = is_heretic_rust_turf(surface)
@@ -407,6 +830,8 @@ GLOBAL_LIST_INIT(heretic_rust_wave_sounds, list(
 	heretic_vfx_flash(origin, HERETIC_RUST_INK, HERETIC_RUST_WAVE_FLASH_RANGE, HERETIC_RUST_WAVE_FLASH_POWER)
 	heretic_vfx_quake(origin, HERETIC_RUST_WAVE_RANGE, HERETIC_RUST_WAVE_QUAKE, HERETIC_RUST_WAVE_QUAKE_TIME)
 	playsound(origin, pick(GLOB.heretic_rust_wave_sounds), HERETIC_RUST_WAVE_VOLUME, TRUE, HERETIC_RUST_WAVE_SOUND_RANGE)
+	if(walls_fell)
+		playsound(origin, HERETIC_RUST_COLLAPSE_SOUND, HERETIC_RUST_WAVE_COLLAPSE_VOLUME, TRUE, HERETIC_RUST_WAVE_SOUND_RANGE)
 	user.visible_message(span_danger("От [user] расходится волна ржавчины, разъедая всё вокруг!"))
 
 /obj/effect/proc_holder/spell/self/rust_corrosive_wave/proc/faces_void(turf/wall)
@@ -525,3 +950,11 @@ GLOBAL_LIST_INIT(heretic_rust_wave_sounds, list(
 #undef HERETIC_RUST_HEART_BREAK_SOUND_RANGE
 #undef HERETIC_RUST_WAVE_VOLUME
 #undef HERETIC_RUST_WAVE_SOUND_RANGE
+#undef HERETIC_RUST_WAVE_COLLAPSE_VOLUME
+#undef HERETIC_RUST_ROOTS_RELEASE_VOLUME
+#undef HERETIC_RUST_FX_ICON
+#undef HERETIC_RUST_ROOTS_GROW
+#undef HERETIC_RUST_ROOTS_VOLUME
+#undef HERETIC_RUST_PRY_VOLUME
+#undef HERETIC_RUST_FORMATION_VOLUME
+#undef HERETIC_RUST_FORMATION_FALL

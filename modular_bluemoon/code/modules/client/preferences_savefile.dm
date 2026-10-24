@@ -9,6 +9,27 @@
 	S["body_weight"] >> body_weight
 	S["normalized_size"] >> features["normalized_size"]
 	S["custom_laugh"] >> custom_laugh
+	S["antag_opt_in_level"] >> antag_opt_in_level
+
+
+	var/list/loaded_moan_sounds
+	S["custom_moan_sounds"] >> loaded_moan_sounds
+	var/loaded_moan_toggle
+	S["use_custom_moan_sounds"] >> loaded_moan_toggle
+	if(isnull(loaded_moan_sounds) || isnull(loaded_moan_toggle))
+		var/current_dir = S.cd
+		S.cd = "/"
+		if(isnull(loaded_moan_sounds))
+			S["custom_moan_sounds"] >> loaded_moan_sounds
+		if(isnull(loaded_moan_toggle))
+			S["use_custom_moan_sounds"] >> loaded_moan_toggle
+		S.cd = current_dir
+		if(!isnull(loaded_moan_sounds))
+			WRITE_FILE(S["custom_moan_sounds"], loaded_moan_sounds)
+		if(!isnull(loaded_moan_toggle))
+			WRITE_FILE(S["use_custom_moan_sounds"], loaded_moan_toggle)
+	custom_moan_sounds = sanitize_custom_moan_sounds(loaded_moan_sounds)
+	use_custom_moan_sounds = sanitize_integer(loaded_moan_toggle, 0, 1, initial(use_custom_moan_sounds))
 
 	pda_style = sanitize_inlist(pda_style, GLOB.pda_styles, initial(pda_style))
 	pda_color = sanitize_hexcolor(pda_color, 6, 1, initial(pda_color))
@@ -23,6 +44,7 @@
 	body_weight = sanitize_inlist(body_weight, GLOB.mob_sizes, NAME_WEIGHT_NORMAL)
 	features["normalized_size"] = sanitize_num_clamp(features["normalized_size"], 0.81, 1.2, 1)
 	custom_laugh = sanitize_inlist(custom_laugh, GLOB.mob_laughs, "Default")
+	antag_opt_in_level = sanitize_antag_opt_in_level(antag_opt_in_level)
 
 /datum/preferences/proc/bluemoon_character_pref_save(savefile/S) //TODO: modularize our other savefile edits... maybe?
 	WRITE_FILE(S["pda_style"], pda_style)
@@ -35,6 +57,16 @@
 	WRITE_FILE(S["body_weight"], body_weight)
 	WRITE_FILE(S["normalized_size"], features["normalized_size"])
 	WRITE_FILE(S["custom_laugh"], custom_laugh)
+	WRITE_FILE(S["antag_opt_in_level"], antag_opt_in_level)
+
+	WRITE_FILE(S["use_custom_moan_sounds"], use_custom_moan_sounds)
+	WRITE_FILE(S["custom_moan_sounds"], custom_moan_sounds)
+
+/datum/preferences/proc/sanitize_custom_moan_sounds(list/moan_sounds)
+	var/list/valid_moan_paths = GLOB.lewd_moans_male + GLOB.lewd_moans_female + GLOB.lewd_softmoans_female + GLOB.lewd_purr_sounds + GLOB.lewd_meow_sounds + GLOB.lewd_fox_sounds + GLOB.lewd_dog_sounds + GLOB.lewd_bird_sounds + GLOB.lewd_robot_sounds + GLOB.lewd_insect_sounds + GLOB.lewd_scream_female + GLOB.lewd_scream_male + GLOB.lewd_scream_gachi
+	for(var/name in GLOB.lewd_other_animal_sounds)
+		valid_moan_paths += GLOB.lewd_other_animal_sounds[name]
+	return SANITIZE_LIST(moan_sounds) & valid_moan_paths
 
 /obj/item/modular_computer/pda/proc/update_style(client/C)
 	// pda_color, update_ringtone(), skin_data, pda_style, device_theme все передаются через update_pda_prefs()
@@ -42,6 +74,8 @@
 
 /datum/preferences
 	var/list/favorite_tracks = list()
+	// Избранные стили по вкладкам hair/facial/grad, общие для всех слотов персонажей.
+	var/list/favorite_hair_styles = list()
 
 	//Ключем будет имя плейлиста, а значением, лист с треками. Пример:
 	//playlists = list("Первый" = list("song1", song2), "Второй" = list("song2", "song3"))

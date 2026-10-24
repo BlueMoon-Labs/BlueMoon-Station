@@ -31,6 +31,7 @@
 	w_class = WEIGHT_CLASS_BULKY
 	weapon_weight = WEAPON_LIGHT
 	spread = 0.5
+	dual_wield_spread = 12
 	fire_delay = 0
 	mag_type = /obj/item/ammo_box/magazine/e45
 	can_suppress = TRUE
@@ -54,6 +55,7 @@
 	name = "\improper Mk. 62 Enforcer (.45)"
 	desc = "The MK62 version was designed for mecha pilots as a last-ditch weapon. Equipped with a stock, red-dot sight and in-built sec-light, this litll devil is perfect for one-two hand shooting."
 	icon_state = "mk62"
+	dual_wield_spread = 0
 	mag_type = /obj/item/ammo_box/magazine/e45
 	can_flashlight = 0
 	obj_flags = UNIQUE_RENAME

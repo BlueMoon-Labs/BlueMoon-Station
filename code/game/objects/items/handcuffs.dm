@@ -3,6 +3,8 @@
 	var/demoralize_criminals = TRUE // checked on carbon/carbon.dm to decide wheter to apply the handcuffed negative moodlet or not.
 	/// allow movement at all during breakout
 	var/allow_breakout_movement = FALSE
+	/// Свой алерт вместо стандартного «Handcuffed»/«Legcuffed» с оверлеем предмета.
+	var/restrained_alert
 
 /obj/item/restraints/suicide_act(mob/living/carbon/user)
 	user.visible_message("<span class='suicide'>[user] is strangling себя with [src]! It looks like [user.p_theyre()] trying to commit suicide!</span>")
@@ -40,7 +42,7 @@
 	throw_range = 5
 	custom_materials = list(/datum/material/iron=500)
 	breakouttime = 600 //Deciseconds = 60s = 1 minute
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 50, ACID = 50)
+	armor_type = /datum/armor/clothing_and_general_objects
 	var/cuffsound = 'sound/weapons/handcuffs.ogg'
 	var/trashtype = null //for disposable cuffs
 

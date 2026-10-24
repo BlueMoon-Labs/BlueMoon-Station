@@ -43,12 +43,12 @@
 	jobtype = /datum/job/expeditor
 	id = /obj/item/card/id
 //	belt = /obj/item/storage/belt/military/assault
-	ears = /obj/item/radio/headset/headset_exp/bowman
+	ears = /obj/item/radio/headset/headset_exp
 	uniform = /obj/item/clothing/under/syndicate/combat/exp
 //	suit = /obj/item/clothing/suit/armor/vest/exp
 //	head = /obj/item/clothing/head/helmet/exp
-	gloves = /obj/item/clothing/gloves/combat // раундстартовые горилки ВСЁ
-	glasses = /obj/item/clothing/glasses/sunglasses
+//	gloves = /obj/item/clothing/gloves/combat // раундстартовые горилки ВСЁ
+//	glasses = /obj/item/clothing/glasses/sunglasses
 	shoes = /obj/item/clothing/shoes/jackboots/tall_default
 //	suit_store = /obj/item/gun/energy/e_gun/mini/expeditor
 	r_pocket = /obj/item/kitchen/knife/combat
@@ -120,7 +120,7 @@
 	desc = "Base armor vest designed for ordinary expeditors. With cool speedy violet vertical line."
 	icon_state = "vest_exp"
 	item_state = "vest_exp"
-	armor = list(MELEE = 40, BULLET = 40, LASER = 30, ENERGY = -20, BOMB = 0, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 30) //Для упрощения нейтрализации
+	armor_type = /datum/armor/exp
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	unique_reskin = list(
 		"Standart" = list(
@@ -147,7 +147,7 @@
 	desc = "Sturdy ballistic helmet with violet protective glass."
 	icon_state = "helmet_exp"
 	item_state = "helmet_exp"
-	armor = list(MELEE = 40, BULLET = 40, LASER = 30, ENERGY = -20, BOMB = 0, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 30) //Для упрощения нейтрализации
+	armor_type = /datum/armor/exp
 	unique_reskin = list(
 		"Standart" = list(
 			"icon_state" = "helmet_exp",

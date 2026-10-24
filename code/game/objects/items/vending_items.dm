@@ -2,6 +2,7 @@
 	Vending machine refills can be found at /code/modules/vending/ within each vending machine's respective file
 */
 /obj/item/vending_refill
+	armor_type = /datum/armor/leather_and_refills
 	name = "resupply canister"
 	var/machine_name = "Generic"
 
@@ -17,7 +18,6 @@
 	throw_speed = 1
 	throw_range = 7
 	w_class = WEIGHT_CLASS_BULKY
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 70, ACID = 30)
 
 // Bluemoon Edit: Vending Update Start
 	/**

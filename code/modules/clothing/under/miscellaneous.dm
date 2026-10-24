@@ -79,7 +79,7 @@
 	gas_transfer_coefficient = 0.01
 	permeability_coefficient = 0.01
 	body_parts_covered = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
-	armor = list(MELEE = 100, BULLET = 100, LASER = 100,ENERGY = 100, BOMB = 100, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 1000) //wound defense at 100 wont stop wounds
+	armor_type = /datum/armor/adminsuit //wound defense at 100 wont stop wounds
 	cold_protection = CHEST | GROIN | LEGS | FEET | ARMS | HANDS
 	min_cold_protection_temperature = SPACE_SUIT_MIN_TEMP_PROTECT
 	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
@@ -130,7 +130,7 @@
 	desc = "A special containment suit that allows plasma-based lifeforms to exist safely in an oxygenated environment, and automatically extinguishes them in a crisis. Despite being airtight, it's not spaceworthy."
 	icon_state = "plasmaman"
 	item_state = "plasmaman"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 100, RAD = 0, FIRE = 95, ACID = 95)
+	armor_type = /datum/armor/under_plasmaman
 	body_parts_covered = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	mutantrace_variation = USE_TAUR_CLIP_MASK
 	can_adjust = FALSE
@@ -204,7 +204,7 @@
 	icon_state = "durathread"
 	item_state = "durathread"
 	can_adjust = FALSE
-	armor = list(MELEE = 10, LASER = 10, FIRE = 40, ACID = 10, BOMB = 5)
+	armor_type = /datum/armor/under_durathread
 
 /obj/item/clothing/under/misc/durathread/skirt
 	name = "durathread jumpskirt"

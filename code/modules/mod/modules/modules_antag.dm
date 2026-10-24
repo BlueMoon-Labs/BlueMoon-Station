@@ -101,7 +101,7 @@
 	righthand_file = null
 	icon_state = "power_kick"
 	force = 35
-	armour_penetration = 100 //за 5 ТК норм.
+	armour_penetration = MELEE_AP_EXCLUSIVE  //за 5 ТК норм.
 	wound_bonus = 20
 
 /obj/item/melee/baseball_bat/powerkick/attack(mob/living/target, mob/living/user)
@@ -161,7 +161,7 @@
 	name = "Improved Cloaking module"
 	desc = "Улучшенная версия прототипа модуля визуальной маскировки для модулярного костюма, которая \
 	, к сожалению, не обрела массового производства. Маскировка этого модуля более стабильная и не сбивается \
-	при столкновениях."
+	при столкновениях, но атака, касание, удар или попавший в вас снаряд всё так же её снимают."
 	icon_state = "cloak_traitor"
 	bumpoff = FALSE
 	stealth_alpha = 35
@@ -180,7 +180,7 @@
 	name = "Spider Clan stealth module"
 	desc = "Улучшенная версия прототипа модуля визуальной маскировки для модулярного костюма, которая \
 	, к сожалению, не обрела массового производства. Маскировка этого модуля более стабильная и не сбивается \
-	при столкновениях."
+	при столкновениях, но атака, касание, удар или попавший в вас снаряд всё так же её снимают."
 	icon_state = "cloak_ninja"
 	bumpoff = FALSE
 	stealth_alpha = 10

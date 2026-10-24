@@ -44,6 +44,9 @@ GLOBAL_LIST_INIT(rod_recipes, list ( \
 	. = ..()
 	update_icon()
 
+/obj/item/stack/rods/builds_over_openspace()
+	return TRUE
+
 /obj/item/stack/rods/get_main_recipes()
 	. = ..()
 	. += GLOB.rod_recipes

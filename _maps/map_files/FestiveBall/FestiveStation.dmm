@@ -2420,7 +2420,7 @@
 /turf/open/floor/plasteel/dark,
 /area/command/gateway)
 "agg" = (
-/obj/machinery/gateway,
+/obj/machinery/gateway/centerstation,
 /turf/open/floor/plasteel/dark,
 /area/command/gateway)
 "agh" = (
@@ -2948,9 +2948,6 @@
 	},
 /obj/effect/turf_decal/tile/neutral{
 	dir = 8
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-4"
 	},
 /turf/open/floor/plasteel/dark,
 /area/ai_monitored/command/storage/eva)
@@ -20920,22 +20917,6 @@
 	},
 /turf/open/floor/plasteel,
 /area/service/hydroponics)
-"aZo" = (
-/obj/machinery/door/airlock/public/glass{
-	name = "Hydroponics";
-	req_access_txt = "35"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
-/obj/effect/mapping_helpers/network_builder/atmos_pipe/supply/hidden/layer2,
-/obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
-/obj/structure/fans/tiny,
-/turf/open/floor/plasteel,
-/area/service/hydroponics)
 "aZp" = (
 /obj/effect/turf_decal/weather/snow/corner{
 	color = "#FFFFFE";
@@ -20966,9 +20947,6 @@
 /obj/machinery/door/airlock/freezer{
 	name = "Freezer";
 	req_one_access_txt = "28"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
 	},
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
@@ -22856,9 +22834,6 @@
 /obj/machinery/door/airlock/research{
 	name = "Break Room";
 	req_access_txt = "47"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
 	},
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
@@ -26961,7 +26936,7 @@
 /obj/effect/turf_decal/tile/brown{
 	dir = 4
 	},
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /turf/open/floor/plasteel,
 /area/cargo/miningoffice)
 "boZ" = (
@@ -39409,9 +39384,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
 /obj/machinery/door/poddoor/shutters/preopen{
 	id = "chemistry_shutters";
 	name = "chemistry shutters"
@@ -45852,9 +45824,6 @@
 /obj/effect/turf_decal/tile/red{
 	dir = 1
 	},
-/obj/structure/cable/yellow{
-	icon_state = "2-4"
-	},
 /turf/open/floor/plasteel,
 /area/security/checkpoint/supply)
 "cex" = (
@@ -46735,9 +46704,6 @@
 /turf/open/floor/grass/snow/edina,
 /area/science/research)
 "cgG" = (
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
@@ -50741,9 +50707,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
 /turf/open/floor/festive/cobblestone,
 /area/edina/street/intersection/princessservitor)
@@ -52254,9 +52217,6 @@
 	id_tag = "meddoor";
 	name = "Medical Cell";
 	req_access_txt = "63"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "1-4"
 	},
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
@@ -112566,7 +112526,7 @@ aoG
 aoG
 aoG
 aZn
-aZo
+aXC
 bJz
 bJz
 aZs

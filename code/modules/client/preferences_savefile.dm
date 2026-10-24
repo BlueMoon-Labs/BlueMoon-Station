@@ -5,7 +5,7 @@
 //	You do not need to raise this if you are adding new values that have sane defaults.
 //	Only raise this value when changing the meaning/format/name/layout of an existing value
 //	where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX	82
+#define SAVEFILE_VERSION_MAX	86
 
 /// Upper bound for character slot indices during savefile migration (loop over S.dir).
 /// Prevents corrupted or garbage directory names (e.g. huge slot numbers) from inflating max_save_slots
@@ -175,6 +175,22 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	if(current_version < 82) // BLUEMOON ADD - звук кнопок способностей включён по умолчанию
 		sound_toggles |= SOUND_BUTTONS
+
+	if(current_version < 83) // Переносим часики экспедиторов
+		var/playtime_summ = (exp["Expeditor"] || 0) + (exp["Vanguard operative"] || 0)
+
+		if(playtime_summ > 0)
+			exp["Vanguard Operative"] = (exp["Vanguard Operative"] || 0) + playtime_summ
+
+		exp -= "Expeditor"
+		exp -= "Vanguard operative"
+
+	// уже включённая антаг-роль поднимает порог согласия, так что HK-47 его не меняет
+	if(current_version < 85 && antag_opt_in_prefs_force_minimum(src) && !(ROLE_HK47 in be_special))
+		be_special[ROLE_HK47] = ANTAG_PRIORITY_HIGH
+
+	if(current_version < 86 && antag_opt_in_prefs_force_minimum(src) && !(ROLE_BROTHER in be_special))
+		be_special[ROLE_BROTHER] = ANTAG_PRIORITY_HIGH
 
 /datum/preferences/proc/update_character(current_version, savefile/S)
 	if(current_version < 19)
@@ -531,6 +547,11 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 			features["xenodorsal"] = "None"
 			features["xenotail"] = "None"
 
+	// Quirk selections are saved by display name. Preserve the localized selection.
+	if(current_version < 84 && islist(all_quirks) && ("Echolocation" in all_quirks))
+		all_quirks -= "Echolocation"
+		all_quirks |= /datum/quirk/echolocation::name
+
 /datum/preferences/proc/load_path(ckey,filename="preferences.sav")
 	if(!ckey)
 		return
@@ -594,6 +615,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["tgui_panel_theme"]		>> tgui_panel_theme
 	S["tgui_panel_state"]		>> tgui_panel_state
 	S["ui_zoom_preferences"]	>> ui_zoom_preferences
+	S["vending_layouts"]		>> vending_layouts
 	S["windowflash"] 			>> windowflashing
 	S["adminhelp_windowflash"]	>> adminhelp_windowflash
 	S["windownoise"] 			>> windownoise
@@ -601,6 +623,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["action_buttons_hide_on_spawn"] 			>> action_buttons_hide_on_spawn
 	S["action_buttons_screen_locs"]	>> action_buttons_screen_locs
 	S["be_special"] 			>> be_special
+	S["antag_opt_in_notice_seen"]	>> antag_opt_in_notice_seen
 
 	//SKYRAT CHANGES BEGIN
 	S["see_chat_emotes"] 	>> see_chat_emotes
@@ -654,12 +677,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["parallax"] >> parallax
 	S["ambientocclusion"] >> ambientocclusion
 	S["lighting_blur"] >> lighting_blur
+	S["multiz_performance"] >> multiz_performance
+	S["multiz_parallax"] >> multiz_parallax
 	S["lighting_brightness"] >> lighting_brightness
 	S["lighting_lamp_brightness"] >> lighting_lamp_brightness
 	S["lighting_bloom_intensity"] >> lighting_bloom_intensity
 	S["lighting_quality"] >> lighting_quality
-	S["light"] >> light
-	S["glowlevel"] >> glowlevel
 	S["auto_fit_viewport"] >> auto_fit_viewport
 	S["widescreenpref"] >> widescreenpref
 	S["fullscreen"] >> fullscreen
@@ -744,6 +767,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	outline_color = sanitize_hexcolor(outline_color, 6, 1, initial(outline_color))
 	outline_enabled = sanitize_integer(outline_enabled, 0, 1, initial(outline_enabled))
 	lastchangelog = sanitize_text(lastchangelog, initial(lastchangelog))
+	antag_opt_in_notice_seen = sanitize_integer(antag_opt_in_notice_seen, FALSE, TRUE, FALSE)
 	UI_style = sanitize_inlist(UI_style, GLOB.available_ui_styles, GLOB.available_ui_styles[1])
 	hotkeys = sanitize_integer(hotkeys, 0, 1, initial(hotkeys))
 	chat_on_map = sanitize_integer(chat_on_map, 0, 1, initial(chat_on_map))
@@ -759,6 +783,17 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	tgui_swapped_buttons	= sanitize_integer(tgui_swapped_buttons, 0, 1, initial(tgui_swapped_buttons))
 	tgui_panel_theme = sanitize_inlist(tgui_panel_theme, list("default", "light", "dark"), initial(tgui_panel_theme))
 	tgui_panel_state = sanitize_text(tgui_panel_state, initial(tgui_panel_state))
+	var/list/sanitized_vending_layouts = list()
+	if(islist(vending_layouts))
+		for(var/machine_key in vending_layouts)
+			if(!istext(machine_key))
+				continue
+			var/machine_type = text2path(machine_key)
+			if(!(ispath(machine_type, /obj/machinery/vending) || ispath(machine_type, /obj/machinery/smartfridge) || ispath(machine_type, /obj/machinery/equipment_vendor)))
+				continue
+			if(vending_layouts[machine_key] in list("grid", "list"))
+				sanitized_vending_layouts[machine_key] = vending_layouts[machine_key]
+	vending_layouts = sanitized_vending_layouts
 	if(length(tgui_panel_state) > 16384)
 		tgui_panel_state = initial(tgui_panel_state)
 	if(!islist(ui_zoom_preferences))
@@ -812,12 +847,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	parallax = sanitize_integer(parallax, PARALLAX_DISABLE, PARALLAX_INSANE, null)
 	ambientocclusion = sanitize_integer(ambientocclusion, 0, 1, initial(ambientocclusion))
 	lighting_blur = sanitize_integer(lighting_blur, LIGHTING_BLUR_MIN, LIGHTING_BLUR_MAX, LIGHTING_BLUR_DEFAULT)
+	multiz_performance = sanitize_integer(multiz_performance, MULTIZ_PERFORMANCE_DISABLE, MAX_EXPECTED_Z_DEPTH - 1, initial(multiz_performance))
+	multiz_parallax = sanitize_integer(multiz_parallax, 0, 1, initial(multiz_parallax))
 	lighting_brightness = sanitize_integer(lighting_brightness, LIGHTING_BRIGHTNESS_MIN, LIGHTING_BRIGHTNESS_MAX, LIGHTING_BRIGHTNESS_DEFAULT)
 	lighting_lamp_brightness = sanitize_integer(lighting_lamp_brightness, LIGHTING_LAMP_BRIGHTNESS_MIN, LIGHTING_LAMP_BRIGHTNESS_MAX, LIGHTING_LAMP_BRIGHTNESS_DEFAULT)
 	lighting_bloom_intensity = sanitize_integer(lighting_bloom_intensity, LIGHTING_BLOOM_INTENSITY_MIN, LIGHTING_BLOOM_INTENSITY_MAX, LIGHTING_BLOOM_INTENSITY_DEFAULT)
 	lighting_quality = sanitize_integer(lighting_quality, LIGHTING_QUALITY_FAST, LIGHTING_QUALITY_HIGH, LIGHTING_QUALITY_DEFAULT)
-	light = sanitize_integer(light, 0, 7, initial(light))
-	glowlevel = sanitize_integer(glowlevel, GLOW_HIGH, GLOW_DISABLE, initial(glowlevel))
 	auto_fit_viewport = sanitize_integer(auto_fit_viewport, 0, 1, initial(auto_fit_viewport))
 	widescreenpref = sanitize_integer(widescreenpref, 0, 1, initial(widescreenpref))
 	fullscreen = sanitize_integer(fullscreen, 0, 1, initial(fullscreen))
@@ -1245,6 +1280,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["tgui_panel_theme"], tgui_panel_theme)
 	WRITE_FILE(S["tgui_panel_state"], tgui_panel_state)
 	WRITE_FILE(S["ui_zoom_preferences"], ui_zoom_preferences)
+	WRITE_FILE(S["vending_layouts"], vending_layouts)
 	WRITE_FILE(S["windowflash"], windowflashing)
 	WRITE_FILE(S["adminhelp_windowflash"], adminhelp_windowflash)
 	WRITE_FILE(S["windownoise"], windownoise)
@@ -1253,6 +1289,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	// Одиночный путь кладёт в буфер уже санитизированный список - пишем тем же видом.
 	WRITE_FILE(S["action_buttons_screen_locs"], sanitize_action_button_positions(action_buttons_screen_locs))
 	WRITE_FILE(S["be_special"], be_special)
+	WRITE_FILE(S["antag_opt_in_notice_seen"], antag_opt_in_notice_seen)
 	WRITE_FILE(S["default_slot"], default_slot)
 	WRITE_FILE(S["toggles"], toggles)
 	WRITE_FILE(S["sound_toggles"], sound_toggles)
@@ -1299,12 +1336,12 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["parallax"], parallax)
 	WRITE_FILE(S["ambientocclusion"], ambientocclusion)
 	WRITE_FILE(S["lighting_blur"], lighting_blur)
+	WRITE_FILE(S["multiz_performance"], multiz_performance)
+	WRITE_FILE(S["multiz_parallax"], multiz_parallax)
 	WRITE_FILE(S["lighting_brightness"], lighting_brightness)
 	WRITE_FILE(S["lighting_lamp_brightness"], lighting_lamp_brightness)
 	WRITE_FILE(S["lighting_bloom_intensity"], lighting_bloom_intensity)
 	WRITE_FILE(S["lighting_quality"], lighting_quality)
-	WRITE_FILE(S["light"], light)
-	WRITE_FILE(S["glowlevel"], glowlevel)
 	WRITE_FILE(S["auto_fit_viewport"], auto_fit_viewport)
 	WRITE_FILE(S["hud_toggle_flash"], hud_toggle_flash)
 	WRITE_FILE(S["hud_toggle_color"], hud_toggle_color)
@@ -1486,6 +1523,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 "balls_efficiency" = CUM_EFFICIENCY,
 "has_breasts" = FALSE,
 "breasts_color" = "ffffff",
+"breasts_sprite_variant" = "New",
+"breasts_nipples" = FALSE,
+"breasts_nipples_color" = "ffffff",
 "breasts_size" = BREASTS_SIZE_DEF,
 "breasts_shape" = DEF_BREASTS_SHAPE,
 "breasts_producing" = FALSE,
@@ -1535,6 +1575,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 "flavor_text" = "",
 "silicon_flavor_text" = "",
 "ooc_notes" = "",
+"ass_photo" = "",
 "meat_type" = "Mammalian",
 "body_model" = MALE,
 "body_size" = RESIZE_DEFAULT_SIZE,
@@ -1601,6 +1642,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["jumpsuit_style"] 					>> jumpsuit_style
 	S["uplink_loc"] 						>> uplink_spawn_loc
 	S["custom_speech_verb"] 				>> custom_speech_verb
+	S["custom_speech_verb_ru"]				>> custom_speech_verb_ru
 	S["custom_tongue"] 						>> custom_tongue
 	S["feature_mcolor"] 					>> features["mcolor"]
 	S["feature_lizard_tail"] 				>> features["tail_lizard"]
@@ -1739,12 +1781,19 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["feature_balls_size"] >> features["balls_size"]
 	S["feature_balls_visibility"] >> features["balls_visibility"]
 	S["feature_balls_fluid"] >> features["balls_fluid"]
+	if(S["feature_balls_cum_rate"])
+		S["feature_balls_cum_rate"] >> features["balls_cum_rate"]
+	if(S["feature_balls_cum_max"])
+		S["feature_balls_cum_max"] >> features["balls_cum_max"]
 	S["feature_balls_accessible"] >> features["balls_accessible"]
 	//breasts features
 	S["feature_has_breasts"] >> features["has_breasts"]
 	S["feature_breasts_size"] >> features["breasts_size"]
 	S["feature_breasts_shape"] >> features["breasts_shape"]
 	S["feature_breasts_color"] >> features["breasts_color"]
+	S["feature_breasts_sprite_variant"] >> features["breasts_sprite_variant"] // BLUEMOON ADD
+	S["feature_breasts_nipples"] >> features["breasts_nipples"] // BLUEMOON ADD
+	S["feature_breasts_nipples_color"] >> features["breasts_nipples_color"] // BLUEMOON ADD
 	S["feature_breasts_producing"] >> features["breasts_producing"]
 	S["feature_breasts_fluid"] >> features["breasts_fluid"]
 	S["feature_breasts_visibility"] >> features["breasts_visibility"]
@@ -1781,6 +1830,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["feature_flavor_text"] >> features["flavor_text"]
 	S["feature_silicon_flavor_text"] >> features["silicon_flavor_text"]
 	S["feature_ooc_notes"] >> features["ooc_notes"]
+	S["feature_ass_photo"] >> features["ass_photo"]
 
 	//SPLURT edit
 	S["feature_naked_flavor_text"] >> features["naked_flavor_text"]
@@ -2078,6 +2128,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	features["vag_shape"] = sanitize_inlist(features["vag_shape"], GLOB.vagina_shapes_list, DEF_VAGINA_SHAPE)
 	features["anus_shape"] = sanitize_inlist(features["anus_shape"], GLOB.anus_shapes_list, DEF_ANUS_SHAPE)
 	features["breasts_color"] = sanitize_hexcolor(features["breasts_color"], 6, FALSE, "FFFFFF")
+	features["breasts_sprite_variant"] = sanitize_inlist(features["breasts_sprite_variant"], list("New", "Old"), "New")  // BLUEMOON ADD
+	features["breasts_nipples"] = sanitize_integer(features["breasts_nipples"], 0, 1, FALSE)                    // BLUEMOON ADD
+	features["breasts_nipples_color"] = sanitize_hexcolor(features["breasts_nipples_color"], 6, FALSE, "FFFFFF") // BLUEMOON ADD
 	features["cock_color"] = sanitize_hexcolor(features["cock_color"], 6, FALSE, "FFFFFF")
 	features["balls_color"] = sanitize_hexcolor(features["balls_color"], 6, FALSE, "FFFFFF")
 	features["vag_color"] = sanitize_hexcolor(features["vag_color"], 6, FALSE, "FFFFFF")
@@ -2091,7 +2144,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	features["belly_visibility"] = sanitize_inlist(features["belly_visibility"], safe_visibilities, GEN_VISIBLE_NO_UNDIES)
 	features["anus_visibility"] = sanitize_inlist(features["anus_visibility"], safe_visibilities, GEN_VISIBLE_NO_UNDIES)
 
-	custom_speech_verb = sanitize_inlist(custom_speech_verb, GLOB.speech_verbs, "default")
+	custom_speech_verb_ru = sanitize_integer(custom_speech_verb_ru, 0, 1, initial(custom_speech_verb_ru))
+	if(!(custom_speech_verb in GLOB.speech_verbs) && !(custom_speech_verb in GLOB.speech_verbs_ru))
+		custom_speech_verb = GLOB.speech_verbs[1]
 	custom_tongue = sanitize_inlist(custom_tongue, GLOB.roundstart_tongues, "default")
 
 	security_records = copytext_char(security_records, 1, MAX_FLAVOR_LEN)
@@ -2104,6 +2159,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	features["silicon_flavor_text"] = copytext_char(features["silicon_flavor_text"], 1, MAX_FLAVOR_LEN)
 	features["custom_species_lore"] = copytext_char(features["custom_species_lore"], 1, MAX_FLAVOR_LEN) //SPLURT edit
 	features["ooc_notes"] = copytext_char(features["ooc_notes"], 1, MAX_FLAVOR_LEN)
+	features["ass_photo"] = sanitize_text(features["ass_photo"])
 
 	//Headshots
 	features["headshot_links"] = sanitize_islist(features["headshot_links"], list())
@@ -2387,6 +2443,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["uplink_loc"]							, uplink_spawn_loc)
 	WRITE_FILE(S["species"]								, pref_species.id)
 	WRITE_FILE(S["custom_speech_verb"]					, custom_speech_verb)
+	WRITE_FILE(S["custom_speech_verb_ru"]				, custom_speech_verb_ru)
 	WRITE_FILE(S["custom_tongue"]						, custom_tongue)
 	WRITE_FILE(S["bark_id"]								, bark_id)
 	WRITE_FILE(S["bark_speed"]							, bark_speed)
@@ -2411,8 +2468,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["feature_deco_wings"]					, features["deco_wings"])
 	WRITE_FILE(S["feature_horns_color"]					, features["horns_color"])
 	WRITE_FILE(S["feature_wings_color"]					, features["wings_color"])
-	WRITE_FILE(S["feature_insect_fluff_color"], features["insect_fluff_color"])
-	WRITE_FILE(S["feature_insect_markings_color"], features["insect_markings_color"])
+	WRITE_FILE(S["feature_insect_fluff_color"]			, features["insect_fluff_color"])
+	WRITE_FILE(S["feature_insect_markings_color"]		, features["insect_markings_color"])
 	WRITE_FILE(S["feature_insect_wings"]				, features["insect_wings"])
 	WRITE_FILE(S["feature_insect_fluff"]				, features["insect_fluff"])
 	WRITE_FILE(S["feature_insect_markings"]				, features["insect_markings"])
@@ -2440,12 +2497,18 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["feature_balls_accessible"], features["balls_accessible"])
 	WRITE_FILE(S["feature_balls_stuffing"], features["balls_stuffing"])
 	WRITE_FILE(S["feature_balls_fluid"], features["balls_fluid"])
+	WRITE_FILE(S["feature_balls_cum_rate"], features["balls_cum_rate"])
+	WRITE_FILE(S["feature_balls_cum_max"], features["balls_cum_max"])
+
 	WRITE_FILE(S["feature_balls_accessible"], features["balls_accessible"])
 
 	WRITE_FILE(S["feature_has_breasts"], features["has_breasts"])
 	WRITE_FILE(S["feature_breasts_size"], features["breasts_size"])
 	WRITE_FILE(S["feature_breasts_shape"], features["breasts_shape"])
 	WRITE_FILE(S["feature_breasts_color"], features["breasts_color"])
+	WRITE_FILE(S["feature_breasts_sprite_variant"], features["breasts_sprite_variant"])  // BLUEMOON ADD
+	WRITE_FILE(S["feature_breasts_nipples"], features["breasts_nipples"]) // BLUEMOON ADD
+	WRITE_FILE(S["feature_breasts_nipples_color"], features["breasts_nipples_color"]) // BLUEMOON ADD
 	WRITE_FILE(S["feature_breasts_fluid"], features["breasts_fluid"])
 	WRITE_FILE(S["feature_breasts_producing"], features["breasts_producing"])
 	WRITE_FILE(S["feature_breasts_visibility"], features["breasts_visibility"])
@@ -2508,6 +2571,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["alt_titles_preferences"], alt_titles_preferences)
 
 	WRITE_FILE(S["feature_ooc_notes"], features["ooc_notes"])
+	WRITE_FILE(S["feature_ass_photo"], features["ass_photo"])
 
 	WRITE_FILE(S["feature_color_scheme"], features["color_scheme"])
 

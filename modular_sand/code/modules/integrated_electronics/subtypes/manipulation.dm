@@ -65,6 +65,11 @@
 		var/value = get_pin_data(IC_INPUT, i+1)
 		if(key && value)
 			params["[key]"] = value
+	// ui_act() зовётся мимо usr, поэтому оператора передаём отдельным параметром -
+	// иначе Remote Logs запишет "Unspecified". Пишем ПОСЛЕ цикла выше, чтобы
+	// ключ из входов схемы не мог подменить атрибуцию.
+	if(ismob(assembly.loc))
+		params["ic_advactivator_user"] = assembly.loc
 	if(acting_object)
 		var/datum/ntnet/my_ntnet = SSnetworks.station_network
 		var/user = assembly.loc

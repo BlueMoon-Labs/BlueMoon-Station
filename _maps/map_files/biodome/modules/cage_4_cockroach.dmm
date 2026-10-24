@@ -1,0 +1,84 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"d" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 10
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 6
+	},
+/obj/modular_map_connector,
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+"h" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2,
+/obj/item/clothing/mask/cigarette/rollie,
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+"j" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+"l" = (
+/mob/living/simple_animal/cockroach,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 4
+	},
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+"s" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
+	dir = 9
+	},
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/grown/bananapeel = 6, /obj/item/grown/corncob = 3)
+	},
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+"x" = (
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+"y" = (
+/mob/living/simple_animal/cockroach,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+"E" = (
+/mob/living/simple_animal/cockroach,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4,
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+"W" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 5
+	},
+/obj/machinery/light/warm/directional/south,
+/obj/effect/spawner/lootdrop{
+	loot = list(/obj/item/grown/bananapeel = 6, /obj/item/grown/corncob = 3)
+	},
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+"Y" = (
+/obj/item/cigbutt/roach,
+/turf/open/floor/plating,
+/area/maintenance/aft/upper)
+
+(1,1,1) = {"
+h
+y
+W
+"}
+(2,1,1) = {"
+x
+Y
+d
+"}
+(3,1,1) = {"
+x
+x
+l
+"}
+(4,1,1) = {"
+E
+j
+s
+"}

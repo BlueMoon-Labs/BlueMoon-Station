@@ -29,7 +29,7 @@
 /datum/action/innate/ability/humanoid_customization/proc/change_form()
 	var/mob/living/carbon/human/H = owner
 
-	var/select_alteration = tgui_input_list(owner, "Select what part of your form to alter", "Form Alteration", list("Body Color", "Eye Color","Hair Style", "Genitals", "Tail", "Snout", "Wings", "Markings", "Ears", "Taur body", "Penis", "Testicles", "Vagina", "Penis Length", "Breast Size", "Breast Shape", "Testicles Size", "Butt Size", "Belly Size", "Body Size", "Genital Color", "Horns", "Hair Color", "Skin Tone (Non-Mutant)", "Gender & Lewd", "Legs"))
+	var/select_alteration = tgui_input_list(owner, "Select what part of your form to alter", "Form Alteration", list("Body Color", "Eye Color","Hair Style", "Genitals", "Tail", "Snout", "Wings", "Markings", "Ears", "Taur body", "Penis", "Testicles", "Vagina", "Penis Length", "Breast Size", "Breast Shape", "Testicles Size", "Butt Size", "Belly Size", "Body Size", "Genital Color", "Horns", "Skin Tone (Non-Mutant)", "Gender & Lewd", "Legs"))
 
 	if(select_alteration == "Body Color")
 		var/new_color = input(owner, "Choose your skin color:", "Race change","#"+H.dna.features["mcolor"]) as color|null
@@ -65,17 +65,10 @@
 		H.dna?.update_ui_block(DNA_RIGHT_EYE_COLOR_BLOCK)
 		H.update_body()
 	else if(select_alteration == "Hair Style")
+		var/list/hair_tabs = list("hair")
 		if(H.gender == MALE)
-			var/new_style = tgui_input_list(owner, "Select a facial hair style", "Hair Alterations", GLOB.facial_hair_styles_list)
-			if(new_style)
-				H.facial_hair_style = new_style
-		else
-			H.facial_hair_style = "Shaved"
-		//handle normal hair
-		var/new_style = tgui_input_list(owner, "Select a hair style", "Hair Alterations", GLOB.hair_styles_list)
-		if(new_style)
-			H.hair_style = new_style
-			H.update_hair()
+			hair_tabs += "facial"
+		open_live_hair_style_picker(owner, H, H, hair_tabs, CALLBACK(src, PROC_REF(apply_hair_style), H), allow_color_without_spray = TRUE)
 	else if (select_alteration == "Genitals")
 		var/operation = tgui_input_list(owner, "Select organ operation.", "Organ Manipulation", list("add sexual organ", "remove sexual organ"))
 		switch(operation)
@@ -104,7 +97,7 @@
 			var/datum/sprite_accessory/ears/mam_ears/instance = GLOB.mam_ears_list[path]
 			if(istype(instance, /datum/sprite_accessory))
 				var/datum/sprite_accessory/S = instance
-				if((!S.ckeys_allowed) || (S.ckeys_allowed.Find(H.client.ckey)))
+				if(S.is_allowed_for(H.client.key))
 					snowflake_ears_list[S.name] = path
 		var/new_ears = tgui_input_list(owner, "Choose your character's ears:", "Ear Alteration", snowflake_ears_list)
 		if(new_ears)
@@ -117,7 +110,7 @@
 			var/datum/sprite_accessory/snouts/mam_snouts/instance = GLOB.mam_snouts_list[path]
 			if(istype(instance, /datum/sprite_accessory))
 				var/datum/sprite_accessory/S = instance
-				if((!S.ckeys_allowed) || (S.ckeys_allowed.Find(H.client.ckey)))
+				if(S.is_allowed_for(H.client.key))
 					snowflake_snouts_list[S.name] = path
 		var/new_snout = tgui_input_list(owner, "Choose your character's face:", "Face Alteration", snowflake_snouts_list)
 		if(new_snout)
@@ -135,7 +128,7 @@
 			var/datum/sprite_accessory/deco_wings/instance = GLOB.deco_wings_list[path]
 			if(istype(instance, /datum/sprite_accessory))
 				var/datum/sprite_accessory/S = instance
-				if((!S.ckeys_allowed) || (S.ckeys_allowed.Find(H.client.ckey)))
+				if(S.is_allowed_for(H.client.key))
 					snowflake_wings_list[S.name] = path
 		var/new_wings = tgui_input_list(owner, "Choose your character's wings:", "Wing Alteration", snowflake_wings_list)
 		if(new_wings)
@@ -148,7 +141,7 @@
 			var/datum/sprite_accessory/mam_body_markings/instance = GLOB.mam_body_markings_list[path]
 			if(istype(instance, /datum/sprite_accessory))
 				var/datum/sprite_accessory/S = instance
-				if((!S.ckeys_allowed) || (S.ckeys_allowed.Find(H.client.ckey)))
+				if(S.is_allowed_for(H.client.key))
 					snowflake_markings_list[S.name] = path
 		var/new_mam_body_markings = tgui_input_list(H, "Choose your character's body markings:", "Marking Alteration", snowflake_markings_list)
 		if(new_mam_body_markings)
@@ -164,7 +157,7 @@
 			var/datum/sprite_accessory/tails/mam_tails/instance = GLOB.mam_tails_list[path]
 			if(istype(instance, /datum/sprite_accessory))
 				var/datum/sprite_accessory/S = instance
-				if((!S.ckeys_allowed) || (S.ckeys_allowed.Find(H.client.ckey)))
+				if(S.is_allowed_for(H.client.key))
 					snowflake_tails_list[S.name] = path
 		var/new_tail = tgui_input_list(owner, "Choose your character's Tail(s):", "Tail Alteration", snowflake_tails_list)
 		if(new_tail)
@@ -181,7 +174,7 @@
 				var/datum/sprite_accessory/S = instance
 				if(S.ignore)
 					continue
-				if((!S.ckeys_allowed) || (S.ckeys_allowed.Find(H.client.ckey)))
+				if(S.is_allowed_for(H.client.key))
 					snowflake_taur_list[S.name] = path
 		var/new_taur = tgui_input_list(owner, "Choose your character's tauric body:", "Tauric Alteration", snowflake_taur_list)
 		if(new_taur)
@@ -371,12 +364,6 @@
 
 			H.update_body()
 
-	else if (select_alteration == "Hair Color")
-		var/new_hair_color = input(owner, "Choose your character's hair color:", "Character Preference", "#" + H.dna.features["hair_color"]) as color|null
-		if (new_hair_color)
-			H.hair_color = sanitize_hexcolor(new_hair_color, 6)
-		H.update_hair()
-
 	else if(select_alteration == "Skin Tone (Non-Mutant)") // Skin tone, different than mutant color
 		var/list/choices = GLOB.skin_tones - GLOB.nonstandard_skin_tones
 		if(CONFIG_GET(flag/allow_custom_skintones))
@@ -431,3 +418,17 @@
 			H.update_body()
 
 /// SPLURT EDIT END
+
+/datum/action/innate/ability/humanoid_customization/proc/apply_hair_style(mob/living/carbon/human/H, new_style, tab)
+	if(owner != H || !IsAvailable() || iszombie_infectious(H))
+		return FALSE
+	if(tab == "facial")
+		if(H.gender != MALE)
+			return FALSE
+		H.facial_hair_style = new_style
+	else
+		H.hair_style = new_style
+	if(H.gender != MALE)
+		H.facial_hair_style = "Shaved"
+	H.update_hair()
+	return TRUE

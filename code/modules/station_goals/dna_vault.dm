@@ -170,6 +170,13 @@
 			break
 	. = ..()
 
+/obj/machinery/dna_vault/update_icon_state()
+	if(machine_stat & (NOPOWER|BROKEN))
+		icon_state = "vault-off"
+		return ..()
+	icon_state = "vault"
+	return ..()
+
 /obj/machinery/dna_vault/Destroy()
 	for(var/V in fillers)
 		var/obj/structure/filler/filler = V

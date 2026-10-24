@@ -16,7 +16,7 @@
 	last_poll_duration = duration
 	return list()
 
-/// Учебная Хватка поднимает тело без mind; обычная роль зовёт призраков на 10 секунд и без ответа не тратит биомассу.
+/// Учебная Хватка поднимает тело без mind; обычная роль зовёт призраков на 10 секунд и без ответа поднимает пустого гуля за биомассу.
 /datum/unit_test/heretic_log_flesh_mindless/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_FLESH
@@ -27,28 +27,32 @@
 	var/datum/eldritch_knowledge/flesh_grasp/ghost_poll_probe/probe = allocate(/datum/eldritch_knowledge/flesh_grasp/ghost_poll_probe)
 	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(heretic.owner.current, EAST))
 	victim.death()
+	var/mob/living/carbon/human/trainee = allocate(/mob/living/carbon/human, get_step(heretic.owner.current, NORTH))
+	trainee.death()
 	TEST_ASSERT_NULL(victim.mind, "Тело изначально без разума.")
 	path.combat_resource = 2
+	probe.ghoul_poll_pending = TRUE
+	TEST_ASSERT(!probe.on_mansus_grasp(victim, heretic.owner.current, TRUE), "Пока идёт опрос, второй не начинается.")
+	TEST_ASSERT_NULL(probe.last_poll_duration, "Повторный опрос не запущен.")
+	probe.ghoul_poll_pending = FALSE
 	TEST_ASSERT(probe.on_mansus_grasp(victim, heretic.owner.current, TRUE), "Обычная роль зовёт призраков в пустое тело.")
 	TEST_ASSERT_EQUAL(probe.last_poll_body, REF(victim), "Опрос предлагает именно это тело.")
 	TEST_ASSERT_EQUAL(probe.last_poll_duration, 10 SECONDS, "Призракам даётся 10 секунд.")
 	TEST_ASSERT(!probe.ghoul_poll_pending, "Завершённый опрос снимает ожидание.")
-	TEST_ASSERT_EQUAL(path.combat_resource, 2, "Без ответа духов биомасса сохраняется.")
-	TEST_ASSERT(victim.stat == DEAD && isnull(victim.mind), "Без ответа духов тело остаётся мёртвым.")
-	probe.ghoul_poll_pending = TRUE
-	probe.last_poll_duration = null
-	TEST_ASSERT(!probe.on_mansus_grasp(victim, heretic.owner.current, TRUE), "Пока идёт опрос, второй не начинается.")
-	TEST_ASSERT_NULL(probe.last_poll_duration, "Повторный опрос не запущен.")
-	probe.ghoul_poll_pending = FALSE
-	heretic.simulated = TRUE
-	TEST_ASSERT(grasp.on_mansus_grasp(victim, heretic.owner.current, TRUE), "Учебная роль поднимает пустую мишень.")
-	TEST_ASSERT_NOTNULL(victim.mind, "Гулю создан разум.")
+	TEST_ASSERT_EQUAL(path.combat_resource, 1, "Без ответа духов пустой гуль стоит одну биомассу.")
+	TEST_ASSERT(victim.stat != DEAD && victim.GetComponent(/datum/component/heretic_flesh_puppet), "Без ответа духов тело встаёт пустым.")
 	allocated += victim.mind
-	var/datum/antagonist/heretic_monster/ghoul/ghoul = victim.mind.has_antag_datum(/datum/antagonist/heretic_monster/ghoul)
+	path.combat_resource = 2
+	heretic.simulated = TRUE
+	TEST_ASSERT(grasp.on_mansus_grasp(trainee, heretic.owner.current, TRUE), "Учебная роль поднимает пустую мишень.")
+	TEST_ASSERT_NOTNULL(trainee.mind, "Гулю создан разум.")
+	allocated += trainee.mind
+	var/datum/antagonist/heretic_monster/ghoul/ghoul = trainee.mind.has_antag_datum(/datum/antagonist/heretic_monster/ghoul)
 	TEST_ASSERT_NOTNULL(ghoul, "Гуль получил роль слуги.")
-	TEST_ASSERT(victim.stat != DEAD, "Тело ожило.")
+	TEST_ASSERT(trainee.stat != DEAD, "Тело ожило.")
+	TEST_ASSERT_NULL(trainee.GetComponent(/datum/component/heretic_flesh_puppet), "Учебный гуль не ходит сам.")
 	TEST_ASSERT_EQUAL(path.combat_resource, 1, "Подъём расходует одну биомассу.")
-	TEST_ASSERT(!grasp.on_mansus_grasp(victim, heretic.owner.current, TRUE), "Живого гуля нельзя поднять повторно.")
+	TEST_ASSERT(!grasp.on_mansus_grasp(trainee, heretic.owner.current, TRUE), "Живого гуля нельзя поднять повторно.")
 
 /// Повторное подключение ржавчины не повторяет урон и снимается при замене пола.
 /datum/unit_test/heretic_log_rust_attachment/Run()
@@ -243,30 +247,44 @@
 	session.update_practice()
 	TEST_ASSERT(session.practice_complete, "Реальный крит завершает упражнение.")
 
-/// Незавершённый ритуал даёт призракам 10 секунд и без ответа не тратит биомассу; учебная роль поднимает мишень без опроса.
+/// Незавершённый ритуал даёт призракам 10 секунд и без ответа поднимает пустого мертвеца за две биомассы; без руны тело остаётся мёртвым; учебная роль поднимает мишень без опроса.
 /datum/unit_test/heretic_log_flesh_silent_dead_poll/Run()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_FLESH
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_flesh)
 	var/datum/eldritch_knowledge/base_flesh/path = heretic.get_knowledge(/datum/eldritch_knowledge/base_flesh)
 	var/datum/eldritch_knowledge/flesh_ghoul/ghost_poll_probe/ritual = allocate(/datum/eldritch_knowledge/flesh_ghoul/ghost_poll_probe)
+	heretic.researched_knowledge[ritual.type] = ritual
 	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(heretic.owner.current, EAST))
 	victim.death()
 	path.combat_resource = 2
-	TEST_ASSERT(!ritual.on_finished_recipe(heretic.owner.current, list(victim), get_turf(victim)), "Без ответа духов ритуал не поднимает тело.")
+	TEST_ASSERT(!ritual.on_finished_recipe(heretic.owner.current, list(victim), get_turf(victim)), "Без руны ритуал не поднимает тело.")
 	TEST_ASSERT_EQUAL(ritual.last_poll_body, REF(victim), "Опрос предлагает тело с руны.")
 	TEST_ASSERT_EQUAL(ritual.last_poll_duration, 10 SECONDS, "Призракам даётся 10 секунд, как и при других призывах.")
-	TEST_ASSERT_EQUAL(path.combat_resource, 2, "Без ответа духов биомасса сохраняется.")
+	TEST_ASSERT_EQUAL(path.combat_resource, 2, "Сорванный обряд сохраняет биомассу.")
 	TEST_ASSERT(victim.stat == DEAD, "Тело остаётся мёртвым.")
+	var/obj/effect/eldritch/rune = allocate(/obj/effect/eldritch, get_turf(victim))
+	flesh_rune_reserve(rune, victim)
+	ritual.last_poll_body = null
+	COOLDOWN_RESET(ritual, servant_poll_cooldown)
+	TEST_ASSERT(ritual.on_finished_recipe(heretic.owner.current, list(victim), get_turf(victim)), "Без ответа духов мертвец встаёт пустым.")
+	TEST_ASSERT_EQUAL(ritual.last_poll_body, REF(victim), "Духов позвали.")
+	TEST_ASSERT_EQUAL(path.combat_resource, 0, "Пустой мертвец стоит две биомассы.")
+	TEST_ASSERT(victim.stat != DEAD && victim.GetComponent(/datum/component/heretic_flesh_puppet), "Пустым мертвецом правит голод.")
+	allocated += victim.mind
+	var/mob/living/carbon/human/trainee = allocate(/mob/living/carbon/human, get_step(heretic.owner.current, NORTH))
+	trainee.death()
+	path.combat_resource = 2
 	heretic.simulated = TRUE
 	ritual.last_poll_body = null
 	COOLDOWN_RESET(ritual, servant_poll_cooldown)
-	TEST_ASSERT(ritual.on_finished_recipe(heretic.owner.current, list(victim), get_turf(victim)), "Учебная роль поднимает пустую мишень.")
+	TEST_ASSERT(ritual.on_finished_recipe(heretic.owner.current, list(trainee), get_turf(trainee)), "Учебная роль поднимает пустую мишень.")
 	TEST_ASSERT_NULL(ritual.last_poll_body, "Учебная роль не зовёт призраков сервера.")
-	TEST_ASSERT_NOTNULL(victim.mind, "Мертвецу создан разум.")
-	allocated += victim.mind
-	TEST_ASSERT_NOTNULL(victim.mind.has_antag_datum(/datum/antagonist/heretic_monster/voiceless_dead), "Мертвец получил роль слуги.")
+	TEST_ASSERT_NOTNULL(trainee.mind, "Мертвецу создан разум.")
+	allocated += trainee.mind
+	TEST_ASSERT_NOTNULL(trainee.mind.has_antag_datum(/datum/antagonist/heretic_monster/voiceless_dead), "Мертвец получил роль слуги.")
 	TEST_ASSERT_EQUAL(path.combat_resource, 0, "Подъём расходует две биомассы.")
+	heretic.researched_knowledge -= ritual.type
 
 /// Смена облика сохраняет перезарядку, здоровье и оставшиеся сегменты Повелителя Ночи.
 /datum/unit_test/heretic_log_flesh_transformation/Run()
@@ -302,7 +320,7 @@
 	spell.charge_counter = 0
 	spell.perform(list(worm), TRUE, worm)
 	TEST_ASSERT_EQUAL(heretic.owner.current, human, "Разум возвращается в прежнее тело.")
-	TEST_ASSERT(madness.granted_spell.charge_counter < madness.granted_spell.charge_max, "Возврат в человека не обходит трёхминутный откат.")
+	TEST_ASSERT(madness.granted_spell.charge_counter < madness.granted_spell.charge_max, "Возврат в человека не обходит откат Касания.")
 	TEST_ASSERT_EQUAL(length(knowledge.shed_form_health), 2, "Сохранены ровно два уцелевших сегмента.")
 	spell = knowledge.ascension_spell_instances[1]
 	TEST_ASSERT(spell.charge_counter < spell.charge_max, "Обратное превращение тоже сохраняет откат.")
@@ -382,6 +400,7 @@
 	TEST_ASSERT_NULL(locate(/mob/living/simple_animal/hostile/eldritch/raw_prophet) in far_turf, "Пустое тело удалено.")
 	TEST_ASSERT(!probe.summoning, "Призыв снова доступен.")
 	probe.poll_result = list(user)
+	COOLDOWN_RESET(probe, servant_poll_cooldown)
 	TEST_ASSERT(!probe.on_finished_recipe(user, list(), far_turf), "Отошедший от руны не завершает призыв.")
 	TEST_ASSERT_EQUAL(probe.finish_failure_reason, "Вы отошли от руны.", "Причина названа после отклика.")
 	TEST_ASSERT_NULL(locate(/mob/living/simple_animal/hostile/eldritch/raw_prophet) in far_turf, "Тело после отклика тоже удалено.")

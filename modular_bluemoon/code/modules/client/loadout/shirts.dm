@@ -24,7 +24,7 @@
 
 /datum/gear/shirt/adjustable_shirt
 	name = "adjustable shirt"
-	path = /obj/item/clothing/underwear/shirt/adjustable_wtoggle/adjustable_shirt
+	path = /obj/item/clothing/underwear/shirt/adjustable/toggle/adjustable_shirt
 
 /datum/gear/shirt/formalshirt
 	name = "formal shirt"

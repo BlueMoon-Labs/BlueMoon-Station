@@ -26,6 +26,9 @@
 	var/tmp/knot_resist_cd_until = 0
 	var/tmp/in_knot_check = FALSE
 
+/obj/item/organ/genital
+	var/is_knotted = FALSE
+
 // ============================================================
 // PENIS ORGAN EXTENSION
 // ============================================================
@@ -36,6 +39,7 @@
 	var/knot_strength = 1
 	var/knot_state = 0
 	var/mob/living/knot_partner = null
+	var/obj/item/organ/genital/knotted_genital = null
 	var/last_knot_check = 0
 	var/last_tug_time = 0
 
@@ -226,6 +230,12 @@
 	apply_mood_effects(user, partner, TRUE)
 	apply_aphrodisiac_effects(user, partner)
 	handle_post_knot_arousal(user, partner)
+	switch(target_zone)
+		if(CUM_TARGET_VAGINA)
+			knotted_genital = partner.getorganslot(ORGAN_SLOT_VAGINA)
+		if(CUM_TARGET_ANUS)
+			knotted_genital = partner.getorganslot(ORGAN_SLOT_ANUS)
+	knotted_genital?.is_knotted = TRUE
 
 /obj/item/organ/genital/penis/proc/send_knot_messages(mob/living/user, mob/living/partner, zone_text)
 	visible_message(list(user, partner),
@@ -401,6 +411,9 @@
 	knot_state = 0
 	knot_partner = null
 	knot_until = 0
+	if(!QDELETED(knotted_genital))
+		knotted_genital.is_knotted = FALSE
+	knotted_genital = null
 
 	if(istype(user, /mob/living))
 		UnregisterSignal(user, COMSIG_MOVABLE_MOVED)

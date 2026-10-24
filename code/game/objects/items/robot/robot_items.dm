@@ -1066,26 +1066,17 @@
 	desc = "Для нежных поцелуев."
 	item_flags = NOBLUDGEON
 
-/obj/item/dogborg_tongue/afterattack(atom/target, mob/user, proximity)
+/obj/item/dogborg_tongue/afterattack(mob/living/target, mob/living/silicon/robot/user, proximity)
 	. = ..()
 	if(!proximity || !isliving(target))
 		return
-	var/mob/living/silicon/robot/R = user
-	var/mob/living/L = target
-	// BLUEMOON EDIT START commented P.S. This is not a vore mechanic, the check has been removed by analogy with the living tongue
-	/*
-	if(L.ckey && !(L.client?.prefs.vore_flags & LICKABLE))
-		to_chat(R, "<span class='danger'>ERROR ERROR: Target not lickable. Aborting display-of-affection subroutine.</span>")
-		return
-	*/
-	// BLUEMOON EDIT END commented
 
-	if(check_zone(R.zone_selected) == "head")
-		R.visible_message("<span class='warning'>\the [R] affectionally licks \the [L]'s face!</span>", "<span class='notice'>You affectionally lick \the [L]'s face!</span>")
-		playsound(R, 'sound/effects/attackblob.ogg', 50, 1)
+	if(check_zone(user.zone_selected) == "head")
+		user.visible_message(span_warning("[user] нежно облизывает лицо [target]!"), span_notice("Вы нежно облизываете лицо [target]!"))
 	else
-		R.visible_message("<span class='warning'>\the [R] affectionally licks \the [L]!</span>", "<span class='notice'>You affectionally lick \the [L]!</span>")
-		playsound(R, 'sound/effects/attackblob.ogg', 50, 1)
+		user.visible_message(span_warning("[user] нежно облизывает [target]!"), span_notice("Вы нежно облизываете [target]!"))
+	user.show_message(span_notice("На вкус [target] можно описать как [target.get_taste_message()]."))
+	playsound(user, 'sound/effects/attackblob.ogg', 50, 1)
 
 /obj/item/dogborg_nose
 	name = "boop module"
@@ -1101,3 +1092,6 @@
 		return
 	do_attack_animation(target, null, src)
 	user.visible_message("<span class='notice'>[user] [pick("nuzzles", "pushes", "boops")] \the [target.name] with their nose!</span>")
+	if(isliving(target))
+		var/mob/living/L = target
+		user.show_message(span_notice("Аромат [L] можно описать как [L.get_smell_message()]."))

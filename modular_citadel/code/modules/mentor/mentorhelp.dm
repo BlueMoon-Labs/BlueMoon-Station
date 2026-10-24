@@ -27,7 +27,7 @@
 		to_chat(src, "<span class='danger'>Вы не можете отправлять менторхелпы (Мут).</span>")
 		return
 
-	var/datum/player_ticket_panel/panel = new(src)
+	var/datum/player_ticket_panel/panel = new(src, "mentor")
 	panel.ui_interact(usr)
 
 /proc/get_mentor_counts()

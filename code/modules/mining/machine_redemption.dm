@@ -3,7 +3,7 @@
 
 /obj/machinery/mineral/ore_redemption
 	name = "ore redemption machine"
-	desc = "A machine that accepts ore and instantly transforms it into workable material sheets. Points for ore are generated based on type and can be redeemed at a mining equipment vendor."
+	desc = "Рудоплавильная печь, мгновенно перерабатывает руду в рабочее сырьё в виде листов. Очки за руду начисляются зависимо от её ценности и могут быть потрачены в шахтёрском автомате со снаряжением."
 	icon = 'icons/obj/machines/mining_machines.dmi'
 	icon_state = "ore_redemption"
 	density = TRUE
@@ -54,8 +54,12 @@
 
 /obj/machinery/mineral/ore_redemption/examine(mob/user)
 	. = ..()
-	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>The status display reads: Smelting <b>[ore_multiplier]</b> sheet(s) per piece of ore.<br>Reward point generation at <b>[point_upgrade*100]%</b>.<br>Ore pickup speed at <b>[ore_pickup_rate]</b>.</span>"
+	. += span_notice("Мультитулом можно задать направление приёма/выдачи руды.")
+
+/obj/machinery/mineral/ore_redemption/examine_display_content(mob/user)
+	. += "– Плавится <b>[ore_multiplier]</b> шт. листов сырья за единицу руды.\n\
+	– Вознаграждение очками за сбыт руды: <b>[point_upgrade*100]%</b>.\n\
+	– Руда загружается со скоростью <b>[ore_pickup_rate]</b> шт./цикл."
 
 /obj/machinery/mineral/ore_redemption/proc/smelt_ore(obj/item/stack/ore/O)
 	if(QDELETED(O))
@@ -143,7 +147,7 @@
 
 	for(var/obj/machinery/requests_console/D in GLOB.allConsoles)
 		if(D.receive_ore_updates)
-			D.createmessage("Ore Redemption Machine", "New minerals available!", msg, 1, 0)
+			D.createmessage("Рудная печь", "Доступно новое сырьё!", msg, 1, 0)
 
 /obj/machinery/mineral/ore_redemption/process()
 	if(materials.mat_container && !panel_open && powered())
@@ -188,7 +192,7 @@
 			return TRUE
 
 	if(istype(W, /obj/item/stack/ore/bluespace_crystal/refined))
-		to_chat(user, "<span class='notice'>[W] has already been refined!</span>")
+		to_chat(user, span_notice("Для [W] уже была произведена обработка!"))
 		return
 
 	return ..()
@@ -199,7 +203,7 @@
 	if(panel_open)
 		input_dir = turn(input_dir, -90)
 		output_dir = turn(output_dir, -90)
-		to_chat(user, "<span class='notice'>You change [src]'s I/O settings, setting the input to [dir2text(input_dir)] and the output to [dir2text(output_dir)].</span>")
+		to_chat(user, span_notice("Вы изменили настройки П/В [src], настраивая приём руды на [dir2text_ru(input_dir)] и выдачу сырья на [dir2text_ru(output_dir)]."))
 		return TRUE
 
 /obj/machinery/mineral/ore_redemption/ui_interact(mob/user, datum/tgui/ui)
@@ -220,19 +224,29 @@
 			var/amount = mat_container.materials[M]
 			var/sheet_amount = amount / MINERAL_MATERIAL_AMOUNT
 			var/ref = REF(M)
-			data["materials"] += list(list("name" = M.name, "id" = ref, "amount" = sheet_amount, "value" = ore_values[M.type]))
+			var/base_points = ore_values[M.type]
+			var/upgraded_points = isnull(base_points) ? null : base_points * point_upgrade
+			data["materials"] += list(list(
+				"name" = capitalize(vocabulary_to_ru(GLOB.mat_ru_nominative, M.name)),
+				"id" = ref,
+				"amount" = sheet_amount,
+				"value" = upgraded_points
+			))
 
 		data["alloys"] = list()
 		for(var/v in stored_research.researched_designs)
 			var/datum/design/D = SSresearch.techweb_design_by_id(v)
-			data["alloys"] += list(list("name" = D.name, "id" = D.id, "amount" = can_smelt_alloy(D)))
+			data["alloys"] += list(list(
+				"name" = vocabulary_to_ru(GLOB.alloys_ru_nominative, D.name),
+				"id" = D.id,
+				"amount" = can_smelt_alloy(D)))
 
 	if (!mat_container)
-		data["disconnected"] = "local mineral storage is unavailable"
+		data["disconnected"] = "локальное хранилище сырье недоступно"
 	else if (!materials.silo)
-		data["disconnected"] = "no ore silo connection is available; storing locally"
+		data["disconnected"] = "не обнаружено хранилище материалов; локальное хранение"
 	else if (materials.on_hold())
-		data["disconnected"] = "mineral withdrawal is on hold"
+		data["disconnected"] = "выдача сырья находится на удержании"
 
 	data["diskDesigns"] = list()
 	data["hasDisk"] = FALSE
@@ -242,7 +256,10 @@
 			var/index = 1
 			for (var/datum/design/thisdesign in inserted_disk.blueprints)
 				if(thisdesign)
-					data["diskDesigns"] += list(list("name" = thisdesign.name, "index" = index, "canupload" = thisdesign.build_type&SMELTER))
+					data["diskDesigns"] += list(list(
+						"name" = thisdesign.name,
+						"index" = index,
+						"canupload" = thisdesign.build_type&SMELTER))
 				index++
 	return data
 
@@ -262,42 +279,97 @@
 						usr.client.increment_progress("miner", points)
 					points = 0
 				else
-					to_chat(usr, "<span class='warning'>No ID detected.</span>")
+					to_chat(usr, span_warning("Не обнаружена ID-карта."))
 			else
-				to_chat(usr, "<span class='warning'>No points to claim.</span>")
+				to_chat(usr, span_warning("Отсутствуют очки вознаграждения."))
 			return TRUE
 		if("Release")
 			if(!mat_container)
 				return
 
 			if(materials.on_hold())
-				to_chat(usr, "<span class='warning'>Mineral access is on hold, please contact the quartermaster.</span>")
-			else if(!allowed(usr)) //Check the ID inside, otherwise check the user
-				to_chat(usr, "<span class='warning'>Required access not found.</span>")
+				to_chat(usr, span_warning("Доступ к сырью на удержании, свяжитесь с вашим квартирмейстером."))
+				return TRUE
+
+			var/datum/material/mat = locate(params["id"])
+			if(!mat)
+				return TRUE
+
+			var/amount = mat_container.materials[mat]
+			if(!amount)
+				return TRUE
+			var/stored_amount = CEILING(amount / MINERAL_MATERIAL_AMOUNT, 0.1)
+			if(!stored_amount)
+				return TRUE
+
+			var/desired = 0
+			if (params["sheets"])
+				desired = text2num(params["sheets"])
 			else
-				var/datum/material/mat = locate(params["id"])
+				desired = input("Как много листов?", "Сколько листов вы хотите переплавить?", 1) as null|num
 
-				var/amount = mat_container.materials[mat]
-				if(!amount)
-					return
-				var/stored_amount = CEILING(amount / MINERAL_MATERIAL_AMOUNT, 0.1)
+			var/sheets_to_remove = round(min(desired,50,stored_amount))
+			if(sheets_to_remove <= 0)
+				return TRUE
 
-				if(!stored_amount)
-					return
-
-				var/desired = 0
-				if (params["sheets"])
-					desired = text2num(params["sheets"])
-				else
-					desired = input("How many sheets?", "How many sheets would you like to smelt?", 1) as null|num
-
-				var/sheets_to_remove = round(min(desired,50,stored_amount))
-
+			var/has_free_access = allowed(usr)
+			if(has_free_access)
 				var/count = mat_container.retrieve_sheets(sheets_to_remove, mat, get_step(src, output_dir))
-				var/list/mats = list()
-				mats[mat] = MINERAL_MATERIAL_AMOUNT
-				materials.silo_log(src, "released", -count, "sheets", mats)
-				//Logging deleted for quick coding
+				var/list/mats_list = list()
+				mats_list[mat] = MINERAL_MATERIAL_AMOUNT * count
+				materials.silo_log(src, "released", -count, "sheets", mats_list)
+				return TRUE
+
+			// No free access - pay from personal bank account
+			var/mob/living/L = usr
+			var/datum/bank_account/bank_acc
+			if(istype(L))
+				bank_acc = L.get_bank_account()
+			if(!bank_acc)
+				to_chat(usr, "<span class='warning'>Для оплаты ресурсов требуется ID-карта с личным банковским счётом.</span>")
+				return TRUE
+
+			// Price mapping
+			var/cost_per_sheet = 0
+			switch(mat.type)
+				if(/datum/material/iron)
+					cost_per_sheet = 2
+				if(/datum/material/glass)
+					cost_per_sheet = 2
+				if(/datum/material/silver)
+					cost_per_sheet = 5
+				if(/datum/material/plasma)
+					cost_per_sheet = 5
+				if(/datum/material/gold)
+					cost_per_sheet = 5
+				if(/datum/material/titanium)
+					cost_per_sheet = 10
+				if(/datum/material/bluespace)
+					cost_per_sheet = 10
+				if(/datum/material/plastic)
+					cost_per_sheet = 2
+				if(/datum/material/uranium)
+					cost_per_sheet = 5
+				if(/datum/material/diamond)
+					cost_per_sheet = 25
+				if(/datum/material/bananium)
+					cost_per_sheet = 50
+
+			if(cost_per_sheet <= 0)
+				to_chat(usr, "<span class='warning'>Данный материал нельзя снять за кредиты.</span>")
+				return TRUE
+
+			var/total_cost = cost_per_sheet * sheets_to_remove
+			if(!bank_acc.has_money(total_cost))
+				to_chat(usr, "<span class='warning'>Недостаточно кредитов на личном счёте. Требуется: [total_cost], доступно: [bank_acc.account_balance].</span>")
+				return TRUE
+
+			bank_acc.adjust_money(-total_cost, "Ore redemption: withdrawal of [sheets_to_remove]x [mat.name]")
+			var/count = mat_container.retrieve_sheets(sheets_to_remove, mat, get_step(src, output_dir))
+			var/list/mats_list = list()
+			mats_list[mat] = MINERAL_MATERIAL_AMOUNT * count
+			materials.silo_log(src, "released", -count, "sheets", mats_list)
+			to_chat(usr, "<span class='notice'>С личного счёта списано [total_cost] кредитов. Выдано [count] листов [lowertext(mat.name)].</span>")
 			return TRUE
 		if("diskInsert")
 			var/obj/item/disk/design_disk/disk = usr.get_active_held_item()
@@ -306,7 +378,7 @@
 					return
 				inserted_disk = disk
 			else
-				to_chat(usr, "<span class='warning'>Not a valid Design Disk!</span>")
+				to_chat(usr, span_warning("Неподходящий диск!"))
 			return TRUE
 		if("diskEject")
 			if(inserted_disk)
@@ -322,7 +394,7 @@
 			if(!mat_container)
 				return
 			if(materials.on_hold())
-				to_chat(usr, "<span class='warning'>Mineral access is on hold, please contact the quartermaster.</span>")
+				to_chat(usr, span_warning("Доступ к сырью на удержании, свяжитесь с вашим квартирмейстером."))
 				return
 			var/alloy_id = params["id"]
 			var/datum/design/alloy = stored_research.isDesignResearchedID(alloy_id)
@@ -334,7 +406,7 @@
 				if (params["sheets"])
 					desired = text2num(params["sheets"])
 				else
-					desired = input("How many sheets?", "How many sheets would you like to smelt?", 1) as null|num
+					desired = input("Как много листов?", "Сколько листов вы хотите переплавить?", 1) as null|num
 				var/amount = round(min(desired,50,smelt_amount))
 				mat_container.use_materials(alloy.materials, amount)
 				materials.silo_log(src, "released", -amount, "sheets", alloy.materials)
@@ -345,7 +417,7 @@
 					output = new alloy.build_path(src)
 				unload_mineral(output)
 			else
-				to_chat(usr, "<span class='warning'>Required access not found.</span>")
+				to_chat(usr, span_warning("Не обнаружено требуемых доступов."))
 			return TRUE
 
 /obj/machinery/mineral/ore_redemption/ex_act(severity, target, origin)

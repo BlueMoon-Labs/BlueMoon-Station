@@ -4,7 +4,7 @@
 	desc = "A military bullpup rifle, outdated by modern standarts. It is still robust enough to deal with assigned combat tasks."
 	icon_state = "acr5"
 	item_state = "acr5"
-	icon = 'modular_bluemoon/icons/obj/guns/projectile.dmi'
+	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi'
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_righthand.dmi'
 	mag_type = /obj/item/ammo_box/magazine/acr5m30
@@ -32,6 +32,7 @@
 
 /obj/item/gun/ballistic/automatic/acr5m30/pinvanguard
 	pin = /obj/item/firing_pin/explorer
+	projectile_simple_mob_damage_multiplier = 1.5
 
 //ACR modification for 7.62
 /obj/item/gun/ballistic/automatic/acrm
@@ -39,7 +40,7 @@
 	desc = "Famous syndicate assault carabine for boarding parties. Reffited for usage of more common 7.62x39 caliber for active duty in the frontier."
 	icon_state = "acr5"
 	item_state = "acr5"
-	icon = 'modular_bluemoon/icons/obj/guns/projectile.dmi'
+	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi'
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/guns_righthand.dmi'
 	mag_type = /obj/item/ammo_box/magazine/acrm

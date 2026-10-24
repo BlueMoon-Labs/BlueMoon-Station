@@ -51,28 +51,80 @@
 	. = locate(ARMORID)
 	if (!.)
 		var/datum/armor/new_armor = new /datum/armor()
-		new_armor = new_armor.generate_new_with_modifiers(list(MELEE = melee, BULLET = bullet, LASER = laser, ENERGY = energy, BOMB = bomb, BIO = bio, RAD = rad, FIRE = fire, ACID = acid, MAGIC = magic, WOUND = wound))
-		new_armor.datum_flags |= DF_USE_TAG
-		new_armor.tag = ARMORID // getArmor() обязан возвращать общий tag-кэшированный датум, а не приватный
+		new_armor.melee = melee
+		new_armor.bullet = bullet
+		new_armor.laser = laser
+		new_armor.energy = energy
+		new_armor.bomb = bomb
+		new_armor.bio = bio
+		new_armor.rad = rad
+		new_armor.fire = fire
+		new_armor.acid = acid
+		new_armor.magic = magic
+		new_armor.wound = wound
+		new_armor.GenerateTag()
 		return new_armor
 
-/// Assosciative list of type -> armor. Used to ensure we always hold a reference to default armor datums
+/// Type aliases hold references to shared armor, interned by all eleven ratings.
 GLOBAL_LIST_INIT(armor_by_type, generate_armor_type_cache())
 
 /proc/generate_armor_type_cache()
 	var/list/armor_cache = list()
-	for(var/datum/armor/armor_type as anything in subtypesof(/datum/armor))
-		armor_type = new armor_type
-		armor_cache[armor_type.type] = armor_type
-		armor_type.GenerateTag()
+	// Resolve zero-valued namespace types to the explicit unarmored profile.
+	var/list/armor_types = list(/datum/armor/none)
+	armor_types |= subtypesof(/datum/armor)
+	for(var/datum/armor/armor_type as anything in armor_types)
+		resolve_armor_profile(armor_type, armor_cache, list())
 	return armor_cache
+
+/// Resolve linked profiles before interning them, independently of declaration order.
+/proc/resolve_armor_profile(datum/armor/armor_type, list/armor_cache, list/resolving)
+	if(armor_cache[armor_type])
+		return armor_cache[armor_type]
+	if(armor_type in resolving)
+		CRASH("Cyclic armor profile dependency: [armor_type]")
+	resolving += armor_type
+	var/datum/armor/source_type = initial(armor_type.base_armor_type)
+	if(source_type)
+		if(!ispath(source_type, /datum/armor))
+			CRASH("Invalid base armor profile [source_type] on [armor_type]")
+		var/datum/armor/source_armor = resolve_armor_profile(source_type, armor_cache, resolving)
+		var/datum/armor/derived_armor = source_armor.setRating(\
+			bullet = max(0, source_armor.bullet - 15),\
+			laser = max(0, source_armor.laser - 15))
+		armor_cache[armor_type] = derived_armor
+		resolving -= armor_type
+		return derived_armor
+	else
+		// Inspect defaults before allocation: equivalent types need no new datum.
+		var/melee = initial(armor_type.melee)
+		var/bullet = initial(armor_type.bullet)
+		var/laser = initial(armor_type.laser)
+		var/energy = initial(armor_type.energy)
+		var/bomb = initial(armor_type.bomb)
+		var/bio = initial(armor_type.bio)
+		var/rad = initial(armor_type.rad)
+		var/fire = initial(armor_type.fire)
+		var/acid = initial(armor_type.acid)
+		var/magic = initial(armor_type.magic)
+		var/wound = initial(armor_type.wound)
+		var/datum/armor/shared_armor = locate(ARMORID)
+		if(!shared_armor)
+			shared_armor = new armor_type
+			shared_armor.GenerateTag()
+		armor_cache[armor_type] = shared_armor
+		resolving -= armor_type
+		return shared_armor
 
 /datum/armor/GenerateTag()
 	..()
-	tag = replacetext("[type]", "/", "-")
+	// Named profiles and getArmor() use the same value-based cache.
+	tag = ARMORID
 
 /datum/armor
 	datum_flags = DF_USE_TAG
+	/// Linked hardsuit profile. MOD armor inherits it with bullet and laser reduced by 15, down to zero.
+	var/base_armor_type
 	var/melee = 0
 	var/bullet = 0
 	var/laser = 0
@@ -132,21 +184,25 @@ GLOBAL_LIST_INIT(armor_by_type, generate_armor_type_cache())
 /datum/armor/proc/detachArmor(datum/armor/AA)
  	return getArmor(melee-AA.melee, bullet-AA.bullet, laser-AA.laser, energy-AA.energy, bomb-AA.bomb, bio-AA.bio, rad-AA.rad, fire-AA.fire, acid-AA.acid, magic-AA.magic, wound-AA.wound)
 
+/datum/armor/proc/upgradeArmor(datum/armor/AA)
+	return getArmor(max(melee,AA.melee), max(bullet,AA.bullet), max(laser,AA.laser), max(energy,AA.energy), max(bomb,AA.bomb), max(bio,AA.bio), max(rad,AA.rad), max(fire,AA.fire), max(acid,AA.acid), max(magic,AA.magic), max(wound,AA.wound))
+
 /datum/armor/vv_edit_var(var_name, var_value)
 	if (var_name == NAMEOF(src, tag))
 		return FALSE
 	. = ..()
-	tag = ARMORID // update tag in case armor values were edited
+	if(datum_flags & DF_USE_TAG)
+		tag = ARMORID // Private copies must remain outside the shared cache.
 
 /// Generate a brand new armor datum with the modifiers given, if ARMOR_ALL is specified only that modifier is used
 /datum/armor/proc/generate_new_with_modifiers(list/modifiers)
 	var/datum/armor/new_armor = new
+	new_armor.tag = null
+	new_armor.datum_flags &= ~DF_USE_TAG
 
 	var/list/all_keys = ARMOR_LIST_ALL()
 	if(ARMOR_ALL in modifiers)
 		var/modifier_all = modifiers[ARMOR_ALL]
-		if(!modifier_all)
-			return src
 		for(var/mod in all_keys)
 			new_armor.vars[mod] = vars[mod] + modifier_all
 		new_armor.tag = null // Don't put custom armor into locate() cache
@@ -166,12 +222,12 @@ GLOBAL_LIST_INIT(armor_by_type, generate_armor_type_cache())
 /// Generate a brand new armor datum with the values given, if a value is not present it carries over
 /datum/armor/proc/generate_new_with_specific(list/values)
 	var/datum/armor/new_armor = new
+	new_armor.tag = null
+	new_armor.datum_flags &= ~DF_USE_TAG
 
 	var/all_keys = ARMOR_LIST_ALL()
 	if(ARMOR_ALL in values)
 		var/value_all = values[ARMOR_ALL]
-		if(!value_all)
-			return src
 		for(var/mod in all_keys)
 			new_armor.vars[mod] = value_all
 		return new_armor
@@ -199,20 +255,40 @@ GLOBAL_LIST_INIT(armor_by_type, generate_armor_type_cache())
 //                      code\datums\armor\_armor.dm
 
 /atom
-	var/datum/armor/armor_type = /datum/armor/none
+	/// Initial armor profile type path. Runtime modifiers change armor, not this.
+	var/armor_type = /datum/armor/none
+	/// Resolved armor datum: shared cached profile or private modified copy.
 	var/datum/armor/armor
 
 /datum/armor/none
 
+/atom/proc/initialize_armor()
+	if(isnull(armor))
+		normal_set_armor(new_tg_get_armor_by_type(armor_type))
+	else if(islist(armor))
+		normal_set_armor(getArmor(arglist(armor)))
+	else if(!istype(armor, /datum/armor))
+		CRASH("Invalid armor [armor] on [type]; assign profile paths to armor_type")
+
+/// Explicitly change the base profile and reset runtime armor to that profile.
+/atom/proc/set_armor_type(new_armor_type)
+	var/datum/armor/new_armor = new_tg_get_armor_by_type(new_armor_type)
+	armor_type = new_armor_type
+	normal_set_armor(new_armor)
+
 /atom/proc/normal_set_armor(datum/armor/armor)
+	if(!isnull(armor) && !istype(armor, /datum/armor))
+		CRASH("normal_set_armor requires a datum; use set_armor_type for a profile path")
 	if(src.armor == armor)
 		return
-	if(!(src.armor?.type in GLOB.armor_by_type))
+	// Both type-cached profiles and getArmor() results are shared. Only a
+	// private, untagged instance belongs to the atom replacing it.
+	if(istype(src.armor, /datum/armor) && !src.armor.tag)
 		qdel(src.armor)
-	src.armor = ispath(armor) ? new_tg_get_armor_by_type(armor) : armor
+	src.armor = armor
 
 /proc/new_tg_get_armor_by_type(armor_type)
-	var/armor = locate(replacetext("[armor_type]", "/", "-"))
+	var/datum/armor/armor = GLOB.armor_by_type[armor_type]
 	if(armor)
 		return armor
 	if(armor_type == /datum/armor)

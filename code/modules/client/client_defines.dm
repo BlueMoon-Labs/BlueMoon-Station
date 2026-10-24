@@ -153,6 +153,7 @@
 	var/datum/player_details/player_details //these persist between logins/logouts during the same round.
 
 	var/list/char_render_holders			//Should only be a key-value list of north/south/east/west = atom/movable/screen.
+	var/datum/plane_master_group/popup/char_preview_planes
 
 	/// Last time they used fix macros
 	var/last_macro_fix = 0
@@ -284,6 +285,8 @@
 
 	// null - Not used at this moment
 	var/show_popup_menus_before_disable
+	// Не даёт обработчику наведения вернуть контекстное меню до выхода из меха.
+	var/mecha_popup_menus_disabled = FALSE
 
 	/// The next point in time at which the client is allowed to send a mousemove() or mousedrag()
 	COOLDOWN_DECLARE(next_mousemove)

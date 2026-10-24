@@ -1,0 +1,104 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"b" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/filingcabinet/chestdrawer{
+	pixel_y = 2
+	},
+/obj/item/paper{
+	default_raw_text = "what the hell is this thing....???? tell me ur secrets you devil machine!!! i will not be denied!!!!!";
+	name = "scribbled notes"
+	},
+/obj/structure/sign/basic{
+	icon_state = "clock";
+	name = "wall clock";
+	desc = "It's your run-of-the-mill wall clock. Perfect for staring at instead of working.";
+	pixel_x = -32
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"q" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"A" = (
+/obj/structure/table,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/multitool{
+	pixel_y = -7;
+	pixel_x = -8
+	},
+/obj/item/screwdriver{
+	pixel_y = 11
+	},
+/obj/item/assembly/signaler{
+	pixel_x = 2;
+	pixel_y = 4
+	},
+/obj/structure/sign/basic{
+	icon_state = "calendar";
+	name = "wall calendar";
+	desc = "It's an old-school wall calendar. Sure, it might be obsolete with modern technology, but it's still hard to imagine an office without one.";
+	pixel_x = -32
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"B" = (
+/turf/closed/wall,
+/area/maintenance/department/cargo)
+"F" = (
+/turf/template_noop,
+/area/template_noop)
+"K" = (
+/obj/structure/table,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/relic,
+/obj/item/pen{
+	pixel_x = -4
+	},
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"U" = (
+/obj/structure/chair/plastic{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+"Z" = (
+/obj/modular_map_connector,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/door/airlock/maintenance_hatch{
+	name = "Maintenance Hatch"
+	},
+/obj/effect/mapping_helpers/airlock/access/all/engineering/maintenance,
+/turf/open/floor/plasteel/rivets,
+/area/maintenance/department/cargo)
+
+(1,1,1) = {"
+B
+B
+B
+B
+B
+"}
+(2,1,1) = {"
+F
+b
+A
+K
+B
+"}
+(3,1,1) = {"
+F
+q
+q
+U
+B
+"}
+(4,1,1) = {"
+F
+Z
+F
+F
+F
+"}

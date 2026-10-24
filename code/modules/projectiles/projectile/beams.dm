@@ -43,8 +43,10 @@
 
 /obj/item/projectile/beam/laser/musket/prime
 	name = "heroic musket laser"
-	damage = 20
-	stamina = 20
+	damage = 60
+	stamina = 60
+	eyeblur = 10
+	ricochet_chance = 100
 
 /obj/item/projectile/beam/laser/mutation
 	name = "ocular laser"

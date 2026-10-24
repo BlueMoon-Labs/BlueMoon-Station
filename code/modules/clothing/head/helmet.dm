@@ -3,7 +3,7 @@
 	desc = "Standard Security gear. Protects the head from impacts."
 	icon_state = "helmet"
 	item_state = "helmet"
-	armor = list(MELEE = 40, BULLET = 30, LASER = 30,ENERGY = 10, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 10)
+	armor_type = /datum/armor/beret_sec_and_brigdoc_and_helmet
 	cold_protection = HEAD
 	min_cold_protection_temperature = HELMET_MIN_TEMP_PROTECT
 	heat_protection = HEAD
@@ -127,7 +127,7 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
 	strip_delay = 80
 	dog_fashion = null
-	armor = list(MELEE = 20, BULLET = 40, LASER = 40, ENERGY = 40, BOMB = 25, BIO = 0, RAD = 0, FIRE = 10, ACID = 50, WOUND = 50)
+	armor_type = /datum/armor/military
 	can_toggle = TRUE
 	toggle_message = "You pull the visor down on"
 	alt_toggle_message = "You push the visor up on"
@@ -237,7 +237,7 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	name = "golden barbute helmet"
 	desc = "There is no man behind the helmet, only a terrible thought."
 	icon_state = "warlord"
-	armor = list(MELEE = 40, BULLET = 40, LASER = 40, ENERGY = 40, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 50)
+	armor_type = /datum/armor/knight_warlord
 	flags_inv = HIDEEARS|HIDEEYES|HIDEFACE|HIDEMASK|HIDEHAIR|HIDEFACIALHAIR|HIDESNOUT
 	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
 	slowdown = 0.2
@@ -265,7 +265,7 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	lighting_alpha = LIGHTING_PLANE_ALPHA_MOSTLY_INVISIBLE
 	color_cutoffs = list(10, 25, 10)
 	mutantrace_variation = STYLE_MUZZLE
-	armor = list(MELEE = 40, BULLET = 40, LASER = 40,ENERGY = 40, BOMB = 50, BIO = 90, RAD = 30, FIRE = 50, ACID = 50, WOUND = 20)
+	armor_type = /datum/armor/hecu
 	cold_protection = HEAD
 	min_cold_protection_temperature = SPACE_HELM_MIN_TEMP_PROTECT
 	heat_protection = HEAD
@@ -310,22 +310,37 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	name = "bulletproof Helmet"
 	desc = "A bulletproof combat helmet that excels in protecting the wearer against traditional projectile weaponry and explosives to a minor extent."
 	icon_state = "helmetalt"
-	item_state = "helmetalt"
-	armor = list(MELEE = 15, BULLET = 60, LASER = 10, ENERGY = 10, BOMB = 40, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 20)
+	armor_type = /datum/armor/alt
 	can_flashlight = TRUE
 	dog_fashion = null
 	dynamic_hair_suffix = ""
 	dynamic_fhair_suffix = ""
+	// BLUEMOON ADD START - визор открывается так же, как у riot-шлема
+	can_toggle = 1
+	toggle_message = "You pull the visor down on"
+	alt_toggle_message = "You push the visor up on"
+	actions_types = list(/datum/action/item_action/toggle)
+	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR
+	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
+	visor_flags_inv = HIDEFACE
+	visor_flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
+	mutantrace_variation = STYLE_MUZZLE
+	toggle_cooldown = 0
+	active_sound = 'sound/machines/closet_open.ogg'
+	// BLUEMOON ADD END
 	unique_reskin = list(
 		"Basic" = list(
 			RESKIN_ICON_STATE = "helmet",
 			RESKIN_ITEM_STATE = "helmet"
 		),
 		"Old" = list(
-			RESKIN_ICON_STATE = "helmetold",
-			RESKIN_ITEM_STATE = "helmetold"
+			RESKIN_ICON_STATE = "helmetaltold",
+			RESKIN_ITEM_STATE = "helmetaltold"
 		),
 	)
+
+/obj/item/clothing/head/helmet/alt/wm
+	icon_state = "helmetalt-wm"
 
 /obj/item/clothing/head/helmet/old
 	name = "degrading Helmet"
@@ -368,7 +383,7 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	alt_toggle_message = "You push the visor up on"
 	can_toggle = 1
 	can_flashlight = TRUE
-	armor = list(MELEE = 45, BULLET = 15, LASER = 5,ENERGY = 5, BOMB = 5, BIO = 2, RAD = 0, FIRE = 50, ACID = 50, WOUND = 30)
+	armor_type = /datum/armor/head_riot
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR
 	strip_delay = 80
 	actions_types = list(/datum/action/item_action/toggle)
@@ -407,6 +422,9 @@ GLOBAL_PROTECT(aventail_pride_colors)
 			if(active_sound_2)
 				if(!up)
 					playsound(src.loc, "[active_sound_2]", 100, 0, 4)
+
+/obj/item/clothing/head/helmet/riot/wm
+	icon_state = "riot-wm"
 
 /obj/item/clothing/head/helmet/justice
 	name = "helmet of justice"
@@ -452,7 +470,7 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	icon_state = "swatsyndie"
 	item_state = "swatsyndie"
 	can_flashlight = TRUE
-	armor = list(MELEE = 40, BULLET = 30, LASER = 30,ENERGY = 30, BOMB = 50, BIO = 90, RAD = 20, FIRE = 50, ACID = 50, WOUND = 20)
+	armor_type = /datum/armor/head_swat
 	cold_protection = HEAD
 	min_cold_protection_temperature = SPACE_HELM_MIN_TEMP_PROTECT
 	heat_protection = HEAD
@@ -553,7 +571,7 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	dynamic_fhair_suffix = ""
 	icon_state = "thunderdome"
 	item_state = "thunderdome"
-	armor = list(MELEE = 40, BULLET = 30, LASER = 25,ENERGY = 10, BOMB = 25, BIO = 10, RAD = 0, FIRE = 50, ACID = 50)
+	armor_type = /datum/armor/thunderdome
 	cold_protection = HEAD
 	min_cold_protection_temperature = SPACE_HELM_MIN_TEMP_PROTECT
 	heat_protection = HEAD
@@ -568,7 +586,7 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	flags_cover = HEADCOVERSEYES
 	dynamic_hair_suffix = ""
 	dynamic_fhair_suffix = ""
-	armor = list(MELEE = 25, BULLET = 0, LASER = 25, ENERGY = 10, BOMB = 10, BIO = 0, RAD = 0, FIRE = 100, ACID = 50)
+	armor_type = /datum/armor/roman
 	resistance_flags = FIRE_PROOF
 	clothing_flags = null
 	icon_state = "roman"
@@ -578,7 +596,7 @@ GLOBAL_PROTECT(aventail_pride_colors)
 
 /obj/item/clothing/head/helmet/roman/fake
 	desc = "An ancient helmet made of plastic and leather."
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0)
+	armor_type = /datum/armor/none
 
 /obj/item/clothing/head/helmet/roman/legionnaire
 	name = "\improper Roman legionnaire Helmet"
@@ -588,7 +606,7 @@ GLOBAL_PROTECT(aventail_pride_colors)
 
 /obj/item/clothing/head/helmet/roman/legionnaire/fake
 	desc = "An ancient helmet made of plastic and leather. Has a red crest on top of it."
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0)
+	armor_type = /datum/armor/none
 
 /obj/item/clothing/head/helmet/gladiator
 	name = "gladiator Helmet"
@@ -610,7 +628,7 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	dynamic_hair_suffix = ""
 	dynamic_fhair_suffix = ""
 	item_state = "redtaghelm"
-	armor = list(MELEE = 15, BULLET = 10, LASER = 20,ENERGY = 10, BOMB = 20, BIO = 0, RAD = 0, FIRE = 0, ACID = 50)
+	armor_type = /datum/armor/bluetaghelm_and_redtaghelm
 	// Offer about the same protection as a hardhat.
 	dog_fashion = null
 
@@ -621,7 +639,7 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	clothing_flags = null
 	flags_cover = HEADCOVERSEYES
 	item_state = "bluetaghelm"
-	armor = list(MELEE = 15, BULLET = 10, LASER = 20,ENERGY = 10, BOMB = 20, BIO = 0, RAD = 0, FIRE = 0, ACID = 50)
+	armor_type = /datum/armor/bluetaghelm_and_redtaghelm
 	// Offer about the same protection as a hardhat.
 	dog_fashion = null
 
@@ -630,7 +648,7 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	desc = "A classic metal helmet."
 	icon_state = "knight_green"
 	item_state = "knight_green"
-	armor = list(MELEE = 60, BULLET = 35, LASER = 5,ENERGY = 5, BOMB = 5, BIO = 2, RAD = 0, FIRE = 0, ACID = 50)
+	armor_type = /datum/armor/head_knight
 	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDESNOUT
 	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
 	clothing_flags = null
@@ -662,7 +680,7 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	desc = "A classic medieval helmet, if you hold it upside down you could see that it's actually a bucket."
 	icon_state = "knight_greyscale"
 	item_state = "knight_greyscale"
-	armor = list(MELEE = 35, BULLET = 10, LASER = 10, ENERGY = 10, BOMB = 10, BIO = 10, RAD = 10, FIRE = 40, ACID = 40, WOUND = 20)
+	armor_type = /datum/armor/greyscale
 	material_flags = MATERIAL_ADD_PREFIX | MATERIAL_COLOR | MATERIAL_AFFECT_STATISTICS //Can change color and add prefix
 
 /obj/item/clothing/head/helmet/skull
@@ -670,7 +688,7 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	desc = "An intimidating tribal helmet, it doesn't look very comfortable."
 	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE
 	flags_cover = HEADCOVERSEYES
-	armor = list(MELEE = 25, BULLET = 25, LASER = 25, ENERGY = 10, BOMB = 10, BIO = 5, RAD = 20, FIRE = 40, ACID = 20, WOUND = 15)
+	armor_type = /datum/armor/skull
 	icon_state = "skull"
 	item_state = "skull"
 	dynamic_hair_suffix = ""
@@ -683,7 +701,7 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	desc = "An insidious armored combat helmet signed with Syndicate insignia. The visor is coated with a resistant paste guaranteed to withstand bright flashes perfectly."
 	icon_state = "infiltrator"
 	item_state = "infiltrator"
-	armor = list(MELEE = 40, BULLET = 40, LASER = 30, ENERGY = 40, BOMB = 70, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 35)
+	armor_type = /datum/armor/head_infiltrator
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	flash_protect = 2
 	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR|HIDESNOUT
@@ -789,7 +807,7 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	desc = "A hardhat with strips of leather and durathread for additional blunt protection."
 	icon_state = "durathread"
 	item_state = "durathread"
-	armor = list(MELEE = 25, BULLET = 10, LASER = 20,ENERGY = 10, BOMB = 30, BIO = 15, RAD = 20, FIRE = 100, ACID = 50)
+	armor_type = /datum/armor/durathread_headwear
 	clothing_flags = null
 
 /obj/item/clothing/head/helmet/rus_helmet
@@ -799,7 +817,6 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	icon_state = "rus_helmet"
 	item_state = "rus_helmet"
 	flags_inv = HIDEEARS
-	//armor = list(MELEE = 30, BULLET = 25, LASER = 20,ENERGY = 10, BOMB = 25, BIO = 0, RAD = 20, FIRE = 30, ACID = 50)
 	pocket_storage_component_path = /datum/component/storage/concrete/pockets/small/rushelmet
 	clothing_flags = null
 
@@ -810,7 +827,7 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	icon_state = "ruscap"
 	item_state = "ruscap"
 	flags_inv = HIDEEARS
-	armor = list(MELEE = 30, BULLET = 25, LASER = 20,ENERGY = 10, BOMB = 25, BIO = 0, RAD = 20, FIRE = 30, ACID = 50)
+	armor_type = /datum/armor/rus_cap
 	pocket_storage_component_path = /datum/component/storage/concrete/pockets/small/rushelmet
 	unique_reskin = list(
 		"Basic" = list(
@@ -834,7 +851,7 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	cold_protection = HEAD
 	flags_inv = HIDEEARS
 	min_cold_protection_temperature = SPACE_SUIT_MIN_TEMP_PROTECT
-	armor = list(MELEE = 10, BULLET = 5, LASER = 5,ENERGY = 5, BOMB = 5, BIO = 50, RAD = 20, FIRE = -10, ACID = 0)
+	armor_type = /datum/armor/rus_ushanka
 
 /obj/item/clothing/head/helmet/police
 	name = "police officer's hat"
@@ -852,7 +869,7 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	anthro_mob_worn_overlay = 'modular_bluemoon/icons/mob/clothing/head/helmet_teshari.dmi'
 	icon_state = "h2helmet"
 	item_state = "h2_helmet"
-	armor = list(MELEE = 50, BULLET = 45, LASER = 55, ENERGY = 55, BOMB = 95, BIO = 100, RAD = 100, FIRE = 100, ACID = 90, WOUND = 30)
+	armor_type = /datum/armor/elder_atmosian
 	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDESNOUT
 	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
 	cold_protection = HEAD

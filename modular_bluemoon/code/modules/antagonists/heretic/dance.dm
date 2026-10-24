@@ -1,6 +1,5 @@
 #define HERETIC_DANCE_DIAGRAM_CRAFT "dance_diagram"
 #define HERETIC_DANCE_DIAGRAM_CLUE "Кто-то расчертил пол медными следами босых ног, как в старом самоучителе танцев. Пахнет медью. Швабра, мыло или нулевой жезл сотрут схему."
-#define HERETIC_DANCE_COLOR "#c8553d"
 
 /datum/heretic_path/dance
 	id = PATH_DANCE
@@ -16,13 +15,14 @@
 		"Приглашение тянет заражённого из толпы к вам, пока вы ждёте за углом.",
 		"Маскарад делает вас и до 4 заражённых одинаковыми танцорами в масках.",
 		"Пляска смерти заставляет толпу зеркалить ваши шаги и выматывает её.",
+		"Номер - две фигуры через связку - захватывает, решает дуэль, держит толпу или уводит от погони; раз в 30 с.",
 	)
 	weakness_points = list(
 		"Наушники-заглушки и глухота закрывают от Приглашения, Колокола и барабана.",
 		"Дефибриллятор, сон, святая вода и нулевой жезл лечат навязчивый такт.",
 		"Схемы шагов видны всем и стираются шваброй или мылом.",
 		"Вне боя Такт быстро тает, а смена стиля мимо сильной доли ждёт следующей или делит его пополам.",
-		"Вознёсшегося сбивает фальшивая нота: светошумовая, клаксон или воздушный горн рядом.",
+		"Вознёсшегося сбивает фальшивая нота: светошумовая, клаксон или горн рядом; пока Болеро молчит, бола держит.",
 	)
 	knowledge = list(
 		/datum/eldritch_knowledge/base_dance,
@@ -39,15 +39,15 @@
 
 /datum/eldritch_knowledge/base_dance
 	name = "Первый такт"
-	summary = "Клинок-шпилька, барабан доли в интерфейсе, Вальс и схемы шагов, заражающие экипаж навязчивым тактом."
+	summary = "Главное - бить клинком, когда кольцо у ног сомкнётся. Даёт клинок-шпильку, Вальс и схемы шагов."
 	details = list(
+		"Начните с ударов: бейте, когда кольцо у ног сомкнётся. Любой удар даёт Такт, в долю - 2, точно - 3.",
+		"Двойное кольцо и «1» на барабане справа - сильная доля: удар в неё даёт акцент стиля. Пинг до 0,3 секунды учтён.",
 		"Нож и пара любой обуви на руне дают клинок «Алая шпилька».",
-		"Кольцо у ног смыкается на доле, двойное - на сильной; барабан справа ведёт счёт. Подсказки скрываются в меню стиля.",
-		"Удар по врагу даёт 1 Такт, в долю - 2, точно в долю - 3; удар в сильную долю - акцент стиля.",
 		"Хватка в любом намерении заражает человека (до 6, на 6 минут); в «Помощи» по полу рисует схему шагов (до 5).",
-		"Фигура: шаги подряд в долю по рисунку стиля; ромбы под ногами считают шаги. Один сбой после двух верных шагов прощается.",
-		"Фигура без цели ждёт её 4 доли. Квадрат Вальса подхватит последнего, по кому вы ударили; нота покажет, кого.",
-		"Связка в бою даёт вход стиля, три стиля за 20 секунд - Попурри. Ctrl+клик по барабану - прошлый стиль.",
+		"Фигура: под музыку идите в каждую долю туда, куда ведёт медный след. Сработав, она остывает 16 долей (10-19 с).",
+		"Пропущенная доля начинает фигуру заново, один сбой после двух верных шагов прощается. Фигура без цели ждёт 4 доли.",
+		"Смена стиля в сильную долю - связка: вход стиля и двойной акцент; три стиля за 20 секунд - Попурри.",
 	)
 	role = HERETIC_ROLE_CRAFT
 	ritual_hint = "Подойдёт любая обувь, даже снятая с себя: положите её и нож на руну."
@@ -62,8 +62,9 @@
 		"Такт от 0 до 10: удар клинком или Хваткой по разумному врагу даёт 1 (раз в секунду), в долю - 2, точно - 3.",
 		"С 4 Такта работает пассивка стиля, а каждый Такт сверх 4 добавляет удару клинком в долю 1 урон.",
 		"Через 4 секунды без боя Такт тает по единице в секунду.",
-		"Смена стиля в сильную долю сохраняет Такт и удваивает следующий акцент. Выбранный мимо неё стиль вступит на следующей сильной доле, тоже без потерь; выбор его ещё раз меняет сразу, деля Такт пополам.",
-		"Колокол тратит 4 Такта. Смерть и смена тела обнуляют Такт.",
+		"Смена стиля в сильную долю сохраняет Такт и удваивает следующий акцент. Выбранный мимо неё стиль вступит на следующей сильной доле без потерь; повторный выбор меняет сразу, деля Такт пополам.",
+		"Колокол тратит 4 Такта, но пассивка стиля доигрывает такт до следующей сильной доли.",
+		"Смерть и смена тела обнуляют Такт.",
 	)
 	combat_resource_action = /obj/effect/proc_holder/spell/self/heretic_dance/style
 	grasp_visual = /obj/effect/temp_visual/heretic_dance/grasp
@@ -89,10 +90,14 @@
 	var/music_channel
 	var/link_bonus = FALSE
 	var/passive_active = FALSE
+	/// Колокол потратил Такт: пассивка стиля доигрывает такт до следующей сильной доли.
+	var/passive_held_to_bar = FALSE
 	var/last_combat_at = -INFINITY
 	var/decay_progress = 0
 	var/list/figure_steps = list()
 	var/last_step_beat = -1
+	/// Направление доли last_step_beat записано в figure_steps, а не прощено.
+	var/last_step_kept = FALSE
 	var/figure_ready_beat = 0
 	/// Собранная фигура без цели ждёт её до этой доли (по beat_total); -1 - не ждёт.
 	var/held_figure_until = -1
@@ -117,6 +122,9 @@
 	var/list/datum/status_effect/heretic_dance/invited/invites = list()
 	var/datum/atom_hud/alternate_appearance/basic/heretic_dance_skeleton/skeleton
 	var/datum/status_effect/heretic_dance/masquerade/masquerade
+	/// Сердца заражённых, которые барабан показал еретику.
+	var/list/atom/movable/screen/heretic_dance_heartbeat/heartbeats = list()
+	var/heartbeat_timer
 	var/dance_failure
 	COOLDOWN_DECLARE(takt_hit_gap)
 
@@ -193,6 +201,7 @@
 	QDEL_LIST(invites)
 	QDEL_NULL(masquerade)
 	hide_skeleton()
+	hide_heartbeats()
 	for(var/mob/living/dancer as anything in dancers.Copy())
 		for(var/datum/status_effect/heretic_dance/effect in dancer.status_effects)
 			if(effect.dance_ref?.resolve() == src)
@@ -201,8 +210,11 @@
 	figure_steps.Cut()
 	held_figure_until = -1
 	link_bonus = FALSE
+	passive_held_to_bar = FALSE
 	lunge_until = 0
 	pending_style_id = null
+	routine_from = null
+	armed_routine = null
 
 /datum/eldritch_knowledge/base_dance/proc/can_use(mob/living/user, allow_incapacitated = FALSE, ignore_grab = FALSE)
 	var/datum/antagonist/heretic/heretic = IS_HERETIC(user)
@@ -334,7 +346,6 @@
 		diagrams -= oldest
 		qdel(oldest)
 	var/obj/effect/heretic_dance_diagram/diagram = new(place, src, style_id)
-	playsound(place, 'modular_bluemoon/sound/heretic/dance_grasp.ogg', 40, TRUE)
 	to_chat(user, span_eldritch("Схема «[diagram.style_name]» расчерчена. Схем: [length(diagrams)] из [HERETIC_DANCE_DIAGRAM_LIMIT].[wait ? " [wait]" : ""]"))
 	log_game("[key_name(user)] рисует схему шагов Пляски в [AREACOORD(place)].")
 	if(!wait)
@@ -441,7 +452,7 @@
 	hint = "Держатся 5 схем, новая стирает самую старую. Кто пройдёт по схеме, подхватит навязчивый такт; после трёх заражений схема блёкнет. Швабра, мыло и нулевой жезл стирают схемы."
 	trace_name = "copper footprints"
 	trace_desc = "Медные следы босых ног кружат на месте, будто кто-то танцевал здесь всю ночь."
-	trace_state = "sigil_dance"
+	trace_state = "trace_dance"
 
 /obj/item/melee/sickly_blade/dance
 	name = "scarlet stiletto"
@@ -460,7 +471,7 @@
 
 /obj/item/heretic_path_relic/dance
 	name = "drum of flayed skin"
-	desc = "Ручной барабан с медным ободом. Натянутая кожа ещё тёплая и зашита грубыми стежками. Удар раз в 4 доли отыгрывает акцент текущего стиля по всем заражённым в 7 клеткам, которые слышат, и на 3 секунды показывает их сердцебиение сквозь стены; вне доли - вполсилы."
+	desc = "Ручной барабан с медным ободом. Натянутая кожа ещё тёплая и зашита грубыми стежками. Удар раз в 4 доли (от 2 до 5 секунд, смотря по танцу) отыгрывает акцент текущего стиля по всем заражённым в 7 клеткам, которые слышат, и на 3 секунды показывает их сердцебиение сквозь стены; вне доли - вполсилы."
 	icon = 'modular_bluemoon/icons/obj/heretic_dance.dmi'
 	icon_state = "dance_relic"
 	item_state = "dance_relic"
@@ -488,7 +499,7 @@
 		return FALSE
 	var/pressed_beat = dance.timed_beat_total(dance.timing(user))
 	if(pressed_beat < ready_beat)
-		to_chat(user, span_warning("Кожа ещё гудит от прошлого удара: до следующего долей: [ready_beat - pressed_beat]."))
+		to_chat(user, span_warning("Кожа ещё гудит от прошлого удара: следующий через [heretic_dance_seconds((ready_beat - pressed_beat) * dance.beat_ds)] с."))
 		return FALSE
 	ready_beat = pressed_beat + HERETIC_DANCE_DRUM_BEATS
 	flick("dance_relic_beat", src)
@@ -497,4 +508,3 @@
 
 #undef HERETIC_DANCE_DIAGRAM_CRAFT
 #undef HERETIC_DANCE_DIAGRAM_CLUE
-#undef HERETIC_DANCE_COLOR

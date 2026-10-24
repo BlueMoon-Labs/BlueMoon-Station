@@ -10,7 +10,7 @@
 	power_channel = ENVIRON
 	max_integrity = 350
 	damage_deflection = 10
-	armor = list(MELEE = 30, BULLET = 30, LASER = 20, ENERGY = 20, BOMB = 10, BIO = 100, RAD = 100, FIRE = 80, ACID = 70)
+	armor_type = /datum/armor/door
 	CanAtmosPass = ATMOS_PASS_DENSITY
 	flags_1 = PREVENT_CLICK_UNDER_1|DEFAULT_RICOCHET_1
 	ricochet_chance_mod = 0.8
@@ -27,6 +27,7 @@
 	var/shockedby
 	var/visible = TRUE // To explain: Whether the door can block line of sight when closed or not.
 	var/operating = FALSE
+	var/opening_passable_delay = 0.5 SECONDS
 	var/glass = FALSE
 	var/welded = FALSE
 	var/normalspeed = TRUE
@@ -47,11 +48,17 @@
 	var/can_open_with_hands = TRUE
 	/// Whether or not this door can be opened through a door remote
 	var/opens_with_door_remote = FALSE
+	/// Special operating mode for elevator doors
+	var/elevator_mode = FALSE
+	/// Current elevator status for processing
+	var/elevator_status
+	/// What specific lift ID do we link with?
+	var/transport_linked_id
 
 /obj/machinery/door/examine(mob/user)
 	. = ..()
 	if(!poddoor)
-		. += "<span class='notice'>Its maintenance panel is <b>screwed</b> in place.</span>"
+		. += "<span class='notice'>Панель обслуживания закреплена <b>винтами</b>.</span>"
 
 /obj/machinery/door/add_context(atom/source, list/context, obj/item/held_item, mob/user)
 	. = ..()
@@ -73,6 +80,12 @@
 	air_update_turf(TRUE)
 	register_context()
 	GLOB.airlocks += src
+	if(elevator_mode)
+		if(transport_linked_id)
+			elevator_status = LIFT_PLATFORM_LOCKED
+			GLOB.elevator_doors += src
+		else
+			stack_trace("Elevator door [src] ([x],[y],[z]) has no linked elevator ID!")
 	spark_system = new /datum/effect_system/spark_spread
 	spark_system.set_up(2, 1, src)
 
@@ -93,6 +106,8 @@
 /obj/machinery/door/Destroy()
 	update_freelook_sight()
 	GLOB.airlocks -= src
+	if(elevator_mode)
+		GLOB.elevator_doors -= src
 	if(spark_system)
 		qdel(spark_system)
 		spark_system = null
@@ -107,9 +122,6 @@
 			return
 		if(isliving(AM))
 			var/mob/living/M = AM
-			if(world.time - M.last_bumped <= 10)
-				return	//Can bump-open one airlock per second. This is to prevent shock spam.
-			M.last_bumped = world.time
 			if(M.restrained() && !check_access(null))
 				return
 			bumpopen(M)
@@ -141,7 +153,7 @@
 		if(allowed(user))
 			open()
 		else
-			do_animate("deny")
+			do_animate("deny", from_bump = TRUE)
 	return
 
 /obj/machinery/door/on_attack_hand(mob/user, act_intent = user.a_intent, unarmed_attack_flags)
@@ -156,6 +168,8 @@
 	add_fingerprint(user)
 	if(operating || (obj_flags & EMAGGED) || !can_open_with_hands)
 		return
+	if(elevator_mode && elevator_status != LIFT_PLATFORM_UNLOCKED)
+		return
 	if(!requiresID())
 		user = null //so allowed(user) always succeeds
 	if(access_bypass || allowed(user))
@@ -166,6 +180,13 @@
 		return TRUE
 	if(density)
 		do_animate("deny")
+
+/// Пишет дистанционное управление этой дверью во все серверы сообщений — вкладка
+/// "Remote Logs" в Message Monitor Console. device — чем управляли (пульт,
+/// интерфейс шлюза, программа и т.п.), action — что сделали ("opened" и т.п.).
+/obj/machinery/door/proc/log_remote_use(mob/user, action, device)
+	for(var/obj/machinery/telecomms/message_server/server in GLOB.telecomms_list)
+		server.log_remote_door(user, src, action, device)
 
 /obj/machinery/door/allowed(mob/M)
 	if(emergency)
@@ -185,10 +206,50 @@
 /obj/machinery/door/proc/try_to_crowbar(obj/item/I, mob/user)
 	return
 
-/// Удерживает ли закрытая дверь опасный перепад давления между своей плиткой и
-/// соседними. Порог задан в кПа, см. DOOR_PRESSURE_DIFFERENCE_TOLERANCE.
-/obj/machinery/door/proc/is_holding_pressure(pressure_tolerance = DOOR_PRESSURE_DIFFERENCE_TOLERANCE)
-	if(!density)
+// Бамп меха использует выбранный захват, а не предметы в руках пилота.
+/obj/machinery/door/proc/try_mecha_bump_open(mob/user)
+	if(!istype(user.loc, /obj/vehicle/sealed/mecha))
+		return FALSE
+	var/obj/vehicle/sealed/mecha/mecha = user.loc
+	if(!(mecha.occupants[user] & VEHICLE_CONTROL_EQUIPMENT))
+		return FALSE
+	for(var/obj/item/mecha_parts/mecha_equipment/medical/rescue_jaw/jaws in list(mecha.selected, mecha.selected_right))
+		if(jaws.chassis == mecha)
+			jaws.action(user, src)
+			return TRUE
+	return FALSE
+
+// Пилот остаётся внутри меха при движении, поэтому проверяем и клетку.
+/obj/machinery/door/proc/bump_open_checks(mob/user, turf/starting_turf)
+	return !QDELETED(user) && get_turf(user) == starting_turf && get_dist(src, user) <= 1
+
+// Соседи при открытой двери: читаем текущие преграды без перестройки кэша атмосферы.
+/obj/machinery/door/proc/get_open_atmos_neighbors()
+	var/list/neighbors = list()
+	var/turf/open/our_turf = loc
+	if(!isopenturf(our_turf) || our_turf.blocks_air)
+		return neighbors
+	var/was_dense = density
+	density = FALSE
+	for(var/direction in GLOB.cardinals_multiz)
+		if((flags_1 & ON_BORDER_1) && direction != dir)
+			continue
+		var/turf/open/neighbor = get_step_multiz(our_turf, direction)
+		if(!isopenturf(neighbor) || neighbor.blocks_air)
+			continue
+		if(direction & (UP|DOWN))
+			if(!CANVERTICALATMOSPASS(our_turf, neighbor))
+				continue
+		else if(!CANATMOSPASS(our_turf, neighbor))
+			continue
+		neighbors += neighbor
+	density = was_dense
+	return neighbors
+
+// Удерживает ли закрытая дверь опасный перепад давления между своей плиткой и
+// соседними. Порог задан в кПа, см. DOOR_PRESSURE_DIFFERENCE_TOLERANCE.
+/obj/machinery/door/proc/is_holding_pressure(pressure_tolerance = DOOR_PRESSURE_DIFFERENCE_TOLERANCE, include_open = FALSE)
+	if(!density && !include_open)
 		return FALSE
 	var/turf/open/our_turf = loc
 	// Плитка под дверью может оказаться закрытой: стену строят поверх содержимого
@@ -198,15 +259,7 @@
 	if(!isopenturf(our_turf) || !our_turf.air)
 		return FALSE
 
-	// Соседей надо видеть так, как если бы дверь уже была открыта, иначе
-	// удерживаемый перепад не виден вовсе. Список снимаем копией и сразу
-	// возвращаем плотность: если чтение смесей ниже когда-нибудь упадёт, дверь
-	// не должна остаться проходимой навсегда.
-	density = FALSE
-	our_turf.ImmediateCalculateAdjacentTurfs()
-	var/list/neighbors = our_turf.atmos_adjacent_turfs?.Copy()
-	density = TRUE
-	our_turf.ImmediateCalculateAdjacentTurfs()
+	var/list/neighbors = get_open_atmos_neighbors()
 	if(!length(neighbors))
 		return FALSE
 
@@ -214,8 +267,6 @@
 	var/max_pressure = min_pressure
 	for(var/turf/open/adjacent in neighbors)
 		if(!adjacent.air)
-			continue
-		if((flags_1 & ON_BORDER_1) && get_dir(src, adjacent) != dir)
 			continue
 		var/pressure = adjacent.air.return_pressure()
 		min_pressure = min(min_pressure, pressure)
@@ -271,7 +322,7 @@
 	else
 		icon_state = "door0"
 
-/obj/machinery/door/proc/do_animate(animation)
+/obj/machinery/door/proc/do_animate(animation, from_bump = FALSE)
 	switch(animation)
 		if("opening")
 			if(panel_open)
@@ -296,15 +347,15 @@
 	operating = TRUE
 	do_animate("opening")
 	set_opacity(0)
-	sleep(5)
+	sleep(opening_passable_delay)
 	density = FALSE
+	air_update_turf(TRUE)
+	update_freelook_sight()
 	sleep(5)
 	layer = initial(layer)
 	update_icon()
 	set_opacity(0)
 	operating = FALSE
-	air_update_turf(TRUE)
-	update_freelook_sight()
 	if(autoclose)
 		spawn(autoclose)
 			close()
@@ -328,6 +379,9 @@
 	layer = closingLayer
 	if(air_tight)
 		density = TRUE
+		// Плотность меняется раньше смежности: сохранённый обход уже недействителен.
+		if(SSair)
+			SSair.decompression_geometry_revision = (SSair.decompression_geometry_revision + 1) % SHORT_REAL_LIMIT
 	sleep(5)
 	density = TRUE
 	sleep(5)

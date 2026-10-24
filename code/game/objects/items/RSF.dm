@@ -4,6 +4,7 @@ RSF
 
 */
 /obj/item/rsf
+	armor_type = /datum/armor/none
 	name = "\improper Rapid-Service-Fabricator"
 	desc = "A device used to rapidly deploy service items."
 	icon = 'icons/obj/tools.dmi'
@@ -14,7 +15,6 @@ RSF
 	density = FALSE
 	anchored = FALSE
 	item_flags = NOBLUDGEON
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0)
 	var/matter = 0
 	var/mode = 1
 	w_class = WEIGHT_CLASS_NORMAL

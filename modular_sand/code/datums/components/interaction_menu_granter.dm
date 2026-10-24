@@ -571,6 +571,7 @@
 		.["unholy_pref"] =				pref_to_num(prefs.unholypref)
 		.["unholy_hard_pref"] =			pref_to_num(prefs.unholyhardpref)
 		.["tattoo_pref"] =				pref_to_num(prefs.tattoopref)
+		.["antag_opt_in"] =				antag_opt_in_ui_data(self)
 
 	//Getting preferences
 		.["verb_consent"] = 			!!CHECK_BITFIELD(prefs.toggles, VERB_CONSENT)
@@ -923,6 +924,8 @@
 				return TRUE
 			else
 				return FALSE
+		if("antag_opt_in")
+			return set_antag_opt_in_level(parent_mob, params["level"])
 		if("char_pref")
 			var/datum/preferences/prefs = parent_mob.client.prefs
 			var/value = num_to_pref(params["value"])
@@ -988,22 +991,24 @@
 			// Имя переменной, которую тронула ветка: в savefile уходит только этот ключ. Ветки на
 			// переменных, отличных от cit_toggles, переставляют имя сами.
 			var/dirty_var = "cit_toggles"
+			var/character_scoped = FALSE
 			switch(params["pref"])
 				if("use_arousal_multiplier")
 					prefs.use_arousal_multiplier = !prefs.use_arousal_multiplier
 					dirty_var = "use_arousal_multiplier"
 				if("arousal_multiplier")
-					prefs.arousal_multiplier = params["amount"]
+					prefs.arousal_multiplier = sanitize_integer(params["amount"], 0, 300, prefs.arousal_multiplier)
 					dirty_var = "arousal_multiplier"
 				if("use_moaning_multiplier")
 					prefs.use_moaning_multiplier = !prefs.use_moaning_multiplier
 					dirty_var = "use_moaning_multiplier"
 				if("moaning_multiplier")
-					prefs.moaning_multiplier = params["amount"]
+					prefs.moaning_multiplier = sanitize_integer(params["amount"], 0, 100, prefs.moaning_multiplier)
 					dirty_var = "moaning_multiplier"
 				if("use_custom_moan_sounds")
 					prefs.use_custom_moan_sounds = !prefs.use_custom_moan_sounds
 					dirty_var = "use_custom_moan_sounds"
+					character_scoped = TRUE
 
 				if("verb_consent")
 					TOGGLE_BITFIELD(prefs.toggles, VERB_CONSENT)
@@ -1109,7 +1114,10 @@
 					dirty_var = "compact_custom_tab"
 				else
 					return FALSE
-			prefs.save_pref_var(dirty_var)
+			if(character_scoped)
+				prefs.save_character(bypass_cooldown = TRUE, silent = TRUE)
+			else
+				prefs.save_pref_var(dirty_var)
 			return TRUE
 		if("genitals_menu")
 			switch(params["who"])
@@ -1172,7 +1180,7 @@
 					if(moan_file)
 						resolved += moan_file
 			prefs.custom_moan_sounds = resolved
-			prefs.save_pref_var("custom_moan_sounds")
+			prefs.save_character(bypass_cooldown = TRUE, silent = TRUE)
 			return TRUE
 
 /datum/component/interaction_menu_granter/proc/resolve_moan_sound_key(moan_key)

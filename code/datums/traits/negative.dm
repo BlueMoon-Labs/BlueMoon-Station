@@ -70,15 +70,17 @@
 GLOBAL_LIST_EMPTY(family_heirlooms)
 
 /datum/quirk/family_heirloom/on_spawn()
-	// Define holder and type
+	// Уже выданную реликвию используем повторно, не создавая копию при спавне или восстановлении.
 	var/mob/living/carbon/human/human_holder = quirk_holder
 	var/obj/item/heirloom_type
-	// BLUEMOON EDIT START - выбор вещей из лодаута как family heirloom
-	if(human_holder && istype(human_holder) && human_holder.mind && !isnull(human_holder.mind.assigned_heirloom))
+	if(!QDELETED(human_holder.mind?.assigned_heirloom))
 		heirloom = human_holder.mind.assigned_heirloom
-		if(heirloom && istype(heirloom))
-			loadout_heirloom = TRUE
+	else if(spawn_items)
+		heirloom = SSjob.equip_loadout_heirloom(human_holder)
+	loadout_heirloom = !QDELETED(heirloom)
 	if(!loadout_heirloom)
+		if(!spawn_items)
+			return
 		// The quirk holder's species - we have a 50% chance, if we have a species with a set heirloom, to choose a species heirloom.
 		var/datum/species/holder_species = human_holder.dna?.species
 		if(holder_species && LAZYLEN(holder_species.family_heirlooms) && prob(50))
@@ -95,14 +97,24 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 		// Create the heirloom item
 		heirloom = new heirloom_type(get_turf(quirk_holder))
 		heirloom.item_flags |= FAMILY_HEIRLOOM
-		// Determine and assign item location
-		var/list/slots = list(
-			"В левом кармане" = ITEM_SLOT_LPOCKET,
-			"В правом кармане" = ITEM_SLOT_RPOCKET,
-			"В рюкзаке" = ITEM_SLOT_BACKPACK
-		)
-		where = human_holder.equip_in_one_of_slots(heirloom, slots, FALSE) || "под ногами"
-	// BLUEMOON EDIT END
+	// Лодаут может сразу положить реликвию в сумку; сначала всё равно пробуем надеть её.
+	var/already_equipped = (heirloom in human_holder.get_equipped_items(TRUE))
+	var/obj/item/clothing/accessory/accessory = heirloom
+	if(istype(accessory) && accessory.current_uniform)
+		already_equipped = human_holder.contains_atom(accessory.current_uniform)
+	if(spawn_items && !already_equipped)
+		var/attached = FALSE
+		if(istype(accessory))
+			var/obj/item/clothing/attach_target = human_holder.get_item_by_slot(accessory.accessory_slot)
+			if(istype(attach_target))
+				attached = attach_target.attach_accessory(accessory, human_holder, TRUE)
+		if(attached || human_holder.equip_to_appropriate_slot(heirloom))
+			where = "В твоём снаряжении"
+		else if(!human_holder.contains_atom(heirloom))
+			where = human_holder.equip_in_one_of_slots(heirloom, list("В рюкзаке" = ITEM_SLOT_BACKPACK), qdel_on_fail = FALSE, critical = TRUE)
+			if(where == ITEM_SLOT_BACK)
+				where = "В рюкзаке"
+			where ||= "под ногами"
 	// Add to global list
 	GLOB.family_heirlooms += heirloom
 	RegisterSignal(heirloom, COMSIG_PARENT_QDELETING, PROC_REF(on_heirloom_deleted))
@@ -159,8 +171,16 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 /datum/quirk/family_heirloom/clone_data()
 	return heirloom
 
-/datum/quirk/family_heirloom/on_clone(data)
+/datum/quirk/family_heirloom/on_clone(obj/item/data)
+	if(!istype(data) || QDELETED(data))
+		return
+	if(heirloom)
+		UnregisterSignal(heirloom, COMSIG_PARENT_QDELETING)
+		GLOB.family_heirlooms -= heirloom
 	heirloom = data
+	loadout_heirloom = TRUE
+	GLOB.family_heirlooms |= heirloom
+	RegisterSignal(heirloom, COMSIG_PARENT_QDELETING, PROC_REF(on_heirloom_deleted))
 
 /datum/quirk/heavy_sleeper
 	name = "Крепко спящий"
@@ -198,6 +218,8 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 	quirk_holder.become_nearsighted(ROUNDSTART_TRAIT)
 
 /datum/quirk/nearsighted/on_spawn()
+	if(!spawn_items)
+		return
 	var/mob/living/carbon/human/H = quirk_holder
 	var/obj/item/clothing/glasses/regular/glasses = new(get_turf(H))
 	if(!H.equip_to_slot_if_possible(glasses, ITEM_SLOT_EYES))
@@ -316,6 +338,8 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 	H.gain_trauma(T, TRAUMA_RESILIENCE_ABSOLUTE)
 
 /datum/quirk/paraplegic/on_spawn()
+	if(!spawn_items)
+		return
 	if(quirk_holder.client)
 		var/modified_limbs = quirk_holder.client.prefs.modified_limbs
 		if(!(modified_limbs[BODY_ZONE_L_LEG] == LOADOUT_LIMB_AMPUTATED && modified_limbs[BODY_ZONE_R_LEG] == LOADOUT_LIMB_AMPUTATED && !isjellyperson(quirk_holder)))
@@ -471,6 +495,8 @@ GLOBAL_LIST_EMPTY(family_heirlooms)
 	RegisterSignal(quirk_holder, COMSIG_PARENT_EXAMINE, PROC_REF(on_examine_holder))
 
 /datum/quirk/blindness/on_spawn()
+	if(!spawn_items)
+		return
 	var/mob/living/carbon/human/H = quirk_holder
 	var/obj/item/clothing/glasses/sunglasses/blindfold/white/glasses = new(get_turf(H))
 	if(!H.equip_to_slot_if_possible(glasses, ITEM_SLOT_EYES, bypass_equip_delay_self = TRUE)) //if you can't put it on the user's eyes, put it in their hands, otherwise put it on their eyes eyes

@@ -305,12 +305,17 @@
 	var/list/cached_reagents = reagent_list
 	if (!target)
 		return
-	if (!target.reagents || src.total_volume<=0 || !src.get_reagent_amount(reagent))
+	var/datum/reagents/R
+	if(istype(target, /datum/reagents))
+		R = target
+	else
+		if(!target.reagents)
+			return
+		R = target.reagents
+	if (src.total_volume<=0 || !src.get_reagent_amount(reagent))
 		return
 	if(amount < 0)
 		return
-
-	var/datum/reagents/R = target.reagents
 	if(src.get_reagent_amount(reagent)<amount)
 		amount = src.get_reagent_amount(reagent)
 	amount = min(amount, R.maximum_volume-R.total_volume)
@@ -485,6 +490,8 @@
 	var/datum/cached_my_atom = my_atom
 
 	var/reaction_occurred = 0 // checks if reaction, binary variable
+	/// Жидкости по возврату решают, пересобрать ли лужу после реакции.
+	var/any_reaction = FALSE
 	var/continue_reacting = FALSE //Helps keep track what kind of reaction is occuring; standard or fermi.
 
 	do
@@ -643,11 +650,12 @@
 
 				selected_reaction.on_reaction(src, multiplier, special_react_result)
 				reaction_occurred = 1
+				any_reaction = TRUE
 				continue_reacting = TRUE
 
 	while(reaction_occurred)
 	update_total()
-	return FALSE
+	return any_reaction
 
 /datum/reagents/process()
 	var/datum/chemical_reaction/C = fermiReactID
@@ -889,7 +897,7 @@
 	pH = REAGENT_NORMAL_PH
 	return FALSE
 
-/datum/reagents/proc/reaction(atom/A, method = TOUCH, volume_modifier = 1, show_message = 1, from_gas = 0, affected_bodypart)
+/datum/reagents/proc/reaction(atom/A, method = TOUCH, volume_modifier = 1, show_message = 1, from_gas = 0, affected_bodypart, from_liquid = FALSE)
 	var/react_type
 	if(isliving(A))
 		react_type = "LIVING"
@@ -914,7 +922,7 @@
 					touch_protection = L.get_permeability_protection()
 				R.reaction_mob(A, method, R.volume * volume_modifier, show_message, touch_protection, affected_bodypart = bodypart)
 			if("TURF")
-				R.reaction_turf(A, R.volume * volume_modifier, show_message, from_gas)
+				R.reaction_turf(A, R.volume * volume_modifier, show_message, from_gas, from_liquid)
 			if("OBJ")
 				R.reaction_obj(A, R.volume * volume_modifier, show_message)
 	SEND_SIGNAL(A, COMSIG_ATOM_EXPOSE_REAGENTS, cached_reagents, src, method, volume_modifier, show_message, from_gas)

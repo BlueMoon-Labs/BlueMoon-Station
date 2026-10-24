@@ -93,8 +93,8 @@
 		if(tgui_alert(target, "Too quick! You are really want to answer?", "Do you really want to answer the summon?", list("Yes", "No")) != "Yes")
 			summoned_approve = FALSE
 	if(!summoned_approve)
-		var/excuses = tgui_input_text(target, "Do you want to tell the summoner the reason for the refusal?", "Say Text", "", MAX_MESSAGE_LEN, encode = FALSE)
-		to_chat(M, span_userdanger(excuses ? "You can hear at the edge of your hearing, it says, \"[excuses]\"</span>" : "It refuses to answer!"))
+		var/excuses = tgui_input_text(target, "Do you want to tell the summoner the reason for the refusal?", "Say Text", "", MAX_MESSAGE_LEN)
+		to_chat(M, span_userdanger((excuses ? "You can hear at the edge of your hearing, it says, \"[excuses]\"" : "It refuses to answer!")))
 		return
 
 	if(istype(get_area(src), /area/hilbertshotelstorage)) // Отель свернулся = телепортация в подсобку 3 на 3 без воможности выбраться = плохо
@@ -165,7 +165,13 @@
 	for(var/obj/item/I in OldRune.contents)
 		listed_items += I
 		I.forceMove(src)
+	for(var/obj/item/listed as anything in listed_items)
+		RegisterSignal(listed, COMSIG_PARENT_QDELETING, PROC_REF(forget_item))
 	START_PROCESSING(SSobj, src)
+
+/obj/effect/summon_rune/return_rune/proc/forget_item(obj/item/source)
+	SIGNAL_HANDLER
+	listed_items -= source
 
 /obj/effect/summon_rune/return_rune/process()
 	if(!returner)
@@ -202,7 +208,7 @@
 	//а вещи из руны уезжали в qdel вместе с ней
 	var/mob/living/carbon/returning = returner
 	returner = null
-	if(returning)
+	if(!QDELETED(returning))
 		teleport_summoned(returning, return_pos, TRUE)
 	return_pos = null
 	listed_items = null

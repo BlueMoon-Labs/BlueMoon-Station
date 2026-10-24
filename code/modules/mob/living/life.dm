@@ -178,11 +178,11 @@
 	//Mutations and radiation
 	handle_mutations_and_radiation()
 
-	//Breathing, if applicable
-	handle_breathing(times_fired)
-
 	if (QDELETED(src)) // diseases can qdel the mob via transformations
 		return FALSE
+
+	//Breathing, if applicable
+	handle_breathing(times_fired)
 
 	//Random events (vomiting etc)
 	handle_random_events()

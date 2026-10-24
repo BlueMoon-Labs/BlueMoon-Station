@@ -122,7 +122,7 @@
 	integrity_failure = 0.17
 	damage_deflection = 10
 	resistance_flags = FIRE_PROOF
-	armor = list(MELEE = 40, BULLET = 40, LASER = 40, ENERGY = 100, BOMB = 30, BIO = 100, RAD = 100, FIRE = 90, ACID = 50)
+	armor_type = /datum/armor/apc
 	req_access = list(ACCESS_ENGINE_EQUIP)
 	interaction_flags_machine = INTERACT_MACHINE_WIRES_IF_OPEN | INTERACT_MACHINE_ALLOW_SILICON | INTERACT_MACHINE_OPEN_SILICON
 
@@ -405,7 +405,7 @@
 	else
 		if (machine_stat & MAINT)
 			. += "The cover is closed. Something is wrong with it. It doesn't work."
-		else if (malfhack)
+		else if (malfhack && !(stealth_end_time > world.time))
 			. += "The cover is broken. It may be hard to force it open."
 		else
 			. += "The cover is closed."
@@ -477,18 +477,18 @@
 		return
 
 	. += mutable_appearance(icon, "apcox-[locked]")
-	. += emissive_appearance(icon, "apcox-[locked]")
+	. += emissive_appearance(icon, "apcox-[locked]", offset_spokesman = src)
 	. += mutable_appearance(icon, "apco3-[hijackerreturn() ? "3" : charging]")
-	. += emissive_appearance(icon, "apco3-[hijackerreturn() ? "3" : charging]")
+	. += emissive_appearance(icon, "apco3-[hijackerreturn() ? "3" : charging]", offset_spokesman = src)
 	if(!operating)
 		return
 
 	. += mutable_appearance(icon, "apco0-[equipment]")
-	. += emissive_appearance(icon, "apco0-[equipment]")
+	. += emissive_appearance(icon, "apco0-[equipment]", offset_spokesman = src)
 	. += mutable_appearance(icon, "apco1-[lighting]")
-	. += emissive_appearance(icon, "apco1-[lighting]")
+	. += emissive_appearance(icon, "apco1-[lighting]", offset_spokesman = src)
 	. += mutable_appearance(icon, "apco2-[environ]")
-	. += emissive_appearance(icon, "apco2-[environ]")
+	. += emissive_appearance(icon, "apco2-[environ]", offset_spokesman = src)
 
 /// Checks for what icon updates we will need to handle
 /obj/machinery/power/apc/proc/check_updates()
@@ -508,7 +508,9 @@
 			new_update_state |= UPSTATE_CELL_IN
 
 	else if((obj_flags & EMAGGED) || malfai)
-		new_update_state |= UPSTATE_BLUESCREEN
+		// BLUEMOON ADD malf stealth - прячем синий экран
+		if(!(malfhack && stealth_end_time > world.time))
+			new_update_state |= UPSTATE_BLUESCREEN
 	else if(panel_open)
 		new_update_state |= UPSTATE_WIREEXP
 
@@ -578,6 +580,7 @@
 							"<span class='notice'>You discard the strangely programmed board.</span>")
 						malfai = null
 						malfhack = 0
+						update_appearance() // BLUEMOON FIX: сбросить синий экран после извлечения взломанной платы
 						return
 					else
 						user.visible_message(\

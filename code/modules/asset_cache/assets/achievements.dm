@@ -37,5 +37,7 @@
 		"neutral" = 'icons/ui_icons/achievements/Mafia/neutral.png',
 		"hated" = 'icons/ui_icons/achievements/Mafia/hated.png',
 		"basemafia" ='icons/ui_icons/achievements/basemafia.png',
-		"frenching" = 'icons/ui_icons/achievements/Misc/frenchingthebubble.png'
+		"frenching" = 'icons/ui_icons/achievements/Misc/frenchingthebubble.png',
+		"crow_necro" = 'icons/ui_icons/achievements/Misc/crow_necro.png',
+		"pawlicker" = 'icons/ui_icons/achievements/Misc/pawlicker.png'
 	)
