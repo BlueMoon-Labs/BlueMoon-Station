@@ -103,21 +103,22 @@
 	. = ..()
 	if(!user)
 		return
+	if(slot != ITEM_SLOT_OCLOTHING)
+		return
+	if(!iscarbon(user))
+		return
 	current_user = user
 	START_PROCESSING(SSobj, src)
 
 	//Play pickup sound
 	if(!pickupsound)
 		return
-	if(!ishuman(user))
-		return
-	if(slot == ITEM_SLOT_OCLOTHING)
-		if(!firstpickup)
-			SEND_SOUND(user, sound('modular_splurt/sound/halflife/hevsuit_pickup.ogg', volume = 50))
-		else
-			firstpickup = FALSE
-			SEND_SOUND(user, sound('modular_splurt/sound/halflife/hevsuit_firstpickup.ogg', volume = 50))
-			SEND_SOUND(user, sound('modular_splurt/sound/halflife/anomalous_materials.ogg', volume = 50))
+	if(!firstpickup)
+		SEND_SOUND(user, sound('modular_splurt/sound/halflife/hevsuit_pickup.ogg', volume = 50))
+	else
+		firstpickup = FALSE
+		SEND_SOUND(user, sound('modular_splurt/sound/halflife/hevsuit_firstpickup.ogg', volume = 50))
+		SEND_SOUND(user, sound('modular_splurt/sound/halflife/anomalous_materials.ogg', volume = 50))
 
 /obj/item/clothing/suit/space/hev_suit/dropped(mob/user)
 	. = ..()
@@ -156,6 +157,8 @@
 
 /obj/item/clothing/suit/space/hev_suit/process(seconds_per_tick)
 	if(!current_user)
+		return
+	if(!iscarbon(current_user))
 		return
 	if(!cell || cell.charge <= 0)
 		return
