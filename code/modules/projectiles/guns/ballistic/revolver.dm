@@ -912,3 +912,20 @@
 	// Полностью очищаем память пушки
 	active_beacons.Cut()
 	return TRUE
+
+/obj/item/gun/ballistic/revolver/anathema
+	name = "Anathema"
+	desc = "A single action baptism of fire. This setup leaves no room for prayer, instantly scarring the flesh of the unholy with a relentless, mechanical crown of thorns. It looks like a single action revolver, but the hammer is too tight to cock with one hand."
+	icon_state = "anathema"
+	w_class = WEIGHT_CLASS_NORMAL
+	weapon_weight = WEAPON_HEAVY
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/apostle
+	fire_delay = 5
+	fire_select_modes = list(SELECT_SEMI_AUTOMATIC, SELECT_FULLY_AUTOMATIC)
+	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
+	item_state = "apostle"
+	fire_sound = "modular_bluemoon/sound/weapons/anathema.ogg"
+	load_sound = "modular_bluemoon/sound/weapons/anathema_reload.ogg"
+	load_empty_sound = "modular_bluemoon/sound/weapons/anathema_reload.ogg"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'

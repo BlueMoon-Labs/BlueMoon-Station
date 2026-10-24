@@ -79,32 +79,29 @@
 	TEST_ASSERT(istype(inspector.wear_suit, /obj/item/clothing/suit/armor/vest/warden/peacekeeper), "The inspector must wear the peacekeeper trench coat.")
 	TEST_ASSERT_EQUAL(vessel.canDock(vessel.home_dock), SHUTTLE_NOT_A_DOCKING_PORT, "Return must be locked before the first inspection visit.")
 
-	var/station_z = SSmapping.levels_by_trait(ZTRAIT_STATION)[1]
+	var/obj/docking_port/stationary/survey_dock = vessel.survey_dock
+	TEST_ASSERT(survey_dock && is_station_level(survey_dock.z), "The navigation console must survey a landing site in the station sector.")
+	TEST_ASSERT_EQUAL(length(survey_dock.return_turfs()), vessel.width * vessel.height, "The surveyed site must lie entirely inside the map.")
+	TEST_ASSERT(destination_visible(flight_console, survey_dock.shuttle_id), "The flight console must offer the surveyed landing site.")
 	var/landing_direction = turn(vessel.dir, 90)
-	var/turf/landing_turf
-	// Runtime Station is not empty at fixed coordinates; locate a berth for the full hull.
-	for(var/test_x in 24 to world.maxx - 24 step 24)
-		for(var/test_y in 24 to world.maxy - 24 step 24)
-			var/clear = TRUE
-			for(var/turf/place as anything in vessel.return_ordered_turfs(test_x, test_y, station_z, landing_direction))
-				if(!isspaceturf(place) || length(place.contents))
-					clear = FALSE
-					break
-			if(clear)
-				landing_turf = locate(test_x, test_y, station_z)
-				break
-		if(landing_turf)
-			break
-	TEST_ASSERT(landing_turf, "The test requires an empty station-sector berth.")
-	landing = new(landing_turf)
+	var/list/survey_bounds = survey_dock.return_coords()
+	var/list/rotated_bounds = survey_dock.return_coords(survey_dock.x, survey_dock.y, landing_direction)
+	var/shift_x = min(survey_bounds[1], survey_bounds[3]) - min(rotated_bounds[1], rotated_bounds[3])
+	var/shift_y = min(survey_bounds[2], survey_bounds[4]) - min(rotated_bounds[2], rotated_bounds[4])
+	landing = new(locate(survey_dock.x + shift_x, survey_dock.y + shift_y, survey_dock.z))
 	landing.setDir(landing_direction)
 	landing.width = vessel.width
 	landing.height = vessel.height
 	landing.dwidth = vessel.dwidth
 	landing.dheight = vessel.dheight
-	landing.area_type = /area/space
+	landing.area_type = survey_dock.area_type
+	TEST_ASSERT(same_footprint(landing, survey_dock), "The rotated berth must cover the surveyed site.")
 	TEST_ASSERT_EQUAL(vessel.initiate_docking(landing), DOCKING_SUCCESS, "The loaded vessel must fly to the station sector.")
 	TEST_ASSERT_EQUAL(vessel.dir, landing_direction, "The flight must exercise a 90-degree shuttle rotation.")
+	var/list/bounds = landing.return_coords()
+	for(var/turf/closed/mineral/rock in block(locate(min(bounds[1], bounds[3]) - 1, min(bounds[2], bounds[4]) - 1, landing.z), locate(max(bounds[1], bounds[3]) + 1, max(bounds[2], bounds[4]) + 1, landing.z)))
+		var/area/rock_area = rock.loc
+		TEST_ASSERT(!rock_area.outdoors, "Landing must burn the rock under and around the hull: [rock] at [rock.x],[rock.y]")
 	TEST_ASSERT(team.visited_station, "The first station arrival must start the return timer.")
 	TEST_ASSERT(team.return_available_at > world.time + 59 MINUTES, "The return delay must be 60 minutes.")
 	TEST_ASSERT(team.return_time_left() <= 60 MINUTES && team.return_time_left() > 59 MINUTES, "The console must report the whole mandatory stay.")
@@ -138,10 +135,18 @@
 	TEST_ASSERT(QDELETED(inspector), "The returned inspector's body must be removed with sparks.")
 	TEST_ASSERT(return_objective.check_completion(), "The return objective must stay completed after the body is removed.")
 
+/datum/unit_test/sol_inspection_shuttle/proc/same_footprint(obj/docking_port/first, obj/docking_port/second)
+	var/list/first_turfs = first.return_turfs()
+	var/list/second_turfs = second.return_turfs()
+	return length(first_turfs) == length(second_turfs) && !length(first_turfs - second_turfs)
+
 /// Check the destination data actually rendered by ShuttleConsole.
-/datum/unit_test/sol_inspection_shuttle/proc/home_destination_visible(obj/machinery/computer/shuttle/sol_inspection/console)
+/datum/unit_test/sol_inspection_shuttle/proc/destination_visible(obj/machinery/computer/shuttle/sol_inspection/console, destination_id)
 	var/list/data = console.ui_data()
 	for(var/list/destination as anything in data["locations"])
-		if(destination["id"] == "sol_inspection_home")
+		if(destination["id"] == destination_id)
 			return TRUE
 	return FALSE
+
+/datum/unit_test/sol_inspection_shuttle/proc/home_destination_visible(obj/machinery/computer/shuttle/sol_inspection/console)
+	return destination_visible(console, "sol_inspection_home")

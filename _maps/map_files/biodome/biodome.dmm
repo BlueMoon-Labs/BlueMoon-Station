@@ -48481,7 +48481,7 @@
 	dir = 1
 	},
 /obj/machinery/light/directional/north,
-/obj/machinery/bountyvend,
+/obj/machinery/equipment_vendor/vanguard,
 /turf/open/floor/plasteel/dark,
 /area/command/teleporter)
 "mKC" = (
@@ -49419,7 +49419,7 @@
 /turf/open/floor/plasteel,
 /area/engineering/atmos)
 "mZn" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /turf/open/floor/wood/wood_large,
 /area/cargo/miningdock)
 "mZA" = (
@@ -61113,7 +61113,7 @@
 /turf/open/floor/plasteel/rivets/large,
 /area/security/brig)
 "qgZ" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /obj/machinery/light/directional/south,
 /turf/open/floor/wood/wood_large,
 /area/cargo/miningdock)
@@ -69852,7 +69852,7 @@
 /area/science/breakroom)
 "sAa" = (
 /obj/machinery/airalarm/directional/south,
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /obj/effect/turf_decal/tile/brown/half/contrasted{
 	dir = 8
 	},

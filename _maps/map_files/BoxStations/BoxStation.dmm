@@ -39528,7 +39528,7 @@
 /turf/open/floor/plasteel/dark/textured/half,
 /area/command/gateway)
 "eFK" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /obj/effect/turf_decal/tile/brown/half,
 /turf/open/floor/plasteel/textured/half,
 /area/cargo/miningdock)
@@ -63724,7 +63724,7 @@
 /obj/effect/turf_decal/trimline/dark_blue/filled/mid_joiner{
 	dir = 4
 	},
-/obj/machinery/bountyvend,
+/obj/machinery/equipment_vendor/vanguard,
 /turf/open/floor/plasteel/dark/textured/half{
 	dir = 1
 	},

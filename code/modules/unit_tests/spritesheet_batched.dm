@@ -221,6 +221,7 @@
  * Под UNIT_TESTS отложенная сборка выключена (DO_NOT_DEFER_ASSETS), поэтому после
  * SSassets готовы все листы. Тест ловит лист, который молча не зарегистрировался или
  * не собрался: в логе такое не видно, а на проде это пустая витрина у интерфейса.
+ * В hermetic-профиле SSassets листы не собирает, поэтому тест собирает их сам.
  */
 /datum/unit_test/spritesheet_batched_all_generated
 
@@ -229,6 +230,9 @@
 		var/datum/asset/spritesheet_batched/sheet = sheet_type
 		if(sheet_type == initial(sheet._abstract))
 			continue
+		#ifdef UNIT_TEST_PROFILE_HERMETIC
+		get_asset_datum(sheet_type)
+		#endif
 		var/datum/asset/spritesheet_batched/loaded = GLOB.asset_datums[sheet_type]
 		// Через TEST_FAIL, а не TEST_ASSERT: assert выходит из Run() на первом же
 		// битом листе, а знать надо про все сразу - иначе чинить их придётся по одному

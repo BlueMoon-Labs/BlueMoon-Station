@@ -15451,7 +15451,7 @@
 /turf/open/floor/clockwork,
 /area/awaymission/complex/cultfacility)
 "noc" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /turf/open/floor/plasteel,
 /area/awaymission/complex/miningcamp)
 "nou" = (
@@ -21446,7 +21446,7 @@
 /area/awaymission/complex/janitorial)
 "spT" = (
 /obj/effect/decal/cleanable/dirt/dust,
-/obj/machinery/mineral/equipment_vendor/golem,
+/obj/machinery/equipment_vendor/golem,
 /turf/open/floor/wood/damturf/broken3,
 /area/awaymission/complex/minerhouse)
 "sqk" = (

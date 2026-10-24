@@ -50,7 +50,6 @@
 		var/list/product_data = list(
 			name = product_record.name,
 			amount = product_record.amount,
-			colorable = product_record.colorable,
 			free = !!product_record.returned_products,
 		)
 		.[REF(product_record)] = product_data
@@ -70,7 +69,6 @@
 		record.product_path = /obj/item/pen
 		record.amount = i % 12
 		record.max_amount = 12
-		record.colorable = !(i % 3)
 		if(!(i % 10))
 			record.returned_products = list(/obj/item/pen)
 		if(i <= 120)
@@ -94,11 +92,8 @@
 	var/mob/user = allocate(/mob)
 	var/list/static_data = machine.ui_static_data(user)
 	var/list/all_static_records = static_data["product_records"] + static_data["coin_records"] + static_data["hidden_records"]
-	var/static_colorable_count = 0
 	for(var/list/static_record as anything in all_static_records)
-		if(static_record["colorable"])
-			static_colorable_count++
-	TEST_ASSERT_EQUAL(static_colorable_count, 60, "Colorability must move to static data without changing its values")
+		TEST_ASSERT(!("colorable" in static_record), "Данные товаров не должны содержать удалённую функцию покраски")
 
 	var/iterations = 500
 	var/start_time = TICK_USAGE_REAL

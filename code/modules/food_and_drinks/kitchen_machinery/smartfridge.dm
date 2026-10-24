@@ -18,6 +18,25 @@
 	var/allow_ai_retrieve = FALSE
 	var/list/initial_contents
 	var/visible_contents = TRUE
+	// Тип сохраняет место до исчезновения последнего его предмета.
+	var/list/product_type_order = list()
+	var/vending_sound = 'sound/machines/machine_vend.ogg'
+
+/obj/machinery/smartfridge/Entered(atom/movable/arrived, atom/old_loc)
+	. = ..()
+	if(istype(arrived, /obj/item))
+		product_type_order |= arrived.type
+
+/obj/machinery/smartfridge/Exited(atom/movable/departed, atom/new_loc)
+	. = ..()
+	if(istype(departed, /obj/item))
+		forget_empty_product_type(departed)
+
+/obj/machinery/smartfridge/proc/forget_empty_product_type(atom/movable/departed)
+	for(var/obj/item/remaining in contents)
+		if(remaining != departed && !QDELETED(remaining) && remaining.type == departed.type)
+			return
+	product_type_order -= departed.type
 
 /obj/machinery/smartfridge/Initialize(mapload)
 	. = ..()
@@ -96,7 +115,7 @@
 		if(accept_check(O))
 			load(O)
 			user.visible_message("<span class='notice'>[user] загружает \the [O] в \the [src].</span>", "<span class='notice'>Вы загрузили \the [O] в \the [src].</span>")
-			updateUsrDialog()
+			SStgui.update_uis(src)
 			if (visible_contents)
 				update_icon()
 			return TRUE
@@ -110,7 +129,7 @@
 				if(accept_check(G))
 					load(G)
 					loaded++
-			updateUsrDialog()
+			SStgui.update_uis(src)
 
 			if(loaded)
 				if(contents.len >= max_n_of_items)
@@ -173,28 +192,42 @@
 
 /obj/machinery/smartfridge/ui_data(mob/user)
 	. = list()
+	.["vending_layout"] = user.client?.prefs?.get_vending_layout(type) || "grid"
 
 	var/listofitems = list()
+	var/list/groups_by_type = list()
 	for (var/I in src)
-		// We do not vend our own components.
+		// Детали самого холодильника не выдаются.
 		if(I in component_parts)
 			continue
 
 		var/atom/movable/O = I
 		if (!QDELETED(O))
-			var/md5name = md5(O.name)				// This needs to happen because of a bug in a TGUI component, https://github.com/ractivejs/ractive/issues/744
-			if (listofitems[md5name])				// which is fixed in a version we cannot use due to ie8 incompatibility
-				listofitems[md5name]["amount"]++	// The good news is, #30519 made smartfridge UIs non-auto-updating
+			// Тип входит в ключ, чтобы одноимённые предметы не смешивались.
+			var/item_key = md5("[O.type]-[O.name]")
+			if (listofitems[item_key])
+				listofitems[item_key]["amount"]++
 			else
-				listofitems[md5name] = list("name" = O.name, "type" = O.type, "amount" = 1)
-	sort_list(listofitems)
-
-	.["contents"] = listofitems
+				LAZYADD(groups_by_type[O.type], item_key)
+				listofitems[item_key] = list(
+					"path" = item_key,
+					"name" = O.name,
+					"type" = O.type,
+					"image" = icon2html(O, user.client, sourceonly = TRUE),
+					"amount" = 1,
+				)
+	var/list/ordered_items = list()
+	for(var/product_type in product_type_order)
+		for(var/item_key in groups_by_type[product_type])
+			ordered_items[item_key] = listofitems[item_key]
+	.["contents"] = ordered_items
 	.["name"] = name
 	.["isdryer"] = FALSE
 
 
-/obj/machinery/smartfridge/handle_atom_del(atom/A) // Update the UIs in case something inside gets deleted
+/obj/machinery/smartfridge/handle_atom_del(atom/A)
+	if(istype(A, /obj/item))
+		forget_empty_product_type(A)
 	SStgui.update_uis(src)
 
 /obj/machinery/smartfridge/ui_act(action, params)
@@ -202,40 +235,41 @@
 	if(.)
 		return
 	switch(action)
+		if("set_vending_layout")
+			usr.client?.prefs?.set_vending_layout(type, params["layout"])
+			return TRUE
 		if("Release")
 			var/desired = 0
 
 			if(!allow_ai_retrieve && isAI(usr))
-				to_chat(usr, "<span class='warning'>[src], похоже, не признаёт ваши полномочия!</span>")
+				to_chat(usr, span_warning("[src], похоже, не признаёт ваши полномочия!"))
 				return
 
 			if (params["amount"])
 				desired = text2num(params["amount"])
 			else
-				desired = input("Сколько?", "Сколько предметов хотите вытащить?", 1) as null|num
+				desired = tgui_input_number(usr, "Сколько предметов хотите вытащить?", "Выдача предметов", 1, contents.len, 1)
 
-			if(QDELETED(src) || QDELETED(usr) || !usr.Adjacent(src)) // Sanity checkin' in case stupid stuff happens while we wait for input()
+			// После диалога пользователь или холодильник могут исчезнуть.
+			if(QDELETED(src) || QDELETED(usr) || !usr.Adjacent(src))
 				return FALSE
+			if(!isnum(desired) || desired < 1)
+				return FALSE
+			desired = min(floor(desired), contents.len)
 
-			if(desired == 1 && Adjacent(usr) && !issilicon(usr))
-				for(var/obj/item/O in src)
-					if(O.name == params["name"])
-						if(O in component_parts)
-							CRASH("Attempted removal of [O] component_part from vending machine via vending interface.")
-						dispense(O, usr)
-						break
-				if (visible_contents)
-					update_icon()
-				return TRUE
-
+			var/dispensed_amount = 0
 			for(var/obj/item/O in src)
 				if(desired <= 0)
 					break
-				if(O.name == params["name"])
+				if(md5("[O.type]-[O.name]") == params["path"])
 					if(O in component_parts)
 						CRASH("Attempted removal of [O] component_part from vending machine via vending interface.")
 					dispense(O, usr)
-					desired--
+					if(O.loc != src)
+						desired--
+						dispensed_amount++
+			if(dispensed_amount)
+				playsound(src, vending_sound, 50, TRUE, extrarange = -3)
 			if (visible_contents)
 				update_icon()
 			return TRUE

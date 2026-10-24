@@ -117,7 +117,7 @@
 			/obj/machinery/vanguard/contraband = FALSE,
 			/obj/machinery/computer/vanguard_control/contraband = FALSE,
 			/obj/machinery/recharger = FALSE,
-			/obj/machinery/bountyvend = FALSE,
+			/obj/machinery/equipment_vendor/vanguard = FALSE,
 		)
 		var/list/area_types = list()
 		for(var/area/spawn_area as anything in spawn_areas)

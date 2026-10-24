@@ -99,7 +99,8 @@
 
 	if(held_index)
 		C.dropItemToGround(owner.get_item_for_held_index(held_index), 1)
-		C.hand_bodyparts[held_index] = null
+		if(C.hand_bodyparts)
+			C.hand_bodyparts[held_index] = null
 
 	for(var/thing in scars)
 		var/datum/scar/S = thing
@@ -289,6 +290,8 @@
 	..()
 
 /obj/item/bodypart/head/drop_limb(special)
+	if(!owner)                            // ← ранний выход
+		return
 	if(!special)
 		//Drop all worn head items
 		for(var/X in list(owner.glasses, owner.ears, owner.wear_mask, owner.head))
@@ -337,10 +340,11 @@
 	owner = C
 	C.bodyparts += src
 	if(held_index)
-		if(held_index > C.hand_bodyparts.len)
-			C.hand_bodyparts.len = held_index
-		C.hand_bodyparts[held_index] = src
-		if(C.dna.species.mutanthands && !is_pseudopart)
+		if(C.hand_bodyparts) // Проверяем, что список существует
+			if(held_index > C.hand_bodyparts.len)
+				C.hand_bodyparts.len = held_index
+			C.hand_bodyparts[held_index] = src
+		if(C.dna?.species?.mutanthands && !is_pseudopart)
 			C.put_in_hand(new C.dna.species.mutanthands(), held_index)
 		if(C.hud_used)
 			var/atom/movable/screen/inventory/hand/hand = C.hud_used.hand_slots["[held_index]"]
@@ -445,6 +449,6 @@
 		var/datum/wound/loss/phantom_loss = new // stolen valor, really
 		scaries.generate(L, phantom_loss)
 		L.attach_limb(src, 1)
-		if(ROBOTIC_LIMBS in dna.species.species_traits) //Snowflake trait moment, but needed.
+		if(dna?.species && (ROBOTIC_LIMBS in dna.species.species_traits)) //Snowflake trait moment, but needed.
 			L.change_bodypart_status(BODYPART_HYBRID, FALSE, TRUE) //Haha what if IPC-lings actually regenerated the right limbs instead of organic ones? That'd be pretty cool, right?
 		return TRUE
