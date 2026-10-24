@@ -5688,6 +5688,8 @@
 /obj/machinery/light/directional/north,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/item/card/id/departmental_budget/tar,
+/obj/item/xenoarch/help/cargo/tarkoff,
+/obj/item/xenoarch/help/cargo/tarkoff,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/port_tarkon/comms)
 "CX" = (
