@@ -270,7 +270,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 			if (inprefs)
 				return
 			inprefs = TRUE
-			. = prefs.process_link(usr,href_list)
+			. = prefs.process_antag_opt_in_href(usr, href_list)
 			inprefs = FALSE
 			record_slow_topic(topic_started, href, "prefs")
 			return
@@ -1218,7 +1218,6 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 			)
 
 			send2adminchat("Server", "[cheesy_message] (No admins online)")
-	clear_character_previews()
 	// seen_messages = null
 	Master.UpdateTickRate()
 	. = ..() //Even though we're going to be hard deleted there are still some things that want to know the destroy is happening
@@ -1916,67 +1915,6 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 /client/proc/AnnouncePR(announcement)
 	if(prefs && prefs.chat_toggles & CHAT_PULLR)
 		to_chat(src, announcement)
-
-/client/proc/show_character_previews(mutable_appearance/source)
-	LAZYINITLIST(char_render_holders)
-	if(!char_preview_planes)
-		//Через попап-группу: мастера без худа плодят реле на основной карте и заявляют те же имена render_target, что и худ игрока.
-		char_preview_planes = new /datum/plane_master_group/popup/on_demand(PLANE_GROUP_POPUP_WINDOW("character_preview"), "character_preview_map")
-		for(var/plane_key in char_preview_planes.plane_masters)
-			var/atom/movable/screen/plane_master/plane_master = char_preview_planes.plane_masters[plane_key]
-			plane_master.refresh_backdrop(mob)
-			plane_master.screen_loc = "character_preview_map:0,CENTER"
-		char_preview_planes.register_to_client(src)
-		// Disable lighting on the preview — no lighting objects exist there,
-		// and the blur edge-fix filter would force the empty plane opaque black
-		for(var/plane_key in char_preview_planes.plane_masters)
-			var/atom/movable/screen/plane_master/lighting/lighting_pm = char_preview_planes.plane_masters[plane_key]
-			if(!istype(lighting_pm))
-				continue
-			lighting_pm.set_alpha(LIGHTING_PLANE_ALPHA_INVISIBLE)
-			lighting_pm.filters = null
-		// The emissive plane only exists to feed the lighting plane's alpha mask, which is disabled
-		// above. Without that mask the raw white emissive overlays would blow out the whole preview,
-		// so hide the emissive plane in the character preview too.
-		var/atom/movable/screen/plane_master/emissive_pm = char_render_holders["plane_master-[EMISSIVE_PLANE]"]
-		if(emissive_pm)
-			emissive_pm.alpha = LIGHTING_PLANE_ALPHA_INVISIBLE
-			emissive_pm.filters = null
-
-	var/pos = 0
-	for(var/dir in GLOB.cardinals)
-		pos++
-		var/atom/movable/screen/preview = char_render_holders["preview-[dir]"]
-		if(!preview)
-			preview = new
-			char_render_holders["preview-[dir]"] = preview
-			screen |= preview
-		preview.appearance = source
-		preview.dir = dir
-		preview.screen_loc = "character_preview_map:0,[pos]"
-
-/client/proc/clear_character_previews()
-	char_preview_planes?.unregister_from_client(src)
-	QDEL_NULL(char_preview_planes)
-	if(!LAZYLEN(char_render_holders))
-		char_render_holders = null
-		return
-
-	var/list/char_render_holders_copy = char_render_holders.Copy()
-	char_render_holders = null
-
-	for(var/index in char_render_holders_copy)
-		var/atom/movable/screen/S = char_render_holders_copy[index]
-		S.vis_contents.Cut()
-		S.overlays.Cut()
-		S.underlays.Cut()
-		S.filters = null
-		S.maptext = null
-		S.icon = null
-		S.screen_loc = null
-		S.appearance = null
-		screen -= S
-		qdel(S)
 
 /client/proc/can_have_part(part_name)
 	return prefs.pref_species.mutant_bodyparts[part_name] || (part_name in GLOB.unlocked_mutant_parts)

@@ -29,25 +29,23 @@
 	bark_variance = BARK_VARIANCE_RAND
 	age = rand(AGE_MIN,AGE_MAX)
 
-/datum/preferences/proc/update_preview_icon(current_tab)
+/datum/preferences/proc/build_preview_appearance()
 	// Determine what job is marked as 'High' priority, and dress them up as such.
 	var/datum/job/previewJob = get_highest_job()
 
-	if(previewJob)
+	if(previewJob && preview_pref == PREVIEW_PREF_JOB)
 		// Silicons only need a very basic preview since there is no customization for them.
 		if(istype(previewJob,/datum/job/ai))
-			parent.show_character_previews(image('icons/mob/AI.dmi', icon_state = resolve_ai_icon(preferred_ai_core_display), dir = SOUTH))
-			return
+			return mutable_appearance('icons/mob/AI.dmi', resolve_ai_icon(preferred_ai_core_display), FLOAT_LAYER, GAME_PLANE)
 		if(istype(previewJob,/datum/job/cyborg))
-			parent.show_character_previews(image('icons/mob/robots.dmi', icon_state = "robot", dir = SOUTH))
-			return
+			return mutable_appearance('icons/mob/robots.dmi', "robot", FLOAT_LAYER, GAME_PLANE)
 
 	// Set up the dummy for its photoshoot. regenerate = FALSE: манекен всё равно
 	// сразу переодевается и в конце проходит regenerate_icons() - восстанавливать
 	// срезанные wipe_state() иконки на входе значит рендерить его дважды.
 	var/mob/living/carbon/human/dummy/mannequin = generate_or_wait_for_human_dummy(DUMMY_HUMAN_SLOT_PREFERENCES, regenerate = FALSE)
-	// Apply the Dummy's preview background first so we properly layer everything else on top of it.
-	mannequin.add_overlay(mutable_appearance('modular_citadel/icons/ui/backgrounds.dmi', bgstate, layer = SPACE_LAYER))
+	if(!mannequin)
+		return null
 	copy_to(mannequin, icon_updates = FALSE, initial_spawn = TRUE)
 
 	switch(preview_pref)
@@ -76,8 +74,11 @@
 
 	mannequin.regenerate_icons()
 
-	parent.show_character_previews(new /mutable_appearance(mannequin))
+	var/mutable_appearance/result = new /mutable_appearance(mannequin)
+	// Конструктор mutable_appearance сбрасывает plane: сохраняем настоящую плоскость манекена.
+	result.plane = mannequin.plane
 	unset_busy_human_dummy(DUMMY_HUMAN_SLOT_PREFERENCES)
+	return result
 
 /datum/preferences/proc/get_highest_job()
 	var/highest_pref = 0

@@ -6,7 +6,7 @@
 
 /datum/language/modular_sand/sergal
 	name = LANGUAGE_SERGAL
-	desc = "The dominant language of the Sergal homeworld, Tal. It consists of aggressive low-pitched hissing and throaty growling."
+	desc = "Основной язык родного мира сергалов - Тала. Состоит из агрессивного низкого шипения и горлового рычания."
 	speech_verb = "snarls"
 	ask_verb = "snarls"
 	exclaim_verb = "barks"
@@ -19,7 +19,7 @@
 
 /datum/language/modular_sand/buggy
 	name = "Buggy"
-	desc = "A barely comprehensible language, spoken by insectoid-like races."
+	desc = "Едва различимый язык, на котором говорят насекомоподобные расы."
 	speech_verb = "flutters"
 	ask_verb = "flits"
 	exclaim_verb = "flaps"
@@ -36,7 +36,7 @@
 
 /datum/language/modular_sand/calcic
 	name = "Calcic"
-	desc = "The disjointed and staccato language of plasmamen. Also understood by skeletons."
+	desc = "Рваный и рубленый язык плазменных людей. Понимают его и скелеты."
 	speech_verb = "rattles"
 	ask_verb = "queries"
 	exclaim_verb = "screeches"
@@ -57,7 +57,7 @@
 
 /datum/language/modular_sand/dunmeri
 	name = "Dunmeri"
-	desc = "The native language of the dark elves of lavaland."
+	desc = "Родной язык тёмных эльфов Лаваленда."
 	speech_verb = "proclaims"
 	ask_verb = "queries"
 	exclaim_verb = "declares"
@@ -80,7 +80,7 @@
 
 /datum/language/modular_sand/moffic
 	name = "Moffic"
-	desc = "The language of the Mothpeople borders on complete unintelligibility."
+	desc = "Язык мотыльковых людей почти невозможно разобрать."
 	speech_verb = "flutters"
 	ask_verb = "flits"
 	exclaim_verb = "flaps"
@@ -100,7 +100,7 @@
 
 /datum/language/modular_sand/shadowtongue
 	name = "Shadowtongue"
-	desc = "What a grand and intoxicating innocence."
+	desc = "Какая великая и опьяняющая невинность."
 	speech_verb = "growls"
 	ask_verb = "growls"
 	exclaim_verb = "roars"
@@ -122,7 +122,7 @@
 
 /datum/language/modular_sand/solcommon
 	name = "Sol Common"
-	desc = "The old Earthen language of Latin, re-adopted into the modern day to offer more identity to Humanity."
+	desc = "Древний земной латинский язык, вновь возрождённый в современности, чтобы дать человечеству больше самобытности."
 	speech_verb = "proclaims"
 	ask_verb = "queries"
 	exclaim_verb = "declares"
@@ -141,7 +141,7 @@
 
 /datum/language/modular_sand/technorussian
 	name = "Technorussian"
-	desc = "Ancient language of Russian colonists, rusted with time and bastardized with technical terms in everyday use."
+	desc = "Древний язык русских колонистов, проржавевший от времени и уродливо перемешанный с техническими терминами в повседневной речи."
 	speech_verb = "proclaims"
 	ask_verb = "queries"
 	exclaim_verb = "declares"

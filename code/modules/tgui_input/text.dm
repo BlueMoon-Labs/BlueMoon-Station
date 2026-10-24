@@ -15,7 +15,7 @@
  * * encode - Toggling this determines if input is filtered via html_encode. Setting this to FALSE gives raw input.
  * * timeout - The timeout of the textbox, after which the modal will close and qdel itself. Set to zero for no timeout.
  */
-/proc/tgui_input_text(mob/user, message = "", title = "Text Input", default, max_length = INFINITY, multiline = FALSE, encode = FALSE, timeout = 0, prevent_enter = FALSE)
+/proc/tgui_input_text(mob/user, message = "", title = "Text Input", default, max_length = INFINITY, multiline = FALSE, encode = FALSE, timeout = 0, prevent_enter = FALSE, hint = null)
 	if (istext(user))
 		stack_trace("tgui_input_text() received text for user instead of mob")
 		return
@@ -45,7 +45,7 @@
 				native_answer = input(user, message, title, default) as text|null
 			end_native_prompt(prompt_mob)
 			return strip_control_chars(native_answer)
-	var/datum/tgui_input_text/text_input = new(user, message, title, default, max_length, multiline, encode, timeout, prevent_enter)
+	var/datum/tgui_input_text/text_input = new(user, message, title, default, max_length, multiline, encode, timeout, prevent_enter, hint)
 	text_input.ui_interact(user)
 	text_input.wait()
 	if (text_input)
@@ -82,13 +82,16 @@
 
 	var/prevent_enter
 
-/datum/tgui_input_text/New(mob/user, message, title, default, max_length, multiline, encode, timeout, prevent_enter)
+	var/hint
+
+/datum/tgui_input_text/New(mob/user, message, title, default, max_length, multiline, encode, timeout, prevent_enter, hint)
 	src.default = default
 	src.encode = encode
 	src.max_length = max_length
 	src.message = message
 	src.multiline = multiline
 	src.title = title
+	src.hint = hint
 	if (timeout)
 		src.timeout = timeout
 		start_time = world.time
@@ -131,6 +134,7 @@
 	data["swapped_buttons"] = !user.client.prefs.tgui_swapped_buttons
 	data["title"] = title
 	data["prevent_enter"] = prevent_enter
+	data["hint"] = hint
 	return data
 
 /datum/tgui_input_text/ui_data(mob/user)

@@ -1442,7 +1442,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	if(!bypass_cooldown)
 		if(world.time < loadcharcooldown) //This is before the check to see if the filepath exists to ensure that BYOND can't get hung up on read attempts when the hard drive is a little slow
 			if(istype(parent))
-				to_chat(parent, "<span class='warning'>You're attempting to load your character a little too fast. Wait half a second, then try again.</span>")
+				to_chat(parent, span_warning("Вы слишком быстро загружаете персонажей. Подождите полсекунды и попробуйте снова."))
 			return "SLOW THE FUCK DOWN" //the reason this isn't null is to make sure that people don't have their character slots overridden by random chars if they accidentally double-click a slot
 		COOLDOWN_START(src, loadcharcooldown, PREF_LOAD_COOLDOWN)
 	if(!fexists(path))
@@ -2288,6 +2288,15 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	cit_character_pref_load(S)
 
+	S["split_eye_colors"] >> split_eye_colors
+	S["bgstate"] >> bgstate
+	S["preview_pref"] >> preview_pref
+	split_eye_colors = sanitize_integer(split_eye_colors, FALSE, TRUE, FALSE)
+	if(!(bgstate in bgstate_options))
+		bgstate = initial(bgstate)
+	if(!(preview_pref in list(PREVIEW_PREF_JOB, PREVIEW_PREF_LOADOUT, PREVIEW_PREF_NAKED, PREVIEW_PREF_NAKED_AROUSED)))
+		preview_pref = PREVIEW_PREF_JOB
+
 	sand_character_pref_load(S)
 
 	splurt_character_pref_load(S)
@@ -2295,6 +2304,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	bluemoon_character_pref_load(S)
 
 	load_tattoo_prefs(S) // BLUEMOON ADD - загрузка татуировок
+
+	if(parent?.prefs == src)
+		parent.tgui_panel?.emotes_send_list()
 
 	return S
 
@@ -2336,8 +2348,20 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		viewer.local_storage_name = savefile_name
 	return viewer.local_storage_name
 
-/// Удаляет слот персонажа из сейвфайла. Очищает директорию /character[slot].
-/// Если удаляется текущий слот - переключается на ближайший непустой, или на слот 1.
+// Создаём независимого персонажа через обычный формат сохранения, чтобы не наследовать данные прежнего слота.
+/datum/preferences/proc/create_character(slot)
+	if(!path)
+		return FALSE
+	var/datum/preferences/defaults = new
+	defaults.path = path
+	var/savefile/template = defaults.save_character(bypass_cooldown = TRUE, silent = TRUE, export = TRUE)
+	defaults.path = null
+	qdel(defaults)
+	if(!template || !load_character(slot, bypass_cooldown = TRUE, provided = template))
+		return FALSE
+	return save_character(bypass_cooldown = TRUE, silent = TRUE)
+
+// Удаляем слот и загружаем оставшегося персонажа; вместо последнего создаём нового.
 /datum/preferences/proc/delete_character(slot)
 	if(!path)
 		return FALSE
@@ -2352,6 +2376,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["real_name"] >> check_name
 	if(!check_name)
 		return FALSE // слот уже пуст
+	if(char_queue)
+		deltimer(char_queue)
+	char_queue = null
+	char_queue_deadline = 0
 
 	// Удаляем директорию персонажа из сейвфайла
 	S.cd = "/"
@@ -2371,11 +2399,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 			if(name)
 				new_slot = i
 				break
-		// Если не нашли непустой - просто переключаемся на слот 1
-		if(!new_slot)
-			new_slot = 1
-		default_slot = new_slot
-		load_character(new_slot)
+		if(new_slot)
+			load_character(new_slot, bypass_cooldown = TRUE)
+		else
+			create_character(1)
 
 	save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 	return TRUE
@@ -2679,6 +2706,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	else
 		S["tcg_decks"] << safe_json_encode(list())
 
+	WRITE_FILE(S["split_eye_colors"], split_eye_colors)
+	WRITE_FILE(S["bgstate"], bgstate)
+	WRITE_FILE(S["preview_pref"], preview_pref)
+
 	cit_character_pref_save(S)
 
 	sand_character_pref_save(S)
@@ -2695,7 +2726,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 			H.set_antag_target_indicator() // Update consent HUD
 
 		if(!silent)
-			to_chat(parent, span_notice("Saved character slot!"))
+			to_chat(parent, span_notice("Персонаж сохранён!"))
 
 	blocking_call_finish(blocking_started_ms, "savefile (персонаж)", "персонаж [parent?.ckey || "?"] слот [default_slot]")
 	return S

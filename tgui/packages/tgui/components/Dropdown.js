@@ -34,12 +34,15 @@ const optionLabel = option => (isOptionPair(option)
   ? (option.displayText !== undefined ? option.displayText : option.value)
   : option);
 
+const SEARCH_THRESHOLD = 9;
+
 export class Dropdown extends Component {
   constructor(props) {
     super(props);
     this.state = {
       selected: props.selected,
       open: false,
+      search: '',
     };
     this.handleClick = () => {
       if (this.state.open) {
@@ -55,9 +58,9 @@ export class Dropdown extends Component {
   setOpen(open) {
     // The menu node exists only after the re-render, so focus it
     // in the setState callback (setState is asynchronous in React).
-    this.setState({ open: open }, () => {
+    this.setState({ open: open, search: '' }, () => {
       if (open) {
-        this.menuRef?.focus();
+        (this.searchRef || this.menuRef)?.focus();
       }
     });
     if (open) {
@@ -81,7 +84,20 @@ export class Dropdown extends Component {
   }
 
   buildMenu(optionList) {
-    const ops = optionList.map(option => {
+    const query = this.state.search.trim().toLowerCase();
+    const visible = query
+      ? optionList.filter(option => {
+        if (typeof option === 'string' || typeof option === 'number') {
+          return String(option).toLowerCase().includes(query);
+        }
+        if (isOptionPair(option)) {
+          return String(optionValue(option) ?? '').toLowerCase().includes(query)
+            || String(option.displayText ?? option.value ?? '').toLowerCase().includes(query);
+        }
+        return true;
+      })
+      : optionList;
+    const ops = visible.map(option => {
       const value = optionValue(option);
       return (
         <Box
@@ -94,7 +110,7 @@ export class Dropdown extends Component {
         </Box>
       );
     });
-    return ops.length ? ops : 'No Options Found';
+    return ops.length ? ops : 'Нет совпадений';
   }
 
   render() {
@@ -114,6 +130,7 @@ export class Dropdown extends Component {
       selected,
       disabled,
       displayText,
+      searchable,
       ...boxProps
     } = props;
     const {
@@ -129,6 +146,9 @@ export class Dropdown extends Component {
     // теперь поиск подписи идёт в render() — и без приведения окно уходило
     // бы в белый экран на первом же рендере.
     const optionList = Array.isArray(options) ? options : [];
+
+    const showSearch = searchable === true
+      || (searchable !== false && optionList.length > SEARCH_THRESHOLD);
 
     // Контрол условно управляемый. Если проп selected передан, подпись всегда
     // считается из него: машина имеет право молча отвергнуть act
@@ -166,6 +186,22 @@ export class Dropdown extends Component {
           noscroll && 'Dropdown__menu-noscroll' || 'Dropdown__menu',
           over && 'Dropdown__over',
         ])}>
+        {showSearch && (
+          <input
+            className="Dropdown__search"
+            placeholder="Поиск..."
+            value={this.state.search}
+            ref={input => { this.searchRef = input; }}
+            onClick={e => e.stopPropagation()}
+            onChange={e => this.setState({ search: e.target.value })}
+            onKeyDown={e => {
+              if (e.key === 'Escape') {
+                e.stopPropagation();
+                this.setOpen(false);
+              }
+            }}
+          />
+        )}
         {this.buildMenu(optionList)}
       </div>
     ) : null;
