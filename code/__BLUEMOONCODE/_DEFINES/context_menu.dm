@@ -16,9 +16,9 @@
 #define CONTEXT_MENU_MIN_WIDTH 60
 #define CONTEXT_MENU_ROW_HEIGHT 11
 /// Строка со значком объекта
-#define CONTEXT_MENU_ICON_ROW_HEIGHT 13
-/// Значок объекта в строке
-#define CONTEXT_MENU_ICON_SIZE 12
+#define CONTEXT_MENU_ICON_ROW_HEIGHT 16
+/// Место под значок объекта в строке: видимая часть спрайта как есть или уменьшенная вдвое
+#define CONTEXT_MENU_ICON_SIZE 16
 /// Столько одинаковых объектов на клетке сворачиваются в одну строку со счётом
 #define CONTEXT_MENU_GROUP_MIN 3
 /// Меню переживает ходьбу, пока его объект не дальше этого

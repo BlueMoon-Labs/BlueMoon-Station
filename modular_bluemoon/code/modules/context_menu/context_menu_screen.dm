@@ -83,11 +83,52 @@
 	look.pixel_z = 0
 	look.alpha = 255
 	look.maptext = null
-	var/list/size = context_menu_icon_size(source.icon)
-	var/scale = CONTEXT_MENU_ICON_SIZE / max(size[1], size[2], 1)
-	// масштаб идёт вокруг центра иконки, поэтому сдвиг - в левый край строки и по центру высоты
-	look.transform = matrix(scale, 0, 2 - size[1] * (1 - scale) / 2, 0, scale, (row_height - size[2] * scale) / 2 - size[2] * (1 - scale) / 2)
+	// bounds: левый, нижний, правый, верхний непрозрачный пиксель и размер иконки
+	var/list/bounds = context_menu_icon_bounds(source.icon, source.icon_state, source.dir)
+	var/visible = max(bounds[3] - bounds[1], bounds[4] - bounds[2]) + 1
+	// целый масштаб держит пиксели чёткими: мелкое как есть, крупное вдвое, огромное - сколько нужно
+	var/scale = 1
+	while(visible * scale > CONTEXT_MENU_ICON_SIZE)
+		scale /= 2
+	// масштаб идёт вокруг центра иконки; центр видимой части - в середину места под значок
+	var/list/icon_center = list(bounds[5] / 2, bounds[6] / 2)
+	var/list/visible_center = list((bounds[1] - 1 + bounds[3]) / 2, (bounds[2] - 1 + bounds[4]) / 2)
+	var/list/slot_center = list(2 + CONTEXT_MENU_ICON_SIZE / 2, row_height / 2)
+	var/list/offset = list()
+	for(var/axis in 1 to 2)
+		offset += round(slot_center[axis] - icon_center[axis] - scale * (visible_center[axis] - icon_center[axis]))
+	look.transform = matrix(scale, 0, offset[1], 0, scale, offset[2])
 	appearance = look
+
+/// Рамка непрозрачных пикселей стейта: list(x1, y1, x2, y2, ширина, высота), по стейту один раз. Пустой - вся иконка.
+/proc/context_menu_icon_bounds(icon_file, icon_state, dir)
+	var/static/list/bounds_cache = list()
+	var/key = "[icon_file]|[icon_state]|[dir]"
+	if(bounds_cache[key])
+		return bounds_cache[key]
+	// стейта нет (сглаженные столы и стены собраны из уголков) - рамка на всю иконку
+	var/icon/sample = (icon_file && (icon_state in icon_states(icon_file))) ? icon(icon_file, icon_state, dir, 1) : null
+	var/list/size = context_menu_icon_size(icon_file)
+	var/width = size[1]
+	var/height = size[2]
+	var/list/bounds = list(width + 1, height + 1, 0, 0, width, height)
+	if(sample)
+		for(var/y in 1 to height)
+			for(var/x in 1 to width)
+				if(!sample.GetPixel(x, y))
+					continue
+				bounds[1] = min(bounds[1], x)
+				bounds[2] = min(bounds[2], y)
+				bounds[3] = max(bounds[3], x)
+				bounds[4] = max(bounds[4], y)
+	if(!bounds[3])
+		// у однонаправленного стейта другой стороны нет
+		if(sample && dir != SOUTH)
+			bounds_cache[key] = context_menu_icon_bounds(icon_file, icon_state, SOUTH)
+			return bounds_cache[key]
+		bounds = list(1, 1, width, height, width, height)
+	bounds_cache[key] = bounds
+	return bounds
 
 /// Размер иконки в пикселях, по файлу один раз
 /proc/context_menu_icon_size(icon_file)

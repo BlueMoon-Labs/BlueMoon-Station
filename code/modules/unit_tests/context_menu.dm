@@ -177,6 +177,36 @@
 	user.close_context_menu()
 	TEST_ASSERT_EQUAL(length(menu.hint_objects), 0, "Плашка хоткея пережила закрытие меню")
 
+/// Значок - видимая часть спрайта: мелкая вещь в натуральную величину, крупная ровно вдвое меньше, в обоих случаях в своём месте строки; сглаженный стол без своего стейта - вдвое меньше целиком
+/datum/unit_test/context_menu_icon_scale
+
+/datum/unit_test/context_menu_icon_scale/Run()
+	var/obj/item/reagent_containers/glass/beaker/beaker = allocate(/obj/item/reagent_containers/glass/beaker)
+	var/obj/item/storage/toolbox/mechanical/toolbox = allocate(/obj/item/storage/toolbox/mechanical)
+	var/obj/structure/table/glass/table = allocate(/obj/structure/table/glass)
+	var/started = REALTIMEOFDAY
+	var/list/beaker_bounds = context_menu_icon_bounds(beaker.icon, beaker.icon_state, beaker.dir)
+	TEST_ASSERT(REALTIMEOFDAY - started < 2, "Рамка стейта считается дольше 0.2 с")
+	TEST_ASSERT(beaker_bounds[3] - beaker_bounds[1] < 16 && beaker_bounds[4] - beaker_bounds[2] < 16, "Мензурка не уместилась в 16 px: [json_encode(beaker_bounds)]")
+	TEST_ASSERT(beaker_bounds[1] > 1 && beaker_bounds[3] < 32, "Рамка мензурки на всю иконку: [json_encode(beaker_bounds)]")
+	for(var/obj/thing as anything in list(beaker, toolbox, table))
+		var/atom/movable/screen/context_menu_icon/icon_object = new(null, thing, CONTEXT_MENU_ICON_ROW_HEIGHT)
+		var/list/bounds = context_menu_icon_bounds(thing.icon, thing.icon_state, thing.dir)
+		var/matrix/transform = icon_object.transform
+		var/expected_scale = max(bounds[3] - bounds[1], bounds[4] - bounds[2]) + 1 > CONTEXT_MENU_ICON_SIZE ? 0.5 : 1
+		TEST_ASSERT_EQUAL(transform.a, expected_scale, "[thing]: масштаб не целый или не тот")
+		// видимая часть после масштаба вокруг центра и сдвига
+		var/left = 16 + expected_scale * (bounds[1] - 1 - 16) + transform.c
+		var/right = 16 + expected_scale * (bounds[3] - 16) + transform.c
+		var/bottom = 16 + expected_scale * (bounds[2] - 1 - 16) + transform.f
+		var/top = 16 + expected_scale * (bounds[4] - 16) + transform.f
+		TEST_ASSERT(left >= 1 && right <= 2 + CONTEXT_MENU_ICON_SIZE + 1, "[thing]: значок вылез из своего места по ширине ([left]..[right])")
+		TEST_ASSERT(bottom >= -1 && top <= CONTEXT_MENU_ICON_ROW_HEIGHT + 1, "[thing]: значок вылез из строки по высоте ([bottom]..[top])")
+		qdel(icon_object)
+	var/list/toolbox_bounds = context_menu_icon_bounds(toolbox.icon, toolbox.icon_state, toolbox.dir)
+	TEST_ASSERT(toolbox_bounds[3] - toolbox_bounds[1] >= 16, "Ящик неожиданно мелкий, тест не проверяет уменьшение: [json_encode(toolbox_bounds)]")
+	TEST_ASSERT_EQUAL(json_encode(context_menu_icon_bounds(table.icon, table.icon_state, table.dir)), json_encode(list(1, 1, 32, 32, 32, 32)), "Рамка сглаженного стола взята по уголку")
+
 /// Пункт интента делает одно действие этим интентом и возвращает прежний
 /datum/unit_test/context_menu_intent_once
 
