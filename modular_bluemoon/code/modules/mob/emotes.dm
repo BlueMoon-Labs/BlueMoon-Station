@@ -668,6 +668,28 @@
 	'sound/mobs/non-humanoids/hiss/lowHiss4.ogg')
 	. = ..()
 
+/datum/emote/sound/human/sweetvoice
+	key = "sweetvoice"
+	key_third_person = "sweetvoices"
+	message = "издаёт сладкий голос!"
+	message_mime = "изображает сладкий голос."
+	sound = 'modular_bluemoon/sound/weapons/mesa/sweetvoice.ogg'
+	emote_cooldown = 0.5 SECONDS
+	emote_type = EMOTE_BOTH
+
+/datum/emote/sound/human/sweetvoice/run_emote(mob/living/user, params, type_override, intentional)
+	if(!istype(user))
+		return
+
+	var/obj/item/hand_item/sweetvoice_blower/sweet_blower = new /obj/item/hand_item/sweetvoice_blower(user)
+	if(user.put_in_hands(sweet_blower) && !QDELETED(sweet_blower))
+		to_chat(user, span_notice("Вы готовите свой сладкий голос."))
+	else
+		qdel(sweet_blower)
+		return
+
+	. = ..()
+
 /datum/emote/sound/human/alien_scream
 	key = "ascream"
 	key_third_person = "ascream"

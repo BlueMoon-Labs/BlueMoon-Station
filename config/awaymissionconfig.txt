@@ -20,5 +20,6 @@ _maps/RandomZLevels/away_mission/challenge.dmm
 #_maps/RandomZLevels/away_mission/SnowCabin.dmm
 #_maps/RandomZLevels/away_mission/spacebattle.dmm
 #_maps/RandomZLevels/away_mission/Killthemall.dmm
+_maps/RandomZLevels/away_mission/ihategordon.dmm
 #modular_splurt/_maps/away_mission/AGRComplexClock.dmm
 #modular_splurt/_maps/away_mission/AGRComplexCult.dmm
