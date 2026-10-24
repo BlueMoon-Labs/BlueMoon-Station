@@ -1404,7 +1404,6 @@
 	UnregisterSignal(M, COMSIG_MOB_SAY)
 	UnregisterSignal(M, COMSIG_MOVABLE_TELEPORTED)
 	UnregisterSignal(M, list(COMSIG_MOB_CLIENT_LOGIN, COMSIG_MOB_CLIENT_LOGOUT))
-	restore_occupant_popup_menus(M)
 	SStgui.close_user_uis(M, src)
 	M.clear_alert("charge")
 	M.clear_alert("mech damage")
@@ -1417,26 +1416,20 @@
 	. = ..()
 	update_icon()
 	M.update_mouse_pointer()
+	// только здесь мех уже не считает его пилотом
+	restore_occupant_popup_menus(M)
 
+/// ПКМ пилота - кликом по карте даже у ИИ, у которого обычно на ПКМ меню BYOND
 /obj/vehicle/sealed/mecha/proc/disable_occupant_popup_menus(mob/pilot)
 	SIGNAL_HANDLER
-	var/client/pilot_client = pilot.client
-	if(!pilot_client)
-		return
-	if(isnull(pilot_client.show_popup_menus_before_disable))
-		pilot_client.show_popup_menus_before_disable = pilot_client.show_popup_menus
-	pilot_client.mecha_popup_menus_disabled = TRUE
-	pilot_client.show_popup_menus = FALSE
+	if(pilot.client)
+		winset(pilot.client, "mapwindow.map", "right-click=true")
+		pilot.client.show_popup_menus = FALSE
 
 /obj/vehicle/sealed/mecha/proc/restore_occupant_popup_menus(mob/pilot, client/pilot_client)
 	SIGNAL_HANDLER
 	pilot_client ||= pilot.client
-	if(!pilot_client)
-		return
-	pilot_client.mecha_popup_menus_disabled = FALSE
-	if(!isnull(pilot_client.show_popup_menus_before_disable))
-		pilot_client.show_popup_menus = pilot_client.show_popup_menus_before_disable
-		pilot_client.show_popup_menus_before_disable = null
+	pilot_client?.update_right_click_mode()
 
 /////////////////////////
 ////// Access stuff /////

@@ -135,6 +135,9 @@
 
 /atom/movable/screen/movable/action_button/MouseEntered(location, control, params)
 	. = ..()
+	// у кнопок свои действия на ПКМ, меню BYOND над ними не нужно
+	if(usr.client)
+		usr.client.show_popup_menus = FALSE
 	if(!QDELETED(src))
 		var/extra_desc = desc || ""
 		var/ctrl_hint = (src.location == SCRN_OBJ_IN_PALETTE) ? "<br><b>Ctrl-click</b> to restore to hotbar" : "<br><b>Ctrl-click</b> to hide in Show Buttons"
@@ -144,6 +147,7 @@
 
 /atom/movable/screen/movable/action_button/MouseExited(location, control, params)
 	closeToolTip(usr)
+	usr.client?.refresh_popup_menus()
 	return ..()
 
 /atom/movable/screen/movable/action_button/MouseDrop(atom/over_object, mob/user, src_location, over_location, params)

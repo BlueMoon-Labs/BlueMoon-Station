@@ -16,4 +16,5 @@
 		SI.associative = associative
 
 		SI.mergeSort(fromIndex, toIndex)
+		SI.L = null
 	return L

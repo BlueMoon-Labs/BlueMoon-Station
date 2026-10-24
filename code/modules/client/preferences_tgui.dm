@@ -121,6 +121,7 @@
 	.["action_buttons_hide"] = action_buttons_hide_on_spawn
 	.["autostand"] = autostand
 	.["long_strip_menu"] = long_strip_menu
+	.["right_click_mode"] = right_click_mode()
 	.["shift_invites"] = shift_invites
 
 	// Gameplay: combat
@@ -565,6 +566,9 @@
 					mentor_toggles ^= DEMENTOR_ON_LOGIN
 			save_pref_var("mentor_toggles")
 			return TRUE
+
+		if("set_right_click_mode")
+			parent?.set_right_click_mode(text2num(params["value"]))
 
 		if("set_screenshake")
 			var/flag = params["flag"]

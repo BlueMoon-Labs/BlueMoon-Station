@@ -144,11 +144,11 @@
 
 	var/static/list/hovering_item_typechecks = list(
 		/obj/item/stack/rods = list(
-			SCREENTIP_CONTEXT_LMB = list(INTENT_ANY = "Craft wired rod"),
+			SCREENTIP_CONTEXT_LMB = list(INTENT_ANY = "Собрать прут с проводом"),
 		),
 
 		/obj/item/stack/sheet/metal = list(
-			SCREENTIP_CONTEXT_LMB = list(INTENT_ANY = "Craft bola"),
+			SCREENTIP_CONTEXT_LMB = list(INTENT_ANY = "Собрать болу"),
 		),
 	)
 
