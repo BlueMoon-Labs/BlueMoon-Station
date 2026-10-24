@@ -79,22 +79,14 @@
 	TEST_ASSERT(istype(inspector.wear_suit, /obj/item/clothing/suit/armor/vest/warden/peacekeeper), "The inspector must wear the peacekeeper trench coat.")
 	TEST_ASSERT_EQUAL(vessel.canDock(vessel.home_dock), SHUTTLE_NOT_A_DOCKING_PORT, "Return must be locked before the first inspection visit.")
 
-	var/station_z = SSmapping.levels_by_trait(ZTRAIT_STATION)[1]
 	var/landing_direction = turn(vessel.dir, 90)
-	var/turf/landing_turf
-	// Runtime Station is not empty at fixed coordinates; locate a berth for the full hull.
-	for(var/test_x in 24 to world.maxx - 24 step 24)
-		for(var/test_y in 24 to world.maxy - 24 step 24)
-			var/clear = TRUE
-			for(var/turf/place as anything in vessel.return_ordered_turfs(test_x, test_y, station_z, landing_direction))
-				if(!isspaceturf(place) || length(place.contents))
-					clear = FALSE
-					break
-			if(clear)
-				landing_turf = locate(test_x, test_y, station_z)
-				break
-		if(landing_turf)
+	var/obj/machinery/computer/camera_advanced/shuttle_docker/sol_inspection/navigation
+	for(var/area/shuttle_area as anything in vessel.shuttle_areas)
+		navigation = locate() in shuttle_area
+		if(navigation)
 			break
+	TEST_ASSERT(navigation, "The inspection needs a navigation console to pick a landing spot.")
+	var/turf/landing_turf = find_berth(vessel, landing_direction, navigation.whitelist_turfs)
 	TEST_ASSERT(landing_turf, "The test requires an empty station-sector berth.")
 	landing = new(landing_turf)
 	landing.setDir(landing_direction)
@@ -102,7 +94,7 @@
 	landing.height = vessel.height
 	landing.dwidth = vessel.dwidth
 	landing.dheight = vessel.dheight
-	landing.area_type = /area/space
+	landing.area_type = landing_turf.loc.type
 	TEST_ASSERT_EQUAL(vessel.initiate_docking(landing), DOCKING_SUCCESS, "The loaded vessel must fly to the station sector.")
 	TEST_ASSERT_EQUAL(vessel.dir, landing_direction, "The flight must exercise a 90-degree shuttle rotation.")
 	TEST_ASSERT(team.visited_station, "The first station arrival must start the return timer.")
@@ -137,6 +129,27 @@
 	TEST_ASSERT(team.is_returned_inspector(inspector_mind), "A living inspector aboard the returning ship must complete the objective.")
 	TEST_ASSERT(QDELETED(inspector), "The returned inspector's body must be removed with sparks.")
 	TEST_ASSERT(return_objective.check_completion(), "The return objective must stay completed after the body is removed.")
+
+/// Planetary stations have no space on their station levels, so take any berth the navigation console accepts.
+/datum/unit_test/sol_inspection_shuttle/proc/find_berth(obj/docking_port/mobile/vessel, landing_direction, list/landing_turf_types)
+	for(var/station_z in SSmapping.levels_by_trait(ZTRAIT_STATION))
+		for(var/test_x in 24 to world.maxx - 24 step 8)
+			for(var/test_y in 24 to world.maxy - 24 step 8)
+				var/turf/candidate = locate(test_x, test_y, station_z)
+				var/clear = TRUE
+				for(var/turf/place as anything in vessel.return_ordered_turfs(test_x, test_y, station_z, landing_direction))
+					if(!landing_turf_types[place.type] || place.loc != candidate.loc || !is_berth_turf_empty(place))
+						clear = FALSE
+						break
+				if(clear)
+					return candidate
+	return null
+
+/datum/unit_test/sol_inspection_shuttle/proc/is_berth_turf_empty(turf/place)
+	for(var/atom/movable/thing as anything in place.contents)
+		if(!istype(thing, /atom/movable/lighting_object) && !istype(thing, /obj/effect/abstract) && !istype(thing, /obj/effect/landmark) && !istype(thing, /obj/structure/flora))
+			return FALSE
+	return TRUE
 
 /// Check the destination data actually rendered by ShuttleConsole.
 /datum/unit_test/sol_inspection_shuttle/proc/home_destination_visible(obj/machinery/computer/shuttle/sol_inspection/console)
