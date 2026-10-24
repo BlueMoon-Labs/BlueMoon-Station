@@ -168,7 +168,7 @@
 		return
 	var/datum/export_report/ex = new
 	if(!do_after(user, 30, target=target))
-		to_chat(user,"You need to stand still to sale goods.")
+		to_chat(user,"Тебе нужно стоять на месте что бы телепортировать предмет")
 		return
 	export_item_and_contents(target, export_categories, dry_run = FALSE, external_report = ex, apply_elastic = FALSE)
 	var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_DS)
@@ -177,7 +177,7 @@
 		if(!export_text)
 			continue
 		D.adjust_money(ex.total_value[E])
-	to_chat(user,"The [target] disappears!")
+	to_chat(user,"Ух ты [target] пропало!")
 
 /obj/item/xenoarch/help/cargo/tarkoff
 	name = "Experimental cargo scanner"
@@ -193,7 +193,7 @@
 		return
 	var/datum/export_report/ex = new
 	if(!do_after(user, 45, target=target))
-		to_chat(user,"You need to stand still to teleport items.")
+		to_chat(user,"Тебе нужно стоять на месте что бы телепортировать предмет")
 		return
 	export_item_and_contents(target, export_categories, dry_run = FALSE, external_report = ex, apply_elastic = FALSE)
 	var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_TAR)
@@ -202,7 +202,7 @@
 		if(!export_text)
 			continue
 		D.adjust_money(ex.total_value[E])
-	to_chat(user,"The [target] disappears!")
+	to_chat(user,"Ух ты [target] пропало!")
 
 //Bluemoon edit end.
 
