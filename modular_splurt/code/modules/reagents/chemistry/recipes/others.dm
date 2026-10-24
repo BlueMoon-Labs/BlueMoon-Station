@@ -6,6 +6,9 @@
 // Other stuff
 
 // BLUEMOON ADD START || Shadekin Mutation Toxin
+// Температура реакции токсина мутации шейдкина (47 °C).
+#define SHADEKIN_MUTATION_REQUIRED_TEMP 320
+
 /datum/chemical_reaction/mutationtoxin/shadekin
 	name = "токсин мутации шейдкина"
 	id = /datum/reagent/mutationtoxin/shadekin
@@ -16,5 +19,5 @@
 		/datum/reagent/drug/happiness = 2,
 		/datum/reagent/mutationtoxin = 1
 	)
-	required_temp = 320
+	required_temp = SHADEKIN_MUTATION_REQUIRED_TEMP
 // BLUEMOON ADD END
