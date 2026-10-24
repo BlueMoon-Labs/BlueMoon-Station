@@ -177,7 +177,7 @@
 		if(!export_text)
 			continue
 		D.adjust_money(ex.total_value[E])
-	to_chat(user,"Ух ты [target] пропало!")
+	to_chat(user,"Ух ты, [target] пропало!")
 
 /obj/item/xenoarch/help/cargo/tarkoff
 	name = "Experimental cargo scanner"
@@ -202,7 +202,7 @@
 		if(!export_text)
 			continue
 		D.adjust_money(ex.total_value[E])
-	to_chat(user,"Ух ты [target] пропало!")
+	to_chat(user,"Ух ты, [target] пропало!")
 
 //Bluemoon edit end.
 
