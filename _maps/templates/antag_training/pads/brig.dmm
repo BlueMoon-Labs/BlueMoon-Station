@@ -1481,9 +1481,7 @@
 	},
 /obj/machinery/computer/antag_training_mockup/records,
 /obj/machinery/light/directional/north,
-/obj/machinery/power/apc/auto_name/west{
-	pixel_y = 32
-	},
+/obj/machinery/power/apc/auto_name/west,
 /obj/structure/cable{
 	icon_state = "0-2"
 	},

@@ -64,9 +64,7 @@
 	pixel_x = 0;
 	pixel_y = -5
 	},
-/obj/machinery/power/apc/auto_name/south{
-	pixel_y = -32
-	},
+/obj/machinery/power/apc/auto_name/south,
 /obj/structure/cable{
 	icon_state = "0-4"
 	},

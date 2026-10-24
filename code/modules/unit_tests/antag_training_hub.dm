@@ -376,6 +376,53 @@
 	for(var/turf/place as anything in session.arena.hub.turfs)
 		check_turf(place, "hub")
 
+/// Смещение ЛКП в картах полигона совпадает с тем, что ставит APC/Initialize(): иначе каждая загрузка хаба пишет ошибки в map_errors.log (10598-10600).
+/datum/unit_test/antag_training_map_apc_offsets/Run()
+	var/static/list/side_dirs = list("north" = NORTH, "south" = SOUTH, "east" = EAST, "west" = WEST)
+	var/regex/apc = regex(@"/obj/machinery/power/apc[\w/]*(\{[^}]*\})?", "g")
+	var/regex/side = regex(@"/(north|south|east|west)\b")
+	var/regex/dir_var = regex(@"\bdir = (\d+)")
+	var/regex/shift = regex(@"\b(pixel_[xy]) = (-?\d+)", "g")
+	var/list/folders = list("_maps/templates/antag_training/")
+	var/checked = 0
+	while(length(folders))
+		var/folder = folders[length(folders)]
+		folders.len--
+		for(var/entry in flist(folder))
+			if(copytext(entry, -1) == "/")
+				folders += "[folder][entry]"
+				continue
+			if(copytext(entry, -4) != ".dmm")
+				continue
+			var/map_text = file2text("[folder][entry]")
+			apc.next = 1
+			while(apc.Find(map_text))
+				var/block = apc.group[1]
+				if(!block)
+					continue
+				checked++
+				var/facing = SOUTH
+				if(dir_var.Find(block))
+					facing = text2num(dir_var.group[1])
+				else if(side.Find(apc.match))
+					facing = side_dirs[side.group[1]]
+				var/list/expected = list("pixel_y" = 0, "pixel_x" = 0)
+				switch(facing)
+					if(NORTH)
+						expected["pixel_y"] = 23
+					if(SOUTH)
+						expected["pixel_y"] = -23
+					if(EAST)
+						expected["pixel_x"] = 24
+					if(WEST)
+						expected["pixel_x"] = -25
+				shift.next = 1
+				while(shift.Find(block))
+					var/axis = shift.group[1]
+					var/value = text2num(shift.group[2])
+					TEST_ASSERT(value == expected[axis], "[folder][entry]: у ЛКП [replacetext(replacetext(block, "\n", " "), "\t", "")] [axis] = [value], APC поставит [expected[axis]].")
+	TEST_ASSERT(checked, "В картах полигона нашлись ЛКП с варедитами - иначе тест ничего не проверяет.")
+
 /obj/structure/antag_training_wardrobe/silicon/probe
 	var/mob/opened_by
 

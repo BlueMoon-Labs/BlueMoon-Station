@@ -277,9 +277,7 @@
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/effect/turf_decal/tile/bar/fourcorners,
 /obj/effect/turf_decal/siding/wood,
-/obj/machinery/power/apc/auto_name/south{
-	pixel_y = -32
-	},
+/obj/machinery/power/apc/auto_name/south,
 /obj/structure/cable{
 	icon_state = "0-4"
 	},

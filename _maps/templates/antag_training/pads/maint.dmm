@@ -856,9 +856,7 @@
 /obj/effect/turf_decal/bot,
 /obj/effect/turf_decal/tile/yellow/fourcorners,
 /obj/machinery/portable_atmospherics/canister/air,
-/obj/machinery/power/apc/auto_name/east{
-	pixel_x = 32
-	},
+/obj/machinery/power/apc/auto_name/east,
 /obj/structure/cable{
 	icon_state = "0-1"
 	},
