@@ -206,3 +206,16 @@
 	glass_name = "glass of Melon Milkshake"
 	glass_desc = "A Melon milkshake, it's like summer all over again!"
 // BLUEMOON ADD END
+
+// BLUEMOON ADD START || Banana Shake
+/datum/reagent/consumable/bananashake
+	name = "Банановый шейк"
+	description = "Банановый молочный коктейль. Напиток, который клоуны пьют на своих вечеринках в честь хонка."
+	color = "#f2d554"
+	quality = DRINK_VERYGOOD
+	nutriment_factor = 1
+	taste_description = "густой банан"
+	glass_icon_state = "bananashake"
+	glass_name = "стакан бананового шейка"
+	glass_desc = "Банановый молочный коктейль. Напиток, который клоуны пьют на своих вечеринках в честь хонка."
+// BLUEMOON ADD END
