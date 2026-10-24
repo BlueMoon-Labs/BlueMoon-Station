@@ -920,7 +920,7 @@
 	w_class = WEIGHT_CLASS_NORMAL
 	weapon_weight = WEAPON_HEAVY
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/apostle
-	fire_delay = 5
+	fire_delay = 3
 	fire_select_modes = list(SELECT_SEMI_AUTOMATIC, SELECT_FULLY_AUTOMATIC)
 	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
 	item_state = "apostle"
@@ -929,3 +929,26 @@
 	load_empty_sound = "modular_bluemoon/sound/weapons/anathema_reload.ogg"
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
+
+/obj/item/gun/ballistic/revolver/Apostle/snub
+	name = "\improper Apostle Snub"
+	desc = "A precise tool of holy law crafted for the parish enforcers. Its heavy .41 caliber rounds deliver steady, unforgiving judgement, turning every standard patrol into a righteous crusade through the blighted swamps."
+	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
+	fire_sound = "modular_bluemoon/fluffs/sound/weapon/Apostle.ogg"
+	icon_state = "apostle snub"
+	item_state = "apostle"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/apostle
+	projectile_damage_multiplier = 0.8
+	dual_wield_spread = 25
+	fire_delay = 3
+	w_class = WEIGHT_CLASS_SMALL
+	recoil = 0.5
+	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_POCKETS
+	unique_reskin = list(
+		"Police" = list(
+			"icon_state" = "apostle police snub"
+		),"M29" = list(
+			"icon_state" = "apostle m29 snub"
+		))
