@@ -734,9 +734,11 @@ GLOBAL_LIST_EMPTY(cached_icon_states_by_file)
 /// `icon_states()` but memoised for icon *files*. Runtime `/icon` datums have
 /// unstable refs (GC reuse) so those fall through to an uncached lookup.
 /proc/cached_icon_states(icon_file, mode = 0)
-	if(!icon_file || istype(icon_file, /icon))
+	var/file_name = "[icon_file]"
+	// A runtime icon assigned to an appearance becomes an unnamed resource, so every one shares the key.
+	if(!length(file_name) || istype(icon_file, /icon))
 		return icon_states(icon_file, mode)
-	var/key = "[icon_file]|[mode]"
+	var/key = "[file_name]|[mode]"
 	. = GLOB.cached_icon_states_by_file[key]
 	if(isnull(.))
 		. = icon_states(icon_file, mode)
@@ -756,12 +758,13 @@ GLOBAL_LIST_EMPTY(cached_icon_state_directional)
 	var/static/list/checkdirs = list(NORTH, EAST, WEST)
 	if(!icon_file)
 		return FALSE
-	if(istype(icon_file, /icon)) // runtime /icon datums: unstable refs, compute every time
+	var/file_name = "[icon_file]"
+	if(!length(file_name) || istype(icon_file, /icon))
 		for(var/checkdir in checkdirs)
 			if(length(icon_states(icon(icon_file, icon_state, checkdir))))
 				return TRUE
 		return FALSE
-	var/key = "[icon_file]|[icon_state]"
+	var/key = "[file_name]|[icon_state]"
 	. = GLOB.cached_icon_state_directional[key]
 	if(!isnull(.))
 		return .

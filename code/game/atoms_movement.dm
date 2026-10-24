@@ -270,6 +270,10 @@
 
 /atom/movable/proc/onTransitZ(old_z,new_z)
 	SEND_SIGNAL(src, COMSIG_MOVABLE_Z_CHANGED, old_z, new_z)
+	// A listener (stationloving) can move us to another z; that nested call already set planes for the final z.
+	var/turf/current_turf = get_turf(src)
+	if(new_z && current_turf?.z != new_z)
+		return
 	if(SSmapping.max_plane_offset)
 		//Вещи в руках, в рюкзаке и органы на карте не рисуются, а пересчёт их оверлеев - основная цена смены этажа.
 		var/atom/movable/holder = loc
