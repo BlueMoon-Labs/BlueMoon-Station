@@ -143,6 +143,40 @@
 	TEST_ASSERT(length(menu.screen_objects) > length(menu.entries), "Меню не нарисовано")
 	user.close_context_menu()
 
+/// Хоткеи не растягивают меню: в строках только имена, хоткей строки под курсором - плашкой сбоку
+/datum/unit_test/context_menu_compact_hints
+
+/datum/unit_test/context_menu_compact_hints/Run()
+	TEST_ASSERT_EQUAL(context_menu_text_width("Осмотреть"), 48, "Ширина текста не по буквам Small Fonts")
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent)
+	var/mob/living/carbon/human/target = allocate(/mob/living/carbon/human/dummy/consistent, get_step(user, EAST))
+	user.a_intent = INTENT_HELP
+	var/datum/context_menu/menu = user.open_context_menu(target, "right=1;shift=1")
+	var/atom/movable/screen/context_menu/examine_row
+	var/widest_name = 0
+	for(var/atom/movable/screen/context_menu/row in menu.screen_objects)
+		if(row.entry == menu.header_entry)
+			continue
+		widest_name = max(widest_name, context_menu_text_width(row.entry.name))
+		if(row.entry.name == "Осмотреть")
+			examine_row = row
+	TEST_ASSERT_NOTNULL(examine_row, "Нет строки «Осмотреть»")
+	for(var/atom/movable/screen/context_menu_text/label in menu.screen_objects)
+		TEST_ASSERT(!findtext(label.maptext, "Shift-ЛКМ"), "Хоткей нарисован в строке и растягивает меню")
+	TEST_ASSERT(menu.width <= max(widest_name, context_menu_text_width(menu.header_text || capitalize(target.name), TRUE) + 8 + context_menu_text_width("режим")) + 8, "Меню шире самого длинного имени")
+
+	examine_row.MouseEntered()
+	var/hint_shown = FALSE
+	for(var/atom/movable/screen/context_menu_text/label in menu.hint_objects)
+		if(findtext(label.maptext, "Shift-ЛКМ"))
+			hint_shown = TRUE
+	TEST_ASSERT(hint_shown, "Наведение на «Осмотреть» не показало хоткей")
+	examine_row.MouseExited()
+	TEST_ASSERT_EQUAL(length(menu.hint_objects), 0, "Плашка хоткея осталась после ухода курсора")
+	examine_row.MouseEntered()
+	user.close_context_menu()
+	TEST_ASSERT_EQUAL(length(menu.hint_objects), 0, "Плашка хоткея пережила закрытие меню")
+
 /// Пункт интента делает одно действие этим интентом и возвращает прежний
 /datum/unit_test/context_menu_intent_once
 

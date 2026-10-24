@@ -171,9 +171,13 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	/// Левый верхний угол меню в пикселях от левого нижнего угла вьюпорта
 	var/origin_x = 0
 	var/origin_y = 0
-	/// Ширина последней отрисовки
+	/// Ширина и левый край последней отрисовки
 	var/width = CONTEXT_MENU_WIDTH
+	var/left = 0
 	var/list/atom/movable/screen/context_menu/screen_objects = list()
+	/// Хоткей строки под курсором - плашкой сбоку меню
+	var/list/atom/movable/screen/hint_objects = list()
+	var/atom/movable/screen/context_menu/hint_row
 
 /datum/context_menu/New(mob/user, atom/target, params)
 	src.user = user
@@ -204,6 +208,7 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 		if(user.active_context_menu == src)
 			user.active_context_menu = null
 		user.client?.screen -= screen_objects
+	hide_hint()
 	QDEL_LIST(screen_objects)
 	user = null
 	target = null

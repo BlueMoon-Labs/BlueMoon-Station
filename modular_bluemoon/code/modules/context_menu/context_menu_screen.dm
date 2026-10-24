@@ -8,6 +8,8 @@
 	var/datum/context_menu/menu
 	var/datum/context_menu_entry/entry
 	var/base_color
+	/// Низ строки в пикселях экрана, по нему плашка хоткея
+	var/row_y = 0
 
 /atom/movable/screen/context_menu/Initialize(mapload, datum/context_menu/menu, datum/context_menu_entry/entry, width = CONTEXT_MENU_WIDTH, height = CONTEXT_MENU_ROW_HEIGHT)
 	. = ..()
@@ -32,10 +34,13 @@
 	. = ..()
 	if(entry)
 		color = "#454566"
+		menu?.show_hint(src)
 
 /atom/movable/screen/context_menu/MouseExited(location, control, params)
 	. = ..()
 	color = base_color
+	if(menu?.hint_row == src)
+		menu.hide_hint()
 
 /atom/movable/screen/context_menu/Click(location, control, params)
 	if(!menu || usr != menu.user)
@@ -106,6 +111,7 @@
 		origin_y = (text2num(screen_loc_regex.group[3]) - 1) * world.icon_size + text2num(screen_loc_regex.group[4])
 
 /datum/context_menu/proc/render()
+	hide_hint()
 	if(user?.client)
 		user.client.screen -= screen_objects
 	QDEL_LIST(screen_objects)
@@ -116,7 +122,7 @@
 	for(var/datum/context_menu_entry/entry as anything in rows)
 		total_height += row_height(entry)
 	var/list/view_pixels = view_to_pixels(user.client?.view || world.view)
-	var/left = clamp(origin_x + 4, 0, max(view_pixels[1] - width, 0))
+	left = clamp(origin_x + 4, 0, max(view_pixels[1] - width, 0))
 	var/top = clamp(origin_y, total_height, max(view_pixels[2], total_height))
 	header_entry = new /datum/context_menu_entry/mode_choice(header)
 	var/y = top - CONTEXT_MENU_ROW_HEIGHT
@@ -132,25 +138,79 @@
 				text_color = "#ff8a80"
 			if(CONTEXT_ENTRY_SERVICE)
 				text_color = "#9aa0b4"
-		var/hint = entry.hint ? MAPTEXT("<span style='color:#8a8fa3;text-align:right'>[html_encode(entry.hint)]</span>") : null
-		add_row(entry, MAPTEXT("<span style='color:[text_color]'>[html_encode(entry.name)]</span>"), left, y, background, hint, entry.icon_source())
+		add_row(entry, MAPTEXT("<span style='color:[text_color]'>[html_encode(entry.name)]</span>"), left, y, background, null, entry.icon_source())
 	if(user?.client)
 		user.client.screen += screen_objects
 
 /datum/context_menu/proc/row_height(datum/context_menu_entry/entry)
 	return entry?.icon_source() ? CONTEXT_MENU_ICON_ROW_HEIGHT : CONTEXT_MENU_ROW_HEIGHT
 
-/// Ширина под самый длинный пункт: имя, значок и хоткей справа; в шапке ещё «режим»
+/// Ширина под самый длинный пункт с его значком; в шапке ещё «режим». Хоткеи в ширину не входят, они - плашкой при наведении.
 /datum/context_menu/proc/fit_width(list/rows, header)
-	var/widest = (length_char(header) + 1 + length_char("режим")) * CONTEXT_MENU_CHAR_WIDTH + 12
+	var/widest = context_menu_text_width(header, TRUE) + 8 + context_menu_text_width("режим")
 	for(var/datum/context_menu_entry/entry as anything in rows)
-		var/row_width = length_char(entry.name) * CONTEXT_MENU_CHAR_WIDTH
-		if(entry.hint)
-			row_width += length_char(entry.hint) * CONTEXT_MENU_CHAR_WIDTH + 12
+		var/row_width = context_menu_text_width(entry.name)
 		if(entry.icon_source())
 			row_width += CONTEXT_MENU_ICON_SIZE + 4
 		widest = max(widest, row_width)
 	return clamp(widest + 8, CONTEXT_MENU_MIN_WIDTH, CONTEXT_MENU_WIDTH)
+
+/// Ширина текста Small Fonts 7px с обводкой в пикселях карты; буквы не из таблицы считаются по 5
+/proc/context_menu_text_width(text, bold = FALSE)
+	var/static/list/glyph_widths
+	if(!glyph_widths)
+		glyph_widths = list()
+		var/list/groups = list(
+			"2" = " ",
+			"3" = "!',.:;Iijl|",
+			"4" = "\"()*-/1<=>?\[\\]`frst{}гя",
+			"6" = "#%&ABCDGHKNOPQRSUwАБВДЖИЙКЛНОПРСЦЪЫЬЭЯдф",
+			"7" = "MWmМФЮжмшщ…",
+			"8" = "@ШЩ",
+		)
+		for(var/glyph_width in groups)
+			var/glyphs = groups[glyph_width]
+			for(var/i in 1 to length_char(glyphs))
+				glyph_widths[copytext_char(glyphs, i, i + 1)] = text2num(glyph_width)
+	. = 0
+	for(var/i in 1 to length_char(text))
+		. += (glyph_widths[copytext_char(text, i, i + 1)] || 5) + (bold ? 2 : 0)
+
+/// Хоткей строки - плашкой справа от меню на её высоте, у правого края экрана - слева
+/datum/context_menu/proc/show_hint(atom/movable/screen/context_menu/row)
+	hide_hint()
+	var/hint = row.entry?.hint
+	if(!hint || !user)
+		return
+	hint_row = row
+	var/hint_width = context_menu_text_width(hint) + 8
+	var/list/view_pixels = view_to_pixels(user.client?.view || world.view)
+	var/hint_x = left + width + 2
+	if(hint_x + hint_width > view_pixels[1])
+		hint_x = max(left - hint_width - 2, 0)
+	var/height = row_height(row.entry)
+	var/screen_loc = "1:[round(hint_x)],1:[row.row_y]"
+	var/atom/movable/screen/context_menu/background = new(null, src, null, hint_width, height)
+	background.mouse_opacity = MOUSE_OPACITY_TRANSPARENT
+	background.screen_loc = screen_loc
+	background.set_base_color("#121218")
+	background.alpha = 235
+	var/atom/movable/screen/context_menu_text/label = new()
+	label.screen_loc = screen_loc
+	label.maptext = MAPTEXT("<span style='color:#8a8fa3'>[html_encode(hint)]</span>")
+	label.maptext_y = round((height - 9) / 2)
+	label.maptext_width = hint_width - 8
+	label.maptext_height = height
+	hint_objects += background
+	hint_objects += label
+	user.client?.screen += hint_objects
+
+/datum/context_menu/proc/hide_hint()
+	hint_row = null
+	if(!length(hint_objects))
+		return
+	user?.client?.screen -= hint_objects
+	QDEL_LIST(hint_objects)
 
 /datum/context_menu/proc/add_row(datum/context_menu_entry/entry, text, x, y, background, hint, atom/icon_source)
 	var/screen_loc = "1:[round(x)],1:[round(y)]"
@@ -158,6 +218,7 @@
 	var/text_y = round((height - 9) / 2)
 	var/atom/movable/screen/context_menu/row = new(null, src, entry, width, height)
 	row.screen_loc = screen_loc
+	row.row_y = round(y)
 	row.set_base_color(background)
 	row.alpha = 235
 	screen_objects += row
