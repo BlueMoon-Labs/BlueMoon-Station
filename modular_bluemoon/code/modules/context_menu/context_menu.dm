@@ -304,11 +304,11 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 		var/list/atom/movable/things = same_things[key]
 		var/atom/movable/first = things[1]
 		if(length(things) >= CONTEXT_MENU_GROUP_MIN)
-			entries += new /datum/context_menu_entry/pick_group("[capitalize(first.name)] ([length(things)])", null, CONTEXT_ENTRY_NORMAL, things)
+			entries += new /datum/context_menu_entry/pick_group("[context_menu_name(first.name)] ([length(things)])", null, CONTEXT_ENTRY_NORMAL, things)
 			continue
 		for(var/atom/movable/thing as anything in things)
-			entries += new /datum/context_menu_entry/pick(capitalize(thing.name), pick_hint(thing), CONTEXT_ENTRY_NORMAL, thing)
-	entries += new /datum/context_menu_entry/pick(capitalize(tile.name), pick_hint(tile), CONTEXT_ENTRY_NORMAL, tile)
+			entries += new /datum/context_menu_entry/pick(context_menu_name(thing.name), pick_hint(thing), CONTEXT_ENTRY_NORMAL, thing)
+	entries += new /datum/context_menu_entry/pick(context_menu_name(tile.name), pick_hint(tile), CONTEXT_ENTRY_NORMAL, tile)
 	page = 1
 	render()
 
@@ -319,12 +319,12 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	for(var/datum/weakref/ref as anything in group.refs)
 		var/atom/movable/thing = ref.resolve()
 		if(thing?.loc == tile)
-			entries += new /datum/context_menu_entry/pick(capitalize(thing.name), pick_hint(thing), CONTEXT_ENTRY_NORMAL, thing)
+			entries += new /datum/context_menu_entry/pick(context_menu_name(thing.name), pick_hint(thing), CONTEXT_ENTRY_NORMAL, thing)
 	page = 1
 	render()
 
 /datum/context_menu/proc/show_admin_verbs()
-	header_text = "Админ: [target.name]"
+	header_text = "Админ: [context_menu_name(target.name)]"
 	entries = list(new /datum/context_menu_entry/back("Назад", null, CONTEXT_ENTRY_SERVICE))
 	for(var/procpath/verb_path as anything in context_menu_admin_verbs_for(target, user.client?.verbs))
 		entries += new /datum/context_menu_entry/admin_verb(verb_path.name, null, CONTEXT_ENTRY_NORMAL, verb_path)
@@ -355,7 +355,7 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 			INVOKE_ASYNC(chooser_client, TYPE_PROC_REF(/client, choose_right_click_mode))
 		return
 	if(istype(entry, /datum/context_menu_entry/intent_list))
-		header_text = "Интенты: [target.name]"
+		header_text = "Интенты: [context_menu_name(target.name)]"
 		entries = list(new /datum/context_menu_entry/back("Назад", null, CONTEXT_ENTRY_SERVICE)) + intent_entries
 		page = 1
 		render()
@@ -467,6 +467,10 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	SIGNAL_HANDLER
 	if(key == "Escape")
 		qdel(src)
+
+/// Имя объекта для строки меню: без \proper и \improper (capitalize иначе ломает первую букву) и с заглавной
+/proc/context_menu_name(name)
+	return capitalize(replacetext(replacetext(format_text(name), "\proper", ""), "\improper", ""))
 
 /proc/cmp_context_menu_order(atom/movable/a, atom/movable/b)
 	var/a_mob = ismob(a)

@@ -164,7 +164,7 @@
 		user.client.screen -= screen_objects
 	QDEL_LIST(screen_objects)
 	var/list/rows = visible_entries()
-	var/header = header_text || (target ? capitalize(target.name) : "На клетке")
+	var/header = header_text || (target ? context_menu_name(target.name) : "На клетке")
 	width = fit_width(rows, header)
 	var/total_height = CONTEXT_MENU_ROW_HEIGHT
 	for(var/datum/context_menu_entry/entry as anything in rows)

@@ -285,6 +285,23 @@
 	TEST_ASSERT_NOTNULL(user.active_context_menu, "ПКМ по видимой клетке не открыл меню")
 	user.close_context_menu()
 
+/// Имена с \improper и \proper в меню без служебных символов и с целой первой буквой («•ignal Ace DELUXE cartridge», 25.10)
+/datum/unit_test/context_menu_improper_names
+
+/datum/unit_test/context_menu_improper_names/Run()
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_user)
+	var/turf/next_turf = get_step(user, EAST)
+	var/obj/item/pen/improper_pen = allocate(/obj/item/pen, next_turf)
+	improper_pen.name = "\improper Signal Ace DELUXE cartridge"
+	var/obj/item/pen/proper_pen = allocate(/obj/item/pen, next_turf)
+	proper_pen.name = "\proper the research director's headset"
+	var/datum/context_menu/menu = user.open_context_menu(next_turf, "right=1")
+	TEST_ASSERT_NOTNULL(find_context_entry(menu, "Signal Ace DELUXE cartridge"), "Имя с \\improper в списке клетки испорчено")
+	TEST_ASSERT_NOTNULL(find_context_entry(menu, "The research director's headset"), "Имя с \\proper в списке клетки испорчено")
+	menu = user.open_context_menu(improper_pen, "right=1")
+	TEST_ASSERT_EQUAL(menu.header_entry?.name, "Signal Ace DELUXE cartridge", "Шапка меню с \\improper испорчена")
+	user.close_context_menu()
+
 /// Длинный список листается пунктом «Ещё…» по кругу, и на экране именно он
 /datum/unit_test/context_menu_paging
 
