@@ -565,14 +565,14 @@
 	menu.choose(rotate)
 	TEST_ASSERT(barricade.dir != old_dir, "Пункт меню не повернул баррикаду")
 
-/// Режим ПКМ, который игрок не выбирал, берётся из конфига (без конфига - меню BYOND, как раньше); выбранный - нет
+/// Режим ПКМ, который игрок не выбирал, берётся из конфига (без конфига - меню действий); выбранный - нет
 /datum/unit_test/context_menu_default_from_config
 	var/old_default
 
 /datum/unit_test/context_menu_default_from_config/Run()
 	old_default = CONFIG_GET(number/right_click_mode_default)
 	var/datum/config_entry/number/right_click_mode_default/entry_type = /datum/config_entry/number/right_click_mode_default
-	TEST_ASSERT_EQUAL(initial(entry_type.default), RIGHT_CLICK_MODE_NATIVE, "Без конфига ПКМ должен открывать меню BYOND, как раньше")
+	TEST_ASSERT_EQUAL(initial(entry_type.default), RIGHT_CLICK_MODE_MENU, "Без конфига ПКМ должен открывать меню действий")
 	var/datum/preferences/prefs = new
 	TEST_ASSERT_NULL(prefs.right_click_choice, "Новый игрок уже с выбранным режимом ПКМ")
 	for(var/mode in list(RIGHT_CLICK_MODE_ACTION, RIGHT_CLICK_MODE_MENU, RIGHT_CLICK_MODE_NATIVE))

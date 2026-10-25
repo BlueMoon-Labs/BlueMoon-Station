@@ -121,12 +121,12 @@
 /client/verb/toggle_right_click_mode()
 	set category = "OOC"
 	set name = "Режим ПКМ"
-	set desc = "Меню BYOND как раньше, меню действий или сразу действие"
+	set desc = "Меню действий, меню BYOND как раньше или сразу действие"
 	choose_right_click_mode()
 
 GLOBAL_LIST_INIT(right_click_mode_names, list(
-	"Меню BYOND, как раньше" = RIGHT_CLICK_MODE_NATIVE,
 	"Меню действий" = RIGHT_CLICK_MODE_MENU,
+	"Меню BYOND, как раньше" = RIGHT_CLICK_MODE_NATIVE,
 	"Сразу действие" = RIGHT_CLICK_MODE_ACTION,
 ))
 
@@ -135,7 +135,7 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 		if(GLOB.right_click_mode_names[mode_name] == mode)
 			return mode_name
 
-/// Разово, тем, кто режим не выбирал: какой он сейчас и где сменить. При дефолте «как раньше» меню действий иначе не найти.
+/// Разово, тем, кто режим не выбирал: что теперь делает ПКМ и как вернуть меню BYOND, пока не спросили в OOC
 /datum/preferences/proc/show_right_click_notice()
 	if(right_click_notice_seen || !parent)
 		return
@@ -143,10 +143,15 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	save_pref_var("right_click_notice_seen")
 	if(!isnull(right_click_choice))
 		return
-	var/text = "Режим ПКМ: [right_click_mode_name(right_click_mode())]. Вернуть меню BYOND, как раньше, можно в любой момент."
-	if(right_click_mode() == RIGHT_CLICK_MODE_NATIVE)
-		text = "ПКМ открывает меню BYOND, как раньше. Можно включить меню действий у курсора: ПКМ - действия с объектом, Shift+ПКМ - второе действие (толкнуть, открыть сумку не снимая, постучать)."
-	to_chat(parent, examine_block(span_notice("[text]<br>Выбрать режим - верб «Режим ПКМ» во вкладке OOC или настройки игры, раздел «ПКМ».")))
+	var/text
+	switch(right_click_mode())
+		if(RIGHT_CLICK_MODE_MENU)
+			text = "ПКМ открывает меню действий у курсора: осмотреть, взять, действия интентов, подсказки с хоткеями, другие объекты на клетке. Shift+ПКМ - второе действие сразу (толкнуть, открыть сумку не снимая, постучать). В комбат-режиме ПКМ - действие."
+		if(RIGHT_CLICK_MODE_NATIVE)
+			text = "ПКМ открывает меню BYOND, как раньше. Можно включить меню действий у курсора: ПКМ - действия с объектом, Shift+ПКМ - второе действие (толкнуть, открыть сумку не снимая, постучать)."
+		else
+			text = "ПКМ сразу делает второе действие (толкнуть, открыть сумку не снимая, постучать), меню действий - на Shift+ПКМ."
+	to_chat(parent, examine_block(span_notice("<b>Новое на ПКМ.</b> [text]<br>Вернуть меню BYOND, как раньше, или выбрать другой режим - клик по шапке меню, верб «Режим ПКМ» во вкладке OOC или настройки игры, раздел «ПКМ».")))
 
 /mob/dead/new_player/Login()
 	. = ..()
@@ -156,7 +161,7 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 /client/proc/choose_right_click_mode()
 	if(!prefs)
 		return
-	var/choice = tgui_input_list(mob, "Меню BYOND: как раньше, вне боя ПКМ открывает меню BYOND. Меню действий: ПКМ - меню у курсора, Shift+ПКМ - второе действие. Сразу действие: наоборот. В комбат-режиме и в мехе ПКМ всегда действие.", "Режим ПКМ", GLOB.right_click_mode_names, right_click_mode_name(prefs.right_click_mode()))
+	var/choice = tgui_input_list(mob, "Меню действий: ПКМ - меню у курсора, Shift+ПКМ - второе действие. Меню BYOND: как раньше, вне боя ПКМ открывает меню BYOND. Сразу действие: ПКМ действует, меню на Shift+ПКМ. В комбат-режиме и в мехе ПКМ всегда действие.", "Режим ПКМ", GLOB.right_click_mode_names, right_click_mode_name(prefs.right_click_mode()))
 	if(!choice || QDELETED(src) || isnull(GLOB.right_click_mode_names[choice]))
 		return
 	set_right_click_mode(GLOB.right_click_mode_names[choice])
@@ -173,7 +178,8 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	if(QDELETED(target) || !right_click_actions)
 		return
 	active_context_menu = new /datum/context_menu(src, target, params)
-	if(client && !client.context_menu_hint_shown && right_click_menu_preferred())
+	// кто выбрал меню сам, знает, как его сменить
+	if(client && !client.context_menu_hint_shown && right_click_menu_preferred() && isnull(client.prefs?.right_click_choice))
 		client.context_menu_hint_shown = TRUE
 		to_chat(src, span_notice("Это меню действий. Чтобы ПКМ сразу действовал или открывал меню BYOND, как раньше, щёлкните по заголовку меню, вербу «Режим ПКМ» во вкладке OOC или выберите в настройках игры."))
 	return active_context_menu

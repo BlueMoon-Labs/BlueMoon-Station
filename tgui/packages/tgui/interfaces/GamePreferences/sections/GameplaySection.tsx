@@ -22,8 +22,8 @@ type GameplayData = {
 };
 
 const RIGHT_CLICK_MODE_OPTIONS = [
-  { value: 2, label: 'Меню BYOND' },
   { value: 1, label: 'Меню действий' },
+  { value: 2, label: 'Меню BYOND' },
   { value: 0, label: 'Сразу действие' },
 ];
 
@@ -51,7 +51,7 @@ const GAMEPLAY_TOGGLES: { key: string; label: string; flag: string; invert?: boo
 export const GameplaySection = (props) => {
   const { act, data } = useBackend<GameplayData>();
   const damageShakeValue = Number(data.damage_screenshake ?? 2);
-  const rightClickMode = Number(data.right_click_mode ?? 2);
+  const rightClickMode = Number(data.right_click_mode ?? 1);
 
   return (
     <Stack vertical>
@@ -69,14 +69,14 @@ export const GameplaySection = (props) => {
           <Stack.Item grow basis={0}>
             <div className="GamePreferences__label">ПКМ</div>
             <div className="GamePreferences__hint">
-              Меню BYOND: как раньше, вне боя ПКМ открывает меню BYOND, в бою Shift+ПКМ - осмотр. Меню действий: ПКМ - меню у курсора, Shift+ПКМ - второе действие (толчок, открыть сумку, постучать). Сразу действие: наоборот. В комбат-режиме и в мехе ПКМ всегда действие. Быстро переключить - верб «Режим ПКМ» во вкладке OOC
+              Меню действий: ПКМ - меню у курсора, Shift+ПКМ - второе действие (толчок, открыть сумку, постучать). Меню BYOND: как раньше, вне боя ПКМ открывает меню BYOND, в бою Shift+ПКМ - осмотр. Сразу действие: ПКМ действует, меню на Shift+ПКМ. В комбат-режиме и в мехе ПКМ всегда действие. Быстро переключить - верб «Режим ПКМ» во вкладке OOC
             </div>
           </Stack.Item>
           <Stack.Item>
             <Dropdown
               width="160px"
               options={RIGHT_CLICK_MODE_OPTIONS.map(o => o.label)}
-              selected={RIGHT_CLICK_MODE_OPTIONS.find(o => o.value === rightClickMode)?.label || 'Меню BYOND'}
+              selected={RIGHT_CLICK_MODE_OPTIONS.find(o => o.value === rightClickMode)?.label || 'Меню действий'}
               onSelected={value => {
                 const opt = RIGHT_CLICK_MODE_OPTIONS.find(o => o.label === value);
                 if (opt) act('set_right_click_mode', { value: opt.value });
