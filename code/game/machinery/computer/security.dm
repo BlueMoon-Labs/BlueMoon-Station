@@ -414,7 +414,7 @@
 						var/name_lock_reason = active1.locked_security_reason || active2?.locked_security_reason
 						set_temp("Эта запись заблокирована навсегда: [name_lock_reason]", "danger")
 						return
-					new_value = stripped_input(usr, "Введите имя:", "Записи безопасности", active1.fields["name"], MAX_MESSAGE_LEN)
+					new_value = tgui_input_text(usr, "Введите имя:", "Записи безопасности", active1.fields["name"], max_length = MAX_MESSAGE_LEN, encode = TRUE)
 					if(!length(new_value) || !can_use_console(usr))
 						return
 					if(active1.locked_security_reason || active2?.locked_security_reason)
@@ -443,7 +443,7 @@
 						var/id_lock_reason = active1.locked_security_reason || active2?.locked_security_reason
 						set_temp("Эта запись заблокирована навсегда: [id_lock_reason]", "danger")
 						return
-					new_value = stripped_input(usr, "Введите ID:", "Записи безопасности", active1.fields["id"])
+					new_value = tgui_input_text(usr, "Введите ID:", "Записи безопасности", active1.fields["id"], max_length = MAX_MESSAGE_LEN, encode = TRUE)
 					if(!length(new_value) || !can_use_console(usr))
 						return
 					if(active1.locked_security_reason || active2?.locked_security_reason)
@@ -479,7 +479,7 @@
 				if("age")
 					if(!active1)
 						return
-					new_value = input(usr, "Введите возраст:", "Записи безопасности", active1.fields["age"]) as num|null
+					new_value = tgui_input_number(usr, "Введите возраст:", "Записи безопасности", active1.fields["age"], min_value = 0, round_value = TRUE)
 					if(isnull(new_value) || !can_use_console(usr))
 						return
 					GLOB.data_core.append_sec_logs(active1.fields["id"], "%%GEN_AUTH%% сменил поле \"возраст\" с [active1.fields["age"]] на [new_value]", login_state.name, login_state.rank)
@@ -487,7 +487,7 @@
 				if("species")
 					if(!active1)
 						return
-					new_value = stripped_input(usr, "Введите название вида:", "Записи безопасности", active1.fields["species"])
+					new_value = tgui_input_text(usr, "Введите название вида:", "Записи безопасности", active1.fields["species"], max_length = MAX_MESSAGE_LEN, encode = TRUE)
 					if(!length(new_value) || !can_use_console(usr))
 						return
 					GLOB.data_core.append_sec_logs(active1.fields["id"], "%%GEN_AUTH%% сменил поле \"вид\" с [active1.fields["species"]] на [new_value]", login_state.name, login_state.rank)
@@ -495,7 +495,7 @@
 				if("fingerprint")
 					if(!active1)
 						return
-					new_value = stripped_input(usr, "Введите хэш отпечатков:", "Записи безопасности", active1.fields["fingerprint"])
+					new_value = tgui_input_text(usr, "Введите хэш отпечатков:", "Записи безопасности", active1.fields["fingerprint"], max_length = MAX_MESSAGE_LEN, encode = TRUE)
 					if(!length(new_value) || !can_use_console(usr))
 						return
 					GLOB.data_core.append_sec_logs(active1.fields["id"], "%%GEN_AUTH%% сменил поле \"отпечаток\" с [active1.fields["fingerprint"]] на [new_value]", login_state.name, login_state.rank)
@@ -503,7 +503,7 @@
 				if("notes")
 					if(!active2)
 						return
-					new_value = stripped_multiline_input(usr, "Введите заметки:", "Записи безопасности", active2.fields["notes"], 8192)
+					new_value = tgui_input_text(usr, "Введите заметки:", "Записи безопасности", active2.fields["notes"], max_length = 8192, multiline = TRUE, encode = TRUE)
 					if(!length(new_value) || !can_use_console(usr))
 						return
 					active2.fields["notes"] = new_value
@@ -519,10 +519,10 @@
 		if("mi_crim_add")
 			if(!logged_in || !active1 || !active2)
 				return
-			var/cname = stripped_input(usr, "Название правонарушения:", "Записи безопасности", "")
+			var/cname = tgui_input_text(usr, "Название правонарушения:", "Записи безопасности", max_length = MAX_MESSAGE_LEN, encode = TRUE)
 			if(!length(cname) || !can_use_console(usr))
 				return
-			var/cdetails = stripped_input(usr, "Подробности:", "Записи безопасности", "")
+			var/cdetails = tgui_input_text(usr, "Подробности:", "Записи безопасности", max_length = MAX_MESSAGE_LEN, encode = TRUE)
 			if(!can_use_console(usr))
 				return
 			var/centcom_authority = (ACCESS_CENT_CAPTAIN in login_state.access)
@@ -533,10 +533,10 @@
 		if("ma_crim_add")
 			if(!logged_in || !active1 || !active2)
 				return
-			var/cname = stripped_input(usr, "Название правонарушения:", "Записи безопасности", "")
+			var/cname = tgui_input_text(usr, "Название правонарушения:", "Записи безопасности", max_length = MAX_MESSAGE_LEN, encode = TRUE)
 			if(!length(cname) || !can_use_console(usr))
 				return
-			var/cdetails = stripped_input(usr, "Подробности:", "Записи безопасности", "")
+			var/cdetails = tgui_input_text(usr, "Подробности:", "Записи безопасности", max_length = MAX_MESSAGE_LEN, encode = TRUE)
 			if(!can_use_console(usr))
 				return
 			var/centcom_authority = (ACCESS_CENT_CAPTAIN in login_state.access)
@@ -576,10 +576,10 @@
 			if(!(ACCESS_SECURITY in login_state.access))
 				set_temp("Недостаточно полномочий: требуется доступ СБ.", "danger")
 				return
-			var/cname = stripped_input(usr, "Название правонарушения (статья) для штрафа:", "Выписать штраф", "")
+			var/cname = tgui_input_text(usr, "Название правонарушения (статья) для штрафа:", "Выписать штраф", max_length = MAX_MESSAGE_LEN, encode = TRUE)
 			if(!length(cname) || !can_use_console(usr))
 				return
-			var/cdetails = stripped_input(usr, "Подробности правонарушения:", "Выписать штраф", "")
+			var/cdetails = tgui_input_text(usr, "Подробности правонарушения:", "Выписать штраф", max_length = MAX_MESSAGE_LEN, encode = TRUE)
 			if(!can_use_console(usr))
 				return
 			var/fine_amount = tgui_input_number(usr, "Сумма штрафа (1 - [FINE_MAX_AMOUNT] кр.)", "Выписать штраф", 500, FINE_MAX_AMOUNT, 1)
@@ -627,7 +627,7 @@
 			if(!f)
 				set_temp("Штраф не найден.", "danger")
 				return
-			var/reason = stripped_input(usr, "Причина снятия штрафа:", "Снять штраф", "")
+			var/reason = tgui_input_text(usr, "Причина снятия штрафа:", "Снять штраф", max_length = MAX_MESSAGE_LEN, encode = TRUE)
 			if(!length(reason) || !can_use_console(usr))
 				return
 			GLOB.data_core.append_sec_logs(active1.fields["id"], "%%GEN_AUTH%% снял штраф №[cdataid] \"[f.crimeName]\" ([f.fine + f.paid] кр.). Причина: [reason]", login_state.name, login_state.rank)
@@ -654,7 +654,7 @@
 		if("add_comment")
 			if(!logged_in || !active2)
 				return
-			var/t1 = stripped_multiline_input(usr, "Добавить комментарий:", "Записи безопасности")
+			var/t1 = tgui_input_text(usr, "Добавить комментарий:", "Записи безопасности", max_length = MAX_MESSAGE_LEN, multiline = TRUE, encode = TRUE)
 			if(!length(t1) || !can_use_console(usr))
 				return
 			var/counter = 1
@@ -694,7 +694,7 @@
 		if("print_poster")
 			if(!logged_in || printing || !active1 || !active2)
 				return
-			var/wanted_name = stripped_input(usr, "Введите имя для розыскного плаката:", "Розыскной плакат", active1.fields["name"])
+			var/wanted_name = tgui_input_text(usr, "Введите имя для розыскного плаката:", "Розыскной плакат", active1.fields["name"], max_length = MAX_MESSAGE_LEN, encode = TRUE)
 			if(!wanted_name || !can_use_console(usr))
 				return
 			var/default_description = "Плакат объявляет [wanted_name] опасным лицом, разыскиваемым Nanotrasen. Немедленно сообщайте о любых наблюдениях в службу безопасности."
@@ -710,7 +710,7 @@
 				default_description += "\nMajor Crimes:"
 				for(var/datum/data/crime/c in major_crimes)
 					default_description += "\n[c.crimeName]\n[c.crimeDetails]\n"
-			var/info = stripped_multiline_input(usr, "Введите описание для плаката:", "Розыскной плакат", default_description)
+			var/info = tgui_input_text(usr, "Введите описание для плаката:", "Розыскной плакат", default_description, max_length = MAX_MESSAGE_LEN, multiline = TRUE, encode = TRUE)
 			if(!info || !can_use_console(usr))
 				return
 			printing = TRUE
