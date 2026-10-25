@@ -297,17 +297,16 @@
 	if(!icon)
 		return
 	radholder.pixel_y = get_hud_pixel_offset(icon, icon_state, dir)
-	var/mob/living/M = src
-	var/rads = M.radiation
-	switch(rads)
-		if(-INFINITY to RAD_MOB_SAFE)
-			radholder.icon_state = "hudradsafe"
+	var/rad_state
+	// Безопасный фон без значка: состояния "hudradsafe" в hud.dmi нет
+	switch(radiation)
 		if((RAD_MOB_SAFE+1) to RAD_MOB_MUTATE)
-			radholder.icon_state = "hudraddanger"
+			rad_state = "hudraddanger"
 		if((RAD_MOB_MUTATE+1) to RAD_MOB_VOMIT)
-			radholder.icon_state = "hudradlethal"
+			rad_state = "hudradlethal"
 		if((RAD_MOB_VOMIT+1) to INFINITY)
-			radholder.icon_state = "hudradnuke"
+			rad_state = "hudradnuke"
+	set_hud_image_state(RAD_HUD, rad_state)
 
 /***********************************************
  Security HUDs! Basic mode shows only the job.
@@ -334,72 +333,61 @@
 /mob/living/proc/sec_hud_set_implants()
 	if(!icon || !hud_list)
 		return
-	var/image/holder
-	for(var/i in list(IMPTRACK_HUD, IMPLOYAL_HUD, IMPCHEM_HUD))
-		if(!(i in hud_list))
-			continue
-		holder = hud_list[i]
-		holder.icon_state = null
+	// Состояние каждой категории считается целиком и ставится один раз: сброс в пустое
+	// посреди прока снимал бы значок со всех зрителей и тут же раздавал заново.
+	var/list/implant_states = list(IMPTRACK_HUD = null, IMPLOYAL_HUD = null, IMPCHEM_HUD = null)
 	for(var/obj/item/implant/I in implants)
 		if(istype(I, /obj/item/implant/tracking))
-			holder = hud_list[IMPTRACK_HUD]
-			var/icon/IC = icon(icon, icon_state, dir)
-			holder.pixel_y = IC.Height() - world.icon_size
-			holder.icon_state = "hud_imp_tracking"
+			implant_states[IMPTRACK_HUD] = "hud_imp_tracking"
 		else if(istype(I, /obj/item/implant/chem))
-			holder = hud_list[IMPCHEM_HUD]
-			var/icon/IC = icon(icon, icon_state, dir)
-			holder.pixel_y = IC.Height() - world.icon_size
-			holder.icon_state = "hud_imp_chem"
+			implant_states[IMPCHEM_HUD] = "hud_imp_chem"
 	if(HAS_TRAIT(src, TRAIT_MINDSHIELD) || HAS_TRAIT(src, TRAIT_FAKE_MINDSHIELD)) // фальшивая сигнатура неотличима от настоящей на худе
-		holder = hud_list[IMPLOYAL_HUD]
-		var/icon/IC = icon(icon, icon_state, dir)
-		holder.pixel_y = IC.Height() - world.icon_size
-		holder.icon_state = "hud_imp_loyal"
+		implant_states[IMPLOYAL_HUD] = "hud_imp_loyal"
 	if(HAS_TRAIT(src, TRAIT_ANCHOR))
-		holder = hud_list[IMPLOYAL_HUD]
-		var/icon/IC = icon(icon, icon_state, dir)
-		holder.pixel_y = IC.Height() - world.icon_size
-		holder.icon_state = "hud_imp_anchor"
+		implant_states[IMPLOYAL_HUD] = "hud_imp_anchor"
+	var/pixel_offset
+	for(var/hud_category in implant_states)
+		var/image/holder = hud_list[hud_category]
+		if(!holder)
+			continue
+		var/new_state = implant_states[hud_category]
+		if(new_state)
+			if(isnull(pixel_offset))
+				var/icon/IC = icon(icon, icon_state, dir)
+				pixel_offset = IC.Height() - world.icon_size
+			holder.pixel_y = pixel_offset
+		set_hud_image_state(hud_category, new_state)
 
 /mob/living/carbon/human/proc/sec_hud_set_security_status()
 	var/image/holder = hud_list[WANTED_HUD]
 	if(!icon)
 		return
 	holder.pixel_y = get_hud_pixel_offset(icon, icon_state, dir)
+	var/wanted_state
 	var/perpname = get_face_name(get_id_name(""))
 	if(perpname && GLOB.data_core)
 		var/datum/data/record/R = antag_training_station_record(GLOB.data_core.security_by_name, perpname, src)
 		if(R)
 			switch(R.fields["criminal"])
 				if(SEC_RECORD_STATUS_EXECUTE)
-					holder.icon_state = "hudexecute"
-					return
+					wanted_state = "hudexecute"
 				if(SEC_RECORD_STATUS_ARREST)
-					holder.icon_state = "hudwanted"
-					return
+					wanted_state = "hudwanted"
 				if(SEC_RECORD_STATUS_SEARCH)
-					holder.icon_state = "hudsearch"
-					return
+					wanted_state = "hudsearch"
 				if(SEC_RECORD_STATUS_MONITOR)
-					holder.icon_state = "hudmonitor"
-					return
+					wanted_state = "hudmonitor"
 				if(SEC_RECORD_STATUS_DEMOTE)
-					holder.icon_state = "huddemote"
-					return
+					wanted_state = "huddemote"
 				if(SEC_RECORD_STATUS_INCARCERATED)
-					holder.icon_state = "hudcarcerated"
-					return
+					wanted_state = "hudcarcerated"
 				if(SEC_RECORD_STATUS_PAROLLED)
-					holder.icon_state = "hudparolled"
-					return
+					wanted_state = "hudparolled"
 				if(SEC_RECORD_STATUS_RELEASED)
-					holder.icon_state = "hudreleased"
-					return
+					wanted_state = "hudreleased"
 				if(SEC_RECORD_STATUS_DISCHARGED)
-					holder.icon_state = "huddischarged"
-					return
-	holder.icon_state = null
+					wanted_state = "huddischarged"
+	set_hud_image_state(WANTED_HUD, wanted_state)
 
 /***********************************************
  Diagnostic HUDs!
@@ -414,9 +402,7 @@
 	if(!holder || !icon)
 		return
 	holder.pixel_y = get_hud_pixel_offset(icon, icon_state, dir)
-	holder.icon_state = null
-	if(src in SSnanites.nanite_monitored_mobs)
-		holder.icon_state = "nanite_ping"
+	set_hud_image_state(NANITE_HUD, (src in SSnanites.nanite_monitored_mobs) ? "nanite_ping" : null)
 
 //For Diag health and cell bars!
 /proc/RoundDiagBar(value)
@@ -649,11 +635,7 @@
 	Airlocks!
 ~~~~~~~~~~~~~*/
 /obj/machinery/door/airlock/proc/diag_hud_set_electrified()
-	var/image/holder = hud_list[DIAG_AIRLOCK_HUD]
-	if(secondsElectrified != 0)
-		holder.icon_state = "electrified"
-	else
-		holder.icon_state = ""
+	set_hud_image_state(DIAG_AIRLOCK_HUD, secondsElectrified != 0 ? "electrified" : null)
 
 /*~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	I'll just put this somewhere near the end...

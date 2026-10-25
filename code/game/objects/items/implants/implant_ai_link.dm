@@ -29,10 +29,7 @@
 		if(!holder)
 			continue
 		holder.pixel_y = p_y
-		if(linked_ai)
-			holder.icon_state = "hudtrackingai"
-		else
-			holder.icon_state = "hudtracking"
+		owner.set_hud_image_state(hud_type, linked_ai ? "hudtrackingai" : "hudtracking")
 
 /obj/item/organ/cyberimp/brain/ai_link/emp_act(severity)
 	. = ..()
@@ -116,9 +113,7 @@
 	// Очистка всех HUD слоев
 	var/list/huds_to_clear = list(DIAG_TRACK_HUD, IMPTRACK_HUD)
 	for(var/hud_type in huds_to_clear)
-		var/image/holder = old_owner.hud_list[hud_type]
-		if(holder)
-			holder.icon_state = null
+		old_owner.set_hud_image_state(hud_type, null)
 
 	if(linked_ai)
 		to_chat(linked_ai, "<span class='boldannounce'>ВНИМАНИЕ:</span> <span class='userdanger'>Связь с био-активом [old_owner.name] разорвана.</span>")
