@@ -273,6 +273,8 @@
 	desc = "A suit of semi-flexible polycarbonate body armor with heavy padding to protect against melee attacks. Helps the wearer resist shoving in close quarters."
 	icon_state = "riot"
 	item_state = "riot"
+	tail_state = "inq"
+	flags_inv = HIDETAIL
 	body_parts_covered = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	cold_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
@@ -289,7 +291,8 @@
 		),
 		"Without Any Mark" = list(
 			RESKIN_ICON_STATE = "riot-wm",
-			RESKIN_ITEM_STATE = "riot"
+			RESKIN_ITEM_STATE = "riot",
+			tail_state = "hos"
 		),
 	)
 	taur_types_icon_whitelist = alist(	"_canine" = list("Canine", "Feline", "Eevee", "Virgo - Synthetic Feline",\
@@ -298,6 +301,7 @@
 
 /obj/item/clothing/suit/armor/riot/wm
 	icon_state = "riot-wm"
+	tail_state = "hos"
 
 /obj/item/clothing/suit/armor/bone
 	name = "bone armor"
@@ -316,8 +320,10 @@
 	icon_state = "bulletproof"
 	item_state = "armor"
 	blood_overlay_type = "armor"
+	tail_state = "inq"
 	armor_type = /datum/armor/bulletproof
 	brc_mitigation_bonus = 20  // BLUEMOON ADD
+	flags_inv = HIDETAIL
 	body_parts_covered = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	cold_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
@@ -332,7 +338,8 @@
 		),
 		"Without Any Mark" = list(
 			RESKIN_ICON_STATE = "bulletproof-wm",
-			RESKIN_ITEM_STATE = "armor"
+			RESKIN_ITEM_STATE = "armor",
+			tail_state = "hos"
 		),
 	)
 	taur_types_icon_whitelist = alist(	"_canine" = list("Canine", "Feline", "Eevee", "Virgo - Synthetic Feline",\
@@ -341,6 +348,7 @@
 
 /obj/item/clothing/suit/armor/bulletproof/wm
 	icon_state = "bulletproof-wm"
+	tail_state = "hos"
 
 /obj/item/clothing/suit/armor/vest/det_suit
 	name = "detective's armor vest"
