@@ -97,14 +97,10 @@
 /obj/effect/awaymission/blackmesa/difficulty_trigger/proc/remove_all_triggers_of_level(trigger_level)
 	if(!trigger_level)
 		return
-	// Find and delete all triggers with the same trigger_id
-	var/list/triggers_to_remove = list()
+	// Find and delete all triggers with the same trigger_id in single loop
 	for(var/obj/effect/awaymission/blackmesa/difficulty_trigger/T in world)
 		if(T && T.trigger_id == trigger_level)
-			triggers_to_remove += T
-
-	for(var/obj/effect/awaymission/blackmesa/difficulty_trigger/T in triggers_to_remove)
-		qdel(T)
+			qdel(T)
 
 // Define 8 trigger zones
 /obj/effect/awaymission/blackmesa/difficulty_trigger/trigger1
@@ -142,6 +138,7 @@
 // =============================================================================
 // JET FLYBY TRIGGER ZONES
 // Progressive flyby system for ihategordon mission
+// Single trigger type with trigger_id (like generator buttons)
 // =============================================================================
 
 // Trigger zone object - when a living player crosses it, jet flies by (screen shake + sounds)
@@ -153,7 +150,7 @@
 	anchored = TRUE
 	density = FALSE
 	layer = TURF_LAYER
-	var/trigger_id = 1 // 1-5 for progressive flyby waves
+	var/trigger_id = 1 // Set in map editor to match wave number
 	var/triggered = FALSE
 	var/shake_duration = 2 SECONDS
 	var/shake_strength = 3
@@ -161,13 +158,11 @@
 
 /obj/effect/awaymission/blackmesa/shake_trigger/Initialize(mapload)
 	. = ..()
-	if(trigger_id < 1 || trigger_id > 5)
+	if(trigger_id < 1)
 		trigger_id = 1
 
 /obj/effect/awaymission/blackmesa/shake_trigger/Crossed(atom/movable/AM)
 	. = ..()
-	if(!src)
-		return
 	if(triggered)
 		return
 	if(!AM)
@@ -175,8 +170,6 @@
 	if(!isliving(AM))
 		return
 	var/mob/living/L = AM
-	if(!L)
-		return
 	if(!L.client)
 		return
 	if(L.stat == DEAD)
@@ -190,16 +183,10 @@
 	if(!D)
 		return
 
-	// Trigger level N can only activate if current difficulty is N-1
-	// Exception: trigger 1 can always activate (current difficulty 0)
-	if(D.difficulty_level != (trigger_id - 1))
-		to_chat(L, "<span class='warning'>Необходимо сначала активировать предыдущую триггер зону пролёта истребителя!</span>")
-		return
-
 	// Trigger the shake effect - mark as triggered first
 	triggered = TRUE
 	trigger_shake_wave(trigger_id)
-	// Delete ALL triggers of this level
+	// Delete ALL triggers with this trigger_id
 	remove_all_shake_triggers_of_level(trigger_id)
 
 /obj/effect/awaymission/blackmesa/shake_trigger/proc/trigger_shake_wave(trigger_level)
@@ -234,87 +221,39 @@
 	if(!trigger_level)
 		return
 	// Find and delete all triggers with the same trigger_id
-	var/list/triggers_to_remove = list()
 	for(var/obj/effect/awaymission/blackmesa/shake_trigger/T in world)
 		if(T && T.trigger_id == trigger_level)
-			triggers_to_remove += T
-
-	for(var/obj/effect/awaymission/blackmesa/shake_trigger/T in triggers_to_remove)
-		qdel(T)
-
-// Define 5 jet flyby trigger zones
-/obj/effect/awaymission/blackmesa/shake_trigger/shake1
-	name = "Jet Flyby Trigger 1"
-	trigger_id = 1
-
-/obj/effect/awaymission/blackmesa/shake_trigger/shake2
-	name = "Jet Flyby Trigger 2"
-	trigger_id = 2
-	shake_strength = 4
-	shake_duration = 2.5 SECONDS
-
-/obj/effect/awaymission/blackmesa/shake_trigger/shake3
-	name = "Jet Flyby Trigger 3"
-	trigger_id = 3
-	shake_strength = 5
-	shake_duration = 3 SECONDS
-
-/obj/effect/awaymission/blackmesa/shake_trigger/shake4
-	name = "Jet Flyby Trigger 4"
-	trigger_id = 4
-	shake_strength = 6
-	shake_duration = 3.5 SECONDS
-
-/obj/effect/awaymission/blackmesa/shake_trigger/shake5
-	name = "Jet Flyby Trigger 5"
-	trigger_id = 5
-	shake_strength = 7
-	shake_duration = 4 SECONDS
+			qdel(T)
 
 // =============================================================================
-// EXPLOSION TRIGGER ZONES
+// BOMBARDMENT TRIGGER ZONES
 // Progressive bombardment system for ihategordon mission
-// Uses sequential bombardment (like door opening) instead of simultaneous explosions
+// Logic: initiator trigger activates mode, strike triggers drop missiles on their location
+// Single trigger type with trigger_id (like generator buttons)
 // =============================================================================
 
-// Explosion target landmark - marks where the bombardment will strike
-/obj/effect/landmark/awaymission/blackmesa/explosion_target
-	name = "Bombardment Target"
-	icon = 'icons/effects/landmarks_static.dmi'
-	icon_state = "x2"
-	invisibility = INVISIBILITY_ABSTRACT
-	anchored = TRUE
-	density = FALSE
-	var/trigger_id = 1 // 1-5 for progressive bombardment waves
+// Bombardment mode tracker - stores which trigger IDs are active
+GLOBAL_VAR_INIT(active_bombardment_modes, list())
 
-/obj/effect/landmark/awaymission/blackmesa/explosion_target/Initialize(mapload)
-	. = ..()
-	if(trigger_id < 1 || trigger_id > 5)
-		trigger_id = 1
-
-// Trigger zone object - when a living player crosses it, triggers sequential bombardment at target landmarks
-/obj/effect/awaymission/blackmesa/explosion_trigger
-	name = "Bombardment Trigger Zone"
+// Initiator trigger - activates bombardment mode for a trigger_id
+/obj/effect/awaymission/blackmesa/bombardment_initiator
+	name = "Bombardment Initiator"
 	icon = 'icons/effects/landmarks_static.dmi'
 	icon_state = "x1"
 	invisibility = INVISIBILITY_ABSTRACT
 	anchored = TRUE
 	density = FALSE
 	layer = TURF_LAYER
-	var/trigger_id = 1 // 1-5 for progressive bombardment waves
+	var/trigger_id = 1 // Set in map editor to match wave number
 	var/triggered = FALSE
-	var/bombardment_delay = 2 SECONDS // Delay between each bomb
-	var/bombardment_interval = 0.5 SECONDS // Delay between strikes
 
-/obj/effect/awaymission/blackmesa/explosion_trigger/Initialize(mapload)
+/obj/effect/awaymission/blackmesa/bombardment_initiator/Initialize(mapload)
 	. = ..()
-	if(trigger_id < 1 || trigger_id > 5)
+	if(trigger_id < 1)
 		trigger_id = 1
 
-/obj/effect/awaymission/blackmesa/explosion_trigger/Crossed(atom/movable/AM)
+/obj/effect/awaymission/blackmesa/bombardment_initiator/Crossed(atom/movable/AM)
 	. = ..()
-	if(!src)
-		return
 	if(triggered)
 		return
 	if(!AM)
@@ -322,55 +261,68 @@
 	if(!isliving(AM))
 		return
 	var/mob/living/L = AM
-	if(!L)
-		return
 	if(!L.client)
 		return
 	if(L.stat == DEAD)
 		return
 
-	// Check if previous trigger was activated (sequential progression)
-	if(!GLOB.zombie_director)
-		to_chat(L, "<span class='warning'>ERROR: Zombie director not initialized!</span>")
-		return
-	var/datum/ai_director/zombie_mission/D = GLOB.zombie_director
-	if(!D)
-		return
-
-	// Trigger level N can only activate if current difficulty is N-1
-	// Exception: trigger 1 can always activate (current difficulty 0)
-	if(D.difficulty_level != (trigger_id - 1))
-		to_chat(L, "<span class='warning'>Необходимо сначала активировать предыдущую триггер зону бомбардировки!</span>")
-		return
-
-	// Trigger the bombardment - mark as triggered first
+	// Activate bombardment mode for this trigger_id
 	triggered = TRUE
-	trigger_bombardment_wave(trigger_id)
-	// Delete ALL triggers of this level
-	remove_all_explosion_triggers_of_level(trigger_id)
+	if(!GLOB.active_bombardment_modes)
+		GLOB.active_bombardment_modes = list()
+	GLOB.active_bombardment_modes["[trigger_id]"] = TRUE
+	// Delete ALL initiators with this trigger_id
+	remove_all_initiators_of_level(trigger_id)
 
-/obj/effect/awaymission/blackmesa/explosion_trigger/proc/trigger_bombardment_wave(trigger_level)
+/obj/effect/awaymission/blackmesa/bombardment_initiator/proc/remove_all_initiators_of_level(trigger_level)
 	if(!trigger_level)
 		return
-
-	// Find all bombardment targets with the same trigger_id
-	var/list/targets = list()
-	for(var/obj/effect/landmark/awaymission/blackmesa/explosion_target/T in world)
+	for(var/obj/effect/awaymission/blackmesa/bombardment_initiator/T in world)
 		if(T && T.trigger_id == trigger_level)
-			targets += T
+			qdel(T)
 
-	if(targets.len == 0)
+// Strike trigger - when crossed, drops missile on its location if mode is active
+/obj/effect/awaymission/blackmesa/bombardment_strike
+	name = "Bombardment Strike Zone"
+	icon = 'icons/effects/landmarks_static.dmi'
+	icon_state = "x2"
+	invisibility = INVISIBILITY_ABSTRACT
+	anchored = TRUE
+	density = FALSE
+	layer = TURF_LAYER
+	var/trigger_id = 1 // Set in map editor to match wave number
+	var/triggered = FALSE
+
+/obj/effect/awaymission/blackmesa/bombardment_strike/Initialize(mapload)
+	. = ..()
+	if(trigger_id < 1)
+		trigger_id = 1
+
+/obj/effect/awaymission/blackmesa/bombardment_strike/Crossed(atom/movable/AM)
+	. = ..()
+	if(triggered)
+		return
+	if(!AM)
+		return
+	if(!isliving(AM))
+		return
+	var/mob/living/L = AM
+	if(!L.client)
+		return
+	if(L.stat == DEAD)
 		return
 
-	// Start sequential bombardment with delays
-	// First strike after initial delay
-	var/delay = bombardment_delay
-	for(var/obj/effect/landmark/awaymission/blackmesa/explosion_target/T in targets)
-		if(T.loc)
-			addtimer(CALLBACK(src, PROC_REF(drop_bombardment_pod), T.loc), delay)
-			delay += bombardment_interval
+	// Check if bombardment mode is active for this trigger_id
+	if(!GLOB.active_bombardment_modes || !GLOB.active_bombardment_modes["[trigger_id]"])
+		return
 
-/obj/effect/awaymission/blackmesa/explosion_trigger/proc/drop_bombardment_pod(turf/drop_turf)
+	// Drop missile on this location
+	triggered = TRUE
+	drop_missile_pod(get_turf(src))
+	// Delete ALL strike triggers with this trigger_id
+	remove_all_strikes_of_level(trigger_id)
+
+/obj/effect/awaymission/blackmesa/bombardment_strike/proc/drop_missile_pod(turf/drop_turf)
 	if(!drop_turf)
 		return
 
@@ -387,60 +339,9 @@
 	pod.effectGib = FALSE
 	new /obj/effect/pod_landingzone(drop_turf, pod)
 
-/obj/effect/awaymission/blackmesa/explosion_trigger/proc/remove_all_explosion_triggers_of_level(trigger_level)
+/obj/effect/awaymission/blackmesa/bombardment_strike/proc/remove_all_strikes_of_level(trigger_level)
 	if(!trigger_level)
 		return
-	// Find and delete all triggers with the same trigger_id
-	var/list/triggers_to_remove = list()
-	for(var/obj/effect/awaymission/blackmesa/explosion_trigger/T in world)
+	for(var/obj/effect/awaymission/blackmesa/bombardment_strike/T in world)
 		if(T && T.trigger_id == trigger_level)
-			triggers_to_remove += T
-
-	for(var/obj/effect/awaymission/blackmesa/explosion_trigger/T in triggers_to_remove)
-		qdel(T)
-
-// Define 5 bombardment trigger zones
-/obj/effect/awaymission/blackmesa/explosion_trigger/explosion1
-	name = "Bombardment Trigger 1"
-	trigger_id = 1
-
-/obj/effect/awaymission/blackmesa/explosion_trigger/explosion2
-	name = "Bombardment Trigger 2"
-	trigger_id = 2
-	bombardment_interval = 0.6 SECONDS
-
-/obj/effect/awaymission/blackmesa/explosion_trigger/explosion3
-	name = "Bombardment Trigger 3"
-	trigger_id = 3
-	bombardment_interval = 0.7 SECONDS
-
-/obj/effect/awaymission/blackmesa/explosion_trigger/explosion4
-	name = "Bombardment Trigger 4"
-	trigger_id = 4
-	bombardment_interval = 0.8 SECONDS
-
-/obj/effect/awaymission/blackmesa/explosion_trigger/explosion5
-	name = "Bombardment Trigger 5"
-	trigger_id = 5
-	bombardment_interval = 1 SECONDS
-
-// Define 5 bombardment target landmarks
-/obj/effect/landmark/awaymission/blackmesa/explosion_target/target1
-	name = "Bombardment Target 1"
-	trigger_id = 1
-
-/obj/effect/landmark/awaymission/blackmesa/explosion_target/target2
-	name = "Bombardment Target 2"
-	trigger_id = 2
-
-/obj/effect/landmark/awaymission/blackmesa/explosion_target/target3
-	name = "Bombardment Target 3"
-	trigger_id = 3
-
-/obj/effect/landmark/awaymission/blackmesa/explosion_target/target4
-	name = "Bombardment Target 4"
-	trigger_id = 4
-
-/obj/effect/landmark/awaymission/blackmesa/explosion_target/target5
-	name = "Bombardment Target 5"
-	trigger_id = 5
+			qdel(T)

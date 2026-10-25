@@ -125,10 +125,3 @@
 	icon_state = "cloudy"
 	color = "#b89560"
 	alpha = 200
-
-/atom/movable/screen/fullscreen/tiled/mesa_sandstorm
-	icon = 'icons/mob/screen_gen.dmi'
-	screen_loc = "WEST,SOUTH to EAST,NORTH"
-	icon_state = "cloudy"
-	color = "#d2b48c"
-	alpha = 150
