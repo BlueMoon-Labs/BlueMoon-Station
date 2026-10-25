@@ -1,182 +1,346 @@
 name: CI Suite
-env:
-  BYOND_ALLOW_STALE_CACHE: '0'
+
 on:
   push:
     branches:
-    - master
+      - master
   pull_request:
     branches:
-    - master
-    - upstream-merge
+      - master
+      - upstream-merge
+  workflow_dispatch:
+
+# A new push to a PR cancels its running suite. Pushes to master queue up, and
+# only the newest waiting one survives.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  # Hermetic tests: worlds per runner. The number of runners is the matrix below.
+  HERMETIC_WORLDS_PER_JOB: 2
+  # Full-map tests: station maps per runner, all started at once.
+  MAPS_PER_JOB: 2
+
 jobs:
-  nanomaps_debian:
-    if: ( !contains(github.event.head_commit.message, '[ci skip]') )
-    name: NanoMaps on Debian 12
-    runs-on: ubuntu-24.04
-    container: debian:12
-    env:
-      TG_BOOTSTRAP_NODE_LINUX: '1'
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install renderer build dependencies
-        run: |
-          apt-get update
-          apt-get install -y ca-certificates curl git build-essential pkg-config cmake xz-utils
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
-      - name: Build and run NanoMap on Debian 12
-        run: |
-          tools/bootstrap/node -e 'require("./tools/nanomaps/renderer.cjs").ensureRenderer().then(renderer => { const run = require("node:child_process").execFileSync; run(renderer, ["map-info", "--json", "_maps/map_files/debug/runtimestation_minimal.dmm"], { stdio: "inherit" }); run(renderer, ["-e", "tgstation.dme", "minimap", "--enable", "nanomaps", "--disable", "icon-smoothing", "--width", "120", "--height", "208", "_maps/map_files/debug/runtimestation_minimal.dmm"], { stdio: "inherit" }); }).catch(error => { console.error(error); process.exitCode = 1; })'
   run_linters:
-    if: ( !contains(github.event.head_commit.message, '[ci skip]') )
     name: Run Linters
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup_ci
+        with:
+          yarn-cache: 'true'
       - name: Restore SpacemanDMM cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/SpacemanDMM
-          key: ${{ runner.os }}-spacemandmm-${{ secrets.CACHE_PURGE_KEY }}
-      - name: Restore Yarn cache
-        uses: actions/cache@v4
-        with:
-          path: tgui/.yarn/cache
-          key: ${{ runner.os }}-yarn-${{ secrets.CACHE_PURGE_KEY }}-${{ hashFiles('tgui/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ secrets.CACHE_PURGE_KEY }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
-      - name: Install Tools
+          key: ${{ runner.os }}-spacemandmm-${{ hashFiles('dependencies.sh') }}
+      - name: Install tools
+        id: tools
         run: |
           pip3 install setuptools --upgrade
-          bash tools/ci/install_node.sh
           bash tools/ci/install_spaceman_dmm.sh dreamchecker
           tools/bootstrap/python -c ''
-      - name: Generate NanoMaps
-        run: tools/build/build nanomaps
-      - name: Test NanoMaps
+
+      # Every check runs even when an earlier one failed, so one push shows all problems.
+      - name: Generate and test NanoMaps
+        if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
         run: |
-          tools/bootstrap/node --test tools/nanomaps/ci.test.cjs
+          tools/build/build nanomaps
+          node --test tools/nanomaps/ci.test.cjs
           git diff --exit-code -- code/modules/asset_cache/assets/nanomaps.dm
-      - name: Run Linters
+      - name: Check ticked file directories
+        if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
+        run: bash tools/ci/check_filedirs.sh tgstation.dme
+      - name: Check .dme include order
+        if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
+        run: python3 tools/ci/check_dme_order.py tgstation.dme
+      - name: Check changelogs
+        if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
+        run: bash tools/ci/check_changelogs.sh
+      - name: Check code patterns
+        if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
+        run: bash tools/ci/check_grep.sh
+      - name: Check JSON and PHP syntax
+        if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
         run: |
-          bash tools/ci/check_filedirs.sh tgstation.dme
-          python3 tools/ci/check_dme_order.py tgstation.dme
-          bash tools/ci/check_changelogs.sh
-          bash tools/ci/check_grep.sh
-          find . -name "*.php" -print0 | xargs -0 -n1 php -l
-          find . -name "*.json" -not -path "*/node_modules/*" -print0 | xargs -0 python3 ./tools/json_verifier.py
-          tools/build/build --ci lint
+          git ls-files -z '*.json' | xargs -0 python3 tools/json_verifier.py
+          git ls-files -z '*.php' | xargs -0 -r -n1 php -l
+      - name: Check SQL schemas
+        if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
+        run: |
+          sudo systemctl start mysql
+          for schema in tgstation_schema tgstation_schema_prefixed; do
+            mysql -u root -proot -e "CREATE DATABASE $schema;"
+            mysql -u root -proot "$schema" < "SQL/$schema.sql"
+          done
+      - name: Lint and test TGUI
+        if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
+        run: tools/build/build --ci lint
+      - name: Test Python tools
+        if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
+        run: |
           tools/bootstrap/python -m dmi.test
           tools/bootstrap/python -m unittest asset_lint.tests
-          tools/bootstrap/python -m asset_lint
           tools/bootstrap/python -m mapmerge2.dmm_test
+          tools/bootstrap/python -m unittest tools.maplint.source.test_baseline
+      - name: Lint maps
+        if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
+        run: tools/bootstrap/python -m tools.maplint.source --github --baseline tools/maplint/baseline.json
+      - name: Lint assets
+        if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
+        run: tools/bootstrap/python -m asset_lint
       - name: Run DreamChecker
-        run: ~/dreamchecker -e tgstation.dme
+        if: ${{ !cancelled() && steps.tools.outcome == 'success' }}
+        run: |
+          set -o pipefail
+          ~/dreamchecker -e tgstation.dme 2>&1 | tee dreamchecker.log
+      - name: Annotate DreamChecker findings
+        if: ${{ failure() && hashFiles('dreamchecker.log') != '' }}
+        run: node tools/ci/annotate.mjs dreamchecker dreamchecker.log
 
-  compile_all_maps:
-    if: ( !contains(github.event.head_commit.message, '[ci skip]') )
-    name: Compile Maps
+  compile_checks:
+    name: Compile ${{ matrix.name }}
     runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-      - name: Restore BYOND cache
-        uses: actions/cache@v4
-        with:
-          path: ~/BYOND
-          key: ${{ runner.os }}-byond-${{ secrets.CACHE_PURGE_KEY }}-${{ hashFiles('dependencies.sh') }}
-      - name: Compile All Maps
-        run: |
-          bash tools/ci/install_byond.sh
-          source $HOME/BYOND/byond/bin/byondsetup
-          tools/build/build --ci dm -DCIBUILDING -DCITESTING -DALL_MAPS
-  compile_all_templates:
-    if: ( !contains(github.event.head_commit.message, '[ci skip]') )
-    name: Compile Templates
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-      - name: Restore BYOND cache
-        uses: actions/cache@v4
-        with:
-          path: ~/BYOND
-          key: ${{ runner.os }}-byond-${{ secrets.CACHE_PURGE_KEY }}-${{ hashFiles('dependencies.sh') }}
-      - name: Compile All Templates
-        run: |
-          bash tools/ci/install_byond.sh
-          source $HOME/BYOND/byond/bin/byondsetup
-          tools/build/build --ci dm -DCIBUILDING -DCITESTING -DALL_TEMPLATES
-  find_all_maps:
-    if: ( !contains(github.event.head_commit.message, '[ci skip]') )
-    name: Find Maps to Test
-    runs-on: ubuntu-24.04
-    outputs:
-      maps: ${{ steps.map_finder.outputs.maps }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Find Maps
-        id: map_finder
-        run: |
-          maps=$(printf '%s\n' _maps/*.json | jq -Rsc '{paths: split("\n")[:-1] | map(ltrimstr("_maps/") | rtrimstr(".json"))}')
-          echo "Maps: $maps"
-          echo "maps=$maps" >> "$GITHUB_OUTPUT"
-  run_all_tests:
-    if: ( !contains(github.event.head_commit.message, '[ci skip]') )
-    name: Integration Tests
-    runs-on: ubuntu-24.04
-    needs: [find_all_maps]
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        map: ${{ fromJSON(needs.find_all_maps.outputs.maps).paths }}
-    services:
-      mysql:
-        image: mysql:latest
-        env:
-          MYSQL_ROOT_PASSWORD: root
-        ports:
-          - 3306
-        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
-    concurrency:
-      group: ci-${{ github.ref }}-${{ matrix.map }}
-      cancel-in-progress: true
+        include:
+          - name: All Maps
+            define: ALL_MAPS
+          - name: All Templates
+            define: ALL_TEMPLATES
     steps:
-      - uses: actions/checkout@v4
-      - name: Restore BYOND cache
-        uses: actions/cache@v4
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup_ci
         with:
-          path: ~/BYOND
-          key: ${{ runner.os }}-byond-${{ secrets.CACHE_PURGE_KEY }}-${{ hashFiles('dependencies.sh') }}
-      - name: Restore Yarn cache
-        uses: actions/cache@v4
+          byond: 'true'
+      - name: Compile
+        run: |
+          set -o pipefail
+          tools/build/build --ci dm-test-build -DCITESTING -D${{ matrix.define }} --warnings-as-errors 2>&1 | tee compile.log
+      - name: Annotate compile errors
+        if: ${{ failure() && hashFiles('compile.log') != '' }}
+        run: node tools/ci/annotate.mjs dm compile.log
+
+  build:
+    name: Build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    outputs:
+      map_groups: ${{ steps.maps.outputs.groups }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup_ci
         with:
-          path: tgui/.yarn/cache
-          key: ${{ runner.os }}-yarn-${{ secrets.CACHE_PURGE_KEY }}-${{ hashFiles('tgui/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-build-${{ secrets.CACHE_PURGE_KEY }}-
-            ${{ runner.os }}-build-
-            ${{ runner.os }}-
-      - name: Setup database
+          byond: 'true'
+          yarn-cache: 'true'
+      - name: Group station maps
+        id: maps
         run: |
-          sudo systemctl start mysql
-          mysql -u root -proot -e 'CREATE DATABASE tg_ci;'
-          mysql -u root -proot tg_ci < SQL/tgstation_schema.sql
-          mysql -u root -proot -e 'CREATE DATABASE tg_ci_prefixed;'
-          mysql -u root -proot tg_ci_prefixed < SQL/tgstation_schema_prefixed.sql
-      - name: Install rust-g
+          groups=$(for config in _maps/*.json; do basename "$config" .json; done \
+            | jq -Rsc --argjson size "$MAPS_PER_JOB" 'split("\n")[:-1]
+              | [range(0; length; $size) as $i | .[$i:$i + $size] | {name: join(", "), maps: join(",")}]')
+          echo "groups=$groups" >> "$GITHUB_OUTPUT"
+      - name: Generate NanoMaps
+        run: tools/build/build --ci nanomaps statbrowser
+      # DreamMaker uses one core: both test profiles and TGUI build side by side.
+      - name: Compile
         run: |
-          bash tools/ci/install_rust_g.sh
-      - name: Compile and run tests
-        run: |
-          bash tools/ci/install_byond.sh
-          source $HOME/BYOND/byond/bin/byondsetup
-          tools/build/build --ci -DCIBUILDING
-          bash tools/ci/run_server.sh ${{ matrix.map }}
-      - name: Upload CI logs on failure
+          tools/build/build --ci tgui tg-font > tgui.log 2>&1 & tgui=$!
+          tools/build/build --ci dm-test-build --unit-test-profile=hermetic --warnings-as-errors > hermetic.log 2>&1 & hermetic=$!
+          tools/build/build --ci dm-test-build --unit-test-profile=full-map --warnings-as-errors > full-map.log 2>&1 & full_map=$!
+          status=0
+          wait $tgui || status=1
+          wait $hermetic || status=1
+          wait $full_map || status=1
+          for log in tgui hermetic full-map; do
+            echo "::group::$log"
+            cat "$log.log"
+            echo "::endgroup::"
+          done
+          exit $status
+      - name: Annotate compile errors
         if: failure()
-        uses: actions/upload-artifact@v7.0.1
+        run: |
+          for log in hermetic.log full-map.log; do
+            if [ -f "$log" ]; then
+              node tools/ci/annotate.mjs dm "$log"
+            fi
+          done
+      # Wall times of tests and start times of maps from the last master run.
+      # The path list must match the save in test_report: it is part of the cache version.
+      - name: Restore test history
+        uses: actions/cache/restore@v6
         with:
-          name: ci-logs-${{ matrix.map }}
-          path: ci_test/data/logs/ci/*.log
+          path: |
+            data/unit_test_durations.json
+            data/map_init_times.json
+          key: test-history-${{ github.run_id }}
+          restore-keys: test-history-
+      # Every test job takes these same files, so all shards split the tests the same way.
+      - name: Prepare test history
+        run: |
+          mkdir -p data
+          for file in data/unit_test_durations.json data/map_init_times.json; do
+            [ -f "$file" ] || echo '{}' > "$file"
+          done
+      - uses: actions/upload-artifact@v7
+        with:
+          name: test-history
+          path: |
+            data/unit_test_durations.json
+            data/map_init_times.json
+          retention-days: 3
+      - name: Upload hermetic build
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-build-hermetic
+          path: |
+            tgstation.test.hermetic.*.dmb
+            tgstation.test.hermetic.*.rsc
+            _maps/map_files/generic/CentCom_hermetic.dmm
+            tgui/public/
+            tgui/packages/tgfont/dist/
+          if-no-files-found: error
+          compression-level: 1
+          retention-days: 3
+      - name: Upload full-map build
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-build-full-map
+          path: |
+            tgstation.test.full-map.*.dmb
+            tgstation.test.full-map.*.rsc
+            tgui/public/
+            tgui/packages/tgfont/dist/
+          if-no-files-found: error
+          compression-level: 1
+          retention-days: 3
+
+  hermetic_tests:
+    name: Unit Tests ${{ matrix.group }}
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup_ci
+        with:
+          byond: 'true'
+          rust-g: 'true'
+      - uses: actions/download-artifact@v8
+        with:
+          name: test-build-hermetic
+      - uses: actions/download-artifact@v8
+        with:
+          name: test-history
+          path: data
+      - name: Configure test worlds
+        run: |
+          cp tools/ci/ci_config.txt config/ci_config.txt
+          printf '\n%s\n' "\$include ci_config.txt" >> config/config.txt
+      - name: Run tests
+        timeout-minutes: 45
+        run: >
+          tools/build/build --ci dm-test-run --prebuilt --unit-test-profile=hermetic
+          --shards="$HERMETIC_WORLDS_PER_JOB" --shard-group=${{ matrix.group }}/${{ strategy.job-total }}
+          --world-timeout=40 --retry-failed
+      - name: Upload logs
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: results-hermetic-${{ matrix.group }}
+          path: data/logs/ci-hermetic*/
           if-no-files-found: ignore
+          retention-days: 14
+
+  map_tests:
+    name: Map Tests (${{ matrix.name }})
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.build.outputs.map_groups) }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup_ci
+        with:
+          byond: 'true'
+          rust-g: 'true'
+      - uses: actions/download-artifact@v8
+        with:
+          name: test-build-full-map
+      - name: Configure test worlds
+        run: |
+          cp tools/ci/ci_config.txt config/ci_config.txt
+          printf '\n%s\n' "\$include ci_config.txt" >> config/config.txt
+      - name: Run tests
+        timeout-minutes: 35
+        run: >
+          tools/build/build --ci dm-test-run --prebuilt --unit-test-profile=full-map
+          --maps=${{ matrix.maps }} --world-timeout=30 --retry-failed
+      - name: Upload logs
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: results-maps-${{ strategy.job-index }}
+          path: data/logs/ci-full-map*/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  test_report:
+    name: Test Report
+    needs: [build, hermetic_tests, map_tests]
+    if: ${{ !cancelled() && needs.build.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          sparse-checkout: tools/ci
+      - uses: actions/download-artifact@v8
+        with:
+          pattern: results-*
+          path: results
+      - uses: actions/download-artifact@v8
+        with:
+          name: test-history
+          path: data
+      - name: Summarize results
+        run: node tools/ci/unit_test_report.mjs results data/unit_test_durations.json data/map_init_times.json
+      # PRs read caches of master, so the history is only saved from master.
+      - name: Save test history
+        if: ${{ github.event_name == 'push' }}
+        uses: actions/cache/save@v6
+        with:
+          path: |
+            data/unit_test_durations.json
+            data/map_init_times.json
+          key: test-history-${{ github.run_id }}
+
+  ci_complete:
+    name: CI Suite Complete
+    needs: [run_linters, compile_checks, build, hermetic_tests, map_tests, test_report]
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check job results
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          echo "$RESULTS" | jq -r 'to_entries[] | "\(.key): \(.value.result)"'
+          echo "$RESULTS" | jq -e 'all(.[]; .result == "success" or .result == "skipped")' > /dev/null
