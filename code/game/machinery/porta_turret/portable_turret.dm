@@ -113,7 +113,8 @@ DEFINE_BITFIELD(turret_flags, list(
 	var/mob/remote_controller
 	/// MISSING:
 	var/shot_stagger = 0
-	/// Cached result of the last scan_for_targets() call, reused on the fires in between scans.
+	/// Weakrefs to the result of the last scan_for_targets() call, reused on the fires in between scans.
+	/// Weak: a turret switched off with a full cache kept every target it had seen from being deleted.
 	var/list/cached_targets
 	COOLDOWN_DECLARE(target_scan_cooldown)
 
@@ -466,19 +467,28 @@ DEFINE_BITFIELD(turret_flags, list(
 	var/list/targets
 	if(COOLDOWN_FINISHED(src, target_scan_cooldown))
 		targets = scan_for_targets()
-		cached_targets = targets.Copy() // tryToShootAt() mutates `targets`; keep an untouched cache
+		cache_targets(targets)
 		COOLDOWN_START(src, target_scan_cooldown, TURRET_TARGET_SCAN_INTERVAL)
 	else
-		// reuse the last scan; build a fresh, mutable list and drop anything deleted since then
-		targets = list()
-		for(var/atom/movable/candidate as anything in cached_targets)
-			if(!QDELETED(candidate))
-				targets += candidate
+		targets = cached_live_targets()
 
 	if(targets.len)
 		tryToShootAt(targets)
 	else if(!always_up)
 		popDown() // no valid targets, close the cover
+
+/obj/machinery/porta_turret/proc/cache_targets(list/targets)
+	cached_targets = list()
+	for(var/atom/movable/target as anything in targets)
+		cached_targets += WEAKREF(target)
+
+/// A fresh, mutable list of the cached targets that still exist.
+/obj/machinery/porta_turret/proc/cached_live_targets()
+	. = list()
+	for(var/datum/weakref/target_ref as anything in cached_targets)
+		var/atom/movable/candidate = target_ref.resolve()
+		if(!QDELETED(candidate))
+			. += candidate
 
 /// Scans the turret's surroundings (view(), mechs, blobs) for things it should shoot at and
 /// returns them as a list. Throttled by process() behind target_scan_cooldown — between scans

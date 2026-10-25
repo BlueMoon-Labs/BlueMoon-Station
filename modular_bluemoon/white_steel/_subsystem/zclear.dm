@@ -247,7 +247,7 @@ SUBSYSTEM_DEF(zclear)
 
 	//WHITE-STEEL FIX: раньше обе фазы считались с CLEAR_TURF_PROCESSING_TIME * 0.5, т.е. каждая
 	//длилась всего 60 секунд при 1084 турфов/тик - массовые qdel/ChangeTurf давали спайки в
-	//Garbage (576-929% в логах). Теперь пересоздание турфов и очистка атомов идут отдельными
+	//Garbage (576-929% в логах). Теперь очистка атомов и пересоздание турфов идут отдельными
 	//фазами по 120 секунд каждая (~542 турфа/тик), суммарно - заявленные 120 секунд.
 	var/reset_process_time = CLEAR_TURF_PROCESSING_TIME
 	var/atom_process_time = CLEAR_TURF_ATOMS_PROCESSING_TIME
@@ -302,15 +302,17 @@ SUBSYSTEM_DEF(zclear)
  * Continues the process of wiping a z-level.
 */
 /datum/controller/subsystem/zclear/proc/continue_wipe(datum/zclear_data/cleardata)
-	var/list_element = (cleardata.process_num % CLEAR_TURF_PROCESSING_TIME) + 1
-	var/atom_list_element = ((cleardata.process_num - CLEAR_TURF_PROCESSING_TIME) % CLEAR_TURF_ATOMS_PROCESSING_TIME) + 1
+	//Сперва атомы, пока клетки в своей области: машинерия, удалённая уже в /area/space, не снималась
+	//с реестров своей области (лампы руины держал кэш её APC) и уходила в хардделы.
+	var/atom_list_element = (cleardata.process_num % CLEAR_TURF_ATOMS_PROCESSING_TIME) + 1
+	var/list_element = ((cleardata.process_num - CLEAR_TURF_ATOMS_PROCESSING_TIME) % CLEAR_TURF_PROCESSING_TIME) + 1
 	switch(cleardata.process_num)
-		if(0 to CLEAR_TURF_PROCESSING_TIME-1)
-			if(list_element <= length(cleardata.divided_turfs))
-				reset_turfs(cleardata.divided_turfs[list_element])
-		if(CLEAR_TURF_PROCESSING_TIME to CLEAR_TURF_PROCESSING_TIME + CLEAR_TURF_ATOMS_PROCESSING_TIME - 1)
+		if(0 to CLEAR_TURF_ATOMS_PROCESSING_TIME-1)
 			if(atom_list_element <= length(cleardata.divided_atom_turfs))
 				clear_turf_atoms(cleardata.divided_atom_turfs[atom_list_element])
+		if(CLEAR_TURF_ATOMS_PROCESSING_TIME to CLEAR_TURF_ATOMS_PROCESSING_TIME + CLEAR_TURF_PROCESSING_TIME - 1)
+			if(list_element <= length(cleardata.divided_turfs))
+				reset_turfs(cleardata.divided_turfs[list_element])
 		else
 			//Done
 			LAZYREMOVE(processing_levels, cleardata)
