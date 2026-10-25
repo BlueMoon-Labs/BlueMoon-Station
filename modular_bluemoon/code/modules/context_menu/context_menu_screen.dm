@@ -45,8 +45,15 @@
 /atom/movable/screen/context_menu/Click(location, control, params)
 	if(!menu || usr != menu.user)
 		return
-	if(entry)
-		menu.choose(entry)
+	if(!entry)
+		return
+	if(istype(entry, /datum/context_menu_entry/pick) && menu.click_picked(entry, params2list(params)))
+		return
+	menu.choose(entry)
+
+/atom/movable/screen/context_menu/MouseWheel(delta_x, delta_y, location, control, params)
+	if(menu && usr == menu.user)
+		menu.scroll(delta_y)
 
 /// Надпись поверх фона: отдельный объект, чтобы maptext не растягивался вместе с фоном
 /atom/movable/screen/context_menu_text

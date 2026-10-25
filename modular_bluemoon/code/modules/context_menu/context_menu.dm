@@ -248,7 +248,8 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	var/turf/target_turf = isturf(target) ? target : (isturf(target.loc) ? target.loc : null)
 	if(target_turf && target != user)
 		var/list/candidates = get_tile_candidates(target_turf)
-		if(isturf(target) && length(candidates))
+		// по полу и по предмету в большой куче нужен именно список: вещь ищут в нём, а не в действиях верхней
+		if((isturf(target) && length(candidates)) || (isitem(target) && length(candidates) >= CONTEXT_MENU_PILE_MIN))
 			tile = target_turf
 			show_tile()
 			return
@@ -289,7 +290,12 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	header_text = null
 	entries = list()
 	var/list/same_things = list()
-	for(var/atom/movable/thing as anything in get_tile_candidates(tile))
+	var/list/candidates = get_tile_candidates(tile)
+	// вещь, по которой щёлкнули, - первой строкой: в куче её не надо искать
+	if(clicked in candidates)
+		candidates -= clicked
+		candidates.Insert(1, clicked)
+	for(var/atom/movable/thing as anything in candidates)
 		var/key = "[thing.type]|[thing.name]"
 		if(!same_things[key])
 			same_things[key] = list()
@@ -301,8 +307,8 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 			entries += new /datum/context_menu_entry/pick_group("[capitalize(first.name)] ([length(things)])", null, CONTEXT_ENTRY_NORMAL, things)
 			continue
 		for(var/atom/movable/thing as anything in things)
-			entries += new /datum/context_menu_entry/pick(capitalize(thing.name), null, CONTEXT_ENTRY_NORMAL, thing)
-	entries += new /datum/context_menu_entry/pick(capitalize(tile.name), null, CONTEXT_ENTRY_NORMAL, tile)
+			entries += new /datum/context_menu_entry/pick(capitalize(thing.name), pick_hint(thing), CONTEXT_ENTRY_NORMAL, thing)
+	entries += new /datum/context_menu_entry/pick(capitalize(tile.name), pick_hint(tile), CONTEXT_ENTRY_NORMAL, tile)
 	page = 1
 	render()
 
@@ -313,7 +319,7 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	for(var/datum/weakref/ref as anything in group.refs)
 		var/atom/movable/thing = ref.resolve()
 		if(thing?.loc == tile)
-			entries += new /datum/context_menu_entry/pick(capitalize(thing.name), null, CONTEXT_ENTRY_NORMAL, thing)
+			entries += new /datum/context_menu_entry/pick(capitalize(thing.name), pick_hint(thing), CONTEXT_ENTRY_NORMAL, thing)
 	page = 1
 	render()
 
@@ -382,20 +388,60 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 		return
 	entry.execute(chooser, chosen_target)
 
+/// Ctrl, Shift или Alt по строке объекта из списка - тот же клик по самому объекту, без захода в его действия.
+/// Осмотр оставляет список открытым: в куче осматривают подряд.
+/datum/context_menu/proc/click_picked(datum/context_menu_entry/pick/entry, list/modifiers)
+	if(!(entry in entries) || !(modifiers["ctrl"] || modifiers["shift"] || modifiers["alt"]))
+		return FALSE
+	var/atom/picked = entry.picked_ref?.resolve()
+	if(!picked || (picked != tile && picked.loc != tile))
+		return FALSE
+	var/mob/chooser = user
+	if(modifiers["shift"] && !modifiers["ctrl"] && !modifiers["alt"] && !modifiers["middle"] && !modifiers["right"])
+		chooser.ShiftClickOn(picked)
+		return TRUE
+	var/list/click_modifiers = list("context_menu" = 1)
+	for(var/key in list("ctrl", "shift", "alt", "middle", "right", "left"))
+		if(modifiers[key])
+			click_modifiers[key] = modifiers[key]
+	qdel(src)
+	INVOKE_ASYNC(chooser, TYPE_PROC_REF(/mob, CommonClickOn), picked, list2params(click_modifiers))
+	return TRUE
+
+/// Подсказка строки объекта: что сделают клики с модификаторами прямо по ней
+/datum/context_menu/proc/pick_hint(atom/thing)
+	if(ismovable(thing))
+		var/atom/movable/movable = thing
+		if(!movable.anchored)
+			return "Ctrl - потянуть, Shift - осмотреть"
+	return "Shift - осмотреть"
+
+/// Колесо над меню листает страницы: вниз - дальше
+/datum/context_menu/proc/scroll(delta)
+	var/pages = page_count()
+	if(pages == 1 || !delta)
+		return
+	page = delta < 0 ? page % pages + 1 : (page + pages - 2) % pages + 1
+	render()
+
+/// Список объектов листают в поисках вещи, его страницы длиннее, чем у действий
+/datum/context_menu/proc/rows_per_page()
+	return target ? CONTEXT_MENU_MAX_ROWS : CONTEXT_MENU_MAX_LIST_ROWS
+
 /datum/context_menu/proc/page_count()
-	if(length(entries) <= CONTEXT_MENU_MAX_ROWS)
+	if(length(entries) <= rows_per_page())
 		return 1
-	return CEILING(length(entries) / (CONTEXT_MENU_MAX_ROWS - 1), 1)
+	return CEILING(length(entries) / (rows_per_page() - 1), 1)
 
 /// Пункты текущей страницы, с «Ещё…» в конце, если страниц несколько
 /datum/context_menu/proc/visible_entries()
 	if(page_count() == 1)
 		page_entry = null
 		return entries.Copy()
-	var/per_page = CONTEXT_MENU_MAX_ROWS - 1
+	var/per_page = rows_per_page() - 1
 	var/first = (page - 1) * per_page + 1
 	. = entries.Copy(first, min(first + per_page, length(entries) + 1))
-	page_entry = new /datum/context_menu_entry/page("Ещё… ([page]/[page_count()])", null, CONTEXT_ENTRY_SERVICE)
+	page_entry = new /datum/context_menu_entry/page("Ещё… ([page]/[page_count()])", "или колесо мыши", CONTEXT_ENTRY_SERVICE)
 	. += page_entry
 
 /// На ходу меню остаётся, пока его объект рядом и на том же уровне

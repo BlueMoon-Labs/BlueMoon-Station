@@ -292,11 +292,19 @@
 	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_user)
 	var/turf/next_turf = get_step(user, EAST)
 	// разные имена, иначе одинаковые ручки свернутся в одну строку
-	for(var/i in 1 to CONTEXT_MENU_MAX_ROWS + 2)
+	for(var/i in 1 to CONTEXT_MENU_MAX_LIST_ROWS + 2)
 		var/obj/item/pen/pen = allocate(/obj/item/pen, next_turf)
 		pen.name = "pen [i]"
 	var/datum/context_menu/menu = user.open_context_menu(next_turf, "right=1;shift=1")
 	TEST_ASSERT_EQUAL(menu.page_count(), 2, "Список клетки должен занять две страницы")
+	TEST_ASSERT_EQUAL(length(menu.visible_entries()), CONTEXT_MENU_MAX_LIST_ROWS, "Страница списка клетки короче CONTEXT_MENU_MAX_LIST_ROWS")
+	menu.scroll(-1)
+	TEST_ASSERT_EQUAL(menu.page, 2, "Колесо вниз не перелистнуло вперёд")
+	menu.scroll(1)
+	TEST_ASSERT_EQUAL(menu.page, 1, "Колесо вверх не перелистнуло назад")
+	menu.scroll(1)
+	TEST_ASSERT_EQUAL(menu.page, 2, "Колесо вверх с первой страницы не ушло на последнюю")
+	menu.scroll(-1)
 	var/datum/context_menu_entry/more
 	for(var/atom/movable/screen/context_menu/row in menu.screen_objects)
 		if(istype(row.entry, /datum/context_menu_entry/page))
@@ -312,6 +320,39 @@
 	menu.choose(more)
 	TEST_ASSERT_EQUAL(menu.page, 1, "«Ещё…» на последней странице не вернул к первой")
 	user.close_context_menu()
+
+/// Предмет в большой куче открывает сразу список клетки, сам первым; Ctrl по строке тянет вещь, Shift осматривает и не закрывает список
+/datum/unit_test/context_menu_pile
+
+/datum/unit_test/context_menu_pile/Run()
+	var/mob/living/carbon/human/dummy/consistent/context_menu_probe/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_probe)
+	var/turf/next_turf = get_step(user, EAST)
+	var/list/pens = list()
+	for(var/i in 1 to CONTEXT_MENU_PILE_MIN - 1)
+		var/obj/item/pen/pen = allocate(/obj/item/pen, next_turf)
+		pen.name = "pen [i]"
+		pens += pen
+	var/obj/item/pen/clicked_pen = pens[1]
+	var/datum/context_menu/menu = user.open_context_menu(clicked_pen, "right=1")
+	TEST_ASSERT_EQUAL(menu.target, clicked_pen, "Маленькая куча должна открываться по предмету под курсором")
+
+	var/obj/item/pen/extra = allocate(/obj/item/pen, next_turf)
+	extra.name = "pen extra"
+	menu = user.open_context_menu(clicked_pen, "right=1")
+	TEST_ASSERT_NULL(menu.target, "Предмет в большой куче не открыл список клетки")
+	var/datum/context_menu_entry/pick/first_row = menu.entries[1]
+	TEST_ASSERT_EQUAL(first_row.picked_ref?.resolve(), clicked_pen, "Вещь под курсором не первая в списке кучи")
+	TEST_ASSERT(findtext(first_row.hint, "Ctrl"), "У строки вещи нет подсказки про Ctrl")
+
+	TEST_ASSERT(menu.click_picked(first_row, list("shift" = "1", "left" = "1")), "Shift по строке не сработал")
+	TEST_ASSERT(user.shift_clicked, "Shift по строке не осмотрел вещь")
+	TEST_ASSERT_EQUAL(user.active_context_menu, menu, "Осмотр из списка закрыл меню")
+
+	TEST_ASSERT(!menu.click_picked(first_row, list("left" = "1")), "Голый клик по строке ушёл в клик по вещи, а не в её действия")
+	TEST_ASSERT(menu.click_picked(first_row, list("ctrl" = "1", "left" = "1")), "Ctrl по строке не сработал")
+	TEST_ASSERT_EQUAL(user.pulling, clicked_pen, "Ctrl по строке не потянул вещь")
+	TEST_ASSERT_NULL(user.active_context_menu, "Меню осталось после Ctrl-клика по строке")
+	user.stop_pulling()
 
 /// Одинаковые объекты клетки - одна строка со счётом и своим списком; у объектов есть значки; меню уже максимума под короткие имена
 /datum/unit_test/context_menu_tile_groups
