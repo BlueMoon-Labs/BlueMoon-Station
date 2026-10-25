@@ -42,9 +42,9 @@
 /obj/item/implanter/attackby(obj/item/W, mob/user, params)
 	if(istype(W, /obj/item/pen))
 		if(!user.can_write(W))
-			to_chat(user, "<span class='notice'>You prod at [src] with [W]!</span>")
+			to_chat(user, "<span class='notice'>Вы тыкаете в [src] при помощи [W]!</span>")
 			return
-		var/t = stripped_input(user, "What would you like the label to be?", name, null)
+		var/t = tgui_input_text(user, "Какую надпись вы хотите сделать?", name, max_length = MAX_MESSAGE_LEN, encode = TRUE)
 		if(user.get_active_held_item() != W)
 			return
 		if(!user.canUseTopic(src, BE_CLOSE))
