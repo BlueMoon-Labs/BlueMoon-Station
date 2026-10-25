@@ -17,6 +17,8 @@ import yaml
 # The same patterns as in generate_cl.py.
 CL_BODY = re.compile(r":cl:([^\r\n]+)?\r?\n((.|\n|\r)+?)\r?\n\/:cl:", re.MULTILINE)
 CL_SPLIT = re.compile(r"(^\w+):\s+(\w.+)", re.MULTILINE)
+# What generate_cl.py takes from the rest of the :cl: line as the author.
+AUTHOR = re.compile(r"[\w .-]{1,40}")
 
 
 def check(body, tags):
@@ -25,6 +27,9 @@ def check(body, tags):
     if not cl:
         return 0, []
     warnings = []
+    author = (cl.group(1) or "").strip()
+    if author and not AUTHOR.fullmatch(author):
+        warnings.append(f'Автором записи станет "{author[:80]}": первое :cl: в описании открывает блок, даже упомянутое в тексте.')
     kept = 0
     defaults = set(tags["defaults"].values())
     for line in cl.group(2).splitlines():
