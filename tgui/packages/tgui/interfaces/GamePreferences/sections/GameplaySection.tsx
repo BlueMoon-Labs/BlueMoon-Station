@@ -22,9 +22,9 @@ type GameplayData = {
 };
 
 const RIGHT_CLICK_MODE_OPTIONS = [
+  { value: 2, label: 'Меню BYOND' },
   { value: 1, label: 'Меню действий' },
   { value: 0, label: 'Сразу действие' },
-  { value: 2, label: 'Меню BYOND' },
 ];
 
 const DAMAGE_SHAKE_OPTIONS = [
@@ -51,7 +51,7 @@ const GAMEPLAY_TOGGLES: { key: string; label: string; flag: string; invert?: boo
 export const GameplaySection = (props) => {
   const { act, data } = useBackend<GameplayData>();
   const damageShakeValue = Number(data.damage_screenshake ?? 2);
-  const rightClickMode = Number(data.right_click_mode ?? 1);
+  const rightClickMode = Number(data.right_click_mode ?? 2);
 
   return (
     <Stack vertical>
@@ -69,14 +69,14 @@ export const GameplaySection = (props) => {
           <Stack.Item grow basis={0}>
             <div className="GamePreferences__label">ПКМ</div>
             <div className="GamePreferences__hint">
-              Меню действий: ПКМ - меню, Shift+ПКМ - второе действие (толчок, открыть сумку, постучать). Сразу действие: наоборот. Меню BYOND: как раньше, вне боя ПКМ открывает меню BYOND. В комбат-режиме и в мехе ПКМ всегда действие. Быстро переключить - верб «Режим ПКМ» во вкладке OOC
+              Меню BYOND: как раньше, вне боя ПКМ открывает меню BYOND, в бою Shift+ПКМ - осмотр. Меню действий: ПКМ - меню у курсора, Shift+ПКМ - второе действие (толчок, открыть сумку, постучать). Сразу действие: наоборот. В комбат-режиме и в мехе ПКМ всегда действие. Быстро переключить - верб «Режим ПКМ» во вкладке OOC
             </div>
           </Stack.Item>
           <Stack.Item>
             <Dropdown
               width="160px"
               options={RIGHT_CLICK_MODE_OPTIONS.map(o => o.label)}
-              selected={RIGHT_CLICK_MODE_OPTIONS.find(o => o.value === rightClickMode)?.label || 'Меню действий'}
+              selected={RIGHT_CLICK_MODE_OPTIONS.find(o => o.value === rightClickMode)?.label || 'Меню BYOND'}
               onSelected={value => {
                 const opt = RIGHT_CLICK_MODE_OPTIONS.find(o => o.label === value);
                 if (opt) act('set_right_click_mode', { value: opt.value });

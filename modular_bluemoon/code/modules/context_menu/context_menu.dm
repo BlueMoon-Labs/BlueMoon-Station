@@ -41,16 +41,23 @@
 
 /// ПКМ открывает меню или делает второе действие - по настройке игрока; Shift меняет одно на другое.
 /// В комбат-режиме и в мехе ПКМ всегда действие. Клики, которые повторяет само меню, всегда действие.
+/// В режиме «меню BYOND» меню действий нет вовсе, всё как раньше.
 /mob/proc/right_click_opens_menu(list/modifiers)
 	if(!modifiers["right"] || modifiers["ctrl"] || modifiers["alt"] || modifiers["middle"] || modifiers["context_menu"] || !right_click_actions)
 		return FALSE
 	// ЛКМ при зажатом ПКМ приходит с right=1 и button=left: это второе действие, как и раньше
 	if(modifiers["button"] && modifiers["button"] != "right")
 		return FALSE
+	if(right_click_mode() == RIGHT_CLICK_MODE_NATIVE)
+		return FALSE
 	var/menu_on_plain_click = right_click_menu_preferred()
 	if(menu_on_plain_click && right_click_needs_clicks())
 		menu_on_plain_click = FALSE
 	return modifiers["shift"] ? !menu_on_plain_click : menu_on_plain_click
+
+/// Shift+ЛКМ - осмотр. Shift+ПКМ - осмотр только в режиме «меню BYOND», как раньше в бою; в остальных режимах это меню или второе действие.
+/mob/proc/shift_click_examines(list/modifiers)
+	return modifiers["shift"] && (!modifiers["right"] || right_click_mode() == RIGHT_CLICK_MODE_NATIVE)
 
 /// ЛКМ при зажатом ПКМ запоминается; следующий клик самим ПКМ - его отпускание, оно ничего не делает
 /mob/proc/swallow_right_button_release(params)
@@ -71,10 +78,21 @@
 		return "ПКМ в бою"
 	return right_click_opens_menu(list("right" = 1)) ? "Shift-ПКМ" : "ПКМ"
 
+/// Приставка к ПКМ в скринтипе: в режиме меню второе действие на Shift+ПКМ, в режиме BYOND вне боя ПКМ - меню BYOND.
+/// with_modifier - Ctrl+ПКМ и Alt+ПКМ, меню они не открывают.
+/mob/proc/right_click_screentip_prefix(with_modifier = FALSE)
+	if(!right_click_actions)
+		return ""
+	if(right_click_mode() == RIGHT_CLICK_MODE_NATIVE && !right_click_needs_clicks())
+		return "В бою "
+	if(!with_modifier && right_click_opens_menu(list("right" = 1)))
+		return "Shift-"
+	return ""
+
 /mob/proc/right_click_mode()
 	if(client?.prefs)
 		return client.prefs.right_click_mode()
-	return CONFIG_GET(flag/right_click_menu_default) ? RIGHT_CLICK_MODE_MENU : RIGHT_CLICK_MODE_ACTION
+	return CONFIG_GET(number/right_click_mode_default)
 
 /// ПКМ, дошедший кликом, открывает меню только в режиме меню; в режиме BYOND он доходит лишь в бою, и это действие
 /mob/proc/right_click_menu_preferred()
@@ -82,38 +100,63 @@
 
 /// Выбор игрока, а если он не выбирал - дефолт сервера: смена дефолта в конфиге доходит до всех, кто не переключал сам
 /datum/preferences/proc/right_click_mode()
-	if(isnull(right_click_menu))
-		return CONFIG_GET(flag/right_click_menu_default) ? RIGHT_CLICK_MODE_MENU : RIGHT_CLICK_MODE_ACTION
-	return right_click_menu
+	if(isnull(right_click_choice))
+		return CONFIG_GET(number/right_click_mode_default)
+	return right_click_choice
+
+/datum/preferences/proc/set_right_click_choice(new_mode)
+	if(!(new_mode in list(RIGHT_CLICK_MODE_ACTION, RIGHT_CLICK_MODE_MENU, RIGHT_CLICK_MODE_NATIVE)))
+		return FALSE
+	right_click_choice = new_mode
+	save_pref_var("right_click_choice", "right_click_mode")
+	return TRUE
 
 /client/proc/set_right_click_mode(new_mode)
-	if(!prefs || !(new_mode in list(RIGHT_CLICK_MODE_ACTION, RIGHT_CLICK_MODE_MENU, RIGHT_CLICK_MODE_NATIVE)))
+	if(!prefs?.set_right_click_choice(new_mode))
 		return
-	prefs.right_click_menu = new_mode
-	prefs.save_pref_var("right_click_menu")
+	log_game("[key_name(src)] выбрал режим ПКМ: [right_click_mode_name(new_mode)]")
 	mob?.close_context_menu()
 	update_right_click_mode()
 
 /client/verb/toggle_right_click_mode()
 	set category = "OOC"
 	set name = "Режим ПКМ"
-	set desc = "Меню действий, сразу действие или меню BYOND как раньше"
+	set desc = "Меню BYOND как раньше, меню действий или сразу действие"
 	choose_right_click_mode()
 
 GLOBAL_LIST_INIT(right_click_mode_names, list(
+	"Меню BYOND, как раньше" = RIGHT_CLICK_MODE_NATIVE,
 	"Меню действий" = RIGHT_CLICK_MODE_MENU,
 	"Сразу действие" = RIGHT_CLICK_MODE_ACTION,
-	"Меню BYOND, как раньше" = RIGHT_CLICK_MODE_NATIVE,
 ))
+
+/proc/right_click_mode_name(mode)
+	for(var/mode_name in GLOB.right_click_mode_names)
+		if(GLOB.right_click_mode_names[mode_name] == mode)
+			return mode_name
+
+/// Разово, тем, кто режим не выбирал: какой он сейчас и где сменить. При дефолте «как раньше» меню действий иначе не найти.
+/datum/preferences/proc/show_right_click_notice()
+	if(right_click_notice_seen || !parent)
+		return
+	right_click_notice_seen = TRUE
+	save_pref_var("right_click_notice_seen")
+	if(!isnull(right_click_choice))
+		return
+	var/text = "Режим ПКМ: [right_click_mode_name(right_click_mode())]. Вернуть меню BYOND, как раньше, можно в любой момент."
+	if(right_click_mode() == RIGHT_CLICK_MODE_NATIVE)
+		text = "ПКМ открывает меню BYOND, как раньше. Можно включить меню действий у курсора: ПКМ - действия с объектом, Shift+ПКМ - второе действие (толкнуть, открыть сумку не снимая, постучать)."
+	to_chat(parent, examine_block(span_notice("[text]<br>Выбрать режим - верб «Режим ПКМ» во вкладке OOC или настройки игры, раздел «ПКМ».")))
+
+/mob/dead/new_player/Login()
+	. = ..()
+	if(client?.prefs && !client.prefs.right_click_notice_seen)
+		addtimer(CALLBACK(client.prefs, TYPE_PROC_REF(/datum/preferences, show_right_click_notice)), 7 SECONDS)
 
 /client/proc/choose_right_click_mode()
 	if(!prefs)
 		return
-	var/current
-	for(var/mode_name in GLOB.right_click_mode_names)
-		if(GLOB.right_click_mode_names[mode_name] == prefs.right_click_mode())
-			current = mode_name
-	var/choice = tgui_input_list(mob, "Меню действий: ПКМ - меню, Shift+ПКМ - второе действие. Сразу действие: наоборот. Меню BYOND: вне боя ПКМ открывает меню BYOND. В комбат-режиме и в мехе ПКМ всегда действие.", "Режим ПКМ", GLOB.right_click_mode_names, current)
+	var/choice = tgui_input_list(mob, "Меню BYOND: как раньше, вне боя ПКМ открывает меню BYOND. Меню действий: ПКМ - меню у курсора, Shift+ПКМ - второе действие. Сразу действие: наоборот. В комбат-режиме и в мехе ПКМ всегда действие.", "Режим ПКМ", GLOB.right_click_mode_names, right_click_mode_name(prefs.right_click_mode()))
 	if(!choice || QDELETED(src) || isnull(GLOB.right_click_mode_names[choice]))
 		return
 	set_right_click_mode(GLOB.right_click_mode_names[choice])
@@ -121,7 +164,7 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 		if(RIGHT_CLICK_MODE_ACTION)
 			to_chat(src, span_notice("ПКМ сразу действует, меню действий - на Shift+ПКМ."))
 		if(RIGHT_CLICK_MODE_NATIVE)
-			to_chat(src, span_notice("ПКМ открывает меню BYOND, как раньше; в комбат-режиме и в мехе ПКМ действует."))
+			to_chat(src, span_notice("ПКМ открывает меню BYOND, как раньше; в комбат-режиме и в мехе ПКМ действует, Shift+ПКМ осматривает."))
 		else
 			to_chat(src, span_notice("ПКМ открывает меню действий, Shift+ПКМ - второе действие (в комбат-режиме и в мехе ПКМ всё равно действует)."))
 

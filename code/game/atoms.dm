@@ -1716,7 +1716,7 @@
 			var/screentip_images = user.client.prefs.screentip_images
 			// LMB and RMB on one line...
 			var/lmb_text = build_context(context, SCREENTIP_CONTEXT_LMB, screentip_images)
-			var/rmb_text = build_context(context, SCREENTIP_CONTEXT_RMB, screentip_images)
+			var/rmb_text = build_context(context, SCREENTIP_CONTEXT_RMB, screentip_images, user.right_click_screentip_prefix())
 
 			if (lmb_text != "")
 				lmb_rmb_line = lmb_text
@@ -1735,7 +1735,7 @@
 			if (SCREENTIP_CONTEXT_CTRL_RMB in context)
 				if (ctrl_lmb_ctrl_rmb_line != "")
 					ctrl_lmb_ctrl_rmb_line += " | "
-				ctrl_lmb_ctrl_rmb_line += build_context(context, SCREENTIP_CONTEXT_CTRL_RMB, screentip_images)
+				ctrl_lmb_ctrl_rmb_line += build_context(context, SCREENTIP_CONTEXT_CTRL_RMB, screentip_images, user.right_click_screentip_prefix(TRUE))
 
 			// Alt-LMB, Alt-RMB on one line...
 			if (ctrl_lmb_ctrl_rmb_line != "")
@@ -1746,7 +1746,7 @@
 			if (SCREENTIP_CONTEXT_ALT_RMB in context)
 				if (alt_lmb_alt_rmb_line != "")
 					alt_lmb_alt_rmb_line += " | "
-				alt_lmb_alt_rmb_line += build_context(context, SCREENTIP_CONTEXT_ALT_RMB, screentip_images)
+				alt_lmb_alt_rmb_line += build_context(context, SCREENTIP_CONTEXT_ALT_RMB, screentip_images, user.right_click_screentip_prefix(TRUE))
 
 			// Shift-LMB, Ctrl-Shift-LMB on one line...
 			if (alt_lmb_alt_rmb_line != "")

@@ -10,14 +10,16 @@ GLOBAL_LIST_INIT(context_menu_screentip_keys, list(
 	SCREENTIP_CONTEXT_CTRL_SHIFT_LMB = list("ctrl=1;shift=1;left=1", "Ctrl-Shift-ЛКМ"),
 ))
 
-/// Админ-вербы, которые меню BYOND показывало по атому: верб -> тип атома, которому он подходит
+/// Админ-вербы, которые меню BYOND показывало по атому: верб -> тип атома, которому он подходит. Частые - первыми.
 GLOBAL_LIST_INIT(context_menu_admin_verbs, list(
 	/datum/admins/proc/show_player_panel = /mob,
 	/client/proc/debug_variables = /datum,
 	/client/proc/cmd_admin_pm_context = /mob,
+	/client/proc/smite = /mob/living,
 	/client/proc/jumptomob = /mob,
 	/client/proc/jumptoturf = /turf,
 	/client/proc/Getmob = /mob,
+	/client/proc/sendmob = /mob,
 	/client/proc/cmd_admin_subtle_message = /mob,
 	/datum/admins/proc/show_traitor_panel = /mob,
 	/client/proc/cmd_admin_check_contents = /mob/living,
@@ -25,8 +27,28 @@ GLOBAL_LIST_INIT(context_menu_admin_verbs, list(
 	/client/proc/cmd_admin_rejuvenate = /mob/living,
 	/client/proc/cmd_admin_godmode = /mob,
 	/client/proc/manipulate_organs = /mob/living/carbon,
+	/client/proc/cmd_admin_drop_everything = /mob,
+	/datum/admins/proc/unprison = /mob,
+	/client/proc/cmd_admin_man_up = /mob,
+	/client/proc/cmd_assume_direct_control = /mob,
+	/client/proc/cmd_give_direct_control = /mob,
+	/client/proc/cmd_admin_gib = /mob,
+	/client/proc/cmd_admin_delete = /atom,
+	/client/proc/cmd_admin_explosion = /atom,
+	/client/proc/cmd_admin_emp = /atom,
+	/client/proc/give_spell = /mob,
+	/client/proc/remove_spell = /mob,
+	/client/proc/give_disease = /mob/living,
+	/client/proc/cmd_admin_grantfullaccess = /mob,
+	/client/proc/cmd_admin_robotize = /mob,
+	/client/proc/cmd_admin_alienize = /mob,
+	/client/proc/cmd_admin_slimeize = /mob,
+	/client/proc/cmd_admin_animalize = /mob,
+	/client/proc/cmd_admin_blobize = /mob,
 	/client/proc/object_say = /obj,
 	/client/proc/mark_datum_mapview = /datum,
+	/client/proc/tag_datum_mapview = /datum,
+	/client/proc/callproc_datum = /datum,
 	/client/proc/fix_air = /turf/open,
 ))
 

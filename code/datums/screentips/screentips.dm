@@ -17,8 +17,9 @@ GLOBAL_LIST_INIT_TYPED(screentip_context_icons, /image, prepare_screentip_contex
  * 	- context[key] = list (REQUIRED)
  * - key = string (REQUIRED)
  * - allow_image = boolean (not required)
+ * - combo_prefix = string (not required), e.g. "Shift-" when the action is not on the bare button for this user
 */
-/proc/build_context(list/context, key, allow_image)
+/proc/build_context(list/context, key, allow_image, combo_prefix = "")
 	if(!length(context) || !length(context[key]) || !key)
 		return ""
 	var/static/regex/russian_letters = regex(@"[А-Яа-яЁё]+", "g")
@@ -29,7 +30,7 @@ GLOBAL_LIST_INIT_TYPED(screentip_context_icons, /image, prepare_screentip_contex
 		LAZYSET(context[key], INTENT_ANY, action)
 	for(var/intent in context[key])
 		// Splits key combinations from mouse buttons. e.g. `Ctrl-Shift-LMB` goes in, `Ctrl-Shift-` goes out. Will be empty for single button actions.
-		var/key_combo = length(key) > 3 ? "[copytext(key, 1, -3)]" : ""
+		var/key_combo = "[combo_prefix][length(key) > 3 ? copytext(key, 1, -3) : ""]"
 		// Grab the mouse button, LMB/RMB+intent
 		var/button = "[copytext(key, -3)]-[intent]"
 		var/using_image = FALSE

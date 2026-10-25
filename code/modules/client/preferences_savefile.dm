@@ -687,7 +687,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["widescreenpref"] >> widescreenpref
 	S["fullscreen"] >> fullscreen
 	S["long_strip_menu"] >> long_strip_menu
-	S["right_click_menu"] >> right_click_menu
+	// не right_click_menu: под ним тест-мерж записал «сразу действие» всем, кто не выбирал
+	S["right_click_mode"] >> right_click_choice
+	S["right_click_notice_seen"] >> right_click_notice_seen
 	S["pixel_size"]	    	>> pixel_size
 	S["scaling_method"]	    >> scaling_method
 	S["hud_toggle_flash"] >> hud_toggle_flash
@@ -858,7 +860,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	widescreenpref = sanitize_integer(widescreenpref, 0, 1, initial(widescreenpref))
 	fullscreen = sanitize_integer(fullscreen, 0, 1, initial(fullscreen))
 	long_strip_menu = sanitize_integer(long_strip_menu, 0, 1, initial(long_strip_menu))
-	right_click_menu = sanitize_integer(right_click_menu, RIGHT_CLICK_MODE_ACTION, RIGHT_CLICK_MODE_NATIVE, null)
+	// не sanitize_integer: переданный null включает его дефолт 0, и невыбравший получает «сразу действие»
+	if(!(right_click_choice in list(RIGHT_CLICK_MODE_ACTION, RIGHT_CLICK_MODE_MENU, RIGHT_CLICK_MODE_NATIVE)))
+		right_click_choice = null
+	right_click_notice_seen = sanitize_integer(right_click_notice_seen, FALSE, TRUE, FALSE)
 	pixel_size = sanitize_integer(pixel_size, PIXEL_SCALING_AUTO, PIXEL_SCALING_3X, initial(pixel_size))
 	scaling_method = sanitize_text(scaling_method, initial(scaling_method))
 	hud_toggle_flash = sanitize_integer(hud_toggle_flash, 0, 1, initial(hud_toggle_flash))
@@ -1366,7 +1371,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["widescreenpref"], widescreenpref)
 	WRITE_FILE(S["fullscreen"], fullscreen)
 	WRITE_FILE(S["long_strip_menu"], long_strip_menu)
-	WRITE_FILE(S["right_click_menu"], right_click_menu)
+	WRITE_FILE(S["right_click_mode"], right_click_choice)
+	WRITE_FILE(S["right_click_notice_seen"], right_click_notice_seen)
 	WRITE_FILE(S["autostand"], autostand)
 	WRITE_FILE(S["cit_toggles"], cit_toggles)
 	WRITE_FILE(S["preferred_chaos_level"], preferred_chaos_level)

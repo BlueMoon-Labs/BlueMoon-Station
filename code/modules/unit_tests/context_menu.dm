@@ -1,3 +1,9 @@
+/// Игрок в режиме меню: тесты меню не зависят от дефолта режима в конфиге
+/mob/living/carbon/human/dummy/consistent/context_menu_user
+
+/mob/living/carbon/human/dummy/consistent/context_menu_user/right_click_mode()
+	return RIGHT_CLICK_MODE_MENU
+
 /mob/living/carbon/human/dummy/consistent/context_menu_probe
 	var/right_clicked = FALSE
 	var/shift_clicked = FALSE
@@ -42,7 +48,7 @@
 		if(entry.name == name)
 			return entry
 
-/// По умолчанию ПКМ - меню, Shift+ПКМ - действие; настройка меняет местами; в бою ПКМ - действие; Shift+ЛКМ - осмотр
+/// В режиме меню ПКМ - меню, Shift+ПКМ - действие; режим действий меняет местами; в бою ПКМ - действие; Shift+ЛКМ - осмотр
 /datum/unit_test/context_menu_routing
 
 /datum/unit_test/context_menu_routing/Run()
@@ -112,7 +118,7 @@
 /datum/unit_test/context_menu_human_entries
 
 /datum/unit_test/context_menu_human_entries/Run()
-	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent)
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_user)
 	var/mob/living/carbon/human/target = allocate(/mob/living/carbon/human/dummy/consistent, get_step(user, EAST))
 	user.a_intent = INTENT_HELP
 	var/datum/context_menu/menu = user.open_context_menu(target, "right=1;shift=1")
@@ -148,7 +154,7 @@
 
 /datum/unit_test/context_menu_compact_hints/Run()
 	TEST_ASSERT_EQUAL(context_menu_text_width("Осмотреть"), 48, "Ширина текста не по буквам Small Fonts")
-	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent)
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_user)
 	var/mob/living/carbon/human/target = allocate(/mob/living/carbon/human/dummy/consistent, get_step(user, EAST))
 	user.a_intent = INTENT_HELP
 	var/datum/context_menu/menu = user.open_context_menu(target, "right=1;shift=1")
@@ -227,7 +233,7 @@
 /datum/unit_test/context_menu_tile_pick
 
 /datum/unit_test/context_menu_tile_pick/Run()
-	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent)
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_user)
 	var/turf/next_turf = get_step(user, EAST)
 	var/obj/item/pen/pen = allocate(/obj/item/pen, next_turf)
 
@@ -268,7 +274,7 @@
 /datum/unit_test/context_menu_paging
 
 /datum/unit_test/context_menu_paging/Run()
-	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent)
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_user)
 	var/turf/next_turf = get_step(user, EAST)
 	// разные имена, иначе одинаковые ручки свернутся в одну строку
 	for(var/i in 1 to CONTEXT_MENU_MAX_ROWS + 2)
@@ -296,7 +302,7 @@
 /datum/unit_test/context_menu_tile_groups
 
 /datum/unit_test/context_menu_tile_groups/Run()
-	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent)
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_user)
 	var/turf/next_turf = get_step(user, EAST)
 	var/list/pens = list()
 	for(var/i in 1 to CONTEXT_MENU_GROUP_MIN + 1)
@@ -336,7 +342,7 @@
 /datum/unit_test/context_menu_item_verbs
 
 /datum/unit_test/context_menu_item_verbs/Run()
-	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent)
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_user)
 	var/obj/item/context_menu_test_item/item = allocate(/obj/item/context_menu_test_item)
 	user.put_in_active_hand(item)
 	var/datum/context_menu/menu = user.open_context_menu(item, "right=1;shift=1")
@@ -349,7 +355,7 @@
 /datum/unit_test/context_menu_screentip_entries
 
 /datum/unit_test/context_menu_screentip_entries/Run()
-	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent)
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_user)
 	var/obj/structure/table/table = allocate(/obj/structure/table, get_step(user, EAST))
 	user.a_intent = INTENT_HELP
 	var/datum/context_menu/menu = user.open_context_menu(table, "right=1;shift=1")
@@ -366,7 +372,7 @@
 /datum/unit_test/context_menu_close_on_move
 
 /datum/unit_test/context_menu_close_on_move/Run()
-	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent)
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_user)
 	var/mob/living/carbon/human/target = allocate(/mob/living/carbon/human/dummy/consistent, get_step(user, EAST))
 	var/datum/context_menu/menu = user.open_context_menu(target, "right=1;shift=1")
 	var/list/screen_objects = menu.screen_objects.Copy()
@@ -384,7 +390,7 @@
 /datum/unit_test/context_menu_intent_screentips
 
 /datum/unit_test/context_menu_intent_screentips/Run()
-	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent)
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_user)
 	var/mob/living/carbon/human/target = allocate(/mob/living/carbon/human/dummy/consistent, get_step(user, EAST))
 	user.a_intent = INTENT_HELP
 	var/list/context = list()
@@ -405,7 +411,7 @@
 /datum/unit_test/context_menu_give_without_alt_fire
 
 /datum/unit_test/context_menu_give_without_alt_fire/Run()
-	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent)
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_user)
 	var/mob/living/carbon/human/target = allocate(/mob/living/carbon/human/dummy/consistent, get_step(user, EAST))
 	var/obj/item/context_menu_test_item/item = allocate(/obj/item/context_menu_test_item)
 	user.put_in_active_hand(item)
@@ -424,7 +430,7 @@
 /datum/unit_test/context_menu_secondary_storage
 
 /datum/unit_test/context_menu_secondary_storage/Run()
-	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent)
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_user)
 	var/turf/next_turf = get_step(user, EAST)
 	var/obj/item/storage/backpack/bag = allocate(/obj/item/storage/backpack, next_turf)
 	var/datum/context_menu_storage_probe/probe = allocate(/datum/context_menu_storage_probe)
@@ -443,7 +449,7 @@
 /datum/unit_test/context_menu_secondary_transfer_amount
 
 /datum/unit_test/context_menu_secondary_transfer_amount/Run()
-	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent)
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_user)
 	var/obj/item/reagent_containers/glass/beaker/beaker = allocate(/obj/item/reagent_containers/glass/beaker)
 	user.put_in_active_hand(beaker)
 	var/list/amounts = beaker.possible_transfer_amounts
@@ -457,7 +463,7 @@
 /datum/unit_test/context_menu_secondary_clothing_and_tank
 
 /datum/unit_test/context_menu_secondary_clothing_and_tank/Run()
-	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent)
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_user)
 	var/obj/item/clothing/under/color/grey/uniform = allocate(/obj/item/clothing/under/color/grey)
 	TEST_ASSERT(user.equip_to_slot_if_possible(uniform, ITEM_SLOT_ICLOTHING), "Не удалось надеть комбинезон")
 	var/was_adjusted = uniform.adjusted
@@ -476,7 +482,7 @@
 /datum/unit_test/context_menu_secondary_door_knock
 
 /datum/unit_test/context_menu_secondary_door_knock/Run()
-	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent)
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_user)
 	var/obj/machinery/door/airlock/public/door = allocate(/obj/machinery/door/airlock/public, get_step(user, EAST))
 	TEST_ASSERT(door.density, "Шлюз в тесте должен быть закрыт")
 	user.CommonClickOn(door, "right=1;shift=1")
@@ -498,7 +504,7 @@
 /datum/unit_test/context_menu_secondary_held_item
 
 /datum/unit_test/context_menu_secondary_held_item/Run()
-	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent)
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_user)
 	var/mob/living/carbon/human/near = allocate(/mob/living/carbon/human/dummy/consistent, get_step(user, EAST))
 	var/mob/living/carbon/human/far = allocate(/mob/living/carbon/human/dummy/consistent, locate(user.x + 3, user.y, user.z))
 	user.a_intent = INTENT_HELP
@@ -534,7 +540,7 @@
 /datum/unit_test/context_menu_secondary_structures
 
 /datum/unit_test/context_menu_secondary_structures/Run()
-	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent)
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_user)
 	var/turf/next_turf = get_step(user, EAST)
 	var/obj/structure/chair/chair = allocate(/obj/structure/chair, next_turf)
 	var/mob/living/carbon/human/sitter = allocate(/mob/living/carbon/human/dummy/consistent, next_turf)
@@ -559,27 +565,78 @@
 	menu.choose(rotate)
 	TEST_ASSERT(barricade.dir != old_dir, "Пункт меню не повернул баррикаду")
 
-/// Режим ПКМ, который игрок не выбирал, берётся из конфига; выбранный - нет
+/// Режим ПКМ, который игрок не выбирал, берётся из конфига (без конфига - меню BYOND, как раньше); выбранный - нет
 /datum/unit_test/context_menu_default_from_config
 	var/old_default
 
 /datum/unit_test/context_menu_default_from_config/Run()
-	old_default = CONFIG_GET(flag/right_click_menu_default)
+	old_default = CONFIG_GET(number/right_click_mode_default)
+	var/datum/config_entry/number/right_click_mode_default/entry_type = /datum/config_entry/number/right_click_mode_default
+	TEST_ASSERT_EQUAL(initial(entry_type.default), RIGHT_CLICK_MODE_NATIVE, "Без конфига ПКМ должен открывать меню BYOND, как раньше")
 	var/datum/preferences/prefs = new
-	TEST_ASSERT_NULL(prefs.right_click_menu, "Новый игрок уже с выбранным режимом ПКМ")
-	CONFIG_SET(flag/right_click_menu_default, FALSE)
-	TEST_ASSERT_EQUAL(prefs.right_click_mode(), RIGHT_CLICK_MODE_ACTION, "Дефолт из конфига не дошёл до невыбравшего")
-	CONFIG_SET(flag/right_click_menu_default, TRUE)
-	TEST_ASSERT_EQUAL(prefs.right_click_mode(), RIGHT_CLICK_MODE_MENU, "Дефолт из конфига не дошёл до невыбравшего")
-	prefs.right_click_menu = RIGHT_CLICK_MODE_NATIVE
-	TEST_ASSERT_EQUAL(prefs.right_click_mode(), RIGHT_CLICK_MODE_NATIVE, "Дефолт конфига перебил выбор игрока")
+	TEST_ASSERT_NULL(prefs.right_click_choice, "Новый игрок уже с выбранным режимом ПКМ")
+	for(var/mode in list(RIGHT_CLICK_MODE_ACTION, RIGHT_CLICK_MODE_MENU, RIGHT_CLICK_MODE_NATIVE))
+		CONFIG_SET(number/right_click_mode_default, mode)
+		TEST_ASSERT_EQUAL(prefs.right_click_mode(), mode, "Дефолт из конфига не дошёл до невыбравшего")
+	TEST_ASSERT(prefs.set_right_click_choice(RIGHT_CLICK_MODE_MENU), "Выбор режима не принят")
+	CONFIG_SET(number/right_click_mode_default, RIGHT_CLICK_MODE_ACTION)
+	TEST_ASSERT_EQUAL(prefs.right_click_mode(), RIGHT_CLICK_MODE_MENU, "Дефолт конфига перебил выбор игрока")
+	TEST_ASSERT(!prefs.set_right_click_choice(5), "Принят несуществующий режим")
+	TEST_ASSERT_EQUAL(prefs.right_click_choice, RIGHT_CLICK_MODE_MENU, "Несуществующий режим затёр выбор")
 	qdel(prefs)
 
 /datum/unit_test/context_menu_default_from_config/Destroy()
-	CONFIG_SET(flag/right_click_menu_default, old_default)
+	CONFIG_SET(number/right_click_mode_default, old_default)
 	return ..()
 
-/// Режим «меню BYOND»: дошедший ПКМ (в бою) - действие, Shift+ПКМ - меню действий, подсказка зовёт в бой
+/// Выбор режима ПКМ переживает сохранение, а ключ right_click_menu, который тест-мерж писал всем подряд, не читается
+/datum/unit_test/context_menu_mode_saving
+	var/datum/preferences/prefs
+
+/datum/unit_test/context_menu_mode_saving/Destroy()
+	if(prefs)
+		fdel(prefs.path)
+		qdel(prefs)
+		prefs = null
+	return ..()
+
+/datum/unit_test/context_menu_mode_saving/Run()
+	prefs = new
+	prefs.load_path("unit_test_right_click_mode")
+	fdel(prefs.path)
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "Корень настроек не записан")
+	sleep(1)
+	TEST_ASSERT(prefs.load_preferences(TRUE), "Настройки не прочитаны")
+	// sanitize_integer(null, ..., null) отдавал 0: всем невыбравшим доставалось «сразу действие» (10602)
+	TEST_ASSERT_NULL(prefs.right_click_choice, "Невыбравший после загрузки получил режим ПКМ")
+	var/savefile/old_save = new(prefs.path)
+	WRITE_FILE(old_save["right_click_menu"], RIGHT_CLICK_MODE_ACTION)
+	old_save = null
+	sleep(1)
+	TEST_ASSERT(prefs.load_preferences(TRUE), "Настройки со старым ключом не прочитаны")
+	TEST_ASSERT_NULL(prefs.right_click_choice, "Старый ключ right_click_menu прочитан как выбор игрока")
+
+	TEST_ASSERT(prefs.set_right_click_choice(RIGHT_CLICK_MODE_MENU), "Выбор режима не принят")
+	prefs.flush_single_prefs()
+	sleep(1)
+	var/savefile/readback = new(prefs.path)
+	var/written
+	READ_FILE(readback["right_click_mode"], written)
+	readback = null
+	TEST_ASSERT_EQUAL(written, RIGHT_CLICK_MODE_MENU, "Выбор режима не записан под ключом right_click_mode")
+	prefs.right_click_choice = null
+	TEST_ASSERT(prefs.load_preferences(TRUE), "Настройки с выбором не прочитаны")
+	TEST_ASSERT_EQUAL(prefs.right_click_choice, RIGHT_CLICK_MODE_MENU, "Выбор режима не пережил сохранение")
+
+	TEST_ASSERT(!prefs.right_click_notice_seen, "Санити: сообщение о режимах ПКМ ещё не показывалось")
+	prefs.right_click_notice_seen = TRUE
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "Настройки с показанным сообщением не записаны")
+	sleep(1)
+	prefs.right_click_notice_seen = FALSE
+	TEST_ASSERT(prefs.load_preferences(TRUE), "Настройки с показанным сообщением не прочитаны")
+	TEST_ASSERT(prefs.right_click_notice_seen, "Сообщение о режимах ПКМ покажется снова")
+
+/// Режим «меню BYOND», как раньше: дошедший ПКМ (в бою) - действие, Shift+ПКМ - осмотр, меню действий нет
 /datum/unit_test/context_menu_native_mode
 
 /datum/unit_test/context_menu_native_mode/Run()
@@ -593,11 +650,33 @@
 	user.CommonClickOn(target, "right=1")
 	TEST_ASSERT(user.right_clicked, "ПКМ в бою в режиме BYOND не сделал действие")
 	TEST_ASSERT_NULL(user.active_context_menu, "ПКМ в бою в режиме BYOND открыл меню действий")
+	user.right_clicked = FALSE
 	user.CommonClickOn(target, "right=1;shift=1")
-	TEST_ASSERT_NOTNULL(user.active_context_menu, "Shift+ПКМ в бою не открыл меню действий")
-	user.close_context_menu()
+	TEST_ASSERT(user.shift_clicked, "Shift+ПКМ в бою в режиме BYOND не осматривает, как раньше")
+	TEST_ASSERT(!user.right_clicked, "Shift+ПКМ в бою в режиме BYOND сделал второе действие")
+	TEST_ASSERT_NULL(user.active_context_menu, "Shift+ПКМ в бою в режиме BYOND открыл меню действий")
 	SEND_SIGNAL(user, COMSIG_TOGGLE_COMBAT_MODE)
 	TEST_ASSERT(!user.right_click_needs_clicks(), "Вне боя и меха ПКМ в режиме BYOND - меню BYOND")
+
+/// Скринтип называет ту кнопку, на которой второе действие у этого игрока
+/datum/unit_test/context_menu_screentip_prefix
+
+/datum/unit_test/context_menu_screentip_prefix/Run()
+	var/mob/living/carbon/human/dummy/consistent/context_menu_probe/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_probe)
+	user.click_mode = RIGHT_CLICK_MODE_MENU
+	TEST_ASSERT_EQUAL(user.right_click_screentip_prefix(), "Shift-", "В режиме меню второе действие не подписано Shift+ПКМ")
+	TEST_ASSERT_EQUAL(user.right_click_screentip_prefix(TRUE), "", "Ctrl+ПКМ меню не открывает, приставка не нужна")
+	var/list/context = list(SCREENTIP_CONTEXT_RMB = list(INTENT_ANY = "Открыть"))
+	var/line = build_context(context, SCREENTIP_CONTEXT_RMB, FALSE, user.right_click_screentip_prefix())
+	TEST_ASSERT_EQUAL(findtext(line, "Shift-"), 1, "Приставка не попала в начало подписи: [line]")
+	user.click_mode = RIGHT_CLICK_MODE_ACTION
+	TEST_ASSERT_EQUAL(user.right_click_screentip_prefix(), "", "В режиме действий второе действие на голом ПКМ")
+	user.click_mode = RIGHT_CLICK_MODE_NATIVE
+	TEST_ASSERT_EQUAL(user.right_click_screentip_prefix(), "В бою ", "В режиме BYOND вне боя ПКМ - меню BYOND, а не действие")
+	TEST_ASSERT_EQUAL(user.right_click_screentip_prefix(TRUE), "В бою ", "В режиме BYOND вне боя Ctrl+ПКМ - меню BYOND")
+	SEND_SIGNAL(user, COMSIG_TOGGLE_COMBAT_MODE)
+	TEST_ASSERT_EQUAL(user.right_click_screentip_prefix(), "", "В бою в режиме BYOND второе действие на голом ПКМ")
+	SEND_SIGNAL(user, COMSIG_TOGGLE_COMBAT_MODE)
 
 /// Админ-вербы меню BYOND попадают в «Админ…» только по подходящим атомам и только выданные
 /datum/unit_test/context_menu_admin_verbs
@@ -611,6 +690,10 @@
 	TEST_ASSERT(context_menu_admin_verbs_for(obj_target, granted) ~= list(/client/proc/debug_variables, /client/proc/object_say), "Неверные админ-вербы по предмету")
 	TEST_ASSERT(context_menu_admin_verbs_for(turf_target, granted) ~= list(/client/proc/debug_variables, /client/proc/jumptoturf), "Неверные админ-вербы по турфу")
 	TEST_ASSERT(!length(context_menu_admin_verbs_for(mob_target, list())), "Админ-вербы без выданных вербов")
+	// Smite меню BYOND показывало по мобу, в «Админ…» его не хватало
+	TEST_ASSERT(context_menu_admin_verbs_for(mob_target, list(/client/proc/smite)) ~= list(/client/proc/smite), "Нет Smite по мобу")
+	TEST_ASSERT(!length(context_menu_admin_verbs_for(obj_target, list(/client/proc/smite))), "Smite по предмету")
+	TEST_ASSERT(context_menu_admin_verbs_for(obj_target, list(/client/proc/cmd_admin_delete)) ~= list(/client/proc/cmd_admin_delete), "Нет Delete по предмету")
 
 /// Пилоту меха ПКМ - модуль меха, а не меню; после высадки, ещё внутри меха, ПКМ снова по настройке
 /datum/unit_test/context_menu_mecha_pilot
@@ -632,14 +715,14 @@
 	TEST_ASSERT(pilot.right_click_opens_menu(list("right" = 1)), "После высадки ПКМ не вернулся к меню")
 	pilot.forceMove(run_loc_floor_bottom_left)
 
-/// Shift+ПКМ киборга в режиме меню - второе действие, а не Shift-клик (у шлюза это открыть дверь)
+/// Shift+ПКМ киборга в режиме меню - второе действие, а не Shift-клик (у шлюза это открыть дверь); в режиме BYOND - Shift-клик, как раньше
 /datum/unit_test/context_menu_cyborg_shift_right_click
 	var/old_default
 	var/shift_clicked = FALSE
 
 /datum/unit_test/context_menu_cyborg_shift_right_click/Run()
-	old_default = CONFIG_GET(flag/right_click_menu_default)
-	CONFIG_SET(flag/right_click_menu_default, TRUE)
+	old_default = CONFIG_GET(number/right_click_mode_default)
+	CONFIG_SET(number/right_click_mode_default, RIGHT_CLICK_MODE_MENU)
 	var/mob/living/silicon/robot/borg = allocate(/mob/living/silicon/robot)
 	var/obj/item/pen/target = allocate(/obj/item/pen, get_step(borg, EAST))
 	RegisterSignal(target, COMSIG_CLICK_SHIFT, PROC_REF(on_shift_click))
@@ -652,10 +735,16 @@
 	TEST_ASSERT_NOTNULL(borg.active_context_menu, "ПКМ киборга в режиме меню не открыл меню")
 	borg.close_context_menu()
 
+	CONFIG_SET(number/right_click_mode_default, RIGHT_CLICK_MODE_NATIVE)
+	shift_clicked = FALSE
+	borg.CommonClickOn(target, "right=1;shift=1")
+	TEST_ASSERT(shift_clicked, "Shift+ПКМ киборга в режиме BYOND перестал быть Shift-кликом")
+	TEST_ASSERT_NULL(borg.active_context_menu, "Shift+ПКМ киборга в режиме BYOND открыл меню")
+
 /datum/unit_test/context_menu_cyborg_shift_right_click/proc/on_shift_click(datum/source)
 	SIGNAL_HANDLER
 	shift_clicked = TRUE
 
 /datum/unit_test/context_menu_cyborg_shift_right_click/Destroy()
-	CONFIG_SET(flag/right_click_menu_default, old_default)
+	CONFIG_SET(number/right_click_mode_default, old_default)
 	return ..()
