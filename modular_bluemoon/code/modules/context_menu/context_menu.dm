@@ -177,6 +177,10 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	close_context_menu()
 	if(QDELETED(target) || !right_click_actions)
 		return
+	// клик по клетке, которую игрок не видит (за стеной, в темноте, вне обзора), click_catcher передаёт турфу с catcher=1:
+	// меню BYOND там ничего не показывало, и это не должно, иначе список клетки - рентген
+	if(params2list(params)["catcher"])
+		return
 	active_context_menu = new /datum/context_menu(src, target, params)
 	// кто выбрал меню сам, знает, как его сменить
 	if(client && !client.context_menu_hint_shown && right_click_menu_preferred() && isnull(client.prefs?.right_click_choice))

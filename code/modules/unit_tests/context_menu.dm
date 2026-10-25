@@ -270,6 +270,21 @@
 	TEST_ASSERT_NULL(menu.target, "ПКМ по полу с вещами должен начинаться со списка клетки")
 	user.close_context_menu()
 
+/// ПКМ по клетке, которую игрок не видит (за стеной, в темноте, вне обзора), приходит турфом через click_catcher: меню её не раскрывает
+/datum/unit_test/context_menu_unseen_tile
+
+/datum/unit_test/context_menu_unseen_tile/Run()
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_user)
+	var/turf/hidden_turf = get_step(user, EAST)
+	allocate(/obj/item/pen, hidden_turf)
+	allocate(/mob/living/carbon/human/dummy/consistent, hidden_turf)
+	user.CommonClickOn(hidden_turf, "right=1;button=right;catcher=1")
+	TEST_ASSERT_NULL(user.active_context_menu, "ПКМ по невидимой клетке раскрыл её содержимое")
+	TEST_ASSERT_NULL(user.open_context_menu(hidden_turf, "right=1;catcher=1"), "Меню открылось по клику мимо обзора")
+	user.CommonClickOn(hidden_turf, "right=1;button=right")
+	TEST_ASSERT_NOTNULL(user.active_context_menu, "ПКМ по видимой клетке не открыл меню")
+	user.close_context_menu()
+
 /// Длинный список листается пунктом «Ещё…» по кругу, и на экране именно он
 /datum/unit_test/context_menu_paging
 
