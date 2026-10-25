@@ -13,6 +13,8 @@
 //растёт навсегда), что давало взрывы TD (перф CSVs: 17->32->34, starlight очередь 10.6M).
 #define ZCLEAR_SEEDED_POOL_LEVELS 4
 #define ZCLEAR_MAX_NEW_DYNAMIC_LEVELS 4
+//Дольше засев не идёт даже на Layenia; если он оборвался рантаймом, уровни снова выдаются.
+#define ZCLEAR_POOL_SEEDING_TIMEOUT (10 MINUTES)
 
 GLOBAL_LIST_EMPTY(zclear_atoms)
 GLOBAL_LIST_EMPTY(zclear_blockers)
@@ -39,6 +41,8 @@ SUBSYSTEM_DEF(zclear)
 	var/dynamic_levels_created = 0
 	//WHITE-STEEL FIX: анти-спам для предупреждения о переполнении пула.
 	var/last_deferred_announce = 0
+	//Когда начался фоновый засев пула, 0 - засев не идёт.
+	var/pool_seeding_started = 0
 
 	//List of processing Z-Levels
 	var/list/datum/zclear_data/processing_levels
@@ -155,11 +159,17 @@ SUBSYSTEM_DEF(zclear)
  * Уровни возвращаются в пул после автозатирки, пока их не заняли снова.
  */
 /datum/controller/subsystem/zclear/proc/seed_initial_pool()
-	if(!LAZYLEN(free_levels) && seeded_pool_levels > 0)
-		for(var/i in 1 to seeded_pool_levels)
-			var/datum/space_level/picked_level = SSmapping.add_new_zlevel("Dynamic free level [i]", ZTRAITS_SPACE, orbital_body_type = null)
-			initialize_space_level(picked_level.z_value)
-			LAZYADD(free_levels, picked_level)
+	if(LAZYLEN(free_levels) || seeded_pool_levels <= 0)
+		return
+	pool_seeding_started = world.time
+	for(var/i in 1 to seeded_pool_levels)
+		var/datum/space_level/picked_level = SSmapping.add_new_zlevel("Dynamic free level [i]", ZTRAITS_SPACE, orbital_body_type = null)
+		initialize_space_level(picked_level.z_value)
+		LAZYADD(free_levels, picked_level)
+	pool_seeding_started = 0
+
+/datum/controller/subsystem/zclear/proc/is_seeding_pool()
+	return pool_seeding_started && world.time < pool_seeding_started + ZCLEAR_POOL_SEEDING_TIMEOUT
 
 /*
  * Returns a free space level.
@@ -185,6 +195,9 @@ SUBSYSTEM_DEF(zclear)
 				break
 		if(free)
 			return picked_level
+	//Пока пул засевается, новый уровень не создаём: assign_z_level() повторит запрос.
+	if(is_seeding_pool())
+		return null
 	//Создаём новый z-уровень только пока не упёрлись в лимит.
 	if(dynamic_levels_created < max_dynamic_levels)
 		dynamic_levels_created++
@@ -201,19 +214,19 @@ SUBSYSTEM_DEF(zclear)
 	return null
 
 /*
- * Приводит космос свежесозданного динамического z-уровня к полноценному /turf/open/space.
+ * Доинициализирует космос свежесозданного динамического z-уровня.
  * BYOND заполняет новый уровень world.turf = /turf/open/space/basic, у которого пустой New()
  * намеренно пропускает Initialize (оптимизация маплоадера): нет SPACE_ICON_STATE, нет
- * visibilityChanged() и регистрации в атмосе. Из-за этого пространство вокруг сгенерированной
- * руины выглядит как второй тип турфа «space» - без параллакса и без нормального взаимодействия.
- * ChangeTurf(/turf/open/space) сам пересоздаёт турф с корректным Initialize.
+ * visibilityChanged() и регистрации в атмосе, вокруг руины выходил космос без параллакса.
+ * Initialize вызывается на месте, как это делает маплоадер. ChangeTurf пересоздавал каждую из
+ * 65 тысяч клеток и держал старт раунда: 10-20 секунд на уровень, на Layenia до двух минут.
  */
 /datum/controller/subsystem/zclear/proc/initialize_space_level(z_level)
 	if(!z_level)
 		return
-	for(var/turf/T as() in block(locate(1, 1, z_level), locate(world.maxx, world.maxy, z_level)))
-		if(istype(T, /turf/open/space/basic))
-			T.ChangeTurf(/turf/open/space, flags = CHANGETURF_IGNORE_AIR | CHANGETURF_DEFER_CHANGE)
+	for(var/turf/open/space/T in block(locate(1, 1, z_level), locate(world.maxx, world.maxy, z_level)))
+		if(!(T.flags_1 & INITIALIZED_1))
+			SSatoms.InitAtom(T, list(FALSE))
 		CHECK_TICK
 
 /datum/controller/subsystem/zclear/proc/begin_tracking(datum/space_level/sl)
@@ -412,9 +425,8 @@ SUBSYSTEM_DEF(zclear)
 	for(var/turf/T as() in turfs)
 		//TODO: This doesn't update turfs around it.
 		var/turf/newT
-		//basic - подтип /turf/open/space, но без Initialize: его тоже надо пересоздать,
-		//иначе после вайпа уровень снова вернётся в пул с «мёртвым» космосом.
-		if(istype(T, /turf/open/space) && !istype(T, /turf/open/space/basic))
+		//Неинициализированный basic надо пересоздать, иначе после вайпа уровень вернётся в пул с "мёртвым" космосом.
+		if(istype(T, /turf/open/space) && (T.flags_1 & INITIALIZED_1))
 			newT = T
 		else
 			newT = T.ChangeTurf(/turf/open/space, flags = CHANGETURF_IGNORE_AIR | CHANGETURF_DEFER_CHANGE)

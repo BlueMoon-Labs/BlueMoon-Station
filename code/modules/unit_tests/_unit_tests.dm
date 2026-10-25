@@ -667,6 +667,7 @@
 #include "update_icon_short_circuit.dm"
 #include "vent_label_numbering.dm"
 #include "weeds_growth.dm"
+#include "zclear_pool.dm"
 
 
 #ifdef AI_BEHAVIOR_SCENE_BENCH
