@@ -30,6 +30,9 @@ GLOBAL_VAR_INIT(unit_test_spritesheet_dir, "data/spritesheets_unit_tests/[unit_t
 GLOBAL_VAR_INIT(unit_test_asset_json_dir, "data/asset_cache/[unit_test_shard_subdir()]")
 
 /proc/unit_test_shard_subdir()
+	var/instance = world.params[UNIT_TEST_INSTANCE_PARAMETER]
+	if(instance)
+		return "[instance]/"
 	var/shard_param = world.params[UNIT_TEST_SHARD_PARAMETER]
 	return shard_param ? "shard[splittext(shard_param, "/")[1]]/" : ""
 
@@ -302,20 +305,9 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 #undef WAIT_BUDGET_TIMER_FIRES
 #undef WAIT_BUDGET_DESCRIPTION
 
-/// Reads repository source files for structural audit tests.
-/// Integration CI runs DreamDaemon from `ci_test/`, while source stays in the parent checkout.
+/// Reads repository source files for structural audit tests. Test worlds run from the repository root.
 /datum/unit_test/proc/read_source_file(source_path)
-	var/source = file2text(source_path)
-	if(length(source))
-		return source
-
-#ifdef CIBUILDING
-	source = file2text("../[source_path]")
-	if(length(source))
-		return source
-#endif
-
-	return source
+	return file2text(source_path)
 
 /*
 /datum/unit_test/proc/test_screenshot(name, icon/icon)
