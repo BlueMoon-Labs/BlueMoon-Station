@@ -180,7 +180,7 @@
 	suffix = "cargodiselost.dmm"
 	id = "cargodiselost"
 
-datum/map_template/ruin/space/vaulttango
+/datum/map_template/ruin/space/vaulttango
 	name = "Vault Tango"
 	description = "Малый пункт базирования интека"
 	prefix = "_maps/RandomRuins/SpaceRuins/BlueMoon/"
