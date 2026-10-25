@@ -95,7 +95,7 @@ export const NtosPortraitPrinter = (props) => {
 
   const current_portrait_title = currentPortrait
     ? currentPortrait.title
-    : 'No portraits found';
+    : 'Картин не найдено';
 
   const current_portrait_asset_prefix = currentPortrait
     ? (TABS[tabIndex].asset_prefix || currentPortrait.asset_prefix)
@@ -138,7 +138,7 @@ export const NtosPortraitPrinter = (props) => {
                 <Stack.Item grow>
                   <Input
                     fluid
-                    placeholder="Search paintings..."
+                    placeholder="Поиск картин..."
                     value={query}
                     onInput={(_e, value) => {
                       if (query === "" && value !== "") {
@@ -163,9 +163,9 @@ export const NtosPortraitPrinter = (props) => {
                     <Button.Confirm
                       icon="trash"
                       color="bad"
-                      tooltip={is_admin ? "Delete this painting from the database (admin)" : "Delete your own painting"}
+                      tooltip={is_admin ? "Удалить картину из базы данных (админ)" : "Удалить свою картину"}
                       tooltipPosition="bottom"
-                      confirmContent="Are you sure?"
+                      confirmContent="Вы уверены?"
                       onClick={() => act('delete_painting', {
                         md5: currentPortrait.md5,
                         asset_prefix: current_portrait_asset_prefix,
@@ -176,7 +176,7 @@ export const NtosPortraitPrinter = (props) => {
                     <Button
                       icon="pencil"
                       color="transparent"
-                      tooltip="Rename this painting"
+                      tooltip="Переименовать картину"
                       tooltipPosition="bottom"
                       onClick={() => act('rename_painting', {
                         md5: currentPortrait.md5,
@@ -235,7 +235,7 @@ export const NtosPortraitPrinter = (props) => {
                       <Button
                         icon="check"
                         disabled={!hasPortraits}
-                        content="Print Portrait"
+                        content="Распечатать картину"
                         onClick={() => act("select", {
                           md5: currentPortrait.md5,
                           asset_prefix: current_portrait_asset_prefix,
