@@ -91,8 +91,10 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 				open_self.excited_group.garbage_collect()
 		// Оверлейные источники держат турф в affected_turfs: обнулённый счётчик ушёл бы в минус.
 		var/skip_dynamic_lumcount = dynamic_lumcount
+		var/skip_starlight_flags = lighting_flags & (TURF_STARLIGHT_QUEUED | TURF_STARLIT)
 		var/turf/skipped_turf = new path(src)
 		skipped_turf.dynamic_lumcount = skip_dynamic_lumcount
+		skipped_turf.lighting_flags |= skip_starlight_flags
 		skipped_turf.flags_1 |= reservation_flag
 		return skipped_turf
 
@@ -104,6 +106,7 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	var/old_lc_bottomright = lc_bottomright
 	var/old_lc_bottomleft = lc_bottomleft
 	var/old_has_opaque = lighting_flags & TURF_HAS_OPAQUE_ATOM
+	var/old_starlight_flags = lighting_flags & (TURF_STARLIGHT_QUEUED | TURF_STARLIT)
 	var/old_shadow_weight = shadow_weight_sum
 	var/old_dynamic_lumcount = dynamic_lumcount
 
@@ -185,6 +188,8 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 	// dynamic_lumcount переносится безусловно (не только при SSlighting.initialized):
 	// оверлейный свет живёт поверх корнер-системы и может гореть до её инициализации.
 	dynamic_lumcount = old_dynamic_lumcount
+	// Очередь старлайта и GLOB.starlight держат клетку по координатам, их отметки переходят новому турфу.
+	lighting_flags |= old_starlight_flags
 
 	if(SSlighting.initialized)
 		// Restore all lighting state FIRST — reconsider_lights/recalc_atom_opacity need these
@@ -222,7 +227,7 @@ GLOBAL_LIST_INIT(blacklisted_automated_baseturfs, typecacheof(list(
 			GLOB.lighting_deferred_starlight += src
 		else
 			for(var/turf/open/space/space_tile in RANGE_TURFS(1, src))
-				GLOB.lighting_starlight_queue += space_tile
+				space_tile.queue_starlight()
 
 	return W
 

@@ -153,11 +153,12 @@
 	var/list/name_counts = list()
 	var/list/names = list()
 
-	for(var/mob/living/carbon/human/H in GLOB.carbon_list)
+	for(var/mob/living/carbon/human/H as anything in GLOB.human_list)
 		if(!trackable(H))
 			continue
 
-		var/crewmember_name = "Unknown"
+		// Как в крю-мониторе: имя с ID, а без ID — отображаемое имя персонажа.
+		var/crewmember_name = H.name || "Неизвестный"
 		if(H.wear_id || H.wear_neck)
 			var/obj/item/card/id/I = H.wear_id?.GetID()
 			if(!I)
@@ -165,11 +166,11 @@
 			if(I && I.registered_name)
 				crewmember_name = I.registered_name
 
-		while(crewmember_name in name_counts)
-			name_counts[crewmember_name]++
-			crewmember_name = text("[] ([])", crewmember_name, name_counts[crewmember_name])
-		names[crewmember_name] = H
-		name_counts[crewmember_name] = 1
+		var/selection_name = avoid_assoc_duplicate_keys(crewmember_name, name_counts)
+		// Учитываем и персонажей, в настоящем имени которых уже есть суффикс «(2)».
+		while(selection_name in names)
+			selection_name = avoid_assoc_duplicate_keys(crewmember_name, name_counts)
+		names[selection_name] = H
 
 	if(!names.len)
 		user.visible_message("<span class='notice'>[user]'s pinpointer fails to detect a signal.</span>", "<span class='notice'>Your pinpointer fails to detect a signal.</span>")
@@ -179,7 +180,10 @@
 	if(!A || QDELETED(src) || !user || !user.is_holding(src) || user.incapacitated())
 		return
 
-	set_target(names[A])
+	var/mob/living/carbon/human/selected_target = names[A]
+	if(QDELETED(selected_target) || !trackable(selected_target))
+		return
+	set_target(selected_target)
 	active = TRUE
 	user.visible_message("<span class='notice'>[user] activates [user.ru_ego()] pinpointer.</span>", "<span class='notice'>You activate your pinpointer.</span>")
 	playsound(src, 'sound/items/screwdriver2.ogg', 50, 1)

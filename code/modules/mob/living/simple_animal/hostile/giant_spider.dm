@@ -472,6 +472,8 @@
 	for(var/mob/living/simple_animal/hostile/poison/giant_spider/M in GLOB.spidermobs)
 		to_chat(M, my_message)
 	for(var/M in GLOB.dead_mob_list)
+		if(!antag_training_observer_hears(M, user))
+			continue
 		var/link = FOLLOW_LINK(M, user)
 		to_chat(M, "[link] [my_message]")
 	usr.log_talk(message, LOG_SAY, tag="spider command")

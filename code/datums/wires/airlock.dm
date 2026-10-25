@@ -42,7 +42,7 @@
 	)
 	add_duds(2)
 	. = ..()
-	if(randomize || !wiretype)
+	if(randomize || !wiretype || in_antag_training())
 		return
 	if(!GLOB.wire_color_directory[wiretype])
 		colors = list()

@@ -155,17 +155,32 @@
 	return null
 
 /turf/open/space/proc/update_starlight()
-	if(CONFIG_GET(flag/starlight))
-		for(var/t in RANGE_TURFS(1,src)) //RANGE_TURFS is in code\__HELPERS\game.dm
-			if(isspaceturf(t))
-				continue
-			var/use_color = GLOB.current_starlight_color || light_color
-			var/use_power = GLOB.current_starlight_power || light_power
+	if(!CONFIG_GET(flag/starlight))
+		return
+	for(var/t in RANGE_TURFS(1,src)) //RANGE_TURFS is in code\__HELPERS\game.dm
+		if(isspaceturf(t))
+			continue
+		var/use_color = GLOB.current_starlight_color || light_color
+		var/use_power = GLOB.current_starlight_power || light_power
+		if(light_range != 3 || light_power != use_power || light_color != use_color)
 			set_light(l_range = 3, l_power = use_power, l_color = use_color)
+		// Турф, пересозданный в обход ChangeTurf (загрузчик карт), теряет отметку, но может уже стоять в списке.
+		if(!(lighting_flags & TURF_STARLIT))
+			lighting_flags |= TURF_STARLIT
 			GLOB.starlight |= src
-			return
+		return
+	if(lighting_flags & TURF_STARLIT)
+		lighting_flags &= ~TURF_STARLIT
 		GLOB.starlight -= src
+	if(light_range)
 		set_light(l_range = 0)
+
+/// Ставит клетку в очередь старлайта SSlighting, если её там ещё нет.
+/turf/open/space/proc/queue_starlight()
+	if(lighting_flags & TURF_STARLIGHT_QUEUED)
+		return
+	lighting_flags |= TURF_STARLIGHT_QUEUED
+	GLOB.lighting_starlight_queue += src
 
 /turf/open/space/attack_paw(mob/user)
 	return attack_hand(user)

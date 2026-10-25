@@ -480,7 +480,7 @@
 	// Тот же инвариант: только in-place удаление, никаких переприсваиваний глобала.
 	for(var/turf/open/space/S in GLOB.lighting_deferred_starlight.Copy())
 		if(S.z == z_level)
-			GLOB.lighting_starlight_queue |= S
+			S.queue_starlight()
 			GLOB.lighting_deferred_starlight -= S
 		CHECK_TICK
 

@@ -77,3 +77,12 @@
 	time = 30
 	category = CAT_WEAPONRY
 	subcategory = CAT_WEAPON
+
+/datum/crafting_recipe/snub
+	name = "\improper Apostle Snub"
+	result = /obj/item/gun/ballistic/revolver/Apostle/snub
+	reqs = list(/obj/item/gun/ballistic/revolver/Apostle = 1)
+	tools = list(TOOL_SAW)
+	time = 30
+	category = CAT_WEAPONRY
+	subcategory = CAT_WEAPON

@@ -697,10 +697,10 @@
 	D.pixel_x = target.pixel_x
 	D.pixel_y = target.pixel_y
 	D.pixel_z = target.pixel_z
-	if(do_mob(src, target, 100))
+	if(do_mob(src, target, 100) && !dismantle_blocked(target))
 		to_chat(src, "<span class='info'>Dismantling complete.</span>")
 		var/atom/Tsec = target.drop_location()
-		new /obj/item/stack/sheet/metal(Tsec, 5)
+		claim_dismantled(new /obj/item/stack/sheet/metal(Tsec, 5))
 		for(var/obj/item/I in target.component_parts)
 			I.forceMove(Tsec)
 		var/obj/effect/temp_visual/swarmer/disintegration/N = new /obj/effect/temp_visual/swarmer/disintegration(get_turf(target))
@@ -884,9 +884,9 @@
 	var/rendered = "<B>Swarm communication - [src]</b> [say_quote(msg)]"
 	for(var/i in GLOB.mob_list)
 		var/mob/M = i
-		if(isswarmer(M))
+		if(isswarmer(M) && M.training_origin == training_origin)
 			to_chat(M, rendered)
-		if(isobserver(M))
+		if(isobserver(M) && antag_training_observer_hears(M, src))
 			var/link = FOLLOW_LINK(M, src)
 			to_chat(M, "[link] [rendered]")
 

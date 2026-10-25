@@ -4807,9 +4807,6 @@
 	icon_state = "4-8"
 	},
 /obj/structure/fans/tiny,
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
 /turf/open/floor/plating,
 /area/ruin/lavaland/unpowered/deepspaceone/engineering)
 "cTS" = (
@@ -5493,9 +5490,6 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
@@ -9252,9 +9246,6 @@
 /obj/structure/fans/tiny,
 /obj/effect/mapping_helpers/airlock/cyclelink_helper{
 	dir = 4
-	},
-/obj/structure/cable{
-	icon_state = "4-8"
 	},
 /obj/structure/disposalpipe/segment{
 	dir = 4
@@ -13067,9 +13058,6 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
@@ -23255,9 +23243,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-4"
 	},
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "nDZ" = (
@@ -32602,9 +32587,6 @@
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
 /turf/open/floor/plasteel/dark/side,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "taE" = (
@@ -36253,9 +36235,6 @@
 /obj/structure/fans/tiny,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
@@ -40478,10 +40457,9 @@
 	dir = 4
 	},
 /obj/machinery/vending/wardrobe/syndie_wardrobe{
-	contraband = list(/obj/item/knife/combat=1, /obj/item/clothing/under/syndicate/coldres=6, /obj/item/clothing/shoes/combat/coldres=6, /obj/item/flashlight/lantern/syndicate=4);
+	contraband = list(/obj/item/kitchen/knife/combat=1, /obj/item/clothing/under/syndicate/coldres=6, /obj/item/clothing/shoes/combat/coldres=6, /obj/item/flashlight/lantern=4);
 	extended_inventory = 1;
 	onstation = 0;
-	all_products_free = 1;
 	pixel_y = 2
 	},
 /obj/effect/turf_decal/bot,

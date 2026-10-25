@@ -715,10 +715,15 @@ GLOBAL_LIST_EMPTY(the_station_areas)
 		var/datum/biome/biome_instance = new biome_path()
 		biomes[biome_path] += biome_instance
 
-/datum/controller/subsystem/mapping/proc/reg_in_areas_in_z(list/areas)
+/// area_floors (зона -> z её новых клеток) дописывает уже известные зоны под эти z без обхода всех их клеток.
+/datum/controller/subsystem/mapping/proc/reg_in_areas_in_z(list/areas, list/area_floors)
 	for(var/B in areas)
 		var/area/A = B
-		A.reg_in_areas_in_z()
+		var/list/floors = area_floors?[A]
+		if(floors)
+			A.reg_on_floors(floors)
+		else
+			A.reg_in_areas_in_z()
 
 /datum/controller/subsystem/mapping/proc/get_isolated_ruin_z()
 	if(!isolated_ruins_z)

@@ -734,9 +734,11 @@ GLOBAL_LIST_EMPTY(cached_icon_states_by_file)
 /// `icon_states()` but memoised for icon *files*. Runtime `/icon` datums have
 /// unstable refs (GC reuse) so those fall through to an uncached lookup.
 /proc/cached_icon_states(icon_file, mode = 0)
-	if(!icon_file || istype(icon_file, /icon))
+	var/file_name = "[icon_file]"
+	// A runtime icon assigned to an appearance becomes an unnamed resource, so every one shares the key.
+	if(!length(file_name) || istype(icon_file, /icon))
 		return icon_states(icon_file, mode)
-	var/key = "[icon_file]|[mode]"
+	var/key = "[file_name]|[mode]"
 	. = GLOB.cached_icon_states_by_file[key]
 	if(isnull(.))
 		. = icon_states(icon_file, mode)
@@ -756,12 +758,13 @@ GLOBAL_LIST_EMPTY(cached_icon_state_directional)
 	var/static/list/checkdirs = list(NORTH, EAST, WEST)
 	if(!icon_file)
 		return FALSE
-	if(istype(icon_file, /icon)) // runtime /icon datums: unstable refs, compute every time
+	var/file_name = "[icon_file]"
+	if(!length(file_name) || istype(icon_file, /icon))
 		for(var/checkdir in checkdirs)
 			if(length(icon_states(icon(icon_file, icon_state, checkdir))))
 				return TRUE
 		return FALSE
-	var/key = "[icon_file]|[icon_state]"
+	var/key = "[file_name]|[icon_state]"
 	. = GLOB.cached_icon_state_directional[key]
 	if(!isnull(.))
 		return .
@@ -1264,23 +1267,29 @@ GLOBAL_LIST_EMPTY(humanoid_icon_cache)
 		if(prefs)
 			prefs.copy_to(body,TRUE,FALSE)
 			CHECK_TICK
+		// Закрытие интерфейса может удалить манекен, пока генерация уступает тик.
+		if(QDELETED(body))
+			return icon('icons/effects/effects.dmi', "nothing")
 		if(J)
 			J.equip(body, TRUE, FALSE, outfit_override = outfit_override)
 			CHECK_TICK
 		else if (outfit_override)
 			body.equipOutfit(outfit_override,visualsOnly = TRUE)
 			CHECK_TICK
+		if(QDELETED(body))
+			return icon('icons/effects/effects.dmi', "nothing")
 
 		// Синхронизация превью моба, без этого именно эти части почему-то ломает. Костыль.
 		body.update_body(update_genitals = TRUE)
 		body.update_hair()
 		body.update_mutations_overlay()
 		CHECK_TICK
+		if(QDELETED(body))
+			return icon('icons/effects/effects.dmi', "nothing")
 
-		// Манекен на время съёмки остаётся занятым, но остальные вызывающие и так
-		// ждут его на in_use. Дирекцию не форсируем: манекен всегда смотрит на юг,
-		// и getFlatIcon возьмёт запрошенную.
-		var/icon/out_icon = build_flat_multidir_icon(body, showDirs, no_anim)
+		// Снимок переживает удаление манекена между кадрами. Дирекцию сохраняем:
+		// манекен смотрит на юг, и getFlatIcon сам возьмёт запрошенную.
+		var/icon/out_icon = build_flat_multidir_icon(body, showDirs, no_anim, snapshot_appearance = body.appearance)
 
 		// Без ключа кэшировать нечего: запись легла бы под индекс null, куда ни один
 		// lookup не придёт, зато вытесняла бы настоящие записи при переполнении.
@@ -1288,7 +1297,12 @@ GLOBAL_LIST_EMPTY(humanoid_icon_cache)
 			GLOB.humanoid_icon_cache[icon_id] = out_icon
 			if(length(GLOB.humanoid_icon_cache) > HUMANOID_ICON_CACHE_MAX)
 				GLOB.humanoid_icon_cache.Cut(1, (HUMANOID_ICON_CACHE_MAX / 4) + 1) // Evict oldest 25%
-		dummy_key? unset_busy_human_dummy(dummy_key) : qdel(body)
+		if(dummy_key)
+			// Пока снимались кадры, старый манекен могли удалить и заменить в том же слоте.
+			if(GLOB.human_dummy_list[dummy_key] == body)
+				unset_busy_human_dummy(dummy_key)
+		else
+			qdel(body)
 		return out_icon
 	else
 		return GLOB.humanoid_icon_cache[icon_id]

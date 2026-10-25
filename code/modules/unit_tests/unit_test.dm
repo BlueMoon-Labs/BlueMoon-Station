@@ -168,6 +168,13 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 		instance = new type(arglist(arguments))
 	else
 		instance = new type()
+	// Моб теста без клиента иначе SSD с начала мира: в долгом прогоне автокрио удаляет его посреди теста.
+	if(isliving(instance))
+		var/mob/living/allocated_living = instance
+		allocated_living.lastclienttime = world.time
+	else if(isobserver(instance))
+		var/mob/dead/observer/allocated_ghost = instance
+		allocated_ghost.lastclienttime = world.time
 	allocated += instance
 	return instance
 

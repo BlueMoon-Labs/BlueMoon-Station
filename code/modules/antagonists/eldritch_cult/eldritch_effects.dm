@@ -751,7 +751,7 @@
 	for(var/obj/effect/reality_smash/influence in smashes)
 		influence.harvested_minds -= source
 		influence.harvesting_minds -= source
-	for(var/datum/antagonist/heretic/heretic in GLOB.antagonists)
+	for(var/datum/antagonist/heretic/heretic in GLOB.antagonists + GLOB.antag_training_unlisted_antagonists)
 		heretic.sacrificed_minds -= source
 		if(heretic.hunt_target == source)
 			heretic.set_hunt_target(null)

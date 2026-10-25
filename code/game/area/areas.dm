@@ -352,6 +352,23 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 			areas_in_z["[floor_z]"] = on_z
 		on_z |= src
 
+/// Дописывает в areas_in_z z новых клеток области. Уже зарегистрированную область не пересчитывает: у космоса это обход миллиона клеток на каждый шаблон.
+/area/proc/reg_on_floors(list/floors)
+	if(isnull(z_levels))
+		reg_in_areas_in_z()
+		return
+	update_areasize()
+	var/list/areas_in_z = SSmapping.areas_in_z
+	for(var/floor_z in floors)
+		if(floor_z in z_levels)
+			continue
+		z_levels += floor_z
+		var/list/on_z = areas_in_z["[floor_z]"]
+		if(!on_z)
+			on_z = list()
+			areas_in_z["[floor_z]"] = on_z
+		on_z |= src
+
 /// Снимает область из SSmapping.areas_in_z под всеми z, где она стояла.
 /area/proc/unreg_from_areas_in_z()
 	if(!z_levels)

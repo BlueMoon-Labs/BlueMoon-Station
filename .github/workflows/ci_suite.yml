@@ -10,6 +10,23 @@ on:
     - master
     - upstream-merge
 jobs:
+  nanomaps_debian:
+    if: ( !contains(github.event.head_commit.message, '[ci skip]') )
+    name: NanoMaps on Debian 12
+    runs-on: ubuntu-24.04
+    container: debian:12
+    env:
+      TG_BOOTSTRAP_NODE_LINUX: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install renderer build dependencies
+        run: |
+          apt-get update
+          apt-get install -y ca-certificates curl git build-essential pkg-config cmake xz-utils
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal
+      - name: Build and run NanoMap on Debian 12
+        run: |
+          tools/bootstrap/node -e 'require("./tools/nanomaps/renderer.cjs").ensureRenderer().then(renderer => { const run = require("node:child_process").execFileSync; run(renderer, ["map-info", "--json", "_maps/map_files/debug/runtimestation_minimal.dmm"], { stdio: "inherit" }); run(renderer, ["-e", "tgstation.dme", "minimap", "--enable", "nanomaps", "--disable", "icon-smoothing", "--width", "120", "--height", "208", "_maps/map_files/debug/runtimestation_minimal.dmm"], { stdio: "inherit" }); }).catch(error => { console.error(error); process.exitCode = 1; })'
   run_linters:
     if: ( !contains(github.event.head_commit.message, '[ci skip]') )
     name: Run Linters
@@ -36,6 +53,12 @@ jobs:
           bash tools/ci/install_node.sh
           bash tools/ci/install_spaceman_dmm.sh dreamchecker
           tools/bootstrap/python -c ''
+      - name: Generate NanoMaps
+        run: tools/build/build nanomaps
+      - name: Test NanoMaps
+        run: |
+          tools/bootstrap/node --test tools/nanomaps/ci.test.cjs
+          git diff --exit-code -- code/modules/asset_cache/assets/nanomaps.dm
       - name: Run Linters
         run: |
           bash tools/ci/check_filedirs.sh tgstation.dme

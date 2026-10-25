@@ -31,7 +31,7 @@
 			if(position.z == jammer_turf.z && (get_dist(position, jammer_turf) < jammer.range))
 				jammed = TRUE
 				break
-		if(!jammed && !emagged)	// Джаммер, или емаг акт полностью блокирует оповещения о смерти юнитов
+		if(!jammed && !emagged && !training_origin)	// Джаммер, емаг или полигон полностью блокируют оповещения о смерти юнитов
 			var/obj/machinery/announcement_system/AAS = null	// AAS my beloved
 			for(var/obj/machinery/announcement_system/S in GLOB.announcement_systems)
 				if(is_station_level(S.z) && S.is_operational())	// Проверка существующей на уровне станции рабочей системы оповещений
@@ -57,4 +57,5 @@
 
 	unbuckle_all_mobs(TRUE)
 
-	SSblackbox.ReportDeath(src)
+	if(!training_origin)
+		SSblackbox.ReportDeath(src)

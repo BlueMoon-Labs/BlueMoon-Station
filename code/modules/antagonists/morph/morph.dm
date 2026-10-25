@@ -93,6 +93,8 @@
 	return bonus
 
 /mob/living/simple_animal/hostile/morph/proc/eat(atom/movable/A)
+	if(training_eat_refused(A))
+		return FALSE
 	if(morphed && !eat_while_disguised)
 		to_chat(src, "<span class='warning'>You can not eat anything while you are disguised!</span>")
 		return FALSE

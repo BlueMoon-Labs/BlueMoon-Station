@@ -1,6 +1,6 @@
 GLOBAL_LIST_INIT(uplink_items, subtypesof(/datum/uplink_item))
 
-/proc/get_uplink_items(uplink_flag, allow_sales = TRUE, allow_restricted = TRUE)
+/proc/get_uplink_items(uplink_flag, allow_sales = TRUE, allow_restricted = TRUE, ignore_player_minimum = FALSE)
 	var/list/filtered_uplink_items = list()
 	var/list/sale_items = list()
 
@@ -10,7 +10,7 @@ GLOBAL_LIST_INIT(uplink_items, subtypesof(/datum/uplink_item))
 			continue
 		if (!(I.purchasable_from & uplink_flag))
 			continue
-		if(I.player_minimum && I.player_minimum > GLOB.joined_player_list.len)
+		if(!ignore_player_minimum && I.player_minimum && I.player_minimum > GLOB.joined_player_list.len)
 			continue
 		if (I.restricted && !allow_restricted)
 			continue

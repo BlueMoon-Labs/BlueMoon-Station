@@ -515,7 +515,7 @@
 //////////////Gang mode stuff/////////////////
 /obj/item/toy/crayon/proc/can_claim_for_gang(mob/user, atom/target)
 	var/area/A = get_area(target)
-	if(!A || (!is_station_level(A.z)))
+	if(!A || (!is_station_level(A.z) && !(istype(A, /area/antag_training) && (A.area_flags & VALID_TERRITORY))))
 		to_chat(user, "<span class='warning'>[A] is unsuitable for tagging.</span>")
 		return FALSE
 

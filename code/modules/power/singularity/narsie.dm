@@ -55,7 +55,7 @@
 	GLOB.cult_narsie = src
 	var/list/all_cults = list()
 	for(var/datum/antagonist/cult/C in GLOB.antagonists)
-		if(!C.owner)
+		if(!C.owner || istype(C, /datum/antagonist/cult/training))
 			continue
 		if(C.cult_team)
 			all_cults |= C.cult_team

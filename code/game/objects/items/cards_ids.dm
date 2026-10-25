@@ -349,6 +349,10 @@
 	if(bank_support != ID_FREE_BANK_ACCOUNT)
 		to_chat(user, "<span class='warning'>Эта ID-карта не имеет модульного банковского счета. Должно быть, устаревшая модель...</span>")
 		return
+	var/refusal = training_bank_refusal()
+	if(refusal)
+		to_chat(user, span_warning(refusal))
+		return
 	. = FALSE
 	var/datum/bank_account/old_account = registered_account
 
@@ -1017,6 +1021,11 @@
 
 /obj/item/card/id/departmental_budget/Initialize(mapload)
 	. = ..()
+	if(is_antag_training_atom(src))
+		name = "departmental card ([department_name])"
+		desc = "Учебная карта отдела: к бюджету станции не привязана, деньги на неё не кладутся и с неё не уходят."
+		icon_state = "[lowertext(department_ID)]_budget"
+		return
 	var/datum/bank_account/B = SSeconomy.get_dep_account(department_ID)
 	if(B)
 		registered_account = B

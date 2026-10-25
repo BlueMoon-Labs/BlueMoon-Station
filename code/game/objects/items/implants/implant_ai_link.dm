@@ -53,7 +53,7 @@
 	if(istype(W, /obj/item/multitool))
 		var/list/available_ais = list()
 		for(var/mob/living/silicon/ai/AI in GLOB.silicon_mobs)
-			if(AI.stat != DEAD)
+			if(AI.stat != DEAD && is_antag_training_atom(AI) == is_antag_training_atom(src))
 				available_ais[AI.name] = AI
 		if(!available_ais.len)
 			to_chat(user, "<span class='warning'>Активные ИИ не найдены.</span>")
@@ -78,7 +78,7 @@
 	if(active || QDELETED(linked_ai))
 		var/list/active_ais = list()
 		for(var/mob/living/silicon/ai/AI in GLOB.silicon_mobs)
-			if(AI.stat != DEAD)
+			if(AI.stat != DEAD && is_antag_training_atom(AI) == is_antag_training_atom(owner))
 				active_ais += AI
 		if(active_ais.len == 1)
 			linked_ai = active_ais[1]

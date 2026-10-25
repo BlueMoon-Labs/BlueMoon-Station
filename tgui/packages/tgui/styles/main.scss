@@ -61,6 +61,8 @@
 @include meta.load-css('./interfaces/NtosMinesweeper.scss');
 @include meta.load-css('./interfaces/NtosMessenger.scss');
 @include meta.load-css('./interfaces/CrewManifest.scss');
+@include meta.load-css('./interfaces/CrewConsole.scss');
+@include meta.load-css('./interfaces/StationMinimap.scss');
 @include meta.load-css('./interfaces/ExperimentConfigure.scss');
 @include meta.load-css('./interfaces/NuclearBomb.scss');
 @include meta.load-css('./interfaces/Paper.scss');

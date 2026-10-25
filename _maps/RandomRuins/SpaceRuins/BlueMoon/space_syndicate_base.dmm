@@ -6953,6 +6953,8 @@
 	},
 /obj/structure/rack/shelf,
 /obj/item/pickaxe/drill/jackhammer,
+/obj/item/xenoarch/help/cargo/ds,
+/obj/item/xenoarch/help/cargo/ds,
 /turf/open/floor/plasteel/dark/smooth/small,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/cargo)
 "By" = (
