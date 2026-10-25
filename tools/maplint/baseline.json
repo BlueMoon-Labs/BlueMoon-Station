@@ -483,8 +483,18 @@
 		}
 	},
 	"_maps/RandomZLevels/away_mission/undergroundoutpost45.dmm": {
-		"dmm_parse": {
-			"": 1
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 13
+		},
+		"multiple_grilles": {
+			"/obj/structure/grille/broken": 2
+		},
+		"smartfridges_in_walls": {
+			"/obj/machinery/smartfridge": 1
+		},
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window": 1,
+			"/obj/effect/spawner/structure/window/reinforced": 2
 		}
 	},
 	"_maps/RandomZLevels/away_mission/wildwest.dmm": {
@@ -505,11 +515,6 @@
 		},
 		"window_spawner": {
 			"/obj/effect/spawner/structure/window/hollow/reinforced/directional": 7
-		}
-	},
-	"_maps/RuinGeneration/17x17_inteq_outpost.dmm": {
-		"dmm_parse": {
-			"": 1
 		}
 	},
 	"_maps/RuinGeneration/49x47_autism.dmm": {
@@ -650,15 +655,9 @@
 		"barricade_stacking": {
 			"/obj/structure/barricade/wooden": 10
 		},
-		"identical_disposal_pipes": {
-			"/obj/structure/disposalpipe/segment": 2
-		},
 		"identical_pipes": {
 			"/obj/machinery/atmospherics/pipe/simple/cyan/visible": 2,
 			"/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4": 2
-		},
-		"multiple_firelocks": {
-			"/obj/machinery/door/firedoor": 2
 		},
 		"multiple_lattice": {
 			"/obj/structure/lattice": 8,
@@ -667,7 +666,6 @@
 		"multiple_machinery": {
 			"/obj/machinery/atmospherics/pipe/simple/cyan/visible": 2,
 			"/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4": 2,
-			"/obj/machinery/door/firedoor": 2,
 			"/obj/machinery/door/firedoor/heavy": 2,
 			"/obj/machinery/door/poddoor/preopen": 2,
 			"/obj/machinery/door/poddoor/shutters/preopen": 2,
@@ -693,21 +691,14 @@
 		"barricade_stacking": {
 			"/obj/structure/barricade/wooden": 10
 		},
-		"identical_disposal_pipes": {
-			"/obj/structure/disposalpipe/segment": 4
-		},
 		"multiple_closets": {
 			"/obj/structure/closet/crate": 2
-		},
-		"multiple_firelocks": {
-			"/obj/machinery/door/firedoor": 2
 		},
 		"multiple_lattice": {
 			"/obj/structure/lattice": 8,
 			"/obj/structure/lattice/catwalk": 2
 		},
 		"multiple_machinery": {
-			"/obj/machinery/door/firedoor": 2,
 			"/obj/machinery/door/poddoor/shutters/preopen": 2,
 			"/obj/machinery/light/floor": 2,
 			"/obj/machinery/suit_storage_unit/standard_unit": 2
@@ -734,16 +725,9 @@
 		"disposals_without_trunks": {
 			"/obj/machinery/disposal/bin": 3
 		},
-		"identical_disposal_pipes": {
-			"/obj/structure/disposalpipe/segment": 2
-		},
-		"multiple_firelocks": {
-			"/obj/machinery/door/firedoor": 10
-		},
 		"multiple_machinery": {
 			"/obj/machinery/atmospherics/components/binary/valve/digital": 2,
-			"/obj/machinery/computer/cargo/request": 2,
-			"/obj/machinery/door/firedoor": 10
+			"/obj/machinery/computer/cargo/request": 2
 		},
 		"multiple_tables": {
 			"/obj/structure/table": 4,
@@ -761,12 +745,6 @@
 	"_maps/map_files/Deltastation/DeltaStation2.dmm": {
 		"barricade_stacking": {
 			"/obj/structure/barricade/wooden": 38
-		},
-		"disposals_without_trunks": {
-			"/obj/machinery/disposal/bin": 1
-		},
-		"identical_disposal_pipes": {
-			"/obj/structure/disposalpipe/segment": 4
 		},
 		"multiple_lattice": {
 			"/obj/structure/lattice": 9,
@@ -796,9 +774,6 @@
 		"grille_stacking": {
 			"/obj/structure/grille": 12
 		},
-		"identical_disposal_pipes": {
-			"/obj/structure/disposalpipe/segment": 2
-		},
 		"identical_pipes": {
 			"/obj/machinery/atmospherics/pipe/heat_exchanging/junction": 2
 		},
@@ -808,12 +783,8 @@
 			"/obj/structure/chair/office/dark": 1,
 			"/obj/structure/chair/sofa/left/brown": 1
 		},
-		"multiple_firelocks": {
-			"/obj/machinery/door/firedoor": 8
-		},
 		"multiple_machinery": {
 			"/obj/machinery/atmospherics/pipe/heat_exchanging/junction": 2,
-			"/obj/machinery/door/firedoor": 8,
 			"/obj/machinery/door/poddoor/shutters": 4,
 			"/obj/machinery/door/poddoor/shutters/preopen": 2
 		},
@@ -833,17 +804,10 @@
 		"barricade_stacking": {
 			"/obj/structure/barricade/wooden": 2
 		},
-		"identical_disposal_pipes": {
-			"/obj/structure/disposalpipe/segment": 2
-		},
-		"multiple_firelocks": {
-			"/obj/machinery/door/firedoor": 2
-		},
 		"multiple_lattice": {
 			"/obj/structure/lattice": 4
 		},
 		"multiple_machinery": {
-			"/obj/machinery/door/firedoor": 2,
 			"/obj/machinery/iv_drip": 2
 		},
 		"multiple_turf": {
@@ -869,17 +833,10 @@
 		"grille_stacking": {
 			"/obj/structure/grille": 2
 		},
-		"identical_disposal_pipes": {
-			"/obj/structure/disposalpipe/trunk": 2
-		},
-		"multiple_firelocks": {
-			"/obj/machinery/door/firedoor": 2
-		},
 		"multiple_lattice": {
 			"/obj/structure/lattice": 38
 		},
 		"multiple_machinery": {
-			"/obj/machinery/door/firedoor": 2,
 			"/obj/machinery/iv_drip": 4
 		},
 		"multiple_tables": {
@@ -903,7 +860,7 @@
 	},
 	"_maps/map_files/Mining/Lavaland.dmm": {
 		"disposals_without_trunks": {
-			"/obj/machinery/disposal/bin": 5
+			"/obj/machinery/disposal/bin": 4
 		},
 		"grille_stacking": {
 			"/obj/structure/grille": 3
@@ -911,16 +868,12 @@
 		"identical_pipes": {
 			"/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4": 8
 		},
-		"multiple_firelocks": {
-			"/obj/machinery/door/firedoor": 6
-		},
 		"multiple_lattice": {
 			"/obj/structure/lattice": 48,
 			"/obj/structure/lattice/catwalk": 12
 		},
 		"multiple_machinery": {
 			"/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4": 8,
-			"/obj/machinery/door/firedoor": 6,
 			"/obj/machinery/door/poddoor/preopen": 6,
 			"/obj/machinery/light": 2
 		},
@@ -988,9 +941,6 @@
 		"grille_stacking": {
 			"/obj/structure/grille": 2
 		},
-		"identical_disposal_pipes": {
-			"/obj/structure/disposalpipe/segment": 4
-		},
 		"multiple_lattice": {
 			"/obj/structure/lattice": 3,
 			"/obj/structure/lattice/catwalk": 1
@@ -1015,11 +965,7 @@
 		}
 	},
 	"_maps/map_files/SmolStation/SmolStation.dmm": {
-		"multiple_firelocks": {
-			"/obj/machinery/door/firedoor": 2
-		},
 		"multiple_machinery": {
-			"/obj/machinery/door/firedoor": 2,
 			"/obj/machinery/field/generator": 12,
 			"/obj/machinery/power/emitter": 2,
 			"/obj/machinery/shieldgen": 12
@@ -1039,15 +985,11 @@
 		"disposals_without_trunks": {
 			"/obj/machinery/disposal/bin": 1
 		},
-		"multiple_firelocks": {
-			"/obj/machinery/door/firedoor": 2
-		},
 		"multiple_lattice": {
 			"/obj/structure/lattice": 18,
 			"/obj/structure/lattice/catwalk": 4
 		},
 		"multiple_machinery": {
-			"/obj/machinery/door/firedoor": 2,
 			"/obj/machinery/portable_atmospherics/canister/oxygen": 2
 		},
 		"smartfridges_in_walls": {
@@ -1069,15 +1011,7 @@
 		"barricade_stacking": {
 			"/obj/structure/barricade/wooden": 12
 		},
-		"identical_disposal_pipes": {
-			"/obj/structure/disposalpipe/segment": 20,
-			"/obj/structure/disposalpipe/trunk/multiz/down": 2
-		},
-		"multiple_firelocks": {
-			"/obj/machinery/door/firedoor": 6
-		},
 		"multiple_machinery": {
-			"/obj/machinery/door/firedoor": 6,
 			"/obj/machinery/door/poddoor/preopen": 2,
 			"/obj/machinery/power/deck_relay": 6
 		},
@@ -1182,16 +1116,12 @@
 			"/obj/structure/barricade/wooden": 5,
 			"/obj/structure/barricade/wooden/snowed": 12
 		},
-		"multiple_firelocks": {
-			"/obj/machinery/door/firedoor": 32
-		},
 		"multiple_lattice": {
 			"/obj/structure/lattice": 1,
 			"/obj/structure/lattice/catwalk": 9
 		},
 		"multiple_machinery": {
 			"/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2": 2,
-			"/obj/machinery/door/firedoor": 24,
 			"/obj/machinery/power/apc/auto_name/north": 4
 		},
 		"multiple_tables": {
