@@ -545,11 +545,16 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 /// Roundstart callbacks run before ticker flips to PLAYING and PostSetup is
 /// asynchronous. Poll those explicit readiness conditions instead of sleeping
 /// an arbitrary ten seconds before every test run.
+/// SSorbits.post_load_init() before PostSetup alone takes about 4.5 minutes of game time on Layenia.
 /proc/RunUnitTestsWhenReady(deadline)
 	if(isnull(deadline))
-		deadline = world.time + 2 MINUTES
+		deadline = world.time + 10 MINUTES
 	if(world.time > deadline)
-		CRASH("Unit test round bootstrap did not finish ticker PostSetup within two minutes")
+		// Nothing else would end this round: fail the run and reboot instead of waiting forever.
+		GLOB.failed_any_test = TRUE
+		log_test("FAIL: unit test round bootstrap did not finish ticker PostSetup within ten minutes")
+		SSticker.Reboot("Unit test round bootstrap timed out", "unit test timeout", 1)
+		CRASH("Unit test round bootstrap did not finish ticker PostSetup within ten minutes")
 	if(!SSticker.HasRoundStarted() || !SSticker.setup_done)
 		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(RunUnitTestsWhenReady), deadline), world.tick_lag)
 		return
