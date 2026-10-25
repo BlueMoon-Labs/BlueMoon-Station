@@ -1793,15 +1793,37 @@ li {
 }
 
 .vote-hint {
-	margin-top: 8px;
-	padding-top: 6px;
-	border-top: 1px solid rgba(0, 0, 0, 0.12);
-	color: #6b7684;
-	font-size: 12px;
+  position: relative;
+  margin-top: 8px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.035);
+  color: #1f262e;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.05s ease;
+  user-select: none;
 }
 
 .vote-hint a {
-	color: #0093c4;
+  color: inherit;
+  text-decoration: none;
+}
+
+.vote-hint a::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.vote-hint:hover {
+  background: rgba(0, 0, 0, 0.07);
+}
+
+.vote-hint:active {
+  transform: translateY(1px);
 }
 
 .vote-name {
