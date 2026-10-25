@@ -95,6 +95,8 @@
 /datum/signal/subspace/vocal
 	var/atom/movable/virtualspeaker/virt
 	var/datum/language/language
+	/// Сигнал с тренировочного полигона слышат только радио полигона, сигнал со станции - только радио вне его.
+	var/from_antag_training = FALSE
 
 /datum/signal/subspace/vocal/New(
 	obj/source,  // the originating radio
@@ -119,12 +121,14 @@
 	)
 	var/turf/T = get_turf(source)
 	levels = T ? SSmapping.get_connected_levels(T).Copy() : list(0)
+	from_antag_training = length(GLOB.antag_training_z) && is_antag_training_atom(source)
 
 /datum/signal/subspace/vocal/copy()
 	var/datum/signal/subspace/vocal/copy = new(source, frequency, virt, language)
 	copy.original = src
 	copy.data = data.Copy()
 	copy.levels = levels
+	copy.from_antag_training = from_antag_training
 	return copy
 
 // This is the meat function for making radios hear vocal transmissions.
@@ -189,6 +193,13 @@
 			radio_z[1] = R.z
 			if(R.can_receive(FREQ_DS2, radio_z))
 				radios |= R
+
+	if(length(GLOB.antag_training_z))
+		var/list/kept_radios = list()
+		for(var/obj/item/radio/radio as anything in radios)
+			if(is_antag_training_atom(radio) == from_antag_training)
+				kept_radios += radio
+		radios = kept_radios
 
 	// From the list of radios, find all mobs who can hear those.
 	var/list/receive = get_mobs_in_radio_ranges(radios)

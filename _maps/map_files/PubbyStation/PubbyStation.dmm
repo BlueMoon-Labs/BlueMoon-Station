@@ -6074,7 +6074,7 @@
 	roundstart_template = /datum/map_template/shuttle/escape_pod/large;
 	shuttle_id = "monastery_shuttle_station";
 	width = 5;
-	enforce_specific_pod = TRUE
+	enforce_specific_pod = 1
 	},
 /turf/open/space/basic,
 /area/space)
@@ -16943,7 +16943,6 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
-/obj/structure/disposalpipe/segment,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /turf/open/floor/plating,
 /area/maintenance/department/crew_quarters/bar)
@@ -63530,9 +63529,6 @@
 	},
 /obj/structure/cable{
 	icon_state = "4-8"
-	},
-/obj/structure/disposalpipe/segment{
-	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4

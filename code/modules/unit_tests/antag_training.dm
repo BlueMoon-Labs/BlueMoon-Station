@@ -1,10 +1,20 @@
 #define ANTAG_TRAINING_PATH_PARTS 4
+/// Арена закрывается по ANTAG_TRAINING_CLOSE_BUDGET_MS мс работы за тик, поэтому число тиков растёт с загрузкой машины.
+#define ANTAG_TRAINING_CLOSE_WAIT (1 MINUTES)
+/// Постройка и очистка арены тратят один бюджет yield_work, поэтому их отношение в одном мире не зависит от загрузки машины.
+#define ANTAG_TRAINING_CLEANUP_RATIO 2
 
-/datum/unit_test/proc/allocate_training_session(program_type = /datum/antag_training_program/heretic, datum/preferences/selected_preferences)
+/datum/unit_test/proc/training_close_budget()
+	return "за [ANTAG_TRAINING_CLOSE_WAIT / (1 SECONDS)] с мирового времени при бюджете очистки [ANTAG_TRAINING_CLOSE_BUDGET_MS] мс за тик"
+
+/datum/unit_test/proc/wait_for_closing_training_arenas()
 	for(var/code in GLOB.antag_training_arenas.Copy())
 		var/datum/antag_training_arena/closing = GLOB.antag_training_arenas[code]
 		if(closing?.finished)
-			wait_for_qdeleted(closing, 1 MINUTES)
+			wait_for_qdeleted(closing, ANTAG_TRAINING_CLOSE_WAIT)
+
+/datum/unit_test/proc/allocate_training_session(program_type = /datum/antag_training_program/heretic, datum/preferences/selected_preferences)
+	wait_for_closing_training_arenas()
 	var/datum/antag_training_session/session = new(program_type, selected_preferences)
 	allocated += session
 	return session
@@ -107,7 +117,7 @@
 	TEST_ASSERT_EQUAL(returned.mind, original_mind, "Выход сохраняет ссылку на исходный разум.")
 	TEST_ASSERT(!returned.can_reenter_corpse && !returned.started_as_observer, "Нельзя обойти запрет возвращения в тело.")
 	TEST_ASSERT_EQUAL(get_turf(returned), run_loc_floor_bottom_left, "Возвращается прежняя точка наблюдения.")
-	TEST_ASSERT(wait_for_qdeleted(arena, 1 MINUTES), "Очистка полигона завершается.")
+	TEST_ASSERT(wait_for_qdeleted(arena, ANTAG_TRAINING_CLOSE_WAIT), "Очистка полигона завершается [training_close_budget()].")
 	TEST_ASSERT(QDELETED(session) && QDELETED(arena) && QDELETED(training_mind) && QDELETED(item), "Выход последнего удаляет полигон и его содержимое.")
 	TEST_ASSERT_EQUAL(GLOB.antag_training_rooms[level], practice_room, "Область сохраняется в ограниченном пуле своего уровня.")
 	TEST_ASSERT(!practice_room.arena && !length(practice_room.contents), "Свободная область не держит сеанс или клетки карты.")
@@ -126,9 +136,9 @@
 	target.forceMove(run_loc_floor_bottom_left)
 	item.forceMove(run_loc_floor_bottom_left)
 	session.avatar.forceMove(run_loc_floor_bottom_left)
-	TEST_ASSERT_EQUAL(get_area(target), arena.room, "Манекен остаётся внутри.")
-	TEST_ASSERT_EQUAL(get_area(item), arena.room, "Предмет остаётся внутри.")
-	TEST_ASSERT_EQUAL(get_area(session.avatar), arena.room, "Участник остаётся внутри.")
+	TEST_ASSERT(arena.owns_area(get_area(target)), "Манекен остаётся внутри.")
+	TEST_ASSERT(arena.owns_area(get_area(item)), "Предмет остаётся внутри.")
+	TEST_ASSERT(arena.owns_area(get_area(session.avatar)), "Участник остаётся внутри.")
 	container.moveToNullspace()
 	var/obj/item/pen/late_nested = new(null)
 	late_nested.loc = container
@@ -150,30 +160,52 @@
 	TEST_ASSERT_EQUAL(session.avatar_mind.current, session.avatar, "Учебный разум не переносится на станцию.")
 	var/mob/dead/observer/observer = allocate(/mob/dead/observer)
 	TEST_ASSERT(isobserver(observer), "Фикстура должна быть наблюдателем.")
-	TEST_ASSERT(get_area(observer) != arena.room, "Призрак создан вне полигона.")
+	TEST_ASSERT(!arena.owns_area(get_area(observer)), "Призрак создан вне полигона.")
 	TEST_ASSERT_EQUAL(arena.room.arena, arena, "Комната сохраняет своего владельца.")
 	TEST_ASSERT(GLOB.antag_training_arenas[arena.code] == arena, "Полигон зарегистрирован до последнего выхода.")
 	TEST_ASSERT(observer.training_move_allowed(arena.entry_turf), "Призрак может наблюдать за тренировкой.")
 	observer.forceMove(arena.entry_turf)
-	TEST_ASSERT_EQUAL(get_area(observer), arena.room, "Наблюдатель находится внутри.")
+	TEST_ASSERT(arena.owns_area(get_area(observer)), "Наблюдатель находится внутри.")
 	TEST_ASSERT_NULL(observer.training_origin, "Наблюдение не привязывает призрака к полигону.")
 	observer.abstract_move(run_loc_floor_bottom_left)
 	TEST_ASSERT_EQUAL(get_turf(observer), run_loc_floor_bottom_left, "Призрак свободно покидает полигон.")
 	observer.ManualFollow(session.current_body)
-	TEST_ASSERT_EQUAL(get_area(observer), arena.room, "Следование за участником доступно.")
+	TEST_ASSERT(arena.owns_area(get_area(observer)), "Следование за участником доступно.")
 	var/mob/camera/camera = allocate(/mob/camera)
 	camera.forceMove(arena.entry_turf)
-	TEST_ASSERT(get_area(camera) != arena.room, "Удалённая камера не входит на полигон.")
+	TEST_ASSERT(!arena.owns_area(get_area(camera)), "Удалённая камера не входит на полигон.")
 	var/mob/dead/observer/inside_observer = allocate(/mob/dead/observer, arena.entry_turf)
-	TEST_ASSERT_EQUAL(get_area(inside_observer), arena.room, "Наблюдателя можно создать внутри полигона.")
+	TEST_ASSERT(arena.owns_area(get_area(inside_observer)), "Наблюдателя можно создать внутри полигона.")
 	TEST_ASSERT(!(arena.room.area_flags & NOTELEPORT), "Внутренние телепорты разрешены.")
-	TEST_ASSERT(arena.room.area_flags & RADIO_BLACKOUT, "Радио изолировано.")
+	TEST_ASSERT(!(arena.room.area_flags & RADIO_BLACKOUT) && arena.relay?.z == arena.private_level.z_value, "Связь полигона идёт через учебный ретранслятор; изоляцию от станции проверяет antag_training_role_radio.")
 	TEST_ASSERT(!SSmapping.level_trait(arena.private_level.z_value, ZTRAIT_RESERVED), "Чужие резервирования не используют тренировочный z.")
 	qdel(session)
-	TEST_ASSERT(wait_for_qdeleted(arena, 10 SECONDS), "Очистка полигона завершается.")
+	TEST_ASSERT(wait_for_qdeleted(arena, ANTAG_TRAINING_CLOSE_WAIT), "Очистка полигона завершается [training_close_budget()].")
 	TEST_ASSERT(!QDELETED(observer) && !QDELETED(inside_observer), "Очистка не удаляет наблюдателей.")
-	TEST_ASSERT(get_area(inside_observer) != arena.room, "После закрытия наблюдатель возвращается на станцию.")
+	TEST_ASSERT(!arena.owns_area(get_area(inside_observer)), "После закрытия наблюдатель возвращается на станцию.")
 	TEST_ASSERT(QDELETED(container) && QDELETED(nested) && QDELETED(late_nested), "Очистка находит содержимое в nullspace.")
+
+/// Изоляция проверяет только перемещения, касающиеся уровня полигона; после закрытия гейт снят со всех уровней.
+/datum/unit_test/antag_training_level_gate/Run()
+	var/datum/antag_training_session/session = allocate_training_session(/datum/antag_training_program/free)
+	TEST_ASSERT(session.prepare(), "Полигон должен подготовиться.")
+	var/datum/antag_training_arena/arena = session.arena
+	var/obj/item/pen/outsider = allocate(/obj/item/pen, run_loc_floor_bottom_left)
+	var/turf/station_step = get_step(run_loc_floor_bottom_left, NORTH)
+	var/turf/arena_turf = arena.entry_turf
+	TEST_ASSERT(ANTAG_TRAINING_MOVE_GATED(outsider, arena_turf), "Вход на полигон проверяется.")
+	TEST_ASSERT(!ANTAG_TRAINING_MOVE_GATED(outsider, station_step), "Перемещение по станции не проверяет изоляцию.")
+	outsider.forceMove(arena_turf)
+	TEST_ASSERT_EQUAL(get_turf(outsider), run_loc_floor_bottom_left, "Посторонний предмет не входит на полигон.")
+	TEST_ASSERT(outsider.forceMove(station_step), "По станции предмет перемещается свободно.")
+	var/obj/item/storage/backpack/carried_bag = new(arena_turf)
+	TEST_ASSERT(session.avatar.put_in_hands(carried_bag), "Участник берёт рюкзак в руки.")
+	outsider.forceMove(carried_bag)
+	TEST_ASSERT_EQUAL(outsider.loc, station_step, "Посторонний предмет не попадает в рюкзак участника.")
+	qdel(session)
+	TEST_ASSERT(wait_for_qdeleted(arena, ANTAG_TRAINING_CLOSE_WAIT), "Полигон закрывается [training_close_budget()].")
+	TEST_ASSERT_EQUAL(length(GLOB.antag_training_z), 0, "После закрытия гейт снят со всех уровней.")
+	TEST_ASSERT(!ANTAG_TRAINING_MOVE_GATED(outsider, arena_turf), "Освобождённый уровень не проверяется.")
 
 /// Вход без кода использует общий полигон, личная смена роли не затрагивает других.
 /datum/unit_test/antag_training_multiplayer/Run()
@@ -191,7 +223,7 @@
 	qdel(first)
 	TEST_ASSERT(!QDELETED(shared) && !QDELETED(second_body), "Выход одного сохраняет общую тренировку.")
 	qdel(second)
-	TEST_ASSERT(wait_for_qdeleted(shared, 10 SECONDS), "Последний выход удаляет полигон.")
+	TEST_ASSERT(wait_for_qdeleted(shared, ANTAG_TRAINING_CLOSE_WAIT), "Последний выход удаляет полигон [training_close_budget()].")
 	TEST_ASSERT_EQUAL(length(GLOB.antagonist_teams), initial_teams, "Учебные роли не создают общие команды раунда.")
 
 /// Выдача ограничена каталогом и квотами, а сброс затрагивает только выбранный сектор.
@@ -202,9 +234,6 @@
 	TEST_ASSERT_NULL(arena.spawn_creature("unknown", "pve"), "Произвольные типы запрещены.")
 	TEST_ASSERT_NULL(arena.spawn_creature("human", "hub"), "В центре нельзя создавать цели.")
 	TEST_ASSERT(!session.issue_equipment("/obj/item/gun", session.current_body), "Выдача принимает только ключ каталога.")
-	for(var/item_id in GLOB.antag_training_equipment)
-		session.next_supply_at = 0
-		TEST_ASSERT(session.issue_equipment(item_id, session.current_body), "Выдаётся [item_id].")
 	var/obj/item/pen/kept = new(arena.zones["laboratory"]["spawn"])
 	var/obj/item/pen/removed = new(arena.zones["pve"]["spawn"])
 	session.current_body.forceMove(arena.zones["pve"]["spawn"])
@@ -217,11 +246,150 @@
 	for(var/kit_id in GLOB.antag_training_kits)
 		for(var/item_id in GLOB.antag_training_kits[kit_id]["items"])
 			TEST_ASSERT(GLOB.antag_training_equipment[item_id], "Комплект [kit_id] выдаёт предмет каталога [item_id].")
-		TEST_ASSERT(arena.zones[GLOB.antag_training_kits[kit_id]["zone"]], "Комплект [kit_id] ведёт в сектор полигона.")
+		var/kit_zone = GLOB.antag_training_kits[kit_id]["zone"]
+		TEST_ASSERT(arena.zones[kit_zone] || arena.sectors[kit_zone], "Комплект [kit_id] ведёт в сектор полигона.")
 	TEST_ASSERT(arena.reset_zone("pve"), "Сектор сбрасывается.")
 	TEST_ASSERT_EQUAL(get_turf(session.current_body), arena.entry_turf, "Перед сбросом участник выходит в центр.")
 	TEST_ASSERT(session.current_body.status_flags & GODMODE, "Центр защищает участника.")
 	TEST_ASSERT(QDELETED(removed) && !QDELETED(kept), "Очистка не трогает соседний сектор.")
+
+/// Каждый предмет каталога выдаётся кнопкой пульта, принадлежит полигону вместе с содержимым и убирается при его закрытии.
+/datum/unit_test/antag_training_equipment_catalog/Run()
+	var/list/pending = list()
+	for(var/item_id in GLOB.antag_training_equipment)
+		pending += item_id
+	while(length(pending))
+		var/datum/antag_training_session/session = allocate_training_session(/datum/antag_training_program/free)
+		TEST_ASSERT(session.prepare(), "Полигон должен подготовиться.")
+		var/datum/antag_training_arena/arena = session.arena
+		var/datum/tgui/ui = allocate(/datum/tgui, session.current_body, session, "AntagTraining")
+		var/list/issued_parts = list()
+		while(length(pending) && arena.supply_count < arena.limit_for(ANTAG_TRAINING_SUPPLY_LIMIT, session))
+			var/item_id = pending[1]
+			pending.Cut(1, 2)
+			var/list/entry = GLOB.antag_training_equipment[item_id]
+			var/issued_before = length(arena.issued_items)
+			session.next_supply_at = 0
+			antag_training_console_act(session, ui, "equipment", list("id" = item_id))
+			TEST_ASSERT_EQUAL(length(arena.issued_items), issued_before + 1, "Пульт выдаёт [item_id].")
+			var/datum/weakref/issued_ref = arena.issued_items[length(arena.issued_items)]
+			var/obj/item/issued = issued_ref.resolve()
+			TEST_ASSERT_EQUAL(issued?.type, entry["type"], "[item_id] выдан своим типом.")
+			if(entry["amount"])
+				var/obj/item/stack/stack = issued
+				TEST_ASSERT_EQUAL(stack.amount, entry["amount"], "[item_id] выдан стопкой нужного размера.")
+			TEST_ASSERT(issued.training_owner?.resolve() == session, "[item_id] записан на участника.")
+			for(var/atom/movable/part as anything in issued.GetAllContents())
+				TEST_ASSERT(part.training_origin?.resolve() == arena, "[part.type] из [item_id] принадлежит полигону.")
+				issued_parts[WEAKREF(part)] = item_id
+		qdel(session)
+		TEST_ASSERT(wait_for_qdeleted(arena, ANTAG_TRAINING_CLOSE_WAIT), "Полигон с выданным снаряжением закрывается [training_close_budget()].")
+		for(var/datum/weakref/part_ref as anything in issued_parts)
+			var/atom/movable/part = part_ref.resolve()
+			TEST_ASSERT(QDELETED(part), "[part?.type] из [issued_parts[part_ref]] убран при закрытии полигона.")
+
+/// Комплект дополнительного сектора из пульта загружает сектор и выдаёт вещи уже в нём.
+/datum/unit_test/antag_training_sector_kit/Run()
+	var/datum/antag_training_session/session = allocate_training_session(/datum/antag_training_program/free)
+	TEST_ASSERT(session.prepare(), "Полигон должен подготовиться.")
+	var/datum/antag_training_arena/arena = session.arena
+	var/datum/antag_training_sector/sector = arena.sectors["eva"]
+	TEST_ASSERT_EQUAL(sector.state, ANTAG_TRAINING_SECTOR_UNLOADED, "Сектор EVA не загружен до выдачи комплекта.")
+	var/datum/tgui/ui = allocate(/datum/tgui, session.current_body, session, "AntagTraining")
+	antag_training_console_act(session, ui, "kit", list("id" = "eva"))
+	var/list/budget = new_wait_budget(1 MINUTES, "выдача комплекта EVA")
+	while(session.preparing && wait_budget_tick(budget))
+		continue
+	TEST_ASSERT(!session.preparing, "Выдача комплекта завершается.")
+	TEST_ASSERT_EQUAL(sector.state, ANTAG_TRAINING_SECTOR_READY, "Комплект загрузил сектор EVA.")
+	var/turf/spot = get_turf(session.current_body)
+	TEST_ASSERT(arena.inside_bounds(spot, sector.bounds), "Комплект перенёс участника в сектор EVA.")
+	for(var/item_id in GLOB.antag_training_kits["eva"]["items"])
+		var/item_type = GLOB.antag_training_equipment[item_id]["type"]
+		var/issued = FALSE
+		for(var/obj/item/thing in spot)
+			if(thing.type == item_type && thing.training_owner?.resolve() == session)
+				issued = TRUE
+		TEST_ASSERT(issued, "[item_id] выдан рядом с участником в секторе EVA.")
+	TEST_ASSERT_EQUAL(session.last_kit, "eva", "Пульт отмечает выданный комплект.")
+
+/datum/antag_training_sector/eva/crash_after_load
+	id = null
+
+/datum/antag_training_sector/eva/crash_after_load/after_load(datum/antag_training_arena/owner)
+	CRASH("Учебный сбой сектора комплекта")
+
+/// Если сектор комплекта не загрузился, подготовка снимается, участник остаётся на месте, а вещи не выдаются.
+/datum/unit_test/antag_training_sector_kit_failed
+	allowed_runtime_patterns = list("Учебный сбой сектора комплекта")
+
+/datum/unit_test/antag_training_sector_kit_failed/Run()
+	var/datum/antag_training_session/session = allocate_training_session(/datum/antag_training_program/free)
+	TEST_ASSERT(session.prepare(), "Полигон должен подготовиться.")
+	var/datum/antag_training_arena/arena = session.arena
+	var/datum/antag_training_sector/eva_sector = arena.sectors["eva"]
+	var/datum/antag_training_sector/crashing = new /datum/antag_training_sector/eva/crash_after_load(arena)
+	crashing.id = eva_sector.id
+	arena.sectors["eva"] = crashing
+	var/turf/start = get_turf(session.current_body)
+	var/datum/tgui/ui = allocate(/datum/tgui, session.current_body, session, "AntagTraining")
+	antag_training_console_act(session, ui, "kit", list("id" = "eva"))
+	var/list/budget = new_wait_budget(1 MINUTES, "отказ сектора комплекта")
+	while(session.preparing && wait_budget_tick(budget))
+		continue
+	var/still_preparing = session.preparing
+	arena.sectors["eva"] = eva_sector
+	qdel(crashing)
+	TEST_ASSERT(!still_preparing, "Отказ сектора снимает подготовку комплекта.")
+	TEST_ASSERT_EQUAL(get_turf(session.current_body), start, "Участник остаётся на месте.")
+	arena.prune_supplies()
+	TEST_ASSERT_EQUAL(arena.supply_count, 0, "Комплект не выдан ни в центре, ни в секторе.")
+	TEST_ASSERT(istext(session.last_feedback) && findtext(session.last_feedback, "не удалось загрузить"), "Пульт сообщает об отказе сектора.")
+	TEST_ASSERT_NULL(session.last_kit, "Комплект не отмечен выданным.")
+
+/// Учебный GPS из пульта выдан выключенным; включённый не виден станционным GPS, а сам и в глобальном режиме показывает только учебные GPS.
+/datum/unit_test/antag_training_gps/Run()
+	var/datum/antag_training_session/session = allocate_training_session(/datum/antag_training_program/free)
+	TEST_ASSERT(session.prepare(), "Полигон должен подготовиться.")
+	var/obj/item/gps/station_gps = allocate(/obj/item/gps, run_loc_floor_bottom_left)
+	var/datum/component/gps/item/station = station_gps.GetComponent(/datum/component/gps/item)
+	station.gpstag = "STATION_TEST"
+	var/mob/living/user = session.current_body
+	var/datum/tgui/ui = allocate(/datum/tgui, user, session, "AntagTraining")
+	antag_training_console_act(session, ui, "equipment", list("id" = "gps"))
+	session.next_supply_at = 0
+	antag_training_console_act(session, ui, "equipment", list("id" = "gps"))
+	var/list/issued = list()
+	for(var/obj/item/gps/antag_training/issued_gps in get_turf(user))
+		issued += issued_gps
+	TEST_ASSERT_EQUAL(length(issued), 2, "Пульт выдаёт учебные GPS.")
+	var/obj/item/gps/antag_training/training_gps = issued[1]
+	var/obj/item/gps/antag_training/partner_gps = issued[2]
+	var/datum/component/gps/item/gps = training_gps.GetComponent(/datum/component/gps/item)
+	var/datum/component/gps/item/partner = partner_gps.GetComponent(/datum/component/gps/item)
+	partner.gpstag = "PARTNER_TEST"
+	TEST_ASSERT(!gps.tracking && !partner.tracking, "Учебный GPS выдан выключенным.")
+	for(var/obj/item/gps/antag_training/held as anything in issued)
+		user.put_in_hands(held)
+		user.AltClickOn(held)
+	TEST_ASSERT(gps.tracking && partner.tracking, "Участник включает учебные GPS.")
+	TEST_ASSERT(!(gps in GLOB.GPS_list) && !(training_gps in GLOB.poi_list), "Учебный GPS не в станционных списках GPS и наблюдения.")
+	var/list/station_view = station.ui_data(user)
+	TEST_ASSERT(islist(station_view["signals"]), "Включённый станционный GPS отдаёт список сигналов.")
+	for(var/list/signal as anything in station_view["signals"])
+		TEST_ASSERT(signal["entrytag"] != gps.gpstag, "Станционный GPS не видит учебный сигнал.")
+	var/datum/tgui/gps_ui = allocate(/datum/tgui, user, gps, "Gps")
+	gps_ui.status = UI_INTERACTIVE
+	usr = user
+	gps.ui_act("globalmode", list(), gps_ui)
+	usr = null
+	TEST_ASSERT(!gps.global_mode, "Кнопка дальности не включает у учебного GPS глобальный режим.")
+	var/list/training_view = gps.ui_data(user)
+	var/list/tags = list()
+	for(var/list/signal as anything in training_view["signals"])
+		tags += signal["entrytag"]
+	TEST_ASSERT(!("STATION_TEST" in tags), "Учебный GPS и в глобальном режиме не показывает станционные сигналы.")
+	TEST_ASSERT("PARTNER_TEST" in tags, "Учебный GPS видит другой учебный GPS полигона.")
 
 /// Смерть восстанавливает участника, а удаление тела завершает сеанс без потери наблюдателя.
 /datum/unit_test/antag_training_recovery/Run()
@@ -265,11 +433,15 @@
 /datum/unit_test/antag_training_all_paths/Run()
 	var/old_warning = GLOB.heretic_threat_warning_until
 	var/path_index = 0
+	var/total_prepare = 0
+	var/total_cleanup = 0
 	for(var/path_id in GLOB.heretic_paths)
 		if(path_index++ % ANTAG_TRAINING_PATH_PARTS != part - 1)
 			continue
 		var/datum/antag_training_session/session = allocate_training_session()
+		var/prepare_start = world.time
 		TEST_ASSERT(session.prepare(), "Полигон пути [path_id] должен подготовиться.")
+		var/prepare_time = world.time - prepare_start
 		var/datum/antagonist/heretic/heretic = IS_HERETIC(session.avatar)
 		TEST_ASSERT(heretic.simulated && !heretic.show_in_roundend && heretic.soft_antag, "Учебная роль исключена из итогов и активных антагонистов.")
 		TEST_ASSERT(!(heretic.owner in GLOB.reality_smash_track.targets), "Тренировка не создаёт станционные разломы.")
@@ -290,8 +462,14 @@
 		TEST_ASSERT_EQUAL(GLOB.heretic_threat_warning_until, old_warning, "Путь [path_id] не меняет общую угрозу.")
 		var/datum/antag_training_arena/arena = session.arena
 		allocated -= session
+		var/close_start = world.time
 		qdel(session)
-		TEST_ASSERT(wait_for_qdeleted(arena, 10 SECONDS), "Очистка после вознесения завершается.")
+		TEST_ASSERT(wait_for_qdeleted(arena, ANTAG_TRAINING_CLOSE_WAIT), "Очистка после вознесения [path_id] завершается [training_close_budget()].")
+		var/cleanup_time = world.time - close_start
+		total_prepare += prepare_time
+		total_cleanup += cleanup_time
+		log_test("TRAINING BENCH [path_id] prepare: [round(prepare_time / (1 SECONDS), 0.1)] s, cleanup: [round(cleanup_time / (1 SECONDS), 0.1)] s, ratio [round(cleanup_time / max(prepare_time, 1), 0.01)]")
+	TEST_ASSERT(total_cleanup <= ANTAG_TRAINING_CLEANUP_RATIO * total_prepare, "Очистка арен после вознесений заняла [round(total_cleanup / (1 SECONDS), 0.1)] с мирового времени, постройка тех же арен [round(total_prepare / (1 SECONDS), 0.1)] с: допускается не больше чем в [ANTAG_TRAINING_CLEANUP_RATIO] раза дольше постройки: обе идут через yield_work, очистка - с бюджетом не меньше постройки.")
 
 /// Манекен становится целью от касания сердцем, а живое учебное подношение выдаёт обычную награду без отправки манекена на станцию.
 /datum/unit_test/antag_training_hunt/Run()
@@ -315,7 +493,7 @@
 	TEST_ASSERT(heretic.complete_hunt_ritual(user, selected, session.arena.entry_turf), "Учебное подношение должно засчитаться.")
 	TEST_ASSERT_EQUAL(heretic.total_sacrifices, 1, "Подношение увеличивает число душ.")
 	TEST_ASSERT_EQUAL(heretic.knowledge_points, old_points + HERETIC_LIVE_SACRIFICE_KNOWLEDGE, "Живая цель даёт обычную награду.")
-	TEST_ASSERT_EQUAL(get_area(victim), session.arena.room, "Манекен остаётся внутри тренировки.")
+	TEST_ASSERT(session.arena.owns_area(get_area(victim)), "Манекен остаётся внутри тренировки.")
 	TEST_ASSERT(!heretic.hunt_target_available(victim.mind), "Одну учебную душу нельзя сдать повторно.")
 	TEST_ASSERT(!(victim.mind in GLOB.heretic_sacrificed_minds), "Учебная душа не попадает в общий список подношений.")
 	TEST_ASSERT_NULL(GLOB.heretic_mansus_visits[victim.mind], "Для манекена не создаётся отдельный Мансус.")
@@ -339,7 +517,7 @@
 	var/servant_mind_ref = text_ref(servant.owner)
 	var/datum/antag_training_arena/arena = session.arena
 	qdel(session)
-	TEST_ASSERT(wait_for_qdeleted(arena, 10 SECONDS), "Полигон со слугой очищается.")
+	TEST_ASSERT(wait_for_qdeleted(arena, ANTAG_TRAINING_CLOSE_WAIT), "Полигон со слугой очищается [training_close_budget()].")
 	sleep(1 SECONDS)
 	var/datum/mind/remaining_mind = locate(servant_mind_ref)
 	TEST_ASSERT(!remaining_mind || !QDELING(remaining_mind), "Разум удалённого слуги освобождается без hard delete.")
@@ -368,7 +546,7 @@
 	TEST_ASSERT_EQUAL(length(keys), 9, "Все рабочие места имеют разные ключи.")
 	TEST_ASSERT(heretic.deed.complete(), "Лаборатория позволяет завершить все ступени дела.")
 
-/// Замеряет перемещения станции и заполненный полигон с шестью участниками.
+/// Замеряет перемещения станции, заполненный полигон с шестью участниками и загрузку сектора.
 /datum/unit_test/antag_training_performance/Run()
 	var/obj/item/pen/probe = allocate(/obj/item/pen)
 	var/turf/first = run_loc_floor_bottom_left
@@ -387,6 +565,14 @@
 	for(var/index in 1 to ANTAG_TRAINING_SUPPLY_LIMIT)
 		TEST_ASSERT(arena.issue_item(/obj/item/gun/energy/laser, arena.entry_turf), "Выдаётся оружие.")
 	measure_moves(probe, first, second, "populated")
+	var/datum/antag_training_sector/sector = arena.sectors["dark"]
+	start_time = REALTIMEOFDAY
+	TEST_ASSERT(sector.load(), "Сектор загружается при заполненном полигоне.")
+	log_test("TRAINING BENCH sector load: [(REALTIMEOFDAY - start_time) * 100] ms")
+	measure_moves(probe, first, second, "sector")
+	start_time = REALTIMEOFDAY
+	TEST_ASSERT(sector.unload(), "Сектор выгружается при заполненном полигоне.")
+	log_test("TRAINING BENCH sector unload: [(REALTIMEOFDAY - start_time) * 100] ms")
 	for(var/pass in 1 to 3)
 		var/start_usage = TICK_USAGE_REAL
 		for(var/index in 1 to 100)
@@ -400,7 +586,7 @@
 	start_time = REALTIMEOFDAY
 	for(var/datum/antag_training_session/member as anything in arena.members.Copy())
 		qdel(member)
-	TEST_ASSERT(wait_for_qdeleted(arena, 1 MINUTES), "Комната освобождается после последнего участника.")
+	TEST_ASSERT(wait_for_qdeleted(arena, ANTAG_TRAINING_CLOSE_WAIT), "Комната освобождается после последнего участника [training_close_budget()].")
 	log_test("TRAINING BENCH cleanup: [(REALTIMEOFDAY - start_time) * 100] ms")
 	start_time = REALTIMEOFDAY
 	var/datum/antag_training_session/reused = allocate_training_session(/datum/antag_training_program/free)
@@ -433,10 +619,10 @@
 	var/datum/antag_training_session/opponent = host.arena.members[2]
 	host.current_body.forceMove(host.arena.zones["melee"]["spawn"])
 	opponent.current_body.forceMove(get_step(host.current_body, NORTH))
-	var/health_before = opponent.current_body.health
-	opponent.current_body.apply_damage(20, BRUTE)
-	TEST_ASSERT(opponent.current_body.health < health_before, "Участник в боевом секторе получает настоящий урон.")
-	TEST_ASSERT_EQUAL(host.current_body.health, host.current_body.maxHealth, "Урон сопернику не задевает другого участника.")
+	var/health_before = opponent.avatar.health
+	opponent.avatar.apply_damage(20, BRUTE)
+	TEST_ASSERT(opponent.avatar.health < health_before, "Участник в боевом секторе получает настоящий урон.")
+	TEST_ASSERT_EQUAL(host.avatar.health, host.avatar.maxHealth, "Урон сопернику не задевает другого участника.")
 	TEST_ASSERT_EQUAL(length(host.arena.members), 8, "Полигон принимает больше шести участников.")
 	TEST_ASSERT_EQUAL(length(GLOB.antag_training_arenas), 1, "Все участники используют единственную комнату.")
 	TEST_ASSERT_EQUAL(world.maxz, initial_z, "Входы используют подготовленные уровни без расширения карты раунда.")
@@ -549,11 +735,11 @@
 	for(var/mob/living/player as anything in fake_players)
 		if(player.health < player.maxHealth)
 			hurt++
-		TEST_ASSERT_EQUAL(get_area(player), arena.room, "Участник остаётся в своём полигоне после боя.")
+		TEST_ASSERT(arena.owns_area(get_area(player)), "Участник остаётся в своём полигоне после боя.")
 	TEST_ASSERT(hurt > 0, "Противники наносят реальный урон, а не спят на пустом z.")
 	arena.prune_targets()
 	for(var/mob/living/target as anything in arena.targets)
-		TEST_ASSERT_EQUAL(get_area(target), arena.room, "Активные противники не выходят с полигона.")
+		TEST_ASSERT(arena.owns_area(get_area(target)), "Активные противники не выходят с полигона.")
 	log_test("TRAINING LOAD: [length(fake_players)] participants, [length(arena.targets)] active NPCs, [hurt] damaged participants in [(world.time - start_time) / 10] seconds")
 
 /datum/unit_test/antag_training_live_ai/Destroy()
@@ -804,7 +990,7 @@
 			TEST_ASSERT(item, "Выдача учтена в общем лимите.")
 			TEST_ASSERT_EQUAL(item.training_owner?.resolve(), session, "Выдача принадлежит сеансу.")
 			item.forceMove(run_loc_floor_bottom_left)
-			TEST_ASSERT_EQUAL(get_area(item), session.arena.room, "Предмет не покидает полигон.")
+			TEST_ASSERT(session.arena.owns_area(get_area(item)), "Предмет не покидает полигон.")
 			if(istype(item, /obj/item/heretic_path_relic))
 				var/obj/item/heretic_path_relic/relic = item
 				TEST_ASSERT_EQUAL(relic.creator?.resolve(), session.avatar_mind, "Реликвия привязана к разуму.")
@@ -909,7 +1095,7 @@
 	duel.deadline = world.time
 	duel.process()
 	TEST_ASSERT_EQUAL(duel.phase, "active", "Отсчёт завершён.")
-	second.current_body.adjustOxyLoss(110)
+	second.avatar.adjustOxyLoss(110)
 	TEST_ASSERT_NULL(first.arena.duel, "Крит завершает дуэль.")
 	TEST_ASSERT(findtext(first.last_duel_result, first.current_body.real_name), "Победитель записан в результате.")
 	first.next_duel_at = 0
@@ -940,8 +1126,8 @@
 	TEST_ASSERT(user.training_move_allowed(get_step(heretic.pocket.center, SOUTH)), "По изнанке полигона можно ходить.")
 	TEST_ASSERT(!user.training_move_allowed(get_turf(GET_ERROR_ROOM)), "Из изнанки полигона на станцию не выйти.")
 	heretic.pocket.collapse("проверка")
-	TEST_ASSERT_EQUAL(get_area(victim), session.arena.room, "Цель вернулась на полигон.")
-	TEST_ASSERT_EQUAL(get_area(user), session.arena.room, "Еретик вернулся на полигон.")
+	TEST_ASSERT(session.arena.owns_area(get_area(victim)), "Цель вернулась на полигон.")
+	TEST_ASSERT(session.arena.owns_area(get_area(user)), "Еретик вернулся на полигон.")
 
 /// Кнопки состояний открывают захваты, цели не встают стопкой, бегущая мишень ходит и замирает, тела обряда ложатся у еретика.
 /datum/unit_test/antag_training_target_states/Run()
@@ -998,3 +1184,5 @@
 		TEST_ASSERT(get_dist(body, session.current_body) <= ANTAG_TRAINING_SPAWN_RADIUS && arena.match_zone(body) == "pve", "Тело лежит рядом с еретиком в его секторе.")
 
 #undef ANTAG_TRAINING_PATH_PARTS
+#undef ANTAG_TRAINING_CLOSE_WAIT
+#undef ANTAG_TRAINING_CLEANUP_RATIO

@@ -27,7 +27,7 @@
 	var/atom/oldloc = loc
 	var/area/oldarea = get_area(oldloc)
 	var/area/newarea = get_area(newloc)
-	if((training_origin || (!oldarea && length(GLOB.antag_training_arenas)) || (oldarea != newarea && (istype(oldarea, /area/antag_training) || istype(newarea, /area/antag_training)))) && !training_move_allowed(newloc))
+	if((training_origin || (!oldarea && length(GLOB.antag_training_z)) || (oldarea != newarea && (istype(oldarea, /area/antag_training) || istype(newarea, /area/antag_training)))) && !training_move_allowed(newloc))
 		return
 	loc = newloc
 	. = TRUE
@@ -57,7 +57,7 @@
  * most of the time you want forceMove()
  */
 /atom/movable/proc/abstract_move(atom/new_loc)
-	if((training_origin || length(GLOB.antag_training_arenas)) && !training_move_allowed(new_loc))
+	if(ANTAG_TRAINING_MOVE_GATED(src, new_loc) && !training_move_allowed(new_loc))
 		return FALSE
 	var/atom/old_loc = loc
 	var/turf/old_turf = get_turf(old_loc)
@@ -318,7 +318,7 @@
 
 /atom/movable/proc/doMove(atom/destination)
 	. = FALSE
-	if((training_origin || length(GLOB.antag_training_arenas)) && !training_move_allowed(destination))
+	if(ANTAG_TRAINING_MOVE_GATED(src, destination) && !training_move_allowed(destination))
 		return
 	if(destination)
 		// Возврат qdel-нутого мувера в мир = вечный пин ссылкой из contents турфа

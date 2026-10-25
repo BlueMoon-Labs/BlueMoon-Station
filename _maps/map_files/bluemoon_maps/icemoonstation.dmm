@@ -11135,7 +11135,6 @@
 	id_tag = "bridgerestarealock"
 	},
 /obj/machinery/door/firedoor,
-/obj/machinery/door/firedoor,
 /obj/effect/mapping_helpers/airlock/access/any/command/general,
 /turf/open/floor/plasteel,
 /area/command/bridge)
@@ -25325,15 +25324,6 @@
 /obj/structure/disposalpipe/segment{
 	dir = 4
 	},
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
 /turf/open/floor/plating/asteroid/snow/icemoon,
 /area/icemoon/surface/outdoors)
 "eDv" = (
@@ -25902,9 +25892,6 @@
 /turf/open/floor/plasteel/dark/textured/large,
 /area/ai_monitored/security/armory)
 "eIF" = (
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
 /obj/structure/disposalpipe/segment{
 	dir = 4
 	},
@@ -74301,7 +74288,6 @@
 /area/service/chapel/main/monastery)
 "nxB" = (
 /obj/structure/disposalpipe/segment,
-/obj/structure/disposalpipe/segment,
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
@@ -88390,7 +88376,6 @@
 	id_tag = "bridgerestarealock"
 	},
 /obj/machinery/door/firedoor,
-/obj/machinery/door/firedoor,
 /obj/effect/mapping_helpers/airlock/access/any/command/general,
 /turf/open/floor/plasteel,
 /area/command/bridge)
@@ -91943,7 +91928,6 @@
 /obj/effect/turf_decal/trimline/purple/warning{
 	dir = 10
 	},
-/obj/structure/disposalpipe/segment,
 /obj/structure/disposalpipe/segment,
 /obj/structure/cable{
 	icon_state = "1-2"
@@ -115533,7 +115517,6 @@
 	},
 /obj/effect/mapping_helpers/airlock/access/all/science/general,
 /obj/machinery/door/firedoor,
-/obj/machinery/door/firedoor,
 /turf/open/floor/plasteel,
 /area/science/nanite)
 "uMa" = (
@@ -125472,9 +125455,6 @@
 /obj/structure/disposalpipe/segment{
 	dir = 6
 	},
-/obj/structure/disposalpipe/segment{
-	dir = 6
-	},
 /turf/open/floor/wood,
 /area/service/library)
 "wHM" = (
@@ -125823,7 +125803,6 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
-/obj/structure/disposalpipe/trunk/multiz/down,
 /obj/structure/disposalpipe/trunk/multiz/down,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 1

@@ -166,10 +166,12 @@
 
 	//crowbarring it !
 	var/turf/T = get_turf(src)
+	var/in_training = !!training_origin
 	if(default_deconstruction_crowbar(I))
-		message_admins("[src] has been deconstructed by [ADMIN_LOOKUPFLW(user)] in [ADMIN_VERBOSEJMP(T)]")
 		log_game("[src] has been deconstructed by [key_name(user)] at [AREACOORD(src)]")
-		investigate_log("SMES deconstructed by [key_name(user)] at [AREACOORD(src)]", INVESTIGATE_SINGULO)
+		if(!in_training)
+			message_admins("[src] has been deconstructed by [ADMIN_LOOKUPFLW(user)] in [ADMIN_VERBOSEJMP(T)]")
+			investigate_log("SMES deconstructed by [key_name(user)] at [AREACOORD(src)]", INVESTIGATE_SINGULO)
 		return
 	else if(panel_open && I.tool_behaviour == TOOL_CROWBAR)
 		return
@@ -196,7 +198,7 @@
 		cell.charge = (charge / capacity) * cell.maxcharge
 
 /obj/machinery/power/smes/Destroy()
-	if(SSticker.IsRoundInProgress())
+	if(SSticker.IsRoundInProgress() && !training_origin)
 		var/turf/T = get_turf(src)
 		message_admins("SMES deleted at [ADMIN_VERBOSEJMP(T)]")
 		log_game("SMES deleted at [AREACOORD(T)]")

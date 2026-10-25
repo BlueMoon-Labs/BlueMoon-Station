@@ -38,6 +38,22 @@ GLOBAL_LIST_INIT(huds, alist(
 	DATA_HUD_ANTAG_OPT_IN = new/datum/atom_hud/data/human/antag_opt_in(),
 	))
 
+/**
+ * Категории, значок которых у большинства атомов пуст: импланты, розыск, наниты, радиация, ток на шлюзе.
+ * Пустой значок такой категории не лежит в client.images: у госта с тремя продвинутыми худами их набиралось
+ * больше тысячи, и SendMaps перебирал их у каждого госта каждый тик. Менять их только через set_hud_image_state().
+ */
+GLOBAL_LIST_INIT(sparse_hud_categories, alist(
+	IMPTRACK_HUD = TRUE,
+	IMPLOYAL_HUD = TRUE,
+	IMPCHEM_HUD = TRUE,
+	WANTED_HUD = TRUE,
+	NANITE_HUD = TRUE,
+	DIAG_NANITE_FULL_HUD = TRUE,
+	RAD_HUD = TRUE,
+	DIAG_AIRLOCK_HUD = TRUE,
+	))
+
 /// Группы z худов, кэш по номеру уровня (см. get_hud_z_group)
 GLOBAL_LIST_EMPTY(hud_z_groups)
 
@@ -238,17 +254,20 @@ GLOBAL_LIST_EMPTY(hud_z_groups)
 	var/list/atom_hud_list = A.hud_list
 	if(!atom_hud_list)
 		return
+	var/alist/sparse_categories = GLOB.sparse_hud_categories
 	var/list/local_hud_icons = hud_icon_keys
 	if(length(local_hud_icons) == 1)
-		var/hud_image = atom_hud_list[local_hud_icons[1]]
-		if(hud_image)
+		var/image/hud_image = atom_hud_list[local_hud_icons[1]]
+		if(hud_image && !(sparse_categories[local_hud_icons[1]] && !hud_image.icon_state))
 			their_client.images |= hud_image
 		return
 	var/first_hud_image
 	var/list/to_add
 	for(var/i in local_hud_icons)
-		var/hud_image = atom_hud_list[i]
+		var/image/hud_image = atom_hud_list[i]
 		if(!hud_image)
+			continue
+		if(sparse_categories[i] && !hud_image.icon_state)
 			continue
 		if(!first_hud_image)
 			first_hud_image = hud_image
@@ -281,6 +300,7 @@ GLOBAL_LIST_EMPTY(hud_z_groups)
 		atoms_to_scan = hudatoms_by_z_group ? hudatoms_by_z_group[z_group] : null
 		if(!atoms_to_scan)
 			return
+	var/alist/sparse_categories = GLOB.sparse_hud_categories
 	for(var/atom/movable/A as anything in atoms_to_scan)
 		if(!A)
 			continue
@@ -290,9 +310,28 @@ GLOBAL_LIST_EMPTY(hud_z_groups)
 		if(!atom_hud_list)
 			continue
 		for(var/i in local_hud_icons)
-			var/hud_image = atom_hud_list[i]
-			if(hud_image)
-				out += hud_image
+			var/image/hud_image = atom_hud_list[i]
+			if(!hud_image)
+				continue
+			// При снятии собираем и пустые редкие значки: убрать отсутствующий безвредно
+			if(check_visibility && sparse_categories[i] && !hud_image.icon_state)
+				continue
+			out += hud_image
+
+/datum/atom_hud/proc/add_hud_images(mob/viewer, list/images_to_add)
+	if(viewer?.client && length(images_to_add))
+		viewer.client.images |= images_to_add
+
+/// Редкий значок атома появился или опустел: зрители худа получают или теряют только его
+/datum/atom_hud/proc/sync_sparse_image(atom/movable/A, image/holder, shown)
+	var/atom_group = A.get_hud_z_group_cached()
+	for(var/mob/viewer as anything in hudusers)
+		if(queued_to_see[viewer] || !viewer_has_images(viewer))
+			continue
+		if(!shown)
+			remove_hud_images(viewer, list(holder))
+		else if(viewer.get_hud_view_group_cached() == atom_group && should_show_to(viewer, A))
+			add_hud_images(viewer, list(holder))
 
 /// Build the entire list of images this hud wants to push to M and union it
 /// into target_images in a single |= call.
@@ -316,6 +355,20 @@ GLOBAL_LIST_EMPTY(hud_z_groups)
 	if(!their_client)
 		return
 	push_all_atoms_to_image_list(M, their_client.images)
+
+/// Ставит значок худа. У редкой категории (GLOB.sparse_hud_categories) появившийся значок раздаётся
+/// зрителям, а опустевший снимается с них.
+/atom/movable/proc/set_hud_image_state(hud_category, new_state)
+	var/image/holder = hud_list ? hud_list[hud_category] : null
+	if(!istype(holder))
+		return
+	var/was_shown = !!holder.icon_state
+	holder.icon_state = new_state
+	if(was_shown == !!new_state || !GLOB.sparse_hud_categories[hud_category])
+		return
+	for(var/datum/atom_hud/hud as anything in hud_memberships)
+		if(hud_category in hud.hud_icons)
+			hud.sync_sparse_image(src, holder, !!new_state)
 
 /// Группа z, по которой худы раздают значки атома
 /atom/movable/proc/get_hud_z_group_cached()

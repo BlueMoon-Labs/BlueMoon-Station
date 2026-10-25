@@ -611,6 +611,12 @@ GLOBAL_LIST_EMPTY(ghost_records)
 	. = ..()
 	ghost_team = new /datum/team/ghost_role()
 
+/obj/effect/mob_spawn/human/Destroy()
+	if(ghost_team && !length(ghost_team.members))
+		qdel(ghost_team)
+	ghost_team = null
+	return ..()
+
 /obj/effect/mob_spawn/human/special(mob/living/carbon/human/spawned_mob, datum/team/ghost_role/ghostovich)
 	. = ..()
 	if(ishuman(spawned_mob))

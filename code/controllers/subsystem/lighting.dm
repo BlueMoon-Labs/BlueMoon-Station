@@ -306,6 +306,8 @@ SUBSYSTEM_DEF(lighting)
 		var/k = 0
 		for(k in 1 to GLOB.lighting_starlight_queue.len)
 			var/turf/open/space/S = GLOB.lighting_starlight_queue[k]
+			if(S)
+				S.lighting_flags &= ~TURF_STARLIGHT_QUEUED
 			if(!QDELETED(S) && istype(S))
 				S.update_starlight()
 			if(init_tick_checks)
@@ -863,6 +865,7 @@ SUBSYSTEM_DEF(lighting)
 		// update_starlight(), поэтому при обратном подъёме он вернётся сам.
 		var/turf/open/space/space_turf = source_atom
 		GLOB.starlight -= space_turf
+		space_turf.lighting_flags &= ~TURF_STARLIT
 		space_turf.set_light(l_range = 0)
 		return TRUE
 	if(!teardown_parked_lookup[source_atom])
@@ -1201,7 +1204,7 @@ SUBSYSTEM_DEF(lighting)
 		var/list/remaining_starlight = list()
 		for(var/turf/open/space/S in GLOB.lighting_deferred_starlight)
 			if(S.z == z)
-				GLOB.lighting_starlight_queue |= S
+				S.queue_starlight()
 			else
 				remaining_starlight[S] = TRUE
 			if(MC_TICK_CHECK)

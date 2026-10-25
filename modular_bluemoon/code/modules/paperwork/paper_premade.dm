@@ -96,6 +96,8 @@
 	. = ..()
 	var/code_text = "<b>Комбинация золотого сейфа запасной карты капитана</b><br><br>Код: <b>%Код%</b><br><br>Сейф расположен на мостике. Используйте код в экстренных случаях для доступа к запасной ID-карте капитана.<br><br>— Central Command"
 	var/code_string = GLOB.spare_id_safe ? jointext(GLOB.spare_id_safe.tumblers, "-") : "ERR%@!#$"
+	if(is_antag_training_atom(src))
+		code_string = antag_training_fake_safe_code(code_string)
 	code_text = replacetext(code_text, "%Код%", code_string)
 	add_raw_text(code_text)
 	update_appearance()

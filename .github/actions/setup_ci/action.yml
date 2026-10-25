@@ -1,0 +1,62 @@
+name: Set up CI tools
+description: Node, BYOND and rust-g of the versions pinned in dependencies.sh, with caches.
+
+inputs:
+  byond:
+    description: Install BYOND and put it on PATH.
+    default: 'false'
+  rust-g:
+    description: Install rust-g for DreamDaemon.
+    default: 'false'
+  yarn-cache:
+    description: Restore the Yarn cache of tgui.
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - name: Read pinned versions
+      id: versions
+      shell: bash
+      run: |
+        source dependencies.sh
+        echo "node=$NODE_VERSION_LTS" >> "$GITHUB_OUTPUT"
+        echo "byond=$BYOND_MAJOR.$BYOND_MINOR" >> "$GITHUB_OUTPUT"
+
+    - name: Set up Node
+      uses: actions/setup-node@v7
+      with:
+        node-version: ${{ steps.versions.outputs.node }}
+        package-manager-cache: false
+
+    - name: Restore Yarn cache
+      if: inputs.yarn-cache == 'true'
+      uses: actions/cache@v6
+      with:
+        path: tgui/.yarn/cache
+        key: ${{ runner.os }}-yarn-${{ hashFiles('tgui/yarn.lock') }}
+        restore-keys: ${{ runner.os }}-yarn-
+
+    - name: Restore BYOND cache
+      if: inputs.byond == 'true'
+      uses: actions/cache@v6
+      with:
+        path: ~/BYOND
+        key: ${{ runner.os }}-byond-${{ steps.versions.outputs.byond }}
+
+    - name: Install BYOND
+      if: inputs.byond == 'true'
+      shell: bash
+      env:
+        BYOND_ALLOW_STALE_CACHE: '0'
+      run: |
+        bash tools/ci/install_byond.sh
+        source "$HOME/BYOND/byond/bin/byondsetup"
+        echo "BYOND_SYSTEM=$BYOND_SYSTEM" >> "$GITHUB_ENV"
+        echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH" >> "$GITHUB_ENV"
+        echo "$BYOND_SYSTEM/bin" >> "$GITHUB_PATH"
+
+    - name: Install rust-g
+      if: inputs.rust-g == 'true'
+      shell: bash
+      run: bash tools/ci/install_rust_g.sh

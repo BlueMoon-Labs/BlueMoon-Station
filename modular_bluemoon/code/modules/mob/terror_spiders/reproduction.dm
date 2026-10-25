@@ -89,10 +89,15 @@
 		if(!grow_as)
 			grow_as = pick(/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/knight, /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/lurker, /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/healer, /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/reaper, /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/builder)
 		var/mob/living/simple_animal/hostile/retaliate/poison/terror_spider/S = new grow_as(T)
+		if(!antag_training_terror_claim(src, S, TRUE))
+			qdel(src)
+			return
 		S.spider_myqueen = spider_myqueen
 		S.spider_mymother = spider_mymother
-		for(var/atom/movable/the_enemy in enemies)
-			S.add_enemy(the_enemy)
+		for(var/datum/weakref/grudge as anything in enemies)
+			var/atom/movable/the_enemy = grudge.resolve()
+			if(the_enemy)
+				S.add_enemy(the_enemy)
 		qdel(src)
 	if(movement_disabled)
 		return
@@ -177,12 +182,19 @@
 // --------------------------------------------------------------------------------
 
 /mob/living/simple_animal/hostile/retaliate/poison/terror_spider/proc/DoLayTerrorEggs(lay_type, lay_number)
-	stop_automated_movement = 1
+	if(!antag_training_terror_room(src, lay_number))
+		return
 	var/obj/structure/spider/eggcluster/terror_eggcluster/C = new /obj/structure/spider/eggcluster/terror_eggcluster(get_turf(src), lay_type)
+	if(!antag_training_terror_claim(src, C))
+		return
+	stop_automated_movement = 1
 	C.spiderling_number = lay_number
 	C.spider_myqueen = spider_myqueen
 	C.spider_mymother = src
-	C.enemies = enemies
+	for(var/atom/movable/the_enemy as anything in enemies)
+		var/datum/weakref/grudge = WEAKREF(the_enemy)
+		if(grudge)
+			C.enemies += grudge
 	if(spider_growinstantly)
 		C.amount_grown = 250
 		C.spider_growinstantly = TRUE
@@ -242,14 +254,20 @@
 	amount_grown += 1
 	if(amount_grown >= 140)  //x2 time for egg process, spiderlings grows instantly
 		var/num = spiderling_number
+		var/lost = 0
 		playsound(src, 'sound/creatures/terrorspiders/eggburst.ogg', 100)
 		for(var/i=0, i<num, i++)
 			var/obj/structure/spider/spiderling/terror_spiderling/S = new /obj/structure/spider/spiderling/terror_spiderling(get_turf(src))
+			if(!antag_training_terror_claim(src, S, TRUE))
+				lost++
+				continue
 			if(spiderling_type)
 				S.grow_as = spiderling_type
 			S.spider_myqueen = spider_myqueen
 			S.spider_mymother = spider_mymother
-			S.enemies = enemies
+			S.enemies = enemies.Copy()
 			if(spider_growinstantly)
 				S.amount_grown = 250
+		if(lost)
+			antag_training_terror_shortfall(src, lost)
 		qdel(src)

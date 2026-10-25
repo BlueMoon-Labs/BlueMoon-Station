@@ -1,0 +1,1747 @@
+{
+	"_maps/RandomRuins/LavaRuins/lavaland_biodome_beach.dmm": {
+		"multiple_machinery": {
+			"/obj/machinery/light": 2
+		}
+	},
+	"_maps/RandomRuins/LavaRuins/lavaland_surface_elephant_graveyard.dmm": {
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/shuttle": 1
+		}
+	},
+	"_maps/RandomRuins/LavaRuins/lavaland_surface_russianbunker.dmm": {
+		"grille_stacking": {
+			"/obj/structure/grille": 13
+		}
+	},
+	"_maps/RandomRuins/SpaceRuins/BlueMoon/anomaly_research.dmm": {
+		"wall_stacking": {
+			"/turf/closed/mineral/snowmountain/cavern": 2
+		}
+	},
+	"_maps/RandomRuins/SpaceRuins/BlueMoon/clockworkhaven.dmm": {
+		"multiple_lattice": {
+			"/obj/structure/lattice/catwalk/clockwork": 32,
+			"/obj/structure/lattice/clockwork": 32
+		}
+	},
+	"_maps/RandomRuins/SpaceRuins/BlueMoon/commsbuoy_nt.dmm": {
+		"multiple_lattice": {
+			"/obj/structure/lattice": 6
+		}
+	},
+	"_maps/RandomRuins/SpaceRuins/BlueMoon/defcon2.dmm": {
+		"identical_pipes": {
+			"/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4": 4
+		},
+		"multiple_machinery": {
+			"/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4": 4
+		},
+		"multiple_unary_components": {
+			"/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2": 1,
+			"/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4": 1
+		},
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/reinforced/no_firelock": 1
+		}
+	},
+	"_maps/RandomRuins/SpaceRuins/BlueMoon/defcon3.dmm": {
+		"identical_pipes": {
+			"/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4": 4
+		},
+		"multiple_machinery": {
+			"/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4": 4
+		},
+		"multiple_unary_components": {
+			"/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2": 1,
+			"/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4": 1
+		},
+		"wall_stacking": {
+			"/turf/closed/wall": 1
+		}
+	},
+	"_maps/RandomRuins/SpaceRuins/BlueMoon/defcon4.dmm": {
+		"identical_pipes": {
+			"/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4": 4
+		},
+		"multiple_machinery": {
+			"/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4": 4
+		},
+		"multiple_unary_components": {
+			"/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2": 1,
+			"/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4": 1
+		},
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/reinforced/no_firelock": 4
+		}
+	},
+	"_maps/RandomRuins/SpaceRuins/BlueMoon/defcon5.dmm": {
+		"identical_pipes": {
+			"/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4": 4
+		},
+		"multiple_machinery": {
+			"/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4": 4
+		},
+		"multiple_unary_components": {
+			"/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2": 1,
+			"/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4": 1
+		}
+	},
+	"_maps/RandomRuins/SpaceRuins/BlueMoon/hilbertresearchfacility.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 2
+		}
+	},
+	"_maps/RandomRuins/SpaceRuins/BlueMoon/hk_factory.dmm": {
+		"multiple_unary_components": {
+			"/obj/machinery/atmospherics/components/unary/vent_pump/layer2": 42,
+			"/obj/machinery/atmospherics/components/unary/vent_scrubber/layer4": 42
+		}
+	},
+	"_maps/RandomRuins/SpaceRuins/BlueMoon/infested_frigate.dmm": {
+		"grille_stacking": {
+			"/obj/structure/grille": 6
+		},
+		"multiple_machinery": {
+			"/obj/machinery/suit_storage_unit/syndicate/softsuit": 2
+		}
+	},
+	"_maps/RandomRuins/SpaceRuins/BlueMoon/listening/inteq_listening_cult.dmm": {
+		"multiple_airlocks": {
+			"/obj/machinery/door/airlock/cult": 1,
+			"/obj/machinery/door/airlock/external": 1
+		},
+		"multiple_closets": {
+			"/obj/structure/closet/firecloset/full": 2
+		},
+		"multiple_tables": {
+			"/obj/structure/table": 2
+		},
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/clockwork": 1,
+			"/obj/effect/spawner/structure/window/plastitanium": 1
+		}
+	},
+	"_maps/RandomRuins/SpaceRuins/BlueMoon/listening/inteq_listening_default.dmm": {
+		"multiple_closets": {
+			"/obj/structure/closet/firecloset/full": 2
+		},
+		"multiple_tables": {
+			"/obj/structure/table": 2
+		}
+	},
+	"_maps/RandomRuins/SpaceRuins/BlueMoon/listening/inteq_listening_syndicate.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 1
+		},
+		"multiple_closets": {
+			"/obj/structure/closet/firecloset/full": 2
+		},
+		"multiple_machinery": {
+			"/obj/machinery/airalarm/syndicate": 2
+		},
+		"multiple_tables": {
+			"/obj/structure/table": 2
+		}
+	},
+	"_maps/RandomRuins/SpaceRuins/BlueMoon/listening/syndie_listening_default.dmm": {
+		"multiple_tables": {
+			"/obj/structure/table": 2
+		}
+	},
+	"_maps/RandomRuins/SpaceRuins/BlueMoon/listening/syndie_listening_siege.dmm": {
+		"multiple_tables": {
+			"/obj/structure/table": 2
+		}
+	},
+	"_maps/RandomRuins/SpaceRuins/BlueMoon/siege/Inteq_base.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 5
+		},
+		"grille_stacking": {
+			"/obj/structure/grille": 15
+		},
+		"multiple_airlocks": {
+			"/obj/machinery/door/airlock/external": 2,
+			"/obj/machinery/door/airlock/grunge": 2,
+			"/obj/machinery/door/airlock/public/glass": 2
+		},
+		"multiple_chairs": {
+			"/obj/structure/chair/office/light": 1,
+			"/obj/structure/chair/wood/wings": 1
+		},
+		"multiple_lattice": {
+			"/obj/structure/lattice": 59,
+			"/obj/structure/lattice/catwalk": 17
+		},
+		"multiple_machinery": {
+			"/obj/machinery/door/airlock/grunge": 2
+		},
+		"smartfridges_in_walls": {
+			"/obj/machinery/smartfridge/organ": 1
+		},
+		"wall_stacking": {
+			"/turf/closed/indestructible/syndicate": 15,
+			"/turf/closed/mineral/random": 7,
+			"/turf/closed/mineral/random/high_chance": 2,
+			"/turf/closed/wall/r_wall": 5
+		},
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/plastitanium": 2
+		}
+	},
+	"_maps/RandomRuins/SpaceRuins/BlueMoon/sol_ship.dmm": {
+		"multiple_windows": {
+			"/obj/structure/window/reinforced/survival_pod": 2
+		},
+		"smartfridges_in_walls": {
+			"/obj/machinery/smartfridge/organ": 1
+		},
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/plastitanium": 2
+		}
+	},
+	"_maps/RandomRuins/SpaceRuins/BlueMoon/space_syndicate_base.dmm": {
+		"multiple_machinery": {
+			"/obj/machinery/power/terminal": 2
+		},
+		"multiple_windows": {
+			"/obj/structure/window/reinforced/survival_pod": 2
+		},
+		"smartfridges_in_walls": {
+			"/obj/machinery/smartfridge": 1,
+			"/obj/machinery/smartfridge/chemistry": 1,
+			"/obj/machinery/smartfridge/food": 2
+		}
+	},
+	"_maps/RandomRuins/SpaceRuins/BlueMoon/whiteshipruin_box.dmm": {
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/plastitanium": 1
+		}
+	},
+	"_maps/RandomRuins/SpaceRuins/TheDerelict.dmm": {
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/hollow/reinforced/directional": 2,
+			"/obj/effect/spawner/structure/window/hollow/reinforced/end": 1
+		}
+	},
+	"_maps/RandomRuins/SpaceRuins/bigderelict1.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 1
+		}
+	},
+	"_maps/RandomRuins/SpaceRuins/clericden.dmm": {
+		"grille_stacking": {
+			"/obj/structure/grille": 3
+		}
+	},
+	"_maps/RandomRuins/SpaceRuins/cloning_facility.dmm": {
+		"grille_stacking": {
+			"/obj/structure/grille": 18
+		}
+	},
+	"_maps/RandomRuins/SpaceRuins/crashedship.dmm": {
+		"multiple_closets": {
+			"/obj/structure/closet/secure_closet/personal/cabinet": 2
+		},
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/hollow/reinforced/middle": 2
+		}
+	},
+	"_maps/RandomRuins/SpaceRuins/derelict3.dmm": {
+		"multiple_lattice": {
+			"/obj/structure/lattice": 2
+		}
+	},
+	"_maps/RandomRuins/SpaceRuins/derelict5.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 1
+		}
+	},
+	"_maps/RandomRuins/SpaceRuins/listeningstation.dmm": {
+		"multiple_tables": {
+			"/obj/structure/table": 2
+		}
+	},
+	"_maps/RandomRuins/SpaceRuins/nicelittlenest.dmm": {
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/reinforced": 4
+		}
+	},
+	"_maps/RandomRuins/SpaceRuins/oldAIsat.dmm": {
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/hollow/reinforced/middle": 1
+		}
+	},
+	"_maps/RandomRuins/SpaceRuins/oldstation.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 1
+		}
+	},
+	"_maps/RandomRuins/SpaceRuinsStation/roid4.dmm": {
+		"wall_stacking": {
+			"/turf/closed/wall": 1
+		}
+	},
+	"_maps/RandomRuins/SpaceRuinsStation/roid7.dmm": {
+		"multiple_lattice": {
+			"/obj/structure/lattice": 2
+		}
+	},
+	"_maps/RandomRuins/StationRuins/Box/Engine/bluemoon/engine_rbmk_bluemoon.dmm": {
+		"multiple_lattice": {
+			"/obj/structure/lattice": 2
+		}
+	},
+	"_maps/RandomRuins/StationRuins/Box/Engine/engine_rbmk.dmm": {
+		"wall_stacking": {
+			"/turf/closed/wall/r_wall": 8
+		}
+	},
+	"_maps/RandomRuins/StationRuins/engine_rbmk.dmm": {
+		"multiple_lattice": {
+			"/obj/structure/lattice": 8
+		},
+		"wall_stacking": {
+			"/turf/closed/wall/r_wall": 23
+		}
+	},
+	"_maps/RandomRuins/StationRuins/engine_rbmk_rocks.dmm": {
+		"multiple_lattice": {
+			"/obj/structure/lattice": 8
+		},
+		"wall_stacking": {
+			"/turf/closed/wall/r_wall": 24
+		}
+	},
+	"_maps/RandomRuins/StationRuins/maint/10x10/10x10_bigtheatre.dmm": {
+		"multiple_chairs": {
+			"/obj/structure/chair/comfy/brown": 2
+		}
+	},
+	"_maps/RandomRuins/StationRuins/maint/10x10/10x10_boxfactory.dmm": {
+		"conveyor_cardinal_inversion": {
+			"/obj/machinery/conveyor/inverted": 2
+		}
+	},
+	"_maps/RandomRuins/StationRuins/maint/10x10/10x10_junction.dmm": {
+		"multiple_lattice": {
+			"/obj/structure/lattice": 2
+		}
+	},
+	"_maps/RandomRuins/StationRuins/maint/10x10/10x10_wizard.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 3
+		},
+		"grille_stacking": {
+			"/obj/structure/grille": 4
+		}
+	},
+	"_maps/RandomRuins/StationRuins/maint/10x5/10x5_maintmedical.dmm": {
+		"multiple_tables": {
+			"/obj/structure/table": 2
+		}
+	},
+	"_maps/RandomZLevels/VR/murderdome.dmm": {
+		"identical_barricades": {
+			"/obj/structure/barricade/security/murderdome": 4
+		}
+	},
+	"_maps/RandomZLevels/VR/snowdin_VR.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 1
+		},
+		"grille_stacking": {
+			"/obj/structure/grille": 6
+		}
+	},
+	"_maps/RandomZLevels/VR/syndicate_trainer.dmm": {
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/hollow/reinforced/directional": 1,
+			"/obj/effect/spawner/structure/window/hollow/reinforced/end": 2,
+			"/obj/effect/spawner/structure/window/hollow/reinforced/middle": 3
+		}
+	},
+	"_maps/RandomZLevels/away_mission/Academy.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 8
+		},
+		"multiple_airlocks": {
+			"/obj/machinery/door/airlock/external": 2,
+			"/obj/machinery/door/airlock/public/glass": 2
+		},
+		"multiple_chairs": {
+			"/obj/structure/chair/office/light": 1,
+			"/obj/structure/chair/wood/wings": 1
+		},
+		"multiple_lattice": {
+			"/obj/structure/lattice": 22
+		},
+		"multiple_tables": {
+			"/obj/structure/table/wood": 2
+		}
+	},
+	"_maps/RandomZLevels/away_mission/Killthemall.dmm": {
+		"grille_stacking": {
+			"/obj/structure/grille": 8
+		},
+		"identical_barricades": {
+			"/obj/structure/barricade/security/murderdome": 4
+		},
+		"multiple_closets": {
+			"/obj/structure/closet/crate/large": 2
+		}
+	},
+	"_maps/RandomZLevels/away_mission/SnowCabin.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 2
+		},
+		"grille_stacking": {
+			"/obj/structure/grille": 1
+		},
+		"multiple_machinery": {
+			"/obj/machinery/space_heater": 2
+		}
+	},
+	"_maps/RandomZLevels/away_mission/TheBeach.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 3
+		},
+		"grille_stacking": {
+			"/obj/structure/grille": 36
+		}
+	},
+	"_maps/RandomZLevels/away_mission/caves.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 1
+		}
+	},
+	"_maps/RandomZLevels/away_mission/ihategordon.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 27
+		},
+		"multiple_closets": {
+			"/obj/structure/closet/crate/large": 2
+		},
+		"multiple_lattice": {
+			"/obj/structure/lattice": 2
+		},
+		"multiple_machinery": {
+			"/obj/machinery/door/poddoor": 2
+		},
+		"multiple_tables": {
+			"/obj/structure/table/reinforced": 4
+		},
+		"multiple_turf": {
+			"/turf/closed/mineral/mesarock": 1,
+			"/turf/open/floor/plating/cobblestone": 1
+		},
+		"multiple_windows": {
+			"/obj/structure/window/reinforced/spawner/north": 2
+		},
+		"wall_stacking": {
+			"/turf/closed/mineral/mesarock": 3,
+			"/turf/closed/wall/r_wall": 2
+		},
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/plasma/reinforced": 4
+		}
+	},
+	"_maps/RandomZLevels/away_mission/jungleresort.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 26
+		}
+	},
+	"_maps/RandomZLevels/away_mission/research.dmm": {
+		"wall_stacking": {
+			"/turf/closed/mineral": 1
+		}
+	},
+	"_maps/RandomZLevels/away_mission/snowdin.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 1
+		},
+		"grille_stacking": {
+			"/obj/structure/grille": 6
+		}
+	},
+	"_maps/RandomZLevels/away_mission/spacebattle.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 2
+		},
+		"grille_stacking": {
+			"/obj/structure/grille": 33
+		},
+		"multiple_lattice": {
+			"/obj/structure/lattice": 4
+		},
+		"wall_stacking": {
+			"/turf/closed/wall/ice": 1
+		},
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/hollow/reinforced/middle": 6
+		}
+	},
+	"_maps/RandomZLevels/away_mission/undergroundoutpost45.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 13
+		},
+		"multiple_grilles": {
+			"/obj/structure/grille/broken": 2
+		},
+		"smartfridges_in_walls": {
+			"/obj/machinery/smartfridge": 1
+		},
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window": 1,
+			"/obj/effect/spawner/structure/window/reinforced": 2
+		}
+	},
+	"_maps/RandomZLevels/away_mission/wildwest.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 6
+		},
+		"multiple_closets": {
+			"/obj/structure/closet/crate": 2,
+			"/obj/structure/closet/crate/large": 4
+		},
+		"multiple_lattice": {
+			"/obj/structure/lattice": 26,
+			"/obj/structure/lattice/catwalk": 14
+		},
+		"wall_stacking": {
+			"/turf/closed/indestructible/rock": 75,
+			"/turf/closed/wall/r_wall": 2
+		},
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/hollow/reinforced/directional": 7
+		}
+	},
+	"_maps/RuinGeneration/49x47_autism.dmm": {
+		"smartfridges_in_walls": {
+			"/obj/machinery/smartfridge/chemistry/preloaded": 2
+		}
+	},
+	"_maps/RuinGeneration/69x45_charliestation.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 1
+		}
+	},
+	"_maps/RuinGeneration/9x9_chemlab.dmm": {
+		"smartfridges_in_walls": {
+			"/obj/machinery/smartfridge/chemistry/preloaded": 1
+		}
+	},
+	"_maps/archive/IceTaxi/Smexistation/IcemoonUnderground_Above_Splurt.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 2
+		},
+		"identical_barricades": {
+			"/obj/structure/barricade/wooden": 2
+		},
+		"multiple_machinery": {
+			"/obj/machinery/door/poddoor/preopen": 4
+		},
+		"multiple_stairs": {
+			"/obj/structure/stairs": 30
+		},
+		"wall_stacking": {
+			"/turf/closed/mineral/random/snow": 1
+		},
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window": 1,
+			"/obj/effect/spawner/structure/window/ice": 1,
+			"/obj/effect/spawner/structure/window/reinforced": 1
+		}
+	},
+	"_maps/archive/IceTaxi/Smexistation/Snaxi_Splurt.dmm": {
+		"dmm_parse": {
+			"": 1
+		}
+	},
+	"_maps/archive/IceTaxi/Smexistation/Snaxi_Splurt_v2.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 3
+		},
+		"multiple_chairs": {
+			"/obj/structure/chair/stool": 2
+		},
+		"multiple_machinery": {
+			"/obj/machinery/door/poddoor/preopen": 4
+		},
+		"smartfridges_in_walls": {
+			"/obj/machinery/smartfridge/chemistry/preloaded": 2,
+			"/obj/machinery/smartfridge/food": 1,
+			"/obj/machinery/smartfridge/organ/preloaded": 1
+		},
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/ice": 1,
+			"/obj/effect/spawner/structure/window/reinforced": 2
+		}
+	},
+	"_maps/archive/PrisonStation/PrisonStation.dmm": {
+		"disposals_without_trunks": {
+			"/obj/machinery/disposal/bin": 3
+		},
+		"grille_stacking": {
+			"/obj/structure/grille": 30
+		},
+		"identical_disposal_pipes": {
+			"/obj/structure/disposalpipe/segment": 2
+		},
+		"multiple_chairs": {
+			"/obj/structure/chair": 1,
+			"/obj/structure/chair/noose": 1
+		},
+		"multiple_firelocks": {
+			"/obj/machinery/door/firedoor": 2
+		},
+		"multiple_grilles": {
+			"/obj/structure/grille": 8
+		},
+		"multiple_lattice": {
+			"/obj/structure/lattice": 1,
+			"/obj/structure/lattice/catwalk": 1
+		},
+		"multiple_machinery": {
+			"/obj/machinery/door/firedoor": 2,
+			"/obj/machinery/door/poddoor": 44,
+			"/obj/machinery/light/floor": 10
+		},
+		"multiple_tables": {
+			"/obj/structure/table": 2,
+			"/obj/structure/table/reinforced": 4,
+			"/obj/structure/table/reinforced/plastitaniumglass": 2
+		},
+		"wall_stacking": {
+			"/turf/closed/wall/mineral/plastitanium": 2,
+			"/turf/closed/wall/r_wall/rust": 2,
+			"/turf/closed/wall/r_wall/syndicate/nodiagonal": 4
+		},
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/plastitanium": 26
+		}
+	},
+	"_maps/archive/PrisonStation/PrisonUnderground.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden/snowed": 1
+		},
+		"grille_stacking": {
+			"/obj/structure/grille": 7
+		},
+		"identical_barricades": {
+			"/obj/structure/barricade/wooden": 2
+		},
+		"identical_pipes": {
+			"/obj/machinery/atmospherics/pipe/simple/general/hidden": 14,
+			"/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden": 56
+		},
+		"multiple_closets": {
+			"/obj/structure/closet/crate/grave": 2
+		},
+		"multiple_machinery": {
+			"/obj/machinery/atmospherics/pipe/simple/general/hidden": 14,
+			"/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden": 56
+		},
+		"wall_stacking": {
+			"/turf/closed/indestructible/riveted/boss": 1,
+			"/turf/closed/wall/r_wall": 4
+		},
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/reinforced/tinted/electrochromatic": 12
+		}
+	},
+	"_maps/map_files/BoxStations/BoxStation.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 10
+		},
+		"identical_pipes": {
+			"/obj/machinery/atmospherics/pipe/simple/cyan/visible": 2,
+			"/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4": 2
+		},
+		"multiple_lattice": {
+			"/obj/structure/lattice": 8,
+			"/obj/structure/lattice/catwalk": 2
+		},
+		"multiple_machinery": {
+			"/obj/machinery/atmospherics/pipe/simple/cyan/visible": 2,
+			"/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4": 2,
+			"/obj/machinery/door/firedoor/heavy": 2,
+			"/obj/machinery/door/poddoor/preopen": 2,
+			"/obj/machinery/door/poddoor/shutters/preopen": 2,
+			"/obj/machinery/light/floor": 2,
+			"/obj/machinery/suit_storage_unit/standard_unit": 2
+		},
+		"multiple_unary_components": {
+			"/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2": 1,
+			"/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4": 1
+		},
+		"smartfridges_in_walls": {
+			"/obj/machinery/smartfridge": 1,
+			"/obj/machinery/smartfridge/chemistry/preloaded": 2,
+			"/obj/machinery/smartfridge/drinks": 1,
+			"/obj/machinery/smartfridge/food": 1
+		},
+		"wall_stacking": {
+			"/turf/closed/wall": 1,
+			"/turf/closed/wall/r_wall": 5
+		}
+	},
+	"_maps/map_files/BoxStations/SyndicateBoxStation.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 10
+		},
+		"multiple_closets": {
+			"/obj/structure/closet/crate": 2
+		},
+		"multiple_lattice": {
+			"/obj/structure/lattice": 8,
+			"/obj/structure/lattice/catwalk": 2
+		},
+		"multiple_machinery": {
+			"/obj/machinery/door/poddoor/shutters/preopen": 2,
+			"/obj/machinery/light/floor": 2,
+			"/obj/machinery/suit_storage_unit/standard_unit": 2
+		},
+		"multiple_unary_components": {
+			"/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2": 1,
+			"/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4": 1
+		},
+		"smartfridges_in_walls": {
+			"/obj/machinery/smartfridge": 1,
+			"/obj/machinery/smartfridge/chemistry/preloaded": 2,
+			"/obj/machinery/smartfridge/drinks": 1,
+			"/obj/machinery/smartfridge/food": 1
+		},
+		"wall_stacking": {
+			"/turf/closed/wall/mineral/plastitanium/nodiagonal": 1,
+			"/turf/closed/wall/r_wall/r_plastitanium": 5
+		}
+	},
+	"_maps/map_files/CogStation/CogStation.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 1
+		},
+		"disposals_without_trunks": {
+			"/obj/machinery/disposal/bin": 3
+		},
+		"multiple_machinery": {
+			"/obj/machinery/atmospherics/components/binary/valve/digital": 2,
+			"/obj/machinery/computer/cargo/request": 2
+		},
+		"multiple_tables": {
+			"/obj/structure/table": 4,
+			"/obj/structure/table/reinforced": 6,
+			"/obj/structure/table/wood": 2
+		},
+		"multiple_turf": {
+			"/turf/open/floor/plating": 11,
+			"/turf/open/floor/wood": 11
+		},
+		"wall_stacking": {
+			"/turf/closed/wall/r_wall": 2
+		}
+	},
+	"_maps/map_files/Deltastation/DeltaStation2.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 38
+		},
+		"multiple_lattice": {
+			"/obj/structure/lattice": 9,
+			"/obj/structure/lattice/catwalk": 1
+		},
+		"multiple_tables": {
+			"/obj/structure/table": 2,
+			"/obj/structure/table/glass": 2,
+			"/obj/structure/table/wood": 2
+		},
+		"multiple_windows": {
+			"/obj/structure/window/reinforced": 10
+		},
+		"smartfridges_in_walls": {
+			"/obj/machinery/smartfridge": 2,
+			"/obj/machinery/smartfridge/chemistry/preloaded": 2,
+			"/obj/machinery/smartfridge/organ/preloaded": 1
+		},
+		"wall_stacking": {
+			"/turf/closed/wall": 1
+		}
+	},
+	"_maps/map_files/FestiveBall/FestiveStation.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden/snowed": 2
+		},
+		"grille_stacking": {
+			"/obj/structure/grille": 12
+		},
+		"identical_pipes": {
+			"/obj/machinery/atmospherics/pipe/heat_exchanging/junction": 2
+		},
+		"multiple_chairs": {
+			"/obj/structure/chair/comfy": 1,
+			"/obj/structure/chair/comfy/black": 1,
+			"/obj/structure/chair/office/dark": 1,
+			"/obj/structure/chair/sofa/left/brown": 1
+		},
+		"multiple_machinery": {
+			"/obj/machinery/atmospherics/pipe/heat_exchanging/junction": 2,
+			"/obj/machinery/door/poddoor/shutters": 4,
+			"/obj/machinery/door/poddoor/shutters/preopen": 2
+		},
+		"wall_stacking": {
+			"/turf/closed/mineral/snowmountain": 1
+		}
+	},
+	"_maps/map_files/IceBoxStation/IceBoxStation.dmm": {
+		"identical_pipes": {
+			"/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4": 2
+		},
+		"multiple_machinery": {
+			"/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4": 2
+		}
+	},
+	"_maps/map_files/LambdaStation/lambda.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 2
+		},
+		"multiple_lattice": {
+			"/obj/structure/lattice": 4
+		},
+		"multiple_machinery": {
+			"/obj/machinery/iv_drip": 2
+		},
+		"multiple_turf": {
+			"/turf/open/floor/plating": 10
+		},
+		"smartfridges_in_walls": {
+			"/obj/machinery/smartfridge/chemistry/preloaded": 2,
+			"/obj/machinery/smartfridge/chemistry/virology": 1,
+			"/obj/machinery/smartfridge/drinks": 1,
+			"/obj/machinery/smartfridge/food": 1
+		},
+		"wall_stacking": {
+			"/turf/closed/indestructible/riveted": 1,
+			"/turf/closed/mineral": 2,
+			"/turf/closed/wall": 8,
+			"/turf/closed/wall/r_wall": 27
+		}
+	},
+	"_maps/map_files/MetaStation/MetaStation.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 15
+		},
+		"grille_stacking": {
+			"/obj/structure/grille": 2
+		},
+		"multiple_lattice": {
+			"/obj/structure/lattice": 38
+		},
+		"multiple_machinery": {
+			"/obj/machinery/iv_drip": 4
+		},
+		"multiple_tables": {
+			"/obj/structure/table/wood/fancy/blue": 2,
+			"/obj/structure/table/wood/fancy/royalblue": 2
+		},
+		"multiple_windows": {
+			"/obj/structure/window/reinforced": 2
+		},
+		"smartfridges_in_walls": {
+			"/obj/machinery/smartfridge": 1,
+			"/obj/machinery/smartfridge/chemistry/preloaded": 2,
+			"/obj/machinery/smartfridge/drinks": 1,
+			"/obj/machinery/smartfridge/food": 1,
+			"/obj/machinery/smartfridge/organ/preloaded": 1
+		},
+		"wall_stacking": {
+			"/turf/closed/wall": 4,
+			"/turf/closed/wall/r_wall": 107
+		}
+	},
+	"_maps/map_files/Mining/Lavaland.dmm": {
+		"disposals_without_trunks": {
+			"/obj/machinery/disposal/bin": 4
+		},
+		"grille_stacking": {
+			"/obj/structure/grille": 3
+		},
+		"identical_pipes": {
+			"/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4": 8
+		},
+		"multiple_lattice": {
+			"/obj/structure/lattice": 48,
+			"/obj/structure/lattice/catwalk": 12
+		},
+		"multiple_machinery": {
+			"/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4": 8,
+			"/obj/machinery/door/poddoor/preopen": 6,
+			"/obj/machinery/light": 2
+		},
+		"multiple_tables": {
+			"/obj/structure/table/reinforced/brass": 2
+		},
+		"multiple_unary_components": {
+			"/obj/machinery/atmospherics/components/unary/vent_pump/on": 1,
+			"/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4": 1
+		},
+		"multiple_windows": {
+			"/obj/structure/window/reinforced/survival_pod": 6
+		},
+		"wall_stacking": {
+			"/turf/closed/mineral/random/high_chance/volcanic": 1,
+			"/turf/closed/wall": 16,
+			"/turf/closed/wall/mineral/plastitanium": 1
+		},
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/plastitanium": 2
+		}
+	},
+	"_maps/map_files/NebulaStation/NebulaStation.dmm": {
+		"multiple_chairs": {
+			"/obj/structure/chair/noose": 1,
+			"/obj/structure/chair/stool/directional/south": 1
+		}
+	},
+	"_maps/map_files/OmegaStation/OmegaStation.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 3
+		},
+		"grille_stacking": {
+			"/obj/structure/grille": 6
+		},
+		"multiple_closets": {
+			"/obj/structure/closet": 1,
+			"/obj/structure/closet/l3closet/security": 1
+		},
+		"multiple_lattice": {
+			"/obj/structure/lattice": 4
+		},
+		"multiple_machinery": {
+			"/obj/machinery/atmospherics/components/unary/vent_pump/on": 2,
+			"/obj/machinery/shower": 2
+		},
+		"multiple_tables": {
+			"/obj/structure/table/reinforced": 2
+		},
+		"multiple_turf": {
+			"/turf/open/floor/plating": 2
+		},
+		"multiple_unary_components": {
+			"/obj/machinery/atmospherics/components/unary/vent_pump/on": 2
+		},
+		"multiple_windows": {
+			"/obj/structure/window/spawner/north": 2
+		},
+		"smartfridges_in_walls": {
+			"/obj/machinery/smartfridge": 1,
+			"/obj/machinery/smartfridge/chemistry/preloaded": 2
+		}
+	},
+	"_maps/map_files/PubbyStation/PubbyStation.dmm": {
+		"grille_stacking": {
+			"/obj/structure/grille": 2
+		},
+		"multiple_lattice": {
+			"/obj/structure/lattice": 3,
+			"/obj/structure/lattice/catwalk": 1
+		},
+		"multiple_machinery": {
+			"/obj/machinery/light/small": 2
+		},
+		"multiple_tables": {
+			"/obj/structure/table": 2,
+			"/obj/structure/table/wood": 2
+		},
+		"smartfridges_in_walls": {
+			"/obj/machinery/smartfridge": 1,
+			"/obj/machinery/smartfridge/chemistry/preloaded": 2
+		},
+		"wall_stacking": {
+			"/turf/closed/wall": 4
+		},
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/reinforced": 9,
+			"/obj/effect/spawner/structure/window/reinforced/tinted": 4
+		}
+	},
+	"_maps/map_files/SmolStation/SmolStation.dmm": {
+		"multiple_machinery": {
+			"/obj/machinery/field/generator": 12,
+			"/obj/machinery/power/emitter": 2,
+			"/obj/machinery/shieldgen": 12
+		},
+		"smartfridges_in_walls": {
+			"/obj/machinery/smartfridge": 1,
+			"/obj/machinery/smartfridge/chemistry/preloaded": 1
+		},
+		"wall_stacking": {
+			"/turf/closed/wall/r_wall": 25
+		}
+	},
+	"_maps/map_files/TauStation/TauStation.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 6
+		},
+		"disposals_without_trunks": {
+			"/obj/machinery/disposal/bin": 1
+		},
+		"multiple_lattice": {
+			"/obj/structure/lattice": 18,
+			"/obj/structure/lattice/catwalk": 4
+		},
+		"multiple_machinery": {
+			"/obj/machinery/portable_atmospherics/canister/oxygen": 2
+		},
+		"smartfridges_in_walls": {
+			"/obj/machinery/smartfridge/chemistry/preloaded": 2,
+			"/obj/machinery/smartfridge/organ/preloaded": 1
+		},
+		"wall_stacking": {
+			"/turf/closed/wall": 4,
+			"/turf/closed/wall/r_wall": 29
+		}
+	},
+	"_maps/map_files/VoidRaptor/VoidRaptor.dmm": {
+		"multiple_closets": {
+			"/obj/structure/closet/firecloset/wall": 1,
+			"/obj/structure/closet/secure_closet/genpop": 1
+		}
+	},
+	"_maps/map_files/bluemoon_maps/icemoonstation.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 12
+		},
+		"multiple_machinery": {
+			"/obj/machinery/door/poddoor/preopen": 2,
+			"/obj/machinery/power/deck_relay": 6
+		},
+		"multiple_tables": {
+			"/obj/structure/table": 2
+		},
+		"multiple_turf": {
+			"/turf/open/floor/plasteel": 17,
+			"/turf/open/floor/plating": 18,
+			"/turf/open/floor/plating/asteroid/snow/icemoon": 6,
+			"/turf/open/space/basic": 1
+		},
+		"multiple_windows": {
+			"/obj/structure/window/reinforced": 2
+		},
+		"smartfridges_in_walls": {
+			"/obj/machinery/smartfridge/chemistry": 1,
+			"/obj/machinery/smartfridge/chemistry/preloaded": 2
+		},
+		"wall_stacking": {
+			"/turf/closed/mineral/random/snow": 1
+		},
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/ice": 7,
+			"/obj/effect/spawner/structure/window/plasma/reinforced": 1,
+			"/obj/effect/spawner/structure/window/reinforced": 8
+		}
+	},
+	"_maps/map_files/debug/runtimestation.dmm": {
+		"multiple_lattice": {
+			"/obj/structure/lattice": 2,
+			"/obj/structure/lattice/catwalk": 2
+		},
+		"multiple_machinery": {
+			"/obj/machinery/light": 6
+		},
+		"multiple_tables": {
+			"/obj/structure/table": 6
+		},
+		"wall_stacking": {
+			"/turf/closed/wall/r_wall": 2
+		}
+	},
+	"_maps/map_files/debug/runtimestation_minimal.dmm": {
+		"multiple_machinery": {
+			"/obj/machinery/light": 6
+		},
+		"multiple_tables": {
+			"/obj/structure/table": 6
+		}
+	},
+	"_maps/map_files/generic/CentCom.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 4
+		},
+		"multiple_chairs": {
+			"/obj/structure/chair/noose": 3,
+			"/obj/structure/chair/wood": 1,
+			"/obj/structure/chair/wood/wings": 2
+		},
+		"multiple_lattice": {
+			"/obj/structure/lattice": 319,
+			"/obj/structure/lattice/catwalk": 3
+		},
+		"multiple_tables": {
+			"/obj/structure/table/abductor": 2,
+			"/obj/structure/table/reinforced": 2
+		},
+		"wall_stacking": {
+			"/turf/closed/indestructible/fakeglass": 18,
+			"/turf/closed/indestructible/riveted": 1138,
+			"/turf/closed/indestructible/rock": 5,
+			"/turf/closed/indestructible/syndicate": 63
+		}
+	},
+	"_maps/map_files/generic/CentCom_hermetic.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 4
+		},
+		"multiple_chairs": {
+			"/obj/structure/chair/noose": 3,
+			"/obj/structure/chair/wood": 1,
+			"/obj/structure/chair/wood/wings": 2
+		},
+		"multiple_lattice": {
+			"/obj/structure/lattice": 319,
+			"/obj/structure/lattice/catwalk": 3
+		},
+		"multiple_tables": {
+			"/obj/structure/table/abductor": 2,
+			"/obj/structure/table/reinforced": 2
+		},
+		"wall_stacking": {
+			"/turf/closed/indestructible/fakeglass": 18,
+			"/turf/closed/indestructible/riveted": 1138,
+			"/turf/closed/indestructible/rock": 5,
+			"/turf/closed/indestructible/syndicate": 63
+		}
+	},
+	"_maps/map_files/layenia/layeniastation.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 5,
+			"/obj/structure/barricade/wooden/snowed": 12
+		},
+		"multiple_lattice": {
+			"/obj/structure/lattice": 1,
+			"/obj/structure/lattice/catwalk": 9
+		},
+		"multiple_machinery": {
+			"/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2": 2,
+			"/obj/machinery/power/apc/auto_name/north": 4
+		},
+		"multiple_tables": {
+			"/obj/structure/table": 3,
+			"/obj/structure/table/reinforced": 13,
+			"/obj/structure/table/wood": 2
+		},
+		"multiple_unary_components": {
+			"/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer2": 2
+		},
+		"multiple_windows": {
+			"/obj/structure/window": 6
+		},
+		"smartfridges_in_walls": {
+			"/obj/machinery/smartfridge": 2,
+			"/obj/machinery/smartfridge/chemistry/preloaded": 2
+		},
+		"wall_stacking": {
+			"/turf/closed/wall/ice": 2,
+			"/turf/closed/wall/r_wall": 14
+		}
+	},
+	"_maps/shuttles/access_smol.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		},
+		"multiple_closets": {
+			"/obj/structure/closet/emcloset/anchored": 2
+		}
+	},
+	"_maps/shuttles/arrival_cog.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/arrivals": 3
+		}
+	},
+	"_maps/shuttles/arrival_delta.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/arrivals": 3
+		}
+	},
+	"_maps/shuttles/arrival_omega.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/arrivals": 3
+		}
+	},
+	"_maps/shuttles/arrival_pubby.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/arrivals": 2
+		}
+	},
+	"_maps/shuttles/arrival_smol.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/arrivals": 3
+		}
+	},
+	"_maps/shuttles/assault_pod_default.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/assault_pod": 1
+		}
+	},
+	"_maps/shuttles/axsbrig_smol.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		}
+	},
+	"_maps/shuttles/axsscioutpost_smol.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		}
+	},
+	"_maps/shuttles/bluemoon/ftu_tradeship.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 4
+		}
+	},
+	"_maps/shuttles/bluemoon/inteq_collosus.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		},
+		"grille_stacking": {
+			"/obj/structure/grille": 21
+		}
+	},
+	"_maps/shuttles/bluemoon/medieval_default.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/medieval": 1
+		},
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/plastitanium/pirate": 2
+		}
+	},
+	"_maps/shuttles/bluemoon/ruin_ds_shuttle.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		}
+	},
+	"_maps/shuttles/bluemoon/ruin_lifeweb_haron.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 2
+		}
+	},
+	"_maps/shuttles/bluemoon/ruin_tarkoff_driverdc2.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 2
+		}
+	},
+	"_maps/shuttles/bluemoon/ruin_tarkoff_driverdc3.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 2
+		}
+	},
+	"_maps/shuttles/bluemoon/ruin_tarkoff_driverdc54.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 2
+		}
+	},
+	"_maps/shuttles/bluemoon/sol_talos.dmm": {
+		"multiple_machinery": {
+			"/obj/machinery/door/poddoor/shutters": 2
+		},
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/shuttle": 13
+		}
+	},
+	"_maps/shuttles/bluemoon/sol_vela.dmm": {
+		"multiple_machinery": {
+			"/obj/machinery/door/poddoor/preopen": 2
+		},
+		"multiple_tables": {
+			"/obj/structure/table/reinforced": 6
+		}
+	},
+	"_maps/shuttles/bluemoon/syndicate_aegis.dmm": {
+		"multiple_machinery": {
+			"/obj/machinery/iv_drip": 2
+		},
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/plastitanium": 2
+		}
+	},
+	"_maps/shuttles/bluemoon/syndicate_cyanide.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		}
+	},
+	"_maps/shuttles/bluemoon/syndicate_traitor.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		}
+	},
+	"_maps/shuttles/bluemoon/vox_skipjack.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/pirate": 3
+		}
+	},
+	"_maps/shuttles/cargo_birdboat.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/supply": 2
+		}
+	},
+	"_maps/shuttles/cargo_box.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/supply": 2
+		}
+	},
+	"_maps/shuttles/cargo_delta.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/supply": 2
+		}
+	},
+	"_maps/shuttles/cargo_kilo.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/supply": 2
+		}
+	},
+	"_maps/shuttles/emergency_asteroid.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/emergency": 3
+		}
+	},
+	"_maps/shuttles/emergency_birdboat.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/emergency": 4
+		}
+	},
+	"_maps/shuttles/emergency_cere.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/emergency": 4
+		}
+	},
+	"_maps/shuttles/emergency_cog.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/emergency": 3
+		}
+	},
+	"_maps/shuttles/emergency_construction.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/emergency/shuttle_build": 3
+		}
+	},
+	"_maps/shuttles/emergency_cramped.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/emergency": 3
+		}
+	},
+	"_maps/shuttles/emergency_delta.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/emergency": 4
+		}
+	},
+	"_maps/shuttles/emergency_goon.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/emergency": 3
+		}
+	},
+	"_maps/shuttles/emergency_gorilla.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/emergency": 1
+		}
+	},
+	"_maps/shuttles/emergency_imfedupwiththisworld.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/emergency": 4
+		}
+	},
+	"_maps/shuttles/emergency_kilo.dmm": {
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/shuttle": 6
+		}
+	},
+	"_maps/shuttles/emergency_koipond.dmm": {
+		"grille_stacking": {
+			"/obj/structure/grille": 19
+		}
+	},
+	"_maps/shuttles/emergency_luxury.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/emergency": 3
+		}
+	},
+	"_maps/shuttles/emergency_meta.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/emergency": 3
+		}
+	},
+	"_maps/shuttles/emergency_meteor.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/emergency": 3
+		}
+	},
+	"_maps/shuttles/emergency_mini.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/emergency": 3
+		}
+	},
+	"_maps/shuttles/emergency_omega.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/emergency": 4
+		}
+	},
+	"_maps/shuttles/emergency_pubby.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/emergency": 3
+		},
+		"grille_stacking": {
+			"/obj/structure/grille": 8
+		}
+	},
+	"_maps/shuttles/emergency_raven.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/emergency": 3
+		},
+		"grille_stacking": {
+			"/obj/structure/grille": 61
+		}
+	},
+	"_maps/shuttles/emergency_russiafightpit.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/emergency": 1
+		}
+	},
+	"_maps/shuttles/emergency_syndicate.dmm": {
+		"grille_stacking": {
+			"/obj/structure/grille": 25
+		}
+	},
+	"_maps/shuttles/emergency_vault.dmm": {
+		"grille_stacking": {
+			"/obj/structure/grille": 23
+		}
+	},
+	"_maps/shuttles/emergency_wabbajack.dmm": {
+		"barricade_stacking": {
+			"/obj/structure/barricade/wooden": 1
+		}
+	},
+	"_maps/shuttles/escape_pod_large.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/pod": 3
+		}
+	},
+	"_maps/shuttles/exploration_shuttle.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		}
+	},
+	"_maps/shuttles/ferry_base.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		}
+	},
+	"_maps/shuttles/ferry_fancy.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		}
+	},
+	"_maps/shuttles/ferry_kilo.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		}
+	},
+	"_maps/shuttles/ferry_lighthouse.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		},
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/reinforced": 1,
+			"/obj/effect/spawner/structure/window/shuttle": 3
+		}
+	},
+	"_maps/shuttles/ferry_meat.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		}
+	},
+	"_maps/shuttles/hunter_bounty.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 4
+		},
+		"grille_stacking": {
+			"/obj/structure/grille": 21
+		},
+		"multiple_windows": {
+			"/obj/structure/window/plastitanium": 2
+		},
+		"wall_stacking": {
+			"/turf/closed/wall/mineral/plastitanium": 2
+		}
+	},
+	"_maps/shuttles/hunter_russian.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 4
+		}
+	},
+	"_maps/shuttles/hunter_space_cop.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		}
+	},
+	"_maps/shuttles/infiltrator_basic.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 4
+		},
+		"grille_stacking": {
+			"/obj/structure/grille": 15
+		}
+	},
+	"_maps/shuttles/infiltrator_syndicate_basic.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 4
+		},
+		"grille_stacking": {
+			"/obj/structure/grille": 15
+		}
+	},
+	"_maps/shuttles/labour_box.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		},
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/shuttle": 3
+		}
+	},
+	"_maps/shuttles/labour_cog.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		},
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/shuttle": 3
+		}
+	},
+	"_maps/shuttles/labour_delta.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		},
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/shuttle": 3
+		}
+	},
+	"_maps/shuttles/labour_kilo.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		},
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/shuttle": 3
+		}
+	},
+	"_maps/shuttles/lambda_code.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 4
+		}
+	},
+	"_maps/shuttles/mining_box.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		}
+	},
+	"_maps/shuttles/mining_common_kilo.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		},
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/shuttle": 1
+		}
+	},
+	"_maps/shuttles/mining_common_meta.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		}
+	},
+	"_maps/shuttles/mining_delta.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		}
+	},
+	"_maps/shuttles/mining_kilo.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		},
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/shuttle": 1
+		}
+	},
+	"_maps/shuttles/mining_large.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		}
+	},
+	"_maps/shuttles/pirate_default.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/pirate": 3
+		},
+		"grille_stacking": {
+			"/obj/structure/grille": 19
+		},
+		"multiple_machinery": {
+			"/obj/machinery/atmospherics/components/unary/vent_pump/on": 2
+		},
+		"multiple_unary_components": {
+			"/obj/machinery/atmospherics/components/unary/vent_pump/on": 2
+		},
+		"multiple_windows": {
+			"/obj/structure/window/plastitanium/pirate": 8
+		},
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/plastitanium/pirate": 32
+		}
+	},
+	"_maps/shuttles/ruin_caravan_victim.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		}
+	},
+	"_maps/shuttles/ruin_derelict_shuttle.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		}
+	},
+	"_maps/shuttles/ruin_pirate_cutter.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		},
+		"grille_stacking": {
+			"/obj/structure/grille": 11
+		}
+	},
+	"_maps/shuttles/ruin_syndicate_dropship.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		},
+		"grille_stacking": {
+			"/obj/structure/grille": 11
+		}
+	},
+	"_maps/shuttles/ruin_syndicate_fighter_shiv.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		}
+	},
+	"_maps/shuttles/slaveship_basic.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 4
+		},
+		"window_spawner": {
+			"/obj/effect/spawner/structure/window/plastitanium/pirate": 20
+		}
+	},
+	"_maps/shuttles/snow_taxi.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		}
+	},
+	"_maps/shuttles/snowdin_excavation.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/elevator": 2
+		}
+	},
+	"_maps/shuttles/snowdin_mining.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile/elevator": 3
+		}
+	},
+	"_maps/shuttles/whiteship_box.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 4
+		}
+	},
+	"_maps/shuttles/whiteship_cere.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 4
+		}
+	},
+	"_maps/shuttles/whiteship_cog.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 3
+		}
+	},
+	"_maps/shuttles/whiteship_delta.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 4
+		}
+	},
+	"_maps/shuttles/whiteship_meta.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 4
+		},
+		"smartfridges_in_walls": {
+			"/obj/machinery/smartfridge": 1
+		}
+	},
+	"_maps/shuttles/whiteship_pubby.dmm": {
+		"docking_port_varedits": {
+			"/obj/docking_port/mobile": 4
+		}
+	},
+	"_maps/templates/antag_training/atmos.dmm": {
+		"grille_stacking": {
+			"/obj/structure/grille": 5
+		}
+	},
+	"_maps/templates/hilbertshotel/apartment_1.dmm": {
+		"multiple_windows": {
+			"/obj/structure/window": 16
+		},
+		"wall_stacking": {
+			"/turf/closed/indestructible/wall": 4
+		}
+	},
+	"_maps/templates/hilbertshotel/apartment_3.dmm": {
+		"multiple_chairs": {
+			"/obj/structure/chair": 1,
+			"/obj/structure/chair/noose": 1
+		}
+	},
+	"_maps/templates/hilbertshotel/apartment_beach.dmm": {
+		"wall_stacking": {
+			"/turf/closed/indestructible/sandstone": 10,
+			"/turf/closed/indestructible/wood": 5
+		}
+	},
+	"_maps/templates/hilbertshotel/apartment_forest.dmm": {
+		"multiple_machinery": {
+			"/obj/machinery/light/floor": 2
+		}
+	},
+	"_maps/templates/hilbertshotel/apartment_mount.dmm": {
+		"multiple_tables": {
+			"/obj/structure/table/wood/fancy/purple": 2
+		}
+	},
+	"_maps/templates/hilbertshotel/apartment_prison.dmm": {
+		"multiple_machinery": {
+			"/obj/machinery/light/cold/directional": 2
+		}
+	},
+	"_maps/templates/hilbertshotel/apartment_syndi.dmm": {
+		"multiple_chairs": {
+			"/obj/structure/chair/office/dark": 2
+		},
+		"multiple_machinery": {
+			"/obj/machinery/microwave": 12
+		},
+		"multiple_tables": {
+			"/obj/structure/table": 3,
+			"/obj/structure/table/reinforced": 1
+		},
+		"multiple_windows": {
+			"/obj/structure/window": 26,
+			"/obj/structure/window/reinforced/tinted": 12
+		}
+	},
+	"_maps/templates/hilbertshotel/apartment_train.dmm": {
+		"wall_stacking": {
+			"/turf/closed/indestructible/fakedoor": 1,
+			"/turf/closed/indestructible/syndicate": 13
+		}
+	},
+	"_maps/templates/hilbertshotel/stationside.dmm": {
+		"multiple_tables": {
+			"/obj/structure/table": 2
+		}
+	}
+}

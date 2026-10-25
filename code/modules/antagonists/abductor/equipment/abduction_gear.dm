@@ -689,11 +689,11 @@
 	name = "beacon - Reagent Synthesizer"
 	spawned_machine = /obj/machinery/chem_dispenser/abductor
 
-#define ALIEN_LIGHT_ON \
-	Initialize(mapload) { \
+#define ALIEN_LIGHT_ON(path) \
+	##path/Initialize(mapload) { \
 		. = ..(); \
 		set_light(1); \
-	} ;
+	}
 
 /obj/item/scalpel/alien
 	name = "alien scalpel"
@@ -702,7 +702,7 @@
 	w_class = WEIGHT_CLASS_TINY
 	light_color = LIGHT_COLOR_PINK
 	toolspeed = 0.25
-	ALIEN_LIGHT_ON
+ALIEN_LIGHT_ON(/obj/item/scalpel/alien)
 
 /obj/item/scalpel/advanced/alien
 	name = "alien combi scalpel"
@@ -711,7 +711,7 @@
 	icon_state = "combi_scalpel"
 	light_color = LIGHT_COLOR_PINK
 	toolspeed = 0.25
-	ALIEN_LIGHT_ON
+ALIEN_LIGHT_ON(/obj/item/scalpel/advanced/alien)
 
 /obj/item/hemostat/alien
 	name = "alien hemostat"
@@ -720,7 +720,7 @@
 	w_class = WEIGHT_CLASS_TINY
 	light_color = LIGHT_COLOR_PINK
 	toolspeed = 0.25
-	ALIEN_LIGHT_ON
+ALIEN_LIGHT_ON(/obj/item/hemostat/alien)
 
 /obj/item/retractor/alien
 	name = "alien retractor"
@@ -729,7 +729,7 @@
 	w_class = WEIGHT_CLASS_TINY
 	light_color = LIGHT_COLOR_PINK
 	toolspeed = 0.25
-	ALIEN_LIGHT_ON
+ALIEN_LIGHT_ON(/obj/item/retractor/alien)
 
 /obj/item/retractor/advanced/alien
 	name = "alien combi retractor"
@@ -738,7 +738,7 @@
 	icon_state = "combi_retractor"
 	light_color = LIGHT_COLOR_PINK
 	toolspeed = 0.25
-	ALIEN_LIGHT_ON
+ALIEN_LIGHT_ON(/obj/item/retractor/advanced/alien)
 
 /obj/item/circular_saw/alien
 	name = "alien saw"
@@ -748,7 +748,7 @@
 	light_color = LIGHT_COLOR_PINK
 	toolspeed = 0.25
 	force = 16
-	ALIEN_LIGHT_ON
+ALIEN_LIGHT_ON(/obj/item/circular_saw/alien)
 
 /obj/item/surgicaldrill/alien
 	name = "alien drill"
@@ -757,7 +757,7 @@
 	w_class = WEIGHT_CLASS_SMALL
 	light_color = LIGHT_COLOR_PINK
 	toolspeed = 0.25
-	ALIEN_LIGHT_ON
+ALIEN_LIGHT_ON(/obj/item/surgicaldrill/alien)
 
 /obj/item/surgicaldrill/advanced/alien
 	name = "alien combi drill"
@@ -766,7 +766,7 @@
 	icon_state = "combi_drill"
 	light_color = LIGHT_COLOR_PINK
 	toolspeed = 0.25
-	ALIEN_LIGHT_ON
+ALIEN_LIGHT_ON(/obj/item/surgicaldrill/advanced/alien)
 
 /obj/item/cautery/alien
 	name = "alien cautery"
@@ -775,7 +775,7 @@
 	w_class = WEIGHT_CLASS_TINY
 	light_color = LIGHT_COLOR_PINK
 	toolspeed = 0.25
-	ALIEN_LIGHT_ON
+ALIEN_LIGHT_ON(/obj/item/cautery/alien)
 
 #undef ALIEN_LIGHT_ON
 

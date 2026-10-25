@@ -185,8 +185,7 @@
 	return discount_rate
 
 /obj/machinery/equipment_vendor/examine_display_content(mob/user)
-	. = ..()
-	. += "– Текущая скидка на товары: [span_green("[get_discount() * 100]%")]"
+	return "– Текущая скидка на товары: [span_green("[get_discount() * 100]%")]"
 
 /obj/machinery/equipment_vendor/ui_assets(mob/user)
 	return list(get_asset_datum(/datum/asset/spritesheet_batched/vending))

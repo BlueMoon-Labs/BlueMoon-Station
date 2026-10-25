@@ -10,13 +10,19 @@ GLOBAL_LIST_EMPTY(GPS_list)
 	if(!isatom(parent))
 		return COMPONENT_INCOMPATIBLE
 	gpstag = _gpstag
+	join_signal_lists()
+
+/datum/component/gps/Destroy()
+	leave_signal_lists()
+	return ..()
+
+/datum/component/gps/proc/join_signal_lists()
 	GLOB.GPS_list += src
 	GLOB.poi_list |= parent
 
-/datum/component/gps/Destroy()
+/datum/component/gps/proc/leave_signal_lists()
 	GLOB.GPS_list -= src
 	GLOB.poi_list -= parent
-	return ..()
 
 ///GPS component subtype. Only gps/item's can be used to open the UI.
 /datum/component/gps/item
@@ -133,6 +139,10 @@ GLOBAL_LIST_EMPTY(GPS_list)
 /datum/component/gps/item/ui_state(mob/user)
 	return state
 
+///Components whose signals this GPS lists.
+/datum/component/gps/item/proc/signal_sources()
+	return GLOB.GPS_list
+
 /datum/component/gps/item/ui_data(mob/user)
 	var/list/data = list()
 	data["power"] = tracking
@@ -149,7 +159,7 @@ GLOBAL_LIST_EMPTY(GPS_list)
 	var/list/signals = list()
 	data["signals"] = list()
 
-	for(var/gps in GLOB.GPS_list)
+	for(var/gps in signal_sources())
 		var/datum/component/gps/G = gps
 		if(G.emped || !G.tracking || G == src)
 			continue

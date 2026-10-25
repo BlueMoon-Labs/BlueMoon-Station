@@ -32,6 +32,24 @@ batched spritesheets on first use instead of during SSassets init.
 Compiled artifacts are separated by profile and define set, and are invalidated
 when sources or the local BYOND compiler change.
 
+`dm-test-run` can start several worlds side by side from one DMB:
+
+- `--shards=N` splits the run into N worlds, balanced by the wall times of past
+  runs in `data/unit_test_durations.json`.
+- `--shard-group=J/M` makes this machine part J of M: its N worlds take their
+  share of N*M shards, so several CI runners split one run.
+- `--maps=a,b` starts one world per `_maps/<name>.json`, usually with
+  `--unit-test-profile=full-map`.
+- `--test-list=file` runs only the listed test types.
+- `--prebuilt` runs the DMB that is already there instead of compiling it, and
+  `--world-timeout=MINUTES` kills a hung world.
+- `--retry-failed` runs the failed tests of a world once more in a fresh world.
+  If all of them pass there, they are reported as flaky and the run stays clean.
+  A world with more than ten failures is not retried.
+
+`--warnings-as-errors` fails `dm` and `dm-test-build` on any DreamMaker warning,
+as CI does.
+
 ## Getting list of available targets
 
 You can get a list of all targets that you can build by running the following command:

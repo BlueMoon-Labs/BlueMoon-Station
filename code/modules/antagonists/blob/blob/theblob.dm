@@ -164,6 +164,8 @@
 				T = null
 	if(!T)
 		return FALSE
+	if(training_origin && !antag_training_blob_may_grow(controller || overmind, T))
+		return FALSE
 	var/make_blob = TRUE //can we make a blob?
 
 	if(isspaceturf(T) && !(locate(/obj/structure/lattice) in T) && prob(80))

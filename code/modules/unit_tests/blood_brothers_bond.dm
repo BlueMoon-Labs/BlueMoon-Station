@@ -538,11 +538,12 @@
 /datum/unit_test/blood_brothers_departure_training/Run()
 	var/datum/team/brother_team/team = allocate_brother_team(src)
 	var/datum/mind/trainee = team.members[1]
-	var/mob/dead/observer/ghost = allocate(/mob/dead/observer, run_loc_floor_bottom_left, trainee.current)
-	ghost.can_reenter_corpse = TRUE
 	var/datum/antag_training_session/session = allocate_training_session(/datum/antag_training_program/free)
 	TEST_ASSERT(session.prepare(), "Полигон готов")
 	var/datum/antag_training_arena/arena = session.arena
+	// Призрак создаётся после prepare(): сборка арены спит, а под нагрузкой призрак без клиента не доживает до connect().
+	var/mob/dead/observer/ghost = allocate(/mob/dead/observer, run_loc_floor_bottom_left, trainee.current)
+	ghost.can_reenter_corpse = TRUE
 	TEST_ASSERT(session.connect(ghost), "Призрак брата вошёл на полигон")
 	// Logout призрака, ушедшего в куклу, удаляет его; без клиента Logout не зовётся
 	qdel(ghost)

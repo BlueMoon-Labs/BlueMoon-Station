@@ -825,7 +825,6 @@
 	name = "Armory Shutters"
 	},
 /obj/machinery/door/firedoor,
-/obj/machinery/door/firedoor,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/armory)
 "aBC" = (
@@ -8444,7 +8443,7 @@
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
 "fid" = (
 /obj/effect/spawner/structure/window/plastitanium,
-/turf/open/space/basic,
+/turf/open/floor/plating,
 /area/ruin/lavaland/unpowered/deepspaceone/virology)
 "fiq" = (
 /obj/structure/stone_tile/block{
@@ -12972,7 +12971,6 @@
 /obj/machinery/door/firedoor,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
-/obj/machinery/door/firedoor,
 /turf/open/floor/plasteel/white/smooth/large,
 /area/mine/xenoarch_area_c)
 "hQh" = (
@@ -14420,7 +14418,7 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/turf/open/space/basic,
+/turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
 "iJX" = (
 /obj/effect/decal/cleanable/dirt/dust,
@@ -31638,6 +31636,9 @@
 /turf/open/floor/plasteel/smooth/half,
 /area/mine/xenoarch_area_b)
 "syI" = (
+/obj/structure/disposalpipe/trunk{
+	dir = 2
+	},
 /obj/machinery/disposal/bin,
 /obj/effect/turf_decal/bot/yellow,
 /obj/effect/turf_decal/trimline/purple/warning{
@@ -34485,7 +34486,6 @@
 	name = "Medbay";
 	req_access_txt = "5"
 	},
-/obj/machinery/door/firedoor,
 /turf/open/floor/plasteel/white/smooth/large,
 /area/mine/xenoarch_area_c)
 "uiE" = (

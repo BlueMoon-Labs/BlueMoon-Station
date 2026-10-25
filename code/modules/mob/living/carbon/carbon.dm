@@ -1246,6 +1246,9 @@
 
 
 /mob/living/carbon/proc/devour_mob(mob/living/carbon/C, devour_time = 130)
+	if(antag_training_member_body(C))
+		to_chat(src, span_warning("На полигоне нельзя проглотить тело другого участника."))
+		return
 	C.visible_message("<span class='danger'>[src] is attempting to devour [C]!</span>", \
 					"<span class='userdanger'>[src] is attempting to devour you!</span>")
 	if(!do_mob(src, C, devour_time))
