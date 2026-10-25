@@ -64,6 +64,34 @@
 			L.client.prefs.save_preferences()
 
 			return TRUE
+		if("rename_painting")
+			var/mob/user = usr
+			var/asset_prefix = params["asset_prefix"]
+			var/md5 = params["md5"]
+			var/current_title = params["current_title"]
+			if(!asset_prefix || !md5)
+				return
+			var/list/current_list = SSpersistence.paintings[asset_prefix]
+			if(!current_list)
+				return
+			var/new_title = stripped_input(user, "Введите новое название для картины:")
+			if(!new_title || new_title == current_title)
+				return
+			var/portrait_to_rename
+			for(var/i in 1 to length(current_list))
+				if(current_list[i]["md5"] == md5)
+					portrait_to_rename = current_list[i]
+					break
+			if(!portrait_to_rename)
+				return
+			var/author_ckey = portrait_to_rename["ckey"]
+			var/is_owner = author_ckey == user?.ckey
+			if(!is_owner)
+				return
+			portrait_to_rename["title"] = new_title
+			to_chat(usr, span_notice("Картина переименована в [new_title]."))
+			return TRUE
+
 		if("delete_painting")
 			var/mob/user = usr
 			var/asset_prefix = params["asset_prefix"]

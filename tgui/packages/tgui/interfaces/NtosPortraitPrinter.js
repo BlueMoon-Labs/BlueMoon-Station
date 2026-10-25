@@ -106,6 +106,7 @@ export const NtosPortraitPrinter = (props) => {
     : '';
 
   const isAdminOrOwner = !!currentPortrait && (is_admin || user_ckey === currentPortrait.ckey);
+  const isOwner = !!currentPortrait && user_ckey === currentPortrait.ckey;
 
   return (
     <NtosWindow
@@ -168,6 +169,19 @@ export const NtosPortraitPrinter = (props) => {
                       onClick={() => act('delete_painting', {
                         md5: currentPortrait.md5,
                         asset_prefix: current_portrait_asset_prefix,
+                      })}
+                    />
+                  )}
+                  {hasPortraits && isOwner && (
+                    <Button
+                      icon="pencil"
+                      color="transparent"
+                      tooltip="Rename this painting"
+                      tooltipPosition="bottom"
+                      onClick={() => act('rename_painting', {
+                        md5: currentPortrait.md5,
+                        asset_prefix: current_portrait_asset_prefix,
+                        current_title: currentPortrait.title,
                       })}
                     />
                   )}
