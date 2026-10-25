@@ -821,3 +821,22 @@
 /datum/unit_test/context_menu_cyborg_shift_right_click/Destroy()
 	CONFIG_SET(number/right_click_mode_default, old_default)
 	return ..()
+
+/// Билд-мод без клиента: только чтобы click_intercept был билд-модом
+/datum/buildmode/context_menu_stub
+
+/datum/buildmode/context_menu_stub/New()
+	return
+
+/// В билд-моде ПКМ уходит в его кнопки и броски: меню BYOND не возвращается ни у призрака, ни в режиме BYOND, пока билд-мод включён
+/datum/unit_test/context_menu_buildmode_popup
+
+/datum/unit_test/context_menu_buildmode_popup/Run()
+	var/mob/dead/observer/ghost = allocate(/mob/dead/observer)
+	var/mob/living/carbon/human/dummy/consistent/context_menu_probe/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_probe)
+	user.click_mode = RIGHT_CLICK_MODE_NATIVE
+	var/datum/buildmode/context_menu_stub/buildmode = new
+	TEST_ASSERT(ghost.popup_menus_wanted(null), "Призраку вне билд-мода не показывается меню BYOND")
+	TEST_ASSERT(!ghost.popup_menus_wanted(buildmode), "Призраку в билд-моде ПКМ открывает меню BYOND вместо кнопок билд-мода")
+	TEST_ASSERT(user.popup_menus_wanted(null), "В режиме BYOND вне боя не показывается меню BYOND")
+	TEST_ASSERT(!user.popup_menus_wanted(buildmode), "В режиме BYOND в билд-моде ПКМ открывает меню BYOND")

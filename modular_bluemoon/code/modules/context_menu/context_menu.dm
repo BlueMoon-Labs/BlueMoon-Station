@@ -24,12 +24,14 @@
 	winset(src, "mapwindow.map", "right-click=[map_clicks ? "true" : "false"]")
 	refresh_popup_menus()
 
-/// Меню BYOND на ПКМ только у тех, кто его выбрал, и только вне боя и мехов
 /client/proc/refresh_popup_menus()
-	if(mob?.piloting_mecha())
-		show_popup_menus = FALSE
-		return
-	show_popup_menus = !mob?.right_click_actions || (prefs?.right_click_mode() == RIGHT_CLICK_MODE_NATIVE && !mob.right_click_needs_clicks())
+	show_popup_menus = mob ? mob.popup_menus_wanted(click_intercept) : TRUE
+
+/// Меню BYOND на ПКМ только у тех, кто его выбрал, и только вне боя и мехов. В билд-моде ПКМ - его настройки и броски.
+/mob/proc/popup_menus_wanted(datum/click_intercept)
+	if(istype(click_intercept, /datum/buildmode) || piloting_mecha())
+		return FALSE
+	return !right_click_actions || (right_click_mode() == RIGHT_CLICK_MODE_NATIVE && !right_click_needs_clicks())
 
 /mob/proc/right_click_needs_clicks()
 	return SEND_SIGNAL(src, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE) || piloting_mecha()
