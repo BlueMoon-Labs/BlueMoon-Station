@@ -179,7 +179,7 @@
 
 /datum/action/item_action/organ_action/ai_link_talk/Trigger()
 	var/obj/item/organ/cyberimp/brain/ai_link/implant = target
-	var/message = tgui_input_text(owner, "Введите сообщение для передачи в нейросеть:", "Нейросвязь")
+	var/message = tgui_input_text(owner, "Введите сообщение для передачи в нейросеть:", "Нейросвязь", max_length = MAX_MESSAGE_LEN, encode = TRUE)
 	if(!message || !owner || !implant)
 		return
 	var/mob/living/L = owner
