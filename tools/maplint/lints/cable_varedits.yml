@@ -1,0 +1,7 @@
+help: "Cables take their directions from icon_state (\"1-2\"), d1 and d2 are overwritten on Initialize."
+/obj/structure/cable:
+  banned_variables:
+    d1:
+    d2:
+    icon_state:
+      allow: { pattern: "^[0-9]+-[0-9]+$" }
