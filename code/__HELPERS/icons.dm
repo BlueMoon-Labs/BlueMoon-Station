@@ -1250,41 +1250,78 @@ GLOBAL_LIST_EMPTY(humanoid_icon_cache)
 /// so the per-entry footprint is non-trivial — keep this modest.
 #define HUMANOID_ICON_CACHE_MAX 256
 
+/// Манекен с внешностью из префов в одежде профессии или аутфита, готовый к снимку.
+/// null, если манекен удалили, пока прок уступал тик. Отпускать через release_human_preview_dummy().
+/proc/dress_human_preview_dummy(datum/job/J, datum/preferences/prefs, dummy_key, outfit_override = null)
+	// regenerate = FALSE: манекен всё равно переодевается прямо ниже и трижды
+	// перерисовывается, так что штатный regenerate_icons() на входе - выброшенная работа.
+	var/mob/living/carbon/human/dummy/body = generate_or_wait_for_human_dummy(dummy_key, regenerate = FALSE)
+
+	// copy_to тянет за собой set_species с полной пересборкой конечностей и органов, equip
+	// спавнит весь комплект аутфита, а тройка update_* перерисовывает моба. В прод-раунде этот
+	// блок мерился в 120-190 мс при потолке тика в 12, поэтому между шагами прок уступает тик.
+	// Манекен на это время остаётся занятым, остальные вызывающие ждут его на in_use.
+	if(prefs)
+		prefs.copy_to(body,TRUE,FALSE)
+		CHECK_TICK
+	// Закрытие интерфейса может удалить манекен, пока генерация уступает тик.
+	if(QDELETED(body))
+		return null
+	if(J)
+		J.equip(body, TRUE, FALSE, outfit_override = outfit_override)
+		CHECK_TICK
+	else if (outfit_override)
+		body.equipOutfit(outfit_override,visualsOnly = TRUE)
+		CHECK_TICK
+	if(QDELETED(body))
+		return null
+
+	// Синхронизация превью моба, без этого именно эти части почему-то ломает. Костыль.
+	body.update_body(update_genitals = TRUE)
+	body.update_hair()
+	body.update_mutations_overlay()
+	CHECK_TICK
+	if(QDELETED(body))
+		return null
+	return body
+
+/proc/release_human_preview_dummy(mob/living/carbon/human/dummy/body, dummy_key)
+	if(dummy_key)
+		// Пока манекен был занят, его могли удалить и заменить в том же слоте.
+		if(GLOB.human_dummy_list[dummy_key] == body)
+			unset_busy_human_dummy(dummy_key)
+	else
+		qdel(body)
+
+/// Внешность одетого манекена лицом на юг: её рисует клиент, без сведения в плоскую иконку.
+/// Слои свечения вырезаны: без освещения маски свечения и их чёрные блокеры легли бы пятнами поверх.
+/proc/get_human_preview_appearance(datum/job/J, datum/preferences/prefs, dummy_key, outfit_override = null)
+	var/mob/living/carbon/human/dummy/body = dress_human_preview_dummy(J, prefs, dummy_key, outfit_override)
+	if(!body)
+		return null
+	var/mutable_appearance/snapshot = new(body)
+	release_human_preview_dummy(body, dummy_key)
+	snapshot.setDir(SOUTH)
+	snapshot.transform = matrix()
+	snapshot.pixel_x = 0
+	snapshot.pixel_y = 0
+	var/list/visible_overlays = list()
+	for(var/mutable_appearance/part as anything in snapshot.overlays)
+		if(part.plane != EMISSIVE_PLANE)
+			visible_overlays += part
+	snapshot.overlays = visible_overlays
+	var/list/visible_underlays = list()
+	for(var/mutable_appearance/part as anything in snapshot.underlays)
+		if(part.plane != EMISSIVE_PLANE)
+			visible_underlays += part
+	snapshot.underlays = visible_underlays
+	return snapshot
+
 //For creating consistent icons for human looking simple animals
 /proc/get_flat_human_icon(icon_id, datum/job/J, datum/preferences/prefs, dummy_key, showDirs = GLOB.cardinals, outfit_override = null, no_anim = FALSE)
 	if(!icon_id || !GLOB.humanoid_icon_cache[icon_id])
-		// regenerate = FALSE: манекен всё равно переодевается прямо ниже и трижды
-		// перерисовывается перед getFlatIcon, так что штатный regenerate_icons()
-		// на входе - выброшенная работа на каждом вызове.
-		var/mob/living/carbon/human/dummy/body = generate_or_wait_for_human_dummy(dummy_key, regenerate = FALSE)
-
-		// Всё до цикла по дирекциям шло одним неразрывным куском: copy_to тянет за собой
-		// set_species с полной пересборкой конечностей и органов, equip спавнит весь
-		// комплект аутфита, а тройка update_* перерисовывает моба. В прод-раунде этот
-		// блок мерился в 120-190 мс при потолке тика в 12 - то есть уступать было пора
-		// давно, а первый CHECK_TICK стоял только ниже. Прок и так умеет спать, манекен
-		// на это время остаётся занятым, но остальные вызывающие ждут его на in_use
-		if(prefs)
-			prefs.copy_to(body,TRUE,FALSE)
-			CHECK_TICK
-		// Закрытие интерфейса может удалить манекен, пока генерация уступает тик.
-		if(QDELETED(body))
-			return icon('icons/effects/effects.dmi', "nothing")
-		if(J)
-			J.equip(body, TRUE, FALSE, outfit_override = outfit_override)
-			CHECK_TICK
-		else if (outfit_override)
-			body.equipOutfit(outfit_override,visualsOnly = TRUE)
-			CHECK_TICK
-		if(QDELETED(body))
-			return icon('icons/effects/effects.dmi', "nothing")
-
-		// Синхронизация превью моба, без этого именно эти части почему-то ломает. Костыль.
-		body.update_body(update_genitals = TRUE)
-		body.update_hair()
-		body.update_mutations_overlay()
-		CHECK_TICK
-		if(QDELETED(body))
+		var/mob/living/carbon/human/dummy/body = dress_human_preview_dummy(J, prefs, dummy_key, outfit_override)
+		if(!body)
 			return icon('icons/effects/effects.dmi', "nothing")
 
 		// Снимок переживает удаление манекена между кадрами. Дирекцию сохраняем:
@@ -1297,12 +1334,7 @@ GLOBAL_LIST_EMPTY(humanoid_icon_cache)
 			GLOB.humanoid_icon_cache[icon_id] = out_icon
 			if(length(GLOB.humanoid_icon_cache) > HUMANOID_ICON_CACHE_MAX)
 				GLOB.humanoid_icon_cache.Cut(1, (HUMANOID_ICON_CACHE_MAX / 4) + 1) // Evict oldest 25%
-		if(dummy_key)
-			// Пока снимались кадры, старый манекен могли удалить и заменить в том же слоте.
-			if(GLOB.human_dummy_list[dummy_key] == body)
-				unset_busy_human_dummy(dummy_key)
-		else
-			qdel(body)
+		release_human_preview_dummy(body, dummy_key)
 		return out_icon
 	else
 		return GLOB.humanoid_icon_cache[icon_id]
