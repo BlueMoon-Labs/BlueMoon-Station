@@ -123,7 +123,8 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 		var/list/map_assets = list()
 		for(var/datum/minimap/floor_map as anything in SSminimaps.station_minimaps)
 			map_assets += "minimap-[floor_map.id].png"
-			map_assets += "minimap-[floor_map.id]-departments.png"
+			if(floor_map.department_map_icon)
+				map_assets += "minimap-[floor_map.id]-departments.png"
 		SSassets.transport.send_assets(user, map_assets)
 		ui = new(user, src, "CrewConsole")
 		ui.open()
