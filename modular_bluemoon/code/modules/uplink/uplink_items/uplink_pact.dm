@@ -197,16 +197,6 @@
 /obj/item/autosurgeon/syndicate/thrusters
 	starting_organ = /obj/item/organ/cyberimp/chest/thrusters
 
-/datum/uplink_item/implants/binocular_lenses
-	name = "Binocular Lenses"
-	desc = "A pair of binocular lenses, that can be attached to the eyes."
-	item = /obj/item/autosurgeon/syndicate/binocular_lenses
-	cost = 2
-	purchasable_from = UPLINK_SYNDICATE_PACT_CREW
-
-/obj/item/autosurgeon/syndicate/binocular_lenses
-	starting_organ = /obj/item/organ/cyberimp/arm/lenses
-
 /datum/uplink_item/implants/arm_taser
 	name = "Arm-mounted Taser Implant"
 	desc = "A variant of the arm cannon implant that fires electrodes and disabler shots. The cannon emerges from the subject's arm and remains inside when not in use."

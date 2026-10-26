@@ -368,17 +368,6 @@
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_ALL
 
-/datum/design/binolenses
-	name = "Binocular Lenses Implant"
-	desc = "A pair of binocular lenses, that can be attached to the eyes!"
-	id = "ci-binolenses"
-	build_type = PROTOLATHE | MECHFAB
-	construction_time = 40
-	materials = list(/datum/material/iron = 5000, /datum/material/glass = 6000, /datum/material/silver = 2000, /datum/material/diamond = 2000)
-	build_path = /obj/item/organ/cyberimp/arm/lenses
-	category = list("Implants")
-	departmental_flags = DEPARTMENTAL_FLAG_ALL
-
 //DATA CHIP. Expensive stuff for good chips.
 /datum/design/medicalbrainchip
 	name = "Advanced Medical Data Chip"
