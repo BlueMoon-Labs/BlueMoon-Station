@@ -1,5 +1,6 @@
 // Создаётся tools/nanomaps/render.cjs; обновляется штатной целью nanomaps.
 /datum/asset/simple/nanomaps
+#ifndef LOWMEMORYMODE
 	assets = list(
 		"nanomap-map-files-biodome-biodome-z1.png" = 'icons/_nanomaps/nanomap-map-files-biodome-biodome-z1.png',
 		"nanomap-map-files-biodome-biodome-z2.png" = 'icons/_nanomaps/nanomap-map-files-biodome-biodome-z2.png',
@@ -148,3 +149,6 @@
 			list("asset" = "nanomap-map-files-wawastation-wawastation-z2.png", "width" = 255, "height" = 255),
 		),
 	)
+#else
+	var/list/map_data = list()
+#endif

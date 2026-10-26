@@ -29,8 +29,9 @@ function fixture(t) {
     fs.writeFileSync(filename, contents);
   };
   write('SpacemanDMM.toml', '');
-  write('_maps/test.json', '{}');
+  write('_maps/test.json', '{"map_path": "map_files", "map_file": "test.dmm"}');
   write('_maps/map_files/test.dmm', '');
+  write('_maps/map_files/generic/ruin.dmm', '');
   write('icons/test.dmi', '');
   write('modular_test/icons/test.dmi', '');
   write('tools/nanomaps/renderer.cjs', '');
@@ -90,6 +91,71 @@ test('обычные правки DM и DME не запускают рендер
   f.change('tgstation.dme');
   f.run();
   assert.equal(f.renders(), 1);
+});
+
+test('правка карты вне _maps/*.json не запускает рендер', t => {
+  const f = fixture(t);
+  f.run();
+  f.change('_maps/map_files/generic/ruin.dmm');
+  f.run();
+  assert.equal(f.renders(), 1);
+});
+
+test('пересборка не трогает метки времени готовых PNG', t => {
+  const f = fixture(t);
+  f.run();
+  // Рендер с неизменным результатом не переписывает PNG; Juke касается только штампа.
+  fs.writeFileSync(path.join(f.directory, 'tools/nanomaps/render.cjs'), "require('node:fs').appendFileSync('renders.txt', 'render\\n');\n");
+  const past = new Date(Date.now() - 60000);
+  fs.utimesSync(path.join(f.directory, image), past, past);
+  f.change('_maps/map_files/test.dmm');
+  f.run();
+  assert.equal(f.renders(), 2);
+  assert.equal(fs.statSync(path.join(f.directory, image)).mtimeMs, past.getTime());
+});
+
+test('манифест пишется только при изменениях и сохраняет CRLF', t => {
+  const { writeIfChanged } = require('./render.cjs');
+  const f = fixture(t);
+  const file = path.join(f.directory, 'manifest.dm');
+  fs.writeFileSync(file, 'a\r\nb\r\n');
+  const past = new Date(Date.now() - 60000);
+  fs.utimesSync(file, past, past);
+  assert.equal(writeIfChanged(file, 'a\nb\n'), false);
+  assert.equal(fs.statSync(file).mtimeMs, past.getTime());
+  assert.equal(writeIfChanged(file, 'a\nc\n'), true);
+  assert.equal(fs.readFileSync(file, 'utf8'), 'a\r\nc\r\n');
+  const png = path.join(f.directory, 'same.png');
+  fs.writeFileSync(png, Buffer.from([1, 2, 3]));
+  assert.equal(writeIfChanged(png, Buffer.from([1, 2, 3])), false);
+  assert.equal(writeIfChanged(png, Buffer.from([1, 2, 4])), true);
+});
+
+test('LOWMEMORYMODE: манифест не ссылается на PNG, сборка не требует NanoMap', t => {
+  const { buildManifest } = require('./render.cjs');
+  const source = buildManifest([{ key: 'map_files/test.dmm', width: 10, height: 20, names: ['nanomap-test-z1.png'] }]);
+  const guarded = source.slice(source.indexOf('#ifndef LOWMEMORYMODE'), source.indexOf('#else'));
+  assert.ok(guarded.includes("'icons/_nanomaps/nanomap-test-z1.png'"));
+  assert.ok(!source.slice(source.indexOf('#else')).includes('icons/_nanomaps'));
+
+  // Импорт Juke держит процесс открытым, поэтому проверка идёт в отдельном Node.
+  const targetUrl = pathToFileURL(path.join(root, 'tools/build/lib/nanomaps.js')).href;
+  const isLowMemoryBuild = (defines, file) => {
+    const result = spawnSync(process.execPath, ['--input-type=module', '-e', `
+      import { isLowMemoryBuild } from ${JSON.stringify(targetUrl)};
+      console.log(isLowMemoryBuild(${JSON.stringify(defines)}, ${JSON.stringify(file)}));
+      process.exit(0);
+    `], { encoding: 'utf8', timeout: 30000 });
+    assert.equal(result.status, 0, result.stderr);
+    return result.stdout.trim() === 'true';
+  };
+  const f = fixture(t);
+  const basemap = path.join(f.directory, '_basemap.dm');
+  fs.writeFileSync(basemap, '//#define LOWMEMORYMODE //uncomment this\r\n');
+  assert.equal(isLowMemoryBuild([], basemap), false);
+  assert.equal(isLowMemoryBuild(['LOWMEMORYMODE'], basemap), true);
+  fs.writeFileSync(basemap, '#define LOWMEMORYMODE //uncomment this\r\n');
+  assert.equal(isLowMemoryBuild([], basemap), true);
 });
 
 for (const output of [image, secondImage, manifest]) {

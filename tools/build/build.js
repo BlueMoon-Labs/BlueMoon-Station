@@ -16,7 +16,7 @@ import crypto from 'crypto';
 import { spawn } from 'child_process';
 import { DreamDaemon, DreamMaker, getDmPath, getDreamDaemonPath } from './lib/byond.js';
 import { yarn } from './lib/yarn.js';
-import { NanomapsTarget } from './lib/nanomaps.js';
+import { NanomapsTarget, isLowMemoryBuild } from './lib/nanomaps.js';
 import Juke from './juke/index.js';
 
 export { NanomapsTarget };
@@ -152,7 +152,7 @@ export const DmTarget = new Juke.Target({
   dependsOn: ({ get }) => [
     LoadoutCryptoRuntimeTarget,
     StatbrowserTarget,
-    NanomapsTarget,
+    !isLowMemoryBuild(get(DefineParameter)) && NanomapsTarget,
     get(DefineParameter).includes('ALL_TEMPLATES') && DmMapsIncludeTarget,
   ],
   inputs: async () => [
@@ -253,7 +253,7 @@ export const DmTestBuildTarget = new Juke.Target({
   parameters: [DefineParameter, UnitTestProfileParameter, WarningsAsErrorsParameter],
   dependsOn: ({ get }) => [
     StatbrowserTarget,
-    NanomapsTarget,
+    !isLowMemoryBuild(getUnitTestDefines(get)) && NanomapsTarget,
     get(DefineParameter).includes('ALL_TEMPLATES') && DmMapsIncludeTarget,
     getUnitTestProfile(get) === 'hermetic' && CentComHermeticTarget,
   ],
