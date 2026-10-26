@@ -7,7 +7,7 @@ import {
   MAX_VISIBLE_MESSAGES,
 } from './constants';
 import { createMainPage, createPage } from './model';
-import { ChatRenderer } from './renderer';
+import { BG_LAYERS, ChatRenderer } from './renderer';
 
 // Mock Byond global used by logger
 if (typeof window.Byond === 'undefined') {
@@ -1074,6 +1074,36 @@ describe('ChatRenderer', () => {
     });
   });
 
+  describe('setSettleOld', () => {
+    test('toggles Chat--noSettle on the root', () => {
+      const renderer = createReadyRenderer();
+      renderer.setSettleOld(false);
+      expect(renderer.rootNode.classList.contains('Chat--noSettle')).toBe(true);
+      renderer.setSettleOld(true);
+      expect(renderer.rootNode.classList.contains('Chat--noSettle')).toBe(false);
+    });
+
+    test('is applied once the root appears', () => {
+      const renderer = new ChatRenderer();
+      renderer.setSettleOld(false);
+      renderer.rootNode = document.createElement('div');
+      renderer.applyPendingAppearance();
+      expect(renderer.rootNode.classList.contains('Chat--noSettle')).toBe(true);
+    });
+
+    test('tab switch wakes messages back in the fresh window', () => {
+      const renderer = createReadyRenderer();
+      for (let i = 0; i < 45; i++) {
+        renderer.processBatch([{ text: 'line ' + i }]);
+      }
+      const sixth = renderer.visibleMessages[5].node;
+      sixth.classList.add('ChatMessage--settled');
+      renderer.messages.splice(0, 5);
+      renderer.changePage(renderer.page);
+      expect(sixth.classList.contains('ChatMessage--settled')).toBe(false);
+    });
+  });
+
   // ---- Events ----
 
   describe('events', () => {
@@ -1120,6 +1150,70 @@ describe('ChatRenderer', () => {
 
       renderer.handleScroll();
       expect(listener).toHaveBeenCalledWith(true);
+    });
+  });
+
+  describe('message classes', () => {
+    test('settles messages beyond the keep window', () => {
+      const renderer = createReadyRenderer();
+      for (let i = 0; i < 45; i++) {
+        renderer.processBatch([{ text: 'line ' + i }]);
+      }
+      expect(renderer.visibleMessages[0].node.classList
+        .contains('ChatMessage--settled')).toBe(true);
+      expect(renderer.visibleMessages[44].node.classList
+        .contains('ChatMessage--settled')).toBe(false);
+    });
+  });
+
+  describe('background layer', () => {
+    const msgTexts = root => Array.from(root.childNodes)
+      .filter(n => !n.classList.contains('ChatBg'))
+      .map(n => n.textContent);
+
+    test('sticks a viewport-sized node first in the chat', () => {
+      const renderer = createReadyRenderer();
+      renderer.processBatch([{ text: 'a' }, { text: 'b' }]);
+      renderer.setBgAnimation('cosmos', 0.5);
+      const bg = renderer.rootNode.firstChild;
+      expect(bg.classList.contains('ChatBg')).toBe(true);
+      expect(bg.querySelectorAll('.ChatBg__layer').length).toBe(BG_LAYERS);
+      expect(bg.style.getPropertyValue('--chat-view-h')).toBe('400px');
+      expect(renderer.rootNode.classList.contains('Chat--bgAnim-cosmos'))
+        .toBe(true);
+      expect(msgTexts(renderer.rootNode)).toEqual(['a', 'b']);
+    });
+
+    test('stays first through prepend, page change and rebuild', () => {
+      const renderer = createReadyRenderer();
+      renderer.setBgAnimation('rain', 0.5);
+      const bg = renderer.bgNode;
+      renderer.processBatch([{ text: 'live' }]);
+      renderer.processBatch([{ text: 'old', createdAt: Date.now() - 60000 }],
+        { prepend: true });
+      expect(renderer.rootNode.firstChild).toBe(bg);
+      expect(msgTexts(renderer.rootNode)).toEqual(['old', 'live']);
+      renderer.changePage(renderer.page);
+      expect(renderer.rootNode.firstChild).toBe(bg);
+      expect(msgTexts(renderer.rootNode)).toEqual(['old', 'live']);
+      renderer.rebuildChat();
+      expect(renderer.rootNode.firstChild).toBe(bg);
+      expect(msgTexts(renderer.rootNode)).toEqual(['old', 'live']);
+    });
+
+    test('switching backgrounds keeps one node, none removes it', () => {
+      const renderer = createReadyRenderer();
+      renderer.setBgAnimation('cosmos', 0.5);
+      const bg = renderer.bgNode;
+      renderer.setBgAnimation('snow', 0.7);
+      expect(renderer.bgNode).toBe(bg);
+      expect(renderer.rootNode.querySelectorAll('.ChatBg').length).toBe(1);
+      expect(renderer.rootNode.classList.contains('Chat--bgAnim-cosmos'))
+        .toBe(false);
+      renderer.setBgAnimation('none', 0.7);
+      expect(renderer.bgNode).toBeNull();
+      expect(renderer.rootNode.querySelector('.ChatBg')).toBeNull();
+      expect(renderer.rootNode.className).not.toContain('Chat--bgAnim-');
     });
   });
 

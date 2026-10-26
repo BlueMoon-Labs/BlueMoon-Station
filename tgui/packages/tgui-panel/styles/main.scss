@@ -51,6 +51,7 @@
 @include meta.load-css('./components/Chat.scss');
 @include meta.load-css('./components/ChatCustomization.scss');
 @include meta.load-css('./components/ChatBgAnimations.scss');
+@include meta.load-css('./components/ChatPresets.scss');
 @include meta.load-css('./components/Ping.scss');
 @include meta.load-css('./components/Notifications.scss');
 

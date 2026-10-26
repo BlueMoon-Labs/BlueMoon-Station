@@ -12,8 +12,10 @@ import { createLogger } from 'tgui/logging';
 import highlightSoundUrl from '../assets/chat_notify.ogg';
 import { MESSAGE_STYLE_ANIMATIONS, MESSAGE_STYLES } from '../settings/constants';
 import { COMBINE_MAX_MESSAGES, COMBINE_MAX_TIME_WINDOW, IMAGE_RETRY_DELAY, IMAGE_RETRY_LIMIT, IMAGE_RETRY_MAX_DELAY, IMAGE_RETRY_MESSAGE_AGE, MAX_PERSISTED_MESSAGES, MAX_VISIBLE_MESSAGES, MESSAGE_PRUNE_INTERVAL, MESSAGE_TYPE_INTERNAL, MESSAGE_TYPE_UNKNOWN, MESSAGE_TYPES } from './constants';
+import { settleOldMessages } from './messageFx';
 import { canPageAcceptType, createMessage, isSameMessage } from './model';
 import { highlightNode, linkifyNode } from './replaceInTextNode';
+import { getChatColorProps, getSettleRootClasses, getStyleOverrideRoot, isStyleOverrideClass, SETTLE_OFF_CLASS } from './rootAppearance';
 
 const logger = createLogger('chatRenderer');
 
@@ -58,6 +60,9 @@ const getDistanceFromBottom = node => (
 const isScrollTracked = node => (
   getDistanceFromBottom(node) <= SCROLL_TRACKING_TOLERANCE
 );
+
+// Слоёв в узле фона, см. ChatBgAnimations.scss.
+export const BG_LAYERS = 3;
 
 const STYLE_OVERRIDE_SHEET_ID = 'cs-style-overrides';
 
@@ -120,6 +125,17 @@ const updateStyleOverrideSheet = (cssText) => {
   }
   if (node.textContent !== cssText) {
     node.textContent = cssText;
+  }
+};
+
+const setRootProps = (root, props) => {
+  for (const [key, value] of Object.entries(props)) {
+    if (value !== null && value !== undefined && value !== '') {
+      root.style.setProperty(key, value);
+    }
+    else {
+      root.style.removeProperty(key);
+    }
   }
 };
 
@@ -331,6 +347,8 @@ export class ChatRenderer {
     this.smoothScroll = false;
     this._pendingAppearance = null;
     this._currentBgAnim = null;
+    this.bgNode = null;
+    this._bgResizeObserver = null;
     // Highlight state
     this.highlightRegex = null;
     this.highlightColor = null;
@@ -374,6 +392,9 @@ export class ChatRenderer {
     // Prefer explicit scroll container and fallback to inferred one.
     this.scrollNode = scrollNode || findNearestScrollableParent(this.rootNode);
     this.scrollNode?.addEventListener('scroll', this.handleScroll);
+    if (this.bgNode) {
+      this.observeBgViewport();
+    }
     this.updateScrollTracking();
     defer(() => {
       this.scrollToBottom();
@@ -550,6 +571,7 @@ export class ChatRenderer {
     this.dropNewMarker();
     // Fast clear of the root node
     this.rootNode.textContent = '';
+    this.restoreBgNode();
     this.visibleMessages = [];
     // Разделители зависят от соседей на вкладке: пересчитываем заново.
     this._lastDividerTime = 0;
@@ -571,6 +593,7 @@ export class ChatRenderer {
         message.dividerNode = undefined;
       }
     }
+    settleOldMessages(this.visibleMessages, true);
     if (node) {
       this.rootNode.appendChild(fragment);
       node.scrollIntoView();
@@ -779,13 +802,16 @@ export class ChatRenderer {
       this.playHighlightSound();
     }
     if (node) {
-      const firstChild = this.rootNode.childNodes[0];
+      const firstChild = this.bgNode
+        ? this.bgNode.nextSibling
+        : this.rootNode.childNodes[0];
       if (prepend && firstChild) {
         this.rootNode.insertBefore(fragment, firstChild);
       }
       else {
         this.rootNode.appendChild(fragment);
       }
+      settleOldMessages(this.visibleMessages, prepend);
       if (shouldAutoScroll) {
         defer(() => this.scrollToBottom());
       }
@@ -839,12 +865,10 @@ export class ChatRenderer {
   }
 
   /**
-   * Sets the background animation on the .Chat root element.
-   * Uses CSS class on rootNode so the animation layer (::before with
-   * negative inset) covers the full content height as messages
-   * accumulate, not just the viewport.
-   * Only changes the class when the animation actually changes,
-   * to avoid restarting CSS animations on unrelated settings changes.
+   * Фон чата: класс Chat--bgAnim-<id> на корне и узел .ChatBg первым
+   * ребёнком. Узел липнет к окну прокрутки и размером с него, а не со
+   * всю историю; слои внутри двигаются только transform/opacity.
+   * Класс меняется лишь при смене фона, чтобы не перезапускать анимации.
    */
   setBgAnimation(bgAnimation, opacity) {
     this._pendingAppearance = {
@@ -866,11 +890,66 @@ export class ChatRenderer {
       // Add new bgAnim class
       if (newBgAnim !== 'none') {
         this.rootNode.classList.add('Chat--bgAnim-' + newBgAnim);
+        this.createBgNode();
+      }
+      else {
+        this.removeBgNode();
       }
       this._currentBgAnim = newBgAnim;
     }
     this.rootNode.style.setProperty(
       '--chat-bg-anim-opacity', String(opacity ?? 0.5));
+  }
+
+  createBgNode() {
+    if (!this.bgNode) {
+      const node = document.createElement('div');
+      node.className = 'ChatBg';
+      node.setAttribute('aria-hidden', 'true');
+      for (let i = 1; i <= BG_LAYERS; i++) {
+        const layer = document.createElement('div');
+        layer.className = 'ChatBg__layer ChatBg__layer--' + i;
+        node.appendChild(layer);
+      }
+      this.bgNode = node;
+    }
+    this.restoreBgNode();
+    this.observeBgViewport();
+  }
+
+  removeBgNode() {
+    this._bgResizeObserver?.disconnect();
+    this._bgResizeObserver = null;
+    this.bgNode?.remove();
+    this.bgNode = null;
+  }
+
+  // Узел фона всегда первый: очистка корня его снимает, вставка истории
+  // идёт после него.
+  restoreBgNode() {
+    if (this.bgNode && this.rootNode
+      && this.rootNode.firstChild !== this.bgNode) {
+      this.rootNode.insertBefore(this.bgNode, this.rootNode.firstChild);
+    }
+  }
+
+  observeBgViewport() {
+    const scrollNode = this.scrollNode;
+    const bgNode = this.bgNode;
+    if (!scrollNode || !bgNode) {
+      return;
+    }
+    const update = () => {
+      bgNode.style.setProperty('--chat-view-h',
+        scrollNode.clientHeight + 'px');
+    };
+    update();
+    this._bgResizeObserver?.disconnect();
+    this._bgResizeObserver = null;
+    if (typeof ResizeObserver === 'function') {
+      this._bgResizeObserver = new ResizeObserver(update);
+      this._bgResizeObserver.observe(scrollNode);
+    }
   }
 
   setCustomColors(bgColor, textColor, accentColor) {
@@ -883,25 +962,8 @@ export class ChatRenderer {
     if (!this.rootNode) {
       return;
     }
-    const root = this.rootNode;
-    if (bgColor) {
-      root.style.setProperty('--chat-bg', bgColor);
-    }
-    else {
-      root.style.removeProperty('--chat-bg');
-    }
-    if (textColor) {
-      root.style.setProperty('--chat-text', textColor);
-    }
-    else {
-      root.style.removeProperty('--chat-text');
-    }
-    if (accentColor) {
-      root.style.setProperty('--chat-accent', accentColor);
-    }
-    else {
-      root.style.removeProperty('--chat-accent');
-    }
+    setRootProps(this.rootNode,
+      getChatColorProps(bgColor, textColor, accentColor));
   }
 
   /**
@@ -934,35 +996,31 @@ export class ChatRenderer {
       return;
     }
     const root = this.rootNode;
-    const toRemove = [];
-    for (const cls of root.classList) {
-      if (cls.startsWith('Chat--plain-') || cls === 'Chat--fxAnimOff') {
-        toRemove.push(cls);
-      }
-    }
+    const toRemove = [...root.classList].filter(isStyleOverrideClass);
     for (const cls of toRemove) {
       root.classList.remove(cls);
     }
-    if (!spanAnimations) {
-      root.classList.add('Chat--fxAnimOff');
+    const { classes: rootClasses, props } = getStyleOverrideRoot(
+      overrides, spanAnimations);
+    for (const cls of rootClasses) {
+      root.classList.add(cls);
     }
-    // Iterate the full known style list rather than the passed map,
-    // so a partial or empty overrides object still clears every stale
-    // --cs-* variable from previous calls.
-    for (const style of MESSAGE_STYLES) {
-      const override = overrides[style.id];
-      const prop = '--cs-' + style.id + '-color';
-      if (override?.color) {
-        root.style.setProperty(prop, override.color);
-      }
-      else {
-        root.style.removeProperty(prop);
-      }
-      if (override?.disabled) {
-        root.classList.add('Chat--plain-' + style.id);
-      }
-    }
+    setRootProps(root, props);
     updateStyleOverrideSheet(buildStyleOverrideCss(overrides));
+  }
+
+  setSettleOld(enabled = true) {
+    this._pendingAppearance = {
+      ...this._pendingAppearance,
+      settleOld: enabled,
+    };
+    if (!this.rootNode) {
+      return;
+    }
+    this.rootNode.classList.remove(SETTLE_OFF_CLASS);
+    for (const cls of getSettleRootClasses(enabled)) {
+      this.rootNode.classList.add(cls);
+    }
   }
 
   setCustomProperties(props) {
@@ -976,15 +1034,7 @@ export class ChatRenderer {
     if (!this.rootNode) {
       return;
     }
-    const root = this.rootNode;
-    for (const [key, value] of Object.entries(props)) {
-      if (value !== null && value !== undefined && value !== '') {
-        root.style.setProperty(key, value);
-      }
-      else {
-        root.style.removeProperty(key);
-      }
-    }
+    setRootProps(this.rootNode, props);
   }
 
   applyPendingAppearance() {
@@ -1008,6 +1058,9 @@ export class ChatRenderer {
     }
     if (p.styleOverrides !== undefined) {
       this.setStyleOverrides(p.styleOverrides, p.spanAnimations);
+    }
+    if (p.settleOld !== undefined) {
+      this.setSettleOld(p.settleOld);
     }
     if (p.radioJobsVisible !== undefined) {
       this.setRadioJobsVisible(p.radioJobsVisible);
@@ -1209,6 +1262,7 @@ export class ChatRenderer {
     this.dropNewMarker();
     // Fast clear of the root node
     this.rootNode.textContent = '';
+    this.restoreBgNode();
     this.messages = [];
     this.visibleMessages = [];
     this._lastDividerTime = 0;

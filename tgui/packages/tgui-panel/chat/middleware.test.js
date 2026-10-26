@@ -20,6 +20,7 @@ const mockChatRenderer = {
   setRadioJobsVisible: jest.fn(),
   setNewMessagesMarker: jest.fn(),
   setStyleOverrides: jest.fn(),
+  setSettleOld: jest.fn(),
   setTimestamps: jest.fn(),
   setTimeDividers: jest.fn(),
   changePage: jest.fn(),
@@ -142,6 +143,7 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(mockChatRenderer.setCustomColors).not.toHaveBeenCalled();
     expect(mockChatRenderer.setCustomProperties).not.toHaveBeenCalled();
     expect(mockChatRenderer.setStyleOverrides).not.toHaveBeenCalled();
+    expect(mockChatRenderer.setSettleOld).not.toHaveBeenCalled();
     expect(mockChatRenderer.setTimestamps).not.toHaveBeenCalled();
     expect(mockChatRenderer.setTimeDividers).not.toHaveBeenCalled();
   });
@@ -296,6 +298,18 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(spanAnimations).toBe(false);
   });
 
+  test('settle switch reaches the renderer', async () => {
+    const store = createTestStore();
+    store.dispatch(updateSettings({ highlightText: '' }));
+    await flushPromises();
+    clearRendererSpies();
+
+    store.dispatch(updateSettings({ settleOldAnimations: false }));
+    await flushPromises();
+    expect(mockChatRenderer.setSettleOld).toHaveBeenCalledTimes(1);
+    expect(mockChatRenderer.setSettleOld).toHaveBeenLastCalledWith(false);
+  });
+
   test('matchWord toggle re-runs setHighlight', async () => {
     const store = createTestStore();
     store.dispatch(updateSettings({ highlightText: 'foo' }));
@@ -328,6 +342,7 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(mockChatRenderer.setCustomColors).not.toHaveBeenCalled();
     expect(mockChatRenderer.setCustomProperties).not.toHaveBeenCalled();
     expect(mockChatRenderer.setStyleOverrides).not.toHaveBeenCalled();
+    expect(mockChatRenderer.setSettleOld).not.toHaveBeenCalled();
     expect(mockChatRenderer.setTimestamps).not.toHaveBeenCalled();
     expect(mockChatRenderer.setTimeDividers).not.toHaveBeenCalled();
   });

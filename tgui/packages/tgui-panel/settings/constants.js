@@ -57,6 +57,7 @@ export const MESSAGE_STYLE_FONTS = [
 
 // Декоративные анимации стиля: пусто = как в теме.
 // css - значение свойства animation; кейфреймы cs-* лежат в Chat.scss.
+// Свечение перерисовывает text-shadow всего чата, поэтому идёт 15 шагами в секунду.
 export const MESSAGE_STYLE_ANIMATIONS = [
   { id: '', name: 'Тема', css: null },
   { id: 'none', name: 'Нет', css: 'none' },
@@ -68,7 +69,7 @@ export const MESSAGE_STYLE_ANIMATIONS = [
   {
     id: 'glow',
     name: 'Свечение',
-    css: 'cs-glow 2400ms ease-in-out infinite alternate',
+    css: 'cs-glow 2400ms steps(36) infinite alternate',
   },
   {
     id: 'flicker',
@@ -96,6 +97,17 @@ export const CHAT_STYLES = [
   { id: 'sakura', name: 'Сакура' },
   { id: 'space', name: 'Космос' },
   { id: 'vaporwave', name: 'Вейпорвейв' },
+  { id: 'ntfax', name: 'Факс НТ (светлая тема)' },
+  { id: 'seccon', name: 'Консоль СБ' },
+  { id: 'pda', name: 'КПК' },
+  { id: 'logbook', name: 'Бортжурнал' },
+  { id: 'syndicate', name: 'Шифровка Синдиката' },
+  { id: 'bridge', name: 'Мостик' },
+  { id: 'medbay', name: 'Медотсек' },
+  { id: 'engineering', name: 'Инженерия' },
+  { id: 'cargo', name: 'Снабжение' },
+  { id: 'centcom', name: 'ЦентКом' },
+  { id: 'blackbox', name: 'Чёрный ящик (тёмная тема)' },
 ];
 
 export const CHAT_ANIMATIONS = [
@@ -107,12 +119,20 @@ export const CHAT_ANIMATIONS = [
   { id: 'zoomin', name: 'Масштаб' },
   { id: 'pop', name: 'Хлопок' },
   { id: 'glowin', name: 'Свечение' },
+  { id: 'teletype', name: 'Телетайп' },
+  { id: 'faxfeed', name: 'Печать факса' },
+  { id: 'interference', name: 'Помеха' },
+  { id: 'crtscan', name: 'Развёртка ЭЛТ' },
+  { id: 'airlock', name: 'Шлюз' },
+  { id: 'develop', name: 'Проявка' },
+  { id: 'scanner', name: 'Сканер' },
+  { id: 'lamp', name: 'Лампа' },
 ];
 
 export const CHAT_ANIM_SPEEDS = [
-  { id: 'fast', name: 'Быстро', value: '100ms' },
-  { id: 'normal', name: 'Нормально', value: '200ms' },
-  { id: 'slow', name: 'Медленно', value: '400ms' },
+  { id: 'fast', name: 'Быстро', value: '180ms' },
+  { id: 'normal', name: 'Нормально', value: '320ms' },
+  { id: 'slow', name: 'Медленно', value: '550ms' },
 ];
 
 export const TEXT_GLOW_OPTIONS = [
@@ -145,6 +165,15 @@ export const CHAT_BG_ANIMATIONS = [
   { id: 'gradient', name: 'Градиент' },
   { id: 'rain', name: 'Дождь' },
   { id: 'embers', name: 'Угольки' },
+  { id: 'snow', name: 'Снег' },
+  { id: 'ash', name: 'Пепел' },
+  { id: 'hyperspace', name: 'Гиперпространство' },
+  { id: 'crtnoise', name: 'Помехи ЭЛТ' },
+  { id: 'meteors', name: 'Метеоры' },
+  { id: 'beacon', name: 'Аварийный маячок' },
+  { id: 'vents', name: 'Вентиляция' },
+  { id: 'dust', name: 'Пыль астероидов' },
+  { id: 'radiation', name: 'Радиация' },
 ];
 
 export const FONTS_DISABLED = "Default";

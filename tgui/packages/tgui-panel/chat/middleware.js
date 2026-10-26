@@ -9,12 +9,13 @@ import DOMPurify from 'dompurify';
 
 import { flushSaveToServer, getLastSavedAt, scheduleSaveToServer } from '../serverState';
 import { loadSettings, updateSettings } from '../settings/actions';
-import { CHAT_ANIM_SPEEDS, MESSAGE_STYLES } from '../settings/constants';
+import { MESSAGE_STYLES } from '../settings/constants';
 import { selectSettings } from '../settings/selectors';
 import { addChatPage, changeChatPage, changeScrollTracking, loadChat, rebuildChat, removeChatPage, saveChatToDisk, toggleAcceptedType, updateChatPage, updateMessageCount } from './actions';
 import { MAX_PERSISTED_MESSAGES, MESSAGE_SAVE_INTERVAL } from './constants';
 import { createMessage, serializeMessage } from './model';
 import { chatRenderer } from './renderer';
+import { getChatCustomProps } from './rootAppearance';
 import { selectChat, selectCurrentChatPage } from './selectors';
 
 // List of blacklisted tags
@@ -181,32 +182,11 @@ const createApplySettings = () => {
         normalized,
         settings.spanAnimations !== false);
     }
-
-    // Animation speed
-    const speedDef = CHAT_ANIM_SPEEDS.find(
-      s => s.id === settings.chatAnimSpeed);
-    const animSpeed = speedDef?.value || '200ms';
-
-    // Text glow
-    let glowValue = null;
-    const glowColor = settings.textGlowColor
-      || settings.chatAccentColor || '#ffdd44';
-    if (settings.textGlow === 'subtle') {
-      glowValue = '0 0 4px ' + glowColor;
-    }
-    else if (settings.textGlow === 'strong') {
-      glowValue = '0 0 10px ' + glowColor
-        + ', 0 0 20px ' + glowColor;
+    if (anyChanged(prev, settings, ['settleOldAnimations'])) {
+      chatRenderer.setSettleOld(settings.settleOldAnimations !== false);
     }
 
-    const nextCustomProps = {
-      '--chat-anim-speed': animSpeed,
-      '--chat-glow': glowValue,
-      '--chat-msg-spacing': settings.messageSpacing + 'px',
-      '--chat-font-weight': String(settings.fontWeight),
-      '--chat-letter-spacing': settings.letterSpacing + 'px',
-      '--chat-border-radius': settings.borderRadius + 'px',
-    };
+    const nextCustomProps = getChatCustomProps(settings);
     // Only push CSS custom properties that actually changed value.
     let changedProps = null;
     for (const [key, value] of Object.entries(nextCustomProps)) {

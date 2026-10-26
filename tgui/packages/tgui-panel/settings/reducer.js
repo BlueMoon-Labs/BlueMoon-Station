@@ -8,7 +8,7 @@ import { changeSettingsTab, loadSettings, openChatSettings, toggleSettings, upda
 import { FONTS, SETTINGS_TABS } from './constants';
 
 const initialState = {
-  version: 6,
+  version: 7,
   fontSize: 13,
   fontFamily: FONTS[0],
   lineHeight: 1.2,
@@ -38,6 +38,8 @@ const initialState = {
   // Кастомизация стилей сообщений: { [styleId]: { color, disabled } }
   styleOverrides: {},
   spanAnimations: true,
+  // Гасить анимации сообщений вне окна свежих
+  settleOldAnimations: true,
   // Timestamps & time dividers
   enableTimestamps: false,
   timestampFormat: 'hm',
@@ -69,6 +71,7 @@ export const settingsReducer = (state = initialState, action) => {
     return {
       ...state,
       ...settings,
+      version: state.version,
     };
   }
   if (type === toggleSettings.type) {
