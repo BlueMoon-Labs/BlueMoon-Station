@@ -176,6 +176,13 @@ const createReconnectedNode = () => {
   return node;
 };
 
+const createNewMarkerNode = () => {
+  const node = document.createElement('div');
+  node.className = 'Chat__newMarker';
+  node.textContent = 'Новые сообщения';
+  return node;
+};
+
 const createTimeDividerNode = (timestamp) => {
   const node = document.createElement('div');
   node.className = 'Chat__timeDivider';
@@ -266,6 +273,9 @@ export class ChatRenderer {
     this.queue = [];
     this.messages = [];
     this.visibleMessages = [];
+    // Растёт при любой правке списка сообщений, по нему сохранение
+    // в хранилище пропускает неизменившийся чат.
+    this.messagesVersion = 0;
     this.page = null;
     this.events = new EventEmitter();
     // Scroll handler
@@ -292,6 +302,9 @@ export class ChatRenderer {
       }
       if (scrollTracking !== this.scrollTracking) {
         this.scrollTracking = scrollTracking;
+        if (scrollTracking) {
+          this._newMarkerArmed = true;
+        }
         this.events.emit('scrollTrackingChanged', scrollTracking);
         logger.debug('tracking', this.scrollTracking);
       }
@@ -329,6 +342,11 @@ export class ChatRenderer {
     this.enableTimeDividers = false;
     this.timeDividerInterval = 300000;
     this._lastDividerTime = 0;
+    // Линия перед первым сообщением, пришедшим, пока читают историю выше
+    this.newMarkerEnabled = false;
+    this._newMarkerNode = null;
+    this._newMarkerMessage = null;
+    this._newMarkerArmed = true;
     // Search state
     this._searchMatches = [];
     this._searchCurrentIndex = -1;
@@ -455,10 +473,43 @@ export class ChatRenderer {
     this.timeDividerInterval = interval || 300000;
   }
 
+  setNewMessagesMarker(enabled) {
+    if (!!enabled !== this.newMarkerEnabled) {
+      this._newMarkerArmed = true;
+    }
+    this.newMarkerEnabled = !!enabled;
+    if (!this.newMarkerEnabled) {
+      this.dropNewMarker();
+    }
+  }
+
+  // Не взводит отметку заново: в том же сеансе прокрутки вверх
+  // вторая линия не нужна.
+  dropNewMarker() {
+    this._newMarkerNode?.remove();
+    this._newMarkerMessage = null;
+  }
+
+  /**
+   * Places the marker before the first unread message of the current
+   * scroll-up session. Returns the node to insert, if any.
+   */
+  takeNewMarker(message, shouldAutoScroll) {
+    if (!this.newMarkerEnabled || shouldAutoScroll || !this._newMarkerArmed
+      || message.type.startsWith(MESSAGE_TYPE_INTERNAL)) {
+      return null;
+    }
+    this._newMarkerArmed = false;
+    this._newMarkerNode = this._newMarkerNode || createNewMarkerNode();
+    this._newMarkerMessage = message;
+    return this._newMarkerNode;
+  }
+
   scrollToBottom() {
     if (!this.scrollNode) {
       return;
     }
+    this._newMarkerArmed = true;
     if (this.smoothScroll) {
       this._smoothScrollInProgress = true;
       // Safety timeout: clear the flag even if the animation is
@@ -496,17 +547,28 @@ export class ChatRenderer {
       return;
     }
     this.page = page;
+    this.dropNewMarker();
     // Fast clear of the root node
     this.rootNode.textContent = '';
     this.visibleMessages = [];
+    // Разделители зависят от соседей на вкладке: пересчитываем заново.
+    this._lastDividerTime = 0;
+    const now = Date.now();
     // Re-add message nodes
     const fragment = document.createDocumentFragment();
     let node;
     for (let message of this.messages) {
       if (canPageAcceptType(page, message.type)) {
         node = message.node;
+        this.attachTimeDivider(message, now);
+        if (message.dividerNode) {
+          fragment.appendChild(message.dividerNode);
+        }
         fragment.appendChild(node);
         this.visibleMessages.push(message);
+      }
+      else {
+        message.dividerNode = undefined;
       }
     }
     if (node) {
@@ -538,6 +600,61 @@ export class ChatRenderer {
     return null;
   }
 
+  /**
+   * Divider belongs to the message right after it on the current tab,
+   * so pruning removes it together with that message.
+   */
+  attachTimeDivider(message, now) {
+    message.dividerNode = undefined;
+    if (!this.enableTimeDividers) {
+      return;
+    }
+    const msgTime = message.createdAt || now;
+    if (this._lastDividerTime === 0) {
+      this._lastDividerTime = msgTime;
+    }
+    else if (msgTime - this._lastDividerTime >= this.timeDividerInterval) {
+      message.dividerNode = createTimeDividerNode(msgTime);
+      this._lastDividerTime = msgTime;
+    }
+  }
+
+  /**
+   * Time divider and the new messages line go right before a message
+   * shown on the current tab.
+   */
+  appendLeadNodes(fragment, message, now, options, shouldAutoScroll) {
+    const { prepend, notifyListeners = true } = options;
+    if (prepend) {
+      return;
+    }
+    this.attachTimeDivider(message, now);
+    if (message.dividerNode) {
+      fragment.appendChild(message.dividerNode);
+    }
+    const marker = notifyListeners
+      && this.takeNewMarker(message, shouldAutoScroll);
+    if (marker) {
+      fragment.appendChild(marker);
+    }
+  }
+
+  linkifyAndWatchImages(node, message, now) {
+    const linkifyNodes = node.querySelectorAll('.linkify');
+    for (let i = 0; i < linkifyNodes.length; ++i) {
+      linkifyNode(linkifyNodes[i]);
+    }
+    // Assign an image error handler
+    if (now < message.createdAt + IMAGE_RETRY_MESSAGE_AGE) {
+      const imgNodes = node.querySelectorAll('img');
+      for (let i = 0; i < imgNodes.length; i++) {
+        const imgNode = imgNodes[i];
+        imgNode.addEventListener('error', handleImageError);
+        imgNode.addEventListener('load', this.handleDeferredContentLoad);
+      }
+    }
+  }
+
   processBatch(batch, options = {}) {
     const {
       prepend,
@@ -560,15 +677,23 @@ export class ChatRenderer {
       }
       return;
     }
+    if (batch.length > 0) {
+      this.messagesVersion++;
+    }
     // Insert messages
     const fragment = document.createDocumentFragment();
     const countByType = {};
     let shouldPlayBatchHighlightSound = false;
     let node;
+    // История из хранилища старше всего, что уже есть: копим её отдельно
+    // и ставим в начало списков, иначе обрезка и смена вкладки берут
+    // новые сообщения за старые.
+    const prepended = prepend ? [] : null;
+    const prependedVisible = prepend ? [] : null;
     for (let payload of batch) {
       const message = createMessage(payload);
       // Combine messages
-      const combinable = this.getCombinableMessage(message);
+      const combinable = !prepend && this.getCombinableMessage(message);
       if (combinable) {
         if (canPlayHighlightSound && this.messageWouldHighlight(message)) {
           shouldPlayBatchHighlightSound = true;
@@ -576,18 +701,6 @@ export class ChatRenderer {
         combinable.times = (combinable.times || 1) + 1;
         updateMessageBadge(combinable);
         continue;
-      }
-      // Time divider check
-      if (this.enableTimeDividers && !prepend) {
-        const msgTime = message.createdAt || now;
-        if (this._lastDividerTime === 0) {
-          this._lastDividerTime = msgTime;
-        }
-        else if (msgTime - this._lastDividerTime
-          >= this.timeDividerInterval) {
-          fragment.appendChild(createTimeDividerNode(msgTime));
-          this._lastDividerTime = msgTime;
-        }
       }
       // Compute timestamp string
       const timestamp = this.enableTimestamps
@@ -632,20 +745,7 @@ export class ChatRenderer {
             }
           }
         }
-        // Linkify text
-        const linkifyNodes = node.querySelectorAll('.linkify');
-        for (let i = 0; i < linkifyNodes.length; ++i) {
-          linkifyNode(linkifyNodes[i]);
-        }
-        // Assign an image error handler
-        if (now < message.createdAt + IMAGE_RETRY_MESSAGE_AGE) {
-          const imgNodes = node.querySelectorAll('img');
-          for (let i = 0; i < imgNodes.length; i++) {
-            const imgNode = imgNodes[i];
-            imgNode.addEventListener('error', handleImageError);
-            imgNode.addEventListener('load', this.handleDeferredContentLoad);
-          }
-        }
+        this.linkifyAndWatchImages(node, message, now);
       }
       // Store the node in the message
       message.node = node;
@@ -663,11 +763,17 @@ export class ChatRenderer {
       }
       countByType[message.type] += 1;
       // TODO: Detect duplicates
-      this.messages.push(message);
+      (prepended || this.messages).push(message);
       if (canPageAcceptType(this.page, message.type)) {
+        this.appendLeadNodes(fragment, message, now, options,
+          shouldAutoScroll);
         fragment.appendChild(node);
-        this.visibleMessages.push(message);
+        (prependedVisible || this.visibleMessages).push(message);
       }
+    }
+    if (prepended?.length) {
+      this.messages = prepended.concat(this.messages);
+      this.visibleMessages = prependedVisible.concat(this.visibleMessages);
     }
     if (shouldPlayBatchHighlightSound) {
       this.playHighlightSound();
@@ -1059,6 +1165,11 @@ export class ChatRenderer {
         for (let i = 0; i < fromIndex; i++) {
           const message = messages[i];
           this.rootNode.removeChild(message.node);
+          message.dividerNode?.remove();
+          message.dividerNode = undefined;
+          if (message === this._newMarkerMessage) {
+            this.dropNewMarker();
+          }
           // Mark this message as pruned
           message.node = 'pruned';
         }
@@ -1066,6 +1177,7 @@ export class ChatRenderer {
         this.messages = this.messages.filter(message => (
           message.node !== 'pruned'
         ));
+        this.messagesVersion++;
         logger.log(`pruned ${fromIndex} visible messages`);
       }
     }
@@ -1075,6 +1187,7 @@ export class ChatRenderer {
         this.messages.length - MAX_PERSISTED_MESSAGES);
       if (fromIndex > 0) {
         this.messages = this.messages.slice(fromIndex);
+        this.messagesVersion++;
         logger.log(`pruned ${fromIndex} stored messages`);
       }
     }
@@ -1091,7 +1204,9 @@ export class ChatRenderer {
     // Remove existing nodes
     for (let message of messages) {
       message.node = undefined;
+      message.dividerNode = undefined;
     }
+    this.dropNewMarker();
     // Fast clear of the root node
     this.rootNode.textContent = '';
     this.messages = [];

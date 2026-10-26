@@ -24,16 +24,39 @@ const FORBID_TAGS = [
   'video',
 ];
 
-const saveChatToStorage = async store => {
-  const state = selectChat(store.getState());
-  const savedAt = getLastSavedAt();
+const saveChatToStorage = async (state, savedAt) => {
   const fromIndex = Math.max(0,
     chatRenderer.messages.length - MAX_PERSISTED_MESSAGES);
   const messages = chatRenderer.messages
     .slice(fromIndex)
     .map(message => serializeMessage(message));
-  storage.set('chat-state', { ...state, savedAt });
-  storage.set('chat-messages', messages);
+  await Promise.all([
+    storage.set('chat-state', { ...state, savedAt }),
+    storage.set('chat-messages', messages),
+  ]);
+};
+
+// Сохранение раз в MESSAGE_SAVE_INTERVAL пишет до MAX_PERSISTED_MESSAGES
+// сообщений целиком; если с прошлого раза ничего не поменялось, не пишем.
+const createChatSaver = () => {
+  let last = null;
+  return async (store, force = false) => {
+    const state = selectChat(store.getState());
+    const savedAt = getLastSavedAt();
+    const version = chatRenderer.messagesVersion;
+    if (!force && last && last.state === state
+      && last.savedAt === savedAt && last.version === version) {
+      return;
+    }
+    try {
+      await saveChatToStorage(state, savedAt);
+      last = { state, savedAt, version };
+    }
+    catch (err) {
+      // Запомненное не обновляем: следующий тик повторит запись.
+      console.error('Failed to save chat history:', err);
+    }
+  };
 };
 
 // Server state tracking for smart merge with browser storage
@@ -144,6 +167,9 @@ const createApplySettings = () => {
     if (anyChanged(prev, settings, ['showRadioJobs'])) {
       chatRenderer.setRadioJobsVisible(settings.showRadioJobs !== false);
     }
+    if (anyChanged(prev, settings, ['newMessagesMarker'])) {
+      chatRenderer.setNewMessagesMarker(settings.newMessagesMarker !== false);
+    }
     if (anyChanged(prev, settings, ['styleOverrides', 'spanAnimations'])) {
       // Normalize so the renderer always sees every known style id and
       // clears stale properties for styles that lost their override.
@@ -216,6 +242,7 @@ export const chatMiddleware = store => {
   let initialized = false;
   let loaded = false;
   const applySettings = createApplySettings();
+  const saveChat = createChatSaver();
   chatRenderer.events.on('batchProcessed', countByType => {
     // Use this flag to workaround unread messages caused by
     // loading them from storage. Side effect of that, is that
@@ -227,7 +254,7 @@ export const chatMiddleware = store => {
   chatRenderer.events.on('scrollTrackingChanged', scrollTracking => {
     store.dispatch(changeScrollTracking(scrollTracking));
   });
-  setInterval(() => saveChatToStorage(store), MESSAGE_SAVE_INTERVAL);
+  setInterval(() => saveChat(store), MESSAGE_SAVE_INTERVAL);
   return next => action => {
     const { type, payload } = action;
     if (!initialized) {
@@ -323,7 +350,7 @@ export const chatMiddleware = store => {
       return;
     }
     if (type === 'roundrestart') {
-      saveChatToStorage(store);
+      saveChat(store, true);
       flushSaveToServer(store);
       return next(action);
     }

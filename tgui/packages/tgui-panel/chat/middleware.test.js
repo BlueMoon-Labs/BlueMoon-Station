@@ -18,6 +18,7 @@ const mockChatRenderer = {
   setCustomColors: jest.fn(),
   setCustomProperties: jest.fn(),
   setRadioJobsVisible: jest.fn(),
+  setNewMessagesMarker: jest.fn(),
   setStyleOverrides: jest.fn(),
   setTimestamps: jest.fn(),
   setTimeDividers: jest.fn(),
@@ -27,6 +28,7 @@ const mockChatRenderer = {
   rebuildChat: jest.fn(),
   saveToDisk: jest.fn(),
   messages: [],
+  messagesVersion: 0,
 };
 
 jest.mock('./renderer', () => ({
@@ -112,6 +114,7 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(mockChatRenderer.setCustomColors).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setCustomProperties).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setRadioJobsVisible).toHaveBeenCalledTimes(1);
+    expect(mockChatRenderer.setNewMessagesMarker).toHaveBeenCalledWith(true);
     expect(mockChatRenderer.setStyleOverrides).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setTimestamps).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setTimeDividers).toHaveBeenCalledTimes(1);
@@ -327,5 +330,96 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(mockChatRenderer.setStyleOverrides).not.toHaveBeenCalled();
     expect(mockChatRenderer.setTimestamps).not.toHaveBeenCalled();
     expect(mockChatRenderer.setTimeDividers).not.toHaveBeenCalled();
+  });
+});
+
+describe('chatMiddleware new messages marker', () => {
+  beforeEach(() => {
+    jest.spyOn(global, 'setInterval').mockImplementation(() => 0);
+    if (typeof window.Byond === 'undefined') {
+      window.Byond = { topic: jest.fn() };
+    }
+    clearRendererSpies();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test('toggle reaches the renderer only when it changes', async () => {
+    const store = createTestStore();
+    store.dispatch(updateSettings({}));
+    store.dispatch(updateSettings({ fontSize: 14 }));
+    expect(mockChatRenderer.setNewMessagesMarker).toHaveBeenCalledTimes(1);
+    store.dispatch(updateSettings({ newMessagesMarker: false }));
+    expect(mockChatRenderer.setNewMessagesMarker).toHaveBeenCalledTimes(2);
+    expect(mockChatRenderer.setNewMessagesMarker)
+      .toHaveBeenLastCalledWith(false);
+  });
+});
+
+describe('chatMiddleware periodic save', () => {
+  let tick;
+
+  beforeEach(() => {
+    jest.spyOn(global, 'setInterval').mockImplementation(fn => {
+      tick = fn;
+      return 0;
+    });
+    if (typeof window.Byond === 'undefined') {
+      window.Byond = { topic: jest.fn() };
+    }
+    clearRendererSpies();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test('skips the write when nothing changed since the last save', async () => {
+    // eslint-disable-next-line global-require
+    const { storage } = require('common/storage');
+    // eslint-disable-next-line global-require
+    const { changeScrollTracking } = require('./actions');
+    const store = createTestStore();
+    store.dispatch(updateSettings({}));
+    await flushPromises();
+    storage.set.mockClear();
+
+    await tick();
+    expect(storage.set).toHaveBeenCalledTimes(2);
+    await tick();
+    await tick();
+    expect(storage.set).toHaveBeenCalledTimes(2);
+
+    mockChatRenderer.messagesVersion += 1;
+    await tick();
+    expect(storage.set).toHaveBeenCalledTimes(4);
+
+    store.dispatch(changeScrollTracking(false));
+    await tick();
+    expect(storage.set).toHaveBeenCalledTimes(6);
+
+    store.dispatch({ type: 'roundrestart' });
+    await flushPromises();
+    expect(storage.set).toHaveBeenCalledTimes(8);
+  });
+
+  test('retries on the next tick after a failed write', async () => {
+    // eslint-disable-next-line global-require
+    const { storage } = require('common/storage');
+    const store = createTestStore();
+    store.dispatch(updateSettings({}));
+    await flushPromises();
+    storage.set.mockClear();
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    storage.set.mockRejectedValueOnce(new Error('quota'));
+
+    await tick();
+    expect(storage.set).toHaveBeenCalledTimes(2);
+    await tick();
+    expect(storage.set).toHaveBeenCalledTimes(4);
+    await tick();
+    expect(storage.set).toHaveBeenCalledTimes(4);
   });
 });

@@ -82,6 +82,23 @@ $color-bg-section: base.$color-bg-section !default;
   }
 }
 
+.Chat__newMarker {
+  display: flex;
+  align-items: center;
+  margin: 0.4em 0;
+  font-size: 0.75em;
+  color: colors.$orange;
+  user-select: none;
+
+  &:after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    margin-left: 0.6em;
+    background-color: currentColor;
+  }
+}
+
 .Chat__highlight {
   color: #000;
 

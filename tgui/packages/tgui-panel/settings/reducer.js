@@ -44,6 +44,8 @@ const initialState = {
   enableTimeDividers: false,
   timeDividerInterval: 300000,
   showRadioJobs: true,
+  // Линия "Новые сообщения" и счётчик на кнопке прокрутки вниз
+  newMessagesMarker: true,
   view: {
     visible: false,
     activeTab: SETTINGS_TABS[0].id,

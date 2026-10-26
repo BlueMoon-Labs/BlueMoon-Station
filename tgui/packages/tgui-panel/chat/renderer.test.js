@@ -1122,4 +1122,248 @@ describe('ChatRenderer', () => {
       expect(listener).toHaveBeenCalledWith(true);
     });
   });
+
+  describe('history restored after the chat is ready', () => {
+    const texts = list => list.map(m => m.text);
+    const domTexts = root => Array.from(root.childNodes)
+      .map(n => n.textContent);
+
+    test('prepended history keeps chronological order', () => {
+      const renderer = createReadyRenderer();
+      const old = Date.now() - 60000;
+      renderer.processBatch([{ text: 'live 1' }, { text: 'live 2' }]);
+      renderer.processBatch([
+        { text: 'old 1', createdAt: old },
+        { text: 'old 2', createdAt: old + 1 },
+      ], { prepend: true });
+      const expected = ['old 1', 'old 2', 'live 1', 'live 2'];
+      expect(texts(renderer.messages)).toEqual(expected);
+      expect(texts(renderer.visibleMessages)).toEqual(expected);
+      expect(domTexts(renderer.rootNode)).toEqual(expected);
+      renderer.changePage(renderer.page);
+      expect(domTexts(renderer.rootNode)).toEqual(expected);
+    });
+
+    test('pruning after a prepend drops the oldest messages', () => {
+      const renderer = createReadyRenderer();
+      const old = Date.now() - 600000;
+      const live = [];
+      for (let i = 0; i < MAX_VISIBLE_MESSAGES; i++) {
+        live.push({ text: 'live ' + i });
+      }
+      renderer.processBatch(live);
+      renderer.processBatch([{ text: 'old', createdAt: old }],
+        { prepend: true });
+      renderer.pruneMessages();
+      expect(renderer.visibleMessages[0].text).toBe('live 0');
+      expect(renderer.rootNode.firstChild.textContent).toBe('live 0');
+    });
+
+    test('prepended history does not merge into live messages', () => {
+      const renderer = createReadyRenderer();
+      renderer.processBatch([{ text: 'same' }]);
+      renderer.processBatch([{ text: 'same', createdAt: Date.now() - 1000 }],
+        { prepend: true });
+      expect(renderer.messages.length).toBe(2);
+      expect(renderer.messages[1].times).toBeUndefined();
+    });
+  });
+
+  describe('messagesVersion', () => {
+    test('changes on new, combined and pruned messages only', () => {
+      const renderer = createReadyRenderer();
+      const v0 = renderer.messagesVersion;
+      renderer.processBatch([{ text: 'x' }]);
+      const v1 = renderer.messagesVersion;
+      expect(v1).not.toBe(v0);
+      renderer.processBatch([{ text: 'x' }]);
+      const v2 = renderer.messagesVersion;
+      expect(v2).not.toBe(v1);
+      renderer.processBatch([]);
+      renderer.pruneMessages();
+      expect(renderer.messagesVersion).toBe(v2);
+      const batch = [];
+      for (let i = 0; i < MAX_VISIBLE_MESSAGES; i++) {
+        batch.push({ text: 'm' + i });
+      }
+      renderer.processBatch(batch);
+      const v3 = renderer.messagesVersion;
+      renderer.pruneMessages();
+      expect(renderer.messagesVersion).not.toBe(v3);
+    });
+  });
+
+  describe('time dividers', () => {
+    const isDivider = node => node.classList.contains('Chat__timeDivider');
+
+    test('survive a page change', () => {
+      const renderer = createReadyRenderer();
+      renderer.setTimeDividers(true, 1000);
+      const t = Date.now();
+      renderer.processBatch([
+        { text: 'a', createdAt: t },
+        { text: 'b', createdAt: t + 2000 },
+        { text: 'c', createdAt: t + 4000 },
+      ]);
+      const before = Array.from(renderer.rootNode.childNodes)
+        .map(n => (isDivider(n) ? '|' : n.textContent));
+      expect(before).toEqual(['a', '|', 'b', '|', 'c']);
+      renderer.changePage(renderer.page);
+      const after = Array.from(renderer.rootNode.childNodes)
+        .map(n => (isDivider(n) ? '|' : n.textContent));
+      expect(after).toEqual(before);
+    });
+
+    test('are pruned together with their messages', () => {
+      const renderer = createReadyRenderer();
+      renderer.setTimeDividers(true, 1000);
+      const t = Date.now() - 10000000;
+      const batch = [];
+      for (let i = 0; i < MAX_VISIBLE_MESSAGES + 100; i++) {
+        batch.push({ text: 'm' + i, createdAt: t + i * 600 });
+      }
+      renderer.processBatch(batch);
+      renderer.pruneMessages();
+      const nodes = Array.from(renderer.rootNode.childNodes);
+      const firstMessage = nodes.indexOf(renderer.visibleMessages[0].node);
+      expect(firstMessage).toBeLessThanOrEqual(1);
+      for (let i = 0; i < nodes.length - 1; i++) {
+        if (isDivider(nodes[i])) {
+          expect(isDivider(nodes[i + 1])).toBe(false);
+        }
+      }
+    });
+
+    const domOf = renderer => Array.from(renderer.rootNode.childNodes)
+      .map(n => (isDivider(n) ? '|' : n.textContent));
+
+    test('follow the messages shown on a custom tab', () => {
+      const renderer = createReadyRenderer();
+      const mainPage = renderer.page;
+      const localPage = createPage({ acceptedTypes: { localchat: true } });
+      renderer.page = localPage;
+      renderer.setTimeDividers(true, 1000);
+      const t = Date.now();
+      renderer.processBatch([
+        { type: 'localchat', text: 'a', createdAt: t },
+        { type: 'radio', text: 'b', createdAt: t + 2000 },
+        { type: 'localchat', text: 'c', createdAt: t + 2500 },
+      ]);
+      expect(domOf(renderer)).toEqual(['a', '|', 'c']);
+      renderer.changePage(localPage);
+      expect(domOf(renderer)).toEqual(['a', '|', 'c']);
+      renderer.changePage(mainPage);
+      expect(domOf(renderer)).toEqual(['a', '|', 'b', 'c']);
+      renderer.changePage(localPage);
+      expect(domOf(renderer)).toEqual(['a', '|', 'c']);
+    });
+
+    test('of hidden messages do not pile up after prune', () => {
+      const renderer = createReadyRenderer();
+      renderer.page = createPage({ acceptedTypes: { localchat: true } });
+      renderer.setTimeDividers(true, 1000);
+      const t = Date.now() - 100000000;
+      const batch = [];
+      for (let i = 0; i < MAX_VISIBLE_MESSAGES + 200; i++) {
+        batch.push({ type: 'localchat', text: 'l' + i, createdAt: t + i * 3000 });
+        batch.push({ type: 'radio', text: 'r' + i,
+          createdAt: t + i * 3000 + 1500 });
+      }
+      renderer.processBatch(batch);
+      renderer.pruneMessages();
+      const nodes = domOf(renderer);
+      expect(nodes.indexOf('l200')).toBeLessThanOrEqual(1);
+      // Каждое видимое сообщение здесь старше соседа на 3 с.
+      expect(nodes.filter(n => n === '|').length)
+        .toBe(renderer.visibleMessages.length);
+    });
+  });
+
+  describe('new messages marker', () => {
+    const markers = root => root.querySelectorAll('.Chat__newMarker');
+    const scrolledUp = () => {
+      const renderer = createReadyRenderer();
+      renderer.setNewMessagesMarker(true);
+      renderer.processBatch([{ text: 'read 1' }, { text: 'read 2' }]);
+      renderer.scrollTracking = false;
+      renderer.scrollNode.scrollTop = 0;
+      return renderer;
+    };
+
+    test('marks the first message that arrives while scrolled up', () => {
+      const renderer = scrolledUp();
+      renderer.processBatch([{ text: 'new 1' }]);
+      renderer.processBatch([{ text: 'new 2' }]);
+      const found = markers(renderer.rootNode);
+      expect(found.length).toBe(1);
+      expect(found[0].nextSibling.textContent).toBe('new 1');
+    });
+
+    test('moves to the next unread block after returning to the bottom', () => {
+      const renderer = scrolledUp();
+      renderer.processBatch([{ text: 'new 1' }]);
+      renderer.scrollToBottom();
+      renderer.processBatch([{ text: 'seen' }]);
+      renderer.scrollTracking = false;
+      renderer.scrollNode.scrollTop = 0;
+      renderer.processBatch([{ text: 'new 2' }]);
+      const found = markers(renderer.rootNode);
+      expect(found.length).toBe(1);
+      expect(found[0].nextSibling.textContent).toBe('new 2');
+    });
+
+    test('is not placed while following the bottom', () => {
+      const renderer = createReadyRenderer();
+      renderer.setNewMessagesMarker(true);
+      renderer.processBatch([{ text: 'a' }, { text: 'b' }]);
+      expect(markers(renderer.rootNode).length).toBe(0);
+    });
+
+    test('is not placed when disabled and is removed on disable', () => {
+      const renderer = scrolledUp();
+      renderer.processBatch([{ text: 'new 1' }]);
+      renderer.setNewMessagesMarker(false);
+      expect(markers(renderer.rootNode).length).toBe(0);
+      renderer.processBatch([{ text: 'new 2' }]);
+      expect(markers(renderer.rootNode).length).toBe(0);
+    });
+
+    test('ignores restored history and internal messages', () => {
+      const renderer = scrolledUp();
+      renderer.processBatch([{ type: 'internal/reconnected' }]);
+      renderer.processBatch([{ text: 'old', createdAt: Date.now() - 60000 }],
+        { prepend: true });
+      expect(markers(renderer.rootNode).length).toBe(0);
+    });
+
+    test('does not come back in the same scroll-up session', () => {
+      const renderer = scrolledUp();
+      renderer.processBatch([{ text: 'new 1' }]);
+      renderer.rebuildChat();
+      renderer.scrollTracking = false;
+      renderer.scrollNode.scrollTop = 0;
+      renderer.processBatch([{ text: 'new 2' }]);
+      expect(markers(renderer.rootNode).length).toBe(0);
+    });
+
+    test('goes away with its message on prune and page change', () => {
+      const renderer = scrolledUp();
+      renderer.processBatch([{ text: 'new 1' }]);
+      const batch = [];
+      for (let i = 0; i < MAX_VISIBLE_MESSAGES; i++) {
+        batch.push({ text: 'm' + i });
+      }
+      renderer.processBatch(batch);
+      renderer.scrollToBottom();
+      renderer.pruneMessages();
+      expect(markers(renderer.rootNode).length).toBe(0);
+
+      renderer.scrollTracking = false;
+      renderer.scrollNode.scrollTop = 0;
+      renderer.processBatch([{ text: 'new 2' }]);
+      expect(markers(renderer.rootNode).length).toBe(1);
+      renderer.changePage(renderer.page);
+      expect(markers(renderer.rootNode).length).toBe(0);
+    });
+  });
 });

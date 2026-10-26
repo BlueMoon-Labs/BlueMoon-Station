@@ -16,20 +16,54 @@ import { changeSettingsTab, updateSettings } from './actions';
 import { CHAT_ANIM_SPEEDS, CHAT_ANIMATIONS, CHAT_BG_ANIMATIONS, CHAT_STYLES, FONTS, MESSAGE_STYLE_ANIMATIONS, MESSAGE_STYLE_FONTS, MESSAGE_STYLES, SETTINGS_TABS, TEXT_GLOW_OPTIONS, TIME_DIVIDER_INTERVALS, TIMESTAMP_FORMATS } from './constants';
 import { selectActiveTab, selectSettings } from './selectors';
 
-// Общий TGUI-пикер и текстовое поле для ручного ввода цвета.
+const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
+
+// Diagonal line: "no color", so an empty value does not read as black.
+const EMPTY_SWATCH_BG = 'linear-gradient(to top right, transparent 45%,'
+  + ' rgba(255, 90, 90, 0.8) 45%, rgba(255, 90, 90, 0.8) 55%, transparent 55%)';
+
+const ColorSwatch = (props) => {
+  const { value, defaultColor, onChange } = props;
+  const displayColor = value || defaultColor;
+  const empty = !HEX_COLOR.test(displayColor || '');
+  return (
+    <Box
+      position="relative"
+      style={{ width: '22px', height: '22px' }}>
+      <ColorPicker
+        value={empty ? null : displayColor}
+        width="22px"
+        height="22px"
+        onCommit={onChange}
+      />
+      {empty && (
+        <Box
+          className="ColorSwatch__empty"
+          style={{
+            position: 'absolute',
+            inset: '0',
+            borderRadius: '2px',
+            pointerEvents: 'none',
+            background: EMPTY_SWATCH_BG + ', rgba(128, 128, 128, 0.35)',
+          }}
+        />
+      )}
+    </Box>
+  );
+};
+
+/**
+ * Color input with the shared TGUI picker and a text field.
+ */
 const ColorInput = (props) => {
   const { value, defaultColor, placeholder, onChange, onClear } = props;
-  const displayColor = value || defaultColor || '#000000';
-  const pickerColor = /^#[0-9a-fA-F]{6}$/.test(displayColor)
-    ? displayColor : '#000000';
   return (
     <Stack inline align="center">
       <Stack.Item>
-        <ColorPicker
-          value={pickerColor}
-          width="22px"
-          height="22px"
-          onCommit={onChange}
+        <ColorSwatch
+          value={value}
+          defaultColor={defaultColor}
+          onChange={onChange}
         />
       </Stack.Item>
       <Stack.Item>
@@ -59,8 +93,8 @@ export const SettingsPanel = (props) => {
   const dispatch = useDispatch();
   return (
     <Stack fill>
-      <Stack.Item>
-        <Section fitted fill minHeight="8em">
+      <Stack.Item overflowY="auto" maxWidth="9em">
+        <Section fitted fill>
           <Tabs vertical>
             {SETTINGS_TABS.map(tab => (
               <Tabs.Tab
@@ -75,7 +109,11 @@ export const SettingsPanel = (props) => {
           </Tabs>
         </Section>
       </Stack.Item>
-      <Stack.Item grow={1} basis={0}>
+      <Stack.Item
+        key={activeTab}
+        grow={1}
+        basis={0}
+        overflowY="auto">
         {activeTab === 'general' && (
           <SettingsGeneral />
         )}
@@ -108,6 +146,7 @@ export const SettingsGeneral = (props) => {
     timestampFormat,
     enableTimeDividers,
     timeDividerInterval,
+    newMessagesMarker,
     showRadioJobs,
   } = useSelector(selectSettings);
   const dispatch = useDispatch();
@@ -307,6 +346,17 @@ export const SettingsGeneral = (props) => {
           </LabeledList>
         </Box>
       )}
+      <Button.Checkbox
+        checked={newMessagesMarker !== false}
+        tooltipPosition="bottom-start"
+        tooltip={'Пока вы читаете историю выше, первое пришедшее'
+          + ' сообщение отделяется линией, а на кнопке прокрутки'
+          + ' вниз виден счётчик новых.'}
+        onClick={() => dispatch(updateSettings({
+          newMessagesMarker: newMessagesMarker === false,
+        }))}>
+        Отмечать новые сообщения
+      </Button.Checkbox>
       <Divider />
       <Box>
         <Button

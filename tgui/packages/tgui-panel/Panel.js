@@ -4,7 +4,6 @@
  * @license MIT
  */
 
-import { useSelector } from 'common/redux';
 import { useState } from 'react';
 import { Button, Section, Stack } from 'tgui/components';
 import { KitchenSink, useDebug } from 'tgui/debug';
@@ -12,9 +11,7 @@ import { IS_DEVELOPMENT } from 'tgui/env';
 import { Pane } from 'tgui/layouts';
 
 import { NowPlayingWidget, useAudio } from './audio';
-import { ChatPanel, ChatSearchBar, ChatTabs } from './chat';
-import { chatRenderer } from './chat/renderer';
-import { selectChat } from './chat/selectors';
+import { ChatPanel, ChatScrollButton, ChatSearchBar, ChatTabs } from './chat';
 import { EmotePanel, useEmotes } from './emotes';
 import { useGame } from './game';
 import { Notifications } from './Notifications';
@@ -25,7 +22,6 @@ export const Panel = (props) => {
   const audio = useAudio();
   const settings = useSettings();
   const game = useGame();
-  const chat = useSelector(selectChat);
   const [searchOpen, setSearchOpen] = useState(false);
   if (IS_DEVELOPMENT) {
     const debug = useDebug();
@@ -102,11 +98,11 @@ export const Panel = (props) => {
           </Stack.Item>
         )}
         {settings.visible && (
-          <Stack.Item>
+          <Stack.Item shrink={1} style={{ minHeight: 0 }}>
             <SettingsPanel />
           </Stack.Item>
         )}
-        <Stack.Item grow>
+        <Stack.Item grow basis={0} minHeight="max(8em, 30%)">
           <Section fill fitted position="relative">
             {searchOpen && (
               <ChatSearchBar
@@ -115,14 +111,7 @@ export const Panel = (props) => {
             <Pane.Content scrollable>
               <ChatPanel lineHeight={settings.lineHeight} />
             </Pane.Content>
-            {!chat.scrollTracking && (
-              <Button
-                className="Chat__scrollButton"
-                icon="arrow-down"
-                onClick={() => chatRenderer.scrollToBottom()}>
-                Прокрутить вниз
-              </Button>
-            )}
+            <ChatScrollButton />
             <Notifications>
               {game.connectionLostAt && (
                 <Notifications.Item
