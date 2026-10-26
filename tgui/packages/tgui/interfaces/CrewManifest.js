@@ -1,16 +1,6 @@
 import { useBackend } from "../backend";
-import { Flex, Icon, Section, Table } from "../components";
+import { Flex, Section, Table } from "../components";
 import { Window } from "../layouts";
-
-const commandJobs = [
-  "Captain",
-  "Head of Personnel",
-  "Head of Security",
-  "Chief Engineer",
-  "Research Director",
-  "Chief Medical Officer",
-  "Quartermaster",
-];
 
 const departmentNames = {
   Command: "Командование",
@@ -48,30 +38,18 @@ export const CrewManifest = (props) => {
           >
             <Table>
               {Object.entries(crew).map(([crewIndex, crewMember]) => (
-                <Table.Row key={crewIndex}>
+                <Table.Row key={crewIndex} bold={!!crewMember.head}>
                   <Table.Cell className={"CrewManifest__Cell"}>
                     {crewMember.name}
                   </Table.Cell>
                   <Table.Cell
-                    className={
-                      "CrewManifest__Cell CrewManifest__Cell--"
-                      + (crewMember.department_check === "Captain" ? "Captain" : "Command")
-                    }
-                    collapsing
-                  >
-                    {commandJobs.includes(crewMember.department_check) && (
-                      <Icon
-                        name={
-                          crewMember.department_check === "Captain" ? "star" : "chevron-up"
-                        }
-                      />
-                    )}
-                  </Table.Cell>
-                  <Table.Cell
                     className={"CrewManifest__Cell"}
                     collapsing
-                    color="label"
+                    color={crewMember.head ? undefined : "label"}
                   >
+                    {!!crewMember.head && (
+                      <span className="CrewManifest__HeadMark">{'★'}</span>
+                    )}
                     {crewMember.rank}
                   </Table.Cell>
                 </Table.Row>

@@ -825,6 +825,7 @@
 			data["crew_manifest"] += list(list(
 				"name" = t.fields["name"],
 				"rank" = t.fields["rank"],
+				"head" = is_manifest_record_head(t.fields["rank"], t.fields["real_rank"]),
 			))
 
 	// Medical records list

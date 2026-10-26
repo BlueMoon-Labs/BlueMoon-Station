@@ -702,8 +702,14 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 		if(real_rank)
 			foundrecord.fields["real_rank"] = real_rank
 
+/// Глава ли запись: метка главы рации, где должность записи - показанное название, а профессия - карта. Префикс наклейки снимается, как у карты.
+/proc/is_manifest_record_head(rank, real_rank)
+	if(!rank)
+		return FALSE
+	var/list/classes = splittext(get_radio_job_class(real_rank, rank, strip_radio_sticker_prefix(rank)), " ")
+	return ("radiojob-head" in classes)
+
 /datum/datacore/proc/get_manifest()
-	var/list/manifest_out = list()
 	var/list/departments = list(
 		DEPARTMENT_COMMAND		= GLOB.command_positions,
 		DEPARTMENT_SECURITY		= GLOB.security_positions,
@@ -715,156 +721,65 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 		DEPARTMENT_LAW			= GLOB.law_positions,
 		DEPARTMENT_SILICON		= GLOB.nonhuman_positions
 	)
+	// Отдел -> три яруса: капитан, главы, остальные, внутри яруса порядок записей.
+	var/list/tiers_by_department = list()
 	for(var/datum/data/record/t in GLOB.data_core.general)
-		var/name = t.fields["name"]
 		var/rank = t.fields["rank"]
 		var/department_check = GetJobName(t.fields["real_rank"])
-		var/has_department = FALSE
+		var/head = is_manifest_record_head(rank, t.fields["real_rank"])
+		var/list/entry = list(
+			"name" = t.fields["name"],
+			"rank" = rank,
+			"department_check" = department_check,
+			"head" = head,
+		)
+		var/tier = head ? (department_check == "Captain" ? 1 : 2) : 3
+		var/list/entry_departments = list()
 		for(var/department in departments)
-			var/list/jobs = departments[department]
-			if(department_check in jobs)
-				if(!manifest_out[department])
-					manifest_out[department] = list()
-				// Append to beginning of list if captain or department head
-				if (department_check == "Captain" || (department != DEPARTMENT_COMMAND && (rank in GLOB.command_positions)))
-					manifest_out[department] = list(list(
-						"name" = name,
-						"rank" = rank,
-						"department_check" = department_check
-					)) + manifest_out[department]
-				else
-					manifest_out[department] += list(list(
-						"name" = name,
-						"rank" = rank,
-						"department_check" = department_check
-					))
-				has_department = TRUE
-		if(!has_department)
-			if(!manifest_out["Misc"])
-				manifest_out["Misc"] = list()
-			manifest_out["Misc"] += list(list(
-				"name" = name,
-				"rank" = rank,
-				"department_check" = department_check
-			))
+			if(department_check in departments[department])
+				entry_departments += department
+		if(!length(entry_departments))
+			entry_departments += "Misc"
+		for(var/department in entry_departments)
+			var/list/tiers = tiers_by_department[department]
+			if(!tiers)
+				tiers = list(list(), list(), list())
+				tiers_by_department[department] = tiers
+			var/list/bucket = tiers[tier]
+			bucket += list(entry)
+	var/list/manifest_out = list()
+	for(var/department in tiers_by_department)
+		var/list/tiers = tiers_by_department[department]
+		manifest_out[department] = tiers[1] + tiers[2] + tiers[3]
 	return manifest_out
 
-/datum/datacore/proc/get_manifest_bm(monochrome, OOC)
-	var/list/heads = list()
-	var/list/sec = list()
-	var/list/eng = list()
-	var/list/med = list()
-	var/list/sci = list()
-	var/list/sup = list()
-	var/list/civ = list()
-	var/list/law = list()
-	var/list/bot = list()
-	var/list/misc = list()
-	var/dat = {"
-	<head><style>
-		.manifest {border-collapse:collapse;}
-		.manifest td, th {border:1px solid [monochrome?"black":"#DEF; background-color:white; color:black"]; padding:.25em}
-		.manifest th {height: 2em; [monochrome?"border-top-width: 3px":"background-color: #48C; color:white"]}
-		.manifest tr.head th { [monochrome?"border-top-width: 1px":"background-color: #488;"] }
-		.manifest td:first-child {text-align:right}
-		.manifest tr.alt td {[monochrome?"border-top-width: 2px":"background-color: #DEF"]}
-	</style></head>
-	<table class="manifest" width='350px'>
-	<tr class='head'><th>Имя</th><th>Должность</th></tr>
-	"}
-	var/even = 0
-	// sort mobs
-	for(var/datum/data/record/t in GLOB.data_core.general)
-		var/name = t.fields["name"]
-		var/rank = t.fields["rank"]
-		var/department_check = GetJobName(t.fields["real_rank"])
-		var/department = 0
-		if(department_check in GLOB.command_positions)
-			heads[name] = rank
-			department = 1
-		if(department_check in GLOB.security_positions)
-			sec[name] = rank
-			department = 1
-		if(department_check in GLOB.engineering_positions)
-			eng[name] = rank
-			department = 1
-		if(department_check in GLOB.medical_positions)
-			med[name] = rank
-			department = 1
-		if(department_check in GLOB.science_positions)
-			sci[name] = rank
-			department = 1
-		if(department_check in GLOB.supply_positions)
-			sup[name] = rank
-			department = 1
-		if(department_check in GLOB.civilian_positions)
-			civ[name] = rank
-			department = 1
-		if(department_check in GLOB.law_positions)
-			law[name] = rank
-			department = 1
-		if(department_check in GLOB.nonhuman_positions)
-			bot[name] = rank
-			department = 1
-		if(!department && !(name in heads))
-			misc[name] = rank
-	if(heads.len > 0)
-		dat += "<tr><th colspan=3>Heads</th></tr>"
-		for(var/name in heads)
-			dat += "<tr[even ? " class='alt'" : ""]><td>[name]</td><td>[heads[name]]</td></tr>"
-			even = !even
-	if(sec.len > 0)
-		dat += "<tr><th colspan=3>Security</th></tr>"
-		for(var/name in sec)
-			dat += "<tr[even ? " class='alt'" : ""]><td>[name]</td><td>[sec[name]]</td></tr>"
-			even = !even
-	if(eng.len > 0)
-		dat += "<tr><th colspan=3>Engineering</th></tr>"
-		for(var/name in eng)
-			dat += "<tr[even ? " class='alt'" : ""]><td>[name]</td><td>[eng[name]]</td></tr>"
-			even = !even
-	if(med.len > 0)
-		dat += "<tr><th colspan=3>Medical</th></tr>"
-		for(var/name in med)
-			dat += "<tr[even ? " class='alt'" : ""]><td>[name]</td><td>[med[name]]</td></tr>"
-			even = !even
-	if(sci.len > 0)
-		dat += "<tr><th colspan=3>Science</th></tr>"
-		for(var/name in sci)
-			dat += "<tr[even ? " class='alt'" : ""]><td>[name]</td><td>[sci[name]]</td></tr>"
-			even = !even
-	if(sup.len > 0)
-		dat += "<tr><th colspan=3>Supply</th></tr>"
-		for(var/name in sup)
-			dat += "<tr[even ? " class='alt'" : ""]><td>[name]</td><td>[sup[name]]</td></tr>"
-			even = !even
-	if(law.len > 0)
-		dat += "<tr><th colspan=3>Law</th></tr>"
-		for(var/name in law)
-			dat += "<tr[even ? " class='alt'" : ""]><td>[name]</td><td>[law[name]]</td></tr>"
-			even = !even
-	if(civ.len > 0)
-		dat += "<tr><th colspan=3>Civilian</th></tr>"
-		for(var/name in civ)
-			dat += "<tr[even ? " class='alt'" : ""]><td>[name]</td><td>[civ[name]]</td></tr>"
-			even = !even
-	// in case somebody is insane and added them to the manifest, why not
-	if(bot.len > 0)
-		dat += "<tr><th colspan=3>Silicon</th></tr>"
-		for(var/name in bot)
-			dat += "<tr[even ? " class='alt'" : ""]><td>[name]</td><td>[bot[name]]</td></tr>"
-			even = !even
-	// misc guys
-	if(misc.len > 0)
-		dat += "<tr><th colspan=3>Miscellaneous</th></tr>"
-		for(var/name in misc)
-			dat += "<tr[even ? " class='alt'" : ""]><td>[name]</td><td>[misc[name]]</td></tr>"
-			even = !even
-
+/// Таблица списка экипажа для печати, главы со звёздочкой и жирным.
+/datum/datacore/proc/get_manifest_html()
+	var/static/list/department_names = list(
+		DEPARTMENT_COMMAND = "Командование",
+		DEPARTMENT_SECURITY = "Служба Безопасности",
+		DEPARTMENT_ENGINEERING = "Инженерный отдел",
+		DEPARTMENT_MEDICAL = "Медицинский отдел",
+		DEPARTMENT_SCIENCE = "Научный отдел",
+		DEPARTMENT_SUPPLY = "Отдел снабжения",
+		DEPARTMENT_SERVICE = "Отдел сервиса",
+		DEPARTMENT_SILICON = "Синтетика",
+		DEPARTMENT_LAW = "Юридический отдел",
+		"Misc" = "Прочее",
+	)
+	var/list/manifest = get_manifest()
+	var/list/dat = list("<table><tr><th>Имя</th><th>Должность</th></tr>")
+	for(var/department in manifest)
+		dat += "<tr><th colspan=2>[department_names[department] || department]</th></tr>"
+		for(var/list/entry as anything in manifest[department])
+			var/name = html_encode(entry["name"])
+			var/rank = html_encode(entry["rank"])
+			if(entry["head"])
+				dat += "<tr><td><b>[name]</b></td><td><b>★ [rank]</b></td></tr>"
+			else
+				dat += "<tr><td>[name]</td><td>[rank]</td></tr>"
 	dat += "</table>"
-	dat = replacetext(dat, "\n", "")
-	dat = replacetext(dat, "\t", "")
-	return dat
+	return jointext(dat, "")
 
 /datum/datacore/proc/manifest_inject(mob/living/carbon/human/H, client/C, datum/preferences/prefs)
 	set waitfor = FALSE

@@ -33,12 +33,15 @@ export const NtosCrewManifest = (props) => {
                 {entries.map(entry => (
                   <Table.Row
                     key={entry.name}
-                    className="candystripe">
-                    <Table.Cell bold>
+                    className="candystripe"
+                    bold={!!entry.head}>
+                    <Table.Cell>
                       {entry.name}
                     </Table.Cell>
                     <Table.Cell>
-                      ({entry.rank})
+                      ({!!entry.head && (
+                        <span className="CrewManifest__HeadMark">{'★'}</span>
+                      )}{entry.rank})
                     </Table.Cell>
                   </Table.Row>
                 ))}

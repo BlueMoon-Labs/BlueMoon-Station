@@ -215,6 +215,7 @@
 // #include "confusion.dm"
 // #include "crayons.dm"
 #include "create_and_destroy.dm"
+#include "crew_manifest_heads.dm"
 #include "custom_emote_panel.dm"
 #include "custom_portal_station.dm"
 // #include "designs.dm"
