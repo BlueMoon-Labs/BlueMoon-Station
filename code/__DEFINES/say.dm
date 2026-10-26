@@ -83,6 +83,21 @@
 #define SPAN_CHITVOICE "chitvoice"
 #define SPAN_SHADEKINVOICE "shadekinvoice"
 
+// Игровые эффекты текста в чате (оформление и выключатели - в tgui-panel).
+#define SPAN_TREMBLE "tremble"
+#define SPAN_DRUNK "drunk_speech"
+#define SPAN_GASP "gasp_speech"
+#define SPAN_SHIVER "shiver"
+#define SPAN_MUFFLED "muffled_speech"
+#define SPAN_RADIO_STATIC "radio_static"
+
+#define SPEECH_FX_JITTER_MIN 100
+#define SPEECH_FX_DRUNK_MIN 30
+/// Как у "I can't breathe!" в vocal_cords.dm; при 50 carbon уже без сознания и не говорит.
+#define SPEECH_FX_OXY_MIN 25
+#define SPEECH_FX_DIZZY_MIN 100
+#define HEARING_FX_HALLUCINATION_CHANCE 25
+
 //bitflag #defines for return value of the radio() proc.
 #define ITALICS 1
 #define REDUCE_RANGE 2

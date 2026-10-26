@@ -321,6 +321,7 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 			spans |= SPAN_GLITCH
 	else if(slurring)
 		spans |= SPAN_SLURRING
+	spans |= get_speech_fx_spans(language)
 
 // Skyrat edits
 	if(message_mode == MODE_SING)
@@ -404,9 +405,42 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 
 	// Recompose message for AI hrefs, language incomprehension.
 	message = compose_message(speaker, message_language, raw_message, radio_freq, spans, message_mode, FALSE, source)
+	message = apply_hearing_fx(message, speaker, message_language)
 
 	show_message(message, is_sign_language ? MSG_VISUAL : MSG_AUDIBLE, deaf_message, deaf_type)
 	return message
+
+/// Спаны состояния говорящего для оформления чата. Жестам удушье и кляп не мешают, дрожь рук - видна.
+/mob/living/proc/get_speech_fx_spans(datum/language/message_language)
+	. = list()
+	// Робота-заику уже помечает SPAN_GLITCH в say().
+	if(!isrobotic(src) && (stuttering || jitteriness >= SPEECH_FX_JITTER_MIN))
+		. += SPAN_TREMBLE
+	if(message_language && initial(message_language.visual_language))
+		return
+	if(getOxyLoss() >= SPEECH_FX_OXY_MIN || losebreath)
+		. += SPAN_GASP
+	var/muzzle = get_muzzle_strength()
+	if(muzzle > MUFFLE_NONE && muzzle < MUFFLE_MUTE)
+		. += SPAN_MUFFLED
+
+/// Оборачивает готовую строку по состоянию слушателя. Общий список spans не трогает.
+/mob/living/proc/apply_hearing_fx(message, atom/movable/speaker, datum/language/message_language)
+	if(speaker == src || speaker?.GetSource() == src)
+		return message
+	if(hallucination && prob(HEARING_FX_HALLUCINATION_CHANCE))
+		message = "<span class='hear_hallucination'>[message]</span>"
+	if(druggy)
+		message = "<span class='hear_druggy'>[message]</span>"
+	if(dizziness >= SPEECH_FX_DIZZY_MIN)
+		message = "<span class='hear_dizzy'>[message]</span>"
+	return message
+
+/// Реплика, которую слышит только src (галлюцинация), оформляется как настоящая речь, иначе её выдаёт чат.
+/mob/living/proc/compose_fake_speech(mob/living/person, datum/language/message_language, raw_message, radio_freq, list/spans)
+	spans |= person.get_speech_fx_spans(message_language)
+	var/message = compose_message(person, message_language, raw_message, radio_freq, spans, face_name = TRUE)
+	return apply_hearing_fx(message, person, message_language)
 
 /mob/living/send_speech(message, message_range = 6, obj/source = src, bubble_type = bubble_icon, list/spans, datum/language/message_language=null, message_mode)
 	SEND_SIGNAL(src, COMSIG_LIVING_SEND_SPEECH, message, message_range, source, bubble_type, spans, message_language, message_mode)

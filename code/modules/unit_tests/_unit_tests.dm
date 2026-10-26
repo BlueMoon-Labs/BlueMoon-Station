@@ -199,6 +199,7 @@
 #include "chain_pull_through_space.dm"
 #include "character_profile_performance.dm"
 #include "chat_member_badges.dm"
+#include "chat_speech_fx.dm"
 #include "chem_dispenser_payload.dm"
 #include "client_connect_probe.dm"
 #include "climbing_hook.dm"
