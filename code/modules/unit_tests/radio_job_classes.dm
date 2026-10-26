@@ -241,6 +241,20 @@
 	TEST_ASSERT_EQUAL(icon_sprite(), "job-syndicate", "Без своего стейта - значок фракции: [last_line]")
 	tag_classes("Captain", "Bob")
 	TEST_ASSERT_NULL(icon_sprite(), "Свободный текст без своего стейта на станционной карте без значка: [last_line]")
+	tag_classes("Assistant", "Captain!")
+	TEST_ASSERT_NULL(icon_sprite(), "Неточное название профессии не даёт её значка: [last_line]")
+	var/list/agent_captain = tag_classes("Syndicate Captain")
+	TEST_ASSERT_EQUAL(icon_sprite(), "job-syndicate", "Агентская карта Синдиката со значком Синдиката, не капитана: [last_line]")
+	TEST_ASSERT(!("radiojob-head" in agent_captain), "Агентская карта капитана Синдиката без звезды: [last_line]")
+	tag_classes("DS-2 Corporate Liaison")
+	TEST_ASSERT_EQUAL(icon_sprite(), "job-ds2corporateliasion", "Связной DS-2 под обоими написаниями: [last_line]")
+	var/mob/living/silicon/pai/pai = allocate(/mob/living/silicon/pai, get_step(speaker, WEST))
+	allocated += pai.card
+	pai.encoder_active = TRUE
+	for(var/fake_job in list("A.I.", "Cyborg."))
+		pai.encoder_job = fake_job
+		hear_from(pai)
+		TEST_ASSERT_NULL(icon_sprite(), "Энкодер pAI с [fake_job] не даёт значка синтетика: [last_line]")
 
 /// При скрытых тегах между значком и именем один пробел: пробел после тега скрывается вместе с тегом.
 /datum/unit_test/radio_job_classes/tag_spacing

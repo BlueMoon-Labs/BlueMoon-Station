@@ -285,8 +285,8 @@ GLOBAL_LIST_INIT(freqtospan, list(
 		classes += " radiojob-f-[faction]"
 	if(recognized && get_radio_head_jobs()[job.title])
 		classes += " radiojob-head"
-	// Неузнанное название: свой стейт роли (отель, DS-2, ЦК), затем значок стороны.
-	var/list/icon_states = recognized ? list(ckey(job.title)) : list(ckey(strip_radio_sticker_prefix(shown)), get_radio_faction_icon(faction), centcom ? "centcom" : null)
+	// Неузнанное название: свой стейт роли вне SSjob, затем значок стороны.
+	var/list/icon_states = recognized ? list(ckey(job.title)) : list(get_radio_role_icon(shown), get_radio_faction_icon(faction), centcom ? "centcom" : null)
 	return radio_job_style(classes, faction || get_radio_job_legacy_class(job ? job.title : (centcom ? "Centcom" : "Unknown"), job), icon_states)
 
 /// legacy - id прежней раскраски (radiojob-legacy-<id>), icon_states - стейт icons/ui_icons/tgui/jobs.dmi или список, берётся первый из листа.
@@ -298,6 +298,34 @@ GLOBAL_LIST_INIT(freqtospan, list(
 		if(icon_class)
 			break
 	return list(RADIO_JOB_STYLE_CLASSES = classes, RADIO_JOB_STYLE_LEGACY = legacy, RADIO_JOB_STYLE_ICON = icon_class)
+
+/// Стейт jobs.dmi роли вне SSjob по её названию. Только явный список: неточное название профессии ("Captain!", "A.I.") чужого значка не получает.
+/proc/get_radio_role_icon(title)
+	var/static/list/role_states = list(
+		"deathcommando" = "deathcommando",
+		"hotelmanager" = "hotelmanager",
+		"hotelsecurity" = "hotelsecurity",
+		"hotelstaff" = "hotelstaff",
+		"hoteltourist" = "hoteltourist",
+		"ds1communicationsofficer" = "ds1communicationsofficer",
+		"ds1securityagent" = "ds1securityagent",
+		"ds1bioweaponresearcher" = "ds1bioweaponresearcher",
+		"ds1scientist" = "ds1scientist",
+		"ds1nuclearspecialist" = "ds1nuclearspecialist",
+		"ds1mime" = "ds1mime",
+		"ds2admiral" = "ds2admiral",
+		"ds2corporateliaison" = "ds2corporateliasion",
+		"ds2corporateliasion" = "ds2corporateliasion",
+		"ds2masteratarms" = "ds2masteratarms",
+		"ds2brigofficer" = "ds2brigofficer",
+		"ds2commsagent" = "ds2commsagent",
+		"ds2medicalofficer" = "ds2medicalofficer",
+		"ds2enginetechnician" = "ds2enginetechnician",
+		"ds2researcher" = "ds2researcher",
+		"ds2generalstaff" = "ds2generalstaff",
+		"ds2hostage" = "ds2hostage",
+	)
+	return title && role_states[ckey(strip_radio_sticker_prefix(title))]
 
 /proc/get_radio_faction_icon(faction)
 	switch(faction)
