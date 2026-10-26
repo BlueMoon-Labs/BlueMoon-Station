@@ -1423,6 +1423,9 @@
 /obj/effect/turf_decal/siding/yellow{
 	dir = 8
 	},
+/obj/structure/cable{
+	icon_state = "2-4"
+	},
 /turf/open/floor/plasteel/dark/smooth/diagonal,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/engineering)
 "eY" = (
@@ -1659,10 +1662,6 @@
 	},
 /turf/open/floor/carpet/blackred,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms)
-"gc" = (
-/obj/effect/spawner/structure/window/plastitanium,
-/turf/open/floor/plating,
-/area/ruin/space/has_grav/bluemoon/deepspacetwo/atmos)
 "gf" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 4
@@ -2142,6 +2141,10 @@
 	},
 /turf/open/floor/plasteel/dark/smooth/small,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/security/prison)
+"hD" = (
+/obj/effect/spawner/structure/window/plastitanium,
+/turf/open/floor/plating,
+/area/ruin/space/has_grav/bluemoon/deepspacetwo/atmos)
 "hE" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 8
@@ -3153,10 +3156,6 @@
 "lO" = (
 /turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/service/hydroponics)
-"lR" = (
-/obj/machinery/vending/wardrobe/interdyne,
-/turf/open/floor/wood/wood_large,
-/area/ruin/space/has_grav/bluemoon/deepspacetwo/medbay)
 "lU" = (
 /obj/effect/turf_decal/trimline/dark_blue/corner{
 	dir = 4
@@ -3475,6 +3474,10 @@
 	dir = 4
 	},
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/bridge)
+"mZ" = (
+/obj/machinery/vending/wardrobe/interdyne,
+/turf/open/floor/wood/wood_large,
+/area/ruin/space/has_grav/bluemoon/deepspacetwo/medbay)
 "nd" = (
 /obj/effect/turf_decal/trimline/blue/line{
 	dir = 4
@@ -4753,6 +4756,9 @@
 	},
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer2{
 	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "2-4"
 	},
 /turf/open/floor/plasteel/dark/smooth/diagonal,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/engineering)
@@ -8624,6 +8630,9 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 9
 	},
+/obj/structure/cable{
+	icon_state = "1-8"
+	},
 /turf/open/floor/plasteel/dark/smooth/diagonal,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/engineering)
 "Ia" = (
@@ -9342,6 +9351,9 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 8
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
 	},
 /turf/open/floor/plasteel/dark/smooth/diagonal,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/engineering)
@@ -10156,6 +10168,9 @@
 	dir = 4;
 	pixel_x = -24
 	},
+/obj/structure/cable{
+	icon_state = "1-2"
+	},
 /turf/open/floor/plasteel/dark/smooth/diagonal,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/engineering)
 "Od" = (
@@ -10438,6 +10453,9 @@
 /obj/structure/sign/poster/contraband/atmosia_independence{
 	pixel_x = -32;
 	pixel_y = 0
+	},
+/obj/structure/cable{
+	icon_state = "1-8"
 	},
 /turf/open/floor/plasteel/dark/smooth/diagonal,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/engineering)
@@ -11423,6 +11441,13 @@
 /obj/machinery/atmospherics/components/binary/pump/on/layer2{
 	dir = 4
 	},
+/obj/machinery/power/apc/auto_name/north{
+	req_access = null;
+	req_access_txt = "150"
+	},
+/obj/structure/cable{
+	icon_state = "0-4"
+	},
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/atmos)
 "SK" = (
@@ -12318,6 +12343,12 @@
 "VT" = (
 /turf/open/floor/plasteel/dark/smooth/small,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/security/prison)
+"VU" = (
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
+/area/ruin/space/has_grav/bluemoon/deepspacetwo/atmos)
 "VX" = (
 /obj/effect/spawner/structure/window/plastitanium,
 /obj/machinery/door/poddoor/shutters{
@@ -12591,6 +12622,9 @@
 /obj/machinery/portable_atmospherics/canister,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 10
+	},
+/obj/structure/cable{
+	icon_state = "4-8"
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/atmos)
@@ -14331,10 +14365,10 @@ Ct
 um
 Bb
 iB
-gc
+hD
 Eb
 ON
-gc
+hD
 Ng
 Lg
 NB
@@ -14386,10 +14420,10 @@ MK
 um
 Vf
 Fl
-gc
+hD
 dy
 NC
-gc
+hD
 Wk
 vU
 NB
@@ -14443,7 +14477,7 @@ oi
 aZ
 um
 gN
-gc
+hD
 um
 nM
 um
@@ -14712,12 +14746,12 @@ Ls
 TL
 WZ
 um
-um
+VU
 rG
 um
-gc
-gc
-gc
+hD
+hD
+hD
 um
 Cn
 Xf
@@ -14973,7 +15007,7 @@ Le
 Rt
 nR
 ot
-lR
+mZ
 Rt
 tU
 Dy
