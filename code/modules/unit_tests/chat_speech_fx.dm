@@ -381,6 +381,70 @@
 	TEST_ASSERT(!hallucination_radio_voice_ok(crew), "Чужая карта не попадает в рацию.")
 	card.registered_name = crew.real_name
 	TEST_ASSERT(!(crew in hallucination_radio_talkers(target)), "Вне станции по рации никто не говорит.")
+	var/list/station_levels = SSmapping.levels_by_trait(ZTRAIT_STATION)
+	TEST_ASSERT(length(station_levels), "На карте есть станция.")
+	var/turf/home = get_turf(crew)
+	crew.forceMove(locate(10, 10, station_levels[1]))
+	var/list/talkers = hallucination_radio_talkers(target)
+	crew.forceMove(home)
+	TEST_ASSERT(crew in talkers, "Честный носитель на станции говорит по рации.")
+
+	TEST_ASSERT(crew.temporarilyRemoveItemFromInventory(headset, TRUE), "Гарнитура снимается.")
+	var/obj/item/clothing/ears/earmuffs/muffs = allocate(/obj/item/clothing/ears/earmuffs)
+	TEST_ASSERT(crew.equip_to_slot_if_possible(muffs, ITEM_SLOT_EARS_LEFT), "Наушники в левое ухо.")
+	TEST_ASSERT(crew.equip_to_slot_if_possible(headset, ITEM_SLOT_EARS_RIGHT), "Гарнитура в правое ухо.")
+	TEST_ASSERT(!hallucination_radio_voice_ok(crew), "Гарнитура в правом ухе молчит, пока левое занято.")
+	qdel(muffs)
+	TEST_ASSERT(hallucination_radio_voice_ok(crew), "Гарнитура в правом ухе говорит при пустом левом.")
+
+/// Слова фобии и гипнофразы подсвечиваются целыми русскими словами, в настоящей речи и в фальшивке.
+/datum/unit_test/hearing_marks_cyrillic
+	var/mob/living/carbon/human/speech_fx_probe/listener
+	var/mob/living/carbon/human/speaker
+
+/datum/unit_test/hearing_marks_cyrillic/Run()
+	listener = allocate(/mob/living/carbon/human/speech_fx_probe, run_loc_floor_bottom_left)
+	listener.audiovisual_redirect = allocate(/mob/living/carbon/human, get_step(listener, NORTH))
+	speaker = allocate(/mob/living/carbon/human, get_step(listener, EAST))
+
+	var/datum/brain_trauma/mild/phobia/phobia = listener.gain_trauma(/datum/brain_trauma/mild/phobia, TRAUMA_RESILIENCE_ABSOLUTE, "spiders")
+	TEST_ASSERT(istype(phobia), "Фобия пауков выдаётся.")
+	var/trigger
+	for(var/word in phobia.trigger_words)
+		if(length(word) != length_char(word) && !findtext(word, " "))
+			trigger = word
+			break
+	TEST_ASSERT_NOTNULL(trigger, "У фобии пауков есть русское слово.")
+	var/list/lines = real_and_fake("Там [trigger] сидит.")
+	TEST_ASSERT(findtext(lines[1], "class='phobia'"), "Русское слово фобии подсвечивается: [lines[1]]")
+	TEST_ASSERT_EQUAL(lines[2], lines[1], "Фальшивка подсвечивает русскую фобию так же.")
+	lines = real_and_fake("Там [trigger]ище сидит.")
+	TEST_ASSERT(!findtext(lines[1], "class='phobia'"), "Часть слова не подсвечивается: [lines[1]]")
+	TEST_ASSERT_EQUAL(lines[2], lines[1], "Фальшивка не подсвечивает часть слова.")
+	listener.cure_trauma_type(/datum/brain_trauma/mild/phobia, TRAUMA_RESILIENCE_ABSOLUTE)
+
+	listener.gain_trauma(new /datum/brain_trauma/hypnosis("усни сейчас", TRUE), TRAUMA_RESILIENCE_ABSOLUTE)
+	lines = real_and_fake("Усни сейчас.")
+	TEST_ASSERT(findtext(lines[1], "hypnophrase"), "Русская гипнофраза подсвечивается: [lines[1]]")
+	TEST_ASSERT_EQUAL(lines[2], lines[1], "Фальшивка подсвечивает гипнофразу так же.")
+	listener.cure_trauma_type(/datum/brain_trauma/hypnosis, TRAUMA_RESILIENCE_ABSOLUTE)
+
+	var/datum/brain_trauma/induced_hypnosis/goggles = new("слушай меня")
+	listener.gain_trauma(goggles, TRAUMA_RESILIENCE_ABSOLUTE)
+	var/fake = listener.hear_fake_speech(speaker, /datum/language/common, goggles.hypnotic_phrase)
+	TEST_ASSERT(findtext(fake, "hypnophrase"), "Фраза гипноочков подсвечивается в фальшивке: [fake]")
+	speaker.stuttering = 20
+	fake = listener.hear_fake_speech(speaker, /datum/language/common, goggles.hypnotic_phrase)
+	speaker.stuttering = 0
+	TEST_ASSERT(!findtext(fake, "&lt;"), "Заикание не ломает разметку фразы: [fake]")
+	listener.cure_trauma_type(/datum/brain_trauma/induced_hypnosis, TRAUMA_RESILIENCE_ABSOLUTE)
+
+/// Строка настоящей речи speaker и фальшивки с тем же текстом.
+/datum/unit_test/hearing_marks_cyrillic/proc/real_and_fake(text)
+	var/fake = listener.hear_fake_speech(speaker, /datum/language/common, text)
+	listener.shown.Cut()
+	speaker.say(text, language = /datum/language/common, ignore_spam = TRUE)
+	return list(jointext(listener.shown, " | "), fake)
 
 /// Галлюцинация смерти показывает deadchat в том же виде, что настоящий.
 /datum/unit_test/fake_deadchat_matches_real

@@ -846,7 +846,9 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 /proc/hallucination_radio_voice_ok(mob/living/carbon/human/person)
 	if(person.stat != CONSCIOUS || hallucination_voice_gives_away(person))
 		return FALSE
-	if(!istype(person.ears, /obj/item/radio/headset) && !istype(person.ears_extra, /obj/item/radio/headset))
+	// Как say() с ";": правое ухо говорит, только когда левое пусто.
+	var/obj/item/radio/headset/headset = person.ears || person.ears_extra
+	if(!istype(headset) || !headset.on)
 		return FALSE
 	var/obj/item/card/id/card = person.wear_id?.GetID()
 	if(!card)

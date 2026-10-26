@@ -90,7 +90,7 @@
 	if(HAS_TRAIT(owner, TRAIT_FEARLESS))
 		return
 	for(var/word in trigger_words)
-		var/regex/reg = regex("(\\b|\\A)[REGEX_QUOTE(word)]'?s*(\\b|\\Z)", "ig")
+		var/regex/reg = whole_word_regex("[REGEX_QUOTE(word)]'?s*", "ig")
 
 		if(findtext(hearing_args[HEARING_RAW_MESSAGE], reg))
 			hearing_args[HEARING_RAW_MESSAGE] = reg.Replace(hearing_args[HEARING_RAW_MESSAGE], "<span class='phobia'>$0</span>")
@@ -100,7 +100,7 @@
 	if(HAS_TRAIT(owner, TRAIT_FEARLESS))
 		return
 	for(var/word in trigger_words)
-		var/regex/reg = regex("(\\b|\\A)[REGEX_QUOTE(word)]'?s*(\\b|\\Z)", "i")
+		var/regex/reg = whole_word_regex("[REGEX_QUOTE(word)]'?s*", "i")
 
 		if(findtext(speech_args[SPEECH_MESSAGE], reg))
 			to_chat(owner, "<span class='warning'>You can't bring yourself to say the word \"<span class='phobia'>[word]</span>\"!</span>")
