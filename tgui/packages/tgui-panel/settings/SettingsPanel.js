@@ -19,6 +19,7 @@ import { CHAT_ANIM_SPEEDS, CHAT_ANIMATIONS, CHAT_BG_ANIMATIONS, CHAT_STYLES, FON
 import { selectActiveTab, selectSettings } from './selectors';
 import { SettingsChannels } from './SettingsChannels';
 import { SettingsEffects } from './SettingsEffects';
+import { SettingsRadioJobs } from './SettingsRadioJobs';
 
 const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 
@@ -74,7 +75,10 @@ export const ColorInput = (props) => {
       <Box inline nowrap>
         <Tooltip content={value || placeholder}>
           <Box inline verticalAlign="middle">
-            <ColorSwatch value={value} onChange={onChange} />
+            <ColorSwatch
+              value={value}
+              defaultColor={defaultColor}
+              onChange={onChange} />
           </Box>
         </Tooltip>
         {onClear && (
@@ -194,7 +198,6 @@ export const SettingsGeneral = (props) => {
     enableTimeDividers,
     timeDividerInterval,
     newMessagesMarker,
-    showRadioJobs,
   } = useSelector(selectSettings);
   const dispatch = useDispatch();
   const [freeFont, setFreeFont] = useState(false);
@@ -363,15 +366,6 @@ export const SettingsGeneral = (props) => {
         }}>
         Разделители по времени
       </Button.Checkbox>
-      <Button.Checkbox
-        checked={showRadioJobs !== false}
-        onClick={() => {
-          dispatch(updateSettings({
-            showRadioJobs: showRadioJobs === false,
-          }));
-        }}>
-        Должности в рации
-      </Button.Checkbox>
       {enableTimeDividers && (
         <Box ml={2.5} mb={0.5}>
           <LabeledList>
@@ -404,6 +398,8 @@ export const SettingsGeneral = (props) => {
         }))}>
         Отмечать новые сообщения
       </Button.Checkbox>
+      <Divider />
+      <SettingsRadioJobs />
       <Divider />
       <Box>
         <Button
@@ -643,8 +639,9 @@ export const AppearanceCode = (props) => {
   return (
     <Box>
       <Box color="label" mb={0.5}>
-        Код оформления: стиль, шрифт, цвета, анимации, стили текста, каналы и
-        игровые эффекты. Подсветка и вкладки чата в него не входят.
+        Код оформления: стиль, шрифт, цвета, анимации, стили текста, каналы,
+        игровые эффекты и должности в рации. Подсветка и вкладки чата в него
+        не входят.
       </Box>
       <Button
         icon={shown ? 'eye-slash' : 'file-export'}

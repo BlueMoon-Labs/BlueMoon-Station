@@ -214,6 +214,30 @@ test('game effect switches keep known effects with boolean values', () => {
     .toEqual({ tremble: false, radio_static: true });
 });
 
+test('radio job settings go through the code and are checked', () => {
+  const result = roundTrip({
+    showRadioJobs: false,
+    radioJobColorMode: 'legacy',
+    radioJobHeadMark: 'command',
+    radioJobColorNames: true,
+    radioJobColors: { med: '#00ff00', sec: 'red', bogus: '#123456', cmd: '' },
+  });
+  expect(result.settings).toEqual({
+    showRadioJobs: false,
+    radioJobColorMode: 'legacy',
+    radioJobHeadMark: 'command',
+    radioJobColorNames: true,
+    radioJobColors: { med: '#00ff00' },
+  });
+  const bad = roundTrip({
+    radioJobColorMode: 'rainbow',
+    radioJobHeadMark: 'crown',
+    radioJobColorNames: 'yes',
+    radioJobColors: ['#00ff00'],
+  });
+  expect(bad.settings).toEqual({});
+});
+
 const rawCode = json => 'BMCHAT1:' + btoa(json);
 
 test('hostile keys do not reach prototypes or the result', () => {
@@ -221,20 +245,25 @@ test('hostile keys do not reach prototypes or the result', () => {
   const evil = '{"__proto__":{"polluted":true,"flash":true,"disabled":true},'
     + '"constructor":{"flash":true,"disabled":true,"prototype":'
     + '{"polluted":true}},"hasOwnProperty":true}';
-  const maps = ['styleOverrides', 'typeOverrides', 'gameEffects'];
+  const maps = ['styleOverrides', 'typeOverrides', 'gameEffects',
+    'radioJobColors'];
   const json = '{"__proto__":{"polluted":1,"fontSize":12},'
     + '"constructor":{"prototype":{"polluted":1}},"hasOwnProperty":false,'
     + '"styleOverrides":' + evil + ',"gameEffects":' + evil
     + ',"typeOverrides":' + evil.slice(0, -1) + ',"radio":'
-    + evil.slice(0, -1) + ',"flash":true}}}';
+    + evil.slice(0, -1) + ',"flash":true}},'
+    + '"radioJobColors":{"__proto__":"#ff0000","constructor":"#00ff00",'
+    + '"hasOwnProperty":"#0000ff","med":"#123456"}}';
   const result = decodeAppearance(rawCode(json));
   expect(result.ok).toBe(true);
   expect(({}).polluted).toBeUndefined();
   expect(Object.prototype.polluted).toBeUndefined();
   expect(Object.keys(result.settings).sort())
-    .toEqual(['gameEffects', 'styleOverrides', 'typeOverrides']);
+    .toEqual(['gameEffects', 'radioJobColors', 'styleOverrides',
+      'typeOverrides']);
   expect(result.settings.fontSize).toBeUndefined();
   expect(result.settings.typeOverrides).toEqual({ radio: { flash: true } });
+  expect(result.settings.radioJobColors).toEqual({ med: '#123456' });
   for (const key of maps) {
     const map = result.settings[key];
     expect(Object.getPrototypeOf(map)).toBe(Object.prototype);

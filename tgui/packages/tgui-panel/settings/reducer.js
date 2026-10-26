@@ -6,6 +6,7 @@
 
 import { changeSettingsTab, loadSettings, openChatSettings, toggleSettings, updateSettings } from './actions';
 import { FONTS, SETTINGS_TABS } from './constants';
+import { RADIO_JOB_DEFAULTS } from './radioJobs';
 
 const initialState = {
   version: 7,
@@ -53,6 +54,9 @@ const initialState = {
   showRadioJobs: true,
   // Линия "Новые сообщения" и счётчик на кнопке прокрутки вниз
   newMessagesMarker: true,
+  // Теги должностей в рации: режим цвета, метка глав, имя в цвет отдела,
+  // свои цвета { [id из radioJobs.js]: '#hex' }
+  ...RADIO_JOB_DEFAULTS,
   view: {
     visible: false,
     activeTab: SETTINGS_TABS[0].id,

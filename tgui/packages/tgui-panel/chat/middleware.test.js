@@ -19,6 +19,7 @@ const mockChatRenderer = {
   setCustomProperties: jest.fn(),
   setRadioJobsVisible: jest.fn(),
   setNewMessagesMarker: jest.fn(),
+  setRadioJobStyle: jest.fn(),
   setStyleOverrides: jest.fn(),
   setTypeOverrides: jest.fn(),
   setGameEffects: jest.fn(),
@@ -118,6 +119,7 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(mockChatRenderer.setCustomProperties).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setRadioJobsVisible).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setNewMessagesMarker).toHaveBeenCalledWith(true);
+    expect(mockChatRenderer.setRadioJobStyle).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setStyleOverrides).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setTypeOverrides).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setTimestamps).toHaveBeenCalledTimes(1);
@@ -149,6 +151,7 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(mockChatRenderer.setTypeOverrides).not.toHaveBeenCalled();
     expect(mockChatRenderer.setGameEffects).not.toHaveBeenCalled();
     expect(mockChatRenderer.setSettleOld).not.toHaveBeenCalled();
+    expect(mockChatRenderer.setRadioJobStyle).not.toHaveBeenCalled();
     expect(mockChatRenderer.setTimestamps).not.toHaveBeenCalled();
     expect(mockChatRenderer.setTimeDividers).not.toHaveBeenCalled();
   });
@@ -350,6 +353,30 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(mockChatRenderer.setSettleOld).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setSettleOld).toHaveBeenLastCalledWith(false);
     expect(mockChatRenderer.setGameEffects).not.toHaveBeenCalled();
+  });
+
+  test('radio job settings reach the renderer together', async () => {
+    const store = createTestStore();
+    store.dispatch(updateSettings({ highlightText: '' }));
+    await flushPromises();
+    clearRendererSpies();
+
+    store.dispatch(updateSettings({ radioJobHeadMark: 'command' }));
+    await flushPromises();
+    expect(mockChatRenderer.setRadioJobStyle).toHaveBeenCalledTimes(1);
+    expect(mockChatRenderer.setRadioJobStyle).toHaveBeenLastCalledWith({
+      radioJobColorMode: 'department',
+      radioJobHeadMark: 'command',
+      radioJobColorNames: false,
+      radioJobColors: {},
+    });
+    store.dispatch(updateSettings({ radioJobColors: { med: '#00ff00' } }));
+    await flushPromises();
+    expect(mockChatRenderer.setRadioJobStyle).toHaveBeenCalledTimes(2);
+    expect(mockChatRenderer.setRadioJobStyle.mock.calls[1][0].radioJobColors)
+      .toEqual({ med: '#00ff00' });
+    expect(mockChatRenderer.setRadioJobsVisible).not.toHaveBeenCalled();
+    expect(mockChatRenderer.setStyleOverrides).not.toHaveBeenCalled();
   });
 
   test('matchWord toggle re-runs setHighlight', async () => {

@@ -15,7 +15,7 @@ import { COMBINE_MAX_MESSAGES, COMBINE_MAX_TIME_WINDOW, IMAGE_RETRY_DELAY, IMAGE
 import { getBlockFxClasses, settleOldMessages } from './messageFx';
 import { canPageAcceptType, createMessage, isSameMessage } from './model';
 import { highlightNode, linkifyNode } from './replaceInTextNode';
-import { getChatColorProps, getGameFxRootClasses, getSettleRootClasses, getStyleOverrideRoot, isGameFxRootClass, isStyleOverrideClass, SETTLE_OFF_CLASS } from './rootAppearance';
+import { getChatColorProps, getGameFxRootClasses, getRadioJobRoot, getSettleRootClasses, getStyleOverrideRoot, isGameFxRootClass, isRadioJobRootClass, isStyleOverrideClass, SETTLE_OFF_CLASS } from './rootAppearance';
 import { buildTypeOverrideCss } from './typeOverrides';
 
 const logger = createLogger('chatRenderer');
@@ -996,6 +996,26 @@ export class ChatRenderer {
     this.rootNode.classList.toggle('Chat--hideRadioJobs', !visible);
   }
 
+  setRadioJobStyle(settings = {}) {
+    this._pendingAppearance = {
+      ...this._pendingAppearance,
+      radioJobStyle: settings,
+    };
+    if (!this.rootNode) {
+      return;
+    }
+    const root = this.rootNode;
+    const toRemove = [...root.classList].filter(isRadioJobRootClass);
+    for (const cls of toRemove) {
+      root.classList.remove(cls);
+    }
+    const { classes: rootClasses, props } = getRadioJobRoot(settings);
+    for (const cls of rootClasses) {
+      root.classList.add(cls);
+    }
+    setRootProps(root, props);
+  }
+
   setStyleOverrides(overrides = {}, spanAnimations = true) {
     this._pendingAppearance = {
       ...this._pendingAppearance,
@@ -1107,6 +1127,9 @@ export class ChatRenderer {
     }
     if (p.radioJobsVisible !== undefined) {
       this.setRadioJobsVisible(p.radioJobsVisible);
+    }
+    if (p.radioJobStyle !== undefined) {
+      this.setRadioJobStyle(p.radioJobStyle);
     }
     this._pendingAppearance = null;
   }

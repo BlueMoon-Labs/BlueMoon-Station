@@ -16,6 +16,7 @@ import { EmotePanel, useEmotes } from './emotes';
 import { useGame } from './game';
 import { Notifications } from './Notifications';
 import { SettingsPanel, useSettings } from './settings';
+import { getPaneTheme } from './themes';
 
 export const Panel = (props) => {
   const emotes = useEmotes();
@@ -32,7 +33,7 @@ export const Panel = (props) => {
     }
   }
   return (
-    <Pane theme={settings.theme === 'default' ? 'light' : settings.theme}>
+    <Pane theme={getPaneTheme(settings.theme)}>
       <Stack fill vertical>
         <Stack.Item>
           <Section fitted>

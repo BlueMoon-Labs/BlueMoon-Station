@@ -49,6 +49,7 @@
 
 // Components specific to tgui-panel
 @include meta.load-css('./components/Chat.scss');
+@include meta.load-css('./components/ChatRadioJobs.scss');
 @include meta.load-css('./components/ChatCustomization.scss');
 @include meta.load-css('./components/ChatBgAnimations.scss');
 @include meta.load-css('./components/ChatPresets.scss');

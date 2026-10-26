@@ -1,4 +1,5 @@
 import { CHAT_ANIM_SPEEDS, GAME_EFFECTS, MESSAGE_STYLES } from '../settings/constants';
+import { RADIO_JOB_COLOR_MODES, RADIO_JOB_HEAD_MARKS, RADIO_JOB_IDS } from '../settings/radioJobs';
 
 /**
  * Значения, которые ставятся на корень .Chat: и чату, и предпросмотру
@@ -79,3 +80,42 @@ export const getSettleRootClasses = enabled => (
 
 export const isGameFxRootClass = cls => cls === 'Chat--gameFxOff'
   || cls.startsWith('Chat--fxOff-');
+
+const RADIO_JOB_MODE_CLASS = {
+  legacy: 'Chat--rjLegacy',
+  none: 'Chat--rjNoColor',
+};
+
+const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
+
+/**
+ * Теги должностей в рации: режим цвета, метка глав, имя в цвет отдела
+ * и свои цвета --rj-<id>. Свойства перечислены для всех id, чтобы снять
+ * сброшенные.
+ */
+export const getRadioJobRoot = (settings = {}) => {
+  const classes = [];
+  const mode = RADIO_JOB_COLOR_MODES.some(
+    entry => entry.id === settings.radioJobColorMode)
+    ? settings.radioJobColorMode : 'department';
+  if (RADIO_JOB_MODE_CLASS[mode]) {
+    classes.push(RADIO_JOB_MODE_CLASS[mode]);
+  }
+  const headMark = RADIO_JOB_HEAD_MARKS.some(
+    entry => entry.id === settings.radioJobHeadMark)
+    ? settings.radioJobHeadMark : 'icon';
+  if (headMark !== 'none') {
+    classes.push('Chat--rjHead-' + headMark);
+  }
+  if (settings.radioJobColorNames) {
+    classes.push('Chat--rjNames');
+  }
+  const props = {};
+  for (const id of RADIO_JOB_IDS) {
+    const color = settings.radioJobColors?.[id];
+    props['--rj-' + id] = HEX_COLOR.test(color || '') ? color : null;
+  }
+  return { classes, props };
+};
+
+export const isRadioJobRootClass = cls => cls.startsWith('Chat--rj');

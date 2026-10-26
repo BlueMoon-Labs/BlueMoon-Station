@@ -1,5 +1,6 @@
 import { dropStrayTint } from './channelsModel';
 import { CHANNEL_TYPES, CHAT_ANIM_SPEEDS, CHAT_ANIMATIONS, CHAT_BG_ANIMATIONS, CHAT_STYLES, GAME_EFFECTS, MESSAGE_STYLE_ANIMATIONS, MESSAGE_STYLE_FONTS, MESSAGE_STYLES, TEXT_GLOW_OPTIONS, TYPE_ANIM_KEYFRAMES } from './constants';
+import { RADIO_JOB_COLOR_MODES, RADIO_JOB_HEAD_MARKS, RADIO_JOB_IDS } from './radioJobs';
 
 const PREFIX = 'BMCHAT1:';
 const MAX_CODE_LENGTH = 20000;
@@ -66,6 +67,17 @@ const TYPE_FIELDS = {
   flash: isBool,
 };
 
+const pickRadioJobColors = map => {
+  const picked = {};
+  for (const id of RADIO_JOB_IDS) {
+    const value = own(map, id);
+    if (value && isColor(value)) {
+      picked[id] = value;
+    }
+  }
+  return picked;
+};
+
 const pickGameEffects = map => {
   const picked = {};
   for (const { id } of GAME_EFFECTS) {
@@ -106,6 +118,10 @@ const VALUE_CHECKS = {
   spanAnimations: isBool,
   gameEffectsEnabled: isBool,
   settleOldAnimations: isBool,
+  showRadioJobs: isBool,
+  radioJobColorMode: oneOf(RADIO_JOB_COLOR_MODES),
+  radioJobHeadMark: oneOf(RADIO_JOB_HEAD_MARKS),
+  radioJobColorNames: isBool,
 };
 
 const MAP_PICKERS = {
@@ -114,6 +130,7 @@ const MAP_PICKERS = {
   typeOverrides: map => dropStrayTint(pickEntries(
     map, CHANNEL_TYPES.map(channel => channel.type), TYPE_FIELDS)),
   gameEffects: pickGameEffects,
+  radioJobColors: pickRadioJobColors,
 };
 
 // Только оформление: подсветка, звук, вкладки и метка новых сообщений
@@ -126,7 +143,8 @@ export const APPEARANCE_KEYS = [
   'textGlow', 'textGlowColor', 'messageSpacing', 'fontWeight',
   'letterSpacing', 'borderRadius', 'styleOverrides', 'spanAnimations',
   'typeOverrides', 'gameEffectsEnabled', 'gameEffects',
-  'settleOldAnimations',
+  'settleOldAnimations', 'showRadioJobs', 'radioJobColorMode',
+  'radioJobHeadMark', 'radioJobColorNames', 'radioJobColors',
 ];
 
 const toBase64 = text => btoa(encodeURIComponent(text).replace(

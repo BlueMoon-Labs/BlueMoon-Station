@@ -4,7 +4,7 @@ import { createRoot } from 'react-dom/client';
 
 import { MESSAGE_TYPES } from '../chat/constants';
 import { getBlockFxClasses } from '../chat/messageFx';
-import { getChatColorProps, getChatCustomProps, getStyleOverrideRoot } from '../chat/rootAppearance';
+import { getChatColorProps, getChatCustomProps, getRadioJobRoot, getStyleOverrideRoot } from '../chat/rootAppearance';
 import { ChatPreview, getPreviewRootClasses, getPreviewRootStyle } from './ChatPreview';
 import { CHANNEL_TYPES } from './constants';
 
@@ -59,11 +59,11 @@ afterEach(() => {
 });
 
 test('classic style has only base class', () => {
-  expect(getPreviewRootClasses({ chatStyle: 'classic' })).toBe('Chat');
+  expect(getPreviewRootClasses({ chatStyle: 'classic', radioJobHeadMark: 'none' })).toBe('Chat');
 });
 
 test('style class is added', () => {
-  expect(getPreviewRootClasses({ chatStyle: 'seccon' }))
+  expect(getPreviewRootClasses({ chatStyle: 'seccon', radioJobHeadMark: 'none' }))
     .toBe('Chat Chat--style-seccon');
 });
 
@@ -112,12 +112,14 @@ test('root style is what the chat root gets', () => {
     letterSpacing: 0.5,
     borderRadius: 0,
     styleOverrides: { whisper: { color: '#abcdef' } },
+    radioJobColors: { sec: '#ff0000' },
   };
   const expected = {
     ...getChatColorProps(settings.chatBgColor, settings.chatTextColor,
       settings.chatAccentColor),
     ...getChatCustomProps(settings),
     ...getStyleOverrideRoot(settings.styleOverrides, true).props,
+    ...getRadioJobRoot(settings).props,
   };
   const style = getPreviewRootStyle(settings);
   for (const [key, value] of Object.entries(expected)) {
@@ -132,6 +134,7 @@ test('preview renders samples with the chat message classes', () => {
     chatStyle: 'seccon',
     chatAnimation: 'teletype',
     chatAccentColor: '#123456',
+    radioJobHeadMark: 'none',
   });
   const root = container.querySelector('.ChatPreview');
   expect(root.className).toBe('Chat Chat--style-seccon ChatPreview');
@@ -153,7 +156,7 @@ test('preview renders samples with the chat message classes', () => {
 });
 
 test('no animation class without an animation', () => {
-  const { container } = renderWith({ chatStyle: 'classic', chatAnimation: 'none' });
+  const { container } = renderWith({ chatStyle: 'classic', chatAnimation: 'none', radioJobHeadMark: 'none' });
   const root = container.querySelector('.ChatPreview');
   expect(root.className).toBe('Chat ChatPreview');
   expect(root.querySelector('[class*="ChatMessage--anim-"]')).toBeNull();
@@ -175,6 +178,35 @@ test('channels preview has a sample for every channel type', () => {
     expect(classifiedType(node)).toBe(CHANNEL_TYPES[i].type);
     expect(node.textContent).toBe(CHANNEL_TYPES[i].example);
   });
+});
+
+test('radio settings reach the preview root', () => {
+  const classes = getPreviewRootClasses({
+    chatStyle: 'classic',
+    radioJobColorMode: 'legacy',
+    radioJobHeadMark: 'bold',
+    radioJobColorNames: true,
+    showRadioJobs: false,
+  }).split(' ');
+  expect(classes).toEqual(expect.arrayContaining(['Chat--rjLegacy',
+    'Chat--rjHead-bold', 'Chat--rjNames', 'Chat--hideRadioJobs']));
+  expect(getPreviewRootStyle({ radioJobColors: { med: '#123456' } })['--rj-med'])
+    .toBe('#123456');
+});
+
+test('radio samples carry a rank-and-file and a head tag', () => {
+  const { container } = renderWith({ chatStyle: 'classic' });
+  const root = container.querySelector('.ChatPreview');
+  expect(root.classList.contains('Chat--rjHead-icon')).toBe(true);
+  const tags = [...root.querySelectorAll('.radio .radiojob')];
+  expect(tags.length).toBeGreaterThanOrEqual(2);
+  expect(tags.some(tag => tag.classList.contains('radiojob-head'))).toBe(true);
+  expect(tags.some(tag => !tag.classList.contains('radiojob-head'))).toBe(true);
+  for (const tag of tags) {
+    expect(tag.getAttribute('style')).toBeNull();
+    const name = tag.parentNode.querySelector('.radiojob-name');
+    expect(name.className.replace('radiojob-name', 'radiojob')).toBe(tag.className);
+  }
 });
 
 test('block effects of a sample are computed once', () => {

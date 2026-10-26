@@ -10,6 +10,7 @@ import DOMPurify from 'dompurify';
 import { flushSaveToServer, getLastSavedAt, scheduleSaveToServer } from '../serverState';
 import { loadSettings, updateSettings } from '../settings/actions';
 import { MESSAGE_STYLES } from '../settings/constants';
+import { RADIO_JOB_DEFAULTS } from '../settings/radioJobs';
 import { selectSettings } from '../settings/selectors';
 import { addChatPage, changeChatPage, changeScrollTracking, loadChat, rebuildChat, removeChatPage, saveChatToDisk, toggleAcceptedType, updateChatPage, updateMessageCount } from './actions';
 import { MAX_PERSISTED_MESSAGES, MESSAGE_SAVE_INTERVAL } from './constants';
@@ -104,6 +105,8 @@ const loadChatFromStorage = async store => {
   store.dispatch(loadChat(state));
 };
 
+const RADIO_JOB_KEYS = Object.keys(RADIO_JOB_DEFAULTS);
+
 const anyChanged = (prev, next, keys) => {
   if (!prev) {
     return true;
@@ -170,6 +173,14 @@ const createApplySettings = () => {
     }
     if (anyChanged(prev, settings, ['newMessagesMarker'])) {
       chatRenderer.setNewMessagesMarker(settings.newMessagesMarker !== false);
+    }
+    if (anyChanged(prev, settings, RADIO_JOB_KEYS)) {
+      chatRenderer.setRadioJobStyle({
+        radioJobColorMode: settings.radioJobColorMode,
+        radioJobHeadMark: settings.radioJobHeadMark,
+        radioJobColorNames: settings.radioJobColorNames,
+        radioJobColors: settings.radioJobColors,
+      });
     }
     if (anyChanged(prev, settings, ['styleOverrides', 'spanAnimations'])) {
       // Normalize so the renderer always sees every known style id and

@@ -1,5 +1,6 @@
 import { MESSAGE_STYLES } from '../settings/constants';
-import { getChatColorProps, getChatCustomProps, getGameFxRootClasses, getSettleRootClasses, getStyleOverrideRoot, isGameFxRootClass, isStyleOverrideClass } from './rootAppearance';
+import { RADIO_JOB_IDS } from '../settings/radioJobs';
+import { getChatColorProps, getChatCustomProps, getGameFxRootClasses, getRadioJobRoot, getSettleRootClasses, getStyleOverrideRoot, isGameFxRootClass, isRadioJobRootClass, isStyleOverrideClass } from './rootAppearance';
 
 const BASE = {
   chatAnimSpeed: 'normal',
@@ -78,4 +79,37 @@ test('settle switch maps to a root class', () => {
   expect(getSettleRootClasses(false)).toEqual(['Chat--noSettle']);
   expect(getSettleRootClasses(true)).toEqual([]);
   expect(getSettleRootClasses(undefined)).toEqual([]);
+});
+
+test('radio job defaults: department colors and a head icon', () => {
+  const { classes, props } = getRadioJobRoot({});
+  expect(classes).toEqual(['Chat--rjHead-icon']);
+  expect(Object.keys(props)).toHaveLength(RADIO_JOB_IDS.length);
+  expect(Object.values(props).every(value => value === null)).toBe(true);
+});
+
+test('radio job modes, head marks and names map to root classes', () => {
+  expect(getRadioJobRoot({ radioJobColorMode: 'legacy' }).classes)
+    .toContain('Chat--rjLegacy');
+  expect(getRadioJobRoot({ radioJobColorMode: 'none' }).classes)
+    .toContain('Chat--rjNoColor');
+  expect(getRadioJobRoot({ radioJobColorMode: 'bogus', radioJobHeadMark: 'bogus' })
+    .classes).toEqual(['Chat--rjHead-icon']);
+  expect(getRadioJobRoot({ radioJobHeadMark: 'none' }).classes).toEqual([]);
+  expect(getRadioJobRoot({ radioJobHeadMark: 'command', radioJobColorNames: true })
+    .classes).toEqual(['Chat--rjHead-command', 'Chat--rjNames']);
+  const all = getRadioJobRoot({
+    radioJobColorMode: 'none', radioJobHeadMark: 'bold', radioJobColorNames: true,
+  }).classes;
+  expect(all.every(isRadioJobRootClass)).toBe(true);
+  expect(isRadioJobRootClass('Chat--hideRadioJobs')).toBe(false);
+});
+
+test('radio job colors become properties, junk is dropped', () => {
+  const { props } = getRadioJobRoot({
+    radioJobColors: { med: '#00ff00', sec: 'red', bogus: '#123456' },
+  });
+  expect(props['--rj-med']).toBe('#00ff00');
+  expect(props['--rj-sec']).toBeNull();
+  expect(props['--rj-bogus']).toBeUndefined();
 });

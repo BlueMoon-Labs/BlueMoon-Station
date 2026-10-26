@@ -2,7 +2,7 @@ import { useSelector } from 'common/redux';
 import { Box } from 'tgui/components';
 
 import { getBlockFxClasses } from '../chat/messageFx';
-import { getChatColorProps, getChatCustomProps, getGameFxRootClasses, getSettleRootClasses, getStyleOverrideRoot } from '../chat/rootAppearance';
+import { getChatColorProps, getChatCustomProps, getGameFxRootClasses, getRadioJobRoot, getSettleRootClasses, getStyleOverrideRoot } from '../chat/rootAppearance';
 import { CHANNEL_TYPES } from './constants';
 import { selectSettings } from './selectors';
 
@@ -10,7 +10,8 @@ import { selectSettings } from './selectors';
 const APPEARANCE_SAMPLES = [
   { type: 'localchat', html: '<span class="say"><span class="name">Инженер</span> говорит, "Кто открыл шлюз?"</span>' },
   { type: 'localchat', html: '<span class="say"><span class="name">Ассистент</span> кричит, "<span class="yell">Пожар!</span>"</span>' },
-  { type: 'radio', html: '<span class="radio">[Общий] <span class="name">Капитан</span> говорит, "Всем на мостик."</span>' },
+  { type: 'radio', html: '<span class="radio"><span class="name">[Общий] <span class="radiojob radiojob-med radiojob-f-synd radiojob-legacy-synd">[Syndicate Medical Doctor]</span> <span class="radiojob-name radiojob-med radiojob-f-synd radiojob-legacy-synd">Врач</span></span> <span class="message">говорит, "Раненых в медбей."</span></span>' },
+  { type: 'radio', html: '<span class="radio"><span class="name">[Общий] <span class="radiojob radiojob-eng radiojob-head radiojob-legacy-eng">[Chief Engineer]</span> <span class="radiojob-name radiojob-eng radiojob-head radiojob-legacy-eng">Старший инженер</span></span> <span class="message">говорит, "Всем на мостик."</span></span>' },
   { type: 'ooc', html: '<span class="ooc">OOC: Игрок: всем привет</span>' },
   { type: 'adminpm', html: '<span class="pm">ПМ от Админ: всё в порядке?</span>' },
   { type: 'localchat', html: '<span class="emote">* Врач качает головой.</span>' },
@@ -74,6 +75,10 @@ export const getPreviewRootClasses = settings => {
   classes.push(...getGameFxRootClasses(
     settings.gameEffects, settings.gameEffectsEnabled !== false));
   classes.push(...getSettleRootClasses(settings.settleOldAnimations));
+  classes.push(...getRadioJobRoot(settings).classes);
+  if (settings.showRadioJobs === false) {
+    classes.push('Chat--hideRadioJobs');
+  }
   return classes.join(' ');
 };
 
@@ -84,6 +89,7 @@ export const getPreviewRootStyle = settings => {
     ...getChatCustomProps(settings),
     ...getStyleOverrideRoot(
       settings.styleOverrides, settings.spanAnimations !== false).props,
+    ...getRadioJobRoot(settings).props,
   };
   const style = {};
   for (const [key, value] of Object.entries(props)) {
