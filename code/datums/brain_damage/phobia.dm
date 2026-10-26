@@ -79,23 +79,22 @@
 						return
 
 /datum/brain_trauma/mild/phobia/handle_hearing(datum/source, list/hearing_args)
+	var/mainsource = mark_heard_text(hearing_args)
+	if(mainsource)
+		addtimer(CALLBACK(src, PROC_REF(freak_out), null, mainsource), 10) //to react AFTER the chat message
+
+/// Подсвечивает слова фобии и возвращает последнее найденное.
+/datum/brain_trauma/mild/phobia/mark_heard_text(list/hearing_args)
 	if(!owner.can_hear() || world.time < next_scare) //words can't trigger you if you can't hear them *taps head*
 		return
 	if(HAS_TRAIT(owner, TRAIT_FEARLESS))
 		return
-
-	var/matches = FALSE
-	var/mainsource
 	for(var/word in trigger_words)
 		var/regex/reg = regex("(\\b|\\A)[REGEX_QUOTE(word)]'?s*(\\b|\\Z)", "ig")
 
 		if(findtext(hearing_args[HEARING_RAW_MESSAGE], reg))
 			hearing_args[HEARING_RAW_MESSAGE] = reg.Replace(hearing_args[HEARING_RAW_MESSAGE], "<span class='phobia'>$0</span>")
-			matches = TRUE
-			mainsource = word
-
-	if(matches)
-		addtimer(CALLBACK(src, PROC_REF(freak_out), null, mainsource), 10) //to react AFTER the chat message
+			. = word
 
 /datum/brain_trauma/mild/phobia/handle_speech(datum/source, list/speech_args)
 	if(HAS_TRAIT(owner, TRAIT_FEARLESS))

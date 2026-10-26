@@ -793,36 +793,21 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 		"У [pick_list_replacements(HAL_LINES_FILE, "jobs")] [pick_list_replacements(HAL_LINES_FILE, "tator-items")]!!!",\
 		"ИИ [pick("сбойный", "уничтожен")]!!")
 
-	var/mob/living/carbon/person = null
 	var/datum/language/understood_language = target.get_random_understood_language()
-	for(var/mob/living/carbon/H in view(target) - target)
-		if(H.stat != CONSCIOUS || hallucination_voice_gives_away(H))
-			continue
-		if(!person || get_dist(target, H) < get_dist(target, person))
-			person = H
+	var/mob/living/carbon/person = hallucination_pick_talker(target, view(target))
 	if(person && !force_radio) //Basic talk
 		var/chosen = specific_message
 		if(!chosen)
 			chosen = capitalize(pick(speak_messages))
 		chosen = replacetext(chosen, "%TARGETNAME%", target_name)
-		var/image/speech_overlay = image('icons/mob/talk.dmi', person, "default0", layer = ABOVE_MOB_LAYER)
 		var/message = target.hear_fake_speech(person, understood_language, chosen)
 		feedback_details += "Type: Talk, Source: [person.real_name], Message: [message]"
-		if(target.client)
-			target.client.images |= speech_overlay
-			sleep(30)
-			if (target.client)
-				target.client.images.Remove(speech_overlay)
 	else // Radio talk
 		var/chosen = specific_message
 		if(!chosen)
 			chosen = capitalize(pick(radio_messages))
 		chosen = replacetext(chosen, "%TARGETNAME%", target_name)
-		var/list/humans = list()
-		for(var/mob/living/carbon/human/H in GLOB.alive_mob_list)
-			var/turf/human_turf = get_turf(H)
-			if(H != target && H.stat == CONSCIOUS && human_turf && is_station_level(human_turf.z))
-				humans += H
+		var/list/humans = hallucination_radio_talkers(target)
 		if(!length(humans))
 			qdel(src)
 			return
@@ -840,6 +825,37 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	if(voice == "Unknown" || voice == human_person.get_id_name(""))
 		return FALSE
 	return human_person.name_override || voice != human_person.get_face_name("")
+
+/// Ближайший из candidates, кто может говорить и чей голос не выдаёт маскировку; null - говорить рядом некому.
+/proc/hallucination_pick_talker(mob/living/target, list/candidates)
+	for(var/mob/living/carbon/candidate in candidates)
+		if(candidate == target || candidate.stat != CONSCIOUS || hallucination_voice_gives_away(candidate))
+			continue
+		if(!. || get_dist(target, candidate) < get_dist(target, .))
+			. = candidate
+
+/// Кто на станции может сказать target что-то по рации.
+/proc/hallucination_radio_talkers(mob/living/target)
+	. = list()
+	for(var/mob/living/carbon/human/human_mob in GLOB.alive_mob_list)
+		var/turf/human_turf = get_turf(human_mob)
+		if(human_mob != target && human_turf && is_station_level(human_turf.z) && hallucination_radio_voice_ok(human_mob))
+			. += human_mob
+
+/// Голос по рации, который ничего не выдаёт о молчащем: гарнитура есть, голос виден по лицу или карте, карта своя и с его настоящей должностью.
+/proc/hallucination_radio_voice_ok(mob/living/carbon/human/person)
+	if(person.stat != CONSCIOUS || hallucination_voice_gives_away(person))
+		return FALSE
+	if(!istype(person.ears, /obj/item/radio/headset) && !istype(person.ears_extra, /obj/item/radio/headset))
+		return FALSE
+	var/obj/item/card/id/card = person.wear_id?.GetID()
+	if(!card)
+		card = person.wear_neck?.GetID()
+	if(!card)
+		card = person.belt?.GetID()
+	if(!card)
+		return !istype(person.wear_id, /obj/item/modular_computer/pda)
+	return card.registered_name == person.real_name && card.assignment == person.mind?.assigned_role
 
 /datum/hallucination/message
 
@@ -1385,7 +1401,10 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	if(prob(50))
 		var/mob/fakemob
 		var/list/dead_people = list()
+		var/list/ignoring = target.client?.prefs.ignoring
 		for(var/mob/dead/observer/G in GLOB.player_list)
+			if(!G.client?.holder?.fakekey && ignoring && (G.key in ignoring))
+				continue
 			dead_people += G
 		if(LAZYLEN(dead_people))
 			fakemob = pick(dead_people)
@@ -1394,7 +1413,7 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 		if(fakemob)
 			sleep(rand(20, 50))
 			to_chat(target, hallucination_deadchat_say(fakemob, pick("rip","why did i just drop dead?","hey [target.first_name()]","git gud","you too?","is the AI rogue?",\
-			 "i[prob(50)?" fucking":""] hate [pick("blood cult", "clock cult", "revenants", "this round","this","myself","admins","you")]")))
+			 "i[prob(50)?" fucking":""] hate [pick("blood cult", "clock cult", "revenants", "this round","this","myself","admins","you")]")), avoid_highlighting = fakemob == target)
 	sleep(rand(70,90))
 	target.set_screwyhud(SCREWYHUD_NONE)
 	target.SetKnockdown(0)

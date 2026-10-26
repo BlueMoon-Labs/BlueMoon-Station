@@ -417,11 +417,9 @@ GLOBAL_LIST_INIT(psychosis_radio_fragments, list(
 		return
 	psy_log("start type=[type] target=[target]")
 	var/list/humans = list()
-	for(var/mob/living/carbon/human/H in GLOB.alive_mob_list)
-		var/turf/human_turf = get_turf(H)
-		if(H == target || H.stat != CONSCIOUS || !H.mind || !human_turf || !is_station_level(human_turf.z))
-			continue
-		humans += H
+	for(var/mob/living/carbon/human/H as anything in hallucination_radio_talkers(target))
+		if(H.mind)
+			humans += H
 	if(!length(humans))
 		psy_log("early_out type=[type] reason=no_humans")
 		qdel(src)
