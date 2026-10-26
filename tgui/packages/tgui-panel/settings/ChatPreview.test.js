@@ -186,10 +186,12 @@ test('radio settings reach the preview root', () => {
     radioJobColorMode: 'legacy',
     radioJobHeadMark: 'bold',
     radioJobColorNames: true,
+    radioJobIcons: false,
     showRadioJobs: false,
   }).split(' ');
   expect(classes).toEqual(expect.arrayContaining(['Chat--rjLegacy',
-    'Chat--rjHead-bold', 'Chat--rjNames', 'Chat--hideRadioJobs']));
+    'Chat--rjHead-bold', 'Chat--rjNames', 'Chat--rjNoIcon',
+    'Chat--hideRadioJobs']));
   expect(getPreviewRootStyle({ radioJobColors: { med: '#123456' } })['--rj-med'])
     .toBe('#123456');
 });
@@ -202,10 +204,19 @@ test('radio samples carry a rank-and-file and a head tag', () => {
   expect(tags.length).toBeGreaterThanOrEqual(2);
   expect(tags.some(tag => tag.classList.contains('radiojob-head'))).toBe(true);
   expect(tags.some(tag => !tag.classList.contains('radiojob-head'))).toBe(true);
+  const departmentOf = node => [...node.classList].filter(cls => cls !== 'radiojob'
+    && cls !== 'radiojob-name' && !cls.includes('legacy-'));
   for (const tag of tags) {
     expect(tag.getAttribute('style')).toBeNull();
+    // Как в say.dm: класс старого вывода первым, у имени он свой.
+    expect(tag.classList[0]).toMatch(/^radiojob-legacy-/);
+    const legacy = tag.classList[0].slice('radiojob-legacy-'.length);
     const name = tag.parentNode.querySelector('.radiojob-name');
-    expect(name.className.replace('radiojob-name', 'radiojob')).toBe(tag.className);
+    expect(departmentOf(name)).toEqual(departmentOf(tag));
+    expect(name.className).not.toContain('radiojob-legacy-');
+    expect(name.classList.contains('radiojob-name-legacy-' + legacy)).toBe(true);
+    const icon = tag.previousElementSibling;
+    expect(icon.className).toMatch(/^radiojob-icon chat16x16 job-[a-z]+$/);
   }
 });
 

@@ -16,6 +16,11 @@ const PALETTE_BY_ID = Object.fromEntries(
 const NAMES_TOOLTIP = 'Имя говорящего в рации того же цвета, что и тег'
   + ' его должности. Работает и со скрытыми должностями.';
 
+const ICONS_TOOLTIP = 'Значок профессии перед тегом должности: врача,'
+  + ' агента внутренних дел или представителя NT видно сразу, не читая тег.'
+  + ' Значок по показанной должности, свободное название идёт без значка.'
+  + ' Со скрытыми должностями остаётся один значок.';
+
 const withColor = (colors, id, value) => {
   const next = { ...colors };
   if (value) {
@@ -33,7 +38,7 @@ const SampleTag = props => {
   return (
     <span className="radio">
       <span className="name">
-        <span className={'radiojob radiojob-' + id + ' radiojob-legacy-' + id}>
+        <span className={'radiojob-legacy-' + id + ' radiojob radiojob-' + id}>
           [{text}]
         </span>
       </span>
@@ -65,6 +70,7 @@ export const SettingsRadioJobs = props => {
     radioJobColorMode,
     radioJobHeadMark,
     radioJobColorNames,
+    radioJobIcons,
     radioJobColors = {},
   } = settings;
   const dispatch = useDispatch();
@@ -124,6 +130,15 @@ export const SettingsRadioJobs = props => {
             radioJobColorNames: !radioJobColorNames,
           }))}>
           Имя в цвет отдела
+        </Button.Checkbox>
+        <Button.Checkbox
+          mt={0.5}
+          checked={radioJobIcons !== false}
+          tooltip={ICONS_TOOLTIP}
+          onClick={() => dispatch(updateSettings({
+            radioJobIcons: radioJobIcons === false,
+          }))}>
+          Значок профессии
         </Button.Checkbox>
         <Box mt={0.5}>
           <Button

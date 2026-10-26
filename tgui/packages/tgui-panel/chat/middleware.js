@@ -179,6 +179,7 @@ const createApplySettings = () => {
         radioJobColorMode: settings.radioJobColorMode,
         radioJobHeadMark: settings.radioJobHeadMark,
         radioJobColorNames: settings.radioJobColorNames,
+        radioJobIcons: settings.radioJobIcons,
         radioJobColors: settings.radioJobColors,
       });
     }

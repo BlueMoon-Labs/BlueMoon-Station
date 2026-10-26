@@ -89,8 +89,8 @@ const RADIO_JOB_MODE_CLASS = {
 const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 
 /**
- * Теги должностей в рации: режим цвета, метка глав, имя в цвет отдела
- * и свои цвета --rj-<id>. Свойства перечислены для всех id, чтобы снять
+ * Теги должностей в рации: режим цвета, метка глав, имя в цвет отдела,
+ * значок профессии и свои цвета --rj-<id>. Свойства перечислены для всех id, чтобы снять
  * сброшенные.
  */
 export const getRadioJobRoot = (settings = {}) => {
@@ -109,6 +109,9 @@ export const getRadioJobRoot = (settings = {}) => {
   }
   if (settings.radioJobColorNames) {
     classes.push('Chat--rjNames');
+  }
+  if (settings.radioJobIcons === false) {
+    classes.push('Chat--rjNoIcon');
   }
   const props = {};
   for (const id of RADIO_JOB_IDS) {

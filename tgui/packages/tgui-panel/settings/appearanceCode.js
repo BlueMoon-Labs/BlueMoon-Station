@@ -122,6 +122,7 @@ const VALUE_CHECKS = {
   radioJobColorMode: oneOf(RADIO_JOB_COLOR_MODES),
   radioJobHeadMark: oneOf(RADIO_JOB_HEAD_MARKS),
   radioJobColorNames: isBool,
+  radioJobIcons: isBool,
 };
 
 const MAP_PICKERS = {
@@ -144,7 +145,7 @@ export const APPEARANCE_KEYS = [
   'letterSpacing', 'borderRadius', 'styleOverrides', 'spanAnimations',
   'typeOverrides', 'gameEffectsEnabled', 'gameEffects',
   'settleOldAnimations', 'showRadioJobs', 'radioJobColorMode',
-  'radioJobHeadMark', 'radioJobColorNames', 'radioJobColors',
+  'radioJobHeadMark', 'radioJobColorNames', 'radioJobIcons', 'radioJobColors',
 ];
 
 const toBase64 = text => btoa(encodeURIComponent(text).replace(

@@ -3,6 +3,11 @@
 	This file has the basic atom/movable level speech procs.
 	And the base of the send_speech() proc, which is the core of saycode.
 */
+// Ключи оформления тега должности из get_radio_job_style().
+#define RADIO_JOB_STYLE_CLASSES "classes"
+#define RADIO_JOB_STYLE_LEGACY "legacy"
+#define RADIO_JOB_STYLE_ICON "icon"
+
 GLOBAL_LIST_INIT(freqtospan, list(
 	"[FREQ_SCIENCE]" = "sciradio",
 	"[FREQ_MEDICAL]" = "medradio",
@@ -99,22 +104,23 @@ GLOBAL_LIST_INIT(freqtospan, list(
 	//Radio freq/name display
 	var/freqpart = radio_freq ? "\[[get_radio_name(radio_freq)]\] " : ""
 	var/jobpart = ""
-	var/job_class
+	var/list/job_style
 	if(radio_freq)
 		var/speaker_job = speaker.GetJob()
 		var/lower_job = speaker_job ? lowertext(trimtext(speaker_job)) : ""
 		if(lower_job != "" && lower_job != "unknown" && lower_job != "no id" && lower_job != "machine")
 			if(speaker.GetVoice() != "Unknown")
-				job_class = speaker.GetJobClass()
-				if(!job_class || job_class == "")
-					job_class = get_radio_job_class(null, speaker_job)
-				jobpart = "<span class='radiojob [job_class]'>\[[speaker_job]\]</span> "
+				job_style = speaker.GetJobStyle() || get_radio_job_style(null, speaker_job)
+				var/job_icon = job_style[RADIO_JOB_STYLE_ICON]
+				// Класс старого вывода первым: его красит client/script, остальные классы - чат tgui.
+				jobpart = "[job_icon ? "<span class='radiojob-icon [job_icon]'></span>" : ""]<span class='radiojob-legacy-[job_style[RADIO_JOB_STYLE_LEGACY]] radiojob [job_style[RADIO_JOB_STYLE_CLASSES]]'>\[[speaker_job]\]</span> "
 	//Speaker name
 	var/namepart = "[speaker.GetVoice()][speaker.get_alt_name()]"
 	if(face_name && ishuman(speaker))
 		var/mob/living/carbon/human/H = speaker
 		namepart = "[H.get_face_name()]" //So "fake" speaking like in hallucinations does not give the speaker away if disguised
-	var/shown_name = job_class ? "<span class='radiojob-name [job_class]'>[namepart]</span>" : namepart
+	// Старый вывод имя не красил, прежняя раскраска имени - отдельный класс только для tgui.
+	var/shown_name = job_style ? "<span class='radiojob-name [job_style[RADIO_JOB_STYLE_CLASSES]] radiojob-name-legacy-[job_style[RADIO_JOB_STYLE_LEGACY]]'>[namepart]</span>" : namepart
 	//End name span.
 	var/endspanpart = "</span>"
 
@@ -245,10 +251,10 @@ GLOBAL_LIST_INIT(freqtospan, list(
 		return returntext
 	return "[copytext_char("[freq]", 1, 4)].[copytext_char("[freq]", 4, 5)]"
 
-/// Классы тега должности: отдел по job datum, фракция, метка главы и прежняя раскраска. Цвета задаёт чат.
-/// Отдел и глава - по показанному названию shown_job (custom_job карты), свободный текст - отдел профессии карты base_job без метки главы.
+/// Оформление тега должности: классы отдела, фракции и главы для чата, id прежней раскраски и значок. Цвета задаёт чат.
+/// Отдел, глава и значок - по показанному названию shown_job (custom_job карты), свободный текст - отдел профессии карты base_job без метки главы и значка.
 /// Без карты (КПК) префикс наклейки снимается только перед точным названием профессии: "Syndicate Admiral" не капитан.
-/proc/get_radio_job_class(base_job, display_job, shown_job)
+/proc/get_radio_job_style(base_job, display_job, shown_job)
 	var/centcom_card = base_job && !SSjob.GetJob(base_job) && GetJobName(base_job) == "Centcom"
 	var/datum/job/card_job = (base_job && !centcom_card) ? (SSjob.GetJob(base_job) || get_radio_shown_job(base_job, null)) : null
 	var/shown = shown_job || base_job || display_job
@@ -273,12 +279,37 @@ GLOBAL_LIST_INIT(freqtospan, list(
 		department = "centcom"
 	else
 		department = "unk"
-	. = "radiojob-[department]"
+	var/classes = "radiojob-[department]"
 	if(faction)
-		. += " radiojob-f-[faction]"
+		classes += " radiojob-f-[faction]"
 	if(recognized && get_radio_head_jobs()[job.title])
-		. += " radiojob-head"
-	. += " radiojob-legacy-[faction || get_radio_job_legacy_class(job ? job.title : (centcom ? "Centcom" : "Unknown"), job)]"
+		classes += " radiojob-head"
+	var/icon_state
+	if(recognized)
+		icon_state = ckey(job.title)
+	else if(faction)
+		icon_state = get_radio_faction_icon(faction)
+	else if(centcom)
+		icon_state = "centcom"
+	return radio_job_style(classes, faction || get_radio_job_legacy_class(job ? job.title : (centcom ? "Centcom" : "Unknown"), job), icon_state)
+
+/// legacy - id прежней раскраски (radiojob-legacy-<id>), icon_state - стейт icons/ui_icons/tgui/jobs.dmi.
+/proc/radio_job_style(classes, legacy, icon_state)
+	var/icon_class
+	if(icon_state)
+		var/datum/asset/spritesheet_batched/chat/sheet = get_asset_datum(/datum/asset/spritesheet_batched/chat)
+		icon_class = sheet.icon_class_name("job-[icon_state]")
+	return list(RADIO_JOB_STYLE_CLASSES = classes, RADIO_JOB_STYLE_LEGACY = legacy, RADIO_JOB_STYLE_ICON = icon_class)
+
+/proc/get_radio_faction_icon(faction)
+	switch(faction)
+		if("synd")
+			return "syndicate"
+		if("hotel")
+			return "hotelstaff"
+		if("inteq", "sol", "nri", "centcom")
+			return faction
+	return null
 
 /// Профессия названия: профессия карты, если это её название или альт-название, иначе однозначная чужая, неоднозначное - свободный текст. GetJobName() тут не годится: в real_job_name общие альт-названия перезаписывают друг друга.
 /proc/get_radio_shown_job(title, datum/job/card_job)
@@ -435,7 +466,8 @@ GLOBAL_LIST_INIT(freqtospan, list(
 
 /atom/movable/proc/GetJob() //Get a job, you lazy butte
 
-/atom/movable/proc/GetJobClass()
+/// Оформление тега должности в рации из get_radio_job_style() или null.
+/atom/movable/proc/GetJobStyle()
 
 /atom/movable/proc/GetSource()
 
@@ -444,7 +476,7 @@ GLOBAL_LIST_INIT(freqtospan, list(
 //VIRTUALSPEAKERS
 /atom/movable/virtualspeaker
 	var/job
-	var/job_class
+	var/list/job_style
 	var/atom/movable/source
 	var/obj/item/radio/radio
 
@@ -472,40 +504,40 @@ INITIALIZE_IMMEDIATE(/atom/movable/virtualspeaker)
 			job = idcard.get_assignment_name()
 			if(!job || job == "")
 				job = null
-				job_class = null
+				job_style = null
 			else
-				job_class = get_radio_job_class(idcard.assignment, job, idcard.custom_job)
+				job_style = get_radio_job_style(idcard.assignment, job, idcard.custom_job)
 		else
 			if(istype(H.wear_id, /obj/item/modular_computer/pda))
 				var/obj/item/modular_computer/pda/worn_pda = H.wear_id
 				if(worn_pda.ownjob && worn_pda.ownjob != "")
 					job = worn_pda.ownjob
-					job_class = get_radio_job_class(null, job)
+					job_style = get_radio_job_style(null, job)
 				else
 					job = null
-					job_class = null
+					job_style = null
 			else
 				job = null
-				job_class = null
+				job_style = null
 	else if(iscarbon(M))  // Carbon nonhuman
 		job = "No ID"
-		job_class = null
+		job_style = null
 	else if(isAI(M))  // AI
 		job = "AI"
-		job_class = "radiojob-silicon"
+		job_style = radio_job_style("radiojob-silicon", "silicon", "ai")
 	else if(iscyborg(M))  // Cyborg
 		var/mob/living/silicon/robot/B = M
 		job = "[B.designation] Cyborg"
-		job_class = "radiojob-silicon"
+		job_style = radio_job_style("radiojob-silicon", "silicon", "cyborg")
 	else if(istype(M, /mob/living/silicon/pai))  // Personal AI (pAI)
 		job = M.GetJob()
-		job_class = "radiojob-silicon"
+		job_style = radio_job_style("radiojob-silicon", "silicon", "pai")
 	else if(isobj(M))  // Cold, emotionless machines
 		job = "Machine"
-		job_class = "radiojob-unk"
+		job_style = radio_job_style("radiojob-unk", "unk")
 	else  // Unidentifiable mob
 		job = "Unknown"
-		job_class = null
+		job_style = null
 
 /atom/movable/virtualspeaker/Destroy()
 	set_source(null)
@@ -543,11 +575,15 @@ INITIALIZE_IMMEDIATE(/atom/movable/virtualspeaker)
 /atom/movable/virtualspeaker/GetJob()
 	return job
 
-/atom/movable/virtualspeaker/GetJobClass()
-	return job_class
+/atom/movable/virtualspeaker/GetJobStyle()
+	return job_style
 
 /atom/movable/virtualspeaker/GetSource()
 	return source
 
 /atom/movable/virtualspeaker/GetRadio()
 	return radio
+
+#undef RADIO_JOB_STYLE_CLASSES
+#undef RADIO_JOB_STYLE_LEGACY
+#undef RADIO_JOB_STYLE_ICON

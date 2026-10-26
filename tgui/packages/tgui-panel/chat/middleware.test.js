@@ -368,6 +368,7 @@ describe('chatMiddleware applySettings diffing', () => {
       radioJobColorMode: 'department',
       radioJobHeadMark: 'command',
       radioJobColorNames: false,
+      radioJobIcons: true,
       radioJobColors: {},
     });
     store.dispatch(updateSettings({ radioJobColors: { med: '#00ff00' } }));
@@ -375,6 +376,11 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(mockChatRenderer.setRadioJobStyle).toHaveBeenCalledTimes(2);
     expect(mockChatRenderer.setRadioJobStyle.mock.calls[1][0].radioJobColors)
       .toEqual({ med: '#00ff00' });
+    store.dispatch(updateSettings({ radioJobIcons: false }));
+    await flushPromises();
+    expect(mockChatRenderer.setRadioJobStyle).toHaveBeenCalledTimes(3);
+    expect(mockChatRenderer.setRadioJobStyle.mock.calls[2][0].radioJobIcons)
+      .toBe(false);
     expect(mockChatRenderer.setRadioJobsVisible).not.toHaveBeenCalled();
     expect(mockChatRenderer.setStyleOverrides).not.toHaveBeenCalled();
   });

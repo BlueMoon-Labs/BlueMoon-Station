@@ -43,8 +43,10 @@ $palette: (
   }
 }
 
+// radiojob-legacy-* красит и старый вывод BYOND, поэтому у имени свой класс.
 @each $id, $colors in $palette {
-  .Chat--rjLegacy .radiojob-legacy-#{$id} {
+  .Chat--rjLegacy .radiojob-legacy-#{$id},
+  .Chat--rjLegacy .radiojob-name-legacy-#{$id} {
     --rj-c: var(--rj-#{$id}, var(--rj-def-#{$id}));
   }
 }
@@ -58,14 +60,16 @@ $legacy-palette: (
 );
 
 @each $id, $color in $legacy-palette {
-  .Chat--rjLegacy .radiojob-legacy-#{$id} {
+  .Chat--rjLegacy .radiojob-legacy-#{$id},
+  .Chat--rjLegacy .radiojob-name-legacy-#{$id} {
     --rj-c: var(--rj-#{$id}, #{$color});
   }
 }
 
 // Старый клоун был цвета юристов. radiojob-clown - класс сообщений из истории до разделения по отделам.
 .radiojob-clown,
-.Chat--rjLegacy .radiojob-legacy-clown {
+.Chat--rjLegacy .radiojob-legacy-clown,
+.Chat--rjLegacy .radiojob-name-legacy-clown {
   --rj-c: var(--rj-law, var(--rj-def-law));
 }
 
@@ -98,4 +102,15 @@ $legacy-palette: (
 
 .Chat--rjHead-bold .radiojob.radiojob-head {
   font-weight: bold;
+}
+
+// Значок профессии из чат-листа (chat16x16): размер и картинку задаёт лист.
+.radiojob-icon {
+  margin-right: 0.25em;
+  vertical-align: -0.2em;
+  image-rendering: pixelated;
+}
+
+.Chat--rjNoIcon .radiojob-icon {
+  display: none;
 }

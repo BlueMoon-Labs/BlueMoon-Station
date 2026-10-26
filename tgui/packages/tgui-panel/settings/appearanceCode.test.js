@@ -220,6 +220,7 @@ test('radio job settings go through the code and are checked', () => {
     radioJobColorMode: 'legacy',
     radioJobHeadMark: 'command',
     radioJobColorNames: true,
+    radioJobIcons: false,
     radioJobColors: { med: '#00ff00', sec: 'red', bogus: '#123456', cmd: '' },
   });
   expect(result.settings).toEqual({
@@ -227,12 +228,14 @@ test('radio job settings go through the code and are checked', () => {
     radioJobColorMode: 'legacy',
     radioJobHeadMark: 'command',
     radioJobColorNames: true,
+    radioJobIcons: false,
     radioJobColors: { med: '#00ff00' },
   });
   const bad = roundTrip({
     radioJobColorMode: 'rainbow',
     radioJobHeadMark: 'crown',
     radioJobColorNames: 'yes',
+    radioJobIcons: 'no',
     radioJobColors: ['#00ff00'],
   });
   expect(bad.settings).toEqual({});

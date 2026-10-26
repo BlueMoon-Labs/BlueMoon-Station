@@ -46,7 +46,7 @@ const RESETS = [
     Tab: SettingsRadioJobs,
     button: 'Сбросить должности',
     keys: ['showRadioJobs', 'radioJobColorMode', 'radioJobHeadMark',
-      'radioJobColorNames', 'radioJobColors'],
+      'radioJobColorNames', 'radioJobIcons', 'radioJobColors'],
   },
 ];
 
@@ -65,7 +65,8 @@ const CHANGED = {
   typeOverrides: { radio: { border: '#111111' } }, gameEffectsEnabled: false,
   gameEffects: { tremble: false }, settleOldAnimations: false,
   showRadioJobs: false, radioJobColorMode: 'none', radioJobHeadMark: 'bold',
-  radioJobColorNames: true, radioJobColors: { med: '#00ff00' },
+  radioJobColorNames: true, radioJobIcons: false,
+  radioJobColors: { med: '#00ff00' },
 };
 
 const mounted = [];

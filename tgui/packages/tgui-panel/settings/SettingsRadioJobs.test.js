@@ -46,6 +46,7 @@ test('defaults: color by department, head icon, names plain', () => {
   expect(state.radioJobColorMode).toBe('department');
   expect(state.radioJobHeadMark).toBe('icon');
   expect(state.radioJobColorNames).toBe(false);
+  expect(state.radioJobIcons).toBe(true);
   expect(state.radioJobColors).toEqual({});
   expect(state.showRadioJobs).toBe(true);
 });
@@ -77,6 +78,19 @@ test('show and name checkboxes toggle their settings', () => {
   expect(dispatched.at(-1).payload).toEqual({ showRadioJobs: false });
   click(buttonOf(container, 'Имя в цвет отдела'));
   expect(dispatched.at(-1).payload).toEqual({ radioJobColorNames: true });
+});
+
+test('job icon checkbox is on by default and toggles', () => {
+  let now = Date.now();
+  jest.spyOn(Date, 'now').mockImplementation(() => (now += 100));
+  const on = renderWith({});
+  const box = buttonOf(on.container, 'Значок профессии');
+  expect(box.innerHTML).toContain('check-square');
+  click(box);
+  expect(on.dispatched.at(-1).payload).toEqual({ radioJobIcons: false });
+  const off = renderWith({ radioJobIcons: false });
+  click(buttonOf(off.container, 'Значок профессии'));
+  expect(off.dispatched.at(-1).payload).toEqual({ radioJobIcons: true });
 });
 
 test('color list shows a sample tag per department and resets', () => {
@@ -163,7 +177,7 @@ test('class ids from say.dm match the palette', () => {
   const dm = fs.readFileSync(path.join(__dirname,
     '../../../../code/game/say.dm'), 'utf8').replace(/\r\n/g, '\n');
   const ids = new Set();
-  for (const procName of ['get_radio_job_class', 'get_radio_job_faction',
+  for (const procName of ['get_radio_job_style', 'get_radio_job_faction',
     'get_radio_department_class', 'get_radio_job_legacy_class']) {
     const start = dm.indexOf('\n/proc/' + procName + '(');
     expect(start).toBeGreaterThan(-1);
@@ -184,7 +198,8 @@ test('class ids from say.dm match the palette', () => {
     '../styles/components/ChatRadioJobs.scss'), 'utf8');
   for (const id of legacyOnly) {
     expect(scss).toContain('.radiojob-' + id + ',');
-    expect(scss).toContain('.radiojob-legacy-' + id + ' {');
+    expect(scss).toContain('.radiojob-legacy-' + id + ',');
+    expect(scss).toContain('.radiojob-name-legacy-' + id + ' {');
   }
 });
 

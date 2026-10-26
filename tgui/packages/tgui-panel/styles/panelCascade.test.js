@@ -15,6 +15,11 @@ afterEach(() => {
   document.body.innerHTML = '';
 });
 
+// Правила чат-листа, как их пишет generate_css() в batched_spritesheet.dm.
+const SPRITESHEET_CSS = '\n.chat16x16{display:inline-block;width:16px;'
+  + 'height:16px;background-repeat:no-repeat;}'
+  + '\n.chat16x16.job-syndicate{background-position:-16px 0;}';
+
 // Подложка панели вокруг чата: base.scss тёмной темы и светлой.
 const PANEL_BG = { dark: '#202020', light: '#eeeeee' };
 
@@ -148,6 +153,35 @@ describe.each(['dark', 'light'])('radio job tags, %s theme', theme => {
   test('"as before" mode keeps the old faction color', () => {
     expect(tag('Chat--rjLegacy')).toBe('#8f4a4b');
     expect(tag('')).not.toBe('#8f4a4b');
+  });
+  // Разметка say.dm: значок, класс старого вывода первым, у имени свой класс.
+  const line = rootClasses => {
+    const rules = rulesWith({}, SPRITESHEET_CSS);
+    const { message } = mount(theme, rootClasses, '');
+    message.innerHTML = '<span class="radiojob-icon chat16x16 job-syndicate">'
+      + '</span><span class="radiojob-legacy-synd radiojob radiojob-synd'
+      + ' radiojob-f-synd">[Syndicate Operative]</span> <span class='
+      + '"radiojob-name radiojob-synd radiojob-f-synd'
+      + ' radiojob-name-legacy-synd">Ivan</span>';
+    const [icon, tagNode, name] = message.children;
+    return {
+      icon: winningDeclaration(rules, icon, 'display').value,
+      tag: resolved(rules, tagNode, 'color'),
+      name: resolved(rules, name, 'color'),
+    };
+  };
+  test('names follow the tag in "as before" mode', () => {
+    const legacy = line('Chat--rjLegacy Chat--rjNames');
+    expect(legacy.name).toBe('#8f4a4b');
+    expect(legacy.name).toBe(legacy.tag);
+    const department = line('Chat--rjNames');
+    expect(department.name).toBe(department.tag);
+    expect(department.name).not.toBe('#8f4a4b');
+  });
+  test('job icon shows unless turned off', () => {
+    expect(line('').icon).toBe('inline-block');
+    expect(line('Chat--hideRadioJobs').icon).toBe('inline-block');
+    expect(line('Chat--rjNoIcon').icon).toBe('none');
   });
 });
 

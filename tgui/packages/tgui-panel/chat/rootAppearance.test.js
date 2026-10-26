@@ -105,6 +105,15 @@ test('radio job modes, head marks and names map to root classes', () => {
   expect(isRadioJobRootClass('Chat--hideRadioJobs')).toBe(false);
 });
 
+test('job icons are on unless turned off', () => {
+  expect(getRadioJobRoot({}).classes).not.toContain('Chat--rjNoIcon');
+  expect(getRadioJobRoot({ radioJobIcons: true }).classes)
+    .not.toContain('Chat--rjNoIcon');
+  const off = getRadioJobRoot({ radioJobIcons: false }).classes;
+  expect(off).toContain('Chat--rjNoIcon');
+  expect(off.every(isRadioJobRootClass)).toBe(true);
+});
+
 test('radio job colors become properties, junk is dropped', () => {
   const { props } = getRadioJobRoot({
     radioJobColors: { med: '#00ff00', sec: 'red', bogus: '#123456' },

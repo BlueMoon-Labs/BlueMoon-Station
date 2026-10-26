@@ -59,7 +59,7 @@ export const RADIO_JOB_COLOR_MODES = [
 
 export const RADIO_JOB_HEAD_MARKS = [
   { id: 'none', name: 'Нет', tooltip: 'Главы выглядят как все.' },
-  { id: 'icon', name: 'Значок', tooltip: 'Перед тегом главы стоит звёздочка.' },
+  { id: 'icon', name: 'Звезда', tooltip: 'Перед тегом главы стоит звёздочка.' },
   {
     id: 'bold',
     name: 'Жирный',
@@ -79,5 +79,6 @@ export const RADIO_JOB_DEFAULTS = {
   radioJobColorMode: 'department',
   radioJobHeadMark: 'icon',
   radioJobColorNames: false,
+  radioJobIcons: true,
   radioJobColors: {},
 };
