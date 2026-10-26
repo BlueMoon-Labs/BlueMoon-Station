@@ -294,16 +294,7 @@
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 
-/datum/design/cyberimp_leg_microvibration
-	name = "Microvibration Generator Implant"
-	desc = "A compact piston assembly hidden in both shins that delivers a devastating vibrating kick."
-	id = "ci-leg-microvibration"
-	build_type = PROTOLATHE | MECHFAB
-	construction_time = 150
-	materials = list(/datum/material/iron = 6000, /datum/material/titanium = 4000, /datum/material/silver = 2000, /datum/material/diamond = 1000)
-	build_path = /obj/item/organ/cyberimp/leg/microvibration
-	category = list("Implants")
-	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+
 
 /datum/design/cyberimp_mantis
 	name = "Corporate Mantis Blade Implant"

@@ -149,62 +149,31 @@
 ///////////////
 /obj/item/organ/cyberimp/leg/ankles
 	name = "fortified ankles implant"
-	desc = "Hydraulic pistons grafted into both ankles. After a short charge they launch the user forward in a single powerful leap."
+	desc = "Hydraulic pistons grafted into both ankles. They grant a built-in impulse boost that allows the user to dash forward in the direction they're facing."
 	icon_state = "implant-reinforcers2"
 	actions_types = list(/datum/action/item_action/organ_action/use)
-	/// Guard against starting a second charge while one is already in progress.
-	var/charging = FALSE
-
-/obj/item/organ/cyberimp/leg/ankles/deactivate(removing)
-	. = ..()
-	charging = FALSE
+	var/recharging_time = 0
+	var/recharging_rate = 60
+	var/jumpdistance = 5
+	var/jumpspeed = 3
 
 /obj/item/organ/cyberimp/leg/ankles/ui_action_click(mob/user, actiontype)
-	if(!owner || owner != user || charging)
+	if(!owner || owner != user)
 		return
-	if(owner.incapacitated() || owner.buckled || !isturf(owner.loc))
-		to_chat(owner, span_warning("You cannot charge a jump right now."))
+	if(owner.incapacitated() || owner.buckled)
 		return
-	if(HAS_TRAIT(owner, TRAIT_JUMPING))
-		to_chat(owner, span_warning("You are already in the air!"))
+	if(!isturf(owner.loc))
 		return
-	charging = TRUE
-	to_chat(owner, span_notice("You crouch, charging the hydraulic pistons in your ankles..."))
-	if(!do_after(owner, 2 SECONDS, owner))
-		charging = FALSE
+	if(recharging_time > world.time)
+		to_chat(owner, span_warning("The hydraulic pistons need to recharge still!"))
 		return
-	charging = FALSE
-	if(!owner || QDELETED(src) || !(src in owner.internal_organs) || owner.incapacitated() || owner.buckled)
-		return
-	perform_charged_jump()
-
-/obj/item/organ/cyberimp/leg/ankles/proc/perform_charged_jump()
-	var/datum/component/jump/jump = owner.GetComponent(/datum/component/jump)
-	if(!jump)
-		owner.set_jump_component()
-		jump = owner.GetComponent(/datum/component/jump)
-	if(!jump)
-		return
-	var/old_height = jump.jump_height
-	var/old_distance = jump.leap_distance
-	var/old_duration = jump.jump_duration
-	jump.jump_height = 28
-	jump.leap_distance = 4
-	jump.jump_duration = 0.7 SECONDS
-	TIMER_COOLDOWN_END(owner, JUMP_COMPONENT_COOLDOWN)
-	owner.visible_message(span_warning("[owner] launches into the air with a hydraulic hiss!"), span_notice("You launch yourself forward!"))
-	SEND_SIGNAL(owner, COMSIG_KB_LIVING_JUMP, owner.dir)
-	addtimer(CALLBACK(src, PROC_REF(restore_jump), old_height, old_distance, old_duration), 1 SECONDS)
-
-/obj/item/organ/cyberimp/leg/ankles/proc/restore_jump(height, distance, duration)
-	if(QDELETED(src) || !owner || QDELETED(owner))
-		return
-	var/datum/component/jump/jump = owner.GetComponent(/datum/component/jump)
-	if(!jump)
-		return
-	jump.jump_height = height
-	jump.leap_distance = distance
-	jump.jump_duration = duration
+	var/atom/target = get_edge_target_turf(owner, owner.dir)
+	if(owner.throw_at(target, jumpdistance, jumpspeed, spin = FALSE, diagonals_first = TRUE))
+		playsound(owner, 'sound/effects/stealthoff.ogg', 50, 1, 1)
+		recharging_time = world.time + recharging_rate
+		owner.visible_message(span_warning("[owner] dashes forward with a hydraulic hiss!"), span_notice("You dash forward!"))
+	else
+		to_chat(owner, span_warning("Something prevents you from dashing forward!"))
 
 ///////////////
 // Lynx Paws
@@ -224,41 +193,4 @@
 		REMOVE_TRAIT(owner, TRAIT_SILENT_STEP, REF(src))
 	return ..()
 
-///////////////////
-// Microvibration Generator
-///////////////////
-/obj/item/organ/cyberimp/leg/microvibration
-	name = "microvibration generator implant"
-	desc = "A compact piston assembly hidden in both shins. When activated, it delivers a devastating vibrating kick that knocks the target off their feet."
-	icon_state = "implant-power"
-	actions_types = list(/datum/action/item_action/organ_action/use)
-	/// Cooldown between kicks.
-	var/kick_cooldown = 4 SECONDS
 
-/obj/item/organ/cyberimp/leg/microvibration/ui_action_click(mob/user, actiontype)
-	if(!owner || owner != user)
-		return
-	if(owner.incapacitated())
-		to_chat(owner, span_warning("You cannot kick while incapacitated."))
-		return
-	if(HAS_TRAIT(owner, TRAIT_PACIFISM))
-		to_chat(owner, span_warning("You are too peaceful to kick anyone."))
-		return
-	if(TIMER_COOLDOWN_CHECK(owner, "microvibration_kick"))
-		to_chat(owner, span_warning("The generator is still recharging."))
-		return
-	var/mob/living/target = locate(/mob/living) in get_step(owner, owner.dir)
-	if(!target || target == owner)
-		to_chat(owner, span_warning("There is no one in front of you to kick."))
-		return
-	owner.do_attack_animation(target, ATTACK_EFFECT_KICK)
-	playsound(get_turf(owner), 'sound/weapons/punch1.ogg', 50, TRUE)
-	target.apply_damage(15, BRUTE, BODY_ZONE_CHEST)
-	target.apply_damage(35, STAMINA)
-	target.DefaultCombatKnockdown(20)
-	var/turf/throw_turf = get_edge_target_turf(target, owner.dir)
-	if(throw_turf)
-		target.throw_at(throw_turf, 2, 2, owner)
-	owner.visible_message(span_danger("[owner] delivers a powerful vibrating kick to [target]!"), span_danger("You kick [target] with the force of a piston!"))
-	log_combat(owner, target, "microvibration-kicked")
-	TIMER_COOLDOWN_START(owner, "microvibration_kick", kick_cooldown)
