@@ -2,7 +2,7 @@
 
 /obj/structure/closet/crate/secure/loot
 	name = "abandoned crate"
-	desc = "What could be inside?"
+	desc = "Что может быть внутри?"
 	icon_state = "securecrate"
 	base_icon_state = "securecrate"
 	integrity_failure = 0 //no breaking open the crate
@@ -232,3 +232,7 @@
 	var/loot_type = pickweight(category)
 	new loot_type(src)
 	spawned_loot = TRUE
+
+/obj/structure/closet/crate/secure/loot/examine(mob/user)
+	. = ..()
+	. += span_notice("<b>Мультитулом</b> можно посмотреть прошлые попытки")
