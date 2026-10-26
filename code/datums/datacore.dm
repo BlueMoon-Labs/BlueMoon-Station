@@ -692,22 +692,44 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 		if(ishuman(character) && N.client.prefs)
 			manifest_inject(character, N.client, N.client.prefs)
 
-/datum/datacore/proc/manifest_modify(name, assignment, real_rank)
+/datum/datacore/proc/manifest_modify(name, assignment, real_rank, custom_job)
 	if(!name || !assignment && !real_rank)
 		return
 	var/datum/data/record/foundrecord = GLOB.data_core.general_by_name[name]
 	if(foundrecord)
 		if(assignment)
 			foundrecord.fields["rank"] = assignment
+			foundrecord.fields["custom_job"] = custom_job
 		if(real_rank)
 			foundrecord.fields["real_rank"] = real_rank
 
-/// Глава ли запись: метка главы рации, где должность записи - показанное название, а профессия - карта. Префикс наклейки снимается, как у карты.
-/proc/is_manifest_record_head(rank, real_rank)
+GLOBAL_LIST_INIT(manifest_department_names, list(
+	DEPARTMENT_COMMAND = "Командование",
+	DEPARTMENT_SECURITY = "Служба Безопасности",
+	DEPARTMENT_ENGINEERING = "Инженерный отдел",
+	DEPARTMENT_MEDICAL = "Медицинский отдел",
+	DEPARTMENT_SCIENCE = "Научный отдел",
+	DEPARTMENT_SUPPLY = "Отдел снабжения",
+	DEPARTMENT_SERVICE = "Отдел сервиса",
+	DEPARTMENT_SILICON = "Синтетика",
+	DEPARTMENT_LAW = "Юридический отдел",
+	"Misc" = "Прочее",
+))
+
+/// "профессия|должность|своё название карты" -> глава ли.
+GLOBAL_LIST_EMPTY(manifest_head_cache)
+
+/// Глава ли запись: метка главы рации с теми же аргументами, что у карты в say.dm.
+/proc/is_manifest_record_head(real_rank, rank, custom_job)
 	if(!rank)
 		return FALSE
-	var/list/classes = splittext(get_radio_job_class(real_rank, rank, strip_radio_sticker_prefix(rank)), " ")
-	return ("radiojob-head" in classes)
+	var/key = "[real_rank]|[rank]|[custom_job]"
+	. = GLOB.manifest_head_cache[key]
+	if(!isnull(.))
+		return
+	. = ("radiojob-head" in splittext(get_radio_job_class(real_rank, rank, custom_job), " "))
+	if(SSjob.initialized)
+		GLOB.manifest_head_cache[key] = .
 
 /datum/datacore/proc/get_manifest()
 	var/list/departments = list(
@@ -726,11 +748,10 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 	for(var/datum/data/record/t in GLOB.data_core.general)
 		var/rank = t.fields["rank"]
 		var/department_check = GetJobName(t.fields["real_rank"])
-		var/head = is_manifest_record_head(rank, t.fields["real_rank"])
+		var/head = is_manifest_record_head(t.fields["real_rank"], rank, t.fields["custom_job"])
 		var/list/entry = list(
 			"name" = t.fields["name"],
 			"rank" = rank,
-			"department_check" = department_check,
 			"head" = head,
 		)
 		var/tier = head ? (department_check == "Captain" ? 1 : 2) : 3
@@ -755,18 +776,7 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 
 /// Таблица списка экипажа для печати, главы со звёздочкой и жирным.
 /datum/datacore/proc/get_manifest_html()
-	var/static/list/department_names = list(
-		DEPARTMENT_COMMAND = "Командование",
-		DEPARTMENT_SECURITY = "Служба Безопасности",
-		DEPARTMENT_ENGINEERING = "Инженерный отдел",
-		DEPARTMENT_MEDICAL = "Медицинский отдел",
-		DEPARTMENT_SCIENCE = "Научный отдел",
-		DEPARTMENT_SUPPLY = "Отдел снабжения",
-		DEPARTMENT_SERVICE = "Отдел сервиса",
-		DEPARTMENT_SILICON = "Синтетика",
-		DEPARTMENT_LAW = "Юридический отдел",
-		"Misc" = "Прочее",
-	)
+	var/list/department_names = GLOB.manifest_department_names
 	var/list/manifest = get_manifest()
 	var/list/dat = list("<table><tr><th>Имя</th><th>Должность</th></tr>")
 	for(var/department in manifest)
@@ -794,10 +804,12 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 			real_rank = "Unassigned"
 
 		// Берем название роли из карточки, с учетом наклеек и альт. названия
+		var/custom_job
 		if(H.wear_id)
 			var/obj/item/card/id/id_card = H.wear_id.GetID()
 			if(istype(id_card))
 				assignment = id_card.get_assignment_name()
+				custom_job = id_card.custom_job
 		if(!assignment)
 			// Если не удалось, пробуем получить из префов
 			if(C && C.prefs && C.prefs.alt_titles_preferences[assignment])
@@ -818,6 +830,7 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 		G.fields["id"]			= id
 		G.fields["name"]		= H.real_name
 		G.fields["rank"]		= assignment
+		G.fields["custom_job"]	= custom_job
 		G.fields["real_rank"]	= GetJobName(real_rank)
 		G.fields["age"]			= H.age
 		G.fields["species"]		= H.dna.species.name

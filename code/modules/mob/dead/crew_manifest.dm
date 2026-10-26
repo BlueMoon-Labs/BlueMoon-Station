@@ -16,6 +16,9 @@
 	if (..())
 		return
 
+/datum/crew_manifest/ui_static_data(mob/user)
+	return list("department_names" = GLOB.manifest_department_names)
+
 /datum/crew_manifest/ui_data(mob/user)
 	var/list/positions = list(
 		DEPARTMENT_COMMAND 		= 	0,

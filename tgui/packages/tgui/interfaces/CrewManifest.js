@@ -2,21 +2,8 @@ import { useBackend } from "../backend";
 import { Flex, Section, Table } from "../components";
 import { Window } from "../layouts";
 
-const departmentNames = {
-  Command: "Командование",
-  Security: "Служба Безопасности",
-  Engineering: "Инженерный отдел",
-  Medical: "Медицинский отдел",
-  Science: "Научный отдел",
-  Supply: "Отдел снабжения",
-  Service: "Отдел сервиса",
-  Silicon: "Синтетика",
-  Law: "Юридический отдел",
-  Misc: "Прочее",
-};
-
 export const CrewManifest = (props) => {
-  const { data: { manifest, positions } } = useBackend();
+  const { data: { manifest, positions, department_names = {} } } = useBackend();
 
   return (
     <Window title="Манифест экипажа" width={440} height={550}>
@@ -28,7 +15,7 @@ export const CrewManifest = (props) => {
             title={
               <Flex style={{ width: '100%' }}>
                 <Flex.Item>
-                  {departmentNames[department] || department}
+                  {department_names[department] || department}
                 </Flex.Item>
                 <Flex.Item grow textAlign="right">
                   (Открытых позиций: {positions[department]})

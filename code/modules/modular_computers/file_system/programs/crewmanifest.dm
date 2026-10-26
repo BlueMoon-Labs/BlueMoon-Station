@@ -8,6 +8,9 @@
 	tgui_id = "NtosCrewManifest"
 	program_icon = "clipboard-list"
 
+/datum/computer_file/program/crew_manifest/ui_static_data(mob/user)
+	return list("department_names" = GLOB.manifest_department_names)
+
 /datum/computer_file/program/crew_manifest/ui_data(mob/user)
 	var/list/data = get_header_data()
 

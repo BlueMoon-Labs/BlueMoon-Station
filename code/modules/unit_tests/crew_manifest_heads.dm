@@ -4,32 +4,30 @@
 /datum/unit_test/crew_manifest_heads
 
 /datum/unit_test/crew_manifest_heads/Run()
-	add_record("Doctor", "Medical Doctor", "Medical Doctor")
-	add_record("Director", "Medical Director", "Chief Medical Officer")
-	add_record("Freetext", "Bob", "Chief Medical Officer")
-	add_record("Bartender", "Bartender", "Bartender")
-	add_record("Personnel", "Head of Personnel", "Head of Personnel")
-	add_record("Bridge", "Bridge Officer", "Bridge Officer")
-	add_record("Security", "Head of Security", "Head of Security")
-	add_record("Captain", "Captain", "Captain")
-	add_record("Renamed", "Captain", "Captain")
-	add_record("Stickered", "Chief Medical Officer", "Chief Medical Officer")
+	add_record("Doctor", "Medical Doctor")
+	add_record("Director", "Chief Medical Officer")
+	add_record("Freetext", "Chief Medical Officer")
+	add_record("Bartender", "Bartender")
+	add_record("Personnel", "Head of Personnel")
+	add_record("Bridge", "Bridge Officer")
+	add_record("Fake", "Assistant")
+	add_record("Security", "Head of Security")
+	add_record("Captain", "Captain")
+	add_record("Renamed", "Captain")
+	add_record("Stickered", "Chief Medical Officer")
 
-	var/obj/item/card/id/renamed_card = allocate(/obj/item/card/id)
-	renamed_card.registered_name = MANIFEST_TEST_PREFIX + "Renamed"
-	renamed_card.assignment = "Captain"
-	renamed_card.custom_job = "Assistant"
-	renamed_card.update_manifest()
-
-	var/obj/item/card/id/stickered_card = allocate(/obj/item/card/id)
-	stickered_card.registered_name = MANIFEST_TEST_PREFIX + "Stickered"
-	stickered_card.assignment = "Chief Medical Officer"
+	issue_card("Director", "Chief Medical Officer", "Medical Director")
+	issue_card("Freetext", "Chief Medical Officer", "Bob")
+	issue_card("Fake", "Assistant", "Syndicate Captain")
+	issue_card("Renamed", "Captain", "Assistant")
+	var/obj/item/card/id/stickered_card = issue_card("Stickered", "Chief Medical Officer")
 	var/obj/item/card_sticker/syndicate/sticker = allocate(/obj/item/card_sticker/syndicate)
 	TEST_ASSERT(sticker.wrap(stickered_card, null, silent = TRUE, force = TRUE), "Наклейка Синдиката клеится на карту")
 	stickered_card.update_manifest()
 
 	var/datum/crew_manifest/window = allocate(/datum/crew_manifest)
 	var/list/manifest = window.ui_data(null)["manifest"]
+	TEST_ASSERT_EQUAL(window.ui_static_data(null)["department_names"][DEPARTMENT_MEDICAL], "Медицинский отдел", "Окно получает русское название отдела с сервера")
 
 	var/list/medical = test_entries(manifest, DEPARTMENT_MEDICAL)
 	TEST_ASSERT_EQUAL(entry_names(medical), "Director, Stickered, Doctor, Freetext", "Главы медотдела первыми, рядовые в прежнем порядке")
@@ -40,7 +38,10 @@
 	TEST_ASSERT(medical["Stickered"]["head"], "Префикс наклейки не снимает метку главы")
 
 	var/list/service = test_entries(manifest, DEPARTMENT_SERVICE)
-	TEST_ASSERT_EQUAL(entry_names(service), "Personnel, Bartender, Bridge", "Глава сервиса первым, бриг-офицер не глава")
+	TEST_ASSERT_EQUAL(entry_names(service), "Personnel, Bartender, Bridge, Fake", "Глава сервиса первым, бриг-офицер не глава")
+	TEST_ASSERT_EQUAL(service["Fake"]["rank"], "Syndicate Captain", "Своё название карты видно в должности")
+	TEST_ASSERT(!service["Fake"]["head"], "Вписанное руками \"Syndicate Captain\" на карте ассистента не глава, как и в рации")
+	TEST_ASSERT(!("department_check" in service["Personnel"]), "Профессия записи не уходит в данные окна")
 	TEST_ASSERT(service["Personnel"]["head"], "ГП - глава сервиса")
 	TEST_ASSERT(!service["Bridge"]["head"], "Бриг-офицер никем не руководит")
 
@@ -48,6 +49,14 @@
 	TEST_ASSERT_EQUAL(entry_names(command), "Captain, Director, Personnel, Security, Stickered, Freetext, Bridge, Renamed", "Капитан первым, затем главы, затем остальные")
 	TEST_ASSERT_EQUAL(command["Renamed"]["rank"], "Assistant", "Переименованная карта меняет должность записи")
 	TEST_ASSERT(!command["Renamed"]["head"], "Карта капитана под названием ассистента не выдаёт главу")
+
+	var/cache_key = "Chief Medical Officer|Medical Director|Medical Director"
+	TEST_ASSERT_EQUAL(GLOB.manifest_head_cache[cache_key], TRUE, "Ответ по главе лежит в кэше")
+	GLOB.manifest_head_cache[cache_key] = FALSE
+	var/from_cache = is_manifest_record_head("Chief Medical Officer", "Medical Director", "Medical Director")
+	GLOB.manifest_head_cache[cache_key] = TRUE
+	TEST_ASSERT_EQUAL(from_cache, FALSE, "Повторный вызов берёт ответ из кэша, а не считает класс рации заново")
+	TEST_ASSERT_EQUAL(is_manifest_record_head("Chief Medical Officer", "Medical Director", "Medical Director"), TRUE, "Из кэша тот же ответ")
 
 	var/obj/item/modular_computer/laptop/preset/civilian/laptop = allocate(/obj/item/modular_computer/laptop/preset/civilian, run_loc_floor_bottom_left)
 	laptop.install_component(new /obj/item/computer_hardware/printer/mini)
@@ -58,6 +67,7 @@
 	program.computer = laptop
 	var/list/ntos_command = test_entries(program.ui_data(null)["manifest"], DEPARTMENT_COMMAND)
 	TEST_ASSERT(ntos_command["Captain"]["head"], "Список экипажа в NTOS получает метку главы")
+	TEST_ASSERT_EQUAL(program.ui_static_data(null)["department_names"][DEPARTMENT_COMMAND], "Командование", "NTOS получает русское название отдела")
 
 	var/mob/living/carbon/human/reader = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
 	var/datum/tgui/program_ui = allocate(/datum/tgui, reader, program, "NtosCrewManifest")
@@ -72,6 +82,7 @@
 	TEST_ASSERT(!findtext(printed.raw_text, "/list"), "Печать содержит таблицу, а не тип списка: [printed.raw_text]")
 	TEST_ASSERT(findtext(printed.raw_text, "<b>★ Captain</b>"), "Глава в печати со звёздочкой и жирным: [printed.raw_text]")
 	TEST_ASSERT(findtext(printed.raw_text, "<td>Medical Doctor</td>"), "Рядовой в печати без метки: [printed.raw_text]")
+	TEST_ASSERT(findtext(printed.raw_text, "<th colspan=2>Медицинский отдел</th>"), "Печать берёт те же названия отделов: [printed.raw_text]")
 
 	var/mob/living/silicon/pai/pai = allocate(/mob/living/silicon/pai, run_loc_floor_bottom_left)
 	allocated += pai.card
@@ -81,14 +92,23 @@
 	TEST_ASSERT(pai_heads[MANIFEST_TEST_PREFIX + "Director"], "pAI видит главу под альт-названием")
 	TEST_ASSERT(!pai_heads[MANIFEST_TEST_PREFIX + "Doctor"], "pAI не помечает рядового")
 
-/datum/unit_test/crew_manifest_heads/proc/add_record(short_name, rank, real_rank)
+/datum/unit_test/crew_manifest_heads/proc/add_record(short_name, real_rank)
 	var/datum/data/record/record = allocate(/datum/data/record)
 	var/full_name = MANIFEST_TEST_PREFIX + short_name
 	record.fields["name"] = full_name
-	record.fields["rank"] = rank
+	record.fields["rank"] = real_rank
 	record.fields["real_rank"] = real_rank
 	GLOB.data_core.general += record
 	GLOB.data_core.general_by_name[full_name] = record
+
+/// Карта на имя записи, переписывает её через update_manifest(), как консоль ГП.
+/datum/unit_test/crew_manifest_heads/proc/issue_card(short_name, assignment, custom_job = "")
+	var/obj/item/card/id/card = allocate(/obj/item/card/id)
+	card.registered_name = MANIFEST_TEST_PREFIX + short_name
+	card.assignment = assignment
+	card.custom_job = custom_job
+	card.update_manifest()
+	return card
 
 /// Записи теста в отделе: короткое имя -> запись, в порядке манифеста.
 /datum/unit_test/crew_manifest_heads/proc/test_entries(list/manifest, department)
