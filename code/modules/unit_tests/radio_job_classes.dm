@@ -7,12 +7,21 @@
 	var/last_line
 	var/last_legacy
 
-/datum/unit_test/radio_job_classes/Run()
+/datum/unit_test/radio_job_classes/proc/prepare()
 	speaker = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
 	listener = allocate(/mob/living/carbon/human, get_step(speaker, EAST))
 	radio = allocate(/obj/item/radio, get_step(speaker, NORTH))
 	card = allocate(/obj/item/card/id)
 	speaker.equip_to_slot(card, ITEM_SLOT_ID)
+
+/datum/unit_test/radio_job_classes/proc/hear_from(atom/movable/voice_of)
+	var/atom/movable/virtualspeaker/virt = new(null, voice_of, radio)
+	last_line = listener.compose_message(virt, /datum/language/common, "Проверка связи.", FREQ_COMMON, list())
+	qdel(virt)
+	return parse_tag()
+
+/datum/unit_test/radio_job_classes/Run()
+	prepare()
 
 	var/datum/asset/spritesheet_batched/chat/sheet = get_asset_datum(/datum/asset/spritesheet_batched/chat)
 	TEST_ASSERT_EQUAL(sheet.icon_class_name("job-captain"), "chat16x16 job-captain", "Значки профессий в чат-листе размером со строку")
@@ -190,3 +199,56 @@
 		TEST_ASSERT(findtext(stylesheet, ".radiojob-legacy-[id]"), "Старый вывод красит тег radiojob-legacy-[id]")
 	// До разделения по отделам имя в старом выводе было цвета канала.
 	TEST_ASSERT(!findtext(stylesheet, "radiojob-name"), "Старый вывод не красит имя говорящего")
+
+/// pAI с энкодером говорит чужой должностью: тег целиком как у человека с такой картой, без значка pAI.
+/datum/unit_test/radio_job_classes/pai_encoder
+
+/datum/unit_test/radio_job_classes/pai_encoder/Run()
+	prepare()
+	var/mob/living/silicon/pai/pai = allocate(/mob/living/silicon/pai, get_step(speaker, WEST))
+	allocated += pai.card
+	var/list/plain = hear_from(pai)
+	TEST_ASSERT_EQUAL(plain[1], "radiojob-silicon", "pAI без энкодера в синтетиках: [last_line]")
+	TEST_ASSERT_EQUAL(icon_sprite(), "job-pai", "pAI без энкодера со своим значком: [last_line]")
+	pai.encoder_active = TRUE
+	pai.encoder_job = "Captain"
+	var/list/faked = hear_from(pai)
+	TEST_ASSERT(findtext(last_line, "\[Captain\]"), "Энкодер показывает поддельную должность: [last_line]")
+	TEST_ASSERT_EQUAL(faked[1], "radiojob-cmd", "Поддельная должность в цвет командования: [last_line]")
+	TEST_ASSERT("radiojob-head" in faked, "Поддельный капитан со звездой, как настоящий: [last_line]")
+	TEST_ASSERT_EQUAL(last_legacy, "cmd", "Старый вывод красит подделку как капитана: [last_line]")
+	TEST_ASSERT_EQUAL(icon_sprite(), "job-captain", "Значок поддельной должности, не pAI: [last_line]")
+	var/mob/living/carbon/human/donor = allocate(/mob/living/carbon/human)
+	var/mob/living/silicon/ai/station_ai = allocate(/mob/living/silicon/ai, get_step(speaker, SOUTH), null, donor)
+	var/list/ai_tag = hear_from(station_ai)
+	TEST_ASSERT_EQUAL(ai_tag[1], "radiojob-silicon", "ИИ в синтетиках: [last_line]")
+	TEST_ASSERT_EQUAL(icon_sprite(), "job-ai", "Значок ИИ: [last_line]")
+
+/// Неузнанное название со своим стейтом в jobs.dmi берёт его, иначе значок фракции; свободный текст без стейта без значка.
+/datum/unit_test/radio_job_classes/role_icons
+
+/datum/unit_test/radio_job_classes/role_icons/Run()
+	prepare()
+	tag_classes("Hotel Manager")
+	TEST_ASSERT_EQUAL(icon_sprite(), "job-hotelmanager", "Управляющий отелем со своим значком: [last_line]")
+	tag_classes("Hotel Security")
+	TEST_ASSERT_EQUAL(icon_sprite(), "job-hotelsecurity", "Охрана отеля со своим значком: [last_line]")
+	tag_classes("DS-2 Admiral")
+	TEST_ASSERT_EQUAL(icon_sprite(), "job-ds2admiral", "Адмирал DS-2 со своим значком: [last_line]")
+	tag_classes("Death Commando")
+	TEST_ASSERT_EQUAL(icon_sprite(), "job-deathcommando", "Эскадрон смерти со своим значком: [last_line]")
+	tag_classes("Syndicate Admiral")
+	TEST_ASSERT_EQUAL(icon_sprite(), "job-syndicate", "Без своего стейта - значок фракции: [last_line]")
+	tag_classes("Captain", "Bob")
+	TEST_ASSERT_NULL(icon_sprite(), "Свободный текст без своего стейта на станционной карте без значка: [last_line]")
+
+/// При скрытых тегах между значком и именем один пробел: пробел после тега скрывается вместе с тегом.
+/datum/unit_test/radio_job_classes/tag_spacing
+
+/datum/unit_test/radio_job_classes/tag_spacing/Run()
+	prepare()
+	tag_classes("Medical Doctor")
+	TEST_ASSERT(findtext(last_line, "\[Com\] <span class='radiojob-icon "), "Перед значком пробел частоты: [last_line]")
+	TEST_ASSERT(findtext(last_line, ">\[Medical Doctor\] </span><span class='radiojob-name "), "Пробел внутри тега, имя сразу за ним: [last_line]")
+	tag_classes("Medical Doctor", "Senior Surgeon")
+	TEST_ASSERT(findtext(last_line, "\[Com\] <span class='radiojob-legacy-med radiojob radiojob-med'>\[Senior Surgeon\] </span><span class='radiojob-name "), "Без значка тег сразу после частоты, пробел внутри тега: [last_line]")

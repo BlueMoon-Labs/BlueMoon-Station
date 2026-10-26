@@ -86,6 +86,8 @@ test('job icon checkbox is on by default and toggles', () => {
   const on = renderWith({});
   const box = buttonOf(on.container, 'Значок профессии');
   expect(box.innerHTML).toContain('check-square');
+  // Галка не зависит от тегов и стоит на их уровне, без отступа.
+  expect(box.parentNode).toBe(buttonOf(on.container, 'Должности в рации').parentNode);
   click(box);
   expect(on.dispatched.at(-1).payload).toEqual({ radioJobIcons: false });
   const off = renderWith({ radioJobIcons: false });

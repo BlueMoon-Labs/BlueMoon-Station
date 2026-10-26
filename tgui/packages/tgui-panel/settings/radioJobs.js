@@ -1,4 +1,4 @@
-// Классы тега должности в рации приходят из get_radio_job_class() в
+// Классы тега должности в рации приходят из get_radio_job_style() в
 // code/game/say.dm. Умолчания dark/light повторяют ChatRadioJobs.scss.
 export const RADIO_JOB_GROUPS = [
   {

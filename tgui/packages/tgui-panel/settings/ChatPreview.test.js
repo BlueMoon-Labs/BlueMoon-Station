@@ -215,6 +215,9 @@ test('radio samples carry a rank-and-file and a head tag', () => {
     expect(departmentOf(name)).toEqual(departmentOf(tag));
     expect(name.className).not.toContain('radiojob-legacy-');
     expect(name.classList.contains('radiojob-name-legacy-' + legacy)).toBe(true);
+    // Пробел после тега внутри него: скрытый тег не оставляет двойного.
+    expect(tag.textContent).toMatch(/\] $/);
+    expect(tag.nextSibling).toBe(name);
     const icon = tag.previousElementSibling;
     expect(icon.className).toMatch(/^radiojob-icon chat16x16 job-[a-z]+$/);
   }

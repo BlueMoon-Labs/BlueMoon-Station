@@ -91,6 +91,7 @@ $legacy-palette: (
   color: var(--rj-c, currentColor);
 }
 
+// Метка глав "Звезда": звёздочка перед тегом, не значок профессии.
 .Chat--rjHead-icon .radiojob.radiojob-head::before {
   content: '\2605';
   margin-right: 0.15em;

@@ -101,6 +101,14 @@ export const SettingsRadioJobs = props => {
         }))}>
         Должности в рации
       </Button.Checkbox>
+      <Button.Checkbox
+        checked={radioJobIcons !== false}
+        tooltip={ICONS_TOOLTIP}
+        onClick={() => dispatch(updateSettings({
+          radioJobIcons: radioJobIcons === false,
+        }))}>
+        Значок профессии
+      </Button.Checkbox>
       <Box ml={2.5} mt={0.5}>
         <LabeledList>
           <LabeledList.Item label="Цвет">
@@ -130,15 +138,6 @@ export const SettingsRadioJobs = props => {
             radioJobColorNames: !radioJobColorNames,
           }))}>
           Имя в цвет отдела
-        </Button.Checkbox>
-        <Button.Checkbox
-          mt={0.5}
-          checked={radioJobIcons !== false}
-          tooltip={ICONS_TOOLTIP}
-          onClick={() => dispatch(updateSettings({
-            radioJobIcons: radioJobIcons === false,
-          }))}>
-          Значок профессии
         </Button.Checkbox>
         <Box mt={0.5}>
           <Button

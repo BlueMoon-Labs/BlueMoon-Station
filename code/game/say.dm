@@ -113,7 +113,8 @@ GLOBAL_LIST_INIT(freqtospan, list(
 				job_style = speaker.GetJobStyle() || get_radio_job_style(null, speaker_job)
 				var/job_icon = job_style[RADIO_JOB_STYLE_ICON]
 				// Класс старого вывода первым: его красит client/script, остальные классы - чат tgui.
-				jobpart = "[job_icon ? "<span class='radiojob-icon [job_icon]'></span>" : ""]<span class='radiojob-legacy-[job_style[RADIO_JOB_STYLE_LEGACY]] radiojob [job_style[RADIO_JOB_STYLE_CLASSES]]'>\[[speaker_job]\]</span> "
+				// Пробел внутри тега: скрытый тег не оставляет двойного пробела.
+				jobpart = "[job_icon ? "<span class='radiojob-icon [job_icon]'></span>" : ""]<span class='radiojob-legacy-[job_style[RADIO_JOB_STYLE_LEGACY]] radiojob [job_style[RADIO_JOB_STYLE_CLASSES]]'>\[[speaker_job]\] </span>"
 	//Speaker name
 	var/namepart = "[speaker.GetVoice()][speaker.get_alt_name()]"
 	if(face_name && ishuman(speaker))
@@ -284,21 +285,18 @@ GLOBAL_LIST_INIT(freqtospan, list(
 		classes += " radiojob-f-[faction]"
 	if(recognized && get_radio_head_jobs()[job.title])
 		classes += " radiojob-head"
-	var/icon_state
-	if(recognized)
-		icon_state = ckey(job.title)
-	else if(faction)
-		icon_state = get_radio_faction_icon(faction)
-	else if(centcom)
-		icon_state = "centcom"
-	return radio_job_style(classes, faction || get_radio_job_legacy_class(job ? job.title : (centcom ? "Centcom" : "Unknown"), job), icon_state)
+	// Неузнанное название: свой стейт роли (отель, DS-2, ЦК), затем значок стороны.
+	var/list/icon_states = recognized ? list(ckey(job.title)) : list(ckey(strip_radio_sticker_prefix(shown)), get_radio_faction_icon(faction), centcom ? "centcom" : null)
+	return radio_job_style(classes, faction || get_radio_job_legacy_class(job ? job.title : (centcom ? "Centcom" : "Unknown"), job), icon_states)
 
-/// legacy - id прежней раскраски (radiojob-legacy-<id>), icon_state - стейт icons/ui_icons/tgui/jobs.dmi.
-/proc/radio_job_style(classes, legacy, icon_state)
+/// legacy - id прежней раскраски (radiojob-legacy-<id>), icon_states - стейт icons/ui_icons/tgui/jobs.dmi или список, берётся первый из листа.
+/proc/radio_job_style(classes, legacy, icon_states)
 	var/icon_class
-	if(icon_state)
-		var/datum/asset/spritesheet_batched/chat/sheet = get_asset_datum(/datum/asset/spritesheet_batched/chat)
-		icon_class = sheet.icon_class_name("job-[icon_state]")
+	var/datum/asset/spritesheet_batched/chat/sheet = get_asset_datum(/datum/asset/spritesheet_batched/chat)
+	for(var/icon_state in islist(icon_states) ? icon_states : list(icon_states))
+		icon_class = icon_state && sheet.icon_class_name("job-[icon_state]")
+		if(icon_class)
+			break
 	return list(RADIO_JOB_STYLE_CLASSES = classes, RADIO_JOB_STYLE_LEGACY = legacy, RADIO_JOB_STYLE_ICON = icon_class)
 
 /proc/get_radio_faction_icon(faction)
@@ -530,8 +528,10 @@ INITIALIZE_IMMEDIATE(/atom/movable/virtualspeaker)
 		job = "[B.designation] Cyborg"
 		job_style = radio_job_style("radiojob-silicon", "silicon", "cyborg")
 	else if(istype(M, /mob/living/silicon/pai))  // Personal AI (pAI)
-		job = M.GetJob()
-		job_style = radio_job_style("radiojob-silicon", "silicon", "pai")
+		var/mob/living/silicon/pai/pai = M
+		job = pai.GetJob()
+		// С энкодером тег целиком как у показанной должности, иначе значок pAI выдаёт подделку.
+		job_style = (pai.encoder_active && pai.encoder_job) ? get_radio_job_style(null, job) : radio_job_style("radiojob-silicon", "silicon", "pai")
 	else if(isobj(M))  // Cold, emotionless machines
 		job = "Machine"
 		job_style = radio_job_style("radiojob-unk", "unk")
