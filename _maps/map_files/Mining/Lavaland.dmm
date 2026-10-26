@@ -28572,9 +28572,10 @@
 /obj/structure/table/reinforced,
 /obj/item/storage/backpack/duffelbag/syndie/surgery,
 /obj/item/reagent_containers/dropper,
-/obj/machinery/button/door/directional/east{
+/obj/machinery/button/crematorium{
 	id = "crematoriumint";
-	req_access_txt = "150"
+	pixel_x = 18;
+	pixel_y = 3
 	},
 /turf/open/floor/plasteel/dark/smooth/small,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
