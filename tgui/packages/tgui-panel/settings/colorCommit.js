@@ -8,3 +8,21 @@ export const debouncedColorCommit = (input, commit) => {
   clearTimeout(colorCommitTimers.get(input));
   colorCommitTimers.set(input, setTimeout(() => commit(value), 250));
 };
+
+/**
+ * Правки поверх последнего записанного значения, а не того, что захватил
+ * рендер: запись цвета идёт с задержкой, и соседняя правка за это время
+ * иначе теряется. sync - значение из стора на каждом рендере.
+ */
+export const createLatestEditor = commit => {
+  let current;
+  return {
+    sync: value => {
+      current = value;
+    },
+    update: change => {
+      current = change(current);
+      commit(current);
+    },
+  };
+};

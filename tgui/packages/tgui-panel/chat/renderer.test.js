@@ -1074,6 +1074,27 @@ describe('ChatRenderer', () => {
     });
   });
 
+  describe('setTypeOverrides', () => {
+    test('setTypeOverrides writes a stylesheet', () => {
+      const renderer = createReadyRenderer();
+      renderer.setTypeOverrides({ ooc: { border: '#123456' } });
+      expect(document.getElementById('cs-type-overrides').textContent)
+        .toContain('ChatMessage--type-ooc');
+      renderer.setTypeOverrides({});
+      expect(document.getElementById('cs-type-overrides')).toBeNull();
+    });
+
+    test('is reapplied from pending appearance', () => {
+      const renderer = new ChatRenderer();
+      renderer.setTypeOverrides({ radio: { border: '#654321' } });
+      document.getElementById('cs-type-overrides').remove();
+      renderer.applyPendingAppearance();
+      expect(document.getElementById('cs-type-overrides').textContent)
+        .toContain('#654321');
+      renderer.setTypeOverrides({});
+    });
+  });
+
   describe('setSettleOld', () => {
     test('toggles Chat--noSettle on the root', () => {
       const renderer = createReadyRenderer();
@@ -1154,6 +1175,12 @@ describe('ChatRenderer', () => {
   });
 
   describe('message classes', () => {
+    test('adds type class after detection', () => {
+      const renderer = createReadyRenderer();
+      renderer.processBatch([{ html: '<span class="ooc">hi</span>' }]);
+      const node = renderer.messages[0].node;
+      expect(node.classList.contains('ChatMessage--type-ooc')).toBe(true);
+    });
     test('settles messages beyond the keep window', () => {
       const renderer = createReadyRenderer();
       for (let i = 0; i < 45; i++) {

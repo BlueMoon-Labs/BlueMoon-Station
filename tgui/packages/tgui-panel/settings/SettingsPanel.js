@@ -7,14 +7,17 @@
 import { toFixed } from 'common/math';
 import { useDispatch, useSelector } from 'common/redux';
 import { useState } from 'react';
-import { Box, Button, ColorPicker, Divider, Dropdown, Flex, Input, LabeledList, NumberInput, Section, Stack, Tabs, TextArea } from 'tgui/components';
+import { Box, Button, ColorPicker, Divider, Dropdown, Flex, Icon, Input, LabeledList, NumberInput, Section, Stack, Tabs, TextArea, Tooltip } from 'tgui/components';
 
 import { ChatPageSettings } from '../chat';
 import { rebuildChat, saveChatToDisk } from '../chat/actions';
 import { THEMES } from '../themes';
 import { changeSettingsTab, updateSettings } from './actions';
+import { decodeAppearance, encodeAppearance } from './appearanceCode';
+import { ChatPreview } from './ChatPreview';
 import { CHAT_ANIM_SPEEDS, CHAT_ANIMATIONS, CHAT_BG_ANIMATIONS, CHAT_STYLES, FONTS, MESSAGE_STYLE_ANIMATIONS, MESSAGE_STYLE_FONTS, MESSAGE_STYLES, SETTINGS_TABS, TEXT_GLOW_OPTIONS, TIME_DIVIDER_INTERVALS, TIMESTAMP_FORMATS } from './constants';
 import { selectActiveTab, selectSettings } from './selectors';
+import { SettingsChannels } from './SettingsChannels';
 
 const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 
@@ -54,9 +57,46 @@ const ColorSwatch = (props) => {
 
 /**
  * Color input with the shared TGUI picker and a text field.
+ * compact: only the swatch, the value goes into the tooltip.
  */
-const ColorInput = (props) => {
-  const { value, defaultColor, placeholder, onChange, onClear } = props;
+export const ColorInput = (props) => {
+  const {
+    value,
+    defaultColor,
+    placeholder,
+    compact,
+    onChange,
+    onClear,
+  } = props;
+  if (compact) {
+    return (
+      <Box inline nowrap>
+        <Tooltip content={value || placeholder}>
+          <Box inline verticalAlign="middle">
+            <ColorSwatch value={value} onChange={onChange} />
+          </Box>
+        </Tooltip>
+        {onClear && (
+          <Tooltip content="Убрать цвет">
+            <Box
+              inline
+              className="ColorInput__clear"
+              color="label"
+              verticalAlign="middle"
+              textAlign="center"
+              style={{
+                width: '12px',
+                cursor: 'pointer',
+                visibility: value ? 'visible' : 'hidden',
+              }}
+              onClick={onClear}>
+              <Icon name="times" />
+            </Box>
+          </Tooltip>
+        )}
+      </Box>
+    );
+  }
   return (
     <Stack inline align="center">
       <Stack.Item>
@@ -122,6 +162,9 @@ export const SettingsPanel = (props) => {
         )}
         {activeTab === 'textStyles' && (
           <SettingsTextStyles />
+        )}
+        {activeTab === 'channels' && (
+          <SettingsChannels />
         )}
         {activeTab === 'chatPage' && (
           <ChatPageSettings />
@@ -575,6 +618,74 @@ export const SettingsTextStyles = (props) => {
   );
 };
 
+const selectAll = e => e.target.select();
+
+export const AppearanceCode = (props) => {
+  const settings = useSelector(selectSettings);
+  const dispatch = useDispatch();
+  const [shown, setShown] = useState(false);
+  const [input, setInput] = useState('');
+  const [status, setStatus] = useState(null);
+  const apply = () => {
+    const result = decodeAppearance(input);
+    if (!result.ok) {
+      setStatus({ color: 'bad', text: result.error });
+      return;
+    }
+    dispatch(updateSettings(result.settings));
+    setInput('');
+    setStatus({ color: 'good', text: 'Оформление применено.' });
+  };
+  return (
+    <Box>
+      <Box color="label" mb={0.5}>
+        Код оформления: стиль, шрифт, цвета, анимации, стили текста и
+        каналы. Подсветка и вкладки чата в него не входят.
+      </Box>
+      <Button
+        icon={shown ? 'eye-slash' : 'file-export'}
+        onClick={() => setShown(!shown)}>
+        {shown ? 'Скрыть код' : 'Показать код оформления'}
+      </Button>
+      {shown && (
+        <Box className="TextArea" height="4em" mt={0.5}>
+          <textarea
+            className="TextArea__textarea TextArea__textarea--scrollable"
+            readOnly
+            spellCheck={false}
+            value={encodeAppearance(settings)}
+            onFocus={selectAll}
+            onClick={selectAll}
+          />
+        </Box>
+      )}
+      <TextArea
+        mt={1}
+        height="4em"
+        scrollbar
+        placeholder="Вставьте код оформления"
+        value={input}
+        onInput={(e, value) => {
+          setInput(value);
+          setStatus(null);
+        }}
+      />
+      <Button
+        mt={0.5}
+        icon="file-import"
+        disabled={!input.trim()}
+        onClick={apply}>
+        Применить код
+      </Button>
+      {status && (
+        <Box color={status.color} mt={0.5}>
+          {status.text}
+        </Box>
+      )}
+    </Box>
+  );
+};
+
 export const SettingsAppearance = (props) => {
   const {
     chatStyle,
@@ -818,6 +929,10 @@ export const SettingsAppearance = (props) => {
         }))}>
         Подсветка при наведении
       </Button.Checkbox>
+      <Divider />
+      <ChatPreview />
+      <Divider />
+      <AppearanceCode />
       <Divider />
       <Button
         icon="undo"

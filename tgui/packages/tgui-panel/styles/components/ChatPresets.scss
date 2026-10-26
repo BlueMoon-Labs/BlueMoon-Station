@@ -55,6 +55,7 @@
 }
 
 .Chat--style-seccon > .ChatMessage:not(.ChatMessage--highlighted) {
+  --type-stripe-pad: 5px;
   border-left: 2px solid var(--chat-accent, var(--st-line));
 }
 
@@ -135,7 +136,7 @@
 }
 
 // Шифровка Синдиката: чёрно-красный, жёсткая рамка. Левая сторона рамки
-// уступает подсветке.
+// уступает подсветке и полосе канала.
 .Chat--style-syndicate {
   --st-bg: #0d0606;
   --st-text: #d9c9c9;
@@ -166,6 +167,7 @@
 }
 
 .Chat--style-syndicate > .ChatMessage:not(.ChatMessage--highlighted) {
+  --type-stripe-pad: 4px;
   border-left: 1px solid var(--st-frame);
 }
 
@@ -175,6 +177,13 @@
 
 .Chat--style-syndicate .Chat__badge {
   background-color: var(--chat-accent, var(--st-line));
+}
+
+// Мини-чат предпросмотра в настройках.
+.ChatPreview {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 4px 6px;
+  overflow: hidden;
 }
 
 // Мостик: командный синий, золотая волосяная линия между записями.
@@ -285,14 +294,16 @@
   margin-bottom: var(--chat-msg-spacing, 1px);
 }
 
-// Штриховка лежит под прозрачной рамкой.
+// Штриховка лежит под прозрачной рамкой. Полоса канала (--type-stripe)
+// встаёт на её место, штриховка сжимается в ноль, текст не сдвигается.
 .Chat--style-engineering > .ChatMessage:not(.ChatMessage--highlighted) {
+  --type-stripe-pad: 9px;
   border-left: 5px solid transparent;
   padding-left: 7px;
   background-image: repeating-linear-gradient(-45deg,
     var(--chat-accent, var(--st-line)) 0 3px, #141414 3px 6px);
   background-origin: border-box;
-  background-size: 5px 100%;
+  background-size: calc(5px * (1 - var(--type-stripe, 0))) 100%;
   background-repeat: no-repeat;
 }
 
@@ -377,6 +388,7 @@
 }
 
 .Chat--style-centcom > .ChatMessage:not(.ChatMessage--highlighted) {
+  --type-stripe-pad: 9px;
   border-left: 3px double var(--chat-accent, var(--st-line));
   padding-left: 9px;
 }
@@ -564,7 +576,7 @@
 
 // Сканер: блок проявляется, по нему проходит полоса ::after. Её вид
 // задан всем свежим сообщениям без content, поэтому коробка появляется
-// только там, где анимация её включила.
+// только там, где анимация её включила (здесь и в chat/typeOverrides.js).
 // "Свежее" - то же условие, что у затухания выше: при Chat--noSettle
 // погашенных нет.
 .ChatMessage--anim-scanner {
@@ -653,6 +665,16 @@
   100% {
     opacity: 1;
     filter: brightness(1);
+  }
+}
+
+// Вспышка нового сообщения по типу, см. chat/typeOverrides.js.
+@keyframes chatTypeFlash {
+  0%, 30% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
   }
 }
 

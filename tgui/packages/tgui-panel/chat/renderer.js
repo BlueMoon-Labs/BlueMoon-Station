@@ -16,6 +16,7 @@ import { settleOldMessages } from './messageFx';
 import { canPageAcceptType, createMessage, isSameMessage } from './model';
 import { highlightNode, linkifyNode } from './replaceInTextNode';
 import { getChatColorProps, getSettleRootClasses, getStyleOverrideRoot, isStyleOverrideClass, SETTLE_OFF_CLASS } from './rootAppearance';
+import { buildTypeOverrideCss } from './typeOverrides';
 
 const logger = createLogger('chatRenderer');
 
@@ -65,6 +66,7 @@ const isScrollTracked = node => (
 export const BG_LAYERS = 3;
 
 const STYLE_OVERRIDE_SHEET_ID = 'cs-style-overrides';
+const TYPE_OVERRIDE_SHEET_ID = 'cs-type-overrides';
 
 const FONT_OVERRIDE_CSS = {
   normal: 'font-weight: normal; font-style: normal;',
@@ -112,15 +114,15 @@ const buildStyleOverrideCss = (overrides) => {
   return css;
 };
 
-const updateStyleOverrideSheet = (cssText) => {
-  let node = document.getElementById(STYLE_OVERRIDE_SHEET_ID);
+const updateSheet = (id, cssText) => {
+  let node = document.getElementById(id);
   if (!cssText) {
     node?.remove();
     return;
   }
   if (!node) {
     node = document.createElement('style');
-    node.id = STYLE_OVERRIDE_SHEET_ID;
+    node.id = id;
     document.head.appendChild(node);
   }
   if (node.textContent !== cssText) {
@@ -780,6 +782,11 @@ export class ChatRenderer {
           ));
         message.type = typeDef?.type || MESSAGE_TYPE_UNKNOWN;
       }
+      if (!node.dataset.fxTagged) {
+        node.dataset.fxTagged = '1';
+        node.classList.add('ChatMessage--type-'
+          + String(message.type).replace(/[^a-z0-9_-]/gi, '-'));
+      }
       updateMessageBadge(message);
       if (!countByType[message.type]) {
         countByType[message.type] = 0;
@@ -1006,7 +1013,15 @@ export class ChatRenderer {
       root.classList.add(cls);
     }
     setRootProps(root, props);
-    updateStyleOverrideSheet(buildStyleOverrideCss(overrides));
+    updateSheet(STYLE_OVERRIDE_SHEET_ID, buildStyleOverrideCss(overrides));
+  }
+
+  setTypeOverrides(overrides = {}) {
+    this._pendingAppearance = {
+      ...this._pendingAppearance,
+      typeOverrides: overrides,
+    };
+    updateSheet(TYPE_OVERRIDE_SHEET_ID, buildTypeOverrideCss(overrides));
   }
 
   setSettleOld(enabled = true) {
@@ -1058,6 +1073,9 @@ export class ChatRenderer {
     }
     if (p.styleOverrides !== undefined) {
       this.setStyleOverrides(p.styleOverrides, p.spanAnimations);
+    }
+    if (p.typeOverrides !== undefined) {
+      this.setTypeOverrides(p.typeOverrides);
     }
     if (p.settleOld !== undefined) {
       this.setSettleOld(p.settleOld);

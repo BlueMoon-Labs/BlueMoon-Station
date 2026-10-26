@@ -38,6 +38,8 @@ const initialState = {
   // Кастомизация стилей сообщений: { [styleId]: { color, disabled } }
   styleOverrides: {},
   spanAnimations: true,
+  // Оформление по типу сообщения: { [type]: { border, tint, anim, flash } }
+  typeOverrides: {},
   // Гасить анимации сообщений вне окна свежих
   settleOldAnimations: true,
   // Timestamps & time dividers

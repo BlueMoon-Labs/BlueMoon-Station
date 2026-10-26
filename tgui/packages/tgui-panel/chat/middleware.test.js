@@ -20,6 +20,7 @@ const mockChatRenderer = {
   setRadioJobsVisible: jest.fn(),
   setNewMessagesMarker: jest.fn(),
   setStyleOverrides: jest.fn(),
+  setTypeOverrides: jest.fn(),
   setSettleOld: jest.fn(),
   setTimestamps: jest.fn(),
   setTimeDividers: jest.fn(),
@@ -117,6 +118,7 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(mockChatRenderer.setRadioJobsVisible).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setNewMessagesMarker).toHaveBeenCalledWith(true);
     expect(mockChatRenderer.setStyleOverrides).toHaveBeenCalledTimes(1);
+    expect(mockChatRenderer.setTypeOverrides).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setTimestamps).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setTimeDividers).toHaveBeenCalledTimes(1);
   });
@@ -143,6 +145,7 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(mockChatRenderer.setCustomColors).not.toHaveBeenCalled();
     expect(mockChatRenderer.setCustomProperties).not.toHaveBeenCalled();
     expect(mockChatRenderer.setStyleOverrides).not.toHaveBeenCalled();
+    expect(mockChatRenderer.setTypeOverrides).not.toHaveBeenCalled();
     expect(mockChatRenderer.setSettleOld).not.toHaveBeenCalled();
     expect(mockChatRenderer.setTimestamps).not.toHaveBeenCalled();
     expect(mockChatRenderer.setTimeDividers).not.toHaveBeenCalled();
@@ -298,6 +301,23 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(spanAnimations).toBe(false);
   });
 
+  test('typeOverrides change triggers setTypeOverrides only', async () => {
+    const store = createTestStore();
+    store.dispatch(updateSettings({ highlightText: '' }));
+    await flushPromises();
+    clearRendererSpies();
+
+    store.dispatch(updateSettings({
+      typeOverrides: { radio: { border: '#336699' } },
+    }));
+    await flushPromises();
+
+    expect(mockChatRenderer.setTypeOverrides).toHaveBeenCalledTimes(1);
+    expect(mockChatRenderer.setTypeOverrides).toHaveBeenLastCalledWith(
+      { radio: { border: '#336699' } });
+    expect(mockChatRenderer.setStyleOverrides).not.toHaveBeenCalled();
+  });
+
   test('settle switch reaches the renderer', async () => {
     const store = createTestStore();
     store.dispatch(updateSettings({ highlightText: '' }));
@@ -342,6 +362,7 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(mockChatRenderer.setCustomColors).not.toHaveBeenCalled();
     expect(mockChatRenderer.setCustomProperties).not.toHaveBeenCalled();
     expect(mockChatRenderer.setStyleOverrides).not.toHaveBeenCalled();
+    expect(mockChatRenderer.setTypeOverrides).not.toHaveBeenCalled();
     expect(mockChatRenderer.setSettleOld).not.toHaveBeenCalled();
     expect(mockChatRenderer.setTimestamps).not.toHaveBeenCalled();
     expect(mockChatRenderer.setTimeDividers).not.toHaveBeenCalled();

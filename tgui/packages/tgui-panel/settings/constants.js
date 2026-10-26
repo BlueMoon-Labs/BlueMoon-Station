@@ -18,6 +18,10 @@ export const SETTINGS_TABS = [
     name: 'Стили текста',
   },
   {
+    id: 'channels',
+    name: 'Каналы',
+  },
+  {
     id: 'chatPage',
     name: 'Вкладки чата',
   },
@@ -128,6 +132,49 @@ export const CHAT_ANIMATIONS = [
   { id: 'scanner', name: 'Сканер' },
   { id: 'lamp', name: 'Лампа' },
 ];
+
+// Типы сообщений для вкладки "Каналы". type - id из chat/constants.js.
+export const CHANNEL_TYPES = [
+  { type: 'radio', name: 'Рация', example: '[Общий] Инженер говорит, "Приём."' },
+  { type: 'ooc', name: 'OOC', example: 'OOC: Игрок: всем привет' },
+  { type: 'looc', name: 'LOOC', example: 'LOOC: Игрок: я отойду' },
+  { type: 'antagooc', name: 'Антаг-OOC', example: 'AOOC: Игрок: план готов' },
+  { type: 'adminpm', name: 'ПМ админа', example: 'ПМ от Админ: что случилось?' },
+  { type: 'mentorsay', name: 'Менторы', example: 'Ментор PM от Ментор: держи подсказку' },
+  { type: 'combat', name: 'Бой', example: 'Ассистент бьёт вас ящиком!' },
+  { type: 'deadchat', name: 'Мёртвые', example: 'МЁРТВ: Призрак: скучно' },
+  { type: 'warning', name: 'Предупреждения', example: 'Вы чувствуете слабость.' },
+  { type: 'system', name: 'Системные', example: 'Раунд начнётся через 30 секунд.' },
+  { type: 'lewd', name: 'НСФВ', example: 'Пример непристойного сообщения' },
+  { type: 'adminchat', name: 'Админ-чат', example: 'ADMIN: Админ: проверьте тикет' },
+];
+
+// Анимация появления по типу: '' = как у чата.
+export const TYPE_ANIM_KEYFRAMES = {
+  fadein: 'chatFadeIn',
+  slidein: 'chatSlideIn',
+  bounce: 'chatBounce',
+  drop: 'chatDrop',
+  zoomin: 'chatZoomIn',
+  pop: 'chatPop',
+  glowin: 'chatGlowIn',
+  teletype: 'chatTeletype',
+  faxfeed: 'chatFaxFeed',
+  interference: 'chatInterference',
+  crtscan: 'chatCrtScan',
+  airlock: 'chatAirlock',
+  develop: 'chatDevelop',
+  scanner: 'chatScanner',
+  lamp: 'chatLamp',
+};
+
+export const RECOMMENDED_TYPE_OVERRIDES = {
+  adminpm: { border: '#c0392b', flash: true },
+  mentorsay: { border: '#3d7cc9', flash: true },
+  radio: { border: '#6b7a8f' },
+  combat: { border: '#7a1f1f' },
+  deadchat: { border: '#5b4b8a', tint: true },
+};
 
 export const CHAT_ANIM_SPEEDS = [
   { id: 'fast', name: 'Быстро', value: '180ms' },

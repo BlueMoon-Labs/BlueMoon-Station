@@ -224,7 +224,7 @@
 }
 
 // Цвет полосы в переменных: правило чётных строк меняет только их и не
-// перебивает подсветку.
+// перебивает подсветку и полосу канала.
 .Chat--style-sakura > .ChatMessage {
   --sakura-stripe: 255, 150, 180;
   --sakura-stripe-mix: 30%;
@@ -453,8 +453,9 @@
 
 // ============================================================
 // Message entrance animations
-// Длительность - --chat-anim-speed. Только transform/opacity/filter:
-// их ведёт композитор. Масштаб с translateX держит левый край на месте.
+// Длительность - --chat-anim-speed, кривые совпадают с TYPE_ANIM_TIMING
+// в chat/typeOverrides.js. Только transform/opacity/filter: их ведёт
+// композитор. Масштаб с translateX держит левый край на месте.
 // ============================================================
 
 .ChatMessage--anim-fadein {

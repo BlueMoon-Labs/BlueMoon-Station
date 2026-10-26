@@ -182,6 +182,9 @@ const createApplySettings = () => {
         normalized,
         settings.spanAnimations !== false);
     }
+    if (anyChanged(prev, settings, ['typeOverrides'])) {
+      chatRenderer.setTypeOverrides(settings.typeOverrides || {});
+    }
     if (anyChanged(prev, settings, ['settleOldAnimations'])) {
       chatRenderer.setSettleOld(settings.settleOldAnimations !== false);
     }

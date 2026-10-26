@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-import { CHAT_ANIM_SPEEDS, CHAT_ANIMATIONS, CHAT_BG_ANIMATIONS, CHAT_STYLES, MESSAGE_STYLE_ANIMATIONS } from './constants';
+import { CHAT_ANIM_SPEEDS, CHAT_ANIMATIONS, CHAT_BG_ANIMATIONS, CHAT_STYLES, MESSAGE_STYLE_ANIMATIONS, TYPE_ANIM_KEYFRAMES } from './constants';
 
 const stylesDir = path.resolve(__dirname, '../styles/components');
 const css = ['ChatCustomization.scss', 'ChatBgAnimations.scss', 'ChatPresets.scss']
@@ -184,7 +184,7 @@ describe('chat presets', () => {
   });
   test('entrance keyframes stay on the compositor', () => {
     const frames = keyframeProps(css, 'chat[A-Za-z]+');
-    const names = Object.keys(frames);
+    const names = [...Object.values(TYPE_ANIM_KEYFRAMES), 'chatScannerBar'];
     for (const name of names) {
       const allowed = ['opacity', 'transform', 'filter'];
       // Печать и створки шлюза режут блок, это движение по краю.

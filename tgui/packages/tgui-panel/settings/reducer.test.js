@@ -130,6 +130,7 @@ describe('settingsReducer', () => {
     }));
     expect(state.version).toBe(7);
     expect(state.chatStyle).toBe('retro');
+    expect(state.typeOverrides).toEqual({});
     expect(state.settleOldAnimations).toBe(true);
   });
 });
