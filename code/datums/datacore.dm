@@ -727,7 +727,7 @@ GLOBAL_LIST_EMPTY(manifest_head_cache)
 	. = GLOB.manifest_head_cache[key]
 	if(!isnull(.))
 		return
-	. = ("radiojob-head" in splittext(get_radio_job_class(real_rank, rank, custom_job), " "))
+	. = is_radio_job_head(real_rank, rank, custom_job)
 	if(SSjob.initialized && (!custom_job || GetJobName(custom_job) != "Unknown"))
 		GLOB.manifest_head_cache[key] = .
 

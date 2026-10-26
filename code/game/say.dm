@@ -299,6 +299,11 @@ GLOBAL_LIST_INIT(freqtospan, list(
 			break
 	return list(RADIO_JOB_STYLE_CLASSES = classes, RADIO_JOB_STYLE_LEGACY = legacy, RADIO_JOB_STYLE_ICON = icon_class)
 
+/// Метка главы в теге должности рации с аргументами get_radio_job_style().
+/proc/is_radio_job_head(base_job, display_job, shown_job)
+	var/list/style = get_radio_job_style(base_job, display_job, shown_job)
+	return ("radiojob-head" in splittext(style[RADIO_JOB_STYLE_CLASSES], " "))
+
 /// Стейт jobs.dmi роли вне SSjob по её названию. Только явный список: неточное название профессии ("Captain!", "A.I.") чужого значка не получает.
 /proc/get_radio_role_icon(title)
 	var/static/list/role_states = list(

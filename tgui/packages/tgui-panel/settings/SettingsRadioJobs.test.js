@@ -189,8 +189,11 @@ test('class ids from say.dm match the palette', () => {
       ids.add(match[1]);
     }
   }
+  const modifiers = ['head'];
   for (const match of dm.matchAll(/"radiojob-([a-z]+)"/g)) {
-    ids.add(match[1]);
+    if (!modifiers.includes(match[1])) {
+      ids.add(match[1]);
+    }
   }
   const legacyOnly = ['clown'];
   expect([...ids].filter(id => !RADIO_JOB_IDS.includes(id)).sort())
