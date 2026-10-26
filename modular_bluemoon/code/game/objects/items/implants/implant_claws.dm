@@ -417,6 +417,7 @@
 	icon_state = "wolverine"
 	zone = BODY_ZONE_R_ARM
 	holder = /obj/item/kitchen/knife/razor_claws
+	occupies_both_arms = TRUE
 
 /obj/item/organ/cyberimp/arm/razor_claws/ExtendPlaySound(obj/item/I)
 	. = ..()
@@ -469,36 +470,23 @@
 /datum/quirk/retractable_claws/add()
 	var/mob/living/carbon/human/H = quirk_holder
 
-	var/arm = H.get_bodypart(BODY_ZONE_L_ARM)
-	if(arm)
-		var/impl = H.getorganslot(ORGAN_SLOT_LEFT_ARM_AUG)
-		if(!impl)
-			// Создаем имплант для ЛЕВОЙ руки
-			var/obj/item/organ/cyberimp/arm/claws/left/L = new()
-			L.Insert(H)
-
-	arm = H.get_bodypart(BODY_ZONE_R_ARM)
-	if(arm)
-		var/impl = H.getorganslot(ORGAN_SLOT_RIGHT_ARM_AUG)
-		if(!impl)
-			// Создаем имплант для ПРАВОЙ руки
-			var/obj/item/organ/cyberimp/arm/claws/R = new()
-			R.Insert(H)
+	// Один имплант занимает сразу обе руки, поэтому когти выпускаются из любой.
+	if(!H.get_bodypart(BODY_ZONE_L_ARM) && !H.get_bodypart(BODY_ZONE_R_ARM))
+		return
+	if(H.getorganslot(ORGAN_SLOT_LEFT_ARM_AUG) || H.getorganslot(ORGAN_SLOT_RIGHT_ARM_AUG))
+		return
+	var/obj/item/organ/cyberimp/arm/claws/claws = new()
+	claws.Insert(H)
 
 /datum/quirk/retractable_claws/remove()
 	var/mob/living/carbon/human/H = quirk_holder
 
-	// Удаляем имплант из ЛЕВОЙ руки
-	var/obj/item/organ/cyberimp/arm/claws/L = H.getorganslot(ORGAN_SLOT_LEFT_ARM_AUG)
-	if(istype(L))
-		L.Remove(H)
-		qdel(L)
-
-	// Удаляем имплант из ПРАВОЙ руки
-	var/obj/item/organ/cyberimp/arm/claws/R = H.getorganslot(ORGAN_SLOT_RIGHT_ARM_AUG)
-	if(istype(R))
-		R.Remove(H)
-		qdel(R)
+	var/obj/item/organ/cyberimp/arm/claws/claws = H.getorganslot(ORGAN_SLOT_LEFT_ARM_AUG)
+	if(!istype(claws))
+		claws = H.getorganslot(ORGAN_SLOT_RIGHT_ARM_AUG)
+	if(istype(claws))
+		claws.Remove()
+		qdel(claws)
 
 // ============================================================================
 // ИМПЛАНТЫ ДЛЯ КВИРКА (используют натуральные когти)
@@ -513,6 +501,7 @@
 	organ_flags = NONE
 	zone = BODY_ZONE_R_ARM
 	holder = /obj/item/kitchen/knife/claws/natural
+	occupies_both_arms = TRUE
 
 /obj/item/organ/cyberimp/arm/claws/emp_act(severity)
 	return

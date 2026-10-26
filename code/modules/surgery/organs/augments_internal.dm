@@ -47,19 +47,26 @@
 	return ..()
 
 /// Returns the icon_state used for this implant's bodypart overlay (on the body).
-/obj/item/organ/cyberimp/proc/get_overlay_state()
+/obj/item/organ/cyberimp/proc/get_overlay_state(image_layer, obj/item/bodypart/limb)
 	return aug_overlay
+
+/// Which bodypart zones this implant draws its overlay on. Most implants touch a single limb.
+/obj/item/organ/cyberimp/proc/get_bodypart_zones()
+	return list(check_zone(zone))
 
 /// Builds the list of images to draw for this implant on the owner's body.
 /// Delegates to the bodypart_overlay/augment datum via get_overlay().
 /obj/item/organ/cyberimp/proc/get_overlay(image_layer, obj/item/bodypart/limb)
 	. = list()
-	. += image(icon = aug_icon, icon_state = get_overlay_state(), layer = image_layer)
+	var/overlay_state = get_overlay_state(image_layer, limb)
+	. += image(icon = aug_icon, icon_state = overlay_state, layer = image_layer)
 	if (emissive_overlay)
-		. += emissive_appearance(aug_icon, "[get_overlay_state()]_e", layer = image_layer, offset_spokesman = limb.owner || limb)
+		. += emissive_appearance(aug_icon, "[overlay_state]_e", layer = image_layer, offset_spokesman = limb?.owner || limb)
 
 /// Called when this implant is inserted into a specific bodypart. Applies the augment overlay to the body.
 /obj/item/organ/cyberimp/proc/on_bodypart_insert(obj/item/bodypart/limb)
+	if(!limb)
+		return
 	if (bodypart_aug)
 		limb.add_bodypart_overlay(bodypart_aug)
 
@@ -77,15 +84,19 @@
 /obj/item/organ/cyberimp/Insert(mob/living/carbon/M, special = 0, drop_if_replaced = TRUE)
 	. = ..()
 	if(. && owner)
-		var/obj/item/bodypart/limb = owner.get_bodypart(check_zone(zone))
-		on_bodypart_insert(limb)
+		for(var/limb_zone in get_bodypart_zones())
+			on_bodypart_insert(owner.get_bodypart(limb_zone))
 		refresh_bodypart_overlays()
 
 /obj/item/organ/cyberimp/Remove(special = FALSE)
 	var/mob/living/carbon/prev_owner = owner
-	var/obj/item/bodypart/limb = prev_owner ? prev_owner.get_bodypart(check_zone(zone)) : null
+	var/list/prev_limbs = list()
+	if(prev_owner)
+		for(var/limb_zone in get_bodypart_zones())
+			prev_limbs += prev_owner.get_bodypart(limb_zone)
 	. = ..()
-	on_bodypart_remove(limb)
+	for(var/obj/item/bodypart/limb in prev_limbs)
+		on_bodypart_remove(limb)
 	refresh_bodypart_overlays(prev_owner)
 
 // В отличие от органов, имланты будут работать, только пока их можно активировать

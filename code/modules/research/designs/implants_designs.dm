@@ -261,6 +261,50 @@
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_ALL
 
+/datum/design/cyberimp_leg_tendons
+	name = "Reinforced Tendons Implant"
+	desc = "Synthetic tendon bundles for both legs that allow the user to perform a second jump in mid-air."
+	id = "ci-leg-tendons"
+	build_type = PROTOLATHE | MECHFAB
+	construction_time = 120
+	materials = list(/datum/material/iron = 5000, /datum/material/titanium = 2500, /datum/material/silver = 1500)
+	build_path = /obj/item/organ/cyberimp/leg/tendons
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+
+/datum/design/cyberimp_leg_ankles
+	name = "Fortified Ankles Implant"
+	desc = "Hydraulic pistons for both ankles that allow the user to charge and release a powerful forward leap."
+	id = "ci-leg-ankles"
+	build_type = PROTOLATHE | MECHFAB
+	construction_time = 150
+	materials = list(/datum/material/iron = 5000, /datum/material/titanium = 3000, /datum/material/glass = 1000)
+	build_path = /obj/item/organ/cyberimp/leg/ankles
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+
+/datum/design/cyberimp_leg_lynx_paws
+	name = "Lynx Paws Implant"
+	desc = "Sound-dampening pads for both feet that make the user's footsteps completely silent."
+	id = "ci-leg-lynx-paws"
+	build_type = PROTOLATHE | MECHFAB
+	construction_time = 80
+	materials = list(/datum/material/iron = 2000, /datum/material/glass = 1000, /datum/material/silver = 1000)
+	build_path = /obj/item/organ/cyberimp/leg/lynx_paws
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+
+/datum/design/cyberimp_leg_microvibration
+	name = "Microvibration Generator Implant"
+	desc = "A compact piston assembly hidden in both shins that delivers a devastating vibrating kick."
+	id = "ci-leg-microvibration"
+	build_type = PROTOLATHE | MECHFAB
+	construction_time = 150
+	materials = list(/datum/material/iron = 6000, /datum/material/titanium = 4000, /datum/material/silver = 2000, /datum/material/diamond = 1000)
+	build_path = /obj/item/organ/cyberimp/leg/microvibration
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+
 /datum/design/cyberimp_mantis
 	name = "Corporate Mantis Blade Implant"
 	desc = "A long, sharp, mantis-like blade installed within the forearm, acting as a deadly self defense weapon."

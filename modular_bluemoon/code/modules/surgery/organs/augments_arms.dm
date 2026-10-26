@@ -4,6 +4,7 @@
 	contents = newlist(/obj/item/melee/implantarmblade)
 	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
 	icon_state = "mantis"
+	occupies_both_arms = TRUE
 
 /obj/item/organ/cyberimp/arm/mantis_blade/l
 	zone = BODY_ZONE_L_ARM
