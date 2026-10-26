@@ -99,20 +99,22 @@ GLOBAL_LIST_INIT(freqtospan, list(
 	//Radio freq/name display
 	var/freqpart = radio_freq ? "\[[get_radio_name(radio_freq)]\] " : ""
 	var/jobpart = ""
+	var/job_class
 	if(radio_freq)
 		var/speaker_job = speaker.GetJob()
 		var/lower_job = speaker_job ? lowertext(trimtext(speaker_job)) : ""
 		if(lower_job != "" && lower_job != "unknown" && lower_job != "no id" && lower_job != "machine")
 			if(speaker.GetVoice() != "Unknown")
-				var/job_class = speaker.GetJobClass()
+				job_class = speaker.GetJobClass()
 				if(!job_class || job_class == "")
 					job_class = get_radio_job_class(null, speaker_job)
-				jobpart = "<span class='radiojob [job_class]' style='color: [get_radio_job_hex(job_class)]'>\[[speaker_job]\]</span> "
+				jobpart = "<span class='radiojob [job_class]'>\[[speaker_job]\]</span> "
 	//Speaker name
 	var/namepart = "[speaker.GetVoice()][speaker.get_alt_name()]"
 	if(face_name && ishuman(speaker))
 		var/mob/living/carbon/human/H = speaker
 		namepart = "[H.get_face_name()]" //So "fake" speaking like in hallucinations does not give the speaker away if disguised
+	var/shown_name = job_class ? "<span class='radiojob-name [job_class]'>[namepart]</span>" : namepart
 	//End name span.
 	var/endspanpart = "</span>"
 
@@ -124,7 +126,7 @@ GLOBAL_LIST_INIT(freqtospan, list(
 	if(istype(D) && D.display_icon(src))
 		languageicon = "[D.get_icon()] "
 
-	return "[spanpart1][spanpart2][freqpart][jobpart][languageicon][compose_track_href(speaker, namepart)][namepart][compose_job(speaker, message_language, raw_message, radio_freq)][endspanpart][messagepart]"
+	return "[spanpart1][spanpart2][freqpart][jobpart][languageicon][compose_track_href(speaker, namepart)][shown_name][compose_job(speaker, message_language, raw_message, radio_freq)][endspanpart][messagepart]"
 
 /atom/movable/proc/compose_track_href(atom/movable/speaker, message_langs, raw_message, radio_freq)
 	return ""
@@ -243,112 +245,154 @@ GLOBAL_LIST_INIT(freqtospan, list(
 		return returntext
 	return "[copytext_char("[freq]", 1, 4)].[copytext_char("[freq]", 4, 5)]"
 
-/proc/get_radio_job_class(base_job, display_job)
-	var/real = base_job ? GetJobName(base_job) : "Unknown"
-	if(real == "Unknown" && display_job && display_job != base_job)
-		real = GetJobName(display_job)
-	var/combined = ""
-	if(base_job)
-		combined += "[lowertext(base_job)]|"
-	if(display_job)
-		combined += "[lowertext(display_job)]"
-	if(combined != "" && combined != "|")
-		if(findtext(combined, "syndicate") || findtext(combined, "syndicom") || findtext(combined, "синдикат") || findtext(combined, "ds-1") || findtext(combined, "ds-2") || findtext(combined, "ds1") || findtext(combined, "ds2"))
-			return "radiojob-synd"
-		if(findtext(combined, "inteq") || findtext(combined, "интек") || findtext(combined, "vanguard") || findtext(combined, "авангард") || findtext(combined, "mercenary") || findtext(combined, "наемник") || findtext(combined, "наёмник"))
-			return "radiojob-inteq"
-		if(findtext(combined, "tarkov") || findtext(combined, "tarkoff") || findtext(combined, "тарков") || findtext(combined, "таркон"))
-			return "radiojob-tarkon"
-		if(findtext(combined, "pirate") || findtext(combined, "пират"))
-			return "radiojob-pirate"
-		if(findtext(combined, "solfed") || findtext(combined, "sol fed") || findtext(combined, "sol federation"))
-			return "radiojob-sol"
-		if(findtext(combined, "nri"))
-			return "radiojob-nri"
-		if(findtext(combined, "hotel") || findtext(combined, "отель"))
-			return "radiojob-hotel"
-		if(findtext(combined, "centcom") || findtext(combined, "central command") || findtext(combined, "emergency response") || findtext(combined, "death commando") || findtext(combined, "response officer") || findtext(combined, "health safety"))
-			return "radiojob-centcom"
-	if(real == "Clown")
-		return "radiojob-clown"
-	if(real == "Centcom")
-		return "radiojob-centcom"
-	if(real == "Bridge Officer")
-		return "radiojob-cmd"
-	if(real == "NanoTrasen Representative")
-		return "radiojob-cmd"
-	if(real == "Head of Personnel")
-		return "radiojob-cmd"
-	if(real == "Assistant")
-		return "radiojob-asst"
-	if(real == "Peacekeeper")
-		return "radiojob-sec"
-	if(real == "Detective")
-		return "radiojob-sec"
-	var/datum/job/J = SSjob.GetJob(real)
-	if(J)
-		var/deps = J.departments
-		if(deps & DEPARTMENT_BITFLAG_SECURITY)
-			return "radiojob-sec"
-		if(deps & DEPARTMENT_BITFLAG_ENGINEERING)
-			return "radiojob-eng"
-		if(deps & DEPARTMENT_BITFLAG_MEDICAL)
-			return "radiojob-med"
-		if(deps & DEPARTMENT_BITFLAG_SCIENCE)
-			return "radiojob-sci"
-		if(deps & DEPARTMENT_BITFLAG_SUPPLY)
-			return "radiojob-cargo"
-		if(deps & DEPARTMENT_BITFLAG_LAW)
-			return "radiojob-law"
-		if(deps & DEPARTMENT_BITFLAG_SERVICE)
-			return "radiojob-srv"
-		if(deps & DEPARTMENT_BITFLAG_SILICON)
-			return "radiojob-silicon"
-		if(deps & DEPARTMENT_BITFLAG_COMMAND)
-			return "radiojob-cmd"
-		return "radiojob-unk"
-	return "radiojob-unk"
+/// Классы тега должности: отдел по job datum, фракция, метка главы и прежняя раскраска. Цвета задаёт чат.
+/// Отдел и глава - по показанному названию shown_job (custom_job карты), свободный текст - отдел профессии карты base_job без метки главы.
+/// Без карты (КПК) префикс наклейки снимается только перед точным названием профессии: "Syndicate Admiral" не капитан.
+/proc/get_radio_job_class(base_job, display_job, shown_job)
+	var/centcom_card = base_job && !SSjob.GetJob(base_job) && GetJobName(base_job) == "Centcom"
+	var/datum/job/card_job = (base_job && !centcom_card) ? (SSjob.GetJob(base_job) || get_radio_shown_job(base_job, null)) : null
+	var/shown = shown_job || base_job || display_job
+	var/datum/job/job = (centcom_card && shown == base_job) ? null : get_radio_shown_job(shown, card_job)
+	if(!job && !base_job)
+		job = SSjob.GetJob(strip_radio_sticker_prefix(display_job))
+	var/recognized = !!job
+	if(!job)
+		job = card_job
+	var/centcom = !job && (centcom_card || GetJobName(shown) == "Centcom")
+	var/faction = get_radio_job_faction(display_job || base_job)
+	var/department
+	if(job?.title == "Assistant")
+		department = "asst"
+	else if(job?.title == "Prisoner")
+		department = "unk"
+	else if(job)
+		department = get_radio_job_department(job)
+	else if(faction)
+		department = faction
+	else if(centcom)
+		department = "centcom"
+	else
+		department = "unk"
+	. = "radiojob-[department]"
+	if(faction)
+		. += " radiojob-f-[faction]"
+	if(recognized && get_radio_head_jobs()[job.title])
+		. += " radiojob-head"
+	. += " radiojob-legacy-[faction || get_radio_job_legacy_class(job ? job.title : (centcom ? "Centcom" : "Unknown"), job)]"
 
+/// Профессия названия: профессия карты, если это её название или альт-название, иначе однозначная чужая, неоднозначное - свободный текст. GetJobName() тут не годится: в real_job_name общие альт-названия перезаписывают друг друга.
+/proc/get_radio_shown_job(title, datum/job/card_job)
+	if(!title)
+		return null
+	if(card_job && (title == card_job.title || (title in card_job.alt_titles)))
+		return card_job
+	var/datum/job/exact = SSjob.GetJob(title)
+	if(exact)
+		return exact
+	var/datum/job/found
+	for(var/datum/job/candidate as anything in SSjob.occupations)
+		if(!(title in candidate.alt_titles))
+			continue
+		if(found)
+			return null
+		found = candidate
+	return found
 
-/proc/get_radio_job_hex(job_class)
-	switch(job_class)
-		if("radiojob-cmd")
-			return "#fcdf03"
-		if("radiojob-sec")
-			return "#dd3535"
-		if("radiojob-eng")
-			return "#f37746"
-		if("radiojob-med")
-			return "#57b8f0"
-		if("radiojob-sci")
-			return "#c68cfa"
-		if("radiojob-cargo")
-			return "#b88646"
-		if("radiojob-srv")
-			return "#6ca729"
-		if("radiojob-law", "radiojob-clown")
-			return "#ff69d7"
-		if("radiojob-asst")
-			return "#1ecc43"
-		if("radiojob-synd")
-			return "#8f4a4b"
-		if("radiojob-inteq")
-			return "#e58200"
-		if("radiojob-tarkon")
-			return "#f37746"
-		if("radiojob-pirate")
-			return "#fafafa"
-		if("radiojob-sol")
-			return "#3434fd"
-		if("radiojob-nri")
-			return "#ff4444"
-		if("radiojob-hotel")
-			return "#6ca729"
-		if("radiojob-centcom")
-			return "#2681a5"
-		if("radiojob-silicon")
-			return "#9e9e9e"
-	return "#b0b0b0"
+/proc/strip_radio_sticker_prefix(title)
+	var/static/list/prefixes
+	if(!prefixes)
+		prefixes = list()
+		for(var/obj/item/card_sticker/sticker_type as anything in subtypesof(/obj/item/card_sticker))
+			var/prefix = initial(sticker_type.prefix)
+			if(prefix)
+				prefixes |= prefix
+	if(!title)
+		return title
+	for(var/prefix in prefixes)
+		if(findtextEx(title, "[prefix] ") == 1)
+			return copytext(title, length(prefix) + 2)
+	return title
+
+/proc/get_radio_job_faction(shown_title)
+	if(!shown_title)
+		return null
+	var/combined = lowertext(shown_title)
+	if(findtext(combined, "syndicate") || findtext(combined, "syndicom") || findtext(combined, "синдикат") || findtext(combined, "ds-1") || findtext(combined, "ds-2") || findtext(combined, "ds1") || findtext(combined, "ds2"))
+		return "synd"
+	if(findtext(combined, "inteq") || findtext(combined, "интек") || findtext(combined, "vanguard") || findtext(combined, "авангард") || findtext(combined, "mercenary") || findtext(combined, "наемник") || findtext(combined, "наёмник"))
+		return "inteq"
+	if(findtext(combined, "tarkov") || findtext(combined, "tarkoff") || findtext(combined, "тарков") || findtext(combined, "таркон"))
+		return "tarkon"
+	if(findtext(combined, "pirate") || findtext(combined, "пират"))
+		return "pirate"
+	if(findtext(combined, "solfed") || findtext(combined, "sol fed") || findtext(combined, "sol federation"))
+		return "sol"
+	if(findtext(combined, "nri"))
+		return "nri"
+	if(findtext(combined, "hotel") || findtext(combined, "отель"))
+		return "hotel"
+	if(findtext(combined, "centcom") || findtext(combined, "central command") || findtext(combined, "emergency response") || findtext(combined, "death commando") || findtext(combined, "response officer") || findtext(combined, "health safety"))
+		return "centcom"
+	return null
+
+/// Отдел профессии, а без своих битов отдела - отдел её начальника.
+/proc/get_radio_job_department(datum/job/job)
+	var/departments = job.departments
+	if(!departments)
+		for(var/head_title in job.department_head)
+			var/datum/job/head = SSjob.GetJob(head_title)
+			if(head?.departments)
+				departments = head.departments
+				break
+	return get_radio_department_class(departments)
+
+/proc/get_radio_department_class(departments)
+	if(departments & DEPARTMENT_BITFLAG_SECURITY)
+		return "sec"
+	if(departments & DEPARTMENT_BITFLAG_ENGINEERING)
+		return "eng"
+	if(departments & DEPARTMENT_BITFLAG_MEDICAL)
+		return "med"
+	if(departments & DEPARTMENT_BITFLAG_SCIENCE)
+		return "sci"
+	if(departments & DEPARTMENT_BITFLAG_SUPPLY)
+		return "cargo"
+	if(departments & DEPARTMENT_BITFLAG_LAW)
+		return "law"
+	if(departments & DEPARTMENT_BITFLAG_SERVICE)
+		return "srv"
+	if(departments & DEPARTMENT_BITFLAG_SILICON)
+		return "silicon"
+	if(departments & DEPARTMENT_BITFLAG_COMMAND)
+		return "cmd"
+	return "unk"
+
+/// Раскраска до разделения по отделам: настройка чата "По профессии (как раньше)".
+/proc/get_radio_job_legacy_class(real, datum/job/job)
+	switch(real)
+		if("Clown")
+			return "clown"
+		if("Centcom")
+			return "centcom"
+		if("Bridge Officer", "NanoTrasen Representative", "Head of Personnel")
+			return "cmd"
+		if("Assistant")
+			return "asst"
+		if("Peacekeeper", "Detective")
+			return "sec"
+	return job ? get_radio_department_class(job.departments) : "unk"
+
+/// Главы - профессии, которые другие профессии называют своим department_head.
+/proc/get_radio_head_jobs()
+	var/static/list/heads
+	if(length(heads))
+		return heads
+	heads = list()
+	for(var/datum/job/job as anything in SSjob.occupations)
+		for(var/head_title in job.department_head)
+			if(SSjob.GetJob(head_title))
+				heads[head_title] = TRUE
+	return heads
 
 /atom/movable/proc/attach_spans(input, list/spans)
 	if(!length(input))
@@ -430,7 +474,7 @@ INITIALIZE_IMMEDIATE(/atom/movable/virtualspeaker)
 				job = null
 				job_class = null
 			else
-				job_class = get_radio_job_class(idcard.assignment, job)
+				job_class = get_radio_job_class(idcard.assignment, job, idcard.custom_job)
 		else
 			if(istype(H.wear_id, /obj/item/modular_computer/pda))
 				var/obj/item/modular_computer/pda/worn_pda = H.wear_id

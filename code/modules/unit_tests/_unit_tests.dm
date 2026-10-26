@@ -417,6 +417,7 @@
 #include "progressbar_deleted_target.dm"
 #include "projectiles.dm"
 #include "qareen_chalk.dm"
+#include "radio_job_classes.dm"
 #include "weather.dm"
 #include "weather_datum_lifecycle.dm"
 #include "weather_multiz_areas.dm"
