@@ -440,6 +440,7 @@
 // остальные - transform/opacity/filter.
 .ChatMessage--anim-teletype {
   animation: chatTeletype min(var(--chat-anim-speed, 320ms) * 1.5, 600ms) linear;
+  --enter-anim: chatTeletype min(var(--chat-anim-speed, 320ms) * 1.5, 600ms) linear;
 }
 
 @keyframes chatTeletype {
@@ -458,6 +459,7 @@
 
 .ChatMessage--anim-faxfeed {
   animation: chatFaxFeed var(--chat-anim-speed, 320ms) cubic-bezier(0.25, 0.75, 0.35, 1);
+  --enter-anim: chatFaxFeed var(--chat-anim-speed, 320ms) cubic-bezier(0.25, 0.75, 0.35, 1);
 }
 
 // Лист выползает из щели сверху: scaleY с translateY держит верхний край.
@@ -478,6 +480,7 @@
 
 .ChatMessage--anim-interference {
   animation: chatInterference var(--chat-anim-speed, 320ms) linear;
+  --enter-anim: chatInterference var(--chat-anim-speed, 320ms) linear;
 }
 
 // Срыв строки: рывки со скосом и сдвиг оттенка. Без blur и drop-shadow,
@@ -515,6 +518,7 @@
 
 .ChatMessage--anim-crtscan {
   animation: chatCrtScan var(--chat-anim-speed, 320ms) cubic-bezier(0.2, 0.7, 0.3, 1);
+  --enter-anim: chatCrtScan var(--chat-anim-speed, 320ms) cubic-bezier(0.2, 0.7, 0.3, 1);
 }
 
 // Включение кинескопа: яркая черта раскрывается в строку.
@@ -542,6 +546,7 @@
 
 .ChatMessage--anim-airlock {
   animation: chatAirlock var(--chat-anim-speed, 320ms) cubic-bezier(0.7, 0, 0.3, 1);
+  --enter-anim: chatAirlock var(--chat-anim-speed, 320ms) cubic-bezier(0.7, 0, 0.3, 1);
 }
 
 @keyframes chatAirlock {
@@ -557,6 +562,7 @@
 
 .ChatMessage--anim-develop {
   animation: chatDevelop var(--chat-anim-speed, 320ms) cubic-bezier(0.3, 0.6, 0.4, 1);
+  --enter-anim: chatDevelop var(--chat-anim-speed, 320ms) cubic-bezier(0.3, 0.6, 0.4, 1);
 }
 
 @keyframes chatDevelop {
@@ -581,6 +587,7 @@
 // погашенных нет.
 .ChatMessage--anim-scanner {
   animation: chatScanner var(--chat-anim-speed, 320ms) cubic-bezier(0.4, 0, 0.6, 1);
+  --enter-anim: chatScanner var(--chat-anim-speed, 320ms) cubic-bezier(0.4, 0, 0.6, 1);
 }
 
 @keyframes chatScanner {
@@ -634,6 +641,7 @@
 
 .ChatMessage--anim-lamp {
   animation: chatLamp min(var(--chat-anim-speed, 320ms) * 1.6, 600ms) linear;
+  --enter-anim: chatLamp min(var(--chat-anim-speed, 320ms) * 1.6, 600ms) linear;
 }
 
 // Лампа дневного света: пара пробных вспышек, потом ровный свет.

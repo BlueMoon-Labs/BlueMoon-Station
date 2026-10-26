@@ -185,6 +185,11 @@ const createApplySettings = () => {
     if (anyChanged(prev, settings, ['typeOverrides'])) {
       chatRenderer.setTypeOverrides(settings.typeOverrides || {});
     }
+    if (anyChanged(prev, settings, ['gameEffects', 'gameEffectsEnabled'])) {
+      chatRenderer.setGameEffects(
+        settings.gameEffects || {},
+        settings.gameEffectsEnabled !== false);
+    }
     if (anyChanged(prev, settings, ['settleOldAnimations'])) {
       chatRenderer.setSettleOld(settings.settleOldAnimations !== false);
     }

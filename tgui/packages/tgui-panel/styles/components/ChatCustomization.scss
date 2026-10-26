@@ -460,6 +460,7 @@
 
 .ChatMessage--anim-fadein {
   animation: chatFadeIn var(--chat-anim-speed, 320ms) cubic-bezier(0.2, 0.65, 0.3, 1);
+  --enter-anim: chatFadeIn var(--chat-anim-speed, 320ms) cubic-bezier(0.2, 0.65, 0.3, 1);
 }
 
 @keyframes chatFadeIn {
@@ -475,6 +476,7 @@
 
 .ChatMessage--anim-slidein {
   animation: chatSlideIn var(--chat-anim-speed, 320ms) cubic-bezier(0.16, 1, 0.3, 1);
+  --enter-anim: chatSlideIn var(--chat-anim-speed, 320ms) cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes chatSlideIn {
@@ -493,6 +495,7 @@
 
 .ChatMessage--anim-bounce {
   animation: chatBounce var(--chat-anim-speed, 320ms) cubic-bezier(0.3, 0.7, 0.4, 1);
+  --enter-anim: chatBounce var(--chat-anim-speed, 320ms) cubic-bezier(0.3, 0.7, 0.4, 1);
 }
 
 @keyframes chatBounce {
@@ -518,6 +521,7 @@
 
 .ChatMessage--anim-drop {
   animation: chatDrop var(--chat-anim-speed, 320ms) cubic-bezier(0.25, 0.8, 0.4, 1);
+  --enter-anim: chatDrop var(--chat-anim-speed, 320ms) cubic-bezier(0.25, 0.8, 0.4, 1);
 }
 
 @keyframes chatDrop {
@@ -540,6 +544,7 @@
 
 .ChatMessage--anim-zoomin {
   animation: chatZoomIn var(--chat-anim-speed, 320ms) cubic-bezier(0.22, 0.61, 0.36, 1);
+  --enter-anim: chatZoomIn var(--chat-anim-speed, 320ms) cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 @keyframes chatZoomIn {
@@ -555,6 +560,7 @@
 
 .ChatMessage--anim-pop {
   animation: chatPop var(--chat-anim-speed, 320ms) cubic-bezier(0.3, 0.7, 0.4, 1);
+  --enter-anim: chatPop var(--chat-anim-speed, 320ms) cubic-bezier(0.3, 0.7, 0.4, 1);
 }
 
 @keyframes chatPop {
@@ -574,6 +580,7 @@
 
 .ChatMessage--anim-glowin {
   animation: chatGlowIn var(--chat-anim-speed, 320ms) cubic-bezier(0.2, 0.6, 0.3, 1);
+  --enter-anim: chatGlowIn var(--chat-anim-speed, 320ms) cubic-bezier(0.2, 0.6, 0.3, 1);
 }
 
 // Без blur и drop-shadow: такие фильтры композитор не ведёт.

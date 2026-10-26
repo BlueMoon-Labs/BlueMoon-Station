@@ -3,9 +3,15 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { MESSAGE_TYPES } from '../chat/constants';
+import { getBlockFxClasses } from '../chat/messageFx';
 import { getChatColorProps, getChatCustomProps, getStyleOverrideRoot } from '../chat/rootAppearance';
 import { ChatPreview, getPreviewRootClasses, getPreviewRootStyle } from './ChatPreview';
 import { CHANNEL_TYPES } from './constants';
+
+jest.mock('../chat/messageFx', () => ({
+  ...jest.requireActual('../chat/messageFx'),
+  getBlockFxClasses: jest.fn(),
+}));
 
 const mounted = [];
 
@@ -40,6 +46,11 @@ beforeAll(() => {
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 });
 
+beforeEach(() => {
+  getBlockFxClasses.mockImplementation(
+    jest.requireActual('../chat/messageFx').getBlockFxClasses);
+});
+
 afterEach(() => {
   for (const { root, container } of mounted.splice(0)) {
     act(() => root.unmount());
@@ -56,7 +67,15 @@ test('style class is added', () => {
     .toBe('Chat Chat--style-seccon');
 });
 
-test('settle off adds its class', () => {
+test('game effects off adds off classes', () => {
+  expect(getPreviewRootClasses({
+    chatStyle: 'classic',
+    gameEffectsEnabled: false,
+  })).toContain('Chat--gameFxOff');
+  expect(getPreviewRootClasses({
+    chatStyle: 'classic',
+    gameEffects: { tremble: false },
+  })).toContain('Chat--fxOff-tremble');
   expect(getPreviewRootClasses({
     chatStyle: 'classic',
     settleOldAnimations: false,
@@ -127,6 +146,10 @@ test('preview renders samples with the chat message classes', () => {
     .match(/ChatMessage--type-([a-z]+)/)[1]);
   expect(types).toEqual(expect.arrayContaining(
     ['localchat', 'radio', 'ooc', 'adminpm']));
+  const yell = root.querySelector('.yell').closest('.ChatMessage');
+  expect(yell.classList.contains('ChatMessage--fx-shake')).toBe(true);
+  const say = root.querySelector('.say').closest('.ChatMessage');
+  expect(say.classList.contains('ChatMessage--fx-shake')).toBe(false);
 });
 
 test('no animation class without an animation', () => {
@@ -152,6 +175,14 @@ test('channels preview has a sample for every channel type', () => {
     expect(classifiedType(node)).toBe(CHANNEL_TYPES[i].type);
     expect(node.textContent).toBe(CHANNEL_TYPES[i].example);
   });
+});
+
+test('block effects of a sample are computed once', () => {
+  const { rerender } = renderWith({ chatStyle: 'classic' });
+  const calls = getBlockFxClasses.mock.calls.length;
+  rerender({ chatStyle: 'seccon' });
+  rerender({ chatStyle: 'pda' });
+  expect(getBlockFxClasses.mock.calls.length).toBe(calls);
 });
 
 test('changing animation speed replays the samples', () => {

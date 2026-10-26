@@ -1,3 +1,22 @@
+/**
+ * Блочные эффекты сообщения: transform допустим только на блоке
+ * .ChatMessage, на инлайн-спане он ломает перенос строк.
+ */
+export const BLOCK_FX = [
+  { selector: '.yell', fx: 'shake' },
+  { selector: '.hear_dizzy', fx: 'sway' },
+];
+
+export const getBlockFxClasses = node => {
+  const result = [];
+  for (const { selector, fx } of BLOCK_FX) {
+    if (node.querySelector(selector)) {
+      result.push('ChatMessage--fx-' + fx);
+    }
+  }
+  return result;
+};
+
 // Сколько последних видимых сообщений держат свои анимации.
 export const SETTLE_KEEP = 40;
 

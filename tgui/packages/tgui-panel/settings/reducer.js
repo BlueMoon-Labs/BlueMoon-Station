@@ -40,6 +40,9 @@ const initialState = {
   spanAnimations: true,
   // Оформление по типу сообщения: { [type]: { border, tint, anim, flash } }
   typeOverrides: {},
+  // Игровые эффекты текста: общий тумблер и { [effectId]: false } выключенных
+  gameEffectsEnabled: true,
+  gameEffects: {},
   // Гасить анимации сообщений вне окна свежих
   settleOldAnimations: true,
   // Timestamps & time dividers

@@ -1,5 +1,5 @@
 import { MESSAGE_STYLES } from '../settings/constants';
-import { getChatColorProps, getChatCustomProps, getSettleRootClasses, getStyleOverrideRoot, isStyleOverrideClass } from './rootAppearance';
+import { getChatColorProps, getChatCustomProps, getGameFxRootClasses, getSettleRootClasses, getStyleOverrideRoot, isGameFxRootClass, isStyleOverrideClass } from './rootAppearance';
 
 const BASE = {
   chatAnimSpeed: 'normal',
@@ -61,6 +61,17 @@ test('style overrides map to root classes and colors', () => {
   expect(getStyleOverrideRoot({}, true).classes).toEqual([]);
   expect(classes.every(isStyleOverrideClass)).toBe(true);
   expect(isStyleOverrideClass('Chat--style-seccon')).toBe(false);
+});
+
+test('game effect switches map to root classes', () => {
+  expect(getGameFxRootClasses({ tremble: false, drunk: true, bogus: false }, true))
+    .toEqual(['Chat--fxOff-tremble']);
+  expect(getGameFxRootClasses({ tremble: false }, false))
+    .toEqual(['Chat--gameFxOff']);
+  expect(getGameFxRootClasses(undefined, true)).toEqual([]);
+  expect(isGameFxRootClass('Chat--gameFxOff')).toBe(true);
+  expect(isGameFxRootClass('Chat--fxOff-dizzy')).toBe(true);
+  expect(isGameFxRootClass('Chat--fxAnimOff')).toBe(false);
 });
 
 test('settle switch maps to a root class', () => {

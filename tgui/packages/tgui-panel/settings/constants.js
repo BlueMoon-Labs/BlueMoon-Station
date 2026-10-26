@@ -22,6 +22,10 @@ export const SETTINGS_TABS = [
     name: 'Каналы',
   },
   {
+    id: 'effects',
+    name: 'Игровые эффекты',
+  },
+  {
     id: 'chatPage',
     name: 'Вкладки чата',
   },
@@ -85,6 +89,20 @@ export const MESSAGE_STYLE_ANIMATIONS = [
     name: 'Радуга',
     css: 'cs-rainbow 6000ms linear infinite',
   },
+];
+
+// Игровые эффекты текста. Каждый выключается отдельно.
+export const GAME_EFFECTS = [
+  { id: 'tremble', name: 'Дрожь', tooltip: 'Заикание и сильный тремор говорящего', sample: '<span class="tremble">Я н-не боюсь</span>' },
+  { id: 'yell', name: 'Встряска при крике', tooltip: 'Строка с криком один раз вздрагивает', sample: '<span class="yell">Стоять!</span>' },
+  { id: 'drunk', name: 'Опьянение', tooltip: 'Речь пьяного плывёт', sample: '<span class="drunk_speech">Ещё по одной</span>' },
+  { id: 'gasp', name: 'Удушье', tooltip: 'Речь задыхающегося бледнеет к концу', sample: '<span class="gasp_speech">Воздуха...</span>' },
+  { id: 'shiver', name: 'Озноб', tooltip: 'Речь замёрзшего дрожит от холода', sample: '<span class="shiver">Х-холодно</span>' },
+  { id: 'muffled', name: 'Приглушённость', tooltip: 'Речь сквозь кляп и при повреждённых ушах', sample: '<span class="muffled_speech">Ммф, помогите</span>' },
+  { id: 'radio_static', name: 'Помехи рации', tooltip: 'Сообщения по рации при плохом сигнале', sample: '<span class="radio_static">[Общий] ...приём...</span>' },
+  { id: 'hallucination', name: 'Галлюцинации', tooltip: 'Иногда чужая речь искажается, пока вы галлюцинируете', sample: '<span class="hear_hallucination">Они за тобой</span>' },
+  { id: 'druggy', name: 'Вещества', tooltip: 'Под веществами цвет речи плывёт', sample: '<span class="hear_druggy">Как красиво</span>' },
+  { id: 'dizzy', name: 'Головокружение', tooltip: 'При головокружении строки покачиваются', sample: '<span class="hear_dizzy">Всё кружится</span>' },
 ];
 
 export const CHAT_STYLES = [

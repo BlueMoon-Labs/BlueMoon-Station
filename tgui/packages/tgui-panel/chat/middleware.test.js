@@ -21,6 +21,7 @@ const mockChatRenderer = {
   setNewMessagesMarker: jest.fn(),
   setStyleOverrides: jest.fn(),
   setTypeOverrides: jest.fn(),
+  setGameEffects: jest.fn(),
   setSettleOld: jest.fn(),
   setTimestamps: jest.fn(),
   setTimeDividers: jest.fn(),
@@ -146,6 +147,7 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(mockChatRenderer.setCustomProperties).not.toHaveBeenCalled();
     expect(mockChatRenderer.setStyleOverrides).not.toHaveBeenCalled();
     expect(mockChatRenderer.setTypeOverrides).not.toHaveBeenCalled();
+    expect(mockChatRenderer.setGameEffects).not.toHaveBeenCalled();
     expect(mockChatRenderer.setSettleOld).not.toHaveBeenCalled();
     expect(mockChatRenderer.setTimestamps).not.toHaveBeenCalled();
     expect(mockChatRenderer.setTimeDividers).not.toHaveBeenCalled();
@@ -318,6 +320,25 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(mockChatRenderer.setStyleOverrides).not.toHaveBeenCalled();
   });
 
+  test('game effect switches reach the renderer', async () => {
+    const store = createTestStore();
+    store.dispatch(updateSettings({ highlightText: '' }));
+    await flushPromises();
+    clearRendererSpies();
+
+    store.dispatch(updateSettings({ gameEffects: { tremble: false } }));
+    await flushPromises();
+    expect(mockChatRenderer.setGameEffects).toHaveBeenCalledTimes(1);
+    expect(mockChatRenderer.setGameEffects).toHaveBeenLastCalledWith(
+      { tremble: false }, true);
+
+    store.dispatch(updateSettings({ gameEffectsEnabled: false }));
+    await flushPromises();
+    expect(mockChatRenderer.setGameEffects).toHaveBeenLastCalledWith(
+      { tremble: false }, false);
+    expect(mockChatRenderer.setTypeOverrides).not.toHaveBeenCalled();
+  });
+
   test('settle switch reaches the renderer', async () => {
     const store = createTestStore();
     store.dispatch(updateSettings({ highlightText: '' }));
@@ -328,6 +349,7 @@ describe('chatMiddleware applySettings diffing', () => {
     await flushPromises();
     expect(mockChatRenderer.setSettleOld).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setSettleOld).toHaveBeenLastCalledWith(false);
+    expect(mockChatRenderer.setGameEffects).not.toHaveBeenCalled();
   });
 
   test('matchWord toggle re-runs setHighlight', async () => {
@@ -363,6 +385,7 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(mockChatRenderer.setCustomProperties).not.toHaveBeenCalled();
     expect(mockChatRenderer.setStyleOverrides).not.toHaveBeenCalled();
     expect(mockChatRenderer.setTypeOverrides).not.toHaveBeenCalled();
+    expect(mockChatRenderer.setGameEffects).not.toHaveBeenCalled();
     expect(mockChatRenderer.setSettleOld).not.toHaveBeenCalled();
     expect(mockChatRenderer.setTimestamps).not.toHaveBeenCalled();
     expect(mockChatRenderer.setTimeDividers).not.toHaveBeenCalled();

@@ -1,4 +1,4 @@
-import { CHAT_ANIM_SPEEDS, MESSAGE_STYLES } from '../settings/constants';
+import { CHAT_ANIM_SPEEDS, GAME_EFFECTS, MESSAGE_STYLES } from '../settings/constants';
 
 /**
  * Значения, которые ставятся на корень .Chat: и чату, и предпросмотру
@@ -58,8 +58,24 @@ export const getStyleOverrideRoot = (overrides = {}, spanAnimations = true) => {
 export const isStyleOverrideClass = cls => cls.startsWith('Chat--plain-')
   || cls === 'Chat--fxAnimOff';
 
+/**
+ * Выключатели игровых эффектов: Chat--gameFxOff гасит все,
+ * Chat--fxOff-<id> - один эффект из GAME_EFFECTS.
+ */
+export const getGameFxRootClasses = (effects = {}, enabled = true) => {
+  if (enabled === false) {
+    return ['Chat--gameFxOff'];
+  }
+  return GAME_EFFECTS
+    .filter(effect => effects?.[effect.id] === false)
+    .map(effect => 'Chat--fxOff-' + effect.id);
+};
+
 // Затухание анимаций истории выключено.
 export const SETTLE_OFF_CLASS = 'Chat--noSettle';
 
 export const getSettleRootClasses = enabled => (
   enabled === false ? [SETTLE_OFF_CLASS] : []);
+
+export const isGameFxRootClass = cls => cls === 'Chat--gameFxOff'
+  || cls.startsWith('Chat--fxOff-');

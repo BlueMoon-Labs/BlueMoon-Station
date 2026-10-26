@@ -18,6 +18,7 @@ import { ChatPreview } from './ChatPreview';
 import { CHAT_ANIM_SPEEDS, CHAT_ANIMATIONS, CHAT_BG_ANIMATIONS, CHAT_STYLES, FONTS, MESSAGE_STYLE_ANIMATIONS, MESSAGE_STYLE_FONTS, MESSAGE_STYLES, SETTINGS_TABS, TEXT_GLOW_OPTIONS, TIME_DIVIDER_INTERVALS, TIMESTAMP_FORMATS } from './constants';
 import { selectActiveTab, selectSettings } from './selectors';
 import { SettingsChannels } from './SettingsChannels';
+import { SettingsEffects } from './SettingsEffects';
 
 const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
 
@@ -165,6 +166,9 @@ export const SettingsPanel = (props) => {
         )}
         {activeTab === 'channels' && (
           <SettingsChannels />
+        )}
+        {activeTab === 'effects' && (
+          <SettingsEffects />
         )}
         {activeTab === 'chatPage' && (
           <ChatPageSettings />
@@ -599,7 +603,7 @@ export const SettingsTextStyles = (props) => {
       <Divider />
       <Button.Checkbox
         checked={spanAnimations !== false}
-        tooltip="Мерцание и пульсация особых стилей: гипноз, глитч ИИ, помехи, делам и т.п. Выключает и ваши анимации выше."
+        tooltip="Мерцание и пульсация особых стилей: гипноз, глитч ИИ, помехи, делам и т.п. Выключает и ваши анимации выше. Игровые эффекты (дрожь, опьянение и т.п.) настраиваются во вкладке Игровые эффекты."
         onClick={() => dispatch(updateSettings({
           spanAnimations: spanAnimations === false,
         }))}>
@@ -639,8 +643,8 @@ export const AppearanceCode = (props) => {
   return (
     <Box>
       <Box color="label" mb={0.5}>
-        Код оформления: стиль, шрифт, цвета, анимации, стили текста и
-        каналы. Подсветка и вкладки чата в него не входят.
+        Код оформления: стиль, шрифт, цвета, анимации, стили текста, каналы и
+        игровые эффекты. Подсветка и вкладки чата в него не входят.
       </Box>
       <Button
         icon={shown ? 'eye-slash' : 'file-export'}

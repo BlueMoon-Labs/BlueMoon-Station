@@ -1,5 +1,5 @@
 import { dropStrayTint } from './channelsModel';
-import { CHANNEL_TYPES, CHAT_ANIM_SPEEDS, CHAT_ANIMATIONS, CHAT_BG_ANIMATIONS, CHAT_STYLES, MESSAGE_STYLE_ANIMATIONS, MESSAGE_STYLE_FONTS, MESSAGE_STYLES, TEXT_GLOW_OPTIONS, TYPE_ANIM_KEYFRAMES } from './constants';
+import { CHANNEL_TYPES, CHAT_ANIM_SPEEDS, CHAT_ANIMATIONS, CHAT_BG_ANIMATIONS, CHAT_STYLES, GAME_EFFECTS, MESSAGE_STYLE_ANIMATIONS, MESSAGE_STYLE_FONTS, MESSAGE_STYLES, TEXT_GLOW_OPTIONS, TYPE_ANIM_KEYFRAMES } from './constants';
 
 const PREFIX = 'BMCHAT1:';
 const MAX_CODE_LENGTH = 20000;
@@ -66,6 +66,17 @@ const TYPE_FIELDS = {
   flash: isBool,
 };
 
+const pickGameEffects = map => {
+  const picked = {};
+  for (const { id } of GAME_EFFECTS) {
+    const value = own(map, id);
+    if (isBool(value)) {
+      picked[id] = value;
+    }
+  }
+  return picked;
+};
+
 // Неизвестный id стиля, анимации или фона (пресет из другой версии)
 // заменяется умолчанием, а не оставляет игроку его прежний.
 const PRESETS = {
@@ -93,6 +104,7 @@ const VALUE_CHECKS = {
   letterSpacing: inRange(-0.5, 3),
   borderRadius: inRange(0, 16),
   spanAnimations: isBool,
+  gameEffectsEnabled: isBool,
   settleOldAnimations: isBool,
 };
 
@@ -101,6 +113,7 @@ const MAP_PICKERS = {
     map, MESSAGE_STYLES.map(style => style.id), STYLE_FIELDS),
   typeOverrides: map => dropStrayTint(pickEntries(
     map, CHANNEL_TYPES.map(channel => channel.type), TYPE_FIELDS)),
+  gameEffects: pickGameEffects,
 };
 
 // Только оформление: подсветка, звук, вкладки и метка новых сообщений
@@ -112,7 +125,8 @@ export const APPEARANCE_KEYS = [
   'smoothScroll', 'hoverEffect', 'chatBgAnimation', 'chatBgAnimOpacity',
   'textGlow', 'textGlowColor', 'messageSpacing', 'fontWeight',
   'letterSpacing', 'borderRadius', 'styleOverrides', 'spanAnimations',
-  'typeOverrides', 'settleOldAnimations',
+  'typeOverrides', 'gameEffectsEnabled', 'gameEffects',
+  'settleOldAnimations',
 ];
 
 const toBase64 = text => btoa(encodeURIComponent(text).replace(

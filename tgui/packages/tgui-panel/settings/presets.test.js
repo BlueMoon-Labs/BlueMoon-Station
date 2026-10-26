@@ -1,7 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 
-import { CHAT_ANIM_SPEEDS, CHAT_ANIMATIONS, CHAT_BG_ANIMATIONS, CHAT_STYLES, MESSAGE_STYLE_ANIMATIONS, TYPE_ANIM_KEYFRAMES } from './constants';
+import { BLOCK_FX } from '../chat/messageFx';
+import { CHAT_ANIM_SPEEDS, CHAT_ANIMATIONS, CHAT_BG_ANIMATIONS, CHAT_STYLES, GAME_EFFECTS, MESSAGE_STYLE_ANIMATIONS, TYPE_ANIM_KEYFRAMES } from './constants';
 
 const stylesDir = path.resolve(__dirname, '../styles/components');
 const css = ['ChatCustomization.scss', 'ChatBgAnimations.scss', 'ChatPresets.scss']
@@ -303,6 +304,121 @@ describe('chat presets', () => {
     const vaporHl = rule('.Chat--style-vaporwave > .ChatMessage--highlighted');
     expect(vaporBase).toContain('color-mix(');
     expect(vaporHl).not.toContain('color-mix(');
+  });
+});
+
+describe('game effects', () => {
+  const read = () => fs.readFileSync(
+    path.join(stylesDir, 'ChatGameEffects.scss'), 'utf8');
+  test.each(GAME_EFFECTS)('game effect $id has an off switch', ({ id }) => {
+    expect(read()).toContain('.Chat--fxOff-' + id);
+  });
+  test.each(GAME_EFFECTS)('sample of $id is styled', ({ sample }) => {
+    const cls = sample.match(/class="([a-z_]+)"/)[1];
+    const block = BLOCK_FX.find(def => def.selector === '.' + cls);
+    const selector = block ? 'ChatMessage--fx-' + block.fx : cls;
+    expect(read()).toMatch(new RegExp('\\.' + selector + '\\b'));
+  });
+  test('motion is smooth, not stepped', () => {
+    const fx = read();
+    const moving = ['fx-tremble', 'fx-shiver', 'fx-drunk', 'fx-static',
+      'fx-hallucination', 'fx-shake', 'fx-sway'];
+    for (const name of moving) {
+      // Блочные эффекты идут после анимации появления (--enter-anim).
+      expect(fx).toMatch(new RegExp('animation: (var\\(--enter-anim, none\\), )?'
+        + name + ' '));
+    }
+    const stepped = fx.split('\n').filter(line =>
+      line.includes('animation:') && line.includes('steps('));
+    for (const line of stepped) {
+      expect(moving.some(name => line.includes(name + ' '))).toBe(false);
+    }
+  });
+  test('only block effects move with transform', () => {
+    const fx = read();
+    const names = keyframeNames(fx, '[a-z_-]+');
+    const moving = names.filter(name => keyframes(fx, name).includes('transform'));
+    expect(moving.sort()).toEqual(['fx-shake', 'fx-sway']);
+  });
+  test('block effects do not loop forever', () => {
+    const fx = read();
+    for (const name of ['fx-shake', 'fx-sway']) {
+      const uses = fx.split('\n').filter(line =>
+        line.includes('animation:') && line.includes(name));
+      expect(uses.length).toBeGreaterThan(0);
+      for (const line of uses) {
+        expect(line).not.toContain('infinite');
+      }
+    }
+  });
+  const animationOf = (fx, name) => fx.split('\n')
+    .find(line => line.includes('animation: ' + name + ' '));
+  test('hallucination keeps speech readable and calms down', () => {
+    const fx = read();
+    const frames = keyframes(fx, 'fx-hallucination');
+    const offsets = [...frames.matchAll(/(-?[\d.]+)px/g)]
+      .map(m => Math.abs(parseFloat(m[1])));
+    expect(offsets.length).toBeGreaterThan(0);
+    expect(Math.max(...offsets)).toBeLessThanOrEqual(2);
+    const alphas = [...frames.matchAll(/rgba\([^)]*,\s*([\d.]+)\)/g)]
+      .map(m => parseFloat(m[1]));
+    expect(Math.max(...alphas)).toBeLessThanOrEqual(0.45);
+    const line = animationOf(fx, 'fx-hallucination');
+    expect(line).not.toContain('infinite');
+    const repeats = parseInt(line.trim().split(/\s+/).at(-1), 10);
+    expect(repeats).toBeGreaterThanOrEqual(2);
+    expect(repeats).toBeLessThanOrEqual(3);
+  });
+  test('druggy shifts color within three seconds, children too', () => {
+    const fx = read();
+    const line = animationOf(fx, 'fx-druggy');
+    const ms = parseInt(line.match(/(\d+)ms/)[1], 10);
+    const cycle = line.includes('alternate') ? ms * 2 : ms;
+    expect(cycle).toBeGreaterThanOrEqual(2500);
+    expect(cycle).toBeLessThanOrEqual(3000);
+    expect(fx).toMatch(/\.hear_druggy \*[^{]*\{\s*color: inherit;/);
+  });
+  // Chromium не интерполирует тень с color-mix(currentColor): она прыгает
+  // на середине. Помехи прыгают нарочно.
+  test('shadows interpolate smoothly', () => {
+    const fx = read();
+    const names = keyframeNames(fx, '[a-z_-]+')
+      .filter(name => name !== 'fx-static');
+    for (const name of names) {
+      const shadows = keyframes(fx, name).split('\n')
+        .filter(line => line.includes('text-shadow'));
+      for (const line of shadows) {
+        expect(line).not.toMatch(/color-mix|\$ghost/);
+      }
+    }
+  });
+  test('druggy keeps links and colored effects', () => {
+    const fx = read();
+    const rule = fx.match(/([^{}]*\.hear_druggy \*[^{]*)\{\s*color: inherit;/);
+    expect(rule).not.toBeNull();
+    const selectors = rule[1].split(',\n').map(s => s.trim());
+    const colored = [...fx.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
+      .filter(m => /\n\s*color:/.test(m[2]))
+      .map(m => m[1].trim().match(/\.([a-z_]+)$/)?.[1])
+      .filter(cls => cls && cls !== 'hear_druggy');
+    expect(colored).toContain('shiver');
+    for (const selector of selectors) {
+      const not = selector.match(/\*:not\(([^)]*)\)$/);
+      expect(not).not.toBeNull();
+      const excluded = not[1].split(',').map(s => s.trim());
+      expect(excluded).toContain('a');
+      for (const cls of colored) {
+        expect(excluded).toContain('.' + cls);
+      }
+    }
+  });
+  test('gasp end stays visible at the lowest point', () => {
+    const fx = read();
+    const maskEnd = parseFloat(fx.match(
+      /mask-image: linear-gradient\(90deg, #000 \d+%, rgba\(0, 0, 0, ([\d.]+)\)\)/)[1]);
+    const lowest = parseFloat(keyframes(fx, 'fx-gasp')
+      .match(/to \{\s*opacity: ([\d.]+)/)[1]);
+    expect(maskEnd * lowest).toBeGreaterThanOrEqual(0.28);
   });
 });
 

@@ -1,4 +1,4 @@
-import { SETTLE_KEEP, settleOldMessages } from './messageFx';
+import { getBlockFxClasses, SETTLE_KEEP, settleOldMessages } from './messageFx';
 
 const makeNode = html => {
   const node = document.createElement('div');
@@ -6,6 +6,21 @@ const makeNode = html => {
   node.innerHTML = html;
   return node;
 };
+
+describe('getBlockFxClasses', () => {
+  test('yell gives shake', () => {
+    expect(getBlockFxClasses(makeNode('<span class="yell">A!</span>')))
+      .toEqual(['ChatMessage--fx-shake']);
+  });
+  test('dizzy listener gives sway', () => {
+    expect(getBlockFxClasses(makeNode('<span class="hear_dizzy">a</span>')))
+      .toEqual(['ChatMessage--fx-sway']);
+  });
+  test('plain text gives nothing', () => {
+    expect(getBlockFxClasses(makeNode('<span class="say">a</span>')))
+      .toEqual([]);
+  });
+});
 
 describe('settleOldMessages', () => {
   const makeMessages = n => Array.from({ length: n }, () => ({

@@ -87,7 +87,9 @@ export const buildTypeOverrideCss = overrides => {
     const animValue = entry.anim === 'none'
       ? 'none' : typeAnimationValue(entry.anim);
     if (animValue) {
-      decls.push('animation: ' + animValue + ';');
+      // --enter-anim встряска и качка ставят рядом со своей анимацией.
+      decls.push('animation: ' + animValue + ';',
+        '--enter-anim: ' + animValue + ';');
       // Полоса сканера живёт на ::after: включаем свою или гасим общую.
       // Селектор свежести тот же, что у общего правила, плюс класс типа:
       // подавление этим сильнее его по специфичности.

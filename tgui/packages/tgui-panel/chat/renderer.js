@@ -12,10 +12,10 @@ import { createLogger } from 'tgui/logging';
 import highlightSoundUrl from '../assets/chat_notify.ogg';
 import { MESSAGE_STYLE_ANIMATIONS, MESSAGE_STYLES } from '../settings/constants';
 import { COMBINE_MAX_MESSAGES, COMBINE_MAX_TIME_WINDOW, IMAGE_RETRY_DELAY, IMAGE_RETRY_LIMIT, IMAGE_RETRY_MAX_DELAY, IMAGE_RETRY_MESSAGE_AGE, MAX_PERSISTED_MESSAGES, MAX_VISIBLE_MESSAGES, MESSAGE_PRUNE_INTERVAL, MESSAGE_TYPE_INTERNAL, MESSAGE_TYPE_UNKNOWN, MESSAGE_TYPES } from './constants';
-import { settleOldMessages } from './messageFx';
+import { getBlockFxClasses, settleOldMessages } from './messageFx';
 import { canPageAcceptType, createMessage, isSameMessage } from './model';
 import { highlightNode, linkifyNode } from './replaceInTextNode';
-import { getChatColorProps, getSettleRootClasses, getStyleOverrideRoot, isStyleOverrideClass, SETTLE_OFF_CLASS } from './rootAppearance';
+import { getChatColorProps, getGameFxRootClasses, getSettleRootClasses, getStyleOverrideRoot, isGameFxRootClass, isStyleOverrideClass, SETTLE_OFF_CLASS } from './rootAppearance';
 import { buildTypeOverrideCss } from './typeOverrides';
 
 const logger = createLogger('chatRenderer');
@@ -786,6 +786,9 @@ export class ChatRenderer {
         node.dataset.fxTagged = '1';
         node.classList.add('ChatMessage--type-'
           + String(message.type).replace(/[^a-z0-9_-]/gi, '-'));
+        for (const cls of getBlockFxClasses(node)) {
+          node.classList.add(cls);
+        }
       }
       updateMessageBadge(message);
       if (!countByType[message.type]) {
@@ -1024,6 +1027,25 @@ export class ChatRenderer {
     updateSheet(TYPE_OVERRIDE_SHEET_ID, buildTypeOverrideCss(overrides));
   }
 
+  setGameEffects(effects = {}, enabled = true) {
+    this._pendingAppearance = {
+      ...this._pendingAppearance,
+      gameEffects: effects,
+      gameEffectsEnabled: enabled,
+    };
+    if (!this.rootNode) {
+      return;
+    }
+    const root = this.rootNode;
+    const toRemove = [...root.classList].filter(isGameFxRootClass);
+    for (const cls of toRemove) {
+      root.classList.remove(cls);
+    }
+    for (const cls of getGameFxRootClasses(effects, enabled)) {
+      root.classList.add(cls);
+    }
+  }
+
   setSettleOld(enabled = true) {
     this._pendingAppearance = {
       ...this._pendingAppearance,
@@ -1076,6 +1098,9 @@ export class ChatRenderer {
     }
     if (p.typeOverrides !== undefined) {
       this.setTypeOverrides(p.typeOverrides);
+    }
+    if (p.gameEffects !== undefined) {
+      this.setGameEffects(p.gameEffects, p.gameEffectsEnabled);
     }
     if (p.settleOld !== undefined) {
       this.setSettleOld(p.settleOld);

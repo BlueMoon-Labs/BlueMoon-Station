@@ -1095,6 +1095,36 @@ describe('ChatRenderer', () => {
     });
   });
 
+  describe('setGameEffects', () => {
+    test('setGameEffects toggles root classes', () => {
+      const renderer = createReadyRenderer();
+      renderer.setGameEffects({ tremble: false, drunk: true }, true);
+      expect(renderer.rootNode.classList.contains('Chat--fxOff-tremble')).toBe(true);
+      expect(renderer.rootNode.classList.contains('Chat--fxOff-drunk')).toBe(false);
+      expect(renderer.rootNode.classList.contains('Chat--gameFxOff')).toBe(false);
+      renderer.setGameEffects({}, false);
+      expect(renderer.rootNode.classList.contains('Chat--fxOff-tremble')).toBe(false);
+      expect(renderer.rootNode.classList.contains('Chat--gameFxOff')).toBe(true);
+    });
+
+    test('keeps unrelated root classes', () => {
+      const renderer = createReadyRenderer();
+      renderer.rootNode.classList.add('Chat', 'Chat--style-seccon');
+      renderer.setGameEffects({ yell: false }, true);
+      renderer.setGameEffects({}, true);
+      expect([...renderer.rootNode.classList])
+        .toEqual(['Chat', 'Chat--style-seccon']);
+    });
+
+    test('is applied once the root appears', () => {
+      const renderer = new ChatRenderer();
+      renderer.setGameEffects({ dizzy: false }, true);
+      renderer.rootNode = document.createElement('div');
+      renderer.applyPendingAppearance();
+      expect(renderer.rootNode.classList.contains('Chat--fxOff-dizzy')).toBe(true);
+    });
+  });
+
   describe('setSettleOld', () => {
     test('toggles Chat--noSettle on the root', () => {
       const renderer = createReadyRenderer();
@@ -1180,6 +1210,12 @@ describe('ChatRenderer', () => {
       renderer.processBatch([{ html: '<span class="ooc">hi</span>' }]);
       const node = renderer.messages[0].node;
       expect(node.classList.contains('ChatMessage--type-ooc')).toBe(true);
+    });
+    test('adds block fx class for yell', () => {
+      const renderer = createReadyRenderer();
+      renderer.processBatch([{ html: '<span class="say"><span class="yell">A!</span></span>' }]);
+      expect(renderer.messages[0].node.classList
+        .contains('ChatMessage--fx-shake')).toBe(true);
     });
     test('settles messages beyond the keep window', () => {
       const renderer = createReadyRenderer();

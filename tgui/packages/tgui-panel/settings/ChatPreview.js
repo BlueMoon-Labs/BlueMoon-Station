@@ -1,7 +1,8 @@
 import { useSelector } from 'common/redux';
 import { Box } from 'tgui/components';
 
-import { getChatColorProps, getChatCustomProps, getSettleRootClasses, getStyleOverrideRoot } from '../chat/rootAppearance';
+import { getBlockFxClasses } from '../chat/messageFx';
+import { getChatColorProps, getChatCustomProps, getGameFxRootClasses, getSettleRootClasses, getStyleOverrideRoot } from '../chat/rootAppearance';
 import { CHANNEL_TYPES } from './constants';
 import { selectSettings } from './selectors';
 
@@ -13,6 +14,7 @@ const APPEARANCE_SAMPLES = [
   { type: 'ooc', html: '<span class="ooc">OOC: Игрок: всем привет</span>' },
   { type: 'adminpm', html: '<span class="pm">ПМ от Админ: всё в порядке?</span>' },
   { type: 'localchat', html: '<span class="emote">* Врач качает головой.</span>' },
+  { type: 'localchat', html: '<span class="say"><span class="name">Бармен</span> говорит, "<span class="drunk_speech">Ещё по одной</span>"</span>' },
 ];
 
 // Класс, по которому рендерер относит сообщение к каналу.
@@ -47,6 +49,18 @@ const SAMPLE_SETS = {
   channels: CHANNEL_SAMPLES,
 };
 
+const blockFxCache = new Map();
+
+const getSampleFx = html => {
+  if (!blockFxCache.has(html)) {
+    const node = document.createElement('div');
+    node.innerHTML = html;
+    blockFxCache.set(html,
+      getBlockFxClasses(node).map(cls => ' ' + cls).join(''));
+  }
+  return blockFxCache.get(html);
+};
+
 export const getPreviewRootClasses = settings => {
   const classes = ['Chat'];
   if (settings.chatStyle && settings.chatStyle !== 'classic') {
@@ -57,6 +71,8 @@ export const getPreviewRootClasses = settings => {
   }
   classes.push(...getStyleOverrideRoot(
     settings.styleOverrides, settings.spanAnimations !== false).classes);
+  classes.push(...getGameFxRootClasses(
+    settings.gameEffects, settings.gameEffectsEnabled !== false));
   classes.push(...getSettleRootClasses(settings.settleOldAnimations));
   return classes.join(' ');
 };
@@ -96,7 +112,8 @@ export const ChatPreview = props => {
         {SAMPLE_SETS[samples].map((sample, i) => (
           <div
             key={replayKey + i}
-            className={'ChatMessage ChatMessage--type-' + sample.type + anim}
+            className={'ChatMessage ChatMessage--type-' + sample.type
+              + getSampleFx(sample.html) + anim}
             // eslint-disable-next-line react/no-danger -- образцы: константы этого файла, не ввод игрока
             dangerouslySetInnerHTML={{ __html: sample.html }}
           />

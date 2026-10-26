@@ -11,6 +11,7 @@ const sample = {
   chatBgAnimation: 'snow',
   chatAccentColor: '#b3261e',
   typeOverrides: { adminpm: { border: '#c0392b', flash: true } },
+  gameEffects: { tremble: false },
   highlightText: 'секрет',
 };
 
@@ -137,6 +138,7 @@ test('booleans must be booleans', () => {
   const result = roundTrip({
     hoverEffect: 'yes',
     spanAnimations: false,
+    gameEffectsEnabled: 1,
     settleOldAnimations: true,
   });
   expect(result.settings).toEqual({
@@ -201,6 +203,17 @@ test('text style overrides keep only known styles and valid fields', () => {
   });
 });
 
+test('game effect switches keep known effects with boolean values', () => {
+  const result = roundTrip({
+    gameEffects: {
+      tremble: false, radio_static: true, drunk: 'no', static: false,
+      'a b': false,
+    },
+  });
+  expect(result.settings.gameEffects)
+    .toEqual({ tremble: false, radio_static: true });
+});
+
 const rawCode = json => 'BMCHAT1:' + btoa(json);
 
 test('hostile keys do not reach prototypes or the result', () => {
@@ -208,10 +221,10 @@ test('hostile keys do not reach prototypes or the result', () => {
   const evil = '{"__proto__":{"polluted":true,"flash":true,"disabled":true},'
     + '"constructor":{"flash":true,"disabled":true,"prototype":'
     + '{"polluted":true}},"hasOwnProperty":true}';
-  const maps = ['styleOverrides', 'typeOverrides'];
+  const maps = ['styleOverrides', 'typeOverrides', 'gameEffects'];
   const json = '{"__proto__":{"polluted":1,"fontSize":12},'
     + '"constructor":{"prototype":{"polluted":1}},"hasOwnProperty":false,'
-    + '"styleOverrides":' + evil
+    + '"styleOverrides":' + evil + ',"gameEffects":' + evil
     + ',"typeOverrides":' + evil.slice(0, -1) + ',"radio":'
     + evil.slice(0, -1) + ',"flash":true}}}';
   const result = decodeAppearance(rawCode(json));
@@ -219,7 +232,7 @@ test('hostile keys do not reach prototypes or the result', () => {
   expect(({}).polluted).toBeUndefined();
   expect(Object.prototype.polluted).toBeUndefined();
   expect(Object.keys(result.settings).sort())
-    .toEqual(['styleOverrides', 'typeOverrides']);
+    .toEqual(['gameEffects', 'styleOverrides', 'typeOverrides']);
   expect(result.settings.fontSize).toBeUndefined();
   expect(result.settings.typeOverrides).toEqual({ radio: { flash: true } });
   for (const key of maps) {
