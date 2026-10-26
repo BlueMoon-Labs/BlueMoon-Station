@@ -305,23 +305,11 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 
 	last_words = message
 
-	spans |= speech_span
-
-	if(language)
-		var/datum/language/L = GLOB.language_datum_instances[language]
-		spans |= L.spans
-
-	//BlueMoon add - стили шёпота, последнего вздоха, невнятной и глитч-речи
+	spans |= get_speech_spans(language)
 	if(message_mode == MODE_WHISPER)
 		spans |= SPAN_WHISPER
 	else if(message_mode == MODE_WHISPER_CRIT)
 		spans |= SPAN_LAST_BREATH
-	if(isrobotic(src))
-		if(slurring || stuttering || derpspeech)
-			spans |= SPAN_GLITCH
-	else if(slurring)
-		spans |= SPAN_SLURRING
-	spans |= get_speech_fx_spans(language)
 
 // Skyrat edits
 	if(message_mode == MODE_SING)
@@ -347,13 +335,11 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 		return TRUE
 
 	//No screams in space, unless you're next to someone.
-	var/turf/T = get_turf(src)
-	var/datum/gas_mixture/environment = T.return_air()
-	var/pressure = (environment)? environment.return_pressure() : 0
+	var/pressure = get_speech_pressure()
 	if(pressure < SOUND_MINIMUM_PRESSURE && !is_visual_language) //жесты в вакууме видно как обычно
 		message_range = 1
 
-	if(pressure < ONE_ATMOSPHERE*0.4) //Thin air, let's italicise the message
+	if(pressure < SPEECH_THIN_AIR_PRESSURE)
 		spans |= SPAN_ITALICS
 	if(src?.client?.prefs.auto_capitalize_enabled)
 		message=auto_capitalize(message)
@@ -380,6 +366,10 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 	SEND_SIGNAL(src, COMSIG_MOVABLE_HEAR, args) //parent calls can't overwrite the current proc args.
 	if(!client && !audiovisual_redirect)
 		return
+	return show_heard_speech(speaker, message_language, raw_message, radio_freq, spans, message_mode, source)
+
+/// Runechat и строка чата услышанной речи. Через него же идёт речь галлюцинаций, чтобы её нельзя было отличить.
+/mob/living/proc/show_heard_speech(atom/movable/speaker, datum/language/message_language, raw_message, radio_freq, list/spans, message_mode, atom/movable/source)
 	// BLUEMOON EDIT - sign language is visual, deaf people should understand it
 	// message_language сюда приходит и пустым (телекомы шлют signal.language как есть), а
 	// initial() по null-переменной рантаймит и роняет Hear() целиком - слушатель молча
@@ -398,22 +388,22 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 		deaf_message = "<span class='notice'>You can't hear yourself!</span>"
 		deaf_type = 2 // Since you should be able to hear yourself without looking
 
-	// Create map text prior to modifying message for goonchat
+	// Recompose message for AI hrefs, language incomprehension.
+	// Сборка до runechat: say_quote дописывает в spans крик, у настоящей речи это уже сделал send_speech().
+	var/message = compose_message(speaker, message_language, raw_message, radio_freq, spans, message_mode, FALSE, source)
+
 	// BLUEMOON EDIT - sign language uses vision instead of hearing for map text
 	if (client?.prefs.chat_on_map && stat != UNCONSCIOUS && (client.prefs.see_chat_non_mob || ismob(speaker)) && (is_sign_language ? !eye_blind : can_hear()))
 		create_chat_message(speaker, message_language, raw_message, spans, message_mode)
 
-	// Recompose message for AI hrefs, language incomprehension.
-	message = compose_message(speaker, message_language, raw_message, radio_freq, spans, message_mode, FALSE, source)
 	message = apply_hearing_fx(message, speaker, message_language)
-
 	show_message(message, is_sign_language ? MSG_VISUAL : MSG_AUDIBLE, deaf_message, deaf_type)
 	return message
 
 /// Спаны состояния говорящего для оформления чата. Жестам удушье и кляп не мешают, дрожь рук - видна.
 /mob/living/proc/get_speech_fx_spans(datum/language/message_language)
 	. = list()
-	// Робота-заику уже помечает SPAN_GLITCH в say().
+	// Робота-заику уже помечает SPAN_GLITCH в get_speech_spans().
 	if(!isrobotic(src) && (stuttering || jitteriness >= SPEECH_FX_JITTER_MIN))
 		. += SPAN_TREMBLE
 	if(message_language && initial(message_language.visual_language))
@@ -436,11 +426,34 @@ GLOBAL_LIST_INIT(department_radio_keys, list(
 		message = "<span class='hear_dizzy'>[message]</span>"
 	return message
 
-/// Реплика, которую слышит только src (галлюцинация), оформляется как настоящая речь, иначе её выдаёт чат.
-/mob/living/proc/compose_fake_speech(mob/living/person, datum/language/message_language, raw_message, radio_freq, list/spans)
-	spans |= person.get_speech_fx_spans(message_language)
-	var/message = compose_message(person, message_language, raw_message, radio_freq, spans, face_name = TRUE)
-	return apply_hearing_fx(message, person, message_language)
+/// Спаны, которые say() ставит речи по голосу, языку и состоянию говорящего.
+/mob/living/proc/get_speech_spans(datum/language/message_language)
+	. = list(speech_span)
+	if(message_language)
+		var/datum/language/language_instance = GLOB.language_datum_instances[message_language]
+		. |= language_instance.spans
+	if(isrobotic(src))
+		if(slurring || stuttering || derpspeech)
+			. |= SPAN_GLITCH
+	else if(slurring)
+		. |= SPAN_SLURRING
+	. |= get_speech_fx_spans(message_language)
+
+/mob/living/proc/get_speech_pressure()
+	var/turf/speaker_turf = get_turf(src)
+	var/datum/gas_mixture/environment = speaker_turf?.return_air()
+	return environment ? environment.return_pressure() : 0
+
+/// Реплика, которую слышит только src (галлюцинация): строка и runechat те же, что у настоящей речи person рядом или по рации на radio_freq.
+/mob/living/proc/hear_fake_speech(mob/living/person, datum/language/message_language, raw_message, radio_freq)
+	var/list/spans = person.get_speech_spans(message_language)
+	if(!radio_freq)
+		if(person.get_speech_pressure() < SPEECH_THIN_AIR_PRESSURE)
+			spans |= SPAN_ITALICS
+		return show_heard_speech(person, message_language, raw_message, null, spans, null, person)
+	var/atom/movable/virtualspeaker/virt = new(null, person)
+	. = show_heard_speech(virt, message_language, raw_message, radio_freq, spans)
+	qdel(virt)
 
 /mob/living/send_speech(message, message_range = 6, obj/source = src, bubble_type = bubble_icon, list/spans, datum/language/message_language=null, message_mode)
 	SEND_SIGNAL(src, COMSIG_LIVING_SEND_SPEECH, message, message_range, source, bubble_type, spans, message_language, message_mode)

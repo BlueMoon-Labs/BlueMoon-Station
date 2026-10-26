@@ -190,10 +190,10 @@
 	var/mob/living/carbon/human/person = allocate(/mob/living/carbon/human, get_step(target, EAST))
 	target.druggy = 10
 	person.drunkenness = SPEECH_FX_DRUNK_MIN
-	var/fake = target.compose_fake_speech(person, /datum/language/common, "Привет", null, list(person.speech_span))
+	var/fake = target.hear_fake_speech(person, /datum/language/common, "Привет")
 	TEST_ASSERT(findtext(fake, "hear_druggy"), "Фальшивая речь получает эффекты слушателя: [fake]")
 	TEST_ASSERT(findtext(fake, SPAN_DRUNK), "Фальшивая речь несёт состояние говорящего: [fake]")
-	var/fake_radio = target.compose_fake_speech(person, /datum/language/common, "Помогите", "[FREQ_COMMON]", list(person.speech_span))
+	var/fake_radio = target.hear_fake_speech(person, /datum/language/common, "Помогите", FREQ_COMMON)
 	TEST_ASSERT(findtext(fake_radio, "hear_druggy"), "Фальшивая рация получает эффекты слушателя: [fake_radio]")
 	TEST_ASSERT(findtext(fake_radio, SPAN_DRUNK), "Фальшивая рация несёт состояние говорящего: [fake_radio]")
 
@@ -208,3 +208,132 @@
 	TEST_ASSERT(SPAN_YELL in result, "Остальные спаны сохраняются.")
 	TEST_ASSERT(!(SPAN_RADIO_STATIC in original), "Исходный список не мутирует.")
 	TEST_ASSERT(SPAN_RADIO_STATIC in radio_broadcast_spans(null, 30), "Пустой список спанов тоже получает помехи.")
+
+/obj/item/radio/headset/fake_speech_probe
+
+/obj/item/radio/headset/fake_speech_probe/talk_into_impl(atom/movable/M, message, channel, list/spans, datum/language/language)
+	var/atom/movable/virtualspeaker/virt = new(null, M, src)
+	var/datum/signal/subspace/vocal/signal = new(src, frequency, virt, language, message, spans)
+	signal.transmission_method = TRANSMISSION_RADIO
+	signal.data["compression"] = 0
+	signal.broadcast()
+	qdel(virt)
+
+/// Строка галлюцинации совпадает со строкой настоящей речи того же говорящего рядом и по рации.
+/datum/unit_test/fake_speech_matches_real
+	var/forced_text
+	var/mob/living/carbon/human/speech_fx_probe/listener
+	var/mob/living/carbon/human/speaker
+
+/datum/unit_test/fake_speech_matches_real/Run()
+	listener = allocate(/mob/living/carbon/human/speech_fx_probe, run_loc_floor_bottom_left)
+	listener.audiovisual_redirect = allocate(/mob/living/carbon/human, get_step(listener, NORTH))
+	speaker = allocate(/mob/living/carbon/human, get_step(listener, EAST))
+	speaker.real_name = "John Doe"
+	speaker.name = speaker.get_visible_name()
+	RegisterSignal(speaker, COMSIG_MOB_SAY, PROC_REF(keep_text))
+
+	var/real = compare("Открытое лицо", "Проверка связи.")
+	TEST_ASSERT(findtext(real, ">John Doe<"), "Открытое лицо: [real]")
+
+	var/obj/item/clothing/mask/gas/mask = allocate(/obj/item/clothing/mask/gas)
+	TEST_ASSERT(speaker.equip_to_slot_if_possible(mask, ITEM_SLOT_MASK), "Противогаз надевается.")
+	speaker.name = speaker.get_visible_name()
+	real = compare("Закрытое лицо", "Кто здесь?")
+	TEST_ASSERT(findtext(real, "John Doe (как неизвестный)"), "Закрытое лицо выдаёт голос: [real]")
+	qdel(mask)
+
+	var/obj/item/card/id/card = allocate(/obj/item/card/id)
+	card.registered_name = "Bob Roe"
+	card.assignment = "Medical Doctor"
+	speaker.equip_to_slot(card, ITEM_SLOT_ID)
+	speaker.name = speaker.get_visible_name()
+	real = compare("Чужая карта", "Это не моя карта.")
+	TEST_ASSERT(findtext(real, "John Doe (как Bob Roe)"), "Чужая карта: [real]")
+
+	speaker.slurring = 30
+	real = compare("Невнятная речь", "Всё в порядке.")
+	TEST_ASSERT(findtext(real, SPAN_SLURRING), "Невнятная речь: [real]")
+	speaker.slurring = 0
+
+	speaker.grant_language(/datum/language/machine)
+	listener.grant_language(/datum/language/machine)
+	real = compare("Язык со спанами", "Бип.", /datum/language/machine)
+	TEST_ASSERT(findtext(real, SPAN_ROBOT), "Язык со спанами: [real]")
+
+	var/turf/speaker_turf = get_turf(speaker)
+	var/datum/gas_mixture/air = speaker_turf.return_air()
+	var/datum/gas_mixture/removed = air.remove_ratio(0.8)
+	real = compare("Разреженный воздух", "Душно.")
+	air.merge(removed)
+	TEST_ASSERT(findtext(real, SPAN_ITALICS), "Разреженный воздух: [real]")
+
+	var/turf/far = locate(listener.x, listener.y + 12, listener.z)
+	TEST_ASSERT_NOTNULL(far, "Есть клетка вдали от слушателя.")
+	speaker.forceMove(far)
+	allocate(/obj/item/radio, run_loc_floor_bottom_left)
+	var/obj/item/radio/headset/fake_speech_probe/headset = allocate(/obj/item/radio/headset/fake_speech_probe)
+	TEST_ASSERT(speaker.equip_to_slot_if_possible(headset, ITEM_SLOT_EARS_LEFT), "Гарнитура надевается.")
+	real = compare("Рация", ";Помогите!", radio_freq = FREQ_COMMON)
+	TEST_ASSERT(findtext(real, "\[Medical Doctor\]"), "Рация с тегом должности: [real]")
+	TEST_ASSERT(!findtext(real, "class='small'"), "Рация издалека не мельчит: [real]")
+	UnregisterSignal(speaker, COMSIG_MOB_SAY)
+
+/// Сравнивает строку настоящей речи speaker у listener со строкой фальшивки; возвращает настоящую.
+/datum/unit_test/fake_speech_matches_real/proc/compare(label, text, language = /datum/language/common, radio_freq)
+	listener.shown.Cut()
+	forced_text = radio_freq ? copytext_char(text, 2) : text
+	speaker.say(text, language = language, ignore_spam = TRUE)
+	var/real = jointext(listener.shown, " | ")
+	var/fake = listener.hear_fake_speech(speaker, language, forced_text, radio_freq)
+	if(fake != real)
+		TEST_FAIL("[label]: фальшивка [fake], настоящая [real]")
+	return real
+
+/datum/unit_test/fake_speech_matches_real/proc/keep_text(datum/source, list/speech_args)
+	SIGNAL_HANDLER
+	speech_args[SPEECH_MESSAGE] = forced_text
+
+/// Галлюцинация не говорит голосом того, чей голос не виден по лицу или карте: иначе она выдаёт замаскированного.
+/datum/unit_test/hallucination_voice_disguise
+
+/datum/unit_test/hallucination_voice_disguise/Run()
+	var/mob/living/carbon/human/person = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	person.real_name = "John Doe"
+	TEST_ASSERT(!hallucination_voice_gives_away(person), "Открытое лицо голос не выдаёт.")
+	var/obj/item/card/id/card = allocate(/obj/item/card/id)
+	card.registered_name = "Bob Roe"
+	person.equip_to_slot(card, ITEM_SLOT_ID)
+	TEST_ASSERT(!hallucination_voice_gives_away(person), "Лицо видно, чужая карта голос не выдаёт.")
+	var/obj/item/clothing/mask/gas/mask = allocate(/obj/item/clothing/mask/gas)
+	TEST_ASSERT(person.equip_to_slot_if_possible(mask, ITEM_SLOT_MASK), "Противогаз надевается.")
+	TEST_ASSERT(hallucination_voice_gives_away(person), "Под маской с чужой картой голос выдаёт.")
+	card.registered_name = "John Doe"
+	TEST_ASSERT(!hallucination_voice_gives_away(person), "Под маской со своей картой голос совпадает с картой.")
+	qdel(card)
+	TEST_ASSERT(hallucination_voice_gives_away(person), "Под маской без карты голос выдаёт.")
+
+/// Галлюцинация смерти показывает deadchat в том же виде, что настоящий.
+/datum/unit_test/fake_deadchat_matches_real
+
+/datum/unit_test/fake_deadchat_matches_real/Run()
+	GLOB.unit_test_deadchat_messages = list()
+	var/mob/dead/observer/ghost = allocate(/mob/dead/observer, run_loc_floor_bottom_left)
+	ghost.say("git gud")
+	var/real = jointext(GLOB.unit_test_deadchat_messages, " | ")
+	var/fake = hallucination_deadchat_say(ghost, "git gud")
+	if(fake != real)
+		TEST_FAIL("Речь призрака: фальшивка [fake], настоящая [real]")
+
+	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, get_step(run_loc_floor_bottom_left, EAST))
+	victim.mind_initialize()
+	victim.mind.active = TRUE
+	victim.mind.name = "Jane Roe"
+	fake = hallucination_deathrattle(victim)
+	GLOB.unit_test_deadchat_messages = list()
+	victim.death()
+	real = jointext(GLOB.unit_test_deadchat_messages, " | ")
+	GLOB.unit_test_deadchat_messages = null
+	TEST_ASSERT(findtext(real, "Jane Roe"), "Смерть объявляется в deadchat: [real]")
+	if(fake != real)
+		TEST_FAIL("Предсмертное сообщение: фальшивка [fake], настоящая [real]")

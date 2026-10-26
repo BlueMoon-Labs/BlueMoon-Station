@@ -96,6 +96,8 @@
 /// Как у "I can't breathe!" в vocal_cords.dm; при 50 carbon уже без сознания и не говорит.
 #define SPEECH_FX_OXY_MIN 25
 #define SPEECH_FX_DIZZY_MIN 100
+/// Ниже этого давления у говорящего его речь пишется курсивом.
+#define SPEECH_THIN_AIR_PRESSURE (ONE_ATMOSPHERE * 0.4)
 #define HEARING_FX_HALLUCINATION_CHANCE 25
 
 //bitflag #defines for return value of the radio() proc.
