@@ -716,7 +716,7 @@ GLOBAL_LIST_INIT(manifest_department_names, list(
 	"Misc" = "Прочее",
 ))
 
-/// "профессия|должность|своё название карты" -> глава ли.
+/// "профессия|должность|своё название карты" -> глава ли. Свободные названия не кэшируются.
 GLOBAL_LIST_EMPTY(manifest_head_cache)
 
 /// Глава ли запись: метка главы рации с теми же аргументами, что у карты в say.dm.
@@ -728,7 +728,7 @@ GLOBAL_LIST_EMPTY(manifest_head_cache)
 	if(!isnull(.))
 		return
 	. = ("radiojob-head" in splittext(get_radio_job_class(real_rank, rank, custom_job), " "))
-	if(SSjob.initialized)
+	if(SSjob.initialized && (!custom_job || GetJobName(custom_job) != "Unknown"))
 		GLOB.manifest_head_cache[key] = .
 
 /datum/datacore/proc/get_manifest()

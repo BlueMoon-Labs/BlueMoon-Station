@@ -57,6 +57,7 @@
 	GLOB.manifest_head_cache[cache_key] = TRUE
 	TEST_ASSERT_EQUAL(from_cache, FALSE, "Повторный вызов берёт ответ из кэша, а не считает класс рации заново")
 	TEST_ASSERT_EQUAL(is_manifest_record_head("Chief Medical Officer", "Medical Director", "Medical Director"), TRUE, "Из кэша тот же ответ")
+	TEST_ASSERT(!("Chief Medical Officer|Bob|Bob" in GLOB.manifest_head_cache), "Свободное название карты не растит кэш")
 
 	var/obj/item/modular_computer/laptop/preset/civilian/laptop = allocate(/obj/item/modular_computer/laptop/preset/civilian, run_loc_floor_bottom_left)
 	laptop.install_component(new /obj/item/computer_hardware/printer/mini)
@@ -91,6 +92,52 @@
 		pai_heads[entry["name"]] = entry["head"]
 	TEST_ASSERT(pai_heads[MANIFEST_TEST_PREFIX + "Director"], "pAI видит главу под альт-названием")
 	TEST_ASSERT(!pai_heads[MANIFEST_TEST_PREFIX + "Doctor"], "pAI не помечает рядового")
+
+/// Запись из manifest_inject берёт своё название с надетой карты, правка должности в консоли СБ его сбрасывает.
+/datum/unit_test/crew_manifest_heads/inject
+
+/datum/unit_test/crew_manifest_heads/inject/Run()
+	var/mob/living/carbon/human/director = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/full_name = MANIFEST_TEST_PREFIX + "Injected"
+	director.real_name = full_name
+	director.mind_initialize()
+	director.mind.assigned_role = "Chief Medical Officer"
+	var/obj/item/card/id/card = allocate(/obj/item/card/id)
+	card.assignment = "Chief Medical Officer"
+	card.custom_job = "Medical Director"
+	director.equip_to_slot(card, ITEM_SLOT_ID)
+	var/datum/preferences/prefs = new
+	allocated += prefs
+	GLOB.data_core.manifest_inject(director, null, prefs)
+	var/datum/data/record/general = GLOB.data_core.general_by_name[full_name]
+	TEST_ASSERT_NOTNULL(general, "manifest_inject создаёт запись")
+	allocated += general
+	allocated += GLOB.data_core.medical_by_name[full_name]
+	allocated += GLOB.data_core.security_by_name[full_name]
+	allocated += GLOB.data_core.locked_by_id[md5("[full_name]Chief Medical Officer")]
+	TEST_ASSERT_EQUAL(general.fields["custom_job"], "Medical Director", "Своё название карты записано при создании записи")
+
+	var/datum/crew_manifest/window = allocate(/datum/crew_manifest)
+	var/list/medical = test_entries(window.ui_data(null)["manifest"], DEPARTMENT_MEDICAL)
+	TEST_ASSERT(medical["Injected"]["head"], "Главврач из manifest_inject под альт-названием глава")
+
+	var/mob/living/carbon/human/clerk = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/obj/machinery/computer/secure_data/console = allocate(/obj/machinery/computer/secure_data)
+	console.machine_stat = NONE
+	var/datum/ui_login/login = console.ui_login_get()
+	login.logged_in = TRUE
+	login.access = list(ACCESS_HOP)
+	console.active1 = general
+	var/datum/tgui/console_ui = allocate(/datum/tgui, clerk, console, "SecurityRecords")
+	console_ui.status = UI_INTERACTIVE
+	usr = clerk
+	console.ui_act("edit_field", list("field" = "rank", "value" = "Medical Doctor"), console_ui)
+	usr = null
+	console.ui_login_logout(login)
+	TEST_ASSERT_EQUAL(general.fields["rank"], "Medical Doctor", "Консоль СБ меняет должность записи")
+	TEST_ASSERT_NULL(general.fields["custom_job"], "Правка должности сбрасывает своё название карты")
+	medical = test_entries(window.ui_data(null)["manifest"], DEPARTMENT_MEDICAL)
+	TEST_ASSERT(!medical["Injected"]["head"], "Разжалованный в врачи не глава по старому названию карты")
 
 /datum/unit_test/crew_manifest_heads/proc/add_record(short_name, real_rank)
 	var/datum/data/record/record = allocate(/datum/data/record)
