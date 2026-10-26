@@ -193,8 +193,6 @@
 
 	use_power(5)
 	icon_state = "[skin]1"
-	balloon_alert(user, "нажато")
-
 	if(device)
 		device.pulsed()
 
