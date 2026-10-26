@@ -157,16 +157,27 @@
 
 /obj/structure/closet/crate/secure/loot/attackby(obj/item/W, mob/user, params)
 	if(locked && istype(W, /obj/item/multitool))
-		to_chat(user, span_notice("DECA-CODE LOCK REPORT:"))
-		if(attempts == 1)
-			to_chat(user, span_warning("* Anti-Tamper Bomb will activate on next failed access attempt."))
-		else
-			to_chat(user, span_notice("* Anti-Tamper Bomb will activate after [attempts] failed access attempts."))
-		var/list/last = previous_attempts.len ? previous_attempts[previous_attempts.len] : null
-		if(last)
-			to_chat(user, span_notice("Last code attempt, [last["attempt"]], had [last["bulls"]] correct digits at correct positions and [last["cows"]] correct digits at incorrect positions."))
+		ui_interact(user)
 		return // перехват до тампер-чека — потому и не взрывается
 	return ..()
+
+/obj/structure/closet/crate/secure/loot/ui_interact(mob/user, datum/tgui/ui)
+	. = ..()
+
+	// Attempt to update tgui ui, open and update if needed.
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "AbandonedCrate", name)
+		ui.open()
+
+/obj/structure/closet/crate/secure/loot/ui_data(mob/user)
+	var/list/data = list()
+
+	data["previous_attempts"] = previous_attempts
+	data["attempts_left"] = attempts
+
+	return data
+
 
 /// Implements bulls and cows algorithm to compare guess against actual code
 /obj/structure/closet/crate/secure/loot/proc/bulls_and_cows(guess)
