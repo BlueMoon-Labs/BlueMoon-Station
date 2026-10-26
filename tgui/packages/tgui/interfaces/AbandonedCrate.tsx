@@ -17,7 +17,7 @@ type Attempts = {
 const check_attempts = (attempts_to_check: number) => {
   return attempts_to_check === 1
     ? 'при следующей неудачной попытке.'
-    : `через ${attempts_to_check} неудачных попыток.`;
+    : `после ${attempts_to_check} неудачных попыток.`;
 };
 
 const BULLS_COWS_INFO = `Код состоит из неповторяющихся цифр.

@@ -117,8 +117,9 @@
 	if(user.stat != CONSCIOUS || user.restrained())
 		return
 
-	var/input = input(user, "Enter [code_length] digits. All digits must be unique.", "Deca-Code Lock", "") as text|null
-
+	var/input = input(user, "Введите [code_length] цифр. Все цифры должны быть уникальными.", "Кодовый замок", "") as text|null
+	if(QDELETED(src) || !locked || !user.Adjacent(src) || user.stat != CONSCIOUS || user.restrained())
+		return
 	if(input == code)
 		if(!spawned_loot)
 			spawn_loot()
@@ -128,10 +129,10 @@
 		return
 
 	if(!validate_input(input))
-		to_chat(user, span_notice("You leave the crate alone."))
+		to_chat(user, span_notice("Вы оставляете ящик в покое."))
 		return
 
-	to_chat(user, span_warning("A red light flashes."))
+	to_chat(user, span_warning("Мигает красная лампочка."))
 	previous_attempts += list(bulls_and_cows(input))
 	attempts--
 
@@ -196,8 +197,6 @@
 	return list("attempt" = guess, "bulls" = bulls, "cows" = cows)
 
 /obj/structure/closet/crate/secure/loot/emag_act(mob/user, obj/item/card/emag/emag_card)
-	. = ..()
-
 	if(locked)
 		boom(user) // no feedback since it just explodes, thats its own feedback
 		return TRUE

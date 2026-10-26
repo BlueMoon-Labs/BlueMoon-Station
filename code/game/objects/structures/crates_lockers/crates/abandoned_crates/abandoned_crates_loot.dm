@@ -13,15 +13,17 @@
 	/// Associative list with actual loot: item_type = quantity
 	var/list/loot
 
+/obj/effect/spawner/abandoned_crate
+	var/spawn_all = FALSE
+
 /obj/effect/spawner/abandoned_crate/Initialize(mapload)
 	. = ..()
+
 	if(LAZYLEN(loot))
-		var/picked = pickweight(loot)
-		if(islist(picked))
-			picked = pickweight(picked)
-		if(picked)
-			new picked(loc)
-	qdel(src)
+		for(var/atom in loot)
+			for(var/i in 1 to loot[atom])
+				new atom(loc)
+	return INITIALIZE_HINT_QDEL
 
 /obj/effect/spawner/abandoned_crate/booze
 	loot = list(
@@ -164,5 +166,5 @@
 
 /obj/effect/spawner/abandoned_crate/bees
 	loot = list(
-		/mob/living/simple_animal/hostile/poison/bees/toxin
+		/mob/living/simple_animal/hostile/poison/bees/toxin = 3
 		)
