@@ -347,7 +347,15 @@ GENETICS SCANNER
 				entry["brute"] = round(limb.brute_dam, 0.001)
 				entry["burn"] = round(limb.burn_dam, 0.001)
 				for(var/datum/wound/wound as anything in limb.wounds)
-					wounds += list(list("name" = wound.ru_name, "severity" = wound.severity_text(), "treatment" = strip_html_tags(wound.treat_text), "details" = strip_html_tags(replacetext(wound.get_scanner_description(user), "<br>", "\n"))))
+					var/wound_icon
+					switch(wound.wound_type)
+						if(WOUND_SLASH, WOUND_PIERCE)
+							wound_icon = "droplet"
+						if(WOUND_BURN)
+							wound_icon = "fire"
+						if(WOUND_BLUNT)
+							wound_icon = istype(wound, /datum/wound/blunt/moderate) ? "hand-spock" : "bone"
+					wounds += list(list("name" = wound.ru_name, "icon" = wound_icon, "severity" = wound.severity_text(), "treatment" = strip_html_tags(wound.treat_text), "details" = strip_html_tags(replacetext(wound.get_scanner_description(user), "<br>", "\n"))))
 				for(var/obj/item/embedded as anything in limb.embedded_objects)
 					embeds += embedded.name
 			if(limb && !limb.brute_dam && !limb.burn_dam && !length(wounds) && !length(embeds))
@@ -360,7 +368,7 @@ GENETICS SCANNER
 			for(var/embedded_name in embeds)
 				limb_details += "<tr><td colspan='5'>[span_alert(span_tooltip("Извлеките хирургическим зажимом.", "↳ Инородное тело: [html_encode(embedded_name)]", "", "", "font-size:85%; margin-left:1em"))]</td></tr>"
 			for(var/list/wound in wounds)
-				limb_details += "<tr><td colspan='5'>[span_alert(span_tooltip(html_encode(wound["details"]), "↳ [html_encode(wound["name"])] ([wound["severity"]])", "", "", "font-size:85%; margin-left:1em"))]</td></tr>"
+				limb_details += "<tr><td colspan='5'>[span_alert(span_tooltip(html_encode(wound["details"]), "<i class='fas fa-[wound["icon"]]'></i> ↳ [html_encode(wound["name"])] ([wound["severity"]])", "", "", "font-size:85%; margin-left:1em"))]</td></tr>"
 	data["damageLocalization"] = limbs
 	data["report"] += "<hr><b>Состояние тела</b><br>[limb_report]<!--MEDICAL_LIMB_DETAILS--></table>"
 
@@ -414,7 +422,7 @@ GENETICS SCANNER
 				else if (C.getOrganLoss(ORGAN_SLOT_BRAIN) >= 45)
 					damage_message += " " + span_alert("Повреждения.")
 				if(advanced && C.getOrganLoss(ORGAN_SLOT_BRAIN) > 0)
-					temp_message += " " + span_info("Активность: [round((200 - M.getOrganLoss(ORGAN_SLOT_BRAIN))/2, 0.001)]%.")
+					temp_message += " " + span_info("Активность: [round((200 - M.getOrganLoss(ORGAN_SLOT_BRAIN))/2, 1)]%.")
 
 				if(LAZYLEN(C.get_traumas()))
 					var/list/trauma_text = list()
@@ -474,8 +482,11 @@ GENETICS SCANNER
 
 			if(temp_message || damage_message)
 				if(O.damage > 0 || (O.organ_flags & ORGAN_FAILING))
-					organ_data += list(list("name" = capitalize(O.ru_name || O.name), "damage" = advanced ? round(O.damage, 0.001) : null, "status" = trim(strip_html_tags("[damage_message] [temp_message]")), "warning" = !!(damage_message || findtext(temp_message, "class='danger") || findtext(temp_message, "class='alert"))))
-					organ_report += "<tr><td>[html_encode(capitalize(O.ru_name || O.name))]</td>[advanced ? "<td>[span_danger("[round(O.damage, 0.001)]")]</td>" : ""]<td>[damage_message] [temp_message]</td></tr>"
+					var/organ_icon = icon2base64(icon(O.icon, O.icon_state, SOUTH, 1))
+					var/critical = !!(O.organ_flags & ORGAN_FAILING)
+					var/damage_percent = round(O.damage / O.maxHealth * 100, 1)
+					organ_data += list(list("name" = capitalize(O.ru_name || O.name), "icon" = organ_icon, "damage" = advanced ? damage_percent : null, "status" = trim(strip_html_tags("[damage_message] [temp_message]")), "warning" = !!(damage_message || findtext(temp_message, "class='danger") || findtext(temp_message, "class='alert")), "critical" = critical))
+					organ_report += "<tr[critical ? " style='font-weight:bold'" : ""]><td style='white-space:nowrap'><img src='data:image/png;base64,[organ_icon]' width='24' height='24' style='vertical-align:middle'> [html_encode(capitalize(O.ru_name || O.name))]</td>[advanced ? "<td style='white-space:nowrap'>[span_danger("[damage_percent]%")]</td>" : ""]<td>[damage_message] [temp_message]</td></tr>"
 				else
 					// Функциональные нарушения без повреждения органа остаются в общей диагностике.
 					general_diagnosis += "\n[span_info("[capitalize(O.ru_name || O.name)]:")] [temp_message] [damage_message]"
@@ -513,7 +524,7 @@ GENETICS SCANNER
 			if(length(organ_data))
 				data["report"] += "<table><tr><th>Орган</th>[advanced ? "<th>Повреждения</th>" : ""]<th>Состояние</th></tr>[organ_report]</table>"
 			if(length(missing_organs))
-				data["report"] += "<br>[span_danger("Отсутствует: [html_encode(jointext(missing_organs, ", "))]")]"
+				data["report"] += "<br>[span_bolddanger("Отсутствует: [html_encode(jointext(missing_organs, ", "))]")]"
 
 		if(advanced && M.has_status_effect(/datum/status_effect/heretic_dance_earworm))
 			general_diagnosis += "\n" + span_alert("Сердцебиение подстроилось под чужой ритм: пульс бьёт ровными тактами, как метроном. Сбить ритм может разряд дефибриллятора.")

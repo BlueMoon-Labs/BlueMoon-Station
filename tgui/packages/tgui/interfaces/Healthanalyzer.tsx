@@ -9,9 +9,9 @@ import { Window } from '../layouts';
 
 type ScanLine = { text: string; warning: BooleanLike };
 type ScanSection = { title: string; lines: ScanLine[] };
-type Wound = { name: string; severity: string; treatment: string; details: string };
+type Wound = { name: string; icon: string; severity: string; treatment: string; details: string };
 type Limb = { name: string; missing: BooleanLike; brute: number; burn: number; wounds: Wound[]; embeds: string[] };
-type Organ = { name: string; damage: number | null; status: string; warning: BooleanLike };
+type Organ = { name: string; icon: string; damage: number | null; status: string; warning: BooleanLike; critical: BooleanLike };
 type Reagent = { name: string; volume: number; overdosed: BooleanLike; inactive: BooleanLike };
 type Scan = {
   scanTime: string;
@@ -57,7 +57,7 @@ export const Healthanalyzer = () => {
                 {printing ? 'Печать…' : 'Печать'}
               </Button>
             )}
-            <Button.Confirm icon="trash" disabled={!scan} confirmContent="Очистить?" onClick={() => act('clear')}>Очистить</Button.Confirm>
+            <Button.Confirm icon="trash" disabled={!scan} content="Очистить" confirmContent="Очистить?" onClick={() => act('clear')} />
           </>
         )}>
           {scan ? (
@@ -69,7 +69,6 @@ export const Healthanalyzer = () => {
                 </Box>
               )}
               {!!scan.damageLevels && <VitalSigns scan={scan} />}
-              {!!scan.diagnosis?.length && <Box mt={0.5}><ScanLines lines={scan.diagnosis} compact /></Box>}
             </>
           ) : <NoticeBox>В памяти нет результатов обследования. Просканируйте пациента.</NoticeBox>}
         </Section>
@@ -96,6 +95,9 @@ const VitalSigns = ({ scan }: { scan: Scan }) => (
         {scan.blood.incoming > 0 && <Box mt={0.5}>Переливается ещё {round(scan.blood.incoming, 3)} cl</Box>}
       </LabeledList.Item>
     )}
+    {!!scan.diagnosis?.length && (
+      <LabeledList.Item label="Диагностика"><ScanLines lines={scan.diagnosis} compact /></LabeledList.Item>
+    )}
   </LabeledList>
 );
 
@@ -117,15 +119,18 @@ const ScanResults = ({ scan, advanced, verbose }: { scan: Scan; advanced: boolea
             <Table>
               <Table.Row header><Table.Cell>Орган</Table.Cell>{advanced && <Table.Cell>Повреждения</Table.Cell>}<Table.Cell>Диагностика</Table.Cell></Table.Row>
               {scan.organs.map((organ, index) => (
-                <Table.Row key={index}>
-                  <Table.Cell verticalAlign="top" pr={1}>{organ.name}</Table.Cell>
-                  {advanced && <Table.Cell verticalAlign="top" pr={1} color="bad">{round(organ.damage, 3)}</Table.Cell>}
+                <Table.Row key={index} bold={!!organ.critical}>
+                  <Table.Cell verticalAlign="top" pr={1}>
+                    {!!organ.icon && <img className="Healthanalyzer__organIcon" src={`data:image/png;base64,${organ.icon}`} alt="" />}
+                    {organ.name}
+                  </Table.Cell>
+                  {advanced && <Table.Cell verticalAlign="top" pr={1} color="bad">{round(organ.damage, 0)}%</Table.Cell>}
                   <Table.Cell pb={0.5} color={organ.warning ? 'bad' : undefined}>{decodeHtmlEntities(organ.status)}</Table.Cell>
                 </Table.Row>
               ))}
             </Table>
           )}
-          {!!scan.missingOrgans?.length && <Box color="bad" mt={scan.organs?.length ? 0.5 : 0}>Отсутствует: {scan.missingOrgans.join(', ')}</Box>}
+          {!!scan.missingOrgans?.length && <Box bold color="bad" mt={scan.organs?.length ? 0.5 : 0}>Отсутствует: {scan.missingOrgans.join(', ')}</Box>}
         </Section>
       )}
       {sections.map((section, index) => (
@@ -175,7 +180,6 @@ const LimbTable = ({ limbs }: { limbs: Limb[] }) => {
   if (!affected.length) return <Box color="good">Повреждения конечностей не обнаружены.</Box>;
   return (
     <Table>
-      <Table.Row header><Table.Cell /><Table.Cell>Травмы</Table.Cell><Table.Cell>Ожоги</Table.Cell></Table.Row>
       {affected.map(limb => (
         <Fragment key={limb.name}>
           {limb.missing ? (
@@ -242,7 +246,7 @@ const WoundHint = ({ wound }: { wound: Wound }) => {
   }, [visible, expanded]);
   return (
     <span ref={anchor} className="Healthanalyzer__wound" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-      <Button className="Healthanalyzer__woundButton" selected={expanded} aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>
+      <Button className="Healthanalyzer__woundButton" icon={wound.icon} selected={expanded} aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>
         ↳ {wound.name} · {wound.severity}
       </Button>
       {visible && (
