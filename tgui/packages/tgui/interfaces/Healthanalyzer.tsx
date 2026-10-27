@@ -48,7 +48,7 @@ export const Healthanalyzer = () => {
   const { act, data } = useBackend<HealthanalyzerData>();
   const { scan, advanced, printing, scanNumber, live = false, canPrint = advanced, canClear = true, deviceLabel } = data;
   return (
-    <Window title={live ? 'Мониторинг организма' : 'Анализатор здоровья'} width={620} height={780}>
+    <Window title={live ? 'Мониторинг организма' : 'Анализатор здоровья'} width={570} height={780}>
       <Window.Content scrollable>
         <Section title="Медицинский отчёт" buttons={(
           <>
@@ -116,15 +116,15 @@ const ScanResults = ({ scan, advanced, live, deviceLabel = advanced ? 'Прод�
         <Section title="Состояние органов">
           {!!scan.organs?.length && (
             <Table>
-              <Table.Row header><Table.Cell>Орган</Table.Cell>{advanced && <Table.Cell>Повреждения</Table.Cell>}<Table.Cell>Диагностика</Table.Cell></Table.Row>
+              <Table.Row header><Table.Cell collapsing>Орган</Table.Cell>{advanced && <Table.Cell collapsing>Повреждения</Table.Cell>}<Table.Cell>Диагностика</Table.Cell></Table.Row>
               {scan.organs.map((organ, index) => (
                 <Table.Row key={index} bold={!!organ.critical}>
-                  <Table.Cell verticalAlign="top" pr={1}>
+                  <Table.Cell collapsing verticalAlign="top" pr={1}>
                     {!!organ.icon && <img className="Healthanalyzer__organIcon" src={`data:image/png;base64,${organ.icon}`} alt="" />}
                     {organ.name}
                   </Table.Cell>
-                  {advanced && <Table.Cell verticalAlign="top" pr={1} color="bad">{round(organ.damage, 0)}%</Table.Cell>}
-                  <Table.Cell pb={0.5} color={organ.warning ? 'bad' : undefined}>{decodeHtmlEntities(organ.status)}</Table.Cell>
+                  {advanced && <Table.Cell collapsing verticalAlign="top" pr={1} color="bad">{round(organ.damage, 0)}%</Table.Cell>}
+                  <Table.Cell className="Healthanalyzer__organDiagnosis" verticalAlign="top" pb={0.5} color={organ.warning ? 'bad' : undefined}>{decodeHtmlEntities(organ.status)}</Table.Cell>
                 </Table.Row>
               ))}
             </Table>
@@ -201,7 +201,11 @@ const LimbTable = ({ limbs }: { limbs: Limb[] }) => {
               </Table.Cell>
             </Table.Row>
           ) : (
-            <Table.Row><Table.Cell>{limb.name}</Table.Cell><Table.Cell bold color={limb.brute > 0 ? 'bad' : 'label'}>{round(limb.brute, 3)}</Table.Cell><Table.Cell bold color={limb.burn > 0 ? 'average' : 'label'}>{round(limb.burn, 3)}</Table.Cell></Table.Row>
+            <Table.Row>
+              <Table.Cell>{limb.name}</Table.Cell>
+              <Table.Cell collapsing bold textAlign="right" pl={1} pr={1} color={limb.brute > 0 ? 'bad' : 'label'}>{round(limb.brute, 3)}</Table.Cell>
+              <Table.Cell collapsing bold textAlign="right" pl={1} color={limb.burn > 0 ? 'average' : 'label'}>{round(limb.burn, 3)}</Table.Cell>
+            </Table.Row>
           )}
           {limb.embeds.map((embed, index) => (
             <Table.Row key={`embed-${index}`}><Table.Cell colSpan={3} color="bad">Инородное тело: {embed}.</Table.Cell></Table.Row>
