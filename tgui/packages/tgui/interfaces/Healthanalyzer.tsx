@@ -65,7 +65,8 @@ export const Healthanalyzer = () => {
             <>
               {(!!scan.species || scan.temperatureC !== undefined) && (
                 <Box mb={0.5}>
-                  {!!scan.species && <>Раса: {scan.species} | Схожая раса: {scan.similarSpecies}</>}
+                  {!!scan.species && <>Раса: {scan.species}</>}
+                  {!!scan.species && !!scan.similarSpecies && scan.similarSpecies !== scan.species && <> | Схожая раса: {scan.similarSpecies}</>}
                   {scan.temperatureC !== undefined && <>{scan.species ? ' | ' : ''}Температура тела: {round(scan.temperatureC, 3)} °C ({round(scan.temperatureF, 3)} °F)</>}
                 </Box>
               )}
