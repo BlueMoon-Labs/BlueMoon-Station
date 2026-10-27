@@ -4431,6 +4431,12 @@
 #undef CHARACTER_SETUP_INTERFACE
 #undef CHARACTER_SETUP_HEADSHOT_MAX_LEN
 
+// Замеры видимых границ слоёв общие для всех окон: экран окна удаляется при закрытии, а ресурсы за раунд не меняются.
+GLOBAL_LIST_EMPTY(character_preview_icon_bounds)
+#define CHARACTER_PREVIEW_BOUNDS_CACHE_MAX 8192
+GLOBAL_LIST_EMPTY(character_preview_backgrounds)
+#define CHARACTER_PREVIEW_BACKGROUND_CACHE_MAX 64
+
 // Исходная внешность в нативной карте BYOND: четыре ракурса или один поворачиваемый.
 /atom/movable/screen/map_view/character_setup_screen
 	name = "character setup screen"
@@ -4439,7 +4445,6 @@
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	var/list/previews = list()
 	var/shown_offset = 0
-	var/list/icon_bounds_cache = list()
 	var/viewport_aspect
 	var/mutable_appearance/cached_source
 	var/cached_background_state
@@ -4465,7 +4470,6 @@
 	vis_contents.Cut()
 	QDEL_LIST_ASSOC_VAL(previews)
 	QDEL_LIST_ASSOC_VAL(reference_previews)
-	icon_bounds_cache = null
 	cached_source = null
 	view_bounds_cache = null
 	reference_bounds_cache = null
@@ -4568,7 +4572,7 @@
 		preview.appearance_flags &= ~TILE_BOUND
 		var/list/bounds = view_bounds_cache["[direction]"]
 		if(!bounds)
-			bounds = measure_preview_bounds(preview, icon_bounds_cache) || list(0, 0, world.icon_size, world.icon_size)
+			bounds = measure_preview_bounds(preview, GLOB.character_preview_icon_bounds) || list(0, 0, world.icon_size, world.icon_size)
 			view_bounds_cache["[direction]"] = bounds
 		view_bounds["[direction]"] = bounds
 		max_width = max(max_width, bounds[3] - bounds[1])
@@ -4577,7 +4581,7 @@
 			reference.setDir(direction)
 			var/list/reference_bounds = reference_bounds_cache["[direction]"]
 			if(!reference_bounds)
-				reference_bounds = measure_preview_bounds(reference, icon_bounds_cache)
+				reference_bounds = measure_preview_bounds(reference, GLOB.character_preview_icon_bounds)
 				if(reference_bounds)
 					reference_bounds_cache["[direction]"] = reference_bounds
 			if(reference_bounds)
@@ -4634,22 +4638,28 @@
 			canvas_height = CEILING(canvas_height / zoom_factor, world.icon_size)
 	var/background_key = "[canvas_width]x[canvas_height]|[background_style]|[background_style == "texture" ? background_state : ""]"
 	if(background_cache_key != background_key)
-		// Один готовый фон на окно: повороты не создают и не рассылают новую иконку.
-		var/icon/background_canvas = icon('icons/mob/map_backgrounds.dmi', "clear")
-		background_canvas.Crop(1, 1, canvas_width, canvas_height)
-		switch(background_style)
-			if("light", "dark")
-				background_canvas.DrawBox(background_style == "light" ? "#E4E4E4" : "#202020", 1, 1, canvas_width, canvas_height)
-			if("checker")
-				for(var/x = 0, x < canvas_width, x += 8)
-					for(var/y = 0, y < canvas_height, y += 8)
-						background_canvas.DrawBox((x / 8 + y / 8) % 2 ? "#7A7A7A" : "#B0B0B0", x + 1, y + 1, min(x + 8, canvas_width), min(y + 8, canvas_height))
-			if("texture")
-				var/icon/background_tile = icon('modular_citadel/icons/ui/backgrounds.dmi', background_state, SOUTH, 1)
-				for(var/x = 0, x < canvas_width, x += background_tile.Width())
-					for(var/y = 0, y < canvas_height, y += background_tile.Height())
-						background_canvas.Blend(background_tile, ICON_OVERLAY, x + 1, y + 1)
-		background_cache = fcopy_rsc(background_canvas)
+		// Готовый фон общий для окон одного размера: повороты и повторные открытия не создают новую иконку.
+		var/background = GLOB.character_preview_backgrounds[background_key]
+		if(!background)
+			var/icon/background_canvas = icon('icons/mob/map_backgrounds.dmi', "clear")
+			background_canvas.Crop(1, 1, canvas_width, canvas_height)
+			switch(background_style)
+				if("light", "dark")
+					background_canvas.DrawBox(background_style == "light" ? "#E4E4E4" : "#202020", 1, 1, canvas_width, canvas_height)
+				if("checker")
+					for(var/x = 0, x < canvas_width, x += 8)
+						for(var/y = 0, y < canvas_height, y += 8)
+							background_canvas.DrawBox((x / 8 + y / 8) % 2 ? "#7A7A7A" : "#B0B0B0", x + 1, y + 1, min(x + 8, canvas_width), min(y + 8, canvas_height))
+				if("texture")
+					var/icon/background_tile = icon('modular_citadel/icons/ui/backgrounds.dmi', background_state, SOUTH, 1)
+					for(var/x = 0, x < canvas_width, x += background_tile.Width())
+						for(var/y = 0, y < canvas_height, y += background_tile.Height())
+							background_canvas.Blend(background_tile, ICON_OVERLAY, x + 1, y + 1)
+			background = fcopy_rsc(background_canvas)
+			GLOB.character_preview_backgrounds[background_key] = background
+			if(length(GLOB.character_preview_backgrounds) > CHARACTER_PREVIEW_BACKGROUND_CACHE_MAX)
+				GLOB.character_preview_backgrounds.Cut(1, CHARACTER_PREVIEW_BACKGROUND_CACHE_MAX / 4 + 1)
+		background_cache = background
 		background_cache_key = background_key
 	icon = background_cache
 	plane = appearance_source.plane
@@ -4699,30 +4709,20 @@
 	var/height = world.icon_size
 	var/list/bounds
 	if(icon_file)
-		var/icon_dir = icon_state_has_directional_frames(icon_file, state) ? direction : SOUTH
-		var/cache_key = "[REF(icon_file)]-[state]-[icon_dir]"
-		var/list/size = icon_sizes[cache_key]
+		var/file_name = "[icon_file]"
+		var/cache_prefix = "[length(file_name) ? file_name : REF(icon_file)]|[state]|"
+		var/list/size = icon_sizes["[cache_prefix][direction]"]
 		if(!size)
-			var/icon/measured = icon(icon_file, state, icon_dir, 1)
-			width = measured.Width()
-			height = measured.Height()
-			var/list/pixel_bounds
-			for(var/x in 1 to width)
-				for(var/y in 1 to height)
-					if(!measured.GetPixel(x, y))
-						continue
-					if(!pixel_bounds)
-						pixel_bounds = list(x - 1, y - 1, x, y)
-					else
-						pixel_bounds[1] = min(pixel_bounds[1], x - 1)
-						pixel_bounds[2] = min(pixel_bounds[2], y - 1)
-						pixel_bounds[3] = max(pixel_bounds[3], x)
-						pixel_bounds[4] = max(pixel_bounds[4], y)
-			size = list(width, height, pixel_bounds)
-			icon_sizes[cache_key] = size
+			var/icon_dir = icon_state_has_directional_frames(icon_file, state) ? direction : SOUTH
+			size = icon_sizes["[cache_prefix][icon_dir]"]
+			if(!size)
+				var/icon/measured = icon(icon_file, state, icon_dir, 1)
+				size = list(measured.Width(), measured.Height(), measure_pixel_bounds(measured))
+				icon_sizes["[cache_prefix][icon_dir]"] = size
+			icon_sizes["[cache_prefix][direction]"] = size
 			// Храним только числа; смена одежды и причёсок не должна растить кэш бесконечно.
-			if(length(icon_sizes) > 512)
-				icon_sizes.Cut(1, 129)
+			if(length(icon_sizes) > CHARACTER_PREVIEW_BOUNDS_CACHE_MAX)
+				icon_sizes.Cut(1, CHARACTER_PREVIEW_BOUNDS_CACHE_MAX / 4 + 1)
 		width = size[1]
 		height = size[2]
 		var/list/pixel_bounds = size[3]
@@ -4779,3 +4779,44 @@
 		bounds[3] = max(bounds[3], untransformed_bounds[3])
 		bounds[4] = max(bounds[4], untransformed_bounds[4])
 	return bounds
+
+// Ищем крайние непрозрачные строки и столбцы от краёв к центру: пустые поля не обходятся целиком.
+/atom/movable/screen/map_view/character_setup_screen/proc/measure_pixel_bounds(icon/measured)
+	var/width = measured.Width()
+	var/height = measured.Height()
+	var/min_y
+	for(var/y in 1 to height)
+		for(var/x in 1 to width)
+			if(measured.GetPixel(x, y))
+				min_y = y
+				break
+		if(min_y)
+			break
+	if(!min_y)
+		return null
+	var/max_y
+	for(var/y = height, y > min_y && !max_y, y--)
+		for(var/x in 1 to width)
+			if(measured.GetPixel(x, y))
+				max_y = y
+				break
+	max_y ||= min_y
+	var/min_x
+	for(var/x in 1 to width)
+		for(var/y in min_y to max_y)
+			if(measured.GetPixel(x, y))
+				min_x = x
+				break
+		if(min_x)
+			break
+	var/max_x
+	for(var/x = width, x > min_x && !max_x, x--)
+		for(var/y in min_y to max_y)
+			if(measured.GetPixel(x, y))
+				max_x = x
+				break
+	max_x ||= min_x
+	return list(min_x - 1, min_y - 1, max_x, max_y)
+
+#undef CHARACTER_PREVIEW_BOUNDS_CACHE_MAX
+#undef CHARACTER_PREVIEW_BACKGROUND_CACHE_MAX

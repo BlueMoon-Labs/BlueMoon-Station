@@ -197,6 +197,7 @@
 #include "carbon_limb_cache_offset.dm"
 #include "centcom_roundstart_active_turfs.dm"
 #include "chain_pull_through_space.dm"
+#include "character_preview_bounds.dm"
 #include "character_profile_performance.dm"
 #include "chat_member_badges.dm"
 #include "chem_dispenser_payload.dm"
