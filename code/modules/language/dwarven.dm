@@ -2,7 +2,7 @@
 
 /datum/language/dwarf
 	name = "Dwarvish"
-	desc = "The language of the dwarves"
+	desc = "Язык дварфов."
 	space_chance = 100 // Each 'syllable' is its own word
 	key = "w"
 	// flags = TONGUELESS_SPEECH bluemoon change

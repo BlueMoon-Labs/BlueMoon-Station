@@ -1335,6 +1335,7 @@ GLOBAL_LIST_INIT(air_alarm_modes, init_air_alarm_modes())
 	if(!user.canUseTopic(src, !hasSiliconAccessInArea(user)) || !isturf(loc))
 		return
 	togglelock(user)
+	balloon_alert(user, "[locked ? "заблокировано" : "разблокировано"]")
 	return TRUE
 
 /obj/machinery/airalarm/proc/togglelock(mob/living/user)

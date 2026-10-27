@@ -127,7 +127,7 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 	set category = "Admin.Fun"
 	if(IsAdminAdvancedProcCall())
 		return
-	var/newColor = input(src, "Please select the new player OOC color.", "OOC color") as color|null
+	var/newColor = tgui_input_color(src, "Please select the new player OOC color.", "OOC color")
 	if(isnull(newColor))
 		return
 	if(!check_rights(R_FUN))
@@ -163,7 +163,7 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 		if(!is_content_unlocked())
 			return
 
-	var/new_ooccolor = input(src, "Please select your OOC color.", "OOC color", prefs.ooccolor) as color|null
+	var/new_ooccolor = tgui_input_color(src, "Please select your OOC color.", "OOC color", prefs.ooccolor)
 	if(isnull(new_ooccolor))
 		return
 	new_ooccolor = sanitize_ooccolor(new_ooccolor)

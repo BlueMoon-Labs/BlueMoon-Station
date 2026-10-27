@@ -459,8 +459,25 @@
 	},
 /area/ruin/lavaland/unpowered/deepspaceone/virology)
 "aon" = (
-/obj/machinery/vending/wardrobe/curator_wardrobe,
-/turf/open/floor/wood/wood_tiled,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 5
+	},
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
+	dir = 1
+	},
+/obj/item/kirbyplants/hedge{
+	pixel_y = 0;
+	layer = 3;
+	anchored = 1
+	},
+/turf/open/floor/grass/grass0,
+/area/mine/xenoarch_area_b)
+"aov" = (
+/obj/structure/flora/tree/palm{
+	pixel_x = 0;
+	pixel_y = 8
+	},
+/turf/open/floor/grass/grass0,
 /area/mine/xenoarch_area_b)
 "apP" = (
 /obj/structure/disposalpipe/segment{
@@ -648,6 +665,12 @@
 	},
 /turf/open/floor/plasteel/checker,
 /area/mine/living_quarters)
+"avk" = (
+/obj/effect/turf_decal/trimline/brown/filled/line{
+	dir = 5
+	},
+/turf/open/pool/water,
+/area/mine/xenoarch_area_b)
 "avN" = (
 /obj/effect/turf_decal/siding/purple,
 /obj/effect/turf_decal/stripes/yellow/line,
@@ -1055,6 +1078,13 @@
 	},
 /turf/open/floor/plasteel/smooth/half,
 /area/mine/xenoarch_area_c)
+"aHA" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/effect/spawner/structure/window/reinforced/indestructable,
+/turf/open/floor/engine,
+/area/mine/xenoarch_area_b)
 "aHW" = (
 /obj/structure/stone_tile{
 	dir = 1
@@ -2323,10 +2353,13 @@
 /turf/open/floor/plasteel/white/smooth/large,
 /area/ruin/lavaland/unpowered/deepspaceone/chemistry)
 "buV" = (
-/obj/item/kirbyplants{
-	icon_state = "plant-21"
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
 	},
-/turf/open/floor/wood/wood_parquet,
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer2{
+	dir = 1
+	},
+/turf/open/floor/wood/wood_large,
 /area/mine/xenoarch_area_b)
 "bvz" = (
 /obj/effect/turf_decal/stripes/yellow/line{
@@ -2731,6 +2764,13 @@
 	},
 /turf/open/floor/plasteel/white/smooth/large,
 /area/ruin/lavaland/unpowered/deepspaceone/biolab)
+"bIs" = (
+/obj/machinery/computer/library/public{
+	pixel_y = 1
+	},
+/obj/structure/table/wood,
+/turf/open/floor/wood/wood_tiled,
+/area/mine/xenoarch_area_b)
 "bIE" = (
 /obj/structure/closet/secure_closet/miner,
 /turf/open/floor/plasteel/dark,
@@ -3021,6 +3061,22 @@
 /obj/machinery/light/floor,
 /turf/open/floor/grass/grass0,
 /area/mine/xenoarch_area_b)
+"bPr" = (
+/obj/structure/chair/pew/left{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 10
+	},
+/turf/open/floor/wood/wood_large,
+/area/mine/xenoarch_area_b)
+"bPw" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/light,
+/turf/open/floor/wood/wood_tiled,
+/area/mine/xenoarch_area_b)
 "bPW" = (
 /obj/structure/railing,
 /obj/structure/disposalpipe/segment{
@@ -3057,6 +3113,12 @@
 	},
 /turf/open/chasm/lavaland,
 /area/lavaland/necropolis)
+"bSm" = (
+/obj/structure/chair/comfy/brown{
+	dir = 2
+	},
+/turf/open/floor/wood/wood_tiled,
+/area/mine/xenoarch_area_b)
 "bSw" = (
 /turf/closed/wall/mineral/wood,
 /area/mine/living_quarters)
@@ -4104,6 +4166,15 @@
 	},
 /turf/open/floor/plasteel,
 /area/mine/xenoarch_area_a)
+"cuc" = (
+/obj/structure/chair/pew{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 8
+	},
+/turf/open/floor/wood/wood_large,
+/area/mine/xenoarch_area_b)
 "cuk" = (
 /obj/item/gun/medbeam/syndicate,
 /obj/item/clothing/accessory/armband/medblue,
@@ -4343,6 +4414,12 @@
 /obj/machinery/door/firedoor,
 /turf/open/floor/plasteel/smooth/large,
 /area/mine/xenoarch_area_c)
+"cCh" = (
+/obj/machinery/door/firedoor,
+/turf/open/floor/plasteel/stairs/left{
+	dir = 1
+	},
+/area/mine/xenoarch_area_c)
 "cCq" = (
 /obj/machinery/airalarm/syndicate{
 	dir = 4;
@@ -4507,10 +4584,31 @@
 /obj/machinery/equipment_vendor,
 /turf/open/floor/plasteel/dark,
 /area/mine/production)
+"cFh" = (
+/obj/structure/table/wood,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 5
+	},
+/obj/item/flashlight/lantern{
+	icon_state = "lantern-on";
+	pixel_x = -8;
+	pixel_y = 13
+	},
+/turf/open/floor/wood/wood_large,
+/area/mine/xenoarch_area_b)
 "cFA" = (
 /obj/machinery/modular_computer/console/preset/engineering,
 /turf/open/floor/circuit/green,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
+"cGk" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/item/kirbyplants{
+	icon_state = "plant-21"
+	},
+/turf/open/floor/wood/wood_tiled,
+/area/mine/xenoarch_area_b)
 "cGZ" = (
 /turf/open/floor/plasteel/stairs/left,
 /area/mine/xenoarch_area_b)
@@ -5269,6 +5367,10 @@
 /obj/item/spear/bonespear,
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/unpowered/ash_walkers/female)
+"dgY" = (
+/obj/structure/sign/painting/large/library/directional/south,
+/turf/open/floor/wood/wood_tiled,
+/area/mine/xenoarch_area_b)
 "dhP" = (
 /obj/structure/stone_tile/block{
 	dir = 8
@@ -5494,6 +5596,13 @@
 	},
 /turf/open/floor/plating,
 /area/mine/maintenance)
+"dpE" = (
+/obj/machinery/light,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 5
+	},
+/turf/open/floor/plasteel/showroomfloor,
+/area/mine/xenoarch_area_b)
 "dpN" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
@@ -6688,6 +6797,14 @@
 /obj/structure/dresser,
 /turf/open/floor/carpet/blackred,
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
+"eay" = (
+/obj/structure/table/wood,
+/obj/structure/bedsheetbin/towel,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on{
+	dir = 1
+	},
+/turf/open/floor/plasteel/showroomfloor,
+/area/mine/xenoarch_area_b)
 "eaA" = (
 /obj/structure/stone_tile/surrounding_tile,
 /obj/structure/stone_tile/surrounding_tile/cracked{
@@ -7517,8 +7634,7 @@
 /turf/open/indestructible/boss,
 /area/lavaland/necropolis)
 "eES" = (
-/obj/structure/bookcase/random,
-/turf/open/floor/wood/wood_tiled,
+/turf/closed/indestructible/wood,
 /area/mine/xenoarch_area_b)
 "eEU" = (
 /obj/machinery/firealarm{
@@ -8154,10 +8270,11 @@
 	},
 /area/mine/xenoarch_area_b)
 "eZg" = (
-/obj/structure/chair/comfy/brown{
-	dir = 8
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
 	},
-/turf/open/floor/wood/wood_parquet,
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden,
+/turf/open/floor/wood/wood_large,
 /area/mine/xenoarch_area_b)
 "eZz" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
@@ -8391,6 +8508,10 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/mine/laborcamp)
+"ffU" = (
+/obj/effect/turf_decal/siding/wood/thin,
+/turf/open/floor/wood/wood_large,
+/area/mine/xenoarch_area_b)
 "fgc" = (
 /obj/effect/turf_decal/tile/green/full,
 /obj/machinery/light{
@@ -9431,6 +9552,13 @@
 "fJA" = (
 /turf/open/floor/plasteel/white/smooth/large,
 /area/ruin/lavaland/unpowered/deepspaceone/chemistry)
+"fJM" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/effect/spawner/structure/window/reinforced/indestructable,
+/turf/open/floor/engine,
+/area/mine/xenoarch_area_b)
 "fKd" = (
 /obj/machinery/disposal/bin,
 /obj/effect/turf_decal/bot/white{
@@ -9856,10 +9984,8 @@
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
 "fYd" = (
-/obj/machinery/door/window{
-	dir = 8
-	},
-/turf/open/floor/wood/wood_tiled,
+/obj/effect/spawner/structure/window/reinforced/indestructable,
+/turf/open/floor/engine,
 /area/mine/xenoarch_area_b)
 "fYB" = (
 /obj/machinery/light,
@@ -9879,6 +10005,9 @@
 	},
 /turf/open/lava/smooth/lava_land_surface,
 /area/lavaland/surface/outdoors)
+"fZn" = (
+/turf/open/floor/plating/beach/sand,
+/area/mine/xenoarch_area_b)
 "fZx" = (
 /obj/structure/stone_tile/surrounding_tile,
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
@@ -9900,6 +10029,21 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
+"gaF" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 6
+	},
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/machinery/light/floor,
+/obj/item/kirbyplants/hedge{
+	pixel_y = 0;
+	layer = 3;
+	anchored = 1
+	},
+/turf/open/floor/wood/wood_large,
+/area/mine/xenoarch_area_b)
 "gbd" = (
 /obj/structure/stone_tile/block/cracked{
 	dir = 8
@@ -10075,6 +10219,9 @@
 /obj/effect/spawner/structure/window,
 /turf/open/floor/plating,
 /area/mine/production)
+"gfq" = (
+/turf/closed/mineral/random/volcanic,
+/area/mine/xenoarch_area_b)
 "gfw" = (
 /obj/structure/table/reinforced,
 /obj/item/storage/toolbox/syndicate,
@@ -10840,6 +10987,12 @@
 	},
 /turf/closed/wall/r_wall/syndicate/nodiagonal,
 /area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
+"gCb" = (
+/obj/effect/turf_decal/trimline/brown/filled/line{
+	dir = 9
+	},
+/turf/open/pool/water,
+/area/mine/xenoarch_area_b)
 "gCe" = (
 /obj/structure/railing{
 	dir = 8
@@ -12137,6 +12290,12 @@
 	},
 /turf/open/floor/engine,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
+"hsG" = (
+/obj/machinery/door/firedoor,
+/turf/open/floor/plasteel/stairs/medium{
+	dir = 4
+	},
+/area/mine/xenoarch_area_b)
 "hsH" = (
 /obj/effect/turf_decal/siding/wood,
 /obj/structure/window/reinforced/survival_pod,
@@ -12250,6 +12409,18 @@
 /obj/machinery/firealarm/directional/north,
 /turf/open/floor/circuit/green/anim,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
+"hwy" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 10
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_tiled,
+/area/mine/xenoarch_area_b)
 "hwQ" = (
 /obj/structure/chair/comfy{
 	color = "#800000";
@@ -13125,6 +13296,17 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
+"hTP" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 9
+	},
+/obj/item/kirbyplants/hedge{
+	pixel_y = 0;
+	layer = 3;
+	anchored = 1
+	},
+/turf/open/floor/grass/grass0,
+/area/mine/xenoarch_area_b)
 "hTY" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
 	dir = 4;
@@ -13213,6 +13395,10 @@
 	initial_gas_mix = "LAVALAND_ATMOS"
 	},
 /area/ruin/lavaland/unpowered/ash_walkers/female)
+"hWm" = (
+/obj/structure/mineral_door/paperframe,
+/turf/open/floor/plasteel/showroomfloor,
+/area/mine/xenoarch_area_b)
 "hWn" = (
 /obj/structure/railing{
 	dir = 5
@@ -13368,6 +13554,12 @@
 	},
 /turf/open/floor/catwalk_floor/iron,
 /area/mine/xenoarch_area_c)
+"ibN" = (
+/obj/structure/closet/cabinet{
+	pixel_x = -6
+	},
+/turf/open/floor/plasteel/showroomfloor,
+/area/mine/xenoarch_area_b)
 "icc" = (
 /obj/machinery/button/door{
 	id = "AbandonedCabinDorm";
@@ -13520,6 +13712,12 @@
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
+"ihs" = (
+/obj/machinery/door/firedoor,
+/turf/open/floor/plasteel/stairs/right{
+	dir = 4
+	},
+/area/mine/xenoarch_area_b)
 "iht" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 8
@@ -14582,6 +14780,16 @@
 /obj/effect/turf_decal/tile/green/full,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/ruin/lavaland/unpowered/deepspaceone/virology)
+"iPA" = (
+/obj/effect/turf_decal/siding/wood/thin,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_tiled,
+/area/mine/xenoarch_area_b)
 "iPF" = (
 /obj/machinery/power/apc/auto_name/north{
 	req_access = list(150);
@@ -14653,6 +14861,18 @@
 	},
 /turf/open/floor/plasteel,
 /area/mine/living_quarters)
+"iSu" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 6
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 9
+	},
+/turf/open/floor/wood/wood_tiled,
+/area/mine/xenoarch_area_b)
 "iSE" = (
 /obj/structure/stone_tile/surrounding_tile{
 	dir = 4
@@ -14724,6 +14944,9 @@
 "iVu" = (
 /obj/machinery/light{
 	dir = 1
+	},
+/obj/structure/sign/painting/library_secure{
+	pixel_y = 32
 	},
 /turf/open/floor/wood/wood_tiled,
 /area/mine/xenoarch_area_b)
@@ -15084,6 +15307,15 @@
 	initial_gas_mix = "o2=14;n2=23;TEMP=300"
 	},
 /area/ruin/lavaland/unpowered/ash_walkers)
+"jhu" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_large,
+/area/mine/xenoarch_area_b)
 "jhy" = (
 /obj/machinery/atmospherics/components/binary/volume_pump{
 	dir = 4
@@ -15226,6 +15458,12 @@
 /obj/machinery/door/airlock/research/glass,
 /turf/open/floor/plasteel/smooth/large,
 /area/mine/xenoarch)
+"jkD" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 9
+	},
+/turf/open/floor/wood/wood_large,
+/area/mine/xenoarch_area_b)
 "jkU" = (
 /obj/machinery/light{
 	dir = 8
@@ -15260,14 +15498,15 @@
 /turf/open/lava/smooth/lava_land_surface,
 /area/lavaland/surface/outdoors)
 "jlH" = (
-/obj/machinery/light{
-	dir = 4;
-	light_color = "#c1caff"
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 6
 	},
-/obj/machinery/bookbinder{
-	pixel_y = 15
+/obj/item/kirbyplants/hedge{
+	pixel_y = 0;
+	layer = 3;
+	anchored = 1
 	},
-/turf/open/floor/wood/wood_tiled,
+/turf/open/floor/grass/grass0,
 /area/mine/xenoarch_area_b)
 "jlK" = (
 /obj/structure/stone_tile{
@@ -16562,12 +16801,31 @@
 "jVj" = (
 /turf/open/floor/plasteel/white/smooth/large,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
+"jVB" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/obj/item/kirbyplants/hedge{
+	pixel_y = 0;
+	layer = 3;
+	anchored = 1
+	},
+/obj/machinery/light/floor,
+/turf/open/floor/grass/grass0,
+/area/mine/xenoarch_area_b)
 "jWi" = (
 /obj/structure/dresser,
 /obj/machinery/light{
 	dir = 1
 	},
 /turf/open/floor/carpet,
+/area/mine/xenoarch_area_b)
+"jWC" = (
+/obj/structure/sink/directional/west{
+	pixel_x = 13
+	},
+/obj/structure/mirror/directional/east,
+/turf/open/floor/plasteel/showroomfloor,
 /area/mine/xenoarch_area_b)
 "jWI" = (
 /obj/structure/cable/yellow{
@@ -16624,6 +16882,16 @@
 /obj/effect/turf_decal/bot/yellow,
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
+"jZC" = (
+/obj/structure/mineral_door/paperframe,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/turf/open/floor/plasteel/showroomfloor,
+/area/mine/xenoarch_area_b)
 "jZD" = (
 /obj/structure/stone_tile/cracked,
 /obj/structure/stone_tile{
@@ -17917,8 +18185,12 @@
 /turf/open/floor/plasteel/smooth/large,
 /area/mine/xenoarch_area_c)
 "kMX" = (
-/obj/structure/sign/painting/large/library/directional/north,
-/turf/open/floor/wood/wood_tiled,
+/obj/effect/turf_decal/trimline/brown/filled/line,
+/obj/structure/pool/ladder{
+	dir = 1;
+	pixel_y = -24
+	},
+/turf/open/pool/water,
 /area/mine/xenoarch_area_b)
 "kNA" = (
 /obj/structure/stone_tile{
@@ -18673,8 +18945,12 @@
 	},
 /area/ruin/lavaland/unpowered/deepspaceone/engineering)
 "ljL" = (
-/obj/machinery/light,
+/obj/machinery/light/small,
+/obj/effect/turf_decal/siding/wood/thin,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
 	},
 /turf/open/floor/wood/wood_tiled,
@@ -19172,6 +19448,17 @@
 /obj/structure/bookcase,
 /turf/open/indestructible/boss,
 /area/lavaland/necropolis)
+"lyx" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 5
+	},
+/obj/item/kirbyplants/hedge{
+	pixel_y = 0;
+	layer = 3;
+	anchored = 1
+	},
+/turf/open/floor/wood/wood_large,
+/area/mine/xenoarch_area_b)
 "lyz" = (
 /obj/machinery/photocopier,
 /obj/machinery/airalarm{
@@ -20283,7 +20570,6 @@
 /turf/open/floor/plating,
 /area/mine/xenoarch_area_c)
 "mgB" = (
-/obj/structure/sign/painting/large/library/directional/south,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 9
 	},
@@ -20295,6 +20581,13 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
+"mhr" = (
+/obj/structure/sauna_oven,
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 6
+	},
+/turf/open/floor/wood/wood_large,
+/area/mine/xenoarch_area_b)
 "mhw" = (
 /obj/machinery/power/apc/auto_name/north{
 	req_access = list(150);
@@ -20907,6 +21200,15 @@
 	dir = 8
 	},
 /area/ruin/lavaland/unpowered/deepspaceone/virology)
+"mxi" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 5
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 6
+	},
+/turf/open/floor/wood/wood_large,
+/area/mine/xenoarch_area_b)
 "mxH" = (
 /obj/structure/table/reinforced,
 /obj/item/storage/backpack/duffelbag/med/surgery,
@@ -21228,6 +21530,14 @@
 /obj/structure/table/reinforced/plasmarglass,
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
+"mEf" = (
+/obj/structure/sign/painting/library{
+	pixel_y = -32
+	},
+/obj/structure/table/wood,
+/obj/machinery/computer/library/checkout,
+/turf/open/floor/wood/wood_tiled,
+/area/mine/xenoarch_area_b)
 "mEi" = (
 /obj/structure/stone_tile/cracked{
 	dir = 4
@@ -21272,10 +21582,16 @@
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/unpowered/ash_walkers/female)
 "mFO" = (
-/obj/machinery/libraryscanner{
-	pixel_y = 13
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 10
 	},
-/turf/open/floor/wood/wood_tiled,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on,
+/obj/item/kirbyplants/hedge{
+	pixel_y = 0;
+	layer = 3;
+	anchored = 1
+	},
+/turf/open/floor/grass/grass0,
 /area/mine/xenoarch_area_b)
 "mFS" = (
 /obj/effect/turf_decal/trimline/purple/warning{
@@ -21488,19 +21804,16 @@
 /turf/open/floor/plasteel,
 /area/mine/storage)
 "mLB" = (
-/obj/structure/table/wood,
-/obj/structure/window/reinforced{
-	dir = 8
+/obj/item/kirbyplants/hedge{
+	pixel_y = 0;
+	layer = 3;
+	anchored = 1
 	},
-/obj/item/camera_film{
-	pixel_y = 11
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 9
 	},
-/obj/item/camera_film{
-	pixel_y = 11;
-	pixel_x = 8
-	},
-/obj/item/camera,
-/turf/open/floor/wood/wood_tiled,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on,
+/turf/open/floor/wood/wood_large,
 /area/mine/xenoarch_area_b)
 "mLT" = (
 /obj/structure/sign/poster/official/random{
@@ -22471,6 +22784,12 @@
 	},
 /turf/open/floor/plasteel/white/textured/large,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
+"nkm" = (
+/obj/effect/turf_decal/trimline/brown/filled/line{
+	dir = 1
+	},
+/turf/open/pool/water,
+/area/mine/xenoarch_area_b)
 "nkK" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/structure/disposalpipe/segment,
@@ -22494,12 +22813,8 @@
 /turf/open/floor/plasteel/dark/smooth/small,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
 "nlE" = (
-/obj/machinery/light{
-	dir = 4;
-	light_color = "#c1caff"
-	},
-/obj/machinery/photocopier,
-/turf/open/floor/wood/wood_tiled,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/turf/open/floor/wood/wood_large,
 /area/mine/xenoarch_area_b)
 "nlI" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on{
@@ -23250,6 +23565,15 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/mine/production)
+"nEm" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_tiled,
+/area/mine/xenoarch_area_b)
 "nEu" = (
 /obj/effect/turf_decal/tile/dark/half{
 	dir = 8
@@ -24339,6 +24663,9 @@
 	},
 /turf/open/floor/plasteel,
 /area/mine/production)
+"ogJ" = (
+/turf/open/floor/wood/wood_large,
+/area/mine/xenoarch_area_b)
 "ogM" = (
 /obj/item/kirbyplants/random,
 /turf/open/floor/plasteel/cafeteria,
@@ -24728,6 +25055,12 @@
 	},
 /turf/open/floor/plating,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
+"osy" = (
+/obj/machinery/light/small{
+	dir = 4
+	},
+/turf/open/floor/plasteel/showroomfloor,
+/area/mine/xenoarch_area_b)
 "osP" = (
 /obj/structure/disposalpipe/segment{
 	dir = 4
@@ -25760,6 +26093,22 @@
 	dir = 1
 	},
 /area/mine/xenoarch_area_c)
+"oWh" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 10
+	},
+/obj/machinery/light{
+	dir = 4
+	},
+/obj/machinery/light/floor,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/item/kirbyplants/hedge{
+	pixel_y = 0;
+	layer = 3;
+	anchored = 1
+	},
+/turf/open/floor/wood/wood_large,
+/area/mine/xenoarch_area_b)
 "oXf" = (
 /turf/open/floor/plating,
 /area/mine/maintenance)
@@ -25943,6 +26292,10 @@
 /obj/structure/stone_tile/center,
 /turf/open/lava/smooth/lava_land_surface,
 /area/lavaland/necropolis)
+"pbO" = (
+/obj/structure/closet/cabinet,
+/turf/open/floor/plasteel/showroomfloor,
+/area/mine/xenoarch_area_b)
 "pbQ" = (
 /obj/machinery/hydroponics/soil,
 /obj/item/shovel/spade/bone,
@@ -26771,6 +27124,16 @@
 	dir = 4
 	},
 /area/ruin/lavaland/unpowered/deepspaceone/main)
+"pGp" = (
+/obj/effect/turf_decal/trimline/brown/filled/line{
+	dir = 6
+	},
+/obj/structure/pool/ladder{
+	dir = 1;
+	pixel_y = -24
+	},
+/turf/open/pool/water,
+/area/mine/xenoarch_area_b)
 "pGH" = (
 /obj/structure/table/reinforced,
 /turf/open/floor/plasteel/white/textured/large,
@@ -27199,11 +27562,11 @@
 /turf/open/floor/plasteel/white/smooth/large,
 /area/ruin/lavaland/unpowered/deepspaceone/biolab)
 "pSW" = (
-/obj/structure/sign/painting/large/library_private/directional/east,
-/obj/machinery/modular_computer/console/preset/curator{
-	dir = 8
+/obj/effect/spawner/structure/window/reinforced/indestructable,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 9
 	},
-/turf/open/floor/wood/wood_tiled,
+/turf/open/floor/engine,
 /area/mine/xenoarch_area_b)
 "pSY" = (
 /obj/structure/stone_tile/slab,
@@ -27484,10 +27847,10 @@
 	},
 /area/mine/xenoarch_area_b)
 "qbF" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
-	dir = 9
-	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+	dir = 4
+	},
 /turf/open/floor/wood/wood_tiled,
 /area/mine/xenoarch_area_b)
 "qbW" = (
@@ -28344,6 +28707,15 @@
 	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/mine/xenoarch_area_c)
+"qCk" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/floor/wood/wood_tiled,
+/area/mine/xenoarch_area_b)
 "qCq" = (
 /obj/effect/turf_decal/tile/blue{
 	dir = 1
@@ -29678,11 +30050,8 @@
 	},
 /area/ruin/lavaland/unpowered/ash_walkers/female)
 "roF" = (
-/obj/machinery/light{
+/obj/machinery/modular_computer/console/preset/curator{
 	dir = 1
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
-	dir = 4
 	},
 /turf/open/floor/wood/wood_tiled,
 /area/mine/xenoarch_area_b)
@@ -30206,11 +30575,11 @@
 /turf/open/floor/plating,
 /area/mine/xenoarch_area_c)
 "rFl" = (
-/obj/structure/sign/painting/library_secure{
-	pixel_y = 32
-	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
+	},
+/obj/item/kirbyplants{
+	icon_state = "plant-21"
 	},
 /turf/open/floor/wood/wood_tiled,
 /area/mine/xenoarch_area_b)
@@ -30785,6 +31154,18 @@
 /obj/structure/tank_dispenser/oxygen,
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
+"rWv" = (
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/turf/open/floor/plasteel/showroomfloor,
+/area/mine/xenoarch_area_b)
 "rWR" = (
 /obj/machinery/atmospherics/components/unary/thermomachine/freezer{
 	dir = 8
@@ -30925,6 +31306,12 @@
 /obj/item/bikehorn/rubberducky,
 /turf/open/floor/plasteel/freezer,
 /area/mine/laborcamp)
+"sbR" = (
+/obj/machinery/door/firedoor,
+/turf/open/floor/plasteel/stairs/right{
+	dir = 1
+	},
+/area/mine/xenoarch_area_c)
 "sda" = (
 /obj/machinery/atmospherics/components/unary/outlet_injector/atmos/air_input{
 	dir = 1
@@ -30940,6 +31327,9 @@
 /obj/item/pen,
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
+"sdX" = (
+/turf/open/floor/plasteel/showroomfloor,
+/area/mine/xenoarch_area_b)
 "sec" = (
 /obj/machinery/autolathe,
 /turf/open/floor/plasteel,
@@ -32219,6 +32609,10 @@
 /obj/effect/turf_decal/stripes/yellow/line,
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
+"sQI" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
+/turf/open/floor/plasteel/showroomfloor,
+/area/mine/xenoarch_area_b)
 "sRk" = (
 /obj/machinery/atmospherics/components/unary/portables_connector/visible,
 /obj/structure/sign/poster/official/mothepinephrine{
@@ -32294,23 +32688,10 @@
 /turf/open/floor/wood/wood_large,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "sST" = (
-/obj/structure/table/wood,
-/obj/structure/window/reinforced{
+/obj/machinery/door/firedoor,
+/turf/open/floor/plasteel/stairs/left{
 	dir = 8
 	},
-/obj/item/paper_bin{
-	pixel_y = 5
-	},
-/obj/item/pen/fourcolor,
-/obj/item/paper_bin/bundlenatural{
-	pixel_x = 6;
-	pixel_y = 4
-	},
-/obj/item/paper_bin/bundlenatural{
-	pixel_x = 6;
-	pixel_y = 4
-	},
-/turf/open/floor/wood/wood_tiled,
 /area/mine/xenoarch_area_b)
 "sSU" = (
 /obj/structure/stone_tile/cracked,
@@ -32500,12 +32881,16 @@
 	},
 /area/mine/xenoarch_area_b)
 "sXH" = (
-/obj/structure/table/wood,
-/obj/structure/window/reinforced{
+/obj/machinery/door/firedoor,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/turf/open/floor/plasteel/stairs/right{
 	dir = 8
 	},
-/obj/machinery/computer/library/checkout,
-/turf/open/floor/wood/wood_tiled,
 /area/mine/xenoarch_area_b)
 "sYr" = (
 /obj/structure/cable{
@@ -32529,10 +32914,14 @@
 /turf/open/floor/plasteel/dark/side,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "sZc" = (
-/obj/structure/sign/painting/library_private{
-	pixel_y = 32
+/obj/effect/turf_decal/siding/wood/thin,
+/obj/item/kirbyplants/hedge{
+	pixel_y = 0;
+	layer = 3;
+	anchored = 1
 	},
-/turf/open/floor/wood/wood_tiled,
+/obj/machinery/light/floor,
+/turf/open/floor/grass/grass0,
 /area/mine/xenoarch_area_b)
 "sZn" = (
 /obj/structure/disposalpipe/segment{
@@ -32571,25 +32960,14 @@
 /turf/open/floor/plasteel,
 /area/mine/storage)
 "taD" = (
-/obj/effect/turf_decal/trimline/dark/line{
-	dir = 1
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 5
 	},
-/obj/effect/turf_decal/stripes/yellow/line,
-/obj/effect/turf_decal/siding/purple,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer2{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
-	dir = 8
-	},
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/turf/open/floor/plasteel/dark/side,
-/area/ruin/lavaland/unpowered/deepspaceone/testlab)
+/turf/open/floor/wood/wood_parquet,
+/area/mine/xenoarch_area_b)
 "taE" = (
 /obj/structure/table,
 /obj/item/weldingtool/hugetank{
@@ -33187,6 +33565,23 @@
 /obj/effect/spawner/structure/window/plastitanium,
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
+"ttJ" = (
+/obj/structure/closet/crate/wooden,
+/obj/item/stack/sheet/mineral/wood/fifty,
+/obj/item/reagent_containers/glass/bucket{
+	pixel_y = 7
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
+	},
+/obj/machinery/light{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_tiled,
+/area/mine/xenoarch_area_b)
 "tus" = (
 /obj/structure/table/reinforced/brass,
 /obj/item/clothing/head/helmet/clockwork,
@@ -33206,6 +33601,16 @@
 	dir = 4
 	},
 /area/mine/xenoarch_area_c)
+"tuF" = (
+/obj/structure/table/wood,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
+	dir = 8
+	},
+/obj/item/clothing/under/misc/bathrobe,
+/obj/item/clothing/under/misc/bathrobe,
+/obj/item/clothing/under/misc/bathrobe,
+/turf/open/floor/plasteel/showroomfloor,
+/area/mine/xenoarch_area_b)
 "tuR" = (
 /obj/effect/turf_decal/bot/white,
 /obj/machinery/light{
@@ -33728,6 +34133,13 @@
 /obj/item/binoculars,
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/unpowered/ash_walkers/female)
+"tKo" = (
+/obj/structure/reagent_dispensers/watertank,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
+	dir = 8
+	},
+/turf/open/floor/wood/wood_tiled,
+/area/mine/xenoarch_area_b)
 "tKC" = (
 /obj/structure/barricade/wooden/crude,
 /obj/machinery/door/airlock/command{
@@ -34266,6 +34678,15 @@
 	},
 /turf/open/floor/plasteel/dark/textured/large,
 /area/mine/xenoarch)
+"ucR" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/turf/open/floor/plasteel/showroomfloor,
+/area/mine/xenoarch_area_b)
 "udb" = (
 /obj/machinery/porta_turret/syndicate{
 	dir = 10
@@ -34694,6 +35115,15 @@
 /obj/effect/decal/cleanable/blood/old,
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/unpowered/ash_walkers/female)
+"umF" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+	dir = 1
+	},
+/turf/open/floor/plasteel/showroomfloor,
+/area/mine/xenoarch_area_b)
 "umG" = (
 /obj/machinery/atmospherics/pipe/manifold/supply/hidden{
 	dir = 8
@@ -34710,15 +35140,10 @@
 /turf/open/floor/plasteel/white/smooth/diagonal,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
 "unJ" = (
-/obj/structure/table/wood,
-/obj/machinery/door/window{
+/obj/machinery/door/firedoor,
+/turf/open/floor/plasteel/stairs/medium{
 	dir = 8
 	},
-/obj/item/papercutter{
-	pixel_y = 2;
-	pixel_x = 4
-	},
-/turf/open/floor/wood/wood_tiled,
 /area/mine/xenoarch_area_b)
 "uoc" = (
 /turf/open/floor/plasteel/dark/side{
@@ -35497,10 +35922,10 @@
 /turf/open/floor/clockwork/reebe,
 /area/lavaland/necropolis)
 "uNn" = (
-/obj/structure/sign/painting/large/library/directional/south,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 4
 	},
+/obj/structure/sign/painting/large/library/directional/south,
 /turf/open/floor/wood/wood_tiled,
 /area/mine/xenoarch_area_b)
 "uNo" = (
@@ -36178,6 +36603,16 @@
 /obj/effect/spawner/structure/window/plastitanium,
 /turf/open/floor/plating,
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
+"vgt" = (
+/obj/structure/window/reinforced/tinted,
+/obj/machinery/door/window/eastright,
+/obj/machinery/shower{
+	desc = "Despite their age, they seem clean and capable of providing hot water just as well as their modern counterparts. Hopefully Nanotrasen cleaned the water pipes this well...";
+	dir = 4
+	},
+/obj/item/soap/deluxe,
+/turf/open/floor/plasteel/showroomfloor/shower,
+/area/mine/xenoarch_area_b)
 "vgF" = (
 /obj/effect/turf_decal/trimline/dark_green/filled/line{
 	dir = 10
@@ -36326,6 +36761,16 @@
 	},
 /turf/open/floor/plasteel,
 /area/mine/laborcamp/security)
+"vkB" = (
+/obj/structure/mineral_door/paperframe,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/turf/open/floor/wood/wood_tiled,
+/area/mine/xenoarch_area_b)
 "vkF" = (
 /obj/machinery/atmospherics/pipe/simple/green/visible{
 	dir = 4
@@ -36334,10 +36779,9 @@
 /turf/open/floor/plasteel,
 /area/mine/xenoarch_area_a)
 "vkX" = (
-/obj/structure/sign/painting/library{
-	pixel_y = -32
-	},
-/turf/open/floor/wood/wood_tiled,
+/obj/structure/fans/tiny/invisible,
+/obj/structure/mineral_door/woodrustic,
+/turf/open/floor/wood/wood_large,
 /area/mine/xenoarch_area_b)
 "vly" = (
 /obj/structure/cable/yellow,
@@ -36381,6 +36825,16 @@
 /obj/item/clothing/gloves/clockwork,
 /turf/open/indestructible/boss,
 /area/lavaland/necropolis)
+"vnF" = (
+/obj/effect/turf_decal/trimline/brown/filled/line{
+	dir = 10
+	},
+/obj/structure/pool/ladder{
+	dir = 1;
+	pixel_y = -24
+	},
+/turf/open/pool/water,
+/area/mine/xenoarch_area_b)
 "vnS" = (
 /obj/structure/flora/ausbushes/grassybush,
 /obj/machinery/light/small{
@@ -36625,6 +37079,15 @@
 	},
 /turf/open/floor/plating,
 /area/mine/xenoarch_area_c)
+"vrX" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer2{
+	dir = 1
+	},
+/turf/open/floor/plasteel/showroomfloor,
+/area/mine/xenoarch_area_b)
 "vtf" = (
 /obj/effect/turf_decal/tile/red{
 	dir = 4
@@ -37268,6 +37731,12 @@
 /obj/machinery/hydroponics/constructable/automagic,
 /turf/open/floor/plasteel/smooth/diagonal,
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
+"vTg" = (
+/obj/machinery/door/firedoor,
+/turf/open/floor/plasteel/stairs/left{
+	dir = 4
+	},
+/area/mine/xenoarch_area_b)
 "vTv" = (
 /obj/effect/turf_decal/stripes/yellow/corner{
 	dir = 8
@@ -37767,6 +38236,15 @@
 /obj/item/dice/d6/space,
 /turf/open/floor/plasteel/dark,
 /area/mine/production)
+"wlD" = (
+/obj/structure/chair/pew/right{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 9
+	},
+/turf/open/floor/wood/wood_large,
+/area/mine/xenoarch_area_b)
 "wlR" = (
 /obj/structure/stone_tile/cracked{
 	dir = 4
@@ -39709,6 +40187,12 @@
 	},
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/unpowered/ash_walkers)
+"xsI" = (
+/obj/effect/turf_decal/siding/wood/thin{
+	dir = 1
+	},
+/turf/open/floor/wood/wood_large,
+/area/mine/xenoarch_area_b)
 "xsM" = (
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
@@ -40493,12 +40977,10 @@
 /turf/open/floor/holofloor/carpet,
 /area/mine/xenoarch_area_b)
 "xNj" = (
-/obj/structure/table/wood,
-/obj/machinery/computer/library/public{
-	pixel_y = 1
+/obj/structure/toilet{
+	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
-/turf/open/floor/wood/wood_parquet,
+/turf/open/floor/plasteel/showroomfloor,
 /area/mine/xenoarch_area_b)
 "xNq" = (
 /obj/machinery/light,
@@ -54412,7 +54894,7 @@ feN
 qFP
 mFS
 nvN
-taD
+rfD
 nwZ
 xlH
 nIn
@@ -82600,7 +83082,7 @@ gSA
 mPS
 lYW
 aGb
-iDB
+mEf
 eQh
 gdj
 gdj
@@ -82857,7 +83339,7 @@ iDB
 iDB
 iDB
 iDB
-vkX
+smJ
 eQh
 gdj
 gdj
@@ -83114,7 +83596,7 @@ iDB
 vNW
 mNJ
 vNW
-iDB
+dgY
 eQh
 gdj
 gdj
@@ -83623,16 +84105,16 @@ wdn
 tXI
 oeS
 moF
-wdn
-kMX
-jvV
+cCh
 iDB
-jvV
+bIs
+bSm
+roF
 smJ
 eQh
-gdj
-gdj
-gdj
+llq
+llq
+llq
 gdj
 "}
 (166,1,1) = {"
@@ -83880,17 +84362,17 @@ wdn
 tXI
 ibh
 moF
-wdn
+sbR
 nlI
-jvV
 iDB
-jvV
+iDB
+iDB
 hyC
 eQh
-gdj
-gdj
-gdj
-gdj
+llq
+llq
+llq
+llq
 "}
 (167,1,1) = {"
 llq
@@ -84144,10 +84626,10 @@ mNJ
 vNW
 uNn
 eQh
-gdj
-gdj
-gdj
-gdj
+fZn
+fZn
+llq
+llq
 "}
 (168,1,1) = {"
 llq
@@ -84394,17 +84876,17 @@ met
 mWX
 ibh
 moF
-bKy
-caV
+wdn
+qCk
 vNW
 mNJ
 vNW
-hEa
+bPw
 eQh
-gdj
-gdj
-gdj
-gdj
+hrM
+fZn
+fZn
+llq
 "}
 (169,1,1) = {"
 llq
@@ -84652,16 +85134,16 @@ fny
 nhD
 xRf
 rrS
-roF
-jvV
+caV
 iDB
-jvV
-ljL
+iDB
+iDB
+hEa
 eQh
-gdj
-gdj
-gdj
-gdj
+hrM
+hrM
+fZn
+llq
 "}
 (170,1,1) = {"
 llq
@@ -84909,16 +85391,16 @@ kGi
 xKy
 njK
 rrS
-caV
-jvV
-iDB
-jvV
-hEa
+aHA
+ihs
+hsG
+vTg
+fJM
 eQh
-gdj
-gdj
-gdj
-gdj
+hrM
+hrM
+fZn
+llq
 "}
 (171,1,1) = {"
 llq
@@ -85167,15 +85649,15 @@ wdn
 wdn
 wdn
 rFl
-eES
-mNJ
-eES
-hEa
-eQh
-gdj
-gdj
-gdj
-gdj
+jvV
+iDB
+jvV
+cGk
+fYd
+hrM
+hrM
+fZn
+llq
 "}
 (172,1,1) = {"
 llq
@@ -85424,15 +85906,15 @@ qnn
 qnn
 qnn
 qbF
+taD
 rvT
-xNj
 sYw
 mgB
-eQh
-gdj
-gdj
-gdj
-gdj
+fYd
+hrM
+hrM
+fZn
+llq
 "}
 (173,1,1) = {"
 llq
@@ -85680,16 +86162,16 @@ iDB
 iDB
 iDB
 iDB
-buV
-iDB
+jvV
+nEm
 iDB
 iDB
 jvV
 eQh
-gdj
-gdj
-gdj
-gdj
+aov
+fZn
+fZn
+llq
 "}
 (174,1,1) = {"
 llq
@@ -85937,16 +86419,16 @@ fwf
 fwf
 uXD
 eQh
-mLB
+fYd
 sXH
 unJ
 sST
 fYd
 eQh
-gdj
-gdj
-gdj
-gdj
+fZn
+fZn
+llq
+llq
 "}
 (175,1,1) = {"
 llq
@@ -86196,14 +86678,14 @@ hQH
 eQh
 mFO
 eZg
-jvV
-jvV
-iDB
+ogJ
+ogJ
+hTP
 eQh
-gdj
-gdj
-gdj
-gdj
+llq
+llq
+llq
+llq
 "}
 (176,1,1) = {"
 llq
@@ -86452,14 +86934,14 @@ ikd
 bik
 eQh
 sZc
-jvV
-jvV
-jvV
-iDB
+jhu
+ogJ
+ogJ
+jVB
 eQh
-gdj
-gdj
-gdj
+llq
+llq
+llq
 gdj
 "}
 (177,1,1) = {"
@@ -86709,8 +87191,8 @@ wTJ
 dtB
 eQh
 jlH
-iDB
-pSW
+buV
+nlE
 nlE
 aon
 eQh
@@ -86966,14 +87448,14 @@ kXE
 dtR
 eQh
 eQh
+jZC
 eQh
 eQh
 eQh
 eQh
 eQh
-gdj
-gdj
-gdj
+eQh
+eQh
 gdj
 "}
 (179,1,1) = {"
@@ -87220,17 +87702,17 @@ eQh
 eQh
 eQh
 eQh
-dcR
-dcR
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
+eQh
+eQh
+eQh
+ucR
+ibN
+ibN
+ibN
+eQh
+vgt
+xNj
+eQh
 gdj
 "}
 (180,1,1) = {"
@@ -87477,17 +87959,17 @@ fGY
 ksi
 eAe
 eQh
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
+gfq
+gfq
+eQh
+rWv
+sdX
+sdX
+sdX
+hWm
+osy
+jWC
+eQh
 gdj
 "}
 (181,1,1) = {"
@@ -87734,17 +88216,17 @@ cki
 lsc
 cKa
 eQh
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
+gfq
+gfq
+eQh
+vrX
+sQI
+sQI
+dpE
+eQh
+eQh
+eQh
+eQh
 gdj
 "}
 (182,1,1) = {"
@@ -87991,14 +88473,14 @@ mpm
 lsc
 nQj
 eQh
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
+eQh
+eQh
+eQh
+umF
+eay
+pbO
+tuF
+eQh
 gdj
 gdj
 gdj
@@ -88248,14 +88730,14 @@ jUp
 vLL
 qBb
 eQh
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
+lyx
+gaF
+eQh
+vkB
+eQh
+eQh
+eQh
+eQh
 gdj
 gdj
 gdj
@@ -88505,15 +88987,15 @@ tAA
 vLL
 dtr
 eQh
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
+gCb
+vnF
+jkD
+hwy
+eES
+eES
+eES
+eES
+eES
 gdj
 gdj
 gdj
@@ -88762,15 +89244,15 @@ vLL
 vLL
 mjV
 eQh
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
+nkm
+kMX
+xsI
+ljL
+eES
+wlD
+cuc
+bPr
+eES
 gdj
 gdj
 gdj
@@ -89019,15 +89501,15 @@ vLL
 vLL
 mjV
 eQh
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
+nkm
+kMX
+xsI
+iPA
+vkX
+xsI
+ogJ
+ffU
+eES
 gdj
 gdj
 gdj
@@ -89276,15 +89758,15 @@ vLL
 vLL
 aJP
 eQh
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
+avk
+pGp
+mxi
+iSu
+eES
+cFh
+ttJ
+mhr
+eES
 gdj
 gdj
 gdj
@@ -89533,15 +90015,15 @@ msj
 sIE
 dJB
 eQh
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
-gdj
+mLB
+oWh
+pSW
+tKo
+eES
+eES
+eES
+eES
+eES
 gdj
 gdj
 gdj
@@ -89790,11 +90272,11 @@ eQh
 eQh
 eQh
 eQh
-gdj
-gdj
-gdj
-gdj
-gdj
+eQh
+eQh
+eQh
+eQh
+eQh
 gdj
 gdj
 gdj

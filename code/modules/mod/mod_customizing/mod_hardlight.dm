@@ -19,7 +19,7 @@
 	var/modsuit_color
 
 /datum/action/item_action/mod/hardlight_deploy/chooce_color/Trigger(trigger_flags)
-	var/chosen_colour = input(mod.wearer, "", "Choose Color", modsuit_color) as color|null
+	var/chosen_colour = tgui_input_color(mod.wearer, "", "Choose Color", modsuit_color)
 	if(!chosen_colour)
 		return
 
