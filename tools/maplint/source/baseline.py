@@ -1,5 +1,7 @@
+import glob
 import json
 import pathlib
+import subprocess
 from collections import Counter
 from dataclasses import dataclass, field
 from typing import Iterable
@@ -14,6 +16,18 @@ BaselineKey = tuple[str, str, str]
 
 def normalize_map_path(path) -> str:
     return str(path).replace("\\", "/")
+
+"""Maps of the repository, without ignored ones: CentCom_hermetic.dmm is built from CentCom.dmm and exists only where the build ran."""
+def list_maps(root = ".") -> list[str]:
+    root = pathlib.Path(root)
+    try:
+        output = subprocess.run(
+            ["git", "-C", str(root), "ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", "_maps/*.dmm"],
+            check = True, capture_output = True,
+        ).stdout.decode("utf-8")
+    except (OSError, subprocess.CalledProcessError):
+        return sorted(normalize_map_path(path) for path in glob.glob("_maps/**/*.dmm", root_dir = root, recursive = True))
+    return sorted({path for path in output.split("\0") if path and (root / path).is_file()})
 
 def key_for(error: MaplintError) -> BaselineKey:
     return (

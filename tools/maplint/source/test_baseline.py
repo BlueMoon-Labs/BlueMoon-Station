@@ -1,6 +1,7 @@
 import copy
 import io
 import pathlib
+import subprocess
 import tempfile
 import unittest
 from collections import Counter
@@ -126,6 +127,21 @@ class TestMerge(unittest.TestCase):
             self.assertNotIn(b"\r\n", path.read_bytes())
 
         self.assertEqual(baseline.load(pathlib.Path("does/not/exist.json")), {})
+
+class TestMapList(unittest.TestCase):
+    def test_generated_maps_are_skipped(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            subprocess.run(["git", "init", "-q", str(root)], check = True)
+            (root / ".gitignore").write_text("/_maps/generic/CentCom_hermetic.dmm\n", encoding = "utf-8")
+            maps = root / "_maps" / "generic"
+            maps.mkdir(parents = True)
+            for name in ("CentCom.dmm", "CentCom_hermetic.dmm", "new.dmm", "deleted.dmm"):
+                (maps / name).write_text(HEADER, encoding = "utf-8")
+            subprocess.run(["git", "-C", str(root), "add", "_maps/generic/CentCom.dmm", "_maps/generic/deleted.dmm"], check = True)
+            (maps / "deleted.dmm").unlink()
+
+            self.assertEqual(baseline.list_maps(root), ["_maps/generic/CentCom.dmm", "_maps/generic/new.dmm"])
 
 class TestMapCounts(unittest.TestCase):
     def count(self, text):

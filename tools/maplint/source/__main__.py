@@ -1,5 +1,4 @@
 import argparse
-import glob
 from collections import Counter
 import pathlib
 import traceback
@@ -92,7 +91,7 @@ def main(args):
     previous = baseline.load(baseline_path) if baseline_path is not None else {}
     known = {} if args.update_baseline else previous
 
-    map_filenames = [baseline.normalize_map_path(map_filename) for map_filename in (args.maps or sorted(glob.glob("_maps/**/*.dmm", recursive = True)))]
+    map_filenames = [baseline.normalize_map_path(map_filename) for map_filename in (args.maps or baseline.list_maps())]
     found: Counter = Counter()
 
     for map_filename in map_filenames:
