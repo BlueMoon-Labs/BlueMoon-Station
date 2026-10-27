@@ -12,8 +12,9 @@
 #define ADMIN_LOG_ARCHIVE_TTL (10 MINUTES)
 /// Кап длины команды tar при архивации выбранных файлов (лимит cmd на Windows ~8К).
 #define ADMIN_LOG_MULTI_CMD_MAX 6000
-/// Кап страницы в режиме "весь файл" (json-пересылка в tgui + рендер у клиента).
-#define ADMIN_LOG_WHOLE_PAGE_MAX (8 * 1024 * 1024)
+/// Кап страницы в режиме "весь файл". Пересылка страницы в tgui останавливает весь сервер:
+/// 1.8 МБ game.log ушли сообщением в 3.3 МБ и дали стоп-кадр 2.6 с (раунд 10617).
+#define ADMIN_LOG_WHOLE_PAGE_MAX (1024 * 1024)
 
 /// Относительный путь каталога -> world.time последней сборки архива.
 GLOBAL_LIST_EMPTY(admin_log_archive_builds)
@@ -109,6 +110,7 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 	cached_path = null
 	search_results = null
 	search_query = ""
+	update_static_data_for_all_viewers(ignore_cooldown = TRUE)
 
 /datum/admin_log_viewer/proc/refresh_listing(force = FALSE)
 	if(!force && listing && world.time < listing_time + ADMIN_LOG_LISTING_CACHE_TIME)
@@ -231,6 +233,7 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 	page_content = trimmed[1]
 	page_start = offset
 	page_end = trimmed[2]
+	update_static_data_for_all_viewers(ignore_cooldown = TRUE)
 	return TRUE
 
 /// Tail доступен только для файлов внутри каталога текущего раунда.
@@ -461,11 +464,14 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 			"pageNum" = min(max(1, CEILING(file_size / page_size, 1)), round(page_start / page_size) + 1),
 			"pageCount" = max(1, CEILING(file_size / page_size, 1)),
 			"pageBytes" = page_bytes,
-			"content" = page_content,
 			"tailAvailable" = tail_available(),
 			"tailActive" = tail_active,
 		)
 	return data
+
+// Текст страницы весит сотни КиБ: уходит только при смене страницы, а не с каждым действием в окне.
+/datum/admin_log_viewer/ui_static_data(mob/user)
+	return list("fileContent" = page_content)
 
 /datum/admin_log_viewer/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	. = ..()
@@ -530,8 +536,8 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 			return TRUE
 		if("set_page_size")
 			var/new_size = text2num(params["size"])
-			//белый список: 256 КиБ / 1 МиБ / 4 МиБ / 0 = весь файл
-			if(isnull(new_size) || !(new_size in list(0, ADMIN_LOG_PAGE_BYTES, ADMIN_LOG_PAGE_BYTES * 4, ADMIN_LOG_PAGE_BYTES * 16)))
+			//белый список: 256 КиБ / 1 МиБ / 0 = весь файл до ADMIN_LOG_WHOLE_PAGE_MAX
+			if(isnull(new_size) || !(new_size in list(0, ADMIN_LOG_PAGE_BYTES, ADMIN_LOG_PAGE_BYTES * 4)))
 				return TRUE
 			if(new_size == page_bytes)
 				return TRUE
