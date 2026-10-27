@@ -256,17 +256,153 @@ GENETICS SCANNER
 	return CONTEXTUAL_SCREENTIP_SET
 
 // Общий сбор показателей для анализатора, КПК, имплантов и медицинских машин.
-/proc/healthscan(mob/user, mob/living/M, mode = 1, advanced = FALSE, obj/item/healthanalyzer/connected_analyzer = null)
+/proc/healthscan(mob/user, mob/living/M, mode = 1, advanced = FALSE, obj/item/healthanalyzer/connected_analyzer = null, datum/live_source = null, include_chemistry = FALSE)
 	if(isliving(user) && (user.incapacitated() || user.eye_blind))
 		return
-	var/list/data = medical_scan_results(user, M, advanced, include_chemistry = !isnull(connected_analyzer))
+	var/list/data = medical_scan_results(user, M, advanced, include_chemistry = include_chemistry || !isnull(connected_analyzer))
 	var/report = mode ? data["report"] : data["report_compact"]
 	SEND_SIGNAL(M, COMSIG_HEALTH_SCAN, user)
 	if(connected_analyzer)
 		connected_analyzer.store_scan(user, data)
 	else
-		to_chat(user, examine_block(report), type = MESSAGE_TYPE_INFO)
+		show_medical_scan(user, data, M, live_source, "Medical", advanced, include_chemistry)
 	return report
+
+// Общий дисплей для медицинских инструментов и встроенных систем; чат остаётся доступен по префу.
+/proc/show_medical_scan(mob/user, list/data, mob/living/patient, datum/live_source = null, scan_kind = "Medical", advanced = FALSE, include_chemistry = FALSE)
+	if(!length(data))
+		return
+	if(!user.client || user.client.prefs.health_analyzer_chat)
+		var/report = user.client?.prefs && !user.client.prefs.health_analyzer_verbose ? data["report_compact"] || data["report"] : data["report"]
+		if(live_source)
+			report = replacetext(report, "Снимок от", "Показатели на")
+		to_chat(user, examine_block(report), type = MESSAGE_TYPE_INFO)
+		return
+	var/datum/component/medical_scan_display/display = user.LoadComponent(/datum/component/medical_scan_display)
+	display.show_scan(data, patient, live_source, scan_kind, advanced, include_chemistry)
+
+// Встроенная система явно подтверждает доступ к актуальным показателям своего носителя.
+/datum/proc/can_monitor_medical_scan(mob/user, mob/living/patient, scan_kind)
+	return FALSE
+
+/datum/component/medical_scan_display
+	dupe_mode = COMPONENT_DUPE_UNIQUE
+	var/list/scan_data
+	var/last_report = ""
+	var/last_report_compact = ""
+	var/datum/weakref/patient_ref
+	var/datum/weakref/source_ref
+	var/scan_kind = "Medical"
+	var/advanced = FALSE
+	var/include_chemistry = FALSE
+	var/scan_number = 0
+
+/datum/component/medical_scan_display/Initialize()
+	if(!ismob(parent))
+		return COMPONENT_INCOMPATIBLE
+
+/datum/component/medical_scan_display/Destroy(force, silent)
+	SStgui.close_uis(src)
+	scan_data = null
+	patient_ref = null
+	source_ref = null
+	return ..()
+
+/datum/component/medical_scan_display/proc/show_scan(list/data, mob/living/patient, datum/live_source, new_scan_kind, new_advanced, new_include_chemistry)
+	patient_ref = live_source ? WEAKREF(patient) : null
+	source_ref = live_source ? WEAKREF(live_source) : null
+	scan_kind = new_scan_kind
+	advanced = new_advanced
+	include_chemistry = new_include_chemistry
+	scan_number++
+	set_scan(data)
+	ui_interact(parent)
+
+/datum/component/medical_scan_display/proc/set_scan(list/data)
+	last_report = data["report"]
+	last_report_compact = data["report_compact"] || last_report
+	if(source_ref)
+		last_report = replacetext(last_report, "Снимок от", "Показатели на")
+		last_report_compact = replacetext(last_report_compact, "Снимок от", "Показатели на")
+	scan_data = data.Copy()
+	scan_data.Remove("report", "report_compact", "deathReport", "patientRealName")
+
+/datum/component/medical_scan_display/proc/refresh_scan()
+	if(!source_ref)
+		return TRUE
+	var/datum/source = source_ref.resolve()
+	var/mob/living/patient = patient_ref?.resolve()
+	if(!source || !patient || !source.can_monitor_medical_scan(parent, patient, scan_kind))
+		return FALSE
+	var/list/data
+	switch(scan_kind)
+		if("Medical")
+			data = medical_scan_results(parent, patient, advanced, include_chemistry)
+		if("Chemical")
+			data = chemical_scan_results(patient)
+		if("Wound")
+			data = wound_scan_results(parent, patient)
+	if(!length(data))
+		return FALSE
+	set_scan(data)
+	return TRUE
+
+/datum/component/medical_scan_display/ui_host(mob/user)
+	return parent
+
+/datum/component/medical_scan_display/ui_state(mob/user)
+	return GLOB.self_state
+
+/datum/component/medical_scan_display/ui_status(mob/user, datum/ui_state/state)
+	if(user != parent || !user.client)
+		return UI_CLOSE
+	if(source_ref)
+		var/datum/source = source_ref.resolve()
+		var/mob/living/patient = patient_ref?.resolve()
+		if(!source || !patient || user.stat != CONSCIOUS || user.incapacitated() || user.eye_blind || !source.can_monitor_medical_scan(user, patient, scan_kind))
+			return UI_CLOSE
+	return ..()
+
+/datum/component/medical_scan_display/ui_interact(mob/user, datum/tgui/ui)
+	ui = SStgui.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "Healthanalyzer", "Медицинские показатели")
+		ui.set_autoupdate(!isnull(source_ref))
+		ui.open()
+	else
+		ui.set_autoupdate(!isnull(source_ref))
+
+/datum/component/medical_scan_display/ui_data(mob/user)
+	if(!refresh_scan())
+		scan_data = null
+	return list("scan" = scan_data, "scanNumber" = scan_number, "advanced" = advanced, "verbose" = user.client.prefs.health_analyzer_verbose, "live" = !isnull(source_ref), "canPrint" = FALSE, "canClear" = isnull(source_ref), "deviceLabel" = "")
+
+/datum/component/medical_scan_display/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	if(..())
+		return
+	switch(action)
+		if("chat")
+			if(refresh_scan() && scan_data)
+				to_chat(usr, examine_block(usr.client.prefs.health_analyzer_verbose ? last_report : last_report_compact), type = MESSAGE_TYPE_INFO)
+			return TRUE
+		if("detail")
+			usr.client.prefs.health_analyzer_verbose = !usr.client.prefs.health_analyzer_verbose
+			usr.client.prefs.save_preferences()
+			SStgui.update_user_uis(usr)
+			return TRUE
+		if("clear")
+			if(!source_ref)
+				scan_data = null
+				last_report = ""
+				last_report_compact = ""
+			return TRUE
+
+/datum/component/medical_scan_display/ui_close(mob/user)
+	source_ref = null
+	patient_ref = null
+	scan_data = null
+	last_report = ""
+	last_report_compact = ""
 
 /proc/medical_scan_results(mob/user, mob/living/M, advanced = FALSE, include_chemistry = FALSE)
 	if(isliving(user) && (user.incapacitated() || user.eye_blind))
@@ -482,7 +618,7 @@ GENETICS SCANNER
 
 			if(temp_message || damage_message)
 				if(O.damage > 0 || (O.organ_flags & ORGAN_FAILING))
-					var/organ_icon = icon2base64(icon(O.icon, O.icon_state, SOUTH, 1))
+					var/organ_icon = icon2base64html(O, sourceonly = TRUE)
 					var/critical = !!(O.organ_flags & ORGAN_FAILING)
 					var/damage_percent = round(O.damage / O.maxHealth * 100, 1)
 					organ_data += list(list("name" = capitalize(O.ru_name || O.name), "icon" = organ_icon, "damage" = advanced ? damage_percent : null, "status" = trim(strip_html_tags("[damage_message] [temp_message]")), "warning" = !!(damage_message || findtext(temp_message, "class='danger") || findtext(temp_message, "class='alert")), "critical" = critical))
@@ -698,11 +834,11 @@ GENETICS SCANNER
 	return lines
 
 
-/proc/chemscan(mob/living/user, mob/living/M)
+/proc/chemscan(mob/user, mob/living/M, datum/live_source = null)
 	if(!istype(M) || !M.reagents)
 		return
 	var/list/data = chemical_scan_results(M)
-	to_chat(user, examine_block(data["report"]), type = MESSAGE_TYPE_INFO)
+	show_medical_scan(user, data, M, live_source, "Chemical")
 	return data["report"]
 
 /proc/chemical_scan_results(mob/living/target)
@@ -710,6 +846,7 @@ GENETICS SCANNER
 	var/list/data = list(
 		"patientRealName" = target.real_name || "Неизвестный",
 		"scanTime" = scan_time,
+		"chemicalOnly" = TRUE,
 		"sections" = list(),
 		"reagents" = list(),
 		"addictions" = list(),
@@ -805,8 +942,20 @@ GENETICS SCANNER
 	SStgui.update_uis(src)
 
 // Подробное описание ран остаётся доступным у всех вызывающих этот прок инструментов.
-/proc/woundscan(mob/user, mob/living/carbon/patient, obj/item/healthanalyzer/scanner)
+/proc/woundscan(mob/user, mob/living/carbon/patient, obj/item/healthanalyzer/scanner, datum/live_source = null)
 	if(!istype(patient) || (isliving(user) && (user.incapacitated() || user.eye_blind)))
+		return
+	var/list/data = wound_scan_results(user, patient)
+	if(!length(patient.get_wounded_bodyparts()) && istype(scanner, /obj/item/healthanalyzer/wound))
+		playsound(scanner, 'sound/machines/ping.ogg', 50, FALSE)
+	if(istype(scanner))
+		scanner.store_scan(user, data)
+	else
+		show_medical_scan(user, data, patient, live_source, "Wound")
+
+// Отдельный сбор данных позволяет обновлять встроенный сканер ран без повторного вывода в чат.
+/proc/wound_scan_results(mob/user, mob/living/carbon/patient)
+	if(!istype(patient))
 		return
 	var/scan_time = STATION_TIME_TIMESTAMP("hh:mm:ss", world.time)
 	var/list/data = list(
@@ -823,13 +972,8 @@ GENETICS SCANNER
 		medical_scan_section(data, "Раны: [limb.ru_name]", msg)
 	if(!length(data["sections"]))
 		medical_scan_section(data, "Результат", span_notice("Физические травмы не обнаружены."))
-		if(istype(scanner, /obj/item/healthanalyzer/wound))
-			playsound(scanner, 'sound/machines/ping.ogg', 50, FALSE)
-	if(istype(scanner))
-		data["report"] += "<hr>[span_info("Снимок от [scan_time]")]"
-		scanner.store_scan(user, data)
-	else
-		to_chat(user, examine_block(data["report"]), type = MESSAGE_TYPE_INFO)
+	data["report"] += "<hr>[span_info("Снимок от [scan_time]")]"
+	return data
 
 /obj/item/healthanalyzer/wound
 	name = "first aid analyzer"

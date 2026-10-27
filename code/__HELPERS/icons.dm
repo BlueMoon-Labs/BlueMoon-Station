@@ -1686,7 +1686,7 @@ GLOBAL_LIST_EMPTY(bicon_cache)
 /// be larger than HUMANOID_ICON_CACHE_MAX.
 #define BICON_CACHE_MAX 2048
 
-/proc/icon2base64html(thing)
+/proc/icon2base64html(thing, sourceonly = FALSE)
 	if (!thing)
 		return
 	if (isicon(thing))
@@ -1694,6 +1694,8 @@ GLOBAL_LIST_EMPTY(bicon_cache)
 		var/icon_base64 = icon2base64(thing)
 		if(!icon_base64)
 			return
+		if(sourceonly)
+			return icon_base64
 		return "<img class='icon icon-misc' src='data:image/png;base64,[icon_base64]'>"
 
 	// Either an atom or somebody fucked up and is gonna get a runtime, which I'm fine with.
@@ -1723,6 +1725,8 @@ GLOBAL_LIST_EMPTY(bicon_cache)
 			if(length(GLOB.bicon_cache) > BICON_CACHE_MAX)
 				GLOB.bicon_cache.Cut(1, (BICON_CACHE_MAX / 4) + 1) // Evict oldest 25%
 
+	if(sourceonly)
+		return icon_base64
 	return "<img class='icon icon-[A.icon_state]' src='data:image/png;base64,[icon_base64]'>"
 
 //Costlier version of icon2html() that uses getFlatIcon() to account for overlays, underlays, etc. Use with extreme moderation, ESPECIALLY on mobs.

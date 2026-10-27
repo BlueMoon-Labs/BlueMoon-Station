@@ -16,6 +16,7 @@ type Reagent = { name: string; volume: number; overdosed: BooleanLike; inactive:
 type Scan = {
   scanTime: string;
   woundOnly?: BooleanLike;
+  chemicalOnly?: BooleanLike;
   health: number;
   dead: BooleanLike;
   unknown: BooleanLike;
@@ -34,7 +35,7 @@ type Scan = {
   addictions?: string[];
   blood?: { percent: number; volume: number; incoming: number; type: string; low: BooleanLike; critical: BooleanLike };
 };
-type HealthanalyzerData = { advanced: BooleanLike; printing: BooleanLike; verbose: BooleanLike; scanNumber: number; scan: Scan | null };
+type HealthanalyzerData = { advanced: BooleanLike; printing: BooleanLike; verbose: BooleanLike; scanNumber: number; scan: Scan | null; live?: BooleanLike; canPrint?: BooleanLike; canClear?: BooleanLike; deviceLabel?: string };
 
 const damageTypes = [
   { key: 'brute', label: 'Травмы', color: 'red' },
@@ -45,19 +46,19 @@ const damageTypes = [
 
 export const Healthanalyzer = () => {
   const { act, data } = useBackend<HealthanalyzerData>();
-  const { scan, advanced, printing, verbose, scanNumber } = data;
+  const { scan, advanced, printing, verbose, scanNumber, live = false, canPrint = advanced, canClear = true, deviceLabel } = data;
   return (
-    <Window title="Анализатор здоровья" width={620} height={760}>
+    <Window title={live ? 'Мониторинг организма' : 'Анализатор здоровья'} width={620} height={760}>
       <Window.Content scrollable>
         <Section title="Медицинский отчёт" buttons={(
           <>
             <Button icon="comment-medical" disabled={!scan} onClick={() => act('chat')}>Текстом</Button>
-            {!!advanced && (
+            {!!canPrint && (
               <Button icon="print" disabled={!scan || !!printing} onClick={() => act('print')}>
                 {printing ? 'Печать…' : 'Печать'}
               </Button>
             )}
-            <Button.Confirm icon="trash" disabled={!scan} content="Очистить" confirmContent="Очистить?" onClick={() => act('clear')} />
+            {!!canClear && <Button.Confirm icon="trash" disabled={!scan} content="Очистить" confirmContent="Очистить?" onClick={() => act('clear')} />}
           </>
         )}>
           {scan ? (
@@ -72,7 +73,7 @@ export const Healthanalyzer = () => {
             </>
           ) : <NoticeBox>В памяти нет результатов обследования. Просканируйте пациента.</NoticeBox>}
         </Section>
-        {scan && <ScanResults key={scanNumber} scan={scan} advanced={!!advanced} verbose={!!verbose} />}
+        {scan && <ScanResults key={scanNumber} scan={scan} advanced={!!advanced} verbose={!!verbose} live={!!live} deviceLabel={deviceLabel} />}
       </Window.Content>
     </Window>
   );
@@ -101,12 +102,12 @@ const VitalSigns = ({ scan }: { scan: Scan }) => (
   </LabeledList>
 );
 
-const ScanResults = ({ scan, advanced, verbose }: { scan: Scan; advanced: boolean; verbose: boolean }) => {
+const ScanResults = ({ scan, advanced, verbose, live, deviceLabel = advanced ? 'Продвинутый анализатор' : 'Обычный анализатор' }: { scan: Scan; advanced: boolean; verbose: boolean; live: boolean; deviceLabel?: string }) => {
   const { act } = useBackend();
   const sections = scan.sections.filter(section => section.title !== 'Реагенты в организме');
   return (
     <>
-      {!scan.woundOnly && (
+      {!scan.woundOnly && !scan.chemicalOnly && (
         <Section title="Локализация повреждений" buttons={(
           <Button icon="bone" selected={verbose} onClick={() => act('detail')}>{verbose ? 'Подробно' : 'Кратко'}</Button>
         )}>
@@ -136,9 +137,9 @@ const ScanResults = ({ scan, advanced, verbose }: { scan: Scan; advanced: boolea
       {sections.map((section, index) => (
         <Section key={index} title={section.title}><ScanLines lines={section.lines} /></Section>
       ))}
-      {!scan.woundOnly && <Reagents reagents={scan.reagents || []} addictions={scan.addictions || []} />}
-      <Box color="label" textAlign="center" mt={0.8} mb={0.5}>Снимок от {scan.scanTime} · {advanced ? 'Продвинутый' : 'Обычный'} анализатор</Box>
-      <Box color="label" textAlign="center" mb={1}>Для обновления показателей проведите повторное обследование.</Box>
+      {!scan.woundOnly && scan.reagents !== undefined && <Reagents reagents={scan.reagents} addictions={scan.addictions || []} />}
+      <Box color="label" textAlign="center" mt={0.8} mb={0.5}>{live ? 'Последнее обновление:' : 'Снимок от'} {scan.scanTime}{deviceLabel && ` · ${deviceLabel}`}</Box>
+      <Box color="label" textAlign="center" mb={1}>{live ? 'Показатели обновляются автоматически.' : 'Для обновления показателей проведите повторное обследование.'}</Box>
     </>
   );
 };
@@ -191,7 +192,7 @@ const LimbTable = ({ limbs }: { limbs: Limb[] }) => {
             <Table.Row key={`embed-${index}`}><Table.Cell colSpan={3} color="bad">Инородное тело: {embed}.</Table.Cell></Table.Row>
           ))}
           {limb.wounds.map((wound, index) => (
-            <Table.Row key={`wound-${index}`}><Table.Cell colSpan={3}><WoundHint wound={wound} /></Table.Cell></Table.Row>
+            <Table.Row key={`wound-${wound.name}-${index}`}><Table.Cell colSpan={3}><WoundHint wound={wound} /></Table.Cell></Table.Row>
           ))}
         </Fragment>
       ))}
