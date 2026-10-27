@@ -280,6 +280,7 @@
 	max_equip = 7
 	operation_req_access = list(ACCESS_SLAVER)
 	internals_req_access = list(ACCESS_SLAVER)
+	ui_theme = "security"
 
 /obj/item/mecha_parts/mecha_equipment/weapon/energy/disabler/shotgun
 	projectile = /obj/item/projectile/beam/disabler/mecha

@@ -12,6 +12,7 @@
 /mob/living/simple_animal/hostile/inteq
 	name = "InteQ Operative"
 	desc = "Смерть Nanotrasen и Синдикату!"
+	gold_core_spawnable = HOSTILE_SPAWN
 	icon = 'icons/mob/simple_human.dmi'
 	icon_state = "syndicate"
 	icon_living = "syndicate"
@@ -35,7 +36,6 @@
 	attack_sound = 'sound/weapons/punch1.ogg'
 	a_intent = INTENT_HARM
 	loot = list(/obj/effect/mob_spawn/human/corpse/inteq_dead)
-	// Новая переменная для случайного лута (ассоциативный список: предмет -> вес)
 	atmos_requirements = list("min_oxy" = 5, "max_oxy" = 0, "min_tox" = 0, "max_tox" = 1, "min_co2" = 0, "max_co2" = 5, "min_n2" = 0, "max_n2" = 0)
 	unsuitable_atmos_damage = 15
 	faction = list(ROLE_INTEQ)
@@ -81,8 +81,8 @@
 	icon_living = "syndicate_knife"
 	loot = list(/obj/effect/gibspawner/human)
 	random_loot = list(
-		/obj/item/inteq_sledgehammer = 5,
-		/obj/item/broken/inteq_sledgehammer = 40,
+		/obj/item/inteq_sledgehammer = 1,
+		/obj/item/broken/inteq_sledgehammer = 44,
 		/obj/item/clothing/under/inteq = 15,
 		/obj/item/clothing/mask/gas/inteq = 10,
 		/obj/item/clothing/suit/armor/inteq = 5,
@@ -105,8 +105,8 @@
 	speed = 1
 	spacewalk = TRUE
 	random_loot = list(
-		/obj/item/inteq_sledgehammer = 5,
-		/obj/item/broken/inteq_sledgehammer = 40,
+		/obj/item/inteq_sledgehammer = 1,
+		/obj/item/broken/inteq_sledgehammer = 44,
 		/obj/item/clothing/under/inteq = 15,
 		/obj/item/clothing/mask/gas/inteq = 10,
 		/obj/item/clothing/head/helmet/space/syndicate/inteq = 5,
@@ -125,8 +125,8 @@
 	maxHealth = 250
 	health = 250
 	random_loot = list(
-		/obj/item/inteq_sledgehammer = 5,
-		/obj/item/broken/inteq_sledgehammer = 40,
+		/obj/item/inteq_sledgehammer = 1,
+		/obj/item/broken/inteq_sledgehammer = 44,
 		/obj/item/clothing/under/inteq = 15,
 		/obj/item/clothing/mask/gas/inteq = 10,
 		/obj/item/clothing/suit/space/hardsuit/syndi/elite/inteq = 5,
@@ -147,7 +147,6 @@
 	status_flags = 0
 	var/obj/effect/light_emitter/red_energy_sword/sord
 	random_loot = list(
-		/obj/item/dualsaber = 1,
 		/obj/item/broken/dualsaber = 15,
 		/obj/item/melee/transforming/energy/sword/saber = 5,
 		/obj/item/broken/energy_sword = 40,
@@ -155,7 +154,7 @@
 		/obj/item/clothing/mask/gas/inteq = 5,
 		/obj/item/clothing/suit/armor/inteq = 5,
 		/obj/item/clothing/head/helmet/swat/inteq = 5,
-		null = 19   // ничего не выпадает
+		null = 20   // ничего не выпадает
 	)
 
 /mob/living/simple_animal/hostile/inteq/melee/sword/Initialize(mapload)
@@ -183,7 +182,6 @@
 	speed = 1
 	spacewalk = TRUE
 	random_loot = list(
-		/obj/item/dualsaber = 1,
 		/obj/item/broken/dualsaber = 15,
 		/obj/item/melee/transforming/energy/sword/saber = 5,
 		/obj/item/broken/energy_sword = 40,
@@ -191,7 +189,7 @@
 		/obj/item/clothing/mask/gas/inteq = 5,
 		/obj/item/clothing/head/helmet/space/syndicate/inteq = 5,
 		/obj/item/clothing/suit/space/syndicate/inteq = 5,
-		null = 19   // ничего не выпадает
+		null = 20   // ничего не выпадает
 	)
 
 /mob/living/simple_animal/hostile/inteq/melee/sword/space/Initialize(mapload)
@@ -210,7 +208,6 @@
 	maxHealth = 250
 	health = 250
 	random_loot = list(
-		/obj/item/dualsaber = 1,
 		/obj/item/broken/dualsaber = 15,
 		/obj/item/melee/transforming/energy/sword/saber = 5,
 		/obj/item/broken/energy_sword = 20,
@@ -218,7 +215,7 @@
 		/obj/item/clothing/mask/gas/inteq = 5,
 		/obj/item/clothing/suit/space/hardsuit/syndi/elite/inteq = 5,
 		/obj/item/broken/inteq_elite = 35,
-		null = 9   // ничего не выпадает
+		null = 10   // ничего не выпадает
 	)
 
 ///////////////Guns////////////
@@ -298,8 +295,7 @@
 	casingtype = /obj/item/ammo_casing/c45/lethal
 	projectilesound = 'sound/weapons/gunshot_smg.ogg'
 	random_loot = list(
-		/obj/item/gun/ballistic/automatic/c20r = 5,
-		/obj/item/broken/c20r = 30,
+		/obj/item/broken/c20r = 35,
 		/obj/item/ammo_box/magazine/smgm45 = 10,
 		/obj/item/clothing/under/inteq = 15,
 		/obj/item/clothing/mask/gas/inteq = 10,
@@ -324,8 +320,7 @@
 	speed = 1
 	spacewalk = TRUE
 	random_loot = list(
-		/obj/item/gun/ballistic/automatic/c20r = 5,
-		/obj/item/broken/c20r = 30,
+		/obj/item/broken/c20r = 35,
 		/obj/item/ammo_box/magazine/smgm45 = 10,
 		/obj/item/clothing/under/inteq = 15,
 		/obj/item/clothing/mask/gas/inteq = 10,
@@ -345,8 +340,7 @@
 	maxHealth = 250
 	health = 250
 	random_loot = list(
-		/obj/item/gun/ballistic/automatic/c20r = 5,
-		/obj/item/broken/c20r = 10,
+		/obj/item/broken/c20r = 15,
 		/obj/item/ammo_box/magazine/smgm45 = 10,
 		/obj/item/clothing/under/inteq = 15,
 		/obj/item/clothing/mask/gas/inteq = 10,
@@ -363,8 +357,7 @@
 	icon_living = "syndicate_shotgun"
 	casingtype = /obj/item/ammo_casing/shotgun/buckshot //buckshot (up to 72.5 brute) fired in a two-round burst
 	random_loot = list(
-		/obj/item/gun/ballistic/automatic/shotgun/bulldog = 5,
-		/obj/item/broken/bulldog = 30,
+		/obj/item/broken/bulldog = 35,
 		/obj/item/ammo_box/magazine/m12g = 10,
 		/obj/item/clothing/under/inteq = 15,
 		/obj/item/clothing/mask/gas/inteq = 10,
@@ -384,8 +377,7 @@
 	speed = 1
 	spacewalk = TRUE
 	random_loot = list(
-		/obj/item/gun/ballistic/automatic/shotgun/bulldog = 5,
-		/obj/item/broken/bulldog = 30,
+		/obj/item/broken/bulldog = 35,
 		/obj/item/ammo_box/magazine/m12g = 10,
 		/obj/item/clothing/under/inteq = 15,
 		/obj/item/clothing/mask/gas/inteq = 10,
@@ -405,8 +397,7 @@
 	maxHealth = 250
 	health = 250
 	random_loot = list(
-		/obj/item/gun/ballistic/automatic/shotgun/bulldog = 5,
-		/obj/item/broken/bulldog = 10,
+		/obj/item/broken/bulldog = 15,
 		/obj/item/ammo_box/magazine/m12g = 10,
 		/obj/item/clothing/under/inteq = 15,
 		/obj/item/clothing/mask/gas/inteq = 10,

@@ -7146,9 +7146,6 @@
 	pixel_y = 23;
 	start_charge = 35
 	},
-/obj/structure/cable/yellow{
-	icon_state = "0-2"
-	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/solfed_ship/medbay)
 "Pb" = (

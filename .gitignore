@@ -21,6 +21,9 @@
 *.lk
 *.int
 *.backup
+
+# PNG NanoMap создаются штатной сборкой из карт и спрайтов.
+/icons/_nanomaps/*.png
 ### https://raw.github.com/github/gitignore/cc542de017c606138a87ee4880e5f06b3a306def/Global/Linux.gitignore
 
 *~
@@ -71,6 +74,7 @@ htmlcov/
 .coverage
 .coverage.*
 .cache
+tools/loadout_crypto/node_path.txt
 nosetests.xml
 coverage.xml
 .hypothesis/
@@ -178,6 +182,7 @@ Temporary Items
 #extra map stuff
 /_maps/**/backup/
 /_maps/templates.dm
+/_maps/map_files/generic/CentCom_hermetic.dmm
 
 #dmdoc default folder
 /dmdoc

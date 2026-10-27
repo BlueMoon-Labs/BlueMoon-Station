@@ -150,7 +150,7 @@
 #define COMSIG_ATOM_EMP_ACT "atom_emp_act"
 ///from base of atom/fire_act(): (exposed_temperature, exposed_volume)
 #define COMSIG_ATOM_FIRE_ACT "atom_fire_act"
-///from base of atom/bullet_act(): (/obj/item/projectile, def_zone)
+///from base of atom/bullet_act() and of the living, silicon and simple_animal overrides, before blocks and damage: (/obj/item/projectile, def_zone)
 #define COMSIG_ATOM_BULLET_ACT "atom_bullet_act"
 ///from base of atom/blob_act(): (/obj/structure/blob)
 #define COMSIG_ATOM_BLOB_ACT "atom_blob_act"
@@ -329,6 +329,8 @@
 /// A listener's sound/typing marker: (atom/source, kind, direction, duration).
 #define COMSIG_MOB_SOUND_INDICATOR "mob_sound_indicator"
 	#define COMPONENT_SOUND_INDICATOR_HANDLED (1<<0)
+/// An audible nearby event that produces an acoustic snapshot: (atom/center).
+#define COMSIG_MOB_ECHOLOCATION_PULSE "mob_echolocation_pulse"
 #define COMSIG_MOB_ON_NEW_MIND "mob_on_new_mind"			//called when a new mind is assigned to a mob: ()
 #define COMSIG_MOB_SAY "mob_say" // from /mob/living/say(): (proc args list)
 	#define COMPONENT_UPPERCASE_SPEECH 1
@@ -455,6 +457,7 @@
 #define COMSIG_LIVING_ATTACKER_SET "living_attacker_set"			// from base of /mob/living/set_last_attacker(): (attacker)
 
 #define COMSIG_LIVING_SET_AS_ATTACKER "living_set_as_attacker"		// from base of /mob/living/set_last_attacker(): (target)
+#define COMSIG_LIVING_HIT_BY_PROJECTILE "living_hit_by_projectile"	// from base of /mob/living/bullet_act() before damage, when not blocked: (obj/item/projectile/projectile, def_zone)
 
 //ALL OF THESE DO NOT TAKE INTO ACCOUNT WHETHER AMOUNT IS 0 OR LOWER AND ARE SENT REGARDLESS!
 #define COMSIG_LIVING_STATUS_STUN "living_stun"					//from base of mob/living/Stun() (amount, update, ignore)

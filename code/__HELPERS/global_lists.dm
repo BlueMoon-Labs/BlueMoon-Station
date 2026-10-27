@@ -123,6 +123,7 @@
 	for(var/path in subtypesof(/datum/bark))
 		var/datum/bark/B = new path()
 		GLOB.bark_list[B.id] = path
+		GLOB.bark_datums[B.id] = B
 		if(B.allow_random)
 			GLOB.bark_random_list[B.id] = path
 
@@ -130,6 +131,7 @@
 	for(var/path in subtypesof(/datum/sprite_accessory/hair_gradient))
 		var/datum/sprite_accessory/hair_gradient/H = new path()
 		GLOB.hair_gradients_list[H.name] = H
+	GLOB.sprite_accessory_lists |= list(GLOB.hair_gradients_list)
 
 	// Keybindings
 	init_keybindings()
@@ -138,6 +140,49 @@
 	init_attackby_recipes()
 
 	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(init_ref_coin_values)) //so the current procedure doesn't sleep because of UNTIL()
+
+/// Warm all whitelist IDs in one batch after config and the loadout's configured lists are ready.
+/proc/initialize_global_whitelist_cache()
+	var/list/whitelists = list()
+	for(var/category in GLOB.loadout_items)
+		var/list/subcategories = GLOB.loadout_items[category]
+		for(var/subcategory in subcategories)
+			var/list/items = subcategories[subcategory]
+			for(var/item_name in items)
+				var/datum/gear/gear = items[item_name]
+				if(length(gear.ckeywhitelist))
+					whitelists += list(gear.ckeywhitelist)
+	for(var/list/registry as anything in GLOB.sprite_accessory_lists)
+		for(var/entry_name in registry)
+			if(!istext(entry_name))
+				continue
+			var/datum/sprite_accessory/accessory = registry[entry_name]
+			if(istype(accessory) && length(accessory.ckeys_allowed))
+				whitelists += list(accessory.ckeys_allowed)
+	for(var/bark_id in GLOB.bark_datums)
+		var/datum/bark/bark = GLOB.bark_datums[bark_id]
+		if(length(bark.ckeys_allowed))
+			whitelists += list(bark.ckeys_allowed)
+	for(var/datum/ai_donator_screen/screen as anything in GLOB.ai_donator_screens)
+		if(length(screen.ckey_whitelist))
+			whitelists += list(screen.ckey_whitelist)
+	for(var/datum/borg_donator_skin/skin as anything in GLOB.borg_donator_skins)
+		if(length(skin.ckey_whitelist))
+			whitelists += list(skin.ckey_whitelist)
+	// prepare_rooms() is idempotent and only reads map templates; it requires the loaded config.
+	if(CONFIG_GET(flag/hilbertshotel_enabled))
+		SShilbertshotel.prepare_rooms()
+	for(var/template_name in SShilbertshotel.hotel_map_list)
+		var/datum/map_template/hilbertshotel/room_template = SShilbertshotel.hotel_map_list[template_name]
+		if(length(room_template.ckeywhitelist))
+			whitelists += list(room_template.ckeywhitelist)
+	var/list/encrypted_ids = list()
+	for(var/list/whitelist as anything in whitelists)
+		for(var/entry in whitelist)
+			if(istext(entry) && findtextEx(entry, "enc1:", 1, 6))
+				encrypted_ids |= entry
+	if(length(encrypted_ids))
+		return gear_crypto("decrypt", encrypted_ids)
 
 //creates every subtype of prototype (excluding prototype) and adds it to list L.
 //if no list/L is provided, one is created.

@@ -19,7 +19,7 @@
 	hitsound = 'sound/weapons/bladeslice.ogg'
 	throwforce = 45
 	block_chance = 70
-	armour_penetration = 80
+	armour_penetration = MELEE_AP_ANTAGONIST
 	flags_1 = CONDUCT_1
 	w_class = WEIGHT_CLASS_BULKY
 	sharpness = SHARP_POINTY

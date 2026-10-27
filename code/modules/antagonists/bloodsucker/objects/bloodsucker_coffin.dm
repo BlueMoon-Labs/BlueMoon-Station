@@ -54,7 +54,7 @@
 	resistance_flags = NONE
 	max_integrity = 100
 	integrity_failure = 0.5
-	armor = list(MELEE = 20, BULLET = 10, LASER = 15, ENERGY = 0, BOMB = 35, BIO = 0, RAD = 0, FIRE = 50, ACID = 60)
+	armor_type = /datum/armor/blackcoffin
 
 /obj/structure/closet/crate/coffin/meatcoffin
 	name = "meat coffin"
@@ -69,7 +69,7 @@
 	material_drop = /obj/item/reagent_containers/food/snacks/meat/slab
 	material_drop_amount = 3
 	integrity_failure = 0.57
-	armor = list(MELEE = 40, BULLET = 5, LASER = 5, ENERGY = 0, BOMB = 50, BIO = 0, RAD = 0, FIRE = 50, ACID = 100)
+	armor_type = /datum/armor/meatcoffin
 
 /obj/structure/closet/crate/coffin/metalcoffin
 	name = "metal coffin"
@@ -85,7 +85,7 @@
 	material_drop_amount = 5
 	max_integrity = 200
 	integrity_failure = 0.25
-	armor = list(MELEE = 25, BULLET = 10, LASER = 25, ENERGY = 0, BOMB = 10, BIO = 0, RAD = 0, FIRE = 50, ACID = 60)
+	armor_type = /datum/armor/metalcoffin
 
 //////////////////////////////////////////////
 
@@ -142,10 +142,11 @@
 			Turf = get_turf(user) //we may have moved. adjust as needed...
 			A = get_area(src)
 			// Claim?
-			if(!bloodsuckerdatum.coffin && !resident && (is_station_level(Turf.z) || !A.map_name == "Space"))
-				switch(alert(user,"Вы хотите занять данный гроб? [get_area(src)] станет вашим логовом.","Занять логово","Да", "Нет"))
-					if("Да")
-						ClaimCoffin(user)
+			var/datum/antag_training_arena/training_arena = user.training_origin?.resolve()
+			var/training_lair = training_arena?.owns_area(A)
+			if(!bloodsuckerdatum.coffin && !resident && (is_station_level(Turf.z) || !A.map_name == "Space" || training_lair))
+				if(training_lair || alert(user,"Вы хотите занять данный гроб? [get_area(src)] станет вашим логовом.","Занять логово","Да", "Нет") == "Да")
+					ClaimCoffin(user)
 			if (user.AmStaked()) // Stake? No Heal!
 				to_chat(bloodsuckerdatum.owner.current, "<span class='userdanger'>Вы проткнуты колом! Уберите это опасное оружие от своего сердца перед сном.</span>")
 				return

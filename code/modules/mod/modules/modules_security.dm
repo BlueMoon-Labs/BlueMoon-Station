@@ -5,7 +5,8 @@
 	name = "MOD prototype cloaking module"
 	desc = "Полная модернизация костюма, форма технологии визуального маскировки, использующей эзотерическую технологию \
 		для изгиба света вокруг пользователя, а также миметические материалы для соответствия поверхности костюма \
-		окружению на основе данных сенсоров. По какой-то причине эта технология встречается редко."
+		окружению на основе данных сенсоров. По какой-то причине эта технология встречается редко. \
+		Маскировка спадает, если вы с кем-то столкнётесь или атакуете, а также если вас коснутся, ударят или в вас попадёт снаряд."
 	icon_state = "cloak"
 	module_type = MODULE_TOGGLE
 	complexity = 4
@@ -248,7 +249,12 @@
 	if(!need_drain_power)
 		return
 	var/obj/item/stock_parts/cell/mod_cell = mod.get_cell()
-	var/charge_drain = (damage * armour_penetration) * used_modificator
+	// Шкала AP ближнего боя сжата до 0/15/25/50, поэтому для melee домножаем,
+	// иначе элитный клинок почти не тратил бы ячейку (см. MOD_SHIELD_MELEE_AP_MULTIPLIER).
+	var/ap_for_drain = armour_penetration
+	if(attack_type & ATTACK_TYPE_MELEE)
+		ap_for_drain *= MOD_SHIELD_MELEE_AP_MULTIPLIER
+	var/charge_drain = (damage * ap_for_drain) * used_modificator
 	mod_cell.use(charge_drain, FALSE)
 
 /obj/item/mod/module/energy_shield/on_activation()

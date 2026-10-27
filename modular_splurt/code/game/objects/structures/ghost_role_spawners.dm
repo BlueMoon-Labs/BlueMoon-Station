@@ -104,7 +104,7 @@
 	death = FALSE
 	random = TRUE
 	mob_species = /datum/species/human
-	mob_name = "a wandering hermit"
+	mob_name = "a rmit"
 	short_desc = "You are a hermit abandoned by fate."
 	flavour_text = "You've survived weeks in this hellish place. Maybe you want to live here with ash tribe or return to civilisation. \
 	Only you know how you got to this planetoid, whether this place in which you woke up was one of your shelters, or you just stumbled upon it."

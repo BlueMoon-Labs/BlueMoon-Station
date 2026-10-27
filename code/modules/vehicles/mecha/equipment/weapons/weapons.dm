@@ -2,6 +2,8 @@
 	name = "mecha weapon"
 	range = MECHA_RANGED
 	destroy_sound = 'sound/voice/borg_deathsound.ogg'
+	mech_flags = EXOSUIT_MODULE_COMBAT
+	compatible_mecha_types = MECHA_TYPE_COMBAT
 	var/projectile
 	var/fire_sound
 	var/projectiles_per_shot = 1
@@ -10,16 +12,6 @@
 	var/projectile_delay = 0
 	var/firing_effect_type = /obj/effect/temp_visual/dir_setting/firing_effect	//the visual effect appearing when the weapon is fired.
 	var/kickback = TRUE //Will using this weapon in no grav push mecha back.
-	mech_flags = EXOSUIT_MODULE_COMBAT
-
-/obj/item/mecha_parts/mecha_equipment/weapon/can_attach(obj/vehicle/sealed/mecha/M)
-	if(!..())
-		return FALSE
-	if(istype(M, /obj/vehicle/sealed/mecha/combat))
-		return TRUE
-	if((locate(/obj/item/mecha_parts/concealed_weapon_bay) in M.contents) && !(locate(/obj/item/mecha_parts/mecha_equipment/weapon) in M.equipment))
-		return TRUE
-	return FALSE
 
 /obj/item/mecha_parts/mecha_equipment/weapon/action(mob/source, atom/target, params)
 	if(!action_checks(target))
@@ -56,7 +48,7 @@
 	if(kickback && chassis)
 		chassis.newtonian_move(newtonian_target)
 	if(chassis)
-		chassis.log_message("Fired from [src], targeting [target].", LOG_MECHA)
+		chassis.log_message("Выстрел из [src] в цель [target].", LOG_MECHA)
 
 //Base energy weapon type
 /obj/item/mecha_parts/mecha_equipment/weapon/energy
@@ -122,23 +114,17 @@
 	harmful = TRUE
 
 /obj/item/mecha_parts/mecha_equipment/weapon/energy/plasma
-	equip_cooldown = 10
 	name = "217-D Heavy Plasma Cutter"
 	desc = "Устройство, стреляющее резонансными плазменными импульсами на экстремальной скорости. Импульсы способны дробить камень и разрушать твёрдые препятствия."
 	icon_state = "mecha_plasmacutter"
 	lefthand_file = 'icons/mob/inhands/weapons/guns_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/guns_righthand.dmi'
+	equip_cooldown = 10
 	energy_drain = 30
 	projectile = /obj/item/projectile/plasma/adv/mech
 	fire_sound = 'sound/weapons/plasma_cutter.ogg'
 	harmful = TRUE
-
-/obj/item/mecha_parts/mecha_equipment/weapon/energy/plasma/can_attach(obj/vehicle/sealed/mecha/M)
-	if(..()) //combat mech
-		return TRUE
-	else if(LAZYLEN(M.equipment) < M.max_equip)
-		return TRUE
-	return FALSE
+	compatible_mecha_types = NONE
 
 /obj/item/mecha_parts/mecha_equipment/weapon/energy/taser
 	name = "\improper PBT \"Pacifier\" mounted taser"
@@ -159,27 +145,20 @@
 	range = MECHA_MELEE|MECHA_RANGED
 	kickback = FALSE
 	mech_flags = EXOSUIT_MODULE_HONK
-
-/obj/item/mecha_parts/mecha_equipment/weapon/honker/can_attach(obj/vehicle/sealed/mecha/mecha)
-	. = ..()
-	if(!.)
-		return
-	if(!istype(mecha, /obj/vehicle/sealed/mecha/combat/honker))
-		return FALSE
-
+	compatible_mecha_types = MECHA_TYPE_HONKER
 
 /obj/item/mecha_parts/mecha_equipment/weapon/honker/action(mob/source, atom/target, params)
 	if(!action_checks(target))
 		return
 	playsound(chassis, 'sound/items/airhorn.ogg', 100, TRUE)
-	to_chat(source, "[icon2html(src, source)]<font color='red' size='5'>HONK</font>")
+	to_chat(source, "[icon2html(src, source)][span_reallybig(span_red("ХОНК"))]")
 	for(var/mob/living/carbon/M in ohearers(6, chassis))
 		if(!M.can_hear())
 			continue
 		var/turf/turf_check = get_turf(M)
 		if(isspaceturf(turf_check) && !turf_check.Adjacent(src)) //in space nobody can hear you honk.
 			continue
-		to_chat(M, "<font color='red' size='7'>HONK</font>")
+		to_chat(M, span_extremelybig(span_red("ХОНК")))
 		M.SetSleeping(0)
 		M.stuttering += 20
 		var/obj/item/organ/ears/ears = M.getorganslot(ORGAN_SLOT_EARS)
@@ -192,10 +171,10 @@
 		else
 			M.Jitter(500)
 
-	log_message("Honked from [src.name]. HONK!", LOG_MECHA)
+	log_message("Гудок из [src.name]. ХОНК!", LOG_MECHA)
 	var/turf/T = get_turf(src)
-	message_admins("[ADMIN_LOOKUPFLW(source)] used a Mecha Honker in [ADMIN_VERBOSEJMP(T)]")
-	log_game("[key_name(source)] used a Mecha Honker in [AREACOORD(T)]")
+	message_admins("[ADMIN_LOOKUPFLW(source)] использует гудок меха в [ADMIN_VERBOSEJMP(T)]")
+	log_game("[key_name(source)] использует гудок меха в [AREACOORD(T)]")
 	return ..()
 
 
@@ -203,28 +182,65 @@
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic
 	name = "general ballistic weapon"
 	fire_sound = 'sound/weapons/shot.ogg'
+	mecha_subcategory_flags = EXISUIT_WEAPON_MODULE_BALLISTIC // Баллистическое оружие.
 	var/projectiles
 	var/projectiles_cache //ammo to be loaded in, if possible.
 	var/projectiles_cache_max
 	var/projectile_energy_cost
 	var/disabledreload //For weapons with no cache (like the rockets) which are reloaded by hand
 	var/ammo_type
-	mecha_subcategory_flags = EXISUIT_WEAPON_MODULE_BALLISTIC // BLUEMOON ADD
+	var/self_reloading = FALSE
+
+/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/attack_self(mob/user)
+	if(self_reloading || !can_self_reload(user))
+		return
+	self_reloading = TRUE
+	playsound(user, 'modular_bluemoon/krashly/sound/items/shotgun_pickup.ogg', 60, 1)
+	to_chat(user, span_notice("Вы начинаете перезаряжать [src]."))
+	var/completed = do_after(user, 2 SECONDS, target = src, extra_checks = CALLBACK(src, PROC_REF(can_self_reload), user), progress_loc = chassis)
+	self_reloading = FALSE
+	if(!completed || !can_self_reload(user))
+		return
+	rearm(user)
+
+/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/proc/can_self_reload(mob/user)
+	if(!chassis || !(src in chassis.equipment) || !chassis.is_occupant(user) || !(chassis.occupants[user] & VEHICLE_CONTROL_EQUIPMENT))
+		return FALSE
+	if(user.shared_ui_interaction(chassis) != UI_INTERACTIVE || disabledreload || projectiles >= initial(projectiles))
+		return FALSE
+	return projectile_energy_cost ? chassis.has_charge(projectile_energy_cost) : projectiles_cache > 0
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/action_checks(target)
 	. = ..()
 	if(!.)
 		return FALSE
-	if(projectiles <= 0)
+	if(self_reloading || projectiles <= 0)
 		return FALSE
 	return TRUE
 
-/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/get_equip_info()
-	return "[..()] \[[src.projectiles][projectiles_cache_max &&!projectile_energy_cost?"/[projectiles_cache]":""]\][!disabledreload &&(src.projectiles < initial(src.projectiles))?" - <a href='?src=[REF(src)];rearm=1'>Rearm</a>":null]"
+/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/get_ui_data()
+	. = ..()
+	var/rearm_reason
+	if(disabledreload)
+		rearm_reason = "Это орудие заряжается вручную снаружи меха."
+	else if(projectiles >= initial(projectiles))
+		rearm_reason = "Боезапас уже полный."
+	else if(projectile_energy_cost ? !chassis.has_charge(projectile_energy_cost) : projectiles_cache <= 0)
+		rearm_reason = projectile_energy_cost ? "Недостаточно энергии для пополнения боезапаса." : "Резерв боеприпасов пуст."
+	.["snowflake"] = list(
+		"kind" = "ballistic",
+		"total_ammo" = projectiles,
+		"max_ammo" = initial(projectiles),
+		"cache" = projectiles_cache,
+		"cache_max" = projectiles_cache_max,
+		"can_rearm" = !disabledreload,
+		"rearm_reason" = rearm_reason,
+	)
 
 
-/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/rearm()
+/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/rearm(mob/user)
 	if(projectiles < initial(projectiles))
+		var/previous_projectiles = projectiles
 		var/projectiles_to_add = initial(projectiles) - projectiles
 
 		if(projectile_energy_cost)
@@ -243,8 +259,12 @@
 				projectiles = projectiles + projectiles_cache
 				projectiles_cache = 0
 
-		send_byjax(chassis.occupants,"exosuit.browser","[REF(src)]",src.get_equip_info())
-		log_message("Rearmed [src.name].", LOG_MECHA)
+		if(projectiles == previous_projectiles)
+			return FALSE
+		if(user)
+			playsound(user, 'sound/weapons/sawclose.ogg', 60, 1)
+		SStgui.update_uis(chassis)
+		log_message("Боезапас [src.name] пополнен.", LOG_MECHA)
 		return TRUE
 
 
@@ -253,11 +273,14 @@
 
 
 
-/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/Topic(href, href_list)
-	..()
-	if (href_list["rearm"])
-		src.rearm()
-	return
+/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/handle_ui_act(action, list/params)
+	. = ..()
+	if(.)
+		return TRUE
+	if(action != "rearm" || disabledreload)
+		return FALSE
+	rearm(usr)
+	return TRUE
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/action(mob/source, atom/target, params)
 	. = ..()
@@ -265,7 +288,7 @@
 		return
 	projectiles -= projectiles_per_shot
 	if(chassis)
-		send_byjax(chassis.occupants,"exosuit.browser","[REF(src)]",src.get_equip_info())
+		SStgui.update_uis(chassis)
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/carbine
 	name = "\improper FNX-99 \"Hades\" Carbine"
@@ -380,7 +403,7 @@
 	TIMER_COOLDOWN_START(chassis, COOLDOWN_MECHA_EQUIPMENT, equip_cooldown)
 	var/obj/O = new projectile(chassis.loc)
 	playsound(chassis, fire_sound, 50, TRUE)
-	log_message("Launched a [O.name] from [name], targeting [target].", LOG_MECHA)
+	log_message("Запущен [O.name] из [name] в цель [target].", LOG_MECHA)
 	projectiles--
 	proj_init(O, source)
 	O.throw_at(target, missile_range, missile_speed, source, FALSE, diagonals_first = diags_first)
@@ -433,12 +456,7 @@
 	projectile_energy_cost = 100
 	equip_cooldown = 20
 	mech_flags = EXOSUIT_MODULE_HONK
-
-/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/banana_mortar/can_attach(obj/vehicle/sealed/mecha/combat/honker/M)
-	if(..())
-		if(istype(M))
-			return TRUE
-	return FALSE
+	compatible_mecha_types = MECHA_TYPE_HONKER
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/mousetrap_mortar
 	name = "mousetrap mortar"
@@ -451,12 +469,7 @@
 	projectile_energy_cost = 100
 	equip_cooldown = 10
 	mech_flags = EXOSUIT_MODULE_HONK
-
-/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/mousetrap_mortar/can_attach(obj/vehicle/sealed/mecha/combat/honker/M)
-	if(..())
-		if(istype(M))
-			return TRUE
-	return FALSE
+	compatible_mecha_types = MECHA_TYPE_HONKER
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/mousetrap_mortar/proj_init(obj/item/assembly/mousetrap/armed/M)
 	M.secured = 1
@@ -477,40 +490,32 @@
 	projectile_energy_cost = 500
 	harmful = TRUE
 	diags_first = TRUE
+	mech_flags = EXOSUIT_MODULE_HONK
+	compatible_mecha_types = MECHA_TYPE_HONKER
 	/// Damage done by the glove on contact. Also used to determine throw distance (damage / 5)
 	var/punch_damage = 20
 	/// TRUE - Can toggle between lethal and non-lethal || FALSE - Cannot toggle
 	var/can_toggle_lethal = TRUE
-	mech_flags = EXOSUIT_MODULE_HONK
 
-/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/punching_glove/can_attach(obj/vehicle/sealed/mecha/combat/honker/M)
-	if(..())
-		if(istype(M))
-			return TRUE
-	return FALSE
+/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/punching_glove/handle_ui_act(action, list/params)
+	. = ..()
+	if(.)
+		return TRUE
+	if(action != "lethalPunch" || !can_toggle_lethal)
+		return FALSE
+	harmful = !harmful
+	update_equip_info()
+	return TRUE
 
-/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/punching_glove/get_equip_info()
-	if(!chassis)
-		return
-
-	if(can_toggle_lethal)
-		return "[..()] &nbsp; <a href='?src=[REF(src)];lethalPunch=1'>[harmful?"Punch":"Pat"] mode</a>"
-	else
-		return ..()
-
-/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/punching_glove/Topic(href, href_list)
-	..()
-	if(href_list["lethalPunch"])
-		harmful = !harmful
-		if(harmful)
-			to_chat(usr, "[icon2html(src, usr)]<span class='warning'>Lethal Fisting Enabled.</span>")
-		else
-			to_chat(usr, "[icon2html(src, usr)]<span class='warning'>Lethal Fisting Disabled.</span>")
+/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/punching_glove/get_ui_data()
+	. = ..()
+	.["snowflake"]["punching"] = can_toggle_lethal
+	.["snowflake"]["harmful"] = harmful
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/punching_glove/action(mob/source, atom/target, params)
 	. = ..()
 	if(.)
-		to_chat(usr, "[icon2html(src, usr)]<font color='red' size='5'>HONK</font>")
+		to_chat(usr, "[icon2html(src, usr)][span_reallybig(span_red("ХОНК"))]")
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/punching_glove/proj_init(obj/item/punching_glove/PG)
 	if(!istype(PG))

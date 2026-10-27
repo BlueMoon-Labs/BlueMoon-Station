@@ -21,29 +21,38 @@
 	var/harmful = FALSE //Controls if equipment can be used to attack by a pacifist.
 	var/destroy_sound = 'sound/mecha/critdestr.ogg'
 	var/mecha_subcategory_flags // BLUEMOON ADD
+	// Действие для модулей, которые включаются без выбора цели.
+	var/ui_toggle_action
+	var/list/pilot_actions = list()
+	var/ui_icon
+	// Допустимые категории шасси; NONE разрешает установку на любой мех.
+	var/compatible_mecha_types = NONE
 
 /obj/item/mecha_parts/mecha_equipment/proc/update_chassis_page()
 	if(chassis)
-		send_byjax(chassis.occupants,"exosuit.browser","eq_list",chassis.get_equipment_list())
-		send_byjax(chassis.occupants,"exosuit.browser","equipment_menu",chassis.get_equipment_menu(),"dropdowns")
+		SStgui.update_uis(chassis)
 		return TRUE
 	return
 
 /obj/item/mecha_parts/mecha_equipment/proc/update_equip_info()
 	if(chassis)
-		send_byjax(chassis.occupants,"exosuit.browser","[REF(src)]",get_equip_info())
+		chassis.update_equipment_buttons()
+		SStgui.update_uis(chassis)
 		return TRUE
 	return
 
 /obj/item/mecha_parts/mecha_equipment/Destroy()
+	QDEL_LIST_ASSOC_VAL(pilot_actions)
 	if(chassis)
 		LAZYREMOVE(chassis.equipment, src)
 		if(chassis.selected == src)
 			chassis.selected = null
+		if(chassis.selected_right == src)
+			chassis.selected_right = null
 		update_chassis_page()
-		log_message("[src] is destroyed.", LOG_MECHA)
+		log_message("[src] уничтожен.", LOG_MECHA)
 		if(!LAZYLEN(chassis?.occupants))
-			to_chat(chassis.occupants, "[icon2html(src, chassis.occupants)]<span class='danger'>[src] is destroyed!</span>")
+			to_chat(chassis.occupants, "[icon2html(src, chassis.occupants)][span_danger("[src] уничтожен!")]")
 			playsound(chassis, destroy_sound, 50)
 		if(!detachable) //If we're a built-in nondetachable equipment, let's lock up the slot that we were in.
 			chassis.max_equip--
@@ -55,23 +64,10 @@
 		if(!user.temporarilyRemoveItemFromInventory(src))
 			return FALSE
 		attach(M)
-		user.visible_message("<span class='notice'>[user] attaches [src] to [M].</span>", "<span class='notice'>You attach [src] to [M].</span>")
+		user.visible_message(span_notice("[user] устанавливает [src] на [M]."), span_notice("Вы устанавливаете [src] на [M]."))
 		return TRUE
-	to_chat(user, "<span class='warning'>You are unable to attach [src] to [M]!</span>")
+	to_chat(user, span_warning("Не удаётся установить [src] на [M]!"))
 	return FALSE
-
-/obj/item/mecha_parts/mecha_equipment/proc/get_equip_info()
-	if(!chassis)
-		return
-	var/txt = "<span style=\"color:[equip_ready?"#0f0":"#f00"];\">*</span>&nbsp;"
-	if(chassis.selected == src)
-		txt += "<b>[src.name]</b>"
-	else if(selectable)
-		txt += "<a href='?src=[REF(chassis)];select_equip=[REF(src)]'>[src.name]</a>"
-	else
-		txt += "[src.name]"
-
-	return txt
 
 /obj/item/mecha_parts/mecha_equipment/proc/action_checks(atom/target)
 	if(!target)
@@ -85,7 +81,7 @@
 	if(chassis.is_currently_ejecting)
 		return FALSE
 	if(chassis.equipment_disabled)
-		to_chat(chassis.occupants, "<span=warn>Error -- Equipment control unit is unresponsive.</span>")
+		to_chat(chassis.occupants, span_warning("Ошибка: блок управления оборудованием не отвечает."))
 		return FALSE
 	if(TIMER_COOLDOWN_CHECK(chassis, COOLDOWN_MECHA_EQUIPMENT))
 		return FALSE
@@ -93,7 +89,7 @@
 
 /obj/item/mecha_parts/mecha_equipment/proc/action(mob/source, atom/target, params)
 	TIMER_COOLDOWN_START(chassis, COOLDOWN_MECHA_EQUIPMENT, equip_cooldown)//Cooldown is on the MECH so people dont bypass it by switching equipment
-	send_byjax(chassis.occupants,"exosuit.browser","[REF(src)]",src.get_equip_info())
+	SStgui.update_uis(chassis)
 	chassis.use_power(energy_drain)
 	return TRUE
 
@@ -111,36 +107,64 @@
 	return chassis && (get_dir(chassis, target) & chassis.dir)
 
 /obj/item/mecha_parts/mecha_equipment/proc/can_attach(obj/vehicle/sealed/mecha/M)
-	if(LAZYLEN(M.equipment)<M.max_equip)
+	if(!istype(M))
+		return FALSE
+	// Комплект заменяет шасси, не занимая слот: емаг не отменяет требования к переоборудованию.
+	if(istype(src, /obj/item/mecha_parts/mecha_equipment/ripleyupgrade))
+		if(M.type != /obj/vehicle/sealed/mecha/working/ripley)
+			to_chat(loc, span_warning("Этот комплект переоборудования подходит только для моделей APLU MK-I."))
+			return FALSE
+		var/obj/vehicle/sealed/mecha/working/ripley/ripley = M
+		if(length(ripley.cargo))
+			to_chat(loc, span_warning("Перед переоборудованием необходимо освободить грузовой отсек [M]."))
+			return FALSE
+		if(!(M.mecha_flags & ADDING_MAINT_ACCESS_POSSIBLE))
+			to_chat(loc, span_warning("Для переоборудования [M] необходимо разрешить техобслуживание."))
+			return FALSE
+		if(LAZYLEN(M.occupants))
+			to_chat(loc, span_warning("Перед переоборудованием все пассажиры должны покинуть [M]."))
+			return FALSE
+		if(!M.cell)
+			to_chat(loc, span_warning("Для переоборудования необходима установленная батарея."))
+			return FALSE
 		return TRUE
+	if(LAZYLEN(M.equipment) >= M.max_equip)
+		return FALSE
+	if(M.is_emagged() || !compatible_mecha_types || (compatible_mecha_types & M.mecha_type))
+		return TRUE
+	// Скрытый отсек разрешает одно обычное оружие, сохраняя ограничения специальных моделей.
+	if((compatible_mecha_types & MECHA_TYPE_COMBAT) && istype(src, /obj/item/mecha_parts/mecha_equipment/weapon))
+		return (locate(/obj/item/mecha_parts/concealed_weapon_bay) in M.contents) && !(locate(/obj/item/mecha_parts/mecha_equipment/weapon) in M.equipment)
+	return FALSE
 
 /obj/item/mecha_parts/mecha_equipment/proc/attach(obj/vehicle/sealed/mecha/M)
 	LAZYADD(M.equipment, src)
 	chassis = M
 	forceMove(M)
-	log_message("[src] initialized.", LOG_MECHA)
+	for(var/mob/pilot as anything in M.occupants)
+		grant_pilot_action(pilot)
+	log_message("[src] подключён.", LOG_MECHA)
 	update_chassis_page()
 	return
 
 /obj/item/mecha_parts/mecha_equipment/proc/detach(atom/moveto=null)
 	moveto = moveto || get_turf(chassis)
 	if(src.Move(moveto))
+		QDEL_LIST_ASSOC_VAL(pilot_actions)
 		LAZYREMOVE(chassis.equipment, src)
 		if(chassis.selected == src)
 			chassis.selected = null
+		if(chassis.selected_right == src)
+			chassis.selected_right = null
 		update_chassis_page()
-		log_message("[src] removed from equipment.", LOG_MECHA)
+		log_message("[src] снят с меха.", LOG_MECHA)
 		chassis = null
 	return
 
 
-/obj/item/mecha_parts/mecha_equipment/Topic(href,href_list)
-	if(href_list["detach"])
-		detach()
-
 /obj/item/mecha_parts/mecha_equipment/log_message(message, message_type=LOG_GAME, color=null, log_globally, atom/target = null)
 	if(chassis)
-		chassis.log_message("ATTACHMENT: [src] [message]", message_type, color, log_globally, target = target)
+		chassis.log_message("МОДУЛЬ: [src] [message]", message_type, color, log_globally, target = target)
 	else
 		..(message, message_type, color, log_globally, target)
 
@@ -152,3 +176,70 @@
 
 /obj/item/mecha_parts/mecha_equipment/proc/needs_rearm()
 	return FALSE
+
+/obj/item/mecha_parts/mecha_equipment/proc/get_ui_data()
+	if(!ui_icon)
+		// Браузеру нужен один PNG-кадр, иначе он показывает всю сетку кадров DMI.
+		ui_icon = icon2base64(icon(icon, icon_state, SOUTH, 1, FALSE))
+	var/unavailable_reason
+	if(chassis.equipment_disabled)
+		unavailable_reason = "Блок управления оборудованием отключён."
+	else if(selectable && !equip_ready)
+		unavailable_reason = "Модуль занят."
+	else if(selectable && chassis.construction_state != MECHA_LOCKED)
+		unavailable_reason = "Активирован протокол техобслуживания."
+	else if(energy_drain && !chassis.has_charge(energy_drain))
+		unavailable_reason = "Недостаточно энергии."
+	return list(
+		"name" = name,
+		"desc" = desc,
+		"image" = ui_icon,
+		"ref" = REF(src),
+		"integrity" = obj_integrity / max_integrity,
+		"detachable" = detachable,
+		"can_be_triggered" = selectable,
+		"can_be_toggled" = !!ui_toggle_action,
+		"active" = is_ui_active(),
+		"toggle_action" = ui_toggle_action,
+		"selected_left" = chassis.selected == src,
+		"selected_right" = chassis.selected_right == src,
+		"equip_cooldown" = equip_cooldown && DisplayTimeText(equip_cooldown),
+		"energy_per_use" = energy_drain,
+		"unavailable_reason" = unavailable_reason,
+		"detach_reason" = null,
+		"snowflake" = null,
+	)
+
+/obj/item/mecha_parts/mecha_equipment/proc/handle_ui_act(action, list/params)
+	if(action == "detach")
+		if(!detachable)
+			return FALSE
+		detach()
+		return TRUE
+	return FALSE
+
+/obj/item/mecha_parts/mecha_equipment/proc/is_ui_active()
+	return ui_toggle_action && (datum_flags & DF_ISPROCESSING)
+
+/obj/item/mecha_parts/mecha_equipment/proc/grant_pilot_action(mob/pilot)
+	if((!selectable && !ui_toggle_action) || !(chassis.occupants[pilot] & VEHICLE_CONTROL_EQUIPMENT) || pilot_actions[pilot])
+		return
+	var/datum/action/vehicle/sealed/mecha/module/action = new(src)
+	action.chassis = chassis
+	action.equipment = src
+	action.name = "[ui_toggle_action ? "Включить/выключить" : "Выбрать"] [name]"
+	action.icon_icon = icon
+	action.button_icon_state = icon_state
+	pilot_actions[pilot] = action
+	action.Grant(pilot)
+
+/obj/item/mecha_parts/mecha_equipment/proc/remove_pilot_action(mob/pilot)
+	var/datum/action/action = pilot_actions[pilot]
+	pilot_actions -= pilot
+	qdel(action)
+
+/obj/vehicle/sealed/mecha/proc/update_equipment_buttons()
+	for(var/obj/item/mecha_parts/mecha_equipment/module as anything in equipment)
+		for(var/pilot in module.pilot_actions)
+			var/datum/action/action = module.pilot_actions[pilot]
+			action.UpdateButtons()

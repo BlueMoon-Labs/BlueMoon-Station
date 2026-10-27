@@ -108,7 +108,7 @@ The reactor CHEWS through moderator. It does not do this slowly. Be very careful
 	//BLUEMOON ADDITION START - рация для сообщений от реактора
 	var/obj/item/radio/radio
 	var/radio_key = /obj/item/encryptionkey/headset_eng
-	var/engineering_channel = "Engineering"
+	var/engineering_channel = RADIO_CHANNEL_ENGINEERING
 	var/lastwarning = 0
 	//BLUEMOON ADDITION END
 

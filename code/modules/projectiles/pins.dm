@@ -12,6 +12,8 @@
 	var/force_replace = FALSE // Can forcefully replace other pins.
 	var/pin_removeable = FALSE // Can be replaced by any pin.
 	var/emag_removeable = FALSE
+	/// Впаян в оружие: не извлекается ни инструментами, ни взломом, ни заменой.
+	var/permanent = FALSE
 	var/obj/item/gun/gun
 
 /obj/item/firing_pin/Initialize(mapload, newloc)
@@ -75,6 +77,9 @@
 	return
 
 /obj/item/firing_pin/proc/can_be_extracted(obj/item/gun/G, mob/living/user)
+	if(permanent)
+		to_chat(user, span_warning("[src] впаян в [G] намертво, его не извлечь."))
+		return FALSE
 	if(emag_removeable && !(G.obj_flags & EMAGGED))
 		to_chat(user, span_warning("[src] зафиксирован в [G] намертво. Сначала взломайте электронику оружия."))
 		return FALSE
@@ -262,7 +267,7 @@
 
 /obj/item/firing_pin/access/pin_auth(mob/living/user)
 	return !gun.chambered || allowed(user)
-	
+
 /obj/item/firing_pin/access/med
 	name = "medical emergency firing pin"
 	req_one_access = list(ACCESS_MEDICAL)
@@ -359,17 +364,19 @@
 // Explorer Firing Pin- Prevents use on station Z-Level, so it's justifiable to give Explorers guns that don't suck.
 /obj/item/firing_pin/explorer
 	name = "outback firing pin"
-	desc = "A firing pin used by the austrailian defense force, retrofit to prevent weapon discharge on the station."
+	desc = "Боёк для оружия, когда-то использовавшийся австралийскими силами обороны, модернизированный для предотвращения выстрелов на станции."
 	icon_state = "firing_pin_explorer"
-	fail_message = "<span class='warning'>CANNOT FIRE WHILE ON STATION, MATE!</span>"
+	fail_message = "<span class='boldwarning'>НЕЛЬЗЯ ШМАЛЯТЬ НА СТАНЦИИ, ПРИЯТЕЛЬ!</span>"
 	pin_removeable = FALSE
 	emag_removeable = TRUE
 
-// This checks that the user isn't on the station Z-level.
+// This checks that the user isn't on the station Z-level, unless the alert is red or higher.
 /obj/item/firing_pin/explorer/pin_auth(mob/living/user)
 	var/turf/station_check = get_turf(user)
-	if(!station_check||is_station_level(station_check.z))
-		to_chat(user, "<span class='warning'>You cannot use your weapon while on the station!</span>")
+	if(!station_check)
+		return FALSE
+	if(is_station_level(station_check.z) && GLOB.security_level < SEC_LEVEL_RED)
+		to_chat(user, span_warning("Боёк воспрепятствовал выстрелу!"))
 		return FALSE
 	return TRUE
 

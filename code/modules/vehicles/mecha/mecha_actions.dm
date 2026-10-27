@@ -15,8 +15,56 @@
 	chassis = null
 	return ..()
 
+// Модули имеют отдельное действие на каждого оператора, в том числе в двухместных мехах.
+/datum/action/vehicle/sealed/mecha/module
+	var/obj/item/mecha_parts/mecha_equipment/equipment
+	button_block_right_click_context_menu = TRUE
+
+/datum/action/vehicle/sealed/mecha/module/Destroy()
+	if(equipment && owner)
+		equipment.pilot_actions -= owner
+	equipment = null
+	return ..()
+
+/datum/action/vehicle/sealed/mecha/module/IsAvailable(silent = FALSE)
+	return owner && equipment?.chassis == chassis && (chassis?.occupants[owner] & VEHICLE_CONTROL_EQUIPMENT) && !owner.incapacitated()
+
+/datum/action/vehicle/sealed/mecha/module/Trigger(trigger_flags)
+	if(!..())
+		return FALSE
+	if(equipment.ui_toggle_action)
+		equipment.handle_ui_act(equipment.ui_toggle_action, list())
+	else if(trigger_flags & TRIGGER_RIGHT_CLICK)
+		chassis.selected_right = chassis.selected_right == equipment ? null : equipment
+	else
+		chassis.selected = chassis.selected == equipment ? null : equipment
+	equipment.update_equip_info()
+	return TRUE
+
+/datum/action/vehicle/sealed/mecha/module/UpdateButton(atom/movable/screen/movable/action_button/button, status_only = FALSE, force = FALSE)
+	. = ..()
+	if(!button || !equipment || !chassis || !IsAvailable(TRUE))
+		return
+	if(!equipment.ui_toggle_action && chassis.selected_right == equipment)
+		button.color = COLOR_GOLD
+	else if(equipment.ui_toggle_action ? equipment.is_ui_active() : chassis.selected == equipment)
+		button.color = "#aaffaa"
+	button.desc = equipment.ui_toggle_action ? "Включить или выключить модуль." : "ЛКМ: выбрать модуль для ЛКМ. ПКМ: выбрать модуль для ПКМ. Повторное нажатие снимает выбор. Колесо мыши: сменить модуль для ЛКМ; Shift + колесо: для ПКМ."
+
+/obj/vehicle/sealed/mecha/add_control_flags(mob/controller, flags)
+	. = ..()
+	if(.)
+		for(var/obj/item/mecha_parts/mecha_equipment/module as anything in equipment)
+			module.grant_pilot_action(controller)
+
+/obj/vehicle/sealed/mecha/remove_control_flags(mob/controller, flags)
+	. = ..()
+	if(. && !(occupants[controller] & VEHICLE_CONTROL_EQUIPMENT))
+		for(var/obj/item/mecha_parts/mecha_equipment/module as anything in equipment)
+			module.remove_pilot_action(controller)
+
 /datum/action/vehicle/sealed/mecha/mech_eject
-	name = "Eject From Mech"
+	name = "Выйти из меха"
 	button_icon_state = "mech_eject"
 
 /datum/action/vehicle/sealed/mecha/mech_eject/Trigger()
@@ -27,7 +75,7 @@
 	chassis.container_resist(owner)
 
 /datum/action/vehicle/sealed/mecha/mech_toggle_internals
-	name = "Toggle Internal Airtank Usage"
+	name = "Переключить источник воздуха"
 	button_icon_state = "mech_internals_off"
 
 /datum/action/vehicle/sealed/mecha/mech_toggle_internals/Trigger()
@@ -35,61 +83,19 @@
 		return
 	chassis.use_internal_tank = !chassis.use_internal_tank
 	button_icon_state = "mech_internals_[chassis.use_internal_tank ? "on" : "off"]"
-	to_chat(chassis.occupants, "[icon2html(chassis, owner)]<span class='notice'>Now taking air from [chassis.use_internal_tank?"internal airtank":"environment"].</span>")
-	chassis.log_message("Now taking air from [chassis.use_internal_tank?"internal airtank":"environment"].", LOG_MECHA)
+	to_chat(chassis.occupants, "[icon2html(chassis, owner)][span_notice("Источник воздуха: [chassis.use_internal_tank ? "внутренний баллон" : "окружающая среда"].")]")
+	chassis.log_message("Источник воздуха: [chassis.use_internal_tank ? "внутренний баллон" : "окружающая среда"].", LOG_MECHA)
 	UpdateButtons()
 
-/datum/action/vehicle/sealed/mecha/mech_cycle_equip
-	name = "Cycle Equipment"
-	button_icon_state = "mech_cycle_equip_off"
-
-/datum/action/vehicle/sealed/mecha/mech_cycle_equip/Trigger()
-	if(!owner || !chassis || !(owner in chassis.occupants))
-		return
-
-	var/list/available_equipment = list()
-	for(var/e in chassis.equipment)
-		var/obj/item/mecha_parts/mecha_equipment/equipment = e
-		if(equipment.selectable)
-			available_equipment += equipment
-
-	if(available_equipment.len == 0)
-		to_chat(owner, "[icon2html(chassis, owner)]<span class='warning'>No equipment available!</span>")
-		return
-	if(!chassis.selected)
-		chassis.selected = available_equipment[1]
-		to_chat(owner, "[icon2html(chassis, owner)]<span class='notice'>You select [chassis.selected].</span>")
-		send_byjax(chassis.occupants,"exosuit.browser","eq_list",chassis.get_equipment_list())
-		button_icon_state = "mech_cycle_equip_on"
-		UpdateButtons()
-		return
-	var/number = 0
-	for(var/equipment in available_equipment)
-		number++
-		if(equipment != chassis.selected)
-			continue
-		if(available_equipment.len == number)
-			chassis.selected = null
-			to_chat(owner, "[icon2html(chassis, owner)]<span class='notice'>You switch to no equipment.</span>")
-			button_icon_state = "mech_cycle_equip_off"
-		else
-			chassis.selected = available_equipment[number+1]
-			to_chat(owner, "[icon2html(chassis, owner)]<span class='notice'>You switch to [chassis.selected].</span>")
-			button_icon_state = "mech_cycle_equip_on"
-		send_byjax(chassis.occupants,"exosuit.browser","eq_list",chassis.get_equipment_list())
-		UpdateButtons()
-		return
-
-
 /datum/action/vehicle/sealed/mecha/mech_toggle_lights
-	name = "Toggle Lights"
+	name = "Переключить освещение"
 	button_icon_state = "mech_lights_off"
 
 /datum/action/vehicle/sealed/mecha/mech_toggle_lights/Trigger()
 	if(!owner || !chassis || !(owner in chassis.occupants))
 		return
 	if(!(chassis.mecha_flags & HAS_LIGHTS))
-		to_chat(owner, "<span class='warning'>This mechs lights are destroyed!</span>")
+		to_chat(owner, span_warning("Осветители меха уничтожены!"))
 		return
 	chassis.mecha_flags ^= LIGHTS_ON
 	if(chassis.mecha_flags & LIGHTS_ON)
@@ -98,27 +104,23 @@
 	else
 		button_icon_state = "mech_lights_off"
 		chassis.set_light(0)
-	to_chat(owner, "[icon2html(chassis, owner)]<span class='notice'>Toggled lights [(chassis.mecha_flags & LIGHTS_ON)?"on":"off"].</span>")
-	chassis.log_message("Toggled lights [(chassis.mecha_flags & LIGHTS_ON)?"on":"off"].", LOG_MECHA)
+	to_chat(owner, "[icon2html(chassis, owner)][span_notice("Освещение [(chassis.mecha_flags & LIGHTS_ON) ? "включено" : "выключено"].")]")
+	chassis.log_message("Освещение [(chassis.mecha_flags & LIGHTS_ON) ? "включено" : "выключено"].", LOG_MECHA)
 	UpdateButtons()
 
 /datum/action/vehicle/sealed/mecha/mech_view_stats
-	name = "View Stats"
+	name = "Панель меха"
 	button_icon_state = "mech_view_stats"
 
 /datum/action/vehicle/sealed/mecha/mech_view_stats/Trigger()
 	if(!owner || !chassis || !(owner in chassis.occupants))
 		return
-	// nref обязателен: без него onclose() уходит в скин с "null", и крестик по окну
-	// сбрасывает лишь machine, а до Topic() меха "close=1" не доезжает - JS-таймер
-	// панели продолжает стучаться в сервер до конца раунда.
-	var/datum/browser/popup = new(owner, "exosuit", nref = chassis)
-	popup.set_content(chassis.get_stats_html(owner))
-	popup.open()
+	chassis.ui_interact(owner)
 
 
 /datum/action/vehicle/sealed/mecha/strafe
-	name = "Toggle Strafing. Disabled when Alt is held."
+	name = "Боковое движение"
+	desc = "Позволяет двигаться боком. Отключается при зажатом Alt."
 	button_icon_state = "strafe"
 
 /datum/action/vehicle/sealed/mecha/strafe/Trigger()
@@ -127,26 +129,57 @@
 	chassis.toggle_strafe()
 
 /obj/vehicle/sealed/mecha/AltClick(mob/living/user)
-	if(!(user in occupants) || !user.canUseTopic(src))
+	if(!is_occupant(user))
+		open_maintenance_panel(user.get_idcard(TRUE), user)
+		return
+	if(!user.canUseTopic(src))
 		return
 	if(!(user in return_controllers_with_flag(VEHICLE_CONTROL_DRIVE)))
-		to_chat(user, "<span class='warning'>You're in the wrong seat to control movement.</span>")
+		to_chat(user, span_warning("С этого места нельзя управлять движением."))
 		return
 
 	toggle_strafe()
 
+/obj/vehicle/sealed/mecha/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
+	. = ..()
+	if(is_occupant(user))
+		if(occupants[user] & VEHICLE_CONTROL_DRIVE)
+			LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Переключить боковое движение")
+			return CONTEXTUAL_SCREENTIP_SET
+		return
+	LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Панель обслуживания (ID)")
+	if(held_item?.GetID())
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Панель обслуживания")
+	else if(held_item && user.a_intent != INTENT_HARM)
+		var/tool_hint
+		switch(held_item.tool_behaviour)
+			if(TOOL_WRENCH)
+				if(construction_state == MECHA_SECURE_BOLTS)
+					tool_hint = "Ослабить болты"
+				else if(construction_state == MECHA_LOOSE_BOLTS)
+					tool_hint = "Затянуть болты"
+			if(TOOL_CROWBAR)
+				if(construction_state == MECHA_LOOSE_BOLTS)
+					tool_hint = "Открыть люк"
+				else if(construction_state == MECHA_OPEN_HATCH)
+					tool_hint = "Закрыть люк"
+		if(tool_hint)
+			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, tool_hint)
+	return CONTEXTUAL_SCREENTIP_SET
+
 /obj/vehicle/sealed/mecha/proc/toggle_strafe()
 	strafe = !strafe
 
-	to_chat(occupants, "[icon2html(src, occupants)]<span class='notice'>Toggled strafing mode [strafe?"on":"off"].</span>")
-	log_message("Toggled strafing mode [strafe?"on":"off"].", LOG_MECHA)
+	to_chat(occupants, "[icon2html(src, occupants)][span_notice("Боковое движение [strafe ? "включено" : "выключено"].")]")
+	log_message("Боковое движение [strafe ? "включено" : "выключено"].", LOG_MECHA)
 
 	for(var/occupant in occupants)
 		var/datum/action/action = LAZYACCESSASSOC(occupant_actions, occupant, /datum/action/vehicle/sealed/mecha/strafe)
 		action?.UpdateButtons()
 
 /datum/action/vehicle/sealed/mecha/toggle_stabilizers
-	name = "Toggle thruster stabilizers. Cancels space drift so the mech can hold position. Needs powered thrusters."
+	name = "Стабилизаторы"
+	desc = "Останавливают дрейф в космосе. Нужны работающие двигатели и питание."
 	button_icon_state = "mech_thrusters_off"
 
 /datum/action/vehicle/sealed/mecha/toggle_stabilizers/Trigger()
@@ -156,8 +189,8 @@
 
 /obj/vehicle/sealed/mecha/proc/toggle_stabilizers()
 	stabilizers = !stabilizers
-	to_chat(occupants, "[icon2html(src, occupants)]<span class='notice'>Toggled thruster stabilizers [stabilizers ? "on" : "off"].</span>")
-	log_message("Toggled thruster stabilizers [stabilizers ? "on" : "off"].", LOG_MECHA)
+	to_chat(occupants, "[icon2html(src, occupants)][span_notice("Стабилизаторы двигателей [stabilizers ? "включены" : "выключены"].")]")
+	log_message("Стабилизаторы двигателей [stabilizers ? "включены" : "выключены"].", LOG_MECHA)
 
 	for(var/occupant in occupants)
 		var/datum/action/vehicle/sealed/mecha/toggle_stabilizers/action = LAZYACCESSASSOC(occupant_actions, occupant, /datum/action/vehicle/sealed/mecha/toggle_stabilizers)
@@ -169,7 +202,8 @@
 //Need to be granted by the mech type, Not default abilities.
 
 /datum/action/vehicle/sealed/mecha/mech_defense_mode
-	name = "Toggle an energy shield that blocks all attacks from the faced direction at a heavy power cost."
+	name = "Энергетический щит"
+	desc = "Блокирует атаки спереди, расходуя большое количество энергии."
 	button_icon_state = "mech_defense_mode_off"
 
 ///Кнопка зовёт Trigger(trigger_flags) позиционно, поэтому silent - только именованный флаг.
@@ -178,7 +212,7 @@
 	SEND_SIGNAL(chassis, COMSIG_MECHA_ACTION_TRIGGER, owner, list(silent)) //Signal sent to the mech, to be handed to the shield. See durand.dm for more details
 
 /datum/action/vehicle/sealed/mecha/mech_overload_mode
-	name = "Toggle leg actuators overload"
+	name = "Форсаж приводов"
 	button_icon_state = "mech_overload_off"
 
 ///Кнопка нового пассажира обязана показывать состояние шасси, а не типовое "выключено"
@@ -194,15 +228,15 @@
 	var/wanted_state = isnull(forced_state) ? !chassis.leg_overload_mode : forced_state
 	if(!chassis.set_leg_overload(wanted_state))
 		if(wanted_state && !chassis.leg_overload_mode)
-			to_chat(owner, "[icon2html(chassis, owner)]<span class='warning'>Insufficient power; cannot overload leg actuators.</span>")
+			to_chat(owner, "[icon2html(chassis, owner)][span_warning("Недостаточно энергии для форсажа ножных приводов.")]")
 		return
 	if(chassis.leg_overload_mode)
-		to_chat(owner, "[icon2html(chassis, owner)]<span class='danger'>You enable leg actuators overload.</span>")
+		to_chat(owner, "[icon2html(chassis, owner)][span_danger("Вы включаете форсаж ножных приводов.")]")
 	else
-		to_chat(owner, "[icon2html(chassis, owner)]<span class='notice'>You disable leg actuators overload.</span>")
+		to_chat(owner, "[icon2html(chassis, owner)][span_notice("Вы выключаете форсаж ножных приводов.")]")
 
 /datum/action/vehicle/sealed/mecha/mech_smoke
-	name = "Smoke"
+	name = "Дымовая завеса"
 	button_icon_state = "mech_smoke"
 
 /datum/action/vehicle/sealed/mecha/mech_smoke/Trigger()
@@ -215,17 +249,17 @@
 
 
 /datum/action/vehicle/sealed/mecha/mech_zoom
-	name = "Zoom"
-	button_icon_state = "mech_zoom_off"
+	name = "Увеличение обзора"
+	icon_icon = 'icons/mob/actions/actions_items.dmi'
+	button_icon_state = "sniper_zoom"
 
 /datum/action/vehicle/sealed/mecha/mech_zoom/Trigger()
 	if(!owner || !chassis || !(owner in chassis.occupants))
 		return
 	if(owner.client)
 		chassis.zoom_mode = !chassis.zoom_mode
-		button_icon_state = "mech_zoom_[chassis.zoom_mode ? "on" : "off"]"
-		chassis.log_message("Toggled zoom mode.", LOG_MECHA)
-		to_chat(owner, "[icon2html(chassis, owner)]<font color='[chassis.zoom_mode?"blue":"red"]'>Zoom mode [chassis.zoom_mode?"en":"dis"]abled.</font>")
+		chassis.log_message("Переключён режим увеличения обзора.", LOG_MECHA)
+		to_chat(owner, "[icon2html(chassis, owner)][chassis.zoom_mode ? span_blue("Режим увеличения обзора включён.") : span_red("Режим увеличения обзора выключен.")]")
 		if(chassis.zoom_mode)
 			owner.client.view_size.setTo(4.5)
 			SEND_SOUND(owner, sound('sound/mecha/imag_enh.ogg',volume=50))
@@ -234,7 +268,7 @@
 		UpdateButtons()
 
 /datum/action/vehicle/sealed/mecha/mech_switch_damtype
-	name = "Reconfigure arm microtool arrays"
+	name = "Сменить тип урона"
 	button_icon_state = "mech_damtype_brute"
 
 /datum/action/vehicle/sealed/mecha/mech_switch_damtype/Trigger()
@@ -244,13 +278,13 @@
 	switch(chassis.damtype)
 		if("tox")
 			new_damtype = "brute"
-			to_chat(owner, "[icon2html(chassis, owner)]<span class='notice'>Your exosuit's hands form into fists.</span>")
+			to_chat(owner, "[icon2html(chassis, owner)][span_notice("Манипуляторы экзокостюма сжимаются в кулаки.")]")
 		if("brute")
 			new_damtype = "fire"
-			to_chat(owner, "[icon2html(chassis, owner)]<span class='notice'>A torch tip extends from your exosuit's hand, glowing red.</span>")
+			to_chat(owner, "[icon2html(chassis, owner)][span_notice("Из манипулятора экзокостюма выдвигается раскалённая докрасна горелка.")]")
 		if("fire")
 			new_damtype = "tox"
-			to_chat(owner, "[icon2html(chassis, owner)]<span class='notice'>A bone-chillingly thick plasteel needle protracts from the exosuit's palm.</span>")
+			to_chat(owner, "[icon2html(chassis, owner)][span_notice("Из ладони экзокостюма выдвигается пугающе толстая пласталевая игла.")]")
 	chassis.damtype = new_damtype
 	button_icon_state = "mech_damtype_[new_damtype]"
 	playsound(chassis, 'sound/mecha/mechmove01.ogg', 50, TRUE)
@@ -258,7 +292,7 @@
 
 ///swap seats, for two person mecha
 /datum/action/vehicle/sealed/mecha/swap_seat
-	name = "Switch Seats"
+	name = "Сменить место"
 	button_icon_state = "mech_seat_swap"
 
 /datum/action/vehicle/sealed/mecha/swap_seat/Trigger()
@@ -266,27 +300,27 @@
 		return
 
 	if(chassis.occupants.len == chassis.max_occupants)
-		to_chat(owner, "The other seat is occupied!")
+		to_chat(owner, "Другое место занято!")
 		return
 	var/list/drivers = chassis.return_drivers()
-	to_chat(owner, "Switching seats...")
+	to_chat(owner, "Пересадка на другое место...")
 	chassis.is_currently_ejecting = TRUE
 	if(!do_after(owner, chassis.has_gravity() ? chassis.exit_delay : 0 , target = chassis))
 		chassis.is_currently_ejecting = FALSE
 		return
 	chassis.is_currently_ejecting = FALSE
 	if(owner in drivers)
-		to_chat(owner, "You shift to the gunner seat!")
+		to_chat(owner, "Вы пересаживаетесь на место стрелка!")
 		chassis.remove_control_flags(owner, VEHICLE_CONTROL_DRIVE|VEHICLE_CONTROL_SETTINGS)
 		chassis.add_control_flags(owner, VEHICLE_CONTROL_MELEE|VEHICLE_CONTROL_EQUIPMENT)
 	else
-		to_chat(owner, "You shift to the pilot seat!")
+		to_chat(owner, "Вы пересаживаетесь на место пилота!")
 		chassis.remove_control_flags(owner, VEHICLE_CONTROL_MELEE|VEHICLE_CONTROL_EQUIPMENT)
 		chassis.add_control_flags(owner, VEHICLE_CONTROL_DRIVE|VEHICLE_CONTROL_SETTINGS)
 	chassis.update_icon_state()
 
 /datum/action/vehicle/sealed/mecha/mech_toggle_phasing
-	name = "Toggle Phasing"
+	name = "Фазовый модуль"
 	button_icon_state = "mech_phasing_off"
 
 /datum/action/vehicle/sealed/mecha/mech_toggle_phasing/Trigger()
@@ -294,7 +328,7 @@
 		return
 	chassis.phasing = !chassis.phasing
 	button_icon_state = "mech_phasing_[chassis.phasing ? "on" : "off"]"
-	to_chat(owner, "[icon2html(chassis, owner)]<font color=\"[chassis.phasing?"#00f\">En":"#f00\">Dis"]abled phasing.</font>")
+	to_chat(owner, "[icon2html(chassis, owner)][chassis.phasing ? span_blue("Фазовый режим включён.") : span_red("Фазовый режим выключен.")]")
 	UpdateButtons()
 
 //
@@ -308,19 +342,21 @@
 		mecha.chassis = src
 
 /datum/action/vehicle/sealed/mecha/syndicate/mech_zoom
+	name = "Увеличение обзора"
+	icon_icon = 'icons/mob/actions/actions_items.dmi'
+	button_icon_state = "sniper_zoom"
 
 /datum/action/vehicle/sealed/mecha/syndicate/mech_zoom/Trigger()
-    if(owner.client)
-        chassis.zoom_mode = !chassis.zoom_mode
-        button_icon_state = "mech_zoom_[chassis.zoom_mode ? "on" : "off"]"
-        chassis.log_message("Toggled zoom mode.", LOG_MECHA)
-        to_chat(owner, "[icon2html(chassis, owner)]<font color='[chassis.zoom_mode?"blue":"red"]'>Zoom mode [chassis.zoom_mode?"en":"dis"]abled.</font>")
-        if(chassis.zoom_mode)
-            owner.client.view_size.setTo(4.5)
-            SEND_SOUND(owner, sound('sound/mecha/imag_enh_syndicate.ogg',volume=50))
-        else
-            owner.client.view_size.resetToDefault()
-        UpdateButton()
+	if(owner.client)
+		chassis.zoom_mode = !chassis.zoom_mode
+		chassis.log_message("Переключён режим увеличения обзора.", LOG_MECHA)
+		to_chat(owner, "[icon2html(chassis, owner)][chassis.zoom_mode ? span_blue("Режим увеличения обзора включён.") : span_red("Режим увеличения обзора выключен.")]")
+		if(chassis.zoom_mode)
+			owner.client.view_size.setTo(4.5)
+			SEND_SOUND(owner, sound('sound/mecha/imag_enh_syndicate.ogg',volume=50))
+		else
+			owner.client.view_size.resetToDefault()
+		UpdateButton()
 
 ///
 
@@ -333,19 +369,21 @@
 		mecha.chassis = src
 
 /datum/action/vehicle/sealed/mecha/russian/mech_zoom
+	name = "Увеличение обзора"
+	icon_icon = 'icons/mob/actions/actions_items.dmi'
+	button_icon_state = "sniper_zoom"
 
 /datum/action/vehicle/sealed/mecha/russian/mech_zoom/Trigger()
-    if(owner.client)
-        chassis.zoom_mode = !chassis.zoom_mode
-        button_icon_state = "mech_zoom_[chassis.zoom_mode ? "on" : "off"]"
-        chassis.log_message("Toggled zoom mode.", LOG_MECHA)
-        to_chat(owner, "[icon2html(chassis, owner)]<font color='[chassis.zoom_mode?"blue":"red"]'>Zoom mode [chassis.zoom_mode?"en":"dis"]abled.</font>")
-        if(chassis.zoom_mode)
-            owner.client.view_size.setTo(4.5)
-            SEND_SOUND(owner, sound('sound/mecha/imag_enh_russian.ogg',volume=50))
-        else
-            owner.client.view_size.resetToDefault()
-        UpdateButton()
+	if(owner.client)
+		chassis.zoom_mode = !chassis.zoom_mode
+		chassis.log_message("Переключён режим увеличения обзора.", LOG_MECHA)
+		to_chat(owner, "[icon2html(chassis, owner)][chassis.zoom_mode ? span_blue("Режим увеличения обзора включён.") : span_red("Режим увеличения обзора выключен.")]")
+		if(chassis.zoom_mode)
+			owner.client.view_size.setTo(4.5)
+			SEND_SOUND(owner, sound('sound/mecha/imag_enh_russian.ogg',volume=50))
+		else
+			owner.client.view_size.resetToDefault()
+		UpdateButton()
 
 //
 
@@ -358,18 +396,20 @@
 		mecha.chassis = src
 
 /datum/action/vehicle/sealed/mecha/sol/mech_zoom
+	name = "Увеличение обзора"
+	icon_icon = 'icons/mob/actions/actions_items.dmi'
+	button_icon_state = "sniper_zoom"
 
 /datum/action/vehicle/sealed/mecha/sol/mech_zoom/Trigger()
-    if(owner.client)
-        chassis.zoom_mode = !chassis.zoom_mode
-        button_icon_state = "mech_zoom_[chassis.zoom_mode ? "on" : "off"]"
-        chassis.log_message("Toggled zoom mode.", LOG_MECHA)
-        to_chat(owner, "[icon2html(chassis, owner)]<font color='[chassis.zoom_mode?"blue":"red"]'>Zoom mode [chassis.zoom_mode?"en":"dis"]abled.</font>")
-        if(chassis.zoom_mode)
-            owner.client.view_size.setTo(4.5)
-            SEND_SOUND(owner, sound('modular_bluemoon/kovac_shitcode/sound/mecha/imag_enh_sol.ogg',volume=50))
-        else
-            owner.client.view_size.resetToDefault()
-        UpdateButton()
+	if(owner.client)
+		chassis.zoom_mode = !chassis.zoom_mode
+		chassis.log_message("Переключён режим увеличения обзора.", LOG_MECHA)
+		to_chat(owner, "[icon2html(chassis, owner)][chassis.zoom_mode ? span_blue("Режим увеличения обзора включён.") : span_red("Режим увеличения обзора выключен.")]")
+		if(chassis.zoom_mode)
+			owner.client.view_size.setTo(4.5)
+			SEND_SOUND(owner, sound('modular_bluemoon/kovac_shitcode/sound/mecha/imag_enh_sol.ogg',volume=50))
+		else
+			owner.client.view_size.resetToDefault()
+		UpdateButton()
 
 ///

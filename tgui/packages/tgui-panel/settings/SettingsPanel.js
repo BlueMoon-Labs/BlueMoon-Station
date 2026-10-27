@@ -7,7 +7,7 @@
 import { toFixed } from 'common/math';
 import { useDispatch, useSelector } from 'common/redux';
 import { useState } from 'react';
-import { Box, Button, Divider, Dropdown, Flex, Input, LabeledList, NumberInput, Section, Stack, Tabs, TextArea } from 'tgui/components';
+import { Box, Button, ColorPicker, Divider, Dropdown, Flex, Input, LabeledList, NumberInput, Section, Stack, Tabs, TextArea } from 'tgui/components';
 
 import { ChatPageSettings } from '../chat';
 import { rebuildChat, saveChatToDisk } from '../chat/actions';
@@ -16,40 +16,20 @@ import { changeSettingsTab, updateSettings } from './actions';
 import { CHAT_ANIM_SPEEDS, CHAT_ANIMATIONS, CHAT_BG_ANIMATIONS, CHAT_STYLES, FONTS, MESSAGE_STYLE_ANIMATIONS, MESSAGE_STYLE_FONTS, MESSAGE_STYLES, SETTINGS_TABS, TEXT_GLOW_OPTIONS, TIME_DIVIDER_INTERVALS, TIMESTAMP_FORMATS } from './constants';
 import { selectActiveTab, selectSettings } from './selectors';
 
-// React's onChange fires continuously while dragging inside the color
-// dialog; debounce so we do not rewrite stored settings on every tick.
-const colorCommitTimers = new WeakMap();
-const debouncedColorCommit = (input, commit) => {
-  clearTimeout(colorCommitTimers.get(input));
-  colorCommitTimers.set(input, setTimeout(() => commit(input.value), 250));
-};
-
-/**
- * Color input with a native color picker and text field.
- */
+// Общий TGUI-пикер и текстовое поле для ручного ввода цвета.
 const ColorInput = (props) => {
   const { value, defaultColor, placeholder, onChange, onClear } = props;
   const displayColor = value || defaultColor || '#000000';
-  // Native color picker needs a valid 7-char hex
   const pickerColor = /^#[0-9a-fA-F]{6}$/.test(displayColor)
     ? displayColor : '#000000';
   return (
     <Stack inline align="center">
       <Stack.Item>
-        <Box
-          as="input"
-          type="color"
+        <ColorPicker
           value={pickerColor}
-          style={{
-            'width': '22px',
-            'height': '22px',
-            'padding': '0',
-            'border': '1px solid rgba(255,255,255,0.2)',
-            borderRadius: '2px',
-            'background': 'transparent',
-            'cursor': 'pointer',
-          }}
-          onChange={e => debouncedColorCommit(e.target, onChange)}
+          width="22px"
+          height="22px"
+          onCommit={onChange}
         />
       </Stack.Item>
       <Stack.Item>
@@ -128,6 +108,7 @@ export const SettingsGeneral = (props) => {
     timestampFormat,
     enableTimeDividers,
     timeDividerInterval,
+    showRadioJobs,
   } = useSelector(selectSettings);
   const dispatch = useDispatch();
   const [freeFont, setFreeFont] = useState(false);
@@ -295,6 +276,15 @@ export const SettingsGeneral = (props) => {
           dispatch(rebuildChat());
         }}>
         Разделители по времени
+      </Button.Checkbox>
+      <Button.Checkbox
+        checked={showRadioJobs !== false}
+        onClick={() => {
+          dispatch(updateSettings({
+            showRadioJobs: showRadioJobs === false,
+          }));
+        }}>
+        Должности в рации
       </Button.Checkbox>
       {enableTimeDividers && (
         <Box ml={2.5} mb={0.5}>

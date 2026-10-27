@@ -149,6 +149,12 @@
 
 /mob/living/carbon/attackby(obj/item/I, mob/user, params)
 	if(lying && surgeries.len)
+		// Вправление вывиха остаётся лечением травмы даже при начатой операции
+		// на той же конечности. Иначе хирургический инструмент перехватит клик.
+		if(user.a_intent == INTENT_HELP)
+			for(var/datum/wound/blunt/moderate/dislocation in all_wounds)
+				if(dislocation.try_treating(I, user))
+					return STOP_ATTACK_PROC_CHAIN
 		if(user.a_intent == INTENT_HELP || user.a_intent == INTENT_DISARM)
 			for(var/datum/surgery/S in surgeries)
 				if(S.next_step(user,user.a_intent))
@@ -1240,6 +1246,9 @@
 
 
 /mob/living/carbon/proc/devour_mob(mob/living/carbon/C, devour_time = 130)
+	if(antag_training_member_body(C))
+		to_chat(src, span_warning("На полигоне нельзя проглотить тело другого участника."))
+		return
 	C.visible_message("<span class='danger'>[src] is attempting to devour [C]!</span>", \
 					"<span class='userdanger'>[src] is attempting to devour you!</span>")
 	if(!do_mob(src, C, devour_time))

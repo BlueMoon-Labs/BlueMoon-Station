@@ -1,5 +1,5 @@
 import { useBackend } from '../../../backend';
-import { Box, Dropdown, Input, Slider, Stack } from '../../../components';
+import { Box, ColorPicker, Dropdown, Input, Slider, Stack } from '../../../components';
 import { PrefRow } from '../components/PrefRow';
 
 type GraphicsData = {
@@ -33,14 +33,6 @@ type GraphicsData = {
   lighting_quality: number;
   UI_style: string;
   mood_vignette: boolean;
-};
-
-// React's onChange fires continuously while dragging inside the color
-// dialog; debounce so we do not flood the server with act() messages.
-const colorCommitTimers = new WeakMap();
-const debouncedColorCommit = (input: HTMLInputElement, commit: (value: string) => void) => {
-  clearTimeout(colorCommitTimers.get(input));
-  colorCommitTimers.set(input, setTimeout(() => commit(input.value), 250));
 };
 
 const MULTIZ_DEPTH_OPTIONS = [
@@ -138,21 +130,12 @@ export const GraphicsSection = (props) => {
             {tooltip && <div className="GamePreferences__hint">{tooltip}</div>}
           </Stack.Item>
           <Stack.Item>
-            <Box
-              as="input"
-              type="color"
+            <ColorPicker
               value={safeColor}
-              style={{
-                width: '22px',
-                height: '22px',
-                padding: '0',
-                border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: '2px',
-                background: 'transparent',
-                cursor: 'pointer',
-              }}
-              onChange={e => debouncedColorCommit(e.target,
-                value => act('set_gfx_val', { flag, value }))}
+              width="22px"
+              height="22px"
+              tooltip={label}
+              onCommit={value => act('set_gfx_val', { flag, value })}
             />
           </Stack.Item>
           <Stack.Item shrink={0} basis="80px">
@@ -295,7 +278,7 @@ export const GraphicsSection = (props) => {
               <Stack align="center" fill className="GamePreferences__row">
                 <Stack.Item grow basis={0}>
                   <div className="GamePreferences__label" style={{ opacity: isFastMode ? 0.5 : 1, color: isFastMode ? '#6e6e6e' : undefined }}>Размытие</div>
-                  <div className="GamePreferences__hint" style={{ color: isFastMode ? '#6e6e6e' : undefined }}>Мягкость света</div>
+                  <div className="GamePreferences__hint" style={{ color: isFastMode ? '#6e6e6e' : undefined }}>Мягкость света и ореолы ламп, 0 - без них</div>
                 </Stack.Item>
                 <Stack.Item style={{ opacity: isFastMode ? 0.45 : 1 }}>
                   <Dropdown

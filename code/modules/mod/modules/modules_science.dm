@@ -31,22 +31,23 @@
 	complexity = 0
 	removable = FALSE
 	var/explosion_detection_dist = 21
-	var/had_research_scanner = FALSE
+
+/obj/item/mod/module/reagent_scanner/advanced/on_unequip()
+	if(active)
+		on_deactivation()
 
 /obj/item/mod/module/reagent_scanner/advanced/on_activation()
 	. = ..()
 	if(!.)
 		return
-	had_research_scanner = mod.wearer.research_scanner
-	mod.wearer.research_scanner = TRUE
+	ADD_TRAIT(mod.wearer, TRAIT_RESEARCH_SCANNER, MOD_TRAIT)
 	RegisterSignal(SSdcs, COMSIG_GLOB_EXPLOSION, PROC_REF(sense_explosion))
 
 /obj/item/mod/module/reagent_scanner/advanced/on_deactivation(display_message = TRUE, deleting = FALSE)
 	. = ..()
 	if(!.)
 		return
-	mod.wearer.research_scanner = had_research_scanner
-	had_research_scanner = FALSE
+	REMOVE_TRAIT(mod.wearer, TRAIT_RESEARCH_SCANNER, MOD_TRAIT)
 	UnregisterSignal(SSdcs, COMSIG_GLOB_EXPLOSION)
 
 /obj/item/mod/module/reagent_scanner/advanced/proc/sense_explosion(datum/source, turf/epicenter,

@@ -56,7 +56,7 @@ There are several things that need to be remembered:
 //HAIR OVERLAY
 /mob/living/carbon/human/update_hair()
 	if(!HAS_TRAIT(src, TRAIT_HUMAN_NO_RENDER))
-		dna.species.handle_hair(src)
+		dna?.species?.handle_hair(src)
 
 ///Глубина отсрочки пересборки мутантных частей тела. Пока больше нуля,
 ///update_mutant_bodyparts() только помечает заявку. Полная перерисовка
@@ -79,7 +79,7 @@ There are several things that need to be remembered:
 /mob/living/carbon/human/update_body(update_genitals = FALSE, block_recursive_calls = FALSE)
 	if(!HAS_TRAIT(src, TRAIT_HUMAN_NO_RENDER))
 		remove_overlay(BODY_LAYER)
-		dna.species.handle_body(src, block_recursive_calls)
+		dna?.species?.handle_body(src, block_recursive_calls)
 		..()
 		if(update_genitals)
 			update_genitals()
@@ -166,7 +166,7 @@ There are several things that need to be remembered:
 		var/mutable_appearance/new_cult_overlay = mutable_appearance('icons/effects/32x64.dmi', istate, -ANTAG_LAYER)
 		overlays_standing[ANTAG_LAYER] = new_cult_overlay
 	var/datum/antagonist/clockcult/C = src?.mind?.has_antag_datum(/datum/antagonist/clockcult) //check for clockcultism - surely one can't be both cult and clockie, right?
-	if(C)
+	if(C && !istype(C, /datum/antagonist/clockcult/training))
 		var/obj/structure/destructible/clockwork/massive/celestial_gateway/G = GLOB.ark_of_the_clockwork_justiciar
 		if(G && G.active && ishuman(src))
 			var/mutable_appearance/new_cult_overlay = mutable_appearance('icons/effects/genetics.dmi', "servitude", -MUTATIONS_LAYER)

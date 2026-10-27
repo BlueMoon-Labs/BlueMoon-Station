@@ -273,6 +273,9 @@
 	new /obj/item/modkit/concord_riot_helmet_kit(src) // шлем
 	new /obj/item/modsuit_modkit/lapkee(src) //модсьют
 	new /obj/item/modkit/white_belt_kit(src) // пояс
+	new /obj/item/modkit/hardlight_gloves_kit(src) // перчатки
+	new /obj/item/modkit/hardlight_gloves_kit(src) // перчатки
+	new /obj/item/modkit/formal_concord_boots_kit(src) // ботинки
 	new /obj/item/modkit/nebular_kit(src) // пистоль - энфорсер
 	new /obj/item/modkit/comet_kit(src) // WT-550 PDW
 	new /obj/item/modkit/nebular_t_kit(src) // тазер
@@ -304,13 +307,13 @@
 	fromitem = list(/obj/item/storage/belt/security/webbing/ds)
 
 /obj/item/storage/belt/security/webbing/ds/lapkee_belt
-	DONATE_ITEM_TOOLTIP_PARENT
 	name = "White security belt"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/belt.dmi'
 	icon_state = "lapkee_belt"
 	item_state = "lapkee_belt"
 	content_overlays = TRUE
+DONATE_ITEM_TOOLTIP_PARENT(/obj/item/storage/belt/security/webbing/ds/lapkee_belt)
 
 /obj/item/melee/baton/get_belt_overlay()
 	if(istype(loc, /obj/item/storage/belt/security/webbing/ds/lapkee_belt))
@@ -397,13 +400,13 @@
 		icon_state = new_state
 
 /obj/item/storage/belt/security/webbing/ds/melatonin_belt
-	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Lycanthrope's Heavy Tactical Belt"
 	desc = "Массивный тактический пояс, который когда-то служил обычным утяжеленным ремнем. Со временем он оброс модификациями: к нему добавились прочная кожаная кобура, дополнительный поддерживающий ремень, подсумки для патронов и незаметные ножны для складного клинка. Вся эта конструкция выглядит исключительно надежной, хоть и неоправданно тяжелой. На крупной металлической пряжке по центру выгравирован оскал свирепого волка."
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/belt.dmi'
 	icon_state = "melatonin_belt"
 	item_state = "melatonin_belt"
+DONATE_ITEM_TOOLTIP_PARENT(/obj/item/storage/belt/security/webbing/ds/melatonin_belt)
 
 /obj/item/melee/baton/stunsword/melatonin/get_belt_overlay()
 	if(istype(loc, /obj/item/storage/belt/security/webbing/ds/melatonin_belt))

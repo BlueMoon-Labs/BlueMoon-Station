@@ -1,10 +1,9 @@
 /obj/item/mod/module/armor
 	name = "Base MOD armor"
 	icon_state = "base_armor"
-	desc = "Незавершенная плитка дополнительной брони, защищающая владельца от указанного на этикетке типа повреждений. Стоит понимать, что \
-	каждая такая плитка имеет вес и, следовательно, повышает энергопотребление из-за нагрузки на сервоприводы."
+	desc = "Незавершенная плитка дополнительной брони, защищающая владельца от указанного на этикетке типа угрозы. Стоит понимать, что \
+	каждая такая плитка имеет вес и, следовательно, повысит энергопотребление MOD ввиду нагрузки на сервоприводы."
 	module_type = MODULE_ARMOR
-	var/datum/armor/additional_armor = new()
 	var/armor_module_type //MELEE, BULLET, LASER
 	var/armor_bonus = 15
 	var/need_sheets = 10
@@ -16,17 +15,19 @@
 /obj/item/mod/module/armor/Initialize(mapload)
 	. = ..()
 	material_to_armor_list = list(
-		/obj/item/stack/sheet/durathread::name 			 = MELEE,
-		/obj/item/stack/sheet/plasteel::name 			 = BULLET,
-		/obj/item/stack/sheet/mineral/titanium::name 	 = LASER,
-		/obj/item/stack/sheet/mineral/diamond::name		 = ENERGY,
-		/obj/item/stack/sheet/mineral/gold::name		 = BOMB,
-		/obj/item/stack/sheet/mineral/silver::name		 = BIO,
-		/obj/item/stack/sheet/mineral/plastitanium::name = RAD,
-		/obj/item/stack/sheet/plastitaniumglass::name	 = FIRE,
-		/obj/item/stack/sheet/rglass::name				 = ACID,
-		/obj/item/stack/sheet/mineral/adamantine::name	 = MAGIC,
-		/obj/item/stack/sheet/mineral/abductor::name	 = WOUND,
+	// Записывайте имена новых материалов в mat_ru_nominative глобаллист
+		/obj/item/stack/sheet/durathread::name 			 	= MELEE,
+		/obj/item/stack/sheet/animalhide/goliath_hide::name = MELEE,
+		/obj/item/stack/sheet/plasteel::name 				= BULLET,
+		/obj/item/stack/sheet/mineral/titanium::name 		= LASER,
+		/obj/item/stack/sheet/mineral/diamond::name			= ENERGY,
+		/obj/item/stack/sheet/mineral/gold::name			= BOMB,
+		/obj/item/stack/sheet/mineral/silver::name			= BIO,
+		/obj/item/stack/sheet/mineral/plastitanium::name 	= RAD,
+		/obj/item/stack/sheet/plastitaniumglass::name		= FIRE,
+		/obj/item/stack/sheet/rglass::name					= ACID,
+		/obj/item/stack/sheet/mineral/adamantine::name		= MAGIC,
+		/obj/item/stack/sheet/mineral/abductor::name		= WOUND,
 	)
 
 /obj/item/mod/module/armor/Destroy()
@@ -38,9 +39,14 @@
 	. = ..()
 	if(armor_module_type)
 		return
-	. += span_boldnotice("Сейчас доступны варианты:")
+	. += span_boldnotice("<hr><center>Доступные варианты армирования</center>")
+	. += "Пригодные для защиты от угроз материалы:"
+	var/list/armor_vars = list()
 	for(var/material in material_to_armor_list)
-		. += (span_alert("Материал --[(material)]-- позволяет сделать защиту от:") + span_revenminor("[material_to_armor_list[material]]"))
+		var/material_name = span_alert("[capitalize(vocabulary_to_ru(GLOB.mat_ru_nominative, material))]")
+		var/armor_name = span_revenminor("[vocabulary_to_ru(GLOB.armor_rating_genitive_ru, material_to_armor_list[material])]")
+		armor_vars += "<div style='margin-top:4px;'>– [material_name] поможет от [armor_name].</div>"
+	. += armor_vars.Join()
 
 /obj/item/mod/module/armor/proc/add_armor_bonus()
 	if(!mod.theme.compatible_with_armor_modules)
@@ -48,14 +54,14 @@
 		return
 	for(var/obj/item/clothing/mod_part/part as anything in mod.get_mod_parts(include_cell = FALSE))
 		var/datum/armor/part_armor = part.get_armor()
-		part.set_armor(part_armor.generate_new_with_modifiers(list("[armor_module_type]" = armor_bonus)))
+		part.set_armor(part_armor.modifyRating(arglist(list("[armor_module_type]" = armor_bonus))))
 	mod.slowdown_active += slowdown_bonus
 	mod.slowdown_inactive += slowdown_bonus
 
 /obj/item/mod/module/armor/proc/remove_armor_bonus()
 	for(var/obj/item/clothing/mod_part/part as anything in mod.get_mod_parts(include_cell = FALSE))
 		var/datum/armor/part_armor = part.get_armor()
-		part.set_armor(part_armor.generate_new_with_modifiers(list("[armor_module_type]" = -armor_bonus)))
+		part.set_armor(part_armor.modifyRating(arglist(list("[armor_module_type]" = -armor_bonus))))
 	mod.slowdown_active -= slowdown_bonus
 	mod.slowdown_inactive -= slowdown_bonus
 
@@ -90,14 +96,14 @@
 	var/obj/item/stack/sheet/material = I
 	armor_module_type = get_armor_by_material(material)
 	if(material.amount < need_sheets || !armor_module_type)
-		var/ballon_message = armor_module_type ? "Нужно [need_sheets] листов" : "Не подходящий материал!"
+		var/ballon_message = armor_module_type ? "Нужно [need_sheets] листов" : "Неподходящий материал!"
 		C.balloon_alert(C, ballon_message)
 		armor_module_type = null
 		return
 	if(do_after(user, 2 SECONDS, src))
 		name = "[armor_module_type] MOD armor"
 		icon_state = "armor-[armor_module_type]"
-		desc = "Завершенный модуль брони для МОДа, который защищает от повреждений типа [armor_module_type]"
+		desc = "Завершенный модуль брони для MOD, который защищает от [vocabulary_to_ru(GLOB.armor_rating_genitive_ru, armor_module_type)]."
 		material.use(need_sheets)
 	else
 		armor_module_type = null
@@ -116,7 +122,7 @@
 		return
 	playsound(mod, "sparks", 40, TRUE, SHORT_RANGE_SOUND_EXTRARANGE)
 	if(target_mob)
-		balloon_alert(target_mob, span_big_warning("модуль раскалывается и разрушается!"))
+		balloon_alert(target_mob, span_big_warning("Модуль раскалывается и разрушается!"))
 	qdel(src)
 
 /obj/item/mod/module/armor/prebuild/Initialize(mapload)

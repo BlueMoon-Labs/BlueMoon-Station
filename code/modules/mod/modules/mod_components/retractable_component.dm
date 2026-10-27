@@ -70,7 +70,8 @@
 	using_device.forceMove(storage_module)
 	if(special_location)
 		var/obj/item/mod/module/target_module = special_location.loc
-		target_module.on_deactivation()
+		if(istype(target_module))
+			target_module.on_deactivation()
 	if(!special_location && storage_module.active)
 		storage_module.on_deactivation()
 	playsound(get_turf(my_modsuit), sound, 30, 1)

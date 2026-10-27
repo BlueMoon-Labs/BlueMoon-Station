@@ -161,6 +161,7 @@ GLOBAL_LIST_INIT(clothesmate_socks, list())
 				/obj/item/clothing/neck/scarf/pink = 3,
 				/obj/item/clothing/neck/scarf/purple = 3,
 				/obj/item/clothing/neck/scarf/red = 3,
+				/obj/item/clothing/neck/scarf/shadekin = 3, // BLUEMOON ADD - шарф из меха шейдкина
 				/obj/item/clothing/neck/scarf/yellow = 3,
 				/obj/item/clothing/neck/scarf/zebra = 3,
 				/obj/item/clothing/neck/stripedbluescarf = 3,

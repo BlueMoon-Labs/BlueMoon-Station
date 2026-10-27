@@ -33,9 +33,10 @@
 	if(move_to_lair)
 		send_to_lair()
 	var/mob/living/carbon/human/H = owner.current
-	var/load_character = alert(H.client, "Желаете загрузить текущего своего выбранного персонажа?", "Играть своим персонажем!", "Да", "Нет")
-	if(load_character == "Да")
-		H.load_client_appearance(H.client)
+	if(H.client)
+		var/load_character = alert(H.client, "Желаете загрузить текущего своего выбранного персонажа?", "Играть своим персонажем!", "Да", "Нет")
+		if(load_character == "Да")
+			H.load_client_appearance(H.client)
 	. = ..()
 	if(allow_rename)
 		rename_wizard()

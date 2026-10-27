@@ -812,3 +812,64 @@
 	update_icon()
 
 #undef PANCAKE_MAX_STACK
+
+/obj/item/reagent_containers/food/snacks/pawcookie_raw
+	name = "Raw paw form"
+	desc = "Заготовка из теста в форме лапки. Нужно разогреть."
+	icon = 'icons/obj/food/food_ingredients.dmi'
+	icon_state = "rawpaw"
+	cooked_type = /obj/item/reagent_containers/food/snacks/pawcookie
+	list_reagents = list(/datum/reagent/consumable/nutriment = 3)
+	tastes = list("cookie" = 1)
+	foodtype = GRAIN | DAIRY
+
+/obj/item/reagent_containers/food/snacks/pawcookie
+	name = "PawCookie"
+	desc = "Печенька с отпечатком лапки."
+	icon = 'icons/obj/food/pawcookie.dmi'
+	icon_state = "paw14"
+	tastes = list("cookie" = 1)
+	bonus_reagents = list(/datum/reagent/consumable/nutriment = 2, /datum/reagent/consumable/sugar = 1)
+	list_reagents = list(/datum/reagent/consumable/nutriment = 3)
+	bitesize = 3
+	foodtype = GRAIN | SUGAR
+
+/obj/item/reagent_containers/food/snacks/pawcookie/Initialize()
+	..()
+	icon_state = pick("paw1", "paw2", "paw3", "paw4", "paw5", "paw6", "paw7", "paw8", "paw9", "paw10", "paw11", "paw12", "paw13", "paw14")
+
+/obj/item/reagent_containers/food/snacks/pawgold
+	name = "Golden paw"
+	desc = "Блестящая лапка! Сытнее обычной."
+	icon = 'icons/obj/food/food.dmi'
+	icon_state = "pawg"
+	list_reagents = list(/datum/reagent/consumable/nutriment = 10)
+	tastes = list("cookie" = 1)
+	bitesize = 6
+	foodtype = GRAIN | SUGAR
+
+GLOBAL_LIST_INIT(paw_eater_progress, list()) 
+
+/obj/item/reagent_containers/food/snacks/pawcookie/On_Consume(mob/living/user)
+	. = ..()
+	if(!user?.client)
+		return
+	var/state_index = text2num(copytext(icon_state, 4))
+	var/needed = 7
+	var/key = user.client.ckey
+	var/list/eaten = GLOB.paw_eater_progress[key]
+	if(!eaten)
+		eaten = list()
+		GLOB.paw_eater_progress[key] = eaten
+	if(!(state_index in eaten))
+		eaten |= state_index
+		if(eaten.len == needed)
+			user.client.increment_progress("achievement_pawlicker", 1)
+			to_chat(user, span_warning("Ты съел половину от всех видов, но как можно остановиться?"))
+			user.client.give_award(/datum/award/achievement/misc/pawlicker, user)
+			var/obj/item/reagent_containers/food/snacks/pawgold/gold = new(get_turf(user))
+			gold.pixel_x = rand(-6, 6)
+			gold.pixel_y = 20
+			animate(gold, pixel_y = 0, time = 20, easing = BOUNCE_EASING)
+			playsound(gold, 'sound/effects/magic.ogg', 50, TRUE)
+			addtimer(CALLBACK(user, TYPE_PROC_REF(/mob, emote), "yummers"), 1.5 SECONDS)

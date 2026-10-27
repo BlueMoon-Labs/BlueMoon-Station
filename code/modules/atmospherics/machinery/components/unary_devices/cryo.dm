@@ -4,7 +4,7 @@
 	icon_state = "pod-off"
 	density = TRUE
 	max_integrity = 350
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 100, BOMB = 0, BIO = 100, RAD = 100, FIRE = 30, ACID = 30)
+	armor_type = /datum/armor/cryo_cell
 	layer = ABOVE_WINDOW_LAYER
 	plane = GAME_PLANE
 	state_open = FALSE
@@ -63,11 +63,9 @@
 	heat_capacity = initial(heat_capacity) / C
 	conduction_coefficient = initial(conduction_coefficient) * C
 
-/obj/machinery/atmospherics/components/unary/cryo_cell/examine(mob/user) //this is leaving out everything but efficiency since they follow the same idea of "better matter bin, better results"
-	. = ..()
-	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>Статус-дисплей сообщает: \n\
-		- Эффективность машины: <b>[efficiency*100]%</b>.</span>"
+/obj/machinery/atmospherics/components/unary/cryo_cell/examine_display_content(mob/user)
+	. += "\
+	– Эффективность машины: <b>[efficiency*100]%</b>."
 
 /obj/machinery/atmospherics/components/unary/cryo_cell/Destroy()
 	QDEL_NULL(radio)

@@ -1,0 +1,225 @@
+/// Вызволение: только с живым согласным заключённым; ID брига, свобода рядом с братом и пять минут на воле
+/datum/unit_test/blood_brothers_oath_liberation/Run()
+	var/datum/antag_opt_in_test_world/world_state = blood_brothers_oath_world()
+	var/datum/team/brother_team/team = allocate_brother_team(src)
+	var/datum/blood_oath/liberation/oath = new
+	world_state.set_crew(team.members + antag_opt_in_crew(ANTAG_OPT_IN_ROUND_REMOVE))
+	TEST_ASSERT(!oath.available(team), "Без заключённых Вызволения нет")
+	world_state.set_crew(team.members + blood_brothers_target(ANTAG_OPT_IN_NOT_TARGET, "Prisoner"))
+	TEST_ASSERT(!oath.available(team), "Несогласный заключённый не годится")
+	world_state.set_crew(team.members + antag_opt_in_crew(ANTAG_OPT_IN_TEMPORARY, "Prisoner"))
+	TEST_ASSERT(!oath.available(team), "Заключённый без игрока не годится")
+	var/datum/mind/prisoner = blood_brothers_target(ANTAG_OPT_IN_TEMPORARY, "Prisoner")
+	world_state.set_crew(team.members + prisoner)
+	TEST_ASSERT(oath.available(team), "С заключённым доступно")
+	TEST_ASSERT(oath.prepare(team), "Подобран заключённый")
+	TEST_ASSERT_EQUAL(oath.target_mind, prisoner, "Цель - заключённый")
+	oath.vow_type = /datum/blood_vow/shadow
+	TEST_ASSERT(!findtext(prisoner.memory, "поклялся вытащить"), "До клятвы заключённый ничего не знает")
+	team.swear_oath(oath)
+	TEST_ASSERT_EQUAL(team.oath, oath, "Вызволение дано")
+	TEST_ASSERT(findtext(prisoner.memory, "Снаружи кто-то поклялся вытащить вас отсюда"), "Заключённый узнал, что за него поклялись")
+	var/datum/mind/teller = team.members[1]
+	TEST_ASSERT(!findtext(prisoner.memory, teller.name), "Весточка не выдаёт братьев")
+	var/datum/mind/first = team.members[1]
+	var/mob/living/carbon/human/sealer = first.current
+	var/obj/item/card/id/card = allocate(/obj/item/card/id)
+	card.access = list(ACCESS_MAINT_TUNNELS)
+	sealer.put_in_hands(card)
+	TEST_ASSERT(istext(team.try_seal(first)), "ID без доступа в бриг не годится")
+	card.access = list(ACCESS_BRIG)
+	TEST_ASSERT(team.try_seal(first) == TRUE, "ID с доступом в бриг скрепляет первый шаг")
+	var/mob/living/carbon/human/prisoner_body = prisoner.current
+	var/turf/cell = get_step(run_loc_floor_bottom_left, NORTH)
+	heretic_test_area(cell, /area/security/prison)
+	prisoner_body.forceMove(cell)
+	TEST_ASSERT(istext(team.try_seal(first)), "Заключённый в перме")
+	var/turf/beside = get_step(run_loc_floor_bottom_left, EAST)
+	prisoner_body.forceMove(run_loc_floor_top_right)
+	TEST_ASSERT(istext(team.try_seal(first)), "Заключённый далеко от брата")
+	prisoner_body.forceMove(beside)
+	var/obj/item/restraints/handcuffs/cuffs = allocate(/obj/item/restraints/handcuffs)
+	sealer.put_in_hands(cuffs)
+	cuffs.apply_cuffs(prisoner_body, sealer)
+	TEST_ASSERT(prisoner_body.handcuffed, "Заключённый в наручниках")
+	TEST_ASSERT(istext(team.try_seal(first)), "В наручниках - не свобода")
+	prisoner_body.uncuff()
+	TEST_ASSERT(team.try_seal(first) == TRUE, "Заключённый на свободе рядом - второй шаг")
+	var/datum/blood_oath_step/liberation_free/free_step = oath.steps[3]
+	team.process()
+	TEST_ASSERT_EQUAL(free_step.free_time, BROTHER_SENSE_INTERVAL, "Обход команды копит время на свободе")
+	TEST_ASSERT(findtext(free_step.condition_text(sealer), "0:02"), "Условие показывает время: [free_step.condition_text(sealer)]")
+	TEST_ASSERT(findtext(free_step.desc, DisplayTimeText(BROTHER_LIBERATION_FREE_TIME)), "Описание называет время словами: [free_step.desc]")
+	prisoner_body.forceMove(cell)
+	oath.on_team_tick()
+	TEST_ASSERT_EQUAL(free_step.free_time, 0, "Возврат за решётку сбрасывает отсчёт")
+	prisoner_body.forceMove(beside)
+	oath.on_team_tick()
+	prisoner_body.moveToNullspace()
+	oath.on_team_tick()
+	TEST_ASSERT_EQUAL(free_step.free_time, 0, "Тело вне мира - не свобода")
+	prisoner_body.forceMove(beside)
+	var/ticks_needed = round(BROTHER_LIBERATION_FREE_TIME / BROTHER_SENSE_INTERVAL)
+	for(var/tick in 1 to ticks_needed - 1)
+		oath.on_team_tick()
+	TEST_ASSERT(istext(team.try_seal(first)), "Мало времени на свободе")
+	oath.on_team_tick()
+	TEST_ASSERT(team.try_seal(first) == TRUE, "Пять минут на свободе - третий шаг")
+	TEST_ASSERT(oath.finale_extra_complete(), "Заключённый жив и на свободе")
+	TEST_ASSERT(findtext(oath.finale_extra_text(), prisoner.name), "Итог называет заключённого")
+	prisoner_body.forceMove(cell)
+	TEST_ASSERT(!oath.finale_extra_complete(), "Пойманный заключённый - финал не засчитан")
+
+/// Долг крови: цель без убийства, подарок у цели и Кровь за кровь на неё после вручения
+/datum/unit_test/blood_brothers_oath_blood_debt/Run()
+	var/datum/antag_opt_in_test_world/world_state = blood_brothers_oath_world()
+	var/datum/team/brother_team/team = allocate_brother_team(src)
+	world_state.set_crew(team.members + blood_brothers_target(ANTAG_OPT_IN_NOT_TARGET))
+	var/datum/blood_oath/blood_debt/oath = new
+	TEST_ASSERT(!oath.prepare(team), "«Не цель заданий» Долг крови не берёт")
+	var/datum/mind/savior = blood_brothers_target(ANTAG_OPT_IN_TEMPORARY)
+	world_state.set_crew(team.members + savior)
+	TEST_ASSERT(oath.available(team), "Долг крови доступен")
+	TEST_ASSERT(oath.prepare(team), "Долг крови берёт цель без убийства")
+	TEST_ASSERT_EQUAL(oath.target_mind, savior, "Цель - спаситель")
+	TEST_ASSERT(ispath(oath.gift_type, /obj/item), "Подарок подобран")
+	oath.vow_type = /datum/blood_vow/shadow
+	team.swear_oath(oath)
+	var/datum/mind/first = team.members[1]
+	var/datum/mind/second = team.members[2]
+	var/mob/living/carbon/human/donor = first.current
+	var/mob/living/carbon/human/savior_body = savior.current
+	TEST_ASSERT(istext(team.try_seal(first)), "Без подарка не скрепить")
+	var/obj/item/gift = allocate(oath.gift_type)
+	donor.put_in_hands(gift)
+	TEST_ASSERT(team.try_seal(first) == TRUE, "Подарок у брата - первый шаг")
+	TEST_ASSERT(istext(team.try_seal(first)), "Подарок ещё не вручён")
+	var/datum/antagonist/brother/early_brother = first.has_antag_datum(/datum/antagonist/brother)
+	var/datum/action/cooldown/blood_bond/blood_for_blood/early_action = early_brother.bond_actions[/datum/action/cooldown/blood_bond/blood_for_blood]
+	savior.current.forceMove(get_step(donor, EAST))
+	second.current.forceMove(run_loc_floor_top_right)
+	TEST_ASSERT(early_action.Trigger(), "Кровь цели можно отдать и до вручения")
+	TEST_ASSERT(!oath.blood_given, "Кровь до вручения подарка не засчитана")
+	early_action.next_use_time = 0
+	donor.blood_volume = BLOOD_VOLUME_NORMAL
+	donor.dropItemToGround(gift)
+	savior_body.put_in_hands(gift)
+	TEST_ASSERT(team.try_seal(first) == TRUE, "Подарок у цели - второй шаг")
+	var/datum/antagonist/brother/brother = first.has_antag_datum(/datum/antagonist/brother)
+	var/datum/action/cooldown/blood_bond/blood_for_blood/action = brother.bond_actions[/datum/action/cooldown/blood_bond/blood_for_blood]
+	TEST_ASSERT_NOTNULL(action, "Кровь за кровь выдана")
+	second.current.forceMove(run_loc_floor_top_right)
+	savior_body.forceMove(get_step(donor, EAST))
+	var/mob/living/carbon/human/stranger = allocate(/mob/living/carbon/human, get_step(donor, NORTH))
+	TEST_ASSERT(!brother.blood_for_blood_allows(stranger), "Чужому кровь не отдать")
+	TEST_ASSERT(istext(team.try_seal(first)), "Кровь ещё не отдана")
+	TEST_ASSERT(action.Trigger(), "Кровь за кровь уходит цели Долга крови")
+	TEST_ASSERT(team.try_seal(first) == TRUE, "Кровь отдана - третий шаг")
+	TEST_ASSERT(oath.finale_extra_complete(), "Цель жива")
+	savior_body.death()
+	TEST_ASSERT(!oath.finale_extra_complete(), "Мёртвая цель - финал не засчитан")
+	var/datum/action/cooldown/blood_bond/blood_for_blood/action_type = /datum/action/cooldown/blood_bond/blood_for_blood
+	TEST_ASSERT(findtext(initial(action_type.desc), "Долг крови"), "Описание Крови за кровь говорит о Долге крови")
+	TEST_ASSERT(findtext(initial(action_type.bond_how), "Долг крови"), "Подсказка Крови за кровь говорит о Долге крови")
+
+/// Документы станции на время теста - только свои
+/datum/blood_brothers_papers_sandbox
+	var/list/saved_papers
+
+/datum/blood_brothers_papers_sandbox/New()
+	saved_papers = GLOB.brother_station_papers
+	GLOB.brother_station_papers = list()
+
+/datum/blood_brothers_papers_sandbox/Destroy()
+	GLOB.brother_station_papers = saved_papers
+	saved_papers = null
+	return ..()
+
+/// Разоблачение: только при документах на станции; подлинные документы, копия с них и копия на виду в людной зоне
+/datum/unit_test/blood_brothers_oath_exposure/Run()
+	blood_brothers_oath_world()
+	allocate(/datum/blood_brothers_papers_sandbox)
+	var/datum/team/brother_team/team = allocate_brother_team(src)
+	var/datum/blood_oath/exposure/oath = new
+	allocate(/obj/item/documents/photocopy)
+	allocate(/obj/item/documents/syndicate/red)
+	TEST_ASSERT(!oath.available(team), "Без документов станции Разоблачения нет")
+	var/obj/item/documents/nanotrasen/vault_papers = allocate(/obj/item/documents/nanotrasen)
+	TEST_ASSERT(oath.available(team), "Документы на станции - Разоблачение доступно")
+	vault_papers.moveToNullspace()
+	TEST_ASSERT(!oath.available(team), "Документы вне станции не в счёт")
+	vault_papers.forceMove(run_loc_floor_bottom_left)
+	TEST_ASSERT(oath.prepare(team), "Разоблачение готово")
+	oath.vow_type = /datum/blood_vow/shadow
+	team.swear_oath(oath)
+	var/datum/mind/first = team.members[1]
+	var/mob/living/carbon/human/sealer = first.current
+	var/obj/item/documents/syndicate/red/foreign = allocate(/obj/item/documents/syndicate/red)
+	sealer.put_in_hands(foreign)
+	TEST_ASSERT(istext(team.try_seal(first)), "Синдикатские документы не годятся")
+	sealer.dropItemToGround(foreign)
+	var/obj/item/documents/nanotrasen/secret = allocate(/obj/item/documents/nanotrasen)
+	sealer.put_in_hands(secret)
+	TEST_ASSERT(team.try_seal(first) == TRUE, "Документы Нанотрейзен - первый шаг")
+	sealer.dropItemToGround(secret)
+	var/obj/item/documents/photocopy/foreign_copy = allocate(/obj/item/documents/photocopy, null, foreign)
+	sealer.put_in_hands(foreign_copy)
+	TEST_ASSERT(istext(team.try_seal(first)), "Копия синдикатских документов не годится")
+	sealer.dropItemToGround(foreign_copy)
+	var/obj/item/documents/photocopy/copy = allocate(/obj/item/documents/photocopy, null, secret)
+	var/obj/item/documents/photocopy/copy_of_copy = allocate(/obj/item/documents/photocopy, null, copy)
+	sealer.put_in_hands(copy_of_copy)
+	TEST_ASSERT(team.try_seal(first) == TRUE, "Копия с копии - второй шаг")
+	TEST_ASSERT(istext(team.try_seal(first)), "Копии на полу вне людной зоны не в счёт")
+	var/turf/hall = get_step(run_loc_floor_bottom_left, EAST)
+	heretic_test_area(hall, /area/hallway/primary/central)
+	foreign_copy.forceMove(hall)
+	TEST_ASSERT(istext(team.try_seal(first)), "Копия синдикатских документов в коридоре не в счёт")
+	sealer.forceMove(hall)
+	TEST_ASSERT(istext(team.try_seal(first)), "Копия в руках не выложена")
+	sealer.dropItemToGround(copy_of_copy)
+	TEST_ASSERT(team.try_seal(first) == TRUE, "Копия на полу в коридоре - третий шаг")
+	TEST_ASSERT_EQUAL(team.bond_tier, BLOOD_BOND_TIER_MAX, "Три печати")
+
+/// Посвящение: нужен годный кандидат в третьи; третий, ценность у него и круг из троих
+/datum/unit_test/blood_brothers_oath_initiation/Run()
+	var/datum/antag_opt_in_test_world/world_state = blood_brothers_oath_world()
+	var/datum/team/brother_team/team = allocate_brother_team(src)
+	var/datum/blood_oath/initiation/oath = new
+	world_state.set_crew(team.members + blood_brothers_target(ANTAG_OPT_IN_NOT_TARGET, "Security Officer"))
+	TEST_ASSERT(!oath.available(team), "Охрану в третьи не позвать - Посвящения нет")
+	world_state.set_crew(team.members + antag_opt_in_crew(ANTAG_OPT_IN_NOT_TARGET))
+	TEST_ASSERT(!oath.available(team), "Тело без игрока в третьи не позвать")
+	var/datum/mind/candidate = blood_brothers_target(ANTAG_OPT_IN_NOT_TARGET)
+	world_state.set_crew(team.members + candidate)
+	TEST_ASSERT(oath.available(team), "Есть кого позвать - Посвящение доступно")
+	TEST_ASSERT(oath.prepare(team), "Посвящение готово")
+	TEST_ASSERT_EQUAL(oath.capstone_type, /datum/blood_bond_passive/circle, "Венец Посвящения - Круг троих")
+	oath.vow_type = /datum/blood_vow/shadow
+	team.swear_oath(oath)
+	var/datum/mind/first = team.members[1]
+	var/datum/mind/second = team.members[2]
+	TEST_ASSERT(istext(team.try_seal(first)), "Без третьего не скрепить")
+	TEST_ASSERT(team.recruit(candidate), "Третий принят")
+	TEST_ASSERT(team.try_seal(first) == TRUE, "Третий принят - первый шаг")
+	var/obj/item/gift = allocate(oath.gift_type)
+	first.current.put_in_hands(gift)
+	TEST_ASSERT(istext(team.try_seal(first)), "Ценность у первого брата не в счёт")
+	first.current.dropItemToGround(gift)
+	candidate.current.put_in_hands(gift)
+	TEST_ASSERT(team.try_seal(first) == TRUE, "Ценность у третьего - второй шаг")
+	candidate.current.forceMove(run_loc_floor_top_right)
+	TEST_ASSERT(istext(team.try_seal(first)), "Третий далеко")
+	candidate.current.forceMove(get_step(first.current, EAST))
+	TEST_ASSERT(team.try_seal(first) == TRUE, "Все трое рядом - третий шаг")
+	TEST_ASSERT_EQUAL(team.bond_tier, BLOOD_BOND_TIER_MAX, "Три печати")
+	for(var/datum/mind/member as anything in team.members)
+		member.force_escaped = TRUE
+	TEST_ASSERT(oath.finale_extra_complete(), "Все трое ушли вместе")
+	second.force_escaped = FALSE
+	TEST_ASSERT(!oath.finale_extra_complete(), "Брат остался на станции")
+	second.current.death()
+	TEST_ASSERT(!oath.finale_extra_complete(), "Ушли двое из троих - Посвящение не исполнено")
+	var/datum/blood_oath/initiation/another = allocate(/datum/blood_oath/initiation)
+	TEST_ASSERT(!another.available(team), "Место третьего занято - второго Посвящения нет")
+	TEST_ASSERT(!another.prepare(team), "Брат мёртв, а звать больше некого - Посвящение не готовится")

@@ -7,7 +7,7 @@
 	dir_in = 1 //Facing North.
 	max_integrity = 250
 	deflect_chance = 5
-	armor = list(MELEE = 25, BULLET = 20, LASER = 30, ENERGY = 15, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 100)
+	armor_type = /datum/armor/gygax_reticence_and_medigax
 	max_temperature = 25000
 	leg_overload_coeff = 30
 	overload_step_energy_drain_min = 30
@@ -23,7 +23,7 @@
 	icon_state = "darkgygax"
 	max_integrity = 300
 	deflect_chance = 20
-	armor = list(MELEE = 40, BULLET = 40, LASER = 50, ENERGY = 35, BOMB = 20, BIO = 0, RAD =20, FIRE = 100, ACID = 100)
+	armor_type = /datum/armor/gygax_mecha_dark
 	max_temperature = 35000
 	leg_overload_coeff = 10
 	overload_step_energy_drain_min = 10
@@ -35,6 +35,7 @@
 	destruction_sleep_duration = 20
 	nominalphrase = "sound/mecha/nominal_syndicate.ogg"
 	imagenhphrase = "sound/mecha/imag_enh_syndicate.ogg"
+	ui_theme = "syndicate"
 
 /obj/vehicle/sealed/mecha/combat/gygax/dark/loaded/Initialize(mapload)
 	. = ..()

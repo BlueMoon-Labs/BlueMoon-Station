@@ -211,6 +211,9 @@
 
 /obj/item/hand_item/slapper/secret_handshake/on_offer_taken(mob/living/carbon/offerer, mob/living/carbon/taker)
 	. = TRUE
+	var/datum/antagonist/gang/inducting_gang = offerer.mind?.has_antag_datum(/datum/antagonist/gang)
+	if(inducting_gang && !inducting_gang.can_induct(taker))
+		return
 	if (!(null in taker.held_items))
 		to_chat(taker, span_warning("You can't get taught the secret handshake if [offerer] has no free hands!"))
 		return

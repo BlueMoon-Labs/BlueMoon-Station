@@ -342,7 +342,7 @@
 	icon_state = "410snakeshot"
 	pellets = 6
 	variance = 50
-	projectile_type = /obj/item/projectile/bullet/cal41/lethal
+	projectile_type = /obj/item/projectile/bullet/pellet/exorcist_snakeshot
 	can_be_printed = TRUE
 	custom_materials = list(/datum/material/iron = 800)
 
@@ -350,7 +350,7 @@
 	name = "snakeshot pellet"
 	icon_state = "pellet"
 	armour_penetration = BULLET_BR1
-	damage = 3
+	damage = 6
 	tile_dropoff_ap = 6
 	wound_bonus = 1
 	bare_wound_bonus = 5

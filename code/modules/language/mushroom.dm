@@ -1,6 +1,6 @@
 /datum/language/mushroom
 	name = "Mushroom"
-	desc = "A language that consists of the sound of periodic gusts of spore-filled air being released."
+	desc = "Язык, состоящий из звука периодических выбросов споронасыщенного воздуха."
 	speech_verb = "puffs"
 	ask_verb = "puffs inquisitively"
 	exclaim_verb = "poofs loudly"

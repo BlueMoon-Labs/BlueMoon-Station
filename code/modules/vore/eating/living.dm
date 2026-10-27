@@ -8,9 +8,9 @@
 	/// List of vore containers inside a mob
 	var/list/vore_organs = list()
 	/// What the character tastes like
-	var/vore_taste = null
+	var/taste_desc
 	/// What the character smells like
-	var/vore_smell = null
+	var/smell_desc
 	/// Next time vore sounds get played for the prey, do not change manually as it is intended to be set automatically
 	var/next_preyloop
 
@@ -18,7 +18,7 @@
 // Hook for generic creation of stuff on new creatures
 //
 /hook/living_new/proc/vore_setup(mob/living/M)
-	add_verb(M, list(/mob/living/proc/preyloop_refresh, /mob/living/proc/lick, /mob/living/proc/smell_someone, /mob/living/proc/escapeOOC))
+	add_verb(M, list(/mob/living/proc/preyloop_refresh, /mob/living/proc/escapeOOC))
 
 	if(M.vore_flags & NO_VORE) //If the mob isn't supposed to have a stomach, let's not give it an insidepanel so it can make one for itself, or a stomach.
 		return TRUE
@@ -173,7 +173,7 @@
 
 	// Flavor handling
 	if(belly.can_taste && prey.get_taste_message(FALSE))
-		to_chat(belly.owner, "<span class='notice'>[prey] tastes of [prey.get_taste_message(FALSE)].</span>")
+		to_chat(belly.owner, span_notice("[prey] ощущается по вкусу как [prey.get_taste_message(FALSE)]."))
 
 	// Inform Admins
 	var/prey_braindead
@@ -268,8 +268,6 @@
 		return FALSE
 
 	client.prefs.vore_flags = vore_flags // there's garbage data in here, but it doesn't matter
-	client.prefs.vore_taste = vore_taste
-	client.prefs.vore_smell = vore_smell
 
 	var/list/serialized = list()
 	for(var/belly in vore_organs)
@@ -291,8 +289,6 @@
 		return FALSE
 	vore_flags |= VOREPREF_INIT
 	COPY_SPECIFIC_BITFIELDS(vore_flags, client.prefs.vore_flags, DIGESTABLE | DEVOURABLE | FEEDING | LICKABLE | SMELLABLE | ABSORBABLE | MOBVORE)
-	vore_taste = client.prefs.vore_taste
-	vore_smell = client.prefs.vore_smell
 
 	release_vore_contents(silent = TRUE)
 	QDEL_LIST(vore_organs)
@@ -345,118 +341,26 @@
 
 	return ..()
 
-//
-// Clearly super important. Obviously.
-//
-/mob/living/proc/lick()
-	set name = "Lick Someone"
-	set category = "Vore"
-	set desc = "Lick someone nearby!"
-
-	if(incapacitated(ignore_restraints = TRUE))
-		to_chat(src, "<span class='warning'>You can't do that while incapacitated.</span>")
-		return
-	if(!CheckActionCooldown())
-		to_chat(src, "<span class='warning'>You can't do that so fast, slow down.</span>")
-		return
-
-	DelayNextAction(CLICK_CD_MELEE, flush = TRUE)
-
-	var/list/lickable = list()
-	for(var/mob/living/L in view(1))
-		if(L != src && Adjacent(L))
-			LAZYADD(lickable, L)
-	for(var/mob/living/listed in lickable)
-		lickable[listed] = new /mutable_appearance(listed)
-
-	if(!lickable)
-		return
-
-	var/mob/living/tasted = lickable.len == 1 ? lickable[1] : show_radial_menu(src, src, lickable, radius = 40, require_near = TRUE) // BLUEMOON EDIT
-
-	if(QDELETED(tasted) || !Adjacent(tasted) || incapacitated(ignore_restraints = TRUE)) // BLUEMOON EDIT
-		return
-
-	//BLUEMOON ADD START // Delay like licking tongue
-	var/lickspeed = initial((/obj/item/soap/tongue/organic)::cleanspeed)
-	visible_message("<span class='warning'><b>[src]</b> begins to lick \the <b>[tasted]</b>.", "<span class='warning'>You begin to lick \the <b>[tasted]</b>...</span>")
-	if(!do_after(src, lickspeed, tasted) || !in_range(src, tasted))
-		return //If they moved away, you can't lick them.
-	//BLUEMOON ADD END
-
-	if(ishuman(tasted))
-		var/mob/living/carbon/human/H = tasted
-		H.wash_cream()
-
-	playsound(src.loc, 'sound/effects/attackblob.ogg', 50, 1) //BLUEMOON ADD
-	visible_message("<span class='warning'><b>[src]</b> licks <b>[tasted]</b>!</span>","<span class='notice'>You lick <b>[tasted]</b>. They taste rather like [tasted.get_taste_message()].</span>","<b>Slurp!</b>") //BLUEMOON EDIT
-
-// BLUEMOON EDIT START
 /mob/living/proc/get_taste_message(allow_generic = TRUE)
-	if(!vore_taste && !allow_generic)
-		return FALSE
-
-	var/taste_message = ""
-	if((!ckey || client?.prefs.vore_flags & LICKABLE) && vore_taste && vore_taste != "")
-// BLUEMOON EDIT END
-		taste_message += "[vore_taste]"
-	else
+	if(taste_desc)
+		. += "[taste_desc]"
+	else if(allow_generic)
 		if(ishuman(src))
 			var/mob/living/carbon/human/H = src
-			taste_message += "a normal [H.custom_species ? H.custom_species : H.dna.species]"
+			. += "нормальный [H.custom_species ? H.custom_species : H.dna.species]"
 		else
-			taste_message += "a plain old normal [src]"
-	return taste_message
+			. += "старый добрый [name]"
+	return .
 
-//
-// Equally important as the above
-//
-/mob/living/proc/smell_someone()
-	set name = "Smell Someone"
-	set category = "Vore"
-	set desc = "Smell someone nearby!"
-
-	if(incapacitated(ignore_restraints = TRUE))
-		to_chat(src, "<span class='warning'>You can't do that while incapacitated.</span>")
-		return
-	if(!CheckActionCooldown())
-		to_chat(src, "<span class='warning'>You can't do that so fast, slow down.</span>")
-		return
-
-	DelayNextAction(CLICK_CD_MELEE, flush = TRUE)
-
-	var/list/smellable = list()
-	for(var/mob/living/L in view(1))
-		if(L != src && Adjacent(L))
-			LAZYADD(smellable, L)
-	for(var/mob/living/listed in smellable)
-		smellable[listed] = new /mutable_appearance(listed)
-
-	if(!smellable)
-		return
-
-	var/mob/living/sniffed = smellable.len == 1 ? smellable[1] : show_radial_menu(src, src, smellable, radius = 40, require_near = TRUE) // BLUEMOON EDIT
-
-	if(QDELETED(sniffed) || !Adjacent(sniffed) || incapacitated(ignore_restraints = TRUE))
-		return
-
-	emote("sniff") //BLUEMOON ADD
-	visible_message("<span class='warning'><b>[src]</b> smells <b>[sniffed]</b>!</span>","<span class='notice'>You smell <b>[sniffed]</b>. They smell like [sniffed.get_smell_message()].</span>","<b>Sniff!</b>") //BLUEMOON EDIT
-
-// BLUEMOON EDIT START
 /mob/living/proc/get_smell_message()
-
-	var/smell_message = ""
-	if((!ckey || client?.prefs.vore_flags & SMELLABLE) && vore_smell && vore_smell != "")
-	// BLUEMOON EDIT END
-		smell_message += "[vore_smell]"
+	if(smell_desc)
+		. += "[smell_desc]"
+	else if(ishuman(src))
+		var/mob/living/carbon/human/H = src
+		. += "нормальный [H.custom_species ? H.custom_species : H.dna.species]"
 	else
-		if(ishuman(src))
-			var/mob/living/carbon/human/H = src
-			smell_message += "a normal [H.custom_species ? H.custom_species : H.dna.species]"
-		else
-			smell_message += "a plain old normal [src]"
-	return smell_message
+		. += "старый добрый [name]"
+	return .
 
 //	Check if an object is capable of eating things, based on vore_organs
 //

@@ -4,7 +4,7 @@
 	icon_state = "chronohelmet"
 	item_state = "chronohelmet"
 	slowdown = 1
-	armor = list(MELEE = 60, BULLET = 60, LASER = 60, ENERGY = 60, BOMB = 30, BIO = 90, RAD = 90, FIRE = 100, ACID = 100, WOUND = 80)
+	armor_type = /datum/armor/chronos_helmet
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	var/obj/item/clothing/suit/space/chronos/suit = null
 
@@ -20,7 +20,7 @@
 	item_state = "chronosuit"
 	tail_state = "inq"
 	actions_types = list(/datum/action/item_action/toggle)
-	armor = list(MELEE = 60, BULLET = 60, LASER = 60, ENERGY = 60, BOMB = 30, BIO = 90, RAD = 90, FIRE = 100, ACID = 1000, WOUND = 80)
+	armor_type = /datum/armor/chronos_suit
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	mutantrace_variation = STYLE_DIGITIGRADE
 	brc_mitigation_bonus = 20  // BLUEMOON ADD

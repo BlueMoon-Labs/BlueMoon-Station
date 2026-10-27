@@ -44,7 +44,7 @@ DEFINE_BITFIELD(turret_flags, list(
 	power_channel = EQUIP	//drains power from the EQUIPMENT channel
 	max_integrity = 160		//the turret's health
 	integrity_failure = 0.5
-	armor = list(MELEE = 50, BULLET = 30, LASER = 30, ENERGY = 30, BOMB = 30, BIO = 0, RAD = 0, FIRE = 90, ACID = 90)
+	armor_type = /datum/armor/porta_turret
 	/// Base turret icon state
 	base_icon_state = "standard"
 	/// Scan range of the turret for locating targets
@@ -113,7 +113,8 @@ DEFINE_BITFIELD(turret_flags, list(
 	var/mob/remote_controller
 	/// MISSING:
 	var/shot_stagger = 0
-	/// Cached result of the last scan_for_targets() call, reused on the fires in between scans.
+	/// Weakrefs to the result of the last scan_for_targets() call, reused on the fires in between scans.
+	/// Weak: a turret switched off with a full cache kept every target it had seen from being deleted.
 	var/list/cached_targets
 	COOLDOWN_DECLARE(target_scan_cooldown)
 
@@ -466,19 +467,28 @@ DEFINE_BITFIELD(turret_flags, list(
 	var/list/targets
 	if(COOLDOWN_FINISHED(src, target_scan_cooldown))
 		targets = scan_for_targets()
-		cached_targets = targets.Copy() // tryToShootAt() mutates `targets`; keep an untouched cache
+		cache_targets(targets)
 		COOLDOWN_START(src, target_scan_cooldown, TURRET_TARGET_SCAN_INTERVAL)
 	else
-		// reuse the last scan; build a fresh, mutable list and drop anything deleted since then
-		targets = list()
-		for(var/atom/movable/candidate as anything in cached_targets)
-			if(!QDELETED(candidate))
-				targets += candidate
+		targets = cached_live_targets()
 
 	if(targets.len)
 		tryToShootAt(targets)
 	else if(!always_up)
 		popDown() // no valid targets, close the cover
+
+/obj/machinery/porta_turret/proc/cache_targets(list/targets)
+	cached_targets = list()
+	for(var/atom/movable/target as anything in targets)
+		cached_targets += WEAKREF(target)
+
+/// A fresh, mutable list of the cached targets that still exist.
+/obj/machinery/porta_turret/proc/cached_live_targets()
+	. = list()
+	for(var/datum/weakref/target_ref as anything in cached_targets)
+		var/atom/movable/candidate = target_ref.resolve()
+		if(!QDELETED(candidate))
+			. += candidate
 
 /// Scans the turret's surroundings (view(), mechs, blobs) for things it should shoot at and
 /// returns them as a list. Throttled by process() behind target_scan_cooldown — between scans
@@ -629,7 +639,7 @@ DEFINE_BITFIELD(turret_flags, list(
 			if(istype(perp.belt, /obj/item/gun) || istype(perp.belt, /obj/item/melee/baton))
 				threatcount += 2
 
-	if(turret_flags & TURRET_FLAG_SHOOT_CRIMINALS)	//if the turret can check the records, check if they are set to *Arrest* on records
+	if((turret_flags & TURRET_FLAG_SHOOT_CRIMINALS) && !is_antag_training_atom(perp))	//if the turret can check the records, check if they are set to *Arrest* on records
 		var/perpname = perp.get_face_name(perp.get_id_name())
 		var/datum/data/record/R = GLOB.data_core.security_by_name[perpname]
 		if(!R || (R.fields["criminal"] in list(SEC_RECORD_STATUS_ARREST, SEC_RECORD_STATUS_EXECUTE, SEC_RECORD_STATUS_INCARCERATED)))
@@ -863,7 +873,7 @@ DEFINE_BITFIELD(turret_flags, list(
 /obj/machinery/porta_turret/syndicate/energy/pirate
 	max_integrity = 260
 	integrity_failure = 0.08
-	armor = list(MELEE = 50, BULLET = 30, LASER = 30, ENERGY = 30, BOMB = 50, BIO = 0, RAD = 0, FIRE = 90, ACID = 90)
+	armor_type = /datum/armor/base_and_inteq
 
 /obj/machinery/porta_turret/syndicate/energy/pirate/assess_perp(mob/living/carbon/human/perp)
 	return 10
@@ -890,7 +900,7 @@ DEFINE_BITFIELD(turret_flags, list(
 	lethal_projectile = /obj/item/projectile/bullet/syndicate_turret
 	lethal_projectile_sound = 'sound/weapons/gunshot_smg.ogg'
 	stun_projectile_sound = 'sound/weapons/gunshot_smg.ogg'
-	armor = list(MELEE = 50, BULLET = 30, LASER = 30, ENERGY = 30, BOMB = 80, BIO = 0, RAD = 0, FIRE = 90, ACID = 90)
+	armor_type = /datum/armor/turret_shuttle
 
 /obj/machinery/porta_turret/syndicate/pod/toolbox
 	icon_state = "toolbox_off"

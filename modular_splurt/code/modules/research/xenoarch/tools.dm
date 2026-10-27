@@ -152,6 +152,59 @@
 		D.adjust_money(ex.total_value[E])
 	to_chat(user,"The [target] disappears!")
 
+//Bluemoon edit start:
+
+/obj/item/xenoarch/help/cargo/ds
+	name = "Syndicate cargo scanner"
+	desc = "Teleports items into local blackmarket to be sold."
+	icon_state = "cargoscanner"
+	usesound = 'sound/weapons/resonator_blast.ogg'
+
+/obj/item/xenoarch/help/cargo/ds/afterattack(atom/target, mob/user , proximity)
+	if(!proximity)
+		return
+	var/export_categories = EXPORT_CARGO
+	if(!istype(target,/obj/item))
+		return
+	var/datum/export_report/ex = new
+	if(!do_after(user, 30, target=target))
+		to_chat(user,"Тебе нужно стоять на месте что бы телепортировать предмет")
+		return
+	export_item_and_contents(target, export_categories, dry_run = FALSE, external_report = ex, apply_elastic = FALSE)
+	var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_DS)
+	for(var/datum/export/E in ex.total_amount)
+		var/export_text = E.total_printout(ex)
+		if(!export_text)
+			continue
+		D.adjust_money(ex.total_value[E])
+	to_chat(user,"Ух ты, [target] пропало!")
+
+/obj/item/xenoarch/help/cargo/tarkoff
+	name = "Experimental cargo scanner"
+	desc = "Teleports items into local blackmarket to be sold."
+	icon_state = "cargoscanner"
+	usesound = 'sound/weapons/resonator_blast.ogg'
+
+/obj/item/xenoarch/help/cargo/tarkoff/afterattack(atom/target, mob/user , proximity)
+	if(!proximity)
+		return
+	var/export_categories = EXPORT_CARGO
+	if(!istype(target,/obj/item))
+		return
+	var/datum/export_report/ex = new
+	if(!do_after(user, 45, target=target))
+		to_chat(user,"Тебе нужно стоять на месте что бы телепортировать предмет")
+		return
+	export_item_and_contents(target, export_categories, dry_run = FALSE, external_report = ex, apply_elastic = FALSE)
+	var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_TAR)
+	for(var/datum/export/E in ex.total_amount)
+		var/export_text = E.total_printout(ex)
+		if(!export_text)
+			continue
+		D.adjust_money(ex.total_value[E])
+	to_chat(user,"Ух ты, [target] пропало!")
+
+//Bluemoon edit end.
 
 // Storage: Belt and Locker and Bag
 

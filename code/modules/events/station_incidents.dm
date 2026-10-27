@@ -85,6 +85,7 @@
 /datum/round_event_control/station_incident/director_preflight()
 	var/ready = length(get_candidates(first_only = TRUE)) > 0
 	director_preflight_detail = ready ? "Есть подходящая цель на станции." : "Нет подходящих целей на станции."
+	director_preflight_failure = ready ? null : director_preflight_detail
 	return ready
 
 /datum/round_event_control/station_incident/execute_action()

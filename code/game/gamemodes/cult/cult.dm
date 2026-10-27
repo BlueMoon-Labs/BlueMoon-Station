@@ -110,6 +110,8 @@
 /datum/game_mode/proc/add_cultist(datum/mind/cult_mind, stun , equip = FALSE) //BASE
 	if (!istype(cult_mind))
 		return FALSE
+	if(is_antag_training_atom(cult_mind.current))
+		return antag_training_add_cultist(cult_mind, stun)
 
 	var/datum/antagonist/cult/new_cultist = new()
 	new_cultist.give_equipment = equip

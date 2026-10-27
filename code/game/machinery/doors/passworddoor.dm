@@ -6,7 +6,7 @@
 	explosion_block = 3
 	heat_proof = TRUE
 	max_integrity = 600
-	armor = list(MELEE = 100, BULLET = 100, LASER = 100, ENERGY = 100, BOMB = 100, BIO = 100, RAD = 100, FIRE = 100, ACID = 100)
+	armor_type = /datum/armor/secure_and_special_objects
 	resistance_flags = INDESTRUCTIBLE | FIRE_PROOF | ACID_PROOF | LAVA_PROOF
 	damage_deflection = 70
 	var/password = "Swordfish"
@@ -48,7 +48,7 @@
 	else
 		icon_state = "open"
 
-/obj/machinery/door/password/do_animate(animation)
+/obj/machinery/door/password/do_animate(animation, from_bump = FALSE)
 	switch(animation)
 		if("opening")
 			flick("opening", src)

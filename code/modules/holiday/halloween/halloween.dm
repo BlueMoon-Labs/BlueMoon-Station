@@ -41,15 +41,23 @@
 
 //Spookoween variables
 /obj/structure/closet
+	armor_type = /datum/armor/closet
 	var/trapped = 0
 	var/mob/trapped_mob
 
 /obj/structure/closet/Initialize(mapload)
 	. = ..()
-	if(prob(1))
+	if(mapload && !is_hilbert_hotel_area(get_area(src)) && prob(1))
 		set_spooky_trap()
 
 /obj/structure/closet/dump_contents(var/override = TRUE)
+	// Привезённый в отель шкаф тоже не должен выпускать случайного моба.
+	if(trapped && is_hilbert_hotel_area(get_area(src)))
+		trapped = 0
+		var/mob/removed_trapped_mob = trapped_mob
+		set_trapped_mob(null)
+		if(removed_trapped_mob)
+			qdel(removed_trapped_mob)
 	..()
 	trigger_spooky_trap()
 
@@ -68,6 +76,8 @@
 		set_trapped_mob(null)
 
 /obj/structure/closet/proc/set_spooky_trap()
+	if(is_hilbert_hotel_area(get_area(src)))
+		return
 	if(prob(5))
 		trapped = INSANE_CLOWN
 		return

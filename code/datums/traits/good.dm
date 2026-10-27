@@ -116,6 +116,8 @@
 	medical_record_text = "Снимки мозга пациента показывают высокоразвитые слуховые пути."
 
 /datum/quirk/musician/on_spawn()
+	if(!spawn_items)
+		return
 	var/mob/living/carbon/human/H = quirk_holder
 	var/obj/item/choice_beacon/music/B = new(get_turf(H))
 	H.put_in_hands(B)
@@ -162,6 +164,8 @@
 	medical_record_text = "Пациент был недавно замечен за вдыханием паров краски."
 
 /datum/quirk/tagger/on_spawn()
+	if(!spawn_items)
+		return
 	var/mob/living/carbon/human/H = quirk_holder
 	var/obj/item/toy/crayon/spraycan/spraycan = new(get_turf(H))
 	H.put_in_hands(spraycan)
@@ -177,60 +181,6 @@
 	gain_text = "<span class='notice'>Вы преголодны.</span>"
 	lose_text = "<span class='danger'>Жор отступает.</span>"
 	medical_record_text = "Пациент демонстрирует умопомрачительную способность к приему пищи."
-
-/datum/quirk/trandening
-	name = "Глаза с Повышенной Светимостью"
-	desc = "Когда новый классный имплант вышел, вы просто не могли его не купить! Вы начинаете смену с кибернетическими глазами, которые могут сиять разными цветами."
-	value = 1
-	gain_text = "<span class='notice'>Вы следите за последними трендами кибернетики!</span>"
-	lose_text = "<span class='danger'>Высокомощные лазеры из глаз? О чем вы только думали...</span>"
-
-/datum/quirk/trandening/on_spawn()
-	var/mob/living/carbon/human/H = quirk_holder
-	if(!ishuman(H))
-		return
-	var/datum/species/species = H.dna?.species
-	// Species-native night vision eyes (xeno hybrid, xenochimera, lizards, etc.) — keep them; implant would strip NV and flash quirks tied to those organs.
-	if(species?.mutanteyes && ispath(species.mutanteyes, /obj/item/organ/eyes/night_vision))
-		return
-
-	var/obj/item/organ/eyes/old_eyes = H.getorganslot(ORGAN_SLOT_EYES)
-	var/obj/item/organ/eyes/robotic/toggled/glow/new_eyes = new
-	// Glow eyes default to "000"; Insert() would overwrite prefs — preserve character colors.
-	new_eyes.left_eye_color = H.left_eye_color
-	new_eyes.right_eye_color = H.right_eye_color
-	new_eyes.current_color_string = "#[H.left_eye_color]"
-
-	qdel(old_eyes)
-	new_eyes.Insert(quirk_holder)
-
-/datum/quirk/trandening/remove()
-	// Get targets
-	var/obj/item/organ/eyes/old_eyes = quirk_holder.getorganslot(ORGAN_SLOT_EYES)
-	var/mob/living/carbon/human/qurk_mob = quirk_holder
-
-	// Check for eyes existing
-	if(!old_eyes)
-		return
-
-	// Check for quirk eyes
-	if(!istype(old_eyes, /obj/item/organ/eyes/robotic/toggled/glow))
-		return
-
-	// Define new eyes
-	var/species_eyes = /obj/item/organ/eyes
-
-	// Check for mutant eyes
-	if(qurk_mob.dna.species && qurk_mob.dna.species.mutanteyes)
-		// Set eyes to mutant type
-		species_eyes = qurk_mob.dna.species.mutanteyes
-
-	// Create new eyes item
-	var/obj/item/organ/eyes/new_eyes = new species_eyes()
-
-	// Replace eyes
-	qdel(old_eyes)
-	new_eyes.Insert(quirk_holder)
 
 /datum/quirk/bloodpressure
 	name = "Истинная полицитемия"
@@ -291,18 +241,3 @@
 //	E.implant(H)
 //	H.update_icons()
 
-/datum/quirk/breathing_tube
-	name = "Трубка для Горлового Дыхания"
-	desc = "Похоже, что вам не нравятся стандартные противогазы и прочие методы дыхания в безвоздушных условиях. Есть решение!"
-	value = 1
-	mood_quirk = FALSE
-	processing_quirk = FALSE
-
-/datum/quirk/breathing_tube/on_spawn()
-	. = ..()
-
-	// Create a new augment item
-	var/obj/item/organ/cyberimp/mouth/breathing_tube/put_in = new
-
-	// Apply the augment to the quirk holder
-	put_in.Insert(quirk_holder, null, TRUE, TRUE)

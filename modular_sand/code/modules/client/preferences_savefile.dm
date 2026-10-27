@@ -52,10 +52,10 @@
 	WRITE_FILE(.["arousal_multiplier"],		arousal_multiplier)
 	WRITE_FILE(.["use_moaning_multiplier"],	use_moaning_multiplier)
 	WRITE_FILE(.["moaning_multiplier"],		moaning_multiplier)
-	WRITE_FILE(.["use_custom_moan_sounds"],	use_custom_moan_sounds)
-	WRITE_FILE(.["custom_moan_sounds"],		custom_moan_sounds)
+	// Кастомные стоны сохраняются в слоте персонажа (character[slot]), см. bluemoon_character_pref_save.
 	// Bluemoon prefs root (must run last вЂ” СЃРј. modular_bluemoon/preferences_savefile.dm)
 	WRITE_FILE(.["favorite_tracks"], favorite_tracks)
+	WRITE_FILE(.["favorite_hair_styles"], favorite_hair_styles)
 	WRITE_FILE(.["playlists"], playlists)
 	WRITE_FILE(.["favorite_paintings_md5"], favorite_paintings_md5)
 	WRITE_FILE(.["metadollar_minute_pool"], metadollar_minute_pool)
@@ -72,8 +72,6 @@
 	.["arousal_multiplier"] >>		arousal_multiplier
 	.["use_moaning_multiplier"] >>	use_moaning_multiplier
 	.["moaning_multiplier"] >>		moaning_multiplier
-	.["use_custom_moan_sounds"] >>	use_custom_moan_sounds
-	.["custom_moan_sounds"] >>		custom_moan_sounds
 
 	favorite_interactions = SANITIZE_LIST(favorite_interactions)
 
@@ -111,13 +109,10 @@
 	arousal_multiplier = sanitize_integer(arousal_multiplier, 0, 300, initial(arousal_multiplier))
 	use_moaning_multiplier = sanitize_integer(use_moaning_multiplier, 0, 1, initial(use_moaning_multiplier))
 	moaning_multiplier = sanitize_integer(moaning_multiplier, 0, 100, initial(moaning_multiplier))
-	use_custom_moan_sounds = sanitize_integer(use_custom_moan_sounds, 0, 1, initial(use_custom_moan_sounds))
-	var/list/valid_moan_paths = GLOB.lewd_moans_male + GLOB.lewd_moans_female + GLOB.lewd_softmoans_female + GLOB.lewd_purr_sounds + GLOB.lewd_meow_sounds + GLOB.lewd_fox_sounds + GLOB.lewd_dog_sounds + GLOB.lewd_bird_sounds + GLOB.lewd_robot_sounds + GLOB.lewd_insect_sounds + GLOB.lewd_scream_female + GLOB.lewd_scream_male + GLOB.lewd_scream_gachi
-	for(var/name in GLOB.lewd_other_animal_sounds)
-		valid_moan_paths += GLOB.lewd_other_animal_sounds[name]
-	custom_moan_sounds = SANITIZE_LIST(custom_moan_sounds) & valid_moan_paths
 	.["favorite_tracks"] >> favorite_tracks
 	favorite_tracks = sanitize_jukebox_track_list(favorite_tracks)
+	.["favorite_hair_styles"] >> favorite_hair_styles
+	favorite_hair_styles = sanitize_hair_style_favorites(favorite_hair_styles)
 	.["favorite_paintings_md5"] >> favorite_paintings_md5
 	favorite_paintings_md5 = SANITIZE_LIST(favorite_paintings_md5)
 	.["playlists"] >> playlists

@@ -249,7 +249,7 @@
 
 			var/reason = ""
 			if((requestonly && !self_paid) || !(card_slot?.GetID()))
-				reason = stripped_input("Reason:", name, "")
+				reason = tgui_input_text(usr, "Причина:", name, "", MAX_MESSAGE_LEN, FALSE, TRUE)
 				if(isnull(reason) || ..())
 					return
 

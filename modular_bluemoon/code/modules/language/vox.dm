@@ -1,6 +1,6 @@
 /datum/language/modular_bluemoon/vox
 	name = "Vox-Pidgin"
-	desc = "A language comprised largely of screeching and squawking sounds. The language is largely shared only between Vox. (Используйте русскую букву для префикса)"
+	desc = "Язык, сложенный преимущественно из визга и карканья. На нём в основном говорят только воксы. (Используйте русскую букву для префикса)"
 	icon = 'modular_bluemoon/icons/misc/language.dmi'
 	icon_state = "vox"
 	speech_verb = "shrieks"

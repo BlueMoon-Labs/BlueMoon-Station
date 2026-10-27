@@ -44,6 +44,19 @@
 		subject.overlays += reset_overlay
 		compare_first_frame(subject, "матрица цвета и RESET_COLOR, [dir2text(direction)]")
 
+/// Рантайм-иконка без направлений не делает ненаправленной другую рантайм-иконку с тем же стейтом.
+/datum/unit_test/flat_icon_runtime_icon_direction_cache/Run()
+	var/icon/single = new
+	single.Insert(icon('icons/effects/effects.dmi', "nothing"), "test", SOUTH, 1, FALSE)
+	var/image/single_image = image(single, icon_state = "test")
+	TEST_ASSERT(!icon_state_has_directional_frames(single_image.icon, "test"), "Иконка из одного направления ненаправленная")
+
+	var/icon/directional = new
+	for(var/direction in GLOB.cardinals)
+		directional.Insert(icon('icons/effects/effects.dmi', "nothing"), "test", direction, 1, FALSE)
+	var/image/directional_image = image(directional, icon_state = "test")
+	TEST_ASSERT(icon_state_has_directional_frames(directional_image.icon, "test"), "Иконка с четырьмя направлениями направленная")
+
 /datum/unit_test/flat_icon_static_frames/proc/compare_first_frame(image/subject, context)
 	var/icon/full_animation = getFlatIcon(subject)
 	var/icon/expected = icon(full_animation, "", SOUTH, 1, FALSE)

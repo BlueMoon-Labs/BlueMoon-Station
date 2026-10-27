@@ -19,7 +19,7 @@
 	force = 25
 	throwforce = 25
 	block_chance = 45
-	armour_penetration = 25
+	armour_penetration = MELEE_AP_ANTAGONIST
 	wound_bonus = 6
 	bare_wound_bonus = 12
 	w_class = WEIGHT_CLASS_NORMAL
@@ -153,7 +153,7 @@
 	force = 25
 	throwforce = 15
 	block_chance = 55
-	armour_penetration = 39
+	armour_penetration = MELEE_AP_EXCLUSIVE
 	wound_bonus = 7
 	bare_wound_bonus = 14
 	w_class = WEIGHT_CLASS_BULKY

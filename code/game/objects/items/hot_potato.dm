@@ -157,6 +157,7 @@
 	icon_state = active? icon_on : icon_off
 
 /obj/item/hot_potato/syndicate
+	detonate_heavy_range = 1
 	detonate_light_range = 4
 	detonate_fire_range = 5
 

@@ -12,7 +12,7 @@
 	integrity_failure = 0.1
 	power_channel = ENVIRON
 	idle_power_usage = 25
-	armor = list(MELEE = 40, BULLET = 10, LASER = 10, ENERGY = 0, BOMB = 45, BIO = 0, RAD = 0, FIRE = 90, ACID = 100)
+	armor_type = /datum/armor/transport
 	circuit = /obj/item/circuitboard/computer/tram_controls
 	light_color = COLOR_BLUE_LIGHT
 	brightness_on = 0 //we dont want to spam SSlighting with source updates every movement

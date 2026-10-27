@@ -17,7 +17,7 @@
 /area/shuttle/lf_haron)
 "dC" = (
 /obj/structure/table/reinforced,
-/obj/item/storage/backpack/duffelbag/med/surgery,
+/obj/item/storage/backpack/duffelbag/med/surgery/upgraded,
 /turf/open/floor/lf_haron/polar{
 	dir = 6
 	},

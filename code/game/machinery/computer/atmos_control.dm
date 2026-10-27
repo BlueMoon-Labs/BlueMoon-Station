@@ -6,7 +6,7 @@
 	name = "gas sensor"
 	icon = 'icons/obj/stationobjs.dmi'
 	icon_state = "gsensor1"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 0)
+	armor_type = /datum/armor/base_and_tarkon
 
 	var/on = TRUE
 
@@ -307,7 +307,10 @@ GLOBAL_LIST_EMPTY(atmos_air_controllers)
 		IO |= text[1]
 	if(!IO.len)
 		to_chat(user, "<span class='alert'>No machinery detected.</span>")
-	var/S = input("Select the device set: ", "Selection", IO[1]) as anything in sort_list(IO)
+		return
+	var/S = tgui_input_list(user, "Select the device set: ", "Selection", sort_list(IO), IO[1])
+	if(isnull(S))
+		return
 	if(src)
 		src.input_tag = "[S]_in"
 		src.output_tag = "[S]_out"

@@ -554,14 +554,14 @@
 		return TRUE
 
 /////////////////////////////////// DISABILITIES ////////////////////////////////////
-/mob/living/proc/add_quirk(quirktype, spawn_effects) //separate proc due to the way these ones are handled
+/mob/living/proc/add_quirk(quirktype, spawn_effects, spawn_items = TRUE) // Квирки применяются через отдельную процедуру.
 	if(HAS_TRAIT(src, quirktype))
 		return
 	var/datum/quirk/T = quirktype
 	var/qname = initial(T.name)
 	if(!SSquirks || !SSquirks.quirks[qname])
 		return
-	new quirktype (src, spawn_effects)
+	new quirktype (src, spawn_effects, spawn_items)
 	return TRUE
 
 /mob/living/proc/remove_quirk(quirktype)

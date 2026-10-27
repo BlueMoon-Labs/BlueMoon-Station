@@ -208,6 +208,8 @@
 
 	// Should the emote consider atmospheric pressure?
 	var/emote_check_pressure = TRUE
+	/// Whether each successfully played sound also creates an acoustic snapshot.
+	var/echolocation_pulse = FALSE
 
 	// Should the emote ignore walls?
 	var/emote_ignore_walls = FALSE
@@ -239,6 +241,9 @@
 			return TRUE
 		var/vol = round(emote_volume * (user.client?.prefs?.get_sound_volume("emote")) / 100)
 		playsound(user.loc, sound, vol, emote_pitch_variance, emote_range, emote_falloff_exponent, emote_frequency, emote_channel, emote_check_pressure, emote_ignore_walls, emote_falloff_distance, emote_wetness, emote_dryness, emote_distance_multiplier, emote_distance_multiplier_min_range)
+
+		if(echolocation_pulse)
+			emit_echolocation_pulse(user)
 
 		//Cooldown.
 		user.nextsoundemote = world.time + emote_cooldown

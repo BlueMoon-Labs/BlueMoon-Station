@@ -175,18 +175,19 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 		if(R in security)
 			security_by_id[new_id] = R
 
-/// Removes all records (medical, security, general, locked) for a given name. Returns the rank from general record if found.
+/// Removes a person's records except permanent warrants. Returns the general record's rank if found.
 /datum/datacore/proc/remove_records_by_name(target_name)
 	var/announce_rank = null
 	var/datum/data/record/gen = general_by_name[target_name]
 	if(gen)
 		announce_rank = gen.fields["rank"]
-		qdel(gen)
+		if(!gen.locked_security_reason)
+			qdel(gen)
 	var/datum/data/record/med = medical_by_name[target_name]
 	if(med)
 		qdel(med)
 	var/datum/data/record/sec = security_by_name[target_name]
-	if(sec)
+	if(sec && !sec.locked_security_reason)
 		qdel(sec)
 	// Locked-записи индексируются по id, не по имени - ищем перебором.
 	// Без этого GLOB.data_core.locked бесконечно копит записи ушедших в крио,
@@ -202,8 +203,76 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 /datum/data/record
 	name = "record"
 	var/list/fields = list()
+	/// A permanent warrant protects the arrest status and its general/security records.
+	var/locked_security_reason
 	/// Ленивый источник фотографии, общий у general- и locked-записи; пуст у записей с консоли.
 	var/datum/record_photo_source/photo_source
+
+/// All gameplay status changes must preserve permanent arrest warrants.
+/datum/data/record/proc/set_security_status(status)
+	if(locked_security_reason && status != SEC_RECORD_STATUS_ARREST)
+		return FALSE
+	fields["criminal"] = status
+	return TRUE
+
+/// Off-station personnel may not have a manifest entry until a warrant is issued.
+/datum/datacore/proc/issue_permanent_arrest(datum/mind/subject, crime_name, reason, issuing_authority)
+	var/subject_name = subject.current?.real_name || subject.name
+	var/datum/data/record/general_record = general_by_name[subject_name]
+	var/datum/data/record/security_record = security_by_name[subject_name]
+	if(!general_record)
+		var/record_id = security_record?.fields["id"]
+		if(!record_id)
+			do
+				record_id = num2hex(rand(1, 16777215), 6)
+			while(general_by_id[record_id] || security_by_id[record_id])
+		general_record = new
+		general_record.fields = list(
+			"id" = record_id,
+			"name" = subject_name,
+			"rank" = subject.assigned_role || "Unknown",
+			"real_rank" = subject.assigned_role || "Unknown",
+			"gender" = "Unknown",
+			"age" = "Unknown",
+			"species" = "Unknown",
+			"fingerprint" = "Unknown",
+			"p_stat" = "Active",
+			"m_stat" = "Stable",
+		)
+		if(ishuman(subject.current))
+			var/mob/living/carbon/human/person = subject.current
+			general_record.fields["gender"] = person.gender
+			general_record.fields["age"] = person.age
+			general_record.fields["species"] = person.dna.species.name
+			general_record.fields["fingerprint"] = md5(person.dna.uni_identity)
+			general_record.photo_source = new(person, subject.assigned_role)
+		general += general_record
+		register_record(general_record, "general")
+	if(!security_record)
+		security_record = new
+		security_record.fields = list(
+			"id" = general_record.fields["id"],
+			"name" = subject_name,
+			"rank" = general_record.fields["rank"],
+			"criminal" = SEC_RECORD_STATUS_NONE,
+			"mi_crim" = list(),
+			"ma_crim" = list(),
+			"fines" = list(),
+			"comments" = list(),
+			"actions_logs" = list(),
+			"notes" = "No notes.",
+		)
+		security += security_record
+		register_record(security_record, "security")
+	if(security_record.locked_security_reason)
+		return security_record
+	var/datum/data/crime/charge = createCrimeEntry(crime_name, reason, issuing_authority, STATION_TIME_TIMESTAMP("hh:mm:ss", world.time), TRUE)
+	charge.permanent = TRUE
+	LAZYADD(security_record.fields["ma_crim"], charge)
+	set_criminal_status(null, security_record, SEC_RECORD_STATUS_ARREST, reason, issuing_authority, user_name = issuing_authority)
+	security_record.locked_security_reason = reason
+	general_record.locked_security_reason = reason
+	return security_record
 
 /// Единственная дверь к полям photo_front/photo_side: первое обращение снимает кадр и
 /// раскладывает по обоим полям. generate = FALSE - только заглянуть, для списков в ui_data.
@@ -335,6 +404,8 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 	. = ..()
 
 /datum/data/crime
+	/// Permanent charges cannot be removed or marked as served through record tools.
+	var/permanent = FALSE
 	name = "crime"
 	var/crimeName = ""
 	var/crimeDetails = ""
@@ -430,7 +501,7 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 			var/list/crimes = R.fields["mi_crim"]
 			for(var/datum/data/crime/crime in crimes)
 				if(crime.dataId == text2num(cDataId))
-					if(crime.centcom_enforced && !centcom_authority) // BLUEMOON EDIT - авторизация ЦК
+					if(crime.permanent || (crime.centcom_enforced && !centcom_authority))
 						return
 					crimes -= crime
 					return
@@ -441,7 +512,7 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 			var/list/crimes = R.fields["ma_crim"]
 			for(var/datum/data/crime/crime in crimes)
 				if(crime.dataId == text2num(cDataId))
-					if(crime.centcom_enforced && !centcom_authority) // BLUEMOON EDIT - авторизация ЦК
+					if(crime.permanent || (crime.centcom_enforced && !centcom_authority))
 						return
 					crimes -= crime
 					return
@@ -573,6 +644,8 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 			var/list/crimes = R.fields["mi_crim"] + R.fields["ma_crim"]
 			for(var/datum/data/crime/crime in crimes)
 				if(crime.dataId == text2num(cDataId))
+					if(crime.permanent)
+						return
 					crime.penalties_incurred = !crime.penalties_incurred
 					return
 

@@ -235,6 +235,7 @@
 	suffix = "lavaland_surface_hermit.dmm"
 	allow_duplicates = FALSE
 	cost = 10
+	always_place = TRUE
 
 /datum/map_template/ruin/lavaland/swarmer_boss
 	name = "Crashed Shuttle"
@@ -258,6 +259,7 @@
 	description = "A ruin with dark wizards. What secret do they guard?"
 	suffix = "lavaland_surface_wizard.dmm"
 	cost = 5
+	always_place = TRUE
 
 /datum/map_template/ruin/lavaland/puzzle
 	name = "Ancient Puzzle"

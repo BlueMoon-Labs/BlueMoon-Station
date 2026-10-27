@@ -1,4 +1,4 @@
-datum/hud/dextrous/drone/New(mob/owner)
+/datum/hud/dextrous/drone/New(mob/owner)
 	. = ..()
 	var/atom/movable/screen/using
 

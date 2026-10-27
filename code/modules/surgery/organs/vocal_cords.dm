@@ -58,7 +58,7 @@
 			var/mob/living/carbon/C = m
 			if(C.getorganslot(ORGAN_SLOT_ADAMANTINE_RESONATOR))
 				to_chat(C, msg)
-		if(isobserver(m))
+		if(isobserver(m) && antag_training_observer_hears(m, owner))
 			var/link = FOLLOW_LINK(m, owner)
 			to_chat(m, "[link] [msg]")
 
