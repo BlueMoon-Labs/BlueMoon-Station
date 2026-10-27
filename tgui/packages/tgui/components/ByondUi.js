@@ -86,8 +86,12 @@ export class ByondUi extends Component {
     super(props);
     this.containerRef = createRef();
     this.byondUiElement = createByondUiElement(props.params?.id, props.phonehome);
+    this.mounted = false;
+    this.lastReportedSize = null;
     this.handleResize = debounce(() => {
-      this.forceUpdate();
+      if (this.mounted) {
+        this.forceUpdate();
+      }
     }, 100);
   }
 
@@ -105,7 +109,13 @@ export class ByondUi extends Component {
   }
 
   componentDidMount() {
+    this.mounted = true;
     window.addEventListener('resize', this.handleResize);
+    // Подписка нужна картам, которые подгоняют содержимое под фактическую область контрола.
+    if (this.props.onResize && typeof ResizeObserver !== 'undefined') {
+      this.resizeObserver = new ResizeObserver(this.handleResize);
+      this.resizeObserver.observe(this.containerRef.current);
+    }
     this.componentDidUpdate();
     this.handleResize();
   }
@@ -113,6 +123,7 @@ export class ByondUi extends Component {
   componentDidUpdate() {
     const {
       params = {},
+      onResize,
     } = this.props;
     const box = getBoundingBox(this.containerRef.current);
     logger.debug('bounding box', box);
@@ -122,15 +133,23 @@ export class ByondUi extends Component {
       pos: box.pos[0] + ',' + box.pos[1],
       size: box.size[0] + 'x' + box.size[1],
     });
+    if (onResize && box.size[0] > 0 && box.size[1] > 0
+      && (this.lastReportedSize?.[0] !== box.size[0]
+        || this.lastReportedSize?.[1] !== box.size[1])) {
+      this.lastReportedSize = box.size;
+      onResize({ width: box.size[0], height: box.size[1] });
+    }
   }
 
   componentWillUnmount() {
+    this.mounted = false;
+    this.resizeObserver?.disconnect();
     window.removeEventListener('resize', this.handleResize);
     this.byondUiElement.unmount();
   }
 
   render() {
-    const { params, ...rest } = this.props;
+    const { params, onResize, ...rest } = this.props;
     const boxProps = computeBoxProps(rest);
     return (
       <div

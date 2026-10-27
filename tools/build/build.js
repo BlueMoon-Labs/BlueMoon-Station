@@ -16,7 +16,7 @@ import crypto from 'crypto';
 import { spawn } from 'child_process';
 import { DreamDaemon, DreamMaker, getDmPath, getDreamDaemonPath } from './lib/byond.js';
 import { yarn } from './lib/yarn.js';
-import { NanomapsTarget } from './lib/nanomaps.js';
+import { NanomapsTarget, isLowMemoryBuild } from './lib/nanomaps.js';
 import Juke from './juke/index.js';
 
 export { NanomapsTarget };
@@ -148,17 +148,39 @@ export const StatbrowserTarget = new Juke.Target({
 });
 
 
+const DM_DEFINES_STAMP = 'data/dm_defines.txt';
+
+/** Juke compares only file times, so a build with other defines would reuse the
+ * old DMB. The stamp is rewritten when the define set changes and is an input. */
+const stampDmDefines = (defines) => {
+  const text = `${[...new Set(defines)].sort().join('\n')}\n`;
+  if (!fs.existsSync(DM_DEFINES_STAMP) || fs.readFileSync(DM_DEFINES_STAMP, 'utf8') !== text) {
+    fs.mkdirSync(path.dirname(DM_DEFINES_STAMP), { recursive: true });
+    fs.writeFileSync(DM_DEFINES_STAMP, text);
+  }
+  return DM_DEFINES_STAMP;
+};
+
+/** _basemap.dm picks the compiled maps (LOWMEMORYMODE can be enabled there);
+ * station maps are compiled in only with ALL_MAPS or ALL_TEMPLATES. */
+const dmMapInputs = (defines) => (
+  defines.includes('ALL_MAPS') || defines.includes('ALL_TEMPLATES')
+    ? ['_maps/**']
+    : ['_maps/*.dm', '_maps/map_files/generic/**']
+);
+
 export const DmTarget = new Juke.Target({
   dependsOn: ({ get }) => [
     LoadoutCryptoRuntimeTarget,
     StatbrowserTarget,
-    NanomapsTarget,
+    !isLowMemoryBuild(get(DefineParameter)) && NanomapsTarget,
     get(DefineParameter).includes('ALL_TEMPLATES') && DmMapsIncludeTarget,
   ],
-  inputs: async () => [
+  inputs: async ({ get }) => [
     'dependencies.sh',
     await getDmPath(),
-    '_maps/map_files/generic/**',
+    stampDmDefines(get(DefineParameter)),
+    ...dmMapInputs(get(DefineParameter)),
     'code/**',
     'goon/**',
     'html/**',
@@ -231,6 +253,7 @@ const getUnitTestLogDirectory = (get) => {
 
 const dmTestInputs = [
   'dependencies.sh',
+  '_maps/*.dm',
   '_maps/map_files/generic/**',
   'code/**',
   'goon/**',
@@ -253,7 +276,7 @@ export const DmTestBuildTarget = new Juke.Target({
   parameters: [DefineParameter, UnitTestProfileParameter, WarningsAsErrorsParameter],
   dependsOn: ({ get }) => [
     StatbrowserTarget,
-    NanomapsTarget,
+    !isLowMemoryBuild(getUnitTestDefines(get)) && NanomapsTarget,
     get(DefineParameter).includes('ALL_TEMPLATES') && DmMapsIncludeTarget,
     getUnitTestProfile(get) === 'hermetic' && CentComHermeticTarget,
   ],

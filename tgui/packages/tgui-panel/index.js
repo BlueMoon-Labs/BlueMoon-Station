@@ -10,6 +10,7 @@ import './styles/themes/light.scss';
 
 import { perf } from 'common/perf';
 import { combineReducers } from 'common/redux';
+import { backendReducer } from 'tgui/backend';
 import { setupGlobalEvents } from 'tgui/events';
 import { captureExternalLinks } from 'tgui/links';
 import { createRenderer } from 'tgui/renderer';
@@ -36,6 +37,8 @@ window.__pushTguiDebugEvent__?.('bundleLoaded', {
 
 const store = configureStore({
   reducer: combineReducers({
+    // История TGUI-пикера без начальной приостановки, используемой отдельными окнами.
+    backend: (state = {}, action) => backendReducer(state, action),
     audio: audioReducer,
     chat: chatReducer,
     emotes: emotesReducer, // BLUEMOON ADD

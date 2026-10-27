@@ -14,6 +14,7 @@ export { ByondUi } from './ByondUi';
 export { Chart } from './Chart';
 export { Collapsible } from './Collapsible';
 export { ColorBox } from './ColorBox';
+export { ColorPicker, ColorPickerPanel } from './ColorPicker';
 export { Dimmer } from './Dimmer';
 export { Divider } from './Divider';
 export { DraggableClickableControl } from './DraggableClickableControl';

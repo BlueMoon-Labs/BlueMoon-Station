@@ -104,3 +104,23 @@
 	TEST_ASSERT_EQUAL(lower.map_icon.Width(), upper.map_icon.Width(), "Этажи миникарты разной ширины")
 	TEST_ASSERT_EQUAL(lower.map_icon.Height(), upper.map_icon.Height(), "Этажи миникарты разной высоты")
 	TEST_ASSERT_EQUAL(lower.map_icon.Width(), 21, "Рамка миникарты не совпала с заданной")
+
+#ifdef LOWMEMORYMODE
+/// LOWMEMORYMODE собирается без PNG NanoMap: станция получает старую схему зон.
+/datum/unit_test/minimap_fallback_without_nanomap
+
+/datum/unit_test/minimap_fallback_without_nanomap/Run()
+	var/datum/asset/simple/nanomaps/nanomaps = get_asset_datum(/datum/asset/simple/nanomaps)
+	TEST_ASSERT_EQUAL(length(nanomaps.map_data), 0, "В LOWMEMORYMODE манифест NanoMap не пуст")
+	var/list/old_minimaps = SSminimaps.station_minimaps
+	var/datum/minimap_group/old_group = SSminimaps.station_minimap
+	SSminimaps.station_minimaps = list()
+	SSminimaps.build_minimaps()
+	var/list/built = SSminimaps.station_minimaps
+	SSminimaps.station_minimaps = old_minimaps
+	SSminimaps.station_minimap = old_group
+	TEST_ASSERT(length(built), "Без NanoMap у станции нет миникарты")
+	for(var/datum/minimap/floor_map as anything in built)
+		TEST_ASSERT_NOTNULL(floor_map.map_icon, "Этаж [floor_map.name] без изображения")
+		TEST_ASSERT_NULL(floor_map.department_map_icon, "Схема зон получила слой отделов NanoMap")
+#endif

@@ -1117,7 +1117,7 @@
 		to_chat(user, "<span class='warning'>You can't do that right now!</span>")
 		return TRUE
 	if(alert("Are you sure you want to recolor your id?", "Confirm Repaint", "Yes", "No") == "Yes")
-		var/energy_color_input = input(usr,"","Choose Energy Color",id_color) as color|null
+		var/energy_color_input = tgui_input_color(usr,"","Choose Energy Color",id_color)
 		if(!in_range(src, user) || !energy_color_input)
 			return TRUE
 		if(user.incapacitated() || !istype(user))

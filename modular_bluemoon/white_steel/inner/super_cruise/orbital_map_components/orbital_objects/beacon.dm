@@ -58,6 +58,8 @@
 
 /datum/orbital_object/z_linked/beacon/ruin/asteroid/finish_z_level_assignment(datum/space_level/assigned_space_level)
 	. = ..()
+	if(linked_objective)
+		linked_objective.objective_z_level = assigned_space_level.z_value
 	generate_asteroids(world.maxx / 2, world.maxy / 2, assigned_space_level.z_value, 120, rand(-0.5, 0), rand(40, 70))
 
 /datum/orbital_object/z_linked/beacon/ruin/asteroid/post_map_setup()

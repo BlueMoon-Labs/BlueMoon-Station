@@ -81,6 +81,8 @@
 
 //loadout saving/loading specific defines
 #define MAXIMUM_LOADOUT_SAVES		10
+// Отдельный рабочий комплект пресета, не занимающий один из десяти общих слотов.
+#define LOADOUT_PRESET_SLOT 0
 #define LOADOUT_ITEM				"loadout_item"
 #define LOADOUT_COLOR				"loadout_color"
 #define LOADOUT_COLOR_MODE			"loadout_color_mode"
@@ -97,11 +99,6 @@
 
 #define LOADOUT_CAN_NAME_DESC LOADOUT_CAN_NAME | LOADOUT_CAN_DESCRIPTION
 #define LOADOUT_CAN_NAME_DESC_POLY LOADOUT_CAN_NAME_DESC | LOADOUT_CAN_COLOR_POLYCHROMIC
-
-//the names of the customization tabs
-#define SETTINGS_TAB			0
-#define PREFERENCES_TAB			1
-#define KEYBINDINGS_TAB			2
 
 //subtabs for the character settings tab
 #define GENERAL_CHAR_TAB		0
