@@ -130,7 +130,8 @@ SUBSYSTEM_DEF(atoms)
 		CHECK_TICK
 	#endif								// --- END ATOM STATISTICS LOGGING ---
 
-	if(!--mapload_runs)
+	// Режим INSSATOMS здесь ставит чужой загрузчик посреди сборки: его вернёт map_loader_stop().
+	if(!--mapload_runs && initialized == INITIALIZATION_INNEW_MAPLOAD)
 		initialized = old_initialized
 
 	// Список забирается целиком: LateInitialize() может уснуть, и параллельный вызов не должен вычистить его посреди обхода.
@@ -204,8 +205,12 @@ SUBSYSTEM_DEF(atoms)
 		//Не должно случаться, но не оставляем initialized в INSSATOMS навсегда.
 		initialized = INITIALIZATION_INNEW_REGULAR
 		return
-	initialized = map_loader_initialized[length(map_loader_initialized)]
+	var/restored = map_loader_initialized[length(map_loader_initialized)]
 	map_loader_initialized.len--
+	// Сборка, начатая посреди чужого InitializeAtoms(), сняла его MAPLOAD, а он уже закончился.
+	if(restored == INITIALIZATION_INNEW_MAPLOAD && !mapload_runs)
+		restored = INITIALIZATION_INNEW_REGULAR
+	initialized = restored
 
 /datum/controller/subsystem/atoms/proc/map_loader_abort()
 	//Полный сброс маплоадера после исключения (напр. в build_coordinate), когда

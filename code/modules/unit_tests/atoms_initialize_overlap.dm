@@ -45,3 +45,35 @@
 	// Красный прогон оставляет режим карты: остальные тесты мира не должны его унаследовать.
 	SSatoms.initialized = INITIALIZATION_INNEW_REGULAR
 	return ..()
+
+/// Сборка шаблона, начатая посреди чужого InitializeAtoms(), снимает со стека его MAPLOAD уже после его конца и не оставляет режим карты.
+/datum/unit_test/atoms_map_loader_after_overlap
+	var/slow_load_done = FALSE
+
+/datum/unit_test/atoms_map_loader_after_overlap/proc/load_slow(list/atoms)
+	SSatoms.InitializeAtoms(atoms)
+	slow_load_done = TRUE
+
+/datum/unit_test/atoms_map_loader_after_overlap/Run()
+	TEST_ASSERT_EQUAL(SSatoms.initialized, INITIALIZATION_INNEW_REGULAR, "Тест начинается в обычном режиме инициализации.")
+	SSatoms.map_loader_begin()
+	var/obj/effect/atoms_init_probe/tick_eater/slow = new(run_loc_floor_bottom_left)
+	var/obj/effect/atoms_init_probe/fast = new(run_loc_floor_bottom_left)
+	SSatoms.map_loader_stop()
+	allocated += slow
+	allocated += fast
+	INVOKE_ASYNC(src, PROC_REF(load_slow), list(slow))
+	TEST_ASSERT(!slow_load_done, "Первая загрузка уступила тик посреди обхода.")
+	SSatoms.map_loader_begin()
+	var/list/budget = new_wait_budget(2 SECONDS, "первая загрузка дошла до конца")
+	while(!slow_load_done && wait_budget_tick(budget))
+		continue
+	SSatoms.map_loader_stop()
+	TEST_ASSERT(slow_load_done, "Первая загрузка закончилась.")
+	SSatoms.InitializeAtoms(list(fast))
+	TEST_ASSERT_EQUAL(SSatoms.initialized, INITIALIZATION_INNEW_REGULAR, "После второй сборки новые атомы снова создаются не как часть карты.")
+
+/datum/unit_test/atoms_map_loader_after_overlap/Destroy()
+	SSatoms.map_loader_initialized.Cut()
+	SSatoms.initialized = INITIALIZATION_INNEW_REGULAR
+	return ..()
