@@ -577,6 +577,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/list/vending_layouts = list()
 	// Пресеты капсул сохраняются в профиле пользователя между раундами.
 	var/list/podlauncher_presets = list()
+	// Формат отчётов всех медицинских анализаторов пользователя; по умолчанию TGUI.
+	var/health_analyzer_chat = FALSE
 
 /datum/preferences/proc/get_vending_layout(machine_type)
 	return vending_layouts["[machine_type]"] || "grid"
