@@ -249,21 +249,35 @@
 	return jointext(ids, ",")
 
 /// Номер досье -> снимок цели; getFlatIcon дорогой, поэтому снимок один на контракт и только в static data.
+/// Новые снимки делает take_next_photo() по одному за тик: пачка досье разом стоила до 0.45 с стоп-кадра (раунд 10618).
 /datum/hk_terminal/proc/collect_photos()
 	var/list/photos = list()
 	if(QDELETED(hunter))
 		return photos
+	var/photos_pending = FALSE
 	for(var/datum/hk_contract/contract as anything in shown_contracts())
 		if(!contract.trackable())
 			continue
 		if(!contract.photo_taken)
-			contract.photo_taken = TRUE
-			var/atom/pictured = contract.tracked_atom()
-			var/icon/flat = pictured ? getFlatIcon(pictured, defdir = SOUTH, no_anim = TRUE) : null
-			contract.photo = flat ? icon2base64(flat) : null
-		if(contract.photo)
+			photos_pending = TRUE
+		else if(contract.photo)
 			photos["[contract.id]"] = contract.photo
+	if(photos_pending)
+		addtimer(CALLBACK(src, PROC_REF(take_next_photo)), 1, TIMER_UNIQUE | TIMER_DELETE_ME)
 	return photos
+
+/datum/hk_terminal/proc/take_next_photo()
+	if(QDELETED(hunter))
+		return
+	for(var/datum/hk_contract/contract as anything in shown_contracts())
+		if(!contract.trackable() || contract.photo_taken)
+			continue
+		contract.photo_taken = TRUE
+		var/atom/pictured = contract.tracked_atom()
+		var/icon/flat = pictured ? getFlatIcon(pictured, defdir = SOUTH, no_anim = TRUE) : null
+		contract.photo = flat ? icon2base64(flat) : null
+		update_static_data_for_all_viewers()
+		return
 
 /datum/hk_terminal/proc/contract_data(datum/hk_contract/contract)
 	return list(
