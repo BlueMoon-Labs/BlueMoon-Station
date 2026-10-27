@@ -47,7 +47,7 @@ export const Healthanalyzer = () => {
   const { act, data } = useBackend<HealthanalyzerData>();
   const { scan, advanced, printing, verbose, scanNumber } = data;
   return (
-    <Window title="Анализатор здоровья" width={620} height={740}>
+    <Window title="Анализатор здоровья" width={620} height={760}>
       <Window.Content scrollable>
         <Section title="Медицинский отчёт" buttons={(
           <>
