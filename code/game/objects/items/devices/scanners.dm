@@ -11,9 +11,8 @@ GENETICS SCANNER
 
 */
 
-// Подробный и краткий форматы медицинского отчёта.
-#define SCANNER_CONDENSED 	0
-#define SCANNER_VERBOSE 	1
+// Временное ограничение переключения формата отчёта; кнопка «Текстом» в окне остаётся доступна.
+#define HEALTH_ANALYZER_ALLOW_CHAT_MODE FALSE
 
 /obj/item/t_scanner
 	name = "\improper T-ray scanner"
@@ -92,7 +91,6 @@ GENETICS SCANNER
 	var/list/scan_data
 	var/printing = FALSE
 	var/scan_number = 0
-	var/last_msg_condensed = ""
 	var/last_death_report = ""
 
 /obj/item/healthanalyzer/Initialize(mapload)
@@ -114,7 +112,9 @@ GENETICS SCANNER
 // BLUEMOON ADD START - изменение сканеров здоровья
 /obj/item/healthanalyzer/examine(mob/user)
 	. = ..()
-	. += span_notice("Результаты обследования [user.client?.prefs?.health_analyzer_chat ? "выдаются текстовым отчётом" : "отображаются на медицинском дисплее"]. <b>Alt-Click</b> меняет способ отображения на всех ваших анализаторах.")
+	. += span_notice("Результаты обследования [HEALTH_ANALYZER_ALLOW_CHAT_MODE && user.client?.prefs?.health_analyzer_chat ? "выдаются текстовым отчётом" : "отображаются на медицинском дисплее"].")
+	if(HEALTH_ANALYZER_ALLOW_CHAT_MODE)
+		. += span_notice("<b>Alt-Click</b> меняет способ отображения на всех ваших анализаторах.")
 	if(last_msg)
 		. += span_notice("Сохранён отчёт от [last_scan_time]. Используйте анализатор в руке, чтобы открыть его.")
 	if(advanced)
@@ -122,6 +122,8 @@ GENETICS SCANNER
 
 
 /obj/item/healthanalyzer/AltClick(mob/user)
+	if(!HEALTH_ANALYZER_ALLOW_CHAT_MODE)
+		return
 	. = ..()
 	if(!isliving(user) || !user.canUseTopic(src, BE_CLOSE) || !user.client?.prefs)
 		return
@@ -131,7 +133,7 @@ GENETICS SCANNER
 // BLUEMOON ADD END
 
 /obj/item/healthanalyzer/proc/show_results(mob/user)
-	if(user.client?.prefs?.health_analyzer_chat)
+	if(HEALTH_ANALYZER_ALLOW_CHAT_MODE && user.client?.prefs?.health_analyzer_chat)
 		var/report = get_report(user)
 		if(advanced)
 			report += "<hr><a href='?src=[REF(src)];print_scan=1;scan=[scan_number]'>Распечатать</a>"
@@ -149,7 +151,7 @@ GENETICS SCANNER
 		ui.open()
 
 /obj/item/healthanalyzer/ui_data(mob/user)
-	var/list/data = list("advanced" = advanced, "printing" = printing, "scan" = scan_data, "scanNumber" = scan_number, "verbose" = isnull(user.client?.prefs) ? TRUE : user.client.prefs.health_analyzer_verbose)
+	var/list/data = list("advanced" = advanced, "printing" = printing, "scan" = scan_data, "scanNumber" = scan_number)
 	return data
 
 /obj/item/healthanalyzer/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
@@ -159,7 +161,6 @@ GENETICS SCANNER
 		if("clear")
 			scan_data = null
 			last_msg = ""
-			last_msg_condensed = ""
 			last_death_report = ""
 			last_recipient_name = ""
 			last_scan_time = ""
@@ -171,33 +172,21 @@ GENETICS SCANNER
 			if(last_msg)
 				to_chat(usr, examine_block(get_report(usr)), type = MESSAGE_TYPE_INFO)
 			return TRUE
-		if("detail")
-			toggle_detail(usr)
-			return TRUE
 
 /obj/item/healthanalyzer/proc/get_report(mob/user, for_printing = FALSE)
-	var/report = user.client?.prefs && !user.client.prefs.health_analyzer_verbose ? last_msg_condensed : last_msg
+	var/report = last_msg
 	if(for_printing)
 		report = "[span_info("<b>Пациент: [html_encode(last_recipient_name)]</b>")]<br>[report]"
 	if(for_printing && last_death_report)
 		report += "<hr><b>Посмертное заключение</b><br>[last_death_report]"
 	return report
 
-/obj/item/healthanalyzer/proc/toggle_detail(mob/user)
-	if(!user.client?.prefs)
-		return
-	user.client.prefs.health_analyzer_verbose = !user.client.prefs.health_analyzer_verbose
-	user.client.prefs.save_preferences()
-	SStgui.update_user_uis(user)
-
 /obj/item/healthanalyzer/proc/store_scan(mob/user, list/data)
 	scan_number++
 	last_msg = data["report"]
-	last_msg_condensed = data["report_compact"] || last_msg
 	last_death_report = data["deathReport"] || ""
 	last_recipient_name = data["patientRealName"] || "Неизвестный"
 	data.Remove("report")
-	data.Remove("report_compact")
 	data.Remove("deathReport")
 	data.Remove("patientRealName")
 	scan_data = data
@@ -250,17 +239,18 @@ GENETICS SCANNER
 	. = ..()
 	if(!isliving(user))
 		return
-	LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Сменить формат отчёта")
+	if(HEALTH_ANALYZER_ALLOW_CHAT_MODE)
+		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Сменить формат отчёта")
 	if(user.is_holding(src))
 		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Открыть последний отчёт")
 	return CONTEXTUAL_SCREENTIP_SET
 
 // Общий сбор показателей для анализатора, КПК, имплантов и медицинских машин.
-/proc/healthscan(mob/user, mob/living/M, mode = 1, advanced = FALSE, obj/item/healthanalyzer/connected_analyzer = null, datum/live_source = null, include_chemistry = FALSE)
+/proc/healthscan(mob/user, mob/living/M, advanced = FALSE, obj/item/healthanalyzer/connected_analyzer = null, datum/live_source = null, include_chemistry = FALSE)
 	if(isliving(user) && (user.incapacitated() || user.eye_blind))
 		return
 	var/list/data = medical_scan_results(user, M, advanced, include_chemistry = include_chemistry || !isnull(connected_analyzer))
-	var/report = mode ? data["report"] : data["report_compact"]
+	var/report = data["report"]
 	SEND_SIGNAL(M, COMSIG_HEALTH_SCAN, user)
 	if(connected_analyzer)
 		connected_analyzer.store_scan(user, data)
@@ -272,8 +262,8 @@ GENETICS SCANNER
 /proc/show_medical_scan(mob/user, list/data, mob/living/patient, datum/live_source = null, scan_kind = "Medical", advanced = FALSE, include_chemistry = FALSE)
 	if(!length(data))
 		return
-	if(!user.client || user.client.prefs.health_analyzer_chat)
-		var/report = user.client?.prefs && !user.client.prefs.health_analyzer_verbose ? data["report_compact"] || data["report"] : data["report"]
+	if(!user.client || (HEALTH_ANALYZER_ALLOW_CHAT_MODE && user.client.prefs.health_analyzer_chat))
+		var/report = data["report"]
 		if(live_source)
 			report = replacetext(report, "Снимок от", "Показатели на")
 		to_chat(user, examine_block(report), type = MESSAGE_TYPE_INFO)
@@ -289,7 +279,6 @@ GENETICS SCANNER
 	dupe_mode = COMPONENT_DUPE_UNIQUE
 	var/list/scan_data
 	var/last_report = ""
-	var/last_report_compact = ""
 	var/datum/weakref/patient_ref
 	var/datum/weakref/source_ref
 	var/scan_kind = "Medical"
@@ -320,12 +309,10 @@ GENETICS SCANNER
 
 /datum/component/medical_scan_display/proc/set_scan(list/data)
 	last_report = data["report"]
-	last_report_compact = data["report_compact"] || last_report
 	if(source_ref)
 		last_report = replacetext(last_report, "Снимок от", "Показатели на")
-		last_report_compact = replacetext(last_report_compact, "Снимок от", "Показатели на")
 	scan_data = data.Copy()
-	scan_data.Remove("report", "report_compact", "deathReport", "patientRealName")
+	scan_data.Remove("report", "deathReport", "patientRealName")
 
 /datum/component/medical_scan_display/proc/refresh_scan()
 	if(!source_ref)
@@ -375,7 +362,7 @@ GENETICS SCANNER
 /datum/component/medical_scan_display/ui_data(mob/user)
 	if(!refresh_scan())
 		scan_data = null
-	return list("scan" = scan_data, "scanNumber" = scan_number, "advanced" = advanced, "verbose" = user.client.prefs.health_analyzer_verbose, "live" = !isnull(source_ref), "canPrint" = FALSE, "canClear" = isnull(source_ref), "deviceLabel" = "")
+	return list("scan" = scan_data, "scanNumber" = scan_number, "advanced" = advanced, "live" = !isnull(source_ref), "canPrint" = FALSE, "canClear" = isnull(source_ref), "deviceLabel" = "")
 
 /datum/component/medical_scan_display/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
 	if(..())
@@ -383,18 +370,12 @@ GENETICS SCANNER
 	switch(action)
 		if("chat")
 			if(refresh_scan() && scan_data)
-				to_chat(usr, examine_block(usr.client.prefs.health_analyzer_verbose ? last_report : last_report_compact), type = MESSAGE_TYPE_INFO)
-			return TRUE
-		if("detail")
-			usr.client.prefs.health_analyzer_verbose = !usr.client.prefs.health_analyzer_verbose
-			usr.client.prefs.save_preferences()
-			SStgui.update_user_uis(usr)
+				to_chat(usr, examine_block(last_report), type = MESSAGE_TYPE_INFO)
 			return TRUE
 		if("clear")
 			if(!source_ref)
 				scan_data = null
 				last_report = ""
-				last_report_compact = ""
 			return TRUE
 
 /datum/component/medical_scan_display/ui_close(mob/user)
@@ -402,7 +383,6 @@ GENETICS SCANNER
 	patient_ref = null
 	scan_data = null
 	last_report = ""
-	last_report_compact = ""
 
 /proc/medical_scan_results(mob/user, mob/living/M, advanced = FALSE, include_chemistry = FALSE)
 	if(isliving(user) && (user.incapacitated() || user.eye_blind))
@@ -506,7 +486,7 @@ GENETICS SCANNER
 			for(var/list/wound in wounds)
 				limb_details += "<tr><td colspan='5'>[span_alert(span_tooltip(html_encode(wound["details"]), "<i class='fas fa-[wound["icon"]]'></i> ↳ [html_encode(wound["name"])] ([wound["severity"]])", "", "", "font-size:85%; margin-left:1em"))]</td></tr>"
 	data["damageLocalization"] = limbs
-	data["report"] += "<hr><b>Состояние тела</b><br>[limb_report]<!--MEDICAL_LIMB_DETAILS--></table>"
+	data["report"] += "<hr><b>Состояние тела</b><br>[limb_report][limb_details]</table>"
 
 	var/list/organ_data = list()
 	data["organs"] = organ_data
@@ -808,8 +788,7 @@ GENETICS SCANNER
 	if(diagnosis_report)
 		header += "[diagnosis_report]<br>"
 	var/report = "[header][data["report"]]<hr>[span_info("Снимок от [scan_time]")]"
-	data["report_compact"] = replacetext(report, "<!--MEDICAL_LIMB_DETAILS-->", "")
-	data["report"] = replacetext(report, "<!--MEDICAL_LIMB_DETAILS-->", limb_details)
+	data["report"] = report
 	return data
 
 // В чат и на бумагу идёт форматированный текст, в TGUI — обычный текст и уровень предупреждения.
@@ -890,16 +869,6 @@ GENETICS SCANNER
 				msg = span_danger("Обнаружено крайне опасное количество токсичных изомеров.")
 	medical_scan_section(data, "Дополнительная диагностика", msg)
 	return data
-
-/obj/item/healthanalyzer/verb/toggle_mode()
-	set name = "Switch Verbosity"
-	set category = "Object"
-
-	var/mob/living/user = usr
-	if(!istype(user) || !CHECK_MOBILITY(user, MOBILITY_USE))
-		return
-	toggle_detail(user)
-	to_chat(user, span_notice("Подробная локализация повреждений [user.client?.prefs?.health_analyzer_verbose ? "включена" : "выключена"]."))
 
 /obj/item/healthanalyzer/advanced
 	name = "advanced health analyzer"
@@ -1512,5 +1481,4 @@ GENETICS SCANNER
 	else
 		return HM.alias
 
-#undef SCANNER_CONDENSED
-#undef SCANNER_VERBOSE
+#undef HEALTH_ANALYZER_ALLOW_CHAT_MODE

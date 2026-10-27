@@ -35,7 +35,7 @@ type Scan = {
   addictions?: string[];
   blood?: { percent: number; volume: number; incoming: number; type: string; low: BooleanLike; critical: BooleanLike };
 };
-type HealthanalyzerData = { advanced: BooleanLike; printing: BooleanLike; verbose: BooleanLike; scanNumber: number; scan: Scan | null; live?: BooleanLike; canPrint?: BooleanLike; canClear?: BooleanLike; deviceLabel?: string };
+type HealthanalyzerData = { advanced: BooleanLike; printing: BooleanLike; scanNumber: number; scan: Scan | null; live?: BooleanLike; canPrint?: BooleanLike; canClear?: BooleanLike; deviceLabel?: string };
 
 const damageTypes = [
   { key: 'brute', label: 'Травмы', color: 'red' },
@@ -46,7 +46,7 @@ const damageTypes = [
 
 export const Healthanalyzer = () => {
   const { act, data } = useBackend<HealthanalyzerData>();
-  const { scan, advanced, printing, verbose, scanNumber, live = false, canPrint = advanced, canClear = true, deviceLabel } = data;
+  const { scan, advanced, printing, scanNumber, live = false, canPrint = advanced, canClear = true, deviceLabel } = data;
   return (
     <Window title={live ? 'Мониторинг организма' : 'Анализатор здоровья'} width={620} height={760}>
       <Window.Content scrollable>
@@ -73,7 +73,7 @@ export const Healthanalyzer = () => {
             </>
           ) : <NoticeBox>В памяти нет результатов обследования. Просканируйте пациента.</NoticeBox>}
         </Section>
-        {scan && <ScanResults key={scanNumber} scan={scan} advanced={!!advanced} verbose={!!verbose} live={!!live} deviceLabel={deviceLabel} />}
+        {scan && <ScanResults key={scanNumber} scan={scan} advanced={!!advanced} live={!!live} deviceLabel={deviceLabel} />}
       </Window.Content>
     </Window>
   );
@@ -102,16 +102,13 @@ const VitalSigns = ({ scan }: { scan: Scan }) => (
   </LabeledList>
 );
 
-const ScanResults = ({ scan, advanced, verbose, live, deviceLabel = advanced ? 'Продвинутый анализатор' : 'Обычный анализатор' }: { scan: Scan; advanced: boolean; verbose: boolean; live: boolean; deviceLabel?: string }) => {
-  const { act } = useBackend();
+const ScanResults = ({ scan, advanced, live, deviceLabel = advanced ? 'Продвинутый анализатор' : 'Обычный анализатор' }: { scan: Scan; advanced: boolean; live: boolean; deviceLabel?: string }) => {
   const sections = scan.sections.filter(section => section.title !== 'Реагенты в организме');
   return (
     <>
       {!scan.woundOnly && !scan.chemicalOnly && (
-        <Section title="Локализация повреждений" buttons={(
-          <Button icon="bone" selected={verbose} onClick={() => act('detail')}>{verbose ? 'Подробно' : 'Кратко'}</Button>
-        )}>
-          {verbose ? <LimbTable limbs={scan.damageLocalization || []} /> : <Box color="label">Подробная локализация скрыта.</Box>}
+        <Section title="Локализация повреждений">
+          <LimbTable limbs={scan.damageLocalization || []} />
         </Section>
       )}
       {(!!scan.organs?.length || !!scan.missingOrgans?.length) && (

@@ -424,7 +424,7 @@
 		if(installed_cartridge.access & CART_MEDICAL)
 			user.visible_message("<span class='notice'>[user] analyzes [C]'s vitals.</span>", \
 								"<span class='notice'>You analyze [C]'s vitals.</span>")
-			healthscan(user, C, 1, FALSE)
+			healthscan(user, C)
 			return
 	return ..()
 

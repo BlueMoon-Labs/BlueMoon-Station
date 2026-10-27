@@ -654,9 +654,6 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	health_analyzer_chat = FALSE
 	S["health_analyzer_chat"] >> health_analyzer_chat
 	health_analyzer_chat = !!health_analyzer_chat
-	var/saved_health_analyzer_verbose
-	S["health_analyzer_verbose"] >> saved_health_analyzer_verbose
-	health_analyzer_verbose = isnull(saved_health_analyzer_verbose) ? TRUE : !!saved_health_analyzer_verbose
 	S["uses_glasses_colour"]>> uses_glasses_colour
 	S["auto_capitalize_enabled"]>> auto_capitalize_enabled
 	S["surgical_disable_radial"]>> surgical_disable_radial // BLUEMOON ADD
@@ -1328,7 +1325,6 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["hearted_until"], (hearted_until > world.realtime ? hearted_until : null))
 	WRITE_FILE(S["inquisitive_ghost"], inquisitive_ghost)
 	WRITE_FILE(S["health_analyzer_chat"], health_analyzer_chat)
-	WRITE_FILE(S["health_analyzer_verbose"], health_analyzer_verbose)
 	WRITE_FILE(S["uses_glasses_colour"], uses_glasses_colour)
 	WRITE_FILE(S["auto_capitalize_enabled"], auto_capitalize_enabled)
 	WRITE_FILE(S["surgical_disable_radial"], surgical_disable_radial) // BLUEMOON ADD
