@@ -49,7 +49,7 @@ const ColorSwatch = (props) => {
             inset: '0',
             borderRadius: '2px',
             pointerEvents: 'none',
-            background: EMPTY_SWATCH_BG + ', rgba(128, 128, 128, 0.35)',
+            background: EMPTY_SWATCH_BG + ', #9a9a9a',
           }}
         />
       )}

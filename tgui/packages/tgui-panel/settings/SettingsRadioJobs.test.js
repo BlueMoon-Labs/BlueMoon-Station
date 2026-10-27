@@ -13,7 +13,10 @@ const mounted = [];
 const renderWith = settings => {
   const dispatched = [];
   setGlobalStore({
-    getState: () => ({ settings: { ...RADIO_JOB_DEFAULTS, ...settings } }),
+    getState: () => ({
+      backend: {},
+      settings: { ...RADIO_JOB_DEFAULTS, ...settings },
+    }),
     dispatch: action => dispatched.push(action),
   });
   const container = document.createElement('div');
@@ -117,57 +120,52 @@ test('color list shows a sample tag per department and resets', () => {
   });
 });
 
+const chipsOf = container => [...container.querySelectorAll(
+  '.SettingsRadioJobs__colors .ColorPicker__chip')];
+
 test('empty swatch shows the default color of the theme', () => {
   const swatchOf = theme => {
     const { container } = renderWith({ theme });
     click(buttonOf(container, 'Цвета отделов'));
-    return container.querySelector('.SettingsRadioJobs__colors input[type=color]')
-      .value;
+    return chipsOf(container)[0].title;
   };
   const first = RADIO_JOB_PALETTE.find(
     entry => entry.id === RADIO_JOB_GROUPS[0].ids[0]);
-  expect(swatchOf('dark')).toBe(first.dark);
-  expect(swatchOf('default')).toBe(first.light);
+  expect(swatchOf('dark')).toBe(first.dark.toUpperCase());
+  expect(swatchOf('default')).toBe(first.light.toUpperCase());
 });
 
 test('legacy mode swatches show the old faction colors', () => {
   const { container } = renderWith({ radioJobColorMode: 'legacy' });
   click(buttonOf(container, 'Цвета отделов'));
-  const swatches = [...container.querySelectorAll(
-    '.SettingsRadioJobs__colors input[type=color]')].map(input => input.value);
+  const swatches = chipsOf(container).map(chip => chip.title);
   const order = RADIO_JOB_GROUPS.flatMap(group => group.ids);
-  for (const [id, color] of [['synd', '#8f4a4b'], ['sol', '#3434fd'],
-    ['nri', '#ff4444']]) {
+  for (const [id, color] of [['synd', '#8F4A4B'], ['sol', '#3434FD'],
+    ['nri', '#FF4444']]) {
     expect([id, swatches[order.indexOf(id)]]).toEqual([id, color]);
   }
 });
 
-// Запись цвета отложена на 250 мс: вторая правка за это время не должна
-// затереть первую старым списком из рендера.
+// Стор перерисовывает список не сразу: вторая правка не должна затереть
+// первую старым списком из рендера.
 test('two quick color picks both survive', () => {
-  jest.useFakeTimers();
-  try {
-    const { container, dispatched } = renderWith({});
-    click(buttonOf(container, 'Цвета отделов'));
-    const inputs = [...container.querySelectorAll(
-      '.SettingsRadioJobs__colors input[type=color]')];
-    const order = RADIO_JOB_GROUPS.flatMap(group => group.ids);
-    const pick = (id, color) => {
-      const input = inputs[order.indexOf(id)];
-      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')
-        .set.call(input, color);
-      act(() => input.dispatchEvent(new Event('input', { bubbles: true })));
-    };
-    pick('cmd', '#111111');
-    pick('sec', '#222222');
-    act(() => jest.runAllTimers());
-    expect(dispatched.at(-1).payload).toEqual({
-      radioJobColors: { cmd: '#111111', sec: '#222222' },
-    });
-  }
-  finally {
-    jest.useRealTimers();
-  }
+  // jsdom без canvas: колесо палитры не рисуется.
+  jest.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+  const { container, dispatched } = renderWith({});
+  click(buttonOf(container, 'Цвета отделов'));
+  const chips = chipsOf(container);
+  const order = RADIO_JOB_GROUPS.flatMap(group => group.ids);
+  const pick = id => {
+    const chip = chips[order.indexOf(id)];
+    click(chip);
+    click(buttonOf(document.body, 'Применить'));
+    return chip.title;
+  };
+  const cmd = pick('cmd');
+  const sec = pick('sec');
+  expect(dispatched.at(-1).payload).toEqual({
+    radioJobColors: { cmd, sec },
+  });
 });
 
 test('groups cover the palette once', () => {
