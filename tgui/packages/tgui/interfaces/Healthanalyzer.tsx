@@ -108,7 +108,7 @@ const ScanResults = ({ scan, advanced, live, deviceLabel = advanced ? 'Прод�
   return (
     <>
       {!scan.woundOnly && !scan.chemicalOnly && (
-        <Section title="Локализация повреждений">
+        <Section title="Состояние тела">
           <LimbTable scan={scan} />
         </Section>
       )}
