@@ -778,8 +778,8 @@ GENETICS SCANNER
 		var/mob/living/carbon/C = M
 		var/blood_typepath = C.get_blood_id()
 		if(blood_typepath)
-			var/blood_percent = round((C.scan_blood_volume() / (BLOOD_VOLUME_NORMAL * C.blood_ratio))*100, 0.001)
-			var/integrated_blood_percent = round((C.integrating_blood / (BLOOD_VOLUME_NORMAL * C.blood_ratio))*100, 0.001)
+			var/blood_percent = round((C.scan_blood_volume() / (BLOOD_VOLUME_NORMAL * C.blood_ratio))*100, 0.1)
+			var/integrated_blood_percent = round((C.integrating_blood / (BLOOD_VOLUME_NORMAL * C.blood_ratio))*100, 0.1)
 			var/blood_volume = round(C.scan_blood_volume(), 0.001)
 			var/integrating_blood = round(C.integrating_blood, 0.001)
 			data["blood"] = list("percent" = blood_percent, "volume" = blood_volume, "incoming" = integrating_blood, "low" = (C.scan_blood_volume() + C.integrating_blood) <= (BLOOD_VOLUME_SAFE * C.blood_ratio), "critical" = (C.scan_blood_volume() + C.integrating_blood) <= (BLOOD_VOLUME_OKAY * C.blood_ratio))

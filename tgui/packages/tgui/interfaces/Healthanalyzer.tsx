@@ -92,7 +92,7 @@ const VitalSigns = ({ scan }: { scan: Scan }) => (
       <LabeledList.Item label={scan.robotic ? 'Гидравлическая жидкость' : 'Кровь'}>
         <ProgressBar value={scan.blood.percent / 100} color={scan.blood.critical ? 'bad' : scan.blood.low ? 'average' : 'good'}>
           {scan.blood.critical ? 'КРИТИЧЕСКИЙ УРОВЕНЬ · ' : scan.blood.low ? 'НИЗКИЙ УРОВЕНЬ · ' : ''}
-          {round(scan.blood.percent, 3)} % · {round(scan.blood.volume, 3)} cl · {scan.blood.type}
+          {round(scan.blood.percent, 1)} % · {round(scan.blood.volume, 3)} cl · {scan.blood.type}
         </ProgressBar>
         {scan.blood.incoming > 0 && <Box mt={0.5}>Переливается ещё {round(scan.blood.incoming, 3)} cl</Box>}
       </LabeledList.Item>
