@@ -1,3 +1,10 @@
+.Healthanalyzer__limbRow {
+  display: grid;
+  grid-template-columns: minmax(0, 9rem) 5rem 4.5rem 6rem 6rem;
+  column-gap: 0.5rem;
+  text-align: left;
+}
+
 .Healthanalyzer__organDiagnosis {
   overflow-wrap: anywhere;
 }

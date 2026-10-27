@@ -109,7 +109,7 @@ const ScanResults = ({ scan, advanced, live, deviceLabel = advanced ? 'Прод�
     <>
       {!scan.woundOnly && !scan.chemicalOnly && (
         <Section title="Локализация повреждений">
-          <LimbTable limbs={scan.damageLocalization || []} />
+          <LimbTable scan={scan} />
         </Section>
       )}
       {(!!scan.organs?.length || !!scan.missingOrgans?.length) && (
@@ -186,36 +186,47 @@ const Reagents = ({ reagents, addictions }: { reagents: Reagent[]; addictions: s
   </Section>
 );
 
-const LimbTable = ({ limbs }: { limbs: Limb[] }) => {
+const LimbTable = ({ scan }: { scan: Scan }) => {
+  const limbs = scan.damageLocalization || [];
   const affected = limbs.filter(limb => !!limb.missing || limb.brute > 0 || limb.burn > 0 || limb.wounds.length > 0 || limb.embeds.length > 0);
-  if (!affected.length) return <Box color="good">Повреждения конечностей не обнаружены.</Box>;
   return (
-    <Table>
+    <Box>
+      <Box className="Healthanalyzer__limbRow" bold>
+        <Box />
+        {damageTypes.map(({ key, label, color }) => (
+          <Box key={key} color={color}>{key === 'tox' && scan.robotic ? 'Коррозия' : label}</Box>
+        ))}
+      </Box>
+      <Box className="Healthanalyzer__limbRow" mb={0.3}>
+        <Box bold>Всего</Box>
+        {damageTypes.map(({ key, color }) => (
+          <Box key={key} bold color={color}>{round(scan.damageLevels?.[key] ?? 0, 3)}</Box>
+        ))}
+      </Box>
       {affected.map(limb => (
         <Fragment key={limb.name}>
           {limb.missing ? (
-            <Table.Row>
-              <Table.Cell colSpan={3} bold color="bad">
-                {!!limb.missingIcon && <Icon name={limb.missingIcon} mr={0.5} />}
-                {limb.name} отсутствует
-              </Table.Cell>
-            </Table.Row>
+            <Box bold color="bad">
+              {!!limb.missingIcon && <Icon name={limb.missingIcon} mr={0.5} />}
+              {limb.name} отсутствует
+            </Box>
           ) : (
-            <Table.Row>
-              <Table.Cell>{limb.name}</Table.Cell>
-              <Table.Cell collapsing bold textAlign="right" pl={1} pr={1} color={limb.brute > 0 ? 'bad' : 'label'}>{round(limb.brute, 3)}</Table.Cell>
-              <Table.Cell collapsing bold textAlign="right" pl={1} color={limb.burn > 0 ? 'average' : 'label'}>{round(limb.burn, 3)}</Table.Cell>
-            </Table.Row>
+            <Box className="Healthanalyzer__limbRow">
+              <Box>{limb.name}</Box>
+              <Box bold color="red">{round(limb.brute, 3)}</Box>
+              <Box bold color="orange">{round(limb.burn, 3)}</Box>
+            </Box>
           )}
           {limb.embeds.map((embed, index) => (
-            <Table.Row key={`embed-${index}`}><Table.Cell colSpan={3} color="bad">Инородное тело: {embed}.</Table.Cell></Table.Row>
+            <Box key={`embed-${index}`} color="bad">Инородное тело: {embed}.</Box>
           ))}
           {limb.wounds.map((wound, index) => (
-            <Table.Row key={`wound-${wound.name}-${index}`}><Table.Cell colSpan={3}><WoundHint wound={wound} /></Table.Cell></Table.Row>
+            <Box key={`wound-${wound.name}-${index}`}><WoundHint wound={wound} /></Box>
           ))}
         </Fragment>
       ))}
-    </Table>
+      {!affected.length && <Box color="good">Повреждения конечностей не обнаружены.</Box>}
+    </Box>
   );
 };
 
