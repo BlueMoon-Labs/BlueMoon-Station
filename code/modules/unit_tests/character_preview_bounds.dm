@@ -38,6 +38,21 @@
 		for(var/side in 1 to 4)
 			TEST_ASSERT_EQUAL(actual[side], expected[side], "Граница [side] ракурса [direction] во втором окне")
 
+// Запись зрителя без живого экрана роняла schedule_preview_update на null.viewport_width (раунд 10618).
+/datum/unit_test/character_preview_dead_viewer_screen
+
+/datum/unit_test/character_preview_dead_viewer_screen/Run()
+	var/datum/preferences/prefs = new
+	var/datum/character_setup/setup = new(prefs)
+	var/mob/living/carbon/human/viewer = allocate(/mob/living/carbon/human/dummy/consistent)
+	LAZYSET(setup.viewer_screens, viewer, null)
+	setup.preview_dirty = TRUE
+	setup.schedule_preview_update()
+	TEST_ASSERT(!length(setup.viewer_screens), "Запись без экрана должна убираться из зрителей")
+	TEST_ASSERT(!setup.preview_update_pending, "Без готового экрана сборка превью не планируется")
+	qdel(setup)
+	qdel(prefs)
+
 /datum/unit_test/character_preview_bounds/proc/full_scan_bounds(icon/measured)
 	var/list/bounds
 	for(var/x in 1 to measured.Width())

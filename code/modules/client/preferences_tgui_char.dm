@@ -3513,6 +3513,7 @@
 	// Превью собирается отдельным тиком: сборка манекена в тике открытия или действия даёт статтер.
 	if(!preview_dirty || preview_update_pending)
 		return
+	prune_viewer_screens()
 	var/viewport_ready = FALSE
 	for(var/viewer in viewer_screens)
 		var/atom/movable/screen/map_view/character_setup_screen/viewer_screen = viewer_screens[viewer]
@@ -3547,10 +3548,18 @@
 		return
 	if(QDELETED(src) || !prefs || preview_dirty)
 		return
+	prune_viewer_screens()
 	for(var/viewer in viewer_screens)
 		var/atom/movable/screen/map_view/character_setup_screen/viewer_screen = viewer_screens[viewer]
 		viewer_screen.update_character(appearance_source, prefs.bgstate, preview_auto_fit, prefs.character_setup_single_view, preview_direction, preview_zoom, preview_reference, preview_background_style)
 	push_preview_update()
+
+// Экран зрителя мог удалиться мимо ui_close (смена моба, харддел): запись без живого экрана роняет обходы.
+/datum/character_setup/proc/prune_viewer_screens()
+	for(var/viewer in viewer_screens)
+		var/atom/movable/screen/map_view/character_setup_screen/viewer_screen = viewer_screens[viewer]
+		if(QDELETED(viewer_screen))
+			LAZYREMOVE(viewer_screens, viewer)
 
 /datum/character_setup/proc/push_preview_update(character_changed = FALSE)
 	for(var/datum/tgui/ui as anything in SStgui.get_all_open_uis(src))
@@ -3561,6 +3570,7 @@
 
 // Камера использует готовую внешность: поворот, фон и масштаб не пересоздают манекен.
 /datum/character_setup/proc/refresh_preview_camera(character_changed = FALSE)
+	prune_viewer_screens()
 	for(var/viewer in viewer_screens)
 		var/atom/movable/screen/map_view/character_setup_screen/viewer_screen = viewer_screens[viewer]
 		if(viewer_screen.cached_source)
