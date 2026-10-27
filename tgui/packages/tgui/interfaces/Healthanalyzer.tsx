@@ -1,59 +1,56 @@
 import { BooleanLike } from 'common/react';
-import { Fragment, useState } from 'react';
+import { decodeHtmlEntities } from 'common/string';
+import { Fragment, useLayoutEffect, useRef, useState } from 'react';
 
 import { useBackend } from '../backend';
-import { Box, Button, LabeledList, NoticeBox, ProgressBar, Section, Stack, Table } from '../components';
+import { Box, Button, LabeledList, NoticeBox, ProgressBar, Section, Table } from '../components';
 import { Window } from '../layouts';
 
 type ScanLine = { text: string; warning: BooleanLike };
 type ScanSection = { title: string; lines: ScanLine[] };
-type Wound = { name: string; severity: string; treatment: string };
-type Limb = {
-  name: string;
-  missing: BooleanLike;
-  brute: number;
-  burn: number;
-  wounds: Wound[];
-  embeds: string[];
-};
+type Wound = { name: string; severity: string; treatment: string; details: string };
+type Limb = { name: string; missing: BooleanLike; brute: number; burn: number; wounds: Wound[]; embeds: string[] };
 type Organ = { name: string; damage: number | null; status: string; warning: BooleanLike };
 type Reagent = { name: string; volume: number; overdosed: BooleanLike; inactive: BooleanLike };
 type Scan = {
   patient: string;
   scanTime: string;
-  scanmode: number;
-  verbose: BooleanLike;
+  woundOnly?: BooleanLike;
   health: number;
   dead: BooleanLike;
   unknown: BooleanLike;
   robotic: BooleanLike;
-  damageLevels: Record<string, number>;
-  damageLocalization: Limb[];
-  organs: Organ[];
+  species?: string;
+  similarSpecies?: string;
+  temperatureC?: number;
+  temperatureF?: number;
+  vitals?: ScanLine[];
+  damageLevels?: Record<string, number>;
+  damageLocalization?: Limb[];
+  organs?: Organ[];
   sections: ScanSection[];
-  reagents: Reagent[];
-  blood?: { percent: number; volume: number; incoming: number; low: BooleanLike; critical: BooleanLike };
+  reagents?: Reagent[];
+  addictions?: string[];
+  blood?: { percent: number; volume: number; incoming: number; type: string; low: BooleanLike; critical: BooleanLike };
 };
-type HealthanalyzerData = { advanced: BooleanLike; printing: BooleanLike; scan: Scan | null };
+type HealthanalyzerData = { advanced: BooleanLike; printing: BooleanLike; verbose: BooleanLike; scan: Scan | null };
 
-const scanModes = ['Здоровье', 'Реагенты', 'Раны'];
 const damageTypes = [
   { key: 'brute', label: 'Травмы', color: 'red' },
   { key: 'burn', label: 'Ожоги', color: 'orange' },
   { key: 'tox', label: 'Токсины', color: 'green' },
   { key: 'oxy', label: 'Удушение', color: 'blue' },
 ];
-const prioritySections = ['Общая диагностика', 'Органы и радиация', 'Жизненные показатели и операции'];
 
 export const Healthanalyzer = () => {
   const { act, data } = useBackend<HealthanalyzerData>();
-  const { scan, advanced, printing } = data;
+  const { scan, advanced, printing, verbose } = data;
   return (
     <Window title="Анализатор здоровья" width={620} height={740}>
       <Window.Content scrollable>
-        <Section buttons={(
+        <Section title="Медицинский отчёт" buttons={(
           <>
-            <Button icon="comment-medical" disabled={!scan} onClick={() => act('chat')}>В чат</Button>
+            <Button icon="comment-medical" disabled={!scan} onClick={() => act('chat')}>Текстом</Button>
             {!!advanced && (
               <Button icon="print" disabled={!scan || !!printing} onClick={() => act('print')}>
                 {printing ? 'Печать…' : 'Печать'}
@@ -61,152 +58,199 @@ export const Healthanalyzer = () => {
             )}
             <Button.Confirm icon="trash" disabled={!scan} confirmContent="Очистить?" onClick={() => act('clear')}>Очистить</Button.Confirm>
           </>
-        )} title={scan ? scanModes[scan.scanmode] : 'Нет данных'}>
+        )}>
           {scan ? (
             <>
-              <Box bold fontSize={1.3}>{scan.patient}</Box>
-              <Box color="label" mt={0.5}>Снимок от {scan.scanTime} · {advanced ? 'Продвинутый' : 'Обычный'} анализатор</Box>
+              <Box bold fontSize={1.3} mb={0.5}>{scan.patient}</Box>
+              {!!scan.species && <Box mb={0.5}>Раса: {scan.species} | Схожая раса: {scan.similarSpecies}</Box>}
+              {scan.temperatureC !== undefined && <Box mb={0.5}>Температура тела: {scan.temperatureC} °C ({scan.temperatureF} °F)</Box>}
+              <ScanLines lines={scan.vitals || []} compact />
+              {!!scan.damageLevels && <VitalSigns scan={scan} />}
+              <Box color="label" mt={0.8}>Снимок от {scan.scanTime} · {advanced ? 'Продвинутый' : 'Обычный'} анализатор</Box>
             </>
-          ) : (
-            <NoticeBox>Просканируйте пациента, чтобы получить отчёт. Ctrl-Click по анализатору открывает последний снимок.</NoticeBox>
-          )}
+          ) : <NoticeBox>В памяти нет результатов обследования. Просканируйте пациента.</NoticeBox>}
         </Section>
-        {scan && <ScanResults key={`${scan.scanTime}-${scan.patient}-${scan.scanmode}`} scan={scan} advanced={!!advanced} />}
+        {scan && <ScanResults key={`${scan.scanTime}-${scan.patient}`} scan={scan} advanced={!!advanced} verbose={!!verbose} />}
       </Window.Content>
     </Window>
   );
 };
 
-const ScanResults = ({ scan, advanced }: { scan: Scan; advanced: boolean }) => {
-  const [showLimbs, setShowLimbs] = useState(!!scan.verbose);
-  const { blood } = scan;
+const VitalSigns = ({ scan }: { scan: Scan }) => (
+  <LabeledList>
+    <LabeledList.Item label="Общее состояние">
+      {scan.unknown ? <Box color="average">Неизвестно</Box> : scan.dead ? <Box bold color="bad">Смерть</Box> : (
+        <ProgressBar value={scan.health / 100} color={scan.health > 50 ? 'good' : scan.health > 0 ? 'average' : 'bad'}>{scan.health} %</ProgressBar>
+      )}
+    </LabeledList.Item>
+    {damageTypes.map(({ key, label, color }) => (
+      <LabeledList.Item key={key} label={key === 'tox' && scan.robotic ? 'Коррозия' : label}>
+        <ProgressBar value={scan.damageLevels![key] / 100} color={color}>{scan.damageLevels![key]}</ProgressBar>
+      </LabeledList.Item>
+    ))}
+    {!!scan.blood && (
+      <LabeledList.Item label={scan.robotic ? 'Гидравлическая жидкость' : 'Кровь'}>
+        <ProgressBar value={scan.blood.percent / 100} color={scan.blood.critical ? 'bad' : scan.blood.low ? 'average' : 'good'}>
+          {scan.blood.critical ? 'КРИТИЧЕСКИЙ УРОВЕНЬ · ' : scan.blood.low ? 'НИЗКИЙ УРОВЕНЬ · ' : ''}
+          {scan.blood.percent} % · {scan.blood.volume} сл · {scan.blood.type}
+        </ProgressBar>
+        {scan.blood.incoming > 0 && <Box mt={0.5}>Переливается ещё {scan.blood.incoming} сл</Box>}
+      </LabeledList.Item>
+    )}
+  </LabeledList>
+);
+
+const ScanResults = ({ scan, advanced, verbose }: { scan: Scan; advanced: boolean; verbose: boolean }) => {
+  const { act } = useBackend();
+  const sections = scan.sections.filter(section => section.title !== 'Реагенты в организме' && (advanced || section.title !== 'Анализ тела'));
+  const summary = sections.find(section => section.title === 'Общая диагностика');
   return (
     <>
-      {scan.scanmode === 0 && (
-        <>
-          <Section title="Состояние пациента">
-            <LabeledList>
-              <LabeledList.Item label="Общее состояние">
-                {scan.unknown ? <Box color="average">Неизвестно</Box> : scan.dead ? (
-                  <Box bold color="bad">Смерть</Box>
-                ) : (
-                  <ProgressBar value={scan.health / 100} color={scan.health > 50 ? 'good' : scan.health > 0 ? 'average' : 'bad'}>
-                    {scan.health} %
-                  </ProgressBar>
-                )}
-              </LabeledList.Item>
-              {damageTypes.map(({ key, label, color }) => (
-                <LabeledList.Item key={key} label={key === 'tox' && scan.robotic ? 'Коррозия' : label}>
-                  <ProgressBar value={scan.damageLevels[key] / 100} color={color}>{scan.damageLevels[key]}</ProgressBar>
-                </LabeledList.Item>
-              ))}
-              {blood && (
-                <LabeledList.Item label={scan.robotic ? 'Гидравлическая жидкость' : 'Кровь'}>
-                  <ProgressBar value={blood.percent / 100} color={blood.critical ? 'bad' : blood.low ? 'average' : 'good'}>
-                    {blood.critical ? 'КРИТИЧЕСКИЙ УРОВЕНЬ · ' : blood.low ? 'НИЗКИЙ УРОВЕНЬ · ' : ''}
-                    {blood.percent} % · {blood.volume} сл
-                  </ProgressBar>
-                  {blood.incoming > 0 && <Box mt={0.5}>Переливается ещё {blood.incoming} сл</Box>}
-                </LabeledList.Item>
-              )}
-            </LabeledList>
-          </Section>
-          <DiagnosticSections sections={scan.sections.filter(section => prioritySections.includes(section.title))} />
-          <Section title="Повреждения конечностей" buttons={(
-            <Button icon="bone" selected={showLimbs} onClick={() => setShowLimbs(!showLimbs)}>
-              {showLimbs ? 'Скрыть' : 'Показать'}
-            </Button>
-          )}>
-            {showLimbs ? <LimbTable limbs={scan.damageLocalization} /> : <Box color="label">Подробная локализация скрыта.</Box>}
-          </Section>
-          {scan.organs.length > 0 && (
-            <Section title="Состояние органов">
-              <Table>
-                <Table.Row header>
-                  <Table.Cell>Орган</Table.Cell>
-                  {advanced && <Table.Cell>Урон</Table.Cell>}
-                  <Table.Cell>Диагностика</Table.Cell>
-                </Table.Row>
-                {scan.organs.map((organ, index) => (
-                  <Table.Row key={index}>
-                    <Table.Cell verticalAlign="top" pr={1}>{organ.name}</Table.Cell>
-                    {advanced && <Table.Cell verticalAlign="top" pr={1}>{organ.damage}</Table.Cell>}
-                    <Table.Cell pb={1} color={organ.warning ? 'bad' : undefined}>{organ.status}</Table.Cell>
-                  </Table.Row>
-                ))}
-              </Table>
-            </Section>
-          )}
-        </>
+      {summary && <Section title={summary.title}><ScanLines lines={summary.lines} compact /></Section>}
+      {!scan.woundOnly && (
+        <Section title="Локализация повреждений" buttons={(
+          <Button icon="bone" selected={verbose} onClick={() => act('detail')}>{verbose ? 'Подробно' : 'Кратко'}</Button>
+        )}>
+          {verbose ? <LimbTable limbs={scan.damageLocalization || []} /> : <Box color="label">Подробная локализация скрыта.</Box>}
+        </Section>
       )}
-      {scan.scanmode === 1 && scan.reagents.length > 0 && (
-        <Section title="Реагенты в организме">
+      {!!scan.organs?.length && (
+        <Section title="Состояние органов">
           <Table>
-            <Table.Row header><Table.Cell>Реагент</Table.Cell><Table.Cell>Объём</Table.Cell><Table.Cell>Состояние</Table.Cell></Table.Row>
-            {scan.reagents.map((reagent, index) => (
-              <Table.Row key={index} color={reagent.overdosed ? 'bad' : reagent.inactive ? 'label' : undefined}>
-                <Table.Cell>{reagent.name}</Table.Cell>
-                <Table.Cell>{reagent.volume} ед.</Table.Cell>
-                <Table.Cell>{reagent.overdosed ? 'ПЕРЕДОЗИРОВКА' : reagent.inactive ? 'Не усваивается' : 'Усваивается'}</Table.Cell>
+            <Table.Row header><Table.Cell>Орган</Table.Cell>{advanced && <Table.Cell>Повреждения</Table.Cell>}<Table.Cell>Диагностика</Table.Cell></Table.Row>
+            {scan.organs.map((organ, index) => (
+              <Table.Row key={index}>
+                <Table.Cell verticalAlign="top" pr={1}>{organ.name}</Table.Cell>
+                {advanced && <Table.Cell verticalAlign="top" pr={1}>{organ.damage}</Table.Cell>}
+                <Table.Cell pb={0.5} color={organ.warning ? 'bad' : undefined}>{decodeHtmlEntities(organ.status)}</Table.Cell>
               </Table.Row>
             ))}
           </Table>
         </Section>
       )}
-      <DiagnosticSections sections={scan.sections.filter(section =>
-        !(scan.scanmode === 0 && prioritySections.includes(section.title))
-        && !(scan.scanmode === 1 && scan.reagents.length > 0 && section.title === 'Реагенты в организме'))} />
-      <Box color="label" textAlign="center" mb={1}>Это сохранённый снимок. Для новых показателей просканируйте пациента ещё раз.</Box>
+      {sections.filter(section => section !== summary).map((section, index) => (
+        <Section key={index} title={section.title}><ScanLines lines={section.lines} /></Section>
+      ))}
+      {!scan.woundOnly && <Reagents reagents={scan.reagents || []} addictions={scan.addictions || []} />}
+      <Box color="label" textAlign="center" mb={1}>Для обновления показателей проведите повторное обследование.</Box>
     </>
   );
 };
 
-const DiagnosticSections = ({ sections }: { sections: ScanSection[] }) => (
-  <>
-    {sections.map((section, index) => (
-      <Section key={index} title={section.title}>
-        {section.lines.map((line, lineIndex) => (
-          <Box key={lineIndex} mb={lineIndex < section.lines.length - 1 ? 0.7 : 0} color={line.warning ? 'bad' : undefined}>
-            {line.text}
-          </Box>
-        ))}
-      </Section>
+const ScanLines = ({ lines, compact = false }: { lines: ScanLine[]; compact?: boolean }) => (
+  <Box>
+    {lines.map((line, index) => (
+      <Fragment key={index}>
+        {compact && index > 0 && ' · '}
+        <Box as={compact ? 'span' : 'div'} mb={compact ? 0 : 0.4} color={line.warning ? 'bad' : undefined}>
+          {decodeHtmlEntities(line.text)}
+        </Box>
+      </Fragment>
     ))}
-  </>
+  </Box>
+);
+
+const Reagents = ({ reagents, addictions }: { reagents: Reagent[]; addictions: string[] }) => (
+  <Section title="Реагенты в организме">
+    {reagents.length > 0 ? (
+      <Table>
+        <Table.Row header><Table.Cell>Реагент</Table.Cell><Table.Cell>Объём</Table.Cell><Table.Cell>Состояние</Table.Cell></Table.Row>
+        {reagents.map((reagent, index) => (
+          <Table.Row key={index} color={reagent.overdosed ? 'bad' : reagent.inactive ? 'label' : undefined}>
+            <Table.Cell>{reagent.name}</Table.Cell><Table.Cell>{reagent.volume} ед.</Table.Cell>
+            <Table.Cell>{reagent.overdosed ? 'ПЕРЕДОЗИРОВКА' : reagent.inactive ? 'Не усваивается' : 'Усваивается'}</Table.Cell>
+          </Table.Row>
+        ))}
+      </Table>
+    ) : <Box color="label">Реагенты не обнаружены.</Box>}
+    <Box mt={0.7} color={addictions.length > 0 ? 'bad' : 'label'}>
+      {addictions.length > 0 ? `Зависимости: ${addictions.join(', ')}.` : 'Химические зависимости не обнаружены.'}
+    </Box>
+  </Section>
 );
 
 const LimbTable = ({ limbs }: { limbs: Limb[] }) => {
-  if (!limbs.length) {
-    return <Box color="label">Локализация повреждений недоступна для этого организма.</Box>;
-  }
+  const affected = limbs.filter(limb => !!limb.missing || limb.brute > 0 || limb.burn > 0 || limb.wounds.length > 0 || limb.embeds.length > 0);
+  if (!affected.length) return <Box color="good">Повреждения конечностей не обнаружены.</Box>;
   return (
     <Table>
       <Table.Row header><Table.Cell>Часть тела</Table.Cell><Table.Cell>Травмы</Table.Cell><Table.Cell>Ожоги</Table.Cell></Table.Row>
-      {limbs.map(limb => (
+      {affected.map(limb => (
         <Fragment key={limb.name}>
-          <Table.Row>
-            <Table.Cell bold>{limb.name}</Table.Cell>
-            <Table.Cell color={limb.brute > 0 ? 'bad' : 'label'}>{limb.missing ? '—' : limb.brute}</Table.Cell>
-            <Table.Cell color={limb.burn > 0 ? 'average' : 'label'}>{limb.missing ? '—' : limb.burn}</Table.Cell>
-          </Table.Row>
-          {limb.missing && (
-            <Table.Row><Table.Cell colSpan={3}><NoticeBox danger>Отсутствует. Требуется хирургическое присоединение или протезирование.</NoticeBox></Table.Cell></Table.Row>
+          {limb.missing ? (
+            <Table.Row><Table.Cell colSpan={3}><NoticeBox danger>Отсутствует {limb.name.toLocaleLowerCase()}. Требуется хирургическое присоединение или протезирование.</NoticeBox></Table.Cell></Table.Row>
+          ) : (
+            <Table.Row><Table.Cell bold>{limb.name}</Table.Cell><Table.Cell color={limb.brute > 0 ? 'bad' : 'label'}>{limb.brute}</Table.Cell><Table.Cell color={limb.burn > 0 ? 'average' : 'label'}>{limb.burn}</Table.Cell></Table.Row>
           )}
           {limb.embeds.map((embed, index) => (
-            <Table.Row key={`embed-${index}`}><Table.Cell colSpan={3} color="bad">Инородное тело: {embed}. Извлеките хирургическим зажимом.</Table.Cell></Table.Row>
+            <Table.Row key={`embed-${index}`}><Table.Cell colSpan={3} color="bad">Инородное тело: {embed}.</Table.Cell></Table.Row>
           ))}
           {limb.wounds.map((wound, index) => (
-            <Table.Row key={`wound-${index}`}>
-              <Table.Cell colSpan={3}>
-                <Stack vertical my={0.5}>
-                  <Stack.Item bold color="bad">{wound.name} · {wound.severity}</Stack.Item>
-                  <Stack.Item>Лечение: {wound.treatment}</Stack.Item>
-                </Stack>
-              </Table.Cell>
-            </Table.Row>
+            <Table.Row key={`wound-${index}`}><Table.Cell colSpan={3}><WoundHint wound={wound} /></Table.Cell></Table.Row>
           ))}
         </Fragment>
       ))}
     </Table>
+  );
+};
+
+const WoundHint = ({ wound }: { wound: Wound }) => {
+  const anchor = useRef<HTMLSpanElement>(null);
+  const tooltip = useRef<HTMLDivElement>(null);
+  const [hovered, setHovered] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const visible = hovered || expanded;
+  useLayoutEffect(() => {
+    if (!visible) return;
+    const place = () => {
+      const root = anchor.current;
+      const popup = tooltip.current;
+      if (!root || !popup) return;
+      const rect = root.getBoundingClientRect();
+      const container = root.closest('.Layout__content')?.getBoundingClientRect();
+      const bounds = { left: Math.max(0, container?.left || 0), top: Math.max(0, container?.top || 0), right: Math.min(window.innerWidth, container?.right || window.innerWidth), bottom: Math.min(window.innerHeight, container?.bottom || window.innerHeight) };
+      // Подсказка остаётся под тем же CSS zoom; экранные отступы переводим в локальные пиксели.
+      const scale = rect.width / root.offsetWidth || 1;
+      const padding = 8 * scale;
+      popup.style.maxWidth = `${Math.max(1, (bounds.right - bounds.left - padding * 2) / scale)}px`;
+      popup.style.maxHeight = `${Math.max(1, (bounds.bottom - bounds.top - padding * 2) / scale)}px`;
+      const size = popup.getBoundingClientRect();
+      const left = Math.max(bounds.left + padding, Math.min(rect.left, bounds.right - size.width - padding));
+      const preferredTop = rect.bottom + padding + size.height > bounds.bottom - padding ? rect.top - size.height - padding : rect.bottom + padding;
+      const top = Math.max(bounds.top + padding, Math.min(preferredTop, bounds.bottom - size.height - padding));
+      popup.style.left = `${(left - rect.left) / scale}px`;
+      popup.style.top = `${(top - rect.top) / scale}px`;
+    };
+    const close = (event: PointerEvent) => {
+      if (!anchor.current?.contains(event.target as Node)) { setExpanded(false); setHovered(false); }
+    };
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { setExpanded(false); setHovered(false); }
+    };
+    place();
+    window.addEventListener('resize', place);
+    document.addEventListener('scroll', place, true);
+    document.addEventListener('pointerdown', close);
+    document.addEventListener('keydown', escape);
+    return () => {
+      window.removeEventListener('resize', place);
+      document.removeEventListener('scroll', place, true);
+      document.removeEventListener('pointerdown', close);
+      document.removeEventListener('keydown', escape);
+    };
+  }, [visible, expanded]);
+  return (
+    <span ref={anchor} className="Healthanalyzer__wound" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+      <Button className="Healthanalyzer__woundButton" icon="notes-medical" selected={expanded} aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>
+        {wound.name} · {wound.severity}
+      </Button>
+      {visible && (
+        <div ref={tooltip} className="Tooltip Healthanalyzer__woundTooltip" role="tooltip">
+          <Box bold mb={0.5}>{wound.name} · {wound.severity}</Box>
+          <Box preserveWhitespace>{decodeHtmlEntities(expanded ? wound.details : wound.treatment)}</Box>
+          {!expanded && <Box color="label" mt={0.5}>Нажмите, чтобы открыть подробное заключение.</Box>}
+        </div>
+      )}
+    </span>
   );
 };

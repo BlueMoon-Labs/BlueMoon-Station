@@ -89,6 +89,8 @@
 @include meta.load-css('./interfaces/HereticBookMaterials.scss');
 
 
+@include meta.load-css('./interfaces/Healthanalyzer.scss');
+
 // Layouts
 @include meta.load-css('./layouts/Layout.scss');
 @include meta.load-css('./layouts/NtosHeader.scss');

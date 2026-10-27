@@ -11,10 +11,7 @@ GENETICS SCANNER
 
 */
 
-// Describes the three modes of scanning available for health analyzers
-#define SCANMODE_HEALTH		0
-#define SCANMODE_CHEMICAL 	1
-#define SCANMODE_WOUND	 	2
+// Подробный и краткий форматы медицинского отчёта.
 #define SCANNER_CONDENSED 	0
 #define SCANNER_VERBOSE 	1
 
@@ -87,8 +84,6 @@ GENETICS SCANNER
 	throw_speed = 3
 	throw_range = 7
 	custom_materials = list(/datum/material/iron=200)
-	var/mode = 1
-	var/scanmode = SCANMODE_HEALTH
 	var/advanced = FALSE
 	var/last_msg = ""
 	var/last_recipient_name = ""
@@ -97,6 +92,7 @@ GENETICS SCANNER
 	var/list/scan_data
 	var/printing = FALSE
 	var/scan_number = 0
+	var/last_msg_condensed = ""
 
 /obj/item/healthanalyzer/Initialize(mapload)
 	. = ..()
@@ -108,29 +104,17 @@ GENETICS SCANNER
 	return BRUTELOSS
 
 /obj/item/healthanalyzer/attack_self(mob/user)
-	scanmode = (scanmode + 1) % 3
-	switch(scanmode)
-		if(SCANMODE_HEALTH)
-			to_chat(user, span_notice("Вы переключаете анализатор в режим отображения физического состояния пациента."))
-		if(SCANMODE_CHEMICAL)
-			to_chat(user, span_notice("Вы переключаете анализатор в режим отображения химикатов в теле пациента."))
-		if(SCANMODE_WOUND)
-			to_chat(user, span_notice("Вы переключаете анализатор в режим отображения дополнительной информации о повреждениях."))
+	if(!last_msg)
+		to_chat(user, span_notice("В памяти анализатора нет результатов обследования."))
+		return
+	show_results(user)
 
 // BLUEMOON ADD START - изменение сканеров здоровья
 /obj/item/healthanalyzer/examine(mob/user)
 	. = ..()
-	. += "\n"
-	switch(scanmode)
-		if(SCANMODE_HEALTH)
-			. += span_notice("Сканер в режиме отображения физического состояния пациента. Вы можете переключать режимы, <b>используя сканер в руке</b>.")
-		if(SCANMODE_CHEMICAL)
-			. += span_notice("Сканер в режиме отображения химикатов в теле пациента. Вы можете переключать режимы, <b>используя сканер в руке.</b>")
-		if(SCANMODE_WOUND)
-			. += span_notice("Сканер в режиме отображения дополнительной информации о повреждениях. Вы можете переключать режимы, <b>используя сканер в руке.</b>")
-	. += span_notice("Ваш формат вывода: [user.client?.prefs?.health_analyzer_chat ? "чат" : "окно TGUI"]. <b>Alt-Click</b> переключает формат для всех ваших анализаторов.")
+	. += span_notice("Результаты обследования [user.client?.prefs?.health_analyzer_chat ? "выдаются текстовым отчётом" : "отображаются на медицинском дисплее"]. <b>Alt-Click</b> меняет способ отображения на всех ваших анализаторах.")
 	if(last_msg)
-		. += span_notice("Сохранён отчёт о [last_recipient_name] от [last_scan_time]. <b>Ctrl-Click</b> открывает его повторно.")
+		. += span_notice("Сохранён отчёт о [last_recipient_name] от [last_scan_time]. Используйте анализатор в руке, чтобы открыть его.")
 	if(advanced)
 		. += span_notice("Сканер был улучшен и может проводить более глубокий анализ.")
 
@@ -141,21 +125,12 @@ GENETICS SCANNER
 		return
 	user.client.prefs.health_analyzer_chat = !user.client.prefs.health_analyzer_chat
 	user.client.prefs.save_preferences()
-	to_chat(user, span_notice("Все ваши анализаторы теперь выводят результаты [user.client.prefs.health_analyzer_chat ? "в чат" : "в окно TGUI"]."))
-
-/obj/item/healthanalyzer/CtrlClick(mob/user)
-	. = ..()
-	if(!isliving(user) || !user.canUseTopic(src, BE_CLOSE))
-		return
-	if(!last_msg)
-		to_chat(user, span_warning("В анализаторе отсутствуют сохранённые данные!"))
-		return
-	show_results(user)
+	to_chat(user, span_notice("Все ваши анализаторы теперь [user.client.prefs.health_analyzer_chat ? "выдают текстовый медицинский отчёт" : "показывают результаты на медицинском дисплее"]."))
 // BLUEMOON ADD END
 
 /obj/item/healthanalyzer/proc/show_results(mob/user)
 	if(user.client?.prefs?.health_analyzer_chat)
-		var/report = last_msg
+		var/report = get_report(user)
 		if(advanced)
 			report += "<hr><a href='?src=[REF(src)];print_scan=1;scan=[scan_number]'>Распечатать</a>"
 		to_chat(user, examine_block(report), type = MESSAGE_TYPE_INFO)
@@ -172,7 +147,7 @@ GENETICS SCANNER
 		ui.open()
 
 /obj/item/healthanalyzer/ui_data(mob/user)
-	var/list/data = list("advanced" = advanced, "printing" = printing, "scan" = scan_data)
+	var/list/data = list("advanced" = advanced, "printing" = printing, "scan" = scan_data, "verbose" = isnull(user.client?.prefs) ? TRUE : user.client.prefs.health_analyzer_verbose)
 	return data
 
 /obj/item/healthanalyzer/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
@@ -182,6 +157,7 @@ GENETICS SCANNER
 		if("clear")
 			scan_data = null
 			last_msg = ""
+			last_msg_condensed = ""
 			last_recipient_name = ""
 			last_scan_time = ""
 			return TRUE
@@ -190,13 +166,28 @@ GENETICS SCANNER
 			return TRUE
 		if("chat")
 			if(last_msg)
-				to_chat(usr, examine_block(last_msg), type = MESSAGE_TYPE_INFO)
+				to_chat(usr, examine_block(get_report(usr)), type = MESSAGE_TYPE_INFO)
 			return TRUE
+		if("detail")
+			toggle_detail(usr)
+			return TRUE
+
+/obj/item/healthanalyzer/proc/get_report(mob/user)
+	return user.client?.prefs && !user.client.prefs.health_analyzer_verbose ? last_msg_condensed : last_msg
+
+/obj/item/healthanalyzer/proc/toggle_detail(mob/user)
+	if(!user.client?.prefs)
+		return
+	user.client.prefs.health_analyzer_verbose = !user.client.prefs.health_analyzer_verbose
+	user.client.prefs.save_preferences()
+	SStgui.update_user_uis(user)
 
 /obj/item/healthanalyzer/proc/store_scan(mob/user, list/data)
 	scan_number++
 	last_msg = data["report"]
+	last_msg_condensed = data["report_compact"] || last_msg
 	data.Remove("report")
+	data.Remove("report_compact")
 	scan_data = data
 	last_recipient_name = data["patient"]
 	last_scan_time = data["scanTime"]
@@ -214,7 +205,6 @@ GENETICS SCANNER
 		var/list/data = list(
 			"patient" = "Пол",
 			"scanTime" = STATION_TIME_TIMESTAMP("hh:mm:ss", world.time),
-			"scanmode" = SCANMODE_HEALTH,
 			"unknown" = TRUE,
 			"damageLevels" = list("oxy" = 0, "tox" = 0, "burn" = 0, "brute" = 0),
 			"damageLocalization" = list(),
@@ -228,13 +218,8 @@ GENETICS SCANNER
 
 	user.visible_message(span_notice("[user] анализирует показатели персонажа [M]."), span_notice("Вы анализируете показатели персонажа [M]."))
 
-	if(scanmode == SCANMODE_HEALTH)
-		healthscan(user, M, mode, advanced, src)
-		playsound(src, 'sound/rig/shortbeep.ogg', 50, 1, 1)
-	else if(scanmode == SCANMODE_CHEMICAL)
-		store_scan(user, chemical_scan_results(M))
-	else
-		woundscan(user, M, src)
+	healthscan(user, M, advanced = advanced, connected_analyzer = src)
+	playsound(src, 'sound/rig/shortbeep.ogg', 50, 1, 1)
 
 	add_fingerprint(user)
 
@@ -246,13 +231,7 @@ GENETICS SCANNER
 	if (!isliving(target))
 		return NONE
 
-	switch (scanmode)
-		if (SCANMODE_HEALTH)
-			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Анализ здоровья")
-		if (SCANMODE_CHEMICAL)
-			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Анализ реагентов")
-		if (SCANMODE_WOUND)
-			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Анализ ран")
+	LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Обследовать пациента")
 
 	return CONTEXTUAL_SCREENTIP_SET
 
@@ -260,16 +239,16 @@ GENETICS SCANNER
 /proc/healthscan(mob/user, mob/living/M, mode = 1, advanced = FALSE, obj/item/healthanalyzer/connected_analyzer = null)
 	if(isliving(user) && (user.incapacitated() || user.eye_blind))
 		return
-	var/list/data = medical_scan_results(user, M, mode, advanced)
-	var/report = data["report"]
+	var/list/data = medical_scan_results(user, M, advanced, include_chemistry = !isnull(connected_analyzer))
+	var/report = mode ? data["report"] : data["report_compact"]
 	SEND_SIGNAL(M, COMSIG_HEALTH_SCAN, user)
 	if(connected_analyzer)
 		connected_analyzer.store_scan(user, data)
 	else
-		to_chat(user, examine_block(data["report"]), type = MESSAGE_TYPE_INFO)
+		to_chat(user, examine_block(report), type = MESSAGE_TYPE_INFO)
 	return report
 
-/proc/medical_scan_results(mob/user, mob/living/M, mode = SCANNER_VERBOSE, advanced = FALSE)
+/proc/medical_scan_results(mob/user, mob/living/M, advanced = FALSE, include_chemistry = FALSE)
 	if(isliving(user) && (user.incapacitated() || user.eye_blind))
 		return
 	// Показатели повреждений с учётом маскировки смерти.
@@ -294,34 +273,30 @@ GENETICS SCANNER
 	var/list/data = list(
 		"patient" = M.get_visible_name(),
 		"scanTime" = scan_time,
-		"scanmode" = SCANMODE_HEALTH,
-		"verbose" = mode,
 		"health" = (M.stat == DEAD || (HAS_TRAIT(M, TRAIT_FAKEDEATH) && !advanced)) ? null : round(M.health / M.maxHealth * 100, 0.1),
 		"dead" = M.stat == DEAD || (HAS_TRAIT(M, TRAIT_FAKEDEATH) && !advanced && !iszombie(M)),
 		"unknown" = HAS_TRAIT(M, TRAIT_FAKEDEATH) && !advanced && iszombie(M),
 		"robotic" = HAS_TRAIT(M, TRAIT_ROBOTIC_ORGANISM),
+		"temperatureC" = round(M.bodytemperature - T0C, 0.1),
+		"temperatureF" = round(M.bodytemperature * 1.8 - 459.67, 0.1),
 		"damageLevels" = list("oxy" = oxy_loss, "tox" = tox_loss, "burn" = fire_loss, "brute" = brute_loss),
 		"sections" = list(),
-		"report" = "[span_info("<b>Результаты анализа: [html_encode(M.get_visible_name())]</b> ([scan_time])<br>Общее состояние: [mob_status]")]",
+		"report" = "",
 	)
 	var/msg = ""
 
 	if(brute_loss > 10)
-		msg += "\n" + span_alert("Обнаружены [brute_loss > 50 ? "серьёзные" : "незначительные"] травмы.")
+		msg += "\n" + span_alert("Травмы: [brute_loss > 50 ? "серьёзные" : "незначительные"]")
 	if(fire_loss > 10)
-		msg += "\n" + span_alert("Обнаружены [fire_loss > 50 ? "серьёзные" : "незначительные"] ожоги.")
+		msg += "\n" + span_alert("Ожоги: [fire_loss > 50 ? "серьёзные" : "незначительные"]")
 	if(oxy_loss > 10)
-		msg += "\n" + span_alert("Обнаружено [oxy_loss > 50 ? "серьёзное" : "незначительное"] кислородное голодание.")
+		msg += "\n" + span_alert("Кислородное голодание: [oxy_loss > 50 ? "серьёзное" : "незначительное"]")
 	if(tox_loss > 10)
-		msg += "\n" + span_alert("Обнаружено [tox_loss > 50 ? "серьёзное" : "незначительное"] [HAS_TRAIT(M, TRAIT_ROBOTIC_ORGANISM) ? "повреждение системы" : "отравление токсинами"].")
+		msg += "\n" + span_alert("[HAS_TRAIT(M, TRAIT_ROBOTIC_ORGANISM) ? "Повреждение системы" : "Отравление"]: [tox_loss > 50 ? "серьёзное" : "незначительное"]")
 	if(M.getStaminaLoss())
-		msg += "\n" + span_alert("Субъект имеет признаки усталости.")
-		if(advanced)
-			msg += "\n" + span_info("Степень усталости: [M.getStaminaLoss()]%.")
+		msg += "\n" + span_alert("Усталость[advanced ? ": [M.getStaminaLoss()]%" : " обнаружена"]")
 	if (M.getCloneLoss())
-		msg += "\n" + span_alert("Обнаружены [M.getCloneLoss() > 30 ? "серьёзные" : "незначительные"] повреждения цепей ДНК.")
-		if(advanced)
-			msg += "\n" + span_info("Степень повреждения ДНК: [M.getCloneLoss()].")
+		msg += "\n" + span_alert("Повреждения ДНК: [M.getCloneLoss() > 30 ? "серьёзные" : "незначительные"][advanced ? " ([M.getCloneLoss()])" : ""]")
 	if(ishuman(M))
 		var/mob/living/carbon/human/H = M
 		if(advanced && H.has_dna() && !HAS_TRAIT(H, TRAIT_ROBOTIC_ORGANISM))
@@ -329,6 +304,10 @@ GENETICS SCANNER
 	if(advanced && (locate(/obj/item/implant/fake_mindshield) in M.implants))
 		msg += "\n" + span_alert("Внимание: сигнатура импланта защиты разума не проходит верификацию Nanotrasen. Вероятна подделка.")
 
+	if(ishuman(M))
+		var/mob/living/carbon/human/patient = M
+		if(patient.is_bleeding())
+			msg += "\n" + span_danger("Обнаружено кровотечение.")
 	medical_scan_section(data, "Общая диагностика", msg)
 	msg = ""
 
@@ -336,6 +315,7 @@ GENETICS SCANNER
 	var/list/limbs = list()
 	var/limb_report = "<table><tr><th>Повреждения</th><th>[span_danger("Травмы")]</th><th>[span_warning("Ожоги")]</th><th>[span_nicegreen(HAS_TRAIT(M, TRAIT_ROBOTIC_ORGANISM) ? "Коррозия" : "Токсины")]</th><th>[span_info("Удушение")]</th></tr>"
 	limb_report += "<tr><td><b>Всего</b></td><td>[brute_loss]</td><td>[fire_loss]</td><td>[tox_loss]</td><td>[oxy_loss]</td></tr>"
+	var/limb_details = ""
 	if(iscarbon(M))
 		var/mob/living/carbon/C = M
 		for(var/zone in list(BODY_ZONE_HEAD, BODY_ZONE_CHEST, BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG))
@@ -347,21 +327,22 @@ GENETICS SCANNER
 				entry["brute"] = limb.brute_dam
 				entry["burn"] = limb.burn_dam
 				for(var/datum/wound/wound as anything in limb.wounds)
-					wounds += list(list("name" = wound.ru_name, "severity" = wound.severity_text(), "treatment" = html_decode(strip_html_tags(wound.treat_text))))
+					wounds += list(list("name" = wound.ru_name, "severity" = wound.severity_text(), "treatment" = strip_html_tags(wound.treat_text), "details" = strip_html_tags(replacetext(wound.get_scanner_description(user), "<br>", "\n"))))
 				for(var/obj/item/embedded as anything in limb.embedded_objects)
 					embeds += embedded.name
-			limbs += list(entry)
-			if(!mode || (limb && !limb.brute_dam && !limb.burn_dam && !length(wounds) && !length(embeds)))
+			if(limb && !limb.brute_dam && !limb.burn_dam && !length(wounds) && !length(embeds))
 				continue
-			limb_report += "<tr><td>[html_encode(entry["name"])]</td><td>[limb ? limb.brute_dam : "—"]</td><td>[limb ? limb.burn_dam : "—"]</td></tr>"
+			limbs += list(entry)
 			if(!limb)
-				limb_report += "<tr><td colspan='5'>[span_alert("↳ Отсутствует. Требуется хирургическое присоединение или протезирование.")]</td></tr>"
+				limb_details += "<tr><td colspan='5'>[span_alert("Отсутствует [lowertext(html_encode(entry["name"]))]. Требуется хирургическое присоединение или протезирование.")]</td></tr>"
+			else
+				limb_details += "<tr><td>[html_encode(entry["name"])]</td><td>[limb.brute_dam]</td><td>[limb.burn_dam]</td></tr>"
 			for(var/embedded_name in embeds)
-				limb_report += "<tr><td colspan='5'>[span_alert("↳ Инородное тело: [span_tooltip("Извлеките хирургическим зажимом.", html_encode(embedded_name), "", "", "")]")]</td></tr>"
+				limb_details += "<tr><td colspan='5'>[span_alert("↳ Инородное тело: [span_tooltip("Извлеките хирургическим зажимом.", html_encode(embedded_name), "", "", "")]")]</td></tr>"
 			for(var/list/wound in wounds)
-				limb_report += "<tr><td colspan='5'>[span_alert("↳ [html_encode(wound["name"])] ([wound["severity"]])")]<br>Рекомендуемое лечение: [html_encode(wound["treatment"])]</td></tr>"
+				limb_details += "<tr><td colspan='5'>[span_alert("↳ [span_tooltip(html_encode(wound["details"]), "[html_encode(wound["name"])] ([wound["severity"]])", "", "", "")]")]</td></tr>"
 	data["damageLocalization"] = limbs
-	data["report"] += "<hr><b>Состояние тела</b><br>[limb_report]</table>"
+	data["report"] += "<hr><b>Состояние тела</b><br>[limb_report]<!--MEDICAL_LIMB_DETAILS--></table>"
 
 	var/list/organ_data = list()
 	data["organs"] = organ_data
@@ -469,11 +450,11 @@ GENETICS SCANNER
 					damage_message += " " + span_alert("Орган в начальной стадии разложения - [O.ru_name]")
 
 			if(temp_message || damage_message)
-				organ_data += list(list("name" = O.ru_name || O.name, "damage" = advanced ? O.damage : null, "status" = html_decode(strip_html_tags("[damage_message] [temp_message]")), "warning" = !!(damage_message || findtext(temp_message, "class='danger") || findtext(temp_message, "class='alert"))))
+				organ_data += list(list("name" = O.ru_name || O.name, "damage" = advanced ? O.damage : null, "status" = strip_html_tags("[damage_message] [temp_message]"), "warning" = !!(damage_message || findtext(temp_message, "class='danger") || findtext(temp_message, "class='alert"))))
 				msg += "<tr><td>[html_encode(O.ru_name || O.name)]</td>[advanced ? "<td>[O.damage]</td>" : ""]<td>[damage_message] [temp_message]</td></tr>"
 
 		if(length(organ_data))
-			data["report"] += "<hr><b>Состояние органов</b><table><tr><th>Орган</th>[advanced ? "<th>Урон</th>" : ""]<th>Состояние</th></tr>[msg]</table>"
+			data["report"] += "<hr><b>Состояние органов</b><table><tr><th>Орган</th>[advanced ? "<th>Повреждения</th>" : ""]<th>Состояние</th></tr>[msg]</table>"
 		msg = ""
 
 		// Отсутствующие органы с учётом физиологии вида.
@@ -501,7 +482,7 @@ GENETICS SCANNER
 		if(M.has_status_effect(/datum/status_effect/heretic_dance_earworm))
 			msg += span_alert("Сердцебиение подстроилось под чужой ритм: пульс бьёт ровными тактами, как метроном. Сбить ритм может разряд дефибриллятора.") + "\n"
 		if(breathes && !M.getorganslot(ORGAN_SLOT_LUNGS))
-			msg += span_alert("<b>Лёгкие пациента разорвались из-за травмы!</b>") + "\n"
+			msg += span_alert("<b>У субъекта отсутствуют лёгкие!</b>") + "\n"
 		if(has_stomach && !M.getorganslot(ORGAN_SLOT_STOMACH))
 			msg += span_alert("<b>У субъекта отсутствует желудок!</b>") + "\n"
 
@@ -512,7 +493,7 @@ GENETICS SCANNER
 				msg += span_red("Субъект подвергся безопасному уровню радиационного воздействия.") + "\n"
 			msg += span_info("Показатели радиационного заражения: [M.radiation] rad") + "\n"
 
-	medical_scan_section(data, "Органы и радиация", msg)
+	var/body_analysis = msg
 	msg = ""
 	// Вид и температура тела.
 	var/mob/living/carbon/human/H = M
@@ -545,15 +526,17 @@ GENETICS SCANNER
 		else if (S.flying_species != initial(S.flying_species))
 			mutant = TRUE
 
-		msg += "\n" + span_info("Раса: [H.spec_trait_examine_font()][H.dna.custom_species ? H.dna.custom_species : S.name]</font>") + "\n"
-		msg += span_info("Первоначальная раса: [H.spec_trait_examine_font()][S.name]</font>") + "\n"
+		data["species"] = H.dna.custom_species || S.name
+		data["similarSpecies"] = S.name
 		if(mutant)
 			msg += span_info("У субъекта имеются мутации.") + "\n"
 		// BLUEMOON ADD START - уточнение про неоригинальные органы, а не просто мутации
 		if(mutated_parts)
 			msg += span_info("У субъекта имеются [HAS_TRAIT(H, TRAIT_ROBOTIC_ORGANISM) ? "неоригинальные внутренние детали." : "неродные внутренние органы"].") + "\n"
 
-	msg += span_info("Температура тела: [round(M.bodytemperature-T0C,0.1)] &deg;C ([round(M.bodytemperature*1.8-459.67,0.1)] &deg;F)") + "\n"
+	if(advanced)
+		medical_scan_section(data, "Анализ тела", "[body_analysis][msg]")
+	msg = ""
 
 	if(M.tod && (M.stat == DEAD || ((HAS_TRAIT(M, TRAIT_FAKEDEATH)) && !advanced)))
 		var/zdelta = round(rand(-world.time, world.time) - M.timeofdeath)
@@ -573,6 +556,9 @@ GENETICS SCANNER
 					else
 						msg += "\n"
 
+	data["vitals"] = medical_scan_lines(msg)
+	var/vitals_report = replacetext(msg, "\n", "<br>")
+	msg = ""
 	if(M.sterilize_power)
 		msg += span_nicegreen("Ткани пациента продезинфицированы, что повышет шанс успеха операции на [M.sterilize_power] %. ") + span_info("Эффект продлится еще [DisplayTimeText(M._sterilize_expire - world.time)]\n")
 
@@ -580,24 +566,13 @@ GENETICS SCANNER
 		var/datum/surgery_step/surgery_step = procedure.get_surgery_step()
 		msg += span_danger("Начата операция на [procedure.operated_bodypart?.ru_name_v], шанс на успех в текущих условиях: [clamp(surgery_step.get_chance(M, user, user.get_inactive_held_item(), procedure, TRUE),0,100)] %\n")
 
-	medical_scan_section(data, "Жизненные показатели и операции", msg)
+	medical_scan_section(data, "Операции", msg)
 	msg = ""
-	// Раны и рекомендации по лечению.
-	if(iscarbon(M) && !mode)
-		var/mob/living/carbon/C = M
-		var/list/wounded_parts = C.get_wounded_bodyparts()
-		for(var/i in wounded_parts)
-			var/obj/item/bodypart/wounded_part = i
-			msg += span_alert("<b>Физическая травма обнаружена в [wounded_part.ru_name_v]</b>") + "\n"
-			for(var/k in wounded_part.wounds)
-				var/datum/wound/W = k
-				msg += span_alert("Тип: [W.ru_name]\nТяжесть: [W.severity_text()]\nРекомендуемое лечение: [W.treat_text]") + "\n"
-			msg += "\n"
 	var/palm_scan = blood_oath_palm_scan(M)
 	if(palm_scan)
 		msg += span_info("[palm_scan]") + "\n"
 
-	medical_scan_section(data, "Раны и особые признаки", msg)
+	medical_scan_section(data, "Особые признаки", msg)
 	msg = ""
 	for(var/thing in M.diseases)
 		var/datum/disease/D = thing
@@ -607,13 +582,11 @@ GENETICS SCANNER
 	medical_scan_section(data, "Инфекции", msg)
 	msg = ""
 	// Объём крови с учётом размера тела и поступающего переливания.
+	var/blood_report = ""
 	if(M.has_dna())
 		var/mob/living/carbon/C = M
 		var/blood_typepath = C.get_blood_id()
 		if(blood_typepath)
-			if(ishuman(C))
-				if(H.is_bleeding())
-					msg += span_danger("У субъекта кровотечение!") + "\n"
 			var/blood_percent = round((C.scan_blood_volume() / (BLOOD_VOLUME_NORMAL * C.blood_ratio))*100)
 			var/integrated_blood_percent = round((C.integrating_blood / (BLOOD_VOLUME_NORMAL * C.blood_ratio))*100)
 			data["blood"] = list("percent" = blood_percent, "volume" = C.scan_blood_volume(), "incoming" = C.integrating_blood, "low" = (C.scan_blood_volume() + C.integrating_blood) <= (BLOOD_VOLUME_SAFE * C.blood_ratio), "critical" = (C.scan_blood_volume() + C.integrating_blood) <= (BLOOD_VOLUME_OKAY * C.blood_ratio))
@@ -623,12 +596,14 @@ GENETICS SCANNER
 				if(R)
 					blood_type = R.name
 
+			var/list/blood_data = data["blood"]
+			blood_data["type"] = blood_type
 			if((C.scan_blood_volume() + C.integrating_blood) <= (BLOOD_VOLUME_SAFE * C.blood_ratio) && (C.scan_blood_volume() + C.integrating_blood) > (BLOOD_VOLUME_OKAY*C.blood_ratio))
-				msg += span_danger("НИЗКИЙ УРОВЕНЬ [HAS_TRAIT(C, TRAIT_ROBOTIC_ORGANISM) ? "гидравлической жидкости" : "крови"] [blood_percent] %, [C.scan_blood_volume()] сл[C.integrating_blood? ", и ещё поступает [integrated_blood_percent] %, [C.integrating_blood] сл " : ""].") + " " + span_info("группа: [blood_type]") + "\n"
+				blood_report += span_danger("НИЗКИЙ УРОВЕНЬ [HAS_TRAIT(C, TRAIT_ROBOTIC_ORGANISM) ? "гидравлической жидкости" : "крови"] [blood_percent] %, [C.scan_blood_volume()] сл[C.integrating_blood? ", и ещё поступает [integrated_blood_percent] %, [C.integrating_blood] сл " : ""].") + " " + span_info("группа: [blood_type]") + "\n"
 			else if((C.scan_blood_volume() + C.integrating_blood) <= (BLOOD_VOLUME_OKAY * C.blood_ratio))
-				msg += span_danger("КРИТИЧЕСКИЙ УРОВЕНЬ [HAS_TRAIT(C, TRAIT_ROBOTIC_ORGANISM) ? "гидравлической жидкости" : "крови"] [blood_percent] %, [C.scan_blood_volume()] сл[C.integrating_blood? ", и ещё поступает [integrated_blood_percent] %, [C.integrating_blood] сл " : ""].") + " " + span_info("группа: [blood_type]") + "\n"
+				blood_report += span_danger("КРИТИЧЕСКИЙ УРОВЕНЬ [HAS_TRAIT(C, TRAIT_ROBOTIC_ORGANISM) ? "гидравлической жидкости" : "крови"] [blood_percent] %, [C.scan_blood_volume()] сл[C.integrating_blood? ", и ещё поступает [integrated_blood_percent] %, [C.integrating_blood] сл " : ""].") + " " + span_info("группа: [blood_type]") + "\n"
 			else
-				msg += span_info("[HAS_TRAIT(C, TRAIT_ROBOTIC_ORGANISM) ? "Показатель уровня гидравлической жидкости" : "Показатель уровня крови"] [blood_percent] %, [C.scan_blood_volume()] сл[C.integrating_blood? ", и ещё поступает [integrated_blood_percent] %, [C.integrating_blood] сл " : ""]. группа: [blood_type]") + "\n"
+				blood_report += span_info("[HAS_TRAIT(C, TRAIT_ROBOTIC_ORGANISM) ? "Показатель уровня гидравлической жидкости" : "Показатель уровня крови"] [blood_percent] %, [C.scan_blood_volume()] сл[C.integrating_blood? ", и ещё поступает [integrated_blood_percent] %, [C.integrating_blood] сл " : ""]. группа: [blood_type]") + "\n"
 
 		var/cyberimp_detect
 		for(var/obj/item/organ/cyberimp/CI in C.internal_organs)
@@ -642,25 +617,44 @@ GENETICS SCANNER
 		msg += span_info("<b>Обнаружены наниты</b>")
 	else if(HAS_TRAIT_FROM(M, TRAIT_NANITES_IMMUNITY, NANITES_IMMUNITY_FROM_REAGENT))
 		msg += span_info("<b>Обнаружено действие Nanite Protector.</b>\n")
-	medical_scan_section(data, "Кровь, импланты и наниты", msg)
+	medical_scan_section(data, "Импланты и наниты", msg)
+	if(include_chemistry)
+		var/list/chemical_data = chemical_scan_results(M)
+		data["reagents"] = chemical_data["reagents"]
+		data["addictions"] = chemical_data["addictions"]
+		var/list/sections = data["sections"]
+		sections += chemical_data["sections"]
+		data["report"] += chemical_data["report"]
+	var/header = span_info("<b>Результаты анализа: [html_encode(M.get_visible_name())]</b><br>Общее состояние: [mob_status]<br>")
+	if(data["species"])
+		header += span_info("Раса: [html_encode(data["species"])] | Схожая раса: [html_encode(data["similarSpecies"])]<br>")
+	header += span_info("Температура тела: [data["temperatureC"]] °C ([data["temperatureF"]] °F)<br>")
+	header += "[vitals_report][blood_report][span_info("Снимок от [scan_time]")]"
+	var/report = "[header][data["report"]]"
+	data["report_compact"] = replacetext(report, "<!--MEDICAL_LIMB_DETAILS-->", "")
+	data["report"] = replacetext(report, "<!--MEDICAL_LIMB_DETAILS-->", limb_details)
 	return data
 
 // В чат и на бумагу идёт форматированный текст, в TGUI — обычный текст и уровень предупреждения.
 /proc/medical_scan_section(list/data, title, text)
-	if(!length(text))
-		return
-	text = replacetext(text, "\n", "<br>")
-	var/list/lines = list()
-	for(var/line in splittext(text, "<br>"))
-		var/plain = trim(html_decode(strip_html_tags(line)))
-		if(!length(plain))
-			continue
-		lines += list(list("text" = plain, "warning" = !!(findtext(line, "class='alert") || findtext(line, "class='danger") || findtext(line, "class='red"))))
+	var/list/lines = medical_scan_lines(text)
 	if(!length(lines))
 		return
 	var/list/sections = data["sections"]
 	sections += list(list("title" = title, "lines" = lines))
-	data["report"] += "<hr><b>[title]</b><br>[text]"
+	data["report"] += "<hr><b>[title]</b><br>[replacetext(text, "\n", "<br>")]"
+
+// Сохраняем кириллицу без перекодирования; HTML-сущности декодирует интерфейс.
+/proc/medical_scan_lines(text)
+	var/list/lines = list()
+	if(!length(text))
+		return lines
+	for(var/line in splittext(replacetext(text, "\n", "<br>"), "<br>"))
+		var/plain = trim(strip_html_tags(line))
+		if(!length(plain))
+			continue
+		lines += list(list("text" = plain, "warning" = !!(findtext(line, "class='alert") || findtext(line, "class='danger") || findtext(line, "class='red") || findtext(line, "class='bolddanger"))))
+	return lines
 
 
 /proc/chemscan(mob/living/user, mob/living/M)
@@ -675,11 +669,10 @@ GENETICS SCANNER
 	var/list/data = list(
 		"patient" = target.get_visible_name(),
 		"scanTime" = scan_time,
-		"scanmode" = SCANMODE_CHEMICAL,
 		"sections" = list(),
 		"reagents" = list(),
 		"addictions" = list(),
-		"report" = span_info("<b>Химический анализ: [html_encode(target.get_visible_name())]</b> ([scan_time])"),
+		"report" = "",
 	)
 	var/list/reagents = data["reagents"]
 	var/list/addictions = data["addictions"]
@@ -693,14 +686,16 @@ GENETICS SCANNER
 		msg += "[span_notice(reagent_text)][reagent.overdosed ? " — [span_bolddanger("ПЕРЕДОЗИРОВКА")]" : ""]<br>"
 	if(!length(reagents))
 		msg = span_notice("В организме не обнаружены реагенты.")
-	medical_scan_section(data, "Реагенты в организме", msg)
-	msg = ""
+	msg += "<br>"
+	var/addiction_text = ""
 	for(var/datum/reagent/reagent as anything in target.reagents?.addiction_list)
 		addictions += reagent.name
-		msg += "[span_danger(html_encode(reagent.name))]<br>"
-	if(!length(addictions))
-		msg = span_notice("Химические зависимости не обнаружены.")
-	medical_scan_section(data, "Зависимости", msg)
+		addiction_text += "[length(addiction_text) ? ", " : ""][html_encode(reagent.name)]"
+	if(length(addictions))
+		msg += span_danger("Зависимости: [addiction_text].")
+	else
+		msg += span_notice("Химические зависимости не обнаружены.")
+	medical_scan_section(data, "Реагенты в организме", msg)
 	msg = ""
 	var/datum/reagent/impure/fermiTox/isomers = target.reagents?.has_reagent(/datum/reagent/impure/fermiTox)
 	if(istype(isomers))
@@ -722,16 +717,11 @@ GENETICS SCANNER
 	set name = "Switch Verbosity"
 	set category = "Object"
 
-	var/mob/living/L = usr
-	if(!istype(L) || !CHECK_MOBILITY(L, MOBILITY_USE))
+	var/mob/living/user = usr
+	if(!istype(user) || !CHECK_MOBILITY(user, MOBILITY_USE))
 		return
-
-	mode = !mode
-	switch (mode)
-		if(1)
-			to_chat(usr, "Сканер теперь показывает повреждения отдельно взятой конечности.")
-		if(0)
-			to_chat(usr, "Сканер теперь не показывает повреждения конечности.")
+	toggle_detail(user)
+	to_chat(user, span_notice("Подробная локализация повреждений [user.client?.prefs?.health_analyzer_verbose ? "включена" : "выключена"]."))
 
 /obj/item/healthanalyzer/advanced
 	name = "advanced health analyzer"
@@ -754,7 +744,7 @@ GENETICS SCANNER
 	if(!advanced || printing || !last_msg)
 		return
 	// Сохраняем снимок до задержки: новое сканирование не должно подменить печатаемый отчёт.
-	var/report = last_msg
+	var/report = get_report(user)
 	var/report_name = last_recipient_name
 	var/report_time = last_scan_time
 	printing = TRUE
@@ -781,7 +771,7 @@ GENETICS SCANNER
 	var/list/data = list(
 		"patient" = patient.get_visible_name(),
 		"scanTime" = scan_time,
-		"scanmode" = SCANMODE_WOUND,
+		"woundOnly" = TRUE,
 		"sections" = list(),
 		"report" = span_info("<b>Анализ ран: [html_encode(patient.get_visible_name())]</b> ([scan_time])"),
 	)
@@ -803,11 +793,12 @@ GENETICS SCANNER
 	name = "first aid analyzer"
 	icon_state = "adv_spectrometer"
 	desc = "A prototype MeLo-Tech medical scanner used to diagnose injuries and recommend treatment for serious wounds, but offers no further insight into the patient's health. You hope the final version is less annoying to read!"
-	scanmode = SCANMODE_WOUND // Forces context to give correct tip.
 	var/next_encouragement
 	var/greedy
 
 /obj/item/healthanalyzer/wound/attack_self(mob/user)
+	if(last_msg)
+		return ..()
 	if(next_encouragement < world.time)
 		playsound(src, 'sound/machines/ping.ogg', 50, FALSE)
 		var/list/encouragements = list("briefly displays a happy face, gazing emptily at you", "briefly displays a spinning cartoon heart", "displays an encouraging message about eating healthy and exercising", \
@@ -1335,8 +1326,5 @@ GENETICS SCANNER
 	else
 		return HM.alias
 
-#undef SCANMODE_HEALTH
-#undef SCANMODE_CHEMICAL
-#undef SCANMODE_WOUND
 #undef SCANNER_CONDENSED
 #undef SCANNER_VERBOSE

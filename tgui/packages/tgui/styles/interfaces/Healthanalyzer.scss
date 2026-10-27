@@ -1,0 +1,19 @@
+.Healthanalyzer__wound {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+
+.Healthanalyzer__woundButton {
+  white-space: normal;
+}
+
+.Healthanalyzer__woundTooltip {
+  position: absolute;
+  z-index: 10;
+  width: 32rem;
+  box-sizing: border-box;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+  pointer-events: auto;
+}
