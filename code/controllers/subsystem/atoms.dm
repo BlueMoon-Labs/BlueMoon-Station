@@ -9,6 +9,8 @@ SUBSYSTEM_DEF(atoms)
 	flags = SS_NO_FIRE
 
 	var/old_initialized
+	/// Сколько вызовов InitializeAtoms() идёт сейчас: шаблоны грузятся параллельно и уступают тик посреди обхода.
+	var/mapload_runs = 0
 
 	//WHITE-STEEL PORT: стек предыдущих значений initialized для map_loader_begin/stop.
 	//Нужен, чтобы вложенные begin/stop не перезаписывали общий old_initialized.
@@ -54,7 +56,10 @@ SUBSYSTEM_DEF(atoms)
 	if(initialized == INITIALIZATION_INSSATOMS)
 		return
 
-	old_initialized = initialized
+	// Режим до загрузки запоминает только первый из перекрывшихся вызовов: второй увидел бы MAPLOAD первого и вернул бы его навсегда,
+	// и каждая машина, созданная потом где угодно, висела бы в late_loaders до следующей загрузки шаблона.
+	if(!mapload_runs++)
+		old_initialized = initialized
 	initialized = INITIALIZATION_INNEW_MAPLOAD
 
 	var/count
@@ -125,22 +130,24 @@ SUBSYSTEM_DEF(atoms)
 		CHECK_TICK
 	#endif								// --- END ATOM STATISTICS LOGGING ---
 
-	initialized = old_initialized
+	if(!--mapload_runs)
+		initialized = old_initialized
 
-	if(late_loaders.len)
-		for(var/I in 1 to late_loaders.len)
-			var/atom/A = late_loaders[I]
-			if(QDELETED(A))
-				continue
-			A.LateInitialize()
-		testing("Late initialized [late_loaders.len] atoms")
-		late_loaders.Cut()
+	// Список забирается целиком: LateInitialize() может уснуть, и параллельный вызов не должен вычистить его посреди обхода.
+	var/list/to_late_init = late_loaders
+	late_loaders = list()
+	for(var/atom/A as anything in to_late_init)
+		if(QDELETED(A))
+			continue
+		A.LateInitialize()
+	testing("Late initialized [length(to_late_init)] atoms")
 
-	for (var/queued_deletion in queued_deletions)
+	var/list/to_delete = queued_deletions
+	queued_deletions = list()
+	for (var/queued_deletion in to_delete)
 		qdel(queued_deletion)
 
-	testing("[queued_deletions.len] atoms were queued for deletion.")
-	queued_deletions.Cut()
+	testing("[length(to_delete)] atoms were queued for deletion.")
 
 /// Init this specific atom
 /datum/controller/subsystem/atoms/proc/InitAtom(atom/A, list/arguments)
