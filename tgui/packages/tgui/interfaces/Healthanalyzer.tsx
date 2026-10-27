@@ -118,13 +118,13 @@ const ScanResults = ({ scan, advanced, live, deviceLabel = advanced ? 'Прод�
             <Table>
               <Table.Row header><Table.Cell collapsing>Орган</Table.Cell>{advanced && <Table.Cell collapsing>Повреждения</Table.Cell>}<Table.Cell>Диагностика</Table.Cell></Table.Row>
               {scan.organs.map((organ, index) => (
-                <Table.Row key={index} bold={!!organ.critical}>
+                <Table.Row key={index} bold={!!organ.critical} className={organ.critical ? 'Healthanalyzer__organCritical' : undefined}>
                   <Table.Cell collapsing verticalAlign="top" pr={1}>
                     {!!organ.icon && <img className="Healthanalyzer__organIcon" src={`data:image/png;base64,${organ.icon}`} alt="" />}
                     {organ.name}
                   </Table.Cell>
-                  {advanced && <Table.Cell collapsing verticalAlign="top" pr={1} color="bad">{round(organ.damage, 0)}%</Table.Cell>}
-                  <Table.Cell className="Healthanalyzer__organDiagnosis" verticalAlign="top" pb={0.5} color={organ.warning ? 'bad' : undefined}>{decodeHtmlEntities(organ.status)}</Table.Cell>
+                  {advanced && <Table.Cell collapsing verticalAlign="top" pr={1} color={organ.critical ? undefined : 'bad'}>{round(organ.damage, 0)}%</Table.Cell>}
+                  <Table.Cell className="Healthanalyzer__organDiagnosis" verticalAlign="top" pb={0.5} color={!organ.critical && organ.warning ? 'bad' : undefined}>{decodeHtmlEntities(organ.status)}</Table.Cell>
                 </Table.Row>
               ))}
             </Table>

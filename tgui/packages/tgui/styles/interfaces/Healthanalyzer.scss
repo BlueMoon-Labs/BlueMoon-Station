@@ -5,6 +5,14 @@
   text-align: left;
 }
 
+.Healthanalyzer__organCritical {
+  color: #6831a7;
+
+  .Healthanalyzer__organIcon {
+    filter: grayscale(1) brightness(0.5);
+  }
+}
+
 .Healthanalyzer__organDiagnosis {
   overflow-wrap: anywhere;
 }

@@ -647,11 +647,15 @@ GENETICS SCANNER
 			if(temp_message || damage_message)
 				if(O.damage > 0 || (O.organ_flags & ORGAN_FAILING))
 					var/organ_icon = icon2base64html(O, sourceonly = TRUE)
-					var/critical = !!(O.organ_flags & ORGAN_FAILING)
+					var/critical = !!(O.organ_flags & ORGAN_FAILING) || O.damage >= O.maxHealth
 					var/damage_percent = round(O.damage / O.maxHealth * 100, 1)
 					var/organ_diagnosis = "[damage_message] [temp_message]"
+					if(critical)
+						organ_diagnosis = O.organ_flags & (ORGAN_SYNTHETIC | ORGAN_NO_SPOIL) ? "Критический отказ органа. Требуется замена." : "Орган критически разложился и требует замены."
 					organ_data += list(list("name" = capitalize(O.ru_name || O.name), "icon" = organ_icon, "damage" = advanced ? damage_percent : null, "status" = trim(strip_html_tags(organ_diagnosis)), "warning" = !!(findtext(organ_diagnosis, "class='danger") || findtext(organ_diagnosis, "class='alert")), "critical" = critical))
-					organ_report += "<tr[critical ? " style='font-weight:bold'" : ""]><td style='white-space:nowrap'><img src='data:image/png;base64,[organ_icon]' width='24' height='24' style='vertical-align:middle'> [html_encode(capitalize(O.ru_name || O.name))]</td>[advanced ? "<td style='white-space:nowrap'>[span_danger("[damage_percent]%")]</td>" : ""]<td>[damage_message] [temp_message]</td></tr>"
+					var/organ_damage_text = critical ? "[damage_percent]%" : span_danger("[damage_percent]%")
+					var/organ_status_text = critical ? html_encode(trim(strip_html_tags(organ_diagnosis))) : organ_diagnosis
+					organ_report += "<tr[critical ? " style='font-weight:bold;color:[COLOR_SAMPLE_PURPLE]'" : ""]><td style='white-space:nowrap'><img src='data:image/png;base64,[organ_icon]' width='24' height='24' style='vertical-align:middle[critical ? ";filter:grayscale(1) brightness(0.5)" : ""]'> [html_encode(capitalize(O.ru_name || O.name))]</td>[advanced ? "<td style='white-space:nowrap'>[organ_damage_text]</td>" : ""]<td>[organ_status_text]</td></tr>"
 				else
 					// Функциональные нарушения без повреждения органа остаются в общей диагностике.
 					general_diagnosis += "\n[span_info("[capitalize(O.ru_name || O.name)]:")] [temp_message] [damage_message]"
