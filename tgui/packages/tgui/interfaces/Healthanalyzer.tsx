@@ -23,6 +23,7 @@ type Scan = {
   robotic: BooleanLike;
   species?: string;
   similarSpecies?: string;
+  speciesColor?: string;
   temperatureC?: number;
   temperatureF?: number;
   diagnosis?: ScanLine[];
@@ -65,8 +66,8 @@ export const Healthanalyzer = () => {
             <>
               {(!!scan.species || scan.temperatureC !== undefined) && (
                 <Box mb={0.5}>
-                  {!!scan.species && <>Раса: {scan.species}</>}
-                  {!!scan.species && !!scan.similarSpecies && scan.similarSpecies !== scan.species && <> | Схожая раса: {scan.similarSpecies}</>}
+                  {!!scan.species && <>Раса: <Box as="span" color={scan.speciesColor}>{scan.species}</Box></>}
+                  {!!scan.species && !!scan.similarSpecies && scan.similarSpecies !== scan.species && <> | Схожая раса: <Box as="span" color={scan.speciesColor}>{scan.similarSpecies}</Box></>}
                   {scan.temperatureC !== undefined && <>{scan.species ? ' | ' : ''}Температура тела: {round(scan.temperatureC, 3)} °C ({round(scan.temperatureF, 3)} °F)</>}
                 </Box>
               )}

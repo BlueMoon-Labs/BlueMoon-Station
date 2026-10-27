@@ -737,6 +737,7 @@ GENETICS SCANNER
 
 		data["species"] = H.dna.custom_species || S.name
 		data["similarSpecies"] = S.name
+		data["speciesColor"] = H.spec_trait_examine_color()
 		if(mutant)
 			msg += span_info("У субъекта имеются мутации.") + "\n"
 		// BLUEMOON ADD START - уточнение про неоригинальные органы, а не просто мутации
@@ -843,9 +844,9 @@ GENETICS SCANNER
 	if(data["unknown"])
 		header += span_info("Общее состояние: Неизвестно<br>")
 	if(data["species"])
-		header += span_info("Раса: [html_encode(data["species"])] | ")
+		header += span_info("Раса: [H.spec_trait_examine_font()][html_encode(data["species"])]</font> | ")
 		if(data["similarSpecies"] && data["similarSpecies"] != data["species"])
-			header += span_info("Схожая раса: [html_encode(data["similarSpecies"])] | ")
+			header += span_info("Схожая раса: [H.spec_trait_examine_font()][html_encode(data["similarSpecies"])]</font> | ")
 	header += span_info("Температура тела: [data["temperatureC"]] °C ([data["temperatureF"]] °F)<br>")
 	header += replacetext(blood_report, "\n", "<br>")
 	if(diagnosis_report)
