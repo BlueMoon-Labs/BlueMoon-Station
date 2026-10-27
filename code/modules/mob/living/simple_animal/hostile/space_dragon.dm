@@ -237,7 +237,7 @@
   * If an invalid color is given, will re-prompt the dragon until a proper color is chosen.
   */
 /mob/living/simple_animal/hostile/space_dragon/proc/color_selection()
-	chosen_color = input(src,"What would you like your color to be?","Choose Your Color", COLOR_WHITE) as color|null
+	chosen_color = tgui_input_color(src,"What would you like your color to be?","Choose Your Color", COLOR_WHITE)
 	if(!chosen_color) //redo proc until we get a color
 		to_chat(src, "<span class='warning'>Not a valid color, please try again.</span>")
 		color_selection()
@@ -602,7 +602,7 @@
 /obj/structure/carp_rift
 	name = "carp rift"
 	desc = "A rift akin to the ones space carp use to travel long distances."
-	armor = list(MELEE = 30, BULLET = 30, LASER = 30, ENERGY = 100, BOMB = 100, BIO = 100, RAD = 100, FIRE = 100, ACID = 100)
+	armor_type = /datum/armor/carp_rift
 	max_integrity = 300
 	icon = 'icons/obj/carp_rift.dmi'
 	icon_state = "carp_rift_carpspawn"
@@ -712,7 +712,7 @@
 		icon_state = "carp_rift_charged"
 		light_color = LIGHT_COLOR_YELLOW
 		update_light()
-		armor = list(MELEE = 100, BULLET = 100, LASER = 100, ENERGY = 100, BOMB = 100, BIO = 100, RAD = 100, FIRE = 100, ACID = 100)
+		armor = new_tg_get_armor_by_type(/datum/armor/secure_and_special_objects)
 		resistance_flags = INDESTRUCTIBLE
 		dragon.rifts_charged += 1
 		if(dragon.rifts_charged != 3 && !dragon.objective_complete)

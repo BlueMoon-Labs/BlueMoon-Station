@@ -135,6 +135,7 @@ const OutfitDisplay = (props) => {
   const { act, data } = useBackend();
   const { current_outfit } = data;
   const { entries, currentTab } = props;
+  const [applyQuirks] = useLocalState('apply-quirks', false);
   return (
     <Section fill scrollable>
       {entries.map(entry => (
@@ -152,6 +153,7 @@ const OutfitDisplay = (props) => {
           })}
           onDoubleClick={() => act('applyoutfit', {
             path: getOutfitKey(entry),
+            apply_quirks: applyQuirks,
           })} />
       ))}
       {currentTab === "Custom" && (
@@ -175,6 +177,7 @@ const CurrentlySelectedDisplay = (props) => {
   const [deployMethod, setDeployMethod] = useState("Instant");
   const [giveReturn, setGiveReturn] = useState(false);
   const [randomChar, setRandomChar] = useState(false);
+  const [applyQuirks, setApplyQuirks] = useLocalState('apply-quirks', false);
   return (
     <Stack align="center">
       {entry?.path && (
@@ -238,11 +241,19 @@ const CurrentlySelectedDisplay = (props) => {
                 <Icon name="trash" />Pockets
               </ButtonCheckbox>
             )}
+            <ButtonCheckbox
+              lineHeight={2}
+              fluid
+              checked={applyQuirks}
+              tooltip="Выдать квирки из настроек игрока вместе с их стартовыми предметами при применении комплекта"
+              onClick={() => setApplyQuirks(!applyQuirks)}>
+             <Icon name="sliders" />Quirks
+            </ButtonCheckbox>
           </Stack.Item>
           <Stack.Item>
             <Button
               mr={0.8}
-              lineHeight={is_observer ? 6 : 2}
+              lineHeight={is_observer ? 8 : 4}
               color="green"
               onClick={() => act('applyoutfit', {
                 path: current_outfit,
@@ -250,6 +261,7 @@ const CurrentlySelectedDisplay = (props) => {
                 spawn_method: deployMethod,
                 random_char: randomChar,
                 give_return: giveReturn,
+                apply_quirks: applyQuirks,
               })}>
               Confirm
             </Button>

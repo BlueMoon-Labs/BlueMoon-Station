@@ -30,7 +30,7 @@
 	max_val = 23
 
 /datum/config_entry/number/roundtype_rotation_night_end_hour // exclusive end hour of the night window; 24 is the same as 0, the window then runs through hour 23
-	default = 9
+	default = 7
 	min_val = 0
 	max_val = 24
 

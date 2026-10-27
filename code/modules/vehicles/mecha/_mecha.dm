@@ -24,12 +24,14 @@
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	flags_1 = HEAR_1
 	max_integrity = 300
-	armor = list(MELEE = 20, BULLET = 10, LASER = 0, ENERGY = 0, BOMB = 10, BIO = 0, RAD = 0, FIRE = 100, ACID = 100)
+	armor_type = /datum/armor/mecha
 	movedelay = 1 SECONDS
-	/// Cooldown between in-place rotations. Kept shorter than movedelay so turning stays responsive and isn't blocked by inability to move, but slow enough not to spin on the spot.
-	var/turn_delay = 0.4 SECONDS
 	anchored = TRUE
 	emulate_door_bumps = TRUE
+	hud_possible = list (DIAG_STAT_HUD, DIAG_BATT_HUD, DIAG_MECH_HUD, DIAG_TRACK_HUD)
+
+	/// Cooldown between in-place rotations. Kept shorter than movedelay so turning stays responsive and isn't blocked by inability to move, but slow enough not to spin on the spot.
+	var/turn_delay = 0.4 SECONDS
 	COOLDOWN_DECLARE(mecha_bump_smash)
 	COOLDOWN_DECLARE(cooldown_vehicle_turn)
 	///What direction will the mech face when entered/powered on? Defaults to South.
@@ -99,8 +101,12 @@
 
 	///required access level for mecha operation
 	var/list/operation_req_access = list()
+	// Для входа по умолчанию достаточно любого из выбранных доступов.
+	var/operation_one_access = TRUE
 	///required access to change internal components
 	var/list/internals_req_access = list(ACCESS_ENGINE, ACCESS_ROBOTICS)
+	// Внешняя панель доступа и техобслуживания, открываемая ID-картой.
+	var/datum/mecha_maintenance/maintenance_panel
 
 	///Typepath for the wreckage it spawns when destroyed
 	var/wreckage
@@ -108,6 +114,11 @@
 	var/list/equipment = new
 	///Current active equipment
 	var/obj/item/mecha_parts/mecha_equipment/selected
+	// Назначение на ПКМ не занимает отдельный слот оборудования.
+	var/obj/item/mecha_parts/mecha_equipment/selected_right
+	// Превью пересобирается только при изменении внешности, без игрового transform.
+	var/ui_preview_appearance
+	var/ui_preview_icon
 	///Maximum amount of equipment we can have
 	var/max_equip = 3
 
@@ -174,15 +185,17 @@
 
 	var/nominalphrase = "sound/mecha/nominal.ogg"
 	var/imagenhphrase = "sound/mecha/imag_enh.ogg"
-
-
-	hud_possible = list (DIAG_STAT_HUD, DIAG_BATT_HUD, DIAG_MECH_HUD, DIAG_TRACK_HUD)
+	// Категории шасси для проверки совместимости с модулями.
+	var/mecha_type = NONE
+	// Тема панели; null восстанавливает тему типа или выбирает её по доступам и категории.
+	var/ui_theme = null
 
 /obj/item/radio/mech //this has to go somewhere
 	subspace_transmission = TRUE
 
 /obj/vehicle/sealed/mecha/Initialize(mapload)
 	. = ..()
+	register_context()
 	add_radio()
 	add_cabin()
 	if(enclosed)
@@ -202,7 +215,7 @@
 	START_PROCESSING(SSobj, src)
 	GLOB.poi_list |= src
 	AddComponent(/datum/component/hostile_machine_registry)
-	log_message("[src.name] created.", LOG_MECHA)
+	log_message("[src.name] создан.", LOG_MECHA)
 	GLOB.mechas_list += src //global mech list
 	prepare_huds()
 	for(var/datum/atom_hud/data/diagnostic/diag_hud in GLOB.all_huds)
@@ -234,6 +247,7 @@
 	QDEL_NULL(smoke_system)
 	QDEL_NULL(trackers)
 	QDEL_NULL(wires)
+	QDEL_NULL(maintenance_panel)
 
 	GLOB.poi_list -= src
 	GLOB.mechas_list -= src //global mech list
@@ -252,7 +266,7 @@
 			var/mob/living/silicon/ai/ai = occupant
 			if(!ai.linked_core) // we probably shouldnt gib AIs with a core
 				unlucky_ai = occupant
-				ai.investigate_log("has been gibbed by having their mech destroyed.", INVESTIGATE_DEATHS)
+				ai.investigate_log("разорван на части при уничтожении своего меха.", INVESTIGATE_DEATHS)
 				ai.gib() //No wreck, no AI to recover
 			else
 				mob_exit(ai,silent = TRUE, forced = TRUE) // so we dont ghost the AI
@@ -311,7 +325,7 @@
 	for(var/occupant in occupants)
 		var/mob/mob_occupant = occupant
 		SEND_SOUND(mob_occupant, sound('sound/items/timer.ogg', volume=50))
-		to_chat(mob_occupant, "<span=notice>Equipment control unit has been rebooted successfully.</span>")
+		to_chat(mob_occupant, span_notice("Блок управления оборудованием успешно перезагружен."))
 		mob_occupant.update_mouse_pointer()
 
 /obj/vehicle/sealed/mecha/CheckParts(list/parts_list)
@@ -397,15 +411,15 @@
 	var/integrity = obj_integrity*100/max_integrity
 	switch(integrity)
 		if(85 to 100)
-			. += "Он полностью цел."
+			. += span_notice("В идеальном состоянии.")
 		if(65 to 85)
-			. += "Он слегка повреждён."
+			. += span_notice("Видны лёгкие вмятины.")
 		if(45 to 65)
-			. += "Он сильно повреждён."
+			. += span_danger("Выглядит сильно повреждённым.")
 		if(25 to 45)
-			. += "Он находится в критическом состоянии."
+			. += span_danger("Целостность в критическом состоянии.")
 		else
-			. += "Он разваливается на части."
+			. += span_warning("Мех разваливается на части!")
 	var/hide_weapon = locate(/obj/item/mecha_parts/concealed_weapon_bay) in contents
 	var/hidden_weapon = hide_weapon ? (locate(/obj/item/mecha_parts/mecha_equipment/weapon) in equipment) : null
 	var/list/visible_equipment = equipment - hidden_weapon
@@ -423,9 +437,12 @@
 				var/mob/living/carbon/human/H = user
 				for(var/O in H.held_items)
 					if(istype(O, /obj/item/gun))
-						. += "<span class='warning'>Похоже, вы можете попасть в пилота, если прицелитесь в центр или выше.</span>"
+						. += span_warning("Похоже, вы можете попасть в пилота, если прицелитесь в центр или выше.")
 						break //in case user is holding two guns
-	. += "<span class='notice'>Для обслуживания используйте отвёртку, чтобы открыть техническую панель. Ломом можно извлечь батарею или экипировку при открытой панели.</span>"
+	. += span_notice("Используйте гаечный ключ и лом для вскрытия панели обслуживания и манипуляции внутренностями.")
+
+/obj/vehicle/sealed/mecha/generate_integrity_message()
+	return
 
 //processing internal damage, temperature, air regulation, alert updates, lights power use.
 /obj/vehicle/sealed/mecha/process()
@@ -543,7 +560,7 @@
 	for(var/b in occupants)
 		var/mob/living/occupant = b
 		if(!enclosed && occupant?.incapacitated()) //no sides mean it's easy to just sorta fall out if you're incapacitated.
-			visible_message("<span class='warning'>[occupant] tumbles out of the cockpit!</span>")
+			visible_message(span_warning("[occupant] вываливается из кабины!"))
 			mob_exit(occupant, randomstep = TRUE) //bye bye
 
 //Diagnostic HUD updates
@@ -572,22 +589,59 @@
 ///// Action processing ////
 ////////////////////////////
 
+/obj/vehicle/sealed/mecha/proc/on_mousewheel(mob/user, atom/target, delta_x, delta_y, list/modifiers)
+	if(!is_occupant(user))
+		return FALSE
+	// В кабине колесо управляет модулями, а не имплантами или зоной прицеливания.
+	if(!delta_y || !(occupants[user] & VEHICLE_CONTROL_EQUIPMENT) || user.incapacitated())
+		return TRUE
+	var/module_count = length(equipment)
+	if(!module_count)
+		return TRUE
+	var/obj/item/mecha_parts/mecha_equipment/current = modifiers[SHIFT_CLICK] ? selected_right : selected
+	var/step = delta_y < 0 ? 1 : -1
+	var/index = equipment.Find(current)
+	if(!index || !current.selectable || current.ui_toggle_action)
+		index = step > 0 ? 0 : 1
+	// Обходим установленное оборудование без временного списка на каждом событии колеса.
+	for(var/attempt in 1 to module_count)
+		index = WRAP(index + step, 1, module_count + 1)
+		var/obj/item/mecha_parts/mecha_equipment/next_module = equipment[index]
+		if(!next_module.selectable || next_module.ui_toggle_action)
+			continue
+		if(next_module == current)
+			return TRUE
+		if(modifiers[SHIFT_CLICK])
+			selected_right = next_module
+		else
+			selected = next_module
+		next_module.update_equip_info()
+		return TRUE
+	return TRUE
+
 /obj/vehicle/sealed/mecha/proc/on_mouseclick(mob/user, atom/target, params)
 	SIGNAL_HANDLER
+	var/list/mouse_control = params2list(params)
+	// Контекстное меню пилота выключено, поэтому осмотр обрабатываем до оружия.
+	if(mouse_control[SHIFT_CLICK])
+		if(!mouse_control[CTRL_CLICK] && !mouse_control[MIDDLE_CLICK])
+			target.attempt_examinate(user)
+			return COMSIG_MOB_CANCEL_CLICKON
+		return
 	if(!locate(/turf) in list(target,target.loc)) // Prevents inventory from being drilled
 		return
 	if(completely_disabled || is_currently_ejecting || (mecha_flags & CANNOT_INTERACT))
 		return
-	var/list/mouse_control = params2list(params)
-	if(isAI(user) && !mouse_control["middle"])//AIs use MMB
+	// ИИ сохраняет основное управление на СКМ и получает дополнительный модуль на ПКМ.
+	if(isAI(user) && !mouse_control[MIDDLE_CLICK] && !mouse_control[RIGHT_CLICK])
 		return
 	if(phasing)
-		to_chat(occupants, "[icon2html(src, occupants)]<span class='warning'>Unable to interact with objects while phasing.</span>")
+		to_chat(occupants, "[icon2html(src, occupants)][span_warning("Невозможно взаимодействовать с объектами в фазовом режиме.")]")
 		return
 	if(user.incapacitated())
 		return
 	if(construction_state)
-		to_chat(occupants, "[icon2html(src, occupants)]<span class='warning'>Maintenance protocols in effect.</span>")
+		to_chat(occupants, "[icon2html(src, occupants)][span_warning("Активирован протокол техобслуживания.")]")
 		return
 	if(!get_charge())
 		return
@@ -601,25 +655,30 @@
 		if(!target)
 			return
 	var/mob/living/L = user
-	if(selected && (L in return_controllers_with_flag(VEHICLE_CONTROL_EQUIPMENT)))
-		if(!Adjacent(target) && (selected.range & MECHA_RANGED))
-			if(HAS_TRAIT(L, TRAIT_PACIFISM) && selected.harmful)
-				to_chat(L, "<span class='warning'>You don't want to harm other living beings!</span>")
+	var/obj/item/mecha_parts/mecha_equipment/active_equipment = mouse_control[RIGHT_CLICK] ? selected_right : selected
+	if(mouse_control[RIGHT_CLICK] && !active_equipment)
+		return
+	if(active_equipment && (L in return_controllers_with_flag(VEHICLE_CONTROL_EQUIPMENT)))
+		if(!Adjacent(target) && (active_equipment.range & MECHA_RANGED))
+			if(HAS_TRAIT(L, TRAIT_PACIFISM) && active_equipment.harmful)
+				to_chat(L, span_warning("Вы не хотите причинять вред другим живым существам!"))
 				return
 			if(SEND_SIGNAL(src, COMSIG_MECHA_EQUIPMENT_CLICK, L, target) & COMPONENT_CANCEL_EQUIPMENT_CLICK)
 				return
-			INVOKE_ASYNC(selected, TYPE_PROC_REF(/obj/item/mecha_parts/mecha_equipment, action), user, target, params)
+			INVOKE_ASYNC(active_equipment, TYPE_PROC_REF(/obj/item/mecha_parts/mecha_equipment, action), user, target, params)
 			return
-		if((selected.range & MECHA_MELEE) && Adjacent(target))
-			if(isliving(target) && selected.harmful && HAS_TRAIT(L, TRAIT_PACIFISM))
-				to_chat(L, "<span class='warning'>You don't want to harm other living beings!</span>")
+		if((active_equipment.range & MECHA_MELEE) && Adjacent(target))
+			if(isliving(target) && active_equipment.harmful && HAS_TRAIT(L, TRAIT_PACIFISM))
+				to_chat(L, span_warning("Вы не хотите причинять вред другим живым существам!"))
 				return
 			if(SEND_SIGNAL(src, COMSIG_MECHA_EQUIPMENT_CLICK, L, target) & COMPONENT_CANCEL_EQUIPMENT_CLICK)
 				return
-			INVOKE_ASYNC(selected, TYPE_PROC_REF(/obj/item/mecha_parts/mecha_equipment, action), user, target, params)
+			INVOKE_ASYNC(active_equipment, TYPE_PROC_REF(/obj/item/mecha_parts/mecha_equipment, action), user, target, params)
 			return
+	if(mouse_control[RIGHT_CLICK])
+		return
 	if(!(L in return_controllers_with_flag(VEHICLE_CONTROL_MELEE)))
-		to_chat(L, "<span class='warning'>You're in the wrong seat to interact with your hands.</span>")
+		to_chat(L, span_warning("С этого места нельзя управлять манипуляторами."))
 		return
 	var/on_cooldown = TIMER_COOLDOWN_CHECK(src, COOLDOWN_MECHA_MELEE_ATTACK)
 	var/adjacent = Adjacent(target)
@@ -656,8 +715,8 @@
 /obj/vehicle/sealed/mecha/proc/disconnect_air()
 	SIGNAL_HANDLER
 	if(internal_tank.disconnect()) // Something moved us and broke connection
-		to_chat(occupants, "[icon2html(src, occupants)]<span class='warning'>Air port connection has been severed!</span>")
-		log_message("Lost connection to gas port.", LOG_MECHA)
+		to_chat(occupants, "[icon2html(src, occupants)][span_warning("Соединение с газовым портом разорвано!")]")
+		log_message("Связь с газовым портом потеряна.", LOG_MECHA)
 
 ///Цена шага из штатной цены и состояния форсажа. Считается от штатной, а не от
 ///текущей: повторное включение форсажа раньше умножало уже умноженное.
@@ -682,7 +741,7 @@
 	if(new_state && get_charge() < leg_overload_reserve())
 		return FALSE
 	leg_overload_mode = new_state
-	log_message("Toggled leg actuators overload: [leg_overload_mode ? "on" : "off"].", LOG_MECHA)
+	log_message("Форсаж ножных приводов [leg_overload_mode ? "включён" : "выключен"].", LOG_MECHA)
 	if(leg_overload_mode)
 		bumpsmash = TRUE
 		movedelay = movement_quantize_delay(initial(movedelay) * MECHA_OVERLOAD_MOVEDELAY_MULT, world.tick_lag)
@@ -712,7 +771,7 @@
 			if(backup.newtonian_move(turn(movement_dir, 180)))
 				step_silent = TRUE
 				if(return_drivers())
-					to_chat(occupants, "[icon2html(src, occupants)]<span class='info'>The [src] push off [backup] to propel yourself.</span>")
+					to_chat(occupants, "[icon2html(src, occupants)][span_info("[src] отталкивается от [backup], чтобы начать движение.")]")
 		return TRUE
 
 	if(movedelay <= world.time && active_thrusters && movement_dir && active_thrusters.thrust(movement_dir))
@@ -783,7 +842,7 @@
 		return FALSE
 	//форсаж гаснет на резерве ДО расчёта цены шага: этот же шаг идёт по штатной цене
 	if(leg_overload_mode && get_charge() < leg_overload_reserve() && set_leg_overload(FALSE))
-		to_chat(occupants, "[icon2html(src, occupants)]<span class='warning'>Leg actuators overload disabled: power reserve reached.</span>")
+		to_chat(occupants, "[icon2html(src, occupants)][span_warning("Форсаж ножных приводов отключён: достигнут резервный уровень заряда.")]")
 	// Шаг меха живёт на собственном кулдауне, мимо /client/Move(), поэтому цену
 	// выравнивать по тику приходится здесь же. Дробный movedelay набегает от
 	// сканмодулей и капаситоров, а кулдаун всё равно проверяется только на тике.
@@ -791,12 +850,12 @@
 	COOLDOWN_START(src, cooldown_vehicle_move, step_cost)
 	if(internal_tank?.connected_port)
 		if(TIMER_COOLDOWN_CHECK(src, COOLDOWN_MECHA_MESSAGE))
-			to_chat(occupants, "[icon2html(src, occupants)]<span class='warning'>Unable to move while connected to the air system port!</span>")
+			to_chat(occupants, "[icon2html(src, occupants)][span_warning("Нельзя двигаться при подключении к газовому порту!")]")
 			TIMER_COOLDOWN_START(src, COOLDOWN_MECHA_MESSAGE, 2 SECONDS)
 		return FALSE
 	if(construction_state)
 		if(TIMER_COOLDOWN_CHECK(src, COOLDOWN_MECHA_MESSAGE))
-			to_chat(occupants, "[icon2html(src, occupants)]<span class='danger'>Maintenance protocols in effect.</span>")
+			to_chat(occupants, "[icon2html(src, occupants)][span_danger("Активирован протокол техобслуживания.")]")
 			TIMER_COOLDOWN_START(src, COOLDOWN_MECHA_MESSAGE, 2 SECONDS)
 		return FALSE
 
@@ -804,20 +863,20 @@
 		return FALSE
 	if(!has_charge(step_energy_drain))
 		if(TIMER_COOLDOWN_CHECK(src, COOLDOWN_MECHA_MESSAGE))
-			to_chat(occupants, "[icon2html(src, occupants)]<span class='warning'>Insufficient power to move!</span>")
+			to_chat(occupants, "[icon2html(src, occupants)][span_warning("Недостаточно энергии для движения!")]")
 			TIMER_COOLDOWN_START(src, COOLDOWN_MECHA_MESSAGE, 2 SECONDS)
 		return FALSE
 	if(zoom_mode)
-		to_chat(occupants, "[icon2html(src, occupants)]<span class='warning'>Unable to move while in zoom mode!</span>")
+		to_chat(occupants, "[icon2html(src, occupants)][span_warning("Нельзя двигаться в режиме увеличения обзора!")]")
 		return FALSE
 	if(!cell)
-		to_chat(occupants, "[icon2html(src, occupants)]<span class='warning'>Missing power cell.</span>")
+		to_chat(occupants, "[icon2html(src, occupants)][span_warning("Отсутствует батарея.")]")
 		return FALSE
 	if(!scanmod || !capacitor)
-		to_chat(occupants, "[icon2html(src, occupants)]<span class='warning'>Missing [scanmod? "capacitor" : "scanning module"].</span>")
+		to_chat(occupants, "[icon2html(src, occupants)][span_warning("Отсутствует [scanmod ? "конденсатор" : "сканирующий модуль"].")]")
 		return FALSE
 	if(lavaland_only && !is_mining_level(z))
-		to_chat(occupants, "[icon2html(src, occupants)]<span class='warning'>Invalid Environment.</span>")
+		to_chat(occupants, "[icon2html(src, occupants)][span_warning("Неподходящие условия окружающей среды.")]")
 		return FALSE
 
 	var/olddir = dir
@@ -842,17 +901,20 @@
 		use_power(phasing_energy_drain)
 		addtimer(VARSET_CALLBACK(src, movedelay, TRUE), movedelay*3)
 		return
+	var/turf/bump_turf = get_turf(src)
 	. = ..()
-	if(.) //mech was thrown/door/whatever
+	// Открывание двери может ждать пилота; после перемещения старое столкновение уже не актуально.
+	if(. || get_turf(src) != bump_turf)
 		return
 	if(bumpsmash) //Need a pilot to push the PUNCH button.
 		if(COOLDOWN_FINISHED(src, mecha_bump_smash))
 			var/list/controllers = return_controllers_with_flag(VEHICLE_CONTROL_MELEE)
 			var/mob/driver = length(controllers) ? controllers[1] : null
-			obstacle.mech_melee_attack(src, driver)
-			COOLDOWN_START(src, mecha_bump_smash, smashcooldown)
-			if(!obstacle || obstacle.CanPass(src,get_step(src,dir)))
-				step(src,dir)
+			if(can_bump_smash(obstacle, driver))
+				obstacle.mech_melee_attack(src, driver)
+				COOLDOWN_START(src, mecha_bump_smash, smashcooldown)
+				if(!obstacle || obstacle.CanPass(src,get_step(src,dir)))
+					step(src,dir)
 	if(isobj(obstacle))
 		var/obj/obj_obstacle = obstacle
 		if(!obj_obstacle.anchored && obj_obstacle.move_resist <= move_force)
@@ -862,9 +924,8 @@
 		if(mob_obstacle.move_resist <= move_force)
 			step(obstacle, dir)
 
-
-
-
+/obj/vehicle/sealed/mecha/proc/can_bump_smash(atom/obstacle, mob/driver)
+	return TRUE
 
 ///////////////////////////////////
 ////////  Internal damage  ////////
@@ -890,7 +951,7 @@
 
 /obj/vehicle/sealed/mecha/proc/setInternalDamage(int_dam_flag)
 	internal_damage |= int_dam_flag
-	log_message("Internal damage of type [int_dam_flag].", LOG_MECHA)
+	log_message("Внутреннее повреждение типа [int_dam_flag].", LOG_MECHA)
 	SEND_SOUND(occupants, sound('sound/machines/warning-buzzer.ogg',wait=0))
 	diag_hud_set_mechstat()
 
@@ -898,11 +959,11 @@
 	if(internal_damage & int_dam_flag)
 		switch(int_dam_flag)
 			if(MECHA_INT_TEMP_CONTROL)
-				to_chat(occupants, "[icon2html(src, occupants)]<span class='boldnotice'>Life support system reactivated.</span>")
+				to_chat(occupants, "[icon2html(src, occupants)][span_boldnotice("Система жизнеобеспечения восстановлена.")]")
 			if(MECHA_INT_FIRE)
-				to_chat(occupants, "[icon2html(src, occupants)]<span class='boldnotice'>Internal fire extinguished.</span>")
+				to_chat(occupants, "[icon2html(src, occupants)][span_boldnotice("Внутренний пожар потушен.")]")
 			if(MECHA_INT_TANK_BREACH)
-				to_chat(occupants, "[icon2html(src, occupants)]<span class='boldnotice'>Damaged internal tank has been sealed.</span>")
+				to_chat(occupants, "[icon2html(src, occupants)][span_boldnotice("Повреждённый внутренний баллон загерметизирован.")]")
 	internal_damage &= ~int_dam_flag
 	diag_hud_set_mechstat()
 
@@ -917,25 +978,25 @@
 	if(user.can_dominate_mechs)
 		examine(user) //Get diagnostic information!
 		for(var/obj/item/mecha_parts/mecha_tracking/B in trackers)
-			to_chat(user, "<span class='danger'>Warning: Tracking Beacon detected. Enter at your own risk. Beacon Data:</span>")
+			to_chat(user, span_danger("Внимание: обнаружен маяк слежения. Подключайтесь на свой страх и риск. Данные маяка:"))
 			to_chat(user, "[B.get_mecha_info()]")
 			break
 		//Nothing like a big, red link to make the player feel powerful!
-		to_chat(user, "<a href='?src=[REF(user)];ai_take_control=[REF(src)]'><span class='userdanger'>ASSUME DIRECT CONTROL?</span></a><br>")
+		to_chat(user, "<a href='?src=[REF(user)];ai_take_control=[REF(src)]'>[span_userdanger("ПРИНЯТЬ ПРЯМОЕ УПРАВЛЕНИЕ?")]</a><br>")
 	else
 		examine(user)
 		if(length(return_drivers()) > 0)
-			to_chat(user, "<span class='warning'>This exosuit has a pilot and cannot be controlled.</span>")
+			to_chat(user, span_warning("Этот экзокостюм уже занят пилотом, перехватить управление нельзя."))
 			return
 		var/can_control_mech = 0
 		for(var/obj/item/mecha_parts/mecha_tracking/ai_control/A in trackers)
 			can_control_mech = 1
-			to_chat(user, "<span class='notice'>[icon2html(src, user)] Status of [name]:</span>\n[A.get_mecha_info()]")
+			to_chat(user, "[span_notice("[icon2html(src, user)] Состояние [name]:")]\n[A.get_mecha_info()]")
 			break
 		if(!can_control_mech)
-			to_chat(user, "<span class='warning'>You cannot control exosuits without AI control beacons installed.</span>")
+			to_chat(user, span_warning("Нельзя управлять экзокостюмом без установленного маяка управления ИИ."))
 			return
-		to_chat(user, "<a href='?src=[REF(user)];ai_take_control=[REF(src)]'><span class='boldnotice'>Take control of exosuit?</span></a><br>")
+		to_chat(user, "<a href='?src=[REF(user)];ai_take_control=[REF(src)]'>[span_boldnotice("Взять экзокостюм под управление?")]</a><br>")
 
 /obj/vehicle/sealed/mecha/transfer_ai(interaction, mob/user, mob/living/silicon/ai/AI, obj/item/aicard/card)
 	. = ..()
@@ -946,16 +1007,16 @@
 	switch(interaction)
 		if(AI_TRANS_TO_CARD) //Upload AI from mech to AI card.
 			if(!construction_state) //Mech must be in maint mode to allow carding.
-				to_chat(user, span_warning("[name] must have maintenance protocols active in order to allow a transfer."))
+				to_chat(user, span_warning("Для переноса ИИ необходимо разрешить техобслуживание [name]."))
 				return
 			var/list/ai_pilots = list()
 			for(var/mob/living/silicon/ai/aipilot in occupants)
 				ai_pilots += aipilot
 			if(!length(ai_pilots)) //Mech does not have an AI for a pilot
-				to_chat(user, span_warning("No AI detected in the [name] onboard computer."))
+				to_chat(user, span_warning("В бортовом компьютере [name] не обнаружен ИИ."))
 				return
 			if(length(ai_pilots) > 1) //Input box for multiple AIs, but if there's only one we'll default to them.
-				AI = tgui_input_list(user, "Which AI do you wish to card?", "AI Selection", sort_list(ai_pilots))
+				AI = tgui_input_list(user, "Какой ИИ вы хотите перенести на карту?", "Выбор ИИ", sort_list(ai_pilots))
 			else
 				AI = ai_pilots[1]
 			if(isnull(AI))
@@ -973,15 +1034,15 @@
 			card.AI = AI
 			AI.controlled_equipment = null
 			AI.remote_control = null
-			to_chat(AI, span_notice("You have been downloaded to a mobile storage device. Wireless connection offline."))
-			to_chat(user, "[span_boldnotice("Transfer successful")]: [AI.name] ([rand(1000,9999)].exe) removed from [name] and stored within local memory.")
+			to_chat(AI, span_notice("Вы перенесены на мобильный накопитель. Беспроводное соединение отключено."))
+			to_chat(user, "[span_boldnotice("Перенос завершён")]: [AI.name] ([rand(1000,9999)].exe) извлечён из [name] и сохранён в локальной памяти.")
 			return
 
 		if(AI_MECH_HACK) //Called by AIs on the mech
 			AI.linked_core = new /obj/structure/ai_core/deactivated(AI.loc)
 			if(AI.can_dominate_mechs && LAZYLEN(occupants)) //Oh, I am sorry, were you using that?
-				to_chat(AI, span_warning("Occupants detected! Forced ejection initiated!"))
-				to_chat(occupants, span_danger("You have been forcibly ejected!"))
+				to_chat(AI, span_warning("Обнаружены пассажиры! Начата принудительная высадка!"))
+				to_chat(occupants, span_danger("Вас принудительно высадили!"))
 				for(var/ejectee in occupants)
 					mob_exit(ejectee, silent = TRUE, randomstep = TRUE, forced = TRUE) //IT IS MINE, NOW. SUCK IT, RD!
 				AI.can_shunt = FALSE //ONE AI ENTERS. NO AI LEAVES.
@@ -989,19 +1050,19 @@
 		if(AI_TRANS_FROM_CARD) //Using an AI card to upload to a mech.
 			AI = card.AI
 			if(!AI)
-				to_chat(user, span_warning("There is no AI currently installed on this device."))
+				to_chat(user, span_warning("На этом устройстве нет ИИ."))
 				return
 			if(AI.deployed_shell) //Recall AI if shelled so it can be checked for a client
 				AI.disconnect_shell()
 			if(AI.stat || !AI.client)
-				to_chat(user, span_warning("[AI.name] is currently unresponsive, and cannot be uploaded."))
+				to_chat(user, span_warning("[AI.name] не отвечает, загрузка невозможна."))
 				return
 			if((LAZYLEN(occupants) >= max_occupants) || dna_lock) //Normal AIs cannot steal mechs!
-				to_chat(user, span_warning("Access denied. [name] is [LAZYLEN(occupants) >= max_occupants ? "currently fully occupied" : "secured with a DNA lock"]."))
+				to_chat(user, span_warning("Доступ запрещён. [LAZYLEN(occupants) >= max_occupants ? "В [name] нет свободных мест" : "[name] защищён ДНК-замком"]."))
 				return
 			AI.control_disabled = FALSE
 			AI.radio_enabled = TRUE
-			to_chat(user, "[span_boldnotice("Transfer successful")]: [AI.name] ([rand(1000,9999)].exe) installed and executed successfully. Local copy has been removed.")
+			to_chat(user, "[span_boldnotice("Перенос завершён")]: [AI.name] ([rand(1000,9999)].exe) успешно установлен и запущен. Локальная копия удалена.")
 			card.AI = null
 	ai_enter_mech(AI)
 
@@ -1016,9 +1077,9 @@
 	AI.mobility_flags = ALL //Much easier than adding AI checks! Be sure to set this back to 0 if you decide to allow an AI to leave a mech somehow.
 	if(interaction == AI_MECH_HACK)
 		AI.can_shunt = FALSE //ONE AI ENTERS. NO AI LEAVES.
-	to_chat(AI, AI.can_dominate_mechs ? "<span class='announce'>Takeover of [name] complete! You are now loaded onto the onboard computer. Do not attempt to leave the station sector!</span>" :\
-		"<span class='notice'>You have been uploaded to a mech's onboard computer.</span>")
-	to_chat(AI, "<span class='reallybig boldnotice'>Use Middle-Mouse to activate mech functions and equipment. Click normally for AI interactions.</span>")
+	to_chat(AI, AI.can_dominate_mechs ? span_announce("Захват [name] завершён! Вы загружены в бортовой компьютер. Не пытайтесь покинуть сектор станции!") :\
+		span_notice("Вы загружены в бортовой компьютер меха."))
+	to_chat(AI, span_reallybig(span_boldnotice("Используйте СКМ для активации функций и оборудования меха. ЛКМ сохраняет обычное управление ИИ.")))
 
 ///Handles an actual AI (simple_animal mecha pilot) entering the mech
 /obj/vehicle/sealed/mecha/proc/aimob_enter_mech(mob/living/simple_animal/hostile/syndicate/mecha_pilot/pilot_mob)
@@ -1080,19 +1141,20 @@
 	if(obj_flags & EMAGGED)
 		return FALSE
 	obj_flags |= EMAGGED
-	log_message("Emagged - DNA lock removed, one extra equipment slot installed.", LOG_MECHA)
+	log_message("Взлом емагом: снят ДНК-замок, добавлен слот снаряжения и отключены ограничения совместимости модулей.", LOG_MECHA)
 	log_combat(user, src, "emagged", E)
-	to_chat(user, "<span class='notice'>Вы замыкаете контрольную плату [src]. Блокировка ДНК снята, система управления снаряжением перекомпилирована под дополнительный слот.</span>")
+	to_chat(user, span_notice("Вы замыкаете контрольную плату [src]. Блокировка ДНК снята, добавлен слот снаряжения и отключены ограничения совместимости модулей."))
 	if(dna_lock)
 		dna_lock = null
 		dna_lock_name = null
 	max_equip++
 	user.visible_message(
-		"<span class='warning'>[user] прикладывает что-то к контрольной панели [src]...</span>",
-		"<span class='notice'>Свободных слотов снаряжения теперь: [max_equip].</span>"
+		span_warning("[user] прикладывает что-то к контрольной панели [src]..."),
+		span_notice("Слотов снаряжения теперь: [max_equip].")
 	)
 	do_sparks(5, TRUE, src)
 	playsound(src, 'sound/effects/sparks1.ogg', 50)
+	SStgui.update_uis(src)
 	return TRUE
 
 /obj/vehicle/sealed/mecha/proc/is_emagged()
@@ -1101,37 +1163,37 @@
 /obj/vehicle/sealed/mecha/mob_try_enter(mob/M)
 	if(!ishuman(M)) // no silicons or drones in mechas.
 		return
-	log_message("[M] tries to move into [src].", LOG_MECHA)
+	log_message("[M] пытается забраться в [src].", LOG_MECHA)
 	if(dna_lock && M.has_dna())
 		var/mob/living/carbon/entering_carbon = M
 		if(entering_carbon.dna.unique_enzymes != dna_lock)
-			to_chat(M, "<span class='warning'>Доступ запрещён. [name] is secured with a DNA lock.</span>")
-			log_message("Permission denied (DNA LOCK).", LOG_MECHA)
+			to_chat(M, span_warning("Доступ запрещён. [name] защищён ДНК-замком."))
+			log_message("Доступ запрещён: ДНК-замок.", LOG_MECHA)
 			return
 	if(!operation_allowed(M))
-		to_chat(M, "<span class='warning'>Доступ запрещён. Insufficient operation keycodes.</span>")
-		log_message("Permission denied (No keycode).", LOG_MECHA)
+		to_chat(M, span_warning("Доступ запрещён. Недостаточно прав доступа для управления."))
+		log_message("Доступ запрещён: нет нужного кода доступа.", LOG_MECHA)
 		return
 	if(M.buckled)
-		to_chat(M, "<span class='warning'>You are currently buckled and cannot move.</span>")
-		log_message("Permission denied (Buckled).", LOG_MECHA)
+		to_chat(M, span_warning("Вы пристёгнуты и не можете двигаться."))
+		log_message("Доступ запрещён: пользователь пристёгнут.", LOG_MECHA)
 		return
 	if(M.has_buckled_mobs()) //mob attached to us
-		to_chat(M, "<span class='warning'>You can't enter the exosuit with other creatures attached to you!</span>")
-		log_message("Permission denied (Attached mobs).", LOG_MECHA)
+		to_chat(M, span_warning("Нельзя войти в экзокостюм, пока к вам прикреплены другие существа!"))
+		log_message("Доступ запрещён: к пользователю прикреплены другие существа.", LOG_MECHA)
 		return
 
-	visible_message("<span class='notice'>[M] starts to climb into [name].</span>")
+	visible_message(span_notice("[M] начинает забираться в [name]."))
 
 	if(do_after(M, enter_delay, target = src))
 		if(obj_integrity <= 0)
-			to_chat(M, "<span class='warning'>You cannot get in the [name], it has been destroyed!</span>")
+			to_chat(M, span_warning("Нельзя войти в [name]: мех уничтожен!"))
 		else if(LAZYLEN(occupants) >= max_occupants)
-			to_chat(M, "<span class='danger'>[occupants[occupants.len]] was faster! Try better next time, loser.</span>")//get the last one that hopped in
+			to_chat(M, span_danger("[occupants[occupants.len]] успевает занять место раньше вас! Повезёт в другой раз."))//get the last one that hopped in
 		else if(M.buckled)
-			to_chat(M, "<span class='warning'>You can't enter the exosuit while buckled.</span>")
+			to_chat(M, span_warning("Нельзя войти в экзокостюм, пока вы пристёгнуты."))
 		else if(M.has_buckled_mobs())
-			to_chat(M, "<span class='warning'>You can't enter the exosuit with other creatures attached to you!</span>")
+			to_chat(M, span_warning("Нельзя войти в экзокостюм, пока к вам прикреплены другие существа!"))
 		else
 			// Только moved_inside(): он сам делает forceMove и add_occupant. Прежний
 			// "return ..()" сразу после него уводил в /obj/vehicle/sealed/mob_try_enter,
@@ -1140,15 +1202,14 @@
 			// Savannah-Ivanov проходило и дублировало подписки на моба.
 			return moved_inside(M)
 	else
-		to_chat(M, "<span class='warning'>You stop entering the exosuit!</span>")
+		to_chat(M, span_warning("Вы прекращаете забираться в экзокостюм!"))
 
 
 /obj/vehicle/sealed/mecha/generate_actions()
 	initialize_passenger_action_type(/datum/action/vehicle/sealed/mecha/mech_eject) // I don't see a single problem in generating exit vehicle action.
 	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/mech_toggle_internals, VEHICLE_CONTROL_SETTINGS)
-	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/mech_cycle_equip, VEHICLE_CONTROL_EQUIPMENT)
 	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/mech_toggle_lights, VEHICLE_CONTROL_SETTINGS)
-	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/mech_view_stats, VEHICLE_CONTROL_SETTINGS)
+	initialize_passenger_action_type(/datum/action/vehicle/sealed/mecha/mech_view_stats)
 	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/strafe, VEHICLE_CONTROL_DRIVE)
 	initialize_controller_action_type(/datum/action/vehicle/sealed/mecha/toggle_stabilizers, VEHICLE_CONTROL_DRIVE)
 	if(max_occupants > 1)
@@ -1165,7 +1226,7 @@
 	add_occupant(H)
 	LAZYREMOVE(entering_mobs, H)
 	add_fingerprint(H)
-	log_message("[H] moved in as pilot.", LOG_MECHA)
+	log_message("[H] занимает место пилота.", LOG_MECHA)
 	setDir(dir_in)
 	playsound(src, 'sound/machines/windowdoor.ogg', 50, TRUE)
 	if(!internal_damage)
@@ -1174,42 +1235,43 @@
 
 /obj/vehicle/sealed/mecha/proc/mmi_move_inside(obj/item/mmi/M, mob/user)
 	if(!M.brainmob || !M.brainmob.client)
-		to_chat(user, "<span class='warning'>Consciousness matrix not detected!</span>")
+		to_chat(user, span_warning("Матрица сознания не обнаружена!"))
 		return FALSE
 	else if(M.brainmob.stat)
-		to_chat(user, "<span class='warning'>Beta-rhythm below acceptable level!</span>")
+		to_chat(user, span_warning("Бета-ритм ниже допустимого уровня!"))
 		return FALSE
 	var/mob/living/brain/B = M.brainmob
 	if(LAZYLEN(occupants) >= max_occupants)
-		to_chat(user, "<span class='warning'>It's full!</span>")
+		to_chat(user, span_warning("Все места заняты!"))
 		return FALSE
 	if(dna_lock && (!B.stored_dna || (dna_lock != B.stored_dna.unique_enzymes)))
-		to_chat(user, "<span class='warning'>Доступ запрещён. [name] is secured with a DNA lock.</span>")
+		to_chat(user, span_warning("Доступ запрещён. [name] защищён ДНК-замком."))
 		return FALSE
 
-	visible_message("<span class='notice'>[user] starts to insert an MMI into [name].</span>")
+	visible_message(span_notice("[user] начинает устанавливать нейроинтерфейс в [name]."))
 
 	if(do_after(user, 40, target = src))
 		if(LAZYLEN(occupants) < max_occupants)
 			return mmi_moved_inside(M, user)
 		else
-			to_chat(user, "<span class='warning'>Maximum occupants detected!</span>")
+			to_chat(user, span_warning("Все места заняты!"))
 	else
-		to_chat(user, "<span class='notice'>You stop inserting the MMI.</span>")
+		to_chat(user, span_notice("Вы прекращаете установку нейроинтерфейса."))
 	return FALSE
 
 /obj/vehicle/sealed/mecha/proc/mmi_moved_inside(obj/item/mmi/M, mob/user)
 	if(!(Adjacent(M) && Adjacent(user)))
 		return FALSE
 	if(!M.brainmob || !M.brainmob.client)
-		to_chat(user, "<span class='warning'>Consciousness matrix not detected!</span>")
+		to_chat(user, span_warning("Матрица сознания не обнаружена!"))
 		return FALSE
 	else if(M.brainmob.stat)
-		to_chat(user, "<span class='warning'>Beta-rhythm below acceptable level!</span>")
+		to_chat(user, span_warning("Бета-ритм ниже допустимого уровня!"))
+		return FALSE
 
 	var/mob/living/brain/B = M.brainmob
 	if(!user.transferItemToLoc(M, src))
-		to_chat(user, "<span class='warning'>\the [M] is stuck to your hand, you cannot put it in \the [src]!</span>")
+		to_chat(user, span_warning("[M] не отлипает от вашей руки, установить его в [src] нельзя!"))
 		return FALSE
 
 	M.mecha = src
@@ -1219,25 +1281,25 @@
 	B.remote_control = src
 	B.update_mobility()
 	setDir(dir_in)
-	log_message("[M] moved in as pilot.", LOG_MECHA)
+	log_message("[M] занимает место пилота.", LOG_MECHA)
 	if(!internal_damage)
 		SEND_SOUND(M, sound(nominalphrase,volume=50))
-	log_game("[key_name(user)] has put the MMI/posibrain of [key_name(B)] into [src] at [AREACOORD(src)]")
+	log_game("[key_name(user)] устанавливает нейроинтерфейс или позитронный мозг [key_name(B)] в [src] в [AREACOORD(src)]")
 	return TRUE
 
 /obj/vehicle/sealed/mecha/container_resist(mob/living/user)
 	if(isAI(user))
 		var/mob/living/silicon/ai/AI = user
 		if(!AI.can_shunt)
-			to_chat(AI, span_notice("You can't leave a mech after dominating it!."))
+			to_chat(AI, span_notice("Нельзя покинуть мех после захвата его систем!"))
 			return FALSE
-	to_chat(user, span_notice("You begin the ejection procedure. Equipment is disabled during this process. Hold still to finish ejecting."))
+	to_chat(user, span_notice("Вы начинаете процедуру выхода. Оборудование временно отключено. Не двигайтесь до завершения процедуры."))
 	is_currently_ejecting = TRUE
 	if(do_after(user, has_gravity() ? exit_delay : 0 , target = src))
-		to_chat(user, span_notice("You exit the mech."))
+		to_chat(user, span_notice("Вы покидаете мех."))
 		mob_exit(user, silent = TRUE)
 	else
-		to_chat(user, span_notice("You stop exiting the mech. Weapons are enabled again."))
+		to_chat(user, span_notice("Вы прерываете выход из меха. Оружие снова доступно."))
 	is_currently_ejecting = FALSE
 
 /obj/vehicle/sealed/mecha/mob_exit(mob/M, silent = FALSE, randomstep = FALSE, forced = FALSE)
@@ -1255,7 +1317,7 @@
 		AI.eyeobj?.forceMove(newloc) //kick the eye out as well
 		if(forced)//This should only happen if there are multiple AIs in a round, and at least one is Malf.
 			if(!AI.linked_core) //if the victim AI has no core
-				AI.investigate_log("has been gibbed by being forced out of their mech by another AI.", INVESTIGATE_DEATHS)
+				AI.investigate_log("разорван на части при принудительном извлечении из меха другим ИИ.", INVESTIGATE_DEATHS)
 				AI.gib()  //If one Malf decides to steal a mech from another AI (even other Malfs!), they are destroyed, as they have nowhere to go when replaced.
 			AI = null
 			mecha_flags &= ~SILICON_PILOT
@@ -1263,11 +1325,11 @@
 		else
 			if(!AI.linked_core)
 				if(!silent)
-					to_chat(AI, span_userdanger("Inactive core destroyed. Unable to return."))
+					to_chat(AI, span_userdanger("Неактивное ядро уничтожено. Вернуться невозможно."))
 				AI.linked_core = null
 				return
 			if(!silent)
-				to_chat(AI, span_notice("Returning to core..."))
+				to_chat(AI, span_notice("Возвращение в ядро..."))
 			AI.controlled_equipment = null
 			AI.remote_control = null
 			mob_container = AI
@@ -1278,7 +1340,7 @@
 	var/mob/living/ejector = M
 	mecha_flags  &= ~SILICON_PILOT
 	mob_container.forceMove(newloc)//ejecting mob container
-	log_message("[mob_container] moved out.", LOG_MECHA)
+	log_message("[mob_container] покидает мех.", LOG_MECHA)
 	SStgui.close_user_uis(M, src)
 	if(istype(mob_container, /obj/item/mmi))
 		var/obj/item/mmi/mmi = mob_container
@@ -1323,8 +1385,12 @@
 		return
 	RegisterSignal(M, COMSIG_MOB_DEATH, PROC_REF(mob_exit))
 	RegisterSignal(M, COMSIG_MOB_CLICKON, PROC_REF(on_mouseclick))
+	M.register_mousewheel_handler(src, PROC_REF(on_mousewheel), MOUSEWHEEL_PRIORITY_MECHA)
 	RegisterSignal(M, COMSIG_MOB_SAY, PROC_REF(display_speech_bubble))
 	RegisterSignal(M, COMSIG_MOVABLE_TELEPORTED, PROC_REF(on_occupant_displaced))
+	RegisterSignal(M, COMSIG_MOB_CLIENT_LOGIN, PROC_REF(disable_occupant_popup_menus))
+	RegisterSignal(M, COMSIG_MOB_CLIENT_LOGOUT, PROC_REF(restore_occupant_popup_menus))
+	disable_occupant_popup_menus(M)
 
 /obj/vehicle/sealed/mecha/after_add_occupant(mob/M)
 	. = ..()
@@ -1334,8 +1400,12 @@
 /obj/vehicle/sealed/mecha/remove_occupant(mob/M)
 	UnregisterSignal(M, COMSIG_MOB_DEATH)
 	UnregisterSignal(M, COMSIG_MOB_CLICKON)
+	M.unregister_mousewheel_handler(src)
 	UnregisterSignal(M, COMSIG_MOB_SAY)
 	UnregisterSignal(M, COMSIG_MOVABLE_TELEPORTED)
+	UnregisterSignal(M, list(COMSIG_MOB_CLIENT_LOGIN, COMSIG_MOB_CLIENT_LOGOUT))
+	restore_occupant_popup_menus(M)
+	SStgui.close_user_uis(M, src)
 	M.clear_alert("charge")
 	M.clear_alert("mech damage")
 	if(M.client)
@@ -1348,13 +1418,33 @@
 	update_icon()
 	M.update_mouse_pointer()
 
+/obj/vehicle/sealed/mecha/proc/disable_occupant_popup_menus(mob/pilot)
+	SIGNAL_HANDLER
+	var/client/pilot_client = pilot.client
+	if(!pilot_client)
+		return
+	if(isnull(pilot_client.show_popup_menus_before_disable))
+		pilot_client.show_popup_menus_before_disable = pilot_client.show_popup_menus
+	pilot_client.mecha_popup_menus_disabled = TRUE
+	pilot_client.show_popup_menus = FALSE
+
+/obj/vehicle/sealed/mecha/proc/restore_occupant_popup_menus(mob/pilot, client/pilot_client)
+	SIGNAL_HANDLER
+	pilot_client ||= pilot.client
+	if(!pilot_client)
+		return
+	pilot_client.mecha_popup_menus_disabled = FALSE
+	if(!isnull(pilot_client.show_popup_menus_before_disable))
+		pilot_client.show_popup_menus = pilot_client.show_popup_menus_before_disable
+		pilot_client.show_popup_menus_before_disable = null
+
 /////////////////////////
 ////// Access stuff /////
 /////////////////////////
 
 /obj/vehicle/sealed/mecha/proc/operation_allowed(mob/M)
-	req_access = operation_req_access
-	req_one_access = list()
+	req_access = operation_one_access ? list() : operation_req_access
+	req_one_access = operation_one_access ? operation_req_access : list()
 	return allowed(M)
 
 /obj/vehicle/sealed/mecha/proc/internals_access_allowed(mob/M)
@@ -1396,7 +1486,7 @@
 /obj/vehicle/sealed/mecha/proc/ammo_resupply(obj/item/mecha_ammo/A, mob/user,fail_chat_override = FALSE)
 	if(!A.rounds)
 		if(!fail_chat_override)
-			to_chat(user, "<span class='warning'>This box of ammo is empty!</span>")
+			to_chat(user, span_warning("Этот ящик боеприпасов пуст!"))
 		return FALSE
 	var/ammo_needed
 	var/found_gun
@@ -1417,7 +1507,7 @@
 					else
 						gun.projectiles_cache = gun.projectiles_cache + ammo_needed
 					playsound(get_turf(user),A.load_audio,50,TRUE)
-					to_chat(user, "<span class='notice'>You add [ammo_needed] [A.round_term][ammo_needed > 1?"s":""] to the [gun.name]</span>")
+					to_chat(user, span_notice("Вы пополняете боезапас [gun.name] на [ammo_needed] ед."))
 					A.rounds = A.rounds - ammo_needed
 					A.update_name()
 					return TRUE
@@ -1428,13 +1518,13 @@
 					else
 						gun.projectiles_cache = gun.projectiles_cache + A.rounds
 					playsound(get_turf(user),A.load_audio,50,TRUE)
-					to_chat(user, "<span class='notice'>You add [A.rounds] [A.round_term][A.rounds > 1?"s":""] to the [gun.name]</span>")
+					to_chat(user, span_notice("Вы пополняете боезапас [gun.name] на [A.rounds] ед."))
 					A.rounds = 0
 					A.update_name()
 					return TRUE
 	if(!fail_chat_override)
 		if(found_gun)
-			to_chat(user, "<span class='notice'>You can't fit any more ammo of this type!</span>")
+			to_chat(user, span_notice("Боезапас этого типа уже заполнен!"))
 		else
-			to_chat(user, "<span class='notice'>None of the equipment on this exosuit can use this ammo!</span>")
+			to_chat(user, span_notice("Ни один модуль этого экзокостюма не использует такие боеприпасы!"))
 	return FALSE

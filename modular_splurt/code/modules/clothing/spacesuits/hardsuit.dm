@@ -22,7 +22,7 @@
 	item_state = "hev"
 	resistance_flags = ACID_PROOF | FIRE_PROOF
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
-	armor = list("melee" = 30, "bullet" = 10, "laser" = 10, "energy" = 5, "bomb" = 80, "bio" = 100, "rad" = 100, "fire" = 60, "acid" = 60, "wound" = 30)
+	armor_type = /datum/armor/hev_suit
 	actions_types = list(/datum/action/item_action/toggle_research_scanner)
 
 /obj/item/clothing/head/helmet/space/hardsuit/rd/hev/no_scanner
@@ -42,7 +42,7 @@
 	flags_inv = HIDEGLOVES|HIDESHOES|HIDEJUMPSUIT|HIDETAUR|HIDETAIL
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/gun/energy/wormhole_projector,
 	/obj/item/hand_tele, /obj/item/aicard)
-	armor = list("melee" = 35, "bullet" = 25, "laser" = 25, "energy" = 5, "bomb" = 100, "bio" = 100, "rad" = 100, "fire" = 80, "acid" = 100, "wound" = 30) // это костюм защиты от агресивной среды - без защиты от агресивной среды.
+	armor_type = /datum/armor/hev_suit
 	brc_mitigation_bonus = 10  // BLUEMOON ADD
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_ALL_TAURIC //bluemoon add
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/rd/hev
@@ -74,14 +74,14 @@
 /obj/item/clothing/head/helmet/space/hardsuit/rd/hev/cosmetic
 	resistance_flags = null
 	max_heat_protection_temperature = null
-	armor = list("melee" = 0, "bullet" = 0, "laser" = 0, "energy" = 0, "bomb" = 0, "bio" = 100, "rad" = 0, "fire" = 0, "acid" = 0)
+	armor_type = /datum/armor/bio100
 	actions_types = list()
 
 /obj/item/clothing/suit/space/hardsuit/rd/hev/cosmetic
 	resistance_flags = null
 	max_heat_protection_temperature = null
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/gun/energy/wormhole_projector, /obj/item/hand_tele, /obj/item/aicard)
-	armor = list("melee" = 0, "bullet" = 0, "laser" = 0, "energy" = 0, "bomb" = 0, "bio" = 100, "rad" = 0, "fire" = 0, "acid" = 0)
+	armor_type = /datum/armor/bio100
 	brc_mitigation_bonus = 0  // BLUEMOON ADD
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/rd/hev/cosmetic
 	actions_types = list(/datum/action/item_action/toggle_helmet, /datum/action/item_action/toggle_cool_music)
@@ -104,7 +104,7 @@
 	max_charges = 4
 	current_charges = 4
 	recharge_delay = 15
-	armor = list("melee" = 80, "bullet" = 80, "laser" = 50, "energy" = 50, "bomb" = 100, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 100, "wound" = 50)
+	armor_type = /datum/armor/deathsquad_and_shielded
 	brc_mitigation_bonus = 25  // BLUEMOON ADD
 	strip_delay = 130
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
@@ -126,7 +126,7 @@
 	icon_state = "hardsuit0-goldenpa"
 	item_state = "hardsuit0-goldenpa"
 	hardsuit_type = "goldenpa"
-	armor = list("melee" = 80, "bullet" = 80, "laser" = 50, "energy" = 50, "bomb" = 100, "bio" = 100, "rad" = 100, "fire" = 100, "acid" = 100, "wound" = 50)
+	armor_type = /datum/armor/deathsquad_and_shielded
 	strip_delay = 130
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 
@@ -138,7 +138,7 @@
 	anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/suit_digi.dmi'
 	icon_state = "tesla_pa"
 	item_state = "tesla_pa"
-	armor = list("melee" = 70, "bullet" = 70, "laser" = 90, "energy" = 90, "bomb" = 70, "bio" = 100, "rad" = 40, "fire" = 100, "acid" = 100, "wound" = 50)
+	armor_type = /datum/armor/teslapa_suit
 	brc_mitigation_bonus = 25  // BLUEMOON ADD
 	strip_delay = 300
 	equip_delay_self = 300
@@ -202,7 +202,7 @@
 	anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/head_muzzled.dmi'
 	icon_state = "teslaup"
 	item_state = "teslaup"
-	armor = list("melee" = 70, "bullet" = 70, "laser" = 90, "energy" = 90, "bomb" = 70, "bio" = 100, "rad" = 10, "fire" = 100, "acid" = 100, "wound" = 50)
+	armor_type = /datum/armor/teslapa_suit
 	strip_delay = 130
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 
@@ -217,7 +217,7 @@
 	anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/suit_digi.dmi'
 	icon_state = "advanced_pa"
 	item_state = "advanced_pa"
-	armor = list("melee" = 95, "bullet" = 95, "laser" = 70, "energy" = 80, "bomb" = 70, "bio" = 100, "rad" = 40, "fire" = 100, "acid" = 100, "wound" = 50)
+	armor_type = /datum/armor/advancedpa_suit
 	brc_mitigation_bonus = 30  // BLUEMOON ADD
 	strip_delay = 300 //chonky armor means chonky strip
 	equip_delay_self = 300
@@ -241,7 +241,7 @@
 	anthro_mob_worn_overlay = 'modular_splurt/icons/mob/clothing/head_muzzled.dmi'
 	icon_state = "adv_pa"
 	item_state = "adv_pa"
-	armor = list("melee" = 95, "bullet" = 90, "laser" = 70, "energy" = 80, "bomb" = 70, "bio" = 100, "rad" = 40, "fire" = 100, "acid" = 100, "wound" = 50)
+	armor_type = /datum/armor/advancedpa_suit
 	strip_delay = 300
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 
@@ -255,7 +255,7 @@
 	mob_overlay_icon = 'modular_splurt/icons/mob/clothing/head.dmi'
 	icon_state = "hardsuit0-corpus"
 	item_state = "hardsuit0-corpus"
-	armor = list(MELEE = 10, BULLET = 5, LASER = 10, ENERGY = 5, BOMB = 10, BIO = 100, RAD = 75, FIRE = 50, ACID = 75, WOUND = 10)
+	armor_type = /datum/armor/corpus_helmet
 	strip_delay = 300
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	hardsuit_type = "corpus"
@@ -269,7 +269,7 @@
 	icon_state = "hardsuit-corpus"
 	item_state = "hardsuit-corpus"
 	max_integrity = 300
-	armor = list(MELEE = 15, BULLET = 10, LASER = 15, ENERGY = 10, BOMB = 10, BIO = 100, RAD = 100, FIRE = 50, ACID = 75, WOUND = 25)
+	armor_type = /datum/armor/corpus_suit
 	brc_mitigation_bonus = 5  // BLUEMOON ADD
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals, /obj/item/t_scanner, /obj/item/construction/rcd, /obj/item/pipe_dispenser)
 	siemens_coefficient = 0

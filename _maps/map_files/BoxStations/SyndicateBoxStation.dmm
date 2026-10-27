@@ -7289,9 +7289,6 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 4
 	},
@@ -8784,7 +8781,6 @@
 	name = "Cryogenics "
 	},
 /obj/machinery/door/firedoor,
-/obj/machinery/door/firedoor,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
@@ -9582,9 +9578,6 @@
 /obj/machinery/door/airlock/vault{
 	name = "Vault Door";
 	req_access_txt = "53"
-	},
-/obj/structure/cable{
-	icon_state = "1-2"
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
@@ -19559,9 +19552,6 @@
 /obj/structure/disposalpipe/segment{
 	dir = 4
 	},
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
 /obj/effect/turf_decal/trimline/blue/filled/warning{
 	dir = 4
 	},
@@ -22805,7 +22795,7 @@
 /turf/open/floor/plating,
 /area/security/checkpoint/supply)
 "bwe" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /obj/effect/turf_decal/tile/brown/half,
 /turf/open/floor/mineral/plastitanium,
 /area/cargo/miningdock)
@@ -31165,6 +31155,9 @@
 "bUj" = (
 /obj/machinery/light{
 	dir = 8
+	},
+/obj/machinery/computer/shuttle_flight/exploration{
+	dir = 4
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/science/misc_lab)
@@ -59412,9 +59405,6 @@
 /obj/structure/disposalpipe/segment{
 	dir = 4
 	},
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
@@ -64279,6 +64269,10 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/commons/locker)
+"ocM" = (
+/obj/structure/fulton_beacon,
+/turf/open/floor/mineral/plastitanium,
+/area/command/gateway)
 "ocR" = (
 /turf/closed/wall/r_wall/r_plastitanium,
 /area/science/xenobiology)
@@ -71131,9 +71125,6 @@
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /turf/open/floor/plating,
@@ -76511,7 +76502,7 @@
 /area/maintenance/aft)
 "uAC" = (
 /obj/effect/turf_decal/trimline/dark_blue/filled/line,
-/obj/machinery/bountyvend/plus,
+/obj/machinery/equipment_vendor/vanguard,
 /turf/open/floor/mineral/plastitanium,
 /area/command/gateway)
 "uBa" = (
@@ -109817,7 +109808,7 @@ cCb
 cCb
 cCb
 cCb
-cCb
+ocM
 ykT
 uAC
 wql

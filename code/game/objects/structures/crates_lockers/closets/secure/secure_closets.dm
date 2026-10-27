@@ -4,7 +4,7 @@
 	locked = TRUE
 	icon_state = "secure"
 	max_integrity = 250
-	armor = list(MELEE = 30, BULLET = 50, LASER = 50, ENERGY = 100, BOMB = 0, BIO = 0, RAD = 0, FIRE = 80, ACID = 80)
+	armor_type = /datum/armor/crate_secure_and_secure_closet
 	secure = TRUE
 	var/melee_min_damage = 20
 

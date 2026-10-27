@@ -281,9 +281,10 @@
 			var/datum/stack_recipe/R = locate(params["ref"])
 			if(!is_valid_recipe(R, recipes)) //href exploit protection
 				return
-			var/multiplier = text2num(params["multiplier"])
+			var/multiplier = round(text2num(params["multiplier"]))
 			if(!multiplier || (multiplier <= 0)) //href exploit protection
 				return
+			multiplier = (R.max_res_amount > 1) ? min(multiplier, round(R.max_res_amount / R.res_amount)) : 1
 			if(!building_checks(R, multiplier))
 				return
 			if(R.time)
@@ -408,6 +409,8 @@
 	return TRUE
 
 /obj/item/stack/use(used, transfer = FALSE, check = TRUE) // return FALSE = borked; return TRUE = had enough
+	if(!isnum(used) || used < 0)
+		return FALSE
 	if(check && zero_amount())
 		return FALSE
 	if (is_cyborg)
@@ -556,15 +559,19 @@
 			LAZYSET(quick_split, "[option]", option_display)
 	var/stackmaterial
 	if(length(quick_split) <= 2)
-		stackmaterial = round(input(user, "How many sheets do you wish to take out of this stack?\nMax: [max]") as null|num)
+		stackmaterial = tgui_input_number(user, "Сколько листов вы хотите взять из этого стака?", "Разделение стака", max_value = max, min_value = 1)
 	else
 		stackmaterial = show_radial_menu(user, get_atom_on_turf(src), quick_split, require_near = TRUE, tooltips = TRUE)
 		if(stackmaterial == "Custom")
-			stackmaterial = round(input(user, "How many sheets do you wish to take out of this stack?\nMax: [max]") as null|num)
+			stackmaterial = tgui_input_number(user, "Сколько листов вы хотите взять из этого стака?", "Разделение стака", max_value = max, min_value = 1)
 		stackmaterial = isnum(stackmaterial) ? stackmaterial : text2num(stackmaterial)
-	stackmaterial = min(get_amount(), stackmaterial)
-	if(stackmaterial == null || stackmaterial <= 0 || !user.canUseTopic(src, BE_CLOSE, TRUE, FALSE)) //, !iscyborg(user)
+	if(!isnum(stackmaterial))
 		return
+	// tgui_input_number не применяет round_value, поэтому округляем самостоятельно до проверки
+	stackmaterial = round(stackmaterial)
+	if(stackmaterial <= 0 || !user.canUseTopic(src, BE_CLOSE, TRUE, FALSE)) //, !iscyborg(user)
+		return
+	stackmaterial = min(get_amount(), stackmaterial)
 	split_stack(user, stackmaterial)
 	to_chat(user, "<span class='notice'>You take [stackmaterial] sheets out of the stack.</span>")
 

@@ -390,7 +390,7 @@
 /area/shuttle/escape/luxury)
 "bw" = (
 /obj/structure/table/plasmaglass,
-/obj/item/storage/backpack/duffelbag/med/surgery,
+/obj/item/storage/backpack/duffelbag/med/surgery/upgraded,
 /turf/open/floor/carpet/red,
 /area/shuttle/escape/luxury)
 "bx" = (

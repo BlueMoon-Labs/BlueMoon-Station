@@ -443,6 +443,7 @@ GLOBAL_LIST_EMPTY(genital_slot_dna_features)
 			var/obj/item/organ/genital/G = A
 			var/datum/sprite_accessory/S
 			var/size = G.size_to_state()
+
 			switch(G.type)
 				if(/obj/item/organ/genital/penis)
 					S = GLOB.cock_shapes_list[G.shape]
@@ -461,6 +462,15 @@ GLOBAL_LIST_EMPTY(genital_slot_dna_features)
 
 			if(!S || S.icon_state == "none")
 				continue
+
+			// BLUEMOON ADD
+			var/suffix = ""
+			if(istype(G, /obj/item/organ/genital/breasts) \
+				&& dna.features["breasts_sprite_variant"] == "Old" \
+				&& S?.icon_state == "pair")
+				suffix = "old_"
+			// BLUEMOON ADD
+
 			mutant_string = S.mutant_part_string
 			forced_by_hardlight = is_genital_forced_visible(mutant_string)
 			var/aroused_state = G.aroused_state && S.alt_aroused
@@ -499,7 +509,20 @@ GLOBAL_LIST_EMPTY(genital_slot_dna_features)
 					if("anus_color")
 						genital_overlay.color = "#[dna.features["anus_color"]]"
 
-			genital_overlay.icon_state = "[G.slot]_[S.icon_state]_[size][(dna.species.use_skintones && !dna.skin_tone_override) ? "_s" : ""]_[aroused_state]_[layertext]"
+			genital_overlay.icon_state = "[G.slot]_[S.icon_state]_[suffix][size][(dna.species.use_skintones && !dna.skin_tone_override) ? "_s" : ""]_[aroused_state]_[layertext]"
+			// BLUEMOON ADD
+			var/mutable_appearance/nipples_overlay
+			if(istype(G, /obj/item/organ/genital/breasts) \
+				&& dna.features["breasts_nipples"] \
+				&& dna.features["breasts_sprite_variant"] != "Old" \
+				&& S.icon_state == "pair" \
+				&& size != "плоского")
+				nipples_overlay = mutable_appearance(accessory_icon, layer = -layer)
+				if(do_center)
+					nipples_overlay = center_image(nipples_overlay, dim_x, dim_y)
+				nipples_overlay.color = "#[dna.features["breasts_nipples_color"]]"
+				nipples_overlay.icon_state = "nipples_[S.icon_state]_[size]_[aroused_state]_[layertext]"
+			// BLUEMOON ADD
 
 			// Check if the flag is on, or the genitals are exposed with no uniform on (except for gear harness)
 			var/should_promote = (G.genital_flags & GENITAL_THROUGH_CLOTHES) || forced_by_hardlight || (G.is_exposed() && !(w_uniform && !istype(w_uniform, /obj/item/clothing/under/misc/gear_harness)))
@@ -531,12 +554,24 @@ GLOBAL_LIST_EMPTY(genital_slot_dna_features)
 				if(has_emissive_part(dna.features, G.slot))
 					var/mutable_appearance/genital_emissive = emissive_copy(genital_overlay, offset_spokesman = src)
 					LAZYADD(fully_exposed, genital_emissive)
+				// BLUEMOON ADD
+				if(nipples_overlay)
+					nipples_overlay.layer = -GENITALS_EXPOSED_LAYER
+					LAZYADD(fully_exposed, nipples_overlay)
+					if(has_emissive_part(dna.features, G.slot))
+						LAZYADD(fully_exposed, emissive_copy(nipples_overlay))
 			else
 				genital_overlay.layer = -layers_num[layer]
 				standing += genital_overlay
 				if(has_emissive_part(dna.features, G.slot))
 					var/mutable_appearance/genital_emissive = emissive_copy(genital_overlay, offset_spokesman = src)
 					standing += genital_emissive
+				// BLUEMOON ADD
+				if(nipples_overlay)
+					nipples_overlay.layer = -layers_num[layer]
+					standing += nipples_overlay
+					if(has_emissive_part(dna.features, G.slot))
+						standing += emissive_copy(nipples_overlay)
 
 		if(LAZYLEN(standing))
 			overlays_standing[layers_num[layer]] = standing

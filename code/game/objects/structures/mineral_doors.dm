@@ -16,7 +16,7 @@
 	var/isSwitchingStates = 0
 	var/close_delay = -1 //-1 if does not auto close.
 	max_integrity = 200
-	armor = list(MELEE = 10, BULLET = 0, LASER = 0, ENERGY = 100, BOMB = 10, BIO = 100, RAD = 100, FIRE = 50, ACID = 50)
+	armor_type = /datum/armor/mineral_door
 	var/sheetType = /obj/item/stack/sheet/metal
 	var/sheetAmount = 7
 	var/openSound = 'sound/effects/stonedoor_openclose.ogg'
@@ -63,8 +63,6 @@
 		return
 	if(isliving(user))
 		var/mob/living/M = user
-		if(world.time - M.last_bumped <= 60)
-			return //NOTE do we really need that?
 		if(M.client)
 			if(iscarbon(M))
 				var/mob/living/carbon/C = M
@@ -192,8 +190,7 @@
 /obj/structure/mineral_door/transparent/plasma/attackby(obj/item/W, mob/user, params)
 	if(W.get_temperature())
 		var/turf/T = get_turf(src)
-		message_admins("Plasma mineral door ignited by [ADMIN_LOOKUPFLW(user)] in [ADMIN_VERBOSEJMP(T)]")
-		log_admin("Plasma mineral door ignited by [key_name(user)] in [AREACOORD(T)]")
+		antag_training_admin_log(src, "Plasma mineral door ignited by [ADMIN_LOOKUPFLW(user)] in [ADMIN_VERBOSEJMP(T)]", "Plasma mineral door ignited by [key_name(user)] in [AREACOORD(T)]")
 		TemperatureAct()
 	else
 		return ..()

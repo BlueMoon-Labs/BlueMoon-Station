@@ -1,7 +1,7 @@
 //WHITE-STEEL PORT - Индивидуальный рацион питания
 
 /obj/item/storage/mre
-	name = "ИРП-4"
+	name = "MRE-4"
 	desc = "Запечатанный под вакуумом пакет с дневным запасом питательных веществ для взрослого, находящегося в тяжелых условиях. На упаковке нет видимой даты истечения срока годности."
 	icon = 'modular_bluemoon/white/valtos/icons/mre.dmi'
 	icon_state = "mre"
@@ -44,7 +44,7 @@
 		update_icon()
 
 /obj/item/storage/mre/vegan
-	name = "ИРП-6"
+	name = "MRE-6"
 	icon_state = "vegmre"
 	meal_contents = list(
 		/obj/item/storage/mrebag/vegan,
@@ -55,7 +55,7 @@
 		/obj/item/reagent_containers/food/drinks/soda_cans/space_mountain_wind)
 
 /obj/item/storage/mre/protein
-	name = "ИРП-47"
+	name = "MRE-47"
 	icon_state = "meatmre"
 	meal_contents = list(
 		/obj/item/storage/mrebag/protein,
@@ -66,7 +66,7 @@
 		/obj/item/reagent_containers/food/drinks/soda_cans/space_mountain_wind)
 
 /obj/item/storage/mrebag
-	name = "основное блюдо (пицца)"
+	name = "main course (pizza)"
 	desc = "Запечатанный под вакуумом пакет, содержащий основное блюдо ИРП. Саморазогревается при открытии."
 	icon = 'modular_bluemoon/white/valtos/icons/mre.dmi'
 	icon_state = "pouch_medium"
@@ -78,14 +78,14 @@
 	new main_meal(src)
 
 /obj/item/storage/mrebag/vegan
-	name = "основное блюдо (салат)"
+	name = "main course (salad)"
 
 /obj/item/storage/mrebag/vegan/generate_main_meal()
 	var/obj/item/main_meal = pick(subtypesof(/obj/item/reagent_containers/food/snacks/salad))
 	new main_meal(src)
 
 /obj/item/storage/mrebag/protein
-	name = "основное блюдо (бургер)"
+	name = "main course (burger)"
 
 /obj/item/storage/mrebag/protein/generate_main_meal()
 	var/obj/item/main_meal = pick(subtypesof(/obj/item/reagent_containers/food/snacks/burger))
@@ -118,7 +118,7 @@
 		update_icon()
 
 /obj/item/storage/mrebag/dessert
-	name = "десерт"
+	name = "dessert"
 	desc = "Вакуумный пакет с десертом ИРП."
 	icon_state = "pouch_small"
 	open_sound = 'modular_bluemoon/white/valtos/sounds/rip1.ogg'

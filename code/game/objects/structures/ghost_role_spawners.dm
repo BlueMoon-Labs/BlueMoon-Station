@@ -896,10 +896,6 @@ GLOBAL_LIST_EMPTY(ashwalker_spawns)
 	var/endings = strings(PIRATE_NAMES_FILE, "endings")
 	return "[rank] [pick(beggings)] [pick(endings)]"
 
-/obj/effect/mob_spawn/human/pirate/Destroy()
-	new/obj/structure/showcase/machinery/oldpod/used(drop_location())
-	return ..()
-
 /obj/effect/mob_spawn/human/pirate/captain
 	rank = "Captain"
 	outfit = /datum/outfit/pirate/space/captain

@@ -20,7 +20,7 @@
  * 3. Добавьте new /datum/ai_donator_screen/<name> в GLOBAL_LIST_INIT_TYPED ниже.
  *
  * Примечания:
- *    - ckey всегда в нижнем регистре (как в базе данных)
+ *    - ckey_whitelist поддерживает исходные key, нормализованные ckey и enc1 ID от любого из этих вариантов
  *    - icon_state_dead можно не указывать, тогда при смерти ИИ
  *      будет использоваться стандартный мёртвый стейт из AI.dmi
  *    - Один экран может быть доступен нескольким игрокам:
@@ -28,17 +28,20 @@
  */
 
 /datum/ai_donator_screen
-    var/name = ""
-    var/icon = 'icons/mob/AI_donator.dmi'
-    var/icon_state = ""
-    var/icon_state_dead = ""
-    var/list/ckey_whitelist = list()
+	var/name = ""
+	var/icon = 'icons/mob/AI_donator.dmi'
+	var/icon_state = ""
+	var/icon_state_dead = ""
+	var/list/ckey_whitelist = list()
+
+/datum/ai_donator_screen/proc/is_allowed_for(user_key)
+	return length(ckey_whitelist) && is_key_in_whitelist(user_key, ckey_whitelist)
 
 /datum/ai_donator_screen/star
-    name = "Star"
-    icon_state = "ai-star"
-    icon_state_dead = "ai-star_dead"
-    ckey_whitelist = list("pe4henika")
+	name = "Star"
+	icon_state = "ai-star"
+	icon_state_dead = "ai-star_dead"
+	ckey_whitelist = list("pe4henika")
 
 
 GLOBAL_LIST_INIT_TYPED(ai_donator_screens, /datum/ai_donator_screen, list(

@@ -1,0 +1,6092 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"aa" = (
+/turf/closed/wall/r_wall,
+/area/antag_training/sector/robotics)
+"ab" = (
+/obj/item/stack/sheet/cardboard,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"ac" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/trash/can,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"ag" = (
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/structure/table,
+/obj/item/stack/sheet/plasteel/twenty{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/rods/ten{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"ah" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table,
+/obj/item/circuitboard/mecha/ripley/main{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/circuitboard/mecha/ripley/peripherals{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"aj" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate,
+/obj/item/stock_parts/manipulator,
+/obj/item/stock_parts/manipulator,
+/obj/item/bodypart/chest/robot,
+/obj/item/bodypart/chest/robot,
+/obj/item/stock_parts/capacitor,
+/obj/item/bodypart/r_arm/robot,
+/obj/item/stock_parts/cell/high,
+/obj/item/bodypart/l_leg/robot,
+/obj/item/clothing/glasses/welding,
+/obj/item/bodypart/chest/robot,
+/obj/item/bodypart/chest/robot,
+/obj/item/stock_parts/cell/high/empty,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"ao" = (
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stock_parts/cell,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"aw" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/closet/crate/science,
+/obj/item/stock_parts/cell/upgraded,
+/obj/item/stock_parts/manipulator,
+/obj/item/bodypart/r_leg/robot,
+/obj/item/bodypart/l_leg/robot,
+/obj/item/storage/box/stockparts/basic,
+/obj/item/stock_parts/cell/high/empty,
+/obj/item/bodypart/r_arm/robot,
+/obj/item/bodypart/l_arm/robot,
+/obj/item/stock_parts/cell/high/empty,
+/obj/item/bodypart/r_arm/robot,
+/obj/item/bodypart/r_arm/robot,
+/obj/item/stock_parts/cell/high/empty,
+/obj/item/bodypart/head/robot,
+/obj/item/bodypart/l_leg/robot,
+/obj/item/stock_parts/cell/high/empty,
+/obj/item/stock_parts/cell/high/empty,
+/obj/item/bodypart/r_arm/robot,
+/obj/item/bodypart/l_arm/robot,
+/obj/item/bodypart/r_arm/robot,
+/obj/item/stock_parts/cell/high/empty,
+/obj/item/mecha_parts/mecha_equipment/drill,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"ax" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 9
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sign/poster/official/nanotrasen_logo{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"aD" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/structure/closet/crate/medical,
+/obj/item/stack/medical/gauze,
+/obj/item/stack/medical/bruise_pack,
+/obj/item/healthanalyzer,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"aG" = (
+/obj/effect/turf_decal/loading_area,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"aM" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/sign/plaques/kiddie{
+	name = "Test Chamber sign";
+	desc = "Табличка: «Испытательный бокс. Закрыт после пожара, вход с огнетушителем».";
+	pixel_x = -32
+	},
+/obj/item/taperecorder,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"aQ" = (
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/structure/sign/poster/official/build{
+	pixel_x = -32
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"aR" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/structure/table,
+/obj/item/stock_parts/cell/high{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/borg/upgrade/restart{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/multitool{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"aT" = (
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"aU" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/closet/crate,
+/obj/item/stack/sheet/metal/ten,
+/obj/item/stack/rods/ten,
+/obj/item/stock_parts/manipulator,
+/obj/item/stock_parts/matter_bin,
+/obj/item/stock_parts/cell/high/empty,
+/obj/item/stock_parts/capacitor,
+/obj/item/stock_parts/cell/high,
+/obj/item/stock_parts/capacitor,
+/obj/item/stock_parts/cell/high/empty,
+/obj/item/assembly/prox_sensor,
+/obj/item/assembly/igniter,
+/obj/item/assembly/igniter,
+/obj/item/stock_parts/capacitor,
+/obj/item/stock_parts/scanning_module,
+/obj/item/borg/upgrade/rename,
+/obj/item/stock_parts/cell/crap,
+/obj/item/stock_parts/scanning_module,
+/obj/item/stock_parts/scanning_module,
+/obj/item/borg/upgrade/rename,
+/obj/item/borg/upgrade/rename,
+/obj/item/borg/upgrade/rename,
+/obj/item/stock_parts/cell/crap,
+/obj/item/stock_parts/cell/crap,
+/obj/item/stock_parts/cell/crap,
+/obj/item/borg/upgrade/rename,
+/obj/item/borg/upgrade/rename,
+/obj/item/stock_parts/cell/crap,
+/obj/item/paper{
+	name = "recharge bay note";
+	default_raw_text = "Зарядная: станции исправны. Киборгов на зарядке не оставлять дольше смены, пустые батареи - в ящик у стены."
+	},
+/obj/item/paper{
+	name = "recharge bay note";
+	default_raw_text = "Зарядная: станции исправны. Киборгов на зарядке не оставлять дольше смены, пустые батареи - в ящик у стены."
+	},
+/obj/item/assembly/igniter,
+/obj/item/clothing/glasses/welding,
+/obj/item/light/bulb/broken,
+/obj/item/light/tube/broken,
+/obj/item/paper{
+	name = "repair tag";
+	default_raw_text = "НЕИСПРАВНО. На киборга не ставить, вернуть на склад."
+	},
+/obj/item/stock_parts/cell/crap,
+/obj/item/stock_parts/cell/crap,
+/obj/item/borg/upgrade/expand,
+/obj/item/assembly/timer,
+/obj/item/assembly/timer,
+/obj/item/borg/upgrade/rename,
+/obj/item/borg/upgrade/rename,
+/obj/item/borg/upgrade/rename,
+/obj/item/assembly/health,
+/obj/item/assembly/igniter,
+/obj/item/assembly/health,
+/obj/item/stock_parts/cell/high/empty,
+/obj/item/assembly/igniter,
+/obj/item/borg/upgrade/expand,
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"aY" = (
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"aZ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/closet,
+/obj/item/clothing/glasses/welding,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/clothing/under/rank/rnd/roboticist,
+/obj/item/lighter/greyscale,
+/obj/item/storage/backpack/science,
+/obj/item/toy/figure/borg,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"ba" = (
+/obj/machinery/atmospherics/pipe/manifold4w/supply/hidden,
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"bc" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"bm" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/structure/table/glass,
+/obj/item/tank/internals/anesthetic{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/mask/breath/medical{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/medical/gauze{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"bn" = (
+/obj/effect/turf_decal/stripes/yellow/box,
+/obj/item/stack/sheet/cardboard,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"bv" = (
+/turf/closed/wall,
+/area/antag_training/sector/robotics)
+"bQ" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/emcloset,
+/obj/item/reagent_containers/food/drinks/coffee,
+/obj/item/lighter/greyscale,
+/obj/item/clothing/gloves/fingerless,
+/obj/item/newspaper,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/trash/raisins,
+/obj/item/trash/can,
+/obj/item/trash/raisins,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"bS" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/rack,
+/obj/item/stack/sheet/metal/fifty{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/glass/fifty{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/packageWrap{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"bU" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/antag_training/sector/robotics)
+"cq" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate,
+/obj/item/stock_parts/scanning_module,
+/obj/item/stock_parts/capacitor,
+/obj/item/bodypart/l_arm/robot,
+/obj/item/bodypart/r_leg/robot,
+/obj/item/stock_parts/cell/high,
+/obj/item/bodypart/l_arm/robot,
+/obj/item/bodypart/l_arm/robot,
+/obj/item/stock_parts/cell/high,
+/obj/item/bodypart/r_leg/robot,
+/obj/item/bodypart/chest/robot,
+/obj/item/bodypart/l_leg/robot,
+/obj/item/stack/sticky_tape,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"cs" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/stack/tile/plasteel{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/weldingtool{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/rods/ten{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"cx" = (
+/obj/effect/turf_decal/box,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/circuit,
+/area/antag_training/sector/robotics)
+"cO" = (
+/obj/effect/turf_decal/delivery,
+/obj/structure/closet/crate,
+/obj/item/stock_parts/cell/high,
+/obj/item/stock_parts/cell/high,
+/obj/item/bodypart/r_leg/robot,
+/obj/item/bodypart/r_arm/robot,
+/obj/item/stock_parts/cell/high/empty,
+/obj/item/bodypart/r_leg/robot,
+/obj/item/bodypart/chest/robot,
+/obj/item/bodypart/head/robot,
+/obj/item/paper{
+	name = "inspection tag";
+	default_raw_text = "Проверено. Годно к сборке."
+	},
+/obj/item/bodypart/r_leg/robot,
+/obj/item/bodypart/head/robot,
+/obj/item/bodypart/l_leg/robot,
+/obj/item/bodypart/l_leg/robot,
+/obj/item/bodypart/r_arm/robot,
+/obj/item/mecha_parts/mecha_equipment/drill,
+/obj/item/book/manual/ripley_build_and_repair,
+/obj/item/mecha_parts/mecha_equipment/drill,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"cP" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 2
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"cU" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"da" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/plating,
+/area/antag_training/sector/robotics)
+"dc" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/sign/warning/electricshock{
+	pixel_x = -32
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"dh" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/item/light/bulb/broken,
+/turf/open/floor/circuit,
+/area/antag_training/sector/robotics)
+"dl" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"dr" = (
+/obj/structure/bed/roller,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"dt" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"dA" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"dC" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"dD" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/table/reinforced,
+/obj/machinery/cell_charger,
+/obj/item/stock_parts/cell/high{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/paper{
+	name = "recharge bay note";
+	default_raw_text = "Зарядная: станции исправны. Киборгов на зарядке не оставлять дольше смены, пустые батареи - в ящик у стены.";
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/assembly/health{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"dJ" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/machinery/light/small{
+	dir = 8
+	},
+/obj/item/kirbyplants/training,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"dM" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/structure/table,
+/obj/item/assembly/flash/handheld{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/assembly/flash/handheld{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/assembly/flash/handheld{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/sign/warning/nosmoking{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"ea" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/closet,
+/obj/item/clothing/suit/toggle/labcoat/roboticist,
+/obj/item/clothing/under/rank/rnd/roboticist,
+/obj/item/bedsheet/purple,
+/obj/item/clothing/glasses/welding,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/clothing/head/soft/black,
+/obj/item/trash/can,
+/obj/item/reagent_containers/food/drinks/coffee,
+/obj/item/toy/figure/borg,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"ec" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/storage/toolbox/electrical{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/storage/toolbox/mechanical{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/crowbar{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/extinguisher_cabinet{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"ed" = (
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"eg" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"ej" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/oil,
+/turf/open/floor/circuit,
+/area/antag_training/sector/robotics)
+"em" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/wirecutters{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/glass{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"en" = (
+/obj/effect/decal/cleanable/robot_debris/gib,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/cable_coil/cut,
+/turf/open/floor/plasteel{
+	icon_state = "floorscorched1"
+	},
+/area/antag_training/sector/robotics)
+"er" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"es" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate,
+/obj/item/stack/sheet/metal/fifty,
+/obj/item/stack/sheet/metal/fifty,
+/obj/item/stock_parts/capacitor,
+/obj/item/stock_parts/scanning_module,
+/obj/item/clothing/head/welding,
+/obj/item/stock_parts/micro_laser,
+/obj/item/stock_parts/matter_bin,
+/obj/item/stock_parts/manipulator,
+/obj/item/clothing/glasses/welding,
+/obj/item/clothing/glasses/welding,
+/obj/item/stack/rods,
+/obj/item/stock_parts/manipulator,
+/obj/item/clothing/head/welding,
+/obj/item/stack/sheet/metal/ten,
+/obj/item/stock_parts/micro_laser,
+/obj/item/stock_parts/micro_laser,
+/obj/item/stack/sheet/metal/ten,
+/obj/item/stack/rods/ten,
+/obj/item/stock_parts/manipulator,
+/obj/item/stock_parts/capacitor,
+/obj/item/borg/upgrade/thrusters,
+/obj/item/stack/cable_coil/red,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"eu" = (
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/structure/chair/stool{
+	dir = 1
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"eN" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table,
+/obj/item/stack/medical/gauze{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/gloves/color/latex{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/healthanalyzer{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"eO" = (
+/obj/effect/turf_decal/stripes/yellow/box,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"eW" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/light/bulb/broken,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"fe" = (
+/obj/effect/turf_decal/tile/purple{
+	dir = 2
+	},
+/obj/item/assembly/prox_sensor,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"fk" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"fr" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/rack,
+/obj/item/stack/sheet/metal/fifty{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/glass{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/rods/fifty{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"fD" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/optable,
+/obj/item/bedsheet/medical{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/suit/apron/surgical{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/mask/surgical{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"fZ" = (
+/obj/effect/turf_decal/tile/purple{
+	dir = 2
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"ga" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"gl" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"gm" = (
+/obj/item/stack/cable_coil/cut,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"gn" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"gs" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/machinery/recharge_station,
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"gv" = (
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/machinery/light{
+	dir = 4
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"gz" = (
+/obj/structure/table,
+/obj/item/bodypart/head/robot{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/gloves/color/latex{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/healthanalyzer{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"gE" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/item/trash/can,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"gG" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/structure/bed/roller,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"gJ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/trash/candy,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"gL" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"gY" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"ha" = (
+/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"hg" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"hj" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"hn" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"hp" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 5
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/plaques/kiddie{
+	name = "Mechanicus Workshop plaque";
+	desc = "Мастерская «Механикус» - учебная копия станционной робототехники: лаборатория с площадкой сборки киборгов, операционная, зарядная и мех-бей. Эндоскелеты и экзофабрикатор здесь учебные. Испытательный бокс в мех-бее закрыт после пожара.";
+	pixel_y = 32
+	},
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"hr" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate,
+/obj/item/stock_parts/capacitor,
+/obj/item/stock_parts/cell/high,
+/obj/item/bodypart/l_arm/robot,
+/obj/item/stock_parts/cell/high,
+/obj/item/stock_parts/capacitor,
+/obj/item/stock_parts/cell/high,
+/obj/item/storage/box/stockparts/basic,
+/obj/item/bodypart/chest/robot,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"hD" = (
+/obj/machinery/door/airlock/maintenance{
+	name = "Mech Bay Storage"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"hS" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate/freezer,
+/obj/item/organ/heart,
+/obj/item/stack/medical/gauze,
+/obj/item/clothing/suit/apron/surgical,
+/obj/item/trash/candy,
+/obj/item/clothing/mask/surgical,
+/obj/item/clothing/mask/surgical,
+/obj/item/clothing/mask/surgical,
+/obj/item/clothing/suit/apron/surgical,
+/obj/item/surgical_drapes,
+/obj/item/stack/medical/gauze,
+/obj/item/reagent_containers/glass/bottle/epinephrine,
+/obj/item/stack/medical/gauze,
+/obj/item/stack/medical/gauze,
+/obj/item/reagent_containers/syringe,
+/obj/item/reagent_containers/glass/bottle/epinephrine,
+/obj/item/reagent_containers/syringe,
+/obj/item/reagent_containers/glass/bottle/epinephrine,
+/obj/item/stack/medical/gauze,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"hZ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/assembly/health,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"if" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/structure/table,
+/obj/item/stack/sheet/metal/fifty{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/glass/fifty{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"im" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/closet,
+/obj/item/storage/backpack/science,
+/obj/item/lighter/greyscale,
+/obj/item/clothing/gloves/color/latex,
+/obj/item/reagent_containers/food/snacks/donut,
+/obj/item/clothing/head/soft/black,
+/obj/item/trash/raisins,
+/obj/item/clothing/head/soft/black,
+/obj/item/clothing/gloves/fingerless,
+/obj/item/reagent_containers/food/drinks/coffee,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"it" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/cigbutt/cigarbutt,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"iu" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"iz" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/circuit,
+/area/antag_training/sector/robotics)
+"iE" = (
+/obj/structure/sign/poster/official/here_for_your_safety{
+	pixel_x = 32
+	},
+/obj/item/trash/raisins,
+/turf/open/floor/wood,
+/area/antag_training/sector/robotics)
+"iF" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/paper/crumpled,
+/turf/open/floor/circuit,
+/area/antag_training/sector/robotics)
+"iI" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/item/mecha_parts/part/ripley_torso{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/book/manual/ripley_build_and_repair{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"iL" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/office/light{
+	dir = 8
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"iM" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/structure/table,
+/obj/item/storage/box/bodybags{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/storage/firstaid/o2{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/healthanalyzer{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"iR" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"iZ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"jf" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/purple{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"jh" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stock_parts/cell/crap,
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"jl" = (
+/obj/effect/decal/cleanable/molten_object/large,
+/turf/open/floor/plasteel{
+	icon_state = "floorscorched1"
+	},
+/area/antag_training/sector/robotics)
+"ju" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"jz" = (
+/obj/item/stack/sheet/glass/five,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"jF" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/machinery/light{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"jK" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/purple{
+	dir = 2
+	},
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"jT" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/office/dark{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/antag_training/sector/robotics)
+"jY" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/item/trash/can,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"kp" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/light/tube/broken,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"kD" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"kF" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/item/mecha_parts/part/ripley_left_arm{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/mecha_parts/part/ripley_right_leg{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/weldingtool{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plating,
+/area/antag_training/sector/robotics)
+"kK" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/structure/closet/wardrobe/robotics_black,
+/obj/item/clothing/glasses/hud/diagnostic,
+/obj/item/circuitboard/machine/mech_recharger,
+/obj/item/storage/box,
+/obj/item/storage/box,
+/obj/item/mecha_parts/mecha_equipment/drill,
+/obj/item/cigbutt/cigarbutt,
+/obj/item/stock_parts/cell/high/empty,
+/obj/item/storage/box/stockparts/basic,
+/obj/item/clothing/glasses/welding,
+/obj/item/paper{
+	name = "workshop log";
+	default_raw_text = "Журнал мастерской. Перед установкой MMI проверить замок панели рамы. Флэши на верстаке, батареи на зарядке в зарядной."
+	},
+/obj/item/light/bulb/broken,
+/obj/item/paper{
+	name = "supply request";
+	default_raw_text = "Заявка на склад: манипуляторы, конденсаторы, две ёмкие батареи. Сборщики мехов просят ещё листов металла и прутьев."
+	},
+/obj/item/circuitboard/machine/cyborgrecharger,
+/obj/item/paper{
+	name = "workshop log";
+	default_raw_text = "Журнал мастерской. Перед установкой MMI проверить замок панели рамы. Флэши на верстаке, батареи на зарядке в зарядной."
+	},
+/obj/item/circuitboard/machine/mech_recharger,
+/obj/item/stock_parts/cell/crap,
+/obj/item/borg/upgrade/expand,
+/obj/item/borg/upgrade/rename,
+/obj/item/stock_parts/cell/crap,
+/obj/item/stock_parts/cell/crap,
+/obj/item/borg/upgrade/thrusters,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"kN" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/machinery/light{
+	dir = 1
+	},
+/obj/structure/table,
+/obj/item/mecha_parts/part/odysseus_left_leg{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/mecha_parts/part/odysseus_right_leg{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/circuitboard/mecha/odysseus/main{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"kS" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"kZ" = (
+/turf/open/floor/circuit,
+/area/antag_training/sector/robotics)
+"la" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"lb" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/assembly/prox_sensor,
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"ld" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/structure/table/glass,
+/obj/item/scalpel{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/hemostat{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/retractor{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"lq" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"lr" = (
+/obj/effect/decal/cleanable/oil,
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"lu" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/stock_parts/micro_laser{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/capacitor{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/scanning_module{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"lB" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/rack,
+/obj/item/bodypart/l_leg/robot{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/bodypart/chest/robot{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/bodypart/r_leg/robot{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"lF" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/rack,
+/obj/item/stock_parts/matter_bin{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/bodypart/head/robot{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/bodypart/r_leg/robot{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"lL" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate,
+/obj/item/stock_parts/capacitor,
+/obj/item/stock_parts/scanning_module,
+/obj/item/bodypart/l_arm/robot,
+/obj/item/bodypart/chest/robot,
+/obj/item/bodypart/chest/robot,
+/obj/item/bodypart/chest/robot,
+/obj/item/bodypart/l_arm/robot,
+/obj/item/bodypart/head/robot,
+/obj/item/stock_parts/cell/crap,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"lY" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/computer/mech_bay_power_console{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"mb" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 6
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 2
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"me" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table,
+/obj/item/reagent_containers/food/drinks/mug{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clipboard{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/toy/figure/borg{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"mn" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/rack,
+/obj/item/stock_parts/cell/high{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/scanning_module{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/scanning_module{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"my" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"mz" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/rack,
+/obj/item/stock_parts/matter_bin{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/matter_bin{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/manipulator{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"mB" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/office/dark{
+	dir = 4
+	},
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"mF" = (
+/obj/structure/rack,
+/obj/item/stock_parts/matter_bin{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/manipulator{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/micro_laser{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"mL" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"mV" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/stool{
+	dir = 8
+	},
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"nd" = (
+/obj/effect/turf_decal/delivery,
+/obj/machinery/mecha_part_fabricator/offstation/training,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"nf" = (
+/obj/item/assembly/timer,
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"nk" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"nn" = (
+/obj/effect/decal/cleanable/oil,
+/turf/open/floor/circuit,
+/area/antag_training/sector/robotics)
+"no" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/table/reinforced,
+/obj/item/stack/cable_coil{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/multitool{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"nA" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/bookcase/manuals/research_and_development,
+/turf/open/floor/wood,
+/area/antag_training/sector/robotics)
+"nD" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/trash/raisins,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"nL" = (
+/obj/machinery/door/airlock/research{
+	name = "Robotics Storage"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"nX" = (
+/obj/structure/table,
+/obj/item/stock_parts/scanning_module{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/capacitor{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/cell/high{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"nY" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"oc" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/healthanalyzer{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/medical/bruise_pack{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/healthanalyzer{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"od" = (
+/obj/effect/turf_decal/tile/purple{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"om" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"oD" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/rack,
+/obj/item/stack/tile/plasteel{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/metal/fifty{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/micro_laser{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"oP" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/structure/closet/crate/bin,
+/obj/item/stack/medical/gauze,
+/obj/item/reagent_containers/syringe,
+/obj/item/clothing/suit/apron/surgical,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"oU" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"oW" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"pg" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/rack,
+/obj/item/stack/sheet/mineral/gold{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/storage/box/beakers{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"pr" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/sheet/cardboard,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"pv" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/item/reagent_containers/glass/bottle/epinephrine,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"pF" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"pJ" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"pL" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/structure/closet/crate/medical,
+/obj/item/stack/medical/gauze,
+/obj/item/healthanalyzer,
+/obj/item/storage/box/gloves,
+/obj/item/storage/box/gloves,
+/obj/item/clothing/mask/surgical,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/clothing/mask/surgical,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"pP" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/item/stock_parts/cell,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"qc" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/blue{
+	dir = 2
+	},
+/obj/item/stack/medical/gauze,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"qe" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/electronics/airlock,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"ql" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate,
+/obj/item/stock_parts/cell/high,
+/obj/item/stack/cable_coil,
+/obj/item/stock_parts/capacitor,
+/obj/item/stock_parts/scanning_module,
+/obj/item/stock_parts/matter_bin,
+/obj/item/stock_parts/matter_bin,
+/obj/item/stock_parts/scanning_module,
+/obj/item/stock_parts/micro_laser,
+/obj/item/stock_parts/scanning_module,
+/obj/item/stock_parts/micro_laser,
+/obj/item/stock_parts/micro_laser,
+/obj/item/stock_parts/micro_laser,
+/obj/item/stock_parts/manipulator,
+/obj/item/stock_parts/manipulator,
+/obj/item/stock_parts/matter_bin,
+/obj/item/stock_parts/scanning_module,
+/obj/item/storage/box,
+/turf/open/floor/plating,
+/area/antag_training/sector/robotics)
+"qz" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/sticky_tape,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"qR" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/oil,
+/obj/structure/rack,
+/obj/item/stack/sheet/glass{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/crowbar{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/capacitor{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"rb" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/structure/chair{
+	dir = 2
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"rh" = (
+/obj/machinery/door/airlock/research{
+	name = "Roboticist Office"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"rl" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/book/manual/ripley_build_and_repair,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"rs" = (
+/obj/effect/turf_decal/tile/purple{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/emcloset,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"rx" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/circuit,
+/area/antag_training/sector/robotics)
+"rC" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/trash/raisins,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"rM" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table,
+/obj/item/mecha_parts/part/ripley_left_leg{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/mecha_parts/part/ripley_right_leg{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/paper{
+	name = "inspection tag";
+	default_raw_text = "Проверено. Годно к сборке.";
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"rQ" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/rack,
+/obj/item/stock_parts/cell/high{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/cell/high{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/screwdriver{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"rS" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/structure/sign/departments/medbay/alt{
+	pixel_y = 32
+	},
+/obj/structure/table/glass,
+/obj/item/reagent_containers/syringe{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/healthanalyzer{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/syringe{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"rV" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/rack,
+/obj/item/multitool{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/tile/plasteel{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/rods/ten{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"sk" = (
+/obj/item/light/bulb/broken,
+/turf/open/floor/circuit,
+/area/antag_training/sector/robotics)
+"sp" = (
+/obj/effect/turf_decal/delivery,
+/obj/structure/closet/crate,
+/obj/item/stock_parts/capacitor,
+/obj/item/stock_parts/cell/high,
+/obj/item/bodypart/l_arm/robot,
+/obj/item/stock_parts/cell/high,
+/obj/item/stock_parts/cell/high/empty,
+/obj/item/bodypart/l_arm/robot,
+/obj/item/bodypart/l_leg/robot,
+/obj/item/bodypart/chest/robot,
+/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp,
+/obj/item/stock_parts/cell/crap,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"su" = (
+/obj/effect/turf_decal/box,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"sv" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/rack,
+/obj/item/stock_parts/cell/upgraded{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/manipulator{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/micro_laser{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"sA" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/item/stock_parts/cell,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"sC" = (
+/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/cable_coil/cut,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"sF" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/structure/table,
+/obj/item/stock_parts/cell/high{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/cell/high{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/machinery/cell_charger,
+/obj/item/circuitboard/machine/cyborgrecharger{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"sQ" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/iv_drip,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"sU" = (
+/obj/effect/decal/cleanable/ash,
+/obj/item/stock_parts/cell/high/empty,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"sY" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/antag_training/sector/robotics)
+"sZ" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/rack,
+/obj/item/stack/rods/ten{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/metal/fifty{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/metal/ten{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"to" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/assembly/prox_sensor,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"tp" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/food/drinks/mug{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/toy/figure/roboticist{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/cell{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"tE" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"tI" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light{
+	dir = 2
+	},
+/obj/item/stock_parts/cell,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"tL" = (
+/obj/effect/decal/cleanable/robot_debris/limb,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/extinguisher,
+/turf/open/floor/plating{
+	icon_state = "panelscorched"
+	},
+/area/antag_training/sector/robotics)
+"tQ" = (
+/obj/effect/decal/cleanable/oil,
+/obj/item/light/tube/broken,
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"uf" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/sticky_tape,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"uh" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"ur" = (
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/structure/sign/poster/official/science{
+	pixel_x = -32
+	},
+/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"uO" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"uW" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/machinery/light/small{
+	dir = 1
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"va" = (
+/obj/structure/closet/crate/science,
+/obj/item/stock_parts/cell/upgraded,
+/obj/item/borg/upgrade/vtec,
+/obj/item/toy/figure/roboticist,
+/obj/item/folder/white,
+/obj/item/toy/plush/borgplushie,
+/obj/item/paper{
+	name = "workshop log";
+	default_raw_text = "Журнал мастерской. Учебные рамы на площадке сборки не разбирать. MMI лежат в операционной, мозг - только от учебной цели."
+	},
+/obj/item/newspaper,
+/obj/item/paper{
+	name = "supply request";
+	default_raw_text = "Заявка на склад: манипуляторы, конденсаторы, две ёмкие батареи. Сборщики мехов просят ещё листов металла и прутьев."
+	},
+/obj/item/pen,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/paper,
+/obj/item/paper,
+/obj/item/photo/old,
+/turf/open/floor/wood,
+/area/antag_training/sector/robotics)
+"vf" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/trash/candy,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"vs" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/rack,
+/obj/item/clothing/suit/toggle/labcoat/roboticist{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/storage/belt/utility{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/glasses/hud/diagnostic{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"vF" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/structure/chair{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"vN" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/machinery/light{
+	dir = 4
+	},
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"vW" = (
+/obj/item/assembly/health,
+/turf/open/floor/plating,
+/area/antag_training/sector/robotics)
+"vY" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/sign/warning/electricshock{
+	pixel_y = -32
+	},
+/obj/structure/table/reinforced,
+/obj/item/stock_parts/scanning_module{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/manipulator{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/matter_bin{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"wa" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/closet/wardrobe/robotics_black,
+/obj/item/reagent_containers/food/drinks/coffee,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"we" = (
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"wg" = (
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"wj" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/closet/crate,
+/obj/item/stack/sheet/mineral/plasma,
+/obj/item/stack/sheet/metal/ten,
+/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp,
+/obj/item/mecha_parts/mecha_equipment/drill,
+/obj/item/stack/sheet/glass/five,
+/obj/item/stack/rods/ten,
+/obj/item/circuitboard/machine/mech_recharger,
+/obj/item/stock_parts/micro_laser,
+/obj/item/paper{
+	name = "test chamber incident report";
+	default_raw_text = "Акт о пожаре в испытательном боксе мех-бея. На стенде гоняли силовой блок Рипли с разогнанной батареей: перегрев, искра, загорелась гидравлика. Огонь сбит огнетушителем, мех списан и оставлен в боксе до разбора. Бокс не использовать до замены проводки."
+	},
+/obj/item/stack/cable_coil/cut,
+/obj/item/clothing/glasses/welding,
+/obj/item/stock_parts/micro_laser,
+/obj/item/stock_parts/matter_bin,
+/obj/item/stock_parts/manipulator,
+/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp,
+/obj/item/stock_parts/matter_bin,
+/obj/item/stock_parts/capacitor,
+/obj/item/storage/box,
+/obj/item/storage/box,
+/obj/item/stack/sheet/metal/ten,
+/obj/item/clothing/head/welding,
+/obj/item/stock_parts/manipulator,
+/obj/item/storage/box/stockparts/basic,
+/obj/item/clothing/glasses/hud/diagnostic,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"wq" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/table/wood,
+/obj/item/clipboard{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/food/drinks/coffee{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/storage/box/donkpockets{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"ww" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"wH" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/structure/table,
+/obj/item/storage/box/gloves{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/storage/box/syringes{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/glass/bottle/morphine{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"wJ" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/mecha_parts/chassis/odysseus,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"wT" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/rack,
+/obj/item/stack/sheet/metal/fifty{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/rods/fifty{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/plasteel/twenty{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plating,
+/area/antag_training/sector/robotics)
+"wU" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel{
+	icon_state = "floorscorched2"
+	},
+/area/antag_training/sector/robotics)
+"xc" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/structure/closet/l3closet,
+/obj/item/reagent_containers/glass/bottle/epinephrine,
+/obj/item/trash/candy,
+/obj/item/trash/candy,
+/obj/item/reagent_containers/glass/bottle/epinephrine,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"xp" = (
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"xt" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table,
+/obj/item/multitool{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/bodypart/chest/robot{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/bodypart/r_arm/robot{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"xy" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/item/stack/sticky_tape,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"xC" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/blue{
+	dir = 2
+	},
+/obj/structure/table,
+/obj/item/mmi{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/mmi{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/gloves/color/latex{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"xD" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/bodypart/l_arm/robot{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/bodypart/l_arm/robot{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/bodypart/r_leg/robot{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"xF" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/rack,
+/obj/item/stock_parts/capacitor{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/cell/high{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/scanning_module{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plating,
+/area/antag_training/sector/robotics)
+"xL" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate,
+/obj/item/stack/sheet/metal/fifty,
+/obj/item/stack/sheet/glass,
+/obj/item/stack/tile/plasteel,
+/obj/item/stack/rods/ten,
+/obj/item/stack/sheet/glass/five,
+/obj/item/stock_parts/matter_bin,
+/obj/item/clothing/head/welding,
+/obj/item/stock_parts/matter_bin,
+/obj/item/storage/box,
+/obj/item/cigbutt,
+/obj/item/stack/cable_coil/red,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"xW" = (
+/obj/effect/turf_decal/box,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"yg" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/assembly/igniter,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"yj" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/cable_coil/cut,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"ym" = (
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"yn" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/table/reinforced,
+/obj/item/stock_parts/cell/high{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/manipulator{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/manipulator{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"yq" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/item/multitool{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/crowbar{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/tile/plasteel{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"yy" = (
+/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/robot_debris,
+/obj/effect/decal/cleanable/ash,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/mecha_wreckage/ripley,
+/turf/open/floor/plating{
+	icon_state = "panelscorched"
+	},
+/area/antag_training/sector/robotics)
+"yF" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/rack,
+/obj/item/stock_parts/cell/upgraded{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/cell/upgraded{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/analyzer{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"yG" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/rack,
+/obj/item/clothing/suit/toggle/labcoat/roboticist{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/suit/toggle/labcoat/roboticist{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/gloves/color/latex{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"yH" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/closet/crate/science,
+/obj/item/mmi,
+/obj/item/assembly/flash/handheld,
+/obj/item/bodypart/r_arm/robot,
+/obj/item/stock_parts/scanning_module,
+/obj/item/bodypart/l_leg/robot,
+/obj/item/bodypart/head/robot,
+/obj/item/bodypart/head/robot,
+/obj/item/bodypart/r_leg/robot,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"yS" = (
+/turf/closed/indestructible,
+/area/antag_training/sector/robotics)
+"yT" = (
+/obj/effect/turf_decal/tile/purple{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"yU" = (
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"zf" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/structure/rack,
+/obj/item/reagent_containers/syringe{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/medical/bruise_pack{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/syringe{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"zl" = (
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/shard,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"zp" = (
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/structure/table,
+/obj/item/bodypart/l_arm/robot{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/multitool{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/weldingtool{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"zu" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/rack,
+/obj/item/stack/rods/ten{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/metal/ten{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/scanning_module{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"zv" = (
+/obj/machinery/door/airlock/medical/glass{
+	name = "Robotics Surgery"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"zE" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/reinforced,
+/obj/item/borg/upgrade/vtec{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/borg/upgrade/selfrepair{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/borg/upgrade/expand{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"zI" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/rack,
+/obj/item/stock_parts/capacitor{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/scanning_module{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"zK" = (
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/storage/belt/utility/full{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/head/welding{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/glasses/hud/diagnostic{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"Aq" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table,
+/obj/item/paper{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/pen{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/paper{
+	name = "supply request";
+	default_raw_text = "Заявка на склад: манипуляторы, конденсаторы, две ёмкие батареи. Сборщики мехов просят ещё листов металла и прутьев.";
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"AD" = (
+/obj/item/assembly/prox_sensor,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"AI" = (
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"AN" = (
+/obj/item/mecha_parts/mecha_equipment/drill,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"AT" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/purple{
+	dir = 2
+	},
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"AV" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"AY" = (
+/obj/effect/decal/cleanable/oil,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"Bd" = (
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"Bn" = (
+/obj/structure/chair/office/dark{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"Bt" = (
+/obj/effect/turf_decal/box,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/circuit,
+/area/antag_training/sector/robotics)
+"By" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"BI" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/structure/sink{
+	pixel_y = 28
+	},
+/obj/item/reagent_containers/syringe,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"BN" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/closet/crate,
+/obj/item/stack/sheet/metal/ten,
+/obj/item/stack/sheet/glass,
+/obj/item/bodypart/l_leg/robot,
+/obj/item/bodypart/chest/robot,
+/obj/item/stock_parts/cell/high,
+/obj/item/mecha_parts/mecha_equipment/drill,
+/obj/item/stock_parts/manipulator,
+/obj/item/stock_parts/cell/high,
+/obj/item/bodypart/head/robot,
+/obj/item/stock_parts/scanning_module,
+/obj/item/stock_parts/cell/high,
+/obj/item/bodypart/r_leg/robot,
+/obj/item/stock_parts/micro_laser,
+/obj/item/bodypart/chest/robot,
+/obj/item/bodypart/r_arm/robot,
+/obj/item/stock_parts/micro_laser,
+/obj/item/stock_parts/capacitor,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"BX" = (
+/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"Cc" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"Ci" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/closet/crate,
+/obj/item/bodypart/l_arm/robot,
+/obj/item/bodypart/r_arm/robot,
+/obj/item/bodypart/l_leg/robot,
+/obj/item/bodypart/r_leg/robot,
+/obj/item/stock_parts/cell/high/empty,
+/obj/item/bodypart/r_leg/robot,
+/obj/item/stock_parts/cell/high/empty,
+/obj/item/storage/box/stockparts/basic,
+/obj/item/stack/sticky_tape,
+/obj/item/stack/sticky_tape,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"Cx" = (
+/obj/item/trash/can,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"Cy" = (
+/obj/effect/decal/cleanable/oil,
+/obj/structure/table/reinforced,
+/obj/item/screwdriver{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/wrench{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/capacitor{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"CQ" = (
+/obj/machinery/door/airlock/research/glass{
+	name = "Robotics Lab"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"De" = (
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/machinery/light{
+	dir = 8
+	},
+/obj/item/assembly/health,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"Df" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/closet/crate/bin,
+/obj/item/trash/can,
+/obj/item/lighter/greyscale,
+/obj/item/clothing/gloves/fingerless,
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"Dh" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/table/wood,
+/obj/item/paper{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/paper{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/pen{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"Dr" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 2
+	},
+/obj/item/stack/medical/gauze,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"Du" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/machinery/light{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"Dy" = (
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"DC" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/bodypart/head/robot{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/assembly/flash/handheld{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/assembly/flash/handheld{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"DF" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/machinery/aug_manipulator,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"DL" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/closet,
+/obj/item/clothing/mask/breath,
+/obj/item/clothing/head/soft/black,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/newspaper,
+/obj/item/clothing/head/beret/sci,
+/obj/item/newspaper,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"DP" = (
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/structure/table,
+/obj/item/stack/sheet/metal/ten{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/cell/upgraded{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/screwdriver{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/obj/structure/noticeboard{
+	pixel_x = 32
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"DQ" = (
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/firecloset,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"DR" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/purple{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/structure/rack,
+/obj/item/bodypart/chest/robot{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/bodypart/head/robot{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/assembly/flash/handheld{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"DT" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"DV" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"Ed" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/sheet/glass/five,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"Eh" = (
+/obj/effect/turf_decal/tile/purple{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate/bin,
+/obj/item/trash/can,
+/obj/item/toy/figure/borg,
+/obj/item/clothing/gloves/fingerless,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"EJ" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"EO" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/office/light{
+	dir = 4
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"EU" = (
+/obj/item/cigbutt/cigarbutt,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"Fe" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/structure/sign/poster/official/medical_green_cross{
+	pixel_x = 32
+	},
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"Fl" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/sign/warning/fire{
+	pixel_y = -32
+	},
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"Fm" = (
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 2
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"Fy" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/circuit,
+/area/antag_training/sector/robotics)
+"FC" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"FT" = (
+/obj/item/borg/upgrade/thrusters,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"Ga" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/rack,
+/obj/item/bodypart/head/robot{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/bodypart/chest/robot{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/capacitor{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"Gb" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/machinery/light{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"Gg" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/blue{
+	dir = 8
+	},
+/obj/structure/closet/crate/freezer,
+/obj/item/organ/heart,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/reagent_containers/food/drinks/coffee,
+/obj/item/clothing/suit/apron/surgical,
+/obj/item/clothing/suit/apron/surgical,
+/obj/item/clothing/suit/apron/surgical,
+/obj/item/clothing/suit/apron/surgical,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/reagent_containers/glass/bottle/epinephrine,
+/obj/item/reagent_containers/food/drinks/coffee,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"GG" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/circuit,
+/area/antag_training/sector/robotics)
+"GJ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/cable_coil/cut,
+/turf/open/floor/plating,
+/area/antag_training/sector/robotics)
+"GQ" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"GR" = (
+/obj/effect/turf_decal/stripes/yellow/box,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/borg/upgrade/rename,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"Hb" = (
+/obj/effect/turf_decal/bot,
+/obj/item/robot_suit/prebuilt/training,
+/turf/open/floor/circuit,
+/area/antag_training/sector/robotics)
+"Hc" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"Hf" = (
+/obj/structure/table,
+/obj/item/stack/sheet/metal/ten{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/rods/ten{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/weldingtool{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"Ho" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"Hr" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/frame/machine,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"HE" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate,
+/obj/item/bodypart/r_leg/robot,
+/obj/item/bodypart/l_leg/robot,
+/obj/item/bodypart/head/robot,
+/obj/item/stock_parts/manipulator,
+/obj/item/clothing/glasses/hud/diagnostic,
+/obj/item/clothing/gloves/fingerless,
+/obj/item/assembly/health,
+/obj/item/stack/cable_coil/red,
+/obj/item/borg/upgrade/thrusters,
+/obj/item/storage/box,
+/obj/item/reagent_containers/food/drinks/britcup,
+/obj/item/stack/sheet/metal/five,
+/obj/item/cigbutt/cigarbutt,
+/obj/item/newspaper,
+/obj/item/storage/box/stockparts/basic,
+/obj/item/toy/figure/borg,
+/obj/item/borg/upgrade/rename,
+/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp,
+/obj/item/hand_labeler,
+/obj/item/stock_parts/cell/crap,
+/obj/item/hand_labeler,
+/obj/item/borg/upgrade/rename,
+/obj/item/mecha_parts/mecha_equipment/drill,
+/obj/item/stack/cable_coil/red,
+/obj/item/stack/sticky_tape,
+/obj/item/electronics/airlock,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"HF" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"Ic" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"Is" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/turf/closed/wall,
+/area/antag_training/sector/robotics)
+"Iy" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"Iz" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/sheet/cardboard,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"IB" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small{
+	dir = 8
+	},
+/obj/item/kirbyplants/training,
+/turf/open/floor/wood,
+/area/antag_training/sector/robotics)
+"IG" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair{
+	dir = 2
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"IK" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/extinguisher_cabinet{
+	pixel_y = -32
+	},
+/obj/item/stock_parts/cell,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"IM" = (
+/turf/open/floor/wood,
+/area/antag_training/sector/robotics)
+"IO" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/table,
+/obj/item/wrench{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/wrench{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/wirecutters{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"Ja" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"Jd" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/closet,
+/obj/item/toy/cards/deck,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/bedsheet/purple,
+/obj/item/newspaper,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/lighter/greyscale,
+/obj/item/reagent_containers/food/drinks/coffee,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"Jn" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/table,
+/obj/item/wrench{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/metal/fifty{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/rods/ten{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"Jp" = (
+/obj/machinery/door/airlock/research/glass{
+	name = "Cyborg Recharge Bay"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"Jt" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/chair{
+	dir = 1
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"Jy" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"JR" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/rack,
+/obj/item/stock_parts/capacitor{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/glass{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/metal/ten{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"JS" = (
+/obj/structure/table,
+/obj/item/mecha_parts/part/ripley_left_arm{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/mecha_parts/part/ripley_right_arm{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/mecha_parts/mecha_equipment/drill{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"JW" = (
+/obj/effect/decal/remains/robot,
+/obj/effect/decal/cleanable/ash/large,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating{
+	icon_state = "panelscorched"
+	},
+/area/antag_training/sector/robotics)
+"Kb" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"Kr" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stock_parts/cell,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"Ky" = (
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"KB" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/turf/open/floor/circuit,
+/area/antag_training/sector/robotics)
+"KE" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/cigbutt,
+/turf/open/floor/plating,
+/area/antag_training/sector/robotics)
+"KN" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"KO" = (
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sign/antag_training_board,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"Le" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/recharge_station,
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"Lh" = (
+/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"Lm" = (
+/obj/structure/chair{
+	dir = 2
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"Lo" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"Lq" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/purple{
+	dir = 2
+	},
+/obj/structure/table,
+/obj/item/stock_parts/manipulator{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/crowbar{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/screwdriver{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"Lx" = (
+/obj/item/electronics/airlock,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"LE" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/closet/wardrobe/robotics_black,
+/obj/item/clothing/gloves/fingerless,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"LI" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/broken{
+	dir = 2
+	},
+/obj/item/light/tube/broken,
+/turf/open/floor/plasteel{
+	icon_state = "floorscorched2"
+	},
+/area/antag_training/sector/robotics)
+"LJ" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/oil,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"LO" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/turf/open/floor/circuit,
+/area/antag_training/sector/robotics)
+"Mf" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/purple{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/structure/closet/crate,
+/obj/item/stack/sheet/metal/ten,
+/obj/item/stack/rods/ten,
+/obj/item/stack/tile/plasteel,
+/obj/item/storage/box/stockparts/basic,
+/obj/item/paper/crumpled,
+/obj/item/borg/upgrade/thrusters,
+/obj/item/stock_parts/cell/high/empty,
+/obj/item/borg/upgrade/thrusters,
+/obj/item/lighter/greyscale,
+/obj/item/toy/figure/borg,
+/obj/item/clothing/glasses/hud/diagnostic,
+/obj/item/lighter/greyscale,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"Mg" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/oil,
+/obj/item/stack/sheet/cardboard,
+/turf/open/floor/circuit,
+/area/antag_training/sector/robotics)
+"Mh" = (
+/obj/structure/table/wood,
+/obj/item/paper_bin{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/folder/white{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/pen{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/wood,
+/area/antag_training/sector/robotics)
+"Mq" = (
+/obj/effect/turf_decal/misc/recharge,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"Mr" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"MI" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/reagent_dispensers/water_cooler,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"Nc" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/stock_parts/cell/high{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/micro_laser{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/capacitor{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"ND" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/structure/table,
+/obj/item/crowbar{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/cell/high{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/weldingtool{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"NW" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/item/weldingtool{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/scanning_module{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/capacitor{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"NZ" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/purple{
+	dir = 2
+	},
+/obj/item/hand_labeler,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"Oa" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/rack,
+/obj/item/radio/off{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/t_scanner{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"Ob" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/chair{
+	dir = 1
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"Oc" = (
+/obj/structure/chair/stool{
+	dir = 1
+	},
+/obj/item/stack/sheet/glass/five,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"Od" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/table/reinforced,
+/obj/item/stock_parts/manipulator{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/screwdriver{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"Of" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/filingcabinet/chestdrawer,
+/turf/open/floor/wood,
+/area/antag_training/sector/robotics)
+"Om" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating,
+/area/antag_training/sector/robotics)
+"Ot" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/frame/machine,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"OH" = (
+/obj/structure/table/wood,
+/obj/item/reagent_containers/food/drinks/coffee{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/storage/box/donkpockets{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/trash/raisins{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"OQ" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/closet/crate,
+/obj/item/stack/sheet/plasteel/twenty,
+/obj/item/stack/tile/plasteel,
+/obj/item/bodypart/r_arm/robot,
+/obj/item/bodypart/head/robot,
+/obj/item/bodypart/l_arm/robot,
+/obj/item/storage/box/stockparts/basic,
+/obj/item/bodypart/head/robot,
+/obj/item/storage/box/stockparts/basic,
+/obj/item/stack/sticky_tape,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"OY" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/trash/candy,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"Po" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/item/borg/upgrade/rename{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/borg/upgrade/restart{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/cell/high/plus{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"Px" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/sign/poster/official/help_others{
+	pixel_x = 32
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"PL" = (
+/obj/effect/turf_decal/tile/purple{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/warning/nosmoking{
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"PO" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table,
+/obj/item/bodypart/l_arm/robot{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/bodypart/r_arm/robot{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/screwdriver{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"PT" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/structure/table,
+/obj/item/book/manual/wiki/robotics_cyborgs{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/paper_bin{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/pen{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"PX" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/antag_training/sector/robotics)
+"PY" = (
+/obj/item/stack/sheet/cardboard,
+/turf/open/floor/circuit,
+/area/antag_training/sector/robotics)
+"PZ" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/crate,
+/obj/item/stack/tile/plasteel,
+/obj/item/stack/sheet/metal/ten,
+/obj/item/stack/rods/ten,
+/obj/item/stock_parts/manipulator,
+/obj/item/stack/sheet/metal/ten,
+/obj/item/circuitboard/machine/mech_recharger,
+/obj/item/circuitboard/machine/mech_recharger,
+/obj/item/stock_parts/capacitor,
+/obj/item/clothing/head/welding,
+/obj/item/stack/sheet/glass/five,
+/obj/item/book/manual/ripley_build_and_repair,
+/obj/item/clothing/glasses/hud/diagnostic,
+/obj/item/paper{
+	name = "assembly card: Odysseus";
+	default_raw_text = "Карта сборки: медицинский мех «Одиссей». Шасси на стапеле, корпус и голова рядом, конечности на верстаке. Дальше: гидравлика и проводка, платы, модули, обшивка. Сборщик - смена Б."
+	},
+/obj/item/clothing/head/welding,
+/obj/item/paper{
+	name = "inspection tag";
+	default_raw_text = "Проверено. Годно к сборке."
+	},
+/obj/item/circuitboard/mecha/odysseus/peripherals,
+/obj/item/mecha_parts/part/odysseus_head,
+/obj/item/mecha_parts/part/odysseus_torso,
+/obj/item/stock_parts/cell/crap,
+/obj/item/assembly/prox_sensor,
+/obj/item/book/manual/ripley_build_and_repair,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"Qe" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair{
+	dir = 2
+	},
+/obj/structure/sign/departments/science{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"Qt" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/sign/poster/official/safety_eye_protection{
+	pixel_x = -32
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"QA" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/structure/table,
+/obj/item/storage/firstaid/regular{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/extinguisher{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/gloves/color/latex{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"QF" = (
+/obj/structure/rack,
+/obj/item/stack/sheet/metal/ten{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/micro_laser{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/metal/fifty{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"QP" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"QX" = (
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"QY" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"Rd" = (
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"Rh" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/rack,
+/obj/item/clothing/glasses/hud/diagnostic{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/head/welding{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/storage/belt/utility{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"Rj" = (
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"Rk" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/stock_parts/cell/high{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/cell/high{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/storage/box/flashes{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"Rt" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/table,
+/obj/item/mecha_parts/part/odysseus_left_arm{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/mecha_parts/part/odysseus_right_arm{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/wrench{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"Ru" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 2
+	},
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"Rz" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/item/storage/toolbox/mechanical{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/storage/toolbox/electrical{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/head/welding{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plating,
+/area/antag_training/sector/robotics)
+"RR" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/closet/crate,
+/obj/item/stock_parts/matter_bin,
+/obj/item/stock_parts/scanning_module,
+/obj/item/stock_parts/capacitor,
+/obj/item/stock_parts/scanning_module,
+/obj/item/mecha_parts/mecha_equipment/drill,
+/obj/item/stock_parts/matter_bin,
+/obj/item/stock_parts/scanning_module,
+/obj/item/stock_parts/scanning_module,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"RZ" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate,
+/obj/item/stock_parts/scanning_module,
+/obj/item/stock_parts/manipulator,
+/obj/item/bodypart/head/robot,
+/obj/item/storage/box/stockparts/basic,
+/obj/item/stock_parts/cell/high/empty,
+/obj/item/bodypart/r_leg/robot,
+/obj/item/bodypart/chest/robot,
+/obj/item/bodypart/r_leg/robot,
+/obj/item/storage/box,
+/obj/item/stock_parts/cell/high,
+/obj/item/bodypart/r_leg/robot,
+/obj/item/stock_parts/cell/high/empty,
+/obj/item/bodypart/r_leg/robot,
+/obj/item/bodypart/head/robot,
+/obj/item/bodypart/l_leg/robot,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"Sl" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate,
+/obj/item/stock_parts/matter_bin,
+/obj/item/stock_parts/manipulator,
+/obj/item/stock_parts/matter_bin,
+/obj/item/stock_parts/matter_bin,
+/obj/item/stock_parts/capacitor,
+/obj/item/stock_parts/cell/high,
+/obj/item/storage/box,
+/obj/item/stock_parts/scanning_module,
+/obj/item/stock_parts/manipulator,
+/obj/item/stock_parts/cell/high,
+/obj/item/stock_parts/scanning_module,
+/obj/item/stock_parts/matter_bin,
+/obj/item/stock_parts/scanning_module,
+/obj/item/stock_parts/micro_laser,
+/obj/item/paper{
+	name = "inspection tag";
+	default_raw_text = "Проверено. Годно к сборке."
+	},
+/turf/open/floor/plating,
+/area/antag_training/sector/robotics)
+"So" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/decal/cleanable/oil,
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"SC" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 2
+	},
+/obj/item/trash/can,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"SX" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"Ta" = (
+/obj/structure/chair/office/light{
+	dir = 2
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"Te" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/sign/warning/nosmoking{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"Ti" = (
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/structure/closet/firecloset,
+/obj/item/storage/box/stockparts/basic,
+/obj/item/paper{
+	name = "supply request";
+	default_raw_text = "Заявка на склад: манипуляторы, конденсаторы, две ёмкие батареи. Сборщики мехов просят ещё листов металла и прутьев."
+	},
+/obj/item/paper{
+	name = "recharge bay note";
+	default_raw_text = "Зарядная: станции исправны. Киборгов на зарядке не оставлять дольше смены, пустые батареи - в ящик у стены."
+	},
+/obj/item/paper{
+	name = "repair tag";
+	default_raw_text = "НЕИСПРАВНО. На киборга не ставить, вернуть на склад."
+	},
+/obj/item/reagent_containers/food/drinks/coffee,
+/obj/item/clothing/glasses/hud/diagnostic,
+/obj/item/storage/box,
+/obj/item/light/tube/broken,
+/obj/item/reagent_containers/food/drinks/britcup,
+/obj/item/assembly/timer,
+/obj/item/stock_parts/cell/high/empty,
+/obj/item/clothing/glasses/hud/diagnostic,
+/obj/item/clothing/gloves/fingerless,
+/obj/item/light/tube/broken,
+/obj/item/circuitboard/machine/mech_recharger,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"Tj" = (
+/obj/structure/chair/office/light{
+	dir = 1
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"Tm" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/purple{
+	dir = 2
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"Tn" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/structure/closet/crate/bin,
+/obj/item/trash/can,
+/obj/item/paper/crumpled,
+/obj/item/stack/cable_coil/cut,
+/obj/item/assembly/igniter,
+/obj/item/paper{
+	name = "workshop log";
+	default_raw_text = "Журнал мастерской. Учебные рамы на площадке сборки не разбирать. MMI лежат в операционной, мозг - только от учебной цели."
+	},
+/obj/item/electronics/airlock,
+/obj/item/borg/upgrade/thrusters,
+/obj/item/toy/figure/borg,
+/obj/item/borg/upgrade/expand,
+/obj/item/trash/candy,
+/obj/item/assembly/igniter,
+/obj/item/light/tube/broken,
+/obj/item/wrench,
+/obj/item/stack/cable_coil/yellow,
+/obj/item/assembly/flash/handheld,
+/obj/item/toy/figure/borg,
+/obj/item/light/tube/broken,
+/obj/item/lighter/greyscale,
+/obj/item/paper{
+	name = "workshop log";
+	default_raw_text = "Журнал мастерской. Перед установкой MMI проверить замок панели рамы. Флэши на верстаке, батареи на зарядке в зарядной."
+	},
+/obj/item/circuitboard/machine/cyborgrecharger,
+/obj/item/stock_parts/cell/high/empty,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"Tp" = (
+/obj/machinery/door/airlock/research{
+	name = "Test Chamber"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"Ty" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/medical/gauze,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"TE" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/machinery/light/small{
+	dir = 4
+	},
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"TK" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/bodypart/l_leg/robot{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/bodypart/chest/robot{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/bodypart/r_leg/robot{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"TM" = (
+/obj/effect/decal/cleanable/molten_object,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/frame/machine,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"TP" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/structure/table,
+/obj/item/stack/sheet/metal/ten{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/glass{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"TQ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/structure/table/glass,
+/obj/item/healthanalyzer{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/medical/bruise_pack{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/medical/gauze{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"TW" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/machinery/light/small{
+	dir = 8
+	},
+/obj/item/borg/upgrade/rename,
+/turf/open/floor/circuit/green,
+/area/antag_training/sector/robotics)
+"Ub" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/item/stack/sheet/cardboard,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"Uk" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/circuitboard/machine/mech_recharger,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"Ul" = (
+/obj/effect/turf_decal/delivery,
+/obj/structure/closet/crate,
+/obj/item/stock_parts/scanning_module,
+/obj/item/stock_parts/capacitor,
+/obj/item/bodypart/chest/robot,
+/obj/item/bodypart/r_leg/robot,
+/obj/item/stock_parts/matter_bin,
+/obj/item/bodypart/l_arm/robot,
+/obj/item/bodypart/chest/robot,
+/obj/item/bodypart/r_leg/robot,
+/obj/item/stack/cable_coil/yellow,
+/obj/item/mecha_parts/mecha_equipment/drill,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"Ur" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/item/stock_parts/manipulator{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/cell/high{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/capacitor{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plating,
+/area/antag_training/sector/robotics)
+"Ut" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/mecha_parts/chassis/ripley,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"UJ" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/reagent_dispensers/fueltank,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"UU" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/closet/firecloset,
+/obj/item/stack/rods/ten,
+/obj/item/stock_parts/manipulator,
+/obj/item/stock_parts/matter_bin,
+/obj/item/storage/box/stockparts/basic,
+/obj/item/stack/sheet/metal/ten,
+/obj/item/mecha_parts/mecha_equipment/hydraulic_clamp,
+/obj/item/stock_parts/capacitor,
+/obj/item/circuitboard/machine/mech_recharger,
+/obj/item/stock_parts/capacitor,
+/obj/item/stock_parts/micro_laser,
+/obj/item/stock_parts/manipulator,
+/obj/item/stock_parts/micro_laser,
+/obj/item/clothing/head/welding,
+/obj/item/stock_parts/manipulator,
+/obj/item/stock_parts/manipulator,
+/obj/item/stack/sheet/metal/ten,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"Va" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/trash/can,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"Vh" = (
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"Vi" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/assembly/timer,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"Vk" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/closet/crate,
+/obj/item/stack/rods/ten,
+/obj/item/stock_parts/micro_laser,
+/obj/item/stock_parts/capacitor,
+/obj/item/bodypart/r_arm/robot,
+/obj/item/stock_parts/matter_bin,
+/obj/item/bodypart/l_leg/robot,
+/obj/item/stock_parts/capacitor,
+/obj/item/stock_parts/cell/high,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"Vl" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/tile/blue{
+	dir = 2
+	},
+/obj/structure/table,
+/obj/item/healthanalyzer{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/medical/gauze{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/gloves/color/latex{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"Vv" = (
+/obj/item/stack/cable_coil/red,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"VE" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"VF" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/turf/closed/wall,
+/area/antag_training/sector/robotics)
+"VH" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/rack,
+/obj/item/bodypart/l_arm/robot{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/bodypart/r_arm/robot{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"VL" = (
+/obj/machinery/door/airlock/research{
+	name = "Mech Bay"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"VM" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 4
+	},
+/obj/structure/closet/crate/science,
+/obj/item/bodypart/l_arm/robot,
+/obj/item/bodypart/r_arm/robot,
+/obj/item/bodypart/l_leg/robot,
+/obj/item/bodypart/r_leg/robot,
+/obj/item/bodypart/head/robot,
+/obj/item/bodypart/chest/robot,
+/obj/item/cigbutt/cigarbutt,
+/obj/item/clothing/glasses/hud/diagnostic,
+/obj/item/assembly/flash/handheld,
+/obj/item/multitool,
+/obj/item/folder/white,
+/obj/item/paper{
+	name = "workshop log";
+	default_raw_text = "Журнал мастерской. Перед установкой MMI проверить замок панели рамы. Флэши на верстаке, батареи на зарядке в зарядной."
+	},
+/obj/item/stack/cable_coil/yellow,
+/obj/item/paper{
+	name = "repair tag";
+	default_raw_text = "НЕИСПРАВНО. На киборга не ставить, вернуть на склад."
+	},
+/obj/item/paper{
+	name = "repair tag";
+	default_raw_text = "НЕИСПРАВНО. На киборга не ставить, вернуть на склад."
+	},
+/obj/item/lighter/greyscale,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"VO" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/machinery/light/small{
+	dir = 8
+	},
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"VT" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 10
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"VX" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/light/bulb/broken,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"We" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/rack,
+/obj/item/storage/toolbox/mechanical{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/head/hardhat{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/wrench{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"Wh" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/office/light{
+	dir = 2
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"Wo" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/closet/crate/bin,
+/obj/item/trash/can,
+/obj/item/cigbutt,
+/obj/item/newspaper,
+/obj/item/cigbutt/cigarbutt,
+/obj/item/newspaper,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"Wx" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 2
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"WC" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 2
+	},
+/obj/item/reagent_containers/syringe,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"WF" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/rack,
+/obj/item/stock_parts/micro_laser{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/micro_laser{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/matter_bin{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"WQ" = (
+/obj/effect/turf_decal/tile/purple{
+	dir = 8
+	},
+/obj/machinery/light{
+	dir = 8
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"WS" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/robotics)
+"Xb" = (
+/obj/structure/table,
+/obj/item/bodypart/r_leg/robot{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/bodypart/r_arm/robot{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/micro_laser{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"Xg" = (
+/obj/machinery/mech_bay_recharge_port,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"Xo" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/firecloset,
+/obj/item/toy/figure/borg,
+/obj/item/reagent_containers/food/drinks/soda_cans/cola,
+/obj/item/lighter/greyscale,
+/obj/item/clothing/gloves/fingerless,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"Xp" = (
+/obj/effect/turf_decal/tile/purple{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/trash/raisins,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"Xs" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"Xy" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/machinery/light{
+	dir = 2
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"XG" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/structure/chair{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"XM" = (
+/obj/item/stack/medical/gauze,
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"XU" = (
+/obj/effect/turf_decal/tile/purple{
+	dir = 2
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stock_parts/cell,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"XV" = (
+/obj/machinery/light/small{
+	dir = 8
+	},
+/obj/item/stack/cable_coil/red,
+/turf/open/floor/plating,
+/area/antag_training/sector/robotics)
+"Yf" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/borg/upgrade/thrusters,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"Ym" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/structure/table,
+/obj/item/paper{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/folder/white{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/folder/white{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"Yp" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/oil,
+/obj/item/robot_suit/prebuilt/training,
+/turf/open/floor/circuit,
+/area/antag_training/sector/robotics)
+"Yy" = (
+/obj/effect/turf_decal/tile/purple{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/crate/bin,
+/obj/item/trash/can,
+/obj/item/paper/crumpled,
+/obj/item/newspaper,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+"YG" = (
+/obj/item/stack/sheet/cardboard,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"YS" = (
+/obj/item/assembly/prox_sensor,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"YV" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table,
+/obj/item/stack/cable_coil{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/wirecutters{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/multitool{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"YY" = (
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/structure/table/glass,
+/obj/item/mmi{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/mmi{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/mmi{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"Ze" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/antag_training/sector/robotics)
+"Zi" = (
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"Zm" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/blue{
+	dir = 1
+	},
+/obj/structure/table/glass,
+/obj/item/circular_saw{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/cautery{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/surgicaldrill{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/freezer,
+/area/antag_training/sector/robotics)
+"Zo" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table,
+/obj/item/stock_parts/matter_bin{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/manipulator{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/micro_laser{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"Zq" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/electronics/airlock,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/robotics)
+"Zr" = (
+/obj/effect/decal/cleanable/robot_debris,
+/turf/open/floor/circuit,
+/area/antag_training/sector/robotics)
+"Zt" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/wood,
+/obj/item/flashlight/lamp{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/food/drinks/coffee{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clipboard{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/wood,
+/area/antag_training/sector/robotics)
+"ZG" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/sign/warning/nosmoking{
+	pixel_y = 32
+	},
+/obj/item/taperecorder,
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"ZL" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/machinery/light/small{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/robotics)
+"ZQ" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/textured,
+/area/antag_training/sector/robotics)
+"ZR" = (
+/obj/machinery/door/airlock{
+	name = "Robotics Locker Room"
+	},
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/robotics)
+
+(1,1,1) = {"
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+"}
+(2,1,1) = {"
+yS
+if
+QA
+WQ
+aQ
+xp
+Ti
+Tn
+zp
+ur
+De
+eu
+Mf
+bv
+Rj
+Eh
+bv
+UJ
+sZ
+rV
+dc
+xy
+Qt
+jF
+Fl
+aa
+tL
+wU
+yy
+yS
+"}
+(3,1,1) = {"
+yS
+sF
+la
+la
+bc
+ym
+Uk
+ha
+ym
+EO
+er
+bc
+yq
+PX
+Dy
+PL
+bv
+UU
+Lo
+QX
+QX
+QX
+QX
+Kb
+Lo
+PX
+wU
+JW
+en
+yS
+"}
+(4,1,1) = {"
+yS
+ag
+YS
+Yf
+bc
+ym
+ym
+ab
+PO
+gz
+qz
+bc
+Xb
+PX
+aY
+yT
+PX
+qR
+QX
+VE
+lY
+Xg
+Lx
+dl
+By
+PX
+sU
+jl
+LI
+yS
+"}
+(5,1,1) = {"
+yS
+ND
+nd
+aG
+Iz
+uf
+ym
+Ta
+YV
+me
+ym
+FT
+QF
+PX
+KO
+od
+PX
+cs
+qe
+Kb
+bn
+Mq
+eO
+AY
+Iy
+aa
+zl
+BX
+TM
+yS
+"}
+(6,1,1) = {"
+yS
+dM
+bc
+bc
+Zq
+ym
+bc
+hZ
+Po
+Zo
+la
+ym
+NZ
+Is
+hp
+yT
+PX
+em
+By
+Kb
+QX
+GR
+Lo
+Lo
+EJ
+aa
+aa
+Tp
+aa
+yS
+"}
+(7,1,1) = {"
+yS
+PT
+bc
+EU
+la
+bc
+la
+bc
+iL
+cU
+ym
+la
+fe
+bv
+om
+mb
+VF
+ZG
+Ic
+hn
+VX
+LJ
+Ic
+Ed
+Va
+Ho
+aM
+LJ
+IO
+yS
+"}
+(8,1,1) = {"
+yS
+Cc
+Rd
+ym
+bc
+ym
+bc
+la
+bc
+bc
+bc
+ed
+bc
+CQ
+gY
+DV
+bv
+lq
+ju
+QX
+Kb
+Lo
+Lo
+QX
+jz
+su
+Zi
+AY
+Jn
+yS
+"}
+(9,1,1) = {"
+yS
+DF
+bc
+xt
+Tj
+bc
+rx
+kZ
+kZ
+kZ
+iF
+la
+Tm
+bv
+rC
+cP
+VL
+Kb
+AY
+ga
+sC
+AN
+Vi
+Ut
+ac
+xW
+QX
+QX
+Xy
+yS
+"}
+(10,1,1) = {"
+yS
+zK
+Wh
+NW
+la
+ym
+LO
+kZ
+Hb
+kZ
+KB
+bc
+AT
+Is
+gL
+DV
+VL
+Lo
+su
+wJ
+Wx
+AY
+yg
+Kb
+Lo
+xW
+QX
+AD
+Ot
+yS
+"}
+(11,1,1) = {"
+yS
+ec
+la
+la
+bc
+bc
+LO
+kZ
+PY
+Zr
+KB
+ym
+ym
+PX
+XG
+DV
+bv
+Rt
+QX
+ZQ
+Oc
+Lo
+Lo
+AY
+SX
+JR
+zu
+oD
+wj
+yS
+"}
+(12,1,1) = {"
+yS
+VM
+kK
+ym
+DP
+Ub
+dh
+GG
+cx
+kZ
+Bt
+la
+ym
+PX
+Ym
+Fm
+VF
+kN
+hj
+YG
+dl
+AY
+mL
+jY
+aa
+aa
+aa
+aa
+aa
+yS
+"}
+(13,1,1) = {"
+yS
+bv
+bv
+rh
+bv
+bv
+rx
+GG
+sk
+kZ
+Mg
+bc
+HE
+PX
+vF
+SC
+PX
+PZ
+Lo
+Lo
+iI
+ah
+Lo
+EJ
+aa
+da
+Sl
+XV
+wT
+yS
+"}
+(14,1,1) = {"
+yS
+Mh
+IB
+IM
+IM
+PX
+iz
+nn
+Yp
+nn
+ej
+vf
+Lq
+VF
+rb
+ao
+PX
+xL
+AY
+QX
+JS
+nX
+Bn
+QX
+hD
+sY
+vW
+sY
+xF
+yS
+"}
+(15,1,1) = {"
+yS
+Zt
+jT
+bU
+Ze
+PX
+LO
+GG
+Fy
+nn
+KB
+bc
+jK
+bv
+Qe
+DV
+PX
+es
+Lo
+AY
+rM
+Hf
+Lo
+EJ
+aa
+Om
+sY
+GJ
+Ur
+yS
+"}
+(16,1,1) = {"
+yS
+Of
+nA
+iE
+va
+bv
+aR
+bc
+TP
+gv
+Lh
+mF
+DR
+bv
+hg
+tI
+Is
+We
+fr
+zI
+nY
+SX
+Du
+FC
+aa
+ql
+KE
+Rz
+kF
+yS
+"}
+(17,1,1) = {"
+yS
+bv
+bv
+bv
+bv
+bv
+bv
+zv
+bv
+bv
+PX
+PX
+bv
+bv
+Aq
+GQ
+bv
+bv
+bv
+bv
+bv
+bv
+bv
+bv
+bv
+bv
+bv
+bv
+bv
+yS
+"}
+(18,1,1) = {"
+yS
+Gg
+gG
+pv
+dJ
+pL
+oP
+Ru
+bv
+TW
+lr
+lb
+aU
+bv
+bQ
+GQ
+bv
+mz
+lF
+Gb
+WF
+BN
+RR
+Hr
+bv
+wa
+oU
+VO
+Df
+yS
+"}
+(19,1,1) = {"
+yS
+rS
+dA
+wg
+wg
+dA
+gJ
+dr
+PX
+Le
+aT
+pJ
+no
+VF
+Xo
+Bd
+bv
+lu
+Kr
+rl
+to
+yU
+gm
+Vk
+bv
+aZ
+dC
+Ja
+oW
+yS
+"}
+(20,1,1) = {"
+yS
+TQ
+wg
+Ty
+dA
+dA
+OY
+wg
+PX
+aT
+nf
+Mr
+mB
+PX
+gY
+IK
+bv
+Rk
+we
+yU
+to
+iZ
+Vv
+yH
+bv
+Jd
+Vh
+Ja
+WS
+yS
+"}
+(21,1,1) = {"
+yS
+BI
+wg
+dA
+XM
+dA
+wg
+Ru
+bv
+gs
+lr
+jh
+Cy
+PX
+gY
+VT
+VF
+Te
+we
+RZ
+QP
+hr
+Jy
+sA
+bv
+ww
+IG
+OH
+Ob
+yS
+"}
+(22,1,1) = {"
+yS
+gn
+dA
+WC
+Xs
+DT
+wg
+Dr
+bv
+uh
+aT
+aT
+vY
+bv
+uO
+fZ
+bv
+iR
+Jy
+aj
+we
+Hc
+we
+pP
+bv
+fk
+Lm
+tp
+Jt
+yS
+"}
+(23,1,1) = {"
+yS
+eg
+wg
+sQ
+fD
+DT
+dA
+wg
+zv
+lr
+tQ
+aT
+iu
+Is
+ba
+jf
+Is
+Nc
+pF
+kp
+we
+sp
+pr
+we
+ZR
+Vh
+Ja
+nD
+tE
+yS
+"}
+(24,1,1) = {"
+yS
+oc
+dA
+my
+AV
+DT
+dA
+qc
+bv
+yn
+Mr
+HF
+aT
+Jp
+kD
+fZ
+nL
+QP
+we
+Hc
+we
+lL
+QP
+KN
+bv
+ea
+it
+dC
+Dh
+yS
+"}
+(25,1,1) = {"
+yS
+YY
+dA
+wg
+mV
+wg
+QY
+Vl
+Is
+Od
+gl
+So
+Ga
+Is
+ax
+fZ
+bv
+xD
+we
+cq
+yj
+Hc
+we
+KN
+bv
+uW
+Vh
+Ja
+wq
+yS
+"}
+(26,1,1) = {"
+yS
+ld
+dA
+dA
+dA
+dA
+wg
+xC
+bv
+dD
+aT
+aT
+lB
+bv
+Ky
+Xp
+bv
+TK
+we
+cO
+we
+Ul
+Jy
+dt
+bv
+im
+Ja
+Vh
+yG
+yS
+"}
+(27,1,1) = {"
+yS
+Zm
+wg
+wg
+wg
+wg
+dA
+eN
+PX
+zE
+aT
+Mr
+mn
+PX
+aY
+od
+bv
+DC
+we
+QP
+we
+Jy
+AI
+KN
+bv
+LE
+Ja
+Ja
+Rh
+yS
+"}
+(28,1,1) = {"
+yS
+bm
+wg
+wg
+wg
+wg
+wg
+hS
+PX
+Mr
+HF
+aT
+rQ
+PX
+Yy
+XU
+bv
+VH
+Jy
+we
+kS
+we
+eW
+KN
+bv
+DL
+dC
+Cx
+vs
+yS
+"}
+(29,1,1) = {"
+yS
+zf
+vN
+wH
+iM
+Fe
+xc
+aD
+bv
+yF
+TE
+nk
+Oa
+bv
+DQ
+rs
+bv
+bS
+pg
+sv
+aw
+OQ
+ZL
+Ci
+bv
+MI
+gE
+Px
+Wo
+yS
+"}
+(30,1,1) = {"
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+yS
+"}

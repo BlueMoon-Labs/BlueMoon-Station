@@ -71,10 +71,12 @@
 						aspell.name = "Instant [aspell.name]"
 				if(aspell.spell_level >= aspell.level_max)
 					to_chat(user, "<span class='notice'>This spell cannot be strengthened any further.</span>")
-				SSblackbox.record_feedback("nested tally", "wizard_spell_improved", 1, list("[name]", "[aspell.spell_level]"))
+				if(!is_antag_training_atom(book))
+					SSblackbox.record_feedback("nested tally", "wizard_spell_improved", 1, list("[name]", "[aspell.spell_level]"))
 				return TRUE
 	//No same spell found - just learn it
-	SSblackbox.record_feedback("tally", "wizard_spell_learned", 1, name)
+	if(!is_antag_training_atom(book))
+		SSblackbox.record_feedback("tally", "wizard_spell_learned", 1, name)
 	user.mind.AddSpell(S)
 	to_chat(user, "<span class='notice'>You have learned [S.name].</span>")
 	return TRUE
@@ -91,7 +93,7 @@
 
 /datum/spellbook_entry/proc/Refund(mob/living/carbon/human/user,obj/item/spellbook/book) //return point value or -1 for failure
 	var/area/wizard_station/A = GLOB.areas_by_type[/area/wizard_station]
-	if(!(user in A.contents))
+	if(!is_antag_training_atom(book) && !(user in A.contents))
 		to_chat(user, "<span class='warning'>You can only refund spells at the wizard lair</span>")
 		return -1
 	if(!S)
@@ -308,7 +310,8 @@
 
 /datum/spellbook_entry/item/Buy(mob/living/carbon/human/user,obj/item/spellbook/book)
 	new item_path(get_turf(user))
-	SSblackbox.record_feedback("tally", "wizard_spell_learned", 1, name)
+	if(!is_antag_training_atom(book))
+		SSblackbox.record_feedback("tally", "wizard_spell_learned", 1, name)
 	return TRUE
 
 /datum/spellbook_entry/item/GetInfo()

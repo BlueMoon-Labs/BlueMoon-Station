@@ -1,0 +1,152 @@
+/// Exercise the actual event, map initialization, crew equipment and both legs of the flight.
+/datum/unit_test/sol_inspection_shuttle
+	var/datum/round_event/sol_inspection/event
+	var/obj/docking_port/stationary/landing
+
+/datum/unit_test/sol_inspection_shuttle/Destroy()
+	var/datum/team/sol_inspection/team = event?.inspection_team
+	var/obj/docking_port/mobile/sol_inspection/vessel = team?.shuttle
+	if(vessel && !QDELETED(vessel))
+		var/obj/docking_port/stationary/home = vessel.home_dock
+		vessel.jumpToNullSpace()
+		qdel(home, force = TRUE)
+	if(landing)
+		qdel(landing, force = TRUE)
+	if(team)
+		QDEL_NULL(team.account)
+		qdel(team)
+	QDEL_NULL(event)
+	return ..()
+
+/datum/unit_test/sol_inspection_shuttle/Run()
+	var/polls_before = SSpolling.total_polls
+	event = new(FALSE)
+	// start() only asks the crew for a bribe; the vessel is loaded once the demand is refused or expires.
+	event.launch_inspection()
+	TEST_ASSERT_EQUAL(SSpolling.total_polls, polls_before, "Sol inspection must announce capsule availability without starting recruitment polls.")
+	var/datum/team/sol_inspection/team = event.inspection_team
+	TEST_ASSERT(team, "The event must load the inspection vessel at CentCom.")
+	var/obj/docking_port/mobile/sol_inspection/vessel = team.shuttle
+	TEST_ASSERT(vessel && is_centcom_level(vessel.z), "The initial berth must be in the CentCom sector.")
+	TEST_ASSERT(vessel.home_dock == vessel.get_docked(), "The home berth must be linked to the vessel.")
+	TEST_ASSERT_EQUAL(vessel.width, 23, "The entire source hull must fit in the mobile port.")
+	TEST_ASSERT_EQUAL(vessel.height, 23, "The entire source hull must fit in the mobile port.")
+
+	var/spawner_count = 0
+	var/sign_count = 0
+	var/obj/machinery/computer/shuttle/sol_inspection/flight_console
+	var/obj/effect/mob_spawn/human/sol_inspector/commander/commander
+	var/obj/effect/mob_spawn/human/sol_inspector/inspector_spawner
+	for(var/area/shuttle_area as anything in vessel.shuttle_areas)
+		for(var/obj/machinery/computer/shuttle/sol_inspection/console in shuttle_area)
+			flight_console = console
+		for(var/obj/structure/sign/sign in shuttle_area)
+			sign_count++
+			TEST_ASSERT(sign.pixel_x == 32 * ((sign.dir == EAST) - (sign.dir == WEST)), "Shuttle signs must be displaced horizontally onto their supporting wall.")
+			TEST_ASSERT(sign.pixel_y == 32 * ((sign.dir == NORTH) - (sign.dir == SOUTH)), "Shuttle signs must be displaced vertically onto their supporting wall.")
+		for(var/obj/effect/mob_spawn/human/sol_inspector/spawner in shuttle_area)
+			spawner_count++
+			TEST_ASSERT(spawner.inspection_team == team, "All crew slots must share the event's team and bank account.")
+			TEST_ASSERT(spawner.flags_1 & INITIALIZED_1, "Crew capsules must be initialized after the shuttle loads.")
+			TEST_ASSERT(spawner in GLOB.poi_list, "Crew capsules must be selectable through Spawners Menu.")
+			TEST_ASSERT(spawner in GLOB.mob_spawners[spawner.job_description], "Crew capsules must be registered in Spawners Menu.")
+			TEST_ASSERT_EQUAL(spawner.category, "sol", "Crew capsules must use the Sol category supported by SpawnersMenu.")
+			TEST_ASSERT(spawner.skip_reentry_check, "Inspection roles must accept observers outside the usual ghost-role eligibility pool.")
+			if(istype(spawner, /obj/effect/mob_spawn/human/sol_inspector/commander))
+				commander = spawner
+			if(istype(spawner.outfit, /datum/outfit/sol_inspection/inspector))
+				inspector_spawner = spawner
+	TEST_ASSERT_EQUAL(spawner_count, 3, "The vessel must contain three crew slots.")
+	TEST_ASSERT_EQUAL(sign_count, 5, "The vessel must retain its five wall-mounted signs and posters.")
+	TEST_ASSERT(commander, "The inspection needs a commander slot.")
+	TEST_ASSERT(inspector_spawner, "The inspection needs an inspector slot.")
+	TEST_ASSERT(flight_console, "The inspection needs a flight console for the return trip.")
+	TEST_ASSERT(!home_destination_visible(flight_console), "The console must not offer a return before the first station visit.")
+	var/mob/living/carbon/human/inspector = allocate(/mob/living/carbon/human, get_turf(commander))
+	inspector.mind_initialize("sol_shuttle_test")
+	commander.equip(inspector)
+	commander.special(inspector)
+	var/datum/mind/inspector_mind = inspector.mind
+	var/datum/antagonist/sol_inspector/inspector_role = inspector_mind.has_antag_datum(/datum/antagonist/sol_inspector)
+	var/datum/objective/sol_inspection_return/return_objective = locate() in inspector_role?.objectives
+	TEST_ASSERT_NOTNULL(return_objective, "The commander must get the return objective.")
+	TEST_ASSERT(locate(/obj/item/sol_inspection_scanner) in inspector.GetAllContents(), "The commander's equipped outfit must include an inspection scanner.")
+	var/mob/living/carbon/human/crew_member = allocate(/mob/living/carbon/human, get_turf(inspector_spawner))
+	inspector_spawner.equip(crew_member)
+	TEST_ASSERT(locate(/obj/item/sol_inspection_scanner) in crew_member.GetAllContents(), "The inspector outfit must include an inspection scanner.")
+	var/obj/item/card/id/card = inspector.wear_id
+	TEST_ASSERT(card?.registered_account == team.account, "The spawned inspector's ID must use the shared account.")
+	TEST_ASSERT(istype(inspector.wear_suit, /obj/item/clothing/suit/armor/vest/warden/peacekeeper), "The inspector must wear the peacekeeper trench coat.")
+	TEST_ASSERT_EQUAL(vessel.canDock(vessel.home_dock), SHUTTLE_NOT_A_DOCKING_PORT, "Return must be locked before the first inspection visit.")
+
+	var/obj/docking_port/stationary/survey_dock = vessel.survey_dock
+	TEST_ASSERT(survey_dock && is_station_level(survey_dock.z), "The navigation console must survey a landing site in the station sector.")
+	TEST_ASSERT_EQUAL(length(survey_dock.return_turfs()), vessel.width * vessel.height, "The surveyed site must lie entirely inside the map.")
+	TEST_ASSERT(destination_visible(flight_console, survey_dock.shuttle_id), "The flight console must offer the surveyed landing site.")
+	var/landing_direction = turn(vessel.dir, 90)
+	var/list/survey_bounds = survey_dock.return_coords()
+	var/list/rotated_bounds = survey_dock.return_coords(survey_dock.x, survey_dock.y, landing_direction)
+	var/shift_x = min(survey_bounds[1], survey_bounds[3]) - min(rotated_bounds[1], rotated_bounds[3])
+	var/shift_y = min(survey_bounds[2], survey_bounds[4]) - min(rotated_bounds[2], rotated_bounds[4])
+	landing = new(locate(survey_dock.x + shift_x, survey_dock.y + shift_y, survey_dock.z))
+	landing.setDir(landing_direction)
+	landing.width = vessel.width
+	landing.height = vessel.height
+	landing.dwidth = vessel.dwidth
+	landing.dheight = vessel.dheight
+	landing.area_type = survey_dock.area_type
+	TEST_ASSERT(same_footprint(landing, survey_dock), "The rotated berth must cover the surveyed site.")
+	TEST_ASSERT_EQUAL(vessel.initiate_docking(landing), DOCKING_SUCCESS, "The loaded vessel must fly to the station sector.")
+	TEST_ASSERT_EQUAL(vessel.dir, landing_direction, "The flight must exercise a 90-degree shuttle rotation.")
+	var/list/bounds = landing.return_coords()
+	for(var/turf/closed/mineral/rock in block(locate(min(bounds[1], bounds[3]) - 1, min(bounds[2], bounds[4]) - 1, landing.z), locate(max(bounds[1], bounds[3]) + 1, max(bounds[2], bounds[4]) + 1, landing.z)))
+		var/area/rock_area = rock.loc
+		TEST_ASSERT(!rock_area.outdoors, "Landing must burn the rock under and around the hull: [rock] at [rock.x],[rock.y]")
+	TEST_ASSERT(team.visited_station, "The first station arrival must start the return timer.")
+	TEST_ASSERT(team.return_available_at > world.time + 59 MINUTES, "The return delay must be 60 minutes.")
+	TEST_ASSERT(team.return_time_left() <= 60 MINUTES && team.return_time_left() > 59 MINUTES, "The console must report the whole mandatory stay.")
+	TEST_ASSERT_EQUAL(vessel.canDock(vessel.home_dock), SHUTTLE_NOT_A_DOCKING_PORT, "The berth must stay locked during the inspection.")
+	TEST_ASSERT(!home_destination_visible(flight_console), "The console must hide the CentCom berth during the inspection period.")
+
+	// 100,000 кредитов штрафами разблокируют досрочный вылет, но не уводят шаттл автоматически.
+	team.fines_total = 100000
+	TEST_ASSERT(team.return_unlocked(), "100,000 credits in fines must unlock early return.")
+	TEST_ASSERT_EQUAL(vessel.canDock(vessel.home_dock), SHUTTLE_CAN_DOCK, "Early return must allow docking at CentCom.")
+	TEST_ASSERT(home_destination_visible(flight_console), "The console must offer the CentCom berth once fines unlock early return.")
+	TEST_ASSERT(isnull(vessel.destination), "Unlocking via fines must not launch the shuttle on the spot.")
+	TEST_ASSERT_EQUAL(vessel.mode, SHUTTLE_IDLE, "The vessel must stay docked after fine-based unlock.")
+
+	// Fast-forward past the mandatory stay to test the unattended time-based return.
+	team.return_available_at = world.time
+	vessel.check_return()
+	TEST_ASSERT(team.departure_scheduled_at > world.time + 2 MINUTES, "The expired vessel must hold its berth for a grace period before leaving.")
+	TEST_ASSERT(isnull(vessel.destination), "Expiring the stay must not launch the shuttle on the spot.")
+	TEST_ASSERT_EQUAL(vessel.mode, SHUTTLE_IDLE, "The vessel must stay docked through the grace period.")
+
+	// The grace period lapses: the vessel finally leaves for CentCom without anyone touching a console.
+	team.departure_scheduled_at = world.time
+	vessel.check_return()
+	TEST_ASSERT(vessel.destination == vessel.home_dock, "The grace period must lapse into a CentCom departure.")
+	TEST_ASSERT_EQUAL(vessel.mode, SHUTTLE_IGNITING, "The unattended departure must start the engines.")
+	TEST_ASSERT(home_destination_visible(flight_console), "The console must automatically offer the CentCom berth once the stay expires.")
+	TEST_ASSERT_EQUAL(vessel.initiate_docking(vessel.home_dock), DOCKING_SUCCESS, "The vessel must return once the inspection period expires.")
+	TEST_ASSERT(team.returned_home, "Returning to CentCom must finish the inspection.")
+	TEST_ASSERT(team.is_returned_inspector(inspector_mind), "A living inspector aboard the returning ship must complete the objective.")
+	TEST_ASSERT(QDELETED(inspector), "The returned inspector's body must be removed with sparks.")
+	TEST_ASSERT(return_objective.check_completion(), "The return objective must stay completed after the body is removed.")
+
+/datum/unit_test/sol_inspection_shuttle/proc/same_footprint(obj/docking_port/first, obj/docking_port/second)
+	var/list/first_turfs = first.return_turfs()
+	var/list/second_turfs = second.return_turfs()
+	return length(first_turfs) == length(second_turfs) && !length(first_turfs - second_turfs)
+
+/// Check the destination data actually rendered by ShuttleConsole.
+/datum/unit_test/sol_inspection_shuttle/proc/destination_visible(obj/machinery/computer/shuttle/sol_inspection/console, destination_id)
+	var/list/data = console.ui_data()
+	for(var/list/destination as anything in data["locations"])
+		if(destination["id"] == destination_id)
+			return TRUE
+	return FALSE
+
+/datum/unit_test/sol_inspection_shuttle/proc/home_destination_visible(obj/machinery/computer/shuttle/sol_inspection/console)
+	return destination_visible(console, "sol_inspection_home")

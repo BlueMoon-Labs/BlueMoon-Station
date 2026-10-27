@@ -67,6 +67,7 @@
 #define AIRLOCK_OBSTRUCTION_CLEARED_DELAY (1 SECONDS)
 
 /obj/machinery/door/airlock
+	opening_passable_delay = DOOR_OPENING_PASSABLE_DELAY
 	name = "airlock"
 	icon = 'icons/obj/doors/airlocks/station/public.dmi'
 	icon_state = "closed"
@@ -108,6 +109,7 @@
 	var/doorOpen = 'sound/machines/airlock.ogg'
 	var/doorClose = 'sound/machines/airlockclose.ogg'
 	var/doorDeni = 'sound/machines/deniedbeep.ogg' // i'm thinkin' Deni's
+	COOLDOWN_DECLARE(deny_cooldown)
 	var/boltUp = 'sound/machines/boltsup.ogg'
 	var/boltDown = 'sound/machines/boltsdown.ogg'
 	var/noPower = 'sound/machines/doorclick.ogg'
@@ -374,15 +376,23 @@
 	if(iscarbon(user) && density && !operating && !welded && !locked && !hasPower())
 		try_bump_open(user)
 		return
+	if(density && !operating && !welded && !locked && !(src in user.do_afters) && !allowed(user) && try_mecha_bump_open(user))
+		return
 	..()
 
 /obj/machinery/door/airlock/proc/try_bump_open(mob/living/user)
 	if(!density || operating || welded || locked || hasPower() || (src in user.do_afters))
 		return FALSE
-	balloon_alert(user, "forcing open...")
-	user.visible_message("<span class='notice'>[user] starts forcing [src] open...</span>", \
-						"<span class='notice'>You start forcing [src] open...</span>")
-	if(do_after(user, DOOR_BUMP_OVERRIDE_TIME, target = src))
+	if(try_mecha_bump_open(user))
+		return TRUE
+	var/obj/item/crowbar = istype(user.loc, /obj/vehicle/sealed/mecha) ? null : user.is_holding_tool_quality(TOOL_CROWBAR)
+	if(crowbar)
+		try_to_crowbar(crowbar, user)
+		return TRUE
+	balloon_alert(user, "открывание...")
+	user.visible_message(span_notice("[user] начинает принудительно вскрывать [src]..."), span_notice("Вы начинаете принудительно вскрывать [src]..."))
+	var/turf/starting_turf = get_turf(user)
+	if(do_after(user, DOOR_BUMP_OVERRIDE_TIME, target = src, extra_checks = CALLBACK(src, PROC_REF(bump_open_checks), user, starting_turf)))
 		if(!density || operating || welded || locked)
 			return FALSE
 		open(2)
@@ -712,7 +722,7 @@
 		else
 			set_light(0)
 
-/obj/machinery/door/airlock/do_animate(animation)
+/obj/machinery/door/airlock/do_animate(animation, from_bump = FALSE)
 	switch(animation)
 		if("opening")
 			update_icon(ALL, AIRLOCK_OPENING)
@@ -721,7 +731,10 @@
 		if("deny")
 			if(machine_stat)
 				return
-
+			if(from_bump)
+				if(!COOLDOWN_FINISHED(src, deny_cooldown))
+					return
+				COOLDOWN_START(src, deny_cooldown, AIRLOCK_DENY_COOLDOWN)
 			update_icon(ALL, AIRLOCK_DENY)
 			playsound(src, doorDeni, 50, 0, 3)
 			addtimer(CALLBACK(src, TYPE_PROC_REF(/atom, update_icon), AIRLOCK_CLOSED), 6 DECISECONDS, TIMER_DELETE_ME)
@@ -1320,7 +1333,7 @@
 	operating = TRUE
 	play_fov_effect(src, 5, "forcefield")
 	update_icon(ALL, AIRLOCK_OPENING, 1)
-	sleep(1)
+	sleep(opening_passable_delay)
 	set_opacity(0)
 	density = FALSE
 	air_update_turf(TRUE)
@@ -1330,6 +1343,7 @@
 	layer = OPEN_DOOR_LAYER
 	update_icon(ALL, AIRLOCK_OPEN, 1)
 	operating = FALSE
+	emit_echolocation_pulse(src, hearing_range = 5)
 	if(delayed_close_requested)
 		delayed_close_requested = FALSE
 		addtimer(CALLBACK(src, PROC_REF(close)), 1 DECISECONDS)
@@ -1654,7 +1668,7 @@
 /obj/machinery/door/airlock/rcd_act(mob/user, obj/item/construction/rcd/the_rcd, passed_mode)
 	switch(passed_mode)
 		if(RCD_DECONSTRUCT)
-			to_chat(user, "<span class='notice'>You deconstruct the airlock.</span>")
+			to_chat(user, span_notice("Вы разбираете шлюз."))
 			qdel(src)
 			return TRUE
 	return FALSE

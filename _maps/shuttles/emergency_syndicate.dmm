@@ -1720,7 +1720,7 @@
 	dir = 4
 	},
 /obj/effect/turf_decal/tile/neutral,
-/obj/item/storage/backpack/duffelbag/med/surgery/upgraded,
+/obj/item/storage/backpack/duffelbag/med/surgery/alien,
 /turf/open/floor/plasteel/dark,
 /area/shuttle/escape)
 "cI" = (

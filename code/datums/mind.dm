@@ -301,6 +301,7 @@
 		qdel(A)
 		return
 	A.owner = src
+	A.sync_training_listing()
 //ambition start
 	do_add_antag_datum(A)
 //ambition end
@@ -379,11 +380,6 @@
 
 /datum/mind/proc/remove_traitor()
 	remove_antag_datum(/datum/antagonist/traitor)
-
-/datum/mind/proc/remove_brother()
-	if(src in SSticker.mode.brothers)
-		remove_antag_datum(/datum/antagonist/brother)
-	SSticker.mode.update_brother_icons_removed(src)
 
 /datum/mind/proc/remove_nukeop()
 	var/datum/antagonist/nukeop/nuke = has_antag_datum(/datum/antagonist/nukeop,TRUE)
@@ -1722,6 +1718,10 @@ GLOBAL_LIST(objective_choices)
 
 /datum/mind/proc/ambition_topic(href, href_list)
 	var/ambition_func = FALSE
+	if(!href_list["amb_add"] && !href_list["amb_delete"] && !href_list["amb_completed"])
+		return FALSE
+	if(usr != current && !check_rights(R_ADMIN, FALSE))
+		return TRUE
 
 	if(href_list["amb_add"])
 		ambition_func = TRUE
@@ -1736,7 +1736,7 @@ GLOBAL_LIST(objective_choices)
 
 	else if(href_list["amb_delete"])
 		ambition_func = TRUE
-		var/datum/ambition_objective/objective = locate(href_list["amb_delete"])
+		var/datum/ambition_objective/objective = locate(href_list["amb_delete"]) in ambition_objectives
 		if(!istype(objective))
 			return
 		ambition_objectives.Remove(objective)
@@ -1746,7 +1746,7 @@ GLOBAL_LIST(objective_choices)
 
 	else if(href_list["amb_completed"])
 		ambition_func = TRUE
-		var/datum/ambition_objective/objective = locate(href_list["amb_completed"])
+		var/datum/ambition_objective/objective = locate(href_list["amb_completed"]) in ambition_objectives
 		if(!istype(objective))
 			return
 		objective.completed = !objective.completed

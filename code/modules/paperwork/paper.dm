@@ -317,6 +317,14 @@
 	cut_overlays()
 	update_appearance()
 
+/// Пометка для админской панели факсов, если бумагу этому особому адресату обработает код, иначе null.
+/obj/item/paper/proc/special_fax_auto_note(network_id)
+	return null
+
+/// Вызывается факсом последним, когда бумага уже ушла особому адресату (ЦК или синдикату).
+/obj/item/paper/proc/on_special_fax(obj/machinery/fax/sender, network_id, mob/user)
+	return
+
 /obj/item/paper/pickup(user)
 	if(contact_poison && ishuman(user))
 		var/mob/living/carbon/human/H = user
@@ -439,8 +447,7 @@
 	user.visible_message(ignition_message)
 	add_fingerprint(user)
 	var/turf/T = get_turf(src)
-	message_admins("Paper ignited by [ADMIN_LOOKUPFLW(user)] in [ADMIN_VERBOSEJMP(T)]")
-	log_admin("Paper ignited by [key_name(user)] in [AREACOORD(T)]")
+	antag_training_admin_log(src, "Paper ignited by [ADMIN_LOOKUPFLW(user)] in [ADMIN_VERBOSEJMP(T)]", "Paper ignited by [key_name(user)] in [AREACOORD(T)]")
 	fire_act(attacking_item.get_temperature())
 	return TRUE
 

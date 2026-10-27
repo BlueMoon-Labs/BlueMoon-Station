@@ -44,7 +44,7 @@ export const CloningConsole = (props) => {
             {/* нет подов */}
             {pods.length === 0 && (
               <NoticeBox danger>
-                No Cloning Pods connected!
+                Не подключены капсулы клонирования!
               </NoticeBox>
             )}
             {/* 1–5 пода: Cloning Pod №[Индекс]: [Статус] */}
@@ -70,7 +70,7 @@ export const CloningConsole = (props) => {
                   <Stack key={i}>
                     <Stack.Item>
                       <Box bold>
-                        Cloning Pod №{(i + 1)}:
+                        Капсула клонирования №{(i + 1)}:
                       </Box>
                     </Stack.Item>
                     <Stack.Item>
@@ -107,7 +107,7 @@ export const CloningConsole = (props) => {
           ) : (
             <>
               <NoticeBox danger>
-                ОШИБКА: сканера не обнаружено!
+                ОШИБКА: сканер не обнаружен!
               </NoticeBox>
               {cloning_result.message && (
                 <NoticeBox {...makeNoticeFlags(cloning_result.flag)}>{cloning_result.message}</NoticeBox>

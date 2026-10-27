@@ -1,10 +1,11 @@
 import os
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from .allowlist import Allowlist
 from .audit import Audit
-from .inventory import duplicate_groups
+from .inventory import duplicate_groups, is_checked_asset
 from .references import HOLE, DMLexer, resolve_relative
 
 
@@ -90,6 +91,28 @@ class AuditTest(unittest.TestCase):
 
     def test_broken(self):
         self.assertEqual(self.audit.broken, {'sound/missing.ogg': 'code/used.dm'})
+
+    def test_generated_nanomaps_are_checked_for_existence_outside_git(self):
+        existing = 'icons/_nanomaps/existing.png'
+        missing = 'icons/_nanomaps/missing.png'
+        untracked = 'icons/untracked.png'
+        os.makedirs('icons/_nanomaps')
+        for asset in (existing, untracked):
+            with open(asset, 'wb') as handle:
+                handle.write(b'generated')
+        source = 'code/modules/asset_cache/assets/nanomaps.dm'
+        os.makedirs(os.path.dirname(source))
+        with open(source, 'w', encoding='utf-8') as handle:
+            handle.write(f"/datum/asset/simple/nanomaps\n\tassets = list('{existing}', '{missing}', '{untracked}')\n")
+        with open('tgstation.dme', 'a', encoding='utf-8') as handle:
+            handle.write(f'#include "{source}"\n')
+        with patch('asset_lint.inventory.repository_files', return_value=[*self.FILES, source]):
+            audit = Audit().run()
+        self.assertNotIn(existing, audit.broken)
+        self.assertEqual(audit.broken[missing], source)
+        self.assertEqual(audit.broken[untracked], source)
+        self.assertEqual(audit.broken['sound/missing.ogg'], 'code/used.dm')
+        self.assertFalse(is_checked_asset(existing))
 
     def test_duplicates(self):
         self.assertEqual(duplicate_groups(self.audit.assets), [['sound/punch1.ogg', 'sound/punch2.ogg']])

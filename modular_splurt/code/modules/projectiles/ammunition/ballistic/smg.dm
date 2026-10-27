@@ -37,4 +37,5 @@
 /obj/item/ammo_casing/c9mm/rubber
 	name = "9mm Rubber casing"
 	projectile_type = /obj/item/projectile/bullet/c9mm/rubber
+	harmful = FALSE
 

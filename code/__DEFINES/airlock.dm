@@ -6,3 +6,9 @@
 #define AIRLOCK_MEDICAL_LIGHT_COLOR "#9400D3"
 #define AIRLOCK_SECURITY_LIGHT_COLOR "#E40B0B"
 #define AIRLOCK_DENY_LIGHT_COLOR "#c22323"
+
+// Задержка от начала анимации до освобождения прохода у шлюзов и фаерлоков.
+#define DOOR_OPENING_PASSABLE_DELAY (0.1 SECONDS)
+
+// Ограничивает повторные отказы при столкновении; клики и открытие с доступом не задерживает.
+#define AIRLOCK_DENY_COOLDOWN (1 SECONDS)

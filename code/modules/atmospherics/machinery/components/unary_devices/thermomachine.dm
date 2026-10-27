@@ -1,25 +1,28 @@
 /obj/machinery/atmospherics/components/unary/thermomachine
 	icon = 'icons/obj/atmospherics/components/thermomachine.dmi'
-	icon_state = "freezer"
+	icon_state = "thermo_base"
 
 	name = "thermomachine"
 	desc = "Нагревает или охлаждает газ в подсоединённой системе труб."
 
 	density = TRUE
 	max_integrity = 300
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 100, BOMB = 0, BIO = 100, RAD = 100, FIRE = 80, ACID = 30)
+	armor_type = /datum/armor/thermal_devices
 	layer = OBJ_LAYER
 	plane = GAME_PLANE
 	circuit = /obj/item/circuitboard/machine/thermomachine
+	move_resist = 1000
 
 	pipe_flags = PIPING_ONE_PER_TURF
 
-	var/icon_state_off = "freezer"
-	var/icon_state_on = "freezer_1"
-	var/icon_state_open = "freezer-o"
+	var/icon_state_off = "thermo_base"
+	var/icon_state_on = "thermo_base_1"
+	var/icon_state_open = "thermo_base-o"
 
-	var/min_temperature = 0
-	var/max_temperature = 0
+	var/base_cooling = 170
+	var/base_heating = 140
+	var/min_temperature = 170
+	var/max_temperature = 140
 	var/target_temperature = T20C
 	var/heat_capacity = 0
 	var/interactive = TRUE // So mapmakers can disable interaction.
@@ -35,10 +38,15 @@
 	..(dir, piping_layer)
 
 /obj/machinery/atmospherics/components/unary/thermomachine/RefreshParts()
-	var/B
+	var/B = 0
+	var/L = 0
 	for(var/obj/item/stock_parts/matter_bin/M in component_parts)
 		B += M.rating
+	for(var/obj/item/stock_parts/micro_laser/M in component_parts)
+		L += M.rating
 	heat_capacity = 5000 * ((B - 1) ** 2)
+	min_temperature = max(T0C - (base_cooling + L * 15), TCMB)
+	max_temperature = T20C + (base_heating * L)
 
 /obj/machinery/atmospherics/components/unary/thermomachine/update_icon()
 	cut_overlays()
@@ -52,6 +60,32 @@
 
 	add_overlay(getpipeimage(icon, "pipe", dir, , piping_layer))
 
+	var/colors_to_use
+	switch(target_temperature)
+		if(700 to INFINITY)
+			colors_to_use = "#FF0000"
+		if(460 to 700)
+			colors_to_use = "#FF9900"
+		if(340 to 460)
+			colors_to_use = "#FFFF00"
+		if(270 to 340)
+			colors_to_use = "#00FF00"
+		if(200 to 270)
+			colors_to_use = "#00FFFF"
+		if(120 to 200)
+			colors_to_use = "#0000FF"
+		else
+			colors_to_use = "#AA55FF"
+
+	var/meter_state = "temp_meter"
+	if(panel_open)
+		meter_state = "temp_meter-o"
+	else if(on && is_operational)
+		meter_state = "temp_meter_1"
+	var/image/meter = image(icon, meter_state)
+	meter.color = colors_to_use
+	add_overlay(meter)
+
 /obj/machinery/atmospherics/components/unary/thermomachine/update_icon_nopipes()
 	cut_overlays()
 	if(showpipe)
@@ -59,11 +93,19 @@
 
 /obj/machinery/atmospherics/components/unary/thermomachine/examine(mob/user)
 	. = ..()
-	. += "<span class='notice'>Термостат настроен на [target_temperature]K ([target_temperature-T0C]C).</span>"
-	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>Статус-дисплей сообщает: \n\
-		- Теплоёмкость работы с газами: <b>[heat_capacity] J/K</b>. \n\
-		- Диапазон T: <b>[min_temperature]K - [max_temperature]K ([min_temperature-T0C]C - [max_temperature-T0C]C)</b>.</span>"
+	. += span_notice("<b>При закрытой панели:</b>")
+	. += span_notice(" -<b>AltClick</b> меняет настройку температуры.")
+	. += span_notice(" -<b>CtrlClick</b> включает/выключает машину.")
+	. += span_notice("<b>При открытой панели:</b>")
+	. += span_notice(" -<b>Мультитул</b> переключает слой входной трубы.")
+	. += span_notice(" -<b>Ключ</b> вращает входную трубу.")
+	. += span_notice(" -<b>Ключ (disarm)</b> откручивает машину от пола.")
+	. += span_notice("Термостат настроен на <b>[target_temperature]K ([target_temperature-T0C]C)</b>.")
+
+/obj/machinery/atmospherics/components/unary/thermomachine/examine_display_content(mob/user)
+	. += "\
+	– Теплоёмкость работы с газами: <b>[heat_capacity] J/K</b>. \n\
+	– Диапазон T: <b>[min_temperature]K - [max_temperature]K ([min_temperature-T0C]C - [max_temperature-T0C]C)</b>."
 
 /obj/machinery/atmospherics/components/unary/thermomachine/process_atmos()
 	..()
@@ -79,7 +121,7 @@
 		var/combined_energy = heat_capacity * target_temperature + air_heat_capacity * air_contents.return_temperature()
 		air_contents.set_temperature(combined_energy/combined_heat_capacity)
 
-	var/temperature_delta= abs(old_temperature - air_contents.return_temperature())
+	var/temperature_delta = abs(old_temperature - air_contents.return_temperature())
 	if(temperature_delta > 1)
 		active_power_usage = (heat_capacity * temperature_delta) / 10 + idle_power_usage
 		update_parents()
@@ -92,6 +134,22 @@
 	update_icon()
 
 /obj/machinery/atmospherics/components/unary/thermomachine/attackby(obj/item/I, mob/user, params)
+	if(istype(I, /obj/item/wrench) && user.a_intent == INTENT_DISARM && !(flags_1 & NODECONSTRUCT_1) && panel_open)
+		to_chat(user, span_notice("Вы [anchored ? "откручиваете" : "прикручиваете"] [src]..."))
+		if(I.use_tool(src, user, 40, volume = 75))
+			to_chat(user, span_notice("Вы [anchored ? "открутили" : "прикрутили"] [src]."))
+			set_anchored(!anchored)
+		return
+	if(panel_open && !anchored && istype(I, /obj/item/screwdriver))
+		balloon_alert(user, "Сначала прикрути ключом")
+		return
+	if(panel_open && istype(I, /obj/item/multitool))
+		piping_layer = (piping_layer >= PIPING_LAYER_MAX) ? PIPING_LAYER_MIN : (piping_layer + 1)
+		to_chat(user, span_notice("Входная труба переключёна на слой [piping_layer]."))
+		if(anchored)
+			reconnect_nodes()
+		update_icon()
+		return
 	if(!on)
 		if(default_deconstruction_screwdriver(user, icon_state_open, icon_state_off, I))
 			return
@@ -180,24 +238,47 @@
 	var/turf/T = get_turf(src)
 	if(!istype(user) || !user.canUseTopic(src, BE_CLOSE))
 		return
+	if(!anchored)
+		user.start_pulling(src)
+		return
+	if(panel_open)
+		to_chat(user, span_warning("Сначала закройте панель обслуживания!"))
+		return
 	on = !on
 	update_icon()
-	investigate_log("was turned [on ? "on" : "off"] by [key_name(usr)]", INVESTIGATE_ATMOS)
-	message_admins("[src.name] was turned [on ? "on" : "off"] [ADMIN_LOOKUPFLW(usr)] at [ADMIN_COORDJMP(T)], [A]")
+	balloon_alert(user, "[on ? "включено" : "выключено"]")
+	investigate_log("was turned [on ? "on" : "off"] by [key_name(user)]", INVESTIGATE_ATMOS)
+	if(!is_antag_training_atom(src))
+		message_admins("[src.name] was turned [on ? "on" : "off"] [ADMIN_LOOKUPFLW(usr)] at [ADMIN_COORDJMP(T)], [A]")
+
+/obj/machinery/atmospherics/components/unary/thermomachine/AltClick(mob/living/user)
+	if(!can_interact(user))
+		return
+	if(target_temperature == T20C)
+		target_temperature = max_temperature
+	else if(target_temperature == max_temperature)
+		target_temperature = min_temperature
+	else
+		target_temperature = T20C
+	investigate_log("was set to [target_temperature] K by [key_name(user)]", INVESTIGATE_ATMOS)
+	balloon_alert(user, "целевая температура [target_temperature] K")
+	update_icon()
+
+/obj/machinery/atmospherics/components/unary/thermomachine/Move(atom/newloc, direct)
+	var/old_dir = dir
+	. = ..()
+	dir = old_dir
+
+// Пресеты. Различаются только стартовой целью
 
 /obj/machinery/atmospherics/components/unary/thermomachine/freezer
 	name = "freezer"
-	icon_state = "freezer"
-	icon_state_off = "freezer"
-	icon_state_on = "freezer_1"
-	icon_state_open = "freezer-o"
-	max_temperature = T20C
-	min_temperature = 170 //actual minimum temperature is defined by RefreshParts()
-	circuit = /obj/item/circuitboard/machine/thermomachine/freezer
+	base_cooling = 170
+	base_heating = 140
 
 /obj/machinery/atmospherics/components/unary/thermomachine/freezer/on
 	on = TRUE
-	icon_state = "freezer_1"
+	icon_state = "thermo_base_1"
 
 /obj/machinery/atmospherics/components/unary/thermomachine/freezer/on/Initialize(mapload)
 	. = ..()
@@ -209,46 +290,13 @@
 
 /obj/machinery/atmospherics/components/unary/thermomachine/freezer/on/coldroom/Initialize(mapload)
 	. = ..()
-	target_temperature = T0C-80
-
-/obj/machinery/atmospherics/components/unary/thermomachine/freezer/RefreshParts()
-	..()
-	var/L
-	for(var/obj/item/stock_parts/micro_laser/M in component_parts)
-		L += M.rating
-	min_temperature = max(T0C - (initial(min_temperature) + L * 15), TCMB) //73.15K with T1 stock parts
-
-/obj/machinery/atmospherics/components/unary/thermomachine/freezer/AltClick(mob/living/user)
-	if(!can_interact(user))
-		return
-	target_temperature = min_temperature
-	investigate_log("was set to [target_temperature] K by [key_name(user)]", INVESTIGATE_ATMOS)
-	balloon_alert(user, "температура сброшена до [target_temperature] K")
+	target_temperature = T0C - 80
 
 /obj/machinery/atmospherics/components/unary/thermomachine/heater
 	name = "heater"
-	icon_state = "heater"
-	icon_state_off = "heater"
-	icon_state_on = "heater_1"
-	icon_state_open = "heater-o"
-	max_temperature = 140 //actual maximum temperature is defined by RefreshParts()
-	min_temperature = T20C
-	circuit = /obj/item/circuitboard/machine/thermomachine/heater
+	base_cooling = 170
+	base_heating = 140
 
 /obj/machinery/atmospherics/components/unary/thermomachine/heater/on
 	on = TRUE
-	icon_state = "heater_1"
-
-/obj/machinery/atmospherics/components/unary/thermomachine/heater/RefreshParts()
-	..()
-	var/L
-	for(var/obj/item/stock_parts/micro_laser/M in component_parts)
-		L += M.rating
-	max_temperature = T20C + (initial(max_temperature) * L) //573.15K with T1 stock parts
-
-/obj/machinery/atmospherics/components/unary/thermomachine/heater/AltClick(mob/living/user)
-	if(!can_interact(user))
-		return
-	target_temperature = max_temperature
-	investigate_log("was set to [target_temperature] K by [key_name(user)]", INVESTIGATE_ATMOS)
-	balloon_alert(user, "температура сброшена до [target_temperature] K")
+	icon_state = "thermo_base_1"

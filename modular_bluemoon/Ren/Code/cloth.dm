@@ -51,7 +51,7 @@
 	desc = "Костюм данной модели, выполнен на основе классической модели Горка. Изготавливается из особо прочной ткани Рип Стоп с водоотталкивающей пропиткой и высоким содержанием хлопка и полиэфирных нитей. Идеально подогнан под пропорции клиента и прекрасно подходит для грязной работы."
 	icon_state = "infiltrator_u"
 	item_state = "infiltrator_u"
-	armor = list(MELEE = 10, BULLET = 10, LASER = 10,ENERGY = 10, BOMB = 0, BIO = 0, RAD = 10, FIRE = 50, ACID = 20, WOUND = 5)
+	armor_type = /datum/armor/tactical_gorka
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	can_adjust = FALSE
 	icon = 'modular_bluemoon/Ren/Icons/Obj/infiltrator.dmi'
@@ -77,7 +77,7 @@
 	item_state = "hardsuit0-iron_tombstone"
 	icon_state = "hardsuit0-iron_tombstone"
 	hardsuit_type = "iron_tombstone"
-	armor = list(MELEE = 50, BULLET = 75, LASER = 25, ENERGY = 10, BOMB = 40, BIO = 70, RAD = 10, FIRE = 10, ACID = 10, WOUND = 30)
+	armor_type = /datum/armor/iron_tombstone
 	flash_protect = 2
 	strip_delay = 90
 	equip_delay_self = 15
@@ -94,7 +94,7 @@
 	icon_state = "hardsuit-iron_tombstone"
 	tail_state = "syndicate-elite"
 	hardsuit_type = "iron_tombstone"
-	armor = list(MELEE = 50, BULLET = 75, LASER = 25, ENERGY = 10, BOMB = 40, BIO = 70, RAD = 10, FIRE = 10, ACID = 10, WOUND = 30)
+	armor_type = /datum/armor/iron_tombstone
 	brc_mitigation_bonus = 25  // BLUEMOON ADD
 	allowed = list(/obj/item/gun, /obj/item/ammo_box,/obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/melee/transforming/energy/sword/saber, /obj/item/restraints/handcuffs, /obj/item/tank/internals)
 	strip_delay = 120
@@ -142,7 +142,7 @@
 	heat_protection = HEAD
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	alternate_screams = SPASEMAR_SCREAMS
-	armor = list(MELEE = 50, BULLET = 50, LASER = 35, ENERGY = 30, BOMB = 60, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 20)
+	armor_type = /datum/armor/darktemplar_spacesuit
 	equip_sound = 'modular_bluemoon/Ren/Sound/equp1.ogg'
 	mutantrace_variation = NONE
 	unique_reskin = list("Dark Power Armour helmet holy patern" = list(RESKIN_ICON_STATE = "darktemplar_chaplai_helm"), "Dark Power Armour helmet InteQ patern MKI" = list(RESKIN_ICON_STATE = "darktemplar_helm_inteq"), "Dark Power Armour helmet InteQ patern MKII" = list(RESKIN_ICON_STATE = "darktemplar_helm_inteq_alt"))
@@ -172,7 +172,7 @@
 	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	alternate_screams = SPASEMAR_SCREAMS
-	armor = list(MELEE = 50, BULLET = 50, LASER = 35, ENERGY = 30, BOMB = 60, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 20)
+	armor_type = /datum/armor/darktemplar_spacesuit
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	equip_sound = 'modular_bluemoon/Ren/Sound/equp.ogg'
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC
@@ -194,7 +194,7 @@
 	desc = "Тяжёлые латные ботинки созданные, что бы ходить по трупам поверженных врагов."
 	clothing_flags = NOSLIP
 	resistance_flags = FIRE_PROOF | ACID_PROOF
-	armor = list(MELEE = 15, BULLET = 15, LASER = 15, ENERGY = 15, BOMB = 0, BIO = 0, RAD = 0, FIRE = 40, ACID = 75)
+	armor_type = /datum/armor/powerbots
 
 /obj/item/clothing/shoes/jackboots/powerbots/Initialize(mapload)
 	. = ..()
@@ -253,7 +253,7 @@
 	item_state = "hank_m"
 	mob_overlay_icon = 'modular_bluemoon/Ren/Icons/Mob/clothing.dmi'
 	icon = 'modular_bluemoon/Ren/Icons/Mob/clothing.dmi'
-	armor = list(MELEE = 20, BULLET = 20, LASER = 20, ENERGY = 10, BOMB = 0, BIO = 50, RAD = 0, FIRE = 50, ACID = 50, WOUND = 35)
+	armor_type = /datum/armor/hank
 	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR|HIDESNOUT
 	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
 	resistance_flags = FIRE_PROOF | ACID_PROOF
@@ -276,7 +276,7 @@
 	item_state = "hank"
 	mob_overlay_icon = 'modular_bluemoon/Ren/Icons/Mob/clothing.dmi'
 	icon = 'modular_bluemoon/Ren/Icons/Mob/clothing.dmi'
-	armor = list(MELEE = 20, BULLET = 20, LASER = 20, ENERGY = 10, BOMB = 0, BIO = 50, RAD = 0, FIRE = 50, ACID = 50, WOUND = 35)
+	armor_type = /datum/armor/hank
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	mutantrace_variation = NONE
 
@@ -400,7 +400,7 @@
 	anthro_mob_worn_overlay = 'modular_bluemoon/Ren/Icons/Mob/clothing_digi.dmi'
 	icon_state = "ghostbaseball"
 	item_state = "ghostbaseball"
-	armor = list(MELEE = 15, BULLET = 20, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 50, ACID = 40, WOUND = 10)
+	armor_type = /datum/armor/inteq_under_baseball
 
 /obj/item/clothing/head/soft/inteq/baseball
 	name = "Baseball cap"
@@ -411,40 +411,13 @@
 	icon = 'modular_bluemoon/Ren/Icons/Obj/cloth.dmi'
 	mob_overlay_icon = 'modular_bluemoon/Ren/Icons/Mob/clothing.dmi'
 	flags_inv = HIDEEYES|HIDEFACE
-	armor = list(MELEE = 35, BULLET = 35, LASER = 25, ENERGY = 10, BOMB = 25, BIO = 0, RAD = 0, FIRE = 20, ACID = 90, WOUND = 5)
+	armor_type = /datum/armor/baseball_and_inteq_baseball
 	strip_delay = 90 //You dont take a Major Leage cap
 	dog_fashion = null
 
 ///Исследовательский риг
 /obj/item/tank/jetpack/suit/fast
 	full_speed = TRUE
-
-// /obj/item/clothing/head/helmet/space/hardsuit/security/explorer
-// 	name = "Expedition hardsuit helmet"
-// 	desc = "Армированный шлем, в котором не страшно сунуть свой нос даже в самые опасные заброшенные станции и обломки кораблей."
-// 	icon_state = "hardsuit0-explorer"
-// 	item_state = "hardsuit0-explorer"
-// 	hardsuit_type = "explorer"
-// 	armor = list(MELEE = 20, BULLET = 40, LASER = 20, ENERGY = 50, BOMB = 30, BIO = 100, RAD = 50, FIRE = 75, ACID = 75, WOUND = 50)
-// 	mob_overlay_icon = 'modular_sand/icons/mob/clothing/head.dmi'
-// 	icon = 'modular_bluemoon/Ren/Icons/Obj/cloth.dmi'
-// 	anthro_mob_worn_overlay = 'modular_sand/icons/mob/clothing/head_muzzled.dmi'
-// 	brightness_on = 12 // Эу ты куда прёш на дальнем свете
-
-// /obj/item/clothing/suit/space/hardsuit/security/explorer
-// 	name = "Expedition hardsuit"
-// 	desc = "Армированный костюм, в котором не страшно ступить даже в самые опасные заброшенные станции и обломки кораблей."
-// 	icon_state = "hardsuit-explorer"
-// 	item_state = "hardsuit-explorer"
-// 	armor = list(MELEE = 20, BULLET = 40, LASER = 20, ENERGY = 50, BOMB = 30, BIO = 100, RAD = 50, FIRE = 75, ACID = 75, WOUND = 50) // сниженная защита от лазеров и пуль - ценой повешенной мобильности и защиты от бомб
-// 	mob_overlay_icon = 'modular_sand/icons/mob/clothing/suit.dmi'
-// 	icon = 'modular_bluemoon/Ren/Icons/Obj/cloth.dmi'
-// 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/security/explorer
-// 	anthro_mob_worn_overlay = 'modular_sand/icons/mob/clothing/suit_digi.dmi' // у нас забрали джет, терпим.
-// 	unique_reskin = list()
-// 	tail_state = "bombsuit_sci"
-
-
 
 //-----------------------------------------------------------[Одежда FTU]---------------------------------------------------------------------------------------
 ///Боевой риг
@@ -486,7 +459,7 @@
 	anthro_mob_worn_overlay = 'modular_sand/icons/mob/clothing/head_muzzled.dmi'
 	heat_protection = HEAD
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
-	armor = list(MELEE = 30, BULLET = 5, LASER = 10, ENERGY = 5, BOMB = 60, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 15)
+	armor_type = /datum/armor/hardsuit_ftu
 
 /obj/item/clothing/suit/space/hardsuit/engine/ftu
 	name = "Ship engineering hardsuit"
@@ -500,7 +473,7 @@
 	anthro_mob_worn_overlay = 'modular_sand/icons/mob/clothing/suit_digi.dmi'
 	heat_protection = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
-	armor = list(MELEE = 30, BULLET = 5, LASER = 10, ENERGY = 5, BOMB = 60, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 15)
+	armor_type = /datum/armor/hardsuit_ftu
 	unique_reskin = list()
 	jetpack = /obj/item/tank/jetpack/suit
 
@@ -514,7 +487,7 @@
 	body_parts_covered = CHEST|GROIN|ARMS
 	cold_protection = CHEST|GROIN|ARMS
 	heat_protection = CHEST|GROIN|ARMS
-	armor = list(MELEE = 30, BULLET = 60, LASER = 25, ENERGY = 20, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 30)
+	armor_type = /datum/armor/clothing_ftu
 	brc_mitigation_bonus = 20  // BLUEMOON ADD
 
 /obj/item/clothing/suit/armor/vest/ftu/ComponentInitialize()
@@ -524,14 +497,14 @@
 
 /obj/item/clothing/under/inteq/tactical_gorka/ftu
 	name = "Cargo gorka"
-	armor = list()
+	armor_type = /datum/armor/none
 
 /obj/item/clothing/head/helmet/skull/ftu
 	name = "FTU Combat Skull"
 	desc = "Бронированная маска из полимеров стилизованная под череп. Вселяет страх в каждого пирата."
 	anthro_mob_worn_overlay = 'modular_bluemoon/Ren/Icons/Mob/clothing_digi.dmi'
 	flash_protect = 2
-	armor = list(MELEE = 30, BULLET = 60, LASER = 25, ENERGY = 20, BOMB = 25, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 30)
+	armor_type = /datum/armor/clothing_ftu
 	flags_inv = HIDEEYES | HIDEFACE | HIDEMASK
 
 /obj/item/card/id/away/ftu

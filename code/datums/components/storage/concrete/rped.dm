@@ -56,7 +56,7 @@
 		if(available - the_stack.amount < 0)
 			return FALSE
 
-	else if(istype(I, /obj/item/circuitboard/machine) || istype(I, /obj/item/circuitboard/computer))
+	else if(istype(I, /obj/item/circuitboard/machine) || istype(I, /obj/item/circuitboard/computer) || istype(I, /obj/item/circuitboard/mecha) || istype(I, /obj/item/assembly/flash/handheld))
 		return TRUE
 
 	//check normal insertion of other stock parts
@@ -150,7 +150,7 @@
 		if(available - the_stack.amount < 0)
 			return FALSE
 
-	else if(istype(I, /obj/item/circuitboard/machine) || istype(I, /obj/item/circuitboard/computer))
+	else if(istype(I, /obj/item/circuitboard/machine) || istype(I, /obj/item/circuitboard/computer) || istype(I, /obj/item/circuitboard/mecha) || istype(I, /obj/item/assembly/flash/handheld))
 		return TRUE
 
 	//check normal insertion of other stock parts

@@ -88,7 +88,7 @@
 			"name" = room_template.name,
 			"category" = room_template.category,
 			"donator_tier" = room_template.donator_tier,
-			"ckeywhitelist" = room_template.ckeywhitelist
+			"available" = room_template.is_allowed_for(user.key)
 		))
 
 /obj/item/hilbertshotel/ui_data(mob/user)
@@ -182,6 +182,9 @@
 			var/template_name = params["room"]
 			if(!(template_name in SShilbertshotel.hotel_map_list))
 				return FALSE
+			var/datum/map_template/hilbertshotel/room_template = SShilbertshotel.hotel_map_list[template_name]
+			if(!room_template.is_allowed_for(user.key))
+				return FALSE
 			SShilbertshotel.user_data[user.ckey]["template"] = template_name
 			return TRUE
 
@@ -201,6 +204,9 @@
 			else
 				SShilbertshotel.user_data[user.ckey]["room_number"] = room_number
 			if(!room_number || !template || !(template in SShilbertshotel.hotel_map_list))
+				return FALSE
+			var/datum/map_template/hilbertshotel/room_template = SShilbertshotel.hotel_map_list[template]
+			if(!room_template.is_allowed_for(user.key))
 				return FALSE
 			SShilbertshotel.user_data[user.ckey]["status"] = STATUS_ENTERING_ROOM
 			SShilbertshotel.user_data[user.ckey]["entering_since"] = world.time

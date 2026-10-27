@@ -21,7 +21,7 @@
 	throw_speed = 3
 	throw_range = 5
 	w_class = WEIGHT_CLASS_SMALL
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 30)
+	armor_type = /datum/armor/fireproof_tools_and_weapons
 	resistance_flags = FIRE_PROOF
 
 	var/self_fueling = FALSE //Do we refill ourselves or not
@@ -206,13 +206,15 @@
 		if(isliving(O))
 			var/mob/living/L = O
 			if(L.IgniteMob())
-				message_admins("[ADMIN_LOOKUPFLW(user)] set [key_name_admin(L)] on fire with [src] at [AREACOORD(user)]")
+				if(!is_antag_training_atom(src))
+					message_admins("[ADMIN_LOOKUPFLW(user)] set [key_name_admin(L)] on fire with [src] at [AREACOORD(user)]")
 				log_game("[key_name(user)] set [key_name(L)] on fire with [src] at [AREACOORD(user)]")
 
 
 /obj/item/weldingtool/attack_self(mob/user)
 	if(src.reagents.has_reagent(/datum/reagent/toxin/plasma))
-		message_admins("[ADMIN_LOOKUPFLW(user)] activated a rigged welder at [AREACOORD(user)].")
+		if(!is_antag_training_atom(src))
+			message_admins("[ADMIN_LOOKUPFLW(user)] activated a rigged welder at [AREACOORD(user)].")
 		explode()
 	switched_on(user)
 	if(welding)

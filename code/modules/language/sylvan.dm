@@ -1,7 +1,7 @@
 // The language of the vinebings. Yes, it's a shameless ripoff of elvish.
 /datum/language/sylvan
 	name = "Sylvan"
-	desc = "A complicated, ancient language spoken by vine like beings."
+	desc = "Сложный древний язык, на котором говорят существа, похожие на лозу."
 	speech_verb = "expresses"
 	ask_verb = "inquires"
 	exclaim_verb = "declares"

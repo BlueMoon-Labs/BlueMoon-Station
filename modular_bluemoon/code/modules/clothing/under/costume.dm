@@ -8,5 +8,5 @@
 /obj/item/clothing/under/costume/gamberson/military
 	name = "swordsman's gambeson"
 	desc = "A padded medieval gambeson. Has enough woolen layers to dull a strike from any small weapon."
-	armor = list(MELEE = 10, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 30, ACID = 30, WOUND = 10)
+	armor_type = /datum/armor/light_duty
 	has_sensor = NO_SENSORS

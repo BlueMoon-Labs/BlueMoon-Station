@@ -12,7 +12,7 @@
 	CanAtmosPass = ATMOS_PASS_PROC
 	var/point_return = 0 //How many points the blob gets back when it removes a blob of that type. If less than 0, blob cannot be removed.
 	max_integrity = 30
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 80, ACID = 70)
+	armor_type = /datum/armor/blob
 	var/health_regen = 2 //how much health this blob regens when pulsed
 	var/pulse_timestamp = 0 //we got pulsed when?
 	var/heal_timestamp = 0 //we got healed when?
@@ -163,6 +163,8 @@
 			else
 				T = null
 	if(!T)
+		return FALSE
+	if(training_origin && !antag_training_blob_may_grow(controller || overmind, T))
 		return FALSE
 	var/make_blob = TRUE //can we make a blob?
 
@@ -340,7 +342,7 @@
 /obj/structure/blob/examine(mob/user)
 	. = ..()
 	var/datum/atom_hud/hud_to_check = GLOB.huds[DATA_HUD_MEDICAL_ADVANCED]
-	if(user.research_scanner || hud_to_check.hudusers[user])
+	if(HAS_TRAIT(user, TRAIT_RESEARCH_SCANNER) || hud_to_check.hudusers[user])
 		. += "<b>Your HUD displays an extensive report...</b><br>"
 		if(overmind)
 			. += "<b>Progress to Critical Mass:</b> <span class='notice'>[overmind.blobs_legit.len]/[overmind.blobwincount].</span>"

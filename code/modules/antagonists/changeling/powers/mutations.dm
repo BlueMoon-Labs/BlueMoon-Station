@@ -39,8 +39,10 @@
 		if(!silent)
 			playsound(user, 'sound/effects/blobattack.ogg', 30, 1)
 			user.visible_message("<span class='warning'>With a sickening crunch, [user] reforms [user.ru_ego()] [weapon_name_simple] into an arm!</span>", "<span class='notice'>We assimilate the [weapon_name_simple] back into our body.</span>", "<span class='italics>You hear organic matter ripping and tearing!</span>")
-		var/datum/antagonist/changeling/changeling = user.mind.has_antag_datum(/datum/antagonist/changeling)
-		changeling.chem_recharge_slowdown -= recharge_slowdown
+		// Тело удаляют и без разума (выход с полигона): оружие всё равно убирается
+		var/datum/antagonist/changeling/changeling = user.mind?.has_antag_datum(/datum/antagonist/changeling)
+		if(changeling)
+			changeling.chem_recharge_slowdown -= recharge_slowdown
 		user.update_inv_hands()
 		return TRUE
 
@@ -93,7 +95,7 @@
 
 //checks if we already have an organic suit and casts it off.
 /datum/action/changeling/suit/proc/check_suit(mob/user)
-	var/datum/antagonist/changeling/changeling = user.mind.has_antag_datum(/datum/antagonist/changeling)
+	var/datum/antagonist/changeling/changeling = user.mind?.has_antag_datum(/datum/antagonist/changeling)
 	if(!ishuman(user) || !changeling)
 		return TRUE
 	var/mob/living/carbon/human/H = user
@@ -181,7 +183,7 @@
 	throwforce = 0 //Just to be on the safe side
 	throw_range = 0
 	throw_speed = 0
-	armour_penetration = 35
+	armour_penetration = MELEE_AP_ANTAGONIST
 	hitsound = 'sound/weapons/bladeslice.ogg'
 	attack_verb = list("attacked", "slashed", "stabbed", "sliced", "torn", "ripped", "diced", "cut")
 	sharpness = SHARP_EDGED
@@ -428,6 +430,8 @@
 		return
 
 	var/obj/item/shield/changeling/S = ..(user)
+	if(!S)
+		return
 	S.remaining_uses = round(changeling.absorbedcount * 3)
 	return TRUE
 
@@ -494,7 +498,7 @@
 	item_flags = DROPDEL
 	clothing_flags = STOPSPRESSUREDAMAGE //Not THICKMATERIAL because it's organic tissue, so if somebody tries to inject something into it, it still ends up in your blood. (also balance but muh fluff)
 	allowed = list(/obj/item/flashlight, /obj/item/tank/internals/emergency_oxygen, /obj/item/tank/internals/oxygen)
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 90, ACID = 90) //No armor at all.
+	armor_type = /datum/armor/spacesuit_changeling //No armor at all.
 	mutantrace_variation = STYLE_DIGITIGRADE
 
 /obj/item/clothing/suit/space/changeling/Initialize(mapload)
@@ -515,7 +519,7 @@
 	desc = "A covering of pressure and temperature-resistant organic tissue with a glass-like chitin front."
 	item_flags = DROPDEL
 	clothing_flags = STOPSPRESSUREDAMAGE
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 90, ACID = 90)
+	armor_type = /datum/armor/spacesuit_changeling
 	flags_cover = HEADCOVERSEYES | HEADCOVERSMOUTH
 
 /obj/item/clothing/head/helmet/space/changeling/Initialize(mapload)
@@ -548,7 +552,7 @@
 	tail_state = "lingarmor"
 	item_flags = DROPDEL
 	body_parts_covered = CHEST|GROIN|LEGS|FEET|ARMS|HANDS
-	armor = list(MELEE = 70, BULLET = 60, LASER = 30, ENERGY = 40, BOMB = 10, BIO = 4, RAD = 0, FIRE = 50, ACID = 90)
+	armor_type = /datum/armor/clothing_changeling
 	brc_mitigation_bonus = 20  // BLUEMOON ADD
 	flags_inv = HIDEJUMPSUIT|HIDETAUR|HIDETAIL
 	cold_protection = 0
@@ -565,7 +569,7 @@
 	desc = "A tough, hard covering of black chitin with transparent chitin in front."
 	icon_state = "lingarmorhelmet"
 	item_flags = DROPDEL
-	armor = list(MELEE = 70, BULLET = 60, LASER = 30, ENERGY = 40, BOMB = 10, BIO = 4, RAD = 0, FIRE = 50, ACID = 90)
+	armor_type = /datum/armor/clothing_changeling
 	flags_inv = HIDEEARS|HIDEHAIR|HIDEEYES|HIDEFACIALHAIR|HIDEFACE
 
 /obj/item/clothing/head/helmet/changeling/Initialize(mapload)
@@ -644,7 +648,7 @@
 	cold_protection = HANDS
 	min_cold_protection_temperature = GLOVES_MIN_TEMP_PROTECT
 	max_heat_protection_temperature = GLOVES_MAX_TEMP_PROTECT
-	armor = list(MELEE = 20, BULLET = 20, LASER = 20, ENERGY = 20, BOMB = 35, BIO = 35, RAD = 35, FIRE = 0, ACID = 0)
+	armor_type = /datum/armor/martial_arts_extended
 
 /obj/item/clothing/gloves/claws/Initialize(mapload)
 	. = ..()
@@ -676,6 +680,7 @@
 	return ..()
 
 /obj/item/clothing/gloves/fingerless/pugilist/cling // switches between lesser GotNS and Big Punchy Rib Breaky Hands
+	armor_type = /datum/armor/martial_arts_extended
 	name = "hewn bone gauntlets"
 	icon_state = "ling_gauntlets"
 	item_state = "ling_gauntlets"
@@ -686,7 +691,6 @@
 	cold_protection = ARMS|HANDS
 	min_cold_protection_temperature = GLOVES_MIN_TEMP_PROTECT
 	max_heat_protection_temperature = GLOVES_MAX_TEMP_PROTECT
-	armor = list(MELEE = 20, BULLET = 20, LASER = 20, ENERGY = 20, BOMB = 35, BIO = 35, RAD = 35, FIRE = 0, ACID = 0)
 	enhancement = 6 // first, do harm. all of it. all of the harm. just fuck em up.
 	wound_enhancement = 6
 	var/fast_enhancement = 6

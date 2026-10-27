@@ -2,7 +2,7 @@
 
 /datum/language/vampiric
 	name = "Blah-Sucker"
-	desc = "The native language of the Bloodsucker elders, learned intuitively by Fledglings and as they pass from death into immortality. Thralls are also given the ability to speak this as apart of their conversion ritual."
+	desc = "Родной язык старейших Кровопийц. Птенцы усваивают его интуитивно, переходя от смерти к бессмертию; обращённые получают право говорить на нём как часть ритуала посвящения."
 	speech_verb = "growls"
 	ask_verb = "growls"
 	exclaim_verb = "snarls"

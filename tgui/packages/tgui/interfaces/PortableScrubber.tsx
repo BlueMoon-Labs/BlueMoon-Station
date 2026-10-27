@@ -29,7 +29,7 @@ export const PortableScrubber = () => {
     <Window width={360} height={600}>
       <Window.Content scrollable>
         <PortableBasicInfo />
-        <Section title="Забор">
+        <Section title="Всасывание">
           <LabeledList>
             <LabeledList.Item label="Скорость">
               <NumberInput

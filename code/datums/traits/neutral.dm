@@ -182,6 +182,8 @@
 	medical_record_text = "Пациент упоминает фотографию, как хобби для снятия стресса."
 
 /datum/quirk/photographer/on_spawn()
+	if(!spawn_items)
+		return
 	var/mob/living/carbon/human/H = quirk_holder
 	var/obj/item/storage/photo_album/photo_album = new(get_turf(H))
 	H.put_in_hands(photo_album)
@@ -242,7 +244,7 @@
 	lose_text = span_danger("Вспоминаю как проговаривать букву \"Р\".")
 	medical_record_text = "Пациент не может проговаривать букву \"Р\"."
 
-proc/kartavo(message)
+/proc/kartavo(message)
 	var/num = rand(1, 3)
 	switch(prob(75) && num)
 		if(1)
@@ -267,7 +269,7 @@ proc/kartavo(message)
 	lose_text = span_danger("Аниме говно.")
 	medical_record_text = "Пациент - азиат."
 
-proc/asiatish(message)
+/proc/asiatish(message)
 	message = replacetext_char(message, "ра", "ля")
 	message = replacetext_char(message, "ла", "ля")
 	message = replacetext_char(message, "ло", "льо")

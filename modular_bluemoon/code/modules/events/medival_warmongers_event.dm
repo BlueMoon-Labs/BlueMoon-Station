@@ -245,10 +245,47 @@
 /obj/structure/fermenting_barrel/black_powder
 	name = "gunpowder barrel"
 	desc = "A large wooden barrel for holding gunpowder. You'll need to take from this to load the cannons."
+	var/mob/living/last_attacker
 
 /obj/structure/fermenting_barrel/black_powder/Initialize(mapload)
 	. = ..()
+	// Базовая бочка вмещает только 300 единиц, поэтому add_reagent(..., 500) молча
+	// обрезал заряд до 300 и бочка взрывалась слабее, чем должна. Даём ей 500.
+	create_reagents(500, DRAINABLE | AMOUNT_VISIBLE)
 	reagents.add_reagent(/datum/reagent/blackpowder, 500)
+
+// Бочка с порохом детонирует от выстрела/огня/взрыва. Сила взрыва зависит от
+// оставшегося пороха, поэтому соседние бочки цепляются друг за другом.
+/obj/structure/fermenting_barrel/black_powder/proc/boom()
+	if(QDELETED(src))
+		return
+	var/volume = reagents ? reagents.get_reagent_amount(/datum/reagent/blackpowder) : 0
+	if(volume <= 0)
+		qdel(src)
+		return
+	// Сила взрыва пропорциональна оставшемуся пороху. 500 единиц -> серьёзный,
+	// но не сносящий полкарты взрыв (соседние бочки при этом детонируют цепочкой).
+	var/heavy_range = clamp(round(volume / 150), 1, 4)
+	var/light_range = clamp(round(volume / 70), 2, 8)
+	var/flame_range = clamp(round(volume / 55), 3, 10)
+	var/turf/epicenter = get_turf(src)
+	visible_message(span_danger("[capitalize(name)] детонирует!"))
+	explosion(epicenter, 0, heavy_range, light_range, flame_range = flame_range, attacker = last_attacker)
+	qdel(src)
+
+/obj/structure/fermenting_barrel/black_powder/bullet_act(obj/item/projectile/hitting_projectile)
+	if(hitting_projectile.damage > 0 && ((hitting_projectile.damage_type == BURN) || (hitting_projectile.damage_type == BRUTE)))
+		if(isliving(hitting_projectile.firer))
+			last_attacker = hitting_projectile.firer
+		boom()
+	else
+		return ..()
+
+/obj/structure/fermenting_barrel/black_powder/fire_act(exposed_temperature, exposed_volume)
+	boom()
+
+/obj/structure/fermenting_barrel/black_powder/ex_act(severity, target, origin)
+	boom()
 
 /obj/structure/fermenting_barrel/thermite
 	name = "thermite barrel"

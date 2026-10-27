@@ -21,16 +21,17 @@
 	var/mob/living/carbon/human/unarmed = allocate(/mob/living/carbon/human, get_step(start, SOUTH))
 	TEST_ASSERT(!ai_target_is_ranged(unarmed), "An unarmed human must not classify as a ranged threat")
 
-///Попадание снаряда в пауна ставит флаг "по мне стреляют" на время AI_UNDER_FIRE_DURATION.
+///Попадание выпущенного снаряда в пауна ставит флаг "по мне стреляют" на время AI_UNDER_FIRE_DURATION.
 /datum/unit_test/ai_under_fire_flag_on_bullet/Run()
 	var/turf/start = run_loc_floor_bottom_left
-	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, start)
+	var/mob/living/simple_animal/hostile/pawn = allocate(/mob/living/simple_animal/hostile, locate(start.x + 2, start.y, start.z))
 	var/datum/ai_controller/hostile_adapter/melee_chaser/controller = new(pawn)
+	var/mob/living/carbon/human/shooter = allocate(/mob/living/carbon/human, start)
 
 	TEST_ASSERT(!(controller.blackboard[BB_AI_UNDER_FIRE_UNTIL] > world.time), "A freshly created controller must not be under fire")
 
-	var/obj/item/projectile/bullet = allocate(/obj/item/projectile, start)
-	SEND_SIGNAL(pawn, COMSIG_ATOM_BULLET_ACT, bullet, BODY_ZONE_CHEST)
+	var/obj/item/projectile/shot = shoot_test_projectile(pawn, shooter)
+	TEST_ASSERT(QDELETED(shot), "The fired projectile must reach and hit the pawn")
 
 	TEST_ASSERT(controller.blackboard[BB_AI_UNDER_FIRE_UNTIL] > world.time, "A bullet hit must stamp the under-fire deadline into the future")
 	TEST_ASSERT(controller.blackboard[BB_AI_UNDER_FIRE_UNTIL] <= world.time + AI_UNDER_FIRE_DURATION, "The under-fire deadline must not exceed the configured duration")

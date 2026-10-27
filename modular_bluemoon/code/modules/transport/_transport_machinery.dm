@@ -1,5 +1,5 @@
 /obj/machinery/transport
-	armor = list(MELEE = 40, BULLET = 10, LASER = 10, ENERGY = 0, BOMB = 45, BIO = 0, RAD = 0, FIRE = 90, ACID = 100)
+	armor_type = /datum/armor/transport
 	max_integrity = 400
 	integrity_failure = 0.1
 	/// ID of the transport we're associated with for filtering commands

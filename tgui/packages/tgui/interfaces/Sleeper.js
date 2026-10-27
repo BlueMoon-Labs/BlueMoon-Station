@@ -27,6 +27,9 @@ export const Sleeper = (props) => {
     open,
     occupant = {},
     occupied,
+    mounted,
+    stasis_enabled,
+    life_support_active,
   } = data;
   const preSortChems = data.chems || [];
   const chems = preSortChems.sort((a, b) => {
@@ -43,8 +46,23 @@ export const Sleeper = (props) => {
   return (
     <Window
       width={310}
-      height={505}>
+      height={mounted ? 575 : 505}>
       <Window.Content>
+        {!!mounted && (
+          <Section title="Системы капсулы">
+            <Button
+              icon="snowflake"
+              selected={stasis_enabled}
+              content={`Стазис: ${stasis_enabled ? 'включён' : 'выключен'}`}
+              tooltip="Приостанавливает биологические процессы и обмен лекарств. Требует питания."
+              onClick={() => act('stasis')} />
+            {!!occupied && (
+              <Box color={life_support_active ? 'good' : 'bad'}>
+                {life_support_active ? 'Кислород и микроклимат в норме' : 'Нет питания'}
+              </Box>
+            )}
+          </Section>
+        )}
         <Section
           title={occupant.name ? occupant.name : 'Пациент отсутствует'}
           minHeight="210px"
@@ -100,7 +118,8 @@ export const Sleeper = (props) => {
           buttons={(
             <Button
               icon={open ? 'door-open' : 'door-closed'}
-              content={open ? 'Open' : 'Closed'}
+              content={mounted ? 'Извлечь' : open ? 'Открыта' : 'Закрыта'}
+              disabled={!!mounted && !occupied}
               onClick={() => act('door')} />
           )}>
           {chems.map(chem => (
@@ -112,7 +131,7 @@ export const Sleeper = (props) => {
                 chem.addiction_threshold && `Зависимость: ${chem.addiction_threshold}u`,
               ].filter(Boolean).join(' | ')}
               content={chem.name}
-              disabled={!occupied || !chem.allowed}
+              disabled={!occupied || !chem.allowed || (!!mounted && !life_support_active)}
               width="140px"
               onClick={() => act('inject', {
                 chem: chem.id,

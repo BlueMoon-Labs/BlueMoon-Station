@@ -111,6 +111,18 @@
 	TEST_ASSERT(!findtext(worst, REF(cheap)), "The recorded worst item should not be the cheap mob, got: [worst]")
 	TEST_ASSERT_EQUAL(sleepers, 1, "The profiler should count how many measured items slept")
 
+// Фаер, уснувший в Life(), дописывал замеры после того, как другой фаер закрыл профиль: 921 рантайм за проход (раунд 10618).
+/datum/unit_test/subsystem_profile_note_after_pass_closed
+
+/datum/unit_test/subsystem_profile_note_after_pass_closed/Run()
+	SSmobs.profile_cost_by_type = null
+	SSmobs.profile_count_by_type = null
+	SSmobs.profile_max_by_type = null
+	SSmobs.profile_worst_by_type = null
+	SSmobs.profile_sleepers_by_type = null
+	SSmobs.profile_note(/mob/living/carbon/human, 5, null, TRUE)
+	TEST_ASSERT_NULL(SSmobs.profile_cost_by_type, "Замер после закрытия профиля не должен заводить его заново")
+
 // -----------------------------------------------------------------------------
 // The monkey cube cap used `>`, so it admitted cap+1 monkeys — the live server
 // reported 91 tracked cube monkeys against a cap of 90. The rat caps next door

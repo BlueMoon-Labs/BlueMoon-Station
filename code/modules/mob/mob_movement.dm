@@ -55,6 +55,15 @@
 		return FALSE
 	if(mob.force_moving)
 		return FALSE
+	// BLUEMOON CHANGE START - Брошенного персонажа нельзя вести собственными шагами:
+	// ниже, после успешного шага, вызывается throwing.finalize(FALSE), то есть любой
+	// нажатый ключ обрывал полёт на самой клетке. У поля сдерживания Shock() даёт
+	// Stun(40) - 4 секунды, а бросок живёт до range/speed = 200/4 = 5 секунд, так что
+	// последнюю секунду игрок успевал перехватить управление. Ловим на входе, рядом с
+	// force_moving - оба означают "движением игнорируют".
+	if(mob.throwing)
+		return FALSE
+	// BLUEMOON CHANGE END
 
 	// Sandstorm Edit
 	if(mob.shifting || mob.tilting)
@@ -465,6 +474,14 @@
 		to_chat(src, span_warning("По трубам на другой этаж можно попасть только через переходник между палубами."))
 		return FALSE
 
+	// Мех, шкаф, капсула: zMove() вытащил бы моба наружу и оставил контейнер на месте
+	if(!isturf(loc) && !isobserver(src))
+		if(istype(loc, /obj/vehicle/sealed/mecha))
+			to_chat(src, span_warning("Вы не в состоянии двигаться находясь в мехе!"))
+		else
+			to_chat(src, span_warning("Отсюда на другой этаж не перебраться."))
+		return FALSE
+
 	var/obj/structure/ladder/current_ladder = locate() in current_turf
 	if(current_ladder)
 		var/obj/structure/ladder/destination = (direction == UP) ? current_ladder.up : current_ladder.down
@@ -475,6 +492,19 @@
 				return FALSE
 			current_ladder.travel(direction == UP, src, isobserver(src), destination)
 			return TRUE
+
+	// Полет в космосе
+	if(!isobserver(src))
+		if(incapacitated())
+			to_chat(src, span_warning("Вы не в состоянии двигаться!"))
+			return FALSE
+
+		if(!can_z_move(direction, current_turf, null, ZMOVE_FLIGHT_FLAGS|ZMOVE_FEEDBACK))
+			return FALSE
+
+		to_chat(src, "<span class='notice'>Вы начинаете двигаться [direction == UP ? "вверх" : "вниз"]...</span>")
+		if(!do_after(src, 1.5 SECONDS, src))
+			return FALSE
 
 	if(!zMove(direction, null, ZMOVE_FLIGHT_FLAGS|ZMOVE_FEEDBACK))
 		return FALSE

@@ -1,0 +1,3876 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"am" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"as" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/closet/crate/freezer,
+/obj/item/trash/plate,
+/obj/item/trash/waffles,
+/obj/item/kitchen/fork,
+/obj/item/trash/raisins,
+/obj/item/kitchen/fork,
+/obj/item/trash/popcorn,
+/obj/item/trash/plate,
+/obj/item/trash/popcorn,
+/obj/item/kitchen/fork,
+/obj/item/reagent_containers/food/drinks/drinkingglass,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"ay" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/landmark/antag_training/side{
+	side = "depths"
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"aA" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/item/stack/sheet/cardboard,
+/obj/item/light/bulb/broken,
+/obj/item/stack/sheet/cardboard,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"aG" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/t_scanner{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/rods{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"aM" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/item/cigbutt,
+/obj/item/trash/chips,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"aN" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/iv_drip,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"aX" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/noticeboard{
+	pixel_x = -32
+	},
+/obj/item/cigbutt/roach,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"bg" = (
+/obj/item/crowbar/red,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/dark)
+"br" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/sheet/cardboard,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"bt" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/shard,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"bz" = (
+/obj/effect/decal/cleanable/blood/drip,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/cigbutt,
+/obj/item/trash/chips,
+/obj/effect/landmark/antag_training/side{
+	side = "entry"
+	},
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"bA" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/sheet/cardboard,
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"bE" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/filingcabinet/chestdrawer,
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"bF" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/chair{
+	dir = 8
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"bP" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/light/bulb/broken,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"bT" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/rack,
+/obj/item/stack/tile/plasteel{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/sheet/glass/five{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/rods{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"cd" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/flashlight,
+/obj/item/ammo_casing/spent,
+/obj/item/trash/chips,
+/turf/open/floor/plating/rust,
+/area/antag_training/sector/dark)
+"cl" = (
+/obj/effect/turf_decal/bot,
+/obj/structure/closet/crate/internals,
+/obj/item/tank/internals/emergency_oxygen,
+/obj/item/clothing/mask/breath,
+/obj/item/stock_parts/matter_bin,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"cJ" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/shard,
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"cK" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/frame/computer{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"de" = (
+/obj/item/paper/crumpled,
+/obj/item/cigbutt,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"dj" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/chair/wood{
+	dir = 1
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"dm" = (
+/obj/item/trash/pistachios,
+/turf/open/floor/carpet/black,
+/area/antag_training/sector/dark)
+"dp" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/stool,
+/obj/item/trash/sosjerky,
+/obj/item/trash/plate,
+/obj/effect/landmark/antag_training/side{
+	side = "depths"
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"dv" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/sheet/cardboard,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"dM" = (
+/obj/effect/decal/cleanable/vomit/old,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/item/trash/can,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"dX" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/wood{
+	dir = 4
+	},
+/turf/open/floor/carpet/black,
+/area/antag_training/sector/dark)
+"en" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/sign/departments/cargo{
+	pixel_x = 32
+	},
+/obj/item/stack/sheet/cardboard,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"ew" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/ammo_casing/spent,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"eB" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"eE" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"eS" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/directions/supply{
+	pixel_x = -32
+	},
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/dark)
+"fh" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/warning/securearea{
+	pixel_x = -32
+	},
+/obj/item/cigbutt,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"fH" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/closet/cabinet,
+/obj/item/clothing/under/color/black,
+/obj/item/flashlight,
+/obj/item/book/manual/random,
+/obj/item/trash/chips,
+/obj/item/trash/candy,
+/obj/item/lighter,
+/obj/item/lighter,
+/obj/item/trash/candy,
+/obj/item/book/manual/random,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"fK" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"fL" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/office/dark{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"fN" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 4
+	},
+/obj/item/trash/chips,
+/obj/item/light/bulb/broken,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/dark)
+"fP" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/sign/warning/nosmoking/circle{
+	pixel_x = 32
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"gm" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/stock_parts/cell{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/electronics/airlock{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/trash/can{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"gt" = (
+/obj/effect/decal/cleanable/blood/splatter,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/restraints/handcuffs,
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"gv" = (
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/light/tube/broken,
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"gw" = (
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"gz" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/trash/popcorn,
+/obj/item/trash/can,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"gB" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/machinery/light/broken{
+	dir = 4
+	},
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"gC" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/mopbucket,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"gF" = (
+/obj/effect/decal/cleanable/crayon{
+	icon_state = "food";
+	paint_colour = "#e0e0e0"
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"gH" = (
+/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/barricade/wooden/crude,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"gT" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/ammo_casing/spent,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/dark)
+"gV" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/machinery/light/broken{
+	dir = 2
+	},
+/obj/item/paper/crumpled,
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"hk" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/trash/candy,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"hl" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/shard,
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"hn" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 4
+	},
+/obj/item/trash/semki,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"ht" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/emcloset,
+/obj/item/storage/box,
+/obj/item/screwdriver,
+/obj/item/stock_parts/matter_bin,
+/obj/item/stock_parts/matter_bin,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"hC" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/closet/body_bag,
+/obj/item/clothing/gloves/color/latex,
+/obj/item/clothing/gloves/color/latex,
+/obj/item/clothing/gloves/color/latex,
+/obj/item/stack/medical/gauze,
+/obj/item/reagent_containers/glass/bottle,
+/obj/item/reagent_containers/pill/patch/styptic,
+/obj/item/reagent_containers/pill/patch/styptic,
+/obj/item/reagent_containers/pill/patch/styptic,
+/obj/item/reagent_containers/syringe,
+/obj/item/reagent_containers/syringe,
+/obj/item/reagent_containers/glass/bottle,
+/obj/item/reagent_containers/pill/patch/styptic,
+/obj/item/reagent_containers/syringe,
+/obj/item/reagent_containers/pill/patch/styptic,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"hI" = (
+/obj/item/stack/sheet/metal/five,
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"hU" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/paper/crumpled,
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"hZ" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table/optable,
+/obj/item/surgical_drapes{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/pill/patch/styptic{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/clothing/mask/surgical{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"it" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/wood{
+	dir = 1
+	},
+/turf/open/floor/carpet/black,
+/area/antag_training/sector/dark)
+"iX" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/broken{
+	dir = 8
+	},
+/obj/item/trash/can,
+/obj/item/trash/can,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"ji" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/light/tube/broken,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"jN" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/shard,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"jO" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/trash/chips,
+/turf/open/floor/carpet/black,
+/area/antag_training/sector/dark)
+"kd" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/noticeboard{
+	pixel_y = 32
+	},
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"kw" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/bed,
+/obj/item/bedsheet/grey,
+/obj/structure/mirror{
+	pixel_x = -32
+	},
+/obj/item/book/manual/random,
+/turf/open/floor/carpet/black,
+/area/antag_training/sector/dark)
+"kP" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/iv_drip,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"kT" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/cigbutt,
+/obj/item/shard,
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"kV" = (
+/obj/effect/decal/cleanable/oil,
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/frame/machine,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"lw" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/trash/semki,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"lD" = (
+/turf/closed/wall,
+/area/antag_training/sector/dark)
+"lH" = (
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/shard,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"lM" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/table/glass,
+/obj/item/stack/medical/gauze{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/syringe{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/glass/bottle{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"lZ" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/broken{
+	dir = 2
+	},
+/obj/item/trash/can,
+/obj/item/trash/chips,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/dark)
+"mi" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet,
+/obj/item/clothing/under/color/grey,
+/obj/item/clothing/shoes/sneakers/black,
+/obj/item/trash/raisins,
+/obj/item/paper/crumpled,
+/obj/item/lighter,
+/obj/item/clothing/shoes/sneakers/black,
+/obj/item/clothing/shoes/sneakers/black,
+/turf/open/floor/carpet/black,
+/area/antag_training/sector/dark)
+"mj" = (
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/shard,
+/obj/item/paper/crumpled,
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"mo" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/firecloset,
+/obj/item/stack/cable_coil,
+/obj/item/screwdriver,
+/obj/item/stock_parts/matter_bin,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"my" = (
+/obj/effect/decal/cleanable/blood,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/paper/crumpled,
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"mz" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/sheet/metal/five,
+/obj/item/light/tube/broken,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"mC" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/wood,
+/obj/item/storage/briefcase{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/camera{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/pen{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"mF" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/item/stack/sheet/cardboard,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"mI" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/office/dark{
+	dir = 2
+	},
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"mJ" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/light/bulb/broken,
+/obj/item/trash/can,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/dark)
+"mM" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/bed,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"mQ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/sheet/cardboard,
+/obj/item/light/bulb/broken,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"mX" = (
+/obj/effect/decal/cleanable/cobweb/cobweb2,
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/barricade/wooden/crude,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/dark)
+"nh" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"nx" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/directions/supply{
+	pixel_y = 32
+	},
+/obj/item/shard,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"nG" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/girder,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"nU" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 4
+	},
+/obj/machinery/door/airlock,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"oq" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/item/trash/can,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"ou" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/closet/cardboard,
+/obj/item/stack/sheet/cardboard,
+/obj/item/stack/sheet/cardboard,
+/obj/item/screwdriver,
+/obj/item/wirecutters,
+/obj/item/stock_parts/capacitor,
+/obj/item/assembly/igniter,
+/obj/item/assembly/igniter,
+/obj/item/stock_parts/cell,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"oA" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/light/tube/broken,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"oB" = (
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"oD" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/item/light/bulb/broken,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"oI" = (
+/obj/machinery/door/airlock/maintenance,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"oU" = (
+/obj/structure/chair/comfy/black{
+	dir = 1
+	},
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"pa" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/bed,
+/obj/item/bedsheet/medical,
+/obj/item/shard,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"pb" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/cabinet,
+/obj/item/clothing/under/color/black,
+/obj/item/clothing/shoes/sneakers/black,
+/obj/item/storage/backpack,
+/obj/item/trash/can,
+/obj/item/trash/pistachios,
+/obj/item/trash/can,
+/obj/item/trash/candy,
+/obj/item/clothing/under/color/grey,
+/obj/item/clothing/under/color/grey,
+/obj/item/clothing/shoes/sneakers/black,
+/obj/item/clothing/under/color/grey,
+/obj/item/lighter,
+/obj/item/bedsheet,
+/obj/item/bedsheet/grey,
+/turf/open/floor/carpet/black,
+/area/antag_training/sector/dark)
+"pf" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/cigbutt/roach,
+/turf/open/floor/carpet/black,
+/area/antag_training/sector/dark)
+"pq" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/closet/cardboard,
+/obj/item/stack/sheet/cardboard,
+/obj/item/storage/box,
+/obj/item/storage/box,
+/obj/item/stock_parts/matter_bin,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"pt" = (
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/light/bulb/broken,
+/obj/structure/sign/directions/evac{
+	pixel_x = -32
+	},
+/obj/item/ammo_casing/spent,
+/obj/item/trash/chips,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"pv" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/sign/warning/nosmoking{
+	pixel_y = -32
+	},
+/obj/item/paper/crumpled,
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"pA" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/cigbutt,
+/obj/item/trash/candy,
+/obj/item/cigbutt,
+/obj/item/cigbutt,
+/turf/open/floor/carpet/black,
+/area/antag_training/sector/dark)
+"pD" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"pJ" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/trash/semki,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"pZ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"qh" = (
+/obj/item/shard,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/dark)
+"qm" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"qo" = (
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"qp" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/stack/sheet/metal/five{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/rods{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/rods{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"qt" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/wood,
+/obj/item/toy/cards/deck{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/food/drinks/mug{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/candle{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/carpet/black,
+/area/antag_training/sector/dark)
+"qx" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/bed/matress,
+/obj/item/cigbutt/roach,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"qF" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table_frame,
+/obj/item/stack/sheet/glass/five,
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"qG" = (
+/obj/effect/decal/cleanable/blood/drip,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/ammo_casing/spent,
+/obj/item/ammo_casing/spent,
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/dark)
+"qK" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/stool,
+/obj/item/trash/raisins,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"qL" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"qV" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/broken{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"rb" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/trash/semki,
+/turf/open/floor/plating/rust,
+/area/antag_training/sector/dark)
+"rg" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/item/paper/crumpled,
+/obj/item/shard,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"ri" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/sheet/cardboard,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"rm" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/trash/gauze,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"ro" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/shard,
+/obj/item/paper/crumpled,
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"ru" = (
+/obj/structure/table/glass,
+/obj/item/scalpel{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/hemostat{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/retractor{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"rJ" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/broken{
+	dir = 4
+	},
+/obj/item/ammo_casing/spent,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"rQ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/stool,
+/obj/item/trash/popcorn,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"si" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/stack/sheet/cardboard{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/crowbar{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/storage/box{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"sn" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/closet/crate/medical,
+/obj/item/stack/medical/gauze,
+/obj/item/reagent_containers/syringe,
+/obj/item/reagent_containers/glass/bottle,
+/obj/item/clothing/gloves/color/latex,
+/obj/item/clothing/suit/apron/surgical,
+/obj/item/clothing/gloves/color/latex,
+/obj/item/clothing/gloves/color/latex,
+/obj/item/clothing/under/color/grey,
+/obj/item/reagent_containers/pill/patch/styptic,
+/obj/item/bedsheet/medical,
+/obj/item/reagent_containers/glass/bottle,
+/obj/item/reagent_containers/pill/patch/styptic,
+/obj/item/reagent_containers/syringe,
+/obj/item/stack/medical/gauze,
+/obj/item/reagent_containers/syringe,
+/obj/item/reagent_containers/syringe,
+/obj/item/reagent_containers/glass/bottle,
+/obj/item/reagent_containers/pill/patch/styptic,
+/obj/item/reagent_containers/pill/patch/styptic,
+/obj/item/stack/medical/gauze,
+/obj/item/reagent_containers/pill/patch/styptic,
+/obj/item/stack/medical/gauze,
+/obj/item/reagent_containers/pill/patch/styptic,
+/obj/item/reagent_containers/syringe,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"so" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/closet/cabinet,
+/obj/item/clothing/under/color/grey,
+/obj/item/storage/backpack,
+/obj/item/clothing/shoes/workboots,
+/obj/item/cigbutt/roach,
+/obj/item/lighter,
+/obj/item/lighter,
+/obj/item/clothing/head/hardhat/orange,
+/obj/item/clothing/shoes/sneakers/black,
+/obj/item/clothing/under/color/grey,
+/obj/item/stack/sheet/cardboard,
+/obj/item/book/manual/random,
+/obj/item/bedsheet/black,
+/obj/item/book/manual/random,
+/obj/item/book/manual/random,
+/obj/item/bedsheet/black,
+/obj/item/bedsheet/grey,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"sw" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"sA" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table,
+/obj/item/trash/chips{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/food/drinks/drinkingglass{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/kitchen/fork{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"sB" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/stool,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"sI" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/closet/cardboard,
+/obj/item/trash/chips,
+/obj/item/stock_parts/matter_bin,
+/obj/item/storage/box,
+/obj/item/storage/box,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"sO" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/mirror{
+	pixel_x = 32
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"sZ" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 4
+	},
+/obj/structure/sign/directions/medical{
+	pixel_y = -32
+	},
+/obj/item/trash/semki,
+/obj/item/shard,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"th" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"tv" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"ty" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"tF" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/trash/sosjerky,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"tM" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/cigbutt,
+/obj/item/light/bulb/broken,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"tR" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/item/stack/medical/gauze,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"tS" = (
+/obj/structure/closet,
+/obj/item/clothing/shoes/sneakers/black,
+/obj/item/storage/backpack,
+/obj/item/trash/sosjerky,
+/obj/item/cigbutt,
+/obj/item/clothing/shoes/sneakers/black,
+/obj/item/clothing/under/color/grey,
+/obj/item/trash/chips,
+/obj/item/clothing/under/color/grey,
+/obj/item/clothing/shoes/sneakers/black,
+/obj/item/clothing/shoes/sneakers/black,
+/obj/item/clothing/under/color/grey,
+/obj/item/lighter,
+/obj/item/lighter,
+/obj/item/clothing/under/color/grey,
+/obj/item/cigbutt/roach,
+/obj/item/book/manual/random,
+/obj/item/flashlight/lantern,
+/turf/open/floor/carpet/black,
+/area/antag_training/sector/dark)
+"tV" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/sign/warning/nosmoking/circle{
+	pixel_x = 32
+	},
+/obj/item/trash/popcorn,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"uc" = (
+/obj/effect/decal/cleanable/crayon{
+	icon_state = "ghost";
+	paint_colour = "#d9d9d9"
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/ammo_casing/spent,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"ug" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/trash/pistachios,
+/turf/open/floor/carpet/black,
+/area/antag_training/sector/dark)
+"uJ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/paper/crumpled,
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"uK" = (
+/obj/item/ammo_casing/spent,
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"uQ" = (
+/obj/effect/spawner/structure/window/reinforced,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"uR" = (
+/obj/structure/sign/warning/electricshock{
+	pixel_x = 32
+	},
+/obj/item/trash/can,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"uT" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/sheet/cardboard,
+/obj/effect/landmark/antag_training/side{
+	side = "entry"
+	},
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"vd" = (
+/obj/effect/decal/cleanable/crayon{
+	icon_state = "skull";
+	paint_colour = "#9e1b1b"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/shard,
+/obj/item/stack/sheet/cardboard,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"vn" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table/wood,
+/obj/item/paper_bin{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/pen{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stamp{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"vp" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/trash/popcorn,
+/obj/item/trash/raisins,
+/obj/effect/landmark/antag_training/side{
+	side = "depths"
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"vs" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/ammo_casing/spent,
+/obj/item/cigbutt/roach,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"vR" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"vS" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/comfy/black{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"vU" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/comfy/black{
+	dir = 8
+	},
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"vZ" = (
+/obj/effect/decal/cleanable/blood/drip,
+/obj/structure/sign/directions/dorms{
+	pixel_x = 32
+	},
+/obj/item/trash/semki,
+/turf/open/floor/plating/rust,
+/area/antag_training/sector/dark)
+"wi" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"ws" = (
+/obj/effect/decal/remains/human,
+/obj/effect/decal/cleanable/blood/gibs/old,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"wI" = (
+/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"xf" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/machinery/light/broken{
+	dir = 1
+	},
+/obj/item/light/tube/broken,
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"xq" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/sheet/metal/five,
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"xs" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plating/rust,
+/area/antag_training/sector/dark)
+"xT" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/closet/crate,
+/obj/item/stack/rods,
+/obj/item/storage/box,
+/obj/item/stack/tile/plasteel,
+/obj/item/stack/tile/plasteel,
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"ya" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/bed,
+/obj/item/trash/pistachios,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"yd" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/filingcabinet/chestdrawer,
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"yh" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/paper/crumpled,
+/obj/item/ammo_casing/spent,
+/obj/item/ammo_casing/spent,
+/obj/item/ammo_casing/spent,
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"yi" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/clothing/suit/armor/vest{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/head/helmet{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/storage/box{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"yl" = (
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"yw" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/sign/warning/nosmoking{
+	pixel_x = -32
+	},
+/obj/item/trash/popcorn,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"yK" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/shard,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"yR" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/antag_training_board,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"yT" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/paper/crumpled,
+/obj/item/trash/pistachios,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"yU" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/table/reinforced,
+/obj/item/kitchen/rollingpin{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/glass/bowl{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/trash/raisins{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"yZ" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/rods,
+/obj/item/shard,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"zg" = (
+/obj/effect/turf_decal/delivery,
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/reagent_dispensers/watertank,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"zk" = (
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"zn" = (
+/obj/structure/curtain,
+/obj/item/light/tube/broken,
+/obj/item/trash/gauze,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"zr" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/item/trash/can,
+/obj/item/screwdriver,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"zw" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"zO" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/trash/semki,
+/obj/item/trash/pistachios,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"zR" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/item/trash/chips,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"zS" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/trash/chips,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"Ae" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/cabinet,
+/obj/item/clothing/under/color/grey,
+/obj/item/storage/fancy/cigarettes,
+/obj/item/lighter,
+/obj/item/cigbutt,
+/obj/item/trash/pistachios,
+/obj/item/lighter,
+/obj/item/lighter,
+/obj/item/book/manual/random,
+/turf/open/floor/carpet/black,
+/area/antag_training/sector/dark)
+"Ak" = (
+/turf/closed/wall/rust,
+/area/antag_training/sector/dark)
+"Au" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/closet/crate/freezer,
+/obj/item/trash/plate,
+/obj/item/reagent_containers/glass/bowl,
+/obj/item/trash/tray,
+/obj/item/trash/plate,
+/obj/item/trash/can,
+/obj/item/kitchen/fork,
+/obj/item/reagent_containers/food/drinks/drinkingglass,
+/obj/item/kitchen/fork,
+/obj/item/trash/can,
+/obj/item/trash/waffles,
+/obj/item/kitchen/fork,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"AB" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate,
+/obj/item/stack/sheet/metal/five,
+/obj/item/stack/rods,
+/obj/item/light/tube/broken,
+/obj/item/light/bulb/broken,
+/obj/item/storage/box,
+/obj/item/screwdriver,
+/obj/item/screwdriver,
+/obj/item/screwdriver,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"AC" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/sign/warning/fire{
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"AH" = (
+/obj/structure/rack,
+/obj/item/extinguisher{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/flashlight{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/matter_bin{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"AL" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/broken{
+	dir = 8
+	},
+/obj/item/paper/crumpled,
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"AP" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/broken{
+	dir = 8
+	},
+/obj/item/light/bulb/broken,
+/obj/item/ammo_casing/spent,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/dark)
+"Bi" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/closet/crate,
+/obj/item/storage/box,
+/obj/item/stack/sheet/cardboard,
+/obj/item/stock_parts/matter_bin,
+/obj/item/stack/sheet/cardboard,
+/obj/item/screwdriver,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"Bj" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/item/light/bulb/broken,
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"Bz" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table,
+/obj/item/trash/plate{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/food/drinks/drinkingglass{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/kitchen/fork{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"BC" = (
+/obj/item/shard,
+/obj/item/paper/crumpled,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"BM" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/sign/departments/examroom{
+	pixel_x = -32
+	},
+/obj/item/reagent_containers/glass/bottle,
+/obj/item/reagent_containers/syringe,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"BN" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/cigbutt,
+/turf/open/floor/carpet/black,
+/area/antag_training/sector/dark)
+"BQ" = (
+/obj/machinery/light/broken{
+	dir = 4
+	},
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"BZ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/screwdriver,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"Ck" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/bed,
+/obj/item/bedsheet/black,
+/obj/item/cigbutt/roach,
+/obj/item/cigbutt/roach,
+/turf/open/floor/carpet/black,
+/area/antag_training/sector/dark)
+"Cw" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 4
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/dark)
+"CP" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/mirror{
+	pixel_y = 32
+	},
+/obj/item/shard,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"CR" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/body_bag,
+/obj/item/trash/can,
+/obj/item/stock_parts/matter_bin,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"Db" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"Dn" = (
+/obj/effect/decal/cleanable/crayon{
+	icon_state = "danger";
+	paint_colour = "#d8b02a"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/ammo_casing/spent,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"Dw" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/stool,
+/obj/item/trash/plate,
+/obj/item/trash/chips,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"Dx" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/light/bulb/broken,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"DF" = (
+/obj/structure/sign/directions/dorms{
+	pixel_y = 32
+	},
+/obj/item/cigbutt/roach,
+/obj/effect/landmark/antag_training/side{
+	side = "entry"
+	},
+/turf/open/floor/plating/rust,
+/area/antag_training/sector/dark)
+"DK" = (
+/obj/effect/decal/cleanable/crayon{
+	icon_state = "peace";
+	paint_colour = "#e0e0e0"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/trash/candy,
+/turf/open/floor/carpet/black,
+/area/antag_training/sector/dark)
+"DM" = (
+/obj/effect/decal/cleanable/blood/drip,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/flashlight/seclite,
+/obj/item/ammo_casing/spent,
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"Ex" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sign/departments/medbay/alt{
+	pixel_x = -32
+	},
+/obj/item/light/bulb/broken,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"EF" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/trash/raisins,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"EM" = (
+/obj/machinery/door/airlock/medical,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"EN" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/bed/matress,
+/obj/item/paper/crumpled,
+/obj/item/trash/chips,
+/turf/open/floor/carpet/black,
+/area/antag_training/sector/dark)
+"EV" = (
+/obj/effect/decal/cleanable/oil/streak,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/cable_coil/cut,
+/obj/item/stack/sheet/cardboard,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"Fc" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/item/trash/sosjerky,
+/obj/item/cigbutt/roach,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"Fo" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"FJ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"FL" = (
+/turf/closed/indestructible,
+/area/antag_training/sector/dark)
+"FM" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/ammo_casing/spent,
+/obj/item/cigbutt/roach,
+/obj/item/ammo_casing/spent,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"FU" = (
+/obj/item/stack/sheet/metal/five,
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"Ge" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/cigbutt,
+/obj/item/trash/pistachios,
+/turf/open/floor/carpet/black,
+/area/antag_training/sector/dark)
+"Gi" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/trash/can,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"GF" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/trash/semki,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"GP" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/light/tube/broken,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"Hg" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/trash/pistachios,
+/turf/open/floor/carpet/black,
+/area/antag_training/sector/dark)
+"Hh" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/item/shard,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"HE" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stock_parts/capacitor,
+/obj/item/assembly/igniter,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"HK" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/item/stack/rods,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"HZ" = (
+/obj/effect/decal/cleanable/crayon{
+	icon_state = "electricdanger";
+	paint_colour = "#d8b02a"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"Ia" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/dresser,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"Ie" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/item/stack/rods,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"Io" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/light/bulb/broken,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"ID" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/item/stack/sheet/metal/five,
+/obj/item/light/bulb/broken,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"II" = (
+/obj/item/trash/can,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"IN" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/sheet/cardboard,
+/obj/item/stack/tile/plasteel,
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"IO" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/trash/can,
+/obj/item/cigbutt/roach,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"IR" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table,
+/obj/item/trash/sosjerky{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/food/drinks/drinkingglass{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/kitchen/fork{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"IV" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/machinery/light/broken{
+	dir = 4
+	},
+/obj/item/trash/can,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"IY" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/closet/crate,
+/obj/item/stack/sheet/metal/five,
+/obj/item/storage/toolbox/mechanical,
+/obj/item/stack/tile/plasteel,
+/obj/item/light/bulb/broken,
+/obj/item/light/bulb/broken,
+/obj/item/stack/rods,
+/obj/item/assembly/igniter,
+/obj/item/stock_parts/cell,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"Ja" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/broken{
+	dir = 8
+	},
+/obj/item/trash/sosjerky,
+/turf/open/floor/carpet/black,
+/area/antag_training/sector/dark)
+"Jp" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/frame/machine,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"JC" = (
+/obj/effect/decal/cleanable/blood/splatter,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/ammo_casing/spent,
+/obj/item/cigbutt,
+/obj/item/cigbutt/roach,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"JD" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/chair/stool,
+/obj/item/trash/can,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"JG" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"JL" = (
+/obj/structure/rack,
+/obj/item/circuitboard/machine/autolathe{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/storage/box{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/light/tube/broken{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"JU" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/machinery/light/broken{
+	dir = 4
+	},
+/obj/item/trash/can,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"JY" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/broken{
+	dir = 8
+	},
+/obj/item/ammo_casing/spent,
+/obj/item/ammo_casing/spent,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/dark)
+"Kl" = (
+/obj/effect/decal/cleanable/ash,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"Kp" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/item/trash/plate,
+/obj/machinery/light/small/red/antag_training_flicker{
+	dir = 4
+	},
+/obj/item/trash/waffles,
+/obj/item/trash/waffles,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"Ku" = (
+/obj/machinery/light/small/red/antag_training_flicker{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"Kv" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/bed/roller,
+/obj/item/light/tube/broken,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"Kx" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/girder,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/dark)
+"KR" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/stack/sheet/cardboard{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/storage/box{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/screwdriver{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"Lc" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"Lj" = (
+/obj/item/shard,
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"Lm" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/trash/semki,
+/turf/open/floor/carpet/black,
+/area/antag_training/sector/dark)
+"Lv" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/bed,
+/obj/item/cigbutt,
+/turf/open/floor/carpet/black,
+/area/antag_training/sector/dark)
+"LV" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/item/trash/semki,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"LY" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/light/small/broken{
+	dir = 4
+	},
+/obj/item/paper/crumpled,
+/obj/item/ammo_casing/spent,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"Me" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"Mg" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/clothing/head/hardhat{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clothing/glasses/meson{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/light/bulb/broken{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"Mp" = (
+/obj/effect/decal/cleanable/flour,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/item/reagent_containers/glass/bucket,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"Ms" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/closet/cardboard,
+/obj/item/storage/box,
+/obj/item/light/tube/broken,
+/obj/item/trash/can,
+/obj/item/storage/box,
+/obj/item/storage/box,
+/obj/item/storage/box,
+/obj/item/clothing/gloves/color/fyellow,
+/obj/item/trash/can,
+/obj/item/storage/box,
+/obj/item/assembly/igniter,
+/obj/item/stock_parts/cell,
+/obj/item/stock_parts/capacitor,
+/obj/item/wirecutters,
+/obj/item/stock_parts/manipulator,
+/obj/item/screwdriver,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"Mw" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/noticeboard{
+	pixel_y = 32
+	},
+/obj/item/trash/can,
+/obj/item/trash/chips,
+/turf/open/floor/carpet/black,
+/area/antag_training/sector/dark)
+"MD" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/sign/warning/securearea{
+	pixel_y = 32
+	},
+/obj/item/light/bulb/broken,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"ME" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"MH" = (
+/obj/structure/filingcabinet,
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"MO" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/chair/wood{
+	dir = 2
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"MP" = (
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"MV" = (
+/obj/effect/decal/cleanable/blood/old,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/bed,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"MX" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"Nc" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/trash/popcorn,
+/obj/item/trash/sosjerky,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"Nt" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/cigbutt,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"NC" = (
+/obj/effect/decal/cleanable/crayon{
+	icon_state = "heart";
+	paint_colour = "#d65c8b"
+	},
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"NG" = (
+/obj/item/trash/candy,
+/turf/open/floor/carpet/black,
+/area/antag_training/sector/dark)
+"Of" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/machinery/light/broken{
+	dir = 4
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"Oi" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/sign/departments/cargo{
+	pixel_x = -32
+	},
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"On" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/carpet/black,
+/area/antag_training/sector/dark)
+"Ow" = (
+/obj/item/stack/sheet/cardboard,
+/obj/item/light/bulb/broken,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"Oz" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/table/glass,
+/obj/item/storage/pill_bottle{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/pill/patch/styptic{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/syringe{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"OA" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/light/bulb/broken,
+/obj/item/light/tube/broken,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"Pj" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/light/tube/broken,
+/obj/item/stack/tile/plasteel,
+/obj/item/stack/sheet/cardboard,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"Pl" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/table/reinforced,
+/obj/item/kitchen/knife{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/storage/bag/tray{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/trash/plate{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"PK" = (
+/obj/effect/decal/cleanable/crayon{
+	icon_state = "stickman";
+	paint_colour = "#7da7d9"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/ammo_casing/spent,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"PP" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/machinery/light/broken{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"PV" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table/wood,
+/obj/item/folder/red{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/clipboard{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/food/drinks/coffee{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"PW" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/flashlight/flare,
+/obj/item/ammo_casing/spent,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/dark)
+"Qa" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"Qj" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"Qq" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/map/right{
+	pixel_x = 32
+	},
+/obj/item/cigbutt,
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"Qs" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/janitorialcart,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"Qu" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/stool,
+/obj/item/trash/plate,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"QA" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/sign/warning/securearea{
+	pixel_x = -32
+	},
+/obj/item/stock_parts/matter_bin,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"QG" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/carpet/black,
+/area/antag_training/sector/dark)
+"Rd" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/closet/crate/trashcart,
+/obj/item/trash/can,
+/obj/item/trash/raisins,
+/obj/item/trash/popcorn,
+/obj/item/kitchen/fork,
+/obj/item/mop,
+/obj/item/reagent_containers/food/drinks/drinkingglass,
+/obj/item/kitchen/fork,
+/obj/item/kitchen/fork,
+/obj/item/reagent_containers/food/drinks/drinkingglass,
+/obj/item/kitchen/fork,
+/obj/item/trash/raisins,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"Rj" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/machinery/light/broken{
+	dir = 2
+	},
+/obj/item/stack/sheet/metal/five,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"Rw" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/machinery/light/broken{
+	dir = 8
+	},
+/obj/item/trash/boritos,
+/obj/item/trash/boritos,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"RI" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/small/broken{
+	dir = 4
+	},
+/obj/item/light/bulb/broken,
+/obj/item/paper/crumpled,
+/turf/open/floor/plating/rust,
+/area/antag_training/sector/dark)
+"RJ" = (
+/obj/effect/decal/cleanable/crayon{
+	icon_state = "arrow";
+	paint_colour = "#c9c9c9"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/paper/crumpled,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"RQ" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/table/glass,
+/obj/item/clipboard{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/pen{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/syringe{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"RS" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/sign/warning/electricshock{
+	pixel_x = 32
+	},
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"RT" = (
+/obj/effect/decal/cleanable/crayon{
+	icon_state = "toolbox";
+	paint_colour = "#d8b02a"
+	},
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/rods,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"Sb" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/item/trash/waffles,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"Sd" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/table/reinforced,
+/obj/item/reagent_containers/food/condiment/saltshaker{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/reagent_containers/food/condiment/peppermill{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/trash/plate{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"So" = (
+/obj/effect/decal/cleanable/crayon{
+	icon_state = "biohazard";
+	paint_colour = "#5fa04e"
+	},
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"Sp" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/reinforced,
+/obj/item/storage/toolbox/electrical{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/wirecutters{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/cell{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"SJ" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/sign/warning/electricshock{
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"SO" = (
+/turf/open/floor/plating/rust,
+/area/antag_training/sector/dark)
+"SU" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/closet/cardboard,
+/obj/item/trash/can,
+/obj/item/stock_parts/matter_bin,
+/obj/item/screwdriver,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"SV" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/bookcase/random,
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"Tj" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/table/reinforced,
+/obj/item/multitool{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stack/rods{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"Tw" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/closet/crate,
+/obj/item/clothing/gloves/color/black,
+/obj/item/assembly/igniter,
+/obj/item/stack/sheet/cardboard,
+/obj/item/stack/cable_coil,
+/obj/item/storage/box,
+/obj/item/stock_parts/matter_bin,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"Tx" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/trash/can,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"TC" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/bed,
+/obj/item/bedsheet,
+/obj/item/flashlight,
+/obj/item/book/manual/random,
+/turf/open/floor/carpet/black,
+/area/antag_training/sector/dark)
+"TO" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stack/tile/plasteel,
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"TV" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"TW" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/chair/wood{
+	dir = 8
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"TY" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/structure/sign/directions/cafe{
+	pixel_x = 32
+	},
+/obj/item/trash/boritos,
+/obj/item/trash/chips,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"Uc" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/bed,
+/obj/item/bedsheet/medical,
+/obj/item/reagent_containers/glass/bottle,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"Un" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/stock_parts/matter_bin,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"Uv" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/screwdriver,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"UD" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/wrench{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/screwdriver{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/trash/can{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"UH" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/noticeboard{
+	pixel_x = -32
+	},
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"UM" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/structure/barricade/wooden,
+/turf/open/floor/plating/rust,
+/area/antag_training/sector/dark)
+"UR" = (
+/obj/effect/decal/cleanable/glass,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/shard,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"US" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/machinery/light/broken{
+	dir = 8
+	},
+/obj/item/stack/rods,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"UT" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/rack,
+/obj/item/storage/toolbox/mechanical{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/cable_coil{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/stock_parts/matter_bin{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"Vn" = (
+/obj/structure/table/wood,
+/obj/item/dice{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/storage/fancy/cigarettes{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/trash/chips{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"Vq" = (
+/obj/effect/decal/cleanable/crayon{
+	icon_state = "?";
+	paint_colour = "#c9c9c9"
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/stack/sheet/cardboard,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/dark)
+"Vz" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/trash/waffles,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"VA" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/light/bulb/broken,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"VB" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/trash/plate,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"VF" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 4
+	},
+/obj/item/trash/chips,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"VH" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"VN" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/light/tube/broken,
+/obj/item/light/tube/broken,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"VX" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/curtain,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"Wq" = (
+/obj/structure/sign/map/left{
+	pixel_x = 32
+	},
+/obj/item/shard,
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"Ws" = (
+/obj/effect/turf_decal/bot,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/closet/crate,
+/obj/item/storage/box,
+/obj/item/stack/rods,
+/obj/item/stack/rods,
+/obj/item/mop,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"WB" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/item/cigbutt,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"WE" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/item/stack/tile/plasteel,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"WO" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/table/glass,
+/obj/item/reagent_containers/blood{
+	pixel_x = -6;
+	pixel_y = 5
+	},
+/obj/item/stack/medical/gauze{
+	pixel_x = 6;
+	pixel_y = 5
+	},
+/obj/item/flashlight/flare{
+	pixel_x = 0;
+	pixel_y = -5
+	},
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"WP" = (
+/obj/effect/decal/cleanable/crayon{
+	icon_state = "smallbrush";
+	paint_colour = "#7da7d9"
+	},
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"WR" = (
+/obj/effect/decal/cleanable/blood/tracks{
+	dir = 1
+	},
+/obj/effect/decal/cleanable/dirt,
+/obj/item/trash/semki,
+/obj/item/ammo_casing/spent,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/dark)
+"WX" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"WY" = (
+/obj/machinery/door/airlock,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"Xb" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/cigbutt/roach,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"Xc" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/screwdriver,
+/obj/item/stock_parts/matter_bin,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"Xd" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/item/trash/can,
+/obj/item/trash/can,
+/turf/open/floor/plasteel/dark/smooth/large,
+/area/antag_training/sector/dark)
+"Xh" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/closet/crate/medical,
+/obj/item/stack/medical/gauze,
+/obj/item/reagent_containers/glass/bottle,
+/obj/item/reagent_containers/syringe,
+/obj/item/light/tube/broken,
+/obj/item/clothing/gloves/color/latex,
+/obj/item/reagent_containers/glass/bottle,
+/obj/item/light/tube/broken,
+/obj/item/stack/medical/gauze,
+/obj/item/reagent_containers/pill/patch/styptic,
+/obj/item/stack/rods,
+/obj/item/stack/sheet/metal/five,
+/obj/item/clothing/gloves/color/latex,
+/obj/item/clothing/gloves/color/latex,
+/obj/item/clothing/gloves/color/latex,
+/obj/item/clothing/gloves/color/latex,
+/obj/item/stack/medical/gauze,
+/obj/item/clothing/gloves/color/latex,
+/obj/item/clothing/gloves/color/latex,
+/obj/item/reagent_containers/pill/patch/styptic,
+/obj/item/reagent_containers/syringe,
+/obj/item/reagent_containers/glass/bottle,
+/obj/item/reagent_containers/glass/bottle,
+/obj/item/reagent_containers/syringe,
+/obj/item/stack/medical/gauze,
+/obj/item/reagent_containers/syringe,
+/obj/item/stack/medical/gauze,
+/obj/item/reagent_containers/syringe,
+/obj/item/reagent_containers/glass/bottle,
+/obj/item/reagent_containers/glass/bottle,
+/obj/item/reagent_containers/glass/bottle,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"Xt" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/mirror{
+	pixel_y = -32
+	},
+/obj/item/shard,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"Xy" = (
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"Xz" = (
+/obj/effect/decal/cleanable/dirt,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"XD" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+"XI" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 1
+	},
+/obj/structure/sign/warning/biohazard{
+	pixel_y = 32
+	},
+/obj/item/paper/crumpled,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"Yp" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/structure/closet/cabinet,
+/obj/item/clothing/under/color/black,
+/obj/item/storage/briefcase,
+/obj/item/clothing/suit/hazardvest,
+/obj/item/paper,
+/obj/item/shard,
+/obj/item/paper,
+/obj/item/folder,
+/obj/item/paper,
+/obj/item/pen,
+/obj/item/paper,
+/obj/item/ammo_casing/spent,
+/obj/item/folder,
+/obj/item/folder,
+/obj/item/paper,
+/obj/item/folder,
+/obj/item/paper/crumpled,
+/obj/item/folder,
+/obj/item/clothing/under/rank/engineering/engineer,
+/obj/item/folder,
+/obj/item/pen,
+/obj/item/pen,
+/obj/item/clothing/head/hardhat,
+/obj/item/paper,
+/obj/item/pen,
+/obj/item/pen,
+/obj/item/folder,
+/obj/item/pen,
+/obj/item/paper,
+/obj/item/pen,
+/obj/item/folder,
+/obj/item/paper,
+/obj/item/ammo_casing/spent,
+/obj/item/folder,
+/obj/item/paper,
+/obj/item/folder,
+/obj/item/pen,
+/obj/item/paper,
+/obj/item/paper,
+/obj/item/paper/crumpled,
+/obj/item/ammo_casing/spent,
+/obj/item/pen,
+/obj/item/folder,
+/obj/item/paper,
+/obj/item/paper,
+/obj/item/paper,
+/obj/item/paper/crumpled,
+/obj/item/folder,
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"Yv" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/structure/sign/directions/command{
+	pixel_x = 32
+	},
+/obj/item/light/bulb/broken,
+/obj/item/light/bulb/broken,
+/turf/open/floor/plasteel/dark,
+/area/antag_training/sector/dark)
+"YF" = (
+/obj/effect/decal/cleanable/cobweb,
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/bookcase/random,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"YI" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/machinery/light/broken{
+	dir = 2
+	},
+/obj/item/trash/pistachios,
+/turf/open/floor/carpet/black,
+/area/antag_training/sector/dark)
+"YK" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/cigbutt,
+/turf/open/floor/wood,
+/area/antag_training/sector/dark)
+"Zg" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/item/trash/can,
+/obj/item/trash/boritos,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"Zh" = (
+/obj/effect/decal/cleanable/vomit/old,
+/obj/effect/decal/cleanable/dirt,
+/obj/item/trash/can,
+/obj/item/trash/semki,
+/turf/open/floor/plasteel/grimy,
+/area/antag_training/sector/dark)
+"Zn" = (
+/obj/effect/decal/cleanable/dirt/dust,
+/obj/item/paper/crumpled,
+/turf/open/floor/carpet/black,
+/area/antag_training/sector/dark)
+"Zx" = (
+/obj/effect/turf_decal/tile/neutral{
+	dir = 2
+	},
+/obj/structure/closet/crate/freezer,
+/obj/item/reagent_containers/blood,
+/obj/item/reagent_containers/blood,
+/obj/item/reagent_containers/blood,
+/obj/item/reagent_containers/syringe,
+/turf/open/floor/plasteel/white,
+/area/antag_training/sector/dark)
+"ZA" = (
+/turf/open/floor/carpet/black,
+/area/antag_training/sector/dark)
+"ZC" = (
+/obj/effect/decal/cleanable/dirt,
+/obj/effect/turf_decal/tile/neutral{
+	dir = 8
+	},
+/obj/structure/chair/stool,
+/obj/item/trash/waffles,
+/turf/open/floor/plasteel/cafeteria,
+/area/antag_training/sector/dark)
+"ZD" = (
+/obj/effect/decal/cleanable/crayon{
+	icon_state = "danger";
+	paint_colour = "#9e1b1b"
+	},
+/obj/machinery/light/small/broken{
+	dir = 4
+	},
+/obj/item/stack/rods,
+/obj/item/trash/can,
+/turf/open/floor/plating,
+/area/antag_training/sector/dark)
+
+(1,1,1) = {"
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+"}
+(2,1,1) = {"
+FL
+Lv
+Ja
+Ck
+On
+kw
+jO
+TC
+On
+Hg
+mi
+lD
+aX
+uT
+Ak
+sn
+MV
+Fo
+pa
+eE
+Uc
+tR
+BM
+Zx
+FL
+"}
+(3,1,1) = {"
+FL
+Mw
+On
+QG
+On
+EN
+pf
+On
+Ge
+QG
+tS
+Ak
+SO
+lZ
+lD
+nh
+aN
+zn
+kP
+VX
+aN
+MX
+jN
+hC
+FL
+"}
+(4,1,1) = {"
+FL
+pb
+QG
+pA
+jO
+ZA
+dX
+On
+dm
+DK
+YI
+lD
+DF
+RJ
+lD
+xf
+VN
+MX
+MX
+MX
+tv
+oB
+am
+gV
+FL
+"}
+(5,1,1) = {"
+FL
+Ae
+ZA
+NG
+BN
+pf
+qt
+it
+ug
+Zn
+Lm
+WY
+yR
+yZ
+lD
+XI
+zk
+am
+rm
+MX
+rm
+oB
+qF
+Xt
+FL
+"}
+(6,1,1) = {"
+FL
+fH
+WP
+yl
+qL
+MO
+Vn
+qL
+Lc
+Xy
+Fc
+lD
+Dn
+bz
+EM
+GP
+MX
+MX
+MX
+hZ
+tv
+tv
+MX
+lM
+FL
+"}
+(7,1,1) = {"
+FL
+Ia
+Lc
+yT
+pJ
+hk
+Xy
+TW
+Xz
+Xz
+pv
+Ak
+cd
+JC
+Ak
+Hh
+So
+oB
+rm
+ru
+MX
+Kv
+MX
+Oz
+FL
+"}
+(8,1,1) = {"
+FL
+so
+Lc
+Zh
+qx
+Lc
+NC
+IO
+zO
+Lc
+dj
+Ak
+qV
+sZ
+lD
+rg
+RQ
+tv
+rm
+MX
+MX
+tv
+MX
+WO
+FL
+"}
+(9,1,1) = {"
+FL
+mM
+VF
+JU
+tF
+fP
+th
+ya
+LV
+sO
+YF
+lD
+qG
+Cw
+lD
+CP
+bF
+yK
+UR
+ty
+Of
+GP
+pZ
+Xh
+FL
+"}
+(10,1,1) = {"
+FL
+lD
+lD
+lD
+WY
+Ak
+lD
+lD
+Ak
+lD
+lD
+lD
+nx
+fN
+Ak
+lD
+lD
+uQ
+uQ
+lD
+Ak
+EM
+Ak
+lD
+FL
+"}
+(11,1,1) = {"
+FL
+UM
+ri
+eS
+PK
+JY
+hn
+FM
+WR
+fh
+gT
+AP
+Dx
+lw
+bg
+GF
+Ex
+Nt
+uc
+qh
+iX
+bt
+pt
+Kx
+FL
+"}
+(12,1,1) = {"
+FL
+mX
+ZD
+vs
+de
+Yv
+tM
+vd
+rJ
+BC
+vZ
+mJ
+PW
+Xb
+uR
+Vq
+xs
+RI
+rb
+ew
+Ow
+EV
+LY
+gH
+FL
+"}
+(13,1,1) = {"
+FL
+lD
+lD
+uQ
+Ak
+lD
+nU
+lD
+lD
+lD
+Ak
+Ak
+WY
+lD
+lD
+Ak
+Ak
+lD
+lD
+Ak
+WY
+Ak
+lD
+lD
+FL
+"}
+(14,1,1) = {"
+FL
+yd
+vS
+hU
+AL
+UH
+ro
+YK
+VH
+VH
+oU
+lD
+mF
+HK
+Oi
+ID
+eB
+sI
+zr
+US
+Pj
+QA
+Bj
+wi
+FL
+"}
+(15,1,1) = {"
+FL
+SV
+VH
+mj
+VH
+uK
+zw
+DM
+VH
+mC
+qm
+lD
+Ie
+FU
+mQ
+UT
+MP
+gm
+Gi
+bT
+fK
+Uv
+si
+WE
+FL
+"}
+(16,1,1) = {"
+FL
+kd
+mI
+vn
+uJ
+gw
+my
+ws
+VH
+vU
+qm
+lD
+MD
+BZ
+Uv
+KR
+Qj
+Mg
+ME
+aG
+Xc
+OA
+yi
+xT
+FL
+"}
+(17,1,1) = {"
+FL
+bE
+qm
+PV
+kT
+cJ
+yh
+gt
+fL
+uJ
+VH
+lD
+PP
+vR
+dv
+qp
+TV
+AH
+Un
+JL
+ji
+Qj
+UD
+Rj
+FL
+"}
+(18,1,1) = {"
+FL
+MH
+Qq
+YK
+Wq
+hl
+YK
+Lj
+gv
+BQ
+Yp
+Ak
+oD
+RT
+mz
+TV
+TV
+VA
+xq
+Qj
+II
+IN
+Qj
+aA
+FL
+"}
+(19,1,1) = {"
+FL
+Ak
+Ak
+Ak
+lD
+Ak
+lD
+Ak
+WY
+lD
+lD
+lD
+XD
+vR
+JG
+ht
+Qj
+mo
+TV
+IV
+Ms
+FJ
+ou
+IY
+FL
+"}
+(20,1,1) = {"
+FL
+yU
+Rw
+yw
+ZC
+zR
+Zg
+JD
+Db
+aM
+gC
+lD
+Qa
+br
+VA
+CR
+JG
+Io
+pD
+Ak
+lD
+lD
+lD
+lD
+FL
+"}
+(21,1,1) = {"
+FL
+Pl
+Db
+rQ
+sA
+gz
+dp
+Bz
+Nc
+Db
+WB
+lD
+pq
+br
+Bi
+TV
+AB
+MP
+SJ
+lD
+Me
+Tj
+HE
+cK
+FL
+"}
+(22,1,1) = {"
+FL
+Sd
+qo
+vp
+sA
+qK
+VB
+IR
+sB
+Vz
+gF
+WY
+hI
+MP
+TV
+MP
+Xd
+oA
+bA
+oI
+vR
+HZ
+wI
+vR
+FL
+"}
+(23,1,1) = {"
+FL
+Mp
+Db
+EF
+Dw
+lH
+Tx
+Qu
+zS
+ay
+AC
+lD
+Ws
+Gi
+oA
+TO
+cl
+Qj
+WX
+lD
+Ku
+Kl
+bP
+Sp
+FL
+"}
+(24,1,1) = {"
+FL
+Au
+tV
+as
+Sb
+Sb
+Kp
+oq
+TY
+dM
+Rd
+lD
+Qs
+en
+SU
+gB
+Tw
+sw
+zg
+Ak
+kV
+Jp
+RS
+nG
+FL
+"}
+(25,1,1) = {"
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+FL
+"}

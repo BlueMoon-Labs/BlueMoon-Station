@@ -38,27 +38,11 @@
 	if(ishuman(user))
 		var/mob/living/carbon/human/H = user
 		//see code/modules/mob/dead/new_player/preferences.dm at approx line 545 for comments!
-		//this is largely copypasted from there.
-
-		//handle facial hair (if necessary)
-		if(H.gender != FEMALE)
-			var/new_style = tgui_input_list(user, "Select a facial hair style", "Grooming", GLOB.facial_hair_styles_list, H.facial_hair_style)
-			if(!user.canUseTopic(src, BE_CLOSE, FALSE, NO_TK))
-				return	//no tele-grooming
-			if(new_style)
-				H.facial_hair_style = new_style
-		else
+		if(H.gender == FEMALE)
 			H.facial_hair_style = "Shaved"
-
-		//handle normal hair
-		var/new_style = tgui_input_list(user, "Select a hair style", "Grooming", GLOB.hair_styles_list, H.hair_style)
-		if(!user.canUseTopic(src, BE_CLOSE, FALSE, NO_TK))
-			return	//no tele-grooming
-		if(new_style)
-			H.hair_style = new_style
-
-		H.update_mutant_bodyparts()
-		H.update_hair()
+			H.update_mutant_bodyparts()
+			H.update_hair()
+		open_mirror_hair_picker(user, H, src)
 
 /obj/structure/mirror/examine_status(mob/user)
 	if(broken)
@@ -131,7 +115,7 @@
 	name = "magic mirror"
 	desc = "Turn and face the strange... face."
 	icon_state = "magic_mirror"
-	var/list/races_blacklist = list("skeleton", "agent", "military_synth", "memezombies", "clockwork golem servant", "android", "synth", "mush", "zombie", "memezombie")
+	var/list/races_blacklist = list("skeleton", "agent", "military_synth", "memezombies", "clockwork golem servant", "android", "synth", "mush", "zombie", "memezombie", SPECIES_HK, SPECIES_HK47, SPECIES_HK50, SPECIES_HK51)
 	var/list/choosable_races = list()
 
 /obj/structure/mirror/magic/Initialize(mapload)
@@ -197,7 +181,7 @@
 				if(new_s_tone)
 					if(new_s_tone == "custom")
 						var/default = H.dna.skin_tone_override || null
-						var/custom_tone = input(user, "Choose your custom skin tone:", "Race change", default) as color|null
+						var/custom_tone = tgui_input_color(user, "Choose your custom skin tone:", "Race change", default)
 						if(custom_tone)
 							var/temp_hsv = RGBtoHSV(new_s_tone)
 							if(ReadHSV(temp_hsv)[3] >= ReadHSV(MINIMUM_MUTANT_COLOR)[3] || !CONFIG_GET(flag/character_color_limits)) //SPLURT edit
@@ -210,7 +194,7 @@
 						H.dna.update_ui_block(DNA_SKIN_TONE_BLOCK)
 
 			if(MUTCOLORS in H.dna.species.species_traits)
-				var/new_mutantcolor = input(user, "Choose your skin color:", "Race change","#"+H.dna.features["mcolor"]) as color|null
+				var/new_mutantcolor = tgui_input_color(user, "Choose your skin color:", "Race change","#"+H.dna.features["mcolor"])
 				if(new_mutantcolor)
 					var/temp_hsv = RGBtoHSV(new_mutantcolor)
 
@@ -254,12 +238,12 @@
 			if(hairchoice == "Style") //So you just want to use a mirror then?
 				..()
 			else
-				var/new_hair_color = input(H, "Choose your hair color", "Hair Color","#"+H.hair_color) as color|null
+				var/new_hair_color = tgui_input_color(H, "Choose your hair color", "Hair Color","#"+H.hair_color)
 				if(new_hair_color)
 					H.hair_color = sanitize_hexcolor(new_hair_color)
 					H.dna.update_ui_block(DNA_HAIR_COLOR_BLOCK)
 				if(H.gender == "male")
-					var/new_face_color = input(H, "Choose your facial hair color", "Hair Color","#"+H.facial_hair_color) as color|null
+					var/new_face_color = tgui_input_color(H, "Choose your facial hair color", "Hair Color","#"+H.facial_hair_color)
 					if(new_face_color)
 						H.facial_hair_color = sanitize_hexcolor(new_face_color)
 						H.dna.update_ui_block(DNA_FACIAL_HAIR_COLOR_BLOCK)
@@ -271,7 +255,7 @@
 				var/input_color = H.left_eye_color
 				if(eye_type == "Right Eye")
 					input_color = H.right_eye_color
-				var/new_eye_color = input(H, "Choose your eye color", "Eye Color","#"+input_color) as color|null
+				var/new_eye_color = tgui_input_color(H, "Choose your eye color", "Eye Color","#"+input_color)
 				if(!user.canUseTopic(src, BE_CLOSE, FALSE, NO_TK))
 					return
 				if(new_eye_color)

@@ -7,6 +7,8 @@
 	var/message_a = say_quote(message)
 	var/rendered = "<i><span class='alien'>Hivemind, <span class='name'>[shown_name]</span> <span class='message'>[message_a]</span></span></i>"
 	for(var/mob/S in GLOB.player_list)
+		if(isobserver(S) ? !antag_training_observer_hears(S, src) : S.training_origin != training_origin)
+			continue
 		if(!S.stat && S.hivecheck())
 			to_chat(S, rendered)
 		if(S in GLOB.dead_mob_list)

@@ -1,6 +1,6 @@
 /obj/machinery/power/tesla_coil
 	name = "tesla coil"
-	desc = "For the union!"
+	desc = "За профсоюз!"
 	icon = 'icons/obj/tesla_engine/tesla_coil.dmi'
 	icon_state = "coil0"
 	anchored = FALSE
@@ -52,10 +52,10 @@
 		zap_cooldown -= (C.rating * 20)
 	input_power_multiplier = power_multiplier
 
-/obj/machinery/power/tesla_coil/examine(mob/user)
-	. = ..()
-	if(in_range(user, src) || isobserver(user))
-		. += "<span class='notice'>The status display reads: Power generation at <b>[input_power_multiplier*100]%</b>.<br>Shock interval at <b>[zap_cooldown*0.1]</b> seconds.</span>"
+/obj/machinery/power/tesla_coil/examine_display_content(mob/user)
+	. += "\
+	– Энергоэффективность: <b>[input_power_multiplier*100]%</b>.\n\
+	– Интервалы между разрядами: <b>[zap_cooldown / (1 SECONDS)]</b> сек."
 
 /obj/machinery/power/tesla_coil/on_construction()
 	if(anchored)
@@ -124,7 +124,7 @@
 // Tesla R&D researcher
 /obj/machinery/power/tesla_coil/research
 	name = "Tesla Corona Analyzer"
-	desc = "A modified Tesla Coil used to study the effects of Edison's Bane for research."
+	desc = "Модифицированная катушка Теслы, используемая для научных исследований эффекта Проклятья Эддисона."
 	icon_state = "rpcoil0"
 	circuit = /obj/item/circuitboard/machine/tesla_coil/research
 	power_loss = 20 // something something, high voltage + resistance
@@ -172,7 +172,7 @@
 
 /obj/machinery/power/grounding_rod
 	name = "grounding rod"
-	desc = "Keep an area from being fried from Edison's Bane."
+	desc = "Удерживает периметр от прожарки Проклятьем Эддисона."
 	icon = 'icons/obj/tesla_engine/tesla_coil.dmi'
 	icon_state = "grounding_rod0"
 	anchored = FALSE

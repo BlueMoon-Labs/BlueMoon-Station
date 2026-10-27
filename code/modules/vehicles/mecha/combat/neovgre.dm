@@ -3,23 +3,24 @@
 	desc = "Самое мощное творение Nezbere, могучая боевая машина несравненной мощи, о которой говорят, что она заканчивала войны за одну ночь. Вооружена тяжёлым лазером и генератором тесла-сфер. Требует пилота и стрелка."
 	icon = 'icons/mecha/neovgre.dmi'
 	icon_state = "neovgre"
+	pixel_x = -16
+	layer = ABOVE_MOB_LAYER
 	max_integrity = 500
 	deflect_chance = 40
-	armor = list(MELEE = 70, BULLET = 80, LASER = 75, ENERGY = 75, BOMB = 70, BIO = 100, RAD = 100, FIRE = 100, ACID = 100)
+	armor_type = /datum/armor/neovgre
 	max_temperature = 60000
 	resistance_flags = LAVA_PROOF | FIRE_PROOF | ACID_PROOF
 	force = 50 //SMASHY SMASHY!!
 	movedelay = 4
 	internal_damage_threshold = 25
-	pixel_x = -16
-	layer = ABOVE_MOB_LAYER
-	var/breach_time = 100 //ten seconds till all goes to shit
-	var/recharge_rate = 100
 	internals_req_access = list()
 	wreckage = /obj/structure/mecha_wreckage/durand/neovgre
 	stepsound = 'sound/mecha/neostep2.ogg'
 	turnsound = 'sound/mecha/powerloader_step.ogg'
 	max_occupants = 2
+	mecha_type = MECHA_TYPE_COMBAT | MECHA_TYPE_NEOVGRE
+	var/breach_time = 100 //ten seconds till all goes to shit
+	var/recharge_rate = 100
 
 //override this proc if you need to split up mecha control between multiple people (see savannah_ivanov.dm)
 /obj/vehicle/sealed/mecha/combat/neovgre/auto_assign_occupant_flags(mob/M)
@@ -34,7 +35,7 @@
 
 /obj/vehicle/sealed/mecha/combat/neovgre/MouseDrop_T(mob/M, mob/user)
 	if(!is_servant_of_ratvar(user))
-		to_chat(user, "<span class='neovgre'>BEGONE HEATHEN!</span>")
+		to_chat(user, span_neovgre("ПРОЧЬ, НЕВЕРНЫЙ!"))
 		return
 	else
 		..()
@@ -42,16 +43,16 @@
 /obj/vehicle/sealed/mecha/combat/neovgre/moved_inside(mob/living/carbon/human/H)
 	var/list/Itemlist = H.get_contents()
 	for(var/obj/item/clockwork/slab/W in Itemlist)
-		to_chat(H, "<span class='brass'>You safely store [W] inside [src].</span>")
+		to_chat(H, span_brass("Вы убираете [W] в [src]."))
 		qdel(W)
 	. = ..()
 
 /obj/vehicle/sealed/mecha/combat/neovgre/obj_destruction()
 	for(var/mob/M in src)
-		to_chat(M, "<span class='brass'>You are consumed by the fires raging within Neovgre...</span>")
+		to_chat(M, span_brass("Вас поглощает пламя, бушующее внутри Neovgre..."))
 		M.dust()
 	playsound(src, 'sound/effects/neovgre_exploding.ogg', 100, 0)
-	src.visible_message("<span class = 'userdanger'>The reactor has gone critical, its going to blow!</span>")
+	src.visible_message(span_userdanger("Реактор в критическом состоянии! Сейчас рванёт!"))
 	addtimer(CALLBACK(src,PROC_REF(go_critical)),breach_time)
 
 /obj/vehicle/sealed/mecha/combat/neovgre/proc/go_critical()
@@ -60,7 +61,7 @@
 		qdel(src)
 
 /obj/vehicle/sealed/mecha/combat/neovgre/container_resist(mob/living/user)
-	to_chat(user, "<span class='brass'>Neovgre requires a lifetime commitment friend, no backing out now!</span>")
+	to_chat(user, span_brass("Neovgre требует пожизненной преданности, друг. Пути назад нет!"))
 	return
 
 /obj/vehicle/sealed/mecha/combat/neovgre/process()
@@ -101,13 +102,9 @@
 	desc = "При ближайшем рассмотрении это выглядит как обломки Durand с примотанным картоном, разрисованным баллончиком!"
 
 /obj/item/mecha_parts/mecha_equipment/weapon/energy/laser/heavy/neovgre
-	equip_cooldown = 8 //Rapid fire heavy laser cannon, simple yet elegant
-	energy_drain = 30
 	name = "Arbiter Laser Cannon"
 	desc = "Пожалуйста, прикрепите это обратно к Neovgre и перестаньте спрашивать, почему оно выглядит как обычный лазерный пулемёт Solaris выпуска Nanotrasen — Nezbere"
+	equip_cooldown = 8 //Rapid fire heavy laser cannon, simple yet elegant
+	energy_drain = 30
 	fire_sound = 'sound/weapons/neovgre_laser.ogg'
-
-/obj/item/mecha_parts/mecha_equipment/weapon/energy/laser/heavy/neovgre/can_attach(obj/vehicle/sealed/mecha/combat/neovgre/M)
-	if(istype(M))
-		return TRUE
-	return FALSE
+	compatible_mecha_types = MECHA_TYPE_NEOVGRE

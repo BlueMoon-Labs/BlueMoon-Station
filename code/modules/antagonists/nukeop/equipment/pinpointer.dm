@@ -17,7 +17,7 @@
 			msg = "Its tracking indicator is blank."
 	. += msg
 	for(var/obj/machinery/nuclearbomb/bomb in GLOB.machines)
-		if(bomb.timing)
+		if(bomb.timing && is_antag_training_atom(bomb) == is_antag_training_atom(src))
 			. += "Extreme danger. Arming signal detected. Time remaining: [bomb.get_time_left()]."
 
 /obj/item/pinpointer/nuke/process()
@@ -129,7 +129,7 @@
 	var/turf/here = get_turf(src)
 	for(var/V in get_antag_minds(/datum/antagonist/ninja))
 		var/datum/mind/M = V
-		if(ishuman(M.current) && M.current.stat != DEAD)
+		if(ishuman(M.current) && M.current.stat != DEAD && is_antag_training_atom(M.current) == is_antag_training_atom(src))
 			possible_targets |= M.current
 	var/mob/living/closest_weeaboo = get_closest_atom(/mob/living/carbon/human, possible_targets, here)
 	if(closest_weeaboo)

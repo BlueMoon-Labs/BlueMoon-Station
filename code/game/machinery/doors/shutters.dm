@@ -5,7 +5,7 @@
 	icon = 'icons/obj/doors/shutters.dmi'
 	layer = SHUTTER_LAYER
 	closingLayer = SHUTTER_LAYER
-	armor = list(MELEE = 20, BULLET = 20, LASER = 20, ENERGY = 75, BOMB = 25, BIO = 100, RAD = 100, FIRE = 100, ACID = 70)
+	armor_type = /datum/armor/shutters
 	damage_deflection = 20
 	max_integrity = 100
 	recipe_type = /datum/crafting_recipe/shutters
@@ -25,7 +25,7 @@
 	desc = "These shutters have an armoured frame; it looks like plasteel. These shutters look robust enough to survive explosions."
 	icon = 'icons/obj/doors/shutters_old.dmi'
 	icon_state = "closed"
-	armor = list(MELEE = 30, BULLET = 30, LASER = 30, ENERGY = 75, BOMB = 30, BIO = 100, RAD = 100, FIRE = 100, ACID = 70)
+	armor_type = /datum/armor/old
 	max_integrity = 300
 
 /obj/machinery/door/poddoor/shutters/old/preopen
@@ -48,7 +48,7 @@
 	opacity = 0
 	rad_insulation = 1
 /* //SPLURT edit, now handled better in modular
-/obj/machinery/door/poddoor/shutters/radiation/do_animate(animation)
+/obj/machinery/door/poddoor/shutters/radiation/do_animate(animation, from_bump = FALSE)
 	..()
 	switch(animation)
 		if("opening")

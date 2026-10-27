@@ -89,7 +89,7 @@
 	power_draw_per_use = 4
 
 /obj/item/integrated_circuit/input/colorpad/ask_for_input(mob/user)
-	var/new_color = input(user, "Enter a color, please.", "Color", "#ffffff") as color|null
+	var/new_color = tgui_input_color(user, "Enter a color, please.", "Color", "#ffffff")
 	if(new_color && user.IsAdvancedToolUser())
 		set_pin_data(IC_OUTPUT, 1, new_color)
 		push_data()

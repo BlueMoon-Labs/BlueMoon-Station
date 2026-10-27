@@ -238,6 +238,8 @@
 
 /obj/machinery/robo_liquid_generator/Topic(href, href_list)
 	. = ..()
+	if(.)
+		return
 	if(href_list["selected_reagent"])
 		if(href_list["selected_reagent"] == "1")
 			selected_production = null

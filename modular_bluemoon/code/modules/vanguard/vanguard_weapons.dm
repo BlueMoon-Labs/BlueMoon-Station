@@ -61,7 +61,8 @@
 	mag_type = /obj/item/ammo_box/magazine/sig
 	can_suppress = FALSE
 	burst_size = 1
-	spread = 7
+	dual_wield_spread = 12
+	spread = 3
 	fire_delay = 0
 	fire_select_modes = list(SELECT_SEMI_AUTOMATIC)
 	automatic_burst_overlay = FALSE
@@ -69,7 +70,7 @@
 	can_flashlight = 0
 	can_suppress = FALSE
 	pin = /obj/item/firing_pin/explorer
-	projectile_simple_mob_damage_multiplier = 1.5
+	projectile_simple_mob_damage_multiplier = 1.65
 
 /obj/item/gun/ballistic/automatic/pistol/sigsauer/Initialize(mapload)
 	gun_light = new /obj/item/flashlight/seclite(src)
@@ -155,7 +156,8 @@
 	pin = /obj/item/firing_pin/explorer
 	icon = 'modular_bluemoon/icons/obj/guns/projectile.dmi'
 	icon_state = "45revolvervanguard"
-	projectile_simple_mob_damage_multiplier = 1.75
+	unique_reskin = null
+	projectile_simple_mob_damage_multiplier = 2
 
 /obj/item/melee/tomahawk
 	name = "Vanguard magnetic tomahawk"

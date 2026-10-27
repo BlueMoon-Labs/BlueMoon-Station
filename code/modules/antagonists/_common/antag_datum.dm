@@ -83,6 +83,8 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 	var/ui_name
 	///button to access antag interface
 	var/datum/action/antag_info/info_button
+	///Английские строки «You are ...» при получении роли; окно со своим приветствием их выключает
+	var/ui_intro = TRUE
 
 	// BLUEMOON ADD START
 	var/time_of_last_antag_remind = 0 // время последнего напоминания антагонисту о том, что ему нужно проявлять активность
@@ -97,6 +99,7 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 
 /datum/antagonist/Destroy()
 	GLOB.antagonists -= src
+	GLOB.antag_training_unlisted_antagonists -= src
 	//Напоминалка снимала датум из списка только после того, как счётчик догорит до
 	//нуля - это 2 x 12 минут. Снятый раньше антаг оставался в глобальном списке
 	//навсегда: owner уже null, поэтому remind_them_they_are_antagonists проваливался
@@ -113,6 +116,8 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 //ambition start
 		owner?.do_remove_antag_datum(src)
 //ambition end
+		var/datum/team/team = get_team()
+		team?.remove_member(owner)
 	owner = null
 	return ..()
 
@@ -134,6 +139,7 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 ///Called by the transfer_to() mind proc after the mind (mind.current and new_character.mind) has moved but before the player (key and client) is transfered.
 /datum/antagonist/proc/on_body_transfer(mob/living/old_body, mob/living/new_body)
 	SHOULD_CALL_PARENT(TRUE)
+	sync_training_listing()
 	if(old_body)
 		remove_innate_effects(old_body)
 		if(!soft_antag && old_body && old_body.stat != DEAD && !length(old_body.mind?.antag_datums))
@@ -225,8 +231,9 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 	if(!silent)
 		greet()
 		if(ui_name)
-			to_chat(owner.current, span_big("You are [src]."))
-			to_chat(owner.current, span_boldnotice("For more info, read the panel. you can always come back to it using the button in the top left."))
+			if(ui_intro)
+				to_chat(owner.current, span_big("You are [src]."))
+				to_chat(owner.current, span_boldnotice("For more info, read the panel. you can always come back to it using the button in the top left."))
 			info_button.Trigger()
 	apply_innate_effects()
 	give_antag_moodies()
@@ -305,9 +312,6 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 		farewell()
 	// UnregisterSignal(owner, COMSIG_PRE_MINDSHIELD_IMPLANT)
 	// UnregisterSignal(owner, COMSIG_MINDSHIELD_IMPLANTED)
-	var/datum/team/team = get_team()
-	if(team)
-		team.remove_member(owner)
 	qdel(src)
 
 /**

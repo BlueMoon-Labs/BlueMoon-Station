@@ -159,3 +159,32 @@
 	wearer.ZImpactDamage(get_turf(wearer), 1)
 	TEST_ASSERT(wearer.getBruteLoss() > 0, "A fall after the suit is off must hurt again")
 	mod.wearer = null
+
+// "Вышел с полигона в инфильтраторе - рантайм" (10600)
+//
+// Выключение модуля возвращало голос из префов клиента носителя. У тела,
+// которое удаляют без игрока, клиента нет: удаление падало на null.prefs.
+/datum/unit_test/mod_infiltrator_deactivates_without_client/Run()
+	var/mob/living/carbon/human/wearer = allocate(/mob/living/carbon/human)
+	var/obj/item/mod/control/pre_equipped/infiltrator_inteq/mod = allocate(/obj/item/mod/control/pre_equipped/infiltrator_inteq)
+	var/obj/item/mod/module/infiltrator/module = locate() in mod.modules
+	TEST_ASSERT_NOTNULL(module, "test premise: the InteQ infiltrator MOD must come with the infiltrator module")
+	var/own_bark
+	for(var/bark_id in GLOB.bark_list)
+		if(bark_id != "bump")
+			own_bark = bark_id
+			break
+	wearer.set_bark(own_bark)
+	mod.set_wearer(wearer)
+	ENABLE_BITFIELD(mod.status_flags, MOD_ACTIVE)
+	var/obj/item/clothing/mod_part/head/helmet = mod.mod_parts[MOD_PART_HEAD]
+	TEST_ASSERT(wearer.equip_to_slot_if_possible(helmet, ITEM_SLOT_HEAD, disable_warning = TRUE, bypass_equip_delay_self = TRUE), "test premise: the helmet must go on the head")
+
+	TEST_ASSERT(module.on_activation(), "test premise: the module must turn on")
+	TEST_ASSERT_EQUAL(wearer.vocal_bark_id, "bump", "The infiltrator must swap the voice while on")
+	module.on_deactivation()
+	TEST_ASSERT_EQUAL(wearer.vocal_bark_id, own_bark, "Turning the infiltrator off without a client must give back the wearer's own voice")
+
+	TEST_ASSERT(module.on_activation(), "test premise: the module must turn on again")
+	qdel(wearer)
+	TEST_ASSERT_NULL(mod.wearer, "Deleting a clientless wearer with the module on must let the MOD drop its wearer")

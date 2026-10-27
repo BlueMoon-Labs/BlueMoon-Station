@@ -109,6 +109,10 @@
 	singulo_effect = new(src)
 	vis_contents += singulo_effect
 
+	GLOB.gravitational_lenses += src
+	if(length(GLOB.gravitational_lenses) == 1)
+		refresh_world_distortion()
+
 	expand()
 
 /obj/singularity/gravitational/Destroy()
@@ -120,6 +124,9 @@
 	QDEL_NULL(singulo_lens)
 	vis_contents -= warp
 	QDEL_NULL(warp)
+	GLOB.gravitational_lenses -= src
+	if(!length(GLOB.gravitational_lenses))
+		refresh_world_distortion()
 	return ..()
 
 /obj/singularity/Initialize(mapload, starting_energy = 50)

@@ -33,7 +33,7 @@
 	righthand_file = 'icons/mob/inhands/weapons/melee_righthand.dmi'
 	icon_state = "mantis"
 	force = 20
-	armour_penetration = 20
+	armour_penetration = MELEE_AP_COMBAT
 	flags_1 = CONDUCT_1
 	w_class = WEIGHT_CLASS_BULKY
 	sharpness = SHARP_POINTY
@@ -57,4 +57,4 @@
 	name = "Gorlex mantis blade"
 	icon_state = "mantis_syndie"
 	force = 30
-	armour_penetration = 40
+	armour_penetration = MELEE_AP_ANTAGONIST
