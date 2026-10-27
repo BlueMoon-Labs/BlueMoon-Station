@@ -3556,7 +3556,7 @@
 
 // Экран зрителя мог удалиться мимо ui_close (смена моба, харддел): запись без живого экрана роняет обходы.
 /datum/character_setup/proc/prune_viewer_screens()
-	for(var/viewer in viewer_screens)
+	for(var/mob/viewer as anything in viewer_screens)
 		var/atom/movable/screen/map_view/character_setup_screen/viewer_screen = viewer_screens[viewer]
 		if(QDELETED(viewer_screen))
 			LAZYREMOVE(viewer_screens, viewer)
