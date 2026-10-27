@@ -141,6 +141,9 @@ GENETICS SCANNER
 	else
 		ui_interact(user)
 
+/obj/item/healthanalyzer/ui_state(mob/user)
+	return GLOB.hands_state
+
 /obj/item/healthanalyzer/ui_interact(mob/user, datum/tgui/ui)
 	if(!user.client)
 		return
