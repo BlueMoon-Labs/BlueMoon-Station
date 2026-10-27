@@ -761,7 +761,7 @@
 
 	var/new_color
 	while(!new_color)
-		new_color = input(usr, "Выберите новый цвет для вашей голограммы.", "Цвет голограммы", hologram_color) as color|null
+		new_color = tgui_input_color(usr, "Выберите новый цвет для вашей голограммы.", "Цвет голограммы", hologram_color)
 		if(!new_color)
 			return
 		if(color_hex2num(new_color) < 200) //Colors too dark are rejected

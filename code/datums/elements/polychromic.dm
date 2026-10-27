@@ -149,7 +149,7 @@
 		return
 	var/mutable_appearance/M = L[index]
 	var/old_color = istype(M) ? M.color : M
-	var/ncolor = input(user, "Polychromic options", "Choose [choice] Color", old_color) as color|null
+	var/ncolor = tgui_input_color(user, "Polychromic options", "Choose [choice] Color", old_color)
 	if(!ncolor || QDELETED(source) || !colors_by_atom[source] || !user.canUseTopic(source, BE_CLOSE, NO_DEXTERY))
 		return
 	ncolor = sanitize_hexcolor(ncolor, 6, TRUE, old_color)

@@ -228,7 +228,7 @@
 		custom_taste = stripped_input(usr, "Set a custom taste for the custom icecream. 50 characters max, leave blank to go back to the default option.", max_length = 50)
 
 	if(href_list["custom_color"])
-		custom_color = input(usr, "Choose a color for the custom icecream. Cancel to go back to the default option.") as color|null
+		custom_color = tgui_input_color(usr, "Choose a color for the custom icecream. Cancel to go back to the default option.")
 
 	if(href_list["reset_custom"])
 		custom_taste = null

@@ -84,7 +84,7 @@
 	set desc = "Allows you to change color."
 	set category = "Qareen"
 
-	var/C = input(src, "Select Color", "Select color", "#ffffff") as color|null
+	var/C = tgui_input_color(src, "Select Color", "Select color", "#ffffff")
 	color = C
 	update_spooky_icon()
 

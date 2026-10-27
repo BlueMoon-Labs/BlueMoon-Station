@@ -445,7 +445,6 @@ function bm_set_loading_progress(p){p=Math.max(0,Math.min(100,parseInt(p)||0));v
 
 		if("character_setup")
 			_bm_play_click_sound()
-			client.prefs.current_tab = SETTINGS_TAB
 			client.prefs.ShowChoices(src)
 			return
 
