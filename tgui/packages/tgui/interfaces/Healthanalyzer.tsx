@@ -4,13 +4,13 @@ import { decodeHtmlEntities } from 'common/string';
 import { Fragment, useLayoutEffect, useRef, useState } from 'react';
 
 import { useBackend } from '../backend';
-import { Box, Button, LabeledList, NoticeBox, ProgressBar, Section, Table } from '../components';
+import { Box, Button, Icon, LabeledList, NoticeBox, ProgressBar, Section, Table } from '../components';
 import { Window } from '../layouts';
 
 type ScanLine = { text: string; warning: BooleanLike };
 type ScanSection = { title: string; lines: ScanLine[] };
 type Wound = { name: string; icon: string; severity: string; treatment: string; details: string };
-type Limb = { name: string; missing: BooleanLike; brute: number; burn: number; wounds: Wound[]; embeds: string[] };
+type Limb = { name: string; missing: BooleanLike; missingIcon?: string; brute: number; burn: number; wounds: Wound[]; embeds: string[] };
 type Organ = { name: string; icon: string; damage: number | null; status: string; warning: BooleanLike; critical: BooleanLike };
 type Reagent = { name: string; volume: number; overdosed: BooleanLike; inactive: BooleanLike };
 type Scan = {
@@ -194,7 +194,12 @@ const LimbTable = ({ limbs }: { limbs: Limb[] }) => {
       {affected.map(limb => (
         <Fragment key={limb.name}>
           {limb.missing ? (
-            <Table.Row><Table.Cell colSpan={3} bold color="bad">{limb.name} отсутствует</Table.Cell></Table.Row>
+            <Table.Row>
+              <Table.Cell colSpan={3} bold color="bad">
+                {!!limb.missingIcon && <Icon name={limb.missingIcon} mr={0.5} />}
+                {limb.name} отсутствует
+              </Table.Cell>
+            </Table.Row>
           ) : (
             <Table.Row><Table.Cell>{limb.name}</Table.Cell><Table.Cell bold color={limb.brute > 0 ? 'bad' : 'label'}>{round(limb.brute, 3)}</Table.Cell><Table.Cell bold color={limb.burn > 0 ? 'average' : 'label'}>{round(limb.burn, 3)}</Table.Cell></Table.Row>
           )}

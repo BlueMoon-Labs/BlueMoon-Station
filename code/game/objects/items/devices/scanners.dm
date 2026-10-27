@@ -470,7 +470,13 @@ GENETICS SCANNER
 				continue
 			limbs += list(entry)
 			if(!limb)
-				limb_details += "<tr><td colspan='5'>[span_bolddanger("[html_encode(entry["name"])] отсутствует")]</td></tr>"
+				switch(zone)
+					if(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM)
+						entry["missingIcon"] = "handshake-slash"
+					if(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)
+						entry["missingIcon"] = "crutch"
+				var/missing_icon = entry["missingIcon"] ? "<i class='fas fa-[entry["missingIcon"]]'></i> " : ""
+				limb_details += "<tr><td colspan='5'>[span_bolddanger("[missing_icon][html_encode(entry["name"])] отсутствует")]</td></tr>"
 			else
 				limb_details += "<tr><td>[html_encode(entry["name"])]</td><td>[span_danger("[entry["brute"]]")]</td><td>[span_orange("[entry["burn"]]")]</td></tr>"
 			for(var/embedded_name in embeds)
