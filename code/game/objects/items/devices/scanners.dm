@@ -181,7 +181,8 @@ GENETICS SCANNER
 	if(for_printing)
 		report = "[span_info("<b>Пациент: [html_encode(last_recipient_name)]</b>")]<br>[report]"
 	if(for_printing && last_death_report)
-		report += "<hr><b>Посмертное заключение</b><br>[last_death_report]"
+		var/section_header = "<b>Посмертное заключение</b><br>"
+		report = replacetext(report, section_header, "[section_header][last_death_report]<br>")
 	return report
 
 /obj/item/healthanalyzer/proc/store_scan(mob/user, list/data)
@@ -749,24 +750,26 @@ GENETICS SCANNER
 	msg = ""
 
 	if(M.tod && (M.stat == DEAD || ((HAS_TRAIT(M, TRAIT_FAKEDEATH)) && !advanced)))
-		var/zdelta = round(rand(-world.time, world.time) - M.timeofdeath)
+		// Точное время добавляется только на бумагу, прошедшее время доступно во всех форматах.
+		data["deathReport"] = "[span_info("Время смерти:")] [M.tod]"
 		if(iszombie(M))
+			var/zdelta = round(rand(-world.time, world.time) - M.timeofdeath)
 			msg += span_danger("Обнаружена аномалия, неточные данные. Субъект умер [DisplayTimeText(zdelta)] назад, дефибрилляция ещё возможна!") + "\n"
 		else
-			msg += span_info("Время смерти:") + " [M.tod]\n"
 			var/tdelta = round(world.time - M.timeofdeath)
+			msg += span_danger("Субъект умер [DisplayTimeText(tdelta)] назад.")
 			if(tdelta < (DEFIB_TIME_LIMIT * 10))
 				if(heart_ded)
-					msg += span_danger("Субъект умер [DisplayTimeText(tdelta)] назад, требуется вмешательство в сердце для дефибрилляции.")
+					msg += " " + span_danger("Требуется вмешательство в сердце для дефибрилляции.")
 				else
-					msg += span_danger("Субъект умер [DisplayTimeText(tdelta)] назад, дефибрилляция ещё возможна!")
+					msg += " " + span_danger("Дефибрилляция ещё возможна!")
 				if(advanced)
 					if(H.get_ghost() || H.key || H.client)
 						msg += span_danger(" Вмешательство рекомендовано.") + "\n"
 					else
 						msg += "\n"
 
-	data["deathReport"] = replacetext(msg, "\n", "<br>")
+	medical_scan_section(data, "Посмертное заключение", msg)
 	msg = ""
 	if(M.sterilize_power)
 		msg += span_nicegreen("Ткани пациента продезинфицированы, что повышет шанс успеха операции на [round(M.sterilize_power, 0.001)] %. ") + span_info("Эффект продлится еще [DisplayTimeText(M._sterilize_expire - world.time)]\n")
