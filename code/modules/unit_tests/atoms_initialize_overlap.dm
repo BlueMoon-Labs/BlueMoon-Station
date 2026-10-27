@@ -77,3 +77,12 @@
 	SSatoms.map_loader_initialized.Cut()
 	SSatoms.initialized = INITIALIZATION_INNEW_REGULAR
 	return ..()
+
+/// prepare_deletion() кладёт в очередь слабую ссылку: конец загрузки удаляет сам атом, а не ссылку.
+/datum/unit_test/atoms_queued_deletion_resolves
+
+/datum/unit_test/atoms_queued_deletion_resolves/Run()
+	var/obj/effect/atoms_init_probe/doomed = allocate(/obj/effect/atoms_init_probe)
+	SSatoms.queued_deletions += WEAKREF(doomed)
+	SSatoms.InitializeAtoms(list())
+	TEST_ASSERT(QDELETED(doomed), "Атом из очереди удаления должен удаляться в конце загрузки.")

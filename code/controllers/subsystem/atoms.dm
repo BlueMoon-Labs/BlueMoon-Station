@@ -145,8 +145,9 @@ SUBSYSTEM_DEF(atoms)
 
 	var/list/to_delete = queued_deletions
 	queued_deletions = list()
-	for (var/queued_deletion in to_delete)
-		qdel(queued_deletion)
+	// prepare_deletion() кладёт слабые ссылки: удалять надо сам атом, а не ссылку на него.
+	for(var/datum/weakref/queued_deletion as anything in to_delete)
+		qdel(queued_deletion.resolve())
 
 	testing("[length(to_delete)] atoms were queued for deletion.")
 
