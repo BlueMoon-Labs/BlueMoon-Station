@@ -658,29 +658,34 @@ GENETICS SCANNER
 		var/has_liver = C.dna && !(NOLIVER in C.dna.species.species_traits)
 		var/has_stomach = C.dna && !(NOSTOMACH in C.dna.species.species_traits)
 		var/list/required_organs = list(
-			ORGAN_SLOT_EYES = "Глаза",
-			ORGAN_SLOT_EARS = "Уши",
-			ORGAN_SLOT_TONGUE = "Язык",
-			ORGAN_SLOT_BRAIN = "Мозг",
+			ORGAN_SLOT_EYES = /obj/item/organ/eyes,
+			ORGAN_SLOT_EARS = /obj/item/organ/ears,
+			ORGAN_SLOT_TONGUE = /obj/item/organ/tongue,
+			ORGAN_SLOT_BRAIN = /obj/item/organ/brain,
 		)
 		if(has_liver)
-			required_organs[ORGAN_SLOT_LIVER] = "Печень"
+			required_organs[ORGAN_SLOT_LIVER] = /obj/item/organ/liver
 		if(blooded)
-			required_organs[ORGAN_SLOT_HEART] = "Сердце"
+			required_organs[ORGAN_SLOT_HEART] = /obj/item/organ/heart
 		if(breathes)
-			required_organs[ORGAN_SLOT_LUNGS] = "Лёгкие"
+			required_organs[ORGAN_SLOT_LUNGS] = /obj/item/organ/lungs
 		if(has_stomach)
-			required_organs[ORGAN_SLOT_STOMACH] = "Желудок"
+			required_organs[ORGAN_SLOT_STOMACH] = /obj/item/organ/stomach
+		var/list/missing_organ_report = list()
 		for(var/slot in required_organs)
 			if(M.getorganslot(slot))
 				continue
-			missing_organs += capitalize(required_organs[slot])
+			var/obj/item/organ/organ_type = required_organs[slot]
+			var/organ_name = capitalize(initial(organ_type.ru_name))
+			var/organ_icon = icon2base64html(organ_type, sourceonly = TRUE)
+			missing_organs += list(list("name" = organ_name, "icon" = organ_icon))
+			missing_organ_report += "<b style='white-space:nowrap'><img src='data:image/png;base64,[organ_icon]' width='24' height='24' style='vertical-align:middle'> [html_encode(organ_name)]</b>"
 		if(length(organ_data) || length(missing_organs))
 			data["report"] += "<hr><b>Состояние органов</b>"
 			if(length(organ_data))
 				data["report"] += "<table><tr><th>Орган</th>[advanced ? "<th>Повреждения</th>" : ""]<th>Состояние</th></tr>[organ_report]</table>"
 			if(length(missing_organs))
-				data["report"] += "<br>[span_bolddanger("Отсутствует: [html_encode(jointext(missing_organs, ", "))]")]"
+				data["report"] += "<br>[span_bolddanger("Отсутствует: [jointext(missing_organ_report, ", ")]")]"
 
 		if(advanced && M.has_status_effect(/datum/status_effect/heretic_dance_earworm))
 			general_diagnosis += "\n" + span_alert("Сердцебиение подстроилось под чужой ритм: пульс бьёт ровными тактами, как метроном. Сбить ритм может разряд дефибриллятора.")

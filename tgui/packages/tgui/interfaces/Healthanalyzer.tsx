@@ -29,7 +29,7 @@ type Scan = {
   damageLevels?: Record<string, number>;
   damageLocalization?: Limb[];
   organs?: Organ[];
-  missingOrgans?: string[];
+  missingOrgans?: { name: string; icon: string }[];
   sections: ScanSection[];
   reagents?: Reagent[];
   addictions?: string[];
@@ -129,7 +129,19 @@ const ScanResults = ({ scan, advanced, live, deviceLabel = advanced ? 'Прод�
               ))}
             </Table>
           )}
-          {!!scan.missingOrgans?.length && <Box bold color="bad" mt={scan.organs?.length ? 0.5 : 0}>Отсутствует: {scan.missingOrgans.join(', ')}</Box>}
+          {!!scan.missingOrgans?.length && (
+            <Box bold color="bad" mt={scan.organs?.length ? 0.5 : 0}>
+              Отсутствует: {scan.missingOrgans.map((organ, index) => (
+                <Fragment key={index}>
+                  {index > 0 && ', '}
+                  <span className="Healthanalyzer__missingOrgan">
+                    <img className="Healthanalyzer__organIcon" src={`data:image/png;base64,${organ.icon}`} alt="" />
+                    {organ.name}
+                  </span>
+                </Fragment>
+              ))}
+            </Box>
+          )}
         </Section>
       )}
       {sections.map((section, index) => (
