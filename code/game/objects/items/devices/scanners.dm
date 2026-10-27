@@ -463,15 +463,7 @@ GENETICS SCANNER
 				entry["brute"] = round(limb.brute_dam, 0.001)
 				entry["burn"] = round(limb.burn_dam, 0.001)
 				for(var/datum/wound/wound as anything in limb.wounds)
-					var/wound_icon
-					switch(wound.wound_type)
-						if(WOUND_SLASH, WOUND_PIERCE)
-							wound_icon = "droplet"
-						if(WOUND_BURN)
-							wound_icon = "fire"
-						if(WOUND_BLUNT)
-							wound_icon = istype(wound, /datum/wound/blunt/moderate) ? "hand-spock" : "bone"
-					wounds += list(list("name" = wound.ru_name, "icon" = wound_icon, "severity" = wound.severity_text(), "treatment" = strip_html_tags(wound.treat_text), "details" = strip_html_tags(replacetext(wound.get_scanner_description(user), "<br>", "\n"))))
+					wounds += list(list("name" = wound.ru_name, "icon" = wound.scanner_icon, "severity" = wound.severity_text(), "treatment" = strip_html_tags(wound.treat_text), "details" = strip_html_tags(replacetext(wound.get_scanner_description(user), "<br>", "\n"))))
 				for(var/obj/item/embedded as anything in limb.embedded_objects)
 					embeds += embedded.name
 			if(limb && !limb.brute_dam && !limb.burn_dam && !length(wounds) && !length(embeds))
