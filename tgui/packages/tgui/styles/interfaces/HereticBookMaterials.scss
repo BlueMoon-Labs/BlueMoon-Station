@@ -149,8 +149,8 @@
   .HereticBook__pageOrnament, .HereticBook__page::before, .HereticBook__page::after { display: none; }
   .HereticBook__spine { background: linear-gradient(90deg, transparent, #684b3830, transparent); }
   .HereticBook__illumination { opacity: .8; }
-  .HereticBook__annotation { color: var(--faded); font-family: Georgia, 'Times New Roman', serif; }
-  .HereticBook__runningTitle { color: var(--faded); }
+  .HereticBook__note { color: var(--faded); }
+  .HereticBook__kicker { color: var(--accent); }
   .HereticBook__bookTitle, h2 { text-shadow: none; }
   .HereticBook__clasp { background: linear-gradient(90deg, #76654a, #c3af89, #76654a); border-radius: 3px; }
 }
