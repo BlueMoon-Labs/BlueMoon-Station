@@ -239,13 +239,14 @@
 		. += hunter.active_contract
 
 /// Номера досье, у которых есть снимок; засекреченная цель охоты появляется здесь только после опознания.
+/// Отметка готового снимка в ключе: снимок, ушедший в ещё не готовое окно, ui_data отправит повторно.
 /datum/hk_terminal/proc/photos_key()
 	if(QDELETED(hunter))
 		return ""
 	var/list/ids = list()
 	for(var/datum/hk_contract/contract as anything in shown_contracts())
 		if(contract.trackable())
-			ids += "[contract.id]"
+			ids += "[contract.id][contract.photo_taken ? ":photo" : ""]"
 	return jointext(ids, ",")
 
 /// Номер досье -> снимок цели; getFlatIcon дорогой, поэтому снимок один на контракт и только в static data.
@@ -266,18 +267,24 @@
 		addtimer(CALLBACK(src, PROC_REF(take_next_photo)), 1, TIMER_UNIQUE | TIMER_DELETE_ME)
 	return photos
 
+/// Следующий снимок взводится здесь же: кулдаун полного обновления окна не должен растягивать очередь досье.
 /datum/hk_terminal/proc/take_next_photo()
 	if(QDELETED(hunter))
 		return
+	var/datum/hk_contract/taken
 	for(var/datum/hk_contract/contract as anything in shown_contracts())
 		if(!contract.trackable() || contract.photo_taken)
 			continue
+		if(taken)
+			addtimer(CALLBACK(src, PROC_REF(take_next_photo)), 1, TIMER_UNIQUE | TIMER_DELETE_ME)
+			break
+		taken = contract
 		contract.photo_taken = TRUE
 		var/atom/pictured = contract.tracked_atom()
 		var/icon/flat = pictured ? getFlatIcon(pictured, defdir = SOUTH, no_anim = TRUE) : null
 		contract.photo = flat ? icon2base64(flat) : null
+	if(taken)
 		update_static_data_for_all_viewers()
-		return
 
 /datum/hk_terminal/proc/contract_data(datum/hk_contract/contract)
 	return list(
