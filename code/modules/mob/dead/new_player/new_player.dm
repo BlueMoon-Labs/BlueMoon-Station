@@ -604,7 +604,6 @@
 
 
 /mob/dead/new_player/proc/close_spawn_windows()
-	client?.clear_character_previews()
 	if(job_menu)
 		SStgui.close_uis(job_menu)
 	src << browse(null, "window=latechoices") //closes late choices window

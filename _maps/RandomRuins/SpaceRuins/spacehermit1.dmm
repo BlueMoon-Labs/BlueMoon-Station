@@ -1107,7 +1107,7 @@
 /turf/open/floor/plating/asteroid/airless,
 /area/ruin/powered)
 "Rv" = (
-/obj/machinery/mineral/equipment_vendor/golem,
+/obj/machinery/equipment_vendor/golem,
 /turf/open/floor/pod/dark,
 /area/survivalpod/nonpowered)
 "RD" = (

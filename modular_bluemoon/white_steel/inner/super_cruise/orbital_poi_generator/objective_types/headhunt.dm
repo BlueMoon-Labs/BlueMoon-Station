@@ -29,16 +29,20 @@
 
 /datum/orbital_objective/headhunt/Destroy()
 	if(!QDELETED(mob_to_recover))
-		var/target_name = mob_to_recover.real_name
-		if(istext(target_name))
-			LAZYREMOVE(GLOB.mob_spawners[target_name], mob_to_recover)
-			if(!LAZYLEN(GLOB.mob_spawners[target_name]))
-				GLOB.mob_spawners -= target_name
 		if(mob_to_recover.mind)
 			var/datum/antagonist/headhunt_survive/antag = mob_to_recover.mind.has_antag_datum(/datum/antagonist/headhunt_survive)
 			if(antag)
 				for(var/datum/objective/headhunt_survive/hunt_objective in antag.objectives)
 					hunt_objective.linked_objective = null
+	//WHITE-STEEL PORT: тело цели убираем из меню спавнеров, но НЕ удаляем сразу.
+	//Труп - часть содержимого руины: пока миссия идёт, его можно обыскать и сдать в капсулу
+	//доставки. Удаляется он только когда экспедиция покинула миссию, не забрав тело
+	//(см. on_expedition_left_ruin). Иначе труп доживает до вайпа уровня.
+	unregister_mission_body(mob_to_recover)
+	//Живая цель (например, доставленная на шаттле в наручниках) - миссия кончена,
+	//тело убираем сразу, как и при доставке в капсулу (см. despawn_target).
+	if(!QDELETED(mob_to_recover) && mob_to_recover.stat != DEAD)
+		cleanup_undelivered_body(mob_to_recover, TRUE)
 	mob_to_recover = null
 	extraction_pod = null
 	return ..()
@@ -92,11 +96,9 @@
 		mob_to_recover = null
 		return
 	var/mob/living/M = mob_to_recover
-	var/target_name = M.real_name
-	if(istext(target_name) && LAZYLEN(GLOB.mob_spawners[target_name]))
-		LAZYREMOVE(GLOB.mob_spawners[target_name], M)
-		if(!LAZYLEN(GLOB.mob_spawners[target_name]))
-			GLOB.mob_spawners -= target_name
+	//WHITE-STEEL PORT: убираем цель из меню спавнеров, иначе запись останется висеть уже
+	//после удаления тела.
+	unregister_mission_body(M)
 	if(M.mind)
 		var/datum/antagonist/headhunt_survive/antag = M.mind.has_antag_datum(/datum/antagonist/headhunt_survive)
 		if(antag)
@@ -161,6 +163,25 @@
 		frontier_shuttle_docked = TRUE
 	else if(frontier_shuttle_docked && !frontier_shuttle_left)
 		frontier_shuttle_left = TRUE
+		//WHITE-STEEL PORT: экспедиция покинула руину. Если тело цели осталось на
+		//Z-уровне миссии (его не забрали) - миссия покинута без тела, труп убираем.
+		on_expedition_left_ruin()
+
+//WHITE-STEEL PORT: экспедиция покинула миссию. Труп цели охоты удаляется только здесь:
+// пока миссия идёт, труп лежит на руине (его можно обыскать, сдать в капсулу доставки),
+//и удалять его сразу нельзя.
+//Условия удаления: труп остался на Z-уровне миссии И миссия покинута без него.
+//Живая цель не трогаем - её разбирает check_failed() (complete_target_survive).
+/datum/orbital_objective/headhunt/proc/on_expedition_left_ruin()
+	if(QDELETED(mob_to_recover))
+		return
+	if(mob_to_recover.z != objective_z_level)
+		return
+	if(mob_to_recover.stat != DEAD)
+		return
+	log_game("[name]: экспедиция покинула руину (z=[objective_z_level]) без тела цели - труп убираем.")
+	cleanup_undelivered_body(mob_to_recover)
+	mob_to_recover = null
 
 /datum/orbital_objective/headhunt/proc/headhunt_target_escape()
 	if(QDELETED(src) || objective_ended)
@@ -265,6 +286,7 @@
 /datum/outfit/inteq/full/expedition
 	give_explosive_implant = FALSE
 	give_hijack_objective = FALSE
+	ears = null
 
 //=====================
 // Цель преступника: продержаться до подлёта подмоги

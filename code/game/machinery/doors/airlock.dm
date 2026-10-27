@@ -376,19 +376,23 @@
 	if(iscarbon(user) && density && !operating && !welded && !locked && !hasPower())
 		try_bump_open(user)
 		return
+	if(density && !operating && !welded && !locked && !(src in user.do_afters) && !allowed(user) && try_mecha_bump_open(user))
+		return
 	..()
 
 /obj/machinery/door/airlock/proc/try_bump_open(mob/living/user)
 	if(!density || operating || welded || locked || hasPower() || (src in user.do_afters))
 		return FALSE
-	var/obj/item/crowbar = user.is_holding_tool_quality(TOOL_CROWBAR)
+	if(try_mecha_bump_open(user))
+		return TRUE
+	var/obj/item/crowbar = istype(user.loc, /obj/vehicle/sealed/mecha) ? null : user.is_holding_tool_quality(TOOL_CROWBAR)
 	if(crowbar)
 		try_to_crowbar(crowbar, user)
 		return TRUE
-	balloon_alert(user, "forcing open...")
-	user.visible_message("<span class='notice'>[user] starts forcing [src] open...</span>", \
-						"<span class='notice'>You start forcing [src] open...</span>")
-	if(do_after(user, DOOR_BUMP_OVERRIDE_TIME, target = src))
+	balloon_alert(user, "открывание...")
+	user.visible_message(span_notice("[user] начинает принудительно вскрывать [src]..."), span_notice("Вы начинаете принудительно вскрывать [src]..."))
+	var/turf/starting_turf = get_turf(user)
+	if(do_after(user, DOOR_BUMP_OVERRIDE_TIME, target = src, extra_checks = CALLBACK(src, PROC_REF(bump_open_checks), user, starting_turf)))
 		if(!density || operating || welded || locked)
 			return FALSE
 		open(2)
@@ -1339,6 +1343,7 @@
 	layer = OPEN_DOOR_LAYER
 	update_icon(ALL, AIRLOCK_OPEN, 1)
 	operating = FALSE
+	emit_echolocation_pulse(src, hearing_range = 5)
 	if(delayed_close_requested)
 		delayed_close_requested = FALSE
 		addtimer(CALLBACK(src, PROC_REF(close)), 1 DECISECONDS)
@@ -1663,7 +1668,7 @@
 /obj/machinery/door/airlock/rcd_act(mob/user, obj/item/construction/rcd/the_rcd, passed_mode)
 	switch(passed_mode)
 		if(RCD_DECONSTRUCT)
-			to_chat(user, "<span class='notice'>You deconstruct the airlock.</span>")
+			to_chat(user, span_notice("Вы разбираете шлюз."))
 			qdel(src)
 			return TRUE
 	return FALSE

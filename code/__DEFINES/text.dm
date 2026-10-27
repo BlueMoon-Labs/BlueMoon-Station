@@ -277,11 +277,14 @@ GLOBAL_LIST_INIT(mat_ru_nominative, list(
 	"bamboo" = "бамбук",
 	"rigid material" = "твёрдый материал",
 	"durathread" = "дюраткань",
+	"goliath hide plates" = "пластины голиафа",
 	"plasteel" = "пласталь",
 	"plastitanium" = "пластитан",
 	"plastitanium glass" = "пластитановое стекло",
 	"reinforced glass" = "укреплённое стекло",
 	"alien alloy" = "инопланетный сплав",
+	"meat" = "мясо",
+	"pizza" = "пицца",
 ))
 
 /// Лист-словарь для examine string'а материалов в родительном падеже
@@ -319,11 +322,14 @@ GLOBAL_LIST_INIT(mat_ru_genitive, list(
 	"bamboo" = "бамбука",
 	"rigid material" = "твёрдого материала",
 	"durathread" = "дюраткани",
+	"goliath hide plates" = "пластин голифа",
 	"plasteel" = "пластали",
 	"plastitanium" = "пластитана",
 	"plastitanium glass" = "пластитанового стекла",
 	"reinforced glass" = "укреплённого стекла",
 	"alien alloy" = "инопланетного сплава",
+	"meat" = "мяса",
+	"pizza" = "пиццы",
 ))
 
 /// Лист-словарь для существительных сплавов, в рудной печи, ИЩЕТ ПО АЙДИ

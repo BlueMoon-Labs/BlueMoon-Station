@@ -81,25 +81,29 @@
 	category = list ("Engineering Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_SCIENCE
 
-
-
 /datum/design/board/thermomachine
-	name = "Machine Design (Freezer/Heater Board)"
-	desc = "The circuit board for a freezer/heater."
+	name = "Machine Design (Thermomachine Board)"
+	desc = "The circuit board for a thermomachine."
+	id = "thermomachine"
+	build_path = /obj/item/circuitboard/machine/thermomachine
 	category = list ("Engineering Machinery")
 	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_SCIENCE
 
-/datum/design/board/thermomachine/heater
-	name = "Machine Design (Heater Board)"
-	desc = "The circuit board for a heater."
-	id = "heater"
-	build_path = /obj/item/circuitboard/machine/thermomachine/heater
+/datum/design/board/scrubber
+	name = "Portable Air Scrubber Board"
+	desc = "Used to build a portable air scrubber."
+	id = "scrubber"
+	build_path = /obj/item/circuitboard/machine/scrubber
+	category = list ("Engineering Machinery")
+	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_SCIENCE
 
-/datum/design/board/thermomachine/freezer
-	name = "Machine Design (Freezer Board)"
-	desc = "The circuit board for a freezer."
-	id = "freezer"
-	build_path = /obj/item/circuitboard/machine/thermomachine/freezer
+/datum/design/board/pump
+	name = "Portable Air Pump Board"
+	desc = "Used to build a portable air pump."
+	id = "pump"
+	build_path = /obj/item/circuitboard/machine/pump
+	category = list ("Engineering Machinery")
+	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING | DEPARTMENTAL_FLAG_SCIENCE
 
 /datum/design/board/crystallizer
 	name = "Machine Design (Crystallizer Board)"

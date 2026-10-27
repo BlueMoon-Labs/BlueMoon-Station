@@ -13,6 +13,14 @@
 /datum/generator_settings/proc/get_floortrash()
 	return list()
 
+//WHITE-STEEL PORT: общие константы генератора руин.
+//Доля обломков (/obj/structure/salvage) от общего веса мусора. Используется и в
+//add_rare_salvage(), и при расчёте веса матрigrass (generator_ratvar.dm) — менять долю
+//нужно ТОЛЬКО здесь, иначе шанс матрigrass поедет.
+#define RARELY_SALVAGE_SHARE 0.025
+//Шанс появления матрigrass в мусоре руин Ратвара (ровно 1/1000).
+#define MATRIGRASS_SPAWN_CHANCE 0.001
+
 //WHITE-STEEL PORT: на ЛЮБОМ типе карт вместо мусора может появиться один случайный обломок
 ///obj/structure/salvage (без родителя). Шанс — 2.5% (0.025) от общего веса мусора на появление
 //любого из обломков.
@@ -29,7 +37,7 @@
 		total_weight += floortrash[key]
 	if(total_weight <= 0)
 		return
-	var/per_type = total_weight * 0.025 / length(salvage_types)
+	var/per_type = total_weight * RARELY_SALVAGE_SHARE / length(salvage_types)
 	for(var/salvage_type in salvage_types)
 		floortrash[salvage_type] = (floortrash[salvage_type] || 0) + per_type
 

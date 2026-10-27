@@ -83,14 +83,20 @@
 	// Дедуп зон через ассоциативный список: `areas |= B.loc` это линейный поиск
 	// по списку зон на каждый турф шаблона, и на полноразмерном z-уровне он
 	// съедает секунды загрузки.
+	// Значение - z, на которых у зоны есть клетки шаблона.
 	var/list/seen_areas = list()
 	for(var/L in turfs)
 		var/turf/B = L
 		atoms += B
 		var/area/turf_area = B.loc
-		if(turf_area && !seen_areas[turf_area])
-			seen_areas[turf_area] = TRUE
-			areas += turf_area
+		if(turf_area)
+			var/list/area_floors = seen_areas[turf_area]
+			if(!area_floors)
+				area_floors = list()
+				seen_areas[turf_area] = area_floors
+				areas += turf_area
+			if(!(B.z in area_floors))
+				area_floors += B.z
 		for(var/A in B)
 			atoms += A
 			if(istype(A, /obj/structure/cable))
@@ -102,7 +108,7 @@
 		var/turf/T = L
 		T.air_update_turf(TRUE) //calculate adjacent turfs along the border to prevent runtimes
 
-	SSmapping.reg_in_areas_in_z(areas)
+	SSmapping.reg_in_areas_in_z(areas, seen_areas)
 	SSatoms.InitializeAtoms(atoms)
 	SSmachines.setup_template_powernets(cables)
 	SSair.setup_template_machinery(atmos_machines)

@@ -477,6 +477,11 @@ GLOBAL_LIST_INIT(payed_ert, list(
 #define ALT_CLICK "alt"
 #define SHIFT_CLICK "shift"
 
+// Обработчики колеса вызываются от большего приоритета к меньшему.
+#define MOUSEWHEEL_PRIORITY_DEFAULT 0
+#define MOUSEWHEEL_PRIORITY_IMPLANT 10
+#define MOUSEWHEEL_PRIORITY_MECHA 20
+
 //Pixel coordinates within the icon, in the icon's coordinate space
 #define ICON_X "icon-x"
 #define ICON_Y "icon-y"
@@ -576,6 +581,10 @@ GLOBAL_LIST_INIT(payed_ert, list(
 #define UNIT_TEST_SHARD_PARAMETER "unit-test-shard"
 //JSON of past wall times per test, used to balance the shards
 #define UNIT_TEST_DURATIONS_PARAMETER "unit-test-durations"
+//Map config to load instead of data/next_map.json, so several test worlds can share one directory
+#define UNIT_TEST_MAP_PARAMETER "unit-test-map"
+//Name of this test world among others running in the same directory, keeps their caches apart
+#define UNIT_TEST_INSTANCE_PARAMETER "unit-test-instance"
 
 #define EGG_LAYING_MESSAGES list("lays an egg.","squats down and croons.","begins making a huge racket.","begins clucking raucously.")
 

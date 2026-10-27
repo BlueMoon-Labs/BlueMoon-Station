@@ -1,9 +1,4 @@
-SQL_ENABLED
-ADDRESS 127.0.0.1
-PORT 3306
-FEEDBACK_DATABASE tg_ci
-FEEDBACK_TABLEPREFIX
-FEEDBACK_LOGIN root
-FEEDBACK_PASSWORD
+# CI test worlds run with the repository config, these lines are included last and override it.
+# No random lavaland and space ruins: they slow the world start and make two runs differ.
 LAVALAND_BUDGET 0
 SPACE_BUDGET 0

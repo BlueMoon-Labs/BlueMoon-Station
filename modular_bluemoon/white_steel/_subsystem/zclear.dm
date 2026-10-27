@@ -13,6 +13,8 @@
 //растёт навсегда), что давало взрывы TD (перф CSVs: 17->32->34, starlight очередь 10.6M).
 #define ZCLEAR_SEEDED_POOL_LEVELS 4
 #define ZCLEAR_MAX_NEW_DYNAMIC_LEVELS 4
+//Дольше засев не идёт даже на Layenia; если он оборвался рантаймом, уровни снова выдаются.
+#define ZCLEAR_POOL_SEEDING_TIMEOUT (10 MINUTES)
 
 GLOBAL_LIST_EMPTY(zclear_atoms)
 GLOBAL_LIST_EMPTY(zclear_blockers)
@@ -39,6 +41,8 @@ SUBSYSTEM_DEF(zclear)
 	var/dynamic_levels_created = 0
 	//WHITE-STEEL FIX: анти-спам для предупреждения о переполнении пула.
 	var/last_deferred_announce = 0
+	//Когда начался фоновый засев пула, 0 - засев не идёт.
+	var/pool_seeding_started = 0
 
 	//List of processing Z-Levels
 	var/list/datum/zclear_data/processing_levels
@@ -46,8 +50,6 @@ SUBSYSTEM_DEF(zclear)
 	//List of atoms to ignore
 	var/list/ignored_atoms = null
 
-	//List of nullspaced mobs to replace in ruins
-	var/list/mob/nullspaced_mobs = list()
 
 	//List of z-levels being docked with
 	var/list/docking_levels = list()
@@ -150,12 +152,6 @@ SUBSYSTEM_DEF(zclear)
 /datum/controller/subsystem/zclear/proc/unkeep_z(z_level)
 	docking_levels -= z_level
 
-//WHITE-STEEL FIX: чистим nullspaced_mobs от удалённых/пустых тел. Идём с конца: Cut сдвигает хвост.
-/datum/controller/subsystem/zclear/proc/prune_nullspaced_mobs()
-	for(var/index in length(nullspaced_mobs) to 1 step -1)
-		if(QDELETED(nullspaced_mobs[index]))
-			nullspaced_mobs.Cut(index, index + 1)
-
 /*
  * Создаёт на старте раунда пул готовых пустых z-уровней.
  * Каждый уровень полностью инициализируется (Initialize/параллакс) при создании,
@@ -163,11 +159,17 @@ SUBSYSTEM_DEF(zclear)
  * Уровни возвращаются в пул после автозатирки, пока их не заняли снова.
  */
 /datum/controller/subsystem/zclear/proc/seed_initial_pool()
-	if(!LAZYLEN(free_levels) && seeded_pool_levels > 0)
-		for(var/i in 1 to seeded_pool_levels)
-			var/datum/space_level/picked_level = SSmapping.add_new_zlevel("Dynamic free level [i]", ZTRAITS_SPACE, orbital_body_type = null)
-			initialize_space_level(picked_level.z_value)
-			LAZYADD(free_levels, picked_level)
+	if(LAZYLEN(free_levels) || seeded_pool_levels <= 0)
+		return
+	pool_seeding_started = world.time
+	for(var/i in 1 to seeded_pool_levels)
+		var/datum/space_level/picked_level = SSmapping.add_new_zlevel("Dynamic free level [i]", ZTRAITS_SPACE, orbital_body_type = null)
+		initialize_space_level(picked_level.z_value)
+		LAZYADD(free_levels, picked_level)
+	pool_seeding_started = 0
+
+/datum/controller/subsystem/zclear/proc/is_seeding_pool()
+	return pool_seeding_started && world.time < pool_seeding_started + ZCLEAR_POOL_SEEDING_TIMEOUT
 
 /*
  * Returns a free space level.
@@ -193,6 +195,9 @@ SUBSYSTEM_DEF(zclear)
 				break
 		if(free)
 			return picked_level
+	//Пока пул засевается, новый уровень не создаём: assign_z_level() повторит запрос.
+	if(is_seeding_pool())
+		return null
 	//Создаём новый z-уровень только пока не упёрлись в лимит.
 	if(dynamic_levels_created < max_dynamic_levels)
 		dynamic_levels_created++
@@ -209,19 +214,19 @@ SUBSYSTEM_DEF(zclear)
 	return null
 
 /*
- * Приводит космос свежесозданного динамического z-уровня к полноценному /turf/open/space.
+ * Доинициализирует космос свежесозданного динамического z-уровня.
  * BYOND заполняет новый уровень world.turf = /turf/open/space/basic, у которого пустой New()
  * намеренно пропускает Initialize (оптимизация маплоадера): нет SPACE_ICON_STATE, нет
- * visibilityChanged() и регистрации в атмосе. Из-за этого пространство вокруг сгенерированной
- * руины выглядит как второй тип турфа «space» - без параллакса и без нормального взаимодействия.
- * ChangeTurf(/turf/open/space) сам пересоздаёт турф с корректным Initialize.
+ * visibilityChanged() и регистрации в атмосе, вокруг руины выходил космос без параллакса.
+ * Initialize вызывается на месте, как это делает маплоадер. ChangeTurf пересоздавал каждую из
+ * 65 тысяч клеток и держал старт раунда: 10-20 секунд на уровень, на Layenia до двух минут.
  */
 /datum/controller/subsystem/zclear/proc/initialize_space_level(z_level)
 	if(!z_level)
 		return
-	for(var/turf/T as() in block(locate(1, 1, z_level), locate(world.maxx, world.maxy, z_level)))
-		if(istype(T, /turf/open/space/basic))
-			T.ChangeTurf(/turf/open/space, flags = CHANGETURF_IGNORE_AIR | CHANGETURF_DEFER_CHANGE)
+	for(var/turf/open/space/T in block(locate(1, 1, z_level), locate(world.maxx, world.maxy, z_level)))
+		if(!(T.flags_1 & INITIALIZED_1))
+			SSatoms.InitAtom(T, list(FALSE))
 		CHECK_TICK
 
 /datum/controller/subsystem/zclear/proc/begin_tracking(datum/space_level/sl)
@@ -242,7 +247,7 @@ SUBSYSTEM_DEF(zclear)
 
 	//WHITE-STEEL FIX: раньше обе фазы считались с CLEAR_TURF_PROCESSING_TIME * 0.5, т.е. каждая
 	//длилась всего 60 секунд при 1084 турфов/тик - массовые qdel/ChangeTurf давали спайки в
-	//Garbage (576-929% в логах). Теперь пересоздание турфов и очистка атомов идут отдельными
+	//Garbage (576-929% в логах). Теперь очистка атомов и пересоздание турфов идут отдельными
 	//фазами по 120 секунд каждая (~542 турфа/тик), суммарно - заявленные 120 секунд.
 	var/reset_process_time = CLEAR_TURF_PROCESSING_TIME
 	var/atom_process_time = CLEAR_TURF_ATOMS_PROCESSING_TIME
@@ -297,15 +302,17 @@ SUBSYSTEM_DEF(zclear)
  * Continues the process of wiping a z-level.
 */
 /datum/controller/subsystem/zclear/proc/continue_wipe(datum/zclear_data/cleardata)
-	var/list_element = (cleardata.process_num % CLEAR_TURF_PROCESSING_TIME) + 1
-	var/atom_list_element = ((cleardata.process_num - CLEAR_TURF_PROCESSING_TIME) % CLEAR_TURF_ATOMS_PROCESSING_TIME) + 1
+	//Сперва атомы, пока клетки в своей области: машинерия, удалённая уже в /area/space, не снималась
+	//с реестров своей области (лампы руины держал кэш её APC) и уходила в хардделы.
+	var/atom_list_element = (cleardata.process_num % CLEAR_TURF_ATOMS_PROCESSING_TIME) + 1
+	var/list_element = ((cleardata.process_num - CLEAR_TURF_ATOMS_PROCESSING_TIME) % CLEAR_TURF_PROCESSING_TIME) + 1
 	switch(cleardata.process_num)
-		if(0 to CLEAR_TURF_PROCESSING_TIME-1)
-			if(list_element <= length(cleardata.divided_turfs))
-				reset_turfs(cleardata.divided_turfs[list_element])
-		if(CLEAR_TURF_PROCESSING_TIME to CLEAR_TURF_PROCESSING_TIME + CLEAR_TURF_ATOMS_PROCESSING_TIME - 1)
+		if(0 to CLEAR_TURF_ATOMS_PROCESSING_TIME-1)
 			if(atom_list_element <= length(cleardata.divided_atom_turfs))
 				clear_turf_atoms(cleardata.divided_atom_turfs[atom_list_element])
+		if(CLEAR_TURF_ATOMS_PROCESSING_TIME to CLEAR_TURF_ATOMS_PROCESSING_TIME + CLEAR_TURF_PROCESSING_TIME - 1)
+			if(list_element <= length(cleardata.divided_turfs))
+				reset_turfs(cleardata.divided_turfs[list_element])
 		else
 			//Done
 			LAZYREMOVE(processing_levels, cleardata)
@@ -317,18 +324,9 @@ SUBSYSTEM_DEF(zclear)
 				cleardata.completion_callback.Invoke(cleardata.zvalue)
 			if(cleardata.tracking)
 				LAZYADD(free_levels, SSmapping.z_list[cleardata.zvalue])
-				var/nullspaced_mob_names = ""
-				var/valid = FALSE
-				//WHITE-STEEL FIX: nullspaced_mobs может содержать удалённые/пустые записи
-				//(мир их не чистит), из-за чего раньше падало "Cannot read null.key".
-				for(var/mob/M as() in nullspaced_mobs)
-					if(QDELETED(M))
-						continue
-					if(M.key || M.get_ghost(FALSE))
-						nullspaced_mob_names += " - [M.name]\n"
-						valid = TRUE
-				if(valid)
-					priority_announce("Сенсоры сообщают о том, что несколько членов экипажа пропало. Скорее всего их раскидало по космосу, их всё ещё можно попробовать найти.\n[nullspaced_mob_names]")
+				//WHITE-STEEL PORT: анонс про «пропавших членов экипажа, которых можно найти»
+				//удалён вместе с буфером nullspaced_mobs - переносить тела в следующую руину
+				//больше нечем, анонсировать некого.
 	cleardata.process_num ++
 
 /*
@@ -358,13 +356,14 @@ SUBSYSTEM_DEF(zclear)
 				var/mob/living/M = thing
 				if(M.mind || M.key)
 					if(M.stat == DEAD)
-						//Store them for later
+						//WHITE-STEEL PORT: труп больше не «спасается» в буфер nullspaced-мобов.
+						//Раньше мёртвый моб с mind'ом переживал вайп уровня, а генератор руин
+						//переносил его в СЛЕДУЮЩУЮ руину - тела кочевали от миссии к миссии
+						//бесконечно, держали z-уровни от возврата в пул свободных уровней и
+						//висели до ручной чистки администрацией. Теперь труп удаляется вместе
+						//с уровнем.
 						M.ghostize(TRUE)
-						M.forceMove(null)
-						//WHITE-STEEL FIX: не копим удалённые записи — список держит мобов
-						//жёстко и без чистки растёт до hard-del утечки.
-						prune_nullspaced_mobs()
-						nullspaced_mobs += M
+						delete_atom(thing)
 					else
 						//If the mob has a key (but is DC) then teleport them to a safe z-level where they can potentially be retrieved.
 						//Since the wiping takes 90 seconds they could potentially still be on the z-level as it is wiping if they reconnect in time
@@ -428,9 +427,8 @@ SUBSYSTEM_DEF(zclear)
 	for(var/turf/T as() in turfs)
 		//TODO: This doesn't update turfs around it.
 		var/turf/newT
-		//basic - подтип /turf/open/space, но без Initialize: его тоже надо пересоздать,
-		//иначе после вайпа уровень снова вернётся в пул с «мёртвым» космосом.
-		if(istype(T, /turf/open/space) && !istype(T, /turf/open/space/basic))
+		//Неинициализированный basic надо пересоздать, иначе после вайпа уровень вернётся в пул с "мёртвым" космосом.
+		if(istype(T, /turf/open/space) && (T.flags_1 & INITIALIZED_1))
 			newT = T
 		else
 			newT = T.ChangeTurf(/turf/open/space, flags = CHANGETURF_IGNORE_AIR | CHANGETURF_DEFER_CHANGE)

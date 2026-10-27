@@ -99,6 +99,7 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 
 /datum/antagonist/Destroy()
 	GLOB.antagonists -= src
+	GLOB.antag_training_unlisted_antagonists -= src
 	//Напоминалка снимала датум из списка только после того, как счётчик догорит до
 	//нуля - это 2 x 12 минут. Снятый раньше антаг оставался в глобальном списке
 	//навсегда: owner уже null, поэтому remind_them_they_are_antagonists проваливался
@@ -115,6 +116,8 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 //ambition start
 		owner?.do_remove_antag_datum(src)
 //ambition end
+		var/datum/team/team = get_team()
+		team?.remove_member(owner)
 	owner = null
 	return ..()
 
@@ -136,6 +139,7 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 ///Called by the transfer_to() mind proc after the mind (mind.current and new_character.mind) has moved but before the player (key and client) is transfered.
 /datum/antagonist/proc/on_body_transfer(mob/living/old_body, mob/living/new_body)
 	SHOULD_CALL_PARENT(TRUE)
+	sync_training_listing()
 	if(old_body)
 		remove_innate_effects(old_body)
 		if(!soft_antag && old_body && old_body.stat != DEAD && !length(old_body.mind?.antag_datums))
@@ -308,9 +312,6 @@ GLOBAL_LIST_EMPTY(antagonists_to_remind) // BLUEMOON ADD - список анта
 		farewell()
 	// UnregisterSignal(owner, COMSIG_PRE_MINDSHIELD_IMPLANT)
 	// UnregisterSignal(owner, COMSIG_MINDSHIELD_IMPLANTED)
-	var/datum/team/team = get_team()
-	if(team)
-		team.remove_member(owner)
 	qdel(src)
 
 /**

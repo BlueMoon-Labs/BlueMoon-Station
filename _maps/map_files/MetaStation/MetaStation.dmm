@@ -23449,7 +23449,7 @@
 /obj/effect/turf_decal/tile/purple{
 	dir = 4
 	},
-/obj/machinery/bountyvend,
+/obj/machinery/equipment_vendor/vanguard,
 /turf/open/floor/plasteel/white,
 /area/command/gateway)
 "bZq" = (
@@ -59453,9 +59453,6 @@
 /obj/structure/disposalpipe/trunk{
 	dir = 8
 	},
-/obj/structure/disposalpipe/trunk{
-	dir = 8
-	},
 /obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},
@@ -73251,7 +73248,6 @@
 	name = "Gateway Atrium";
 	req_access_txt = "62"
 	},
-/obj/machinery/door/firedoor,
 /obj/effect/turf_decal/delivery,
 /obj/effect/turf_decal/stripes/yellow/corner{
 	dir = 4
@@ -74773,7 +74769,7 @@
 	c_tag = "Mining Office";
 	dir = 8
 	},
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /obj/effect/turf_decal/tile/brown,
 /obj/effect/turf_decal/tile/brown{
 	dir = 4
@@ -75267,6 +75263,10 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/security/warden)
+"qfy" = (
+/obj/structure/fulton_beacon,
+/turf/open/floor/plasteel/white,
+/area/command/gateway)
 "qfD" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow{
@@ -126355,7 +126355,7 @@ wYE
 lJx
 krJ
 kPM
-kPM
+qfy
 clW
 lJx
 cck

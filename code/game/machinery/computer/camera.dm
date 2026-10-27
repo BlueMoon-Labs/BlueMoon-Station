@@ -144,6 +144,8 @@
 				break
 		if(selected_camera && selected_camera.z != z && (is_away_level(z) || is_away_level(selected_camera.z)))
 			selected_camera = null //фильтр away-уровней, как в get_available_cameras
+		if(selected_camera && !antag_training_camera_visible(selected_camera, src))
+			selected_camera = null
 		active_camera = selected_camera
 		playsound(src, get_sfx("terminal_type"), 25, FALSE)
 
@@ -228,6 +230,8 @@
 		for(var/tag in network_cameras)
 			var/obj/machinery/camera/C = network_cameras[tag]
 			if(C.z != z && (console_away || is_away_level(C.z)))//if on away mission, can only receive feed from same z_level cameras
+				continue
+			if(!antag_training_camera_visible(C, src))
 				continue
 			D[tag] = C
 	return D

@@ -991,6 +991,7 @@
 			// Имя переменной, которую тронула ветка: в savefile уходит только этот ключ. Ветки на
 			// переменных, отличных от cit_toggles, переставляют имя сами.
 			var/dirty_var = "cit_toggles"
+			var/character_scoped = FALSE
 			switch(params["pref"])
 				if("use_arousal_multiplier")
 					prefs.use_arousal_multiplier = !prefs.use_arousal_multiplier
@@ -1007,6 +1008,7 @@
 				if("use_custom_moan_sounds")
 					prefs.use_custom_moan_sounds = !prefs.use_custom_moan_sounds
 					dirty_var = "use_custom_moan_sounds"
+					character_scoped = TRUE
 
 				if("verb_consent")
 					TOGGLE_BITFIELD(prefs.toggles, VERB_CONSENT)
@@ -1112,7 +1114,10 @@
 					dirty_var = "compact_custom_tab"
 				else
 					return FALSE
-			prefs.save_pref_var(dirty_var)
+			if(character_scoped)
+				prefs.save_character(bypass_cooldown = TRUE, silent = TRUE)
+			else
+				prefs.save_pref_var(dirty_var)
 			return TRUE
 		if("genitals_menu")
 			switch(params["who"])
@@ -1175,7 +1180,7 @@
 					if(moan_file)
 						resolved += moan_file
 			prefs.custom_moan_sounds = resolved
-			prefs.save_pref_var("custom_moan_sounds")
+			prefs.save_character(bypass_cooldown = TRUE, silent = TRUE)
 			return TRUE
 
 /datum/component/interaction_menu_granter/proc/resolve_moan_sound_key(moan_key)

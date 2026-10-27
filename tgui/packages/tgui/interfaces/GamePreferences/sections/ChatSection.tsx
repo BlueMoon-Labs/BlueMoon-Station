@@ -1,5 +1,5 @@
 import { useBackend } from '../../../backend';
-import { Box, Dropdown, Input, NumberInput, Stack, Tooltip } from '../../../components';
+import { ColorPicker, Dropdown, Input, NumberInput, Stack, Tooltip } from '../../../components';
 import { PrefRow } from '../components/PrefRow';
 
 type ChatData = {
@@ -28,14 +28,6 @@ type ChatData = {
   tgui_input_verbs: boolean;
   max_chat_length: number;
   auto_capitalize_enabled: boolean;
-};
-
-// React's onChange fires continuously while dragging inside the color
-// dialog; debounce so we do not flood the server with act() messages.
-const colorCommitTimers = new WeakMap();
-const debouncedColorCommit = (input: HTMLInputElement, commit: (value: string) => void) => {
-  clearTimeout(colorCommitTimers.get(input));
-  colorCommitTimers.set(input, setTimeout(() => commit(input.value), 250));
 };
 
 const GHOST_FORM_OPTIONS = [
@@ -83,21 +75,12 @@ const OOC_COLORS = (data: ChatData, act: Function) => (
             <div className="GamePreferences__label">Цвет OOC</div>
           </Stack.Item>
           <Stack.Item>
-            <Box
-              as="input"
-              type="color"
+            <ColorPicker
               value={/^#[0-9a-fA-F]{6}$/.test(data.ooccolor) ? data.ooccolor : '#ffbed6'}
-              style={{
-                width: '22px',
-                height: '22px',
-                padding: '0',
-                border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: '2px',
-                background: 'transparent',
-                cursor: 'pointer',
-              }}
-              onChange={e => debouncedColorCommit(e.target,
-                value => act('set_ooc_pref', { flag: 'ooccolor', value }))}
+              width="22px"
+              height="22px"
+              tooltip="Цвет OOC"
+              onCommit={value => act('set_ooc_pref', { flag: 'ooccolor', value })}
             />
           </Stack.Item>
           <Stack.Item shrink={0} basis="80px">
@@ -122,21 +105,12 @@ const OOC_COLORS = (data: ChatData, act: Function) => (
             <div className="GamePreferences__label">Цвет OOC антага</div>
           </Stack.Item>
           <Stack.Item>
-            <Box
-              as="input"
-              type="color"
+            <ColorPicker
               value={/^#[0-9a-fA-F]{6}$/.test(data.aooccolor) ? data.aooccolor : '#ce254f'}
-              style={{
-                width: '22px',
-                height: '22px',
-                padding: '0',
-                border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: '2px',
-                background: 'transparent',
-                cursor: 'pointer',
-              }}
-              onChange={e => debouncedColorCommit(e.target,
-                value => act('set_ooc_pref', { flag: 'aooccolor', value }))}
+              width="22px"
+              height="22px"
+              tooltip="Цвет OOC антага"
+              onCommit={value => act('set_ooc_pref', { flag: 'aooccolor', value })}
             />
           </Stack.Item>
           <Stack.Item shrink={0} basis="80px">

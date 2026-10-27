@@ -216,8 +216,8 @@
 		icon_state = "[initial(icon_state)]_impregnated"
 
 		var/obj/item/bodypart/chest/LC = target.get_bodypart(BODY_ZONE_CHEST)
-		if((!LC || !LC.is_robotic_limb(FALSE)) && !target.getorgan(/obj/item/organ/body_egg/alien_embryo))
-			new /obj/item/organ/body_egg/alien_embryo(target)
+		if((!LC || !LC.is_robotic_limb(FALSE)) && !target.getorgan(/obj/item/organ/body_egg/alien_embryo) && antag_training_brood_room(src, 1, target))
+			antag_training_claim_brood(src, list(new /obj/item/organ/body_egg/alien_embryo(target)))
 
 	else
 		target.visible_message("<span class='danger'>[src] violates [target]'s face!</span>", \

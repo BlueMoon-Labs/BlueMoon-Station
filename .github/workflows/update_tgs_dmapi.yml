@@ -5,19 +5,20 @@ on:
     - cron: "0 0 * * *"
   workflow_dispatch:
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   update-dmapi:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
     name: Update the TGS DMAPI
+    env:
+      BRANCH: tgs-dmapi-update
     steps:
     - name: Clone
-      uses: actions/checkout@v4
-
-    - name: Branch
-      run: |
-        git branch -f tgs-dmapi-update
-        git checkout tgs-dmapi-update
-        git reset --hard master
+      uses: actions/checkout@v7
 
     - name: Apply DMAPI update
       uses: tgstation/tgs-dmapi-updater@v2
@@ -25,23 +26,37 @@ jobs:
         header-path: 'code/__DEFINES/tgs.dm'
         library-path: 'code/modules/tgs'
 
-    - name: Commit and Push
-      continue-on-error: true
+    # Pushes only a new update, so an open pull request is not rebuilt every night.
+    - name: Push the update
+      id: push
       run: |
-        git config user.name SPLURT-Station
-        git config user.email SPLURT-Station@users.noreply.github.com
-        git add .
-        git commit -m 'Update TGS DMAPI'
-        git push -f -u origin tgs-dmapi-update
+        dmapi=(code/__DEFINES/tgs.dm code/modules/tgs)
+        git add -A -- "${dmapi[@]}"
+        if git diff --cached --quiet -- "${dmapi[@]}"; then
+          echo "The DMAPI is up to date."
+          exit 0
+        fi
+        if git fetch -q origin "$BRANCH" && git diff --cached --quiet FETCH_HEAD -- "${dmapi[@]}"; then
+          echo "$BRANCH already has this update."
+        else
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$BRANCH"
+          git commit -m "Update TGS DMAPI"
+          git push -f origin "$BRANCH"
+        fi
+        echo "changed=true" >> "$GITHUB_OUTPUT"
 
-    - name: Create Pull Request
-      uses: repo-sync/pull-request@v2
-      if: ${{ success() }}
-      with:
-        source_branch: "tgs-dmapi-update"
-        destination_branch: "master"
-        pr_title: "Automatic TGS DMAPI Update"
-        pr_body: "This pull request updates the TGS DMAPI to the latest version. Please note any breaking or unimplemented changes before merging."
-        pr_label: "Tools"
-        pr_allow_empty: false
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Open a pull request
+      if: steps.push.outputs.changed == 'true'
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        if [ -n "$(gh pr list --head "$BRANCH" --state open --json number --jq '.[].number')" ]; then
+          echo "The pull request is already open."
+          exit 0
+        fi
+        # The repository may forbid Actions to open pull requests: then a person opens it.
+        gh pr create --base master --head "$BRANCH" --title "Automatic TGS DMAPI Update" \
+          --body "This pull request updates the TGS DMAPI to the latest version. Please note any breaking or unimplemented changes before merging." \
+          || echo "::warning::Could not open the pull request, open it by hand: https://github.com/${{ github.repository }}/compare/master...$BRANCH"

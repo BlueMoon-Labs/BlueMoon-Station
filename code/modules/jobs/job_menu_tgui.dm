@@ -2,8 +2,6 @@
 // В этот раз без пидор_бэк дефайнов.
 #define JOB_MENU_LATEJOIN "latejoin"
 #define JOB_MENU_PREFS "prefs"
-/// Потолок холста превью в пикселях: и base64, и обход канвасом остаются разумными
-#define JOB_MENU_PREVIEW_LIMIT 128
 
 /mob/dead/new_player
 	var/datum/job_menu/job_menu
@@ -31,9 +29,12 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 	var/datum/preferences/prefs
 	var/selected
 	var/selected_ghost
+	/// Внешности превью по ключу профессии или "ghost:роль", FALSE - превью у роли нет
 	var/list/previews
 	var/pushed_preview
 	var/cached_slot
+	/// Карта окна, на которой клиент сам рисует превью
+	var/atom/movable/screen/map_view/job_preview/preview_screen
 
 /datum/job_menu/New(new_mode, datum/preferences/new_prefs)
 	mode = new_mode
@@ -42,6 +43,7 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 
 /datum/job_menu/Destroy(force, ...)
 	SStgui.close_uis(src)
+	QDEL_NULL(preview_screen)
 	previews = null
 	prefs = null
 	return ..()
@@ -77,14 +79,25 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui) // Единственное место где может наебнуться меню, изначально окно загружается без кэша.
 		pushed_preview = null
+		if(!preview_screen)
+			preview_screen = new
+			preview_screen.generate_view("job_menu_[REF(src)]_map")
 		var/window_title = (mode == JOB_MENU_LATEJOIN) ? "Выберите профессию" : "Настройка профессий"
 		ui = new(user, src, "JobMenu", window_title)
 		ui.open()
 		ui.set_autoupdate(FALSE)
+		preview_screen.display_to(user, ui.window)
+
+/datum/job_menu/ui_close(mob/user)
+	. = ..()
+	pushed_preview = null
+	QDEL_NULL(preview_screen)
 
 // Дата
 /datum/job_menu/ui_data(mob/user)
 	var/list/data = list()
+	if(!previews)
+		return data
 	if(!prefs && user?.client)
 		prefs = user.client.prefs
 
@@ -97,20 +110,24 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 	data["selected"] = selected
 	data["selectedGhost"] = selected_ghost
 
-	// Один слот под последнее отправленное превью, дальше гоняем ключи
 	var/preview_target = selected
 	if(!preview_target && selected_ghost)
 		preview_target = "ghost:[selected_ghost]"
 
-	if(preview_target && pushed_preview != preview_target)
-		var/preview_image = previews[preview_target]
-		if(isnull(preview_image))
-			preview_image = selected ? generate_preview(selected, user) : generate_ghost_preview(selected_ghost, user)
-			previews[preview_target] = preview_image
+	if(pushed_preview != preview_target)
+		var/shown_appearance
+		if(preview_target)
+			shown_appearance = previews[preview_target]
+			if(isnull(shown_appearance))
+				shown_appearance = selected ? build_preview(selected, user) : build_ghost_preview(selected_ghost, user)
+				if(!previews)  // <-- datum мог быть уничтожен во время генерации
+					return data
+				previews[preview_target] = shown_appearance || FALSE
+		preview_screen?.show_preview(shown_appearance || null)
 		pushed_preview = preview_target
-		if(length(preview_image))
-			data["preview"] = preview_image
-			data["previewJob"] = preview_target
+	data["previewMap"] = preview_screen?.assigned_map
+	data["previewShown"] = !!preview_screen?.shown_appearance
+	data["previewTiles"] = preview_screen?.shown_tiles
 
 	data["departments"] = build_departments(user)
 
@@ -264,7 +281,7 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 /datum/job_menu/proc/prefers_overflow_locked(datum/job/job_datum, mob/user)
 	if(!prefs || job_datum.title == SSjob.overflow_role)
 		return FALSE
-	if(prefs.job_preferences["[SSjob.overflow_role]"] != JP_LOW)
+	if(!prefs.job_preferences || prefs.job_preferences["[SSjob.overflow_role]"] != JP_LOW)
 		return FALSE
 	if(user && jobban_isbanned(user, SSjob.overflow_role))
 		return FALSE
@@ -532,28 +549,97 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 
 // ПРЕВЬЮ
 
-/datum/job_menu/proc/generate_preview(job_title, mob/user)
+/// Карта превью: клиент сам рисует внешность, сервер не сводит её в плоскую иконку.
+/// getFlatIcon одетого манекена стоил около 60 мс на каждый выбор профессии, и в лобби
+/// перед стартом это была самая дорогая работа вне МК.
+/atom/movable/screen/map_view/job_preview
+	name = "job preview"
+	/// Показанная внешность, null - карта пуста
+	var/mutable_appearance/shown_appearance
+	/// Сколько клеток по стороне занимает внешность: по нему окно выбирает зум
+	var/shown_tiles = 1
+	/// Рамка задаёт размер карты
+	var/atom/movable/screen/background/frame
+
+/atom/movable/screen/map_view/job_preview/Destroy()
+	shown_appearance = null
+	QDEL_NULL(frame)
+	return ..()
+
+/atom/movable/screen/map_view/job_preview/generate_view(map_key)
+	. = ..()
+	frame = new
+	frame.assigned_map = assigned_map
+	frame.del_on_map_removal = FALSE
+	frame.icon_state = "clear"
+	place_in_frame(2)
+
+/// Без стопки плоскостей: свет превью не нужен, а слои свечения вырезаны из снимка внешности.
+/atom/movable/screen/map_view/job_preview/display_to_client(client/show_to)
+	if(!show_to)
+		return
+	registered_client = show_to
+	show_to.register_map_obj(src)
+	show_to.register_map_obj(frame)
+
+/// Показать внешность (null - очистить). Широкие части вроде тавров и крыльев увеличивают карту,
+/// чтобы клиент не обрезал их по краю клетки.
+/atom/movable/screen/map_view/job_preview/proc/show_preview(mutable_appearance/shown)
+	cut_overlays()
+	shown_appearance = shown
+	if(!shown)
+		return
+	add_overlay(shown)
+	shown_tiles = preview_tiles(shown)
+	place_in_frame(max(2, shown_tiles))
+
+/**
+ * Клиент считает вид вторичной карты по её экранам, только когда они меняются после создания
+ * контрола карты. ByondUi создаёт контрол позже, чем сервер расставляет экраны, и без пересчёта
+ * вид остаётся размером с экран игры, а фигура мельчает в углу. Окно сообщает о новом контроле,
+ * и рамка на тик сжимается до клетки, чтобы клиент пересчитал вид.
+ */
+/atom/movable/screen/map_view/job_preview/proc/refit_view()
+	frame.fill_rect(1, 1, 1, 1)
+	addtimer(CALLBACK(src, PROC_REF(place_in_frame), max(2, shown_tiles)), 1)
+
+/// Рамка span x span клеток и внешность в её центре. Карта в одну клетку выходит у клиента размером
+/// с экран игры, поэтому span не меньше 2, а лишнее поле окно срезает зумом.
+/atom/movable/screen/map_view/job_preview/proc/place_in_frame(span)
+	frame.fill_rect(1, 1, span, span)
+	var/center = (span - 1) * world.icon_size / 2
+	set_position(1 + round(center / world.icon_size), 1 + round(center / world.icon_size), center % world.icon_size, center % world.icon_size)
+
+/// Всё больше клетки center_image центрирует отрицательным смещением, по нему и считаем выступ.
+/atom/movable/screen/map_view/job_preview/proc/preview_tiles(mutable_appearance/shown)
+	var/overhang = max(0, -shown.pixel_x, -shown.pixel_y)
+	for(var/mutable_appearance/part as anything in shown.overlays)
+		overhang = max(overhang, -part.pixel_x, -part.pixel_y)
+	for(var/mutable_appearance/part as anything in shown.underlays)
+		overhang = max(overhang, -part.pixel_x, -part.pixel_y)
+	return 1 + CEILING(overhang * 2 / world.icon_size, 1)
+
+/datum/job_menu/proc/build_preview(job_title, mob/user)
 	var/datum/preferences/preview_prefs = prefs || user?.client?.prefs
 	if(!preview_prefs || !SSjob)
-		return ""
+		return null
 	var/datum/job/job_datum = SSjob.GetJob(job_title)
 	if(!job_datum)
-		return ""
+		return null
 
 	// Синтетики
 	if(istype(job_datum, /datum/job/ai))
-		return encode_preview_icon(icon('icons/mob/AI.dmi', resolve_ai_icon(preview_prefs.preferred_ai_core_display), SOUTH, 1))
+		return mutable_appearance('icons/mob/AI.dmi', resolve_ai_icon(preview_prefs.preferred_ai_core_display))
 	if(istype(job_datum, /datum/job/cyborg))
-		return encode_preview_icon(icon('icons/mob/robots.dmi', "robot", SOUTH, 1))
+		return mutable_appearance('icons/mob/robots.dmi', "robot")
 
-	var/icon/flat_icon = get_flat_human_icon(null, job_datum, preview_prefs, DUMMY_HUMAN_SLOT_JOB_MENU, list(SOUTH))
-	return encode_preview_icon(flat_icon)
+	return get_human_preview_appearance(job_datum, preview_prefs, DUMMY_HUMAN_SLOT_JOB_MENU)
 
 /// Превью гост роли
-/datum/job_menu/proc/generate_ghost_preview(spawner_key, mob/user)
+/datum/job_menu/proc/build_ghost_preview(spawner_key, mob/user)
 	var/list/spawner_list = GLOB.mob_spawners[spawner_key]
 	if(!length(spawner_list))
-		return ""
+		return null
 	var/obj/effect/mob_spawn/spawn_landmark
 	for(var/candidate in spawner_list)
 		if(!istype(candidate, /obj/effect/mob_spawn))
@@ -563,65 +649,39 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 			spawn_landmark = check
 			break
 	if(!spawn_landmark)
-		return ""
+		return null
 
 	var/datum/preferences/preview_prefs = prefs || user?.client?.prefs
 
 	// Синтетики
 	if(ispath(spawn_landmark.mob_type, /mob/living/silicon/ai))
-		return encode_preview_icon(icon('icons/mob/AI.dmi', resolve_ai_icon(preview_prefs?.preferred_ai_core_display), SOUTH, 1))
+		return mutable_appearance('icons/mob/AI.dmi', resolve_ai_icon(preview_prefs?.preferred_ai_core_display))
 	if(ispath(spawn_landmark.mob_type, /mob/living/silicon/robot))
-		return encode_preview_icon(icon('icons/mob/robots.dmi', "robot", SOUTH, 1))
+		return mutable_appearance('icons/mob/robots.dmi', "robot")
 
 	// учитывается только реальный человек, у мнимых друзей тут спрайт не тот
 	if(ispath(spawn_landmark.mob_type, /mob/living/carbon/human))
 		if(!istype(spawn_landmark, /obj/effect/mob_spawn/human))
-			return ""
+			return null
 		var/obj/effect/mob_spawn/human/human_spawn = spawn_landmark
 		var/outfit_path = istype(human_spawn.outfit) ? human_spawn.outfit.type : human_spawn.outfit
 		var/datum/preferences/role_prefs = (human_spawn.can_load_appearance && preview_prefs) ? preview_prefs : null
 		// без префов общий манекен показал бы внешность из прошлого превью
 		var/dummy_key = role_prefs ? DUMMY_HUMAN_SLOT_JOB_MENU : null
-		return encode_preview_icon(get_flat_human_icon(null, null, role_prefs, dummy_key, list(SOUTH), outfit_path))
+		return get_human_preview_appearance(null, role_prefs, dummy_key, outfit_path)
 
 	// остальное спрайт самого моба
 	if(!ispath(spawn_landmark.mob_type, /mob))
-		return ""
+		return null
 	var/atom/mob_proto = spawn_landmark.mob_type
 	var/icon_file = initial(mob_proto.icon)
 	var/icon_state = initial(mob_proto.icon_state)
 	if(!icon_file || !icon_state)
-		return ""
+		return null
 	if(!(icon_state in icon_states(icon_file)))
-		return ""
-	return encode_preview_icon(icon(icon_file, icon_state, SOUTH, 1))
-
-/datum/job_menu/proc/fit_preview_icon(icon/target)
-	if(!isicon(target))
-		return target
-	var/width = target.Width()
-	var/height = target.Height()
-	if(!isnum(width) || !isnum(height) || width <= 0 || height <= 0)
-		return target
-
-	var/longest = max(width, height)
-	if(longest <= JOB_MENU_PREVIEW_LIMIT)
-		return target
-
-	// Нужен был целый делитель для вмещения куклы ровно по центру превью без скейла. Во бля
-	var/factor = 1
-	while(longest / factor > JOB_MENU_PREVIEW_LIMIT)
-		factor++
-
-	var/icon/result = new /icon(target)
-	result.Scale(max(1, round(width / factor, 1)), max(1, round(height / factor, 1)))
-	return result
-
-/datum/job_menu/proc/encode_preview_icon(icon/target)
-	if(!isicon(target))
-		return ""
-	var/encoded = icon2base64(fit_preview_icon(target))
-	return istext(encoded) ? encoded : ""
+		return null
+	// Большой спрайт смещён в клетку своим pixel_x, по нему же карта превью узнает его ширину
+	return mutable_appearance(icon_file, icon_state, pixel_x = initial(mob_proto.pixel_x), pixel_y = initial(mob_proto.pixel_y))
 
 // АКТы
 
@@ -644,6 +704,10 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 			selected = job_title
 			selected_ghost = null
 			return
+
+		if("preview_mounted")
+			preview_screen?.refit_view()
+			return FALSE
 
 		if("select_ghost")
 			var/spawner_key = params["spawner"]
@@ -713,18 +777,20 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 					prefs.joblessrole = BERANDOMJOB
 				else
 					prefs.joblessrole = RETURNTOLOBBY
-			prefs.save_character(silent = TRUE)
+			refresh_character_setup(prefs.get_highest_job())
 			return
 
 		if("reset")
 			if(mode != JOB_MENU_PREFS || !prefs)
 				return
+			var/datum/job/previous_job = prefs.get_highest_job()
 			prefs.ResetJobs()
-			prefs.save_character(silent = TRUE)
+			refresh_character_setup(previous_job)
 			return
 
 		if("alt_title")
-			if(!prefs)
+			var/datum/preferences/our_prefs = prefs
+			if(!our_prefs)
 				return
 			var/job_title = params["job"]
 			var/datum/job/job_datum = SSjob?.GetJob(job_title)
@@ -735,16 +801,16 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 				titles_list += alt_title
 			var/chosen_title = tgui_input_list(ui_user, "Выберите название должности:", "Настройка профессий", titles_list)
 			if(chosen_title)
+				if(!our_prefs.alt_titles_preferences)
+					our_prefs.alt_titles_preferences = list()
 				if(chosen_title == job_title)
-					prefs.alt_titles_preferences.Remove(job_title)
+					our_prefs.alt_titles_preferences.Remove(job_title)
 				else
-					prefs.alt_titles_preferences[job_title] = chosen_title
-				prefs.save_character(silent = TRUE)
+					our_prefs.alt_titles_preferences[job_title] = chosen_title
+				refresh_character_setup(our_prefs.get_highest_job())
 			return
 
 		if("close")
-			if(prefs)
-				prefs.save_character(silent = TRUE)
 			ui?.close()
 			return
 
@@ -772,6 +838,8 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 /datum/job_menu/proc/set_priority(mob/user, job_title, level)
 	if(!prefs || !istext(job_title))
 		return
+	if(!prefs.job_preferences)
+		prefs.job_preferences = list()
 	var/datum/job/job_datum = SSjob?.GetJob(job_title)
 	if(!job_datum || !length(SSjob.occupations))
 		return
@@ -782,6 +850,7 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 	if(isnull(new_level) || new_level < 0 || new_level > JP_HIGH)
 		return
 
+	var/datum/job/previous_job = prefs.get_highest_job()
 	if(job_title == SSjob.overflow_role)
 		// Переполнение - это простое "Да/Нет": Да означает JP_LOW.
 		if(new_level)
@@ -795,8 +864,17 @@ GLOBAL_LIST_INIT(job_menu_antag_spawners, list(
 	else
 		prefs.SetJobPreferenceLevel(job_datum, new_level)
 
-	prefs.save_character(silent = TRUE)
+	refresh_character_setup(previous_job)
+
+/datum/job_menu/proc/refresh_character_setup(datum/job/previous_job)
+	var/datum/character_setup/setup = prefs?.character_setup_ui
+	if(QDELETED(setup))
+		return
+	setup.save_notice = null
+	// Пересобираем куклу только при смене отображаемой профессии в режиме «По профессии».
+	if(setup.preview_mode == PREVIEW_PREF_JOB && prefs.get_highest_job() != previous_job)
+		setup.preview_dirty = TRUE
+	SStgui.update_uis(setup)
 
 #undef JOB_MENU_LATEJOIN
 #undef JOB_MENU_PREFS
-#undef JOB_MENU_PREVIEW_LIMIT

@@ -310,11 +310,13 @@
 	add_fingerprint(user)
 	var/area/A = get_base_area(src)
 	if(!can_use_button())
-		to_chat(user, span_warning("Пожарная сигнализация не отвечает!"))
+		balloon_alert(user, "не отвечает!")
 	else if(A.fire)
 		reset(user)
+		balloon_alert(user, "деактивировано")
 	else
 		alarm(user)
+		balloon_alert(user, "активировано")
 
 /obj/machinery/firealarm/attack_ai(mob/user)
 	return attack_hand(user)

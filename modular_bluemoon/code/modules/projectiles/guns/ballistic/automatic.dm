@@ -1,7 +1,7 @@
 // ACR-5Mm30
 /obj/item/gun/ballistic/automatic/acr5m30
 	name = "ACR-5m26"
-	desc = "A military bullpup rifle, outdated by modern standarts. It is still robust enough to deal with assigned combat tasks."
+	desc = "A military service rifle designed by Aussec Armory, outdated by modern standarts. It is still robust enough to deal with assigned combat tasks."
 	icon_state = "acr5"
 	item_state = "acr5"
 	icon = 'modular_bluemoon/icons/obj/guns/projectile48x32.dmi'

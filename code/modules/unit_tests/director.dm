@@ -2040,7 +2040,8 @@
 	TEST_ASSERT(!operative_event.should_spawn_linked_keeper(FALSE, ROUNDTYPE_EXTENDED), "Extended использует самостоятельный control защитника, а не пару")
 	qdel(operative_event)
 	for(var/datum/round_event_control/control as anything in SSdirector.event_controls())
-		if(control.severity != DIRECTOR_SEVERITY_GHOST || !control.enabled || control.admin_only || control.weight <= 0)
+		// Базовый вес, а не текущий: лежащий диск станции растит вес оперативника по ходу долгого прогона.
+		if(control.severity != DIRECTOR_SEVERITY_GHOST || !control.enabled || control.admin_only || initial(control.weight) <= 0)
 			continue
 		if(control.required_round_type && !(ROUNDTYPE_DYNAMIC_LIGHT in control.required_round_type))
 			continue

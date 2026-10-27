@@ -124,3 +124,6 @@
 // Кол-во хедшотов, не ставить меньше 1
 #define MAX_HEADSHOTS 6
 #define MAX_HEADSHOTS_NAKED MAX_HEADSHOTS
+
+// Максимум вариантов профессий, квирков и экипировки у одного персонажа.
+#define MAX_CHARACTER_PRESETS 20

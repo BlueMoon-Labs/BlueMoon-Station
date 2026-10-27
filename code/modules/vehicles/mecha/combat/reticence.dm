@@ -20,6 +20,7 @@
 	stepsound = null
 	turnsound = null
 	destruction_sleep_duration = 20
+	ui_theme = "heretic"
 
 /obj/vehicle/sealed/mecha/combat/reticence/loaded/Initialize(mapload)
 	. = ..()

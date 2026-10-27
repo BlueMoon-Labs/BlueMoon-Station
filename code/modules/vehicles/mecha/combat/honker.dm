@@ -1,6 +1,6 @@
 /obj/vehicle/sealed/mecha/combat/honker
-	desc = "Произведён \"Tyranny of Honk, INC\", этот экзокостюм разработан как тяжёлая поддержка клоунов. Используется для распространения веселья и радости жизни. ХОНК!"
 	name = "\improper H.O.N.K"
+	desc = "Произведён \"Tyranny of Honk, INC\", этот экзокостюм разработан как тяжёлая поддержка клоунов. Используется для распространения веселья и радости жизни. ХОНК!"
 	icon_state = "honker"
 	movedelay = 3
 	max_integrity = 140
@@ -13,119 +13,9 @@
 	wreckage = /obj/structure/mecha_wreckage/honker
 	mecha_flags = CANSTRAFE | IS_ENCLOSED | HAS_LIGHTS
 	max_equip = 3
+	mecha_type = MECHA_TYPE_COMBAT | MECHA_TYPE_HONKER
+	ui_theme = "abductor"
 	var/squeak = TRUE
-
-/obj/vehicle/sealed/mecha/combat/honker/get_stats_part(mob/user)
-	var/integrity = obj_integrity/max_integrity*100
-	var/cell_charge = get_charge()
-	var/datum/gas_mixture/int_tank_air = internal_tank.return_air()
-	var/tank_pressure = internal_tank ? round(int_tank_air.return_pressure(),0.01) : "None"
-	var/tank_temperature = internal_tank ? int_tank_air.return_temperature() : "Unknown"
-	var/cabin_pressure = round(return_pressure(),0.01)
-	var/output = {"[report_internal_damage()]
-						[integrity<30?"<font color='red'><b>DAMAGE LEVEL CRITICAL</b></font><br>":null]
-						[internal_damage&MECHA_INT_TEMP_CONTROL?"<font color='red'><b>CLOWN SUPPORT SYSTEM MALFUNCTION</b></font><br>":null]
-						[internal_damage&MECHA_INT_TANK_BREACH?"<font color='red'><b>GAS TANK HONK</b></font><br>":null]
-						[internal_damage&MECHA_INT_CONTROL_LOST?"<font color='red'><b>HONK-A-DOODLE</b></font> - <a href='?src=[REF(src)];repair_int_control_lost=1'>Recalibrate</a><br>":null]
-						<b>IntegriHONK: </b> [integrity]%<br>
-						<b>PowerHONK charge: </b>[isnull(cell_charge)?"No power cell installed":"[cell.percent()]%"]<br>
-						<b>Air source: </b>[use_internal_tank?"Internal Airtank":"Environment"]<br>
-						<b>AirHONK pressure: </b>[tank_pressure]kPa<br>
-						<b>AirHONK temperature: </b>[tank_temperature]&deg;K|[tank_temperature - T0C]&deg;C<br>
-						<b>HONK pressure: </b>[cabin_pressure>WARNING_HIGH_PRESSURE ? "<font color='red'>[cabin_pressure]</font>": cabin_pressure]kPa<br>
-						<b>HONK temperature: </b> [return_temperature()]&deg;K|[return_temperature() - T0C]&deg;C<br>
-						<b>Lights: </b>[(mecha_flags & LIGHTS_ON)?"on":"off"]<br>
-						[dna_lock?"<b>DNA-locked:</b><br> <span style='font-size:10px;letter-spacing:-1px;'>[dna_lock]</span> \[<a href='?src=[REF(src)];reset_dna=1'>Reset</a>\]<br>":null]
-					"}
-	return output
-
-/obj/vehicle/sealed/mecha/combat/honker/get_stats_html(mob/user)
-	var/output = {"<html>
-						<head>
-						<meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
-						<title>[src.name] data</title>
-						<style>
-						body {color: #00ff00; background: #32CD32; font-family:"Courier",monospace; font-size: 12px;}
-						hr {border: 1px solid #0f0; color: #fff; background-color: #000;}
-						a {padding:2px 5px;;color:#0f0;}
-						.wr {margin-bottom: 5px;}
-						.header {cursor:pointer;}
-						.open, .closed {background: #32CD32; color:#000; padding:1px 2px;}
-						.links a {margin-bottom: 2px;padding-top:3px;}
-						.visible {display: block;}
-						.hidden {display: none;}
-						</style>
-						<script language='javascript' type='text/javascript'>
-						[js_byjax]
-						[js_dropdowns]
-						[js_mecha_stats_ticker]
-
-						function get_rand_color_string() {
-						    var color = new Array;
-						    for(var i=0;i<3;i++){
-						        color.push(Math.floor(Math.random()*255));
-						    }
-						    return 'rgb('+color.toString()+')';
-						}
-
-						window.onload = function() {
-							dropdowns();
-							window.on_mecha_update = function() {
-								document.body.style.color = get_rand_color_string();
-								document.body.style.background = get_rand_color_string();
-							};
-							schedule_update();
-						}
-						</script>
-						</head>
-						<body>
-						<div id='content'>
-						[src.get_stats_part(user)]
-						</div>
-						<div id='eq_list'>
-						[src.get_equipment_list()]
-						</div>
-						<hr>
-						<div id='commands'>
-						[src.get_commands()]
-						</div>
-						</body>
-						</html>
-					 "}
-	return output
-
-/obj/vehicle/sealed/mecha/combat/honker/get_commands()
-	var/output = {"<div class='wr'>
-						<div class='header'>Sounds of HONK:</div>
-						<div class='links'>
-						<a href='?src=[REF(src)];play_sound=sadtrombone'>Sad Trombone</a>
-						<a href='?src=[REF(src)];play_sound=bikehorn'>Bike Horn</a>
-						<a href='?src=[REF(src)];play_sound=airhorn2'>Air Horn</a>
-						<a href='?src=[REF(src)];play_sound=carhorn'>Car Horn</a>
-						<a href='?src=[REF(src)];play_sound=party_horn'>Party Horn</a>
-						<a href='?src=[REF(src)];play_sound=reee'>Reee</a>
-						<a href='?src=[REF(src)];play_sound=weeoo1'>Siren</a>
-						<a href='?src=[REF(src)];play_sound=hiss1'>Hissing Creature</a>
-						<a href='?src=[REF(src)];play_sound=armbomb'>Armed Grenade</a>
-						<a href='?src=[REF(src)];play_sound=saberon'>Energy Sword</a>
-						<a href='?src=[REF(src)];play_sound=airlock_alien_prying'>Airlock Prying</a>
-						<a href='?src=[REF(src)];play_sound=lightningbolt'>Lightning Bolt</a>
-						<a href='?src=[REF(src)];play_sound=explosionfar'>Distant Explosion</a>
-						</div>
-						</div>
-						"}
-	output += ..()
-	return output
-
-
-/obj/vehicle/sealed/mecha/combat/honker/get_equipment_list()
-	if(!LAZYLEN(equipment))
-		return
-	var/output = "<b>Honk-ON-Systems:</b><div style=\"margin-left: 15px;\">"
-	for(var/obj/item/mecha_parts/mecha_equipment/MT in equipment)
-		output += "<div id='[REF(MT)]'>[MT.get_equip_info()]</div>"
-	output += "</div>"
-	return output
 
 /obj/vehicle/sealed/mecha/combat/honker/play_stepsound()
 	// Same as the base: thrust / push-off and drift-loop moves aren't footsteps, so don't squeak on them.
@@ -138,22 +28,20 @@
 		playsound(src, "clownstep", 70, 1)
 	squeak = !squeak
 
-/obj/vehicle/sealed/mecha/combat/honker/Topic(href, href_list)
-	..()
-	//Такая же дыра, как была в родительском Topic: гудки дёргались без всякой проверки,
-	//то есть по ссылке из панели их мог запустить кто угодно снаружи меха
-	if(!(usr in occupants))
+/obj/vehicle/sealed/mecha/combat/honker/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
+	. = ..()
+	if(. || action != "play_sound" || ui_status(ui.user, state) != UI_INTERACTIVE || !(occupants[ui.user] & VEHICLE_CONTROL_SETTINGS))
 		return
-	if (href_list["play_sound"])
-		switch(href_list["play_sound"])
+	if(params["sound"])
+		switch(params["sound"])
 			if("sadtrombone")
 				playsound(src, 'sound/misc/sadtrombone.ogg', 50)
 			if("bikehorn")
 				playsound(src, 'sound/items/bikehorn.ogg', 50)
 			if("airhorn2")
-				playsound(src, 'sound/items/airhorn2.ogg', 40) //soundfile has higher than average volume
+				playsound(src, 'sound/items/airhorn2.ogg', 40) // Запись громче остальных.
 			if("carhorn")
-				playsound(src, 'sound/items/carhorn.ogg', 80) //soundfile has lower than average volume
+				playsound(src, 'sound/items/carhorn.ogg', 80) // Запись тише остальных.
 			if("party_horn")
 				playsound(src, 'sound/items/party_horn.ogg', 50)
 			if("reee")
@@ -172,4 +60,4 @@
 				playsound(src, 'sound/magic/lightningbolt.ogg', 50)
 			if("explosionfar")
 				playsound(src, 'sound/effects/explosionfar.ogg', 50)
-	return
+	return TRUE

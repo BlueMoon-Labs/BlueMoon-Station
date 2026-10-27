@@ -24765,7 +24765,7 @@
 /turf/open/floor/plasteel/dark,
 /area/engineering/main)
 "iTT" = (
-/obj/machinery/mineral/equipment_vendor/golem,
+/obj/machinery/equipment_vendor/golem,
 /turf/open/floor/plasteel/dark,
 /area/cargo/warehouse)
 "iTW" = (

@@ -1,9 +1,13 @@
+import { plural } from 'common/ru/plural';
 import { toTitleCase } from 'common/string';
 import { useState } from 'react';
 
 import { useBackend } from '../backend';
 import { BlockQuote, Box, Button, NumberInput, Section, Table } from '../components';
 import { Window } from '../layouts';
+
+const pointsWord = (n) => plural(n, 'очко', 'очка', 'очков');
+const listWord = (n) => plural(n, 'лист', 'листа', 'листов');
 
 export const OreRedemptionMachine = (props) => {
   const { act, data } = useBackend();
@@ -32,7 +36,7 @@ export const OreRedemptionMachine = (props) => {
             {unclaimedPoints}
             <Button
               ml={2}
-              content="Зачислить"
+              content="Забрать"
               disabled={unclaimedPoints === 0}
               onClick={() => act('Claim')} />
           </Box>
@@ -119,12 +123,12 @@ const MaterialRow = (props) => {
       </Table.Cell>
       <Table.Cell collapsing textAlign="right">
         <Box mr={2} color="label" inline>
-          {material.value && material.value + ' очков'}
+          {!!material.value && `${material.value} ${pointsWord(material.value)}`}
         </Box>
       </Table.Cell>
       <Table.Cell collapsing textAlign="right">
         <Box mr={2} color="label" inline>
-          {amountAvailable} листов
+          {amountAvailable} {listWord(amountAvailable)}
         </Box>
       </Table.Cell>
       <Table.Cell collapsing>

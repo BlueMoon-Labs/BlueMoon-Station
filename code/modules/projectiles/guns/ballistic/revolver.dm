@@ -449,6 +449,37 @@
 		user.drop_all_held_items()
 		user.DefaultCombatKnockdown(80)
 
+// -------------- Gatfruit Revolver -------------
+// Вырастает из гатфрута. Барабан намертво запечатан смолой, поэтому перезарядить его нельзя.
+/obj/item/gun/ballistic/revolver/gatfruit
+	name = "\improper .357 gatfruit revolver"
+	desc = "A suspicious revolver grown from a gatfruit. Its cylinder is fused shut by hardened plant resin, making reloading impossible."
+
+/obj/item/gun/ballistic/revolver/gatfruit/attackby(obj/item/A, mob/user, params)
+	if(istype(A, /obj/item/ammo_box) || istype(A, /obj/item/ammo_casing))
+		to_chat(user, span_warning("The [src]'s cylinder is fused shut — you can't reload it!"))
+		return TRUE
+	return ..()
+
+/obj/item/gun/ballistic/revolver/gatfruit/examine(mob/user)
+	. = ..()
+	. += span_notice("The cylinder is sealed with hardened plant resin. It cannot be reloaded.")
+
+// Испорченный плод. Внешне неотличим от обычного револьвера: имя, описание и иконка наследуются.
+/obj/item/gun/ballistic/revolver/gatfruit/bad
+
+/obj/item/gun/ballistic/revolver/gatfruit/bad/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0, stam_cost = 0)
+	if(user && chambered?.BB)
+		user.visible_message(
+			span_danger("[user]'s [src] jerks in [user.ru_ego()] hands and goes off right in [user.ru_ego()] face!"),
+			span_userdanger("The [src] jerks in your hands and fires straight into your face!"),
+			span_italics("You hear a gunshot!"),
+		)
+		target = user
+		zone_override = BODY_ZONE_HEAD
+		message = FALSE
+	return ..()
+
 // -------------- HoS Modular Weapon System -------------
 // ---------- Code originally from VoreStation ----------
 /obj/item/gun/ballistic/revolver/mws
@@ -597,7 +628,7 @@
 	// 1. Проверка пояса buscadero на талии
 	var/obj/item/storage/belt/buscadero/belt = user.get_item_by_slot(ITEM_SLOT_BELT)
 	if(!istype(belt))
-		return FALSE 
+		return FALSE
 
 	// 2. Проверка наличия второго револьвера в неактивной руке
 	var/obj/item/gun/ballistic/revolver/offhand_rev = user.get_inactive_held_item()
@@ -615,7 +646,7 @@
 				src.magazine.stored_ammo[i] = null
 				CB.forceMove(src.drop_location())
 				CB.bounce_away(FALSE, NONE)
-				reloaded_any = TRUE 
+				reloaded_any = TRUE
 
 	// 4. Полностью вытряхивает старые гильзы из второго револьвера на пол
 	if(offhand_rev && offhand_rev.magazine && offhand_rev.magazine.stored_ammo && offhand_rev.magazine.stored_ammo.len)
@@ -638,7 +669,7 @@
 
 	// Перебирает найденные на поясе патроны
 	for(var/obj/item/ammo_casing/bullet in bullets_in_belt)
-		
+
 		// Заряжает основной револьвер, пока в барабане есть место
 		if(src.magazine?.give_round(bullet))
 			actual_reload_success = TRUE
@@ -660,7 +691,7 @@
 
 	// --- 7. ИТОГИ ---
 	if(actual_reload_success || reloaded_any)
-		playsound(user, 'sound/weapons/bulletinsert.ogg', 60, 1) 
+		playsound(user, 'sound/weapons/bulletinsert.ogg', 60, 1)
 		user.visible_message(
 			"<span class='danger'>[user] ловким движением откидывает барабаны, с треском высыпая гильзы на пол, и вслепую забивает новые патроны из пояса [belt.name] прямо в каморы!</span>",
 			"<span class='notice'>Вы ловко очистили каморы револьверов и зарядили их патронами из пояса.</span>"
@@ -673,8 +704,8 @@
 
 /obj/item/gun/ballistic/revolver/Salvation/attack_self(mob/living/user)
 	if(try_dual_buscadero_reload(user))
-		return 
-	return ..() 
+		return
+	return ..()
 
 /obj/item/gun/ballistic/revolver/Condemnation/attack_self(mob/living/user)
 	if(try_dual_buscadero_reload(user))
@@ -741,7 +772,7 @@
 	fire_delay = 5
 	w_class = WEIGHT_CLASS_NORMAL
 	recoil = 0.5
-	slot_flags = ITEM_SLOT_BELT 
+	slot_flags = ITEM_SLOT_BELT
 	unique_reskin = list(
 		"Police" = list(
 			"icon_state" = "liturgy police"
@@ -773,7 +804,7 @@
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/winchester1897_shot.ogg'
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
-	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/exorcist 
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/exorcist
 	dual_wield_spread = 25
 	fire_delay = 10
 	w_class = WEIGHT_CLASS_NORMAL
@@ -799,10 +830,10 @@
 
 	// СТРОГАЯ ПРОВЕРКА ВТОРОЙ РУКИ: Ищем тяжелое оружие во второй руке
 	var/obj/item/offhand_item = H.get_inactive_held_item()
-	
+
 	// Проверяем, является ли предмет во второй руке тоже одним из этих двух револьверов
 	var/is_offhand_heavy = (istype(offhand_item, /obj/item/gun/ballistic/revolver/Dies_Irae) || istype(offhand_item, /obj/item/gun/ballistic/revolver/Exorcist))
-	
+
 	if(!is_offhand_heavy)
 		return // Если вторая рука пуста или там любой другой предмет (нож, фонарик, легкий пистолет) — вывиха НЕТ!
 
@@ -828,14 +859,14 @@
 
 	// БОЛЕВОЙ ШОК, ЭФФЕКТЫ И ПАДЕНИЕ ОРУЖИЯ
 	to_chat(H, "<span class='userdanger'>Попытка выстрелить из двух тяжелых револьверов одновременно сокрушительной отдачей выбивает вам оба плеча!</span>")
-	
-	playsound(H.loc, 'sound/effects/wounds/crack1.ogg', 70, TRUE) 
-	
+
+	playsound(H.loc, 'sound/effects/wounds/crack1.ogg', 70, TRUE)
+
 	// Персонаж роняет оба револьвера на пол
 	H.drop_all_held_items()
-	
+
 	// Болевой ступор/паралич на 3.5 секунды
-	H.Paralyze(35) 
+	H.Paralyze(35)
 
 
 /obj/item/gun/ballistic/revolver/judgement
@@ -847,9 +878,9 @@
 	fire_sound = "modular_bluemoon/fluffs/sound/weapon/Judgement.ogg"
 	lefthand_file = 'icons/mob/inhands/weapons/guns_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/guns_righthand.dmi'
-	
+
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/judgement
-	
+
 	var/list/active_beacons = list()
 
 // бум на Z
@@ -864,15 +895,15 @@
 	for(var/mob/living/carbon/C in active_beacons)
 		if(C && !QDELETED(C))
 			to_chat(C, "<span class='userdanger'>Вживленный внутри вас маячок детонирует по радиосигналу!</span>")
-			
+
 			var/turf/T = get_turf(C)
 			if(T)
 				new /obj/effect/temp_visual/kinetic_blast(T)
 				playsound(T, 'sound/weapons/resonator_blast.ogg', 50, 1)
 				playsound(T, 'sound/weapons/genhit2.ogg', 50, 1)
-			
+
 			C.ex_act(EXPLODE_LIGHT)
-			
+
 			// Поочередно удаляем по одному импланту-детонатору из его тела
 			var/obj/item/gps/embed_gps/judgement_beacon_bomb/B = locate(/obj/item/gps/embed_gps/judgement_beacon_bomb) in C
 			if(B)
@@ -881,3 +912,43 @@
 	// Полностью очищаем память пушки
 	active_beacons.Cut()
 	return TRUE
+
+/obj/item/gun/ballistic/revolver/anathema
+	name = "Anathema"
+	desc = "A single action baptism of fire. This setup leaves no room for prayer, instantly scarring the flesh of the unholy with a relentless, mechanical crown of thorns. It looks like a single action revolver, but the hammer is too tight to cock with one hand."
+	icon_state = "anathema"
+	w_class = WEIGHT_CLASS_NORMAL
+	weapon_weight = WEAPON_HEAVY
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/apostle
+	fire_delay = 3
+	fire_select_modes = list(SELECT_SEMI_AUTOMATIC, SELECT_FULLY_AUTOMATIC)
+	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
+	item_state = "apostle"
+	fire_sound = "modular_bluemoon/sound/weapons/anathema.ogg"
+	load_sound = "modular_bluemoon/sound/weapons/anathema_reload.ogg"
+	load_empty_sound = "modular_bluemoon/sound/weapons/anathema_reload.ogg"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
+
+/obj/item/gun/ballistic/revolver/Apostle/snub
+	name = "\improper Apostle Snub"
+	desc = "A precise tool of holy law crafted for the parish enforcers. Its heavy .41 caliber rounds deliver steady, unforgiving judgement, turning every standard patrol into a righteous crusade through the blighted swamps."
+	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
+	fire_sound = "modular_bluemoon/fluffs/sound/weapon/Apostle.ogg"
+	icon_state = "apostle snub"
+	item_state = "apostle"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/apostle
+	projectile_damage_multiplier = 0.8
+	dual_wield_spread = 25
+	fire_delay = 3
+	w_class = WEIGHT_CLASS_SMALL
+	recoil = 0.5
+	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_POCKETS
+	unique_reskin = list(
+		"Police" = list(
+			"icon_state" = "apostle police snub"
+		),"M29" = list(
+			"icon_state" = "apostle m29 snub"
+		))

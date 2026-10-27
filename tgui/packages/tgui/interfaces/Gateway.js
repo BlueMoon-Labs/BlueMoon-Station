@@ -24,9 +24,9 @@ const GatewayContent = (props) => {
   if (!gateway_present) {
     return (
       <Section>
-        <NoticeBox>No linked gateway</NoticeBox>
+        <NoticeBox>Нет подключённых врат</NoticeBox>
         <Button fluid onClick={() => act('linkup')}>
-          Linkup
+          Соединить
         </Button>
       </Section>
     );
@@ -46,17 +46,17 @@ const GatewayContent = (props) => {
           textAlign="center"
           fluid
           onClick={() => act('deactivate')}>
-          Deactivate
+          Деактивировать
         </Button>
       </Section>
     );
   }
   if (!destinations.length) {
-    return <Section>No gateway nodes detected.</Section>;
+    return <Section>Не обнаружено путеводных узлов.</Section>;
   }
   return (
     <>
-      {!gateway_status && <NoticeBox>Gateway Unpowered</NoticeBox>}
+      {!gateway_status && <NoticeBox>Врата не запитаны</NoticeBox>}
       {destinations.map((dest) => (
         <Section key={dest.ref} title={dest.name}>
           {(dest.available && (
@@ -67,7 +67,7 @@ const GatewayContent = (props) => {
                   destination: dest.ref,
                 })
               }>
-              Activate
+              Активировать
             </Button>
           )) || (
             <>
@@ -75,7 +75,7 @@ const GatewayContent = (props) => {
                 {dest.reason}
               </Box>
               {!!dest.timeout && (
-                <ProgressBar value={dest.timeout}>Calibrating...</ProgressBar>
+                <ProgressBar value={dest.timeout}>Калибровка...</ProgressBar>
               )}
             </>
           )}

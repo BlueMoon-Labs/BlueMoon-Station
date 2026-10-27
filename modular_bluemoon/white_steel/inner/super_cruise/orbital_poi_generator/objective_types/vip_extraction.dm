@@ -28,12 +28,8 @@
 	if(vip_timer_id)
 		deltimer(vip_timer_id)
 		vip_timer_id = null
-	if(!QDELETED(mob_to_recover))
-		var/target_name = mob_to_recover.real_name
-		if(istext(target_name))
-			LAZYREMOVE(GLOB.mob_spawners[target_name], mob_to_recover)
-			if(!LAZYLEN(GLOB.mob_spawners[target_name]))
-				GLOB.mob_spawners -= target_name
+
+	cleanup_undelivered_body(mob_to_recover)
 	mob_to_recover = null
 	return ..()
 
@@ -41,8 +37,6 @@
 /datum/orbital_objective/vip_recovery/check_failed()
 	if(generated)
 		if(QDELETED(mob_to_recover))
-			return TRUE
-		if(mob_to_recover in SSzclear.nullspaced_mobs)
 			return TRUE
 		send_ferry_if_loaded()
 		if(is_centcom_level(mob_to_recover.z) && mob_to_recover.stat == CONSCIOUS)
@@ -59,9 +53,9 @@
 	if(generated && !QDELETED(mob_to_recover))
 		var/mob/living/vip = mob_to_recover
 		to_chat(vip, span_userdanger("Время вышло. Вас больше не будут эвакуировать."))
-		if(vip.client)
-			vip.ghostize()
-		qdel(vip)
+		//WHITE-STEEL PORT: убираем тело из меню спавнеров, иначе оно остаётся висеть до
+		//ручной чистки администрацией.
+		cleanup_undelivered_body(vip, TRUE)
 		mob_to_recover = null
 	remove_objective()
 
@@ -80,6 +74,9 @@
 /datum/orbital_objective/vip_recovery/proc/despawn_vip(mob/living/vip)
 	if(vip.client)
 		vip.ghostize()
+	//WHITE-STEEL PORT: убираем ВИПа из меню спавнеров, иначе запись останется висеть уже
+	//после удаления тела.
+	unregister_mission_body(vip)
 	qdel(vip)
 
 /datum/orbital_objective/vip_recovery/proc/award_vip_metadollars(mob/living/vip)

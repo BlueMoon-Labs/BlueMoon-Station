@@ -1,80 +1,81 @@
 // Здесь будет находится вся сломаная контробанда что падает с мобов для продажи в баунти венде
 
 /obj/item/broken
-	name = "Debug broken item"
-	desc = "You shoudnt see that"
+	name = "debug broken item"
+	desc = "Вы не должны этого видеть"
 	w_class = WEIGHT_CLASS_NORMAL
 	icon = 'modular_bluemoon/icons/obj/broken_stuff.dmi'
 	icon_state = "gavelhammer"
 
 
 /obj/item/broken/inteq_sledgehammer
-	name = "Broken sledgehammer"
-	desc = "Engeneering tool used by InteQ freaks to smash skulls. This one broke in half, tho it must have some value"
+	name = "broken sledgehammer"
+	desc = "Инженерный инструмент, используемый фриками из InteQ для размозжения черепушек. Этот переломан пополам, хотя какую-то пользу должен иметь."
 	icon_state = "sledgehammer"
 
 /obj/item/broken/dualsaber
-	name = "Shatered doble-bladed energy sword"
-	desc = "Wide known energy blade, used by syndicate. This one has dual blades... And they both shatered. Those parts have some decent value, still."
+	name = "shattered doble-bladed energy sword"
+	desc = "Печально известный энергомеч, используемый Синдикатом. У этого два клинка... И обе их линзы разбиты. От этих обломков всё равно должна быть польза."
 	icon_state = "dualsaber0"
 
 /obj/item/broken/energy_sword
-	name = "Shutered energy sword"
-	desc = "Wide known energy blade, used by syndicate. Looks like it shatered, and energy sorce wount work. Spare parts will cost something anyway."
+	name = "shattered energy sword"
+	desc = "Печально известный энергомеч, используемый Синдикатом. Линза разбита, а энергоисточник сдох. Остаток должен что-то да стоить, впрочем."
 	icon_state = "sword0"
 
 /obj/item/broken/inteq_elite
-	name = "Ripped InteQ elite hardsuit"
-	desc = "Bad omen for all who's interested layes around InteQ. That suit provide high defense... once. Now it's just pile of junk, at least worth something at black market"
+	name = "ripped InteQ elite hardsuit"
+	desc = "Плохое предзнаменование для всех, кто заинтересовал ЧВК InteQ. Этот скафандр имеет отменные защитные характеристики... \
+	Имел. Сейчас это груда пластали, по крайней мере чем-то ценная на чёрном рынке"
 	icon_state = "hardsuit0-inteqe"
 
 /obj/item/broken/makarov
 	name = "disassembled Makarov pistol"
-	desc = "Absolute classic of guncraft in.. pieces. Well, maybe it corpse will serve somebody else"
+	desc = "Абсолютная классика оружейничества... В виде обломков. Ну, хотя бы её \"труп\" послужит кому-нибудь ещё."
 	icon_state = "pistol"
 
 /obj/item/broken/c20r
 	name = "disassembled C-20R submachine gun"
-	desc = "Symdicate basics for dummies. And now YOU are a dummy!"
+	desc = "С<u>ы</u>ндикатовская база для дебилов. И ТЫ теперь дебил!"
 	icon_state = "c20r-e"
 
 /obj/item/broken/bulldog
 	name = "disassembled Bulldog shotgun"
-	desc = "Hear it roar? No? Because some bitch-ass tear apart magazine fed system!"
+	desc = "Слышал ли его рёв? Нет? Потому что какой-то сучёнок разнёс механизм подачи гильз!"
 	icon_state = "bulldog-e"
 
 /obj/item/broken/ushm
-	name = "Broken USHM"
-	desc = "Engeneering tool used by InteQ freaks to cut through walls, as well as through flesh & bones. This one broke in half, tho it must have some value"
+	name = "broken USHM"
+	desc = "Инженерный инструмент, используемый фриками из InteQ для прорезания стен, а ещё плоти с костями. Лезвие этого образца сломано напополам, хотя какую-то пользу должен иметь"
 	icon_state = "RSHM_calm"
 
 /obj/item/broken/sniper_rifle
 	name = "disassembled Sniper rifle"
-	desc = " Heavy calliber sniper rifle.. with barell broke apart! Looks that make grown up man cry"
+	desc = "Крупнокалиберная снайперская винтовка.. С разорванным на части стволом! Зрелище заставит любого взрослого рыдать."
 	icon_state = "sniper"
 
 /obj/item/broken/m1garand
-	name = "Disassembled Mars Service Rifle"
-	desc = "Seems like some body PING it too much"
+	name = "disassembled Mars Service Rifle"
+	desc = "Выглядит словно кто-то слишком любил характерный \"ДЗЫНЬ\" винтовки."
 	icon_state = "m1garand"
 
 /obj/item/broken/homemadeak
-	name = "Disassembled Homemade AK"
-	desc = "How.. How it's even possible?! Oh.. somebody weld shut the barel, that's how"
+	name = "disassembled Homemade AK"
+	desc = "Как.. Как это возможно?! А.. Кто-то заварил дуло, вот как"
 	icon = 'modular_bluemoon/phenyamomota/icon/obj/guns/rifles.dmi'
 	icon_state = "ak47_hm-old"
 
 /obj/item/broken/vss
-	name = "Disassembled VSS"
-	desc = "Barel have been bent, scope was riped out by force and shatered.. not gun, but a bunch a scrap for now"
+	name = "disassembled VSS"
+	desc = "Ствол был погнут, прицел вырван с мясом планки и разбит... Не пушка, а груда металла."
 	icon_state = "vintorez_scope_open"
 
 /obj/item/broken/hmg
-	name = "Disassembled M2A1 HMG"
-	desc = "This one.. unique. Seems like your foe doesn't want you to get your dirty hands on this one THAT much, and riped off the belt fed mechanism"
+	name = "disassembled M2A1 HMG"
+	desc = "Это.. Необычный случай. Похоже, твои противники не хотят, чтобы оно попало твои в грязные лапы НАСТОЛЬКО сильно, что вырвали с мясом механизм патронника."
 	icon_state = "m2a1closed-empty"
 
 /obj/item/broken/pirate_sword
 	name = "shattered energy cutlass"
-	desc = "Who took my gold?!"
+	desc = "Кто забрал моё золото?!"
 	icon_state = "cutlass0"

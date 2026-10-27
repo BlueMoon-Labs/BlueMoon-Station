@@ -364,7 +364,7 @@
 	if(!holder)
 		return
 	if(remove || stealth)
-		holder.icon_state = null
+		host_mob.set_hud_image_state(DIAG_NANITE_FULL_HUD, null)
 		return
 	var/nanite_percent = (nanite_volume / max_nanites) * 100
 	nanite_percent = clamp(CEILING(nanite_percent, 10), 10, 100)
@@ -372,8 +372,7 @@
 		return
 	last_nanite_percent_bar = nanite_percent
 	holder.pixel_y = get_hud_pixel_offset(host_mob.icon, host_mob.icon_state, host_mob.dir)
-	holder.icon_state = null
-	holder.icon_state = "nanites[nanite_percent]"
+	host_mob.set_hud_image_state(DIAG_NANITE_FULL_HUD, "nanites[nanite_percent]")
 
 /datum/component/nanites/proc/on_emp(datum/source, severity)
 	severity *= emp_severity_mod

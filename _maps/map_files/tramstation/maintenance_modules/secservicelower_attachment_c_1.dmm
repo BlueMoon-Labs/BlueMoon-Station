@@ -133,7 +133,7 @@
 /turf/open/floor/plasteel,
 /area/command/gateway)
 "y" = (
-/obj/machinery/bountyvend,
+/obj/machinery/equipment_vendor/vanguard,
 /obj/effect/turf_decal/bot,
 /obj/effect/turf_decal/trimline/dark_blue/filled/line{
 	dir = 4
