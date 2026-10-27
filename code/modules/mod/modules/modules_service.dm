@@ -27,9 +27,11 @@
 		позволяя готовить еду на расстоянии с наибольшей лёгкостью. Не рекомендуется использовать против винограда."
 	icon_state = "microwave_beam"
 	module_type = MODULE_ACTIVE
-	complexity = 2
+	complexity = 1
 	use_power_cost = DEFAULT_CHARGE_DRAIN * 5
 	incompatible_modules = list(/obj/item/mod/module/microwave_beam)
+	have_shortcut_activation = TRUE
+	required_modpart_index = MOD_PART_GLOVES
 	cooldown_time = 10 SECONDS
 	var/obj/machinery/microwave/microwave
 
@@ -68,6 +70,8 @@
 //Waddle
 
 /obj/item/mod/module/waddle
+	complexity = 1
+	mod_module_flags = MOD_MODULE_GENERAL
 	name = "MOD waddle module"
 	desc = "Some of the most primitive technology in use by HonkCo. This module works off an automatic intention system, \
 		utilizing its sensitivity to the pilot's often-limited brainwaves to directly read their next step, \
@@ -76,21 +80,54 @@
 		to waddle around, bouncing to and fro with a pep in their step."
 	icon_state = "waddle"
 	idle_power_cost = DEFAULT_CHARGE_DRAIN * 0.2
+	active_power_cost = DEFAULT_CHARGE_DRAIN * 0.2
 	module_type = MODULE_TOGGLE
 	removable = FALSE
 	incompatible_modules = list(/obj/item/mod/module/waddle)
 	required_modpart_index = MOD_PART_FEET
 	startup_with_suit = TRUE
+	var/mob/living/carbon/human/waddle_user
+	var/datum/component/squeak/mod_waddle/step_sound
 
 /obj/item/mod/module/waddle/on_activation()
-	var/obj/item/clothing/mod_part/shoes = mod.get_boots()
-	shoes.AddComponent(/datum/component/squeak, list('sound/effects/clownstep1.ogg'=1,'sound/effects/clownstep2.ogg'=1), 50)
-	mod.wearer.LoadComponent(/datum/component/waddling)
-	if(mod.wearer.mind && HAS_TRAIT(mod.wearer.mind, TRAIT_CLOWN_MENTALITY))
-		SEND_SIGNAL(mod.wearer, COMSIG_CLEAR_MOOD_EVENT, "noshoes")
+	if(active)
+		return FALSE
+	. = ..()
+	if(!.)
+		return
+	waddle_user = mod.wearer
+	ADD_TRAIT(waddle_user, TRAIT_WADDLING, REF(src))
+	waddle_user.LoadComponent(/datum/component/waddling)
+	var/obj/item/clothing/mod_part/boots = mod.get_boots()
+	step_sound = boots.AddComponent(/datum/component/squeak/mod_waddle, list('sound/effects/clownstep1.ogg' = 1, 'sound/effects/clownstep2.ogg' = 1), MOD_WADDLE_VOLUME)
+	if(waddle_user.mind && HAS_TRAIT(waddle_user.mind, TRAIT_CLOWN_MENTALITY))
+		SEND_SIGNAL(waddle_user, COMSIG_CLEAR_MOOD_EVENT, "noshoes")
 
 /obj/item/mod/module/waddle/on_deactivation()
-	var/datum/component/waddling/waddle_component = mod.wearer.GetComponent(/datum/component/waddling)
-	waddle_component?.RemoveComponent()
-	if(mod.wearer.mind && HAS_TRAIT(mod.wearer.mind, TRAIT_CLOWN_MENTALITY))
-		SEND_SIGNAL(mod.wearer, COMSIG_ADD_MOOD_EVENT, "noshoes", /datum/mood_event/noshoes)
+	clear_waddle()
+	return ..()
+
+/obj/item/mod/module/waddle/on_unequip()
+	clear_waddle()
+	return ..()
+
+/obj/item/mod/module/waddle/on_uninstall(deleting = FALSE, user)
+	clear_waddle()
+	return ..()
+
+/obj/item/mod/module/waddle/Destroy()
+	clear_waddle()
+	return ..()
+
+/obj/item/mod/module/waddle/proc/clear_waddle()
+	QDEL_NULL(step_sound)
+	if(!waddle_user)
+		return
+	REMOVE_TRAIT(waddle_user, TRAIT_WADDLING, REF(src))
+	if(!HAS_TRAIT(waddle_user, TRAIT_WADDLING))
+		qdel(waddle_user.GetComponent(/datum/component/waddling))
+	if(waddle_user.mind && HAS_TRAIT(waddle_user.mind, TRAIT_CLOWN_MENTALITY))
+		SEND_SIGNAL(waddle_user, COMSIG_ADD_MOOD_EVENT, "noshoes", /datum/mood_event/noshoes)
+	waddle_user = null
+
+/datum/component/squeak/mod_waddle

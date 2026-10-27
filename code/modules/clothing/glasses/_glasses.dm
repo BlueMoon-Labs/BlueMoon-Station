@@ -33,6 +33,8 @@
 
 /obj/item/clothing/glasses/examine(mob/user)
 	. = ..()
+	if(HAS_TRAIT(src, TRAIT_NIF_HUD))
+		. += span_notice("Эти очки поддерживают HUD-программы NIF.")
 	if(glass_colour_type && ishuman(user))
 		. += "<span class='notice'>Alt-click to toggle its colors.</span>"
 

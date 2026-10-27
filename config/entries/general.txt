@@ -331,6 +331,7 @@ ROUNDSTART_RACES xeno
 ROUNDSTART_RACES slimeperson
 ROUNDSTART_RACES guilmon
 ROUNDSTART_RACES ipc
+ROUNDSTART_RACES protean
 ROUNDSTART_RACES arachnid
 
 ## SPLURT races (Or races that for some reason didn't appear in this txt file originally for whatever reason)

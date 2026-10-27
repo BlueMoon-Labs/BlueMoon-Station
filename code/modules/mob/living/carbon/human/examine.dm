@@ -674,6 +674,10 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 		var/obj/item/organ/cyberimp/eyes/hud/CIH = H.getorgan(/obj/item/organ/cyberimp/eyes/hud)
 		if(CIH?.HUD_type)
 			have_hudtypes += CIH.HUD_type
+		var/obj/item/organ/cyberimp/brain/nif/implant = H.getorganslot(ORGAN_SLOT_BRAIN_NIF)
+		for(var/datum/nifsoft/hud/program in implant?.loaded_nifsofts)
+			if(program.active && program.hud_type)
+				have_hudtypes += program.hud_type
 
 		return (hudtype in have_hudtypes)
 

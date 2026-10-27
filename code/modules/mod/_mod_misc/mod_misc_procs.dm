@@ -1,16 +1,21 @@
 /obj/item/mod/control/proc/get_helmet()
+	RETURN_TYPE(/obj/item/clothing/mod_part/head)
 	return mod_parts[MOD_PART_HEAD]
 
 /obj/item/mod/control/proc/get_chestplate()
+	RETURN_TYPE(/obj/item/clothing/mod_part/suit)
 	return mod_parts[MOD_PART_CHEST]
 
 /obj/item/mod/control/proc/get_gauntlets()
+	RETURN_TYPE(/obj/item/clothing/mod_part/gloves)
 	return mod_parts[MOD_PART_GLOVES]
 
 /obj/item/mod/control/proc/get_boots()
+	RETURN_TYPE(/obj/item/clothing/mod_part/shoes)
 	return mod_parts[MOD_PART_FEET]
 
 /obj/item/mod/control/get_cell()
+	RETURN_TYPE(/obj/item/stock_parts/cell)
 	return mod_parts[MOD_PART_CELL]
 
 /obj/item/mod/control/proc/is_malfunctioning()
@@ -161,15 +166,25 @@
 		if(user)
 			balloon_alert(user, "[new_module] превышает вместимость [src]!")
 			playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
-			return FALSE
+		return FALSE
 	return TRUE
 
 /obj/item/mod/control/proc/handle_attack_cell(obj/item/stock_parts/cell/new_cell, obj/item/stock_parts/cell/cell, mob/user)
+	if(!istype(core, /obj/item/mod/core/standard))
+		balloon_alert(user, "это ядро не использует батареи")
+		return FALSE
+	if(!can_replace_cell())
+		balloon_alert(user, "Сначала отключите костюм!")
+		return FALSE
 	if(cell)
 		if(!do_after(user, 1 SECONDS, target = src))
 			balloon_alert(user, "прервано!")
 			return FALSE
-		playsound(src, 'sound/machines/click.ogg', 50, TRUE, SILENCED_SOUND_EXTRARANGE)
+	if(!can_replace_cell() || get_cell() != cell || QDELETED(new_cell) || !user.is_holding(new_cell))
+		return FALSE
+	if(!user.temporarilyRemoveItemFromInventory(new_cell))
+		return FALSE
+	if(cell)
 		cell.forceMove(drop_location())
 		user.put_in_hands(cell)
 	new_cell.moveToNullspace()
@@ -178,12 +193,25 @@
 	update_cell_alert()
 	return TRUE
 
+/obj/item/mod/control/proc/can_replace_cell()
+	return istype(core, /obj/item/mod/core/standard) && !is_activating() && (!is_active() || theme.allow_hot_swap)
+
 /obj/item/mod/control/proc/handle_module_inserting(obj/item/mod/module, mob/user)
 	install(module, user)
 	return TRUE
 
 /obj/item/mod/control/proc/handle_slimepotion_effect(obj/item/slimepotion/potion, mob/user)
+	if(istype(potion, /obj/item/slimepotion/speed))
+		if(obj_flags & SPEED_POTION_EFFECT)
+			return FALSE
+		obj_flags |= SPEED_POTION_EFFECT
+		update_speed()
+		to_chat(user, span_notice("Вы облегчаете все части [src]."))
+		qdel(potion)
+		return TRUE
 	for(var/obj/item/piece as anything in get_mod_parts(include_cell = FALSE))
+		if(QDELETED(potion))
+			break
 		potion.afterattack(piece, user)
 	return TRUE
 
@@ -205,7 +233,26 @@
 	charger.recharge(src, user)
 
 /mob/living/carbon/human/attackby(obj/item/I, mob/user, params)
+	var/datum/species/protean/species = dna?.species
+	if(istype(species) && species.handle_item(src, I, user))
+		return TRUE
 	. = ..()
 	var/obj/item/mod/control/target_mod = is_wearing_mod()
 	if(istype(I, /obj/item/inducer) && target_mod)
 		target_mod.do_charge_by_inducer(I, user)
+
+/obj/item/mod/control/proc/update_storage_allowed()
+	var/obj/item/clothing/mod_part/suit/chest = get_chestplate()
+	if(!chest)
+		return
+	chest.allowed = MOD_BASE_ALLOWED
+	chest.allowed |= theme.allowed
+	for(var/obj/item/mod/module/module in modules)
+		chest.allowed |= module.get_storage_allowed()
+	if(wearer?.wear_suit != chest || !wearer.s_store)
+		return
+	if(!is_type_in_list(wearer.s_store, chest.allowed))
+		wearer.dropItemToGround(wearer.s_store)
+
+/obj/item/mod/module/proc/get_storage_allowed()
+	return list()

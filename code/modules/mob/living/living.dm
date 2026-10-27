@@ -1076,18 +1076,19 @@
 
 /mob/living/update_gravity(has_gravity,override = 0)
 	. = ..()
+	update_gravity_inversion(has_gravity)
 	if(!SSticker.HasRoundStarted())
 		return
-	if(has_gravity)
-		if(has_gravity == 1)
-			clear_alert("gravity")
-		else
-			if(has_gravity >= GRAVITY_DAMAGE_TRESHOLD)
-				throw_alert("gravity", /atom/movable/screen/alert/veryhighgravity)
-			else
-				throw_alert("gravity", /atom/movable/screen/alert/highgravity)
-	else
+	if(has_gravity <= NEGATIVE_GRAVITY)
+		throw_alert("gravity", /atom/movable/screen/alert/negative)
+	else if(!has_gravity)
 		throw_alert("gravity", /atom/movable/screen/alert/weightless)
+	else if(has_gravity <= STANDARD_GRAVITY)
+		clear_alert("gravity")
+	else if(has_gravity >= GRAVITY_DAMAGE_TRESHOLD)
+		throw_alert("gravity", /atom/movable/screen/alert/veryhighgravity)
+	else
+		throw_alert("gravity", /atom/movable/screen/alert/highgravity)
 	if(!override && !is_flying())
 		float(!has_gravity)
 
@@ -1311,7 +1312,7 @@
 		return TRUE
 	return FALSE
 
-/mob/living/throw_at(atom/target, range, speed, mob/thrower, spin=1, diagonals_first = 0, datum/callback/callback, force, quickstart = TRUE)
+/mob/living/throw_at(atom/target, range, speed, mob/thrower, spin=1, diagonals_first = 0, datum/callback/callback, force, gentle = FALSE, quickstart = TRUE)
 	stop_pulling()
 	. = ..()
 

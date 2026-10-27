@@ -21,6 +21,7 @@
 	var/default_skin = "standard"
 	/// Initial armor profile type path shared across the MOD pieces.
 	var/armor_type = /datum/armor/modsuit_standard
+	var/brc_mitigation_bonus = 0
 	/// Resistance flags shared across the MOD pieces.
 	var/resistance_flags = NONE
 	/// Max heat protection shared across the MOD pieces.
@@ -54,6 +55,10 @@
 	var/need_block_storage_when_not_active = FALSE
 	var/compatible_with_armor_modules = TRUE
 	var/overwrite_desc = FALSE
+	var/allow_hot_swap = FALSE
+	var/hide_worn_sprites = FALSE
+	var/body_hardlight = FALSE
+	var/locked_hardlight = FALSE
 	/// List of skins with their appropriate clothing flags.
 	var/list/skins = list(
 		"standard" = MOD_PRESET_DEFAULT,
@@ -72,11 +77,12 @@
 		piece.permeability_coefficient = permeability_coefficient
 		piece.siemens_coefficient = siemens_coefficient
 
-	var/obj/item/clothing/mod_part/suit/chestplate = modsuit.get_chestplate()
+	var/obj/item/clothing/mod_part/suit/chest = modsuit.get_chestplate()
+	chest.set_brc_bonus(brc_mitigation_bonus)
 	modsuit.max_armor_module_count = max_armor_module_count
 	modsuit.slowdown_inactive = slowdown_inactive
 	modsuit.slowdown_active = slowdown_active
-	chestplate.allowed += allowed
+	modsuit.update_storage_allowed()
 
 /datum/mod_theme/proc/apply_theme_skin(obj/item/mod/control/modsuit, new_skin)
 	modsuit.skin = new_skin || default_skin
@@ -86,8 +92,8 @@
 		piece.desc = "[piece.desc] [desc]"
 		if(overwrite_desc) //Если кого-то из донатеров будет корёжить, что их "особое" описание совмещается с дефолтным, от куска МОДа.
 			piece.desc = "[desc]"
-		piece.icon_state = "[modsuit.skin]-[initial(piece.icon_state)]"
-		piece.item_state = "[modsuit.skin]-[initial(piece.item_state)]"
+		piece.icon_state = "[modsuit.get_visual_skin()]-[initial(piece.icon_state)]"
+		piece.item_state = "[modsuit.get_visual_skin()]-[initial(piece.item_state)]"
 
 /datum/mod_theme/proc/setup_theme(obj/item/mod/control/modsuit, new_skin, need_update_stat = TRUE)
 	apply_theme_skin(modsuit, new_skin)
@@ -122,6 +128,7 @@
 	allowed = ALLOWED_CARGO
 
 /datum/mod_theme/centcom
+	brc_mitigation_bonus = 15
 	resistance_flags = FIRE_PROOF|ACID_PROOF
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	siemens_coefficient = 0
@@ -130,6 +137,7 @@
 	hardlight_color = MOD_COMMAND_COLOR
 
 /datum/mod_theme/station_combat
+	brc_mitigation_bonus = 15
 	siemens_coefficient = 0
 	allowed = ALLOWED_SECURITY
 	hardlight_color = MOD_SEC_COLOR
@@ -145,8 +153,15 @@
 	max_heat_protection_temperature = FIRE_SUIT_MAX_TEMP_PROTECT
 
 /datum/mod_theme/antagonist
+	brc_mitigation_bonus = 15
+	allow_hot_swap = TRUE
 	complexity_max = ANTAG_MAX_COMPLEXITY
 	siemens_coefficient = 0
 	allowed = ALLOWED_ANTAG
 	compatible_with_armor_modules = FALSE
 	hardlight_effect = /datum/overlay_effect/mod_effect/white_noize
+
+/datum/mod_theme/antagonist/New()
+	. = ..()
+	inbuilt_modules = inbuilt_modules.Copy()
+	inbuilt_modules |= /obj/item/mod/module/hat_stabilizer/syndicate

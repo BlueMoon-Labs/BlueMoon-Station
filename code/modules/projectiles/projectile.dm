@@ -95,6 +95,8 @@
 	var/ricochets = 0
 	/// how many times we can ricochet max
 	var/ricochets_max = 0
+	var/min_ricochets = 0
+	var/accuracy_falloff = PROJECTILE_DEFAULT_ACCURACY_FALLOFF
 	/// 0-100, the base chance of ricocheting, before being modified by the atom we shoot and our chance decay
 	var/ricochet_chance = 0
 	/// 0-1 (or more, I guess) multiplier, the ricochet_chance is modified by multiplying this after each ricochet
@@ -417,7 +419,7 @@
 
 	var/distance = get_dist(T, starting) // Get the distance between the turf shot from and the mob we hit and use that for the calculations.
 	if(def_zone && check_zone(def_zone) != BODY_ZONE_CHEST)
-		def_zone = ran_zone(def_zone, max(100-(7*distance), 5) * zone_accuracy_factor) //Lower accurancy/longer range tradeoff. 7 is a balanced number to use.
+		def_zone = ran_zone(def_zone, max(100-(accuracy_falloff * distance), 5) * zone_accuracy_factor) //Lower accurancy/longer range tradeoff. 7 is a balanced number to use.
 
 	return process_hit(T, select_target(T, A, A), A)		// SELECT TARGET FIRST!
 
@@ -664,6 +666,8 @@
 		if(PROJECTILE_RICOCHET_NO)
 			return FALSE
 		if(PROJECTILE_RICOCHET_YES)
+			if(ricochets < min_ricochets)
+				return TRUE
 			var/chance = ricochet_chance * A.ricochet_chance_mod
 			if(firer && HAS_TRAIT(firer, TRAIT_NICE_SHOT))
 				chance += NICE_SHOT_RICOCHET_BONUS
@@ -755,6 +759,8 @@
 	LAZYINITLIST(impacted)
 	if(fired_from)
 		SEND_SIGNAL(fired_from, COMSIG_PROJECTILE_BEFORE_FIRE, src, original)	//If no angle needs to resolve it from xo/yo!
+	if(firer && fired_from)
+		SEND_SIGNAL(firer, COMSIG_MOD_PROJECTILE_FIRE, src)
 	if(shrapnel_type)
 		AddElement(/datum/element/embed, projectile_payload = shrapnel_type)
 	if(!log_override && firer && original)

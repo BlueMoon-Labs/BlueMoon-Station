@@ -373,6 +373,8 @@
 	alarm_manager?.clear_alarm(ALARM_CAMERA)
 
 /obj/machinery/camera/proc/can_use()
+	if(HAS_TRAIT(src, TRAIT_MOD_DISRUPTED))
+		return FALSE
 	if(!status)
 		return FALSE
 	if(machine_stat & EMPED)

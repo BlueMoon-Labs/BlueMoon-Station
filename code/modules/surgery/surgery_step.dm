@@ -80,6 +80,8 @@
 	if(try_to_fail)
 		to_chat(user, span_warning("Вы действуете так, что незаметно провалите этот этап!"))
 	// BLUEMOON ADD END
+	if(HAS_TRAIT(user, TRAIT_PROTEAN_SURGERY))
+		speed_mod /= PROTEAN_SERVO_SURGERY_FACTOR
 	var/delay = time * speed_mod
 	if(target == user && !HAS_TRAIT(target, TRAIT_ROBOTIC_ORGANISM)) // BLUEMOON EDIT - добавлена проверка на роботизированный организм
 		if(HAS_TRAIT(target, TRAIT_PAINKILLER))

@@ -375,7 +375,13 @@
 	if(!O)
 		return FALSE
 
-	return O.equip(src, visualsOnly, preference_source)
+	var/datum/species/protean/protean = dna?.species
+	var/obj/item/mod/control/pre_equipped/protean/protean_suit
+	if(istype(protean))
+		protean_suit = protean.prepare_outfit(src)
+	. = O.equip(src, visualsOnly, preference_source)
+	if(protean_suit)
+		protean.finish_outfit(src, protean_suit)
 
 
 //delete all equipment without dropping anything

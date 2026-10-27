@@ -42,6 +42,8 @@
 	var/allowed_in_phaseout = FALSE
 	/// If we're allowed to use this module while the suit is disabled.
 	var/allowed_inactive = FALSE
+	var/allowed_incapacitated = FALSE
+	var/hands_free_use = FALSE
 	/// Timer for the cooldown
 	COOLDOWN_DECLARE(cooldown_current_timer)
 	/// BLUEMOON ADD Bitflag for exosuit fabricator sub-categories
@@ -68,6 +70,8 @@
 
 /obj/item/mod/module/Destroy()
 	mod?.uninstall(src, deleting = TRUE)
+	QDEL_NULL(my_retract_component)
+	QDEL_NULL(internal_device)
 	if(device)
 		UnregisterSignal(device, COMSIG_PARENT_PREQDELETED)
 		QDEL_NULL(device)
@@ -75,8 +79,28 @@
 
 /obj/item/mod/module/examine(mob/user)
 	. = ..()
-	if(user.hud_list[DIAG_HUD] && user.client.images & user.hud_list[DIAG_HUD])
+	if(user.client && user.hud_list[DIAG_HUD] && user.client.images & user.hud_list[DIAG_HUD])
 		. += span_notice("Использовано места: [complexity]")
+	. += span_notice("Видно <a href='?src=[REF(src)];mod_specification=1'>шильдик</a> технической спецификации")
+
+/obj/item/mod/module/Topic(href, list/href_list)
+	. = ..()
+	if(href_list["mod_specification"] && usr)
+		to_chat(usr, examine_block(get_specification()))
+
+/obj/item/mod/module/proc/get_specification()
+	var/list/parameters = list(
+		"Вместимость (complexity)" = complexity,
+		"Расход в ожидании, ед. заряда/с" = idle_power_cost,
+		"Расход при работе, ед. заряда/с" = active_power_cost,
+		"Расход за применение, ед. заряда" = use_power_cost,
+		"Перезарядка, с" = cooldown_time / (1 SECONDS),
+	)
+	var/list/readout = list(span_notice("<b>Техническая спецификация: [html_encode(name)]</b>"), "<table>")
+	for(var/parameter in parameters)
+		readout += "<tr><td>[parameter]</td><td>[parameters[parameter]]</td></tr>"
+	readout += "</table>"
+	return readout.Join()
 
 /obj/item/mod/module/proc/check_required_modpart()
 	if(!mod || !mod?.wearer)
@@ -102,13 +126,11 @@
 
 /// Called from MODsuit's uninstall() proc, so when the module is uninstalled.
 /obj/item/mod/module/proc/on_uninstall(deleting = FALSE, user)
-	if(my_retract_component && deleting)
-		my_retract_component.RemoveComponent()
-		QDEL_NULL(internal_device)
+	if(my_retract_component)
+		my_retract_component?.snap_back()
 		QDEL_NULL(my_retract_component)
-	if(required_modpart)
-		required_modpart.linked_modules -= src
-		required_modpart = null
+	required_modpart?.linked_modules?.Remove(src)
+	required_modpart = null
 	return
 
 /// Called when the MODsuit is activated
@@ -138,14 +160,16 @@
 /obj/item/mod/module/proc/check_minimum_cell_charge()
 	if(!minimum_cell_charge)
 		return TRUE
-	var/obj/item/stock_parts/cell/mod_cell = mod?.get_cell()
-	var/current_percent = mod_cell.percent()
-	if(current_percent <= minimum_cell_charge)
+	if(!mod?.core?.charge_source())
+		return FALSE
+	if(mod.get_charge_percent() <= minimum_cell_charge)
 		return FALSE
 	return TRUE
 
 /// Called when the module is selected from the TGUI
 /obj/item/mod/module/proc/on_select()
+	if(SEND_SIGNAL(src, COMSIG_MODULE_TRIGGERED, mod?.wearer) & MOD_ABORT_USE)
+		return FALSE
 	if(!mod?.wearer) //the control's TGUI is reachable on an unworn suit; every module action below needs a wearer
 		return
 	if(!COOLDOWN_FINISHED(src, cooldown_current_timer))
@@ -160,22 +184,27 @@
 	if(!check_required_modpart())
 		mod.balloon_alert(mod.wearer, "Выдвиньте [required_modpart.name]")
 		return
+	var/activated = FALSE
 	if(module_type != MODULE_USABLE)
 		if(active)
 			on_deactivation()
 		else
 			on_activation()
+			activated = active
 	else
-		on_use()
+		activated = on_use()
+	if(activated && module_type != MODULE_PASSIVE && module_type != MODULE_ARMOR)
+		to_chat(mod.wearer, span_notice("Модуль \"[name]\" активирован"))
 	SEND_SIGNAL(mod, COMSIG_MOD_MODULE_SELECTED, src)
 
 /// Called when the module is activated
 /obj/item/mod/module/proc/on_activation()
-	var/obj/item/stock_parts/cell/cell = mod.get_cell()
+	if(SEND_SIGNAL(src, COMSIG_MODULE_TRIGGERED, mod?.wearer) & MOD_ABORT_USE)
+		return FALSE
 	if(need_full_deploy && !mod.all_parts_deployed())
 		mod.balloon_alert(mod.wearer, "Разверните полностью!")
 		return FALSE
-	if(!mod.is_active() || !cell?.charge)
+	if((!mod.is_active() && !allowed_inactive) || !mod.get_charge() || !mod.check_charge(active_power_cost))
 		mod.balloon_alert(mod.wearer, "обесточен!")
 		return FALSE
 	if(!allowed_in_phaseout && istype(mod.wearer.loc, /obj/effect/dummy/phased_mob))
@@ -203,11 +232,12 @@
 /obj/item/mod/module/proc/on_deactivation()
 	active = FALSE
 	if(module_type == MODULE_ACTIVE)
-		mod.selected_module = null
+		if(mod.selected_module == src)
+			mod.selected_module = null
 		mod.balloon_alert(mod.wearer, "[src] деактивирован")
 
 		if(device)
-			my_retract_component.snap_back()
+			my_retract_component?.snap_back()
 		else
 			UnregisterSignal(mod.wearer, used_signal)
 			used_signal = null
@@ -216,6 +246,8 @@
 
 /// Called when the module is used
 /obj/item/mod/module/proc/on_use()
+	if(SEND_SIGNAL(src, COMSIG_MODULE_TRIGGERED, mod?.wearer) & MOD_ABORT_USE)
+		return FALSE
 	if(!mod.wearer)
 		return
 	if(!COOLDOWN_FINISHED(src, cooldown_current_timer))
@@ -233,22 +265,29 @@
 
 /// Called when an activated module without a device is used
 /obj/item/mod/module/proc/on_select_use(atom/target)
-	if(!mod?.wearer)
+	if(SEND_SIGNAL(src, COMSIG_MODULE_TRIGGERED, mod?.wearer) & MOD_ABORT_USE)
+		return FALSE
+	if(!active || QDELETED(target) || !mod?.wearer || mod.selected_module != src)
 		return FALSE
 	if(mod.wearer.incapacitated(ignore_grab = TRUE))
 		return FALSE
+	if(mod.is_activating() || !mod.is_active() || !check_required_modpart())
+		return FALSE
 	mod.wearer.face_atom(target)
-	if(!on_use())
-		return FALSE
-	if(mod.is_activating() || !mod.is_active())
-		return FALSE
-	return TRUE
+	return on_use()
 
 /// Called when an activated module without a device is active and the user alt/middle-clicks
 /obj/item/mod/module/proc/on_special_click(mob/source, atom/target)
 	SIGNAL_HANDLER
-	INVOKE_ASYNC(src, PROC_REF(on_select_use), target)
+	if(source != mod?.wearer || !active)
+		return
+	INVOKE_ASYNC(src, PROC_REF(use_on_target), source, target)
 	return COMSIG_MOB_CANCEL_CLICKON
+
+/obj/item/mod/module/proc/use_on_target(mob/user, atom/target)
+	if(user != mod?.wearer)
+		return FALSE
+	return on_select_use(target)
 
 /// Called on the MODsuit's process
 /obj/item/mod/module/proc/on_process(delta_time)
@@ -270,17 +309,12 @@
 
 /// Drains power from the suit cell
 /obj/item/mod/module/proc/drain_power(amount)
-	var/obj/item/stock_parts/cell/cell = mod.get_cell()
 	if(!check_power(amount))
 		return FALSE
-	cell.charge = max(0, cell.charge - amount)
-	return TRUE
+	return mod.subtract_charge(amount)
 
 /obj/item/mod/module/proc/check_power(amount)
-	var/obj/item/stock_parts/cell/cell = mod.get_cell()
-	if(!cell || (cell.charge < amount))
-		return FALSE
-	return TRUE
+	return mod?.check_charge(amount)
 
 /// Adds additional things to the MODsuit ui_data()
 /obj/item/mod/module/proc/add_ui_data()
@@ -340,6 +374,7 @@
 	var/list/accepted_anomalies = list(/obj/item/assembly/signaler/anomaly)
 	/// If this one starts with a core in.
 	var/prebuilt = FALSE
+	var/core_removable = TRUE
 
 /obj/item/mod/module/anomaly_locked/Initialize(mapload)
 	. = ..()
@@ -357,14 +392,15 @@
 	. = ..()
 	if(!length(accepted_anomalies))
 		return
+	var/list/examine_text = .
 	if(core)
-		. += span_notice("There is a [core.name] installed in it. You could remove it with a <b>screwdriver</b>...")
+		examine_text.Insert(length(examine_text), span_notice(core_removable ? "Установлено ядро [core.name]. Его можно извлечь отвёрткой." : "Ядро [core.name] встроено в модуль и не извлекается."))
 	else
 		var/list/core_list = list()
 		for(var/path in accepted_anomalies)
 			var/atom/core_path = path
 			core_list += initial(core_path.name)
-		. += span_notice("You need to insert \a [english_list(core_list, and_text = " or ")] for this module to function.")
+		examine_text.Insert(length(examine_text), span_notice("You need to insert \a [english_list(core_list, and_text = " or ")] for this module to function."))
 
 /obj/item/mod/module/anomaly_locked/on_select()
 	if(!core)
@@ -372,10 +408,26 @@
 		return
 	return ..()
 
-/obj/item/mod/module/anomaly_locked/on_process(delta_time)
-	. = ..()
-	if(!core)
+/obj/item/mod/module/anomaly_locked/on_activation()
+	if(QDELETED(core))
 		return FALSE
+	return ..()
+
+/obj/item/mod/module/anomaly_locked/on_process(delta_time)
+	if(QDELETED(core))
+		if(active)
+			on_deactivation()
+		return FALSE
+	return ..()
+
+/obj/item/mod/module/anomaly_locked/Exited(atom/movable/gone, direction)
+	. = ..()
+	if(gone != core)
+		return
+	core = null
+	if(active)
+		on_deactivation()
+	update_icon_state()
 
 /obj/item/mod/module/anomaly_locked/on_active_process(delta_time)
 	if(!core)
@@ -398,20 +450,28 @@
 
 /obj/item/mod/module/anomaly_locked/screwdriver_act(mob/living/user, obj/item/tool)
 	. = ..()
+	if(!core_removable)
+		balloon_alert(user, "ядро не извлекается")
+		return TRUE
 	if(!core)
 		mod?.balloon_alert(user, "нет ядра!")
 		return
+	var/obj/item/assembly/signaler/anomaly/old_core = core
 	mod?.balloon_alert(user, "изъятие ядра...")
-	if(!do_after(user, 3 SECONDS, target = src))
+	if(!do_after(user, 3 SECONDS, target = src) || QDELETED(old_core) || core != old_core)
 		mod?.balloon_alert(user, "прервано!")
 		return
 	mod?.balloon_alert(user, "ядро изъято")
-	core.forceMove(drop_location())
+	old_core.forceMove(drop_location())
 	if(Adjacent(user) && !issilicon(user))
-		user.put_in_hands(core)
-	core = null
-	update_icon_state()
+		user.put_in_hands(old_core)
 
 /obj/item/mod/module/anomaly_locked/update_icon_state()
 	icon_state = initial(icon_state) + (core ? "-core" : "")
 	return ..()
+
+/obj/item/mod/module/proc/get_slowdown()
+	return 0
+
+/obj/item/mod/module/proc/can_install(obj/item/mod/control/suit, mob/user)
+	return TRUE
