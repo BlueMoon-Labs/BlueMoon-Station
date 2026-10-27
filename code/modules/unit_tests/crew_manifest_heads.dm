@@ -30,10 +30,10 @@
 	TEST_ASSERT_EQUAL(window.ui_static_data(null)["department_names"][DEPARTMENT_MEDICAL], "Медицинский отдел", "Окно получает русское название отдела с сервера")
 
 	var/list/medical = test_entries(manifest, DEPARTMENT_MEDICAL)
-	TEST_ASSERT_EQUAL(entry_names(medical), "Director, Stickered, Doctor, Freetext", "Главы медотдела первыми, рядовые в прежнем порядке")
+	TEST_ASSERT_EQUAL(entry_names(medical), "Director, Freetext, Stickered, Doctor", "Главы медотдела первыми, рядовые в прежнем порядке")
 	TEST_ASSERT(medical["Director"]["head"], "Главврач под альт-названием помечен главой")
 	TEST_ASSERT(!medical["Doctor"]["head"], "Рядовой врач не глава")
-	TEST_ASSERT(!medical["Freetext"]["head"], "Свободное название на карте главврача не выдаёт главу, как и в рации")
+	TEST_ASSERT(medical["Freetext"]["head"], "Свободное название на карте главврача остаётся главой, как и в рации")
 	TEST_ASSERT_EQUAL(medical["Stickered"]["rank"], "Syndicate Chief Medical Officer", "Наклейка видна в должности записи")
 	TEST_ASSERT(medical["Stickered"]["head"], "Префикс наклейки не снимает метку главы")
 
@@ -46,7 +46,7 @@
 	TEST_ASSERT(!service["Bridge"]["head"], "Бриг-офицер никем не руководит")
 
 	var/list/command = test_entries(manifest, DEPARTMENT_COMMAND)
-	TEST_ASSERT_EQUAL(entry_names(command), "Captain, Director, Personnel, Security, Stickered, Freetext, Bridge, Renamed", "Капитан первым, затем главы, затем остальные")
+	TEST_ASSERT_EQUAL(entry_names(command), "Captain, Director, Freetext, Personnel, Security, Stickered, Bridge, Renamed", "Капитан первым, затем главы, затем остальные")
 	TEST_ASSERT_EQUAL(command["Renamed"]["rank"], "Assistant", "Переименованная карта меняет должность записи")
 	TEST_ASSERT(!command["Renamed"]["head"], "Карта капитана под названием ассистента не выдаёт главу")
 

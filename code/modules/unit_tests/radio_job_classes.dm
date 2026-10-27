@@ -78,7 +78,8 @@
 
 	var/list/free_title = tag_classes("Medical Doctor", "Senior Surgeon")
 	TEST_ASSERT_EQUAL(free_title[1], doctor[1], "Свободное название остаётся в отделе профессии карты: [last_line]")
-	TEST_ASSERT(!findtext(last_line, "radiojob-icon"), "Свободное название не выдаёт профессию карты значком: [last_line]")
+	TEST_ASSERT(!("radiojob-head" in free_title), "Свободное название на карте рядового не глава: [last_line]")
+	TEST_ASSERT_EQUAL(icon_sprite(), "job-medicaldoctor", "Свободное название со значком профессии карты: [last_line]")
 
 	var/list/admiral_captain = tag_classes("Captain", "Admiral")
 	TEST_ASSERT_EQUAL(admiral_captain[1], "radiojob-cmd", "Альт-название капитана, совпадающее с должностью ЦК, остаётся капитанским: [last_line]")
@@ -97,11 +98,11 @@
 	TEST_ASSERT_EQUAL(mechanic_roboticist[1], "radiojob-sci", "Механик-робототехник в науке: [last_line]")
 	var/list/bob_captain = tag_classes("Captain", "Bob")
 	TEST_ASSERT_EQUAL(bob_captain[1], "radiojob-cmd", "Свободное название капитана в цвет командования: [last_line]")
-	TEST_ASSERT(!("radiojob-head" in bob_captain), "Свободное название не выдаёт главу: [last_line]")
-	TEST_ASSERT(!findtext(last_line, "radiojob-icon"), "Свободное название на карте капитана без значка капитана: [last_line]")
+	TEST_ASSERT("radiojob-head" in bob_captain, "Свободное название на карте капитана остаётся главой: [last_line]")
+	TEST_ASSERT_EQUAL(icon_sprite(), "job-captain", "Свободное название на карте капитана со значком капитана: [last_line]")
 	var/list/mechanic_captain = tag_classes("Captain", "Mechanic")
 	TEST_ASSERT_EQUAL(mechanic_captain[1], "radiojob-cmd", "Чужое неоднозначное альт-название красится профессией карты: [last_line]")
-	TEST_ASSERT(!("radiojob-head" in mechanic_captain), "Чужое неоднозначное альт-название не выдаёт главу: [last_line]")
+	TEST_ASSERT("radiojob-head" in mechanic_captain, "Чужое неоднозначное альт-название на карте капитана остаётся главой: [last_line]")
 	var/list/forged_iron = tag_classes("Big Iron")
 	TEST_ASSERT_EQUAL(forged_iron[1], "radiojob-unk", "Поддельная должность с неоднозначным альт-названием не берёт чужой отдел: [last_line]")
 	TEST_ASSERT(!("radiojob-head" in forged_iron), "Поддельная должность с неоднозначным альт-названием не глава: [last_line]")
@@ -224,7 +225,7 @@
 	TEST_ASSERT_EQUAL(ai_tag[1], "radiojob-silicon", "ИИ в синтетиках: [last_line]")
 	TEST_ASSERT_EQUAL(icon_sprite(), "job-ai", "Значок ИИ: [last_line]")
 
-/// Неузнанное название со своим стейтом в jobs.dmi берёт его, иначе значок фракции; свободный текст без стейта без значка.
+/// Неузнанное название со своим стейтом в jobs.dmi берёт его, иначе значок фракции; свободный текст на станционной карте - значок её профессии.
 /datum/unit_test/radio_job_classes/role_icons
 
 /datum/unit_test/radio_job_classes/role_icons/Run()
@@ -240,9 +241,10 @@
 	tag_classes("Syndicate Admiral")
 	TEST_ASSERT_EQUAL(icon_sprite(), "job-syndicate", "Без своего стейта - значок фракции: [last_line]")
 	tag_classes("Captain", "Bob")
-	TEST_ASSERT_NULL(icon_sprite(), "Свободный текст без своего стейта на станционной карте без значка: [last_line]")
-	tag_classes("Assistant", "Captain!")
-	TEST_ASSERT_NULL(icon_sprite(), "Неточное название профессии не даёт её значка: [last_line]")
+	TEST_ASSERT_EQUAL(icon_sprite(), "job-captain", "Свободный текст на станционной карте со значком её профессии: [last_line]")
+	var/list/inexact_captain = tag_classes("Assistant", "Captain!")
+	TEST_ASSERT_EQUAL(icon_sprite(), "job-assistant", "Неточное название профессии не даёт её значка: [last_line]")
+	TEST_ASSERT(!("radiojob-head" in inexact_captain), "Неточное название профессии не даёт главу: [last_line]")
 	var/list/agent_captain = tag_classes("Syndicate Captain")
 	TEST_ASSERT_EQUAL(icon_sprite(), "job-syndicate", "Агентская карта Синдиката со значком Синдиката, не капитана: [last_line]")
 	TEST_ASSERT(!("radiojob-head" in agent_captain), "Агентская карта капитана Синдиката без звезды: [last_line]")
@@ -264,5 +266,5 @@
 	tag_classes("Medical Doctor")
 	TEST_ASSERT(findtext(last_line, "\[Com\] <span class='radiojob-icon "), "Перед значком пробел частоты: [last_line]")
 	TEST_ASSERT(findtext(last_line, ">\[Medical Doctor\] </span><span class='radiojob-name "), "Пробел внутри тега, имя сразу за ним: [last_line]")
-	tag_classes("Medical Doctor", "Senior Surgeon")
-	TEST_ASSERT(findtext(last_line, "\[Com\] <span class='radiojob-legacy-med radiojob radiojob-med'>\[Senior Surgeon\] </span><span class='radiojob-name "), "Без значка тег сразу после частоты, пробел внутри тега: [last_line]")
+	tag_classes("Senior Surgeon")
+	TEST_ASSERT(findtext(last_line, "\[Com\] <span class='radiojob-legacy-unk radiojob radiojob-unk'>\[Senior Surgeon\] </span><span class='radiojob-name "), "Без значка тег сразу после частоты, пробел внутри тега: [last_line]")

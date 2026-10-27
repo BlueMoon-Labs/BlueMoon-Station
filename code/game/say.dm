@@ -253,7 +253,7 @@ GLOBAL_LIST_INIT(freqtospan, list(
 	return "[copytext_char("[freq]", 1, 4)].[copytext_char("[freq]", 4, 5)]"
 
 /// Оформление тега должности: классы отдела, фракции и главы для чата, id прежней раскраски и значок. Цвета задаёт чат.
-/// Отдел, глава и значок - по показанному названию shown_job (custom_job карты), свободный текст - отдел профессии карты base_job без метки главы и значка.
+/// Отдел, глава и значок - по показанному названию shown_job (custom_job карты), свободный текст - по профессии карты base_job.
 /// Без карты (КПК) префикс наклейки снимается только перед точным названием профессии: "Syndicate Admiral" не капитан.
 /proc/get_radio_job_style(base_job, display_job, shown_job)
 	var/centcom_card = base_job && !SSjob.GetJob(base_job) && GetJobName(base_job) == "Centcom"
@@ -262,7 +262,6 @@ GLOBAL_LIST_INIT(freqtospan, list(
 	var/datum/job/job = (centcom_card && shown == base_job) ? null : get_radio_shown_job(shown, card_job)
 	if(!job && !base_job)
 		job = SSjob.GetJob(strip_radio_sticker_prefix(display_job))
-	var/recognized = !!job
 	if(!job)
 		job = card_job
 	var/centcom = !job && (centcom_card || GetJobName(shown) == "Centcom")
@@ -283,10 +282,10 @@ GLOBAL_LIST_INIT(freqtospan, list(
 	var/classes = "radiojob-[department]"
 	if(faction)
 		classes += " radiojob-f-[faction]"
-	if(recognized && get_radio_head_jobs()[job.title])
+	if(job && get_radio_head_jobs()[job.title])
 		classes += " radiojob-head"
 	// Неузнанное название: свой стейт роли вне SSjob, затем значок стороны.
-	var/list/icon_states = recognized ? list(ckey(job.title)) : list(get_radio_role_icon(shown), get_radio_faction_icon(faction), centcom ? "centcom" : null)
+	var/list/icon_states = job ? list(ckey(job.title)) : list(get_radio_role_icon(shown), get_radio_faction_icon(faction), centcom ? "centcom" : null)
 	return radio_job_style(classes, faction || get_radio_job_legacy_class(job ? job.title : (centcom ? "Centcom" : "Unknown"), job), icon_states)
 
 /// legacy - id прежней раскраски (radiojob-legacy-<id>), icon_states - стейт icons/ui_icons/tgui/jobs.dmi или список, берётся первый из листа.
