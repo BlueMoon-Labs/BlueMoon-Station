@@ -48,7 +48,7 @@ export const Healthanalyzer = () => {
   const { act, data } = useBackend<HealthanalyzerData>();
   const { scan, advanced, printing, scanNumber, live = false, canPrint = advanced, canClear = true, deviceLabel } = data;
   return (
-    <Window title={live ? 'Мониторинг организма' : 'Анализатор здоровья'} width={620} height={760}>
+    <Window title={live ? 'Мониторинг организма' : 'Анализатор здоровья'} width={620} height={780}>
       <Window.Content scrollable>
         <Section title="Медицинский отчёт" buttons={(
           <>
