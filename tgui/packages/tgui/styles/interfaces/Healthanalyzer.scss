@@ -1,11 +1,28 @@
 .Healthanalyzer__wound {
   position: relative;
   display: inline-block;
-  max-width: 100%;
+  max-width: calc(100% - 1rem);
+  margin-left: 1rem;
+  color: #c51e1e;
+  font-size: 0.95rem;
 }
 
-.Healthanalyzer__woundButton {
+.Healthanalyzer__woundButton.Button {
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0.1em 0.3em;
+  margin: 0;
+  color: inherit;
+  background-color: transparent;
+  line-height: 1.4;
   white-space: normal;
+  cursor: help;
+
+  &:hover,
+  &:focus-visible {
+    color: inherit;
+    background-color: rgba(197, 30, 30, 0.15);
+  }
 }
 
 .Healthanalyzer__woundTooltip {
@@ -16,4 +33,5 @@
   overflow-y: auto;
   overflow-wrap: anywhere;
   pointer-events: auto;
+  font-size: 1rem;
 }

@@ -1,3 +1,4 @@
+import { round } from 'common/math';
 import { BooleanLike } from 'common/react';
 import { decodeHtmlEntities } from 'common/string';
 import { Fragment, useLayoutEffect, useRef, useState } from 'react';
@@ -13,7 +14,6 @@ type Limb = { name: string; missing: BooleanLike; brute: number; burn: number; w
 type Organ = { name: string; damage: number | null; status: string; warning: BooleanLike };
 type Reagent = { name: string; volume: number; overdosed: BooleanLike; inactive: BooleanLike };
 type Scan = {
-  patient: string;
   scanTime: string;
   woundOnly?: BooleanLike;
   health: number;
@@ -24,16 +24,17 @@ type Scan = {
   similarSpecies?: string;
   temperatureC?: number;
   temperatureF?: number;
-  vitals?: ScanLine[];
+  diagnosis?: ScanLine[];
   damageLevels?: Record<string, number>;
   damageLocalization?: Limb[];
   organs?: Organ[];
+  missingOrgans?: string[];
   sections: ScanSection[];
   reagents?: Reagent[];
   addictions?: string[];
   blood?: { percent: number; volume: number; incoming: number; type: string; low: BooleanLike; critical: BooleanLike };
 };
-type HealthanalyzerData = { advanced: BooleanLike; printing: BooleanLike; verbose: BooleanLike; scan: Scan | null };
+type HealthanalyzerData = { advanced: BooleanLike; printing: BooleanLike; verbose: BooleanLike; scanNumber: number; scan: Scan | null };
 
 const damageTypes = [
   { key: 'brute', label: 'Травмы', color: 'red' },
@@ -44,7 +45,7 @@ const damageTypes = [
 
 export const Healthanalyzer = () => {
   const { act, data } = useBackend<HealthanalyzerData>();
-  const { scan, advanced, printing, verbose } = data;
+  const { scan, advanced, printing, verbose, scanNumber } = data;
   return (
     <Window title="Анализатор здоровья" width={620} height={740}>
       <Window.Content scrollable>
@@ -61,16 +62,18 @@ export const Healthanalyzer = () => {
         )}>
           {scan ? (
             <>
-              <Box bold fontSize={1.3} mb={0.5}>{scan.patient}</Box>
-              {!!scan.species && <Box mb={0.5}>Раса: {scan.species} | Схожая раса: {scan.similarSpecies}</Box>}
-              {scan.temperatureC !== undefined && <Box mb={0.5}>Температура тела: {scan.temperatureC} °C ({scan.temperatureF} °F)</Box>}
-              <ScanLines lines={scan.vitals || []} compact />
+              {(!!scan.species || scan.temperatureC !== undefined) && (
+                <Box mb={0.5}>
+                  {!!scan.species && <>Раса: {scan.species} | Схожая раса: {scan.similarSpecies}</>}
+                  {scan.temperatureC !== undefined && <>{scan.species ? ' | ' : ''}Температура тела: {round(scan.temperatureC, 3)} °C ({round(scan.temperatureF, 3)} °F)</>}
+                </Box>
+              )}
               {!!scan.damageLevels && <VitalSigns scan={scan} />}
-              <Box color="label" mt={0.8}>Снимок от {scan.scanTime} · {advanced ? 'Продвинутый' : 'Обычный'} анализатор</Box>
+              {!!scan.diagnosis?.length && <Box mt={0.5}><ScanLines lines={scan.diagnosis} compact /></Box>}
             </>
           ) : <NoticeBox>В памяти нет результатов обследования. Просканируйте пациента.</NoticeBox>}
         </Section>
-        {scan && <ScanResults key={`${scan.scanTime}-${scan.patient}`} scan={scan} advanced={!!advanced} verbose={!!verbose} />}
+        {scan && <ScanResults key={scanNumber} scan={scan} advanced={!!advanced} verbose={!!verbose} />}
       </Window.Content>
     </Window>
   );
@@ -78,23 +81,19 @@ export const Healthanalyzer = () => {
 
 const VitalSigns = ({ scan }: { scan: Scan }) => (
   <LabeledList>
-    <LabeledList.Item label="Общее состояние">
-      {scan.unknown ? <Box color="average">Неизвестно</Box> : scan.dead ? <Box bold color="bad">Смерть</Box> : (
-        <ProgressBar value={scan.health / 100} color={scan.health > 50 ? 'good' : scan.health > 0 ? 'average' : 'bad'}>{scan.health} %</ProgressBar>
-      )}
-    </LabeledList.Item>
+    {!!scan.unknown && <LabeledList.Item label="Общее состояние"><Box color="average">Неизвестно</Box></LabeledList.Item>}
     {damageTypes.map(({ key, label, color }) => (
       <LabeledList.Item key={key} label={key === 'tox' && scan.robotic ? 'Коррозия' : label}>
-        <ProgressBar value={scan.damageLevels![key] / 100} color={color}>{scan.damageLevels![key]}</ProgressBar>
+        <ProgressBar value={scan.damageLevels![key] / 100} color={color}>{round(scan.damageLevels![key], 3)}</ProgressBar>
       </LabeledList.Item>
     ))}
     {!!scan.blood && (
       <LabeledList.Item label={scan.robotic ? 'Гидравлическая жидкость' : 'Кровь'}>
         <ProgressBar value={scan.blood.percent / 100} color={scan.blood.critical ? 'bad' : scan.blood.low ? 'average' : 'good'}>
           {scan.blood.critical ? 'КРИТИЧЕСКИЙ УРОВЕНЬ · ' : scan.blood.low ? 'НИЗКИЙ УРОВЕНЬ · ' : ''}
-          {scan.blood.percent} % · {scan.blood.volume} сл · {scan.blood.type}
+          {round(scan.blood.percent, 3)} % · {round(scan.blood.volume, 3)} cl · {scan.blood.type}
         </ProgressBar>
-        {scan.blood.incoming > 0 && <Box mt={0.5}>Переливается ещё {scan.blood.incoming} сл</Box>}
+        {scan.blood.incoming > 0 && <Box mt={0.5}>Переливается ещё {round(scan.blood.incoming, 3)} cl</Box>}
       </LabeledList.Item>
     )}
   </LabeledList>
@@ -102,11 +101,9 @@ const VitalSigns = ({ scan }: { scan: Scan }) => (
 
 const ScanResults = ({ scan, advanced, verbose }: { scan: Scan; advanced: boolean; verbose: boolean }) => {
   const { act } = useBackend();
-  const sections = scan.sections.filter(section => section.title !== 'Реагенты в организме' && (advanced || section.title !== 'Анализ тела'));
-  const summary = sections.find(section => section.title === 'Общая диагностика');
+  const sections = scan.sections.filter(section => section.title !== 'Реагенты в организме');
   return (
     <>
-      {summary && <Section title={summary.title}><ScanLines lines={summary.lines} compact /></Section>}
       {!scan.woundOnly && (
         <Section title="Локализация повреждений" buttons={(
           <Button icon="bone" selected={verbose} onClick={() => act('detail')}>{verbose ? 'Подробно' : 'Кратко'}</Button>
@@ -114,24 +111,28 @@ const ScanResults = ({ scan, advanced, verbose }: { scan: Scan; advanced: boolea
           {verbose ? <LimbTable limbs={scan.damageLocalization || []} /> : <Box color="label">Подробная локализация скрыта.</Box>}
         </Section>
       )}
-      {!!scan.organs?.length && (
+      {(!!scan.organs?.length || !!scan.missingOrgans?.length) && (
         <Section title="Состояние органов">
-          <Table>
-            <Table.Row header><Table.Cell>Орган</Table.Cell>{advanced && <Table.Cell>Повреждения</Table.Cell>}<Table.Cell>Диагностика</Table.Cell></Table.Row>
-            {scan.organs.map((organ, index) => (
-              <Table.Row key={index}>
-                <Table.Cell verticalAlign="top" pr={1}>{organ.name}</Table.Cell>
-                {advanced && <Table.Cell verticalAlign="top" pr={1}>{organ.damage}</Table.Cell>}
-                <Table.Cell pb={0.5} color={organ.warning ? 'bad' : undefined}>{decodeHtmlEntities(organ.status)}</Table.Cell>
-              </Table.Row>
-            ))}
-          </Table>
+          {!!scan.organs?.length && (
+            <Table>
+              <Table.Row header><Table.Cell>Орган</Table.Cell>{advanced && <Table.Cell>Повреждения</Table.Cell>}<Table.Cell>Диагностика</Table.Cell></Table.Row>
+              {scan.organs.map((organ, index) => (
+                <Table.Row key={index}>
+                  <Table.Cell verticalAlign="top" pr={1}>{organ.name}</Table.Cell>
+                  {advanced && <Table.Cell verticalAlign="top" pr={1} color="bad">{round(organ.damage, 3)}</Table.Cell>}
+                  <Table.Cell pb={0.5} color={organ.warning ? 'bad' : undefined}>{decodeHtmlEntities(organ.status)}</Table.Cell>
+                </Table.Row>
+              ))}
+            </Table>
+          )}
+          {!!scan.missingOrgans?.length && <Box color="bad" mt={scan.organs?.length ? 0.5 : 0}>Отсутствует: {scan.missingOrgans.join(', ')}</Box>}
         </Section>
       )}
-      {sections.filter(section => section !== summary).map((section, index) => (
+      {sections.map((section, index) => (
         <Section key={index} title={section.title}><ScanLines lines={section.lines} /></Section>
       ))}
       {!scan.woundOnly && <Reagents reagents={scan.reagents || []} addictions={scan.addictions || []} />}
+      <Box color="label" textAlign="center" mt={0.8} mb={0.5}>Снимок от {scan.scanTime} · {advanced ? 'Продвинутый' : 'Обычный'} анализатор</Box>
       <Box color="label" textAlign="center" mb={1}>Для обновления показателей проведите повторное обследование.</Box>
     </>
   );
@@ -154,11 +155,11 @@ const Reagents = ({ reagents, addictions }: { reagents: Reagent[]; addictions: s
   <Section title="Реагенты в организме">
     {reagents.length > 0 ? (
       <Table>
-        <Table.Row header><Table.Cell>Реагент</Table.Cell><Table.Cell>Объём</Table.Cell><Table.Cell>Состояние</Table.Cell></Table.Row>
+        <Table.Row header><Table.Cell>Реагент</Table.Cell><Table.Cell>Объём</Table.Cell><Table.Cell /></Table.Row>
         {reagents.map((reagent, index) => (
           <Table.Row key={index} color={reagent.overdosed ? 'bad' : reagent.inactive ? 'label' : undefined}>
-            <Table.Cell>{reagent.name}</Table.Cell><Table.Cell>{reagent.volume} ед.</Table.Cell>
-            <Table.Cell>{reagent.overdosed ? 'ПЕРЕДОЗИРОВКА' : reagent.inactive ? 'Не усваивается' : 'Усваивается'}</Table.Cell>
+            <Table.Cell>{reagent.name}</Table.Cell><Table.Cell>{round(reagent.volume, 3)} u</Table.Cell>
+            <Table.Cell>{reagent.overdosed ? 'ПЕРЕДОЗИРОВКА' : ''}</Table.Cell>
           </Table.Row>
         ))}
       </Table>
@@ -174,13 +175,13 @@ const LimbTable = ({ limbs }: { limbs: Limb[] }) => {
   if (!affected.length) return <Box color="good">Повреждения конечностей не обнаружены.</Box>;
   return (
     <Table>
-      <Table.Row header><Table.Cell>Часть тела</Table.Cell><Table.Cell>Травмы</Table.Cell><Table.Cell>Ожоги</Table.Cell></Table.Row>
+      <Table.Row header><Table.Cell /><Table.Cell>Травмы</Table.Cell><Table.Cell>Ожоги</Table.Cell></Table.Row>
       {affected.map(limb => (
         <Fragment key={limb.name}>
           {limb.missing ? (
-            <Table.Row><Table.Cell colSpan={3}><NoticeBox danger>Отсутствует {limb.name.toLocaleLowerCase()}. Требуется хирургическое присоединение или протезирование.</NoticeBox></Table.Cell></Table.Row>
+            <Table.Row><Table.Cell colSpan={3} bold color="bad">{limb.name} отсутствует</Table.Cell></Table.Row>
           ) : (
-            <Table.Row><Table.Cell bold>{limb.name}</Table.Cell><Table.Cell color={limb.brute > 0 ? 'bad' : 'label'}>{limb.brute}</Table.Cell><Table.Cell color={limb.burn > 0 ? 'average' : 'label'}>{limb.burn}</Table.Cell></Table.Row>
+            <Table.Row><Table.Cell>{limb.name}</Table.Cell><Table.Cell bold color={limb.brute > 0 ? 'bad' : 'label'}>{round(limb.brute, 3)}</Table.Cell><Table.Cell bold color={limb.burn > 0 ? 'average' : 'label'}>{round(limb.burn, 3)}</Table.Cell></Table.Row>
           )}
           {limb.embeds.map((embed, index) => (
             <Table.Row key={`embed-${index}`}><Table.Cell colSpan={3} color="bad">Инородное тело: {embed}.</Table.Cell></Table.Row>
@@ -241,8 +242,8 @@ const WoundHint = ({ wound }: { wound: Wound }) => {
   }, [visible, expanded]);
   return (
     <span ref={anchor} className="Healthanalyzer__wound" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-      <Button className="Healthanalyzer__woundButton" icon="notes-medical" selected={expanded} aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>
-        {wound.name} · {wound.severity}
+      <Button className="Healthanalyzer__woundButton" selected={expanded} aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>
+        ↳ {wound.name} · {wound.severity}
       </Button>
       {visible && (
         <div ref={tooltip} className="Tooltip Healthanalyzer__woundTooltip" role="tooltip">
