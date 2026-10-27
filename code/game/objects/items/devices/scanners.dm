@@ -650,7 +650,7 @@ GENETICS SCANNER
 					var/critical = !!(O.organ_flags & ORGAN_FAILING) || O.damage >= O.maxHealth
 					var/damage_percent = round(O.damage / O.maxHealth * 100, 1)
 					var/organ_diagnosis = "[damage_message] [temp_message]"
-					if(critical)
+					if(critical && !(istype(O, /obj/item/organ/brain) && (O.organ_flags & ORGAN_FAILING)))
 						organ_diagnosis = O.organ_flags & (ORGAN_SYNTHETIC | ORGAN_NO_SPOIL) ? "Критический отказ органа. Требуется замена." : "Орган критически разложился и требует замены."
 					organ_data += list(list("name" = capitalize(O.ru_name || O.name), "icon" = organ_icon, "damage" = advanced ? damage_percent : null, "status" = trim(strip_html_tags(organ_diagnosis)), "warning" = !!(findtext(organ_diagnosis, "class='danger") || findtext(organ_diagnosis, "class='alert")), "critical" = critical))
 					var/organ_damage_text = critical ? "[damage_percent]%" : span_danger("[damage_percent]%")

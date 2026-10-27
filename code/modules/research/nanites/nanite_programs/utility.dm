@@ -69,7 +69,7 @@
 
 /datum/nanite_program/self_scan/can_monitor_medical_scan(mob/user, mob/living/patient, scan_kind)
 	var/datum/nanite_extra_setting/setting = extra_settings[NES_SCAN_TYPE]
-	return activated && host_mob == user && patient == host_mob && !QDELETED(nanites) && nanites.nanite_volume > 0 && check_conditions() && setting.get_value() == scan_kind
+	return activated && host_mob == user && patient == host_mob && !QDELETED(nanites) && nanites.nanite_volume > 0 && nanites.nanite_volume >= nanites.safety_threshold && check_conditions() && setting.get_value() == scan_kind
 
 /datum/nanite_program/stealth
 	name = "Stealth"
