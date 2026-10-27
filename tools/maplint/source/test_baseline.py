@@ -1,10 +1,12 @@
 import copy
 import io
 import pathlib
+import shutil
 import subprocess
 import tempfile
 import unittest
 from collections import Counter
+from unittest import mock
 
 from . import baseline, dmm, lint
 from .error import MaplintError
@@ -130,6 +132,8 @@ class TestMerge(unittest.TestCase):
 
 class TestMapList(unittest.TestCase):
     def test_generated_maps_are_skipped(self):
+        if shutil.which("git") is None:
+            self.skipTest("git is not installed")
         with tempfile.TemporaryDirectory() as directory:
             root = pathlib.Path(directory)
             subprocess.run(["git", "init", "-q", str(root)], check = True)
@@ -142,6 +146,16 @@ class TestMapList(unittest.TestCase):
             (maps / "deleted.dmm").unlink()
 
             self.assertEqual(baseline.list_maps(root), ["_maps/generic/CentCom.dmm", "_maps/generic/new.dmm"])
+
+    def test_without_git_generated_maps_are_skipped(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = pathlib.Path(directory)
+            maps = root / "_maps" / "generic"
+            maps.mkdir(parents = True)
+            for name in ("CentCom.dmm", "CentCom_hermetic.dmm", "new.dmm"):
+                (maps / name).write_text(HEADER, encoding = "utf-8")
+            with mock.patch.object(baseline.subprocess, "run", side_effect = FileNotFoundError("git")):
+                self.assertEqual(baseline.list_maps(root), ["_maps/generic/CentCom.dmm", "_maps/generic/new.dmm"])
 
 class TestMapCounts(unittest.TestCase):
     def count(self, text):

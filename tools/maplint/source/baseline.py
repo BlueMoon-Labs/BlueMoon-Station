@@ -17,6 +17,9 @@ BaselineKey = tuple[str, str, str]
 def normalize_map_path(path) -> str:
     return str(path).replace("\\", "/")
 
+"""Maps the build generates next to their sources; without git there is no .gitignore to drop them."""
+GENERATED_MAPS = {"CentCom_hermetic.dmm"}
+
 """Maps of the repository, without ignored ones: CentCom_hermetic.dmm is built from CentCom.dmm and exists only where the build ran."""
 def list_maps(root = ".") -> list[str]:
     root = pathlib.Path(root)
@@ -26,7 +29,8 @@ def list_maps(root = ".") -> list[str]:
             check = True, capture_output = True,
         ).stdout.decode("utf-8")
     except (OSError, subprocess.CalledProcessError):
-        return sorted(normalize_map_path(path) for path in glob.glob("_maps/**/*.dmm", root_dir = root, recursive = True))
+        found = glob.glob("_maps/**/*.dmm", root_dir = root, recursive = True)
+        return sorted(normalize_map_path(path) for path in found if pathlib.Path(path).name not in GENERATED_MAPS)
     return sorted({path for path in output.split("\0") if path and (root / path).is_file()})
 
 def key_for(error: MaplintError) -> BaselineKey:
