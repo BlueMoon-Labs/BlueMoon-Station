@@ -15,6 +15,8 @@
 /// Кап страницы в режиме "весь файл". Пересылка страницы в tgui останавливает весь сервер:
 /// 1.8 МБ game.log ушли сообщением в 3.3 МБ и дали стоп-кадр 2.6 с (раунд 10617).
 #define ADMIN_LOG_WHOLE_PAGE_MAX (1024 * 1024)
+/// Без grep (не Unix) поиск читает файл в память целиком до этого размера.
+#define ADMIN_LOG_SEARCH_READ_MAX (8 * 1024 * 1024)
 
 /// Относительный путь каталога -> world.time последней сборки архива.
 GLOBAL_LIST_EMPTY(admin_log_archive_builds)
@@ -287,8 +289,9 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 		to_chat(owner, span_warning("Запрос поиска: от 2 до 256 символов."), confidential = TRUE)
 		return
 	search_query = query
-	//порог тот же, что у load_page: файл в пределах страницы ищем в памяти на любой ОС
-	if(file_size <= max(ADMIN_LOG_WHOLE_READ_MAX, effective_page_bytes()))
+	//на Unix порог тот же, что у load_page, дальше ищет grep; без grep ищем в памяти до ADMIN_LOG_SEARCH_READ_MAX
+	var/in_memory_max = world.system_type == UNIX ? max(ADMIN_LOG_WHOLE_READ_MAX, effective_page_bytes()) : ADMIN_LOG_SEARCH_READ_MAX
+	if(file_size <= in_memory_max)
 		if(cached_path != path || isnull(cached_content))
 			cached_content = rustg_file_read(path)
 			cached_path = path
@@ -296,7 +299,7 @@ GLOBAL_LIST_EMPTY(admin_log_archive_building)
 	else
 		var/list/results = admin_log_search_shell(path, query)
 		if(isnull(results))
-			to_chat(owner, span_warning("Поиск по файлам крупнее 1 МиБ доступен только на Unix-сервере."), confidential = TRUE)
+			to_chat(owner, span_warning((world.system_type == UNIX ? "Путь файла содержит небезопасные символы - поиск недоступен." : "Поиск по файлам крупнее 8 МиБ доступен только на Unix-сервере.")), confidential = TRUE)
 			return
 		search_results = results
 	log_admin("[key_name(owner)] searched log [path] for: [query]")
