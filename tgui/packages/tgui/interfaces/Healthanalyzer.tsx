@@ -200,7 +200,7 @@ const LimbTable = ({ scan }: { scan: Scan }) => {
       <Box className="Healthanalyzer__limbRow" mb={0.3}>
         <Box bold>Всего</Box>
         {damageTypes.map(({ key, color }) => (
-          <Box key={key} bold color={color}>{round(scan.damageLevels?.[key] ?? 0, 3)}</Box>
+          <Box key={key} bold color={round(scan.damageLevels?.[key] ?? 0, 3) === 0 ? 'label' : color}>{round(scan.damageLevels?.[key] ?? 0, 3)}</Box>
         ))}
       </Box>
       {affected.map(limb => (
@@ -213,8 +213,8 @@ const LimbTable = ({ scan }: { scan: Scan }) => {
           ) : (
             <Box className="Healthanalyzer__limbRow">
               <Box>{limb.name}</Box>
-              <Box bold color="red">{round(limb.brute, 3)}</Box>
-              <Box bold color="orange">{round(limb.burn, 3)}</Box>
+              <Box bold color={round(limb.brute, 3) === 0 ? 'label' : 'red'}>{round(limb.brute, 3)}</Box>
+              <Box bold color={round(limb.burn, 3) === 0 ? 'label' : 'orange'}>{round(limb.burn, 3)}</Box>
             </Box>
           )}
           {limb.embeds.map((embed, index) => (
