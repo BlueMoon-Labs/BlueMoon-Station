@@ -47,6 +47,7 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 	var/list/highlighted_ids = list()
 	var/show_names = TRUE
 	var/show_icons = FALSE
+	var/show_departments = FALSE
 
 /datum/component/crewmonitor_highlights/Destroy(force = FALSE, silent = FALSE)
 	highlighted_ids = null
@@ -167,7 +168,7 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 	var/datum/source = ui_host(user)
 	var/datum/component/crewmonitor_highlights/highlights = source?.GetComponent(/datum/component/crewmonitor_highlights)
 	var/turf/user_turf = get_turf(source) || get_turf(user)
-	. = list("sensors" = list(), "maps" = list(), "link_allowed" = isAI(user), "highlighted_ids" = highlights ? highlights.highlighted_ids : list(), "show_names" = highlights ? highlights.show_names : TRUE, "show_icons" = highlights ? highlights.show_icons : FALSE)
+	. = list("sensors" = list(), "maps" = list(), "link_allowed" = isAI(user), "highlighted_ids" = highlights ? highlights.highlighted_ids : list(), "show_names" = highlights ? highlights.show_names : TRUE, "show_icons" = highlights ? highlights.show_icons : FALSE, "show_departments" = highlights ? highlights.show_departments : FALSE)
 	if(!user_turf)
 		return
 	if(!is_hilbert_hotel_area(get_area(user_turf)))
@@ -365,18 +366,20 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 	. = ..()
 	if(.)
 		return
-	if(action == "toggle_highlight" || action == "clear_highlights" || action == "toggle_names" || action == "toggle_icons")
+	if(action == "toggle_highlight" || action == "clear_highlights" || action == "toggle_names" || action == "toggle_icons" || action == "toggle_departments")
 		var/datum/source = ui_host(usr)
 		if(QDELETED(source))
 			return FALSE
 		var/datum/component/crewmonitor_highlights/highlights = source.GetComponent(/datum/component/crewmonitor_highlights)
-		if(action == "toggle_names" || action == "toggle_icons")
+		if(action == "toggle_names" || action == "toggle_icons" || action == "toggle_departments")
 			if(!highlights)
 				highlights = source.LoadComponent(/datum/component/crewmonitor_highlights)
 			if(action == "toggle_names")
 				highlights.show_names = !highlights.show_names
-			else
+			else if(action == "toggle_icons")
 				highlights.show_icons = !highlights.show_icons
+			else
+				highlights.show_departments = !highlights.show_departments
 			return TRUE
 		if(action == "clear_highlights")
 			if(!length(highlights?.highlighted_ids))

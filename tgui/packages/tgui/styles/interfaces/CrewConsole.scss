@@ -49,22 +49,34 @@
 
   &--dead {
     filter: grayscale(1);
-    opacity: 0.7;
   }
 }
 
 .CrewConsole__jobIconFrame {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 12px;
   height: 12px;
   pointer-events: none;
+}
 
-  &--dead {
-    outline: 1px solid #ed2814;
-    outline-offset: 1px;
-  }
+.CrewConsole__deathBadge {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 10px;
+  height: 10px;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 10px;
+  line-height: 1;
+  filter: drop-shadow(0 0 1px black) drop-shadow(0 0 1px black);
+  pointer-events: none;
 }
 
 .CrewConsole__jobIconSlot {

@@ -38,13 +38,18 @@ const CrewJobIcon = ({ jobIcon, color }) => {
   const dead = color === DEAD_COLOR;
   const damageLevel = DAMAGE_COLORS.indexOf(color);
   return (
-    <span className={`CrewConsole__jobIconFrame${dead ? ' CrewConsole__jobIconFrame--dead' : ''}`}>
+    <span className="CrewConsole__jobIconFrame">
       <Box
         className={`jobs8x8 ${jobIcon || 'no_id'} CrewConsole__jobIcon${dead ? ' CrewConsole__jobIcon--dead' : ''}${damageLevel >= 0 ? ' CrewConsole__jobIcon--damaged' : ''}`}
         style={damageLevel >= 0 ? {
           filter: `url(#crew-health-${color.slice(1)})`,
           animationDuration: DAMAGE_PULSE_DURATIONS[damageLevel],
         } : undefined} />
+      {dead && (
+        <span className="CrewConsole__deathBadge" aria-hidden="true">
+          <Icon name="skull" />
+        </span>
+      )}
     </span>
   );
 };
@@ -254,7 +259,7 @@ const CrewTableEntry = (props) => {
         bold={jobIsHead(ijob)}
         color={jobToColor(ijob)}>
         <span className="CrewConsole__jobIconSlot" aria-hidden="true">
-          <CrewJobIcon jobIcon={sensor_data.job_icon} color={color} />
+          <CrewJobIcon jobIcon={sensor_data.job_icon} />
         </span>
         {name}{assignment !== undefined ? ` (${assignment})` : ""}
       </Table.Cell>
@@ -338,6 +343,8 @@ const CrewMap = (props) => {
       maps={maps}
       initialZ={data.z}
       statePrefix="crewMap"
+      showDepartments={!!data.show_departments}
+      onToggleDepartments={() => act('toggle_departments')}
       controls={(
         <>
           <Button.Checkbox checked={showNames} onClick={() => act('toggle_names')}>
