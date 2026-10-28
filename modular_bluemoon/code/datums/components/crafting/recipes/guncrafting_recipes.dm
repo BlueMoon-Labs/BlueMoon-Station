@@ -112,7 +112,18 @@
 	result = /obj/item/gun/ballistic/revolver/Sanctum_Officium 
 	reqs = list(/obj/item/gun/ballistic/revolver/Dies_Irae = 1,
 				/obj/item/stack/rods = 5,
-				/obj/item/weaponcrafting/stock =1)
+				/obj/item/weaponcrafting/stock = 1)
+	tools = list(TOOL_SCREWDRIVER)
+	time = 30
+	category = CAT_WEAPONRY
+	subcategory = CAT_WEAPON
+
+/datum/crafting_recipe/Sanctum_Officium_scope
+	name = "\improper Sanctum Officium optic revolver conversion"
+	result = /obj/item/gun/ballistic/revolver/Sanctum_Officium/optic
+	reqs = list(/datum/crafting_recipe/Sanctum_Officium = 1,
+				/obj/item/binoculars = 1,
+				/obj/item/stack/sticky_tape = 5)
 	tools = list(TOOL_SCREWDRIVER)
 	time = 30
 	category = CAT_WEAPONRY
