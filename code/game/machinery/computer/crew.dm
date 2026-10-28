@@ -294,7 +294,7 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 				var/total_list = list("id" = H.UID(), "name" = name, "assignment" = assignment, "ijob" = ijob, "life_status" = life_status, "oxydam" = oxydam, "toxdam" = toxdam, "burndam" = burndam, "brutedam" = brutedam, "totaldam" = totaldam, "area" = area, "pos_x" = pos_x, "pos_y" = pos_y, "pos_z" = pos_z, "floor" = pos_z ? (monitored_levels.Find(pos_z) || SSmapping.get_connected_levels(pos_z).Find(pos_z)) : null, "can_track" = !hidden_location && H.can_track(null))
 
 				total_list["job_icon"] = get_job_icon(I)
-				if(totaldam)
+				if(totaldam || (!isnull(life_status) && !life_status))
 					results_damaged[++results_damaged.len] = total_list
 				else
 					results_undamaged[++results_undamaged.len] = total_list
@@ -360,6 +360,11 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 		radio_terminal.radioAnnounce("КРИТИЧЕСКОЕ СОСТОЯНИЕ: [patient_name] ([assignment])[area_message]")
 
 /proc/damage_compare(list/a,list/b)
+	// Неизвестный статус датчика не считаем смертью.
+	var/a_dead = !isnull(a["life_status"]) && !a["life_status"]
+	var/b_dead = !isnull(b["life_status"]) && !b["life_status"]
+	if(a_dead != b_dead)
+		return b_dead - a_dead
 	return b["totaldam"] - a["totaldam"]
 
 /datum/crewmonitor/ui_act(action,params)
@@ -520,7 +525,7 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 		var/total_list = list("id" = H.UID(), "name" = name, "assignment" = "Защитник", "ijob" = 0, "life_status" = life_status, "oxydam" = oxydam, "toxdam" = toxdam, "burndam" = burndam, "brutedam" = brutedam, "totaldam" = totaldam, "area" = area, "pos_x" = pos_x, "pos_y" = pos_y, "pos_z" = pos_z, "floor" = pos_z ? (monitored_levels.Find(pos_z) || SSmapping.get_connected_levels(pos_z).Find(pos_z)) : null, "can_track" = !hidden_location && H.can_track(null))
 
 		total_list["job_icon"] = get_job_icon(H.get_idcard())
-		if(totaldam)
+		if(totaldam || (!isnull(life_status) && !life_status))
 			results_damaged[++results_damaged.len] = total_list
 		else
 			results_undamaged[++results_undamaged.len] = total_list
