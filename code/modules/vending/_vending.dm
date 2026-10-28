@@ -658,7 +658,8 @@ GLOBAL_LIST_EMPTY(vending_products)
 		if(!is_operational())
 			return
 		if(!panel_open && canLoadItem(I))
-			loadingAttempt(I,user)
+			if(loadingAttempt(I, user))
+				return STOP_ATTACK_PROC_CHAIN
 
 		// На всякий случай тут нет проверки на panel_open
 		if(istype(I, /obj/item/storage/bag)) //trays USUALLY
@@ -1614,6 +1615,7 @@ GLOBAL_LIST_EMPTY(vending_products)
 	loaded_items--
 	use_power(active_power_usage)
 	vending_machine_input[choice] = max(vending_machine_input[choice] - 1, 0)
+	dispensed_item.forceMove(drop_location())
 	if(user.CanReach(src) && user.put_in_hands(dispensed_item))
 		to_chat(user, span_notice("Вы взяли [dispensed_item.name] из слота."))
 	else

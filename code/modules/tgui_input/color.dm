@@ -10,7 +10,11 @@
 	if(!istype(user) || !user.client)
 		return null
 	default = uppertext(sanitize_hexcolor(default, 6, TRUE, COLOR_WHITE))
-	// Цвет всегда выбирается через общий TGUI-пикер, независимо от режима остальных инпутов.
+	if(!user.client.prefs.tgui_input_mode)
+		var/mob/prompt_mob = begin_native_prompt(user)
+		var/native_color = input(user, message, title, default) as null|color
+		end_native_prompt(prompt_mob)
+		return isnull(native_color) ? null : uppertext(sanitize_hexcolor(native_color, 6, TRUE, COLOR_WHITE))
 	var/datum/tgui_input_color/color_input = new(user, message, title, default, timeout)
 	color_input.ui_interact(user)
 	color_input.wait()
@@ -113,7 +117,10 @@
 	if(!istype(user) || !user.client)
 		return null
 	var/datum/tgui_input_color/async/color_input = new(user, message, title, default, callback, timeout)
-	color_input.ui_interact(user)
+	if(user.client.prefs.tgui_input_mode)
+		color_input.ui_interact(user)
+	else
+		color_input.prompt_native(user)
 	if(!QDELETED(color_input))
 		return color_input
 
@@ -138,3 +145,15 @@
 
 /datum/tgui_input_color/async/wait()
 	return
+
+// Нативный диалог не задерживает вызывающий код; тайм-аут запрещает поздний callback.
+/datum/tgui_input_color/async/proc/prompt_native(mob/user)
+	set waitfor = FALSE
+	var/mob/prompt_mob = begin_native_prompt(user)
+	var/native_color = input(user, message, title, default) as null|color
+	end_native_prompt(prompt_mob)
+	if(QDELETED(src))
+		return
+	if(!isnull(native_color))
+		set_entry(uppertext(sanitize_hexcolor(native_color, 6, TRUE, COLOR_WHITE)))
+	qdel(src)
