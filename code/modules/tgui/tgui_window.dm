@@ -295,6 +295,7 @@
 	visible = FALSE
 	status = TGUI_WINDOW_CLOSED
 	message_queue = null
+	drop_oversized_payloads()
 	// Do not close the window to give user some time
 	// to read the error message.
 	if(!fatally_errored)
@@ -426,6 +427,9 @@
 		log_tgui(client,
 			"[id]/on_message type=[type], status_before=[status], queue_len=[length(message_queue)]",
 			window = src)
+	// Свежая страница не продолжит чужие передачи, а недокачанные держали бы её слоты ещё 30 с.
+	if(type == "ready")
+		drop_oversized_payloads()
 	// Status can be READY if user has refreshed the window.
 	if(type == "ready" && status == TGUI_WINDOW_READY)
 		// Resend the assets
@@ -476,8 +480,19 @@
 			for(var/asset in sent_assets)
 				send_asset(asset)
 		if("oversizedPayloadRequest")
+			if(!islist(payload))
+				return
 			var/payload_id = payload["id"]
 			var/chunk_count = payload["chunkCount"]
+			// null <= лимит истинно, и передача без числа частей собиралась на первом же чанке
+			if(!istext(payload_id) || !length(payload_id) || length(payload_id) > 64 || !istext(payload["type"]) || !isnum(chunk_count) || chunk_count < 1 || chunk_count != round(chunk_count))
+				log_tgui(client, "[id]/on_message malformed oversized payload request", window = src)
+				return
+			// WebView2 повторяет топики. Отказ на дубль снимал у клиента очередь уже идущей передачи.
+			var/list/existing_payload = oversized_payloads[payload_id]
+			if(existing_payload && existing_payload["type"] == payload["type"] && existing_payload["count"] == chunk_count)
+				send_message("oversizePayloadResponse", list("allow" = TRUE, "id" = payload_id))
+				return
 			var/max_chunk_count = CONFIG_GET(number/tgui_max_chunk_count)
 			var/permit_payload = chunk_count <= max_chunk_count
 			// Настройки панели сохраняются в фоне, игрок ничего не вводил - отказ только в лог.
@@ -498,6 +513,8 @@
 						to_chat(client, span_warning("Сервер уже собирает другой большой ввод. Подождите несколько секунд и повторите."))
 			send_message("oversizePayloadResponse", list("allow" = permit_payload, "id" = payload_id))
 		if("payloadChunk")
+			if(!islist(payload))
+				return
 			var/payload_id = payload["id"]
 			var/chunk_index = payload["index"]
 			if(append_payload_chunk(payload_id, payload["chunk"], chunk_index))
@@ -539,8 +556,10 @@
 	var/list/chunks = oversized_payload["chunks"]
 	if(isnum(chunk_index) && chunk_index <= length(chunks))
 		return TRUE
-	if(!istext(chunk) || (isnum(chunk_index) && chunk_index != length(chunks) + 1))
-		log_tgui(client, "[id]/payload [payload_id] dropped: chunk [chunk_index] after [length(chunks)]", window = src)
+	// Клиент режет чанк по 900 символов URL-кодировки, в байтах он не длиннее. Без потолка
+	// лимит на число частей не ограничивал память под склейку.
+	if(!istext(chunk) || length(chunk) > TGUI_PAYLOAD_CHUNK_MAX_BYTES || (isnum(chunk_index) && chunk_index != length(chunks) + 1))
+		log_tgui(client, "[id]/payload [payload_id] dropped: chunk [chunk_index] after [length(chunks)], [length(chunk)] bytes", window = src)
 		remove_oversized_payload(payload_id)
 		return FALSE
 	chunks += chunk
@@ -565,6 +584,10 @@
 	if(oversized_payload)
 		deltimer(oversized_payload["timer"])
 	oversized_payloads -= payload_id
+
+/datum/tgui_window/proc/drop_oversized_payloads()
+	for(var/payload_id in oversized_payloads)
+		remove_oversized_payload(payload_id)
 
 /// Клиент не узнавал о брошенной передаче и держал её очередь до конца раунда.
 /datum/tgui_window/proc/expire_oversized_payload(payload_id)
