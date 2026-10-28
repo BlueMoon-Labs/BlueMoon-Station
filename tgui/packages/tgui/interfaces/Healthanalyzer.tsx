@@ -126,7 +126,7 @@ const SpeciesBadge = ({ name, similarName, robotic, color }: { name: string; sim
       </Box>
       {hovered && (
         <div ref={tooltip} className="Tooltip Healthanalyzer__speciesTooltip" role="tooltip">
-          <Box>{robotic ? 'Синтетический организм' : 'Органический организм'}</Box>
+          <Box>{robotic ? 'Синтетик' : 'Органик'}</Box>
           {!!similarName && similarName !== name && <Box mt={0.5}>Схожая раса: {similarName}</Box>}
         </div>
       )}

@@ -102,7 +102,6 @@
 .Healthanalyzer__speciesTooltip {
   position: absolute;
   z-index: 10;
-  width: 32rem;
   box-sizing: border-box;
   overflow-y: auto;
   overflow-wrap: anywhere;
@@ -111,6 +110,5 @@
 }
 
 .Healthanalyzer__speciesTooltip {
-  width: 20rem;
   pointer-events: none;
 }
