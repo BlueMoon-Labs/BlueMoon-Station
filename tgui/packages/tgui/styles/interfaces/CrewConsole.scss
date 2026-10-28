@@ -29,7 +29,7 @@
     border: 3px solid white;
     box-shadow: 0 0 0 1px #000, 0 0 8px currentColor;
     border-radius: 50%;
-    opacity: 0.6;
+    animation: crew-highlight 1.5s ease-out infinite;
     pointer-events: none;
   }
 }
@@ -123,6 +123,18 @@
   background-color: #ffd45c;
   z-index: 6;
   cursor: default;
+}
+
+@keyframes crew-highlight {
+  from {
+    transform: scale(0.7);
+    opacity: 1;
+  }
+
+  to {
+    transform: scale(1.9);
+    opacity: 0;
+  }
 }
 
 @keyframes crew-damage-pulse {
