@@ -121,7 +121,7 @@
 /datum/crafting_recipe/Sanctum_Officium_scope
 	name = "\improper Sanctum Officium optic revolver conversion"
 	result = /obj/item/gun/ballistic/revolver/Sanctum_Officium/optic
-	reqs = list(/datum/crafting_recipe/Sanctum_Officium = 1,
+	reqs = list(/obj/item/gun/ballistic/revolver/Sanctum_Officium = 1,
 				/obj/item/binoculars = 1,
 				/obj/item/stack/sticky_tape = 5)
 	tools = list(TOOL_SCREWDRIVER)

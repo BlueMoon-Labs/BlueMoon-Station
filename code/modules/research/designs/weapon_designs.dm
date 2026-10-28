@@ -817,7 +817,7 @@
 	min_security_level = SEC_LEVEL_AMBER //SEC_LEVEL_RED
 
 /datum/design/cal41_taser
-	name = "Speed Loader (.41 fmj)"
+	name = "Speed Loader (.41 taser)"
 	desc = "Designed to quickly reload revolvers."
 	id = "41_taser"
 	build_type = PROTOLATHE
@@ -828,7 +828,7 @@
 	min_security_level = SEC_LEVEL_AMBER //SEC_LEVEL_RED
 
 /datum/design/cal41_ion
-	name = "Speed Loader (.41 fmj)"
+	name = "Speed Loader (.41 ion)"
 	desc = "Designed to quickly reload revolvers."
 	id = "41_ion"
 	build_type = PROTOLATHE
@@ -839,7 +839,7 @@
 	min_security_level = SEC_LEVEL_AMBER //SEC_LEVEL_RED
 
 /datum/design/cal41_ratshot
-	name = "Speed Loader (.41 fmj)"
+	name = "Speed Loader (.41 ratshot)"
 	desc = "Designed to quickly reload revolvers."
 	id = "41_rat"
 	build_type = PROTOLATHE
@@ -850,7 +850,7 @@
 	min_security_level = SEC_LEVEL_AMBER //SEC_LEVEL_RED
 
 /datum/design/cal41_ricochet
-	name = "Speed Loader (.41 fmj)"
+	name = "Speed Loader (.41 ricochet)"
 	desc = "Designed to quickly reload revolvers."
 	id = "41_ric"
 	build_type = PROTOLATHE
@@ -944,7 +944,7 @@
 	id = "410_slug"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 5000)
-	build_path = /obj/item/ammo_casing/cal410
+	build_path = /obj/item/ammo_casing/cal410/slug 
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 	min_security_level = SEC_LEVEL_BLUE

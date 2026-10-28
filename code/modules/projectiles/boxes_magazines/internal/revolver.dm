@@ -85,7 +85,7 @@
 	max_ammo = 9
 	multiload = 1
 
-/obj/item/ammo_box/magazine/internal/cylinder/exorcist 
+/obj/item/ammo_box/magazine/internal/cylinder/exorcist_big
 	name = "Exorcist cylinder"
 	ammo_type = /obj/item/ammo_casing/shotgun/buckshot
 	caliber = list("shotgun")

@@ -132,5 +132,5 @@
 	description = "A dark age demands crude fury. When the world fractures, you do not weep—you weld the shards together and force the iron to scream."
 	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
 	prereq_ids = list("weaponry", "adv_weaponry")
-	design_ids = list("dies_irae", "liturgy", "anathema", "Mea_culpa", "Misericordia", "Sanctum_Officium")
+	design_ids = list("dies_irae", "liturgy", "anathema", "Mea_culpa", "Misericordia")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 10000)

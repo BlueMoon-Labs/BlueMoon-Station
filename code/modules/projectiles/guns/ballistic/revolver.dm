@@ -966,7 +966,7 @@
 	item_state = "apostle"
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
-	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/apostle
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/mea_culpa
 	
 	var/obj/item/gun/ballistic/underbarrel
 	
@@ -1002,7 +1002,7 @@
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/winchester1897_shot.ogg'
 	lefthand_file = 'modular_splurt/icons/mob/inhands/weapons/guns_lefthand.dmi'
 	righthand_file = 'modular_splurt/icons/mob/inhands/weapons/guns_righthand.dmi'
-	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/exorcist
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/exorcist_big
 	dual_wield_spread = 100
 	fire_delay = 10
 	w_class = WEIGHT_CLASS_BULKY

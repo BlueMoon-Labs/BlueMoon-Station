@@ -351,7 +351,7 @@
 	tile_dropoff_ap = 2
 
 /obj/item/ammo_casing/cal41/ricochet
-	name= ".41 ratshot"
+	name= ".41 ricochet"
 	desc = "An .41 expensive rounds for ricocheting. High chance to shoot yourself!"
 	caliber = ".41cal"
 	projectile_type = /obj/item/projectile/bullet/cal41/ric
@@ -416,18 +416,18 @@
 	name = "snakeshot pellet"
 	icon_state = "pellet"
 	armour_penetration = BULLET_BR1
-	damage = 5
+	damage = 7
 	tile_dropoff_ap = 6
 	wound_bonus = 1
-	bare_wound_bonus = 5
+	bare_wound_bonus = 1
 	wound_falloff_tile = -2.5
 
-/obj/item/ammo_casing/cal410 //Урон на 2 больше чем у револьвера сб, но разброс при стрельбе
+/obj/item/ammo_casing/cal410/slug //Урон на 2 больше чем у револьвера сб, но разброс при стрельбе
 	name= ".410 slug shot"
 	desc = "An .410 slug shot."
 	caliber = ".410cal"
 	icon = 'modular_bluemoon/icons/obj/ammo.dmi'
-	icon_state = "410rubber"
+	icon_state = "410slug"
 	pellets = 1
 	variance = 50
 	projectile_type = /obj/item/projectile/bullet/pellet/exorcist_slug
