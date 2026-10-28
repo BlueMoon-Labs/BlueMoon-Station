@@ -146,14 +146,24 @@ const useMedicalTooltipPosition = (visible: boolean, contentKey: string | boolea
   return { anchor, tooltip };
 };
 
+// Используем палитру общего прока spec_trait_examine_color(), сохраняя его приоритеты рас.
+const speciesAppearances: Record<string, { modifier: string; icon: string }> = {
+  '#18d855': { modifier: 'organic', icon: 'dna' },
+  '#aaa9ad': { modifier: 'synthetic', icon: 'microchip' },
+  '#00ffff': { modifier: 'slime', icon: 'droplet' },
+  '#800080': { modifier: 'plasmaman', icon: 'fire' },
+  '#8b4513': { modifier: 'golem', icon: 'gem' },
+};
+
 const SpeciesBadge = ({ name, similarName, robotic, color }: { name: string; similarName?: string; robotic: boolean; color?: string }) => {
   const [hovered, setHovered] = useState(false);
-  const { anchor, tooltip } = useMedicalTooltipPosition(hovered, `${name}:${similarName}:${robotic}`);
+  const appearance = speciesAppearances[robotic ? '#aaa9ad' : color?.toLowerCase() || '#18d855'] || speciesAppearances['#18d855'];
+  const { anchor, tooltip } = useMedicalTooltipPosition(hovered, `${name}:${similarName}:${appearance.modifier}`);
   useMedicalTooltipEscape(hovered, () => setHovered(false));
   return (
     <span ref={anchor} className="Healthanalyzer__speciesAnchor" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-      <Box as="span" className={`Healthanalyzer__speciesBadge${robotic ? ' Healthanalyzer__speciesBadge--synthetic' : ''}`} color={color}>
-        <Icon name={robotic ? 'microchip' : 'dna'} />
+      <Box as="span" className={`Healthanalyzer__speciesBadge Healthanalyzer__speciesBadge--${appearance.modifier}`} color={appearance.modifier === 'organic' ? color : undefined}>
+        <Icon name={appearance.icon} />
         <span>{name}</span>
       </Box>
       {hovered && (

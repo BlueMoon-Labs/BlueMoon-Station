@@ -36,6 +36,33 @@
       color: #dadade;
     }
   }
+
+  &--slime {
+    background-color: #123b3d;
+    color: #00ffff;
+
+    > span {
+      color: #b6ffff;
+    }
+  }
+
+  &--plasmaman {
+    background-color: #311934;
+    color: #c474d4;
+
+    > span {
+      color: #ebc4f1;
+    }
+  }
+
+  &--golem {
+    background-color: #372719;
+    color: #c58b4b;
+
+    > span {
+      color: #efd1ad;
+    }
+  }
 }
 
 .Healthanalyzer__limbRow {
