@@ -57,8 +57,8 @@ export const Healthanalyzer = () => {
       event.preventDefault();
       dispatch(backendSuspendStart());
     };
-    document.addEventListener('keydown', closeOnEscape, true);
-    return () => document.removeEventListener('keydown', closeOnEscape, true);
+    window.addEventListener('keydown', closeOnEscape);
+    return () => window.removeEventListener('keydown', closeOnEscape);
   }, [dispatch, suspended, suspending]);
   return (
     <Window title={live ? 'Мониторинг организма' : 'Анализатор здоровья'} width={570} height={710}>
@@ -90,6 +90,21 @@ export const Healthanalyzer = () => {
       </Window.Content>
     </Window>
   );
+};
+
+const useMedicalTooltipEscape = (visible: boolean, close: () => void) => {
+  useLayoutEffect(() => {
+    if (!visible) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || event.repeat) return;
+      event.preventDefault();
+      // Подсказка поглощает Escape до обработчика закрытия окна.
+      event.stopPropagation();
+      close();
+    };
+    document.addEventListener('keydown', closeOnEscape);
+    return () => document.removeEventListener('keydown', closeOnEscape);
+  }, [visible, close]);
 };
 
 const useMedicalTooltipPosition = (visible: boolean, contentKey: string | boolean) => {
@@ -130,6 +145,7 @@ const useMedicalTooltipPosition = (visible: boolean, contentKey: string | boolea
 const SpeciesBadge = ({ name, similarName, robotic, color }: { name: string; similarName?: string; robotic: boolean; color?: string }) => {
   const [hovered, setHovered] = useState(false);
   const { anchor, tooltip } = useMedicalTooltipPosition(hovered, `${name}:${similarName}:${robotic}`);
+  useMedicalTooltipEscape(hovered, () => setHovered(false));
   return (
     <span ref={anchor} className="Healthanalyzer__speciesAnchor" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
       <Box as="span" className={`Healthanalyzer__speciesBadge${robotic ? ' Healthanalyzer__speciesBadge--synthetic' : ''}`} color={color}>
@@ -304,25 +320,21 @@ const WoundHint = ({ wound }: { wound: Wound }) => {
   const [expanded, setExpanded] = useState(false);
   const visible = hovered || expanded;
   const { anchor, tooltip } = useMedicalTooltipPosition(visible, expanded);
+  useMedicalTooltipEscape(visible, () => { setExpanded(false); setHovered(false); });
   useLayoutEffect(() => {
     if (!visible) return;
     const close = (event: PointerEvent) => {
       if (!anchor.current?.contains(event.target as Node)) { setExpanded(false); setHovered(false); }
     };
-    const escape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') { setExpanded(false); setHovered(false); }
-    };
     document.addEventListener('pointerdown', close);
-    document.addEventListener('keydown', escape);
     return () => {
       document.removeEventListener('pointerdown', close);
-      document.removeEventListener('keydown', escape);
     };
   }, [visible, anchor]);
   return (
     <span ref={anchor} className="Healthanalyzer__wound" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
       <Button className="Healthanalyzer__woundButton" icon={wound.icon} selected={expanded} aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>
-        ↳ {wound.name} · {wound.severity}
+        ↳ {wound.name}
       </Button>
       {visible && (
         <div ref={tooltip} className="Tooltip Healthanalyzer__woundTooltip" role="tooltip">

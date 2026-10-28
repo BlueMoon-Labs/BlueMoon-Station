@@ -483,7 +483,7 @@ GENETICS SCANNER
 			for(var/embedded_name in embeds)
 				limb_details += "<tr><td colspan='5'>[span_alert(span_tooltip("Извлеките хирургическим зажимом.", "↳ Инородное тело: [html_encode(embedded_name)]", "", "", "font-size:85%; margin-left:1em"))]</td></tr>"
 			for(var/list/wound in wounds)
-				limb_details += "<tr><td colspan='5'>[span_alert(span_tooltip(html_encode(wound["details"]), "<i class='fas fa-[wound["icon"]]'></i> ↳ [html_encode(wound["name"])] ([wound["severity"]])", "", "", "font-size:85%; margin-left:1em"))]</td></tr>"
+				limb_details += "<tr><td colspan='5'>[span_alert(span_tooltip(html_encode(wound["details"]), "<i class='fas fa-[wound["icon"]]'></i> ↳ [html_encode(wound["name"])]", "", "", "font-size:85%; margin-left:1em"))]</td></tr>"
 	data["damageLocalization"] = limbs
 	data["report"] += "<hr><b>Состояние тела</b><br>[limb_report][limb_details]</table>"
 
