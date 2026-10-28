@@ -461,7 +461,7 @@
 	//min_security_level = SEC_LEVEL_RED
 
 /datum/design/mech_rescue_jaw
-	name = "Спасательный захват экзокостюма"
+	name = "Exosuit Medical Equipment (Rescue Jaws)"
 	desc = "Гидравлический захват для вскрытия дверей и загрузки пациентов в слипер медицинского экзокостюма."
 	id = "mech_rescue_jaw"
 	build_type = MECHFAB

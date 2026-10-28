@@ -25,7 +25,7 @@
 	return ..()
 
 /obj/item/mecha_parts/mecha_equipment/medical/rescue_jaw
-	name = "mounted rescue jaws"
+	name = "rescue jaws"
 	desc = "Спасательный гидравлический захват для медицинских экзокостюмов. Вскрывает двери и помещает пациентов в установленный слипер. Не вскрывает заваренные шлюзы и шлюзы с опущенными болтами."
 	icon_state = "rescue_clamp"
 	range = MECHA_MELEE
