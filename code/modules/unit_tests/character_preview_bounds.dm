@@ -96,6 +96,30 @@
 		for(var/side in 1 to 4)
 			TEST_ASSERT_EQUAL(actual[side], expected[side], "Граница [side] ракурса [direction] после прогрева")
 
+	// Путь сборки окна: к update_character() слои уже замерены.
+	GLOB.character_preview_icon_bounds = list()
+	var/datum/preferences/prefs = new
+	var/datum/character_setup/setup = new(prefs)
+	var/mob/living/carbon/human/viewer = allocate(/mob/living/carbon/human/dummy/consistent)
+	var/atom/movable/screen/map_view/character_setup_screen/prewarm_probe/probe = allocate(/atom/movable/screen/map_view/character_setup_screen/prewarm_probe)
+	LAZYSET(setup.viewer_screens, viewer, probe)
+	setup.preview_dirty = FALSE
+	setup.show_preview_appearance(source)
+	var/cache_after = length(GLOB.character_preview_icon_bounds)
+	var/cache_before = probe.cache_size_before_update
+	LAZYREMOVE(setup.viewer_screens, viewer)
+	qdel(setup)
+	qdel(prefs)
+	TEST_ASSERT(cache_before > 0, "Окно собрало превью без прогрева замеров")
+	TEST_ASSERT_EQUAL(cache_after, cache_before, "Сборка окна мерила слои в том же тике")
+
+/atom/movable/screen/map_view/character_setup_screen/prewarm_probe
+	var/cache_size_before_update = -1
+
+/atom/movable/screen/map_view/character_setup_screen/prewarm_probe/update_character(mutable_appearance/appearance_source, background_state, auto_fit = TRUE, single_view = FALSE, view_direction = SOUTH, zoom_factor = 1, show_reference = FALSE, background_style = "texture")
+	cache_size_before_update = length(GLOB.character_preview_icon_bounds)
+	return ..()
+
 /datum/unit_test/character_preview_bounds_prewarm/Destroy()
 	if(original_cache)
 		GLOB.character_preview_icon_bounds = original_cache

@@ -3548,6 +3548,9 @@
 		return
 	if(QDELETED(src) || !prefs || preview_dirty)
 		return
+	show_preview_appearance(appearance_source)
+
+/datum/character_setup/proc/show_preview_appearance(mutable_appearance/appearance_source)
 	prune_viewer_screens()
 	// Новые слои меряются попиксельно, по 1-2 мс на слой: замеряем их заранее с уступкой тика.
 	for(var/viewer in viewer_screens)

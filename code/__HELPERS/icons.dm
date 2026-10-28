@@ -769,7 +769,7 @@ GLOBAL_LIST_EMPTY(cached_dmi_state_dirs)
 		var/list/metadata = copytext(raw_metadata, 1, 2) == "{" ? safe_json_decode(raw_metadata, null) : null
 		if(islist(metadata) && islist(metadata["states"]))
 			state_dirs = list()
-			for(var/list/state_data in metadata["states"])
+			for(var/list/state_data as anything in metadata["states"])
 				// Стейт движения BYOND берёт только для шага, icon() отдаёт обычный с тем же именем.
 				if(!islist(state_data) || state_data["movement"])
 					continue

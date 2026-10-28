@@ -82,4 +82,5 @@
 					break
 			TEST_ASSERT(state_dirs["[state]"], "Нет стейта [icon_file]:[state] в заголовке")
 			TEST_ASSERT_EQUAL(state_dirs["[state]"] > 1, probe_directional, "Направленность [icon_file]:[state] не совпала с пробой")
-	TEST_ASSERT_NULL(dmi_state_dirs("icons/nonexistent_for_test.dmi"), "Отсутствующий файл дал заголовок")
+	var/missing_file = "icons/nonexistent_for_test"
+	TEST_ASSERT_NULL(dmi_state_dirs("[missing_file].dmi"), "Отсутствующий файл дал заголовок")
