@@ -17,7 +17,7 @@ type Scan = {
   scanTime: string;
   woundOnly?: BooleanLike;
   chemicalOnly?: BooleanLike;
-  health: number;
+  health: number | null;
   dead: BooleanLike;
   unknown: BooleanLike;
   robotic: BooleanLike;
@@ -49,7 +49,7 @@ export const Healthanalyzer = () => {
   const { act, data } = useBackend<HealthanalyzerData>();
   const { scan, advanced, printing, scanNumber, live = false, canPrint = advanced, canClear = true, deviceLabel } = data;
   return (
-    <Window title={live ? 'Мониторинг организма' : 'Анализатор здоровья'} width={570} height={780}>
+    <Window title={live ? 'Мониторинг организма' : 'Анализатор здоровья'} width={570} height={710}>
       <Window.Content scrollable>
         <Section title="Медицинский отчёт" buttons={(
           <>
@@ -136,12 +136,15 @@ const SpeciesBadge = ({ name, similarName, robotic, color }: { name: string; sim
 
 const VitalSigns = ({ scan }: { scan: Scan }) => (
   <LabeledList>
-    {!!scan.unknown && <LabeledList.Item label="Общее состояние"><Box color="average">Неизвестно</Box></LabeledList.Item>}
-    {damageTypes.map(({ key, label, color }) => (
-      <LabeledList.Item key={key} label={key === 'tox' && scan.robotic ? 'Коррозия' : label}>
-        <ProgressBar value={scan.damageLevels![key] / 100} color={color}>{round(scan.damageLevels![key], 3)}</ProgressBar>
-      </LabeledList.Item>
-    ))}
+    <LabeledList.Item label="Общее состояние">
+      <ProgressBar
+        value={scan.unknown || scan.dead ? 0 : scan.health ?? 0}
+        maxValue={100}
+        color={scan.unknown ? 'average' : scan.dead ? 'bad' : undefined}
+        ranges={{ good: [50, Infinity], average: [0, 50], bad: [-Infinity, 0] }}>
+        {scan.unknown ? 'Неизвестно' : scan.dead ? 'Смерть' : `${round(scan.health, 3)} %`}
+      </ProgressBar>
+    </LabeledList.Item>
     {!!scan.blood && (
       <LabeledList.Item label={scan.robotic ? 'Гидравлическая жидкость' : 'Кровь'}>
         <ProgressBar value={scan.blood.percent / 100} color={scan.blood.critical ? 'bad' : scan.blood.low ? 'average' : 'good'}>
