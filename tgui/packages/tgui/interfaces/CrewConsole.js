@@ -66,13 +66,13 @@ const HealthStat = props => {
 };
 
 export const CrewConsole = () => {
+  const { act, data } = useBackend();
   const [tab, setTab] = useLocalState('crewTab', 'list');
   // Отметки привязаны к UID моба: одинаковые имена не объединяются, переименование сохраняет отметку.
-  const [highlightedIds, setHighlightedIds] = useLocalState('crewHighlightedIds', []);
-  const toggleHighlight = id => setHighlightedIds(ids => (
-    ids.includes(id) ? ids.filter(entry => entry !== id) : [...ids, id]
-  ));
-  const highlightProps = { highlightedIds, setHighlightedIds, toggleHighlight };
+  const highlightedIds = data.highlighted_ids || [];
+  const toggleHighlight = id => act('toggle_highlight', { id });
+  const clearHighlights = () => act('clear_highlights');
+  const highlightProps = { highlightedIds, clearHighlights, toggleHighlight };
   return (
     <Window
       title="Монитор экипажа"
@@ -113,7 +113,7 @@ export const CrewConsole = () => {
 
 const CrewTable = (props) => {
   const { data } = useBackend();
-  const { highlightedIds, setHighlightedIds, toggleHighlight } = props;
+  const { highlightedIds, clearHighlights, toggleHighlight } = props;
   const [search, setSearch] = useLocalState('crewSearch', '');
   const sensors = data.sensors || [];
   const searcher = createSearch(search, sensor => (
@@ -142,7 +142,7 @@ const CrewTable = (props) => {
               icon="times"
               tooltip="Снять все отметки"
               disabled={!highlightedIds.length}
-              onClick={() => setHighlightedIds([])} />
+              onClick={clearHighlights} />
           </Table.Cell>
           <Table.Cell bold>
             Имя

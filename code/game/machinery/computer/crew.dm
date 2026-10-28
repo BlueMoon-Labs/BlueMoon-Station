@@ -40,6 +40,16 @@ GLOBAL_DATUM_INIT(crewmonitor_security, /datum/crewmonitor/security, new)
 GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 
+// Отметки принадлежат устройству и переживают закрытие интерфейса.
+/datum/component/crewmonitor_highlights
+	dupe_mode = COMPONENT_DUPE_UNIQUE
+	// Храним UID, чтобы отметки не удерживали персонажей от удаления.
+	var/list/highlighted_ids = list()
+
+/datum/component/crewmonitor_highlights/Destroy(force = FALSE, silent = FALSE)
+	highlighted_ids = null
+	return ..()
+
 /datum/crewmonitor
 	var/list/ui_sources = list() //List of user -> ui source
 	var/list/jobs
@@ -143,8 +153,10 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 	return ..()
 
 /datum/crewmonitor/ui_data(mob/user)
-	var/turf/user_turf = get_turf(ui_host(user)) || get_turf(user)
-	. = list("sensors" = list(), "maps" = list(), "link_allowed" = isAI(user))
+	var/datum/source = ui_host(user)
+	var/datum/component/crewmonitor_highlights/highlights = source?.GetComponent(/datum/component/crewmonitor_highlights)
+	var/turf/user_turf = get_turf(source) || get_turf(user)
+	. = list("sensors" = list(), "maps" = list(), "link_allowed" = isAI(user), "highlighted_ids" = highlights ? highlights.highlighted_ids : list())
 	if(!user_turf)
 		return
 	if(!is_hilbert_hotel_area(get_area(user_turf)))
@@ -341,6 +353,34 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 	. = ..()
 	if(.)
 		return
+	if(action == "toggle_highlight" || action == "clear_highlights")
+		var/datum/source = ui_host(usr)
+		if(QDELETED(source))
+			return FALSE
+		var/datum/component/crewmonitor_highlights/highlights = source.GetComponent(/datum/component/crewmonitor_highlights)
+		if(action == "clear_highlights")
+			if(!length(highlights?.highlighted_ids))
+				return FALSE
+			highlights.highlighted_ids.Cut()
+			return TRUE
+		var/sensor_id = params["id"]
+		if(!istext(sensor_id))
+			return FALSE
+		if(highlights && (sensor_id in highlights.highlighted_ids))
+			highlights.highlighted_ids -= sensor_id
+			return TRUE
+		var/turf/position = get_turf(source) || get_turf(usr)
+		if(!position)
+			return FALSE
+		// Добавлять можно только доступные этому монитору датчики.
+		for(var/list/sensor as anything in update_data(position.z))
+			if(sensor["id"] != sensor_id)
+				continue
+			if(!highlights)
+				highlights = source.LoadComponent(/datum/component/crewmonitor_highlights)
+			highlights.highlighted_ids += sensor_id
+			return TRUE
+		return FALSE
 	var/mob/living/silicon/ai/AI = usr
 	if(!istype(AI))
 		return
