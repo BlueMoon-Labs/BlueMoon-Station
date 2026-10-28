@@ -1,9 +1,10 @@
 import { round } from 'common/math';
 import { BooleanLike } from 'common/react';
+import { useDispatch } from 'common/redux';
 import { decodeHtmlEntities } from 'common/string';
-import { Fragment, useLayoutEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
-import { useBackend } from '../backend';
+import { backendSuspendStart, useBackend } from '../backend';
 import { Box, Button, Icon, LabeledList, NoticeBox, ProgressBar, Section, Table } from '../components';
 import { Window } from '../layouts';
 
@@ -46,8 +47,19 @@ const damageTypes = [
 ];
 
 export const Healthanalyzer = () => {
-  const { act, data } = useBackend<HealthanalyzerData>();
+  const { act, data, suspended, suspending } = useBackend<HealthanalyzerData>();
+  const dispatch = useDispatch();
   const { scan, advanced, printing, scanNumber, live = false, canPrint = advanced, canClear = true, deviceLabel } = data;
+  useEffect(() => {
+    if (suspended || suspending) return;
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || event.repeat) return;
+      event.preventDefault();
+      dispatch(backendSuspendStart());
+    };
+    document.addEventListener('keydown', closeOnEscape, true);
+    return () => document.removeEventListener('keydown', closeOnEscape, true);
+  }, [dispatch, suspended, suspending]);
   return (
     <Window title={live ? 'Мониторинг организма' : 'Анализатор здоровья'} width={570} height={710}>
       <Window.Content scrollable>
