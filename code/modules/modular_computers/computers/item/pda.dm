@@ -1162,6 +1162,8 @@
 // ---- Borg PDA messaging ----
 
 /mob/living/silicon/robot/proc/cmd_send_pdamesg(mob/user)
+	if(QDELETED(aiPDA))
+		return
 	var/list/plist = list()
 	var/list/namecounts = list()
 
