@@ -480,23 +480,28 @@
 			var/chunk_count = payload["chunkCount"]
 			var/max_chunk_count = CONFIG_GET(number/tgui_max_chunk_count)
 			var/permit_payload = chunk_count <= max_chunk_count
+			// Настройки панели сохраняются в фоне, игрок ничего не вводил - отказ только в лог.
+			var/notify_user = payload["type"] != "panel/state_set"
 			// Отказ больше не молчит. Раньше сервер просто отвечал allow = FALSE, клиент
 			// выбрасывал очередь без единого слова, и для игрока это выглядело как "окно висит,
 			// сервер не принимает" - ровно так выглядел упёршийся в лимит JSON интегральной
 			// сборки, и разобраться было нечем.
 			if(!permit_payload)
 				log_tgui(client, "[id]/on_message payload rejected: [chunk_count] chunks over limit [max_chunk_count]", window = src)
-				to_chat(client, span_warning("Введённый текст слишком велик для передачи: [chunk_count] частей при лимите [max_chunk_count]. Сократите текст."))
+				if(notify_user)
+					to_chat(client, span_warning("Введённый текст слишком велик для передачи: [chunk_count] частей при лимите [max_chunk_count]. Сократите текст."))
 			else
 				permit_payload = create_oversized_payload(payload_id, payload["type"], chunk_count)
 				if(!permit_payload)
 					log_tgui(client, "[id]/on_message payload rejected: too many concurrent payloads or duplicate id", window = src)
-					to_chat(client, span_warning("Сервер уже собирает другой большой ввод. Подождите несколько секунд и повторите."))
+					if(notify_user)
+						to_chat(client, span_warning("Сервер уже собирает другой большой ввод. Подождите несколько секунд и повторите."))
 			send_message("oversizePayloadResponse", list("allow" = permit_payload, "id" = payload_id))
 		if("payloadChunk")
 			var/payload_id = payload["id"]
-			if(append_payload_chunk(payload_id, payload["chunk"]))
-				send_message("acknowlegePayloadChunk", list("id" = payload_id))
+			var/chunk_index = payload["index"]
+			if(append_payload_chunk(payload_id, payload["chunk"], chunk_index))
+				send_message("acknowlegePayloadChunk", list("id" = payload_id, "index" = chunk_index))
 			else
 				send_message("payloadDropped", list("id" = payload_id))
 	if(log_handshake)
@@ -511,38 +516,65 @@
 	if(oversized_payloads[payload_id])
 		stack_trace("Attempted to create oversized tgui payload with duplicate ID.")
 		return FALSE
-	// Do NOT use TIMER_UNIQUE|TIMER_OVERRIDE: each new CALLBACK() has a different hash,
-	// so those flags would not deduplicate timers — they would just accumulate.
-	// Store the timer ID explicitly and use deltimer() before each reset.
-	var/timer_id = addtimer(CALLBACK(src, PROC_REF(remove_oversized_payload), payload_id), 30 SECONDS, TIMER_STOPPABLE)
 	oversized_payloads[payload_id] = list(
 		"type" = message_type,
 		"count" = chunk_count,
 		"chunks" = list(),
-		"timer" = timer_id,
+		"timer" = arm_oversized_payload_timeout(payload_id),
 	)
 	return TRUE
 
-/datum/tgui_window/proc/append_payload_chunk(payload_id, chunk)
+// Do NOT use TIMER_UNIQUE|TIMER_OVERRIDE: each new CALLBACK() has a different hash,
+// so those flags would not deduplicate timers — they would just accumulate.
+// Store the timer ID explicitly and use deltimer() before each reset.
+/datum/tgui_window/proc/arm_oversized_payload_timeout(payload_id)
+	return addtimer(CALLBACK(src, PROC_REF(expire_oversized_payload), payload_id), 30 SECONDS, TIMER_STOPPABLE)
+
+/// chunk_index - номер чанка с единицы. Повтор уже принятого чанка подтверждается без записи:
+/// WebView2 умеет доставить топик дважды, а дубль в склейке ломал JSON всей передачи.
+/datum/tgui_window/proc/append_payload_chunk(payload_id, chunk, chunk_index)
 	var/list/oversized_payload = oversized_payloads[payload_id]
 	if(!oversized_payload)
 		return FALSE // Payload was timed out or never existed — signal caller
 	var/list/chunks = oversized_payload["chunks"]
-	chunks += chunk
-	if(length(chunks) >= oversized_payload["count"])
-		deltimer(oversized_payload["timer"])
-		var/message_type = oversized_payload["type"]
-		var/final_payload = chunks.Join("")
+	if(isnum(chunk_index) && chunk_index <= length(chunks))
+		return TRUE
+	if(!istext(chunk) || (isnum(chunk_index) && chunk_index != length(chunks) + 1))
+		log_tgui(client, "[id]/payload [payload_id] dropped: chunk [chunk_index] after [length(chunks)]", window = src)
 		remove_oversized_payload(payload_id)
-		on_message(message_type, json_decode(final_payload), list("type" = message_type, "payload" = final_payload, "tgui" = TRUE, "window_id" = id))
-	else
-		// Explicit deltimer + new addtimer to correctly reset the deadline
+		return FALSE
+	chunks += chunk
+	if(length(chunks) < oversized_payload["count"])
 		deltimer(oversized_payload["timer"])
-		oversized_payload["timer"] = addtimer(CALLBACK(src, PROC_REF(remove_oversized_payload), payload_id), 30 SECONDS, TIMER_STOPPABLE)
+		oversized_payload["timer"] = arm_oversized_payload_timeout(payload_id)
+		return TRUE
+	var/message_type = oversized_payload["type"]
+	var/final_payload = chunks.Join("")
+	remove_oversized_payload(payload_id)
+	var/decoded_payload
+	try
+		decoded_payload = json_decode(final_payload)
+	catch
+		log_tgui(client, "[id]/payload [payload_id] is not valid JSON, [length(final_payload)] chars", window = src)
+		return FALSE
+	on_message(message_type, decoded_payload, list("type" = message_type, "payload" = final_payload, "tgui" = TRUE, "window_id" = id))
 	return TRUE
 
 /datum/tgui_window/proc/remove_oversized_payload(payload_id)
+	var/list/oversized_payload = oversized_payloads[payload_id]
+	if(oversized_payload)
+		deltimer(oversized_payload["timer"])
 	oversized_payloads -= payload_id
+
+/// Клиент не узнавал о брошенной передаче и держал её очередь до конца раунда.
+/datum/tgui_window/proc/expire_oversized_payload(payload_id)
+	var/list/oversized_payload = oversized_payloads[payload_id]
+	if(!oversized_payload)
+		return
+	var/list/chunks = oversized_payload["chunks"]
+	log_tgui(client, "[id]/payload [payload_id] timed out: [length(chunks)] of [oversized_payload["count"]] chunks", window = src)
+	oversized_payloads -= payload_id
+	send_message("payloadDropped", list("id" = payload_id))
 
 /// Возвращает URL для загрузки tgui-ассета. Если задан dev_server_ip,
 /// бандлы (js/css главного tgui и панели) перенаправляются на dev-сервер

@@ -1,21 +1,35 @@
 import { backendCreatePayloadQueue, sendMessage } from 'tgui/backend';
 
-import { flushSaveToServer, forgetSentState } from './serverState';
+import {
+  flushSaveToServer,
+  forgetSentState,
+  scheduleSaveToServer,
+  serverStateMiddleware,
+} from './serverState';
 
 jest.mock('tgui/backend', () => ({
   backendCreatePayloadQueue: jest.fn(payload => ({
     type: 'backend/createPayloadQueue',
     payload,
   })),
+  backendRemovePayloadQueue: jest.fn(payload => ({
+    type: 'backend/removePayloadQueue',
+    payload,
+  })),
+  selectBackend: state => state.backend,
   sendMessage: jest.fn(),
 }));
 
 const createStore = ({
   dispatch = jest.fn(),
   highlightText = '',
+  queues = {},
 } = {}) => ({
   dispatch,
   getState: () => ({
+    backend: {
+      outgoingPayloadQueues: queues,
+    },
     settings: {
       version: 1,
       theme: 'default',
@@ -50,6 +64,7 @@ describe('tgui panel serverState', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    forgetSentState();
     backendCreatePayloadQueue.mockImplementation(payload => ({
       type: 'backend/createPayloadQueue',
       payload,
@@ -152,9 +167,79 @@ describe('tgui panel serverState', () => {
       },
     });
 
-    const payload = JSON.parse(queuePayload.chunks.join(''));
-    const state = JSON.parse(payload.state);
+    // Чанки везут само состояние, без обёртки, экранирующей каждую кавычку.
+    const state = JSON.parse(queuePayload.chunks.join(''));
     expect(state.settings.highlightText).toBe('Ж'.repeat(600));
+  });
+
+  // Раунд 10628: новое сохранение уходило, пока предыдущее ещё ехало по чанкам; передачи
+  // копились на сервере, упирались в лимит в три одновременные, и он отвергал все следующие.
+  test('waits for the chunked transfer in flight before sending a newer state', () => {
+    jest.useFakeTimers();
+    const queues = {};
+    const dispatch = jest.fn(action => {
+      if (action.type === 'backend/createPayloadQueue') {
+        queues[action.payload.id] = { chunks: action.payload.chunks, acked: 0 };
+      }
+    });
+    const large = createStore({ dispatch, queues, highlightText: 'Ж'.repeat(600) });
+    flushSaveToServer(large);
+    expect(sendMessage).toHaveBeenCalledTimes(1);
+    const { id } = backendCreatePayloadQueue.mock.calls[0][0];
+
+    const newer = createStore({ dispatch, queues, highlightText: 'newer-marker' });
+    flushSaveToServer(newer);
+    jest.advanceTimersByTime(3000);
+    expect(global.Byond.topic).not.toHaveBeenCalled();
+
+    delete queues[id];
+    jest.advanceTimersByTime(3000);
+    expect(global.Byond.topic).toHaveBeenCalledTimes(1);
+    const state = JSON.parse(global.Byond.topic.mock.calls[0][0].panel_state);
+    expect(state.settings.highlightText).toBe('newer-marker');
+    jest.useRealTimers();
+  });
+
+  test('resends a refused panel state, but gives up after a few refusals', () => {
+    jest.useFakeTimers();
+    const store = createStore({ highlightText: 'Ж'.repeat(600) });
+    const next = jest.fn();
+    const refuse = () => {
+      const calls = backendCreatePayloadQueue.mock.calls;
+      const { id } = calls[calls.length - 1][0];
+      serverStateMiddleware(store)(next)({
+        type: 'oversizePayloadResponse',
+        payload: { allow: 0, id },
+      });
+    };
+
+    scheduleSaveToServer(store);
+    jest.advanceTimersByTime(3000);
+    expect(backendCreatePayloadQueue).toHaveBeenCalledTimes(1);
+    for (let i = 0; i < 3; i++) {
+      refuse();
+      jest.advanceTimersByTime(3000);
+      expect(backendCreatePayloadQueue).toHaveBeenCalledTimes(i + 2);
+    }
+    refuse();
+    jest.advanceTimersByTime(3000);
+    expect(backendCreatePayloadQueue).toHaveBeenCalledTimes(4);
+    expect(next).toHaveBeenCalledTimes(4);
+    jest.useRealTimers();
+  });
+
+  test('ignores refusals of payloads that are not panel state', () => {
+    jest.useFakeTimers();
+    const store = createStore({ highlightText: 'other-payload-marker' });
+    flushSaveToServer(store);
+    expect(global.Byond.topic).toHaveBeenCalledTimes(1);
+    serverStateMiddleware(store)(jest.fn())({
+      type: 'payloadDropped',
+      payload: { id: 'some-window-input' },
+    });
+    jest.advanceTimersByTime(3000);
+    expect(global.Byond.topic).toHaveBeenCalledTimes(1);
+    jest.useRealTimers();
   });
 
   // Дедупликация помечает тело отправленным ДО того, как транспорт отработал. Если отправка
