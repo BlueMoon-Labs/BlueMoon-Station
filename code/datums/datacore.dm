@@ -702,9 +702,9 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 		if(real_rank)
 			foundrecord.fields["real_rank"] = real_rank
 
-/datum/datacore/proc/get_manifest()
-	var/list/manifest_out = list()
-	var/list/departments = list(
+// Общий порядок отделов и состав профессий для манифеста и списка готовых персонажей.
+/proc/get_manifest_departments()
+	return list(
 		DEPARTMENT_COMMAND		= GLOB.command_positions,
 		DEPARTMENT_SECURITY		= GLOB.security_positions,
 		DEPARTMENT_ENGINEERING	= GLOB.engineering_positions,
@@ -715,6 +715,10 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 		DEPARTMENT_LAW			= GLOB.law_positions,
 		DEPARTMENT_SILICON		= GLOB.nonhuman_positions
 	)
+
+/datum/datacore/proc/get_manifest()
+	var/list/manifest_out = list()
+	var/list/departments = get_manifest_departments()
 	for(var/datum/data/record/t in GLOB.data_core.general)
 		var/name = t.fields["name"]
 		var/rank = t.fields["rank"]
