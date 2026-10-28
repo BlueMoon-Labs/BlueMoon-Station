@@ -40,11 +40,13 @@ GLOBAL_DATUM_INIT(crewmonitor_security, /datum/crewmonitor/security, new)
 GLOBAL_DATUM_INIT(crewmonitor_command, /datum/crewmonitor/command, new)
 GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 
-// Отметки принадлежат устройству и переживают закрытие интерфейса.
+// Отметки и параметры карты принадлежат устройству и переживают закрытие интерфейса.
 /datum/component/crewmonitor_highlights
 	dupe_mode = COMPONENT_DUPE_UNIQUE
 	// Храним UID, чтобы отметки не удерживали персонажей от удаления.
 	var/list/highlighted_ids = list()
+	var/show_names = TRUE
+	var/show_icons = FALSE
 
 /datum/component/crewmonitor_highlights/Destroy(force = FALSE, silent = FALSE)
 	highlighted_ids = null
@@ -139,6 +141,15 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 		ui = new(user, src, "CrewConsole")
 		ui.open()
 
+/datum/crewmonitor/ui_assets(mob/user)
+	. = ..()
+	. += get_asset_datum(/datum/asset/spritesheet_batched/jobs)
+
+/datum/crewmonitor/proc/get_job_icon(obj/item/card/id/card)
+	var/static/list/job_icon_states = make_associative(icon_states('icons/ui_icons/tgui/jobs.dmi'))
+	var/job_icon = card ? ckey(card.get_job_name()) : "no_id"
+	return job_icon_states[job_icon] ? job_icon : "no_id"
+
 /datum/crewmonitor/proc/show(mob/M, source)
 	ui_sources[M] = source
 	ui_interact(M)
@@ -156,7 +167,7 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 	var/datum/source = ui_host(user)
 	var/datum/component/crewmonitor_highlights/highlights = source?.GetComponent(/datum/component/crewmonitor_highlights)
 	var/turf/user_turf = get_turf(source) || get_turf(user)
-	. = list("sensors" = list(), "maps" = list(), "link_allowed" = isAI(user), "highlighted_ids" = highlights ? highlights.highlighted_ids : list())
+	. = list("sensors" = list(), "maps" = list(), "link_allowed" = isAI(user), "highlighted_ids" = highlights ? highlights.highlighted_ids : list(), "show_names" = highlights ? highlights.show_names : TRUE, "show_icons" = highlights ? highlights.show_icons : FALSE)
 	if(!user_turf)
 		return
 	if(!is_hilbert_hotel_area(get_area(user_turf)))
@@ -281,6 +292,7 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 
 				var/total_list = list("id" = H.UID(), "name" = name, "assignment" = assignment, "ijob" = ijob, "life_status" = life_status, "oxydam" = oxydam, "toxdam" = toxdam, "burndam" = burndam, "brutedam" = brutedam, "totaldam" = totaldam, "area" = area, "pos_x" = pos_x, "pos_y" = pos_y, "pos_z" = pos_z, "floor" = pos_z ? (monitored_levels.Find(pos_z) || SSmapping.get_connected_levels(pos_z).Find(pos_z)) : null, "can_track" = !hidden_location && H.can_track(null))
 
+				total_list["job_icon"] = get_job_icon(I)
 				if(totaldam)
 					results_damaged[++results_damaged.len] = total_list
 				else
@@ -353,11 +365,19 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 	. = ..()
 	if(.)
 		return
-	if(action == "toggle_highlight" || action == "clear_highlights")
+	if(action == "toggle_highlight" || action == "clear_highlights" || action == "toggle_names" || action == "toggle_icons")
 		var/datum/source = ui_host(usr)
 		if(QDELETED(source))
 			return FALSE
 		var/datum/component/crewmonitor_highlights/highlights = source.GetComponent(/datum/component/crewmonitor_highlights)
+		if(action == "toggle_names" || action == "toggle_icons")
+			if(!highlights)
+				highlights = source.LoadComponent(/datum/component/crewmonitor_highlights)
+			if(action == "toggle_names")
+				highlights.show_names = !highlights.show_names
+			else
+				highlights.show_icons = !highlights.show_icons
+			return TRUE
 		if(action == "clear_highlights")
 			if(!length(highlights?.highlighted_ids))
 				return FALSE
@@ -496,6 +516,7 @@ GLOBAL_DATUM_INIT(crewmonitor_siege, /datum/crewmonitor/siege, new)
 
 		var/total_list = list("id" = H.UID(), "name" = name, "assignment" = "Защитник", "ijob" = 0, "life_status" = life_status, "oxydam" = oxydam, "toxdam" = toxdam, "burndam" = burndam, "brutedam" = brutedam, "totaldam" = totaldam, "area" = area, "pos_x" = pos_x, "pos_y" = pos_y, "pos_z" = pos_z, "floor" = pos_z ? (monitored_levels.Find(pos_z) || SSmapping.get_connected_levels(pos_z).Find(pos_z)) : null, "can_track" = !hidden_location && H.can_track(null))
 
+		total_list["job_icon"] = get_job_icon(H.get_idcard())
 		if(totaldam)
 			results_damaged[++results_damaged.len] = total_list
 		else

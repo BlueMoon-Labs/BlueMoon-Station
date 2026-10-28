@@ -7,14 +7,47 @@ import { COLORS } from '../constants';
 import { Window } from '../layouts';
 import { StationMap } from './common/StationMap';
 
-const HEALTH_COLOR_BY_LEVEL = [
-  '#17d568',
-  '#2ecc71',
-  '#e67e22',
-  '#ed5100',
-  '#e74c3c',
-  '#ed2814',
-];
+const HEALTHY_COLOR = '#17d568';
+const DEAD_COLOR = '#ed2814';
+const DAMAGE_COLORS = ['#ffeb3b', '#ffc107', '#ff9800'];
+const DAMAGE_PULSE_DURATIONS = ['3s', '1.5s', '0.7s'];
+
+// Общие фильтры тонируют значки, сохраняя прозрачность и рисунок профессии.
+const HEALTH_ICON_FILTERS = (
+  <svg width="0" height="0" aria-hidden="true" style={{ position: 'absolute' }}>
+    <defs>
+      {DAMAGE_COLORS.map(color => {
+        const [red, green, blue] = color.slice(1).match(/../g)
+          .map(channel => parseInt(channel, 16) / 255);
+        return (
+          <filter key={color} id={`crew-health-${color.slice(1)}`} colorInterpolationFilters="sRGB">
+            <feColorMatrix type="saturate" values="0" />
+            <feComponentTransfer>
+              <feFuncR type="linear" slope={red} />
+              <feFuncG type="linear" slope={green} />
+              <feFuncB type="linear" slope={blue} />
+            </feComponentTransfer>
+          </filter>
+        );
+      })}
+    </defs>
+  </svg>
+);
+
+const CrewJobIcon = ({ jobIcon, color }) => {
+  const dead = color === DEAD_COLOR;
+  const damageLevel = DAMAGE_COLORS.indexOf(color);
+  return (
+    <span className={`CrewConsole__jobIconFrame${dead ? ' CrewConsole__jobIconFrame--dead' : ''}`}>
+      <Box
+        className={`jobs8x8 ${jobIcon || 'no_id'} CrewConsole__jobIcon${dead ? ' CrewConsole__jobIcon--dead' : ''}${damageLevel >= 0 ? ' CrewConsole__jobIcon--damaged' : ''}`}
+        style={damageLevel >= 0 ? {
+          filter: `url(#crew-health-${color.slice(1)})`,
+          animationDuration: DAMAGE_PULSE_DURATIONS[damageLevel],
+        } : undefined} />
+    </span>
+  );
+};
 
 const jobIsHead = jobId => jobId % 10 === 0;
 
@@ -44,12 +77,16 @@ const jobToColor = jobId => {
 };
 
 const healthToColor = (oxy, tox, burn, brute, life_status) => {
-  if (!life_status) {
-    return HEALTH_COLOR_BY_LEVEL[HEALTH_COLOR_BY_LEVEL.length - 1];
+  if (life_status === false || life_status === 0) {
+    return DEAD_COLOR;
   }
   const healthSum = (oxy ?? 0) + (tox ?? 0) + (burn ?? 0) + (brute ?? 0);
-  const level = Math.min(Math.max(Math.ceil(healthSum / 25), 0), 5);
-  return HEALTH_COLOR_BY_LEVEL[level];
+  if (healthSum < 40) {
+    return HEALTHY_COLOR;
+  }
+  // Ступени повреждений: 40–79, 80–119 и от 120; красный оставляем смерти.
+  const level = Math.min(Math.floor(healthSum / 40) - 1, DAMAGE_COLORS.length - 1);
+  return DAMAGE_COLORS[level];
 };
 
 const HealthStat = props => {
@@ -79,6 +116,7 @@ export const CrewConsole = () => {
       width={800}
       height={600}>
       <Window.Content>
+        {HEALTH_ICON_FILTERS}
         <Stack fill vertical>
           <Stack.Item>
             <Tabs>
@@ -201,6 +239,7 @@ const CrewTableEntry = (props) => {
     floor,
     can_track,
   } = sensor_data;
+  const color = healthToColor(oxydam, toxdam, burndam, brutedam, life_status);
 
   return (
     <Table.Row className={highlighted && 'CrewConsole__highlightedRow'}>
@@ -214,16 +253,14 @@ const CrewTableEntry = (props) => {
       <Table.Cell
         bold={jobIsHead(ijob)}
         color={jobToColor(ijob)}>
+        <span className="CrewConsole__jobIconSlot" aria-hidden="true">
+          <CrewJobIcon jobIcon={sensor_data.job_icon} color={color} />
+        </span>
         {name}{assignment !== undefined ? ` (${assignment})` : ""}
       </Table.Cell>
       <Table.Cell collapsing textAlign="center">
         <ColorBox
-          color={healthToColor(
-            oxydam,
-            toxdam,
-            burndam,
-            brutedam,
-            life_status)} />
+          color={color} />
       </Table.Cell>
       <Table.Cell collapsing textAlign="center">
         {Number.isFinite(oxydam) ? (
@@ -286,9 +323,10 @@ const CrewDirection = ({ sensor, position }) => {
 };
 
 const CrewMap = (props) => {
-  const { data } = useBackend();
+  const { act, data } = useBackend();
   const { highlightedIds, toggleHighlight } = props;
-  const [showNames, setShowNames] = useLocalState('crewMapHighlightedNames', true);
+  const showNames = !!data.show_names;
+  const showIcons = !!data.show_icons;
   const maps = (data.levels || [])
     .map(z => (data.maps || []).find(map => map.z === z))
     .filter(Boolean);
@@ -301,9 +339,14 @@ const CrewMap = (props) => {
       initialZ={data.z}
       statePrefix="crewMap"
       controls={(
-        <Button.Checkbox checked={showNames} onClick={() => setShowNames(!showNames)}>
-          Имена
-        </Button.Checkbox>
+        <>
+          <Button.Checkbox checked={showNames} onClick={() => act('toggle_names')}>
+            Имена
+          </Button.Checkbox>
+          <Button.Checkbox checked={showIcons} onClick={() => act('toggle_icons')}>
+            Иконки
+          </Button.Checkbox>
+        </>
       )}
       hint=" Нажатие на метку — выделение. Полупрозрачные метки — персонажи на других этажах."
       renderMarkers={(floor, scale) => (
@@ -316,6 +359,7 @@ const CrewMap = (props) => {
               scale={scale}
               highlighted={highlightedIds.includes(sensor.id)}
               showName={showNames}
+              showIcon={showIcons}
               toggleHighlight={toggleHighlight} />
           ))}
           {!!data.position && (
@@ -338,7 +382,7 @@ const CrewMap = (props) => {
 };
 
 const CrewMapMarker = (props) => {
-  const { sensor, floor, scale, highlighted, showName, toggleHighlight } = props;
+  const { sensor, floor, scale, highlighted, showName, showIcon, toggleHighlight } = props;
   const otherLevel = sensor.pos_z !== floor.z;
   const color = healthToColor(
     sensor.oxydam, sensor.toxdam, sensor.burndam, sensor.brutedam, sensor.life_status,
@@ -349,7 +393,7 @@ const CrewMapMarker = (props) => {
   return (
     <Tooltip content={tooltip}>
       <div
-        className={`CrewConsole__marker${highlighted ? ' CrewConsole__marker--highlighted' : ''}`}
+        className={`CrewConsole__marker${showIcon ? ' CrewConsole__marker--job' : ''}${highlighted ? ' CrewConsole__marker--highlighted' : ''}`}
         role="button"
         aria-label={tooltip}
         tabIndex={0}
@@ -365,10 +409,11 @@ const CrewMapMarker = (props) => {
           left: `${(sensor.pos_x - floor.min_x + 0.5) * scale}px`,
           bottom: `${(sensor.pos_y - floor.min_y + 0.5) * scale}px`,
           color,
-          backgroundColor: color,
+          backgroundColor: showIcon ? undefined : color,
           opacity: otherLevel ? 0.4 : 1,
           zIndex: (otherLevel ? 1 : 2) + (highlighted ? 2 : 0),
         }}>
+        {showIcon && <CrewJobIcon jobIcon={sensor.job_icon} color={color} />}
         {highlighted && showName && (
           <span className="CrewConsole__markerLabel">
             {sensor.name}{otherLevel ? ` (Этаж ${sensor.floor})` : ''}

@@ -29,13 +29,71 @@
     border: 3px solid white;
     box-shadow: 0 0 0 1px #000, 0 0 8px currentColor;
     border-radius: 50%;
-    animation: crew-highlight 1.5s ease-out infinite;
+    opacity: 0.6;
     pointer-events: none;
   }
 }
 
 .CrewConsole__highlightedRow {
   background: rgba(255, 255, 255, 0.08);
+}
+
+.CrewConsole__jobIcon {
+  image-rendering: pixelated;
+  transform: scale(1.5);
+  pointer-events: none;
+
+  &--damaged {
+    animation: crew-damage-pulse ease-in-out infinite;
+  }
+
+  &--dead {
+    filter: grayscale(1);
+    opacity: 0.7;
+  }
+}
+
+.CrewConsole__jobIconFrame {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+  pointer-events: none;
+
+  &--dead {
+    outline: 1px solid #ed2814;
+    outline-offset: 1px;
+  }
+}
+
+.CrewConsole__jobIconSlot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.CrewConsole__marker--job {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: 0;
+  border-radius: 0;
+
+  .CrewConsole__jobIcon {
+    transform: scale(2);
+  }
+
+  .CrewConsole__jobIconFrame {
+    width: 16px;
+    height: 16px;
+  }
 }
 
 .Button.CrewConsole__plainButton {
@@ -55,15 +113,13 @@
   cursor: default;
 }
 
-@keyframes crew-highlight {
-  from {
-    transform: scale(0.7);
+@keyframes crew-damage-pulse {
+  0%, 100% {
     opacity: 1;
   }
 
-  to {
-    transform: scale(1.9);
-    opacity: 0;
+  50% {
+    opacity: 0.4;
   }
 }
 
