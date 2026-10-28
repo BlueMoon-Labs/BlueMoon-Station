@@ -14,6 +14,7 @@ type Wound = { name: string; icon: string; severity: string; treatment: string; 
 type Limb = { name: string; missing: BooleanLike; missingIcon?: string; brute: number; burn: number; wounds: Wound[]; embeds: string[] };
 type Organ = { name: string; icon: string; damage: number | null; status: string; warning: BooleanLike; critical: BooleanLike };
 type Reagent = { name: string; volume: number; overdosed: BooleanLike; inactive: BooleanLike };
+type Quirk = { name: string; value: number };
 type Scan = {
   scanTime: string;
   woundOnly?: BooleanLike;
@@ -28,6 +29,8 @@ type Scan = {
   temperatureC?: number;
   temperatureF?: number;
   diagnosis?: ScanLine[];
+  deathNotice?: ScanLine[];
+  quirks?: Quirk[];
   damageLevels?: Record<string, number>;
   damageLocalization?: Limb[];
   organs?: Organ[];
@@ -82,6 +85,7 @@ export const Healthanalyzer = () => {
                   {scan.temperatureC !== undefined && <>{scan.species ? ' | ' : ''}Температура тела: {round(scan.temperatureC, 3)} °C ({round(scan.temperatureF, 3)} °F)</>}
                 </Box>
               )}
+              {!!scan.deathNotice?.length && <Box mb={0.5}><ScanLines lines={scan.deathNotice} compact /></Box>}
               {!!scan.damageLevels && <VitalSigns scan={scan} />}
             </>
           ) : <NoticeBox>В памяти нет результатов обследования. Просканируйте пациента.</NoticeBox>}
@@ -185,6 +189,9 @@ const VitalSigns = ({ scan }: { scan: Scan }) => (
     {!!scan.diagnosis?.length && (
       <LabeledList.Item label="Диагностика"><ScanLines lines={scan.diagnosis} compact /></LabeledList.Item>
     )}
+    {!!scan.quirks?.length && (
+      <LabeledList.Item label="Особенности"><Quirks quirks={scan.quirks} /></LabeledList.Item>
+    )}
   </LabeledList>
 );
 
@@ -246,6 +253,19 @@ const ScanLines = ({ lines, compact = false }: { lines: ScanLine[]; compact?: bo
         {compact && index > 0 && ' · '}
         <Box as={compact ? 'span' : 'div'} mb={compact ? 0 : 0.4} color={line.warning ? 'bad' : undefined}>
           {decodeHtmlEntities(line.text)}
+        </Box>
+      </Fragment>
+    ))}
+  </Box>
+);
+
+const Quirks = ({ quirks }: { quirks: Quirk[] }) => (
+  <Box>
+    {quirks.map((quirk, index) => (
+      <Fragment key={quirk.name}>
+        {index > 0 && ', '}
+        <Box as="span" color={quirk.value < 0 ? 'bad' : quirk.value > 0 ? 'good' : undefined}>
+          {quirk.name}
         </Box>
       </Fragment>
     ))}

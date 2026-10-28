@@ -176,10 +176,10 @@ GENETICS SCANNER
 /obj/item/healthanalyzer/proc/get_report(mob/user, for_printing = FALSE)
 	var/report = last_msg
 	if(for_printing)
-		report = "[span_info("<b>Пациент: [html_encode(last_recipient_name)]</b>")]<br>[report]"
-	if(for_printing && last_death_report)
-		var/section_header = "<b>Посмертное заключение</b><br>"
-		report = replacetext(report, section_header, "[section_header][last_death_report]<br>")
+		var/print_header = span_info("<b>Пациент: [html_encode(last_recipient_name)]</b>")
+		if(last_death_report)
+			print_header += "<br>[last_death_report]"
+		report = "[print_header]<br>[report]"
 	return report
 
 /obj/item/healthanalyzer/proc/store_scan(mob/user, list/data)
@@ -559,9 +559,6 @@ GENETICS SCANNER
 						trauma_desc += B.scan_desc
 						trauma_text += trauma_desc
 					temp_message += " " + span_alert("Церебральные травмы: [english_list(trauma_text)].")
-				if(C.roundstart_quirks.len)
-					temp_message += " " + span_info("Особенности: [C.get_trait_string(FALSE, TRUE)].")
-
 				if(ishuman(C) && advanced)
 
 					if(H.hallucinating())
@@ -747,6 +744,28 @@ GENETICS SCANNER
 	var/diagnosis_report = jointext(splittext(trim(general_diagnosis), "\n") - "", " · ")
 	msg = ""
 
+	// Сохраняем фильтр медицинского сканера; внутри каждой группы сортируем особенности по названию.
+	var/list/negative_quirks = list()
+	var/list/positive_quirks = list()
+	var/list/neutral_quirks = list()
+	for(var/datum/quirk/quirk as anything in M.roundstart_quirks)
+		if(quirk.flavor_quirk)
+			continue
+		if(quirk.value < 0)
+			negative_quirks += quirk
+		else if(quirk.value > 0)
+			positive_quirks += quirk
+		else
+			neutral_quirks += quirk
+	var/list/quirks = list()
+	data["quirks"] = quirks
+	var/list/quirk_report = list()
+	for(var/list/quirk_group as anything in list(negative_quirks, positive_quirks, neutral_quirks))
+		for(var/datum/quirk/quirk as anything in sort_list(quirk_group, GLOBAL_PROC_REF(cmp_quirk_asc)))
+			quirks += list(list("name" = quirk.name, "value" = quirk.value))
+			var/quirk_name = html_encode(quirk.name)
+			quirk_report += quirk.value < 0 ? span_danger(quirk_name) : quirk.value > 0 ? span_nicegreen(quirk_name) : span_info(quirk_name)
+
 	if(M.tod && (M.stat == DEAD || ((HAS_TRAIT(M, TRAIT_FAKEDEATH)) && !advanced)))
 		// Точное время добавляется только на бумагу, прошедшее время доступно во всех форматах.
 		data["deathReport"] = "[span_info("Время смерти:")] [M.tod]"
@@ -767,7 +786,8 @@ GENETICS SCANNER
 					else
 						msg += "\n"
 
-	medical_scan_section(data, "Посмертное заключение", msg)
+	var/death_notice = msg
+	data["deathNotice"] = medical_scan_lines(death_notice)
 	msg = ""
 	if(M.sterilize_power)
 		msg += span_nicegreen("Ткани пациента продезинфицированы, что повышет шанс успеха операции на [round(M.sterilize_power, 0.001)] %. ") + span_info("Эффект продлится еще [DisplayTimeText(M._sterilize_expire - world.time)]\n")
@@ -845,9 +865,13 @@ GENETICS SCANNER
 		if(data["similarSpecies"] && data["similarSpecies"] != data["species"])
 			header += span_info("Схожая раса: [H.spec_trait_examine_font()][html_encode(data["similarSpecies"])]</font> | ")
 	header += span_info("Температура тела: [data["temperatureC"]] °C ([data["temperatureF"]] °F)<br>")
+	if(death_notice)
+		header += "[replacetext(death_notice, "\n", "<br>")]<br>"
 	header += replacetext(blood_report, "\n", "<br>")
 	if(diagnosis_report)
 		header += "[diagnosis_report]<br>"
+	if(length(quirk_report))
+		header += "[span_info("Особенности:")] [jointext(quirk_report, ", ")]<br>"
 	var/report = "[header][data["report"]]<hr>[span_info("Снимок от [scan_time]")]"
 	data["report"] = report
 	return data
