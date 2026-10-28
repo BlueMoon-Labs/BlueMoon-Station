@@ -10925,13 +10925,27 @@
 /turf/open/floor/plasteel/dark/side,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "gws" = (
-/obj/structure/cable/yellow{
-	icon_state = "0-8"
+/obj/effect/turf_decal/trimline/dark/line{
+	dir = 4
+	},
+/obj/effect/turf_decal/siding/purple{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
 	},
 /obj/machinery/power/apc/syndicate{
-	pixel_x = 32
+	dir = 1;
+	name = "RND APC";
+	req_access_txt = "150";
+	pixel_y = 30
 	},
-/turf/open/floor/plasteel/dark,
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
+/turf/open/floor/plasteel/dark/side{
+	dir = 8
+	},
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "gxh" = (
 /obj/structure/extinguisher_cabinet/directional{
@@ -21573,9 +21587,6 @@
 /turf/open/floor/plasteel/dark,
 /area/mine/storage)
 "mzP" = (
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
@@ -21587,6 +21598,9 @@
 	},
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
+	},
+/obj/structure/disposalpipe/junction{
+	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
@@ -24009,12 +24023,6 @@
 	},
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/lavaland/surface/outdoors)
-"nIn" = (
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/turf/open/floor/plasteel/dark,
-/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "nIp" = (
 /obj/structure/chair/sofa/corp,
 /obj/effect/turf_decal/tile/red/half{
@@ -28950,6 +28958,7 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
+/obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel/dark/side{
 	dir = 1
 	},
@@ -32771,15 +32780,6 @@
 "sKA" = (
 /turf/open/floor/engine/n2,
 /area/mine/xenoarch_area_a)
-"sKF" = (
-/obj/effect/turf_decal/trimline/purple/warning{
-	dir = 4
-	},
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/turf/open/floor/plasteel/dark,
-/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "sKK" = (
 /obj/machinery/disposal/bin,
 /obj/structure/disposalpipe/trunk,
@@ -33912,6 +33912,9 @@
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "tsw" = (
 /obj/machinery/firealarm/directional/north,
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
 /obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 4
 	},
@@ -34459,29 +34462,6 @@
 	},
 /turf/open/floor/plasteel/white/textured/large,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
-"tJp" = (
-/obj/effect/turf_decal/trimline/dark/line{
-	dir = 8
-	},
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 4
-	},
-/obj/effect/turf_decal/siding/purple{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/structure/disposalpipe/segment,
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "2-4"
-	},
-/turf/open/floor/plasteel/dark/side{
-	dir = 4
-	},
-/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "tJz" = (
 /obj/structure/stone_tile/block/cracked{
 	dir = 4
@@ -37109,6 +37089,9 @@
 	},
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
 	},
 /turf/open/floor/plasteel,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
@@ -54307,7 +54290,7 @@ xPw
 fCd
 sll
 kHe
-liQ
+gws
 liQ
 liQ
 liQ
@@ -54832,7 +54815,7 @@ cDh
 pdb
 jZM
 ujk
-tJp
+jZM
 wFr
 jFt
 qiA
@@ -55089,7 +55072,7 @@ nvN
 rfD
 wBj
 rsF
-sKF
+rsF
 qBx
 wjW
 wjW
@@ -55346,7 +55329,7 @@ nvN
 rfD
 nwZ
 xlH
-nIn
+xlH
 xlH
 duM
 wjW
@@ -55603,7 +55586,7 @@ nvN
 gPs
 nwZ
 gxh
-gws
+xlH
 xlH
 eUS
 wjW
