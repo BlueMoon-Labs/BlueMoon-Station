@@ -6497,12 +6497,12 @@
 /turf/open/floor/plasteel/kitchen/diagonal,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/service/diner)
 "zt" = (
-/obj/structure/reagent_dispensers/virusfood{
-	pixel_y = 29
-	},
-/obj/machinery/computer/pandemic,
 /obj/effect/turf_decal/tile/dark_blue/full,
 /obj/effect/turf_decal/siding/white,
+/obj/machinery/computer/pandemic{
+	pixel_x = 2;
+	pixel_y = 4
+	},
 /turf/open/floor/plasteel/white/smooth/herringbone,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/medbay)
 "zx" = (
@@ -8295,7 +8295,6 @@
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/cargo)
 "GK" = (
 /obj/structure/shuttle/engine/huge,
-/obj/effect/turf_decal/stripes/yellow/line,
 /turf/open/floor/plating/airless,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo)
 "GL" = (
@@ -9697,13 +9696,17 @@
 /obj/machinery/light/dim/directional/east{
 	dir = 1
 	},
-/obj/structure/table/reinforced/titaniumglass,
-/obj/machinery/reagentgrinder{
-	desc = "Used to grind things up into raw materials and liquids.";
-	pixel_y = 5
-	},
 /obj/effect/turf_decal/tile/dark_blue/full,
 /obj/effect/turf_decal/siding/white,
+/obj/structure/reagent_dispensers/virusfood{
+	pixel_y = 29
+	},
+/obj/machinery/smartfridge/chemistry/virology/preloaded{
+	pixel_x = 31
+	},
+/obj/structure/table/reinforced/titaniumglass,
+/obj/item/reagent_containers/dropper,
+/obj/item/reagent_containers/glass/beaker/large,
 /turf/open/floor/plasteel/white/smooth/herringbone,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/medbay)
 "MC" = (
@@ -9736,11 +9739,15 @@
 /turf/open/floor/plasteel/white/textured/large,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/service/diner)
 "MG" = (
-/obj/machinery/smartfridge/chemistry/virology/preloaded,
-/obj/effect/turf_decal/tile/dark_blue/full,
-/obj/effect/turf_decal/siding/white{
-	dir = 4
+/obj/structure/table/reinforced/titaniumglass,
+/obj/machinery/reagentgrinder{
+	desc = "Used to grind things up into raw materials and liquids.";
+	pixel_y = 5
 	},
+/obj/effect/turf_decal/siding/white{
+	dir = 5
+	},
+/obj/effect/turf_decal/tile/dark_blue/full,
 /turf/open/floor/plasteel/white/smooth/herringbone,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/medbay)
 "MH" = (
@@ -13876,7 +13883,7 @@ kF
 zX
 Oi
 Oi
-GK
+ZY
 wg
 wg
 wg
@@ -13930,7 +13937,7 @@ ZP
 kF
 zX
 Oi
-Oi
+GK
 Yb
 wg
 wg
@@ -14375,7 +14382,7 @@ NB
 zX
 Oi
 Oi
-GK
+ZY
 wg
 wg
 Co
@@ -14429,7 +14436,7 @@ vU
 NB
 zX
 Oi
-Oi
+GK
 Yb
 wg
 wg
@@ -14539,7 +14546,7 @@ um
 bn
 Oi
 Oi
-GK
+ZY
 wg
 wg
 wg
@@ -14593,7 +14600,7 @@ mg
 um
 zX
 Oi
-Oi
+GK
 Yb
 wg
 wg
@@ -15199,7 +15206,7 @@ fz
 zX
 Oi
 Oi
-GK
+ZY
 wg
 wg
 wg
@@ -15253,7 +15260,7 @@ Zg
 fz
 zX
 Oi
-Oi
+GK
 Yb
 wg
 wg
@@ -15365,7 +15372,7 @@ my
 zX
 Oi
 Oi
-GK
+ZY
 wg
 wg
 Co
@@ -15419,7 +15426,7 @@ my
 my
 zX
 Oi
-Oi
+GK
 Yb
 wg
 wg
@@ -15856,7 +15863,7 @@ st
 Td
 Oi
 Oi
-GK
+ZY
 wg
 wg
 wg
@@ -15910,7 +15917,7 @@ nm
 dv
 zX
 Oi
-Oi
+GK
 Yb
 wg
 wg
