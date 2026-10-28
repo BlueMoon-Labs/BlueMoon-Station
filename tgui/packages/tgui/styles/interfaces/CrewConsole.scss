@@ -62,6 +62,20 @@
   pointer-events: none;
 }
 
+.CrewConsole__damageDot {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  z-index: 1;
+  width: 8px;
+  height: 8px;
+  transform: translate(-50%, -50%);
+  border: 1px solid #111;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+}
+
 .CrewConsole__deathBadge {
   position: absolute;
   top: 0;

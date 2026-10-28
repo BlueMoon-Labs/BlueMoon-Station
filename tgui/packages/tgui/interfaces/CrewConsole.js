@@ -12,28 +12,6 @@ const DEAD_COLOR = '#ed2814';
 const DAMAGE_COLORS = ['#ffeb3b', '#ffc107', '#ff9800'];
 const DAMAGE_PULSE_DURATIONS = ['3s', '1.5s', '0.7s'];
 
-// Общие фильтры тонируют значки, сохраняя прозрачность и рисунок профессии.
-const HEALTH_ICON_FILTERS = (
-  <svg width="0" height="0" aria-hidden="true" style={{ position: 'absolute' }}>
-    <defs>
-      {DAMAGE_COLORS.map(color => {
-        const [red, green, blue] = color.slice(1).match(/../g)
-          .map(channel => parseInt(channel, 16) / 255);
-        return (
-          <filter key={color} id={`crew-health-${color.slice(1)}`} colorInterpolationFilters="sRGB">
-            <feColorMatrix type="saturate" values="0" />
-            <feComponentTransfer>
-              <feFuncR type="linear" slope={red} />
-              <feFuncG type="linear" slope={green} />
-              <feFuncB type="linear" slope={blue} />
-            </feComponentTransfer>
-          </filter>
-        );
-      })}
-    </defs>
-  </svg>
-);
-
 const CrewJobIcon = ({ jobIcon, color }) => {
   const dead = color === DEAD_COLOR;
   const damageLevel = DAMAGE_COLORS.indexOf(color);
@@ -42,9 +20,14 @@ const CrewJobIcon = ({ jobIcon, color }) => {
       <Box
         className={`jobs8x8 ${jobIcon || 'no_id'} CrewConsole__jobIcon${dead ? ' CrewConsole__jobIcon--dead' : ''}${damageLevel >= 0 ? ' CrewConsole__jobIcon--damaged' : ''}`}
         style={damageLevel >= 0 ? {
-          filter: `url(#crew-health-${color.slice(1)})`,
           animationDuration: DAMAGE_PULSE_DURATIONS[damageLevel],
         } : undefined} />
+      {damageLevel >= 0 && (
+        <span
+          className="CrewConsole__damageDot"
+          aria-hidden="true"
+          style={{ backgroundColor: color }} />
+      )}
       {dead && (
         <span className="CrewConsole__deathBadge" aria-hidden="true">
           <Icon name="skull" />
@@ -121,7 +104,6 @@ export const CrewConsole = () => {
       width={800}
       height={600}>
       <Window.Content>
-        {HEALTH_ICON_FILTERS}
         <Stack fill vertical>
           <Stack.Item>
             <Tabs>
