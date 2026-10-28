@@ -47,6 +47,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	//game-preferences
 	var/lastchangelog = ""				//Saved changlog filesize to detect if there was a change
+	var/lastchangelog_date = ""			//Дата самой свежей записи ченджлога, которую игрок уже видел
 	var/custom_colors = TOGGLES_DEFAULT_CUSTOM_COLORS
 	var/ooccolor = "#c43b23"
 	var/aooccolor = "#ce254f"

@@ -3548,6 +3548,17 @@
 		return
 	if(QDELETED(src) || !prefs || preview_dirty)
 		return
+	show_preview_appearance(appearance_source)
+
+/datum/character_setup/proc/show_preview_appearance(mutable_appearance/appearance_source)
+	prune_viewer_screens()
+	// Новые слои меряются попиксельно, по 1-2 мс на слой: замеряем их заранее с уступкой тика.
+	for(var/viewer in viewer_screens)
+		var/atom/movable/screen/map_view/character_setup_screen/viewer_screen = viewer_screens[viewer]
+		viewer_screen.prewarm_preview_bounds(appearance_source)
+		break
+	if(QDELETED(src) || !prefs || preview_dirty)
+		return
 	prune_viewer_screens()
 	for(var/viewer in viewer_screens)
 		var/atom/movable/screen/map_view/character_setup_screen/viewer_screen = viewer_screens[viewer]
@@ -4709,7 +4720,13 @@ GLOBAL_LIST_EMPTY(character_preview_backgrounds)
 	apply_native_camera()
 
 // Границы видимых пикселей слоёв: слева, снизу, справа, сверху. Картинку персонажа не пересобираем.
-/atom/movable/screen/map_view/character_setup_screen/proc/measure_preview_bounds(image/source, list/icon_sizes, inherited_icon, inherited_state, inherited_dir = SOUTH)
+/atom/movable/screen/map_view/character_setup_screen/proc/prewarm_preview_bounds(mutable_appearance/appearance_source)
+	var/mutable_appearance/probe = new(appearance_source)
+	for(var/direction in GLOB.cardinals)
+		probe.dir = direction
+		measure_preview_bounds(probe, GLOB.character_preview_icon_bounds, allow_sleep = TRUE)
+
+/atom/movable/screen/map_view/character_setup_screen/proc/measure_preview_bounds(image/source, list/icon_sizes, inherited_icon, inherited_state, inherited_dir = SOUTH, allow_sleep = FALSE)
 	if(source.alpha <= 0)
 		return null
 	var/icon_file = source.icon || inherited_icon
@@ -4733,6 +4750,8 @@ GLOBAL_LIST_EMPTY(character_preview_backgrounds)
 			// Храним только числа; смена одежды и причёсок не должна растить кэш бесконечно.
 			if(length(icon_sizes) > CHARACTER_PREVIEW_BOUNDS_CACHE_MAX)
 				icon_sizes.Cut(1, CHARACTER_PREVIEW_BOUNDS_CACHE_MAX / 4 + 1)
+			if(allow_sleep)
+				CHECK_TICK
 		width = size[1]
 		height = size[2]
 		var/list/pixel_bounds = size[3]
@@ -4740,7 +4759,7 @@ GLOBAL_LIST_EMPTY(character_preview_backgrounds)
 
 	var/list/untransformed_bounds
 	for(var/image/child as anything in source.underlays + source.overlays)
-		var/list/child_bounds = measure_preview_bounds(child, icon_sizes, icon_file, state, direction)
+		var/list/child_bounds = measure_preview_bounds(child, icon_sizes, icon_file, state, direction, allow_sleep)
 		if(!child_bounds)
 			continue
 		child_bounds[1] += child.pixel_x + child.pixel_w

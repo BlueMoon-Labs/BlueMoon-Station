@@ -594,6 +594,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["ooccolor"] 				>> ooccolor
 	S["aooccolor"] 				>> aooccolor
 	S["lastchangelog"] 			>> lastchangelog
+	S["lastchangelog_date"] 	>> lastchangelog_date
 	S["UI_style"] 				>> UI_style
 	S["outline_color"] 			>> outline_color
 	S["outline_enabled"] 		>> outline_enabled
@@ -776,6 +777,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	outline_color = sanitize_hexcolor(outline_color, 6, 1, initial(outline_color))
 	outline_enabled = sanitize_integer(outline_enabled, 0, 1, initial(outline_enabled))
 	lastchangelog = sanitize_text(lastchangelog, initial(lastchangelog))
+	lastchangelog_date = sanitize_changelog_date(lastchangelog_date)
 	antag_opt_in_notice_seen = sanitize_integer(antag_opt_in_notice_seen, FALSE, TRUE, FALSE)
 	UI_style = sanitize_inlist(UI_style, GLOB.available_ui_styles, GLOB.available_ui_styles[1])
 	hotkeys = sanitize_integer(hotkeys, 0, 1, initial(hotkeys))
@@ -1278,6 +1280,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["ooccolor"], ooccolor)
 	WRITE_FILE(S["aooccolor"], aooccolor)
 	WRITE_FILE(S["lastchangelog"], lastchangelog)
+	WRITE_FILE(S["lastchangelog_date"], lastchangelog_date)
 	WRITE_FILE(S["UI_style"], UI_style)
 	WRITE_FILE(S["outline_enabled"], outline_enabled)
 	WRITE_FILE(S["outline_color"], outline_color)
