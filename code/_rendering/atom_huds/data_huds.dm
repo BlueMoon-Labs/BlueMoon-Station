@@ -222,7 +222,9 @@
 	if(!holder)
 		med_hud_set_radstatus()
 		return
-	holder.icon_state = "hud[RoundHealth(src)]"
+	var/health_state = RoundHealth(src)
+	// У полностью здорового персонажа полоска скрыта: состояния "hud" в файле иконок нет.
+	holder.icon_state = health_state ? "hud[health_state]" : ""
 	if(!icon)
 		med_hud_set_radstatus()
 		return

@@ -56,35 +56,8 @@
 		REMOVE_TRAIT(src, TRAIT_PROSOPAGNOSIA, "unconscious_obscurity")
 		for(var/datum/atom_hud/alternate_appearance/basic/unconscious_obscurity/AA in GLOB.active_alternate_appearances)
 			AA.remove_hud_from(src, TRUE)
-		if(client)
-			for(var/datum/atom_hud/H in GLOB.all_huds)
-				if(H.hudusers[src])
-					H.push_all_atoms_to_user(src)
-					continue
-				var/needs_hud = FALSE
-				if(istype(H, /datum/atom_hud/data/human/security))
-					if(HAS_TRAIT(src, TRAIT_SECURITY_HUD))
-						needs_hud = TRUE
-					else if(ishuman(src))
-						var/mob/living/carbon/human/HU = src
-						if(istype(HU.glasses, /obj/item/clothing/glasses/hud/security))
-							needs_hud = TRUE
-				else if(istype(H, /datum/atom_hud/data/human/medical))
-					if(HAS_TRAIT(src, TRAIT_MEDICAL_HUD))
-						needs_hud = TRUE
-					else if(ishuman(src))
-						var/mob/living/carbon/human/HU2 = src
-						if(istype(HU2.glasses, /obj/item/clothing/glasses/hud/health))
-							needs_hud = TRUE
-				else if(istype(H, /datum/atom_hud/data/diagnostic))
-					if(HAS_TRAIT(src, TRAIT_DIAGNOSTIC_HUD))
-						needs_hud = TRUE
-					else if(ishuman(src))
-						var/mob/living/carbon/human/HU3 = src
-						if(istype(HU3.glasses, /obj/item/clothing/glasses/hud/diagnostic))
-							needs_hud = TRUE
-				if(needs_hud)
-					H.add_hud_to(src)
+		// При обмороке снимаются только изображения; членство и число источников худа сохраняются.
+		reload_huds()
 
 /mob/living/prepare_huds()
 	..()
