@@ -1,32 +1,9 @@
 import { useBackend } from "../backend";
-import { Flex, Icon, Section, Table } from "../components";
+import { Flex, Section, Table } from "../components";
 import { Window } from "../layouts";
 
-const commandJobs = [
-  "Captain",
-  "Head of Personnel",
-  "Head of Security",
-  "Chief Engineer",
-  "Research Director",
-  "Chief Medical Officer",
-  "Quartermaster",
-];
-
-const departmentNames = {
-  Command: "Командование",
-  Security: "Служба Безопасности",
-  Engineering: "Инженерный отдел",
-  Medical: "Медицинский отдел",
-  Science: "Научный отдел",
-  Supply: "Отдел снабжения",
-  Service: "Отдел сервиса",
-  Silicon: "Синтетика",
-  Law: "Юридический отдел",
-  Misc: "Прочее",
-};
-
 export const CrewManifest = (props) => {
-  const { data: { manifest, positions } } = useBackend();
+  const { data: { manifest, positions, department_names = {} } } = useBackend();
 
   return (
     <Window title="Манифест экипажа" width={440} height={550}>
@@ -38,7 +15,7 @@ export const CrewManifest = (props) => {
             title={
               <Flex style={{ width: '100%' }}>
                 <Flex.Item>
-                  {departmentNames[department] || department}
+                  {department_names[department] || department}
                 </Flex.Item>
                 <Flex.Item grow textAlign="right">
                   (Открытых позиций: {positions[department]})
@@ -48,30 +25,18 @@ export const CrewManifest = (props) => {
           >
             <Table>
               {Object.entries(crew).map(([crewIndex, crewMember]) => (
-                <Table.Row key={crewIndex}>
+                <Table.Row key={crewIndex} bold={!!crewMember.head}>
                   <Table.Cell className={"CrewManifest__Cell"}>
                     {crewMember.name}
                   </Table.Cell>
                   <Table.Cell
-                    className={
-                      "CrewManifest__Cell CrewManifest__Cell--"
-                      + (crewMember.department_check === "Captain" ? "Captain" : "Command")
-                    }
-                    collapsing
-                  >
-                    {commandJobs.includes(crewMember.department_check) && (
-                      <Icon
-                        name={
-                          crewMember.department_check === "Captain" ? "star" : "chevron-up"
-                        }
-                      />
-                    )}
-                  </Table.Cell>
-                  <Table.Cell
                     className={"CrewManifest__Cell"}
                     collapsing
-                    color="label"
+                    color={crewMember.head ? undefined : "label"}
                   >
+                    {!!crewMember.head && (
+                      <span className="CrewManifest__HeadMark">{'★'}</span>
+                    )}
                     {crewMember.rank}
                   </Table.Cell>
                 </Table.Row>

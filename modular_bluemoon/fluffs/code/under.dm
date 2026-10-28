@@ -1238,3 +1238,12 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
 	can_adjust = FALSE
+
+/obj/item/clothing/under/donator/bm/br_pilotsuit_mk1
+	name = "BLACKROSE© Mark.I Pilot Suit"
+	desc = "Экземпляр старых наработок Ателье 'Black Rose' в виде пилотного костюма устаревшей модели из облегающего и плотного текстиля, состав которого до сих пор известен только им. По крайней мере костюм системы 'вторая кожа' всё ещё поддерживает свою функцию по облегчению нагрузок для носителя, помощь в терморегуляции и малой защите от механических повреждений."
+	icon_state = "brpilotsuitmk1"
+	item_state = "brpilotsuitmk1"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/under.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/under.dmi'
+	can_adjust = FALSE

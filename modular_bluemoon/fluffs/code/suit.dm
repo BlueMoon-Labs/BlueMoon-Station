@@ -1277,3 +1277,12 @@ DONATE_ITEM_TOOLTIP_PARENT(/obj/item/clothing/suit/armor/vest/alt/tau)
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/suit/donator/bm/br_pilotjacket_s5
+	name = "BLACKROSE© Pilot Jacket Series V"
+	desc = "Частный заказ в дополнение к пилотному костюму. Не имеет особых и уникальных модификаций, кроме возможности установки бронеплит, расширенных внутренних карманов и высокого воротника."
+	icon_state = "brpilotcjackets5"
+	item_state = "brpilotcjackets5"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON

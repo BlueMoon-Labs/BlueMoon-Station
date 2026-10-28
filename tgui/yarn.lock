@@ -10521,6 +10521,7 @@ __metadata:
     dompurify: "npm:^3.3.1"
     react: "npm:^19.2.4"
     react-dom: "npm:^19.2.4"
+    sass: "npm:^1.97.3"
     tgui: "workspace:*"
     tgui-dev-server: "workspace:*"
   languageName: unknown

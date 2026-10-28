@@ -951,6 +951,10 @@ GLOBAL_LIST_INIT(binary, list("0","1"))
 /proc/random_capital_letter()
 	return uppertext(pick(GLOB.alphabet))
 
+/// Регэксп, в котором body стоит целым словом. \b в BYOND не считает кириллицу буквами. body уже экранирован (REGEX_QUOTE).
+/proc/whole_word_regex(body, flags)
+	return regex(@"(?<![\wа-яёА-ЯЁ])" + body + @"(?![\wа-яёА-ЯЁ])", flags)
+
 /proc/unintelligize(message)
 	var/regex/word_boundaries = regex(@"\b[\S]+\b", "g")
 	var/prefix = message[1]
