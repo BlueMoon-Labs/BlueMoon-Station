@@ -576,7 +576,7 @@
 	. = "[sticker.prefix] [effective_job]"
 
 /obj/item/card/id/proc/update_manifest()
-	GLOB.data_core.manifest_modify(registered_name, get_assignment_name(), assignment)
+	GLOB.data_core.manifest_modify(registered_name, get_assignment_name(), assignment, custom_job)
 
 /obj/item/card/id/silver
 	name = "silver identification card"

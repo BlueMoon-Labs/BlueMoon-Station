@@ -123,3 +123,33 @@
 	qdel(first)
 	qdel(lizard)
 	qdel(second)
+
+/// Модификации тела одного персонажа не переезжают на общий манекен редактора к следующему.
+/datum/unit_test/preferences_preview_body_mods_reset/Run()
+	var/datum/preferences/navigation_test/modded_prefs = allocate(/datum/preferences/navigation_test)
+	modded_prefs.pref_species = new /datum/species/human
+	modded_prefs.random_character(MALE)
+	modded_prefs.organ_mods = list(ORGAN_SLOT_BREATHING_TUBE = "tube")
+	modded_prefs.implant_mods = list("disrobe" = TRUE)
+	var/datum/preferences/navigation_test/plain_prefs = allocate(/datum/preferences/navigation_test)
+	plain_prefs.pref_species = new /datum/species/human
+	plain_prefs.random_character(FEMALE)
+
+	TEST_ASSERT(has_overlay_state(modded_prefs.build_preview_appearance(), "breathing_tube"), "выбранная трубка не видна на превью")
+	var/mob/living/carbon/human/dummy/pooled = GLOB.human_dummy_list[DUMMY_HUMAN_SLOT_PREFERENCES]
+	TEST_ASSERT_NOTNULL(pooled, "редактор не берёт манекен из пула")
+	TEST_ASSERT_NULL(pooled.getorganslot(ORGAN_SLOT_BREATHING_TUBE), "трубка осталась на освобождённом манекене")
+	TEST_ASSERT(!length(pooled.implants), "имплант остался на освобождённом манекене")
+
+	TEST_ASSERT(!has_overlay_state(plain_prefs.build_preview_appearance(), "breathing_tube"), "трубка прошлого персонажа попала на превью следующего")
+	TEST_ASSERT_EQUAL(GLOB.human_dummy_list[DUMMY_HUMAN_SLOT_PREFERENCES], pooled, "второе превью не переиспользовало манекен")
+
+/datum/unit_test/preferences_preview_body_mods_reset/proc/has_overlay_state(mutable_appearance/shown, state)
+	if(!shown)
+		return FALSE
+	if(shown.icon_state == state)
+		return TRUE
+	for(var/mutable_appearance/part as anything in shown.overlays + shown.underlays)
+		if(has_overlay_state(part, state))
+			return TRUE
+	return FALSE

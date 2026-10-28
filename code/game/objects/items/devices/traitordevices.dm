@@ -133,7 +133,6 @@ effective or pretty fucking useless.
 	var/list/data = list()
 	data["irradiate"] = irradiate
 	data["stealth"] = stealth
-	data["scanmode"] = scanmode
 	data["intensity"] = intensity
 	data["wavelength"] = wavelength
 	data["on_cooldown"] = used
@@ -150,9 +149,6 @@ effective or pretty fucking useless.
 			. = TRUE
 		if("stealth")
 			stealth = !stealth
-			. = TRUE
-		if("scanmode")
-			scanmode = !scanmode
 			. = TRUE
 		if("radintensity")
 			var/target = params["target"]
