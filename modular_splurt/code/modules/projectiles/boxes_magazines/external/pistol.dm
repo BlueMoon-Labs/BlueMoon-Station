@@ -85,6 +85,10 @@
 	name = "Cheap handgun magazine (9mm Rubber)"
 	ammo_type = /obj/item/ammo_casing/c9mm/rubber
 
+/obj/item/ammo_box/magazine/m9/inc
+	name = "Cheap handgun magazine (9mm Incrediary)"
+	ammo_type = /obj/item/ammo_casing/c9mm/inc
+
 /obj/item/ammo_box/magazine/m22
 	name = "Cheap handgun magazine (.22LR)"
 	icon = 'modular_splurt/icons/obj/ammo.dmi'
