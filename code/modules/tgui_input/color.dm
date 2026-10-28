@@ -1,6 +1,7 @@
 // Открывает выбор цвета и возвращает #RRGGBB либо null при отмене, закрытии или тайм-ауте.
 // user: моб или клиент; message: пояснение; title: заголовок; default: исходный цвет.
 // timeout задаётся в децисекундах; 0 отключает ограничение времени.
+// Нативный синхронный input не поддерживает тайм-аут; режим берётся из предпочтений игрока.
 /proc/tgui_input_color(mob/user, message = "", title = "Выбор цвета", default = COLOR_WHITE, timeout = 0)
 	if(!user)
 		user = usr
@@ -107,6 +108,7 @@
 
 // Асинхронный диалог: callback получает #RRGGBB только при подтверждении.
 // При отмене или тайм-ауте callback не вызывается. Функция возвращает датум диалога.
+// В нативном режиме тайм-аут отменяет callback, но не закрывает системное окно.
 // Аргументы совпадают с синхронной версией; callback идёт перед timeout.
 /proc/tgui_input_color_async(mob/user, message = "", title = "Выбор цвета", default = COLOR_WHITE, datum/callback/callback, timeout = 60 SECONDS)
 	if(!user)

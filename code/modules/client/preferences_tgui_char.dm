@@ -194,7 +194,7 @@
 	for(var/quirk_name in quirks.Copy())
 		var/datum/quirk/quirk_datum = istext(quirk_name) ? SSquirks.quirks[quirk_name] : null
 		if(!quirk_datum || quirk_lock_reason(quirk_name, quirk_datum, quirks))
-			quirks -= quirk_name
+			quirks -= list(quirk_name)
 			removed += "[quirk_name]"
 			continue
 		if(initial(quirk_datum.value) > 0 && ++positive_count > MAX_QUIRKS)
@@ -219,7 +219,7 @@
 	var/list/jobs = preset["job_preferences"]
 	for(var/job_title in jobs.Copy())
 		if(!istext(job_title) || !SSjob.GetJob(job_title))
-			jobs -= job_title
+			jobs -= list(job_title)
 			removed += "профессия [job_title]"
 	return removed
 

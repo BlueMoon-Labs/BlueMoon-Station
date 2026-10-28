@@ -57,6 +57,7 @@
 		for(var/datum/atom_hud/alternate_appearance/basic/unconscious_obscurity/AA in GLOB.active_alternate_appearances)
 			AA.remove_hud_from(src, TRUE)
 		// При обмороке снимаются только изображения; членство и число источников худа сохраняются.
+		refresh_hud_view_group()
 		reload_huds()
 
 /mob/living/prepare_huds()

@@ -417,6 +417,9 @@
 	if(!respawn_latejoin_check(notify = TRUE))
 		return FALSE
 
+	if(!check_quirk_balance())
+		return FALSE
+
 	var/arrivals_docked = TRUE
 	if(SSshuttle.arrivals)
 		close_spawn_windows()	//In case we get held up
@@ -427,9 +430,6 @@
 		if(CONFIG_GET(flag/arrivals_shuttle_require_undocked))
 			SSshuttle.arrivals.RequireUndocked(src)
 		arrivals_docked = SSshuttle.arrivals.mode != SHUTTLE_CALL
-
-	if(!check_quirk_balance())
-		return FALSE
 
 	//Remove the player from the join queue if he was in one and reset the timer
 	SSticker.queued_players -= src

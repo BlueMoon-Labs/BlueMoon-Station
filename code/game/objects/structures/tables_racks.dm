@@ -917,6 +917,10 @@
 		eject_patient()
 
 /obj/structure/table/optable/proc/eject_patient()
+	if(patient && QDELETED(patient))
+		// Подписки удалённого пациента снимаются в его Destroy; монитору передаём только сброс.
+		patient = null
+		SEND_SIGNAL(src, COMSIG_MACHINE_EJECT_OCCUPANT, null)
 	// Возвращаем маску до очистки ссылки на пациента, корректно снимая её из инвентаря.
 	stop_process()
 	if(isnull(patient))
@@ -936,14 +940,16 @@
 
 /obj/structure/table/optable/proc/stop_process()
 	STOP_PROCESSING(SSobj, src)
+	if(QDELETED(mask))
+		mask = null
 	if(mask && mask.loc != src)
 		visible_message(span_notice("[mask] срывается и возвращается на место по втягивающемуся шлангу."))
-		if(ismob(mask.loc))
+		if(ismob(mask.loc) && !QDELETED(mask.loc))
 			var/mob/mask_holder = mask.loc
 			mask_holder.transferItemToLoc(mask, src, TRUE)
 		else
 			mask.forceMove(src)
-	if(patient && patient.internal == tank)
+	if(!QDELETED(patient) && patient.internal == tank)
 		patient.internal = null
 		patient.update_action_buttons_icon()
 
@@ -1006,10 +1012,10 @@
 			if(!CHECK_MOBILITY(patient, MOBILITY_STAND) || (tank && patient.internal == tank && mask && patient.wear_mask == mask))
 				return TRUE
 		eject_patient()
-	for(var/mob/living/carbon/human/H in loc)
-		if(QDELETED(H) || CHECK_MOBILITY(H, MOBILITY_STAND))
+	for(var/mob/living/carbon/human/candidate_patient in loc)
+		if(QDELETED(candidate_patient) || CHECK_MOBILITY(candidate_patient, MOBILITY_STAND))
 			continue
-		patient = H
+		patient = candidate_patient
 		RegisterSignal(patient, COMSIG_MOVABLE_MOVED, PROC_REF(patient_moved))
 		SEND_SIGNAL(src, COMSIG_MACHINERY_SET_OCCUPANT, patient)
 		return TRUE
