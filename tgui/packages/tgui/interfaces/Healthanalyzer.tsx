@@ -66,8 +66,7 @@ export const Healthanalyzer = () => {
             <>
               {(!!scan.species || scan.temperatureC !== undefined) && (
                 <Box mb={0.5}>
-                  {!!scan.species && <>Раса: <Box as="span" color={scan.speciesColor}>{scan.species}</Box></>}
-                  {!!scan.species && !!scan.similarSpecies && scan.similarSpecies !== scan.species && <> | Схожая раса: <Box as="span" color={scan.speciesColor}>{scan.similarSpecies}</Box></>}
+                  {!!scan.species && <>Раса: <SpeciesBadge name={scan.species} similarName={scan.similarSpecies} robotic={!!scan.robotic} color={scan.speciesColor} /></>}
                   {scan.temperatureC !== undefined && <>{scan.species ? ' | ' : ''}Температура тела: {round(scan.temperatureC, 3)} °C ({round(scan.temperatureF, 3)} °F)</>}
                 </Box>
               )}
@@ -78,6 +77,60 @@ export const Healthanalyzer = () => {
         {scan && <ScanResults key={scanNumber} scan={scan} advanced={!!advanced} live={!!live} deviceLabel={deviceLabel} />}
       </Window.Content>
     </Window>
+  );
+};
+
+const useMedicalTooltipPosition = (visible: boolean, contentKey: string | boolean) => {
+  const anchor = useRef<HTMLSpanElement>(null);
+  const tooltip = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    if (!visible) return;
+    const place = () => {
+      const root = anchor.current;
+      const popup = tooltip.current;
+      if (!root || !popup) return;
+      const rect = root.getBoundingClientRect();
+      const container = root.closest('.Layout__content')?.getBoundingClientRect();
+      const bounds = { left: Math.max(0, container?.left || 0), top: Math.max(0, container?.top || 0), right: Math.min(window.innerWidth, container?.right || window.innerWidth), bottom: Math.min(window.innerHeight, container?.bottom || window.innerHeight) };
+      // Подсказка остаётся под тем же CSS zoom; экранные отступы переводим в локальные пиксели.
+      const scale = rect.width / root.offsetWidth || 1;
+      const padding = 8 * scale;
+      popup.style.maxWidth = `${Math.max(1, (bounds.right - bounds.left - padding * 2) / scale)}px`;
+      popup.style.maxHeight = `${Math.max(1, (bounds.bottom - bounds.top - padding * 2) / scale)}px`;
+      const size = popup.getBoundingClientRect();
+      const left = Math.max(bounds.left + padding, Math.min(rect.left, bounds.right - size.width - padding));
+      const preferredTop = rect.bottom + padding + size.height > bounds.bottom - padding ? rect.top - size.height - padding : rect.bottom + padding;
+      const top = Math.max(bounds.top + padding, Math.min(preferredTop, bounds.bottom - size.height - padding));
+      popup.style.left = `${(left - rect.left) / scale}px`;
+      popup.style.top = `${(top - rect.top) / scale}px`;
+    };
+    place();
+    window.addEventListener('resize', place);
+    document.addEventListener('scroll', place, true);
+    return () => {
+      window.removeEventListener('resize', place);
+      document.removeEventListener('scroll', place, true);
+    };
+  }, [visible, contentKey]);
+  return { anchor, tooltip };
+};
+
+const SpeciesBadge = ({ name, similarName, robotic, color }: { name: string; similarName?: string; robotic: boolean; color?: string }) => {
+  const [hovered, setHovered] = useState(false);
+  const { anchor, tooltip } = useMedicalTooltipPosition(hovered, `${name}:${similarName}:${robotic}`);
+  return (
+    <span ref={anchor} className="Healthanalyzer__speciesAnchor" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+      <Box as="span" className={`Healthanalyzer__speciesBadge${robotic ? ' Healthanalyzer__speciesBadge--synthetic' : ''}`} color={color}>
+        <Icon name={robotic ? 'microchip' : 'dna'} />
+        <span>{name}</span>
+      </Box>
+      {hovered && (
+        <div ref={tooltip} className="Tooltip Healthanalyzer__speciesTooltip" role="tooltip">
+          <Box>{robotic ? 'Синтетический организм' : 'Органический организм'}</Box>
+          {!!similarName && similarName !== name && <Box mt={0.5}>Схожая раса: {similarName}</Box>}
+        </div>
+      )}
+    </span>
   );
 };
 
@@ -232,50 +285,25 @@ const LimbTable = ({ scan }: { scan: Scan }) => {
 };
 
 const WoundHint = ({ wound }: { wound: Wound }) => {
-  const anchor = useRef<HTMLSpanElement>(null);
-  const tooltip = useRef<HTMLDivElement>(null);
   const [hovered, setHovered] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const visible = hovered || expanded;
+  const { anchor, tooltip } = useMedicalTooltipPosition(visible, expanded);
   useLayoutEffect(() => {
     if (!visible) return;
-    const place = () => {
-      const root = anchor.current;
-      const popup = tooltip.current;
-      if (!root || !popup) return;
-      const rect = root.getBoundingClientRect();
-      const container = root.closest('.Layout__content')?.getBoundingClientRect();
-      const bounds = { left: Math.max(0, container?.left || 0), top: Math.max(0, container?.top || 0), right: Math.min(window.innerWidth, container?.right || window.innerWidth), bottom: Math.min(window.innerHeight, container?.bottom || window.innerHeight) };
-      // Подсказка остаётся под тем же CSS zoom; экранные отступы переводим в локальные пиксели.
-      const scale = rect.width / root.offsetWidth || 1;
-      const padding = 8 * scale;
-      popup.style.maxWidth = `${Math.max(1, (bounds.right - bounds.left - padding * 2) / scale)}px`;
-      popup.style.maxHeight = `${Math.max(1, (bounds.bottom - bounds.top - padding * 2) / scale)}px`;
-      const size = popup.getBoundingClientRect();
-      const left = Math.max(bounds.left + padding, Math.min(rect.left, bounds.right - size.width - padding));
-      const preferredTop = rect.bottom + padding + size.height > bounds.bottom - padding ? rect.top - size.height - padding : rect.bottom + padding;
-      const top = Math.max(bounds.top + padding, Math.min(preferredTop, bounds.bottom - size.height - padding));
-      popup.style.left = `${(left - rect.left) / scale}px`;
-      popup.style.top = `${(top - rect.top) / scale}px`;
-    };
     const close = (event: PointerEvent) => {
       if (!anchor.current?.contains(event.target as Node)) { setExpanded(false); setHovered(false); }
     };
     const escape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') { setExpanded(false); setHovered(false); }
     };
-    place();
-    window.addEventListener('resize', place);
-    document.addEventListener('scroll', place, true);
     document.addEventListener('pointerdown', close);
     document.addEventListener('keydown', escape);
     return () => {
-      window.removeEventListener('resize', place);
-      document.removeEventListener('scroll', place, true);
       document.removeEventListener('pointerdown', close);
       document.removeEventListener('keydown', escape);
     };
-  }, [visible, expanded]);
+  }, [visible, anchor]);
   return (
     <span ref={anchor} className="Healthanalyzer__wound" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
       <Button className="Healthanalyzer__woundButton" icon={wound.icon} selected={expanded} aria-expanded={expanded} onClick={() => setExpanded(!expanded)}>
