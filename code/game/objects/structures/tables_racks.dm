@@ -854,11 +854,12 @@
 	if(tank && mask)
 		if(!check_patient())
 			return
+		var/mob/living/carbon/human/anesthesia_patient = patient
 		if(patient.internal != tank) // переключаем с любого другого источника на баллон стола
 			to_chat(user, span_notice("Вы начинаете включать подачу анестетика."))
 			if(patient.stat != UNCONSCIOUS) // пациент без сознания не видит сообщение ниже
 				to_chat(patient, span_danger("[user] пытается включить подачу анестетика!"))
-			if(!do_after(user, 3 SECONDS, patient) || !check_patient())
+			if(!do_after(user, 3 SECONDS, anesthesia_patient) || !check_patient() || patient != anesthesia_patient)
 				return
 			// Стол отслеживает собственную втягивающуюся маску, поэтому перед
 			// подключением пациента нужно снять и уже надетую дыхательную маску.
@@ -874,7 +875,7 @@
 			user.visible_message("[user] подключает оборудование для анестезии к [patient] и проворачиваете клапан.", span_notice("Вы открываете клапан с анестезией. Убедитесь, что пациент спит и можно начинать."))
 			START_PROCESSING(SSobj, src)
 		else
-			if(!do_after(user, 1 SECONDS, patient) || !check_patient())
+			if(!do_after(user, 1 SECONDS, anesthesia_patient) || !check_patient() || patient != anesthesia_patient)
 				return
 			user.visible_message("[user] отключает подачу анестетика к [patient].", span_notice("Вы проворачиваете клапан и отключаете подачу анестезии."))
 			stop_process()
@@ -930,7 +931,7 @@
 		eject_patient()
 
 /obj/structure/table/optable/process()
-	if(!mask || !tank || !patient || mask.loc != patient || tank.loc != src || get_turf(mask) != get_turf(src) || patient.loc != loc)
+	if(!mask || !tank || !patient || patient.wear_mask != mask || mask.loc != patient || tank.loc != src || get_turf(mask) != get_turf(src) || patient.loc != loc)
 		eject_patient()
 
 /obj/structure/table/optable/proc/stop_process()
@@ -998,22 +999,21 @@
 	check_patient()
 
 /obj/structure/table/optable/proc/check_patient()
-	var/mob/living/carbon/human/H = locate() in loc
-	if(H)
-		if(!CHECK_MOBILITY(H, MOBILITY_STAND))
-			if(patient != H)
-				eject_patient()
-				patient = H
-				RegisterSignal(patient, COMSIG_MOVABLE_MOVED, PROC_REF(patient_moved))
-				SEND_SIGNAL(src, COMSIG_MACHINERY_SET_OCCUPANT, patient)
-			return TRUE
-		else if(patient == H)
-			eject_patient()
-			return FALSE
-	else
-		if(!isnull(patient))
-			eject_patient()
-		return FALSE
+	// Другие люди на клетке не должны переключать пациента и отключать ему анестезию.
+	if(patient)
+		if(!QDELETED(patient) && patient.loc == loc)
+			// Краткое пробуждение и автоматическое вставание не должны срывать подключённую маску.
+			if(!CHECK_MOBILITY(patient, MOBILITY_STAND) || (tank && patient.internal == tank && mask && patient.wear_mask == mask))
+				return TRUE
+		eject_patient()
+	for(var/mob/living/carbon/human/H in loc)
+		if(QDELETED(H) || CHECK_MOBILITY(H, MOBILITY_STAND))
+			continue
+		patient = H
+		RegisterSignal(patient, COMSIG_MOVABLE_MOVED, PROC_REF(patient_moved))
+		SEND_SIGNAL(src, COMSIG_MACHINERY_SET_OCCUPANT, patient)
+		return TRUE
+	return FALSE
 
 /*
  * Racks

@@ -861,19 +861,39 @@ ALIEN_LIGHT_ON(/obj/item/cautery/alien)
 
 	var/static/list/injected_reagents = list(/datum/reagent/medicine/corazone, /datum/reagent/medicine/morphine)
 
+/obj/structure/table/optable/abductor/Initialize(mapload)
+	. = ..()
+	// На месте построенного или загруженного стола уже может находиться пациент.
+	START_PROCESSING(SSobj, src)
+
 /obj/structure/table/optable/abductor/Crossed(atom/movable/AM)
 	. = ..()
-	if(iscarbon(AM))
+	if(iscarbon(AM) && AM.loc == loc)
 		START_PROCESSING(SSobj, src)
+		// Первая доза вводится сразу, без ожидания очередного цикла SSobj.
+		process()
 		to_chat(AM, span_danger("Вы чувствуете серию лёгких уколов — стол вводит обезболивающее."))
 
 /obj/structure/table/optable/abductor/process()
+	// Пока маска используется, сохраняем штатный контроль её подключения и положения пациента.
+	if((mask && mask.loc != src) || (tank && patient?.internal == tank))
+		..()
 	. = PROCESS_KILL
 	for(var/mob/living/carbon/C in get_turf(src))
+		if(!C.reagents)
+			continue
 		. = TRUE
 		for(var/chemical in injected_reagents)
 			if(C.reagents.get_reagent_amount(chemical) < 1)
 				C.reagents.add_reagent(chemical, 1)
+
+/obj/structure/table/optable/abductor/stop_process()
+	. = ..()
+	if(QDELETED(src))
+		return
+	// Смена пациента и отключение газовой анестезии не отключают автоматические иглы.
+	if(locate(/mob/living/carbon) in get_turf(src))
+		START_PROCESSING(SSobj, src)
 
 /obj/structure/table/optable/abductor/Destroy()
 	STOP_PROCESSING(SSobj, src)
