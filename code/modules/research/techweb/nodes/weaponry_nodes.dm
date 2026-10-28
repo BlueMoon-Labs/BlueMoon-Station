@@ -123,7 +123,7 @@
 	description = "Feeling lucky, punk?"
 	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
 	prereq_ids = list("weaponry", "ballistic_weapons")
-	design_ids = list("41_dumdum", "41_incendiary", "41_magnum", "41_fmj")
+	design_ids = list("41_dumdum", "41_incendiary", "41_magnum", "41_fmj", "41_ion", "41_ric", "41_rat")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 3500)
 
 /datum/techweb_node/revolver_conversions
@@ -132,5 +132,5 @@
 	description = "A dark age demands crude fury. When the world fractures, you do not weep—you weld the shards together and force the iron to scream."
 	informing_radio_channels = list(RADIO_CHANNEL_SECURITY)
 	prereq_ids = list("weaponry", "adv_weaponry")
-	design_ids = list("dies_irae", "liturgy", "anathema")
-	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 5000)
+	design_ids = list("dies_irae", "liturgy", "anathema", "Mea_culpa", "Misericordia", "Sanctum_Officium")
+	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 10000)

@@ -86,3 +86,34 @@
 	time = 30
 	category = CAT_WEAPONRY
 	subcategory = CAT_WEAPON
+
+/datum/crafting_recipe/Mea_culpa
+	name = "\improper Mea_culpa revolver conversion"
+	result = /obj/item/gun/ballistic/revolver/Mea_culpa
+	reqs = list(/obj/item/gun/ballistic/revolver/Apostle = 1,
+				/obj/item/weaponcrafting/gunkit/Mea_culpa = 1)
+	tools = list(TOOL_SCREWDRIVER)
+	time = 30
+	category = CAT_WEAPONRY
+	subcategory = CAT_WEAPON
+
+/datum/crafting_recipe/Misericordia
+	name = "\improper Misericordia revolver conversion"
+	result = /obj/item/gun/ballistic/revolver/Misericordia
+	reqs = list(/obj/item/gun/ballistic/revolver/Exorcist = 1,
+				/obj/item/weaponcrafting/gunkit/Misericordia = 1)
+	tools = list(TOOL_SCREWDRIVER)
+	time = 30
+	category = CAT_WEAPONRY
+	subcategory = CAT_WEAPON
+
+/datum/crafting_recipe/Sanctum_Officium 
+	name = "\improper Sanctum Officium  revolver conversion"
+	result = /obj/item/gun/ballistic/revolver/Sanctum_Officium 
+	reqs = list(/obj/item/gun/ballistic/revolver/Dies_Irae = 1,
+				/obj/item/stack/rods = 5,
+				/obj/item/weaponcrafting/stock =1)
+	tools = list(TOOL_SCREWDRIVER)
+	time = 30
+	category = CAT_WEAPONRY
+	subcategory = CAT_WEAPON

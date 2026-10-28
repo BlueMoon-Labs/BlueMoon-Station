@@ -304,6 +304,72 @@
 	embedding = null
 	armour_penetration = BULLET_BR5
 
+/obj/item/ammo_casing/cal41/taser
+	name= ".41 taser"
+	desc = "An .41 taser round"
+	caliber = ".41cal"
+	projectile_type = /obj/item/projectile/energy/electrode/cal41
+	can_be_printed = TRUE
+	advanced_print_req = TRUE
+	custom_materials = list(/datum/material/iron = 800, /datum/material/plastic = 200)
+
+/obj/item/projectile/energy/electrode/cal41
+	tase_duration = 40
+	knockdown = 10
+	stamina = 30
+	knockdown_stamoverride = 5
+	knockdown_stam_max = 40
+	strong_tase = FALSE
+
+/obj/item/ammo_casing/cal41/ion
+	name= ".41 ion"
+	desc = "An .41 ion round"
+	caliber = ".41cal"
+	projectile_type = /obj/item/projectile/bullet/c45/ion
+	can_be_printed = TRUE
+	advanced_print_req = TRUE
+	custom_materials = list(/datum/material/iron = 800, /datum/material/plastic = 200)
+
+/obj/item/ammo_casing/cal41/ratshot //30 урона впритык, что меньше чем обычная пуля, но бонус травм, если без брони. Буквально стрелять по крысам, свармерам и прочим мелким и быстрым тварям
+	name= ".41 ratshot"
+	desc = "An .41 ratshot round for rat shooting. 10 pellets but very bad damage"
+	caliber = ".41cal"
+	projectile_type = /obj/item/projectile/bullet/pellet/ratshot	
+	can_be_printed = TRUE
+	advanced_print_req = TRUE
+	variance = 30
+	pellets = 10
+	custom_materials = list(/datum/material/iron = 800, /datum/material/plastic = 200)
+
+/obj/item/projectile/bullet/pellet/ratshot
+	name = "ratshot pellet"
+	damage = 3
+	armour_penetration = BULLET_BR0
+	wound_bonus = 5
+	bare_wound_bonus = 5
+	wound_falloff_tile = -2.5
+	tile_dropoff_ap = 2
+
+/obj/item/ammo_casing/cal41/ricochet
+	name= ".41 ratshot"
+	desc = "An .41 expensive rounds for ricocheting. High chance to shoot yourself!"
+	caliber = ".41cal"
+	projectile_type = /obj/item/projectile/bullet/cal41/ric
+	can_be_printed = TRUE
+	advanced_print_req = TRUE
+	custom_materials = list(/datum/material/iron = 1000, /datum/material/plastic = 2000)
+
+/obj/item/projectile/bullet/cal41/ric //Рикошет пульки с большим углом рикошета и автоаимом по цели, чтоб хуярить в самого стрелка. Дорогие и маленькие урон за автоаим и самострел
+	name = ".41 bullet"
+	damage = 20
+	ricochets_max = 4
+	ricochet_chance = 100
+	ricochet_auto_aim_angle = 90
+	ricochet_auto_aim_range = 10
+	ricochet_incidence_leeway = 50
+	ricochet_decay_chance = 1
+	ricochet_decay_damage = 1
+
 //410 револьвер дробовик
 
 /obj/item/ammo_casing/cal410
@@ -350,10 +416,32 @@
 	name = "snakeshot pellet"
 	icon_state = "pellet"
 	armour_penetration = BULLET_BR1
-	damage = 6
+	damage = 5
 	tile_dropoff_ap = 6
 	wound_bonus = 1
 	bare_wound_bonus = 5
+	wound_falloff_tile = -2.5
+
+/obj/item/ammo_casing/cal410 //Урон на 2 больше чем у револьвера сб, но разброс при стрельбе
+	name= ".410 slug shot"
+	desc = "An .410 slug shot."
+	caliber = ".410cal"
+	icon = 'modular_bluemoon/icons/obj/ammo.dmi'
+	icon_state = "410rubber"
+	pellets = 1
+	variance = 50
+	projectile_type = /obj/item/projectile/bullet/pellet/exorcist_slug
+	can_be_printed = TRUE
+	custom_materials = list(/datum/material/glass = 800)
+
+/obj/item/projectile/bullet/pellet/exorcist_slug
+	name = "snakeshot pellet"
+	icon_state = "pellet"
+	armour_penetration = BULLET_BR3
+	damage = 35
+	tile_dropoff_ap = 6
+	wound_bonus = 1
+	bare_wound_bonus = 1
 	wound_falloff_tile = -2.5
 
 //взрывной револьвер/кинетик
