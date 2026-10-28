@@ -130,6 +130,9 @@ GENETICS SCANNER
 // BLUEMOON ADD END
 
 /obj/item/healthanalyzer/proc/show_results(mob/user)
+	if(user.is_blind())
+		to_chat(user, span_warning("Вы не можете прочитать результаты анализатора, пока ничего не видите."))
+		return
 	if(GLOB.health_analyzer_allow_chat_mode && user.client?.prefs?.health_analyzer_chat)
 		var/report = get_report(user)
 		if(advanced)
@@ -141,8 +144,13 @@ GENETICS SCANNER
 /obj/item/healthanalyzer/ui_state(mob/user)
 	return GLOB.hands_state
 
+/obj/item/healthanalyzer/ui_status(mob/user, datum/ui_state/state)
+	if(user.is_blind())
+		return UI_CLOSE
+	return ..()
+
 /obj/item/healthanalyzer/ui_interact(mob/user, datum/tgui/ui)
-	if(!user.client)
+	if(!user.client || user.is_blind())
 		return
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
@@ -151,12 +159,15 @@ GENETICS SCANNER
 		ui.open()
 
 /obj/item/healthanalyzer/ui_data(mob/user)
+	if(user.is_blind())
+		return list()
 	var/list/data = list("advanced" = advanced, "printing" = printing, "scan" = scan_data, "scanNumber" = scan_number)
 	return data
 
 /obj/item/healthanalyzer/ui_act(action, list/params, datum/tgui/ui, datum/ui_state/state)
-	if(..())
-		return
+	. = ..()
+	if(. || usr.is_blind())
+		return TRUE
 	switch(action)
 		if("clear")
 			scan_data = null
@@ -196,7 +207,7 @@ GENETICS SCANNER
 	show_results(user)
 
 /obj/item/healthanalyzer/attack(mob/living/M, mob/living/carbon/human/user)
-	if(user.incapacitated() || user.eye_blind)
+	if(user.incapacitated())
 		return
 	flick("[icon_state]-scan", src)
 
@@ -248,7 +259,7 @@ GENETICS SCANNER
 
 // Общий сбор показателей для анализатора, КПК, имплантов и медицинских машин.
 /proc/healthscan(mob/user, mob/living/M, advanced = FALSE, obj/item/healthanalyzer/connected_analyzer = null, datum/live_source = null, include_chemistry = FALSE)
-	if(isliving(user) && (user.incapacitated() || user.eye_blind))
+	if(isliving(user) && user.incapacitated())
 		return
 	var/list/data = medical_scan_results(user, M, advanced, include_chemistry = include_chemistry || !isnull(connected_analyzer))
 	var/report = data["report"]
@@ -262,6 +273,10 @@ GENETICS SCANNER
 // Общий дисплей для медицинских инструментов и встроенных систем; чат остаётся доступен по префу.
 /proc/show_medical_scan(mob/user, list/data, mob/living/patient, datum/live_source = null, scan_kind = "Medical", advanced = FALSE, include_chemistry = FALSE)
 	if(!length(data))
+		return
+	// Без зрения доступны только показания подтверждённой встроенной системы.
+	if(user.is_blind() && (QDELETED(live_source) || !live_source.can_monitor_medical_scan(user, patient, scan_kind)))
+		to_chat(user, span_warning("Вы не можете прочитать показания внешнего сканера, пока ничего не видите."))
 		return
 	if(!user.client || (GLOB.health_analyzer_allow_chat_mode && user.client.prefs.health_analyzer_chat))
 		var/report = data["report"]
@@ -347,8 +362,10 @@ GENETICS SCANNER
 	if(source_ref)
 		var/datum/source = source_ref.resolve()
 		var/mob/living/patient = patient_ref?.resolve()
-		if(!source || !patient || user.stat != CONSCIOUS || user.incapacitated() || user.eye_blind || !source.can_monitor_medical_scan(user, patient, scan_kind))
+		if(!source || !patient || user.stat != CONSCIOUS || user.incapacitated() || !source.can_monitor_medical_scan(user, patient, scan_kind))
 			return UI_CLOSE
+	else if(user.is_blind())
+		return UI_CLOSE
 	return ..()
 
 /datum/component/medical_scan_display/ui_interact(mob/user, datum/tgui/ui)
@@ -386,7 +403,7 @@ GENETICS SCANNER
 	last_report = ""
 
 /proc/medical_scan_results(mob/user, mob/living/M, advanced = FALSE, include_chemistry = FALSE)
-	if(isliving(user) && (user.incapacitated() || user.eye_blind))
+	if(isliving(user) && user.incapacitated())
 		return
 	// Показатели повреждений с учётом маскировки смерти.
 	var/oxy_loss = round(M.getOxyLoss(), 0.001)
@@ -996,7 +1013,7 @@ GENETICS SCANNER
 
 // Подробное описание ран остаётся доступным у всех вызывающих этот прок инструментов.
 /proc/woundscan(mob/user, mob/living/carbon/patient, obj/item/healthanalyzer/scanner, datum/live_source = null)
-	if(!istype(patient) || (isliving(user) && (user.incapacitated() || user.eye_blind)))
+	if(!istype(patient) || (isliving(user) && user.incapacitated()))
 		return
 	var/list/data = wound_scan_results(user, patient)
 	if(!length(patient.get_wounded_bodyparts()) && istype(scanner, /obj/item/healthanalyzer/wound))
