@@ -33,6 +33,22 @@
 "abj" = (
 /turf/open/floor/plasteel/smooth/large,
 /area/mine/xenoarch)
+"abk" = (
+/obj/structure/cable/yellow{
+	icon_state = "0-4"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "2-4"
+	},
+/obj/machinery/power/rtg/advanced,
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/floor/catwalk_floor,
+/area/ruin/lavaland/unpowered/deepspaceone/engineering)
 "abn" = (
 /turf/closed/wall,
 /area/mine/living_quarters)
@@ -50,6 +66,18 @@
 /obj/structure/flora/junglebush/b,
 /turf/open/floor/grass/grass0,
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
+"ado" = (
+/obj/machinery/door/poddoor/preopen{
+	id = "dsxenobio7";
+	name = "containment blast door"
+	},
+/obj/machinery/door/window/northleft{
+	name = "Containment Pen";
+	req_access_txt = "150"
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/turf/open/floor/engine,
+/area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "adz" = (
 /obj/effect/turf_decal/siding/thinplating/dark{
 	dir = 1
@@ -807,6 +835,10 @@
 /obj/structure/table/reinforced/plastitaniumglass,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/ruin/lavaland/unpowered/deepspaceone/virology)
+"aAh" = (
+/obj/machinery/teleport/hub/syndicate,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "aAx" = (
 /obj/machinery/vending/games,
 /turf/open/floor/holofloor{
@@ -1722,14 +1754,14 @@
 	},
 /area/mine/xenoarch_area_c)
 "bbU" = (
-/obj/effect/turf_decal/stripes/yellow/line{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
+	},
+/obj/effect/turf_decal/stripes/yellow/corner{
 	dir = 1
 	},
-/obj/machinery/light{
-	dir = 1;
-	pixel_x = 16
-	},
-/turf/open/floor/engine,
+/turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "bbZ" = (
 /obj/structure/bed/shadow,
@@ -2434,7 +2466,14 @@
 /turf/open/floor/plasteel/dark,
 /area/mine/laborcamp)
 "bwU" = (
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden,
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4,
+/obj/machinery/button/door{
+	id = "ds1miner";
+	layer = 3.3;
+	name = "Containment Blast Doors";
+	pixel_y = 28;
+	req_access_txt = "150"
+	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "bxc" = (
@@ -3324,15 +3363,10 @@
 	},
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "bWx" = (
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 1
-	},
-/obj/effect/turf_decal/trimline/purple/filled/warning{
-	dir = 1
-	},
-/obj/machinery/atmospherics/pipe/simple/general/hidden,
-/turf/open/floor/plasteel/smooth/edge,
-/area/ruin/lavaland/unpowered/deepspaceone/circuits)
+/obj/effect/turf_decal/bot/white,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "bWT" = (
 /obj/structure/rack,
 /obj/item/tank/internals/oxygen,
@@ -4049,6 +4083,16 @@
 /obj/effect/spawner/structure/window/plasma/reinforced,
 /turf/open/floor/plating,
 /area/mine/xenoarch_area_a)
+"cpT" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 8
+	},
+/obj/machinery/airalarm/directional/north{
+	req_access_txt = "150";
+	req_access = list(150)
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "cqk" = (
 /obj/machinery/door/airlock{
 	name = "General Staff quaters";
@@ -4125,6 +4169,15 @@
 /obj/structure/stone_tile,
 /turf/open/indestructible/boss,
 /area/lavaland/necropolis)
+"csX" = (
+/obj/machinery/camera/xray/directional/west{
+	c_tag = "DS-1 cargostorage";
+	network = list("ds1");
+	pixel_x = null;
+	dir = 6
+	},
+/turf/open/floor/catwalk_floor,
+/area/ruin/lavaland/unpowered/deepspaceone/cargo)
 "ctd" = (
 /obj/machinery/atmospherics/pipe/simple/general/hidden/layer4,
 /obj/effect/spawner/structure/window/plastitanium,
@@ -4864,6 +4917,12 @@
 	},
 /turf/open/floor/plasteel/smooth/herringbone,
 /area/mine/xenoarch)
+"cRF" = (
+/obj/structure/table/glass,
+/obj/item/storage/bag/bio,
+/obj/item/storage/bag/bio,
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "cSc" = (
 /obj/structure/cable{
 	icon_state = "1-4"
@@ -4987,20 +5046,26 @@
 	},
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
-"cVH" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+"cVV" = (
+/obj/machinery/button/door{
+	id = "dsxenobio7";
+	layer = 3.3;
+	name = "Containment Blast Doors";
+	pixel_y = 28;
+	req_access_txt = "150"
+	},
+/obj/effect/turf_decal/trimline/purple/filled/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/yellow/corner{
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/general/hidden,
-/turf/open/floor/plasteel,
-/area/ruin/lavaland/unpowered/deepspaceone/circuits)
-"cVV" = (
-/obj/effect/turf_decal/trimline/purple/warning{
+/obj/effect/turf_decal/stripes/yellow/corner{
 	dir = 8
 	},
-/obj/structure/window/plasma/reinforced/spawner/east,
-/turf/open/floor/plasteel/dark,
-/area/ruin/lavaland/unpowered/deepspaceone/testlab)
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/plasteel/smooth/edge,
+/area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "cWb" = (
 /obj/structure/lattice/catwalk,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
@@ -5087,6 +5152,18 @@
 /obj/structure/flora/ash/cacti,
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/unpowered/ash_walkers)
+"cXY" = (
+/obj/structure/table/reinforced,
+/obj/machinery/recharger{
+	pixel_x = 6;
+	pixel_y = -2
+	},
+/obj/machinery/recharger{
+	pixel_x = -7;
+	pixel_y = -2
+	},
+/turf/open/floor/mineral/plastitanium,
+/area/ruin/lavaland/unpowered/deepspaceone/security)
 "cYj" = (
 /obj/machinery/vending/wardrobe/sec_wardrobe{
 	shut_up = 1;
@@ -6718,12 +6795,13 @@
 /turf/open/floor/plasteel/textured/large,
 /area/mine/xenoarch)
 "dYf" = (
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4,
-/obj/machinery/light{
-	pixel_x = 17
+/obj/machinery/door/poddoor/preopen{
+	id = "dsxenobio7";
+	name = "containment blast door"
 	},
-/turf/open/floor/plasteel/dark,
-/area/ruin/lavaland/unpowered/deepspaceone/testlab)
+/obj/effect/spawner/structure/window/plastitanium,
+/turf/open/floor/plating,
+/area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "dYl" = (
 /obj/machinery/atmospherics/pipe/simple/dark/visible,
 /obj/machinery/meter,
@@ -6757,24 +6835,19 @@
 /turf/open/floor/wood/wood_large,
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
 "dYZ" = (
-/obj/machinery/button/door{
-	id = "dsxenobio7";
-	layer = 3.3;
-	name = "Containment Blast Doors";
-	pixel_y = 28;
-	req_access_txt = "150"
-	},
-/obj/effect/turf_decal/trimline/purple/filled/line{
-	dir = 1
-	},
-/obj/effect/turf_decal/stripes/yellow/corner{
-	dir = 4
-	},
-/obj/effect/turf_decal/stripes/yellow/corner{
+/obj/effect/turf_decal/stripes/yellow/line{
 	dir = 8
 	},
-/obj/effect/turf_decal/delivery,
-/turf/open/floor/plasteel/smooth/edge,
+/obj/machinery/power/apc/syndicate{
+	dir = 1;
+	name = "RND APC";
+	req_access_txt = "150";
+	pixel_y = 30
+	},
+/obj/structure/cable/yellow{
+	icon_state = "0-8"
+	},
+/turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "dZh" = (
 /obj/machinery/light/small{
@@ -7016,15 +7089,6 @@
 	},
 /turf/open/floor/engine,
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
-"ehz" = (
-/obj/machinery/camera/xray/directional/west{
-	c_tag = "DS-1 post";
-	network = list("ds1");
-	pixel_x = null;
-	dir = 5
-	},
-/turf/open/floor/plasteel/dark,
-/area/ruin/lavaland/unpowered/deepspaceone/main)
 "ehA" = (
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
@@ -7625,12 +7689,6 @@
 /obj/effect/turf_decal/stripes/yellow/line,
 /turf/open/floor/engine,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
-"eBG" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
-	dir = 8
-	},
-/turf/open/floor/plasteel,
-/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "eCc" = (
 /obj/machinery/shower{
 	dir = 8;
@@ -8262,19 +8320,14 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "eWK" = (
-/obj/structure/cable/yellow,
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
-/obj/machinery/power/rtg/advanced,
 /obj/machinery/camera/xray/directional/west{
-	c_tag = "DS-1 RTG";
+	c_tag = "DS-1 post";
 	network = list("ds1");
 	pixel_x = null;
-	dir = 4
+	dir = 5
 	},
-/turf/open/floor/catwalk_floor,
-/area/ruin/lavaland/unpowered/deepspaceone/engineering)
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/main)
 "eWW" = (
 /obj/structure/table/wood/fancy/blackred,
 /obj/machinery/vending/wallmed/directional/east,
@@ -8363,6 +8416,10 @@
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden,
 /turf/open/floor/wood/wood_large,
 /area/mine/xenoarch_area_b)
+"eZw" = (
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4,
+/turf/open/floor/engine,
+/area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "eZz" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 5
@@ -8371,20 +8428,11 @@
 /turf/open/floor/plasteel/dark,
 /area/mine/laborcamp)
 "eZQ" = (
-/obj/effect/turf_decal/stripes/yellow/line{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
 	dir = 8
 	},
-/obj/machinery/power/apc/syndicate{
-	dir = 1;
-	name = "RND APC";
-	req_access_txt = "150";
-	pixel_y = 30
-	},
-/obj/structure/cable/yellow{
-	icon_state = "0-8"
-	},
-/turf/open/floor/plasteel/dark,
-/area/ruin/lavaland/unpowered/deepspaceone/circuits)
+/turf/closed/wall/r_wall/syndicate/nodiagonal,
+/area/ruin/lavaland/unpowered)
 "fae" = (
 /obj/machinery/door/firedoor,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
@@ -8970,6 +9018,15 @@
 	},
 /turf/closed/wall/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
+"fqO" = (
+/obj/structure/chair/office/dark{
+	dir = 8
+	},
+/obj/structure/sign/xenobio_guide{
+	pixel_y = -32
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "frl" = (
 /obj/structure/table,
 /obj/machinery/computer/reactor/fuel_rods{
@@ -9101,9 +9158,6 @@
 "fvq" = (
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
-	dir = 4
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 4
@@ -9338,12 +9392,9 @@
 /turf/open/floor/plasteel/white/textured/large,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
 "fBQ" = (
-/obj/effect/turf_decal/stripes/yellow/line,
-/obj/machinery/atmospherics/components/binary/volume_pump{
-	dir = 1
-	},
+/obj/structure/fans/tiny,
 /turf/open/floor/plasteel/dark,
-/area/ruin/lavaland/unpowered/deepspaceone/circuits)
+/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "fCd" = (
 /mob/living/simple_animal/slime,
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
@@ -9692,12 +9743,6 @@
 /obj/structure/flora/biolumi/mine,
 /turf/open/floor/plating/dirt/dark/jungle,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
-"fLf" = (
-/obj/machinery/computer/teleporter{
-	dir = 4
-	},
-/turf/open/floor/catwalk_floor/iron_dark,
-/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "fLq" = (
 /obj/structure/stone_tile/surrounding_tile{
 	dir = 1
@@ -10920,13 +10965,12 @@
 /turf/open/floor/engine,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
 "gyG" = (
-/obj/effect/turf_decal/stripes/yellow/line{
+/obj/effect/turf_decal/stripes/yellow/line,
+/obj/effect/turf_decal/trimline/purple/filled/warning,
+/obj/machinery/atmospherics/pipe/simple/general/hidden,
+/turf/open/floor/plasteel/smooth/edge{
 	dir = 1
 	},
-/obj/machinery/light{
-	dir = 1
-	},
-/turf/open/floor/engine,
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "gyQ" = (
 /obj/structure/stone_tile/block,
@@ -11177,9 +11221,21 @@
 /turf/open/floor/plasteel/dark,
 /area/mine/laborcamp)
 "gEa" = (
-/obj/effect/turf_decal/bot/white,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/turf/open/floor/plasteel/dark,
+/obj/effect/turf_decal/trimline/dark/line{
+	dir = 5
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/yellow/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/purple/corner{
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark/corner{
+	dir = 8
+	},
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "gEp" = (
 /obj/structure/cable/yellow{
@@ -11365,10 +11421,22 @@
 	},
 /area/mine/xenoarch_area_b)
 "gJy" = (
-/obj/structure/table/glass,
-/obj/item/storage/bag/bio,
-/obj/item/storage/bag/bio,
-/turf/open/floor/plasteel/dark,
+/obj/machinery/button/door{
+	id = "dsxenobio4";
+	layer = 3.3;
+	name = "Containment Blast Doors";
+	pixel_y = -28;
+	req_access_txt = "150"
+	},
+/obj/effect/turf_decal/trimline/purple/filled/line,
+/obj/effect/turf_decal/stripes/yellow/corner{
+	dir = 1
+	},
+/obj/effect/turf_decal/stripes/yellow/corner,
+/obj/effect/turf_decal/delivery,
+/turf/open/floor/plasteel/smooth/edge{
+	dir = 1
+	},
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "gJE" = (
 /obj/machinery/atmospherics/pipe/simple/green/visible{
@@ -13097,11 +13165,14 @@
 	},
 /area/mine/xenoarch_area_b)
 "hLO" = (
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
-	dir = 1
+/obj/machinery/camera/xray/directional/west{
+	c_tag = "DS-1 RBMK";
+	network = list("ds1");
+	pixel_x = null;
+	dir = 4
 	},
 /turf/open/floor/plasteel/dark,
-/area/ruin/lavaland/unpowered/deepspaceone/testlab)
+/area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "hLQ" = (
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
@@ -13368,16 +13439,6 @@
 /obj/machinery/door/firedoor/heavy,
 /turf/open/floor/plasteel/dark/smooth/small,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
-"hSJ" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
-	},
-/obj/effect/turf_decal/stripes/yellow/corner{
-	dir = 1
-	},
-/turf/open/floor/plasteel/dark,
-/area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "hSR" = (
 /obj/effect/turf_decal/trimline/neutral/filled/corner{
 	dir = 8
@@ -13674,6 +13735,21 @@
 	},
 /turf/open/floor/catwalk_floor/iron,
 /area/mine/xenoarch_area_c)
+"ibE" = (
+/obj/effect/turf_decal/stripes/red{
+	dir = 1
+	},
+/obj/structure/railing{
+	pixel_y = -2
+	},
+/obj/machinery/camera/xray/directional/west{
+	c_tag = "DS-1 dock";
+	network = list("ds1");
+	pixel_x = null;
+	dir = 10
+	},
+/turf/open/floor/plating,
+/area/ruin/lavaland/unpowered/deepspaceone/cargo)
 "ibN" = (
 /obj/structure/closet/cabinet{
 	pixel_x = -6
@@ -13940,14 +14016,12 @@
 /turf/open/floor/plasteel,
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
 "ijL" = (
-/obj/machinery/door/airlock/research{
-	name = "Xenobiology Lab";
-	req_access_txt = "150"
+/obj/effect/turf_decal/stripes/yellow/line,
+/obj/machinery/atmospherics/components/binary/volume_pump{
+	dir = 1
 	},
-/obj/structure/fans/tiny,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/open/floor/plasteel/dark,
-/area/ruin/lavaland/unpowered/deepspaceone/testlab)
+/area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "ikd" = (
 /obj/structure/table/wood,
 /obj/item/reagent_containers/food/snacks/breadslice/creamcheese,
@@ -14790,11 +14864,14 @@
 	},
 /area/mine/xenoarch_area_c)
 "iLY" = (
-/obj/effect/turf_decal/trimline/purple/corner{
-	dir = 4
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
 	},
-/turf/open/floor/plasteel/dark,
-/area/ruin/lavaland/unpowered/deepspaceone/testlab)
+/obj/machinery/light{
+	dir = 1
+	},
+/turf/open/floor/engine,
+/area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "iMr" = (
 /obj/effect/turf_decal/siding/dark{
 	dir = 4
@@ -14880,9 +14957,6 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "iPo" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
-	dir = 5
-	},
 /obj/machinery/door/airlock/virology{
 	name = "Inderdyne Test subject room 1";
 	req_access_txt = "150"
@@ -15010,13 +15084,6 @@
 	},
 /turf/open/floor/engine,
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
-"iTg" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on{
-	dir = 4
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/turf/open/floor/plasteel/dark,
-/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "iTp" = (
 /obj/machinery/processor/slime,
 /turf/open/floor/catwalk_floor/iron,
@@ -16155,19 +16222,6 @@
 	},
 /turf/open/indestructible/boss,
 /area/lavaland/necropolis)
-"jzt" = (
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 1
-	},
-/obj/machinery/light/floor,
-/obj/effect/turf_decal/trimline/purple/filled/warning{
-	dir = 5
-	},
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/turf/open/floor/plasteel,
-/area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "jzL" = (
 /obj/structure/closet/crate/secure/gear,
 /obj/item/clothing/glasses/night,
@@ -16259,21 +16313,6 @@
 /obj/effect/turf_decal/stripes/yellow/line,
 /turf/open/floor/catwalk_floor,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
-"jCj" = (
-/obj/effect/turf_decal/trimline/dark/line{
-	dir = 4
-	},
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 8
-	},
-/obj/effect/turf_decal/siding/purple{
-	dir = 8
-	},
-/obj/structure/window/plasma/reinforced/spawner/west,
-/turf/open/floor/plasteel/dark/side{
-	dir = 8
-	},
-/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "jCk" = (
 /obj/structure/flora/grass/jungle,
 /turf/open/floor/grass/grass0,
@@ -16322,12 +16361,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
-"jEw" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on{
-	dir = 1
-	},
-/turf/open/floor/plating,
-/area/ruin/lavaland/unpowered/deepspaceone/engineering)
 "jEF" = (
 /obj/structure/window/reinforced/clockwork{
 	dir = 4
@@ -16445,6 +16478,13 @@
 	},
 /turf/open/floor/plasteel/smooth/large,
 /area/mine/xenoarch_area_c)
+"jHY" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/general/hidden,
+/turf/open/floor/plasteel,
+/area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "jIa" = (
 /obj/structure/stone_tile/slab,
 /obj/structure/anvil/obtainable/bone,
@@ -16974,22 +17014,6 @@
 /obj/machinery/light/floor,
 /turf/open/floor/grass/grass0,
 /area/mine/xenoarch_area_b)
-"jVR" = (
-/obj/structure/cable/yellow{
-	icon_state = "0-4"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "2-4"
-	},
-/obj/machinery/power/rtg/advanced,
-/obj/machinery/light{
-	dir = 1
-	},
-/turf/open/floor/catwalk_floor,
-/area/ruin/lavaland/unpowered/deepspaceone/engineering)
 "jWi" = (
 /obj/structure/dresser,
 /obj/machinery/light{
@@ -17025,26 +17049,15 @@
 /turf/open/floor/plasteel/dark,
 /area/mine/storage)
 "jXV" = (
-/obj/effect/turf_decal/siding/dark{
-	dir = 4
-	},
-/obj/effect/turf_decal/siding/dark{
-	dir = 8
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
 	},
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 8
 	},
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 4
-	},
-/obj/machinery/camera/xray/directional/west{
-	c_tag = "DS-1 cargo hall";
-	network = list("ds1");
-	pixel_x = null;
-	dir = 8
-	},
-/turf/open/floor/plasteel/dark/smooth/small,
-/area/ruin/lavaland/unpowered/deepspaceone/cargo)
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "jYg" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
 	dir = 4
@@ -17069,10 +17082,6 @@
 	dir = 8
 	},
 /area/ruin/lavaland/unpowered/deepspaceone/main)
-"jZu" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4,
-/turf/open/floor/engine,
-/area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "jZB" = (
 /obj/machinery/rnd/destructive_analyzer,
 /obj/effect/turf_decal/bot/yellow,
@@ -17217,14 +17226,16 @@
 /turf/open/floor/grass,
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "kec" = (
-/obj/machinery/door/poddoor/preopen{
-	id = "dsxenobio7";
-	name = "containment blast door"
+/obj/effect/turf_decal/trimline/purple/warning{
+	dir = 1
 	},
-/obj/structure/disposalpipe/segment,
-/obj/effect/spawner/structure/window/plastitanium,
-/turf/open/floor/plating,
-/area/ruin/lavaland/unpowered/deepspaceone/circuits)
+/obj/machinery/door/window/northleft{
+	dir = 2;
+	name = "Containment Pen";
+	req_access_txt = "150"
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "kel" = (
 /obj/structure/table,
 /obj/item/stack/sheet/plasteel/fifty{
@@ -18114,10 +18125,17 @@
 /turf/open/indestructible/hoteltile,
 /area/ruin/lavaland/unpowered/deepspaceone/main_shower)
 "kHZ" = (
-/obj/machinery/chem_master,
-/obj/machinery/light/floor,
-/turf/open/floor/catwalk_floor/iron_dark,
-/area/ruin/lavaland/unpowered/deepspaceone/testlab)
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/trimline/purple/filled/warning{
+	dir = 1
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel/smooth/edge,
+/area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "kId" = (
 /obj/structure/closet/secure_closet/contraband/armory{
 	req_access = null
@@ -19068,20 +19086,15 @@
 /turf/open/floor/plasteel,
 /area/mine/production)
 "ljc" = (
-/obj/effect/turf_decal/stripes/red{
+/obj/effect/turf_decal/stripes/yellow/line{
 	dir = 1
 	},
-/obj/structure/railing{
-	pixel_y = -2
+/obj/effect/turf_decal/trimline/purple/filled/warning{
+	dir = 1
 	},
-/obj/machinery/camera/xray/directional/west{
-	c_tag = "DS-1 dock";
-	network = list("ds1");
-	pixel_x = null;
-	dir = 10
-	},
-/turf/open/floor/plating,
-/area/ruin/lavaland/unpowered/deepspaceone/cargo)
+/obj/machinery/atmospherics/pipe/simple/general/hidden,
+/turf/open/floor/plasteel/smooth/edge,
+/area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "lje" = (
 /turf/open/floor/plasteel/white/smooth/diagonal,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
@@ -19145,22 +19158,11 @@
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "ljH" = (
-/obj/effect/turf_decal/trimline/dark/line{
-	dir = 5
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
-	dir = 8
-	},
-/obj/effect/turf_decal/stripes/yellow/corner{
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
 	dir = 1
 	},
-/obj/effect/turf_decal/siding/purple/corner{
-	dir = 8
-	},
-/turf/open/floor/plasteel/dark/corner{
-	dir = 8
-	},
-/area/ruin/lavaland/unpowered/deepspaceone/testlab)
+/turf/open/floor/plating,
+/area/ruin/lavaland/unpowered/deepspaceone/engineering)
 "ljL" = (
 /obj/machinery/light/small,
 /obj/effect/turf_decal/siding/wood/thin,
@@ -19691,14 +19693,18 @@
 /turf/open/floor/plasteel/dark,
 /area/mine/maintenance)
 "lyJ" = (
-/obj/machinery/camera/xray/directional/west{
-	c_tag = "DS-1 RBMK";
-	network = list("ds1");
-	pixel_x = null;
+/obj/structure/cable{
+	icon_state = "4-8"
+	},
+/obj/structure/disposalpipe/segment{
 	dir = 4
 	},
-/turf/open/floor/plasteel/dark,
-/area/ruin/lavaland/unpowered/deepspaceone/reactor)
+/obj/machinery/atmospherics/pipe/simple/brown/visible{
+	dir = 8
+	},
+/obj/structure/marker_beacon/bronze,
+/turf/open/floor/plasteel/elevatorshaft,
+/area/ruin/lavaland/unpowered)
 "lzC" = (
 /turf/closed/mineral/random/volcanic,
 /area/ruin/lavaland/unpowered/ash_walkers/female)
@@ -19964,6 +19970,16 @@
 	},
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/security)
+"lGA" = (
+/obj/structure/flora/grass/jungle,
+/obj/machinery/camera/xray/directional/west{
+	c_tag = "DS-1 RBMK3";
+	network = list("ds1");
+	pixel_x = null;
+	dir = 8
+	},
+/turf/open/floor/grass/grass0,
+/area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "lHk" = (
 /obj/effect/turf_decal/stripes/yellow/corner{
 	dir = 1
@@ -20768,18 +20784,6 @@
 	},
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/unpowered/ash_walkers/female)
-"mfS" = (
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 1
-	},
-/obj/effect/turf_decal/trimline/purple/filled/warning{
-	dir = 1
-	},
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/turf/open/floor/plasteel/smooth/edge,
-/area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "mfW" = (
 /obj/machinery/door/airlock/external/glass{
 	name = "External Access";
@@ -20805,9 +20809,9 @@
 /turf/open/floor/wood/wood_tiled,
 /area/mine/xenoarch_area_b)
 "mgI" = (
-/obj/structure/fans/tiny,
-/turf/open/floor/plasteel/dark,
-/area/ruin/lavaland/unpowered/deepspaceone/testlab)
+/obj/structure/chair/sofa/bench/right,
+/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
+/area/ruin/lavaland/unpowered/deepspaceone/engineering)
 "mhr" = (
 /obj/structure/sauna_oven,
 /obj/effect/turf_decal/siding/wood/thin{
@@ -21712,15 +21716,6 @@
 	},
 /turf/open/floor/plasteel/smooth/large,
 /area/mine/xenoarch)
-"mDd" = (
-/obj/machinery/camera/xray/directional/west{
-	c_tag = "DS-1 cargostorage";
-	network = list("ds1");
-	pixel_x = null;
-	dir = 6
-	},
-/turf/open/floor/catwalk_floor,
-/area/ruin/lavaland/unpowered/deepspaceone/cargo)
 "mDn" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 6
@@ -22289,15 +22284,6 @@
 /obj/machinery/door/airlock/research/glass,
 /turf/open/floor/plating,
 /area/mine/xenoarch)
-"mQl" = (
-/obj/effect/turf_decal/trimline/purple/corner{
-	dir = 1
-	},
-/obj/machinery/light/floor,
-/obj/structure/window/plasma/reinforced/spawner/east,
-/obj/structure/window/plasma/reinforced/spawner,
-/turf/open/floor/plasteel/dark,
-/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "mQA" = (
 /obj/effect/turf_decal/stripes/yellow/corner{
 	dir = 10
@@ -23805,6 +23791,19 @@
 /obj/effect/turf_decal/stripes/yellow/line,
 /turf/open/floor/plasteel/dark,
 /area/mine/laborcamp)
+"nDo" = (
+/obj/machinery/door/poddoor/preopen{
+	id = "dsxenobio4";
+	name = "containment blast door"
+	},
+/obj/machinery/door/window/northleft{
+	dir = 2;
+	name = "Containment Pen";
+	req_access_txt = "150"
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/turf/open/floor/engine,
+/area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "nDr" = (
 /obj/machinery/door/airlock/external{
 	glass = 1;
@@ -23814,15 +23813,6 @@
 /obj/effect/mapping_helpers/airlock/cyclelink_helper,
 /turf/open/floor/plasteel,
 /area/mine/production)
-"nDy" = (
-/obj/machinery/door/airlock/research{
-	name = "Xenobiology Lab";
-	req_access_txt = "150"
-	},
-/obj/structure/fans/tiny,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/turf/open/floor/plasteel/dark,
-/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "nDB" = (
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
@@ -24070,13 +24060,12 @@
 /turf/open/floor/grass/grass0,
 /area/mine/xenoarch_area_b)
 "nJq" = (
-/obj/machinery/door/poddoor/preopen{
-	id = "dsxenobio7";
-	name = "containment blast door"
+/obj/effect/turf_decal/bot/white,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 10
 	},
-/obj/effect/spawner/structure/window/plastitanium,
-/turf/open/floor/plating,
-/area/ruin/lavaland/unpowered/deepspaceone/circuits)
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "nJy" = (
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
@@ -24412,9 +24401,12 @@
 /turf/open/floor/engine/o2,
 /area/mine/xenoarch_area_a)
 "nSN" = (
-/obj/structure/chair/sofa/bench/right,
-/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
-/area/ruin/lavaland/unpowered/deepspaceone/engineering)
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4,
+/obj/machinery/light{
+	pixel_x = 17
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "nSQ" = (
 /obj/machinery/atmospherics/pipe/layer_manifold{
 	layer = 2.47
@@ -25748,6 +25740,18 @@
 /obj/effect/mapping_helpers/airlock/cyclelink_helper,
 /turf/open/floor/plasteel/dark,
 /area/mine/laborcamp)
+"oDX" = (
+/obj/effect/turf_decal/trimline/dark/line,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/effect/turf_decal/siding/purple{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark/side{
+	dir = 1
+	},
+/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "oEl" = (
 /obj/effect/turf_decal/tile/green/diagonal_centre,
 /obj/effect/turf_decal/bot/yellow,
@@ -26430,17 +26434,15 @@
 /turf/open/floor/plasteel/white/smooth/large,
 /area/ruin/lavaland/unpowered/deepspaceone/chemistry)
 "oYK" = (
-/obj/machinery/door/poddoor/preopen{
-	id = "dsxenobio7";
-	name = "containment blast door"
+/obj/machinery/camera/xray/directional/west{
+	c_tag = "DS-1 Reserch";
+	network = list("ds1");
+	pixel_x = null;
+	dir = 5
 	},
-/obj/machinery/door/window/northleft{
-	name = "Containment Pen";
-	req_access_txt = "150"
-	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/turf/open/floor/engine,
-/area/ruin/lavaland/unpowered/deepspaceone/circuits)
+/obj/machinery/quantumpad,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "oYR" = (
 /obj/machinery/computer/security/telescreen/toxins{
 	dir = 8;
@@ -26804,6 +26806,12 @@
 /obj/machinery/door/firedoor/heavy,
 /turf/open/floor/plasteel/dark/smooth/large,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
+"pmc" = (
+/obj/effect/turf_decal/trimline/purple/corner{
+	dir = 4
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "pmr" = (
 /obj/structure/chair/office/dark{
 	dir = 8
@@ -27044,11 +27052,12 @@
 /turf/open/floor/plasteel,
 /area/mine/laborcamp)
 "puc" = (
-/obj/machinery/atmospherics/components/unary/passive_vent/layer4{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
 	dir = 8
 	},
-/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
-/area/ruin/lavaland/unpowered)
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "puH" = (
 /obj/structure/fence/corner,
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
@@ -27346,6 +27355,10 @@
 	},
 /turf/open/floor/plasteel/white/smooth/large,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
+"pEr" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden,
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "pEN" = (
 /obj/structure/stone_tile{
 	dir = 1
@@ -27650,16 +27663,6 @@
 /obj/structure/stone_tile/block,
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/unpowered/ash_walkers)
-"pNk" = (
-/obj/structure/flora/grass/jungle,
-/obj/machinery/camera/xray/directional/west{
-	c_tag = "DS-1 RBMK3";
-	network = list("ds1");
-	pixel_x = null;
-	dir = 8
-	},
-/turf/open/floor/grass/grass0,
-/area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "pNr" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
@@ -27751,6 +27754,19 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/mine/production)
+"pPv" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/machinery/light/floor,
+/obj/effect/turf_decal/trimline/purple/filled/warning{
+	dir = 5
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/turf/open/floor/plasteel,
+/area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "pPK" = (
 /obj/structure/stone_tile/cracked{
 	dir = 8
@@ -27893,10 +27909,10 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "pUJ" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
-	dir = 8
+/obj/effect/turf_decal/trimline/purple/warning{
+	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/structure/extinguisher_cabinet/directional/south,
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "pVc" = (
@@ -28600,6 +28616,12 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /turf/open/floor/wood/wood_tiled,
 /area/mine/xenoarch_area_b)
+"qnp" = (
+/obj/machinery/computer/teleporter{
+	dir = 4
+	},
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "qnE" = (
 /obj/machinery/door/airlock{
 	id_tag = "miningdorm1";
@@ -29675,17 +29697,26 @@
 	},
 /area/mine/xenoarch_area_c)
 "qWd" = (
-/obj/structure/table/reinforced,
-/obj/machinery/recharger{
-	pixel_x = 6;
-	pixel_y = -2
+/obj/effect/turf_decal/siding/dark{
+	dir = 4
 	},
-/obj/machinery/recharger{
-	pixel_x = -7;
-	pixel_y = -2
+/obj/effect/turf_decal/siding/dark{
+	dir = 8
 	},
-/turf/open/floor/mineral/plastitanium,
-/area/ruin/lavaland/unpowered/deepspaceone/security)
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 4
+	},
+/obj/machinery/camera/xray/directional/west{
+	c_tag = "DS-1 cargo hall";
+	network = list("ds1");
+	pixel_x = null;
+	dir = 8
+	},
+/turf/open/floor/plasteel/dark/smooth/small,
+/area/ruin/lavaland/unpowered/deepspaceone/cargo)
 "qWD" = (
 /obj/structure/stone_tile/surrounding_tile{
 	dir = 1
@@ -30088,23 +30119,9 @@
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/lavaland/surface/outdoors)
 "rgi" = (
-/obj/machinery/button/door{
-	id = "dsxenobio4";
-	layer = 3.3;
-	name = "Containment Blast Doors";
-	pixel_y = -28;
-	req_access_txt = "150"
-	},
-/obj/effect/turf_decal/trimline/purple/filled/line,
-/obj/effect/turf_decal/stripes/yellow/corner{
-	dir = 1
-	},
-/obj/effect/turf_decal/stripes/yellow/corner,
-/obj/effect/turf_decal/delivery,
-/turf/open/floor/plasteel/smooth/edge{
-	dir = 1
-	},
-/area/ruin/lavaland/unpowered/deepspaceone/circuits)
+/obj/structure/chair/sofa/bench/left,
+/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
+/area/ruin/lavaland/unpowered/deepspaceone/engineering)
 "rgv" = (
 /obj/machinery/light{
 	dir = 8
@@ -30329,6 +30346,11 @@
 	},
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/lavaland/surface/outdoors)
+"rmS" = (
+/obj/machinery/chem_master,
+/obj/machinery/light/floor,
+/turf/open/floor/catwalk_floor/iron_dark,
+/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "rmX" = (
 /obj/effect/turf_decal/big_sign/syndicate/bottom/middle,
 /turf/open/floor/plasteel,
@@ -30366,12 +30388,6 @@
 	initial_gas_mix = "LAVALAND_ATMOS"
 	},
 /area/ruin/lavaland/unpowered/ash_walkers/female)
-"rop" = (
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
-	dir = 1
-	},
-/turf/open/floor/plasteel/dark,
-/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "roF" = (
 /obj/machinery/modular_computer/console/preset/curator{
 	dir = 1
@@ -30424,6 +30440,13 @@
 /obj/machinery/firealarm/directional/north,
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
+"rqT" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "rra" = (
 /obj/structure/stone_tile/slab,
 /obj/structure/table/reinforced/brass,
@@ -30978,25 +31001,20 @@
 	},
 /turf/open/floor/plasteel/white/textured/large,
 /area/ruin/lavaland/unpowered/deepspaceone/medbay)
-"rHL" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
-	dir = 5
-	},
-/turf/open/floor/plasteel/dark,
-/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "rHM" = (
-/obj/structure/cable{
-	icon_state = "4-8"
+/obj/structure/cable/yellow,
+/obj/structure/cable/yellow{
+	icon_state = "1-2"
 	},
-/obj/structure/disposalpipe/segment{
+/obj/machinery/power/rtg/advanced,
+/obj/machinery/camera/xray/directional/west{
+	c_tag = "DS-1 RTG";
+	network = list("ds1");
+	pixel_x = null;
 	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/brown/visible{
-	dir = 8
-	},
-/obj/structure/marker_beacon/bronze,
-/turf/open/floor/plasteel/elevatorshaft,
-/area/ruin/lavaland/unpowered)
+/turf/open/floor/catwalk_floor,
+/area/ruin/lavaland/unpowered/deepspaceone/engineering)
 "rHO" = (
 /obj/machinery/door/airlock/hatch/syndicate{
 	req_access_txt = "150"
@@ -31232,18 +31250,17 @@
 	},
 /area/mine/xenoarch_area_b)
 "rOV" = (
-/obj/machinery/door/poddoor/preopen{
-	id = "dsxenobio4";
-	name = "containment blast door"
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
 	},
-/obj/machinery/door/window/northleft{
-	dir = 2;
-	name = "Containment Pen";
-	req_access_txt = "150"
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/turf/open/floor/engine,
-/area/ruin/lavaland/unpowered/deepspaceone/circuits)
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 4
+	},
+/turf/open/floor/plasteel/elevatorshaft,
+/area/ruin/lavaland/unpowered)
 "rPf" = (
 /obj/structure/table/reinforced/titaniumglass,
 /obj/item/storage/backpack/duffelbag/syndie/surgery,
@@ -31545,14 +31562,12 @@
 /turf/closed/wall/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/reactor)
 "rXP" = (
-/obj/structure/chair/office/dark{
+/obj/effect/turf_decal/trimline/purple/warning{
 	dir = 8
 	},
-/obj/structure/sign/xenobio_guide{
-	pixel_y = -32
-	},
+/obj/structure/window/plasma/reinforced/spawner/east,
 /turf/open/floor/plasteel/dark,
-/area/ruin/lavaland/unpowered/deepspaceone/circuits)
+/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "rYm" = (
 /turf/open/floor/plasteel,
 /area/mine/laborcamp/security)
@@ -32431,6 +32446,12 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/open/floor/plasteel,
 /area/ruin/lavaland/unpowered/deepspaceone/dormitories)
+"sAL" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 8
+	},
+/turf/open/floor/plasteel,
+/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "sAO" = (
 /obj/structure/lattice,
 /obj/item/stack/ore/glass/basalt,
@@ -33314,9 +33335,14 @@
 /turf/open/floor/plasteel,
 /area/mine/storage)
 "taD" = (
-/obj/machinery/teleport/hub/syndicate,
-/turf/open/floor/catwalk_floor/iron_dark,
-/area/ruin/lavaland/unpowered/deepspaceone/testlab)
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer2{
+	dir = 8
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
+	dir = 5
+	},
+/turf/open/floor/wood/wood_parquet,
+/area/mine/xenoarch_area_b)
 "taE" = (
 /obj/structure/table,
 /obj/item/weldingtool/hugetank{
@@ -33700,14 +33726,6 @@
 	dir = 8
 	},
 /area/ruin/lavaland/unpowered/deepspaceone/engineering)
-"tmf" = (
-/obj/effect/turf_decal/stripes/yellow/line,
-/obj/effect/turf_decal/trimline/purple/filled/warning,
-/obj/machinery/atmospherics/pipe/simple/general/hidden,
-/turf/open/floor/plasteel/smooth/edge{
-	dir = 1
-	},
-/area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "tmu" = (
 /turf/closed/mineral/random/volcanic,
 /area/lavaland/surface/outdoors/unexplored)
@@ -34341,10 +34359,10 @@
 /obj/structure/disposalpipe/segment{
 	dir = 5
 	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/machinery/atmospherics/pipe/simple/brown/visible{
 	dir = 8
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /turf/open/floor/plasteel/dark/side{
 	dir = 10
 	},
@@ -34529,11 +34547,6 @@
 /obj/machinery/atmospherics/components/unary/vent_pump/on,
 /turf/open/floor/plasteel,
 /area/mine/living_quarters)
-"tLn" = (
-/obj/effect/turf_decal/bot/white,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden,
-/turf/open/floor/plasteel/dark,
-/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "tLw" = (
 /obj/machinery/porta_turret/syndicate{
 	dir = 6;
@@ -34614,16 +34627,9 @@
 	},
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "tNE" = (
-/obj/effect/turf_decal/trimline/dark/line,
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 1
-	},
-/obj/effect/turf_decal/siding/purple{
-	dir = 1
-	},
-/turf/open/floor/plasteel/dark/side{
-	dir = 1
-	},
+/obj/effect/turf_decal/bot/white,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "tPn" = (
 /obj/structure/stone_tile/block{
@@ -34799,14 +34805,11 @@
 /turf/open/floor/catwalk_floor/iron_dark,
 /area/mine/xenoarch)
 "tVu" = (
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer2{
-	dir = 8
+/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
+	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden{
-	dir = 5
-	},
-/turf/open/floor/wood/wood_parquet,
-/area/mine/xenoarch_area_b)
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "tVJ" = (
 /obj/structure/stone_tile/surrounding_tile,
 /obj/structure/stone_tile/surrounding_tile{
@@ -35658,16 +35661,6 @@
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /turf/open/floor/plasteel,
 /area/mine/storage)
-"uqV" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
-	dir = 8
-	},
-/obj/machinery/door/airlock/multi_tile/metal{
-	dir = 4;
-	req_access_txt = "150"
-	},
-/turf/open/floor/plasteel/dark,
-/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "urf" = (
 /obj/machinery/door/airlock{
 	id_tag = "miningdorm2";
@@ -36108,10 +36101,6 @@
 /obj/structure/spider/stickyweb,
 /turf/open/floor/carpet/royalblue,
 /area/mine/storage)
-"uEl" = (
-/obj/structure/chair/sofa/bench/left,
-/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
-/area/ruin/lavaland/unpowered/deepspaceone/engineering)
 "uEN" = (
 /obj/structure/stone_tile/surrounding_tile/burnt,
 /obj/structure/stone_tile/surrounding_tile{
@@ -36661,10 +36650,9 @@
 	},
 /area/mine/xenoarch_area_c)
 "uXq" = (
-/obj/effect/turf_decal/trimline/purple/warning{
-	dir = 4
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 5
 	},
-/obj/structure/extinguisher_cabinet/directional/south,
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "uXr" = (
@@ -36753,10 +36741,12 @@
 /turf/open/floor/plasteel/smooth/half,
 /area/mine/xenoarch)
 "uYJ" = (
-/obj/effect/turf_decal/bot/white,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
-	dir = 10
+/obj/machinery/door/airlock/research{
+	name = "Xenobiology Lab";
+	req_access_txt = "150"
 	},
+/obj/structure/fans/tiny,
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "uYN" = (
@@ -37841,26 +37831,6 @@
 	},
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/lavaland/surface/outdoors)
-"vES" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
-	dir = 8
-	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
-	dir = 8
-	},
-/obj/structure/disposalpipe/segment{
-	desc = "An underfloor disposal pipe. This one has been applied with an acid-proof coating.";
-	dir = 4;
-	name = "Acid-Proof disposal pipe"
-	},
-/obj/structure/cable/yellow{
-	icon_state = "4-8"
-	},
-/obj/structure/urbanismdisplay/urbanismchalk{
-	pixel_y = 32
-	},
-/turf/open/floor/plasteel,
-/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "vFM" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on{
 	dir = 1
@@ -38046,6 +38016,12 @@
 	dir = 1
 	},
 /area/ruin/lavaland/unpowered/deepspaceone/main)
+"vMD" = (
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
+	dir = 1
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "vNO" = (
 /obj/structure/stone_tile/block/burnt,
 /obj/structure/stone_tile/block/cracked,
@@ -38127,12 +38103,6 @@
 	dir = 4
 	},
 /area/ruin/lavaland/unpowered/deepspaceone/main)
-"vRD" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
-	dir = 8
-	},
-/turf/closed/wall/r_wall/syndicate/nodiagonal,
-/area/ruin/lavaland/unpowered)
 "vSI" = (
 /obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
@@ -38200,14 +38170,13 @@
 	},
 /area/ruin/lavaland/unpowered/deepspaceone/main)
 "vUQ" = (
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/obj/structure/cable/yellow{
-	icon_state = "1-2"
+/obj/machinery/door/poddoor/preopen{
+	id = "dsxenobio7";
+	name = "containment blast door"
 	},
-/obj/effect/turf_decal/stripes/yellow/line{
-	dir = 8
-	},
-/turf/open/floor/plasteel/dark,
+/obj/structure/disposalpipe/segment,
+/obj/effect/spawner/structure/window/plastitanium,
+/turf/open/floor/plating,
 /area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "vVc" = (
 /obj/machinery/atmospherics/components/unary/vent_pump/siphon/on{
@@ -38254,6 +38223,16 @@
 	},
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/unpowered/ash_walkers)
+"vYE" = (
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 8
+	},
+/obj/machinery/door/airlock/multi_tile/metal{
+	dir = 4;
+	req_access_txt = "150"
+	},
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "vZv" = (
 /obj/structure/disposalpipe/segment{
 	dir = 6
@@ -38675,6 +38654,16 @@
 /obj/structure/destructible/clockwork/ocular_warden,
 /turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/lavaland/surface/outdoors)
+"wlS" = (
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 1
+	},
+/obj/machinery/light{
+	dir = 1;
+	pixel_x = 16
+	},
+/turf/open/floor/engine,
+/area/ruin/lavaland/unpowered/deepspaceone/circuits)
 "wlU" = (
 /obj/machinery/atmospherics/pipe/simple/supply/visible{
 	dir = 5
@@ -39756,15 +39745,24 @@
 /turf/open/floor/plasteel/white/smooth/large,
 /area/ruin/lavaland/unpowered/deepspaceone/chemistry)
 "wSD" = (
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4,
-/obj/machinery/button/door{
-	id = "ds1miner";
-	layer = 3.3;
-	name = "Containment Blast Doors";
-	pixel_y = 28;
-	req_access_txt = "150"
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 8
 	},
-/turf/open/floor/plasteel/dark,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+	dir = 8
+	},
+/obj/structure/disposalpipe/segment{
+	desc = "An underfloor disposal pipe. This one has been applied with an acid-proof coating.";
+	dir = 4;
+	name = "Acid-Proof disposal pipe"
+	},
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/structure/urbanismdisplay/urbanismchalk{
+	pixel_y = 32
+	},
+/turf/open/floor/plasteel,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "wTi" = (
 /obj/effect/turf_decal/siding/dark/corner{
@@ -40156,14 +40154,12 @@
 /turf/open/floor/plasteel/smooth,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "xbH" = (
-/obj/effect/turf_decal/trimline/purple/warning{
+/obj/effect/turf_decal/trimline/purple/corner{
 	dir = 1
 	},
-/obj/machinery/door/window/northleft{
-	dir = 2;
-	name = "Containment Pen";
-	req_access_txt = "150"
-	},
+/obj/machinery/light/floor,
+/obj/structure/window/plasma/reinforced/spawner/east,
+/obj/structure/window/plasma/reinforced/spawner,
 /turf/open/floor/plasteel/dark,
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "xbM" = (
@@ -40977,15 +40973,11 @@
 /turf/open/floor/plasteel,
 /area/mine/eva)
 "xCC" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/machinery/atmospherics/components/unary/passive_vent/layer4{
 	dir = 8
 	},
-/obj/machinery/airalarm/directional/north{
-	req_access_txt = "150";
-	req_access = list(150)
-	},
-/turf/open/floor/plasteel/dark,
-/area/ruin/lavaland/unpowered/deepspaceone/testlab)
+/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
+/area/ruin/lavaland/unpowered)
 "xCF" = (
 /obj/machinery/firealarm{
 	pixel_y = 24
@@ -41269,14 +41261,19 @@
 /turf/open/indestructible/hoteltile,
 /area/ruin/lavaland/unpowered/deepspaceone/main_shower)
 "xJo" = (
-/obj/machinery/camera/xray/directional/west{
-	c_tag = "DS-1 Reserch";
-	network = list("ds1");
-	pixel_x = null;
-	dir = 5
+/obj/effect/turf_decal/trimline/dark/line{
+	dir = 4
 	},
-/obj/machinery/quantumpad,
-/turf/open/floor/catwalk_floor/iron_dark,
+/obj/effect/turf_decal/stripes/yellow/line{
+	dir = 8
+	},
+/obj/effect/turf_decal/siding/purple{
+	dir = 8
+	},
+/obj/structure/window/plasma/reinforced/spawner/west,
+/turf/open/floor/plasteel/dark/side{
+	dir = 8
+	},
 /area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "xJt" = (
 /obj/effect/turf_decal/stripes/yellow/line,
@@ -41478,6 +41475,15 @@
 /obj/machinery/door/firedoor/heavy,
 /turf/open/floor/engine,
 /area/ruin/lavaland/unpowered/deepspaceone/cargo)
+"xOK" = (
+/obj/machinery/door/airlock/research{
+	name = "Xenobiology Lab";
+	req_access_txt = "150"
+	},
+/obj/structure/fans/tiny,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
+/turf/open/floor/plasteel/dark,
+/area/ruin/lavaland/unpowered/deepspaceone/testlab)
 "xPi" = (
 /obj/effect/turf_decal/siding/dark,
 /obj/effect/turf_decal/trimline/dark_red/filled/warning,
@@ -51986,7 +51992,7 @@ kHe
 tFV
 iST
 pxb
-kec
+vUQ
 dzE
 wRF
 wBH
@@ -52002,7 +52008,7 @@ wjW
 wjW
 wjW
 wjW
-mgI
+fBQ
 hDB
 wjW
 eia
@@ -52243,13 +52249,13 @@ kHe
 wqp
 kcq
 xJt
-oYK
+ado
 pzv
 eNP
 uvh
 aCg
 kke
-rOV
+nDo
 xPw
 fCd
 sll
@@ -52259,8 +52265,8 @@ jaA
 hYL
 gBN
 wjW
-wSD
-rHL
+bwU
+uXq
 wjW
 wjW
 wjW
@@ -52500,7 +52506,7 @@ kHe
 eUY
 opb
 iQS
-nJq
+dYf
 cJe
 wRF
 eEq
@@ -52512,12 +52518,12 @@ eto
 iQS
 kHe
 fbO
-hLO
-pUJ
-gEa
-ijL
-iTg
-dYf
+tVu
+puc
+bWx
+uYJ
+rqT
+nSN
 wjW
 hwp
 pfq
@@ -52759,9 +52765,9 @@ kHe
 kHe
 kHe
 kHe
-dYZ
+cVV
 vdY
-rgi
+gJy
 kHe
 kHe
 kHe
@@ -52770,10 +52776,10 @@ kHe
 kHe
 qZP
 feN
-rop
-tLn
-nDy
-bwU
+vMD
+tNE
+xOK
+pEr
 feN
 wjW
 vEd
@@ -53027,10 +53033,10 @@ aWE
 kHe
 wiK
 kLb
-uYJ
+nJq
 tuR
 wjW
-xCC
+cpT
 feN
 wjW
 tZY
@@ -53288,7 +53294,7 @@ wnx
 wjW
 wjW
 amW
-uqV
+vYE
 wjW
 wjW
 hHH
@@ -53539,16 +53545,16 @@ qhj
 eto
 iQS
 kHe
-taD
+aAh
 sxB
-fLf
-xJo
+qnp
+oYK
 gHw
 hlV
 sRP
-kHZ
-iLY
-tNE
+rmS
+pmc
+oDX
 eYf
 gBz
 aOl
@@ -53800,12 +53806,12 @@ hvk
 hvk
 hvk
 hvk
-xbH
+kec
 hlV
 sRP
 gdq
 cWj
-tNE
+oDX
 eYf
 gBz
 lZR
@@ -54053,16 +54059,16 @@ tFV
 aPP
 aWE
 kHe
-cVV
-cVV
-cVV
-cVV
-mQl
+rXP
+rXP
+rXP
+rXP
+xbH
 hlV
 sRP
 efu
 tTw
-tNE
+oDX
 eYf
 gBz
 fnH
@@ -54316,9 +54322,9 @@ liQ
 liQ
 oBR
 vqE
-ljH
-jCj
-jCj
+gEa
+xJo
+xJo
 cza
 eYf
 fJw
@@ -54573,7 +54579,7 @@ qPG
 qPG
 qPG
 jjV
-eBG
+sAL
 qPG
 qPG
 qPG
@@ -55081,7 +55087,7 @@ tFV
 aPP
 aWE
 kHe
-vES
+wSD
 nVJ
 gvZ
 wBj
@@ -55093,7 +55099,7 @@ rfD
 wBj
 rsF
 sKF
-uXq
+pUJ
 wjW
 wjW
 wvG
@@ -55322,11 +55328,11 @@ siL
 siL
 siL
 siL
-ljc
+ibE
 kHe
-gyG
+iLY
 rIu
-jZu
+eZw
 xJt
 vxV
 eNP
@@ -55838,7 +55844,7 @@ siL
 siL
 xRp
 kHe
-bbU
+wlS
 rIu
 rIu
 puW
@@ -56100,10 +56106,10 @@ rIu
 tly
 xIp
 vHA
-bWx
-cVH
-tmf
-fBQ
+ljc
+jHY
+gyG
+ijL
 yec
 kHe
 syI
@@ -56360,8 +56366,8 @@ bmL
 njn
 gAQ
 jJJ
-hSJ
-vUQ
+bbU
+jXV
 jez
 dlA
 erH
@@ -56609,12 +56615,12 @@ mqr
 xjy
 wGC
 kHe
-gyG
+iLY
 rIu
 rIu
 puW
 efQ
-mfS
+kHZ
 kix
 atN
 cdx
@@ -56871,7 +56877,7 @@ opb
 opb
 iQS
 hxv
-jzt
+pPv
 kIE
 cAH
 sQe
@@ -57128,7 +57134,7 @@ kHe
 kHe
 kHe
 kHe
-eZQ
+dYZ
 orh
 orh
 xbc
@@ -57384,7 +57390,7 @@ gHW
 tBn
 oIL
 woT
-gJy
+cRF
 dNv
 dNv
 ykt
@@ -57644,7 +57650,7 @@ dNv
 dNv
 pmr
 dNv
-rXP
+fqO
 kHe
 kHe
 eRu
@@ -58413,7 +58419,7 @@ cpd
 bnw
 uHw
 feF
-ehz
+eWK
 feF
 aqI
 bnw
@@ -59428,7 +59434,7 @@ gkD
 miz
 miz
 miz
-jXV
+qWd
 tqR
 miz
 wDg
@@ -62816,7 +62822,7 @@ cXI
 kvD
 vft
 neo
-jEw
+ljH
 ogb
 izm
 dPN
@@ -63849,10 +63855,10 @@ qPn
 oxx
 bFW
 wHU
-eWK
+rHM
 mQf
 qOp
-nSN
+mgI
 wQZ
 sDX
 fWx
@@ -64052,7 +64058,7 @@ tfw
 tfw
 tfw
 gHO
-mDd
+csX
 iiQ
 iiQ
 iiQ
@@ -64104,8 +64110,8 @@ tfw
 nel
 qPn
 oxx
-vRD
-jVR
+eZQ
+abk
 mQf
 uUH
 qOp
@@ -64359,14 +64365,14 @@ dEi
 tfw
 tfw
 nel
-rHM
+lyJ
 oxx
-vRD
+eZQ
 npY
 nQM
 xbd
 qOp
-uEl
+rgi
 wQZ
 sDX
 fvG
@@ -64618,7 +64624,7 @@ tfw
 nel
 qPn
 oxx
-vRD
+eZQ
 qOp
 qOp
 cTH
@@ -64840,7 +64846,7 @@ xqm
 dIK
 oSV
 bbf
-qWd
+cXY
 qQk
 qQk
 qQk
@@ -64875,7 +64881,7 @@ tfw
 nel
 qPn
 rtj
-puc
+xCC
 eia
 rCG
 iEJ
@@ -66665,7 +66671,7 @@ opQ
 mkc
 tKN
 cMu
-fvq
+rOV
 oxx
 tfw
 tfw
@@ -66922,7 +66928,7 @@ qGa
 fyy
 tKN
 cMu
-fvq
+rOV
 oxx
 tfw
 eia
@@ -67698,7 +67704,7 @@ dPC
 awt
 xBW
 gzx
-lyJ
+hLO
 rIW
 rMM
 qHp
@@ -69512,7 +69518,7 @@ clY
 clY
 clY
 jCk
-pNk
+lGA
 teB
 rqF
 cfC
@@ -86358,7 +86364,7 @@ qnn
 qnn
 qnn
 qbF
-tVu
+taD
 rvT
 sYw
 mgB
