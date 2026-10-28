@@ -43,6 +43,9 @@
 /datum/atom_hud/data/human/medical/advanced/should_show_to(mob/M, atom/A)
 	if(HAS_TRAIT(M, TRAIT_BLOCK_MEDHUD))
 		return FALSE
+	// На IceBox фауна луны в одной группе z со станцией: ~600 значков у каждого госта, SendMaps перебирал их каждый тик.
+	if(isobserver(M) && istype(A, /mob/living/simple_animal/hostile/asteroid))
+		return FALSE
 	return TRUE
 
 /datum/atom_hud/data/human/security/basic/should_show_to(mob/M, atom/A)
