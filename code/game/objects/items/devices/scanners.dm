@@ -11,9 +11,6 @@ GENETICS SCANNER
 
 */
 
-// Временное ограничение переключения формата отчёта; кнопка «Текстом» в окне остаётся доступна.
-#define HEALTH_ANALYZER_ALLOW_CHAT_MODE FALSE
-
 /obj/item/t_scanner
 	name = "\improper T-ray scanner"
 	desc = "A terahertz-ray emitter and scanner used to detect underfloor objects such as cables and pipes."
@@ -112,8 +109,8 @@ GENETICS SCANNER
 // BLUEMOON ADD START - изменение сканеров здоровья
 /obj/item/healthanalyzer/examine(mob/user)
 	. = ..()
-	. += span_notice("Результаты обследования [HEALTH_ANALYZER_ALLOW_CHAT_MODE && user.client?.prefs?.health_analyzer_chat ? "выдаются текстовым отчётом" : "отображаются на медицинском дисплее"].")
-	if(HEALTH_ANALYZER_ALLOW_CHAT_MODE)
+	. += span_notice("Результаты обследования [GLOB.health_analyzer_allow_chat_mode && user.client?.prefs?.health_analyzer_chat ? "выдаются текстовым отчётом" : "отображаются на медицинском дисплее"].")
+	if(GLOB.health_analyzer_allow_chat_mode)
 		. += span_notice("<b>Alt-Click</b> меняет способ отображения на всех ваших анализаторах.")
 	if(last_msg)
 		. += span_notice("Сохранён отчёт от [last_scan_time]. Используйте анализатор в руке, чтобы открыть его.")
@@ -122,7 +119,7 @@ GENETICS SCANNER
 
 
 /obj/item/healthanalyzer/AltClick(mob/user)
-	if(!HEALTH_ANALYZER_ALLOW_CHAT_MODE)
+	if(!GLOB.health_analyzer_allow_chat_mode)
 		return
 	. = ..()
 	if(!isliving(user) || !user.canUseTopic(src, BE_CLOSE) || !user.client?.prefs)
@@ -133,7 +130,7 @@ GENETICS SCANNER
 // BLUEMOON ADD END
 
 /obj/item/healthanalyzer/proc/show_results(mob/user)
-	if(HEALTH_ANALYZER_ALLOW_CHAT_MODE && user.client?.prefs?.health_analyzer_chat)
+	if(GLOB.health_analyzer_allow_chat_mode && user.client?.prefs?.health_analyzer_chat)
 		var/report = get_report(user)
 		if(advanced)
 			report += "<hr><a href='?src=[REF(src)];print_scan=1;scan=[scan_number]'>Распечатать</a>"
@@ -243,7 +240,7 @@ GENETICS SCANNER
 	. = ..()
 	if(!isliving(user))
 		return
-	if(HEALTH_ANALYZER_ALLOW_CHAT_MODE)
+	if(GLOB.health_analyzer_allow_chat_mode)
 		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Сменить формат отчёта")
 	if(user.is_holding(src))
 		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Открыть последний отчёт")
@@ -266,7 +263,7 @@ GENETICS SCANNER
 /proc/show_medical_scan(mob/user, list/data, mob/living/patient, datum/live_source = null, scan_kind = "Medical", advanced = FALSE, include_chemistry = FALSE)
 	if(!length(data))
 		return
-	if(!user.client || (HEALTH_ANALYZER_ALLOW_CHAT_MODE && user.client.prefs.health_analyzer_chat))
+	if(!user.client || (GLOB.health_analyzer_allow_chat_mode && user.client.prefs.health_analyzer_chat))
 		var/report = data["report"]
 		if(live_source)
 			report = replacetext(report, "Снимок от", "Показатели на")
@@ -1544,5 +1541,3 @@ GENETICS SCANNER
 		return  "[HM.name] ([HM.alias])"
 	else
 		return HM.alias
-
-#undef HEALTH_ANALYZER_ALLOW_CHAT_MODE
