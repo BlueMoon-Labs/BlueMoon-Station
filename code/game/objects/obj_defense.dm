@@ -127,7 +127,8 @@
 		return
 	user.do_attack_animation(src)
 	. = take_damage(damage_amount, damage_type, damage_flag, sound_effect, get_dir(src, user), armor_penetration)
-	user.DelayNextAction(CLICK_CD_MELEE)
+	// У NPC нет завершения клика через CommonClickOn: сразу применяем задержку.
+	user.DelayNextAction(CLICK_CD_MELEE, flush = !user.client)
 
 /obj/attack_alien(mob/living/carbon/alien/humanoid/user)
 	if(attack_generic(user, 60, BRUTE, MELEE, 0))
