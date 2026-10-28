@@ -1017,25 +1017,25 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 		organ_mods -= slot
 
 /datum/preferences/proc/migrate_legacy_body_mods(list/quirks = all_quirks, list/selected_organs = organ_mods, list/selected_implants = implant_mods)
-	// Игрок может подключиться до инициализации SSquirks; миграции нужны только исходные цены.
-	var/static/list/quirk_values
-	if(!quirk_values)
-		quirk_values = list()
-		for(var/datum/quirk/quirk_type as anything in subtypesof(/datum/quirk))
-			quirk_values[initial(quirk_type.name)] = initial(quirk_type.value)
-	var/list/legacy_quirks = list(
+	var/static/list/legacy_quirks = list(
 		"Глаза с Повышенной Светимостью" = "eyes",
 		"Трубка для Горлового Дыхания" = "tube",
 		"Имплант Для Дорсуалифоба" = "hide_backpack",
 		"Тядзин" = "genital_fluid",
 	)
-	var/list/migrated = list()
+	var/list/migrated
 	for(var/quirk_name in legacy_quirks)
 		if(quirk_name in quirks)
 			quirks -= quirk_name
-			migrated += legacy_quirks[quirk_name]
+			LAZYADD(migrated, legacy_quirks[quirk_name])
 	if(!length(migrated))
 		return
+	// Игрок может подключиться до SSquirks; цены готовим только при наличии устаревших квирков.
+	var/static/list/quirk_values
+	if(!quirk_values)
+		quirk_values = list()
+		for(var/datum/quirk/quirk_type as anything in subtypesof(/datum/quirk))
+			quirk_values[initial(quirk_type.name)] = initial(quirk_type.value)
 	var/budget = 0
 	for(var/quirk_name in quirks)
 		budget -= quirk_values[quirk_name]

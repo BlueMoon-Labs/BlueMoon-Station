@@ -287,6 +287,8 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 	SEND_SIGNAL(src, COMSIG_MOB_HUD_CREATED)
 
 /mob/proc/set_hud_used(datum/hud/new_hud)
+	if(hud_used != new_hud)
+		hud_used?.hide_landings()
 	hud_used = new_hud
 	new_hud.build_action_groups()
 
@@ -304,6 +306,8 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 	if(!screenmob.client)
 		return FALSE
 
+	if(screenmob == mymob)
+		hide_landings()
 	screenmob.client.clear_screen()
 	screenmob.client.update_clickcatcher()
 
@@ -465,6 +469,7 @@ GLOBAL_LIST_INIT(available_ui_styles, list(
 
 /datum/hud/proc/on_client_logout(datum/source, client/old_client)
 	SIGNAL_HANDLER
+	hide_landings()
 	if(old_client)
 		UnregisterSignal(old_client, COMSIG_CLIENT_SET_EYE)
 	track_eye(mymob)

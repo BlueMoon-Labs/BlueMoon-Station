@@ -128,8 +128,8 @@
 			snapshot["alt_titles_preferences"] = SANITIZE_LIST(snapshot["alt_titles_preferences"])
 			snapshot["loadout"] = deepCopyList(preset["loadout"])
 			// Старые пресеты хранят эти модификации в квирках; переносим каждый набор независимо.
-			snapshot["organ_mods"] = deepCopyList(SANITIZE_LIST(preset["organ_mods"]))
-			snapshot["implant_mods"] = deepCopyList(SANITIZE_LIST(preset["implant_mods"]))
+			snapshot["organ_mods"] = SANITIZE_LIST(snapshot["organ_mods"])
+			snapshot["implant_mods"] = SANITIZE_LIST(snapshot["implant_mods"])
 			snapshot["distant_start_enabled"] = sanitize_integer(snapshot["distant_start_enabled"], FALSE, TRUE, TRUE)
 			migrate_legacy_body_mods(snapshot["all_quirks"], snapshot["organ_mods"], snapshot["implant_mods"])
 			sanitized[preset_name] = snapshot

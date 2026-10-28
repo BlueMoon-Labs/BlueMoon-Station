@@ -864,14 +864,15 @@ ALIEN_LIGHT_ON(/obj/item/cautery/alien)
 /obj/structure/table/optable/abductor/Initialize(mapload)
 	. = ..()
 	// На месте построенного или загруженного стола уже может находиться пациент.
-	START_PROCESSING(SSobj, src)
+	if(locate(/mob/living/carbon) in loc)
+		START_PROCESSING(SSobj, src)
 
 /obj/structure/table/optable/abductor/Crossed(atom/movable/AM)
 	. = ..()
 	if(iscarbon(AM) && AM.loc == loc)
 		START_PROCESSING(SSobj, src)
 		// Первая доза вводится сразу, без ожидания очередного цикла SSobj.
-		process()
+		inject_patient(AM)
 		to_chat(AM, span_danger("Вы чувствуете серию лёгких уколов — стол вводит обезболивающее."))
 
 /obj/structure/table/optable/abductor/process()
@@ -880,12 +881,17 @@ ALIEN_LIGHT_ON(/obj/item/cautery/alien)
 		..()
 	. = PROCESS_KILL
 	for(var/mob/living/carbon/C in get_turf(src))
-		if(!C.reagents)
-			continue
-		. = TRUE
-		for(var/chemical in injected_reagents)
-			if(C.reagents.get_reagent_amount(chemical) < 1)
-				C.reagents.add_reagent(chemical, 1)
+		if(inject_patient(C))
+			. = TRUE
+
+// При наступании обрабатываем только вошедшего, не обходя остальных пациентов и предметы на клетке.
+/obj/structure/table/optable/abductor/proc/inject_patient(mob/living/carbon/recipient)
+	if(QDELETED(recipient) || !recipient.reagents)
+		return FALSE
+	for(var/chemical in injected_reagents)
+		if(recipient.reagents.get_reagent_amount(chemical) < 1)
+			recipient.reagents.add_reagent(chemical, 1)
+	return TRUE
 
 /obj/structure/table/optable/abductor/stop_process()
 	. = ..()

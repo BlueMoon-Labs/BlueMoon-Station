@@ -1615,10 +1615,11 @@ GLOBAL_LIST_EMPTY(vending_products)
 	loaded_items--
 	use_power(active_power_usage)
 	vending_machine_input[choice] = max(vending_machine_input[choice] - 1, 0)
-	dispensed_item.forceMove(drop_location())
 	if(user.CanReach(src) && user.put_in_hands(dispensed_item))
 		to_chat(user, span_notice("Вы взяли [dispensed_item.name] из слота."))
 	else
+		if(dispensed_item.loc == src)
+			dispensed_item.forceMove(drop_location())
 		to_chat(user, span_warning("[capitalize(dispensed_item.name)] падает на землю!"))
 	return TRUE
 

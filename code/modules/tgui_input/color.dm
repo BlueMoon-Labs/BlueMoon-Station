@@ -120,7 +120,7 @@
 	if(user.client.prefs.tgui_input_mode)
 		color_input.ui_interact(user)
 	else
-		color_input.prompt_native(user)
+		complete_native_color_input(WEAKREF(color_input), user, message, title, color_input.default)
 	if(!QDELETED(color_input))
 		return color_input
 
@@ -130,10 +130,15 @@
 /datum/tgui_input_color/async/New(mob/user, message, title, default, datum/callback/callback, timeout)
 	src.callback = callback
 	..(user, message, title, default, timeout)
+	RegisterSignal(user.client, COMSIG_PARENT_QDELETING, PROC_REF(on_client_deleted))
 
 /datum/tgui_input_color/async/Destroy(force, ...)
 	QDEL_NULL(callback)
 	return ..()
+
+/datum/tgui_input_color/async/proc/on_client_deleted(datum/source)
+	SIGNAL_HANDLER
+	qdel(src)
 
 /datum/tgui_input_color/async/ui_close(mob/user)
 	. = ..()
@@ -146,14 +151,15 @@
 /datum/tgui_input_color/async/wait()
 	return
 
-// Нативный диалог не задерживает вызывающий код; тайм-аут запрещает поздний callback.
-/datum/tgui_input_color/async/proc/prompt_native(mob/user)
+// Ожидающий input не держит src диалога: после отмены или тайм-аута он освобождается через слабую ссылку.
+/proc/complete_native_color_input(datum/weakref/input_ref, mob/user, message, title, default)
 	set waitfor = FALSE
 	var/mob/prompt_mob = begin_native_prompt(user)
 	var/native_color = input(user, message, title, default) as null|color
 	end_native_prompt(prompt_mob)
-	if(QDELETED(src))
+	var/datum/tgui_input_color/async/color_input = input_ref.resolve()
+	if(!color_input)
 		return
 	if(!isnull(native_color))
-		set_entry(uppertext(sanitize_hexcolor(native_color, 6, TRUE, COLOR_WHITE)))
-	qdel(src)
+		color_input.set_entry(uppertext(sanitize_hexcolor(native_color, 6, TRUE, COLOR_WHITE)))
+	qdel(color_input)

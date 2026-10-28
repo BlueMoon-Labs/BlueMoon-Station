@@ -931,7 +931,7 @@
 		eject_patient()
 
 /obj/structure/table/optable/process()
-	if(!mask || !tank || !patient || patient.wear_mask != mask || mask.loc != patient || tank.loc != src || get_turf(mask) != get_turf(src) || patient.loc != loc)
+	if(!mask || !tank || !patient || patient.wear_mask != mask || mask.loc != patient || tank.loc != src || patient.loc != loc)
 		eject_patient()
 
 /obj/structure/table/optable/proc/stop_process()
