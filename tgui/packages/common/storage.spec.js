@@ -410,12 +410,25 @@ describe('ServerStorageBackend', () => {
     expect(window.hubStorage.removeItem).not.toHaveBeenCalled();
   });
 
-  test('clear without key and length leaves foreign values alone', async () => {
+  test('clear without key and length removes own known keys, keeps foreign ones and reports it', async () => {
     serverStore.set('statbrowser_theme', '{}');
+    serverStore.set('bluemoon-panel-settings', '{"theme":"dark"}');
     const backend = new ServerStorageBackend();
+    await backend.get('panel-settings');
+    await backend.set('chat-state', { visible: true });
 
-    await expect(backend.clear()).resolves.toBeUndefined();
+    await expect(backend.clear()).resolves.toBe(false);
     expect(serverStore.get('statbrowser_theme')).toBe('{}');
+    expect(serverStore.has('bluemoon-panel-settings')).toBe(false);
+    expect(serverStore.has('bluemoon-chat-state')).toBe(false);
+  });
+
+  test('StorageProxy.clear passes the incomplete clear on to the caller', async () => {
+    const proxy = new StorageProxy();
+    await proxy.set('chat-state', { visible: true });
+
+    await expect(proxy.clear()).resolves.toBe(false);
+    expect(serverStore.has('bluemoon-chat-state')).toBe(false);
   });
 });
 

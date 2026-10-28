@@ -122,6 +122,9 @@ class ByondStorageBackend {
   constructor(storageName, impl) {
     this.storageName = storageName;
     this.impl = impl;
+    // Без key и length хранилище не перечислить: clear() сотрёт только ключи,
+    // которые этот бэкенд видел сам.
+    this.knownKeys = new Set();
   }
 
   get store() {
@@ -129,8 +132,10 @@ class ByondStorageBackend {
   }
 
   async get(key) {
-    const value = await this.store.getItem(HUB_STORAGE_PREFIX + key);
+    const storageKey = HUB_STORAGE_PREFIX + key;
+    const value = await this.store.getItem(storageKey);
     if (typeof value === 'string') {
+      this.knownKeys.add(storageKey);
       return JSON.parse(value);
     }
   }
@@ -139,21 +144,34 @@ class ByondStorageBackend {
     const storageKey = HUB_STORAGE_PREFIX + key;
     if (value === undefined) {
       await this.store.removeItem(storageKey);
+      this.knownKeys.delete(storageKey);
       return;
     }
     await this.store.setItem(storageKey, JSON.stringify(value));
+    this.knownKeys.add(storageKey);
   }
 
   async remove(key) {
-    await this.store.removeItem(HUB_STORAGE_PREFIX + key);
+    const storageKey = HUB_STORAGE_PREFIX + key;
+    await this.store.removeItem(storageKey);
+    this.knownKeys.delete(storageKey);
   }
 
+  /**
+   * Returns false when the storage cannot list its keys and only the keys
+   * seen by this backend were removed.
+   */
   async clear() {
     // Only remove keys owned by this backend instead of wiping unrelated data.
     const store = this.store;
     if (typeof store.key !== 'function' || typeof store.length !== 'number') {
-      return;
+      for (const storageKey of [...this.knownKeys]) {
+        await store.removeItem(storageKey);
+        this.knownKeys.delete(storageKey);
+      }
+      return false;
     }
+    this.knownKeys.clear();
     for (let index = store.length - 1; index >= 0; index--) {
       const key = await store.key(index);
       if (typeof key === 'string' && key.startsWith(HUB_STORAGE_PREFIX)) {

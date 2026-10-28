@@ -1,4 +1,8 @@
-import { backendCreatePayloadQueue, sendMessage } from 'tgui/backend';
+import {
+  backendCreatePayloadQueue,
+  backendRemovePayloadQueue,
+  sendMessage,
+} from 'tgui/backend';
 
 import {
   flushSaveToServer,
@@ -67,6 +71,10 @@ describe('tgui panel serverState', () => {
     forgetSentState();
     backendCreatePayloadQueue.mockImplementation(payload => ({
       type: 'backend/createPayloadQueue',
+      payload,
+    }));
+    backendRemovePayloadQueue.mockImplementation(payload => ({
+      type: 'backend/removePayloadQueue',
       payload,
     }));
     dateNowSpy = jest.spyOn(Date, 'now').mockReturnValue(1234);
@@ -239,6 +247,52 @@ describe('tgui panel serverState', () => {
     });
     jest.advanceTimersByTime(3000);
     expect(global.Byond.topic).toHaveBeenCalledTimes(1);
+    jest.useRealTimers();
+  });
+
+  const createChunkedStore = () => {
+    const queues = {};
+    const dispatch = jest.fn(action => {
+      if (action.type === 'backend/createPayloadQueue') {
+        queues[action.payload.id] = { chunks: action.payload.chunks, acked: 0 };
+      }
+      if (action.type === 'backend/removePayloadQueue') {
+        delete queues[action.payload.id];
+      }
+    });
+    return createStore({ dispatch, queues, highlightText: 'Ж'.repeat(600) });
+  };
+
+  test('resends the same state after a stale chunked transfer is dropped', () => {
+    const store = createChunkedStore();
+    flushSaveToServer(store);
+    expect(backendCreatePayloadQueue).toHaveBeenCalledTimes(1);
+
+    dateNowSpy.mockReturnValue(1234 + 36000);
+    flushSaveToServer(store);
+    expect(backendCreatePayloadQueue).toHaveBeenCalledTimes(2);
+    const { chunks } = backendCreatePayloadQueue.mock.calls[1][0];
+    expect(JSON.parse(chunks.join('')).settings.highlightText).toBe('Ж'.repeat(600));
+  });
+
+  test('counts the stale timeout from the last acknowledged chunk', () => {
+    // Фейковые таймеры подменяют Date целиком, шпион на Date.now тут не действует.
+    dateNowSpy.mockRestore();
+    jest.useFakeTimers({ now: 1234 });
+    const store = createChunkedStore();
+    flushSaveToServer(store);
+    const { id } = backendCreatePayloadQueue.mock.calls[0][0];
+
+    jest.setSystemTime(1234 + 30000);
+    serverStateMiddleware(store)(jest.fn())({
+      type: 'acknowlegePayloadChunk',
+      payload: { id },
+    });
+
+    jest.setSystemTime(1234 + 60000);
+    flushSaveToServer(store);
+    expect(backendCreatePayloadQueue).toHaveBeenCalledTimes(1);
+    jest.clearAllTimers();
     jest.useRealTimers();
   });
 

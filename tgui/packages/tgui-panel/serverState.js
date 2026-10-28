@@ -132,6 +132,8 @@ const isTransferPending = store => {
   if (Date.now() - inFlight.startedAt > IN_FLIGHT_STALE_MS) {
     store.dispatch(backendRemovePayloadQueue({ id: inFlight.id }));
     inFlight = null;
+    // Брошенная передача не доехала: то же состояние нужно отправить заново.
+    lastSentBody = null;
     return false;
   }
   return true;
@@ -291,6 +293,10 @@ export const flushSaveToServer = (store) => {
  */
 export const serverStateMiddleware = store => next => action => {
   const { type, payload } = action;
+  // Срок считается от последнего подтверждённого чанка, а не от начала передачи.
+  if (type === 'acknowlegePayloadChunk' && inFlight?.id === payload?.id) {
+    inFlight.startedAt = Date.now();
+  }
   const rejected = (type === 'oversizePayloadResponse' && !payload?.allow)
     || type === 'payloadDropped';
   if (rejected && String(payload?.id).startsWith(PAYLOAD_ID_PREFIX)) {
