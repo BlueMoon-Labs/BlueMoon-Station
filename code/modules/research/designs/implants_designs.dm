@@ -294,6 +294,38 @@
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 
+/datum/design/cyberimp_sandevistan_corp
+	name = "Corporate Sandevistan"
+	desc = "A corporate-issued neural overclocking implant, tuned for security use. Offers a balanced burst of speed with a reasonable cooldown."
+	id = "ci-sandevistan-corp"
+	build_type = PROTOLATHE | MECHFAB
+	construction_time = 120
+	materials = list(/datum/material/iron = 6000, /datum/material/glass = 4000, /datum/material/silver = 3000, /datum/material/gold = 2000)
+	build_path = /obj/item/organ/cyberimp/brain/sandevistan/sec_level
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+
+/datum/design/cyberimp_berserker_corp
+	name = "Corporate Berserker"
+	desc = "A combat implant that floods the user's system with stimulants, greatly enhancing melee combat at the cost of temporarily disabling ranged weapon use. Mutually exclusive with the sandvistan."
+	id = "ci-berserker-corp"
+	build_type = PROTOLATHE | MECHFAB
+	construction_time = 100
+	materials = list(/datum/material/iron = 5000, /datum/material/glass = 3000, /datum/material/silver = 2000)
+	build_path = /obj/item/organ/cyberimp/brain/berserker/sec_level
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+
+/datum/design/cyberimp_ballistic_processor
+	name = "Ballistic Processor"
+	desc = "A neural-linked ballistic processor that allows bullets to ricochet off of surfaces with high chance and home towards nearby targets."
+	id = "ci-ballistic-processor"
+	build_type = PROTOLATHE | MECHFAB
+	construction_time = 100
+	materials = list(/datum/material/iron = 6000, /datum/material/glass = 4000, /datum/material/silver = 4000, /datum/material/gold = 2000)
+	build_path = /obj/item/organ/cyberimp/arm/ballistic_processor
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 
 
 /datum/design/cyberimp_mantis

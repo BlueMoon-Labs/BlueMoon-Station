@@ -98,7 +98,7 @@
 	description = "Electronic implants that improve humans."
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL, RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("adv_biotech", "adv_datatheory")
-	design_ids = list("ci-nutriment", "ci-breather", "ci-gloweyes", "ci-welding", "ci-medhud", "ci-sechud", "ci-service", "ci-power-cord","ci_claws","ci-leg-lynx-paws")
+	design_ids = list("ci-nutriment", "ci-breather", "ci-gloweyes", "ci-welding", "ci-medhud", "ci-sechud", "ci-service", "ci-power-cord","ci_claws")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 
 /datum/techweb_node/adv_cyber_implants
@@ -107,7 +107,7 @@
 	description = "Upgraded and more powerful cybernetic implants."
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL, RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("neural_programming", "cyber_implants","integrated_HUDs")
-	design_ids = list("ci-toolset", "ci-surgery", "ci-reviver", "ci-reviver-hack", "ci-nutrimentplus", "ci-robot-radshielding", "ci-leg-tendons", "ci-leg-ankles")
+	design_ids = list("ci-toolset", "ci-surgery", "ci-reviver", "ci-reviver-hack", "ci-nutrimentplus", "ci-robot-radshielding", "ci-leg-tendons", "ci-leg-ankles", "ci-monostring", "ci-gorilla-arms", "ci-handcannon", "ci-ballistic-processor", "ci-leg-lynx-paws")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 
 /datum/techweb_node/combat_cyber_implants
@@ -116,7 +116,7 @@
 	description = "Military grade combat implants to improve performance."
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL, RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("adv_cyber_implants","weaponry","NVGtech","high_efficiency")
-	design_ids = list("ci-thermals", "ci-thermals-hack", "ci-antidrop", "ci-antidrop-hack", "ci-antistun", "ci-antistun-hack", "ci-thrusters", "ci-shield", "ci-shield-hack", "ci-chemseq", "ci-chemseq-hack")
+	design_ids = list("ci-thermals", "ci-thermals-hack", "ci-antidrop", "ci-antidrop-hack", "ci-antistun", "ci-antistun-hack", "ci-thrusters", "ci-shield", "ci-shield-hack", "ci-chemseq", "ci-chemseq-hack", "ci-sandevistan-corp", "ci-berserker-corp")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 
 /////////////////////////Advanced Surgery/////////////////////////

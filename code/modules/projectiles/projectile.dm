@@ -111,6 +111,14 @@
 	///If the object being hit can pass ths damage on to something else, it should not do it for this bullet
 	var/force_hit = FALSE
 
+	// Ballistic processor
+	var/ballistic_processor = FALSE
+	var/ballistic_processor_ricochet_chance = 70
+	var/ballistic_processor_max_ricochets = 2
+	var/ballistic_processor_homing_angle = 15
+	var/ballistic_processor_homing_range = 7
+	var/ballistic_processor_ricochets_done = 0
+
 	//Hitscan
 	var/hitscan = FALSE		//Whether this is hitscan. If it is, speed is basically ignored.
 	var/list/beam_segments	//assoc list of datum/point or datum/point/vector, start = end. Used for hitscan effect generation.
@@ -402,6 +410,34 @@
 		return FALSE
 	var/turf/T = get_turf(A)
 	if(check_ricochet_flag(A) && check_ricochet(A)) //if you can ricochet, attempt to ricochet off the object
+		if(ballistic_processor && ballistic_processor_ricochets_done < ballistic_processor_max_ricochets)
+			if(prob(ballistic_processor_ricochet_chance))
+				ballistic_processor_ricochets_done++
+				ricochets++
+				if(A.handle_ricochet(src))
+					on_ricochet(A)
+					impacted = list()
+					ignore_source_check = TRUE
+					decayedRange = max(0, decayedRange - reflect_range_decrease)
+					ricochet_chance *= ricochet_decay_chance
+					damage *= ricochet_decay_damage
+					range = decayedRange
+					// auto-home to nearest target within 15 degrees approx - just retarget angle
+					var/best_dist = INFINITY
+					var/best_mob = null
+					for(var/mob/living/L in range(ballistic_processor_homing_range, src))
+						if(L.stat == DEAD || L == firer)
+							continue
+						var/dist = get_dist(src, L)
+						if(dist < best_dist)
+							best_dist = dist
+							best_mob = L
+					if(best_mob)
+						var/new_angle = get_angle(src, best_mob)
+						setAngle(new_angle)
+					if(hitscan)
+						store_hitscan_collision(trajectory.copy_to())
+					return TRUE
 		ricochets++
 		if(A.handle_ricochet(src))
 			on_ricochet(A) //if allowed, use autoaim to ricochet into someone, otherwise default to ricocheting off the object from above
