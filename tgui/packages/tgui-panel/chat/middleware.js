@@ -9,12 +9,14 @@ import DOMPurify from 'dompurify';
 
 import { flushSaveToServer, getLastSavedAt, scheduleSaveToServer } from '../serverState';
 import { loadSettings, updateSettings } from '../settings/actions';
-import { CHAT_ANIM_SPEEDS, MESSAGE_STYLES } from '../settings/constants';
+import { MESSAGE_STYLES } from '../settings/constants';
+import { RADIO_JOB_DEFAULTS } from '../settings/radioJobs';
 import { selectSettings } from '../settings/selectors';
 import { addChatPage, changeChatPage, changeScrollTracking, loadChat, rebuildChat, removeChatPage, saveChatToDisk, toggleAcceptedType, updateChatPage, updateMessageCount } from './actions';
 import { MAX_PERSISTED_MESSAGES, MESSAGE_SAVE_INTERVAL } from './constants';
 import { createMessage, serializeMessage } from './model';
 import { chatRenderer } from './renderer';
+import { getChatCustomProps } from './rootAppearance';
 import { selectChat, selectCurrentChatPage } from './selectors';
 
 // List of blacklisted tags
@@ -24,16 +26,39 @@ const FORBID_TAGS = [
   'video',
 ];
 
-const saveChatToStorage = async store => {
-  const state = selectChat(store.getState());
-  const savedAt = getLastSavedAt();
+const saveChatToStorage = async (state, savedAt) => {
   const fromIndex = Math.max(0,
     chatRenderer.messages.length - MAX_PERSISTED_MESSAGES);
   const messages = chatRenderer.messages
     .slice(fromIndex)
     .map(message => serializeMessage(message));
-  storage.set('chat-state', { ...state, savedAt });
-  storage.set('chat-messages', messages);
+  await Promise.all([
+    storage.set('chat-state', { ...state, savedAt }),
+    storage.set('chat-messages', messages),
+  ]);
+};
+
+// Сохранение раз в MESSAGE_SAVE_INTERVAL пишет до MAX_PERSISTED_MESSAGES
+// сообщений целиком; если с прошлого раза ничего не поменялось, не пишем.
+const createChatSaver = () => {
+  let last = null;
+  return async (store, force = false) => {
+    const state = selectChat(store.getState());
+    const savedAt = getLastSavedAt();
+    const version = chatRenderer.messagesVersion;
+    if (!force && last && last.state === state
+      && last.savedAt === savedAt && last.version === version) {
+      return;
+    }
+    try {
+      await saveChatToStorage(state, savedAt);
+      last = { state, savedAt, version };
+    }
+    catch (err) {
+      // Запомненное не обновляем: следующий тик повторит запись.
+      console.error('Failed to save chat history:', err);
+    }
+  };
 };
 
 // Server state tracking for smart merge with browser storage
@@ -79,6 +104,8 @@ const loadChatFromStorage = async store => {
   }
   store.dispatch(loadChat(state));
 };
+
+const RADIO_JOB_KEYS = Object.keys(RADIO_JOB_DEFAULTS);
 
 const anyChanged = (prev, next, keys) => {
   if (!prev) {
@@ -144,6 +171,18 @@ const createApplySettings = () => {
     if (anyChanged(prev, settings, ['showRadioJobs'])) {
       chatRenderer.setRadioJobsVisible(settings.showRadioJobs !== false);
     }
+    if (anyChanged(prev, settings, ['newMessagesMarker'])) {
+      chatRenderer.setNewMessagesMarker(settings.newMessagesMarker !== false);
+    }
+    if (anyChanged(prev, settings, RADIO_JOB_KEYS)) {
+      chatRenderer.setRadioJobStyle({
+        radioJobColorMode: settings.radioJobColorMode,
+        radioJobHeadMark: settings.radioJobHeadMark,
+        radioJobColorNames: settings.radioJobColorNames,
+        radioJobIcons: settings.radioJobIcons,
+        radioJobColors: settings.radioJobColors,
+      });
+    }
     if (anyChanged(prev, settings, ['styleOverrides', 'spanAnimations'])) {
       // Normalize so the renderer always sees every known style id and
       // clears stale properties for styles that lost their override.
@@ -155,32 +194,19 @@ const createApplySettings = () => {
         normalized,
         settings.spanAnimations !== false);
     }
-
-    // Animation speed
-    const speedDef = CHAT_ANIM_SPEEDS.find(
-      s => s.id === settings.chatAnimSpeed);
-    const animSpeed = speedDef?.value || '200ms';
-
-    // Text glow
-    let glowValue = null;
-    const glowColor = settings.textGlowColor
-      || settings.chatAccentColor || '#ffdd44';
-    if (settings.textGlow === 'subtle') {
-      glowValue = '0 0 4px ' + glowColor;
+    if (anyChanged(prev, settings, ['typeOverrides'])) {
+      chatRenderer.setTypeOverrides(settings.typeOverrides || {});
     }
-    else if (settings.textGlow === 'strong') {
-      glowValue = '0 0 10px ' + glowColor
-        + ', 0 0 20px ' + glowColor;
+    if (anyChanged(prev, settings, ['gameEffects', 'gameEffectsEnabled'])) {
+      chatRenderer.setGameEffects(
+        settings.gameEffects || {},
+        settings.gameEffectsEnabled !== false);
+    }
+    if (anyChanged(prev, settings, ['settleOldAnimations'])) {
+      chatRenderer.setSettleOld(settings.settleOldAnimations !== false);
     }
 
-    const nextCustomProps = {
-      '--chat-anim-speed': animSpeed,
-      '--chat-glow': glowValue,
-      '--chat-msg-spacing': settings.messageSpacing + 'px',
-      '--chat-font-weight': String(settings.fontWeight),
-      '--chat-letter-spacing': settings.letterSpacing + 'px',
-      '--chat-border-radius': settings.borderRadius + 'px',
-    };
+    const nextCustomProps = getChatCustomProps(settings);
     // Only push CSS custom properties that actually changed value.
     let changedProps = null;
     for (const [key, value] of Object.entries(nextCustomProps)) {
@@ -216,6 +242,7 @@ export const chatMiddleware = store => {
   let initialized = false;
   let loaded = false;
   const applySettings = createApplySettings();
+  const saveChat = createChatSaver();
   chatRenderer.events.on('batchProcessed', countByType => {
     // Use this flag to workaround unread messages caused by
     // loading them from storage. Side effect of that, is that
@@ -227,7 +254,7 @@ export const chatMiddleware = store => {
   chatRenderer.events.on('scrollTrackingChanged', scrollTracking => {
     store.dispatch(changeScrollTracking(scrollTracking));
   });
-  setInterval(() => saveChatToStorage(store), MESSAGE_SAVE_INTERVAL);
+  setInterval(() => saveChat(store), MESSAGE_SAVE_INTERVAL);
   return next => action => {
     const { type, payload } = action;
     if (!initialized) {
@@ -323,7 +350,7 @@ export const chatMiddleware = store => {
       return;
     }
     if (type === 'roundrestart') {
-      saveChatToStorage(store);
+      saveChat(store, true);
       flushSaveToServer(store);
       return next(action);
     }

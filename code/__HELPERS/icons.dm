@@ -1719,7 +1719,7 @@ GLOBAL_LIST_EMPTY(bicon_cache)
 /// be larger than HUMANOID_ICON_CACHE_MAX.
 #define BICON_CACHE_MAX 2048
 
-/proc/icon2base64html(thing)
+/proc/icon2base64html(thing, sourceonly = FALSE)
 	if (!thing)
 		return
 	if (isicon(thing))
@@ -1727,11 +1727,15 @@ GLOBAL_LIST_EMPTY(bicon_cache)
 		var/icon_base64 = icon2base64(thing)
 		if(!icon_base64)
 			return
+		if(sourceonly)
+			return icon_base64
 		return "<img class='icon icon-misc' src='data:image/png;base64,[icon_base64]'>"
 
-	// Either an atom or somebody fucked up and is gonna get a runtime, which I'm fine with.
+	// Для пути типа используем базовую иконку без создания экземпляра атома.
 	var/atom/A = thing
-	var/atom_icon = A.icon
+	var/from_type = ispath(thing, /atom)
+	var/atom_icon = from_type ? initial(A.icon) : A.icon
+	var/atom_icon_state = from_type ? initial(A.icon_state) : A.icon_state
 	// Рантайм-иконка стрингифицируется в "/icon" одинаково для любой динамической, поэтому
 	// ключ обходил это через REF(). Но REF() - индекс в таблице BYOND, и он переиспользуется
 	// после сборки мусора: собранная иконка отдаёт слот следующей, ключ совпадает, и панель
@@ -1739,11 +1743,11 @@ GLOBAL_LIST_EMPTY(bicon_cache)
 	// самоисправляется. Файловые иконки стрингифицируются в свой dmi-путь и стабильны -
 	// кэшируются как раньше; динамические собираются заново, их единицы.
 	var/cacheable = atom_icon && !istype(atom_icon, /icon)
-	var/key = cacheable ? "[atom_icon]:[A.icon_state]" : null
+	var/key = cacheable ? "[atom_icon]:[atom_icon_state]" : null
 	var/icon_base64 = cacheable ? GLOB.bicon_cache[key] : null
 
 	if (!icon_base64) // Doesn't exist, make it.
-		var/icon/I = icon(A.icon, A.icon_state, SOUTH, 1)
+		var/icon/I = icon(atom_icon, atom_icon_state, SOUTH, 1)
 		if (ishuman(thing)) // Shitty workaround for a BYOND issue.
 			var/icon/temp = I
 			I = icon()
@@ -1756,7 +1760,9 @@ GLOBAL_LIST_EMPTY(bicon_cache)
 			if(length(GLOB.bicon_cache) > BICON_CACHE_MAX)
 				GLOB.bicon_cache.Cut(1, (BICON_CACHE_MAX / 4) + 1) // Evict oldest 25%
 
-	return "<img class='icon icon-[A.icon_state]' src='data:image/png;base64,[icon_base64]'>"
+	if(sourceonly)
+		return icon_base64
+	return "<img class='icon icon-[atom_icon_state]' src='data:image/png;base64,[icon_base64]'>"
 
 //Costlier version of icon2html() that uses getFlatIcon() to account for overlays, underlays, etc. Use with extreme moderation, ESPECIALLY on mobs.
 /proc/costly_icon2html(thing, target, sourceonly = FALSE)

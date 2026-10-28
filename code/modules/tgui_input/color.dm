@@ -1,6 +1,7 @@
 // Открывает выбор цвета и возвращает #RRGGBB либо null при отмене, закрытии или тайм-ауте.
 // user: моб или клиент; message: пояснение; title: заголовок; default: исходный цвет.
 // timeout задаётся в децисекундах; 0 отключает ограничение времени.
+// Нативный синхронный input не поддерживает тайм-аут; режим берётся из предпочтений игрока.
 /proc/tgui_input_color(mob/user, message = "", title = "Выбор цвета", default = COLOR_WHITE, timeout = 0)
 	if(!user)
 		user = usr
@@ -10,7 +11,11 @@
 	if(!istype(user) || !user.client)
 		return null
 	default = uppertext(sanitize_hexcolor(default, 6, TRUE, COLOR_WHITE))
-	// Цвет всегда выбирается через общий TGUI-пикер, независимо от режима остальных инпутов.
+	if(!user.client.prefs.tgui_input_mode)
+		var/mob/prompt_mob = begin_native_prompt(user)
+		var/native_color = input(user, message, title, default) as null|color
+		end_native_prompt(prompt_mob)
+		return isnull(native_color) ? null : uppertext(sanitize_hexcolor(native_color, 6, TRUE, COLOR_WHITE))
 	var/datum/tgui_input_color/color_input = new(user, message, title, default, timeout)
 	color_input.ui_interact(user)
 	color_input.wait()
@@ -103,6 +108,7 @@
 
 // Асинхронный диалог: callback получает #RRGGBB только при подтверждении.
 // При отмене или тайм-ауте callback не вызывается. Функция возвращает датум диалога.
+// В нативном режиме тайм-аут отменяет callback, но не закрывает системное окно.
 // Аргументы совпадают с синхронной версией; callback идёт перед timeout.
 /proc/tgui_input_color_async(mob/user, message = "", title = "Выбор цвета", default = COLOR_WHITE, datum/callback/callback, timeout = 60 SECONDS)
 	if(!user)
@@ -113,7 +119,10 @@
 	if(!istype(user) || !user.client)
 		return null
 	var/datum/tgui_input_color/async/color_input = new(user, message, title, default, callback, timeout)
-	color_input.ui_interact(user)
+	if(user.client.prefs.tgui_input_mode)
+		color_input.ui_interact(user)
+	else
+		complete_native_color_input(WEAKREF(color_input), user, message, title, color_input.default)
 	if(!QDELETED(color_input))
 		return color_input
 
@@ -123,10 +132,15 @@
 /datum/tgui_input_color/async/New(mob/user, message, title, default, datum/callback/callback, timeout)
 	src.callback = callback
 	..(user, message, title, default, timeout)
+	RegisterSignal(user.client, COMSIG_PARENT_QDELETING, PROC_REF(on_client_deleted))
 
 /datum/tgui_input_color/async/Destroy(force, ...)
 	QDEL_NULL(callback)
 	return ..()
+
+/datum/tgui_input_color/async/proc/on_client_deleted(datum/source)
+	SIGNAL_HANDLER
+	qdel(src)
 
 /datum/tgui_input_color/async/ui_close(mob/user)
 	. = ..()
@@ -138,3 +152,16 @@
 
 /datum/tgui_input_color/async/wait()
 	return
+
+// Ожидающий input не держит src диалога: после отмены или тайм-аута он освобождается через слабую ссылку.
+/proc/complete_native_color_input(datum/weakref/input_ref, mob/user, message, title, default)
+	set waitfor = FALSE
+	var/mob/prompt_mob = begin_native_prompt(user)
+	var/native_color = input(user, message, title, default) as null|color
+	end_native_prompt(prompt_mob)
+	var/datum/tgui_input_color/async/color_input = input_ref.resolve()
+	if(!color_input)
+		return
+	if(!isnull(native_color))
+		color_input.set_entry(uppertext(sanitize_hexcolor(native_color, 6, TRUE, COLOR_WHITE)))
+	qdel(color_input)

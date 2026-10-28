@@ -2832,3 +2832,15 @@
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/spooky
 	ckeywhitelist = list("kumikoshouko")
+
+/datum/gear/donator/bm/br_pilotsuit_mk1
+	name = "BLACKROSE© Mark.I Pilot Suit"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/donator/bm/br_pilotsuit_mk1
+	ckeywhitelist = list("hateredsoul")
+
+/datum/gear/donator/bm/br_pilotjacket_s5
+	name = "BLACKROSE© Pilot Jacket Series V"
+	slot = ITEM_SLOT_OCLOTHING
+	path = /obj/item/clothing/suit/donator/bm/br_pilotjacket_s5
+	ckeywhitelist = list("hateredsoul")

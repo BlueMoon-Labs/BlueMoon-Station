@@ -580,6 +580,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/list/vending_layouts = list()
 	// Пресеты капсул сохраняются в профиле пользователя между раундами.
 	var/list/podlauncher_presets = list()
+	// Формат отчётов всех медицинских анализаторов пользователя; по умолчанию TGUI.
+	var/health_analyzer_chat = FALSE
 
 /datum/preferences/proc/get_vending_layout(machine_type)
 	return vending_layouts["[machine_type]"] || "grid"
@@ -977,15 +979,15 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 				return TRUE
 	return FALSE
 
-/datum/preferences/proc/body_mods_cost()
+/datum/preferences/proc/body_mods_cost(list/selected_organs = organ_mods, list/selected_implants = implant_mods)
 	. = 0
-	for(var/slot in organ_mods)
+	for(var/slot in selected_organs)
 		if(body_mod_organ_locked(slot))
 			continue
-		var/list/option = body_mod_organ_option(slot, organ_mods[slot])
+		var/list/option = body_mod_organ_option(slot, selected_organs[slot])
 		if(option)
 			. += option["cost"]
-	for(var/implant_id in implant_mods)
+	for(var/implant_id in selected_implants)
 		var/list/option = body_mod_implant_option(implant_id)
 		if(option)
 			. += option["cost"]
@@ -1016,27 +1018,29 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 	for(var/slot in dropped)
 		organ_mods -= slot
 
-/datum/preferences/proc/migrate_legacy_body_mods()
-	if(!SSquirks || !length(SSquirks.quirks))
-		return
-	var/list/legacy_quirks = list(
+/datum/preferences/proc/migrate_legacy_body_mods(list/quirks = all_quirks, list/selected_organs = organ_mods, list/selected_implants = implant_mods)
+	var/static/list/legacy_quirks = list(
 		"Глаза с Повышенной Светимостью" = "eyes",
 		"Трубка для Горлового Дыхания" = "tube",
 		"Имплант Для Дорсуалифоба" = "hide_backpack",
 		"Тядзин" = "genital_fluid",
 	)
-	var/list/migrated = list()
+	var/list/migrated
 	for(var/quirk_name in legacy_quirks)
-		if(quirk_name in all_quirks)
-			all_quirks -= quirk_name
-			migrated += legacy_quirks[quirk_name]
+		if(quirk_name in quirks)
+			quirks -= quirk_name
+			LAZYADD(migrated, legacy_quirks[quirk_name])
 	if(!length(migrated))
 		return
+	// Игрок может подключиться до SSquirks; цены готовим только при наличии устаревших квирков.
+	var/static/list/quirk_values
+	if(!quirk_values)
+		quirk_values = list()
+		for(var/datum/quirk/quirk_type as anything in subtypesof(/datum/quirk))
+			quirk_values[initial(quirk_type.name)] = initial(quirk_type.value)
 	var/budget = 0
-	for(var/quirk_name in all_quirks)
-		var/datum/quirk/quirk_datum = SSquirks.quirks[quirk_name]
-		if(quirk_datum)
-			budget -= initial(quirk_datum.value)
+	for(var/quirk_name in quirks)
+		budget -= quirk_values[quirk_name]
 	for(var/modification in modified_limbs)
 		var/limb_kind = modified_limbs[modification][1]
 		if(limb_kind == LOADOUT_LIMB_PROSTHETIC)
@@ -1044,21 +1048,21 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 		else if(limb_kind == LOADOUT_LIMB_AMPUTATED)
 			budget += 2
 	budget -= mob_size_name_to_quirk_cost(body_weight)
-	budget -= body_mods_cost()
-	if(("tube" in migrated) && !organ_mods[ORGAN_SLOT_BREATHING_TUBE] && budget >= 1)
-		organ_mods[ORGAN_SLOT_BREATHING_TUBE] = "tube"
+	budget -= body_mods_cost(selected_organs, selected_implants)
+	if(("tube" in migrated) && !selected_organs[ORGAN_SLOT_BREATHING_TUBE] && budget >= 1)
+		selected_organs[ORGAN_SLOT_BREATHING_TUBE] = "tube"
 		budget -= 1
-	if(("eyes" in migrated) && !organ_mods[ORGAN_SLOT_EYES] && !body_mod_organ_locked(ORGAN_SLOT_EYES))
+	if(("eyes" in migrated) && !selected_organs[ORGAN_SLOT_EYES] && !body_mod_organ_locked(ORGAN_SLOT_EYES))
 		if(budget >= 2)
-			organ_mods[ORGAN_SLOT_EYES] = "glow"
+			selected_organs[ORGAN_SLOT_EYES] = "glow"
 			budget -= 2
 		else if(budget >= 1)
-			organ_mods[ORGAN_SLOT_EYES] = "robotic"
+			selected_organs[ORGAN_SLOT_EYES] = "robotic"
 			budget -= 1
 	if("hide_backpack" in migrated)
-		implant_mods["hide_backpack"] = TRUE
+		selected_implants["hide_backpack"] = TRUE
 	if("genital_fluid" in migrated)
-		implant_mods["genital_fluid"] = TRUE
+		selected_implants["genital_fluid"] = TRUE
 
 /datum/preferences/proc/apply_prefs_body_mods(mob/living/carbon/human/character)
 	for(var/slot in organ_mods)
@@ -1099,19 +1103,24 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 		if(!new_implant.implant(character, null, TRUE, TRUE))
 			qdel(new_implant)
 
-/datum/preferences/proc/GetQuirkBalance(mob/user)
+/datum/preferences/proc/quirk_balance(list/selected_quirks = all_quirks)
 	var/bal = 0
-	for(var/V in all_quirks)
+	for(var/V in selected_quirks)
 		var/datum/quirk/T = SSquirks.quirks[V]
-		bal -= initial(T.value)
+		if(T)
+			bal -= initial(T.value)
 	for(var/modification in modified_limbs)
 		var/limb_kind = modified_limbs[modification][1]
 		if(limb_kind == LOADOUT_LIMB_PROSTHETIC)
 			bal += 1
 		else if(limb_kind == LOADOUT_LIMB_AMPUTATED)
 			bal += 2
-	bal -= mob_size_name_to_quirk_cost(body_weight) //BLUEMOON ADD вес влияет на доступные квирки
+	bal -= mob_size_name_to_quirk_cost(body_weight)
 	bal -= body_mods_cost()
+	return bal
+
+/datum/preferences/proc/GetQuirkBalance(mob/user)
+	var/bal = quirk_balance()
 	if(bal < 0)
 		to_chat(user, "<span class='danger'>Something goes wrong and quirk balance goes to [bal], quirks and character weight reseted.</span>") //BLUEMOON ADD
 		all_quirks = list()
