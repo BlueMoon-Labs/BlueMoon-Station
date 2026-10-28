@@ -26,8 +26,8 @@ THE SOFTWARE.
 '''
 
 from __future__ import print_function
-import yaml, os, glob, sys, re, time, argparse
-from datetime import datetime, date, timedelta
+import yaml, os, glob, sys, re, time, argparse, subprocess
+from datetime import datetime, date, timedelta, timezone
 from time import time
 
 today = date.today()
@@ -123,9 +123,13 @@ for fileName in glob.glob(os.path.join(args.ymlDir, "*.yml")):
     if today not in currentEntries:
         currentEntries[today] = {}
     author_entries = currentEntries[today].get(cl['author'], [])
+    # Номер PR из имени AutoChangeLog-pr-N.yml: окно ченджлога ставит по нему ссылку
+    pr_match = re.match(r'AutoChangeLog-pr-(\d+)$', name)
     if len(cl['changes']):
         new = 0
         for change in cl['changes']:
+            if pr_match:
+                change = dict(change, pr=int(pr_match.group(1)))
             if change not in author_entries:
                 (change_type, _) = dictToTuples(change)[0]
                 if change_type not in validPrefixes:
@@ -143,3 +147,81 @@ for fileName in glob.glob(os.path.join(args.ymlDir, "*.yml")):
 
     with open(monthFile, 'w', encoding='utf-8') as f:
         yaml.dump(currentEntries, f, default_flow_style=False, allow_unicode=True)
+
+
+def changelog_sources(since):
+    '''AutoChangeLog-pr-N.yml, созданные в git начиная с since: (дата создания, номер PR, автор, изменения).'''
+    log = subprocess.run(
+        ['git', 'log', '--full-history', '--diff-filter=A', '--since=' + since.isoformat(), '--format=@@%H %ct', '--name-only', '--', 'html/changelogs/AutoChangeLog-pr-*.yml'],
+        check=True, capture_output=True).stdout.decode('utf-8')
+    sources = []
+    sha = created = None
+    for line in log.splitlines():
+        if line.startswith('@@'):
+            sha, stamp = line[2:].split()
+            created = datetime.fromtimestamp(int(stamp), timezone.utc).date()
+            continue
+        match = re.search(r'AutoChangeLog-pr-(\d+)\.yml$', line.strip())
+        if not match:
+            continue
+        shown = subprocess.run(['git', 'cat-file', 'blob', '{0}:{1}'.format(sha, line.strip())], capture_output=True)
+        try:
+            cl = yaml.load(shown.stdout.decode('utf-8'), Loader=yaml.SafeLoader)
+        except yaml.YAMLError:
+            continue
+        if isinstance(cl, dict) and cl.get('changes'):
+            sources.append((created, int(match.group(1)), str(cl.get('author')), cl['changes']))
+    return sources
+
+
+def repair_month(entries, sources):
+    '''Дописывает номер PR записям без него и убирает повторную компиляцию того же PR.'''
+    changed = False
+    seen = set()
+    for day in sorted(entries.keys()):
+        for author in list(entries[day].keys()):
+            kept = []
+            for change in entries[day][author]:
+                if 'pr' not in change:
+                    matches = sorted(
+                        (created, pr) for created, pr, cl_author, cl_changes in sources
+                        if cl_author == str(author) and change in cl_changes and created <= day)
+                    if matches:
+                        change = dict(change, pr=matches[-1][1])
+                        changed = True
+                if 'pr' in change:
+                    key = (str(author), tuple(sorted((k, str(v)) for k, v in change.items())))
+                    if key in seen:
+                        changed = True
+                        continue
+                    seen.add(key)
+                kept.append(change)
+            if kept:
+                entries[day][author] = kept
+            else:
+                del entries[day][author]
+        if not entries[day]:
+            del entries[day]
+    return changed
+
+
+# Записи, скомпилированные без номера PR (старым генератором или до слияния ветки),
+# получают его здесь; текущий и прошлый месяц, чтобы пережить смену месяца.
+first_of_month = today.replace(day=1)
+previous_month = (first_of_month - timedelta(days=1)).replace(day=1)
+try:
+    sources = changelog_sources(previous_month - timedelta(days=31))
+except (OSError, subprocess.CalledProcessError) as e:
+    print('Skipping PR number repair: {0}'.format(e), file=sys.stderr)
+    sources = None
+if sources is not None:
+    for month in (previous_month, first_of_month):
+        monthFile = os.path.join(archiveDir, month.strftime(fileDateFormat) + '.yml')
+        if not os.path.exists(monthFile):
+            continue
+        with open(monthFile, 'r', encoding='utf-8') as f:
+            entries = yaml.load(f, Loader=yaml.SafeLoader) or {}
+        if repair_month(entries, sources):
+            print('Repaired PR numbers in {0}'.format(monthFile))
+            with open(monthFile, 'w', encoding='utf-8') as f:
+                yaml.dump(entries, f, default_flow_style=False, allow_unicode=True)
