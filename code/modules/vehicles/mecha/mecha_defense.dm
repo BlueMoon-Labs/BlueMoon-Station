@@ -42,7 +42,8 @@
 
 	if(attack_dir)
 		var/facing_modifier = get_armour_facing(abs(dir2angle(dir) - dir2angle(attack_dir)))
-		booster_damage_modifier /= facing_modifier
+		// Атака со спины не усиливает урон, но снижает шанс отражения.
+		booster_damage_modifier /= max(facing_modifier, 1)
 		booster_deflection_modifier *= facing_modifier
 	if(prob(deflect_chance * booster_deflection_modifier))
 		visible_message(span_danger("Броня [src] отражает атаку!"))
@@ -70,6 +71,8 @@
 	attack_generic(user, 15, BRUTE, MELEE, 0)
 
 /obj/vehicle/sealed/mecha/attack_animal(mob/living/simple_animal/user)
+	if(!user.can_damage_objects)
+		return FALSE
 	if(!user.CheckActionCooldown(CLICK_CD_MELEE))
 		return
 	log_message("Атака животного. Нападавший: [user].", LOG_MECHA, color="red")
