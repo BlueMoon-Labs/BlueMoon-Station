@@ -100,9 +100,58 @@ const KINDS: Record<string, ChangeKind & { category: string }> = {
 
 const UNKNOWN_KIND = { icon: 'circle-info', color: 'label', label: 'Прочее', category: 'tech' };
 
-export const kindOf = (type: string): ChangeKind => KINDS[type] || UNKNOWN_KIND;
+/** Теги из описания PR (tools/changelog/tags.yml) -> теги архива; у тест-мерджей они ещё не переведены. */
+const TAG_ALIASES: Record<string, string> = {
+  fixes: 'bugfix',
+  rsctweak: 'tweak',
+  tweaks: 'tweak',
+  adds: 'rscadd',
+  del: 'rscdel',
+  dels: 'rscdel',
+  typo: 'spellcheck',
+  rebalance: 'balance',
+};
 
-export const categoryOf = (type: string): string => (KINDS[type] || UNKNOWN_KIND).category;
+const resolveKind = (type: string) => KINDS[TAG_ALIASES[type] || type] || UNKNOWN_KIND;
+
+export const kindOf = (type: string): ChangeKind => resolveKind(type);
+
+export const categoryOf = (type: string): string => resolveKind(type).category;
+
+export type TestMerge = {
+  number: number;
+  title: string;
+  author: string;
+  url: string;
+  changes: ChangeEntry[];
+};
+
+/** Тест-мерджи из static data; кривые записи отбрасываются. */
+export const normalizeTestMerges = (raw: unknown): TestMerge[] => {
+  if (!Array.isArray(raw)) {
+    return [];
+  }
+  const result: TestMerge[] = [];
+  for (const item of raw) {
+    const number = Number(item?.number);
+    if (!Number.isInteger(number) || number <= 0) {
+      continue;
+    }
+    const changes = Array.isArray(item.changes)
+      ? item.changes
+          .filter((change: any) => change && typeof change.type === 'string' && change.text !== undefined)
+          .map((change: any) => ({ type: change.type, text: String(change.text) }))
+      : [];
+    result.push({
+      number,
+      title: String(item.title || ''),
+      author: String(item.author || ''),
+      url: typeof item.url === 'string' && item.url.startsWith('https://') ? item.url : prUrl(number),
+      changes,
+    });
+  }
+  return result;
+};
 
 const MONTHS_NOMINATIVE = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
 const MONTHS_GENITIVE = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];

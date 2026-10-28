@@ -49,6 +49,54 @@
     padding: 24px 8px;
     text-align: center;
     color: colors.$label;
+
+    &--inline {
+      padding: 2px 0 2px 4px;
+      text-align: left;
+    }
+  }
+
+  &__tmBanner {
+    margin-bottom: 14px;
+    padding: 8px 10px;
+    border: 1px solid rgba(colors.$average, 0.5);
+    border-left: 3px solid colors.$average;
+    background: rgba(colors.$average, 0.1);
+
+    .Icon {
+      color: colors.$average;
+    }
+  }
+
+  &__tmIcon {
+    font-size: 20px;
+  }
+
+  &__tmTitles {
+    margin-top: 2px;
+    color: colors.$label;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__tmCard {
+    margin-top: 10px;
+    padding: 8px 10px;
+    border-left: 3px solid colors.$average;
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  &__tmHeader {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  &__tmTitle {
+    font-size: 14px;
+    font-weight: bold;
   }
 
   &__day {

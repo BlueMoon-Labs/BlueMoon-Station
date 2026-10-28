@@ -190,6 +190,62 @@ test('у автора аватарка и ссылка на PR; нескольк
   expect(ui.getByText('DuLL-FoX').tagName).not.toBe('A');
 });
 
+const testmerges = [
+  {
+    number: 4300,
+    title: 'Новые шляпы',
+    author: 'Pingvas',
+    url: 'https://github.com/BlueMoon-Labs/BlueMoon-Station/pull/4300',
+    changes: [
+      { type: 'add', text: 'Добавлены шляпы' },
+      { type: 'typo', text: 'Поправлены описания' },
+    ],
+  },
+  { number: 4301, title: 'Без записей', author: 'Имя Автора', url: 'javascript:alert(1)', changes: [] },
+];
+
+test('без тест-мерджей нет ни кнопки, ни плашки', async () => {
+  const ui = setup({ dates: ['2026-10'], last_seen: '', testmerges: [] }, { '2026-10.yml': [october] });
+  await ui.findByText('Ёлка стала зеленее');
+  expect(ui.queryByText(/На тесте/)).toBeNull();
+  expect(ui.container.querySelector('.Changelog__tmBanner')).toBeNull();
+});
+
+test('тест-мерджи: плашка на свежем месяце и вкладка с пояснением и их ченджлогом', async () => {
+  const ui = setup(
+    { dates: ['2026-10', '2026-09'], last_seen: '', testmerges },
+    { '2026-10.yml': [october], '2026-09.yml': [september] },
+  );
+  await ui.findByText('Ёлка стала зеленее');
+  const banner = ui.container.querySelector('.Changelog__tmBanner')!;
+  expect(banner.textContent).toContain('Сейчас на сервере тестируется: 2');
+  expect(banner.textContent).toContain('#4300 Новые шляпы');
+
+  fireEvent.input(ui.container.querySelector('.Input__input')!, { target: { value: 'ёлка' } });
+  expect(ui.container.querySelector('.Changelog__tmBanner')).toBeNull();
+  fireEvent.input(ui.container.querySelector('.Input__input')!, { target: { value: '' } });
+
+  fireEvent.click(ui.getByText('Подробнее'));
+  expect(ui.getByText(/ещё не влиты в основную сборку/)).toBeTruthy();
+  expect(ui.getByText('Добавлены шляпы')).toBeTruthy();
+  expect(ui.getByText('Поправлены описания')).toBeTruthy();
+  expect(ui.getByText('Автор не оставил записей в ченджлоге.')).toBeTruthy();
+  const links = Array.from(ui.container.querySelectorAll('.Changelog__tmCard .Changelog__pr')).map((link) =>
+    link.getAttribute('href'),
+  );
+  expect(links).toEqual([
+    'https://github.com/BlueMoon-Labs/BlueMoon-Station/pull/4300',
+    'https://github.com/BlueMoon-Labs/BlueMoon-Station/pull/4301',
+  ]);
+
+  fireEvent.click(ui.getByText('К изменениям'));
+  fireEvent.click(ui.container.querySelector('.fa-chevron-right')!.closest('.Button')!);
+  await ui.findByText('Сентябрьский баланс');
+  expect(ui.container.querySelector('.Changelog__tmBanner')).toBeNull();
+  fireEvent.click(ui.getByText('На тесте: 2'));
+  expect(ui.getByText('Добавлены шляпы')).toBeTruthy();
+});
+
 test('поиск по #номеру оставляет записи одного PR', async () => {
   const ui = setup({ dates: ['2026-10'], last_seen: '' }, { '2026-10.yml': [october] });
   await ui.findByText('Ёлка стала зеленее');

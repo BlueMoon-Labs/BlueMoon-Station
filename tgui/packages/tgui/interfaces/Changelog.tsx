@@ -24,14 +24,19 @@ import {
   monthHasNew,
   monthHasNewOutside,
   monthName,
+  normalizeTestMerges,
   parseMonth,
   prUrl,
+  TestMerge,
 } from './ChangelogModel';
 
 type ChangelogData = {
   dates: string[];
   last_seen: string;
+  testmerges?: unknown;
 };
+
+type View = 'feed' | 'about' | 'testmerge';
 
 type MonthState = { month?: string } & (
   | { status: 'loading' }
@@ -114,13 +119,14 @@ export const Changelog = () => {
   const { data } = useBackend<ChangelogData>();
   const dates = data.dates || [];
   const lastSeen = data.last_seen || '';
+  const testMerges = useMemo(() => normalizeTestMerges(data.testmerges), [data.testmerges]);
 
   const [month, setMonth] = useState(dates[0]);
   const [reloadKey, setReloadKey] = useState(0);
   const [query, setQuery] = useState('');
   const [categories, setCategories] = useState<string[]>([]);
   const [onlyNew, setOnlyNew] = useState(false);
-  const [showAbout, setShowAbout] = useState(false);
+  const [view, setView] = useState<View>('feed');
   const [archiveOpen, setArchiveOpen] = useState(false);
   const [newByMonth, setNewByMonth] = useState<Record<string, number>>({});
 
@@ -141,7 +147,7 @@ export const Changelog = () => {
 
   const index = month ? dates.indexOf(month) : -1;
   const selectMonth = (next: string) => {
-    setShowAbout(false);
+    setView('feed');
     setMonth(next);
   };
   const toggleCategory = (id: string) =>
@@ -162,8 +168,10 @@ export const Changelog = () => {
             </Stack.Item>
           )}
           <Stack.Item grow basis={0}>
-            {showAbout ? (
-              <About onBack={() => setShowAbout(false)} />
+            {view === 'about' ? (
+              <About onBack={() => setView('feed')} />
+            ) : view === 'testmerge' ? (
+              <TestMergeView testMerges={testMerges} onBack={() => setView('feed')} />
             ) : (
               <Stack vertical fill>
                 <Stack.Item>
@@ -221,8 +229,20 @@ export const Changelog = () => {
                           </Button>
                         </Stack.Item>
                       )}
+                      {!!testMerges.length && (
+                        <Stack.Item>
+                          <Button
+                            icon="flask"
+                            color="average"
+                            tooltip="Тестируется на сервере, ещё не в сборке"
+                            onClick={() => setView('testmerge')}
+                          >
+                            {`На тесте: ${testMerges.length}`}
+                          </Button>
+                        </Stack.Item>
+                      )}
                       <Stack.Item>
-                        <Button icon="circle-info" tooltip="О проекте" onClick={() => setShowAbout(true)} />
+                        <Button icon="circle-info" tooltip="О проекте" onClick={() => setView('about')} />
                       </Stack.Item>
                     </Stack>
                     <Box className="Changelog__chips">
@@ -274,6 +294,9 @@ export const Changelog = () => {
                           </Box>
                         )}
                       </Box>
+                    )}
+                    {index === 0 && !query && !categories.length && !onlyNew && !!testMerges.length && (
+                      <TestMergeBanner testMerges={testMerges} onOpen={() => setView('testmerge')} />
                     )}
                     {visible.map((day) => (
                       <Day key={day.date} day={day} isNew={isNewDate(day.date, lastSeen)} />
@@ -414,6 +437,72 @@ const Author = (props: { block: AuthorBlock }) => {
     </Box>
   );
 };
+
+const TESTMERGE_NOTE =
+  'Эти изменения сейчас проверяются на сервере (тест-мердж) и ещё не влиты в основную сборку: они могут поменяться, сломаться или пропасть после рестарта.';
+
+const TestMergeBanner = (props: { testMerges: TestMerge[]; onOpen: () => void }) => (
+  <Box className="Changelog__tmBanner">
+    <Stack align="center">
+      <Stack.Item>
+        <Icon name="flask" className="Changelog__tmIcon" />
+      </Stack.Item>
+      <Stack.Item grow>
+        <Box bold>{`Сейчас на сервере тестируется: ${props.testMerges.length}`}</Box>
+        <Box className="Changelog__tmTitles">
+          {props.testMerges.map((testMerge) => `#${testMerge.number} ${testMerge.title}`).join(' · ')}
+        </Box>
+      </Stack.Item>
+      <Stack.Item>
+        <Button icon="arrow-right" onClick={props.onOpen}>
+          Подробнее
+        </Button>
+      </Stack.Item>
+    </Stack>
+  </Box>
+);
+
+const TestMergeView = (props: { testMerges: TestMerge[]; onBack: () => void }) => (
+  <Section
+    fill
+    scrollable
+    title="На тесте"
+    buttons={
+      <Button icon="arrow-left" onClick={props.onBack}>
+        К изменениям
+      </Button>
+    }
+  >
+    <NoticeBox info>{TESTMERGE_NOTE}</NoticeBox>
+    {props.testMerges.map((testMerge) => (
+      <Box key={testMerge.number} className="Changelog__tmCard">
+        <Box className="Changelog__tmHeader">
+          <a className="Changelog__pr" href={testMerge.url} title="Открыть PR на GitHub">
+            {`#${testMerge.number}`}
+          </a>
+          <span className="Changelog__tmTitle">{testMerge.title}</span>
+        </Box>
+        <Box className="Changelog__authorName">
+          <Avatar author={testMerge.author} onLoad={() => {}} />
+          {testMerge.author}
+        </Box>
+        {testMerge.changes.length ? (
+          testMerge.changes.map((change, number) => {
+            const kind = kindOf(change.type);
+            return (
+              <Box key={number} className="Changelog__change">
+                <Icon className="Changelog__changeIcon" name={kind.icon} color={kind.color} title={kind.label} />
+                <span>{change.text}</span>
+              </Box>
+            );
+          })
+        ) : (
+          <Box className="Changelog__placeholder Changelog__placeholder--inline">Автор не оставил записей в ченджлоге.</Box>
+        )}
+      </Box>
+    ))}
+  </Section>
+);
 
 const About = (props: { onBack: () => void }) => (
   <Section

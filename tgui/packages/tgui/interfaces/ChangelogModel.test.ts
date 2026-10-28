@@ -13,6 +13,7 @@ import {
   isNewDate,
   kindOf,
   monthHasNew,
+  normalizeTestMerges,
   parseMonth,
 } from './ChangelogModel';
 
@@ -73,6 +74,28 @@ test('подряд идущие записи одного PR группирую�
   expect(avatarUrl('Имя Фамилия')).toBeNull();
   expect(avatarUrl('-bad')).toBeNull();
   expect(avatarUrl('../evil')).toBeNull();
+});
+
+test('теги из описания PR понимаются как теги архива', () => {
+  expect(kindOf('typo').label).toBe('Текст');
+  expect(categoryOf('del')).toBe('del');
+  expect(categoryOf('rebalance')).toBe('balance');
+  expect(categoryOf('fix')).toBe('fix');
+  expect(categoryOf('code')).toBe('tech');
+});
+
+test('тест-мерджи: кривые записи отбрасываются, ссылка только https', () => {
+  const merges = normalizeTestMerges([
+    { number: 1, title: 'A', author: 'x', url: 'https://example.org/pull/1', changes: [{ type: 'add', text: 5 }, null, { text: 'без типа' }] },
+    { number: 'abc' },
+    null,
+    { number: 2, title: 'B', author: 'y', url: 'javascript:alert(1)' },
+  ]);
+  expect(merges).toEqual([
+    { number: 1, title: 'A', author: 'x', url: 'https://example.org/pull/1', changes: [{ type: 'add', text: '5' }] },
+    { number: 2, title: 'B', author: 'y', url: 'https://github.com/BlueMoon-Labs/BlueMoon-Station/pull/2', changes: [] },
+  ]);
+  expect(normalizeTestMerges(undefined)).toEqual([]);
 });
 
 test('даты и месяцы подписываются по-русски', () => {
