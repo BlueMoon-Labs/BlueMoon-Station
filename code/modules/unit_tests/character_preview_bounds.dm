@@ -67,3 +67,37 @@
 				bounds[3] = max(bounds[3], x)
 				bounds[4] = max(bounds[4], y)
 	return bounds
+
+// Заранее замеренная внешность собирается без новых замеров и с теми же границами (раунд 10624: 65-863 мс на сборку).
+/datum/unit_test/character_preview_bounds_prewarm
+	var/list/original_cache
+
+/datum/unit_test/character_preview_bounds_prewarm/Run()
+	original_cache = GLOB.character_preview_icon_bounds
+	var/mob/living/carbon/human/doctor = allocate(/mob/living/carbon/human/dummy/consistent)
+	doctor.equipOutfit(/datum/outfit/job/doctor, visualsOnly = TRUE)
+	var/mutable_appearance/source = new /mutable_appearance(doctor)
+
+	GLOB.character_preview_icon_bounds = list()
+	var/atom/movable/screen/map_view/character_setup_screen/cold = allocate(/atom/movable/screen/map_view/character_setup_screen)
+	cold.update_character(source, "steel")
+	var/list/cold_bounds = cold.view_bounds_cache.Copy()
+
+	GLOB.character_preview_icon_bounds = list()
+	var/atom/movable/screen/map_view/character_setup_screen/warm = allocate(/atom/movable/screen/map_view/character_setup_screen)
+	warm.prewarm_preview_bounds(source)
+	var/warmed_size = length(GLOB.character_preview_icon_bounds)
+	TEST_ASSERT(warmed_size > 0, "Прогрев ничего не замерил")
+	warm.update_character(source, "steel")
+	TEST_ASSERT_EQUAL(length(GLOB.character_preview_icon_bounds), warmed_size, "Сборка после прогрева мерила слои заново")
+	for(var/direction in GLOB.cardinals)
+		var/list/expected = cold_bounds["[direction]"]
+		var/list/actual = warm.view_bounds_cache["[direction]"]
+		for(var/side in 1 to 4)
+			TEST_ASSERT_EQUAL(actual[side], expected[side], "Граница [side] ракурса [direction] после прогрева")
+
+/datum/unit_test/character_preview_bounds_prewarm/Destroy()
+	if(original_cache)
+		GLOB.character_preview_icon_bounds = original_cache
+	original_cache = null
+	return ..()

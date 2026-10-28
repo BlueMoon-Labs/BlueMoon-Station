@@ -66,3 +66,20 @@
 	for(var/pixel_x in 1 to expected.Width())
 		for(var/pixel_y in 1 to expected.Height())
 			TEST_ASSERT_EQUAL(actual.GetPixel(pixel_x, pixel_y), expected.GetPixel(pixel_x, pixel_y), "Пиксель [pixel_x],[pixel_y] отличается: [context]")
+
+/// Направления из заголовка DMI совпадают с пробой icon() по каждому стейту, включая дубли имён со стейтами движения.
+/datum/unit_test/dmi_state_dirs_match_probe/Run()
+	for(var/icon_file in list('icons/effects/effects.dmi', 'icons/mob/secbot_accessories.dmi', 'icons/mob/gondolapod.dmi', 'icons/mob/clothing/uniform.dmi'))
+		var/list/state_dirs = dmi_state_dirs("[icon_file]")
+		TEST_ASSERT(length(state_dirs), "rust-g не прочитал заголовок [icon_file]")
+		var/list/states = uniqueList(icon_states(icon_file))
+		for(var/index in 1 to min(length(states), 80))
+			var/state = states[index]
+			var/probe_directional = FALSE
+			for(var/checkdir in list(NORTH, EAST, WEST))
+				if(length(icon_states(icon(icon_file, state, checkdir))))
+					probe_directional = TRUE
+					break
+			TEST_ASSERT(state_dirs["[state]"], "Нет стейта [icon_file]:[state] в заголовке")
+			TEST_ASSERT_EQUAL(state_dirs["[state]"] > 1, probe_directional, "Направленность [icon_file]:[state] не совпала с пробой")
+	TEST_ASSERT_NULL(dmi_state_dirs("icons/nonexistent_for_test.dmi"), "Отсутствующий файл дал заголовок")
