@@ -174,10 +174,10 @@ def changelog_sources(since):
     return sources
 
 
-def repair_month(entries, sources):
-    '''Дописывает номер PR записям без него и убирает повторную компиляцию того же PR.'''
+def repair_month(entries, sources, seen):
+    '''Дописывает номер PR записям без него и убирает повторную компиляцию того же PR.
+    seen - уже встреченные записи, общий для месяцев, которые чинятся подряд.'''
     changed = False
-    seen = set()
     for day in sorted(entries.keys()):
         for author in list(entries[day].keys()):
             kept = []
@@ -186,8 +186,11 @@ def repair_month(entries, sources):
                     matches = sorted(
                         (created, pr) for created, pr, cl_author, cl_changes in sources
                         if cl_author == str(author) and change in cl_changes and created <= day)
-                    if matches:
-                        change = dict(change, pr=matches[-1][1])
+                    # Компиляция идёт в день создания AutoChangeLog, поэтому берём самый поздний PR до записи;
+                    # два разных PR, созданных в тот же день с тем же текстом, не различить - номер не ставим.
+                    latest = [pr for created, pr in matches if matches and created == matches[-1][0]]
+                    if len(set(latest)) == 1:
+                        change = dict(change, pr=latest[0])
                         changed = True
                 if 'pr' in change:
                     key = (str(author), tuple(sorted((k, str(v)) for k, v in change.items())))
@@ -215,13 +218,14 @@ except (OSError, subprocess.CalledProcessError) as e:
     print('Skipping PR number repair: {0}'.format(e), file=sys.stderr)
     sources = None
 if sources is not None:
+    seen = set()
     for month in (previous_month, first_of_month):
         monthFile = os.path.join(archiveDir, month.strftime(fileDateFormat) + '.yml')
         if not os.path.exists(monthFile):
             continue
         with open(monthFile, 'r', encoding='utf-8') as f:
             entries = yaml.load(f, Loader=yaml.SafeLoader) or {}
-        if repair_month(entries, sources):
+        if repair_month(entries, sources, seen):
             print('Repaired PR numbers in {0}'.format(monthFile))
             with open(monthFile, 'w', encoding='utf-8') as f:
                 yaml.dump(entries, f, default_flow_style=False, allow_unicode=True)

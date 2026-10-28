@@ -2,6 +2,7 @@
 
 /datum/changelog
 	var/static/list/changelog_items = list()
+	var/archive_dir
 	/// Месяцы архива ("YYYY-MM"), свежие первыми. Это же белый список для get_month.
 	var/list/dates
 	/// ckey -> дата последней записи, которую игрок видел ДО текущего открытия окна.
@@ -9,6 +10,7 @@
 
 /datum/changelog/New(archive_dir = CHANGELOG_ARCHIVE_DIR)
 	. = ..()
+	src.archive_dir = archive_dir
 	dates = changelog_archive_months(archive_dir)
 
 /datum/changelog/ui_state()
@@ -35,10 +37,10 @@
 /datum/changelog/proc/get_month_asset(date)
 	if(!istext(date) || !(date in dates))
 		return null
-	var/datum/asset/changelog_item/changelog_item = changelog_items[date]
+	var/datum/asset/changelog_item/changelog_item = changelog_items["[archive_dir][date]"]
 	if (!changelog_item)
-		changelog_item = new /datum/asset/changelog_item(date)
-		changelog_items[date] = changelog_item
+		changelog_item = new /datum/asset/changelog_item(date, archive_dir)
+		changelog_items["[archive_dir][date]"] = changelog_item
 	return changelog_item
 
 /datum/changelog/ui_static_data(mob/user)
