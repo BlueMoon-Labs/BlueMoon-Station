@@ -1,0 +1,117 @@
+// Тег должности в рации. Цвет идёт через --rj-c, чтобы режимы, метка глав
+// и имя говорящего переключались одним классом на корне .Chat.
+// Свои цвета игрока: --rj-<id> на корне. Умолчания повторяют settings/radioJobs.js.
+@use 'sass:list';
+
+$palette: (
+  'cmd': (#fcdf03, #8a6d00),
+  'sec': (#dd3535, #b31b1b),
+  'eng': (#f37746, #b8460f),
+  'med': (#57b8f0, #1f6f9e),
+  'sci': (#c68cfa, #8237c4),
+  'cargo': (#b88646, #8a5a1c),
+  'srv': (#6ca729, #43751a),
+  'law': (#ff69d7, #b8128a),
+  'asst': (#1ecc43, #16782e),
+  'silicon': (#9e9e9e, #5f5f5f),
+  'unk': (#b0b0b0, #6e6e6e),
+  'centcom': (#2681a5, #1b6585),
+  'synd': (#a85a5c, #7a2e30),
+  'inteq': (#e58200, #a65c00),
+  'tarkon': (#f37746, #b8460f),
+  'pirate': (#fafafa, #3c3c3c),
+  'sol': (#6a6aff, #2a2ad0),
+  'nri': (#36c9a6, #0d6e5f),
+  'hotel': (#6ca729, #43751a),
+);
+
+.Chat {
+  @each $id, $colors in $palette {
+    --rj-def-#{$id}: #{list.nth($colors, 1)};
+  }
+}
+
+.theme-light .Chat {
+  @each $id, $colors in $palette {
+    --rj-def-#{$id}: #{list.nth($colors, 2)};
+  }
+}
+
+@each $id, $colors in $palette {
+  .radiojob-#{$id} {
+    --rj-c: var(--rj-#{$id}, var(--rj-def-#{$id}));
+  }
+}
+
+// radiojob-legacy-* красит и старый вывод BYOND, поэтому у имени свой класс.
+@each $id, $colors in $palette {
+  .Chat--rjLegacy .radiojob-legacy-#{$id},
+  .Chat--rjLegacy .radiojob-name-legacy-#{$id} {
+    --rj-c: var(--rj-#{$id}, var(--rj-def-#{$id}));
+  }
+}
+
+// Прежние цвета фракций, перекрашенных в режиме по отделам. Повторяют
+// legacy в settings/radioJobs.js.
+$legacy-palette: (
+  'synd': #8f4a4b,
+  'sol': #3434fd,
+  'nri': #ff4444,
+);
+
+@each $id, $color in $legacy-palette {
+  .Chat--rjLegacy .radiojob-legacy-#{$id},
+  .Chat--rjLegacy .radiojob-name-legacy-#{$id} {
+    --rj-c: var(--rj-#{$id}, #{$color});
+  }
+}
+
+// Старый клоун был цвета юристов. radiojob-clown - класс сообщений из истории до разделения по отделам.
+.radiojob-clown,
+.Chat--rjLegacy .radiojob-legacy-clown,
+.Chat--rjLegacy .radiojob-name-legacy-clown {
+  --rj-c: var(--rj-law, var(--rj-def-law));
+}
+
+.Chat--rjNoColor .radiojob,
+.Chat--rjNoColor .radiojob-name {
+  --rj-c: currentColor;
+}
+
+.Chat--rjHead-command .radiojob-head {
+  --rj-c: var(--rj-cmd, var(--rj-def-cmd));
+}
+
+// !important перекрывает инлайн-цвет старых сообщений из истории.
+.radiojob {
+  color: var(--rj-c, currentColor) !important;
+}
+
+.Chat--rjNames .radiojob-name {
+  color: var(--rj-c, currentColor);
+}
+
+// Метка глав "Звезда": звёздочка перед тегом, не значок профессии.
+.Chat--rjHead-icon .radiojob.radiojob-head::before {
+  content: '\2605';
+  margin-right: 0.15em;
+}
+
+.Chat--rjHead-bold .radiojob {
+  font-weight: normal;
+}
+
+.Chat--rjHead-bold .radiojob.radiojob-head {
+  font-weight: bold;
+}
+
+// Значок профессии из чат-листа (chat16x16): размер и картинку задаёт лист.
+.radiojob-icon {
+  margin-right: 0.25em;
+  vertical-align: -0.2em;
+  image-rendering: pixelated;
+}
+
+.Chat--rjNoIcon .radiojob-icon {
+  display: none;
+}

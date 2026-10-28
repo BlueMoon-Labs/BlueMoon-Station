@@ -23,6 +23,7 @@ import { BackgroundTab } from './tabs/Background';
 import { GeneralTab } from './tabs/General';
 import { LoadoutTab } from './tabs/Loadout';
 import { MarkingsTab } from './tabs/Markings';
+import { ModificationsTab } from './tabs/Modifications';
 import { QuirksTab } from './tabs/Quirks';
 import { SpeechTab } from './tabs/Speech';
 
@@ -737,6 +738,8 @@ const TabContent = (props: { tab: number }) => {
       return <LoadoutTab />;
     case 6:
       return <QuirksTab />;
+    case 7:
+      return <ModificationsTab />;
     default:
       return (
         <Section fill scrollable>

@@ -753,6 +753,34 @@ GLOBAL_LIST_EMPTY(cached_icon_state_directional)
 /// Soft cap on cached_icon_state_directional entries (each value is a single boolean).
 #define ICON_STATE_DIRECTIONAL_CACHE_MAX 8192
 
+/// Число направлений у стейтов DMI-файла, "[файл]" => list(стейт => dirs). FALSE - файл rust-g не прочитал.
+GLOBAL_LIST_EMPTY(cached_dmi_state_dirs)
+#define DMI_STATE_DIRS_CACHE_MAX 1024
+
+/// Направления всех стейтов файла одним чтением заголовка DMI. Три пробных icon() на стейт стоили до 1.7 мс.
+/proc/dmi_state_dirs(file_name)
+	. = GLOB.cached_dmi_state_dirs[file_name]
+	if(!isnull(.))
+		return . || null
+	var/list/state_dirs = FALSE
+	if(findtext(file_name, ".dmi", -4))
+		// Ошибку чтения rust-g отдаёт текстом, не JSON: такой файл молча уходит на пробные icon().
+		var/raw_metadata = RUSTG_CALL(RUST_G, "dmi_read_metadata")(file_name)
+		var/list/metadata = copytext(raw_metadata, 1, 2) == "{" ? safe_json_decode(raw_metadata, null) : null
+		if(islist(metadata) && islist(metadata["states"]))
+			state_dirs = list()
+			for(var/list/state_data as anything in metadata["states"])
+				// Стейт движения BYOND берёт только для шага, icon() отдаёт обычный с тем же именем.
+				if(!islist(state_data) || state_data["movement"])
+					continue
+				var/state_name = "[state_data["name"]]"
+				if(!state_dirs[state_name])
+					state_dirs[state_name] = state_data["dirs"]
+	GLOB.cached_dmi_state_dirs[file_name] = state_dirs
+	if(length(GLOB.cached_dmi_state_dirs) > DMI_STATE_DIRS_CACHE_MAX)
+		GLOB.cached_dmi_state_dirs.Cut(1, (DMI_STATE_DIRS_CACHE_MAX / 4) + 1)
+	return state_dirs || null
+
 /// Returns TRUE if the given icon_state in the given icon has any of NORTH/EAST/WEST frames.
 /proc/icon_state_has_directional_frames(icon_file, icon_state)
 	var/static/list/checkdirs = list(NORTH, EAST, WEST)
@@ -768,11 +796,16 @@ GLOBAL_LIST_EMPTY(cached_icon_state_directional)
 	. = GLOB.cached_icon_state_directional[key]
 	if(!isnull(.))
 		return .
-	. = FALSE
-	for(var/checkdir in checkdirs)
-		if(length(icon_states(icon(icon_file, icon_state, checkdir))))
-			. = TRUE
-			break
+	var/list/state_dirs = dmi_state_dirs(file_name)
+	var/dirs = state_dirs?["[icon_state]"]
+	if(dirs)
+		. = dirs > 1
+	else
+		. = FALSE
+		for(var/checkdir in checkdirs)
+			if(length(icon_states(icon(icon_file, icon_state, checkdir))))
+				. = TRUE
+				break
 	GLOB.cached_icon_state_directional[key] = .
 	if(length(GLOB.cached_icon_state_directional) > ICON_STATE_DIRECTIONAL_CACHE_MAX)
 		GLOB.cached_icon_state_directional.Cut(1, (ICON_STATE_DIRECTIONAL_CACHE_MAX / 4) + 1) // evict oldest 25%

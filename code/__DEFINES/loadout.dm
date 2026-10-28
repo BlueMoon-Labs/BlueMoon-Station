@@ -108,6 +108,7 @@
 #define SPEECH_CHAR_TAB			4
 #define LOADOUT_CHAR_TAB		5
 #define QUIRKS_CHAR_TAB			6
+#define MODIFICATIONS_CHAR_TAB	7
 
 //subtabs for preferences tab
 #define GAME_PREFS_TAB			0

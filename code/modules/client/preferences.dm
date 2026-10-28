@@ -47,6 +47,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	//game-preferences
 	var/lastchangelog = ""				//Saved changlog filesize to detect if there was a change
+	var/lastchangelog_date = ""			//Дата самой свежей записи ченджлога, которую игрок уже видел
 	var/custom_colors = TOGGLES_DEFAULT_CUSTOM_COLORS
 	var/ooccolor = "#c43b23"
 	var/aooccolor = "#ce254f"
@@ -322,6 +323,8 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 	var/custom_tongue = "default" //if your tongue is to be something other than your races
 	var/list/language = list() //additional language your character has
 	var/modified_limbs = list() //prosthetic/amputated limbs
+	var/organ_mods = list()
+	var/implant_mods = list()
 	var/chosen_limb_id //body sprite selected to load for the users limbs, null means default, is sanitized when loaded
 
 	// Vocal bark prefs
@@ -843,19 +846,280 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 /datum/preferences/proc/ResetJobs()
 	job_preferences = list()
 
+GLOBAL_LIST_INIT(body_mod_organ_groups, list(
+	list(
+		"slot" = ORGAN_SLOT_EYES,
+		"base" = /obj/item/organ/eyes,
+		"label" = "Глаза",
+		"options" = list(
+			list("id" = "organic", "label" = "Обычные", "cost" = 0),
+			list("id" = "robotic", "label" = "Кибернетические", "cost" = 0, "path" = /obj/item/organ/eyes/robotic),
+			list("id" = "glow", "label" = "Светящиеся", "cost" = 1, "path" = /obj/item/organ/eyes/robotic/toggled/glow),
+		),
+	),
+	list(
+		"slot" = ORGAN_SLOT_EARS,
+		"base" = /obj/item/organ/ears,
+		"label" = "Уши",
+		"options" = list(
+			list("id" = "organic", "label" = "Обычные", "cost" = 0),
+			list("id" = "cyber", "label" = "Кибернетические", "cost" = 0, "path" = /obj/item/organ/ears/cybernetic),
+			list("id" = "upgraded", "label" = "Улучшенные", "cost" = 1, "path" = /obj/item/organ/ears/cybernetic/upgraded),
+		),
+	),
+	list(
+		"slot" = ORGAN_SLOT_HEART,
+		"base" = /obj/item/organ/heart,
+		"label" = "Сердце",
+		"options" = list(
+			list("id" = "organic", "label" = "Обычное", "cost" = 0),
+			list("id" = "cyber", "label" = "Кибернетическое", "cost" = 0, "path" = /obj/item/organ/heart/cybernetic),
+			list("id" = "tier2", "label" = "Кибернетическое II", "cost" = 1, "path" = /obj/item/organ/heart/cybernetic/tier2),
+			list("id" = "tier3", "label" = "Кибернетическое III", "cost" = 2, "path" = /obj/item/organ/heart/cybernetic/tier3),
+		),
+	),
+	list(
+		"slot" = ORGAN_SLOT_LUNGS,
+		"base" = /obj/item/organ/lungs,
+		"label" = "Лёгкие",
+		"options" = list(
+			list("id" = "organic", "label" = "Обычные", "cost" = 0),
+			list("id" = "cyber", "label" = "Кибернетические", "cost" = 0, "path" = /obj/item/organ/lungs/cybernetic),
+			list("id" = "tier2", "label" = "Кибернетические II", "cost" = 1, "path" = /obj/item/organ/lungs/cybernetic/tier2),
+			list("id" = "tier3", "label" = "Кибернетические III", "cost" = 2, "path" = /obj/item/organ/lungs/cybernetic/tier3),
+		),
+	),
+	list(
+		"slot" = ORGAN_SLOT_LIVER,
+		"base" = /obj/item/organ/liver,
+		"label" = "Печень",
+		"options" = list(
+			list("id" = "organic", "label" = "Обычная", "cost" = 0),
+			list("id" = "cyber", "label" = "Кибернетическая", "cost" = 0, "path" = /obj/item/organ/liver/cybernetic),
+			list("id" = "tier2", "label" = "Кибернетическая II", "cost" = 1, "path" = /obj/item/organ/liver/cybernetic/tier2),
+			list("id" = "tier3", "label" = "Кибернетическая III", "cost" = 2, "path" = /obj/item/organ/liver/cybernetic/tier3),
+		),
+	),
+	list(
+		"slot" = ORGAN_SLOT_STOMACH,
+		"base" = /obj/item/organ/stomach,
+		"label" = "Желудок",
+		"options" = list(
+			list("id" = "organic", "label" = "Обычный", "cost" = 0),
+			list("id" = "cyber", "label" = "Кибернетический", "cost" = 0, "path" = /obj/item/organ/stomach/cybernetic),
+			list("id" = "tier2", "label" = "Кибернетический II", "cost" = 1, "path" = /obj/item/organ/stomach/cybernetic/tier2),
+			list("id" = "tier3", "label" = "Кибернетический III", "cost" = 2, "path" = /obj/item/organ/stomach/cybernetic/tier3),
+		),
+	),
+	list(
+		"slot" = ORGAN_SLOT_BREATHING_TUBE,
+		"label" = "Дыхательная трубка",
+		"options" = list(
+			list("id" = "none", "label" = "Нет", "cost" = 0),
+			list("id" = "tube", "label" = "Установить", "cost" = 1, "path" = /obj/item/organ/cyberimp/mouth/breathing_tube),
+		),
+	),
+))
+
+GLOBAL_LIST_INIT(body_mod_implants, list(
+	list("id" = "hide_backpack", "label" = "Имплант Дорсуалифоба", "desc" = "Рюкзак на спине скрывается от посторонних глаз по кнопке.", "cost" = 0, "path" = /obj/item/implant/hide_backpack),
+	list("id" = "disrobe", "label" = "Мгновенное раздевание", "desc" = "Кнопка мгновенно сбрасывает всю надетую одежду.", "cost" = 0, "path" = /obj/item/implant/disrobe),
+	list("id" = "genital_fluid", "label" = "Жидкостный индуктор", "desc" = "Позволяет вырабатывать генитальную жидкость заданного реагента. (груди)", "cost" = 0, "path" = /obj/item/implant/genital_fluid),
+))
+
+/datum/preferences/proc/body_mod_organ_group(slot)
+	for(var/list/group in GLOB.body_mod_organ_groups)
+		if(group["slot"] == slot)
+			return group
+	return null
+
+/datum/preferences/proc/body_mod_organ_option(slot, option_id)
+	var/list/group = body_mod_organ_group(slot)
+	if(!group)
+		return null
+	for(var/list/option in group["options"])
+		if(option["id"] == option_id)
+			return option
+	return null
+
+/datum/preferences/proc/body_mod_implant_option(implant_id)
+	for(var/list/option in GLOB.body_mod_implants)
+		if(option["id"] == implant_id)
+			return option
+	return null
+
+/datum/preferences/proc/body_mod_organ_locked(slot)
+	if(!pref_species)
+		return FALSE
+	switch(slot)
+		if(ORGAN_SLOT_EYES)
+			return pref_species.mutanteyes != /obj/item/organ/eyes
+		if(ORGAN_SLOT_EARS)
+			return pref_species.mutantears != /obj/item/organ/ears
+		if(ORGAN_SLOT_LUNGS)
+			return !!pref_species.mutantlungs
+		if(ORGAN_SLOT_LIVER)
+			return pref_species.mutantliver != /obj/item/organ/liver
+		if(ORGAN_SLOT_STOMACH)
+			return pref_species.mutantstomach != /obj/item/organ/stomach
+		if(ORGAN_SLOT_HEART)
+			if(pref_species.mutant_heart != /obj/item/organ/heart)
+				return TRUE
+			for(var/heart_path in pref_species.mutant_organs)
+				if(ispath(heart_path, /obj/item/organ/heart))
+					return TRUE
+	return FALSE
+
+/datum/preferences/proc/body_mod_organ_registered(path)
+	for(var/list/group in GLOB.body_mod_organ_groups)
+		if(group["base"] == path)
+			return TRUE
+		for(var/list/option in group["options"])
+			if(option["path"] == path)
+				return TRUE
+	return FALSE
+
+/datum/preferences/proc/body_mods_cost()
+	. = 0
+	for(var/slot in organ_mods)
+		if(body_mod_organ_locked(slot))
+			continue
+		var/list/option = body_mod_organ_option(slot, organ_mods[slot])
+		if(option)
+			. += option["cost"]
+	for(var/implant_id in implant_mods)
+		var/list/option = body_mod_implant_option(implant_id)
+		if(option)
+			. += option["cost"]
+
+/datum/preferences/proc/sanitize_body_mods()
+	var/list/clean_organs = list()
+	if(islist(organ_mods))
+		for(var/slot in organ_mods)
+			var/list/option = body_mod_organ_option("[slot]", organ_mods[slot])
+			if(!option || !option["path"])
+				continue
+			clean_organs["[slot]"] = option["id"]
+	organ_mods = clean_organs
+	var/list/clean_implants = list()
+	if(islist(implant_mods))
+		for(var/implant_id in implant_mods)
+			var/list/option = body_mod_implant_option("[implant_id]")
+			if(!option)
+				continue
+			clean_implants[option["id"]] = TRUE
+	implant_mods = clean_implants
+
+/datum/preferences/proc/drop_locked_body_mods()
+	var/list/dropped = list()
+	for(var/slot in organ_mods)
+		if(body_mod_organ_locked(slot))
+			dropped += slot
+	for(var/slot in dropped)
+		organ_mods -= slot
+
+/datum/preferences/proc/migrate_legacy_body_mods()
+	if(!SSquirks || !length(SSquirks.quirks))
+		return
+	var/list/legacy_quirks = list(
+		"Глаза с Повышенной Светимостью" = "eyes",
+		"Трубка для Горлового Дыхания" = "tube",
+		"Имплант Для Дорсуалифоба" = "hide_backpack",
+		"Тядзин" = "genital_fluid",
+	)
+	var/list/migrated = list()
+	for(var/quirk_name in legacy_quirks)
+		if(quirk_name in all_quirks)
+			all_quirks -= quirk_name
+			migrated += legacy_quirks[quirk_name]
+	if(!length(migrated))
+		return
+	var/budget = 0
+	for(var/quirk_name in all_quirks)
+		var/datum/quirk/quirk_datum = SSquirks.quirks[quirk_name]
+		if(quirk_datum)
+			budget -= initial(quirk_datum.value)
+	for(var/modification in modified_limbs)
+		var/limb_kind = modified_limbs[modification][1]
+		if(limb_kind == LOADOUT_LIMB_PROSTHETIC)
+			budget += 1
+		else if(limb_kind == LOADOUT_LIMB_AMPUTATED)
+			budget += 2
+	budget -= mob_size_name_to_quirk_cost(body_weight)
+	budget -= body_mods_cost()
+	if(("tube" in migrated) && !organ_mods[ORGAN_SLOT_BREATHING_TUBE] && budget >= 1)
+		organ_mods[ORGAN_SLOT_BREATHING_TUBE] = "tube"
+		budget -= 1
+	if(("eyes" in migrated) && !organ_mods[ORGAN_SLOT_EYES] && !body_mod_organ_locked(ORGAN_SLOT_EYES))
+		if(budget >= 2)
+			organ_mods[ORGAN_SLOT_EYES] = "glow"
+			budget -= 2
+		else if(budget >= 1)
+			organ_mods[ORGAN_SLOT_EYES] = "robotic"
+			budget -= 1
+	if("hide_backpack" in migrated)
+		implant_mods["hide_backpack"] = TRUE
+	if("genital_fluid" in migrated)
+		implant_mods["genital_fluid"] = TRUE
+
+/datum/preferences/proc/apply_prefs_body_mods(mob/living/carbon/human/character)
+	for(var/slot in organ_mods)
+		if(body_mod_organ_locked(slot))
+			continue
+		var/list/group = body_mod_organ_group(slot)
+		if(!group)
+			continue
+		var/list/option = body_mod_organ_option(slot, organ_mods[slot])
+		if(!option || !option["path"])
+			continue
+		var/new_path = option["path"]
+		var/obj/item/organ/old_organ = character.getorganslot(slot)
+		if(old_organ)
+			if(old_organ.type == new_path)
+				continue
+			if(old_organ.type != group["base"] && !body_mod_organ_registered(old_organ.type))
+				continue
+			old_organ.Remove()
+			qdel(old_organ)
+		var/obj/item/organ/new_organ = new new_path
+		if(istype(new_organ, /obj/item/organ/eyes/robotic/toggled/glow))
+			var/obj/item/organ/eyes/robotic/toggled/glow/glow_eyes = new_organ
+			if(length(character.left_eye_color))
+				glow_eyes.left_eye_color = character.left_eye_color
+				glow_eyes.current_color_string = "#[character.left_eye_color]"
+			if(length(character.right_eye_color))
+				glow_eyes.right_eye_color = character.right_eye_color
+		new_organ.Insert(character)
+	for(var/implant_id in implant_mods)
+		var/list/option = body_mod_implant_option(implant_id)
+		if(!option || !option["path"])
+			continue
+		var/new_path = option["path"]
+		if(locate(new_path) in character.implants)
+			continue
+		var/obj/item/implant/new_implant = new new_path
+		if(!new_implant.implant(character, null, TRUE, TRUE))
+			qdel(new_implant)
+
 /datum/preferences/proc/GetQuirkBalance(mob/user)
 	var/bal = 0
 	for(var/V in all_quirks)
 		var/datum/quirk/T = SSquirks.quirks[V]
 		bal -= initial(T.value)
 	for(var/modification in modified_limbs)
-		if(modified_limbs[modification][1] == LOADOUT_LIMB_PROSTHETIC)
-			bal += 1 //max 1 point regardless of how many prosthetics
+		var/limb_kind = modified_limbs[modification][1]
+		if(limb_kind == LOADOUT_LIMB_PROSTHETIC)
+			bal += 1
+		else if(limb_kind == LOADOUT_LIMB_AMPUTATED)
+			bal += 2
 	bal -= mob_size_name_to_quirk_cost(body_weight) //BLUEMOON ADD вес влияет на доступные квирки
+	bal -= body_mods_cost()
 	if(bal < 0)
 		to_chat(user, "<span class='danger'>Something goes wrong and quirk balance goes to [bal], quirks and character weight reseted.</span>") //BLUEMOON ADD
 		all_quirks = list()
 		body_weight = NAME_WEIGHT_NORMAL //BLUEMOON ADD сброс всего сбрасывает и вес
+		organ_mods = list()
+		implant_mods = list()
 		return FALSE
 	return bal
 
@@ -1044,6 +1308,7 @@ GLOBAL_LIST_EMPTY(preferences_datums)
 
 	if(initial_spawn)
 		apply_prefs_modified_limbs(character)
+		apply_prefs_body_mods(character)
 
 	if(DIGITIGRADE in pref_species.species_traits)
 		character.Digitigrade_Leg_Swap(FALSE)

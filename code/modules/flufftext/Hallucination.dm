@@ -793,46 +793,71 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 		"У [pick_list_replacements(HAL_LINES_FILE, "jobs")] [pick_list_replacements(HAL_LINES_FILE, "tator-items")]!!!",\
 		"ИИ [pick("сбойный", "уничтожен")]!!")
 
-	var/list/mob/living/carbon/people = list()
-	var/mob/living/carbon/person = null
 	var/datum/language/understood_language = target.get_random_understood_language()
-	for(var/mob/living/carbon/H in view(target) - target)
-		if(!person)
-			person = H
-		else
-			if(get_dist(target,H)<get_dist(target,person))
-				person = H
-		people += H
+	var/mob/living/carbon/person = hallucination_pick_talker(target, view(target))
 	if(person && !force_radio) //Basic talk
 		var/chosen = specific_message
 		if(!chosen)
 			chosen = capitalize(pick(speak_messages))
 		chosen = replacetext(chosen, "%TARGETNAME%", target_name)
-		var/image/speech_overlay = image('icons/mob/talk.dmi', person, "default0", layer = ABOVE_MOB_LAYER)
-		var/message = target.compose_message(person,understood_language,chosen,null,list(person.speech_span),face_name = TRUE)
+		var/message = target.hear_fake_speech(person, understood_language, chosen)
 		feedback_details += "Type: Talk, Source: [person.real_name], Message: [message]"
-		to_chat(target, message)
-		if(target.client)
-			target.client.images |= speech_overlay
-			sleep(30)
-			if (target.client)
-				target.client.images.Remove(speech_overlay)
-		var/spans = list(person.speech_span)
-		if (target.client?.prefs.chat_on_map)
-			target.create_chat_message(person, understood_language, chosen, spans, 0)
 	else // Radio talk
 		var/chosen = specific_message
 		if(!chosen)
 			chosen = capitalize(pick(radio_messages))
 		chosen = replacetext(chosen, "%TARGETNAME%", target_name)
-		var/list/humans = list()
-		for(var/mob/living/carbon/human/H in GLOB.alive_mob_list)
-			humans += H
+		var/list/humans = hallucination_radio_talkers(target)
+		if(!length(humans))
+			qdel(src)
+			return
 		person = pick(humans)
-		var/message = target.compose_message(person,understood_language,chosen,"[FREQ_COMMON]",list(person.speech_span),face_name = TRUE)
+		var/message = target.hear_fake_speech(person, understood_language, chosen, FREQ_COMMON)
 		feedback_details += "Type: Radio, Source: [person.real_name], Message: [message]"
-		to_chat(target, message)
 	qdel(src)
+
+/// Голос, которого нет ни на лице, ни на карте, выдал бы замаскированного, хотя тот молчит.
+/proc/hallucination_voice_gives_away(mob/living/carbon/person)
+	if(!ishuman(person))
+		return FALSE
+	var/mob/living/carbon/human/human_person = person
+	var/voice = human_person.GetVoice()
+	if(voice == "Unknown" || voice == human_person.get_id_name(""))
+		return FALSE
+	return human_person.name_override || voice != human_person.get_face_name("")
+
+/// Ближайший из candidates, кто может говорить и чей голос не выдаёт маскировку; null - говорить рядом некому.
+/proc/hallucination_pick_talker(mob/living/target, list/candidates)
+	for(var/mob/living/carbon/candidate in candidates)
+		if(candidate == target || candidate.stat != CONSCIOUS || hallucination_voice_gives_away(candidate))
+			continue
+		if(!. || get_dist(target, candidate) < get_dist(target, .))
+			. = candidate
+
+/// Кто на станции может сказать target что-то по рации.
+/proc/hallucination_radio_talkers(mob/living/target)
+	. = list()
+	for(var/mob/living/carbon/human/human_mob in GLOB.alive_mob_list)
+		var/turf/human_turf = get_turf(human_mob)
+		if(human_mob != target && human_turf && is_station_level(human_turf.z) && hallucination_radio_voice_ok(human_mob))
+			. += human_mob
+
+/// Голос по рации, который ничего не выдаёт о молчащем: гарнитура есть, голос виден по лицу или карте, карта своя и с его настоящей должностью.
+/proc/hallucination_radio_voice_ok(mob/living/carbon/human/person)
+	if(person.stat != CONSCIOUS || hallucination_voice_gives_away(person))
+		return FALSE
+	// Как say() с ";": правое ухо говорит, только когда левое пусто.
+	var/obj/item/radio/headset/headset = person.ears || person.ears_extra
+	if(!istype(headset) || !headset.on)
+		return FALSE
+	var/obj/item/card/id/card = person.wear_id?.GetID()
+	if(!card)
+		card = person.wear_neck?.GetID()
+	if(!card)
+		card = person.belt?.GetID()
+	if(!card)
+		return !istype(person.wear_id, /obj/item/modular_computer/pda)
+	return card.registered_name == person.real_name && card.assignment == person.mind?.assigned_role
 
 /datum/hallucination/message
 
@@ -1346,6 +1371,23 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	if(AM == target)
 		new /datum/hallucination/shock(target)
 
+/// Предсмертное сообщение target в том виде, в каком deadchat_broadcast() показывает его мёртвому в теле.
+/proc/hallucination_deathrattle(mob/living/target)
+	return span_deadsay("<b>[target.mind?.name || target.real_name]</b>[span_linkify(" has died at <b>[get_area_name(target)]</b>.")]")
+
+/// Реплика speaker в deadchat, собранная как в say_dead().
+/proc/hallucination_deadchat_say(mob/speaker, message)
+	var/name = speaker.mind?.name || speaker.real_name
+	var/alt_name = ""
+	var/mob/dead/observer/ghost = speaker
+	if(isobserver(speaker) && ghost.deadchat_name)
+		name = ghost.deadchat_name
+	else if(name != speaker.real_name)
+		alt_name = " (died as [speaker.real_name])"
+	var/spanned = speaker.say_quote(speaker.say_emphasis(message))
+	var/source = "<span class='game'><span class='prefix'>DEAD:</span> <span class='name'>[name]</span>[alt_name]"
+	return span_deadsay("[source][span_linkify(" <span class='message'>[emoji_parse(spanned)]</span></span>")]")
+
 /datum/hallucination/death
 
 /datum/hallucination/death/New(mob/living/carbon/C, forced = TRUE)
@@ -1356,11 +1398,15 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 	target.set_screwyhud(SCREWYHUD_DEAD)
 	target.Knockdown(300)
 	target.silent += 10
-	to_chat(target, "<span class='deadsay'><b>[target.real_name]</b> has died at <b>[get_area_name(target)]</b>.</span>")
+	if(!(target.client?.prefs.toggles & DISABLE_DEATHRATTLE))
+		to_chat(target, hallucination_deathrattle(target))
 	if(prob(50))
 		var/mob/fakemob
 		var/list/dead_people = list()
+		var/list/ignoring = target.client?.prefs.ignoring
 		for(var/mob/dead/observer/G in GLOB.player_list)
+			if(!G.client?.holder?.fakekey && ignoring && (G.key in ignoring))
+				continue
 			dead_people += G
 		if(LAZYLEN(dead_people))
 			fakemob = pick(dead_people)
@@ -1368,8 +1414,8 @@ GLOBAL_LIST_INIT(hallucination_list, list(
 			fakemob = target //ever been so lonely you had to haunt yourself?
 		if(fakemob)
 			sleep(rand(20, 50))
-			to_chat(target, "<span class='deadsay'><b>DEAD: [fakemob.name]</b> says, \"[pick("rip","why did i just drop dead?","hey [target.first_name()]","git gud","you too?","is the AI rogue?",\
-			 "i[prob(50)?" fucking":""] hate [pick("blood cult", "clock cult", "revenants", "this round","this","myself","admins","you")]")]\"</span>")
+			to_chat(target, hallucination_deadchat_say(fakemob, pick("rip","why did i just drop dead?","hey [target.first_name()]","git gud","you too?","is the AI rogue?",\
+			 "i[prob(50)?" fucking":""] hate [pick("blood cult", "clock cult", "revenants", "this round","this","myself","admins","you")]")), avoid_highlighting = fakemob == target)
 	sleep(rand(70,90))
 	target.set_screwyhud(SCREWYHUD_NONE)
 	target.SetKnockdown(0)

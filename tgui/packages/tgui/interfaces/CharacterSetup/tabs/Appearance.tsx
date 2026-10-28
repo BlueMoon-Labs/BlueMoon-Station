@@ -33,12 +33,6 @@ interface MutantPart {
   colors?: MutantPartColor[];
 }
 
-interface ModifiedLimb {
-  name: string;
-  kind: string;
-  extra?: string;
-}
-
 interface AppearanceData {
   values: Record<string, string | number | boolean>;
 
@@ -51,7 +45,6 @@ interface AppearanceData {
   speciesList: string[];
   customSpecies: string | null;
   advancedColors: boolean;
-  modifiedLimbs: ModifiedLimb[];
 
   useSkintones: boolean;
   skinTone: string;
@@ -244,20 +237,6 @@ export const AppearanceTab = () => {
               onClick={() => act('randomize')}
             />
           </Box>
-          <Box mb={1}>
-            <Box>Модификация конечностей</Box>
-            <Button
-              icon="wrench"
-              content="Изменить"
-              onClick={() => act('modify_limbs')}
-            />
-          </Box>
-          {asArray(appearance.modifiedLimbs).map((limb) => (
-            <Box key={limb.name} color="label">
-              {limb.name}: {limb.kind}
-              {limb.extra ? ` (${limb.extra})` : ''}
-            </Box>
-          ))}
           {(appearance.bodySprites || []).length > 0 && (
             <SelectRow
               label="Спрайт тела"

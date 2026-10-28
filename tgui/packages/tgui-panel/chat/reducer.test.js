@@ -206,6 +206,25 @@ describe('chatReducer', () => {
       // that accept it should not get unread (line 80)
       expect(next.pageById[state.currentPageId].unreadCount).toBe(2);
     });
+
+    test('keeps the same state object when no counter changes', () => {
+      const state = setupTwoPages(true);
+      const next = chatReducer(
+        state,
+        updateMessageCount({ localchat: 3, radio: 1 }),
+      );
+      expect(next).toBe(state);
+    });
+
+    test('keeps untouched pages by reference', () => {
+      const state = setupTwoPages(false);
+      const next = chatReducer(
+        state,
+        updateMessageCount({ localchat: 1 }),
+      );
+      expect(next).not.toBe(state);
+      expect(next.pageById['radio-only']).toBe(state.pageById['radio-only']);
+    });
   });
 
   describe('addChatPage', () => {
