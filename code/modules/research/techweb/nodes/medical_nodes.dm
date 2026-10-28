@@ -107,7 +107,7 @@
 	description = "Upgraded and more powerful cybernetic implants."
 	informing_radio_channels = list(RADIO_CHANNEL_MEDICAL, RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("neural_programming", "cyber_implants","integrated_HUDs")
-	design_ids = list("ci-toolset", "ci-surgery", "ci-reviver", "ci-reviver-hack", "ci-nutrimentplus", "ci-robot-radshielding", "ci-leg-tendons", "ci-leg-ankles", "ci-monostring", "ci-gorilla-arms", "ci-handcannon", "ci-ballistic-processor", "ci-leg-lynx-paws")
+	design_ids = list("ci-toolset", "ci-surgery", "ci-reviver", "ci-reviver-hack", "ci-nutrimentplus", "ci-robot-radshielding", "ci-leg-tendons", "ci-leg-ankles", "ci-monostring", "ci-gorilla-arms", "ci-handcannon", "ci-ballistic-processor", "ci-leg-lynx-paws", "ci-kiroshi-optics", "ci-militech-optics")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2500)
 
 /datum/techweb_node/combat_cyber_implants

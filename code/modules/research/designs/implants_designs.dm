@@ -95,20 +95,32 @@
 	hacked_only = TRUE
 
 /datum/design/cyberimp_chem
-	name = "Corporate Chemical Sequencer Implant"
-	desc = "This implant can inject limited list of basic reagents into your blood."
+	name = "Corporate Blood pump implant"
+	desc = "An emergency blood pump that injects regenerative compounds into the bloodstream when critically injured."
 	id = "ci-chemseq"
 	build_type = PROTOLATHE | MECHFAB
-	materials = list(/datum/material/iron = 600, /datum/material/glass = 600, /datum/material/silver = 500, /datum/material/gold = 1000)
+	materials = list(/datum/material/iron = 6000, /datum/material/glass = 4000, /datum/material/silver = 5000, /datum/material/gold = 1000)
 	construction_time = 120
-	build_path = /obj/item/organ/cyberimp/chest/chem_implant/sec_level
+	build_path = /obj/item/organ/cyberimp/chest/blood_pump/sec_level
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 
 /datum/design/cyberimp_chem/hack
-	name = "Chemical Sequencer Implant"
+	name = "Blood pump implant"
 	id = "ci-chemseq-hack"
-	build_path = /obj/item/organ/cyberimp/chest/chem_implant
+	build_path = /obj/item/organ/cyberimp/chest/blood_pump
+	hacked_only = TRUE
+
+/datum/design/cyberimp_blood_pump_antag
+	name = "Combat Blood pump implant"
+	desc = "An emergency blood pump that injects advanced regenerative compounds into the bloodstream when critically injured."
+	id = "ci-blood-pump-antag"
+	build_type = PROTOLATHE | MECHFAB
+	construction_time = 100
+	materials = list(/datum/material/iron = 8000, /datum/material/glass = 6000, /datum/material/silver = 4000, /datum/material/gold = 3000, /datum/material/uranium = 2000)
+	build_path = /obj/item/organ/cyberimp/chest/blood_pump/antag
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 	hacked_only = TRUE
 
 /datum/design/cyberimp_janitor
@@ -324,6 +336,28 @@
 	construction_time = 100
 	materials = list(/datum/material/iron = 6000, /datum/material/glass = 4000, /datum/material/silver = 4000, /datum/material/gold = 2000)
 	build_path = /obj/item/organ/cyberimp/arm/ballistic_processor
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+
+/datum/design/cyberimp_kiroshi
+	name = "Kiroshi Optics"
+	desc = "A high-precision optical implant that grants a sniper scope-like zoom for long-range targeting."
+	id = "ci-kiroshi-optics"
+	build_type = PROTOLATHE | MECHFAB
+	construction_time = 80
+	materials = list(/datum/material/iron = 4000, /datum/material/glass = 3000, /datum/material/silver = 2000)
+	build_path = /obj/item/organ/cyberimp/eyes/optical/kiroshi
+	category = list("Implants")
+	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
+
+/datum/design/cyberimp_militech
+	name = "Militech Optical Suite"
+	desc = "A high-precision optical implant with integrated flash protection and sniper scope-like zoom for long-range targeting."
+	id = "ci-militech-optics"
+	build_type = PROTOLATHE | MECHFAB
+	construction_time = 100
+	materials = list(/datum/material/iron = 5000, /datum/material/glass = 4000, /datum/material/silver = 3000, /datum/material/gold = 2000)
+	build_path = /obj/item/organ/cyberimp/eyes/optical/militech
 	category = list("Implants")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
 
