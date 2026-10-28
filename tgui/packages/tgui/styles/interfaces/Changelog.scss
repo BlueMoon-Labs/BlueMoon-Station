@@ -72,6 +72,11 @@
     font-size: 20px;
   }
 
+  // Без min-width: 0 flex-элемент не уже своей строки в nowrap и выталкивает кнопку за плашку.
+  &__tmText {
+    min-width: 0;
+  }
+
   &__tmTitles {
     margin-top: 2px;
     color: colors.$label;

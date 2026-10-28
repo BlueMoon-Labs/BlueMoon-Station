@@ -447,7 +447,7 @@ const TestMergeBanner = (props: { testMerges: TestMerge[]; onOpen: () => void })
       <Stack.Item>
         <Icon name="flask" className="Changelog__tmIcon" />
       </Stack.Item>
-      <Stack.Item grow>
+      <Stack.Item grow className="Changelog__tmText">
         <Box bold>{`Сейчас на сервере тестируется: ${props.testMerges.length}`}</Box>
         <Box className="Changelog__tmTitles">
           {props.testMerges.map((testMerge) => `#${testMerge.number} ${testMerge.title}`).join(' · ')}
