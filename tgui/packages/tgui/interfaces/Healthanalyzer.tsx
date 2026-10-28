@@ -158,18 +158,18 @@ const speciesAppearances: Record<string, { modifier: string; icon: string }> = {
 const SpeciesBadge = ({ name, similarName, robotic, color }: { name: string; similarName?: string; robotic: boolean; color?: string }) => {
   const [hovered, setHovered] = useState(false);
   const appearance = speciesAppearances[robotic ? '#aaa9ad' : color?.toLowerCase() || '#18d855'] || speciesAppearances['#18d855'];
-  const { anchor, tooltip } = useMedicalTooltipPosition(hovered, `${name}:${similarName}:${appearance.modifier}`);
-  useMedicalTooltipEscape(hovered, () => setHovered(false));
+  const visible = hovered && !!similarName && similarName !== name;
+  const { anchor, tooltip } = useMedicalTooltipPosition(visible, `${name}:${similarName}:${appearance.modifier}`);
+  useMedicalTooltipEscape(visible, () => setHovered(false));
   return (
     <span ref={anchor} className="Healthanalyzer__speciesAnchor" onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
       <Box as="span" className={`Healthanalyzer__speciesBadge Healthanalyzer__speciesBadge--${appearance.modifier}`} color={appearance.modifier === 'organic' ? color : undefined}>
         <Icon name={appearance.icon} />
         <span>{name}</span>
       </Box>
-      {hovered && (
+      {visible && (
         <div ref={tooltip} className="Tooltip Healthanalyzer__speciesTooltip" role="tooltip">
-          <Box>{robotic ? 'Синтетик' : 'Органик'}</Box>
-          {!!similarName && similarName !== name && <Box mt={0.5}>Схожая раса: {similarName}</Box>}
+          <Box>Схожая раса: {similarName}</Box>
         </div>
       )}
     </span>
