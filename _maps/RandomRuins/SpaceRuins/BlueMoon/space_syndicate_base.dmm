@@ -453,7 +453,6 @@
 	dir = 10
 	},
 /mob/living/simple_animal/hostile/tentacles,
-/turf/open/floor/plasteel/showroomfloor/shower,
 /turf/open/floor/plasteel/white/smooth/small,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/security/prison_shower)
 "bw" = (
@@ -5672,7 +5671,6 @@
 	dir = 6
 	},
 /mob/living/simple_animal/hostile/tentacles,
-/turf/open/floor/plasteel/showroomfloor/shower,
 /turf/open/floor/plasteel/white/smooth/small,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/security/prison_shower)
 "vK" = (
