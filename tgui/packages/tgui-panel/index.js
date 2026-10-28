@@ -9,7 +9,7 @@ import './styles/main.scss';
 import './styles/themes/light.scss';
 
 import { perf } from 'common/perf';
-import { combineReducers } from 'common/redux';
+import { combineReducers, subscribeToChanges } from 'common/redux';
 import { backendReducer } from 'tgui/backend';
 import { setupGlobalEvents } from 'tgui/events';
 import { captureExternalLinks } from 'tgui/links';
@@ -79,8 +79,9 @@ const setupApp = () => {
     setupHotReloading();
   }
 
-  // Subscribe for Redux state updates
-  store.subscribe(renderApp);
+  // Subscribe for Redux state updates. Every chat message dispatches an
+  // action, so actions that leave the state unchanged skip the render.
+  subscribeToChanges(store, renderApp);
 
   // Subscribe for backend updates
   const dispatchIncomingMessage = msg => {
