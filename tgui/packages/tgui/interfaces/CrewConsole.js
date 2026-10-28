@@ -69,12 +69,17 @@ const healthToColor = (oxy, tox, burn, brute, life_status) => {
     return DEAD_COLOR;
   }
   const healthSum = (oxy ?? 0) + (tox ?? 0) + (burn ?? 0) + (brute ?? 0);
-  if (healthSum < 40) {
+  if (healthSum < 30) {
     return HEALTHY_COLOR;
   }
-  // Ступени повреждений: 40–79, 80–119 и от 120; красный оставляем смерти.
-  const level = Math.min(Math.floor(healthSum / 40) - 1, DAMAGE_COLORS.length - 1);
-  return DAMAGE_COLORS[level];
+  // Ступени повреждений: 30–49, 50–99 и от 100; красный оставляем смерти.
+  if (healthSum < 50) {
+    return DAMAGE_COLORS[0];
+  }
+  if (healthSum < 100) {
+    return DAMAGE_COLORS[1];
+  }
+  return DAMAGE_COLORS[2];
 };
 
 const HealthStat = props => {
