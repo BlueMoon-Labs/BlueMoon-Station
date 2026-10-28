@@ -740,6 +740,10 @@ GENETICS SCANNER
 
 	if(advanced)
 		general_diagnosis += "\n[msg]"
+	if(SEND_SIGNAL(M, COMSIG_NANITE_SCAN, null, FALSE))
+		general_diagnosis += "\n" + span_info("<b>Обнаружены наниты</b>")
+	else if(HAS_TRAIT_FROM(M, TRAIT_NANITES_IMMUNITY, NANITES_IMMUNITY_FROM_REAGENT))
+		general_diagnosis += "\n" + span_info("<b>Обнаружено действие Nanite Protector.</b>")
 	data["diagnosis"] = medical_scan_lines(general_diagnosis)
 	var/diagnosis_report = jointext(splittext(trim(general_diagnosis), "\n") - "", " · ")
 	msg = ""
@@ -813,6 +817,8 @@ GENETICS SCANNER
 	msg = ""
 	// Объём крови с учётом размера тела и поступающего переливания.
 	var/blood_report = ""
+	var/list/implants = list()
+	data["implants"] = implants
 	if(M.has_dna())
 		var/mob/living/carbon/C = M
 		var/blood_typepath = C.get_blood_id()
@@ -837,19 +843,10 @@ GENETICS SCANNER
 			else
 				blood_report += span_info("[HAS_TRAIT(C, TRAIT_ROBOTIC_ORGANISM) ? "Показатель уровня гидравлической жидкости" : "Показатель уровня крови"] [blood_percent] %, [blood_volume] cl[C.integrating_blood? ", и ещё поступает [integrated_blood_percent] %, [integrating_blood] cl " : ""]. группа: [blood_type]") + "\n"
 
-		var/cyberimp_detect
 		for(var/obj/item/organ/cyberimp/CI in C.internal_organs)
 			if(CI.status == ORGAN_ROBOTIC && !CI.syndicate_implant)
-				cyberimp_detect += "[capitalize(CI.ru_name || CI.name)]<br>"
-		if(cyberimp_detect)
-			msg += span_notice("Обнаружены кибернетические модификации:") + "\n"
-			msg += span_notice("[cyberimp_detect]") + "\n"
+				implants += capitalize(CI.ru_name || CI.name)
 
-	if(SEND_SIGNAL(M, COMSIG_NANITE_SCAN, null, FALSE))
-		msg += span_info("<b>Обнаружены наниты</b>")
-	else if(HAS_TRAIT_FROM(M, TRAIT_NANITES_IMMUNITY, NANITES_IMMUNITY_FROM_REAGENT))
-		msg += span_info("<b>Обнаружено действие Nanite Protector.</b>\n")
-	medical_scan_section(data, "Импланты и наниты", msg)
 	if(include_chemistry)
 		var/list/chemical_data = chemical_scan_results(M)
 		data["reagents"] = chemical_data["reagents"]
@@ -870,6 +867,8 @@ GENETICS SCANNER
 	header += replacetext(blood_report, "\n", "<br>")
 	if(diagnosis_report)
 		header += "[diagnosis_report]<br>"
+	if(length(implants))
+		header += "[span_info("Импланты:")] [html_encode(jointext(implants, ", "))]<br>"
 	if(length(quirk_report))
 		header += "[span_info("Особенности:")] [jointext(quirk_report, ", ")]<br>"
 	var/report = "[header][data["report"]]<hr>[span_info("Снимок от [scan_time]")]"
