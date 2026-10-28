@@ -650,4 +650,15 @@
 				TEST_ASSERT(findtext(recipe_data["icon"], "crafting"), "класс спрайта у рецепта [recipe_data["name"]] не от листа крафта: [recipe_data["icon"]]")
 	TEST_ASSERT(checked_recipes > 0, "в статике меню крафта не оказалось ни одного рецепта")
 
+	// Запись рецепта одна на всех: повторное открытие не пересобирает сотни рецептов в одном тике.
+	var/datum/crafting_recipe/first_recipe
+	for(var/datum/crafting_recipe/recipe as anything in GLOB.crafting_recipes)
+		if(recipe.name != "" && recipe.always_availible)
+			first_recipe = recipe
+			break
+	TEST_ASSERT_NOTNULL(first_recipe?.menu_data, "открытие меню не сохранило запись рецепта")
+	var/list/cached_entry = first_recipe.menu_data
+	crafting.ui_static_data(user)
+	TEST_ASSERT(first_recipe.menu_data == cached_entry, "повторное открытие меню пересобрало запись рецепта")
+
 #undef CRAFTING_PAYLOAD_LIMIT

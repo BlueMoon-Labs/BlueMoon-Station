@@ -762,6 +762,7 @@ TEST_FOCUS(/datum/unit_test/echolocation_lighting_shape_filtering)
 TEST_FOCUS(/datum/unit_test/echolocation_lit_fixtures)
 TEST_FOCUS(/datum/unit_test/echolocation_item_echo_visibility)
 TEST_FOCUS(/datum/unit_test/echolocation_typing_echo_lifecycle)
+TEST_FOCUS(/datum/unit_test/echolocation_batched_echo_removal)
 #endif
 
 #endif
