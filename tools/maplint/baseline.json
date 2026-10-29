@@ -862,15 +862,11 @@
 		"grille_stacking": {
 			"/obj/structure/grille": 3
 		},
-		"identical_pipes": {
-			"/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4": 8
-		},
 		"multiple_lattice": {
 			"/obj/structure/lattice": 48,
 			"/obj/structure/lattice/catwalk": 12
 		},
 		"multiple_machinery": {
-			"/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4": 8,
 			"/obj/machinery/door/poddoor/preopen": 6,
 			"/obj/machinery/light": 2
 		},
