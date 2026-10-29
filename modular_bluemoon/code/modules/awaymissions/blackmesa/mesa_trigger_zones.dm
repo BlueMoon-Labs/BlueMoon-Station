@@ -271,6 +271,10 @@ GLOBAL_VAR_INIT(active_bombardment_modes, list())
 	if(!GLOB.active_bombardment_modes)
 		GLOB.active_bombardment_modes = list()
 	GLOB.active_bombardment_modes["[trigger_id]"] = TRUE
+	for(var/obj/effect/awaymission/blackmesa/bombardment_strike/strike in world)
+		if(strike.trigger_id == trigger_id)
+			strike.trigger_bombardment()
+	remove_all_strikes_of_level(trigger_id)
 	// Delete ALL initiators with this trigger_id
 	remove_all_initiators_of_level(trigger_id)
 
@@ -278,6 +282,13 @@ GLOBAL_VAR_INIT(active_bombardment_modes, list())
 	if(!trigger_level)
 		return
 	for(var/obj/effect/awaymission/blackmesa/bombardment_initiator/T in world)
+		if(T && T.trigger_id == trigger_level)
+			qdel(T)
+
+/obj/effect/awaymission/blackmesa/bombardment_initiator/proc/remove_all_strikes_of_level(trigger_level)
+	if(!trigger_level)
+		return
+	for(var/obj/effect/awaymission/blackmesa/bombardment_strike/T in world)
 		if(T && T.trigger_id == trigger_level)
 			qdel(T)
 
@@ -316,11 +327,15 @@ GLOBAL_VAR_INIT(active_bombardment_modes, list())
 	if(!GLOB.active_bombardment_modes || !GLOB.active_bombardment_modes["[trigger_id]"])
 		return
 
-	// Drop missile on this location
-	triggered = TRUE
-	drop_missile_pod(get_turf(src))
+	trigger_bombardment()
 	// Delete ALL strike triggers with this trigger_id
 	remove_all_strikes_of_level(trigger_id)
+
+/obj/effect/awaymission/blackmesa/bombardment_strike/proc/trigger_bombardment()
+	if(triggered)
+		return
+	triggered = TRUE
+	drop_missile_pod(get_turf(src))
 
 /obj/effect/awaymission/blackmesa/bombardment_strike/proc/drop_missile_pod(turf/drop_turf)
 	if(!drop_turf)
