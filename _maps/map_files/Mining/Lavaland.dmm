@@ -10657,6 +10657,7 @@
 /obj/structure/table/wood/fancy/red,
 /obj/item/paper_bin,
 /obj/item/pen/fountain/captain,
+/obj/item/stamp/syndicate,
 /turf/open/floor/carpet/royalblack,
 /area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
 "goR" = (
@@ -29592,9 +29593,12 @@
 /area/mine/xenoarch)
 "qUj" = (
 /obj/structure/table/wood/fancy/red,
-/obj/item/lighter/contractor,
 /obj/machinery/airalarm/directional/north{
 	req_access = list(150)
+	},
+/obj/machinery/fax{
+	fax_name = "DS-1 Syndicate Fax";
+	name = "DS-2 Fax Machine"
 	},
 /turf/open/floor/carpet/royalblack,
 /area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
