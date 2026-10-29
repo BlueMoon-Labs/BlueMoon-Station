@@ -46,3 +46,19 @@
 
 	var/mob/living/carbon/human/species/mammal/vox/spawned = allocate(/mob/living/carbon/human/species/mammal/vox)
 	TEST_ASSERT(spawned.physiology.siemens_coeff < 1, "Готовый вокс со спавна без сопротивления току")
+
+/// Вокс из настроек персонажа под ударом шлюза под напряжением: путь, которым раса достаётся игроку.
+/datum/unit_test/vox_shock_resistance_from_preferences/Run()
+	var/datum/preferences/prefs = new
+	prefs.pref_species = new /datum/species/mammal/vox
+	var/mob/living/carbon/human/vox = allocate(/mob/living/carbon/human)
+	prefs.copy_to(vox, roundstart_checks = FALSE)
+	var/mob/living/carbon/human/human = allocate(/mob/living/carbon/human)
+	var/obj/item/stock_parts/cell/cell = allocate(/obj/item/stock_parts/cell/bluespace)
+	cell.charge = 500000
+	var/obj/machinery/door/airlock/door = allocate(/obj/machinery/door/airlock)
+	electrocute_mob(human, cell, door)
+	cell.charge = 500000
+	electrocute_mob(vox, cell, door)
+	// Урон от батареи 50 +-5: у вокса не больше 33, у человека не меньше 45
+	TEST_ASSERT(vox.getFireLoss() < human.getFireLoss(), "Шлюз бьёт вокса из настроек не слабее человека: [vox.getFireLoss()] против [human.getFireLoss()]")
