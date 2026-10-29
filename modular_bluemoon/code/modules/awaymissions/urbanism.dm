@@ -1214,7 +1214,9 @@
 	if(!start_turf)
 		return
 
-	linked_truck = new /obj/structure/urbanismcars/truck(start_turf)
+	linked_truck = locate(/obj/structure/urbanismcars/truck) in start_turf
+	if(!linked_truck)
+		linked_truck = new /obj/structure/urbanismcars/truck(start_turf)
 	if(!linked_truck)
 		log_world("truck_generator: failed to spawn truck")
 		return
@@ -1247,6 +1249,18 @@
 	density = TRUE
 	var/charging = FALSE
 	var/turf/target_turf = null
+	var/previous_movement_type
+	var/previous_move_force
+	var/previous_move_resist
+
+/obj/structure/urbanismcars/truck/Initialize(mapload)
+	. = ..()
+	RegisterSignal(src, COMSIG_ATOM_ENTERING, PROC_REF(on_entering_atom))
+
+/obj/structure/urbanismcars/truck/Destroy()
+	UnregisterSignal(src, COMSIG_ATOM_ENTERING)
+	SSmove_manager.stop_looping(src)
+	return ..()
 
 /obj/structure/urbanismcars/truck/proc/charge_to_destination(turf/destination)
 	if(!src || !destination)
@@ -1259,89 +1273,83 @@
 	var/turf/T = get_turf(src)
 	if(!T || T == target_turf)
 		return
+	if(T.z != destination.z)
+		log_world("truck charge rejected: start and destination are on different z-levels")
+		target_turf = null
+		return
 
 	new /obj/effect/temp_visual/dragon_swoop(target_turf)
 	charging = TRUE
-	DestroySurroundings()
+	previous_movement_type = movement_type
+	previous_move_force = move_force
+	previous_move_resist = move_resist
+	movement_type = PHASING | FLYING
+	move_force = INFINITY
+	move_resist = INFINITY
 	setDir(get_dir(src, target_turf))
 	var/obj/effect/temp_visual/decoy/D = new /obj/effect/temp_visual/decoy(loc, src)
 	if(D)
 		animate(D, alpha = 0, color = "#FF0000", transform = matrix() * 2, time = 5)
 
-	addtimer(CALLBACK(src, PROC_REF(start_charge), target_turf), 5)
+	SSmove_manager.move_towards(src, target_turf)
 
-/obj/structure/urbanismcars/truck/proc/start_charge(turf/destination)
-	if(!src || !destination)
-		charging = FALSE
-		return
+/obj/structure/urbanismcars/truck/proc/on_entering_atom(datum/source, atom/destination, atom/old_loc, list/atom/old_locs)
+	SIGNAL_HANDLER
+	if(charging && isturf(destination) && destination.density)
+		Bump(destination)
 
-	throw_at(destination, get_dist(src, destination), 1, src, 0)
-
-/obj/structure/urbanismcars/truck/Move()
-	if(charging)
-		playsound(src.loc, 'sound/effects/meteorimpact.ogg', 200, 1, 2, 1)
-		new /obj/effect/temp_visual/decoy/fading(loc, src)
-		DestroySurroundings()
+/obj/structure/urbanismcars/truck/Moved(atom/old_loc, movement_dir, forced)
 	. = ..()
-	if(charging)
-		DestroySurroundings()
-
-/obj/structure/urbanismcars/truck/Bump(atom/A)
-	if(!src || !A)
-		return ..()
-
-	if(charging)
-		if(isturf(A) || isobj(A) && A.density)
-			// Принудительно разрушаем объект
-			A.ex_act(EXPLODE_HEAVY)
-			// Если объект всё ещё существует, удаляем принудительно
-			if(!QDELETED(A))
-				qdel(A)
-		DestroySurroundings()
-	..()
-
-/obj/structure/urbanismcars/truck/throw_impact(atom/hit_atom, datum/thrownthing/throwingdatum)
-	if(!src)
+	if(!charging || !loc)
 		return
 
+	playsound(loc, 'sound/effects/meteorimpact.ogg', 200, TRUE, 2, 1)
+	new /obj/effect/temp_visual/decoy/fading(loc, src)
+	for(var/atom/movable/AM in loc)
+		if(AM != src && !QDELETED(AM) && (AM.density || isliving(AM)))
+			Bump(AM)
+
+	if(!QDELETED(src) && get_turf(src) == target_turf)
+		stop_charge()
+
+/obj/structure/urbanismcars/truck/proc/stop_charge()
 	if(!charging)
-		return ..()
-
-	if(isliving(hit_atom))
-		var/mob/living/L = hit_atom
-		if(!L)
-			return
-
-		L.visible_message("<span class='danger'>[src] slams into [L]!</span>", "<span class='userdanger'>[src] slams into you!</span>")
-		L.apply_damage(55, BRUTE)
-		playsound(get_turf(L), 'sound/effects/meteorimpact.ogg', 100, 1)
-		shake_camera(L, 4, 3)
-		shake_camera(src, 2, 3)
-		var/throwtarget = get_edge_target_turf(src, get_dir(src, get_step_away(L, src)))
-		L.throw_at(throwtarget, 3)
-
+		return
 	charging = FALSE
+	SSmove_manager.stop_looping(src)
+	target_turf = null
+	movement_type = previous_movement_type
+	move_force = previous_move_force
+	move_resist = previous_move_resist
 	anchored = TRUE
 	density = TRUE
 	visible_message(span_notice("The truck comes to a halt."))
 
-/obj/structure/urbanismcars/truck/proc/DestroySurroundings()
-	if(!src)
+/obj/structure/urbanismcars/truck/Bump(atom/A)
+	if(!A || QDELETED(src))
+		return
+	if(!charging)
+		return ..()
+
+	if(isliving(A))
+		var/mob/living/L = A
+		L.visible_message(
+			span_danger("[src] slams into [L]!"),
+			span_userdanger("[src] slams into you!")
+		)
+		L.apply_damage(55, BRUTE)
+		playsound(get_turf(L), 'sound/effects/meteorimpact.ogg', 100, TRUE)
+		shake_camera(L, 4, 3)
+		var/turf/throw_target = get_edge_target_turf(L, get_dir(src, L))
+		L.throw_at(throw_target, 3)
 		return
 
-	var/turf/T = get_turf(src)
-	if(!T)
+	if(isturf(A))
+		if(A.density)
+			A.ex_act(EXPLODE_HEAVY)
 		return
 
-	for(var/dir in GLOB.cardinals)
-		for(var/atom/movable/AM in get_step(T, dir))
-			if(!AM || AM == src)
-				continue
-			if(isturf(AM))
-				continue
-			if(AM.density)
-				// Принудительно разрушаем объект
-				AM.ex_act(EXPLODE_HEAVY)
-				// Если объект всё ещё существует, удаляем принудительно
-				if(!QDELETED(AM))
-					qdel(AM)
+	if(isobj(A) && A.density)
+		A.ex_act(EXPLODE_HEAVY)
+		if(!QDELETED(A))
+			qdel(A)

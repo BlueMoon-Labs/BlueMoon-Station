@@ -11077,12 +11077,6 @@
 /obj/structure/salvage/computer,
 /turf/open/floor/wood,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
-"erp" = (
-/obj/effect/awaymission/blackmesa/shake_trigger{
-	trigger_id = 2
-	},
-/turf/open/floor/plating/cobblestone/sidewalk,
-/area/awaymission/ihategordon/outsideofmesa)
 "erP" = (
 /obj/effect/turf_decal/siding/wideplating_new,
 /obj/effect/festive/street/streetlinesouth,
@@ -22087,7 +22081,7 @@
 /area/awaymission/ihategordon/big_offices)
 "iFm" = (
 /obj/effect/awaymission/blackmesa/shake_trigger{
-	trigger_id = 3
+	trigger_id = 4
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
@@ -42774,7 +42768,7 @@
 /area/awaymission/ihategordon/outsideofmesa/bombardment)
 "rfk" = (
 /obj/effect/awaymission/blackmesa/shake_trigger{
-	trigger_id = 4
+	trigger_id = 3
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
@@ -47720,6 +47714,12 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
+"tcq" = (
+/obj/effect/awaymission/blackmesa/shake_trigger{
+	trigger_id = 2
+	},
+/turf/open/floor/plating/cobblestone/sidewalk,
+/area/awaymission/ihategordon/outsideofmesa)
 "tcs" = (
 /obj/effect/festive/street/streetlinesouth,
 /obj/effect/turf_decal/siding/wideplating_new,
@@ -129603,7 +129603,7 @@ vPV
 vPV
 vPV
 rZK
-iFm
+rfk
 vPV
 vPV
 hdg
@@ -129860,7 +129860,7 @@ vPV
 vPV
 vPV
 rZK
-iFm
+rfk
 vPV
 vPV
 hdg
@@ -133476,7 +133476,7 @@ lDz
 mae
 lDz
 fsU
-erp
+tcq
 vPV
 hsc
 rXH
@@ -133733,7 +133733,7 @@ sjY
 rSa
 sjY
 uRF
-erp
+tcq
 vPV
 hsc
 rXH
@@ -133990,7 +133990,7 @@ kkX
 vyB
 nTw
 wVs
-erp
+tcq
 vPV
 hsc
 rXH
@@ -134247,7 +134247,7 @@ lDz
 mae
 qul
 fsU
-erp
+tcq
 vPV
 hsc
 rXH
@@ -141926,12 +141926,12 @@ ciw
 ciw
 ciw
 wxf
-rfk
+iFm
 jLp
 jLp
 jLp
 jLp
-rfk
+iFm
 wxf
 wxf
 wxf

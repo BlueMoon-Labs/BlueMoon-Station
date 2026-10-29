@@ -174,13 +174,6 @@
 	if(!dialogue_active || current_interactor != user)
 		return
 
-	next_interaction_time = world.time + 2 SECONDS
-	say("Шлюзы открыл! Деактивируете туррели - возвращаетесь к открывшемуся проходу и продолжаете путь")
-	icon_state = "radiohecu_talking"
-	playsound(src, 'sound/machines/chime.ogg', 70, FALSE, 7, 3)
-	addtimer(CALLBACK(src, PROC_REF(reset_icon)), 3 SECONDS)
-
-	open_blastdoors()
 	dialogue_completed = TRUE
 	end_dialogue()
 
@@ -237,6 +230,23 @@
 		"Но если вы попадете в основную комнату управления и отключите туррели - я открою ставни и отключу их",
 		"...И делайте это скорее, у меня тут... Скажем так, образовалась пробелма ввиде моего коллеги"
 	)
+
+/obj/machinery/negotiations_radio/door_control/confirm_action(mob/user)
+	if(!user || !src)
+		return
+
+	if(!dialogue_active || current_interactor != user)
+		return
+
+	next_interaction_time = world.time + 2 SECONDS
+	say("Шлюзы открыл! Деактивируете туррели - возвращаетесь к открывшемуся проходу и продолжаете путь")
+	icon_state = "radiohecu_talking"
+	playsound(src, 'sound/machines/chime.ogg', 70, FALSE, 7, 3)
+	addtimer(CALLBACK(src, PROC_REF(reset_icon)), 3 SECONDS)
+
+	open_blastdoors()
+	dialogue_completed = TRUE
+	end_dialogue()
 
 // =============================================================================
 // BOMBARDMENT CAMERA SYSTEM
