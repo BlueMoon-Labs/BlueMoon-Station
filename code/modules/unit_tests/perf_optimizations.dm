@@ -1251,3 +1251,19 @@
 	entry.config_entry_value -= test_key
 	regenerate_donator_grouping_list()
 	TEST_ASSERT(!is_donator_group(test_key, DONATOR_GROUP_TIER_1), "Test cleanup must remove the probe key")
+
+	// The real load path must schedule the regeneration itself.
+	var/config_file = "zz_unit_test_donators.txt"
+	var/config_path = "[config.directory]/[config_file]"
+	var/old_resident_file = entry.resident_file
+	var/old_modified = entry.modified
+	fdel(config_path)
+	text2file("tier_1_donators [test_key]", config_path)
+	config.LoadEntries(config_file)
+	fdel(config_path)
+	var/loaded = is_donator_group(test_key, DONATOR_GROUP_TIER_1)
+	entry.config_entry_value -= test_key
+	entry.resident_file = old_resident_file
+	entry.modified = old_modified
+	regenerate_donator_grouping_list()
+	TEST_ASSERT(loaded, "A donator key loaded from a config file must reach the regenerated groups")

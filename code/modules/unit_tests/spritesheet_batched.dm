@@ -658,7 +658,17 @@
 			break
 	TEST_ASSERT_NOTNULL(first_recipe?.menu_data, "открытие меню не сохранило запись рецепта")
 	var/list/cached_entry = first_recipe.menu_data
-	crafting.ui_static_data(user)
+	TEST_ASSERT(payload_entry(static_data, first_recipe) == cached_entry, "первое открытие меню отдало не сохранённую запись рецепта")
+	var/list/reopened_data = crafting.ui_static_data(user)
 	TEST_ASSERT(first_recipe.menu_data == cached_entry, "повторное открытие меню пересобрало запись рецепта")
+	TEST_ASSERT(payload_entry(reopened_data, first_recipe) == cached_entry, "повторное открытие меню отдало копию записи рецепта")
+
+/datum/unit_test/crafting_payload_size/proc/payload_entry(list/static_data, datum/crafting_recipe/recipe)
+	var/list/entries = static_data["crafting_recipes"][recipe.category]
+	if(recipe.subcategory != CAT_NONE)
+		entries = entries[recipe.subcategory]
+	for(var/list/entry in entries)
+		if(entry["ref"] == "[REF(recipe)]")
+			return entry
 
 #undef CRAFTING_PAYLOAD_LIMIT
