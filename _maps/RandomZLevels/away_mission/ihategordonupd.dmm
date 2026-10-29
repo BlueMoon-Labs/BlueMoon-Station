@@ -2384,12 +2384,6 @@
 	icon_state = "platingdmg3"
 	},
 /area/awaymission/ihategordon/dorm_rooms)
-"aWC" = (
-/obj/effect/awaymission/blackmesa/bombardment_initiator{
-	trigger_id = 2
-	},
-/turf/open/floor/plating/ironsand,
-/area/awaymission/ihategordon/outsideofmesa)
 "aWR" = (
 /obj/machinery/door/airlock/highsecurity,
 /turf/open/floor/plating,
@@ -9550,10 +9544,13 @@
 	},
 /area/awaymission/ihategordon/outsideofmesa/hecu_camp)
 "dPS" = (
-/obj/effect/festive/street/streetlineeast,
-/obj/effect/awaymission/blackmesa/shake_trigger,
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/outsideofmesa)
+/obj/structure/flora/ausbushes/stalkybush,
+/obj/structure/urbanismmachines/xenplant{
+	name = "tree";
+	icon_state = "pine"
+	},
+/turf/open/floor/plating/smooth/grass/urbanism,
+/area/space)
 "dPT" = (
 /obj/structure/urbanismcars{
 	icon_state = "truck_notwreck";
@@ -11081,12 +11078,10 @@
 /turf/open/floor/wood,
 /area/awaymission/ihategordon/outsideofmesa/restricted_zone)
 "erp" = (
-/obj/effect/awaymission/blackmesa/bombardment_initiator{
+/obj/effect/awaymission/blackmesa/shake_trigger{
 	trigger_id = 2
 	},
-/turf/open/floor/plating/ironsand{
-	color = "#f7caa6"
-	},
+/turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
 "erP" = (
 /obj/effect/turf_decal/siding/wideplating_new,
@@ -12778,13 +12773,12 @@
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
 "eYE" = (
-/obj/effect/festive/street/streetlinewest{
-	pixel_x = -1;
-	pixel_y = 0
+/obj/structure/flora/ausbushes/stalkybush,
+/obj/structure/flora/rock{
+	icon_state = "basalt2"
 	},
-/obj/effect/awaymission/blackmesa/shake_trigger,
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/outsideofmesa)
+/turf/open/floor/plating/smooth/grass/urbanism,
+/area/space)
 "eYI" = (
 /obj/structure/rockpilemesa{
 	color = "#4cfbfb"
@@ -17091,12 +17085,9 @@
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
 "gFA" = (
-/obj/structure/flora/tree/jungle{
-	icon_state = "tree4"
-	},
-/obj/structure/flora/ausbushes/sparsegrass,
-/turf/open/floor/plating/smooth/grass/urbanism,
-/area/space)
+/obj/effect/awaymission/blackmesa/shake_trigger,
+/turf/open/floor/plating/cobblestone/sidewalk,
+/area/awaymission/ihategordon/outsideofmesa)
 "gFD" = (
 /obj/effect/decal/cleanable/blood{
 	icon_state = "bubblegumfoot"
@@ -20393,8 +20384,8 @@
 /obj/effect/turf_decal/siding/wideplating_new{
 	dir = 8
 	},
-/obj/effect/awaymission/blackmesa/shake_trigger{
-	trigger_id = 4
+/obj/effect/awaymission/blackmesa/bombardment_initiator{
+	trigger_id = 2
 	},
 /turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
@@ -22098,7 +22089,7 @@
 /obj/effect/awaymission/blackmesa/shake_trigger{
 	trigger_id = 3
 	},
-/turf/open/floor/plating/cobblestone,
+/turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
 "iFK" = (
 /obj/effect/turf_decal/stripes/asteroid{
@@ -22221,16 +22212,6 @@
 /obj/effect/festive/street/streetlinewest,
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/dorm_rooms)
-"iHT" = (
-/obj/effect/festive/street/streetlinewest{
-	pixel_x = -1;
-	pixel_y = 0
-	},
-/obj/effect/awaymission/blackmesa/shake_trigger{
-	trigger_id = 3
-	},
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/outsideofmesa)
 "iHZ" = (
 /obj/structure/urbanismeffect{
 	icon_state = "fire";
@@ -24897,9 +24878,9 @@
 /area/space)
 "jLp" = (
 /obj/effect/awaymission/blackmesa/shake_trigger{
-	trigger_id = 2
+	trigger_id = 4
 	},
-/turf/open/floor/plating/cobblestone,
+/turf/open/floor/plating/ironsand,
 /area/awaymission/ihategordon/outsideofmesa)
 "jLA" = (
 /obj/structure/fence{
@@ -42792,11 +42773,10 @@
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa/bombardment)
 "rfk" = (
-/obj/effect/festive/street/streetlineeast,
 /obj/effect/awaymission/blackmesa/shake_trigger{
-	trigger_id = 3
+	trigger_id = 4
 	},
-/turf/open/floor/plating/cobblestone,
+/turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
 "rfz" = (
 /obj/structure/urbanismeffect{
@@ -47195,8 +47175,9 @@
 /turf/open/floor/plating,
 /area/awaymission/ihategordon/big_offices)
 "sRS" = (
+/obj/structure/railing/unbreakable,
 /obj/effect/awaymission/blackmesa/shake_trigger,
-/turf/open/floor/plating/cobblestone,
+/turf/open/floor/plating/cobblestone/sidewalk,
 /area/awaymission/ihategordon/outsideofmesa)
 "sRW" = (
 /obj/structure/mesaflora{
@@ -47739,16 +47720,6 @@
 	},
 /turf/open/floor/plasteel/rivets,
 /area/awaymission/ihategordon/dorm_rooms)
-"tcq" = (
-/obj/effect/festive/street/streetlinewest{
-	pixel_x = -1;
-	pixel_y = 0
-	},
-/obj/effect/awaymission/blackmesa/shake_trigger{
-	trigger_id = 2
-	},
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/outsideofmesa)
 "tcs" = (
 /obj/effect/festive/street/streetlinesouth,
 /obj/effect/turf_decal/siding/wideplating_new,
@@ -55341,11 +55312,12 @@
 	},
 /area/awaymission/ihategordon/outsideofmesa)
 "wls" = (
-/obj/structure/flora/tree/jungle{
-	layer = 6
+/obj/structure/railing/unbreakable{
+	dir = 1
 	},
-/turf/open/floor/plating/smooth/grass/urbanism,
-/area/space)
+/obj/effect/awaymission/blackmesa/shake_trigger,
+/turf/open/floor/plating/cobblestone/sidewalk,
+/area/awaymission/ihategordon/outsideofmesa)
 "wlW" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark{
 	dir = 8
@@ -59450,13 +59422,6 @@
 	},
 /obj/effect/festive/street/streetlinewest,
 /obj/structure/barricade/wooden,
-/turf/open/floor/plating/cobblestone,
-/area/awaymission/ihategordon/outsideofmesa)
-"xXI" = (
-/obj/effect/festive/street/streetlineeast,
-/obj/effect/awaymission/blackmesa/shake_trigger{
-	trigger_id = 2
-	},
 /turf/open/floor/plating/cobblestone,
 /area/awaymission/ihategordon/outsideofmesa)
 "xXM" = (
@@ -104030,7 +103995,7 @@ bpm
 hbs
 hbs
 hbs
-hbs
+mku
 gQu
 hbs
 bYK
@@ -104289,7 +104254,7 @@ hbs
 hbs
 hbs
 bpm
-hbs
+mku
 bYK
 bYK
 bYK
@@ -104548,8 +104513,8 @@ hbs
 xbt
 hbs
 bpm
-hbs
-hbs
+jKQ
+mku
 bYK
 bYK
 bYK
@@ -104806,7 +104771,7 @@ aui
 hbs
 hbs
 hbs
-bpm
+dPS
 hbs
 bYK
 bYK
@@ -105319,7 +105284,7 @@ hbs
 hbs
 hbs
 mku
-hbs
+jKQ
 hbs
 hbs
 hbs
@@ -105835,7 +105800,7 @@ hbs
 hbs
 hbs
 hbs
-hbs
+jKQ
 bYK
 bYK
 wlp
@@ -106348,7 +106313,7 @@ hbs
 ume
 hbs
 hbs
-hbs
+jKQ
 hbs
 bYK
 bYK
@@ -106606,7 +106571,7 @@ wsc
 hbs
 hbs
 hbs
-hbs
+jKQ
 bYK
 bYK
 wlp
@@ -107119,7 +107084,7 @@ icY
 hbs
 hbs
 hbs
-hbs
+jKQ
 hbs
 bYK
 bYK
@@ -107371,7 +107336,7 @@ bpm
 jKQ
 hbs
 hbs
-hbs
+icY
 hbs
 hbs
 hbs
@@ -107626,15 +107591,15 @@ hbs
 hbs
 hbs
 hbs
+mku
 hbs
 hbs
 hbs
 hbs
-xbt
 hbs
-bpm
 hbs
-nll
+hbs
+jKQ
 bYK
 bYK
 wlp
@@ -107886,12 +107851,12 @@ hbs
 aui
 hbs
 hbs
-hbs
-aui
-hbs
-hbs
+mku
+eYE
 hbs
 hbs
+hbs
+nll
 hbs
 bYK
 wlp
@@ -108147,8 +108112,8 @@ hbs
 ume
 hbs
 hbs
+jKQ
 hbs
-bYK
 bYK
 bYK
 wlp
@@ -108401,11 +108366,11 @@ hbs
 jKQ
 hbs
 ume
+wsc
 hbs
 hbs
 hbs
-pBv
-hbs
+jKQ
 bYK
 bYK
 wlp
@@ -108659,9 +108624,9 @@ hbs
 aui
 hbs
 hbs
+ume
 hbs
-hbs
-aui
+xbt
 hbs
 hbs
 bYK
@@ -108913,12 +108878,12 @@ hbs
 hbs
 rgB
 hbs
+icY
 hbs
 hbs
 hbs
 hbs
-hbs
-hbs
+jKQ
 hbs
 bZx
 bYK
@@ -109173,7 +109138,7 @@ hbs
 hbs
 hbs
 hbs
-gFA
+hbs
 hbs
 hbs
 hbs
@@ -109429,11 +109394,11 @@ hbs
 hbs
 ume
 hbs
+xbt
 hbs
+bpm
 hbs
-hbs
-hbs
-hbs
+nll
 hbs
 bYK
 wlp
@@ -109686,11 +109651,11 @@ hbs
 hbs
 bpm
 hbs
-aui
 hbs
 hbs
-wls
-bYK
+hbs
+hbs
+jKQ
 bYK
 bYK
 wlp
@@ -109943,11 +109908,11 @@ fWS
 hbs
 pKi
 bRd
+bpm
 hbs
 hbs
-bYK
-bYK
-bYK
+hbs
+nll
 bYK
 bYK
 wlp
@@ -110200,11 +110165,11 @@ mku
 hbs
 hbs
 hbs
+ume
 hbs
 hbs
-gQu
+jKQ
 hbs
-bYK
 bYK
 bYK
 wlp
@@ -110457,11 +110422,11 @@ hbs
 hbs
 iiN
 hbs
-hbs
-wls
-hbs
+wsc
 hbs
 hbs
+hbs
+jKQ
 bYK
 bYK
 wlp
@@ -110715,9 +110680,9 @@ bpm
 ume
 hbs
 hbs
+ume
 hbs
-hbs
-hbs
+xbt
 hbs
 dLJ
 bYK
@@ -110972,10 +110937,10 @@ hbs
 mku
 ume
 hbs
-fWS
 hbs
-bYK
-bYK
+hbs
+hbs
+jKQ
 bYK
 bYK
 wlp
@@ -111228,11 +111193,11 @@ hbs
 aui
 hbs
 hbs
-aui
+bpm
 hbs
 hbs
-bYK
-bYK
+hbs
+nll
 bYK
 bYK
 wlp
@@ -111485,10 +111450,10 @@ hbs
 hbs
 iiN
 hbs
-pBv
-bpm
+ume
 hbs
 hbs
+jKQ
 hbs
 bYK
 bYK
@@ -111742,11 +111707,11 @@ jKQ
 aui
 hbs
 hbs
+wsc
 hbs
 hbs
 hbs
-hbs
-hbs
+jKQ
 pBv
 bYK
 wlp
@@ -112001,8 +111966,8 @@ hbs
 hbs
 hbs
 ume
-aui
-fWS
+hbs
+xbt
 hbs
 hbs
 bYK
@@ -112259,7 +112224,7 @@ bRd
 hbs
 hbs
 hbs
-hbs
+jKQ
 hbs
 hbs
 bYK
@@ -112515,7 +112480,7 @@ hbs
 fWS
 hbs
 hbs
-pBv
+hbs
 hbs
 hbs
 hbs
@@ -112770,11 +112735,11 @@ aui
 hbs
 hbs
 hbs
+xbt
 hbs
+bpm
 hbs
-hbs
-hbs
-hbs
+nll
 bYK
 bYK
 wlp
@@ -113027,11 +112992,11 @@ hbs
 hbs
 hbs
 mfE
+aui
 hbs
 hbs
-bYK
-bYK
-bYK
+hbs
+hbs
 bYK
 bYK
 wlp
@@ -129638,7 +129603,7 @@ vPV
 vPV
 vPV
 rZK
-vPV
+iFm
 vPV
 vPV
 hdg
@@ -129895,7 +129860,7 @@ vPV
 vPV
 vPV
 rZK
-vPV
+iFm
 vPV
 vPV
 hdg
@@ -131958,9 +131923,9 @@ tiK
 vdx
 bPP
 bpc
-aWC
-erp
-erp
+bpc
+bPP
+bPP
 bpc
 bpc
 rKx
@@ -133501,17 +133466,17 @@ gZC
 lDz
 bGV
 lDz
-iFm
 lDz
 lDz
-jLp
 lDz
 lDz
-sRS
+lDz
+lDz
+lDz
 mae
 lDz
 fsU
-vPV
+erp
 vPV
 hsc
 rXH
@@ -133758,17 +133723,17 @@ wCF
 sjY
 sjY
 sjY
-iHT
 sjY
 sjY
-tcq
 sjY
 sjY
-eYE
+sjY
+sjY
+sjY
 rSa
 sjY
 uRF
-vPV
+erp
 vPV
 hsc
 rXH
@@ -134015,17 +133980,17 @@ tpD
 kkX
 kkX
 kkX
-rfk
 kkX
 kkX
-xXI
 kkX
 kkX
-dPS
+kkX
+kkX
+kkX
 vyB
 nTw
 wVs
-vPV
+erp
 vPV
 hsc
 rXH
@@ -134272,17 +134237,17 @@ gZC
 lDz
 bGV
 lDz
-iFm
 lDz
 lDz
-jLp
 lDz
 lDz
-sRS
+lDz
+lDz
+lDz
 mae
 qul
 fsU
-vPV
+erp
 vPV
 hsc
 rXH
@@ -136087,12 +136052,12 @@ iRL
 nqF
 roO
 pXO
-xQW
-vPV
-vPV
-vPV
-vPV
-nqF
+wls
+gFA
+gFA
+gFA
+gFA
+sRS
 pAV
 roO
 xQW
@@ -141961,12 +141926,12 @@ ciw
 ciw
 ciw
 wxf
-vPV
-bpc
-bpc
-bpc
-bpc
-vPV
+rfk
+jLp
+jLp
+jLp
+jLp
+rfk
 wxf
 wxf
 wxf
