@@ -17,9 +17,15 @@
 		best_roll = max(best_roll, tackle.rollTackle(target))
 	TEST_ASSERT(best_roll < 5, "Вокс без снаряжения выбрасывает монстр-такл (бросок [best_roll]): мгновенный агрессивный захват")
 
+	target.drunkenness = 100
+	best_roll = -INFINITY
+	for(var/i in 1 to 100)
+		best_roll = max(best_roll, tackle.rollTackle(target))
+	TEST_ASSERT(best_roll < 5, "Вокс выбрасывает монстр-такл по пьяной цели (бросок [best_roll]): мгновенный агрессивный захват")
+
 /// Удар вокса валит не чаще человеческого: роняет только удар с максимальным уроном.
 /datum/unit_test/vox_punch_knockdown_threshold/Run()
 	var/mob/living/carbon/human/vox = allocate(/mob/living/carbon/human)
 	vox.set_species(/datum/species/mammal/vox)
 	var/datum/species/species = vox.dna.species
-	TEST_ASSERT(species.punchstunthreshold >= species.punchdamagehigh, "Почти любой удар вокса валит: порог [species.punchstunthreshold] при уроне [species.punchdamagelow]-[species.punchdamagehigh]")
+	TEST_ASSERT(species.punchstunthreshold == species.punchdamagehigh, "Валит не только максимальный удар вокса: порог [species.punchstunthreshold] при уроне [species.punchdamagelow]-[species.punchdamagehigh]")
