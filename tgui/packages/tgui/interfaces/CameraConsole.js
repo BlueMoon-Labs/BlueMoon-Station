@@ -9,10 +9,10 @@ import { Box, Button, ByondUi, Flex, Icon, Input, Section, Stack, Tabs } from '.
 import { Window } from '../layouts';
 import { StationMap } from './common/StationMap';
 
-/**
- * Returns previous and next camera names relative to the currently
- * active camera.
- */
+// Старые источники списка не передают состояние камеры.
+const isCameraAvailable = camera => camera.status === undefined || !!camera.status;
+
+// Ищем ближайшие доступные камеры по обе стороны от выбранной, без перехода через край списка.
 export const prevNextCamera = (cameras, activeCamera) => {
   if (!activeCamera) {
     return [];
@@ -20,10 +20,24 @@ export const prevNextCamera = (cameras, activeCamera) => {
   const index = cameras.findIndex(camera => (
     camera.name === activeCamera.name
   ));
-  return [
-    cameras[index - 1]?.name,
-    cameras[index + 1]?.name,
-  ];
+  if (index === -1) {
+    return [];
+  }
+  let previousName;
+  let nextName;
+  for (let previous = index - 1; previous >= 0; previous--) {
+    if (isCameraAvailable(cameras[previous])) {
+      previousName = cameras[previous].name;
+      break;
+    }
+  }
+  for (let next = index + 1; next < cameras.length; next++) {
+    if (isCameraAvailable(cameras[next])) {
+      nextName = cameras[next].name;
+      break;
+    }
+  }
+  return [previousName, nextName];
 };
 
 /**
@@ -56,8 +70,8 @@ export const CameraConsole = (props) => {
   ] = prevNextCamera(cameras, activeCamera);
   return (
     <Window
-      width={hasMap ? 1100 : 870}
-      height={750}>
+      width={hasMap ? 1580 : 1250}
+      height={1000}>
       <Window.Content>
         <Stack fill vertical>
           {hasMap && (
@@ -206,12 +220,13 @@ export const CameraConsoleContent = (props) => {
           // would be absolutely abysmal (50+ ms for each re-render).
             <div
               key={camera.name}
-              title={camera.name}
+              title={isCameraAvailable(camera) ? camera.name : `${camera.name} — нет сигнала`}
               className={classes([
                 'Button',
                 'Button--fluid',
                 'Button--color--transparent',
                 'Button--ellipsis',
+                !isCameraAvailable(camera) && 'CameraConsole__unavailableCamera',
                 activeCamera
                 && camera.name === activeCamera.name
                 && 'Button--selected',

@@ -74,6 +74,10 @@ $background-color: rgba(0, 0, 0, 0.33) !default;
   padding: 0.5em;
 }
 
+.Button.CameraConsole__unavailableCamera {
+  color: #ff5c5c;
+}
+
 .CameraConsole__marker {
   position: absolute;
   width: 18px;
