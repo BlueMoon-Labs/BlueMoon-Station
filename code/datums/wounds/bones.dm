@@ -13,6 +13,7 @@
 	sound_effect = 'sound/effects/wounds/crack1.ogg'
 	wound_type = WOUND_BLUNT
 	wound_flags = (BONE_WOUND | ACCEPTS_GAUZE)
+	scanner_icon = "bone"
 
 	/// Have we been taped?
 	var/taped
@@ -385,6 +386,7 @@
 	wound_flags = (BONE_WOUND)
 	status_effect_type = /datum/status_effect/wound/blunt/moderate
 	scar_keyword = "bluntmoderate"
+	scanner_icon = "hand-spock"
 
 // BLUEMOON ADD START
 /datum/wound/blunt/moderate/apply_wound(obj/item/bodypart/L, silent, datum/wound/old_wound, smited)

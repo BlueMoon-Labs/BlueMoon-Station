@@ -114,6 +114,9 @@
 		// Fallback: legacy payload path for backward compatibility
 		if(!state_json && islist(payload))
 			state_json = payload["state"]
+		// Чанками приходит само состояние без обёртки: на руках разобранный список, исходная строка - в href_list
+		if(!state_json && islist(payload) && payload["v"])
+			state_json = href_list?["payload"]
 		if(!istext(state_json) || length(state_json) > 16384)
 			if(client && istext(state_json))
 				window.send_message("panel/state_error", list("reason" = "too_large", "size" = length(state_json)))

@@ -85,7 +85,7 @@
 		"custom_speech_verb", "custom_speech_verb_ru", "custom_tongue", "custom_laugh", "language",
 		"bark_id", "bark_speed", "bark_pitch", "bark_variance", "enable_personal_chat_color", "personal_chat_color",
 		"loadout_slot", "loadout_enabled", "loadout_data", "all_quirks", "antag_opt_in_level",
-		"phobia_type", "shriek_type", "onelife_death_type", "summon_nickname", "vore_taste", "vore_smell",
+		"phobia_type", "shriek_type", "onelife_death_type", "summon_nickname", "distant_start_enabled", "vore_taste", "vore_smell",
 		"security_records", "medical_records", "underwear", "undershirt", "socks", "undie_color", "shirt_color", "socks_color",
 		"job_preferences", "joblessrole", "alt_titles_preferences", "persistent_tattoos", "tattoos_string", "pending_tattoo_removals",
 		"character_presets", "active_character_preset",
@@ -107,6 +107,7 @@
 	var/static/list/fields = list(
 		"job_preferences", "joblessrole", "alt_titles_preferences", "prefered_security_department",
 		"all_quirks", "phobia_type", "shriek_type", "onelife_death_type", "summon_nickname", "loadout_enabled",
+		"organ_mods", "implant_mods", "distant_start_enabled",
 	)
 	return fields
 
@@ -126,6 +127,11 @@
 				snapshot[field] = deepCopyList(preset[field])
 			snapshot["alt_titles_preferences"] = SANITIZE_LIST(snapshot["alt_titles_preferences"])
 			snapshot["loadout"] = deepCopyList(preset["loadout"])
+			// Старые пресеты хранят эти модификации в квирках; переносим каждый набор независимо.
+			snapshot["organ_mods"] = SANITIZE_LIST(snapshot["organ_mods"])
+			snapshot["implant_mods"] = SANITIZE_LIST(snapshot["implant_mods"])
+			snapshot["distant_start_enabled"] = sanitize_integer(snapshot["distant_start_enabled"], FALSE, TRUE, TRUE)
+			migrate_legacy_body_mods(snapshot["all_quirks"], snapshot["organ_mods"], snapshot["implant_mods"])
 			sanitized[preset_name] = snapshot
 	character_presets = sanitized
 	if(!istext(active_character_preset) || !islist(character_presets[active_character_preset]))
@@ -157,8 +163,6 @@
 			positive_count++
 	if(positive_count > MAX_QUIRKS)
 		return "В пресете больше [MAX_QUIRKS] положительных квирков."
-	if(quirk_balance(quirks) < 0)
-		return "Для этих квирков не хватает баланса при текущем весе, протезах и модификациях персонажа."
 	var/points = available_gear_points(user)
 	var/list/seen_gear = list()
 	for(var/raw_entry in preset["loadout"])
@@ -181,6 +185,43 @@
 	if(points < 0)
 		return "Для комплекта пресета не хватает очков экипировки."
 	return null
+
+// Убираем устаревшие и недоступные записи, сохраняя остальную часть пресета.
+/datum/character_setup/proc/clean_character_preset(list/preset, mob/user)
+	var/list/removed = list()
+	var/list/quirks = preset["all_quirks"]
+	var/positive_count = 0
+	for(var/quirk_name in quirks.Copy())
+		var/datum/quirk/quirk_datum = istext(quirk_name) ? SSquirks.quirks[quirk_name] : null
+		if(!quirk_datum || quirk_lock_reason(quirk_name, quirk_datum, quirks))
+			quirks -= list(quirk_name)
+			removed += "[quirk_name]"
+			continue
+		if(initial(quirk_datum.value) > 0 && ++positive_count > MAX_QUIRKS)
+			quirks -= quirk_name
+			removed += quirk_name
+	var/list/clean_loadout = list()
+	var/list/seen_gear = list()
+	var/points = available_gear_points(user)
+	for(var/raw_entry in preset["loadout"])
+		var/list/entry = islist(raw_entry) ? raw_entry : null
+		var/datum/gear/gear = entry && istext(entry[LOADOUT_ITEM]) ? find_loadout_gear(entry[LOADOUT_ITEM]) : null
+		if(!gear)
+			removed += "предмет [entry ? entry[LOADOUT_ITEM] : "без идентификатора"]"
+			continue
+		if((gear.type in seen_gear) || (gear.donoritem && !gear.donator_ckey_check(user?.key)) || (istype(gear, /datum/gear/unlockable) && !prefs.can_use_unlockable(gear)) || gear.cost > points)
+			removed += gear.name
+			continue
+		points -= gear.cost
+		seen_gear += gear.type
+		clean_loadout += list(entry)
+	preset["loadout"] = clean_loadout
+	var/list/jobs = preset["job_preferences"]
+	for(var/job_title in jobs.Copy())
+		if(!istext(job_title) || !SSjob.GetJob(job_title))
+			jobs -= list(job_title)
+			removed += "профессия [job_title]"
+	return removed
 
 /datum/character_setup/proc/manage_character_preset(action, list/params, mob/user)
 	var/slot = prefs.default_slot
@@ -238,6 +279,11 @@
 			selected_character_preset = null
 			save_notice = "Пресет «[preset_name]» удалён. Текущие настройки персонажа оставлены без изменений."
 		if("preset_apply")
+			if(!length(SSquirks?.quirks) || !SSjob?.initialized || !length(GLOB.loadout_items))
+				save_notice = "Справочники профессий, квирков или экипировки ещё загружаются."
+				return
+			preset = deepCopyList(preset)
+			var/list/removed = clean_character_preset(preset, user)
 			var/error = character_preset_error(preset, user)
 			if(error)
 				save_notice = "Пресет не применён: [error]"
@@ -247,17 +293,24 @@
 				prefs.vars[field] = deepCopyList(preset[field])
 			prefs.joblessrole = sanitize_inlist(prefs.joblessrole, list(RETURNTOLOBBY, BEOVERFLOW, BERANDOMJOB), RETURNTOLOBBY)
 			prefs.loadout_enabled = sanitize_integer(prefs.loadout_enabled, FALSE, TRUE, TRUE)
+			prefs.sanitize_body_mods()
+			prefs.distant_start_enabled = sanitize_integer(prefs.distant_start_enabled, FALSE, TRUE, TRUE)
 			prefs.prefered_security_department = sanitize_inlist(prefs.prefered_security_department, GLOB.security_depts_prefs, SEC_DEPT_RANDOM)
 			prefs.shriek_type = sanitize_inlist(prefs.shriek_type, GLOB.shriek_types, SHRIEK_TYPE_GENERIC)
 			prefs.onelife_death_type = sanitize_inlist(prefs.onelife_death_type, GLOB.onelife_death_forms, "Пепел")
 			if(SStraumas)
 				prefs.phobia_type = SStraumas.sanitize_phobia_type(prefs.phobia_type)
+			prefs.character_presets[preset_name] = preset
 			activate_character_preset_loadout(preset_name, preset)
 			if(prefs.job_menu)
 				prefs.job_menu.previews.Cut()
 				prefs.job_menu.pushed_preview = null
 				SStgui.update_uis(prefs.job_menu)
 			save_notice = "Применён пресет «[preset_name]». Используется отдельный комплект «Пресет»."
+			if(length(removed))
+				save_notice += " Отключены недоступные записи: [jointext(removed, ", ")]."
+			if(quirk_balance() < 0)
+				save_notice += " Не хватает очков особенностей: скорректируйте их набор или модификации перед входом в раунд."
 
 /datum/character_setup/proc/activate_character_preset_loadout(preset_name, list/preset)
 	prefs.loadout_data["SAVE_[LOADOUT_PRESET_SLOT]"] = deepCopyList(preset["loadout"])
@@ -2731,8 +2784,9 @@
 	if(prefs.all_quirks.Find(/datum/quirk/bluemoon_devourer::name))
 		to_chat(usr, span_warning("Квирк Пожиратель несовместим с любым весом кроме стандартного."))
 		return
-	var/balance_check = prefs.GetQuirkBalance() - prefs.mob_size_name_to_quirk_cost(new_weight) + prefs.mob_size_name_to_quirk_cost(prefs.body_weight)
-	if(balance_check < 0)
+	var/balance = quirk_balance()
+	var/balance_check = balance - prefs.mob_size_name_to_quirk_cost(new_weight) + prefs.mob_size_name_to_quirk_cost(prefs.body_weight)
+	if(balance_check < min(0, balance))
 		to_chat(usr, span_warning("Для взятия данного веса нужно ещё [abs(balance_check)] очков квирков."))
 		return
 	prefs.body_weight = new_weight
@@ -2811,7 +2865,8 @@
 	if(isnull(option["path"]))
 		prefs.organ_mods -= slot
 		return
-	if(quirk_balance() + old_cost - option["cost"] < 0)
+	var/balance = quirk_balance()
+	if(balance + old_cost - option["cost"] < min(0, balance))
 		to_chat(user, span_warning("Недостаточно баланса: нужно ещё [option["cost"] - quirk_balance() - old_cost] очков квирков."))
 		return
 	prefs.organ_mods[slot] = option["id"]
@@ -2824,13 +2879,14 @@
 	var/list/option = prefs.body_mod_implant_option(implant_id)
 	if(!option)
 		return
+	var/balance = quirk_balance()
 	if(prefs.implant_mods[implant_id])
-		if(quirk_balance() + option["cost"] < 0)
+		if(balance + option["cost"] < min(0, balance))
 			to_chat(user, span_warning("Возврат этого импланта увёл бы баланс в минус!"))
 			return
 		prefs.implant_mods -= implant_id
 		return
-	if(quirk_balance() - option["cost"] < 0)
+	if(balance - option["cost"] < min(0, balance))
 		to_chat(user, span_warning("Недостаточно баланса для этого импланта!"))
 		return
 	prefs.implant_mods[implant_id] = TRUE
@@ -3026,22 +3082,7 @@
 /datum/character_setup/proc/quirk_balance(list/selected_quirks)
 	if(isnull(selected_quirks))
 		selected_quirks = prefs.all_quirks
-	var/balance = 0
-	var/list/quirk_datums = SSquirks ? SSquirks.quirks : list()
-	for(var/quirk_name in selected_quirks)
-		var/datum/quirk/quirk_datum = quirk_datums[quirk_name]
-		if(!quirk_datum)
-			continue
-		balance -= initial(quirk_datum.value)
-	for(var/modification in prefs.modified_limbs)
-		var/limb_kind = prefs.modified_limbs[modification][1]
-		if(limb_kind == LOADOUT_LIMB_PROSTHETIC)
-			balance += 1
-		else if(limb_kind == LOADOUT_LIMB_AMPUTATED)
-			balance += 2
-	balance -= prefs.mob_size_name_to_quirk_cost(prefs.body_weight)
-	balance -= prefs.body_mods_cost()
-	return balance
+	return prefs.quirk_balance(selected_quirks)
 
 /datum/character_setup/proc/quirk_lock_reason(quirk_name, datum/quirk/quirk_datum, list/selected_quirks)
 	if(isnull(selected_quirks))
@@ -3116,6 +3157,7 @@
 	data["shriekOptions"] = shriek_options
 
 	data["summonNickname"] = prefs.summon_nickname
+	data["distantStartEnabled"] = prefs.distant_start_enabled
 
 	data["phobia"] = prefs.phobia_type || "Случайная"
 	var/list/phobia_options = list("Случайная")
@@ -3236,10 +3278,11 @@
 
 	var/datum/quirk/quirk_datum = SSquirks.quirks[quirk_name]
 	var/value = SSquirks.quirk_points[quirk_name]
+	// После очистки старого пресета дефицит можно исправлять постепенно, не сбрасывая весь набор.
+	var/balance = quirk_balance()
 
 	if(quirk_name in prefs.all_quirks)
-		var/balance = quirk_balance()
-		if(balance + value < 0)
+		if(balance + value < min(0, balance))
 			to_chat(user, span_warning("Возврат этого квирка увёл бы баланс в минус!"))
 			return
 		prefs.all_quirks -= quirk_name
@@ -3252,7 +3295,7 @@
 	if(prefs.GetPositiveQuirkCount() >= MAX_QUIRKS && value > 0)
 		to_chat(user, span_warning("Нельзя взять больше [MAX_QUIRKS] позитивных квирков!"))
 		return
-	if(quirk_balance() - value < 0)
+	if(balance - value < min(0, balance))
 		to_chat(user, span_warning("Недостаточно баланса для этого квирка!"))
 		return
 	prefs.all_quirks += quirk_name
@@ -3513,6 +3556,7 @@
 	// Превью собирается отдельным тиком: сборка манекена в тике открытия или действия даёт статтер.
 	if(!preview_dirty || preview_update_pending)
 		return
+	prune_viewer_screens()
 	var/viewport_ready = FALSE
 	for(var/viewer in viewer_screens)
 		var/atom/movable/screen/map_view/character_setup_screen/viewer_screen = viewer_screens[viewer]
@@ -3547,10 +3591,29 @@
 		return
 	if(QDELETED(src) || !prefs || preview_dirty)
 		return
+	show_preview_appearance(appearance_source)
+
+/datum/character_setup/proc/show_preview_appearance(mutable_appearance/appearance_source)
+	prune_viewer_screens()
+	// Новые слои меряются попиксельно, по 1-2 мс на слой: замеряем их заранее с уступкой тика.
+	for(var/viewer in viewer_screens)
+		var/atom/movable/screen/map_view/character_setup_screen/viewer_screen = viewer_screens[viewer]
+		viewer_screen.prewarm_preview_bounds(appearance_source)
+		break
+	if(QDELETED(src) || !prefs || preview_dirty)
+		return
+	prune_viewer_screens()
 	for(var/viewer in viewer_screens)
 		var/atom/movable/screen/map_view/character_setup_screen/viewer_screen = viewer_screens[viewer]
 		viewer_screen.update_character(appearance_source, prefs.bgstate, preview_auto_fit, prefs.character_setup_single_view, preview_direction, preview_zoom, preview_reference, preview_background_style)
 	push_preview_update()
+
+// Экран зрителя мог удалиться мимо ui_close (смена моба, харддел): запись без живого экрана роняет обходы.
+/datum/character_setup/proc/prune_viewer_screens()
+	for(var/mob/viewer as anything in viewer_screens)
+		var/atom/movable/screen/map_view/character_setup_screen/viewer_screen = viewer_screens[viewer]
+		if(QDELETED(viewer_screen))
+			LAZYREMOVE(viewer_screens, viewer)
 
 /datum/character_setup/proc/push_preview_update(character_changed = FALSE)
 	for(var/datum/tgui/ui as anything in SStgui.get_all_open_uis(src))
@@ -3561,6 +3624,7 @@
 
 // Камера использует готовую внешность: поворот, фон и масштаб не пересоздают манекен.
 /datum/character_setup/proc/refresh_preview_camera(character_changed = FALSE)
+	prune_viewer_screens()
 	for(var/viewer in viewer_screens)
 		var/atom/movable/screen/map_view/character_setup_screen/viewer_screen = viewer_screens[viewer]
 		if(viewer_screen.cached_source)
@@ -4187,6 +4251,10 @@
 			quirk_set_nickname(params)
 			return TRUE
 
+		if("quirk_set_distant_start")
+			prefs.distant_start_enabled = !!params["value"]
+			return TRUE
+
 		if("slot_export")
 			slot_export()
 			return TRUE
@@ -4431,6 +4499,12 @@
 #undef CHARACTER_SETUP_INTERFACE
 #undef CHARACTER_SETUP_HEADSHOT_MAX_LEN
 
+// Замеры видимых границ слоёв общие для всех окон: экран окна удаляется при закрытии, а ресурсы за раунд не меняются.
+GLOBAL_LIST_EMPTY(character_preview_icon_bounds)
+#define CHARACTER_PREVIEW_BOUNDS_CACHE_MAX 8192
+GLOBAL_LIST_EMPTY(character_preview_backgrounds)
+#define CHARACTER_PREVIEW_BACKGROUND_CACHE_MAX 64
+
 // Исходная внешность в нативной карте BYOND: четыре ракурса или один поворачиваемый.
 /atom/movable/screen/map_view/character_setup_screen
 	name = "character setup screen"
@@ -4439,7 +4513,6 @@
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	var/list/previews = list()
 	var/shown_offset = 0
-	var/list/icon_bounds_cache = list()
 	var/viewport_aspect
 	var/mutable_appearance/cached_source
 	var/cached_background_state
@@ -4465,7 +4538,6 @@
 	vis_contents.Cut()
 	QDEL_LIST_ASSOC_VAL(previews)
 	QDEL_LIST_ASSOC_VAL(reference_previews)
-	icon_bounds_cache = null
 	cached_source = null
 	view_bounds_cache = null
 	reference_bounds_cache = null
@@ -4568,7 +4640,7 @@
 		preview.appearance_flags &= ~TILE_BOUND
 		var/list/bounds = view_bounds_cache["[direction]"]
 		if(!bounds)
-			bounds = measure_preview_bounds(preview, icon_bounds_cache) || list(0, 0, world.icon_size, world.icon_size)
+			bounds = measure_preview_bounds(preview, GLOB.character_preview_icon_bounds) || list(0, 0, world.icon_size, world.icon_size)
 			view_bounds_cache["[direction]"] = bounds
 		view_bounds["[direction]"] = bounds
 		max_width = max(max_width, bounds[3] - bounds[1])
@@ -4577,7 +4649,7 @@
 			reference.setDir(direction)
 			var/list/reference_bounds = reference_bounds_cache["[direction]"]
 			if(!reference_bounds)
-				reference_bounds = measure_preview_bounds(reference, icon_bounds_cache)
+				reference_bounds = measure_preview_bounds(reference, GLOB.character_preview_icon_bounds)
 				if(reference_bounds)
 					reference_bounds_cache["[direction]"] = reference_bounds
 			if(reference_bounds)
@@ -4634,22 +4706,28 @@
 			canvas_height = CEILING(canvas_height / zoom_factor, world.icon_size)
 	var/background_key = "[canvas_width]x[canvas_height]|[background_style]|[background_style == "texture" ? background_state : ""]"
 	if(background_cache_key != background_key)
-		// Один готовый фон на окно: повороты не создают и не рассылают новую иконку.
-		var/icon/background_canvas = icon('icons/mob/map_backgrounds.dmi', "clear")
-		background_canvas.Crop(1, 1, canvas_width, canvas_height)
-		switch(background_style)
-			if("light", "dark")
-				background_canvas.DrawBox(background_style == "light" ? "#E4E4E4" : "#202020", 1, 1, canvas_width, canvas_height)
-			if("checker")
-				for(var/x = 0, x < canvas_width, x += 8)
-					for(var/y = 0, y < canvas_height, y += 8)
-						background_canvas.DrawBox((x / 8 + y / 8) % 2 ? "#7A7A7A" : "#B0B0B0", x + 1, y + 1, min(x + 8, canvas_width), min(y + 8, canvas_height))
-			if("texture")
-				var/icon/background_tile = icon('modular_citadel/icons/ui/backgrounds.dmi', background_state, SOUTH, 1)
-				for(var/x = 0, x < canvas_width, x += background_tile.Width())
-					for(var/y = 0, y < canvas_height, y += background_tile.Height())
-						background_canvas.Blend(background_tile, ICON_OVERLAY, x + 1, y + 1)
-		background_cache = fcopy_rsc(background_canvas)
+		// Готовый фон общий для окон одного размера: повороты и повторные открытия не создают новую иконку.
+		var/background = GLOB.character_preview_backgrounds[background_key]
+		if(!background)
+			var/icon/background_canvas = icon('icons/mob/map_backgrounds.dmi', "clear")
+			background_canvas.Crop(1, 1, canvas_width, canvas_height)
+			switch(background_style)
+				if("light", "dark")
+					background_canvas.DrawBox(background_style == "light" ? "#E4E4E4" : "#202020", 1, 1, canvas_width, canvas_height)
+				if("checker")
+					for(var/x = 0, x < canvas_width, x += 8)
+						for(var/y = 0, y < canvas_height, y += 8)
+							background_canvas.DrawBox((x / 8 + y / 8) % 2 ? "#7A7A7A" : "#B0B0B0", x + 1, y + 1, min(x + 8, canvas_width), min(y + 8, canvas_height))
+				if("texture")
+					var/icon/background_tile = icon('modular_citadel/icons/ui/backgrounds.dmi', background_state, SOUTH, 1)
+					for(var/x = 0, x < canvas_width, x += background_tile.Width())
+						for(var/y = 0, y < canvas_height, y += background_tile.Height())
+							background_canvas.Blend(background_tile, ICON_OVERLAY, x + 1, y + 1)
+			background = fcopy_rsc(background_canvas)
+			GLOB.character_preview_backgrounds[background_key] = background
+			if(length(GLOB.character_preview_backgrounds) > CHARACTER_PREVIEW_BACKGROUND_CACHE_MAX)
+				GLOB.character_preview_backgrounds.Cut(1, CHARACTER_PREVIEW_BACKGROUND_CACHE_MAX / 4 + 1)
+		background_cache = background
 		background_cache_key = background_key
 	icon = background_cache
 	plane = appearance_source.plane
@@ -4689,7 +4767,13 @@
 	apply_native_camera()
 
 // Границы видимых пикселей слоёв: слева, снизу, справа, сверху. Картинку персонажа не пересобираем.
-/atom/movable/screen/map_view/character_setup_screen/proc/measure_preview_bounds(image/source, list/icon_sizes, inherited_icon, inherited_state, inherited_dir = SOUTH)
+/atom/movable/screen/map_view/character_setup_screen/proc/prewarm_preview_bounds(mutable_appearance/appearance_source)
+	var/mutable_appearance/probe = new(appearance_source)
+	for(var/direction in GLOB.cardinals)
+		probe.dir = direction
+		measure_preview_bounds(probe, GLOB.character_preview_icon_bounds, allow_sleep = TRUE)
+
+/atom/movable/screen/map_view/character_setup_screen/proc/measure_preview_bounds(image/source, list/icon_sizes, inherited_icon, inherited_state, inherited_dir = SOUTH, allow_sleep = FALSE)
 	if(source.alpha <= 0)
 		return null
 	var/icon_file = source.icon || inherited_icon
@@ -4699,30 +4783,22 @@
 	var/height = world.icon_size
 	var/list/bounds
 	if(icon_file)
-		var/icon_dir = icon_state_has_directional_frames(icon_file, state) ? direction : SOUTH
-		var/cache_key = "[REF(icon_file)]-[state]-[icon_dir]"
-		var/list/size = icon_sizes[cache_key]
+		var/file_name = "[icon_file]"
+		var/cache_prefix = "[length(file_name) ? file_name : REF(icon_file)]|[state]|"
+		var/list/size = icon_sizes["[cache_prefix][direction]"]
 		if(!size)
-			var/icon/measured = icon(icon_file, state, icon_dir, 1)
-			width = measured.Width()
-			height = measured.Height()
-			var/list/pixel_bounds
-			for(var/x in 1 to width)
-				for(var/y in 1 to height)
-					if(!measured.GetPixel(x, y))
-						continue
-					if(!pixel_bounds)
-						pixel_bounds = list(x - 1, y - 1, x, y)
-					else
-						pixel_bounds[1] = min(pixel_bounds[1], x - 1)
-						pixel_bounds[2] = min(pixel_bounds[2], y - 1)
-						pixel_bounds[3] = max(pixel_bounds[3], x)
-						pixel_bounds[4] = max(pixel_bounds[4], y)
-			size = list(width, height, pixel_bounds)
-			icon_sizes[cache_key] = size
+			var/icon_dir = icon_state_has_directional_frames(icon_file, state) ? direction : SOUTH
+			size = icon_sizes["[cache_prefix][icon_dir]"]
+			if(!size)
+				var/icon/measured = icon(icon_file, state, icon_dir, 1)
+				size = list(measured.Width(), measured.Height(), measure_pixel_bounds(measured))
+				icon_sizes["[cache_prefix][icon_dir]"] = size
+			icon_sizes["[cache_prefix][direction]"] = size
 			// Храним только числа; смена одежды и причёсок не должна растить кэш бесконечно.
-			if(length(icon_sizes) > 512)
-				icon_sizes.Cut(1, 129)
+			if(length(icon_sizes) > CHARACTER_PREVIEW_BOUNDS_CACHE_MAX)
+				icon_sizes.Cut(1, CHARACTER_PREVIEW_BOUNDS_CACHE_MAX / 4 + 1)
+			if(allow_sleep)
+				CHECK_TICK
 		width = size[1]
 		height = size[2]
 		var/list/pixel_bounds = size[3]
@@ -4730,7 +4806,7 @@
 
 	var/list/untransformed_bounds
 	for(var/image/child as anything in source.underlays + source.overlays)
-		var/list/child_bounds = measure_preview_bounds(child, icon_sizes, icon_file, state, direction)
+		var/list/child_bounds = measure_preview_bounds(child, icon_sizes, icon_file, state, direction, allow_sleep)
 		if(!child_bounds)
 			continue
 		child_bounds[1] += child.pixel_x + child.pixel_w
@@ -4779,3 +4855,44 @@
 		bounds[3] = max(bounds[3], untransformed_bounds[3])
 		bounds[4] = max(bounds[4], untransformed_bounds[4])
 	return bounds
+
+// Ищем крайние непрозрачные строки и столбцы от краёв к центру: пустые поля не обходятся целиком.
+/atom/movable/screen/map_view/character_setup_screen/proc/measure_pixel_bounds(icon/measured)
+	var/width = measured.Width()
+	var/height = measured.Height()
+	var/min_y
+	for(var/y in 1 to height)
+		for(var/x in 1 to width)
+			if(measured.GetPixel(x, y))
+				min_y = y
+				break
+		if(min_y)
+			break
+	if(!min_y)
+		return null
+	var/max_y
+	for(var/y = height, y > min_y && !max_y, y--)
+		for(var/x in 1 to width)
+			if(measured.GetPixel(x, y))
+				max_y = y
+				break
+	max_y ||= min_y
+	var/min_x
+	for(var/x in 1 to width)
+		for(var/y in min_y to max_y)
+			if(measured.GetPixel(x, y))
+				min_x = x
+				break
+		if(min_x)
+			break
+	var/max_x
+	for(var/x = width, x > min_x && !max_x, x--)
+		for(var/y in min_y to max_y)
+			if(measured.GetPixel(x, y))
+				max_x = x
+				break
+	max_x ||= min_x
+	return list(min_x - 1, min_y - 1, max_x, max_y)
+
+#undef CHARACTER_PREVIEW_BOUNDS_CACHE_MAX
+#undef CHARACTER_PREVIEW_BACKGROUND_CACHE_MAX

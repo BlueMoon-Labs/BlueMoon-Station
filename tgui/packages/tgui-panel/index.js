@@ -9,22 +9,22 @@ import './styles/main.scss';
 import './styles/themes/light.scss';
 
 import { perf } from 'common/perf';
-import { combineReducers } from 'common/redux';
-import { backendReducer } from 'tgui/backend';
+import { subscribeToChanges } from 'common/redux';
 import { setupGlobalEvents } from 'tgui/events';
 import { captureExternalLinks } from 'tgui/links';
 import { createRenderer } from 'tgui/renderer';
 import { configureStore } from 'tgui/store';
 import { setupHotReloading } from 'tgui-dev-server/link/client.cjs';
 
-import { audioMiddleware, audioReducer } from './audio';
-import { chatMiddleware, chatReducer } from './chat';
-import { emotesReducer } from './emotes'; // BLUEMOON ADD
-import { gameMiddleware, gameReducer } from './game';
+import { audioMiddleware } from './audio';
+import { chatMiddleware } from './chat';
+import { gameMiddleware } from './game';
 import { Panel } from './Panel';
 import { setupPanelFocusHacks } from './panelFocus';
-import { pingMiddleware, pingReducer } from './ping';
-import { settingsMiddleware, settingsReducer } from './settings';
+import { pingMiddleware } from './ping';
+import { panelReducer } from './reducer';
+import { serverStateMiddleware } from './serverState';
+import { settingsMiddleware } from './settings';
 import { telemetryMiddleware } from './telemetry';
 
 perf.mark('inception', window.performance?.timing?.navigationStart);
@@ -36,16 +36,7 @@ window.__pushTguiDebugEvent__?.('bundleLoaded', {
 });
 
 const store = configureStore({
-  reducer: combineReducers({
-    // История TGUI-пикера без начальной приостановки, используемой отдельными окнами.
-    backend: (state = {}, action) => backendReducer(state, action),
-    audio: audioReducer,
-    chat: chatReducer,
-    emotes: emotesReducer, // BLUEMOON ADD
-    game: gameReducer,
-    ping: pingReducer,
-    settings: settingsReducer,
-  }),
+  reducer: panelReducer,
   middleware: {
     pre: [
       chatMiddleware,
@@ -54,6 +45,7 @@ const store = configureStore({
       settingsMiddleware,
       audioMiddleware,
       gameMiddleware,
+      serverStateMiddleware,
     ],
   },
 });
@@ -79,8 +71,9 @@ const setupApp = () => {
     setupHotReloading();
   }
 
-  // Subscribe for Redux state updates
-  store.subscribe(renderApp);
+  // Subscribe for Redux state updates. Every chat message dispatches an
+  // action, so actions that leave the state unchanged skip the render.
+  subscribeToChanges(store, renderApp);
 
   // Subscribe for backend updates
   const dispatchIncomingMessage = msg => {

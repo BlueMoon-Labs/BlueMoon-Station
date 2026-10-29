@@ -204,6 +204,8 @@
 	sharpness = SHARP_NONE
 
 	var/chain = null
+	// Попадать в живые цели в крите, без сознания или с ограниченной подвижностью.
+	var/hit_incapacitated_targets = FALSE
 
 /obj/item/projectile/Initialize(mapload)
 	. = ..()
@@ -560,6 +562,11 @@
 	// 5. nothing
 		// (returns null)
 
+/obj/item/projectile/proc/apply_firing_intent(intent)
+	hit_incapacitated_targets = (intent == INTENT_HARM)
+	if(hit_incapacitated_targets || intent == INTENT_GRAB)
+		hit_prone_targets = TRUE
+
 //Returns true if the target atom is on our current turf and above the right layer
 //If direct target is true it's the originally clicked target.
 /obj/item/projectile/proc/can_hit_target(atom/target, direct_target = FALSE, ignore_loc = FALSE,cross_failed = FALSE)
@@ -587,19 +594,20 @@
 		var/mob/living/L = target
 		if(direct_target)
 			return TRUE
-		// If target not able to use items, move and stand - or if they're just dead, pass over.
-		if(L.stat == DEAD)
+		// Смерть и её имитацию пропускаем без прямого прицеливания.
+		if(L.stat == DEAD || HAS_TRAIT(L, TRAIT_FAKEDEATH))
 			return FALSE
-		// BLUEMOON ADD START - стрельба по лежачим целям в любом режиме, кроме HELP
+		if(hit_incapacitated_targets)
+			return TRUE
+		// Граб-интент сохраняет прежние ограничения для лежачих целей.
 		if(!hit_prone_targets)
 			var/mob/living/buckled_to = L.lowest_buckled_mob()
 			if(!buckled_to.density) // Will just be us if we're not buckled to another mob
 				return FALSE
 			if(L.resting)
 				return TRUE
-		if(L.stat) // если цель лежит, но в крите, то пули без таргета не берут её
+		if(L.stat)
 			return FALSE
-		// BLUEMOON ADD END
 		var/stunned = HAS_TRAIT(L, TRAIT_MOBILITY_NOMOVE) && HAS_TRAIT(L, TRAIT_MOBILITY_NOREST) && HAS_TRAIT(L, TRAIT_MOBILITY_NOPICKUP)
 		return !stunned || hit_stunned_targets
 	return TRUE

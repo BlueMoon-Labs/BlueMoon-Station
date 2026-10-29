@@ -7,14 +7,35 @@ import { COLORS } from '../constants';
 import { Window } from '../layouts';
 import { StationMap } from './common/StationMap';
 
-const HEALTH_COLOR_BY_LEVEL = [
-  '#17d568',
-  '#2ecc71',
-  '#e67e22',
-  '#ed5100',
-  '#e74c3c',
-  '#ed2814',
-];
+const HEALTHY_COLOR = '#17d568';
+const DEAD_COLOR = '#ed2814';
+const DAMAGE_COLORS = ['#ffeb3b', '#ffc107', '#ff9800'];
+const DAMAGE_PULSE_DURATIONS = ['3s', '1.5s', '0.7s'];
+
+const CrewJobIcon = ({ jobIcon, color }) => {
+  const dead = color === DEAD_COLOR;
+  const damageLevel = DAMAGE_COLORS.indexOf(color);
+  return (
+    <span className="CrewConsole__jobIconFrame">
+      <Box
+        className={`jobs8x8 ${jobIcon || 'no_id'} CrewConsole__jobIcon${dead ? ' CrewConsole__jobIcon--dead' : ''}${damageLevel >= 0 ? ' CrewConsole__jobIcon--damaged' : ''}`}
+        style={damageLevel >= 0 ? {
+          animationDuration: DAMAGE_PULSE_DURATIONS[damageLevel],
+        } : undefined} />
+      {damageLevel >= 0 && (
+        <span
+          className="CrewConsole__damageDot"
+          aria-hidden="true"
+          style={{ backgroundColor: color }} />
+      )}
+      {dead && (
+        <span className="CrewConsole__deathBadge" aria-hidden="true">
+          <Icon name="skull" />
+        </span>
+      )}
+    </span>
+  );
+};
 
 const jobIsHead = jobId => jobId % 10 === 0;
 
@@ -44,12 +65,21 @@ const jobToColor = jobId => {
 };
 
 const healthToColor = (oxy, tox, burn, brute, life_status) => {
-  if (!life_status) {
-    return HEALTH_COLOR_BY_LEVEL[HEALTH_COLOR_BY_LEVEL.length - 1];
+  if (life_status === false || life_status === 0) {
+    return DEAD_COLOR;
   }
   const healthSum = (oxy ?? 0) + (tox ?? 0) + (burn ?? 0) + (brute ?? 0);
-  const level = Math.min(Math.max(Math.ceil(healthSum / 25), 0), 5);
-  return HEALTH_COLOR_BY_LEVEL[level];
+  if (healthSum < 30) {
+    return HEALTHY_COLOR;
+  }
+  // Ступени повреждений: 30–49, 50–99 и от 100; красный оставляем смерти.
+  if (healthSum < 50) {
+    return DAMAGE_COLORS[0];
+  }
+  if (healthSum < 100) {
+    return DAMAGE_COLORS[1];
+  }
+  return DAMAGE_COLORS[2];
 };
 
 const HealthStat = props => {
@@ -66,13 +96,13 @@ const HealthStat = props => {
 };
 
 export const CrewConsole = () => {
+  const { act, data } = useBackend();
   const [tab, setTab] = useLocalState('crewTab', 'list');
   // Отметки привязаны к UID моба: одинаковые имена не объединяются, переименование сохраняет отметку.
-  const [highlightedIds, setHighlightedIds] = useLocalState('crewHighlightedIds', []);
-  const toggleHighlight = id => setHighlightedIds(ids => (
-    ids.includes(id) ? ids.filter(entry => entry !== id) : [...ids, id]
-  ));
-  const highlightProps = { highlightedIds, setHighlightedIds, toggleHighlight };
+  const highlightedIds = data.highlighted_ids || [];
+  const toggleHighlight = id => act('toggle_highlight', { id });
+  const clearHighlights = () => act('clear_highlights');
+  const highlightProps = { highlightedIds, clearHighlights, toggleHighlight };
   return (
     <Window
       title="Монитор экипажа"
@@ -113,7 +143,7 @@ export const CrewConsole = () => {
 
 const CrewTable = (props) => {
   const { data } = useBackend();
-  const { highlightedIds, setHighlightedIds, toggleHighlight } = props;
+  const { highlightedIds, clearHighlights, toggleHighlight } = props;
   const [search, setSearch] = useLocalState('crewSearch', '');
   const sensors = data.sensors || [];
   const searcher = createSearch(search, sensor => (
@@ -142,7 +172,7 @@ const CrewTable = (props) => {
               icon="times"
               tooltip="Снять все отметки"
               disabled={!highlightedIds.length}
-              onClick={() => setHighlightedIds([])} />
+              onClick={clearHighlights} />
           </Table.Cell>
           <Table.Cell bold>
             Имя
@@ -201,6 +231,7 @@ const CrewTableEntry = (props) => {
     floor,
     can_track,
   } = sensor_data;
+  const color = healthToColor(oxydam, toxdam, burndam, brutedam, life_status);
 
   return (
     <Table.Row className={highlighted && 'CrewConsole__highlightedRow'}>
@@ -214,16 +245,14 @@ const CrewTableEntry = (props) => {
       <Table.Cell
         bold={jobIsHead(ijob)}
         color={jobToColor(ijob)}>
+        <span className="CrewConsole__jobIconSlot" aria-hidden="true">
+          <CrewJobIcon jobIcon={sensor_data.job_icon} />
+        </span>
         {name}{assignment !== undefined ? ` (${assignment})` : ""}
       </Table.Cell>
       <Table.Cell collapsing textAlign="center">
         <ColorBox
-          color={healthToColor(
-            oxydam,
-            toxdam,
-            burndam,
-            brutedam,
-            life_status)} />
+          color={color} />
       </Table.Cell>
       <Table.Cell collapsing textAlign="center">
         {Number.isFinite(oxydam) ? (
@@ -286,9 +315,10 @@ const CrewDirection = ({ sensor, position }) => {
 };
 
 const CrewMap = (props) => {
-  const { data } = useBackend();
+  const { act, data } = useBackend();
   const { highlightedIds, toggleHighlight } = props;
-  const [showNames, setShowNames] = useLocalState('crewMapHighlightedNames', true);
+  const showNames = !!data.show_names;
+  const showIcons = !!data.show_icons;
   const maps = (data.levels || [])
     .map(z => (data.maps || []).find(map => map.z === z))
     .filter(Boolean);
@@ -300,10 +330,17 @@ const CrewMap = (props) => {
       maps={maps}
       initialZ={data.z}
       statePrefix="crewMap"
+      showDepartments={!!data.show_departments}
+      onToggleDepartments={() => act('toggle_departments')}
       controls={(
-        <Button.Checkbox checked={showNames} onClick={() => setShowNames(!showNames)}>
-          Имена
-        </Button.Checkbox>
+        <>
+          <Button.Checkbox checked={showNames} onClick={() => act('toggle_names')}>
+            Имена
+          </Button.Checkbox>
+          <Button.Checkbox checked={showIcons} onClick={() => act('toggle_icons')}>
+            Иконки
+          </Button.Checkbox>
+        </>
       )}
       hint=" Нажатие на метку — выделение. Полупрозрачные метки — персонажи на других этажах."
       renderMarkers={(floor, scale) => (
@@ -316,6 +353,7 @@ const CrewMap = (props) => {
               scale={scale}
               highlighted={highlightedIds.includes(sensor.id)}
               showName={showNames}
+              showIcon={showIcons}
               toggleHighlight={toggleHighlight} />
           ))}
           {!!data.position && (
@@ -338,7 +376,7 @@ const CrewMap = (props) => {
 };
 
 const CrewMapMarker = (props) => {
-  const { sensor, floor, scale, highlighted, showName, toggleHighlight } = props;
+  const { sensor, floor, scale, highlighted, showName, showIcon, toggleHighlight } = props;
   const otherLevel = sensor.pos_z !== floor.z;
   const color = healthToColor(
     sensor.oxydam, sensor.toxdam, sensor.burndam, sensor.brutedam, sensor.life_status,
@@ -349,7 +387,7 @@ const CrewMapMarker = (props) => {
   return (
     <Tooltip content={tooltip}>
       <div
-        className={`CrewConsole__marker${highlighted ? ' CrewConsole__marker--highlighted' : ''}`}
+        className={`CrewConsole__marker${showIcon ? ' CrewConsole__marker--job' : ''}${highlighted ? ' CrewConsole__marker--highlighted' : ''}`}
         role="button"
         aria-label={tooltip}
         tabIndex={0}
@@ -365,10 +403,11 @@ const CrewMapMarker = (props) => {
           left: `${(sensor.pos_x - floor.min_x + 0.5) * scale}px`,
           bottom: `${(sensor.pos_y - floor.min_y + 0.5) * scale}px`,
           color,
-          backgroundColor: color,
+          backgroundColor: showIcon ? undefined : color,
           opacity: otherLevel ? 0.4 : 1,
           zIndex: (otherLevel ? 1 : 2) + (highlighted ? 2 : 0),
         }}>
+        {showIcon && <CrewJobIcon jobIcon={sensor.job_icon} color={color} />}
         {highlighted && showName && (
           <span className="CrewConsole__markerLabel">
             {sensor.name}{otherLevel ? ` (Этаж ${sensor.floor})` : ''}

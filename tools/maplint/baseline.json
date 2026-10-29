@@ -55,9 +55,6 @@
 		"multiple_unary_components": {
 			"/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2": 1,
 			"/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4": 1
-		},
-		"wall_stacking": {
-			"/turf/closed/wall": 1
 		}
 	},
 	"_maps/RandomRuins/SpaceRuins/BlueMoon/defcon4.dmm": {
@@ -865,15 +862,11 @@
 		"grille_stacking": {
 			"/obj/structure/grille": 3
 		},
-		"identical_pipes": {
-			"/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4": 8
-		},
 		"multiple_lattice": {
 			"/obj/structure/lattice": 48,
 			"/obj/structure/lattice/catwalk": 12
 		},
 		"multiple_machinery": {
-			"/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4": 8,
 			"/obj/machinery/door/poddoor/preopen": 6,
 			"/obj/machinery/light": 2
 		},
@@ -1064,30 +1057,6 @@
 		}
 	},
 	"_maps/map_files/generic/CentCom.dmm": {
-		"barricade_stacking": {
-			"/obj/structure/barricade/wooden": 4
-		},
-		"multiple_chairs": {
-			"/obj/structure/chair/noose": 3,
-			"/obj/structure/chair/wood": 1,
-			"/obj/structure/chair/wood/wings": 2
-		},
-		"multiple_lattice": {
-			"/obj/structure/lattice": 319,
-			"/obj/structure/lattice/catwalk": 3
-		},
-		"multiple_tables": {
-			"/obj/structure/table/abductor": 2,
-			"/obj/structure/table/reinforced": 2
-		},
-		"wall_stacking": {
-			"/turf/closed/indestructible/fakeglass": 18,
-			"/turf/closed/indestructible/riveted": 1138,
-			"/turf/closed/indestructible/rock": 5,
-			"/turf/closed/indestructible/syndicate": 63
-		}
-	},
-	"_maps/map_files/generic/CentCom_hermetic.dmm": {
 		"barricade_stacking": {
 			"/obj/structure/barricade/wooden": 4
 		},
