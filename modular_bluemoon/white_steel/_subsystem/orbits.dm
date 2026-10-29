@@ -69,7 +69,9 @@ PROCESSING_SUBSYSTEM_DEF(orbits)
 /datum/controller/subsystem/processing/orbits/proc/get_event()
 	if(!event_probability)
 		return null
-	return pickweight(runnable_events)
+	// Свой экземпляр на руину: общий держал удалённый маяк в linked_z и делил счётчики тиков
+	var/datum/ruin_event/template = pickweight(runnable_events)
+	return template ? new template.type : null
 
 /datum/controller/subsystem/processing/orbits/proc/post_load_init()
 	for(var/map_key in orbital_maps)

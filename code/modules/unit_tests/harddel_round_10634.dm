@@ -74,3 +74,52 @@
 	var/list/leftover = SSicon_smooth.smooth_queue
 	SSicon_smooth.smooth_queue = saved_queue
 	TEST_ASSERT(!length(leftover), "в очереди сглаживания остались удалённые атомы")
+
+/// Маяк руины брал общий экземпляр события из runnable_events и оставался в его linked_z после удаления.
+/datum/unit_test/ruin_beacon_releases_shared_event
+	parent_type = /datum/unit_test/harddel_9813_base
+
+/datum/unit_test/ruin_beacon_releases_shared_event/proc/make_and_delete_beacon()
+	var/datum/orbital_object/z_linked/beacon/ruin/beacon = new
+	TEST_ASSERT_NOTNULL(beacon.ruin_event, "маяку руины не досталось события")
+	var/list/record = target_record(beacon, "маяк руины после очистки уровня")
+	qdel(beacon)
+	return record
+
+/datum/unit_test/ruin_beacon_releases_shared_event/Run()
+	begin_isolated_gc()
+	var/list/record = make_and_delete_beacon()
+	for(var/datum/ruin_event/template as anything in SSorbits.runnable_events)
+		TEST_ASSERT_NULL(template.linked_z, "общий шаблон события держит маяк [template.type]")
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
+	scan_holders(record)
+	assert_soft_collected(record)
+
+/// Кнопки суперкруиза удаляются вместе с телом оператора, консоль не должна их держать.
+/datum/unit_test/supercruise_console_forgets_deleted_actions
+
+/datum/unit_test/supercruise_console_forgets_deleted_actions/Run()
+	var/obj/machinery/computer/shuttle_flight/console = allocate(/obj/machinery/computer/shuttle_flight, run_loc_floor_bottom_left)
+	var/mob/living/carbon/human/pilot = new(run_loc_floor_bottom_left)
+	console.GrantActions(pilot)
+	TEST_ASSERT_EQUAL(length(console.actions), 4, "консоль выдала не все кнопки")
+	qdel(pilot)
+	TEST_ASSERT_NULL(console.off_action, "консоль держит удалённую кнопку отключения")
+	TEST_ASSERT_NULL(console.rotate_action, "консоль держит удалённую кнопку поворота")
+	TEST_ASSERT_NULL(console.place_action, "консоль держит удалённую кнопку установки")
+	TEST_ASSERT_NULL(console.docker_action, "консоль держит удалённую кнопку прыжка")
+	TEST_ASSERT(!length(console.actions), "в списке кнопок консоли остались удалённые")
+
+/// Точку стыковки на руине удаляет очистка уровня, пока шаттл помнит её точкой отлёта.
+/datum/unit_test/stationary_port_clears_mobile_references
+
+/datum/unit_test/stationary_port_clears_mobile_references/Run()
+	var/obj/docking_port/mobile/shuttle = locate() in SSshuttle.mobile
+	TEST_ASSERT_NOTNULL(shuttle, "на карте нет ни одного шаттла")
+	var/obj/docking_port/stationary/saved_previous = shuttle.previous
+	var/obj/docking_port/stationary/ruin_spot = new(run_loc_floor_bottom_left)
+	shuttle.previous = ruin_spot
+	qdel(ruin_spot, TRUE)
+	var/obj/docking_port/stationary/leftover = shuttle.previous
+	shuttle.previous = saved_previous
+	TEST_ASSERT_NULL(leftover, "шаттл помнит удалённую точку отлёта")
