@@ -491,8 +491,10 @@
 			offset = GRAB_PIXEL_SHIFT_NECK
 		if(GRAB_KILL)
 			offset = GRAB_PIXEL_SHIFT_NECK
-	M.setDir(get_dir(M, src))
-	var/dir_filter = M.dir
+	// На одной клетке направления нет: прежний dir оставлял тело сдвинутым к месту, где тянущий был раньше
+	var/dir_filter = get_dir(M, src)
+	if(dir_filter)
+		M.setDir(dir_filter)
 	if(ISDIAGONALDIR(dir_filter))
 		dir_filter = EWCOMPONENT(dir_filter)
 	var/target_x = 0
@@ -514,7 +516,7 @@
 				M.update_transform(FALSE)
 				M.lying_prev = M.lying
 			target_x -= offset
-	if(target_x || target_y)
+	if(target_x != M.pixel_x || target_y != M.pixel_y)
 		animate(M, pixel_x = target_x, pixel_y = target_y, time = 3, flags = ANIMATION_PARALLEL)
 
 /mob/living/proc/reset_pull_offsets(mob/living/M, override)
