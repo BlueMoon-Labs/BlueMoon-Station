@@ -6,7 +6,7 @@ import { useState } from 'react';
 
 import { useBackend, useLocalState } from '../backend';
 import { Box, Button, ByondUi, Flex, Icon, Input, Section, Stack, Tabs } from '../components';
-import { Window } from '../layouts';
+import { NtosWindow, Window } from '../layouts';
 import { StationMap } from './common/StationMap';
 
 // Старые источники списка не передают состояние камеры.
@@ -63,16 +63,18 @@ export const CameraConsole = (props) => {
   const [tab, setTab] = useLocalState('cameraTab', 'list');
   const hasMap = Array.isArray(data.maps);
   const showMap = hasMap && tab === 'map';
+  const CameraWindow = props.ntos ? NtosWindow : Window;
   const cameras = selectCameras(data.cameras);
   const [
     prevCameraName,
     nextCameraName,
   ] = prevNextCamera(cameras, activeCamera);
   return (
-    <Window
+    <CameraWindow
+      canMaximize
       width={hasMap ? 1580 : 1250}
       height={1000}>
-      <Window.Content>
+      <CameraWindow.Content>
         <Stack fill vertical>
           {hasMap && (
             <Stack.Item>
@@ -132,8 +134,8 @@ export const CameraConsole = (props) => {
             </div>
           </Stack.Item>
         </Stack>
-      </Window.Content>
-    </Window>
+      </CameraWindow.Content>
+    </CameraWindow>
   );
 };
 

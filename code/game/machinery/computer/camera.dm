@@ -24,6 +24,8 @@
 	var/list/camera_map_data
 	var/camera_map_updated_at = -1
 	var/show_departments = FALSE
+	// Слабая ссылка сохраняет выбор, не удерживая удалённую камеру.
+	var/datum/weakref/last_camera
 
 /obj/machinery/computer/security/Initialize(mapload)
 	. = ..()
@@ -52,6 +54,9 @@
 	QDEL_NULL(cam_plane_group)
 	qdel(cam_background)
 	camera_map_data = null
+	active_camera = null
+	last_camera = null
+	last_camera_turf = null
 	return ..()
 
 /obj/machinery/computer/security/connect_to_shuttle(obj/docking_port/mobile/port, obj/docking_port/stationary/dock, idnum, override=FALSE)
@@ -80,18 +85,16 @@
 	// Update UI
 	ui = SStgui.try_update_ui(user, src, ui)
 
+	if(!ui && !length(concurrent_users))
+		active_camera = camera_console_initial_camera(get_available_cameras(), last_camera)
+		last_camera = active_camera ? WEAKREF(active_camera) : null
+		last_camera_turf = null
+
 	// Update the camera, showing static if necessary and updating data if the location has moved.
 	update_active_camera_screen()
 
 	if(!ui)
-		var/list/map_assets = list()
-		for(var/datum/minimap/floor_map as anything in SSminimaps.station_minimaps)
-			if(is_away_level(z) && floor_map.z_level != z)
-				continue
-			map_assets += "minimap-[floor_map.id].png"
-			if(floor_map.department_map_icon)
-				map_assets += "minimap-[floor_map.id]-departments.png"
-		SSassets.transport.send_assets(user, map_assets)
+		send_camera_console_map_assets(user, z)
 		var/user_ref = REF(user)
 		var/is_living = isliving(user)
 		// Ghosts shouldn't count towards concurrent users, which produces
@@ -123,20 +126,7 @@
 	// Не пересобираем одинаковые данные для каждого зрителя в одном цикле TGUI.
 	if(isnull(camera_map_data) || world.time >= camera_map_updated_at + 1 SECONDS)
 		camera_map_updated_at = world.time
-		camera_map_data = list()
-		var/list/cameras = get_available_cameras()
-		for(var/tag in cameras)
-			var/obj/machinery/camera/camera = cameras[tag]
-			if(QDELETED(camera))
-				continue
-			var/turf/camera_turf = get_turf(camera)
-			camera_map_data += list(list(
-				name = camera.c_tag,
-				status = camera.can_use(),
-				x = camera_turf?.x,
-				y = camera_turf?.y,
-				z = camera_turf?.z,
-			))
+		camera_map_data = camera_console_camera_data(get_available_cameras())
 	data["cameras"] = camera_map_data
 	data["activeCamera"] = null
 	if(!QDELETED(active_camera))
@@ -150,12 +140,7 @@
 	var/list/data = list()
 	data["mapRef"] = map_name
 	data["z"] = z
-	data["maps"] = list()
-	for(var/datum/minimap/floor_map as anything in SSminimaps.station_minimaps)
-		if(is_away_level(z) && floor_map.z_level != z)
-			continue
-		var/list/stack = SSmapping.get_connected_levels(floor_map.z_level)
-		data["maps"] += list(floor_map.get_ui_data(stack.Find(floor_map.z_level)))
+	data["maps"] = camera_console_map_data(z)
 	return data
 
 /obj/machinery/computer/security/ui_act(action, params)
@@ -181,6 +166,7 @@
 		if(selected_camera && !antag_training_camera_visible(selected_camera, src))
 			selected_camera = null
 		active_camera = selected_camera
+		last_camera = selected_camera ? WEAKREF(selected_camera) : null
 		last_camera_turf = null
 		playsound(src, get_sfx("terminal_type"), 25, FALSE)
 
@@ -245,6 +231,8 @@
 	// Turn off the console
 	if(length(concurrent_users) == 0 && is_living)
 		active_camera = null
+		last_camera_turf = null
+		cam_screen.vis_contents.Cut()
 		playsound(src, 'sound/machines/terminal_off.ogg', 25, FALSE)
 		use_power(0)
 
@@ -437,5 +425,57 @@
 	for(var/i in network)
 		network -= i
 		network += "[idnum][i]"
+
+// Общие данные карты для стационарных и переносных устройств просмотра камер.
+/proc/camera_console_map_data(z_level)
+	var/list/maps = list()
+	for(var/datum/minimap/floor_map as anything in SSminimaps.station_minimaps)
+		if(is_away_level(z_level) && floor_map.z_level != z_level)
+			continue
+		var/list/stack = SSmapping.get_connected_levels(floor_map.z_level)
+		maps += list(floor_map.get_ui_data(stack.Find(floor_map.z_level)))
+	return maps
+
+/proc/send_camera_console_map_assets(mob/user, z_level)
+	var/list/map_assets = list()
+	for(var/datum/minimap/floor_map as anything in SSminimaps.station_minimaps)
+		if(is_away_level(z_level) && floor_map.z_level != z_level)
+			continue
+		map_assets += "minimap-[floor_map.id].png"
+		if(floor_map.department_map_icon)
+			map_assets += "minimap-[floor_map.id]-departments.png"
+	SSassets.transport.send_assets(user, map_assets)
+
+/proc/camera_console_camera_data(list/cameras)
+	var/list/data = list()
+	for(var/tag in cameras)
+		var/obj/machinery/camera/camera = cameras[tag]
+		if(QDELETED(camera))
+			continue
+		var/turf/camera_turf = get_turf(camera)
+		data += list(list(
+			name = camera.c_tag,
+			status = camera.can_use(),
+			x = camera_turf?.x,
+			y = camera_turf?.y,
+			z = camera_turf?.z,
+		))
+	return data
+
+// Последний выбор восстанавливается только среди камер, разрешённых этому устройству.
+/proc/camera_console_initial_camera(list/cameras, datum/weakref/last_camera)
+	var/obj/machinery/camera/previous_camera = last_camera?.resolve()
+	if(!QDELETED(previous_camera) && cameras[previous_camera.c_tag] == previous_camera)
+		return previous_camera
+	var/obj/machinery/camera/fallback_camera
+	for(var/tag in sort_list(cameras))
+		var/obj/machinery/camera/camera = cameras[tag]
+		if(QDELETED(camera))
+			continue
+		if(!fallback_camera)
+			fallback_camera = camera
+		if(camera.can_use())
+			return camera
+	return fallback_camera
 
 #undef DEFAULT_MAP_SIZE
