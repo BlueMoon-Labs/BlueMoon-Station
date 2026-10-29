@@ -251,6 +251,7 @@
 	var/list/brain_record = target_record(head.brain, "мозг из отрезанной головы")
 	var/list/eyes_record = target_record(head.eyes, "глаза из отрезанной головы")
 	var/list/brainmob_record = target_record(brainmob, "мозгомоб из отрезанной головы")
+	var/list/head_record = target_record(head, "отрезанная голова")
 	brainmob = null
 	stored_mind = null
 
@@ -258,11 +259,13 @@
 	TEST_ASSERT_NULL(head.brain, "Голова удержала удалённый мозг")
 	TEST_ASSERT_NULL(head.eyes, "Голова удержала удалённые глаза")
 	TEST_ASSERT_NULL(head.brainmob, "Голова удержала удалённого мозгомоба")
+	head = null
 
 	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	assert_soft_collected(brain_record)
 	assert_soft_collected(eyes_record)
 	assert_soft_collected(brainmob_record)
+	assert_soft_collected(head_record)
 
 /// Консоль голодека дерезит убежавшего питомца сама и спавнеру об этом не
 /// сообщает, а спавнер живёт до смены программы. Раунд 9827: REF SEARCH назвал
@@ -474,12 +477,15 @@
 	TEST_ASSERT(filling in burger.ingredients, "Ингредиент не попал в список бургера")
 
 	var/list/record = target_record(filling, "ингредиент кастомизируемой еды")
+	var/list/burger_record = target_record(burger, "кастомизируемый бургер")
 	filling = null
 	qdel(burger)
 	TEST_ASSERT(!length(burger.ingredients), "Список ингредиентов остался с трупами внутри")
+	burger = null
 
 	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	assert_soft_collected(record)
+	assert_soft_collected(burger_record)
 
 /// SStgui.on_close считал ключ как "[REF(ui.src_object)]" и при промахе выходил
 /// return FALSE ДО чистки, а close() сразу делал qdel(src). Оставались три
