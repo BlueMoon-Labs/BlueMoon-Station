@@ -31,6 +31,7 @@ type Scan = {
   diagnosis?: ScanLine[];
   deathNotice?: ScanLine[];
   quirks?: Quirk[];
+  implants?: string[];
   damageLevels?: Record<string, number>;
   damageLocalization?: Limb[];
   organs?: Organ[];
@@ -198,6 +199,9 @@ const VitalSigns = ({ scan }: { scan: Scan }) => (
     )}
     {!!scan.diagnosis?.length && (
       <LabeledList.Item label="Диагностика"><ScanLines lines={scan.diagnosis} compact /></LabeledList.Item>
+    )}
+    {!!scan.implants?.length && (
+      <LabeledList.Item label="Импланты">{scan.implants.join(', ')}</LabeledList.Item>
     )}
     {!!scan.quirks?.length && (
       <LabeledList.Item label="Особенности"><Quirks quirks={scan.quirks} /></LabeledList.Item>

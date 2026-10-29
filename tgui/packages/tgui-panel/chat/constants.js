@@ -5,7 +5,15 @@
  */
 
 export const MAX_VISIBLE_MESSAGES = 2500;
+// Сколько сообщений держим в памяти и поднимаем из истории при входе.
+// Больше - дороже вход и пересборка чата, остальное подгружается по кнопке.
 export const MAX_PERSISTED_MESSAGES = 1000;
+// Сколько хранится в истории между заходами. BYOND держит serverStorage одним
+// файлом и переписывает его целиком: 5000 сообщений - около 1 МБ на запись.
+export const HISTORY_MAX_MESSAGES = 5000;
+// Размер куска истории: сохранение переписывает только куски с изменениями.
+export const HISTORY_SEGMENT_SIZE = 200;
+export const HISTORY_LOAD_STEP = 500;
 export const MESSAGE_SAVE_INTERVAL = 10000;
 export const MESSAGE_PRUNE_INTERVAL = 60000;
 export const COMBINE_MAX_MESSAGES = 5;

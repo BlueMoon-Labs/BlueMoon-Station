@@ -182,6 +182,8 @@
 	var/ghost_possess_title = null
 	/// Optional question text; defaults to a generic possess prompt with [name].
 	var/ghost_possess_question = null
+	// Разрешает урон объектам, включая запасной расчёт по урону обычной атаки.
+	var/can_damage_objects = TRUE
 
 /mob/living/simple_animal/Initialize(mapload)
 	. = ..()

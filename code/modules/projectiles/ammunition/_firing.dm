@@ -27,10 +27,7 @@
 	BB.original = target
 	BB.firer = user
 	BB.fired_from = fired_from
-	// BLUEMOON ADD START - присвоение пуле возможности стрельбы лёжа, если у стреляющего интент ХАРМ
-	if(user.a_intent == INTENT_HARM)
-		BB.hit_prone_targets = TRUE
-	// BLUEMOON ADD END
+	BB.apply_firing_intent(user.a_intent)
 	if (zone_override)
 		BB.def_zone = zone_override
 	else
