@@ -29,3 +29,20 @@
 	vox.set_species(/datum/species/mammal/vox)
 	var/datum/species/species = vox.dna.species
 	TEST_ASSERT(species.punchstunthreshold == species.punchdamagehigh, "Валит не только максимальный удар вокса: порог [species.punchstunthreshold] при уроне [species.punchdamagelow]-[species.punchdamagehigh]")
+
+/// Перчатки воксу не надеть, поэтому ток бьёт его слабее человека, но оглушает так же.
+/datum/unit_test/vox_shock_resistance/Run()
+	var/mob/living/carbon/human/human = allocate(/mob/living/carbon/human)
+	var/mob/living/carbon/human/vox = allocate(/mob/living/carbon/human)
+	vox.set_species(/datum/species/mammal/vox)
+	human.electrocute_act(20, "тестовый провод")
+	vox.electrocute_act(20, "тестовый провод")
+	TEST_ASSERT(vox.getFireLoss() < human.getFireLoss(), "Ток бьёт вокса не слабее человека: [vox.getFireLoss()] против [human.getFireLoss()]")
+	TEST_ASSERT(vox.getFireLoss() > 0, "Вокс стал неуязвим к току")
+	TEST_ASSERT(vox.IsStun(), "Ток перестал оглушать вокса")
+
+	vox.set_species(/datum/species/human)
+	TEST_ASSERT(vox.physiology.siemens_coeff == 1, "Сопротивление току осталось после смены расы: [vox.physiology.siemens_coeff]")
+
+	var/mob/living/carbon/human/species/mammal/vox/spawned = allocate(/mob/living/carbon/human/species/mammal/vox)
+	TEST_ASSERT(spawned.physiology.siemens_coeff < 1, "Готовый вокс со спавна без сопротивления току")
