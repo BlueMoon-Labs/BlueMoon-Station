@@ -488,6 +488,7 @@
 #include "teleporters.dm"
 #include "tgui_create_message.dm"
 #include "tgui_dev_asset_url.dm"
+#include "tgui_oversized_payload.dm"
 #include "tgui_preview_caches.dm"
 #include "timer_sanity.dm"
 #include "turf_flags.dm"
@@ -545,6 +546,7 @@
 #include "harddel_cleanup.dm"
 #include "harddel_xenobio_10151.dm"
 #include "harddel_round_10466.dm"
+#include "harddel_round_10634.dm"
 #include "dangling_reference_guards.dm"
 #include "data_hud_offset_cache.dm"
 #include "healthdoll_memo.dm"
@@ -762,6 +764,7 @@ TEST_FOCUS(/datum/unit_test/echolocation_lighting_shape_filtering)
 TEST_FOCUS(/datum/unit_test/echolocation_lit_fixtures)
 TEST_FOCUS(/datum/unit_test/echolocation_item_echo_visibility)
 TEST_FOCUS(/datum/unit_test/echolocation_typing_echo_lifecycle)
+TEST_FOCUS(/datum/unit_test/echolocation_batched_echo_removal)
 #endif
 
 #endif

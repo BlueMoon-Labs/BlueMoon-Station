@@ -38,6 +38,90 @@
   background: rgba(255, 255, 255, 0.08);
 }
 
+.CrewConsole__jobIcon {
+  image-rendering: pixelated;
+  transform: scale(1.5);
+  pointer-events: none;
+
+  &--damaged {
+    animation: crew-damage-pulse ease-in-out infinite;
+  }
+
+  &--dead {
+    filter: grayscale(1);
+  }
+}
+
+.CrewConsole__jobIconFrame {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+  pointer-events: none;
+}
+
+.CrewConsole__damageDot {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  z-index: 1;
+  width: 8px;
+  height: 8px;
+  transform: translate(-50%, -50%);
+  border: 1px solid #111;
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+}
+
+.CrewConsole__deathBadge {
+  position: absolute;
+  top: 0;
+  left: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 10px;
+  height: 10px;
+  transform: translate(-50%, -50%);
+  color: white;
+  font-size: 10px;
+  line-height: 1;
+  filter: drop-shadow(0 0 1px black) drop-shadow(0 0 1px black);
+  pointer-events: none;
+}
+
+.CrewConsole__jobIconSlot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.CrewConsole__marker--job {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: 0;
+  border-radius: 0;
+
+  .CrewConsole__jobIcon {
+    transform: scale(2);
+  }
+
+  .CrewConsole__jobIconFrame {
+    width: 16px;
+    height: 16px;
+  }
+}
+
 .Button.CrewConsole__plainButton {
   &,
   &:hover,
@@ -64,6 +148,16 @@
   to {
     transform: scale(1.9);
     opacity: 0;
+  }
+}
+
+@keyframes crew-damage-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.4;
   }
 }
 

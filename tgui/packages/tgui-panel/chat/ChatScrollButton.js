@@ -24,7 +24,7 @@ export const ChatScrollButton = () => {
     <Button
       className="Chat__scrollButton"
       icon="arrow-down"
-      onClick={() => chatRenderer.scrollToBottom()}>
+      onClick={() => chatRenderer.scrollToBottom({ smooth: true })}>
       {formatScrollButtonLabel(page?.unreadCount,
         newMessagesMarker !== false)}
     </Button>

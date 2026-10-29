@@ -134,3 +134,45 @@
 	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	for(var/list/record in records)
 		assert_soft_collected(record)
+
+/// Раунд 10634: надетые трусики, удалённые без dropped() (вместе с телом или через delete_equipment()
+/// у манекена превью), оставались в SSfastprocess и уходили в hard delete по 250 мс.
+/datum/unit_test/portal_panties_stop_processing_on_delete
+	parent_type = /datum/unit_test/harddel_9813_base
+
+/datum/unit_test/portal_panties_stop_processing_on_delete/proc/wear_panties(mob/living/carbon/human/wearer)
+	var/obj/item/clothing/underwear/briefs/panties/portalpanties/panties = new(wearer.loc)
+	wearer.equip_to_slot(panties, ITEM_SLOT_UNDERWEAR)
+	TEST_ASSERT(panties in SSfastprocess.processing, "надетые трусики не встали в SSfastprocess")
+	return panties
+
+/datum/unit_test/portal_panties_stop_processing_on_delete/proc/delete_with_body()
+	var/mob/living/carbon/human/wearer = new(run_loc_floor_bottom_left)
+	var/panties = wear_panties(wearer)
+	var/list/record = target_record(panties, "трусики, удалённые вместе с телом")
+	panties = null
+	qdel(wearer)
+	return record
+
+/datum/unit_test/portal_panties_stop_processing_on_delete/proc/delete_from_dummy()
+	var/mob/living/carbon/human/dummy/dummy = allocate(/mob/living/carbon/human/dummy, run_loc_floor_bottom_left)
+	var/panties = wear_panties(dummy)
+	var/list/record = target_record(panties, "трусики, снятые delete_equipment() манекена")
+	panties = null
+	dummy.delete_equipment()
+	return record
+
+/// Отдельным проком: локальная ссылка на найденный объект не должна пережить проверку и держать его в сборке.
+/datum/unit_test/portal_panties_stop_processing_on_delete/proc/left_in_fastprocess(list/record)
+	var/datum/leftover = locate(record["ref"])
+	return !isnull(leftover) && (leftover in SSfastprocess.processing)
+
+/datum/unit_test/portal_panties_stop_processing_on_delete/Run()
+	begin_isolated_gc()
+	var/list/records = list(delete_with_body(), delete_from_dummy())
+	for(var/list/record in records)
+		TEST_ASSERT(!left_in_fastprocess(record), "[record["label"]] остались в SSfastprocess")
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
+	for(var/list/record in records)
+		scan_holders(record)
+		assert_soft_collected(record)

@@ -198,7 +198,7 @@
 			Use a [EXAMINE_HINT("multitool")] to connect it to a neighboring machine.</span>"
 		return
 
-	if(isnull(patient) || user.is_blind())
+	if(isnull(patient) || !user.can_read_medical_display())
 		return
 
 	if(machine_stat & EMPED)
@@ -207,7 +207,7 @@
 
 	if(!issilicon(user) && !isobserver(user) && get_dist(src, user) > 2)
 		. += "<span class='notice'><i>You are too far away to read the display.</i></span>"
-	else if(HAS_TRAIT(user, TRAIT_DUMB) || !user.can_read(src))
+	else if(HAS_TRAIT(user, TRAIT_DUMB) || HAS_TRAIT(user, TRAIT_ILLITERATE) || (!user.can_read(src) && !user.is_blind()))
 		. += "<span class='warning'>You try to comprehend the display, but it's too complex for you to understand.</span>"
 	else
 		healthscan(user, patient, advanced = advanced_scan, include_chemistry = chemscan_enabled)

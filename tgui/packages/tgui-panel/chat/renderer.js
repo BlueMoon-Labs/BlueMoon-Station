@@ -23,6 +23,17 @@ const logger = createLogger('chatRenderer');
 // We consider this as the smallest possible scroll offset
 // that is still trackable.
 const SCROLL_TRACKING_TOLERANCE = 48;
+const SCROLL_TOP_TOLERANCE = 48;
+const SMOOTH_SCROLL_DURATION = 250;
+// Дальше стольких экранов плавная прокрутка начинается с прыжка.
+const SMOOTH_SCROLL_MAX_SCREENS = 2;
+const USER_SCROLL_EVENTS = ['wheel', 'touchstart', 'keydown', 'mousedown'];
+
+const requestFrame = callback => (
+  window.requestAnimationFrame
+    ? window.requestAnimationFrame(callback)
+    : setTimeout(() => callback(performance.now()), 16)
+);
 const SCROLLABLE_OVERFLOWS = new Set(['auto', 'scroll', 'overlay']);
 
 const getScrollableRoot = () => (
@@ -301,23 +312,19 @@ export class ChatRenderer {
     this.scrollNode = null;
     this.scrollTracking = true;
     this._smoothScrollInProgress = false;
-    this._smoothScrollTimer = null;
+    this._scrollAnimation = null;
     this.updateScrollTracking = () => {
       const node = this.scrollNode;
       if (!node) {
         return;
       }
-      const scrollTracking = isScrollTracked(node);
       // During a programmatic smooth scroll, don't let intermediate
       // scroll positions set tracking to false (causes button flicker).
+      // The animation updates tracking itself when it ends.
       if (this._smoothScrollInProgress) {
-        if (scrollTracking) {
-          // Reached the bottom — animation finished
-          this._smoothScrollInProgress = false;
-          clearTimeout(this._smoothScrollTimer);
-        }
         return;
       }
+      const scrollTracking = isScrollTracked(node);
       if (scrollTracking !== this.scrollTracking) {
         this.scrollTracking = scrollTracking;
         if (scrollTracking) {
@@ -327,8 +334,23 @@ export class ChatRenderer {
         logger.debug('tracking', this.scrollTracking);
       }
     };
+    // Дошли ли до верха чата: над ним кнопка подгрузки ранней истории.
+    this.atTop = false;
+    // Колесо, тач или клавиши во время плавной прокрутки - игрок сам ведёт
+    // чат, анимация ему не мешает.
+    this.handleUserScrollIntent = () => {
+      if (this._scrollAnimation) {
+        this.stopScrollAnimation();
+      }
+    };
     this.handleScroll = () => {
       this.updateScrollTracking();
+      const atTop = this.scrollNode.scrollTop <= SCROLL_TOP_TOLERANCE
+        && !this.scrollTracking;
+      if (atTop !== this.atTop) {
+        this.atTop = atTop;
+        this.events.emit('atTopChanged', atTop);
+      }
     };
     this.handleDeferredContentLoad = e => {
       e?.target?.removeEventListener('load', this.handleDeferredContentLoad);
@@ -390,10 +412,17 @@ export class ChatRenderer {
     }
     if (this.scrollNode) {
       this.scrollNode.removeEventListener('scroll', this.handleScroll);
+      for (const type of USER_SCROLL_EVENTS) {
+        this.scrollNode.removeEventListener(type, this.handleUserScrollIntent);
+      }
     }
     // Prefer explicit scroll container and fallback to inferred one.
     this.scrollNode = scrollNode || findNearestScrollableParent(this.rootNode);
     this.scrollNode?.addEventListener('scroll', this.handleScroll);
+    for (const type of USER_SCROLL_EVENTS) {
+      this.scrollNode?.addEventListener(type, this.handleUserScrollIntent,
+        { passive: true });
+    }
     if (this.bgNode) {
       this.observeBgViewport();
     }
@@ -528,25 +557,19 @@ export class ChatRenderer {
     return this._newMarkerNode;
   }
 
-  scrollToBottom() {
+  /**
+   * smooth - анимировать даже при выключенной плавной прокрутке: кнопка
+   * вниз - явное действие, мгновенный прыжок через всю историю выглядит рывком.
+   */
+  scrollToBottom({ smooth = this.smoothScroll } = {}) {
     if (!this.scrollNode) {
       return;
     }
     this._newMarkerArmed = true;
-    if (this.smoothScroll) {
-      this._smoothScrollInProgress = true;
-      // Safety timeout: clear the flag even if the animation is
-      // interrupted (e.g. user scrolls up during animation).
-      // Smooth scroll typically takes 300-500ms.
-      clearTimeout(this._smoothScrollTimer);
-      this._smoothScrollTimer = setTimeout(() => {
-        this._smoothScrollInProgress = false;
-        this.updateScrollTracking();
-      }, 700);
-      this.scrollNode.scrollTo({
-        top: this.scrollNode.scrollHeight,
-        behavior: 'smooth',
-      });
+    // Идущая анимация сама доведёт до низа, даже если он отодвинулся;
+    // мгновенный прыжок посреди неё откатывался бы назад следующим кадром.
+    if (smooth || this._scrollAnimation) {
+      this.animateScrollToBottom();
     }
     else {
       // scrollHeight is always bigger than scrollTop and is
@@ -561,6 +584,54 @@ export class ChatRenderer {
       this.scrollTracking = true;
       this.events.emit('scrollTrackingChanged', true);
     }
+  }
+
+  /**
+   * Плавная прокрутка вниз одной анимацией. Нативный smooth перезапускался
+   * с каждым новым сообщением и догрузившейся картинкой, а с далёкого верха
+   * протаскивал через экран всю историю - отсюда рывки. Здесь цель
+   * перечитывается каждый кадр, повторный вызов не перезапускает анимацию,
+   * а дальнее расстояние сокращается прыжком до последних экранов.
+   */
+  animateScrollToBottom() {
+    const node = this.scrollNode;
+    const getMaxTop = () => Math.max(0, node.scrollHeight - node.clientHeight);
+    if (this._scrollAnimation) {
+      return;
+    }
+    const jumpTo = getMaxTop() - node.clientHeight * SMOOTH_SCROLL_MAX_SCREENS;
+    if (node.scrollTop < jumpTo) {
+      node.scrollTop = jumpTo;
+    }
+    const animation = {
+      startedAt: performance.now(),
+      from: node.scrollTop,
+    };
+    this._scrollAnimation = animation;
+    this._smoothScrollInProgress = true;
+    const step = now => {
+      if (this._scrollAnimation !== animation) {
+        return;
+      }
+      const progress = Math.min(1,
+        (now - animation.startedAt) / SMOOTH_SCROLL_DURATION);
+      const eased = 1 - (1 - progress) ** 3;
+      const maxTop = getMaxTop();
+      node.scrollTop = animation.from + (maxTop - animation.from) * eased;
+      if (progress < 1) {
+        requestFrame(step);
+        return;
+      }
+      this.stopScrollAnimation();
+      node.scrollTop = getMaxTop();
+      this.updateScrollTracking();
+    };
+    requestFrame(step);
+  }
+
+  stopScrollAnimation() {
+    this._scrollAnimation = null;
+    this._smoothScrollInProgress = false;
   }
 
   changePage(page) {
@@ -1309,6 +1380,23 @@ export class ChatRenderer {
         this.messagesVersion++;
         logger.log(`pruned ${fromIndex} stored messages`);
       }
+    }
+  }
+
+  /**
+   * Ставит раннюю историю над чатом, не сдвигая то, что сейчас на экране.
+   * Обрезка при возврате вниз уберёт её так же, как любое старое сообщение.
+   */
+  prependHistory(messages) {
+    const node = this.scrollNode;
+    const heightBefore = node ? node.scrollHeight : 0;
+    this.processBatch(messages, {
+      prepend: true,
+      notifyListeners: false,
+    });
+    if (node && this.isReady()) {
+      node.scrollTop += node.scrollHeight - heightBefore;
+      this.handleScroll();
     }
   }
 

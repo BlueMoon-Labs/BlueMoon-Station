@@ -35,6 +35,7 @@
 	minimal_access = list(ACCESS_MEDICAL, ACCESS_MORGUE, ACCESS_CLONING, ACCESS_MINERAL_STOREROOM, ACCESS_PSYCH, ACCESS_PRODUCTION_MEDICAL)
 
 	display_order = JOB_DISPLAY_ORDER_PSYCH
+	mind_traits = list(TRAIT_MEDICAL_DEVICE_INTERFACE)
 
 /datum/outfit/job/doctor/psychologist
 	name = "Psychologist"

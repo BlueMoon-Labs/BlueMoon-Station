@@ -69,23 +69,26 @@
 	layers = null
 	vis = null
 	last = null
-	forced_eye = cached_eye = null
+	set_cached_eye(null)
+	forced_eye = null
 	owner = null
 	parallax = null
 	parallax_is_template = FALSE
 	return ..()
 
 /datum/parallax_holder/proc/Reset(auto_z_change, force)
-	if(!(cached_eye = Eye()))
+	set_cached_eye(Eye())
+	if(!cached_eye)
 		// if no eye, tear down
-		last = cached_eye = last_area = null
+		last = last_area = null
 		SetParallax(null, null, auto_z_change)
 		return
 	// first, check loc
 	var/turf/T = get_turf(cached_eye)
 	if(!T)
 		// if in nullspace, tear down
-		last = cached_eye = last_area = null
+		set_cached_eye(null)
+		last = last_area = null
 		SetParallax(null, null, auto_z_change)
 		return
 	var/datum/parallax/template = SSparallax.get_parallax_template(T.z)
@@ -105,6 +108,23 @@
 	// hard reset positions to correct positions
 	for(var/atom/movable/screen/parallax_layer/L in layers)
 		L.ResetPosition(T.x, T.y)
+
+/// Клиент, ушедший в лобби, параллакс больше не пересчитывает: без сброса по удалению
+/// прежний глаз (призрак после респавна) держался здесь, пока игрок не войдёт в моба.
+/datum/parallax_holder/proc/set_cached_eye(atom/new_eye)
+	if(cached_eye == new_eye)
+		return
+	// Турф при ChangeTurf шлёт удаление, оставаясь тем же глазом клиента: на него не подписываемся
+	if(cached_eye && !isturf(cached_eye))
+		UnregisterSignal(cached_eye, COMSIG_PARENT_QDELETING)
+	cached_eye = new_eye
+	if(new_eye && !isturf(new_eye))
+		RegisterSignal(new_eye, COMSIG_PARENT_QDELETING, PROC_REF(on_cached_eye_deleted))
+
+/datum/parallax_holder/proc/on_cached_eye_deleted(datum/source)
+	SIGNAL_HANDLER
+	if(source == cached_eye)
+		set_cached_eye(null)
 
 // better updates via client_mobs_in_contents can be created again when important recursive contents is ported!
 /datum/parallax_holder/proc/Update(full, anim_time = 0)
