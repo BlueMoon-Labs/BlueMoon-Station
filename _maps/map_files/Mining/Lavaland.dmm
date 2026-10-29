@@ -2575,6 +2575,16 @@
 	network = list("ds1");
 	c_tag = "DS-1 Armory"
 	},
+/obj/machinery/ammo_workbench/unlocked,
+/obj/item/stack/sheet/metal/fifty{
+	pixel_x = 8;
+	pixel_y = 0
+	},
+/obj/item/stack/sheet/glass/fifty{
+	pixel_y = 0;
+	pixel_x = -6
+	},
+/obj/item/disk/ammo_workbench/advanced,
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/lavaland/unpowered/deepspaceone/armory)
 "byJ" = (
