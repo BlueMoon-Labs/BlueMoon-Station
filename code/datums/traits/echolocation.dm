@@ -41,6 +41,8 @@
 	/// Keep the recipient so logout/transfer can remove every private screen object.
 	var/client/echo_client
 	var/monitoring_echoes = FALSE
+	/// A pulse spans several ticks; a newer pulse or a clear stops the old one.
+	var/pulse_generation = 0
 
 /datum/quirk/echolocation/add()
 	eye_action = new(src)
@@ -85,15 +87,18 @@
 
 /datum/quirk/echolocation/proc/on_moved()
 	SIGNAL_HANDLER
-	if(!can_listen())
+	if(!quirk_holder.client || !can_listen())
 		clear_echoes(stop_monitoring = !should_monitor())
 		return
-	for(var/atom/movable/screen/echolocation_echo/echo as anything in echoes.Copy())
+	var/list/view_size = getviewsize(quirk_holder.client.view)
+	var/list/lost = list()
+	for(var/atom/movable/screen/echolocation_echo/echo as anything in echoes)
 		if(echo.typist && !echo.refresh_typing())
-			remove_echo(echo)
+			lost += echo
 			continue
-		if(!echo.update_position(quirk_holder))
-			remove_echo(echo)
+		if(!echo.update_position(quirk_holder, view_size))
+			lost += echo
+	remove_echoes(lost)
 
 /datum/quirk/echolocation/proc/sync_actions()
 	if(!quirk_holder || QDELETED(quirk_holder))
@@ -233,7 +238,7 @@
 		pulses = 1
 	if(pulses && can_snap(emote.key))
 		next_echo = world.time + ECHO_COOLDOWN
-		pulse(pulses)
+		INVOKE_ASYNC(src, PROC_REF(pulse), pulses)
 		snap_action.UpdateButtons()
 
 /// Full tiles stop the wave; directional panes block their edge, not the whole tile.
@@ -290,7 +295,7 @@
 /// External sounds never spend or check the voluntary clicking cooldown.
 /datum/quirk/echolocation/proc/on_external_pulse(datum/source, atom/center)
 	SIGNAL_HANDLER
-	pulse(1, get_turf(center))
+	INVOKE_ASYNC(src, PROC_REF(pulse), 1, get_turf(center))
 
 /// Both legs of an external echo must be reachable, and walls must hide their far side.
 /datum/quirk/echolocation/proc/collect_pulse_turfs(turf/origin, width, height)
@@ -345,17 +350,24 @@
 /datum/quirk/echolocation/proc/pulse(pulses, turf/origin = quirk_holder.loc)
 	if(!quirk_holder.client || !can_listen())
 		return
-	var/list/view_size = getviewsize(quirk_holder.client.view)
+	var/client/listener_client = quirk_holder.client
+	var/list/view_size = getviewsize(listener_client.view)
 	var/list/reached = collect_pulse_turfs(origin, view_size[1], view_size[2])
 	if(!length(reached))
 		return
+	var/generation = ++pulse_generation
 	// A fresh pulse replaces remembered shapes, not an ongoing conversation's bubble.
-	for(var/atom/movable/screen/echolocation_echo/old_echo as anything in echoes.Copy())
+	var/list/stale = list()
+	for(var/atom/movable/screen/echolocation_echo/old_echo as anything in echoes)
 		if(!old_echo.sound_kind)
-			remove_echo(old_echo)
+			stale += old_echo
+	remove_echoes(stale)
+	// A full view is hundreds of animated screen objects: build it over several ticks
+	// and shorten each delay by the time already spent so the wavefront stays on schedule.
+	var/started = world.time
 	var/max_radius = sqrt((((view_size[1] - 1) / 2) + abs(origin.x - quirk_holder.x)) ** 2 + (((view_size[2] - 1) / 2) + abs(origin.y - quirk_holder.y)) ** 2) + 1
 	for(var/pulse_index in 1 to pulses)
-		var/atom/movable/screen/echolocation_echo/wave = create_echo(origin)
+		var/atom/movable/screen/echolocation_echo/wave = create_echo(origin, view_size)
 		if(!wave)
 			break
 		wave.icon = wave_icon()
@@ -370,21 +382,29 @@
 		animate(alpha = 180, time = 0)
 		animate(transform = matrix().Scale(max_radius * world.icon_size / 60), alpha = 0, time = travel_time)
 	for(var/turf/where as anything in reached)
+		if(TICK_CHECK)
+			stoplag()
+			// The listener may have opened their eyes, logged out or snapped again meanwhile.
+			if(generation != pulse_generation || QDELETED(quirk_holder) || quirk_holder.client != listener_client || !can_listen())
+				return
 		// Silence is an absence of information, never a fictitious floor over space.
 		if(!isclosedturf(where) && !carries_sound(where))
 			continue
 		var/distance = sqrt((where.x - origin.x) ** 2 + (where.y - origin.y) ** 2)
-		var/delay = distance * ECHO_TRAVEL_TIME
-		var/atom/movable/screen/echolocation_echo/surface = create_echo(where)
-		if(!surface)
+		var/delay = max(0, distance * ECHO_TRAVEL_TIME - (world.time - started))
+		if(length(echoes) >= ECHO_MAX_VISUALS)
 			break
+		var/atom/movable/screen/echolocation_echo/surface = create_echo(where, view_size)
+		// The listener may have stepped so far that this turf left the view.
+		if(!surface)
+			continue
 		var/brightness = surface.set_surface(where, src)
 		surface.reverberate(delay, pulses, brightness)
 		for(var/atom/movable/thing in where)
 			// A closed container is a single shape; its contents are never traversed.
 			if(!can_echo_atom(thing, reached[where] < 0))
 				continue
-			var/atom/movable/screen/echolocation_echo/shape = create_echo(where)
+			var/atom/movable/screen/echolocation_echo/shape = create_echo(where, view_size)
 			if(!shape)
 				break
 			shape.set_shape(thing)
@@ -438,14 +458,16 @@
 		animate(transform = matrix().Scale(kind == "footstep" ? 0.28 : 0.45), alpha = 0, time = 0.9 SECONDS)
 	return COMPONENT_SOUND_INDICATOR_HANDLED
 
-/datum/quirk/echolocation/proc/create_echo(turf/origin)
+/datum/quirk/echolocation/proc/create_echo(turf/origin, list/view_size)
 	if(!quirk_holder.client || length(echoes) >= ECHO_MAX_VISUALS)
 		return
 	var/atom/movable/screen/echolocation_echo/echo = new
 	echo.world_x = origin.x
 	echo.world_y = origin.y
 	echo.world_z = origin.z
-	echo.update_position(quirk_holder)
+	if(!echo.update_position(quirk_holder, view_size))
+		qdel(echo)
+		return
 	echoes += echo
 	echo_client = quirk_holder.client
 	echo_client.screen += echo
@@ -473,15 +495,19 @@
 		clear_echoes(stop_monitoring = !should_monitor())
 		return
 	var/list/audible_typists
-	for(var/atom/movable/screen/echolocation_echo/echo as anything in echoes.Copy())
+	var/list/view_size
+	var/list/finished = list()
+	for(var/atom/movable/screen/echolocation_echo/echo as anything in echoes)
 		if(world.time >= echo.expires)
-			remove_echo(echo)
+			finished += echo
 			continue
 		if(!echo.typist)
 			continue
 		var/mob/typing_mob = echo.refresh_typing()
-		if(!typing_mob || !carries_sound(typing_mob.loc) || !echo.update_position(quirk_holder))
-			remove_echo(echo)
+		if(typing_mob && isnull(view_size))
+			view_size = getviewsize(quirk_holder.client.view)
+		if(!typing_mob || !carries_sound(typing_mob.loc) || !echo.update_position(quirk_holder, view_size))
+			finished += echo
 			continue
 		if(typing_mob == quirk_holder)
 			continue
@@ -489,14 +515,24 @@
 		if(isnull(audible_typists))
 			audible_typists = hearers(ECHO_TYPING_RANGE, quirk_holder)
 		if(!(typing_mob in audible_typists))
-			remove_echo(echo)
+			finished += echo
+	remove_echoes(finished)
 
 /datum/quirk/echolocation/proc/remove_echo(atom/movable/screen/echolocation_echo/echo)
 	echo_client?.screen -= echo
 	echoes -= echo
 	qdel(echo)
 
+/// One pass over client.screen for the whole batch instead of one per echo.
+/datum/quirk/echolocation/proc/remove_echoes(list/finished)
+	if(!length(finished))
+		return
+	echo_client?.screen -= finished
+	echoes -= finished
+	QDEL_LIST(finished)
+
 /datum/quirk/echolocation/proc/clear_echoes(stop_monitoring = TRUE)
+	pulse_generation++
 	if(stop_monitoring && monitoring_echoes)
 		STOP_PROCESSING(SSfastprocess, src)
 		monitoring_echoes = FALSE
@@ -603,12 +639,13 @@
 	world_z = source.z
 	return source
 
-/atom/movable/screen/echolocation_echo/proc/update_position(mob/listener)
+/atom/movable/screen/echolocation_echo/proc/update_position(mob/listener, list/view_size)
 	if(listener.z != world_z || !listener.client)
 		return FALSE
 	var/offset_x = world_x - listener.x
 	var/offset_y = world_y - listener.y
-	var/list/view_size = getviewsize(listener.client.view)
+	if(!view_size)
+		view_size = getviewsize(listener.client.view)
 	if(abs(offset_x) > (view_size[1] - 1) / 2 || abs(offset_y) > (view_size[2] - 1) / 2)
 		return FALSE
 	screen_loc = "CENTER[offset_x >= 0 ? "+" : ""][offset_x],CENTER[offset_y >= 0 ? "+" : ""][offset_y]"
@@ -642,7 +679,9 @@
 	overlays += shape
 	// Filter the neutral host after the copied object's own tint has been composed.
 	color = null
-	filters = list(filter(type = "color", color = list(0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,1, 0.6,0.6,0.6,0)), filter(type = "outline", size = 1, color = COLOR_WHITE))
+	// Hundreds of shapes per pulse take the same pair; filters are copied on assignment.
+	var/static/list/monochrome_filters = list(filter(type = "color", color = list(0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,1, 0.6,0.6,0.6,0)), filter(type = "outline", size = 1, color = COLOR_WHITE))
+	filters = monochrome_filters
 	layer = isliving(observed) ? ECHO_MOB_LAYER : ECHO_STRUCTURE_LAYER
 
 /// Copy physical layers into the monochrome group without turning lighting masks into solid shapes.
@@ -677,9 +716,11 @@
 /atom/movable/screen/echolocation_echo/proc/reverberate(delay, pulses, brightness)
 	var/repeat_time = (pulses - 1) * ECHO_WAVE_INTERVAL
 	expires = world.time + delay + repeat_time + 0.1 SECONDS + ECHO_HOLD_TIME + ECHO_FADE_TIME
-	animate(src, alpha = 0, time = delay)
+	// The echo starts transparent, so the silent stretch is a start delay rather than a step.
+	animate(src, alpha = brightness, time = 0.1 SECONDS, delay = delay)
 	for(var/pulse_index in 1 to pulses)
-		animate(alpha = brightness, time = 0.1 SECONDS)
+		if(pulse_index > 1)
+			animate(alpha = brightness, time = 0.1 SECONDS)
 		if(pulse_index < pulses)
 			animate(alpha = round(brightness * 0.45), time = ECHO_WAVE_INTERVAL - 0.1 SECONDS)
 	animate(alpha = round(brightness * 0.7), time = ECHO_HOLD_TIME)

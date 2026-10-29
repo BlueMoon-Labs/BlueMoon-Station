@@ -753,6 +753,34 @@ GLOBAL_LIST_EMPTY(cached_icon_state_directional)
 /// Soft cap on cached_icon_state_directional entries (each value is a single boolean).
 #define ICON_STATE_DIRECTIONAL_CACHE_MAX 8192
 
+/// Число направлений у стейтов DMI-файла, "[файл]" => list(стейт => dirs). FALSE - файл rust-g не прочитал.
+GLOBAL_LIST_EMPTY(cached_dmi_state_dirs)
+#define DMI_STATE_DIRS_CACHE_MAX 1024
+
+/// Направления всех стейтов файла одним чтением заголовка DMI. Три пробных icon() на стейт стоили до 1.7 мс.
+/proc/dmi_state_dirs(file_name)
+	. = GLOB.cached_dmi_state_dirs[file_name]
+	if(!isnull(.))
+		return . || null
+	var/list/state_dirs = FALSE
+	if(findtext(file_name, ".dmi", -4))
+		// Ошибку чтения rust-g отдаёт текстом, не JSON: такой файл молча уходит на пробные icon().
+		var/raw_metadata = RUSTG_CALL(RUST_G, "dmi_read_metadata")(file_name)
+		var/list/metadata = copytext(raw_metadata, 1, 2) == "{" ? safe_json_decode(raw_metadata, null) : null
+		if(islist(metadata) && islist(metadata["states"]))
+			state_dirs = list()
+			for(var/list/state_data as anything in metadata["states"])
+				// Стейт движения BYOND берёт только для шага, icon() отдаёт обычный с тем же именем.
+				if(!islist(state_data) || state_data["movement"])
+					continue
+				var/state_name = "[state_data["name"]]"
+				if(!state_dirs[state_name])
+					state_dirs[state_name] = state_data["dirs"]
+	GLOB.cached_dmi_state_dirs[file_name] = state_dirs
+	if(length(GLOB.cached_dmi_state_dirs) > DMI_STATE_DIRS_CACHE_MAX)
+		GLOB.cached_dmi_state_dirs.Cut(1, (DMI_STATE_DIRS_CACHE_MAX / 4) + 1)
+	return state_dirs || null
+
 /// Returns TRUE if the given icon_state in the given icon has any of NORTH/EAST/WEST frames.
 /proc/icon_state_has_directional_frames(icon_file, icon_state)
 	var/static/list/checkdirs = list(NORTH, EAST, WEST)
@@ -768,11 +796,16 @@ GLOBAL_LIST_EMPTY(cached_icon_state_directional)
 	. = GLOB.cached_icon_state_directional[key]
 	if(!isnull(.))
 		return .
-	. = FALSE
-	for(var/checkdir in checkdirs)
-		if(length(icon_states(icon(icon_file, icon_state, checkdir))))
-			. = TRUE
-			break
+	var/list/state_dirs = dmi_state_dirs(file_name)
+	var/dirs = state_dirs?["[icon_state]"]
+	if(dirs)
+		. = dirs > 1
+	else
+		. = FALSE
+		for(var/checkdir in checkdirs)
+			if(length(icon_states(icon(icon_file, icon_state, checkdir))))
+				. = TRUE
+				break
 	GLOB.cached_icon_state_directional[key] = .
 	if(length(GLOB.cached_icon_state_directional) > ICON_STATE_DIRECTIONAL_CACHE_MAX)
 		GLOB.cached_icon_state_directional.Cut(1, (ICON_STATE_DIRECTIONAL_CACHE_MAX / 4) + 1) // evict oldest 25%
@@ -1686,7 +1719,7 @@ GLOBAL_LIST_EMPTY(bicon_cache)
 /// be larger than HUMANOID_ICON_CACHE_MAX.
 #define BICON_CACHE_MAX 2048
 
-/proc/icon2base64html(thing)
+/proc/icon2base64html(thing, sourceonly = FALSE)
 	if (!thing)
 		return
 	if (isicon(thing))
@@ -1694,11 +1727,15 @@ GLOBAL_LIST_EMPTY(bicon_cache)
 		var/icon_base64 = icon2base64(thing)
 		if(!icon_base64)
 			return
+		if(sourceonly)
+			return icon_base64
 		return "<img class='icon icon-misc' src='data:image/png;base64,[icon_base64]'>"
 
-	// Either an atom or somebody fucked up and is gonna get a runtime, which I'm fine with.
+	// Для пути типа используем базовую иконку без создания экземпляра атома.
 	var/atom/A = thing
-	var/atom_icon = A.icon
+	var/from_type = ispath(thing, /atom)
+	var/atom_icon = from_type ? initial(A.icon) : A.icon
+	var/atom_icon_state = from_type ? initial(A.icon_state) : A.icon_state
 	// Рантайм-иконка стрингифицируется в "/icon" одинаково для любой динамической, поэтому
 	// ключ обходил это через REF(). Но REF() - индекс в таблице BYOND, и он переиспользуется
 	// после сборки мусора: собранная иконка отдаёт слот следующей, ключ совпадает, и панель
@@ -1706,11 +1743,11 @@ GLOBAL_LIST_EMPTY(bicon_cache)
 	// самоисправляется. Файловые иконки стрингифицируются в свой dmi-путь и стабильны -
 	// кэшируются как раньше; динамические собираются заново, их единицы.
 	var/cacheable = atom_icon && !istype(atom_icon, /icon)
-	var/key = cacheable ? "[atom_icon]:[A.icon_state]" : null
+	var/key = cacheable ? "[atom_icon]:[atom_icon_state]" : null
 	var/icon_base64 = cacheable ? GLOB.bicon_cache[key] : null
 
 	if (!icon_base64) // Doesn't exist, make it.
-		var/icon/I = icon(A.icon, A.icon_state, SOUTH, 1)
+		var/icon/I = icon(atom_icon, atom_icon_state, SOUTH, 1)
 		if (ishuman(thing)) // Shitty workaround for a BYOND issue.
 			var/icon/temp = I
 			I = icon()
@@ -1723,7 +1760,9 @@ GLOBAL_LIST_EMPTY(bicon_cache)
 			if(length(GLOB.bicon_cache) > BICON_CACHE_MAX)
 				GLOB.bicon_cache.Cut(1, (BICON_CACHE_MAX / 4) + 1) // Evict oldest 25%
 
-	return "<img class='icon icon-[A.icon_state]' src='data:image/png;base64,[icon_base64]'>"
+	if(sourceonly)
+		return icon_base64
+	return "<img class='icon icon-[atom_icon_state]' src='data:image/png;base64,[icon_base64]'>"
 
 //Costlier version of icon2html() that uses getFlatIcon() to account for overlays, underlays, etc. Use with extreme moderation, ESPECIALLY on mobs.
 /proc/costly_icon2html(thing, target, sourceonly = FALSE)

@@ -12,6 +12,7 @@
 	also_treatable_tools = list(TOOL_HEMOSTAT)
 	base_treat_time = 3 SECONDS
 	wound_flags = (FLESH_WOUND | ACCEPTS_GAUZE)
+	scanner_icon = "droplet"
 
 	/// How much blood we start losing when this wound is first applied
 	var/initial_flow

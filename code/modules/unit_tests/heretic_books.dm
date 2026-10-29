@@ -115,7 +115,7 @@
 		var/trace_name = initial(deed_type.trace_name)
 		TEST_ASSERT_EQUAL(length(trace_name), length_char(trace_name), "След [deed_type] называется латиницей, а не «[trace_name]».")
 
-/// TGUI получает экземпляр набора ресурсов с фонами всех путей.
+/// TGUI получает экземпляр набора ресурсов с фонами, гравюрами и фурнитурой всех путей и книжным шрифтом.
 /datum/unit_test/heretic_book_ui_assets/Run()
 	var/obj/item/forbidden_book/book = allocate(/obj/item/forbidden_book)
 	var/list/assets = book.ui_assets()
@@ -123,12 +123,22 @@
 	var/datum/asset/simple/heretic_book/book_assets = assets[1]
 	TEST_ASSERT(istype(book_assets), "TGUI ожидает экземпляр набора ресурсов, а не путь типа.")
 	var/list/mappings = book_assets.get_url_mappings()
-	TEST_ASSERT_EQUAL(length(mappings), length(GLOB.heretic_paths), "Нужны адреса фонов всех путей.")
+	var/static/list/fonts = list("roman-cyr", "roman-lat", "italic-cyr", "italic-lat")
+	TEST_ASSERT_EQUAL(length(mappings), length(GLOB.heretic_paths) * 4 + length(fonts), "Нужны фон, гравюра, застёжка и уголок каждого пути и книжный шрифт.")
+	for(var/font in fonts)
+		var/filename = "heretic-garamond-[font].woff2"
+		var/datum/asset_cache_item/font_file = book_assets.assets[filename]
+		TEST_ASSERT(istype(font_file) && isfile(font_file.resource), "Шрифт [filename] должен быть зарегистрированным ресурсом.")
+		TEST_ASSERT(length(mappings[filename]), "TGUI должен получить адрес шрифта [filename].")
 	for(var/path_id in GLOB.heretic_paths)
 		var/filename = "heretic-[lowertext(path_id)].webp"
 		var/datum/asset_cache_item/background = book_assets.assets[filename]
 		TEST_ASSERT(istype(background) && isfile(background.resource), "Фон [filename] должен быть зарегистрированным ресурсом.")
 		TEST_ASSERT(length(mappings[filename]), "TGUI должен получить адрес фона [filename].")
+		for(var/kind in list("plate", "clasp", "corner"))
+			var/art = "heretic-[kind]-[lowertext(path_id)].webp"
+			var/datum/asset_cache_item/art_file = book_assets.assets[art]
+			TEST_ASSERT(istype(art_file) && isfile(art_file.resource), "Рисунок [art] должен быть зарегистрированным ресурсом.")
 
 /// Книга меняет облик для читателя, не перенося чужие знания и не оставляя открытый переплёт после падения.
 /datum/unit_test/heretic_book_reader_and_cleanup/Run()

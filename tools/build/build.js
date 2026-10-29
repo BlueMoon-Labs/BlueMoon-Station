@@ -441,6 +441,12 @@ const runTestWorld = (ddPath, dmbFile, params, outputFile, timeoutMs) => new Pro
 });
 
 const worldOutputFile = (logDirectory, world) => `data/logs/${logDirectory}/${world.name}.out.log`;
+
+/** Parents of the per-world directories (unit_test_shard_subdir() in DM). DreamDaemon
+ * creates missing directories non-atomically: two worlds creating one parent at once
+ * get errno 17 on a savefile or a lost fcopy(). */
+const SHARED_WORLD_DIRECTORIES = ['tmp', 'data/unit_tests', 'data/asset_cache', 'data/spritesheets_unit_tests'];
+
 const isWorldClean = (world) => fs.existsSync(`data/logs/${world.directory}/clean_run.lk`);
 
 /** Starts the worlds side by side from hardlinks of one DMB and waits for all of them.
@@ -459,6 +465,9 @@ const startWorlds = async (get, artifactBase, logDirectory, worlds) => {
     Juke.rm(`data/logs/${world.directory}`, { recursive: true });
   });
   fs.mkdirSync(`data/logs/${logDirectory}`, { recursive: true });
+  for (const directory of SHARED_WORLD_DIRECTORIES) {
+    fs.mkdirSync(directory, { recursive: true });
+  }
   Juke.logger.info(`Running ${worlds.map((world) => world.name).join(', ')}, output in data/logs/${logDirectory}/<name>.out.log`);
   const outcomes = await Promise.all(worlds.map((world, index) => runTestWorld(
     ddPath,

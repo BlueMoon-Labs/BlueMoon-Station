@@ -516,6 +516,7 @@
 					if(GetJobName(new_rank) != "Unknown" && GetJobName(new_rank) != "Centcom")
 						active1.fields["rank"] = new_rank
 						active1.fields["real_rank"] = GetJobName(new_rank)
+						active1.fields["custom_job"] = null
 		if("mi_crim_add")
 			if(!logged_in || !active1 || !active2)
 				return

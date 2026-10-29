@@ -155,9 +155,12 @@
 	TEST_ASSERT(warmonger_session.prepare(), "Полигон готовит вармонгера.")
 	var/datum/antag_training_program/antag/crew/warmonger/warmonger = warmonger_session.program
 	body = warmonger_session.current_body
-	var/datum/species/skeleton/space/skeleton_type = warmonger.species_type
-	var/warrior_brute = initial(skeleton_type.brutemod) / 2
+	// Не initial(): в Хэллоуин New() скелета меняет brutemod
+	var/datum/species/skeleton = new warmonger.species_type
+	var/warrior_brute = skeleton.brutemod / 2
+	qdel(skeleton)
 	TEST_ASSERT(abs(body.dna.species.brutemod - warrior_brute) < 0.01, "Воин крепче обычного скелета, как у спавнера.")
+	TEST_ASSERT(findtext(warmonger.option_hints["Снаряжение: Воин"], "[round(100 * warrior_brute)]% обычного"), "Подсказка воина называет его настоящую стойкость.")
 	antag_training_crew_option(warmonger_session, "Снаряжение: Воин")
 	TEST_ASSERT(abs(body.dna.species.brutemod - warrior_brute) < 0.01, "Повторная выдача не копит стойкость.")
 	antag_training_crew_option(warmonger_session, "Снаряжение: Военачальник")

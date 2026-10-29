@@ -18,7 +18,12 @@ const mockChatRenderer = {
   setCustomColors: jest.fn(),
   setCustomProperties: jest.fn(),
   setRadioJobsVisible: jest.fn(),
+  setNewMessagesMarker: jest.fn(),
+  setRadioJobStyle: jest.fn(),
   setStyleOverrides: jest.fn(),
+  setTypeOverrides: jest.fn(),
+  setGameEffects: jest.fn(),
+  setSettleOld: jest.fn(),
   setTimestamps: jest.fn(),
   setTimeDividers: jest.fn(),
   changePage: jest.fn(),
@@ -27,6 +32,7 @@ const mockChatRenderer = {
   rebuildChat: jest.fn(),
   saveToDisk: jest.fn(),
   messages: [],
+  messagesVersion: 0,
 };
 
 jest.mock('./renderer', () => ({
@@ -37,6 +43,7 @@ jest.mock('common/storage', () => ({
   storage: {
     get: jest.fn().mockResolvedValue(undefined),
     set: jest.fn().mockResolvedValue(undefined),
+    remove: jest.fn().mockResolvedValue(undefined),
   },
 }));
 
@@ -112,7 +119,10 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(mockChatRenderer.setCustomColors).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setCustomProperties).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setRadioJobsVisible).toHaveBeenCalledTimes(1);
+    expect(mockChatRenderer.setNewMessagesMarker).toHaveBeenCalledWith(true);
+    expect(mockChatRenderer.setRadioJobStyle).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setStyleOverrides).toHaveBeenCalledTimes(1);
+    expect(mockChatRenderer.setTypeOverrides).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setTimestamps).toHaveBeenCalledTimes(1);
     expect(mockChatRenderer.setTimeDividers).toHaveBeenCalledTimes(1);
   });
@@ -139,6 +149,10 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(mockChatRenderer.setCustomColors).not.toHaveBeenCalled();
     expect(mockChatRenderer.setCustomProperties).not.toHaveBeenCalled();
     expect(mockChatRenderer.setStyleOverrides).not.toHaveBeenCalled();
+    expect(mockChatRenderer.setTypeOverrides).not.toHaveBeenCalled();
+    expect(mockChatRenderer.setGameEffects).not.toHaveBeenCalled();
+    expect(mockChatRenderer.setSettleOld).not.toHaveBeenCalled();
+    expect(mockChatRenderer.setRadioJobStyle).not.toHaveBeenCalled();
     expect(mockChatRenderer.setTimestamps).not.toHaveBeenCalled();
     expect(mockChatRenderer.setTimeDividers).not.toHaveBeenCalled();
   });
@@ -293,6 +307,85 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(spanAnimations).toBe(false);
   });
 
+  test('typeOverrides change triggers setTypeOverrides only', async () => {
+    const store = createTestStore();
+    store.dispatch(updateSettings({ highlightText: '' }));
+    await flushPromises();
+    clearRendererSpies();
+
+    store.dispatch(updateSettings({
+      typeOverrides: { radio: { border: '#336699' } },
+    }));
+    await flushPromises();
+
+    expect(mockChatRenderer.setTypeOverrides).toHaveBeenCalledTimes(1);
+    expect(mockChatRenderer.setTypeOverrides).toHaveBeenLastCalledWith(
+      { radio: { border: '#336699' } });
+    expect(mockChatRenderer.setStyleOverrides).not.toHaveBeenCalled();
+  });
+
+  test('game effect switches reach the renderer', async () => {
+    const store = createTestStore();
+    store.dispatch(updateSettings({ highlightText: '' }));
+    await flushPromises();
+    clearRendererSpies();
+
+    store.dispatch(updateSettings({ gameEffects: { tremble: false } }));
+    await flushPromises();
+    expect(mockChatRenderer.setGameEffects).toHaveBeenCalledTimes(1);
+    expect(mockChatRenderer.setGameEffects).toHaveBeenLastCalledWith(
+      { tremble: false }, true);
+
+    store.dispatch(updateSettings({ gameEffectsEnabled: false }));
+    await flushPromises();
+    expect(mockChatRenderer.setGameEffects).toHaveBeenLastCalledWith(
+      { tremble: false }, false);
+    expect(mockChatRenderer.setTypeOverrides).not.toHaveBeenCalled();
+  });
+
+  test('settle switch reaches the renderer', async () => {
+    const store = createTestStore();
+    store.dispatch(updateSettings({ highlightText: '' }));
+    await flushPromises();
+    clearRendererSpies();
+
+    store.dispatch(updateSettings({ settleOldAnimations: false }));
+    await flushPromises();
+    expect(mockChatRenderer.setSettleOld).toHaveBeenCalledTimes(1);
+    expect(mockChatRenderer.setSettleOld).toHaveBeenLastCalledWith(false);
+    expect(mockChatRenderer.setGameEffects).not.toHaveBeenCalled();
+  });
+
+  test('radio job settings reach the renderer together', async () => {
+    const store = createTestStore();
+    store.dispatch(updateSettings({ highlightText: '' }));
+    await flushPromises();
+    clearRendererSpies();
+
+    store.dispatch(updateSettings({ radioJobHeadMark: 'command' }));
+    await flushPromises();
+    expect(mockChatRenderer.setRadioJobStyle).toHaveBeenCalledTimes(1);
+    expect(mockChatRenderer.setRadioJobStyle).toHaveBeenLastCalledWith({
+      radioJobColorMode: 'department',
+      radioJobHeadMark: 'command',
+      radioJobColorNames: false,
+      radioJobIcons: true,
+      radioJobColors: {},
+    });
+    store.dispatch(updateSettings({ radioJobColors: { med: '#00ff00' } }));
+    await flushPromises();
+    expect(mockChatRenderer.setRadioJobStyle).toHaveBeenCalledTimes(2);
+    expect(mockChatRenderer.setRadioJobStyle.mock.calls[1][0].radioJobColors)
+      .toEqual({ med: '#00ff00' });
+    store.dispatch(updateSettings({ radioJobIcons: false }));
+    await flushPromises();
+    expect(mockChatRenderer.setRadioJobStyle).toHaveBeenCalledTimes(3);
+    expect(mockChatRenderer.setRadioJobStyle.mock.calls[2][0].radioJobIcons)
+      .toBe(false);
+    expect(mockChatRenderer.setRadioJobsVisible).not.toHaveBeenCalled();
+    expect(mockChatRenderer.setStyleOverrides).not.toHaveBeenCalled();
+  });
+
   test('matchWord toggle re-runs setHighlight', async () => {
     const store = createTestStore();
     store.dispatch(updateSettings({ highlightText: 'foo' }));
@@ -325,7 +418,125 @@ describe('chatMiddleware applySettings diffing', () => {
     expect(mockChatRenderer.setCustomColors).not.toHaveBeenCalled();
     expect(mockChatRenderer.setCustomProperties).not.toHaveBeenCalled();
     expect(mockChatRenderer.setStyleOverrides).not.toHaveBeenCalled();
+    expect(mockChatRenderer.setTypeOverrides).not.toHaveBeenCalled();
+    expect(mockChatRenderer.setGameEffects).not.toHaveBeenCalled();
+    expect(mockChatRenderer.setSettleOld).not.toHaveBeenCalled();
     expect(mockChatRenderer.setTimestamps).not.toHaveBeenCalled();
     expect(mockChatRenderer.setTimeDividers).not.toHaveBeenCalled();
+  });
+});
+
+describe('chatMiddleware new messages marker', () => {
+  beforeEach(() => {
+    jest.spyOn(global, 'setInterval').mockImplementation(() => 0);
+    if (typeof window.Byond === 'undefined') {
+      window.Byond = { topic: jest.fn() };
+    }
+    clearRendererSpies();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test('toggle reaches the renderer only when it changes', async () => {
+    const store = createTestStore();
+    store.dispatch(updateSettings({}));
+    store.dispatch(updateSettings({ fontSize: 14 }));
+    expect(mockChatRenderer.setNewMessagesMarker).toHaveBeenCalledTimes(1);
+    store.dispatch(updateSettings({ newMessagesMarker: false }));
+    expect(mockChatRenderer.setNewMessagesMarker).toHaveBeenCalledTimes(2);
+    expect(mockChatRenderer.setNewMessagesMarker)
+      .toHaveBeenLastCalledWith(false);
+  });
+});
+
+describe('chatMiddleware periodic save', () => {
+  let tick;
+
+  beforeEach(() => {
+    jest.spyOn(global, 'setInterval').mockImplementation(fn => {
+      tick = fn;
+      return 0;
+    });
+    if (typeof window.Byond === 'undefined') {
+      window.Byond = { topic: jest.fn() };
+    }
+    clearRendererSpies();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  const writes = (storage, key) => storage.set.mock.calls
+    .filter(([written]) => written === key).length;
+
+  test('skips the write when nothing changed since the last save', async () => {
+    // eslint-disable-next-line global-require
+    const { storage } = require('common/storage');
+    // eslint-disable-next-line global-require
+    const { changeScrollTracking } = require('./actions');
+    const store = createTestStore();
+    store.dispatch(updateSettings({}));
+    await flushPromises();
+    storage.set.mockClear();
+
+    await tick();
+    expect(writes(storage, 'chat-state')).toBe(1);
+    await tick();
+    await tick();
+    expect(writes(storage, 'chat-state')).toBe(1);
+
+    mockChatRenderer.messagesVersion += 1;
+    await tick();
+    expect(writes(storage, 'chat-state')).toBe(2);
+
+    store.dispatch(changeScrollTracking(false));
+    await tick();
+    expect(writes(storage, 'chat-state')).toBe(3);
+
+    store.dispatch({ type: 'roundrestart' });
+    await flushPromises();
+    expect(writes(storage, 'chat-state')).toBe(4);
+  });
+
+  test('retries on the next tick after a failed write', async () => {
+    // eslint-disable-next-line global-require
+    const { storage } = require('common/storage');
+    const store = createTestStore();
+    store.dispatch(updateSettings({}));
+    await flushPromises();
+    storage.set.mockClear();
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    storage.set.mockRejectedValueOnce(new Error('quota'));
+
+    await tick();
+    expect(writes(storage, 'chat-state')).toBe(1);
+    await tick();
+    expect(writes(storage, 'chat-state')).toBe(2);
+    await tick();
+    expect(writes(storage, 'chat-state')).toBe(2);
+  });
+
+  test('new messages go to the history segment, an idle chat writes none', async () => {
+    // eslint-disable-next-line global-require
+    const { storage } = require('common/storage');
+    const store = createTestStore();
+    store.dispatch(updateSettings({}));
+    await flushPromises();
+    storage.set.mockClear();
+
+    mockChatRenderer.messages = [{ type: 'say', html: 'a' }, { type: 'say', html: 'b' }];
+    mockChatRenderer.messagesVersion += 1;
+    await tick();
+    expect(writes(storage, 'chat-log-0')).toBe(1);
+    expect(writes(storage, 'chat-messages')).toBe(0);
+    expect(mockChatRenderer.messages.map(m => m.logId)).toEqual([0, 1]);
+
+    mockChatRenderer.messagesVersion += 1;
+    await tick();
+    expect(writes(storage, 'chat-log-0')).toBe(1);
+    mockChatRenderer.messages = [];
   });
 });

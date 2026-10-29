@@ -2660,10 +2660,10 @@
 	ckeywhitelist = list("rockymed")
 
 /datum/gear/donator/bm/kumikoshouko_case
-	name = "Kumiko Weapon Case"
+	name = "Supply Case"
 	slot = ITEM_SLOT_BACKPACK
 	path = /obj/item/storage/box/kumikoshouko_case
-	ckeywhitelist = list("kumikoshouko", "ottasuka")
+	ckeywhitelist = list("kumikoshouko", "ottasuka", "foxrtotlimda", "1hollowknight1")
 
 /datum/gear/donator/bm/skull_half_mask
 	name = "Skull Gaiter"
@@ -2773,12 +2773,6 @@
 	path = /obj/item/clothing/under/donator/bm/the_stylish_one_tracksuit
 	ckeywhitelist = list("hartty", "meowonty")
 
-/datum/gear/donator/bm/kumiko_ncr_case
-	name = "NCR ranger clothes case"
-	slot = ITEM_SLOT_BACKPACK
-	path = /obj/item/storage/box/kumiko_ncr_case
-	ckeywhitelist = list("kumikoshouko", "1hollowknight1", "foxrtotlimda")
-
 /datum/gear/donator/bm/xeno_waller
 	name = "Xeno Wallet"
 	slot = ITEM_SLOT_BACKPACK
@@ -2832,3 +2826,21 @@
 	slot = ITEM_SLOT_ICLOTHING
 	path = /obj/item/clothing/under/donator/bm/crimson_dress
 	ckeywhitelist = list("sawwarrr", "angelnedemon", "hartty")
+
+/datum/gear/donator/bm/pumpkin_bag
+	name = "Pumpkin Bag"
+	slot = ITEM_SLOT_BACKPACK
+	path = /obj/item/storage/spooky
+	ckeywhitelist = list("kumikoshouko")
+
+/datum/gear/donator/bm/br_pilotsuit_mk1
+	name = "BLACKROSE© Mark.I Pilot Suit"
+	slot = ITEM_SLOT_ICLOTHING
+	path = /obj/item/clothing/under/donator/bm/br_pilotsuit_mk1
+	ckeywhitelist = list("hateredsoul")
+
+/datum/gear/donator/bm/br_pilotjacket_s5
+	name = "BLACKROSE© Pilot Jacket Series V"
+	slot = ITEM_SLOT_OCLOTHING
+	path = /obj/item/clothing/suit/donator/bm/br_pilotjacket_s5
+	ckeywhitelist = list("hateredsoul")

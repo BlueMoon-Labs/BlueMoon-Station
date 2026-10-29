@@ -49,8 +49,9 @@ jobs:
 
       - name: "Sync with latest master"
         if: steps.value_holder.outputs.ACTIONS_ENABLED
+        # История за два месяца: по ней генератор дописывает номера PR в записи архива.
         run: |
-          git fetch origin master
+          git fetch --shallow-since="$(date -u -d "$(date -u +%Y-%m-01) -2 month" +%Y-%m-%d)" origin master
           git reset --hard origin/master
 
       - name: "Compile"

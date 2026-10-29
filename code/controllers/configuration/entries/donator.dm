@@ -1,5 +1,6 @@
 /datum/config_entry/multi_keyed_flag/donator_group
 	abstract_type = /datum/config_entry/multi_keyed_flag/donator_group
+	postload_required = TRUE
 
 //If we're in the middle of a config load, only do the regeneration afterwards to prevent this from wasting a massive amount of CPU for list regenerations.
 /datum/config_entry/multi_keyed_flag/donator_group/ValidateAndSet(str_val, during_load)
