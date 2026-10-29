@@ -546,6 +546,7 @@
 #include "harddel_cleanup.dm"
 #include "harddel_xenobio_10151.dm"
 #include "harddel_round_10466.dm"
+#include "harddel_round_10634.dm"
 #include "dangling_reference_guards.dm"
 #include "data_hud_offset_cache.dm"
 #include "healthdoll_memo.dm"
