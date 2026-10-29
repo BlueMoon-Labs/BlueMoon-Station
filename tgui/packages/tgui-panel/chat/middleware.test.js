@@ -43,6 +43,7 @@ jest.mock('common/storage', () => ({
   storage: {
     get: jest.fn().mockResolvedValue(undefined),
     set: jest.fn().mockResolvedValue(undefined),
+    remove: jest.fn().mockResolvedValue(undefined),
   },
 }));
 
@@ -468,6 +469,9 @@ describe('chatMiddleware periodic save', () => {
     jest.restoreAllMocks();
   });
 
+  const writes = (storage, key) => storage.set.mock.calls
+    .filter(([written]) => written === key).length;
+
   test('skips the write when nothing changed since the last save', async () => {
     // eslint-disable-next-line global-require
     const { storage } = require('common/storage');
@@ -479,22 +483,22 @@ describe('chatMiddleware periodic save', () => {
     storage.set.mockClear();
 
     await tick();
-    expect(storage.set).toHaveBeenCalledTimes(2);
+    expect(writes(storage, 'chat-state')).toBe(1);
     await tick();
     await tick();
-    expect(storage.set).toHaveBeenCalledTimes(2);
+    expect(writes(storage, 'chat-state')).toBe(1);
 
     mockChatRenderer.messagesVersion += 1;
     await tick();
-    expect(storage.set).toHaveBeenCalledTimes(4);
+    expect(writes(storage, 'chat-state')).toBe(2);
 
     store.dispatch(changeScrollTracking(false));
     await tick();
-    expect(storage.set).toHaveBeenCalledTimes(6);
+    expect(writes(storage, 'chat-state')).toBe(3);
 
     store.dispatch({ type: 'roundrestart' });
     await flushPromises();
-    expect(storage.set).toHaveBeenCalledTimes(8);
+    expect(writes(storage, 'chat-state')).toBe(4);
   });
 
   test('retries on the next tick after a failed write', async () => {
@@ -508,10 +512,31 @@ describe('chatMiddleware periodic save', () => {
     storage.set.mockRejectedValueOnce(new Error('quota'));
 
     await tick();
-    expect(storage.set).toHaveBeenCalledTimes(2);
+    expect(writes(storage, 'chat-state')).toBe(1);
     await tick();
-    expect(storage.set).toHaveBeenCalledTimes(4);
+    expect(writes(storage, 'chat-state')).toBe(2);
     await tick();
-    expect(storage.set).toHaveBeenCalledTimes(4);
+    expect(writes(storage, 'chat-state')).toBe(2);
+  });
+
+  test('new messages go to the history segment, an idle chat writes none', async () => {
+    // eslint-disable-next-line global-require
+    const { storage } = require('common/storage');
+    const store = createTestStore();
+    store.dispatch(updateSettings({}));
+    await flushPromises();
+    storage.set.mockClear();
+
+    mockChatRenderer.messages = [{ type: 'say', html: 'a' }, { type: 'say', html: 'b' }];
+    mockChatRenderer.messagesVersion += 1;
+    await tick();
+    expect(writes(storage, 'chat-log-0')).toBe(1);
+    expect(writes(storage, 'chat-messages')).toBe(0);
+    expect(mockChatRenderer.messages.map(m => m.logId)).toEqual([0, 1]);
+
+    mockChatRenderer.messagesVersion += 1;
+    await tick();
+    expect(writes(storage, 'chat-log-0')).toBe(1);
+    mockChatRenderer.messages = [];
   });
 });

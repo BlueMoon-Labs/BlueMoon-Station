@@ -731,8 +731,9 @@ GLOBAL_LIST_EMPTY(manifest_head_cache)
 	if(SSjob.initialized && (!custom_job || GetJobName(custom_job) != "Unknown"))
 		GLOB.manifest_head_cache[key] = .
 
-/datum/datacore/proc/get_manifest()
-	var/list/departments = list(
+// Общий порядок отделов и состав профессий для манифеста и списка готовых персонажей.
+/proc/get_manifest_departments()
+	return list(
 		DEPARTMENT_COMMAND		= GLOB.command_positions,
 		DEPARTMENT_SECURITY		= GLOB.security_positions,
 		DEPARTMENT_ENGINEERING	= GLOB.engineering_positions,
@@ -743,6 +744,9 @@ GLOBAL_LIST_EMPTY(manifest_head_cache)
 		DEPARTMENT_LAW			= GLOB.law_positions,
 		DEPARTMENT_SILICON		= GLOB.nonhuman_positions
 	)
+
+/datum/datacore/proc/get_manifest()
+	var/list/departments = get_manifest_departments()
 	// Отдел -> три яруса: капитан, главы, остальные, внутри яруса порядок записей.
 	var/list/tiers_by_department = list()
 	for(var/datum/data/record/t in GLOB.data_core.general)

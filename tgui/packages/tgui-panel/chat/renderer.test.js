@@ -1524,3 +1524,191 @@ describe('ChatRenderer', () => {
     });
   });
 });
+
+describe('ChatRenderer early history', () => {
+  beforeEach(() => {
+    jest.spyOn(global, 'setInterval').mockImplementation(() => 0);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  const LINE = 20;
+  const createScrolledRenderer = () => {
+    const renderer = createReadyRenderer();
+    const metrics = setupScrollMetrics(renderer.scrollNode, {
+      clientHeight: 100,
+      scrollTop: 0,
+    });
+    Object.defineProperty(renderer.scrollNode, 'scrollHeight', {
+      configurable: true,
+      get: () => renderer.rootNode.childNodes.length * LINE,
+    });
+    renderer.processBatch([
+      { type: 'localchat', html: 'new 1' },
+      { type: 'localchat', html: 'new 2' },
+      { type: 'localchat', html: 'new 3' },
+      { type: 'localchat', html: 'new 4' },
+      { type: 'localchat', html: 'new 5' },
+      { type: 'localchat', html: 'new 6' },
+      { type: 'localchat', html: 'new 7' },
+      { type: 'localchat', html: 'new 8' },
+    ]);
+    metrics.scrollTop = 0;
+    renderer.scrollTracking = false;
+    return { renderer, metrics };
+  };
+
+  test('reports reaching the top of a scrolled-up chat', () => {
+    const { renderer } = createScrolledRenderer();
+    const listener = jest.fn();
+    renderer.events.on('atTopChanged', listener);
+    renderer.handleScroll();
+    expect(listener).toHaveBeenLastCalledWith(true);
+    expect(renderer.atTop).toBe(true);
+  });
+
+  test('prepends history above without moving what is on screen', () => {
+    const { renderer, metrics } = createScrolledRenderer();
+    renderer.prependHistory([
+      { type: 'localchat', html: 'old 1', logId: 1 },
+      { type: 'localchat', html: 'old 2', logId: 2 },
+      { type: 'localchat', html: 'old 3', logId: 3 },
+      { type: 'localchat', html: 'old 4', logId: 4 },
+    ]);
+    expect(renderer.messages.map(m => m.html).slice(0, 5))
+      .toEqual(['old 1', 'old 2', 'old 3', 'old 4', 'new 1']);
+    expect(renderer.rootNode.firstChild.textContent).toContain('old 1');
+    expect(metrics.scrollTop).toBe(4 * LINE);
+    expect(renderer.atTop).toBe(false);
+  });
+});
+
+describe('ChatRenderer smooth scroll to bottom', () => {
+  let frames;
+  let now;
+
+  beforeEach(() => {
+    jest.spyOn(global, 'setInterval').mockImplementation(() => 0);
+    frames = [];
+    now = 0;
+    window.requestAnimationFrame = callback => frames.push(callback);
+    jest.spyOn(performance, 'now').mockImplementation(() => now);
+  });
+
+  afterEach(() => {
+    delete window.requestAnimationFrame;
+    jest.restoreAllMocks();
+  });
+
+  const runFrame = ms => {
+    now += ms;
+    const pending = frames;
+    frames = [];
+    for (const callback of pending) {
+      callback(now);
+    }
+  };
+
+  const createSmoothRenderer = ({ scrollHeight, scrollTop }) => {
+    const renderer = createReadyRenderer();
+    renderer.smoothScroll = true;
+    renderer.scrollTracking = false;
+    const metrics = setupScrollMetrics(renderer.scrollNode, {
+      scrollHeight,
+      clientHeight: 400,
+      scrollTop,
+    });
+    // Как в браузере: scrollTop не выходит за низ.
+    Object.defineProperty(renderer.scrollNode, 'scrollTop', {
+      configurable: true,
+      get: () => metrics.scrollTop,
+      set: value => {
+        metrics.scrollTop = Math.max(0,
+          Math.min(value, metrics.scrollHeight - metrics.clientHeight));
+      },
+    });
+    return { renderer, metrics };
+  };
+
+  test('repeated calls keep one animation that ends at the current bottom', () => {
+    const { renderer, metrics } = createSmoothRenderer({
+      scrollHeight: 2000,
+      scrollTop: 1000,
+    });
+    renderer.scrollToBottom();
+    runFrame(100);
+    const midway = metrics.scrollTop;
+    expect(midway).toBeGreaterThan(1000);
+    expect(midway).toBeLessThan(1600);
+    // Пришло сообщение: цель отодвинулась, а анимация не начинается заново.
+    metrics.scrollHeight = 2100;
+    renderer.scrollToBottom();
+    expect(frames).toHaveLength(1);
+    runFrame(100);
+    expect(metrics.scrollTop).toBeGreaterThan(midway);
+    runFrame(100);
+    expect(metrics.scrollTop).toBe(1700);
+    expect(frames).toHaveLength(0);
+    expect(renderer.scrollTracking).toBe(true);
+  });
+
+  test('a far scroll starts with a jump to the last screens', () => {
+    const { renderer, metrics } = createSmoothRenderer({
+      scrollHeight: 50000,
+      scrollTop: 0,
+    });
+    renderer.scrollToBottom();
+    expect(metrics.scrollTop).toBe(50000 - 400 - 2 * 400);
+    runFrame(300);
+    expect(metrics.scrollTop).toBe(50000 - 400);
+  });
+
+  test('the button animates with smooth scroll off, and a message mid-way does not jerk it', () => {
+    const { renderer, metrics } = createSmoothRenderer({
+      scrollHeight: 2000,
+      scrollTop: 1000,
+    });
+    renderer.smoothScroll = false;
+    renderer.scrollToBottom({ smooth: true });
+    runFrame(100);
+    const midway = metrics.scrollTop;
+    expect(midway).toBeLessThan(1600);
+    metrics.scrollHeight = 2100;
+    renderer.scrollToBottom();
+    expect(metrics.scrollTop).toBe(midway);
+    runFrame(100);
+    expect(metrics.scrollTop).toBeGreaterThan(midway);
+    runFrame(100);
+    expect(metrics.scrollTop).toBe(1700);
+  });
+
+  test('auto-scroll with smooth scroll off still jumps at once', () => {
+    const { renderer, metrics } = createSmoothRenderer({
+      scrollHeight: 2000,
+      scrollTop: 1000,
+    });
+    renderer.smoothScroll = false;
+    renderer.scrollToBottom();
+    expect(metrics.scrollTop).toBe(1600);
+    expect(frames).toHaveLength(0);
+  });
+
+  test('the wheel takes the scroll back from the animation', () => {
+    const { renderer, metrics } = createSmoothRenderer({
+      scrollHeight: 2000,
+      scrollTop: 1000,
+    });
+    renderer.mount(document.createElement('div'), renderer.scrollNode);
+    renderer.stopScrollAnimation();
+    frames = [];
+    renderer.scrollToBottom();
+    runFrame(50);
+    const stoppedAt = metrics.scrollTop;
+    renderer.scrollNode.dispatchEvent(new Event('wheel'));
+    runFrame(50);
+    expect(metrics.scrollTop).toBe(stoppedAt);
+    expect(frames).toHaveLength(0);
+  });
+});

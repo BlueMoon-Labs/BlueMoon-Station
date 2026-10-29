@@ -5,7 +5,7 @@
 //	You do not need to raise this if you are adding new values that have sane defaults.
 //	Only raise this value when changing the meaning/format/name/layout of an existing value
 //	where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX	86
+#define SAVEFILE_VERSION_MAX	87
 
 /// Upper bound for character slot indices during savefile migration (loop over S.dir).
 /// Prevents corrupted or garbage directory names (e.g. huge slot numbers) from inflating max_save_slots
@@ -652,6 +652,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["hearted_until"] >> hearted_until
 	sync_hearted_pref(src)
 	S["inquisitive_ghost"] >> inquisitive_ghost
+	health_analyzer_chat = FALSE
+	S["health_analyzer_chat"] >> health_analyzer_chat
+	health_analyzer_chat = !!health_analyzer_chat
 	S["uses_glasses_colour"]>> uses_glasses_colour
 	S["auto_capitalize_enabled"]>> auto_capitalize_enabled
 	S["surgical_disable_radial"]>> surgical_disable_radial // BLUEMOON ADD
@@ -959,7 +962,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 			max_save_slots = max(max_save_slots, slotnum) //so we can still update byond member slots after they lose memeber status
 			default_slot = slotnum
 			if (load_character(null, TRUE)) // this updtates char slots
-				save_character(TRUE)
+				save_character(TRUE, update_active_preset = FALSE)
 		default_slot = old_default_slot
 		max_save_slots = old_max_save_slots
 		save_preferences(TRUE)
@@ -1331,6 +1334,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["ignoring"], ignoring)
 	WRITE_FILE(S["hearted_until"], (hearted_until > world.realtime ? hearted_until : null))
 	WRITE_FILE(S["inquisitive_ghost"], inquisitive_ghost)
+	WRITE_FILE(S["health_analyzer_chat"], health_analyzer_chat)
 	WRITE_FILE(S["uses_glasses_colour"], uses_glasses_colour)
 	WRITE_FILE(S["auto_capitalize_enabled"], auto_capitalize_enabled)
 	WRITE_FILE(S["surgical_disable_radial"], surgical_disable_radial) // BLUEMOON ADD
@@ -1699,6 +1703,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["summon_nickname"] 					>> summon_nickname // BLUEMOON ADD - выбор прозвища для призываемого
 	S["phobia_type"] 						>> phobia_type // BLUEMOON ADD - выбор фобии для квирка
 	S["onelife_death_type"]					>> onelife_death_type // BLUEMOON ADD - форма рассыпания для Одной Жизни
+	S["distant_start_enabled"] >> distant_start_enabled
 	S["feature_hardsuit_with_tail"] 		>> features["hardsuit_with_tail"]
 	S["persistent_scars"] 					>> persistent_scars
 	S["scars1"] 							>> scars_list["1"]
@@ -1786,7 +1791,6 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	//Quirks
 	S["all_quirks"] >> all_quirks
-	migrate_legacy_body_mods()
 
 	S["language"] >> language
 
@@ -2032,7 +2036,6 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["loadout_slot"] >> loadout_slot
 	S["character_presets"] >> character_presets
 	S["active_character_preset"] >> active_character_preset
-	sanitize_character_presets()
 	// BLUEMOON ADD - загрузка переключателя лодаута
 	S["loadout_enabled"] >> loadout_enabled
 	// BLUEMOON ADD END
@@ -2078,6 +2081,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	eye_type = sanitize_inlist(eye_type, GLOB.eye_types, DEFAULT_EYES_TYPE)
 	shriek_type = sanitize_inlist(shriek_type, GLOB.shriek_types, SHRIEK_TYPE_GENERIC) // BLUEMOON ADD
 	onelife_death_type = sanitize_inlist(onelife_death_type, GLOB.onelife_death_forms, "Пепел") // BLUEMOON ADD
+	distant_start_enabled = sanitize_integer(distant_start_enabled, FALSE, TRUE, TRUE)
 	//фобия из старого сейва, которой больше нет в пуле, сбрасывается в "случайную",
 	//но только когда пул уже собран: игроки переподключаются к серверу задолго до
 	//инициализации SStraumas, и проверка по пустому списку стирала живой выбор -
@@ -2350,6 +2354,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	splurt_character_pref_load(S)
 
 	bluemoon_character_pref_load(S)
+	// Вес и остальные настройки слота уже загружены; версия 87 обновляет все слоты при входе.
+	migrate_legacy_body_mods()
+	sanitize_character_presets()
 
 	load_tattoo_prefs(S) // BLUEMOON ADD - загрузка татуировок
 	if(!provided)
@@ -2466,7 +2473,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 	return TRUE
 
-/datum/preferences/proc/save_character(bypass_cooldown = FALSE, silent = FALSE, export = FALSE)
+/datum/preferences/proc/save_character(bypass_cooldown = FALSE, silent = FALSE, export = FALSE, update_active_preset = TRUE)
 	if(!path)
 		return FALSE
 	if(!bypass_cooldown)
@@ -2487,7 +2494,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		S.cd = "/character[default_slot]"
 		slot_names_cache = null
 		// Обновляем только активный пресет при реальном сохранении, без смены выбранного лодаута.
-		if(character_setup_preset_autosave && istext(active_character_preset) && islist(character_presets[active_character_preset]))
+		if(update_active_preset && character_setup_preset_autosave && istext(active_character_preset) && islist(character_presets[active_character_preset]))
 			character_presets[active_character_preset] = capture_character_preset()
 
 	WRITE_FILE(S["version"]			, SAVEFILE_VERSION_MAX)	//load_character will sanitize any bad data, so assume up-to-date.)
@@ -2511,6 +2518,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["summon_nickname"]						, summon_nickname) // BLUEMOON ADD
 	WRITE_FILE(S["phobia_type"]							, phobia_type) // BLUEMOON ADD
 	WRITE_FILE(S["onelife_death_type"]					, onelife_death_type) // BLUEMOON ADD
+	WRITE_FILE(S["distant_start_enabled"], distant_start_enabled)
 	WRITE_FILE(S["feature_hardsuit_with_tail"]			, features["hardsuit_with_tail"])
 	WRITE_FILE(S["left_eye_color"]						, left_eye_color)
 	WRITE_FILE(S["right_eye_color"]						, right_eye_color)

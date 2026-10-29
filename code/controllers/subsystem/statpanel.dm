@@ -99,10 +99,35 @@ SUBSYSTEM_DEF(statpanels)
 
 /datum/controller/subsystem/statpanels/proc/build_readyplayers_payload()
 	var/list/rows = list()
+	var/list/departments = get_manifest_departments()
+	var/list/department_rows = list()
+	for(var/department in departments)
+		department_rows[department] = list()
+	var/list/other_rows = list()
 	for(var/mob/dead/new_player/np as anything in GLOB.new_player_list)
 		if(np.ready != PLAYER_READY_TO_PLAY || !np.client)
 			continue
-		rows += np.client.prefs?.real_name || np.client.ckey
+		var/datum/preferences/prefs = np.client.prefs
+		// Публикуем только имя выбранного персонажа; данные аккаунта не подставляем ни при каких условиях.
+		if(!istext(prefs?.real_name) || !length(trimtext(prefs.real_name)))
+			continue
+		// title принадлежит базовой профессии и не зависит от выбранного альтернативного названия.
+		var/datum/job/preferred_job = prefs.get_highest_job()
+		var/job_title = preferred_job?.title
+		var/row = "[trimtext(prefs.real_name)] ([job_title || "профессия не выбрана"])"
+		var/has_department = FALSE
+		for(var/department in departments)
+			var/list/jobs = departments[department]
+			if(job_title in jobs)
+				var/list/players = department_rows[department]
+				players += row
+				has_department = TRUE
+				break
+		if(!has_department)
+			other_rows += row
+	for(var/department in departments)
+		rows += sort_list(department_rows[department])
+	rows += sort_list(other_rows)
 	return rows
 
 /datum/controller/subsystem/statpanels/fire(resumed = FALSE)

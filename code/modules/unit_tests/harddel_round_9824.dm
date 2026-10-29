@@ -86,6 +86,11 @@
 
 /datum/unit_test/trauma_quirk_removal_releases_trauma/Run()
 	begin_isolated_gc()
+	var/list/record = grant_and_remove()
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
+	assert_soft_collected(record)
+
+/datum/unit_test/trauma_quirk_removal_releases_trauma/proc/grant_and_remove()
 	var/mob/living/carbon/human/patient = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
 	patient.add_quirk(/datum/quirk/phobia)
 
@@ -102,9 +107,7 @@
 	var/list/record = target_record(granted, "траума квирка фобии")
 	patient.remove_quirk(/datum/quirk/phobia)
 	TEST_ASSERT_NULL(brain.has_trauma_type(/datum/brain_trauma/mild/phobia), "Снятие квирка не вылечило фобию")
-
-	run_gc_fire_cycles(2, yield_for_gc = TRUE)
-	assert_soft_collected(record)
+	return record
 
 /// Кровяная клякса на окне: /obj/effect/decal/Initialize отвечает INITIALIZE_HINT_QDEL
 /// на турфе без пола (NeverShouldHaveComeHere), то есть new() возвращает уже удалённый
@@ -187,6 +190,11 @@
 
 /datum/unit_test/storage_pool_releases_recycled_item/Run()
 	begin_isolated_gc()
+	var/list/record = recycle_and_delete()
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
+	assert_soft_collected(record)
+
+/datum/unit_test/storage_pool_releases_recycled_item/proc/recycle_and_delete()
 	var/obj/item/storage/backpack/bag = allocate(/obj/item/storage/backpack, run_loc_floor_bottom_left)
 	var/datum/component/storage/storage = bag.GetComponent(/datum/component/storage)
 	TEST_ASSERT_NOTNULL(storage, "У рюкзака нет компонента хранилища")
@@ -217,9 +225,7 @@
 	qdel(second)
 	TEST_ASSERT_NULL(box.our_item, "Коробка удержала удалённый предмет")
 	TEST_ASSERT_NULL(box.holder.our_item, "holder удержал удалённый предмет")
-
-	run_gc_fire_cycles(2, yield_for_gc = TRUE)
-	assert_soft_collected(record)
+	return record
 
 /datum/unit_test/storage_pool_releases_recycled_item/Destroy()
 	purge_storage_ui_pools()
@@ -258,7 +264,8 @@
 	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, floor)
 	victim.death()
 
-	var/mob/living/simple_animal/hostile/asteroid/hivelordbrood/legion/advanced/brood = allocate(/mob/living/simple_animal/hostile/asteroid/hivelordbrood/legion/advanced, floor)
+	// Не через allocate(): список allocated держал бы бруда, которого проверяем на сборку
+	var/mob/living/simple_animal/hostile/asteroid/hivelordbrood/legion/advanced/brood = new(floor)
 	var/list/record = target_record(brood, "легион-бруд, ушедший в infest")
 	brood.infest(victim)
 

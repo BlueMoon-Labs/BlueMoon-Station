@@ -16,6 +16,7 @@ import {
   quirkColor,
   SelectRow,
   TabDataMissing,
+  ToggleRow,
 } from '../components';
 
 interface QuirkRow {
@@ -41,6 +42,7 @@ interface QuirksData {
   shriek?: string;
   shriekOptions?: string[];
   summonNickname?: string | null;
+  distantStartEnabled?: boolean;
   phobia?: string;
   phobiaOptions?: string[];
   onelife?: string;
@@ -149,39 +151,61 @@ export const QuirksTab = () => {
   ).length;
   const maxPositive = quirks.maxPositive ?? 0;
   const nickname = quirks.summonNickname;
+  const hasShriek = current.includes('Крикун');
+  const hasSummon = current.includes('Призываемый');
+  const hasPhobia = current.includes('Фобия');
+  const hasOnelife = current.includes('Одна Жизнь');
+  const hasDistant = current.includes('Отстраненность');
 
   return (
     <Section fill scrollable title="Особенности">
-      <Section title="Настройки отдельных особенностей">
-        <Box color="label" mb={1}>
-          Работают, только если выбрана соответствующая особенность.
-        </Box>
-        <SelectRow
-          label="Тип крика"
-          value={quirks.shriek}
-          options={quirks.shriekOptions || []}
-          action="quirk_set_shriek"
-        />
-        <FieldRow label="Прозвище призываемого">
-          <Button
-            icon="pen"
-            content={nickname || 'Задать'}
-            onClick={() => act('quirk_set_nickname')}
-          />
-        </FieldRow>
-        <SelectRow
-          label="Фобия"
-          value={quirks.phobia}
-          options={quirks.phobiaOptions || []}
-          action="quirk_set_phobia"
-        />
-        <SelectRow
-          label="Останки «Одной Жизни»"
-          value={quirks.onelife}
-          options={quirks.onelifeOptions || []}
-          action="quirk_set_onelife"
-        />
-      </Section>
+      {(hasShriek || hasSummon || hasPhobia || hasOnelife || hasDistant) && (
+        <Section title="Настройки отдельных особенностей">
+          {hasShriek && (
+            <SelectRow
+              label="Тип крика"
+              value={quirks.shriek}
+              options={quirks.shriekOptions || []}
+              action="quirk_set_shriek"
+            />
+          )}
+          {hasSummon && (
+            <FieldRow label="Прозвище призываемого">
+              <Button
+                icon="pen"
+                content={nickname || 'Задать'}
+                onClick={() => act('quirk_set_nickname')}
+              />
+            </FieldRow>
+          )}
+          {hasPhobia && (
+            <SelectRow
+              label="Фобия"
+              value={quirks.phobia}
+              options={quirks.phobiaOptions || []}
+              action="quirk_set_phobia"
+            />
+          )}
+          {hasOnelife && (
+            <SelectRow
+              label="Останки «Одной Жизни»"
+              value={quirks.onelife}
+              options={quirks.onelifeOptions || []}
+              action="quirk_set_onelife"
+            />
+          )}
+          {hasDistant && (
+            <ToggleRow
+              label="Отстранённость при появлении"
+              value={!!quirks.distantStartEnabled}
+              action="quirk_set_distant_start"
+              params={{ value: !quirks.distantStartEnabled }}
+              onLabel="Вкл"
+              offLabel="Выкл"
+            />
+          )}
+        </Section>
+      )}
 
       <Section title="Выбранные особенности">
         <Stack mb={1} wrap>

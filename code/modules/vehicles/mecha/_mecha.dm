@@ -29,6 +29,7 @@
 	anchored = TRUE
 	emulate_door_bumps = TRUE
 	hud_possible = list (DIAG_STAT_HUD, DIAG_BATT_HUD, DIAG_MECH_HUD, DIAG_TRACK_HUD)
+	attack_hand_is_action = TRUE
 
 	/// Cooldown between in-place rotations. Kept shorter than movedelay so turning stays responsive and isn't blocked by inability to move, but slow enough not to spin on the spot.
 	var/turn_delay = 0.4 SECONDS
