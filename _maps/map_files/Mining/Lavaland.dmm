@@ -5642,7 +5642,7 @@
 "doZ" = (
 /obj/structure/lattice/catwalk,
 /obj/structure/disposalpipe/segment,
-/turf/open/lava/smooth/lava_land_surface,
+/turf/open/floor/plating/asteroid/basalt/lava_land_surface,
 /area/ruin/lavaland/unpowered)
 "dpj" = (
 /obj/machinery/door/airlock/maintenance{
@@ -28936,7 +28936,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/obj/structure/disposalpipe/segment,
+/obj/structure/disposalpipe/segment{
+	dir = 1
+	},
 /turf/open/floor/plasteel/dark/side{
 	dir = 1
 	},
