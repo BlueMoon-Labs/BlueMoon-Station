@@ -64,6 +64,9 @@ GENETICS SCANNER
 	if(t_ray_images.len)
 		flick_overlay(t_ray_images, list(viewer.client), flick_time)
 
+/mob/proc/can_read_medical_display()
+	return !is_blind() || HAS_MIND_TRAIT(src, TRAIT_MEDICAL_DEVICE_INTERFACE)
+
 /obj/item/healthanalyzer
 	name = "health analyzer"
 	desc = "Ручной сканер тела с функцией анализа показателей здоровья пациента."
@@ -130,7 +133,7 @@ GENETICS SCANNER
 // BLUEMOON ADD END
 
 /obj/item/healthanalyzer/proc/show_results(mob/user)
-	if(user.is_blind())
+	if(!user.can_read_medical_display())
 		to_chat(user, span_warning("Вы не можете прочитать результаты анализатора, пока ничего не видите."))
 		return
 	if(GLOB.health_analyzer_allow_chat_mode && user.client?.prefs?.health_analyzer_chat)
@@ -145,12 +148,12 @@ GENETICS SCANNER
 	return GLOB.hands_state
 
 /obj/item/healthanalyzer/ui_status(mob/user, datum/ui_state/state)
-	if(user.is_blind())
+	if(!user.can_read_medical_display())
 		return UI_CLOSE
 	return ..()
 
 /obj/item/healthanalyzer/ui_interact(mob/user, datum/tgui/ui)
-	if(!user.client || user.is_blind())
+	if(!user.client || !user.can_read_medical_display())
 		return
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
@@ -159,7 +162,7 @@ GENETICS SCANNER
 		ui.open()
 
 /obj/item/healthanalyzer/ui_data(mob/user)
-	if(user.is_blind())
+	if(!user.can_read_medical_display())
 		return list()
 	var/list/data = list("advanced" = advanced, "printing" = printing, "scan" = scan_data, "scanNumber" = scan_number)
 	return data
@@ -275,7 +278,7 @@ GENETICS SCANNER
 	if(!length(data))
 		return
 	// Без зрения доступны только показания подтверждённой встроенной системы.
-	if(user.is_blind() && (QDELETED(live_source) || !live_source.can_monitor_medical_scan(user, patient, scan_kind)))
+	if(!user.can_read_medical_display() && (QDELETED(live_source) || !live_source.can_monitor_medical_scan(user, patient, scan_kind)))
 		to_chat(user, span_warning("Вы не можете прочитать показания внешнего сканера, пока ничего не видите."))
 		return
 	if(!user.client || (GLOB.health_analyzer_allow_chat_mode && user.client.prefs.health_analyzer_chat))
@@ -364,7 +367,7 @@ GENETICS SCANNER
 		var/mob/living/patient = patient_ref?.resolve()
 		if(!source || !patient || user.stat != CONSCIOUS || user.incapacitated() || !source.can_monitor_medical_scan(user, patient, scan_kind))
 			return UI_CLOSE
-	else if(user.is_blind())
+	else if(!user.can_read_medical_display())
 		return UI_CLOSE
 	return ..()
 

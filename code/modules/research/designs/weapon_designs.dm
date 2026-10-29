@@ -816,6 +816,50 @@
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 	min_security_level = SEC_LEVEL_AMBER //SEC_LEVEL_RED
 
+/datum/design/cal41_taser
+	name = "Speed Loader (.41 taser)"
+	desc = "Designed to quickly reload revolvers."
+	id = "41_taser"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 2000)
+	build_path = /obj/item/ammo_box/cal41/taser
+	category = list("Ammo")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_AMBER //SEC_LEVEL_RED
+
+/datum/design/cal41_ion
+	name = "Speed Loader (.41 ion)"
+	desc = "Designed to quickly reload revolvers."
+	id = "41_ion"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 20000, /datum/material/plasma = 1000)
+	build_path = /obj/item/ammo_box/cal41/ion
+	category = list("Ammo")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_AMBER //SEC_LEVEL_RED
+
+/datum/design/cal41_ratshot
+	name = "Speed Loader (.41 ratshot)"
+	desc = "Designed to quickly reload revolvers."
+	id = "41_rat"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 20000)
+	build_path = /obj/item/ammo_box/cal41/ratshot
+	category = list("Ammo")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_AMBER //SEC_LEVEL_RED
+
+/datum/design/cal41_ricochet
+	name = "Speed Loader (.41 ricochet)"
+	desc = "Designed to quickly reload revolvers."
+	id = "41_ric"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 20000, /datum/material/titanium = 10000)
+	build_path = /obj/item/ammo_box/cal41/ricochet
+	category = list("Ammo")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_AMBER //SEC_LEVEL_RED
+
 //апгрейды 41
 
 /datum/design/cal41_liturgy
@@ -851,6 +895,28 @@
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 	min_security_level = SEC_LEVEL_BLUE
 
+/datum/design/cal41_Mea_culpa
+	name = "Apostle to Mea_culpa upgrade kit"
+	desc = "A set of spare parts for upgrading Apostle. Can be used only on empty gun"
+	id = "Mea_culpa"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 7500, /datum/material/titanium = 1000 )
+	build_path = /obj/item/weaponcrafting/gunkit/Mea_culpa
+	category = list("Weapons")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_BLUE
+
+/datum/design/cal41_Misericordia 
+	name = "Exorcist to Misericordia  upgrade kit"
+	desc = "A set of spare parts for upgrading Apostle. Can be used only on empty gun"
+	id = "Misericordia"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 7500, /datum/material/titanium = 1000 )
+	build_path = /obj/item/weaponcrafting/gunkit/Misericordia 
+	category = list("Weapons")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_BLUE
+
 // 410 cal дробь
 
 /datum/design/exorcist_rubber
@@ -869,6 +935,16 @@
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 1000)
 	build_path = /obj/item/ammo_casing/cal410/lethal
+	category = list("Ammo")
+	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
+	min_security_level = SEC_LEVEL_BLUE
+
+/datum/design/exorcist_lethal
+	name = "410 slug"
+	id = "410_slug"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 5000)
+	build_path = /obj/item/ammo_casing/cal410/slug 
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 	min_security_level = SEC_LEVEL_BLUE
