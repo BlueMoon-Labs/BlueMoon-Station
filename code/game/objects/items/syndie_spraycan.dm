@@ -16,14 +16,14 @@
 	/// Set to true if we finished drawing something, this spraycan is now useless
 	var/expended = FALSE
 	/// Тип руны, которую рисует этот баллончик.
-	var/rune_type = /obj/effect/decal/cleanable/traitor_rune
+	var/rune_type = /obj/effect/decal/traitor_rune
 
 /obj/item/traitor_spraycan/inteq
 	name = "InteQ spraycan"
 	desc = "Этим баллончиком можно нанести узор областью 3х3. Краски хватает ровно на один финальный слой."
 	icon_state = "deathcan"
 	item_state = "spraycan"
-	rune_type = /obj/effect/decal/cleanable/traitor_rune/inteq_rune
+	rune_type = /obj/effect/decal/traitor_rune/inteq_rune
 
 /obj/item/traitor_spraycan/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
 	if (!isliving(user) || !proximity_flag)
@@ -36,7 +36,7 @@
 		return
 	if (isturf(target))
 		try_draw_new_rune(user, target)
-	else if (istype(target, /obj/effect/decal/cleanable/traitor_rune))
+	else if (istype(target, /obj/effect/decal/traitor_rune))
 		try_complete_rune(user, target)
 
 /**
@@ -104,7 +104,7 @@
  * * user - the mob drawing the rune
  * * target_turf - the place the rune's being drawn
  */
-/obj/item/traitor_spraycan/proc/try_complete_rune(mob/living/user, obj/effect/decal/cleanable/traitor_rune/rune)
+/obj/item/traitor_spraycan/proc/try_complete_rune(mob/living/user, obj/effect/decal/traitor_rune/rune)
 	switch(rune.drawn_stage)
 		if (RUNE_STAGE_OUTLINE)
 			if (!try_draw_step("прорисовываю узор...", user, rune))
@@ -136,7 +136,7 @@
 		return FALSE
 	return TRUE
 
-/obj/effect/decal/cleanable/traitor_rune
+/obj/effect/decal/traitor_rune
 	name = "Syndicate graffiti"
 	desc = "Похоже, это будет... логотип Синдиката?"
 	icon = 'icons/effects/96x96.dmi'
@@ -144,7 +144,6 @@
 	pixel_x = -32
 	pixel_y = -32
 	gender = NEUTER
-	mergeable_decal = FALSE
 	resistance_flags = FIRE_PROOF | UNACIDABLE | ACID_PROOF
 	plane = FLOOR_PLANE
 	layer = TURF_DECAL_LAYER + 0.6
@@ -163,7 +162,7 @@
 
 	var/slips_walkers = FALSE
 
-/obj/effect/decal/cleanable/traitor_rune/inteq_rune
+/obj/effect/decal/traitor_rune/inteq_rune
 	name = "InteQ graffiti"
 	desc = "Похоже, это будет... логотип InteQ?"
 	icon_state = "inteq_rune_outline"
@@ -177,16 +176,27 @@
 
 	slips_walkers = TRUE
 
-/obj/effect/decal/cleanable/traitor_rune/Destroy()
-	if (drawn_stage == RUNE_STAGE_COMPLETE)
-		return QDEL_HINT_LETMELIVE
+/obj/effect/decal/traitor_rune/inteq_rune/examine(mob/user)
+	. = ..()
+	switch(drawn_stage)
+		if (RUNE_STAGE_COMPLETE)
+			. = ..()
+			. += span_notice("Убрать граффити не получится, краска лежит слишком плотно. Надо подождать.")
+		if (RUNE_STAGE_REMOVABLE)
+			. = ..()
+			. += span_notice("Можно убрать <b>мылом</b>.")
 
+/obj/effect/decal/traitor_rune/Destroy()
 	STOP_PROCESSING(SSobj, src)
 	deltimer(protected_timer)
 	QDEL_NULL(demoraliser)
+	for(var/turf/slip_turf in RANGE_TURFS(1, loc))
+		var/datum/component/slippery/slip = slip_turf.GetComponent(/datum/component/slippery)
+		if (slip)
+			qdel(slip)
 	return ..()
 
-/obj/effect/decal/cleanable/traitor_rune/process()
+/obj/effect/decal/traitor_rune/process()
 	if(!demoraliser)
 		STOP_PROCESSING(SSobj, src)
 		return
@@ -194,7 +204,7 @@
 		return
 	do_scare_scan()
 
-/obj/effect/decal/cleanable/traitor_rune/proc/do_scare_scan()
+/obj/effect/decal/traitor_rune/proc/do_scare_scan()
 	demoraliser.do_scare_scan()
 
 /**
@@ -204,7 +214,8 @@
  * Arguments
  * * stage - new stage to apply
  */
-/obj/effect/decal/cleanable/traitor_rune/proc/set_stage(stage)
+
+/obj/effect/decal/traitor_rune/proc/set_stage(stage)
 	drawn_stage = stage
 	switch(drawn_stage)
 		if (RUNE_STAGE_OUTLINE)
@@ -214,19 +225,38 @@
 		if (RUNE_STAGE_COLOURED, RUNE_STAGE_REMOVABLE)
 			icon_state = rune_done_state
 			desc = desc_done
-			for(var/turf/slip_turf in RANGE_TURFS(1, loc))
-				qdel(slip_turf.GetComponent(/datum/component/slippery))
+			clear_slip()
 
 		if (RUNE_STAGE_COMPLETE)
 			icon_state = rune_sheen_state
 			desc = desc_done_sheen
 			if (spawns_demoraliser)
-				demoraliser = new(src, 6, TRUE)
+				demoraliser = new(src, 7, TRUE)
 				START_PROCESSING(SSobj, src)
 			if (slips_walkers)
 				for(var/turf/nearby_turf in RANGE_TURFS(1, loc))
 					nearby_turf.AddComponent(/datum/component/slippery, 6 SECONDS, NO_SLIP_WHEN_WALKING)
 			protected_timer = addtimer(CALLBACK(src, PROC_REF(set_stage), RUNE_STAGE_REMOVABLE), 5 MINUTES)
+
+/obj/effect/decal/traitor_rune/proc/clear_slip()
+	for(var/turf/slip_turf in RANGE_TURFS(1, loc))
+		var/datum/component/slippery/slip = slip_turf.GetComponent(/datum/component/slippery)
+		if (slip)
+			qdel(slip)
+
+
+/obj/effect/decal/traitor_rune/attackby(obj/item/W, mob/user, params)
+	if (istype(W, /obj/item/soap))
+		if (drawn_stage == RUNE_STAGE_COMPLETE)
+			user.balloon_alert(user, "краска ещё не высохла!")
+			return
+		user.balloon_alert(user, "оттираю...")
+		if (QDELETED(src))
+			return
+		user.balloon_alert(user, "стерто!")
+		qdel(src)
+		return
+	return ..()
 
 #undef SYNDIE_DRAW_TIME
 #undef RUNE_STAGE_COLOURED
