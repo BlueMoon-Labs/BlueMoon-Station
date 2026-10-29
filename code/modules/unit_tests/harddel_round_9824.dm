@@ -90,7 +90,6 @@
 	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	assert_soft_collected(record)
 
-/// Отдельным проком: локалы с траумой и квирком иначе держат её в кадре Run() всю сборку.
 /datum/unit_test/trauma_quirk_removal_releases_trauma/proc/grant_and_remove()
 	var/mob/living/carbon/human/patient = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
 	patient.add_quirk(/datum/quirk/phobia)
@@ -195,7 +194,6 @@
 	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	assert_soft_collected(record)
 
-/// Отдельным проком: локал с удалённым предметом иначе держит его в кадре Run() всю сборку.
 /datum/unit_test/storage_pool_releases_recycled_item/proc/recycle_and_delete()
 	var/obj/item/storage/backpack/bag = allocate(/obj/item/storage/backpack, run_loc_floor_bottom_left)
 	var/datum/component/storage/storage = bag.GetComponent(/datum/component/storage)

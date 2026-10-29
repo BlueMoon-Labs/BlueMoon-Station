@@ -156,7 +156,6 @@
 	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	assert_soft_collected(record)
 
-/// Отдельным проком: локал с распечаткой иначе держит её в кадре Run() всю сборку.
 /datum/unit_test/brig_report_does_not_retain_paper/proc/print_and_delete()
 	var/turf/floor = run_loc_floor_bottom_left
 	var/obj/machinery/computer/prisoner/management/console = allocate(/obj/machinery/computer/prisoner/management, floor)
@@ -187,7 +186,6 @@
 	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	assert_soft_collected(record)
 
-/// Отдельным проком: временные переменные TEST_ASSERT_EQUAL иначе держат владельца в кадре Run().
 /datum/unit_test/syntech_normalizer_does_not_pin_owner/proc/bind_and_delete_owner()
 	var/turf/floor = run_loc_floor_bottom_left
 	var/mob/living/carbon/human/wearer = new(floor)

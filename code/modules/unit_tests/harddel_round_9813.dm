@@ -52,8 +52,7 @@
 	var/label = target["label"]
 	var/datum/qdel_item/item = SSgarbage.GetOrCreateItem(target["type_path"])
 	TEST_ASSERT(item.qdels > 0, "[label] не попал в qdel")
-	// Исчезнуть из мира можно и через hard delete, мягкой сборкой это не считается.
-	// begin_isolated_gc() после снимка заводит новый счётчик типа, поэтому смотрим оба.
+	// Hard delete тоже убирает цель из мира; begin_isolated_gc() мог завести новый счётчик типа
 	var/datum/qdel_item/recorded = target["qdel_item"]
 	var/hard_deleted = recorded.hard_deletes != target["hard_deletes"] || (item != recorded && item.hard_deletes)
 	TEST_ASSERT(!hard_deleted, "[label] собран через hard delete")
