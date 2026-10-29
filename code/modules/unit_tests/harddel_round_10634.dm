@@ -58,3 +58,19 @@
 	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	scan_holders(record)
 	assert_soft_collected(record)
+
+/// Атом, удалённый жёстко, пока ждал сглаживания, оставляет в очереди null: проход его пропускает.
+/datum/unit_test/icon_smooth_skips_deleted_atoms
+
+/datum/unit_test/icon_smooth_skips_deleted_atoms/Run()
+	var/saved_state = SSicon_smooth.state
+	var/list/saved_queue = SSicon_smooth.smooth_queue
+	var/obj/structure/window/doomed = allocate(/obj/structure/window, run_loc_floor_bottom_left)
+	qdel(doomed)
+	SSicon_smooth.smooth_queue = list(null, doomed)
+	SSicon_smooth.state = SS_RUNNING
+	SSicon_smooth.fire()
+	SSicon_smooth.state = saved_state
+	var/list/leftover = SSicon_smooth.smooth_queue
+	SSicon_smooth.smooth_queue = saved_queue
+	TEST_ASSERT(!length(leftover), "в очереди сглаживания остались удалённые атомы")

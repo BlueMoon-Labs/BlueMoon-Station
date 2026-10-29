@@ -16,6 +16,9 @@ SUBSYSTEM_DEF(icon_smooth)
 	while(cached.len)
 		var/atom/A = cached[cached.len]
 		cached.len--
+		// Жёстко удалённый атом оставляет в очереди null
+		if(QDELETED(A))
+			continue
 		if (A.flags_1 & INITIALIZED_1)
 			smooth_icon(A)
 		else
