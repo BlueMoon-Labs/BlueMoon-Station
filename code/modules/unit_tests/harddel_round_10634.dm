@@ -123,3 +123,15 @@
 	var/obj/docking_port/stationary/leftover = shuttle.previous
 	shuttle.previous = saved_previous
 	TEST_ASSERT_NULL(leftover, "шаттл помнит удалённую точку отлёта")
+
+/// Призрак не получает дата-худы без явной настройки: их картинки сервер сверяет с обзором каждый тик.
+/datum/unit_test/ghost_data_huds_off_by_default
+
+/datum/unit_test/ghost_data_huds_off_by_default/Run()
+	var/mob/dead/observer/ghost = allocate(/mob/dead/observer, run_loc_floor_bottom_left)
+	TEST_ASSERT(!ghost.data_huds_on, "призрак без настройки включил дата-худы")
+	for(var/hud_type in ghost.datahuds)
+		var/datum/atom_hud/hud = GLOB.huds[hud_type]
+		TEST_ASSERT(!hud.hudusers[ghost], "призрак без настройки подписан на худ [hud_type]")
+	ghost.sync_data_huds()
+	TEST_ASSERT(!ghost.data_huds_on, "сверка без клиента включила дата-худы")
