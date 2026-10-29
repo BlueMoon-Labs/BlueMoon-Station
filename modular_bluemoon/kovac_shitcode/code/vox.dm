@@ -117,7 +117,7 @@
 //Но и лапками дерёт морды в кровь
 	punchdamagelow = 5
 	punchdamagehigh = 10
-	punchstunthreshold = 4
+	punchstunthreshold = 10
 	punchwoundbonus = 3
 
 	attack_verb = "claw"
@@ -154,9 +154,9 @@
 	var/datum/component/tackler/T = C.LoadComponent(/datum/component/tackler)
 	T.stamina_cost = 25
 	T.base_knockdown = 2.5 SECONDS
-	T.range = 5
+	T.range = 4
 	T.speed = 0.9
-	T.skill_mod = 4
+	T.skill_mod = 1 // как у перчаток-хватателей: воксам их не надеть
 	T.min_distance = 2
 	return ..()
 
