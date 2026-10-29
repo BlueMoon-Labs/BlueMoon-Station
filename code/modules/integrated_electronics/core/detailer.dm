@@ -47,7 +47,7 @@
 	if(!in_range(src, user))
 		return
 	if(color_choice == "custom")
-		detail_color = input(user,"","Choose Color",detail_color) as color|null
+		detail_color = tgui_input_color(user,"","Choose Color",detail_color)
 	else
 		detail_color = color_list[color_choice]
 	update_icon()

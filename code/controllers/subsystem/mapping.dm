@@ -97,7 +97,13 @@ SUBSYSTEM_DEF(mapping)
 #ifdef FORCE_MAP
 		config = load_map_config(FORCE_MAP)
 #else
-		config = load_map_config(error_if_missing = FALSE)
+#ifdef UNIT_TESTS
+		var/test_map = world.params[UNIT_TEST_MAP_PARAMETER]
+		if(test_map)
+			config = load_map_config(test_map)
+#endif
+		if(!config)
+			config = load_map_config(error_if_missing = FALSE)
 #endif
 	stat_map_name = config.map_name
 

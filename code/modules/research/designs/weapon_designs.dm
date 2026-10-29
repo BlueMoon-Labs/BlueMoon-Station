@@ -872,3 +872,13 @@
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 	min_security_level = SEC_LEVEL_BLUE
+
+/datum/design/desynchronizer
+	name = "Desynchronizer"
+	desc = "Устройство, способное десинхронизировать пользователя с пространством и временем."
+	id = "desynchronizer"
+	build_type = PROTOLATHE
+	materials = list(/datum/material/iron = 1000, /datum/material/glass = 500, /datum/material/silver = 1500, /datum/material/bluespace = 1000)
+	build_path = /obj/item/desynchronizer
+	category = list("Weapons")
+	departmental_flags = DEPARTMENTAL_FLAG_SCIENCE

@@ -169,6 +169,7 @@
 #include "atmos_pipenet_rebuild.dm"
 #include "atmos_gas_balance.dm"
 #include "atmos_handbook.dm"
+#include "atoms_initialize_overlap.dm"
 #include "firelock_alarm.dm"
 #include "rpd_fixes.dm"
 #include "window_airbag.dm"
@@ -197,8 +198,11 @@
 #include "carbon_limb_cache_offset.dm"
 #include "centcom_roundstart_active_turfs.dm"
 #include "chain_pull_through_space.dm"
+#include "changelog_archive.dm"
+#include "character_preview_bounds.dm"
 #include "character_profile_performance.dm"
 #include "chat_member_badges.dm"
+#include "chat_speech_fx.dm"
 #include "chem_dispenser_payload.dm"
 #include "client_connect_probe.dm"
 #include "climbing_hook.dm"
@@ -214,6 +218,7 @@
 // #include "confusion.dm"
 // #include "crayons.dm"
 #include "create_and_destroy.dm"
+#include "crew_manifest_heads.dm"
 #include "custom_emote_panel.dm"
 #include "custom_portal_station.dm"
 // #include "designs.dm"
@@ -258,6 +263,7 @@
 #include "hk_droids_terminal.dm"
 #include "hk_droids_voice.dm"
 #include "holofan_charge.dm"
+#include "hud_sparse_images.dm"
 #include "immovable_rod_cleanup.dm"
 // #include "greyscale_config.dm"
 #include "heretic_knowledge.dm"
@@ -415,6 +421,7 @@
 #include "progressbar_deleted_target.dm"
 #include "projectiles.dm"
 #include "qareen_chalk.dm"
+#include "radio_job_classes.dm"
 #include "weather.dm"
 #include "weather_datum_lifecycle.dm"
 #include "weather_multiz_areas.dm"
@@ -481,6 +488,7 @@
 #include "teleporters.dm"
 #include "tgui_create_message.dm"
 #include "tgui_dev_asset_url.dm"
+#include "tgui_oversized_payload.dm"
 #include "tgui_preview_caches.dm"
 #include "timer_sanity.dm"
 #include "turf_flags.dm"
@@ -600,9 +608,9 @@
 #include "phobia_preference.dm"
 #include "psychosis_pools.dm"
 #include "preload_size_budgets.dm"
-#include "preferences_navigation.dm"
 #include "preferences_preview_performance.dm"
 #include "preferences_render_caches.dm"
+#include "preferences_test_fixture.dm"
 #include "round_10294_profile_icon_benchmark.dm"
 #include "preferences_save_deferral.dm"
 #include "preferences_single_pref_coalescing.dm"
@@ -664,9 +672,12 @@
 #include "tile_pipe_placement.dm"
 #include "timestop_illusion.dm"
 #include "transport.dm"
+#include "turret_target_cache.dm"
 #include "update_icon_short_circuit.dm"
 #include "vent_label_numbering.dm"
 #include "weeds_growth.dm"
+#include "zclear_pool.dm"
+#include "zclear_wipe_order.dm"
 
 
 #ifdef AI_BEHAVIOR_SCENE_BENCH
@@ -751,6 +762,7 @@ TEST_FOCUS(/datum/unit_test/echolocation_lighting_shape_filtering)
 TEST_FOCUS(/datum/unit_test/echolocation_lit_fixtures)
 TEST_FOCUS(/datum/unit_test/echolocation_item_echo_visibility)
 TEST_FOCUS(/datum/unit_test/echolocation_typing_echo_lifecycle)
+TEST_FOCUS(/datum/unit_test/echolocation_batched_echo_removal)
 #endif
 
 #endif

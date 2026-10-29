@@ -6,7 +6,7 @@ dreamchecker = true
 [debugger]
 engine = "auxtools"
 
-#[code_standards]
+[code_standards]
 disallow_relative_type_definitions = true
 disallow_relative_proc_definitions = true
 

@@ -210,9 +210,7 @@
 	else if(HAS_TRAIT(user, TRAIT_DUMB) || !user.can_read(src))
 		. += "<span class='warning'>You try to comprehend the display, but it's too complex for you to understand.</span>"
 	else
-		healthscan(user, patient, advanced = advanced_scan)
-		if(chemscan_enabled)
-			chemscan(user, patient)
+		healthscan(user, patient, advanced = advanced_scan, include_chemistry = chemscan_enabled)
 
 /obj/machinery/vitals_reader/add_context(atom/source, list/context, obj/item/held_item, mob/user)
 	if(held_item?.tool_behaviour == TOOL_WRENCH)

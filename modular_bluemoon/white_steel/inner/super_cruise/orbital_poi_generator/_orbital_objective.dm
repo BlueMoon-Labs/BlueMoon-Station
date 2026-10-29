@@ -160,7 +160,17 @@
 	var/turf/bridge = null
 	if(!beacon)
 		bridge = get_exploration_bridge_turf()
-	if(!beacon && !bridge)
+	var/turf/shuttle_fallback = null
+	var/obj/docking_port/mobile/exploration_shuttle = SSshuttle.getShuttle("exploration")
+	if(exploration_shuttle)
+		for(var/area/A in exploration_shuttle.shuttle_areas)
+			for(var/turf/open/floor/F in A)
+				if(!F.density)
+					shuttle_fallback = F
+					break
+			if(shuttle_fallback)
+				break
+	if(!beacon && !bridge && !shuttle_fallback)
 		return
 	var/atom/movable/npc_target = get_target()
 	for(var/mob/living/carbon/human/H as() in GLOB.human_list)
@@ -172,7 +182,7 @@
 		if(!is_expedition_crew(H))
 			continue
 		//Тело уходит на маяк (на свободный пол рядом с ним) или, если маяка нет, на мостик шаттла.
-		var/turf/destination = beacon ? beacon.get_delivery_turf() : bridge
+		var/turf/destination = beacon ? beacon.get_delivery_turf() : (bridge ? bridge : shuttle_fallback)
 		if(!destination)
 			continue
 		var/turf/start = get_turf(H)

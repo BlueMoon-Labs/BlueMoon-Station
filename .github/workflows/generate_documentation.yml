@@ -1,7 +1,7 @@
 name: Generate documentation
 on:
   schedule:
-  - cron: "44 */6 * * *"
+    - cron: "44 */6 * * *"
   workflow_dispatch:
 permissions:
   contents: read
@@ -9,25 +9,24 @@ jobs:
   generate_documentation:
     permissions:
       contents: write  # for JamesIves/github-pages-deploy-action to push changes in repo
-    if: ( !contains(github.event.head_commit.message, '[ci skip]') )
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
     concurrency: gen-docs
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Setup cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/SpacemanDMM
-          key: ${{ runner.os }}-spacemandmm-${{ secrets.CACHE_PURGE_KEY }}
+          key: ${{ runner.os }}-spacemandmm-${{ hashFiles('dependencies.sh') }}
       - name: Install SpacemanDMM
         run: bash tools/ci/install_spaceman_dmm.sh dmdoc
       - name: Generate documentation
         run: |
           ~/dmdoc
           touch dmdoc/.nojekyll
-          echo https://splurt-station.github.io/S.P.L.U.R.T-Station-13/ > dmdoc/CNAME
       - name: Deploy
-        uses: JamesIves/github-pages-deploy-action@v4.7.3
+        uses: JamesIves/github-pages-deploy-action@v4.9.0
         with:
           branch: gh-pages
           clean: true

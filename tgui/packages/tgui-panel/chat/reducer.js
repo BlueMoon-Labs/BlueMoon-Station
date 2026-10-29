@@ -63,7 +63,7 @@ export const chatReducer = (state = initialState, action) => {
     const countByType = payload;
     const pages = state.pages.map(id => state.pageById[id]);
     const currentPage = state.pageById[state.currentPageId];
-    const nextPageById = { ...state.pageById };
+    let nextPageById = null;
     for (let page of pages) {
       let unreadCount = 0;
       for (let type of Object.keys(countByType)) {
@@ -83,11 +83,17 @@ export const chatReducer = (state = initialState, action) => {
         unreadCount += countByType[type];
       }
       if (unreadCount > 0) {
+        nextPageById = nextPageById || { ...state.pageById };
         nextPageById[page.id] = {
           ...page,
           unreadCount: page.unreadCount + unreadCount,
         };
       }
+    }
+    // Новый объект только при смене счётчиков: панель перерисовывается
+    // по смене состояния, а этот экшен приходит на каждое сообщение.
+    if (!nextPageById) {
+      return state;
     }
     return {
       ...state,

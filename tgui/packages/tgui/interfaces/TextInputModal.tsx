@@ -8,6 +8,7 @@ import { InputButtons } from './common/InputButtons';
 import { Loader } from './common/Loader';
 
 type TextInputData = {
+  hint?: string;
   large_buttons: boolean;
   max_length: number;
   message: string;
@@ -20,6 +21,7 @@ type TextInputData = {
 export const TextInputModal = (_) => {
   const { act, data } = useBackend<TextInputData>();
   const {
+    hint,
     large_buttons,
     max_length,
     message = "",
@@ -43,7 +45,8 @@ export const TextInputModal = (_) => {
     + (message.length > 30 ? Math.ceil(message.length * 0.45) : 0)
     + (multiline ? 195 : 0)
     + (message.length && large_buttons ? 5 : 0)
-    + (message.split('\n').length - 1) * 12;
+    + (message.split('\n').length - 1) * 12
+    + (hint ? 165 : 0);
 
   // Window width based multiline.
   const windowWidth
@@ -68,6 +71,17 @@ export const TextInputModal = (_) => {
             <Stack.Item>
               <Box color="label" preserveWhitespace>{message}</Box>
             </Stack.Item>
+            {!!hint && (
+              <Stack.Item>
+                <Box
+                  color="label"
+                  preserveWhitespace
+                  style={{ maxHeight: '150px', overflowY: 'auto' }}
+                >
+                  {hint}
+                </Box>
+              </Stack.Item>
+            )}
             <Stack.Item grow>
               <InputArea input={input} onType={onType} />
             </Stack.Item>

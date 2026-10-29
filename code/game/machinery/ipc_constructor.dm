@@ -1077,7 +1077,7 @@
 	if(!user || busy)
 		return
 	var/current_color = get_genital_color_value(color_id)
-	var/chosen_color = input(user, get_genital_color_prompt(color_id), "Цвет половой системы", "#[current_color]") as color|null
+	var/chosen_color = tgui_input_color(user, get_genital_color_prompt(color_id), "Цвет половой системы", "#[current_color]")
 	if(!chosen_color)
 		return
 	if(QDELETED(src) || QDELETED(user) || busy)

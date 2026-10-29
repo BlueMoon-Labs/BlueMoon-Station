@@ -456,7 +456,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	var/list/labels = build_labels(user)
 	var/tab_label = labels["tab_[color_tab]"]
 	var/current_color = get_tab_color()
-	var/new_color = input(user, tab_label, labels["color"], "#[current_color]") as color|null
+	var/new_color = tgui_input_color(user, tab_label, labels["color"], "#[current_color]")
 	// За время диалога могли сменить вкладку, отойти от цели или убрать спрей из рук.
 	if(QDELETED(src) || !new_color || tab != color_tab || !can_change_color(user))
 		return FALSE

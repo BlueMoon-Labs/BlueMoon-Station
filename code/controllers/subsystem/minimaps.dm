@@ -25,12 +25,14 @@ SUBSYSTEM_DEF(minimaps)
 			station_sources += read_source_features("_maps/[SSmapping.config.map_path]/[map_file]")
 	for(var/z in SSmapping.levels_by_trait(ZTRAIT_STATION))
 		var/station_index = SSmapping.z_to_station_z_index["[z]"]
+		var/list/stack = SSmapping.get_connected_levels(z)
+		// В LOWMEMORYMODE PNG не собираются: остаётся старая раскраска зон.
 		if(!station_index || station_index > length(station_maps))
-			log_mapping("Для станционного z=[z] не найдена миникарта NanoMap.")
+			log_mapping("Для станционного z=[z] не найдена миникарта NanoMap, строится схема зон.")
+			station_minimaps += new /datum/minimap(z, name = "Этаж [stack.Find(z)]", autocrop = FALSE, area_colors = TRUE)
 			continue
 		var/list/map_data = station_maps[station_index]
 		var/datum/asset_cache_item/map_asset = nanomaps.assets[map_data["asset"]]
-		var/list/stack = SSmapping.get_connected_levels(z)
 		station_minimaps += new /datum/minimap(z, x2 = map_data["width"], y2 = map_data["height"], name = "Этаж [stack.Find(z)]", autocrop = FALSE, source_icon = map_asset.resource, area_colors = TRUE, source_tiles = station_sources[station_index])
 
 	// Общая рамка: этажи одной станции совпадают по координатам и масштабу

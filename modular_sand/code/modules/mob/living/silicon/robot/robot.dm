@@ -5,6 +5,7 @@
 	lawupdate = FALSE
 	scrambledcodes = TRUE // Roleplay borgs aren't real
 	set_module = /obj/item/robot_module/roleplay
+	has_pda = FALSE
 
 /mob/living/silicon/robot/modules/roleplay/Initialize(mapload)
 	. = ..()

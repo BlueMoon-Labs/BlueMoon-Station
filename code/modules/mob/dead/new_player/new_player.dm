@@ -417,6 +417,9 @@
 	if(!respawn_latejoin_check(notify = TRUE))
 		return FALSE
 
+	if(!check_quirk_balance())
+		return FALSE
+
 	var/arrivals_docked = TRUE
 	if(SSshuttle.arrivals)
 		close_spawn_windows()	//In case we get held up
@@ -604,7 +607,6 @@
 
 
 /mob/dead/new_player/proc/close_spawn_windows()
-	client?.clear_character_previews()
 	if(job_menu)
 		SStgui.close_uis(job_menu)
 	src << browse(null, "window=latechoices") //closes late choices window
@@ -623,6 +625,9 @@
 /mob/dead/new_player/proc/check_preferences()
 	if(!client)
 		return FALSE //Not sure how this would get run without the mob having a client, but let's just be safe.
+	if(!check_quirk_balance())
+		ready = PLAYER_NOT_READY
+		return FALSE
 	if(client.prefs.joblessrole != RETURNTOLOBBY)
 		return TRUE
 	// If they have antags enabled, they're potentially doing this on purpose instead of by accident. Notify admins if so.
@@ -639,5 +644,14 @@
 			message_admins("[src.ckey] just got booted back to lobby with no jobs enabled, but antag rolling enabled. Likely antag rolling abuse.")
 
 		return FALSE //This is the only case someone should actually be completely blocked from antag rolling as well
+	return TRUE
+
+// Пресет с удалённой отрицательной особенностью можно исправить в меню без сброса остальных настроек.
+/mob/dead/new_player/proc/check_quirk_balance()
+	if(!client)
+		return FALSE
+	if(CONFIG_GET(flag/roundstart_traits) && client.prefs.quirk_balance() < 0)
+		to_chat(src, span_warning("Не хватает очков особенностей. Скорректируйте особенности или модификации персонажа перед входом в раунд."))
+		return FALSE
 	return TRUE
 

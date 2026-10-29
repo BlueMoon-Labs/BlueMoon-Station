@@ -1,12 +1,12 @@
 /*
 /////////////////////////	ИНФОРМАЦИЯ: /////////////////////////
 
-При добавлении рескина на оружие (или любого предмета, что влияет на геймплей) впишите DONATE_ITEM_TOOLTIP_PARENT сразу после пути
+При добавлении рескина на оружие (или любого предмета, что влияет на геймплей) впишите DONATE_ITEM_TOOLTIP_PARENT(путь) сразу после определения предмета
 Пример:
 
 /obj/item/gun/ballistic/automatic/pistol/enforcer/my_reskin
-	DONATE_ITEM_TOOLTIP_PARENT
 	name = "My personal enforcer"
+DONATE_ITEM_TOOLTIP_PARENT(/obj/item/gun/ballistic/automatic/pistol/enforcer/my_reskin)
 
 Если предмет из категории HIGHRISK, например мультифазка или антикварка,
 	вместо DONATE_ITEM_TOOLTIP_PARENT используйте DONATE_ITEM_TOOLTIP_PARENT_HIGHRISK
@@ -19,10 +19,10 @@
 	fromitem = list(/obj/item/kitchen/knife/butcher)
 
 /obj/item/kitchen/knife/butcher/shigu_knife
-	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Shigu Butcher Knife"
 	desc = "A ultra-sharp butcher knife. Maybe his seemingly glaring surface can scare!"
 	icon_state = "Shigu_Knife"
+DONATE_ITEM_TOOLTIP_PARENT(/obj/item/kitchen/knife/butcher/shigu_knife)
 
 //////////////////////////////////////////////////
 
@@ -33,7 +33,6 @@
 	fromitem = list(/obj/item/kitchen/knife/combat)
 
 /obj/item/kitchen/knife/combat/kukri
-	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Кукри-мачете"
 	desc = "Традиционное кукри, с разительным отличием, что делает его похожим на мачете, благодаря своему изогнутому клинку и функционалу как режущего инструмента и оружия. Из-за той же формы лещвия с изгибом центр тяжести смещён к острию, что делает его более эффективным для рубки. На рукояти изображён логотип, напоминающий чёрную розу и круговая надпись Black Rose atelier"
 	item_state = "kukri"
@@ -51,6 +50,7 @@
 			RESKIN_ITEM_STATE = "kukri_w"
 		)
 	)
+DONATE_ITEM_TOOLTIP_PARENT(/obj/item/kitchen/knife/combat/kukri)
 
 //////////////////////////////////////////////////
 
@@ -61,7 +61,6 @@
 	fromitem = list(/obj/item/melee/classic_baton)
 
 /obj/item/melee/classic_baton/impactbaton_jitte
-	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Impact Baton 1/62-H"
 	desc = "Impact Baton model 1, year 62th \"Hardlight\". Standard carbon fiber baton of Yernela catcrin law enforcements with hardlight technology sword-cutter."
 	icon = 'modular_bluemoon/fluffs/icons/obj/melee.dmi'
@@ -70,6 +69,7 @@
 	item_state = "impact_baton"
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/melee_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/melee_righthand.dmi'
+DONATE_ITEM_TOOLTIP_PARENT(/obj/item/melee/classic_baton/impactbaton_jitte)
 
 /obj/item/modkit/catcrinbaton_kit
 	name = "3/51-H Telescopic Baton Kit"
@@ -78,7 +78,6 @@
 	fromitem = list(/obj/item/melee/classic_baton/telescopic)
 
 /obj/item/melee/classic_baton/telescopic/catcrin
-	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Impact Baton 3/51-H"
 	desc = "Impact Baton model 3, year 51th \"Hardlight\". Easy conсealable telescopic baton of hight-position catcrins with paralitic hardlight elements on the tip and as handguard."
 	icon = 'modular_bluemoon/fluffs/icons/obj/melee.dmi'
@@ -89,6 +88,7 @@
 	on_item_state = "hardlightbaton_1"
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/melee_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/melee_righthand.dmi'
+DONATE_ITEM_TOOLTIP_PARENT(/obj/item/melee/classic_baton/telescopic/catcrin)
 
 ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -99,7 +99,6 @@
 	fromitem = list(/obj/item/melee/classic_baton/telescopic)
 
 /obj/item/melee/classic_baton/telescopic/portal_abomination
-	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Otherworld Portal Weapon"
 	desc = "A portal tool, revealing some part of otherworld undescribable abomination. Use it carefully or it will use you. Who openned the gates to this thing?!"
 	icon_state = "portalabomination"
@@ -111,6 +110,7 @@
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	hitsound = 'modular_bluemoon/fluffs/sound/weapon/Abomination.ogg'
+DONATE_ITEM_TOOLTIP_PARENT(/obj/item/melee/classic_baton/telescopic/portal_abomination)
 
 /obj/item/modkit/dark_sabre_kit
 	name = "Dark Omen Sword Kit"
@@ -119,7 +119,6 @@
 	fromitem = list(/obj/item/melee/transforming/plasmasword, /obj/item/melee/transforming/energy/sword/saber, /obj/item/melee/transforming/energy/sword/saber/red)
 
 /obj/item/melee/transforming/energy/sword/saber/dark_sabre
-	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Dark Omen Sword"
 	desc = "Необычная рукоять из тяжёлого неизвестного материала. На ней выгравирована мелким шрифтом странная фраза: \n<span class='danger'>«ТАМ, ГДЕ БЫЛ СТРАХ, ОСТАНУСЬ ТОЛЬКО Я»</span>\nПри включении, появляется леденящий душу чёрный клинок. От него исходит низкий, резонирующий гул. Последнее, что слышали многие жертвы этого орудия."
 	icon = 'modular_bluemoon/fluffs/icons/obj/melee.dmi'
@@ -134,6 +133,7 @@
 	possible_colors = null
 	unique_reskin = null
 	var/image/transform_overlay
+DONATE_ITEM_TOOLTIP_PARENT(/obj/item/melee/transforming/energy/sword/saber/dark_sabre)
 
 #define DARK_SABRE_TRANSFORM_TIME (0.5 SECONDS)
 
@@ -174,7 +174,6 @@
 	update_icon_state()
 
 /obj/item/melee/baton/twilight_spike
-	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Twilight Spike"
 	desc = "Тонкий, стремительный клинок, напоминающий заострённый шип. Его лезвие будто накапливает энергию, а при ударе высвобождает краткий парализующий импульс. \
 	Лёгкий и отлично сбалансированный, он создан для тех, кто предпочитает скорость и точность грубой силе."
@@ -185,14 +184,15 @@
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	turn_on_sound = 'modular_bluemoon/fluffs/sound/twilight_spike_on.ogg'
 	hit_sound = 'modular_bluemoon/fluffs/sound/twilight_spike_hit.ogg'
+DONATE_ITEM_TOOLTIP_PARENT(/obj/item/melee/baton/twilight_spike)
 
 /obj/item/melee/baton/twilight_spike/update_icon_state()
 	. = ..()
 	item_state = "[initial(item_state)][turned_on ? "_active" : ""]"
 
 /obj/item/melee/transforming/energy/sword/energy_sabre/fluff
-	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Cybersun Energy Sabre"
+DONATE_ITEM_TOOLTIP_PARENT(/obj/item/melee/transforming/energy/sword/energy_sabre/fluff)
 
 /obj/item/melee/transforming/energy/sword/energy_sabre/fluff/Initialize(mapload)
 	. = ..()
@@ -324,7 +324,6 @@
 	fromitem = list(/obj/item/kitchen/knife/combat)
 
 /obj/item/kitchen/knife/combat/scream_knife
-	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Knife of scream"
 	desc = "A cool hunting knife bought at a random 24-hour store. For some unknown reason, it is much more comfortable to hold it in a reverse grip.."
 	item_state = "scream"
@@ -332,6 +331,7 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/melee.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/melee_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/melee_righthand.dmi'
+DONATE_ITEM_TOOLTIP_PARENT(/obj/item/kitchen/knife/combat/scream_knife)
 
 //////////////////////////////////////////////////
 
@@ -342,11 +342,11 @@
 	fromitem = list(/obj/item/kitchen/knife)
 
 /obj/item/kitchen/knife/trenchknife
-	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Trench Knife"
 	desc = "Для своего 600-летнего возраста этот артефакт Первой мировой войны сохранился великолепно. Массивная латунная рукоять-кастет покрыта благородной темной патиной, но не имеет ни единой трещины. Четыре кольца с шипами до сих пор идеально ложатся на пальцы"
 	icon = 'modular_bluemoon/fluffs/icons/obj/kitchen.dmi'
 	icon_state = "knife"
+DONATE_ITEM_TOOLTIP_PARENT(/obj/item/kitchen/knife/trenchknife)
 
 //////////////////////////////////////////////////
 
@@ -357,14 +357,13 @@
 	fromitem = list(/obj/item/kitchen/knife/combat)
 
 /obj/item/kitchen/knife/combat/bowie
-	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Bowie Knife"
 	desc = "Культовый тяжелый тесак, который спустя шесть веков полностью сохранил свою брутальную функциональность. Характерный хищный скос обуха и массивная стальная гарда не расшатались от времени."
 	icon = 'modular_bluemoon/fluffs/icons/obj/kitchen.dmi'
 	icon_state = "buckknife"
+DONATE_ITEM_TOOLTIP_PARENT(/obj/item/kitchen/knife/combat/bowie)
 
 /obj/item/melee/baton/stunsword/melatonin
-	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Dunwall Folding Stun-Sword"
 	desc = "Раритетное оружие, выполненное на заказ по сложной складной схеме, неуловимо напоминающей клинок лорда-защитника Дануолла. Оно оснащено компактной деревянной рукоятью со стальным кольцом на торце для быстрого извлечения из поясных ножен. Внутрь рукояти аккуратно встроены батарея и индикатор заряда. Острое лезвие угрожающе переливается искрами бледно-синей электрической энергии, которая, вопреки хищному и смертоносному виду клинка, предназначена лишь для мгновенного оглушения цели."
 	icon = 'modular_bluemoon/fluffs/icons/obj/melee.dmi'
@@ -373,6 +372,7 @@
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
 	turn_on_sound = 'modular_bluemoon/fluffs/sound/weapon/stunblade.ogg'
+DONATE_ITEM_TOOLTIP_PARENT(/obj/item/melee/baton/stunsword/melatonin)
 
 /obj/item/melee/baton/stunsword/melatonin/update_icon_state()
 	. = ..()
@@ -404,7 +404,6 @@
 #define STUNKATANA_BASE_STATE "stunkatana"
 
 /obj/item/melee/baton/stunsword/stunkatana
-	DONATE_ITEM_TOOLTIP_PARENT
 	name = "\improper Stun-Katana"
 	desc = "Оружие специальных подразделений ЧВК \"Конкорд\", способное одним только ударом разрезать мехов словно раскалённый нож масло... Ах, было бы славно, если бы он и оставался таким. К сожалению, из-за политики ПАКТа, максимальная сила режущей энерго-кромки выставлена на 1-2 процента, а предоставляемые энергоячейки едва ли могут сравниться с боевыми образцами, что делает этот поистинне мощный клинок лишь средством нелетального задержания с ноткой хайтека и напыщенности."
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
@@ -413,6 +412,7 @@
 	icon_state = STUNKATANA_BASE_STATE
 	item_state = STUNKATANA_BASE_STATE
 	turn_on_sound = 'modular_bluemoon/fluffs/sound/weapon/stunblade.ogg'
+DONATE_ITEM_TOOLTIP_PARENT(/obj/item/melee/baton/stunsword/stunkatana)
 
 /obj/item/melee/baton/stunsword/stunkatana/switch_status(new_status, silent)
 	var/old_status = turned_on
@@ -469,13 +469,13 @@
 #undef STUNKATANA_BASE_STATE
 
 /obj/item/restraints/legcuffs/bola/energy/melatonin
-	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Entangling Bola"
 	desc = "Грубая самодельная бола, на концах которой вместо грузов закреплены каменные волчьи лапы. Следы ручной работы видны повсюду — неровная обработка камня, потёртая верёвка и крепления, сделанные наспех."
 	icon_state = "melatonin_bola"
 	item_state = "melatonin_bola"
 	hitsound = 'modular_bluemoon/fluffs/sound/Entangling_Bola_hit.ogg'
 	icon = 'modular_bluemoon/fluffs/icons/obj/items.dmi'
+DONATE_ITEM_TOOLTIP_PARENT(/obj/item/restraints/legcuffs/bola/energy/melatonin)
 
 /obj/item/restraints/legcuffs/bola/energy/melatonin/Initialize(mapload)
 	. = ..()
@@ -529,7 +529,6 @@
 	fromitem = list(/obj/item/kitchen/knife/combat)
 
 /obj/item/kitchen/knife/combat/nul
-	DONATE_ITEM_TOOLTIP_PARENT
 	name = "\improper Sword of Nul"
 	desc = "Короткое прямое бронзовое лезвие, однако оружие слегка позеленело от времени. Он по прежнему острый, очень острый, острее даже тончайшей стали. Фактически, меч острее, чем теоретически возможно для бронзового оружия. На нем отсутствуют какие-либо украшения, за исключение грубо выполненного черепа, вырезанного посередине рукояти. Когда-то рукоять была обернута кожей или тканью, которая со временем сгнила, оставив только голый металл. Поговаривают, его выковал сам Драконскир, могущественный демон, где-то в третьем тысячелетии до нашей эры для защиты города Ур от вторгшихся сил военачальника Урлона из Урука."
 	item_state = "sword-nul"
@@ -537,6 +536,7 @@
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/guns_right.dmi'
+DONATE_ITEM_TOOLTIP_PARENT(/obj/item/kitchen/knife/combat/nul)
 
 /obj/item/kitchen/knife/combat/nul/Initialize(mapload)
 	.=..()

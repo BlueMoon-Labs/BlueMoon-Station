@@ -63,15 +63,13 @@
 			TEST_ASSERT(abs(text2num(center_offset.group[1])) <= 5, "[fullscreen_type] ставит якорь [anchor] за край обзора 15x11")
 			position = center_offset.next
 
-/// Два мастера на одном номере плоскости - до клиента доедет только один.
+// Два мастера одной группы на одном номере плоскости - до клиента доедет только один.
 /datum/unit_test/plane_master_numbers_are_unique
 
 /datum/unit_test/plane_master_numbers_are_unique/Run()
 	var/list/claimed_by = list()
-	for(var/atom/movable/screen/plane_master/master_type as anything in subtypesof(/atom/movable/screen/plane_master))
-		//Абстрактная плита своей плоскости не имеет.
-		if(master_type == /atom/movable/screen/plane_master/rendering_plate)
-			continue
+	var/datum/plane_master_group/main/group = allocate(/datum/plane_master_group/main, RENDER_GRAPH_TEST_KEY)
+	for(var/atom/movable/screen/plane_master/master_type as anything in group.get_plane_types())
 		var/plane_key = "[initial(master_type.plane)]"
 		if(!(initial(master_type.offsetting_flags) & BLOCKS_PLANE_OFFSETTING) && SSmapping.plane_offset_blacklist[plane_key])
 			TEST_FAIL("Мастер [master_type] использует несмещаемую плоскость [plane_key] без BLOCKS_PLANE_OFFSETTING.")
