@@ -497,8 +497,9 @@
 		M.setDir(dir_filter)
 	if(ISDIAGONALDIR(dir_filter))
 		dir_filter = EWCOMPONENT(dir_filter)
-	var/target_x = 0
-	var/target_y = 0
+	// От исходного смещения спрайта: у крупных мобов оно ненулевое
+	var/target_x = M.get_standard_pixel_x_offset()
+	var/target_y = M.get_standard_pixel_y_offset()
 	switch(dir_filter)
 		if(NORTH)
 			target_y += offset
@@ -522,7 +523,7 @@
 /mob/living/proc/reset_pull_offsets(mob/living/M, override)
 	if(!override && M.buckled)
 		return
-	animate(M, pixel_x = 0, pixel_y = 0, time = 3, flags = ANIMATION_PARALLEL)
+	animate(M, pixel_x = M.get_standard_pixel_x_offset(), pixel_y = M.get_standard_pixel_y_offset(), time = 3, flags = ANIMATION_PARALLEL)
 
 //mob verbs are a lot faster than object verbs
 //for more info on why this is not atom/pull, see examinate() in mob.dm

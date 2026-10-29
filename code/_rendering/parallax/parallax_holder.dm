@@ -123,7 +123,8 @@
 
 /datum/parallax_holder/proc/on_cached_eye_deleted(datum/source)
 	SIGNAL_HANDLER
-	set_cached_eye(null)
+	if(source == cached_eye)
+		set_cached_eye(null)
 
 // better updates via client_mobs_in_contents can be created again when important recursive contents is ported!
 /datum/parallax_holder/proc/Update(full, anim_time = 0)

@@ -162,12 +162,16 @@
 	dummy.delete_equipment()
 	return record
 
+/// Отдельным проком: локальная ссылка на найденный объект не должна пережить проверку и держать его в сборке.
+/datum/unit_test/portal_panties_stop_processing_on_delete/proc/left_in_fastprocess(list/record)
+	var/datum/leftover = locate(record["ref"])
+	return !isnull(leftover) && (leftover in SSfastprocess.processing)
+
 /datum/unit_test/portal_panties_stop_processing_on_delete/Run()
 	begin_isolated_gc()
 	var/list/records = list(delete_with_body(), delete_from_dummy())
 	for(var/list/record in records)
-		var/datum/leftover = locate(record["ref"])
-		TEST_ASSERT(isnull(leftover) || !(leftover in SSfastprocess.processing), "[record["label"]] остались в SSfastprocess")
+		TEST_ASSERT(!left_in_fastprocess(record), "[record["label"]] остались в SSfastprocess")
 	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	for(var/list/record in records)
 		scan_holders(record)

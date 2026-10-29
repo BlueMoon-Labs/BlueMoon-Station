@@ -18,6 +18,8 @@ SUBSYSTEM_DEF(icon_smooth)
 		cached.len--
 		// Жёстко удалённый атом оставляет в очереди null
 		if(QDELETED(A))
+			if(MC_TICK_CHECK)
+				return
 			continue
 		if (A.flags_1 & INITIALIZED_1)
 			smooth_icon(A)

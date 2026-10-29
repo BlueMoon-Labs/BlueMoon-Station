@@ -259,11 +259,12 @@
 	if(force && registered)
 		unregister()
 	// Шаттл в полёте помнит точку отлёта, а её удаляет очистка z-уровня руины
-	for(var/obj/docking_port/mobile/shuttle in SSshuttle.mobile)
-		if(shuttle.previous == src)
-			shuttle.previous = null
-		if(shuttle.destination == src)
-			shuttle.destination = null
+	if(force)
+		for(var/obj/docking_port/mobile/shuttle in SSshuttle.mobile)
+			if(shuttle.previous == src)
+				shuttle.previous = null
+			if(shuttle.destination == src)
+				shuttle.destination = null
 	. = ..()
 
 /obj/docking_port/stationary/Moved(atom/oldloc, dir, forced)
