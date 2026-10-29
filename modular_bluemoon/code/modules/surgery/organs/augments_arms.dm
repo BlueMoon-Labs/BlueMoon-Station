@@ -83,7 +83,7 @@
 /obj/item/organ/cyberimp/arm/gorilla/activate_allowed(datum/action/action, mob/user, silent = FALSE)
 	if(crit_fail || (organ_flags & ORGAN_FAILING))
 		return FALSE
-	return /obj/item/organ/proc/activate_allowed(action, user, silent)
+	return call(/obj/item/organ/proc/activate_allowed)(action, user, silent)
 
 /obj/item/organ/cyberimp/arm/gorilla/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = TRUE)
 	. = ..()
@@ -319,27 +319,12 @@
 	. = ..()
 	if(!.)
 		return
-	if(ishuman(M))
-		RegisterSignal(M, COMSIG_MOB_FIRED_GUN, PROC_REF(on_gun_fire))
+	ADD_TRAIT(M, TRAIT_BALLISTIC_PROCESSOR, ORGAN_TRAIT)
 
 /obj/item/organ/cyberimp/arm/ballistic_processor/Remove(special = FALSE)
 	if(owner)
-		UnregisterSignal(owner, COMSIG_MOB_FIRED_GUN)
+		REMOVE_TRAIT(owner, TRAIT_BALLISTIC_PROCESSOR, ORGAN_TRAIT)
 	return ..()
-
-/obj/item/organ/cyberimp/arm/ballistic_processor/proc/on_gun_fire(mob/living/user, obj/item/gun/gun, atom/target, params, zone_override)
-	SIGNAL_HANDLER
-	if(user != owner)
-		return
-	// Применяем свойства к только что выстреленной пуле
-	if(gun.chambered && gun.chambered.BB)
-		var/obj/item/projectile/P = gun.chambered.BB
-		if(istype(P) && P.flag == BULLET)
-			P.ballistic_processor = TRUE
-			P.ballistic_processor_ricochet_chance = ricochet_chance
-			P.ballistic_processor_max_ricochets = max_ricochets
-			P.ballistic_processor_homing_angle = homing_angle
-			P.ballistic_processor_homing_range = homing_range
 
 /obj/item/organ/cyberimp/brain/berserker
 	name = "Berserker implant"
@@ -412,23 +397,28 @@
 				H.action_cooldown_mod = attack_speed_mult
 		to_chat(H, "<span class='notice'>You enter berserker mode! You feel unstoppable!</span>")
 		addtimer(CALLBACK(src, PROC_REF(deactivate_berserk)), berserk_time)
-		addtimer(CALLBACK(src, PROC_REF(check_emp_selfharm)), 1 SECONDS)
 
-/obj/item/organ/cyberimp/brain/berserker/proc/check_emp_selfharm()
-	if(!active || !owner)
+/// ЭМИ по активному берсерку заставляет носителя избивать самого себя.
+/obj/item/organ/cyberimp/brain/berserker/emp_act(severity)
+	. = ..()
+	if(. & EMP_PROTECT_SELF)
+		return
+	if(!active || !ishuman(owner))
+		return
+	INVOKE_ASYNC(src, PROC_REF(emp_selfharm))
+
+/obj/item/organ/cyberimp/brain/berserker/proc/emp_selfharm()
+	if(!active || !ishuman(owner))
 		return
 	var/mob/living/carbon/human/H = owner
-	if(ishuman(H))
-		// Проверка на ЭМИ - если есть эффект ЭМИ или просто в районе ЭМИ
-		if(H.emped || H.get_emp_level())
-			H.visible_message(span_danger("[H] starts attacking themselves uncontrollably!"), span_userdanger("Your berserker implant malfunctions from EMP and forces you to attack yourself!"))
-			H.a_intent_change(INTENT_HARM)
-			H.setClickCooldown(0)
-			// Атакуем себя
-			for(var/i in 1 to 5)
-				H.ClickOn(H, list())
-				sleep(2)
-		addtimer(CALLBACK(src, PROC_REF(check_emp_selfharm)), 2 SECONDS)
+	H.visible_message(span_danger("[H] starts attacking themselves uncontrollably!"), span_userdanger("Your berserker implant malfunctions from EMP and forces you to attack yourself!"))
+	H.a_intent_change(INTENT_HARM)
+	H.SetNextAction(0, flush = TRUE)
+	for(var/i in 1 to 5)
+		if(QDELETED(H))
+			return
+		H.ClickOn(H, list())
+		sleep(2)
 
 /obj/item/organ/cyberimp/brain/berserker/proc/deactivate_berserk()
 	if(!active || !owner)
@@ -577,7 +567,7 @@
 	/// Время зарядки перед выстрелом
 	var/charge_time = 1.5 SECONDS
 	/// Модификатор разброса при стрельбе с двух рук
-	var/dual_wield_spread = 12
+	dual_wield_spread = 12
 	/// Улучшенная точность при стрельбе с двух рук
 	var/dual_wield_inaccuracy_mult = 0.7
 
@@ -675,41 +665,39 @@
 	inaccuracy_modifier = 0.7
 
 /obj/item/ammo_casing/energy/implanthandgun
-	projectile_type = /obj/projectile/bullet/implanthandgun
+	projectile_type = /obj/item/projectile/bullet/implanthandgun
 	select_name = "explosive"
 	e_cost = 1000
 	fire_sound = 'sound/weapons/rocket.ogg'
 	delay = 30
 
 /obj/item/ammo_casing/energy/implanthandgun/burst
-	projectile_type = /obj/projectile/bullet/implanthandgun/burst
+	projectile_type = /obj/item/projectile/bullet/implanthandgun/burst
 	select_name = "burst"
 	e_cost = 1000
 	pellets = 3
 	variance = 4
 	fire_sound = 'sound/weapons/laser.ogg'
 
-/obj/projectile/bullet/implanthandgun
+/obj/item/projectile/bullet/implanthandgun
 	name = "explosive charge"
 	icon_state = "missile"
 	damage = 50
-	armour_penetration = 30
 	range = 15
 	knockdown = 0
 	stun = 0
 
-/obj/projectile/bullet/implanthandgun/burst
+/obj/item/projectile/bullet/implanthandgun/burst
 	name = "mini explosive charge"
 	damage = 25
-	armour_penetration = 20
 	range = 12
 
-/obj/projectile/bullet/implanthandgun/on_hit(atom/target, blocked = FALSE)
+/obj/item/projectile/bullet/implanthandgun/on_hit(atom/target, blocked = FALSE, pierce_hit)
 	. = ..()
 	explosion(target, 0, 1, 2, 0, 0, 0, 0)
 	return BULLET_ACT_HIT
 
-/obj/projectile/bullet/implanthandgun/burst/on_hit(atom/target, blocked = FALSE)
+/obj/item/projectile/bullet/implanthandgun/burst/on_hit(atom/target, blocked = FALSE, pierce_hit)
 	. = ..()
 	explosion(target, 0, 0, 1, 0, 0, 0, 0)
 	return BULLET_ACT_HIT

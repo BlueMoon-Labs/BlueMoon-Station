@@ -410,7 +410,7 @@
 		return FALSE
 	var/turf/T = get_turf(A)
 	if(check_ricochet_flag(A) && check_ricochet(A)) //if you can ricochet, attempt to ricochet off the object
-		if(ballistic_processor && ballistic_processor_ricochets_done < ballistic_processor_max_ricochets)
+		if(flag == BULLET && firer && HAS_TRAIT(firer, TRAIT_BALLISTIC_PROCESSOR) && ballistic_processor_ricochets_done < ballistic_processor_max_ricochets)
 			if(prob(ballistic_processor_ricochet_chance))
 				ballistic_processor_ricochets_done++
 				ricochets++
@@ -433,7 +433,7 @@
 							best_dist = dist
 							best_mob = L
 					if(best_mob)
-						var/new_angle = get_angle(src, best_mob)
+						var/new_angle = Get_Angle(src, best_mob)
 						setAngle(new_angle)
 					if(hitscan)
 						store_hitscan_collision(trajectory.copy_to())
