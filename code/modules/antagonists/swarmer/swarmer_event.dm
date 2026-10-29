@@ -33,6 +33,6 @@
 /datum/round_event/spawn_swarmer/proc/find_swarmer()
 	for(var/i in GLOB.mob_living_list)
 		var/mob/living/L = i
-		if(istype(L, /mob/living/simple_animal/hostile/swarmer) && L.client) //If there is a swarmer with an active client, we've found our swarmer
+		if(istype(L, /mob/living/simple_animal/hostile/swarmer) && GET_CLIENT(L) && !L.training_origin) //If there is a swarmer with an active client, we've found our swarmer
 			return TRUE
 	return FALSE

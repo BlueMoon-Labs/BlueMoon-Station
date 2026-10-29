@@ -21,6 +21,7 @@ GLOBAL_LIST_INIT_TYPED(screentip_context_icons, /image, prepare_screentip_contex
 /proc/build_context(list/context, key, allow_image)
 	if(!length(context) || !length(context[key]) || !key)
 		return ""
+	var/static/regex/russian_letters = regex(@"[А-Яа-яЁё]+", "g")
 	var/list/to_add = list()
 	if(!islist(context[key])) // tg ports
 		var/action = context[key]
@@ -38,7 +39,9 @@ GLOBAL_LIST_INIT_TYPED(screentip_context_icons, /image, prepare_screentip_contex
 			if(context_icon)
 				button = "<span style='font-size: [SCREENTIP_CONTEXT_ICON_FONT_SCALE_PERCENT]%;'>\icon[context_icon]</span>"
 				using_image = TRUE
-		LAZYADD(to_add, "[key_combo][button][using_image ? "" : ": "][context[key][intent]]")
+		// В TinyUnicode нет кириллицы: используем для неё пиксельный Tiny5 той же высоты.
+		var/action_text = replacetext(context[key][intent], russian_letters, "<span class='subcontext-cyrillic'>$0</span>")
+		LAZYADD(to_add, "[key_combo][button][using_image ? "" : ": "][action_text]")
 
 	// Prepare separator for same button but different intent
 	var/separator = "[allow_image ? " " : " / "]"

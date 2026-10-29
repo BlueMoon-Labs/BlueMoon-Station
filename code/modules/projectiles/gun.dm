@@ -207,7 +207,9 @@
 	if(!no_pin_required)
 		if(pin)
 			. += span_info("Внутри установлен \a <b>[pin]</b>.")
-			if(pin.emag_removeable && !(obj_flags & EMAGGED))
+			if(pin.permanent)
+				. += span_info("[pin] впаян в [src] намертво: его не извлечь ни инструментами, ни взломом.")
+			else if(pin.emag_removeable && !(obj_flags & EMAGGED))
 				. += span_info("Похоже, что [pin] невозможно извлечь, не взломав электронику оружия.")
 			else
 				. += span_info("Похоже, что [pin] может быть извлечён с помощью <b>инструментов</b>.")

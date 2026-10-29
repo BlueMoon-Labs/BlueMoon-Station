@@ -170,7 +170,7 @@ GLOBAL_DATUM(main_supermatter_engine, /obj/machinery/power/supermatter_crystal)
 	///The key our internal radio uses
 	var/radio_key = /obj/item/encryptionkey/headset_eng
 	///The engineering channel
-	var/engineering_channel = "Engineering"
+	var/engineering_channel = RADIO_CHANNEL_ENGINEERING
 	///The common channel
 	var/common_channel = null
 

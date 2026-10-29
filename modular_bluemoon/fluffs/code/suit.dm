@@ -515,7 +515,6 @@
 // 	item_state = "empire_head"
 // 	body_parts_covered = HEAD
 // 	flags_inv = HIDEMASK|HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR|HIDESNOUT
-// 	armor = list(MELEE = 15, BULLET = 10, LASER = 10, ENERGY = 10, BOMB = 10, BIO = 0, RAD = 0, FIRE = 20, ACID = 0)
 // 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 // Спрайты принадлежат cnaperdodo
@@ -529,7 +528,6 @@
 // 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
 // 	item_state = "officer_armor"
 // 	body_parts_covered = CHEST|GROIN
-// 	armor = list(MELEE = 25, BULLET = 25, LASER = 20, ENERGY = 15, BOMB = 20, BIO = 10, RAD = 0, FIRE = 30, ACID = 20)
 // 	slowdown = 0
 // 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
@@ -831,6 +829,7 @@
 
 ///////////////////////////////////////////////
 
+//Убрать наследование от captains_parade, потому что это общий предмет донаторки без рестриктов
 /obj/item/clothing/suit/toggle/captains_parade/hos_formal/officerian_coat
 	name = "Poly Coat"
 	desc = "A coat with polychromic leather"
@@ -840,7 +839,7 @@
 	blood_overlay_type = "coat"
 	icon_state = "officerian_coat"
 	item_state = "officerian_coat"
-	armor = list(MELEE = 10, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
+	armor_type = /datum/armor/miner_and_officer_coats
 	var/list/poly_colors = list("#2A2A2A", "#A52F29")
 
 /obj/item/clothing/suit/toggle/captains_parade/hos_formal/officerian_coat/ComponentInitialize()
@@ -858,7 +857,7 @@
 	blood_overlay_type = "coat"
 	icon_state = "officerian_coat_oversized"
 	item_state = "officerian_coat_oversized"
-	armor = list(MELEE = 10, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0, WOUND = 0)
+	armor_type = /datum/armor/miner_and_officer_coats
 	var/list/poly_colors = list("#2A2A2A", "#A52F29")
 
 /obj/item/clothing/suit/toggle/captains_parade/hos_formal/officerian_coat_oversized/ComponentInitialize()
@@ -1119,7 +1118,6 @@
 	wearer.update_body()
 
 /obj/item/clothing/suit/armor/hos/platecarrier/melatonin_carrier
-	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Lycanthrope's Reinforced Coat"
 	desc = "Тяжелая кожаная куртка со следами долгого износа. Ткань на груди и спине заметно уплотнена — изнутри она прошита защитным слоем кевлара. По швам и воротнику куртки идут массивные клёпки из серебристого металла, а на рукавах затянуты грубые ремни. Шов между рукавом и правым плечом небрежно порван, обнажая подкладку, а чуть ниже пришита нашивка в форме полумесяца. Из-под потертой кожаной кобуры на плече отчетливо несет стойким запахом сигаретного дыма и перегара."
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
@@ -1128,6 +1126,7 @@
 	icon_state = "melatonin-carrier-coat-0"
 	body_parts_covered = CHEST|GROIN|ARMS
 	unique_reskin = list()
+DONATE_ITEM_TOOLTIP_PARENT(/obj/item/clothing/suit/armor/hos/platecarrier/melatonin_carrier)
 
 /obj/item/clothing/suit/armor/hos/platecarrier/melatonin_carrier/equipped(mob/user, slot)
 	. = ..()
@@ -1201,7 +1200,6 @@
 	return TRUE
 
 /obj/item/clothing/suit/armor/hos/platecarrier/lapkee_carrier
-	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Modified concord armored coat"
 	desc = "Часть линейки защитного снаряжения для оперативных групп касари, активно работающих в зонах повышенной аномальной активности, радиологических, бактериологических или химических угроз. Применяется там, где невозможно выполнение, например, исследований без физического присутствия представителей вида, или где использование иных средств защиты невозможно. В связи с посредственными отношениями между расой касари и многими другими видами, этот халат оснащён качественными бронепластинами в области груди, системами отслеживания жизненных показателей и, в полной комплектации - системами жизнеобеспечения, бункером, манипулятором и экстренными химическими запасами."
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
@@ -1209,6 +1207,7 @@
 	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/suit_digi.dmi'
 	icon_state = "lapkee-carrier-top"
 	unique_reskin = list()
+DONATE_ITEM_TOOLTIP_PARENT(/obj/item/clothing/suit/armor/hos/platecarrier/lapkee_carrier)
 
 /obj/item/clothing/suit/armor/hos/platecarrier/lapkee_carrier/equipped(mob/user, slot) //оверрайдим этот прок, дабы у нас вызывалась обнова иконки в момент одевания
 	. = ..()
@@ -1227,15 +1226,14 @@
 	wearer.update_body()
 
 /obj/item/clothing/suit/armor/vest/alt/tau
-	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Jaeger Combat Exoskeleton MK.1"
 	desc = "Jaeger Combat Exoskeleton MK.1. Designed to accommodate various modular armor components and support systems. This model comes equipped with EOD pauldrons, a Mjolnir torso, and Hell Diver knee guards. The light and storage module appears to be broken, and the armor plates are heavily damaged, offering reduced protection compared to their original state. The armor also features an empty slot for an armor module compatible with all TerraGov armor modules."
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
 	icon_state = "tau"
-	item_state = "tau"
 	blood_overlay_type = "armor"
 	body_parts_covered = CHEST
+DONATE_ITEM_TOOLTIP_PARENT(/obj/item/clothing/suit/armor/vest/alt/tau)
 
 /obj/item/modkit/tau_armor_kit
 	name = "Jaeger armor Kit"
@@ -1249,9 +1247,18 @@
 	name = "Honorable coat"
 	desc = "Old honoroble coat, pretty expensive"
 	icon_state = "honorable_coat"
-	item_state = "honorable_coat"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/suit/donator/bm/arsmaid_suit
+	name = "Maid Suit"
+	desc = "Maid Suit"
+	icon_state = "arsmaid_suit"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
+	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/suit/donator/bm/kladmenuwu_jacket
@@ -1260,4 +1267,22 @@
 	lefthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_left.dmi'
 	righthand_file = 'modular_bluemoon/fluffs/icons/mob/inhands/clothing_right.dmi'
 	anthro_mob_worn_overlay = 'modular_bluemoon/fluffs/icons/mob/clothing/suit_digi.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/suit/taxedo
+	name = "Taxedo"
+	desc = "Taxedo with skeleton markings, neat."
+	icon_state = "taxedo"
+	item_state = "taxedo"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
+	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
+
+/obj/item/clothing/suit/donator/bm/br_pilotjacket_s5
+	name = "BLACKROSE© Pilot Jacket Series V"
+	desc = "Частный заказ в дополнение к пилотному костюму. Не имеет особых и уникальных модификаций, кроме возможности установки бронеплит, расширенных внутренних карманов и высокого воротника."
+	icon_state = "brpilotcjackets5"
+	item_state = "brpilotcjackets5"
+	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
+	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON

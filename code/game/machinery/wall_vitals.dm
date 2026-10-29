@@ -37,7 +37,7 @@
 	active_power_usage = 10
 	max_integrity = 150
 	payment_department = ACCOUNT_MED
-	armor = list(MELEE = 30, BULLET = 20, LASER = 20, ENERGY = 30, BOMB = 10, FIRE = 50, ACID = 80)
+	armor_type = /datum/armor/vitals_reader
 	light_range = 1.5
 	light_power = 0.75
 	light_color = LIGHT_COLOR_CYAN
@@ -198,7 +198,7 @@
 			Use a [EXAMINE_HINT("multitool")] to connect it to a neighboring machine.</span>"
 		return
 
-	if(isnull(patient) || user.is_blind())
+	if(isnull(patient) || !user.can_read_medical_display())
 		return
 
 	if(machine_stat & EMPED)
@@ -207,12 +207,10 @@
 
 	if(!issilicon(user) && !isobserver(user) && get_dist(src, user) > 2)
 		. += "<span class='notice'><i>You are too far away to read the display.</i></span>"
-	else if(HAS_TRAIT(user, TRAIT_DUMB) || !user.can_read(src))
+	else if(HAS_TRAIT(user, TRAIT_DUMB) || HAS_TRAIT(user, TRAIT_ILLITERATE) || (!user.can_read(src) && !user.is_blind()))
 		. += "<span class='warning'>You try to comprehend the display, but it's too complex for you to understand.</span>"
 	else
-		healthscan(user, patient, advanced = advanced_scan)
-		if(chemscan_enabled)
-			chemscan(user, patient)
+		healthscan(user, patient, advanced = advanced_scan, include_chemistry = chemscan_enabled)
 
 /obj/machinery/vitals_reader/add_context(atom/source, list/context, obj/item/held_item, mob/user)
 	if(held_item?.tool_behaviour == TOOL_WRENCH)

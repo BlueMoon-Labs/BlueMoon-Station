@@ -12,14 +12,28 @@ import { createLogger } from 'tgui/logging';
 import highlightSoundUrl from '../assets/chat_notify.ogg';
 import { MESSAGE_STYLE_ANIMATIONS, MESSAGE_STYLES } from '../settings/constants';
 import { COMBINE_MAX_MESSAGES, COMBINE_MAX_TIME_WINDOW, IMAGE_RETRY_DELAY, IMAGE_RETRY_LIMIT, IMAGE_RETRY_MAX_DELAY, IMAGE_RETRY_MESSAGE_AGE, MAX_PERSISTED_MESSAGES, MAX_VISIBLE_MESSAGES, MESSAGE_PRUNE_INTERVAL, MESSAGE_TYPE_INTERNAL, MESSAGE_TYPE_UNKNOWN, MESSAGE_TYPES } from './constants';
+import { getBlockFxClasses, settleOldMessages } from './messageFx';
 import { canPageAcceptType, createMessage, isSameMessage } from './model';
 import { highlightNode, linkifyNode } from './replaceInTextNode';
+import { getChatColorProps, getGameFxRootClasses, getRadioJobRoot, getSettleRootClasses, getStyleOverrideRoot, isGameFxRootClass, isRadioJobRootClass, isStyleOverrideClass, SETTLE_OFF_CLASS } from './rootAppearance';
+import { buildTypeOverrideCss } from './typeOverrides';
 
 const logger = createLogger('chatRenderer');
 
 // We consider this as the smallest possible scroll offset
 // that is still trackable.
 const SCROLL_TRACKING_TOLERANCE = 48;
+const SCROLL_TOP_TOLERANCE = 48;
+const SMOOTH_SCROLL_DURATION = 250;
+// Дальше стольких экранов плавная прокрутка начинается с прыжка.
+const SMOOTH_SCROLL_MAX_SCREENS = 2;
+const USER_SCROLL_EVENTS = ['wheel', 'touchstart', 'keydown', 'mousedown'];
+
+const requestFrame = callback => (
+  window.requestAnimationFrame
+    ? window.requestAnimationFrame(callback)
+    : setTimeout(() => callback(performance.now()), 16)
+);
 const SCROLLABLE_OVERFLOWS = new Set(['auto', 'scroll', 'overlay']);
 
 const getScrollableRoot = () => (
@@ -59,7 +73,11 @@ const isScrollTracked = node => (
   getDistanceFromBottom(node) <= SCROLL_TRACKING_TOLERANCE
 );
 
+// Слоёв в узле фона, см. ChatBgAnimations.scss.
+export const BG_LAYERS = 3;
+
 const STYLE_OVERRIDE_SHEET_ID = 'cs-style-overrides';
+const TYPE_OVERRIDE_SHEET_ID = 'cs-type-overrides';
 
 const FONT_OVERRIDE_CSS = {
   normal: 'font-weight: normal; font-style: normal;',
@@ -107,19 +125,30 @@ const buildStyleOverrideCss = (overrides) => {
   return css;
 };
 
-const updateStyleOverrideSheet = (cssText) => {
-  let node = document.getElementById(STYLE_OVERRIDE_SHEET_ID);
+const updateSheet = (id, cssText) => {
+  let node = document.getElementById(id);
   if (!cssText) {
     node?.remove();
     return;
   }
   if (!node) {
     node = document.createElement('style');
-    node.id = STYLE_OVERRIDE_SHEET_ID;
+    node.id = id;
     document.head.appendChild(node);
   }
   if (node.textContent !== cssText) {
     node.textContent = cssText;
+  }
+};
+
+const setRootProps = (root, props) => {
+  for (const [key, value] of Object.entries(props)) {
+    if (value !== null && value !== undefined && value !== '') {
+      root.style.setProperty(key, value);
+    }
+    else {
+      root.style.removeProperty(key);
+    }
   }
 };
 
@@ -173,6 +202,13 @@ const createMessageNode = (animation, timestamp) => {
 const createReconnectedNode = () => {
   const node = document.createElement('div');
   node.className = 'Chat__reconnected';
+  return node;
+};
+
+const createNewMarkerNode = () => {
+  const node = document.createElement('div');
+  node.className = 'Chat__newMarker';
+  node.textContent = 'Новые сообщения';
   return node;
 };
 
@@ -266,6 +302,9 @@ export class ChatRenderer {
     this.queue = [];
     this.messages = [];
     this.visibleMessages = [];
+    // Растёт при любой правке списка сообщений, по нему сохранение
+    // в хранилище пропускает неизменившийся чат.
+    this.messagesVersion = 0;
     this.page = null;
     this.events = new EventEmitter();
     // Scroll handler
@@ -273,31 +312,45 @@ export class ChatRenderer {
     this.scrollNode = null;
     this.scrollTracking = true;
     this._smoothScrollInProgress = false;
-    this._smoothScrollTimer = null;
+    this._scrollAnimation = null;
     this.updateScrollTracking = () => {
       const node = this.scrollNode;
       if (!node) {
         return;
       }
-      const scrollTracking = isScrollTracked(node);
       // During a programmatic smooth scroll, don't let intermediate
       // scroll positions set tracking to false (causes button flicker).
+      // The animation updates tracking itself when it ends.
       if (this._smoothScrollInProgress) {
-        if (scrollTracking) {
-          // Reached the bottom — animation finished
-          this._smoothScrollInProgress = false;
-          clearTimeout(this._smoothScrollTimer);
-        }
         return;
       }
+      const scrollTracking = isScrollTracked(node);
       if (scrollTracking !== this.scrollTracking) {
         this.scrollTracking = scrollTracking;
+        if (scrollTracking) {
+          this._newMarkerArmed = true;
+        }
         this.events.emit('scrollTrackingChanged', scrollTracking);
         logger.debug('tracking', this.scrollTracking);
       }
     };
+    // Дошли ли до верха чата: над ним кнопка подгрузки ранней истории.
+    this.atTop = false;
+    // Колесо, тач или клавиши во время плавной прокрутки - игрок сам ведёт
+    // чат, анимация ему не мешает.
+    this.handleUserScrollIntent = () => {
+      if (this._scrollAnimation) {
+        this.stopScrollAnimation();
+      }
+    };
     this.handleScroll = () => {
       this.updateScrollTracking();
+      const atTop = this.scrollNode.scrollTop <= SCROLL_TOP_TOLERANCE
+        && !this.scrollTracking;
+      if (atTop !== this.atTop) {
+        this.atTop = atTop;
+        this.events.emit('atTopChanged', atTop);
+      }
     };
     this.handleDeferredContentLoad = e => {
       e?.target?.removeEventListener('load', this.handleDeferredContentLoad);
@@ -318,6 +371,8 @@ export class ChatRenderer {
     this.smoothScroll = false;
     this._pendingAppearance = null;
     this._currentBgAnim = null;
+    this.bgNode = null;
+    this._bgResizeObserver = null;
     // Highlight state
     this.highlightRegex = null;
     this.highlightColor = null;
@@ -329,6 +384,11 @@ export class ChatRenderer {
     this.enableTimeDividers = false;
     this.timeDividerInterval = 300000;
     this._lastDividerTime = 0;
+    // Линия перед первым сообщением, пришедшим, пока читают историю выше
+    this.newMarkerEnabled = false;
+    this._newMarkerNode = null;
+    this._newMarkerMessage = null;
+    this._newMarkerArmed = true;
     // Search state
     this._searchMatches = [];
     this._searchCurrentIndex = -1;
@@ -352,10 +412,20 @@ export class ChatRenderer {
     }
     if (this.scrollNode) {
       this.scrollNode.removeEventListener('scroll', this.handleScroll);
+      for (const type of USER_SCROLL_EVENTS) {
+        this.scrollNode.removeEventListener(type, this.handleUserScrollIntent);
+      }
     }
     // Prefer explicit scroll container and fallback to inferred one.
     this.scrollNode = scrollNode || findNearestScrollableParent(this.rootNode);
     this.scrollNode?.addEventListener('scroll', this.handleScroll);
+    for (const type of USER_SCROLL_EVENTS) {
+      this.scrollNode?.addEventListener(type, this.handleUserScrollIntent,
+        { passive: true });
+    }
+    if (this.bgNode) {
+      this.observeBgViewport();
+    }
     this.updateScrollTracking();
     defer(() => {
       this.scrollToBottom();
@@ -455,24 +525,51 @@ export class ChatRenderer {
     this.timeDividerInterval = interval || 300000;
   }
 
-  scrollToBottom() {
+  setNewMessagesMarker(enabled) {
+    if (!!enabled !== this.newMarkerEnabled) {
+      this._newMarkerArmed = true;
+    }
+    this.newMarkerEnabled = !!enabled;
+    if (!this.newMarkerEnabled) {
+      this.dropNewMarker();
+    }
+  }
+
+  // Не взводит отметку заново: в том же сеансе прокрутки вверх
+  // вторая линия не нужна.
+  dropNewMarker() {
+    this._newMarkerNode?.remove();
+    this._newMarkerMessage = null;
+  }
+
+  /**
+   * Places the marker before the first unread message of the current
+   * scroll-up session. Returns the node to insert, if any.
+   */
+  takeNewMarker(message, shouldAutoScroll) {
+    if (!this.newMarkerEnabled || shouldAutoScroll || !this._newMarkerArmed
+      || message.type.startsWith(MESSAGE_TYPE_INTERNAL)) {
+      return null;
+    }
+    this._newMarkerArmed = false;
+    this._newMarkerNode = this._newMarkerNode || createNewMarkerNode();
+    this._newMarkerMessage = message;
+    return this._newMarkerNode;
+  }
+
+  /**
+   * smooth - анимировать даже при выключенной плавной прокрутке: кнопка
+   * вниз - явное действие, мгновенный прыжок через всю историю выглядит рывком.
+   */
+  scrollToBottom({ smooth = this.smoothScroll } = {}) {
     if (!this.scrollNode) {
       return;
     }
-    if (this.smoothScroll) {
-      this._smoothScrollInProgress = true;
-      // Safety timeout: clear the flag even if the animation is
-      // interrupted (e.g. user scrolls up during animation).
-      // Smooth scroll typically takes 300-500ms.
-      clearTimeout(this._smoothScrollTimer);
-      this._smoothScrollTimer = setTimeout(() => {
-        this._smoothScrollInProgress = false;
-        this.updateScrollTracking();
-      }, 700);
-      this.scrollNode.scrollTo({
-        top: this.scrollNode.scrollHeight,
-        behavior: 'smooth',
-      });
+    this._newMarkerArmed = true;
+    // Идущая анимация сама доведёт до низа, даже если он отодвинулся;
+    // мгновенный прыжок посреди неё откатывался бы назад следующим кадром.
+    if (smooth || this._scrollAnimation) {
+      this.animateScrollToBottom();
     }
     else {
       // scrollHeight is always bigger than scrollTop and is
@@ -489,6 +586,54 @@ export class ChatRenderer {
     }
   }
 
+  /**
+   * Плавная прокрутка вниз одной анимацией. Нативный smooth перезапускался
+   * с каждым новым сообщением и догрузившейся картинкой, а с далёкого верха
+   * протаскивал через экран всю историю - отсюда рывки. Здесь цель
+   * перечитывается каждый кадр, повторный вызов не перезапускает анимацию,
+   * а дальнее расстояние сокращается прыжком до последних экранов.
+   */
+  animateScrollToBottom() {
+    const node = this.scrollNode;
+    const getMaxTop = () => Math.max(0, node.scrollHeight - node.clientHeight);
+    if (this._scrollAnimation) {
+      return;
+    }
+    const jumpTo = getMaxTop() - node.clientHeight * SMOOTH_SCROLL_MAX_SCREENS;
+    if (node.scrollTop < jumpTo) {
+      node.scrollTop = jumpTo;
+    }
+    const animation = {
+      startedAt: performance.now(),
+      from: node.scrollTop,
+    };
+    this._scrollAnimation = animation;
+    this._smoothScrollInProgress = true;
+    const step = now => {
+      if (this._scrollAnimation !== animation) {
+        return;
+      }
+      const progress = Math.min(1,
+        (now - animation.startedAt) / SMOOTH_SCROLL_DURATION);
+      const eased = 1 - (1 - progress) ** 3;
+      const maxTop = getMaxTop();
+      node.scrollTop = animation.from + (maxTop - animation.from) * eased;
+      if (progress < 1) {
+        requestFrame(step);
+        return;
+      }
+      this.stopScrollAnimation();
+      node.scrollTop = getMaxTop();
+      this.updateScrollTracking();
+    };
+    requestFrame(step);
+  }
+
+  stopScrollAnimation() {
+    this._scrollAnimation = null;
+    this._smoothScrollInProgress = false;
+  }
+
   changePage(page) {
     if (!this.isReady()) {
       this.page = page;
@@ -496,19 +641,32 @@ export class ChatRenderer {
       return;
     }
     this.page = page;
+    this.dropNewMarker();
     // Fast clear of the root node
     this.rootNode.textContent = '';
+    this.restoreBgNode();
     this.visibleMessages = [];
+    // Разделители зависят от соседей на вкладке: пересчитываем заново.
+    this._lastDividerTime = 0;
+    const now = Date.now();
     // Re-add message nodes
     const fragment = document.createDocumentFragment();
     let node;
     for (let message of this.messages) {
       if (canPageAcceptType(page, message.type)) {
         node = message.node;
+        this.attachTimeDivider(message, now);
+        if (message.dividerNode) {
+          fragment.appendChild(message.dividerNode);
+        }
         fragment.appendChild(node);
         this.visibleMessages.push(message);
       }
+      else {
+        message.dividerNode = undefined;
+      }
     }
+    settleOldMessages(this.visibleMessages, true);
     if (node) {
       this.rootNode.appendChild(fragment);
       node.scrollIntoView();
@@ -538,6 +696,61 @@ export class ChatRenderer {
     return null;
   }
 
+  /**
+   * Divider belongs to the message right after it on the current tab,
+   * so pruning removes it together with that message.
+   */
+  attachTimeDivider(message, now) {
+    message.dividerNode = undefined;
+    if (!this.enableTimeDividers) {
+      return;
+    }
+    const msgTime = message.createdAt || now;
+    if (this._lastDividerTime === 0) {
+      this._lastDividerTime = msgTime;
+    }
+    else if (msgTime - this._lastDividerTime >= this.timeDividerInterval) {
+      message.dividerNode = createTimeDividerNode(msgTime);
+      this._lastDividerTime = msgTime;
+    }
+  }
+
+  /**
+   * Time divider and the new messages line go right before a message
+   * shown on the current tab.
+   */
+  appendLeadNodes(fragment, message, now, options, shouldAutoScroll) {
+    const { prepend, notifyListeners = true } = options;
+    if (prepend) {
+      return;
+    }
+    this.attachTimeDivider(message, now);
+    if (message.dividerNode) {
+      fragment.appendChild(message.dividerNode);
+    }
+    const marker = notifyListeners
+      && this.takeNewMarker(message, shouldAutoScroll);
+    if (marker) {
+      fragment.appendChild(marker);
+    }
+  }
+
+  linkifyAndWatchImages(node, message, now) {
+    const linkifyNodes = node.querySelectorAll('.linkify');
+    for (let i = 0; i < linkifyNodes.length; ++i) {
+      linkifyNode(linkifyNodes[i]);
+    }
+    // Assign an image error handler
+    if (now < message.createdAt + IMAGE_RETRY_MESSAGE_AGE) {
+      const imgNodes = node.querySelectorAll('img');
+      for (let i = 0; i < imgNodes.length; i++) {
+        const imgNode = imgNodes[i];
+        imgNode.addEventListener('error', handleImageError);
+        imgNode.addEventListener('load', this.handleDeferredContentLoad);
+      }
+    }
+  }
+
   processBatch(batch, options = {}) {
     const {
       prepend,
@@ -560,15 +773,23 @@ export class ChatRenderer {
       }
       return;
     }
+    if (batch.length > 0) {
+      this.messagesVersion++;
+    }
     // Insert messages
     const fragment = document.createDocumentFragment();
     const countByType = {};
     let shouldPlayBatchHighlightSound = false;
     let node;
+    // История из хранилища старше всего, что уже есть: копим её отдельно
+    // и ставим в начало списков, иначе обрезка и смена вкладки берут
+    // новые сообщения за старые.
+    const prepended = prepend ? [] : null;
+    const prependedVisible = prepend ? [] : null;
     for (let payload of batch) {
       const message = createMessage(payload);
       // Combine messages
-      const combinable = this.getCombinableMessage(message);
+      const combinable = !prepend && this.getCombinableMessage(message);
       if (combinable) {
         if (canPlayHighlightSound && this.messageWouldHighlight(message)) {
           shouldPlayBatchHighlightSound = true;
@@ -576,18 +797,6 @@ export class ChatRenderer {
         combinable.times = (combinable.times || 1) + 1;
         updateMessageBadge(combinable);
         continue;
-      }
-      // Time divider check
-      if (this.enableTimeDividers && !prepend) {
-        const msgTime = message.createdAt || now;
-        if (this._lastDividerTime === 0) {
-          this._lastDividerTime = msgTime;
-        }
-        else if (msgTime - this._lastDividerTime
-          >= this.timeDividerInterval) {
-          fragment.appendChild(createTimeDividerNode(msgTime));
-          this._lastDividerTime = msgTime;
-        }
       }
       // Compute timestamp string
       const timestamp = this.enableTimestamps
@@ -632,20 +841,7 @@ export class ChatRenderer {
             }
           }
         }
-        // Linkify text
-        const linkifyNodes = node.querySelectorAll('.linkify');
-        for (let i = 0; i < linkifyNodes.length; ++i) {
-          linkifyNode(linkifyNodes[i]);
-        }
-        // Assign an image error handler
-        if (now < message.createdAt + IMAGE_RETRY_MESSAGE_AGE) {
-          const imgNodes = node.querySelectorAll('img');
-          for (let i = 0; i < imgNodes.length; i++) {
-            const imgNode = imgNodes[i];
-            imgNode.addEventListener('error', handleImageError);
-            imgNode.addEventListener('load', this.handleDeferredContentLoad);
-          }
-        }
+        this.linkifyAndWatchImages(node, message, now);
       }
       // Store the node in the message
       message.node = node;
@@ -657,29 +853,46 @@ export class ChatRenderer {
           ));
         message.type = typeDef?.type || MESSAGE_TYPE_UNKNOWN;
       }
+      if (!node.dataset.fxTagged) {
+        node.dataset.fxTagged = '1';
+        node.classList.add('ChatMessage--type-'
+          + String(message.type).replace(/[^a-z0-9_-]/gi, '-'));
+        for (const cls of getBlockFxClasses(node)) {
+          node.classList.add(cls);
+        }
+      }
       updateMessageBadge(message);
       if (!countByType[message.type]) {
         countByType[message.type] = 0;
       }
       countByType[message.type] += 1;
       // TODO: Detect duplicates
-      this.messages.push(message);
+      (prepended || this.messages).push(message);
       if (canPageAcceptType(this.page, message.type)) {
+        this.appendLeadNodes(fragment, message, now, options,
+          shouldAutoScroll);
         fragment.appendChild(node);
-        this.visibleMessages.push(message);
+        (prependedVisible || this.visibleMessages).push(message);
       }
+    }
+    if (prepended?.length) {
+      this.messages = prepended.concat(this.messages);
+      this.visibleMessages = prependedVisible.concat(this.visibleMessages);
     }
     if (shouldPlayBatchHighlightSound) {
       this.playHighlightSound();
     }
     if (node) {
-      const firstChild = this.rootNode.childNodes[0];
+      const firstChild = this.bgNode
+        ? this.bgNode.nextSibling
+        : this.rootNode.childNodes[0];
       if (prepend && firstChild) {
         this.rootNode.insertBefore(fragment, firstChild);
       }
       else {
         this.rootNode.appendChild(fragment);
       }
+      settleOldMessages(this.visibleMessages, prepend);
       if (shouldAutoScroll) {
         defer(() => this.scrollToBottom());
       }
@@ -733,12 +946,10 @@ export class ChatRenderer {
   }
 
   /**
-   * Sets the background animation on the .Chat root element.
-   * Uses CSS class on rootNode so the animation layer (::before with
-   * negative inset) covers the full content height as messages
-   * accumulate, not just the viewport.
-   * Only changes the class when the animation actually changes,
-   * to avoid restarting CSS animations on unrelated settings changes.
+   * Фон чата: класс Chat--bgAnim-<id> на корне и узел .ChatBg первым
+   * ребёнком. Узел липнет к окну прокрутки и размером с него, а не со
+   * всю историю; слои внутри двигаются только transform/opacity.
+   * Класс меняется лишь при смене фона, чтобы не перезапускать анимации.
    */
   setBgAnimation(bgAnimation, opacity) {
     this._pendingAppearance = {
@@ -760,11 +971,66 @@ export class ChatRenderer {
       // Add new bgAnim class
       if (newBgAnim !== 'none') {
         this.rootNode.classList.add('Chat--bgAnim-' + newBgAnim);
+        this.createBgNode();
+      }
+      else {
+        this.removeBgNode();
       }
       this._currentBgAnim = newBgAnim;
     }
     this.rootNode.style.setProperty(
       '--chat-bg-anim-opacity', String(opacity ?? 0.5));
+  }
+
+  createBgNode() {
+    if (!this.bgNode) {
+      const node = document.createElement('div');
+      node.className = 'ChatBg';
+      node.setAttribute('aria-hidden', 'true');
+      for (let i = 1; i <= BG_LAYERS; i++) {
+        const layer = document.createElement('div');
+        layer.className = 'ChatBg__layer ChatBg__layer--' + i;
+        node.appendChild(layer);
+      }
+      this.bgNode = node;
+    }
+    this.restoreBgNode();
+    this.observeBgViewport();
+  }
+
+  removeBgNode() {
+    this._bgResizeObserver?.disconnect();
+    this._bgResizeObserver = null;
+    this.bgNode?.remove();
+    this.bgNode = null;
+  }
+
+  // Узел фона всегда первый: очистка корня его снимает, вставка истории
+  // идёт после него.
+  restoreBgNode() {
+    if (this.bgNode && this.rootNode
+      && this.rootNode.firstChild !== this.bgNode) {
+      this.rootNode.insertBefore(this.bgNode, this.rootNode.firstChild);
+    }
+  }
+
+  observeBgViewport() {
+    const scrollNode = this.scrollNode;
+    const bgNode = this.bgNode;
+    if (!scrollNode || !bgNode) {
+      return;
+    }
+    const update = () => {
+      bgNode.style.setProperty('--chat-view-h',
+        scrollNode.clientHeight + 'px');
+    };
+    update();
+    this._bgResizeObserver?.disconnect();
+    this._bgResizeObserver = null;
+    if (typeof ResizeObserver === 'function') {
+      this._bgResizeObserver = new ResizeObserver(update);
+      this._bgResizeObserver.observe(scrollNode);
+    }
   }
 
   setCustomColors(bgColor, textColor, accentColor) {
@@ -777,25 +1043,8 @@ export class ChatRenderer {
     if (!this.rootNode) {
       return;
     }
-    const root = this.rootNode;
-    if (bgColor) {
-      root.style.setProperty('--chat-bg', bgColor);
-    }
-    else {
-      root.style.removeProperty('--chat-bg');
-    }
-    if (textColor) {
-      root.style.setProperty('--chat-text', textColor);
-    }
-    else {
-      root.style.removeProperty('--chat-text');
-    }
-    if (accentColor) {
-      root.style.setProperty('--chat-accent', accentColor);
-    }
-    else {
-      root.style.removeProperty('--chat-accent');
-    }
+    setRootProps(this.rootNode,
+      getChatColorProps(bgColor, textColor, accentColor));
   }
 
   /**
@@ -807,6 +1056,37 @@ export class ChatRenderer {
    *   { color, disabled, font, size, anim }
    * @param {boolean} spanAnimations
    */
+  setRadioJobsVisible(visible = true) {
+    this._pendingAppearance = {
+      ...this._pendingAppearance,
+      radioJobsVisible: visible,
+    };
+    if (!this.rootNode) {
+      return;
+    }
+    this.rootNode.classList.toggle('Chat--hideRadioJobs', !visible);
+  }
+
+  setRadioJobStyle(settings = {}) {
+    this._pendingAppearance = {
+      ...this._pendingAppearance,
+      radioJobStyle: settings,
+    };
+    if (!this.rootNode) {
+      return;
+    }
+    const root = this.rootNode;
+    const toRemove = [...root.classList].filter(isRadioJobRootClass);
+    for (const cls of toRemove) {
+      root.classList.remove(cls);
+    }
+    const { classes: rootClasses, props } = getRadioJobRoot(settings);
+    for (const cls of rootClasses) {
+      root.classList.add(cls);
+    }
+    setRootProps(root, props);
+  }
+
   setStyleOverrides(overrides = {}, spanAnimations = true) {
     this._pendingAppearance = {
       ...this._pendingAppearance,
@@ -817,35 +1097,58 @@ export class ChatRenderer {
       return;
     }
     const root = this.rootNode;
-    const toRemove = [];
-    for (const cls of root.classList) {
-      if (cls.startsWith('Chat--plain-') || cls === 'Chat--fxAnimOff') {
-        toRemove.push(cls);
-      }
-    }
+    const toRemove = [...root.classList].filter(isStyleOverrideClass);
     for (const cls of toRemove) {
       root.classList.remove(cls);
     }
-    if (!spanAnimations) {
-      root.classList.add('Chat--fxAnimOff');
+    const { classes: rootClasses, props } = getStyleOverrideRoot(
+      overrides, spanAnimations);
+    for (const cls of rootClasses) {
+      root.classList.add(cls);
     }
-    // Iterate the full known style list rather than the passed map,
-    // so a partial or empty overrides object still clears every stale
-    // --cs-* variable from previous calls.
-    for (const style of MESSAGE_STYLES) {
-      const override = overrides[style.id];
-      const prop = '--cs-' + style.id + '-color';
-      if (override?.color) {
-        root.style.setProperty(prop, override.color);
-      }
-      else {
-        root.style.removeProperty(prop);
-      }
-      if (override?.disabled) {
-        root.classList.add('Chat--plain-' + style.id);
-      }
+    setRootProps(root, props);
+    updateSheet(STYLE_OVERRIDE_SHEET_ID, buildStyleOverrideCss(overrides));
+  }
+
+  setTypeOverrides(overrides = {}) {
+    this._pendingAppearance = {
+      ...this._pendingAppearance,
+      typeOverrides: overrides,
+    };
+    updateSheet(TYPE_OVERRIDE_SHEET_ID, buildTypeOverrideCss(overrides));
+  }
+
+  setGameEffects(effects = {}, enabled = true) {
+    this._pendingAppearance = {
+      ...this._pendingAppearance,
+      gameEffects: effects,
+      gameEffectsEnabled: enabled,
+    };
+    if (!this.rootNode) {
+      return;
     }
-    updateStyleOverrideSheet(buildStyleOverrideCss(overrides));
+    const root = this.rootNode;
+    const toRemove = [...root.classList].filter(isGameFxRootClass);
+    for (const cls of toRemove) {
+      root.classList.remove(cls);
+    }
+    for (const cls of getGameFxRootClasses(effects, enabled)) {
+      root.classList.add(cls);
+    }
+  }
+
+  setSettleOld(enabled = true) {
+    this._pendingAppearance = {
+      ...this._pendingAppearance,
+      settleOld: enabled,
+    };
+    if (!this.rootNode) {
+      return;
+    }
+    this.rootNode.classList.remove(SETTLE_OFF_CLASS);
+    for (const cls of getSettleRootClasses(enabled)) {
+      this.rootNode.classList.add(cls);
+    }
   }
 
   setCustomProperties(props) {
@@ -859,15 +1162,7 @@ export class ChatRenderer {
     if (!this.rootNode) {
       return;
     }
-    const root = this.rootNode;
-    for (const [key, value] of Object.entries(props)) {
-      if (value !== null && value !== undefined && value !== '') {
-        root.style.setProperty(key, value);
-      }
-      else {
-        root.style.removeProperty(key);
-      }
-    }
+    setRootProps(this.rootNode, props);
   }
 
   applyPendingAppearance() {
@@ -891,6 +1186,21 @@ export class ChatRenderer {
     }
     if (p.styleOverrides !== undefined) {
       this.setStyleOverrides(p.styleOverrides, p.spanAnimations);
+    }
+    if (p.typeOverrides !== undefined) {
+      this.setTypeOverrides(p.typeOverrides);
+    }
+    if (p.gameEffects !== undefined) {
+      this.setGameEffects(p.gameEffects, p.gameEffectsEnabled);
+    }
+    if (p.settleOld !== undefined) {
+      this.setSettleOld(p.settleOld);
+    }
+    if (p.radioJobsVisible !== undefined) {
+      this.setRadioJobsVisible(p.radioJobsVisible);
+    }
+    if (p.radioJobStyle !== undefined) {
+      this.setRadioJobStyle(p.radioJobStyle);
     }
     this._pendingAppearance = null;
   }
@@ -1045,6 +1355,11 @@ export class ChatRenderer {
         for (let i = 0; i < fromIndex; i++) {
           const message = messages[i];
           this.rootNode.removeChild(message.node);
+          message.dividerNode?.remove();
+          message.dividerNode = undefined;
+          if (message === this._newMarkerMessage) {
+            this.dropNewMarker();
+          }
           // Mark this message as pruned
           message.node = 'pruned';
         }
@@ -1052,6 +1367,7 @@ export class ChatRenderer {
         this.messages = this.messages.filter(message => (
           message.node !== 'pruned'
         ));
+        this.messagesVersion++;
         logger.log(`pruned ${fromIndex} visible messages`);
       }
     }
@@ -1061,8 +1377,26 @@ export class ChatRenderer {
         this.messages.length - MAX_PERSISTED_MESSAGES);
       if (fromIndex > 0) {
         this.messages = this.messages.slice(fromIndex);
+        this.messagesVersion++;
         logger.log(`pruned ${fromIndex} stored messages`);
       }
+    }
+  }
+
+  /**
+   * Ставит раннюю историю над чатом, не сдвигая то, что сейчас на экране.
+   * Обрезка при возврате вниз уберёт её так же, как любое старое сообщение.
+   */
+  prependHistory(messages) {
+    const node = this.scrollNode;
+    const heightBefore = node ? node.scrollHeight : 0;
+    this.processBatch(messages, {
+      prepend: true,
+      notifyListeners: false,
+    });
+    if (node && this.isReady()) {
+      node.scrollTop += node.scrollHeight - heightBefore;
+      this.handleScroll();
     }
   }
 
@@ -1077,9 +1411,12 @@ export class ChatRenderer {
     // Remove existing nodes
     for (let message of messages) {
       message.node = undefined;
+      message.dividerNode = undefined;
     }
+    this.dropNewMarker();
     // Fast clear of the root node
     this.rootNode.textContent = '';
+    this.restoreBgNode();
     this.messages = [];
     this.visibleMessages = [];
     this._lastDividerTime = 0;

@@ -22,6 +22,7 @@
 	var/lawsync = 1
 	var/aisync = 1
 	var/panel_locked = TRUE
+	var/cyborg_type = /mob/living/silicon/robot
 
 /obj/item/robot_suit/New()
 	..()
@@ -59,7 +60,8 @@
 	if(src.l_arm && src.r_arm)
 		if(src.l_leg && src.r_leg)
 			if(src.chest && src.head)
-				SSblackbox.record_feedback("amount", "cyborg_frames_built", 1)
+				if(!training_origin)
+					SSblackbox.record_feedback("amount", "cyborg_frames_built", 1)
 				return TRUE
 	return FALSE
 
@@ -112,10 +114,13 @@
 		new /obj/item/stack/cable_coil(drop_to, 1)
 		chest.wired = FALSE
 		chest.cell?.forceMove(drop_to)
+		chest.cell = null
 
 	if(head)
 		head.flash1?.forceMove(drop_to)
 		head.flash2?.forceMove(drop_to)
+		head.flash1 = null
+		head.flash2 = null
 		head.forceMove(drop_to)
 
 /obj/item/robot_suit/proc/put_in_hand_or_drop(mob/living/user, obj/item/I) //normal put_in_hands() drops the item ontop of the player, this drops it at the suit's loc
@@ -266,12 +271,7 @@
 				return
 
 			var/mob/living/brain/BM = M.brainmob
-			if(!BM.key || !BM.mind)
-				to_chat(user, "<span class='warning'>The MMI indicates that their mind is completely unresponsive; there's no point!</span>")
-				return
-
-			if(!BM.client) //braindead
-				to_chat(user, "<span class='warning'>The MMI indicates that their mind is currently inactive; it might change!</span>")
+			if(!mind_ready(BM, user))
 				return
 
 			if(BM.stat == DEAD || (M.brain && M.brain.organ_flags & ORGAN_FAILING))
@@ -286,33 +286,15 @@
 			if(!user.temporarilyRemoveItemFromInventory(W))
 				return
 
-			var/mob/living/silicon/robot/O = new /mob/living/silicon/robot(get_turf(loc))
+			var/mob/living/silicon/robot/O = new cyborg_type(get_turf(loc))
 			if(!O)
 				return
-
-			if(M.laws && M.laws.id != DEFAULT_AI_LAWID)
-				aisync = 0
-				lawsync = 0
-				O.laws = M.laws
-				M.laws.associate(O)
 
 			O.invisibility = 0
 			//Transfer debug settings to new mob
 			O.custom_name = created_name
 			O.locked = panel_locked
-			if(!aisync)
-				lawsync = FALSE
-				O.set_connected_ai(null)
-			else
-				O.notify_ai(NEW_BORG)
-				if(forced_ai)
-					O.set_connected_ai(forced_ai)
-			if(!lawsync)
-				O.lawupdate = 0
-				if(M.laws.id == DEFAULT_AI_LAWID)
-					O.make_laws()
-
-			BM.mind.remove_antags_for_borging()
+			bind_to_station(O, M)
 			BM.mind.transfer_to(O)
 
 			if(O.mind && O.mind.special_role)
@@ -330,7 +312,8 @@
 			O.mmi = W //and give the real mmi to the borg.
 			O.updatename()
 			playsound(O.loc, 'sound/voice/liveagain.ogg', 75, TRUE)
-			SSblackbox.record_feedback("amount", "cyborg_birth", 1)
+			if(!O.training_origin)
+				SSblackbox.record_feedback("amount", "cyborg_birth", 1)
 			forceMove(O)
 			O.robot_suit = src
 
@@ -381,6 +364,35 @@
 		to_chat(user, "<span class='warning'>You need to use a multitool to name [src]!</span>")
 	else
 		return ..()
+
+/obj/item/robot_suit/proc/mind_ready(mob/living/brain/brain_mob, mob/user)
+	if(!brain_mob.key || !brain_mob.mind)
+		to_chat(user, "<span class='warning'>The MMI indicates that their mind is completely unresponsive; there's no point!</span>")
+		return FALSE
+	if(!brain_mob.client) //braindead
+		to_chat(user, "<span class='warning'>The MMI indicates that their mind is currently inactive; it might change!</span>")
+		return FALSE
+	return TRUE
+
+/// Связь нового киборга с ИИ и законами станции; роли, несовместимые с законами, снимаются.
+/obj/item/robot_suit/proc/bind_to_station(mob/living/silicon/robot/borg, obj/item/mmi/mmi)
+	if(mmi.laws && mmi.laws.id != DEFAULT_AI_LAWID)
+		aisync = 0
+		lawsync = 0
+		borg.laws = mmi.laws
+		mmi.laws.associate(borg)
+	if(!aisync)
+		lawsync = FALSE
+		borg.set_connected_ai(null)
+	else
+		borg.notify_ai(NEW_BORG)
+		if(forced_ai)
+			borg.set_connected_ai(forced_ai)
+	if(!lawsync)
+		borg.lawupdate = 0
+		if(mmi.laws.id == DEFAULT_AI_LAWID)
+			borg.make_laws()
+	mmi.brainmob.mind.remove_antags_for_borging()
 
 /obj/item/robot_suit/proc/Interact(mob/user)
 			var/t1 = "Designation: <A href='?src=[REF(src)];Name=1'>[(created_name ? "[created_name]" : "Default Cyborg")]</a><br>\n"

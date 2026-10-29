@@ -220,7 +220,7 @@
 	if(istype(cl, /obj/item/clothing/under))
 		var/obj/item/clothing/under/u = cl
 		u.can_adjust = FALSE
-	cl.armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0)
+	cl.set_armor_type(/datum/armor/none)
 	cl.body_parts_covered = NONE
 	user.visible_message(span_warning("[user] modifies [cl], now it not have armor and not covering anything!"),span_warning("You modify the [cl], now it not have armor and not covering anything!"))
 	uses--
@@ -258,3 +258,36 @@
 	desc = "A modkit for making a riot armor into a ncr ranger duster."
 	product = /obj/item/clothing/suit/armor/riot/kumiko_ncr_elite_desert
 	fromitem = list(/obj/item/clothing/suit/armor/riot)
+
+/////////////////////
+
+///obj/item/shovel/spade/pan
+//	name = "pan"
+//	desc = "Old and fancy"
+//	hitsound = "modular_bluemoon/sound/items/frying_pan.ogg"
+//	icon_state = "pan"
+//	icon = "modular_bluemoon/fluffs/icons/obj/melee.dmi"
+
+/obj/item/modkit/snub
+	name = "Revolver snub conversion"
+	desc = "A modkit for making an old version."
+	product = /obj/item/gun/ballistic/revolver/Apostle/snub/old
+	fromitem = list(/obj/item/gun/ballistic/revolver/Apostle/snub)
+
+/obj/item/modkit/anathema
+	name = "Anathema revolver conversion"
+	desc = "A modkit for making a jukebox into an acradorian version."
+	product = /obj/item/gun/ballistic/revolver/anathema/old
+	fromitem = list(/obj/item/gun/ballistic/revolver/anathema)
+
+/obj/item/modkit/irae
+	name = "Irae Revolver conversion"
+	desc = "A modkit for making a jukebox into an acradorian version."
+	product = /obj/item/gun/ballistic/revolver/Dies_Irae/old
+	fromitem = list(/obj/item/gun/ballistic/revolver/Dies_Irae)
+
+/obj/item/modkit/apostle
+	name = "Revolver conversion"
+	desc = "A modkit for making a jukebox into an acradorian version."
+	product = /obj/item/gun/ballistic/revolver/Apostle/old
+	fromitem = list(/obj/item/gun/ballistic/revolver/Apostle)

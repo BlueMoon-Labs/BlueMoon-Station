@@ -188,7 +188,7 @@
 			var/mob/living/carbon/human/H = usr
 			var/perpname = get_face_name(get_id_name(""))
 			if(istype(H.glasses, /obj/item/clothing/glasses/hud) || istype(H.getorganslot(ORGAN_SLOT_HUD), /obj/item/organ/cyberimp/eyes/hud))
-				var/datum/data/record/R = GLOB.data_core.general_by_name[perpname]
+				var/datum/data/record/R = antag_training_station_record(GLOB.data_core.general_by_name, perpname, src)
 				if(href_list["photo_front"] || href_list["photo_side"])
 					if(R)
 						if(!H.canUseHUD())
@@ -221,17 +221,24 @@
 							to_chat(H, "<span class='warning'>ERROR: Invalid Access</span>")
 							return
 						if(perpname)
-							R = GLOB.data_core.security_by_name[perpname]
+							R = antag_training_station_record(GLOB.data_core.security_by_name, perpname, src)
 							if(R)
 								if(href_list["status"])
+									if(R.locked_security_reason)
+										to_chat(usr, span_warning("Эта запись службы безопасности заблокирована навсегда: [R.locked_security_reason]"))
+										return
 									var/setcriminal = input(usr, "Specify a new criminal status for this person.", "Security HUD", R.fields["criminal"]) in list(SEC_RECORD_STATUS_NONE, SEC_RECORD_STATUS_ARREST, SEC_RECORD_STATUS_EXECUTE, SEC_RECORD_STATUS_INCARCERATED, SEC_RECORD_STATUS_RELEASED, SEC_RECORD_STATUS_PAROLLED, SEC_RECORD_STATUS_DEMOTE, SEC_RECORD_STATUS_SEARCH, SEC_RECORD_STATUS_MONITOR, SEC_RECORD_STATUS_DISCHARGED, "Отмена")
 									if(setcriminal != "Отмена")
 										if(R)
 											if(H.canUseHUD())
 												if(istype(H.glasses, /obj/item/clothing/glasses/hud/security) || istype(H.getorganslot(ORGAN_SLOT_HUD), /obj/item/organ/cyberimp/eyes/hud/security))
-													investigate_log("[key_name(src)] has been set from [R.fields["criminal"]] to [setcriminal] by [key_name(usr)].", INVESTIGATE_RECORDS)
-													R.fields["criminal"] = setcriminal
-													sec_hud_set_security_status()
+													if(R.locked_security_reason)
+														to_chat(usr, span_warning("Эта запись службы безопасности заблокирована навсегда: [R.locked_security_reason]"))
+														return
+													var/old_status = R.fields["criminal"]
+													if(R.set_security_status(setcriminal))
+														investigate_log("[key_name(src)] has been set from [old_status] to [setcriminal] by [key_name(usr)].", INVESTIGATE_RECORDS)
+														sec_hud_set_security_status()
 									return
 								if(href_list["view"])
 									if(R)
@@ -320,6 +327,8 @@
 							to_chat(usr, "<span class='warning'>Unable to locate a data core entry for this person.</span>")
 
 	if(href_list["medical"])
+		if(is_antag_training_atom(src))
+			return
 		if(hasHUD(usr, DATA_HUD_MEDICAL_BASIC))
 			if(usr.incapacitated())
 				return
@@ -344,6 +353,8 @@
 				to_chat(usr, "<span class='warning'>Unable to locate a data core entry for this person.</span>")
 
 	if(href_list["medrecord"])
+		if(is_antag_training_atom(src))
+			return
 		if(hasHUD(usr, DATA_HUD_MEDICAL_BASIC))
 			if(usr.incapacitated())
 				return
@@ -369,6 +380,8 @@
 				to_chat(usr, "<span class='warning'>Unable to locate a data core entry for this person.</span>")
 
 	if(href_list["medrecordComment"])
+		if(is_antag_training_atom(src))
+			return
 		if(hasHUD(usr, DATA_HUD_MEDICAL_BASIC))
 			if(usr.incapacitated())
 				return
@@ -402,6 +415,8 @@
 
 	if(href_list["lookitem"]) //It's for the show item at modular_sand/code/modules/mob/living/carbon/show.dm
 		var/obj/item/I = locate(href_list["lookitem"])
+		if(!istype(I))
+			return
 		if(I.loc in view(4))
 			examinate(I)
 		else
@@ -541,7 +556,7 @@
 	//Check for arrest warrant
 	if(judgement_criteria & JUDGE_RECORDCHECK)
 		var/perpname = get_face_name(get_id_name())
-		var/datum/data/record/R = GLOB.data_core.security_by_name[perpname]
+		var/datum/data/record/R = antag_training_station_record(GLOB.data_core.security_by_name, perpname, src)
 		if(R && R.fields["criminal"])
 			switch(R.fields["criminal"])
 				if(SEC_RECORD_STATUS_EXECUTE)
@@ -608,6 +623,8 @@
 
 //Used for new human mobs created by cloning/goleming/podding
 /mob/living/carbon/human/proc/set_cloned_appearance()
+	if(!dna?.features)
+		return
 	if(dna.features["body_model"] == MALE)
 		facial_hair_style = "Full Beard"
 	else
@@ -772,7 +789,7 @@
 			to_chat(src, "<span class='warning'>You can't do that right now!</span>")
 		return FALSE
 	if(!Adjacent(M) && (M.loc != src) && !(M in src.GetAllContents()))
-		if((be_close == 0) || (!no_tk && (dna.check_mutation(TK) && tkMaxRangeCheck(src, M))))
+		if((be_close == 0) || (!no_tk && (dna?.check_mutation(TK) && tkMaxRangeCheck(src, M))))
 			return TRUE
 		if(!silent)
 			to_chat(src, "<span class='warning'>You are too far away!</span>")
@@ -882,7 +899,7 @@
 	if(hud_signature == cached_health_hud_signature && (isnull(existing_doll) || existing_doll.doll_cache_key))
 		return
 	cached_health_hud_signature = hud_signature
-	if(dna.species.update_health_hud())
+	if(dna?.species?.update_health_hud())
 		return
 	else
 		if(hud_used.healths)
@@ -924,7 +941,7 @@
 		regenerate_organs()
 	remove_all_embedded_objects()
 	drunkenness = 0
-	for(var/datum/mutation/human/HM in dna.mutations)
+	for(var/datum/mutation/human/HM in dna?.mutations)
 		if(HM.quality != POSITIVE)
 			dna.remove_mutation(HM.name)
 	if(blood_volume < (BLOOD_VOLUME_NORMAL*blood_ratio))
@@ -1330,7 +1347,7 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 
 /mob/living/carbon/human/updatehealth()
 	. = ..()
-	dna?.species.spec_updatehealth(src)
+	dna?.species?.spec_updatehealth(src)
 	if(HAS_TRAIT(src, TRAIT_IGNORESLOWDOWN))	//if we want to ignore slowdown from damage and equipment
 		remove_movespeed_modifier(/datum/movespeed_modifier/damage_slowdown)
 		remove_movespeed_modifier(/datum/movespeed_modifier/damage_slowdown_flying)
@@ -1349,12 +1366,12 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 		remove_movespeed_modifier(/datum/movespeed_modifier/damage_slowdown_flying)
 
 /mob/living/carbon/human/is_bleeding()
-	if(NOBLOOD in dna.species.species_traits || bleedsuppress)
+	if(!dna?.species || (NOBLOOD in dna.species.species_traits) || bleedsuppress)
 		return FALSE
 	return ..()
 
 /mob/living/carbon/human/get_total_bleed_rate()
-	if(NOBLOOD in dna.species.species_traits)
+	if(!dna?.species || (NOBLOOD in dna.species.species_traits))
 		return FALSE
 	return ..()
 
@@ -1378,15 +1395,19 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
  * * Green if none of the others apply (aka, generic organic)
 */
 /mob/living/carbon/human/proc/spec_trait_examine_font()
+	return "<font color='[spec_trait_examine_color()]'>"
+
+// Общий цвет расы для осмотра, текстового отчёта и медицинского дисплея.
+/mob/living/carbon/human/proc/spec_trait_examine_color()
 	if(HAS_TRAIT(src, TRAIT_ROBOTIC_ORGANISM))
-		return "<font color='#aaa9ad'>"
+		return "#aaa9ad"
 	if(HAS_TRAIT(src, TRAIT_TOXINLOVER))
-		return "<font color='#00ffff'>"
+		return "#00ffff"
 	if(isplasmaman(src))
-		return "<font color='#800080'>"
+		return "#800080"
 	if(isgolem(src))
-		return "<font color='#8b4513'>"
-	return "<font color='#18d855'>"
+		return "#8b4513"
+	return "#18d855"
 
 
 /mob/living/carbon/human/get_tooltip_data()

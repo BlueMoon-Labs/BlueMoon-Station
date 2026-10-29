@@ -171,6 +171,9 @@
 		if(isliving(pulledby))
 			var/mob/living/L = pulledby
 			L.set_pull_offsets(src, pulledby.grab_state)
+	// Тащимое, оставшееся на месте (шаг к нему или на его клетку), иначе смотрело бы сдвигом на прежнее место тянущего
+	if(isliving(pulling))
+		set_pull_offsets(pulling, grab_state)
 
 	if(active_storage && !(CanReach(active_storage.parent,view_only = TRUE)))
 		active_storage.close(src)

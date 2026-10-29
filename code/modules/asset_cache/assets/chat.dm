@@ -1,7 +1,7 @@
 /datum/asset/spritesheet_batched/chat
 	name = "chat"
 	// Единственный лист, который нельзя собирать отложенно: классы спрайтов отсюда
-	// подставляет речь (language.dm, hearted.dm, emoji_parse.dm), а не окно tgui.
+	// подставляет речь (language.dm, hearted.dm, emoji_parse.dm, say.dm), а не окно tgui.
 	// Речь зовут проки с SHOULD_NOT_SLEEP, дособрать лист по требованию оттуда нельзя -
 	// значит он обязан быть готов ещё с инициализации.
 	load_immediately = TRUE
@@ -11,6 +11,15 @@
 /datum/asset/spritesheet_batched/chat/create_spritesheets()
 	insert_all_icons("emoji", 'icons/emoji.dmi')
 	insert_all_icons("emoji", 'icons/emoji_32.dmi')
+	// Значки BYOND-членства в OOC/AOOC, под высоту строки чата.
+	var/datum/universal_icon/ooc_badge = uni_icon('icons/obj/plushes.dmi', "plushie_nuke")
+	insert_icon("member-ooc", ooc_badge.scale(16, 16))
+	var/datum/universal_icon/aooc_badge = uni_icon('icons/member_content.dmi', "blag")
+	insert_icon("member-aooc", aooc_badge.scale(16, 16))
+	// Значки профессий перед тегом должности в рации (say.dm), HUD-значки 8x8 вдвое.
+	for(var/job_state in icon_states('icons/ui_icons/tgui/jobs.dmi'))
+		var/datum/universal_icon/job_badge = uni_icon('icons/ui_icons/tgui/jobs.dmi', job_state)
+		insert_icon("job-[job_state]", job_badge.scale(16, 16))
 	// pre-loading all lanugage icons also helps to avoid meta
 	insert_all_icons("language", default_language_file)
 	// catch languages which are pulling icons from another file

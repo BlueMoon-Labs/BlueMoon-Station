@@ -100,7 +100,7 @@
 	description = "Tools for high level mech suits"
 	informing_radio_channels = list(RADIO_CHANNEL_SCIENCE)
 	prereq_ids = list("adv_biotech")
-	design_ids = list("mech_sleeper", "mech_syringe_gun", "mech_medi_beam")
+	design_ids = list("mech_sleeper", "mech_syringe_gun", "mech_medi_beam", "mech_rescue_jaw")
 	research_costs = list(TECHWEB_POINT_TYPE_GENERIC = 2000)
 
 /datum/techweb_node/mech_modules

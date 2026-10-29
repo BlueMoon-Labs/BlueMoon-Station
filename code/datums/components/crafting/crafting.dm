@@ -499,7 +499,7 @@
 
 				if (istype(result, /obj/item/grenade/iedcasing) || istype(result, /obj/item/reagent_containers/food/drinks/bottle/molotov))
 					var/client/client = user.client
-					if (CONFIG_GET(flag/use_exp_tracking) && client && client.get_exp_living(TRUE) < 480) // Player with less than 8 hours playtime is making an IED or molotov cocktail. АХАХААХА
+					if (CONFIG_GET(flag/use_exp_tracking) && client && client.get_exp_living(TRUE) < 480 && !is_antag_training_atom(user)) // Player with less than 8 hours playtime is making an IED or molotov cocktail. АХАХААХА
 						if(client.next_ied_grief_warning < world.time)
 							var/turf/T = get_turf(user)
 							client.next_ied_grief_warning = world.time + 15 MINUTES // Wait 15 minutes before alerting admins again
@@ -584,7 +584,10 @@
 	return min(possible_counts)
 
 /datum/component/personal_crafting/proc/build_recipe_data(datum/crafting_recipe/R, datum/asset/spritesheet_batched/crafting/sheet)
+	if(R.menu_data)
+		return R.menu_data
 	var/list/data = list()
+	R.menu_data = data
 	data["name"] = R.name
 	data["desc"] = R.desc
 	data["ref"] = "[REF(R)]"

@@ -366,7 +366,7 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 			. += "<span class='notice'>[src] выглядит очень ухоженно. Видимо, этот предмет кому-то ценен...</span>"
 	// BLUEMOON ADD END
 
-	if(!user.research_scanner)
+	if(!HAS_TRAIT(user, TRAIT_RESEARCH_SCANNER))
 		return
 
 	// Research prospects, including boostable nodes and point values.

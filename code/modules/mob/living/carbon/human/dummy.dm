@@ -28,6 +28,12 @@ INITIALIZE_IMMEDIATE(/mob/living/carbon/human/dummy)
 
 /mob/living/carbon/human/dummy/proc/wipe_state()
 	delete_equipment()
+	// Аугментации и импланты из модификаций тела set_species() не трогает: без сброса они переезжают на превью следующего персонажа.
+	for(var/obj/item/organ/cyberimp/augment in internal_organs)
+		augment.Remove(TRUE)
+		qdel(augment)
+	for(var/obj/item/implant/implant as anything in implants)
+		qdel(implant)
 	icon_render_key = null
 	cut_overlays(TRUE)
 	// Манекен из GLOB.human_dummy_list переиспользуется всем сервером, а размер считается
@@ -122,8 +128,6 @@ GLOBAL_LIST_EMPTY(dummy_mob_list)
 
 		if(ishuman(target))
 			var/mob/living/carbon/human/human_target = target
-			if(human_target?.client)
-				SSquirks.AssignQuirks(human_target, human_target.client, TRUE, TRUE, null, FALSE, human_target)
 			human_target.copy_clothing_prefs(copycat)
 
 			if(human_target.client?.prefs)

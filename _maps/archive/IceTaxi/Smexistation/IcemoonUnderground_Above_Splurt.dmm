@@ -2106,7 +2106,7 @@
 /turf/open/floor/plasteel/white,
 /area/science/mixing)
 "jr" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /turf/open/floor/plasteel,
 /area/mine/production)
 "js" = (
@@ -2308,9 +2308,6 @@
 /area/science)
 "kB" = (
 /obj/structure/table_frame/wood,
-/obj/structure/cable{
-	icon_state = "4-8"
-	},
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
@@ -3246,7 +3243,7 @@
 /turf/open/floor/plating/asteroid/snow/icemoon,
 /area/icemoon/surface/outdoors)
 "pi" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /obj/effect/turf_decal/tile/brown{
 	dir = 1
 	},
@@ -4633,7 +4630,7 @@
 /turf/open/floor/plating,
 /area/icemoon/surface/outdoors)
 "vb" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /obj/effect/turf_decal/tile/purple,
 /obj/effect/turf_decal/tile/purple{
 	dir = 4
@@ -7088,18 +7085,6 @@
 	},
 /turf/open/floor/plating,
 /area/maintenance/department/science)
-"Ft" = (
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/turf/closed/mineral/random/snow,
-/area/icemoon/underground/unexplored/rivers)
 "Fv" = (
 /obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/plating,
@@ -11377,15 +11362,6 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/command/bridge)
-"Ye" = (
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
-/turf/closed/mineral/random/snow,
-/area/icemoon/surface/outdoors)
 "Yf" = (
 /obj/structure/table,
 /obj/machinery/light/small/broken{
@@ -40546,7 +40522,7 @@ HQ
 kp
 GU
 pO
-Ft
+yY
 yY
 yY
 yY
@@ -40554,7 +40530,7 @@ yY
 yY
 Hv
 Hv
-Ye
+Hv
 Hv
 Hv
 Hv

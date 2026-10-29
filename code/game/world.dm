@@ -79,6 +79,7 @@ GLOBAL_LIST(topic_status_cache)
 
 	LoadBans()
 	initialize_global_loadout_items()
+	initialize_global_whitelist_cache()
 	reload_custom_roundstart_items_list()//Cit change - loads donator items. Remind me to remove when I port over bay's loadout system
 
 	// Читается до Master.Initialize(): инициализация подсистем сама начинает переписывать
@@ -191,6 +192,7 @@ GLOBAL_LIST(topic_status_cache)
 
 	var/latest_changelog = file("[global.config.directory]/../html/changelogs/archive/" + time2text(world.timeofday, "YYYY-MM") + ".yml")
 	GLOB.changelog_hash = fexists(latest_changelog) ? md5(latest_changelog) : 0 //for telling if the changelog has changed recently
+	GLOB.changelog_latest_date = changelog_latest_entry_date()
 	if(fexists(GLOB.config_error_log))
 		fcopy(GLOB.config_error_log, "[GLOB.log_directory]/config_error.log")
 		fdel(GLOB.config_error_log)

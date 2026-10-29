@@ -258,6 +258,13 @@
 	// unregister() на нём выдавал "docking_port unregistered multiple times".
 	if(force && registered)
 		unregister()
+	// Шаттл в полёте помнит точку отлёта, а её удаляет очистка z-уровня руины
+	if(force)
+		for(var/obj/docking_port/mobile/shuttle in SSshuttle.mobile)
+			if(shuttle.previous == src)
+				shuttle.previous = null
+			if(shuttle.destination == src)
+				shuttle.destination = null
 	. = ..()
 
 /obj/docking_port/stationary/Moved(atom/oldloc, dir, forced)
@@ -655,6 +662,12 @@
 	var/list/ripple_turfs = list()
 
 	for(var/i in 1 to L0.len)
+		//WHITE-STEEL PORT: у стыковочных портов могут быть разные размеры
+		//(например временный порт случайной посадки), из-за чего L1 короче L0.
+		//Без этой проверки ripple_area падает "list index out of bounds" и
+		//check_effects() прерывается - шаттл вообще не приземляется.
+		if(i > L1.len)
+			continue  // out of bounds
 		var/turf/T0 = L0[i]
 		var/turf/T1 = L1[i]
 		if(!T0 || !T1)

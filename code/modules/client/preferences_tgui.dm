@@ -107,6 +107,7 @@
 	.["chat_radio"] = !!(chat_toggles & CHAT_RADIO)
 	.["chat_pullr"] = !!(chat_toggles & CHAT_PULLR)
 	.["chat_bankcard"] = !!(chat_toggles & CHAT_BANKCARD)
+	.["chat_ghosthuds"] = !!(chat_toggles & CHAT_GHOSTHUDS)
 	.["windowflashing"] = windowflashing
 	.["adminhelp_windowflash"] = adminhelp_windowflash
 	.["windownoise"] = windownoise
@@ -121,6 +122,7 @@
 	.["action_buttons_hide"] = action_buttons_hide_on_spawn
 	.["autostand"] = autostand
 	.["long_strip_menu"] = long_strip_menu
+	.["shift_invites"] = shift_invites
 
 	// Gameplay: combat
 	.["disable_combat_cursor"] = disable_combat_cursor
@@ -152,6 +154,8 @@
 			"status" = (role in be_special) ? be_special[role] : ANTAG_PRIORITY_DISABLED
 		))
 	.["antag_roles"] = antag_roles
+	.["antag_objective_style"] = antag_objective_style
+	.["antag_objective_styles"] = antag_objective_style_options()
 
 	// Content toggles
 	.["verb_consent"] = !!(toggles & VERB_CONSENT)
@@ -440,6 +444,11 @@
 					chat_toggles ^= CHAT_PULLR
 				if("chat_bankcard")
 					chat_toggles ^= CHAT_BANKCARD
+				if("chat_ghosthuds")
+					chat_toggles ^= CHAT_GHOSTHUDS
+					var/mob/dead/observer/ghost = parent?.mob
+					if(istype(ghost))
+						ghost.sync_data_huds()
 				if("windowflashing")
 					windowflashing = !windowflashing
 					dirty_var = "windowflashing"
@@ -487,6 +496,9 @@
 				if("long_strip_menu")
 					long_strip_menu = !long_strip_menu
 					dirty_var = "long_strip_menu"
+				if("shift_invites")
+					shift_invites = !shift_invites
+					dirty_var = "shift_invites"
 				if("disable_combat_cursor")
 					disable_combat_cursor = !disable_combat_cursor
 					dirty_var = "disable_combat_cursor"
@@ -506,6 +518,14 @@
 			if(!set_antag_preference(params["role"], text2num(params["value"])))
 				return
 			save_preferences()
+			return TRUE
+
+		if("set_antag_objective_style")
+			var/style = params["value"]
+			if(!(style in GLOB.antag_objective_styles) || style == antag_objective_style)
+				return
+			antag_objective_style = style
+			save_pref_var("antag_objective_style")
 			return TRUE
 
 		if("ticket_nickname")

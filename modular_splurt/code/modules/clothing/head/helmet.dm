@@ -9,12 +9,12 @@
 	mob_overlay_icon = 'modular_splurt/icons/mob/clothing/head.dmi'
 	icon_state = "goner_helmet"
 	flags_inv = HIDEHAIR
-	armor = list(MELEE = 40, BULLET = 30, LASER = 30, ENERGY = 10, BOMB = 25, BIO = 5, RAD = 5, FIRE = 50, ACID = 50) // Normal helmet's + BIO&RAD
+	armor_type = /datum/armor/head_goner // Normal helmet's + BIO&RAD
 
 /obj/item/clothing/head/helmet/goner/fake
 	name = "trencher helmet replica"
 	desc = "A plastic helmet with purple paint applied. Protects as best as cardboard box labeled 'Bomb Shelter'."
-	armor = 0
+	armor_type = /datum/armor/none
 
 /obj/item/clothing/head/helmet/goner/fake/poly
 	name = "polychromic trencher helmet"
@@ -55,7 +55,7 @@
 /obj/item/clothing/head/helmet/goner/officer/fake
 	name = "trencher officer cap replica"
 	desc = "A cheap officer cap. Great for people with Napoleon complex."
-	armor = 0
+	armor_type = /datum/armor/none
 
 /obj/item/clothing/head/helmet/goner/officer/fake/poly
 	name = "polychromic trencher officer cap"

@@ -19,10 +19,10 @@
 
 // Модули для киборгов
 
-// Модуль Доминатрикс доступен в фабрикаторе с самого начала
+// Модуль Доминатрикс и каркас HK-51 доступны в фабрикаторе с самого начала
 /datum/techweb_node/cyborg/New()
 	. = ..()
-	design_ids += "borg_dominatrix"
+	design_ids += list("borg_dominatrix", "hk51_frame")
 
 /datum/techweb_node/cyborg_upg_advmedtools
 	id = "cyborg_upg_advmedtools"

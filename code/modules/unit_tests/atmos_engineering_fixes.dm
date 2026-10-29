@@ -158,35 +158,110 @@
 			details += "[problem.type] at ([problem.x],[problem.y]) T=[problem.return_temperature()] -> [door.issue_turfs[problem]]"
 		TEST_FAIL("group alarm stayed [door.alarm_type]; live issue turfs: [details.len ? details.Join("; ") : "none"]")
 
-/// The sensor knows why it shut the door - hot, cold or a neighbour's generic
-/// alarm - but until now a closed firelock told the crew nothing. These pin the
-/// lamp decision (the icon states themselves are ported sprites, so a typo in
-/// the defines would silently render nothing at all).
+// Проверяем настоящие оверлеи: местные датчики, защитное закрытие и гашение при открытии.
 /datum/unit_test/firedoor_alarm_lamps/Run()
 	var/obj/machinery/door/firedoor/door = allocate(/obj/machinery/door/firedoor)
-	// The test zone has no APC, so the door lands unpowered: power it by hand,
-	// otherwise every lamp assertion below would pass for the wrong reason.
 	door.machine_stat &= ~NOPOWER
-	TEST_ASSERT_NULL(door.alarm_overlay_state(), "a firelock with no alarm lit a lamp")
-
-	door.alarm_type = FIRELOCK_ALARM_TYPE_HOT
-	TEST_ASSERT_EQUAL(door.alarm_overlay_state(), FIRELOCK_ALARM_TYPE_HOT, "a heat alarm did not light the heat lamp")
-
-	// Lamps are powered indicators: a firelock shut by a breach that also killed
-	// the APC must not keep glowing.
+	var/turf/open/source = get_turf(door)
+	unit_test_normalize_exposure_window(source)
+	door.issue_turfs = list()
+	door.density = TRUE
+	door.update_icon()
+	assert_alarm_overlay(door, null)
+	door.process_atmos_alarm(source, source.air, ATMOS_HEAT_ALARM_TEMPERATURE + 10)
+	assert_alarm_overlay(door, FIRELOCK_ALARM_TYPE_HOT)
 	door.machine_stat |= NOPOWER
-	TEST_ASSERT_NULL(door.alarm_overlay_state(), "an unpowered firelock lit its lamps")
+	door.update_icon()
+	assert_alarm_overlay(door, null)
 	door.machine_stat &= ~NOPOWER
-
-	door.alarm_type = FIRELOCK_ALARM_TYPE_COLD
-	TEST_ASSERT_EQUAL(door.alarm_overlay_state(), FIRELOCK_ALARM_TYPE_COLD, "a cold alarm did not light the cold lamp")
-
+	door.process_atmos_alarm(source, source.air, door.cold_alarm_limit(source) - 10)
+	assert_alarm_overlay(door, FIRELOCK_ALARM_TYPE_COLD)
+	door.generic_alarm = TRUE
+	door.recompute_atmos_alarm()
+	assert_alarm_overlay(door, FIRELOCK_ALARM_TYPE_GENERIC)
+	door.generic_alarm = FALSE
+	door.recompute_atmos_alarm()
+	assert_alarm_overlay(door, FIRELOCK_ALARM_TYPE_COLD)
+	// Ни один вид угрозы не рисуется на открытой двери.
+	for(var/state in list(FIRELOCK_ALARM_TYPE_HOT, FIRELOCK_ALARM_TYPE_COLD, FIRELOCK_ALARM_TYPE_GENERIC))
+		door.issue_turfs[source] = state
+		door.generic_alarm = state == FIRELOCK_ALARM_TYPE_GENERIC
+		door.alarm_type = state
+		door.density = FALSE
+		door.update_icon()
+		assert_alarm_overlay(door, null)
+	// Локальная автоматика показывает общую угрозу и без тревоги зоны или датчиков.
+	door.issue_turfs.Cut()
+	door.alarm_type = null
+	door.generic_alarm = FALSE
+	door.density = TRUE
+	door.mark_auto_closed()
+	assert_alarm_overlay(door, FIRELOCK_ALARM_TYPE_GENERIC)
+	door.process_atmos_alarm(source, source.air, ATMOS_HEAT_ALARM_TEMPERATURE + 10)
+	assert_alarm_overlay(door, FIRELOCK_ALARM_TYPE_HOT)
+	// Оверлей исчезает ещё до изменения плотности в анимации открытия.
+	door.operating = TRUE
+	door.do_animate("opening")
+	TEST_ASSERT(door.density, "контроль: плотность изменилась раньше проверки анимации")
+	assert_alarm_overlay(door, null)
+	door.process_atmos_alarm(source, source.air, door.cold_alarm_limit(source) - 10)
+	assert_alarm_overlay(door, null)
+	door.density = FALSE
+	door.operating = FALSE
+	door.auto_closed = FALSE
+	door.update_icon()
 	var/list/available_states = icon_states(door.icon)
 	for(var/state in list(FIRELOCK_ALARM_TYPE_HOT, FIRELOCK_ALARM_TYPE_COLD, FIRELOCK_ALARM_TYPE_GENERIC))
 		TEST_ASSERT(state in available_states, "[door.icon] has no icon state named [state]")
+	check_local_sensors()
 
-	door.alarm_type = null
-	TEST_ASSERT_NULL(door.alarm_overlay_state(), "clearing the alarm left the lamps on")
+/datum/unit_test/firedoor_alarm_lamps/proc/assert_alarm_overlay(obj/machinery/door/firedoor/door, expected)
+	TEST_ASSERT_EQUAL(door.alarm_overlay_state(), expected, "неверный выбор оверлея угрозы")
+	TEST_ASSERT_EQUAL(door.displayed_alarm_state, expected, "индикация не обновилась после изменения причины")
+	var/list/threat_states = list(FIRELOCK_ALARM_TYPE_HOT, FIRELOCK_ALARM_TYPE_COLD, FIRELOCK_ALARM_TYPE_GENERIC)
+	var/list/drawn = list()
+	for(var/mutable_appearance/overlay as anything in door.overlays)
+		if(overlay.icon_state in threat_states)
+			drawn += overlay.icon_state
+	TEST_ASSERT_EQUAL(length(drawn), expected ? 1 : 0, "на двери осталось неверное число оверлеев угрозы")
+	if(expected)
+		TEST_ASSERT_EQUAL(drawn[1], expected, "на двери нарисован другой оверлей угрозы")
+
+// Общая тревога группы сохраняется, а каждый закрытый шлюз показывает свои датчики.
+/datum/unit_test/firedoor_alarm_lamps/proc/check_local_sensors()
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/turf/open/first_turf = locate(origin.x + 1, origin.y + 2, origin.z)
+	var/turf/open/second_turf = get_step(first_turf, EAST)
+	unit_test_normalize_exposure_window(first_turf)
+	unit_test_normalize_exposure_window(second_turf)
+	var/obj/machinery/door/firedoor/first = allocate(/obj/machinery/door/firedoor, first_turf)
+	var/obj/machinery/door/firedoor/second = allocate(/obj/machinery/door/firedoor, second_turf)
+	var/turf/open/hot_turf = get_step(first_turf, WEST)
+	var/turf/open/cold_turf = get_step(second_turf, EAST)
+	TEST_ASSERT(first.GetMergeGroup(first.merger_id, first.merger_typecache) == second.GetMergeGroup(second.merger_id, second.merger_typecache), "контроль: двери не образовали одну группу")
+	TEST_ASSERT(!(hot_turf in second.watched_atmos_turfs) && !(cold_turf in first.watched_atmos_turfs), "контроль: источники видны обоим датчикам")
+	for(var/obj/machinery/door/firedoor/door as anything in list(first, second))
+		door.machine_stat &= ~NOPOWER
+		door.density = TRUE
+		door.update_icon()
+	first.process_atmos_alarm(hot_turf, hot_turf.air, ATMOS_HEAT_ALARM_TEMPERATURE + 10)
+	assert_alarm_overlay(first, FIRELOCK_ALARM_TYPE_HOT)
+	assert_alarm_overlay(second, null)
+	second.process_atmos_alarm(cold_turf, cold_turf.air, second.cold_alarm_limit(cold_turf) - 10)
+	TEST_ASSERT_EQUAL(second.alarm_type, FIRELOCK_ALARM_TYPE_HOT, "индикация изменила общий вердикт группы")
+	assert_alarm_overlay(first, FIRELOCK_ALARM_TYPE_HOT)
+	assert_alarm_overlay(second, FIRELOCK_ALARM_TYPE_COLD)
+	second.generic_alarm = TRUE
+	second.recompute_atmos_alarm()
+	assert_alarm_overlay(second, FIRELOCK_ALARM_TYPE_GENERIC)
+	second.generic_alarm = FALSE
+	second.recompute_atmos_alarm()
+	assert_alarm_overlay(second, FIRELOCK_ALARM_TYPE_COLD)
+	second.process_atmos_alarm(cold_turf, cold_turf.air, T20C)
+	assert_alarm_overlay(second, null)
+	second.mark_auto_closed()
+	assert_alarm_overlay(second, FIRELOCK_ALARM_TYPE_GENERIC)
+	assert_alarm_overlay(first, FIRELOCK_ALARM_TYPE_HOT)
 
 /// Хвостовой модульный блок файрлока переопределял процы, уже объявленные выше
 /// на том же типе. BYOND компилирует это молча и оставляет последнее
@@ -201,7 +276,7 @@
 	var/list/examine_lines = door.examine(observer)
 	var/examine_text = examine_lines.Join("\n")
 	TEST_ASSERT(findtext(examine_text, "Атмосферный датчик"), "осмотр файрлока потерял строку атмосферного датчика: [examine_text]")
-	TEST_ASSERT(findtext(examine_text, "manual override"), "осмотр файрлока потерял строку ручного открытия: [examine_text]")
+	TEST_ASSERT(findtext(examine_text, "ручным приводом"), "осмотр файрлока потерял строку ручного открытия: [examine_text]")
 	door.alarm_type = null
 
 	// Открытие ломом обязано взводить грейс, иначе следующая же тревога
@@ -417,6 +492,8 @@
 
 	SSair.decompression_pending -= base
 	SSair.decompression_areas -= base
+	SSair.decompression_started_at -= base
+	SSair.decompression_seen -= base
 
 /// Дверь, закрытую мимо системы тревог (пожарная тревога зоны, разгерметизация,
 /// whack_a_mole), открыть было некому: recompute_atmos_alarm() выходит по
@@ -469,9 +546,127 @@
 	door.alarm_type = null
 	door.auto_closed = FALSE
 
-/// Таймерный колбек переоткрытия обязан возвращаться без сна: door/open() спит
-/// анимацию целую секунду, и в раунде 9911 try_auto_reopen держал SStimer по
-/// 300-350мс на колбек в разгар станционного пожара.
+// Локдаун события блокирует все пути автооткрытия, сохраняя ручной привод и защиту пробоин.
+/datum/unit_test/firelock_hostile_lockdown/Run()
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/turf/open/center = locate(origin.x + 2, origin.y + 2, origin.z)
+	unit_test_normalize_exposure_window(center)
+	var/obj/machinery/door/firedoor/door = allocate(/obj/machinery/door/firedoor, center)
+	door.machine_stat &= ~NOPOWER
+	var/area/base = get_area(door)
+	door_runtime_set_lockdown(list(door), TRUE)
+	if(door.operating)
+		wait_for_var(door, "operating", FALSE)
+	TEST_ASSERT(door.lockdown_count && door.density && door.auto_closed, "событие не закрыло фаерлок с запретом автооткрытия")
+	TEST_ASSERT_EQUAL(door.displayed_alarm_state, FIRELOCK_ALARM_TYPE_GENERIC, "локдаун не показал общую угрозу")
+	TEST_ASSERT(!door.is_holding_pressure(), "контроль: перепад давления скрыл бы отсутствие запрета")
+	var/time_before = world.time
+	door.try_auto_reopen()
+	TEST_ASSERT_EQUAL(world.time, time_before, "таймер локдауна уснул")
+	TEST_ASSERT(door.density && !door.operating && door.auto_closed, "таймер открыл дверь во время локдауна")
+	base.ModifyFiredoors(TRUE)
+	TEST_ASSERT(door.density && !door.operating && door.auto_closed, "сброс тревоги зоны обошёл локдаун")
+	door.alarm_type = FIRELOCK_ALARM_TYPE_COLD
+	door.recompute_atmos_alarm()
+	TEST_ASSERT(door.density && !door.operating && door.auto_closed, "снятие тревоги датчика обошло локдаун")
+	door.nextstate = FIREDOOR_OPEN
+	door.latetoggle()
+	TEST_ASSERT(door.density && !door.operating, "отложенное открытие обошло локдаун")
+
+	door.try_to_crowbar(null, null)
+	TEST_ASSERT(!door.density && door.lockdown_count, "локдаун запретил ручное открытие")
+	TEST_ASSERT_NULL(door.displayed_alarm_state, "ручное открытие сохранило оверлей угрозы")
+	door.try_to_crowbar(null, null)
+	door_runtime_set_lockdown(list(door), FALSE)
+	TEST_ASSERT(!door.lockdown_count && door.density && !door.auto_closed, "снятие локдауна открыло вручную закрытую дверь")
+
+	// Событие во время открытия должно завершить анимацию повторным закрытием.
+	door.unblock_automatic_closing()
+	INVOKE_ASYNC(door, TYPE_PROC_REF(/obj/machinery/door/firedoor, open))
+	door_runtime_set_lockdown(list(door), TRUE)
+	if(door.operating)
+		wait_for_var(door, "operating", FALSE, 4 SECONDS)
+	TEST_ASSERT(door.lockdown_count && door.density && door.auto_closed, "начатое открытие отменило локдаун")
+	door.decompression_seal_areas = list()
+	door.decompression_seal_areas[base] = TRUE
+	door_runtime_set_lockdown(list(door), FALSE)
+	TEST_ASSERT(!door.lockdown_count && door.density && !door.operating && door.auto_closed, "конец события открыл границу сохраняющейся пробоины")
+	door.decompression_seal_areas = null
+	door.try_auto_reopen()
+	if(door.operating)
+		wait_for_var(door, "operating", FALSE)
+	TEST_ASSERT(!door.density && !door.auto_closed, "после локдауна и ремонта не восстановилось автооткрытие")
+
+	// Потеря питания за время события не должна оставить вечный запрет.
+	door_runtime_set_lockdown(list(door), TRUE)
+	door_runtime_set_lockdown(list(door), TRUE)
+	if(door.operating)
+		wait_for_var(door, "operating", FALSE)
+	door_runtime_set_lockdown(list(door), FALSE)
+	door.try_auto_reopen()
+	TEST_ASSERT(door.lockdown_count == 1 && door.density && !door.operating, "снятие одного из двух локдаунов открыло дверь")
+	door.machine_stat |= NOPOWER
+	door_runtime_set_lockdown(list(door), FALSE)
+	TEST_ASSERT(!door.lockdown_count && door.density, "локдаун не снялся с обесточенной двери")
+	door.machine_stat &= ~NOPOWER
+	door.try_auto_reopen()
+	if(door.operating)
+		wait_for_var(door, "operating", FALSE)
+	TEST_ASSERT(!door.density, "возврат питания не восстановил автооткрытие")
+
+// Нажатие пожарной кнопки игроком открывает даже защитную границу и переживает текущую анимацию.
+/datum/unit_test/firelock_manual_alarm_reset/Run()
+	var/turf/open/origin = run_loc_floor_bottom_left
+	var/turf/open/center = locate(origin.x + 2, origin.y + 2, origin.z)
+	unit_test_normalize_exposure_window(center)
+	var/obj/machinery/door/firedoor/door = allocate(/obj/machinery/door/firedoor, center)
+	var/obj/machinery/firealarm/alarm = allocate(/obj/machinery/firealarm, center)
+	var/mob/user = allocate(/mob/living/carbon/human, center)
+	door.machine_stat &= ~NOPOWER
+	alarm.machine_stat &= ~NOPOWER
+	var/area/base = get_base_area(alarm)
+	door_runtime_set_lockdown(list(door), TRUE)
+	if(door.operating)
+		wait_for_var(door, "operating", FALSE)
+	base.set_fire_alarm_effects(TRUE)
+	alarm.reset()
+	TEST_ASSERT(door.density && !door.operating && door.lockdown_count, "автоматический сброс пожарной кнопки обошёл локдаун")
+
+	door.decompression_seal_areas = list()
+	door.decompression_seal_areas[base] = TRUE
+	base.set_fire_alarm_effects(TRUE)
+	alarm.on_attack_hand(user)
+	if(door.operating)
+		wait_for_var(door, "operating", FALSE)
+	TEST_ASSERT(!door.density && !door.auto_closed, "нажатие пожарной кнопки игроком не открыло фаерлок")
+	TEST_ASSERT(door.lockdown_count && door.is_decompression_seal(), "ручная команда сняла локдаун или сведения о пробоине")
+	TEST_ASSERT(!door.can_auto_close(), "ручная команда не дала защиту от повторного закрытия")
+	TEST_ASSERT_NULL(door.displayed_alarm_state, "на открытой вручную двери остался оверлей угрозы")
+
+	// Заваренную дверь сигнализация по-прежнему не открывает.
+	door.try_to_crowbar(null, null)
+	door.welded = TRUE
+	base.set_fire_alarm_effects(TRUE)
+	alarm.on_attack_hand(user)
+	TEST_ASSERT(door.density && !door.operating, "пожарная кнопка открыла заваренный фаерлок")
+	door.welded = FALSE
+	door.open_manually()
+
+	// Ручная команда, пришедшая при закрытии, должна остаться ручной после анимации.
+	INVOKE_ASYNC(door, TYPE_PROC_REF(/obj/machinery/door/firedoor, close), TRUE)
+	base.set_fire_alarm_effects(TRUE)
+	alarm.on_attack_hand(user)
+	TEST_ASSERT_EQUAL(door.nextstate, FIREDOOR_OPEN_MANUAL, "отложенная команда потеряла признак ручного открытия")
+	if(door.operating)
+		wait_for_var(door, "operating", FALSE, 4 SECONDS)
+	TEST_ASSERT(!door.density && !door.auto_closed && !door.can_auto_close(), "после анимации локдаун отменил ручное открытие")
+	TEST_ASSERT_NULL(door.displayed_alarm_state, "отложенное ручное открытие сохранило оверлей угрозы")
+	door.decompression_seal_areas = null
+	door_runtime_set_lockdown(list(door), FALSE)
+
+// Таймерный колбек переоткрытия обязан возвращаться без сна: door/open() спит
+// анимацию целую секунду, и в раунде 9911 try_auto_reopen держал SStimer по
+// 300-350мс на колбек в разгар станционного пожара.
 /datum/unit_test/firelock_auto_reopen_nonblocking/Run()
 	var/turf/open/origin = run_loc_floor_bottom_left
 	var/turf/open/center = locate(origin.x + 2, origin.y + 2, origin.z)
@@ -690,6 +885,8 @@
 	var/requeued = SSair.decompression_areas[base]
 	SSair.decompression_areas -= base
 	SSair.decompression_pending -= base
+	SSair.decompression_started_at -= base
+	SSair.decompression_seen -= base
 	old_area.contents += spot
 	TEST_ASSERT(!requeued, "a just-handled area was requeued for decompression within the alarm cooldown")
 

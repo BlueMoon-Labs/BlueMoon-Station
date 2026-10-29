@@ -7,7 +7,7 @@
 	name = "Goldbrand"
 	desc = "Granted only to those who prove themselves in battle, this sword cuts and burns flesh."
 	force = 18
-	armour_penetration = 15
+	armour_penetration = MELEE_AP_COMBAT
 	block_chance = 35 //not too bad really
 	var/burn_force = 5
 	var/firestacking = 10
@@ -37,7 +37,7 @@
 		name = upgradedname
 		desc = upgradeddesc
 		block_chance = 66
-		armour_penetration = 35
+		armour_penetration = MELEE_AP_EXCLUSIVE
 		force = 20
 		burn_force = 20
 		firestacking = 20

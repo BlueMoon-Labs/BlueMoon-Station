@@ -1,7 +1,8 @@
 /mob/living/silicon/ai/proc/get_camera_list()
 	var/list/L = list()
 	for (var/obj/machinery/camera/C in GLOB.cameranet.cameras)
-		L.Add(C)
+		if(antag_training_camera_visible(C, src))
+			L.Add(C)
 
 	camera_sort(L)
 
@@ -39,7 +40,7 @@
 
 	for(var/i in GLOB.mob_living_list)
 		var/mob/living/L = i
-		if(!L.can_track(usr))
+		if(!L.can_track(usr) || is_antag_training_atom(L) != is_antag_training_atom(src))
 			continue
 
 		var/name = L.name

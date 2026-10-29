@@ -15,7 +15,6 @@ REPEATED_MODE_ADJUST 45 30 10
 ## Set to 0 to disable that mode.
 
 PROBABILITY TRAITOR 5
-PROBABILITY TRAITORBRO 2
 PROBABILITY TRAITORCHAN 4
 PROBABILITY INTERNAL_AFFAIRS 3
 PROBABILITY NUCLEAR 2
@@ -39,7 +38,6 @@ PROBABILITY SANDBOX 0
 ## Modes that aren't continuous will end the instant all antagonists are dead.
 
 CONTINUOUS TRAITOR
-CONTINUOUS TRAITORBRO
 CONTINUOUS TRAITORCHAN
 CONTINUOUS INTERNAL_AFFAIRS
 #CONTINUOUS NUCLEAR
@@ -63,7 +61,6 @@ CONTINUOUS SECRET_EXTENDED
 ## In modes that are continuous, if all antagonists should die then a new set of antagonists will be created.
 
 MIDROUND_ANTAG TRAITOR
-#MIDROUND_ANTAG TRAITORBRO
 MIDROUND_ANTAG TRAITORCHAN
 MIDROUND_ANTAG INTERNAL_AFFAIRS
 #MIDROUND_ANTAG  NUCLEAR
@@ -77,7 +74,6 @@ MIDROUND_ANTAG WIZARD
 ## Toggles for whether this mode should force antags even if not enough players have it enabled.
 ## If it's off, it just won't roll as many antags.
 #FORCE_ANTAG_COUNT TRAITOR
-#FORCE_ANTAG_COUNT TRAITORBRO
 #FORCE_ANTAG_COUNT TRAITORCHAN
 #FORCE_ANTAG_COUNT INTERNAL_AFFAIRS
 FORCE_ANTAG_COUNT  NUCLEAR
@@ -101,9 +97,6 @@ FORCE_ANTAG_COUNT CLOCKWORK_CULT
 
 #MIN_POP TRAITOR 0
 #MAX_POP TRAITOR -1
-
-#MIN_POP TRAITORBRO 0
-#MAX_POP TRAITORBRO -1
 
 #MIN_POP TRAITORCHAN 15
 #MAX_POP TRAITORCHAN -1
@@ -149,8 +142,6 @@ FORCE_ANTAG_COUNT CLOCKWORK_CULT
 ## Used as (Antagonists = Population / Coeff)
 ## Set to 0 to disable scaling and use default numbers instead.
 TRAITOR_SCALING_COEFF 6
-## per brother TEAM
-BROTHER_SCALING_COEFF 12
 CHANGELING_SCALING_COEFF 6
 ## heretics
 ECULT_SCALING_COEFF 5
@@ -165,7 +156,16 @@ SECURITY_SCALING_COEFF 8
 ## The number of objectives traitors get.
 ## Not including escaping/hijacking.
 TRAITOR_OBJECTIVES_AMOUNT 2
-BROTHER_OBJECTIVES_AMOUNT 2
+
+## Antag opt-in: how far a character agrees to be an antagonist objective target.
+## 0 - not a target, 1 - temporary inconvenience, 2 - can be killed, 3 - can be removed from the round.
+## Level for characters that never chose one.
+ANTAG_OPT_IN_DEFAULT_LEVEL 3
+## Minimum level for security and command on their own job.
+ANTAG_OPT_IN_SECURITY_MIN 2
+ANTAG_OPT_IN_COMMAND_MIN 2
+## Minimum level for a player who left the lobby with a crew antagonist role enabled.
+ANTAG_OPT_IN_ANTAG_ENABLED_MIN 2
 
 ## Uncomment to prohibit jobs that start with loyalty
 ## implants from being most antagonists.

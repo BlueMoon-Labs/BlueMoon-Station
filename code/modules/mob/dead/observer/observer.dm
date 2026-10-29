@@ -92,12 +92,13 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 
 		if(ishuman(body))
 			var/mob/living/carbon/human/body_human = body
-			if(HAIR in body_human.dna.species.species_traits)
-				hair_style = body_human.hair_style
-				hair_color = brighten_color(body_human.hair_color)
-			if(FACEHAIR in body_human.dna.species.species_traits)
-				facial_hair_style = body_human.facial_hair_style
-				facial_hair_color = brighten_color(body_human.facial_hair_color)
+			if(body_human.dna?.species)
+				if(HAIR in body_human.dna.species.species_traits)
+					hair_style = body_human.hair_style
+					hair_color = brighten_color(body_human.hair_color)
+				if(FACEHAIR in body_human.dna.species.species_traits)
+					facial_hair_style = body_human.facial_hair_style
+					facial_hair_color = brighten_color(body_human.facial_hair_color)
 
 	update_icon()
 
@@ -131,10 +132,17 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 		AA.onNewMob(src)
 
 	. = ..()
+	register_mousewheel_handler(src, PROC_REF(on_mousewheel))
 	AddElement(/datum/element/ghost_role_eligibility)
+	var/datum/action/join_shift/join_action = new(src)
+	join_action.Grant(src)
 	grant_all_languages()
-	show_data_huds()
-	data_huds_on = 1
+
+/mob/dead/observer/proc/on_mousewheel(mob/user, atom/target, delta_x, delta_y, list/modifiers)
+	if(!delta_y || !modifiers[SHIFT_CLICK])
+		return FALSE
+	add_view_range(delta_y > 0 ? -1 : 1)
+	return TRUE
 
 /mob/dead/observer/get_status_tab_items()
 	. = ..()
@@ -732,7 +740,7 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 			request_ghost_lighting_init(visible_z)
 
 /mob/dead/observer/update_sight(forced = TRUE)
-	if(client?.prefs)
+	if(client)
 		ghost_others = client.prefs.ghost_others //A quick update just in case this setting was changed right before calling the proc
 
 	if (!ghostvision)
@@ -884,19 +892,28 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		var/datum/atom_hud/H = GLOB.huds[hudtype]
 		H.remove_hud_from(src)
 
+/// Включает или снимает дата-худы по настройке клиента.
+/mob/dead/observer/proc/sync_data_huds()
+	var/wanted = !!(client?.prefs?.chat_toggles & CHAT_GHOSTHUDS)
+	if(wanted == !!data_huds_on)
+		return
+	if(wanted)
+		show_data_huds()
+	else
+		remove_data_huds()
+	data_huds_on = wanted
+
 /mob/dead/observer/verb/toggle_data_huds()
 	set name = "Toggle Sec/Med/Diag HUD"
-	set desc = "Toggles whether you see medical/security/diagnostic HUDs"
+	set desc = "Показывать мед/СБ/диаг-худы призраку. Выбор запоминается для следующих раз."
 	set category = "Ghost"
 
-	if(data_huds_on) //remove old huds
-		remove_data_huds()
-		to_chat(src, "<span class='notice'>Data HUDs disabled.</span>")
-		data_huds_on = 0
-	else
-		show_data_huds()
-		to_chat(src, "<span class='notice'>Data HUDs enabled.</span>")
-		data_huds_on = 1
+	if(!client?.prefs)
+		return
+	client.prefs.chat_toggles ^= CHAT_GHOSTHUDS
+	client.prefs.save_pref_var("chat_toggles")
+	sync_data_huds()
+	to_chat(src, span_notice("Дата-худы призрака [data_huds_on ? "включены" : "выключены"]."))
 
 /mob/dead/observer/verb/toggle_health_scan()
 	set name = "Toggle Health Scan"
@@ -928,13 +945,13 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		client.prefs.real_name = random_unique_name(gender)
 	if(client.prefs.be_random_body)
 		client.prefs.random_character(gender)
-
-	if(HAIR in client.prefs.pref_species.species_traits)
-		hair_style = client.prefs.hair_style
-		hair_color = brighten_color(client.prefs.hair_color)
-	if(FACEHAIR in client.prefs.pref_species.species_traits)
-		facial_hair_style = client.prefs.facial_hair_style
-		facial_hair_color = brighten_color(client.prefs.facial_hair_color)
+	if(client.prefs.pref_species)
+		if(HAIR in client.prefs.pref_species.species_traits)
+			hair_style = client.prefs.hair_style
+			hair_color = brighten_color(client.prefs.hair_color)
+		if(FACEHAIR in client.prefs.pref_species.species_traits)
+			facial_hair_style = client.prefs.facial_hair_style
+			facial_hair_color = brighten_color(client.prefs.facial_hair_color)
 
 	update_icon()
 
@@ -948,11 +965,13 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 	. = ..()
 	switch(var_name)
 		if(NAMEOF(src, icon))
-			ghostimage_default.icon = icon
-			ghostimage_simple.icon = icon
+			if(ghostimage_default && ghostimage_simple)
+				ghostimage_default.icon = icon
+				ghostimage_simple.icon = icon
 		if(NAMEOF(src, icon_state))
-			ghostimage_default.icon_state = icon_state
-			ghostimage_simple.icon_state = icon_state
+			if(ghostimage_default && ghostimage_simple)
+				ghostimage_default.icon_state = icon_state
+				ghostimage_simple.icon_state = icon_state
 		if(NAMEOF(src, fun_verbs))
 			if(fun_verbs)
 				add_verb(src, /mob/dead/observer/verb/boo)
@@ -960,6 +979,8 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 			else
 				remove_verb(src, /mob/dead/observer/verb/boo)
 				remove_verb(src, /mob/dead/observer/verb/possess)
+		if(NAMEOF(src, invisibility))
+			set_invisibility(invisibility) // updates light
 
 /mob/dead/observer/reset_perspective(atom/A)
 	// Отвязываемся по observetarget, а не по client.eye. Прежнее условие требовало, чтобы
@@ -1082,11 +1103,6 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 // Ghosts have no momentum, being massless ectoplasm
 /mob/dead/observer/Process_Spacemove(movement_dir)
 	return TRUE
-
-/mob/dead/observer/vv_edit_var(var_name, var_value)
-	. = ..()
-	if(var_name == NAMEOF(src, invisibility))
-		set_invisibility(invisibility) // updates light
 
 /proc/set_observer_default_invisibility(amount, message=null)
 	for(var/mob/dead/observer/G in GLOB.player_list)

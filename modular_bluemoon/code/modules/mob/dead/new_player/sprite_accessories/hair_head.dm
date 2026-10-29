@@ -368,3 +368,23 @@
 	icon = 'modular_bluemoon/icons/mob/hair.dmi'
 	name = "Dreadtail"
 	icon_state = "hair_dreadtail"
+
+/datum/sprite_accessory/hair/hair_inari_flowerchild
+	icon = 'modular_bluemoon/icons/mob/hair.dmi'
+	name = "Inari Flowerchild"
+	icon_state = "hair_inari_flowerchild"
+
+/datum/sprite_accessory/hair/hair_inari_flowerchild_ponyless
+	icon = 'modular_bluemoon/icons/mob/hair.dmi'
+	name = "Inari Flowerchild (Ponyless)"
+	icon_state = "hair_inari_flowerchild_ponyless"
+
+/datum/sprite_accessory/hair/hair_inari_flowerchild_ponyful
+	icon = 'modular_bluemoon/icons/mob/hair.dmi'
+	name = "Inari Flowerchild (Ponyful)"
+	icon_state = "hair_inari_flowerchild_ponyful"
+
+/datum/sprite_accessory/hair/cloud_cascade
+	icon = 'modular_bluemoon/icons/mob/hair.dmi'
+	name = "Cloud Cascade"
+	icon_state = "hair_cloud_cascade"

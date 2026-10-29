@@ -152,6 +152,11 @@
 
 /datum/unit_test/brig_report_does_not_retain_paper/Run()
 	begin_isolated_gc()
+	var/list/record = print_and_delete()
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
+	assert_soft_collected(record)
+
+/datum/unit_test/brig_report_does_not_retain_paper/proc/print_and_delete()
 	var/turf/floor = run_loc_floor_bottom_left
 	var/obj/machinery/computer/prisoner/management/console = allocate(/obj/machinery/computer/prisoner/management, floor)
 	TEST_ASSERT(console in GLOB.prisoncomputer_list, "Консоль заключённых не встала в глобальный список")
@@ -166,8 +171,7 @@
 
 	var/list/record = target_record(report, "распечатка брига")
 	qdel(report)
-	run_gc_fire_cycles(2, yield_for_gc = TRUE)
-	assert_soft_collected(record)
+	return record
 
 /// Лоадаутные нормалайзеры писали владельца жёсткой ссылкой и держали тело до
 /// конца раунда: предмет живёт дольше носителя (шкафчик, чужой рюкзак, пол).
@@ -178,6 +182,11 @@
 
 /datum/unit_test/syntech_normalizer_does_not_pin_owner/Run()
 	begin_isolated_gc()
+	var/list/record = bind_and_delete_owner()
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
+	assert_soft_collected(record)
+
+/datum/unit_test/syntech_normalizer_does_not_pin_owner/proc/bind_and_delete_owner()
 	var/turf/floor = run_loc_floor_bottom_left
 	var/mob/living/carbon/human/wearer = new(floor)
 	var/obj/item/clothing/neck/syntech/collar/collar = allocate(/obj/item/clothing/neck/syntech/collar, floor)
@@ -191,9 +200,7 @@
 	qdel(wearer)
 	wearer = null
 	TEST_ASSERT_NULL(collar.owner_ref.resolve(), "Ошейник всё ещё разрешает ссылку на удалённое тело")
-
-	run_gc_fire_cycles(2, yield_for_gc = TRUE)
-	assert_soft_collected(record)
+	return record
 
 /// clockcult/admin_add заводит собственный датум через add_servant_of_ratvar, а
 /// заготовку из add_antag_wrapper бросает без владельца. Уборка этой заготовки
@@ -244,6 +251,7 @@
 	var/list/brain_record = target_record(head.brain, "мозг из отрезанной головы")
 	var/list/eyes_record = target_record(head.eyes, "глаза из отрезанной головы")
 	var/list/brainmob_record = target_record(brainmob, "мозгомоб из отрезанной головы")
+	var/list/head_record = target_record(head, "отрезанная голова")
 	brainmob = null
 	stored_mind = null
 
@@ -251,11 +259,13 @@
 	TEST_ASSERT_NULL(head.brain, "Голова удержала удалённый мозг")
 	TEST_ASSERT_NULL(head.eyes, "Голова удержала удалённые глаза")
 	TEST_ASSERT_NULL(head.brainmob, "Голова удержала удалённого мозгомоба")
+	head = null
 
 	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	assert_soft_collected(brain_record)
 	assert_soft_collected(eyes_record)
 	assert_soft_collected(brainmob_record)
+	assert_soft_collected(head_record)
 
 /// Консоль голодека дерезит убежавшего питомца сама и спавнеру об этом не
 /// сообщает, а спавнер живёт до смены программы. Раунд 9827: REF SEARCH назвал
@@ -265,6 +275,12 @@
 
 /datum/unit_test/holodeck_spawner_releases_derezzed_pet/Run()
 	begin_isolated_gc()
+	var/list/record = spawn_and_derez()
+	run_gc_fire_cycles(2, yield_for_gc = TRUE)
+	assert_soft_collected(record)
+
+/// Отдельным проком: временные переменные TEST_ASSERT_EQUAL иначе держат питомца в кадре Run().
+/datum/unit_test/holodeck_spawner_releases_derezzed_pet/proc/spawn_and_derez()
 	var/turf/floor = run_loc_floor_bottom_left
 	var/obj/effect/holodeck_effect/mobspawner/pet/spawner = allocate(/obj/effect/holodeck_effect/mobspawner/pet, floor)
 	//список из одного типа: ветка с pick() отрабатывает, но питомец детерминирован
@@ -280,9 +296,7 @@
 	qdel(pet)
 	pet = null
 	TEST_ASSERT_NULL(spawner.mob_ref.resolve(), "Спавнер всё ещё разрешает ссылку на удалённого питомца")
-
-	run_gc_fire_cycles(2, yield_for_gc = TRUE)
-	assert_soft_collected(record)
+	return record
 
 /// Кнопка антаг-инфо висит на теле и по clear_ref сносит себя сама, но
 /// антаг-датуму об этом не сообщала, а его Destroy кнопку не трогал (обнуление
@@ -386,7 +400,7 @@
 /// ХардСпейс-бра: тот же паттерн, слот рубашки.
 /datum/unit_test/cryo_path_releases_wearer/proc/hardspace_bra()
 	var/turf/floor = run_loc_floor_bottom_left
-	var/obj/item/clothing/underwear/shirt/bra/bra_adjustable/hardspace_bra/bra = new(floor)
+	var/obj/item/clothing/underwear/shirt/adjustable/bra/hardspace_bra/bra = new(floor)
 	var/mob/living/carbon/human/wearer = new(floor)
 	var/obj/item/storage/box/package = new(floor)
 
@@ -463,12 +477,15 @@
 	TEST_ASSERT(filling in burger.ingredients, "Ингредиент не попал в список бургера")
 
 	var/list/record = target_record(filling, "ингредиент кастомизируемой еды")
+	var/list/burger_record = target_record(burger, "кастомизируемый бургер")
 	filling = null
 	qdel(burger)
 	TEST_ASSERT(!length(burger.ingredients), "Список ингредиентов остался с трупами внутри")
+	burger = null
 
 	run_gc_fire_cycles(2, yield_for_gc = TRUE)
 	assert_soft_collected(record)
+	assert_soft_collected(burger_record)
 
 /// SStgui.on_close считал ключ как "[REF(ui.src_object)]" и при промахе выходил
 /// return FALSE ДО чистки, а close() сразу делал qdel(src). Оставались три

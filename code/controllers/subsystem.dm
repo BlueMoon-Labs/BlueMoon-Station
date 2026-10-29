@@ -345,6 +345,9 @@
 
 /// Учёт одного замера профилированного прохода.
 /datum/controller/subsystem/proc/profile_note(item_type, cost_ms, datum/item, slept = FALSE)
+	// Фаер, уснувший в элементе, просыпается после того, как другой фаер уже закрыл профиль прохода.
+	if(!profile_cost_by_type)
+		return
 	profile_cost_by_type[item_type] += cost_ms
 	profile_count_by_type[item_type] += 1
 	if(slept)

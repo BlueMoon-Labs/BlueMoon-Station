@@ -351,7 +351,8 @@
 
 #define TYPING_INDICATOR_TIMEOUT 20 MINUTES
 
-#define GRAB_PIXEL_SHIFT_PASSIVE	6
+/// Обычный пулл не сдвигает тащимого: со сдвигом спрайт тела налезал на тянущего
+#define GRAB_PIXEL_SHIFT_PASSIVE	0
 #define GRAB_PIXEL_SHIFT_AGGRESSIVE	12
 #define GRAB_PIXEL_SHIFT_NECK		16
 

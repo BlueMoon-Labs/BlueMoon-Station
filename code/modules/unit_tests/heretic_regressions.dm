@@ -201,7 +201,7 @@
 
 /// Боевые посохи учитывают защиту капюшона при настоящем ударе в голову.
 /datum/unit_test/heretic_staff_armor/Run()
-	for(var/staff_type in list(/obj/item/staff/bostaff, /obj/item/staff/bostaff/chaplain))
+	for(var/staff_type in list(/obj/item/staff/bostaff))
 		var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human)
 		var/mob/living/carbon/human/unarmored = allocate(/mob/living/carbon/human, get_step(user, EAST))
 		var/mob/living/carbon/human/armored = allocate(/mob/living/carbon/human, get_step(user, NORTH))

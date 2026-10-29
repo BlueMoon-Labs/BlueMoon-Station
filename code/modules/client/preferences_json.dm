@@ -104,12 +104,12 @@
 		to_chat(parent, span_notice("Настройки сохранены!"))
 	return result
 
-/datum/preferences/proc/save_character(bypass_cooldown = FALSE, silent = FALSE, export = FALSE)
+/datum/preferences/proc/save_character(bypass_cooldown = FALSE, silent = FALSE, export = FALSE, update_active_preset = TRUE)
 	var/blocking_started_ms = blocking_call_start()
 	var/list/patch_context = export ? null : list()
 	var/savefile/result
 	try
-		result = write_character(bypass_cooldown, silent, export, patch_context)
+		result = write_character(bypass_cooldown, silent, export, patch_context, update_active_preset)
 	catch(var/exception/failure)
 		if(export)
 			throw failure
@@ -128,8 +128,14 @@
 			blocking_call_finish(blocking_started_ms, "JSON (персонаж)", "ошибка записи")
 			return FALSE
 	blocking_call_finish(blocking_started_ms, "JSON (персонаж)", "слот [default_slot]")
+	if(!export)
+		if(length(slot_names_cache) == max_save_slots)
+			slot_names_cache[default_slot] = real_name
+		if(length(slot_custom_names_cache) == max_save_slots)
+			slot_custom_names_cache[default_slot] = character_slot_name
+		character_setup_ui?.record_saved_state()
 	if(parent && !silent && !export)
-		to_chat(parent, span_notice("Слот персонажа сохранён!"))
+		to_chat(parent, span_notice("Персонаж сохранён!"))
 	return result
 
 /// Записываем миграции только после загрузки всех модульных настроек.
@@ -155,7 +161,7 @@
 			max_save_slots = max(max_save_slots, slotnum)
 			default_slot = slotnum
 			if (load_character(null, TRUE))
-				if(!save_character(TRUE, TRUE))
+				if(!save_character(TRUE, TRUE, update_active_preset = FALSE))
 					default_slot = old_default_slot
 					max_save_slots = old_max_save_slots
 					return FALSE

@@ -53,7 +53,8 @@ GLOBAL_DATUM(dna_for_copying, /datum/dna)
 
 	return ..()
 
-/datum/dna/proc/transfer_identity(mob/living/carbon/destination, transfer_SE = 0)
+// Переносит ДНК и доступную внешность владельца; бельё копируется только по запросу вызывающего.
+/datum/dna/proc/transfer_identity(mob/living/carbon/destination, transfer_SE = 0, copy_clothing = FALSE)
 	if(!istype(destination))
 		return
 	var/old_size = destination.dna.features["body_size"]
@@ -66,6 +67,8 @@ GLOBAL_DATUM(dna_for_copying, /datum/dna)
 	destination.dna.species.say_mod = species.say_mod
 	destination.dna.species.exotic_blood_color = species.exotic_blood_color //it can change from the default value
 	destination.dna.species.exotic_blood_blend_mode = species.exotic_blood_blend_mode
+	destination.dna.species.eye_type = species.eye_type
+	destination.dna.species.mutant_bodyparts["limbs_id"] = species.mutant_bodyparts["limbs_id"]
 	destination.dna.real_name = real_name
 	destination.dna.nameless = nameless
 	destination.dna.custom_species = custom_species
@@ -76,8 +79,35 @@ GLOBAL_DATUM(dna_for_copying, /datum/dna)
 	if(ishuman(destination))
 		var/mob/living/carbon/human/H = destination
 		H.give_genitals(TRUE)//This gives the body the genitals of this DNA. Used for any transformations based on DNA
-		H.grad_style = H.grad_style
-		H.grad_color = H.grad_color
+		if(ishuman(holder) && !QDELETED(holder))
+			var/mob/living/carbon/human/source = holder
+			H.gender = source.gender
+			H.skin_tone = source.skin_tone
+			H.hair_style = source.hair_style
+			H.hair_color = source.hair_color
+			H.facial_hair_style = source.facial_hair_style
+			H.facial_hair_color = source.facial_hair_color
+			H.left_eye_color = source.left_eye_color
+			H.right_eye_color = source.right_eye_color
+			H.grad_style = source.grad_style
+			H.grad_color = source.grad_color
+			H.lip_style = source.lip_style
+			H.lip_color = source.lip_color
+			H.nail_style = source.nail_style
+			H.nail_color = source.nail_color
+			var/obj/item/organ/eyes/eyes = H.getorgan(/obj/item/organ/eyes)
+			if(eyes)
+				if(!initial(eyes.left_eye_color))
+					eyes.left_eye_color = source.left_eye_color
+				if(!initial(eyes.right_eye_color))
+					eyes.right_eye_color = source.right_eye_color
+				eyes.old_left_eye_color = source.left_eye_color
+				eyes.old_right_eye_color = source.right_eye_color
+			if(copy_clothing)
+				source.copy_clothing_prefs(H)
+				H.undie_color = source.undie_color
+				H.shirt_color = source.shirt_color
+				H.socks_color = source.socks_color
 		// BLUEMOON EDIT START - привязка флавора к ДНК
 		destination.dna.flavor_text = flavor_text
 		destination.dna.naked_flavor_text = naked_flavor_text
@@ -107,6 +137,7 @@ GLOBAL_DATUM(dna_for_copying, /datum/dna)
 	new_dna.species.exotic_blood_blend_mode = species.exotic_blood_blend_mode
 	new_dna.species.eye_type = species.eye_type
 	new_dna.species.limbs_id = species.limbs_id || species.id
+	new_dna.species.mutant_bodyparts["limbs_id"] = species.mutant_bodyparts["limbs_id"]
 	new_dna.real_name = real_name
 	new_dna.nameless = nameless
 	new_dna.custom_species = custom_species

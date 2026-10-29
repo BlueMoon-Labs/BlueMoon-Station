@@ -449,6 +449,37 @@
 		user.drop_all_held_items()
 		user.DefaultCombatKnockdown(80)
 
+// -------------- Gatfruit Revolver -------------
+// Вырастает из гатфрута. Барабан намертво запечатан смолой, поэтому перезарядить его нельзя.
+/obj/item/gun/ballistic/revolver/gatfruit
+	name = "\improper .357 gatfruit revolver"
+	desc = "A suspicious revolver grown from a gatfruit. Its cylinder is fused shut by hardened plant resin, making reloading impossible."
+
+/obj/item/gun/ballistic/revolver/gatfruit/attackby(obj/item/A, mob/user, params)
+	if(istype(A, /obj/item/ammo_box) || istype(A, /obj/item/ammo_casing))
+		to_chat(user, span_warning("The [src]'s cylinder is fused shut — you can't reload it!"))
+		return TRUE
+	return ..()
+
+/obj/item/gun/ballistic/revolver/gatfruit/examine(mob/user)
+	. = ..()
+	. += span_notice("The cylinder is sealed with hardened plant resin. It cannot be reloaded.")
+
+// Испорченный плод. Внешне неотличим от обычного револьвера: имя, описание и иконка наследуются.
+/obj/item/gun/ballistic/revolver/gatfruit/bad
+
+/obj/item/gun/ballistic/revolver/gatfruit/bad/process_fire(atom/target, mob/living/user, message = TRUE, params = null, zone_override = "", bonus_spread = 0, stam_cost = 0)
+	if(user && chambered?.BB)
+		user.visible_message(
+			span_danger("[user]'s [src] jerks in [user.ru_ego()] hands and goes off right in [user.ru_ego()] face!"),
+			span_userdanger("The [src] jerks in your hands and fires straight into your face!"),
+			span_italics("You hear a gunshot!"),
+		)
+		target = user
+		zone_override = BODY_ZONE_HEAD
+		message = FALSE
+	return ..()
+
 // -------------- HoS Modular Weapon System -------------
 // ---------- Code originally from VoreStation ----------
 /obj/item/gun/ballistic/revolver/mws
@@ -574,9 +605,11 @@
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/requiem_revolver_righthand.dmi'
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/cowboy
 	dual_wield_spread = 1
+	fire_delay = 1
 	w_class = WEIGHT_CLASS_NORMAL
 	recoil = 0.25
 	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_POCKETS
+	fire_select_modes = list(SELECT_SEMI_AUTOMATIC, SELECT_FULLY_AUTOMATIC)
 
 /obj/item/gun/ballistic/revolver/Salvation
 	name = "\improper Salvation"
@@ -589,15 +622,17 @@
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/requiem_revolver_righthand.dmi'
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/cowboy
 	dual_wield_spread = 1
+	fire_delay = 1
 	w_class = WEIGHT_CLASS_NORMAL
 	recoil = 0.25
 	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_POCKETS
+	fire_select_modes = list(SELECT_SEMI_AUTOMATIC, SELECT_FULLY_AUTOMATIC)
 
 /obj/item/gun/ballistic/revolver/proc/try_dual_buscadero_reload(mob/living/user)
 	// 1. Проверка пояса buscadero на талии
 	var/obj/item/storage/belt/buscadero/belt = user.get_item_by_slot(ITEM_SLOT_BELT)
 	if(!istype(belt))
-		return FALSE 
+		return FALSE
 
 	// 2. Проверка наличия второго револьвера в неактивной руке
 	var/obj/item/gun/ballistic/revolver/offhand_rev = user.get_inactive_held_item()
@@ -615,7 +650,7 @@
 				src.magazine.stored_ammo[i] = null
 				CB.forceMove(src.drop_location())
 				CB.bounce_away(FALSE, NONE)
-				reloaded_any = TRUE 
+				reloaded_any = TRUE
 
 	// 4. Полностью вытряхивает старые гильзы из второго револьвера на пол
 	if(offhand_rev && offhand_rev.magazine && offhand_rev.magazine.stored_ammo && offhand_rev.magazine.stored_ammo.len)
@@ -638,7 +673,7 @@
 
 	// Перебирает найденные на поясе патроны
 	for(var/obj/item/ammo_casing/bullet in bullets_in_belt)
-		
+
 		// Заряжает основной револьвер, пока в барабане есть место
 		if(src.magazine?.give_round(bullet))
 			actual_reload_success = TRUE
@@ -660,7 +695,7 @@
 
 	// --- 7. ИТОГИ ---
 	if(actual_reload_success || reloaded_any)
-		playsound(user, 'sound/weapons/bulletinsert.ogg', 60, 1) 
+		playsound(user, 'sound/weapons/bulletinsert.ogg', 60, 1)
 		user.visible_message(
 			"<span class='danger'>[user] ловким движением откидывает барабаны, с треском высыпая гильзы на пол, и вслепую забивает новые патроны из пояса [belt.name] прямо в каморы!</span>",
 			"<span class='notice'>Вы ловко очистили каморы револьверов и зарядили их патронами из пояса.</span>"
@@ -673,8 +708,8 @@
 
 /obj/item/gun/ballistic/revolver/Salvation/attack_self(mob/living/user)
 	if(try_dual_buscadero_reload(user))
-		return 
-	return ..() 
+		return
+	return ..()
 
 /obj/item/gun/ballistic/revolver/Condemnation/attack_self(mob/living/user)
 	if(try_dual_buscadero_reload(user))
@@ -699,6 +734,8 @@
 	unique_reskin = list(
 		"Police" = list(
 			"icon_state" = "apostle police"
+		),"M29" = list(
+			"icon_state" = "apostle m29"
 		))
 
 
@@ -719,8 +756,11 @@
 	slot_flags = ITEM_SLOT_BELT
 	unique_reskin = list(
 		"Police" = list(
-			"icon_state" = "dies_irae  police"
-		))
+			"icon_state" = "dies_irae police"
+		),"M29" = list(
+			"icon_state" = "dies_irae m29"
+		),"Huntinh" = list(
+			"icon_state" = "dies_irae hunt"))
 
 /obj/item/gun/ballistic/revolver/Liturgy //Апгрейд на ревик сбух, чтоб было 18 патрон, енфорсеру всунули 28, ревику можно 18
 	name = "\improper Liturgy"
@@ -736,10 +776,12 @@
 	fire_delay = 5
 	w_class = WEIGHT_CLASS_NORMAL
 	recoil = 0.5
-	slot_flags = ITEM_SLOT_BELT 
+	slot_flags = ITEM_SLOT_BELT
 	unique_reskin = list(
 		"Police" = list(
 			"icon_state" = "liturgy police"
+		),"M29" = list(
+			"icon_state" = "liturgy m29"
 		))
 
 /obj/item/gun/ballistic/revolver/Passing_Bell //тупа секвоя из нью вегаса антагам, калибр 45 70 давно в игре, но его нахуй никто не использует
@@ -766,7 +808,7 @@
 	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/winchester1897_shot.ogg'
 	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_lefthand.dmi'
 	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
-	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/exorcist 
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/exorcist
 	dual_wield_spread = 25
 	fire_delay = 10
 	w_class = WEIGHT_CLASS_NORMAL
@@ -792,10 +834,10 @@
 
 	// СТРОГАЯ ПРОВЕРКА ВТОРОЙ РУКИ: Ищем тяжелое оружие во второй руке
 	var/obj/item/offhand_item = H.get_inactive_held_item()
-	
+
 	// Проверяем, является ли предмет во второй руке тоже одним из этих двух револьверов
 	var/is_offhand_heavy = (istype(offhand_item, /obj/item/gun/ballistic/revolver/Dies_Irae) || istype(offhand_item, /obj/item/gun/ballistic/revolver/Exorcist))
-	
+
 	if(!is_offhand_heavy)
 		return // Если вторая рука пуста или там любой другой предмет (нож, фонарик, легкий пистолет) — вывиха НЕТ!
 
@@ -821,165 +863,16 @@
 
 	// БОЛЕВОЙ ШОК, ЭФФЕКТЫ И ПАДЕНИЕ ОРУЖИЯ
 	to_chat(H, "<span class='userdanger'>Попытка выстрелить из двух тяжелых револьверов одновременно сокрушительной отдачей выбивает вам оба плеча!</span>")
-	
-	playsound(H.loc, 'sound/effects/wounds/crack1.ogg', 70, TRUE) 
-	
+
+	playsound(H.loc, 'sound/effects/wounds/crack1.ogg', 70, TRUE)
+
 	// Персонаж роняет оба револьвера на пол
 	H.drop_all_held_items()
-	
+
 	// Болевой ступор/паралич на 3.5 секунды
-	H.Paralyze(35) 
+	H.Paralyze(35)
 
 
-
-
-
-// ==========================================
-// НОВЫЕ РЕВИКИ 2
-// ==========================================
-/obj/item/gps/embed_gps/judgement_beacon_bomb
-	name = "Маячок-детонатор"
-	desc = "Миниатюрный скрытый заряд, внедренный под кожу. Дистанционно взрывается по радиосигналу револьвера или автоматически через 2 минуты."
-	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
-	icon_state = "bomb_beacon" 
-	
-	var/obj/item/gun/ballistic/revolver/judgement/my_gun 
-	var/mob/living/carbon/my_target 
-
-/obj/item/gps/embed_gps/judgement_beacon_bomb/Initialize(mapload)
-	. = ..()
-	src.lifespan = 2 MINUTES 
-	addtimer(CALLBACK(src, PROC_REF(auto_detonate)), src.lifespan)
-
-/obj/item/gps/embed_gps/judgement_beacon_bomb/proc/auto_detonate()
-	if(QDELETED(src))
-		return
-
-	if(my_target && !QDELETED(my_target))
-		to_chat(my_target, "<span class='userdanger'>Вживленный внутри вас маячок издает критический писк и детонирует!</span>")
-		
-		var/turf/T = get_turf(my_target)
-		if(T)
-			new /obj/effect/temp_visual/kinetic_blast(T)
-			playsound(T, 'sound/weapons/resonator_blast.ogg', 50, 1)
-		
-		my_target.ex_act(EXPLODE_LIGHT)
-		
-		if(my_gun && !QDELETED(my_gun))
-			my_gun.active_beacons -= my_target
-	else
-		var/turf/T = get_turf(src)
-		if(T)
-			new /obj/effect/particle_effect/smoke(T)
-	
-	qdel(src)
-
-// ==========================================
-// ПАТРОНЫ ПОКА ТУТ, ТЕСТИРУЮ, ПОТОМ ЗАКИНУ В НОРМАЛЬНОЕ МЕСТО
-// ==========================================
-
-// Маячок (10 урона + МНОЖЕСТВЕННОЕ вживление имплантов)
-/obj/item/projectile/bullet/judgement_beacon
-	name = ".44 Magnum glycerine rounds"
-	damage = 10 
-
-/obj/item/projectile/bullet/judgement_beacon/on_hit(atom/target, blocked = FALSE)
-	. = ..()
-	if(!iscarbon(target))
-		return
-
-	var/mob/living/carbon/C = target
-	
-	if(!firer || !istype(firer.get_active_held_item(), /obj/item/gun/ballistic/revolver/judgement))
-		return
-
-	var/obj/item/gun/ballistic/revolver/judgement/J = firer.get_active_held_item()
-
-	var/obj/item/gps/embed_gps/judgement_beacon_bomb/bomb = new(target)
-	bomb.my_gun = J
-	bomb.my_target = C
-	bomb.tryEmbed(C, forced = TRUE, silent = TRUE)
-	
-	J.active_beacons.Add(C)
-	
-	to_chat(firer, "<span class='notice'>Револьвер издает писк</span>")
-
-
-// ==========================================
-// ЖЕЛТЫЙ КВАДРАТ ПРИ ПОПАДАНИИ, ПОТОМ может ЧЕ НИТЬ ДРУГОЕ БУДЕТ
-// ==========================================
-/obj/effect/temp_visual/judgement_kinetic_blast
-	name = "кинетическая вспышка"
-	desc = "Визуальный эффект кинетического удара."
-	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi' // Твой файл иконок
-	icon_state = "boom" // Сюда впишешь название своего спрайта взрыва, когда нарисуешь!
-	duration = 5 // Длительность анимации в тиках (0.5 секунды), после чего игра сама удалит эффект
-
-// ==========================================
-// ОТКИДЫВАЕТ, ПЛЮС РИКОШЕТ
-// ==========================================
-/obj/item/projectile/bullet/judgement_kinetic_ricochet
-	name = ".44 Magnum round"
-	damage = 70
-	ricochets_max = 4
-	ricochet_chance = 100
-	ricochet_auto_aim_angle = 90
-	ricochet_auto_aim_range = 10
-	ricochet_incidence_leeway = 50
-	ricochet_decay_chance = 1
-	ricochet_decay_damage = 1
-
-/obj/item/projectile/bullet/judgement_kinetic_ricochet/on_hit(atom/target, blocked = 0)
-	. = ..()
-	
-	// СПАВН ВИЗУАЛЬНОГО МИНИ-ВЗРЫВА ПРИ ЛЮБОМ ПОПАДАНИИ (в стену, пол или моба)
-	var/turf/hit_turf = get_turf(target)
-	if(hit_turf)
-		// Создаем твой кастомный эффект взрыва точно на тайле попадания
-		new /obj/effect/temp_visual/judgement_kinetic_blast(hit_turf)
-		// Воспроизводим сочный звук удара из примера с перчаткой
-		playsound(hit_turf, 'sound/weapons/genhit2.ogg', 40, 1)
-
-	// КРИВО СПИЗДИЛ КОД С ПАУВЕР ФИСТА
-	if(isliving(target))
-		var/mob/living/L = target
-		
-		if(hasvar(L, "move_resist") && L.vars["move_resist"] >= INFINITY)
-			return
-
-		var/atom/throw_target = get_edge_target_turf(L, get_dir(src, get_step_away(L, starting)))
-		
-		if(throw_target)
-			L.throw_at(throw_target, 2, 1)
-			to_chat(L, "<span class='userdanger'>Тяжелый кинетический импульс пули сбивает вас с ног и отбрасывает назад!</span>")
-
-
-// ==========================================
-// Патрончики
-// ==========================================
-/obj/item/ammo_casing/a357/judgement_beacon
-	name = ".44 Magnum glycerine rounds"
-	desc = "Особый патрон. Пуля наносит легкий урон и вживляет дистанционную взрывчатку под кожу."
-	projectile_type = /obj/item/projectile/bullet/judgement_beacon
-
-/obj/item/ammo_casing/a357/judgement_kinetic
-	name = ".44 magnum kinetic rounds"
-	desc = "Особый патрон. Пуля наносит огромный урон, отскакивает от стен и откидывает цели назад."
-	projectile_type = /obj/item/projectile/bullet/judgement_kinetic_ricochet
-
-
-// ==========================================
-// Барабанчик
-// ==========================================
-/obj/item/ammo_box/magazine/internal/cylinder/judgement
-	name = "барабан Judgement"
-	ammo_type = /obj/item/ammo_casing/a357/judgement_beacon 
-	max_ammo = 6
-
-
-// ==========================================
-// САМ РЕВОЛЬВЕР 
-// ==========================================
 /obj/item/gun/ballistic/revolver/judgement
 	name = "\improper Judgement"
 	desc = "The High Explosive .44 Magnum fires kinetic or glycerine rounds useful for close-quarter combat scenarios. It is the only weapon in the SRPA arsenal certified for use with glycerin rounds. Each slug carries a small, explosive charge that can be remote-detonated from a switch near the trigger guard."
@@ -989,9 +882,9 @@
 	fire_sound = "modular_bluemoon/fluffs/sound/weapon/Judgement.ogg"
 	lefthand_file = 'icons/mob/inhands/weapons/guns_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/weapons/guns_righthand.dmi'
-	
+
 	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/judgement
-	
+
 	var/list/active_beacons = list()
 
 // бум на Z
@@ -1006,15 +899,15 @@
 	for(var/mob/living/carbon/C in active_beacons)
 		if(C && !QDELETED(C))
 			to_chat(C, "<span class='userdanger'>Вживленный внутри вас маячок детонирует по радиосигналу!</span>")
-			
+
 			var/turf/T = get_turf(C)
 			if(T)
 				new /obj/effect/temp_visual/kinetic_blast(T)
 				playsound(T, 'sound/weapons/resonator_blast.ogg', 50, 1)
 				playsound(T, 'sound/weapons/genhit2.ogg', 50, 1)
-			
+
 			C.ex_act(EXPLODE_LIGHT)
-			
+
 			// Поочередно удаляем по одному импланту-детонатору из его тела
 			var/obj/item/gps/embed_gps/judgement_beacon_bomb/B = locate(/obj/item/gps/embed_gps/judgement_beacon_bomb) in C
 			if(B)
@@ -1023,3 +916,132 @@
 	// Полностью очищаем память пушки
 	active_beacons.Cut()
 	return TRUE
+
+/obj/item/gun/ballistic/revolver/anathema
+	name = "Anathema"
+	desc = "A single action baptism of fire. This setup leaves no room for prayer, instantly scarring the flesh of the unholy with a relentless, mechanical crown of thorns. It looks like a single action revolver, but the hammer is too tight to cock with one hand."
+	icon_state = "anathema"
+	w_class = WEIGHT_CLASS_NORMAL
+	weapon_weight = WEAPON_HEAVY
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/apostle
+	fire_delay = 3
+	fire_select_modes = list(SELECT_SEMI_AUTOMATIC, SELECT_FULLY_AUTOMATIC)
+	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
+	item_state = "apostle"
+	fire_sound = "modular_bluemoon/sound/weapons/anathema.ogg"
+	load_sound = "modular_bluemoon/sound/weapons/anathema_reload.ogg"
+	load_empty_sound = "modular_bluemoon/sound/weapons/anathema_reload.ogg"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
+
+/obj/item/gun/ballistic/revolver/Apostle/snub
+	name = "\improper Apostle Snub"
+	desc = "A precise tool of holy law crafted for the parish enforcers. Its heavy .41 caliber rounds deliver steady, unforgiving judgement, turning every standard patrol into a righteous crusade through the blighted swamps."
+	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
+	fire_sound = "modular_bluemoon/fluffs/sound/weapon/Apostle.ogg"
+	icon_state = "apostle snub"
+	item_state = "apostle"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/apostle
+	projectile_damage_multiplier = 0.8
+	dual_wield_spread = 25
+	fire_delay = 3
+	w_class = WEIGHT_CLASS_SMALL
+	recoil = 0.5
+	slot_flags = ITEM_SLOT_BELT | ITEM_SLOT_POCKETS
+	unique_reskin = list(
+		"Police" = list(
+			"icon_state" = "apostle police snub"
+		),"M29" = list(
+			"icon_state" = "apostle m29 snub"
+		))
+
+/obj/item/gun/ballistic/revolver/Mea_culpa
+	name = "\improper Mea Culpa"
+	desc = "True penance is a relentless process. This light-framed weapon delivers a swift rain of low-caliber judgements, forcing heretics to confess through rapid retribution. But for the unrepentant, 'Mea Culpa' holds a darker truth. With a flick of a switch, it shifts to its secondary mode—unleashing a single, roaring shotgun blast that tears the ultimate confession straight from the sinner's chest."
+	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
+	fire_sound = "modular_bluemoon/fluffs/sound/weapon/Apostle.ogg"
+	icon_state = "Mea_culpa"
+	item_state = "apostle"
+	lefthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_lefthand.dmi'
+	righthand_file = 'modular_bluemoon/icons/mob/inhands/weapons/revolver_righthand.dmi'
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/mea_culpa
+	
+	var/obj/item/gun/ballistic/underbarrel
+	
+	projectile_damage_multiplier = 1.1
+	dual_wield_spread = 25
+	fire_delay = 1
+	w_class = WEIGHT_CLASS_NORMAL
+	recoil = 0.5
+	slot_flags = ITEM_SLOT_BELT
+
+/obj/item/gun/ballistic/revolver/Mea_culpa/Initialize(mapload)
+	. = ..()
+	underbarrel = new /obj/item/gun/ballistic/revolver/doublebarrel/improvised(src) 
+
+/obj/item/gun/ballistic/revolver/Mea_culpa/altafterattack(atom/target, mob/living/user, proximity_flag, params)
+	if(!underbarrel || !istype(user))
+		return ..()
+	underbarrel.afterattack(target, user, proximity_flag, params)
+	return TRUE
+
+/obj/item/gun/ballistic/revolver/Mea_culpa/attackby(obj/item/A, mob/user, params)
+	if(underbarrel && istype(A, /obj/item/ammo_casing/shotgun))
+		return underbarrel.attackby(A, user, params)
+		
+	return ..()
+
+/obj/item/gun/ballistic/revolver/Misericordia 
+	name = "\improper Misericordia "
+	desc = "Once a modest .410 gauge implement, this weapon has undergone a violent rebirth to deliver the ultimate act of grace. Now chambered in the crushing power of the 12-gauge, 'Misericordia' is a monstrous, stock-fitted revolver-shotgun designed to grant absolute absolution. It is called mercy not because it spares the wicked, but because it leaves nothing left of them to suffer. The long, heavy barrel directs a roaring blast of holy fire that tears through flesh, bone, and sinew in a single heartbeat. A beautiful, catastrophic end for those who are beyond saving"
+	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
+	icon_state = "Misericordia"
+	item_state = "308"
+	fire_sound = 'modular_bluemoon/fluffs/sound/weapon/winchester1897_shot.ogg'
+	lefthand_file = 'modular_splurt/icons/mob/inhands/weapons/guns_lefthand.dmi'
+	righthand_file = 'modular_splurt/icons/mob/inhands/weapons/guns_righthand.dmi'
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/exorcist_big
+	dual_wield_spread = 100
+	fire_delay = 10
+	w_class = WEIGHT_CLASS_BULKY
+	weapon_weight = WEAPON_HEAVY
+	recoil = 5
+
+/obj/item/gun/ballistic/revolver/Sanctum_Officium 
+	name = "\improper Sanctum Officium "
+	desc = "The bureaucracy of the Holy Inquisition is vast, cold, and absolute. This long-barreled carbine conversion embodies that very rigidity. Fitted with a heavy, unyielding shoulder stock and an extended, cold-forged barrel, 'Sanctum Officium' turns a simple sidearm into a calculated instrument of long-range execution. It eliminates the chaotic sway of human hands, ensuring that the Bureau's decree is delivered with mathematical, distant precision. When this weapon speaks, it is not a declaration of anger-it is the final, unappealable signature on a heretic's death warrant."
+	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
+	fire_sound = "modular_bluemoon/fluffs/sound/weapon/Dies_Irae.ogg"
+	icon_state = "Sanctum_Officium"
+	item_state = "308"
+	lefthand_file = 'modular_splurt/icons/mob/inhands/weapons/guns_lefthand.dmi'
+	righthand_file = 'modular_splurt/icons/mob/inhands/weapons/guns_righthand.dmi'
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/dies_irae
+	dual_wield_spread = 100
+	fire_delay = 10
+	w_class = WEIGHT_CLASS_BULKY
+	weapon_weight = WEAPON_HEAVY
+	recoil = 5
+	slot_flags = ITEM_SLOT_BELT
+
+/obj/item/gun/ballistic/revolver/Sanctum_Officium/optic
+	name = "\improper Sanctum Officium sniper"
+	desc = "The bureaucracy of the Holy Inquisition is vast, cold, and absolute. This long-barreled carbine conversion embodies that very rigidity. Fitted with a heavy, unyielding shoulder stock and an extended, cold-forged barrel, 'Sanctum Officium' turns a simple sidearm into a calculated instrument of long-range execution. It eliminates the chaotic sway of human hands, ensuring that the Bureau's decree is delivered with mathematical, distant precision. When this weapon speaks, it is not a declaration of anger-it is the final, unappealable signature on a heretic's death warrant."
+	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
+	fire_sound = "modular_bluemoon/fluffs/sound/weapon/Dies_Irae.ogg"
+	icon_state = "Sanctum_Officium scope"
+	item_state = "308"
+	lefthand_file = 'modular_splurt/icons/mob/inhands/weapons/guns_lefthand.dmi'
+	righthand_file = 'modular_splurt/icons/mob/inhands/weapons/guns_righthand.dmi'
+	mag_type = /obj/item/ammo_box/magazine/internal/cylinder/dies_irae
+	dual_wield_spread = 100
+	fire_delay = 10
+	zoomable = TRUE
+	zoom_amt = 10
+	zoom_out_amt = 5
+	w_class = WEIGHT_CLASS_BULKY
+	weapon_weight = WEAPON_HEAVY
+	recoil = 5
+	slot_flags = ITEM_SLOT_BELT

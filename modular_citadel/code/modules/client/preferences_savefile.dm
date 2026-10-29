@@ -33,15 +33,15 @@
 	READ_PLAYER_SAVE(S, document, "lust_tolerance", lust_tolerance)
 	READ_PLAYER_SAVE(S, document, "sexual_potency", sexual_potency)
 
-	erppref = sanitize_inlist(PLAYER_SAVE_VALUE(S, document, "erp_pref"), GLOB.lewd_prefs_choices, "Ask")
-	nonconpref = sanitize_inlist(PLAYER_SAVE_VALUE(S, document, "noncon_pref"), GLOB.lewd_prefs_choices, "Ask")
-	vorepref = sanitize_inlist(PLAYER_SAVE_VALUE(S, document, "vore_pref"), GLOB.lewd_prefs_choices, "Ask")
-	mobsexpref = sanitize_inlist(PLAYER_SAVE_VALUE(S, document, "mobsex_pref"), GLOB.lewd_prefs_choices, "No") //Hentai
-	tattoopref = sanitize_inlist(PLAYER_SAVE_VALUE(S, document, "tattoo_pref"), GLOB.lewd_prefs_choices, "Ask") //BLUEMOON ADD - tattoo consent
-	unholypref = sanitize_inlist(PLAYER_SAVE_VALUE(S, document, "unholypref"), GLOB.lewd_prefs_choices, "Ask") //I AM MENTAL I AM MAD I AM INSANE
-	unholyhardpref = sanitize_inlist(PLAYER_SAVE_VALUE(S, document, "unholyhard_pref"), GLOB.lewd_prefs_choices, "No") // https://youtu.be/DCC6w9pAn3k?si=YIKRdkT_wwQr-V8U
-	extremepref = sanitize_inlist(PLAYER_SAVE_VALUE(S, document, "extreme_pref"), GLOB.lewd_prefs_choices, "No") //god has forsaken me
-	extremeharm = sanitize_inlist(PLAYER_SAVE_VALUE(S, document, "extreme_harm"), (GLOB.lewd_prefs_choices - "Ask"), "No") //hacky for not saving "Ask"
+	erppref = sanitize_inlist(PLAYER_SAVE_VALUE(S, document, "erp_pref"), GLOB.lewd_prefs_choices, initial(erppref))
+	nonconpref = sanitize_inlist(PLAYER_SAVE_VALUE(S, document, "noncon_pref"), GLOB.lewd_prefs_choices, initial(nonconpref))
+	vorepref = sanitize_inlist(PLAYER_SAVE_VALUE(S, document, "vore_pref"), GLOB.lewd_prefs_choices, initial(vorepref))
+	mobsexpref = sanitize_inlist(PLAYER_SAVE_VALUE(S, document, "mobsex_pref"), GLOB.lewd_prefs_choices,initial(mobsexpref)) //Hentai
+	tattoopref = sanitize_inlist(PLAYER_SAVE_VALUE(S, document, "tattoo_pref"), GLOB.lewd_prefs_choices, initial(tattoopref)) //BLUEMOON ADD - tattoo consent
+	unholypref = sanitize_inlist(PLAYER_SAVE_VALUE(S, document, "unholypref"), GLOB.lewd_prefs_choices, initial(unholypref)) //I AM MENTAL I AM MAD I AM INSANE
+	unholyhardpref = sanitize_inlist(PLAYER_SAVE_VALUE(S, document, "unholyhard_pref"), GLOB.lewd_prefs_choices, initial(unholyhardpref)) // https://youtu.be/DCC6w9pAn3k?si=YIKRdkT_wwQr-V8U
+	extremepref = sanitize_inlist(PLAYER_SAVE_VALUE(S, document, "extreme_pref"), GLOB.lewd_prefs_choices, initial(extremepref)) //god has forsaken me
+	extremeharm = sanitize_inlist(PLAYER_SAVE_VALUE(S, document, "extreme_harm"), (GLOB.lewd_prefs_choices - "Ask"), initial(extremeharm)) //hacky for not saving "Ask"
 	if(extremepref == "No")
 		extremeharm = "No"
 	enable_personal_chat_color	= sanitize_integer(enable_personal_chat_color, 0, 1, initial(enable_personal_chat_color))

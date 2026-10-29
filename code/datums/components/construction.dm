@@ -23,23 +23,23 @@
 	if(desc)
 		examine_list += desc
 
-/datum/component/construction/proc/on_step()
+/datum/component/construction/proc/on_step(mob/living/user)
 	if(index > steps.len)
-		spawn_result()
+		spawn_result(user)
 	else
 		update_parent(index)
 
 /datum/component/construction/proc/action(datum/source, obj/item/I, mob/living/user)
 	return check_step(I, user)
 
-/datum/component/construction/proc/update_index(diff)
+/datum/component/construction/proc/update_index(diff, mob/living/user)
 	index += diff
-	on_step()
+	on_step(user)
 
 /datum/component/construction/proc/check_step(obj/item/I, mob/living/user)
 	var/diff = is_right_key(I)
 	if(diff && custom_action(I, user, diff))
-		update_index(diff)
+		update_index(diff, user)
 		return TRUE
 	return FALSE
 
@@ -79,12 +79,12 @@
 	else if(diff == FORWARD)
 		switch(current_step["action"])
 			if(ITEM_DELETE)
-				. = user.transferItemToLoc(I, parent)
+				. = istype(I.loc, /obj/item/storage/part_replacer) ? I.remove_item_from_storage(parent) : user.transferItemToLoc(I, parent)
 				if(.)
 					qdel(I)
 
 			if(ITEM_MOVE_INSIDE)
-				. = user.transferItemToLoc(I, parent)
+				. = istype(I.loc, /obj/item/storage/part_replacer) ? I.remove_item_from_storage(parent) : user.transferItemToLoc(I, parent)
 
 			// Using stacks
 			else if(istype(I, /obj/item/stack))
@@ -107,7 +107,7 @@
 			else if(ispath(target_step_key, /obj/item/stack))
 				new target_step_key(drop_location(), target_step["amount"])
 
-/datum/component/construction/proc/spawn_result()
+/datum/component/construction/proc/spawn_result(mob/living/user)
 	// Some constructions result in new components being added.
 	if(ispath(result, /datum/component))
 		parent.AddComponent(result)
@@ -140,13 +140,13 @@
 	for(var/typepath in steps)
 		if(istype(I, typepath) && custom_action(I, user, typepath))
 			steps -= typepath
-			on_step()
+			on_step(user)
 			return TRUE
 	return FALSE
 
-/datum/component/construction/unordered/on_step()
+/datum/component/construction/unordered/on_step(mob/living/user)
 	if(!steps.len)
-		spawn_result()
+		spawn_result(user)
 	else
 		update_parent(steps.len)
 

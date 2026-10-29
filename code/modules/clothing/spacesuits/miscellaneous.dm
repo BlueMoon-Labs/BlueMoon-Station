@@ -22,7 +22,7 @@ Contains:
 	desc = "An advanced tactical space helmet."
 	icon_state = "deathsquad"
 	item_state = "deathsquad"
-	armor = list(MELEE = 80, BULLET = 80, LASER = 50, ENERGY = 50, BOMB = 100, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 50)
+	armor_type = /datum/armor/deathsquad_and_shielded
 	strip_delay = 130
 	actions_types = list()
 
@@ -40,7 +40,7 @@ Contains:
 	item_state = "swat_suit"
 	tail_state = "deathsquad"
 	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/tank/internals, /obj/item/kitchen/knife/combat)
-	armor = list(MELEE = 80, BULLET = 80, LASER = 50, ENERGY = 50, BOMB = 100, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 30)
+	armor_type = /datum/armor/deathsquad_and_officer
 	brc_mitigation_bonus = BRC_MITIGATION_25  // BLUEMOON ADD
 	strip_delay = 130
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/deathsquad
@@ -59,7 +59,7 @@ Contains:
 	item_state = "swat_suit"
 	tail_state = "atmos"
 	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/tank/internals, /obj/item/kitchen/knife/combat)
-	armor = list(MELEE = 40, BULLET = 30, LASER = 30,ENERGY = 30, BOMB = 50, BIO = 90, RAD = 20, FIRE = 100, ACID = 100, WOUND = 25)
+	armor_type = /datum/armor/spacesuit_swat
 	brc_mitigation_bonus = 10  // BLUEMOON ADD
 	strip_delay = 120
 	resistance_flags = FIRE_PROOF | ACID_PROOF
@@ -131,7 +131,7 @@ Contains:
 	dynamic_hair_suffix = "+generic"
 	dynamic_fhair_suffix = "+generic"
 	flags_inv = 0
-	armor = list(MELEE = 80, BULLET = 80, LASER = 50, ENERGY = 50, BOMB = 100, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 30)
+	armor_type = /datum/armor/deathsquad_and_officer
 	strip_delay = 130
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	resistance_flags = FIRE_PROOF | ACID_PROOF
@@ -147,7 +147,7 @@ Contains:
 	flags_inv = 0
 	w_class = WEIGHT_CLASS_NORMAL
 	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/tank/internals)
-	armor = list(MELEE = 80, BULLET = 80, LASER = 50, ENERGY = 50, BOMB = 100, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 30)
+	armor_type = /datum/armor/deathsquad_and_officer
 	brc_mitigation_bonus = 25  // BLUEMOON ADD
 	strip_delay = 130
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
@@ -224,7 +224,7 @@ Contains:
 	desc = "A thick, space-proof tricorne from the royal Space Queen. It's lined with a layer of reflective kevlar."
 	icon_state = "pirate"
 	item_state = "pirate"
-	armor = list(MELEE = 20, BULLET = 40, LASER = 30,ENERGY = 15, BOMB = 30, BIO = 30, RAD = 30, FIRE = 60, ACID = 75, WOUND = 30)
+	armor_type = /datum/armor/pirate
 	flags_inv = HIDEHAIR
 	strip_delay = 40
 	equip_delay_other = 20
@@ -247,7 +247,7 @@ Contains:
 	flags_inv = 0
 	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/tank/internals, /obj/item/melee/transforming/energy/sword/pirate, /obj/item/clothing/glasses/cover/eyepatch, /obj/item/reagent_containers/food/drinks/bottle/rum)
 	slowdown = 0
-	armor = list(MELEE = 20, BULLET = 40, LASER = 30,ENERGY = 15, BOMB = 30, BIO = 30, RAD = 30, FIRE = 60, ACID = 75, WOUND = 30)
+	armor_type = /datum/armor/pirate
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	strip_delay = 40
 	equip_delay_other = 20
@@ -273,7 +273,7 @@ Contains:
 	icon_state = "hardsuit0-ert_commander"
 	item_state = "hardsuit0-ert_commander"
 	hardsuit_type = "ert_commander"
-	armor = list(MELEE = 50, BULLET = 25, LASER = 50, ENERGY = 50, BOMB = 40, BIO = 100, RAD = 50, FIRE = 100, ACID = 100, WOUND = 30)
+	armor_type = /datum/armor/hardsuit_ert_and_hos
 	strip_delay = 130
 	brightness_on = 16
 
@@ -293,7 +293,7 @@ Contains:
 	tail_state = "ert-commander"
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert
 	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/tank/internals)
-	armor = list(MELEE = 50, BULLET = 25, LASER = 50, ENERGY = 50, BOMB = 40, BIO = 100, RAD = 50, FIRE = 100, ACID = 100, WOUND = 30)
+	armor_type = /datum/armor/hardsuit_ert_and_hos
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	slowdown = 0
 	strip_delay = 130
@@ -323,7 +323,6 @@ Contains:
 	icon_state = "hardsuit0-ert_engineer"
 	item_state = "hardsuit0-ert_engineer"
 	hardsuit_type = "ert_engineer"
-	armor = list(MELEE = 60, BULLET = 45, LASER = 45, ENERGY = 45, BOMB = 50, BIO = 100, RAD = 100, FIRE = 100, ACID = 80, WOUND = 30) // BLUEMOON CHANGE rig rebalance
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT // BLUEMOON CHANGE rig rebalance
 
 /obj/item/clothing/suit/space/hardsuit/ert/engi
@@ -332,7 +331,6 @@ Contains:
 	item_state = "ert_engineer"
 	tail_state = "ert-engineer"
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/engi
-	armor = list(MELEE = 60, BULLET = 45, LASER = 45, ENERGY = 45, BOMB = 50, BIO = 100, RAD = 100, FIRE = 100, ACID = 80, WOUND = 30) // BLUEMOON CHANGE rig rebalance
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT // BLUEMOON CHANGE rig rebalance
 
@@ -373,7 +371,7 @@ Contains:
 	icon_state = "hardsuit0-ert_commander-alert"
 	item_state = "hardsuit0-ert_commander-alert"
 	hardsuit_type = "ert_commander-alert"
-	armor = list(MELEE = 70, BULLET = 55, LASER = 50, ENERGY = 50, BOMB = 65, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 50)
+	armor_type = /datum/armor/ert_alert
 	brightness_on = 12
 
 	heat_protection = HEAD
@@ -387,7 +385,7 @@ Contains:
 	item_state = "ert_command-alert"
 	tail_state = "ert-alert"
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/alert
-	armor = list(MELEE = 70, BULLET = 55, LASER = 50, ENERGY = 50, BOMB = 65, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 50)
+	armor_type = /datum/armor/ert_alert
 	brc_mitigation_bonus = 20  // BLUEMOON ADD
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC|STYLE_PAW_TAURIC
 
@@ -443,7 +441,7 @@ Contains:
 	item_state = "s_suit"
 	tail_state = "syndicate-winter"
 	desc = "A lightweight space suit with the basic ability to protect the wearer from the vacuum of space during emergencies."
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 100, RAD = 20, FIRE = 50, ACID = 65, WOUND = 10)
+	armor_type = /datum/armor/space_spacesuit_eva
 
 /obj/item/clothing/head/helmet/space/eva
 	name = "EVA helmet"
@@ -451,7 +449,7 @@ Contains:
 	item_state = "space"
 	desc = "A lightweight space helmet with the basic ability to protect the wearer from the vacuum of space during emergencies."
 	flash_protect = 0
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0,ENERGY = 0, BOMB = 0, BIO = 100, RAD = 20, FIRE = 50, ACID = 65, WOUND = 10)
+	armor_type = /datum/armor/space_spacesuit_eva
 
 //Radiation
 /obj/item/clothing/head/helmet/space/rad
@@ -459,7 +457,7 @@ Contains:
 	desc = "A special helmet that protects against radiation and space. Not much else unfortunately."
 	icon_state = "cespace_helmet"
 	item_state = "nothing"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 100, RAD = 100, FIRE = 0, ACID = 0, WOUND = 5)
+	armor_type = /datum/armor/rad
 	resistance_flags = FIRE_PROOF
 	rad_flags = RAD_PROTECT_CONTENTS | RAD_NO_CONTAMINATE
 	actions_types = list()
@@ -470,7 +468,7 @@ Contains:
 	icon_state = "hardsuit-rad"
 	item_state = "nothing"
 	tail_state = "ert-engineer"
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 100, RAD = 100, FIRE = 0, ACID = 0, WOUND = 5)
+	armor_type = /datum/armor/rad
 	resistance_flags = FIRE_PROOF
 	rad_flags = RAD_PROTECT_CONTENTS | RAD_NO_CONTAMINATE
 	mutantrace_variation = NONE
@@ -480,7 +478,7 @@ Contains:
 	desc = "An advanced, space-proof helmet. It appears to be modeled after an old-world eagle."
 	icon_state = "griffinhat"
 	item_state = "griffinhat"
-	armor = list(MELEE = 20, BULLET = 40, LASER = 30, ENERGY = 25, BOMB = 100, BIO = 100, RAD = 100, FIRE = 80, ACID = 80, WOUND = 20)
+	armor_type = /datum/armor/freedom
 	strip_delay = 130
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
 	resistance_flags = ACID_PROOF | FIRE_PROOF
@@ -493,7 +491,7 @@ Contains:
 	item_state = "freedom"
 	tail_state = "ert-commander"
 	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/tank/internals)
-	armor = list(MELEE = 20, BULLET = 40, LASER = 30,ENERGY = 25, BOMB = 100, BIO = 100, RAD = 100, FIRE = 80, ACID = 80, WOUND = 20)
+	armor_type = /datum/armor/freedom
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	strip_delay = 130
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
@@ -519,7 +517,7 @@ Contains:
 	desc = "Spaceworthy and it looks like a space carp's head, smells like one too."
 	icon_state = "carp_helm"
 	item_state = "syndicate"
-	armor = list(MELEE = 60, BULLET = 60, LASER = 50, ENERGY = 50, BOMB = 55, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 30) // same as elite InteQ / syndi elite
+	armor_type = /datum/armor/carp_and_syndicate_elite // same as elite InteQ / syndi elite
 	brightness_on = 0 //luminosity when on
 	actions_types = list()
 	heat_protection = HEAD
@@ -527,18 +525,25 @@ Contains:
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	mutantrace_variation = NONE
 	flags_inv = HIDEEARS|HIDEEYES|HIDEFACE|HIDEHAIR|HIDEFACIALHAIR
+	var/datum/action/innate/lesser_carp_rift/teleport
 
 /obj/item/clothing/head/helmet/space/hardsuit/carp/Initialize(mapload)
 	. = ..()
-	ADD_TRAIT(src, TRAIT_NODROP, LOCKED_HELMET_TRAIT)
+	teleport = new()
 
 /obj/item/clothing/head/helmet/space/hardsuit/carp/equipped(mob/living/carbon/human/user, slot)
 	. = ..()
+	ADD_TRAIT(user, TRAIT_HEALS_FROM_CARP_RIFTS, INNATE_TRAIT)
+	teleport.Grant(user)
+
 	if(slot == ITEM_SLOT_HEAD)
 		user.faction |= "carp"
 
 /obj/item/clothing/head/helmet/space/hardsuit/carp/dropped(mob/living/carbon/human/user)
 	. = ..()
+	REMOVE_TRAIT(user, TRAIT_HEALS_FROM_CARP_RIFTS, INNATE_TRAIT)
+	if(teleport)
+		QDEL_NULL(teleport)
 	if(user.head == src)
 		user.faction -= "carp"
 
@@ -549,7 +554,7 @@ Contains:
 	item_state = "space_suit_syndicate"
 	tail_state = "carp"
 	slowdown = 0	//Space carp magic, never stop believing
-	armor = list(MELEE = 60, BULLET = 60, LASER = 50, ENERGY = 50, BOMB = 55, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 30) // same as elite InteQ / syndi elite
+	armor_type = /datum/armor/carp_and_syndicate_elite // same as elite InteQ / syndi elite
 	brc_mitigation_bonus = 20  // BLUEMOON ADD
 	allowed = list(/obj/item/tank/internals, /obj/item/gun/ballistic/automatic/speargun)	//I'm giving you a hint here
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/carp
@@ -574,7 +579,7 @@ Contains:
 	item_state = "hardsuit0-prt"
 	hardsuit_type = "knight_grey"
 	actions_types = list()
-	armor =	list(MELEE = 75, BULLET = 25, LASER = 50, ENERGY = 50, BOMB = 40, BIO = 100, RAD = 50, FIRE = 100, ACID = 100, WOUND = 30)
+	armor_type = /datum/armor/paranormal
 	mutantrace_variation = STYLE_MUZZLE
 	heat_protection = HEAD
 	max_heat_protection_temperature = FIRE_IMMUNITY_MAX_TEMP_PROTECT
@@ -599,7 +604,7 @@ Contains:
 	item_state = "knight_grey"
 	tail_state = "syndicate-winter"
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/paranormal
-	armor =	list(MELEE = 75, BULLET = 25, LASER = 50, ENERGY = 50, BOMB = 40, BIO = 100, RAD = 50, FIRE = 100, ACID = 100, WOUND = 30)
+	armor_type = /datum/armor/paranormal
 	brc_mitigation_bonus = 20  // BLUEMOON ADD
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_SNEK_TAURIC|STYLE_PAW_TAURIC
 
@@ -633,7 +638,7 @@ Contains:
 
 /obj/item/clothing/suit/space/hardsuit/ert/paranormal/inquisitor/old
 	desc = "Powerful wards are built into this hardsuit, protecting the user from all manner of paranormal threats. Alas, this one looks pretty worn out and rusted."
-	armor = list(MELEE = 55, BULLET = 40, LASER = 40, ENERGY = 40, BOMB = 40, BIO = 80, RAD = 80, FIRE = 60, ACID = 60, WOUND = 20)
+	armor_type = /datum/armor/paranormal_old
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	slowdown = 0.8
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/paranormal/inquisitor/old
@@ -641,7 +646,7 @@ Contains:
 
 /obj/item/clothing/head/helmet/space/hardsuit/ert/paranormal/inquisitor/old
 	desc = "A helmet worn by those who deal with paranormal threats for a living. Alas, this one looks pretty worn out and rusted."
-	armor = list(MELEE = 55, BULLET = 40, LASER = 40, ENERGY = 40, BOMB = 40, BIO = 80, RAD = 80, FIRE = 60, ACID = 60, WOUND = 20)
+	armor_type = /datum/armor/paranormal_old
 	charges = 12
 
 /obj/item/clothing/suit/space/hardsuit/ert/paranormal/beserker
@@ -661,7 +666,7 @@ Contains:
 
 /obj/item/clothing/suit/space/hardsuit/ert/paranormal/beserker/old
 	desc = "Voices echo from the hardsuit, driving the user insane. This one is pretty battle-worn, but still fearsome."
-	armor = list(MELEE = 55, BULLET = 40, LASER = 40, ENERGY = 40, BOMB = 40, BIO = 80, RAD = 80, FIRE = 60, ACID = 60, WOUND = 20)
+	armor_type = /datum/armor/paranormal_old
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	slowdown = 0.8
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/ert/paranormal/beserker/old
@@ -669,7 +674,7 @@ Contains:
 
 /obj/item/clothing/head/helmet/space/hardsuit/ert/paranormal/beserker/old
 	desc = "Peering into the eyes of the helmet is enough to seal damnation. This one is pretty battle-worn, but still fearsome."
-	armor = list(MELEE = 55, BULLET = 40, LASER = 40, ENERGY = 40, BOMB = 40, BIO = 80, RAD = 80, FIRE = 60, ACID = 60, WOUND = 20)
+	armor_type = /datum/armor/paranormal_old
 	charges = 6
 
 /obj/item/clothing/head/helmet/space/fragile
@@ -677,7 +682,7 @@ Contains:
 	desc = "A bulky, air-tight helmet meant to protect the user during emergency situations. It doesn't look very durable."
 	icon_state = "syndicate-helm-orange"
 	item_state = "syndicate-helm-orange"
-	armor = list(MELEE = 5, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 10, FIRE = 0, ACID = 0, WOUND = 5)
+	armor_type = /datum/armor/fragile
 	strip_delay = 65
 
 /obj/item/clothing/suit/space/fragile
@@ -688,7 +693,7 @@ Contains:
 	item_state = "syndicate-orange"
 	tail_state = "orange"
 	slowdown = 2
-	armor = list(MELEE = 5, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 10, FIRE = 0, ACID = 0, WOUND = 5)
+	armor_type = /datum/armor/fragile
 	strip_delay = 65
 
 /obj/item/clothing/suit/space/fragile/run_block(mob/living/owner, atom/object, damage, attack_text, attack_type, armour_penetration, mob/attacker, def_zone, final_block_chance, list/block_return)
@@ -723,7 +728,7 @@ Contains:
 	item_state = "swat_suit"
 	tail_state = "contractor"
 	allowed = list(/obj/item/gun, /obj/item/ammo_box, /obj/item/ammo_casing, /obj/item/melee/baton, /obj/item/restraints/handcuffs, /obj/item/tank/internals, /obj/item/kitchen/knife/combat)
-	armor = list(MELEE = 60, BULLET = 40, LASER = 40, ENERGY = 50, BOMB = 100, BIO = 100, RAD = 100, FIRE = 100, ACID = 100, WOUND = 25)
+	armor_type = /datum/armor/spacesuit_hunter
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	strip_delay = 130
 	resistance_flags = FIRE_PROOF | ACID_PROOF

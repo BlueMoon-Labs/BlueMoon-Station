@@ -11,6 +11,8 @@
 	removable = FALSE
 	required_modpart_index = MOD_PART_HEAD
 	startup_with_suit = TRUE
+	/// Голос носителя до включения: у удаляемого тела клиента уже нет, префы не прочитать.
+	var/stored_bark_id
 
 /obj/item/mod/module/infiltrator/on_install()
 	. = ..()
@@ -27,14 +29,18 @@
 	if(!mod.wearer || !.) //если родитель выдал FALSE
 		return
 	mod.wearer.infiltrator_active = TRUE
+	stored_bark_id = mod.wearer.vocal_bark_id
 	mod.wearer.set_bark("bump")
 	mod.wearer.digitalcamo = TRUE
 	mod.wearer.digitalinvis = TRUE
 
 /obj/item/mod/module/infiltrator/on_deactivation()
 	. = ..()
+	if(!mod.wearer)
+		return
 	mod.wearer.infiltrator_active = FALSE
-	mod.wearer.set_bark(mod.wearer.client.prefs.bark_id)
+	mod.wearer.set_bark(stored_bark_id || mod.wearer.client?.prefs.bark_id)
+	stored_bark_id = null
 	mod.wearer.digitalinvis = FALSE
 	mod.wearer.digitalcamo = FALSE
 
@@ -101,7 +107,7 @@
 	righthand_file = null
 	icon_state = "power_kick"
 	force = 35
-	armour_penetration = 100 //за 5 ТК норм.
+	armour_penetration = MELEE_AP_EXCLUSIVE  //за 5 ТК норм.
 	wound_bonus = 20
 
 /obj/item/melee/baseball_bat/powerkick/attack(mob/living/target, mob/living/user)
@@ -161,7 +167,7 @@
 	name = "Improved Cloaking module"
 	desc = "Улучшенная версия прототипа модуля визуальной маскировки для модулярного костюма, которая \
 	, к сожалению, не обрела массового производства. Маскировка этого модуля более стабильная и не сбивается \
-	при столкновениях."
+	при столкновениях, но атака, касание, удар или попавший в вас снаряд всё так же её снимают."
 	icon_state = "cloak_traitor"
 	bumpoff = FALSE
 	stealth_alpha = 35
@@ -180,7 +186,7 @@
 	name = "Spider Clan stealth module"
 	desc = "Улучшенная версия прототипа модуля визуальной маскировки для модулярного костюма, которая \
 	, к сожалению, не обрела массового производства. Маскировка этого модуля более стабильная и не сбивается \
-	при столкновениях."
+	при столкновениях, но атака, касание, удар или попавший в вас снаряд всё так же её снимают."
 	icon_state = "cloak_ninja"
 	bumpoff = FALSE
 	stealth_alpha = 10

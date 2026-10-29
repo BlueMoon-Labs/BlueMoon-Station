@@ -119,7 +119,7 @@
 	desc = "It's a robust baseball hat in tasteful red colour."
 	icon_state = "secsoft"
 	soft_type = "sec"
-	armor = list(MELEE = 30, BULLET = 25, LASER = 25, ENERGY = 10, BOMB = 25, BIO = 0, RAD = 0, FIRE = 20, ACID = 50, WOUND = 10)
+	armor_type = /datum/armor/soft_head_sec
 	strip_delay = 60
 	dog_fashion = null
 
@@ -137,6 +137,6 @@
 	soft_type = "baseball"
 	item_state = "baseballsoft"
 	flags_inv = HIDEEYES|HIDEFACE
-	armor = list(MELEE = 35, BULLET = 35, LASER = 25, ENERGY = 10, BOMB = 25, BIO = 0, RAD = 0, FIRE = 20, ACID = 90, WOUND = 5)
+	armor_type = /datum/armor/baseball_and_inteq_baseball
 	strip_delay = 90 //You dont take a Major Leage cap
 	dog_fashion = null

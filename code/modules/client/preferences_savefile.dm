@@ -5,7 +5,7 @@
 //	You do not need to raise this if you are adding new values that have sane defaults.
 //	Only raise this value when changing the meaning/format/name/layout of an existing value
 //	where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX	83
+#define SAVEFILE_VERSION_MAX	87
 
 /// Обычная запись идёт прямо в документ; экспорт и миграции сохраняют путь через savefile.
 #define WRITE_PLAYER_SAVE(target, document, key, value) if(document) { document.write(key, value); } else { WRITE_FILE(target[key], value); }
@@ -165,6 +165,13 @@
 
 		exp -= "Expeditor"
 		exp -= "Vanguard operative"
+
+	// уже включённая антаг-роль поднимает порог согласия, так что HK-47 его не меняет
+	if(current_version < 85 && antag_opt_in_prefs_force_minimum(src) && !(ROLE_HK47 in be_special))
+		be_special[ROLE_HK47] = ANTAG_PRIORITY_HIGH
+
+	if(current_version < 86 && antag_opt_in_prefs_force_minimum(src) && !(ROLE_BROTHER in be_special))
+		be_special[ROLE_BROTHER] = ANTAG_PRIORITY_HIGH
 
 /datum/preferences/proc/update_character(current_version, savefile/S)
 	if(current_version < 19)
@@ -521,6 +528,11 @@
 			features["xenodorsal"] = "None"
 			features["xenotail"] = "None"
 
+	// Quirk selections are saved by display name. Preserve the localized selection.
+	if(current_version < 84 && islist(all_quirks) && ("Echolocation" in all_quirks))
+		all_quirks -= "Echolocation"
+		all_quirks |= /datum/quirk/echolocation::name
+
 /datum/preferences/proc/load_path(ckey,filename="preferences.sav")
 	if(!ckey)
 		return
@@ -564,6 +576,7 @@
 	READ_PLAYER_SAVE(S, document, "ooccolor", ooccolor)
 	READ_PLAYER_SAVE(S, document, "aooccolor", aooccolor)
 	READ_PLAYER_SAVE(S, document, "lastchangelog", lastchangelog)
+	READ_PLAYER_SAVE(S, document, "lastchangelog_date", lastchangelog_date)
 	READ_PLAYER_SAVE(S, document, "UI_style", UI_style)
 	READ_PLAYER_SAVE(S, document, "outline_color", outline_color)
 	READ_PLAYER_SAVE(S, document, "outline_enabled", outline_enabled)
@@ -584,7 +597,14 @@
 	READ_PLAYER_SAVE(S, document, "tgui_swapped_buttons", tgui_swapped_buttons)
 	READ_PLAYER_SAVE(S, document, "tgui_panel_theme", tgui_panel_theme)
 	READ_PLAYER_SAVE(S, document, "tgui_panel_state", tgui_panel_state)
+	READ_PLAYER_SAVE(S, document, "character_setup_theme", character_setup_theme)
+	READ_PLAYER_SAVE(S, document, "character_setup_single_view", character_setup_single_view)
+	READ_PLAYER_SAVE(S, document, "character_setup_autosave", character_setup_autosave)
+	READ_PLAYER_SAVE(S, document, "character_setup_preset_autosave", character_setup_preset_autosave)
+	READ_PLAYER_SAVE(S, document, "character_slot_name_replace", character_slot_name_replace)
 	READ_PLAYER_SAVE(S, document, "ui_zoom_preferences", ui_zoom_preferences)
+	READ_PLAYER_SAVE(S, document, "vending_layouts", vending_layouts)
+	READ_PLAYER_SAVE(S, document, "podlauncher_presets", podlauncher_presets)
 	READ_PLAYER_SAVE(S, document, "windowflash", windowflashing)
 	READ_PLAYER_SAVE(S, document, "adminhelp_windowflash", adminhelp_windowflash)
 	READ_PLAYER_SAVE(S, document, "windownoise", windownoise)
@@ -592,6 +612,7 @@
 	READ_PLAYER_SAVE(S, document, "action_buttons_hide_on_spawn", action_buttons_hide_on_spawn)
 	READ_PLAYER_SAVE(S, document, "action_buttons_screen_locs", action_buttons_screen_locs)
 	READ_PLAYER_SAVE(S, document, "be_special", be_special)
+	READ_PLAYER_SAVE(S, document, "antag_opt_in_notice_seen", antag_opt_in_notice_seen)
 
 	//SKYRAT CHANGES BEGIN
 	READ_PLAYER_SAVE(S, document, "see_chat_emotes", see_chat_emotes)
@@ -613,6 +634,9 @@
 	READ_PLAYER_SAVE(S, document, "hearted_until", hearted_until)
 	sync_hearted_pref(src)
 	READ_PLAYER_SAVE(S, document, "inquisitive_ghost", inquisitive_ghost)
+	health_analyzer_chat = FALSE
+	READ_PLAYER_SAVE(S, document, "health_analyzer_chat", health_analyzer_chat)
+	health_analyzer_chat = !!health_analyzer_chat
 	READ_PLAYER_SAVE(S, document, "uses_glasses_colour", uses_glasses_colour)
 	READ_PLAYER_SAVE(S, document, "auto_capitalize_enabled", auto_capitalize_enabled)
 	READ_PLAYER_SAVE(S, document, "surgical_disable_radial", surgical_disable_radial) // BLUEMOON ADD
@@ -651,8 +675,6 @@
 	READ_PLAYER_SAVE(S, document, "lighting_lamp_brightness", lighting_lamp_brightness)
 	READ_PLAYER_SAVE(S, document, "lighting_bloom_intensity", lighting_bloom_intensity)
 	READ_PLAYER_SAVE(S, document, "lighting_quality", lighting_quality)
-	READ_PLAYER_SAVE(S, document, "light", light)
-	READ_PLAYER_SAVE(S, document, "glowlevel", glowlevel)
 	READ_PLAYER_SAVE(S, document, "auto_fit_viewport", auto_fit_viewport)
 	READ_PLAYER_SAVE(S, document, "widescreenpref", widescreenpref)
 	READ_PLAYER_SAVE(S, document, "fullscreen", fullscreen)
@@ -731,6 +753,8 @@
 	outline_color = sanitize_hexcolor(outline_color, 6, 1, initial(outline_color))
 	outline_enabled = sanitize_integer(outline_enabled, 0, 1, initial(outline_enabled))
 	lastchangelog = sanitize_text(lastchangelog, initial(lastchangelog))
+	lastchangelog_date = sanitize_changelog_date(lastchangelog_date)
+	antag_opt_in_notice_seen = sanitize_integer(antag_opt_in_notice_seen, FALSE, TRUE, FALSE)
 	UI_style = sanitize_inlist(UI_style, GLOB.available_ui_styles, GLOB.available_ui_styles[1])
 	hotkeys = sanitize_integer(hotkeys, 0, 1, initial(hotkeys))
 	chat_on_map = sanitize_integer(chat_on_map, 0, 1, initial(chat_on_map))
@@ -746,6 +770,22 @@
 	tgui_swapped_buttons	= sanitize_integer(tgui_swapped_buttons, 0, 1, initial(tgui_swapped_buttons))
 	tgui_panel_theme = sanitize_inlist(tgui_panel_theme, list("default", "light", "dark"), initial(tgui_panel_theme))
 	tgui_panel_state = sanitize_text(tgui_panel_state, initial(tgui_panel_state))
+	character_setup_theme = valid_setup_theme(character_setup_theme) ? character_setup_theme : initial(character_setup_theme)
+	character_setup_single_view = sanitize_integer(character_setup_single_view, FALSE, TRUE, initial(character_setup_single_view))
+	character_setup_autosave = sanitize_integer(character_setup_autosave, FALSE, TRUE, initial(character_setup_autosave))
+	character_setup_preset_autosave = sanitize_integer(character_setup_preset_autosave, FALSE, TRUE, initial(character_setup_preset_autosave))
+	character_slot_name_replace = sanitize_integer(character_slot_name_replace, FALSE, TRUE, initial(character_slot_name_replace))
+	var/list/sanitized_vending_layouts = list()
+	if(islist(vending_layouts))
+		for(var/machine_key in vending_layouts)
+			if(!istext(machine_key))
+				continue
+			var/machine_type = text2path(machine_key)
+			if(!(ispath(machine_type, /obj/machinery/vending) || ispath(machine_type, /obj/machinery/smartfridge) || ispath(machine_type, /obj/machinery/equipment_vendor)))
+				continue
+			if(vending_layouts[machine_key] in list("grid", "list"))
+				sanitized_vending_layouts[machine_key] = vending_layouts[machine_key]
+	vending_layouts = sanitized_vending_layouts
 	if(length(tgui_panel_state) > 16384)
 		tgui_panel_state = initial(tgui_panel_state)
 	if(!islist(ui_zoom_preferences))
@@ -805,8 +845,6 @@
 	lighting_lamp_brightness = sanitize_integer(lighting_lamp_brightness, LIGHTING_LAMP_BRIGHTNESS_MIN, LIGHTING_LAMP_BRIGHTNESS_MAX, LIGHTING_LAMP_BRIGHTNESS_DEFAULT)
 	lighting_bloom_intensity = sanitize_integer(lighting_bloom_intensity, LIGHTING_BLOOM_INTENSITY_MIN, LIGHTING_BLOOM_INTENSITY_MAX, LIGHTING_BLOOM_INTENSITY_DEFAULT)
 	lighting_quality = sanitize_integer(lighting_quality, LIGHTING_QUALITY_FAST, LIGHTING_QUALITY_HIGH, LIGHTING_QUALITY_DEFAULT)
-	light = sanitize_integer(light, 0, 7, initial(light))
-	glowlevel = sanitize_integer(glowlevel, GLOW_HIGH, GLOW_DISABLE, initial(glowlevel))
 	auto_fit_viewport = sanitize_integer(auto_fit_viewport, 0, 1, initial(auto_fit_viewport))
 	widescreenpref = sanitize_integer(widescreenpref, 0, 1, initial(widescreenpref))
 	fullscreen = sanitize_integer(fullscreen, 0, 1, initial(fullscreen))
@@ -834,6 +872,7 @@
 	key_bindings = sanitize_islist(key_bindings, list())
 	modless_key_bindings = sanitize_islist(modless_key_bindings, list())
 	favorite_outfits = SANITIZE_LIST(favorite_outfits)
+	podlauncher_presets = SANITIZE_LIST(podlauncher_presets)
 	color_presets_tint = sanitize_color_preset_keys(color_presets_tint) // BLUEMOON ADD
 	color_presets_hsv = sanitize_color_preset_keys(color_presets_hsv) // BLUEMOON ADD
 	color_presets_matrix = sanitize_color_preset_keys(color_presets_matrix) // BLUEMOON ADD
@@ -1183,6 +1222,7 @@
 	WRITE_PLAYER_SAVE(S, document, "ooccolor", ooccolor)
 	WRITE_PLAYER_SAVE(S, document, "aooccolor", aooccolor)
 	WRITE_PLAYER_SAVE(S, document, "lastchangelog", lastchangelog)
+	WRITE_PLAYER_SAVE(S, document, "lastchangelog_date", lastchangelog_date)
 	WRITE_PLAYER_SAVE(S, document, "UI_style", UI_style)
 	WRITE_PLAYER_SAVE(S, document, "outline_enabled", outline_enabled)
 	WRITE_PLAYER_SAVE(S, document, "outline_color", outline_color)
@@ -1203,7 +1243,13 @@
 	WRITE_PLAYER_SAVE(S, document, "tgui_swapped_buttons", tgui_swapped_buttons)
 	WRITE_PLAYER_SAVE(S, document, "tgui_panel_theme", tgui_panel_theme)
 	WRITE_PLAYER_SAVE(S, document, "tgui_panel_state", tgui_panel_state)
+	WRITE_PLAYER_SAVE(S, document, "character_setup_single_view", character_setup_single_view)
+	WRITE_PLAYER_SAVE(S, document, "character_setup_autosave", character_setup_autosave)
+	WRITE_PLAYER_SAVE(S, document, "character_setup_preset_autosave", character_setup_preset_autosave)
+	WRITE_PLAYER_SAVE(S, document, "character_slot_name_replace", character_slot_name_replace)
 	WRITE_PLAYER_SAVE(S, document, "ui_zoom_preferences", ui_zoom_preferences)
+	WRITE_PLAYER_SAVE(S, document, "vending_layouts", vending_layouts)
+	WRITE_PLAYER_SAVE(S, document, "podlauncher_presets", podlauncher_presets)
 	WRITE_PLAYER_SAVE(S, document, "windowflash", windowflashing)
 	WRITE_PLAYER_SAVE(S, document, "adminhelp_windowflash", adminhelp_windowflash)
 	WRITE_PLAYER_SAVE(S, document, "windownoise", windownoise)
@@ -1212,6 +1258,7 @@
 	// Одиночный путь кладёт в буфер уже санитизированный список - пишем тем же видом.
 	WRITE_PLAYER_SAVE(S, document, "action_buttons_screen_locs", sanitize_action_button_positions(action_buttons_screen_locs))
 	WRITE_PLAYER_SAVE(S, document, "be_special", be_special)
+	WRITE_PLAYER_SAVE(S, document, "antag_opt_in_notice_seen", antag_opt_in_notice_seen)
 	WRITE_PLAYER_SAVE(S, document, "default_slot", default_slot)
 	WRITE_PLAYER_SAVE(S, document, "toggles", toggles)
 	WRITE_PLAYER_SAVE(S, document, "sound_toggles", sound_toggles)
@@ -1226,6 +1273,7 @@
 	WRITE_PLAYER_SAVE(S, document, "ignoring", ignoring)
 	WRITE_PLAYER_SAVE(S, document, "hearted_until", (hearted_until > world.realtime ? hearted_until : null))
 	WRITE_PLAYER_SAVE(S, document, "inquisitive_ghost", inquisitive_ghost)
+	WRITE_PLAYER_SAVE(S, document, "health_analyzer_chat", health_analyzer_chat)
 	WRITE_PLAYER_SAVE(S, document, "uses_glasses_colour", uses_glasses_colour)
 	WRITE_PLAYER_SAVE(S, document, "auto_capitalize_enabled", auto_capitalize_enabled)
 	WRITE_PLAYER_SAVE(S, document, "surgical_disable_radial", surgical_disable_radial) // BLUEMOON ADD
@@ -1264,8 +1312,6 @@
 	WRITE_PLAYER_SAVE(S, document, "lighting_lamp_brightness", lighting_lamp_brightness)
 	WRITE_PLAYER_SAVE(S, document, "lighting_bloom_intensity", lighting_bloom_intensity)
 	WRITE_PLAYER_SAVE(S, document, "lighting_quality", lighting_quality)
-	WRITE_PLAYER_SAVE(S, document, "light", light)
-	WRITE_PLAYER_SAVE(S, document, "glowlevel", glowlevel)
 	WRITE_PLAYER_SAVE(S, document, "auto_fit_viewport", auto_fit_viewport)
 	WRITE_PLAYER_SAVE(S, document, "hud_toggle_flash", hud_toggle_flash)
 	WRITE_PLAYER_SAVE(S, document, "hud_toggle_color", hud_toggle_color)
@@ -1361,7 +1407,7 @@
 	if(!bypass_cooldown)
 		if(world.time < loadcharcooldown) //This is before the check to see if the filepath exists to ensure that BYOND can't get hung up on read attempts when the hard drive is a little slow
 			if(istype(parent))
-				to_chat(parent, "<span class='warning'>You're attempting to load your character a little too fast. Wait half a second, then try again.</span>")
+				to_chat(parent, span_warning("Вы слишком быстро загружаете персонажей. Подождите полсекунды и попробуйте снова."))
 			return "SLOW THE FUCK DOWN" //the reason this isn't null is to make sure that people don't have their character slots overridden by random chars if they accidentally double-click a slot
 		COOLDOWN_START(src, loadcharcooldown, PREF_LOAD_COOLDOWN)
 	if(!provided && !player_save_exists())
@@ -1455,6 +1501,9 @@
 "balls_efficiency" = CUM_EFFICIENCY,
 "has_breasts" = FALSE,
 "breasts_color" = "ffffff",
+"breasts_sprite_variant" = "New",
+"breasts_nipples" = FALSE,
+"breasts_nipples_color" = "ffffff",
 "breasts_size" = BREASTS_SIZE_DEF,
 "breasts_shape" = DEF_BREASTS_SHAPE,
 "breasts_producing" = FALSE,
@@ -1541,6 +1590,7 @@
 
 	//Character
 	READ_PLAYER_SAVE(S, document, "real_name", real_name)
+	READ_PLAYER_SAVE(S, document, "character_slot_name", character_slot_name)
 	READ_PLAYER_SAVE(S, document, "nameless", nameless)
 	READ_PLAYER_SAVE(S, document, "custom_species", custom_species)
 	READ_PLAYER_SAVE(S, document, "name_is_always_random", be_random_name)
@@ -1598,6 +1648,7 @@
 	READ_PLAYER_SAVE(S, document, "summon_nickname", summon_nickname) // BLUEMOON ADD - выбор прозвища для призываемого
 	READ_PLAYER_SAVE(S, document, "phobia_type", phobia_type) // BLUEMOON ADD - выбор фобии для квирка
 	READ_PLAYER_SAVE(S, document, "onelife_death_type", onelife_death_type) // BLUEMOON ADD - форма рассыпания для Одной Жизни
+	READ_PLAYER_SAVE(S, document, "distant_start_enabled", distant_start_enabled)
 	READ_PLAYER_SAVE(S, document, "feature_hardsuit_with_tail", features["hardsuit_with_tail"])
 	READ_PLAYER_SAVE(S, document, "persistent_scars", persistent_scars)
 	READ_PLAYER_SAVE(S, document, "scars1", scars_list["1"])
@@ -1611,6 +1662,22 @@
 		modified_limbs = safe_json_decode(limbmodstr)
 	else
 		modified_limbs = list()
+
+	var/organmodstr
+	READ_PLAYER_SAVE(S, document, "organ_mods", organmodstr)
+	if(length(organmodstr))
+		organ_mods = safe_json_decode(organmodstr)
+	else
+		organ_mods = list()
+
+	var/implantmodstr
+	READ_PLAYER_SAVE(S, document, "implant_mods", implantmodstr)
+	if(length(implantmodstr))
+		implant_mods = safe_json_decode(implantmodstr)
+	else
+		implant_mods = list()
+	sanitize_body_mods()
+	drop_locked_body_mods()
 
 	var/tcgcardstr
 	READ_PLAYER_SAVE(S, document, "tcg_cards", tcgcardstr)
@@ -1724,6 +1791,9 @@
 	READ_PLAYER_SAVE(S, document, "feature_breasts_size", features["breasts_size"])
 	READ_PLAYER_SAVE(S, document, "feature_breasts_shape", features["breasts_shape"])
 	READ_PLAYER_SAVE(S, document, "feature_breasts_color", features["breasts_color"])
+	READ_PLAYER_SAVE(S, document, "feature_breasts_sprite_variant", features["breasts_sprite_variant"]) // BLUEMOON ADD
+	READ_PLAYER_SAVE(S, document, "feature_breasts_nipples", features["breasts_nipples"]) // BLUEMOON ADD
+	READ_PLAYER_SAVE(S, document, "feature_breasts_nipples_color", features["breasts_nipples_color"]) // BLUEMOON ADD
 	READ_PLAYER_SAVE(S, document, "feature_breasts_producing", features["breasts_producing"])
 	READ_PLAYER_SAVE(S, document, "feature_breasts_fluid", features["breasts_fluid"])
 	READ_PLAYER_SAVE(S, document, "feature_breasts_visibility", features["breasts_visibility"])
@@ -1836,7 +1906,7 @@
 		if(!islist(loadout_data))
 			loadout_data = list()
 
-		for(var/loadout_save_index = 1, loadout_save_index <= MAXIMUM_LOADOUT_SAVES, loadout_save_index++)
+		for(var/loadout_save_index = LOADOUT_PRESET_SLOT, loadout_save_index <= MAXIMUM_LOADOUT_SAVES, loadout_save_index++)
 			var/save_key = "SAVE_[loadout_save_index]"
 			var/list/sanitize_entries = loadout_data[save_key]
 			if(islist(sanitize_entries) && LAZYLEN(sanitize_entries))
@@ -1922,6 +1992,8 @@
 
 	//let's remember their last used slot, i'm sure "oops i brought the wrong stuff" will be an issue now
 	READ_PLAYER_SAVE(S, document, "loadout_slot", loadout_slot)
+	READ_PLAYER_SAVE(S, document, "character_presets", character_presets)
+	READ_PLAYER_SAVE(S, document, "active_character_preset", active_character_preset)
 	// BLUEMOON ADD - загрузка переключателя лодаута
 	READ_PLAYER_SAVE(S, document, "loadout_enabled", loadout_enabled)
 	// BLUEMOON ADD END
@@ -1934,6 +2006,7 @@
 	//Sanitize
 
 	real_name = reject_bad_name(real_name, TRUE)
+	character_slot_name = copytext_char(trimtext(strip_control_chars(sanitize_text(character_slot_name))), 1, MAX_NAME_LEN + 1)
 	gender = sanitize_gender(gender, TRUE, TRUE)
 	features["body_model"] = sanitize_gender(features["body_model"], FALSE, FALSE, gender == FEMALE ? FEMALE : MALE)
 	if(!real_name)
@@ -1966,6 +2039,7 @@
 	eye_type = sanitize_inlist(eye_type, GLOB.eye_types, DEFAULT_EYES_TYPE)
 	shriek_type = sanitize_inlist(shriek_type, GLOB.shriek_types, SHRIEK_TYPE_GENERIC) // BLUEMOON ADD
 	onelife_death_type = sanitize_inlist(onelife_death_type, GLOB.onelife_death_forms, "Пепел") // BLUEMOON ADD
+	distant_start_enabled = sanitize_integer(distant_start_enabled, FALSE, TRUE, TRUE)
 	//фобия из старого сейва, которой больше нет в пуле, сбрасывается в "случайную",
 	//но только когда пул уже собран: игроки переподключаются к серверу задолго до
 	//инициализации SStraumas, и проверка по пустому списку стирала живой выбор -
@@ -2067,6 +2141,9 @@
 	features["vag_shape"] = sanitize_inlist(features["vag_shape"], GLOB.vagina_shapes_list, DEF_VAGINA_SHAPE)
 	features["anus_shape"] = sanitize_inlist(features["anus_shape"], GLOB.anus_shapes_list, DEF_ANUS_SHAPE)
 	features["breasts_color"] = sanitize_hexcolor(features["breasts_color"], 6, FALSE, "FFFFFF")
+	features["breasts_sprite_variant"] = sanitize_inlist(features["breasts_sprite_variant"], list("New", "Old"), "New")  // BLUEMOON ADD
+	features["breasts_nipples"] = sanitize_integer(features["breasts_nipples"], 0, 1, FALSE)                    // BLUEMOON ADD
+	features["breasts_nipples_color"] = sanitize_hexcolor(features["breasts_nipples_color"], 6, FALSE, "FFFFFF") // BLUEMOON ADD
 	features["cock_color"] = sanitize_hexcolor(features["cock_color"], 6, FALSE, "FFFFFF")
 	features["balls_color"] = sanitize_hexcolor(features["balls_color"], 6, FALSE, "FFFFFF")
 	features["vag_color"] = sanitize_hexcolor(features["vag_color"], 6, FALSE, "FFFFFF")
@@ -2212,7 +2289,7 @@
 	READ_PLAYER_SAVE(S, document, "pregnancy_breast_growth", pregnancy_breast_growth)
 	//SPLURT EDIT END
 
-	loadout_slot = sanitize_num_clamp(loadout_slot, 1, MAXIMUM_LOADOUT_SAVES, 1, TRUE)
+	loadout_slot = sanitize_num_clamp(loadout_slot, LOADOUT_PRESET_SLOT, MAXIMUM_LOADOUT_SAVES, 1, TRUE)
 	loadout_enabled = sanitize_integer(loadout_enabled, FALSE, TRUE, TRUE) // BLUEMOON ADD
 
 	alt_titles_preferences = SANITIZE_LIST(alt_titles_preferences)
@@ -2224,19 +2301,76 @@
 
 	cit_character_pref_load(S, document)
 
+	READ_PLAYER_SAVE(S, document, "split_eye_colors", split_eye_colors)
+	READ_PLAYER_SAVE(S, document, "bgstate", bgstate)
+	split_eye_colors = sanitize_integer(split_eye_colors, FALSE, TRUE, FALSE)
+	if(!(bgstate in bgstate_options))
+		bgstate = initial(bgstate)
+
 	if(!sand_character_pref_load(S, !provided, document))
 		return FALSE
 
 	splurt_character_pref_load(S, document)
 
 	bluemoon_character_pref_load(S, document)
+	// Вес и остальные настройки слота уже загружены; версия 87 обновляет все слоты при входе.
+	migrate_legacy_body_mods()
+	sanitize_character_presets()
 
 	load_tattoo_prefs(S, document) // BLUEMOON ADD - загрузка татуировок
+	if(!provided)
+		character_setup_ui?.record_saved_state()
+
+	if(parent?.prefs == src)
+		parent.tgui_panel?.emotes_send_list()
 
 	return document || S
 
+/// Имена персонажей по слотам (null - слот пуст) из индекса корня, без открытия анкет.
+/datum/preferences/proc/get_slot_names()
+	if(length(slot_names_cache) == max_save_slots)
+		return slot_names_cache
+	var/list/character_names = player_character_names()
+	if(!islist(character_names))
+		return null
+	var/list/names = new /list(max_save_slots)
+	for(var/slot in 1 to max_save_slots)
+		names[slot] = character_names["character[slot]"]
+	slot_names_cache = names
+	return names
+
+/// Названия слотов в индексе корня нет: читаются из анкет один раз, дальше кэш правится при записи и удалении.
+/datum/preferences/proc/get_slot_custom_names()
+	if(length(slot_custom_names_cache) == max_save_slots)
+		return slot_custom_names_cache
+	var/list/names = get_slot_names()
+	if(!names)
+		return null
+	var/datum/player_save_json/account/storage = get_player_save_storage()
+	var/list/custom_slot_names = new /list(max_save_slots)
+	for(var/slot in 1 to max_save_slots)
+		if(!names[slot])
+			continue
+		var/custom_name = storage.character_field("character[slot]", "character_slot_name")
+		custom_slot_names[slot] = copytext_char(trimtext(strip_control_chars(sanitize_text(custom_name))), 1, MAX_NAME_LEN + 1)
+	slot_custom_names_cache = custom_slot_names
+	return custom_slot_names
+
+// Создаём независимого персонажа через обычный формат сохранения, чтобы не наследовать данные прежнего слота.
+/datum/preferences/proc/create_character(slot)
+	if(!path)
+		return FALSE
+	var/datum/preferences/defaults = new
+	defaults.path = path
+	var/savefile/template = defaults.save_character(bypass_cooldown = TRUE, silent = TRUE, export = TRUE)
+	defaults.path = null
+	qdel(defaults)
+	if(!template || !load_character(slot, bypass_cooldown = TRUE, provided = template))
+		return FALSE
+	return save_character(bypass_cooldown = TRUE, silent = TRUE)
+
 /// Публикует удаление в корне, не пересохраняя остальные анкеты.
-/// Если удаляется текущий слот, переключается на первый непустой или на слот 1.
+/// Если удаляется текущий слот, переключается на первый непустой, а вместо последнего создаёт нового.
 /datum/preferences/proc/delete_character(slot)
 	if(!path)
 		return FALSE
@@ -2275,6 +2409,12 @@
 		S.dir.Remove(key)
 		if(!commit_player_save(S))
 			return FALSE
+	if(char_queue)
+		deltimer(char_queue)
+	char_queue = null
+	char_queue_deadline = 0
+	slot_names_cache = null
+	slot_custom_names_cache = null
 
 	// Если удалили текущий слот - нужно переключиться на другой
 	if(slot == default_slot)
@@ -2289,16 +2429,15 @@
 			if(names["character[i]"])
 				new_slot = i
 				break
-		// Если не нашли непустой - просто переключаемся на слот 1
-		if(!new_slot)
-			new_slot = 1
-		default_slot = new_slot
-		load_character(new_slot)
+		if(new_slot)
+			load_character(new_slot, bypass_cooldown = TRUE)
+		else
+			create_character(1)
 
 	save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 	return TRUE
 
-/datum/preferences/proc/write_character(bypass_cooldown = FALSE, silent = FALSE, export = FALSE, list/patch_context)
+/datum/preferences/proc/write_character(bypass_cooldown = FALSE, silent = FALSE, export = FALSE, list/patch_context, update_active_preset = TRUE)
 	if(!path && !export)
 		return FALSE
 	if(!export && !bypass_cooldown)
@@ -2343,55 +2482,60 @@
 		if(length(S.dir) && savefile_needs_update(S) == -2)
 			player_save_error("Неподдерживаемая версия слота [default_slot]; запись заблокирована")
 			return FALSE
+		// Обновляем только активный пресет при реальном сохранении, без смены выбранного лодаута.
+		if(update_active_preset && character_setup_preset_autosave && istext(active_character_preset) && islist(character_presets[active_character_preset]))
+			character_presets[active_character_preset] = capture_character_preset()
 
 	WRITE_PLAYER_SAVE(S, document, "version"			, SAVEFILE_VERSION_MAX)	//load_character will sanitize any bad data, so assume up-to-date.)
 
 	//Character
-	WRITE_PLAYER_SAVE(S, document, "real_name"							, real_name)
-	WRITE_PLAYER_SAVE(S, document, "nameless"							, nameless)
-	WRITE_PLAYER_SAVE(S, document, "custom_species"						, custom_species)
-	WRITE_PLAYER_SAVE(S, document, "name_is_always_random"				, be_random_name)
-	WRITE_PLAYER_SAVE(S, document, "body_is_always_random"				, be_random_body)
-	WRITE_PLAYER_SAVE(S, document, "gender"								, gender)
-	WRITE_PLAYER_SAVE(S, document, "body_model"							, features["body_model"])
-	WRITE_PLAYER_SAVE(S, document, "body_size"							, features["body_size"])
-	WRITE_PLAYER_SAVE(S, document, "feature_fuzzy"						, features["fuzzy"])
-	WRITE_PLAYER_SAVE(S, document, "age"									, age)
-	WRITE_PLAYER_SAVE(S, document, "hair_color"							, hair_color)
-	WRITE_PLAYER_SAVE(S, document, "facial_hair_color"					, facial_hair_color)
-	WRITE_PLAYER_SAVE(S, document, "eye_type"							, eye_type)
-	WRITE_PLAYER_SAVE(S, document, "shriek_type"							, shriek_type) // BLUEMOON ADD
-	WRITE_PLAYER_SAVE(S, document, "summon_nickname"						, summon_nickname) // BLUEMOON ADD
-	WRITE_PLAYER_SAVE(S, document, "phobia_type"							, phobia_type) // BLUEMOON ADD
-	WRITE_PLAYER_SAVE(S, document, "onelife_death_type"					, onelife_death_type) // BLUEMOON ADD
-	WRITE_PLAYER_SAVE(S, document, "feature_hardsuit_with_tail"			, features["hardsuit_with_tail"])
-	WRITE_PLAYER_SAVE(S, document, "left_eye_color"						, left_eye_color)
-	WRITE_PLAYER_SAVE(S, document, "right_eye_color"						, right_eye_color)
-	WRITE_PLAYER_SAVE(S, document, "use_custom_skin_tone"				, use_custom_skin_tone)
-	WRITE_PLAYER_SAVE(S, document, "pda_ringtone"						, pda_ringtone)
-	WRITE_PLAYER_SAVE(S, document, "pda_theme"							, pda_theme)
-	WRITE_PLAYER_SAVE(S, document, "skin_tone"							, skin_tone)
-	WRITE_PLAYER_SAVE(S, document, "hair_style_name"						, hair_style)
-	WRITE_PLAYER_SAVE(S, document, "facial_style_name"					, facial_hair_style)
-	WRITE_PLAYER_SAVE(S, document, "grad_style"							, grad_style)
-	WRITE_PLAYER_SAVE(S, document, "grad_color"							, grad_color)
-	WRITE_PLAYER_SAVE(S, document, "underwear"							, underwear)
-	WRITE_PLAYER_SAVE(S, document, "undie_color"							, undie_color)
-	WRITE_PLAYER_SAVE(S, document, "undershirt"							, undershirt)
-	WRITE_PLAYER_SAVE(S, document, "shirt_color"							, shirt_color)
-	WRITE_PLAYER_SAVE(S, document, "socks"								, socks)
-	WRITE_PLAYER_SAVE(S, document, "socks_color"							, socks_color)
-	WRITE_PLAYER_SAVE(S, document, "backbag"								, backbag)
-	WRITE_PLAYER_SAVE(S, document, "jumpsuit_style"						, jumpsuit_style)
-	WRITE_PLAYER_SAVE(S, document, "uplink_loc"							, uplink_spawn_loc)
-	WRITE_PLAYER_SAVE(S, document, "species"								, pref_species.id)
-	WRITE_PLAYER_SAVE(S, document, "custom_speech_verb"					, custom_speech_verb)
-	WRITE_PLAYER_SAVE(S, document, "custom_speech_verb_ru"				, custom_speech_verb_ru)
-	WRITE_PLAYER_SAVE(S, document, "custom_tongue"						, custom_tongue)
-	WRITE_PLAYER_SAVE(S, document, "bark_id"								, bark_id)
-	WRITE_PLAYER_SAVE(S, document, "bark_speed"							, bark_speed)
-	WRITE_PLAYER_SAVE(S, document, "bark_pitch"							, bark_pitch)
-	WRITE_PLAYER_SAVE(S, document, "bark_variance"						, bark_variance)
+	WRITE_PLAYER_SAVE(S, document, "real_name", real_name)
+	WRITE_PLAYER_SAVE(S, document, "character_slot_name", character_slot_name)
+	WRITE_PLAYER_SAVE(S, document, "nameless", nameless)
+	WRITE_PLAYER_SAVE(S, document, "custom_species", custom_species)
+	WRITE_PLAYER_SAVE(S, document, "name_is_always_random", be_random_name)
+	WRITE_PLAYER_SAVE(S, document, "body_is_always_random", be_random_body)
+	WRITE_PLAYER_SAVE(S, document, "gender", gender)
+	WRITE_PLAYER_SAVE(S, document, "body_model", features["body_model"])
+	WRITE_PLAYER_SAVE(S, document, "body_size", features["body_size"])
+	WRITE_PLAYER_SAVE(S, document, "feature_fuzzy", features["fuzzy"])
+	WRITE_PLAYER_SAVE(S, document, "age", age)
+	WRITE_PLAYER_SAVE(S, document, "hair_color", hair_color)
+	WRITE_PLAYER_SAVE(S, document, "facial_hair_color", facial_hair_color)
+	WRITE_PLAYER_SAVE(S, document, "eye_type", eye_type)
+	WRITE_PLAYER_SAVE(S, document, "shriek_type", shriek_type) // BLUEMOON ADD
+	WRITE_PLAYER_SAVE(S, document, "summon_nickname", summon_nickname) // BLUEMOON ADD
+	WRITE_PLAYER_SAVE(S, document, "phobia_type", phobia_type) // BLUEMOON ADD
+	WRITE_PLAYER_SAVE(S, document, "onelife_death_type", onelife_death_type) // BLUEMOON ADD
+	WRITE_PLAYER_SAVE(S, document, "distant_start_enabled", distant_start_enabled)
+	WRITE_PLAYER_SAVE(S, document, "feature_hardsuit_with_tail", features["hardsuit_with_tail"])
+	WRITE_PLAYER_SAVE(S, document, "left_eye_color", left_eye_color)
+	WRITE_PLAYER_SAVE(S, document, "right_eye_color", right_eye_color)
+	WRITE_PLAYER_SAVE(S, document, "use_custom_skin_tone", use_custom_skin_tone)
+	WRITE_PLAYER_SAVE(S, document, "pda_ringtone", pda_ringtone)
+	WRITE_PLAYER_SAVE(S, document, "pda_theme", pda_theme)
+	WRITE_PLAYER_SAVE(S, document, "skin_tone", skin_tone)
+	WRITE_PLAYER_SAVE(S, document, "hair_style_name", hair_style)
+	WRITE_PLAYER_SAVE(S, document, "facial_style_name", facial_hair_style)
+	WRITE_PLAYER_SAVE(S, document, "grad_style", grad_style)
+	WRITE_PLAYER_SAVE(S, document, "grad_color", grad_color)
+	WRITE_PLAYER_SAVE(S, document, "underwear", underwear)
+	WRITE_PLAYER_SAVE(S, document, "undie_color", undie_color)
+	WRITE_PLAYER_SAVE(S, document, "undershirt", undershirt)
+	WRITE_PLAYER_SAVE(S, document, "shirt_color", shirt_color)
+	WRITE_PLAYER_SAVE(S, document, "socks", socks)
+	WRITE_PLAYER_SAVE(S, document, "socks_color", socks_color)
+	WRITE_PLAYER_SAVE(S, document, "backbag", backbag)
+	WRITE_PLAYER_SAVE(S, document, "jumpsuit_style", jumpsuit_style)
+	WRITE_PLAYER_SAVE(S, document, "uplink_loc", uplink_spawn_loc)
+	WRITE_PLAYER_SAVE(S, document, "species", pref_species.id)
+	WRITE_PLAYER_SAVE(S, document, "custom_speech_verb", custom_speech_verb)
+	WRITE_PLAYER_SAVE(S, document, "custom_speech_verb_ru", custom_speech_verb_ru)
+	WRITE_PLAYER_SAVE(S, document, "custom_tongue", custom_tongue)
+	WRITE_PLAYER_SAVE(S, document, "bark_id", bark_id)
+	WRITE_PLAYER_SAVE(S, document, "bark_speed", bark_speed)
+	WRITE_PLAYER_SAVE(S, document, "bark_pitch", bark_pitch)
+	WRITE_PLAYER_SAVE(S, document, "bark_variance", bark_variance)
 
 	// records
 	WRITE_PLAYER_SAVE(S, document, "security_records"					, security_records)
@@ -2448,6 +2592,9 @@
 	WRITE_PLAYER_SAVE(S, document, "feature_breasts_size", features["breasts_size"])
 	WRITE_PLAYER_SAVE(S, document, "feature_breasts_shape", features["breasts_shape"])
 	WRITE_PLAYER_SAVE(S, document, "feature_breasts_color", features["breasts_color"])
+	WRITE_PLAYER_SAVE(S, document, "feature_breasts_sprite_variant", features["breasts_sprite_variant"])
+	WRITE_PLAYER_SAVE(S, document, "feature_breasts_nipples", features["breasts_nipples"])
+	WRITE_PLAYER_SAVE(S, document, "feature_breasts_nipples_color", features["breasts_nipples_color"])
 	WRITE_PLAYER_SAVE(S, document, "feature_breasts_fluid", features["breasts_fluid"])
 	WRITE_PLAYER_SAVE(S, document, "feature_breasts_producing", features["breasts_producing"])
 	WRITE_PLAYER_SAVE(S, document, "feature_breasts_visibility", features["breasts_visibility"])
@@ -2576,8 +2723,12 @@
 	WRITE_PLAYER_SAVE(S, document, "scars4"						, scars_list["4"])
 	WRITE_PLAYER_SAVE(S, document, "scars5"						, scars_list["5"])
 	if(islist(modified_limbs))
-		WRITE_PLAYER_SAVE(S, document, "modified_limbs"				, safe_json_encode(modified_limbs))
-	WRITE_PLAYER_SAVE(S, document, "chosen_limb_id",   chosen_limb_id)
+		WRITE_PLAYER_SAVE(S, document, "modified_limbs", safe_json_encode(modified_limbs))
+	if(islist(organ_mods))
+		WRITE_PLAYER_SAVE(S, document, "organ_mods", safe_json_encode(organ_mods))
+	if(islist(implant_mods))
+		WRITE_PLAYER_SAVE(S, document, "implant_mods", safe_json_encode(implant_mods))
+	WRITE_PLAYER_SAVE(S, document, "chosen_limb_id", chosen_limb_id)
 	//SPLURT EDIT BEGIN
 	WRITE_PLAYER_SAVE(S, document, "virile", virility)
 	WRITE_PLAYER_SAVE(S, document, "fertile", fertility)
@@ -2602,6 +2753,8 @@
 	else
 		WRITE_PLAYER_SAVE(S, document, "loadout", safe_json_encode(list()))
 	WRITE_PLAYER_SAVE(S, document, "loadout_slot", loadout_slot)
+	WRITE_PLAYER_SAVE(S, document, "character_presets", character_presets)
+	WRITE_PLAYER_SAVE(S, document, "active_character_preset", active_character_preset)
 	WRITE_PLAYER_SAVE(S, document, "loadout_enabled", loadout_enabled) // BLUEMOON ADD
 
 	if(length(tcg_cards))
@@ -2613,6 +2766,9 @@
 		WRITE_PLAYER_SAVE(S, document, "tcg_decks", safe_json_encode(tcg_decks))
 	else
 		WRITE_PLAYER_SAVE(S, document, "tcg_decks", safe_json_encode(list()))
+
+	WRITE_PLAYER_SAVE(S, document, "split_eye_colors", split_eye_colors)
+	WRITE_PLAYER_SAVE(S, document, "bgstate", bgstate)
 
 	cit_character_pref_save(S)
 

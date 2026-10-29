@@ -9,12 +9,15 @@ import DOMPurify from 'dompurify';
 
 import { flushSaveToServer, getLastSavedAt, scheduleSaveToServer } from '../serverState';
 import { loadSettings, updateSettings } from '../settings/actions';
-import { CHAT_ANIM_SPEEDS, MESSAGE_STYLES } from '../settings/constants';
+import { MESSAGE_STYLES } from '../settings/constants';
+import { RADIO_JOB_DEFAULTS } from '../settings/radioJobs';
 import { selectSettings } from '../settings/selectors';
 import { addChatPage, changeChatPage, changeScrollTracking, loadChat, rebuildChat, removeChatPage, saveChatToDisk, toggleAcceptedType, updateChatPage, updateMessageCount } from './actions';
-import { MAX_PERSISTED_MESSAGES, MESSAGE_SAVE_INTERVAL } from './constants';
-import { createMessage, serializeMessage } from './model';
+import { HISTORY_LOAD_STEP, HISTORY_MAX_MESSAGES, HISTORY_SEGMENT_SIZE, MAX_PERSISTED_MESSAGES, MESSAGE_SAVE_INTERVAL } from './constants';
+import { ChatHistory } from './history';
+import { createMessage } from './model';
 import { chatRenderer } from './renderer';
+import { getChatCustomProps } from './rootAppearance';
 import { selectChat, selectCurrentChatPage } from './selectors';
 
 // List of blacklisted tags
@@ -24,41 +27,130 @@ const FORBID_TAGS = [
   'video',
 ];
 
-const saveChatToStorage = async store => {
-  const state = selectChat(store.getState());
-  const savedAt = getLastSavedAt();
-  const fromIndex = Math.max(0,
-    chatRenderer.messages.length - MAX_PERSISTED_MESSAGES);
-  const messages = chatRenderer.messages
-    .slice(fromIndex)
-    .map(message => serializeMessage(message));
-  storage.set('chat-state', { ...state, savedAt });
-  storage.set('chat-messages', messages);
+export const chatHistory = new ChatHistory(storage, {
+  segmentSize: HISTORY_SEGMENT_SIZE,
+  maxMessages: HISTORY_MAX_MESSAGES,
+});
+
+// Пока история не поднята, свежим сообщениям не раздаём номера: иначе
+// разделитель переподключения получил бы номер позже них и при следующем
+// входе встал бы не на своё место.
+let historyRestored = false;
+
+const saveChatToStorage = async (state, savedAt) => {
+  await Promise.all([
+    storage.set('chat-state', { ...state, savedAt }),
+    historyRestored && chatHistory.save(chatRenderer.messages),
+  ]);
+};
+
+const sanitizeStoredMessages = messages => {
+  for (const message of messages) {
+    if (message.html) {
+      message.html = DOMPurify.sanitize(message.html, {
+        FORBID_TAGS,
+      });
+    }
+  }
+  return messages;
+};
+
+const getOldestLogId = () => {
+  let oldest;
+  for (const message of chatRenderer.messages) {
+    if (Number.isInteger(message.logId)
+      && (oldest === undefined || message.logId < oldest)) {
+      oldest = message.logId;
+    }
+  }
+  return oldest;
+};
+
+export const hasOlderChatHistory = () => (
+  historyRestored && chatHistory.hasOlder(getOldestLogId())
+);
+
+let loadingOlder = null;
+
+/**
+ * Подгружает из истории HISTORY_LOAD_STEP сообщений старше самого старого
+ * в чате. Повторный клик, пока идёт загрузка, ждёт ту же загрузку.
+ */
+export const loadOlderChatHistory = () => {
+  if (!loadingOlder) {
+    loadingOlder = (async () => {
+      try {
+        const messages = await chatHistory.load(HISTORY_LOAD_STEP,
+          getOldestLogId());
+        if (messages.length) {
+          chatRenderer.prependHistory(sanitizeStoredMessages(messages));
+        }
+        return messages.length;
+      }
+      catch (err) {
+        console.error('Failed to load chat history:', err);
+        return 0;
+      }
+      finally {
+        loadingOlder = null;
+      }
+    })();
+  }
+  return loadingOlder;
+};
+
+// Сохранение раз в MESSAGE_SAVE_INTERVAL пишет состояние вкладок и куски
+// истории с новыми сообщениями; если с прошлого раза ничего не поменялось,
+// не пишем.
+const createChatSaver = () => {
+  let last = null;
+  return async (store, force = false) => {
+    const state = selectChat(store.getState());
+    const savedAt = getLastSavedAt();
+    const version = chatRenderer.messagesVersion;
+    if (!force && last && last.state === state
+      && last.savedAt === savedAt && last.version === version) {
+      return;
+    }
+    try {
+      await saveChatToStorage(state, savedAt);
+      last = { state, savedAt, version };
+    }
+    catch (err) {
+      // Запомненное не обновляем: следующий тик повторит запись.
+      console.error('Failed to save chat history:', err);
+    }
+  };
 };
 
 // Server state tracking for smart merge with browser storage
 let serverChatLoaded = false;
 let serverSavedAt = 0;
 
+const restoreHistory = async () => {
+  try {
+    return await chatHistory.load(MAX_PERSISTED_MESSAGES);
+  }
+  catch (err) {
+    console.error('Failed to restore chat history:', err);
+    return [];
+  }
+};
+
 const loadChatFromStorage = async store => {
   const [state, messages] = await Promise.all([
     storage.get('chat-state'),
-    storage.get('chat-messages'),
+    restoreHistory(),
   ]);
   // Discard incompatible versions
   if (state && state.version <= 4) {
+    historyRestored = true;
     store.dispatch(loadChat());
     return;
   }
   // Always try to restore messages from browser storage (not server-persisted)
-  if (messages) {
-    for (let message of messages) {
-      if (message.html) {
-        message.html = DOMPurify.sanitize(message.html, {
-          FORBID_TAGS,
-        });
-      }
-    }
+  if (messages.length) {
+    sanitizeStoredMessages(messages);
     const batch = [
       ...messages,
       createMessage({
@@ -69,6 +161,7 @@ const loadChatFromStorage = async store => {
       prepend: true,
     });
   }
+  historyRestored = true;
   // Compare server vs browser storage by savedAt counter.
   // Use the fresher copy; if equal or both missing, server wins (backward compat).
   const browserSavedAt = (state && typeof state.savedAt === 'number')
@@ -79,6 +172,8 @@ const loadChatFromStorage = async store => {
   }
   store.dispatch(loadChat(state));
 };
+
+const RADIO_JOB_KEYS = Object.keys(RADIO_JOB_DEFAULTS);
 
 const anyChanged = (prev, next, keys) => {
   if (!prev) {
@@ -141,6 +236,21 @@ const createApplySettings = () => {
         settings.chatTextColor,
         settings.chatAccentColor);
     }
+    if (anyChanged(prev, settings, ['showRadioJobs'])) {
+      chatRenderer.setRadioJobsVisible(settings.showRadioJobs !== false);
+    }
+    if (anyChanged(prev, settings, ['newMessagesMarker'])) {
+      chatRenderer.setNewMessagesMarker(settings.newMessagesMarker !== false);
+    }
+    if (anyChanged(prev, settings, RADIO_JOB_KEYS)) {
+      chatRenderer.setRadioJobStyle({
+        radioJobColorMode: settings.radioJobColorMode,
+        radioJobHeadMark: settings.radioJobHeadMark,
+        radioJobColorNames: settings.radioJobColorNames,
+        radioJobIcons: settings.radioJobIcons,
+        radioJobColors: settings.radioJobColors,
+      });
+    }
     if (anyChanged(prev, settings, ['styleOverrides', 'spanAnimations'])) {
       // Normalize so the renderer always sees every known style id and
       // clears stale properties for styles that lost their override.
@@ -152,32 +262,19 @@ const createApplySettings = () => {
         normalized,
         settings.spanAnimations !== false);
     }
-
-    // Animation speed
-    const speedDef = CHAT_ANIM_SPEEDS.find(
-      s => s.id === settings.chatAnimSpeed);
-    const animSpeed = speedDef?.value || '200ms';
-
-    // Text glow
-    let glowValue = null;
-    const glowColor = settings.textGlowColor
-      || settings.chatAccentColor || '#ffdd44';
-    if (settings.textGlow === 'subtle') {
-      glowValue = '0 0 4px ' + glowColor;
+    if (anyChanged(prev, settings, ['typeOverrides'])) {
+      chatRenderer.setTypeOverrides(settings.typeOverrides || {});
     }
-    else if (settings.textGlow === 'strong') {
-      glowValue = '0 0 10px ' + glowColor
-        + ', 0 0 20px ' + glowColor;
+    if (anyChanged(prev, settings, ['gameEffects', 'gameEffectsEnabled'])) {
+      chatRenderer.setGameEffects(
+        settings.gameEffects || {},
+        settings.gameEffectsEnabled !== false);
+    }
+    if (anyChanged(prev, settings, ['settleOldAnimations'])) {
+      chatRenderer.setSettleOld(settings.settleOldAnimations !== false);
     }
 
-    const nextCustomProps = {
-      '--chat-anim-speed': animSpeed,
-      '--chat-glow': glowValue,
-      '--chat-msg-spacing': settings.messageSpacing + 'px',
-      '--chat-font-weight': String(settings.fontWeight),
-      '--chat-letter-spacing': settings.letterSpacing + 'px',
-      '--chat-border-radius': settings.borderRadius + 'px',
-    };
+    const nextCustomProps = getChatCustomProps(settings);
     // Only push CSS custom properties that actually changed value.
     let changedProps = null;
     for (const [key, value] of Object.entries(nextCustomProps)) {
@@ -213,6 +310,7 @@ export const chatMiddleware = store => {
   let initialized = false;
   let loaded = false;
   const applySettings = createApplySettings();
+  const saveChat = createChatSaver();
   chatRenderer.events.on('batchProcessed', countByType => {
     // Use this flag to workaround unread messages caused by
     // loading them from storage. Side effect of that, is that
@@ -224,7 +322,7 @@ export const chatMiddleware = store => {
   chatRenderer.events.on('scrollTrackingChanged', scrollTracking => {
     store.dispatch(changeScrollTracking(scrollTracking));
   });
-  setInterval(() => saveChatToStorage(store), MESSAGE_SAVE_INTERVAL);
+  setInterval(() => saveChat(store), MESSAGE_SAVE_INTERVAL);
   return next => action => {
     const { type, payload } = action;
     if (!initialized) {
@@ -320,7 +418,7 @@ export const chatMiddleware = store => {
       return;
     }
     if (type === 'roundrestart') {
-      saveChatToStorage(store);
+      saveChat(store, true);
       flushSaveToServer(store);
       return next(action);
     }

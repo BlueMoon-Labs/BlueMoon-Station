@@ -71,14 +71,7 @@
 	return ..()
 
 /obj/Initialize(mapload)
-	if (islist(armor))
-		var/datum/armor/blank_armor = new()
-		armor = blank_armor.generate_new_with_specific(armor)
-		qdel(blank_armor)
-	else if (!armor)
-		armor = getArmor()
-	else if (!istype(armor, /datum/armor))
-		stack_trace("Invalid type [armor.type] found in .armor during /obj Initialize()")
+	initialize_armor()
 
 	if(obj_integrity == null)
 		obj_integrity = max_integrity
@@ -105,6 +98,8 @@
 
 /obj/Destroy(force=FALSE)
 	if(!ismachinery(src) && (datum_flags & DF_ISPROCESSING))
+		// Надетому предмету при qdel dropped() не зовётся, а из SSfastprocess снимает обычно он
+		STOP_PROCESSING(SSfastprocess, src)
 		STOP_PROCESSING(SSobj, src)
 	if(datum_flags & DF_HAS_OPEN_UI)
 		SStgui.close_uis(src)

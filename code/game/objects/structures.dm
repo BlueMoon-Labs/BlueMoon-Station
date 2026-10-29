@@ -1,4 +1,5 @@
 /obj/structure
+	armor_type = /datum/armor/clothing_and_general_objects
 	icon = 'icons/obj/structures.dmi'
 	pressure_resistance = 8
 	max_integrity = 300
@@ -17,8 +18,6 @@
 	pass_flags_self = PASSSTRUCTURE
 
 /obj/structure/Initialize(mapload)
-	if (!armor)
-		armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 50, ACID = 50)
 	. = ..()
 	if(smooth)
 		queue_smooth(src)

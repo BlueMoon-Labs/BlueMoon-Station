@@ -69,7 +69,7 @@
 	if(!new_team && make_team)
 		//todo remove this and allow admin buttons to create more than one cult
 		for(var/datum/antagonist/cult/H in GLOB.antagonists)
-			if(!H.owner)
+			if(!H.owner || istype(H, /datum/antagonist/cult/training))
 				continue
 			if(H.cult_team)
 				cult_team = H.cult_team
@@ -342,6 +342,8 @@
 	var/cultplayers = 0
 	for(var/I in GLOB.player_list)
 		var/mob/M = I
+		if(M.training_origin)
+			continue
 		if(M.stat != DEAD)
 			if(iscultist(M))
 				++cultplayers
@@ -410,13 +412,13 @@
 		sac_objective.team = src
 
 	for(var/mob/living/carbon/human/player in GLOB.player_list)
-		if(player.mind && !player.mind.has_antag_datum(/datum/antagonist/cult) && !is_convertable_to_cult(player) && player.stat != DEAD && !player.mind.is_ghost_role())
+		if(player.mind && !player.mind.has_antag_datum(/datum/antagonist/cult) && !is_convertable_to_cult(player) && player.stat != DEAD && !player.mind.is_ghost_role() && sac_objective.opt_in_valid(player.mind))
 			target_candidates += player.mind
 
 	if(!length(target_candidates))
 		message_admins("Cult Sacrifice: Could not find unconvertible target, checking for convertible target.")
 		for(var/mob/living/carbon/human/player in GLOB.player_list)
-			if(player.mind && !player.mind.has_antag_datum(/datum/antagonist/cult) && player.stat != DEAD && !player.mind.is_ghost_role())
+			if(player.mind && !player.mind.has_antag_datum(/datum/antagonist/cult) && player.stat != DEAD && !player.mind.is_ghost_role() && sac_objective.opt_in_valid(player.mind))
 				target_candidates += player.mind
 
 	listclearnulls(target_candidates)

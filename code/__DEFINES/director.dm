@@ -29,6 +29,14 @@
 #define DIRECTOR_DEPT_SUPPLY "supply"
 #define DIRECTOR_DEPT_COMMAND "command"
 
+/// Приглашения в пустые критичные отделы: сколько отдел пуст до приглашения, пауза между ними и тишина в начале раунда
+#define DIRECTOR_VACANCY_INVITE_DELAY (5 MINUTES)
+#define DIRECTOR_VACANCY_INVITE_COOLDOWN (15 MINUTES)
+#define DIRECTOR_VACANCY_ROUND_GRACE (10 MINUTES)
+/// Метадоллары за летджойн в пустой отдел и срок, который нужно продержаться (или дожить до эвакуации)
+#define METADOLLARS_RELIEF_BONUS 3
+#define METADOLLARS_RELIEF_MIN_TIME (30 MINUTES)
+
 /// Статус эвакуации для сигналов
 #define DIRECTOR_EVAC_NONE 0
 #define DIRECTOR_EVAC_CALLED 1

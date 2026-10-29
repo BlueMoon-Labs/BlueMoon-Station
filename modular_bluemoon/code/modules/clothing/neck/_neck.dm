@@ -25,6 +25,7 @@
 	w_class = WEIGHT_CLASS_SMALL
 	var/obj/item/card/id/access_id = null
 	var/list/collar_access
+	COOLDOWN_DECLARE(echolocation_pulse_cooldown)
 
 /obj/item/clothing/neck/petcollar/Destroy()
 	QDEL_NULL(access_id)
@@ -70,7 +71,15 @@
 	SIGNAL_HANDLER
 	if((current_equipped_slot == ITEM_SLOT_NECK))
 		if(prob(25)) //roughly every 4th step
-			playsound(loc, pick('modular_bluemoon/sound/items/collarbell1.ogg','modular_bluemoon/sound/items/collarbell2.ogg','modular_bluemoon/sound/items/collarbell3.ogg', 'modular_bluemoon/sound/items/collarbell4.ogg'), 10)
+			ring_bell()
+
+/// Jingles produce at most one pulse per second, independently of voluntary clicks.
+/obj/item/clothing/neck/petcollar/proc/ring_bell()
+	playsound(loc, pick('modular_bluemoon/sound/items/collarbell1.ogg','modular_bluemoon/sound/items/collarbell2.ogg','modular_bluemoon/sound/items/collarbell3.ogg', 'modular_bluemoon/sound/items/collarbell4.ogg'), 10)
+	if(!COOLDOWN_FINISHED(src, echolocation_pulse_cooldown))
+		return
+	COOLDOWN_START(src, echolocation_pulse_cooldown, 1 SECONDS)
+	emit_echolocation_pulse(src)
 
 /obj/item/clothing/neck/petcollar/dropped(mob/user)
 	. = ..()

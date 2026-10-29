@@ -295,6 +295,33 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 	return FALSE
 
 /**
+ * Короткое описание вида для панели профиля персонажа.
+ * Возвращает список абзацев или null, если у вида нет описания.
+ */
+/datum/species/proc/get_species_description()
+	return null
+
+/**
+ * Полный лор вида для панели профиля персонажа.
+ * Возвращает список абзацев или null, если у вида нет лора.
+ */
+/datum/species/proc/get_species_lore()
+	return null
+
+/// Склеивает описание и лор вида в один текст для панели профиля.
+/datum/species/proc/get_species_lore_text()
+	var/list/parts = list()
+	var/list/description = get_species_description()
+	var/list/lore = get_species_lore()
+	if(description)
+		parts += description
+	if(lore)
+		parts += lore
+	if(!length(parts))
+		return ""
+	return jointext(parts, "\n\n")
+
+/**
  * Generates a random name for a carbon.
  *
  * This generates a random unique name based on a human's species and gender.
@@ -1011,7 +1038,8 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 		var/layernum = text2num(layer)
 		for(var/bodypart in relevant_layers[layer])
 			var/datum/sprite_accessory/S = bodypart
-			var/mutable_appearance/accessory_overlay = mutable_appearance(S.icon, layer = -layernum)
+			var/part_layer = isnull(S.overlay_layer) ? -layernum : S.overlay_layer
+			var/mutable_appearance/accessory_overlay = mutable_appearance(S.icon, layer = part_layer)
 			accessory_overlay.category = S.mutable_category
 			bodypart = S.mutant_part_string || dna_feature_as_text_string[S]
 			var/wing_color = H.dna.features[GLOB.colored_mutant_parts[bodypart]] || H.dna.features["wings_color"]
@@ -1120,7 +1148,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 				standing += emissive_copy(accessory_overlay)
 
 			if(S.extra) //apply the extra overlay, if there is one
-				var/mutable_appearance/extra_accessory_overlay = mutable_appearance(S.icon, layer = -layernum)
+				var/mutable_appearance/extra_accessory_overlay = mutable_appearance(S.icon, layer = part_layer)
 				extra_accessory_overlay.category = S.mutable_category
 				if(S.gender_specific)
 					extra_accessory_overlay.icon_state = "[g]_[bodypart]_extra_[S.icon_state]_[layertext]"
@@ -1170,7 +1198,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 					standing += emissive_copy(extra_accessory_overlay)
 
 			if(S.extra2) //apply the extra overlay, if there is one
-				var/mutable_appearance/extra2_accessory_overlay = mutable_appearance(S.icon, layer = -layernum)
+				var/mutable_appearance/extra2_accessory_overlay = mutable_appearance(S.icon, layer = part_layer)
 				extra2_accessory_overlay.category = S.mutable_category
 				if(S.gender_specific)
 					extra2_accessory_overlay.icon_state = "[g]_[bodypart]_extra2_[S.icon_state]_[layertext]"
@@ -2062,6 +2090,10 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 
 
 /datum/species/proc/spec_hitby(atom/movable/AM, mob/living/carbon/human/H)
+	return
+
+/// ЭМИ, прошедший защиту носителя.
+/datum/species/proc/spec_emp_act(mob/living/carbon/human/H, severity)
 	return
 
 /datum/species/proc/spec_attack_hand(mob/living/carbon/human/M, mob/living/carbon/human/H, datum/martial_art/attacker_style, act_intent, attackchain_flags)

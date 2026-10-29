@@ -83,14 +83,20 @@
 	// Дедуп зон через ассоциативный список: `areas |= B.loc` это линейный поиск
 	// по списку зон на каждый турф шаблона, и на полноразмерном z-уровне он
 	// съедает секунды загрузки.
+	// Значение - z, на которых у зоны есть клетки шаблона.
 	var/list/seen_areas = list()
 	for(var/L in turfs)
 		var/turf/B = L
 		atoms += B
 		var/area/turf_area = B.loc
-		if(turf_area && !seen_areas[turf_area])
-			seen_areas[turf_area] = TRUE
-			areas += turf_area
+		if(turf_area)
+			var/list/area_floors = seen_areas[turf_area]
+			if(!area_floors)
+				area_floors = list()
+				seen_areas[turf_area] = area_floors
+				areas += turf_area
+			if(!(B.z in area_floors))
+				area_floors += B.z
 		for(var/A in B)
 			atoms += A
 			if(istype(A, /obj/structure/cable))
@@ -102,7 +108,7 @@
 		var/turf/T = L
 		T.air_update_turf(TRUE) //calculate adjacent turfs along the border to prevent runtimes
 
-	SSmapping.reg_in_areas_in_z(areas)
+	SSmapping.reg_in_areas_in_z(areas, seen_areas)
 	SSatoms.InitializeAtoms(atoms)
 	SSmachines.setup_template_powernets(cables)
 	SSair.setup_template_machinery(atmos_machines)
@@ -193,7 +199,7 @@
   * * rotate_placement_to_orientation - Has no effect if centered. Should we rotate where we load it around the turf we're loading at? Used for stuff like engine submaps when the station is rotated.
   *
   */
-/datum/map_template/proc/load(turf/T, centered = FALSE, orientation = SOUTH, annihilate = default_annihilate, force_cache = FALSE, rotate_placement_to_orientation = FALSE)
+/datum/map_template/proc/load(turf/T, centered = FALSE, orientation = SOUTH, annihilate = default_annihilate, force_cache = FALSE, rotate_placement_to_orientation = FALSE, no_changeturf_override = null)
 	var/old_T = T
 	if(centered)
 		T = locate(T.x - round(((orientation & (NORTH|SOUTH))? width : height) / 2) , T.y - round(((orientation & (NORTH|SOUTH)) ? height : width) / 2) , T.z) // %180 catches East/West (90,270) rotations on true, North/South (0,180) rotations on false
@@ -249,7 +255,7 @@
 		var/cache_started_world_time = world.time
 		parsed.build_cache()
 		record_synchronous_map_phase("map model cache", cache_started_ms, cache_started_world_time)
-	if(!parsed.load(T.x, T.y, T.z, cropMap=TRUE, no_changeturf=(SSatoms.initialized == INITIALIZATION_INSSATOMS), placeOnTop=TRUE, orientation = orientation, annihilate_tiles = (annihilate == MAP_TEMPLATE_ANNIHILATE_LOADING)))
+	if(!parsed.load(T.x, T.y, T.z, cropMap=TRUE, no_changeturf=(no_changeturf_override != null ? no_changeturf_override : (SSatoms.initialized == INITIALIZATION_INSSATOMS)), placeOnTop=TRUE, orientation = orientation, annihilate_tiles = (annihilate == MAP_TEMPLATE_ANNIHILATE_LOADING)))
 		return
 	var/list/bounds = parsed.bounds
 	if(!bounds)

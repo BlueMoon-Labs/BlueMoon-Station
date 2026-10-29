@@ -13,7 +13,7 @@
 	throwforce = 7
 	w_class = WEIGHT_CLASS_NORMAL
 	attack_verb = list("beaten")
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 50, BIO = 0, RAD = 0, FIRE = 80, ACID = 80)
+	armor_type = /datum/armor/baton
 	attack_speed = CLICK_CD_MELEE
 
 	var/stamina_loss_amount = 35
@@ -237,7 +237,7 @@
 		playsound(L, 'sound/weapons/genhit.ogg', 50, 1)
 		return FALSE
 	final_stamina_loss_amount = block_calculate_resultant_damage(final_stamina_loss_amount, return_list)
-	var/zap_block = L.run_armor_check(BODY_ZONE_CHEST, MELEE, null, null, armor_pen)
+	var/zap_block = L.run_armor_check(BODY_ZONE_CHEST, ENERGY, null, null, armor_pen)
 	deductcharge(hitcost, FALSE)
 	if(QDELETED(src) || QDELETED(our_cell))
 		return FALSE

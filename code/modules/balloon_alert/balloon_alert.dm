@@ -12,7 +12,9 @@
 /atom/proc/balloon_alert(mob/viewer, text)
 	SHOULD_NOT_SLEEP(TRUE)
 
-	INVOKE_ASYNC(src, PROC_REF(balloon_alert_perform), viewer, text)
+	if (!ismob(viewer) || isnull(viewer.client))
+		return
+	balloon_alert_perform(WEAKREF(src), viewer.client, text)
 
 /// Create balloon alerts (text that floats up) to everything within range.
 /// Will only display to people who can see.
@@ -32,25 +34,28 @@
 // MeasureText blocks. I have no idea for how long.
 // I would've made the maptext_height update on its own, but I don't know
 // if this would look bad on laggy clients.
-/atom/proc/balloon_alert_perform(mob/viewer, text)
-	if (!ismob(viewer))
-		return
-	var/client/viewer_client = viewer.client
-	if (isnull(viewer_client))
+/// Источник - только weakref: атом, удалённый, пока клиент отвечает, не держится кадром прока.
+/proc/balloon_alert_perform(datum/weakref/source_ref, client/viewer_client, text)
+	set waitfor = FALSE
+	usr = null
+	var/measured_height
+	WXH_TO_HEIGHT(viewer_client?.MeasureText(text, null, BALLOON_TEXT_WIDTH), measured_height)
+	var/atom/source = source_ref?.resolve()
+	if (QDELETED(source) || isnull(viewer_client))
 		return
 
 	var/bound_width = world.icon_size
-	if (ismovable(src))
-		var/atom/movable/movable_source = src
+	if (ismovable(source))
+		var/atom/movable/movable_source = source
 		bound_width = movable_source.bound_width
 
-	var/image/balloon_alert = image(loc = isturf(src) ? src : get_atom_on_turf(src), layer = ABOVE_MOB_LAYER)
+	var/image/balloon_alert = image(loc = isturf(source) ? source : get_atom_on_turf(source), layer = ABOVE_MOB_LAYER)
 	balloon_alert.plane = BALLOON_CHAT_PLANE
 	balloon_alert.alpha = 0
 	balloon_alert.appearance_flags = RESET_ALPHA|RESET_COLOR|RESET_TRANSFORM
 	balloon_alert.maptext = MAPTEXT("<span style='text-align: center; -dm-text-outline: 1px #0005'>[text]</span>")
 	balloon_alert.maptext_x = (BALLOON_TEXT_WIDTH - bound_width) * -0.5
-	WXH_TO_HEIGHT(viewer_client?.MeasureText(text, null, BALLOON_TEXT_WIDTH), balloon_alert.maptext_height)
+	balloon_alert.maptext_height = measured_height
 	balloon_alert.maptext_width = BALLOON_TEXT_WIDTH
 
 	viewer_client?.images += balloon_alert

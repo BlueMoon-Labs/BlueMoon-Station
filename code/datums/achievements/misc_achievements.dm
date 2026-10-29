@@ -177,3 +177,16 @@
 	desc = "Ignore the warning label on a springlock MODsuit."
 	database_id = MEDAL_SPRINGLOCK
 	icon = "springlock"
+
+/datum/award/achievement/misc/crow_necro
+	name = "Who Lurks Under Necropolis"
+	desc = "He can see your every move, pick up a crowbar and try to find"
+	database_id = MEDAL_CROW_NECRO
+	icon = "crow_necro"
+
+/datum/award/achievement/misc/pawlicker
+	name = "PawLicker"
+	desc = "Ты попробовал так много лапок..."
+
+	database_id = MEDAL_PAWLICKER
+	icon = "pawlicker"

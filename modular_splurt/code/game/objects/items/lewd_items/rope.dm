@@ -36,7 +36,7 @@ GLOBAL_LIST_INIT(bondage_rope_slowdowns, list(
 	color = "#fc60db"
 	w_class = WEIGHT_CLASS_SMALL
 	breakouttime = 600 //Deciseconds = 60s = 1 minute
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 50, ACID = 50)
+	armor_type = /datum/armor/clothing_and_general_objects
 	demoralize_criminals = FALSE //Негативный moodlet всех restrains/
 	var/cuffsound = 'modular_splurt/sound/lewd/rope.ogg'
 	var/rope_target = ROPE_TARGET_HANDS_IN_FRONT

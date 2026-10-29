@@ -7,6 +7,8 @@
 	var/obj/item/modular_computer/pda/silicon/aiPDA
 	var/flash_protect = FALSE
 	var/datum/armor/borg_plating_armor
+	// Встроенный ПДА и сетевые приложения модульного интерфейса доступны этому киборгу.
+	var/has_pda = TRUE
 
 /mob/living/silicon/robot/get_cell()
 	return cell
@@ -33,7 +35,7 @@
 
 	ident = rand(1, 999)
 
-	if(!shell)
+	if(!shell && has_pda)
 		aiPDA = new/obj/item/modular_computer/pda/silicon(src)
 		aiPDA.imprint_id(real_name, "Cyborg")
 
@@ -649,6 +651,8 @@
 		new /obj/item/bodypart/l_arm/robot(drop_to)
 		new /obj/item/bodypart/r_arm/robot(drop_to)
 		new /obj/item/bodypart/head/robot(drop_to)
+		new /obj/item/assembly/flash/handheld(drop_to)
+		new /obj/item/assembly/flash/handheld(drop_to)
 
 	cell?.forceMove(drop_to) // Cell can be null, if removed beforehand
 	radio?.keyslot?.forceMove(drop_to)

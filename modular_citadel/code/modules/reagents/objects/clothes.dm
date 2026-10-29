@@ -2,11 +2,11 @@
 //Clothes made from FermiChem
 
 /obj/item/clothing/head/hattip	//I wonder if anyone else has played cryptworlds
+	armor_type = /datum/armor/none
 	name = "Synthetic hat"
 	icon = 'icons/obj/clothing/hats.dmi'
 	icon_state = "cowboy"
 	desc = "A synthesized hat. You feel compelled to keep it on all times."
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0)
 	//item_flags = NODROP //Tips their hat!
 
 /obj/item/clothing/head/hattip/on_attack_hand(mob/user, act_intent = user.a_intent, unarmed_attack_flags)

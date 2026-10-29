@@ -40530,7 +40530,6 @@
 /obj/structure/cable{
 	icon_state = "0-8"
 	},
-/obj/machinery/door/firedoor,
 /turf/open/floor/plating,
 /area/medical/virology)
 "fZh" = (
@@ -66986,9 +66985,6 @@
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden,
 /obj/machinery/door/firedoor,
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
 /turf/open/floor/plasteel/dark{
 	icon_state = "darkfull_whole_alt"
 	},
@@ -69839,7 +69835,6 @@
 /obj/structure/cable{
 	icon_state = "0-8"
 	},
-/obj/machinery/door/firedoor,
 /turf/open/floor/plating,
 /area/medical/virology)
 "kkB" = (
@@ -73313,9 +73308,6 @@
 	icon_state = "0-2"
 	},
 /obj/structure/cable,
-/obj/machinery/door/firedoor{
-	dir = 8
-	},
 /turf/open/floor/plating,
 /area/medical/virology)
 "kIz" = (
@@ -81331,7 +81323,6 @@
 /obj/structure/cable{
 	icon_state = "0-4"
 	},
-/obj/machinery/door/firedoor,
 /turf/open/floor/plating,
 /area/medical/virology)
 "lPp" = (
@@ -96080,9 +96071,6 @@
 /obj/structure/cable{
 	icon_state = "0-2"
 	},
-/obj/machinery/door/firedoor{
-	dir = 8
-	},
 /turf/open/floor/plating,
 /area/medical/virology)
 "nVw" = (
@@ -97374,9 +97362,6 @@
 	},
 /obj/structure/disposalpipe/segment{
 	dir = 4
-	},
-/obj/structure/cable{
-	icon_state = "4-8"
 	},
 /turf/open/floor/wood,
 /area/security/detectives_office)
@@ -107039,7 +107024,7 @@
 /turf/open/floor/plasteel,
 /area/hallway/primary/starboard)
 "pDy" = (
-/obj/machinery/mineral/equipment_vendor,
+/obj/machinery/equipment_vendor,
 /obj/effect/turf_decal/tile/brown{
 	dir = 4
 	},
@@ -107933,9 +107918,6 @@
 	},
 /area/command/heads_quarters/captain)
 "pKI" = (
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
 /obj/structure/cable{
 	icon_state = "1-2"
 	},
@@ -109626,9 +109608,6 @@
 	},
 /obj/structure/disposalpipe/segment{
 	dir = 4
-	},
-/obj/structure/cable{
-	icon_state = "4-8"
 	},
 /turf/open/floor/plasteel/dark{
 	icon_state = "darkfull_whole_alt"
@@ -112570,7 +112549,6 @@
 	icon_state = "0-8"
 	},
 /obj/structure/cable,
-/obj/machinery/door/firedoor,
 /turf/open/floor/plating,
 /area/medical/virology)
 "qwI" = (
@@ -118330,9 +118308,6 @@
 	},
 /obj/structure/cable{
 	icon_state = "2-8"
-	},
-/obj/structure/cable{
-	icon_state = "1-2"
 	},
 /turf/open/floor/plating,
 /area/maintenance/port/aft)
@@ -131598,9 +131573,6 @@
 	name = "air supply pipe"
 	},
 /obj/structure/disposalpipe/segment,
-/obj/structure/cable{
-	icon_state = "1-2"
-	},
 /obj/machinery/door/poddoor/preopen{
 	id = "hos"
 	},
@@ -152982,9 +152954,6 @@
 	icon_state = "1-2"
 	},
 /obj/structure/cable{
-	icon_state = "1-2"
-	},
-/obj/structure/cable{
 	icon_state = "1-4"
 	},
 /obj/structure/cable{
@@ -160962,9 +160931,6 @@
 	},
 /obj/structure/cable{
 	icon_state = "1-8"
-	},
-/obj/structure/cable{
-	icon_state = "1-2"
 	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
 	name = "air supply pipe"

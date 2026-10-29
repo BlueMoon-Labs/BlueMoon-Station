@@ -370,11 +370,11 @@ SUBSYSTEM_DEF(vote)
 			if(display_votes & SHOW_RESULTS)
 				var/list/bar_color = vote_bar_colors[((i - 1) % vote_bar_colors.len) + 1]
 				var/hex_color = rgb(bar_color[1], bar_color[2], bar_color[3])
-				var/votes_amount = choices[choices[i]]
+				var/votes_amount = get_effective_votes(choices[i])
 				var/percent = total_votes > 0 ? round((votes_amount / total_votes) * 100, 1) : 0
-				text += "<span class='vote-dot' style='background: [hex_color]; box-shadow: 0 0 6px 1px rgba([bar_color[1]], [bar_color[2]], [bar_color[3]], 0.8);'></span>"
+				text += "<span class='vote-dot' style='background: [hex_color]; box-shadow: 0 0 3px 1px rgba([bar_color[1]], [bar_color[2]], [bar_color[3]], 0.3);'></span>"
 				text += "<span class='vote-name'>[choices[i]]</span>"
-				text += "<div class='vote-bar-track'><div class='vote-bar' style='width: [percent]%; animation-delay: [max(0, i - 1) * 0.12]s; background: linear-gradient(90deg, rgba([bar_color[1]], [bar_color[2]], [bar_color[3]], 0.6), [hex_color] 70%); box-shadow: 0 0 8px 1px rgba([bar_color[1]], [bar_color[2]], [bar_color[3]], 0.55);'></div></div>"
+				text += "<div class='vote-bar-track'><div class='vote-bar' style='width: [percent]%; animation-delay: [max(0, i - 1) * 0.12]s; background: linear-gradient(90deg, rgba([bar_color[1]], [bar_color[2]], [bar_color[3]], 0.6), [hex_color] 70%); box-shadow: 0 0 2px 1px rgba([bar_color[1]], [bar_color[2]], [bar_color[3]], 0.2);'></div></div>"
 				text += "<span class='vote-percent'>[percent]%</span>"
 				text += "<span class='vote-count'>[votes_amount]</span>"
 			else
@@ -558,7 +558,7 @@ SUBSYSTEM_DEF(vote)
 		if(SSticker.current_state > GAME_STATE_PREGAME)
 			reset()
 			return .
-		var/fallback = pick_dynamic_type_by_chaos(GLOB.player_list, allow_light = !use_dynamic_light_roundtype_vote_window())
+		var/fallback = pick_roundtype_without_votes()
 		SSpersistence.RecordDynamicType(fallback)
 		GLOB.round_type = fallback
 		GLOB.master_mode = fallback
@@ -714,20 +714,8 @@ SUBSYSTEM_DEF(vote)
 				if(roundtype_prime_runoff_ballot)
 					choices |= list(ROUNDTYPE_DYNAMIC_LIGHT, ROUNDTYPE_EXTENDED)
 				else
-					var/combo = check_combo()
-					var/secondary_roundtype
-					var/list/roundtype_choices
-					if(use_dynamic_light_roundtype_vote_window())
-						secondary_roundtype = ROUNDTYPE_EXTENDED
-						roundtype_choices = list(ROUNDTYPE_DYNAMIC, secondary_roundtype)
-					else
-						secondary_roundtype = get_roundtype_vote_secondary_choice()
-						roundtype_choices = list(ROUNDTYPE_DYNAMIC, secondary_roundtype)
-					if(combo == ROUNDTYPE_ROTATION_HEAVY)
-						roundtype_choices = list(secondary_roundtype)
-					else if(combo == ROUNDTYPE_ROTATION_LIGHT)
-						roundtype_choices = list(ROUNDTYPE_DYNAMIC)
-					choices |= roundtype_choices
+					var/rotation_applies = update_round_rotation_eligibility()
+					choices |= roundtype_ballot_choices(check_combo(), rotation_applies)
 				sanitize_roundtype_vote_choices()
 			if("custom")
 				question = saved_custom_question
@@ -753,7 +741,7 @@ SUBSYSTEM_DEF(vote)
 		for(var/i = 1, i <= choices.len, i++)
 			var/list/bar_color = vote_bar_colors[((i - 1) % vote_bar_colors.len) + 1]
 			var/hex_color = rgb(bar_color[1], bar_color[2], bar_color[3])
-			text += "<div class='vote-choice'><span class='vote-dot' style='background: [hex_color]; box-shadow: 0 0 6px 1px rgba([bar_color[1]], [bar_color[2]], [bar_color[3]], 0.8);'></span>[choices[i]]</div>"
+			text += "<div class='vote-choice'><span class='vote-dot' style='background: [hex_color]; box-shadow: 0 0 3px 1px rgba([bar_color[1]], [bar_color[2]], [bar_color[3]], 0.3);'></span>[choices[i]]</div>"
 		text += "<div class='vote-hint'>Нажмите <a href='?src=[REF(src)]'>сюда</a> чтобы проголосовать</div>"
 		log_vote(text)
 		to_chat(world, vote_block(text))
@@ -809,6 +797,43 @@ SUBSYSTEM_DEF(vote)
 		if(group_counts[group] >= ROUNDTYPE_MAX_COMBO)
 			return group
 	return FALSE
+
+/// Полноценный раунд: онлайн не ниже порога и час вне ночного окна. Онлайн и час передаются явно ради тестов.
+/datum/controller/subsystem/vote/proc/roundtype_rotation_applies(player_count, current_hour)
+	if(player_count < CONFIG_GET(number/roundtype_rotation_min_players))
+		return FALSE
+	return !is_roundtype_vote_hour_in_window(
+		current_hour,
+		CONFIG_GET(number/roundtype_rotation_night_start_hour),
+		CONFIG_GET(number/roundtype_rotation_night_end_hour)
+	)
+
+/// Засчитывается ли будущий раунд в ротацию, по онлайну и часу на момент выбора режима: голосованием или админом.
+/datum/controller/subsystem/vote/proc/update_round_rotation_eligibility()
+	var/player_count = get_total_player_count()
+	var/current_hour = text2num(time2text(world.timeofday, "hh"))
+	. = roundtype_rotation_applies(player_count, current_hour)
+	if(!SSticker.HasRoundStarted())
+		GLOB.round_counts_for_rotation = .
+	log_vote("Ротация режимов [. ? "применяется" : "не применяется"]: онлайн [player_count], час [current_hour], серия [check_combo() || "нет"].")
+
+/datum/controller/subsystem/vote/proc/roundtype_ballot_choices(combo, rotation_applies)
+	var/secondary_roundtype = use_dynamic_light_roundtype_vote_window() ? ROUNDTYPE_EXTENDED : get_roundtype_vote_secondary_choice()
+	if(rotation_applies)
+		if(combo == ROUNDTYPE_ROTATION_HEAVY)
+			return list(secondary_roundtype)
+		if(combo == ROUNDTYPE_ROTATION_LIGHT)
+			return list(ROUNDTYPE_DYNAMIC)
+	return list(ROUNDTYPE_DYNAMIC, secondary_roundtype)
+
+/datum/controller/subsystem/vote/proc/pick_roundtype_without_votes()
+	if(GLOB.round_counts_for_rotation)
+		switch(check_combo())
+			if(ROUNDTYPE_ROTATION_HEAVY)
+				return get_roundtype_vote_secondary_choice()
+			if(ROUNDTYPE_ROTATION_LIGHT)
+				return pick_dynamic_type_by_chaos(GLOB.player_list, allow_light = FALSE)
+	return pick_dynamic_type_by_chaos(GLOB.player_list, allow_light = !use_dynamic_light_roundtype_vote_window())
 
 /datum/controller/subsystem/vote/proc/is_roundtype_vote_hour_in_window(current_hour, start_hour, end_hour)
 	if(start_hour == end_hour)
@@ -950,7 +975,7 @@ SUBSYSTEM_DEF(vote)
 		var/show_votes_count = should_show_votes_to(user)
 		for(var/i in 1 to choices.len)
 			var/choice_name = choices[i]
-			var/vote_count = max(0, choices[choice_name] || 0)
+			var/vote_count = max(0, get_effective_votes(choice_name) || 0)
 			var/user_selected = FALSE  // plurality
 			var/user_approved = FALSE  // approval
 			var/user_rank = 0          // schulze/IRV
@@ -993,6 +1018,10 @@ SUBSYSTEM_DEF(vote)
 	if(mode == "roundtype")
 		data["last_modes"] = length(SSpersistence.saved_round_types) ? jointext(SSpersistence.saved_round_types, ", ") : (length(SSpersistence.saved_modes) ? jointext(SSpersistence.saved_modes, ", ") : null)
 		data["combo_threshold"] = ROUNDTYPE_MAX_COMBO
+		data["rotation_min_players"] = CONFIG_GET(number/roundtype_rotation_min_players)
+		data["rotation_night_start"] = server_hour_to_msk(CONFIG_GET(number/roundtype_rotation_night_start_hour))
+		data["rotation_night_end"] = server_hour_to_msk(CONFIG_GET(number/roundtype_rotation_night_end_hour))
+		data["rotation_applies"] = GLOB.round_counts_for_rotation
 		// Пояснения о вариантах динамика
 		var/list/roundtype_descs = list()
 		roundtype_descs += list(list("name" = ROUNDTYPE_DYNAMIC, "desc" = "Одна из вариаций динамика выбирается автоматически."))
@@ -1183,7 +1212,7 @@ SUBSYSTEM_DEF(vote)
 		if(isnum(chaos))
 			total_chaos += chaos
 
-	var/list/available_hard = list(ROUNDTYPE_DYNAMIC_HARD)
+	var/list/available_hard = list(ROUNDTYPE_DYNAMIC_TEAMBASED)
 	var/list/available_medium = list(ROUNDTYPE_DYNAMIC_MEDIUM)
 	// var/list/available_medium = list(ROUNDTYPE_DYNAMIC_MEDIUM, ROUNDTYPE_DYNAMIC_LIGHT) - last_dynamic_type
 

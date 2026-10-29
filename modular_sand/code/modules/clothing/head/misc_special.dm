@@ -14,7 +14,7 @@
 	item_state = "goatpelt"
 	color = "#ffd700"
 	body_parts_covered = HEAD
-	armor = list("melee" = 60, "bullet" = 55, "laser" = 55, "energy" = 45, "bomb" = 100, "bio" = 20, "rad" = 20, "fire" = 100, "acid" = 100)
+	armor_type = /datum/armor/king
 	dog_fashion = null
 	resistance_flags = FIRE_PROOF
 

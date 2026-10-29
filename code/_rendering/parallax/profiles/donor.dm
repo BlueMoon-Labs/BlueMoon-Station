@@ -48,7 +48,7 @@
 		/atom/movable/screen/parallax_layer/space/layer_3,
 	)
 	variant_sets = list(
-		list(1, /atom/movable/screen/parallax_layer/donor/whitesands),
+		list(1, /atom/movable/screen/parallax_layer/donor/planet/whitesands),
 	)
 	source = "Shiptest"
 	weight = 10

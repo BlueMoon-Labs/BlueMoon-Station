@@ -96,3 +96,11 @@
 /obj/item/clothing/neck/cloak/altpolychromic/ComponentInitialize()
 	. = ..()
 	AddElement(/datum/element/polychromic, poly_colors, 2)
+
+// BLUEMOON ADD - шарф из меха шейдкина (портировано из S.P.L.U.R.T-tg)
+/obj/item/clothing/neck/scarf/shadekin
+	name = "shadekin fur scarf"
+	desc = "Неэтичный шарф, сшитый из мягкого меха и податливых шкур шейдкинов. Нелегален почти во всех областях обжитого космоса, но всё равно высоко ценится элитами и пиратами."
+	icon = 'modular_splurt/icons/obj/clothing/neck/shadekin_scarf.dmi'
+	mob_overlay_icon = 'modular_splurt/icons/mob/clothing/neck/shadekin_scarf.dmi'
+	icon_state = "scarf_unethical"

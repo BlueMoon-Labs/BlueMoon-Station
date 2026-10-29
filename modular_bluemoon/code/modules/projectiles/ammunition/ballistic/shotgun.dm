@@ -30,6 +30,7 @@
 	icon_state = "23ruberslug"
 	caliber = "23"
 	projectile_type = /obj/item/projectile/bullet/slug_rubber23
+	harmful = FALSE
 
 /obj/item/ammo_casing/buckshot23
 	name = "23 buckshot shell"
@@ -48,6 +49,7 @@
 	icon_state = "23rubershot"
 	caliber = "23"
 	projectile_type = /obj/item/projectile/bullet/pellet/rubbershot23
+	harmful = FALSE
 	pellets = 8
 	variance = 25
 

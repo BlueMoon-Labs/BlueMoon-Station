@@ -6,7 +6,7 @@
 	plane = ABOVE_WALL_PLANE
 	anchored = TRUE
 	density = FALSE
-	armor = list(MELEE = 50, BULLET = 20, LASER = 0, ENERGY = 100, BOMB = 10, BIO = 100, RAD = 100, FIRE = 90, ACID = 50)
+	armor_type = /datum/armor/fireaxecabinet
 	max_integrity = 150
 	integrity_failure = 0.33
 	var/locked = TRUE
@@ -210,5 +210,6 @@
 	new /obj/item/extinguisher/advanced(src)
 	new /obj/item/clothing/suit/fire/atmos(src)
 	new /obj/item/clothing/head/hardhat/atmos(src)
+	new /obj/item/storage/briefcase/inflatable_airbag(src)
 	new /obj/item/tank/internals/oxygen/red(src)
 	new /obj/item/watertank/atmos(src)

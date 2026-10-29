@@ -93,11 +93,13 @@
 	head = /obj/item/clothing/head/helmet/space/pirate/bandana
 	ears = /obj/item/radio/headset/pirate
 	id = /obj/item/card/id/pirate
+	r_hand = /obj/item/gun/energy/plasma/light
 
 	give_space_cooler_if_synth = TRUE // BLUEMOON ADD
 
 /datum/outfit/pirate/space/captain
 	head = /obj/item/clothing/head/helmet/space/pirate
+	r_hand = /obj/item/gun/energy/plasma/rifle
 
 /datum/outfit/pirate/post_equip(mob/living/carbon/human/H, visualsOnly = FALSE, client/preference_source)
 	H.faction |= "pirate"

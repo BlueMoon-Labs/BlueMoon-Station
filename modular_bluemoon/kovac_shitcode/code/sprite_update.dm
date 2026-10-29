@@ -35,7 +35,7 @@
 	icon_state = "agent"
 	item_state = "agent"
 	dog_fashion = null
-	armor = list("melee" = 50, "bullet" = 40, "laser" = 40, "energy" = 45, "bomb" = 25, "bio" = 0, "rad" = 0, "fire" = 70, "acid" = 90, "wound" = 40)
+	armor_type = /datum/armor/agent
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
 
 /obj/item/clothing/head/helmet/flakhelm	//Actually the M1 Helmet
@@ -61,7 +61,7 @@
 	desc = "Touch the skies and above!"
 
 /obj/item/clothing/head/helmet/aviator_helmet/no_armor
-	armor = list("melee" = 0, "bullet" = 0, "laser" = 0, "energy" = 0, "bomb" = 0, "bio" = 0, "rad" = 0, "fire" = 0, "acid" = 0, "wound" = 0)
+	armor_type = /datum/armor/none
 
 /obj/item/clothing/head/helmet/blast_helmet
 	name = "blast helmet"
@@ -145,7 +145,7 @@
 	w_class = WEIGHT_CLASS_TINY
 	allowed = list(/obj/item/gun, /obj/item/melee, /obj/item/restraints, /obj/item/tank)
 	slowdown = 0.7
-	armor = list(MELEE = 60, BULLET = 50, LASER = 40, ENERGY = 15, BOMB = 30, BIO = 30, RAD = 30)
+	armor_type = /datum/armor/spacesuit_vox
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	heat_protection = CHEST|GROIN|LEGS|ARMS
 	max_heat_protection_temperature = SPACE_SUIT_MAX_TEMP_PROTECT
@@ -165,7 +165,7 @@
 		brc_worn = FALSE
 
 /obj/item/clothing/head/helmet/space/vox
-	armor = list(MELEE = 60, BULLET = 50, LASER = 40, ENERGY = 15, BOMB = 30, BIO = 30, RAD = 30)
+	armor_type = /datum/armor/spacesuit_vox
 	flags_cover = NONE
 	species_restricted = list("Vox")
 
@@ -179,7 +179,7 @@
 	item_state = "vox-stealth"
 	desc = "A smoothly contoured, matte-black alien helmet."
 
-	armor = list(MELEE = 25, BULLET = 25, LASER = 20, ENERGY = 5, BOMB = 15, BIO = 30, RAD = 30)
+	armor_type = /datum/armor/stealth
 
 /obj/item/clothing/suit/space/vox/stealth
 	name = "alien stealth suit"
@@ -187,7 +187,7 @@
 	item_state = "vox-stealth"
 	desc = "A sleek black suit. it seems to be rather heavy."
 
-	armor = list(MELEE = 25, BULLET = 25, LASER = 20, ENERGY = 5, BOMB = 15, BIO = 30, RAD = 30)
+	armor_type = /datum/armor/stealth
 
 	slowdown = 1.4
 	actions_types = list(/datum/action/item_action/vox_stealth)
@@ -342,7 +342,7 @@
 	icon_state = "vox-medic"
 	item_state = "vox-medic"
 	desc = "An alien helmet with enormous lenseю"
-	armor = list(MELEE = 45, BULLET = 40, LASER = 45, ENERGY = 20, BOMB = 25, BIO = 30, RAD = 30)
+	armor_type = /datum/armor/medic
 
 /obj/item/clothing/suit/space/vox/medic
 	name = "alien medical armor"
@@ -351,7 +351,7 @@
 	desc = "A nonhuman pressure suit."
 	slowdown = 0.5
 	var/mob/living/carbon/human/wearer
-	armor = list(MELEE = 45, BULLET = 40, LASER = 45, ENERGY = 20, BOMB = 25, BIO = 30, RAD = 30)
+	armor_type = /datum/armor/medic
 
 /obj/item/clothing/suit/space/vox/medic/equipped(mob/user, slot)
 	..()
@@ -396,7 +396,7 @@
 	icon_state = "hardsuit0-voxcarapace"
 	item_state = "hardsuit0-voxcarapace"
 	hardsuit_type = "voxcarapace"
-	armor = list(MELEE = 65, BULLET = 50, LASER = 70, ENERGY = 20, BOMB = 30, BIO = 30, RAD = 30)
+	armor_type = /datum/armor/hardsuit_vox
 
 /obj/item/clothing/suit/space/hardsuit/syndi/vox
 	name = "alien carapace hardsuit"
@@ -405,7 +405,7 @@
 	item_state = "hardsuit0-voxcarapace"
 	hardsuit_type = "voxcarapace"
 	helmettype = /obj/item/clothing/head/helmet/space/hardsuit/syndi/vox
-	armor = list(MELEE = 65, BULLET = 50, LASER = 70, ENERGY = 20, BOMB = 30, BIO = 30, RAD = 30)
+	armor_type = /datum/armor/hardsuit_vox
 	species_restricted = list("Vox")
 	tail_state = ""
 

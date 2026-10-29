@@ -3,12 +3,14 @@
 //The effects include: stun, knockdown, unconscious, sleeping, resting, jitteriness, dizziness, ear damage,
 // eye damage, eye_blind, eye_blurry, druggy, TRAIT_BLIND trait, and TRAIT_NEARSIGHT trait.
 
-///Set the jitter of a mob
+/**
+ * Задаёт ТРЯСКУ ТЕЛА персонажа, дрожь
+ */
 /mob/proc/Jitter(amount)
 	jitteriness = max(jitteriness,amount,0)
 
 /**
-  * Set the dizzyness of a mob to a passed in amount
+  * Задаёт ТРЯСКУ ЭКРАНА игрока, "головокружеине"
   *
   * Except if dizziness is already higher in which case it does nothing
   */
@@ -75,6 +77,7 @@
 		clear_fullscreen("blind_blindfold_hard", 0) // Мгновенно убрать
 		clear_fullscreen("blind_blindfold", 0) // Мгновенно убрать
 		// remove_client_colour(/datum/client_colour/monochrome/blind)
+	SEND_SIGNAL(src, COMSIG_MOB_BLINDNESS_CHANGED)
 /**
   * Make the mobs vision blurry
   */

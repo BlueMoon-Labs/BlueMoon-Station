@@ -551,7 +551,9 @@
 /datum/reagent/consumable/nuka_cola/on_mob_life(mob/living/carbon/M)
 	M.Jitter(20)
 	M.set_drugginess(30)
-	M.dizziness +=1.5
+	// Refresh a bounded effect instead of accumulating hundreds of ticks of
+	// dizziness from large doses. Once the reagent is purged, it fades normally.
+	M.Dizzy(10)
 	M.drowsyness = 0
 	M.AdjustSleeping(-40, FALSE)
 	M.adjust_bodytemperature(-5 * TEMPERATURE_DAMAGE_COEFFICIENT, BODYTEMP_NORMAL)

@@ -52,13 +52,17 @@
 
 	//if(prob(45)) // BlueMoon. Тестируем цель на похищение. Первое время она будет гарантированно выдаваться рейдерам.
 	kidnap_objective.team = src
-	kidnap_objective.find_target()
-	objectives += kidnap_objective
+	if(kidnap_objective.find_target())
+		objectives += kidnap_objective
+	else
+		qdel(kidnap_objective)
 
 	if(prob(25)) // Дополнительная цель
 		kidnap_objective_additional.team = src
-		kidnap_objective_additional.find_target()
-		objectives += kidnap_objective_additional
+		if(kidnap_objective_additional.find_target())
+			objectives += kidnap_objective_additional
+		else
+			qdel(kidnap_objective_additional)
 
 	return
 
@@ -221,7 +225,7 @@
 /obj/machinery/porta_turret/syndicate/energy/pirate/inteq
 	max_integrity = 260
 	integrity_failure = 0.08
-	armor = list(MELEE = 50, BULLET = 30, LASER = 30, ENERGY = 30, BOMB = 50, BIO = 0, RAD = 0, FIRE = 90, ACID = 90)
+	armor_type = /datum/armor/base_and_inteq
 	faction = list("InteQ")
 
 /obj/machinery/porta_turret/syndicate/energy/pirate/inteq/assess_perp(mob/living/carbon/human/perp)

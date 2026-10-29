@@ -72,3 +72,22 @@
 	max_ammo = 6
 	multiload = 1
 
+/obj/item/ammo_box/magazine/internal/cylinder/judgement
+	name = "барабан Judgement"
+	ammo_type = /obj/item/ammo_casing/magnum44
+	caliber = list(".44 magnum")
+	max_ammo = 6
+
+/obj/item/ammo_box/magazine/internal/cylinder/mea_culpa
+	name = "Mea Culpa cylinder"
+	ammo_type = /obj/item/ammo_casing/c45/lethal
+	caliber = list(".45")
+	max_ammo = 9
+	multiload = 1
+
+/obj/item/ammo_box/magazine/internal/cylinder/exorcist_big
+	name = "Exorcist cylinder"
+	ammo_type = /obj/item/ammo_casing/shotgun/buckshot
+	caliber = list("shotgun")
+	max_ammo = 5
+	multiload = 1

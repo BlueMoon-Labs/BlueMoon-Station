@@ -16,7 +16,7 @@ GLOBAL_LIST_EMPTY(allCasters)
 	verb_say = "beeps"
 	verb_ask = "beeps"
 	verb_exclaim = "beeps"
-	armor = list(MELEE = 50, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 50, ACID = 30)
+	armor_type = /datum/armor/newscaster
 	max_integrity = 200
 	integrity_failure = 0.25
 	var/screen = 0
@@ -349,7 +349,9 @@ GLOBAL_LIST_EMPTY(allCasters)
 		usr.set_machine(src)
 		scan_user(usr)
 		if(href_list["set_channel_name"])
-			channel_name = stripped_input(usr, "Provide a Feed Channel Name", "Network Channel Handler", "", MAX_NAME_LEN)
+			var/new_channel_name = tgui_input_text(usr, "Provide a Feed Channel Name", "Network Channel Handler", "", MAX_NAME_LEN, FALSE, TRUE)
+			if(!isnull(new_channel_name))
+				channel_name = new_channel_name
 			updateUsrDialog()
 		else if(href_list["set_channel_lock"])
 			c_locked = !c_locked
@@ -369,7 +371,7 @@ GLOBAL_LIST_EMPTY(allCasters)
 			if(channel_name == "" || channel_name == "\[REDACTED\]" || scanned_user == "Unknown" || check || (scanned_user in existing_authors) )
 				screen=7
 			else
-				var/choice = alert("Please confirm Feed channel creation","Network Channel Handler","Confirm","Cancel")
+				var/choice = tgui_alert(usr, "Please confirm Feed channel creation", "Network Channel Handler", list("Confirm", "Cancel"))
 				if(choice=="Confirm")
 					scan_user(usr)
 					GLOB.news_network.CreateFeedChannel(channel_name, scanned_user, c_locked)
@@ -381,13 +383,17 @@ GLOBAL_LIST_EMPTY(allCasters)
 			for(var/datum/news/feed_channel/F in GLOB.news_network.network_channels)
 				if( (!F.locked || F.author == scanned_user) && !F.censored)
 					available_channels += F.channel_name
-			channel_name = input(usr, "Choose receiving Feed Channel", "Network Channel Handler") in available_channels
+			var/new_receiving_channel = tgui_input_list(usr, "Choose receiving Feed Channel", "Network Channel Handler", available_channels)
+			if(!isnull(new_receiving_channel))
+				channel_name = new_receiving_channel
 			updateUsrDialog()
 		else if(href_list["set_new_message"])
-			var/temp_message = trim(stripped_multiline_input(usr, "Write your Feed story", "Network Channel Handler", msg))
-			if(temp_message)
-				msg = temp_message
-				updateUsrDialog()
+			var/raw_message = tgui_input_text(usr, "Write your Feed story", "Network Channel Handler", msg, MAX_MESSAGE_LEN, TRUE, TRUE)
+			if(!isnull(raw_message))
+				var/temp_message = trim(raw_message)
+				if(temp_message)
+					msg = temp_message
+			updateUsrDialog()
 		else if(href_list["set_attachment"])
 			AttachPhoto(usr)
 			updateUsrDialog()
@@ -432,17 +438,21 @@ GLOBAL_LIST_EMPTY(allCasters)
 			screen = 14
 			updateUsrDialog()
 		else if(href_list["set_wanted_name"])
-			channel_name = stripped_input(usr, "Provide the name of the Wanted person", "Network Security Handler")
+			var/new_wanted_name = tgui_input_text(usr, "Provide the name of the Wanted person", "Network Security Handler", "", MAX_NAME_LEN, FALSE, TRUE)
+			if(!isnull(new_wanted_name))
+				channel_name = new_wanted_name
 			updateUsrDialog()
 		else if(href_list["set_wanted_desc"])
-			msg = stripped_input(usr, "Provide a description of the Wanted person and any other details you deem important", "Network Security Handler")
+			var/new_wanted_desc = tgui_input_text(usr, "Provide a description of the Wanted person and any other details you deem important", "Network Security Handler", "", MAX_MESSAGE_LEN, FALSE, TRUE)
+			if(!isnull(new_wanted_desc))
+				msg = new_wanted_desc
 			updateUsrDialog()
 		else if(href_list["submit_wanted"])
 			var/input_param = text2num(href_list["submit_wanted"])
 			if(msg == "" || channel_name == "" || scanned_user == "Unknown")
 				screen = 16
 			else
-				var/choice = alert("Please confirm Wanted Issue [(input_param==1) ? ("creation.") : ("edit.")]","Network Security Handler","Confirm","Cancel")
+				var/choice = tgui_alert(usr, "Please confirm Wanted Issue [(input_param==1) ? ("creation.") : ("edit.")]", "Network Security Handler", list("Confirm", "Cancel"))
 				if(choice=="Confirm")
 					scan_user(usr)
 					if(input_param==1)          //If input_param == 1 we're submitting a new wanted issue. At 2 we're just editing an existing one.
@@ -450,16 +460,16 @@ GLOBAL_LIST_EMPTY(allCasters)
 						screen = 15
 					else
 						if(GLOB.news_network.wanted_issue.isAdminMsg)
-							alert("The wanted issue has been distributed by a Nanotrasen higherup. You cannot edit it.","Ok")
+							tgui_alert(usr, "The wanted issue has been distributed by a Nanotrasen higherup. You cannot edit it.", "Network Security Handler", list("Ok"))
 							return
 						GLOB.news_network.submitWanted(channel_name, msg, scanned_user, picture)
 						screen = 19
 			updateUsrDialog()
 		else if(href_list["cancel_wanted"])
 			if(GLOB.news_network.wanted_issue.isAdminMsg)
-				alert("The wanted issue has been distributed by a Nanotrasen higherup. You cannot take it down.","Ok")
+				tgui_alert(usr, "The wanted issue has been distributed by a Nanotrasen higherup. You cannot take it down.", "Network Security Handler", list("Ok"))
 				return
-			var/choice = alert("Please confirm Wanted Issue removal","Network Security Handler","Confirm","Cancel")
+			var/choice = tgui_alert(usr, "Please confirm Wanted Issue removal", "Network Security Handler", list("Confirm", "Cancel"))
 			if(choice=="Confirm")
 				GLOB.news_network.deleteWanted()
 				screen=17
@@ -470,21 +480,21 @@ GLOBAL_LIST_EMPTY(allCasters)
 		else if(href_list["censor_channel_author"])
 			var/datum/news/feed_channel/FC = locate(href_list["censor_channel_author"])
 			if(FC.is_admin_channel)
-				alert("This channel was created by a Nanotrasen Officer. You cannot censor it.","Ok")
+				tgui_alert(usr, "This channel was created by a Nanotrasen Officer. You cannot censor it.", "Network Channel Handler", list("Ok"))
 				return
 			FC.toggleCensorAuthor()
 			updateUsrDialog()
 		else if(href_list["censor_channel_story_author"])
 			var/datum/news/feed_message/MSG = locate(href_list["censor_channel_story_author"])
 			if(MSG.is_admin_message)
-				alert("This message was created by a Nanotrasen Officer. You cannot censor its author.","Ok")
+				tgui_alert(usr, "This message was created by a Nanotrasen Officer. You cannot censor its author.", "Network Channel Handler", list("Ok"))
 				return
 			MSG.toggleCensorAuthor()
 			updateUsrDialog()
 		else if(href_list["censor_channel_story_body"])
 			var/datum/news/feed_message/MSG = locate(href_list["censor_channel_story_body"])
 			if(MSG.is_admin_message)
-				alert("This channel was created by a Nanotrasen Officer. You cannot censor it.","Ok")
+				tgui_alert(usr, "This channel was created by a Nanotrasen Officer. You cannot censor it.", "Network Channel Handler", list("Ok"))
 				return
 			MSG.toggleCensorBody()
 			updateUsrDialog()
@@ -496,7 +506,7 @@ GLOBAL_LIST_EMPTY(allCasters)
 		else if(href_list["toggle_d_notice"])
 			var/datum/news/feed_channel/FC = locate(href_list["toggle_d_notice"])
 			if(FC.is_admin_channel)
-				alert("This channel was created by a Nanotrasen Officer. You cannot place a D-Notice upon it.","Ok")
+				tgui_alert(usr, "This channel was created by a Nanotrasen Officer. You cannot place a D-Notice upon it.", "Network Channel Handler", list("Ok"))
 				return
 			FC.toggleCensorDclass()
 			updateUsrDialog()
@@ -524,7 +534,7 @@ GLOBAL_LIST_EMPTY(allCasters)
 			updateUsrDialog()
 		else if(href_list["new_comment"])
 			var/datum/news/feed_message/FM = locate(href_list["new_comment"])
-			var/cominput = copytext_char(stripped_input(usr, "Write your message:", "New comment", null), 140)
+			var/cominput = tgui_input_text(usr, "Write your message:", "New comment", null, 140, FALSE, TRUE)
 			if(cominput)
 				scan_user(usr)
 				var/datum/news/feed_comment/FC = new/datum/news/feed_comment

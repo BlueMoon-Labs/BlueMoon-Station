@@ -13,7 +13,7 @@
 	if(SStitle_bm && player.bm_lobby_ready)
 		SStitle_bm.update_character_name(player, real_name)
 
-/datum/preferences/write_character(bypass_cooldown = FALSE, silent = FALSE, export = FALSE, list/patch_context)
+/datum/preferences/write_character(bypass_cooldown = FALSE, silent = FALSE, export = FALSE, list/patch_context, update_active_preset = TRUE)
 	. = ..()
 	if(!istype(., /savefile))
 		return

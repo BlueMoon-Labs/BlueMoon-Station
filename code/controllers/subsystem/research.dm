@@ -17,6 +17,8 @@ SUBSYSTEM_DEF(research)
 	//BLUEMOON CHANGE
 	//Упаковка и отправка изученных научных нод
 	var/list/pending_research_node_ids = list()	//Упаковываемый пакет ID-шек
+	/// Узлы пакета, изученные в станционной сети: только о них объявляет станционная рация
+	var/list/station_research_node_ids = list()
 	var/research_batch_timer
 
 	//ERROR LOGGING
@@ -37,6 +39,7 @@ SUBSYSTEM_DEF(research)
 	var/list/techweb_point_items = list(		//path = list(point type = value)
 	/obj/item/assembly/signaler/anomaly            = list(TECHWEB_POINT_TYPE_GENERIC = 10000),
 	/obj/item/heretic_veil_crystal                 = list(TECHWEB_POINT_TYPE_GENERIC = HERETIC_VEIL_CRYSTAL_POINTS),
+	/obj/item/satellite_data_core                  = list(TECHWEB_POINT_TYPE_GENERIC = SATELLITE_DATA_CORE_POINTS),
 	//   -   Slime Extracts!   - Basics
 	/obj/item/slime_extract/grey                   = list(TECHWEB_POINT_TYPE_GENERIC = 500),
 	/obj/item/slime_extract/metal                  = list(TECHWEB_POINT_TYPE_GENERIC = 750),
@@ -323,8 +326,6 @@ SUBSYSTEM_DEF(research)
 	autosort_categories()
 	error_design = new
 	error_node = new
-
-	RegisterSignal(SSdcs, COMSIG_GLOB_RESEARCH_BATCH_COMPLETE, PROC_REF(on_research_batch_signal))	// Регистрация сигнала отправки пакета изученных ID-шек
 
 	for(var/A in subtypesof(/obj/item/seeds))
 		var/obj/item/seeds/S = A
@@ -621,9 +622,11 @@ SUBSYSTEM_DEF(research)
 		CHECK_TICK
 
 // Начало упаковки ID-шек, вызывается rdconsole.dm
-/datum/controller/subsystem/research/proc/on_node_researched(node_id)
+/datum/controller/subsystem/research/proc/on_node_researched(node_id, datum/techweb/web)
 	if(!(node_id in pending_research_node_ids))
 		pending_research_node_ids += node_id
+	if(web == science_tech)
+		station_research_node_ids[node_id] = TRUE
 	if(!isnull(research_batch_timer))	// Обнуление таймера при изучении нового научного нода в процессе упаковки
 		deltimer(research_batch_timer)
 		research_batch_timer = null
@@ -634,14 +637,14 @@ SUBSYSTEM_DEF(research)
 	research_batch_timer = null
 	var/list/nodes_to_process = pending_research_node_ids.Copy()
 	pending_research_node_ids.Cut()
+	var/list/station_nodes = station_research_node_ids
+	station_research_node_ids = list()
 
 	if(!length(nodes_to_process))
 		return	// Нету ID-шек для сортировки
 	SEND_GLOBAL_SIGNAL(COMSIG_GLOB_RESEARCH_BATCH_COMPLETE, nodes_to_process)	// ID-шки научных нод упакованы
-
-/datum/controller/subsystem/research/proc/on_research_batch_signal(datum/source, list/node_ids)
-	SIGNAL_HANDLER
-	INVOKE_ASYNC(src, PROC_REF(handle_research_batch_announcement), node_ids)
+	if(length(station_nodes))
+		INVOKE_ASYNC(src, PROC_REF(handle_research_batch_announcement), station_nodes)
 
 /datum/controller/subsystem/research/proc/handle_research_batch_announcement(list/node_ids)	// Логика рассылки оповещений по отделам
 	var/obj/machinery/announcement_system/AAS = null

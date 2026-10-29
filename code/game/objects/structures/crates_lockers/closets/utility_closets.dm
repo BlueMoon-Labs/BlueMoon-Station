@@ -24,40 +24,38 @@
 	..()
 	new /obj/item/clothing/head/helmet/space/ervos(src)
 	new /obj/item/clothing/suit/space/ervos(src)
+	switch(rand(1, 100))
+		if(1 to 10)
+			new /obj/item/storage/briefcase/inflatable(src)
+		if(11 to 20)
+			new /obj/item/storage/briefcase/inflatable_airbag(src)
+		else
+			new /obj/item/storage/briefcase/inflatable_mini(src)
 
 	if (prob(40))
 		new /obj/item/storage/toolbox/emergency(src)
 
-	switch (pickweight(list("small" = 35, "aid" = 25, "tank" = 20, "both" = 10, "nothing" = 5, "rng" = 5)))
+	switch (pickweight(list("small" = 35, "aid" = 25, "tank" = 20, "both" = 10, "rng" = 5)))
 		if ("small")
 			new /obj/item/tank/internals/emergency_oxygen(src)
 			new /obj/item/tank/internals/emergency_oxygen(src)
 			new /obj/item/clothing/mask/breath(src)
 			new /obj/item/clothing/mask/breath(src)
-
 		if ("aid")
 			new /obj/item/tank/internals/emergency_oxygen(src)
 			new /obj/item/storage/firstaid/o2(src)
 			new /obj/item/clothing/mask/breath(src)
-
 		if ("tank")
 			new /obj/item/tank/internals/oxygen(src)
 			new /obj/item/clothing/mask/breath(src)
-
 		if ("both")
 			new /obj/item/tank/internals/emergency_oxygen(src)
 			new /obj/item/clothing/mask/breath(src)
-
-		if ("nothing")
-			// doot
-
 		if ("rng")
 			new /obj/effect/spawner/lootdrop/breathing_tanks/no_turf(src)
 			new /obj/effect/spawner/lootdrop/breathing_tanks/no_turf(src)
 			new /obj/effect/spawner/lootdrop/breathing_masks/no_turf(src)
 			new /obj/effect/spawner/lootdrop/breathing_masks/no_turf(src)
-
-			return
 
 /*
  * Fire Closet

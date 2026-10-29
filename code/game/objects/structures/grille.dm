@@ -10,7 +10,7 @@
 	flags_1 = CONDUCT_1
 	pressure_resistance = 5*ONE_ATMOSPHERE
 	layer = BELOW_OBJ_LAYER
-	armor = list(MELEE = 50, BULLET = 70, LASER = 70, ENERGY = 100, BOMB = 10, BIO = 100, RAD = 100, FIRE = 50, ACID = 0)
+	armor_type = /datum/armor/grille
 	max_integrity = 50
 	attack_hand_is_action = TRUE
 	attack_hand_speed = 8
@@ -65,15 +65,21 @@
 /obj/structure/grille/rcd_act(mob/user, var/obj/item/construction/rcd/the_rcd, passed_mode)
 	switch(passed_mode)
 		if(RCD_DECONSTRUCT)
-			to_chat(user, "<span class='notice'>You deconstruct the grille.</span>")
+			to_chat(user, span_notice("Вы разбираете решётку."))
 			qdel(src)
 			return TRUE
 		if(RCD_WINDOWGRILLE)
 			if(locate(/obj/structure/window) in loc)
 				return FALSE
-			to_chat(user, "<span class='notice'>You construct the window.</span>")
+			to_chat(user, span_notice("Вы устанавливаете окно."))
 			var/obj/structure/window/WD = new the_rcd.window_type(drop_location())
 			WD.setAnchored(TRUE)
+			WD.install_airbag()
+			// Новое окно заменяет аварийную защиту, включая ещё не сработавшие модули.
+			for(var/obj/item/airbag_module/module in WD.loc)
+				qdel(module)
+			for(var/obj/structure/inflatable/airbag/barrier in WD.loc)
+				qdel(barrier)
 			return TRUE
 	return FALSE
 

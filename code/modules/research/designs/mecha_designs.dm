@@ -460,6 +460,16 @@
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 	//min_security_level = SEC_LEVEL_RED
 
+/datum/design/mech_rescue_jaw
+	name = "Exosuit Medical Equipment (Rescue Jaws)"
+	desc = "Гидравлический захват для вскрытия дверей и загрузки пациентов в слипер медицинского экзокостюма."
+	id = "mech_rescue_jaw"
+	build_type = MECHFAB
+	build_path = /obj/item/mecha_parts/mecha_equipment/medical/rescue_jaw
+	materials = list(/datum/material/iron = 10000, /datum/material/titanium = 5000, /datum/material/silver = 2000)
+	construction_time = 100
+	category = list("Exosuit Equipment")
+
 /datum/design/mech_sleeper
 	name = "Exosuit Medical Equipment (Mounted Sleeper)"
 	desc = "Equipment for medical exosuits. A mounted sleeper that stabilizes patients and can inject reagents in the exosuit's reserves."
@@ -506,7 +516,7 @@
 	id = "ripley_mk2_kit"
 	build_type = MECHFAB
 	build_path = /obj/item/mecha_parts/mecha_equipment/ripleyupgrade
-	materials = list(/datum/material/titanium=15000)
+	materials = list(/datum/material/iron=20000, /datum/material/plasma=20000)
 	construction_time = 200
 	category = list("Exosuit Equipment")
 
@@ -518,7 +528,7 @@
 	build_path = /obj/item/choice_beacon/vehicle/pact/mech/combat
 	materials = list(/datum/material/iron=190100, /datum/material/glass=33670, /datum/material/gold=6000, /datum/material/silver=30000, /datum/material/uranium=25000, /datum/material/titanium=20000, /datum/material/diamond=20000)
 	construction_time = 20
-	category = list("Bluespace Designs")
+	category = list("Weapons")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 	min_security_level = SEC_LEVEL_RED
 
@@ -530,6 +540,7 @@
 	materials = list(/datum/material/iron=175100, /datum/material/glass=36670, /datum/material/gold=8000, /datum/material/diamond=22000, /datum/material/titanium=10000, /datum/material/plasma=3000)
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL
 	min_security_level = SEC_LEVEL_BLUE
+	category = list("Medical Designs")
 
 /datum/design/combat_mech_beacon/cargo
 	name = "Cargo Mech Beacon"
@@ -539,6 +550,7 @@
 	materials = list(/datum/material/iron=180100, /datum/material/glass=15670, /datum/material/gold=2000, /datum/material/silver=23000, /datum/material/plasma=25000, /datum/material/diamond=6500, /datum/material/titanium=15000)
 	departmental_flags = DEPARTMENTAL_FLAG_CARGO
 	min_security_level = SEC_LEVEL_BLUE
+	category = list("Mining Designs")
 
 /datum/design/combat_mech_beacon/engineer
 	name = "Engineer Mech Beacon"
@@ -548,3 +560,4 @@
 	materials = list(/datum/material/iron=180100, /datum/material/glass=12170, /datum/material/gold=22000, /datum/material/silver=23000, /datum/material/plasma=25000, /datum/material/diamond=6500)
 	departmental_flags = DEPARTMENTAL_FLAG_ENGINEERING
 	min_security_level = SEC_LEVEL_BLUE
+	category = list("Tool Designs")

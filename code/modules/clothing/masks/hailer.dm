@@ -65,7 +65,7 @@ GLOBAL_LIST_EMPTY(sechailers)
 	var/safety = TRUE
 	var/obj/item/radio/radio //For engineering alerts.
 	var/radio_key = /obj/item/encryptionkey/headset_sec
-	var/radio_channel = "Security"
+	var/radio_channel = RADIO_CHANNEL_SECURITY
 	var/dispatch_cooldown = 250
 	var/last_dispatch = 0
 
@@ -364,6 +364,6 @@ GLOBAL_LIST_EMPTY(sechailers)
 	desc = "A close-fitting tactical mask created in cooperation with a certain megacorporation, comes with an especially aggressive Compli-o-nator 3000."
 	icon_state = "spacepol"
 	item_state = "spacepol"
-	mutantrace_variation = STYLE_NO_ANTHRO_ICON
+	mutantrace_variation = STYLE_MUZZLE
 	flags_cover = MASKCOVERSMOUTH | MASKCOVERSEYES
 	visor_flags_cover = MASKCOVERSMOUTH | MASKCOVERSEYES

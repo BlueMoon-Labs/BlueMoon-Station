@@ -246,6 +246,12 @@
 				effective_weight = max(effective_weight-repeatable_weight_decrease,1)
 	return effective_weight
 
+/datum/dynamic_ruleset/proc/note_family_fired()
+	if(isnull(family))
+		return
+	SSdirector.family_fired_counts[family] = (SSdirector.family_fired_counts[family] || 0) + 1
+	SSdirector.family_last_fired_at[family] = SSdirector.now()
+
 /// Here you can remove candidates that do not meet your requirements.
 /// This means if their job is not correct or they have disconnected you can remove them from candidates here.
 /// Usually this does not need to be changed unless you need some specific requirements from your candidates.

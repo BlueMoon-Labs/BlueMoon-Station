@@ -104,20 +104,19 @@
 		return
 
 	if(hair_style)
-		var/selected_string
-		var/list/datum/sprite_accessory/hair/valid_hairstyles = list()
-		for(var/hair_string in GLOB.hair_styles_list)
-			valid_hairstyles.Add(hair_string)
-		selected_string = tgui_input_list(usr, "Select a new hairstyle", "Your hairstyle", valid_hairstyles)
-		if(incapacitated())
-			to_chat(src, "<span class='warning'>You can't mess with your hair right now!</span>")
-			return
-		else if(selected_string && hair_style != selected_string)
-			hair_style = selected_string
-			regenerate_icons()
-			visible_message("<span class='notice'>[src] pauses a moment to style their hair.</span>")
-		else
-			to_chat(src, "<span class ='notice'>You're already using that style.</span>")
+		open_live_hair_style_picker(src, src, src, list("hair"), CALLBACK(src, PROC_REF(apply_tied_hair)))
+
+/mob/living/carbon/human/proc/apply_tied_hair(new_style, tab, new_color)
+	if(incapacitated())
+		to_chat(src, span_warning("You can't mess with your hair right now!"))
+		return FALSE
+	if(hair_style == new_style && (isnull(new_color) || hair_color == new_color))
+		to_chat(src, span_notice("You're already using that style."))
+		return FALSE
+	hair_style = new_style
+	regenerate_icons()
+	visible_message(span_notice("[src] pauses a moment to style their hair."))
+	return TRUE
 
 /mob/living/carbon/human
 	var/revive_ready = REVIVING_READY	// Only used for creatures that have the xenochimera regen ability, so far.

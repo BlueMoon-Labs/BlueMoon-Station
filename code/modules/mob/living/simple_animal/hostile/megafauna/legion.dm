@@ -329,6 +329,7 @@ SHITCODE AHEAD. BE ADVISED. Also comment extravaganza
 
 ///A basic turret that shoots at nearby mobs. Intended to be used for the legion megafauna.
 /obj/structure/legionturret
+	armor_type = /datum/armor/legionturret
 	name = "\improper Legion sentinel"
 	desc = "The eye pierces your soul."
 	icon = 'icons/mob/lavaland/lavaland_monsters.dmi'
@@ -340,7 +341,6 @@ SHITCODE AHEAD. BE ADVISED. Also comment extravaganza
 	anchored = TRUE
 	density = TRUE
 	layer = ABOVE_OBJ_LAYER
-	armor = list(MELEE = 0, BULLET = 0, LASER = 100,ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 0, ACID = 0)
 	///What kind of projectile the actual damaging part should be.
 	var/projectile_type = /obj/item/projectile/beam/legion
 	///Time until the tracer gets shot

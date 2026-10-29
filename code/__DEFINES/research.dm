@@ -18,6 +18,9 @@
 
 #define TECHWEB_POINT_TYPE_DEFAULT TECHWEB_POINT_TYPE_GENERIC
 
+/// Очки за ядро данных списанного спутника (событие Derelict Satellite).
+#define SATELLITE_DATA_CORE_POINTS 3000
+
 //defined here so people don't forget to change this!
 #define TECHWEB_POINT_TYPE_LIST_ASSOCIATIVE_NAMES list(\
 	TECHWEB_POINT_TYPE_GENERIC = "General Research"\

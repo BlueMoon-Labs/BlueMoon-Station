@@ -62,6 +62,21 @@
 		return null
 	return result
 
+/// Одно поле анкеты без сборки savefile: из корня до разделения или из опубликованного поколения раздела.
+/datum/player_save_json/account/proc/character_field(key, field)
+	var/datum/player_save_document/root = snapshot()
+	if(!root || !(key in root.tree))
+		return null
+	if(isnull(directories))
+		var/list/node = root.tree[key]
+		var/list/children = node["children"]
+		var/list/field_node = children[field]
+		return field_node ? player_save_decode_value(field_node["value"]) : null
+	if(!directories[key])
+		return null
+	var/datum/player_save_json/child = branch(key)
+	return child.read_field(field, directories[key])
+
 /datum/player_save_json/account/load_tree(required_generation, validate = TRUE)
 	cached_root = null
 	return ..()

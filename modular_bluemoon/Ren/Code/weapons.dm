@@ -14,9 +14,10 @@
 	force = 30
 	throwforce = 10
 	wound_bonus = 35
-	armour_penetration = 30
+	armour_penetration = MELEE_AP_ANTAGONIST
 	sharpness = SHARP_EDGED
 	attack_verb = list("slashed", "sliced", "shredded")
+	diamonded = TRUE
 
 /obj/item/pickaxe/drill/jackhammer/angle_grinder/afterattack(atom/A, mob/living/user, proximity)
 	. = ..()
@@ -526,7 +527,7 @@
 	item_state = "karakurt"
 	force = 15
 	throwforce = 12
-	armour_penetration = 50
+	armour_penetration = MELEE_AP_EXCLUSIVE
 	block_parry_data = /datum/block_parry_data/traitor_rapier
 
 /obj/item/melee/rapier/karakurt/attack(mob/living/target, mob/living/user)

@@ -734,9 +734,11 @@ GLOBAL_LIST_EMPTY(cached_icon_states_by_file)
 /// `icon_states()` but memoised for icon *files*. Runtime `/icon` datums have
 /// unstable refs (GC reuse) so those fall through to an uncached lookup.
 /proc/cached_icon_states(icon_file, mode = 0)
-	if(!icon_file || istype(icon_file, /icon))
+	var/file_name = "[icon_file]"
+	// A runtime icon assigned to an appearance becomes an unnamed resource, so every one shares the key.
+	if(!length(file_name) || istype(icon_file, /icon))
 		return icon_states(icon_file, mode)
-	var/key = "[icon_file]|[mode]"
+	var/key = "[file_name]|[mode]"
 	. = GLOB.cached_icon_states_by_file[key]
 	if(isnull(.))
 		. = icon_states(icon_file, mode)
@@ -751,31 +753,66 @@ GLOBAL_LIST_EMPTY(cached_icon_state_directional)
 /// Soft cap on cached_icon_state_directional entries (each value is a single boolean).
 #define ICON_STATE_DIRECTIONAL_CACHE_MAX 8192
 
+/// Число направлений у стейтов DMI-файла, "[файл]" => list(стейт => dirs). FALSE - файл rust-g не прочитал.
+GLOBAL_LIST_EMPTY(cached_dmi_state_dirs)
+#define DMI_STATE_DIRS_CACHE_MAX 1024
+
+/// Направления всех стейтов файла одним чтением заголовка DMI. Три пробных icon() на стейт стоили до 1.7 мс.
+/proc/dmi_state_dirs(file_name)
+	. = GLOB.cached_dmi_state_dirs[file_name]
+	if(!isnull(.))
+		return . || null
+	var/list/state_dirs = FALSE
+	if(findtext(file_name, ".dmi", -4))
+		// Ошибку чтения rust-g отдаёт текстом, не JSON: такой файл молча уходит на пробные icon().
+		var/raw_metadata = RUSTG_CALL(RUST_G, "dmi_read_metadata")(file_name)
+		var/list/metadata = copytext(raw_metadata, 1, 2) == "{" ? safe_json_decode(raw_metadata, null) : null
+		if(islist(metadata) && islist(metadata["states"]))
+			state_dirs = list()
+			for(var/list/state_data as anything in metadata["states"])
+				// Стейт движения BYOND берёт только для шага, icon() отдаёт обычный с тем же именем.
+				if(!islist(state_data) || state_data["movement"])
+					continue
+				var/state_name = "[state_data["name"]]"
+				if(!state_dirs[state_name])
+					state_dirs[state_name] = state_data["dirs"]
+	GLOB.cached_dmi_state_dirs[file_name] = state_dirs
+	if(length(GLOB.cached_dmi_state_dirs) > DMI_STATE_DIRS_CACHE_MAX)
+		GLOB.cached_dmi_state_dirs.Cut(1, (DMI_STATE_DIRS_CACHE_MAX / 4) + 1)
+	return state_dirs || null
+
 /// Returns TRUE if the given icon_state in the given icon has any of NORTH/EAST/WEST frames.
 /proc/icon_state_has_directional_frames(icon_file, icon_state)
 	var/static/list/checkdirs = list(NORTH, EAST, WEST)
 	if(!icon_file)
 		return FALSE
-	if(istype(icon_file, /icon)) // runtime /icon datums: unstable refs, compute every time
+	var/file_name = "[icon_file]"
+	if(!length(file_name) || istype(icon_file, /icon))
 		for(var/checkdir in checkdirs)
 			if(length(icon_states(icon(icon_file, icon_state, checkdir))))
 				return TRUE
 		return FALSE
-	var/key = "[icon_file]|[icon_state]"
+	var/key = "[file_name]|[icon_state]"
 	. = GLOB.cached_icon_state_directional[key]
 	if(!isnull(.))
 		return .
-	. = FALSE
-	for(var/checkdir in checkdirs)
-		if(length(icon_states(icon(icon_file, icon_state, checkdir))))
-			. = TRUE
-			break
+	var/list/state_dirs = dmi_state_dirs(file_name)
+	var/dirs = state_dirs?["[icon_state]"]
+	if(dirs)
+		. = dirs > 1
+	else
+		. = FALSE
+		for(var/checkdir in checkdirs)
+			if(length(icon_states(icon(icon_file, icon_state, checkdir))))
+				. = TRUE
+				break
 	GLOB.cached_icon_state_directional[key] = .
 	if(length(GLOB.cached_icon_state_directional) > ICON_STATE_DIRECTIONAL_CACHE_MAX)
 		GLOB.cached_icon_state_directional.Cut(1, (ICON_STATE_DIRECTIONAL_CACHE_MAX / 4) + 1) // evict oldest 25%
 
 // Creates a single icon from a given /atom or /image.  Only the first argument is required.
-/proc/getFlatIcon(image/A, defdir, deficon, defstate, defblend, start = TRUE, no_anim = FALSE)
+// icon_offsets optionally receives the original origin's pixel offsets within the flattened icon.
+/proc/getFlatIcon(image/A, defdir, deficon, defstate, defblend, start = TRUE, no_anim = FALSE, list/icon_offsets = null)
 	//Define... defines.
 	var/static/icon/flat_template = icon('icons/effects/effects.dmi', "nothing")
 
@@ -809,6 +846,9 @@ GLOBAL_LIST_EMPTY(cached_icon_state_directional)
 	#define addY1 add_size[INDEX_Y_LOW]
 	#define addY2 add_size[INDEX_Y_HIGH]
 
+	if(!isnull(icon_offsets))
+		icon_offsets["x"] = 0
+		icon_offsets["y"] = 0
 	if(!A || A.alpha <= 0)
 		return BLANK
 
@@ -938,6 +978,9 @@ GLOBAL_LIST_EMPTY(cached_icon_state_directional)
 				addY2 - flatY1 + 1
 				)
 				flat_size = add_size.Copy()
+				if(!isnull(icon_offsets))
+					icon_offsets["x"] = 1 - flatX1
+					icon_offsets["y"] = 1 - flatY1
 
 			// Blend the overlay into the flattened icon
 			if(I != copy && (I.appearance_flags & RESET_COLOR))
@@ -1240,40 +1283,83 @@ GLOBAL_LIST_EMPTY(humanoid_icon_cache)
 /// so the per-entry footprint is non-trivial — keep this modest.
 #define HUMANOID_ICON_CACHE_MAX 256
 
+/// Манекен с внешностью из префов в одежде профессии или аутфита, готовый к снимку.
+/// null, если манекен удалили, пока прок уступал тик. Отпускать через release_human_preview_dummy().
+/proc/dress_human_preview_dummy(datum/job/J, datum/preferences/prefs, dummy_key, outfit_override = null)
+	// regenerate = FALSE: манекен всё равно переодевается прямо ниже и трижды
+	// перерисовывается, так что штатный regenerate_icons() на входе - выброшенная работа.
+	var/mob/living/carbon/human/dummy/body = generate_or_wait_for_human_dummy(dummy_key, regenerate = FALSE)
+
+	// copy_to тянет за собой set_species с полной пересборкой конечностей и органов, equip
+	// спавнит весь комплект аутфита, а тройка update_* перерисовывает моба. В прод-раунде этот
+	// блок мерился в 120-190 мс при потолке тика в 12, поэтому между шагами прок уступает тик.
+	// Манекен на это время остаётся занятым, остальные вызывающие ждут его на in_use.
+	if(prefs)
+		prefs.copy_to(body,TRUE,FALSE)
+		CHECK_TICK
+	// Закрытие интерфейса может удалить манекен, пока генерация уступает тик.
+	if(QDELETED(body))
+		return null
+	if(J)
+		J.equip(body, TRUE, FALSE, outfit_override = outfit_override)
+		CHECK_TICK
+	else if (outfit_override)
+		body.equipOutfit(outfit_override,visualsOnly = TRUE)
+		CHECK_TICK
+	if(QDELETED(body))
+		return null
+
+	// Синхронизация превью моба, без этого именно эти части почему-то ломает. Костыль.
+	body.update_body(update_genitals = TRUE)
+	body.update_hair()
+	body.update_mutations_overlay()
+	CHECK_TICK
+	if(QDELETED(body))
+		return null
+	return body
+
+/proc/release_human_preview_dummy(mob/living/carbon/human/dummy/body, dummy_key)
+	if(dummy_key)
+		// Пока манекен был занят, его могли удалить и заменить в том же слоте.
+		if(GLOB.human_dummy_list[dummy_key] == body)
+			unset_busy_human_dummy(dummy_key)
+	else
+		qdel(body)
+
+/// Внешность одетого манекена лицом на юг: её рисует клиент, без сведения в плоскую иконку.
+/// Слои свечения вырезаны: без освещения маски свечения и их чёрные блокеры легли бы пятнами поверх.
+/proc/get_human_preview_appearance(datum/job/J, datum/preferences/prefs, dummy_key, outfit_override = null)
+	var/mob/living/carbon/human/dummy/body = dress_human_preview_dummy(J, prefs, dummy_key, outfit_override)
+	if(!body)
+		return null
+	var/mutable_appearance/snapshot = new(body)
+	release_human_preview_dummy(body, dummy_key)
+	snapshot.setDir(SOUTH)
+	snapshot.transform = matrix()
+	snapshot.pixel_x = 0
+	snapshot.pixel_y = 0
+	var/list/visible_overlays = list()
+	for(var/mutable_appearance/part as anything in snapshot.overlays)
+		if(part.plane != EMISSIVE_PLANE)
+			visible_overlays += part
+	snapshot.overlays = visible_overlays
+	var/list/visible_underlays = list()
+	for(var/mutable_appearance/part as anything in snapshot.underlays)
+		if(part.plane != EMISSIVE_PLANE)
+			visible_underlays += part
+	snapshot.underlays = visible_underlays
+	return snapshot
+
 //For creating consistent icons for human looking simple animals
 /proc/get_flat_human_icon(icon_id, datum/job/J, datum/preferences/prefs, dummy_key, showDirs = GLOB.cardinals, outfit_override = null, no_anim = FALSE)
 	if(!icon_id || !GLOB.humanoid_icon_cache[icon_id])
-		// regenerate = FALSE: манекен всё равно переодевается прямо ниже и трижды
-		// перерисовывается перед getFlatIcon, так что штатный regenerate_icons()
-		// на входе - выброшенная работа на каждом вызове.
-		var/mob/living/carbon/human/dummy/body = generate_or_wait_for_human_dummy(dummy_key, regenerate = FALSE)
+		var/mob/living/carbon/human/dummy/body = dress_human_preview_dummy(J, prefs, dummy_key, outfit_override)
+		if(!body)
+			return icon('icons/effects/effects.dmi', "nothing")
 
-		// Всё до цикла по дирекциям шло одним неразрывным куском: copy_to тянет за собой
-		// set_species с полной пересборкой конечностей и органов, equip спавнит весь
-		// комплект аутфита, а тройка update_* перерисовывает моба. В прод-раунде этот
-		// блок мерился в 120-190 мс при потолке тика в 12 - то есть уступать было пора
-		// давно, а первый CHECK_TICK стоял только ниже. Прок и так умеет спать, манекен
-		// на это время остаётся занятым, но остальные вызывающие ждут его на in_use
-		if(prefs)
-			prefs.copy_to(body,TRUE,FALSE)
-			CHECK_TICK
-		if(J)
-			J.equip(body, TRUE, FALSE, outfit_override = outfit_override)
-			CHECK_TICK
-		else if (outfit_override)
-			body.equipOutfit(outfit_override,visualsOnly = TRUE)
-			CHECK_TICK
-
-		// Синхронизация превью моба, без этого именно эти части почему-то ломает. Костыль.
-		body.update_body(update_genitals = TRUE)
-		body.update_hair()
-		body.update_mutations_overlay()
-		CHECK_TICK
-
-		// Манекен на время съёмки остаётся занятым, но остальные вызывающие и так
-		// ждут его на in_use. Дирекцию не форсируем: манекен всегда смотрит на юг,
-		// и getFlatIcon возьмёт запрошенную.
-		var/icon/out_icon = build_flat_multidir_icon(body, showDirs, no_anim)
+		// Снимок переживает удаление манекена между кадрами. Дирекцию сохраняем:
+		// манекен смотрит на юг, и getFlatIcon сам возьмёт запрошенную.
+		var/icon/out_icon = build_flat_multidir_icon(body, showDirs, no_anim, snapshot_appearance = body.appearance)
 
 		// Без ключа кэшировать нечего: запись легла бы под индекс null, куда ни один
 		// lookup не придёт, зато вытесняла бы настоящие записи при переполнении.
@@ -1281,7 +1367,7 @@ GLOBAL_LIST_EMPTY(humanoid_icon_cache)
 			GLOB.humanoid_icon_cache[icon_id] = out_icon
 			if(length(GLOB.humanoid_icon_cache) > HUMANOID_ICON_CACHE_MAX)
 				GLOB.humanoid_icon_cache.Cut(1, (HUMANOID_ICON_CACHE_MAX / 4) + 1) // Evict oldest 25%
-		dummy_key? unset_busy_human_dummy(dummy_key) : qdel(body)
+		release_human_preview_dummy(body, dummy_key)
 		return out_icon
 	else
 		return GLOB.humanoid_icon_cache[icon_id]
@@ -1633,7 +1719,7 @@ GLOBAL_LIST_EMPTY(bicon_cache)
 /// be larger than HUMANOID_ICON_CACHE_MAX.
 #define BICON_CACHE_MAX 2048
 
-/proc/icon2base64html(thing)
+/proc/icon2base64html(thing, sourceonly = FALSE)
 	if (!thing)
 		return
 	if (isicon(thing))
@@ -1641,11 +1727,15 @@ GLOBAL_LIST_EMPTY(bicon_cache)
 		var/icon_base64 = icon2base64(thing)
 		if(!icon_base64)
 			return
+		if(sourceonly)
+			return icon_base64
 		return "<img class='icon icon-misc' src='data:image/png;base64,[icon_base64]'>"
 
-	// Either an atom or somebody fucked up and is gonna get a runtime, which I'm fine with.
+	// Для пути типа используем базовую иконку без создания экземпляра атома.
 	var/atom/A = thing
-	var/atom_icon = A.icon
+	var/from_type = ispath(thing, /atom)
+	var/atom_icon = from_type ? initial(A.icon) : A.icon
+	var/atom_icon_state = from_type ? initial(A.icon_state) : A.icon_state
 	// Рантайм-иконка стрингифицируется в "/icon" одинаково для любой динамической, поэтому
 	// ключ обходил это через REF(). Но REF() - индекс в таблице BYOND, и он переиспользуется
 	// после сборки мусора: собранная иконка отдаёт слот следующей, ключ совпадает, и панель
@@ -1653,11 +1743,11 @@ GLOBAL_LIST_EMPTY(bicon_cache)
 	// самоисправляется. Файловые иконки стрингифицируются в свой dmi-путь и стабильны -
 	// кэшируются как раньше; динамические собираются заново, их единицы.
 	var/cacheable = atom_icon && !istype(atom_icon, /icon)
-	var/key = cacheable ? "[atom_icon]:[A.icon_state]" : null
+	var/key = cacheable ? "[atom_icon]:[atom_icon_state]" : null
 	var/icon_base64 = cacheable ? GLOB.bicon_cache[key] : null
 
 	if (!icon_base64) // Doesn't exist, make it.
-		var/icon/I = icon(A.icon, A.icon_state, SOUTH, 1)
+		var/icon/I = icon(atom_icon, atom_icon_state, SOUTH, 1)
 		if (ishuman(thing)) // Shitty workaround for a BYOND issue.
 			var/icon/temp = I
 			I = icon()
@@ -1670,7 +1760,9 @@ GLOBAL_LIST_EMPTY(bicon_cache)
 			if(length(GLOB.bicon_cache) > BICON_CACHE_MAX)
 				GLOB.bicon_cache.Cut(1, (BICON_CACHE_MAX / 4) + 1) // Evict oldest 25%
 
-	return "<img class='icon icon-[A.icon_state]' src='data:image/png;base64,[icon_base64]'>"
+	if(sourceonly)
+		return icon_base64
+	return "<img class='icon icon-[atom_icon_state]' src='data:image/png;base64,[icon_base64]'>"
 
 //Costlier version of icon2html() that uses getFlatIcon() to account for overlays, underlays, etc. Use with extreme moderation, ESPECIALLY on mobs.
 /proc/costly_icon2html(thing, target, sourceonly = FALSE)

@@ -3,47 +3,47 @@
 
 /obj/item/razor/proc/new_hairstyle(mob/living/carbon/human/H, mob/user, mirror)
 	var/location = user.zone_selected
-	if (H == user && !mirror)
-		to_chat(user, "<span class='warning'>You need a mirror to properly style your own hair!</span>")
-		balloon_alert(user, "need mirror!")
+	if(!can_style_target(H, user, location))
 		return
-	if(!user.canUseTopic(src, BE_CLOSE, FALSE, NO_TK))
-		return
-	var/new_style = input(user, "Select a hair style", "Grooming")  as null|anything in GLOB.hair_styles_list
-	if(!new_style)
-		return
-	if(!get_location_accessible(H, location))
-		to_chat(user, "<span class='warning'>The headgear is in the way!</span>")
-		balloon_alert(user, "headgear in the way!")
-		return
-	user.visible_message(span_notice("[user] tries to change [H]'s hairstyle using [src]."), span_notice("You try to change [H]'s hairstyle using [src]."))
-	if(new_style && do_after(user, 6 SECONDS, H))
-		user.visible_message(span_notice("[user] successfully changes [H]'s hairstyle using [src]."), span_notice("You successfully change [H]'s hairstyle using [src]."))
-		H.balloon_alert(user, "changed hairstyle")
-		H.hair_style = new_style
-		H.update_hair()
+	open_live_hair_style_picker(user, H, src, list("hair"), CALLBACK(src, PROC_REF(apply_hairstyle), H, user, location))
 
 /obj/item/razor/proc/new_facial_hairstyle(mob/living/carbon/human/H, mob/user, var/mirror)
 	var/location = user.zone_selected
-	if(H == user && !mirror)
-		to_chat(user, "<span class='warning'>You need a mirror to properly style your own facial hair!</span>")
+	if(!can_style_target(H, user, location))
+		return
+	open_live_hair_style_picker(user, H, src, list("facial"), CALLBACK(src, PROC_REF(apply_hairstyle), H, user, location))
+
+/obj/item/razor/proc/can_style_target(mob/living/carbon/human/H, mob/user, location)
+	if(QDELETED(src) || QDELETED(H) || QDELETED(user) || !extended || !H.get_bodypart(BODY_ZONE_HEAD))
+		return FALSE
+	if(!user.canUseTopic(src, BE_CLOSE, FALSE, NO_TK) || !user.canUseTopic(H, BE_CLOSE, FALSE, NO_TK))
+		return FALSE
+	if(H == user && !HAS_TRAIT(H, TRAIT_SELF_AWARE) && !(locate(/obj/structure/mirror) in range(1, H)))
+		to_chat(user, span_warning("You need a mirror to properly style your own hair!"))
 		balloon_alert(user, "need mirror!")
-		return
-	if(!user.canUseTopic(src, BE_CLOSE, FALSE, NO_TK))
-		return
-	var/new_style = input(user, "Select a facial hair style", "Grooming")  as null|anything in GLOB.facial_hair_styles_list
-	if(!new_style)
-		return
+		return FALSE
 	if(!get_location_accessible(H, location))
-		to_chat(user, "<span class='warning'>The mask is in the way!</span>")
-		balloon_alert(user, "mask in the way!")
-		return
-	user.visible_message(span_notice("[user] tries to change [H]'s facial hair style using [src]."), span_notice("You try to change [H]'s facial hair style using [src]."))
-	if(new_style && do_after(user, 6 SECONDS, H))
-		user.visible_message(span_notice("[user] successfully changes [H]'s facial hair style using [src]."), span_notice("You successfully change [H]'s facial hair style using [src]."))
-		H.balloon_alert(user, "changed facial hair style")
+		var/obstruction = location == BODY_ZONE_PRECISE_MOUTH ? "mask" : "headgear"
+		to_chat(user, span_warning("The [obstruction] is in the way!"))
+		balloon_alert(user, "[obstruction] in the way!")
+		return FALSE
+	return TRUE
+
+/obj/item/razor/proc/apply_hairstyle(mob/living/carbon/human/H, mob/user, location, new_style, tab)
+	if(!can_style_target(H, user, location))
+		return FALSE
+	var/style_label = tab == "facial" ? "facial hair style" : "hairstyle"
+	user.visible_message(span_notice("[user] tries to change [H]'s [style_label] using [src]."), span_notice("You try to change [H]'s [style_label] using [src]."))
+	if(!do_after(user, 6 SECONDS, H) || !can_style_target(H, user, location))
+		return FALSE
+	user.visible_message(span_notice("[user] successfully changes [H]'s [style_label] using [src]."), span_notice("You successfully change [H]'s [style_label] using [src]."))
+	H.balloon_alert(user, "changed [style_label]")
+	if(tab == "facial")
 		H.facial_hair_style = new_style
-		H.update_hair()
+	else
+		H.hair_style = new_style
+	H.update_hair()
+	return TRUE
 
 /obj/item/razor/straightrazor
 	name = "straight razor"

@@ -14,6 +14,7 @@
 		"bark_pitch" = "scalar",
 		"bark_speed" = "scalar",
 		"bark_variance" = "scalar",
+		"bgstate" = "scalar",
 		"blood_color" = "scalar",
 		"body_is_always_random" = "scalar",
 		"body_model" = "scalar",
@@ -24,9 +25,11 @@
 		"custom_emote_panel" = "list",
 		"custom_interactions" = "interactions",
 		"custom_laugh" = "scalar",
+		"custom_moan_sounds" = "list",
 		"custom_species" = "name",
 		"custom_speech_verb" = "scalar",
 		"custom_tongue" = "scalar",
+		"distant_start_enabled" = "scalar",
 		"egg_shell" = "scalar",
 		"enable_personal_chat_color" = "scalar",
 		"erp_pref" = "scalar",
@@ -59,9 +62,12 @@
 		"feature_breasts_accessible" = "scalar",
 		"feature_breasts_color" = "scalar",
 		"feature_breasts_fluid" = "fluid",
+		"feature_breasts_nipples" = "scalar",
+		"feature_breasts_nipples_color" = "scalar",
 		"feature_breasts_producing" = "scalar",
 		"feature_breasts_shape" = "scalar",
 		"feature_breasts_size" = "scalar",
+		"feature_breasts_sprite_variant" = "scalar",
 		"feature_breasts_stuffing" = "scalar",
 		"feature_breasts_visibility" = "scalar",
 		"feature_butt_accessible" = "scalar",
@@ -191,6 +197,7 @@
 		"socks" = "scalar",
 		"socks_color" = "scalar",
 		"species" = "scalar",
+		"split_eye_colors" = "scalar",
 		"summon_nickname" = "name",
 		"tattoo_pref" = "scalar",
 		"undershirt" = "scalar",
@@ -199,6 +206,7 @@
 		"unholyhard_pref" = "scalar",
 		"unholypref" = "scalar",
 		"uplink_loc" = "scalar",
+		"use_custom_moan_sounds" = "scalar",
 		"use_custom_skin_tone" = "scalar",
 		"virile" = "scalar",
 		"vore_flags" = "scalar",
@@ -520,6 +528,7 @@
 	var/confirmed = tgui_alert(user, "Заменить переносимые настройки слота [slot]? Валюта, коллекции и закрытые данные останутся прежними.", "Импорт персонажа", list("Импортировать", "Отмена"))
 	if(confirmed == "Импортировать" && user.client?.prefs == src && default_slot == slot)
 		if(import_character_json(text))
+			. = TRUE
 			to_chat(user, span_notice("Персонаж импортирован и сохранён в слот [slot]."))
 		else
 			to_chat(user, span_warning("Импорт не выполнен: [html_encode(player_transfer_error)]"))

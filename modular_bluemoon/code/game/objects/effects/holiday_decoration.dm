@@ -192,3 +192,12 @@
 /obj/item/decoration/tinsel/halloween/bats
 	icon_state = "14"
 	random = FALSE
+
+// Во время Хэллоуина на все замапленные окна (включая окна из спавнеров) вешается гирлянда.
+/obj/structure/window/Initialize(mapload, direct)
+	. = ..()
+	if(mapload && SSholidays.holidays && SSholidays.holidays[HALLOWEEN])
+		var/turf/window_turf = get_turf(src)
+		// Угловые окна ставятся по два на турф - гирлянда нужна одна.
+		if(window_turf && !(locate(/obj/item/decoration/garland/halloween) in window_turf))
+			new /obj/item/decoration/garland/halloween(window_turf)

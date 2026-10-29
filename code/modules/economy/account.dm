@@ -15,9 +15,13 @@ GLOBAL_VAR_INIT(next_account_number, 0)
 /datum/bank_account
 	var/account_holder = "Rusty Venture"
 	var/account_balance = 0
+	/// Regulatory fines may overdraw an account; normal purchases still require funds.
+	var/allow_debt = FALSE
 	var/datum/job/account_job
 	var/list/bank_cards = list()
 	var/add_to_accounts = TRUE
+	/// Счёт гост-роли или внешней команды: станционные механики вроде Crab-17 его не трогают
+	var/offstation = FALSE
 	var/transferable = TRUE
 	var/account_id
 	var/being_dumped = FALSE //pink levels are rising
@@ -98,6 +102,7 @@ GLOBAL_VAR_INIT(next_account_number, 0)
 /datum/bank_account/Destroy()
 	if(add_to_accounts)
 		SSeconomy.bank_accounts -= src
+	GLOB.all_money_accounts -= src
 	for(var/datum/transaction/T in transaction_history)
 		qdel(T)
 	transaction_history.Cut()
@@ -150,7 +155,7 @@ GLOBAL_VAR_INIT(next_account_number, 0)
  */
 /datum/bank_account/proc/_adjust_money(amount)
 	account_balance += amount
-	if(account_balance < 0)
+	if(account_balance < 0 && !allow_debt)
 		account_balance = 0
 
 /datum/bank_account/proc/adjust_money(amount, reason)
@@ -165,6 +170,8 @@ GLOBAL_VAR_INIT(next_account_number, 0)
 	return account_balance >= amt
 
 /datum/bank_account/proc/transfer_money(datum/bank_account/from, amount)
+	if(!isnum(amount) || amount <= 0)
+		return FALSE
 	if(!from.transferable || !from.has_money(amount))
 		return FALSE
 

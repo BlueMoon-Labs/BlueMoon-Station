@@ -148,6 +148,9 @@
 /obj/item/card/emag/empty
 	uses = 0
 
+/obj/item/card/emag/oneuse
+	uses = 1
+
 /obj/item/emagrecharge
 	name = "electromagnet charging device"
 	desc = "Небольшой аккумулятор двумя лениво воткнутыми штырями. Похоже, она нужна для заряжения небольших батарей в электромагнитных устройствах и, к несчастью, без возможности нормальной зарядки."
@@ -188,7 +191,7 @@
 	lefthand_file = 'icons/mob/inhands/equipment/idcards_lefthand.dmi'
 	righthand_file = 'icons/mob/inhands/equipment/idcards_righthand.dmi'
 	slot_flags = ITEM_SLOT_ID
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 100)
+	armor_type = /datum/armor/fireproof_and_acidproof_misc
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	var/id_type_name = "Identification Card"
 	var/mining_points = 0 //For redeeming at mining equipment vendors
@@ -346,6 +349,10 @@
 	if(bank_support != ID_FREE_BANK_ACCOUNT)
 		to_chat(user, "<span class='warning'>Эта ID-карта не имеет модульного банковского счета. Должно быть, устаревшая модель...</span>")
 		return
+	var/refusal = training_bank_refusal()
+	if(refusal)
+		to_chat(user, span_warning(refusal))
+		return
 	. = FALSE
 	var/datum/bank_account/old_account = registered_account
 
@@ -424,7 +431,7 @@
 		return
 	if(!alt_click_can_use_id(user))
 		return
-	amount_to_remove = FLOOR(min(amount_to_remove, registered_account.account_balance), 1)
+	amount_to_remove = FLOOR(clamp(amount_to_remove, 0, max(0, registered_account.account_balance)), 1)
 	if(amount_to_remove && registered_account.adjust_money(-amount_to_remove))
 		var/obj/item/holochip/holochip = new (user.drop_location(), amount_to_remove)
 		user.put_in_hands(holochip)
@@ -447,6 +454,10 @@
 		. += "У этой карты [mining_points] рудокопных очков карго; всего было заработано [mining_points_total] очков."
 	if(contraband_points)
 		. += "<span class='info'>У этой карты [contraband_points] очков Авангарда.</span>"
+	. += bank_examine(user)
+
+/obj/item/card/id/proc/bank_examine(mob/user)
+	. = list()
 	if(!bank_support || (bank_support == ID_LOCKED_BANK_ACCOUNT && !registered_account))
 		. += "<span class='info'>Эта ID-карта не имеет банковского счёта. Должно быть, устаревшая модель...</span>"
 	else if(registered_account)
@@ -565,7 +576,7 @@
 	. = "[sticker.prefix] [effective_job]"
 
 /obj/item/card/id/proc/update_manifest()
-	GLOB.data_core.manifest_modify(registered_name, get_assignment_name(), assignment)
+	GLOB.data_core.manifest_modify(registered_name, get_assignment_name(), assignment, custom_job)
 
 /obj/item/card/id/silver
 	name = "silver identification card"
@@ -1010,6 +1021,11 @@
 
 /obj/item/card/id/departmental_budget/Initialize(mapload)
 	. = ..()
+	if(is_antag_training_atom(src))
+		name = "departmental card ([department_name])"
+		desc = "Учебная карта отдела: к бюджету станции не привязана, деньги на неё не кладутся и с неё не уходят."
+		icon_state = "[lowertext(department_ID)]_budget"
+		return
 	var/datum/bank_account/B = SSeconomy.get_dep_account(department_ID)
 	if(B)
 		registered_account = B
@@ -1101,7 +1117,7 @@
 		to_chat(user, "<span class='warning'>You can't do that right now!</span>")
 		return TRUE
 	if(alert("Are you sure you want to recolor your id?", "Confirm Repaint", "Yes", "No") == "Yes")
-		var/energy_color_input = input(usr,"","Choose Energy Color",id_color) as color|null
+		var/energy_color_input = tgui_input_color(usr,"","Choose Energy Color",id_color)
 		if(!in_range(src, user) || !energy_color_input)
 			return TRUE
 		if(user.incapacitated() || !istype(user))

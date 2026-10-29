@@ -40,7 +40,6 @@
 	build_path = /obj/item/organ/eyes/robotic/toggled/thermals/sec_level
 	category = list("Cybernetics", "Organs")
 	departmental_flags = DEPARTMENTAL_FLAG_MEDICAL | DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = THERMAL_EYES_SEC_LEVEL
 
 /datum/design/cyberimp_thermals/hack
 	name = "Thermal Eyes"

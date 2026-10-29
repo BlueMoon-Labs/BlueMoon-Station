@@ -12,5 +12,13 @@ Space Mono Licensed by Google under SIL Open Font License, V1.1.
 Tiny Unicode created by Jakob Riedle/DuffsDevice. Website indicates free for commercial use.
 (https://fontmeme.com/fonts/tiny-unicode-font/)
 
+Tiny5 created by Stefan Schmidt / The Tiny5 Project Authors. Licensed under SIL Open Font License, V1.1.
+Full license: Tiny5-OFL.txt
+Source: https://github.com/google/fonts/tree/b2723573ff4dd21b37158d1d549269e21a559df9/ofl/tiny5
+
 VCR OSD Mono created by Riciery Leal/mrmanet. Website indicates 100% free, author confirms it's free for all to use.
 (https://www.dafont.com/font-comment.php?file=vcr_osd_mono)
+
+EB Garamond created by Georg Duffner and Octavio Pardo / The EB Garamond Project Authors. Licensed under SIL Open Font License, V1.1.
+Used by the heretic codex UI: tgui/packages/tgui/assets/heretic-garamond-*.woff2, full license: heretic-garamond-OFL.txt next to them.
+Source: https://fonts.google.com/specimen/EB+Garamond

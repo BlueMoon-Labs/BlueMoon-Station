@@ -304,6 +304,72 @@
 	embedding = null
 	armour_penetration = BULLET_BR5
 
+/obj/item/ammo_casing/cal41/taser
+	name= ".41 taser"
+	desc = "An .41 taser round"
+	caliber = ".41cal"
+	projectile_type = /obj/item/projectile/energy/electrode/cal41
+	can_be_printed = TRUE
+	advanced_print_req = TRUE
+	custom_materials = list(/datum/material/iron = 800, /datum/material/plastic = 200)
+
+/obj/item/projectile/energy/electrode/cal41
+	tase_duration = 40
+	knockdown = 10
+	stamina = 30
+	knockdown_stamoverride = 5
+	knockdown_stam_max = 40
+	strong_tase = FALSE
+
+/obj/item/ammo_casing/cal41/ion
+	name= ".41 ion"
+	desc = "An .41 ion round"
+	caliber = ".41cal"
+	projectile_type = /obj/item/projectile/bullet/c45/ion
+	can_be_printed = TRUE
+	advanced_print_req = TRUE
+	custom_materials = list(/datum/material/iron = 800, /datum/material/plastic = 200)
+
+/obj/item/ammo_casing/cal41/ratshot //30 урона впритык, что меньше чем обычная пуля, но бонус травм, если без брони. Буквально стрелять по крысам, свармерам и прочим мелким и быстрым тварям
+	name= ".41 ratshot"
+	desc = "An .41 ratshot round for rat shooting. 10 pellets but very bad damage"
+	caliber = ".41cal"
+	projectile_type = /obj/item/projectile/bullet/pellet/ratshot	
+	can_be_printed = TRUE
+	advanced_print_req = TRUE
+	variance = 30
+	pellets = 10
+	custom_materials = list(/datum/material/iron = 800, /datum/material/plastic = 200)
+
+/obj/item/projectile/bullet/pellet/ratshot
+	name = "ratshot pellet"
+	damage = 3
+	armour_penetration = BULLET_BR0
+	wound_bonus = 5
+	bare_wound_bonus = 5
+	wound_falloff_tile = -2.5
+	tile_dropoff_ap = 2
+
+/obj/item/ammo_casing/cal41/ricochet
+	name= ".41 ricochet"
+	desc = "An .41 expensive rounds for ricocheting. High chance to shoot yourself!"
+	caliber = ".41cal"
+	projectile_type = /obj/item/projectile/bullet/cal41/ric
+	can_be_printed = TRUE
+	advanced_print_req = TRUE
+	custom_materials = list(/datum/material/iron = 1000, /datum/material/plastic = 2000)
+
+/obj/item/projectile/bullet/cal41/ric //Рикошет пульки с большим углом рикошета и автоаимом по цели, чтоб хуярить в самого стрелка. Дорогие и маленькие урон за автоаим и самострел
+	name = ".41 bullet"
+	damage = 20
+	ricochets_max = 4
+	ricochet_chance = 100
+	ricochet_auto_aim_angle = 90
+	ricochet_auto_aim_range = 10
+	ricochet_incidence_leeway = 50
+	ricochet_decay_chance = 1
+	ricochet_decay_damage = 1
+
 //410 револьвер дробовик
 
 /obj/item/ammo_casing/cal410
@@ -342,7 +408,7 @@
 	icon_state = "410snakeshot"
 	pellets = 6
 	variance = 50
-	projectile_type = /obj/item/projectile/bullet/cal41/lethal
+	projectile_type = /obj/item/projectile/bullet/pellet/exorcist_snakeshot
 	can_be_printed = TRUE
 	custom_materials = list(/datum/material/iron = 800)
 
@@ -350,8 +416,146 @@
 	name = "snakeshot pellet"
 	icon_state = "pellet"
 	armour_penetration = BULLET_BR1
-	damage = 3
+	damage = 7
 	tile_dropoff_ap = 6
 	wound_bonus = 1
-	bare_wound_bonus = 5
+	bare_wound_bonus = 1
 	wound_falloff_tile = -2.5
+
+/obj/item/ammo_casing/cal410/slug //Урон на 2 больше чем у револьвера сб, но разброс при стрельбе
+	name= ".410 slug shot"
+	desc = "An .410 slug shot."
+	caliber = ".410cal"
+	icon = 'modular_bluemoon/icons/obj/ammo.dmi'
+	icon_state = "410slug"
+	pellets = 1
+	variance = 50
+	projectile_type = /obj/item/projectile/bullet/pellet/exorcist_slug
+	can_be_printed = TRUE
+	custom_materials = list(/datum/material/glass = 800)
+
+/obj/item/projectile/bullet/pellet/exorcist_slug
+	name = "snakeshot pellet"
+	icon_state = "pellet"
+	armour_penetration = BULLET_BR3
+	damage = 35
+	tile_dropoff_ap = 6
+	wound_bonus = 1
+	bare_wound_bonus = 1
+	wound_falloff_tile = -2.5
+
+//взрывной револьвер/кинетик
+
+/obj/item/ammo_casing/magnum44
+	name = ".44 Magnum glycerine rounds"
+	desc = "Особый патрон. Пуля наносит легкий урон и вживляет дистанционную взрывчатку под кожу."
+	caliber = ".44 magnum"
+	projectile_type = /obj/item/projectile/bullet/judgement_beacon
+
+/obj/item/ammo_casing/magnum44_kinetic
+	name = ".44 magnum kinetic rounds"
+	caliber = ".44 magnum"
+	desc = "Особый патрон. Пуля наносит огромный урон, отскакивает от стен и откидывает цели назад."
+	projectile_type = /obj/item/projectile/bullet/judgement_kinetic_ricochet
+
+// Маячок (10 урона + МНОЖЕСТВЕННОЕ вживление имплантов)
+/obj/item/projectile/bullet/judgement_beacon
+	name = ".44 Magnum glycerine rounds"
+	damage = 10 
+
+/obj/item/projectile/bullet/judgement_beacon/on_hit(atom/target, blocked = FALSE)
+	. = ..()
+	if(!iscarbon(target))
+		return
+
+	var/mob/living/carbon/C = target
+	
+	if(!firer || !istype(firer.get_active_held_item(), /obj/item/gun/ballistic/revolver/judgement))
+		return
+
+	var/obj/item/gun/ballistic/revolver/judgement/J = firer.get_active_held_item()
+
+	var/obj/item/gps/embed_gps/judgement_beacon_bomb/bomb = new(target)
+	bomb.my_gun = J
+	bomb.my_target = C
+	bomb.tryEmbed(C, forced = TRUE, silent = TRUE)
+	
+	J.active_beacons.Add(C)
+	
+	to_chat(firer, "<span class='notice'>Револьвер издает писк</span>")
+
+/obj/effect/temp_visual/judgement_kinetic_blast
+	name = "кинетическая вспышка"
+	desc = "Визуальный эффект кинетического удара."
+	icon = 'modular_bluemoon/icons/obj/effect/projectiles/generic.dmi' 
+	icon_state = "fire" 
+	duration = 5 // Длительность анимации в тиках (0.5 секунды), после чего игра сама удалит эффект
+
+/obj/item/projectile/bullet/judgement_kinetic_ricochet
+	name = ".44 Magnum round"
+	damage = 70
+	ricochets_max = 4
+	ricochet_chance = 100
+	ricochet_auto_aim_angle = 90
+	ricochet_auto_aim_range = 10
+	ricochet_incidence_leeway = 50
+	ricochet_decay_chance = 1
+	ricochet_decay_damage = 1
+
+/obj/item/projectile/bullet/judgement_kinetic_ricochet/on_hit(atom/target, blocked = 0)
+	. = ..()
+	
+	var/turf/hit_turf = get_turf(target)
+	if(hit_turf)
+		new /obj/effect/temp_visual/judgement_kinetic_blast(hit_turf)
+		playsound(hit_turf, 'sound/weapons/genhit2.ogg', 40, 1)
+
+	// КРИВО СПИЗДИЛ КОД С ПАУВЕР ФИСТА
+	if(isliving(target))
+		var/mob/living/L = target
+		
+		if(hasvar(L, "move_resist") && L.vars["move_resist"] >= INFINITY)
+			return
+
+		var/atom/throw_target = get_edge_target_turf(L, get_dir(src, get_step_away(L, starting)))
+		
+		if(throw_target)
+			L.throw_at(throw_target, 2, 1)
+			to_chat(L, "<span class='userdanger'>Тяжелый кинетический импульс пули сбивает вас с ног и отбрасывает назад!</span>")
+
+/obj/item/gps/embed_gps/judgement_beacon_bomb
+	name = "Маячок-детонатор"
+	desc = "Миниатюрный скрытый заряд, внедренный под кожу. Дистанционно взрывается по радиосигналу револьвера или автоматически через 2 минуты."
+	icon = 'modular_bluemoon/icons/obj/guns/revolvers.dmi'
+	icon_state = "bomb_beacon" 
+	
+	var/obj/item/gun/ballistic/revolver/judgement/my_gun 
+	var/mob/living/carbon/my_target 
+
+/obj/item/gps/embed_gps/judgement_beacon_bomb/Initialize(mapload)
+	. = ..()
+	src.lifespan = 2 MINUTES 
+	addtimer(CALLBACK(src, PROC_REF(auto_detonate)), src.lifespan)
+
+/obj/item/gps/embed_gps/judgement_beacon_bomb/proc/auto_detonate()
+	if(QDELETED(src))
+		return
+
+	if(my_target && !QDELETED(my_target))
+		to_chat(my_target, "<span class='userdanger'>Вживленный внутри вас маячок издает критический писк и детонирует!</span>")
+		
+		var/turf/T = get_turf(my_target)
+		if(T)
+			new /obj/effect/temp_visual/kinetic_blast(T)
+			playsound(T, 'sound/weapons/resonator_blast.ogg', 50, 1)
+		
+		my_target.ex_act(EXPLODE_LIGHT)
+		
+		if(my_gun && !QDELETED(my_gun))
+			my_gun.active_beacons -= my_target
+	else
+		var/turf/T = get_turf(src)
+		if(T)
+			new /obj/effect/particle_effect/smoke(T)
+	
+	qdel(src)

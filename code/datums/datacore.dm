@@ -175,18 +175,19 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 		if(R in security)
 			security_by_id[new_id] = R
 
-/// Removes all records (medical, security, general, locked) for a given name. Returns the rank from general record if found.
+/// Removes a person's records except permanent warrants. Returns the general record's rank if found.
 /datum/datacore/proc/remove_records_by_name(target_name)
 	var/announce_rank = null
 	var/datum/data/record/gen = general_by_name[target_name]
 	if(gen)
 		announce_rank = gen.fields["rank"]
-		qdel(gen)
+		if(!gen.locked_security_reason)
+			qdel(gen)
 	var/datum/data/record/med = medical_by_name[target_name]
 	if(med)
 		qdel(med)
 	var/datum/data/record/sec = security_by_name[target_name]
-	if(sec)
+	if(sec && !sec.locked_security_reason)
 		qdel(sec)
 	// Locked-записи индексируются по id, не по имени - ищем перебором.
 	// Без этого GLOB.data_core.locked бесконечно копит записи ушедших в крио,
@@ -202,8 +203,76 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 /datum/data/record
 	name = "record"
 	var/list/fields = list()
+	/// A permanent warrant protects the arrest status and its general/security records.
+	var/locked_security_reason
 	/// Ленивый источник фотографии, общий у general- и locked-записи; пуст у записей с консоли.
 	var/datum/record_photo_source/photo_source
+
+/// All gameplay status changes must preserve permanent arrest warrants.
+/datum/data/record/proc/set_security_status(status)
+	if(locked_security_reason && status != SEC_RECORD_STATUS_ARREST)
+		return FALSE
+	fields["criminal"] = status
+	return TRUE
+
+/// Off-station personnel may not have a manifest entry until a warrant is issued.
+/datum/datacore/proc/issue_permanent_arrest(datum/mind/subject, crime_name, reason, issuing_authority)
+	var/subject_name = subject.current?.real_name || subject.name
+	var/datum/data/record/general_record = general_by_name[subject_name]
+	var/datum/data/record/security_record = security_by_name[subject_name]
+	if(!general_record)
+		var/record_id = security_record?.fields["id"]
+		if(!record_id)
+			do
+				record_id = num2hex(rand(1, 16777215), 6)
+			while(general_by_id[record_id] || security_by_id[record_id])
+		general_record = new
+		general_record.fields = list(
+			"id" = record_id,
+			"name" = subject_name,
+			"rank" = subject.assigned_role || "Unknown",
+			"real_rank" = subject.assigned_role || "Unknown",
+			"gender" = "Unknown",
+			"age" = "Unknown",
+			"species" = "Unknown",
+			"fingerprint" = "Unknown",
+			"p_stat" = "Active",
+			"m_stat" = "Stable",
+		)
+		if(ishuman(subject.current))
+			var/mob/living/carbon/human/person = subject.current
+			general_record.fields["gender"] = person.gender
+			general_record.fields["age"] = person.age
+			general_record.fields["species"] = person.dna.species.name
+			general_record.fields["fingerprint"] = md5(person.dna.uni_identity)
+			general_record.photo_source = new(person, subject.assigned_role)
+		general += general_record
+		register_record(general_record, "general")
+	if(!security_record)
+		security_record = new
+		security_record.fields = list(
+			"id" = general_record.fields["id"],
+			"name" = subject_name,
+			"rank" = general_record.fields["rank"],
+			"criminal" = SEC_RECORD_STATUS_NONE,
+			"mi_crim" = list(),
+			"ma_crim" = list(),
+			"fines" = list(),
+			"comments" = list(),
+			"actions_logs" = list(),
+			"notes" = "No notes.",
+		)
+		security += security_record
+		register_record(security_record, "security")
+	if(security_record.locked_security_reason)
+		return security_record
+	var/datum/data/crime/charge = createCrimeEntry(crime_name, reason, issuing_authority, STATION_TIME_TIMESTAMP("hh:mm:ss", world.time), TRUE)
+	charge.permanent = TRUE
+	LAZYADD(security_record.fields["ma_crim"], charge)
+	set_criminal_status(null, security_record, SEC_RECORD_STATUS_ARREST, reason, issuing_authority, user_name = issuing_authority)
+	security_record.locked_security_reason = reason
+	general_record.locked_security_reason = reason
+	return security_record
 
 /// Единственная дверь к полям photo_front/photo_side: первое обращение снимает кадр и
 /// раскладывает по обоим полям. generate = FALSE - только заглянуть, для списков в ui_data.
@@ -335,6 +404,8 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 	. = ..()
 
 /datum/data/crime
+	/// Permanent charges cannot be removed or marked as served through record tools.
+	var/permanent = FALSE
 	name = "crime"
 	var/crimeName = ""
 	var/crimeDetails = ""
@@ -430,7 +501,7 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 			var/list/crimes = R.fields["mi_crim"]
 			for(var/datum/data/crime/crime in crimes)
 				if(crime.dataId == text2num(cDataId))
-					if(crime.centcom_enforced && !centcom_authority) // BLUEMOON EDIT - авторизация ЦК
+					if(crime.permanent || (crime.centcom_enforced && !centcom_authority))
 						return
 					crimes -= crime
 					return
@@ -441,7 +512,7 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 			var/list/crimes = R.fields["ma_crim"]
 			for(var/datum/data/crime/crime in crimes)
 				if(crime.dataId == text2num(cDataId))
-					if(crime.centcom_enforced && !centcom_authority) // BLUEMOON EDIT - авторизация ЦК
+					if(crime.permanent || (crime.centcom_enforced && !centcom_authority))
 						return
 					crimes -= crime
 					return
@@ -573,6 +644,8 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 			var/list/crimes = R.fields["mi_crim"] + R.fields["ma_crim"]
 			for(var/datum/data/crime/crime in crimes)
 				if(crime.dataId == text2num(cDataId))
+					if(crime.permanent)
+						return
 					crime.penalties_incurred = !crime.penalties_incurred
 					return
 
@@ -619,19 +692,48 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 		if(ishuman(character) && N.client.prefs)
 			manifest_inject(character, N.client, N.client.prefs)
 
-/datum/datacore/proc/manifest_modify(name, assignment, real_rank)
+/datum/datacore/proc/manifest_modify(name, assignment, real_rank, custom_job)
 	if(!name || !assignment && !real_rank)
 		return
 	var/datum/data/record/foundrecord = GLOB.data_core.general_by_name[name]
 	if(foundrecord)
 		if(assignment)
 			foundrecord.fields["rank"] = assignment
+			foundrecord.fields["custom_job"] = custom_job
 		if(real_rank)
 			foundrecord.fields["real_rank"] = real_rank
 
-/datum/datacore/proc/get_manifest()
-	var/list/manifest_out = list()
-	var/list/departments = list(
+GLOBAL_LIST_INIT(manifest_department_names, list(
+	DEPARTMENT_COMMAND = "Командование",
+	DEPARTMENT_SECURITY = "Служба Безопасности",
+	DEPARTMENT_ENGINEERING = "Инженерный отдел",
+	DEPARTMENT_MEDICAL = "Медицинский отдел",
+	DEPARTMENT_SCIENCE = "Научный отдел",
+	DEPARTMENT_SUPPLY = "Отдел снабжения",
+	DEPARTMENT_SERVICE = "Отдел сервиса",
+	DEPARTMENT_SILICON = "Синтетика",
+	DEPARTMENT_LAW = "Юридический отдел",
+	"Misc" = "Прочее",
+))
+
+/// "профессия|должность|своё название карты" -> глава ли. Свободные названия не кэшируются.
+GLOBAL_LIST_EMPTY(manifest_head_cache)
+
+/// Глава ли запись: метка главы рации с теми же аргументами, что у карты в say.dm.
+/proc/is_manifest_record_head(real_rank, rank, custom_job)
+	if(!rank)
+		return FALSE
+	var/key = "[real_rank]|[rank]|[custom_job]"
+	. = GLOB.manifest_head_cache[key]
+	if(!isnull(.))
+		return
+	. = is_radio_job_head(real_rank, rank, custom_job)
+	if(SSjob.initialized && (!custom_job || GetJobName(custom_job) != "Unknown"))
+		GLOB.manifest_head_cache[key] = .
+
+// Общий порядок отделов и состав профессий для манифеста и списка готовых персонажей.
+/proc/get_manifest_departments()
+	return list(
 		DEPARTMENT_COMMAND		= GLOB.command_positions,
 		DEPARTMENT_SECURITY		= GLOB.security_positions,
 		DEPARTMENT_ENGINEERING	= GLOB.engineering_positions,
@@ -642,156 +744,56 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 		DEPARTMENT_LAW			= GLOB.law_positions,
 		DEPARTMENT_SILICON		= GLOB.nonhuman_positions
 	)
+
+/datum/datacore/proc/get_manifest()
+	var/list/departments = get_manifest_departments()
+	// Отдел -> три яруса: капитан, главы, остальные, внутри яруса порядок записей.
+	var/list/tiers_by_department = list()
 	for(var/datum/data/record/t in GLOB.data_core.general)
-		var/name = t.fields["name"]
 		var/rank = t.fields["rank"]
 		var/department_check = GetJobName(t.fields["real_rank"])
-		var/has_department = FALSE
+		var/head = is_manifest_record_head(t.fields["real_rank"], rank, t.fields["custom_job"])
+		var/list/entry = list(
+			"name" = t.fields["name"],
+			"rank" = rank,
+			"head" = head,
+		)
+		var/tier = head ? (department_check == "Captain" ? 1 : 2) : 3
+		var/list/entry_departments = list()
 		for(var/department in departments)
-			var/list/jobs = departments[department]
-			if(department_check in jobs)
-				if(!manifest_out[department])
-					manifest_out[department] = list()
-				// Append to beginning of list if captain or department head
-				if (department_check == "Captain" || (department != DEPARTMENT_COMMAND && (rank in GLOB.command_positions)))
-					manifest_out[department] = list(list(
-						"name" = name,
-						"rank" = rank,
-						"department_check" = department_check
-					)) + manifest_out[department]
-				else
-					manifest_out[department] += list(list(
-						"name" = name,
-						"rank" = rank,
-						"department_check" = department_check
-					))
-				has_department = TRUE
-		if(!has_department)
-			if(!manifest_out["Misc"])
-				manifest_out["Misc"] = list()
-			manifest_out["Misc"] += list(list(
-				"name" = name,
-				"rank" = rank,
-				"department_check" = department_check
-			))
+			if(department_check in departments[department])
+				entry_departments += department
+		if(!length(entry_departments))
+			entry_departments += "Misc"
+		for(var/department in entry_departments)
+			var/list/tiers = tiers_by_department[department]
+			if(!tiers)
+				tiers = list(list(), list(), list())
+				tiers_by_department[department] = tiers
+			var/list/bucket = tiers[tier]
+			bucket += list(entry)
+	var/list/manifest_out = list()
+	for(var/department in tiers_by_department)
+		var/list/tiers = tiers_by_department[department]
+		manifest_out[department] = tiers[1] + tiers[2] + tiers[3]
 	return manifest_out
 
-/datum/datacore/proc/get_manifest_bm(monochrome, OOC)
-	var/list/heads = list()
-	var/list/sec = list()
-	var/list/eng = list()
-	var/list/med = list()
-	var/list/sci = list()
-	var/list/sup = list()
-	var/list/civ = list()
-	var/list/law = list()
-	var/list/bot = list()
-	var/list/misc = list()
-	var/dat = {"
-	<head><style>
-		.manifest {border-collapse:collapse;}
-		.manifest td, th {border:1px solid [monochrome?"black":"#DEF; background-color:white; color:black"]; padding:.25em}
-		.manifest th {height: 2em; [monochrome?"border-top-width: 3px":"background-color: #48C; color:white"]}
-		.manifest tr.head th { [monochrome?"border-top-width: 1px":"background-color: #488;"] }
-		.manifest td:first-child {text-align:right}
-		.manifest tr.alt td {[monochrome?"border-top-width: 2px":"background-color: #DEF"]}
-	</style></head>
-	<table class="manifest" width='350px'>
-	<tr class='head'><th>Имя</th><th>Должность</th></tr>
-	"}
-	var/even = 0
-	// sort mobs
-	for(var/datum/data/record/t in GLOB.data_core.general)
-		var/name = t.fields["name"]
-		var/rank = t.fields["rank"]
-		var/department_check = GetJobName(t.fields["real_rank"])
-		var/department = 0
-		if(department_check in GLOB.command_positions)
-			heads[name] = rank
-			department = 1
-		if(department_check in GLOB.security_positions)
-			sec[name] = rank
-			department = 1
-		if(department_check in GLOB.engineering_positions)
-			eng[name] = rank
-			department = 1
-		if(department_check in GLOB.medical_positions)
-			med[name] = rank
-			department = 1
-		if(department_check in GLOB.science_positions)
-			sci[name] = rank
-			department = 1
-		if(department_check in GLOB.supply_positions)
-			sup[name] = rank
-			department = 1
-		if(department_check in GLOB.civilian_positions)
-			civ[name] = rank
-			department = 1
-		if(department_check in GLOB.law_positions)
-			law[name] = rank
-			department = 1
-		if(department_check in GLOB.nonhuman_positions)
-			bot[name] = rank
-			department = 1
-		if(!department && !(name in heads))
-			misc[name] = rank
-	if(heads.len > 0)
-		dat += "<tr><th colspan=3>Heads</th></tr>"
-		for(var/name in heads)
-			dat += "<tr[even ? " class='alt'" : ""]><td>[name]</td><td>[heads[name]]</td></tr>"
-			even = !even
-	if(sec.len > 0)
-		dat += "<tr><th colspan=3>Security</th></tr>"
-		for(var/name in sec)
-			dat += "<tr[even ? " class='alt'" : ""]><td>[name]</td><td>[sec[name]]</td></tr>"
-			even = !even
-	if(eng.len > 0)
-		dat += "<tr><th colspan=3>Engineering</th></tr>"
-		for(var/name in eng)
-			dat += "<tr[even ? " class='alt'" : ""]><td>[name]</td><td>[eng[name]]</td></tr>"
-			even = !even
-	if(med.len > 0)
-		dat += "<tr><th colspan=3>Medical</th></tr>"
-		for(var/name in med)
-			dat += "<tr[even ? " class='alt'" : ""]><td>[name]</td><td>[med[name]]</td></tr>"
-			even = !even
-	if(sci.len > 0)
-		dat += "<tr><th colspan=3>Science</th></tr>"
-		for(var/name in sci)
-			dat += "<tr[even ? " class='alt'" : ""]><td>[name]</td><td>[sci[name]]</td></tr>"
-			even = !even
-	if(sup.len > 0)
-		dat += "<tr><th colspan=3>Supply</th></tr>"
-		for(var/name in sup)
-			dat += "<tr[even ? " class='alt'" : ""]><td>[name]</td><td>[sup[name]]</td></tr>"
-			even = !even
-	if(law.len > 0)
-		dat += "<tr><th colspan=3>Law</th></tr>"
-		for(var/name in law)
-			dat += "<tr[even ? " class='alt'" : ""]><td>[name]</td><td>[law[name]]</td></tr>"
-			even = !even
-	if(civ.len > 0)
-		dat += "<tr><th colspan=3>Civilian</th></tr>"
-		for(var/name in civ)
-			dat += "<tr[even ? " class='alt'" : ""]><td>[name]</td><td>[civ[name]]</td></tr>"
-			even = !even
-	// in case somebody is insane and added them to the manifest, why not
-	if(bot.len > 0)
-		dat += "<tr><th colspan=3>Silicon</th></tr>"
-		for(var/name in bot)
-			dat += "<tr[even ? " class='alt'" : ""]><td>[name]</td><td>[bot[name]]</td></tr>"
-			even = !even
-	// misc guys
-	if(misc.len > 0)
-		dat += "<tr><th colspan=3>Miscellaneous</th></tr>"
-		for(var/name in misc)
-			dat += "<tr[even ? " class='alt'" : ""]><td>[name]</td><td>[misc[name]]</td></tr>"
-			even = !even
-
+/// Таблица списка экипажа для печати, главы со звёздочкой и жирным.
+/datum/datacore/proc/get_manifest_html()
+	var/list/department_names = GLOB.manifest_department_names
+	var/list/manifest = get_manifest()
+	var/list/dat = list("<table><tr><th>Имя</th><th>Должность</th></tr>")
+	for(var/department in manifest)
+		dat += "<tr><th colspan=2>[department_names[department] || department]</th></tr>"
+		for(var/list/entry as anything in manifest[department])
+			var/name = html_encode(entry["name"])
+			var/rank = html_encode(entry["rank"])
+			if(entry["head"])
+				dat += "<tr><td><b>[name]</b></td><td><b>★ [rank]</b></td></tr>"
+			else
+				dat += "<tr><td>[name]</td><td>[rank]</td></tr>"
 	dat += "</table>"
-	dat = replacetext(dat, "\n", "")
-	dat = replacetext(dat, "\t", "")
-	return dat
+	return jointext(dat, "")
 
 /datum/datacore/proc/manifest_inject(mob/living/carbon/human/H, client/C, datum/preferences/prefs)
 	set waitfor = FALSE
@@ -806,10 +808,12 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 			real_rank = "Unassigned"
 
 		// Берем название роли из карточки, с учетом наклеек и альт. названия
+		var/custom_job
 		if(H.wear_id)
 			var/obj/item/card/id/id_card = H.wear_id.GetID()
 			if(istype(id_card))
 				assignment = id_card.get_assignment_name()
+				custom_job = id_card.custom_job
 		if(!assignment)
 			// Если не удалось, пробуем получить из префов
 			if(C && C.prefs && C.prefs.alt_titles_preferences[assignment])
@@ -830,6 +834,7 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 		G.fields["id"]			= id
 		G.fields["name"]		= H.real_name
 		G.fields["rank"]		= assignment
+		G.fields["custom_job"]	= custom_job
 		G.fields["real_rank"]	= GetJobName(real_rank)
 		G.fields["age"]			= H.age
 		G.fields["species"]		= H.dna.species.name

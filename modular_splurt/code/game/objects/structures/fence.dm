@@ -11,7 +11,7 @@
 	var/health = 70
 	var/maxhealth = 70
 	resistance_flags = ACID_PROOF
-	armor = list("melee" = 0, "bullet" = 0, "laser" = 0, "energy" = 0, "bomb" = 0, "bio" = 0, "rad" = 0, "fire" = 80, "acid" = 100)
+	armor_type = /datum/armor/fire80_acid100
 	CanAtmosPass = ATMOS_PASS_PROC
 	var/breaksound = "shatter"
 	var/hitsound = 'sound/effects/Glasshit.ogg'

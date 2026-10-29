@@ -35,6 +35,17 @@ GLOBAL_LIST_INIT(blacklisted_malf_machines, typecacheof(list(
 	..()
 	desc = "[desc] It has [uses] use\s remaining."
 
+/datum/action/innate/ai/Destroy()
+	owner_AI = null
+	return ..()
+
+/// Удаление ИИ снимает действия с моба раньше, чем /mob/Destroy() их удаляет: модуль без ядра бесполезен, а дальнобойный ещё и держит ядро циклом с proc_holder.
+/datum/action/innate/ai/clear_ref(datum/ref)
+	if(ref == owner_AI && !QDELETED(src))
+		qdel(src)
+		return
+	return ..()
+
 /datum/action/innate/ai/Grant(mob/living/L)
 	. = ..()
 	if(!isAI(owner))
@@ -131,6 +142,9 @@ GLOBAL_LIST_INIT(blacklisted_malf_machines, typecacheof(list(
 /datum/module_picker/New()
 	possible_modules = list()
 	for(var/type in typesof(/datum/AI_Module))
+		var/datum/AI_Module/module_type = type
+		if(initial(module_type.training_only))
+			continue
 		var/datum/AI_Module/AM = new type
 		if((AM.power_type && AM.power_type != /datum/action/innate/ai) || AM.upgrade)
 			possible_modules += AM
@@ -238,6 +252,8 @@ GLOBAL_LIST_INIT(blacklisted_malf_machines, typecacheof(list(
 	var/upgrade //If the module gives a passive upgrade, use this. Mutually exclusive with power_type.
 	var/unlock_text = "<span class='notice'>Hello World!</span>" //Text shown when an ability is unlocked
 	var/unlock_sound //Sound played when an ability is unlocked
+	/// Учебный модуль полигона: его предлагает только выбор учебного ИИ.
+	var/training_only = FALSE
 
 /datum/AI_Module/proc/upgrade(mob/living/silicon/ai/AI) //Apply upgrades!
 	return
@@ -841,6 +857,8 @@ GLOBAL_LIST_INIT(blacklisted_malf_machines, typecacheof(list(
 		if(!uses)
 			break
 		var/obj/machinery/camera/C = V
+		if(!antag_training_camera_visible(C, owner_AI))
+			continue
 		if(!C.status || C.view_range != initial(C.view_range))
 			C.toggle_cam(owner_AI, 0) //Reactivates the camera based on status. Badly named proc.
 			C.view_range = initial(C.view_range)
@@ -872,7 +890,7 @@ GLOBAL_LIST_INIT(blacklisted_malf_machines, typecacheof(list(
 	var/upgraded_cameras = 0
 	for(var/V in GLOB.cameranet.cameras)
 		var/obj/machinery/camera/C = V
-		if(C.assembly)
+		if(C.assembly && antag_training_camera_visible(C, AI))
 			var/upgraded = 0
 
 			if(!C.isXRay())

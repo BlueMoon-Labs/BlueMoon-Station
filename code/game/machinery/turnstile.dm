@@ -4,7 +4,7 @@
 	icon = 'icons/obj/turnstile.dmi'
 	icon_state = "turnstile_map"
 	density = FALSE
-	armor = list(melee = 50, bullet = 50, laser = 50, energy = 50, bomb = 10, bio = 100, rad = 100, fire = 90, acid = 70)
+	armor_type = /datum/armor/button_and_turnstile
 	anchored = TRUE
 	use_power = FALSE
 	idle_power_usage = 2

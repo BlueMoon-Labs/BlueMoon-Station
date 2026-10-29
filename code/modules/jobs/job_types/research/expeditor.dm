@@ -120,7 +120,7 @@
 	desc = "Base armor vest designed for ordinary expeditors. With cool speedy violet vertical line."
 	icon_state = "vest_exp"
 	item_state = "vest_exp"
-	armor = list(MELEE = 40, BULLET = 40, LASER = 30, ENERGY = -20, BOMB = 0, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 30) //Для упрощения нейтрализации
+	armor_type = /datum/armor/exp
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	unique_reskin = list(
 		"Standart" = list(
@@ -147,7 +147,7 @@
 	desc = "Sturdy ballistic helmet with violet protective glass."
 	icon_state = "helmet_exp"
 	item_state = "helmet_exp"
-	armor = list(MELEE = 40, BULLET = 40, LASER = 30, ENERGY = -20, BOMB = 0, BIO = 0, RAD = 0, FIRE = 50, ACID = 50, WOUND = 30) //Для упрощения нейтрализации
+	armor_type = /datum/armor/exp
 	unique_reskin = list(
 		"Standart" = list(
 			"icon_state" = "helmet_exp",

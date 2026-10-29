@@ -1894,15 +1894,15 @@
 /// cost/intensity и метаданными точного preflight. После спавна вклад переводится на живой
 /// трекинг созданного моба, поэтому фиксированный долгий linger больше не нужен.
 /// Исключения: wizard-события (пул Summon Events), праздничные (holidayID) и осознанно
-/// не-антагские (sentience - дружелюбная, qareen - джинн не гарантированно враждебен).
+/// не-антагские (sentience - дружелюбная, qareen - джинн не гарантированно враждебен, туристы и этапированный заключённый - мирные MINOR-роли).
 /datum/unit_test/director_ghost_event_classification
 
 /datum/unit_test/director_ghost_event_classification/Run()
 	// По именам, не тайп-пасам: qareen живёт в modular_splurt и не входит в текущую сборку -
 	// ссылка на его тип не компилируется, а событие при подключении обязано остаться исключением.
-	var/list/exempt_names = list("Random Human-level Intelligence", "Station-wide Human-level Intelligence", "Spawn Qareen")
+	var/list/exempt_names = list("Random Human-level Intelligence", "Station-wide Human-level Intelligence", "Spawn Qareen", "Tour Group", "Prisoner Transfer")
 	for(var/datum/round_event_control/control as anything in SSdirector.event_controls())
-		if(control.wizardevent || control.holidayID || (control.name in exempt_names))
+		if(control.wizardevent || control.holidayID || (control.name in exempt_names) || control.family == "crew_relief")
 			continue
 		if(!ispath(control.typepath, /datum/round_event/ghost_role))
 			continue
@@ -2006,6 +2006,8 @@
 		// Воксы - гост-команда со своего корабля, но не antag_heavy: решением геймдизайна это
 		// единственный рейд лёгкого профиля, и живёт он только в нём (см. vox_scavengers_event.dm).
 		/datum/round_event_control/vox_scavengers,
+		// Бюрократическая проверка без боевой задачи.
+		/datum/round_event_control/sol_inspection,
 	)
 	var/datum/round_event_control/operative/operative_control = locate() in SSdirector.event_controls()
 	var/datum/round_event_control/operative/keeper/keeper_control = locate() in SSdirector.event_controls()
@@ -2038,7 +2040,8 @@
 	TEST_ASSERT(!operative_event.should_spawn_linked_keeper(FALSE, ROUNDTYPE_EXTENDED), "Extended использует самостоятельный control защитника, а не пару")
 	qdel(operative_event)
 	for(var/datum/round_event_control/control as anything in SSdirector.event_controls())
-		if(control.severity != DIRECTOR_SEVERITY_GHOST || !control.enabled || control.admin_only || control.weight <= 0)
+		// Базовый вес, а не текущий: лежащий диск станции растит вес оперативника по ходу долгого прогона.
+		if(control.severity != DIRECTOR_SEVERITY_GHOST || !control.enabled || control.admin_only || initial(control.weight) <= 0)
 			continue
 		if(control.required_round_type && !(ROUNDTYPE_DYNAMIC_LIGHT in control.required_round_type))
 			continue
@@ -3066,8 +3069,9 @@
 	TEST_ASSERT_EQUAL(initial(base_path.name), "", "Каркас crew_conversion не должен регистрироваться сам (init_rulesets отсекает пустые имена)")
 	var/datum/dynamic_ruleset/midround/crew_conversion/heretic/heretic_rule = new
 	var/datum/dynamic_ruleset/midround/crew_conversion/changeling/changeling_rule = new
+	var/datum/dynamic_ruleset/midround/crew_conversion/blood_brothers/brothers_rule = new
 	try
-		for(var/datum/dynamic_ruleset/midround/crew_conversion/rule as anything in list(heretic_rule, changeling_rule))
+		for(var/datum/dynamic_ruleset/midround/crew_conversion/rule as anything in list(heretic_rule, changeling_rule, brothers_rule))
 			TEST_ASSERT_EQUAL(rule.severity, DIRECTOR_SEVERITY_ANTAG, "[rule.name]: экипажная конверсия обязана жить в ANTAG-пуле")
 			TEST_ASSERT(rule.weight > 0, "[rule.name]: конверсия обязана участвовать в естественном выборе")
 			TEST_ASSERT(!rule.admin_only, "[rule.name]: конверсия не должна быть admin_only")
@@ -3077,9 +3081,11 @@
 	catch(var/exception/e)
 		qdel(heretic_rule)
 		qdel(changeling_rule)
+		qdel(brothers_rule)
 		throw e
 	qdel(heretic_rule)
 	qdel(changeling_rule)
+	qdel(brothers_rule)
 
 /// Экипажная конверсия не выбирает игрока в крите или без сознания.
 /datum/unit_test/director_crew_conversion_skips_unconscious

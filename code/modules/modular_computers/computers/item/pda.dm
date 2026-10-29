@@ -31,7 +31,7 @@
 	slot_flags = ITEM_SLOT_ID | ITEM_SLOT_BELT
 	actions_types = list(/datum/action/item_action/toggle_light/pda)
 	has_light = TRUE //LED flashlight!
-	armor = list(MELEE = 0, BULLET = 0, LASER = 0, ENERGY = 0, BOMB = 0, BIO = 0, RAD = 0, FIRE = 100, ACID = 100)
+	armor_type = /datum/armor/fireproof_and_acidproof_misc
 	resistance_flags = FIRE_PROOF | ACID_PROOF
 	comp_light_luminosity = 2.3
 	comp_light_color = "#FFCC66"
@@ -424,7 +424,7 @@
 		if(installed_cartridge.access & CART_MEDICAL)
 			user.visible_message("<span class='notice'>[user] analyzes [C]'s vitals.</span>", \
 								"<span class='notice'>You analyze [C]'s vitals.</span>")
-			healthscan(user, C, 1, FALSE)
+			healthscan(user, C)
 			return
 	return ..()
 
@@ -1162,6 +1162,8 @@
 // ---- Borg PDA messaging ----
 
 /mob/living/silicon/robot/proc/cmd_send_pdamesg(mob/user)
+	if(QDELETED(aiPDA))
+		return
 	var/list/plist = list()
 	var/list/namecounts = list()
 

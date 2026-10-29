@@ -269,3 +269,44 @@
 	name = "speed loader (.41 FMJ)"
 	ammo_type = /obj/item/ammo_casing/cal41/fmj
 
+/obj/item/ammo_box/cal41/taser
+	name = "speed loader (.41 taser)"
+	ammo_type = /obj/item/ammo_casing/cal41/taser
+
+/obj/item/ammo_box/cal41/ion
+	name = "speed loader (.41 ion)"
+	ammo_type = /obj/item/ammo_casing/cal41/ion
+
+/obj/item/ammo_box/cal41/ricochet
+	name = "speed loader (.41 ric)"
+	ammo_type = /obj/item/ammo_casing/cal41/ricochet
+
+/obj/item/ammo_box/cal41/ratshot
+	name = "speed loader (.41 ratshot)"
+	ammo_type = /obj/item/ammo_casing/cal41/ratshot
+
+//взрывной
+
+/obj/item/ammo_box/magnum44
+	name = "speed loader (.44 HE)"
+	desc = "Designed to quickly reload revolvers."
+	icon = 'modular_bluemoon/icons/obj/ammo.dmi' 
+	icon_state = "41"
+	caliber = ".44 magnum"
+	ammo_type = /obj/item/ammo_casing/magnum44
+	max_ammo = 6
+	multiple_sprites = 1
+	speedloader = TRUE
+	w_class = WEIGHT_CLASS_TINY
+
+/obj/item/ammo_box/magnum44_kinetic
+	name = "speed loader (.44 RC)"
+	desc = "Designed to quickly reload revolvers."
+	icon = 'modular_bluemoon/icons/obj/ammo.dmi' 
+	icon_state = "41"
+	caliber = ".44 magnum"
+	ammo_type = /obj/item/ammo_casing/magnum44_kinetic
+	max_ammo = 6
+	multiple_sprites = 1
+	speedloader = TRUE
+	w_class = WEIGHT_CLASS_TINY

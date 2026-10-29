@@ -17,7 +17,7 @@
 	desc = "advanced clown shoes that protect the wearer and render them nearly immune to slipping on their own peels. They also squeak at 100% capacity."
 	clothing_flags = NOSLIP
 	slowdown = SHOES_SLOWDOWN
-	armor = list(MELEE = 25, BULLET = 25, LASER = 25, ENERGY = 25, BOMB = 50, BIO = 10, RAD = 0, FIRE = 70, ACID = 50)
+	armor_type = /datum/armor/shoe_combat
 	strip_delay = 70
 	resistance_flags = NONE
 	permeability_coefficient = 0.05
@@ -28,7 +28,7 @@
 	name = "mk-honk combat shoes"
 	desc = "The culmination of years of clown combat research, these shoes leave a trail of chaos in their wake. They will slowly recharge themselves over time, or can be manually charged with bananium."
 	slowdown = SHOES_SLOWDOWN
-	armor = list(MELEE = 25, BULLET = 25, LASER = 25, ENERGY = 25, BOMB = 50, BIO = 10, RAD = 0, FIRE = 70, ACID = 50)
+	armor_type = /datum/armor/shoe_combat
 	strip_delay = 70
 	resistance_flags = NONE
 	permeability_coefficient = 0.05
@@ -253,21 +253,15 @@
 
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/banana_mortar/bombanana
 	name = "bombanana mortar"
-	desc = "Equipment for clown exosuits. Launches exploding banana peels."
+	desc = "Оборудование для клоунских экзокостюмов. Запускает взрывающиеся банановые шкурки."
 	icon_state = "mecha_bananamrtr"
 	projectile = /obj/item/grown/bananapeel/bombanana
 	projectiles = 8
 	projectile_energy_cost = 1000
 
-/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/banana_mortar/bombanana/can_attach(obj/vehicle/sealed/mecha/combat/honker/M)
-	if(..())
-		if(istype(M))
-			return TRUE
-	return FALSE
-
 /obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/flashbang/tearstache
 	name = "\improper HONKeR-6 grenade launcher"
-	desc = "A weapon for combat exosuits. Launches primed tear-stache grenades."
+	desc = "Оружие для боевых экзокостюмов. Запускает активированные слезоточивые гранаты, приклеивающие усы к лицам жертв."
 	icon_state = "mecha_grenadelnchr"
 	projectile = /obj/item/grenade/chem_grenade/teargas/moustache
 	fire_sound = 'sound/weapons/grenadelaunch.ogg'
@@ -276,25 +270,21 @@
 	projectile_energy_cost = 800
 	equip_cooldown = 60
 	det_time = 20
-
-/obj/item/mecha_parts/mecha_equipment/weapon/ballistic/launcher/flashbang/tearstache/can_attach(obj/vehicle/sealed/mecha/combat/honker/M)
-	if(..())
-		if(istype(M))
-			return TRUE
-	return FALSE
+	compatible_mecha_types = MECHA_TYPE_HONKER
 
 /obj/vehicle/sealed/mecha/combat/honker/dark
-	desc = "Produced by \"Tyranny of Honk, INC\", this exosuit is designed as heavy clown-support. This one has been painted black for maximum fun. HONK!"
+	desc = "Произведённый компанией \"Tyranny of Honk, INC\" экзокостюм тяжёлой поддержки клоунов. Эта модель окрашена в чёрный цвет для максимального веселья. ХОНК!"
 	name = "\improper Dark H.O.N.K"
 	icon_state = "darkhonker"
 	max_integrity = 300
 	deflect_chance = 15
-	armor = list(MELEE = 40, BULLET = 40, LASER = 50, ENERGY = 35, BOMB = 20, BIO = 0, RAD = 0, FIRE = 100, ACID = 100)
+	armor_type = /datum/armor/honker_mecha_dark
 	max_temperature = 35000
 	operation_req_access = list(ACCESS_SYNDICATE)
 	internals_req_access = list(ACCESS_SYNDICATE)
 	wreckage = /obj/structure/mecha_wreckage/honker/dark
 	max_equip = 3
+	ui_theme = "syndicate"
 
 /obj/vehicle/sealed/mecha/combat/honker/dark/add_cell(obj/item/stock_parts/cell/C)
 	if(C)
