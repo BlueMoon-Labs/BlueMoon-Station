@@ -18,12 +18,23 @@
 	/// Тип руны, которую рисует этот баллончик.
 	var/rune_type = /obj/effect/decal/traitor_rune
 
+	var/rune_name = "лого Синдиката"
+	var/complete_hint = "Третий этап защищает от стирания на 5 минут - <b>тратит весь балончик</b>."
+
 /obj/item/traitor_spraycan/inteq
 	name = "InteQ spraycan"
 	desc = "Этим баллончиком можно нанести узор областью 3х3. Краски хватает ровно на один финальный слой."
 	icon_state = "deathcan"
 	item_state = "spraycan"
 	rune_type = /obj/effect/decal/traitor_rune/inteq_rune
+	rune_name = "лого InteQ"
+	complete_hint = "Третий этап защищает от стирания на 5 минут и заставляет окружающих бояться - <b>тратит весь балончик</b>."
+
+/obj/item/traitor_spraycan/examine(mob/user)
+	. = ..()
+	. += span_notice("Рисует [rune_name] в <b>три этапа</b>.")
+	. += span_notice("Если остановиться на <b>втором</b> - можно рисовать сколько угодно.")
+	. += span_notice("[complete_hint]")
 
 /obj/item/traitor_spraycan/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
 	if (!isliving(user) || !proximity_flag)
@@ -236,7 +247,7 @@
 			if (slips_walkers)
 				for(var/turf/nearby_turf in RANGE_TURFS(1, loc))
 					nearby_turf.AddComponent(/datum/component/slippery, 6 SECONDS, NO_SLIP_WHEN_WALKING)
-			protected_timer = addtimer(CALLBACK(src, PROC_REF(set_stage), RUNE_STAGE_REMOVABLE), 5 MINUTES)
+			protected_timer = addtimer(CALLBACK(src, PROC_REF(set_stage), RUNE_STAGE_REMOVABLE), 5 MINUTES, TIMER_STOPPABLE)
 
 /obj/effect/decal/traitor_rune/proc/clear_slip()
 	for(var/turf/slip_turf in RANGE_TURFS(1, loc))
