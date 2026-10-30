@@ -178,3 +178,86 @@
 	knockdown = 0
 	icon = 'icons/effects/effects.dmi'
 	icon_state = "impact_laser_blue"
+
+// Sweetvoice hand item for emote - works like kiss emote
+/obj/item/hand_item/sweetvoice_blower
+	name = "sweet voice"
+	desc = "SWEET VOICE is ready to be deployed."
+	icon = 'icons/obj/projectiles.dmi'
+	icon_state = "red_laser"
+	var/list/intent_colors = list(
+		"help" = "#00ff00",   // Зеленый для помощи
+		"disarm" = "#ffff00", // Желтый для разоружения
+		"grab" = "#00ffff",   // Голубой для захвата
+		"harm" = "#ff0000"    // Красный для вреда
+	)
+	var/list/intent_pitches = list(
+		"help" = 1.2,    // Высокий тон для помощи
+		"disarm" = 1.0,  // Нормальный тон для разоружения
+		"grab" = 0.9,    // Низкий тон для захвата
+		"harm" = 0.8     // Самый низкий тон для вреда
+	)
+
+/obj/item/hand_item/sweetvoice_blower/Initialize(mapload)
+	. = ..()
+	AddComponent(/datum/component/two_handed, require_twohands=TRUE)
+
+/obj/item/hand_item/sweetvoice_blower/can_give()
+	return FALSE
+
+/obj/item/hand_item/sweetvoice_blower/afterattack(atom/target, mob/user, proximity_flag, click_parameters)
+	. = ..()
+
+	if(!isliving(user))
+		return
+
+	var/mob/living/L = user
+	var/user_intent = L.a_intent
+	var/projectile_color = intent_colors[user_intent] || "#ffffff"
+	var/sound_pitch = intent_pitches[user_intent] || 1.0
+
+	// Проигрываем звук с нужным тоном
+	playsound(user.loc, 'modular_bluemoon/sound/weapons/mesa/sweetvoice.ogg', 50, sound_pitch, 3)
+
+	var/obj/item/projectile/sweetvoice/blown_voice = new(get_turf(user))
+	blown_voice.color = projectile_color
+	user.visible_message("<b>[user]</b> издаёт сладкий голос в сторону [target]!", span_notice("Вы издаёте сладкий голос в сторону [target]!"))
+
+	//Shooting Code:
+	blown_voice.original = target
+	blown_voice.fired_from = user
+	blown_voice.pixels_per_second = TILES_TO_PIXELS(7) // Speed of sweet voice
+	blown_voice.firer = user // don't hit ourself that would be really annoying
+	blown_voice.impacted = list(user = TRUE) // just to make sure we don't hit the wearer
+	blown_voice.preparePixelProjectile(target, user)
+	blown_voice.fire()
+	qdel(src)
+
+// Sweetvoice projectile for emote - harmless fun projectile
+/obj/item/projectile/sweetvoice
+	name = "sweet voice"
+	icon = 'icons/obj/projectiles.dmi'
+	icon_state = "red_laser" // Using laser pointer dot icon
+	damage = 0
+	nodamage = TRUE
+	knockdown = 0
+	stamina = 0
+	pass_flags = PASSTABLE | PASSGLASS | PASSGRILLE
+	projectile_phasing = PASSTABLE | PASSGLASS | PASSGRILLE
+	range = 7
+	color = "#ffffff" // Dynamic color set by emote
+
+/obj/item/projectile/sweetvoice/on_hit(atom/target, blocked = FALSE)
+	. = ..()
+	if(!target)
+		return
+
+	// Only affect living mobs
+	if(isliving(target))
+		var/mob/living/L = target
+		if(L == firer)
+			return // Don't affect the firer
+
+		// Add soft light effect
+		L.set_light(2, 1, color)
+		addtimer(CALLBACK(L, TYPE_PROC_REF(/atom, set_light), 0), 1 SECONDS)
