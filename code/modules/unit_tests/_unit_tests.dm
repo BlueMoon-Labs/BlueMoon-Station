@@ -554,6 +554,7 @@
 #include "heal_noop_updates.dm"
 #include "id_card_examine_icon.dm"
 #include "vitals_reader_redraw.dm"
+#include "vox_balance.dm"
 #include "wizard_event_costs.dm"
 #include "hud_screen_lifecycle.dm"
 #include "icon_alloc_guard.dm"
