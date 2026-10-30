@@ -1,0 +1,25 @@
+/// Без клиента окно отдаёт общие поля и не падает, а вкладку сервера не открывает.
+/// ui_act здесь не зовётся: базовый ui_act без открытого tgui сразу возвращает TRUE.
+/datum/unit_test/ping_diag_ui_data/Run()
+	var/datum/ping_diag_ui/ui = new(null)
+	var/list/data = ui.ui_data(null)
+	TEST_ASSERT_EQUAL(data["staff"], FALSE, "без клиента не админ")
+	TEST_ASSERT_EQUAL(data["tab"], "self", "вкладка по умолчанию")
+	TEST_ASSERT(isnull(data["clients"]), "таблицу сервера без прав не отдаём")
+	TEST_ASSERT(isnull(data["target"]), "без клиента цели нет")
+	TEST_ASSERT_EQUAL(data["server_clients"], 0, "игроков с данными нет")
+	TEST_ASSERT(!ui.set_tab("server"), "без прав на вкладку сервера не пускаем")
+	TEST_ASSERT_EQUAL(ui.tab, "self", "вкладка не сменилась")
+	TEST_ASSERT(!ui.set_tab("nonsense"), "неизвестная вкладка")
+	TEST_ASSERT(ui.set_tab("self"), "своя вкладка доступна всем")
+	qdel(ui)
+
+/// Отчёт приходит от клиента: разметку экранируем, длину режем.
+/datum/unit_test/ping_diag_ui_report/Run()
+	var/html = ping_diag_report_html("<script>alert(1)</script>\nвторая")
+	TEST_ASSERT(!findtext(html, "<script>"), "теги из отчёта не проходят")
+	TEST_ASSERT(findtext(html, "&lt;script&gt;"), "теги экранированы")
+	TEST_ASSERT(findtext(html, "<br>вторая"), "переводы строк становятся <br>")
+	var/long_html = ping_diag_report_html(jointext(new /list(PING_DIAG_REPORT_MAX_LEN + 50), "a"))
+	var/kept = length_char(long_html) - length_char(ping_diag_report_html(""))
+	TEST_ASSERT_EQUAL(kept, PING_DIAG_REPORT_MAX_LEN, "длинный отчёт обрезан до предела")

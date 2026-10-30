@@ -702,3 +702,8 @@ GLOBAL_LIST_INIT(day_names, list("Monday", "Tuesday", "Wednesday", "Thursday", "
 
 /// Это лист для всевозможных контейнеров реагентов закрытого типа, принимаемого кемдиспенсерами, кеммастерами и т.д.
 #define CLOSED_CONTAINERS_OPERABLE list(/obj/item/reagent_containers/glass/bottle/vial)
+
+/// Хелпер-дефайны для корректной работы стикеров карт
+#define SYNDI_NT_PREFIX_LIST list("Syndicate", "Syndi", "NT", "Nanotrasen") // Блэклист корпоративных неймингов
+#define STICKER_SLOT_PREFIX "prefix"
+#define STICKER_SLOT_SUFFIX "suffix"

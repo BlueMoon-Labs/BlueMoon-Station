@@ -1,5 +1,20 @@
+import { useEffect, useState } from 'react';
+
 import { useBackend } from '../../../backend';
-import { Box, Button, Dropdown, Section, Stack } from '../../../components';
+import {
+  Box,
+  Button,
+  Dropdown,
+  Section,
+  Stack,
+  Tabs,
+} from '../../../components';
+import {
+  AppearanceSubTab,
+  getAppearanceSubTab,
+  setAppearanceSubTab,
+  subscribeAppearanceSubTab,
+} from '../appearanceSubTab';
 import {
   asArray,
   asOptions,
@@ -179,6 +194,15 @@ export const AppearanceTab = () => {
   const { act, data } = useBackend<AppearanceContext>();
   const appearance = data.appearance;
   const fields = data.featureFields || [];
+  const [subTab, setSubTabLocal] = useState<AppearanceSubTab>(
+    getAppearanceSubTab()
+  );
+
+  useEffect(
+    () =>
+      subscribeAppearanceSubTab(() => setSubTabLocal(getAppearanceSubTab())),
+    []
+  );
 
   if (!appearance) {
     return <TabDataMissing title="Внешность" />;
@@ -190,10 +214,41 @@ export const AppearanceTab = () => {
     visible ? field(key) : null;
 
   const weightNames = Object.keys(appearance.weightOptions || {});
+  const hasGenitals = !!appearance.genitals?.supported;
+  // Если гениталии вдруг стали недоступны, откатываемся на «Тело».
+  const activeSubTab: AppearanceSubTab =
+    subTab === 'genitals' && !hasGenitals ? 'body' : subTab;
+  const selectSubTab = (next: AppearanceSubTab) => {
+    setSubTabLocal(next);
+    setAppearanceSubTab(next);
+  };
 
   return (
     <Section fill scrollable title="Внешность">
-      <SettingsGrid>
+      <Tabs mb={1}>
+        <Tabs.Tab
+          selected={activeSubTab === 'body'}
+          onClick={() => selectSubTab('body')}
+        >
+          Тело
+        </Tabs.Tab>
+        <Tabs.Tab
+          selected={activeSubTab === 'parts'}
+          onClick={() => selectSubTab('parts')}
+        >
+          Части тела
+        </Tabs.Tab>
+        {hasGenitals && (
+          <Tabs.Tab
+            selected={activeSubTab === 'genitals'}
+            onClick={() => selectSubTab('genitals')}
+          >
+            Гениталии
+          </Tabs.Tab>
+        )}
+      </Tabs>
+      {activeSubTab === 'body' && (
+        <SettingsGrid>
         <Section title="Тело">
           <SelectRow
             label="Пол"
@@ -358,17 +413,20 @@ export const AppearanceTab = () => {
             </>
           )}
         </Section>
-      </SettingsGrid>
-
-      <Section title="Части тела" mt={1}>
-        <SettingsGrid compact>
-          {asArray(appearance.mutantParts).map((part) => (
-            <MutantPartCard key={part.key} part={part} />
-          ))}
         </SettingsGrid>
-      </Section>
+      )}
 
-      {appearance.genitals && (
+      {activeSubTab === 'parts' && (
+        <Section title="Части тела">
+          <SettingsGrid compact>
+            {asArray(appearance.mutantParts).map((part) => (
+              <MutantPartCard key={part.key} part={part} />
+            ))}
+          </SettingsGrid>
+        </Section>
+      )}
+
+      {activeSubTab === 'genitals' && hasGenitals && appearance.genitals && (
         <GenitalsSection
           genitals={appearance.genitals}
           skinTone={

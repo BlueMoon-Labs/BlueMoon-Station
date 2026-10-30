@@ -641,6 +641,16 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 
 	. += span_boldnotice("Профиль персонажа: <a href='?src=\ref[src];character_profile=1'>\[Осмотреть\]</a>")
 
+	if(!skipface && !obscure_name && dna?.headshot_links && length(dna.headshot_links))
+		var/headshot_html = ""
+		for(var/headshot_link in dna.headshot_links)
+			if(!headshot_link)
+				continue
+			headshot_html += headshot_preview_html(headshot_link, 128, 128)
+		if(headshot_html)
+			. += span_boldnotice("Хедшот персонажа:")
+			. += headshot_html
+
 	if(activity)
 		. += span_nicegreen("<b>Деятельность:</b> [activity]")
 

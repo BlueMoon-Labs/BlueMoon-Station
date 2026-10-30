@@ -23,8 +23,8 @@ SUBSYSTEM_DEF(chat)
 			// Send to tgchat
 			client.tgui_panel?.window.send_message("chat/message", payload)
 			// Send to old chat
-			for(var/message in payload)
-				SEND_TEXT(client, message_to_html(message))
+			legacy_chat_output(client, payload)
+			client.ping_diag?.note_chat(length(payload), REALTIMEOFDAY)
 		if(MC_TICK_CHECK)
 			return
 
