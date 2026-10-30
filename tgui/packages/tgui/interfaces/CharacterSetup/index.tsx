@@ -61,7 +61,6 @@ interface CharacterSetupData {
   previewModes: string[];
   previewBackground: string;
   previewBackgrounds: string[];
-  localStorageName: string | null;
   offerActive: boolean;
   redemptionCode?: string;
   hasUnsavedChanges: boolean;
@@ -504,7 +503,6 @@ const SlotTools = () => {
   const { act, data } = useBackend<CharacterSetupData>();
   const [open, setOpen] = useState(false);
 
-  const localName = data.localStorageName;
   const offerActive = !!data.offerActive;
 
   return (
@@ -518,25 +516,18 @@ const SlotTools = () => {
       {open && (
         <Stack mt={1} align="center" wrap>
           <Stack.Item>
-            <Box color="label">
-              Локальная копия: {localName ? localName : 'пусто'}
-            </Box>
-          </Stack.Item>
-          <Stack.Item>
-            <Button.Confirm
+            <Button
               icon="download"
-              content="Экспорт слота"
-              confirmContent="Экспортировать слот?"
+              content="Скачать JSON"
+              tooltip="Сохранить файл персонажа на компьютер для переноса или обмена."
               onClick={() => act('slot_export')}
             />
           </Stack.Item>
           <Stack.Item>
-            <Button.Confirm
+            <Button
               icon="upload"
-              content="Импорт в слот"
-              confirmContent="Заменить текущий слот?"
-              disabled={!localName}
-              tooltip={localName ? undefined : 'Локальной копии нет'}
+              content="Загрузить JSON"
+              tooltip="Загрузить персонажа в выбранный слот. Перед заменой появится подтверждение."
               onClick={() => act('slot_import')}
             />
           </Stack.Item>

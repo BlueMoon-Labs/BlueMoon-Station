@@ -95,15 +95,17 @@ GLOBAL_DATUM_INIT(shift_invite_link, /datum/shift_invite_link, new)
 	/// Получать приглашения в пустые критичные отделы
 	var/shift_invites = TRUE
 
-/datum/preferences/save_preferences(bypass_cooldown = FALSE, silent = FALSE)
+/datum/preferences/write_preferences(bypass_cooldown = FALSE, silent = FALSE, list/patch_context)
 	. = ..()
 	if(!istype(., /savefile))
-		return
+		return FALSE
 	WRITE_FILE(.["shift_invites"], shift_invites)
 
-/datum/preferences/load_preferences(bypass_cooldown = FALSE)
+/datum/preferences/read_preferences(bypass_cooldown = FALSE)
 	. = ..()
-	if(!istype(., /savefile))
-		return
-	.["shift_invites"] >> shift_invites
+	if(!istype(., /savefile) && !istype(., /datum/player_save_document))
+		return FALSE
+	var/datum/player_save_document/document = istype(., /datum/player_save_document) ? . : null
+	var/savefile/S = document ? null : .
+	READ_PLAYER_SAVE(S, document, "shift_invites", shift_invites)
 	shift_invites = isnull(shift_invites) ? TRUE : !!shift_invites

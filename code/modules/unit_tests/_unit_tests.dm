@@ -617,6 +617,7 @@
 #include "phobia_preference.dm"
 #include "psychosis_pools.dm"
 #include "preload_size_budgets.dm"
+#include "player_save_json.dm"
 #include "preferences_preview_performance.dm"
 #include "preferences_render_caches.dm"
 #include "preferences_test_fixture.dm"
@@ -743,6 +744,27 @@ TEST_FOCUS(/datum/unit_test/cleanbot_failed_path_search_has_cooldown)
 TEST_FOCUS(/datum/unit_test/floorbot_failed_path_search_has_cooldown)
 #endif
 
+#ifdef PLAYER_SAVE_TESTS
+TEST_FOCUS(/datum/unit_test/preferences_save_deferral)
+TEST_FOCUS(/datum/unit_test/species_prefs_load_reuses_matching_datum)
+TEST_FOCUS(/datum/unit_test/player_save_json)
+TEST_FOCUS(/datum/unit_test/preferences_single_pref_absorb)
+TEST_FOCUS(/datum/unit_test/preferences_single_pref_defer_decision)
+TEST_FOCUS(/datum/unit_test/preferences_single_pref_deferral)
+TEST_FOCUS(/datum/unit_test/preferences_single_pref_reuses_full_save_queue)
+TEST_FOCUS(/datum/unit_test/preferences_single_pref_flush)
+TEST_FOCUS(/datum/unit_test/preferences_single_pref_var_matches_full_save)
+TEST_FOCUS(/datum/unit_test/preferences_single_pref_flush_migrates_stale_file)
+TEST_FOCUS(/datum/unit_test/preferences_single_pref_var_reads_variable)
+TEST_FOCUS(/datum/unit_test/preferences_single_pref_keys_match_full_save)
+TEST_FOCUS(/datum/unit_test/preferences_slot_names_cache)
+TEST_FOCUS(/datum/unit_test/shift_invites_pref_round_trip)
+TEST_FOCUS(/datum/unit_test/antag_opt_in_pref_saving)
+TEST_FOCUS(/datum/unit_test/echolocation_saved_name_migration)
+TEST_FOCUS(/datum/unit_test/hk47_savefile_migration_enables_role)
+TEST_FOCUS(/datum/unit_test/blood_brothers_savefile_migration_enables_role)
+TEST_FOCUS(/datum/unit_test/insect_accessory_colors)
+#endif
 
 #undef PORTED_STATION_MAPS
 #undef TEST_ASSERT
