@@ -83,13 +83,14 @@ GLOBAL_LIST_INIT(innate_features, init_innate_features())
 	character.sync_naga_anatomy()
 
 // Навык принадлежит личности; изменение анатомии тела само по себе его не переписывает.
-/datum/mind/proc/set_naga_locomotion(enabled)
+/datum/mind/proc/set_naga_locomotion(enabled, update_mobility = TRUE)
 	var/previous = HAS_TRAIT(src, TRAIT_NAGA_LOCOMOTION)
 	if(enabled)
 		ADD_TRAIT(src, TRAIT_NAGA_LOCOMOTION, INNATE_NAGA_TAIL)
 	else
 		REMOVE_TRAIT(src, TRAIT_NAGA_LOCOMOTION, INNATE_NAGA_TAIL)
-	if(previous != HAS_TRAIT(src, TRAIT_NAGA_LOCOMOTION))
+	. = previous != HAS_TRAIT(src, TRAIT_NAGA_LOCOMOTION)
+	if(update_mobility && isliving(current) && .)
 		current?.update_mobility()
 
 /mob/living/carbon/human
@@ -148,8 +149,11 @@ GLOBAL_LIST_INIT(innate_features, init_innate_features())
 
 /datum/preferences/proc/apply_innate_features(mob/living/carbon/human/character)
 	character.dna.features["innate_features"] = valid_innate_features()
+	// Настройки меняют навык и тело вместе, без промежуточного падения из-за несовпадения моторики.
+	var/motor_changed = character.mind?.set_naga_locomotion(INNATE_NAGA_TAIL in character.dna.features["innate_features"], update_mobility = FALSE)
 	character.sync_innate_features()
-	character.mind?.set_naga_locomotion(INNATE_NAGA_TAIL in character.dna.features["innate_features"])
+	if(motor_changed)
+		character.update_mobility()
 
 /datum/character_setup/proc/build_innate_data()
 	var/list/items = list()

@@ -138,6 +138,8 @@
 
 /mob/living/carbon/get_num_supporting_limbs(check_disabled = TRUE)
 	if(HAS_TRAIT(src, TRAIT_NAGA_ANATOMY))
+		if(check_disabled && mind && !HAS_MIND_TRAIT(src, TRAIT_NAGA_LOCOMOTION))
+			return 0
 		var/obj/item/bodypart/tail = get_bodypart(BODY_ZONE_L_LEG)
 		return (tail && (!check_disabled || !tail.disabled)) ? 2 : 0
 	if(check_disabled && HAS_MIND_TRAIT(src, TRAIT_NAGA_LOCOMOTION))

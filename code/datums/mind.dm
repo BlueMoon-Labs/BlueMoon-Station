@@ -210,6 +210,7 @@
 			return FALSE
 	var/old_character = current
 	var/update_naga_mobility = HAS_TRAIT(src, TRAIT_NAGA_LOCOMOTION) || (new_character?.mind && HAS_TRAIT(new_character.mind, TRAIT_NAGA_LOCOMOTION))
+	update_naga_mobility ||= (current && HAS_TRAIT(current, TRAIT_NAGA_ANATOMY)) || (new_character && HAS_TRAIT(new_character, TRAIT_NAGA_ANATOMY))
 	var/signals = SEND_SIGNAL(new_character, COMSIG_MOB_PRE_PLAYER_CHANGE, new_character, old_character) | SEND_SIGNAL(src, COMSIG_PRE_MIND_TRANSFER, new_character, old_character)
 	if(signals & COMPONENT_STOP_MIND_TRANSFER)
 		return
@@ -277,6 +278,8 @@
 		current?.update_mobility()
 		if(ishuman(current) && !HAS_TRAIT(current, TRAIT_NAGA_ANATOMY) && HAS_TRAIT(src, TRAIT_NAGA_LOCOMOTION))
 			to_chat(current, span_warning("Вы умеете передвигаться только опорным хвостом. Ходить на ногах вы не умеете и в этом теле можете лишь ползать. Медик может заменить обе ноги опорным хвостом."))
+		else if(ishuman(current) && HAS_TRAIT(current, TRAIT_NAGA_ANATOMY) && !HAS_TRAIT(src, TRAIT_NAGA_LOCOMOTION))
+			to_chat(current, span_warning("Вы умеете ходить только на ногах. Пользоваться опорным хвостом вы не умеете и в этом теле можете лишь ползать на руках. Для привычного передвижения вам требуется тело с ногами."))
 //splurt change
 	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(_paci_check), new_character, old_character)
 //end change
