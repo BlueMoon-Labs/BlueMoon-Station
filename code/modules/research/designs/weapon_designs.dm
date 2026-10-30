@@ -931,7 +931,7 @@
 
 /datum/design/exorcist_lethal
 	name = "410 lethal"
-	id = "exorcistlethal"
+	id = "exorcist_lethal"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 1000)
 	build_path = /obj/item/ammo_casing/cal410/lethal
