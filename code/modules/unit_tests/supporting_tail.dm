@@ -157,6 +157,62 @@
 	TEST_ASSERT_EQUAL(unfamiliar_tail.get_num_supporting_limbs(), 0, "Вход обычной личности в тело без прежнего разума тоже блокирует хвост.")
 	TEST_ASSERT(!CHECK_MOBILITY(unfamiliar_tail, MOBILITY_STAND), "Ограничение обновляется и когда ни один из прежних разумов не имел хвостового навыка.")
 
+/datum/unit_test/supporting_tail/rejuvenation/Run()
+	var/mob/living/carbon/human/original = patient("Naga, Fat")
+	original.mind_initialize()
+	var/datum/mind/tail_mind = original.mind
+	allocated += tail_mind
+	tail_mind.set_original_character(original)
+	var/mob/living/carbon/human/recipient = allocate(/mob/living/carbon/human)
+	recipient.dna.features["taur"] = "None"
+	var/datum/innate_feature/extra = feature("ci_rejuvenation_extra")
+	recipient.dna.features["innate_features"] = list(extra.id)
+	tail_mind.transfer_to(recipient)
+	recipient.fully_heal()
+	TEST_ASSERT_EQUAL(recipient.get_num_legs(FALSE), 2, "Обычное полное лечение не меняет ноги по моторике личности.")
+	recipient.revive(full_heal = TRUE, admin_revive = TRUE)
+	var/obj/item/bodypart/l_leg/naga_tail/tail = recipient.get_bodypart(BODY_ZONE_L_LEG)
+	TEST_ASSERT(istype(tail), "Реджув заменяет ноги опорным хвостом для хвостовой личности.")
+	TEST_ASSERT_EQUAL(recipient.get_bodypart(BODY_ZONE_R_LEG), tail, "После реджува обе зоны относятся к единственному хвосту.")
+	TEST_ASSERT_EQUAL(recipient.get_num_legs(FALSE), 0, "Обычные ноги не остаются рядом с восстановленным хвостом.")
+	TEST_ASSERT_EQUAL(recipient.dna.features["taur"], "Naga, Fat", "В чужом теле восстанавливается вариант исходного персонажа.")
+	TEST_ASSERT((INNATE_NAGA_TAIL in recipient.dna.features["innate_features"]) && (extra.id in recipient.dna.features["innate_features"]), "Реджув закрепляет хвост в ДНК и сохраняет остальные особенности.")
+	TEST_ASSERT(recipient.mind == tail_mind && HAS_TRAIT(tail_mind, TRAIT_NAGA_LOCOMOTION), "Реджув не меняет личность и её моторику.")
+	recipient.set_resting(FALSE, TRUE)
+	TEST_ASSERT(CHECK_MOBILITY(recipient, MOBILITY_STAND), "После реджува хвостовая личность снова может встать.")
+	recipient.revive(full_heal = TRUE, admin_revive = TRUE)
+	TEST_ASSERT_EQUAL(recipient.get_bodypart(BODY_ZONE_L_LEG), tail, "Повторный реджув не пересоздаёт целый хвост.")
+	TEST_ASSERT_EQUAL(length(recipient.bodyparts), 5, "Повторный реджув не накапливает лишние конечности.")
+	tail.drop_limb()
+	recipient.revive(full_heal = TRUE, admin_revive = TRUE)
+	TEST_ASSERT(istype(recipient.get_bodypart(BODY_ZONE_L_LEG), /obj/item/bodypart/l_leg/naga_tail), "Реджув возвращает и ампутированный хвост.")
+	var/mob/living/carbon/human/ordinary = allocate(/mob/living/carbon/human)
+	ordinary.mind_initialize()
+	var/datum/mind/leg_mind = ordinary.mind
+	allocated += leg_mind
+	leg_mind.transfer_to(recipient)
+	recipient.fully_heal()
+	TEST_ASSERT(HAS_TRAIT(recipient, TRAIT_NAGA_ANATOMY), "Обычное лечение не убирает непривычный хвост.")
+	recipient.revive(full_heal = TRUE, admin_revive = TRUE)
+	TEST_ASSERT_EQUAL(recipient.get_num_legs(FALSE), 2, "Реджув возвращает обычной личности обе ноги вместо хвоста.")
+	TEST_ASSERT(!HAS_TRAIT(recipient, TRAIT_NAGA_ANATOMY) && !HAS_TRAIT_FROM(recipient, TRAIT_HARD_SOLES, INNATE_NAGA_TAIL), "Сняты анатомический трейт и защита хвоста.")
+	TEST_ASSERT(!(INNATE_NAGA_TAIL in recipient.dna.features["innate_features"]) && (extra.id in recipient.dna.features["innate_features"]), "Из ДНК удаляется только особенность хвоста.")
+	TEST_ASSERT_EQUAL(recipient.dna.features["taur"], "None", "Обычные ноги не скрываются спрайтом прежнего хвоста.")
+	TEST_ASSERT(recipient.mind == leg_mind && !HAS_TRAIT(leg_mind, TRAIT_NAGA_LOCOMOTION), "Обратная замена также не переписывает моторику личности.")
+	recipient.set_resting(FALSE, TRUE)
+	TEST_ASSERT(CHECK_MOBILITY(recipient, MOBILITY_STAND), "Восстановленные ноги доступны обычной личности.")
+	var/mob/living/carbon/human/no_taur = allocate(/mob/living/carbon/human)
+	no_taur.dna.species.mutant_bodyparts = no_taur.dna.species.mutant_bodyparts.Copy()
+	no_taur.dna.species.mutant_bodyparts -= "taur"
+	tail_mind.transfer_to(no_taur)
+	no_taur.revive(full_heal = TRUE, admin_revive = TRUE)
+	TEST_ASSERT(HAS_TRAIT(no_taur, TRAIT_NAGA_ANATOMY) && no_taur.get_num_supporting_limbs() == 2, "Реджув восстанавливает хвост и в виде без исходной поддержки тавров.")
+	TEST_ASSERT(no_taur.dna.species.mutant_bodyparts["taur"], "Восстановленный хвост имеет слой для отрисовки.")
+	var/mob/living/carbon/human/mindless = patient()
+	var/obj/item/bodypart/mindless_tail = mindless.get_bodypart(BODY_ZONE_L_LEG)
+	mindless.revive(full_heal = TRUE, admin_revive = TRUE)
+	TEST_ASSERT_EQUAL(mindless.get_bodypart(BODY_ZONE_L_LEG), mindless_tail, "У тела без разума реджув сохраняет текущую анатомию.")
+
 /datum/unit_test/supporting_tail/rest_motor_mismatch
 	var/list/saved_chat_capture
 

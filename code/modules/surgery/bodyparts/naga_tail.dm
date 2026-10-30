@@ -227,7 +227,34 @@
 // Основа куклы и состояния хвоста хранятся в отдельном core-атласе.
 GLOBAL_VAR_INIT(naga_doll_icon, 'icons/mob/naga_healthdoll.dmi')
 
-// Вызывается при смене ДНК и применении настроек, а не в Life или обработчике движения.
+// Реджув восстанавливает анатомию по навыку личности, не обучая её новой моторике.
+/mob/living/carbon/human/proc/restore_naga_anatomy_from_mind()
+	if(!mind || !dna?.species)
+		return
+	var/list/selected = dna.features["innate_features"]
+	selected = islist(selected) ? selected.Copy() : list()
+	if(HAS_MIND_TRAIT(src, TRAIT_NAGA_LOCOMOTION))
+		selected |= INNATE_NAGA_TAIL
+		var/datum/sprite_accessory/taur/taur = GLOB.taur_list[dna.features["taur"]]
+		if(!istype(taur, /datum/sprite_accessory/taur/naga))
+			var/mob/living/carbon/human/original = mind.original_character?.resolve()
+			var/datum/sprite_accessory/taur/original_taur
+			if(istype(original))
+				original_taur = GLOB.taur_list[original.dna?.features["taur"]]
+			dna.features["taur"] = istype(original_taur, /datum/sprite_accessory/taur/naga) ? original_taur.name : /datum/sprite_accessory/taur/naga::name
+		if(!dna.species.mutant_bodyparts["taur"])
+			// В чужом виде опорный хвост тоже должен иметь слой для отрисовки.
+			dna.species.mutant_bodyparts = dna.species.mutant_bodyparts?.Copy() || list()
+			dna.species.mutant_bodyparts["taur"] = dna.features["taur"]
+	else
+		if(HAS_TRAIT(src, TRAIT_NAGA_ANATOMY) || (INNATE_NAGA_TAIL in selected))
+			dna.features["taur"] = /datum/sprite_accessory/taur/none::name
+		selected -= INNATE_NAGA_TAIL
+	dna.features["innate_features"] = selected
+	sync_naga_anatomy()
+	sync_innate_features()
+
+// Вызывается при смене ДНК, применении настроек и реджуве, а не в Life или обработчике движения.
 /mob/living/carbon/human/proc/sync_naga_anatomy()
 	if(!dna?.species)
 		return

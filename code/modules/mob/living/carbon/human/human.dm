@@ -959,6 +959,7 @@
 
 /mob/living/carbon/human/fully_heal(admin_revive = FALSE)
 	if(admin_revive)
+		restore_naga_anatomy_from_mind()
 		regenerate_limbs()
 		regenerate_organs()
 	remove_all_embedded_objects()
