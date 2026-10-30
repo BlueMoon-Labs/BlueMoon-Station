@@ -78,6 +78,7 @@
 /client/verb/update_ping(tickstamp as num, sent_realtime as null|num, batch as null|num)
 	set instant = TRUE
 	set name = ".update_ping"
+	ping_reply_at = world.time
 
 	// Helper procs are inlined here: this verb runs roughly once per 2 seconds per client.
 	var/tick_ping = (world.time + world.tick_lag * TICK_USAGE_REAL / 100 - tickstamp) * 100

@@ -90,6 +90,8 @@ SUBSYSTEM_DEF(server_maint)
 				QDEL_IN(C, 1) //to ensure they get our message before getting disconnected
 				continue
 
+		C.tgui_panel?.offer_history_save()
+
 		if (ping_send_this_fire && !(world.time - C.connection_time < PING_BUFFER_TIME || ping_skips_inactive(C.last_activity)))
 			winset(C, null, ping_update_command(world.time+world.tick_lag*TICK_USAGE_REAL/100, REALTIMEOFDAY, ping_batch))
 			if(ping_batch)

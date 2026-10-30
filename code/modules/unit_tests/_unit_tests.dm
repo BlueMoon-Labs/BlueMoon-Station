@@ -201,6 +201,8 @@
 #include "changelog_archive.dm"
 #include "character_preview_bounds.dm"
 #include "character_profile_performance.dm"
+#include "chat_history_save_offer.dm"
+#include "chat_legacy_output.dm"
 #include "chat_member_badges.dm"
 #include "chat_speech_fx.dm"
 #include "chem_dispenser_payload.dm"
