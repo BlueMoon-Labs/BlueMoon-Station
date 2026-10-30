@@ -4730,7 +4730,6 @@
 #include "modular_bluemoon\code\game\objects\items\_portal_toys.dm"
 #include "modular_bluemoon\code\game\objects\items\ashtray.dm"
 #include "modular_bluemoon\code\game\objects\items\assault_hammer.dm"
-#include "modular_bluemoon\code\game\objects\items\cards_ids.dm"
 #include "modular_bluemoon\code\game\objects\items\cigs_lighters.dm"
 #include "modular_bluemoon\code\game\objects\items\climbing_hook.dm"
 #include "modular_bluemoon\code\game\objects\items\cool_broom.dm"

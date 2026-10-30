@@ -16,11 +16,11 @@
 /obj/item/vanguard_voucher_class/examine_more(mob/user)
 	. = ..()
 	. += span_boldnotice("<hr><center>Выберите себе набор снаряжения!</center>")
-	. += "<div style='margin-top:4px;'>• <b>[span_yellowteamradio("Гренадёр")]</b> – эксперт по проникновению поможет эскадрону инженерный набором и сумкой с термитными зарядами. \
+	. += "<div style='margin-top:4px;'>• <b>[span_yellowteamradio("Гренадёр")]</b> – эксперт по проникновению поможет эскадрону инженерным набором и сумкой с термитными зарядами. \
 	Вооружён лаз-пистолетом на сменных и перезаряжаемых батареях.</div>"
 	. += "<div style='margin-top:4px;'>• <b>[span_green("Фельдшер")]</b> – полевой врач и передовой ресурс с ценными медикаментами, вооружённый спектром оружия ближнего боя \
 	и хирургическими инструментами.</div>"
-	. += "<div style='margin-top:4px;'>• <b>[span_red("Штурмовик")]</b> – специалист по убийству всего что движется с двумя пистолетами, откалиброванных под огонь \
+	. += "<div style='margin-top:4px;'>• <b>[span_red("Штурмовик")]</b> – специалист по убийству всего движущегося; с двумя пистолетами, отлаженных под огонь \
 	по-македонски, набором метательных ножей и подсумком с медикаментами.</div>"
 
 /obj/item/vanguard_voucher_suit
@@ -194,6 +194,7 @@
 			new /obj/item/storage/box/demolition(drop_location)
 			new /obj/item/clothing/glasses/meson(drop_location)
 			new /obj/item/clothing/gloves/combat(drop_location)
+			new /obj/item/card_sticker/vanguard/grenadier(drop_location)
 		if("Фельдшер")
 			new /obj/item/stack/medical/fracture_kit/cms(drop_location)
 			new /obj/item/storage/firstaid/frontier(drop_location)
@@ -203,6 +204,7 @@
 			new /obj/item/defibrillator/compact/loaded(drop_location)
 			new /obj/item/clothing/glasses/hud/health(drop_location)
 			new /obj/item/clothing/gloves/color/latex/nitrile(drop_location)
+			new /obj/item/card_sticker/vanguard/feldscherer(drop_location)
 		if("Штурмовик")
 			new /obj/item/storage/secure/briefcase/vanguard/p320(drop_location)
 			new /obj/item/storage/belt/military/assault(drop_location)
@@ -210,6 +212,7 @@
 			new /obj/item/storage/bag/marksman(drop_location)
 			new /obj/item/clothing/glasses/night(drop_location)
 			new /obj/item/clothing/gloves/color/black(drop_location)
+			new /obj/item/card_sticker/vanguard/shocktrooper(drop_location)
 	playsound(src, 'sound/machines/machine_vend.ogg', 50, TRUE, extrarange = -3)
 	SSblackbox.record_feedback("tally", "vanguard_voucher_redeemed", 1, selection)
 	qdel(voucher)

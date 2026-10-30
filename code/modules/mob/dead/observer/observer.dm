@@ -137,8 +137,6 @@ GLOBAL_VAR_INIT(observer_default_invisibility, INVISIBILITY_OBSERVER)
 	var/datum/action/join_shift/join_action = new(src)
 	join_action.Grant(src)
 	grant_all_languages()
-	show_data_huds()
-	data_huds_on = 1
 
 /mob/dead/observer/proc/on_mousewheel(mob/user, atom/target, delta_x, delta_y, list/modifiers)
 	if(!delta_y || !modifiers[SHIFT_CLICK])
@@ -894,19 +892,28 @@ This is the proc mobs get to turn into a ghost. Forked from ghostize due to comp
 		var/datum/atom_hud/H = GLOB.huds[hudtype]
 		H.remove_hud_from(src)
 
+/// Включает или снимает дата-худы по настройке клиента.
+/mob/dead/observer/proc/sync_data_huds()
+	var/wanted = !!(client?.prefs?.chat_toggles & CHAT_GHOSTHUDS)
+	if(wanted == !!data_huds_on)
+		return
+	if(wanted)
+		show_data_huds()
+	else
+		remove_data_huds()
+	data_huds_on = wanted
+
 /mob/dead/observer/verb/toggle_data_huds()
 	set name = "Toggle Sec/Med/Diag HUD"
-	set desc = "Toggles whether you see medical/security/diagnostic HUDs"
+	set desc = "Показывать мед/СБ/диаг-худы призраку. Выбор запоминается для следующих раз."
 	set category = "Ghost"
 
-	if(data_huds_on) //remove old huds
-		remove_data_huds()
-		to_chat(src, "<span class='notice'>Data HUDs disabled.</span>")
-		data_huds_on = 0
-	else
-		show_data_huds()
-		to_chat(src, "<span class='notice'>Data HUDs enabled.</span>")
-		data_huds_on = 1
+	if(!client?.prefs)
+		return
+	client.prefs.chat_toggles ^= CHAT_GHOSTHUDS
+	client.prefs.save_pref_var("chat_toggles")
+	sync_data_huds()
+	to_chat(src, span_notice("Дата-худы призрака [data_huds_on ? "включены" : "выключены"]."))
 
 /mob/dead/observer/verb/toggle_health_scan()
 	set name = "Toggle Health Scan"
