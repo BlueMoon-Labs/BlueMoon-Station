@@ -305,6 +305,9 @@
 
 /obj/item/soulstone/proc/getCultGhost(mob/living/carbon/human/T, mob/user)
 	var/mob/dead/observer/chosen_ghost
+	if(is_antag_training_atom(T))
+		to_chat(user, span_warning("На полигоне недоступно: камень душ зовёт в тень призраков станции."))
+		return FALSE
 
 	for(var/mob/dead/observer/ghost in GLOB.player_list) //We put them back in their body
 		if(ghost.mind && ghost.mind.current == T && ghost.client)

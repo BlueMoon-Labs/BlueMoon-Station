@@ -581,6 +581,10 @@ GLOBAL_LIST_INIT(payed_ert, list(
 #define UNIT_TEST_SHARD_PARAMETER "unit-test-shard"
 //JSON of past wall times per test, used to balance the shards
 #define UNIT_TEST_DURATIONS_PARAMETER "unit-test-durations"
+//Map config to load instead of data/next_map.json, so several test worlds can share one directory
+#define UNIT_TEST_MAP_PARAMETER "unit-test-map"
+//Name of this test world among others running in the same directory, keeps their caches apart
+#define UNIT_TEST_INSTANCE_PARAMETER "unit-test-instance"
 
 #define EGG_LAYING_MESSAGES list("lays an egg.","squats down and croons.","begins making a huge racket.","begins clucking raucously.")
 
@@ -698,3 +702,8 @@ GLOBAL_LIST_INIT(day_names, list("Monday", "Tuesday", "Wednesday", "Thursday", "
 
 /// Это лист для всевозможных контейнеров реагентов закрытого типа, принимаемого кемдиспенсерами, кеммастерами и т.д.
 #define CLOSED_CONTAINERS_OPERABLE list(/obj/item/reagent_containers/glass/bottle/vial)
+
+/// Хелпер-дефайны для корректной работы стикеров карт
+#define SYNDI_NT_PREFIX_LIST list("Syndicate", "Syndi", "NT", "Nanotrasen") // Блэклист корпоративных неймингов
+#define STICKER_SLOT_PREFIX "prefix"
+#define STICKER_SLOT_SUFFIX "suffix"

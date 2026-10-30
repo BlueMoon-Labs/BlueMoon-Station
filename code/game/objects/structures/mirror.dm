@@ -181,7 +181,7 @@
 				if(new_s_tone)
 					if(new_s_tone == "custom")
 						var/default = H.dna.skin_tone_override || null
-						var/custom_tone = input(user, "Choose your custom skin tone:", "Race change", default) as color|null
+						var/custom_tone = tgui_input_color(user, "Choose your custom skin tone:", "Race change", default)
 						if(custom_tone)
 							var/temp_hsv = RGBtoHSV(new_s_tone)
 							if(ReadHSV(temp_hsv)[3] >= ReadHSV(MINIMUM_MUTANT_COLOR)[3] || !CONFIG_GET(flag/character_color_limits)) //SPLURT edit
@@ -194,7 +194,7 @@
 						H.dna.update_ui_block(DNA_SKIN_TONE_BLOCK)
 
 			if(MUTCOLORS in H.dna.species.species_traits)
-				var/new_mutantcolor = input(user, "Choose your skin color:", "Race change","#"+H.dna.features["mcolor"]) as color|null
+				var/new_mutantcolor = tgui_input_color(user, "Choose your skin color:", "Race change","#"+H.dna.features["mcolor"])
 				if(new_mutantcolor)
 					var/temp_hsv = RGBtoHSV(new_mutantcolor)
 
@@ -238,12 +238,12 @@
 			if(hairchoice == "Style") //So you just want to use a mirror then?
 				..()
 			else
-				var/new_hair_color = input(H, "Choose your hair color", "Hair Color","#"+H.hair_color) as color|null
+				var/new_hair_color = tgui_input_color(H, "Choose your hair color", "Hair Color","#"+H.hair_color)
 				if(new_hair_color)
 					H.hair_color = sanitize_hexcolor(new_hair_color)
 					H.dna.update_ui_block(DNA_HAIR_COLOR_BLOCK)
 				if(H.gender == "male")
-					var/new_face_color = input(H, "Choose your facial hair color", "Hair Color","#"+H.facial_hair_color) as color|null
+					var/new_face_color = tgui_input_color(H, "Choose your facial hair color", "Hair Color","#"+H.facial_hair_color)
 					if(new_face_color)
 						H.facial_hair_color = sanitize_hexcolor(new_face_color)
 						H.dna.update_ui_block(DNA_FACIAL_HAIR_COLOR_BLOCK)
@@ -255,7 +255,7 @@
 				var/input_color = H.left_eye_color
 				if(eye_type == "Right Eye")
 					input_color = H.right_eye_color
-				var/new_eye_color = input(H, "Choose your eye color", "Eye Color","#"+input_color) as color|null
+				var/new_eye_color = tgui_input_color(H, "Choose your eye color", "Eye Color","#"+input_color)
 				if(!user.canUseTopic(src, BE_CLOSE, FALSE, NO_TK))
 					return
 				if(new_eye_color)

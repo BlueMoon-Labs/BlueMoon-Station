@@ -4,7 +4,11 @@ GLOBAL_LIST_INIT(antag_training_kits, list(
 	"medicine" = list("name" = "Первая помощь", "zone" = "laboratory", "items" = list("health", "firstaid", "burn_kit")),
 	"workshop" = list("name" = "Строительство", "zone" = "laboratory", "items" = list("tools", "steel", "glass", "cable")),
 	"security" = list("name" = "Сотрудник СБ", "zone" = "pve", "items" = list("baton", "disabler", "flash", "cuffs", "vest", "helmet", "sunglasses")),
-	"counter" = list("name" = "Против еретика", "zone" = "melee", "items" = list("nullrod", "holywater", "earmuffs", "flashbang", "cuffs"))
+	"counter" = list("name" = "Против еретика", "zone" = "melee", "items" = list("nullrod", "holywater", "earmuffs", "flashbang", "cuffs")),
+	"engineer" = list("name" = "Инженер", "zone" = "engineering", "items" = list("insulated_gloves", "tools", "cable", "apc_frame", "apc_board", "cell", "plasma"), "hint" = "Наденьте изолированные перчатки: без них провода и щитки бьют током. Плазма - топливо для генератора P.A.C.M.A.N."),
+	"atmos" = list("name" = "Атмосферный техник", "zone" = "atmos", "items" = list("mask", "oxygen", "analyzer", "extinguisher", "tools"), "hint" = "Наденьте противогаз и откройте подачу из баллона. Перед тем как открыть дверь, проверьте воздух за ней анализатором."),
+	"eva" = list("name" = "Выход в космос", "zone" = "eva", "items" = list("suit", "space_helmet", "jetpack", "magboots", "gps"), "hint" = "Наденьте скафандр, шлем и магнитные ботинки, джетпак - на спину, и откройте подачу воздуха из него. GPS выдан выключенным: включите его в меню."),
+	"robotics" = list("name" = "Робототехник", "zone" = "robotics", "items" = list("mmi", "surgery", "cell", "tools"), "hint" = "Создайте учебную цель, извлеките её мозг на операционном столе и вставьте в MMI, а MMI - в учебную раму киборга.")
 ))
 
 /datum/antag_training_session
@@ -31,14 +35,35 @@ GLOBAL_LIST_INIT(antag_training_kits, list(
 	var/list/kit = GLOB.antag_training_kits[kit_id]
 	if(!kit || !can_control(current_body) || preparing || arena.resetting || world.time < next_supply_at)
 		return FALSE
+	var/datum/antag_training_sector/sector = arena.sectors[kit["zone"]]
+	if(!sector && !arena.zones[kit["zone"]])
+		return FALSE
+	var/refusal = sector?.entry_refusal(src)
+	if(refusal)
+		practice_message(refusal)
+		return FALSE
 	arena.prune_supplies()
 	var/list/items = kit["items"]
-	if(arena.supply_count + length(items) > ANTAG_TRAINING_SUPPLY_LIMIT)
+	if(arena.supply_count + length(items) > arena.limit_for(ANTAG_TRAINING_SUPPLY_LIMIT, src))
 		practice_message("Для комплекта не хватает места в общем лимите. Уберите свои ненужные предметы.")
 		return FALSE
 	preparing = TRUE
 	next_supply_at = world.time + ANTAG_TRAINING_PRACTICE_DELAY
+	if(sector)
+		INVOKE_ASYNC(src, PROC_REF(deliver_kit), kit_id, sector)
+		return TRUE
 	current_body.forceMove(arena.zones[kit["zone"]]["spawn"])
+	return deliver_kit(kit_id)
+
+/datum/antag_training_session/proc/deliver_kit(kit_id, datum/antag_training_sector/sector)
+	var/list/kit = GLOB.antag_training_kits[kit_id]
+	if(sector && !enter_sector(sector))
+		preparing = FALSE
+		// Готовый сектор при отказе значит, что за загрузку сменилось тело: новому вещи не нужны.
+		if(!QDELETED(src) && !finished && !arena.finished && sector.state != ANTAG_TRAINING_SECTOR_READY)
+			practice_message("Сектор «[sector.name]» не удалось загрузить. Попробуйте ещё раз или сбросьте полигон.")
+		return FALSE
+	var/list/items = kit["items"]
 	var/issued = 0
 	for(var/item_id in items)
 		arena.yield_work()
@@ -50,7 +75,7 @@ GLOBAL_LIST_INIT(antag_training_kits, list(
 	preparing = FALSE
 	if(!QDELETED(src) && !finished)
 		last_kit = kit_id
-		practice_message("Комплект «[kit["name"]]»: выдано [issued] из [length(items)]. Вещи лежат рядом с вами; наденьте броню и возьмите инструмент в руку.")
+		practice_message("Комплект «[kit["name"]]»: выдано [issued] из [length(items)]. Вещи лежат рядом с вами. [kit["hint"] || "Наденьте броню и возьмите инструмент в руку."]")
 	return issued == length(items)
 
 /datum/antag_training_session/proc/training_recipes()
@@ -95,7 +120,7 @@ GLOBAL_LIST_INIT(antag_training_kits, list(
 		return FALSE
 	arena.prune_supplies()
 	arena.prune_targets()
-	if(item_count + body_count > ANTAG_TRAINING_BATCH_LIMIT || arena.supply_count + item_count > ANTAG_TRAINING_SUPPLY_LIMIT || length(arena.targets) + body_count > ANTAG_TRAINING_TARGET_LIMIT)
+	if(item_count + body_count > ANTAG_TRAINING_BATCH_LIMIT || arena.supply_count + item_count > arena.limit_for(ANTAG_TRAINING_SUPPLY_LIMIT, src) || length(arena.targets) + body_count > arena.limit_for(ANTAG_TRAINING_TARGET_LIMIT, src))
 		practice_message("Не хватает места в общих лимитах предметов или целей. Освободите место перед выдачей рецепта.")
 		return FALSE
 	if(body_count && world.time < arena.next_spawn_at)
@@ -218,12 +243,13 @@ GLOBAL_LIST_INIT(antag_training_kits, list(
 		practice_message("Прежняя цель занята другим участником. Завершите упражнение и выберите новую цель.")
 		return FALSE
 	arena.prune_targets()
-	if(length(arena.targets) >= ANTAG_TRAINING_TARGET_LIMIT && !previous)
+	if(length(arena.targets) >= arena.limit_for(ANTAG_TRAINING_TARGET_LIMIT, src) && !previous)
 		practice_message("Достигнут общий предел целей. Удалите свою ненужную цель.")
 		return FALSE
 	arena.next_spawn_at = world.time + ANTAG_TRAINING_PRACTICE_DELAY
 	preparing = TRUE
 	stop_practice()
+	stop_exercise()
 	if(previous)
 		QDEL_NULL(previous.mind)
 		qdel(previous)
@@ -254,7 +280,7 @@ GLOBAL_LIST_INIT(antag_training_kits, list(
 	if(!practice_id || practice_complete)
 		return
 	var/mob/living/carbon/human/target = practice_target?.resolve()
-	if(!target || target.client || !can_manage_target(target) || get_area(heretic_pocket_anchor(get_turf(target))) != arena.room)
+	if(!target || target.client || !can_manage_target(target) || !arena.owns_area(get_area(heretic_pocket_anchor(get_turf(target)))))
 		measurement?.stop()
 		practice_hint = "Цель удалена или занята участником. Завершите упражнение, затем подготовьте новую цель."
 		return

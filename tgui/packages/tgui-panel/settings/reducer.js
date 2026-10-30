@@ -6,9 +6,10 @@
 
 import { changeSettingsTab, loadSettings, openChatSettings, toggleSettings, updateSettings } from './actions';
 import { FONTS, SETTINGS_TABS } from './constants';
+import { RADIO_JOB_DEFAULTS } from './radioJobs';
 
 const initialState = {
-  version: 6,
+  version: 7,
   fontSize: 13,
   fontFamily: FONTS[0],
   lineHeight: 1.2,
@@ -38,12 +39,24 @@ const initialState = {
   // Кастомизация стилей сообщений: { [styleId]: { color, disabled } }
   styleOverrides: {},
   spanAnimations: true,
+  // Оформление по типу сообщения: { [type]: { border, tint, anim, flash } }
+  typeOverrides: {},
+  // Игровые эффекты текста: общий тумблер и { [effectId]: false } выключенных
+  gameEffectsEnabled: true,
+  gameEffects: {},
+  // Гасить анимации сообщений вне окна свежих
+  settleOldAnimations: true,
   // Timestamps & time dividers
   enableTimestamps: false,
   timestampFormat: 'hm',
   enableTimeDividers: false,
   timeDividerInterval: 300000,
   showRadioJobs: true,
+  // Линия "Новые сообщения" и счётчик на кнопке прокрутки вниз
+  newMessagesMarker: true,
+  // Теги должностей в рации: режим цвета, метка глав, имя в цвет отдела,
+  // свои цвета { [id из radioJobs.js]: '#hex' }
+  ...RADIO_JOB_DEFAULTS,
   view: {
     visible: false,
     activeTab: SETTINGS_TABS[0].id,
@@ -67,6 +80,7 @@ export const settingsReducer = (state = initialState, action) => {
     return {
       ...state,
       ...settings,
+      version: state.version,
     };
   }
   if (type === toggleSettings.type) {

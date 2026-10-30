@@ -424,7 +424,7 @@
 		if(installed_cartridge.access & CART_MEDICAL)
 			user.visible_message("<span class='notice'>[user] analyzes [C]'s vitals.</span>", \
 								"<span class='notice'>You analyze [C]'s vitals.</span>")
-			healthscan(user, C, 1, FALSE)
+			healthscan(user, C)
 			return
 	return ..()
 
@@ -1162,6 +1162,8 @@
 // ---- Borg PDA messaging ----
 
 /mob/living/silicon/robot/proc/cmd_send_pdamesg(mob/user)
+	if(QDELETED(aiPDA))
+		return
 	var/list/plist = list()
 	var/list/namecounts = list()
 

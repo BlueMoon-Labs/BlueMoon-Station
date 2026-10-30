@@ -18911,7 +18911,7 @@
 /turf/open/floor/plasteel/cult,
 /area/awaymission/complex/cultholdout)
 "qtL" = (
-/obj/structure/closet/secure/loot,
+/obj/structure/closet/crate/secure/loot,
 /obj/effect/decal/cleanable/dirt/dust,
 /obj/item/reagent_containers/food/snacks/grown/rice,
 /obj/item/reagent_containers/food/snacks/grown/rice,

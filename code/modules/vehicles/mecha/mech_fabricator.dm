@@ -79,7 +79,8 @@
 	vocal_volume = 20
 
 /obj/machinery/mecha_part_fabricator/Initialize(mapload)
-	stored_research = new
+	if(!stored_research)
+		stored_research = new
 	rmat = AddComponent(/datum/component/remote_materials, "mechfab", mapload && link_on_init, _after_insert=CALLBACK(src, PROC_REF(AfterMaterialInsert)))
 	on_station = is_station_level(z) || is_mining_level(z)
 	RefreshParts() //Recalculating local material sizes if the fab isn't linked

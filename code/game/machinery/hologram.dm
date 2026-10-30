@@ -290,7 +290,7 @@ Possible to do for anyone motivated enough:
 				to_chat(usr, span_info("You requested an AI's presence."))
 				var/area/area = get_area(src)
 				for(var/mob/living/silicon/ai/AI in GLOB.silicon_mobs)
-					if(!AI.client)
+					if(!AI.client || is_antag_training_atom(AI) != is_antag_training_atom(src))
 						continue
 					to_chat(AI, span_info("Ваше присутствие было запрошено в: <a href='?src=[REF(AI)];jumptoholopad=[REF(src)]'>\the [area]</a>.</span>")) // <a href='?src=[REF(AI)];project_to_holopad=[REF(src)]'>Project Hologram?</a>"))
 				return TRUE
@@ -387,6 +387,8 @@ Possible to do for anyone motivated enough:
 	if (!istype(user))
 		return
 	if (!on_network)
+		return
+	if(is_antag_training_atom(src) != is_antag_training_atom(user))
 		return
 	/*There are pretty much only three ways to interact here.
 	I don't need to check for client since they're clicking on an object.

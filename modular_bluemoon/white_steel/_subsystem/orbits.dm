@@ -69,7 +69,9 @@ PROCESSING_SUBSYSTEM_DEF(orbits)
 /datum/controller/subsystem/processing/orbits/proc/get_event()
 	if(!event_probability)
 		return null
-	return pickweight(runnable_events)
+	// Свой экземпляр на руину: общий держал удалённый маяк в linked_z и делил счётчики тиков
+	var/datum/ruin_event/template = pickweight(runnable_events)
+	return template ? new template.type : null
 
 /datum/controller/subsystem/processing/orbits/proc/post_load_init()
 	for(var/map_key in orbital_maps)
@@ -81,9 +83,9 @@ PROCESSING_SUBSYSTEM_DEF(orbits)
 			new /datum/orbital_object/z_linked/phobos()
 		orbital_map.post_setup()
 	orbits_setup = TRUE
-	//WHITE-STEEL FIX: готовим пул свободных z-уровней ДО создания маяков, чтобы
-	//при первом же облёте объекты брали уровни из пула, а не плодили новые.
-	SSzclear.seed_initial_pool()
+	//WHITE-STEEL FIX: пул свободных z-уровней, чтобы при облёте объекты брали уровни из него, а не плодили новые.
+	//Засевается в фоне: уровни нужны только при облёте, а засев держал старт раунда (на Layenia до шести минут).
+	INVOKE_ASYNC(SSzclear, TYPE_PROC_REF(/datum/controller/subsystem/zclear, seed_initial_pool))
 	//Create initial ruins
 	for(var/i in 1 to initial_objective_beacons)
 		new /datum/orbital_object/z_linked/beacon/ruin()

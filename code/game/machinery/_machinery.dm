@@ -954,7 +954,8 @@ Class Procs:
 /obj/machinery/proc/AI_notify_hack()
 	var/alertstr = span_userdanger("Network Alert: Замечена попытка взлома[get_area(src)?" в [get_area_name(src, TRUE)]":". Невозможно отследить местоположение"].")
 	for(var/mob/living/silicon/ai/AI in GLOB.player_list)
-		to_chat(AI, alertstr)
+		if(is_antag_training_atom(AI) == is_antag_training_atom(src))
+			to_chat(AI, alertstr)
 
 /obj/machinery/proc/play_click_sound(custom_clicksound)
 	if((custom_clicksound||clicksound) && world.time > next_clicksound)

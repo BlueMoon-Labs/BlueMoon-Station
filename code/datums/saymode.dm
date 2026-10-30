@@ -21,10 +21,12 @@
 			for(var/_M in GLOB.player_list)
 				var/mob/M = _M
 				if(M in GLOB.dead_mob_list)
+					if(isobserver(M) ? !antag_training_observer_hears(M, user) : M.training_origin != user.training_origin)
+						continue
 					var/link = FOLLOW_LINK(M, user)
 					to_chat(M, "[link] [msg]")
 				else
-					switch(M.lingcheck())
+					switch(M.lingcheck(user))
 						if (LINGHIVE_LING)
 							var/mob/living/L = M
 							if (!HAS_TRAIT(L, CHANGELING_HIVEMIND_MUTE))
@@ -44,10 +46,12 @@
 			for(var/_M in GLOB.player_list)
 				var/mob/M = _M
 				if(M in GLOB.dead_mob_list)
+					if(isobserver(M) ? !antag_training_observer_hears(M, user) : M.training_origin != user.training_origin)
+						continue
 					var/link = FOLLOW_LINK(M, user)
 					to_chat(M, "[link] [msg]")
 				else
-					switch(M.lingcheck())
+					switch(M.lingcheck(user))
 						if(LINGHIVE_LINK)
 							to_chat(M, msg)
 						if(LINGHIVE_LING)

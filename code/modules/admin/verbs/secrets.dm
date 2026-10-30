@@ -42,7 +42,7 @@
 	data["is_funmin"] = is_funmin
 	return data
 
-proc/check_user_confimation(confirmation_data)
+/proc/check_user_confimation(confirmation_data)
 	if(confirmation_data == "Yes")
 		return TRUE
 

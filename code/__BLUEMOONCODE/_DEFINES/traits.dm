@@ -15,6 +15,8 @@
 #define TRAIT_BLUEMOON_WATER_EXPOSED		"robotic_water_exposed"
 #define TRAIT_BLUEMOON_EMP_VULNERABILITY	"robotic_emp_vulnerability"
 #define TRAIT_BLUEMOON_CROCIN_POISONOUS		"crocin_poisonous"
+/// Позволяет обученному персоналу воспринимать показания медицинских приборов без зрения.
+#define TRAIT_MEDICAL_DEVICE_INTERFACE 		"medical_device_interface"
 #define TRAIT_LEWD_SUMMON					"Призываемый"
 #define TRAIT_LEWD_SUMMONED					"lewd_summoned"
 #define TRAIT_SPIKY							"spiky"
@@ -26,6 +28,8 @@
 #define TRAIT_RETRACTABLE_CLAWS				"claws"
 #define TRAIT_CHAMELEON_QUIRK				"chameleon_quirk"
 #define TRAIT_KNOWS_RESEARCH 				"parchment_knowledge"
+/// Тело ждёт игрока в капсуле полигона: dusts_on_catatonia его не трогает.
+#define TRAIT_TRAINING_DREAMER				"training_dreamer"
 #define BLUEMOON_TRAIT_NAME_PHOBIA			"Фобия"
 
 // Трейты для рас

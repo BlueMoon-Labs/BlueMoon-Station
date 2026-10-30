@@ -5,6 +5,8 @@
 	var/obj/item/modular_computer/messenger_device = messenger.computer
 	if(!istype(messenger_device))
 		return
+	if(is_antag_training_atom(messenger_device))
+		return
 
 	var/messenger_ref = REF(messenger)
 	if(messenger_ref in GLOB.pda_messengers)

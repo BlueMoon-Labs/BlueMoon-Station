@@ -142,10 +142,11 @@
 			Turf = get_turf(user) //we may have moved. adjust as needed...
 			A = get_area(src)
 			// Claim?
-			if(!bloodsuckerdatum.coffin && !resident && (is_station_level(Turf.z) || !A.map_name == "Space"))
-				switch(alert(user,"Вы хотите занять данный гроб? [get_area(src)] станет вашим логовом.","Занять логово","Да", "Нет"))
-					if("Да")
-						ClaimCoffin(user)
+			var/datum/antag_training_arena/training_arena = user.training_origin?.resolve()
+			var/training_lair = training_arena?.owns_area(A)
+			if(!bloodsuckerdatum.coffin && !resident && (is_station_level(Turf.z) || !A.map_name == "Space" || training_lair))
+				if(training_lair || alert(user,"Вы хотите занять данный гроб? [get_area(src)] станет вашим логовом.","Занять логово","Да", "Нет") == "Да")
+					ClaimCoffin(user)
 			if (user.AmStaked()) // Stake? No Heal!
 				to_chat(bloodsuckerdatum.owner.current, "<span class='userdanger'>Вы проткнуты колом! Уберите это опасное оружие от своего сердца перед сном.</span>")
 				return

@@ -20483,7 +20483,6 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 4
 	},
-/obj/machinery/power/apc/auto_name/north,
 /obj/structure/disposalpipe/segment{
 	dir = 4
 	},

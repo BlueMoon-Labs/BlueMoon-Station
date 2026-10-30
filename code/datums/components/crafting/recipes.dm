@@ -14,6 +14,8 @@
 	var/list/foodtypes = list() //food type tags for dietary filtering
 	var/mass_craftable = FALSE //if TRUE, can repeat until ingredients run out
 	var/always_availible = TRUE //Set to FALSE if it needs to be learned first.
+	/// The recipe's entry in the crafting menu: identical for every crafter, built on first open.
+	var/list/menu_data
 
 /datum/crafting_recipe/New()
 	if(!(result in reqs))

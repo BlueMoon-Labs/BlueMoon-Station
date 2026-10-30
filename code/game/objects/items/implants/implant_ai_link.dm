@@ -29,10 +29,7 @@
 		if(!holder)
 			continue
 		holder.pixel_y = p_y
-		if(linked_ai)
-			holder.icon_state = "hudtrackingai"
-		else
-			holder.icon_state = "hudtracking"
+		owner.set_hud_image_state(hud_type, linked_ai ? "hudtrackingai" : "hudtracking")
 
 /obj/item/organ/cyberimp/brain/ai_link/emp_act(severity)
 	. = ..()
@@ -53,12 +50,12 @@
 	if(istype(W, /obj/item/multitool))
 		var/list/available_ais = list()
 		for(var/mob/living/silicon/ai/AI in GLOB.silicon_mobs)
-			if(AI.stat != DEAD)
+			if(AI.stat != DEAD && is_antag_training_atom(AI) == is_antag_training_atom(src))
 				available_ais[AI.name] = AI
 		if(!available_ais.len)
 			to_chat(user, "<span class='warning'>Активные ИИ не найдены.</span>")
 			return TRUE
-		var/ai_choice = input(user, "Выберите ИИ для синхронизации", "Настройка импланта") as null|anything in available_ais
+		var/ai_choice = tgui_input_list(user, "Выберите ИИ для синхронизации", "Настройка импланта", available_ais)
 		if(ai_choice)
 			linked_ai = available_ais[ai_choice]
 			to_chat(user, "<span class='notice'>Имплант синхронизирован с [linked_ai.name].</span>")
@@ -78,7 +75,7 @@
 	if(active || QDELETED(linked_ai))
 		var/list/active_ais = list()
 		for(var/mob/living/silicon/ai/AI in GLOB.silicon_mobs)
-			if(AI.stat != DEAD)
+			if(AI.stat != DEAD && is_antag_training_atom(AI) == is_antag_training_atom(owner))
 				active_ais += AI
 		if(active_ais.len == 1)
 			linked_ai = active_ais[1]
@@ -116,9 +113,7 @@
 	// Очистка всех HUD слоев
 	var/list/huds_to_clear = list(DIAG_TRACK_HUD, IMPTRACK_HUD)
 	for(var/hud_type in huds_to_clear)
-		var/image/holder = old_owner.hud_list[hud_type]
-		if(holder)
-			holder.icon_state = null
+		old_owner.set_hud_image_state(hud_type, null)
 
 	if(linked_ai)
 		to_chat(linked_ai, "<span class='boldannounce'>ВНИМАНИЕ:</span> <span class='userdanger'>Связь с био-активом [old_owner.name] разорвана.</span>")
@@ -150,7 +145,7 @@
 /obj/item/organ/cyberimp/brain/ai_link/proc/add_stat_panel(mob/source, list/stat_list)
 	SIGNAL_HANDLER
 	if(linked_ai)
-		stat_list += list(list("Master AI", linked_ai.name))
+		stat_list += list(list("Мастер-ИИ", linked_ai.name))
 
 /obj/item/organ/cyberimp/brain/ai_link/proc/on_examine(mob/living/carbon/human/H, mob/user, list/examine_list)
 	SIGNAL_HANDLER
@@ -161,7 +156,7 @@
 	examine_list += "<span style='color: #00D1FF;'>Вы замечаете индикатор <b>Нейроимпланта</b> на виске [H.name].</span>"
 
 /datum/action/item_action/organ_action/state_laws
-	name = "State Laws"
+	name = "Огласить законы"
 	desc = "Огласить статус синхронизации и просмотреть законы."
 
 /datum/action/item_action/organ_action/state_laws/Trigger()
@@ -173,13 +168,13 @@
 		implant.linked_ai.laws.show_laws(owner)
 
 /datum/action/item_action/organ_action/ai_link_talk
-	name = "Neural Link Communication"
+	name = "Связь с нейросетью"
 	desc = "Отправить сообщение в зашифрованный канал связи ИИ и роботов."
 	button_icon_state = "id_comms"
 
 /datum/action/item_action/organ_action/ai_link_talk/Trigger()
 	var/obj/item/organ/cyberimp/brain/ai_link/implant = target
-	var/message = stripped_input(owner, "Введите сообщение для передачи в нейросеть:", "Neural Link")
+	var/message = tgui_input_text(owner, "Введите сообщение для передачи в нейросеть:", "Нейросвязь", max_length = MAX_MESSAGE_LEN, encode = TRUE)
 	if(!message || !owner || !implant)
 		return
 	var/mob/living/L = owner

@@ -308,8 +308,7 @@ GLOBAL_LIST_INIT(spells, typesof(/obj/effect/proc_holder/spell)) //needed for th
 			location = target
 		if(isliving(target) && message)
 			to_chat(target, text("[message]"))
-			log_admin("[target] cast spell. [message]")
-			message_admins("[target] cast spell. [message]")
+			antag_training_admin_log(target, "[target] cast spell. [message]", "[target] cast spell. [message]")
 		if(sparks_spread)
 			do_sparks(sparks_amt, FALSE, location)
 		if(smoke_type)

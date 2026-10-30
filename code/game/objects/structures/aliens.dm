@@ -282,6 +282,12 @@ GLOBAL_VAR_INIT(alien_weeds_revision, 0)
 	if(status == BURST)
 		obj_integrity = integrity_failure * max_integrity
 
+/obj/structure/alien/egg/Destroy()
+	if(child?.loc == src)
+		QDEL_NULL(child)
+	child = null
+	return ..()
+
 /obj/structure/alien/egg/update_icon_state()
 	switch(status)
 		if(GROWING)

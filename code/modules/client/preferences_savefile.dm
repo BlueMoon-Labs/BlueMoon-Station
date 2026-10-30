@@ -5,7 +5,7 @@
 //	You do not need to raise this if you are adding new values that have sane defaults.
 //	Only raise this value when changing the meaning/format/name/layout of an existing value
 //	where you would want the updater procs below to run
-#define SAVEFILE_VERSION_MAX	86
+#define SAVEFILE_VERSION_MAX	87
 
 /// Upper bound for character slot indices during savefile migration (loop over S.dir).
 /// Prevents corrupted or garbage directory names (e.g. huge slot numbers) from inflating max_save_slots
@@ -594,6 +594,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["ooccolor"] 				>> ooccolor
 	S["aooccolor"] 				>> aooccolor
 	S["lastchangelog"] 			>> lastchangelog
+	S["lastchangelog_date"] 	>> lastchangelog_date
 	S["UI_style"] 				>> UI_style
 	S["outline_color"] 			>> outline_color
 	S["outline_enabled"] 		>> outline_enabled
@@ -614,8 +615,14 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["tgui_swapped_buttons"]	>> tgui_swapped_buttons
 	S["tgui_panel_theme"]		>> tgui_panel_theme
 	S["tgui_panel_state"]		>> tgui_panel_state
+	S["character_setup_theme"]	>> character_setup_theme
+	S["character_setup_single_view"] >> character_setup_single_view
+	S["character_setup_autosave"] >> character_setup_autosave
+	S["character_setup_preset_autosave"] >> character_setup_preset_autosave
+	S["character_slot_name_replace"] >> character_slot_name_replace
 	S["ui_zoom_preferences"]	>> ui_zoom_preferences
 	S["vending_layouts"]		>> vending_layouts
+	S["podlauncher_presets"]	>> podlauncher_presets
 	S["windowflash"] 			>> windowflashing
 	S["adminhelp_windowflash"]	>> adminhelp_windowflash
 	S["windownoise"] 			>> windownoise
@@ -645,6 +652,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["hearted_until"] >> hearted_until
 	sync_hearted_pref(src)
 	S["inquisitive_ghost"] >> inquisitive_ghost
+	health_analyzer_chat = FALSE
+	S["health_analyzer_chat"] >> health_analyzer_chat
+	health_analyzer_chat = !!health_analyzer_chat
 	S["uses_glasses_colour"]>> uses_glasses_colour
 	S["auto_capitalize_enabled"]>> auto_capitalize_enabled
 	S["surgical_disable_radial"]>> surgical_disable_radial // BLUEMOON ADD
@@ -767,6 +777,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	outline_color = sanitize_hexcolor(outline_color, 6, 1, initial(outline_color))
 	outline_enabled = sanitize_integer(outline_enabled, 0, 1, initial(outline_enabled))
 	lastchangelog = sanitize_text(lastchangelog, initial(lastchangelog))
+	lastchangelog_date = sanitize_changelog_date(lastchangelog_date)
 	antag_opt_in_notice_seen = sanitize_integer(antag_opt_in_notice_seen, FALSE, TRUE, FALSE)
 	UI_style = sanitize_inlist(UI_style, GLOB.available_ui_styles, GLOB.available_ui_styles[1])
 	hotkeys = sanitize_integer(hotkeys, 0, 1, initial(hotkeys))
@@ -783,6 +794,11 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	tgui_swapped_buttons	= sanitize_integer(tgui_swapped_buttons, 0, 1, initial(tgui_swapped_buttons))
 	tgui_panel_theme = sanitize_inlist(tgui_panel_theme, list("default", "light", "dark"), initial(tgui_panel_theme))
 	tgui_panel_state = sanitize_text(tgui_panel_state, initial(tgui_panel_state))
+	character_setup_theme = valid_setup_theme(character_setup_theme) ? character_setup_theme : initial(character_setup_theme)
+	character_setup_single_view = sanitize_integer(character_setup_single_view, FALSE, TRUE, initial(character_setup_single_view))
+	character_setup_autosave = sanitize_integer(character_setup_autosave, FALSE, TRUE, initial(character_setup_autosave))
+	character_setup_preset_autosave = sanitize_integer(character_setup_preset_autosave, FALSE, TRUE, initial(character_setup_preset_autosave))
+	character_slot_name_replace = sanitize_integer(character_slot_name_replace, FALSE, TRUE, initial(character_slot_name_replace))
 	var/list/sanitized_vending_layouts = list()
 	if(islist(vending_layouts))
 		for(var/machine_key in vending_layouts)
@@ -880,6 +896,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	key_bindings = sanitize_islist(key_bindings, list())
 	modless_key_bindings = sanitize_islist(modless_key_bindings, list())
 	favorite_outfits = SANITIZE_LIST(favorite_outfits)
+	podlauncher_presets = SANITIZE_LIST(podlauncher_presets)
 	color_presets_tint = sanitize_color_preset_keys(color_presets_tint) // BLUEMOON ADD
 	color_presets_hsv = sanitize_color_preset_keys(color_presets_hsv) // BLUEMOON ADD
 	color_presets_matrix = sanitize_color_preset_keys(color_presets_matrix) // BLUEMOON ADD
@@ -938,7 +955,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 			max_save_slots = max(max_save_slots, slotnum) //so we can still update byond member slots after they lose memeber status
 			default_slot = slotnum
 			if (load_character(null, TRUE)) // this updtates char slots
-				save_character(TRUE)
+				save_character(TRUE, update_active_preset = FALSE)
 		default_slot = old_default_slot
 		max_save_slots = old_max_save_slots
 		save_preferences(TRUE)
@@ -1259,6 +1276,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["ooccolor"], ooccolor)
 	WRITE_FILE(S["aooccolor"], aooccolor)
 	WRITE_FILE(S["lastchangelog"], lastchangelog)
+	WRITE_FILE(S["lastchangelog_date"], lastchangelog_date)
 	WRITE_FILE(S["UI_style"], UI_style)
 	WRITE_FILE(S["outline_enabled"], outline_enabled)
 	WRITE_FILE(S["outline_color"], outline_color)
@@ -1279,8 +1297,13 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["tgui_swapped_buttons"], tgui_swapped_buttons)
 	WRITE_FILE(S["tgui_panel_theme"], tgui_panel_theme)
 	WRITE_FILE(S["tgui_panel_state"], tgui_panel_state)
+	WRITE_FILE(S["character_setup_single_view"], character_setup_single_view)
+	WRITE_FILE(S["character_setup_autosave"], character_setup_autosave)
+	WRITE_FILE(S["character_setup_preset_autosave"], character_setup_preset_autosave)
+	WRITE_FILE(S["character_slot_name_replace"], character_slot_name_replace)
 	WRITE_FILE(S["ui_zoom_preferences"], ui_zoom_preferences)
 	WRITE_FILE(S["vending_layouts"], vending_layouts)
+	WRITE_FILE(S["podlauncher_presets"], podlauncher_presets)
 	WRITE_FILE(S["windowflash"], windowflashing)
 	WRITE_FILE(S["adminhelp_windowflash"], adminhelp_windowflash)
 	WRITE_FILE(S["windownoise"], windownoise)
@@ -1304,6 +1327,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["ignoring"], ignoring)
 	WRITE_FILE(S["hearted_until"], (hearted_until > world.realtime ? hearted_until : null))
 	WRITE_FILE(S["inquisitive_ghost"], inquisitive_ghost)
+	WRITE_FILE(S["health_analyzer_chat"], health_analyzer_chat)
 	WRITE_FILE(S["uses_glasses_colour"], uses_glasses_colour)
 	WRITE_FILE(S["auto_capitalize_enabled"], auto_capitalize_enabled)
 	WRITE_FILE(S["surgical_disable_radial"], surgical_disable_radial) // BLUEMOON ADD
@@ -1442,7 +1466,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	if(!bypass_cooldown)
 		if(world.time < loadcharcooldown) //This is before the check to see if the filepath exists to ensure that BYOND can't get hung up on read attempts when the hard drive is a little slow
 			if(istype(parent))
-				to_chat(parent, "<span class='warning'>You're attempting to load your character a little too fast. Wait half a second, then try again.</span>")
+				to_chat(parent, span_warning("Вы слишком быстро загружаете персонажей. Подождите полсекунды и попробуйте снова."))
 			return "SLOW THE FUCK DOWN" //the reason this isn't null is to make sure that people don't have their character slots overridden by random chars if they accidentally double-click a slot
 		COOLDOWN_START(src, loadcharcooldown, PREF_LOAD_COOLDOWN)
 	if(!fexists(path))
@@ -1612,6 +1636,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	//Character
 	S["real_name"] 							>> real_name
+	S["character_slot_name"] >> character_slot_name
 	S["nameless"] 							>> nameless
 	S["custom_species"] 					>> custom_species
 	S["name_is_always_random"] 				>> be_random_name
@@ -1669,6 +1694,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["summon_nickname"] 					>> summon_nickname // BLUEMOON ADD - выбор прозвища для призываемого
 	S["phobia_type"] 						>> phobia_type // BLUEMOON ADD - выбор фобии для квирка
 	S["onelife_death_type"]					>> onelife_death_type // BLUEMOON ADD - форма рассыпания для Одной Жизни
+	S["distant_start_enabled"] >> distant_start_enabled
 	S["feature_hardsuit_with_tail"] 		>> features["hardsuit_with_tail"]
 	S["persistent_scars"] 					>> persistent_scars
 	S["scars1"] 							>> scars_list["1"]
@@ -1682,6 +1708,22 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		modified_limbs = safe_json_decode(limbmodstr)
 	else
 		modified_limbs = list()
+
+	var/organmodstr
+	S["organ_mods"] >> organmodstr
+	if(length(organmodstr))
+		organ_mods = safe_json_decode(organmodstr)
+	else
+		organ_mods = list()
+
+	var/implantmodstr
+	S["implant_mods"] >> implantmodstr
+	if(length(implantmodstr))
+		implant_mods = safe_json_decode(implantmodstr)
+	else
+		implant_mods = list()
+	sanitize_body_mods()
+	drop_locked_body_mods()
 
 	var/tcgcardstr
 	S["tcg_cards"] >> tcgcardstr
@@ -1897,7 +1939,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		if(!islist(loadout_data))
 			loadout_data = list()
 
-		for(var/loadout_save_index = 1, loadout_save_index <= MAXIMUM_LOADOUT_SAVES, loadout_save_index++)
+		for(var/loadout_save_index = LOADOUT_PRESET_SLOT, loadout_save_index <= MAXIMUM_LOADOUT_SAVES, loadout_save_index++)
 			var/save_key = "SAVE_[loadout_save_index]"
 			var/list/sanitize_entries = loadout_data[save_key]
 			if(islist(sanitize_entries) && LAZYLEN(sanitize_entries))
@@ -1983,6 +2025,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	//let's remember their last used slot, i'm sure "oops i brought the wrong stuff" will be an issue now
 	S["loadout_slot"] >> loadout_slot
+	S["character_presets"] >> character_presets
+	S["active_character_preset"] >> active_character_preset
 	// BLUEMOON ADD - загрузка переключателя лодаута
 	S["loadout_enabled"] >> loadout_enabled
 	// BLUEMOON ADD END
@@ -1995,6 +2039,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	//Sanitize
 
 	real_name = reject_bad_name(real_name, TRUE)
+	character_slot_name = copytext_char(trimtext(strip_control_chars(sanitize_text(character_slot_name))), 1, MAX_NAME_LEN + 1)
 	gender = sanitize_gender(gender, TRUE, TRUE)
 	features["body_model"] = sanitize_gender(features["body_model"], FALSE, FALSE, gender == FEMALE ? FEMALE : MALE)
 	if(!real_name)
@@ -2027,6 +2072,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	eye_type = sanitize_inlist(eye_type, GLOB.eye_types, DEFAULT_EYES_TYPE)
 	shriek_type = sanitize_inlist(shriek_type, GLOB.shriek_types, SHRIEK_TYPE_GENERIC) // BLUEMOON ADD
 	onelife_death_type = sanitize_inlist(onelife_death_type, GLOB.onelife_death_forms, "Пепел") // BLUEMOON ADD
+	distant_start_enabled = sanitize_integer(distant_start_enabled, FALSE, TRUE, TRUE)
 	//фобия из старого сейва, которой больше нет в пуле, сбрасывается в "случайную",
 	//но только когда пул уже собран: игроки переподключаются к серверу задолго до
 	//инициализации SStraumas, и проверка по пустому списку стирала живой выбор -
@@ -2276,7 +2322,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["pregnancy_breast_growth"] >> pregnancy_breast_growth
 	//SPLURT EDIT END
 
-	loadout_slot = sanitize_num_clamp(loadout_slot, 1, MAXIMUM_LOADOUT_SAVES, 1, TRUE)
+	loadout_slot = sanitize_num_clamp(loadout_slot, LOADOUT_PRESET_SLOT, MAXIMUM_LOADOUT_SAVES, 1, TRUE)
 	loadout_enabled = sanitize_integer(loadout_enabled, FALSE, TRUE, TRUE) // BLUEMOON ADD
 
 	alt_titles_preferences = SANITIZE_LIST(alt_titles_preferences)
@@ -2288,19 +2334,33 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	cit_character_pref_load(S)
 
+	S["split_eye_colors"] >> split_eye_colors
+	S["bgstate"] >> bgstate
+	split_eye_colors = sanitize_integer(split_eye_colors, FALSE, TRUE, FALSE)
+	if(!(bgstate in bgstate_options))
+		bgstate = initial(bgstate)
+
 	sand_character_pref_load(S)
 
 	splurt_character_pref_load(S)
 
 	bluemoon_character_pref_load(S)
+	// Вес и остальные настройки слота уже загружены; версия 87 обновляет все слоты при входе.
+	migrate_legacy_body_mods()
+	sanitize_character_presets()
 
 	load_tattoo_prefs(S) // BLUEMOON ADD - загрузка татуировок
+	if(!provided)
+		character_setup_ui?.record_saved_state()
+
+	if(parent?.prefs == src)
+		parent.tgui_panel?.emotes_send_list()
 
 	return S
 
-/// Имена персонажей по слотам (null - слот пуст). Сейвфайл читается только после сброса кэша.
+// Имена персонажей и названия слотов читаем вместе; реальные имена также определяют занятость слотов.
 /datum/preferences/proc/get_slot_names()
-	if(length(slot_names_cache) == max_save_slots)
+	if(length(slot_names_cache) == max_save_slots && length(slot_custom_names_cache) == max_save_slots)
 		return slot_names_cache
 	if(!path)
 		return null
@@ -2308,13 +2368,22 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	if(!S)
 		return null
 	var/list/names = new /list(max_save_slots)
+	var/list/custom_slot_names = new /list(max_save_slots)
 	for(var/slot in 1 to max_save_slots)
 		var/name
 		S.cd = "/character[slot]"
 		S["real_name"] >> name
 		names[slot] = name
+		var/custom_name
+		S["character_slot_name"] >> custom_name
+		custom_slot_names[slot] = copytext_char(trimtext(strip_control_chars(sanitize_text(custom_name))), 1, MAX_NAME_LEN + 1)
 	slot_names_cache = names
+	slot_custom_names_cache = custom_slot_names
 	return names
+
+/datum/preferences/proc/get_slot_custom_names()
+	get_slot_names()
+	return slot_custom_names_cache
 
 /// Имя персонажа в локальном экспорте клиента, читается один раз до следующего экспорта или удаления
 /datum/preferences/proc/get_local_storage_name(client/viewer)
@@ -2336,8 +2405,20 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		viewer.local_storage_name = savefile_name
 	return viewer.local_storage_name
 
-/// Удаляет слот персонажа из сейвфайла. Очищает директорию /character[slot].
-/// Если удаляется текущий слот - переключается на ближайший непустой, или на слот 1.
+// Создаём независимого персонажа через обычный формат сохранения, чтобы не наследовать данные прежнего слота.
+/datum/preferences/proc/create_character(slot)
+	if(!path)
+		return FALSE
+	var/datum/preferences/defaults = new
+	defaults.path = path
+	var/savefile/template = defaults.save_character(bypass_cooldown = TRUE, silent = TRUE, export = TRUE)
+	defaults.path = null
+	qdel(defaults)
+	if(!template || !load_character(slot, bypass_cooldown = TRUE, provided = template))
+		return FALSE
+	return save_character(bypass_cooldown = TRUE, silent = TRUE)
+
+// Удаляем слот и загружаем оставшегося персонажа; вместо последнего создаём нового.
 /datum/preferences/proc/delete_character(slot)
 	if(!path)
 		return FALSE
@@ -2352,6 +2433,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["real_name"] >> check_name
 	if(!check_name)
 		return FALSE // слот уже пуст
+	if(char_queue)
+		deltimer(char_queue)
+	char_queue = null
+	char_queue_deadline = 0
 
 	// Удаляем директорию персонажа из сейвфайла
 	S.cd = "/"
@@ -2371,16 +2456,15 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 			if(name)
 				new_slot = i
 				break
-		// Если не нашли непустой - просто переключаемся на слот 1
-		if(!new_slot)
-			new_slot = 1
-		default_slot = new_slot
-		load_character(new_slot)
+		if(new_slot)
+			load_character(new_slot, bypass_cooldown = TRUE)
+		else
+			create_character(1)
 
 	save_preferences(bypass_cooldown = TRUE, silent = TRUE)
 	return TRUE
 
-/datum/preferences/proc/save_character(bypass_cooldown = FALSE, silent = FALSE, export = FALSE)
+/datum/preferences/proc/save_character(bypass_cooldown = FALSE, silent = FALSE, export = FALSE, update_active_preset = TRUE)
 	if(!path)
 		return FALSE
 	if(!bypass_cooldown)
@@ -2400,11 +2484,15 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	if(!export)
 		S.cd = "/character[default_slot]"
 		slot_names_cache = null
+		// Обновляем только активный пресет при реальном сохранении, без смены выбранного лодаута.
+		if(update_active_preset && character_setup_preset_autosave && istext(active_character_preset) && islist(character_presets[active_character_preset]))
+			character_presets[active_character_preset] = capture_character_preset()
 
 	WRITE_FILE(S["version"]			, SAVEFILE_VERSION_MAX)	//load_character will sanitize any bad data, so assume up-to-date.)
 
 	//Character
 	WRITE_FILE(S["real_name"]							, real_name)
+	WRITE_FILE(S["character_slot_name"], character_slot_name)
 	WRITE_FILE(S["nameless"]							, nameless)
 	WRITE_FILE(S["custom_species"]						, custom_species)
 	WRITE_FILE(S["name_is_always_random"]				, be_random_name)
@@ -2421,6 +2509,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["summon_nickname"]						, summon_nickname) // BLUEMOON ADD
 	WRITE_FILE(S["phobia_type"]							, phobia_type) // BLUEMOON ADD
 	WRITE_FILE(S["onelife_death_type"]					, onelife_death_type) // BLUEMOON ADD
+	WRITE_FILE(S["distant_start_enabled"], distant_start_enabled)
 	WRITE_FILE(S["feature_hardsuit_with_tail"]			, features["hardsuit_with_tail"])
 	WRITE_FILE(S["left_eye_color"]						, left_eye_color)
 	WRITE_FILE(S["right_eye_color"]						, right_eye_color)
@@ -2642,6 +2731,10 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["scars5"]						, scars_list["5"])
 	if(islist(modified_limbs))
 		WRITE_FILE(S["modified_limbs"]				, safe_json_encode(modified_limbs))
+	if(islist(organ_mods))
+		WRITE_FILE(S["organ_mods"]					, safe_json_encode(organ_mods))
+	if(islist(implant_mods))
+		WRITE_FILE(S["implant_mods"]				, safe_json_encode(implant_mods))
 	WRITE_FILE(S["chosen_limb_id"],   chosen_limb_id)
 	//SPLURT EDIT BEGIN
 	WRITE_FILE(S["virile"], virility)
@@ -2667,6 +2760,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	else
 		S["loadout"] << safe_json_encode(list())
 	WRITE_FILE(S["loadout_slot"], loadout_slot)
+	WRITE_FILE(S["character_presets"], character_presets)
+	WRITE_FILE(S["active_character_preset"], active_character_preset)
 	WRITE_FILE(S["loadout_enabled"], loadout_enabled) // BLUEMOON ADD
 
 	if(length(tcg_cards))
@@ -2678,6 +2773,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 		S["tcg_decks"] << safe_json_encode(tcg_decks)
 	else
 		S["tcg_decks"] << safe_json_encode(list())
+
+	WRITE_FILE(S["split_eye_colors"], split_eye_colors)
+	WRITE_FILE(S["bgstate"], bgstate)
 
 	cit_character_pref_save(S)
 
@@ -2695,9 +2793,11 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 			H.set_antag_target_indicator() // Update consent HUD
 
 		if(!silent)
-			to_chat(parent, span_notice("Saved character slot!"))
+			to_chat(parent, span_notice("Персонаж сохранён!"))
 
 	blocking_call_finish(blocking_started_ms, "savefile (персонаж)", "персонаж [parent?.ckey || "?"] слот [default_slot]")
+	if(!export)
+		character_setup_ui?.record_saved_state()
 	return S
 
 /datum/preferences/proc/queue_save_char(save_in, silent)

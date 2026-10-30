@@ -65,6 +65,9 @@
 /// запрос непрерывного куска памяти, на котором 32-битный процесс умирает.
 #define TGUI_PAYLOAD_WARNING_SIZE (1024 * 1024)
 
+/// Потолок одного чанка большой нагрузки от клиента. Клиент режет по 900 символов URL-кодировки.
+#define TGUI_PAYLOAD_CHUNK_MAX_BYTES 1024
+
 // TGUI defines
 #define UI_MODAL_INPUT_MAX_LENGTH 1024
 #define UI_MODAL_INPUT_MAX_LENGTH_NAME 64 // Names for generally anything don't go past 32, let alone 64.

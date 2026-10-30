@@ -140,7 +140,7 @@
 	var/list/dictionary = list()
 	var/list/unsorted = list()
 	var/own_ref = REF(src)
-	for(var/list/entry as anything in get_messenger_directory())
+	for(var/list/entry as anything in get_messenger_directory(is_antag_training_atom(computer)))
 		if(entry["ref"] == own_ref)
 			continue
 		unsorted += list(entry)
@@ -156,14 +156,17 @@
 	return dictionary
 
 GLOBAL_LIST_EMPTY(pda_messenger_directory)
+/// КПК полигона видят только друг друга, станционные - только станционные.
+GLOBAL_LIST_EMPTY(pda_messenger_directory_training)
 GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 
 /// Список видимых мессенджеров общий для всех открытых окон: SStgui опрашивает каждое
 /// раз в секунду, и обход всех ПДА с get_all_files() на каждое окно не нужен.
-/proc/get_messenger_directory()
+/proc/get_messenger_directory(training = FALSE)
 	if(GLOB.pda_messenger_directory_time == world.time)
-		return GLOB.pda_messenger_directory
+		return training ? GLOB.pda_messenger_directory_training : GLOB.pda_messenger_directory
 	var/list/directory = list()
+	var/list/training_directory = list()
 	for(var/obj/item/modular_computer/pda/pda_device in GLOB.PDAs)
 		if(pda_device.toff || pda_device.hidden)
 			continue
@@ -176,10 +179,27 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 		data["name"] = pda_device.saved_identification || "Unknown"
 		data["job"] = pda_device.saved_job || "Unknown"
 		data["ref"] = REF(messenger)
-		directory += list(data)
+		if(is_antag_training_atom(pda_device))
+			training_directory += list(data)
+		else
+			directory += list(data)
 	GLOB.pda_messenger_directory = directory
+	GLOB.pda_messenger_directory_training = training_directory
 	GLOB.pda_messenger_directory_time = world.time
-	return directory
+	return training ? training_directory : directory
+
+/// Мессенджер на другой стороне полигона: ни сообщений, ни переводов.
+/datum/computer_file/program/messenger/proc/training_side_differs(datum/computer_file/program/messenger/other)
+	return is_antag_training_atom(computer) != is_antag_training_atom(other?.computer)
+
+/// Мессенджер полигона по REF для чата с этим мессенджером полигона: учебные КПК не попадают в общий список станции.
+/datum/computer_file/program/messenger/proc/training_peer(recipient_ref)
+	if(!istext(recipient_ref) || !is_antag_training_atom(computer))
+		return null
+	var/datum/computer_file/program/messenger/peer = locate(recipient_ref)
+	if(!istype(peer) || !istype(peer.computer) || training_side_differs(peer))
+		return null
+	return peer
 
 /// Checks if the person can send an everyone message
 /datum/computer_file/program/messenger/proc/can_send_everyone_message()
@@ -578,6 +598,9 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 	if(target_messenger == src)
 		to_chat(user, span_warning("Нельзя перевести деньги самому себе."))
 		return FALSE
+	if(training_side_differs(target_messenger))
+		to_chat(user, span_warning("ERROR: Получатель вне вашей сети, перевод невозможен."))
+		return FALSE
 	if(!istype(target_chat))
 		to_chat(user, span_warning("ERROR: Чат не найден."))
 		return FALSE
@@ -727,9 +750,9 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 	var/datum/computer_file/program/messenger/recipient = null
 
 	if(isnull(name) && isnull(job))
-		if(!(recipient_ref in GLOB.pda_messengers))
+		recipient = (recipient_ref in GLOB.pda_messengers) ? GLOB.pda_messengers[recipient_ref] : training_peer(recipient_ref)
+		if(!recipient)
 			return null
-		recipient = GLOB.pda_messengers[recipient_ref]
 
 	var/datum/pda_chat/new_chat = new(recipient)
 
@@ -876,6 +899,15 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 	if(!COOLDOWN_FINISHED(src, last_text))
 		return FALSE
 
+	if(length(GLOB.antag_training_z))
+		var/list/reachable = list()
+		for(var/datum/computer_file/program/messenger/messenger as anything in targets)
+			if(!training_side_differs(messenger))
+				reachable += messenger
+		if(sender && length(reachable) < length(targets))
+			to_chat(sender, span_notice("ERROR: Часть получателей вне вашей сети."))
+		targets = reachable
+
 	if(!length(targets))
 		return FALSE
 
@@ -935,9 +967,12 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 	var/ghost_message = span_notice("[span_name(signal.format_sender())] [rigged ? "(as [span_name(fake_name)]) Rigged " : ""]PDA Message --> [span_name("[everyone ? "Everyone" : signal.format_target()]")]: \"[signal.format_message()]\"")
 	var/list/message_listeners = GLOB.dead_mob_list + GLOB.current_observers_list
 	for(var/mob/listener as anything in message_listeners)
-		if(!listener.client)
+		var/client/listener_client = GET_CLIENT(listener)
+		if(!listener_client)
 			continue
-		if(!(get_chat_toggles(listener.client) & CHAT_GHOSTPDA))
+		if(!(get_chat_toggles(listener_client) & CHAT_GHOSTPDA))
+			continue
+		if(!antag_training_observer_hears(listener, computer))
 			continue
 		to_chat(listener, "[FOLLOW_LINK(listener, source)] [ghost_message]")
 

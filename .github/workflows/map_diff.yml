@@ -1,0 +1,41 @@
+name: Map Diff
+
+# Renders before/after images of the changed parts of maps. The images are put into the
+# PR by the Map Diff Comment workflow, because a PR from a fork gets no write token here.
+on:
+  pull_request:
+    branches:
+      - master
+    paths:
+      - '_maps/**.dmm'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  render:
+    name: Render changed maps
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      # The merge commit and its first parent, the base the PR is compared with.
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 2
+      - uses: ./.github/actions/setup_ci
+      - name: Restore NanoMap renderer
+        uses: actions/cache@v6
+        with:
+          path: tools/bootstrap/.cache/nanomaps
+          key: ${{ runner.os }}-nanomaps-renderer-${{ hashFiles('tools/nanomaps/renderer.cjs') }}
+      - name: Render
+        run: node tools/ci/map_diff.mjs HEAD^1 map_diff
+      - uses: actions/upload-artifact@v7
+        with:
+          name: map-diff
+          path: map_diff/
+          retention-days: 3

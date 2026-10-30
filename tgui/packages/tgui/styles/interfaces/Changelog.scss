@@ -1,13 +1,207 @@
+@use '../colors.scss';
+
 .Changelog {
-  &__Button {
-    height: 22px;
+  &__toolbar {
+    margin-bottom: 0;
   }
 
-  &__Cell {
-    padding: 3px 0;
+  &__month {
+    min-width: 130px;
+    text-align: center;
+    font-size: 15px;
+    font-weight: bold;
+  }
 
-    &--Icon {
-      width: 25px;
+  &__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 8px;
+
+    & > .Button {
+      margin: 0;
+    }
+  }
+
+  &__archive .Button {
+    margin: 0;
+  }
+
+  &__year {
+    font-weight: bold;
+  }
+
+  &__monthButton {
+    padding-left: 22px;
+  }
+
+  &__dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-left: 6px;
+    border-radius: 50%;
+    background: colors.$yellow;
+    vertical-align: middle;
+  }
+
+  &__placeholder {
+    padding: 24px 8px;
+    text-align: center;
+    color: colors.$label;
+
+    &--inline {
+      padding: 2px 0 2px 4px;
+      text-align: left;
+    }
+  }
+
+  &__tmBanner {
+    margin-bottom: 14px;
+    padding: 8px 10px;
+    border: 1px solid rgba(colors.$average, 0.5);
+    border-left: 3px solid colors.$average;
+    background: rgba(colors.$average, 0.1);
+
+    .Icon {
+      color: colors.$average;
+    }
+  }
+
+  &__tmIcon {
+    font-size: 20px;
+  }
+
+  // Без min-width: 0 flex-элемент не уже своей строки в nowrap и выталкивает кнопку за плашку.
+  &__tmText {
+    min-width: 0;
+  }
+
+  &__tmTitles {
+    margin-top: 2px;
+    color: colors.$label;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__tmCard {
+    margin-top: 10px;
+    padding: 8px 10px;
+    border-left: 3px solid colors.$average;
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  &__tmHeader {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  &__tmTitle {
+    font-size: 14px;
+    font-weight: bold;
+  }
+
+  &__day {
+    margin-bottom: 14px;
+    padding: 2px 0 2px 10px;
+    border-left: 3px solid rgba(255, 255, 255, 0.12);
+
+    &--new {
+      border-left-color: colors.$yellow;
+    }
+  }
+
+  &__dayTitle {
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: bold;
+  }
+
+  &__newBadge {
+    margin-left: 8px;
+    padding: 1px 6px;
+    border-radius: 3px;
+    background: rgba(colors.$yellow, 0.18);
+    color: colors.$yellow;
+    font-size: 11px;
+    font-weight: normal;
+  }
+
+  &__author {
+    margin-bottom: 8px;
+  }
+
+  &__authorName {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-bottom: 3px;
+    color: colors.$label;
+    font-weight: bold;
+
+    a {
+      color: inherit;
+    }
+  }
+
+  &__avatar {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    flex-shrink: 0;
+
+    &--none {
+      line-height: 20px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.08);
+      font-size: 11px;
+    }
+  }
+
+  &__pr {
+    padding: 0 5px;
+    border-radius: 3px;
+    background: rgba(colors.$primary, 0.25);
+    color: #9fc2ea;
+    font-weight: normal;
+    font-size: 11px;
+    text-decoration: none;
+
+    &:hover {
+      background: rgba(colors.$primary, 0.45);
+    }
+  }
+
+  &__group + &__group {
+    margin-top: 4px;
+  }
+
+  &__groupTitle {
+    margin: 2px 0 1px 28px;
+  }
+
+  &__change {
+    display: flex;
+    gap: 8px;
+    padding: 2px 0 2px 4px;
+    line-height: 1.45;
+  }
+
+  &__changeIcon {
+    flex-shrink: 0;
+    width: 16px;
+    margin-top: 2px;
+    text-align: center;
+  }
+
+  &__about {
+    line-height: 1.5;
+
+    h2 {
+      margin-top: 0;
     }
   }
 }

@@ -17,8 +17,9 @@
 
 /datum/antagonist/brother/Destroy()
 	QDEL_LIST_ASSOC_VAL(bond_actions)
+	// Из команды разум убирает родительский Destroy() через get_team()
+	. = ..()
 	team = null
-	return ..()
 
 /datum/antagonist/brother/create_team(datum/team/brother_team/new_team)
 	if(new_team && !istype(new_team))

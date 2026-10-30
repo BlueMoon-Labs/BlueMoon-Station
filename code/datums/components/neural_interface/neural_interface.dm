@@ -8,7 +8,7 @@
 // ---------------------------------------------------------------------------
 // Utility Procs
 // ---------------------------------------------------------------------------
-proc/string_repeat(string, count)
+/proc/string_repeat(string, count)
 	var/result = ""
 	for(var/i in range(1, count))
 		result += string
