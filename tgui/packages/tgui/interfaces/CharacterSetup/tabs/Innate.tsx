@@ -25,11 +25,16 @@ export const InnateTab = () => {
   return (
     <Stack vertical>
       <Stack.Item>
-        <NoticeBox>
-          Можно выбрать одну основную особенность и любое число дополнительных.
-          Все условия проверяются повторно при создании персонажа.
-          Доступно очков квирков: {tab.balance}.
-        </NoticeBox>
+        <Section>
+          <Box color="label" mb={1}>
+            Можно выбрать одну основную особенность и любое число дополнительных.
+            Все условия проверяются повторно при создании персонажа.
+          </Box>
+          <Box inline bold mr={1}>Доступно очков квирков:</Box>
+          <Box inline color={tab.balance < 0 ? 'bad' : undefined}>
+            {tab.balance}
+          </Box>
+        </Section>
       </Stack.Item>
       {tab.items.map(feature => (
         <Stack.Item key={feature.id}>
