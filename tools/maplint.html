@@ -1,0 +1,186 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../"><link rel="stylesheet" href="dmdoc.css"><title>tools/maplint/README.md - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>maplint <aside>tools/maplint/README.md</aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1be77b87eca657613bcfbe6491ef46a558e11023/tools/maplint/README.md"><img src="git.png" width="16" height="16" title="tools/maplint/README.md"></a></h1><table class="summary" cellspacing="0"><tr><td colspan="2"><p>maplint is a tool that lets you prohibit anti-patterns in maps through simple rules. You can use maplint to do things like ban variable edits for specific types, ban specific variable edits, ban combinations of types, etc.</p>
+<h2 id="bluemoon">BlueMoon</h2>
+<p>Порт maplint из tgstation. Проверяет все <code>.dmm</code> под <code>_maps/</code> (станции, руины, шаблоны, шаттлы, гейтвеи, архив). Запускать из корня репозитория.</p>
+<p>CI:</p>
+<pre><code class="language-sh">tools/bootstrap/python -m tools.maplint.source --github --baseline tools/maplint/baseline.json
+</code></pre>
+<p>Локально хватает любого Python 3.10+ с PyYAML: <code>python -m tools.maplint.source --baseline tools/maplint/baseline.json</code>. Без <code>--github</code> ошибки печатаются цветом, а не аннотациями GitHub. Полный прогон занимает меньше минуты.</p>
+<p>Только свои карты или правила:</p>
+<pre><code class="language-sh">python -m tools.maplint.source --baseline tools/maplint/baseline.json _maps/RandomRuins/SpaceRuins/my_ruin.dmm
+python -m tools.maplint.source --baseline tools/maplint/baseline.json --lints reagents_varedits multiple_turf
+</code></pre>
+<h3 id="базлайн">Базлайн</h3>
+<p>Старые карты нарушают правила тысячами мест, поэтому в <code>baseline.json</code> записано, сколько нарушений уже есть, и CI падает только на новых. Ключ записи - карта, правило и тип, значение - на скольких клетках карты стоит нарушение. Координат и ключей попов в ключе нет: если передвинуть содержимое карты или mapmerge переименует попы, базлайн остаётся верным. Скопировать нарушение на ещё одну клетку той же карты - уже новое нарушение.</p>
+<p>Что делает проверка с базлайном:</p>
+<ul>
+<li>нарушений по ключу больше, чем в базлайне, или ключа там нет - ошибка. Печатаются все нарушения этого ключа, включая старые, и отдельной строкой сколько найдено и сколько разрешено;</li>
+<li>нарушений меньше, чем в базлайне (карту починили, карту удалили) - тоже ошибка: запись устарела, базлайн надо ужать, чтобы починенное не вернулось незаметно;</li>
+<li>карта, которая не разбирается целиком, записана под правилом <code>dmm_parse</code>, такую карту остальные правила не видят, пока её не починят.</li>
+</ul>
+<p>Перегенерировать базлайн после починки карт или правки правил:</p>
+<pre><code class="language-sh">python -m tools.maplint.source --baseline tools/maplint/baseline.json --update-baseline
+</code></pre>
+<p>С перечнем карт или <code>--lints</code> перезаписываются только записи этих карт и правил, остальное остаётся как было. Новые нарушения в базлайн не добавляйте - чините карту.</p>
+<p>Тесты логики базлайна: <code>python -m unittest tools.maplint.source.test_baseline</code>.</p>
+<h3 id="отличия-от-tg">Отличия от tg</h3>
+<p>Свои правила:</p>
+<ul>
+<li><code>reagents_varedits</code> - запрет варедита <code>reagents</code> на любом объекте. <code>reagents</code> - это рантайм-холдер реагентов, тип в нём вместо холдера даёт bad del на роундстарте. Содержимое задаётся <code>list_reagents</code>.</li>
+</ul>
+<p>Подогнаны под BlueMoon:</p>
+<ul>
+<li><code>barricade_stacking</code> - нет рандомного спавнера баррикад;</li>
+<li><code>cable_varedits</code> - кабели здесь берут направление из <code>icon_state</code> (&quot;1-2&quot;), поэтому запрещены <code>d1</code>/<code>d2</code> и <code>icon_state</code> не вида <code>N-N</code>, а не все варедиты;</li>
+<li><code>docking_port_varedits</code> - только <code>_maps/shuttles</code>: размер мобильного порта считается сам только у шаблонов шаттлов, в руинах и на станциях варедит нужен;</li>
+<li><code>grille_stacking</code> - решётка с кабелем разрешена (электрифицированного спавнера нет), пластитан - <code>/obj/structure/window/plastitanium</code>;</li>
+<li><code>window_spawner</code> - нет <code>electrified_grille</code> в исключениях.</li>
+</ul>
+<p>Убраны, потому что их предмета здесь нет: <code>admin_library_computer</code>, <code>electrified_grilles</code>, <code>merge_conflict_marker</code> (наш mapmerge2 маркер не ставит), <code>multiz_cables</code>, <code>posters_directionals</code> и <code>telescreen_varedits</code> (направленных постеров и телескринов нет, смещение варедитом - единственный способ).</p>
+<p>Убраны соглашения tg, которых в картах BlueMoon нет: на них приходились сотни тысяч старых мест, и любая правка карты по местным привычкам ловила бы ошибку. Это <code>use_basic_space</code>, <code>window_pane_varedits</code>, <code>windoor_var_edits</code> (направление окна варедитом), <code>door_name_capitalization</code>, <code>heat_capacity</code>, <code>banned_obj_vars</code> (<code>layer</code>), <code>atmos_var_edits</code> (<code>piping_layer</code>), <code>apc_pixel_shifts</code>, <code>colorless_decals</code> и <code>area_noop</code>. Оставлены правила, которые ловят настоящие ошибки: дубли объектов на клетке, предметы внутри стен, мусорки без трубы, битые файлы карт.</p>
+<h2 id="making-lints">Making lints</h2>
+<p>To create a lint, create a new file in the <code>lints</code> folder. Lints use <a href="https://learnxinyminutes.com/docs/yaml/">YAML</a>, which is very expressive, though can be a little complex. If you get stuck, read other lints in this folder.</p>
+<h3 id="typepaths">Typepaths</h3>
+<p>The root of the file is your typepaths. This will match not only that type, but also subtypes. For example:</p>
+<pre><code class="language-yml">/mob/dog:
+  # We'll get to this...
+</code></pre>
+<p>...will define rules for <code>/mob/dog</code>, <code>/mob/dog/corgi</code>, <code>/mob/dog/beagle</code>, etc.</p>
+<p>If you only want to match a specific typepath, prefix it with <code>=</code>. This:</p>
+<pre><code class="language-yml">=/mob/dog:
+</code></pre>
+<p>...will only match <code>/mob/dog</code> specifically.</p>
+<p>Alternatively, if you want to match ALL types, enter a single <code>*</code>, for wildcard.</p>
+<h3 id=""><code>banned</code></h3>
+<p>The simplest rule is to completely ban a subtype. To do this, fill with <code>banned: true</code>.</p>
+<p>For example, this lint will ban <code>/mob/dog</code> and all subtypes:</p>
+<pre><code class="language-yml">/mob/dog:
+  banned: true # Cats FTW
+</code></pre>
+<h3 id=""><code>banned_neighbors</code></h3>
+<p>If you want to ban other objects being on the same tile as another, you can specify <code>banned_neighbors</code>.</p>
+<p>This takes a few forms. The simplest is just a list of types to not be next to. This lint will ban either cat<em>toy _or</em> cat_food (or their subtypes) from being on the same tile as a dog.</p>
+<pre><code class="language-yml">/mob/dog:
+  banned_neighbors:
+    - /obj/item/cat_toy
+    - /obj/item/cat_food
+</code></pre>
+<p>This also supports the <code>=</code> format as specified before. This will ban <code>/mob/dog</code> being on the same tile as <code>/obj/item/toy</code> <em>only</em>.</p>
+<pre><code class="language-yml">/mob/dog:
+  banned_neighbors:
+    - =/obj/item/toy # Only the best toys for our dogs
+</code></pre>
+<p>Anything in this list will <em>not</em> include the object itself, meaning you can use it to make sure two of the same object are not on the same tile. For example, this lint will ban two dogs from being on the same tile:</p>
+<pre><code class="language-yml">/mob/dog:
+  banned_neighbors:
+    - /mob/dog # We're a space station, not a dog park!
+</code></pre>
+<p>However, you can add a bit more specificity with <code>identical: true</code>. This will prohibit other instances of the <em>exact</em> same type <em>and</em> variable edits from being on the same tile.</p>
+<pre><code class="language-yml">/mob/dog:
+  banned_neighbors:
+    # Purebreeds are unnatural! We're okay with dogs as long as they're different.
+    /mob/dog: { identical: true }
+</code></pre>
+<p>Finally, if you need maximum precision, you can specify a <a href="https://en.wikipedia.org/wiki/Regular_expression">regular expression</a> to match for a path. If we wanted to ban a <code>/mob/dog</code> from being on the same tile as <code>/obj/bowl/big/cat</code>, <code>/obj/bowl/small/cat</code>, etc, we can write:</p>
+<pre><code class="language-yml">/mob/dog:
+  banned_neighbors:
+    CAT_BOWLS: { pattern: ^/obj/bowl/.+/cat$ }
+</code></pre>
+<h3 id=""><code>banned_variables</code></h3>
+<p>To ban all variable edits, you can specify <code>banned_variables: true</code> for a typepath. For instance, if we want to block dogs from getting any var-edits, we can write:</p>
+<pre><code class="language-yml">/mob/dog:
+  banned_variables: true # No var edits, no matter what
+</code></pre>
+<p>If we want to be more specific, we can write out the specific variables we want to ban.</p>
+<pre><code class="language-yml">/mob/dog
+  banned_variables:
+  - species # Don't var-edit species, use the subtypes
+</code></pre>
+<p>We can also explicitly create allowlists and denylists of values through <code>allow</code> and <code>deny</code>. For example, if we want to make sure we're not creating invalid bowls for animals, we can write:</p>
+<pre><code class="language-yml">/obj/bowl/dog:
+  banned_variables:
+    species:
+      # If we specify a species, it's gotta be a dog
+      allow: [&quot;beagle&quot;, &quot;corgi&quot;, &quot;pomeranian&quot;]
+
+/obj/bowl/humans:
+  banned_variables:
+    species:
+      # We're civilized, we don't want to eat from the same bowl that's var-edited for animals
+      deny: [&quot;cats&quot;, &quot;dogs&quot;]
+</code></pre>
+<p>Similar to <a href="#banned_neighbors">banned_neighbors</a>, you can specify a regular expression pattern for allow/deny.</p>
+<pre><code class="language-yml">/mob/dog:
+  banned_variables:
+    # Names must start with a capital letter
+    name:
+      allow: { pattern: &quot;^[A-Z].*$&quot; }
+</code></pre>
+<h3 id=""><code>ignore</code></h3>
+<p>If you want to exclude certain objects and subtypes from <code>banned_neighbors</code>, you can specify objects in <code>ignore</code> that will get skipped from triggering <code>banned_neighbors</code>.</p>
+<pre><code class="language-yml">/turf/wall:
+  banned_neighbors:
+    - /obj/structure
+  ignore:
+    - /obj/structure/sign
+</code></pre>
+<p>This lint stops structures from being put inside solid walls but we make an exception to ignore any signs and all their subtypes like <code>/obj/structure/sign/poster</code>.</p>
+<h3 id=""><code>help</code></h3>
+<p>If you want a custom message to go with your lint, you can specify &quot;help&quot; in the root.</p>
+<pre><code class="language-yml">help: Pugs haven't existed on Sol since 2450.
+/mob/dog/pug:
+  banned: true
+</code></pre>
+<h3 id="conditional-rules"><code>when</code> - Conditional Rules</h3>
+<p>Sometimes it may be necessary for a rule to be given conditions which have to be met before it needs to be applied. All children of the when node must be satisfied for the rule to execute.</p>
+<p>If we wanted to create a rule which disallows the placement of access helpers when an airlock's access has been manually set via a variable edit, then we could make the following rule:</p>
+<pre><code class="language-yml">/obj/machinery/door/airlock:
+	when:
+	- req_access_txt is set
+	banned_neighbors:
+	- /obj/effect/mapping_helper/airlock/access
+</code></pre>
+<p>The following conditions are valid:</p>
+<ul>
+<li><strong>{var_name} is set</strong>: The variable named <em>var_name</em> has been modified.</li>
+<li><strong>{var_name} is not set</strong>: The variable named <em>var_name</em> has not been modified.</li>
+<li><strong>{var_name} is '{value}'</strong>: The variable named <em>var_name</em> has a specific value.</li>
+<li><strong>{var_name} is not '{value}'</strong>: The variable named <em>var_name</em> does not have a specific value.</li>
+<li><strong>{var_name} like '{regex}'</strong>: The variable named <em>var_name</em> matches the provided regex.</li>
+</ul>
+<h4 id=""><code>any</code></h4>
+<p>The any node may be added as a child to the when node to specify that it will be satisfied if any of its child conditions are met.</p>
+<pre><code class="language-yml">/mob/dog:
+	# Rule only applies when the dog is any of the following breeds
+	when:
+	- any:
+		- breed is 'labrador'
+		- breed is 'pug'
+		- breed is 'corgi'
+	# These breeds of dogs must have a dogbed
+	required_neighbors:
+	- /obj/dogbed
+</code></pre>
+<h4 id=""><code>all</code></h4>
+<p>The all node may be added as a child to the when node to specify that it will be satisfied only when all of its child conditions are met. Note that the <code>all</code> node only makes sense to use when the parent node is an <code>any</code> node, as the default behaviour of <code>when</code> is to require all conditions to be met.</p>
+<pre><code class="language-yml">/mob/dog:
+	# Rule only applies if the dog breed is capitalised and has an owner
+	when:
+	- all:
+		- breed like '[A-Z][a-z]*'
+		- owner is set
+	# These dogs must have a dogbed for their owner
+	required_neighbors:
+	- /obj/dogbed
+</code></pre>
+<h3 id=""><code>skip_files</code></h3>
+<p>To skip processing this rule when the current filename start with a given path, either the start of a path, the full path (with extension), or regex matched.</p>
+<pre><code class="language-yml">/area/template_noop:
+  banned_neighbors:
+    - /turf/open
+    - /obj
+  skip_files:
+    - _maps/templates
+    - _maps/minigame/deathmatch/OSHA_Violator.dmm
+    - pattern: &quot;^_maps/templates/holodeck.*&quot;
+</code></pre>
+<p>In this example, all files in '_maps/templates' (recursively), 'OSHA_Violator.dmm', and any regex matched files for 'temples/holodeck.' will be skipped for any other rules defined in this yml.</p></td></tr></table></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1be77b87eca657613bcfbe6491ef46a558e11023">1be77b8</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

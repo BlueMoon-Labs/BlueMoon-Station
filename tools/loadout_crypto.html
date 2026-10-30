@@ -1,0 +1,119 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../"><link rel="stylesheet" href="dmdoc.css"><title>tools/loadout_crypto/README.md - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>Loadout encryption <aside>tools/loadout_crypto/README.md</aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1be77b87eca657613bcfbe6491ef46a558e11023/tools/loadout_crypto/README.md"><img src="git.png" width="16" height="16" title="tools/loadout_crypto/README.md"></a></h1><table class="summary" cellspacing="0"><tr><td colspan="2"><p>New IDs use <code>enc1:</code> with AES-256-GCM (32-byte key, random 12-byte nonce,
+16-byte authentication tag). The encoded payload is nonce + ciphertext + tag,
+in canonical unpadded base64url. AAD is the UTF-8 string <code>bluemoon/loadout/enc1</code>.
+The implementation uses <a href="https://nodejs.org/api/crypto.html">Node.js crypto</a>.
+Node.js must be available to the <strong>running game server</strong>, as well as during development.
+Use a supported LTS release. The helper avoids <code>node:</code> imports and the newer
+<code>base64url</code> Buffer encoding to tolerate older server installations; this does
+not change the encryption or the token format. The test runner needs Node.js 18+.
+No npm packages are required.</p>
+<p>Both accounts and arbitrary text use the same <code>encrypt</code> and <code>decrypt</code> operations.
+Text is limited to 256 Unicode characters, not UTF-8 bytes. A <code>decrypt</code> request
+with an array of IDs decrypts them in a batch, returning null for invalid entries.</p>
+<p>The server-only key is configured in <code>config/entries/donator.txt</code>:</p>
+<pre><code class="language-text">LOADOUT_CKEY_SECRET &lt;64 hex characters&gt;
+LOADOUT_CRYPTO_NODE node
+</code></pre>
+<p>Keep the real <code>LOADOUT_CKEY_SECRET</code> only in the deployment copy of the config;
+the placeholder in the repository must remain commented out. Replacing or losing
+the key makes existing <code>enc1:</code> IDs unreadable. There is no default key: without an
+explicit private key, encryption and decryption fail with <code>secret_missing</code> and
+encrypted whitelist entries deny access. <code>LOADOUT_CRYPTO_NODE</code> may be a
+Node.js executable name or a full path without quotes or extra arguments.</p>
+<p>The DM bridge reads the key through <code>CONFIG_GET</code> and sends it to the local helper
+through a short-lived request file. The request and response files are deleted
+after each operation and must be protected with the server's normal filesystem
+permissions. If the server process is terminated between writing and cleanup,
+the request file may remain in <code>tmp/</code> and contain the key; remove leftover
+<code>loadout_crypto_*.json</code> files before sharing or backing up the directory. The key
+is never printed to game logs or returned to clients.</p>
+<p><code>[SHOW]</code> now returns an encrypted ID; absent/broken config produces an error,
+never an unencrypted fallback. In DM, <code>gear_ckey_id(key)</code> encrypts the original
+spelling, and <code>gear_ckey_from_id(id)</code> decrypts it (or returns null on failure).
+Whitelist checks normalize the decrypted key, preserving account identity across
+case/punctuation changes. Keep the complete <code>enc1:</code> prefix when copying an ID.
+Results are cached and the cache is discarded when the configured secret changes.
+Cached requests return before reading <code>node_path.txt</code> or accessing the Node helper;
+the loaded secret and configured Node executable are still checked in memory so
+configuration changes invalidate cached results. Uncached requests, including the
+admin diagnostic tool, resolve the current Node path from disk.
+<code>initialize_global_whitelist_cache()</code> warms loadout, accessory, bark, AI screen,
+borg skin and hotel whitelists in a single deduplicated batch after config loading
+and loadout initialization. Whitelists are read from live datums, including
+configured loadout overrides. Hotel templates are prepared before the batch;
+their subsystem reuses the prepared list during its later initialization. The original lists
+retain their encrypted IDs; only the private crypto cache contains the decrypted text.</p>
+<p><code>/datum/sprite_accessory.ckeys_allowed</code> uses the same whitelist check as
+<code>/datum/gear.ckeywhitelist</code>. Both lists accept original account names, normalized
+ckeys, and <code>enc1:</code> IDs encrypted from either spelling, including mixed lists.
+For example, <code>list(&quot;AA-BB-ab&quot;, &quot;anotheraccount&quot;, &quot;enc1:...&quot;)</code> may be used
+for a personal accessory. Use a complete ID obtained with <code>[SHOW]</code> or the debug
+verb. Checks compare normalized identities after authenticated decryption and
+reuse the crypto cache. A null or empty list allows everyone; an unreadable ID
+never grants access. This applies to character preferences and in-round
+appearance customization.</p>
+<p>The same formats are supported by <code>/datum/bark.ckeys_allowed</code>,
+<code>/datum/ai_donator_screen.ckey_whitelist</code>, <code>/datum/borg_donator_skin.ckey_whitelist</code>
+and <code>/datum/map_template/hilbertshotel.ckeywhitelist</code>. Their access rules are
+preserved: a null bark list is public but an explicit empty list denies access;
+empty AI screen lists deny access; borg skins require either whitelist membership
+or donor group membership; empty hotel lists are public. Hotel template access
+is checked on the server for both selection and check-in, and the UI receives
+only the availability decision instead of the whitelist.</p>
+<h2 id="in-round-diagnostics">In-round diagnostics</h2>
+<p>After deploying this build, use <strong>Debug.2) Info → Loadout crypto</strong> with debug rights.
+Enter a short test string, then decrypt the returned ID. Both operations bypass
+the cache and privately report diagnostics, including <code>node_version</code> when the
+helper responds and <code>exit_code</code> when the shell returns. The debug request also
+includes the original helper <code>error_detail</code> and shell <code>stderr</code>; ordinary callers
+never request or receive these fields. Treat the debug output as private because
+it can contain local paths or runtime messages. Temporary helper failures are not
+cached as invalid IDs.</p>
+<table><thead><tr><th>Error</th><th>Meaning / next check</th></tr></thead><tbody>
+<tr><td><code>config_unavailable</code></td><td>Configuration has not been initialized.</td></tr>
+<tr><td><code>secret_missing</code> / <code>invalid_secret_config</code></td><td>The loaded <code>LOADOUT_CKEY_SECRET</code> must contain exactly 64 hex characters.</td></tr>
+<tr><td><code>invalid_node_executable</code></td><td>Empty or unsupported executable path in <code>LOADOUT_CRYPTO_NODE</code>.</td></tr>
+<tr><td><code>helper_missing</code></td><td><code>tools/loadout_crypto/crypto.cjs</code> is absent from the running server's working directory. Include it in deployment.</td></tr>
+<tr><td><code>rustg_rng_failed</code></td><td>The installed rust-g cannot generate a request ID. Working SHA-256 alone does not verify the RNG export.</td></tr>
+<tr><td><code>request_write_failed</code></td><td>The game cannot write the request under <code>tmp/</code>.</td></tr>
+<tr><td><code>shell_failed</code></td><td>BYOND returned <code>null</code> and could not launch the shell. On a Linux TGS deployment, check that the security level is <code>Trusted</code>; also check that <code>/bin/sh</code> exists and the server process is allowed to execute it.</td></tr>
+<tr><td><code>node_exit_failed</code></td><td>Nonzero shell status. On Linux, 127 usually means command not found; 126 usually means it cannot be executed. Other codes can indicate an incompatible runtime or response write failure.</td></tr>
+<tr><td><code>response_missing</code> / <code>invalid_response</code></td><td>No valid JSON response; check shell permissions, working directory and write access.</td></tr>
+<tr><td><code>stderr_code=node_not_found</code></td><td>The shell started, but could not find the configured Node executable. Set <code>LOADOUT_CRYPTO_NODE</code> to an absolute executable path.</td></tr>
+<tr><td><code>stderr_code=permission_denied</code></td><td>The shell or Node executable is not permitted to run. Check TGS security level and executable permissions.</td></tr>
+<tr><td><code>stderr_code=node_not_executable</code></td><td>The configured file is not a runnable Linux Node binary (wrong architecture or missing execute permission).</td></tr>
+<tr><td><code>stderr_code=process_stderr</code></td><td>The process wrote an unclassified error; debug diagnostics include the raw text in <code>stderr</code>.</td></tr>
+<tr><td><code>authentication_failed</code></td><td>The ID was changed or encrypted with another key.</td></tr>
+<tr><td><code>invalid_token</code> / <code>invalid_text</code> / <code>invalid_account</code> / <code>invalid_request</code></td><td>The input is invalid for the requested operation.</td></tr>
+<tr><td><code>helper_failed</code></td><td>The helper started but failed internally; debug diagnostics include the original error in <code>error_detail</code>. Ordinary requests receive only the fixed code.</td></tr>
+</tbody></table>
+<p>The TGS build uses <code>tools/bootstrap/node</code> with a separate cache. A successful
+TGUI build does <strong>not</strong> put Node on the game process's PATH. The repository's
+<code>tools/build/build.js</code> records its actual <code>process.execPath</code> in the generated
+<code>tools/loadout_crypto/node_path.txt</code> during TGUI and DM builds, even when their
+compiled outputs are up to date. This also works with older installed TGS
+<code>Configuration/EventScripts/PreCompile.sh</code> copies that invoke this build script;
+the installed hook does not need updating for path recording.</p>
+<p>When <code>LOADOUT_CRYPTO_NODE</code> is left at its default <code>node</code>, the game uses this
+generated path. An explicit executable path in config continues to override it.
+Deploy the build output and repository files together so the generated path
+file is available to the game. The build log prints <code>Loadout crypto Node: ...</code>.
+In-round diagnostics show <code>node_executable</code>, <code>node_source</code> (<code>build</code>, <code>config</code>,
+or <code>PATH</code>) and, for automatic selection, <code>node_path_file</code> (<code>loaded</code>, <code>missing</code>,
+or <code>invalid</code>). A missing/invalid path file falls back to <code>node</code> from PATH.</p>
+<p><code>rustg_hash_string</code> is a one-way hash API, not reversible encryption. Replacing
+this bridge with a native macro requires an AES-GCM export in the installed
+rust-g (or a separate native library) and deployment of that binary. A DM macro
+alone cannot add an export to the server's existing <code>.so</code>.</p>
+<p>Server-side inspection, with access to the private config:</p>
+<p>The standalone CLI accepts a private file containing one line in the form
+<code>LOADOUT_CKEY_SECRET &lt;64 hex characters&gt;</code>. Keep that file outside the repository.</p>
+<pre><code class="language-sh">node tools/loadout_crypto/crypto.cjs encrypt config/loadout_secret.txt &quot;AA-BB-ab&quot;
+node tools/loadout_crypto/crypto.cjs decrypt config/loadout_secret.txt &quot;enc1:...&quot;
+node tools/loadout_crypto/crypto.cjs inspect config/loadout_secret.txt modular_bluemoon/fluffs/code/donator.dm
+</code></pre>
+<p><code>inspect</code> outputs each distinct encrypted ID with its original key or an error. It does not
+edit the input file. Treat the output as private: it reveals the account names.
+Existing plaintext entries continue to work.</p>
+<p>Tests: <code>node --test tools/loadout_crypto/crypto.test.cjs</code>, plus the DM
+<code>loadout_ckey_id</code>, <code>loadout_ckey_whitelist</code> and <code>loadout_ckey_encryption</code> unit tests.</p></td></tr></table></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1be77b87eca657613bcfbe6491ef46a558e11023">1be77b8</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>
