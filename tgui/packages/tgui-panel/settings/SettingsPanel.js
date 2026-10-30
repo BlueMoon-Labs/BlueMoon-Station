@@ -7,49 +7,108 @@
 import { toFixed } from 'common/math';
 import { useDispatch, useSelector } from 'common/redux';
 import { useState } from 'react';
-import { Box, Button, Divider, Dropdown, Flex, Input, LabeledList, NumberInput, Section, Stack, Tabs, TextArea } from 'tgui/components';
+import { Box, Button, ColorPicker, Divider, Dropdown, Flex, Icon, Input, LabeledList, NumberInput, Section, Stack, Tabs, TextArea, Tooltip } from 'tgui/components';
 
 import { ChatPageSettings } from '../chat';
 import { rebuildChat, saveChatToDisk } from '../chat/actions';
 import { THEMES } from '../themes';
 import { changeSettingsTab, updateSettings } from './actions';
+import { decodeAppearance, encodeAppearance } from './appearanceCode';
+import { ChatPreview } from './ChatPreview';
 import { CHAT_ANIM_SPEEDS, CHAT_ANIMATIONS, CHAT_BG_ANIMATIONS, CHAT_STYLES, FONTS, MESSAGE_STYLE_ANIMATIONS, MESSAGE_STYLE_FONTS, MESSAGE_STYLES, SETTINGS_TABS, TEXT_GLOW_OPTIONS, TIME_DIVIDER_INTERVALS, TIMESTAMP_FORMATS } from './constants';
 import { selectActiveTab, selectSettings } from './selectors';
+import { SettingsChannels } from './SettingsChannels';
+import { SettingsEffects } from './SettingsEffects';
+import { SettingsRadioJobs } from './SettingsRadioJobs';
 
-// React's onChange fires continuously while dragging inside the color
-// dialog; debounce so we do not rewrite stored settings on every tick.
-const colorCommitTimers = new WeakMap();
-const debouncedColorCommit = (input, commit) => {
-  clearTimeout(colorCommitTimers.get(input));
-  colorCommitTimers.set(input, setTimeout(() => commit(input.value), 250));
+const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
+
+// Diagonal line: "no color", so an empty value does not read as black.
+const EMPTY_SWATCH_BG = 'linear-gradient(to top right, transparent 45%,'
+  + ' rgba(255, 90, 90, 0.8) 45%, rgba(255, 90, 90, 0.8) 55%, transparent 55%)';
+
+const ColorSwatch = (props) => {
+  const { value, defaultColor, onChange } = props;
+  const displayColor = value || defaultColor;
+  const empty = !HEX_COLOR.test(displayColor || '');
+  return (
+    <Box
+      position="relative"
+      style={{ width: '22px', height: '22px' }}>
+      <ColorPicker
+        value={empty ? null : displayColor}
+        width="22px"
+        height="22px"
+        onCommit={onChange}
+      />
+      {empty && (
+        <Box
+          className="ColorSwatch__empty"
+          style={{
+            position: 'absolute',
+            inset: '0',
+            borderRadius: '2px',
+            pointerEvents: 'none',
+            background: EMPTY_SWATCH_BG + ', #9a9a9a',
+          }}
+        />
+      )}
+    </Box>
+  );
 };
 
 /**
- * Color input with a native color picker and text field.
+ * Color input with the shared TGUI picker and a text field.
+ * compact: only the swatch, the value goes into the tooltip.
  */
-const ColorInput = (props) => {
-  const { value, defaultColor, placeholder, onChange, onClear } = props;
-  const displayColor = value || defaultColor || '#000000';
-  // Native color picker needs a valid 7-char hex
-  const pickerColor = /^#[0-9a-fA-F]{6}$/.test(displayColor)
-    ? displayColor : '#000000';
+export const ColorInput = (props) => {
+  const {
+    value,
+    defaultColor,
+    placeholder,
+    compact,
+    onChange,
+    onClear,
+  } = props;
+  if (compact) {
+    return (
+      <Box inline nowrap>
+        <Tooltip content={value || placeholder}>
+          <Box inline verticalAlign="middle">
+            <ColorSwatch
+              value={value}
+              defaultColor={defaultColor}
+              onChange={onChange} />
+          </Box>
+        </Tooltip>
+        {onClear && (
+          <Tooltip content="Убрать цвет">
+            <Box
+              inline
+              className="ColorInput__clear"
+              color="label"
+              verticalAlign="middle"
+              textAlign="center"
+              style={{
+                width: '12px',
+                cursor: 'pointer',
+                visibility: value ? 'visible' : 'hidden',
+              }}
+              onClick={onClear}>
+              <Icon name="times" />
+            </Box>
+          </Tooltip>
+        )}
+      </Box>
+    );
+  }
   return (
     <Stack inline align="center">
       <Stack.Item>
-        <Box
-          as="input"
-          type="color"
-          value={pickerColor}
-          style={{
-            'width': '22px',
-            'height': '22px',
-            'padding': '0',
-            'border': '1px solid rgba(255,255,255,0.2)',
-            borderRadius: '2px',
-            'background': 'transparent',
-            'cursor': 'pointer',
-          }}
-          onChange={e => debouncedColorCommit(e.target, onChange)}
+        <ColorSwatch
+          value={value}
+          defaultColor={defaultColor}
+          onChange={onChange}
         />
       </Stack.Item>
       <Stack.Item>
@@ -79,8 +138,8 @@ export const SettingsPanel = (props) => {
   const dispatch = useDispatch();
   return (
     <Stack fill>
-      <Stack.Item>
-        <Section fitted fill minHeight="8em">
+      <Stack.Item overflowY="auto" maxWidth="9em">
+        <Section fitted fill>
           <Tabs vertical>
             {SETTINGS_TABS.map(tab => (
               <Tabs.Tab
@@ -95,7 +154,11 @@ export const SettingsPanel = (props) => {
           </Tabs>
         </Section>
       </Stack.Item>
-      <Stack.Item grow={1} basis={0}>
+      <Stack.Item
+        key={activeTab}
+        grow={1}
+        basis={0}
+        overflowY="auto">
         {activeTab === 'general' && (
           <SettingsGeneral />
         )}
@@ -104,6 +167,12 @@ export const SettingsPanel = (props) => {
         )}
         {activeTab === 'textStyles' && (
           <SettingsTextStyles />
+        )}
+        {activeTab === 'channels' && (
+          <SettingsChannels />
+        )}
+        {activeTab === 'effects' && (
+          <SettingsEffects />
         )}
         {activeTab === 'chatPage' && (
           <ChatPageSettings />
@@ -128,7 +197,7 @@ export const SettingsGeneral = (props) => {
     timestampFormat,
     enableTimeDividers,
     timeDividerInterval,
-    showRadioJobs,
+    newMessagesMarker,
   } = useSelector(selectSettings);
   const dispatch = useDispatch();
   const [freeFont, setFreeFont] = useState(false);
@@ -297,15 +366,6 @@ export const SettingsGeneral = (props) => {
         }}>
         Разделители по времени
       </Button.Checkbox>
-      <Button.Checkbox
-        checked={showRadioJobs !== false}
-        onClick={() => {
-          dispatch(updateSettings({
-            showRadioJobs: showRadioJobs === false,
-          }));
-        }}>
-        Должности в рации
-      </Button.Checkbox>
       {enableTimeDividers && (
         <Box ml={2.5} mb={0.5}>
           <LabeledList>
@@ -327,6 +387,19 @@ export const SettingsGeneral = (props) => {
           </LabeledList>
         </Box>
       )}
+      <Button.Checkbox
+        checked={newMessagesMarker !== false}
+        tooltipPosition="bottom-start"
+        tooltip={'Пока вы читаете историю выше, первое пришедшее'
+          + ' сообщение отделяется линией, а на кнопке прокрутки'
+          + ' вниз виден счётчик новых.'}
+        onClick={() => dispatch(updateSettings({
+          newMessagesMarker: newMessagesMarker === false,
+        }))}>
+        Отмечать новые сообщения
+      </Button.Checkbox>
+      <Divider />
+      <SettingsRadioJobs />
       <Divider />
       <Box>
         <Button
@@ -526,7 +599,7 @@ export const SettingsTextStyles = (props) => {
       <Divider />
       <Button.Checkbox
         checked={spanAnimations !== false}
-        tooltip="Мерцание и пульсация особых стилей: гипноз, глитч ИИ, помехи, делам и т.п. Выключает и ваши анимации выше."
+        tooltip="Мерцание и пульсация особых стилей: гипноз, глитч ИИ, помехи, делам и т.п. Выключает и ваши анимации выше. Игровые эффекты (дрожь, опьянение и т.п.) настраиваются во вкладке Игровые эффекты."
         onClick={() => dispatch(updateSettings({
           spanAnimations: spanAnimations === false,
         }))}>
@@ -542,6 +615,75 @@ export const SettingsTextStyles = (props) => {
         Сбросить стили текста
       </Button>
     </Section>
+  );
+};
+
+const selectAll = e => e.target.select();
+
+export const AppearanceCode = (props) => {
+  const settings = useSelector(selectSettings);
+  const dispatch = useDispatch();
+  const [shown, setShown] = useState(false);
+  const [input, setInput] = useState('');
+  const [status, setStatus] = useState(null);
+  const apply = () => {
+    const result = decodeAppearance(input);
+    if (!result.ok) {
+      setStatus({ color: 'bad', text: result.error });
+      return;
+    }
+    dispatch(updateSettings(result.settings));
+    setInput('');
+    setStatus({ color: 'good', text: 'Оформление применено.' });
+  };
+  return (
+    <Box>
+      <Box color="label" mb={0.5}>
+        Код оформления: стиль, шрифт, цвета, анимации, стили текста, каналы,
+        игровые эффекты и должности в рации. Подсветка и вкладки чата в него
+        не входят.
+      </Box>
+      <Button
+        icon={shown ? 'eye-slash' : 'file-export'}
+        onClick={() => setShown(!shown)}>
+        {shown ? 'Скрыть код' : 'Показать код оформления'}
+      </Button>
+      {shown && (
+        <Box className="TextArea" height="4em" mt={0.5}>
+          <textarea
+            className="TextArea__textarea TextArea__textarea--scrollable"
+            readOnly
+            spellCheck={false}
+            value={encodeAppearance(settings)}
+            onFocus={selectAll}
+            onClick={selectAll}
+          />
+        </Box>
+      )}
+      <TextArea
+        mt={1}
+        height="4em"
+        scrollbar
+        placeholder="Вставьте код оформления"
+        value={input}
+        onInput={(e, value) => {
+          setInput(value);
+          setStatus(null);
+        }}
+      />
+      <Button
+        mt={0.5}
+        icon="file-import"
+        disabled={!input.trim()}
+        onClick={apply}>
+        Применить код
+      </Button>
+      {status && (
+        <Box color={status.color} mt={0.5}>
+          {status.text}
+        </Box>
+      )}
+    </Box>
   );
 };
 
@@ -788,6 +930,10 @@ export const SettingsAppearance = (props) => {
         }))}>
         Подсветка при наведении
       </Button.Checkbox>
+      <Divider />
+      <ChatPreview />
+      <Divider />
+      <AppearanceCode />
       <Divider />
       <Button
         icon="undo"

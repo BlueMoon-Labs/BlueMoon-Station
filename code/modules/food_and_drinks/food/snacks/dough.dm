@@ -57,35 +57,35 @@
 	tastes = list("dough" = 1)
 	foodtype = GRAIN
 
-	attack_self(mob/user)
-		. = ..()
-		if(.)
-			return
-		if(user.get_item_by_slot(ITEM_SLOT_FEET))
-			to_chat(user, span_warning("Нельзя работать с едой в обуви! Надо сначала снять её"))
-			return
-		var/obj/item/reagent_containers/food/condiment/sugar/sugarpack
-		for(var/obj/item/I in user.held_items)
-			if(I == src)
-				continue
-			if(istype(I, /obj/item/reagent_containers/food/condiment/sugar))
-				sugarpack = I
-				break
-		if(!sugarpack)
-			to_chat(user, span_warning("Для формовки нужна пачка сахара во второй руке!"))
-			return
-		if(!sugarpack.reagents || sugarpack.reagents.get_reagent_amount(/datum/reagent/consumable/sugar) < 1)
-			to_chat(user, span_warning("Пачка сахара пуста!"))
-			return
-		to_chat(user, span_notice("Ты прижимаешь ногу к тесту, придавая ему форму лапки..."))
-		if(!do_after(user, 1 SECONDS, user))
-			to_chat(user, span_warning("Ты сбился!"))
-			return
-		sugarpack.reagents.remove_reagent((/datum/reagent/consumable/sugar), 1)
-		var/obj/item/reagent_containers/food/snacks/pawcookie_raw/form = new(get_turf(user))
-		qdel(src)
-		user.put_in_hands(form)
-		to_chat(user, span_notice("Заготовка готова! Теперь её можно разогреть"))
+/obj/item/reagent_containers/food/snacks/doughslice/attack_self(mob/user)
+	. = ..()
+	if(.)
+		return
+	if(user.get_item_by_slot(ITEM_SLOT_FEET))
+		to_chat(user, span_warning("Нельзя работать с едой в обуви! Надо сначала снять её"))
+		return
+	var/obj/item/reagent_containers/food/condiment/sugar/sugarpack
+	for(var/obj/item/I in user.held_items)
+		if(I == src)
+			continue
+		if(istype(I, /obj/item/reagent_containers/food/condiment/sugar))
+			sugarpack = I
+			break
+	if(!sugarpack)
+		to_chat(user, span_warning("Для формовки нужна пачка сахара во второй руке!"))
+		return
+	if(!sugarpack.reagents || sugarpack.reagents.get_reagent_amount(/datum/reagent/consumable/sugar) < 1)
+		to_chat(user, span_warning("Пачка сахара пуста!"))
+		return
+	to_chat(user, span_notice("Ты прижимаешь ногу к тесту, придавая ему форму лапки..."))
+	if(!do_after(user, 1 SECONDS, user))
+		to_chat(user, span_warning("Ты сбился!"))
+		return
+	sugarpack.reagents.remove_reagent((/datum/reagent/consumable/sugar), 1)
+	var/obj/item/reagent_containers/food/snacks/pawcookie_raw/form = new(get_turf(user))
+	qdel(src)
+	user.put_in_hands(form)
+	to_chat(user, span_notice("Заготовка готова! Теперь её можно разогреть"))
 
 /obj/item/reagent_containers/food/snacks/bun
 	name = "bun"

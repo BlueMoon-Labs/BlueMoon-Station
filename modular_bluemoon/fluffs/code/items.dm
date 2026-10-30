@@ -258,3 +258,36 @@
 	desc = "A modkit for making a riot armor into a ncr ranger duster."
 	product = /obj/item/clothing/suit/armor/riot/kumiko_ncr_elite_desert
 	fromitem = list(/obj/item/clothing/suit/armor/riot)
+
+/////////////////////
+
+///obj/item/shovel/spade/pan
+//	name = "pan"
+//	desc = "Old and fancy"
+//	hitsound = "modular_bluemoon/sound/items/frying_pan.ogg"
+//	icon_state = "pan"
+//	icon = "modular_bluemoon/fluffs/icons/obj/melee.dmi"
+
+/obj/item/modkit/snub
+	name = "Revolver snub conversion"
+	desc = "A modkit for making an old version."
+	product = /obj/item/gun/ballistic/revolver/Apostle/snub/old
+	fromitem = list(/obj/item/gun/ballistic/revolver/Apostle/snub)
+
+/obj/item/modkit/anathema
+	name = "Anathema revolver conversion"
+	desc = "A modkit for making a jukebox into an acradorian version."
+	product = /obj/item/gun/ballistic/revolver/anathema/old
+	fromitem = list(/obj/item/gun/ballistic/revolver/anathema)
+
+/obj/item/modkit/irae
+	name = "Irae Revolver conversion"
+	desc = "A modkit for making a jukebox into an acradorian version."
+	product = /obj/item/gun/ballistic/revolver/Dies_Irae/old
+	fromitem = list(/obj/item/gun/ballistic/revolver/Dies_Irae)
+
+/obj/item/modkit/apostle
+	name = "Revolver conversion"
+	desc = "A modkit for making a jukebox into an acradorian version."
+	product = /obj/item/gun/ballistic/revolver/Apostle/old
+	fromitem = list(/obj/item/gun/ballistic/revolver/Apostle)

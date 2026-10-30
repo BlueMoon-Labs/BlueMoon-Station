@@ -19136,6 +19136,17 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/centcom/ferry)
+"kxl" = (
+/obj/effect/turf_decal/tile/dark/half{
+	dir = 1
+	},
+/obj/effect/turf_decal/tile/neutral/half,
+/obj/effect/turf_decal/tile/dark/half,
+/obj/machinery/antag_training_pod{
+	dir = 1
+	},
+/turf/open/floor/plasteel/textured/half,
+/area/centcom/holding)
 "kxp" = (
 /obj/effect/turf_decal/tile/red/half{
 	dir = 1
@@ -57999,7 +58010,7 @@ cfx
 dvX
 oom
 fcu
-xdr
+kxl
 pgm
 wnd
 bhm
@@ -58513,7 +58524,7 @@ rnA
 aGK
 oom
 fcu
-xdr
+kxl
 pgm
 cpN
 agK

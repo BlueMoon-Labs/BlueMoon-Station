@@ -3978,7 +3978,6 @@
 	name = "Gateway Access Shutters"
 	},
 /obj/effect/turf_decal/delivery,
-/obj/machinery/door/firedoor,
 /obj/structure/fans/tiny,
 /turf/open/floor/plasteel,
 /area/command/gateway)
@@ -3989,7 +3988,6 @@
 	name = "Gateway Access Shutters"
 	},
 /obj/effect/turf_decal/delivery,
-/obj/machinery/door/firedoor,
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
@@ -32159,7 +32157,6 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 1
 	},
-/obj/machinery/door/firedoor,
 /obj/effect/mapping_helpers/network_builder/atmos_pipe/scrubbers/hidden/layer4,
 /obj/effect/decal/festive/mistletoe,
 /obj/effect/decal/festive/christmas_reef,
@@ -32959,7 +32956,6 @@
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 1
 	},
-/obj/machinery/door/firedoor,
 /obj/structure/disposalpipe/segment{
 	dir = 4
 	},
@@ -50816,9 +50812,6 @@
 /area/edina/street/primary/servitor)
 "crm" = (
 /obj/effect/festive/street/streetlinenw,
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
 /obj/structure/disposalpipe/segment{
 	dir = 4
 	},

@@ -370,11 +370,11 @@ SUBSYSTEM_DEF(vote)
 			if(display_votes & SHOW_RESULTS)
 				var/list/bar_color = vote_bar_colors[((i - 1) % vote_bar_colors.len) + 1]
 				var/hex_color = rgb(bar_color[1], bar_color[2], bar_color[3])
-				var/votes_amount = choices[choices[i]]
+				var/votes_amount = get_effective_votes(choices[i])
 				var/percent = total_votes > 0 ? round((votes_amount / total_votes) * 100, 1) : 0
-				text += "<span class='vote-dot' style='background: [hex_color]; box-shadow: 0 0 6px 1px rgba([bar_color[1]], [bar_color[2]], [bar_color[3]], 0.8);'></span>"
+				text += "<span class='vote-dot' style='background: [hex_color]; box-shadow: 0 0 3px 1px rgba([bar_color[1]], [bar_color[2]], [bar_color[3]], 0.3);'></span>"
 				text += "<span class='vote-name'>[choices[i]]</span>"
-				text += "<div class='vote-bar-track'><div class='vote-bar' style='width: [percent]%; animation-delay: [max(0, i - 1) * 0.12]s; background: linear-gradient(90deg, rgba([bar_color[1]], [bar_color[2]], [bar_color[3]], 0.6), [hex_color] 70%); box-shadow: 0 0 8px 1px rgba([bar_color[1]], [bar_color[2]], [bar_color[3]], 0.55);'></div></div>"
+				text += "<div class='vote-bar-track'><div class='vote-bar' style='width: [percent]%; animation-delay: [max(0, i - 1) * 0.12]s; background: linear-gradient(90deg, rgba([bar_color[1]], [bar_color[2]], [bar_color[3]], 0.6), [hex_color] 70%); box-shadow: 0 0 2px 1px rgba([bar_color[1]], [bar_color[2]], [bar_color[3]], 0.2);'></div></div>"
 				text += "<span class='vote-percent'>[percent]%</span>"
 				text += "<span class='vote-count'>[votes_amount]</span>"
 			else
@@ -741,7 +741,7 @@ SUBSYSTEM_DEF(vote)
 		for(var/i = 1, i <= choices.len, i++)
 			var/list/bar_color = vote_bar_colors[((i - 1) % vote_bar_colors.len) + 1]
 			var/hex_color = rgb(bar_color[1], bar_color[2], bar_color[3])
-			text += "<div class='vote-choice'><span class='vote-dot' style='background: [hex_color]; box-shadow: 0 0 6px 1px rgba([bar_color[1]], [bar_color[2]], [bar_color[3]], 0.8);'></span>[choices[i]]</div>"
+			text += "<div class='vote-choice'><span class='vote-dot' style='background: [hex_color]; box-shadow: 0 0 3px 1px rgba([bar_color[1]], [bar_color[2]], [bar_color[3]], 0.3);'></span>[choices[i]]</div>"
 		text += "<div class='vote-hint'>Нажмите <a href='?src=[REF(src)]'>сюда</a> чтобы проголосовать</div>"
 		log_vote(text)
 		to_chat(world, vote_block(text))
@@ -975,7 +975,7 @@ SUBSYSTEM_DEF(vote)
 		var/show_votes_count = should_show_votes_to(user)
 		for(var/i in 1 to choices.len)
 			var/choice_name = choices[i]
-			var/vote_count = max(0, choices[choice_name] || 0)
+			var/vote_count = max(0, get_effective_votes(choice_name) || 0)
 			var/user_selected = FALSE  // plurality
 			var/user_approved = FALSE  // approval
 			var/user_rank = 0          // schulze/IRV

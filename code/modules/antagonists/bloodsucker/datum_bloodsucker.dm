@@ -47,8 +47,7 @@
 	reminded_times_left = 2 // BLUEMOON ADD
 
 /datum/antagonist/bloodsucker/on_gain()
-	SSticker.mode.bloodsuckers |= owner // Add if not already in here (and you might be, if you were picked at round start)
-	SSticker.mode.check_start_sunlight()// Start Sunlight? (if first Vamp)
+	join_sunlight_cycle()
 	SelectFirstName()// Name & Title
 	SelectTitle(am_fledgling = TRUE) 	// If I have a creator, then set as Fledgling.
 	SelectReputation(am_fledgling = TRUE)
@@ -59,8 +58,7 @@
 
 
 /datum/antagonist/bloodsucker/on_removal()
-	SSticker.mode.bloodsuckers -= owner
-	SSticker.mode.check_cancel_sunlight()// End Sunlight? (if last Vamp)
+	leave_sunlight_cycle()
 	if(owner.current)
 		ClearAllPowersAndStats()// Clear Powers & Stats
 	clear_bloodsucker_objectives()	// Objectives
@@ -68,7 +66,14 @@
 	owner.special_role = null // BLUEMOON ADD
 	. = ..()
 
+/// Солнце раунда ведёт тех, кто в списке кровососов режима, и живёт, пока список не пуст.
+/datum/antagonist/bloodsucker/proc/join_sunlight_cycle()
+	SSticker.mode.bloodsuckers |= owner
+	SSticker.mode.check_start_sunlight()
 
+/datum/antagonist/bloodsucker/proc/leave_sunlight_cycle()
+	SSticker.mode.bloodsuckers -= owner
+	SSticker.mode.check_cancel_sunlight()
 
 /datum/antagonist/bloodsucker/greet()
 	var/fullname = ReturnFullName(TRUE)
@@ -301,17 +306,12 @@
 			//return
 	// BLUEMOON ADD END
 	var/mob/living/L = owner.current
-	level_bloodcost = max_blood_volume * 0.2
+	level_bloodcost = max_blood_volume * BLOODSUCKER_RANK_BLOOD_SHARE
 	//If the blood volume of the bloodsucker is lower than the cost to level up, return and inform the bloodsucker
 
 	//TODO: Make this into a radial, or perhaps a tgui next UI
 		// Purchase Power Prompt
-	var/list/options = list()
-	for(var/pickedpower in typesof(/datum/action/cooldown/bloodsucker))
-		var/datum/action/cooldown/bloodsucker/power = pickedpower
-		// If I don't own it, and I'm allowed to buy it.
-		if(!(locate(power) in powers) && initial(power.bloodsucker_can_buy))
-			options[initial(power.name)] = power // TESTING: After working with TGUI, it seems you can use initial() to view the variables inside a path?
+	var/list/options = BuyablePowers()
 	options["\[ Not Now \]"] = null
 	// Abort?
 	if(options.len > 1)
@@ -335,6 +335,21 @@
 		to_chat(owner.current, "<span class='cult'>Вы использовали [level_bloodcost] единиц крови и изучили [initial(P.name)]!</span>")
 	else
 		to_chat(owner.current, "<span class='cult'>Вы становитесь более древним порождением ночи!</span>")
+	AdvanceRank()
+
+	// Вампир тратит все уровни, не открывая и не закрывая гроб заново.
+	if(bloodsucker_level_unspent)
+		SpendRank()
+
+/// Имя -> тип сил, которые ещё можно выбрать при повышении.
+/datum/antagonist/bloodsucker/proc/BuyablePowers()
+	. = list()
+	for(var/datum/action/cooldown/bloodsucker/power as anything in typesof(/datum/action/cooldown/bloodsucker))
+		if(!(locate(power) in powers) && initial(power.bloodsucker_can_buy))
+			.[initial(power.name)] = power
+
+/// Тратит один неизрасходованный уровень: усиливает силы и тело, растит поколение.
+/datum/antagonist/bloodsucker/proc/AdvanceRank()
 	/////////
 	// Advance Powers (including new)
 	LevelUpPowers()
@@ -362,11 +377,6 @@
 	to_chat(owner.current, "<span class='warning'>Все ваши изученые способности так же усилились!</span>")
 	update_hud(TRUE)
 	owner.current.playsound_local(null, 'sound/effects/pope_entry.ogg', 25, TRUE, pressure_affected = FALSE)
-
-	// BLUEMOON ADD START - вампир тратит все уровни без необходимости открыть-закрывать гроб
-	if(bloodsucker_level_unspent)
-		SpendRank()
-	// BLUEMOON ADD END
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

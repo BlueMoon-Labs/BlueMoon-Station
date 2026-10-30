@@ -140,7 +140,7 @@
 
 /obj/machinery/computer/camera_advanced/on_attack_hand(mob/user, act_intent = user.a_intent, unarmed_attack_flags)
 	if(current_user)
-		to_chat(user, "The console is already in use!")
+		to_chat(user, "Консоль уже используется!")
 		return
 	var/mob/living/L = user
 
@@ -157,7 +157,7 @@
 				camera_location = myturf
 			else
 				for(var/obj/machinery/camera/C in GLOB.cameranet.cameras)
-					if(!C.can_use() || z_lock.len && !(C.z in z_lock))
+					if(!C.can_use() || z_lock.len && !(C.z in z_lock) || !antag_training_camera_visible(C, src))
 						continue
 					var/list/network_overlap = networks & C.network
 					if(network_overlap.len)
@@ -265,7 +265,7 @@
 		sprint = initial
 
 /datum/action/innate/camera_off
-	name = "End Camera View"
+	name = "Завершить просмотр камеры"
 	icon_icon = 'icons/mob/actions/actions_silicon.dmi'
 	button_icon_state = "camera_off"
 
@@ -277,7 +277,7 @@
 	console.remove_eye_control(owner)
 
 /datum/action/innate/camera_jump
-	name = "Jump To Camera"
+	name = "Перейти к камере"
 	icon_icon = 'icons/mob/actions/actions_silicon.dmi'
 	button_icon_state = "camera_jump"
 
@@ -292,6 +292,8 @@
 	for (var/obj/machinery/camera/cam as anything in GLOB.cameranet.cameras)
 		if(length(origin.z_lock) && !(cam.z in origin.z_lock))
 			continue
+		if(!antag_training_camera_visible(cam, origin))
+			continue
 		L.Add(cam)
 
 	camera_sort(L)
@@ -303,10 +305,10 @@
 		if (length(tempnetwork))
 			if(!netcam.c_tag)
 				continue
-			T["[netcam.c_tag][netcam.can_use() ? null : " (Deactivated)"]"] = netcam
+			T["[netcam.c_tag][netcam.can_use() ? null : " (отключена)"]"] = netcam
 
 	playsound(origin, 'sound/machines/terminal_prompt.ogg', 25, FALSE)
-	var/camera = input("Choose which camera you want to view", "Cameras") as null|anything in T
+	var/camera = tgui_input_list(owner, "Выберите камеру для просмотра", "Камеры", T)
 	if(isnull(camera))
 		return
 	if(isnull(T[camera]))

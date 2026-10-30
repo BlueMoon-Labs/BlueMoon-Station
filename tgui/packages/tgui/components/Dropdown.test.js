@@ -283,7 +283,7 @@ describe('Dropdown', () => {
     expect(getControl(container).textContent).toContain('healium');
     fireEvent.click(getControl(container));
     expect(container.querySelector('.Dropdown__menu').textContent).toBe(
-      'No Options Found',
+      'Нет совпадений',
     );
   });
 

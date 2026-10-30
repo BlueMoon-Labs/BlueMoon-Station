@@ -1,0 +1,1248 @@
+//MAP CONVERTED BY dmm2tgm.py THIS HEADER COMMENT PREVENTS RECONVERSION, DO NOT REMOVE
+"bU" = (
+/turf/template_noop,
+/area/template_noop)
+"dt" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 1
+	},
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/three)
+"hw" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 4
+	},
+/obj/machinery/light/directional/east,
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/one)
+"ih" = (
+/obj/effect/landmark/antag_training/hub_pad/four,
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/four)
+"iB" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/four)
+"js" = (
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/two)
+"kQ" = (
+/obj/effect/turf_decal/stripes/white,
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/one)
+"nt" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/one)
+"pc" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/four)
+"qJ" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 1
+	},
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/one)
+"qW" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 8
+	},
+/obj/machinery/light/directional/west,
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/one)
+"sw" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/three)
+"sy" = (
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/one)
+"Bi" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 8
+	},
+/obj/machinery/light/directional/west,
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/two)
+"Cg" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/one)
+"CS" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 1
+	},
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/two)
+"Iz" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 4
+	},
+/obj/machinery/light/directional/east,
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/four)
+"Lp" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 4
+	},
+/obj/machinery/light/directional/east,
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/three)
+"Md" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 4
+	},
+/obj/machinery/light/directional/east,
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/two)
+"MZ" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 4
+	},
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/two)
+"OD" = (
+/obj/effect/turf_decal/stripes/white,
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/two)
+"Pj" = (
+/obj/effect/landmark/antag_training/hub_pad/three,
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/three)
+"QB" = (
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/four)
+"Rn" = (
+/obj/effect/landmark/antag_training/hub_pad/one,
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/one)
+"Rr" = (
+/obj/effect/turf_decal/stripes/white,
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/four)
+"RG" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 8
+	},
+/obj/machinery/light/directional/west,
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/four)
+"RJ" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/three)
+"Sf" = (
+/obj/effect/turf_decal/stripes/white,
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/three)
+"YT" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 1
+	},
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/four)
+"Zh" = (
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/three)
+"Zs" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 8
+	},
+/obj/machinery/light/directional/west,
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/three)
+"ZK" = (
+/obj/effect/turf_decal/stripes/white{
+	dir = 8
+	},
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/two)
+"ZS" = (
+/obj/effect/landmark/antag_training/hub_pad/two,
+/turf/open/floor/engine,
+/area/antag_training/hub/pad/two)
+
+(1,1,1) = {"
+qJ
+nt
+nt
+qW
+nt
+nt
+nt
+nt
+nt
+nt
+nt
+qW
+nt
+nt
+kQ
+"}
+(2,1,1) = {"
+qJ
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+kQ
+"}
+(3,1,1) = {"
+qJ
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+kQ
+"}
+(4,1,1) = {"
+qJ
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+kQ
+"}
+(5,1,1) = {"
+qJ
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+kQ
+"}
+(6,1,1) = {"
+qJ
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+kQ
+"}
+(7,1,1) = {"
+qJ
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+kQ
+"}
+(8,1,1) = {"
+qJ
+sy
+sy
+sy
+sy
+sy
+sy
+Rn
+sy
+sy
+sy
+sy
+sy
+sy
+kQ
+"}
+(9,1,1) = {"
+qJ
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+kQ
+"}
+(10,1,1) = {"
+qJ
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+kQ
+"}
+(11,1,1) = {"
+qJ
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+kQ
+"}
+(12,1,1) = {"
+qJ
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+kQ
+"}
+(13,1,1) = {"
+qJ
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+kQ
+"}
+(14,1,1) = {"
+qJ
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+sy
+kQ
+"}
+(15,1,1) = {"
+qJ
+Cg
+Cg
+hw
+Cg
+Cg
+Cg
+Cg
+Cg
+Cg
+Cg
+hw
+Cg
+Cg
+kQ
+"}
+(16,1,1) = {"
+bU
+bU
+bU
+bU
+bU
+bU
+bU
+bU
+bU
+bU
+bU
+bU
+bU
+bU
+bU
+"}
+(17,1,1) = {"
+CS
+ZK
+ZK
+Bi
+ZK
+ZK
+ZK
+ZK
+ZK
+ZK
+ZK
+Bi
+ZK
+ZK
+OD
+"}
+(18,1,1) = {"
+CS
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+OD
+"}
+(19,1,1) = {"
+CS
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+OD
+"}
+(20,1,1) = {"
+CS
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+OD
+"}
+(21,1,1) = {"
+CS
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+OD
+"}
+(22,1,1) = {"
+CS
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+OD
+"}
+(23,1,1) = {"
+CS
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+OD
+"}
+(24,1,1) = {"
+CS
+js
+js
+js
+js
+js
+js
+ZS
+js
+js
+js
+js
+js
+js
+OD
+"}
+(25,1,1) = {"
+CS
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+OD
+"}
+(26,1,1) = {"
+CS
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+OD
+"}
+(27,1,1) = {"
+CS
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+OD
+"}
+(28,1,1) = {"
+CS
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+OD
+"}
+(29,1,1) = {"
+CS
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+OD
+"}
+(30,1,1) = {"
+CS
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+js
+OD
+"}
+(31,1,1) = {"
+CS
+MZ
+MZ
+Md
+MZ
+MZ
+MZ
+MZ
+MZ
+MZ
+MZ
+Md
+MZ
+MZ
+OD
+"}
+(32,1,1) = {"
+bU
+bU
+bU
+bU
+bU
+bU
+bU
+bU
+bU
+bU
+bU
+bU
+bU
+bU
+bU
+"}
+(33,1,1) = {"
+dt
+RJ
+RJ
+Zs
+RJ
+RJ
+RJ
+RJ
+RJ
+RJ
+RJ
+Zs
+RJ
+RJ
+Sf
+"}
+(34,1,1) = {"
+dt
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Sf
+"}
+(35,1,1) = {"
+dt
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Sf
+"}
+(36,1,1) = {"
+dt
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Sf
+"}
+(37,1,1) = {"
+dt
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Sf
+"}
+(38,1,1) = {"
+dt
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Sf
+"}
+(39,1,1) = {"
+dt
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Sf
+"}
+(40,1,1) = {"
+dt
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Pj
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Sf
+"}
+(41,1,1) = {"
+dt
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Sf
+"}
+(42,1,1) = {"
+dt
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Sf
+"}
+(43,1,1) = {"
+dt
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Sf
+"}
+(44,1,1) = {"
+dt
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Sf
+"}
+(45,1,1) = {"
+dt
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Sf
+"}
+(46,1,1) = {"
+dt
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Zh
+Sf
+"}
+(47,1,1) = {"
+dt
+sw
+sw
+Lp
+sw
+sw
+sw
+sw
+sw
+sw
+sw
+Lp
+sw
+sw
+Sf
+"}
+(48,1,1) = {"
+bU
+bU
+bU
+bU
+bU
+bU
+bU
+bU
+bU
+bU
+bU
+bU
+bU
+bU
+bU
+"}
+(49,1,1) = {"
+YT
+pc
+pc
+RG
+pc
+pc
+pc
+pc
+pc
+pc
+pc
+RG
+pc
+pc
+Rr
+"}
+(50,1,1) = {"
+YT
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+Rr
+"}
+(51,1,1) = {"
+YT
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+Rr
+"}
+(52,1,1) = {"
+YT
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+Rr
+"}
+(53,1,1) = {"
+YT
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+Rr
+"}
+(54,1,1) = {"
+YT
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+Rr
+"}
+(55,1,1) = {"
+YT
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+Rr
+"}
+(56,1,1) = {"
+YT
+QB
+QB
+QB
+QB
+QB
+QB
+ih
+QB
+QB
+QB
+QB
+QB
+QB
+Rr
+"}
+(57,1,1) = {"
+YT
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+Rr
+"}
+(58,1,1) = {"
+YT
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+Rr
+"}
+(59,1,1) = {"
+YT
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+Rr
+"}
+(60,1,1) = {"
+YT
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+Rr
+"}
+(61,1,1) = {"
+YT
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+Rr
+"}
+(62,1,1) = {"
+YT
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+QB
+Rr
+"}
+(63,1,1) = {"
+YT
+iB
+iB
+Iz
+iB
+iB
+iB
+iB
+iB
+iB
+iB
+Iz
+iB
+iB
+Rr
+"}

@@ -90,6 +90,7 @@
 		mat_container.insert_item(O, ore_multiplier) //insert it
 		materials.silo_log(src, "smelted", amount, "ores", mats)
 		qdel(O)
+		balloon_alert_to_viewers("руда принята")
 
 /obj/machinery/mineral/ore_redemption/proc/can_smelt_alloy(datum/design/D)
 	var/datum/component/material_container/mat_container = materials.mat_container

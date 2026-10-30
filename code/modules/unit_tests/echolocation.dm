@@ -919,3 +919,26 @@
 	deleted_marker.set_typist(deleted_source)
 	qdel(deleted_source)
 	TEST_ASSERT_NULL(deleted_marker.refresh_typing(), "Deleting a typing source must safely clear its weakref-backed marker")
+
+/// A pulse is built over several ticks: removal is batched and a clear must stop the build in progress.
+/datum/unit_test/echolocation_batched_echo_removal
+
+/datum/unit_test/echolocation_batched_echo_removal/Run()
+	var/mob/living/carbon/human/holder = allocate(/mob/living/carbon/human)
+	var/datum/quirk/echolocation/sense = allocate(/datum/quirk/echolocation, holder)
+	var/atom/movable/screen/echolocation_echo/first = new
+	var/atom/movable/screen/echolocation_echo/second = new
+	var/atom/movable/screen/echolocation_echo/kept = allocate(/atom/movable/screen/echolocation_echo)
+	sense.echoes += list(first, second, kept)
+
+	sense.remove_echoes(list())
+	TEST_ASSERT_EQUAL(length(sense.echoes), 3, "Removing an empty batch must keep every echo")
+	sense.remove_echoes(list(first, second))
+	TEST_ASSERT(QDELETED(first) && QDELETED(second), "Every echo of a removed batch must be deleted")
+	TEST_ASSERT_EQUAL(length(sense.echoes), 1, "A removed batch must leave the quirk's echo list")
+	TEST_ASSERT(kept in sense.echoes, "Echoes outside the batch must stay")
+
+	var/generation = sense.pulse_generation
+	sense.clear_echoes()
+	TEST_ASSERT(sense.pulse_generation != generation, "Clearing echoes must invalidate a pulse that is still being built")
+	TEST_ASSERT(!length(sense.echoes), "Clearing echoes must empty the echo list")

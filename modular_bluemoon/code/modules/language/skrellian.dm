@@ -1,6 +1,6 @@
 /datum/language/modular_bluemoon/skrell
 	name = "Skrellian"
-	desc = "A melodic and complex language spoken by the Skrell of Qerrbalak. Some of the notes are inaudible to humans."
+	desc = "Мелодичный и сложный язык скреллов Кербалака. Часть нот не слышна человеку."
 	icon = 'modular_bluemoon/icons/misc/language.dmi'
 	icon_state = "skrell"
 	speech_verb = "warbles"

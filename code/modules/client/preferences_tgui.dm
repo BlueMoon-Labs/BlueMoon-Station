@@ -107,6 +107,7 @@
 	.["chat_radio"] = !!(chat_toggles & CHAT_RADIO)
 	.["chat_pullr"] = !!(chat_toggles & CHAT_PULLR)
 	.["chat_bankcard"] = !!(chat_toggles & CHAT_BANKCARD)
+	.["chat_ghosthuds"] = !!(chat_toggles & CHAT_GHOSTHUDS)
 	.["windowflashing"] = windowflashing
 	.["adminhelp_windowflash"] = adminhelp_windowflash
 	.["windownoise"] = windownoise
@@ -443,6 +444,11 @@
 					chat_toggles ^= CHAT_PULLR
 				if("chat_bankcard")
 					chat_toggles ^= CHAT_BANKCARD
+				if("chat_ghosthuds")
+					chat_toggles ^= CHAT_GHOSTHUDS
+					var/mob/dead/observer/ghost = parent?.mob
+					if(istype(ghost))
+						ghost.sync_data_huds()
 				if("windowflashing")
 					windowflashing = !windowflashing
 					dirty_var = "windowflashing"

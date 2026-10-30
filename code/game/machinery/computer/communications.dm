@@ -862,7 +862,7 @@
 	if(!SScommunications.can_announce(user, is_ai))
 		to_chat(user, span_alert("Система оповещения испытывает перегрузку. Пожалуйста, подождите."))
 		return
-	var/input = input(user, "Напишите сообщение для объявления экипажу станции.", "Приоритетное оповещение") as message|null
+	var/input = tgui_input_text(user, "Напишите сообщение для объявления экипажу станции.", "Приоритетное оповещение", multiline = TRUE, max_length = MAX_MESSAGE_LEN)
 	if(!input || !user.canUseTopic(src, !issilicon(usr)))
 		return
 	if(!(user.can_speak())) //No more cheating, mime/random mute guy!

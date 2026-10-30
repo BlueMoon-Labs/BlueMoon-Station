@@ -19,6 +19,11 @@
 	TEST_ASSERT(!brute.in_melee, "Моб в шкафу считает себя в ближнем бою")
 
 	brute.forceMove(run_loc_floor_bottom_left)
+	// Удар изнутри по шкафу честно занял кулдаун атаки, снаружи проверяем уже готового к удару моба
+	brute.next_action = 0
+	brute.next_action_immediate = 0
+	brute.last_action = 0
+	brute.last_action_immediate = 0
 	fangs.perform(0.5, controller, BB_AI_CURRENT_TARGET)
 	TEST_ASSERT(prey.health < health_before, "Моб снаружи шкафа не ударил соседа")
 	qdel(controller)
@@ -104,3 +109,45 @@
 	TEST_ASSERT_EQUAL(lower.map_icon.Width(), upper.map_icon.Width(), "Этажи миникарты разной ширины")
 	TEST_ASSERT_EQUAL(lower.map_icon.Height(), upper.map_icon.Height(), "Этажи миникарты разной высоты")
 	TEST_ASSERT_EQUAL(lower.map_icon.Width(), 21, "Рамка миникарты не совпала с заданной")
+
+#ifdef LOWMEMORYMODE
+/// LOWMEMORYMODE собирается без PNG NanoMap: станция получает старую схему зон.
+/datum/unit_test/minimap_fallback_without_nanomap
+
+/datum/unit_test/minimap_fallback_without_nanomap/Run()
+	var/datum/asset/simple/nanomaps/nanomaps = get_asset_datum(/datum/asset/simple/nanomaps)
+	TEST_ASSERT_EQUAL(length(nanomaps.map_data), 0, "В LOWMEMORYMODE манифест NanoMap не пуст")
+	var/list/old_minimaps = SSminimaps.station_minimaps
+	var/datum/minimap_group/old_group = SSminimaps.station_minimap
+	SSminimaps.station_minimaps = list()
+	SSminimaps.build_minimaps()
+	var/list/built = SSminimaps.station_minimaps
+	SSminimaps.station_minimaps = old_minimaps
+	SSminimaps.station_minimap = old_group
+	TEST_ASSERT(length(built), "Без NanoMap у станции нет миникарты")
+	for(var/datum/minimap/floor_map as anything in built)
+		TEST_ASSERT_NOTNULL(floor_map.map_icon, "Этаж [floor_map.name] без изображения")
+		TEST_ASSERT_NULL(floor_map.department_map_icon, "Схема зон получила слой отделов NanoMap")
+#endif
+
+/// Шаг на клетку тела и разворот не оставляют тело сдвинутым к прежнему месту тянущего.
+/datum/unit_test/pull_offset_follows_puller_reversal
+
+/datum/unit_test/pull_offset_follows_puller_reversal/Run()
+	var/turf/start = get_step(run_loc_floor_bottom_left, NORTH)
+	var/mob/living/carbon/human/dragger = allocate(/mob/living/carbon/human, get_step(start, NORTH))
+	var/mob/living/carbon/human/body = allocate(/mob/living/carbon/human, start)
+	body.set_resting(TRUE, TRUE)
+	dragger.start_pulling(body)
+	TEST_ASSERT_EQUAL(body.pixel_y, 0, "обычный пулл сдвинул тело на тянущего")
+	dragger.setGrabState(GRAB_AGGRESSIVE)
+	dragger.set_pull_offsets(body, GRAB_AGGRESSIVE)
+	TEST_ASSERT_EQUAL(body.pixel_y, GRAB_PIXEL_SHIFT_AGGRESSIVE, "тело в захвате не сдвинулось к тянущему")
+
+	dragger.Move(start, SOUTH)
+	TEST_ASSERT_EQUAL(dragger.loc, start, "тянущий не шагнул на клетку тела")
+	TEST_ASSERT_EQUAL(body.pixel_y, 0, "тело на одной клетке с тянущим осталось сдвинутым")
+
+	dragger.Move(run_loc_floor_bottom_left, SOUTH)
+	TEST_ASSERT_EQUAL(body.loc, start, "тело сдвинулось, хотя тянущий рядом")
+	TEST_ASSERT_EQUAL(body.pixel_y, -GRAB_PIXEL_SHIFT_AGGRESSIVE, "тело не повернулось сдвигом к тянущему после разворота")

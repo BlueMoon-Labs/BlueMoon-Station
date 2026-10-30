@@ -7,10 +7,12 @@
 
 	var/max_distance = max(round((power/7)^0.7), 1)
 
-	if(log)
+	var/in_training = is_antag_training_atom(epicenter)
+	if(log && !in_training)
 		message_admins("EMP with power [power], max distance [max_distance] in area [epicenter.loc.name] ")
 	log_game("EMP with power [power], max distance [max_distance] in area [epicenter.loc.name] ")
-	deadchat_broadcast("<span class='deadsay bold'>EMP with power ([power]), max distance ([max_distance]) in [epicenter.loc.name]</span>", turf_target = epicenter)
+	if(!in_training)
+		deadchat_broadcast("<span class='deadsay bold'>EMP with power ([power]), max distance ([max_distance]) in [epicenter.loc.name]</span>", turf_target = epicenter)
 
 	if(power > 100)
 		new /obj/effect/temp_visual/emp/pulse(epicenter)

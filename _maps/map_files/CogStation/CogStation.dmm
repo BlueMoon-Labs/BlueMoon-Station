@@ -11201,9 +11201,6 @@
 /obj/structure/disposalpipe/segment{
 	dir = 4
 	},
-/obj/structure/disposalpipe/segment{
-	dir = 4
-	},
 /turf/open/floor/plasteel,
 /area/service/hydroponics/lobby)
 "aEB" = (
@@ -11319,7 +11316,6 @@
 	dir = 8;
 	name = "scrubbers"
 	},
-/obj/machinery/door/firedoor,
 /obj/structure/disposalpipe/segment{
 	dir = 4
 	},
@@ -52812,7 +52808,6 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	name = "scrubbers"
 	},
-/obj/machinery/door/firedoor,
 /turf/open/floor/wood,
 /area/service/hydroponics/lobby)
 "dUG" = (
@@ -75622,7 +75617,6 @@
 	dir = 4;
 	name = "low pressure supply"
 	},
-/obj/machinery/door/firedoor,
 /obj/structure/disposalpipe/segment,
 /obj/machinery/door/poddoor/preopen{
 	id = "bridgeblast";
@@ -84712,7 +84706,6 @@
 	req_access_txt = "65";
 	name = "AI Chamber"
 	},
-/obj/machinery/door/firedoor,
 /obj/structure/cable{
 	icon_state = "4-8"
 	},
@@ -88505,7 +88498,6 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	name = "scrubbers"
 	},
-/obj/machinery/door/firedoor,
 /obj/structure/disposalpipe/segment,
 /turf/open/floor/plasteel,
 /area/service/hydroponics/lobby)

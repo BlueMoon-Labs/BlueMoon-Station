@@ -2,6 +2,12 @@
 
 /datum/antag_training_program/hk47
 	name = "HK-47 — дроид-ассасин"
+	category = "Чужаки"
+	desc = "Дроид-ассасин: учебные контракты всех видов, модули шасси за очки, ЭМИ, перепрошивка и бой с парой HK-50."
+	icon = "robot"
+	color = "orange"
+	learn = "Учебные контракты всех видов|Модули шасси за очки|ЭМИ и перепрошивка|Бой с парой HK-50"
+	difficulty = 3
 	avatar_name = HK47_NAME
 	target_action = "Цель контракта"
 	options = list("Добавить очки", "Вызвать HK-50 для боя", "ЭМИ по себе", "Перепрошить меня", "Полный заряд", "Контракт: ликвидация", "Контракт: захват", "Контракт: кража", "Контракт: охрана", "Контракт: саботаж", "Контракт: охота с опознанием")
@@ -73,8 +79,8 @@
 		if("Вызвать HK-50 для боя")
 			call_hk50(session, user)
 		if("ЭМИ по себе")
-			if(session.arena.inside_bounds(get_turf(user), session.arena.zones["hub"]["bounds"]))
-				to_chat(user, span_warning("В безопасном центре ЭМИ не действует. Перейдите на боевую площадку."))
+			if(session.arena.safe_turf(get_turf(user)))
+				to_chat(user, span_warning("В безопасной зоне ЭМИ не действует. Перейдите на боевую площадку."))
 				return
 			new /obj/effect/temp_visual/emp(get_turf(user))
 			user.emp_act(HK47_TRAINING_EMP_SEVERITY)
@@ -128,16 +134,15 @@
 	arena.next_spawn_at = world.time + 1 SECONDS
 	var/list/zone = arena.zones[zone_id]
 	var/spawned = 0
-	while(active + spawned < ANTAG_TRAINING_HK50_PAIR && length(arena.targets) < ANTAG_TRAINING_TARGET_LIMIT)
+	while(active + spawned < ANTAG_TRAINING_HK50_PAIR && arena.has_target_room())
 		var/turf/spot = arena.free_spot(zone["target"], zone["bounds"])
 		if(!spot)
 			break
 		var/mob/living/simple_animal/hostile/hk50/droid = new(spot)
-		droid.training_owner = WEAKREF(session)
+		if(!arena.claim_target(droid, session, TRUE))
+			qdel(droid)
+			break
 		droid.toggle_ai(AI_ON)
-		ADD_TRAIT(droid, TRAIT_NO_MIDROUND_ANTAG, REF(arena))
-		ADD_TRAIT(droid, TRAIT_EXEMPT_HEALTH_EVENTS, REF(arena))
-		arena.targets += droid
 		spawned++
 	if(!spawned)
 		to_chat(user, span_warning("HK-50 негде встать: сектор занят или достигнут лимит целей."))
@@ -160,16 +165,7 @@
 	return
 
 /datum/antagonist/hk47/training/greet()
-	var/mob/living/droid = owner.current
-	if(droid.client)
-		brief()
-	else
-		RegisterSignal(droid, COMSIG_MOB_CLIENT_LOGIN, PROC_REF(on_first_login))
-
-/datum/antagonist/hk47/training/proc/on_first_login(mob/living/source)
-	SIGNAL_HANDLER
-	UnregisterSignal(source, COMSIG_MOB_CLIENT_LOGIN)
-	brief()
+	antag_training_greet_on_login(src, CALLBACK(src, PROC_REF(brief)))
 
 /// Брифинг и голос прибытия только для самого игрока.
 /datum/antagonist/hk47/training/proc/brief()

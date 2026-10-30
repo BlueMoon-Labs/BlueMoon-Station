@@ -166,7 +166,7 @@ There are several things that need to be remembered:
 		var/mutable_appearance/new_cult_overlay = mutable_appearance('icons/effects/32x64.dmi', istate, -ANTAG_LAYER)
 		overlays_standing[ANTAG_LAYER] = new_cult_overlay
 	var/datum/antagonist/clockcult/C = src?.mind?.has_antag_datum(/datum/antagonist/clockcult) //check for clockcultism - surely one can't be both cult and clockie, right?
-	if(C)
+	if(C && !istype(C, /datum/antagonist/clockcult/training))
 		var/obj/structure/destructible/clockwork/massive/celestial_gateway/G = GLOB.ark_of_the_clockwork_justiciar
 		if(G && G.active && ishuman(src))
 			var/mutable_appearance/new_cult_overlay = mutable_appearance('icons/effects/genetics.dmi', "servitude", -MUTATIONS_LAYER)
@@ -1091,6 +1091,10 @@ use_mob_overlay_icon: if FALSE, it will always use the default_icon_file even if
 			. += "-[BP.dmg_overlay_type]"
 		if(BP.body_markings_list?.len)
 			. += "-[safe_json_encode(BP.body_markings_list)]"
+		// Импланты рисуются на конечности: без них тело с трубкой и без неё делили одну запись кэша
+		for(var/datum/bodypart_overlay/overlay as anything in BP.bodypart_overlays)
+			for(var/extra_key in overlay.icon_render_key(BP))
+				. += "-[overlay.type]-[extra_key]"
 		if(BP.icon)
 			. += "-[BP.icon]"
 		else

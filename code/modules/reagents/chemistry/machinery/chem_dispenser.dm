@@ -648,7 +648,7 @@
 		ui.open()
 
 		var/client/client = user.client
-		if (CONFIG_GET(flag/use_exp_tracking) && client && client.get_exp_living(TRUE) < CHEM_DISPENSER_GRIEF_PLAYTIME_THRESHOLD)
+		if (CONFIG_GET(flag/use_exp_tracking) && client && client.get_exp_living(TRUE) < CHEM_DISPENSER_GRIEF_PLAYTIME_THRESHOLD && !is_antag_training_atom(src))
 			if(client.next_chem_grief_warning < world.time)
 				if(!istype(src, /obj/machinery/chem_dispenser/drinks) && !istype(src, /obj/machinery/chem_dispenser/mutagen) && !istype(src, /obj/machinery/chem_dispenser/mutagensaltpeter) && !istype(src, /obj/machinery/chem_dispenser/abductor)) // These types are not used for grief.
 					var/turf/T = get_turf(src)

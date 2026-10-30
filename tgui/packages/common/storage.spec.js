@@ -3,8 +3,10 @@ import {
   IMPL_HUB_STORAGE,
   IMPL_LOCAL_STORAGE,
   IMPL_MEMORY,
+  IMPL_SERVER_STORAGE,
   LocalStorageBackend,
   MemoryBackend,
+  ServerStorageBackend,
   storage,
   StorageProxy,
 } from './storage';
@@ -333,6 +335,100 @@ describe('HubStorageBackend', () => {
 
     await expect(proxy.set('fallback-key', 'fallback-value')).resolves.toBeUndefined();
     await expect(proxy.get('fallback-key')).resolves.toBe('fallback-value');
+  });
+});
+
+describe('ServerStorageBackend', () => {
+  let serverStore;
+  let hubStore;
+
+  // Как у BYOND 516: только getItem/setItem/removeItem, без key и length.
+  const createByondStorage = store => ({
+    getItem: jest.fn(key => (store.has(key) ? store.get(key) : null)),
+    setItem: jest.fn((key, value) => store.set(key, value)),
+    removeItem: jest.fn(key => store.delete(key)),
+  });
+
+  beforeEach(() => {
+    localStorage.clear();
+    serverStore = new Map();
+    hubStore = new Map();
+    window.serverStorage = createByondStorage(serverStore);
+    window.hubStorage = createByondStorage(hubStore);
+  });
+
+  afterEach(() => {
+    delete window.serverStorage;
+    delete window.hubStorage;
+  });
+
+  test('StorageProxy picks serverStorage first, even without key and length', async () => {
+    const proxy = new StorageProxy();
+    const backend = await proxy.backendPromise;
+
+    expect(backend).toBeInstanceOf(ServerStorageBackend);
+    expect(backend.impl).toBe(IMPL_SERVER_STORAGE);
+    await proxy.set('chat-state', { visible: true });
+    expect(serverStore.get('bluemoon-chat-state')).toBe('{"visible":true}');
+    expect(hubStore.size).toBe(0);
+  });
+
+  test('hubStorage without key and length is still used when there is no serverStorage', async () => {
+    delete window.serverStorage;
+    const proxy = new StorageProxy();
+
+    await expect(proxy.backendPromise).resolves.toBeInstanceOf(HubStorageBackend);
+  });
+
+  test('a missing key is moved over from hubStorage once', async () => {
+    hubStore.set('bluemoon-panel-settings', '{"theme":"dark"}');
+    localStorage.setItem('panel-settings', '{"theme":"light"}');
+    const proxy = new StorageProxy();
+
+    await expect(proxy.get('panel-settings')).resolves.toEqual({ theme: 'dark' });
+    expect(serverStore.get('bluemoon-panel-settings')).toBe('{"theme":"dark"}');
+  });
+
+  test('falls back to pre-516 storage when hubStorage has nothing', async () => {
+    localStorage.setItem('panel-settings', '{"theme":"light"}');
+    const proxy = new StorageProxy();
+
+    await expect(proxy.get('panel-settings')).resolves.toEqual({ theme: 'light' });
+    expect(serverStore.get('bluemoon-panel-settings')).toBe('{"theme":"light"}');
+  });
+
+  test('hubStorage is only read: moving and removing leave it as it was', async () => {
+    hubStore.set('bluemoon-chat-messages', '[1,2]');
+    const proxy = new StorageProxy();
+    await expect(proxy.get('chat-messages')).resolves.toEqual([1, 2]);
+
+    await proxy.remove('chat-messages');
+    await proxy.clear();
+
+    expect(hubStore.get('bluemoon-chat-messages')).toBe('[1,2]');
+    expect(window.hubStorage.setItem).not.toHaveBeenCalled();
+    expect(window.hubStorage.removeItem).not.toHaveBeenCalled();
+  });
+
+  test('clear without key and length removes own known keys, keeps foreign ones and reports it', async () => {
+    serverStore.set('statbrowser_theme', '{}');
+    serverStore.set('bluemoon-panel-settings', '{"theme":"dark"}');
+    const backend = new ServerStorageBackend();
+    await backend.get('panel-settings');
+    await backend.set('chat-state', { visible: true });
+
+    await expect(backend.clear()).resolves.toBe(false);
+    expect(serverStore.get('statbrowser_theme')).toBe('{}');
+    expect(serverStore.has('bluemoon-panel-settings')).toBe(false);
+    expect(serverStore.has('bluemoon-chat-state')).toBe(false);
+  });
+
+  test('StorageProxy.clear passes the incomplete clear on to the caller', async () => {
+    const proxy = new StorageProxy();
+    await proxy.set('chat-state', { visible: true });
+
+    await expect(proxy.clear()).resolves.toBe(false);
+    expect(serverStore.has('bluemoon-chat-state')).toBe(false);
   });
 });
 

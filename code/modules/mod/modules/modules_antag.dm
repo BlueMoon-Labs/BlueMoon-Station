@@ -11,6 +11,8 @@
 	removable = FALSE
 	required_modpart_index = MOD_PART_HEAD
 	startup_with_suit = TRUE
+	/// Голос носителя до включения: у удаляемого тела клиента уже нет, префы не прочитать.
+	var/stored_bark_id
 
 /obj/item/mod/module/infiltrator/on_install()
 	. = ..()
@@ -27,14 +29,18 @@
 	if(!mod.wearer || !.) //если родитель выдал FALSE
 		return
 	mod.wearer.infiltrator_active = TRUE
+	stored_bark_id = mod.wearer.vocal_bark_id
 	mod.wearer.set_bark("bump")
 	mod.wearer.digitalcamo = TRUE
 	mod.wearer.digitalinvis = TRUE
 
 /obj/item/mod/module/infiltrator/on_deactivation()
 	. = ..()
+	if(!mod.wearer)
+		return
 	mod.wearer.infiltrator_active = FALSE
-	mod.wearer.set_bark(mod.wearer.client.prefs.bark_id)
+	mod.wearer.set_bark(stored_bark_id || mod.wearer.client?.prefs.bark_id)
+	stored_bark_id = null
 	mod.wearer.digitalinvis = FALSE
 	mod.wearer.digitalcamo = FALSE
 

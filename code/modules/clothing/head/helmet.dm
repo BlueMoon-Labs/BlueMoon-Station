@@ -310,12 +310,11 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	name = "bulletproof Helmet"
 	desc = "A bulletproof combat helmet that excels in protecting the wearer against traditional projectile weaponry and explosives to a minor extent."
 	icon_state = "helmetalt"
-	armor_type = /datum/armor/alt
+	armor_type = /datum/armor/bulletproof
 	can_flashlight = TRUE
 	dog_fashion = null
 	dynamic_hair_suffix = ""
 	dynamic_fhair_suffix = ""
-	// BLUEMOON ADD START - визор открывается так же, как у riot-шлема
 	can_toggle = 1
 	toggle_message = "You pull the visor down on"
 	alt_toggle_message = "You push the visor up on"
@@ -383,7 +382,7 @@ GLOBAL_PROTECT(aventail_pride_colors)
 	alt_toggle_message = "You push the visor up on"
 	can_toggle = 1
 	can_flashlight = TRUE
-	armor_type = /datum/armor/head_riot
+	armor_type = /datum/armor/suit_riot
 	flags_inv = HIDEEARS|HIDEFACE|HIDEHAIR
 	strip_delay = 80
 	actions_types = list(/datum/action/item_action/toggle)

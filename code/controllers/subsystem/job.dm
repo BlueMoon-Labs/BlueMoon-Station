@@ -1100,7 +1100,7 @@ SUBSYSTEM_DEF(job)
 /datum/controller/subsystem/job/proc/get_living_heads()
 	. = list()
 	for(var/mob/living/carbon/human/player in GLOB.alive_mob_list)
-		if(player.stat != DEAD && player.mind && (player.mind.assigned_role in GLOB.command_positions))
+		if(player.stat != DEAD && player.mind && (player.mind.assigned_role in GLOB.command_positions) && !is_antag_training_atom(player))
 			. |= player.mind
 
 
@@ -1110,7 +1110,7 @@ SUBSYSTEM_DEF(job)
 /datum/controller/subsystem/job/proc/get_all_heads()
 	. = list()
 	for(var/mob/player as anything in GLOB.mob_list)
-		if(player.mind && (player.mind.assigned_role in GLOB.command_positions))
+		if(player.mind && (player.mind.assigned_role in GLOB.command_positions) && !is_antag_training_atom(player))
 			. |= player.mind
 
 //////////////////////////////////////////////
@@ -1119,7 +1119,7 @@ SUBSYSTEM_DEF(job)
 /datum/controller/subsystem/job/proc/get_living_sec()
 	. = list()
 	for(var/mob/living/carbon/human/player in GLOB.carbon_list)
-		if(player.stat != DEAD && player.mind && (player.mind.assigned_role in GLOB.security_positions))
+		if(player.stat != DEAD && player.mind && (player.mind.assigned_role in GLOB.security_positions) && !is_antag_training_atom(player))
 			. |= player.mind
 
 ////////////////////////////////////////
@@ -1128,7 +1128,7 @@ SUBSYSTEM_DEF(job)
 /datum/controller/subsystem/job/proc/get_all_sec()
 	. = list()
 	for(var/mob/living/carbon/human/player in GLOB.carbon_list)
-		if(player.mind && (player.mind.assigned_role in GLOB.security_positions))
+		if(player.mind && (player.mind.assigned_role in GLOB.security_positions) && !is_antag_training_atom(player))
 			. |= player.mind
 
 /datum/controller/subsystem/job/proc/JobDebug(message)

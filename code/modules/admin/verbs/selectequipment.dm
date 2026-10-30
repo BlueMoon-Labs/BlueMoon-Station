@@ -80,11 +80,16 @@
 	qdel(src)
 
 /datum/select_equipment/proc/init_dummy()
-	dummy_key = "selectequipmentUI_[target_mob]"
+	// Каждое окно владеет своим манекеном, даже при одинаковых именах целей.
+	dummy_key = "selectequipmentUI_[REF(src)]"
+	var/preview_slot = dummy_key
 	var/mob/living/carbon/human/preview_dummy = generate_dummy_lookalike(dummy_key, target_mob)
+	if(QDELETED(src) || QDELETED(target_mob))
+		clear_human_dummy(preview_slot)
+		return FALSE
 	appearance_key = build_appearance_key(preview_dummy)
 	unset_busy_human_dummy(dummy_key)
-	return
+	return TRUE
 
 /**
  * Отпечаток внешности манекена - всё, что влияет на картинку, кроме самого аутфита.
@@ -157,8 +162,8 @@
 
 /datum/select_equipment/ui_data(mob/user)
 	var/list/data = list()
-	if(!dummy_key)
-		init_dummy()
+	if(!dummy_key && !init_dummy())
+		return data
 
 	// Кэшируем только штатные аутфиты (кастомные правятся на ходу) и только когда есть
 	// отпечаток внешности - иначе разные тела схлопнулись бы в один ключ.
@@ -170,6 +175,10 @@
 			showDirs = list(SOUTH), // панель показывает один кадр, а каждая дирекция стоит ~120 мс
 			outfit_override = selected_outfit,
 			no_anim = TRUE)
+		// Создание превью спит; закрытое окно больше не должно заполнять кэш и нагрузку.
+		if(QDELETED(src) || QDELETED(target_mob))
+			clear_human_dummy(dummy_key)
+			return data
 		preview = icon2base64_scaled(dummysprite, 2)
 		if(preview_key)
 			preview_cache[preview_key] = preview

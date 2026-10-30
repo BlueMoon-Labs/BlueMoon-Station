@@ -460,3 +460,8 @@
 	name = "RadFox"
 	icon_state = "radfox"
 	matrixed_sections = MATRIX_ALL
+
+/datum/sprite_accessory/tails/mam_tails/bm_tails/lynx_tail
+	name = "Lynx"
+	icon_state = "lynx"
+	matrixed_sections = MATRIX_RED_GREEN

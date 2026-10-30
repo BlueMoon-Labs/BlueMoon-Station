@@ -717,16 +717,21 @@
 		return
 
 	if(message)
-		var/msg = "<i><font color=#008CA2>\[[species.slimelink_owner.real_name]'s Slime Link\] <b>[H]:</b> [message]</font></i>"
-		log_directed_talk(H, species.slimelink_owner, msg, LOG_SAY, "slime link")
-		for(var/X in species.linked_mobs)
-			var/mob/living/M = X
-			to_chat(M, msg)
+		send_linked_message(H, message)
 
-		for(var/X in GLOB.dead_mob_list)
-			var/mob/M = X
-			var/link = FOLLOW_LINK(M, H)
-			to_chat(M, "[link] [msg]")
+/datum/action/innate/linked_speech/proc/send_linked_message(mob/living/carbon/human/H, message)
+	var/msg = "<i><font color=#008CA2>\[[species.slimelink_owner.real_name]'s Slime Link\] <b>[H]:</b> [message]</font></i>"
+	log_directed_talk(H, species.slimelink_owner, msg, LOG_SAY, "slime link")
+	for(var/X in species.linked_mobs)
+		var/mob/living/M = X
+		to_chat(M, msg)
+
+	for(var/X in GLOB.dead_mob_list)
+		var/mob/M = X
+		if(!antag_training_observer_hears(M, H))
+			continue
+		var/link = FOLLOW_LINK(M, H)
+		to_chat(M, "[link] [msg]")
 
 /datum/action/innate/project_thought
 	name = "Send Thought"
@@ -754,18 +759,21 @@
 		return
 	var/msg = sanitize(input("Message:", "Telepathy") as text|null)
 	if(msg)
-		if(M.anti_magic_check(FALSE, FALSE, TRUE, 0))
-			to_chat(H, "<span class='notice'>As you try to communicate with [M], you're suddenly stopped by a vision of a massive tinfoil wall that streches beyond visible range. It seems you've been foiled.</span>")
-			return
-		log_directed_talk(H, M, msg, LOG_SAY, "slime telepathy")
-		to_chat(M, "<span class='notice'>You hear an alien voice in your head... </span><font color=#008CA2>[msg]</font>")
-		to_chat(H, "<span class='notice'>You telepathically said: \"[msg]\" to [M]</span>")
-		for(var/dead in GLOB.dead_mob_list)
-			if(!isobserver(dead))
-				continue
-			var/follow_link_user = FOLLOW_LINK(dead, H)
-			var/follow_link_target = FOLLOW_LINK(dead, M)
-			to_chat(dead, "[follow_link_user] <span class='name'>[H]</span> <span class='alertalien'>Slime Telepathy --> </span> [follow_link_target] <span class='name'>[M]</span> <span class='noticealien'>[msg]</span>")
+		send_thought(H, M, msg)
+
+/datum/action/innate/project_thought/proc/send_thought(mob/living/carbon/human/H, mob/living/M, msg)
+	if(M.anti_magic_check(FALSE, FALSE, TRUE, 0))
+		to_chat(H, "<span class='notice'>As you try to communicate with [M], you're suddenly stopped by a vision of a massive tinfoil wall that streches beyond visible range. It seems you've been foiled.</span>")
+		return
+	log_directed_talk(H, M, msg, LOG_SAY, "slime telepathy")
+	to_chat(M, "<span class='notice'>You hear an alien voice in your head... </span><font color=#008CA2>[msg]</font>")
+	to_chat(H, "<span class='notice'>You telepathically said: \"[msg]\" to [M]</span>")
+	for(var/dead in GLOB.dead_mob_list)
+		if(!isobserver(dead) || !antag_training_observer_hears(dead, H))
+			continue
+		var/follow_link_user = FOLLOW_LINK(dead, H)
+		var/follow_link_target = FOLLOW_LINK(dead, M)
+		to_chat(dead, "[follow_link_user] <span class='name'>[H]</span> <span class='alertalien'>Slime Telepathy --> </span> [follow_link_target] <span class='name'>[M]</span> <span class='noticealien'>[msg]</span>")
 
 /datum/action/innate/link_minds
 	name = "Link Minds"
