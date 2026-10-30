@@ -157,6 +157,40 @@
 	TEST_ASSERT_EQUAL(unfamiliar_tail.get_num_supporting_limbs(), 0, "Вход обычной личности в тело без прежнего разума тоже блокирует хвост.")
 	TEST_ASSERT(!CHECK_MOBILITY(unfamiliar_tail, MOBILITY_STAND), "Ограничение обновляется и когда ни один из прежних разумов не имел хвостового навыка.")
 
+/datum/unit_test/supporting_tail/rest_motor_mismatch
+	var/list/saved_chat_capture
+
+/datum/unit_test/supporting_tail/rest_motor_mismatch/Destroy()
+	GLOB.unit_test_chat_capture = saved_chat_capture
+	saved_chat_capture = null
+	return ..()
+
+/datum/unit_test/supporting_tail/rest_motor_mismatch/Run()
+	saved_chat_capture = GLOB.unit_test_chat_capture
+	GLOB.unit_test_chat_capture = list()
+	for(var/tail_body in list(FALSE, TRUE))
+		var/mob/living/carbon/human/human = tail_body ? patient() : allocate(/mob/living/carbon/human)
+		human.mind_initialize()
+		allocated += human.mind
+		human.mind.set_naga_locomotion(!tail_body)
+		TEST_ASSERT(human.resting && human.lying, "Несовместимая моторика не даёт встать.")
+		var/start_time = world.time
+		human.lay_down()
+		human.do_resist()
+		TEST_ASSERT_EQUAL(world.time, start_time, "Rest и Resist отказывают сразу, без ожидания do_after.")
+		TEST_ASSERT(!LAZYLEN(human.do_afters) && !(human.combat_flags & COMBAT_FLAG_RESISTING_REST), "Не создаются длительное действие и флаг попытки встать.")
+		var/warnings = 0
+		var/reason = tail_body ? "не умеете пользоваться опорным хвостом" : "не умеете пользоваться ногами"
+		for(var/list/entry as anything in GLOB.unit_test_chat_capture)
+			if(entry[1] == human && findtext(entry[2], "class='warning'") && findtext(entry[2], reason))
+				warnings++
+		TEST_ASSERT_EQUAL(warnings, 2, "Обе команды объясняют причину отказа через span_warning.")
+		var/message_count = length(GLOB.unit_test_chat_capture)
+		TEST_ASSERT(!human.resist_a_rest(automatic = TRUE), "Автовставание также отказывает без do_after.")
+		TEST_ASSERT_EQUAL(length(GLOB.unit_test_chat_capture), message_count, "Автовставание не спамит предупреждениями.")
+		TEST_ASSERT(!human.resist_a_rest(ignoretimer = TRUE), "Пропуск таймера не обходит несовместимую моторику.")
+		TEST_ASSERT(human.resting && human.lying, "Отклонённая попытка не меняет положение тела.")
+
 /datum/unit_test/supporting_tail/surgical_conversion/Run()
 	var/mob/living/carbon/human/donor = patient("Naga, Fat")
 	donor.mind_initialize()
