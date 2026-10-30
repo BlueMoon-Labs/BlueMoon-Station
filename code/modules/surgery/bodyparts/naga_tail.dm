@@ -192,8 +192,8 @@
 	var/converting_anatomy = !HAS_TRAIT(C, TRAIT_NAGA_ANATOMY)
 	if(converting_anatomy)
 		var/list/selected = C.dna.features["innate_features"]
-		if(!islist(selected))
-			selected = list()
+		// После копирования ДНК вложенный список может быть общим для нескольких тел.
+		selected = islist(selected) ? selected.Copy() : list()
 		selected |= INNATE_NAGA_TAIL
 		C.dna.features["innate_features"] = selected
 		ADD_TRAIT(C, TRAIT_NAGA_ANATOMY, INNATE_NAGA_TAIL)

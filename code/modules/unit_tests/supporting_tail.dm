@@ -256,9 +256,11 @@
 	tail.receive_damage(brute = 12, wound_bonus = CANT_WOUND, can_dismember = FALSE)
 	tail.drop_limb()
 	var/mob/living/carbon/human/recipient = allocate(/mob/living/carbon/human)
+	var/mob/living/carbon/human/doctor = allocate(/mob/living/carbon/human)
+	doctor.dna.features["innate_features"] = list()
+	doctor.dna.transfer_identity(recipient)
 	tail_mind.transfer_to(recipient)
 	recipient.Paralyze(30 SECONDS)
-	var/mob/living/carbon/human/doctor = allocate(/mob/living/carbon/human)
 	doctor.mind_initialize()
 	allocated += doctor.mind
 	doctor.zone_selected = BODY_ZONE_PRECISE_GROIN
@@ -282,6 +284,9 @@
 	TEST_ASSERT_EQUAL(tail.brute_dam, 12, "Переход к хвостатой анатомии сохраняет повреждения донора.")
 	TEST_ASSERT(HAS_TRAIT(recipient, TRAIT_NAGA_ANATOMY), "Операция меняет анатомию тела.")
 	TEST_ASSERT(INNATE_NAGA_TAIL in recipient.dna.features["innate_features"], "Хвостатая анатомия закреплена в ДНК.")
+	TEST_ASSERT(!(INNATE_NAGA_TAIL in doctor.dna.features["innate_features"]), "Пересадка не меняет список особенностей источника скопированной ДНК.")
+	doctor.sync_innate_features()
+	TEST_ASSERT_EQUAL(doctor.get_num_legs(FALSE), 2, "Последующая синхронизация источника ДНК сохраняет его ноги.")
 	TEST_ASSERT_EQUAL(recipient.dna.features["taur"], "Naga, Fat", "Внешность берётся с пересаженного хвоста.")
 	recipient.sync_innate_features()
 	TEST_ASSERT_EQUAL(recipient.get_bodypart(BODY_ZONE_L_LEG), tail, "Повторная синхронизация не пересоздаёт пришитый хвост.")
