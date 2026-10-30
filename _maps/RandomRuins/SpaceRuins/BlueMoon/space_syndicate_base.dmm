@@ -911,24 +911,7 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms)
 "cW" = (
-/obj/item/gun/energy/kinetic_accelerator,
-/obj/item/storage/bag/ore,
-/obj/item/mining_scanner,
-/obj/structure/closet/secure_closet{
-	icon_state = "mining";
-	name = "mining gear locker";
-	req_access_txt = "150"
-	},
-/obj/item/storage/belt/mining/alt,
-/obj/item/clothing/under/syndicate/overalls{
-	pixel_y = -2
-	},
-/obj/item/storage/backpack/satchel/explorer,
-/obj/item/storage/backpack/explorer,
-/obj/item/clothing/accessory/armband/cargo{
-	desc = "An armband, worn by the FOB's operatives to display which department they're assigned to.";
-	name = "mining officer armband"
-	},
+/obj/structure/closet/firecloset/full,
 /turf/open/floor/plasteel/dark/smooth/small,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/cargo)
 "cY" = (
@@ -1158,14 +1141,10 @@
 /obj/effect/turf_decal/siding/dark{
 	dir = 6
 	},
-/obj/machinery/airalarm/syndicate{
-	dir = 8;
-	pixel_x = 24
-	},
-/obj/structure/curtain,
-/obj/machinery/shower/directional/north,
+/obj/structure/table/wood,
+/obj/structure/bedsheetbin/towel,
 /turf/open/floor/plasteel/white/smooth/small,
-/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms/fitness_shower)
+/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms/fitness)
 "dS" = (
 /obj/effect/turf_decal/bot/white,
 /obj/machinery/portable_atmospherics/scrubber,
@@ -1185,11 +1164,13 @@
 /turf/open/floor/plating/airless,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo)
 "dW" = (
-/obj/item/kirbyplants/hedge{
-	anchored = 1
+/obj/effect/turf_decal/siding/wood{
+	dir = 9
 	},
-/turf/open/floor/wood/wood_diagonal,
-/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms)
+/turf/open/pool/cobble/corner/water{
+	dir = 1
+	},
+/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms/fitness)
 "dZ" = (
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
 	dir = 1
@@ -1321,7 +1302,10 @@
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/cargo/hangar)
 "eJ" = (
 /obj/machinery/light/dim/directional/south,
-/obj/machinery/portable_atmospherics/canister/pluoxium,
+/obj/structure/rack/shelf,
+/obj/item/pickaxe/drill/jackhammer,
+/obj/item/extinguisher/advanced,
+/obj/item/extinguisher/advanced,
 /turf/open/floor/plasteel/dark/smooth/small,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/cargo)
 "eL" = (
@@ -1653,14 +1637,13 @@
 /turf/open/floor/plasteel/dark/textured/large,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/cargo)
 "gb" = (
-/obj/structure/bed/double{
-	dir = 1
+/obj/effect/turf_decal/siding/wood{
+	dir = 8
 	},
-/obj/item/bedsheet/brown/double{
-	dir = 1
+/turf/open/pool/cobble/side/water{
+	dir = 8
 	},
-/turf/open/floor/carpet/blackred,
-/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms)
+/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms/fitness)
 "gf" = (
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 4
@@ -2430,10 +2413,6 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/halls)
 "iK" = (
-/obj/structure/chair/sofa/corp/left{
-	color = "#DE3A3A";
-	dir = 4
-	},
 /obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
 	dir = 4
 	},
@@ -2441,6 +2420,9 @@
 	dir = 8
 	},
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
+/obj/structure/chair/sofa/right/maroon{
+	dir = 4
+	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms)
 "iM" = (
@@ -2465,7 +2447,7 @@
 /turf/open/floor/plasteel/white/smooth/diagonal,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/service/hydroponics)
 "iR" = (
-/obj/structure/bookcase/random/fiction,
+/obj/structure/bookcase/random/opacity/fiction,
 /turf/open/floor/plasteel/dark/smooth/small,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms)
 "iS" = (
@@ -2711,10 +2693,11 @@
 /turf/open/floor/wood/wood_diagonal,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/bridge/admiral)
 "jM" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
-/obj/structure/table/wood/fancy/black,
-/turf/open/floor/wood/wood_diagonal,
-/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms)
+/obj/effect/turf_decal/siding/wood{
+	dir = 5
+	},
+/turf/open/pool/cobble/corner/water,
+/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms/fitness)
 "jN" = (
 /obj/effect/turf_decal/siding/wideplating_new/dark,
 /obj/effect/turf_decal/stripes/red{
@@ -2887,7 +2870,7 @@
 /area/template_noop)
 "ki" = (
 /turf/closed/wall/r_wall/syndicate,
-/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms)
+/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms/fitness)
 "km" = (
 /obj/structure/closet/secure_closet/personal{
 	icon_state = "cabinet"
@@ -4122,10 +4105,6 @@
 	},
 /turf/open/floor/plasteel/smooth/diagonal,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/halls)
-"pt" = (
-/obj/structure/bookcase/random/nonfiction,
-/turf/open/floor/plasteel/dark/smooth/small,
-/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms)
 "pu" = (
 /obj/effect/turf_decal/siding/dark/corner,
 /obj/structure/disposalpipe/segment{
@@ -4372,11 +4351,6 @@
 /turf/open/floor/plasteel/dark/textured/large,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/service/hydroponics)
 "qE" = (
-/obj/structure/rack,
-/obj/item/clothing/shoes/magboots/syndie{
-	pixel_y = 8
-	},
-/obj/item/clothing/shoes/magboots/syndie,
 /obj/effect/turf_decal/tile/blue,
 /obj/effect/turf_decal/tile/blue{
 	dir = 1
@@ -4393,6 +4367,7 @@
 	dir = 1
 	},
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
+/obj/machinery/portable_atmospherics/canister/pluoxium,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/bridge/eva)
 "qH" = (
@@ -4618,14 +4593,14 @@
 /turf/open/floor/mineral/plastitanium,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/security)
 "rs" = (
-/obj/effect/turf_decal/siding/dark{
-	dir = 10
-	},
-/obj/machinery/shower/directional/east,
-/obj/structure/curtain,
-/obj/machinery/shower/directional/north,
+/obj/effect/turf_decal/siding/dark,
+/obj/structure/table/wood,
+/obj/item/reagent_containers/rag/towel/random,
+/obj/item/reagent_containers/rag/towel/random,
+/obj/item/reagent_containers/rag/towel/random,
+/obj/item/reagent_containers/rag/towel/random,
 /turf/open/floor/plasteel/white/smooth/small,
-/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms/fitness_shower)
+/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms/fitness)
 "rx" = (
 /obj/structure/table/reinforced,
 /obj/effect/turf_decal/trimline/purple/filled/line{
@@ -5019,11 +4994,15 @@
 /turf/open/floor/mineral/plastitanium/red,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/security)
 "tg" = (
-/obj/effect/turf_decal/siding/dark{
-	dir = 9
-	},
-/obj/structure/curtain,
 /obj/machinery/shower/directional/south,
+/obj/structure/curtain,
+/obj/effect/turf_decal/siding/dark{
+	dir = 1
+	},
+/obj/item/soap/syndie{
+	pixel_x = -1;
+	pixel_y = -9
+	},
 /turf/open/floor/plasteel/white/smooth/small,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms/fitness_shower)
 "tj" = (
@@ -5158,10 +5137,12 @@
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms)
 "tJ" = (
 /obj/effect/turf_decal/siding/wood{
-	dir = 5
+	dir = 10
 	},
-/turf/open/floor/carpet/blackred,
-/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms)
+/turf/open/pool/cobble/corner/water{
+	dir = 8
+	},
+/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms/fitness)
 "tL" = (
 /obj/structure/window/reinforced/survival_pod{
 	dir = 4;
@@ -5344,6 +5325,8 @@
 /obj/item/storage/bag/money/c5000,
 /obj/item/storage/bag/money/c5000,
 /obj/item/storage/bag/money/c5000,
+/obj/item/xenoarch/help/cargo/ds,
+/obj/item/xenoarch/help/cargo/ds,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/bridge/vault)
 "uf" = (
@@ -5386,6 +5369,18 @@
 "uu" = (
 /turf/open/floor/plasteel/white/smooth/herringbone,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/medbay)
+"ux" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 6
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 5
+	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 8
+	},
+/turf/open/floor/plasteel/white/smooth/small,
+/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms/fitness)
 "uA" = (
 /obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4{
 	dir = 4
@@ -5929,14 +5924,14 @@
 /turf/open/floor/carpet/royalblack,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/security)
 "wR" = (
-/obj/structure/closet/secure_closet/personal{
-	icon_state = "cabinet"
-	},
+/obj/machinery/light/dim/directional/west,
 /obj/effect/turf_decal/siding/wood{
-	dir = 1
+	dir = 8
 	},
-/turf/open/floor/carpet/blackred,
-/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms)
+/turf/open/pool/cobble/side/water{
+	dir = 8
+	},
+/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms/fitness)
 "wS" = (
 /obj/machinery/igniter/incinerator_syndicatelava,
 /turf/open/floor/engine,
@@ -6385,6 +6380,19 @@
 	},
 /turf/open/floor/plasteel/white/smooth/small,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/medbay)
+"yY" = (
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
+	dir = 1
+	},
+/obj/structure/railing{
+	dir = 8;
+	pixel_x = -5
+	},
+/obj/effect/turf_decal/siding/dark{
+	dir = 10
+	},
+/turf/open/floor/plasteel/white/smooth/small,
+/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms/fitness)
 "yZ" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
@@ -6962,7 +6970,10 @@
 	dir = 1
 	},
 /obj/structure/rack/shelf,
-/obj/item/pickaxe/drill/jackhammer,
+/obj/item/clothing/mask/gas/sechailer/mopp/advance,
+/obj/item/clothing/gloves/cbrn/mopp/advance,
+/obj/item/clothing/suit/hooded/cbrn/mopp/advance,
+/obj/item/clothing/shoes/magboots/syndie,
 /turf/open/floor/plasteel/dark/smooth/small,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/cargo)
 "By" = (
@@ -7150,15 +7161,14 @@
 /turf/open/floor/carpet/blackred,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/service/diner)
 "Cj" = (
-/obj/machinery/light/dim/directional/west,
-/obj/effect/turf_decal/siding/dark{
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 8
 	},
-/obj/machinery/atmospherics/components/unary/vent_pump/on/layer2{
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
 	dir = 4
 	},
 /turf/open/floor/plasteel/white/smooth/small,
-/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms/fitness_shower)
+/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms/fitness)
 "Cm" = (
 /obj/item/card/id/syndicate/advanced/black,
 /obj/item/card/id/syndicate/advanced/black,
@@ -7261,9 +7271,10 @@
 	dir = 1
 	},
 /obj/structure/rack/shelf,
-/obj/item/clothing/suit/hooded/cbrn/mopp/advance/security,
 /obj/item/clothing/mask/gas/sechailer/mopp/advance,
+/obj/item/clothing/suit/hooded/cbrn/mopp/advance,
 /obj/item/clothing/gloves/cbrn/mopp/advance,
+/obj/item/clothing/shoes/magboots/syndie,
 /turf/open/floor/plasteel/dark/smooth/small,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/cargo)
 "CH" = (
@@ -7384,12 +7395,14 @@
 /turf/open/floor/plasteel,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/research)
 "Du" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
-	dir = 10
+/obj/machinery/light/dim/directional/east,
+/obj/effect/turf_decal/siding/wood{
+	dir = 6
 	},
-/turf/open/floor/wood/wood_diagonal,
-/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms)
+/turf/open/pool/cobble/corner/water{
+	dir = 4
+	},
+/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms/fitness)
 "Dv" = (
 /obj/effect/turf_decal/stripes/red,
 /obj/structure/disposalpipe/segment{
@@ -7476,11 +7489,8 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms)
 "DE" = (
-/obj/effect/turf_decal/siding/wood{
-	dir = 4
-	},
-/turf/open/floor/carpet/blackred,
-/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms)
+/turf/open/pool/cobble/water,
+/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms/fitness)
 "DF" = (
 /obj/structure/table/reinforced/plastitaniumglass,
 /obj/machinery/atmospherics/components/unary/vent_pump/on/layer2,
@@ -7977,6 +7987,10 @@
 	},
 /obj/machinery/shower/directional/south,
 /obj/structure/curtain,
+/obj/item/soap/syndie{
+	pixel_x = -1;
+	pixel_y = -9
+	},
 /turf/open/floor/plasteel/white/smooth/small,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms/fitness_shower)
 "Fx" = (
@@ -8055,18 +8069,14 @@
 /obj/effect/turf_decal/siding/dark{
 	dir = 4
 	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
-	dir = 4
-	},
 /obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
 	dir = 8
 	},
-/obj/item/soap/syndie{
-	pixel_x = -1;
-	pixel_y = -9
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
 	},
 /turf/open/floor/plasteel/white/smooth/small,
-/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms/fitness_shower)
+/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms/fitness)
 "FJ" = (
 /obj/effect/turf_decal/siding/dark{
 	dir = 10
@@ -8598,10 +8608,13 @@
 /turf/open/floor/plasteel/white/smooth/diagonal,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/medbay)
 "HU" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
-/obj/machinery/light/dim/directional/east,
-/turf/open/floor/wood/wood_diagonal,
-/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms)
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
+	},
+/turf/open/pool/cobble/side/water{
+	dir = 4
+	},
+/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms/fitness)
 "HV" = (
 /obj/machinery/conveyor{
 	dir = 4;
@@ -8681,11 +8694,13 @@
 /turf/open/floor/catwalk_floor,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/engineering)
 "Ir" = (
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer2{
-	dir = 8
-	},
-/obj/machinery/atmospherics/pipe/manifold/scrubbers/hidden/layer4,
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2{
+	dir = 6
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4{
+	dir = 4
+	},
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms)
 "Iw" = (
@@ -9015,11 +9030,13 @@
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/bridge)
 "JX" = (
 /obj/structure/sign/flag/syndicate/directional/north,
-/obj/structure/table/wood/fancy/black,
-/obj/item/paper_bin,
-/obj/item/pen,
-/turf/open/floor/wood/wood_diagonal,
-/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms)
+/obj/effect/turf_decal/siding/wood{
+	dir = 1
+	},
+/turf/open/pool/cobble/side/water{
+	dir = 1
+	},
+/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms/fitness)
 "JZ" = (
 /obj/structure/disposalpipe/segment{
 	dir = 2
@@ -10289,12 +10306,11 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/halls)
 "OH" = (
-/obj/structure/chair/sofa/corp/right{
-	color = "#DE3A3A";
-	dir = 4
-	},
 /obj/effect/turf_decal/siding/thinplating/dark{
 	dir = 9
+	},
+/obj/structure/chair/sofa/corner/maroon{
+	dir = 4
 	},
 /obj/machinery/button/door/directional/north{
 	req_access_txt = "150";
@@ -11205,12 +11221,18 @@
 /turf/open/floor/wood/wood_diagonal,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/bridge/cl)
 "RZ" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
-/obj/structure/chair/office/dark{
-	dir = 1
+/obj/effect/turf_decal/siding/wood{
+	dir = 4
 	},
-/turf/open/floor/wood/wood_diagonal,
-/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms)
+/obj/structure/pool/ladder{
+	dir = 8;
+	pixel_y = 6;
+	pixel_x = -3
+	},
+/turf/open/pool/cobble/side/water{
+	dir = 4
+	},
+/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms/fitness)
 "Sb" = (
 /obj/machinery/door/firedoor,
 /obj/effect/turf_decal/stripes/red/corner{
@@ -11254,6 +11276,7 @@
 	dir = 1
 	},
 /obj/machinery/light/dim/directional/north,
+/obj/structure/chair/sofa/middle/maroon,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms)
 "Sf" = (
@@ -11558,6 +11581,7 @@
 	dir = 8
 	},
 /obj/effect/mapping_helpers/network_builder/power_cable/auto,
+/obj/structure/reagent_dispensers/foamtank,
 /turf/open/floor/plasteel/dark/textured/large,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/engineering)
 "To" = (
@@ -11948,16 +11972,19 @@
 /turf/open/floor/plating,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/bridge)
 "UD" = (
-/obj/machinery/door/airlock/grunge{
-	id_tag = "TESArena";
-	name = "Dormitory"
+/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4,
+/obj/structure/railing{
+	dir = 8;
+	pixel_x = -5
 	},
-/obj/effect/mapping_helpers/airlock/cutaiwire,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
-/obj/machinery/door/firedoor,
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
-/turf/open/floor/wood/wood_parquet,
-/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms)
+/obj/effect/turf_decal/siding/dark{
+	dir = 9
+	},
+/obj/machinery/light/dim/directional/east{
+	dir = 1
+	},
+/turf/open/floor/plasteel/white/smooth/small,
+/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms/fitness)
 "UE" = (
 /obj/effect/turf_decal/trimline/dark_blue/corner{
 	dir = 4
@@ -12054,11 +12081,10 @@
 	},
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/research)
 "UT" = (
-/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer2,
 /obj/effect/turf_decal/siding/thinplating/dark{
 	dir = 1
 	},
-/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer4,
+/obj/structure/chair/sofa/left/maroon,
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms)
 "UX" = (
@@ -13207,23 +13233,9 @@
 /turf/open/floor/plasteel/dark,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/research)
 "YN" = (
-/obj/structure/dresser,
-/obj/machinery/button/door{
-	id = "TESArena";
-	name = "Dorm Bolt Control";
-	normaldoorcontrol = 1;
-	pixel_x = 5;
-	pixel_y = -34;
-	specialfunctions = 4
-	},
-/obj/machinery/atmospherics/components/unary/vent_scrubber/on/layer4{
-	dir = 4
-	},
-/obj/effect/turf_decal/siding/wood{
-	dir = 4
-	},
-/turf/open/floor/carpet/blackred,
-/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms)
+/obj/effect/turf_decal/siding/wood,
+/turf/open/pool/cobble/side/water,
+/area/ruin/space/has_grav/bluemoon/deepspacetwo/service/dorms/fitness)
 "YQ" = (
 /obj/machinery/atmospherics/pipe/simple/scrubbers/visible/layer4{
 	level = 1
@@ -13673,11 +13685,11 @@ wg
 wg
 wg
 ki
-Kf
-Kf
-Kf
-Kf
-Kf
+wj
+wj
+wj
+wj
+wj
 WE
 WE
 Kf
@@ -13727,12 +13739,12 @@ Co
 EJ
 kx
 WA
-Kf
+wj
 dW
 wR
 gb
-iZ
-Kf
+tJ
+wj
 OH
 iK
 qR
@@ -13782,12 +13794,12 @@ Co
 wg
 wg
 wg
-Kf
+wj
 JX
-tJ
+DE
 DE
 YN
-Kf
+wj
 Se
 IQ
 QV
@@ -13837,12 +13849,12 @@ Co
 wg
 wg
 xr
-Kf
+wj
 jM
 RZ
 HU
 Du
-UD
+wj
 UT
 Ir
 Az
@@ -13892,11 +13904,11 @@ Co
 wg
 xr
 NB
-Kf
-Kf
-Kf
-Kf
-Kf
+wj
+UD
+ux
+yY
+wj
 Kf
 JF
 ok
@@ -13947,11 +13959,11 @@ Co
 wg
 dT
 qh
-NB
+wj
 tg
 Cj
 rs
-Kf
+wj
 iR
 eo
 ok
@@ -14002,12 +14014,12 @@ Co
 wg
 cI
 qh
-NB
+wj
 Fw
 FH
 dR
-Kf
-pt
+wj
+iR
 eW
 Zz
 KY
@@ -14061,7 +14073,7 @@ wj
 wj
 YH
 wj
-Kf
+wj
 Kf
 tt
 Tr
@@ -15133,7 +15145,7 @@ my
 my
 my
 my
-CF
+Bv
 mD
 fQ
 cW
