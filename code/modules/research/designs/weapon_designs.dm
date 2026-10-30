@@ -825,7 +825,7 @@
 	build_path = /obj/item/ammo_box/cal41/taser
 	category = list("Ammo")
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
-	min_security_level = SEC_LEVEL_AMBER //SEC_LEVEL_RED
+	min_security_level = SEC_LEVEL_GREEN //SEC_LEVEL_RED
 
 /datum/design/cal41_ion
 	name = "Speed Loader (.41 ion)"
@@ -931,7 +931,7 @@
 
 /datum/design/exorcist_lethal
 	name = "410 lethal"
-	id = "exorcist_lethal"
+	id = "exorcistlethal"
 	build_type = PROTOLATHE
 	materials = list(/datum/material/iron = 1000)
 	build_path = /obj/item/ammo_casing/cal410/lethal

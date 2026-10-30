@@ -55,7 +55,7 @@
 	desc = "A set of spare parts for upgrading the Apostle to the anathema. Can be used only on empty gun"
 
 /obj/item/weaponcrafting/gunkit/Mea_culpa
-	name = "Mea_culpaa gun conversion kit"
+	name = "Mea culpa gun conversion kit"
 	desc = "A set of spare parts for upgrading the Apostle to the Mea culpa. Can be used only on empty gun"
 
 /obj/item/weaponcrafting/gunkit/Misericordia

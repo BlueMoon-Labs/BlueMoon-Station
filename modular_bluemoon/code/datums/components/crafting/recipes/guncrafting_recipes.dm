@@ -88,7 +88,7 @@
 	subcategory = CAT_WEAPON
 
 /datum/crafting_recipe/Mea_culpa
-	name = "\improper Mea_culpa revolver conversion"
+	name = "\improper Mea culpa revolver conversion"
 	result = /obj/item/gun/ballistic/revolver/Mea_culpa
 	reqs = list(/obj/item/gun/ballistic/revolver/Apostle = 1,
 				/obj/item/weaponcrafting/gunkit/Mea_culpa = 1)
