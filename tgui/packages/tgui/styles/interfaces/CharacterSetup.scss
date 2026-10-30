@@ -367,9 +367,11 @@
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    padding-bottom: 0.65rem;
-    margin-bottom: 0.8rem;
+    padding: 0.3rem 0.6rem 0.65rem 0.6rem;
+    margin: 0 0 0.8rem 0;
     border-bottom: 1px solid rgba(150, 180, 200, 0.2);
+    border-radius: 2px;
+    background: rgba(120, 160, 190, 0.18);
     font-size: 1.1rem;
     font-weight: bold;
     color: #fff;
@@ -378,6 +380,30 @@
       width: 1.4rem;
       color: #77b7dc;
       text-align: center;
+    }
+  }
+
+  &__limb-title {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 2px;
+    background: rgba(120, 160, 190, 0.22);
+  }
+
+  &__limb-markings {
+    padding-right: 0.2rem;
+
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba(150, 180, 200, 0.35);
+      border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.25);
     }
   }
 
@@ -567,10 +593,28 @@
 
   .CharacterSetup__card-title {
     border-bottom-color: $border-c;
+    background: rgba($accent, 0.16);
 
     .Icon {
       color: rgba($text-c, 0.8);
     }
+  }
+
+  // Заливка названий секций-категорий акцентом темы.
+  .CharacterSetup .Section > .Section__title {
+    background: rgba($accent, 0.12);
+  }
+
+  .CharacterSetup__limb-title {
+    background: rgba($accent, 0.2);
+  }
+
+  .CharacterSetup__limb-markings::-webkit-scrollbar-thumb {
+    background: rgba($accent, 0.45);
+  }
+
+  .CharacterSetup__limb-markings::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
   }
 
   .CharacterSetup__field-label {

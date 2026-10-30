@@ -8,6 +8,10 @@
 	armor_type = /datum/armor/brigdoc_and_fakearmor_press
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 	brc_mitigation_bonus = BRC_MITIGATION_10  // BLUEMOON ADD
+	unique_reskin = list(
+		"Alt" = list("icon_state" = "secmed_vest"),
+		"Normal" = list("icon_state" = "brigphysicianvest")
+	)
 
 /obj/item/clothing/suit/brigdoc/equipped(mob/user, slot)
 	. = ..()
@@ -22,17 +26,6 @@
 		brc_worn = FALSE
 // BLUEMOON ADD END
 
-/obj/item/clothing/suit/armor/brigdoc/labcoat
-	name = "Brig Physician Lab Coat"
-	desc = "A dark red lab coat for brig physicians."
-	icon = 'modular_splurt/icons/obj/clothing/suits.dmi'
-	mob_overlay_icon = 'modular_splurt/icons/mobs/suits.dmi'
-	icon_state = "secmed_labcoat"
-	item_state = "secmed_labcoat"
-	unique_reskin = list(
-		"Old" = list("icon_state" = "old_brigphysicianvest")
-	)
-
 /obj/item/clothing/suit/armor/brigdoc
 	name = "Brig Physician Armored Coat"
 	desc = "A dark red lab coat with armored vest for brig physicians. Used for hostile work environments."
@@ -42,7 +35,18 @@
 	item_state = "secmed_armor"
 	brc_mitigation_bonus = 10  // BLUEMOON ADD
 	unique_reskin = list(
-		"Alt" = list("icon_state" = "secmed_armor_alt")
+		"Альтернатива" = list("icon_state" = "secmed_armor_alt"),
+		"Стандарт" = list("icon_state" = "secmed_armor")
+	)
+
+/obj/item/clothing/suit/armor/brigdoc/labcoat
+	name = "Brig Physician Lab Coat"
+	desc = "A dark red lab coat for brig physicians."
+	icon_state = "secmed_labcoat"
+	item_state = "secmed_labcoat"
+	unique_reskin = list(
+		"Устаревший" = list("icon_state" = "old_brigphysicianvest"),
+		"Стандарт" = list("icon_state" = "secmed_labcoat")
 	)
 
 /obj/item/clothing/suit/armor/vest/blueshield

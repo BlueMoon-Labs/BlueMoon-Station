@@ -811,7 +811,7 @@
 	cure_blind()
 	cure_husk()
 	hallucination = 0
-	heal_overall_damage(INFINITY, INFINITY, INFINITY, FALSE, FALSE, TRUE, forced = admin_revive) //heal brute and burn dmg on both organic and robotic limbs, and update health right away.
+	heal_overall_damage(INFINITY, INFINITY, INFINITY, FALSE, FALSE, FALSE, forced = admin_revive) // Лечим органические и роботизированные конечности; здоровье пересчитаем после полного восстановления.
 	ExtinguishMob()
 	fire_stacks = 0
 	confused = 0
@@ -824,6 +824,8 @@
 				var/obj/item/organ/O = organ
 				O.organ_flags &= ~ORGAN_SYNTHETIC_EMP // BLUEMOON ADD
 				O.setOrganDamage(0)
+	// Пересчёт обязателен и без повреждений конечностей: OXY, TOX и CLONE обнулены без обновления.
+	updatehealth()
 
 //proc called by revive(), to check if we can actually ressuscitate the mob (we don't want to revive him and have him instantly die again)
 /mob/living/proc/can_be_revived()

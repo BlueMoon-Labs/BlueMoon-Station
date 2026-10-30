@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useBackend } from '../../backend';
 import { Box, Button, Input, Stack } from '../../components';
+import { setAppearanceSubTab } from './appearanceSubTab';
 import { FeatureField } from './components';
 
 interface SearchEntry {
@@ -57,6 +58,22 @@ const GENITAL_GROUPS: Record<string, string> = {
 };
 
 const normalize = (text: string) => text.toLocaleLowerCase().replaceAll('ё', 'е');
+
+const APPEARANCE_TAB = 2;
+
+const APPEARANCE_SUBTAB_GROUPS: Record<string, 'body' | 'parts' | 'genitals'> = {
+  'Тело': 'body',
+  'Цвет тела и размер': 'body',
+  'Глаза и волосы': 'body',
+  'Части тела': 'parts',
+  'Гениталии': 'genitals',
+  'Пенис': 'genitals',
+  'Яички': 'genitals',
+  'Влагалище': 'genitals',
+  'Грудь': 'genitals',
+  'Попа': 'genitals',
+  'Живот': 'genitals',
+};
 
 export const SearchSettings = () => {
   const { act, data } = useBackend<SearchData>();
@@ -159,6 +176,9 @@ export const SearchSettings = () => {
   const select = (entry: SearchEntry) => {
     setPending({ entry, slot: data.defaultSlot });
     setOpen(false);
+    if (entry.tab === APPEARANCE_TAB) {
+      setAppearanceSubTab(APPEARANCE_SUBTAB_GROUPS[entry.group] || 'body');
+    }
     if (entry.tab >= 0 && entry.tab !== data.tab) act('set_tab', { tab: entry.tab });
   };
 

@@ -37,7 +37,7 @@
 	desc = "A sturdy black jacket with reinforced fabric. Bears insignia of NT corporate security."
 	icon_state = "secjacket"
 	item_state = "hos"
-	togglename = "buttons"
+	togglename = "пуговицы"
 	body_parts_covered = CHEST|GROIN|ARMS
 	cold_protection = CHEST|GROIN|ARMS
 	heat_protection = CHEST|GROIN|ARMS
@@ -240,7 +240,7 @@
 	body_parts_covered = CHEST|GROIN|ARMS
 	armor_type = /datum/armor/command
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
-	togglename = "buttons"
+	togglename = "пуговицы"
 
 /obj/item/clothing/suit/toggle/captains_parade/equipped(mob/user, slot)  // BLUEMOON ADD
 	. = ..()
