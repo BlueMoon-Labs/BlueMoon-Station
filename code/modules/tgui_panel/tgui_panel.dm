@@ -70,6 +70,11 @@
  * Callback for handling incoming tgui messages.
  */
 /datum/tgui_panel/proc/on_message(type, payload, href_list)
+	if(type == "ping")
+		var/list/metrics = ping_payload_take_metrics(payload)
+		if(islist(metrics) && client)
+			client.get_ping_diag().record_browser(metrics["loopLag"], metrics["fps"], metrics["hidden"], metrics["rtt"], metrics["chatMessages"])
+		return FALSE
 	if(type == "ready")
 		// Масштаб окна панель получает один раз, здесь, а dpi едет отдельным winget - ждём его ответа.
 		var/dpi_deadline = world.time + TGUI_PANEL_DPI_WAIT

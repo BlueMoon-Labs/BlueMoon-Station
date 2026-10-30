@@ -12,6 +12,19 @@
 /proc/ping_wire_num(value)
 	return num2text(value, PING_WIRE_PRECISION)
 
+/// Команда рассылки пинга. Номер пачки дописывается, только если она есть: иначе верб идёт старым путём.
+/proc/ping_update_command(tickstamp, realtime, batch)
+	. = "command=.update_ping+[ping_wire_num(tickstamp)]+[ping_wire_num(realtime)]"
+	if(batch)
+		. += "+[batch]"
+
+/// Клиенту без ввода 5 минут SSserver_maint пинг не шлёт.
+/proc/ping_skips_inactive(last_activity)
+	return world.time - last_activity >= 5 MINUTES
+
+/proc/ping_is_fast_probe(batch)
+	return batch == PING_DIAG_PROBE_BATCH
+
 /// Server-side share of a round trip, in ms: the wall clock always covers at least as
 /// much ground as the game clock, and the gap is time the server spent stalled rather
 /// than time the sample spent in transit.
@@ -62,7 +75,7 @@
 		ping_rtt_sorted = list()
 	return rtt_window_push(ping_rtt_window, ping_rtt_sorted, raw_rtt_ping, PING_RTT_WINDOW_SIZE)
 
-/client/verb/update_ping(tickstamp as num, sent_realtime as null|num)
+/client/verb/update_ping(tickstamp as num, sent_realtime as null|num, batch as null|num)
 	set instant = TRUE
 	set name = ".update_ping"
 
@@ -80,9 +93,13 @@
 	// and its own step grows to 6.25ms once it climbs past 14:33 GMT. Fall back to the
 	// tick-based measurement, which sits at a far smaller magnitude and stays finer.
 	var/best_ping = rtt_ping_raw ? rtt_ping_raw : tick_ping
+	var/server_ping = ping_server_component(best_ping, tick_ping)
+	// Ускоренный замер окна диагностики: старые средние и сводка SStime_track его не видят.
+	if(ping_is_fast_probe(batch))
+		ping_diag_probe(best_ping, server_ping)
+		return
 
 	var/rtt_ping = stabilize_rtt_ping(best_ping)
-	var/server_ping = ping_server_component(best_ping, tick_ping)
 
 	var/jitter = abs(best_ping - lastping_rtt_raw)
 	if(isnull(avgping_jitter))
@@ -117,6 +134,7 @@
 
 	// Keep the legacy fields as the player-facing RTT value.
 	avgping = avgping_rtt
+	ping_diag_record(best_ping, server_ping, batch)
 
 /client/verb/display_ping(tickstamp as num, sent_realtime as null|num)
 	set instant = TRUE

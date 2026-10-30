@@ -12,6 +12,8 @@ SUBSYSTEM_DEF(server_maint)
 	/// Whether this fire sends ping measurements - once per 3 fires (1.8s at wait = 6),
 	/// 0.6s cadence bought nothing but ~80k verb round-trips and stats math per round.
 	var/ping_send_this_fire = FALSE
+	/// Номер пачки пинга этого фаера для SSping_diag, 0 - без пачки.
+	var/ping_batch = 0
 	/// Last measured null-cleanup cost in ms.
 	var/cleanup_last_ms = 0
 	/// Running average null-cleanup cost in ms.
@@ -42,6 +44,7 @@ SUBSYSTEM_DEF(server_maint)
 			log_world("Found a null in clients list!")
 		src.currentrun = GLOB.clients.Copy()
 		ping_send_this_fire = (times_fired % 3 == 0)
+		ping_batch = (ping_send_this_fire && SSping_diag?.initialized && SSping_diag.can_fire) ? SSping_diag.open_batch() : 0
 
 		switch (cleanup_ticker) // do only one of these at a time, once per 5 fires
 			if (0)
@@ -87,8 +90,10 @@ SUBSYSTEM_DEF(server_maint)
 				QDEL_IN(C, 1) //to ensure they get our message before getting disconnected
 				continue
 
-		if (ping_send_this_fire && !(world.time - C.connection_time < PING_BUFFER_TIME || world.time - C.last_activity >= 5 MINUTES))
-			winset(C, null, "command=.update_ping+[ping_wire_num(world.time+world.tick_lag*TICK_USAGE_REAL/100)]+[ping_wire_num(REALTIMEOFDAY)]")
+		if (ping_send_this_fire && !(world.time - C.connection_time < PING_BUFFER_TIME || ping_skips_inactive(C.last_activity)))
+			winset(C, null, ping_update_command(world.time+world.tick_lag*TICK_USAGE_REAL/100, REALTIMEOFDAY, ping_batch))
+			if(ping_batch)
+				SSping_diag.note_sent(C, ping_batch)
 
 		MC_TICK_CHECK
 
