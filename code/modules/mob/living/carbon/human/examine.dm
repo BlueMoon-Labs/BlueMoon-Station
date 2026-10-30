@@ -253,7 +253,7 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 	if(naga_anatomy)
 		missing -= BODY_ZONE_R_LEG
 		if(get_bodypart(BODY_ZONE_L_LEG))
-			msg += span_info("[t_on] вместо ног опирается на хвост.\n")
+			msg += span_info("У [t_nego] вместо ног опорный хвост.\n")
 	var/list/disabled = list()
 //	var/list/writing = list() - BLUEMOON REMOVAL (не используется, заменено на show_written_on_bodypart_text)
 

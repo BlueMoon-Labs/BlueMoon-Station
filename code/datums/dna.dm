@@ -485,7 +485,9 @@ GLOBAL_DATUM(dna_for_copying, /datum/dna)
 
 /mob/living/carbon/human/set_species(datum/species/mrace, icon_update = TRUE, pref_load = FALSE)
 	..()
-	sync_innate_features()
+	// copy_to() синхронизирует анатомию вместе с моторикой после загрузки всех настроек.
+	if(!pref_load)
+		sync_innate_features()
 	//вид может отменять гравитацию (species.negates_gravity), но применять её
 	//прямо здесь нельзя: set_species идёт и при создании моба, а update_gravity
 	//там навешивает FLOATING ещё до того, как моб вообще где-то оказался.

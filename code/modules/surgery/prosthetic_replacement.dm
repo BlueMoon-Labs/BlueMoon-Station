@@ -101,7 +101,7 @@
 	name = "Supporting tail transplantation"
 	desc = "Пересадка опорного хвоста через доступ в области паха. У тела с ногами сначала необходимо ампутировать обе ноги."
 	icon_state = "surgery_any"
-	steps = list(/datum/surgery_step/incise, /datum/surgery_step/clamp_bleeders, /datum/surgery_step/retract_skin, /datum/surgery_step/attach_naga_tail)
+	steps = list(/datum/surgery_step/incise, /datum/surgery_step/clamp_bleeders, /datum/surgery_step/retract_skin, /datum/surgery_step/attach_naga_tail, /datum/surgery_step/close/naga_tail_replacement)
 	possible_locs = list(BODY_ZONE_PRECISE_GROIN)
 	requires_bodypart_type = 0
 	radial_priority = SURGERY_RADIAL_PRIORITY_HEAL_EMERGENCY
@@ -112,6 +112,15 @@
 		return FALSE
 	var/mob/living/carbon/human/human = target
 	return human.can_receive_naga_tail() && ..()
+
+/datum/surgery_step/close/naga_tail_replacement/success(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
+	. = ..()
+	var/obj/item/bodypart/bodypart = target.get_bodypart(check_zone(target_zone))
+	if(bodypart)
+		// После разреза и одного зажима остаётся 7 стеков; обычное прижигание снимает 3.
+		bodypart.generic_bleedstacks = max(0, bodypart.generic_bleedstacks - 4)
+		bodypart.update_part_wound_overlay()
+	return TRUE
 
 /datum/surgery_step/attach_naga_tail
 	name = "Пришить опорный хвост"

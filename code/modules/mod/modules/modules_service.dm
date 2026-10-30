@@ -69,28 +69,58 @@
 
 /obj/item/mod/module/waddle
 	name = "MOD waddle module"
-	desc = "Some of the most primitive technology in use by HonkCo. This module works off an automatic intention system, \
-		utilizing its sensitivity to the pilot's often-limited brainwaves to directly read their next step, \
-		affecting the boots they're installed in. Employing a twin-linked gravitonic drive to create \
-		miniaturized etheric blasts of space-time beneath the user's feet, this enables them to... \
-		to waddle around, bouncing to and fro with a pep in their step."
+	desc = "Гравитонные приводы в корпусе MOD-костюма заставляют носителя забавно покачиваться и подпрыгивать под писк. \
+		Работают при ходьбе ногами и движении опорным хвостом, не требуют ботинок."
 	icon_state = "waddle"
 	idle_power_cost = DEFAULT_CHARGE_DRAIN * 0.2
 	module_type = MODULE_TOGGLE
 	removable = FALSE
 	incompatible_modules = list(/obj/item/mod/module/waddle)
-	required_modpart_index = MOD_PART_FEET
+	required_modpart_index = MOD_PART_CHEST
 	startup_with_suit = TRUE
+	var/datum/component/squeak/squeak_component
 
 /obj/item/mod/module/waddle/on_activation()
-	var/obj/item/clothing/mod_part/shoes = mod.get_boots()
-	shoes.AddComponent(/datum/component/squeak, list('sound/effects/clownstep1.ogg'=1,'sound/effects/clownstep2.ogg'=1), 50)
+	if(active || !mod?.wearer)
+		return FALSE
+	if(!mod.wearer.get_num_supporting_limbs())
+		mod.balloon_alert(mod.wearer, "нет действующей опоры!")
+		return FALSE
+	. = ..()
+	if(!.)
+		return FALSE
+	squeak_component = required_modpart.AddComponent(/datum/component/squeak, list('sound/effects/clownstep1.ogg'=1,'sound/effects/clownstep2.ogg'=1), 50)
+	RegisterSignal(mod.wearer, COMSIG_MOVABLE_MOVED, PROC_REF(on_waddle_move))
+	ADD_TRAIT(mod.wearer, TRAIT_WADDLING, REF(src))
 	mod.wearer.LoadComponent(/datum/component/waddling)
 	if(mod.wearer.mind && HAS_TRAIT(mod.wearer.mind, TRAIT_CLOWN_MENTALITY))
 		SEND_SIGNAL(mod.wearer, COMSIG_CLEAR_MOOD_EVENT, "noshoes")
 
 /obj/item/mod/module/waddle/on_deactivation()
-	var/datum/component/waddling/waddle_component = mod.wearer.GetComponent(/datum/component/waddling)
-	waddle_component?.RemoveComponent()
+	if(!active)
+		return FALSE
+	. = ..()
+	UnregisterSignal(mod.wearer, COMSIG_MOVABLE_MOVED)
+	QDEL_NULL(squeak_component)
+	REMOVE_TRAIT(mod.wearer, TRAIT_WADDLING, REF(src))
+	if(!HAS_TRAIT(mod.wearer, TRAIT_WADDLING))
+		var/datum/component/waddling/waddle_component = mod.wearer.GetComponent(/datum/component/waddling)
+		waddle_component?.RemoveComponent()
 	if(mod.wearer.mind && HAS_TRAIT(mod.wearer.mind, TRAIT_CLOWN_MENTALITY))
 		SEND_SIGNAL(mod.wearer, COMSIG_ADD_MOOD_EVENT, "noshoes", /datum/mood_event/noshoes)
+
+/obj/item/mod/module/waddle/on_suit_deactivation()
+	if(active)
+		on_deactivation()
+	return ..()
+
+/obj/item/mod/module/waddle/on_unequip()
+	if(active)
+		on_deactivation()
+	return ..()
+
+/obj/item/mod/module/waddle/proc/on_waddle_move(mob/living/source)
+	SIGNAL_HANDLER
+	if(source.lying || !source.get_num_supporting_limbs() || !source.has_gravity())
+		return
+	squeak_component?.step_squeak()

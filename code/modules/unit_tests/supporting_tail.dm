@@ -511,7 +511,7 @@
 	TEST_ASSERT_EQUAL(tail.burn_dam, 4, "Пересадка сохраняет ожоги.")
 	TEST_ASSERT(fracture in recipient.all_wounds, "Рана присоединяется к новому пациенту.")
 	TEST_ASSERT_EQUAL(fracture.victim, recipient, "Рана больше не ссылается на донора.")
-	TEST_ASSERT_EQUAL(recipient.dna.features["taur"], "Naga, Fat", "Пересадка сохраняет форму донора.")
+	TEST_ASSERT_EQUAL(recipient.dna.features["taur"], "Naga", "Повреждённый хвост принимает форму текущего владельца.")
 
 /datum/unit_test/supporting_tail/reject_normal_legs/Run()
 	var/mob/living/carbon/human/human = patient()
@@ -566,9 +566,18 @@
 	TEST_ASSERT(abs(total_slowdown - mod.slowdown_active) < 0.001, "Штраф скорости полностью распределён по доступным частям.")
 	var/obj/item/mod/module/magboot/magnets = allocate(/obj/item/mod/module/magboot)
 	mod.install(magnets)
-	TEST_ASSERT(!magnets.on_select(), "Ножной модуль не включается из свёрнутого ботинка.")
-	TEST_ASSERT(!magnets.active, "Неудачная активация не выдаёт эффект модуля.")
+	magnets.on_select()
+	TEST_ASSERT(magnets.active, "Магниты включаются через корпус без ботинок.")
+	TEST_ASSERT(HAS_TRAIT(human, TRAIT_NOSLIPWATER) && human.mob_negates_gravity(), "Хвост получает сцепление и опору в невесомости.")
+	ADD_TRAIT(human, TRAIT_NOSLIPWATER, "ci_other_noslip")
 	mod.finish_activation(FALSE)
+	TEST_ASSERT(!magnets.active && !HAS_TRAIT(human, TRAIT_NEGATES_GRAVITY), "Отключение костюма снимает магнитное сцепление.")
+	TEST_ASSERT(HAS_TRAIT(human, TRAIT_NOSLIPWATER), "Магниты не снимают защиту от скольжения другого источника.")
+	REMOVE_TRAIT(human, TRAIT_NOSLIPWATER, "ci_other_noslip")
+	mod.finish_activation(TRUE)
+	magnets.on_activation()
+	mod.unset_wearer()
+	TEST_ASSERT(!magnets.active && !HAS_TRAIT(human, TRAIT_NEGATES_GRAVITY) && !HAS_TRAIT(human, TRAIT_NOSLIPWATER), "Смена носителя очищает эффекты магнитов.")
 
 /datum/unit_test/supporting_tail/surgery/Run()
 	var/mob/living/carbon/human/human = patient()
@@ -615,6 +624,15 @@
 		if(!preexisting_bleeding)
 			TEST_ASSERT_EQUAL(chest.get_bleed_rate(), 0, "Завершённая операция не оставляет кровотечение из туловища.")
 			TEST_ASSERT_NULL(chest.bleed_overlay_icon, "После закрытия исчезает оверлей хирургического кровотечения.")
+		var/obj/item/bodypart/l_leg/naga_tail/tail = locate() in get_turf(human)
+		TEST_ASSERT_NOTNULL(tail, "Удалённый хвост доступен для обратной пересадки.")
+		surgeon.put_in_active_hand(tail)
+		var/datum/surgery/replacement = new /datum/surgery/naga_tail_replacement(human, BODY_ZONE_PRECISE_GROIN, chest)
+		allocated += replacement
+		for(var/step_type in replacement.steps)
+			var/datum/surgery_step/step = allocate(step_type)
+			TEST_ASSERT(step.success(surgeon, human, BODY_ZONE_PRECISE_GROIN, tail, replacement), "Этап пересадки [step_type] завершается.")
+		TEST_ASSERT_EQUAL(chest.generic_bleedstacks, preexisting_bleeding, "Пересадка тоже закрывает свой разрез, сохраняя прежнее кровотечение.")
 
 /datum/unit_test/supporting_tail/surgery_parity/Run()
 	var/datum/surgery/amputation/amputation = surgery_prototype(/datum/surgery/amputation)
@@ -622,13 +640,14 @@
 	var/datum/surgery/naga_tail_removal/removal = surgery_prototype(/datum/surgery/naga_tail_removal)
 	var/datum/surgery/naga_tail_replacement/replacement = surgery_prototype(/datum/surgery/naga_tail_replacement)
 	TEST_ASSERT_EQUAL(length(removal.steps), length(amputation.steps) + 1, "Удаление хвоста требует дополнительного закрытия разреза на туловище.")
-	TEST_ASSERT_EQUAL(length(replacement.steps), length(prosthetic.steps), "Нет лишнего закрытия после пересадки.")
+	TEST_ASSERT_EQUAL(length(replacement.steps), length(prosthetic.steps) + 1, "Пересадка закрывает разрез на оставшемся туловище.")
 	for(var/index in 1 to length(amputation.steps) - 1)
 		TEST_ASSERT_EQUAL(removal.steps[index], amputation.steps[index], "Подготовительные этапы удаления совпадают с ампутацией.")
 	TEST_ASSERT_EQUAL(removal.steps[length(amputation.steps)], /datum/surgery_step/sever_naga_tail, "После подготовки отделяется хвост.")
 	TEST_ASSERT_EQUAL(removal.steps[length(removal.steps)], /datum/surgery_step/close/naga_tail_removal, "Последний этап закрывает разрез каутером.")
-	for(var/index in 1 to length(replacement.steps) - 1)
+	for(var/index in 1 to length(prosthetic.steps) - 1)
 		TEST_ASSERT_EQUAL(replacement.steps[index], prosthetic.steps[index], "Подготовительные этапы пересадки совпадают с установкой конечности.")
+	TEST_ASSERT_EQUAL(replacement.steps[length(replacement.steps)], /datum/surgery_step/close/naga_tail_replacement, "Пересадка завершается прижиганием.")
 	TEST_ASSERT_EQUAL(removal.icon_state, amputation.icon_state, "Иконка удаления совпадает с ампутацией.")
 	TEST_ASSERT_EQUAL(replacement.icon_state, prosthetic.icon_state, "Иконка пересадки совпадает с установкой конечности.")
 	var/datum/surgery_step/sever_naga_tail/sever = allocate(/datum/surgery_step/sever_naga_tail)
@@ -676,8 +695,11 @@
 /datum/unit_test/supporting_tail/examine/Run()
 	var/mob/living/carbon/human/human = patient()
 	var/mob/living/carbon/human/doctor = allocate(/mob/living/carbon/human)
+	var/datum/mind/ordinary_mind = allocate(/datum/mind)
+	ordinary_mind.transfer_to(human)
+	TEST_ASSERT(!human.get_num_supporting_limbs(), "Обычная личность не может опираться на этот хвост.")
 	var/text = jointext(human.examine(doctor, TRUE), "\n")
-	TEST_ASSERT(findtext(text, "вместо ног опирается на хвост"), "Осмотр описывает опору на хвост.")
+	TEST_ASSERT(findtext(text, "вместо ног опорный хвост"), "Осмотр описывает анатомию, не утверждая способность стоять.")
 	TEST_ASSERT(!findtext(text, "нога отсутствует"), "При целом хвосте нет ложных ампутаций ног.")
 	var/obj/item/bodypart/tail = human.get_bodypart(BODY_ZONE_L_LEG)
 	tail.drop_limb()
@@ -752,16 +774,26 @@
 	var/list/old_color = tail.tail_item_color
 	TEST_ASSERT(islist(old_color), "Матричная окраска предмета хранится списком коэффициентов.")
 	old_color = old_color.Copy()
+	TEST_ASSERT_EQUAL(old_color[1], 0x11 / 255, "Отсечение снимает актуальный цвет даже без обновления кэша конечностей.")
 	human.dna.features["taur_primary"] = "FFFFFF"
 	TEST_ASSERT_EQUAL(tail.tail_item_color[1], old_color[1], "Предмет хранит снимок цвета донора.")
 	TEST_ASSERT_NULL(tail.tail_item_extra_color, "Срез предмета сохраняет исходные цвета.")
 	TEST_ASSERT_EQUAL(length(tail.get_limb_icon(TRUE)), 2, "Предмет отображает основу и отдельный срез.")
 	var/mob/living/carbon/human/recipient = patient()
 	recipient.get_bodypart(BODY_ZONE_L_LEG).drop_limb()
+	recipient.dna.features["color_scheme"] = ADVANCED_CHARACTER_COLORING
+	recipient.dna.features["taur"] = "RadDog Naga (Hyper)"
+	recipient.dna.features["taur_primary"] = "ABCDEF"
+	recipient.dna.features["taur_secondary"] = "123456"
+	recipient.dna.features["taur_tertiary"] = "789ABC"
 	TEST_ASSERT(tail.attach_limb(recipient), "Отделённый хвост пересаживается другому персонажу.")
+	TEST_ASSERT_EQUAL(recipient.dna.features["taur"], "RadDog Naga (Hyper)", "Сохраняется форма владельца вместо донорской.")
 	tail.update_limb(FALSE)
+	recipient.dna.features["taur_primary"] = "FEDCBA"
 	tail.drop_limb()
-	TEST_ASSERT_EQUAL(jointext(tail.tail_item_color, ";"), jointext(old_color, ";"), "Повторное отсечение сохраняет исходную палитру донора.")
+	TEST_ASSERT_EQUAL(tail.taur_style, "RadDog Naga (Hyper)", "Повторное отсечение сохраняет новую форму.")
+	TEST_ASSERT_EQUAL(tail.tail_palette[1], "FEDCBA", "Повторное отсечение заново копирует палитру владельца.")
+	TEST_ASSERT_EQUAL(tail.tail_item_color[1], 0xFE / 255, "Предмет отображает новый цвет, изменённый после пересадки.")
 
 /datum/unit_test/supporting_tail/asset_states/Run()
 	for(var/style in list("Naga", "Naga (coiled)", "Naga, Fat", "RadDog Naga (Hyper)"))
@@ -857,3 +889,114 @@
 	TEST_ASSERT(!mod.all_parts_deployed(), "Обычный носитель не может считать костюм полностью развёрнутым без ботинок.")
 	TEST_ASSERT(mod.deploy(human, mod.get_boots()), "Обычный носитель разворачивает ботинки.")
 	TEST_ASSERT(mod.all_parts_deployed(), "После ботинок обычный костюм готов.")
+
+/datum/unit_test/supporting_tail/preferences_mobility/Run()
+	var/mob/living/carbon/human/human = allocate(/mob/living/carbon/human)
+	human.mind_initialize()
+	var/datum/preferences/prefs = preferences()
+	prefs.innate_features = list(INNATE_NAGA_TAIL)
+	prefs.copy_to(human, icon_updates = FALSE, roundstart_checks = FALSE)
+	TEST_ASSERT(HAS_TRAIT(human, TRAIT_NAGA_ANATOMY) && HAS_MIND_TRAIT(human, TRAIT_NAGA_LOCOMOTION), "Полное применение настроек даёт тело и моторику хвоста.")
+	TEST_ASSERT(!human.resting && CHECK_MOBILITY(human, MOBILITY_STAND), "Полный copy_to не укладывает персонажа при включении хвоста.")
+	prefs.innate_features = list()
+	prefs.copy_to(human, icon_updates = FALSE, roundstart_checks = FALSE)
+	TEST_ASSERT(!HAS_TRAIT(human, TRAIT_NAGA_ANATOMY) && human.get_num_legs() == 2, "Повторное применение возвращает ноги.")
+	TEST_ASSERT(!human.resting && CHECK_MOBILITY(human, MOBILITY_STAND), "Снятие хвоста через полный copy_to тоже не вызывает падения.")
+
+/datum/unit_test/supporting_tail/damage_disabling/Run()
+	var/mob/living/carbon/human/human = patient()
+	var/obj/item/bodypart/tail = human.get_bodypart(BODY_ZONE_L_LEG)
+	var/threshold = tail.get_disable_threshold()
+	tail.stamina_dam = threshold
+	tail.update_disabled(TRUE)
+	TEST_ASSERT_EQUAL(tail.disabled, BODYPART_DISABLED_DAMAGE, "Достижение порога выносливости отключает хвост по общей логике конечностей.")
+	tail.stamina_dam = threshold * 0.9
+	tail.update_disabled(TRUE)
+	TEST_ASSERT(tail.disabled, "Небольшое восстановление не обходит инерцию отключения.")
+	tail.stamina_dam = threshold * 0.8
+	tail.update_disabled(TRUE)
+	TEST_ASSERT(!tail.disabled && !tail.last_maxed, "Восстановление до общего порога возвращает опору.")
+	tail.stamina_dam = 0
+	tail.change_bodypart_status(BODYPART_ROBOTIC)
+	tail.brute_dam = threshold
+	tail.update_disabled(TRUE)
+	TEST_ASSERT_EQUAL(tail.disabled, BODYPART_DISABLED_DAMAGE, "Механический хвост учитывает порог физического повреждения.")
+
+/datum/unit_test/supporting_tail/appearance_fallback/Run()
+	var/mob/living/carbon/human/donor = patient("Naga, Fat")
+	donor.dna.features["color_scheme"] = ADVANCED_CHARACTER_COLORING
+	donor.dna.features["taur_primary"] = "123456"
+	donor.dna.features["taur_secondary"] = "654321"
+	donor.dna.features["taur_tertiary"] = "ABCDEF"
+	var/obj/item/bodypart/l_leg/naga_tail/tail = donor.get_bodypart(BODY_ZONE_L_LEG)
+	tail.drop_limb()
+	var/mob/living/carbon/human/recipient = patient()
+	recipient.get_bodypart(BODY_ZONE_L_LEG).drop_limb()
+	recipient.dna.features["taur"] = "None"
+	var/datum/sprite_accessory/taur/taur = GLOB.taur_list["Naga"]
+	for(var/key in list("mcolor", "mcolor2", "mcolor3", "taur_primary", "taur_secondary", "taur_tertiary"))
+		recipient.dna.features -= key
+	TEST_ASSERT(tail.attach_limb(recipient), "Хвост пришивается к кукле без настроенной внешности хвоста.")
+	TEST_ASSERT_EQUAL(recipient.dna.features["taur"], "Naga, Fat", "При отсутствии формы используется снимок хвоста.")
+	TEST_ASSERT_EQUAL(taur.get_tail_color(recipient.dna.features, 1), "123456", "При отсутствии цветов используется снимок палитры.")
+	tail.drop_limb()
+	recipient.dna.features["taur"] = "None"
+	for(var/key in list("mcolor", "mcolor2", "mcolor3", "taur_primary", "taur_secondary", "taur_tertiary"))
+		recipient.dna.features -= key
+	var/list/preferred_features = list("taur" = "RadDog Naga (Hyper)", "color_scheme" = ADVANCED_CHARACTER_COLORING, "taur_primary" = "AABBCC", "taur_secondary" = "DDEEFF", "taur_tertiary" = "112233")
+	tail.adopt_owner_appearance(recipient, preferred_features)
+	TEST_ASSERT_EQUAL(recipient.dna.features["taur"], "RadDog Naga (Hyper)", "Совместимая форма из префов имеет приоритет над снимком хвоста.")
+	TEST_ASSERT_EQUAL(taur.get_tail_color(recipient.dna.features, 1), "AABBCC", "Палитра из префов заполняет отсутствующий цвет куклы.")
+
+/datum/unit_test/supporting_tail/mod_waddle/Run()
+	var/mob/living/carbon/human/human = patient()
+	var/obj/item/mod/control/pre_equipped/standard/mod = allocate(/obj/item/mod/control/pre_equipped/standard)
+	human.equip_to_slot_if_possible(mod, ITEM_SLOT_BACK)
+	for(var/obj/item/part as anything in mod.get_deployable_parts())
+		mod.deploy(human, part)
+	var/obj/item/mod/module/waddle/waddle = allocate(/obj/item/mod/module/waddle)
+	mod.install(waddle)
+	mod.finish_activation(TRUE)
+	TEST_ASSERT(waddle.active && HAS_TRAIT(human, TRAIT_WADDLING), "Waddle запускается вместе с корпусом без ботинок.")
+	TEST_ASSERT_NOTNULL(waddle.squeak_component, "Звук подключён к развёрнутому корпусу костюма.")
+	ADD_TRAIT(human, TRAIT_WADDLING, "ci_other_waddle")
+	mod.finish_activation(FALSE)
+	TEST_ASSERT(!waddle.active && isnull(waddle.squeak_component), "Отключение костюма убирает его звук и состояние модуля.")
+	TEST_ASSERT(HAS_TRAIT(human, TRAIT_WADDLING) && human.GetComponent(/datum/component/waddling), "Сохраняется походка от другого источника.")
+	REMOVE_TRAIT(human, TRAIT_WADDLING, "ci_other_waddle")
+	mod.finish_activation(TRUE)
+	mod.unset_wearer()
+	TEST_ASSERT(!HAS_TRAIT(human, TRAIT_WADDLING) && !human.GetComponent(/datum/component/waddling), "Смена носителя очищает походку костюма.")
+
+/datum/unit_test/supporting_tail/mod_jump/Run()
+	for(var/module_type in list(/obj/item/mod/module/jump_jet, /obj/item/mod/module/jump_jet/ninja, /obj/item/mod/module/jump_jet/inteq))
+		var/mob/living/carbon/human/human = patient()
+		var/obj/item/mod/control/pre_equipped/standard/mod = allocate(/obj/item/mod/control/pre_equipped/standard)
+		human.equip_to_slot_if_possible(mod, ITEM_SLOT_BACK)
+		for(var/obj/item/part as anything in mod.get_deployable_parts())
+			mod.deploy(human, part)
+		var/obj/item/mod/module/jump_jet/jump = allocate(module_type)
+		mod.install(jump)
+		mod.finish_activation(TRUE)
+		TEST_ASSERT_EQUAL(jump.required_modpart, mod.get_mod_part_by_index(MOD_PART_CHEST), "Прыжковый модуль [module_type] использует корпус.")
+		TEST_ASSERT(jump.check_required_modpart(), "Прыжок доступен наге без развёрнутых ботинок.")
+		human.get_bodypart(BODY_ZONE_L_LEG).drop_limb()
+		TEST_ASSERT(!jump.on_use(), "Потеря хвоста запрещает прыжок.")
+		TEST_ASSERT(COOLDOWN_FINISHED(jump, cooldown_current_timer), "Отказ без опоры не запускает перезарядку.")
+		mod.finish_activation(FALSE)
+
+/datum/unit_test/supporting_tail/shibola_payloads/Run()
+	var/mob/living/carbon/human/human = patient()
+	var/obj/item/shibola/shibola = allocate(/obj/item/shibola)
+	TEST_ASSERT(!shibola.can_apply_payload_to(human), "Пустая шибола не подсекает хвост.")
+	var/obj/item/restraints/bondage_rope/rope = allocate(/obj/item/restraints/bondage_rope)
+	shibola.payload = rope
+	rope.rope_target = ROPE_TARGET_LEGS
+	TEST_ASSERT(!shibola.can_apply_payload_to(human), "Шибола не связывает отсутствующие ноги.")
+	rope.rope_target = ROPE_TARGET_HANDS_IN_FRONT
+	TEST_ASSERT(shibola.can_apply_payload_to(human), "Шибола может доставить верёвку для рук.")
+	shibola.payload = allocate(/obj/item/clothing/mask)
+	TEST_ASSERT(shibola.can_apply_payload_to(human), "Маска в шиболе совместима с хвостом.")
+	shibola.payload = allocate(/obj/item/clothing/shoes)
+	TEST_ASSERT(!shibola.can_apply_payload_to(human), "Обувь в шиболе по-прежнему не подходит наге.")
+	shibola.payload = null

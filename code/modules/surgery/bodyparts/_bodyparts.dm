@@ -602,6 +602,10 @@
 		var/datum/wound/W = i
 		if(W.disabling)
 			return BODYPART_DISABLED_WOUND
+	return is_disabled_by_damage(silent)
+
+// Общая проверка порога и восстановления используется также хвостом, который иначе обрабатывает переломы.
+/obj/item/bodypart/proc/is_disabled_by_damage(silent = FALSE)
 	var/disable_threshold = get_disable_threshold()
 	if(can_dismember() && !HAS_TRAIT(owner, TRAIT_NODISMEMBER))
 		. = disabled //inertia, to avoid limbs healing 0.1 damage and being re-enabled

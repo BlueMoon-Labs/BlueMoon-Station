@@ -72,8 +72,9 @@
 
 /datum/surgery_step/close/naga_tail_removal/success(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
 	. = ..()
-	var/obj/item/bodypart/bodypart = target.get_bodypart(target_zone)
+	var/obj/item/bodypart/bodypart = target.get_bodypart(check_zone(target_zone))
 	if(bodypart)
 		// Разрез даёт 10 единиц кровотечения, а два зажима и обычное прижигание снимают только 9.
 		bodypart.generic_bleedstacks = max(0, bodypart.generic_bleedstacks - 1)
 		bodypart.update_part_wound_overlay()
+	return TRUE

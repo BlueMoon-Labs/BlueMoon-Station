@@ -31,19 +31,22 @@
 	var/tail_item_extra2_state
 	var/tail_item_extra_color = NONE
 	var/tail_item_extra2_color
+	var/list/tail_palette
 
 /obj/item/bodypart/l_leg/naga_tail/update_limb(dropping_limb, mob/living/carbon/source)
 	. = ..()
 	// Обычный спрайт ноги и её маски не должны появляться поверх таврического тела.
 	dmg_overlay_type = ""
 	use_digitigrade = NOT_DIGITIGRADE
-	if(no_update)
-		return
 	var/mob/living/carbon/appearance_source = source || owner
 	if(appearance_source?.dna)
-		taur_style = appearance_source.dna.features["taur"]
+		var/datum/sprite_accessory/taur/taur = GLOB.taur_list[appearance_source.dna.features["taur"]]
+		if(!istype(taur, /datum/sprite_accessory/taur/naga))
+			return
+		// Внешность хвоста всегда принадлежит текущему владельцу, включая повторное отсечение.
+		taur_style = taur.name
+		tail_palette = list(taur.get_tail_color(appearance_source.dna.features, 1), taur.get_tail_color(appearance_source.dna.features, 2), taur.get_tail_color(appearance_source.dna.features, 3))
 		tail_item_color = "#[appearance_source.dna.features["mcolor"]]"
-		var/datum/sprite_accessory/taur/taur = GLOB.taur_list[taur_style]
 		if(taur)
 			tail_item_icon = taur.severed_item_icon
 			tail_item_state = taur.severed_item_state
@@ -51,7 +54,7 @@
 			tail_item_extra2_state = taur.severed_item_extra2_state
 			if(ishuman(appearance_source))
 				var/mob/living/carbon/human/human = appearance_source
-				// Цвета хранятся на предмете: после отсечения ему не нужна ссылка на донора.
+				// Цвета хранятся на предмете: после отсечения ему не нужна ссылка на владельца.
 				if(tail_item_icon != 'icons/obj/surgery.dmi' || tail_item_state != "severedtail")
 					tail_item_color = taur.do_colouration ? taur.get_severed_color(human, taur.color_src, 1) : null
 				if(isnull(taur.severed_item_extra_color_src))
@@ -70,10 +73,9 @@
 	if(!channel)
 		channel = source == MUTCOLORS2 ? 2 : (source == MUTCOLORS3 ? 3 : 1)
 	var/datum/species/species = human.dna.species
-	var/advanced = human.dna.features["color_scheme"] == ADVANCED_CHARACTER_COLORING
-	var/primary = human.dna.features[advanced ? "taur_primary" : "mcolor"] || human.dna.features["mcolor"] || "FFFFFF"
-	var/secondary = human.dna.features[advanced ? "taur_secondary" : "mcolor2"] || human.dna.features["mcolor2"] || "FFFFFF"
-	var/tertiary = human.dna.features[advanced ? "taur_tertiary" : "mcolor3"] || human.dna.features["mcolor3"] || "FFFFFF"
+	var/primary = get_tail_color(human.dna.features, 1) || "FFFFFF"
+	var/secondary = get_tail_color(human.dna.features, 2) || "FFFFFF"
+	var/tertiary = get_tail_color(human.dna.features, 3) || "FFFFFF"
 	var/selected_color = channel == 1 ? primary : (channel == 2 ? secondary : tertiary)
 	switch(source)
 		if(SKINTONE)
@@ -106,6 +108,35 @@
 				blue = list(0, 0, 0)
 			return rgb_construct_color_matrix(red[1] / 255, red[2] / 255, red[3] / 255, green[1] / 255, green[2] / 255, green[3] / 255, blue[1] / 255, blue[2] / 255, blue[3] / 255, 0, 0, 0)
 	return null
+
+// Возвращаем незаполненный канал как null, чтобы пересадка могла использовать настройки или снимок хвоста.
+/datum/sprite_accessory/taur/proc/get_tail_color(list/features, channel)
+	if(!islist(features))
+		return null
+	var/base_key = channel == 1 ? "mcolor" : "mcolor[channel]"
+	var/taur_key = channel == 1 ? "taur_primary" : (channel == 2 ? "taur_secondary" : "taur_tertiary")
+	return features[features["color_scheme"] == ADVANCED_CHARACTER_COLORING ? taur_key : base_key] || features[base_key]
+
+// Текущая кукла имеет приоритет над префами, а хвост хранит запасную внешность для тела без настроек.
+/obj/item/bodypart/l_leg/naga_tail/proc/adopt_owner_appearance(mob/living/carbon/human/human, list/preferred_features)
+	if(isnull(preferred_features))
+		preferred_features = human.client?.prefs?.features
+	var/datum/sprite_accessory/taur/taur = GLOB.taur_list[human.dna.features["taur"]]
+	if(!istype(taur, /datum/sprite_accessory/taur/naga))
+		taur = GLOB.taur_list[preferred_features?["taur"]]
+	if(!istype(taur, /datum/sprite_accessory/taur/naga))
+		taur = GLOB.taur_list[taur_style]
+	if(!istype(taur, /datum/sprite_accessory/taur/naga))
+		taur = GLOB.taur_list[/datum/sprite_accessory/taur/naga::name]
+	human.dna.features["taur"] = taur.name
+	if(!human.dna.features["color_scheme"] && preferred_features?["color_scheme"])
+		human.dna.features["color_scheme"] = preferred_features["color_scheme"]
+	var/advanced = human.dna.features["color_scheme"] == ADVANCED_CHARACTER_COLORING
+	for(var/channel in 1 to 3)
+		var/base_key = channel == 1 ? "mcolor" : "mcolor[channel]"
+		var/taur_key = channel == 1 ? "taur_primary" : (channel == 2 ? "taur_secondary" : "taur_tertiary")
+		human.dna.features[advanced ? taur_key : base_key] = taur.get_tail_color(human.dna.features, channel) || taur.get_tail_color(preferred_features, channel) || tail_palette?[channel] || "FFFFFF"
+	update_limb(FALSE, human)
 
 /obj/item/bodypart/l_leg/naga_tail/get_clothing_zone()
 	return BODY_ZONE_CHEST
@@ -147,7 +178,7 @@
 	for(var/datum/wound/wound as anything in wounds)
 		if(wound.disabling && !istype(wound, /datum/wound/blunt))
 			return BODYPART_DISABLED_WOUND
-	return BODYPART_NOT_DISABLED
+	return is_disabled_by_damage(silent)
 
 /mob/living/carbon/human/proc/can_receive_naga_tail()
 	return (HAS_TRAIT(src, TRAIT_NAGA_ANATOMY) || !!dna?.species?.mutant_bodyparts["taur"]) && !get_bodypart(BODY_ZONE_L_LEG) && !get_bodypart(BODY_ZONE_R_LEG)
@@ -166,7 +197,7 @@
 		selected |= INNATE_NAGA_TAIL
 		C.dna.features["innate_features"] = selected
 		ADD_TRAIT(C, TRAIT_NAGA_ANATOMY, INNATE_NAGA_TAIL)
-	C.dna.features["taur"] = taur_style
+	adopt_owner_appearance(human)
 	. = ..()
 	ADD_TRAIT(C, TRAIT_HARD_SOLES, INNATE_NAGA_TAIL)
 	for(var/datum/wound/blunt/fracture as anything in wounds)
