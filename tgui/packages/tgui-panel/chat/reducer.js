@@ -4,7 +4,7 @@
  * @license MIT
  */
 
-import { addChatPage, changeChatPage, changeScrollTracking, loadChat, removeChatPage, toggleAcceptedType, updateChatPage, updateMessageCount } from './actions';
+import { addChatPage, changeChatPage, changeScrollTracking, clearChat, loadChat, removeChatPage, toggleAcceptedType, updateChatPage, updateMessageCount } from './actions';
 import { canPageAcceptType, createMainPage } from './model';
 
 const mainPage = createMainPage();
@@ -58,6 +58,16 @@ export const chatReducer = (state = initialState, action) => {
       };
     }
     return nextState;
+  }
+  if (type === clearChat.type) {
+    const pageById = {};
+    for (const id of state.pages) {
+      pageById[id] = { ...state.pageById[id], unreadCount: 0 };
+    }
+    return {
+      ...state,
+      pageById,
+    };
   }
   if (type === updateMessageCount.type) {
     const countByType = payload;
