@@ -52,7 +52,7 @@ export const InnateTab = () => {
                 {requirement.text}
               </Box>
             ))}
-            {feature.selected && !feature.available && (
+            {!!feature.selected && !feature.available && (
               <NoticeBox danger mt={1}>
                 Условия больше не выполнены. Исправьте их или уберите
                 особенность перед входом в раунд.
