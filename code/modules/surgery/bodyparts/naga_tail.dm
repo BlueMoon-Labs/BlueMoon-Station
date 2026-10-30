@@ -255,9 +255,6 @@
 		doll.doll_cache_key = null
 	update_health_hud()
 
-// Основа куклы и состояния хвоста хранятся в отдельном core-атласе.
-GLOBAL_VAR_INIT(naga_doll_icon, 'icons/mob/naga_healthdoll.dmi')
-
 // Реджув восстанавливает анатомию по навыку личности, не обучая её новой моторике.
 /mob/living/carbon/human/proc/restore_naga_anatomy_from_mind()
 	if(!mind || !dna?.species)

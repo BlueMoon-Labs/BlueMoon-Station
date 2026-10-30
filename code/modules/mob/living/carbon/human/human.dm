@@ -941,9 +941,9 @@
 						var/tail_state = tail ? ((hal_screwyhud == SCREWYHUD_HEALTHY) ? 0 : tail.get_healthdoll_state()) : 6
 						if(tail?.disabled)
 							tail_state = 7
-						doll.icon = GLOB.naga_doll_icon
+						doll.icon = NAGA_DOLL_ICON
 						if(tail_state)
-							doll.add_overlay(get_healthdoll_appearance(GLOB.naga_doll_icon, "tail[tail_state]"))
+							doll.add_overlay(get_healthdoll_appearance(NAGA_DOLL_ICON, "tail[tail_state]"))
 					else
 						doll.icon = ui_style_modular(hud_used.ui_style, "health")
 					doll.icon_state = "healthdoll_OVERLAY"
@@ -951,7 +951,7 @@
 					if(length(doll_overlays))
 						doll.add_overlay(doll_overlays)
 				else
-					doll.icon = HAS_TRAIT(src, TRAIT_NAGA_ANATOMY) ? GLOB.naga_doll_icon : ui_style_modular(hud_used.ui_style, "health")
+					doll.icon = HAS_TRAIT(src, TRAIT_NAGA_ANATOMY) ? NAGA_DOLL_ICON : ui_style_modular(hud_used.ui_style, "health")
 					doll.icon_state = "healthdoll_DEAD"
 
 		hud_used.staminas?.update_icon_state()

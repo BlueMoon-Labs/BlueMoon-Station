@@ -806,7 +806,7 @@
 	var/list/item_states = icon_states(taur.severed_item_icon)
 	TEST_ASSERT(taur.severed_item_state in item_states, "В DMI существует подключённая основа предмета.")
 	TEST_ASSERT(taur.severed_item_extra_state in item_states, "В DMI существует подключённый срез.")
-	var/list/doll_states = icon_states(GLOB.naga_doll_icon)
+	var/list/doll_states = icon_states(NAGA_DOLL_ICON)
 	for(var/state in list("healthdoll_OVERLAY", "healthdoll_DEAD", "tail1", "tail2", "tail3", "tail4", "tail5", "tail6", "tail7"))
 		TEST_ASSERT(state in doll_states, "Атлас куклы содержит состояние [state].")
 
