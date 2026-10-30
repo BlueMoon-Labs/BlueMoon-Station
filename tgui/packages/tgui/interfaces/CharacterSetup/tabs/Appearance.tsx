@@ -10,6 +10,12 @@ import {
   Tabs,
 } from '../../../components';
 import {
+  AppearanceSubTab,
+  getAppearanceSubTab,
+  setAppearanceSubTab,
+  subscribeAppearanceSubTab,
+} from '../appearanceSubTab';
+import {
   asArray,
   asOptions,
   ColorField,
@@ -23,12 +29,6 @@ import {
   TextRow,
   ToggleRow,
 } from '../components';
-import {
-  AppearanceSubTab,
-  getAppearanceSubTab,
-  setAppearanceSubTab,
-  subscribeAppearanceSubTab,
-} from '../appearanceSubTab';
 import { GenitalData, GenitalsSection } from './Genitals';
 
 interface MutantPartColor {
@@ -413,7 +413,7 @@ export const AppearanceTab = () => {
             </>
           )}
         </Section>
-      </SettingsGrid>
+        </SettingsGrid>
       )}
 
       {activeSubTab === 'parts' && (
