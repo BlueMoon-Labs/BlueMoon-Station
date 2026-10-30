@@ -1840,6 +1840,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 			atk_verb = ATTACK_EFFECT_PUNCH
 		if(!(target.mobility_flags & MOBILITY_STAND) && can_kick)
 			atk_verb = ATTACK_EFFECT_KICK
+		var/tail_attack = atk_verb == ATTACK_EFFECT_KICK && HAS_TRAIT(user, TRAIT_NAGA_ANATOMY)
 
 		switch(atk_verb)
 			if(ATTACK_EFFECT_KICK)
@@ -1870,18 +1871,28 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 
 		if(!damage || !affecting)//future-proofing for species that have 0 damage/weird cases where no zone is targeted
 			playsound(target.loc, user.dna.species.miss_sound, 25, TRUE, -1)
-			target.visible_message("<span class='danger'>[user]'s [atk_verb] misses [target]!</span>", \
-							"<span class='danger'>You avoid [user]'s [atk_verb]!</span>", "<span class='hear'>You hear a swoosh!</span>", null, COMBAT_MESSAGE_RANGE, null, \
-							user, "<span class='warning'>Your [atk_verb] misses [target]!</span>")
+			if(tail_attack)
+				target.visible_message(span_danger("[user] промахивается хвостом по [target]!"), \
+					span_danger("Вы уклоняетесь от удара хвостом [user]!"), span_hear("Вы слышите свист!"), null, COMBAT_MESSAGE_RANGE, null, \
+					user, span_warning("Вы промахиваетесь хвостом по [target]!"))
+			else
+				target.visible_message("<span class='danger'>[user]'s [atk_verb] misses [target]!</span>", \
+								"<span class='danger'>You avoid [user]'s [atk_verb]!</span>", "<span class='hear'>You hear a swoosh!</span>", null, COMBAT_MESSAGE_RANGE, null, \
+								user, "<span class='warning'>Your [atk_verb] misses [target]!</span>")
 			log_combat(user, target, "attempted to punch")
 			return FALSE
 
 
 		var/armor_block = target.run_armor_check(affecting, MELEE)
 		playsound(target.loc, user.dna.species.attack_sound_override || attack_sound, 25, 1, -1)
-		target.visible_message("<span class='danger'>[user] [atk_verb]ed [target]!</span>", \
-					"<span class='userdanger'>[user] [atk_verb]ed you!</span>", null, COMBAT_MESSAGE_RANGE, null, \
-					user, "<span class='danger'>You [atk_verb]ed [target]!</span>")
+		if(tail_attack)
+			target.visible_message(span_danger("[user] бьёт [target] хвостом!"), \
+				span_userdanger("[user] бьёт вас хвостом!"), null, COMBAT_MESSAGE_RANGE, null, \
+				user, span_danger("Вы бьёте [target] хвостом!"))
+		else
+			target.visible_message("<span class='danger'>[user] [atk_verb]ed [target]!</span>", \
+						"<span class='userdanger'>[user] [atk_verb]ed you!</span>", null, COMBAT_MESSAGE_RANGE, null, \
+						user, "<span class='danger'>You [atk_verb]ed [target]!</span>")
 
 		target.set_last_attacker(user)
 		user.dna.species.spec_unarmedattacked(user, target)

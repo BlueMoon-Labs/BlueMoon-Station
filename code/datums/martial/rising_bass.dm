@@ -93,8 +93,8 @@
 		var/turf/H = get_step(D, dir)
 		var/turf/K = get_step(D, oppdir)
 		A.do_attack_animation(D, ATTACK_EFFECT_KICK)
-		D.visible_message("<span class='warning'>[A] kicks [D] in the side, sliding them over!</span>", \
-						  "<span class='userdanger'>[A] kicks you in the side, forcing you to step away!</span>")
+		D.visible_message(span_warning("[A] бьёт [D] [HAS_TRAIT(A, TRAIT_NAGA_ANATOMY) ? "хвостом" : "ногой"] в бок, отталкивая в сторону!"), \
+			span_userdanger("[A] бьёт вас [HAS_TRAIT(A, TRAIT_NAGA_ANATOMY) ? "хвостом" : "ногой"] в бок, отталкивая в сторону!"))
 		playsound(get_turf(A), 'sound/weapons/thudswoosh.ogg', 50, 1, -1)
 		D.apply_damage(damage, BRUTE, BODY_ZONE_CHEST)
 		D.DefaultCombatKnockdown(60, override_hardstun = 1, override_stamdmg = damage)

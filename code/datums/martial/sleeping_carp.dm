@@ -38,9 +38,14 @@
 	///this is the critical hit damage added to the attack if it rolls, it starts at 0 because it'll be changed when rolled
 	var/crit_damage = 0
 	var/damage = damage_roll(A,D)
-	D.visible_message("<span class='danger'>[A] [atk_verb]s [D]!</span>", \
-					"<span class='userdanger'>[A] [atk_verb]s you!</span>", null, null, A)
-	to_chat(A, "<span class='danger'>You [atk_verb] [D]!</span>")
+	if(atk_verb == "precisely kick" && HAS_TRAIT(A, TRAIT_NAGA_ANATOMY))
+		D.visible_message(span_danger("[A] точно бьёт [D] хвостом!"), \
+			span_userdanger("[A] точно бьёт вас хвостом!"), null, null, A)
+		to_chat(A, span_danger("Вы точно бьёте [D] хвостом!"))
+	else
+		D.visible_message("<span class='danger'>[A] [atk_verb]s [D]!</span>", \
+						"<span class='userdanger'>[A] [atk_verb]s you!</span>", null, null, A)
+		to_chat(A, "<span class='danger'>You [atk_verb] [D]!</span>")
 	if(prob(10))
 		crit_damage += (damage*2 + 15)
 		playsound(get_turf(D), 'sound/weapons/bite.ogg', 50, TRUE, -1)
@@ -59,8 +64,8 @@
 		return FALSE
 	var/damage = (damage_roll(A,D) + 15)
 	A.do_attack_animation(D, ATTACK_EFFECT_KICK)
-	D.visible_message("<span class='warning'>[A] kicks [D] square in the chest, sending them flying!</span>", \
-					"<span class='userdanger'>You are kicked square in the chest by [A], sending you flying!</span>", "<span class='hear'>You hear a sickening sound of flesh hitting flesh!</span>", COMBAT_MESSAGE_RANGE, A)
+	D.visible_message(span_warning("[A] бьёт [D] [HAS_TRAIT(A, TRAIT_NAGA_ANATOMY) ? "хвостом" : "ногой"] прямо в грудь, отбрасывая назад!"), \
+		span_userdanger("[A] бьёт вас [HAS_TRAIT(A, TRAIT_NAGA_ANATOMY) ? "хвостом" : "ногой"] прямо в грудь, отбрасывая назад!"), span_hear("Вы слышите глухой звук удара!"), COMBAT_MESSAGE_RANGE, A)
 	playsound(get_turf(A), 'sound/effects/hit_kick.ogg', 50, TRUE, -1)
 	var/atom/throw_target = get_edge_target_turf(D, A.dir)
 	D.throw_at(throw_target, 7, 14, A)
@@ -80,14 +85,14 @@
 		D.apply_damage(damage, BRUTE, BODY_ZONE_HEAD, wound_bonus = CANT_WOUND)
 		D.DefaultCombatKnockdown(50, override_hardstun = 0.01, override_stamdmg = 0)
 		D.apply_damage(damage + 35, STAMINA, BODY_ZONE_HEAD, wound_bonus = CANT_WOUND) //A cit specific change form the tg port to really punish anyone who tries to stand up
-		D.visible_message("<span class='warning'>[A] kicks [D] in the head, sending them face first into the floor!</span>", \
-					"<span class='userdanger'>You are kicked in the head by [A], sending you crashing to the floor!</span>", "<span class='hear'>You hear a sickening sound of flesh hitting flesh!</span>", COMBAT_MESSAGE_RANGE, A)
+		D.visible_message(span_warning("[A] бьёт [D] по голове [HAS_TRAIT(A, TRAIT_NAGA_ANATOMY) ? "хвостом" : "ногой"], опрокидывая лицом в пол!"), \
+			span_userdanger("[A] бьёт вас по голове [HAS_TRAIT(A, TRAIT_NAGA_ANATOMY) ? "хвостом" : "ногой"], опрокидывая лицом в пол!"), span_hear("Вы слышите глухой звук удара!"), COMBAT_MESSAGE_RANGE, A)
 	else
 		D.apply_damage(damage*0.5, BRUTE, BODY_ZONE_HEAD, wound_bonus = CANT_WOUND)
 		D.apply_damage(damage + 35, STAMINA, BODY_ZONE_HEAD, wound_bonus = CANT_WOUND)
 		D.drop_all_held_items()
-		D.visible_message("<span class='warning'>[A] kicks [D] in the head!</span>", \
-					"<span class='userdanger'>You are kicked in the head by [A]!</span>", "<span class='hear'>You hear a sickening sound of flesh hitting flesh!</span>", COMBAT_MESSAGE_RANGE, A)
+		D.visible_message(span_warning("[A] бьёт [D] по голове [HAS_TRAIT(A, TRAIT_NAGA_ANATOMY) ? "хвостом" : "ногой"]!"), \
+			span_userdanger("[A] бьёт вас по голове [HAS_TRAIT(A, TRAIT_NAGA_ANATOMY) ? "хвостом" : "ногой"]!"), span_hear("Вы слышите глухой звук удара!"), COMBAT_MESSAGE_RANGE, A)
 	log_combat(A, D, "dropkicked (Sleeping Carp)")
 	return TRUE
 
@@ -109,9 +114,14 @@
 	var/atk_verb = pick("kick", "chop", "hit", "slam")
 	if(!A.get_num_supporting_limbs() && atk_verb == "kick")
 		atk_verb = "hit"
-	D.visible_message("<span class='danger'>[A] [atk_verb]s [D]!</span>", \
-					"<span class='userdanger'>[A] [atk_verb]s you!</span>", null, null, A)
-	to_chat(A, "<span class='danger'>You [atk_verb] [D]!</span>")
+	if(atk_verb == "kick" && HAS_TRAIT(A, TRAIT_NAGA_ANATOMY))
+		D.visible_message(span_danger("[A] бьёт [D] хвостом!"), \
+			span_userdanger("[A] бьёт вас хвостом!"), null, null, A)
+		to_chat(A, span_danger("Вы бьёте [D] хвостом!"))
+	else
+		D.visible_message("<span class='danger'>[A] [atk_verb]s [D]!</span>", \
+						"<span class='userdanger'>[A] [atk_verb]s you!</span>", null, null, A)
+		to_chat(A, "<span class='danger'>You [atk_verb] [D]!</span>")
 	D.apply_damage(damage, BRUTE, affecting, wound_bonus = CANT_WOUND)
 	playsound(get_turf(D), 'sound/weapons/punch1.ogg', 25, TRUE, -1)
 	if(CHECK_MOBILITY(D, MOBILITY_STAND) && damage >= stunthreshold)

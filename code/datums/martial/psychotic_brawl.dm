@@ -56,8 +56,12 @@
 			atk_verb = pick("punches", "kicks", "hits", "slams into")
 			if(!A.get_num_supporting_limbs() && atk_verb == "kicks")
 				atk_verb = "hits"
-			D.visible_message("<span class='danger'>[A] [atk_verb] [D] with inhuman strength, sending [D.ru_na()] flying backwards!</span>", \
-							  "<span class='userdanger'>[A] [atk_verb] you with inhuman strength, sending you flying backwards!</span>")
+			if(atk_verb == "kicks" && HAS_TRAIT(A, TRAIT_NAGA_ANATOMY))
+				D.visible_message(span_danger("[A] с нечеловеческой силой бьёт [D] хвостом, отбрасывая назад!"), \
+					span_userdanger("[A] с нечеловеческой силой бьёт вас хвостом, отбрасывая назад!"))
+			else
+				D.visible_message("<span class='danger'>[A] [atk_verb] [D] with inhuman strength, sending [D.ru_na()] flying backwards!</span>", \
+								  "<span class='userdanger'>[A] [atk_verb] you with inhuman strength, sending you flying backwards!</span>")
 			D.apply_damage(damage*2, BRUTE)
 			playsound(get_turf(D), 'sound/effects/meteorimpact.ogg', 25, 1, -1)
 			var/throwtarget = get_edge_target_turf(A, get_dir(A, get_step_away(D, A)))

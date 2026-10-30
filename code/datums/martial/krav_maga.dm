@@ -207,8 +207,12 @@
 	else
 		A.do_attack_animation(D, ATTACK_EFFECT_PUNCH)
 		playsound(get_turf(D), 'sound/effects/hit_punch.ogg', 50, 1, -1)
-	D.visible_message("<span class='danger'>[A] [picked_hit_type] [D]!</span>", \
-					  "<span class='userdanger'>[A] [picked_hit_type] you!</span>")
+	if(HAS_TRAIT(A, TRAIT_NAGA_ANATOMY) && (picked_hit_type == "kicks" || picked_hit_type == "stomps on"))
+		D.visible_message(span_danger("[A] [picked_hit_type == "stomps on" ? "с силой придавливает" : "бьёт"] [D] хвостом!"), \
+			span_userdanger("[A] [picked_hit_type == "stomps on" ? "с силой придавливает" : "бьёт"] вас хвостом!"))
+	else
+		D.visible_message("<span class='danger'>[A] [picked_hit_type] [D]!</span>", \
+						  "<span class='userdanger'>[A] [picked_hit_type] you!</span>")
 	log_combat(A, D, "[picked_hit_type] with [name]")
 	return TRUE
 
@@ -232,7 +236,7 @@
 	else
 		D.visible_message("<span class='danger'>[A] reprimands [D]!</span>", \
 					"<span class='userdanger'>You're manhandled by [A]!</span>", "<span class='hear'>You hear a sickening sound of flesh hitting flesh!</span>", COMBAT_MESSAGE_RANGE, A)
-		to_chat(A, "<span class='danger'>You stomp [D]!</span>")
+		to_chat(A, span_danger("Вы с силой придавливаете [D] [HAS_TRAIT(A, TRAIT_NAGA_ANATOMY) ? "хвостом" : "ногой"]!"))
 		A.do_attack_animation(D, ATTACK_EFFECT_KICK)
 		playsound(D, 'sound/effects/hit_punch.ogg', 50, TRUE, -1)
 		D.apply_damage(damage*2 + 20, STAMINA, affecting, armor_block)

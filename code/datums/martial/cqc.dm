@@ -65,15 +65,15 @@
 	var/damage = damage_roll(A,D)
 	if(D.lying && !D.IsUnconscious() && D.getStaminaLoss() > 100)
 		log_combat(A, D, "knocked out (Head kick)(CQC)")
-		D.visible_message("<span class='warning'>[A] kicks [D]'s head, knocking [D.ru_na()] out!</span>", \
-					  		"<span class='userdanger'>[A] kicks your head, knocking you out!</span>")
+		D.visible_message(span_warning("[A] бьёт [D] по голове [HAS_TRAIT(A, TRAIT_NAGA_ANATOMY) ? "хвостом" : "ногой"], отправляя в нокаут!"), \
+			span_userdanger("[A] бьёт вас по голове [HAS_TRAIT(A, TRAIT_NAGA_ANATOMY) ? "хвостом" : "ногой"], отправляя в нокаут!"))
 		playsound(get_turf(A), 'sound/weapons/genhit1.ogg', 50, 1, -1)
 		D.Knockdown(20 SECONDS)
 		D.Unconscious(10 SECONDS)
 		D.adjustOrganLoss(ORGAN_SLOT_BRAIN, damage + 10, 150)
 	else
-		D.visible_message("<span class='warning'>[A] kicks [D]!</span>", \
-							"<span class='userdanger'>[A] kicks you!</span>")
+		D.visible_message(span_warning("[A] бьёт [D] [HAS_TRAIT(A, TRAIT_NAGA_ANATOMY) ? "хвостом" : "ногой"]!"), \
+			span_userdanger("[A] бьёт вас [HAS_TRAIT(A, TRAIT_NAGA_ANATOMY) ? "хвостом" : "ногой"]!"))
 		playsound(get_turf(A), 'sound/weapons/cqchit1.ogg', 50, 1, -1)
 		var/atom/throw_target = get_edge_target_turf(D, A.dir)
 		D.throw_at(throw_target, 1, 14, A)
@@ -161,8 +161,12 @@
 		playsound(get_turf(D), 'sound/weapons/cqchit2.ogg', 50, 1, -1)
 	else
 		playsound(get_turf(D), 'sound/weapons/cqchit1.ogg', 50, 1, -1)
-	D.visible_message("<span class='danger'>[A] [picked_hit_type] [D]!</span>", \
-					  "<span class='userdanger'>[A] [picked_hit_type] you!</span>")
+	if(picked_hit_type == "stomps on" && HAS_TRAIT(A, TRAIT_NAGA_ANATOMY))
+		D.visible_message(span_danger("[A] с силой придавливает [D] хвостом!"), \
+			span_userdanger("[A] с силой придавливает вас хвостом!"))
+	else
+		D.visible_message("<span class='danger'>[A] [picked_hit_type] [D]!</span>", \
+						  "<span class='userdanger'>[A] [picked_hit_type] you!</span>")
 	log_combat(A, D, "[picked_hit_type] (CQC)")
 	if(!CHECK_MOBILITY(A, MOBILITY_STAND) && !D.stat && CHECK_MOBILITY(D, MOBILITY_STAND) && A.get_num_supporting_limbs())
 		D.visible_message(span_warning("[A] подсекает [D] [HAS_TRAIT(A, TRAIT_NAGA_ANATOMY) ? "хвостом" : "ногой"]!"), \

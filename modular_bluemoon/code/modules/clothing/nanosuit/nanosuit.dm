@@ -897,8 +897,12 @@
 							span_userdanger("[A] промахивается по мне!"))
 			playsound(get_turf(D), 'sound/weapons/punchmiss.ogg', 25, TRUE, -1)
 			return TRUE
-	D.visible_message(span_danger("[A] [quick?"быстро":""] [picked_hit_type] [D]!") , \
-					span_userdanger("[A] [quick?"быстро":""] [picked_hit_type] меня!"))
+	if(HAS_TRAIT(A, TRAIT_NAGA_ANATOMY) && (picked_hit_type == "пинает" || picked_hit_type == "топчется по"))
+		D.visible_message(span_danger("[A] [quick ? "быстро " : ""][picked_hit_type == "топчется по" ? "с силой придавливает" : "бьёт"] [D] хвостом!"), \
+			span_userdanger("[A] [quick ? "быстро " : ""][picked_hit_type == "топчется по" ? "с силой придавливает" : "бьёт"] вас хвостом!"))
+	else
+		D.visible_message(span_danger("[A] [quick?"быстро":""] [picked_hit_type] [D]!") , \
+						span_userdanger("[A] [quick?"быстро":""] [picked_hit_type] меня!"))
 	if(picked_hit_type == "пинает" || picked_hit_type == "топчется по")
 		A.do_attack_animation(D, ATTACK_EFFECT_KICK)
 		playsound(get_turf(D), 'sound/weapons/cqchit2.ogg', 50, TRUE, -1)
