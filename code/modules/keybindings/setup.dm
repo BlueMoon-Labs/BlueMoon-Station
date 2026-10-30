@@ -170,6 +170,13 @@
 	keybindings_add_movement_repeat_macros(macrosets[SKIN_MACROSET_CLASSIC_HOTKEYS], movement_keys, TRUE)
 	keybindings_add_movement_repeat_macros(macrosets[SKIN_MACROSET_CLASSIC_INPUT], movement_keys, FALSE)
 
+	// Меню BYOND на Shift+ПКМ: макросы Shift переключают right-click карты на клиенте. Свои макросы Shift не перебиваются.
+	for(var/macro_key in right_click_macros)
+		for(var/macroset in macrosets)
+			var/list/the_set = macrosets[macroset]
+			if(!the_set[macro_key])
+				the_set[macro_key] = right_click_macros[macro_key]
+
 	// Lastly, set the actual macros.
 	for(var/macroset in macrosets)
 		apply_macro_set(macroset, macrosets[macroset])

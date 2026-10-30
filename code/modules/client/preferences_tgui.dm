@@ -124,6 +124,18 @@
 	.["autostand"] = autostand
 	.["long_strip_menu"] = long_strip_menu
 	.["right_click_mode"] = right_click_mode()
+	.["shift_right_click_mode"] = shift_right_click_mode()
+	var/list/menu_style = list()
+	for(var/key in GLOB.context_menu_style_choices + CONTEXT_MENU_FREE_OPTIONS)
+		menu_style[key] = context_menu_option(key)
+	.["context_menu_style"] = menu_style
+	.["context_menu_themes"] = GLOB.context_menu_themes
+	var/list/menu_presets = list()
+	for(var/preset_id in GLOB.context_menu_style_presets)
+		var/list/preset = GLOB.context_menu_style_presets[preset_id]
+		menu_presets += list(list("id" = preset_id, "name" = preset["name"], "desc" = preset["desc"]))
+	.["context_menu_presets"] = menu_presets
+	.["context_menu_preset"] = current_context_menu_preset()
 	.["shift_invites"] = shift_invites
 
 	// Gameplay: combat
@@ -578,6 +590,18 @@
 
 		if("set_right_click_mode")
 			parent?.set_right_click_mode(text2num(params["value"]))
+
+		if("set_shift_right_click_mode")
+			parent?.set_shift_right_click_mode(text2num(params["value"]))
+
+		if("set_context_menu_style")
+			set_context_menu_style(params["key"], params["value"])
+
+		if("reset_context_menu_style")
+			reset_context_menu_style()
+
+		if("apply_context_menu_preset")
+			apply_context_menu_preset(params["preset"])
 
 		if("set_screenshake")
 			var/flag = params["flag"]

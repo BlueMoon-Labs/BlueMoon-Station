@@ -700,6 +700,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	// не right_click_menu: под ним тест-мерж записал «сразу действие» всем, кто не выбирал
 	S["right_click_mode"] >> right_click_choice
 	S["right_click_notice_seen"] >> right_click_notice_seen
+	S["shift_right_click_mode"] >> shift_right_click_choice
+	S["context_menu_style"] >> context_menu_style
 	S["pixel_size"]	    	>> pixel_size
 	S["scaling_method"]	    >> scaling_method
 	S["hud_toggle_flash"] >> hud_toggle_flash
@@ -880,6 +882,9 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	if(!(right_click_choice in list(RIGHT_CLICK_MODE_ACTION, RIGHT_CLICK_MODE_MENU, RIGHT_CLICK_MODE_NATIVE)))
 		right_click_choice = null
 	right_click_notice_seen = sanitize_integer(right_click_notice_seen, FALSE, TRUE, FALSE)
+	if(!(shift_right_click_choice in list(RIGHT_CLICK_MODE_ACTION, RIGHT_CLICK_MODE_MENU, RIGHT_CLICK_MODE_NATIVE)))
+		shift_right_click_choice = null
+	context_menu_style = sanitize_context_menu_style(context_menu_style)
 	pixel_size = sanitize_integer(pixel_size, PIXEL_SCALING_AUTO, PIXEL_SCALING_3X, initial(pixel_size))
 	scaling_method = sanitize_text(scaling_method, initial(scaling_method))
 	hud_toggle_flash = sanitize_integer(hud_toggle_flash, 0, 1, initial(hud_toggle_flash))
@@ -1397,6 +1402,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["long_strip_menu"], long_strip_menu)
 	WRITE_FILE(S["right_click_mode"], right_click_choice)
 	WRITE_FILE(S["right_click_notice_seen"], right_click_notice_seen)
+	WRITE_FILE(S["shift_right_click_mode"], shift_right_click_choice)
+	WRITE_FILE(S["context_menu_style"], context_menu_style)
 	WRITE_FILE(S["autostand"], autostand)
 	WRITE_FILE(S["cit_toggles"], cit_toggles)
 	WRITE_FILE(S["preferred_chaos_level"], preferred_chaos_level)

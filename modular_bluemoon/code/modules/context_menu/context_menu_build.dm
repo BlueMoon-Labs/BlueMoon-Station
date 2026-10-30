@@ -74,13 +74,14 @@ GLOBAL_LIST_INIT(context_menu_intent_short, list(
 ))
 
 /datum/context_menu/proc/build_entries(atom/A)
+	var/list/style = user.context_menu_prefs()?.context_menu_style
 	var/list/result = list()
 	/// "модификаторы|интент" уже показанных кликов
 	var/list/shown_clicks = list()
 	if(tile)
 		var/entry_name = tile_list_shown ? "Назад" : "Другие на клетке ([length(get_tile_candidates(tile) - A)])"
 		result += new /datum/context_menu_entry/pick(entry_name, null, CONTEXT_ENTRY_SERVICE, null)
-	add_basic_entries(A, result, shown_clicks)
+	add_basic_entries(A, result, shown_clicks, style)
 	// подписи скринтипа точнее общих названий интентов, поэтому собираются раньше них
 	var/list/main_clicks = list()
 	var/list/other_clicks = list()
@@ -90,12 +91,41 @@ GLOBAL_LIST_INIT(context_menu_intent_short, list(
 	result += main_clicks
 	result += other_clicks
 	if(length(intent_entries))
-		result += new /datum/context_menu_entry/intent_list("Интенты…", null, CONTEXT_ENTRY_SERVICE)
+		if(context_menu_style_option(style, "intents") == "inline")
+			result += intent_entries
+			intent_entries = list()
+		else
+			result += new /datum/context_menu_entry/intent_list("Интенты…", null, CONTEXT_ENTRY_SERVICE)
 	add_verb_entries(A, result)
-	if(user.client?.holder && length(context_menu_admin_verbs_for(A, user.client.verbs)))
-		result += new /datum/context_menu_entry/admin_list("Админ…", null, CONTEXT_ENTRY_SERVICE)
+	var/admin_pos = context_menu_style_option(style, "admin_pos")
+	if(admin_pos != "hidden" && user.client?.holder && length(context_menu_admin_verbs_for(A, user.client.verbs)))
+		var/datum/context_menu_entry/admin_list/admin_entry = new("Админ…", null, CONTEXT_ENTRY_ADMIN)
+		if(admin_pos == "top")
+			// под «Другие на клетке», если он есть
+			result.Insert(tile ? 2 : 1, admin_entry)
+		else
+			result += admin_entry
 	SEND_SIGNAL(A, COMSIG_ATOM_CONTEXT_MENU, user, result)
+	if(context_menu_style_option(style, "danger_order") == "bottom")
+		context_menu_danger_last(result)
 	return result
+
+/// Агрессивные пункты - после остальных действий, перед служебными: случайный клик по верху меню не бьёт
+/proc/context_menu_danger_last(list/entries)
+	var/list/danger = list()
+	for(var/datum/context_menu_entry/entry as anything in entries)
+		if(entry.style == CONTEXT_ENTRY_DANGER)
+			danger += entry
+	if(!length(danger))
+		return
+	entries -= danger
+	var/insert_at = length(entries) + 1
+	for(var/i in 1 to length(entries))
+		var/datum/context_menu_entry/entry = entries[i]
+		if(istype(entry, /datum/context_menu_entry/intent_list) || istype(entry, /datum/context_menu_entry/admin_list) || istype(entry, /datum/context_menu_entry/verb_call))
+			insert_at = i
+			break
+	entries.Insert(insert_at, danger)
 
 /datum/context_menu/proc/add_click(list/result, list/shown_clicks, atom/A, name, hint, modifiers, intent, style)
 	var/key = "[modifiers]|[intent]"
@@ -109,8 +139,9 @@ GLOBAL_LIST_INIT(context_menu_intent_short, list(
 		style = (intent && intent != INTENT_HELP) ? CONTEXT_ENTRY_DANGER : CONTEXT_ENTRY_NORMAL
 	result += new /datum/context_menu_entry/click(name, hint, style, params, intent)
 
-/datum/context_menu/proc/add_basic_entries(atom/A, list/result, list/shown_clicks)
-	add_click(result, shown_clicks, A, "Осмотреть", "Shift-ЛКМ", "shift=1;left=1")
+/datum/context_menu/proc/add_basic_entries(atom/A, list/result, list/shown_clicks, list/style)
+	if(context_menu_style_option(style, "show_examine"))
+		add_click(result, shown_clicks, A, "Осмотреть", "Shift-ЛКМ", "shift=1;left=1")
 	if(isitem(A))
 		var/obj/item/item = A
 		if(!item.anchored && item.loc != user && !user.get_active_held_item() && user.CanReach(item))
@@ -121,7 +152,7 @@ GLOBAL_LIST_INIT(context_menu_intent_short, list(
 			result += new /datum/context_menu_entry/callback("Отпустить", null, CONTEXT_ENTRY_NORMAL, CALLBACK(user, TYPE_PROC_REF(/atom/movable, stop_pulling)))
 		else if(!movable.anchored && user.Adjacent(movable))
 			add_click(result, shown_clicks, A, "Потянуть", "Ctrl-ЛКМ", "ctrl=1;left=1")
-	if(A != user)
+	if(A != user && context_menu_style_option(style, "show_point"))
 		add_click(result, shown_clicks, A, "Указать", "Shift-СКМ", "shift=1;middle=1")
 
 /// Разовые действия каждым интентом: текущий - в меню, остальные - в подменю «Интенты…». С предметом в руке - только «использовать» и удар им.

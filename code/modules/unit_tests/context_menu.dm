@@ -11,9 +11,14 @@
 	var/seen_intent
 	var/record_clicks = FALSE
 	var/click_mode = RIGHT_CLICK_MODE_MENU
+	/// null - Shift+ПКМ по умолчанию для click_mode
+	var/shift_click_mode
 
 /mob/living/carbon/human/dummy/consistent/context_menu_probe/right_click_mode()
 	return click_mode
+
+/mob/living/carbon/human/dummy/consistent/context_menu_probe/shift_right_click_mode()
+	return isnull(shift_click_mode) ? ..() : shift_click_mode
 
 /mob/living/carbon/human/dummy/consistent/context_menu_probe/RightClickOn(atom/A, params)
 	right_clicked = TRUE
@@ -154,22 +159,24 @@
 
 /datum/unit_test/context_menu_compact_hints/Run()
 	TEST_ASSERT_EQUAL(context_menu_text_width("Осмотреть"), 48, "Ширина текста не по буквам Small Fonts")
-	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_user)
+	var/mob/living/carbon/human/dummy/consistent/context_menu_styled/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_styled)
+	user.style_prefs = new
+	user.style_prefs.context_menu_style = list("hints" = "hover", "renderer" = "map")
 	var/mob/living/carbon/human/target = allocate(/mob/living/carbon/human/dummy/consistent, get_step(user, EAST))
 	user.a_intent = INTENT_HELP
 	var/datum/context_menu/menu = user.open_context_menu(target, "right=1;shift=1")
 	var/atom/movable/screen/context_menu/examine_row
 	var/widest_name = 0
 	for(var/atom/movable/screen/context_menu/row in menu.screen_objects)
-		if(row.entry == menu.header_entry)
+		if(!row.entry || row.entry == menu.header_entry)
 			continue
-		widest_name = max(widest_name, context_menu_text_width(row.entry.name))
+		widest_name = max(widest_name, menu.text_width(row.entry.name))
 		if(row.entry.name == "Осмотреть")
 			examine_row = row
 	TEST_ASSERT_NOTNULL(examine_row, "Нет строки «Осмотреть»")
 	for(var/atom/movable/screen/context_menu_text/label in menu.screen_objects)
 		TEST_ASSERT(!findtext(label.maptext, "Shift-ЛКМ"), "Хоткей нарисован в строке и растягивает меню")
-	TEST_ASSERT(menu.width <= max(widest_name, context_menu_text_width(menu.header_text || capitalize(target.name), TRUE) + 8 + context_menu_text_width("режим")) + 8, "Меню шире самого длинного имени")
+	TEST_ASSERT(menu.width <= round(max(widest_name, menu.text_width(menu.header_text || capitalize(target.name), TRUE) + 8 + menu.text_width("режим")) + 8), "Меню шире самого длинного имени")
 
 	examine_row.MouseEntered()
 	var/hint_shown = FALSE
@@ -375,7 +382,10 @@
 /datum/unit_test/context_menu_tile_groups
 
 /datum/unit_test/context_menu_tile_groups/Run()
-	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_user)
+	// хоткеи в строке законно расширяют меню, здесь проверяется ширина по именам
+	var/mob/living/carbon/human/dummy/consistent/context_menu_styled/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_styled)
+	user.style_prefs = new
+	user.style_prefs.context_menu_style = list("hints" = "hover")
 	var/turf/next_turf = get_step(user, EAST)
 	var/list/pens = list()
 	for(var/i in 1 to CONTEXT_MENU_GROUP_MIN + 1)
@@ -840,3 +850,443 @@
 	TEST_ASSERT(!ghost.popup_menus_wanted(buildmode), "Призраку в билд-моде ПКМ открывает меню BYOND вместо кнопок билд-мода")
 	TEST_ASSERT(user.popup_menus_wanted(null), "В режиме BYOND вне боя не показывается меню BYOND")
 	TEST_ASSERT(!user.popup_menus_wanted(buildmode), "В режиме BYOND в билд-моде ПКМ открывает меню BYOND")
+
+/// Shift+ПКМ настраивается отдельно: ПКМ - действие, Shift+ПКМ - меню BYOND; ПКМ - меню BYOND, Shift+ПКМ - меню действий
+/datum/unit_test/context_menu_shift_mode
+
+/datum/unit_test/context_menu_shift_mode/Run()
+	var/mob/living/carbon/human/dummy/consistent/context_menu_probe/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_probe)
+	var/obj/item/pen/target = allocate(/obj/item/pen, get_step(user, EAST))
+	// без своей настройки Shift+ПКМ - противоположное ПКМ, меню BYOND остаётся меню BYOND
+	TEST_ASSERT_EQUAL(default_shift_right_click_mode(RIGHT_CLICK_MODE_MENU), RIGHT_CLICK_MODE_ACTION, "Shift+ПКМ по умолчанию в режиме меню")
+	TEST_ASSERT_EQUAL(default_shift_right_click_mode(RIGHT_CLICK_MODE_ACTION), RIGHT_CLICK_MODE_MENU, "Shift+ПКМ по умолчанию в режиме действий")
+	TEST_ASSERT_EQUAL(default_shift_right_click_mode(RIGHT_CLICK_MODE_NATIVE), RIGHT_CLICK_MODE_NATIVE, "Shift+ПКМ по умолчанию в режиме BYOND")
+
+	user.click_mode = RIGHT_CLICK_MODE_ACTION
+	user.shift_click_mode = RIGHT_CLICK_MODE_NATIVE
+	TEST_ASSERT(user.popup_menus_wanted(null), "Меню BYOND на Shift+ПКМ выключено")
+	TEST_ASSERT(user.right_click_map_clicks(FALSE), "ПКМ-действие не приходит кликом")
+	TEST_ASSERT(!user.right_click_map_clicks(TRUE), "Shift+ПКМ при меню BYOND приходит кликом")
+	var/list/macros = user.right_click_shift_macros()
+	TEST_ASSERT_EQUAL(macros?["Shift"], "\".winset :map.right-click=false\"", "Shift не включает меню BYOND на карте")
+	TEST_ASSERT_EQUAL(macros?["Shift+UP"], "\".winset :map.right-click=true\"", "Отпущенный Shift не возвращает клики")
+	user.CommonClickOn(target, "right=1")
+	TEST_ASSERT(user.right_clicked, "ПКМ не сделал действие")
+	TEST_ASSERT_NULL(user.active_context_menu, "ПКМ открыл меню действий")
+	user.right_clicked = FALSE
+	// клик дошёл раньше, чем сервер узнал про Shift: это не действие и не меню действий, а осмотр, как раньше
+	user.CommonClickOn(target, "right=1;shift=1")
+	TEST_ASSERT(!user.right_clicked && !user.active_context_menu, "Shift+ПКМ при меню BYOND сделал действие или открыл меню действий")
+	TEST_ASSERT(user.shift_clicked, "Дошедший Shift+ПКМ при меню BYOND не осмотрел")
+	TEST_ASSERT_EQUAL(user.right_click_action_hint(), "ПКМ", "Подсказка второго действия")
+	TEST_ASSERT_EQUAL(right_click_mode_name(RIGHT_CLICK_MODE_ACTION, RIGHT_CLICK_MODE_NATIVE), "ПКМ - действие, Shift+ПКМ - меню BYOND", "Название раскладки")
+
+	user.click_mode = RIGHT_CLICK_MODE_NATIVE
+	user.shift_click_mode = RIGHT_CLICK_MODE_MENU
+	TEST_ASSERT(user.popup_menus_wanted(null), "При ПКМ - меню BYOND оно выключено")
+	TEST_ASSERT(!user.right_click_map_clicks(FALSE), "ПКМ при меню BYOND приходит кликом")
+	TEST_ASSERT(user.right_click_map_clicks(TRUE), "Shift+ПКМ при меню действий не приходит кликом")
+	user.shift_click_mode = RIGHT_CLICK_MODE_NATIVE
+	TEST_ASSERT_NULL(user.right_click_shift_macros(), "Макросы Shift там, где ПКМ и Shift+ПКМ одинаковы")
+	user.shift_click_mode = RIGHT_CLICK_MODE_MENU
+	user.CommonClickOn(target, "right=1;shift=1")
+	TEST_ASSERT_NOTNULL(user.active_context_menu, "Shift+ПКМ не открыл меню действий")
+	user.close_context_menu()
+	TEST_ASSERT_EQUAL(user.right_click_action_hint(), "ПКМ в бою", "Второе действие вне боя недоступно")
+	SEND_SIGNAL(user, COMSIG_TOGGLE_COMBAT_MODE)
+	TEST_ASSERT(!user.popup_menus_wanted(null), "В бою включено меню BYOND")
+	user.right_clicked = FALSE
+	user.CommonClickOn(target, "right=1")
+	TEST_ASSERT(user.right_clicked, "ПКМ в бою не сделал действие")
+	user.CommonClickOn(target, "right=1;shift=1")
+	TEST_ASSERT_NOTNULL(user.active_context_menu, "Shift+ПКМ в бою не открыл меню действий")
+	user.close_context_menu()
+	SEND_SIGNAL(user, COMSIG_TOGGLE_COMBAT_MODE)
+
+/// Shift+ПКМ сохраняется отдельным ключом, вид меню - одним списком; мусор в сейве не проходит
+/datum/unit_test/context_menu_style_saving
+	var/datum/preferences/prefs
+
+/datum/unit_test/context_menu_style_saving/Destroy()
+	if(prefs)
+		fdel(prefs.path)
+		qdel(prefs)
+		prefs = null
+	return ..()
+
+/datum/unit_test/context_menu_style_saving/Run()
+	prefs = new
+	prefs.load_path("unit_test_context_menu_style")
+	fdel(prefs.path)
+	TEST_ASSERT(prefs.save_preferences(TRUE, TRUE), "Корень настроек не записан")
+	sleep(1)
+	TEST_ASSERT(prefs.load_preferences(TRUE), "Настройки не прочитаны")
+	TEST_ASSERT_NULL(prefs.shift_right_click_choice, "Невыбравший получил свой Shift+ПКМ")
+	for(var/key in GLOB.context_menu_style_choices)
+		TEST_ASSERT_EQUAL(prefs.context_menu_option(key), GLOB.context_menu_style_choices[key][1], "[key] по умолчанию не первый вариант")
+	TEST_ASSERT_EQUAL(prefs.context_menu_option("font"), "segoe", "Шрифт по умолчанию не Segoe UI")
+	TEST_ASSERT_EQUAL(prefs.context_menu_option("animation"), "none", "По умолчанию есть анимация")
+	TEST_ASSERT_EQUAL(prefs.context_menu_option("renderer"), "html", "По умолчанию меню не окном")
+	TEST_ASSERT_EQUAL(prefs.context_menu_option("opacity"), CONTEXT_MENU_OPACITY_DEFAULT, "Непрозрачность по умолчанию")
+
+	TEST_ASSERT(prefs.set_shift_right_click_choice(RIGHT_CLICK_MODE_NATIVE), "Shift+ПКМ не принят")
+	TEST_ASSERT(!prefs.set_shift_right_click_choice(7), "Принят несуществующий Shift+ПКМ")
+	TEST_ASSERT(prefs.set_context_menu_style("font", "pixel"), "Шрифт не принят")
+	TEST_ASSERT(prefs.set_context_menu_style("theme", "terminal"), "Тема не принята")
+	TEST_ASSERT(!prefs.set_context_menu_style("theme", "comic"), "Принята несуществующая тема")
+	TEST_ASSERT(prefs.set_context_menu_style("scale", "150"), "Размер не принят")
+	TEST_ASSERT(!prefs.set_context_menu_style("scale", "333"), "Принят размер не из списка")
+	TEST_ASSERT(prefs.set_context_menu_style("opacity", "5"), "Непрозрачность не принята")
+	TEST_ASSERT_EQUAL(prefs.context_menu_option("opacity"), CONTEXT_MENU_OPACITY_MIN, "Непрозрачность ниже минимума")
+	TEST_ASSERT(prefs.set_context_menu_style("icons"), "Значки не переключились")
+	TEST_ASSERT(prefs.set_context_menu_style("border", 1), "Рамка не включилась")
+	TEST_ASSERT(!prefs.set_context_menu_style("nonsense", 1), "Принята несуществующая настройка")
+	prefs.flush_single_prefs()
+	sleep(1)
+	prefs.shift_right_click_choice = null
+	prefs.context_menu_style = null
+	TEST_ASSERT(prefs.load_preferences(TRUE), "Настройки с видом меню не прочитаны")
+	TEST_ASSERT_EQUAL(prefs.shift_right_click_choice, RIGHT_CLICK_MODE_NATIVE, "Shift+ПКМ не пережил сохранение")
+	TEST_ASSERT_EQUAL(prefs.context_menu_option("font"), "pixel", "Шрифт не пережил сохранение")
+	TEST_ASSERT_EQUAL(prefs.context_menu_option("theme"), "terminal", "Тема не пережила сохранение")
+	TEST_ASSERT_EQUAL(prefs.context_menu_option("scale"), 150, "Размер не пережил сохранение")
+	TEST_ASSERT_EQUAL(prefs.context_menu_option("opacity"), CONTEXT_MENU_OPACITY_MIN, "Непрозрачность не пережила сохранение")
+	TEST_ASSERT_EQUAL(prefs.context_menu_option("icons"), FALSE, "Значки не пережили сохранение")
+	TEST_ASSERT_EQUAL(prefs.context_menu_option("border"), TRUE, "Рамка не пережила сохранение")
+
+	var/savefile/broken = new(prefs.path)
+	WRITE_FILE(broken["context_menu_style"], list("font" = "comic sans", "scale" = 333, "theme" = "light", "junk" = 1))
+	WRITE_FILE(broken["shift_right_click_mode"], 9)
+	broken = null
+	sleep(1)
+	TEST_ASSERT(prefs.load_preferences(TRUE), "Настройки с мусором не прочитаны")
+	TEST_ASSERT_EQUAL(prefs.context_menu_option("font"), "segoe", "Мусорный шрифт прошёл")
+	TEST_ASSERT_EQUAL(prefs.context_menu_option("scale"), 100, "Мусорный размер прошёл")
+	TEST_ASSERT_EQUAL(prefs.context_menu_option("theme"), "light", "Годная тема рядом с мусором потерялась")
+	TEST_ASSERT(!("junk" in prefs.context_menu_style), "Неизвестная настройка осталась в сейве")
+	TEST_ASSERT_NULL(prefs.shift_right_click_choice, "Мусорный Shift+ПКМ прошёл")
+	prefs.reset_context_menu_style()
+	TEST_ASSERT_EQUAL(prefs.context_menu_option("theme"), "dark", "Сброс не вернул тему по умолчанию")
+
+/// У каждой темы есть все цвета, которые рисует меню
+/datum/unit_test/context_menu_themes_complete
+
+/datum/unit_test/context_menu_themes_complete/Run()
+	var/list/needed = GLOB.context_menu_themes["dark"]
+	for(var/theme_id in GLOB.context_menu_style_choices["theme"])
+		var/list/theme = GLOB.context_menu_themes[theme_id]
+		TEST_ASSERT_NOTNULL(theme, "Темы [theme_id] нет в GLOB.context_menu_themes")
+		for(var/color_key in needed)
+			TEST_ASSERT(istext(theme[color_key]) && length(theme[color_key]) == 7, "У темы [theme_id] нет цвета [color_key]")
+	for(var/font_id in GLOB.context_menu_map_fonts)
+		if(font_id == "pixel")
+			continue
+		TEST_ASSERT_NOTNULL(GLOB.context_menu_font_families[font_id], "У шрифта [font_id] нет имени для css")
+		TEST_ASSERT(context_menu_smooth_text_width("Осмотреть", FALSE, font_id) > 500, "У шрифта [font_id] нет таблицы ширин")
+
+/// Игрок с настройками вида меню без клиента
+/mob/living/carbon/human/dummy/consistent/context_menu_styled
+	var/datum/preferences/style_prefs
+
+/mob/living/carbon/human/dummy/consistent/context_menu_styled/right_click_mode()
+	return RIGHT_CLICK_MODE_MENU
+
+/mob/living/carbon/human/dummy/consistent/context_menu_styled/context_menu_prefs()
+	return style_prefs
+
+/mob/living/carbon/human/dummy/consistent/context_menu_styled/Destroy()
+	QDEL_NULL(style_prefs)
+	return ..()
+
+/// Гладкий шрифт растеризуется в зум карты раз крупнее и сжимается обратно; пиксельный - Small Fonts; размер, плотность, тема, рамка, шапка, хоткеи и анимация - из настроек
+/datum/unit_test/context_menu_style
+
+/datum/unit_test/context_menu_style/Run()
+	var/mob/living/carbon/human/dummy/consistent/context_menu_styled/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_styled)
+	user.style_prefs = new
+	var/turf/next_turf = get_step(user, EAST)
+	allocate(/obj/item/pen, next_turf)
+	allocate(/obj/item/paper, next_turf)
+	var/datum/context_menu/menu = user.open_context_menu(next_turf, "right=1")
+	TEST_ASSERT(menu.smooth_font, "Шрифт по умолчанию не гладкий")
+	var/datum/context_menu_entry/first_row = menu.visible_entries()[1]
+	TEST_ASSERT_EQUAL(menu.row_height(first_row), CONTEXT_MENU_ICON_ROW_HEIGHT, "Строка со значком при 100% не той высоты")
+	TEST_ASSERT_EQUAL(menu.scale, 1, "Меню по умолчанию не 100%")
+	var/labels = 0
+	for(var/atom/movable/screen/context_menu_text/label in menu.screen_objects)
+		labels++
+		TEST_ASSERT(findtext(label.maptext, "Calibri"), "Гладкая надпись не Calibri: [label.maptext]")
+		var/matrix/shrink = label.transform
+		TEST_ASSERT_EQUAL(shrink.a, 1 / CONTEXT_MENU_DEFAULT_ZOOM, "Гладкая надпись не сжата в зум раз")
+		TEST_ASSERT(label.maptext_width > menu.width, "Коробка гладкой надписи не крупнее строки")
+	TEST_ASSERT(labels, "Нет надписей")
+	// анимация открытия по умолчанию - проявление: всё стартует прозрачным
+	TEST_ASSERT(menu.opened, "Меню не отметило анимацию открытия")
+	var/smooth_width = menu.width
+	var/list/header_group = menu.row_groups[1]
+	var/atom/movable/screen/context_menu/header_row = header_group[1]
+	TEST_ASSERT_EQUAL(header_row.entry, menu.header_entry, "Первая группа строк не шапка")
+	TEST_ASSERT_EQUAL(header_row.base_color, GLOB.context_menu_themes["dark"]["header_bg"], "Шапка не цвета темы по умолчанию")
+
+	var/list/style = list("font" = "pixel", "scale" = 150, "opacity" = 60, "icons" = FALSE, "theme" = "terminal", "density" = "roomy", "border" = TRUE, "header" = FALSE, "hints" = "inline", "animation" = "none")
+	user.style_prefs.context_menu_style = style
+	menu.render()
+	TEST_ASSERT(!menu.smooth_font, "Пиксельный шрифт не включился")
+	TEST_ASSERT_EQUAL(menu.row_height(first_row), round((CONTEXT_MENU_ROW_HEIGHT + 4) * 1.5), "Строка при 150%, просторно и без значков не той высоты")
+	TEST_ASSERT(menu.width > smooth_width, "Меню на 150% не шире")
+	for(var/atom/movable/screen/context_menu_icon/icon_object in menu.screen_objects)
+		TEST_FAIL("Значок нарисован при выключенных значках")
+	var/frames = 0
+	for(var/atom/movable/screen/context_menu/row in menu.screen_objects)
+		TEST_ASSERT_EQUAL(row.alpha, round(255 * 0.6), "Непрозрачность строки не из настроек")
+		TEST_ASSERT(row.entry != menu.header_entry, "Шапка нарисована при выключенной шапке")
+		if(!row.entry)
+			frames++
+			TEST_ASSERT_EQUAL(row.base_color, GLOB.context_menu_themes["terminal"]["border"], "Рамка не цвета темы")
+		else if(row.entry.style == CONTEXT_ENTRY_NORMAL)
+			TEST_ASSERT_EQUAL(row.base_color, GLOB.context_menu_themes["terminal"]["row_bg"], "Строка не цвета темы")
+	TEST_ASSERT_EQUAL(frames, 1, "Рамка меню не одна")
+	var/inline_hints = 0
+	for(var/atom/movable/screen/context_menu_text/label in menu.screen_objects)
+		TEST_ASSERT(findtext(label.maptext, "class='maptext'"), "Пиксельная надпись не Small Fonts: [label.maptext]")
+		var/matrix/grow = label.transform
+		TEST_ASSERT_EQUAL(grow.a, 1.5, "Пиксельная надпись на 150% не растянута")
+		if(findtext(label.maptext, "Shift - осмотреть"))
+			inline_hints++
+	TEST_ASSERT(inline_hints, "Хоткеи не нарисованы в строках")
+	var/atom/movable/screen/context_menu/some_row
+	for(var/atom/movable/screen/context_menu/row in menu.screen_objects)
+		if(row.entry)
+			some_row = row
+	some_row.MouseEntered()
+	TEST_ASSERT(!length(menu.hint_objects), "Плашка хоткея при хоткеях в строках")
+	user.close_context_menu()
+
+	// animate() сразу пишет в переменные конечное значение: после любой анимации строки на месте и видны
+	for(var/animation in GLOB.context_menu_style_choices["animation"])
+		user.style_prefs.context_menu_style = list("animation" = animation)
+		menu = user.open_context_menu(next_turf, "right=1")
+		var/list/last_group = menu.row_groups[length(menu.row_groups)]
+		var/atom/movable/screen/context_menu/last_row = last_group[1]
+		TEST_ASSERT_EQUAL(last_row.alpha, menu.row_alpha, "После анимации [animation] строка не той прозрачности")
+		TEST_ASSERT(!last_row.pixel_x && !last_row.pixel_y, "После анимации [animation] строка не на месте")
+		user.close_context_menu()
+
+	// слева и по центру от курсора
+	user.style_prefs.context_menu_style = list("position" = "left", "animation" = "none")
+	menu = user.open_context_menu(next_turf, "right=1;screen-loc=10:16,8:16")
+	TEST_ASSERT(menu.left + menu.width <= menu.origin_x, "Меню слева заходит за курсор")
+	user.close_context_menu()
+	user.style_prefs.context_menu_style = list("position" = "center", "animation" = "none")
+	menu = user.open_context_menu(next_turf, "right=1;screen-loc=10:16,8:16")
+	TEST_ASSERT(abs(menu.left + menu.width / 2 - menu.origin_x) <= 1, "Меню по центру не над курсором")
+	user.close_context_menu()
+
+/// «Админ…» на каждой странице: длинное меню не уносит его на вторую
+/datum/unit_test/context_menu_admin_pinned
+
+/datum/unit_test/context_menu_admin_pinned/Run()
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_user)
+	var/obj/item/pen/target = allocate(/obj/item/pen, get_step(user, EAST))
+	var/datum/context_menu/menu = user.open_context_menu(target, "right=1")
+	var/datum/context_menu_entry/admin_list/admin_entry = new("Админ…", null, CONTEXT_ENTRY_ADMIN)
+	menu.entries = list()
+	for(var/i in 1 to CONTEXT_MENU_MAX_ROWS * 2)
+		menu.entries += new /datum/context_menu_entry("Пункт [i]")
+	menu.entries += admin_entry
+	TEST_ASSERT(menu.page_count() > 1, "Санити: пунктов на одну страницу")
+	var/list/seen = list()
+	for(var/page in 1 to menu.page_count())
+		menu.page = page
+		var/list/rows = menu.visible_entries()
+		TEST_ASSERT(admin_entry in rows, "На странице [page] нет «Админ…»")
+		TEST_ASSERT(length(rows) <= CONTEXT_MENU_MAX_ROWS, "Страница [page] длиннее [CONTEXT_MENU_MAX_ROWS]: [length(rows)]")
+		for(var/datum/context_menu_entry/entry as anything in rows)
+			if(entry != admin_entry && entry != menu.page_entry)
+				seen |= entry
+	TEST_ASSERT_EQUAL(length(seen), CONTEXT_MENU_MAX_ROWS * 2, "Пункты потерялись между страницами")
+	user.close_context_menu()
+
+/// Наборы вида: в каждом только существующие настройки с допустимыми значениями, набор применяется целиком и узнаётся обратно
+/datum/unit_test/context_menu_presets
+
+/datum/unit_test/context_menu_presets/Run()
+	var/datum/preferences/prefs = new
+	TEST_ASSERT_EQUAL(prefs.current_context_menu_preset(), "default", "Вид по умолчанию не узнан как «Стандарт»")
+	var/list/seen_styles = list()
+	for(var/preset_id in GLOB.context_menu_style_presets)
+		var/list/preset = GLOB.context_menu_style_presets[preset_id]
+		TEST_ASSERT(istext(preset["name"]) && istext(preset["desc"]), "У набора [preset_id] нет имени или описания")
+		var/list/style = preset["style"]
+		TEST_ASSERT_EQUAL(length(sanitize_context_menu_style(style)), length(style), "В наборе [preset_id] есть недопустимые настройки")
+		var/style_key = json_encode(style)
+		TEST_ASSERT(!seen_styles[style_key], "Набор [preset_id] повторяет [seen_styles[style_key]]")
+		seen_styles[style_key] = preset_id
+		TEST_ASSERT(prefs.apply_context_menu_preset(preset_id), "Набор [preset_id] не применился")
+		TEST_ASSERT_EQUAL(prefs.current_context_menu_preset(), preset_id, "Применённый набор [preset_id] не узнан")
+		for(var/key in style)
+			TEST_ASSERT_EQUAL(prefs.context_menu_option(key), style[key], "Набор [preset_id] не выставил [key]")
+	TEST_ASSERT(length(GLOB.context_menu_style_presets) >= 8, "Наборов меньше восьми")
+	TEST_ASSERT(!prefs.apply_context_menu_preset("nonexistent"), "Применился несуществующий набор")
+	prefs.set_context_menu_style("theme", "light")
+	prefs.set_context_menu_style("font", "pixel")
+	TEST_ASSERT_NULL(prefs.current_context_menu_preset(), "Свой вид узнан как набор")
+	TEST_ASSERT(prefs.set_context_menu_style("accent", "#AbCdEf"), "Свой цвет акцента не принят")
+	TEST_ASSERT_EQUAL(prefs.context_menu_option("accent"), "#abcdef", "Цвет акцента не приведён к нижнему регистру")
+	TEST_ASSERT(!prefs.set_context_menu_style("accent", "red;color:x"), "Принят цвет акцента не в #rrggbb")
+	TEST_ASSERT(prefs.set_context_menu_style("accent", ""), "Цвет акцента не сбрасывается к теме")
+	qdel(prefs)
+
+/// Полоска акцента у основного действия, тень, щели между строками, заглавные, обводка и число пунктов на странице
+/datum/unit_test/context_menu_style_extras
+
+/datum/unit_test/context_menu_style_extras/Run()
+	var/mob/living/carbon/human/dummy/consistent/context_menu_styled/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_styled)
+	user.style_prefs = new
+	var/mob/living/carbon/human/target = allocate(/mob/living/carbon/human/dummy/consistent, get_step(user, EAST))
+	user.a_intent = INTENT_HELP
+	user.style_prefs.context_menu_style = list("animation" = "none", "stripe" = TRUE, "shadow" = TRUE, "separators" = TRUE, "caps" = TRUE, "outline" = TRUE, "page_rows" = 8, "accent" = "#123456")
+	var/datum/context_menu/menu = user.open_context_menu(target, "right=1")
+	TEST_ASSERT_EQUAL(menu.rows_per_page(), 8, "Пунктов на странице не из настроек")
+	TEST_ASSERT(length(menu.visible_entries()) <= 8, "Страница длиннее восьми пунктов")
+	var/stripes = 0
+	var/shadows = 0
+	var/list/row_bottoms = list()
+	for(var/atom/movable/screen/context_menu/row in menu.screen_objects)
+		if(row.entry)
+			row_bottoms += row.row_y
+			continue
+		if(row.base_color == "#123456")
+			stripes++
+		else if(row.base_color == "#000000")
+			shadows++
+	TEST_ASSERT(stripes >= 1, "Нет полоски своего цвета у основного действия")
+	TEST_ASSERT_EQUAL(shadows, 1, "Тень меню не одна")
+	// между соседними строками щель в пиксель
+	var/list/atom/movable/screen/context_menu/rows = list()
+	for(var/atom/movable/screen/context_menu/row in menu.screen_objects)
+		if(row.entry)
+			rows += row
+	for(var/i in 1 to length(rows) - 1)
+		var/atom/movable/screen/context_menu/upper = rows[i]
+		var/atom/movable/screen/context_menu/lower = rows[i + 1]
+		TEST_ASSERT_EQUAL(upper.row_y - (lower.row_y + menu.row_height(lower.entry)), 1, "Между строками [upper.entry.name] и [lower.entry.name] нет щели")
+	var/caps_found = FALSE
+	for(var/atom/movable/screen/context_menu_text/label in menu.screen_objects)
+		if(findtext(label.maptext, "ОСМОТРЕТЬ"))
+			caps_found = TRUE
+		TEST_ASSERT(findtext(label.maptext, "-dm-text-outline"), "Гладкий текст без обводки: [label.maptext]")
+	TEST_ASSERT(caps_found, "Пункты не заглавными")
+	TEST_ASSERT_EQUAL(menu.text_width("Осмотреть"), menu.text_width("ОСМОТРЕТЬ"), "Ширина считается не по заглавным")
+	user.close_context_menu()
+
+
+/// Статистика меню: сводка по игрокам считает раскладки, наборы и каждую настройку, выгрузка - читаемый JSON
+/datum/unit_test/context_menu_stats
+
+/datum/unit_test/context_menu_stats/Run()
+	var/datum/context_menu_stats/stats = new
+	var/datum/preferences/default_prefs = new
+	var/datum/preferences/custom_prefs = new
+	custom_prefs.right_click_choice = RIGHT_CLICK_MODE_ACTION
+	custom_prefs.shift_right_click_choice = RIGHT_CLICK_MODE_NATIVE
+	custom_prefs.context_menu_style = list("theme" = "terminal", "font" = "pixel")
+	var/list/first = stats.record_for("stats_one", default_prefs, 2)
+	first["opens"] += 3
+	first["choices"] += 2
+	stats.record_for("stats_two", custom_prefs, 1.5)
+	stats.entries["Осмотреть"] = 4
+	var/list/snapshot = json_decode(json_encode(stats.snapshot()))
+	var/list/summary = snapshot["summary"]
+	TEST_ASSERT_EQUAL(summary["preset"]["default"], 1, "Игрок на стандартном виде не посчитан")
+	TEST_ASSERT_EQUAL(summary["preset"]["custom"], 1, "Игрок со своим видом не посчитан")
+	TEST_ASSERT_EQUAL(summary["right_click"]["действие"], 1, "Раскладка ПКМ не посчитана")
+	TEST_ASSERT_EQUAL(summary["shift_right_click"]["меню BYOND"], 1, "Раскладка Shift+ПКМ не посчитана")
+	TEST_ASSERT_EQUAL(summary["style"]["theme"]["terminal"], 1, "Тема игрока не посчитана")
+	TEST_ASSERT_EQUAL(summary["style"]["theme"]["dark"], 1, "Тема по умолчанию не посчитана")
+	TEST_ASSERT_EQUAL(summary["style"]["scale"]["100"], 2, "Размер по умолчанию не посчитан у обоих")
+	TEST_ASSERT_EQUAL(snapshot["players"]["stats_one"]["opens"], 3, "Открытия игрока потерялись")
+	TEST_ASSERT_EQUAL(snapshot["players"]["stats_two"]["zoom"], 1.5, "Зум карты игрока не записан")
+	TEST_ASSERT_EQUAL(snapshot["entries"]["Осмотреть"], 4, "Счёт пунктов потерялся")
+	TEST_ASSERT(snapshot["players"]["stats_two"]["right_click_chosen"], "Свой выбор ПКМ не отмечен")
+	TEST_ASSERT(!snapshot["players"]["stats_one"]["right_click_chosen"], "Невыбравший отмечен как выбравший")
+	qdel(stats)
+	qdel(default_prefs)
+	qdel(custom_prefs)
+
+/// Клик по строке браузерного меню приходит в Topic: номер строки выбирает пункт, чужой клик и мусорный номер ничего не делают
+/datum/unit_test/context_menu_html_topic
+
+/datum/unit_test/context_menu_html_topic/Run()
+	var/mob/living/carbon/human/dummy/consistent/context_menu_probe/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_probe)
+	var/mob/living/carbon/human/stranger = allocate(/mob/living/carbon/human/dummy/consistent)
+	var/obj/item/pen/target = allocate(/obj/item/pen, get_step(user, EAST))
+	var/datum/context_menu/menu = user.open_context_menu(target, "right=1")
+	TEST_ASSERT(!menu.html_renderer(), "Браузерное меню без клиента")
+	menu.html_rows = menu.entries.Copy()
+	var/examine_index = 0
+	for(var/i in 1 to length(menu.html_rows))
+		var/datum/context_menu_entry/entry = menu.html_rows[i]
+		if(entry.name == "Осмотреть")
+			examine_index = i
+	TEST_ASSERT(examine_index, "Нет строки «Осмотреть»")
+	var/old_usr = usr
+	usr = stranger
+	menu.Topic("", list("choose" = "[examine_index]"))
+	TEST_ASSERT_EQUAL(user.active_context_menu, menu, "Чужой клик выбрал пункт")
+	usr = user
+	menu.Topic("", list("choose" = "999"))
+	TEST_ASSERT_EQUAL(user.active_context_menu, menu, "Мусорный номер строки закрыл меню")
+	menu.Topic("", list("choose" = "[examine_index]"))
+	usr = old_usr
+	TEST_ASSERT_NULL(user.active_context_menu, "Клик по строке не выбрал пункт")
+	TEST_ASSERT(menu.chosen, "Выбор из браузера посчитан брошенным меню")
+
+/// Настройки содержимого и поведения: интенты в списке, опасные в конце и с переспросом, скрытые «Осмотреть»/«Указать», закрытие на любом шаге
+/datum/unit_test/context_menu_behavior_options
+
+/datum/unit_test/context_menu_behavior_options/Run()
+	var/mob/living/carbon/human/dummy/consistent/context_menu_styled/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_styled)
+	user.style_prefs = new
+	var/mob/living/carbon/human/target = allocate(/mob/living/carbon/human/dummy/consistent, get_step(user, EAST))
+	user.a_intent = INTENT_HELP
+	user.style_prefs.context_menu_style = list("intents" = "inline", "danger_order" = "bottom", "show_examine" = FALSE, "show_point" = FALSE, "confirm_danger" = TRUE)
+	var/datum/context_menu/menu = user.open_context_menu(target, "right=1")
+	TEST_ASSERT_NULL(find_context_entry(menu, "Осмотреть"), "Скрытый «Осмотреть» в меню")
+	TEST_ASSERT_NULL(find_context_entry(menu, "Указать"), "Скрытый «Указать» в меню")
+	TEST_ASSERT_NULL(find_context_entry(menu, "Интенты…"), "Интенты в списке, а подменю осталось")
+	var/datum/context_menu_entry/harm = find_context_entry(menu, "Ударить")
+	TEST_ASSERT_NOTNULL(harm, "Интенты в списке, а удара нет")
+	var/last_calm = 0
+	var/first_danger = length(menu.entries) + 1
+	for(var/i in 1 to length(menu.entries))
+		var/datum/context_menu_entry/entry = menu.entries[i]
+		if(entry.style == CONTEXT_ENTRY_DANGER)
+			first_danger = min(first_danger, i)
+		else if(entry.style != CONTEXT_ENTRY_SERVICE && entry.style != CONTEXT_ENTRY_ADMIN)
+			last_calm = i
+	TEST_ASSERT(last_calm < first_danger, "Опасные действия не в конце: спокойное [last_calm], опасное [first_danger]")
+
+	menu.choose(harm)
+	TEST_ASSERT_EQUAL(user.active_context_menu, menu, "Опасное действие выполнено с первого клика")
+	TEST_ASSERT_EQUAL(menu.entry_display_name(harm), "Точно? Ударить", "Переспрос не показан")
+	menu.choose(harm)
+	TEST_ASSERT_NULL(user.active_context_menu, "Второй клик не выполнил опасное действие")
+
+	user.style_prefs.context_menu_style = list("close_on_move" = "always")
+	menu = user.open_context_menu(target, "right=1")
+	user.forceMove(get_step(user, NORTH))
+	TEST_ASSERT_NULL(user.active_context_menu, "Меню пережило шаг при «закрывать на любом шаге»")
+	user.style_prefs.context_menu_style = list("close_on_move" = "never")
+	menu = user.open_context_menu(target, "right=1")
+	user.forceMove(get_step(user, SOUTH))
+	TEST_ASSERT_EQUAL(user.active_context_menu, menu, "Меню закрылось на шаге при «не закрывать»")
+	user.close_context_menu()
+
+	// порядок без игрока: опасные перед служебными, служебные на месте
+	var/datum/context_menu_entry/calm = new("Спокойное", null, CONTEXT_ENTRY_NORMAL)
+	var/datum/context_menu_entry/danger = new("Опасное", null, CONTEXT_ENTRY_DANGER)
+	var/datum/context_menu_entry/intent_list/intents = new("Интенты…", null, CONTEXT_ENTRY_SERVICE)
+	var/list/order = list(danger, calm, intents)
+	context_menu_danger_last(order)
+	TEST_ASSERT(order[1] == calm && order[2] == danger && order[3] == intents, "Неверный порядок опасных действий")

@@ -86,6 +86,14 @@ window "mainwindow"
 		anchor2 = none
 		is-visible = false
 		saved-params = ""
+	elem "context_menu"
+		type = BROWSER
+		pos = 0,0
+		size = 200x200
+		anchor1 = none
+		anchor2 = none
+		is-visible = false
+		saved-params = ""
 
 window "mapwindow"
 	elem "mapwindow"
