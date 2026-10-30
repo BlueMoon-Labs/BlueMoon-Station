@@ -2,6 +2,9 @@
 	name = "RadDog Naga (Hyper)"
 	icon = 'modular_splurt/icons/mob/mam_taur.dmi'
 	icon_state = "chemnaga"
+	severed_body_state = "chemnaga-severed"
+	severed_body_extra_state = "chemnaga-severed"
+	parent_type = /datum/sprite_accessory/taur/naga
 	taur_mode = STYLE_SNEK_TAURIC
 	hide_legs = USE_SNEK_CLIP_MASK
 	matrixed_sections = MATRIX_ALL

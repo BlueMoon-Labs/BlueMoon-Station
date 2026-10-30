@@ -12,6 +12,8 @@
 	if(!iscarbon(target))
 		return FALSE
 	var/mob/living/carbon/C = target
+	if(HAS_TRAIT(C, TRAIT_NAGA_ANATOMY) && (user.zone_selected == BODY_ZONE_L_LEG || user.zone_selected == BODY_ZONE_R_LEG))
+		return FALSE
 	if(!C.get_bodypart(user.zone_selected)) //can only start if limb is missing
 		return TRUE
 /datum/surgery_step/add_prosthetic
@@ -31,6 +33,9 @@
 		tool = I
 	if(istype(tool, /obj/item/bodypart))
 		var/obj/item/bodypart/BP = tool
+		if(istype(BP, /obj/item/bodypart/l_leg/naga_tail))
+			to_chat(user, span_warning("Опорный хвост пересаживают через пах после ампутации обеих ног. Начните соответствующую операцию в области паха."))
+			return -1
 		if(ismonkey(target))// monkey patient only accept organic monkey limbs
 			if(BP.is_robotic_limb() || BP.animal_origin != MONKEY_BODYPART)
 				to_chat(user, "<span class='warning'>[BP] doesn't match the patient's morphology.</span>")
@@ -90,3 +95,49 @@
 			var/obj/item/melee/arm_blade/new_arm = new(target,TRUE,TRUE)
 			target_zone == BODY_ZONE_R_ARM ? target.put_in_r_hand(new_arm) : target.put_in_l_hand(new_arm)
 			return TRUE
+
+// В паху сохраняется туловище, поэтому наличие хвоста проверяется отдельно от доступа.
+/datum/surgery/naga_tail_replacement
+	name = "Supporting tail transplantation"
+	desc = "Пересадка опорного хвоста через доступ в области паха. У тела с ногами сначала необходимо ампутировать обе ноги."
+	icon_state = "surgery_any"
+	steps = list(/datum/surgery_step/incise, /datum/surgery_step/clamp_bleeders, /datum/surgery_step/retract_skin, /datum/surgery_step/attach_naga_tail)
+	possible_locs = list(BODY_ZONE_PRECISE_GROIN)
+	requires_bodypart_type = 0
+	radial_priority = SURGERY_RADIAL_PRIORITY_HEAL_EMERGENCY
+	special_surgery_traits = list(OPERATION_NEED_FULL_ANESTHETIC)
+
+/datum/surgery/naga_tail_replacement/can_start(mob/user, mob/living/carbon/target, obj/item/tool)
+	if(!ishuman(target))
+		return FALSE
+	var/mob/living/carbon/human/human = target
+	return human.can_receive_naga_tail() && ..()
+
+/datum/surgery_step/attach_naga_tail
+	name = "Пришить опорный хвост"
+	parent_type = /datum/surgery_step/add_prosthetic
+	implements = list(/obj/item/bodypart/l_leg/naga_tail = 100)
+
+/datum/surgery_step/attach_naga_tail/preop(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
+	var/mob/living/carbon/human/human = target
+	if(!istype(human) || !human.can_receive_naga_tail())
+		return -1
+	display_results(user, target, span_notice("Вы начинаете пришивать опорный хвост [target]..."),
+		"[user] начинает пришивать опорный хвост [target].",
+		"[user] начинает пришивать опорный хвост [target].")
+
+/datum/surgery_step/attach_naga_tail/success(mob/user, mob/living/carbon/target, target_zone, obj/item/tool, datum/surgery/surgery)
+	var/mob/living/carbon/human/human = target
+	if(!istype(human) || !human.can_receive_naga_tail())
+		return FALSE
+	var/obj/item/bodypart/l_leg/naga_tail/tail = tool
+	if(!istype(tail) || !user.temporarilyRemoveItemFromInventory(tail))
+		return FALSE
+	if(!tail.attach_limb(target))
+		user.put_in_hands(tail)
+		return FALSE
+	display_results(user, target, span_notice("Вы пришили опорный хвост [target]."),
+		"[user] пришивает опорный хвост [target]!",
+		"[user] пришивает опорный хвост [target]!")
+	log_combat(user, target, "surgically attached supporting tail")
+	return TRUE

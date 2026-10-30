@@ -113,6 +113,8 @@
 
 /// Called when the MODsuit is activated
 /obj/item/mod/module/proc/on_suit_activation()
+	if(required_modpart && !check_required_modpart())
+		return FALSE
 	return startup_with_suit ? on_activation() : FALSE
 
 /// Called when the MODsuit is deactivated
@@ -148,6 +150,9 @@
 /obj/item/mod/module/proc/on_select()
 	if(!mod?.wearer) //the control's TGUI is reachable on an unworn suit; every module action below needs a wearer
 		return
+	if(required_modpart_index == MOD_PART_FEET && HAS_TRAIT(mod.wearer, TRAIT_NAGA_ANATOMY))
+		mod.balloon_alert(mod.wearer, "нет обувного слота!")
+		return FALSE
 	if(!COOLDOWN_FINISHED(src, cooldown_current_timer))
 		mod.balloon_alert(mod.wearer, "на перезарядке!")
 		return FALSE

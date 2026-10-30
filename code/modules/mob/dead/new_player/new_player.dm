@@ -650,6 +650,11 @@
 /mob/dead/new_player/proc/check_quirk_balance()
 	if(!client)
 		return FALSE
+	for(var/feature_id in client.prefs.innate_features)
+		var/datum/innate_feature/feature = GLOB.innate_features[feature_id]
+		if(!feature?.available(client.prefs))
+			to_chat(src, span_warning("Не выполнены условия врождённой особенности. Проверьте вкладку «Врожденное» перед входом в раунд."))
+			return FALSE
 	if(CONFIG_GET(flag/roundstart_traits) && client.prefs.quirk_balance() < 0)
 		to_chat(src, span_warning("Не хватает очков особенностей. Скорректируйте особенности или модификации персонажа перед входом в раунд."))
 		return FALSE

@@ -162,6 +162,9 @@
 	if(ishuman(C))
 		var/mob/living/carbon/human/H = C
 		if(HAS_TRAIT(C, TRAIT_LIMBATTACHMENT))
+			if((body_zone == BODY_ZONE_L_LEG || body_zone == BODY_ZONE_R_LEG) && (HAS_TRAIT(C, TRAIT_NAGA_ANATOMY) != istype(src, /obj/item/bodypart/l_leg/naga_tail)))
+				to_chat(user, span_warning("Эта конечность не подходит анатомии [H]."))
+				return
 			if(!H.get_bodypart(body_zone) && !animal_origin)
 				if(H == user)
 					H.visible_message("<span class='warning'>[H] jams [src] into [H.ru_ego()] empty socket!</span>",\
@@ -216,6 +219,10 @@
 		var/obj/item/organ/organ_check = i
 		if(check_zone(organ_check.zone) == body_zone)
 			. += organ_check
+
+// Зона одежды может отличаться от анатомической зоны конечности.
+/obj/item/bodypart/proc/get_clothing_zone()
+	return body_zone
 
 /obj/item/bodypart/proc/consider_processing()
 	if(stamina_dam > DAMAGE_PRECISION)
@@ -502,14 +509,15 @@
 	if(owner && ishuman(owner))
 		var/mob/living/carbon/human/H = owner
 		var/list/clothing = H.clothingonpart(src)
+		var/clothing_zone = get_clothing_zone()
 		for(var/obj/item/clothing/C as anything in clothing)
 			// unlike normal armor checks, we tabluate these piece-by-piece manually so we can also pass on appropriate damage the clothing's limbs if necessary
 			if(C.armor)
 				armor_ablation += C.armor.getRating(WOUND)
 			if(wounding_type == WOUND_SLASH)
-				C.take_damage_zone(body_zone, damage, BRUTE, armour_penetration)
+				C.take_damage_zone(clothing_zone, damage, BRUTE, armour_penetration)
 			else if(wounding_type == WOUND_BURN && damage >= 10) // lazy way to block freezing from shredding clothes without adding another var onto apply_damage()
-				C.take_damage_zone(body_zone, damage, BURN, armour_penetration)
+				C.take_damage_zone(clothing_zone, damage, BURN, armour_penetration)
 
 		if(!armor_ablation)
 			injury_mod += bare_wound_bonus

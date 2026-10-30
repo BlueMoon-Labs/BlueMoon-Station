@@ -83,6 +83,9 @@
 	button_icon_state = "wrassle_kick"
 
 /datum/action/kick/Trigger()
+	if(!owner.get_num_supporting_limbs())
+		to_chat(owner, span_warning("Для этого приёма нужна действующая нога или опорный хвост."))
+		return FALSE
 	if(owner.incapacitated())
 		to_chat(owner, "<span class='warning'>You can't WRESTLE while you're OUT FOR THE COUNT.</span>")
 		return
@@ -384,6 +387,9 @@
 /datum/martial_art/wrestling/proc/kick(mob/living/carbon/human/A, mob/living/carbon/human/D)
 	if(!D)
 		return
+	if(!A.get_num_supporting_limbs())
+		to_chat(A, span_warning("Для этого приёма нужна действующая нога или опорный хвост."))
+		return FALSE
 	var/damage = damage_roll(A,D)
 	A.emote("realagony")
 	A.emote("flip")

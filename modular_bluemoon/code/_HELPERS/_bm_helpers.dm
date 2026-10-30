@@ -14,15 +14,14 @@
 		H.shoes
 	)
 
+	var/target_zone = body_part.get_clothing_zone()
 	for(var/obj/item/clothing/C in clothes)
 		if(!C)
 			continue
-
 		var/list/covered_zones = body_parts_covered2organ_names(C.body_parts_covered)
 		if(!covered_zones)
 			continue
 
-		var/target_zone = body_part.body_zone
 		if(target_zone in covered_zones)
 			return C
 

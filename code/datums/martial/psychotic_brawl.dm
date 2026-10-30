@@ -54,6 +54,8 @@
 		if(5,6)
 			A.do_attack_animation(D, ATTACK_EFFECT_PUNCH)
 			atk_verb = pick("punches", "kicks", "hits", "slams into")
+			if(!A.get_num_supporting_limbs() && atk_verb == "kicks")
+				atk_verb = "hits"
 			D.visible_message("<span class='danger'>[A] [atk_verb] [D] with inhuman strength, sending [D.ru_na()] flying backwards!</span>", \
 							  "<span class='userdanger'>[A] [atk_verb] you with inhuman strength, sending you flying backwards!</span>")
 			D.apply_damage(damage*2, BRUTE)

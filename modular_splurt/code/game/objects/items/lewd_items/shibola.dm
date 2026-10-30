@@ -56,6 +56,8 @@
 		to_chat(user, span_warning("There is nothing to remove; try putting some clothing or bondage ropes into it first!"))
 
 /obj/item/shibola/proc/ensnare(mob/living/carbon/C)
+	if(HAS_TRAIT(C, TRAIT_NAGA_ANATOMY))
+		return
 	visible_message("<span class='danger'>\The [src] tangles around [C]!</span>")
 
 	if(!C.client || C.client?.prefs.nonconpref == "No")

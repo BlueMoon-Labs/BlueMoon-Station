@@ -84,7 +84,7 @@
 		"modified_limbs", "organ_mods", "implant_mods", "chosen_limb_id", "body_weight", "scars_list", "bgstate",
 		"custom_speech_verb", "custom_speech_verb_ru", "custom_tongue", "custom_laugh", "language",
 		"bark_id", "bark_speed", "bark_pitch", "bark_variance", "enable_personal_chat_color", "personal_chat_color",
-		"loadout_slot", "loadout_enabled", "loadout_data", "all_quirks", "antag_opt_in_level",
+		"loadout_slot", "loadout_enabled", "loadout_data", "all_quirks", "innate_features", "antag_opt_in_level",
 		"phobia_type", "shriek_type", "onelife_death_type", "summon_nickname", "distant_start_enabled", "vore_taste", "vore_smell",
 		"security_records", "medical_records", "underwear", "undershirt", "socks", "undie_color", "shirt_color", "socks_color",
 		"job_preferences", "joblessrole", "alt_titles_preferences", "persistent_tattoos", "tattoos_string", "pending_tattoo_removals",
@@ -2977,6 +2977,8 @@
 			data["quirksTab"] = build_quirks_data()
 		if(MODIFICATIONS_CHAR_TAB)
 			data["modsTab"] = build_modifications_data()
+		if(INNATE_CHAR_TAB)
+			data["innateTab"] = build_innate_data()
 
 	if(prefs.character_settings_tab == GENERAL_CHAR_TAB || prefs.character_settings_tab == APPEARANCE_CHAR_TAB)
 		data["appearance"] = build_appearance_data(user, prefs.character_settings_tab == APPEARANCE_CHAR_TAB)
@@ -3014,6 +3016,7 @@
 		list("id" = MODIFICATIONS_CHAR_TAB, "label" = "Модификации", "icon" = "robot"),
 		list("id" = SPEECH_CHAR_TAB, "label" = "Речь", "icon" = "comment"),
 		list("id" = QUIRKS_CHAR_TAB, "label" = "Особенности", "icon" = "brain"),
+		list("id" = INNATE_CHAR_TAB, "label" = "Врожденное", "icon" = "dna"),
 		list("id" = LOADOUT_CHAR_TAB, "label" = "Экипировка", "icon" = "tshirt"),
 	)
 
@@ -3674,7 +3677,7 @@
 
 		if("set_tab")
 			var/new_tab = num_param(params["tab"])
-			if(isnull(new_tab) || new_tab < GENERAL_CHAR_TAB || new_tab > MODIFICATIONS_CHAR_TAB)
+			if(isnull(new_tab) || new_tab < GENERAL_CHAR_TAB || new_tab > INNATE_CHAR_TAB)
 				return
 			prefs.character_settings_tab = new_tab
 			return TRUE
@@ -4229,6 +4232,9 @@
 
 		if("quirk_toggle")
 			quirk_toggle(params)
+			return TRUE
+		if("innate_toggle")
+			toggle_innate_feature(params["id"])
 			return TRUE
 
 		if("quirk_reset")

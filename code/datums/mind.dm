@@ -200,12 +200,16 @@
 
 /datum/mind/proc/set_original_character(new_original_character)
 	original_character = WEAKREF(new_original_character)
+	if(ishuman(new_original_character))
+		var/mob/living/carbon/human/original_human = new_original_character
+		set_naga_locomotion(HAS_TRAIT(original_human, TRAIT_NAGA_ANATOMY))
 
 /datum/mind/proc/transfer_to(mob/new_character, var/force_key_move = 0)
 	if(current && new_character && current.training_origin != new_character.training_origin)
 		if(current.training_origin || new_character.training_origin)
 			return FALSE
 	var/old_character = current
+	var/update_naga_mobility = HAS_TRAIT(src, TRAIT_NAGA_LOCOMOTION) || (new_character?.mind && HAS_TRAIT(new_character.mind, TRAIT_NAGA_LOCOMOTION))
 	var/signals = SEND_SIGNAL(new_character, COMSIG_MOB_PRE_PLAYER_CHANGE, new_character, old_character) | SEND_SIGNAL(src, COMSIG_PRE_MIND_TRANSFER, new_character, old_character)
 	if(signals & COMPONENT_STOP_MIND_TRANSFER)
 		return
@@ -267,6 +271,12 @@
 
 	SEND_SIGNAL(src, COMSIG_MIND_TRANSFER, new_character, old_character)
 	SEND_SIGNAL(new_character, COMSIG_MOB_ON_NEW_MIND)
+	if(update_naga_mobility)
+		if(isliving(old_current) && !QDELETED(old_current))
+			old_current.update_mobility()
+		current?.update_mobility()
+		if(ishuman(current) && !HAS_TRAIT(current, TRAIT_NAGA_ANATOMY) && HAS_TRAIT(src, TRAIT_NAGA_LOCOMOTION))
+			to_chat(current, span_warning("Вы умеете передвигаться только опорным хвостом. Ходить на ногах вы не умеете и в этом теле можете лишь ползать. Медик может заменить обе ноги опорным хвостом."))
 //splurt change
 	INVOKE_ASYNC(GLOBAL_PROC, GLOBAL_PROC_REF(_paci_check), new_character, old_character)
 //end change
@@ -2000,9 +2010,12 @@ GLOBAL_LIST(objective_choices)
 
 //HUMAN
 /mob/living/carbon/human/mind_initialize()
+	var/fresh_mind = !mind
 	..()
 	if(!mind.assigned_role)
 		mind.assigned_role = "Unassigned" //default
+	if(fresh_mind)
+		mind.set_naga_locomotion(HAS_TRAIT(src, TRAIT_NAGA_ANATOMY))
 
 //AI
 /mob/living/silicon/ai/mind_initialize()

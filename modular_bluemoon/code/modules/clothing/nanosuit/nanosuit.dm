@@ -798,8 +798,7 @@
 		return TRUE
 	if(findtext(streak,HEAD_EXPLOSION))
 		streak = ""
-		HeadStomp(A,D)
-		return TRUE
+		return HeadStomp(A,D)
 	return FALSE
 
 /datum/martial_art/nanosuit/proc/PowerPunch(mob/living/carbon/human/A, mob/living/carbon/human/D)
@@ -815,6 +814,8 @@
 	return TRUE
 
 /datum/martial_art/nanosuit/proc/HeadStomp(mob/living/carbon/human/A, mob/living/carbon/human/D)
+	if(!A.get_num_supporting_limbs())
+		return FALSE
 	var/obj/item/bodypart/head/head = D.get_bodypart(BODY_ZONE_HEAD)
 	if(head)
 		head.drop_limb()
@@ -844,10 +845,11 @@
 	return TRUE
 
 /datum/martial_art/nanosuit/harm_act(var/mob/living/carbon/human/A, var/mob/living/carbon/D)
-	var/picked_hit_type = pick("бьёт", "пинает")
+	var/has_legs = A.get_num_supporting_limbs() > 0
+	var/picked_hit_type = has_legs ? pick("бьёт", "пинает") : "бьёт"
 	var/bonus_damage = 15 // must exceed TRAIT_TOUGHT_DAMAGE (10) to harm tough targets
 	var/quick = FALSE
-	if(D.resting || !(D.mobility_flags & MOBILITY_STAND))//we can hit ourselves
+	if(has_legs && (D.resting || !(D.mobility_flags & MOBILITY_STAND))) // Придавливать цель можно ногой или действующим опорным хвостом.
 		bonus_damage += 5
 		picked_hit_type = "топчется по"
 		if(A.zone_selected == BODY_ZONE_HEAD && D.get_bodypart(BODY_ZONE_HEAD) && (!A.resting || (A.mobility_flags & MOBILITY_STAND)))
@@ -875,9 +877,9 @@
 			D.Paralyze(60)
 			D.visible_message("<span class='warning'>[A] бьет [D] очень сильно!", \
 							span_userdanger("[A] бьет меня очень сильно"))
-		else if(A.resting && (D.mobility_flags & MOBILITY_STAND)) //but we can't legsweep ourselves!
-			D.visible_message("<span class='warning'>[A] ломает колено [D]!", \
-								span_userdanger("[A] ломает тебе колено!"))
+		else if(has_legs && D.get_num_supporting_limbs() && A.resting && (D.mobility_flags & MOBILITY_STAND)) // Подсечка действует и на опорный хвост.
+			D.visible_message(span_warning("[A] подсекает [D] [HAS_TRAIT(A, TRAIT_NAGA_ANATOMY) ? "хвостом" : "ногой"]!"), \
+				span_userdanger("[A] подсекает вас [HAS_TRAIT(A, TRAIT_NAGA_ANATOMY) ? "хвостом" : "ногой"]!"))
 			playsound(get_turf(A), 'sound/effects/hit_kick.ogg', 50, TRUE, -1)
 			bonus_damage += 5
 			D.Paralyze(60)

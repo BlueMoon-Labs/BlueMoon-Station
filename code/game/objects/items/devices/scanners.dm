@@ -439,6 +439,22 @@ GENETICS SCANNER
 	)
 	var/msg = ""
 
+	var/list/innate_features = list()
+	var/list/innate_feature_names = list()
+	data["innateFeatures"] = innate_features
+	if(ishuman(M))
+		var/mob/living/carbon/human/patient = M
+		for(var/feature_id in patient.applied_innate_features)
+			var/datum/innate_feature/feature = GLOB.innate_features[feature_id]
+			if(!feature)
+				continue
+			var/feature_name = feature.display_name || feature.name
+			innate_features += list(list("id" = feature.id, "name" = feature_name, "tooltip" = feature.medical_tooltip))
+			innate_feature_names += html_encode(feature_name)
+		if(HAS_MIND_TRAIT(patient, TRAIT_NAGA_LOCOMOTION) && !HAS_TRAIT(patient, TRAIT_NAGA_ANATOMY))
+			innate_features += list(list("id" = TRAIT_NAGA_LOCOMOTION, "name" = "Хвостовая моторика", "tooltip" = "Пациент умеет передвигаться только опорным хвостом. Ноги этого тела не дают ему возможности ходить. Для восстановления ходьбы ампутируйте обе ноги, затем пересадите опорный хвост через доступ в паху."))
+			innate_feature_names += "Хвостовая моторика"
+
 	if(brute_loss > 10)
 		msg += "\n" + span_alert("Травмы: [brute_loss > 50 ? "серьёзные" : "незначительные"]")
 	if(fire_loss > 10)
@@ -475,9 +491,13 @@ GENETICS SCANNER
 	var/limb_details = ""
 	if(iscarbon(M))
 		var/mob/living/carbon/C = M
+		var/naga_anatomy = HAS_TRAIT(C, TRAIT_NAGA_ANATOMY)
 		for(var/zone in list(BODY_ZONE_HEAD, BODY_ZONE_CHEST, BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG))
+			if(naga_anatomy && zone == BODY_ZONE_R_LEG)
+				continue
 			var/obj/item/bodypart/limb = C.get_bodypart(zone)
-			var/list/entry = list("name" = capitalize(ru_parse_zone(zone)), "missing" = isnull(limb), "wounds" = list(), "embeds" = list())
+			var/is_tail = naga_anatomy && zone == BODY_ZONE_L_LEG
+			var/list/entry = list("name" = is_tail ? "Опорный хвост" : capitalize(ru_parse_zone(zone)), "missing" = isnull(limb), "wounds" = list(), "embeds" = list())
 			var/list/wounds = entry["wounds"]
 			var/list/embeds = entry["embeds"]
 			if(limb)
@@ -491,13 +511,14 @@ GENETICS SCANNER
 				continue
 			limbs += list(entry)
 			if(!limb)
+				entry["missingText"] = is_tail ? "оторван" : "отсутствует"
 				switch(zone)
 					if(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM)
 						entry["missingIcon"] = "handshake-slash"
 					if(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)
 						entry["missingIcon"] = "crutch"
 				var/missing_icon = entry["missingIcon"] ? "<i class='fas fa-[entry["missingIcon"]]'></i> " : ""
-				limb_details += "<tr><td colspan='5'>[span_bolddanger("[missing_icon][html_encode(entry["name"])] отсутствует")]</td></tr>"
+				limb_details += "<tr><td colspan='5'>[span_bolddanger("[missing_icon][html_encode(entry["name"])] [entry["missingText"]]")]</td></tr>"
 			else
 				limb_details += "<tr><td>[html_encode(entry["name"])]</td><td>[span_danger("[entry["brute"]]")]</td><td>[span_orange("[entry["burn"]]")]</td></tr>"
 			for(var/embedded_name in embeds)
@@ -891,6 +912,7 @@ GENETICS SCANNER
 		header += "[span_info("Импланты:")] [html_encode(jointext(implants, ", "))]<br>"
 	if(length(quirk_report))
 		header += "[span_info("Особенности:")] [jointext(quirk_report, ", ")]<br>"
+	header += "[span_info("Врожденное:")] [length(innate_feature_names) ? jointext(innate_feature_names, ", ") : "Нет"]<br>"
 	var/report = "[header][data["report"]]<hr>[span_info("Снимок от [scan_time]")]"
 	data["report"] = report
 	return data

@@ -319,6 +319,8 @@
 /obj/item/bodypart/proc/replace_limb(mob/living/carbon/C, special)
 	if(!istype(C))
 		return
+	if(HAS_TRAIT(C, TRAIT_NAGA_ANATOMY) && (body_zone == BODY_ZONE_L_LEG || body_zone == BODY_ZONE_R_LEG) && !istype(src, /obj/item/bodypart/l_leg/naga_tail))
+		return FALSE
 	var/obj/item/bodypart/O = C.get_bodypart(body_zone)
 	if(O)
 		O.drop_limb(1)
@@ -336,6 +338,8 @@
 	attach_limb(C, special)
 
 /obj/item/bodypart/proc/attach_limb(mob/living/carbon/C, special)
+	if(HAS_TRAIT(C, TRAIT_NAGA_ANATOMY) && (body_zone == BODY_ZONE_L_LEG || body_zone == BODY_ZONE_R_LEG) && !istype(src, /obj/item/bodypart/l_leg/naga_tail))
+		return FALSE
 	moveToNullspace()
 	owner = C
 	C.bodyparts += src
@@ -426,6 +430,10 @@
 /mob/living/carbon/regenerate_limbs(noheal = FALSE, list/excluded_limbs = list())
 	. = ..()
 	var/list/limb_list = list(BODY_ZONE_HEAD, BODY_ZONE_CHEST, BODY_ZONE_R_ARM, BODY_ZONE_L_ARM, BODY_ZONE_R_LEG, BODY_ZONE_L_LEG)
+	if(HAS_TRAIT(src, TRAIT_NAGA_ANATOMY))
+		limb_list -= BODY_ZONE_R_LEG
+		if(BODY_ZONE_R_LEG in excluded_limbs)
+			limb_list -= BODY_ZONE_L_LEG
 	if(excluded_limbs.len)
 		limb_list -= excluded_limbs
 	for(var/Z in limb_list)

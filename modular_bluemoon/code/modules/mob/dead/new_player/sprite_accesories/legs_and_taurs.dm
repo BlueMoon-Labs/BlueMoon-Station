@@ -2,6 +2,8 @@
 	name = "Naga, Fat"
 	icon = 'modular_bluemoon/icons/mob/mam_taur.dmi'
 	icon_state = "nagafat"
+	severed_body_state = "nagafat-severed"
+	severed_body_extra_state = "nagafat-severed"
 	taur_mode = STYLE_SNEK_TAURIC
 	hide_legs = USE_SNEK_CLIP_MASK
 	matrixed_sections = MATRIX_RED_GREEN

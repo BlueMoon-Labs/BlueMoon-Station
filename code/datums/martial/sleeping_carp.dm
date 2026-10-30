@@ -33,6 +33,8 @@
 	var/obj/item/bodypart/affecting = D.get_bodypart(ran_zone(A.zone_selected))
 	A.do_attack_animation(D, ATTACK_EFFECT_PUNCH)
 	var/atk_verb = pick("precisely kick", "brutally chop", "cleanly hit", "viciously slam")
+	if(!A.get_num_supporting_limbs() && atk_verb == "precisely kick")
+		atk_verb = "cleanly hit"
 	///this is the critical hit damage added to the attack if it rolls, it starts at 0 because it'll be changed when rolled
 	var/crit_damage = 0
 	var/damage = damage_roll(A,D)
@@ -52,6 +54,9 @@
 
 ///Crashing Wave Kick: Harm Disarm combo, throws people seven tiles backwards
 /datum/martial_art/the_sleeping_carp/proc/launchKick(mob/living/carbon/human/A, mob/living/carbon/human/D)
+	if(!A.get_num_supporting_limbs())
+		to_chat(A, span_warning("Для этого приёма нужна действующая нога или опорный хвост."))
+		return FALSE
 	var/damage = (damage_roll(A,D) + 15)
 	A.do_attack_animation(D, ATTACK_EFFECT_KICK)
 	D.visible_message("<span class='warning'>[A] kicks [D] square in the chest, sending them flying!</span>", \
@@ -65,6 +70,9 @@
 
 ///Keelhaul: Harm Grab combo, knocks people down, deals stamina damage while they're on the floor
 /datum/martial_art/the_sleeping_carp/proc/dropKick(mob/living/carbon/human/A, mob/living/carbon/human/D)
+	if(!A.get_num_supporting_limbs())
+		to_chat(A, span_warning("Для этого приёма нужна действующая нога или опорный хвост."))
+		return FALSE
 	var/damage = damage_roll(A,D)
 	A.do_attack_animation(D, ATTACK_EFFECT_KICK)
 	playsound(get_turf(A), 'sound/effects/hit_kick.ogg', 50, TRUE, -1)
@@ -99,6 +107,8 @@
 	var/obj/item/bodypart/affecting = D.get_bodypart(ran_zone(A.zone_selected))
 	A.do_attack_animation(D, ATTACK_EFFECT_PUNCH)
 	var/atk_verb = pick("kick", "chop", "hit", "slam")
+	if(!A.get_num_supporting_limbs() && atk_verb == "kick")
+		atk_verb = "hit"
 	D.visible_message("<span class='danger'>[A] [atk_verb]s [D]!</span>", \
 					"<span class='userdanger'>[A] [atk_verb]s you!</span>", null, null, A)
 	to_chat(A, "<span class='danger'>You [atk_verb] [D]!</span>")

@@ -59,6 +59,9 @@
 /datum/martial_art/cqc/proc/Kick(mob/living/carbon/human/A, mob/living/carbon/human/D)
 	if(!can_use(A))
 		return FALSE
+	if(!A.get_num_supporting_limbs())
+		to_chat(A, span_warning("Для этого приёма нужна действующая нога или опорный хвост."))
+		return FALSE
 	var/damage = damage_roll(A,D)
 	if(D.lying && !D.IsUnconscious() && D.getStaminaLoss() > 100)
 		log_combat(A, D, "knocked out (Head kick)(CQC)")
@@ -150,7 +153,7 @@
 	A.do_attack_animation(D)
 	var/picked_hit_type = pick("CQC'd", "Big Bossed")
 	var/bonus_damage = (damage_roll(A,D) + 7)
-	if(!CHECK_MOBILITY(D, MOBILITY_STAND))
+	if(!CHECK_MOBILITY(D, MOBILITY_STAND) && A.get_num_supporting_limbs())
 		bonus_damage += 5
 		picked_hit_type = "stomps on"
 	D.apply_damage(bonus_damage, BRUTE)
@@ -161,9 +164,9 @@
 	D.visible_message("<span class='danger'>[A] [picked_hit_type] [D]!</span>", \
 					  "<span class='userdanger'>[A] [picked_hit_type] you!</span>")
 	log_combat(A, D, "[picked_hit_type] (CQC)")
-	if(!CHECK_MOBILITY(A, MOBILITY_STAND) && !D.stat && CHECK_MOBILITY(D, MOBILITY_STAND))
-		D.visible_message("<span class='warning'>[A] leg sweeps [D]!", \
-							"<span class='userdanger'>[A] leg sweeps you!</span>")
+	if(!CHECK_MOBILITY(A, MOBILITY_STAND) && !D.stat && CHECK_MOBILITY(D, MOBILITY_STAND) && A.get_num_supporting_limbs())
+		D.visible_message(span_warning("[A] подсекает [D] [HAS_TRAIT(A, TRAIT_NAGA_ANATOMY) ? "хвостом" : "ногой"]!"), \
+			span_userdanger("[A] подсекает вас [HAS_TRAIT(A, TRAIT_NAGA_ANATOMY) ? "хвостом" : "ногой"]!"))
 		playsound(get_turf(A), 'sound/effects/hit_kick.ogg', 50, 1, -1)
 		D.apply_damage(bonus_damage, BRUTE)
 		D.DefaultCombatKnockdown(60)
