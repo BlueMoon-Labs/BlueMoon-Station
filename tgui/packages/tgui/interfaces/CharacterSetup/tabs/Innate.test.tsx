@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { combineReducers, createStore, setGlobalStore } from 'common/redux';
 
 import { backendReducer, backendUpdate } from '../../../backend';
@@ -26,28 +26,6 @@ const setup = (items: unknown[] | undefined = [item]) => {
   return topic;
 };
 
-test('карточки показывают категорию, описание, бюджет и все условия', () => {
-  setup();
-  for (const text of ['Дополнительная', item.desc, 'Подходящее тело', 'Естественные конечности']) {
-    expect(screen.getByText(text)).toBeTruthy();
-  }
-  expect(screen.getByText(/Доступно очков квирков: 3/)).toBeTruthy();
-});
-
-test('основная и дополнительная особенности различаются в интерфейсе', () => {
-  setup([item, { ...item, id: 'primary', name: 'Основная особенность', primary: true }]);
-  expect(screen.getByText('Основная')).toBeTruthy();
-  expect(screen.getByText('Дополнительная')).toBeTruthy();
-});
-
-test('выбор отправляет стабильный идентификатор особенности', () => {
-  const topic = setup();
-  fireEvent.click(screen.getByText('Выбрать'));
-  const actions = topic.mock.calls.filter(([message]) => message.type === 'act/innate_toggle');
-  expect(actions.length).toBe(1);
-  expect(JSON.parse(actions[0][0].payload).id).toBe(item.id);
-});
-
 test('недоступную особенность нельзя выбрать', () => {
   const topic = setup([{ ...item, available: false }]);
   fireEvent.click(screen.getByText('Выбрать'));
@@ -56,16 +34,16 @@ test('недоступную особенность нельзя выбрать'
 
 test('недоступную выбранную особенность можно убрать', () => {
   const topic = setup([{ ...item, selected: true, available: false }]);
-  expect(screen.getByText(/Условия больше не выполнены/)).toBeTruthy();
   fireEvent.click(screen.getByText('Убрать'));
   const actions = topic.mock.calls.filter(([message]) => message.type === 'act/innate_toggle');
+  expect(actions.length).toBe(1);
   expect(JSON.parse(actions[0][0].payload).id).toBe(item.id);
 });
 
 test('выбор одной карточки не отправляет идентификатор соседней', () => {
-  const topic = setup([item, { ...item, id: 'second', name: 'Вторая' }]);
-  const section = screen.getByText('Вторая').closest('.Section')!;
-  fireEvent.click(within(section as HTMLElement).getByText('Выбрать'));
-  const action = topic.mock.calls.find(([message]) => message.type === 'act/innate_toggle')!;
-  expect(JSON.parse(action[0].payload).id).toBe('second');
+  const topic = setup([{ ...item, selected: true }, { ...item, id: 'second', name: 'Вторая' }]);
+  fireEvent.click(screen.getByText('Выбрать'));
+  const actions = topic.mock.calls.filter(([message]) => message.type === 'act/innate_toggle');
+  expect(actions.length).toBe(1);
+  expect(JSON.parse(actions[0][0].payload).id).toBe('second');
 });

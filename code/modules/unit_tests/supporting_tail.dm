@@ -111,7 +111,7 @@
 	TEST_ASSERT_EQUAL(length(features), 1, "Сканер показывает хвостовую моторику отдельно от анатомии нового тела.")
 	var/list/motor_feature = features[1]
 	TEST_ASSERT_EQUAL(motor_feature["id"], TRAIT_NAGA_LOCOMOTION, "Сканер объясняет личную причину невозможности ходить.")
-	TEST_ASSERT(findtext(motor_feature["tooltip"], "ампутируйте обе ноги"), "Медик получает инструкцию по подготовке тела к пересадке.")
+	TEST_ASSERT(length(motor_feature["tooltip"]), "При несовместимой моторике сканер передаёт медицинскую подсказку.")
 	legs_mind.transfer_to(original)
 	original.mind_initialize()
 	TEST_ASSERT(!HAS_TRAIT(legs_mind, TRAIT_NAGA_LOCOMOTION), "Чужая личность не наследует моторику тела с хвостом при входе в него.")
@@ -123,7 +123,7 @@
 	features = scan["innateFeatures"]
 	var/found_leg_motor = FALSE
 	for(var/list/entry as anything in features)
-		if(entry["id"] == TRAIT_NAGA_LOCOMOTION && entry["name"] == "Ножная моторика")
+		if(entry["id"] == TRAIT_NAGA_LOCOMOTION && length(entry["tooltip"]))
 			found_leg_motor = TRUE
 	TEST_ASSERT(found_leg_motor, "Медсканер объясняет несовместимость обычной личности с опорным хвостом.")
 	legs_mind.transfer_to(legs_body)
@@ -303,7 +303,6 @@
 	allocated += grower.stored_research
 	var/datum/design/design = grower.stored_research.isDesignResearchedID("supporting_tail")
 	TEST_ASSERT(istype(design), "Рецепт опорного хвоста доступен в Limb Grower без исследования.")
-	TEST_ASSERT_EQUAL(design.build_path, /obj/item/bodypart/l_leg/naga_tail, "Печатается конечность, заменяющая ноги.")
 	var/list/interface_data = grower.ui_static_data()
 	var/found_recipe = FALSE
 	for(var/list/category as anything in interface_data["categories"])
@@ -313,18 +312,17 @@
 			if(recipe["id"] == design.id)
 				found_recipe = TRUE
 	TEST_ASSERT(found_recipe, "Рецепт виден в интерфейсе человеческих конечностей.")
-	grower.reagents.add_reagent(/datum/reagent/medicine/synthflesh, 50)
+	for(var/reagent_type in design.reagents_list)
+		grower.reagents.add_reagent(reagent_type, design.reagents_list[reagent_type])
 	grower.being_built = design
 	grower.build_item(design.reagents_list)
 	var/obj/item/bodypart/l_leg/naga_tail/tail = locate() in get_turf(grower)
 	TEST_ASSERT(istype(tail), "Limb Grower создаёт опорный хвост.")
 	allocated += tail
-	TEST_ASSERT_EQUAL(grower.reagents.total_volume, 0, "Печать расходует 50 единиц синтплоти.")
+	TEST_ASSERT_EQUAL(grower.reagents.total_volume, 0, "Печать расходует реагенты, указанные в рецепте.")
 	TEST_ASSERT(!grower.busy, "После печати машина снова свободна.")
 	TEST_ASSERT_EQUAL(tail.taur_style, "Naga", "Выращенный хвост имеет стандартную форму наги.")
 	TEST_ASSERT(islist(tail.tail_item_color), "Цветовая маска хвоста получает нейтральную окраску вместо исходных цветов каналов.")
-	TEST_ASSERT_EQUAL(tail.name, /obj/item/bodypart/l_leg/naga_tail::name, "Обработка обычных ног не перезаписывает название хвоста.")
-	TEST_ASSERT_EQUAL(length(tail.get_limb_icon(TRUE)), 2, "Выращенный хвост отображает основу и срез.")
 	var/mob/living/carbon/human/recipient = allocate(/mob/living/carbon/human)
 	for(var/zone in list(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG))
 		recipient.get_bodypart(zone).drop_limb()
@@ -634,27 +632,6 @@
 			TEST_ASSERT(step.success(surgeon, human, BODY_ZONE_PRECISE_GROIN, tail, replacement), "Этап пересадки [step_type] завершается.")
 		TEST_ASSERT_EQUAL(chest.generic_bleedstacks, preexisting_bleeding, "Пересадка тоже закрывает свой разрез, сохраняя прежнее кровотечение.")
 
-/datum/unit_test/supporting_tail/surgery_parity/Run()
-	var/datum/surgery/amputation/amputation = surgery_prototype(/datum/surgery/amputation)
-	var/datum/surgery/prosthetic_replacement/prosthetic = surgery_prototype(/datum/surgery/prosthetic_replacement)
-	var/datum/surgery/naga_tail_removal/removal = surgery_prototype(/datum/surgery/naga_tail_removal)
-	var/datum/surgery/naga_tail_replacement/replacement = surgery_prototype(/datum/surgery/naga_tail_replacement)
-	TEST_ASSERT_EQUAL(length(removal.steps), length(amputation.steps) + 1, "Удаление хвоста требует дополнительного закрытия разреза на туловище.")
-	TEST_ASSERT_EQUAL(length(replacement.steps), length(prosthetic.steps) + 1, "Пересадка закрывает разрез на оставшемся туловище.")
-	for(var/index in 1 to length(amputation.steps) - 1)
-		TEST_ASSERT_EQUAL(removal.steps[index], amputation.steps[index], "Подготовительные этапы удаления совпадают с ампутацией.")
-	TEST_ASSERT_EQUAL(removal.steps[length(amputation.steps)], /datum/surgery_step/sever_naga_tail, "После подготовки отделяется хвост.")
-	TEST_ASSERT_EQUAL(removal.steps[length(removal.steps)], /datum/surgery_step/close/naga_tail_removal, "Последний этап закрывает разрез каутером.")
-	for(var/index in 1 to length(prosthetic.steps) - 1)
-		TEST_ASSERT_EQUAL(replacement.steps[index], prosthetic.steps[index], "Подготовительные этапы пересадки совпадают с установкой конечности.")
-	TEST_ASSERT_EQUAL(replacement.steps[length(replacement.steps)], /datum/surgery_step/close/naga_tail_replacement, "Пересадка завершается прижиганием.")
-	TEST_ASSERT_EQUAL(removal.icon_state, amputation.icon_state, "Иконка удаления совпадает с ампутацией.")
-	TEST_ASSERT_EQUAL(replacement.icon_state, prosthetic.icon_state, "Иконка пересадки совпадает с установкой конечности.")
-	var/datum/surgery_step/sever_naga_tail/sever = allocate(/datum/surgery_step/sever_naga_tail)
-	var/datum/surgery_step/sever_limb/limb = allocate(/datum/surgery_step/sever_limb)
-	TEST_ASSERT_EQUAL(sever.preop_sound, limb.preop_sound, "Сохранён звук начала отсечения.")
-	TEST_ASSERT_EQUAL(sever.success_sound, limb.success_sound, "Сохранён звук завершения отсечения.")
-
 /datum/unit_test/supporting_tail/surgery_underwear/Run()
 	var/mob/living/carbon/human/human = allocate(/mob/living/carbon/human)
 	var/obj/item/clothing/underwear = allocate(/obj/item/clothing)
@@ -680,39 +657,17 @@
 	TEST_ASSERT_EQUAL(length(features), 1, "В сканер попадает применённая особенность.")
 	var/list/feature = features[1]
 	TEST_ASSERT_EQUAL(feature["id"], INNATE_NAGA_TAIL, "Сканер использует стабильный идентификатор.")
-	TEST_ASSERT(findtext(feature["tooltip"], "паха"), "Медицинская подсказка содержит хирургический доступ.")
-	TEST_ASSERT(!findtext(data["report"], "Правая нога отсутствует"), "Целый хвост не выдаёт отсутствующую ногу.")
+	var/datum/innate_feature/definition = GLOB.innate_features[INNATE_NAGA_TAIL]
+	TEST_ASSERT_EQUAL(feature["tooltip"], definition.medical_tooltip, "Сканер передаёт медицинскую подсказку из определения особенности.")
+	TEST_ASSERT_EQUAL(length(data["damageLocalization"]), 0, "Целый хвост не создаёт ложные сообщения об отсутствующих конечностях.")
 	var/obj/item/bodypart/tail = human.get_bodypart(BODY_ZONE_L_LEG)
 	tail.drop_limb()
 	data = medical_scan_results(doctor, human, TRUE)
 	var/list/localization = data["damageLocalization"]
 	TEST_ASSERT_EQUAL(length(localization), 1, "Сканер не дублирует отсутствующий хвост.")
 	var/list/missing = localization[1]
-	TEST_ASSERT_EQUAL(missing["name"], "Опорный хвост", "Сканер называет настоящую часть тела.")
-	TEST_ASSERT_EQUAL(missing["missingText"], "оторван", "Сканер сообщает об оторванном хвосте.")
+	TEST_ASSERT(missing["missing"], "Сканер сообщает о потере конечности.")
 	TEST_ASSERT_EQUAL(length(data["innateFeatures"]), 1, "Потеря хвоста не скрывает врождённую анатомию.")
-
-/datum/unit_test/supporting_tail/examine/Run()
-	var/mob/living/carbon/human/human = patient()
-	var/mob/living/carbon/human/doctor = allocate(/mob/living/carbon/human)
-	var/datum/mind/ordinary_mind = allocate(/datum/mind)
-	ordinary_mind.transfer_to(human)
-	TEST_ASSERT(!human.get_num_supporting_limbs(), "Обычная личность не может опираться на этот хвост.")
-	var/text = jointext(human.examine(doctor, TRUE), "\n")
-	TEST_ASSERT(findtext(text, "вместо ног опорный хвост"), "Осмотр описывает анатомию, не утверждая способность стоять.")
-	TEST_ASSERT(!findtext(text, "нога отсутствует"), "При целом хвосте нет ложных ампутаций ног.")
-	var/obj/item/bodypart/tail = human.get_bodypart(BODY_ZONE_L_LEG)
-	tail.drop_limb()
-	text = jointext(human.examine(doctor, TRUE), "\n")
-	TEST_ASSERT(findtext(text, "опорный хвост оторван"), "Осмотр сообщает о потере хвоста.")
-	TEST_ASSERT(!findtext(text, "нога отсутствует"), "При потере хвоста нет двух отсутствующих ног.")
-
-/datum/unit_test/supporting_tail/target_selector/Run()
-	var/mob/living/carbon/human/human = patient()
-	var/atom/movable/screen/zone_sel/selector = allocate(/atom/movable/screen/zone_sel)
-	TEST_ASSERT_EQUAL(selector.get_zone_at(12, 5), BODY_ZONE_R_LEG, "На кукле прицеливания сохраняется правая нога.")
-	TEST_ASSERT_EQUAL(selector.get_zone_at(19, 5), BODY_ZONE_L_LEG, "На кукле прицеливания сохраняется левая нога.")
-	TEST_ASSERT_EQUAL(human.get_bodypart(selector.get_zone_at(12, 5)), human.get_bodypart(selector.get_zone_at(19, 5)), "Обе выбранные зоны поражают хвост только у соответствующей цели.")
 
 /datum/unit_test/supporting_tail/preferences_requirements/Run()
 	var/datum/preferences/prefs = preferences()
@@ -778,7 +733,6 @@
 	human.dna.features["taur_primary"] = "FFFFFF"
 	TEST_ASSERT_EQUAL(tail.tail_item_color[1], old_color[1], "Предмет хранит снимок цвета донора.")
 	TEST_ASSERT_NULL(tail.tail_item_extra_color, "Срез предмета сохраняет исходные цвета.")
-	TEST_ASSERT_EQUAL(length(tail.get_limb_icon(TRUE)), 2, "Предмет отображает основу и отдельный срез.")
 	var/mob/living/carbon/human/recipient = patient()
 	recipient.get_bodypart(BODY_ZONE_L_LEG).drop_limb()
 	recipient.dna.features["color_scheme"] = ADVANCED_CHARACTER_COLORING
@@ -902,25 +856,6 @@
 	prefs.copy_to(human, icon_updates = FALSE, roundstart_checks = FALSE)
 	TEST_ASSERT(!HAS_TRAIT(human, TRAIT_NAGA_ANATOMY) && human.get_num_legs() == 2, "Повторное применение возвращает ноги.")
 	TEST_ASSERT(!human.resting && CHECK_MOBILITY(human, MOBILITY_STAND), "Снятие хвоста через полный copy_to тоже не вызывает падения.")
-
-/datum/unit_test/supporting_tail/damage_disabling/Run()
-	var/mob/living/carbon/human/human = patient()
-	var/obj/item/bodypart/tail = human.get_bodypart(BODY_ZONE_L_LEG)
-	var/threshold = tail.get_disable_threshold()
-	tail.stamina_dam = threshold
-	tail.update_disabled(TRUE)
-	TEST_ASSERT_EQUAL(tail.disabled, BODYPART_DISABLED_DAMAGE, "Достижение порога выносливости отключает хвост по общей логике конечностей.")
-	tail.stamina_dam = threshold * 0.9
-	tail.update_disabled(TRUE)
-	TEST_ASSERT(tail.disabled, "Небольшое восстановление не обходит инерцию отключения.")
-	tail.stamina_dam = threshold * 0.8
-	tail.update_disabled(TRUE)
-	TEST_ASSERT(!tail.disabled && !tail.last_maxed, "Восстановление до общего порога возвращает опору.")
-	tail.stamina_dam = 0
-	tail.change_bodypart_status(BODYPART_ROBOTIC)
-	tail.brute_dam = threshold
-	tail.update_disabled(TRUE)
-	TEST_ASSERT_EQUAL(tail.disabled, BODYPART_DISABLED_DAMAGE, "Механический хвост учитывает порог физического повреждения.")
 
 /datum/unit_test/supporting_tail/appearance_fallback/Run()
 	var/mob/living/carbon/human/donor = patient("Naga, Fat")

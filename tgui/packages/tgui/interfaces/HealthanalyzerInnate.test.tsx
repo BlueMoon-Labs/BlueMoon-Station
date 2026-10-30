@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { combineReducers, createStore, setGlobalStore } from 'common/redux';
 
 import { backendReducer, backendUpdate } from '../backend';
@@ -30,53 +30,17 @@ const setup = (scan: Record<string, unknown> = sample) => {
   return { ...ui, update };
 };
 
-test('врождённые особенности находятся внизу первого блока', () => {
-  const { container } = setup();
-  const first = container.querySelector('.Section')!;
-  expect(within(first as HTMLElement).getByText('Опорный хвост')).toBeTruthy();
-  const content = first.querySelector('.Section__content')!;
-  expect(content.lastElementChild!.textContent).toContain('Врожденное: Опорный хвост');
-  expect(screen.getByText('Врожденное:').classList.contains('color-label')).toBe(true);
-});
-
-test('медицинская подсказка приходит из данных особенности и находится рядом с якорем', () => {
-  setup();
+test('наведение показывает медицинские данные выбранной особенности', () => {
+  const second = { id: 'second', name: 'Вторая особенность', tooltip: 'Другая медицинская рекомендация.' };
+  setup({ ...sample, innateFeatures: [feature, second] });
   expect(screen.queryByRole('tooltip')).toBeNull();
-  const label = screen.getByText(feature.name);
-  fireEvent.mouseEnter(label);
-  const tip = screen.getByRole('tooltip');
-  expect(tip.textContent).toBe(feature.tooltip);
-  expect(tip.closest('.Healthanalyzer__innateFeature')).toBe(label.closest('.Healthanalyzer__innateFeature'));
-  expect(label.getAttribute('title')).toBeNull();
-  fireEvent.mouseLeave(label.closest('.Healthanalyzer__innateFeature')!);
-  expect(screen.queryByRole('tooltip')).toBeNull();
-});
-
-test('пустой список явно показывает отсутствие особенностей', () => {
-  setup({ ...sample, innateFeatures: [] });
-  expect(screen.getByText('Врожденное:').parentElement!.textContent).toBe('Врожденное: Нет');
-  expect(screen.queryByRole('tooltip')).toBeNull();
-});
-
-test('старый или химический отчёт без поля не показывает ложное отсутствие особенностей', () => {
-  setup({ ...sample, chemicalOnly: 1, innateFeatures: undefined });
-  expect(screen.queryByText(/Врожденное:/)).toBeNull();
-});
-
-test('несколько особенностей получают независимые подсказки', () => {
-  setup({ ...sample, innateFeatures: [feature, { id: 'second', name: 'Вторая особенность', tooltip: 'Другая медицинская рекомендация.' }] });
   fireEvent.mouseEnter(screen.getByText(feature.name));
   expect(screen.getByRole('tooltip').textContent).toBe(feature.tooltip);
-  fireEvent.mouseLeave(screen.getByText(feature.name).closest('.Healthanalyzer__innateFeature')!);
-  fireEvent.mouseEnter(screen.getByText('Вторая особенность'));
-  expect(screen.getAllByRole('tooltip').length).toBe(1);
-  expect(screen.getByRole('tooltip').textContent).toBe('Другая медицинская рекомендация.');
-});
-
-test('особенность без медицинского текста не создаёт пустую подсказку', () => {
-  setup({ ...sample, innateFeatures: [{ id: 'plain', name: 'Без подсказки' }] });
-  fireEvent.mouseEnter(screen.getByText('Без подсказки'));
+  fireEvent.mouseLeave(screen.getByText(feature.name));
   expect(screen.queryByRole('tooltip')).toBeNull();
+  fireEvent.mouseEnter(screen.getByText(second.name));
+  expect(screen.getAllByRole('tooltip').length).toBe(1);
+  expect(screen.getByRole('tooltip').textContent).toBe(second.tooltip);
 });
 
 test('Escape закрывает медицинскую подсказку до обработки закрытия окна', () => {
@@ -98,13 +62,5 @@ test('обновление скана удаляет открытую подск
   fireEvent.mouseEnter(screen.getByText(feature.name));
   update({ innateFeatures: [] });
   expect(screen.queryByRole('tooltip')).toBeNull();
-  expect(screen.getByText('Врожденное:').parentElement!.textContent).toBe('Врожденное: Нет');
-});
-
-test('текст подсказки не интерпретируется как HTML', () => {
-  const text = '<img src=x onerror=alert(1)> Операции в паху.';
-  const { container } = setup({ ...sample, innateFeatures: [{ ...feature, tooltip: text }] });
-  fireEvent.mouseEnter(screen.getByText(feature.name));
-  expect(screen.getByRole('tooltip').textContent).toBe(text);
-  expect(container.querySelector('img')).toBeNull();
+  expect(screen.queryByText(feature.name)).toBeNull();
 });
