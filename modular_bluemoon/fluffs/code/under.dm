@@ -236,7 +236,7 @@
 	icon_state = "savannah_sleepwear"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/underwear.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/underwear.dmi'
-	togglename = "buttons"
+	togglename = "пуговицы"
 	body_parts_covered = CHEST | ARMS
 
 /obj/item/clothing/under/donator/bm/urban_misteran

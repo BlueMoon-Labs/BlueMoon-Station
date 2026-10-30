@@ -1202,6 +1202,8 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		SSblackbox.exp_update_queue -= src
 	if(SSparallax?.currentrun)
 		SSparallax.currentrun -= src
+	SSping_diag?.forget_client(src)
+	QDEL_NULL(ping_diag_ui)
 	if(GLOB.ahelp_tickets)
 		GLOB.ahelp_tickets.ClientLogout(src)
 	GLOB.mentor_tickets?.ClientLogout(src)

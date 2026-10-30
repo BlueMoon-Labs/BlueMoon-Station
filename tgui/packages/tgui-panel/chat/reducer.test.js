@@ -2,6 +2,7 @@ import {
   addChatPage,
   changeChatPage,
   changeScrollTracking,
+  clearChat,
   loadChat,
   removeChatPage,
   toggleAcceptedType,
@@ -388,4 +389,19 @@ describe('chatReducer', () => {
       expect(state).toBe(initialState);
     });
   });
+});
+
+test('clearing the chat resets unread counters on every tab', () => {
+  const page = createPage({ id: 'p1', acceptedTypes: { ooc: true } });
+  const state = {
+    ...initialState,
+    pages: [...initialState.pages, 'p1'],
+    pageById: {
+      ...initialState.pageById,
+      p1: { ...page, unreadCount: 7 },
+    },
+  };
+  const next = chatReducer(state, clearChat());
+  expect(next.pageById.p1.unreadCount).toBe(0);
+  expect(next.pageById.p1.acceptedTypes).toEqual({ ooc: true });
 });

@@ -314,6 +314,12 @@ SUBSYSTEM_DEF(tick_spikes)
 	/// Числовой хвост к последней классификации (cpu/map_cpu). Живёт отдельно от строки
 	/// класса, потому что класс сравнивается на точное равенство при решении об авто-дампе.
 	var/last_classify_detail = ""
+	/// Класс с хвостом последнего полного блока: его читает SSping_diag, время - в last_spike_world.
+	var/last_spike_class
+	/// Самая тяжёлая подсистема класса МК последнего полного блока, иначе null: ключ источника в SSping_diag.
+	var/last_spike_heaviest_name
+	/// Самая тяжёлая подсистема в тиках спайка из последней классификации класса МК.
+	var/last_classify_heaviest
 	///монотонный номер для имён файлов дампов: НЕ сбрасывается на start_capture,
 	///иначе авто-дамп и дамп новой сессии склеили бы два JSON в один файл
 	var/profile_dump_seq = 0
@@ -450,6 +456,8 @@ SUBSYSTEM_DEF(tick_spikes)
 	drift_histogram = list(0, 0, 0, 0, 0)
 	last_spike_iteration = 0
 	last_spike_world = 0
+	last_spike_class = null
+	last_spike_heaviest_name = null
 	last_sendmaps_value = 0
 	last_sendmaps_calls = 0
 	spike_events = list()
@@ -902,17 +910,22 @@ SUBSYSTEM_DEF(tick_spikes)
  */
 /datum/controller/subsystem/tick_spikes/proc/classify_spike(now_world, drift)
 	last_classify_detail = ""
+	last_classify_heaviest = null
 	if(world.time < self_inflicted_until)
 		return TICK_SPIKE_CLASS_SELF
 	var/tight_window_start = now_world - (TICK_SPIKES_CLASSIFY_WINDOW_TICKS * world.tick_lag)
 	var/list/culprits = list()
 	var/culprits_ms = 0
+	var/heaviest_usage = 0
 	for(var/i in heavy_ring_chronological())
 		var/run_time = heavy_time[i]
 		if(isnull(run_time) || run_time < tight_window_start)
 			continue
 		culprits += "[heavy_name[i]] ([round(heavy_usage[i], 0.1)]% тика)"
 		culprits_ms += heavy_usage[i] * world.tick_lag
+		if(heavy_usage[i] > heaviest_usage)
+			heaviest_usage = heavy_usage[i]
+			last_classify_heaviest = heavy_name[i]
 	if(length(culprits))
 		. = "[TICK_SPIKE_CLASS_MC]: [culprits.Join(", ")]"
 		// Названные прогоны могут не покрывать дрифт: тогда основная потеря вне МК
@@ -1146,6 +1159,8 @@ SUBSYSTEM_DEF(tick_spikes)
 
 	var/list/heavy_lines = collect_heavy_runs(now_world - TICK_SPIKES_HEAVY_WINDOW)
 	var/spike_class = classify_spike(now_world, drift)
+	last_spike_class = "[spike_class][last_classify_detail]"
+	last_spike_heaviest_name = last_classify_heaviest
 
 	var/list/event = list()
 	event += "=== СПАЙК #[session_spike_count][tag_line] [time_stamp_from_world(now_world)] (wt [now_world]) ==="

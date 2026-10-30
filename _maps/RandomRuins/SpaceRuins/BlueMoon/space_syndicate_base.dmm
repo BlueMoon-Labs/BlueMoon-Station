@@ -7261,9 +7261,8 @@
 	dir = 1
 	},
 /obj/structure/rack/shelf,
-/obj/item/clothing/suit/cbrn/mopp/advance/security,
+/obj/item/clothing/suit/hooded/cbrn/mopp/advance/security,
 /obj/item/clothing/mask/gas/sechailer/mopp/advance,
-/obj/item/clothing/head/helmet/cbrn/mopp/advance,
 /obj/item/clothing/gloves/cbrn/mopp/advance,
 /turf/open/floor/plasteel/dark/smooth/small,
 /area/ruin/space/has_grav/bluemoon/deepspacetwo/cargo)

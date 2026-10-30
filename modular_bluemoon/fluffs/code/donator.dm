@@ -327,7 +327,7 @@
 /datum/gear/donator/bm/noonarlong
 	name = "A long syndicate jacket."
 	slot = ITEM_SLOT_OCLOTHING
-	path = /obj/item/clothing/suit/toggle/noonarlong
+	path = /obj/item/clothing/suit/toggle/noonar/long
 	ckeywhitelist = list("noonar", "dasani2879")
 
 
