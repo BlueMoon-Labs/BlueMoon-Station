@@ -11,7 +11,7 @@ GLOBAL_LIST_INIT(context_menu_style_choices, list(
 	"width" = list("auto", "narrow", "wide"),
 	"animation" = list("none", "fade", "slide", "zoom", "drop", "cascade"),
 	"anim_speed" = list("normal", "fast", "slow"),
-	"hints" = list("inline", "hover", "none"),
+	"hints" = list("none", "hover", "inline"),
 	"position" = list("right", "left", "center", "above"),
 	"icons" = list(TRUE, FALSE),
 	"icon_size" = list(16, 24, 32),
@@ -52,7 +52,7 @@ GLOBAL_LIST_INIT(context_menu_sounds, list(
  * Порядок - порядок кнопок в настройках и в вербе «Вид меню ПКМ».
  */
 GLOBAL_LIST_INIT(context_menu_style_presets, list(
-	"default" = list("name" = "Стандарт", "desc" = "Обычное меню: Segoe UI, хоткеи справа, без анимаций", "style" = list()),
+	"default" = list("name" = "Стандарт", "desc" = "Обычное меню: Segoe UI, без подсказок управления и анимаций", "style" = list()),
 	"tiles" = list("name" = "Плашки", "desc" = "Действия плашками в несколько рядов, крупные значки", "style" = list(
 		"layout" = "pills", "theme" = "slate", "icon_size" = 24, "hints" = "hover", "hover" = "outline",
 	)),
@@ -84,7 +84,7 @@ GLOBAL_LIST_INIT(context_menu_style_presets, list(
 	"light" = list("name" = "Светлое", "desc" = "Светлый фон, просторные строки", "style" = list(
 		"theme" = "light", "density" = "normal", "opacity" = 100, "hover" = "accent",
 	)),
-	"speedrun" = list("name" = "Быстро", "desc" = "Плотно, 14 пунктов, анимации быстрые", "style" = list(
+	"speedrun" = list("name" = "Быстро", "desc" = "Мельче, 20 пунктов на странице, без значков", "style" = list(
 		"page_rows" = 20, "hints" = "none", "icons" = FALSE, "scale" = 90,
 	)),
 ))

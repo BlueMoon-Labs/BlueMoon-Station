@@ -166,9 +166,9 @@ const ANIMATION_OPTIONS: Option<string>[] = [
 ];
 
 const HINT_OPTIONS: Option<string>[] = [
-  { value: 'inline', label: 'В строке справа' },
-  { value: 'hover', label: 'Внизу при наведении' },
   { value: 'none', label: 'Не показывать' },
+  { value: 'hover', label: 'Внизу при наведении' },
+  { value: 'inline', label: 'В строке справа' },
 ];
 
 const POSITION_OPTIONS: Option<string>[] = [
@@ -649,7 +649,7 @@ export const ContextMenuSection = (props) => {
       <PrefRow label="Обводка текста" checked={!!style.outline} tooltip="Тёмная обводка букв" onClick={() => toggle('outline')} />
 
       <GroupTitle title="Хоткеи" />
-      <DropdownRow label="Хоткеи пунктов" hint="В строке справа меню становится шире" options={HINT_OPTIONS} value={style.hints} onSelect={(value) => setStyle('hints', value)} />
+      <DropdownRow label="Подсказки управления" hint="Какой кнопкой то же действие без меню (Shift-ЛКМ, Ctrl-ЛКМ). В строке справа меню заметно шире" options={HINT_OPTIONS} value={style.hints} onSelect={(value) => setStyle('hints', value)} />
       {html && (
         <DropdownRow label="Вид хоткеев" options={HINT_STYLE_OPTIONS} value={style.hint_style} onSelect={(value) => setStyle('hint_style', value)} />
       )}
