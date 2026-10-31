@@ -31,8 +31,9 @@
 		return
 	// клик мимо открытого меню действий только закрывает его; клик, открывающий меню, сразу открывает новое
 	if(active_context_menu)
-		close_context_menu()
-		if(!right_click_opens_menu(params2list(params)))
+		var/reopen = right_click_opens_menu(params2list(params))
+		close_context_menu(reopen ? "reopen" : "click")
+		if(!reopen)
 			return
 	if(SEND_SIGNAL(src, COMSIG_MOB_CLICKON, A, params) & COMSIG_MOB_CANCEL_CLICKON)
 		return

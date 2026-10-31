@@ -142,9 +142,10 @@ GLOBAL_LIST_INIT(context_menu_intent_short, list(
 /datum/context_menu/proc/add_basic_entries(atom/A, list/result, list/shown_clicks, list/style)
 	if(context_menu_style_option(style, "show_examine"))
 		add_click(result, shown_clicks, A, "Осмотреть", "Shift-ЛКМ", "shift=1;left=1")
-	if(isitem(A))
-		var/obj/item/item = A
-		if(!item.anchored && item.loc != user && !user.get_active_held_item() && user.CanReach(item))
+	if(isitem(A) && context_menu_can_take(user, A))
+		if(user.get_active_held_item())
+			result += new /datum/context_menu_entry/take("Взять", "второй рукой", CONTEXT_ENTRY_NORMAL)
+		else
 			add_click(result, shown_clicks, A, "Взять", "ЛКМ", "left=1")
 	if(isliving(user) && ismovable(A) && A != user)
 		var/atom/movable/movable = A

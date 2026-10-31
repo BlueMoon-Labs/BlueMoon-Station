@@ -38,6 +38,12 @@
 	if(user.a_intent == intent)
 		user.a_intent = old_intent
 
+/// Взять вещь: активной рукой, а если она занята - свободной
+/datum/context_menu_entry/take
+
+/datum/context_menu_entry/take/execute(mob/user, atom/target)
+	context_menu_take(user, target)
+
 /datum/context_menu_entry/verb_call
 	var/verb_path
 

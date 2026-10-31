@@ -17,6 +17,8 @@
 /client
 	/// Подсказка, как переключить режим ПКМ, уже была в этой сессии
 	var/context_menu_hint_shown = FALSE
+	/// Подсказка про ЛКМ и ПКМ по строкам списка клетки уже была в этой сессии
+	var/context_menu_pile_hint_shown = FALSE
 	/// Макросы клавиши Shift, переключающие right-click карты: клавиша -> команда. null - не нужны.
 	var/list/right_click_macros
 
@@ -195,14 +197,14 @@
 	if(!isnull(new_shift_mode))
 		prefs.set_shift_right_click_choice(new_shift_mode)
 	GLOB.context_menu_stats.record_change(src, "раскладку", right_click_mode_name(prefs.right_click_mode(), prefs.shift_right_click_mode()))
-	mob?.close_context_menu()
+	mob?.close_context_menu("settings")
 	update_right_click_mode()
 
 /client/proc/set_shift_right_click_mode(new_mode)
 	if(!prefs?.set_shift_right_click_choice(new_mode))
 		return
 	GLOB.context_menu_stats.record_change(src, "раскладку", right_click_mode_name(prefs.right_click_mode(), prefs.shift_right_click_mode()))
-	mob?.close_context_menu()
+	mob?.close_context_menu("settings")
 	update_right_click_mode()
 
 /client/verb/toggle_right_click_mode()
@@ -249,7 +251,7 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	var/text
 	switch(right_click_mode())
 		if(RIGHT_CLICK_MODE_MENU)
-			text = "ПКМ открывает меню действий у курсора: осмотреть, взять, действия интентов, подсказки с хоткеями, другие объекты на клетке. Shift+ПКМ - второе действие сразу (толкнуть, открыть сумку не снимая, постучать). В комбат-режиме ПКМ - действие."
+			text = "ПКМ открывает меню действий у курсора: осмотреть, взять, действия интентов, подсказки с хоткеями, другие объекты на клетке. В списке клетки ЛКМ по вещи берёт её, ПКМ по строке - её действия. Shift+ПКМ - второе действие сразу (толкнуть, открыть сумку не снимая, постучать). В комбат-режиме ПКМ - действие."
 		if(RIGHT_CLICK_MODE_NATIVE)
 			text = "ПКМ открывает меню BYOND, как раньше. Можно включить меню действий у курсора: ПКМ - действия с объектом, Shift+ПКМ - второе действие (толкнуть, открыть сумку не снимая, постучать)."
 		else
@@ -280,7 +282,7 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	to_chat(src, span_notice("[right_click_mode_name(prefs.right_click_mode(), prefs.shift_right_click_mode())]. В комбат-режиме и в мехе ПКМ всё равно действует. Шрифт, размер и прозрачность меню - в настройках игры, раздел «Меню ПКМ»."))
 
 /mob/proc/open_context_menu(atom/target, params)
-	close_context_menu()
+	close_context_menu("reopen")
 	if(QDELETED(target) || !right_click_actions)
 		return
 	// клик по клетке, которую игрок не видит (за стеной, в темноте, вне обзора), click_catcher передаёт турфу с catcher=1:
@@ -295,8 +297,10 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 		to_chat(src, span_notice("Это меню действий. Чтобы ПКМ сразу действовал или открывал меню BYOND, как раньше, щёлкните по заголовку меню, вербу «Режим ПКМ» во вкладке OOC или выберите в настройках игры. Там же шрифт, размер и прозрачность меню."))
 	return active_context_menu
 
-/mob/proc/close_context_menu()
+/// reason - почему закрыли, для статистики брошенных меню
+/mob/proc/close_context_menu(reason)
 	if(active_context_menu)
+		active_context_menu.close_reason ||= reason
 		qdel(active_context_menu)
 
 /**
@@ -374,8 +378,12 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	var/cursor_offset = 4
 	/// Звук открытия и выбора, ключ GLOB.context_menu_sounds
 	var/menu_sound = "off"
+	/// ЛКМ по вещи в списке клетки: take - взять сразу, actions - открыть её действия
+	var/pile_click = "take"
 	/// Пункт выбран и меню закрылось по делу; иначе закрытие считается брошенным меню в статистике
 	var/chosen = FALSE
+	/// Почему меню закрыли без выбора, для статистики: click, reopen, escape, moved, auto_close...
+	var/close_reason
 	/// Анимация открытия уже была; листание её не повторяет
 	var/opened = FALSE
 	/// Объекты экрана по строкам, шапка первой: строка появляется целиком
@@ -393,6 +401,8 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 		if(modifiers[key])
 			click_position[key] = modifiers[key]
 	set_origin(modifiers["screen-loc"])
+	// подсказки строк списка клетки собираются раньше первой отрисовки
+	pile_click = context_menu_style_option(user.context_menu_prefs()?.context_menu_style, "pile_click")
 	RegisterSignal(user, COMSIG_MOVABLE_MOVED, PROC_REF(on_user_moved))
 	RegisterSignal(user, list(COMSIG_MOB_DEATH, COMSIG_MOB_LOGOUT), PROC_REF(on_user_lost))
 	RegisterSignal(user, COMSIG_MOB_KEYDOWN, PROC_REF(on_key_down))
@@ -414,7 +424,7 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 
 /datum/context_menu/Destroy()
 	if(user && !chosen)
-		GLOB.context_menu_stats.record_abandon(user)
+		GLOB.context_menu_stats.record_abandon(user, close_reason || "other")
 	if(user)
 		if(user.active_context_menu == src)
 			user.active_context_menu = null
@@ -449,6 +459,10 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 /datum/context_menu/proc/show_tile()
 	set_target(null)
 	tile_list_shown = TRUE
+	var/client/viewer = user.client
+	if(viewer && pile_click == "take" && !viewer.context_menu_pile_hint_shown)
+		viewer.context_menu_pile_hint_shown = TRUE
+		to_chat(viewer, span_notice("В списке клетки ЛКМ по вещи берёт её (занята рука - берёт вторая), ПКМ по строке - её действия. Можно вернуть, чтобы ЛКМ открывал действия, - настройки игры, раздел «Меню ПКМ»."))
 	header_text = null
 	entries = list()
 	var/list/same_things = list()
@@ -581,13 +595,73 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	INVOKE_ASYNC(chooser, TYPE_PROC_REF(/mob, CommonClickOn), picked, list2params(click_modifiers))
 	return TRUE
 
+/// Клик по строке меню: модификаторы по объекту из списка - клик по нему, ЛКМ по вещи из списка - взять, остальное - выбор пункта
+/datum/context_menu/proc/click_row(datum/context_menu_entry/entry, list/modifiers)
+	if(istype(entry, /datum/context_menu_entry/pick) && click_picked(entry, modifiers))
+		return
+	if(!modifiers["right"] && quick_take(entry))
+		return
+	choose(entry)
+
+/// Вещь строки списка клетки, которую можно взять сразу; у строки одинаковых - первая из них
+/datum/context_menu/proc/takeable_from_row(datum/context_menu_entry/entry)
+	var/list/atom/things = list()
+	if(istype(entry, /datum/context_menu_entry/pick))
+		var/datum/context_menu_entry/pick/pick_entry = entry
+		things += pick_entry.picked_ref?.resolve()
+	else if(istype(entry, /datum/context_menu_entry/pick_group))
+		var/datum/context_menu_entry/pick_group/group = entry
+		for(var/datum/weakref/ref as anything in group.refs)
+			things += ref.resolve()
+	for(var/obj/item/item in things)
+		if(item.loc == tile && context_menu_can_take(user, item))
+			return item
+
+/// ЛКМ по вещи в списке клетки берёт её: в куче за вещью приходят, её действия - на ПКМ по строке
+/datum/context_menu/proc/quick_take(datum/context_menu_entry/entry)
+	if(pile_click != "take" || !tile || !(entry in entries))
+		return FALSE
+	var/obj/item/item = takeable_from_row(entry)
+	if(!item)
+		return FALSE
+	GLOB.context_menu_stats.record_choice(user, "pick_take", "Взять")
+	play_menu_sound()
+	var/mob/chooser = user
+	chosen = TRUE
+	qdel(src)
+	context_menu_take(chooser, item)
+	return TRUE
+
 /// Подсказка строки объекта: что сделают клики с модификаторами прямо по ней
 /datum/context_menu/proc/pick_hint(atom/thing)
+	var/list/parts = list()
+	if(pile_click == "take" && isitem(thing))
+		parts += "ЛКМ - взять, ПКМ - действия"
 	if(ismovable(thing))
 		var/atom/movable/movable = thing
 		if(!movable.anchored)
-			return "Ctrl - потянуть, Shift - осмотреть"
-	return "Shift - осмотреть"
+			parts += "Ctrl - потянуть"
+	parts += "Shift - осмотреть"
+	return jointext(parts, ", ")
+
+/// Вещь можно взять: рядом, не прикручена, не своя, и есть свободная рука - активная или вторая
+/proc/context_menu_can_take(mob/user, obj/item/item)
+	if(item.anchored || item.loc == user || !user.CanReach(item))
+		return FALSE
+	if(!user.get_active_held_item())
+		return TRUE
+	return iscarbon(user) && !user.get_inactive_held_item()
+
+/// Берёт вещь как ЛКМ по ней; активная рука занята - сперва переключается на свободную
+/proc/context_menu_take(mob/user, obj/item/item)
+	if(QDELETED(user) || QDELETED(item) || !context_menu_can_take(user, item))
+		return
+	if(user.get_active_held_item())
+		var/mob/living/carbon/carbon_user = user
+		carbon_user.swap_hand(carbon_user.get_inactive_hand_index())
+		if(user.get_active_held_item())
+			return
+	INVOKE_ASYNC(user, TYPE_PROC_REF(/mob, CommonClickOn), item, "left=1;context_menu=1")
 
 /// Колесо над меню листает страницы: вниз - дальше
 /datum/context_menu/proc/scroll(delta)
@@ -635,15 +709,10 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 /// На ходу меню остаётся, пока его объект рядом и на том же уровне
 /datum/context_menu/proc/on_user_moved(datum/source)
 	SIGNAL_HANDLER
-	if(close_on_move == "always")
-		qdel(src)
-		return
 	var/turf/anchor = get_turf(target || tile)
 	var/turf/user_turf = get_turf(user)
-	if(!anchor || !user_turf || anchor.z != user_turf.z)
-		qdel(src)
-		return
-	if(close_on_move == "far" && get_dist(user_turf, anchor) > CONTEXT_MENU_MAX_DISTANCE)
+	if(close_on_move == "always" || !anchor || !user_turf || anchor.z != user_turf.z || (close_on_move == "far" && get_dist(user_turf, anchor) > CONTEXT_MENU_MAX_DISTANCE))
+		close_reason = "moved"
 		qdel(src)
 
 /datum/context_menu/proc/play_menu_sound()
@@ -657,6 +726,7 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 
 /datum/context_menu/proc/on_user_lost(datum/source)
 	SIGNAL_HANDLER
+	close_reason = "lost"
 	qdel(src)
 
 /datum/context_menu/proc/on_target_deleted(datum/source)
@@ -664,11 +734,13 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	if(tile && source != tile)
 		show_tile()
 		return
+	close_reason = "target"
 	qdel(src)
 
 /datum/context_menu/proc/on_key_down(datum/source, key, client/user_client, full_key)
 	SIGNAL_HANDLER
 	if(key == "Escape")
+		close_reason = "escape"
 		qdel(src)
 
 /// Имя объекта для строки меню: без \proper и \improper (capitalize иначе ломает первую букву) и с заглавной

@@ -2,7 +2,7 @@
  * Статистика меню действий за раунд: что выбрали игроки и как пользуются меню, чтобы подбирать дефолты по большинству.
  *
  * Пишется в [GLOB.log_directory]/context_menu.json, файл перезаписывается целиком не чаще раза в CONTEXT_MENU_STATS_EXPORT_DELAY.
- * players: ckey -> раскладка ПКМ, набор, вид (только то, что не по умолчанию), зум карты, открытия, выборы, брошенные меню.
+ * players: ckey -> раскладка ПКМ, набор, вид (только то, что не по умолчанию), зум карты, открытия, выборы, брошенные меню и почему их закрыли.
  * changes: кто, когда и что поменял в раскладке и виде - видно, от каких дефолтов уходят.
  * entries: сколько раз выбран каждый пункт меню по всем игрокам.
  */
@@ -31,6 +31,7 @@ GLOBAL_DATUM_INIT(context_menu_stats, /datum/context_menu_stats, new)
 			"choices" = 0,
 			"abandoned" = 0,
 			"choice_kinds" = list(),
+			"abandon_reasons" = list(),
 		)
 		players[ckey] = record
 	// настройки - на момент последнего действия: игрок мог их сменить по ходу раунда
@@ -62,16 +63,24 @@ GLOBAL_DATUM_INIT(context_menu_stats, /datum/context_menu_stats, new)
 	record["choices"]++
 	var/list/kinds = record["choice_kinds"]
 	kinds[kind]++
-	// имена предметов в списке клетки уникальны и раздувают таблицу, считаются только действия
-	if(kind != "pick" && kind != "pick_group" && name && (entries[name] || length(entries) < CONTEXT_MENU_STATS_MAX_ENTRIES))
-		entries[name]++
+	count_entry(kind, name)
 	queue_export()
 
-/datum/context_menu_stats/proc/record_abandon(mob/user)
+/// Счёт пункта по имени. Имена предметов в списке клетки и шапка с именем цели уникальны и раздувают таблицу, считаются только действия
+/datum/context_menu_stats/proc/count_entry(kind, name)
+	if(!name || (kind in list("pick", "pick_group", "mode_choice")))
+		return
+	if(entries[name] || length(entries) < CONTEXT_MENU_STATS_MAX_ENTRIES)
+		entries[name]++
+
+/// Меню закрыто без выбора; reason - чем: click (клик мимо), reopen (новое меню), escape, moved, auto_close, settings, lost, target
+/datum/context_menu_stats/proc/record_abandon(mob/user, reason)
 	var/list/record = player_record(user?.client)
 	if(!record)
 		return
 	record["abandoned"]++
+	var/list/reasons = record["abandon_reasons"]
+	reasons[reason]++
 	queue_export()
 
 /// Смена раскладки или вида: setting - что, value - на что
@@ -85,7 +94,9 @@ GLOBAL_DATUM_INIT(context_menu_stats, /datum/context_menu_stats, new)
 			"setting" = setting,
 			"value" = value,
 		))
-	log_game("[key_name(player)] сменил в меню ПКМ [setting]: [value]")
+	// перебор вида и наборов идёт десятками кликов подряд, в лог игры - только раскладка
+	if(setting == "раскладку")
+		log_game("[key_name(player)] сменил в меню ПКМ [setting]: [value]")
 	player_record(player)
 	queue_export()
 
@@ -103,9 +114,13 @@ GLOBAL_DATUM_INIT(context_menu_stats, /datum/context_menu_stats, new)
 
 /// Всё собранное плюс сводка: сколько игроков на каждой раскладке, наборе и значении каждой настройки
 /datum/context_menu_stats/proc/snapshot()
-	var/list/summary = list("right_click" = list(), "shift_right_click" = list(), "preset" = list(), "style" = list())
+	var/list/summary = list("right_click" = list(), "shift_right_click" = list(), "preset" = list(), "style" = list(), "abandon_reasons" = list())
 	for(var/ckey in players)
 		var/list/record = players[ckey]
+		var/list/reason_counts = summary["abandon_reasons"]
+		var/list/player_reasons = record["abandon_reasons"]
+		for(var/reason in player_reasons)
+			reason_counts[reason] += player_reasons[reason]
 		for(var/key in list("right_click", "shift_right_click", "preset"))
 			var/list/counts = summary[key]
 			counts["[record[key]]"]++

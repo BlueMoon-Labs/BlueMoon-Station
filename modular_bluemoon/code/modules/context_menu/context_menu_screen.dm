@@ -54,9 +54,7 @@
 		return
 	if(!entry)
 		return
-	if(istype(entry, /datum/context_menu_entry/pick) && menu.click_picked(entry, params2list(params)))
-		return
-	menu.choose(entry)
+	menu.click_row(entry, params2list(params))
 
 /atom/movable/screen/context_menu/MouseWheel(delta_x, delta_y, location, control, params)
 	if(menu && usr == menu.user)
@@ -211,6 +209,7 @@
 	accent = context_menu_style_option(style, "accent") || theme["accent"]
 	confirm_danger = context_menu_style_option(style, "confirm_danger")
 	close_on_move = context_menu_style_option(style, "close_on_move")
+	pile_click = context_menu_style_option(style, "pile_click")
 	cursor_offset = context_menu_style_option(style, "offset")
 	menu_sound = context_menu_style_option(style, "sound")
 	text_zoom = user?.client?.context_menu_zoom || CONTEXT_MENU_DEFAULT_ZOOM

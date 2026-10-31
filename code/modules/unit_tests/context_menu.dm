@@ -1196,6 +1196,9 @@
 	first["choices"] += 2
 	stats.record_for("stats_two", custom_prefs, 1.5)
 	stats.entries["Осмотреть"] = 4
+	stats.count_entry("mode_choice", "Hedge")
+	stats.count_entry("pick_take", "Взять")
+	first["abandon_reasons"] = list("click" = 2, "reopen" = 1)
 	var/list/snapshot = json_decode(json_encode(stats.snapshot()))
 	var/list/summary = snapshot["summary"]
 	TEST_ASSERT_EQUAL(summary["preset"]["default"], 1, "Игрок на стандартном виде не посчитан")
@@ -1208,6 +1211,9 @@
 	TEST_ASSERT_EQUAL(snapshot["players"]["stats_one"]["opens"], 3, "Открытия игрока потерялись")
 	TEST_ASSERT_EQUAL(snapshot["players"]["stats_two"]["zoom"], 1.5, "Зум карты игрока не записан")
 	TEST_ASSERT_EQUAL(snapshot["entries"]["Осмотреть"], 4, "Счёт пунктов потерялся")
+	TEST_ASSERT_NULL(snapshot["entries"]["Hedge"], "Клик по шапке посчитан пунктом с именем цели")
+	TEST_ASSERT_EQUAL(snapshot["entries"]["Взять"], 1, "«Взять» из списка клетки не посчитан")
+	TEST_ASSERT_EQUAL(snapshot["summary"]["abandon_reasons"]["click"], 2, "Причины закрытия не сведены")
 	TEST_ASSERT(snapshot["players"]["stats_two"]["right_click_chosen"], "Свой выбор ПКМ не отмечен")
 	TEST_ASSERT(!snapshot["players"]["stats_one"]["right_click_chosen"], "Невыбравший отмечен как выбравший")
 	qdel(stats)
@@ -1290,3 +1296,134 @@
 	var/list/order = list(danger, calm, intents)
 	context_menu_danger_last(order)
 	TEST_ASSERT(order[1] == calm && order[2] == danger && order[3] == intents, "Неверный порядок опасных действий")
+
+/// Строка вещи в списке клетки по ЛКМ берёт её, по ПКМ открывает действия; занятая рука - берёт вторая; обе заняты - действия
+/datum/unit_test/context_menu_pile_quick_take
+
+/datum/unit_test/context_menu_pile_quick_take/Run()
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_user)
+	var/turf/next_turf = get_step(user, EAST)
+	var/list/pens = list()
+	for(var/i in 1 to 4)
+		var/obj/item/pen/pen = allocate(/obj/item/pen, next_turf)
+		pen.name = "pen [i]"
+		pens += pen
+
+	var/datum/context_menu/menu = user.open_context_menu(next_turf, "right=1")
+	var/datum/context_menu_entry/pick/row = context_menu_pick_row(menu, pens[1])
+	TEST_ASSERT(findtext(row.hint, "ЛКМ - взять"), "У строки вещи нет подсказки про ЛКМ")
+	menu.click_row(row, list("right" = "1"))
+	TEST_ASSERT_EQUAL(menu.target, pens[1], "ПКМ по строке не открыл действия вещи")
+
+	menu.show_tile()
+	menu.click_row(context_menu_pick_row(menu, pens[1]), list("left" = "1"))
+	TEST_ASSERT_EQUAL(user.get_active_held_item(), pens[1], "ЛКМ по строке не взял вещь")
+	TEST_ASSERT_NULL(user.active_context_menu, "Меню осталось после «взять» из списка")
+	TEST_ASSERT(menu.chosen, "«Взять» из списка посчитано брошенным меню")
+
+	menu = user.open_context_menu(pens[2], "right=1")
+	var/datum/context_menu_entry/take_entry = find_context_entry(menu, "Взять")
+	TEST_ASSERT(istype(take_entry, /datum/context_menu_entry/take), "С вещью в руке нет «Взять» второй рукой")
+	menu = user.open_context_menu(next_turf, "right=1")
+	menu.click_row(context_menu_pick_row(menu, pens[2]), list("left" = "1"))
+	TEST_ASSERT_EQUAL(user.get_active_held_item(), pens[2], "Занятая рука: вещь не взята второй")
+	TEST_ASSERT_EQUAL(user.get_inactive_held_item(), pens[1], "Вещь из первой руки потерялась")
+
+	menu = user.open_context_menu(next_turf, "right=1")
+	menu.click_row(context_menu_pick_row(menu, pens[3]), list("left" = "1"))
+	TEST_ASSERT_EQUAL(menu.target, pens[3], "Обе руки заняты: ЛКМ по строке не открыл действия")
+	TEST_ASSERT(!user.is_holding(pens[3]), "Обе руки заняты, а вещь взята")
+	user.close_context_menu()
+
+/// ЛКМ по строке одинаковых вещей берёт одну из них; настройка pile_click = actions возвращает действия на ЛКМ
+/datum/unit_test/context_menu_pile_click_option
+
+/datum/unit_test/context_menu_pile_click_option/Run()
+	var/mob/living/carbon/human/dummy/consistent/context_menu_styled/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_styled)
+	user.style_prefs = new
+	var/turf/next_turf = get_step(user, EAST)
+	var/list/pens = list()
+	for(var/i in 1 to CONTEXT_MENU_GROUP_MIN)
+		pens += allocate(/obj/item/pen, next_turf)
+	var/obj/item/paper/paper = allocate(/obj/item/paper, next_turf)
+	var/obj/item/pen/first_pen = pens[1]
+	var/group_name = "[capitalize(first_pen.name)] ([length(pens)])"
+
+	var/datum/context_menu/menu = user.open_context_menu(next_turf, "right=1")
+	menu.click_row(find_context_entry(menu, group_name), list("right" = "1"))
+	TEST_ASSERT_EQUAL(menu.header_text, group_name, "ПКМ по строке одинаковых не открыл их список")
+	menu.show_tile()
+	menu.click_row(find_context_entry(menu, group_name), list("left" = "1"))
+	var/obj/item/held = user.get_active_held_item()
+	TEST_ASSERT(held && (held in pens), "ЛКМ по строке одинаковых не взял одну из них")
+	user.dropItemToGround(held)
+	held.forceMove(next_turf)
+
+	user.style_prefs.context_menu_style = list("pile_click" = "actions")
+	menu = user.open_context_menu(next_turf, "right=1")
+	var/datum/context_menu_entry/pick/row = context_menu_pick_row(menu, paper)
+	menu.click_row(find_context_entry(menu, group_name), list("left" = "1"))
+	TEST_ASSERT_EQUAL(menu.header_text, group_name, "При «открыть действия» ЛКМ по строке одинаковых что-то взял")
+	TEST_ASSERT_NULL(user.get_active_held_item(), "При «открыть действия» вещь взята")
+	TEST_ASSERT(!findtext(row.hint, "ЛКМ"), "При «открыть действия» подсказка обещает «взять»")
+	user.close_context_menu()
+
+/// Браузерное меню: ПКМ по строке вещи приходит в Topic с right=1 и открывает действия, ЛКМ - берёт
+/datum/unit_test/context_menu_html_right_click
+
+/datum/unit_test/context_menu_html_right_click/Run()
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_user)
+	var/turf/next_turf = get_step(user, EAST)
+	var/obj/item/pen/pen = allocate(/obj/item/pen, next_turf)
+	var/datum/context_menu/menu = user.open_context_menu(next_turf, "right=1")
+	menu.html_rows = menu.entries.Copy()
+	var/pen_index = menu.html_rows.Find(context_menu_pick_row(menu, pen))
+	TEST_ASSERT(pen_index, "Нет строки ручки")
+	var/old_usr = usr
+	usr = user
+	menu.Topic("", list("choose" = "[pen_index]", "right" = "1"))
+	TEST_ASSERT_EQUAL(menu.target, pen, "ПКМ по строке в браузере не открыл действия")
+	menu.show_tile()
+	menu.html_rows = menu.entries.Copy()
+	menu.Topic("", list("choose" = "[menu.html_rows.Find(context_menu_pick_row(menu, pen))]"))
+	usr = old_usr
+	TEST_ASSERT_EQUAL(user.get_active_held_item(), pen, "ЛКМ по строке в браузере не взял вещь")
+
+/// Закрытие без выбора помечено причиной: клик мимо, новое меню, Escape, отход
+/datum/unit_test/context_menu_close_reasons
+
+/datum/unit_test/context_menu_close_reasons/Run()
+	var/mob/living/carbon/human/dummy/consistent/context_menu_probe/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_probe)
+	var/mob/living/carbon/human/target = allocate(/mob/living/carbon/human/dummy/consistent, get_step(user, EAST))
+	var/datum/context_menu/menu = user.open_context_menu(target, "right=1")
+	user.CommonClickOn(target, "left=1")
+	TEST_ASSERT_EQUAL(menu.close_reason, "click", "Клик мимо меню не помечен")
+	menu = user.open_context_menu(target, "right=1")
+	user.CommonClickOn(target, "right=1")
+	TEST_ASSERT_EQUAL(menu.close_reason, "reopen", "Новое меню поверх старого не помечено")
+	menu = user.active_context_menu
+	menu.on_key_down(user, "Escape")
+	TEST_ASSERT_EQUAL(menu.close_reason, "escape", "Escape не помечен")
+	var/mob/living/carbon/human/dummy/consistent/context_menu_styled/walker = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_styled)
+	walker.style_prefs = new
+	walker.style_prefs.context_menu_style = list("close_on_move" = "always")
+	menu = walker.open_context_menu(target, "right=1")
+	walker.forceMove(get_step(walker, NORTH))
+	TEST_ASSERT(QDELETED(menu), "Меню пережило шаг")
+	TEST_ASSERT_EQUAL(menu.close_reason, "moved", "Шаг не помечен")
+
+/// Значок браузерного меню - целый стейт без попиксельной обрезки; повёрнутая вещь с однонаправленным стейтом не теряет значок
+/datum/unit_test/context_menu_html_icon
+
+/datum/unit_test/context_menu_html_icon/Run()
+	var/obj/item/clothing/suit/armor/vest/vest = allocate(/obj/item/clothing/suit/armor/vest)
+	var/south = context_menu_icon_base64(vest)
+	TEST_ASSERT(length(south), "У бронежилета нет значка")
+	vest.setDir(EAST)
+	TEST_ASSERT_EQUAL(context_menu_icon_base64(vest), south, "Повёрнутая вещь получила пустую сторону стейта")
+	TEST_ASSERT(!context_menu_icon_has_state(vest.icon, "no such state here"), "Несуществующий стейт найден")
+
+/proc/context_menu_pick_row(datum/context_menu/menu, atom/thing)
+	for(var/datum/context_menu_entry/pick/entry in menu.entries)
+		if(entry.picked_ref?.resolve() == thing)
+			return entry

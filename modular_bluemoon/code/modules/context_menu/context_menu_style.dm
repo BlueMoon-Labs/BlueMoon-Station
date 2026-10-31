@@ -37,6 +37,7 @@ GLOBAL_LIST_INIT(context_menu_style_choices, list(
 	"show_examine" = list(TRUE, FALSE),
 	"show_point" = list(TRUE, FALSE),
 	"intents" = list("submenu", "inline"),
+	"pile_click" = list("take", "actions"),
 	"admin_pos" = list("bottom", "top", "hidden"),
 	"sound" = list("off", "click", "soft"),
 ))

@@ -116,6 +116,7 @@
 		return
 	// курсор давно ушёл с меню (auto_close)
 	if(href_list["close"])
+		close_reason = "auto_close"
 		qdel(src)
 		return
 	var/index = text2num(href_list["choose"])
@@ -123,30 +124,40 @@
 		return
 	var/datum/context_menu_entry/entry = html_rows[index]
 	var/list/modifiers = list()
-	for(var/key in list("ctrl", "shift", "alt"))
+	for(var/key in list("ctrl", "shift", "alt", "right"))
 		if(text2num(href_list[key]))
 			modifiers[key] = 1
-	if(istype(entry, /datum/context_menu_entry/pick) && click_picked(entry, modifiers))
-		return
-	choose(entry)
+	click_row(entry, modifiers)
 
 /**
- * Значок объекта для браузерного меню: видимая часть основного стейта в base64, по стейту один раз.
+ * Значок объекта для браузерного меню: основной стейт целиком в base64, по стейту один раз.
+ * Прозрачные поля обрезает страница: попиксельный обход в DM стоил десятки мс на значок за один тик.
  * Люди собраны из оверлеев, их основной стейт - пустое тело, им значка нет.
  */
 /proc/context_menu_icon_base64(atom/thing)
 	var/static/list/cache = list()
 	if(!thing?.icon || ishuman(thing))
 		return null
-	var/key = "[thing.icon]|[thing.icon_state]|[thing.dir]"
+	// у однонаправленного стейта другой стороны нет, а вещь в руках и в меню всегда лицом
+	var/icon_dir = isitem(thing) ? SOUTH : thing.dir
+	var/key = "[thing.icon]|[thing.icon_state]|[icon_dir]"
 	if(key in cache)
 		return cache[key]
 	var/result
-	if(thing.icon_state in icon_states(thing.icon))
-		var/icon/sample = icon(thing.icon, thing.icon_state, thing.dir, 1, FALSE)
-		var/list/bounds = context_menu_icon_bounds(thing.icon, thing.icon_state, thing.dir)
-		sample.Crop(bounds[1], bounds[2], bounds[3], bounds[4])
-		result = icon2base64(sample) || null
+	if(context_menu_icon_has_state(thing.icon, thing.icon_state))
+		result = icon2base64(icon(thing.icon, thing.icon_state, icon_dir, 1, FALSE)) || null
 	if(length(cache) < CONTEXT_MENU_HTML_ICON_CACHE)
 		cache[key] = result
 	return result
+
+/// Есть ли стейт в файле иконки; список стейтов файла собирается один раз
+/proc/context_menu_icon_has_state(icon_file, icon_state)
+	var/static/list/states_by_file = list()
+	var/file_key = "[icon_file]"
+	var/list/states = states_by_file[file_key]
+	if(!states)
+		states = list()
+		for(var/state in icon_states(icon_file))
+			states["[state]"] = TRUE
+		states_by_file[file_key] = states
+	return states["[icon_state]"] || FALSE

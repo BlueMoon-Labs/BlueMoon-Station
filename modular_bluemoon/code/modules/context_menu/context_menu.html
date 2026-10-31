@@ -88,6 +88,53 @@
 	var WEIGHTS = { normal: 400, medium: 600, bold: 700 };
 	var WIDTHS = { auto: [0, 0], narrow: [0, 160], wide: [220, 0] };
 
+	// значки приходят целым стейтом, прозрачные поля обрезаются здесь, по значку один раз; "" - пустой стейт
+	var trimmedIcons = {};
+	var trimIcon = function (icon, done) {
+		var source = new Image();
+		source.onload = function () {
+			var w = source.width;
+			var h = source.height;
+			var canvas = document.createElement("canvas");
+			canvas.width = w;
+			canvas.height = h;
+			canvas.getContext("2d").drawImage(source, 0, 0);
+			var pixels;
+			try {
+				pixels = canvas.getContext("2d").getImageData(0, 0, w, h).data;
+			} catch (e) {
+				done("data:image/png;base64," + icon);
+				return;
+			}
+			var left = w;
+			var top = h;
+			var right = -1;
+			var bottom = -1;
+			for (var y = 0; y < h; y++) {
+				for (var x = 0; x < w; x++) {
+					if (pixels[(y * w + x) * 4 + 3]) {
+						left = Math.min(left, x);
+						right = Math.max(right, x);
+						top = Math.min(top, y);
+						bottom = Math.max(bottom, y);
+					}
+				}
+			}
+			if (right < 0) {
+				trimmedIcons[icon] = "";
+				done("");
+				return;
+			}
+			var crop = document.createElement("canvas");
+			crop.width = right - left + 1;
+			crop.height = bottom - top + 1;
+			crop.getContext("2d").drawImage(canvas, left, top, crop.width, crop.height, 0, 0, crop.width, crop.height);
+			trimmedIcons[icon] = crop.toDataURL("image/png");
+			done(trimmedIcons[icon]);
+		};
+		source.src = "data:image/png;base64," + icon;
+	};
+
 	var menu = {
 		data: null,
 		// клик возвращает фокус карте, иначе ходьба и хоткеи уйдут в эту страницу
@@ -164,10 +211,20 @@
 				var img = document.createElement("img");
 				img.style.width = iconPx + "px";
 				img.style.height = iconPx + "px";
-				if (icon) {
-					img.src = "data:image/png;base64," + icon;
+				img.style.visibility = "hidden";
+				if (!icon) {
+					return img;
+				}
+				var showTrimmed = function (src) {
+					if (src) {
+						img.src = src;
+						img.style.visibility = "";
+					}
+				};
+				if (trimmedIcons[icon] !== undefined) {
+					showTrimmed(trimmedIcons[icon]);
 				} else {
-					img.style.visibility = "hidden";
+					trimIcon(icon, showTrimmed);
 				}
 				return img;
 			};
@@ -283,11 +340,15 @@
 						footer.textContent = " ";
 					}
 				};
+				// ПКМ по строке вещи в списке клетки - её действия вместо «взять»
 				row.onmousedown = function (event) {
-					if (event.button !== 0) {
+					if (event.button !== 0 && event.button !== 2) {
 						return;
 					}
-					menu.send({ choose: index + 1, ctrl: event.ctrlKey ? 1 : 0, shift: event.shiftKey ? 1 : 0, alt: event.altKey ? 1 : 0 });
+					menu.send({ choose: index + 1, ctrl: event.ctrlKey ? 1 : 0, shift: event.shiftKey ? 1 : 0, alt: event.altKey ? 1 : 0, right: event.button === 2 ? 1 : 0 });
+				};
+				row.oncontextmenu = function (event) {
+					event.preventDefault();
 				};
 				rows.appendChild(row);
 				animated.push(row);

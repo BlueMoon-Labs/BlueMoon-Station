@@ -51,6 +51,7 @@ type ContextMenuStyle = {
   show_examine: boolean | number;
   show_point: boolean | number;
   intents: string;
+  pile_click: string;
   admin_pos: string;
   sound: string;
 };
@@ -443,6 +444,11 @@ const INTENTS_OPTIONS: Option<string>[] = [
   { value: 'inline', label: 'Сразу в списке' },
 ];
 
+const PILE_CLICK_OPTIONS: Option<string>[] = [
+  { value: 'take', label: 'Взять, действия - ПКМ по строке' },
+  { value: 'actions', label: 'Открыть действия вещи' },
+];
+
 const ADMIN_POS_OPTIONS: Option<string>[] = [
   { value: 'bottom', label: 'Внизу каждой страницы' },
   { value: 'top', label: 'Вверху' },
@@ -666,6 +672,13 @@ export const ContextMenuSection = (props) => {
 
       <GroupTitle title="Содержимое" />
       <DropdownRow label="Интенты" options={INTENTS_OPTIONS} value={style.intents} onSelect={(value) => setStyle('intents', value)} />
+      <DropdownRow
+        label="ЛКМ по вещи в списке клетки"
+        hint="Занята активная рука - берёт вторая, свободная"
+        options={PILE_CLICK_OPTIONS}
+        value={style.pile_click}
+        onSelect={(value) => setStyle('pile_click', value)}
+      />
       <DropdownRow
         label="Опасные действия"
         hint="Ударить, обезоружить, схватить - после остальных, чтобы не попасть по ним случайно"
