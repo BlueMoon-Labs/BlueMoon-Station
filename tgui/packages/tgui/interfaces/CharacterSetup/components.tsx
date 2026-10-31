@@ -1,6 +1,7 @@
 import { sortBy } from 'common/collections';
 import {
   Children,
+  ComponentProps,
   isValidElement,
   useEffect,
   useLayoutEffect,
@@ -26,6 +27,48 @@ import {
   safeHex,
   uppercaseHexInput,
 } from '../../components/ColorPicker';
+
+export type AppearanceSubTab = 'body' | 'parts' | 'genitals';
+
+let appearanceSubTab: AppearanceSubTab = 'body';
+const appearanceSubTabListeners = new Set<() => void>();
+
+export const getAppearanceSubTab = (): AppearanceSubTab => appearanceSubTab;
+
+export const setAppearanceSubTab = (next: AppearanceSubTab) => {
+  if (appearanceSubTab === next) {
+    return;
+  }
+  appearanceSubTab = next;
+  appearanceSubTabListeners.forEach((listener) => listener());
+};
+
+export const subscribeAppearanceSubTab = (listener: () => void) => {
+  appearanceSubTabListeners.add(listener);
+  return () => {
+    appearanceSubTabListeners.delete(listener);
+  };
+};
+
+let appearanceSplitView = true;
+const appearanceSplitViewListeners = new Set<() => void>();
+
+export const getAppearanceSplitView = (): boolean => appearanceSplitView;
+
+export const setAppearanceSplitView = (next: boolean) => {
+  if (appearanceSplitView === next) {
+    return;
+  }
+  appearanceSplitView = next;
+  appearanceSplitViewListeners.forEach((listener) => listener());
+};
+
+export const subscribeAppearanceSplitView = (listener: () => void) => {
+  appearanceSplitViewListeners.add(listener);
+  return () => {
+    appearanceSplitViewListeners.delete(listener);
+  };
+};
 
 export const SettingsGrid = (props: {
   compact?: boolean;
@@ -136,20 +179,26 @@ export type SelectOption =
 
 export type ActParams = Record<string, string | number | boolean>;
 
+export type TooltipPosition = ComponentProps<typeof Tooltip>['position'];
+
 export const FieldRow = (props: {
   label: string;
   tooltip?: string;
   labelBasis?: string;
+  tooltipPosition?: TooltipPosition;
   children: React.ReactNode;
 }) => {
-  const { label, tooltip, labelBasis, children } = props;
+  const { label, tooltip, labelBasis, tooltipPosition, children } = props;
   const fieldLabel = <div className="CharacterSetup__field-label">{label}</div>;
   return (
     <div data-search-label={label}>
       <Stack align="center" mb={1}>
         <Stack.Item basis={labelBasis || '48%'}>
           {tooltip ? (
-            <Tooltip content={<span className="Tooltip__text">{tooltip}</span>}>
+            <Tooltip
+              content={<span className="Tooltip__text">{tooltip}</span>}
+              position={tooltipPosition}
+            >
               {fieldLabel}
             </Tooltip>
           ) : (
@@ -275,6 +324,7 @@ export const ToggleRow = (props: {
   offLabel?: string;
   tooltip?: string;
   labelBasis?: string;
+  tooltipPosition?: TooltipPosition;
 }) => {
   const { act, data } = useBackend<{ emissivesAllowed: boolean }>();
   const {
@@ -286,26 +336,38 @@ export const ToggleRow = (props: {
     offLabel = 'Нет',
     tooltip,
     labelBasis,
+    tooltipPosition,
   } = props;
   const glow = action === 'toggle_emissive_part';
   const glowButton =
     glow || (action === 'set_feature' && params?.key === 'allow_emissives');
   if (glow && !data.emissivesAllowed) return null;
   return (
-    <FieldRow label={label} tooltip={tooltip} labelBasis={labelBasis}>
-      <Button
-        className={glowButton ? 'CharacterSetup__icon-button' : undefined}
-        icon={glowButton ? 'lightbulb' : value ? 'check' : 'times'}
-        selected={!!value}
-        content={glowButton ? undefined : value ? onLabel : offLabel}
-        tooltip={
-          glowButton
-            ? `${tooltip || label}: ${value ? onLabel : offLabel}`
-            : tooltip
-        }
-        aria-label={glowButton ? label : undefined}
-        onClick={() => (params ? act(action, params) : act(action))}
-      />
+    <FieldRow label={label} tooltip={tooltip} labelBasis={labelBasis} tooltipPosition={tooltipPosition}>
+      <Stack align="center" inline>
+        <Stack.Item>
+          <Button
+            className="CharacterSetup__toggle"
+            icon={glowButton ? 'lightbulb' : value ? 'check' : 'times'}
+            selected={!!value}
+            tooltip={
+              glowButton
+                ? `${tooltip || label}: ${value ? onLabel : offLabel}`
+                : tooltip
+            }
+            tooltipPosition={tooltipPosition}
+            aria-label={glowButton ? label : undefined}
+            onClick={() => (params ? act(action, params) : act(action))}
+          />
+        </Stack.Item>
+        {!glowButton && (
+          <Stack.Item>
+            <Box ml={1} color={value ? undefined : 'label'}>
+              {value ? onLabel : offLabel}
+            </Box>
+          </Stack.Item>
+        )}
+      </Stack>
     </FieldRow>
   );
 };
@@ -340,6 +402,7 @@ export const CycleChoice = (props: {
   onCycle: (direction: 'prev' | 'next') => void;
   disabled?: boolean;
   arrowsTogether?: boolean;
+  tooltipPosition?: TooltipPosition;
 }) => {
   const arrow = (direction: 'prev' | 'next') => (
     <Stack.Item>
@@ -349,6 +412,7 @@ export const CycleChoice = (props: {
         tooltip={
           direction === 'prev' ? 'Предыдущий вариант' : 'Следующий вариант'
         }
+        tooltipPosition={props.tooltipPosition}
         aria-label={
           direction === 'prev' ? 'Предыдущий вариант' : 'Следующий вариант'
         }
@@ -378,6 +442,7 @@ export const SelectRow = (props: {
   labelBasis?: string;
   extra?: React.ReactNode;
   over?: boolean;
+  tooltipPosition?: TooltipPosition;
   onCycle?: (direction: 'prev' | 'next') => void;
   arrowsTogether?: boolean;
 }) => {
@@ -393,6 +458,7 @@ export const SelectRow = (props: {
     labelBasis,
     extra,
     over,
+    tooltipPosition,
     onCycle,
     arrowsTogether,
   } = props;
@@ -400,6 +466,7 @@ export const SelectRow = (props: {
     <Dropdown
       over={over}
       tooltip={tooltip}
+      tooltipPosition={tooltipPosition}
       width={width || '100%'}
       options={normalizeOptions(options || [])}
       selected={value}
@@ -411,6 +478,7 @@ export const SelectRow = (props: {
       onCycle={onCycle}
       disabled={options.length < 2}
       arrowsTogether={arrowsTogether}
+      tooltipPosition={tooltipPosition}
     >
       {dropdown}
     </CycleChoice>
@@ -418,7 +486,12 @@ export const SelectRow = (props: {
     dropdown
   );
   return (
-    <FieldRow label={label} tooltip={tooltip} labelBasis={labelBasis}>
+    <FieldRow
+      label={label}
+      tooltip={tooltip}
+      labelBasis={labelBasis}
+      tooltipPosition={tooltipPosition}
+    >
       {extra ? (
         <Stack align="center" style={{ width: '100%' }}>
           <Stack.Item grow>{choice}</Stack.Item>
@@ -636,6 +709,7 @@ const FeatureFieldControl = (props: {
               value={(value as number) || 0}
               minValue={field.min}
               maxValue={field.max}
+              format={(next: number) => `${Math.round(next * 100) / 100}`}
               onChange={(e, next) =>
                 act('set_feature', { key: field.key, value: next })
               }
