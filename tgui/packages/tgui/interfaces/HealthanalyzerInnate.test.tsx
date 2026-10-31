@@ -63,4 +63,10 @@ test('обновление скана удаляет открытую подск
   update({ innateFeatures: [] });
   expect(screen.queryByRole('tooltip')).toBeNull();
   expect(screen.queryByText(feature.name)).toBeNull();
+  expect(screen.queryByText('Врожденное:')).toBeNull();
+});
+
+test.each([[], undefined])('строка врождённых особенностей скрыта при пустом списке %j', (innateFeatures) => {
+  setup({ ...sample, innateFeatures });
+  expect(screen.queryByText('Врожденное:')).toBeNull();
 });

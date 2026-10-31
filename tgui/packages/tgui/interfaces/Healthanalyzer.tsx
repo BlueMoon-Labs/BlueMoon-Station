@@ -90,15 +90,15 @@ export const Healthanalyzer = () => {
               )}
               {!!scan.deathNotice?.length && <Box mb={0.5}><ScanLines lines={scan.deathNotice} compact /></Box>}
               {!!scan.damageLevels && <VitalSigns scan={scan} />}
-              {scan.innateFeatures !== undefined && (
+              {!!scan.innateFeatures?.length && (
                 <Box mt={0.5}>
                   <Box inline color="label">Врожденное:</Box>{' '}
-                  {scan.innateFeatures.length > 0 ? scan.innateFeatures.map((feature, index) => (
+                  {scan.innateFeatures.map((feature, index) => (
                     <Fragment key={feature.id}>
                       {index > 0 && ', '}
                       <InnateFeatureLabel feature={feature} />
                     </Fragment>
-                  )) : 'Нет'}
+                  ))}
                 </Box>
               )}
             </>
