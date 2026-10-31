@@ -761,13 +761,77 @@
 		TEST_ASSERT("m_taur_[variant.severed_body_state]_ADJUP" in body_states, "Основной атлас хвоста содержит верхний слой культи для [style].")
 		TEST_ASSERT("m_taur_[variant.severed_body_state]_FRONT" in body_states, "Основной атлас хвоста содержит передний слой культи для [style].")
 		TEST_ASSERT("m_taur_extra_[variant.severed_body_extra_state]_FRONT" in body_states, "Основной атлас хвоста содержит срез для [style].")
+		for(var/layer in list("ADJUP", "FRONT"))
+			TEST_ASSERT("m_taur_extra_[variant.severed_body_extra_matrix_state]_[layer]" in body_states, "Атлас содержит матричный срез [style] для слоя [layer].")
+			TEST_ASSERT("m_taur_extra_[variant.severed_body_extra_slime_state]_[layer]" in body_states, "Атлас содержит слаймовый срез [style] для слоя [layer].")
 	var/datum/sprite_accessory/taur/taur = GLOB.taur_list["Naga"]
 	var/list/item_states = icon_states(taur.severed_item_icon)
 	TEST_ASSERT(taur.severed_item_state in item_states, "В DMI существует подключённая основа предмета.")
 	TEST_ASSERT(taur.severed_item_extra_state in item_states, "В DMI существует подключённый срез.")
+	TEST_ASSERT(taur.severed_item_extra_matrix_state in item_states, "В DMI существует матричный срез предмета.")
+	TEST_ASSERT(taur.severed_item_extra_slime_state in item_states, "В DMI существует слаймовый срез предмета.")
 	var/list/doll_states = icon_states(NAGA_DOLL_ICON)
 	for(var/state in list("healthdoll_OVERLAY", "healthdoll_DEAD", "tail1", "tail2", "tail3", "tail4", "tail5", "tail6", "tail7"))
 		TEST_ASSERT(state in doll_states, "Атлас куклы содержит состояние [state].")
+
+/datum/unit_test/supporting_tail/matrixed_severed_overlays/Run()
+	for(var/style in list("Naga", "Naga (coiled)", "Naga, Fat", "RadDog Naga (Hyper)"))
+		for(var/species_type in list(/datum/species/human, /datum/species/jelly/roundstartslime, /datum/species/mammal/synthetic))
+			var/mob/living/carbon/human/human = patient(style)
+			human.set_species(species_type)
+			human.dna.features["color_scheme"] = ADVANCED_CHARACTER_COLORING
+			human.dna.features["taur_primary"] = "12AB34"
+			human.dna.features["taur_secondary"] = "CD56EF"
+			human.dna.features["taur_tertiary"] = "789ABC"
+			var/datum/sprite_accessory/taur/taur = GLOB.taur_list[style]
+			var/obj/item/bodypart/l_leg/naga_tail/tail = human.get_bodypart(BODY_ZONE_L_LEG)
+			tail.drop_limb()
+			var/matrixed = species_type != /datum/species/human
+			var/slime = species_type == /datum/species/jelly/roundstartslime
+			var/expected_item_state = slime ? taur.severed_item_extra_slime_state : (matrixed ? taur.severed_item_extra_matrix_state : taur.severed_item_extra_state)
+			TEST_ASSERT_EQUAL(tail.tail_item_extra_state, expected_item_state, "Вид владельца выбирает срез предмета: [style], [species_type].")
+			if(matrixed)
+				TEST_ASSERT_EQUAL(json_encode(tail.tail_item_extra_color), json_encode(tail.tail_item_color), "Срез предмета использует всю матрицу основной палитры.")
+			else
+				TEST_ASSERT_NULL(tail.tail_item_extra_color, "У органического владельца мясной срез остаётся фиксированным.")
+			human.update_mutant_bodyparts()
+			var/mutable_appearance/base_overlay
+			var/mutable_appearance/cut_overlay
+			var/expected_state = slime ? taur.severed_body_extra_slime_state : (matrixed ? taur.severed_body_extra_matrix_state : taur.severed_body_extra_state)
+			for(var/mutable_appearance/part as anything in human.overlays_standing[BODY_FRONT_LAYER])
+				if(part.icon_state == "m_taur_[taur.severed_body_state]_FRONT")
+					base_overlay = part
+				if(part.icon_state == "m_taur_extra_[expected_state]_FRONT")
+					cut_overlay = part
+			TEST_ASSERT_NOTNULL(base_overlay, "После отсечения отображается основа культи.")
+			TEST_ASSERT_NOTNULL(cut_overlay, "После отсечения отображается срез подходящего типа.")
+			if(matrixed)
+				TEST_ASSERT_EQUAL(json_encode(cut_overlay.color), json_encode(base_overlay.color), "Срез культи использует ту же окраску, что и её основа.")
+			else
+				TEST_ASSERT_NULL(cut_overlay.color, "У органической культи сохраняются исходные цвета среза.")
+
+/datum/unit_test/supporting_tail/matrixed_cut_transplant/Run()
+	var/mob/living/carbon/human/donor = patient()
+	donor.set_species(/datum/species/jelly/roundstartslime)
+	donor.dna.features["color_scheme"] = ADVANCED_CHARACTER_COLORING
+	donor.dna.features["taur_primary"] = "112233"
+	donor.dna.features["taur_secondary"] = "445566"
+	var/obj/item/bodypart/l_leg/naga_tail/tail = donor.get_bodypart(BODY_ZONE_L_LEG)
+	tail.drop_limb()
+	var/datum/sprite_accessory/taur/taur = GLOB.taur_list["Naga"]
+	TEST_ASSERT_EQUAL(tail.tail_item_extra_state, taur.severed_item_extra_slime_state, "Отделённый хвост слайма получает срез без кости.")
+	donor.dna.features["taur_primary"] = "FFFFFF"
+	donor.set_species(/datum/species/human)
+	TEST_ASSERT_EQUAL(tail.tail_item_extra_color[1], 0x11 / 255, "Смена вида и цвета бывшего владельца не перекрашивает предмет на полу.")
+	var/mob/living/carbon/human/recipient = patient()
+	recipient.get_bodypart(BODY_ZONE_L_LEG).drop_limb()
+	TEST_ASSERT(tail.attach_limb(recipient), "Хвост слайма пересаживается органическому владельцу.")
+	TEST_ASSERT_EQUAL(tail.tail_item_extra_state, taur.severed_item_extra_state, "Пересадка органическому владельцу возвращает мясной срез.")
+	TEST_ASSERT_NULL(tail.tail_item_extra_color, "После пересадки не остаётся старая матрица среза.")
+	recipient.set_species(/datum/species/mammal/synthetic)
+	tail.drop_limb()
+	TEST_ASSERT_EQUAL(tail.tail_item_extra_state, taur.severed_item_extra_matrix_state, "Повторное отсечение учитывает новый синтетический вид владельца.")
+	TEST_ASSERT_EQUAL(json_encode(tail.tail_item_extra_color), json_encode(tail.tail_item_color), "Повторное отсечение сохраняет актуальную матрицу среза.")
 
 /datum/unit_test/supporting_tail/proc/taur_states(mob/living/carbon/human/human)
 	var/list/states = list()

@@ -61,6 +61,11 @@
 					tail_item_extra_color = taur.get_severed_color(human, taur.extra_color_src, 2)
 				else
 					tail_item_extra_color = taur.get_severed_color(human, taur.severed_item_extra_color_src)
+				var/matrixed_severed_state = taur.get_matrixed_severed_state(human, for_item = TRUE)
+				if(matrixed_severed_state)
+					tail_item_extra_state = matrixed_severed_state
+					// Уже рассчитанная окраска основы учитывает выбранную палитру и режим матрицы.
+					tail_item_extra_color = tail_item_color
 				if(isnull(taur.severed_item_extra2_color_src))
 					tail_item_extra2_color = taur.get_severed_color(human, taur.extra2_color_src, 3)
 				else

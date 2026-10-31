@@ -36,6 +36,8 @@
 | `severed_item_extra_state`, `severed_item_extra2_state` | Дополнительные слои предмета. |
 | `severed_body_extra_color_src`, `severed_body_extra2_color_src` | Независимые источники цвета слоёв культи. |
 | `severed_item_extra_color_src`, `severed_item_extra2_color_src` | Независимые источники цвета слоёв предмета. |
+| `severed_body_extra_matrix_state`, `severed_item_extra_matrix_state` | Матричные срезы синтетиков; используют окраску основы хвоста. |
+| `severed_body_extra_slime_state`, `severed_item_extra_slime_state` | Матричные срезы слаймов без кости; та же палитра хвоста. |
 
 Источники цвета: `null` — прежняя окраска extra/extra2; `NONE` — исходные цвета DMI; `MUTCOLORS`, `MUTCOLORS2`, `MUTCOLORS3` — соответствующий цвет палитры тавра. Поддерживаются и остальные штатные источники.
 Состояния культи лежат в основном `icon` каждого хвоста: `m_taur_<state>_<слой>`, дополнительные — `m_taur_extra_<state>_<слой>` и `m_taur_extra2_<state>_<слой>`; для Naga слои `ADJUP` и `FRONT`. Основа имени состояния — `naga-severed` для Naga, `nagafat-severed` для Naga, Fat и `chemnaga-severed` для RadDog Naga (Hyper).
@@ -44,5 +46,5 @@
 
 ## Ресурсы
 
-- `icons/obj/naga_tail_item.dmi`: `naga_tail` — матричная основа, `naga_tail_cut` — срез с фиксированными цветами.
+- `icons/obj/naga_tail_item.dmi`: `naga_tail` — основа; `naga_tail_cut` — мясной срез; `naga_tail_cut_matrix` — красные контур и центральная деталь, зелёная внутренность; `naga_tail_cut_slime` — красный контур, зелёная внутренность без кости.
 - `icons/mob/naga_healthdoll.dmi`: `healthdoll_OVERLAY`, `healthdoll_DEAD`; `tail1`…`tail5` — повреждения, `tail6` — отсутствие, `tail7` — отключение.

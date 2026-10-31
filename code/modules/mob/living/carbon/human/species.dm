@@ -1155,6 +1155,9 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 				standing += emissive_copy(accessory_overlay)
 
 			var/extra_state = severed_taur ? severed_taur.severed_body_extra_state : (S.extra ? S.icon_state : null)
+			var/matrixed_severed_state = severed_taur?.get_matrixed_severed_state(H)
+			if(matrixed_severed_state)
+				extra_state = matrixed_severed_state
 			if(severed_taur ? !!extra_state : S.extra) // Для обычного тавра сохраняем исходное условие extra.
 				var/mutable_appearance/extra_accessory_overlay = mutable_appearance(S.icon, layer = part_layer)
 				extra_accessory_overlay.category = S.mutable_category
@@ -1166,7 +1169,11 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 					extra_accessory_overlay = center_image(extra_accessory_overlay, S.dimension_x, S.dimension_y)
 
 				var/extra_color_src = S.extra_color_src
-				if(severed_taur && !isnull(severed_taur.severed_body_extra_color_src))
+				if(matrixed_severed_state)
+					// Используем ту же окраску, включая принудительный цвет и эффекты основы культи.
+					extra_accessory_overlay.color = accessory_overlay.color
+					extra_color_src = NONE
+				else if(severed_taur && !isnull(severed_taur.severed_body_extra_color_src))
 					extra_accessory_overlay.color = severed_taur.get_severed_color(H, severed_taur.severed_body_extra_color_src)
 					extra_color_src = NONE
 				switch(extra_color_src) // Обычные слои сохраняют прежнюю схему окрашивания.

@@ -43,6 +43,17 @@
 	var/severed_body_extra2_color_src
 	var/severed_item_extra_color_src
 	var/severed_item_extra2_color_src
+	var/severed_body_extra_matrix_state
+	var/severed_item_extra_matrix_state
+	var/severed_body_extra_slime_state
+	var/severed_item_extra_slime_state
+
+// Слаймовый срез не содержит кости; синтетический сохраняет центральную деталь оболочки.
+/datum/sprite_accessory/taur/proc/get_matrixed_severed_state(mob/living/carbon/human/human, for_item = FALSE)
+	if(isjellyperson(human))
+		return for_item ? severed_item_extra_slime_state : severed_body_extra_slime_state
+	if(isrobotic(human))
+		return for_item ? severed_item_extra_matrix_state : severed_body_extra_matrix_state
 
 /datum/sprite_accessory/taur/is_not_visible(var/mob/living/carbon/human/H, var/tauric)
 	return (!tauric || (H.wear_suit && (H.wear_suit.flags_inv & HIDETAUR)))
@@ -145,6 +156,10 @@
 	severed_item_state = "naga_tail"
 	severed_item_extra_state = "naga_tail_cut"
 	severed_item_extra_color_src = NONE
+	severed_body_extra_matrix_state = "naga-severed-matrix"
+	severed_item_extra_matrix_state = "naga_tail_cut_matrix"
+	severed_body_extra_slime_state = "naga-severed-slime"
+	severed_item_extra_slime_state = "naga_tail_cut_slime"
 
 /datum/sprite_accessory/taur/naga/coiled
 	name = "Naga (coiled)"

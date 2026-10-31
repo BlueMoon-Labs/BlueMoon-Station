@@ -8,6 +8,8 @@
 	taur_mode = STYLE_SNEK_TAURIC
 	hide_legs = USE_SNEK_CLIP_MASK
 	matrixed_sections = MATRIX_ALL
+	severed_body_extra_matrix_state = "chemnaga-severed-matrix"
+	severed_body_extra_slime_state = "chemnaga-severed-slime"
 
 /datum/sprite_accessory/taur/chemlight
 	name = "RadDog Taur (Hyper)"
