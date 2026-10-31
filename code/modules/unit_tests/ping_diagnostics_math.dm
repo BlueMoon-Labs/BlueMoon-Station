@@ -7,6 +7,88 @@
 	ping_diag_median(source)
 	TEST_ASSERT_EQUAL(source[1], 3, "исходный список не сортируется на месте")
 
+/// Своя сортировка даёт ровно те же перцентили, что прежний sortTim по cmp_numeric_asc.
+/proc/ping_diag_reference_percentile(list/values, percent)
+	var/count = length(values)
+	if(!count)
+		return 0
+	var/list/sorted = values.Copy()
+	sortTim(sorted, GLOBAL_PROC_REF(cmp_numeric_asc))
+	return sorted[clamp(CEILING(count * percent / 100, 1), 1, count)]
+
+/datum/unit_test/ping_diag_percentile_exact/proc/random_set(count, low, high)
+	. = list()
+	for(var/i in 1 to count)
+		. += rand(low, high) + (prob(50) ? round(rand(), 0.01) : 0)
+
+/datum/unit_test/ping_diag_percentile_exact/Run()
+	var/list/ascending = list()
+	var/list/descending = list()
+	var/list/flat = list()
+	for(var/i in 1 to 200)
+		ascending += i
+		descending += 201 - i
+		flat += 42.5
+	var/list/sets = list(
+		"пустой" = list(),
+		"один" = list(7),
+		"два" = list(9, -3),
+		"повторы" = list(5, 5, 5, 1, 1, 9, 9, 9, 9, 0, 0.5, 5),
+		"все равны" = flat,
+		"по возрастанию" = ascending,
+		"по убыванию" = descending,
+		"200 с повторами" = random_set(200, 20, 60),
+		"200" = random_set(200, -50, 2000),
+		"800" = random_set(800, 0, 60000),
+		"800 с повторами" = random_set(800, 30, 90),
+	)
+	var/list/percents = list(1, 5, 33.3, 50, 50, 95, 99, 100)
+	for(var/name in sets)
+		var/list/values = sets[name]
+		var/list/before = values.Copy()
+		var/list/expected = list()
+		for(var/percent in percents)
+			expected += ping_diag_reference_percentile(values, percent)
+			var/actual = ping_diag_percentile(values, percent)
+			TEST_ASSERT(actual == expected[length(expected)], "[name], p[percent]: [actual] вместо [expected[length(expected)]]")
+		TEST_ASSERT_EQUAL(values.Join(","), before.Join(","), "[name]: исходный список не тронут")
+		var/list/together = ping_diag_percentiles(values.Copy(), percents)
+		for(var/i in 1 to length(percents))
+			TEST_ASSERT(together[i] == expected[i], "[name]: p[percents[i]] одним выбором - [together[i]] вместо [expected[i]]")
+
+/// recompute берёт медиану, p95 и минимум из одной сортировки: числа те же, что по прежней формуле.
+/datum/unit_test/ping_diag_recompute_ranks/Run()
+	var/datum/ping_diagnostics/diag = new("tester")
+	var/now = 0
+	for(var/i in 1 to 260)
+		now += 15
+		diag.record_sample(now, 40 + rand(0, 40) + (prob(8) ? rand(100, 400) : 0), prob(10) ? rand(0, 20) : 0, i, null)
+	diag.recompute(now, 0, 0)
+	var/list/rtts = list()
+	var/list/personal = list()
+	var/list/recent_rtts = list()
+	var/list/recent_personal = list()
+	for(var/slot in diag.window_slots(now))
+		rtts += diag.sample_rtt[slot]
+		personal += diag.sample_personal[slot]
+		if(diag.sample_time[slot] >= now - PING_DIAG_FLOOD_WINDOW_DS)
+			recent_rtts += diag.sample_rtt[slot]
+			recent_personal += diag.sample_personal[slot]
+	var/list/summary = diag.summary
+	TEST_ASSERT_EQUAL(summary["samples"], length(rtts), "замеры окна")
+	TEST_ASSERT_EQUAL(summary["rtt_now"], rtts[length(rtts)], "последний RTT берётся до сортировки")
+	TEST_ASSERT(summary["rtt_median"] == ping_diag_reference_percentile(rtts, 50), "медиана RTT")
+	TEST_ASSERT(summary["rtt_p95"] == ping_diag_reference_percentile(rtts, 95), "p95 RTT")
+	TEST_ASSERT(summary["rtt_min"] == min(rtts), "минимум RTT")
+	TEST_ASSERT(summary["personal_median"] == ping_diag_reference_percentile(personal, 50), "медиана личного")
+	TEST_ASSERT(summary["recent_rtt_p95"] == ping_diag_reference_percentile(recent_rtts, 95), "p95 за 30 с")
+	TEST_ASSERT(summary["recent_personal_median"] == ping_diag_reference_percentile(recent_personal, 50), "медиана личного за 30 с")
+	var/list/spikes = ping_diag_find_spikes(personal)
+	var/list/slots = diag.window_slots(now)
+	var/minutes = max((diag.sample_time[slots[length(slots)]] - diag.sample_time[slots[1]]) / (1 MINUTES), 1)
+	TEST_ASSERT(summary["loss_per_min"] == ping_diag_count_loss_like(personal, spikes) / minutes, "потери по тем же спайкам")
+	qdel(diag)
+
 /datum/unit_test/ping_diag_spikes/Run()
 	var/list/personal = list(5, 8, 6, 250, 7, 5, 300, 320, 6)
 	var/list/spikes = ping_diag_find_spikes(personal)
@@ -28,6 +110,8 @@
 	TEST_ASSERT_EQUAL(ping_diag_classify_event(120, 10), PING_EVENT_SERVER_STALL, "простой - сервер")
 	TEST_ASSERT_EQUAL(ping_diag_classify_event(0, 95), PING_EVENT_SERVER_LOAD, "без простоя, но тик забит")
 	TEST_ASSERT_EQUAL(ping_diag_classify_event(0, 30), PING_EVENT_HOST_NETWORK, "сервер свободен - канал хоста")
+	TEST_ASSERT_EQUAL(ping_diag_classify_event(0, 30, 5, 65), PING_EVENT_SERVER_LOAD, "тяжёлый прогон подсистемы держит ответы - наша нагрузка")
+	TEST_ASSERT_EQUAL(ping_diag_classify_event(0, 30, 5, PING_DIAG_SERVER_LOAD_RUN - 1), PING_EVENT_HOST_NETWORK, "лёгкие прогоны - канал хоста")
 
 /datum/unit_test/ping_diag_verdicts/proc/stats(list/overrides)
 	var/list/result = list(
@@ -87,15 +171,18 @@
 	TEST_ASSERT_EQUAL(main(list("base" = 180)), PING_VERDICT_FAR, "высокая база")
 	TEST_ASSERT_EQUAL(main(list("base" = 100, "server_base" = 40)), PING_VERDICT_FAR, "база вдвое выше серверной")
 	TEST_ASSERT_EQUAL(main(list("base" = 70, "server_base" = 20)), PING_VERDICT_OK, "мелкая база не далеко, даже если втрое выше")
-	TEST_ASSERT_EQUAL(main(list("build" = 5141500)), PING_VERDICT_OLD_BUILD, "старая сборка")
-	TEST_ASSERT_EQUAL(main(list("warn_build" = 0, "build" = 5141500)), PING_VERDICT_OK, "без конфига сборку не судим")
+	var/list/old_build = ping_diag_pick_verdicts(stats(list("build" = 5141500)))
+	TEST_ASSERT_EQUAL(old_build.Join(","), PING_VERDICT_OK, "старая сборка - не вердикт про пинг")
+	TEST_ASSERT(ping_diag_old_build(stats(list("build" = 5141500))), "старая сборка - отдельный совет")
+	TEST_ASSERT(!ping_diag_old_build(stats(list())), "свежая сборка - без совета")
+	TEST_ASSERT(!ping_diag_old_build(stats(list("warn_build" = 0, "build" = 5141500))), "без конфига сборку не судим")
+	TEST_ASSERT(!ping_diag_old_build(stats(list("build" = 0))), "сборка неизвестна - без совета")
 
 /datum/unit_test/ping_diag_texts/Run()
 	for(var/verdict in list(PING_VERDICT_FLOOD, PING_VERDICT_FREEZE, PING_VERDICT_PC, PING_VERDICT_PERIODIC, PING_VERDICT_LOSS, PING_VERDICT_JITTER, PING_VERDICT_FAR))
 		TEST_ASSERT(ping_diag_is_yours(verdict), "[verdict] - на стороне игрока")
 		TEST_ASSERT(length(ping_diag_hint_text(verdict)), "у [verdict] есть текст подсказки")
 	TEST_ASSERT(!ping_diag_is_yours(PING_VERDICT_SERVER), "сервер - не сторона игрока")
-	TEST_ASSERT(!ping_diag_is_yours(PING_VERDICT_OLD_BUILD), "старая сборка в чат не подсказывается")
 
 	var/list/summary = list("build" = 5161688, "samples" = 120, "base" = 41.6, "rtt_median" = 45, "rtt_p95" = 90, "personal_median" = 3, "spikes_per_min" = 0.4, "loss_per_min" = 0.2, "period" = 600, "freezes" = 1, "stall_mean" = 2, "shared_mean" = 1, "personal_mean" = 4, "loop_lag" = 8, "fps" = 60, "browser_rtt" = 50)
 	var/list/context = list("mob_kind" = "ghost", "view" = "21x15", "z_clients" = 30, "near_clients" = 4)
@@ -110,7 +197,8 @@
 	TEST_ASSERT_EQUAL(cells[header.Find("mob_kind")], "ghost", "тип моба")
 	TEST_ASSERT_EQUAL(cells[header.Find("view")], "21x15", "обзор")
 	TEST_ASSERT_EQUAL(cells[header.Find("near_clients")], "4", "людей рядом")
-	TEST_ASSERT_EQUAL(header[length(header)], "verdict", "вердикт последней колонкой")
+	TEST_ASSERT_EQUAL(header[length(header)], "old_build", "флаг старой сборки последней колонкой")
+	TEST_ASSERT_EQUAL(cells[header.Find("old_build")], "0", "без конфига сборку не судим")
 	TEST_ASSERT(!header.Find("chat_lag"), "задержки панели чата в заголовке больше нет")
 	TEST_ASSERT_EQUAL(header.Find("chat_rate") + 1, header.Find("chat_messages"), "поток чата перед числом сообщений")
 	TEST_ASSERT_EQUAL(cells[header.Find("browser_rtt")], "50", "браузерный RTT")
@@ -125,6 +213,11 @@
 	TEST_ASSERT_EQUAL(cells[header.Find("chat_rate")], "12.3", "поток с точностью до десятой")
 	TEST_ASSERT_EQUAL(cells[header.Find("chat_messages")], "5000", "сообщений в чате")
 	TEST_ASSERT_EQUAL(cells[header.Find("verdict")], PING_VERDICT_FLOOD, "вердикт")
+	summary["build"] = 5141500
+	summary["warn_build"] = 5161600
+	cells = splittext(ping_diag_csv_row("12:00:00", 1234567, "somekey", summary, PING_VERDICT_OK, context), ",")
+	TEST_ASSERT_EQUAL(cells[header.Find("verdict")], PING_VERDICT_OK, "старая сборка не в колонке вердикта")
+	TEST_ASSERT_EQUAL(cells[header.Find("old_build")], "1", "а отдельным флагом")
 
 	var/line = ping_diag_event_line(list("time" = "12:00:00", "world_time" = 1234567, "type" = PING_EVENT_HOST_NETWORK, "clients" = 40, "fraction" = 0.9, "extra_ms" = 150, "stall_ms" = 0, "host_retrans_pct" = 2.5, "source" = ""))
 	TEST_ASSERT_EQUAL(line, "12:00:00 wt=1234567 тип=host_network клиентов=40 доля=0.9 прибавка=150мс простой=0мс повторы_хоста=2.5% источник=-", "формат строки события")

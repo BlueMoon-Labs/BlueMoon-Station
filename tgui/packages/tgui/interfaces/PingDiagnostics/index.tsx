@@ -13,6 +13,7 @@ import {
   graphGeometry,
   GraphPoint,
   ms,
+  OLD_BUILD,
   PingDiagnosticsData,
   PingEvent,
   RoundSummary,
@@ -95,7 +96,10 @@ const Numbers = ({ data, stats }: { data: PingDiagnosticsData; stats: Stats }) =
       <LabeledList.Item label="Подвисания">{stats.freezes ?? 0} за 5 минут</LabeledList.Item>
       <LabeledList.Item label="Окно игры">{gameWindowText(stats)}</LabeledList.Item>
       <LabeledList.Item label="Поток чата">{chatRateText(stats.chat_rate)}</LabeledList.Item>
-      <LabeledList.Item label="BYOND">{data.byond}</LabeledList.Item>
+      <LabeledList.Item label="BYOND" color={data.old_build ? 'average' : undefined}>
+        {data.byond}
+        {!!data.old_build && ', старше рекомендуемой'}
+      </LabeledList.Item>
     </LabeledList>
   </Section>
 );
@@ -119,6 +123,13 @@ const Advice = ({ verdicts, stats }: { verdicts: VerdictCode[]; stats: Stats }) 
     </Section>
   );
 };
+
+const BuildAdvice = () => (
+  <Section title={OLD_BUILD.title}>
+    <Box color="label">{OLD_BUILD.why}</Box>
+    <Box>{OLD_BUILD.advice}</Box>
+  </Section>
+);
 
 const HintControls = () => {
   const { act, data } = useBackend<PingDiagnosticsData>();
@@ -166,6 +177,7 @@ const SelfTab = () => {
       <Breakdown stats={stats} />
       <Graph points={data.graph ?? []} />
       <Advice verdicts={verdicts} stats={stats} />
+      {!!data.old_build && <BuildAdvice />}
       <Numbers data={data} stats={stats} />
       <HintControls />
     </>
@@ -243,7 +255,10 @@ const ServerTab = () => {
               {COLUMNS.map((entry) => (
                 <Table.Cell key={entry.key}>{entry.cell ? entry.cell(row) : entry.value(row)}</Table.Cell>
               ))}
-              <Table.Cell color={VERDICTS[row.verdict]?.color}>{VERDICTS[row.verdict]?.title ?? row.verdict}</Table.Cell>
+              <Table.Cell color={VERDICTS[row.verdict]?.color}>
+                {VERDICTS[row.verdict]?.title ?? row.verdict}
+                {!!row.old_build && <Box color="label">старый BYOND</Box>}
+              </Table.Cell>
             </Table.Row>
           ))}
         </Table>

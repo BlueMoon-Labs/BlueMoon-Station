@@ -115,7 +115,9 @@
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
 		ui = new(user, src, "TextInputModal")
-		ui.open()
+		if(!ui.open())
+			qdel(ui)
+			ui_close(user)
 
 /datum/tgui_input_text/ui_close(mob/user)
 	. = ..()
@@ -214,16 +216,16 @@
 	var/datum/callback/callback
 
 /datum/tgui_input_text/async/New(mob/user, message, title, default, callback, max_length, multiline, encode, timeout)
-	..(user, title, message, default, max_length, multiline, encode, timeout)
+	..(user, message, title, default, max_length, multiline, encode, timeout)
 	src.callback = callback
 
 /datum/tgui_input_text/async/Destroy(force, ...)
 	QDEL_NULL(callback)
 	. = ..()
 
-///datum/tgui_input_text/async/tgui_close(mob/user)
-//	. = ..()
-//	qdel(src)
+/datum/tgui_input_text/async/ui_close(mob/user)
+	. = ..()
+	qdel(src)
 
 /datum/tgui_input_text/async/set_entry(entry)
 	. = ..()
