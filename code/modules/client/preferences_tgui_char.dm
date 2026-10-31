@@ -1096,7 +1096,7 @@
 	data["hasMarkings"] = length(entries) > 0
 	data["total"] = length(entries)
 
-	var/list/grid = list("Head", "Right Leg", "Chest", "Left Arm", "Left Leg", "Right Arm")
+	var/list/grid = list("Head", "Chest", "Left Arm", "Right Arm", "Left Leg", "Right Leg")
 	var/list/limbs = list()
 	for(var/limb in grid)
 		var/list/rows = list()

@@ -734,6 +734,8 @@ GLOBAL_LIST_INIT(atmos_adjacent_savings, list(0,0))
 /// порог, по которому фаза решает, что турф вообще стоит зоны. Раньше жил двумя
 /// независимыми литералами: `var/const/` внутри обхода и голой пятёркой в фазе.
 #define EQUALIZE_MIN_PRESSURE_DELTA 5
+/// Сколько SSair ждёт парного StopLoadingMap() вне загрузки карты, прежде чем разобрать очередь пробуждений шаблона сам.
+#define MAP_LOADING_STUCK_TIMEOUT (2 MINUTES)
 /// Pure-telemetry devices (meters, air sensors) only report once per this many
 /// SSair fires; their power draw is compensated by the same constant.
 #define ATMOS_TELEMETRY_INTERVAL 4

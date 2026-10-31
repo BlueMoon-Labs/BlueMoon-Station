@@ -8,7 +8,7 @@
 
 /// Тип скин-контрола по id окна: "BROWSER", "WINDOW" и так далее. Задан скин-файлом
 /// и в пределах одного подключения не меняется, а winexists - это round-trip до
-/// клиента на каждое открытие окна tgui. Спрашиваем один раз за сессию.
+/// клиента на каждое открытие окна tgui. Спрашиваем один раз за сессию, об окнах пула - никогда.
 /client/var/list/tgui_window_control_types = list()
 
 /datum/tgui_window
@@ -148,30 +148,41 @@
 	// Force pooled windows hidden immediately; frontend will reveal when ready.
 	if(pooled && istype(client))
 		winset(client, id, "is-visible=0")
-	// Detect whether the control is a browser
+	is_browser = is_skin_browser()
+	// вопрос скину мог усыпить прок - клиент за это время успевает отвалиться
 	if(!istype(client))
 		return
-	var/win_type = client.tgui_window_control_types[id]
-	if(!win_type)
-		win_type = tracked_winexists(client, id)
-		// winexists усыпил прок до ответа скина - клиент мог за это время отвалиться
-		if(!istype(client))
-			return
-		// Пустой ответ означает "контрола нет"; такое не кэшируем, чтобы окно,
-		// созданное позже, определилось правильно
-		if(length(win_type))
-			client.tgui_window_control_types[id] = win_type
-	is_browser = win_type == "BROWSER"
 	if(CONFIG_GET(flag/emergency_tgui_logging))
 		var/primary_target = get_primary_output_target()
 		var/secondary_target = get_secondary_output_target()
 		var/mirror_output = CONFIG_GET(flag/emergency_tgui_mirror_output)
 		log_tgui(client,
-			"[id]/initialize winexists=[win_type], is_browser=[is_browser], primary_target=[primary_target], secondary_target=[secondary_target], mirror_output=[mirror_output]",
+			"[id]/initialize is_browser=[is_browser], primary_target=[primary_target], secondary_target=[secondary_target], mirror_output=[mirror_output]",
 			window = src)
 	// Instruct the client to signal UI when the window is closed.
 	if(!is_browser && istype(client)) // BLUEMOON EDIT - sanity check
 		winset(client, id, "on-close=\"uiclose [id]\"")
+
+/// Окна пула создаёт browse(), в скине их нет. Вопрос о них усыплял initialize() с захваченным
+/// окном до ответа скина, и клиент, который молчит (реконнект, зависший WebView2), съедал весь пул.
+/datum/tgui_window/proc/is_skin_browser()
+	if(pooled)
+		return FALSE
+	return query_control_type() == "BROWSER"
+
+/// Тип контрола по id: "BROWSER", "MAIN" и так далее. Спит до ответа скина.
+/datum/tgui_window/proc/query_control_type()
+	if(!istype(client))
+		return
+	var/win_type = client.tgui_window_control_types[id]
+	if(win_type)
+		return win_type
+	win_type = tracked_winexists(client, id)
+	// Пустой ответ означает "контрола нет"; такое не кэшируем, чтобы окно,
+	// созданное позже, определилось правильно
+	if(istype(client) && length(win_type))
+		client.tgui_window_control_types[id] = win_type
+	return win_type
 
 /datum/tgui_window/proc/get_primary_output_target()
 	return is_browser ? "[id]:update" : "[id].browser:update"

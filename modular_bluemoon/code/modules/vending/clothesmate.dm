@@ -343,7 +343,7 @@ GLOBAL_LIST_INIT(clothesmate_socks, list())
 				/obj/item/clothing/suit/assu_suit = 16,
 				/obj/item/clothing/suit/basil_boys = 7,
 				/obj/item/clothing/suit/toggle/male2 = 10,
-				/obj/item/clothing/suit/bomber = 3,
+				/obj/item/clothing/suit/toggle/bomber = 3,
 				/obj/item/clothing/suit/deckers = 5,
 				/obj/item/clothing/suit/driscoll = 7,
 				/obj/item/clothing/suit/dutch = 7,

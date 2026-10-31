@@ -27,6 +27,8 @@ const SCROLL_TOP_TOLERANCE = 48;
 const SMOOTH_SCROLL_DURATION = 250;
 // Дальше стольких экранов плавная прокрутка начинается с прыжка.
 const SMOOTH_SCROLL_MAX_SCREENS = 2;
+// Столько после колеса, клика или клавиши прокрутку считаем делом игрока.
+const USER_SCROLL_GRACE = 1000;
 const USER_SCROLL_EVENTS = ['wheel', 'touchstart', 'keydown', 'mousedown'];
 
 const requestFrame = callback => (
@@ -305,12 +307,19 @@ export class ChatRenderer {
     // Растёт при любой правке списка сообщений, по нему сохранение
     // в хранилище пропускает неизменившийся чат.
     this.messagesVersion = 0;
+    // Сколько сообщений держать на экране, задаётся в настройках.
+    this.visibleLimit = MAX_VISIBLE_MESSAGES;
     this.page = null;
     this.events = new EventEmitter();
     // Scroll handler
     /** @type {HTMLElement} */
     this.scrollNode = null;
     this.scrollTracking = true;
+    // Высота содержимого при прошлой проверке и время последней прокрутки
+    // игроком: по ним сдвиг от догрузки картинок и шрифтов не путается
+    // с чтением истории.
+    this._lastScrollHeight = 0;
+    this._userScrollAt = -Infinity;
     this._smoothScrollInProgress = false;
     this._scrollAnimation = null;
     this.updateScrollTracking = () => {
@@ -325,10 +334,20 @@ export class ChatRenderer {
         return;
       }
       const scrollTracking = isScrollTracked(node);
+      const height = node.scrollHeight;
+      const resized = height !== this._lastScrollHeight;
+      this._lastScrollHeight = height;
+      if (!scrollTracking && this.scrollTracking && resized
+        && performance.now() - this._userScrollAt > USER_SCROLL_GRACE) {
+        this.scrollToBottom({ smooth: false });
+        return;
+      }
       if (scrollTracking !== this.scrollTracking) {
         this.scrollTracking = scrollTracking;
         if (scrollTracking) {
           this._newMarkerArmed = true;
+          // Пока читали выше, обрезка ждала.
+          this.pruneSoon();
         }
         this.events.emit('scrollTrackingChanged', scrollTracking);
         logger.debug('tracking', this.scrollTracking);
@@ -339,6 +358,7 @@ export class ChatRenderer {
     // Колесо, тач или клавиши во время плавной прокрутки - игрок сам ведёт
     // чат, анимация ему не мешает.
     this.handleUserScrollIntent = () => {
+      this._userScrollAt = performance.now();
       if (this._scrollAnimation) {
         this.stopScrollAnimation();
       }
@@ -443,6 +463,9 @@ export class ChatRenderer {
     if (this.isReady() && this.queue.length > 0) {
       this.processBatch(this.queue);
       this.queue = [];
+      // История при входе копится здесь до готовности чата, лимит
+      // настроек к ней ещё не применялся.
+      this.pruneSoon();
     }
   }
 
@@ -582,6 +605,7 @@ export class ChatRenderer {
     // auto-scroll (processBatch checks this.scrollTracking).
     if (!this.scrollTracking) {
       this.scrollTracking = true;
+      this.pruneSoon();
       this.events.emit('scrollTrackingChanged', true);
     }
   }
@@ -1349,7 +1373,7 @@ export class ChatRenderer {
     {
       const messages = this.visibleMessages;
       const fromIndex = Math.max(0,
-        messages.length - MAX_VISIBLE_MESSAGES);
+        messages.length - this.visibleLimit);
       if (fromIndex > 0) {
         this.visibleMessages = messages.slice(fromIndex);
         for (let i = 0; i < fromIndex; i++) {
@@ -1396,6 +1420,38 @@ export class ChatRenderer {
     });
     if (node && this.isReady()) {
       node.scrollTop += node.scrollHeight - heightBefore;
+      this.handleScroll();
+    }
+  }
+
+  // После отложенной прокрутки вниз: обрезка раньше неё сбивает слежение
+  // за низом, и чат остаётся висеть над новыми сообщениями.
+  pruneSoon() {
+    defer(() => this.pruneMessages());
+  }
+
+  setVisibleLimit(limit) {
+    this.visibleLimit = Number.isInteger(limit) && limit > 0
+      ? limit
+      : MAX_VISIBLE_MESSAGES;
+    this.pruneMessages();
+  }
+
+  /** Убирает все сообщения с экрана и из памяти. */
+  clearChat() {
+    this.dropNewMarker();
+    this._searchMatches = [];
+    this._searchCurrentIndex = -1;
+    this._searchRegex = null;
+    if (this.rootNode) {
+      this.rootNode.textContent = '';
+      this.restoreBgNode();
+    }
+    this.messages = [];
+    this.visibleMessages = [];
+    this._lastDividerTime = 0;
+    this.messagesVersion++;
+    if (this.scrollNode) {
       this.handleScroll();
     }
   }
