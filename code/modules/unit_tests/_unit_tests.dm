@@ -495,6 +495,7 @@
 #include "tgui_dev_asset_url.dm"
 #include "tgui_input_open_failure.dm"
 #include "tgui_oversized_payload.dm"
+#include "tgui_pool_silent_client.dm"
 #include "tgui_preview_caches.dm"
 #include "timer_sanity.dm"
 #include "turf_flags.dm"
