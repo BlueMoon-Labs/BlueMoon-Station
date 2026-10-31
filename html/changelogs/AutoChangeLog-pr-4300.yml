@@ -1,0 +1,5 @@
+author: Pingvas
+delete-after: true
+changes:
+  - rscadd: Разрешаем дробные значения роста, такие как 92.5
+  - rscadd: Фикшу отображение во вкладках.
