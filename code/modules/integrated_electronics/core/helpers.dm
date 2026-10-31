@@ -21,10 +21,6 @@
 
 
 /obj/item/integrated_circuit/proc/set_pin_data(pin_type, pin_number, new_data)
-	if(islist(new_data))
-		for(var/i in 1 to length(new_data))
-			if(isdatum(new_data) && !isweakref(new_data))
-				new_data[i] = WEAKREF(new_data[i])
 	if(isdatum(new_data) && !isweakref(new_data))
 		new_data = WEAKREF(new_data)
 	var/datum/integrated_io/pin = get_pin_ref(pin_type, pin_number)
@@ -71,15 +67,34 @@
 
 /datum/integrated_io/proc/get_data()
 	if(islist(data))
-		var/list/data_list = data
-		for(var/i in 1 to length(data))
-			var/datum/weakref/i_ref = data_list[i]
-			if(istype(i_ref))
-				data_list[i] = i_ref.resolve()
-		data = data_list
+		var/list/stored = data
+		return ic_resolve_list_refs(stored.Copy())
 	if(isweakref(data))
 		return data.resolve()
 	return data
+
+/// Датумы в списке пина (и во вложенных списках) хранятся слабыми ссылками. Меняет переданный список, вложенные копирует.
+/proc/ic_weakref_list_entries(list/target, depth = 0)
+	for(var/i in 1 to length(target))
+		var/entry = target[i]
+		if(isdatum(entry) && !isweakref(entry))
+			target[i] = WEAKREF(entry)
+		else if(islist(entry) && depth < IC_MAX_LIST_NESTING)
+			var/list/nested = entry
+			target[i] = ic_weakref_list_entries(nested.Copy(), depth + 1)
+	return target
+
+/// Обратное к ic_weakref_list_entries(): слабые ссылки разрешены, удалённые цели становятся null.
+/proc/ic_resolve_list_refs(list/target, depth = 0)
+	for(var/i in 1 to length(target))
+		var/entry = target[i]
+		if(isweakref(entry))
+			var/datum/weakref/entry_ref = entry
+			target[i] = entry_ref.resolve()
+		else if(islist(entry) && depth < IC_MAX_LIST_NESTING)
+			var/list/nested = entry
+			target[i] = ic_resolve_list_refs(nested.Copy(), depth + 1)
+	return target
 
 
 // Returns a list of parameters necessary to locate a pin in the assembly: component number, pin type and pin number
