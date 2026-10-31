@@ -4404,6 +4404,7 @@
 #include "code\modules\surgery\organs\augments_chest.dm"
 #include "code\modules\surgery\organs\augments_eyes.dm"
 #include "code\modules\surgery\organs\augments_internal.dm"
+#include "code\modules\surgery\organs\augments_legs.dm"
 #include "code\modules\surgery\organs\autosurgeon.dm"
 #include "code\modules\surgery\organs\ears.dm"
 #include "code\modules\surgery\organs\eyes.dm"
@@ -5537,7 +5538,7 @@
 #include "modular_bluemoon\code\modules\surgery\robot_purge_reagents.dm"
 #include "modular_bluemoon\code\modules\surgery\organs\augments_arms.dm"
 #include "modular_bluemoon\code\modules\surgery\organs\augments_chest.dm"
-#include "modular_bluemoon\code\modules\surgery\organs\augments_eyes.dm"
+
 #include "modular_bluemoon\code\modules\surgery\organs\augments_head.dm"
 #include "modular_bluemoon\code\modules\surgery\organs\bioaegis_dangerous.dm"
 #include "modular_bluemoon\code\modules\surgery\organs\bioaegis_other.dm"

@@ -745,6 +745,16 @@
 	var/obj/item/organ/organ_target = target
 	name = "Use [organ_target.name]"
 
+/datum/action/item_action/organ_action/toggle_zoom
+	name = "Toggle Zoom"
+	icon_icon = 'icons/mob/actions/actions_items.dmi'
+	button_icon_state = "sniper_zoom"
+
+/datum/action/item_action/organ_action/toggle_zoom/New(Target)
+	..()
+	var/obj/item/organ/organ_target = target
+	name = "Toggle [organ_target.name] Zoom"
+
 
 /datum/action/item_action/cult_dagger
 	name = "Draw Blood Rune"

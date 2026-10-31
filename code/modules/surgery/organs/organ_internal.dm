@@ -53,27 +53,48 @@
 		Remove(TRUE)
 	return ..()
 
+/// Returns the `internal_organs_slot` keys this organ occupies while inside a mob.
+/// Most organs take a single `slot`; arm-mounted cyberimplants take both arms at once.
+/obj/item/organ/proc/get_organ_slots()
+	return list(slot)
+
+/// Whether this organ should be treated as being inside `target_zone` (used to list extractable organs).
+/obj/item/organ/proc/occupies_zone(target_zone)
+	return zone == target_zone
+
+/// Whether this organ can be surgically installed into `target_zone`.
+/obj/item/organ/proc/can_insert_into_zone(target_zone)
+	return zone == target_zone
+
+/// Last chance for an organ to reconfigure itself for the zone surgery is installing it into.
+/obj/item/organ/proc/prepare_insert(mob/living/carbon/target, target_zone)
+	return
+
 /obj/item/organ/proc/Insert(mob/living/carbon/M, special = 0, drop_if_replaced = TRUE)
 	if(!iscarbon(M) || owner == M)
 		return FALSE
 
-	var/obj/item/organ/replaced = M.getorganslot(slot)
-	if(replaced)
-		replaced.Remove(TRUE)
-		// Some single-use parasites qdel themselves from Remove(). Do not try
-		// to drop an already deleted replacement back into the world.
-		if(!QDELETED(replaced))
-			if(drop_if_replaced)
-				replaced.forceMove(get_turf(M))
-			else
-				qdel(replaced)
+	// An organ can occupy more than one slot (arm implants take both arms), so free them all first.
+	var/list/taken_slots = get_organ_slots()
+	for(var/organ_slot in taken_slots)
+		var/obj/item/organ/replaced = M.getorganslot(organ_slot)
+		if(replaced && replaced != src)
+			replaced.Remove(TRUE)
+			// Some single-use parasites qdel themselves from Remove(). Do not try
+			// to drop an already deleted replacement back into the world.
+			if(!QDELETED(replaced))
+				if(drop_if_replaced)
+					replaced.forceMove(get_turf(M))
+				else
+					qdel(replaced)
 
 	//Hopefully this doesn't cause problems
 	organ_flags &= ~ORGAN_FROZEN
 
 	owner = M
 	M.internal_organs |= src
-	M.internal_organs_slot[slot] = src
+	for(var/organ_slot in taken_slots)
+		M.internal_organs_slot[organ_slot] = src
 	M.invalidate_life_processing_organs()
 	SEND_SIGNAL(src, COMSIG_ORGAN_INSERTED)//SPLURT EDIT ADD - gregnancy
 	moveToNullspace()
@@ -86,11 +107,13 @@
 
 //Special is for instant replacement like autosurgeons
 /obj/item/organ/proc/Remove(special = FALSE)
+	var/list/taken_slots = get_organ_slots()
 	if(owner)
 		owner.internal_organs -= src
 		owner.invalidate_life_processing_organs()
-		if(owner.internal_organs_slot[slot] == src)
-			owner.internal_organs_slot.Remove(slot)
+		for(var/organ_slot in taken_slots)
+			if(owner.internal_organs_slot[organ_slot] == src)
+				owner.internal_organs_slot.Remove(organ_slot)
 		if((organ_flags & ORGAN_VITAL) && !special && !(owner.status_flags & GODMODE))
 			owner.death()
 		for(var/X in actions)

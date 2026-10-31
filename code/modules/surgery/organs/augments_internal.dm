@@ -47,19 +47,26 @@
 	return ..()
 
 /// Returns the icon_state used for this implant's bodypart overlay (on the body).
-/obj/item/organ/cyberimp/proc/get_overlay_state()
+/obj/item/organ/cyberimp/proc/get_overlay_state(image_layer, obj/item/bodypart/limb)
 	return aug_overlay
+
+/// Which bodypart zones this implant draws its overlay on. Most implants touch a single limb.
+/obj/item/organ/cyberimp/proc/get_bodypart_zones()
+	return list(check_zone(zone))
 
 /// Builds the list of images to draw for this implant on the owner's body.
 /// Delegates to the bodypart_overlay/augment datum via get_overlay().
 /obj/item/organ/cyberimp/proc/get_overlay(image_layer, obj/item/bodypart/limb)
 	. = list()
-	. += image(icon = aug_icon, icon_state = get_overlay_state(), layer = image_layer)
+	var/overlay_state = get_overlay_state(image_layer, limb)
+	. += image(icon = aug_icon, icon_state = overlay_state, layer = image_layer)
 	if (emissive_overlay)
-		. += emissive_appearance(aug_icon, "[get_overlay_state()]_e", layer = image_layer, offset_spokesman = limb.owner || limb)
+		. += emissive_appearance(aug_icon, "[overlay_state]_e", layer = image_layer, offset_spokesman = limb?.owner || limb)
 
 /// Called when this implant is inserted into a specific bodypart. Applies the augment overlay to the body.
 /obj/item/organ/cyberimp/proc/on_bodypart_insert(obj/item/bodypart/limb)
+	if(!limb)
+		return
 	if (bodypart_aug)
 		limb.add_bodypart_overlay(bodypart_aug)
 
@@ -77,15 +84,19 @@
 /obj/item/organ/cyberimp/Insert(mob/living/carbon/M, special = 0, drop_if_replaced = TRUE)
 	. = ..()
 	if(. && owner)
-		var/obj/item/bodypart/limb = owner.get_bodypart(check_zone(zone))
-		on_bodypart_insert(limb)
+		for(var/limb_zone in get_bodypart_zones())
+			on_bodypart_insert(owner.get_bodypart(limb_zone))
 		refresh_bodypart_overlays()
 
 /obj/item/organ/cyberimp/Remove(special = FALSE)
 	var/mob/living/carbon/prev_owner = owner
-	var/obj/item/bodypart/limb = prev_owner ? prev_owner.get_bodypart(check_zone(zone)) : null
+	var/list/prev_limbs = list()
+	if(prev_owner)
+		for(var/limb_zone in get_bodypart_zones())
+			prev_limbs += prev_owner.get_bodypart(limb_zone)
 	. = ..()
-	on_bodypart_remove(limb)
+	for(var/obj/item/bodypart/limb in prev_limbs)
+		on_bodypart_remove(limb)
 	refresh_bodypart_overlays(prev_owner)
 
 // В отличие от органов, имланты будут работать, только пока их можно активировать
@@ -236,6 +247,204 @@
 	if(!removing)
 		to_chat(owner, span_warning("<b>ECC-имплантат</b> отключаяется, вы больше не защищены от радиации."))
 	active = !active
+
+/obj/item/organ/cyberimp/brain/sandevistan
+	name = "Sandevistan"
+	desc = "A neural cybernetic implant that temporarily overclocks the user's nervous system, granting a massive burst of speed and reaction time."
+	icon_state = "brain_implant"
+	implant_overlay = "brain_implant_overlay"
+	zone = BODY_ZONE_HEAD
+	w_class = WEIGHT_CLASS_TINY
+	slot = ORGAN_SLOT_BRAIN_SANDEVISTAN
+	implant_color = "#00FFFF"
+	actions_types = list(/datum/action/item_action/organ_action/use/sandevistan)
+	var/active = FALSE
+	var/duration = 4 SECONDS
+	var/cooldown = 180 SECONDS
+	var/movespeed_mod = /datum/movespeed_modifier/sandevistan
+	var/next_use = 0
+	/// Счётчик активаций для перегруза
+	var/overload_count = 0
+
+/datum/action/item_action/organ_action/use/sandevistan
+	name = "Activate Sandevistan"
+
+/datum/action/item_action/organ_action/use/sandevistan/Trigger()
+	. = ..()
+	if(!.)
+		return
+	var/obj/item/organ/cyberimp/brain/sandevistan/S = target
+	if(!istype(S))
+		return
+	S.activate_sandevistan()
+
+/obj/item/organ/cyberimp/brain/sandevistan/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = TRUE)
+	if(ishuman(M))
+		var/mob/living/carbon/human/H = M
+		var/obj/item/organ/cyberimp/brain/berserker/ber = H.getorgan(/obj/item/organ/cyberimp/brain/berserker)
+		if(ber)
+			to_chat(H, span_warning("[ber] prevents [src] from being installed!"))
+			return FALSE
+	return ..()
+
+/obj/item/organ/cyberimp/brain/sandevistan/proc/activate_sandevistan()
+	if(!owner)
+		return
+	if(active)
+		to_chat(owner, span_warning("Sandevistan is already active."))
+		return
+	if(world.time < next_use)
+		var/timeleft = round((next_use - world.time) / 10)
+		to_chat(owner, span_warning("Sandevistan recharging. [timeleft] seconds remaining."))
+		return
+	if(owner.stat == DEAD)
+		return
+
+	overload_count++
+	active = TRUE
+	next_use = world.time + cooldown
+	to_chat(owner, span_notice("Your vision sharpens as time seems to slow around you."))
+	owner.playsound_local(owner, 'sound/machines/terminal_prompt_confirm.ogg', 50, FALSE)
+	owner.add_movespeed_modifier(movespeed_mod)
+	if(owner.client)
+		owner.add_filter("sandevistan", 2, list("type" = "outline", "color" = "#00FFFF", "alpha" = 80, "size" = 1))
+	if(istype(src, /obj/item/organ/cyberimp/brain/sandevistan/military))
+		var/obj/item/organ/cyberimp/brain/sandevistan/military/mil = src
+		if(overload_count > 2 && overload_count > (4 - 2)) // первые 2 активации без дебафов
+			apply_overload_effects()
+	else
+		if(overload_count >= 2)
+			apply_overload_effects()
+	addtimer(CALLBACK(src, PROC_REF(deactivate_sandevistan)), duration)
+
+/obj/item/organ/cyberimp/brain/sandevistan/proc/apply_overload_effects()
+	if(!ishuman(owner))
+		return
+	var/mob/living/carbon/human/H = owner
+	if(overload_count == 2 || (istype(src, /obj/item/organ/cyberimp/brain/sandevistan/military) && overload_count == 3))
+		to_chat(H, span_warning("Your body starts to strain from the repeated overclocking!"))
+		shake_camera(H, 5, 3)
+		H.Jitter(15)
+		if(!istype(src, /obj/item/organ/cyberimp/brain/sandevistan/military))
+			if(H.get_active_held_item())
+				H.dropItemToGround(H.get_active_held_item())
+			if(H.get_inactive_held_item())
+				H.dropItemToGround(H.get_inactive_held_item())
+		else
+			if(H.get_active_held_item())
+				H.dropItemToGround(H.get_active_held_item())
+			if(H.get_inactive_held_item())
+				H.dropItemToGround(H.get_inactive_held_item())
+		for(var/i in 1 to 2)
+			var/obj/item/bodypart/chest/C = H.get_bodypart(BODY_ZONE_CHEST)
+			if(C)
+				C.force_wound_upwards(/datum/wound/pierce/critical)
+		H.blood_volume = max(BLOOD_VOLUME_SAFE - 150, H.blood_volume - 150)
+	else if(overload_count >= 3 || (istype(src, /obj/item/organ/cyberimp/brain/sandevistan/military) && overload_count >= 4))
+		to_chat(H, span_userdanger("Your cybernetic system goes into critical overload!"))
+		shake_camera(H, 10, 6)
+		H.Jitter(30)
+		H.blur_eyes(10)
+		H.adjustToxLoss(60)
+		H.adjustOrganLoss(ORGAN_SLOT_BRAIN, 40)
+		// Множественные кровотечения
+		var/list/all_parts = H.bodyparts
+		for(var/i in 1 to 4)
+			var/obj/item/bodypart/BP = pick(all_parts)
+			if(BP)
+				BP.force_wound_upwards(/datum/wound/slash/critical)
+		H.blood_volume = max(BLOOD_VOLUME_SURVIVE - 200, H.blood_volume - 200)
+		// Тяжёлая интоксикация
+		H.reagents.add_reagent(/datum/reagent/toxin/cyanide, 15)
+		H.reagents.add_reagent(/datum/reagent/toxin/leadacetate, 10)
+
+/obj/item/organ/cyberimp/brain/sandevistan/proc/deactivate_sandevistan()
+	if(!owner || !active)
+		return
+	active = FALSE
+	to_chat(owner, span_warning("The world snaps back into focus as your Sandevistan powers down."))
+	owner.playsound_local(owner, 'sound/machines/terminal_prompt_deny.ogg', 30, FALSE)
+	owner.remove_movespeed_modifier(movespeed_mod)
+	if(owner.client)
+		owner.remove_filter("sandevistan")
+	var/deadly = FALSE
+	if(istype(src, /obj/item/organ/cyberimp/brain/sandevistan/military))
+		deadly = (overload_count >= 5) // 4 безопасных + 1 смертельный
+	else
+		deadly = (overload_count >= 3)
+	if(deadly && ishuman(owner))
+		var/mob/living/carbon/human/H = owner
+		if(H.stat < DEAD)
+			H.adjustOrganLoss(ORGAN_SLOT_BRAIN, 70)
+			H.adjustToxLoss(100)
+			H.blood_volume = max(0, H.blood_volume - 300)
+			H.visible_message(span_danger("[H] suddenly collapses as their cybernetic system violently shuts down!"), span_userdanger("Your body gives out from the catastrophic overload!"))
+			H.Paralyze(10 SECONDS)
+			if(H.blood_volume <= BLOOD_VOLUME_SURVIVE)
+				H.adjustOxyLoss(50)
+
+/obj/item/organ/cyberimp/brain/sandevistan/emp_act(severity)
+	. = ..()
+	if(!owner || . & EMP_PROTECT_SELF)
+		return
+	if(active)
+		deactivate_sandevistan()
+	if(prob(50 / severity))
+		next_use = world.time + cooldown * 1.5
+		to_chat(owner, span_warning("Your Sandevistan glitches wildly from the EMP!"))
+		if(istype(src, /obj/item/organ/cyberimp/brain/sandevistan/military))
+			overload_count = max(overload_count, 3)
+		else
+			overload_count = max(overload_count, 2)
+
+/obj/item/organ/cyberimp/brain/sandevistan/deactivate(removing)
+	. = ..()
+	if(active)
+		deactivate_sandevistan()
+
+/obj/item/organ/cyberimp/brain/sandevistan/military
+	name = "Military Sandevistan"
+	desc = "A military-grade neural overclocking implant. Far more potent than civilian models, with reduced cooldown at the cost of increased strain."
+	icon_state = "brain_implant"
+	implant_overlay = "brain_implant_overlay"
+	implant_color = "#FF3333"
+	syndicate_implant = TRUE
+	duration = 6 SECONDS
+	cooldown = 90 SECONDS
+	movespeed_mod = /datum/movespeed_modifier/sandevistan/military
+	/// Максимальное количество активаций до перегруза
+	var/max_safe_activations = 4
+	var/last_reset_time = 0
+
+/obj/item/organ/cyberimp/brain/sandevistan/military/Insert(mob/living/carbon/M, special = FALSE, drop_if_replaced = TRUE)
+	. = ..()
+	if(. && owner)
+		last_reset_time = world.time
+		addtimer(CALLBACK(src, PROC_REF(reset_overload)), 2 MINUTES, TIMER_LOOP|TIMER_STOPPABLE)
+
+/obj/item/organ/cyberimp/brain/sandevistan/military/Remove(special = FALSE)
+	if(owner)
+		// удаляем таймер если есть
+	return ..()
+
+/obj/item/organ/cyberimp/brain/sandevistan/military/proc/reset_overload()
+	if(!owner)
+		return
+	overload_count = 0
+	last_reset_time = world.time
+	if(ishuman(owner))
+		to_chat(owner, span_notice("Your military Sandevistan has cooled down."))
+
+/obj/item/organ/cyberimp/brain/sandevistan/sec_level
+	name = "Corporate Sandevistan"
+	desc = "A corporate-issued neural overclocking implant, tuned for security use. Offers a balanced burst of speed with a reasonable cooldown."
+	icon_state = "brain_implant"
+	implant_overlay = "brain_implant_overlay"
+	implant_color = "#ab6509"
+	active_security_level = CNS_REBOOTER_SEC_LEVEL
+	duration = 4 SECONDS
+	cooldown = 120 SECONDS
+	movespeed_mod = /datum/movespeed_modifier/sandevistan
 
 //[[[[MOUTH]]]]
 /obj/item/organ/cyberimp/mouth

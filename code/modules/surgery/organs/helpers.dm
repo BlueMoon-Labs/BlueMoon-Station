@@ -21,7 +21,7 @@
 
 	for(var/X in internal_organs)
 		var/obj/item/organ/O = X
-		if(zone == O.zone)
+		if(O.occupies_zone(zone))
 			returnorg += O
 	return returnorg
 
