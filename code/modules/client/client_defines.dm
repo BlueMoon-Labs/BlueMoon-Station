@@ -194,6 +194,8 @@
 	var/list/seen_messages
 	/// viewsize datum for holding our view size
 	var/datum/view_data/view_size
+	/// Очередь подгонки вьюпорта, см. queue_fit_viewport()
+	var/datum/viewport_fit_queue/viewport_fit_queue
 
 	/// our current tab
 	var/stat_tab
