@@ -11,8 +11,13 @@
 
 /obj/item/discovery_scanner/Initialize()
 	. = ..()
-	if(!linked_techweb)
-		linked_techweb = SSresearch.science_tech
+	AddComponent(/datum/component/techweb_holder)
+	RegisterSignal(src, COMSIG_ATOM_TECHWEB_CHANGED, PROC_REF(on_research_binding))
+	SEND_SIGNAL(src, COMSIG_ATOM_SET_TECHWEB, find_rnd_network_for_object(src))
+
+/obj/item/discovery_scanner/proc/on_research_binding(datum/source, datum/techweb/web)
+	SIGNAL_HANDLER
+	linked_techweb = web
 
 /obj/item/discovery_scanner/Destroy()
 	linked_techweb = null	//Note: Shouldn't hard del anyway since techwebs don't get deleted, however if they do then troubles will arise and this will need to be changed.
@@ -28,11 +33,14 @@
 	if(istype(O, /obj/machinery/computer/rdconsole))
 		to_chat(user, span_notice("Привязываю [src] к [O]."))
 		var/obj/machinery/computer/rdconsole/rdconsole = O
-		linked_techweb = rdconsole.stored_research
+		SEND_SIGNAL(src, COMSIG_ATOM_SET_TECHWEB, netrun_atom_techweb(rdconsole))
 		return
 	. = ..()
 
 /obj/item/discovery_scanner/proc/begin_scanning(mob/user, datum/component/discoverable/discoverable)
+	if(!netrun_research_snapshot())
+		to_chat(user, span_warning("Исследовательский сервер недоступен. Повторите сканирование после соединения."))
+		return
 	to_chat(user, span_notice("Начинаю сканировать [discoverable.parent]..."))
 	if(do_after(user, 50, target=get_turf(user)))
-		discoverable.discovery_scan(linked_techweb, user)
+		discoverable.discovery_scan(linked_techweb, user, src)

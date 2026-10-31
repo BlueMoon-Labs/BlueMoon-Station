@@ -163,7 +163,7 @@
 	points_awarded *= CONFIG_GET(number/sex_table_multiplier)
 	switch(point_type)
 		if(POINT_TYPE_SCIENCE)
-			linked_techweb?.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = points_awarded))
+			netrun_research_request("credit", list("points" = list(TECHWEB_POINT_TYPE_GENERIC = points_awarded)))
 		else
 			if(slaver_mode) // Slaver version generates money for the slavers instead.
 				GLOB.slavers_credits_balance += points_awarded

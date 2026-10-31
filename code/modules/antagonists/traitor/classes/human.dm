@@ -33,6 +33,8 @@
 	if(try_forge_assassinate_objective(T, mode))
 		return TRUE
 	else
+		if(prob(15) && try_forge_netrun_objective(T))
+			return TRUE
 		if(prob(14) && GLOB.round_type != ROUNDTYPE_DYNAMIC_LIGHT)	// BLUEMOON CHANGE - в Лайт-Динамик протекта не даём: защищать не от кого, пусть предатель занимается чем-то другим
 			var/datum/objective/protect/protect_objective = new
 			protect_objective.owner = T.owner

@@ -21,13 +21,22 @@ export const createStore = (reducer, enhancer) => {
   const getState = () => currentState;
 
   const subscribe = listener => {
-    listeners.push(listener);
+    // Each subscription owns its slot, even when the callback is reused.
+    const subscription = () => listener();
+    listeners.push(subscription);
+    let subscribed = true;
+    return () => {
+      if (!subscribed) return;
+      subscribed = false;
+      listeners = listeners.filter(entry => entry !== subscription);
+    };
   };
 
   const dispatch = action => {
     currentState = reducer(currentState, action);
-    for (let i = 0; i < listeners.length; i++) {
-      listeners[i]();
+    // Subscription changes take effect on the next dispatch.
+    for (const listener of listeners.slice()) {
+      listener();
     }
   };
 

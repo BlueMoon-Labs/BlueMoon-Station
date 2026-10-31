@@ -56,7 +56,7 @@
 	var/mob/living/carbon/human/H = user
 	var/obj/item/card/id/id_card = H?.wear_id?.GetID() || H?.wear_neck?.GetID()
 	var/cam_name = (istype(id_card) && id_card.registered_name) ? id_card.registered_name : "Unknown"
-	builtInCamera.c_tag = "Body Camera: [cam_name]"
+	builtInCamera.set_camera_tag("Body Camera: [cam_name]")
 
 /obj/item/clothing/accessory/bodycamera/proc/register_wearer(mob/living/new_wearer)
 	if(wearer == new_wearer)

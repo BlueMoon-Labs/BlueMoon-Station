@@ -214,6 +214,7 @@ GLOBAL_PROTECT(admin_verbs_debug)
 	/client/proc/cmd_display_del_log,
 	/client/proc/cmd_display_gc_queue,
 	/client/proc/cmd_gc_health_panel,
+	/client/proc/show_netrun_task_statistics,
 	/client/proc/create_outfits,
 	/client/proc/modify_goals,
 	/client/proc/debug_huds,

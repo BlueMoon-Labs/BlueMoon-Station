@@ -26,7 +26,7 @@
 		return
 	if(!on || !is_freq_listening(signal))  // has to be on to receive messages
 		return
-	if(signal.data["done"]) // already broadcast by another mainframe or a receiver network
+	if(!istype(signal, /datum/signal/subspace/messaging/tablet_message) && !istype(signal, /datum/signal/subspace/pda) && (signal.data["done"] || signal.original?.data["done"]))
 		return
 	if (!intercept && !(z in signal.levels) && !(0 in signal.levels))  // has to be syndicate or on the right level
 		return
@@ -36,7 +36,9 @@
 		signal.levels += 0  // Signal is broadcast to agents anywhere
 
 	signal.data["compression"] = 0
-	signal.mark_done()
+	if(!istype(signal, /datum/signal/subspace/messaging/tablet_message) && !istype(signal, /datum/signal/subspace/pda))
+		signal.mark_done()
+	signal.netrun_transmitter = WEAKREF(src)
 	signal.broadcast()
 
 /obj/machinery/telecomms/allinone/attackby(obj/item/P, mob/user, params)

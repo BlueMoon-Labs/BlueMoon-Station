@@ -89,6 +89,17 @@ const ApcContent = (props) => {
       <Section title="Power Status">
         <LabeledList>
           <LabeledList.Item
+            label="Сетевой интерфейс"
+            buttons={(
+              <Button
+                icon={data.netrunIsolated ? 'unlink' : 'link'}
+                content={data.netrunIsolated ? 'Изолирован' : 'Подключён'}
+                color={data.netrunIsolated ? 'average' : 'good'}
+                disabled={locked || !data.netrunLocalControl}
+                tooltip="Изолирует сеть сектора. Переключается рядом с разблокированным APC."
+                onClick={() => act('netrun_isolate')} />
+            )} />
+          <LabeledList.Item
             label="Main Breaker"
             color={externalPowerStatus.color}
             buttons={(

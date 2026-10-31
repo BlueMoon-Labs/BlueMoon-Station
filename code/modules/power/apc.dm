@@ -1046,6 +1046,8 @@
 		"locked" = locked && !(integration_cog && is_servant_of_ratvar(user)) && !area.hasSiliconAccessInArea(user, PRIVILEGES_SILICON|PRIVILEGES_DRONE),
 		"failTime" = failure_timer,
 		"isOperating" = operating,
+		"netrunIsolated" = netrun_isolated,
+		"netrunLocalControl" = isliving(user) && user.Adjacent(src),
 		"externalPower" = main_status,
 		"powerCellStatus" = cell ? cell.percent() : null,
 		"chargeMode" = chargemode,
@@ -1163,6 +1165,14 @@
 	if(locked && !area.hasSiliconAccessInArea(usr, PRIVILEGES_SILICON|PRIVILEGES_DRONE) && !failure_timer && action != "toggle_nightshift" && (!integration_cog || !(is_servant_of_ratvar(usr))))
 		return
 	switch(action)
+		if("netrun_isolate")
+			if(!isliving(usr) || !usr.Adjacent(src) || failure_timer || (machine_stat & (BROKEN | MAINT)))
+				return FALSE
+			set_netrun_isolated(!netrun_isolated)
+			add_hiddenprint(usr)
+			investigate_log("[key_name(usr)] [netrun_isolated ? "isolated" : "reconnected"] the sector network interface at [AREACOORD(src)].", INVESTIGATE_WIRES)
+			visible_message(span_notice("[usr] [netrun_isolated ? "отключает" : "включает"] сетевой интерфейс [src]."))
+			return TRUE
 		if("lock")
 			if(area.hasSiliconAccessInArea(usr))
 				if((obj_flags & EMAGGED) || (machine_stat & (BROKEN|MAINT)))

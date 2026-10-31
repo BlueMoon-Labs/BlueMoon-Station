@@ -594,9 +594,13 @@
 
 /// Removes a file from direct storage.
 /obj/item/modular_computer/proc/remove_file(datum/computer_file/file_removing)
-	if(!file_removing)
+	if(!file_removing || !(file_removing in stored_files))
 		return FALSE
 	stored_files -= file_removing
+	if(istype(file_removing, /datum/computer_file/program))
+		var/datum/computer_file/program/program = file_removing
+		program.on_uninstall()
+		program.computer = null
 	SEND_SIGNAL(src, COMSIG_MODULAR_COMPUTER_FILE_DELETE, file_removing)
 	SEND_SIGNAL(file_removing, COMSIG_COMPUTER_FILE_DELETE)
 	return TRUE

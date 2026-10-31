@@ -71,6 +71,7 @@
 	return choice
 
 /datum/antagonist/traitor/on_gain()
+	owner.LoadComponent(/datum/component/netrun_broker_account)
 	owner.special_role = job_rank
 	assign_traitor_kind()
 	finalize_traitor()

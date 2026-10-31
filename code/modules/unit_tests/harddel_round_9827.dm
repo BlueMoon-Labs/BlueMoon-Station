@@ -10,6 +10,27 @@
 /datum/unit_test/harddel_9827_base/Run()
 	return
 
+/// Удалённый атом в очереди сглаживания и пустой слот от hard delete не должны ронять
+/// обход SSicon_smooth и оседать в deferred. Работает на штатной подсистеме:
+/// второй экземпляр через new подменил бы глобальный SSicon_smooth и удалил настоящий.
+/datum/unit_test/icon_smoothing_deleted_queue_entries/Run()
+	var/obj/live = allocate(/obj)
+	var/obj/deleted = allocate(/obj)
+	live.smooth = SMOOTH_QUEUED
+	deleted.smooth = SMOOTH_QUEUED
+	qdel(deleted)
+	SSicon_smooth.smooth_queue += live
+	SSicon_smooth.smooth_queue += deleted
+	SSicon_smooth.smooth_queue.len++
+	SSicon_smooth.can_fire = TRUE
+	for(var/i in 1 to 8)
+		if(!(live.smooth & SMOOTH_QUEUED))
+			break
+		SSicon_smooth.fire()
+	TEST_ASSERT(!(live.smooth & SMOOTH_QUEUED), "Живой атом очереди должен сгладиться после удалённых записей")
+	TEST_ASSERT(!(deleted in SSicon_smooth.deferred), "Удалённый атом не должен откладываться навсегда")
+	TEST_ASSERT(!(null in SSicon_smooth.deferred), "Пустой слот hard delete не должен откладываться навсегда")
+
 /// Модкит переносит детали донора в новый ствол макросом TRANSFER_ATOM_VAR.
 /// Макрос делал qdel(TARGET.VAR) и НЕ обнулял поле, поэтому при доноре без
 /// магазина (enforcer/nomag) новый ствол оставался со ссылкой на удалённый

@@ -446,16 +446,23 @@
 
 /obj/item/surgical_drapes/advanced/Initialize(mapload)
 	. = ..()
-	linked_techweb = SSresearch.science_tech
+	AddComponent(/datum/component/techweb_holder)
+	RegisterSignal(src, COMSIG_ATOM_TECHWEB_CHANGED, PROC_REF(on_research_binding))
+	SEND_SIGNAL(src, COMSIG_ATOM_SET_TECHWEB, find_rnd_network_for_object(src))
+
+/obj/item/surgical_drapes/advanced/proc/on_research_binding(datum/source, datum/techweb/web)
+	SIGNAL_HANDLER
+	linked_techweb = web
 
 /obj/item/surgical_drapes/advanced/proc/get_advanced_surgeries()
 	. = list()
-	if(!linked_techweb)
+	var/datum/techweb/research = netrun_research_snapshot()
+	if(!research)
 		return
 	for(var/subtype in subtypesof(/datum/design/surgery))
 		var/datum/design/surgery/prototype = subtype
 		var/id = initial(prototype.id)
-		if(id in linked_techweb.researched_designs)
+		if(id in research.researched_designs)
 			prototype = SSresearch.techweb_design_by_id(id)
 			. |= prototype.surgery
 

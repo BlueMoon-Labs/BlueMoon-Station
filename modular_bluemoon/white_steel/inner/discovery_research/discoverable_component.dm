@@ -31,7 +31,10 @@
 	to_chat(user, span_notice("Сканирование: [scanned ? "Истина" : "Ложь"]."))
 	to_chat(user, span_notice("Награда: [point_reward]."))
 
-/datum/component/discoverable/proc/discovery_scan(datum/techweb/linked_techweb, mob/user)
+/datum/component/discoverable/proc/discovery_scan(datum/techweb/linked_techweb, mob/user, atom/scanner)
+	if(!netrun_research_authorizes(scanner, linked_techweb))
+		to_chat(user, span_warning("Исследовательский сервер недоступен."))
+		return
 	//Already scanned our atom.
 	var/atom/A = parent
 	if(scanned)
@@ -41,8 +44,9 @@
 	if(GLOB.scanned_atom_types[A.type] && !unique)
 		to_chat(user, span_warning("Мы уже знаем про тип [A]."))
 		return
+	if(!scanner.netrun_research_request("credit", list("points" = list(TECHWEB_POINT_TYPE_GENERIC = point_reward)), user))
+		return
 	scanned = TRUE
-	linked_techweb.research_points[TECHWEB_POINT_TYPE_GENERIC] += point_reward
 	GLOB.scanned_atom_types[A.type] = TRUE
 	playsound(user, 'sound/machines/terminal_success.ogg', 60)
 	to_chat(user, span_notice("Новый тип отсканирован, [point_reward] очков было получено."))

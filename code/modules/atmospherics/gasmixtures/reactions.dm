@@ -688,7 +688,7 @@
 	air.adjust_moles(GAS_NITROUS, -reaction_efficency)
 	air.adjust_moles(GAS_PLASMA, -2*reaction_efficency)
 
-	SSresearch.science_tech.add_point_type(TECHWEB_POINT_TYPE_DEFAULT, min((reaction_efficency**2)*BZ_RESEARCH_SCALE),BZ_RESEARCH_MAX_AMOUNT)
+	SSresearch.science_tech?.add_point_type(TECHWEB_POINT_TYPE_DEFAULT, min((reaction_efficency**2)*BZ_RESEARCH_SCALE),BZ_RESEARCH_MAX_AMOUNT)
 
 	if(energy_released > 0)
 		var/new_heat_capacity = air.heat_capacity()
@@ -735,7 +735,7 @@
 	air.adjust_moles(GAS_PLASMA, -heat_scale)
 	air.adjust_moles(GAS_NITRYL, -heat_scale)
 
-	SSresearch.science_tech.add_point_type(TECHWEB_POINT_TYPE_DEFAULT, STIMULUM_RESEARCH_AMOUNT*max(stim_energy_change,0))
+	SSresearch.science_tech?.add_point_type(TECHWEB_POINT_TYPE_DEFAULT, STIMULUM_RESEARCH_AMOUNT*max(stim_energy_change,0))
 	if(stim_energy_change)
 		var/new_heat_capacity = air.heat_capacity()
 		if(new_heat_capacity > MINIMUM_HEAT_CAPACITY)
@@ -793,7 +793,7 @@
 	air.adjust_moles(GAS_HYPERNOB, nob_formed)
 	// Exothermic; BZ reduces energy released
 	var/energy_released = nob_formed * NOBLIUM_FORMATION_ENERGY / max(1, bz_moles * 10)
-	SSresearch.science_tech.add_point_type(TECHWEB_POINT_TYPE_DEFAULT, nob_formed*NOBLIUM_RESEARCH_AMOUNT)
+	SSresearch.science_tech?.add_point_type(TECHWEB_POINT_TYPE_DEFAULT, nob_formed*NOBLIUM_RESEARCH_AMOUNT)
 	var/new_heat_capacity = air.heat_capacity()
 	if(new_heat_capacity > MINIMUM_HEAT_CAPACITY)
 		air.set_temperature(max((temperature * old_heat_capacity + energy_released) / new_heat_capacity, TCMB))
@@ -840,7 +840,7 @@
 
 	// Slightly exothermic
 	air.set_temperature(air.return_temperature() + cleaned_air * 0.002)
-	SSresearch.science_tech.add_point_type(TECHWEB_POINT_TYPE_DEFAULT, cleaned_air*MIASMA_RESEARCH_AMOUNT)
+	SSresearch.science_tech?.add_point_type(TECHWEB_POINT_TYPE_DEFAULT, cleaned_air*MIASMA_RESEARCH_AMOUNT)
 	return REACTING
 
 /datum/gas_reaction/miaster/test()
@@ -928,16 +928,18 @@
 	air.set_moles(GAS_QCD, amount)
 	if(!synthesis_reported)
 		report_synthesis()
-	var/list/largest_values = SSresearch.science_tech.largest_values
+	var/list/largest_values = SSresearch.science_tech?.largest_values
+	if(!largest_values)
+		return
 	if(!(GAS_QCD in largest_values))
 		largest_values[GAS_QCD] = 0
 	var/previous_largest = largest_values[GAS_QCD]
 	var/research_amount = min(amount * QCD_RESEARCH_AMOUNT, 100000)
 	if(previous_largest <= research_amount)
-		SSresearch.science_tech.add_point_type(TECHWEB_POINT_TYPE_DEFAULT, research_amount)
+		SSresearch.science_tech?.add_point_type(TECHWEB_POINT_TYPE_DEFAULT, research_amount)
 		largest_values[GAS_QCD] = research_amount
 	else
-		SSresearch.science_tech.add_point_type(TECHWEB_POINT_TYPE_DEFAULT, research_amount / 100)
+		SSresearch.science_tech?.add_point_type(TECHWEB_POINT_TYPE_DEFAULT, research_amount / 100)
 
 /datum/gas_reaction/dehagedorn
 	priority = 50

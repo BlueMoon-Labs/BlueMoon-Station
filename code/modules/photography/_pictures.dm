@@ -45,7 +45,9 @@
 	if(!picture_image)
 		return null
 	if(isnull(base64_cache) || base64_cache_source != picture_image)
-		base64_cache = icon2base64(picture_image)
+		// A DMI can contain multiple directions/animation frames. Browsers display
+		// its whole sprite sheet; a photograph exports exactly one still frame.
+		base64_cache = icon2base64(icon(picture_image, dir = SOUTH, frame = 1))
 		base64_cache_source = picture_image
 	return base64_cache
 

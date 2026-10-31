@@ -406,7 +406,7 @@ GLOBAL_LIST_EMPTY(teleportlocs)
 	unreg_from_areas_in_z()
 	power_apc = null
 	if(base_area)
-		LAZYREMOVE(base_area, src)
+		LAZYREMOVE(base_area.sub_areas, src)
 		base_area = null
 	if(sub_areas)
 		for(var/i in sub_areas)

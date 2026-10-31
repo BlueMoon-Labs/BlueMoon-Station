@@ -1,0 +1,1070 @@
+// NetRun's visual vocabulary is scoped to the workspace. Existing tgui widgets
+// retain their interaction, disabled and focus semantics; the map stays mounted.
+.netrun-session-combat {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  min-width: 0;
+  height: 27px;
+  padding: 3px 8px;
+  color: var(--net-muted);
+  background: var(--net-bg);
+  border: 1px solid var(--net-border);
+  border-radius: 5px;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+  > span { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  > small { flex-shrink: 0; color: var(--net-accent); }
+  &[data-own-turn='true'] { color: var(--net-good); border-color: var(--net-good); }
+  &:focus-visible { outline: 2px solid var(--net-accent); outline-offset: -2px; }
+}
+
+@media (max-width: 640px) {
+  .netrun-session-status__label, .netrun-session-combat > small { display: none; }
+}
+
+.netrun-operations {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+  min-width: 0;
+  padding: 10px;
+
+  &__tools { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin-bottom: 10px; }
+  &__tools input {
+    flex: 1 1 180px;
+    min-width: 100px;
+    padding: 6px 8px;
+    color: var(--net-text);
+    background: var(--net-bg);
+    border: 1px solid var(--net-border);
+    border-radius: 4px;
+  }
+  &__list { flex: 1 1 0; min-height: 0; overflow-y: auto; }
+  &__entry { margin-bottom: 6px; border: 1px solid var(--net-border); border-radius: 6px; background: var(--net-bg); }
+  &__entry summary { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; padding: 9px; cursor: pointer; }
+  &__label { flex: 1 1 140px; font-weight: bold; }
+  &__details { padding: 0 10px 10px; overflow-wrap: anywhere; }
+  &__details > div { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+  &__details > div > span:first-child { color: var(--net-muted); }
+  code { overflow-wrap: anywhere; font-size: 11px; }
+}
+
+.netrun-viewport {
+  position: relative;
+  isolation: isolate;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 190px;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+  background: radial-gradient(ellipse at 50% 45%, #102c3b 0%, #07121c 80%);
+
+  &[data-net-panning] { cursor: grabbing; }
+
+  &:focus-visible {
+    outline: 2px solid var(--net-accent, #55cbe9);
+    outline-offset: -2px;
+  }
+
+  &:active {
+    cursor: grabbing;
+  }
+}
+
+.netrun-viewport__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.netrun-viewport__state {
+  position: absolute;
+  z-index: 4;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+  text-align: center;
+  color: var(--net-text, #e5f1fa);
+  background: rgba(7, 18, 28, .9);
+  cursor: default;
+
+  > .Icon {
+    font-size: 28px;
+    color: var(--net-accent, #55cbe9);
+  }
+
+  p {
+    max-width: 400px;
+    margin: 0;
+    color: var(--net-muted, #8298a8);
+    line-height: 1.55;
+  }
+}
+
+.netrun-viewport__hud {
+  position: absolute;
+  z-index: 2;
+  left: 14px;
+  bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 164px;
+  padding: 10px 13px;
+  color: #c8e5f0;
+  background: linear-gradient(130deg, rgba(12, 30, 44, .95), rgba(7, 19, 30, .93));
+  border: 1px solid rgba(90, 198, 221, .25);
+  border-left: 2px solid rgba(90, 198, 221, .72);
+  border-radius: 8px;
+  box-shadow: 0 7px 24px rgba(0, 0, 0, .25), inset 0 1px rgba(180, 232, 245, .05);
+  font-family: Consolas, monospace;
+  font-size: 11px;
+  pointer-events: none;
+  opacity: .82;
+  transform: translateY(2px);
+  transition: opacity 140ms ease, transform 140ms ease, border-color 140ms ease;
+}
+
+.netrun-viewport[data-net-panning] .netrun-viewport__hud {
+  opacity: 1;
+  transform: translateY(0);
+  border-color: rgba(107, 220, 237, .7);
+}
+
+.netrun-viewport__compass {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 25px;
+  color: #5c8294;
+  font-size: 9px;
+}
+
+.netrun-viewport__north { color: #8eeafd; font-weight: 700; }
+.netrun-viewport__south { color: #658597; }
+
+.netrun-viewport__needle {
+  width: 2px;
+  height: 25px;
+  position: relative;
+  background: linear-gradient(#5fe9e1 0 50%, #41657a 50% 100%);
+  box-shadow: 0 0 8px rgba(95, 233, 225, .26);
+  &:before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: -5px;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 8px solid #5fe9e1;
+  }
+}
+
+.netrun-viewport__telemetry {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  > strong { font-size: 10px; letter-spacing: 1px; color: #70b9d0; font-weight: 600; }
+  > div { display: flex; align-items: baseline; justify-content: space-between; gap: 13px; font-size: 12px; }
+  > div span:last-child { color: #7de3d9; font-variant-numeric: tabular-nums; }
+}
+
+.netrun-viewport__selection {
+  position: absolute;
+  z-index: 3;
+  top: 12px;
+  right: 12px;
+  max-width: calc(100% - 48px);
+  padding: 8px 11px;
+  overflow: hidden;
+  color: #b7ebf5;
+  background: rgba(8, 25, 37, .94);
+  border: 1px solid #376075;
+  border-radius: 7px;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
+
+  &--confirmed { color: #74d8b4; }
+  &--rejected, &--timeout { color: #ffc26b; }
+}
+
+.netrun-viewport__tooltip {
+  position: absolute;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-sizing: border-box;
+  width: 218px;
+  max-width: calc(100% - 16px);
+  padding: 11px 13px;
+  color: #dbeaf3;
+  background: rgba(12, 30, 42, .97);
+  border: 1px solid #356278;
+  border-radius: 8px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, .35);
+  font-size: 11px;
+  pointer-events: none;
+
+  strong, code {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  code {
+    color: #829eaf;
+  }
+}
+
+.netrun-viewport__online { color: #74d8b4; }
+.netrun-viewport__offline { color: #ec8f91; }
+
+@media (prefers-reduced-motion: reduce) {
+  .netrun-viewport__state > .Icon { animation: none; }
+}
+
+.netrun-shell {
+  --net-bg: #080f18;
+  --net-panel: #101d29;
+  --net-elevated: #172736;
+  --net-border: #294053;
+  --net-accent: #55cbe9;
+  --net-text: #e5f1fa;
+  --net-muted: #8298a8;
+  position: relative;
+  isolation: isolate;
+  padding: 0 12px 12px 76px;
+  gap: 7px;
+  font-size: 13px;
+  background: var(--net-bg) !important;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+
+  .Button {
+    border-radius: 6px;
+    transition: background-color 120ms ease, border-color 120ms ease;
+  }
+
+  .Button:focus-visible, button:focus-visible, input:focus-visible {
+    outline: 2px solid var(--net-accent);
+    outline-offset: 2px;
+  }
+
+  .Section {
+    border-radius: 8px;
+  }
+
+  .Input {
+    border-radius: 6px;
+  }
+}
+
+.netrun-header {
+  flex: 0 0 67px;
+  margin-left: -64px;
+  margin-right: -12px;
+  padding: 0 16px 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+  gap: 16px;
+  background: var(--net-panel);
+  border-bottom: 1px solid var(--net-border);
+}
+
+.netrun-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-width: 230px;
+}
+
+.netrun-header__logo {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  color: var(--net-accent);
+  background: var(--net-elevated);
+  border: 1px solid var(--net-border);
+  border-radius: 10px;
+  font-size: 18px;
+}
+
+.netrun-header__title {
+  display: flex;
+  flex-direction: column;
+  font-size: 16px;
+  letter-spacing: .09em;
+  font-weight: 700;
+  color: var(--net-text);
+  white-space: nowrap;
+}
+
+.netrun-header__title small {
+  font-size: 9px;
+  letter-spacing: .13em;
+  color: var(--net-muted);
+  font-weight: 500;
+}
+
+.netrun-header__indicators {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: flex-end;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.netrun-indicator, .netrun-trace {
+  flex-shrink: 0;
+  padding: 9px 11px;
+  background: var(--net-elevated);
+  border: 1px solid var(--net-border);
+  border-radius: 7px;
+  color: var(--net-muted);
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.netrun-indicator .Icon { margin-right: 5px; color: var(--net-accent); }
+.netrun-indicator[data-state="online"] { color: #5bdab1; }
+.netrun-indicator[data-state="offline"] { color: #f08387; }
+.netrun-trace { width: 170px; padding: 6px 11px; }
+.netrun-trace__label { display: flex; justify-content: space-between; font-size: 10px; letter-spacing: .05em; }
+.netrun-trace__label strong { color: var(--net-text); }
+.netrun-trace__track { height: 4px; margin-top: 5px; background: var(--net-bg); border-radius: 4px; overflow: hidden; }
+.netrun-trace__fill { height: 100%; transition: width 250ms ease; border-radius: inherit; }
+
+.netrun-navigation {
+  position: absolute;
+  top: 76px;
+  left: 7px;
+  bottom: 12px;
+  width: 56px;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--net-panel);
+  border: 1px solid var(--net-border);
+  border-radius: 9px;
+  scrollbar-width: none;
+}
+.netrun-navigation::-webkit-scrollbar { display: none; }
+.netrun-navigation__tabs {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch;
+  gap: 5px;
+  padding: 6px 4px;
+  min-width: 0;
+  width: 100%;
+}
+.netrun-navigation__tabs .Tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 57px;
+  min-width: 0;
+  padding: 6px 3px !important;
+  font-size: 9px;
+  text-align: center;
+  line-height: 1.2;
+  border-radius: 7px;
+  white-space: normal !important;
+  word-break: break-word;
+}
+.netrun-navigation__tabs .Tab--selected {
+  background: #21465d !important;
+  color: var(--net-text);
+}
+.netrun-navigation__tabs .Tab .Icon { font-size: 18px; }
+.netrun-status {
+  flex: 0 0 auto;
+  padding: 0 9px;
+  background: var(--net-panel);
+  border: 1px solid var(--net-border);
+  border-radius: 8px;
+  min-width: 0;
+}
+.netrun-workspace {
+  border: 1px solid var(--net-border);
+  background: var(--net-bg);
+}
+.netrun-workspace [data-net-layout="map"] {
+  background-color: var(--net-bg) !important;
+  border-radius: 8px;
+}
+.netrun-workspace [data-net-layout="sidebar"] {
+  background: var(--net-panel) !important;
+  box-shadow: -7px 0 20px #0003;
+}
+@media (max-width: 900px) {
+  .netrun-header__brand { min-width: 130px; }
+  .netrun-header__title small { display: none; }
+  .netrun-header__indicators { gap: 5px; }
+  .netrun-indicator { padding: 8px; }
+  .netrun-indicator:first-child span { display: none; }
+  .netrun-trace { width: 130px; }
+}
+@media (max-width: 650px) {
+  .netrun-shell { padding: 0 6px 7px; }
+  .netrun-header { margin: 0 -6px; flex-basis: 52px; padding: 0 8px; }
+  .netrun-header__brand { min-width: 0; }
+  .netrun-header__title { font-size: 13px; }
+  .netrun-header__logo { width: 30px; height: 30px; }
+  .netrun-indicator { display: none; }
+  .netrun-trace { width: 120px; }
+  .netrun-navigation {
+    position: static;
+    width: 100%;
+    height: auto;
+    flex: 0 0 auto;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .netrun-navigation__tabs { flex-direction: row !important; width: max-content; min-width: 100%; }
+  .netrun-navigation__tabs .Tab { min-width: 65px; min-height: 39px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .netrun-shell .Button, .netrun-trace__fill { transition: none; }
+}
+
+/* Compact primary navigation and readable controls, based on in-game screenshots. */
+.netrun-shell { padding-left: 94px; font-size: 12px; }
+.netrun-header { margin-left: -82px; }
+.netrun-navigation { width: 74px; }
+.netrun-navigation__tabs .Tab {
+  min-height: 61px;
+  font-size: 10px;
+  word-break: normal;
+  overflow: hidden;
+}
+.netrun-navigation__label {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.netrun-inspector { scrollbar-width: thin; scrollbar-color: var(--net-border) transparent; }
+.netrun-inspector__toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 8px;
+  color: var(--net-muted);
+  background: var(--net-panel);
+  border-bottom: 1px solid var(--net-border);
+  font-size: 10px;
+}
+.netrun-inspector-toggle { min-height: 27px; }
+.netrun-inspector-toggle .Button {
+  background: var(--net-elevated);
+  border: 1px solid var(--net-border);
+}
+.netrun-command-grid { margin: 6px 0; width: 100%; }
+.netrun-command-grid .Button {
+  min-width: 0;
+  padding: 6px 7px !important;
+  border: 1px solid var(--net-border) !important;
+  background: var(--net-elevated) !important;
+  color: var(--net-text) !important;
+  font-size: 11px;
+}
+.netrun-command-grid .Button:hover:not(.Button--disabled) {
+  background: #21415a !important;
+  border-color: var(--net-accent) !important;
+}
+.netrun-command-grid .Button--disabled { opacity: .5; }
+.netrun-command-grid .netrun-command--danger:not(.Button--disabled) {
+  border-color: #79414c !important;
+  color: #f5a1a8 !important;
+}
+.netrun-command-grid .netrun-command--risky:not(.Button--disabled) {
+  border-color: #79643f !important;
+  color: #f5c477 !important;
+}
+/* One compact toolbar; everything secondary opens on demand or floats over the map. */
+.netrun-map-tools {
+  position: relative;
+  z-index: 6;
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--net-border);
+  background: var(--net-panel);
+}
+.netrun-map-tools .Button {
+  margin: 0;
+  background: var(--net-elevated);
+  border: 1px solid var(--net-border);
+}
+.netrun-map-tools__sep {
+  width: 1px;
+  align-self: stretch;
+  margin: 2px 2px;
+  background: var(--net-border);
+}
+.netrun-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+.netrun-map-popover { position: relative; flex: 0 0 auto; color: var(--net-muted); font-size: 11px; }
+.netrun-map-popover summary {
+  cursor: pointer;
+  list-style: none;
+  padding: 3px 8px;
+  border: 1px solid var(--net-border);
+  background: var(--net-elevated);
+  border-radius: 6px;
+  white-space: nowrap;
+}
+.netrun-map-popover summary::-webkit-details-marker { display: none; }
+.netrun-map-popover summary::after { content: ' ▾'; color: var(--net-accent); }
+.netrun-map-popover[open] summary { border-color: var(--net-accent); color: var(--net-text); }
+.netrun-map-popover__body {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 5px);
+  left: 0;
+  width: max-content;
+  max-width: min(460px, 80vw);
+  max-height: 260px;
+  overflow: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid var(--net-border);
+  background: var(--net-panel);
+  border-radius: 9px;
+  box-shadow: 0 8px 30px #0009;
+}
+.netrun-map-popover:not([open]) .netrun-map-popover__body { display: none; }
+.netrun-map-popover__break { flex-basis: 100%; height: 0; }
+.netrun-map-filters .Button { display: inline-flex; align-items: center; gap: 4px; }
+.netrun-glyph-icon { display: inline-block; vertical-align: middle; flex: 0 0 auto; }
+.netrun-map-stage {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+}
+.netrun-map-selectionbar {
+  position: absolute;
+  z-index: 4;
+  top: 8px;
+  left: 8px;
+  max-width: calc(100% - 16px - min(330px, 45%));
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  padding: 5px 9px;
+  border: 1px solid var(--net-border);
+  border-radius: 8px;
+  background: var(--net-panel);
+  background: color-mix(in srgb, var(--net-panel) 88%, transparent);
+  box-shadow: 0 4px 16px #0006;
+  color: var(--net-muted);
+  font-size: 11px;
+  pointer-events: none;
+}
+.netrun-map-selectionbar strong { color: var(--net-text); }
+.netrun-map-selectionbar > .Icon { color: var(--net-accent); }
+.netrun-map-dock {
+  position: absolute;
+  z-index: 4;
+  top: 8px;
+  right: 8px;
+  width: min(330px, 45%);
+  max-height: calc(100% - 16px);
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.netrun-map-dock__panel {
+  padding: 6px 8px;
+  border: 1px solid var(--net-border);
+  border-radius: 8px;
+  background: var(--net-panel);
+  background: color-mix(in srgb, var(--net-panel) 92%, transparent);
+  box-shadow: 0 4px 16px #0006;
+}
+.netrun-map-notice {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  padding: 6px 10px;
+  border: 1px solid var(--net-border);
+  border-radius: 8px;
+  background: var(--net-panel);
+  color: var(--net-muted);
+}
+.netrun-map-legend {
+  position: absolute;
+  z-index: 5;
+  left: 8px;
+  bottom: 8px;
+  width: min(420px, calc(100% - 16px));
+  max-height: calc(100% - 60px);
+  overflow: auto;
+  padding: 8px 10px;
+  border: 1px solid var(--net-border);
+  border-radius: 9px;
+  background: var(--net-panel);
+  background: color-mix(in srgb, var(--net-panel) 95%, transparent);
+  box-shadow: 0 8px 30px #0009;
+  font-size: 11px;
+  color: var(--net-text);
+}
+.netrun-map-legend__head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.netrun-map-legend h4 { margin: 6px 0 3px; font-size: 10px; font-weight: normal; color: var(--net-muted); text-transform: uppercase; letter-spacing: .05em; }
+.netrun-map-legend__grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 3px 10px; }
+.netrun-map-legend__grid > span { display: inline-flex; align-items: center; gap: 5px; min-width: 0; }
+.netrun-map-legend__hint { margin: 8px 0 0; color: var(--net-muted); }
+.netrun-map-gateways { margin-left: 0; }
+.netrun-map-gateways__list {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 5px);
+  right: 0;
+  width: min(450px, 75vw);
+  max-height: 240px;
+  overflow: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 10px;
+  border: 1px solid var(--net-border);
+  background: var(--net-panel);
+  border-radius: 9px;
+  box-shadow: 0 8px 30px #0009;
+}
+.netrun-map-gateways:not([open]) .netrun-map-gateways__list { display: none; }
+.netrun-breach-card {
+  flex: 0 1 800px;
+  box-shadow: 0 15px 40px #0005;
+}
+.netrun-breach-card td { min-width: 42px; min-height: 42px; }
+.netrun-auto-breach {
+  border: 1px solid var(--net-border);
+  background: var(--net-panel);
+  border-radius: 10px;
+}
+@media (max-width: 930px) {
+  .netrun-map-dock { width: min(300px, 60%); }
+  .netrun-map-selectionbar { max-width: calc(100% - 16px); top: auto; bottom: 8px; }
+}
+@media (max-width: 650px) {
+  .netrun-shell { padding-left: 6px; }
+  .netrun-header { margin-left: -6px; }
+  .netrun-navigation { width: 100%; }
+  .netrun-navigation__label { max-width: 65px; }
+  .netrun-breach-card { margin: 8px auto !important; padding: 10px !important; }
+  .netrun-breach-card td { min-width: 31px; min-height: 31px; }
+}
+
+/* Content layouts remain native TGUI components with NetRun-only styling. */
+.netrun-node-detail, .netrun-machine { min-width: 0; }
+.netrun-node-detail > .Box, .netrun-machine > .Box { margin-bottom: 9px; }
+.netrun-node-detail .LabeledList, .netrun-machine .LabeledList {
+  font-size: 11px;
+  line-height: 1.45;
+}
+.netrun-node-detail .Button { margin-bottom: 3px; }
+.netrun-files-layout {
+  display: grid;
+  grid-template-columns: minmax(270px, 0.85fr) minmax(0, 1.4fr);
+  gap: 12px;
+  min-height: 390px;
+}
+.netrun-files-catalog, .netrun-files-preview {
+  min-width: 0;
+  padding: 15px;
+  background: var(--net-panel);
+  border: 1px solid var(--net-border);
+  border-radius: 9px;
+}
+.netrun-files-catalog [data-net-files], .netrun-remote-files {
+  max-height: min(38vh, 380px);
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.netrun-files-preview textarea { min-height: 170px; padding: 9px; border-radius: 7px; }
+.netrun-files-preview .Input { min-height: 30px; }
+.netrun-combat-panel { padding: 14px !important; }
+.netrun-combat-content { width: 100%; max-width: 1050px; margin: 0 auto; }
+.netrun-combat-targets {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(265px, 1fr));
+  gap: 9px;
+  margin-bottom: 14px;
+}
+.netrun-combat-programs .Button { min-width: 118px; min-height: 36px; }
+.netrun-machine { padding: 8px 4px; }
+@media (max-width: 930px) {
+  .netrun-files-layout { grid-template-columns: 1fr; }
+  .netrun-files-catalog [data-net-files], .netrun-remote-files { max-height: 200px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .netrun-command-grid .Button, .netrun-breach-card td { transition: none !important; }
+}
+
+/* Readable labels and keyboard-focused breach cells. */
+.netrun-navigation__tabs .Tab { min-height: 70px; }
+.netrun-navigation__label {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+  line-height: 1.25;
+}
+.netrun-breach-card td[role="button"]:focus-visible {
+  outline: 2px solid #e5f1fa;
+  outline-offset: 1px;
+}
+.netrun-breach-card td[role="button"]:hover {
+  background: rgba(85, 203, 233, .28) !important;
+  border-color: #e5f1fa !important;
+}
+
+/* Live combat and native machine integrations. */
+.netrun-combat-targets {
+  grid-template-columns: repeat(auto-fill, minmax(270px, 320px));
+  align-items: start;
+}
+.netrun-combat-target {
+  min-height: 118px;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+.netrun-combat-target:hover { background: #1d3344 !important; }
+.netrun-combat-target .Icon { margin-right: 6px; }
+.netrun-self-panel { padding: 11px !important; }
+.netrun-combat-programs { gap: 8px !important; padding: 4px 0; }
+.netrun-combat-programs .Button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 8px 12px !important;
+  color: var(--net-text) !important;
+}
+.netrun-combat-programs .Button.Button--disabled { opacity: .45; }
+.netrun-remote-panel {
+  margin-top: 14px !important;
+  padding: 12px;
+  background: var(--net-panel);
+  border: 1px solid var(--net-border);
+  border-radius: 8px;
+}
+.netrun-remote-tree details {
+  padding: 4px 8px;
+  margin: 3px 0;
+  background: #101f2c;
+  border-left: 2px solid var(--net-border);
+}
+.netrun-remote-tree summary {
+  cursor: pointer;
+  color: var(--net-text);
+  padding: 3px 0;
+}
+.netrun-remote-tree summary:hover { color: var(--net-accent); }
+.netrun-remote-action {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  padding: 8px 0;
+  border-top: 1px solid var(--net-border);
+}
+.netrun-remote-action input {
+  min-height: 31px;
+  border-radius: 6px;
+}
+@media (max-width: 650px) {
+  .netrun-combat-targets { grid-template-columns: 1fr; }
+}
+
+/* TGUI Tabs use a flex-growing text column. In the vertical NetRun rail
+ * it pushes the caption to the bottom and leaves every icon too high.
+ * Center the icon and caption as one group, not as independent flex items. */
+.netrun-navigation__tabs .Tab {
+  position: relative;
+  justify-content: center;
+  gap: 5px;
+}
+.netrun-navigation__tabs .Tab__left {
+  display: flex;
+  flex: 0 0 22px;
+  width: 100%;
+  min-width: 0;
+  height: 22px;
+  margin: 0;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+.netrun-navigation__tabs .Tab__left .Icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  min-width: 1em;
+  height: 1em;
+}
+.netrun-navigation__tabs .Tab__text {
+  flex: 0 0 auto;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  text-align: center;
+  line-height: 1.2;
+}
+.netrun-navigation__tabs .Tab__right {
+  position: absolute;
+  top: 2px;
+  right: 3px;
+  min-width: 0;
+  margin: 0;
+  font-size: 9px;
+  line-height: 1;
+}
+/* Font Awesome's baseline otherwise makes standalone action icons float
+ * above their adjacent text in the inherited TGUI Button line-height. */
+.netrun-shell .Button > .Icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  line-height: 1;
+  min-height: 1em;
+}
+
+/* File actions share square hit targets. Center the buttons themselves as well
+ * as their glyphs; inline buttons inside grid cells otherwise sit at the top. */
+.netrun-file-actions {
+  align-items: center;
+
+  > .Button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    flex: 0 0 24px;
+    width: 24px;
+    min-width: 24px;
+    height: 24px;
+    margin: 0;
+    padding: 0;
+    line-height: 1;
+
+    > .Icon {
+      margin: 0;
+      line-height: 1;
+    }
+  }
+}
+
+// Theme tokens reach existing panels, native widgets and the retained Pixi map.
+.netrun-shell {
+  --net-good: #68dbb7;
+  --net-warn: #f5c477;
+  --net-bad: #f2969c;
+  --net-map: #081420;
+  color-scheme: dark;
+  .Button--color--default, .Button--color--transparent {
+    color: var(--net-text);
+    background: var(--net-elevated);
+    box-shadow: inset 0 0 0 1px var(--net-border);
+    &:hover:not(.Button--disabled) { background: var(--net-border); }
+  }
+  .Button--selected { box-shadow: inset 0 0 0 1px var(--net-accent); }
+  .Tab--selected { background: var(--net-elevated) !important; color: var(--net-accent); }
+  .netrun-navigation__tabs .Tab--selected { box-shadow: inset 2px 0 var(--net-accent); }
+  .netrun-indicator[data-state='online'] { color: var(--net-good); }
+  .netrun-indicator[data-state='offline'] { color: var(--net-bad); }
+  .netrun-viewport { background: var(--net-map); }
+  .netrun-viewport__hud, .netrun-viewport__tooltip, .netrun-viewport__selection {
+    color: var(--net-text); background: var(--net-panel); border-color: var(--net-border);
+  }
+  .netrun-viewport__compass, .netrun-viewport__tooltip code { color: var(--net-muted); }
+  .netrun-viewport__north, .netrun-viewport__telemetry > strong, .netrun-viewport__telemetry > div span:last-child { color: var(--net-accent); }
+  .netrun-viewport__online { color: var(--net-good); }
+  .netrun-viewport__offline { color: var(--net-bad); }
+  &[data-net-theme='phosphor'], &[data-net-theme='amber'] { font-family: Consolas, 'Courier New', monospace; }
+  &[data-net-theme='synthwave'] .netrun-header__logo { box-shadow: 0 0 22px #eaa1e819; }
+  &[data-net-theme='noir'] .netrun-header__title { letter-spacing: .16em; }
+}
+
+.netrun-command-tooltip {
+  box-sizing: border-box;
+  width: 360px;
+  max-width: calc(100vw - 32px);
+  margin: -.5em -.75em;
+  padding: 15px 16px;
+  border: 1px solid var(--net-border);
+  border-radius: 10px;
+  background: var(--net-panel);
+  color: var(--net-text);
+  box-shadow: 0 14px 36px #0008;
+  font-family: 'Inter', 'Segoe UI', sans-serif;
+  font-size: 12px;
+  line-height: 1.55;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  &__heading { display: flex; align-items: center; gap: 11px; margin-bottom: 12px; }
+  &__heading strong { display: block; font-size: 14px; line-height: 1.3; }
+  &__heading code { display: block; color: var(--net-muted); font-size: 10px; margin-top: 3px; }
+  &__icon { display: grid; place-items: center; flex: 0 0 34px; height: 34px; color: var(--net-accent); background: var(--net-elevated); border: 1px solid var(--net-border); border-radius: 8px; }
+  p { margin: 0 0 10px; }
+  &__details { color: var(--net-muted); }
+  dl { display: grid; grid-template-columns: 1fr 1fr; gap: 9px 16px; margin: 12px 0 0; padding-top: 12px; border-top: 1px solid var(--net-border); }
+  dt { color: var(--net-muted); font-size: 10px; text-transform: uppercase; letter-spacing: .07em; }
+  dd { margin: 2px 0 0; font-weight: 600; font-size: 11px; }
+  &__notice { display: flex; align-items: baseline; gap: 7px; padding-top: 10px; margin-top: 10px; border-top: 1px solid var(--net-border); font-size: 11px; }
+  .is-warning { color: var(--net-warn); }
+  .is-danger { color: var(--net-bad); }
+}
+
+.netrun-avatar {
+  display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto;
+  box-sizing: border-box; border: 1px solid currentColor; border-radius: 13px;
+  background: radial-gradient(circle at 25% 15%, #ffffff0d, transparent 70%), var(--net-elevated, #172736);
+  vertical-align: middle; margin-right: 8px;
+  svg { width: 78%; height: 78%; }
+}
+.netrun-entity-profile { display: flex; align-items: center; gap: 7px; padding: 12px; margin-bottom: 8px; background: var(--net-panel); border-bottom: 1px solid var(--net-border); }
+.netrun-entity-profile__body { flex: 1; min-width: 0; }
+.netrun-entity-profile__body > div:first-child { display: flex; justify-content: space-between; gap: 8px; }
+.netrun-entity-profile__body strong { color: var(--net-text); font-size: 14px; overflow-wrap: anywhere; }
+.netrun-entity-profile__body small { color: var(--net-muted); font-size: 9px; letter-spacing: .1em; }
+.netrun-entity-profile__body p, .netrun-contact-tagline { margin: 3px 0; font-size: 11px; color: var(--net-muted); overflow-wrap: anywhere; }
+.netrun-entity-profile__integrity { height: 3px; margin: 7px 0 4px; background: var(--net-border); border-radius: 3px; overflow: hidden; }
+.netrun-entity-profile__integrity span { display: block; height: 100%; transition: width 180ms ease; }
+
+.netrun-appearance-backdrop { position: absolute; z-index: 30; inset: 0; background: #000a; display: flex; justify-content: flex-end; padding: 14px; }
+.netrun-appearance {
+  color: var(--net-text); background: var(--net-panel); border: 1px solid var(--net-border); border-radius: 12px;
+  width: min(570px, 100%); box-sizing: border-box; overflow: auto; padding: 21px; box-shadow: 0 20px 80px #0008;
+  > header { display: flex; align-items: start; justify-content: space-between; gap: 12px; }
+  h2 { font-size: 21px; font-weight: 600; margin: 5px 0 0; }
+  h3 { font-size: 13px; font-weight: 600; margin: 22px 0 11px; }
+  button { font: inherit; cursor: pointer; }
+  &__intro { color: var(--net-muted); font-size: 12px; line-height: 1.6; }
+  .netrun-eyebrow { color: var(--net-accent); letter-spacing: .17em; font: 9px Consolas, monospace; }
+  &:focus { outline: none; }
+}
+.netrun-theme-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 9px; }
+.netrun-theme-choice {
+  position: relative; display: flex; flex-direction: column; gap: 5px; padding: 7px; text-align: left;
+  border: 1px solid var(--net-border); background: var(--net-bg); color: var(--net-text); border-radius: 9px;
+  &[aria-pressed='true'] { border-color: var(--net-accent); box-shadow: 0 0 0 1px var(--net-accent); }
+  > strong { font-size: 12px; padding: 2px 3px 0; }
+  > small { font-size: 10px; color: var(--net-muted); line-height: 1.4; padding: 0 3px 4px; }
+  &__preview { display: flex; align-items: center; justify-content: space-between; gap: 18px; width: 100%; height: 48px; padding: 9px; border: 1px solid; border-radius: 5px; box-sizing: border-box; }
+  &__preview > span { display: flex; flex-direction: column; gap: 4px; padding: 5px; width: 55%; border-radius: 3px; }
+  &__preview i { height: 2px; display: block; &:nth-child(2) { width: 70%; } &:nth-child(3) { width: 45%; } }
+  &__check { position: absolute; top: 10px; right: 10px; font-size: 8px; color: var(--net-accent); }
+}
+.netrun-persona-preview { display: flex; gap: 8px; align-items: center; padding: 13px; background: var(--net-bg); border: 1px solid var(--net-border); border-radius: 9px; }
+.netrun-persona-preview > div { min-width: 0; }
+.netrun-persona-preview strong { font-size: 16px; overflow-wrap: anywhere; }
+.netrun-persona-preview p { color: var(--net-muted); margin: 5px 0; font-size: 12px; line-height: 1.45; overflow-wrap: anywhere; }
+.netrun-persona-preview small { color: var(--net-muted); font-size: 9px; letter-spacing: .04em; }
+.netrun-field { display: flex; flex-direction: column; gap: 6px; font-size: 11px; color: var(--net-muted); margin-top: 14px; }
+.netrun-field input, .netrun-field textarea { width: 100%; box-sizing: border-box; color: var(--net-text); background: var(--net-bg); border: 1px solid var(--net-border); border-radius: 5px; padding: 8px; font-size: 12px; font-family: inherit; resize: vertical; }
+.netrun-field select { width: 100%; min-width: 0; box-sizing: border-box; color: var(--net-text); background: var(--net-bg); border: 1px solid var(--net-border); border-radius: 5px; padding: 6px; font: inherit; }
+.netrun-agent-details { border-top: 1px solid var(--net-border); margin-top: 8px; padding-top: 6px; }
+.netrun-agent-details > summary { color: var(--net-muted); font-size: 11px; cursor: pointer; padding: 3px 0; }
+.netrun-agent-details ol { margin: 6px 0; padding-left: 22px; font-size: 11px; }
+.netrun-agent-details li { padding: 3px 0; }
+.netrun-agent-active-goal { color: var(--net-accent); }
+.netrun-agent-program { border-left: 2px solid var(--net-border); margin: 6px 0; padding-left: 7px; font-size: 11px; }
+.netrun-agent-form { margin-top: 8px; padding: 8px; background: var(--net-panel); border: 1px solid var(--net-border); border-radius: 6px; }
+.netrun-agent-form .netrun-field, .netrun-agent-form__row .netrun-field { margin: 5px 0; gap: 4px; flex: 1 1 0; min-width: 0; }
+.netrun-agent-form__row { display: flex; align-items: end; flex-wrap: wrap; gap: 6px; margin: 5px 0; }
+.netrun-security { flex: 1 1 auto; min-width: 0; min-height: 0; overflow-y: auto; padding: 12px; }
+.netrun-security__entry { margin-top: 10px; padding: 10px; border: 1px solid var(--net-border); border-radius: 7px; background: var(--net-bg); overflow-wrap: anywhere; }
+.netrun-security__heading { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 6px; }
+.netrun-security__heading > span { font-size: 11px; }
+.netrun-security__actions { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 10px; }
+.netrun-security__actions > div { flex: 1 1 145px; min-width: 0; }
+.netrun-security__actions small { display: block; color: var(--net-muted); font-size: 10px; margin-top: 3px; }
+.netrun-file-offers { margin-bottom: 14px; }
+.netrun-file-offers__entry { margin-top: 7px; padding: 9px; border: 1px solid var(--net-border); border-radius: 6px; background: var(--net-bg); overflow-wrap: anywhere; }
+.netrun-agents-workspace { padding: 14px; min-width: 0; }
+.netrun-agent-context { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; padding: 10px; margin: 12px 0; border: 1px solid var(--net-border); border-radius: 7px; background: var(--net-bg); }
+.netrun-agent-context > div { flex: 1 1 220px; }
+.netrun-agent-context > div:last-child { flex-basis: 100%; }
+.netrun-agent-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); align-items: start; gap: 10px; }
+.netrun-agent-launcher { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--net-border); }
+.netrun-agent-template-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); gap: 6px; }
+.netrun-shell .Button.netrun-agent-template { display: flex; align-items: center; gap: 8px; margin: 0; padding: 9px; white-space: normal; text-align: left; }
+.netrun-agent-template > span:last-child { min-width: 0; overflow-wrap: anywhere; }
+.netrun-agent-template small { display: block; margin-top: 4px; color: var(--net-muted); font-size: 10px; }
+.netrun-agent-launch-card { margin-top: 10px; padding: 12px; background: var(--net-bg); border: 1px solid var(--net-border); border-radius: 7px; }
+.netrun-agent-file { display: flex; align-items: center; justify-content: space-between; gap: 6px; margin: 5px 0; }
+.netrun-agent-file > span { flex: 1 1 0; min-width: 0; overflow-wrap: anywhere; font-size: 11px; }
+.netrun-agent-file small { display: block; color: var(--net-muted); font-size: 10px; }
+.netrun-field > small { align-self: flex-end; font-variant-numeric: tabular-nums; }
+.netrun-persona-editor fieldset { border: none; margin: 16px 0 0; padding: 0; }
+.netrun-persona-editor legend { font-size: 11px; color: var(--net-muted); margin-bottom: 8px; }
+.netrun-avatar-choices { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.netrun-avatar-choices button { color: var(--net-muted); background: transparent; border: 1px solid transparent; border-radius: 7px; padding: 7px 2px; min-width: 0; }
+.netrun-avatar-choices button[aria-pressed='true'] { border-color: var(--net-accent); background: var(--net-bg); }
+.netrun-avatar-choices .netrun-avatar { margin: 0 0 6px; }
+.netrun-avatar-choices small { display: block; font-size: 9px; overflow-wrap: anywhere; }
+.netrun-accent-choices { display: flex; gap: 9px; flex-wrap: wrap; }
+.netrun-accent-choices button { border-radius: 50%; width: 25px; height: 25px; border: 3px solid var(--net-panel); box-shadow: 0 0 0 1px var(--net-border); color: #111; font-size: 9px; }
+.netrun-accent-choices button[aria-pressed='true'] { box-shadow: 0 0 0 2px var(--net-text); }
+.netrun-persona-editor__save { display: flex; gap: 10px; align-items: center; justify-content: space-between; margin-top: 17px; border-top: 1px solid var(--net-border); padding-top: 15px; }
+.netrun-persona-editor__save > span { color: var(--net-muted); font-size: 10px; }
+@media (max-width: 650px) {
+  .netrun-appearance-backdrop { padding: 5px; }
+  .netrun-appearance { padding: 15px; }
+  .netrun-avatar-choices { grid-template-columns: repeat(3, 1fr); }
+  .netrun-entity-profile__body small { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .netrun-entity-profile__integrity span { transition: none; }
+}

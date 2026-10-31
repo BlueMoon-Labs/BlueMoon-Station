@@ -20,6 +20,7 @@
 	var/network_id = RND_NETWORK_AUTO			//AUTO: станция — science_tech, иначе — персональная изолированная сеть
 	var/techweb_type = /datum/techweb/isolated	//Тип техвеба нестанционной сети
 	var/last_design_count = 0	// Хранит предшествующее синхронизации количество доступных дизайнов
+	var/research_print_pending = FALSE
 
 	var/lathe_prod_time = 0.5
 	var/emag_only_access = TRUE
@@ -40,25 +41,22 @@
 	. = ..()
 	create_reagents(0, OPENCONTAINER | NO_REACT)
 	gen_access()
-	stored_research = new
-	INVOKE_ASYNC(src, PROC_REF(update_research))
 	materials = AddComponent(/datum/component/remote_materials, "lathe", mapload, _after_insert=CALLBACK(src, PROC_REF(AfterMaterialInsert)))
 	RefreshParts()
-	RegisterSignal(SSdcs, COMSIG_GLOB_RESEARCH_NODE_UNLOCKED, PROC_REF(on_node_unlocked))
-	RegisterSignal(SSdcs, COMSIG_GLOB_RESEARCH_BATCH_COMPLETE, PROC_REF(on_research_batch_complete))
 
 /obj/machinery/rnd/production/LateInitialize()
 	. = ..()
 	AddComponent(/datum/component/techweb_holder)
 	RegisterSignal(src, COMSIG_ATOM_TECHWEB_CHANGED, PROC_REF(on_techweb_changed))
 	SEND_SIGNAL(src, COMSIG_ATOM_SET_TECHWEB, SSresearch.get_rnd_network_for(src, network_id, techweb_type))
+	stored_research = new /datum/techweb/netrun_snapshot
+	INVOKE_ASYNC(src, PROC_REF(update_research))
 
 
 /obj/machinery/rnd/production/Destroy()
 	if(deferred_sync_timer)
 		deltimer(deferred_sync_timer)
 		deferred_sync_timer = null
-	UnregisterSignal(SSdcs, list(COMSIG_GLOB_RESEARCH_NODE_UNLOCKED, COMSIG_GLOB_RESEARCH_BATCH_COMPLETE))
 	materials = null
 	cached_designs = null
 	QDEL_NULL(stored_research)
@@ -69,7 +67,8 @@
 	SIGNAL_HANDLER
 
 	host_research = new_web
-	stored_research = new
+	QDEL_NULL(stored_research)
+	stored_research = new /datum/techweb/netrun_snapshot
 	cached_designs.Cut()
 	_ui_cached_designs.Cut()
 	designs_cache_built = FALSE
@@ -123,20 +122,11 @@
 		obj_flags |= EMAGGED
 
 /obj/machinery/rnd/production/proc/update_research()
-	// Снапшот "что уже знали" ДО синка: после него доклеиваем только новые дизайны.
-	// Полный пересбор (весь researched_designs через techweb_design_by_id) гонялся
-	// каждой машиной раз в 1.5с на волне исследований - 75k вызовов за 18с на проде.
-	// Судить о "первом ли это синке" по снапшоту нельзя: свежий /datum/techweb
-	// исследует стартовые ноды прямо в New(), так что researched_designs непуст уже
-	// до первого пересбора - и инкрементальный путь навсегда терял базовые рецепты.
-	var/list/previously_known = designs_cache_built ? stored_research.researched_designs.Copy() : null
-	host_research?.copy_research_to(stored_research, TRUE)
-	if(previously_known)
-		update_designs_incremental(previously_known)
-	else
+	if(!designs_cache_built)
 		update_designs()
-	if(last_design_count == 0)
 		last_design_count = length(cached_designs)
+	var/datum/netrun_machine_service/research_client/client = get_netrun_machine_service("research.client")
+	return client?.request()
 
 /obj/machinery/rnd/production/proc/update_designs()
 	cached_designs.Cut()
@@ -257,7 +247,7 @@
 /obj/machinery/rnd/production/ui_interact(mob/user, datum/tgui/ui)
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
-		ui = new(user, src, "Fabricator", "[host_research?.organization] [department_tag] [name]")
+		ui = new(user, src, "Fabricator", "[stored_research?.organization] [department_tag] [name]")
 		ui.open()
 
 /obj/machinery/rnd/production/ui_assets(mob/user)
@@ -301,8 +291,8 @@
 	. = ..()
 	if(.)
 		return
-	var/mob/living/user = usr
-	if(!istype(user))
+	var/mob/user = usr
+	if(!isliving(user) && !(istype(state, /datum/ui_state/netrun_request) && state.can_use_topic(src, user) == UI_INTERACTIVE))
 		return
 	if(!user.can_use_production_topic(src, action))
 		if(COOLDOWN_FINISHED(src, cooldown_say))
@@ -388,6 +378,29 @@
 	return !ispath(path, /obj/item/stack/sheet) && !ispath(path, /obj/item/stack/ore/bluespace_crystal) && !ispath(path, /obj/item/stack/ducts)
 
 /obj/machinery/rnd/production/proc/user_try_print_id(id, amount)
+	if(QDELETED(src) || busy || research_print_pending || !id || ((!istype(linked_console) && requires_console)))
+		return FALSE
+	var/mob/user = usr
+	if(user && !user.can_use_production_topic(src, "build"))
+		return FALSE
+	var/datum/netrun_machine_service/research_client/client = get_netrun_machine_service("research.client")
+	research_print_pending = TRUE
+	if(client?.request_design(id, CALLBACK(src, PROC_REF(finish_research_print), id, amount, user ? WEAKREF(user) : null)))
+		return TRUE
+	research_print_pending = FALSE
+	return FALSE
+
+/obj/machinery/rnd/production/proc/finish_research_print(id, amount, datum/weakref/user_ref, datum/techweb/authority)
+	research_print_pending = FALSE
+	if(QDELETED(src) || !netrun_online() || !netrun_research_authorizes(src, authority, id))
+		return FALSE
+	var/mob/user = user_ref?.resolve()
+	if(user_ref && (QDELETED(user) || !user.can_use_production_topic(src, "build")))
+		return FALSE
+	return world.PushUsr(user, CALLBACK(src, PROC_REF(perform_print_id), id, amount))
+
+/// Native resource, department and security checks run only after the server replies.
+/obj/machinery/rnd/production/proc/perform_print_id(id, amount)
 	if((!istype(linked_console) && requires_console) || !id)
 		return FALSE
 	if(busy)
@@ -402,7 +415,7 @@
 			COOLDOWN_START(src, cooldown_say, cooldown_say_time)
 			say("Warning: Printing failed: The request is too big!")
 		return FALSE
-	var/datum/design/D = (linked_console || requires_console)? (linked_console && linked_console.stored_research && linked_console.stored_research.researched_designs[id]? SSresearch.techweb_design_by_id(id) : null) : SSresearch.techweb_design_by_id(id)	//BLUEMOON ADD: проверка на подключённую сеть консоли
+	var/datum/design/D = stored_research?.researched_designs[id] ? SSresearch.techweb_design_by_id(id) : null
 	if(!istype(D))
 		return FALSE
 	if(!(isnull(allowed_department_flags) || (D.departmental_flags & allowed_department_flags)))

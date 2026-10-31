@@ -10,6 +10,8 @@
 	var/mob/living/carbon/human/patient
 	var/obj/structure/table/optable/table
 	var/list/advanced_surgeries = list()
+	var/list/network_surgeries = list()
+	var/list/disk_surgeries = list()
 	var/datum/techweb/linked_techweb
 	light_color = LIGHT_COLOR_BLUE
 
@@ -27,6 +29,7 @@
 	SIGNAL_HANDLER
 
 	linked_techweb = new_web
+	sync_surgeries()
 
 /obj/machinery/computer/operating/Destroy()
 	if(table)
@@ -46,17 +49,23 @@
 			"You hear the chatter of a floppy drive.")
 		var/obj/item/disk/surgery/D = O
 		if(do_after(user, 10, target = src))
+			disk_surgeries |= D.surgeries
 			advanced_surgeries |= D.surgeries
 		return TRUE
 	return ..()
 
 /obj/machinery/computer/operating/proc/sync_surgeries()
-	if(linked_techweb)
-		for(var/i in linked_techweb.researched_designs)
+	// Physical disks survive an outage; downloaded server protocols are revocable.
+	advanced_surgeries = disk_surgeries.Copy()
+	network_surgeries.Cut()
+	var/datum/techweb/research = netrun_research_snapshot()
+	if(research)
+		for(var/i in research.researched_designs)
 			var/datum/design/surgery/D = SSresearch.techweb_design_by_id(i)
 			if(!istype(D))
 				continue
-			advanced_surgeries |= D.surgery
+			network_surgeries |= D.surgery
+	advanced_surgeries |= network_surgeries
 
 /obj/machinery/computer/operating/proc/find_table()
 	for(var/direction in GLOB.cardinals)
@@ -75,6 +84,7 @@
 		ui.open()
 
 /obj/machinery/computer/operating/ui_data(mob/user)
+	sync_surgeries()
 	var/list/data = list()
 	data["table"] = table
 	var/static/list/surgeries_base = list()

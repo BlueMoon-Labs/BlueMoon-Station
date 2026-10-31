@@ -10,8 +10,23 @@
 	var/used_capacity = 0
 	var/list/stored_files = list() // List of stored files on this drive. DO NOT MODIFY DIRECTLY!
 
+/obj/item/computer_hardware/hard_drive/on_install(obj/item/modular_computer/MC, mob/user)
+	. = ..()
+	for(var/datum/computer_file/program/program as anything in stored_files)
+		if(!istype(program))
+			continue
+		program.computer = MC
+		program.on_install()
+		SEND_SIGNAL(MC, COMSIG_MODULAR_COMPUTER_FILE_STORE, program)
+
 /obj/item/computer_hardware/hard_drive/on_remove(obj/item/modular_computer/MC, mob/user)
 	MC.shutdown_computer()
+	for(var/datum/computer_file/program/program as anything in stored_files)
+		if(!istype(program))
+			continue
+		program.on_uninstall()
+		program.computer = null
+		SEND_SIGNAL(MC, COMSIG_MODULAR_COMPUTER_FILE_DELETE, program)
 
 /obj/item/computer_hardware/hard_drive/proc/install_default_programs()
 	store_file(new/datum/computer_file/program/computerconfig(src)) // Computer configuration utility, allows hardware control and displays more info than status bar
@@ -49,6 +64,13 @@
 	F.holder = src
 	stored_files.Add(F)
 	recalculate_size()
+	if(holder)
+		if(istype(F, /datum/computer_file/program))
+			var/datum/computer_file/program/program = F
+			program.computer = holder
+			program.on_install()
+		SEND_SIGNAL(holder, COMSIG_MODULAR_COMPUTER_FILE_STORE, F)
+		SEND_SIGNAL(F, COMSIG_COMPUTER_FILE_STORE, holder)
 	return TRUE
 
 // Use this proc to remove file from the drive. Returns 1 on success and 0 on failure. Contains necessary sanity checks.
@@ -65,6 +87,13 @@
 	if(F in stored_files)
 		stored_files -= F
 		recalculate_size()
+		if(istype(F, /datum/computer_file/program))
+			var/datum/computer_file/program/program = F
+			program.on_uninstall()
+			program.computer = null
+		if(holder)
+			SEND_SIGNAL(holder, COMSIG_MODULAR_COMPUTER_FILE_DELETE, F)
+		SEND_SIGNAL(F, COMSIG_COMPUTER_FILE_DELETE)
 		return TRUE
 	else
 		return FALSE

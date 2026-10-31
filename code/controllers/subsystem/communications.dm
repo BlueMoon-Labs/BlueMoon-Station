@@ -64,20 +64,14 @@ SUBSYSTEM_DEF(communications)
 	message_admins("[ADMIN_LOOKUPFLW(user)] has called an emergency meeting.")
 
 /datum/controller/subsystem/communications/proc/send_message(datum/comm_message/sending, print = FALSE, unique = FALSE)
-	// Типизированный реестр вместо istype-обхода ВСЕХ машин станции (тысячи объектов
-	// ради пары комм-консолей - заметный кусок 404мс send_intercept на проде).
+	// External ingress enters one physical gateway. Inbox copies travel over the network.
 	for(var/obj/machinery/computer/communications/C as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/computer/communications))
 		if(!(C.machine_stat & (BROKEN|NOPOWER)) && is_station_level(C.z))
-			if(unique)
-				C.add_message(sending)
-			else //We copy the message for each console, answers and deletions won't be shared
-				var/datum/comm_message/M = new(sending.title,sending.content,sending.possible_answers.Copy())
-				C.add_message(M)
-			if(print)
-				var/obj/item/paper/printed_paper = new /obj/item/paper(C.loc)
-				printed_paper.name = "paper - '[sending.title]'"
-				printed_paper.add_raw_text(sending.content)
-				printed_paper.update_appearance()
+			var/datum/netrun_machine_service/communications_gateway/gateway = C.get_netrun_machine_service("communications.gateway")
+			if(gateway)
+				gateway.broadcast(sending, print, unique)
+				return TRUE
+	return FALSE
 
 #undef COMMUNICATION_COOLDOWN
 #undef COMMUNICATION_COOLDOWN_AI

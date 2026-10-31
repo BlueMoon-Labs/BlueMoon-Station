@@ -63,21 +63,23 @@
 /datum/unit_test/icon_smooth_skips_deleted_atoms
 
 /datum/unit_test/icon_smooth_skips_deleted_atoms/Run()
-	var/saved_state = SSicon_smooth.state
-	var/saved_can_fire = SSicon_smooth.can_fire
+	var/saved_can_fire = detach_subsystem(SSicon_smooth)
 	var/list/saved_queue = SSicon_smooth.smooth_queue
 	var/list/saved_deferred = SSicon_smooth.deferred
 	var/obj/structure/window/doomed = allocate(/obj/structure/window, run_loc_floor_bottom_left)
 	qdel(doomed)
 	SSicon_smooth.smooth_queue = list(null, doomed)
 	SSicon_smooth.deferred = list()
-	SSicon_smooth.state = SS_RUNNING
-	SSicon_smooth.fire()
-	SSicon_smooth.state = saved_state
+	// A spent tick budget may stop fire() after either deleted entry.
+	for(var/slice in 1 to 2)
+		SSicon_smooth.state = SS_RUNNING
+		SSicon_smooth.fire()
+		if(!length(SSicon_smooth.smooth_queue) && !length(SSicon_smooth.deferred))
+			break
 	var/list/leftover = SSicon_smooth.smooth_queue + SSicon_smooth.deferred
 	SSicon_smooth.smooth_queue = saved_queue
 	SSicon_smooth.deferred = saved_deferred
-	SSicon_smooth.can_fire = (length(saved_queue) || length(saved_deferred)) ? TRUE : saved_can_fire
+	release_subsystem(SSicon_smooth, (length(saved_queue) || length(saved_deferred)) ? TRUE : saved_can_fire)
 	TEST_ASSERT(!length(leftover), "в очереди сглаживания остались удалённые атомы")
 
 /// Маяк руины брал общий экземпляр события из runnable_events и оставался в его linked_z после удаления.

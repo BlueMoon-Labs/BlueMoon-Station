@@ -135,7 +135,6 @@
 	if(istype(signal, /datum/signal/subspace/messaging/tablet_message))
 		var/datum/signal/subspace/messaging/tablet_message/tablet_signal = signal
 		if(!tablet_signal.data["message"] && !tablet_signal.data["photo"])
-			tablet_signal.mark_done()
 			return
 		var/datum/data_pda_msg/M = new(tablet_signal.format_target(), tablet_signal.format_sender(), tablet_signal.format_message(), null, xyz_coords(tablet_signal.source))
 		pda_msgs += M
@@ -223,9 +222,24 @@
 /datum/signal/subspace/pda/broadcast()
 	if (!logged)  // Can only go through if a message server logs it
 		return
+	var/list/targets = list()
 	for (var/obj/item/modular_computer/pda/P in GLOB.PDAs)
 		if ("[P.owner] ([P.ownjob])" in data["targets"])
-			P.receive_message(src)
+			var/datum/computer_file/program/messenger/app = locate(/datum/computer_file/program/messenger) in P.get_all_files()
+			if(app)
+				targets += app
+	var/datum/signal/subspace/messaging/tablet_message/tablet = new(source, list(
+		"targets" = targets,
+		"message" = data["message"],
+		"photo" = data["photo"],
+		"automated" = TRUE,
+		"fakename" = data["name"],
+		"fakejob" = data["job"],
+	))
+	tablet.original = src
+	tablet.netrun_transmission = netrun_transmission
+	tablet.netrun_transmitter = netrun_transmitter
+	return netrun_broadcast_tablet(tablet)
 
 // New modular computer messaging signal system
 
@@ -256,7 +270,9 @@
 	if(data["everyone"])
 		return "Everyone"
 	var/datum/computer_file/program/messenger/target_app = data["targets"][1]
-	var/obj/item/modular_computer/target = target_app.computer
+	var/obj/item/modular_computer/target = target_app?.computer
+	if(QDELETED(target))
+		return "Unavailable recipient"
 	return STRINGIFY_PDA_TARGET(target.saved_identification, target.saved_job)
 
 /datum/signal/subspace/messaging/tablet_message/proc/format_sender()
@@ -267,9 +283,7 @@
 	return data["message"]
 
 /datum/signal/subspace/messaging/tablet_message/broadcast()
-	for(var/datum/computer_file/program/messenger/app in data["targets"])
-		if(!QDELETED(app))
-			app.receive_message(src)
+	return netrun_broadcast_tablet(src)
 
 
 // Log datums stored by the message server.

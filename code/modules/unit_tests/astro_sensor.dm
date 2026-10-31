@@ -77,7 +77,20 @@
 /// Выдача: пик дороже подхода, потолок за явление связывает бесконечное наблюдение.
 /datum/unit_test/astro_sensor_yield/Run()
 	var/datum/round_event/space_weather/phenomenon = unit_test_detached_phenomenon(/datum/round_event/space_weather/graveyard)
-	var/points_before = SSresearch.science_tech.research_points[TECHWEB_POINT_TYPE_GENERIC] || 0
+	// Research now belongs to physical servers; a hermetic test has no global
+	// orphan database unless it constructs an actual owner for its fixture.
+	var/obj/machinery/rnd/server/server = allocate(/obj/machinery/rnd/server, run_loc_floor_bottom_left)
+	server.network_id = RND_NETWORK_STATION
+	server.base_mining_income = list()
+	// A concurrent template load can defer this real owner's LateInitialize.
+	var/deadline = world.time + 10 SECONDS
+	while(!server.stored_research && world.time < deadline)
+		sleep(world.tick_lag)
+	TEST_ASSERT_NOTNULL(server.stored_research, "Физический сервер должен завершить создание базы исследований")
+	SSresearch.refresh_research_authorities()
+	var/datum/techweb/research = SSresearch.science_tech
+	TEST_ASSERT_NOTNULL(research, "Физический сервер должен предоставить техвеб для данных сенсора")
+	var/points_before = research.research_points[TECHWEB_POINT_TYPE_GENERIC] || 0
 
 	var/obj/machinery/astro_sensor/at_peak = allocate(/obj/machinery/astro_sensor, run_loc_floor_bottom_left)
 	at_peak.gain = 1
@@ -93,7 +106,7 @@
 	var/cap = at_peak.base_yield * phenomenon.sensor_yield_mult
 	TEST_ASSERT_EQUAL(round(at_peak.yielded), round(cap), "Выдача за явление [round(at_peak.yielded)] разошлась с потолком [round(cap)]")
 
-	var/points_after = SSresearch.science_tech.research_points[TECHWEB_POINT_TYPE_GENERIC] || 0
+	var/points_after = research.research_points[TECHWEB_POINT_TYPE_GENERIC] || 0
 	TEST_ASSERT(points_after > points_before, "Собранные данные не доехали до техвеба")
 
 	// Выгоревший приёмник не собирает ничего, даже если усиление осталось поднятым.
@@ -104,5 +117,5 @@
 	TEST_ASSERT_EQUAL(burnt.collected, 0, "Сломанный сенсор всё равно собрал данные")
 
 	// Тест не оставляет раунду подаренных очков.
-	SSresearch.science_tech.remove_point_type(TECHWEB_POINT_TYPE_GENERIC, points_after - points_before)
+	research.remove_point_type(TECHWEB_POINT_TYPE_GENERIC, points_after - points_before)
 	qdel(phenomenon)

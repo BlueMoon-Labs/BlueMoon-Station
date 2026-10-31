@@ -58,27 +58,8 @@
 	switch (action)
 		if ("print")
 			var/design_id = params["designId"]
-			if (!techweb.researched_designs[design_id])
-				return TRUE
-
-			var/datum/design/design = SSresearch.techweb_design_by_id(design_id)
-			if (!(design.build_type & COMPONENT_PRINTER))
-				return TRUE
-
-			if (materials.on_hold())
-				say("Mineral access is on hold, please contact the quartermaster.")
-				return TRUE
-
-			if (!materials.mat_container?.has_materials(design.materials))
-				say("Not enough materials.")
-				return TRUE
-
-			balloon_alert_to_viewers("printed [design.name]")
-			materials.mat_container?.use_materials(design.materials)
-			materials.silo_log(src, "printed", -1, design.name, design.materials)
-			var/atom/printed_design = new design.build_path(drop_location())
-			printed_design.pixel_x = printed_design.base_pixel_x + rand(-5, 5)
-			printed_design.pixel_y = printed_design.base_pixel_y + rand(-5, 5)
+			var/datum/netrun_machine_service/research_client/client = get_netrun_machine_service("research.client")
+			client?.request_design(design_id, CALLBACK(src, PROC_REF(finish_research_print), design_id))
 		if ("remove_mat")
 			var/datum/material/material = locate(params["ref"])
 			var/amount = text2num(params["amount"])
@@ -91,6 +72,26 @@
 
 	return TRUE
 
+/obj/machinery/component_printer/proc/finish_research_print(design_id, datum/techweb/authority)
+	if(QDELETED(src) || !netrun_online() || !netrun_research_authorizes(src, authority, design_id))
+		return FALSE
+	var/datum/design/design = SSresearch.techweb_design_by_id(design_id)
+	if(!(design.build_type & COMPONENT_PRINTER))
+		return FALSE
+	if(materials.on_hold())
+		say("Mineral access is on hold, please contact the quartermaster.")
+		return FALSE
+	if(!materials.mat_container?.has_materials(design.materials))
+		say("Not enough materials.")
+		return FALSE
+	balloon_alert_to_viewers("printed [design.name]")
+	materials.mat_container.use_materials(design.materials)
+	materials.silo_log(src, "printed", -1, design.name, design.materials)
+	var/atom/printed_design = new design.build_path(drop_location())
+	printed_design.pixel_x = printed_design.base_pixel_x + rand(-5, 5)
+	printed_design.pixel_y = printed_design.base_pixel_y + rand(-5, 5)
+	return TRUE
+
 /obj/machinery/component_printer/ui_data(mob/user)
 	var/list/data = list()
 	data["materials"] = materials.mat_container.ui_data()
@@ -100,9 +101,10 @@
 	var/list/data = list()
 
 	var/list/designs = list()
+	var/datum/techweb/research = netrun_research_snapshot()
 
 	// for (var/datum/design/component/component_design_type as anything in subtypesof(/datum/design/component))
-	for (var/researched_design_id in techweb.researched_designs)
+	for (var/researched_design_id in research?.researched_designs)
 		var/datum/design/design = SSresearch.techweb_design_by_id(researched_design_id)
 		if (!(design.build_type & COMPONENT_PRINTER))
 			continue

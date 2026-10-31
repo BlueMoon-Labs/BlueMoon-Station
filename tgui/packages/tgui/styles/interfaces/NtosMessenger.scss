@@ -1,3 +1,13 @@
+.NtosMessenger {
+  min-height: 0;
+  overflow: hidden;
+
+  &__body {
+    min-width: 0;
+    min-height: 0;
+  }
+}
+
 .NtosChatMessage {
   display: inline-flex;
   flex-direction: column;

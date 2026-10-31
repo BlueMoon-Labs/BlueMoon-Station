@@ -172,7 +172,7 @@ GLOBAL_VAR_INIT(shield_coverage_cache_expiry, 0)
 	radio.recalculateChannels()
 
 	camera = new (src) // спавн камеры
-	camera.c_tag = "[camera_c_tag_prefix] #[id]"
+	camera.set_camera_tag("[camera_c_tag_prefix] #[id]")
 	camera.toggle_cam(null, FALSE)
 	if(roundstart)
 		toggle()

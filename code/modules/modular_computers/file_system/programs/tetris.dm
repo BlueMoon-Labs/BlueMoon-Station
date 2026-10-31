@@ -146,7 +146,7 @@
 				if(istype(user_id) && (ACCESS_RESEARCH in user_id.access))
 					COOLDOWN_START(src, reward_cooldown, NTOS_TETRIS_COOLDOWN)
 					var/science_points = clamp(temp_score, 0, NTOS_TETRIS_SCORE_MAX_SCI)
-					SSresearch.science_tech.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = science_points))
+					SSresearch.science_tech?.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = science_points))
 					computer.say("Обнаружен исследовательский персонал. +[science_points] очков исследований.")
 
 			return TRUE

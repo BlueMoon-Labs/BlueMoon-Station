@@ -95,6 +95,9 @@
 /obj/machinery/computer/camera_advanced/remove_eye_control(mob/living/user)
 	if(isnull(user))
 		return
+	var/datum/netrun_machine_service/camera_viewer/service = get_netrun_machine_service("camera.viewer")
+	service?.cancel_feed()
+	eyeobj?.clear_netrun_camera_masks()
 
 	for(var/datum/action/actions_removed as anything in actions)
 		actions_removed.Remove(user)
@@ -117,6 +120,13 @@
 /obj/machinery/computer/camera_advanced/check_eye(mob/user)
 	if( (machine_stat & (NOPOWER|BROKEN)) || (!Adjacent(user) && hasSiliconAccessInArea(user)) || user.eye_blind || user.incapacitated() )
 		user.unset_machine()
+		return
+	if(current_user == user && eyeobj?.use_static != USE_STATIC_NONE)
+		var/datum/netrun_machine_service/camera_viewer/service = get_netrun_machine_service("camera.viewer")
+		if(!service?.feed_available())
+			user.unset_machine()
+			return
+		eyeobj?.update_netrun_camera_masks()
 
 /obj/machinery/computer/camera_advanced/Destroy()
 	if(current_user)
@@ -139,44 +149,8 @@
 	return ..()
 
 /obj/machinery/computer/camera_advanced/on_attack_hand(mob/user, act_intent = user.a_intent, unarmed_attack_flags)
-	if(current_user)
-		to_chat(user, "Консоль уже используется!")
-		return
-	var/mob/living/L = user
-
-	if(!can_use(user))
-		return
-	if(!eyeobj)
-		CreateEye()
-
-	if(!eyeobj.eye_initialized)
-		var/camera_location
-		var/turf/myturf = get_turf(src)
-		if(eyeobj.use_static != USE_STATIC_NONE)
-			if((!z_lock.len || (myturf.z in z_lock)) && GLOB.cameranet.checkTurfVis(myturf))
-				camera_location = myturf
-			else
-				for(var/obj/machinery/camera/C in GLOB.cameranet.cameras)
-					if(!C.can_use() || z_lock.len && !(C.z in z_lock) || !antag_training_camera_visible(C, src))
-						continue
-					var/list/network_overlap = networks & C.network
-					if(network_overlap.len)
-						camera_location = get_turf(C)
-						break
-		else
-			camera_location = myturf
-			if(z_lock.len && !(myturf.z in z_lock))
-				camera_location = locate(round(world.maxx/2), round(world.maxy/2), z_lock[1])
-
-		if(camera_location)
-			eyeobj.eye_initialized = TRUE
-			give_eye_control(L)
-			eyeobj.setLoc(camera_location)
-		else
-			user.unset_machine()
-	else
-		give_eye_control(L)
-		eyeobj.setLoc(eyeobj.loc)
+	if(isliving(user))
+		netrun_connect_camera(user)
 
 /obj/machinery/computer/camera_advanced/attack_robot(mob/user)
 	return attack_hand(user)
@@ -216,6 +190,7 @@
 	return TRUE
 
 /mob/camera/aiEye/remote/Destroy()
+	clear_netrun_camera_masks()
 	if(origin && eye_user)
 		origin.remove_eye_control(eye_user,src)
 	origin = null
@@ -239,6 +214,7 @@
 
 		if(use_static != USE_STATIC_NONE)
 			GLOB.cameranet.visibility(src, GetViewerClient(), null, use_static)
+			update_netrun_camera_masks()
 
 		if(visible_icon)
 			if(eye_user.client)
@@ -289,12 +265,9 @@
 
 	var/list/L = list()
 
-	for (var/obj/machinery/camera/cam as anything in GLOB.cameranet.cameras)
-		if(length(origin.z_lock) && !(cam.z in origin.z_lock))
-			continue
-		if(!antag_training_camera_visible(cam, origin))
-			continue
-		L.Add(cam)
+	var/list/available_cameras = origin.netrun_available_cameras()
+	for(var/camera_tag in available_cameras)
+		L.Add(available_cameras[camera_tag])
 
 	camera_sort(L)
 
@@ -316,10 +289,8 @@
 	var/obj/machinery/camera/final = T[camera]
 	playsound(src, "terminal_type", 25, FALSE)
 	if(final)
-		playsound(origin, 'sound/machines/terminal_prompt_confirm.ogg', 25, FALSE)
-		remote_eye.setLoc(get_turf(final))
-		owner.overlay_fullscreen("flash", /atom/movable/screen/fullscreen/tiled/flash/static)
-		owner.clear_fullscreen("flash", 3) //Shorter flash than normal since it's an ~~advanced~~ console!
+		var/datum/netrun_machine_service/camera_viewer/service = origin.get_netrun_machine_service("camera.viewer")
+		service?.request_feed(final.c_tag, owner)
 	else
 		playsound(origin, 'sound/machines/terminal_prompt_deny.ogg', 25, FALSE)
 

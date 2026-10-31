@@ -756,6 +756,7 @@ GLOBAL_LIST(objective_choices)
 		/datum/objective/martyr,
 		/datum/objective/steal,
 		/datum/objective/download,
+		/datum/objective/netrun_exfiltrate,
 		/datum/objective/nuclear,
 		/datum/objective/nuclear/revert,
 		/datum/objective/absorb,

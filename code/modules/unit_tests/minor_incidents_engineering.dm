@@ -329,8 +329,27 @@
 	allocated += dump
 	TEST_ASSERT(findtext(examine_text(dump, roboticist), "R&D"), "При осмотре диска видно, куда его нести")
 	var/obj/machinery/computer/rdconsole/console = allocate(/obj/machinery/computer/rdconsole, run_loc_floor_bottom_left)
+	var/deadline = world.time + 10 SECONDS
+	while(!console.GetComponent(/datum/component/techweb_holder) && world.time < deadline)
+		sleep(world.tick_lag)
+	TEST_ASSERT_NOTNULL(console.GetComponent(/datum/component/techweb_holder), "Консоль должна завершить сетевую инициализацию")
 	console.machine_stat = NONE
-	var/datum/techweb/research = console.stored_research || SSresearch.science_tech
+	SEND_SIGNAL(console, COMSIG_ATOM_SET_TECHWEB, null)
+	TEST_ASSERT(!dump.upload(console, roboticist), "Без исследовательского сервера консоль отклоняет дамп")
+	TEST_ASSERT(!QDELETED(dump), "Отключённая консоль не уничтожает дамп прошивки")
+	var/obj/machinery/rnd/server/server = allocate(/obj/machinery/rnd/server, run_loc_floor_top_right)
+	server.base_mining_income = list()
+	// A parallel training-sector template may still be in InitializeAtoms().
+	// Native creation then defers the server's owned memory to LateInitialize.
+	deadline = world.time + 10 SECONDS
+	while(!server.stored_research && world.time < deadline)
+		sleep(world.tick_lag)
+	var/datum/techweb/research = server.stored_research
+	TEST_ASSERT_NOTNULL(research, "Физический сервер должен владеть базой исследований (initialized=[!!(server.flags_1 & INITIALIZED_1)], atoms=[SSatoms.initialized], holder=[!!server.GetComponent(/datum/component/techweb_holder)], node=[!!server.GetComponent(/datum/component/netrun_node)], deleted=[QDELETED(server)])")
+	// Native deferred power_change may have run while awaiting the server.
+	console.machine_stat = NONE
+	SEND_SIGNAL(console, COMSIG_ATOM_SET_TECHWEB, research)
+	TEST_ASSERT_EQUAL(console.stored_research, research, "Консоль должна выбрать физическую базу исследований")
 	var/points_before = research.next_income[TECHWEB_POINT_TYPE_GENERIC]
 	TEST_ASSERT(dump.upload(console, roboticist), "Консоль R&D принимает дамп")
 	TEST_ASSERT_EQUAL(research.next_income[TECHWEB_POINT_TYPE_GENERIC], points_before + 1000, "Разбор дампа даёт 1000 очков исследований")

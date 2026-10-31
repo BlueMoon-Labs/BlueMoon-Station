@@ -129,6 +129,7 @@ GLOBAL_LIST_INIT(heretic_mansus_test_rows, list(
 
 /// Обычная и независимая радиопередача блокируются в Мансусе и возобновляются после выхода.
 /datum/unit_test/heretic_mansus_radio_transmission/Run()
+	netrun_connected_test_area()
 	var/list/fixture = make_mansus_fixture()
 	var/mob/living/carbon/human/victim = fixture["victim"]
 	var/datum/heretic_mansus_visit/visit = fixture["visit"]
@@ -141,11 +142,13 @@ GLOBAL_LIST_INIT(heretic_mansus_test_rows, list(
 	independent.set_frequency(FREQ_CENTCOM)
 	var/obj/item/radio/mansus_receiver/listener = allocate(/obj/item/radio/mansus_receiver, visit.return_turf)
 	radio.talk_into_impl(victim, "Проверка обычной связи", spans = list())
+	TEST_ASSERT(netrun_wait_radio(radio), "Блокированная передача не оставляет незавершённой работы телекоммов.")
 	TEST_ASSERT_EQUAL(receiver.received_messages, 0, "Передача из Мансуса не попадает в телекоммы.")
 	independent.talk_into_impl(victim, "Проверка независимой связи", spans = list())
 	TEST_ASSERT_EQUAL(listener.received_messages, 0, "Независимая передача из Мансуса не достигает внешней рации.")
 	visit.finish()
 	radio.talk_into_impl(victim, "Проверка обычной связи", spans = list())
+	TEST_ASSERT(netrun_wait_radio(radio), "После выхода передача завершает работу телекоммов.")
 	TEST_ASSERT_EQUAL(receiver.received_messages, 1, "После выхода передача вновь поступает в телекоммы.")
 	independent.talk_into_impl(victim, "Проверка независимой связи", spans = list())
 	TEST_ASSERT_EQUAL(listener.received_messages, 1, "После выхода независимая передача достигает внешней рации.")

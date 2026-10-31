@@ -227,9 +227,6 @@
 	signal.data["done"] = FALSE
 	signal.data["reject"] = FALSE
 	signal.send_to_receivers()
-	if(!signal.data["done"])
-		signal.broadcast()
-		signal.mark_done()
 
 /datum/orbital_objective/headhunt/proc/is_vanguard_pda(obj/item/modular_computer/pda/pda_device)
 	var/atom/holder = pda_device.loc

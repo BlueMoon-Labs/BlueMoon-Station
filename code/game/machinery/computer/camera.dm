@@ -86,9 +86,13 @@
 	ui = SStgui.try_update_ui(user, src, ui)
 
 	if(!ui && !length(concurrent_users))
-		active_camera = camera_console_initial_camera(get_available_cameras(), last_camera)
-		last_camera = active_camera ? WEAKREF(active_camera) : null
-		last_camera_turf = null
+		// Стартовая камера подключается тем же сетевым запросом, что и ручной выбор.
+		var/obj/machinery/camera/initial_camera = camera_console_initial_camera(get_available_cameras(), last_camera)
+		var/datum/netrun_machine_service/camera_viewer/service = get_netrun_machine_service("camera.viewer")
+		if(!initial_camera)
+			service?.cancel_feed()
+		else if(initial_camera != active_camera || !service?.feed_available())
+			service?.request_feed(initial_camera.c_tag, user)
 
 	// Update the camera, showing static if necessary and updating data if the location has moved.
 	update_active_camera_screen()
@@ -120,7 +124,11 @@
 		ui.open()
 
 /obj/machinery/computer/security/ui_data()
+	update_active_camera_screen()
+	var/datum/netrun_machine_service/camera_viewer/service = get_netrun_machine_service("camera.viewer")
 	var/list/data = list()
+	var/datum/netrun_machine_service/security_monitor/monitor = get_netrun_machine_service("security.monitor")
+	data["network_alerts"] = monitor?.alerts.Copy() || list()
 	data["network"] = network
 	data["show_departments"] = show_departments
 	// Не пересобираем одинаковые данные для каждого зрителя в одном цикле TGUI.
@@ -132,7 +140,7 @@
 	if(!QDELETED(active_camera))
 		data["activeCamera"] = list(
 			name = active_camera.c_tag,
-			status = active_camera.can_use(),
+			status = active_camera.can_use() && service?.feed_available(),
 		)
 	return data
 
@@ -154,29 +162,16 @@
 
 	if(action == "switch_camera")
 		var/c_tag = params["name"]
-		//точечный поиск по кэшу сетей вместо пересборки всего списка на каждый клик
-		var/obj/machinery/camera/selected_camera
-		for(var/network_name in network)
-			var/list/network_cameras = GLOB.cameranet.get_cameras_by_network(network_name)
-			selected_camera = network_cameras?[c_tag]
-			if(selected_camera)
-				break
-		if(selected_camera && selected_camera.z != z && (is_away_level(z) || is_away_level(selected_camera.z)))
-			selected_camera = null //фильтр away-уровней, как в get_available_cameras
-		if(selected_camera && !antag_training_camera_visible(selected_camera, src))
-			selected_camera = null
-		active_camera = selected_camera
-		last_camera = selected_camera ? WEAKREF(selected_camera) : null
-		last_camera_turf = null
+		var/datum/netrun_machine_service/camera_viewer/service = get_netrun_machine_service("camera.viewer")
+		if(istext(c_tag) && length(c_tag))
+			service?.request_feed(c_tag, usr)
 		playsound(src, get_sfx("terminal_type"), 25, FALSE)
-
-		update_active_camera_screen()
-
 		return TRUE
 
 /obj/machinery/computer/security/proc/update_active_camera_screen()
 	// Show static if can't use the camera
-	if(QDELETED(active_camera) || !active_camera?.can_use())
+	var/datum/netrun_machine_service/camera_viewer/service = get_netrun_machine_service("camera.viewer")
+	if(QDELETED(active_camera) || !active_camera?.can_use() || !service?.feed_available())
 		show_camera_static()
 		return
 
@@ -233,6 +228,8 @@
 		active_camera = null
 		last_camera_turf = null
 		cam_screen.vis_contents.Cut()
+		var/datum/netrun_machine_service/camera_viewer/service = get_netrun_machine_service("camera.viewer")
+		service?.cancel_feed()
 		playsound(src, 'sound/machines/terminal_off.ogg', 25, FALSE)
 		use_power(0)
 
@@ -243,18 +240,7 @@
 
 // Returns the list of cameras accessible from this computer
 /obj/machinery/computer/security/proc/get_available_cameras()
-	var/list/D = list()
-	var/console_away = is_away_level(z)
-	for(var/network_name in network)
-		var/list/network_cameras = GLOB.cameranet.get_cameras_by_network(network_name)
-		for(var/tag in network_cameras)
-			var/obj/machinery/camera/C = network_cameras[tag]
-			if(C.z != z && (console_away || is_away_level(C.z)))//if on away mission, can only receive feed from same z_level cameras
-				continue
-			if(!antag_training_camera_visible(C, src))
-				continue
-			D[tag] = C
-	return D
+	return netrun_available_cameras()
 
 // SECURITY MONITORS
 

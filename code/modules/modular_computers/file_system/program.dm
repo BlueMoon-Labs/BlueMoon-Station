@@ -59,6 +59,17 @@
 /datum/computer_file/program/proc/on_install()
 	return
 
+/// Called before a program leaves its computer, including removal of its drive.
+/datum/computer_file/program/proc/on_uninstall()
+	if(!computer)
+		return
+	if(computer.active_program == src)
+		computer.kill_program(forced = TRUE)
+	if(src in computer.idle_threads)
+		kill_program(forced = TRUE)
+		computer.idle_threads -= src
+	SStgui.close_uis(src)
+
 /datum/computer_file/program/clone()
 	var/datum/computer_file/program/temp = ..()
 	temp.required_access = required_access

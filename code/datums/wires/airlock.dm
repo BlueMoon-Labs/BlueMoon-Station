@@ -108,6 +108,7 @@
 			else if(A.aiControlDisabled == -1)
 				A.aiControlDisabled = 2
 			addtimer(CALLBACK(A, TYPE_PROC_REF(/obj/machinery/door/airlock, reset_ai_wire)), 1 SECONDS)
+			SEND_SIGNAL(A, COMSIG_AIRLOCK_NETWORK_CHANGED)
 		if(WIRE_SHOCK) // Pulse to shock the door for 10 ticks.
 			if(!A.secondsElectrified)
 				A.set_electrified(30, usr)
@@ -126,6 +127,7 @@
 		aiControlDisabled = 0
 	else if(aiControlDisabled == 2)
 		aiControlDisabled = -1
+	SEND_SIGNAL(src, COMSIG_AIRLOCK_NETWORK_CHANGED)
 
 /datum/wires/airlock/on_cut(wire, mend)
 	var/obj/machinery/door/airlock/A = holder
@@ -160,6 +162,7 @@
 					A.aiControlDisabled = 1
 				else if(A.aiControlDisabled == -1)
 					A.aiControlDisabled = 2
+			SEND_SIGNAL(A, COMSIG_AIRLOCK_NETWORK_CHANGED)
 		if(WIRE_SHOCK) // Cut to shock the door, mend to unshock.
 			if(mend)
 				if(A.secondsElectrified)

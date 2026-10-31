@@ -89,6 +89,14 @@
 
 	alarm_manager = new(src)
 
+/// Runtime tag changes must reach discovery even when another camera has this tag.
+/obj/machinery/camera/proc/set_camera_tag(new_tag)
+	if(c_tag == new_tag)
+		return
+	c_tag = new_tag
+	GLOB.cameranet.invalidate_camera_cache()
+	SEND_SIGNAL(src, COMSIG_NETRUN_SERVICE_STATE_CHANGED)
+
 /obj/machinery/camera/connect_to_shuttle(obj/docking_port/mobile/port, obj/docking_port/stationary/dock, idnum, override=FALSE)
 	for(var/i in network)
 		network -= i
@@ -399,6 +407,7 @@
  * их зона меняется каждым шагом носителя.
  */
 /obj/machinery/camera/proc/get_visible_turfs()
+	RETURN_TYPE(/list)
 	if(!isturf(loc))
 		return compute_visible_turfs()
 	if(visibility_cache_dirty || isnull(cached_visible_turfs))

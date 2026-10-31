@@ -10,7 +10,7 @@ const ScrubberControl = (props: { readonly scrubber: ScrubberInfo }) => {
   const { act } = useBackend();
   const { id_tag, long_name, power, scrubbing, widenet, filter_types } =
     scrubber;
-  const filters = filter_types || [];
+  const filters = Array.isArray(filter_types) ? filter_types : [];
   const enabledCount = filters.filter((filter) => filter.enabled).length;
   return (
     <Section

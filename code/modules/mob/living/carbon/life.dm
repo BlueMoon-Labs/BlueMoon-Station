@@ -709,10 +709,10 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Йоу, а что, если мы 
 						ballmer_percent = (-abs(drunkenness - 13.35) / 0.9) + 1
 					if(prob(5))
 						say(pick(GLOB.ballmer_good_msg), forced = "ballmer")
-					SSresearch.science_tech.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = BALLMER_POINTS * ballmer_percent))
+					SSresearch.science_tech?.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = BALLMER_POINTS * ballmer_percent))
 				if(drunkenness > 26) // by this point you're into windows ME territory
 					if(prob(5))
-						SSresearch.science_tech.remove_point_list(list(TECHWEB_POINT_TYPE_GENERIC = BALLMER_POINTS))
+						SSresearch.science_tech?.remove_point_list(list(TECHWEB_POINT_TYPE_GENERIC = BALLMER_POINTS))
 						say(pick(GLOB.ballmer_windows_me_msg), forced = "ballmer")
 
 		if(drunkenness >= 41)
@@ -791,10 +791,10 @@ GLOBAL_LIST_INIT(ballmer_windows_me_msg, list("Йоу, а что, если мы 
 						ballmer_percent = (-abs(drunkenness - 13.35) / 0.9) + 1
 					if(prob(5))
 						say(pick(GLOB.ballmer_good_msg), forced = "ballmer")
-					SSresearch.science_tech.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = BALLMER_POINTS * ballmer_percent))
+					SSresearch.science_tech?.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = BALLMER_POINTS * ballmer_percent))
 				if(drunkenness > 26)
 					if(prob(5))
-						SSresearch.science_tech.remove_point_list(list(TECHWEB_POINT_TYPE_GENERIC = BALLMER_POINTS))
+						SSresearch.science_tech?.remove_point_list(list(TECHWEB_POINT_TYPE_GENERIC = BALLMER_POINTS))
 						say(pick(GLOB.ballmer_windows_me_msg), forced = "ballmer")
 
 		if(mind?.assigned_role == "Roboticist" && prob(3))

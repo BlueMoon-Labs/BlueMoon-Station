@@ -79,7 +79,8 @@
 	var/datum/antag_training_session/second = allocate_training_session(/datum/antag_training_program/free)
 	second.role = antag_training_role("crew:Security Officer")
 	TEST_ASSERT(second.prepare(first.arena), "Второй офицер на полигоне.")
-	allocate(/obj/machinery/telecomms/allinone, run_loc_floor_bottom_left)
+	var/datum/netrun_route_scene/station_network = netrun_connected_test_area()
+	station_network.machine(/obj/machinery/telecomms/allinone, run_loc_floor_bottom_left)
 	var/mob/living/carbon/human/station_speaker = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
 	var/mob/living/carbon/human/station_listener = allocate(/mob/living/carbon/human, run_loc_floor_top_right)
 	for(var/mob/living/carbon/human/crew as anything in list(station_speaker, station_listener))
@@ -95,6 +96,10 @@
 	station_speaker.say(":s station-sec-probe")
 	TEST_ASSERT(wait_heard(station_listener, "station-sec-probe"), "Станция слышит себя: проверка не пустая.")
 	TEST_ASSERT(!heard(trainee, "station-sec-probe") && !heard(partner, "station-sec-probe"), "Полигон не слышит станцию.")
+	// The other side may take a different, asynchronous route from the local recipient.
+	TEST_ASSERT(wait_antag_training_observation(), "Окно проверки задержанной радиодоставки завершилось.")
+	TEST_ASSERT(!heard(station_listener, "arena-sec-probe") && !heard(station_speaker, "arena-sec-probe"), "Станция не должна услышать задержанное сообщение полигона.")
+	TEST_ASSERT(!heard(trainee, "station-sec-probe") && !heard(partner, "station-sec-probe"), "Полигон не должен услышать задержанное сообщение станции.")
 
 /datum/unit_test/antag_training_role_radio/proc/on_hear(mob/source, list/hearing_args)
 	SIGNAL_HANDLER

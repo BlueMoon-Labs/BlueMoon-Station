@@ -555,9 +555,6 @@ GLOBAL_VAR_INIT(nt_fax_department, pick("NT HR Department", "NT Legal Department
 	signal.data["done"] = FALSE
 	signal.data["reject"] = FALSE
 	signal.send_to_receivers()
-	if(!signal.data["done"])
-		signal.broadcast()
-		signal.mark_done()
 
 /**
  * Procedure for animating an object entering or leaving the fax machine.

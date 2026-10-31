@@ -254,18 +254,45 @@
 			flipped += "[seat.type] ([seat.x],[seat.y],[seat.z]) dir [seat.dir]"
 	TEST_ASSERT(!length(flipped), "Концы скамей перепутаны: [flipped.Join(", ")]")
 
-/// Фабрикаторы робототехники синхронизируются с R&D: sync() ищет консоль в семи тайлах.
+/// Маппленные фабрикаторы получают исследования от доступного сервера после запуска сети.
 /datum/unit_test/robotics_fabricators_sync_research
 	requires_full_map = TRUE
 
 /datum/unit_test/robotics_fabricators_sync_research/Run()
-	var/list/unsynced = list()
+	var/list/pending = list()
 	for(var/obj/machinery/mecha_part_fabricator/fabricator as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/mecha_part_fabricator))
 		if(!is_station_level(fabricator.z) || !istype(get_area(fabricator), /area/science/robotics))
 			continue
-		if(!fabricator.sync(ignore_timer = TRUE, is_silent = TRUE))
-			unsynced += "([fabricator.x],[fabricator.y],[fabricator.z])"
-	TEST_ASSERT(!length(unsynced), "Фабрикаторы робототехники без R&D-консоли рядом: [unsynced.Join(", ")]")
+		pending += fabricator
+	// The old sync() return value only confirms request admission. Real startup
+	// waits for the shared readiness barrier, discovery, and the server's reply.
+	var/deadline = world.time + 60 SECONDS
+	while(length(pending))
+		// Исследования отдаёт только работающий сервер: перегретый или обесточенный
+		// сервер станции (как Computer Core CogStation без охлаждения) синхронизировать нечем.
+		if(!robotics_station_server_online())
+			return
+		for(var/obj/machinery/mecha_part_fabricator/fabricator as anything in pending.Copy())
+			var/datum/netrun_machine_service/research_client/client = fabricator.get_netrun_machine_service("research.client")
+			var/datum/techweb/authority = client?.live_authority()
+			if(authority && client.snapshot_binding == REF(authority) && client.snapshot_revision >= 0)
+				pending -= fabricator
+		if(length(pending))
+			if(world.time >= deadline)
+				break
+			sleep(1 SECONDS)
+	var/list/unsynced = list()
+	for(var/obj/machinery/mecha_part_fabricator/fabricator as anything in pending)
+		var/datum/netrun_machine_service/research_client/client = fabricator.get_netrun_machine_service("research.client")
+		var/datum/component/netrun_node/node = client?.resolve_node()
+		unsynced += "([fabricator.x],[fabricator.y],[fabricator.z]) online=[node?.is_online()] bound=[!!netrun_atom_techweb(fabricator)] revision=[client?.snapshot_revision]"
+	TEST_ASSERT(!length(unsynced), "Фабрикаторы робототехники не получили исследования от доступного R&D-сервера: [unsynced.Join(", ")]")
+
+/datum/unit_test/robotics_fabricators_sync_research/proc/robotics_station_server_online()
+	for(var/obj/machinery/rnd/server/server as anything in SSresearch.servers)
+		if(!QDELETED(server) && server.research_network_id() == RND_NETWORK_STATION && server.netrun_online())
+			return TRUE
+	return FALSE
 
 /// В науке портированных карт с начала раунда есть пластик для Problem Computer.
 /datum/unit_test/ported_map_science_plastic

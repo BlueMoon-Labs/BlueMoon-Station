@@ -1526,7 +1526,7 @@ GENETICS SCANNER
 		var/obj/machinery/computer/scan_consolenew/C = O
 		if(C.stored_research)
 			to_chat(user, "<span class='notice'>[name] linked to central research database.</span>")
-			discovered = C.stored_research.discovered_mutations
+			discovered = C.netrun_research_snapshot()?.discovered_mutations
 		else
 			to_chat(user,"<span class='warning'>No database to update from.</span>")
 

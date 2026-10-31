@@ -93,7 +93,8 @@
 			var/gas_name = GLOB.gas_data.names[gas_id]
 			signal.data["gases"][gas_name] = air_sample.get_moles(gas_id) / total_moles * 100
 
-	radio_connection?.post_signal(src, signal, filter = RADIO_ATMOSIA)
+	netrun_atmos_send("atmos.sensor", "atmos.monitor", signal.data)
+	qdel(signal)
 	return TRUE
 
 
@@ -296,37 +297,34 @@ GLOBAL_LIST_EMPTY(atmos_air_controllers)
 
 // This hacky madness is the evidence of the fact that a lot of machines were never meant to be constructable, im so sorry you had to see this
 /obj/machinery/computer/atmos_control/tank/proc/reconnect(mob/user)
+	var/datum/netrun_machine_service/atmos/monitor/service = get_netrun_machine_service("atmos.monitor")
+	var/list/devices = service?.resolve("atmos.device")
+	if(!length(devices))
+		to_chat(user, span_notice("В доступной сети APC не обнаружено атмосферных устройств."))
+		return
 	var/list/IO = list()
-	var/datum/radio_frequency/freq = SSradio.return_frequency(frequency)
-	var/list/devices = freq.devices["_default"]
-	for(var/obj/machinery/atmospherics/components/unary/vent_pump/U in devices)
-		var/list/text = splittext(U.id_tag, "_")
-		IO |= text[1]
-	for(var/obj/machinery/atmospherics/components/unary/outlet_injector/U in devices)
-		var/list/text = splittext(U.id, "_")
-		IO |= text[1]
+	for(var/datum/netrun_machine_service/atmos/device/device as anything in devices)
+		var/device_tag = device.service_tag()
+		if(!istext(device_tag) || !length(device_tag))
+			continue
+		var/list/text = splittext(device_tag, "_")
+		if(length(text) > 1)
+			IO |= text[1]
 	if(!IO.len)
 		to_chat(user, "<span class='alert'>No machinery detected.</span>")
 		return
 	var/S = tgui_input_list(user, "Select the device set: ", "Selection", sort_list(IO), IO[1])
 	if(isnull(S))
 		return
-	if(src)
+	if(!QDELETED(src) && S && can_interact(user))
 		src.input_tag = "[S]_in"
 		src.output_tag = "[S]_out"
 		name = "[uppertext(S)] Supply Control"
-		var/list/new_devices = freq.devices["4"]
-		sensors.Cut()
-		for(var/obj/machinery/air_sensor/U in new_devices)
-			var/list/text = splittext(U.id_tag, "_")
-			if(text[1] == S)
-				sensors = list("[S]_sensor" = "[S] Tank")
-				break
-
-	for(var/obj/machinery/atmospherics/components/unary/outlet_injector/U in devices)
-		U.broadcast_status()
-	for(var/obj/machinery/atmospherics/components/unary/vent_pump/U in devices)
-		U.broadcast_status()
+		sensors = list("[S]_sensor" = "[S] Tank")
+		input_info = null
+		output_info = null
+		netrun_poll_device(input_tag)
+		netrun_poll_device(output_tag)
 
 /obj/machinery/computer/atmos_control/tank/ui_data(mob/user)
 	var/list/data = ..()
@@ -342,7 +340,7 @@ GLOBAL_LIST_EMPTY(atmos_air_controllers)
 /obj/machinery/computer/atmos_control/tank/ui_act(action, params)
 	. = ..()
 
-	if(. || !radio_connection)
+	if(.)
 		return
 	var/datum/signal/signal = new(list("sigtype" = "command", "user" = usr))
 	switch(action)
@@ -367,7 +365,9 @@ GLOBAL_LIST_EMPTY(atmos_air_controllers)
 				target = clamp(target, 0, MAX_OUTPUT_PRESSURE)
 				signal.data += list("tag" = output_tag, "set_internal_pressure" = target)
 				. = TRUE
-	radio_connection.post_signal(src, signal, filter = RADIO_ATMOSIA)
+	if(. && signal.data["tag"])
+		netrun_atmos_send("atmos.monitor", "atmos.device", signal.data, usr, signal.data["tag"])
+	qdel(signal)
 
 /obj/machinery/computer/atmos_control/tank/receive_signal(datum/signal/signal)
 	if(!signal)

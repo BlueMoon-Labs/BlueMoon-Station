@@ -334,6 +334,11 @@
 	var/turf/T = get_turf(src)
 	if (signal.data["done"] && T && (T.z in signal.levels))
 		return
+	// An admitted routed transmission can still be awaiting DNS/relay responses.
+	// Wait for its finite transaction instead of racing it with a duplicate RF send.
+	if(signal.netrun_transmission?.pending_packets)
+		addtimer(CALLBACK(src, PROC_REF(backup_transmission), signal), 1 SECONDS)
+		return
 
 	// Okay, the signal was never processed, send a mundane broadcast.
 	signal.data["compression"] = 0

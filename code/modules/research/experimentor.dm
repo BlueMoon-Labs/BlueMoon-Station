@@ -141,11 +141,11 @@
 				if(!N)
 					continue
 				var/str = "<b>[N.display_name]</b>: очков — [listin[node_id]].</b>"
-				if(SSresearch.science_tech.researched_nodes[N.id])
+				if(linked_console?.netrun_research_cache?.researched_nodes[N.id])
 					res += str
-				else if(SSresearch.science_tech.boosted_nodes[N.id])
+				else if(linked_console?.netrun_research_cache?.boosted_nodes[N.id])
 					boosted += str
-				if(SSresearch.science_tech.visible_nodes[N.id])	//JOY OF DISCOVERY!
+				if(linked_console?.netrun_research_cache?.visible_nodes[N.id])	//JOY OF DISCOVERY!
 					output += str
 			output += boosted + res
 			dat += output
@@ -202,7 +202,7 @@
 				if(picked && linked_console && !QDELETED(linked_console) && linked_console.stored_research)	//BLUEMOON ADD: !QDELETED — консоль могла быть уничтожена; && stored_research — консоль без подключённой сети
 					var/datum/techweb_node/boost_node = SSresearch.techweb_node_by_id(picked)
 					if(boost_node)
-						linked_console.stored_research.boost_with_path(boost_node, process.type)
+						linked_console.request_research_action("boost", usr, list("node_id" = boost_node.id, "item_type" = process.type))
 	updateUsrDialog()
 
 /obj/machinery/rnd/experimentor/proc/matchReaction(matching,reaction)

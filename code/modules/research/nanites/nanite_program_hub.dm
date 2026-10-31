@@ -105,8 +105,9 @@
 /obj/machinery/nanite_program_hub/ui_static_data(mob/user)
 	var/list/data = list()
 	data["programs"] = list()
-	if(linked_techweb)
-		for(var/i in linked_techweb.researched_designs)
+	var/datum/techweb/research = istype(src, /obj/machinery/nanite_program_hub/admin) ? linked_techweb : netrun_research_snapshot()
+	if(research)
+		for(var/i in research.researched_designs)
 			var/datum/design/nanites/D = SSresearch.techweb_design_by_id(i)
 			if(!istype(D))
 				continue
@@ -134,15 +135,11 @@
 		if("download")
 			if(!disk)
 				return
-			var/datum/design/nanites/downloaded = linked_techweb.isDesignResearchedID(params["program_id"]) //check if it's a valid design
-			if(!istype(downloaded))
-				return
-			if(disk.program)
-				qdel(disk.program)
-			disk.program = new downloaded.program_type
-			disk.name = "[initial(disk.name)] \[[disk.program.name]\]"
-			playsound(src, 'sound/machines/terminal_prompt.ogg', 25, FALSE)
-			. = TRUE
+			if(istype(src, /obj/machinery/nanite_program_hub/admin))
+				finish_research_download(params["program_id"], REF(disk), linked_techweb)
+				return TRUE
+			var/datum/netrun_machine_service/research_client/client = get_netrun_machine_service("research.client")
+			return client?.request_design(params["program_id"], CALLBACK(src, PROC_REF(finish_research_download), params["program_id"], REF(disk)))
 		if("refresh")
 			update_static_data(usr)
 			. = TRUE
@@ -155,6 +152,19 @@
 				disk.program = null
 				disk.name = initial(disk.name)
 			. = TRUE
+
+/obj/machinery/nanite_program_hub/proc/finish_research_download(id, disk_ref, datum/techweb/authority)
+	if(QDELETED(src) || !disk || REF(disk) != disk_ref || (!istype(src, /obj/machinery/nanite_program_hub/admin) && !netrun_research_authorizes(src, authority, id)))
+		return FALSE
+	var/datum/design/nanites/downloaded = authority.isDesignResearchedID(id)
+	if(!istype(downloaded))
+		return FALSE
+	if(disk.program)
+		qdel(disk.program)
+	disk.program = new downloaded.program_type
+	disk.name = "[initial(disk.name)] \[[disk.program.name]\]"
+	playsound(src, 'sound/machines/terminal_prompt.ogg', 25, FALSE)
+	return TRUE
 
 /obj/machinery/nanite_program_hub/admin/Initialize(mapload)
 	. = ..()
