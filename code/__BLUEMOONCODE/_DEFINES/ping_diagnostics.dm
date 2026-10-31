@@ -84,4 +84,10 @@
 #define PING_DIAG_NEAR_RANGE 10
 
 #define PING_DIAG_CSV_HEADER "time,world_time,ckey,build,mob_kind,view,z_clients,near_clients,samples,base,rtt_median,rtt_p95,personal_median,spikes_per_min,loss_per_min,period_s,freezes,stall_mean,shared_mean,personal_mean,loop_lag,fps,browser_rtt,chat_rate,chat_messages,verdict,old_build"
-#define PING_DIAG_HOST_CSV_HEADER "time,world_time,clients,tx_kbps,rx_kbps,retrans_per_min,retrans_pct,shared_events,ours_fraction"
+/// Хвост ss_* - цена самой подсистемы за минуту: фаеры, их сумма и максимум, чтение /proc, запись логов, расчёт минутных строк, мс.
+#define PING_DIAG_HOST_CSV_HEADER "time,world_time,clients,tx_kbps,rx_kbps,retrans_per_min,retrans_pct,shared_events,ours_fraction,ss_fires,ss_fire_ms,ss_fire_max_ms,ss_proc_read_ms,ss_log_write_ms,ss_rows_ms"
+
+/// Таймеры rustg_time_microseconds для самозамера подсистемы.
+#define PING_DIAG_FIRE_TIMER "ping_diag_fire"
+#define PING_DIAG_IO_TIMER "ping_diag_io"
+#define PING_DIAG_ROWS_TIMER "ping_diag_rows"

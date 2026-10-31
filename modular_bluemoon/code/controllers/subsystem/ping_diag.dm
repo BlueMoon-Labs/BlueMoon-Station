@@ -21,7 +21,10 @@ SUBSYSTEM_DEF(ping_diag)
 	var/list/events = list()
 	/// ckey -> TRUE: подсказка раз за раунд, даже после перезахода.
 	var/list/hinted_ckeys = list()
-	var/next_verdict_at = 0
+	/// Проход вердиктов растянут на PING_DIAG_VERDICT_EVERY_DS: с какого момента идёт, сколько клиентов в нём и сколько уже пересчитано.
+	var/verdict_started_at = -INFINITY
+	var/verdict_total = 0
+	var/verdict_done = 0
 	var/next_csv_at = 0
 	/// Резюмнутый фаер идёт каждый тик: ускоренный замер не чаще PING_DIAG_FAST_PROBE_DS.
 	var/next_probe_at = 0
@@ -43,6 +46,13 @@ SUBSYSTEM_DEF(ping_diag)
 	var/minute_events = 0
 	var/minute_ours_ms = 0
 	var/minute_yours_ms = 0
+	/// Цена самой подсистемы за минуту, мкс: последние колонки ping-host.
+	var/minute_fires = 0
+	var/minute_fire_us = 0
+	var/minute_fire_max_us = 0
+	var/minute_proc_us = 0
+	var/minute_log_us = 0
+	var/minute_rows_us = 0
 
 /datum/controller/subsystem/ping_diag/Initialize(start_timeofday)
 	. = ..()
@@ -82,10 +92,22 @@ SUBSYSTEM_DEF(ping_diag)
 
 /// Итог раунда перезаписью: раз в минуту и на выключении, чтобы снятый посреди игры сервер оставил итог.
 /datum/controller/subsystem/ping_diag/proc/write_summary()
-	if(summary_path)
-		rustg_file_write(json_encode(round_summary()), summary_path)
+	if(!summary_path)
+		return
+	var/text = json_encode(round_summary())
+	rustg_time_reset(PING_DIAG_IO_TIMER)
+	rustg_file_write(text, summary_path)
+	minute_log_us += rustg_time_microseconds(PING_DIAG_IO_TIMER)
 
 /datum/controller/subsystem/ping_diag/fire(resumed)
+	rustg_time_reset(PING_DIAG_FIRE_TIMER)
+	run_fire(resumed)
+	var/spent = rustg_time_microseconds(PING_DIAG_FIRE_TIMER)
+	minute_fires++
+	minute_fire_us += spent
+	minute_fire_max_us = max(minute_fire_max_us, spent)
+
+/datum/controller/subsystem/ping_diag/proc/run_fire(resumed)
 	var/now = REALTIMEOFDAY
 	if(probe_due(resumed))
 		next_probe_at = world.time + PING_DIAG_FAST_PROBE_DS
@@ -96,19 +118,34 @@ SUBSYSTEM_DEF(ping_diag)
 			next_csv_at = world.time + PING_DIAG_CSV_EVERY_DS
 			write_client_rows()
 			write_summary()
-		if(world.time < next_verdict_at)
-			return
-		next_verdict_at = world.time + PING_DIAG_VERDICT_EVERY_DS
-		refresh_server_medians()
-		currentrun = GLOB.clients.Copy()
+			// Минутная запись и вердикты не делят один перегруженный тик.
+			if(MC_TICK_CHECK)
+				return
+		if(!length(currentrun) && world.time >= verdict_started_at + PING_DIAG_VERDICT_EVERY_DS)
+			start_verdict_pass()
 	var/list/run = currentrun
-	while(length(run))
+	var/quota = verdict_quota()
+	while(length(run) && verdict_done < quota)
 		var/client/target = run[length(run)]
 		run.len--
+		verdict_done++
 		if(target?.ping_diag)
 			recompute_client(target, now)
 		if(MC_TICK_CHECK)
 			return
+
+/// Новый проход: последние вошедшие клиенты в конце списка и пересчитываются первыми.
+/datum/controller/subsystem/ping_diag/proc/start_verdict_pass()
+	refresh_server_medians()
+	currentrun = GLOB.clients.Copy()
+	verdict_started_at = world.time
+	verdict_total = length(currentrun)
+	verdict_done = 0
+
+/// Сколько клиентов прохода пора пересчитать к этому фаеру: доля прошедшего срока на шаг вперёд, весь проход - за шаг до срока.
+/datum/controller/subsystem/ping_diag/proc/verdict_quota()
+	var/elapsed = world.time - verdict_started_at + wait
+	return min(verdict_total, CEILING(verdict_total * elapsed / PING_DIAG_VERDICT_EVERY_DS, 1))
 
 /// Плановый фаер шлёт пробу всегда, резюмнутый идёт каждый тик - ему не чаще шага.
 /datum/controller/subsystem/ping_diag/proc/probe_due(resumed)
@@ -190,7 +227,13 @@ SUBSYSTEM_DEF(ping_diag)
 	if(source_key)
 		event_sources[source_key] = (event_sources[source_key] || 0) + 1
 	if(events_log)
-		WRITE_LOG_NO_FORMAT(events_log, "[ping_diag_event_line(event)]\n")
+		write_log(events_log, "[ping_diag_event_line(event)]\n")
+
+/// Запись в лог с замером: блокирующий ввод-вывод копится в minute_log_us.
+/datum/controller/subsystem/ping_diag/proc/write_log(path, text)
+	rustg_time_reset(PING_DIAG_IO_TIMER)
+	WRITE_LOG_NO_FORMAT(path, text)
+	minute_log_us += rustg_time_microseconds(PING_DIAG_IO_TIMER)
 
 /// Что тормозило сервер, пока пачка была открыта, - по данным детектора тик-спайков.
 /datum/controller/subsystem/ping_diag/proc/spike_source(from_world, to_world)
@@ -310,6 +353,7 @@ SUBSYSTEM_DEF(ping_diag)
 /datum/controller/subsystem/ping_diag/proc/write_client_rows()
 	if(!clients_log)
 		return
+	rustg_time_reset(PING_DIAG_ROWS_TIMER)
 	var/now = REALTIMEOFDAY
 	var/stamp = time2text(world.timeofday, "hh:mm:ss")
 	var/list/turfs = list()
@@ -346,16 +390,21 @@ SUBSYSTEM_DEF(ping_diag)
 		if(length(raw["text"]))
 			raw_lines += "wt=[num2text(world.time, 10)] ckey=[target.ckey] t0=[num2text(raw["t0"], 10)] s=[raw["text"]]"
 			diag.raw_dumped_until = raw["last"]
-	if(length(rows))
-		WRITE_LOG_NO_FORMAT(clients_log, "[rows.Join("\n")]\n")
-	if(length(raw_lines))
-		WRITE_LOG_NO_FORMAT(samples_log, "[raw_lines.Join("\n")]\n")
+	var/rows_text = length(rows) ? "[rows.Join("\n")]\n" : null
+	var/raw_text = length(raw_lines) ? "[raw_lines.Join("\n")]\n" : null
+	minute_rows_us += rustg_time_microseconds(PING_DIAG_ROWS_TIMER)
+	if(rows_text)
+		write_log(clients_log, rows_text)
+	if(raw_text)
+		write_log(samples_log, raw_text)
 	write_host_row(stamp, now)
 
 /datum/controller/subsystem/ping_diag/proc/write_host_row(stamp, now)
 	var/total = minute_ours_ms + minute_yours_ms
 	var/ours_fraction = total ? round(minute_ours_ms / total, 0.01) : 0
+	rustg_time_reset(PING_DIAG_IO_TIMER)
 	var/sampled = host_net?.sample(now) && host_net.rated
+	minute_proc_us += rustg_time_microseconds(PING_DIAG_IO_TIMER)
 	var/list/cells = list(
 		stamp,
 		num2text(world.time, 10),
@@ -366,9 +415,23 @@ SUBSYSTEM_DEF(ping_diag)
 		sampled ? host_net.retrans_pct : "",
 		minute_events,
 		ours_fraction,
+		minute_fires,
+		ping_diag_us_to_ms(minute_fire_us),
+		ping_diag_us_to_ms(minute_fire_max_us),
+		ping_diag_us_to_ms(minute_proc_us),
+		ping_diag_us_to_ms(minute_log_us),
+		ping_diag_us_to_ms(minute_rows_us),
 	)
-	if(host_log)
-		WRITE_LOG_NO_FORMAT(host_log, "[cells.Join(",")]\n")
 	minute_events = 0
 	minute_ours_ms = 0
 	minute_yours_ms = 0
+	minute_fires = 0
+	minute_fire_us = 0
+	minute_fire_max_us = 0
+	minute_proc_us = 0
+	minute_log_us = 0
+	minute_rows_us = 0
+	. = cells.Join(",")
+	// Запись этой строки и текущий фаер уходят в цену следующей минуты.
+	if(host_log)
+		write_log(host_log, "[.]\n")

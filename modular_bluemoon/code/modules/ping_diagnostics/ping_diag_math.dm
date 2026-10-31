@@ -1,19 +1,70 @@
 /proc/ping_diag_median(list/values)
 	return ping_diag_percentile(values, 50)
 
-/// Перцентиль по ближайшему рангу. Сортирует копию, у пустого списка 0.
+/// Перцентиль по ближайшему рангу. Выбирает по копии, у пустого списка 0.
 /proc/ping_diag_percentile(list/values, percent)
-	var/count = length(values)
-	if(!count)
+	if(!length(values))
 		return 0
-	var/list/sorted = values.Copy()
-	sortTim(sorted, GLOBAL_PROC_REF(cmp_numeric_asc))
-	return sorted[clamp(CEILING(count * percent / 100, 1), 1, count)]
+	var/list/picked = ping_diag_percentiles(values.Copy(), list(percent))
+	return picked[1]
 
-/// Индексы спайков личной доли: выше и абсолютного пола, и кратного медианы.
-/proc/ping_diag_find_spikes(list/personal)
+/**
+ * Несколько перцентилей по ближайшему рангу за один выбор, percents - по возрастанию.
+ * Переставляет values на месте: снаружи передавать копию, если порядок нужен. У пустого списка нули.
+ * Быстрый выбор без вызова процедуры на сравнение: sortTim с call() на каждое сравнение в разы дороже.
+ */
+/proc/ping_diag_percentiles(list/values, list/percents)
 	. = list()
-	var/threshold = max(PING_DIAG_SPIKE_MIN_MS, PING_DIAG_SPIKE_MEDIAN_FACTOR * ping_diag_median(personal))
+	var/count = length(values)
+	var/low = 1
+	for(var/percent in percents)
+		if(!count)
+			. += 0
+			continue
+		var/rank = clamp(CEILING(count * percent / 100, 1), 1, count)
+		var/lo = low
+		var/hi = count
+		while(hi - lo > 12)
+			var/a = values[lo]
+			var/b = values[(lo + hi) >> 1]
+			var/c = values[hi]
+			var/pivot = a < b ? (b < c ? b : (a < c ? c : a)) : (a < c ? a : (b < c ? c : b))
+			var/i = lo
+			var/j = hi
+			while(i <= j)
+				while(values[i] < pivot)
+					i++
+				while(values[j] > pivot)
+					j--
+				if(i <= j)
+					values.Swap(i, j)
+					i++
+					j--
+			if(rank <= j)
+				hi = j
+			else if(rank >= i)
+				lo = i
+			else
+				// Между j и i только равные опорному: ранг уже на месте.
+				lo = rank
+				hi = rank
+		for(var/k in lo + 1 to hi)
+			var/value = values[k]
+			var/m = k - 1
+			while(m >= lo && values[m] > value)
+				values[m + 1] = values[m]
+				m--
+			values[m + 1] = value
+		. += values[rank]
+		// Правее ранга только не меньшие: следующий ранг ищется там же.
+		low = rank
+
+/// Индексы спайков личной доли: выше и абсолютного пола, и кратного медианы. Медиану можно передать готовой.
+/proc/ping_diag_find_spikes(list/personal, median)
+	. = list()
+	if(isnull(median))
+		median = ping_diag_median(personal)
+	var/threshold = max(PING_DIAG_SPIKE_MIN_MS, PING_DIAG_SPIKE_MEDIAN_FACTOR * median)
 	for(var/i in 1 to length(personal))
 		if(personal[i] >= threshold)
 			. += i
@@ -166,6 +217,10 @@
 		ping_diag_old_build(summary) ? 1 : 0,
 	)
 	return cells.Join(",")
+
+/// Микросекунды в ячейку CSV: миллисекунды до десятой, без экспоненты.
+/proc/ping_diag_us_to_ms(us)
+	return num2text(round((us || 0) / 1000, 0.1), 7)
 
 /proc/ping_diag_event_line(list/event)
 	return "[event["time"]] wt=[num2text(event["world_time"] || 0, 10)] тип=[event["type"]] клиентов=[event["clients"]] доля=[event["fraction"]] прибавка=[event["extra_ms"]]мс простой=[event["stall_ms"]]мс повторы_хоста=[event["host_retrans_pct"] || 0]% источник=[event["source"] || "-"]"

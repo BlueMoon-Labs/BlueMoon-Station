@@ -66,14 +66,22 @@
 		"minute_events" = SSping_diag.minute_events,
 		"minute_ours_ms" = SSping_diag.minute_ours_ms,
 		"minute_yours_ms" = SSping_diag.minute_yours_ms,
+		"minute_fires" = SSping_diag.minute_fires,
+		"minute_fire_us" = SSping_diag.minute_fire_us,
+		"minute_fire_max_us" = SSping_diag.minute_fire_max_us,
+		"minute_proc_us" = SSping_diag.minute_proc_us,
+		"minute_log_us" = SSping_diag.minute_log_us,
+		"minute_rows_us" = SSping_diag.minute_rows_us,
+		"next_csv_at" = SSping_diag.next_csv_at,
+		"verdict_started_at" = SSping_diag.verdict_started_at,
+		"verdict_total" = SSping_diag.verdict_total,
+		"verdict_done" = SSping_diag.verdict_done,
 		"host_net" = SSping_diag.host_net,
 		"clients_log" = SSping_diag.clients_log,
 		"events_log" = SSping_diag.events_log,
 		"host_log" = SSping_diag.host_log,
 		"samples_log" = SSping_diag.samples_log,
 		"summary_path" = SSping_diag.summary_path,
-		"next_csv_at" = SSping_diag.next_csv_at,
-		"next_verdict_at" = SSping_diag.next_verdict_at,
 	)
 	SSping_diag.open_batches = list()
 	SSping_diag.mass_batches = list()
@@ -270,7 +278,7 @@
 	fdel(path)
 	SSping_diag.summary_path = path
 	SSping_diag.next_csv_at = 0
-	SSping_diag.next_verdict_at = world.time + 1 MINUTES
+	SSping_diag.verdict_started_at = world.time
 	SSping_diag.ours_ms_total = 1200
 	SSping_diag.yours_ms_total = 0
 	SSping_diag.fire(FALSE)
@@ -283,3 +291,48 @@
 	TEST_ASSERT(length(minutely), "минутный фаер записал итог")
 	TEST_ASSERT_EQUAL(json_decode(minutely)["ours_ms"], 1200, "в итоге наша доля на момент записи")
 	TEST_ASSERT_EQUAL(json_decode(final_text)["ours_ms"], 3400, "выключение перезаписало итог, а не дописало")
+
+/// Резюмнутый фаер, как в живом МК: подсистема в работе, бюджет тика не кончился.
+/datum/unit_test/ping_diag_verdict_pacing/proc/resumed_fire()
+	var/old_state = SSping_diag.state
+	var/old_limit = Master.current_ticklimit
+	SSping_diag.state = SS_RUNNING
+	Master.current_ticklimit = INFINITY
+	SSping_diag.fire(TRUE)
+	SSping_diag.state = old_state
+	Master.current_ticklimit = old_limit
+
+/// Проход вердиктов идёт ровно по фаерам: к каждому пересчитана доля клиентов по прошедшему сроку, весь проход - до срока.
+/datum/unit_test/ping_diag_verdict_pacing/Run()
+	var/list/saved = ping_diag_save_state()
+	SSping_diag.next_probe_at = world.time + 100
+	var/total = 66
+	var/step_quota = CEILING(total * SSping_diag.wait / PING_DIAG_VERDICT_EVERY_DS, 1)
+	SSping_diag.currentrun = new /list(total)
+	SSping_diag.verdict_total = total
+	SSping_diag.verdict_done = 0
+	var/previous = 0
+	var/fires = 0
+	for(var/elapsed = 0; elapsed < PING_DIAG_VERDICT_EVERY_DS; elapsed += SSping_diag.wait)
+		SSping_diag.verdict_started_at = world.time - elapsed
+		resumed_fire()
+		fires++
+		var/done = total - length(SSping_diag.currentrun)
+		TEST_ASSERT(done - previous <= step_quota + 1, "фаер на [elapsed] дс пересчитал [done - previous] клиентов из [total] - снова пачкой")
+		TEST_ASSERT(done >= CEILING(total * elapsed / PING_DIAG_VERDICT_EVERY_DS, 1), "к [elapsed] дс пересчитано [done] - отстаём от срока")
+		previous = done
+	TEST_ASSERT_EQUAL(fires, PING_DIAG_VERDICT_EVERY_DS / SSping_diag.wait, "проход на весь срок")
+	TEST_ASSERT_EQUAL(length(SSping_diag.currentrun), 0, "каждый клиент пересчитан за срок")
+
+	SSping_diag.currentrun = list()
+	SSping_diag.next_csv_at = world.time + 1000
+	SSping_diag.watched = list()
+	var/started = world.time - PING_DIAG_VERDICT_EVERY_DS + 1
+	SSping_diag.verdict_started_at = started
+	SSping_diag.fire(FALSE)
+	TEST_ASSERT_EQUAL(SSping_diag.verdict_started_at, started, "новый проход не раньше срока")
+	SSping_diag.verdict_started_at = world.time - PING_DIAG_VERDICT_EVERY_DS
+	SSping_diag.fire(FALSE)
+	TEST_ASSERT_EQUAL(SSping_diag.verdict_started_at, world.time, "в срок начат новый проход")
+	TEST_ASSERT_EQUAL(SSping_diag.verdict_total, length(GLOB.clients), "по всем клиентам")
+	ping_diag_restore_state(saved)
