@@ -421,7 +421,11 @@
 	var/last_share = our_air.last_share; \
 	ATMOS_TPROF_WAKE_RATIO(last_share, our_move_threshold) \
 	if(last_share > our_suspend_threshold){ \
-		our_excited_group.reset_cooldowns(); \
+		if(our_excited_group.breakdown_stage){ \
+			our_excited_group.cancel_breakdown(); \
+		} \
+		our_excited_group.breakdown_cooldown = 0; \
+		our_excited_group.dismantle_cooldown = 0; \
 		cached_atmos_cooldown = 0; \
 		enemy_tile.atmos_cooldown = 0; \
 		if(!enemy_tile.excited && SSair){ \
@@ -856,7 +860,7 @@
 	var/planet_atmos = planetary_atmos
 
 	// Пороги в молях откалиброваны на стандартную клетку, на баллонных тайлах они масштабируются по содержимому (1%, чтобы не гасить реальный поток).
-	var/our_cycle_moles = our_air.total_moles()
+	var/our_cycle_moles = our_air.total_moles_rev == our_air.mutation_rev ? our_air.total_moles_cache : our_air.total_moles()
 	var/our_suspend_threshold = max(MINIMUM_AIR_TO_SUSPEND, our_cycle_moles * SIGNIFICANT_SHARE_CONTENT_RATIO)
 	var/our_move_threshold = max(MINIMUM_MOLES_DELTA_TO_MOVE, our_cycle_moles * MINIMUM_AIR_RATIO_TO_MOVE)
 	var/turf/open/space_neighbor
@@ -1057,7 +1061,12 @@
 	ATMOS_TPROF_MARK
 	ATMOS_TPROF_COUNT_IF(atmos_visual_rev == our_air.mutation_rev, "vis_memo")
 	if(atmos_visual_rev != our_air.mutation_rev)
-		update_visuals()
+		// Чистый воздух без старого оверлея - тот же ранний выход, что в update_visuals(), без вызова прока.
+		var/list/visual_gases = our_air.gases
+		if(!atmos_overlay_types && length(visual_gases) == 2 && visual_gases[GAS_O2] && visual_gases[GAS_N2])
+			atmos_visual_rev = our_air.mutation_rev
+		else
+			update_visuals()
 	ATMOS_TPROF_ADD("visuals")
 
 	ATMOS_TPROF_MARK
@@ -1067,7 +1076,7 @@
 	ATMOS_TPROF_ADD("expose")
 
 	ATMOS_TPROF_MARK
-	if(air_controller?.heat_enabled && our_air.temperature > MINIMUM_TEMPERATURE_START_SUPERCONDUCTION)
+	if(air_controller?.heat_enabled && our_air.temperature > MINIMUM_TEMPERATURE_START_SUPERCONDUCTION && !air_controller.active_super_conductivity[src])
 		ATMOS_TPROF_COUNT("superconduct_starts")
 		consider_superconductivity(starting = TRUE)
 	ATMOS_TPROF_ADD("superconduct")

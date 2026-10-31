@@ -431,7 +431,8 @@
 		T.process_cell(fire_count)
 		if(T.air.last_share > MINIMUM_MOLES_DELTA_TO_MOVE)
 			sharing_turfs++
-		maybe_sleep_low_pressure_turf(T)
+		if(!T.excited_group)
+			maybe_sleep_low_pressure_turf(T)
 		// Only pause while there is still work left. Pausing on an emptied
 		// runlist made the next fire see `!length(currentrun)` and re-Copy the
 		// whole active list, running a second full turf pass inside what the
