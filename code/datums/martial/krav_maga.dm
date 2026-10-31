@@ -211,8 +211,14 @@
 		D.visible_message(span_danger("[A] [picked_hit_type == "stomps on" ? "с силой придавливает" : "бьёт"] [D] хвостом!"), \
 			span_userdanger("[A] [picked_hit_type == "stomps on" ? "с силой придавливает" : "бьёт"] вас хвостом!"))
 	else
-		D.visible_message("<span class='danger'>[A] [picked_hit_type] [D]!</span>", \
-						  "<span class='userdanger'>[A] [picked_hit_type] you!</span>")
+		var/attack_description = "удар кулаком"
+		switch(picked_hit_type)
+			if("kicks")
+				attack_description = "удар ногой"
+			if("stomps on")
+				attack_description = "сильный удар ногой сверху"
+		D.visible_message(span_danger("[A] наносит [D] [attack_description]!"), \
+			span_userdanger("[A] наносит вам [attack_description]!"))
 	log_combat(A, D, "[picked_hit_type] with [name]")
 	return TRUE
 

@@ -43,9 +43,19 @@
 			span_userdanger("[A] точно бьёт вас хвостом!"), null, null, A)
 		to_chat(A, span_danger("Вы точно бьёте [D] хвостом!"))
 	else
-		D.visible_message("<span class='danger'>[A] [atk_verb]s [D]!</span>", \
-						"<span class='userdanger'>[A] [atk_verb]s you!</span>", null, null, A)
-		to_chat(A, "<span class='danger'>You [atk_verb] [D]!</span>")
+		var/attack_description
+		switch(atk_verb)
+			if("precisely kick")
+				attack_description = "точный удар ногой"
+			if("brutally chop")
+				attack_description = "жестокий рубящий удар"
+			if("cleanly hit")
+				attack_description = "чёткий удар"
+			if("viciously slam")
+				attack_description = "сокрушительный удар"
+		D.visible_message(span_danger("[A] наносит [D] [attack_description]!"), \
+			span_userdanger("[A] наносит вам [attack_description]!"), null, null, A)
+		to_chat(A, span_danger("Вы наносите [D] [attack_description]!"))
 	if(prob(10))
 		crit_damage += (damage*2 + 15)
 		playsound(get_turf(D), 'sound/weapons/bite.ogg', 50, TRUE, -1)
@@ -119,9 +129,19 @@
 			span_userdanger("[A] бьёт вас хвостом!"), null, null, A)
 		to_chat(A, span_danger("Вы бьёте [D] хвостом!"))
 	else
-		D.visible_message("<span class='danger'>[A] [atk_verb]s [D]!</span>", \
-						"<span class='userdanger'>[A] [atk_verb]s you!</span>", null, null, A)
-		to_chat(A, "<span class='danger'>You [atk_verb] [D]!</span>")
+		var/attack_description
+		switch(atk_verb)
+			if("kick")
+				attack_description = "удар ногой"
+			if("chop")
+				attack_description = "рубящий удар"
+			if("hit")
+				attack_description = "прямой удар"
+			if("slam")
+				attack_description = "сокрушительный удар"
+		D.visible_message(span_danger("[A] наносит [D] [attack_description]!"), \
+			span_userdanger("[A] наносит вам [attack_description]!"), null, null, A)
+		to_chat(A, span_danger("Вы наносите [D] [attack_description]!"))
 	D.apply_damage(damage, BRUTE, affecting, wound_bonus = CANT_WOUND)
 	playsound(get_turf(D), 'sound/weapons/punch1.ogg', 25, TRUE, -1)
 	if(CHECK_MOBILITY(D, MOBILITY_STAND) && damage >= stunthreshold)
