@@ -134,6 +134,21 @@
 	original.set_resting(FALSE, TRUE)
 	TEST_ASSERT_EQUAL(original.get_num_supporting_limbs(), 2, "После возвращения в хвостатое тело личность снова имеет опору.")
 	TEST_ASSERT(CHECK_MOBILITY(original, MOBILITY_STAND), "Хвостовая моторика не мешает стоять на опорном хвосте.")
+	for(var/creature_type in list(/mob/living/carbon/monkey, /mob/living/carbon/alien/humanoid))
+		var/mob/living/carbon/creature = allocate(creature_type)
+		var/original_support = creature.get_num_supporting_limbs()
+		TEST_ASSERT(original_support > 0, "У нечеловеческого тела есть действующая опора до переноса разума.")
+		tail_mind.transfer_to(creature)
+		creature.set_resting(FALSE, TRUE)
+		TEST_ASSERT(HAS_MIND_TRAIT(creature, TRAIT_NAGA_LOCOMOTION), "Личность сохраняет хвостовую моторику в нечеловеческом теле.")
+		TEST_ASSERT_EQUAL(creature.get_num_supporting_limbs(), original_support, "Хвостовая моторика не отключает опору обезьяны или ксеноса.")
+		TEST_ASSERT(CHECK_MOBILITY(creature, MOBILITY_STAND), "Нечеловеческое тело не переходит на вынужденное ползание.")
+	var/mob/living/carbon/human/returned = allocate(/mob/living/carbon/human)
+	tail_mind.transfer_to(returned)
+	TEST_ASSERT_EQUAL(returned.get_num_supporting_limbs(), 0, "После возвращения в человеческое тело с ногами ограничение моторики снова действует.")
+	tail_mind.transfer_to(original)
+	original.set_resting(FALSE, TRUE)
+	TEST_ASSERT_EQUAL(original.get_num_supporting_limbs(), 2, "Возвращение в хвостатое тело восстанавливает привычную опору.")
 	var/mob/living/carbon/human/spawned = patient()
 	var/mob/dead/new_player/lobby = allocate(/mob/dead/new_player)
 	var/datum/mind/spawn_mind = allocate(/datum/mind)
@@ -758,12 +773,8 @@
 	for(var/style in list("Naga", "Naga (coiled)", "Naga, Fat", "RadDog Naga (Hyper)"))
 		var/datum/sprite_accessory/taur/variant = GLOB.taur_list[style]
 		var/list/body_states = icon_states(variant.icon)
-		TEST_ASSERT("m_taur_[variant.severed_body_state]_ADJUP" in body_states, "Основной атлас хвоста содержит верхний слой культи для [style].")
-		TEST_ASSERT("m_taur_[variant.severed_body_state]_FRONT" in body_states, "Основной атлас хвоста содержит передний слой культи для [style].")
-		TEST_ASSERT("m_taur_extra_[variant.severed_body_extra_state]_FRONT" in body_states, "Основной атлас хвоста содержит срез для [style].")
-		for(var/layer in list("ADJUP", "FRONT"))
-			TEST_ASSERT("m_taur_extra_[variant.severed_body_extra_matrix_state]_[layer]" in body_states, "Атлас содержит матричный срез [style] для слоя [layer].")
-			TEST_ASSERT("m_taur_extra_[variant.severed_body_extra_slime_state]_[layer]" in body_states, "Атлас содержит слаймовый срез [style] для слоя [layer].")
+		for(var/prefix in list("m_taur_[variant.severed_body_state]", "m_taur_extra_[variant.severed_body_extra_state]", "m_taur_extra_[variant.severed_body_extra_matrix_state]", "m_taur_extra_[variant.severed_body_extra_slime_state]"))
+			TEST_ASSERT(("[prefix]_ADJUP" in body_states) || ("[prefix]_FRONT" in body_states), "Для [style] существует хотя бы один слой состояния [prefix].")
 	var/datum/sprite_accessory/taur/taur = GLOB.taur_list["Naga"]
 	var/list/item_states = icon_states(taur.severed_item_icon)
 	TEST_ASSERT(taur.severed_item_state in item_states, "В DMI существует подключённая основа предмета.")
@@ -798,11 +809,13 @@
 			var/mutable_appearance/base_overlay
 			var/mutable_appearance/cut_overlay
 			var/expected_state = slime ? taur.severed_body_extra_slime_state : (matrixed ? taur.severed_body_extra_matrix_state : taur.severed_body_extra_state)
-			for(var/mutable_appearance/part as anything in human.overlays_standing[BODY_FRONT_LAYER])
-				if(part.icon_state == "m_taur_[taur.severed_body_state]_FRONT")
-					base_overlay = part
-				if(part.icon_state == "m_taur_extra_[expected_state]_FRONT")
-					cut_overlay = part
+			for(var/layer in list(BODY_ADJ_UPPER_LAYER, BODY_FRONT_LAYER))
+				var/layer_text = layer == BODY_FRONT_LAYER ? "FRONT" : "ADJUP"
+				for(var/mutable_appearance/part as anything in human.overlays_standing[layer])
+					if(part.icon_state == "m_taur_[taur.severed_body_state]_[layer_text]")
+						base_overlay = part
+					if(part.icon_state == "m_taur_extra_[expected_state]_[layer_text]")
+						cut_overlay = part
 			TEST_ASSERT_NOTNULL(base_overlay, "После отсечения отображается основа культи.")
 			TEST_ASSERT_NOTNULL(cut_overlay, "После отсечения отображается срез подходящего типа.")
 			if(matrixed)

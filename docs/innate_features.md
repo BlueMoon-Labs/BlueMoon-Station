@@ -40,7 +40,7 @@
 | `severed_body_extra_slime_state`, `severed_item_extra_slime_state` | Матричные срезы слаймов без кости; та же палитра хвоста. |
 
 Источники цвета: `null` — прежняя окраска extra/extra2; `NONE` — исходные цвета DMI; `MUTCOLORS`, `MUTCOLORS2`, `MUTCOLORS3` — соответствующий цвет палитры тавра. Поддерживаются и остальные штатные источники.
-Состояния культи лежат в основном `icon` каждого хвоста: `m_taur_<state>_<слой>`, дополнительные — `m_taur_extra_<state>_<слой>` и `m_taur_extra2_<state>_<слой>`; для Naga слои `ADJUP` и `FRONT`. Основа имени состояния — `naga-severed` для Naga, `nagafat-severed` для Naga, Fat и `chemnaga-severed` для RadDog Naga (Hyper).
+Состояния культи лежат в основном `icon` каждого хвоста: `m_taur_<state>_<слой>`, дополнительные — `m_taur_extra_<state>_<слой>` и `m_taur_extra2_<state>_<слой>`. Достаточно одного из слоёв `ADJUP` или `FRONT`; пустые состояния не нужны. Основа имени состояния — `naga-severed` для Naga, `nagafat-severed` для Naga, Fat и `chemnaga-severed` для RadDog Naga (Hyper).
 
 В самом хвосте `taur_style`, `tail_palette` и поля `tail_item_*` хранят форму, исходную палитру, ресурсы и снимок цветов последнего владельца для отображения отделённого предмета и запасной внешности при пересадке.
 
