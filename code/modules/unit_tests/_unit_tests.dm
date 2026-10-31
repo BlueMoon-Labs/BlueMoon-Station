@@ -160,6 +160,7 @@
 #include "atmos_sleeping_edges.dm"
 #include "atmos_fire_gate.dm"
 #include "atmos_speed_lever.dm"
+#include "atmos_station_air_paths.dm"
 #include "atmos_vector_reductions.dm"
 #include "atmos_he_pipe_sleep.dm"
 #include "atmos_idle_churn.dm"
