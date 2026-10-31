@@ -71,6 +71,9 @@
 		"events_log" = SSping_diag.events_log,
 		"host_log" = SSping_diag.host_log,
 		"samples_log" = SSping_diag.samples_log,
+		"summary_path" = SSping_diag.summary_path,
+		"next_csv_at" = SSping_diag.next_csv_at,
+		"next_verdict_at" = SSping_diag.next_verdict_at,
 	)
 	SSping_diag.open_batches = list()
 	SSping_diag.mass_batches = list()
@@ -81,6 +84,7 @@
 	SSping_diag.events_log = null
 	SSping_diag.host_log = null
 	SSping_diag.samples_log = null
+	SSping_diag.summary_path = null
 	return saved
 
 /proc/ping_diag_restore_state(list/saved)
@@ -216,3 +220,66 @@
 	TEST_ASSERT_NULL(loud["chat_rate"], "поток неизвестен - null, а не 0")
 	var/list/flooded = ping_diag_client_row("flooded", list("chat_rate" = 41.37), PING_VERDICT_FLOOD)
 	TEST_ASSERT(abs(flooded["chat_rate"] - 41.4) < 0.001, "поток округлён до десятой: [flooded["chat_rate"]]")
+	TEST_ASSERT(!flooded["old_build"], "сборка неизвестна - без совета")
+	var/list/outdated = ping_diag_client_row("outdated", list("build" = 5141500, "warn_build" = 5161600), PING_VERDICT_OK)
+	TEST_ASSERT(outdated["old_build"], "старая сборка - флаг в строке")
+	TEST_ASSERT_EQUAL(outdated["verdict"], PING_VERDICT_OK, "а вердикт свой")
+
+/// Общий всплеск при тяжёлом прогоне подсистемы в окне пачки - наша нагрузка, а не канал хоста.
+/datum/unit_test/ping_diag_heavy_run_event/proc/event_type()
+	var/id = SSping_diag.open_batch()
+	var/datum/ping_batch/batch = SSping_diag.find_batch(id)
+	batch.opened_world = world.time - 1
+	for(var/i in 1 to 6)
+		var/datum/ping_diagnostics/diag = new("tester")
+		diag.record_sample(1, 40, 0, 0, 0)
+		batch.expect(diag)
+		SSping_diag.note_reply(diag, diag.record_sample(2, 120, 0, id, 0), id, batch.opened_at + 5)
+	var/before = length(SSping_diag.events)
+	SSping_diag.close_due_batches(batch.opened_at + PING_DIAG_BATCH_CLOSE_DS)
+	if(length(SSping_diag.events) != before + 1)
+		return "нет события"
+	var/list/event = SSping_diag.events[length(SSping_diag.events)]
+	return event["type"]
+
+/datum/unit_test/ping_diag_heavy_run_event/Run()
+	var/list/saved = ping_diag_save_state()
+	var/datum/controller/subsystem/tick_spikes/recorder = SStick_spikes
+	var/list/rings = list()
+	for(var/name in list("ring_world_time", "ring_cpu", "ring_map_cpu", "heavy_time", "heavy_name", "heavy_usage"))
+		rings[name] = recorder.vars[name]
+	recorder.ring_world_time = list(world.time)
+	recorder.ring_cpu = list(20)
+	recorder.ring_map_cpu = list(5)
+	recorder.heavy_time = list(world.time)
+	recorder.heavy_name = list("Ping Diagnostics")
+	recorder.heavy_usage = list(65)
+	var/heavy = event_type()
+	recorder.heavy_time = list(world.time - 100)
+	var/calm = event_type()
+	for(var/name in rings)
+		recorder.vars[name] = rings[name]
+	ping_diag_restore_state(saved)
+	TEST_ASSERT_EQUAL(heavy, PING_EVENT_SERVER_LOAD, "прогон подсистемы на 65% тика в окне пачки - нагрузка сервера")
+	TEST_ASSERT_EQUAL(calm, PING_EVENT_HOST_NETWORK, "тяжёлый прогон до пачки не в счёт, сервер свободен - канал хоста")
+
+/// Итог раунда пишется перезаписью из минутного фаера и на выключении: снятый посреди игры сервер его оставляет.
+/datum/unit_test/ping_diag_summary_minutely/Run()
+	var/list/saved = ping_diag_save_state()
+	var/path = "data/ping_diag_summary_test.json"
+	fdel(path)
+	SSping_diag.summary_path = path
+	SSping_diag.next_csv_at = 0
+	SSping_diag.next_verdict_at = world.time + 1 MINUTES
+	SSping_diag.ours_ms_total = 1200
+	SSping_diag.yours_ms_total = 0
+	SSping_diag.fire(FALSE)
+	var/minutely = file2text(path)
+	SSping_diag.ours_ms_total = 3400
+	SSping_diag.Shutdown()
+	var/final_text = file2text(path)
+	fdel(path)
+	ping_diag_restore_state(saved)
+	TEST_ASSERT(length(minutely), "минутный фаер записал итог")
+	TEST_ASSERT_EQUAL(json_decode(minutely)["ours_ms"], 1200, "в итоге наша доля на момент записи")
+	TEST_ASSERT_EQUAL(json_decode(final_text)["ours_ms"], 3400, "выключение перезаписало итог, а не дописало")

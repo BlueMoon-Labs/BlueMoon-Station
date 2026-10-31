@@ -2,7 +2,7 @@
  * Диагностика пинга: закрывает рассылки пинга и делит лишнее на наше и игроков,
  * гоняет ускоренный замер для открытых окон, раз в 10 с ставит вердикты и подсказывает в чат.
  * Логи: ping-events (общие всплески, сразу), раз в минуту ping-clients, ping-host и ping-samples,
- * на выключении ping-summary.
+ * ping-summary перезаписью раз в минуту и на выключении.
  */
 SUBSYSTEM_DEF(ping_diag)
 	name = "Ping Diagnostics"
@@ -78,6 +78,10 @@ SUBSYSTEM_DEF(ping_diag)
 	host_net = SSping_diag.host_net
 
 /datum/controller/subsystem/ping_diag/Shutdown()
+	write_summary()
+
+/// Итог раунда перезаписью: раз в минуту и на выключении, чтобы снятый посреди игры сервер оставил итог.
+/datum/controller/subsystem/ping_diag/proc/write_summary()
 	if(summary_path)
 		rustg_file_write(json_encode(round_summary()), summary_path)
 
@@ -91,6 +95,7 @@ SUBSYSTEM_DEF(ping_diag)
 		if(world.time >= next_csv_at)
 			next_csv_at = world.time + PING_DIAG_CSV_EVERY_DS
 			write_client_rows()
+			write_summary()
 		if(world.time < next_verdict_at)
 			return
 		next_verdict_at = world.time + PING_DIAG_VERDICT_EVERY_DS
@@ -159,15 +164,16 @@ SUBSYSTEM_DEF(ping_diag)
 		if(length(mass_batches) > PING_DIAG_MAX_MASS_BATCHES)
 			mass_batches.Cut(1, 2)
 	var/list/load = batch_load(batch.opened_world, world.time)
-	var/list/event = batch.detect_event(load[1], load[2])
+	var/list/event = batch.detect_event(load[1], load[2], load[3])
 	if(event)
 		record_event(event, spike_source(batch.opened_world, world.time))
 
-/// Нагрузка за окно пачки по кольцу SStick_spikes: максимум cpu и map_cpu, без замеров - текущие.
+/// Нагрузка за окно пачки по кольцам SStick_spikes: максимум cpu и map_cpu (без замеров - текущие) и самый тяжёлый прогон подсистемы, % тика.
 /datum/controller/subsystem/ping_diag/proc/batch_load(from_world, to_world)
 	var/cpu = ping_diag_window_max(SStick_spikes?.ring_world_time, SStick_spikes?.ring_cpu, from_world, to_world)
 	var/map_cpu = ping_diag_window_max(SStick_spikes?.ring_world_time, SStick_spikes?.ring_map_cpu, from_world, to_world)
-	return list(isnull(cpu) ? world.cpu : cpu, isnull(map_cpu) ? world.map_cpu : map_cpu)
+	var/heavy_run = ping_diag_window_max(SStick_spikes?.heavy_time, SStick_spikes?.heavy_usage, from_world, to_world)
+	return list(isnull(cpu) ? world.cpu : cpu, isnull(map_cpu) ? world.map_cpu : map_cpu, heavy_run || 0)
 
 /datum/controller/subsystem/ping_diag/proc/record_event(list/event, source)
 	event["time"] = time2text(world.timeofday, "hh:mm:ss")

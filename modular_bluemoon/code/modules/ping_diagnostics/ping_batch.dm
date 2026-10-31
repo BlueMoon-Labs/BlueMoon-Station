@@ -65,7 +65,7 @@
 	expected.Cut()
 	return shared
 
-/datum/ping_batch/proc/detect_event(cpu, map_cpu = 0)
+/datum/ping_batch/proc/detect_event(cpu, map_cpu = 0, heavy_run = 0)
 	if(mass_silent)
 		var/total = mass_silent + length(excesses)
 		// Молчавшие не ответили за всё время жизни пачки: прибавка у них не меньше её возраста.
@@ -96,5 +96,5 @@
 		"fraction" = round(hit / count, 0.01),
 		"extra_ms" = round(ping_diag_median(extras), 1),
 		"stall_ms" = round(stall, 1),
-		"type" = ping_diag_classify_event(stall, cpu, map_cpu),
+		"type" = ping_diag_classify_event(stall, cpu, map_cpu, heavy_run),
 	)

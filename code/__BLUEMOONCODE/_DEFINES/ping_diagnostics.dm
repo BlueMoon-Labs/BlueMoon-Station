@@ -31,6 +31,8 @@
 #define PING_DIAG_SERVER_LOAD_CPU 90
 /// Как TICK_SPIKES_CLASSIFY_MAP_CPU_THRESHOLD: выше - рассылка карты съедает тик.
 #define PING_DIAG_SERVER_LOAD_MAP_CPU 30
+/// Как heavy_run_threshold детектора тик-спайков: прогон подсистемы на столько % тика держит ответы на пинг.
+#define PING_DIAG_SERVER_LOAD_RUN 40
 /// Меньше этой доли замеров с известной общей задержкой - подсказку в чат не шлём.
 #define PING_DIAG_SHARED_KNOWN_MIN 0.5
 #define PING_DIAG_MIN_SAMPLES 20
@@ -71,7 +73,6 @@
 #define PING_VERDICT_LOSS "loss"
 #define PING_VERDICT_JITTER "jitter"
 #define PING_VERDICT_FAR "far"
-#define PING_VERDICT_OLD_BUILD "old_build"
 
 #define PING_EVENT_SERVER_STALL "server"
 #define PING_EVENT_SERVER_LOAD "server_load"
@@ -82,5 +83,5 @@
 /// Радиус "людей рядом" в тайлах: примерно экран.
 #define PING_DIAG_NEAR_RANGE 10
 
-#define PING_DIAG_CSV_HEADER "time,world_time,ckey,build,mob_kind,view,z_clients,near_clients,samples,base,rtt_median,rtt_p95,personal_median,spikes_per_min,loss_per_min,period_s,freezes,stall_mean,shared_mean,personal_mean,loop_lag,fps,browser_rtt,chat_rate,chat_messages,verdict"
+#define PING_DIAG_CSV_HEADER "time,world_time,ckey,build,mob_kind,view,z_clients,near_clients,samples,base,rtt_median,rtt_p95,personal_median,spikes_per_min,loss_per_min,period_s,freezes,stall_mean,shared_mean,personal_mean,loop_lag,fps,browser_rtt,chat_rate,chat_messages,verdict,old_build"
 #define PING_DIAG_HOST_CSV_HEADER "time,world_time,clients,tx_kbps,rx_kbps,retrans_per_min,retrans_pct,shared_events,ours_fraction"

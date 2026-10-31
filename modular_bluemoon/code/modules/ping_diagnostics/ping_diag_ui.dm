@@ -84,6 +84,7 @@
 		data["self"] = target == viewer
 		data["verdicts"] = diag.verdicts
 		data["stats"] = diag.summary
+		data["old_build"] = ping_diag_old_build(diag.summary)
 		data["percentile"] = SSping_diag.rtt_percentile_of(diag.summary["rtt_median"] || 0)
 		data["graph"] = diag.graph_points(now)
 		data["byond"] = "[target.byond_version].[target.byond_build]"

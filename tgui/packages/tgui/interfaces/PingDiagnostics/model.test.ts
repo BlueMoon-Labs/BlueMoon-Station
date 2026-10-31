@@ -1,4 +1,4 @@
-import { breakdown, buildReport, gameWindowText, graphGeometry, VERDICTS, whyText } from './model';
+import { breakdown, buildReport, gameWindowText, graphGeometry, OLD_BUILD, VERDICTS, whyText } from './model';
 
 describe('PingDiagnostics model', () => {
   it('у каждого вердикта есть заголовок и сторона', () => {
@@ -100,6 +100,12 @@ describe('PingDiagnostics model', () => {
     expect(VERDICTS.flood.advice.join(' ')).toContain('«Вся речь в режиме призрака»');
     expect(VERDICTS.flood.advice[0]).toContain('откройте «Настройки», вкладку «Чат»');
     expect('chat' in VERDICTS).toBe(false);
+  });
+
+  it('старая сборка - совет в отчёте, не вердикт', () => {
+    expect('old_build' in VERDICTS).toBe(false);
+    expect(buildReport({ verdicts: ['ok'], old_build: 1 })).toContain(`Совет: ${OLD_BUILD.title}. ${OLD_BUILD.why}`);
+    expect(buildReport({ verdicts: ['ok'] })).not.toContain('Совет:');
   });
 
   it('отчёт - строка про поток чата', () => {

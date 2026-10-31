@@ -66,11 +66,14 @@
 		return 0
 	return ping_diag_median(excesses)
 
-/// Чей общий всплеск: простой сервера, нагрузка внутри тика (cpu или рассылка карты) или канал хоста.
-/proc/ping_diag_classify_event(stall_ms, cpu, map_cpu = 0)
+/**
+ * Чей общий всплеск: простой сервера, нагрузка внутри тика или канал хоста.
+ * Нагрузка - cpu, рассылка карты или самый тяжёлый прогон подсистемы в окне пачки (heavy_run, % тика).
+ */
+/proc/ping_diag_classify_event(stall_ms, cpu, map_cpu = 0, heavy_run = 0)
 	if(stall_ms >= PING_DIAG_SHARED_EVENT_MS / 2)
 		return PING_EVENT_SERVER_STALL
-	if(cpu >= PING_DIAG_SERVER_LOAD_CPU || map_cpu >= PING_DIAG_SERVER_LOAD_MAP_CPU)
+	if(cpu >= PING_DIAG_SERVER_LOAD_CPU || map_cpu >= PING_DIAG_SERVER_LOAD_MAP_CPU || heavy_run >= PING_DIAG_SERVER_LOAD_RUN)
 		return PING_EVENT_SERVER_LOAD
 	return PING_EVENT_HOST_NETWORK
 
@@ -103,10 +106,12 @@
 	var/server_base = stats["server_base"]
 	if(base > PING_DIAG_FAR_BASE_MS || (server_base && base > PING_DIAG_FAR_MIN_MS && base > server_base * 2))
 		. += PING_VERDICT_FAR
-	if(stats["warn_build"] && stats["build"] && stats["build"] < stats["warn_build"])
-		. += PING_VERDICT_OLD_BUILD
 	if(!length(.))
 		. += PING_VERDICT_OK
+
+/// Сборка клиента старше рекомендуемой в конфиге: совет обновиться, на пинг не влияет и в вердикт не идёт.
+/proc/ping_diag_old_build(list/summary)
+	return !!(summary["warn_build"] && summary["build"] && summary["build"] < summary["warn_build"])
 
 /proc/ping_diag_is_yours(verdict)
 	var/static/list/yours = list(PING_VERDICT_FLOOD, PING_VERDICT_FREEZE, PING_VERDICT_PC, PING_VERDICT_PERIODIC, PING_VERDICT_LOSS, PING_VERDICT_JITTER, PING_VERDICT_FAR)
@@ -158,6 +163,7 @@
 		isnull(summary["chat_rate"]) ? "" : round(summary["chat_rate"], 0.1),
 		isnull(summary["chat_messages"]) ? "" : summary["chat_messages"],
 		verdict,
+		ping_diag_old_build(summary) ? 1 : 0,
 	)
 	return cells.Join(",")
 
@@ -230,4 +236,5 @@
 		"chat_rate" = isnull(summary["chat_rate"]) ? null : round(summary["chat_rate"], 0.1),
 		"ours_fraction" = summary["extra_mean"] >= PING_DIAG_NOTICEABLE_EXTRA_MS ? round(summary["ours_fraction"] || 0, 0.01) : null,
 		"verdict" = verdict,
+		"old_build" = ping_diag_old_build(summary),
 	)

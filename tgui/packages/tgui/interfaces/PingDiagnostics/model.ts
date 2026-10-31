@@ -1,6 +1,6 @@
 import { plural } from 'common/ru/plural';
 
-export type VerdictCode = 'collecting' | 'ok' | 'server' | 'flood' | 'freeze' | 'pc' | 'periodic' | 'loss' | 'jitter' | 'far' | 'old_build';
+export type VerdictCode = 'collecting' | 'ok' | 'server' | 'flood' | 'freeze' | 'pc' | 'periodic' | 'loss' | 'jitter' | 'far';
 
 export type Stats = Partial<Record<
   | 'samples' | 'rtt_now' | 'rtt_median' | 'rtt_min' | 'rtt_p95' | 'base' | 'stall_mean' | 'shared_mean'
@@ -15,6 +15,7 @@ export type GraphPoint = { t: number; rtt: number; stall: number; shared: number
 export type ClientRow = {
   ckey: string; base: number; rtt_median: number; rtt_p95: number; personal_median: number;
   spikes_per_min: number; freezes: number; chat_rate?: number | null; ours_fraction: number | null; verdict: VerdictCode;
+  old_build?: number | boolean;
 };
 
 export type PingEvent = {
@@ -28,7 +29,7 @@ export type PingDiagnosticsData = {
   staff: number; tab: 'self' | 'server'; hint_enabled: number;
   server_rtt_median: number; server_base_median: number; server_clients?: number;
   target?: string; self?: number; verdicts?: VerdictCode[]; stats?: Stats;
-  percentile?: number; graph?: GraphPoint[]; byond?: string;
+  percentile?: number; graph?: GraphPoint[]; byond?: string; old_build?: number | boolean;
   clients?: ClientRow[]; events?: PingEvent[]; round?: RoundSummary;
 };
 
@@ -83,12 +84,13 @@ export const VERDICTS: Record<VerdictCode, { title: string; color: string; side:
     side: 'yours',
     advice: ['Если включён VPN или прокси - попробуйте без него.', 'Иногда провайдер ведёт трафик кружным путём, тут поможет только другой провайдер или VPN с точкой поближе к серверу.'],
   },
-  old_build: {
-    title: 'Старая версия BYOND',
-    color: 'average',
-    side: 'yours',
-    advice: ['Обновите BYOND с byond.com - в новых сборках исправлены сетевые ошибки.'],
-  },
+};
+
+// Старая сборка - совет, а не вердикт: на пинг она не влияет.
+export const OLD_BUILD = {
+  title: 'Обновите BYOND',
+  why: 'Ваша сборка BYOND старше рекомендуемой. На пинг это не влияет - старые сборки держат связь не хуже новых.',
+  advice: 'Свежая версия есть на byond.com, в ней исправлены ошибки клиента.',
 };
 
 export const ms = (value?: number | null) => `${Math.round(value ?? 0)} мс`;
@@ -146,8 +148,6 @@ export const whyText = (verdict: VerdictCode, stats: Stats): string => {
       return `Пинг гуляет в среднем на ${ms(stats.personal_median)} от вашего минимума.`;
     case 'far':
       return `Даже в лучший момент пинг ${ms(stats.base)}${stats.server_base ? `, у большинства игроков ${ms(stats.server_base)}` : ''}.`;
-    case 'old_build':
-      return 'Ваша сборка BYOND старше рекомендуемой.';
     default:
       return '';
   }
@@ -195,6 +195,7 @@ export const buildReport = (data: Partial<PingDiagnosticsData>) => {
     `Окно игры: ${gameWindowText(stats)}`,
     `Поток чата: ${chatRateText(stats.chat_rate)}`,
     ...verdicts.map((code) => `- ${VERDICTS[code]?.title ?? code}. ${whyText(code, stats)}`),
+    ...(data.old_build ? [`Совет: ${OLD_BUILD.title}. ${OLD_BUILD.why}`] : []),
   ];
   return lines.join('\n');
 };
