@@ -560,7 +560,8 @@
 			T.excited_group.garbage_collect()
 
 /datum/controller/subsystem/air/proc/add_to_active(turf/open/T, blockchanges = TRUE, wake_machines = TRUE, reset_stall = TRUE)
-	if(!istype(T) || T.blocks_air || !T.air)
+	// Космос не симулируется: его process_cell только снимает его с очереди, а затравкой обхода зоны он гонял пустой обход.
+	if(!istype(T) || T.blocks_air || !T.air || isspaceturf(T))
 		return
 	// `excited` doubles as the membership flag of active_turfs: every path that
 	// drops a turf out of the list clears it, and nothing marks a turf excited
@@ -782,8 +783,7 @@
 	// A recalculation moves no gas: give the turf its cycle to re-compare, not a
 	// fresh stall budget. A door cycling next to a settled room used to hand its
 	// whole neighborhood a new rest window every time it opened.
-	ATMOS_BENCH_WAKE(open_turf, "adjacency")
-	SSair.add_to_active(open_turf, FALSE, reset_stall = FALSE)
+	SSair.wake_if_gradient(open_turf, "adjacency")
 
 /turf/proc/update_air_ref(flag)
 	if(!SSair)

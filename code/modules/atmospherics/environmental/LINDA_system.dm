@@ -184,8 +184,12 @@
 		var/turf/open/open_self = src
 		if(istype(open_self) && open_self.excited_group)
 			open_self.excited_group.garbage_collect()
+	var/turf/open/open_turf = src
 	if(remove)
 		SSair.remove_from_active(src)
+	else if(update && istype(open_turf) && !open_turf.excited)
+		// Смена геометрии газ не двигает: будит только перепад с новыми соседями.
+		SSair.wake_if_gradient(open_turf, "air_update_turf")
 	else
 		ATMOS_BENCH_WAKE(src, "air_update_turf")
 		SSair.add_to_active(src)

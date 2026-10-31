@@ -151,6 +151,7 @@
 #include "atmos_frozen_vapor_pin.dm"
 #include "atmos_gas_propagation.dm"
 #include "atmos_high_pressure_pile.dm"
+#include "atmos_load_wakes.dm"
 #include "atmos_lobby_settling.dm"
 #include "atmos_native.dm"
 #include "atmos_performance.dm"

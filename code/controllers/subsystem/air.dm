@@ -153,6 +153,12 @@ SUBSYSTEM_DEF(air)
 	var/currentpart = SSAIR_REBUILD_PIPENETS
 
 	var/map_loading = TRUE
+	/// Вложенность StartLoadingMap(): загрузку карты и инициализацию атомов шаблона обрамляют независимо.
+	var/map_loading_depth = 0
+	/// world.time внешнего StartLoadingMap(), по нему release_stuck_map_loading() узнаёт загрузку, оборванную рантаймом.
+	var/map_loading_started = 0
+	/// Турфы, чью смежность пересчитала загрузка шаблона: будить их или нет, решает последний StopLoadingMap(), когда геометрия готова.
+	var/list/turf/open/queued_for_activation = list()
 
 	var/log_explosive_decompression = TRUE // If things get spammy, admemes can turn this off.
 
@@ -555,6 +561,7 @@ SUBSYSTEM_DEF(air)
 		// resumes on the next tick forever. The wall clock is not.
 		apply_saturation_valve(pass_wall_ds, cost_full.last_complete_ms)
 		pass_started_at = world.time
+		release_stuck_map_loading()
 
 	thread_wait_ticks = MC_AVERAGE(thread_wait_ticks, cur_thread_wait_ticks)
 	cur_thread_wait_ticks = 0
@@ -1576,10 +1583,47 @@ SUBSYSTEM_DEF(air)
 #endif
 
 /datum/controller/subsystem/air/StartLoadingMap()
+	if(!map_loading_depth)
+		map_loading_started = world.time
+	map_loading_depth++
 	map_loading = TRUE
 
 /datum/controller/subsystem/air/StopLoadingMap()
+	map_loading_depth = max(map_loading_depth - 1, 0)
+	if(map_loading_depth)
+		return
 	map_loading = FALSE
+	var/list/queued = queued_for_activation
+	queued_for_activation = list()
+	for(var/turf/open/queued_turf as anything in queued)
+		if(!istype(queued_turf))
+			continue
+		// Загрузчик откладывает пересчёт смежности в SSadjacent_air: перепад к соседу, которого уже закрыло окно, проверяем по свежей.
+		if(!queued_turf.excited && SSadjacent_air.queue[queued_turf] && queued_turf.has_atmos_gradient())
+			queued_turf.ImmediateCalculateAdjacentTurfs()
+		else
+			wake_if_gradient(queued_turf, "template_load")
+		CHECK_TICK
+
+/// Рантайм посреди загрузки шаблона оставил бы очередь пробуждений копиться до конца раунда.
+/datum/controller/subsystem/air/proc/release_stuck_map_loading()
+	if(!map_loading_depth || Master.map_loading || world.time < map_loading_started + MAP_LOADING_STUCK_TIMEOUT)
+		return
+	stack_trace("SSair: загрузка шаблона не закрыла StartLoadingMap() за [DisplayTimeText(MAP_LOADING_STUCK_TIMEOUT)], очередь пробуждений ([length(queued_for_activation)]) разобрана принудительно")
+	map_loading_depth = 1
+	StopLoadingMap()
+
+/// Пробуждение, газ не двигавшее (пересчёт смежности, снос соседа): турфу без перепада process_cell ничего не сделал бы, а пока грузится шаблон, перепад судить рано.
+/datum/controller/subsystem/air/proc/wake_if_gradient(turf/open/T, reason)
+	if(initialized && map_loading)
+		queued_for_activation[T] = TRUE
+		return
+	if(!T.excited && !T.has_atmos_gradient())
+		// Оверлей газа загруженного шаблона рисовал только этот цикл.
+		T.update_visuals()
+		return
+	ATMOS_BENCH_WAKE(T, reason)
+	add_to_active(T, FALSE, reset_stall = FALSE)
 
 /datum/controller/subsystem/air/proc/setup_allturfs()
 	var/list/turfs_to_init = block(locate(1, 1, 1), locate(world.maxx, world.maxy, world.maxz))

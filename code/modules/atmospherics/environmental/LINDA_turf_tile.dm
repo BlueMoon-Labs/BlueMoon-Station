@@ -62,13 +62,41 @@
 	if(active_hotspot)
 		QDEL_NULL(active_hotspot)
 	for(var/turf/open/T as anything in atmos_adjacent_turfs)
-		if(SSair)
-			// Газ соседа не менялся: один цикл на пересравнение, без свежего бюджета простоя.
-			ATMOS_BENCH_WAKE(T, "turf_destroy")
-			SSair.add_to_active(T, FALSE, reset_stall = FALSE)
+		// Газ соседа не менялся, с новым турфом его сведёт пересчёт смежности замены.
+		if(SSair && istype(T))
+			SSair.wake_if_gradient(T, "turf_destroy")
 	update_air_ref(-1)
 	air = null
 	return ..()
+
+/// Есть ли турфу работа в process_cell: перепад с соседом, сток в космос, дрейф неба от шаблона, огонь или жар для теплопроводности.
+/turf/open/proc/has_atmos_gradient()
+	var/datum/gas_mixture/our_air = air
+	if(blocks_air || !our_air || isspaceturf(src))
+		return FALSE
+	if(active_hotspot)
+		return TRUE
+	if(SSair?.heat_enabled && our_air.temperature > MINIMUM_TEMPERATURE_START_SUPERCONDUCTION)
+		return TRUE
+	for(var/turf/open/neighbor as anything in atmos_adjacent_turfs)
+		if(!istype(neighbor) || neighbor.blocks_air)
+			continue
+		var/datum/gas_mixture/neighbor_air = neighbor.air
+		if(!neighbor_air)
+			continue
+		if(neighbor_air.gc_share)
+			if(!planetary_atmos && (our_air.total_moles() > MINIMUM_MOLES_DELTA_TO_MOVE || abs(our_air.temperature - TCMB) > MINIMUM_TEMPERATURE_DELTA_TO_CONSIDER))
+				return TRUE
+			continue
+		if(planetary_atmos && neighbor.planetary_atmos && neighbor.initial_gas_mix != initial_gas_mix)
+			continue
+		if(our_air.compare(neighbor_air))
+			return TRUE
+	if(planetary_atmos && SSair)
+		var/datum/gas_mixture/template = SSair.get_planetary_template(src)
+		if(template && our_air.compare(template))
+			return TRUE
+	return FALSE
 
 /////////////////GAS MIXTURE PROCS///////////////////
 
