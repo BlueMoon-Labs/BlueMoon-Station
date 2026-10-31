@@ -203,16 +203,16 @@
 	var/datum/callback/callback
 
 /datum/tgui_list_input/async/New(mob/user, message, title, list/items, default, callback, timeout)
-	..(user, title, message, items, default, timeout)
+	..(user, message, title, items, default, timeout)
 	src.callback = callback
 
 /datum/tgui_list_input/async/Destroy(force, ...)
 	QDEL_NULL(callback)
 	. = ..()
 
-///datum/tgui_list_input/async/tgui_close(mob/user)
-//	. = ..()
-//	qdel(src)
+/datum/tgui_list_input/async/ui_close(mob/user)
+	. = ..()
+	qdel(src)
 
 /datum/tgui_list_input/async/set_choice(choice)
 	. = ..()

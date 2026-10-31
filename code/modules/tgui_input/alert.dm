@@ -193,6 +193,10 @@
 	QDEL_NULL(callback)
 	. = ..()
 
+/datum/tgui_alert/async/ui_close(mob/user)
+	. = ..()
+	qdel(src)
+
 /datum/tgui_alert/async/set_choice(choice)
 	. = ..()
 	if(!isnull(src.choice))
