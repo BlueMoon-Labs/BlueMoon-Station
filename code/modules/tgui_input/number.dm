@@ -108,7 +108,9 @@
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
 		ui = new(user, src, "NumberInputModal")
-		ui.open()
+		if(!ui.open())
+			qdel(ui)
+			ui_close(user)
 
 /datum/tgui_input_number/ui_close(mob/user)
 	. = ..()
