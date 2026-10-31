@@ -1603,7 +1603,6 @@ SUBSYSTEM_DEF(air)
 			queued_turf.ImmediateCalculateAdjacentTurfs()
 		else
 			wake_if_gradient(queued_turf, "template_load")
-		CHECK_TICK
 
 /// Рантайм посреди загрузки шаблона оставил бы очередь пробуждений копиться до конца раунда.
 /datum/controller/subsystem/air/proc/release_stuck_map_loading()

@@ -74,27 +74,44 @@
 	return data
 
 /// Датумы в списке пина (и во вложенных списках) хранятся слабыми ссылками. Меняет переданный список, вложенные копирует.
+/// У ассоциативных записей обрабатывается значение, ключ остаётся: замена ключа сбросила бы ассоциацию.
 /proc/ic_weakref_list_entries(list/target, depth = 0)
 	for(var/i in 1 to length(target))
 		var/entry = target[i]
-		if(isdatum(entry) && !isweakref(entry))
-			target[i] = WEAKREF(entry)
-		else if(islist(entry) && depth < IC_MAX_LIST_NESTING)
-			var/list/nested = entry
-			target[i] = ic_weakref_list_entries(nested.Copy(), depth + 1)
+		var/value = (istext(entry) || isdatum(entry)) ? target[entry] : null
+		if(!isnull(value))
+			target[entry] = ic_weakref_list_value(value, depth)
+		else
+			target[i] = ic_weakref_list_value(entry, depth)
 	return target
+
+/proc/ic_weakref_list_value(value, depth)
+	if(isdatum(value) && !isweakref(value))
+		return WEAKREF(value)
+	if(islist(value) && depth < IC_MAX_LIST_NESTING)
+		var/list/nested = value
+		return ic_weakref_list_entries(nested.Copy(), depth + 1)
+	return value
 
 /// Обратное к ic_weakref_list_entries(): слабые ссылки разрешены, удалённые цели становятся null.
 /proc/ic_resolve_list_refs(list/target, depth = 0)
 	for(var/i in 1 to length(target))
 		var/entry = target[i]
-		if(isweakref(entry))
-			var/datum/weakref/entry_ref = entry
-			target[i] = entry_ref.resolve()
-		else if(islist(entry) && depth < IC_MAX_LIST_NESTING)
-			var/list/nested = entry
-			target[i] = ic_resolve_list_refs(nested.Copy(), depth + 1)
+		var/value = (istext(entry) || isdatum(entry)) ? target[entry] : null
+		if(!isnull(value))
+			target[entry] = ic_resolve_list_value(value, depth)
+		else
+			target[i] = ic_resolve_list_value(entry, depth)
 	return target
+
+/proc/ic_resolve_list_value(value, depth)
+	if(isweakref(value))
+		var/datum/weakref/value_ref = value
+		return value_ref.resolve()
+	if(islist(value) && depth < IC_MAX_LIST_NESTING)
+		var/list/nested = value
+		return ic_resolve_list_refs(nested.Copy(), depth + 1)
+	return value
 
 
 // Returns a list of parameters necessary to locate a pin in the assembly: component number, pin type and pin number

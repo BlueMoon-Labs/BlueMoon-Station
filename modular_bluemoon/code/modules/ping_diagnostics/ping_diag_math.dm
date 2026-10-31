@@ -22,39 +22,39 @@
 			. += 0
 			continue
 		var/rank = clamp(CEILING(count * percent / 100, 1), 1, count)
-		var/lo = low
-		var/hi = count
-		while(hi - lo > 12)
-			var/a = values[lo]
-			var/b = values[(lo + hi) >> 1]
-			var/c = values[hi]
-			var/pivot = a < b ? (b < c ? b : (a < c ? c : a)) : (a < c ? a : (b < c ? c : b))
-			var/i = lo
-			var/j = hi
-			while(i <= j)
-				while(values[i] < pivot)
-					i++
-				while(values[j] > pivot)
-					j--
-				if(i <= j)
-					values.Swap(i, j)
-					i++
-					j--
-			if(rank <= j)
-				hi = j
-			else if(rank >= i)
-				lo = i
+		var/left = low
+		var/right = count
+		while(right - left > PING_DIAG_SELECT_INSERTION_MAX)
+			var/first = values[left]
+			var/middle = values[(left + right) >> 1]
+			var/last = values[right]
+			var/pivot = first < middle ? (middle < last ? middle : (first < last ? last : first)) : (first < last ? first : (middle < last ? last : middle))
+			var/scan_up = left
+			var/scan_down = right
+			while(scan_up <= scan_down)
+				while(values[scan_up] < pivot)
+					scan_up++
+				while(values[scan_down] > pivot)
+					scan_down--
+				if(scan_up <= scan_down)
+					values.Swap(scan_up, scan_down)
+					scan_up++
+					scan_down--
+			if(rank <= scan_down)
+				right = scan_down
+			else if(rank >= scan_up)
+				left = scan_up
 			else
-				// Между j и i только равные опорному: ранг уже на месте.
-				lo = rank
-				hi = rank
-		for(var/k in lo + 1 to hi)
-			var/value = values[k]
-			var/m = k - 1
-			while(m >= lo && values[m] > value)
-				values[m + 1] = values[m]
-				m--
-			values[m + 1] = value
+				// Между scan_down и scan_up только равные опорному: ранг уже на месте.
+				left = rank
+				right = rank
+		for(var/index in left + 1 to right)
+			var/value = values[index]
+			var/slot = index - 1
+			while(slot >= left && values[slot] > value)
+				values[slot + 1] = values[slot]
+				slot--
+			values[slot + 1] = value
 		. += values[rank]
 		// Правее ранга только не меньшие: следующий ранг ищется там же.
 		low = rank

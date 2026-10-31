@@ -68,3 +68,24 @@
 	locator.check_then_do_work(1, ignore_power = TRUE)
 	var/list/found = locator.get_pin_data(IC_OUTPUT, 1)
 	TEST_ASSERT(target in found, "Локатор не нашёл предмет того же типа, что образец из списка")
+
+/// Ассоциативный список в пине: ключи остаются, значения хранятся слабыми ссылками.
+/datum/unit_test/integrated_circuit_assoc_list_refs
+
+/datum/unit_test/integrated_circuit_assoc_list_refs/Run()
+	var/obj/item/integrated_circuit/lists/append/append = allocate(/obj/item/integrated_circuit/lists/append)
+	var/obj/item/pen/item = new(run_loc_floor_bottom_left)
+	append.set_pin_data(IC_INPUT, 1, list("tool" = item, "nested" = list("deep" = item)))
+	var/datum/integrated_io/pin = append.get_pin_ref(IC_INPUT, 1)
+	var/list/stored = pin.data
+	TEST_ASSERT(isweakref(stored["tool"]), "Значение ассоциативного списка хранится жёсткой ссылкой")
+	var/list/stored_nested = stored["nested"]
+	TEST_ASSERT(isweakref(stored_nested["deep"]), "Значение вложенного ассоциативного списка хранится жёсткой ссылкой")
+	var/list/read = append.get_pin_data(IC_INPUT, 1)
+	TEST_ASSERT(read["tool"] == item, "Чтение потеряло ассоциацию ключа")
+	var/list/read_nested = read["nested"]
+	TEST_ASSERT(read_nested["deep"] == item, "Чтение потеряло ассоциацию во вложенном списке")
+	TEST_ASSERT(isweakref(stored["tool"]), "Чтение подменило слабую ссылку в пине на атом")
+	qdel(item)
+	read = append.get_pin_data(IC_INPUT, 1)
+	TEST_ASSERT(("tool" in read) && isnull(read["tool"]), "Ключ удалённого объекта пропал или держит его")

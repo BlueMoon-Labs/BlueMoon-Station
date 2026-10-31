@@ -61,6 +61,8 @@
 #define PING_DIAG_HINT_HOLD_DS (3 MINUTES)
 #define PING_DIAG_MAX_EVENTS 100
 #define PING_DIAG_GRAPH_POINTS 300
+/// Кусок выбора перцентиля не длиннее этого добирается вставками.
+#define PING_DIAG_SELECT_INSERTION_MAX 12
 #define PING_DIAG_REPORT_MAX_LEN 3000
 
 #define PING_VERDICT_COLLECTING "collecting"
