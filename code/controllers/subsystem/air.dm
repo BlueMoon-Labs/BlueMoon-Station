@@ -26,7 +26,8 @@ SUBSYSTEM_DEF(air)
 	priority = FIRE_PRIORITY_AIR
 	wait = 5
 	flags = SS_BACKGROUND
-	runlevels = RUNLEVEL_GAME | RUNLEVEL_POSTGAME
+	// Карта и шаттлы оставляют к лобби тысячи активных турфов: пусть оседают до спавна экипажа, а не на нём.
+	runlevels = RUNLEVEL_LOBBY | RUNLEVEL_GAME | RUNLEVEL_POSTGAME
 
 	var/cached_cost = 0
 
