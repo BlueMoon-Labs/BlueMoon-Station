@@ -9,4 +9,6 @@
 	var/test_path = path
 	. = ..()
 	if(test_path)
-		fdel(test_path)
+		for(var/suffix in list("", ".json", ".json.recovery"))
+			fdel("[test_path][suffix]")
+		fdel("[test_path].json.d/")

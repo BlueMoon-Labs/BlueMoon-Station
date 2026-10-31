@@ -17,17 +17,19 @@ GLOBAL_LIST_INIT(antag_objective_style_descriptions, list(
 	/// Какие задания игрок предпочитает получать, когда становится антагонистом.
 	var/antag_objective_style = ANTAG_OBJECTIVE_STYLE_NORMAL
 
-/datum/preferences/save_preferences(bypass_cooldown = FALSE, silent = FALSE)
+/datum/preferences/write_preferences(bypass_cooldown = FALSE, silent = FALSE, list/patch_context)
 	. = ..()
 	if(!istype(., /savefile))
-		return
+		return FALSE
 	WRITE_FILE(.["antag_objective_style"], antag_objective_style)
 
-/datum/preferences/load_preferences(bypass_cooldown = FALSE)
+/datum/preferences/read_preferences(bypass_cooldown = FALSE)
 	. = ..()
-	if(!istype(., /savefile))
-		return
-	.["antag_objective_style"] >> antag_objective_style
+	if(!istype(., /savefile) && !istype(., /datum/player_save_document))
+		return FALSE
+	var/datum/player_save_document/document = istype(., /datum/player_save_document) ? . : null
+	var/savefile/S = document ? null : .
+	READ_PLAYER_SAVE(S, document, "antag_objective_style", antag_objective_style)
 	antag_objective_style = sanitize_antag_objective_style(antag_objective_style)
 
 /proc/antag_objective_style_options()

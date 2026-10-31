@@ -2957,7 +2957,6 @@
 	data["saveNotice"] = save_notice
 	data["playingSoundPreview"] = world.time < sound_preview_until ? sound_preview_kind : null
 
-	data["localStorageName"] = prefs.get_local_storage_name(user.client)
 	data["offerActive"] = !!prefs.offer
 	if(prefs.offer)
 		data["redemptionCode"] = prefs.offer.redemption_code
@@ -3342,29 +3341,21 @@
 	var/mob/user = prefs.parent?.mob
 	if(!user?.client)
 		return
-	var/savefile/S = prefs.save_character(export = TRUE)
-	if(!istype(S, /savefile))
-		to_chat(user, span_warning("Не удалось экспортировать персонажа."))
+	if(world.time < prefs.player_transfer_cooldown)
+		to_chat(user, span_warning("Подождите перед повторным экспортом персонажа."))
 		return
-	user.client.local_storage_name_read = FALSE
-	user.client.Export(S)
-	to_chat(user, span_notice("Персонаж экспортирован в локальную копию."))
+	prefs.player_transfer_cooldown = world.time + 10 SECONDS
+	prefs.download_character_json(user)
 
 /datum/character_setup/proc/slot_import()
 	var/mob/user = prefs.parent?.mob
 	if(!user?.client)
 		return
-	var/savefile/S = new(user.client.Import())
-	if(!istype(S, /savefile))
-		to_chat(user, span_warning("Не удалось импортировать персонажа из локальной копии."))
-		return
-	if(!prefs.load_character(provided = S))
-		to_chat(user, span_warning("Не удалось импортировать персонажа из локальной копии."))
+	if(!prefs.upload_character_json(user))
 		return
 	character_revision++
 	preview_dirty = TRUE
-	to_chat(user, span_notice("Персонаж импортирован из локальной копии."))
-	prefs.save_character(TRUE)
+	SStgui.update_uis(src)
 
 /datum/character_setup/proc/slot_give()
 	var/mob/user = prefs.parent?.mob
@@ -3373,68 +3364,57 @@
 	if(prefs.offer)
 		qdel(prefs.offer)
 		return
-	var/savefile/S = prefs.save_character(export = TRUE)
-	if(!istype(S, /savefile))
+	var/character_json = prefs.export_character_json()
+	if(!character_json)
 		tgui_alert_async(user, "Не удалось подготовить передачу, попробуйте позже.")
 		return
-	var/datum/character_offer_instance/offer_datum = new(user.ckey, S)
+	var/datum/character_offer_instance/offer_datum = new(user.ckey, character_json)
 	if(QDELETED(offer_datum))
 		tgui_alert_async(user, "Не удалось подготовить передачу, попробуйте позже.")
 		return
 	offer_datum.RegisterSignal(user, COMSIG_MOB_CLIENT_LOGOUT, TYPE_PROC_REF(/datum/character_offer_instance, on_quit))
 	prefs.offer = offer_datum
-	tgui_alert_async(user, "Код передачи: [offer_datum.redemption_code] - отправьте его получателю.")
+	tgui_alert_async(user, "Код передачи: [offer_datum.redemption_code]. Сообщите его игроку, которому хотите передать персонажа.")
 
 /datum/character_setup/proc/slot_retrieve()
 	var/mob/user = prefs.parent?.mob
 	if(!user)
 		return
 	if(!length(GLOB.character_offers))
-		tgui_alert_async(user, "Активных предложений нет.")
+		tgui_alert_async(user, "Сейчас нет персонажей, предложенных для передачи.")
 		return
-	var/retrieve_code = tgui_input_text(user, "Введите 5-значный код передачи.", "Получение персонажа", null, 5)
+	var/retrieve_code = tgui_input_text(user, "Введите код передачи из пяти цифр.", "Получение персонажа", null, 5)
 	if(!retrieve_code)
 		return
 	if(!text2num(retrieve_code))
-		tgui_alert_async(user, "Подходят только цифры.")
+		tgui_alert_async(user, "Код должен состоять только из цифр.")
 		return
 	if(length(retrieve_code) != 5)
-		tgui_alert_async(user, "Ровно 5 цифр, не больше и не меньше.")
+		tgui_alert_async(user, "В коде должно быть ровно пять цифр. Проверьте его и попробуйте снова.")
 		return
 	var/datum/character_offer_instance/offer_datum = LAZYACCESS(GLOB.character_offers, retrieve_code)
 	if(!offer_datum)
-		tgui_alert_async(user, "Такого кода нет.")
+		tgui_alert_async(user, "Предложение с таким кодом не найдено. Проверьте код: возможно, персонажа уже забрали.")
 		return
 	if(prefs.offer == offer_datum)
-		tgui_alert_async(user, "Нельзя принять собственное предложение.")
+		tgui_alert_async(user, "Нельзя получить собственное предложение.")
 		return
 
-	var/savefile/offered_file = offer_datum.character_savefile
 	var/mob/living/the_owner = get_mob_by_ckey(offer_datum.owner_ckey)
-	if(prefs.savefile_needs_update(offered_file) == -2)
-		tgui_alert_async(user, "Этот сейвфайл повреждён.")
-		to_chat(the_owner, span_boldwarning("Что-то пошло не так при передаче, она отменена."))
-		qdel(offer_datum)
+	var/receiving_slot = prefs.default_slot
+	if(tgui_alert(user, "Импортировать переданного персонажа в слот [receiving_slot]? Закрытые данные и коллекции останутся прежними.", "Получение персонажа", list("Импортировать", "Отмена")) != "Импортировать")
 		return
-
-	var/character_name
-	offered_file["real_name"] >> character_name
-	var/confirm = tgui_alert(user, "Вы перезапишете текущий слот персонажем [character_name]. Продолжить?", "Подтверждение", list("Да", "Нет"))
-	if(confirm != "Да")
+	if(QDELETED(offer_datum) || user.client?.prefs != prefs || prefs.default_slot != receiving_slot)
+		tgui_alert_async(user, "Предложение больше недоступно или выбранный слот изменился. Начните получение заново.")
 		return
-	if(QDELETED(offer_datum))
-		tgui_alert_async(user, "Этот персонаж уже недоступен.")
+	if(!prefs.import_character_json(offer_datum.character_json))
+		tgui_alert_async(user, "Не удалось импортировать персонажа. Сообщите об ошибке разработчикам.")
+		to_chat(the_owner, span_boldwarning("Передача персонажа не завершилась из-за ошибки импорта. Сообщите об этом разработчикам."))
 		return
-	to_chat(the_owner, span_boldwarning("[user.key] забрал вашего персонажа, [character_name]!"))
-	if(!prefs.load_character(provided = offered_file))
-		tgui_alert_async(user, "Что-то пошло не так при загрузке сейвфайла, сообщите об этом администрации.")
-		to_chat(the_owner, span_boldwarning("Что-то пошло не так на последнем шаге передачи, сообщите об этом."))
-		qdel(offer_datum)
-		return
+	to_chat(the_owner, span_notice("[user.key] получил переданного персонажа."))
 	character_revision++
 	preview_dirty = TRUE
-	tgui_alert_async(user, "Персонаж [character_name] получен!")
-	prefs.save_character(TRUE)
+	tgui_alert_async(user, "Персонаж получен и сохранён в слот [receiving_slot].")
 	qdel(offer_datum)
 
 /datum/character_setup/proc/format_help_text()
