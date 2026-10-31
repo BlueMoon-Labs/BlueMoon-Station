@@ -71,8 +71,8 @@
 	TEST_ASSERT(!user.netrun_view_capable(), "Removing cybernetic eyes left a stale optical capability")
 	TEST_ASSERT_NULL(user.netrun_view_target(), "Removed cybernetic eyes still published their former owner")
 
-/// Hacked HUD lenses must be worn: possession and ROOT access alone never create an image.
-/datum/unit_test/netrun_vision_hud_firmware_and_wearer/Run()
+/// HUD lenses must be worn; access is enforced by the optical session, not an emag gate.
+/datum/unit_test/netrun_vision_hud_wearer/Run()
 	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human)
 	var/obj/item/clothing/glasses/hud/health/night/glasses = allocate(/obj/item/clothing/glasses/hud/health/night)
 	var/datum/netrun_console/console = allocate(/datum/netrun_console, user)
@@ -86,7 +86,7 @@
 	TEST_ASSERT_NULL(glasses.netrun_view_target(), "Unhacked glasses published a floor viewpoint")
 	TEST_ASSERT(user.equip_to_slot_if_possible(glasses, ITEM_SLOT_EYES, disable_warning = TRUE), "The actual HUD equip operation failed")
 	TEST_ASSERT_EQUAL(glasses.netrun_owner_access(console), NETRUN_ACCESS_ROOT, "The wearer did not own their glasses")
-	TEST_ASSERT_NULL(glasses.netrun_view_target(), "Wearing secure HUD glasses skipped the firmware requirement")
+	TEST_ASSERT_EQUAL(glasses.netrun_view_target(), user, "A worn HUD requires no destructive firmware bypass to supply its lens")
 	world.PushUsr(user, CALLBACK(glasses, TYPE_PROC_REF(/atom, emag_act), user))
 	TEST_ASSERT(glasses.obj_flags & EMAGGED, "The native emag operation did not bypass the HUD firmware")
 	TEST_ASSERT_EQUAL(glasses.netrun_view_target(), user, "Hacked, worn glasses did not publish their wearer's viewpoint")

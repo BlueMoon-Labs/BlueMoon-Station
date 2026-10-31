@@ -35,6 +35,7 @@
 	var/datum/neural_interface_module/netrun/module = new(interface, console)
 	module.visible = interface.visible
 	interface.modules[module_key] = module
+	interface.add_monitor_by_type(source_id, /datum/neural_monitor/netrun_vision, parent)
 	SEND_SIGNAL(interface, COMSIG_NEURAL_INTERFACE_WRITE_LOG, "Network interface connected.", "MODULE")
 
 /datum/component/netrun_neural_feedback/RegisterWithParent()

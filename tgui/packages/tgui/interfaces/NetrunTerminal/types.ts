@@ -126,7 +126,7 @@ export type Storage = {
 };
 
 export type AgentBuilder = {
-  template_uid: string;
+  template_uid: string | null;
   profile: string;
   name: string;
   description: string;
@@ -141,6 +141,7 @@ export type AgentBuilder = {
   themes: string[];
   max_programs?: number;
   max_modules?: number;
+  behavior?: AgentBehavior;
 };
 
 export type NodeInteraction = {
@@ -259,7 +260,13 @@ export type MatrixState = {
 
 export type LogLine = { time?: string; text: string; kind: string };
 
-export type HostAction = { id: string; name: string; icon: string };
+export type HostAction = {
+  id: string;
+  name: string;
+  icon: string;
+  enabled?: boolean;
+  reason?: string | null;
+};
 
 export type EntityState = {
   name: string;
@@ -505,6 +512,7 @@ export type NetrunData = {
   ping_route: PingHop[] | null;
   ping?: { id: number; remaining_ms: number } | null;
   agents?: AgentState[] | null;
+  agent_builder?: AgentBuilder | null;
   agent_count?: number;
   events?: NetEvent[] | null;
   waypoint?: Waypoint | null;

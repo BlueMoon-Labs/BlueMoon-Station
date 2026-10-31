@@ -7,9 +7,41 @@
 	var/datum/netrun_bot_program/program = SSnetrun.get_bot_program(file.content)
 	return program?.file_size && program.faction == NETRUN_FACTION_OWNER && !program.sanctioned ? program : null
 
+/// A blank private process is an authored package, not a forged station profile.
+/datum/netrun_bot_program/custom
+	id = "custom"
+	name = "Собственный агент"
+	desc = "Пустой частный процесс: поведение задаётся паттерном, программы и модули выбираются из собственной памяти."
+	faction = NETRUN_FACTION_OWNER
+	storage = 8 * NETRUN_STORAGE_SCALE
+	file_size = 4
+	name_prefix = "AGENT"
+	avatar = "cipher"
+	accent = "cyan"
+
+/datum/netrun_bot_program/custom/plan(datum/netrun_bot_brain/brain)
+	if(brain.order == "patrol")
+		return ..()
+	brain.push_goal(new /datum/netrun_bot_goal/guard(brain, brain.post_node()))
+
+/// Building from a recalled/authored package retains its owned policy snapshot.
+/proc/netrun_agent_builder_behavior(datum/netrun_file/template, datum/netrun_bot_program/program)
+	var/list/behavior = list("strategy" = "profile", "aggression" = 100, "caution" = round(program.flee_ratio * 100), "cooperation" = TRUE)
+	var/datum/netrun_file/bot/package = template
+	if(istype(package) && !isnull(package.stored_behavior))
+		var/list/stored = netrun_agent_behavior_settings(package.stored_behavior, TRUE)
+		if(!stored)
+			return null
+		for(var/key in stored)
+			behavior[key] = stored[key]
+	return behavior
+
 /datum/netrun_console/proc/agent_builder_payload(datum/netrun_file/template)
-	var/datum/netrun_bot_program/program = netrun_agent_template(template)
-	if(!program || !inventory.store_for(template))
+	var/datum/netrun_bot_program/program = template ? netrun_agent_template(template) : SSnetrun.get_bot_program("custom")
+	if(!program || (template && !inventory.store_for(template)))
+		return null
+	var/list/behavior = netrun_agent_builder_behavior(template, program)
+	if(!behavior)
 		return null
 	var/list/defaults = list()
 	for(var/id in program.programs)
@@ -30,7 +62,7 @@
 			var/datum/netrun_program/daemon/definition = SSnetrun.get_daemon(file.content)
 			module_files += list(list("uid" = file.uid, "id" = extension.id, "name" = extension.name, "desc" = extension.desc, "size" = file.size, "effects" = definition.effect_values(), "requirements" = list(), "allowed" = TRUE, "reason" = null))
 	return list(
-		"template_uid" = template.uid,
+		"template_uid" = template?.uid,
 		"profile" = program.id,
 		"name" = program.name,
 		"description" = program.desc,
@@ -45,6 +77,7 @@
 		"themes" = netrun_theme_ids(),
 		"max_programs" = 8,
 		"max_modules" = 4,
+		"behavior" = behavior,
 	)
 
 /// Create an independent executable package. All validation precedes writes;
@@ -53,9 +86,10 @@
 	RETURN_TYPE(/datum/netrun_file/bot)
 	if(!islist(options) || !cosmetic_user(user))
 		return null
-	var/datum/netrun_file/template = find_local_file(options["uid"])
-	var/datum/netrun_bot_program/program = netrun_agent_template(template)
-	if(!program || !inventory.store_for(template))
+	var/from_scratch = isnull(options["uid"])
+	var/datum/netrun_file/template = from_scratch ? null : find_local_file(options["uid"])
+	var/datum/netrun_bot_program/program = from_scratch ? SSnetrun.get_bot_program("custom") : netrun_agent_template(template)
+	if(!program || (!from_scratch && !inventory.store_for(template)))
 		log_line("Нужен собственный файл-шаблон частного агента.", "bad")
 		return null
 	var/agent_name = ("name" in options) ? options["name"] : program.name_prefix
@@ -73,6 +107,16 @@
 	if(!netrun_option_valid(avatar, netrun_avatar_options()) || !netrun_option_valid(accent, netrun_accent_options()) || !(theme in netrun_theme_ids()) || !istext(tagline) || length_char(tagline) > 80 || !(order in list("guard", "patrol")))
 		log_line("Настройки внешности или начальной задачи агента недопустимы.", "bad")
 		return null
+	var/list/behavior = netrun_agent_builder_behavior(template, program)
+	if(!behavior)
+		return null
+	if("behavior" in options)
+		var/list/changes = netrun_agent_behavior_settings(options["behavior"], TRUE)
+		if(!changes)
+			log_line("Паттерн поведения агента недопустим.", "bad")
+			return null
+		for(var/key in changes)
+			behavior[key] = changes[key]
 	var/list/uids = options["program_uids"]
 	if(isnull(uids))
 		uids = list()
@@ -126,6 +170,7 @@
 	result.stored_name = agent_name
 	result.stored_persona = list("avatar" = avatar, "accent" = accent, "tagline" = trim(strip_html_tags(tagline, TRUE)), "alias" = agent_name, "theme" = theme)
 	result.stored_order = order
+	result.stored_behavior = behavior
 	result.stored_files = list()
 	if(include_defaults)
 		for(var/id in program.programs)

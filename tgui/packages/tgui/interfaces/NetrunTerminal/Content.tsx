@@ -71,7 +71,9 @@ const ImplantWorkspace = () => {
       </Box>
       <div role="group" aria-label="Действия подключения" style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
         {(data.host_actions || []).map((action) => (
-          <Button key={action.id} compact icon={action.icon} content={action.name} onClick={() => act(action.id)} />
+          <Button key={action.id} compact icon={action.icon} content={action.name}
+            disabled={action.enabled === false} tooltip={action.reason}
+            onClick={() => act(action.id)} />
         ))}
       </div>
       <Box mt={1} mb={1} p={1} style={{ background: THEME.bg, border: `1px solid ${THEME.line}` }}>
@@ -338,6 +340,7 @@ const Header = memo(({ onAppearance }: { onAppearance: () => void }) => {
         style={{ flex: '0 0 auto', display: 'flex', flexWrap: 'wrap', gap: '3px', padding: '5px 0' }}>
         {data.host_actions.map((action) => (
           <Button key={action.id} compact icon={action.icon} content={action.name}
+            disabled={action.enabled === false} tooltip={action.reason}
             onClick={() => act(action.id)} />
         ))}
       </div>

@@ -115,6 +115,90 @@
 	var/mob/camera/netrun_entity/other = allocate(/mob/camera/netrun_entity)
 	TEST_ASSERT_NULL(owner.console.create_agent_file(list("uid" = template.uid), other), "Another entity cannot author through this owner's client")
 
+/// A blank authoring path needs no template and persists the real shared pattern.
+/datum/unit_test/netrun_agent_builder_from_scratch/Run()
+	var/datum/netrun_fortress_scene/scene = allocate(/datum/netrun_fortress_scene, run_loc_floor_bottom_left)
+	var/mob/camera/netrun_entity/owner = allocate(/mob/camera/netrun_entity, run_loc_floor_bottom_left, scene.node_a)
+	owner.console.operator = owner
+	var/list/payload = owner.console.agent_builder_payload()
+	TEST_ASSERT_NULL(payload["template_uid"], "An empty memory can expose the blank builder without an invented file UID")
+	var/list/behavior = list("strategy" = "scavenge", "aggression" = 20, "caution" = 80, "cooperation" = FALSE)
+	var/datum/netrun_file/bot/built = owner.console.create_agent_file(list("name" = "My Agent", "behavior" = behavior), owner)
+	TEST_ASSERT_NOTNULL(built, "An owner can create a blank agent without a template")
+	TEST_ASSERT_EQUAL(built.content, "custom", "The scratch path uses the fixed unprivileged private profile")
+	TEST_ASSERT_EQUAL(length(built.stored_files), 0, "A blank agent does not manufacture executable programs")
+	behavior["aggression"] = 90
+	TEST_ASSERT_EQUAL(built.stored_behavior["aggression"], 20, "The authored pattern owns an independent validated snapshot")
+	TEST_ASSERT(owner.console.launch_bot_file(built.uid), "The blank package uses the real ordinary launch path")
+	var/list/agents = owner.console.agents()
+	var/mob/camera/netrun_entity/bot/agent = agents[1]
+	TEST_ASSERT(!agent.program.sanctioned, "Authoring cannot mint sanctioned station authority")
+	TEST_ASSERT(!agent.console.has_key(scene.node_b.network, TRUE), "A blank agent receives no free LAN key")
+	var/list/live_behavior = agent.behavior_settings()
+	TEST_ASSERT_EQUAL(live_behavior["strategy"], "scavenge", "The shared planner receives the authored strategy")
+	TEST_ASSERT_EQUAL(live_behavior["caution"], 80, "The live pattern receives the authored retreat threshold")
+	TEST_ASSERT_EQUAL(live_behavior["cooperation"], FALSE, "The cooperation pattern is configured before autonomous work")
+	TEST_ASSERT(agent.return_to_owner(), "The scratch agent can recall through a real delivery")
+	var/datum/netrun_request/agent_recall/recall = netrun_operation_packet(owner.console, /datum/netrun_request/agent_recall)
+	recall.deliver()
+	TEST_ASSERT_EQUAL(built.stored_behavior["strategy"], "scavenge", "Recall retains the authored pattern")
+	var/list/templated = owner.console.agent_builder_payload(built)
+	var/list/templated_behavior = templated["behavior"]
+	TEST_ASSERT_EQUAL(templated_behavior["strategy"], "scavenge", "A recalled package exposes its stored policy rather than archetype defaults")
+	var/datum/netrun_file/bot/rebuilt = owner.console.create_agent_file(list("uid" = built.uid, "name" = "Rebuilt"), owner)
+	TEST_ASSERT_EQUAL(rebuilt.stored_behavior["caution"], 80, "Rebuilding without explicit policy changes retains the stored pattern")
+	var/before = owner.console.inventory.local_store.revision
+	TEST_ASSERT_NULL(owner.console.create_agent_file(list("behavior" = list("strategy" = "/proc/execute")), owner), "Arbitrary strategies cannot become runnable policies")
+	TEST_ASSERT_NULL(owner.console.create_agent_file(list("behavior" = list("aggression" = 101)), owner), "Out-of-range temperament cannot be stored")
+	TEST_ASSERT_NULL(owner.console.create_agent_file(list("behavior" = list("strategy" = "guard", "sanctioned" = TRUE)), owner), "Persisted patterns reject unknown authority fields")
+	TEST_ASSERT_EQUAL(owner.console.inventory.local_store.revision, before, "Invalid patterns cannot mutate the local disk")
+
+/// The default blank profile honors the ordinary initial and later guard/patrol orders.
+/datum/unit_test/netrun_agent_scratch_order_policy/Run()
+	var/datum/netrun_fortress_scene/scene = allocate(/datum/netrun_fortress_scene, run_loc_floor_bottom_left)
+	var/mob/camera/netrun_entity/owner = allocate(/mob/camera/netrun_entity, run_loc_floor_bottom_left, scene.node_a)
+	owner.console.operator = owner
+	var/datum/netrun_file/bot/built = owner.console.create_agent_file(list("name" = "Patroller", "order" = "patrol"), owner)
+	TEST_ASSERT(owner.console.launch_bot_file(built.uid), "A blank package starts with an initial patrol order")
+	var/list/agents = owner.console.agents()
+	var/mob/camera/netrun_entity/bot/agent = agents[1]
+	var/datum/netrun_agent_behavior/pattern/temperament/policy = netrun_actor_temperament(agent)
+	agent.brain.clear_goals()
+	policy.plan(agent.brain)
+	TEST_ASSERT(istype(agent.brain.current_goal(), /datum/netrun_bot_goal/patrol), "The default pattern honors an initial patrol instead of forcing guard")
+	agent.brain.clear_goals()
+	agent.brain.order = "guard"
+	agent.brain.order_node_ref = WEAKREF(scene.node_b)
+	policy.plan(agent.brain)
+	var/datum/netrun_bot_goal/guard/guard = agent.brain.current_goal()
+	TEST_ASSERT(istype(guard), "The same default pattern responds to a later guard order")
+	TEST_ASSERT_EQUAL(guard.post_ref?.resolve(), scene.node_b, "The guard plan uses the requested post")
+
+/// Duplicating within one disk preserves rich package ownership and charges both copies.
+/datum/unit_test/netrun_agent_local_duplicate/Run()
+	var/mob/camera/netrun_entity/owner = allocate(/mob/camera/netrun_entity)
+	owner.console.operator = owner
+	var/datum/netrun_file/bot/original = owner.console.create_agent_file(list("name" = "Original", "behavior" = list("strategy" = "guard")), owner)
+	original.stored_files += netrun_program_file("patch")
+	original.size += netrun_storage_used(original.stored_files)
+	original.stored_persona["avatar"] = "fox"
+	var/used_before = owner.console.inventory.local_store.used()
+	TEST_ASSERT(owner.console.transfer_local_file(original, FALSE), "A local package can be copied into the same memory without a shard")
+	var/datum/netrun_file/bot/duplicate = owner.console.selected_local_file()
+	TEST_ASSERT(istype(duplicate) && duplicate != original && duplicate.uid != original.uid, "Duplication creates an independently addressable rich agent file")
+	TEST_ASSERT_EQUAL(owner.console.inventory.local_store.used(), used_before + original.size, "Both packages occupy their actual complete memory")
+	TEST_ASSERT(original in owner.console.inventory.local_store.files, "Duplication retains the original local owner")
+	var/datum/netrun_file/copied_program = duplicate.stored_files[1]
+	TEST_ASSERT(copied_program != original.stored_files[1], "Nested programs are independently owned by each package")
+	duplicate.stored_persona["avatar"] = "eye"
+	duplicate.stored_behavior["strategy"] = "patrol"
+	TEST_ASSERT_EQUAL(original.stored_persona["avatar"], "fox", "Duplicated appearance cannot mutate the source")
+	TEST_ASSERT_EQUAL(original.stored_behavior["strategy"], "guard", "Duplicated patterns cannot mutate the source")
+	owner.console.inventory.local_store.capacity = owner.console.inventory.local_store.used()
+	var/count_before = length(owner.console.inventory.local_store.files)
+	TEST_ASSERT(!owner.console.transfer_local_file(original, FALSE), "A full disk rejects local duplication before allocating owned copies")
+	TEST_ASSERT_EQUAL(length(owner.console.inventory.local_store.files), count_before, "Capacity rejection leaves both original packages intact")
+
 /// New archetypes use existing capabilities and never acquire station or LAN authority.
 /datum/unit_test/netrun_agent_extended_profiles/Run()
 	var/datum/netrun_fortress_scene/scene = allocate(/datum/netrun_fortress_scene, run_loc_floor_bottom_left)

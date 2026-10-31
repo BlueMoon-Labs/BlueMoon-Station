@@ -70,6 +70,7 @@
 	qdel(doomed)
 	SSicon_smooth.smooth_queue = list(null, doomed)
 	SSicon_smooth.deferred = list()
+	var/saved_state = SSicon_smooth.state
 	SSicon_smooth.state = SS_RUNNING
 	// после тяжёлых тестов тик уже съеден, и MC_TICK_CHECK бросает проход на первом атоме
 	var/saved_ticklimit = Master.current_ticklimit

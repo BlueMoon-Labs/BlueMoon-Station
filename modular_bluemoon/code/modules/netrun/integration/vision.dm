@@ -52,7 +52,7 @@
 	.["sight"] = eyes.sight_flags
 	.["see_invisible"] = eyes.see_invisible
 
-// HUD glasses have a remote lens only after the existing firmware/emag mechanism is used.
+// A worn HUD supplies its lens through the ordinary authorized optical session.
 /obj/item/clothing/glasses/hud/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/netrun_node, NETRUN_NODE_OPTIC, list("reboot"), 3, list())
@@ -65,7 +65,7 @@
 	return TRUE
 
 /obj/item/clothing/glasses/hud/netrun_view_target()
-	if(!(obj_flags & EMAGGED) || !ishuman(loc))
+	if(!ishuman(loc))
 		return null
 	var/mob/living/carbon/human/wearer = loc
 	var/datum/component/netrun_node/node = GetComponent(/datum/component/netrun_node)

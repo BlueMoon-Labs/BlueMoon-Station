@@ -377,8 +377,11 @@
 		bot.dissolve()
 		return TRUE
 	if(bot.expires_at && world.time >= bot.expires_at)
-		bot.retire()
-		return TRUE
+		if(bot.is_network_visitor() && !brain.visitor_departing)
+			brain.begin_visitor_departure()
+		else
+			bot.retire(brain.visitor_departing ? "не найден доступный выход NTnet" : null)
+			return TRUE
 	if(!bot.host_node)
 		brain.state = "без узла"
 		return TRUE

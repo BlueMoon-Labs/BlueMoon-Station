@@ -179,6 +179,8 @@
 	var/datum/netrun_fortress_module/turret = fortress.add_module(NETRUN_FORT_TURRET, TRUE)
 	var/mob/camera/netrun_entity/bot/bot = allocate(/mob/camera/netrun_entity/bot, run_loc_floor_bottom_left, scene.apc_node, NETRUN_BOT_RAIDER)
 	TEST_ASSERT(bot.console.store_file(scene.key_file()), "A real LAN key grants the route independently of the gate")
+	// Isolate the siege from the visitor's separate bootstrap hack and its source-node ICE.
+	bot.console.access_session.grant_node(scene.apc_node, NETRUN_ACCESS_USER)
 	TEST_ASSERT(fortress.gate_blocks(bot.console), "The closed fortress gate blocks this otherwise keyed bot")
 	TEST_ASSERT(!bot.can_enter(scene.node_b), "The native fortress gate prevents entry")
 	var/list/foes = bot.brain.hostiles()

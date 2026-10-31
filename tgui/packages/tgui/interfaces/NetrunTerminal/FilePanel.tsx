@@ -41,14 +41,21 @@ const FileTransfer = ({ file }: { file: NonNullable<NetrunData['file']> }) => {
       {!!state.reason && <Box color={THEME.warn} fontSize="11px">{state.reason}</Box>}
             </>);
   }
+  const local = file.transfer?.local || fileTransferState(file, data.storage);
   const state = file.transfer?.shard || fileTransferState(file, data.shard);
-  return data.shard ? (<>
+  return (<>
+    <Button compact icon="copy" content="Дублировать в памяти" disabled={!local.copy}
+      tooltip={local.reason || 'Создать независимую копию на том же диске. Ключи доступов объединяются в общий ключ.'}
+      onClick={() => act('file_copy', { uid: file.uid, to_shard: false })} />
+    {!!local.reason && <Box color={THEME.warn} fontSize="11px">{local.reason}</Box>}
+    {!!data.shard && <>
     <Button compact icon="copy" content={state.merge ? 'Объединить с ключом на шарде' : 'Копировать на шард'} disabled={!state.copy}
       tooltip={state.reason || 'Исходный файл остаётся в локальной памяти.'} onClick={() => act('file_copy', { uid: file.uid, to_shard: true })} />
     <Button compact icon="arrow-right-arrow-left" content="Перенести на шард" disabled={!state.move}
       tooltip={state.reason || 'Исходный файл покинет локальную память.'} onClick={() => act('file_move', { uid: file.uid, to_shard: true })} />
     {!!state.reason && <Box color={THEME.warn} fontSize="11px">{state.reason}</Box>}
-                       </>) : null;
+                     </>}
+          </>);
 };
 
 const FileEditor = (props: { onCreated?: () => void }) => {

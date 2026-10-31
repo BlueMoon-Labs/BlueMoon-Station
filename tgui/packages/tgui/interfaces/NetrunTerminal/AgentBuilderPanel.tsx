@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Box, Button } from '../../components';
 import { EntityAvatar } from './EntityAvatar';
 import { NETRUN_THEMES } from './themes';
-import { AgentBuilder, NetrunData, THEME } from './types';
+import { AgentBehavior, AgentBuilder, NetrunData, THEME } from './types';
 import { useNetrunBackend as useBackend } from './useNetrunBackend';
 
 /** A private template produces an independent executable package, ready to launch from Files. */
@@ -16,6 +16,9 @@ export const AgentBuilderPanel = ({ builder }: { builder: AgentBuilder }) => {
   const [tagline, setTagline] = useState('');
   const [theme, setTheme] = useState(builder.themes.includes('ion') ? 'ion' : builder.themes[0]);
   const [order, setOrder] = useState(builder.orders[0]?.id || 'guard');
+  const [behavior, setBehavior] = useState<AgentBehavior>(builder.behavior || {
+    strategy: 'profile', aggression: 100, caution: 30, cooperation: true,
+  });
   const [includeDefaults, setIncludeDefaults] = useState(true);
   const [selected, setSelected] = useState<string[]>([]);
   const [selectedModules, setSelectedModules] = useState<string[]>([]);
@@ -31,14 +34,16 @@ export const AgentBuilderPanel = ({ builder }: { builder: AgentBuilder }) => {
   const remaining = destination ? destination.capacity - destination.used : 0;
   const overfull = used > builder.capacity || size > remaining;
   const valid = !!name.trim() && !overfull && modules.every((module) => module.allowed)
+    && Number.isFinite(behavior.aggression) && behavior.aggression >= 0 && behavior.aggression <= 100
+    && Number.isFinite(behavior.caution) && behavior.caution >= 0 && behavior.caution <= 100
     && modules.length <= (builder.max_modules ?? 4) && programs.length <= (builder.max_programs ?? 8);
   const create = () => {
     if (!valid) { return; }
     act('agent_create', { uid: builder.template_uid, name: name.trim(), avatar, accent, tagline, theme, order,
-      include_defaults: includeDefaults, program_uids: programs.map((program) => program.uid), module_uids: modules.map((module) => module.uid), to_shard: onShard });
+      behavior, include_defaults: includeDefaults, program_uids: programs.map((program) => program.uid), module_uids: modules.map((module) => module.uid), to_shard: onShard });
   };
   return (<Box mt={1} data-net-agent-builder={builder.profile}>
-    <Button compact icon="robot" content="Собрать своего агента" selected={open} onClick={() => setOpen(!open)} />
+    <Button compact icon="robot" content={builder.template_uid ? 'Собрать своего агента' : 'Создать агента с нуля'} selected={open} onClick={() => setOpen(!open)} />
     {open && <form className="netrun-agent-form" aria-label="Конструктор агента" onSubmit={(event) => { event.preventDefault(); create(); }}>
       <Box bold>{builder.name}</Box>
       <Box color={THEME.muted} fontSize="11px">{builder.description}</Box>
@@ -63,6 +68,27 @@ export const AgentBuilderPanel = ({ builder }: { builder: AgentBuilder }) => {
         {builder.orders.map((choice) => <option key={choice.id} value={choice.id}>{choice.name}</option>)}
                                                       </select>
       </label>
+      <fieldset style={{ border: `1px solid ${THEME.line}`, margin: '0 0 6px', padding: '6px' }}>
+        <legend>Паттерн поведения</legend>
+        <label className="netrun-field">Стратегия<select value={behavior.strategy}
+          onChange={(event) => setBehavior({ ...behavior, strategy: event.target.value as AgentBehavior['strategy'] })}>
+          <option value="profile">Поведение профиля</option>
+          <option value="guard">Охранять пост</option>
+          <option value="patrol">Патрулировать доступную сеть</option>
+          <option value="scavenge">Искать и собирать обломки</option>
+                                                 </select>
+        </label>
+        <label className="netrun-field">Агрессия<input type="number" min={0} max={100} value={behavior.aggression}
+          onChange={(event) => setBehavior({ ...behavior, aggression: Number(event.target.value) })} />
+        </label>
+        <label className="netrun-field">Осторожность<input type="number" min={0} max={100} value={behavior.caution}
+          onChange={(event) => setBehavior({ ...behavior, caution: Number(event.target.value) })} />
+        </label>
+        <label><input type="checkbox" checked={!!behavior.cooperation}
+          onChange={(event) => setBehavior({ ...behavior, cooperation: event.target.checked })} /> Помогать союзникам
+        </label>
+        <Box color={THEME.muted} fontSize="11px">Поведение профиля следует начальной задаче; другая стратегия задаёт постоянный паттерн. Агрессия определяет готовность атаковать сильных противников, осторожность — порог отступления. Программы и права доступа нужны для выполнения действий.</Box>
+      </fieldset>
       <fieldset style={{ border: `1px solid ${THEME.line}`, margin: 0, padding: '6px' }}>
         <legend>Программы · память {used}/{builder.capacity}</legend>
         <label style={{ display: 'block' }}><input type="checkbox" checked={includeDefaults} onChange={(event) => setIncludeDefaults(event.target.checked)} /> Штатный набор</label>

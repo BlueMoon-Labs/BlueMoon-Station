@@ -72,7 +72,7 @@
 	var/mob/camera/netrun_entity/bot/bot = owner
 	switch(strategy)
 		if("guard")
-			brain.push_goal(new /datum/netrun_bot_goal/guard(brain, bot.host_node))
+			brain.push_goal(new /datum/netrun_bot_goal/guard(brain, brain.post_node()))
 		if("patrol")
 			brain.push_goal(new /datum/netrun_bot_goal/patrol(brain, bot.program.patrol_networks(brain)))
 		if("scavenge")

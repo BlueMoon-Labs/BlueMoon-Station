@@ -184,7 +184,12 @@
 	var/datum/netrun_console/console = brain.owner.console
 	var/datum/netrun_file/file = brain.best_salvage(node)
 	if(file)
-		return console.recover_salvage(file.uid) ? NETRUN_BOT_GOAL_CONTINUE : NETRUN_BOT_GOAL_FAILED
+		if(!console.recover_salvage(file.uid))
+			return NETRUN_BOT_GOAL_FAILED
+		var/turf/spot = node.physical_turf()
+		if(brain.visitor_objective == "salvage" && !brain.visitor_departing && spot && is_station_level(spot.z))
+			brain.visitor_progress++
+		return NETRUN_BOT_GOAL_CONTINUE
 	// Full memory is not a bad route: unloading may make this cache useful again.
 	return NETRUN_BOT_GOAL_DONE
 
@@ -211,4 +216,29 @@
 	if(world.time > expires_at - 1)
 		master.log_line("[agent.real_name]: нет маршрута до владельца, агент остаётся в узле [agent.host_node?.address].", "average")
 		return NETRUN_BOT_GOAL_FAILED
+	return NETRUN_BOT_GOAL_CONTINUE
+
+/// Return through an actual reachable relay; loss of all exits does not grant teleportation.
+/datum/netrun_bot_goal/depart_network
+	name = "уход во внешнюю сеть через реле NTnet"
+	var/datum/weakref/relay_ref
+
+/datum/netrun_bot_goal/depart_network/New(datum/netrun_bot_brain/brain)
+	..(brain, 90 SECONDS)
+
+/datum/netrun_bot_goal/depart_network/advance()
+	var/mob/camera/netrun_entity/bot/visitor = brain.owner
+	brain.state = name
+	if(visitor.can_leave_network())
+		visitor.leave_network()
+		return NETRUN_BOT_GOAL_DONE
+	var/datum/component/netrun_node/relay = relay_ref?.resolve()
+	if(!netrun_relay_entry_available(relay) || brain.is_blacklisted(relay.address))
+		relay = brain.visitor_exit_node()
+		relay_ref = relay ? WEAKREF(relay) : null
+	if(!relay)
+		brain.state = "ожидание доступного реле NTnet"
+		return NETRUN_BOT_GOAL_CONTINUE
+	if(approach(relay) == NETRUN_BOT_MOVE_BLOCKED)
+		relay_ref = null
 	return NETRUN_BOT_GOAL_CONTINUE

@@ -107,6 +107,66 @@
 
 // MARK: Раундстарт
 
+/// An external process uses the same relay boundary as autonomous visitors.
+/obj/machinery/ntnet_relay
+	var/obj/effect/mob_spawn/netrun_entity/relay/netrun_visitor_spawner
+
+/obj/machinery/ntnet_relay/attack_ghost(mob/dead/observer/user)
+	. = ..()
+	if(!.)
+		netrun_visitor_spawner?.attack_ghost(user)
+
+/obj/effect/mob_spawn/netrun_entity/relay
+	name = "Сетевая сущность из внешней сети"
+	job_description = "Сетевая сущность из внешней сети"
+	short_desc = "Вы — независимый процесс, прибывший на станцию через реле NTnet."
+	important_info = "Вы не антагонист. Доступ к станционным машинам придётся получить самостоятельно. Вы можете завершить участие, вернувшись в рабочее реле NTnet."
+	uses = -1
+	permanent = TRUE
+
+/obj/effect/mob_spawn/netrun_entity/relay/Initialize(mapload)
+	. = ..()
+	RegisterSignal(loc, COMSIG_PARENT_QDELETING, PROC_REF(on_relay_deleted))
+
+/obj/effect/mob_spawn/netrun_entity/relay/Destroy()
+	var/obj/machinery/ntnet_relay/relay = loc
+	if(istype(relay))
+		UnregisterSignal(relay, COMSIG_PARENT_QDELETING)
+		if(relay.netrun_visitor_spawner == src)
+			relay.netrun_visitor_spawner = null
+	return ..()
+
+/obj/effect/mob_spawn/netrun_entity/relay/proc/on_relay_deleted(datum/source)
+	SIGNAL_HANDLER
+	qdel(src)
+
+/obj/effect/mob_spawn/netrun_entity/relay/allow_spawn(mob/user, silent = FALSE)
+	var/obj/machinery/ntnet_relay/relay = loc
+	var/datum/component/netrun_node/node = istype(relay) ? relay.GetComponent(/datum/component/netrun_node) : null
+	if(!netrun_relay_entry_available(node))
+		if(!silent)
+			to_chat(user, span_warning("Вход через это реле NTnet сейчас недоступен."))
+		return FALSE
+	return TRUE
+
+/obj/effect/mob_spawn/netrun_entity/relay/create(ckey, name, load_character, spawn_type)
+	// The player may have spent time in the role prompt while the relay changed state.
+	if(QDELETED(src) || !allow_spawn(null, TRUE))
+		return
+	var/obj/machinery/ntnet_relay/relay = loc
+	var/datum/component/netrun_node/node = relay.GetComponent(/datum/component/netrun_node)
+	var/mob/camera/netrun_entity/visitor/entity = new(get_turf(relay), node)
+	if(QDELETED(entity))
+		return
+	entity.set_net_name("VISITOR-[uppertext(copytext(md5("[world.time][rand(1, 99999)]"), 1, 5))]")
+	if(ckey)
+		entity.ckey = ckey
+		to_chat(entity, examine_block("<p>[short_desc]</p><p>[flavour_text]</p><span class='warning'>[important_info]</span><p>В памяти установлен autobreach.exe. Получите доступ к ЛВС, затем к закрытым узлам по обычным правилам взлома. Для ухода войдите в реле и нажмите «Покинуть сеть».</p>"))
+		SEND_GLOBAL_SIGNAL(COMSIG_GHOST_ROLE_CLAIMED, entity)
+	log_game("NETRUN: [key_name(entity)] прибыл из внешней сети через [AREACOORD(relay)]")
+	node.network?.add_log("Процесс [entity.real_name] прибыл через реле [node.address].")
+	return entity
+
 /datum/controller/subsystem/netrun
 	/// Сколько серверов с загруженным семенем появляется на станции в начале раунда
 	var/roundstart_seeds = 1

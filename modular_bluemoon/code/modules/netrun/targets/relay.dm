@@ -6,6 +6,7 @@
 /obj/machinery/ntnet_relay/Initialize(mapload)
 	. = ..()
 	AddComponent(/datum/component/netrun_node, NETRUN_NODE_GATEWAY, list("relay_toggle", "reboot"), 4, list(ACCESS_NETWORK))
+	netrun_visitor_spawner = new(src)
 
 /obj/machinery/ntnet_relay/netrun_online(remote = TRUE)
 	return is_operational()

@@ -222,3 +222,59 @@
 	TEST_ASSERT_EQUAL(mind.current, scene.user, "The original mind returns to its dead body")
 	TEST_ASSERT_EQUAL(scene.user.stat, DEAD, "The emergency cannot revive a dead diver")
 	TEST_ASSERT_EQUAL(scene.user.getOrganLoss(ORGAN_SLOT_BRAIN), 20, "Death follows the same bounded emergency policy")
+
+/// Native ownership survives the real mind transfer, without opening another person's implants.
+/datum/unit_test/netrun_dive_native_device_ownership/Run()
+	var/datum/netrun_client_scene/scene = allocate(/datum/netrun_client_scene, run_loc_floor_bottom_left)
+	var/datum/component/netrun_node/entry = scene.implant.GetComponent(/datum/component/netrun_node)
+	TEST_ASSERT(scene.implant.complete_dive(entry, scene.user), "The owner must enter through the installed neural endpoint")
+	var/mob/camera/netrun_entity/entity = scene.implant.console.dive_ref?.resolve()
+	TEST_ASSERT_EQUAL(netrun_console_owner(entity.console), scene.user, "A live diver must retain the physical owner's identity")
+	TEST_ASSERT_EQUAL(scene.user.netrun_owner_access(entity.console), NETRUN_ACCESS_ROOT, "A diver cannot administer the body's cybernetics")
+	TEST_ASSERT_EQUAL(scene.implant.netrun_owner_access(entity.console), NETRUN_ACCESS_ROOT, "A diver cannot administer the body's neural implant")
+	var/mob/living/carbon/human/stranger = allocate(/mob/living/carbon/human)
+	TEST_ASSERT_EQUAL(stranger.netrun_owner_access(entity.console), NETRUN_ACCESS_NONE, "A live body link granted access to a stranger's cybernetics")
+	stranger.mind_initialize()
+	var/datum/weakref/original_principal = entity.dive_link.personal_principal_ref
+	entity.dive_link.personal_principal_ref = WEAKREF(stranger.mind)
+	TEST_ASSERT_EQUAL(scene.user.netrun_owner_access(entity.console), NETRUN_ACCESS_NONE, "A changed resident identity inherited another mind's body ownership")
+	entity.dive_link.personal_principal_ref = original_principal
+	entity.dive_link.release_body()
+	TEST_ASSERT_EQUAL(scene.user.netrun_owner_access(entity.console), NETRUN_ACCESS_NONE, "A released body link retained native ownership")
+	entity.mind.transfer_to(scene.user)
+	qdel(entity)
+
+/// Local network silhouettes remain above machine blindness and include authorized device state.
+/datum/unit_test/netrun_entity_neural_node_marks/Run()
+	var/datum/netrun_entity_contact_scene/scene = allocate(/datum/netrun_entity_contact_scene, run_loc_floor_bottom_left)
+	var/mob/camera/netrun_entity/entity = scene.recipient
+	var/obj/item/radio/intercom/intercom = allocate(/obj/item/radio/intercom, get_turf(entity))
+	intercom.name = "Test intercom <node>"
+	intercom.broadcasting = TRUE
+	intercom.listening = FALSE
+	var/datum/component/netrun_node/node = intercom.GetComponent(/datum/component/netrun_node)
+	entity.console.access_session.node_access[node.address] = NETRUN_ACCESS_USER
+	var/datum/component/neural_interface/interface = entity.GetComponent(/datum/component/neural_interface)
+	var/datum/neural_monitor/netrun_vision/vision
+	for(var/datum/neural_monitor/netrun_vision/candidate in interface.monitors)
+		vision = candidate
+		break
+	TEST_ASSERT_NOTNULL(vision, "A resident process has no network vision monitor")
+	TEST_ASSERT_NULL(entity.current_vision_target(), "The fixture must have no physical optical feed")
+	TEST_ASSERT(vision.update_marks(entity.console, get_turf(entity)), "Network vision must work without a physical optical feed")
+	var/datum/neural_interface_module/image_highlight/images = interface.modules["image"]
+	var/datum/image_holder_data/mark = images.get_image_data_entry_by_key("\ref[vision]:\ref[node]:NETVISION")
+	TEST_ASSERT_NOTNULL(mark, "The nearby intercom was hidden by a non-optical machine host")
+	TEST_ASSERT_EQUAL(mark.overlay.plane, FOV_VISUAL_PLANE, "Network marks were placed underneath the blindness fullscreen")
+	TEST_ASSERT(findtext(mark.screen_text.maptext, "Test intercom &lt;node&gt;"), "A network mark omitted or failed to escape its device name")
+	TEST_ASSERT(findtext(mark.screen_text.maptext, "Mikrofon: vklyuchyon"), "The intercom mark omitted its microphone state")
+	TEST_ASSERT(findtext(mark.screen_text.maptext, "Dinamik: vyklyuchen"), "The intercom mark omitted its speaker state")
+	mark.toggle()
+	TEST_ASSERT(!mark.enabled, "The fixture must disable a mark as the shared per-tile cycle does")
+	vision.update_marks(entity.console, get_turf(entity))
+	mark = images.get_image_data_entry_by_key("\ref[vision]:\ref[node]:NETVISION")
+	TEST_ASSERT(!mark.enabled && mark.overlay.alpha == 0, "Refreshing a disabled mark broke per-tile label cycling")
+	var/locked_text = vision.node_text(node, NETRUN_ACCESS_NONE)
+	TEST_ASSERT(findtext(locked_text, "LOCKED") && !findtext(locked_text, "Mikrofon"), "A locked node leaked its private device state")
+	var/guest_text = vision.node_text(node, NETRUN_ACCESS_GUEST)
+	TEST_ASSERT(findtext(guest_text, "USER REQUIRED") && !findtext(guest_text, "Mikrofon"), "Guest discovery leaked USER-only device state")

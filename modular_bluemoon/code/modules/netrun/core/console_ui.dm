@@ -293,6 +293,7 @@
 	data["jack"] = connection.jack ? list("address" = connection.jack.address, "name" = connection.jack.get_name()) : null
 	data["host_actions"] = host_actions()
 	data["file"] = (workspace_view in list("files", "agents")) ? file_payload() : null
+	data["agent_builder"] = workspace_view == "agents" ? agent_builder_payload() : null
 	// Matrix clicks must not rebuild the hidden graph, global autocomplete,
 	// selected-node command help or the native machine UI behind the puzzle.
 	if(intrusion.breach && !(workspace_view in list("map", "files", "agents", "pinned", "terminal", "web")))

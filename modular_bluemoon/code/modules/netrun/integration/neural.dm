@@ -159,14 +159,29 @@
 /datum/neural_monitor/netrun_vision/process(delta_time)
 	if(!..())
 		return FALSE
-	var/obj/item/organ/cyberimp/brain/netlink/implant = monitor_atom
-	var/mob/living/carbon/user = implant?.owner
-	if(!istype(implant) || !user || user.stat != CONSCIOUS || !implant.console)
+	if(!owner?.host_mob?.client)
 		return FALSE
-	var/datum/netrun_console/console = implant.console
-	var/turf/center = get_turf(user)
+	var/datum/netrun_console/console
+	var/turf/center
+	if(istype(monitor_atom, /mob/camera/netrun_entity))
+		var/mob/camera/netrun_entity/entity = monitor_atom
+		console = entity.console
+		center = get_turf(entity.current_vision_target() || entity)
+	else if(istype(monitor_atom, /obj/item/organ/cyberimp/brain/netlink))
+		var/obj/item/organ/cyberimp/brain/netlink/implant = monitor_atom
+		if(!implant.owner || implant.owner.stat != CONSCIOUS)
+			return FALSE
+		console = implant.console
+		center = get_turf(implant.owner)
+	if(QDELETED(console) || !center)
+		return FALSE
+	return update_marks(console, center)
+
+/// Network silhouettes do not require the host to possess physical optics.
+/// Query only the local map square; no station-wide node scan runs on this HUD tick.
+/datum/neural_monitor/netrun_vision/proc/update_marks(datum/netrun_console/console, turf/center)
 	var/list/found = list()
-	for(var/atom/A in view(range, user))
+	for(var/atom/A in range(range, center))
 		var/datum/component/netrun_node/node = A.GetComponent(/datum/component/netrun_node)
 		if(!node)
 			continue
@@ -175,17 +190,43 @@
 			break
 	sortTim(found, GLOBAL_PROC_REF(cmp_numeric_asc), associative = TRUE)
 	var/shown = 0
+	var/datum/netrun_path_tree/tree = console.connection.read_path_tree(TRUE)
 	for(var/datum/component/netrun_node/node as anything in found)
 		if(shown >= max_marks)
 			break
-		var/level = console.node_level(node)
-		if(level < NETRUN_ACCESS_GUEST)
-			continue
+		var/level = console.node_level(node, tree)
 		shown++
 		var/image/overlay = image(icon = overlay_node)
 		overlay.color = netrun_access_color(level, node.is_online())
-		owner.write_image_data("\ref[node]:NETVISION", overlay, node.parent, "[node.address]\n[netrun_neural_access_name(level)]", 1.5 SECONDS, 24, -6, 12)
+		var/key = "\ref[src]:\ref[node]:NETVISION"
+		// Anchor on the physical turf: nested/hidden endpoints have no rendered host sprite.
+		owner.write_image_data(key, overlay, node.physical_turf(), node_text(node, level), 1.5 SECONDS, 24, -6, 10)
+		var/datum/neural_interface_module/image_highlight/images = owner.modules["image"]
+		var/datum/image_holder_data/mark = images?.get_image_data_entry_by_key(key)
+		if(mark)
+			// Native blindness still hides the room; only network markers cross the fullscreen.
+			mark.overlay.plane = FOV_VISUAL_PLANE
+			mark.overlay.layer = FOV_VISUAL_LAYER
+			mark.overlay.alpha = mark.enabled ? 255 : 0
+			mark.overlay.appearance_flags |= RESET_COLOR | RESET_ALPHA
+			mark.overlay.cut_overlay(mark.screen_text)
+			mark.screen_text.maptext_width = 180
+			mark.screen_text.maptext_height = 112
+			mark.overlay.add_overlay(mark.screen_text)
+	console.release_path_tree(tree)
 	return TRUE
+
+/datum/neural_monitor/netrun_vision/proc/node_text(datum/component/netrun_node/node, level)
+	var/text = "[netrun_neural_text(node.get_name(), 36)]<br>[node.address] [netrun_neural_access_name(level)]"
+	if(level < NETRUN_ACCESS_GUEST)
+		return "[text]<br>LOCKED"
+	if(level < NETRUN_ACCESS_USER)
+		return "[text]<br>STATUS: USER REQUIRED"
+	var/atom/host = node.parent
+	var/list/status = host.netrun_status()
+	for(var/i = 1, i <= min(3, length(status)), i++)
+		text += "<br>[netrun_neural_text(status[i], 52)]"
+	return text
 
 /proc/netrun_access_color(level, online = TRUE)
 	if(!online)

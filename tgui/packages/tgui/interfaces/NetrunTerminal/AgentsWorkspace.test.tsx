@@ -44,6 +44,18 @@ test('agent overview exposes target-aware quick orders, owned templates and an e
   expect(sent('workspace_view')).toEqual([{ page: 'map' }]);
 });
 
+test('an empty inventory can create a blank agent without selecting or manufacturing a template UID', () => {
+  const { panel, update, sent } = setup();
+  update({ storage: { files: [], used: 0, capacity: 128 }, shard: null, file: null,
+    agent_builder: { ...builder, template_uid: null, profile: 'custom', name: 'Собственный агент' } });
+  fireEvent.click(panel.getByText('Создать агента с нуля'));
+  fireEvent.change(panel.getByLabelText('Имя агента'), { target: { value: 'Новый помощник' } });
+  fireEvent.click(panel.getByText('Создать агента'));
+  expect(sent('file_select')).toEqual([]);
+  expect(sent('agent_create')).toEqual([expect.objectContaining({ uid: null, name: 'Новый помощник',
+    behavior: { strategy: 'profile', aggression: 100, caution: 30, cooperation: true }, program_uids: [], module_uids: [] })]);
+});
+
 test('hidden builders preserve drafts, but an authoritative active deletion clears the selected launch card', () => {
   const { panel, update } = setup();
   fireEvent.click(panel.getByText('Собрать своего агента'));

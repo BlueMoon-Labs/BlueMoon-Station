@@ -34,7 +34,24 @@ test('a named agent package uses the selected template, persona, owned programs 
   expect(panel.getByText('Файл займёт 9; свободно 30.')).toBeTruthy();
   fireEvent.click(panel.getByText('Создать агента'));
   expect(sent()).toEqual([{ uid: 'template', name: 'Кира', avatar: 'fox', accent: 'mint', tagline: 'Картограф', theme: 'ion', order: 'patrol',
+    behavior: { strategy: 'profile', aggression: 100, caution: 30, cooperation: true },
     include_defaults: true, program_uids: ['owned-program'], module_uids: [], to_shard: true }]);
+});
+
+test('a blank agent needs no template and carries a complete independently authored behavior pattern', () => {
+  const { panel, sent } = setup();
+  panel.rerender(<AgentBuilderPanel key="scratch" builder={{ ...builder, template_uid: null, profile: 'custom', defaults: [] }} />);
+  fireEvent.click(panel.getByText('Создать агента с нуля'));
+  fireEvent.change(panel.getByLabelText('Стратегия'), { target: { value: 'scavenge' } });
+  fireEvent.change(panel.getByLabelText('Агрессия'), { target: { value: '15' } });
+  fireEvent.change(panel.getByLabelText('Осторожность'), { target: { value: '80' } });
+  fireEvent.click(panel.getByLabelText('Помогать союзникам'));
+  fireEvent.click(panel.getByText('Создать агента'));
+  expect(sent()).toEqual([expect.objectContaining({ uid: null, program_uids: [], module_uids: [],
+    behavior: { strategy: 'scavenge', aggression: 15, caution: 80, cooperation: false } })]);
+  fireEvent.change(panel.getByLabelText('Осторожность'), { target: { value: '101' } });
+  fireEvent.click(panel.getByText('Создать агента'));
+  expect(sent()).toHaveLength(1);
 });
 
 test('owned capability modules use their memory cost and UID while denied modules explain their requirement', () => {

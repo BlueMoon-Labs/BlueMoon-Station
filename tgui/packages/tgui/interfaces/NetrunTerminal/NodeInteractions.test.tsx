@@ -174,6 +174,24 @@ describe('Node and process interactions', () => {
     expect(panel.getAllByText('Выбрать узел подключения')).toHaveLength(1);
   });
 
+  test('leaving the network stays disabled until the current relay admits departure', () => {
+    const action = { id: 'entity_leave', name: 'Покинуть сеть', icon: 'right-from-bracket' };
+    const { store, topic } = setup({ workspace_view: 'files', map: null, origin: 'entity', host_actions: [
+      { ...action, enabled: false, reason: 'Доберитесь до рабочего реле NTnet.' },
+    ] });
+    const panel = render(<NetrunContent />);
+    const connections = within(panel.getByRole('group', { name: 'Действия подключения' }));
+    fireEvent.click(connections.getByText('Покинуть сеть'));
+    expect(sent(topic, 'entity_leave')).toEqual([]);
+    act(() => store.dispatch(backendUpdate({ data: { host_actions: [{ ...action, enabled: true }] } })));
+    fireEvent.click(connections.getByText('Покинуть сеть'));
+    expect(sent(topic, 'entity_leave')).toEqual([{}]);
+    nextInteraction();
+    act(() => store.dispatch(backendUpdate({ data: { host_actions: [{ ...action, enabled: false }] } })));
+    fireEvent.click(connections.getByText('Покинуть сеть'));
+    expect(sent(topic, 'entity_leave')).toHaveLength(1);
+  });
+
   test('ICE reconnaissance explains the kind and current risk before entering', () => {
     const { store } = setup({ selected: { ...node, contacts: [{
       ...contact, kind: 'ice', name: 'ICE-HUNTER', ice_kind: 'hunter',

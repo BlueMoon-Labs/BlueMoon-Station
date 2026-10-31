@@ -385,7 +385,12 @@
 			break
 	departing.expires_at = world.time - 1
 	departing.brain.think()
-	TEST_ASSERT(QDELETED(departing), "A visitor actually leaves when its lifetime expires")
+	TEST_ASSERT(QDELETED(departing) || departing.brain.visitor_departing, "Lifetime expiry starts departure through a physical relay")
+	if(!QDELETED(departing))
+		TEST_ASSERT(departing.expires_at <= world.time + 90 SECONDS, "Combat or a lost relay can delay departure for only one bounded grace period")
+		departing.expires_at = world.time - 1
+		departing.brain.think()
+	TEST_ASSERT(QDELETED(departing), "A visitor leaves or is cleaned up before another population wave")
 	SSnetrun.rogue_wave_at = world.time - 1
 	census()
 	TEST_ASSERT_EQUAL(SSnetrun.count_network_visitors(), SSnetrun.visitor_limit, "A later native wave replaces departed visitors during the round")

@@ -47,6 +47,14 @@
 	var/salvage_cursor = 1
 	/// Earliest fresh debris deadline seen during the current bounded search.
 	var/salvage_wait_until = 0
+	/// Visiting factions carry one finite station objective before returning to a relay.
+	var/visitor_objective
+	var/visitor_progress = 0
+	var/visitor_required = 0
+	var/list/visitor_surveyed = list()
+	var/visitor_departing = FALSE
+	var/visitor_completed = FALSE
+	var/visitor_exit_cursor = 1
 	/// Retain a legal local combat target across AP actions, not just telegraphs.
 	var/datum/weakref/combat_target_ref
 	var/datum/weakref/controlled_target_ref
@@ -161,16 +169,21 @@
 
 /// Goal execution is a capability; policy and reactions live in installed modules.
 /datum/netrun_bot_brain/proc/advance_goals()
+	if(owner.is_network_visitor())
+		advance_visitor_objective()
 	var/datum/netrun_bot_goal/goal = current_goal()
 	if(goal && world.time >= goal.expires_at)
 		finish_goal(goal)
 		goal = null
 	if(!goal)
-		var/datum/netrun_agent_behavior/pattern/temperament/policy = netrun_actor_temperament(owner)
-		if(policy)
-			policy.plan(src)
+		if(owner.is_network_visitor() && visitor_departing)
+			plan_visitor_objective()
 		else
-			owner.program.plan(src)
+			var/datum/netrun_agent_behavior/pattern/temperament/policy = netrun_actor_temperament(owner)
+			if(policy)
+				policy.plan(src)
+			else
+				owner.program.plan(src)
 		goal = current_goal()
 	if(!goal)
 		state = "ожидание"
@@ -179,7 +192,7 @@
 	if(QDELETED(src) || QDELETED(goal))
 		return
 	if(result != NETRUN_BOT_GOAL_CONTINUE || world.time >= goal.expires_at)
-		finish_goal(goal)
+		finish_goal(goal, result == NETRUN_BOT_GOAL_DONE)
 
 // MARK: Цели
 
@@ -197,8 +210,9 @@
 	RETURN_TYPE(/datum/netrun_bot_goal)
 	return length(goals) ? goals[1] : null
 
-/datum/netrun_bot_brain/proc/finish_goal(datum/netrun_bot_goal/goal)
+/datum/netrun_bot_brain/proc/finish_goal(datum/netrun_bot_goal/goal, successful = FALSE)
 	clear_goal_wait(goal)
+	var/objective_done = successful && visitor_objective == "sabotage" && istype(goal, /datum/netrun_bot_goal/station_invasion)
 	if(istype(goal, /datum/netrun_bot_goal/command) && order == "command")
 		order = "guard"
 		order_command = null
@@ -208,6 +222,9 @@
 	goals -= goal
 	qdel(goal)
 	SEND_SIGNAL(owner, COMSIG_NETRUN_ENTITY_GOALS_CHANGED, handling_behavior)
+	if(objective_done)
+		visitor_completed = TRUE
+		begin_visitor_departure()
 
 /datum/netrun_bot_brain/proc/clear_goals()
 	clear_goal_wait()
@@ -225,7 +242,10 @@
 
 /datum/netrun_bot_brain/proc/goal_text()
 	var/datum/netrun_bot_goal/goal = current_goal()
-	return goal ? goal.describe() : null
+	var/current = goal ? goal.describe() : null
+	if(visitor_objective)
+		return "[visitor_objective_text()]; [current || state]"
+	return current
 
 /// Retain only the delivered response of this brain's own command, never a live node journal.
 /datum/netrun_bot_brain/proc/command_updated(datum/netrun_packet_context/operation)

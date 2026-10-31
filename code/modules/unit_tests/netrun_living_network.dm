@@ -118,3 +118,102 @@
 	TEST_ASSERT(!netrun_bot_factions_hostile("redshift", "redshift"), "Members of one faction are not enemies")
 	TEST_ASSERT(raider.brain.combat_step(), "A real faction encounter enters ordinary telegraphed combat")
 	TEST_ASSERT_EQUAL(SSnetrun.count_network_visitors(), 3, "The visitor quota counts all visiting factions")
+
+/// A reusable ghost entry rechecks the real relay after the role prompt.
+/datum/unit_test/netrun_relay_visitor_entry/Run()
+	var/datum/netrun_fortress_scene/scene = allocate(/datum/netrun_fortress_scene, run_loc_floor_bottom_left)
+	SSnetworks.station_network.setting_disabled = FALSE
+	var/obj/machinery/ntnet_relay/relay = scene.machine(/obj/machinery/ntnet_relay, get_turf(scene.node_b.parent))
+	var/obj/effect/mob_spawn/netrun_entity/relay/spawner = relay.netrun_visitor_spawner
+	TEST_ASSERT_NOTNULL(spawner, "Every physical relay publishes an external network ghost role")
+	TEST_ASSERT(spawner.allow_spawn(null, TRUE), "An online unisolated relay admits visitors")
+	relay.enabled = FALSE
+	TEST_ASSERT(!spawner.allow_spawn(null, TRUE), "An offline relay withdraws the ghost entry")
+	TEST_ASSERT_NULL(spawner.create(), "Create revalidates a relay disabled while a role prompt was open")
+	relay.enabled = TRUE
+	var/mob/camera/netrun_entity/visitor/visitor = spawner.create()
+	TEST_ASSERT_NOTNULL(visitor, "A restored relay admits a player process")
+	allocated += visitor
+	var/datum/component/netrun_node/node = relay.GetComponent(/datum/component/netrun_node)
+	TEST_ASSERT_EQUAL(visitor.host_node, node, "The process actually resides in its entry relay")
+	TEST_ASSERT(!length(visitor.console.access_session.node_access) && !length(visitor.console.access_session.network_access), "Arrival grants neither machine USER nor a LAN login")
+	TEST_ASSERT_EQUAL(visitor.console.node_level(node), NETRUN_ACCESS_NONE, "Player visitors follow NPC residency restrictions")
+	TEST_ASSERT(visitor.console.daemon_capability("autobreach"), "Visitors arrive with a real hacking tool")
+	TEST_ASSERT(!QDELETED(spawner), "Entering does not consume the physical relay ghost role")
+	qdel(visitor)
+	qdel(relay)
+	TEST_ASSERT(QDELETED(spawner), "Destroying the physical relay also removes its ghost entry")
+	TEST_ASSERT(!(relay in SSnetworks.station_network.relays), "Ghost-entry cleanup preserves native relay registry teardown")
+
+/// Leaving requires physical relay residency and fresh native availability.
+/datum/unit_test/netrun_relay_departure_authority/Run()
+	var/datum/netrun_fortress_scene/scene = allocate(/datum/netrun_fortress_scene, run_loc_floor_bottom_left)
+	SSnetworks.station_network.setting_disabled = FALSE
+	var/obj/machinery/ntnet_relay/relay = scene.machine(/obj/machinery/ntnet_relay, get_turf(scene.node_b.parent))
+	var/datum/component/netrun_node/node = relay.GetComponent(/datum/component/netrun_node)
+	var/mob/camera/netrun_entity/entity = allocate(/mob/camera/netrun_entity, run_loc_floor_bottom_left, scene.node_a)
+	entity.console.map_view.selected_address = node.address
+	TEST_ASSERT(!entity.can_leave_network(), "Selecting a remote relay cannot end the process")
+	TEST_ASSERT(!entity.console.host_act("entity_leave", list(), entity), "Forged actions cannot bypass relay residency")
+	entity.enter_node(node)
+	TEST_ASSERT(entity.can_leave_network(), "An independent process can leave from an online relay")
+	entity.combat_stun_until = world.time + 10 SECONDS
+	TEST_ASSERT(!entity.can_leave_network(), "Stun prevents departure")
+	entity.combat_stun_until = 0
+	relay.enabled = FALSE
+	TEST_ASSERT(!entity.console.host_act("entity_leave", list(), entity), "Execution rechecks native relay availability")
+	TEST_ASSERT(!QDELETED(entity), "A denied departure preserves the player process")
+	relay.enabled = TRUE
+	SSnetworks.station_network.setting_disabled = TRUE
+	TEST_ASSERT(!entity.can_leave_network(), "The disabled external backbone prevents departure")
+	SSnetworks.station_network.setting_disabled = FALSE
+	TEST_ASSERT(entity.console.host_act("entity_leave", list(), entity), "The host action ends the process through the real boundary")
+	TEST_ASSERT(QDELETED(entity), "A departed process cannot remain as an abandoned resident")
+	TEST_ASSERT(!length(node.salvage), "A peaceful departure creates no death loot")
+
+/// Survey counts distinct authorized devices; salvage counts actual recovered files.
+/datum/unit_test/netrun_visitor_finite_objectives/Run()
+	var/datum/netrun_fortress_scene/scene = allocate(/datum/netrun_fortress_scene, run_loc_floor_bottom_left)
+	var/mob/camera/netrun_entity/bot/scout = allocate(/mob/camera/netrun_entity/bot, run_loc_floor_bottom_left, scene.node_a, "collective_guard")
+	scout.brain.clear_goals()
+	scout.brain.visitor_required = 2
+	scout.brain.advance_visitor_objective()
+	TEST_ASSERT_EQUAL(scout.brain.visitor_progress, 0, "Spawning without machine rights does not complete reconnaissance")
+	scout.console.access_session.grant_node(scene.node_a, NETRUN_ACCESS_USER)
+	scout.brain.advance_visitor_objective()
+	scout.brain.advance_visitor_objective()
+	TEST_ASSERT_EQUAL(scout.brain.visitor_progress, 1, "Repeated inspection of the same real device counts once")
+	scout.console.access_session.grant_node(scene.node_b, NETRUN_ACCESS_USER)
+	scout.enter_node(scene.node_b)
+	scout.brain.advance_visitor_objective()
+	TEST_ASSERT(scout.brain.visitor_completed && scout.brain.visitor_departing, "A finite completed survey switches to departure")
+	TEST_ASSERT(istype(scout.brain.current_goal(), /datum/netrun_bot_goal/depart_network), "Departure replaces unrelated patrol work")
+	qdel(scout)
+	var/mob/camera/netrun_entity/bot/collector = allocate(/mob/camera/netrun_entity/bot, run_loc_floor_bottom_left, scene.node_a, "archive_collector")
+	collector.brain.clear_goals()
+	for(var/index in 1 to collector.brain.visitor_required)
+		var/datum/netrun_file/file = new("debris-[index].txt", NETRUN_FILE_TEXT, "recoverable data", 1)
+		scene.node_a.leave_salvage(file, "test")
+	var/datum/netrun_bot_goal/salvage/goal = allocate(/datum/netrun_bot_goal/salvage, collector.brain, scene.node_a)
+	TEST_ASSERT_EQUAL(goal.advance(), NETRUN_BOT_GOAL_CONTINUE, "The first recovery performs a real file transfer")
+	TEST_ASSERT_EQUAL(collector.brain.visitor_progress, 1, "A recovered file advances the mission")
+	goal.advance()
+	collector.brain.advance_visitor_objective()
+	TEST_ASSERT(collector.brain.visitor_completed && collector.brain.visitor_departing, "Recovered cargo triggers a return to external space")
+
+/// Expired visitors get one bounded route home, then clean up if every exit is lost.
+/datum/unit_test/netrun_visitor_departure_timeout/Run()
+	var/datum/netrun_fortress_scene/scene = allocate(/datum/netrun_fortress_scene, run_loc_floor_bottom_left)
+	var/mob/camera/netrun_entity/bot/visitor = allocate(/mob/camera/netrun_entity/bot, run_loc_floor_bottom_left, scene.node_a, "scavenger")
+	var/datum/netrun_entity_module/bot_lifecycle/lifecycle = visitor.entity_modules["bot_lifecycle"]
+	visitor.expires_at = world.time
+	lifecycle.behavior_step(visitor.brain)
+	TEST_ASSERT(!QDELETED(visitor) && visitor.brain.visitor_departing, "Objective expiry starts physical departure before cleanup")
+	TEST_ASSERT(visitor.expires_at > world.time && visitor.expires_at <= world.time + 90 SECONDS, "The departure grace period has one finite deadline")
+	var/deadline = visitor.expires_at
+	visitor.brain.begin_visitor_departure()
+	TEST_ASSERT_EQUAL(visitor.expires_at, deadline, "Repeated requests cannot extend the visitor lifetime")
+	visitor.expires_at = world.time
+	lifecycle.behavior_step(visitor.brain)
+	TEST_ASSERT(QDELETED(visitor), "A disconnected visitor cannot accumulate forever")
+	TEST_ASSERT(!length(scene.node_a.salvage), "Lifecycle cleanup does not generate repeatable loot")

@@ -3,6 +3,7 @@ export type BotGlyphId = 'robot' | 'guard' | 'interceptor' | 'tool' | 'radar' | 
   | 'cipher' | 'breacher' | 'blade' | 'archive' | 'badge' | 'gear';
 type BotRole = { name: string; icon: string; glyph: BotGlyphId };
 export const BOT_ROLES: Record<string, BotRole> = {
+  custom: { name: 'Собственный агент', icon: 'robot', glyph: 'robot' },
   sentinel: { name: 'Агент-страж', icon: 'shield-halved', glyph: 'guard' },
   interceptor: { name: 'Агент-перехватчик', icon: 'crosshairs', glyph: 'interceptor' },
   mender: { name: 'Агент-ремонтник', icon: 'screwdriver-wrench', glyph: 'tool' },

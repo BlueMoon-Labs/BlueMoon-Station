@@ -9,7 +9,7 @@ import { useNetrunBackend } from './useNetrunBackend';
 
 /** Template selection is the same inventory selection as Files; switching pages never invents a new UID. */
 export const AgentsWorkspace = memo(() => {
-  const { act, data } = useNetrunBackend(['workspace_view', 'file', 'storage', 'shard', 'selected', 'entity']);
+  const { act, data } = useNetrunBackend(['workspace_view', 'file', 'storage', 'shard', 'selected', 'entity', 'agent_builder']);
   const confirmed = useRef<NetrunData['file']>(null);
   if (data.workspace_view === 'agents' || data.workspace_view === 'files') { confirmed.current = data.file; }
   const file = data.file || confirmed.current;
@@ -33,8 +33,9 @@ export const AgentsWorkspace = memo(() => {
     <AgentsPanel />
     <section className="netrun-agent-launcher" aria-label="Запуск и создание агентов">
       <Box bold mb={0.5}>Запуск и создание</Box>
-      <Box color={THEME.muted} fontSize="11px" mb={1}>Выберите файл агента из памяти или шарда. В конструкторе можно собрать отдельную копию со своими программами и модулями.</Box>
-      {!templates.length && <Box color={THEME.muted}>Нужен файл .bot. Запишите шаблон на шард или получите его от другого процесса.</Box>}
+      <Box color={THEME.muted} fontSize="11px" mb={1}>Создайте пустого агента со своим паттерном поведения или выберите шаблон из памяти или шарда. Программы и модули копируются из ваших файлов.</Box>
+      {!!data.agent_builder && <AgentBuilderPanel key="scratch" builder={data.agent_builder} />}
+      {!templates.length && <Box color={THEME.muted}>Готовых файлов .bot нет. Созданный агент появится здесь после сохранения.</Box>}
       <div className="netrun-agent-template-grid">{templates.map((template) => (
         <Button key={template.uid} className="netrun-agent-template" role="button" selected={selected?.uid === template.uid}
           aria-pressed={selected?.uid === template.uid} aria-label={`Шаблон ${template.name}`}

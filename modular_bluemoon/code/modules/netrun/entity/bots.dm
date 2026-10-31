@@ -78,6 +78,8 @@
 	if(!owner && program.lifetime)
 		expires_at = world.time + program.lifetime + rand(0, 2 MINUTES)
 	brain = new(src)
+	if(is_network_visitor())
+		brain.assign_visitor_objective()
 	program.equip(src)
 	if(is_network_visitor() && !console.daemon_capability("autobreach"))
 		console.store_file(netrun_daemon_file("autobreach"))
@@ -150,8 +152,12 @@
 	return QDELETED(principal) || QDELETED(faction) || !istype(faction) || faction.id != net_faction || faction.principal_ref?.resolve() != principal
 
 /// Visiting processes depart without being destroyed or generating free combat loot.
-/mob/camera/netrun_entity/bot/proc/retire()
-	host_node?.network?.add_log("Автономный процесс [real_name] завершил обход и покинул сеть.")
+/mob/camera/netrun_entity/bot/proc/retire(reason)
+	if(reason)
+		brain.state = "процесс завершён: [reason]"
+		host_node?.network?.add_log("Автономный процесс [real_name] завершён: [reason].")
+	else
+		host_node?.network?.add_log("Автономный процесс [real_name] завершил обход и покинул сеть.")
 	qdel(src)
 
 /mob/camera/netrun_entity/bot/dissolve()
@@ -918,7 +924,7 @@
 		var/datum/component/netrun_node/node = graph.registered_relays[address]
 		// Walls/turrets do not erase the physical external entry. A real closed
 		// gate remains a barrier; creating a visitor must not bypass it.
-		if(!QDELETED(node) && !node.network?.isolated && node.is_online() && !(node.fortress?.slots_max() > 0 && node.fortress.intact_count(NETRUN_FORT_GATE)))
+		if(netrun_relay_entry_available(node))
 			entries += node
 	if(length(entries))
 		return pick(entries)

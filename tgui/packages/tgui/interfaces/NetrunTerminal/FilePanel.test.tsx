@@ -78,6 +78,20 @@ test('a shard file can be copied or moved explicitly into local memory', () => {
     .toEqual([{ uid: original.uid, move: false }, { uid: original.uid, move: true }]);
 });
 
+test('a local file can be duplicated without a shard and follows authoritative capacity decisions', () => {
+  const { panel, topic, store } = setup();
+  act(() => store.dispatch(backendUpdate({ data: { storage: { used: 1, capacity: 10, files: [original] } } })));
+  fireEvent.click(panel.getByText('Дублировать в памяти'));
+  const sent = () => topic.mock.calls.filter(([message]) => message.type === 'act/file_copy').map(([message]) => JSON.parse(message.payload));
+  expect(sent()).toEqual([{ uid: original.uid, to_shard: false }]);
+  act(() => store.dispatch(backendUpdate({ data: { file: { ...original, transfer: {
+    local: { copy: false, move: false, reason: 'На носителе назначения недостаточно свободной памяти.', merge: false },
+  } } } })));
+  expect(panel.getByText('На носителе назначения недостаточно свободной памяти.')).toBeTruthy();
+  fireEvent.click(panel.getByText('Дублировать в памяти'));
+  expect(sent()).toHaveLength(1);
+});
+
 test('a full destination key can merge while server transfer denials remain visible', () => {
   const { panel, topic, store } = setup();
   const key = { ...original, uid: 'key-shard', name: 'key.grants', kind: 'grants', source: 'shard', can_import: true };

@@ -56,7 +56,7 @@
 	if(!entity_modules["neural_feedback"])
 		install_module(/datum/netrun_entity_module/neural_feedback)
 	console?.activate()
-	to_chat(src, span_notice("Вы — процесс в сети станции. Мир виден через доступную оптику: камеры, киберглаза и взломанные HUD-очки. \
+	to_chat(src, span_notice("Вы — процесс в сети станции. Мир виден через доступную оптику: камеры, киберглаза и надетые HUD-очки. \
 		В окне устройства включите «Смотреть». Говорить и слышать можно через интеркомы — включите микрофон или динамик. Кнопка «Сеть» \
 		открывает карту; переходы между узлами — Shift+WASD по положению на карте (наведя фокус на карту)."))
 	INVOKE_ASYNC(console, TYPE_PROC_REF(/datum, ui_interact), src)
@@ -537,11 +537,16 @@
 	var/mob/camera/netrun_entity/entity = host
 	if(entity?.dive_link?.body)
 		. += list(list("id" = "return", "name" = "Вернуться в тело", "icon" = "person-walking-arrow-right"))
+	else if(entity)
+		var/reason = entity.leave_network_reason()
+		. += list(list("id" = "entity_leave", "name" = "Покинуть сеть", "icon" = "right-from-bracket", "enabled" = !reason, "reason" = reason))
 
 /datum/netrun_console/entity/host_act(action, list/params, mob/user)
 	var/mob/camera/netrun_entity/entity = host
 	if(user != entity)
 		return FALSE
+	if(action == "entity_leave")
+		return entity.leave_network()
 	if(entity?.dispatch_module_action(action, params, user))
 		return TRUE
 	return ..()

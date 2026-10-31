@@ -149,7 +149,7 @@
 	TEST_ASSERT_EQUAL(length(console.access_session.node_access), 0, "This dive must begin with native ownership rather than acquired grants")
 	TEST_ASSERT(scene.implant.complete_dive(entry, scene.user), "The wearer's own neural endpoint must provide an initial network entrance")
 	var/mob/camera/netrun_entity/entity = console.dive_ref?.resolve()
-	TEST_ASSERT_EQUAL(entity.console.node_level(entry), NETRUN_ACCESS_USER, "Transferring an empty acquired-grant list must preserve the resident's initial USER grant")
+	TEST_ASSERT_EQUAL(entity.console.node_level(entry), NETRUN_ACCESS_ROOT, "A diver keeps native ownership of the body's own neural endpoint")
 	entity.return_to_body()
 
 /// Losing a physical lead returns the original mind once and cancels resident work.

@@ -5,6 +5,13 @@
 /proc/netrun_console_owner(datum/netrun_console/console)
 	if(!console)
 		return
+	// A dive changes the controlled mob, not ownership of the body's devices.
+	// The live link is the authority: an abandoned resident keeps no body access.
+	if(istype(console.host, /mob/camera/netrun_entity))
+		var/mob/camera/netrun_entity/entity = console.host
+		var/mob/living/carbon/body = entity.dive_link?.body
+		if(!QDELETED(body) && entity.mind && entity.mind.current == entity && entity.dive_link.personal_principal_ref?.resolve() == entity.mind && body.netrun_personal_dive_ref?.resolve() == entity.dive_link)
+			return body
 	if(console.operator)
 		return console.operator
 	if(ismob(console.host))
