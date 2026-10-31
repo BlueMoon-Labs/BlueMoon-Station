@@ -1782,6 +1782,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	//Quirks
 	S["all_quirks"] >> all_quirks
+	S["innate_features"] >> innate_features
+	sanitize_innate_features()
 
 	S["language"] >> language
 
@@ -2710,6 +2712,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 
 	//Quirks
 	WRITE_FILE(S["all_quirks"]			, all_quirks)
+	WRITE_FILE(S["innate_features"], innate_features)
 	//SKYRAT ADDITION - additional language
 	WRITE_FILE(S["language"]			, language)
 	//

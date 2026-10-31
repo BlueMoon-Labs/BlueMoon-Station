@@ -367,6 +367,8 @@
 	switch(def_zone)
 		if(BODY_ZONE_CHEST)
 			return list(CHEST, GROIN)
+		if(BODY_ZONE_PRECISE_GROIN)
+			return list(GROIN)
 		if(BODY_ZONE_HEAD)
 			return list(HEAD)
 		if(BODY_ZONE_L_ARM)

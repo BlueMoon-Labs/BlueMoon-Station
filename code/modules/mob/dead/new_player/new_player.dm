@@ -560,9 +560,9 @@
 		if(transfer_after)
 			player_mind.late_joiner = TRUE
 		player_mind.active = 0					//we wish to transfer the key manually
-		player_mind.transfer_to(H)					//won't transfer key since the mind is not active
-		// transfer_to() обнуляет src.mind: дальше только через локальную ссылку
+		// Навык движения задаётся до входа в исходное тело, чтобы хвост не считался непривычным.
 		player_mind.set_original_character(H)
+		player_mind.transfer_to(H)					//won't transfer key since the mind is not active
 
 	H.name = real_name
 	. = H
@@ -650,6 +650,11 @@
 /mob/dead/new_player/proc/check_quirk_balance()
 	if(!client)
 		return FALSE
+	for(var/feature_id in client.prefs.innate_features)
+		var/datum/innate_feature/feature = GLOB.innate_features[feature_id]
+		if(!feature?.available(client.prefs))
+			to_chat(src, span_warning("Не выполнены условия врождённой особенности. Проверьте вкладку «Врожденное» перед входом в раунд."))
+			return FALSE
 	if(CONFIG_GET(flag/roundstart_traits) && client.prefs.quirk_balance() < 0)
 		to_chat(src, span_warning("Не хватает очков особенностей. Скорректируйте особенности или модификации персонажа перед входом в раунд."))
 		return FALSE

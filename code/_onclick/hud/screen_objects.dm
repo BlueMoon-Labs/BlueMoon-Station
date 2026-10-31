@@ -193,6 +193,9 @@
 	plane = HUD_PLANE
 
 /atom/movable/screen/inventory/Click(location, control, params)
+	if((slot_id == ITEM_SLOT_FEET || slot_id == ITEM_SLOT_SOCKS) && hud?.mymob && HAS_TRAIT(hud.mymob, TRAIT_NAGA_ANATOMY))
+		to_chat(usr, span_notice("На опорный хвост нельзя надеть обувь или носки."))
+		return
 	// At this point in client Click() code we have passed the 1/10 sec check and little else
 	// We don't even know if it's a middle click
 
@@ -524,6 +527,7 @@
 		overlay_object = new
 		overlay_object.icon_state = "[choice]"
 		hover_overlays_cache[choice] = overlay_object
+	overlay_object.icon = overlay_icon
 	vis_contents += overlay_object
 
 /obj/effect/overlay/zone_sel

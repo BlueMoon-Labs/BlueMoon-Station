@@ -154,15 +154,14 @@
 
 /obj/item/mod/module/jump_jet
 	name = "Jump Jet Module"
+	desc = "Ускорители на развёрнутом корпусе MOD-костюма выбрасывают сжатый газ и отправляют носителя в короткий полёт. \
+		Работают в атмосфере и космосе, не требуют ботинок. Для старта нужна действующая нога или опорный хвост. \
+		Несовместимы с джетпаком, поскольку занимают то же крепление."
 	icon_state = "jump_jet"
-	desc = "Специализированный нагнетатель газа, которы при наборе нужного давления способен \
-	с огромной силой высвободить накопленный безвредный газ, чтобы отправить пользователя в непродолжительный\
-	полет. Работает как в атмосфере, так и в космосе, благодаря встроенным бакам. Несовместим с джетпаком, потому что \
-	крепится ровно туда же."
 	incompatible_modules = list(/obj/item/mod/module/jetpack, /obj/item/mod/module/jump_jet)
 	module_type = MODULE_USABLE
 	cooldown_time = 10 SECONDS
-	required_modpart_index = MOD_PART_FEET
+	required_modpart_index = MOD_PART_CHEST
 	var/beam_icon = 'icons/effects/effects.dmi'
 	var/beam_state = "ion_fade"
 	var/jumpdistance = 5
@@ -171,13 +170,15 @@
 	var/jumps_avaible
 
 /obj/item/mod/module/jump_jet/on_use()
+	if(!mod?.wearer)
+		return FALSE
+	if(!check_required_modpart() || !mod.wearer.get_num_supporting_limbs() || mod.wearer.body_position == LYING_DOWN)
+		mod.balloon_alert(mod.wearer, "нужен корпус и опора!")
+		return FALSE
 	. = ..()
 	if(!.)
 		return
 	var/turf/start_from = mod.wearer.loc
-	if(mod.wearer.body_position == LYING_DOWN)
-		balloon_alert(mod.wearer, "Нужна опора!")
-		return
 	var/atom/target = get_edge_target_turf(mod.wearer, mod.wearer.dir)
 	if(mod.wearer.throw_at(target, jumpdistance, jumpspeed, spin = FALSE, diagonals_first = TRUE))
 		start_from.Beam(mod.wearer, beam_state, beam_icon, 0.5 SECONDS)

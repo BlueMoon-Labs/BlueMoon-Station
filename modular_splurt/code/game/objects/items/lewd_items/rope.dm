@@ -89,6 +89,9 @@ GLOBAL_LIST_INIT(bondage_rope_slowdowns, list(
 			process_knot(C, user)
 
 		if(ROPE_TARGET_LEGS, ROPE_TARGET_LEGS_OBJECT)
+			if(!can_apply_to_legs(C))
+				to_chat(user, span_warning("У [C] нет пары ног, которую можно связать."))
+				return
 			if(C.legcuffed != null && !istype(C.legcuffed, /obj/item/restraints/bondage_rope))
 				to_chat(user, "<span class='warning'>[C] is already legcuffed...</span>")
 				return
@@ -147,7 +150,7 @@ GLOBAL_LIST_INIT(bondage_rope_slowdowns, list(
 			else
 				to_chat(user, "<span class='warning'>You fail to tie [C]'s hands!</span>")
 		if(ROPE_TARGET_LEGS, ROPE_TARGET_LEGS_OBJECT)
-			if(do_mob(user, C, 30) && (C.get_num_legs(FALSE) >= 2 || C.get_leg_ignore()))
+			if(do_mob(user, C, 30) && can_apply_to_legs(C) && (C.get_num_legs(FALSE) >= 2 || C.get_leg_ignore()))
 				playsound(loc, cuffsound, 30, 1, -2)
 				SSblackbox.record_feedback("tally", "handcuffs", 1, type)
 				log_combat(user, C, "handcuffed")
@@ -163,6 +166,8 @@ GLOBAL_LIST_INIT(bondage_rope_slowdowns, list(
 // > Using normal rope, calls finish_knot_normal
 // > Using object rope, handles the handcuffed effect (unless instant self apply is disabled) and sets state to ROPE_STATE_DECIDING_OBJECT
 /obj/item/restraints/bondage_rope/proc/after_process_knot(mob/living/carbon/C, mob/living/user)
+	if((rope_target == ROPE_TARGET_LEGS || rope_target == ROPE_TARGET_LEGS_OBJECT) && !can_apply_to_legs(C))
+		return
 	switch(rope_target)
 		if(ROPE_TARGET_HANDS_IN_FRONT, ROPE_TARGET_HANDS_BEHIND, ROPE_TARGET_LEGS)
 			finish_knot_normal(C, user)
@@ -208,6 +213,8 @@ GLOBAL_LIST_INIT(bondage_rope_slowdowns, list(
 
 // Sets state to ROPE_STATE_TIED, applies handcuffed effect and disappears rope
 /obj/item/restraints/bondage_rope/proc/finish_knot_normal(mob/living/carbon/target, mob/living/carbon/user)
+	if(rope_target == ROPE_TARGET_LEGS && !can_apply_to_legs(target))
+		return
 	rope_state = ROPE_STATE_TIED
 	if(!user.temporarilyRemoveItemFromInventory(src))
 		reset_rope_state()
@@ -223,6 +230,9 @@ GLOBAL_LIST_INIT(bondage_rope_slowdowns, list(
 
 // Sets state to ROPE_STATE_TIED, applies handcuffed effect (if needed) and disappears rope
 /obj/item/restraints/bondage_rope/proc/finish_knot_object(obj/O, O_type)
+	if(rope_target == ROPE_TARGET_LEGS_OBJECT && !can_apply_to_legs(roped_mob))
+		reset_rope_state()
+		return
 	rope_state = ROPE_STATE_TIED
 	if(!roped_master.temporarilyRemoveItemFromInventory(src))
 		reset_rope_state()
@@ -250,6 +260,9 @@ GLOBAL_LIST_INIT(bondage_rope_slowdowns, list(
 	if(roped_mob == null)
 		if(roped_master != null)
 			to_chat(roped_master, "<span class='warning'>Seems like whoever you were roping... Is gone?</span>")
+		reset_rope_state()
+		return FALSE
+	if((rope_target == ROPE_TARGET_LEGS || rope_target == ROPE_TARGET_LEGS_OBJECT) && !can_apply_to_legs(roped_mob))
 		reset_rope_state()
 		return FALSE
 	if(rope_state == ROPE_STATE_TIED || (roped_master != roped_mob || ROPE_SELF_APPLY_INSTANT))
@@ -395,7 +408,7 @@ GLOBAL_LIST_INIT(bondage_rope_slowdowns, list(
 
 // Taken from handcuffs code
 /obj/item/restraints/bondage_rope/proc/apply_legs(mob/living/carbon/target)
-	if(target == null || target.legcuffed != null)
+	if(target == null || target.legcuffed != null || !can_apply_to_legs(target))
 		return
 	target.legcuffed = src
 	target.update_equipment_speed_mods()
@@ -522,7 +535,7 @@ GLOBAL_LIST_INIT(bondage_rope_slowdowns, list(
 					reset_rope_state()
 					qdel(src)
 		if(ROPE_TARGET_LEGS)
-			if(C.get_num_legs(FALSE) >= 2 || C.get_leg_ignore())
+			if(can_apply_to_legs(C) && (C.get_num_legs(FALSE) >= 2 || C.get_leg_ignore()))
 				playsound(loc, cuffsound, 30, 1, -2)
 				SSblackbox.record_feedback("tally", "handcuffs", 1, type)
 				if(C.legcuffed == null)

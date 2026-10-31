@@ -515,7 +515,7 @@
 	var/datum/species/S = H.dna.species
 	for(var/atom/movable/screen/inventory/inv in (static_inventory + toggleable_inventory + extra_inventory)) // Sandstorm edit
 		if(inv.slot_id)
-			if(inv.slot_id in S.no_equip)
+			if((inv.slot_id in S.no_equip) || ((inv.slot_id == ITEM_SLOT_FEET || inv.slot_id == ITEM_SLOT_SOCKS) && HAS_TRAIT(H, TRAIT_NAGA_ANATOMY)))
 				inv.alpha = 128
 			else
 				inv.alpha = initial(inv.alpha)

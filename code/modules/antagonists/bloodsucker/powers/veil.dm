@@ -94,6 +94,10 @@
 	//H.eye_color = random_eye_color()
 	REMOVE_TRAIT(H, TRAIT_DISFIGURED, null) //
 	H.dna.features = random_features(H.dna.species?.id, H.gender)
+	// Маскировка не заменяет конечности и не стирает врождённую анатомию.
+	H.dna.features["innate_features"] = prev_features["innate_features"]
+	if(HAS_TRAIT(H, TRAIT_NAGA_ANATOMY))
+		H.dna.features["taur"] = prev_features["taur"]
 
 	// Apply Appearance
 	H.update_body(TRUE) // Outfit and underwear, also body and privates.
@@ -141,7 +145,12 @@
 		//H.disabilities = prev_disabilities // Restore HUSK, CLUMSY, etc.
 		if (prev_disfigured)
 			ADD_TRAIT(H, TRAIT_DISFIGURED, "husk") // NOTE: We are ASSUMING husk. // H.status_flags |= DISFIGURED	// Restore "Unknown" disfigurement
+		var/list/current_innate_features = H.dna.features["innate_features"]
+		var/current_taur = H.dna.features["taur"]
 		H.dna.features = prev_features
+		H.dna.features["innate_features"] = current_innate_features
+		if(HAS_TRAIT(H, TRAIT_NAGA_ANATOMY))
+			H.dna.features["taur"] = current_taur
 		// Apply Appearance
 		H.update_body(TRUE) // Outfit and underwear, also body and privates.
 		H.update_hair()

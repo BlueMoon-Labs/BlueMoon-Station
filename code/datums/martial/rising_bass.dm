@@ -50,6 +50,9 @@
 	if(owner.incapacitated())
 		to_chat(owner, "<span class='warning'>You can't use [name] while you're incapacitated.</span>")
 		return
+	if(istype(src, /datum/action/risingbassmove/sidekick) && !owner.get_num_supporting_limbs())
+		to_chat(owner, span_warning("Для бокового удара нужна действующая нога или опорный хвост."))
+		return FALSE
 	var/mob/living/carbon/human/H = owner
 	if (H.mind.martial_art.streak == "[movestreak]")
 		H.mind.martial_art.streak = ""
@@ -80,6 +83,9 @@
 	return TRUE
 
 /datum/martial_art/the_rising_bass/proc/sideKick(mob/living/carbon/human/A, mob/living/carbon/human/D)
+	if(!A.get_num_supporting_limbs())
+		to_chat(A, span_warning("Для бокового удара нужна действующая нога или опорный хвост."))
+		return FALSE
 	var/damage = (damage_roll(A,D)*0.5)
 	if(CHECK_MOBILITY(D, MOBILITY_STAND))
 		var/dir = A.dir & (NORTH | SOUTH) ? pick(EAST, WEST) : pick(NORTH, SOUTH)
@@ -87,8 +93,8 @@
 		var/turf/H = get_step(D, dir)
 		var/turf/K = get_step(D, oppdir)
 		A.do_attack_animation(D, ATTACK_EFFECT_KICK)
-		D.visible_message("<span class='warning'>[A] kicks [D] in the side, sliding them over!</span>", \
-						  "<span class='userdanger'>[A] kicks you in the side, forcing you to step away!</span>")
+		D.visible_message(span_warning("[A] бьёт [D] [HAS_TRAIT(A, TRAIT_NAGA_ANATOMY) ? "хвостом" : "ногой"] в бок, отталкивая в сторону!"), \
+			span_userdanger("[A] бьёт вас [HAS_TRAIT(A, TRAIT_NAGA_ANATOMY) ? "хвостом" : "ногой"] в бок, отталкивая в сторону!"))
 		playsound(get_turf(A), 'sound/weapons/thudswoosh.ogg', 50, 1, -1)
 		D.apply_damage(damage, BRUTE, BODY_ZONE_CHEST)
 		D.DefaultCombatKnockdown(60, override_hardstun = 1, override_stamdmg = damage)
@@ -136,11 +142,17 @@
 	return FALSE
 
 /datum/martial_art/the_rising_bass/proc/footSmash(mob/living/carbon/human/A, mob/living/carbon/human/D)
+	if(!A.get_num_supporting_limbs())
+		to_chat(A, span_warning("Для этого приёма нужна действующая нога или опорный хвост."))
+		return FALSE
+	if(!D.get_num_supporting_limbs(FALSE))
+		to_chat(A, span_warning("У цели нет ног или опорного хвоста для этого приёма."))
+		return FALSE
 	var/damage = (damage_roll(A,D)*0.5)
 	if(CHECK_MOBILITY(D, MOBILITY_STAND))
 		A.do_attack_animation(D, ATTACK_EFFECT_KICK)
-		D.visible_message("<span class='warning'>[A] smashes their foot down on [D]'s foot!</span>", \
-						  "<span class='userdanger'>[A] smashes your foot!</span>")
+		D.visible_message(span_warning("[A] с силой придавливает [HAS_TRAIT(D, TRAIT_NAGA_ANATOMY) ? "опорный хвост" : "ступню"] [D] [HAS_TRAIT(A, TRAIT_NAGA_ANATOMY) ? "хвостом" : "ногой"]!"), \
+			span_userdanger("[A] с силой придавливает ваш[HAS_TRAIT(D, TRAIT_NAGA_ANATOMY) ? " опорный хвост" : "у ступню"]!"))
 		playsound(get_turf(A), 'sound/weapons/punch1.ogg', 50, 1, -1)
 		D.apply_damage(damage, BRUTE, pick(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG))
 		D.dropItemToGround(D.get_active_held_item())

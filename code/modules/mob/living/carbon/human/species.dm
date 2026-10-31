@@ -1047,6 +1047,13 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 				accessory_overlay.icon_state = "[g]_[bodypart]_[S.icon_state]_[layertext]"
 			else
 				accessory_overlay.icon_state = "m_[bodypart]_[S.icon_state]_[layertext]"
+			var/datum/sprite_accessory/taur/severed_taur
+			if(bodypart == "taur" && HAS_TRAIT(H, TRAIT_NAGA_ANATOMY) && !H.get_bodypart(BODY_ZONE_L_LEG))
+				var/datum/sprite_accessory/taur/taur = S
+				// Без настроенного состояния сохраняем все исходные слои тавра.
+				if(taur.severed_body_state)
+					severed_taur = taur
+					accessory_overlay.icon_state = "[S.gender_specific ? g : "m"]_taur_[taur.severed_body_state]_[layertext]"
 			if(S.center)
 				accessory_overlay = center_image(accessory_overlay, S.dimension_x, S.dimension_y)
 			var/advanced_color_system = (H.dna.features["color_scheme"] == ADVANCED_CHARACTER_COLORING)
@@ -1147,17 +1154,29 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 			if(glowing)
 				standing += emissive_copy(accessory_overlay)
 
-			if(S.extra) //apply the extra overlay, if there is one
+			var/extra_state = severed_taur ? severed_taur.severed_body_extra_state : (S.extra ? S.icon_state : null)
+			var/matrixed_severed_state = severed_taur?.get_matrixed_severed_state(H)
+			if(matrixed_severed_state)
+				extra_state = matrixed_severed_state
+			if(severed_taur ? !!extra_state : S.extra) // Для обычного тавра сохраняем исходное условие extra.
 				var/mutable_appearance/extra_accessory_overlay = mutable_appearance(S.icon, layer = part_layer)
 				extra_accessory_overlay.category = S.mutable_category
 				if(S.gender_specific)
-					extra_accessory_overlay.icon_state = "[g]_[bodypart]_extra_[S.icon_state]_[layertext]"
+					extra_accessory_overlay.icon_state = "[g]_[bodypart]_extra_[extra_state]_[layertext]"
 				else
-					extra_accessory_overlay.icon_state = "m_[bodypart]_extra_[S.icon_state]_[layertext]"
+					extra_accessory_overlay.icon_state = "m_[bodypart]_extra_[extra_state]_[layertext]"
 				if(S.center)
 					extra_accessory_overlay = center_image(extra_accessory_overlay, S.dimension_x, S.dimension_y)
 
-				switch(S.extra_color_src) //change the color of the extra overlay
+				var/extra_color_src = S.extra_color_src
+				if(matrixed_severed_state)
+					// Используем ту же окраску, включая принудительный цвет и эффекты основы культи.
+					extra_accessory_overlay.color = accessory_overlay.color
+					extra_color_src = NONE
+				else if(severed_taur && !isnull(severed_taur.severed_body_extra_color_src))
+					extra_accessory_overlay.color = severed_taur.get_severed_color(H, severed_taur.severed_body_extra_color_src)
+					extra_color_src = NONE
+				switch(extra_color_src) // Обычные слои сохраняют прежнюю схему окрашивания.
 					if(MUTCOLORS)
 						if(fixed_mut_color)
 							extra_accessory_overlay.color = "#[fixed_mut_color]"
@@ -1197,17 +1216,22 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 				if(glowing)
 					standing += emissive_copy(extra_accessory_overlay)
 
-			if(S.extra2) //apply the extra overlay, if there is one
+			var/extra2_state = severed_taur ? severed_taur.severed_body_extra2_state : (S.extra2 ? S.icon_state : null)
+			if(severed_taur ? !!extra2_state : S.extra2) // Для обычного тавра сохраняем исходное условие extra2.
 				var/mutable_appearance/extra2_accessory_overlay = mutable_appearance(S.icon, layer = part_layer)
 				extra2_accessory_overlay.category = S.mutable_category
 				if(S.gender_specific)
-					extra2_accessory_overlay.icon_state = "[g]_[bodypart]_extra2_[S.icon_state]_[layertext]"
+					extra2_accessory_overlay.icon_state = "[g]_[bodypart]_extra2_[extra2_state]_[layertext]"
 				else
-					extra2_accessory_overlay.icon_state = "m_[bodypart]_extra2_[S.icon_state]_[layertext]"
+					extra2_accessory_overlay.icon_state = "m_[bodypart]_extra2_[extra2_state]_[layertext]"
 				if(S.center)
 					extra2_accessory_overlay = center_image(extra2_accessory_overlay, S.dimension_x, S.dimension_y)
 
-				switch(S.extra2_color_src) //change the color of the extra overlay
+				var/extra2_color_src = S.extra2_color_src
+				if(severed_taur && !isnull(severed_taur.severed_body_extra2_color_src))
+					extra2_accessory_overlay.color = severed_taur.get_severed_color(H, severed_taur.severed_body_extra2_color_src)
+					extra2_color_src = NONE
+				switch(extra2_color_src) // Обычные слои сохраняют прежнюю схему окрашивания.
 					if(MUTCOLORS)
 						if(fixed_mut_color)
 							extra2_accessory_overlay.color = "#[fixed_mut_color]"
@@ -1355,6 +1379,8 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 			return equip_delay_self_check(I, H, bypass_equip_delay_self)
 		//
 		if(ITEM_SLOT_FEET)
+			if(HAS_TRAIT(H, TRAIT_NAGA_ANATOMY))
+				return FALSE
 			if(H.shoes)
 				return FALSE
 			if( !(I.slot_flags & ITEM_SLOT_FEET) )
@@ -1419,6 +1445,8 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 				return FALSE
 			return equip_delay_self_check(I, H, bypass_equip_delay_self)
 		if(ITEM_SLOT_SOCKS)
+			if(HAS_TRAIT(H, TRAIT_NAGA_ANATOMY))
+				return FALSE
 			if(H.w_socks)
 				return FALSE
 			if( !(I.slot_flags & ITEM_SLOT_SOCKS) )
@@ -1511,7 +1539,10 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 				return FALSE
 			if(!istype(I, /obj/item/restraints/legcuffs))
 				return FALSE
-			if(num_legs < 2)
+			var/obj/item/restraints/legcuffs/restraint = I
+			if(!restraint.can_apply_to_legs(H))
+				return FALSE
+			if(num_legs < 2 && !HAS_TRAIT(H, TRAIT_NAGA_ANATOMY))
 				return FALSE
 			return TRUE
 		if(ITEM_SLOT_BACKPACK)
@@ -1811,8 +1842,12 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 	else
 
 		var/atk_verb = user.dna.species.attack_verb
-		if(!(target.mobility_flags & MOBILITY_STAND))
+		var/can_kick = user.get_num_supporting_limbs() > 0
+		if(atk_verb == ATTACK_EFFECT_KICK && !can_kick)
+			atk_verb = ATTACK_EFFECT_PUNCH
+		if(!(target.mobility_flags & MOBILITY_STAND) && can_kick)
 			atk_verb = ATTACK_EFFECT_KICK
+		var/tail_attack = atk_verb == ATTACK_EFFECT_KICK && HAS_TRAIT(user, TRAIT_NAGA_ANATOMY)
 
 		switch(atk_verb)
 			if(ATTACK_EFFECT_KICK)
@@ -1843,18 +1878,28 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 
 		if(!damage || !affecting)//future-proofing for species that have 0 damage/weird cases where no zone is targeted
 			playsound(target.loc, user.dna.species.miss_sound, 25, TRUE, -1)
-			target.visible_message("<span class='danger'>[user]'s [atk_verb] misses [target]!</span>", \
-							"<span class='danger'>You avoid [user]'s [atk_verb]!</span>", "<span class='hear'>You hear a swoosh!</span>", null, COMBAT_MESSAGE_RANGE, null, \
-							user, "<span class='warning'>Your [atk_verb] misses [target]!</span>")
+			if(tail_attack)
+				target.visible_message(span_danger("[user] промахивается хвостом по [target]!"), \
+					span_danger("Вы уклоняетесь от удара хвостом [user]!"), span_hear("Вы слышите свист!"), null, COMBAT_MESSAGE_RANGE, null, \
+					user, span_warning("Вы промахиваетесь хвостом по [target]!"))
+			else
+				target.visible_message("<span class='danger'>[user]'s [atk_verb] misses [target]!</span>", \
+								"<span class='danger'>You avoid [user]'s [atk_verb]!</span>", "<span class='hear'>You hear a swoosh!</span>", null, COMBAT_MESSAGE_RANGE, null, \
+								user, "<span class='warning'>Your [atk_verb] misses [target]!</span>")
 			log_combat(user, target, "attempted to punch")
 			return FALSE
 
 
 		var/armor_block = target.run_armor_check(affecting, MELEE)
 		playsound(target.loc, user.dna.species.attack_sound_override || attack_sound, 25, 1, -1)
-		target.visible_message("<span class='danger'>[user] [atk_verb]ed [target]!</span>", \
-					"<span class='userdanger'>[user] [atk_verb]ed you!</span>", null, COMBAT_MESSAGE_RANGE, null, \
-					user, "<span class='danger'>You [atk_verb]ed [target]!</span>")
+		if(tail_attack)
+			target.visible_message(span_danger("[user] бьёт [target] хвостом!"), \
+				span_userdanger("[user] бьёт вас хвостом!"), null, COMBAT_MESSAGE_RANGE, null, \
+				user, span_danger("Вы бьёте [target] хвостом!"))
+		else
+			target.visible_message("<span class='danger'>[user] [atk_verb]ed [target]!</span>", \
+						"<span class='userdanger'>[user] [atk_verb]ed you!</span>", null, COMBAT_MESSAGE_RANGE, null, \
+						user, "<span class='danger'>You [atk_verb]ed [target]!</span>")
 
 		target.set_last_attacker(user)
 		user.dna.species.spec_unarmedattacked(user, target)

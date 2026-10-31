@@ -485,6 +485,7 @@
 #include "strippable_hands_gate.dm"
 #include "subsystem_init.dm"
 #include "surgeries.dm"
+#include "supporting_tail.dm"
 #include "synthcorrupt_emitter.dm"
 #include "tank_idle_sleep.dm"
 #include "teleporters.dm"
