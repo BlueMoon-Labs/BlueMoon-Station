@@ -51,3 +51,37 @@
 					TEST_ASSERT(isnull(generic_a.gases[padding_gas]), "нулевой ключ общего пути должен был уйти чисткой")
 					for(var/datum/gas_mixture/mix as anything in list(fast_a, fast_b, generic_a, generic_b))
 						qdel(mix)
+
+/// Порог, ниже которого react() отпускает смесь O2/N2 без сбора кандидатов, совпадает с перебором безгазовых реакций, а сам выход ведёт себя как общий путь.
+/datum/unit_test/atmos_react_warm_station_air
+
+/datum/unit_test/atmos_react_warm_station_air/Run()
+	TEST_ASSERT(SSair?.initialized, "SSair не инициализирован")
+	var/padding_gas = unit_test_inert_padding_gas()
+	TEST_ASSERT_NOTNULL(padding_gas, "нужен газ без реакций и горения")
+	var/list/temp_gated = SSair.temp_gated_reactions
+	var/list/needs_fuel = SSair.temp_gated_needs_fuel
+	var/list/fuel_temps = GLOB.gas_data.fire_temperatures
+	var/ceiling = SSair.temp_gated_air_ceiling
+	TEST_ASSERT(ceiling > T20C + 100, "тёплый воздух станции должен уходить ранним выходом, порог [ceiling]")
+	for(var/temperature in list(T20C, SSair.temp_gated_min_temp, T20C + 40, 1000, 5000, 1e6))
+		var/air_has_fuel = (fuel_temps[GAS_O2] && temperature >= fuel_temps[GAS_O2]) || (fuel_temps[GAS_N2] && temperature >= fuel_temps[GAS_N2])
+		var/collects_candidate = FALSE
+		for(var/datum/gas_reaction/reaction as anything in temp_gated)
+			if(temperature >= temp_gated[reaction] && (!needs_fuel[reaction] || air_has_fuel))
+				collects_candidate = TRUE
+				break
+		TEST_ASSERT_EQUAL(collects_candidate, temperature >= ceiling, "порог раннего выхода не совпал с перебором реакций при [temperature] K")
+
+		var/datum/gas_mixture/fast = unit_test_station_air(MOLES_O2STANDARD, MOLES_N2STANDARD, temperature)
+		var/datum/gas_mixture/generic = unit_test_station_air(MOLES_O2STANDARD, MOLES_N2STANDARD, temperature)
+		generic.set_moles(padding_gas, 0)
+		fast.reaction_results = list("fire" = 1)
+		generic.reaction_results = list("fire" = 1)
+		var/fast_result = fast.react(null)
+		TEST_ASSERT_EQUAL(fast_result, generic.react(null), "итог react() разошёлся при [temperature] K")
+		TEST_ASSERT_EQUAL(unit_test_mix_state(fast), unit_test_mix_state(generic), "смесь после react() разошлась при [temperature] K")
+		if(fast_result == NO_REACTION)
+			TEST_ASSERT(!length(fast.reaction_results), "ранний выход оставил результат прошлой реакции при [temperature] K")
+		qdel(fast)
+		qdel(generic)
