@@ -113,6 +113,7 @@
 #define INNATE_NAGA_TAIL "naga_tail"
 #define TRAIT_NAGA_ANATOMY "naga_anatomy"
 #define TRAIT_NAGA_LOCOMOTION "naga_locomotion"
+#define NAGA_TAIL_COVERAGE (CHEST | GROIN)
 
 //subtabs for preferences tab
 #define GAME_PREFS_TAB			0

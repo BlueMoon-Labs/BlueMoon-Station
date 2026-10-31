@@ -427,11 +427,15 @@
 	return CHECK_MOBILITY(src, MOBILITY_UI)
 
 /mob/living/carbon/human/proc/is_zone_covered_by_clothing(target_zone)
-	if(target_zone == BODY_ZONE_L_LEG || target_zone == BODY_ZONE_R_LEG)
+	var/covered_part
+	if(HAS_TRAIT(src, TRAIT_NAGA_ANATOMY) && (target_zone == BODY_ZONE_L_LEG || target_zone == BODY_ZONE_R_LEG || target_zone == BODY_ZONE_PRECISE_GROIN))
+		covered_part = NAGA_TAIL_COVERAGE
+	else if(target_zone == BODY_ZONE_L_LEG || target_zone == BODY_ZONE_R_LEG)
 		var/obj/item/bodypart/limb = get_bodypart(target_zone)
 		if(limb)
 			target_zone = limb.get_clothing_zone()
-	var/covered_part = zone2body_parts_covered_complicated(target_zone)
+	if(!covered_part)
+		covered_part = zone2body_parts_covered_complicated(target_zone)
 	if(!covered_part)
 		if(above_neck(target_zone))
 			covered_part = HEAD
@@ -467,6 +471,9 @@
 					. = 0
 		else
 			var/obj/item/bodypart/BP = get_bodypart(target_zone)
+			if(target_zone == BODY_ZONE_PRECISE_GROIN && HAS_TRAIT(src, TRAIT_NAGA_ANATOMY))
+				// Доступ к основанию хвоста существует и перед пересадкой, когда самого хвоста нет.
+				BP = get_bodypart(BODY_ZONE_L_LEG) || get_bodypart(BODY_ZONE_CHEST)
 			var/obj/item/clothing/CS = get_bodypart_protecting_clothing_by_coverage(src, BP)
 			if(CS && (CS.clothing_flags & THICKMATERIAL))
 				. = 0

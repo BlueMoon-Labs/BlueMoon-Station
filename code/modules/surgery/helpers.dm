@@ -242,9 +242,11 @@
 	var/covered_locations = 0	//based on body_parts_covered
 	var/face_covered = 0	//based on flags_inv
 	var/eyesmouth_covered = 0	//based on flags_cover
+	var/required_coverage = NONE
 	if(iscarbon(M))
 		var/mob/living/carbon/C = M
-		if(location == BODY_ZONE_PRECISE_GROIN && HAS_TRAIT(C, TRAIT_NAGA_ANATOMY))
+		if(HAS_TRAIT(C, TRAIT_NAGA_ANATOMY) && (location == BODY_ZONE_PRECISE_GROIN || location == BODY_ZONE_L_LEG || location == BODY_ZONE_R_LEG))
+			required_coverage = NAGA_TAIL_COVERAGE
 			location = BODY_ZONE_CHEST
 		if(location == BODY_ZONE_L_LEG || location == BODY_ZONE_R_LEG)
 			var/obj/item/bodypart/limb = C.get_bodypart(location)
@@ -262,6 +264,8 @@
 				face_covered |= I.flags_inv
 				eyesmouth_covered |= I.flags_cover
 
+	if(covered_locations & required_coverage)
+		return FALSE
 	switch(location)
 		if(BODY_ZONE_HEAD)
 			if(covered_locations & HEAD)

@@ -425,20 +425,30 @@
 	var/protected = human.getarmor(human.get_bodypart(BODY_ZONE_R_LEG), MELEE)
 	TEST_ASSERT_EQUAL(protected, unprotected + vest.armor.getRating(MELEE), "Броня тела защищает единый хвост при попадании в правую зону.")
 	TEST_ASSERT_EQUAL(human.getarmor(tail, MELEE), protected, "У левой и правой зон одинаковая защита.")
+	TEST_ASSERT(vest in human.clothingonpart(tail), "Одежда торса учитывается среди вещей, покрывающих хвост.")
 	vest.clothing_flags |= THICKMATERIAL
 	TEST_ASSERT_EQUAL(zone2body_parts_covered_complicated(BODY_ZONE_PRECISE_GROIN), CHEST, "Пах по-прежнему соответствует покрытию тела.")
-	TEST_ASSERT_EQUAL(get_bodypart_protecting_clothing_by_coverage(human, tail), vest, "Лечение находит броню тела над хвостом.")
-	for(var/zone in list(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG))
-		TEST_ASSERT(human.is_zone_covered_by_clothing(zone), "Одежда на теле закрывает хвост для инъекций: [zone].")
-		TEST_ASSERT(!human.can_inject(null, FALSE, zone), "Толстая броня тела блокирует инъекции в хвост: [zone].")
-		TEST_ASSERT(!get_location_accessible(human, zone), "Покрытие тела блокирует хирургический доступ к хвосту: [zone].")
-	TEST_ASSERT(!get_location_accessible(human, BODY_ZONE_PRECISE_GROIN), "Одежда на теле закрывает доступ к основанию хвоста.")
-	vest.body_parts_covered = GROIN
-	TEST_ASSERT_EQUAL(human.getarmor(tail, MELEE), unprotected, "Отдельное покрытие паха без тела не даёт броню хвосту.")
+	for(var/coverage in list(CHEST, GROIN, NAGA_TAIL_COVERAGE))
+		vest.body_parts_covered = coverage
+		TEST_ASSERT_EQUAL(human.getarmor(tail, MELEE), protected, "Покрытие [coverage] защищает хвост, не удваивая броню одной вещи.")
+		TEST_ASSERT_EQUAL(human.getarmor(human.get_bodypart(BODY_ZONE_R_LEG), MELEE), protected, "Покрытие [coverage] действует и через правую зону хвоста.")
+		TEST_ASSERT(vest in human.clothingonpart(tail), "Одежда торса или паха входит в покрытие хвоста.")
+		TEST_ASSERT_EQUAL(length(human.clothingonpart(tail)), 1, "Вещь с обоими флагами не дублируется в списке покрытия хвоста.")
+		TEST_ASSERT_EQUAL(get_bodypart_protecting_clothing_by_coverage(human, tail), vest, "Лечение находит одежду с покрытием [coverage].")
+		for(var/zone in list(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG, BODY_ZONE_PRECISE_GROIN))
+			TEST_ASSERT(human.is_zone_covered_by_clothing(zone), "Торс или пах закрывают хвост для инъекций: [zone].")
+			TEST_ASSERT(!human.can_inject(null, FALSE, zone), "Толстая одежда торса или паха блокирует прокол: [zone].")
+			TEST_ASSERT(!get_location_accessible(human, zone), "Одежда торса или паха закрывает хирургический доступ: [zone].")
+		vest.clothing_flags &= ~THICKMATERIAL
+		for(var/zone in list(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG, BODY_ZONE_PRECISE_GROIN))
+			TEST_ASSERT(human.can_inject(null, FALSE, zone), "Тонкая одежда сохраняет обычную доступность прокола.")
+			TEST_ASSERT(!human.can_inject_syringe(null, FALSE, zone), "Обычная игла не проходит через тонкую одежду торса или паха.")
+		vest.clothing_flags |= THICKMATERIAL
 	vest.body_parts_covered = LEGS
 	TEST_ASSERT_EQUAL(human.getarmor(tail, MELEE), unprotected, "Броня только ног не защищает хвост.")
+	TEST_ASSERT(!(vest in human.clothingonpart(tail)), "Одежда только ног не входит в покрытие хвоста.")
 	TEST_ASSERT(!get_bodypart_protecting_clothing_by_coverage(human, tail), "Броня ног не мешает лечить хвост.")
-	for(var/zone in list(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG))
+	for(var/zone in list(BODY_ZONE_L_LEG, BODY_ZONE_R_LEG, BODY_ZONE_PRECISE_GROIN))
 		TEST_ASSERT(!human.is_zone_covered_by_clothing(zone), "Покрытие ног не закрывает хвост для инъекций: [zone].")
 		TEST_ASSERT(human.can_inject(null, FALSE, zone), "Броня ног не блокирует инъекции в хвост: [zone].")
 		TEST_ASSERT(get_location_accessible(human, zone), "Броня ног не закрывает хирургический доступ к хвосту: [zone].")
@@ -452,6 +462,11 @@
 	TEST_ASSERT(uniform.body_parts_covered & LEG_LEFT, "Удар по хвосту не разрывает покрытие левой ноги.")
 	TEST_ASSERT_EQUAL(human.getarmor(tail, MELEE), unprotected, "Разорванная форма перестаёт защищать хвост.")
 	TEST_ASSERT(get_location_accessible(human, BODY_ZONE_R_LEG), "Разрыв покрытия открывает доступ к хвосту.")
+	vest.body_parts_covered = GROIN
+	tail.drop_limb()
+	TEST_ASSERT(!get_location_accessible(human, BODY_ZONE_PRECISE_GROIN), "Одежда паха мешает начать пересадку отсутствующего хвоста.")
+	TEST_ASSERT(human.is_zone_covered_by_clothing(BODY_ZONE_PRECISE_GROIN), "Основание отсутствующего хвоста остаётся закрыто одеждой паха.")
+	TEST_ASSERT(!human.can_inject(null, FALSE, BODY_ZONE_PRECISE_GROIN), "Толстая защита паха блокирует прокол и без хвоста.")
 
 /datum/unit_test/supporting_tail/fracture_and_paralysis/Run()
 	var/mob/living/carbon/human/human = patient()
