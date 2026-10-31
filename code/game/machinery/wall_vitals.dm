@@ -214,14 +214,14 @@
 
 /obj/machinery/vitals_reader/add_context(atom/source, list/context, obj/item/held_item, mob/user)
 	if(held_item?.tool_behaviour == TOOL_WRENCH)
-		context[SCREENTIP_CONTEXT_LMB] = "Detach"
+		context[SCREENTIP_CONTEXT_LMB] = "Снять"
 		. = CONTEXTUAL_SCREENTIP_SET
 	if(is_operational)
 		if(isnull(connected) && held_item?.tool_behaviour == TOOL_MULTITOOL)
-			context[SCREENTIP_CONTEXT_LMB] = "Connect to nearby machine"
+			context[SCREENTIP_CONTEXT_LMB] = "Подключить к машине рядом"
 			. = CONTEXTUAL_SCREENTIP_SET
 		if(!isnull(patient))
-			context[SCREENTIP_CONTEXT_SHIFT_LMB] = "Examine vitals"
+			context[SCREENTIP_CONTEXT_SHIFT_LMB] = "Осмотреть показатели"
 			. = CONTEXTUAL_SCREENTIP_SET
 	return .
 

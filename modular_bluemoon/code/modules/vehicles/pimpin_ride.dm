@@ -141,27 +141,27 @@
 	. = ..()
 
 	if(!held_item && occupant_amount() > 0 && is_key(inserted_key) && occupants.Find(user))
-		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Remove key")
+		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Вынуть ключ")
 		return CONTEXTUAL_SCREENTIP_SET
 
 	if(istype(held_item, /obj/item/storage/bag/trash) && !trash_bag)
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Add trash bag")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Повесить мешок")
 		return CONTEXTUAL_SCREENTIP_SET
 
 	if(istype(held_item, /obj/item/janicart_upgrade) && !installed_upgrade)
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Install upgrade")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Установить улучшение")
 		return CONTEXTUAL_SCREENTIP_SET
 
 	if(istype(held_item, /obj/item/screwdriver) && installed_upgrade)
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Remove upgrade")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Снять улучшение")
 		return CONTEXTUAL_SCREENTIP_SET
 
 	if(is_key(held_item) && !is_key(inserted_key))
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Insert key")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Вставить ключ")
 		return CONTEXTUAL_SCREENTIP_SET
 
 	if(trash_bag)
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Insert into trash bag")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Положить в мешок")
 		return CONTEXTUAL_SCREENTIP_SET
 
 /**

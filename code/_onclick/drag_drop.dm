@@ -28,6 +28,8 @@
 	if(QDELETED(object)) //Yep, you can click on qdeleted things before they have time to nullspace. Fun.
 		return
 	SEND_SIGNAL(src, COMSIG_CLIENT_MOUSEDOWN, object, location, control, params)
+	if(mob && findtext(params, "button=right"))
+		mob.right_button_chorded = FALSE
 	if(mouse_down_icon)
 		mouse_pointer_icon = mouse_down_icon
 	var/delay = mob.CanMobAutoclick(object, location, params)

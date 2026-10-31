@@ -44,7 +44,7 @@
 	SIGNAL_HANDLER
 
 	if(ishuman(user))
-		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Pick up")
+		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Взять на руки")
 		return CONTEXTUAL_SCREENTIP_SET
 
 /datum/element/mob_holder/proc/mob_try_pickup(mob/living/source, mob/user)

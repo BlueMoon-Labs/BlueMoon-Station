@@ -3,6 +3,7 @@ import { AdminSection } from './AdminSection';
 import { MentorSection } from './MentorSection';
 import { ChatSection } from './sections/ChatSection';
 import { ContentSection } from './sections/ContentSection';
+import { ContextMenuSection } from './sections/ContextMenuSection';
 import { GameplaySection } from './sections/GameplaySection';
 import { GraphicsSection } from './sections/GraphicsSection';
 import { SoundsSection } from './sections/SoundsSection';
@@ -12,6 +13,7 @@ const BASE_CATEGORIES = [
   { key: 'graphics', label: 'Графика', section: GraphicsSection },
   { key: 'chat', label: 'Чат', section: ChatSection },
   { key: 'gameplay', label: 'Геймплей', section: GameplaySection },
+  { key: 'context_menu', label: 'Меню ПКМ', section: ContextMenuSection },
   { key: 'content', label: 'Контент', section: ContentSection },
 ];
 

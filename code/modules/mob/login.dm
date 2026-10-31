@@ -81,6 +81,7 @@
 	update_client_colour()
 	update_mouse_pointer()
 	if(client)
+		client.update_right_click_mode()
 		client.view_size?.resetToDefault()
 		if(client.player_details && istype(client.player_details))
 			if(client.player_details.player_actions.len)

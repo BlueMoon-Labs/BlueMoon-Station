@@ -334,7 +334,7 @@
 /obj/machinery/power/apc/add_context(atom/source, list/context, obj/item/held_item, mob/living/user)
 	. = ..()
 	if(operating)
-		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, locked ? "Unlock" : "Lock")
+		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, locked ? "Разблокировать" : "Заблокировать")
 		return CONTEXTUAL_SCREENTIP_SET
 
 /obj/machinery/power/apc/Destroy()

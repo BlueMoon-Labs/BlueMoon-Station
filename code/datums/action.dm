@@ -44,8 +44,6 @@
 	/// This is the icon state for the icon that appears on the button
 	var/button_icon_state = "default"
 	var/button_overlay_state
-	/// При наведении на кнопу, блокирует открытие контестного меню ПКМ
-	var/button_block_right_click_context_menu = FALSE
 
 /datum/action/New(Target)
 	link_to(Target)
@@ -293,8 +291,6 @@
 	button.actiontooltipstyle = buttontooltipstyle
 	if(desc)
 		button.desc = desc
-	if(button_block_right_click_context_menu)
-		TOGGLE_BITFIELD(button.flags_1, PREVENT_RIGHT_CLICK_CONTEXT_MENU_1)
 	return button
 
 /datum/action/proc/SetId(atom/movable/screen/movable/action_button/our_button, mob/owner)

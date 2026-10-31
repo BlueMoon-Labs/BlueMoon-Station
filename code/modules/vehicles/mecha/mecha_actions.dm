@@ -18,7 +18,6 @@
 // Модули имеют отдельное действие на каждого оператора, в том числе в двухместных мехах.
 /datum/action/vehicle/sealed/mecha/module
 	var/obj/item/mecha_parts/mecha_equipment/equipment
-	button_block_right_click_context_menu = TRUE
 
 /datum/action/vehicle/sealed/mecha/module/Destroy()
 	if(equipment && owner)
