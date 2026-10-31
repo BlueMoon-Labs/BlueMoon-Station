@@ -472,6 +472,7 @@
 #include "slippery_worn_items.dm"
 #include "sort_tim.dm"
 #include "space_cleaner_gentle.dm"
+#include "space_ruin_planetary_turfs.dm"
 #include "spatial_grid.dm"
 #include "spawn_humans.dm"
 #include "spawn_mobs.dm"
