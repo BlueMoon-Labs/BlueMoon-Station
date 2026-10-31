@@ -778,6 +778,7 @@ GLOBAL_LIST(unit_test_ghost_notifications)
 	client.prefs.copy_to(src)
 	client.prefs.apply_prefs_modified_limbs(src)
 	client.prefs.apply_prefs_body_mods(src)
+	update_body()
 	// BLUEMOON ADD START - загрузка татуировок для ghost roles (после copy_to, чтобы set_species() не уничтожил данные)
 	client.prefs.apply_tattoos_to_human(src)
 	// BLUEMOON ADD END
