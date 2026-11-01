@@ -25,7 +25,7 @@
 		return
 	if(!is_freq_listening(signal))
 		return
-	if(signal.data["done"]) // already broadcast by another receiver network or all-in-one mainframe
+	if(!istype(signal, /datum/signal/subspace/messaging/tablet_message) && !istype(signal, /datum/signal/subspace/pda) && (signal.data["done"] || signal.original?.data["done"]))
 		return
 
 	signal.levels = list()

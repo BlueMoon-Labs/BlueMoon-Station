@@ -1076,6 +1076,7 @@
 	heard += hearing_args[HEARING_RAW_MESSAGE]
 
 /datum/unit_test/heretic_echo_ring_jams_radio/Run()
+	netrun_connected_test_area()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_ECHO
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_echo)
@@ -1107,10 +1108,12 @@
 	receiver.tracked_radio = intercom
 	heard.Cut()
 	victim.say("Меня слышно рядом.", language = /datum/language/common, ignore_spam = TRUE)
+	TEST_ASSERT(netrun_wait_radio(intercom), "Глушение проверяется после завершения работы микрофона.")
 	TEST_ASSERT(findtext(jointext(heard, " "), "слышно рядом"), "Обычная речь звенящей цели слышна рядом.")
 	TEST_ASSERT_EQUAL(receiver.received, 0, "Интерком с микрофоном не передаёт речь звенящей цели.")
 	TEST_ASSERT_EQUAL(victim.count_shown("не слышит вашего голоса"), 1, "Чужой микрофон рядом не присылает цели жалоб.")
 	listener.say("Меня слышно по рации.", language = /datum/language/common, ignore_spam = TRUE)
+	TEST_ASSERT(netrun_wait_radio(intercom), "Речь другого слушателя доходит по штатному транспорту.")
 	TEST_ASSERT(receiver.received > 0, "Тот же интерком передаёт речь других.")
 	qdel(ringing)
 	victim.say(";Снова на связи.", language = /datum/language/common, ignore_spam = TRUE)
@@ -1221,6 +1224,7 @@
 	heard += list(list("message" = hearing_args[HEARING_MESSAGE], "freq" = hearing_args[HEARING_RADIO_FREQ]))
 
 /datum/unit_test/heretic_echo_voice/Run()
+	netrun_connected_test_area()
 	var/datum/antagonist/heretic/heretic = allocate_heretic()
 	heretic.selected_path = PATH_ECHO
 	heretic.gain_knowledge(/datum/eldritch_knowledge/base_echo)
@@ -1245,6 +1249,7 @@
 	var/obj/machinery/telecomms/receiver/echo_radio_probe/receiver = allocate(/obj/machinery/telecomms/receiver/echo_radio_probe, locate(origin.x, origin.y + 3, origin.z))
 	receiver.tracked_radio = intercom
 	listener.say("Проверка микрофона.", language = /datum/language/common, ignore_spam = TRUE)
+	TEST_ASSERT(netrun_wait_radio(intercom), "Микрофон завершает передачу до проверки приёмника.")
 	var/transmitted = receiver.received
 	TEST_ASSERT(transmitted > 0, "Интерком с включённым микрофоном передаёт по рации обычную речь рядом.")
 	heard.Cut()
@@ -1252,6 +1257,7 @@
 	user.ckey = "echovoicetester"
 	user.logging[num2text(LOG_SAY)] = list()
 	TEST_ASSERT(echo.fake_voice(user, intercom, "Капитан", "Все в бар."), "Интерком говорит чужим голосом.")
+	TEST_ASSERT(netrun_wait_radio(intercom), "Чужой голос проверяется после завершения возможной работы микрофона.")
 	TEST_ASSERT_EQUAL(length(heard), 1, "Слушатель рядом слышит фразу один раз.")
 	var/list/line = heard[1]
 	TEST_ASSERT(findtext(line["message"], "Капитан"), "Звучит выбранное имя: [line["message"]]")

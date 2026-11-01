@@ -359,7 +359,7 @@
 	. = ..()
 
 	echo = new(src)
-	echo.plane = FIELD_OF_VISION_LAYER
+	echo.plane = GAME_PLANE
 
 	filter_on_user = new(src)
 	particle_effect_holder = new(src)
@@ -595,7 +595,7 @@
 /obj/effect/dress_particle_holder
 	pixel_y = -8
 	alpha = 150
-	plane = FIELD_OF_VISION_LAYER
+	plane = GAME_PLANE
 	appearance_flags = PIXEL_SCALE
 	mouse_opacity = MOUSE_OPACITY_TRANSPARENT
 	vis_flags = VIS_INHERIT_LAYER

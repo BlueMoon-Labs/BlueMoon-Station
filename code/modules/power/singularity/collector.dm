@@ -77,7 +77,7 @@
 			var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_ENG)
 			if(D)
 				D.adjust_money(bitcoins_mined)
-			SSresearch.science_tech.add_point_type(TECHWEB_POINT_TYPE_DEFAULT, bitcoins_mined)
+			SSresearch.science_tech?.add_point_type(TECHWEB_POINT_TYPE_DEFAULT, bitcoins_mined)
 			last_push = stored_power
 			stored_power = 0
 

@@ -519,6 +519,10 @@
 #define COMSIG_MACHINE_EJECT_OCCUPANT "eject_occupant"			//from base of obj/machinery/dropContents() (occupant)
 ///from base power_change() when power is lost
 #define COMSIG_MACHINERY_POWER_LOST "machinery_power_lost"
+	/// Any machine_stat bit transition, including EMP recovery and repairs: (old_value, new_value).
+#define COMSIG_MACHINERY_STAT_CHANGED "machinery_stat_changed"
+	/// Native airlock power/wire control transitions that change network reachability.
+#define COMSIG_AIRLOCK_NETWORK_CHANGED "airlock_network_changed"
 ///from base power_change() when power is restored
 #define COMSIG_MACHINERY_POWER_RESTORED "machinery_power_restored"
 ///from /obj/machinery/obj_break(damage_flag): (damage_flag)

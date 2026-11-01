@@ -105,7 +105,7 @@ GLOBAL_VAR_INIT(war_declared, FALSE)
 
 	// Science bonus - emergency research data from "Nanotrasen R&D"
 	if(SSresearch?.science_tech)
-		SSresearch.science_tech.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = 5000))
+		SSresearch.science_tech?.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = 5000))
 		for(var/obj/machinery/announcement_system/AS in GLOB.announcement_systems)
 			if(AS?.radio && AS.is_operational())
 				AS.radio.talk_into(AS, "Additional research data received from Nanotrasen R&D Division following the emergency protocol.", RADIO_CHANNEL_SCIENCE)

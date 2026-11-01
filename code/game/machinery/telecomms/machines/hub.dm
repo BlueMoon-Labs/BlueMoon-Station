@@ -32,10 +32,8 @@
 		// It's probably compressed so send it to the bus.
 		relay_information(signal, /obj/machinery/telecomms/bus, TRUE)
 	else
-		// Send it to each relay so their levels get added...
-		relay_information(signal, /obj/machinery/telecomms/relay)
-		// Then broadcast that signal to
-		relay_information(signal, /obj/machinery/telecomms/broadcaster)
+		// Relay levels return in packets before the hub sends its broadcast snapshot.
+		netrun_relay_then_broadcast(signal)
 
 //Preset HUB
 

@@ -1,0 +1,236 @@
+/// The implanted port is physically usable by its wearer, without exposing an organ UI target.
+/datum/unit_test/netrun_implant_shard_port/Run()
+	var/datum/netrun_client_scene/scene = allocate(/datum/netrun_client_scene, run_loc_floor_bottom_left)
+	var/obj/item/netrun_shard/shard = allocate(/obj/item/netrun_shard/agent_workshop)
+	TEST_ASSERT(scene.user.put_in_hands(shard), "The wearer holds a real shard")
+	shard.afterattack(scene.user, scene.user, TRUE)
+	TEST_ASSERT_EQUAL(scene.implant.console.inventory.shard, shard, "Applying a shard to oneself loads the implanted port")
+	TEST_ASSERT_EQUAL(shard.loc, scene.implant, "The implant physically contains the loaded shard")
+	TEST_ASSERT_EQUAL(length(shard.file_store.files), 7, "The workshop provides all seven private agent templates")
+	scene.implant.console.eject_shard(scene.user)
+	TEST_ASSERT_NULL(scene.implant.console.inventory.shard, "Normal ejection frees the physical slot")
+	TEST_ASSERT(shard in scene.user.held_items, "Ejection returns the actual media to the wearer")
+	var/mob/living/carbon/human/outsider = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/obj/item/netrun_shard/foreign = allocate(/obj/item/netrun_shard)
+	TEST_ASSERT(outsider.put_in_hands(foreign), "A bystander holds separate media")
+	TEST_ASSERT(!scene.implant.console.insert_shard(foreign, outsider), "A bystander cannot load another person's implant")
+	TEST_ASSERT_NULL(scene.implant.console.inventory.shard, "Denied insertion leaves the port empty")
+	TEST_ASSERT(foreign in outsider.held_items, "Denied insertion preserves possession of the shard")
+	TEST_ASSERT(scene.implant.insert_held_shard(scene.user), "The implant action can load a held shard without targeting the organ")
+	TEST_ASSERT_EQUAL(scene.implant.console.inventory.shard, shard, "The action loads the same physical shard")
+
+/// Import uses the actual local and removable disks, preserving rich agent package ownership.
+/datum/unit_test/netrun_agent_shard_import/Run()
+	var/obj/item/host = allocate(/obj/item)
+	var/datum/netrun_console/console = allocate(/datum/netrun_console, host)
+	var/obj/item/netrun_shard/shard = allocate(/obj/item/netrun_shard)
+	shard.forceMove(host)
+	console.inventory.set_shard(shard)
+	var/datum/netrun_file/bot/template = netrun_bot_file(NETRUN_BOT_MENDER)
+	template.stored_persona = list("avatar" = "fox")
+	template.stored_files = list(netrun_program_file("patch"))
+	template.size += netrun_storage_used(template.stored_files)
+	TEST_ASSERT(shard.file_store.insert(template), "The rich package starts on the removable disk")
+	var/datum/netrun_file/bot/copied = console.inventory.import_from_shard(template.uid)
+	TEST_ASSERT(istype(copied), "Import preserves the agent file subtype")
+	TEST_ASSERT(copied != template && copied.uid != template.uid, "A copy is a separate owned file with its own UID")
+	TEST_ASSERT(template in shard.file_store.files, "Copying preserves the original removable package")
+	var/datum/netrun_file/original_program = template.stored_files[1]
+	var/datum/netrun_file/copied_program = copied.stored_files[1]
+	TEST_ASSERT(copied_program != original_program, "Nested program files are independently owned")
+	copied.stored_persona["avatar"] = "eye"
+	TEST_ASSERT_EQUAL(template.stored_persona["avatar"], "fox", "Copied presentation data is independent")
+	var/old_uid = template.uid
+	console.inventory.local_store.capacity = console.inventory.local_store.used()
+	TEST_ASSERT_NULL(console.inventory.import_from_shard(template.uid, TRUE), "A full local disk rejects a move")
+	TEST_ASSERT(template in shard.file_store.files, "A rejected move retains the removable owner")
+	console.inventory.local_store.capacity += template.size
+	TEST_ASSERT_EQUAL(console.inventory.import_from_shard(template.uid, TRUE), template, "Moving transfers the actual package into local memory")
+	TEST_ASSERT_EQUAL(template.uid, old_uid, "A move retains its UID")
+	TEST_ASSERT(!(template in shard.file_store.files) && (template in console.inventory.local_store.files), "A moved package has exactly one disk owner")
+	shard.forceMove(run_loc_floor_bottom_left)
+	TEST_ASSERT_EQUAL(console.find_local_file(template.uid), template, "Imported agents survive physical shard removal")
+	TEST_ASSERT_NULL(console.inventory.import_from_shard(old_uid), "A detached disk cannot be accessed through a stale UID")
+
+/// Custom packages compose ordinary owned program files with a validated private profile.
+/datum/unit_test/netrun_agent_builder_launch_roundtrip/Run()
+	var/datum/netrun_fortress_scene/scene = allocate(/datum/netrun_fortress_scene, run_loc_floor_bottom_left)
+	var/mob/camera/netrun_entity/owner = allocate(/mob/camera/netrun_entity, run_loc_floor_bottom_left, scene.node_a)
+	owner.console.operator = owner
+	var/datum/netrun_file/template = netrun_bot_file(NETRUN_BOT_SENTINEL)
+	var/datum/netrun_file/program = netrun_program_file("patch")
+	TEST_ASSERT(owner.console.store_file(template) && owner.console.store_file(program), "The owner has a real template and executable")
+	var/list/options = list("uid" = template.uid, "name" = "My Helper", "avatar" = "fox", "accent" = "mint", "theme" = "amber", "tagline" = "Local helper", "order" = "patrol", "include_defaults" = FALSE, "program_uids" = list(program.uid))
+	var/datum/netrun_file/bot/built = owner.console.create_agent_file(options, owner)
+	TEST_ASSERT_NOTNULL(built, "A valid package can be authored in local memory")
+	TEST_ASSERT_EQUAL(built.content, NETRUN_BOT_SENTINEL, "Behavior is chosen by the owned template's registered profile")
+	TEST_ASSERT_EQUAL(built.size, SSnetrun.get_bot_program(NETRUN_BOT_SENTINEL).file_size + program.size, "Packaged programs are charged as part of the executable file")
+	TEST_ASSERT_EQUAL(length(built.stored_files), 1, "The author can replace the standard loadout")
+	var/datum/netrun_file/packed = built.stored_files[1]
+	TEST_ASSERT(packed != program && packed.content == "patch", "The package owns a copy of the selected program")
+	TEST_ASSERT_EQUAL(owner.console.find_local_file(template.uid), template, "Authoring preserves the source template")
+	TEST_ASSERT_EQUAL(owner.console.find_local_file(program.uid), program, "Authoring preserves source executables")
+	owner.console.inventory.selected_file_uid = template.uid
+	var/list/payload = owner.console.file_payload()
+	TEST_ASSERT_NOTNULL(payload["agent_builder"], "A selected private template exposes the real builder contract")
+	TEST_ASSERT(owner.console.launch_bot_file(built.uid), "A custom package uses the ordinary launch path")
+	var/list/agents = owner.console.agents()
+	TEST_ASSERT_EQUAL(length(agents), 1, "The owner tracks one launched process")
+	var/mob/camera/netrun_entity/bot/agent = agents[1]
+	TEST_ASSERT_EQUAL(agent.real_name, "My Helper", "The configured name is applied after spawn")
+	TEST_ASSERT_EQUAL(agent.get_persona().avatar, "fox", "The configured avatar is applied")
+	TEST_ASSERT_EQUAL(agent.get_persona().theme, "amber", "The configured theme is applied")
+	TEST_ASSERT_EQUAL(agent.brain.order, "patrol", "The configured goal policy uses the common brain")
+	TEST_ASSERT(packed in agent.console.inventory.local_store.files, "The live process receives the package's actual owned program")
+	TEST_ASSERT(!(program in agent.console.inventory.local_store.files), "The owner's source program is not shared with the process")
+	TEST_ASSERT_EQUAL(length(agent.console.inventory.local_store.files), 1, "Launching respects the authored replacement loadout")
+	TEST_ASSERT(agent.return_to_owner(), "The authored process can start a real recall delivery")
+	var/datum/netrun_request/agent_recall/recall = netrun_operation_packet(owner.console, /datum/netrun_request/agent_recall)
+	TEST_ASSERT_NOTNULL(recall, "Recall creates the ordinary in-flight file")
+	recall.deliver()
+	TEST_ASSERT(QDELETED(agent), "Successful recall releases the live process")
+	TEST_ASSERT_EQUAL(owner.console.find_local_file(built.uid), built, "Recall returns the same custom executable file")
+	TEST_ASSERT_EQUAL(built.stored_name, "My Helper", "Recall preserves the authored presentation")
+	TEST_ASSERT(packed in built.stored_files, "Recall preserves the process's real executable contents")
+
+/// All rejection paths are atomic and cannot import privileged archetypes or foreign files.
+/datum/unit_test/netrun_agent_builder_validation/Run()
+	var/mob/camera/netrun_entity/owner = allocate(/mob/camera/netrun_entity)
+	owner.console.operator = owner
+	var/datum/netrun_file/template = netrun_bot_file(NETRUN_BOT_MENDER)
+	var/datum/netrun_file/foreign = allocate(/datum/netrun_file, "foreign.exe", NETRUN_FILE_PROGRAM, "assault", 2)
+	TEST_ASSERT(owner.console.store_file(template), "The owner has a template")
+	var/before = owner.console.inventory.local_store.revision
+	TEST_ASSERT_NULL(owner.console.create_agent_file(list("uid" = template.uid, "program_uids" = list(foreign.uid)), owner), "A foreign UID cannot enter the package")
+	TEST_ASSERT_NULL(owner.console.create_agent_file(list("uid" = template.uid, "avatar" = "arbitrary/path"), owner), "Cosmetics use the existing fixed option set")
+	TEST_ASSERT_NULL(owner.console.create_agent_file(list("uid" = template.uid, "order" = "/proc/execute"), owner), "Goals are fixed data choices rather than evaluated code")
+	TEST_ASSERT_EQUAL(owner.console.inventory.local_store.revision, before, "Invalid configuration leaves memory unchanged")
+	var/datum/netrun_file/forged = new("police.bot", NETRUN_FILE_BOT, NETRUN_BOT_POLICE, 1)
+	TEST_ASSERT(owner.console.store_file(forged), "A forged label can exist as inert file data")
+	TEST_ASSERT_NULL(owner.console.create_agent_file(list("uid" = forged.uid), owner), "Station authority cannot be authored from a forged file")
+	var/old_count = length(owner.console.inventory.local_store.files)
+	owner.console.inventory.local_store.capacity = owner.console.inventory.local_store.used()
+	TEST_ASSERT_NULL(owner.console.create_agent_file(list("uid" = template.uid), owner), "Authoring rejects a full destination before creating owned copies")
+	TEST_ASSERT_EQUAL(length(owner.console.inventory.local_store.files), old_count, "Capacity rejection leaves source files intact")
+	var/mob/camera/netrun_entity/other = allocate(/mob/camera/netrun_entity)
+	TEST_ASSERT_NULL(owner.console.create_agent_file(list("uid" = template.uid), other), "Another entity cannot author through this owner's client")
+
+/// A blank authoring path needs no template and persists the real shared pattern.
+/datum/unit_test/netrun_agent_builder_from_scratch/Run()
+	var/datum/netrun_fortress_scene/scene = allocate(/datum/netrun_fortress_scene, run_loc_floor_bottom_left)
+	var/mob/camera/netrun_entity/owner = allocate(/mob/camera/netrun_entity, run_loc_floor_bottom_left, scene.node_a)
+	owner.console.operator = owner
+	var/list/payload = owner.console.agent_builder_payload()
+	TEST_ASSERT_NULL(payload["template_uid"], "An empty memory can expose the blank builder without an invented file UID")
+	var/list/behavior = list("strategy" = "scavenge", "aggression" = 20, "caution" = 80, "cooperation" = FALSE)
+	var/datum/netrun_file/bot/built = owner.console.create_agent_file(list("name" = "My Agent", "behavior" = behavior), owner)
+	TEST_ASSERT_NOTNULL(built, "An owner can create a blank agent without a template")
+	TEST_ASSERT_EQUAL(built.content, "custom", "The scratch path uses the fixed unprivileged private profile")
+	TEST_ASSERT_EQUAL(length(built.stored_files), 0, "A blank agent does not manufacture executable programs")
+	behavior["aggression"] = 90
+	TEST_ASSERT_EQUAL(built.stored_behavior["aggression"], 20, "The authored pattern owns an independent validated snapshot")
+	TEST_ASSERT(owner.console.launch_bot_file(built.uid), "The blank package uses the real ordinary launch path")
+	var/list/agents = owner.console.agents()
+	var/mob/camera/netrun_entity/bot/agent = agents[1]
+	TEST_ASSERT(!agent.program.sanctioned, "Authoring cannot mint sanctioned station authority")
+	TEST_ASSERT(!agent.console.has_key(scene.node_b.network, TRUE), "A blank agent receives no free LAN key")
+	var/list/live_behavior = agent.behavior_settings()
+	TEST_ASSERT_EQUAL(live_behavior["strategy"], "scavenge", "The shared planner receives the authored strategy")
+	TEST_ASSERT_EQUAL(live_behavior["caution"], 80, "The live pattern receives the authored retreat threshold")
+	TEST_ASSERT_EQUAL(live_behavior["cooperation"], FALSE, "The cooperation pattern is configured before autonomous work")
+	TEST_ASSERT(agent.return_to_owner(), "The scratch agent can recall through a real delivery")
+	var/datum/netrun_request/agent_recall/recall = netrun_operation_packet(owner.console, /datum/netrun_request/agent_recall)
+	recall.deliver()
+	TEST_ASSERT_EQUAL(built.stored_behavior["strategy"], "scavenge", "Recall retains the authored pattern")
+	var/list/templated = owner.console.agent_builder_payload(built)
+	var/list/templated_behavior = templated["behavior"]
+	TEST_ASSERT_EQUAL(templated_behavior["strategy"], "scavenge", "A recalled package exposes its stored policy rather than archetype defaults")
+	var/datum/netrun_file/bot/rebuilt = owner.console.create_agent_file(list("uid" = built.uid, "name" = "Rebuilt"), owner)
+	TEST_ASSERT_EQUAL(rebuilt.stored_behavior["caution"], 80, "Rebuilding without explicit policy changes retains the stored pattern")
+	var/before = owner.console.inventory.local_store.revision
+	TEST_ASSERT_NULL(owner.console.create_agent_file(list("behavior" = list("strategy" = "/proc/execute")), owner), "Arbitrary strategies cannot become runnable policies")
+	TEST_ASSERT_NULL(owner.console.create_agent_file(list("behavior" = list("aggression" = 101)), owner), "Out-of-range temperament cannot be stored")
+	TEST_ASSERT_NULL(owner.console.create_agent_file(list("behavior" = list("strategy" = "guard", "sanctioned" = TRUE)), owner), "Persisted patterns reject unknown authority fields")
+	TEST_ASSERT_EQUAL(owner.console.inventory.local_store.revision, before, "Invalid patterns cannot mutate the local disk")
+
+/// The default blank profile honors the ordinary initial and later guard/patrol orders.
+/datum/unit_test/netrun_agent_scratch_order_policy/Run()
+	var/datum/netrun_fortress_scene/scene = allocate(/datum/netrun_fortress_scene, run_loc_floor_bottom_left)
+	var/mob/camera/netrun_entity/owner = allocate(/mob/camera/netrun_entity, run_loc_floor_bottom_left, scene.node_a)
+	owner.console.operator = owner
+	var/datum/netrun_file/bot/built = owner.console.create_agent_file(list("name" = "Patroller", "order" = "patrol"), owner)
+	TEST_ASSERT(owner.console.launch_bot_file(built.uid), "A blank package starts with an initial patrol order")
+	var/list/agents = owner.console.agents()
+	var/mob/camera/netrun_entity/bot/agent = agents[1]
+	var/datum/netrun_agent_behavior/pattern/temperament/policy = netrun_actor_temperament(agent)
+	agent.brain.clear_goals()
+	policy.plan(agent.brain)
+	TEST_ASSERT(istype(agent.brain.current_goal(), /datum/netrun_bot_goal/patrol), "The default pattern honors an initial patrol instead of forcing guard")
+	agent.brain.clear_goals()
+	agent.brain.order = "guard"
+	agent.brain.order_node_ref = WEAKREF(scene.node_b)
+	policy.plan(agent.brain)
+	var/datum/netrun_bot_goal/guard/guard = agent.brain.current_goal()
+	TEST_ASSERT(istype(guard), "The same default pattern responds to a later guard order")
+	TEST_ASSERT_EQUAL(guard.post_ref?.resolve(), scene.node_b, "The guard plan uses the requested post")
+
+/// Duplicating within one disk preserves rich package ownership and charges both copies.
+/datum/unit_test/netrun_agent_local_duplicate/Run()
+	var/mob/camera/netrun_entity/owner = allocate(/mob/camera/netrun_entity)
+	owner.console.operator = owner
+	var/datum/netrun_file/bot/original = owner.console.create_agent_file(list("name" = "Original", "behavior" = list("strategy" = "guard")), owner)
+	original.stored_files += netrun_program_file("patch")
+	original.size += netrun_storage_used(original.stored_files)
+	original.stored_persona["avatar"] = "fox"
+	var/used_before = owner.console.inventory.local_store.used()
+	TEST_ASSERT(owner.console.transfer_local_file(original, FALSE), "A local package can be copied into the same memory without a shard")
+	var/datum/netrun_file/bot/duplicate = owner.console.selected_local_file()
+	TEST_ASSERT(istype(duplicate) && duplicate != original && duplicate.uid != original.uid, "Duplication creates an independently addressable rich agent file")
+	TEST_ASSERT_EQUAL(owner.console.inventory.local_store.used(), used_before + original.size, "Both packages occupy their actual complete memory")
+	TEST_ASSERT(original in owner.console.inventory.local_store.files, "Duplication retains the original local owner")
+	var/datum/netrun_file/copied_program = duplicate.stored_files[1]
+	TEST_ASSERT(copied_program != original.stored_files[1], "Nested programs are independently owned by each package")
+	duplicate.stored_persona["avatar"] = "eye"
+	duplicate.stored_behavior["strategy"] = "patrol"
+	TEST_ASSERT_EQUAL(original.stored_persona["avatar"], "fox", "Duplicated appearance cannot mutate the source")
+	TEST_ASSERT_EQUAL(original.stored_behavior["strategy"], "guard", "Duplicated patterns cannot mutate the source")
+	owner.console.inventory.local_store.capacity = owner.console.inventory.local_store.used()
+	var/count_before = length(owner.console.inventory.local_store.files)
+	TEST_ASSERT(!owner.console.transfer_local_file(original, FALSE), "A full disk rejects local duplication before allocating owned copies")
+	TEST_ASSERT_EQUAL(length(owner.console.inventory.local_store.files), count_before, "Capacity rejection leaves both original packages intact")
+
+/// New archetypes use existing capabilities and never acquire station or LAN authority.
+/datum/unit_test/netrun_agent_extended_profiles/Run()
+	var/datum/netrun_fortress_scene/scene = allocate(/datum/netrun_fortress_scene, run_loc_floor_bottom_left)
+	for(var/id in list("surveyor", "collector", "interceptor"))
+		var/datum/netrun_bot_program/profile = SSnetrun.get_bot_program(id)
+		TEST_ASSERT_NOTNULL(profile, "The registry discovers private profile [id]")
+		TEST_ASSERT(profile.file_size && profile.faction == NETRUN_FACTION_OWNER && !profile.sanctioned, "The new profile is a private launchable agent")
+		var/mob/camera/netrun_entity/bot/agent = allocate(/mob/camera/netrun_entity/bot, run_loc_floor_bottom_left, scene.node_a, id)
+		var/datum/netrun_entity_module/navigation/navigation = agent.entity_modules["navigation"]
+		TEST_ASSERT_EQUAL(agent.navigation, navigation.navigation, "The profile shares modular navigation")
+		TEST_ASSERT(agent.console.legit_node_level(scene.node_b) < NETRUN_ACCESS_USER, "A profile does not grant legal clearance on another node")
+		TEST_ASSERT(!agent.console.has_key(scene.node_b.network, TRUE), "A private profile does not mint a LAN key")
+		qdel(agent)
+
+/// Survey reports exist only after actual scan delivery, with the ordinary ACL recheck.
+/datum/unit_test/netrun_agent_survey_delivery/Run()
+	var/datum/netrun_fortress_scene/scene = allocate(/datum/netrun_fortress_scene, run_loc_floor_bottom_left)
+	var/mob/camera/netrun_entity/bot/agent = allocate(/mob/camera/netrun_entity/bot, run_loc_floor_bottom_left, scene.node_a, "surveyor")
+	var/datum/netrun_bot_goal/survey/goal = allocate(/datum/netrun_bot_goal/survey, agent.brain, scene.node_a)
+	TEST_ASSERT_EQUAL(goal.advance(), NETRUN_BOT_GOAL_CONTINUE, "Survey admission awaits command delivery")
+	var/datum/netrun_request/command/packet = netrun_operation_packet(agent.console, /datum/netrun_request/command)
+	TEST_ASSERT_NOTNULL(packet, "Survey uses a real routed scan command")
+	var/reports = 0
+	for(var/datum/netrun_file/file as anything in agent.console.inventory.local_store.files)
+		if(findtext(file.name, "survey-") == 1)
+			reports++
+	TEST_ASSERT_EQUAL(reports, 0, "No report is fabricated before delivery")
+	packet.deliver()
+	TEST_ASSERT_EQUAL(goal.advance(), NETRUN_BOT_GOAL_DONE, "The delivered result completes the survey")
+	var/datum/netrun_file/report
+	for(var/datum/netrun_file/file as anything in agent.console.inventory.local_store.files)
+		if(findtext(file.name, "survey-") == 1)
+			report = file
+	TEST_ASSERT_NOTNULL(report, "The survey stores a real owned text report")
+	TEST_ASSERT(findtext(report.content, scene.node_a.address), "The report identifies the actually inspected node")

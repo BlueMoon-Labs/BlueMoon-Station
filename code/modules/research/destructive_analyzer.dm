@@ -94,7 +94,7 @@ Note: Must be placed within 3 tiles of the R&D Console
 	return TRUE
 
 /obj/machinery/rnd/destructive_analyzer/proc/user_try_decon_id(id, mob/user)
-	if(!istype(loaded_item) || !istype(linked_console) || !linked_console.stored_research)	//BLUEMOON ADD: !stored_research — консоль без подключённой сети
+	if(!istype(loaded_item) || !istype(linked_console) || !linked_console.netrun_research_cache || !netrun_research_authorizes(linked_console, linked_console.stored_research))
 		return FALSE
 
 	if (id && id != RESEARCH_MATERIAL_RECLAMATION_ID)
@@ -104,7 +104,7 @@ Note: Must be placed within 3 tiles of the R&D Console
 		var/dpath = loaded_item.type
 		var/list/worths = TN.boost_item_paths[dpath]
 		var/list/differences = list()
-		var/list/already_boosted = linked_console.stored_research.boosted_nodes[TN.id]
+		var/list/already_boosted = linked_console.netrun_research_cache.boosted_nodes[TN.id]
 		for(var/i in worths)
 			var/used = already_boosted? already_boosted[i] : 0
 			var/value = min(worths[i], TN.research_costs[i]) - used
@@ -117,13 +117,11 @@ Note: Must be placed within 3 tiles of the R&D Console
 			return FALSE
 		if(QDELETED(loaded_item) || QDELETED(linked_console) || !user.Adjacent(linked_console) || QDELETED(src))
 			return FALSE
-		SSblackbox.record_feedback("nested tally", "item_deconstructed", 1, list("[TN.id]", "[loaded_item.type]"))
-		if(destroy_item(loaded_item))
-			linked_console.stored_research.boost_with_path(SSresearch.techweb_node_by_id(TN.id), dpath)
+		return linked_console.request_research_action("analyze", user, list("item" = REF(loaded_item), "node_id" = TN.id))
 
 	else
 		var/list/point_value = techweb_item_point_check(loaded_item)
-		if(linked_console.stored_research.deconstructed_items[loaded_item.type] && !istype(loaded_item, /obj/item/heretic_veil_crystal))
+		if(linked_console.netrun_research_cache.deconstructed_items[loaded_item.type] && !istype(loaded_item, /obj/item/heretic_veil_crystal))
 			point_value = list()
 		var/user_mode_string = ""
 		if(length(point_value))
@@ -135,10 +133,34 @@ Note: Must be placed within 3 tiles of the R&D Console
 			return FALSE
 		if(QDELETED(loaded_item) || QDELETED(linked_console) || !user.Adjacent(linked_console) || QDELETED(src))
 			return FALSE
-		var/loaded_type = loaded_item.type
-		if(destroy_item(loaded_item))
-			linked_console.stored_research.add_point_list(point_value)
-			linked_console.stored_research.deconstructed_items[loaded_type] = point_value
+		return linked_console.request_research_action("analyze", user, list("item" = REF(loaded_item)))
+
+/// The item is destroyed and the research credited together only after a delivered request.
+/obj/machinery/computer/rdconsole/proc/perform_research_analysis(list/data, mob/user, datum/techweb/authority)
+	var/obj/machinery/rnd/destructive_analyzer/analyzer = linked_destroy
+	if(!netrun_research_authorizes(src, authority) || QDELETED(analyzer) || QDELETED(user) || !user.Adjacent(src))
+		return FALSE
+	var/obj/item/item = analyzer.loaded_item
+	if(QDELETED(item) || REF(item) != data["item"] || analyzer.busy || analyzer.linked_console != src)
+		return FALSE
+	var/item_type = item.type
+	var/id = data["node_id"]
+	if(id)
+		var/datum/techweb_node/node = SSresearch.techweb_node_by_id(id)
+		if(!istype(node))
+			return FALSE
+		SSblackbox.record_feedback("nested tally", "item_deconstructed", 1, list("[id]", "[item_type]"))
+		if(!analyzer.destroy_item(item))
+			return FALSE
+		return authority.boost_with_path(node, item_type)
+	var/list/points = techweb_item_point_check(item)
+	if(authority.deconstructed_items[item_type] && !istype(item, /obj/item/heretic_veil_crystal))
+		points = list()
+	if(!analyzer.destroy_item(item))
+		return FALSE
+	authority.add_point_list(points)
+	authority.deconstructed_items[item_type] = points
+	authority.netrun_research_changed()
 	return TRUE
 
 /obj/machinery/rnd/destructive_analyzer/proc/unload_item()

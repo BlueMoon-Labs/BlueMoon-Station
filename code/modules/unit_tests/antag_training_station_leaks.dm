@@ -90,8 +90,23 @@
 	TEST_ASSERT_NOTNULL(slip, "Глава персонала полигона получает записку с кодом.")
 	TEST_ASSERT(!findtext(slip.get_raw_text(), real_code), "Записка полигона не раскрывает код сейфа станции.")
 
+/// Let delayed packets run before asserting that no cross-boundary message arrived.
+/datum/antag_training_observation
+	var/finished = FALSE
+
+/datum/antag_training_observation/proc/finish()
+	finished = TRUE
+
+/datum/unit_test/proc/wait_antag_training_observation()
+	var/datum/antag_training_observation/window = new
+	allocated += window
+	addtimer(CALLBACK(window, TYPE_PROC_REF(/datum/antag_training_observation, finish)), 5 SECONDS)
+	return wait_for_var(window, "finished", TRUE, 10 SECONDS)
+
 /// Учебные КПК не видны станции и наоборот, сообщения и переводы между ними не проходят.
 /datum/unit_test/antag_training_station_leaks/messenger/Run()
+	var/datum/netrun_route_scene/station_network = netrun_connected_test_area()
+	station_network.machine(/obj/machinery/telecomms/allinone, run_loc_floor_bottom_left)
 	var/datum/antag_training_session/session = allocate_training_session(/datum/antag_training_program/free)
 	session.role = antag_training_role("crew:Security Officer")
 	TEST_ASSERT(session.prepare(), "Полигон готовит офицера.")
@@ -107,6 +122,8 @@
 
 	var/mob/living/carbon/human/payer = allocate(/mob/living/carbon/human)
 	var/obj/item/modular_computer/pda/station_pda = allocate(/obj/item/modular_computer/pda)
+	station_pda.enabled = TRUE
+	station_pda.toff = FALSE
 	var/obj/item/card/id/payer_card = allocate(/obj/item/card/id)
 	payer_card.registered_name = "Station Payer"
 	var/datum/bank_account/payer_account = allocate(/datum/bank_account, "Station Payer")
@@ -116,6 +133,8 @@
 	payer.put_in_hands(station_pda)
 	var/datum/computer_file/program/messenger/station_messenger = locate() in station_pda.get_all_files()
 	var/obj/item/modular_computer/pda/neighbour_pda = allocate(/obj/item/modular_computer/pda)
+	neighbour_pda.enabled = TRUE
+	neighbour_pda.toff = FALSE
 	var/obj/item/card/id/neighbour_card = allocate(/obj/item/card/id)
 	neighbour_card.registered_name = "Station Neighbour"
 	neighbour_pda.InsertID(neighbour_card)
@@ -139,16 +158,24 @@
 	TEST_ASSERT_EQUAL(officer_account.account_balance, ANTAG_TRAINING_LEAK_BALANCE, "Перевод с полигона на станцию не проходит.")
 	TEST_ASSERT_EQUAL(payer_account.account_balance, ANTAG_TRAINING_LEAK_BALANCE, "Счёт станции не получает перевод с полигона.")
 
-	var/saved_debug = SSnetworks.ntnet_debug_global_signal
-	SSnetworks.ntnet_debug_global_signal = TRUE
-	var/station_chats_before = length(station_messenger.saved_chats)
+	var/datum/pda_chat/arena_chat_before = station_messenger.find_chat_by_recipient(REF(arena_messenger))
+	var/station_arena_messages_before = length(arena_chat_before?.messages)
 	var/sent_from_arena = arena_messenger.send_message(officer, "Утечка с полигона", list(station_messenger))
-	var/station_chats_after = length(station_messenger.saved_chats)
 	var/sent_to_neighbour = station_messenger.send_message(payer, "Сосед на станции", list(neighbour_messenger))
-	SSnetworks.ntnet_debug_global_signal = saved_debug
+	var/list/budget = new_wait_budget(5 SECONDS, "доставка сообщений КПК")
+	while(arena_messenger.netrun_pending_messages || station_messenger.netrun_pending_messages)
+		if(!wait_budget_tick(budget))
+			break
 	TEST_ASSERT(!sent_from_arena, "Сообщение с полигона на станцию не отправляется.")
-	TEST_ASSERT_EQUAL(station_chats_after, station_chats_before, "Сообщение с полигона не доходит до станции.")
 	TEST_ASSERT(sent_to_neighbour, "Сообщение по станции отправляется.")
+	TEST_ASSERT(!station_messenger.netrun_pending_messages && !station_messenger.netrun_delivery_error, "Станционный пакет должен действительно доставиться: [station_messenger.netrun_delivery_status]")
+	var/datum/pda_chat/neighbour_chat = neighbour_messenger.find_chat_by_recipient(REF(station_messenger))
+	TEST_ASSERT_EQUAL(length(neighbour_chat?.messages), 1, "Получатель станции должен получить ровно одно сообщение.")
+	var/datum/pda_message/received = neighbour_chat.messages[1]
+	TEST_ASSERT_EQUAL(received.message, "Сосед на станции", "Пакет должен доставить исходный текст.")
+	TEST_ASSERT(wait_antag_training_observation(), "Окно проверки задержанной доставки КПК завершилось.")
+	var/datum/pda_chat/arena_chat_after = station_messenger.find_chat_by_recipient(REF(arena_messenger))
+	TEST_ASSERT_EQUAL(length(arena_chat_after?.messages), station_arena_messages_before, "Задержанное сообщение с полигона не доходит до станции.")
 
 /// Сигнал с полигона не доходит до станции и наоборот, внутри одной стороны доходит.
 /datum/unit_test/antag_training_station_leaks/signals/Run()

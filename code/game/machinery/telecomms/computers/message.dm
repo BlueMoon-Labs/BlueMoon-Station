@@ -313,12 +313,10 @@
 					"fakename" = sanitize(customsender),
 					"fakejob" = sanitize(customjob),
 				))
-				// this will log the signal and transmit it to the target
-				linkedServer.receive_information(signal, null)
-				usr.log_message("(PDA: [name] | [usr.real_name]) sent \"[sanitize(custommessage)]\" to [signal.format_target()]", LOG_PDA)
-				playsound(usr, 'sound/machines/twobeep_high.ogg', 40, TRUE)
-				usr.balloon_alert(usr, "Сообщение отправлено")
-				message = "ВНИМАНИЕ: Сообщение отправлено."
+				if(netrun_send_tablet_via_server(signal, linkedServer, usr))
+					message = "ВНИМАНИЕ: Сообщение ожидает сетевой доставки."
+				else
+					message = "ОШИБКА: Не удалось передать сообщение серверу."
 				return
 			// Do not check if it's blank yet
 			// But do check if it's above our set limit (for people who manualy send hrefs at us!)

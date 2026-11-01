@@ -33,3 +33,23 @@
 	// Пустой ввод отличается от отменённого только тем, что оба дают null.
 	TEST_ASSERT_NULL(raw_text_or_reflect(null, ""), "пустой ввод должен возвращать null")
 	TEST_ASSERT_NULL(raw_text_or_reflect(null, "[ascii2text(14)]"), "ввод из одних управляющих символов должен возвращать null")
+
+/// Registration is observable without opening a prompt or attaching a live client.
+/datum/unit_test/say_verb_registration/Run()
+	var/mob/living/carbon/human/human = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
+	var/list/expected = list(
+		/mob/verb/say_verb = "Say",
+		/mob/verb/say_typing_indicator = "Say (Indicator)",
+		/mob/verb/me_verb = "Me",
+		/mob/verb/me_typing_indicator = "Me (Indicator)",
+	)
+	for(var/entry in expected)
+		var/procpath/verbpath = entry
+		TEST_ASSERT(verbpath in human.verbs, "A normal human is missing the canonical speech verb [verbpath]")
+		TEST_ASSERT_EQUAL(verbpath.name, expected[entry], "The canonical speech verb has an unexpected command name")
+		TEST_ASSERT_EQUAL(verbpath.category, "Say", "The canonical speech verb left the Say category")
+	// BYOND 516.1688 returns null for procpath.hidden for both hidden and visible
+	// verbs; this metadata cannot assert the compiled verb's visibility setting.
+	allocate(/mob/camera/netrun_entity, run_loc_floor_bottom_left)
+	for(var/entry in expected)
+		TEST_ASSERT(entry in human.verbs, "Initializing a network entity removed [entry] from an existing human")

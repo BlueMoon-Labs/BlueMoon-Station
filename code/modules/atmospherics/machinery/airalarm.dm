@@ -607,7 +607,7 @@ GLOBAL_LIST_INIT(air_alarm_modes, init_air_alarm_modes())
 		data["vents"] = list()
 		for(var/id_tag in A.air_vent_names)
 			var/long_name = A.air_vent_names[id_tag]
-			var/list/info = A.air_vent_info[id_tag]
+			var/list/info = netrun_vent_info[id_tag]
 			if(!info || info["frequency"] != frequency)
 				continue
 			data["vents"] += list(list(
@@ -626,7 +626,7 @@ GLOBAL_LIST_INIT(air_alarm_modes, init_air_alarm_modes())
 		data["scrubbers"] = list()
 		for(var/id_tag in A.air_scrub_names)
 			var/long_name = A.air_scrub_names[id_tag]
-			var/list/info = A.air_scrub_info[id_tag]
+			var/list/info = netrun_scrub_info[id_tag]
 			if(!info || info["frequency"] != frequency)
 				continue
 			data["scrubbers"] += list(list(
@@ -806,32 +806,29 @@ GLOBAL_LIST_INIT(air_alarm_modes, init_air_alarm_modes())
 /obj/machinery/airalarm/proc/refresh_all()
 	var/area/A = get_base_area(src)
 	for(var/id_tag in A.air_vent_names)
-		var/list/I = A.air_vent_info[id_tag]
+		var/list/I = netrun_vent_info[id_tag]
 		if(I && I["timestamp"] + AALARM_REPORT_TIMEOUT / 2 > world.time)
 			continue
 		send_signal(id_tag, list("status"))
 	for(var/id_tag in A.air_scrub_names)
-		var/list/I = A.air_scrub_info[id_tag]
+		var/list/I = netrun_scrub_info[id_tag]
 		if(I && I["timestamp"] + AALARM_REPORT_TIMEOUT / 2 > world.time)
 			continue
 		send_signal(id_tag, list("status"))
 
 /obj/machinery/airalarm/proc/set_frequency(new_frequency)
 	SSradio.remove_object(src, frequency)
+	var/old_frequency = frequency
 	frequency = new_frequency
 	radio_connection = SSradio.add_object(src, frequency, RADIO_TO_AIRALARM)
+	if(old_frequency != frequency)
+		SEND_SIGNAL(src, COMSIG_NETRUN_SERVICE_STATE_CHANGED)
 
-/obj/machinery/airalarm/proc/send_signal(target, list/command, mob/user)//sends signal 'command' to 'target'. Returns 0 if no radio connection, 1 otherwise
-	if(!radio_connection)
-		return FALSE
-
-	var/datum/signal/signal = new(command)
-	signal.data["tag"] = target
-	signal.data["sigtype"] = "command"
-	signal.data["user"] = user
-	radio_connection.post_signal(src, signal, RADIO_FROM_AIRALARM)
-
-	return TRUE
+/obj/machinery/airalarm/proc/send_signal(target, list/command, mob/user)
+	var/list/data = command.Copy()
+	data["tag"] = target
+	data["sigtype"] = "command"
+	return netrun_atmos_send("atmos.controller", "atmos.device", data, user, target)
 
 ///Запись одного порога. Отдельным проком, потому что значение уходит в
 ///tlv.vars[]: белый список полей обязан жить ровно в одном месте, иначе
@@ -850,8 +847,7 @@ GLOBAL_LIST_INIT(air_alarm_modes, init_air_alarm_modes())
 /obj/machinery/airalarm/proc/set_all_filters(device_id, enable, mob/user)
 	if(!device_id)
 		return FALSE
-	var/area/our_area = get_base_area(src)
-	var/list/info = our_area.air_scrub_info[device_id]
+	var/list/info = netrun_scrub_info[device_id]
 	if(!info)
 		return FALSE
 	var/list/gas_ids = list()
@@ -1190,11 +1186,6 @@ GLOBAL_LIST_INIT(air_alarm_modes, init_air_alarm_modes())
 
 
 /obj/machinery/airalarm/proc/post_alert(alert_level, cause, cause_gas)
-	var/datum/radio_frequency/frequency = SSradio.return_frequency(alarm_frequency)
-
-	if(!frequency)
-		return
-
 	var/datum/signal/alert_signal = new(list(
 		"zone" = get_area_name(src, get_base_area = TRUE),
 		"type" = "Atmospheric",
@@ -1211,7 +1202,9 @@ GLOBAL_LIST_INIT(air_alarm_modes, init_air_alarm_modes())
 	else if (alert_level==0)
 		alert_signal.data["alert"] = "clear"
 
-	frequency.post_signal(src, alert_signal, range = -1)
+	netrun_atmos_send("atmos.alarm", "atmos.alert", alert_signal.data)
+	netrun_atmos_send("atmos.alarm", "atmos.alarmdoor", alert_signal.data)
+	qdel(alert_signal)
 
 /obj/machinery/airalarm/proc/apply_danger_level()
 	var/area/A = get_base_area(src)

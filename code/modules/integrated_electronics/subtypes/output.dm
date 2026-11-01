@@ -361,7 +361,7 @@
 		update_speed = get_pin_data(IC_INPUT, 3) ? 5 : 10
 		var/list/new_network = get_pin_data(IC_INPUT, 4)
 		if(!isnull(cam_name))
-			camera.c_tag = cam_name
+			camera.set_camera_tag(cam_name)
 		//Пин объявлен списком, но в схему можно подать в него что угодно. Число
 		//в camera.network валило "type mismatch: 4 & /list" в КАЖДОЙ камерной
 		//консоли станции (networks & C.network) - принимаем только список,

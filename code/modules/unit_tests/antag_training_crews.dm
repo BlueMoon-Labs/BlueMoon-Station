@@ -155,10 +155,10 @@
 	TEST_ASSERT(warmonger_session.prepare(), "Полигон готовит вармонгера.")
 	var/datum/antag_training_program/antag/crew/warmonger/warmonger = warmonger_session.program
 	body = warmonger_session.current_body
-	// Не initial(): в Хэллоуин New() скелета меняет brutemod
-	var/datum/species/skeleton = new warmonger.species_type
-	var/warrior_brute = skeleton.brutemod / 2
-	qdel(skeleton)
+	// Skeleton construction also applies seasonal modifiers (Halloween). Compare
+	// against the same live species baseline that the real role spawner receives.
+	var/datum/species/skeleton/space/baseline_skeleton = allocate(warmonger.species_type)
+	var/warrior_brute = baseline_skeleton.brutemod / 2
 	TEST_ASSERT(abs(body.dna.species.brutemod - warrior_brute) < 0.01, "Воин крепче обычного скелета, как у спавнера.")
 	TEST_ASSERT(findtext(warmonger.option_hints["Снаряжение: Воин"], "[round(100 * warrior_brute)]% обычного"), "Подсказка воина называет его настоящую стойкость.")
 	antag_training_crew_option(warmonger_session, "Снаряжение: Воин")
@@ -218,6 +218,10 @@
 
 /// Гарнитура учебного пирата не слышит пиратов раунда, а они не слышат её.
 /datum/unit_test/antag_training_crews_pirate_radio/Run()
+	var/datum/netrun_route_scene/network = netrun_connected_test_area()
+	var/obj/machinery/telecomms/allinone/relay = network.machine(/obj/machinery/telecomms/allinone, run_loc_floor_top_right)
+	relay.intercept = TRUE
+	relay.freq_listening = list(FREQ_PIRATE)
 	var/datum/antag_training_session/session = allocate_training_session(/datum/antag_training_program/antag/crew/pirate)
 	TEST_ASSERT(session.prepare(), "Полигон готовит пирата.")
 	var/mob/living/carbon/human/trainee = session.current_body
@@ -230,9 +234,11 @@
 	for(var/mob/listener as anything in list(trainee, raider, partner))
 		RegisterSignal(listener, COMSIG_MOVABLE_HEAR, PROC_REF(on_hear))
 	raider.say("; pirate-station-probe")
+	TEST_ASSERT(netrun_wait_radio(raider.ears), "Передача пиратов раунда завершает работу телекоммов.")
 	TEST_ASSERT(heard(partner, "pirate-station-probe"), "Пираты раунда слышат друг друга.")
 	TEST_ASSERT(!heard(trainee, "pirate-station-probe"), "Гарнитура учебного пирата не слышит пиратов раунда.")
 	trainee.say("; pirate-arena-probe")
+	TEST_ASSERT(netrun_wait_radio(trainee.ears), "Учебная передача завершена до проверки изоляции.")
 	TEST_ASSERT(!heard(raider, "pirate-arena-probe") && !heard(partner, "pirate-arena-probe"), "Пираты раунда не слышат учебного пирата.")
 
 /datum/unit_test/antag_training_crews_pirate_radio/proc/on_hear(mob/source, list/hearing_args)

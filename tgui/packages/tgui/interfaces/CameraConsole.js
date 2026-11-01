@@ -94,6 +94,18 @@ export const CameraConsole = (props) => {
               </Tabs>
             </Stack.Item>
           )}
+          {!!data.network_alerts?.length && (
+            <Stack.Item>
+              <Section title="Сетевые тревоги" height="130px" scrollable>
+                {data.network_alerts.slice().reverse().map(alert => (
+                  <Box key={alert.id} color={alert.severity >= 3 ? 'bad' : 'average'} mb={0.5}>
+                    <b>{alert.id} · {alert.area || 'Район не определён'} · {alert.address}</b>
+                    <Box>{alert.text || alert.kind} Повторов: {alert.reports}.</Box>
+                  </Box>
+                ))}
+              </Section>
+            </Stack.Item>
+          )}
           <Stack.Item grow position="relative">
             <div className={classes([
               'CameraConsole__content',

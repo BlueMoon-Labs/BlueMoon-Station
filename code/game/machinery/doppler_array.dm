@@ -218,19 +218,4 @@ GLOBAL_LIST_EMPTY(doppler_arrays)
 
 	/*****The Point Capper*****/
 
-	var/list/largest_values = linked_techweb.largest_values
-	if(!(LARGEST_BOMB in largest_values))
-		largest_values[LARGEST_BOMB] = 0
-	if(point_gain > largest_values[LARGEST_BOMB])
-		var/old_tech_largest_bomb_value = largest_values[LARGEST_BOMB] //held so we can pull old before we do math
-		linked_techweb.largest_values[LARGEST_BOMB] = point_gain
-		point_gain -= old_tech_largest_bomb_value
-		var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_SCI)
-		if(D)
-			D.adjust_money(point_gain)
-		linked_techweb.add_point_type(TECHWEB_POINT_TYPE_DEFAULT, point_gain)
-		say("Explosion details and mixture analyzed and sold to the highest bidder for [point_gain] cr, with a reward of [point_gain] points.")
-
-	else //you've made smaller bombs
-		say("Data already captured. Aborting.")
-		return
+	netrun_research_request("explosion", list("value" = point_gain))

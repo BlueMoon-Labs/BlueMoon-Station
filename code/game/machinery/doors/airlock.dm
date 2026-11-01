@@ -435,11 +435,15 @@
 		if(secondsMainPowerLost>0)
 			if(!wires.is_cut(WIRE_POWER1) && !wires.is_cut(WIRE_POWER2))
 				secondsMainPowerLost -= 1
+				if(!secondsMainPowerLost)
+					SEND_SIGNAL(src, COMSIG_AIRLOCK_NETWORK_CHANGED)
 				updateDialog()
 			cont = TRUE
 		if(secondsBackupPowerLost>0)
 			if(!wires.is_cut(WIRE_BACKUP1) && !wires.is_cut(WIRE_BACKUP2))
 				secondsBackupPowerLost -= 1
+				if(!secondsBackupPowerLost)
+					SEND_SIGNAL(src, COMSIG_AIRLOCK_NETWORK_CHANGED)
 				updateDialog()
 			cont = TRUE
 	spawnPowerRestoreRunning = FALSE
@@ -890,6 +894,7 @@
 		sleep(50)
 		//disable blocked control
 		src.aiControlDisabled = 2
+		SEND_SIGNAL(src, COMSIG_AIRLOCK_NETWORK_CHANGED)
 		to_chat(user, "Receiving control information from airlock.")
 		sleep(10)
 		//bring up airlock dialog

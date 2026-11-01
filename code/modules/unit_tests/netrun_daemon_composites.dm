@@ -1,0 +1,82 @@
+/// Legacy and declarative effects compete per kind across both real media.
+/datum/unit_test/netrun_daemon_composite_loadout/Run()
+	var/obj/item/host = allocate(/obj/item)
+	var/datum/netrun_console/console = allocate(/datum/netrun_console, host)
+	var/obj/item/netrun_shard/shard = allocate(/obj/item/netrun_shard/composites)
+	shard.forceMove(host)
+	console.inventory.set_shard(shard)
+	TEST_ASSERT(console.store_file(netrun_daemon_file("cloak")), "The legacy cloak remains an ordinary owned file")
+	TEST_ASSERT(console.store_file(netrun_daemon_file("unit-test-buffer")), "An independently defined stronger legacy effect fits")
+	TEST_ASSERT_EQUAL(console.daemon_bonus("cloak"), 0.3, "The stronger separate cloak beats ghostlink rather than adding to it")
+	TEST_ASSERT_EQUAL(console.daemon_bonus("scrub"), 1, "Another effect of the same composite remains active")
+	TEST_ASSERT_EQUAL(console.daemon_bonus("icepick"), 1, "Breachkit publishes its own analysis effect")
+	TEST_ASSERT_EQUAL(console.daemon_bonus("buffer"), 2, "A stronger legacy buffer wins only its own effect kind")
+	TEST_ASSERT_EQUAL(console.daemon_bonus("mapper"), 1, "Analyst provides real topology reconnaissance")
+	TEST_ASSERT_EQUAL(console.daemon_bonus("siphon"), 1, "The same analyst provides the separate extraction capability")
+	var/datum/netrun_file/duplicate = netrun_daemon_file("ghostlink")
+	TEST_ASSERT(console.store_file(duplicate), "A composite duplicate has its ordinary storage cost")
+	TEST_ASSERT_EQUAL(console.daemon_bonus("scrub"), 1, "Duplicate composite programs do not stack")
+	console.ui_bonuses = list()
+	TEST_ASSERT_EQUAL(console.daemon_bonus("mapper"), 1, "A UI pass can retain derived effect metadata")
+	shard.forceMove(run_loc_floor_bottom_left)
+	TEST_ASSERT_EQUAL(console.daemon_bonus("mapper"), 0, "Removing the actual source revokes the composite's discovery effect")
+	TEST_ASSERT_EQUAL(console.daemon_bonus("siphon"), 0, "All effects of the detached executable are revoked together")
+	TEST_ASSERT_EQUAL(console.daemon_bonus("buffer"), 2, "Source revocation preserves independent local programs")
+
+/// New programs affect existing gameplay consumers without new effect branches or access grants.
+/datum/unit_test/netrun_daemon_composite_native_effects/Run()
+	var/datum/netrun_fortress_scene/scene = allocate(/datum/netrun_fortress_scene, run_loc_floor_bottom_left)
+	var/mob/camera/netrun_entity/entity = allocate(/mob/camera/netrun_entity, run_loc_floor_bottom_left, scene.node_a)
+	var/datum/netrun_console/console = entity.console
+	console.operator = entity
+	TEST_ASSERT(console.store_file(netrun_daemon_file("autobreach")), "The actual automatic executable is still required")
+	scene.node_b.base_security = 4
+	TEST_ASSERT(console.start_breach("node", scene.node_b.address, TRUE), "The ordinary breach pipeline starts without composites")
+	var/datum/netrun_breach/automatic/first = console.intrusion.breach
+	var/first_duration = first.duration
+	first.finish()
+	TEST_ASSERT(console.store_file(netrun_daemon_file("breachkit")), "The composite occupies real local storage")
+	TEST_ASSERT(console.start_breach("node", scene.node_b.address, TRUE), "The same pipeline accepts the composite analysis effect")
+	var/datum/netrun_breach/automatic/second = console.intrusion.breach
+	TEST_ASSERT(second.duration < first_duration, "Native icepick analysis reduces the actual automatic breach duration")
+	TEST_ASSERT(console.node_level(scene.node_b) < NETRUN_ACCESS_USER, "A composite does not grant target authority before completion")
+	second.finish()
+	var/datum/netrun_command/siphon = SSnetrun.get_command("siphon")
+	scene.node_a.file_store.insert(new /datum/netrun_file("composite-test.txt", NETRUN_FILE_TEXT, "test"))
+	var/owned_files = length(console.all_files(TRUE))
+	TEST_ASSERT_EQUAL(console.daemon_bonus("siphon"), 0, "The extraction capability is absent before an executable is loaded")
+	siphon.execute(scene.node_a, console)
+	TEST_ASSERT_EQUAL(length(console.all_files(TRUE)), owned_files, "The advertised command cannot copy files without its executable")
+	var/datum/netrun_file/analyst = netrun_daemon_file("analyst")
+	TEST_ASSERT(console.store_file(analyst), "The discovery/extraction executable fits")
+	TEST_ASSERT_EQUAL(console.daemon_bonus("siphon"), 1, "The composite supplies the native extraction capability")
+	owned_files = length(console.all_files(TRUE))
+	siphon.execute(scene.node_a, console)
+	TEST_ASSERT_EQUAL(length(console.all_files(TRUE)), owned_files + length(scene.node_a.file_store.files), "The native command can copy the authorized node's real files using the composite")
+	console.next_command = world.time
+	TEST_ASSERT(!console.run_command(scene.node_b, "siphon"), "Publishing an extraction capability cannot replace the command's USER requirement")
+	console.delete_local_file(analyst)
+	TEST_ASSERT_EQUAL(console.daemon_bonus("siphon"), 0, "Deleting the executable immediately revokes its capability again")
+
+/// Printed acquisition, independent metadata and ordinary file copies share one definition.
+/datum/unit_test/netrun_daemon_composite_acquisition/Run()
+	var/obj/item/netrun_shard/shard = allocate(/obj/item/netrun_shard/composites)
+	TEST_ASSERT_EQUAL(length(shard.file_store.files), 3, "The research suite contains exactly its three declared programs")
+	TEST_ASSERT(shard.file_store.used() <= shard.file_store.capacity, "The printed suite fits actual removable memory")
+	for(var/datum/netrun_file/file as anything in shard.file_store.files)
+		var/datum/netrun_program/daemon/definition = SSnetrun.get_daemon(file.content)
+		TEST_ASSERT_NOTNULL(definition, "Every printed program resolves through the shared registry")
+		TEST_ASSERT(definition.size >= 4 && definition.loot_weight > 0 && definition.loot_weight < 1, "Composite programs have explicit storage and rare ordinary acquisition")
+		TEST_ASSERT(file.content != "black_ice", "The public suite never provides contraband ICE")
+		var/list/entry = definition.ui_entry()
+		var/list/metadata = entry["effects"]
+		TEST_ASSERT_EQUAL(length(metadata), 2, "The registry describes both actual effects")
+		var/effect = metadata[1]
+		var/original = definition.effect_bonus(effect)
+		metadata[effect] = 99
+		TEST_ASSERT_EQUAL(definition.effect_bonus(effect), original, "UI metadata cannot mutate the shared daemon definition")
+		var/datum/netrun_file/copy = file.copy()
+		TEST_ASSERT(copy.uid != file.uid && copy.content == file.content && copy.size == file.size, "A composite remains a portable independent ordinary file")
+		qdel(copy)
+	var/datum/netrun_program/daemon/breachkit = SSnetrun.get_daemon("breachkit")
+	TEST_ASSERT(breachkit.size >= 5, "The combined analysis/buffer package retains its intended memory tradeoff")

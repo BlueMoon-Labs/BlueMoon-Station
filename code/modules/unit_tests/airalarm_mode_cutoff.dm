@@ -82,13 +82,15 @@
 /datum/unit_test/airalarm_flood_clamps_vents/Run()
 	var/turf/open/floor = run_loc_floor_bottom_left
 	TEST_ASSERT(istype(floor), "тесту нужен открытый турф с воздухом")
+	netrun_connected_test_area()
 
 	// AALARM_MODE_* живут только внутри airalarm.dm (в конце файла #undef), поэтому
 	// номер режима берём из его же датума - как и соседние тесты файла.
 	var/datum/air_alarm_mode/flood_mode = /datum/air_alarm_mode/flood
 	var/flood_id = initial(flood_mode.id)
 
-	var/obj/machinery/atmospherics/components/unary/vent_pump/vent = allocate(/obj/machinery/atmospherics/components/unary/vent_pump, floor)
+	// Test command delivery independently of SSair, which turns off unpiped vents.
+	var/obj/machinery/atmospherics/components/unary/vent_pump/vent = allocate(/obj/machinery/atmospherics/components/unary/vent_pump, floor, FALSE)
 	vent.set_machine_stat(0)
 	// Регистрация в области и подписка на частоту живут в atmosinit(), которую в
 	// обычной жизни зовёт SSair на старте раунда.
@@ -104,7 +106,13 @@
 	// Заведомо не те значения, что ждём: иначе тест зелёный и при пустой команде.
 	vent.pressure_checks = 0
 	vent.external_pressure_bound = ONE_ATMOSPHERE
+	// A queued telemetry poll must not overwrite the later, non-coalesced order.
+	TEST_ASSERT(alarm.send_signal(vent.id_tag, list("status" = TRUE)), "Запрос статуса должен попасть в очередь сети APC")
 	alarm.apply_mode_commands(flood_id)
+	var/list/budget = new_wait_budget(5 SECONDS, "доставка команды затопления")
+	while(vent.pressure_checks != 1 || vent.external_pressure_bound != ONE_ATMOSPHERE * 50 || !vent.on)
+		if(!wait_budget_tick(budget))
+			break
 
 	TEST_ASSERT_EQUAL(vent.pressure_checks, 1,
 		"затопление снова снимает проверку давления вместо потолка: вент не уйдёт в простой до конца смены")

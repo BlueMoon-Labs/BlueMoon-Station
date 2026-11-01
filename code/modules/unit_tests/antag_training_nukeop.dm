@@ -260,6 +260,7 @@
 	var/list/hearings = list()
 
 /datum/unit_test/antag_training_nukeop_radio/Run()
+	netrun_connected_test_area()
 	var/datum/antag_training_session/session = allocate_training_session(/datum/antag_training_program/antag/nukeop)
 	TEST_ASSERT(session.prepare(), "Полигон готовит оперативника.")
 	var/mob/living/carbon/human/trainee = session.current_body
@@ -278,9 +279,11 @@
 		RegisterSignal(listener, COMSIG_MOVABLE_HEAR, PROC_REF(on_hear))
 
 	agent.say("; inteq-station-probe")
+	TEST_ASSERT(netrun_wait_radio(agent.ears), "Передача оперативников раунда завершает работу телекоммов.")
 	TEST_ASSERT(heard(partner, "inteq-station-probe"), "Радио InteQ раунда слышат друг друга.")
 	TEST_ASSERT(!heard(trainee, "inteq-station-probe"), "Учебная гарнитура не слышит InteQ раунда.")
 	trainee.say("; inteq-arena-probe")
+	TEST_ASSERT(netrun_wait_radio(arena_headset), "Учебная передача завершена до проверки изоляции.")
 	TEST_ASSERT(!heard(agent, "inteq-arena-probe") && !heard(partner, "inteq-arena-probe"), "Радио InteQ раунда не слышат учебную гарнитуру.")
 	var/atom/movable/virtualspeaker/speaker = new(null, trainee, arena_headset)
 	allocated += speaker

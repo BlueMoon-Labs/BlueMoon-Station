@@ -384,7 +384,10 @@
 	if(console.machine_stat & (NOPOWER|BROKEN))
 		to_chat(user, span_warning("[console] не отвечает."))
 		return FALSE
-	var/datum/techweb/research = console.stored_research || SSresearch.science_tech
+	var/datum/techweb/research = console.stored_research
+	if(QDELETED(research))
+		to_chat(user, span_warning("[console] не подключена к исследовательскому серверу."))
+		return FALSE
 	research.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = BOT_GLITCH_DUMP_POINTS))
 	playsound(console, 'sound/machines/ping.ogg', 40, FALSE)
 	console.visible_message(span_notice("[console] разбирает дамп сбойной прошивки: +[BOT_GLITCH_DUMP_POINTS] очков исследований."))

@@ -197,13 +197,16 @@
 /obj/machinery/astro_sensor/proc/collect_data(datum/round_event/space_weather/phenomenon, intensity, seconds_per_tick)
 	if((machine_stat & BROKEN) || gain <= 0 || intensity <= 0)
 		return
+	var/datum/techweb/research = SSresearch.science_tech
+	if(QDELETED(research))
+		return
 	var/cap = base_yield * phenomenon.sensor_yield_mult
 	if(yielded >= cap)
 		return
 	var/gathered = min(ASTRO_SENSOR_DATA_RATE * gain * intensity * sensitivity * seconds_per_tick, cap - yielded)
 	collected += gathered
 	yielded += gathered
-	SSresearch.science_tech?.add_point_type(TECHWEB_POINT_TYPE_GENERIC, gathered, income = FALSE)
+	research.add_point_type(TECHWEB_POINT_TYPE_GENERIC, gathered, income = FALSE)
 
 // ---------------------------------------------------------------------------
 // Внешний вид и сборка

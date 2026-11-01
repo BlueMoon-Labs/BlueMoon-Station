@@ -114,8 +114,7 @@
 
 	C.network = tempnetwork
 	var/area/A = get_area(src)
-	C.c_tag = "[A.name] ([rand(1, 999)])"
-	GLOB.cameranet.invalidate_camera_cache() //network и c_tag выставлены после Initialize камеры
+	C.set_camera_tag("[A.name] ([rand(1, 999)])")
 	return TRUE
 
 /obj/structure/camera_assembly/wirecutter_act(mob/user, obj/item/I)

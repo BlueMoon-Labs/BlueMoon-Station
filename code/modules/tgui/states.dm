@@ -48,6 +48,10 @@
  *
  * return UI_state The state of the UI.
  */
+/datum/ui_state
+	/// Remote states supply their own reachability policy; native machine policy still runs.
+	var/requires_physical_interaction = TRUE
+
 /datum/ui_state/proc/can_use_topic(src_object, mob/user)
 	// Don't allow interaction by default.
 	return UI_CLOSE

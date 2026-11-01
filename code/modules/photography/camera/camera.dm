@@ -148,7 +148,10 @@
 	to_chat(user, P.desc)
 	qdel(P)
 
-/obj/item/camera/proc/captureimage(atom/target, mob/user, flag, size_x = 1, size_y = 1)
+/// size_x/size_y are radii in turfs, not output width/height. A network camera can
+/// supply its own visibility snapshot (including its XRay upgrade); other callers
+/// keep the normal photographer/AI visibility rules.
+/obj/item/camera/proc/captureimage(atom/target, mob/user, flag, size_x = 1, size_y = 1, list/visible_turfs)
 	if(flash_enabled)
 		flash_lighting_fx(8, light_power, light_color)
 	blending = TRUE
@@ -165,19 +168,21 @@
 	var/viewr = max(viewlist[1], viewlist[2]) + max(size_x, size_y)
 	// Must match can_target(): living mobs use their mob for get_hear(), not client.eye (eye can be a remote camera).
 	var/atom/view_center = istype(user, /mob) ? user : (user?.client?.eye || target)
-	seen = get_hear(viewr, view_center)
+	seen = islist(visible_turfs) ? visible_turfs : get_hear(viewr, view_center)
 	var/list/turfs = list()
 	var/list/mobs = list()
 	var/blueprints = FALSE
 	var/clone_area = SSmapping.RequestBlockReservation(size_x * 2 + 1, size_y * 2 + 1)
-	for(var/turf/T in block(locate(target_turf.x - size_x, target_turf.y - size_y, target_turf.z), locate(target_turf.x + size_x, target_turf.y + size_y, target_turf.z)))
-		if((ai_user && GLOB.cameranet.checkTurfVis(T)) || (T in seen))
+	var/turf/bottom_left = locate(max(1, target_turf.x - size_x), max(1, target_turf.y - size_y), target_turf.z)
+	var/turf/top_right = locate(min(world.maxx, target_turf.x + size_x), min(world.maxy, target_turf.y + size_y), target_turf.z)
+	for(var/turf/T in block(bottom_left, top_right))
+		if((!islist(visible_turfs) && ai_user && GLOB.cameranet.checkTurfVis(T)) || (T in seen))
 			turfs += T
 			for(var/mob/M in T)
 				mobs += M
 			if(locate(/obj/item/areaeditor/blueprints) in T)
 				blueprints = TRUE
-	if(!length(turfs))
+	if(!length(turfs) && !islist(visible_turfs))
 		turfs += target_turf
 	for(var/i in mobs)
 		var/mob/M = i

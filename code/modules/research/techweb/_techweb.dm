@@ -5,6 +5,13 @@
 
 //Techweb datums are meant to store unlocked research, being able to be stored on research consoles, servers, and disks. They are NOT global.
 /datum/techweb
+	/// Only a physical R&D server owns authoritative research memory.
+	var/datum/weakref/research_owner_ref
+	/// Explicitly linked physical servers retain the same authoritative database.
+	/// Clients never join this set; losing the last physical owner destroys it.
+	var/list/research_owner_refs = list()
+	/// Used only while merging two physical server groups to rebind their clients.
+	var/datum/weakref/research_successor_ref
 	var/list/researched_nodes = list()		//Already unlocked and all designs are now available. Assoc list, id = TRUE
 	var/list/visible_nodes = list()			//Visible nodes, doesn't mean it can be researched. Assoc list, id = TRUE
 	var/list/available_nodes = list()		//Nodes that can immediately be researched, all reqs met. assoc list, id = TRUE
@@ -181,14 +188,19 @@
 		V.ui_update()
 
 /datum/techweb/proc/add_point_list(list/pointlist, income = TRUE)
+	var/changed = FALSE
 	if(income) // i DO NOT TRUST byond to optimize this way properly
 		for(var/i in pointlist)
 			if(SSresearch.point_types[i] && pointlist[i] > 0)
 				next_income[i] += pointlist[i]
+				changed = TRUE
 	else
 		for(var/i in pointlist)
 			if(SSresearch.point_types[i] && pointlist[i] > 0)
 				research_points[i] += pointlist[i]
+				changed = TRUE
+	if(changed && !income)
+		netrun_research_changed(FALSE)
 
 /datum/techweb/proc/add_points_all(amount)
 	var/list/l = SSresearch.point_types.Copy()
@@ -206,6 +218,7 @@
 	for(var/i in pointlist)
 		if(SSresearch.point_types[i] && pointlist[i] > 0)
 			research_points[i] = max(0, research_points[i] - pointlist[i])
+	netrun_research_changed(FALSE)
 
 /datum/techweb/proc/remove_points_all(amount)
 	var/list/l = SSresearch.point_types.Copy()
@@ -217,6 +230,7 @@
 	for(var/i in pointlist)
 		if(SSresearch.point_types[i] && pointlist[i] != 0)
 			research_points[i] = max(0, research_points[i] + pointlist[i])
+	netrun_research_changed(FALSE)
 
 /datum/techweb/proc/modify_points_all(amount)
 	var/list/l = SSresearch.point_types.Copy()
@@ -270,6 +284,8 @@
 		next_income[type] += amount
 	else
 		research_points[type] += amount
+	if(!income)
+		netrun_research_changed(FALSE)
 	return TRUE
 
 /// Засчитывает первый за раунд синтез газа и разово начисляет за него очки.
@@ -306,7 +322,7 @@
 /proc/register_gas_synthesis(gas_id)
 	if(!SSresearch || !SSresearch.science_tech)
 		return FALSE
-	return SSresearch.science_tech.discover_gas_synthesis(gas_id)
+	return SSresearch.science_tech?.discover_gas_synthesis(gas_id)
 
 /// То же для машин, отдающих сразу смесь (HFR). Смесь обязана содержать только
 /// свежий выхлоп, иначе открытием засчитается транзитный газ.
@@ -324,12 +340,14 @@
 		next_income[type] += amount
 	else
 		research_points[type] = max(0, research_points[type] + amount)
+		netrun_research_changed(FALSE)
 	return TRUE
 
 /datum/techweb/proc/remove_point_type(type, amount)
 	if(!SSresearch.point_types[type] || (amount <= 0))
 		return FALSE
 	research_points[type] = max(0, research_points[type] - amount)
+	netrun_research_changed(FALSE)
 	return TRUE
 
 /datum/techweb/proc/add_design_by_id(id, custom = FALSE)
@@ -338,9 +356,12 @@
 /datum/techweb/proc/add_design(datum/design/design, custom = FALSE)
 	if(!istype(design))
 		return FALSE
+	var/changed = !researched_designs[design.id] || (custom && !custom_designs[design.id])
 	researched_designs[design.id] = TRUE
 	if(custom)
 		custom_designs[design.id] = TRUE
+	if(changed)
+		netrun_research_changed()
 	return TRUE
 
 /datum/techweb/proc/remove_design_by_id(id, custom = FALSE)
@@ -353,6 +374,7 @@
 		return FALSE
 	custom_designs -= design.id
 	researched_designs -= design.id
+	netrun_research_changed()
 	return TRUE
 
 /datum/techweb/proc/get_point_total(list/pointlist)
@@ -368,7 +390,7 @@
 /datum/techweb/proc/printout_points()
 	return techweb_point_display_generic(research_points)
 
-/datum/techweb/proc/research_node_id(id, force, auto_update_points)
+/datum/techweb/proc/research_node_id(id, force = FALSE, auto_update_points = TRUE)
 	return research_node(SSresearch.techweb_node_by_id(id), force, auto_update_points)
 
 /datum/techweb/proc/research_node(datum/techweb_node/node, force = FALSE, auto_adjust_cost = TRUE)
@@ -393,6 +415,7 @@
 		var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_SCI)
 		if(D)
 			D.adjust_money(SSeconomy.techweb_bounty)
+	netrun_research_changed()
 	return TRUE
 
 /datum/techweb/proc/unresearch_node_id(id)
@@ -403,6 +426,7 @@
 		return FALSE
 	researched_nodes -= node.id
 	recalculate_nodes(TRUE)				//Fully rebuild the tree.
+	netrun_research_changed()
 
 /datum/techweb/proc/boost_with_path(datum/techweb_node/N, itempath)
 	if(!istype(N) || !ispath(itempath))
@@ -413,6 +437,7 @@
 	if(N.autounlock_by_boost)
 		hidden_nodes -= N.id
 	update_node_status(N)
+	netrun_research_changed()
 	return TRUE
 
 /datum/techweb/proc/update_tiers(datum/techweb_node/base)

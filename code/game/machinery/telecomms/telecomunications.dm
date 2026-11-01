@@ -36,7 +36,7 @@ GLOBAL_LIST_EMPTY(telecomms_list)
 	var/hide = FALSE  // Is it a hidden machine?
 
 
-/obj/machinery/telecomms/proc/relay_information(datum/signal/subspace/signal, filter, copysig, amount = 20)
+/obj/machinery/telecomms/proc/relay_information(datum/signal/subspace/signal, filter, copysig, amount = 20, datum/netrun_telecomms_relay_group/relay_group)
 	// relay signal to all linked machinery that are of type [filter]. If signal has been sent [amount] times, stop sending
 
 	if(!on)
@@ -49,6 +49,10 @@ GLOBAL_LIST_EMPTY(telecomms_list)
 		stack_trace("telecomms relay_information: max relay depth ([TELECOMMS_RELAY_MAX_DEPTH]) exceeded (possible circular links). filter=[filter]")
 		return 0
 	signal.data[TELECOMMS_RELAY_DEPTH_KEY] = depth + 1
+	var/datum/netrun_machine_service/sender = get_netrun_machine_service("telecomms.relay")
+	if(!sender)
+		signal.data[TELECOMMS_RELAY_DEPTH_KEY] = depth
+		return 0
 
 	var/send_count = 0
 
@@ -63,14 +67,22 @@ GLOBAL_LIST_EMPTY(telecomms_list)
 		if(z != machine.loc.z && !long_range_link && !machine.long_range_link)
 			continue
 
+		var/datum/netrun_machine_service/recipient = machine.get_netrun_machine_service("telecomms.relay")
+		if(!recipient)
+			continue
+		// All asynchronous branches own a snapshot, including formerly shared signals.
+		var/datum/netrun_machine_message/telecomms/packet
+		if(relay_group)
+			packet = new /datum/netrun_machine_message/telecomms/relay_probe(signal, src, relay_group)
+		else
+			packet = new(signal, src)
+		// Configured links already identify a physical peer. Route the packet to
+		// that peer directly instead of repeating DNS at every telecomms stage.
+		if(!sender.send_to(recipient, packet))
+			continue
 		send_count++
 		if(machine.is_freq_listening(signal))
 			machine.traffic++
-
-		if(copysig)
-			machine.receive_information(signal.copy(), src)
-		else
-			machine.receive_information(signal, src)
 
 	if(send_count > 0 && is_freq_listening(signal))
 		traffic++
@@ -79,8 +91,13 @@ GLOBAL_LIST_EMPTY(telecomms_list)
 	return send_count
 
 /obj/machinery/telecomms/proc/relay_direct_information(datum/signal/signal, obj/machinery/telecomms/machine)
-	// send signal directly to a machine
-	machine.receive_information(signal, src)
+	if(!on || !istype(signal, /datum/signal/subspace) || QDELETED(machine) || !machine.on || !(machine in links))
+		return FALSE
+	var/datum/netrun_machine_service/sender = get_netrun_machine_service("telecomms.relay")
+	var/datum/netrun_machine_service/recipient = machine.get_netrun_machine_service("telecomms.relay")
+	if(!sender || !recipient)
+		return FALSE
+	return sender.send_to(recipient, new /datum/netrun_machine_message/telecomms(signal, src))
 
 /obj/machinery/telecomms/proc/receive_information(datum/signal/signal, obj/machinery/telecomms/machine_from)
 	// receive information from linked machinery

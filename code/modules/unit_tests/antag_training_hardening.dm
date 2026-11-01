@@ -24,6 +24,8 @@ GLOBAL_LIST(unit_test_admin_messages)
 	var/obj/machinery/camera/body_camera = bodycam.builtInCamera
 	TEST_ASSERT(body_camera && ("ss13" in body_camera.network), "Бодикамера на полигоне включается в сеть станции.")
 	body_camera.c_tag = "Unit Test Arena Bodycam"
+	// Консоль получает список камер по сети: станционной стороне нужна запитанная зона с APC.
+	netrun_connected_test_area()
 	var/obj/machinery/camera/station_camera = allocate(/obj/machinery/camera, run_loc_floor_bottom_left)
 	station_camera.c_tag = "Unit Test Station Camera"
 	GLOB.cameranet.invalidate_camera_cache()

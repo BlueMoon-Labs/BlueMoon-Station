@@ -64,7 +64,7 @@ describe('PaperSheet PrimaryView', () => {
       .mockReturnValue({
         font: '',
         measureText: (text: string) => ({ width: text.length * 8 }),
-      } as CanvasRenderingContext2D);
+      } as unknown as ReturnType<HTMLCanvasElement['getContext']>);
   });
 
   afterEach(() => {

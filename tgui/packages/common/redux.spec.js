@@ -10,6 +10,35 @@ import {
 } from './redux';
 
 describe('createStore', () => {
+  test('subscriptions detach independently and unsubscribe is idempotent', () => {
+    const store = createStore((state = 0) => state);
+    const listener = jest.fn();
+    const detach = store.subscribe(listener);
+    const detachAgain = store.subscribe(listener);
+    detach();
+    detach();
+    store.dispatch({ type: 'TEST' });
+    expect(listener).toHaveBeenCalledTimes(1);
+    detachAgain();
+    store.dispatch({ type: 'TEST' });
+    expect(listener).toHaveBeenCalledTimes(1);
+  });
+
+  test('subscription changes during notification apply on the next dispatch', () => {
+    const store = createStore((state = 0) => state);
+    const later = jest.fn();
+    let detachSecond = () => {};
+    store.subscribe(() => { detachSecond(); store.subscribe(later); });
+    const second = jest.fn();
+    detachSecond = store.subscribe(second);
+    store.dispatch({ type: 'TEST' });
+    expect(second).toHaveBeenCalledTimes(1);
+    expect(later).not.toHaveBeenCalled();
+    store.dispatch({ type: 'TEST' });
+    expect(second).toHaveBeenCalledTimes(1);
+    expect(later).toHaveBeenCalledTimes(1);
+  });
+
   test('инициализируется через @@INIT dispatch', () => {
     const reducer = (state = { count: 0 }) => state;
     const store = createStore(reducer);

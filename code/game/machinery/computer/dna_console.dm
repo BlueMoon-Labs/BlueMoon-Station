@@ -1015,7 +1015,7 @@
 			// GUARD CHECK - We're running a research-type operation. If, for some
 			//  reason, somehow the DNA Console has been disconnected from the research
 			//  network - Or was never in it to begin with - don't proceed
-			if(!stored_research)
+			if(!netrun_research_snapshot())
 				return
 
 			var/first_bref = params["firstref"]
@@ -1044,11 +1044,11 @@
 			// If it's already discovered, end here. Otherwise, add it to the list of
 			//  discovered mutations.
 			// We've already checked for stored_research earlier
-			if(result_path in stored_research.discovered_mutations)
+			if(result_path in netrun_research_snapshot()?.discovered_mutations)
 				return
 
 			var/datum/mutation/human/HM = GET_INITIALIZED_MUTATION(result_path)
-			stored_research.discovered_mutations += result_path
+			netrun_research_request("mutation", list("mutation" = result_path), usr)
 			say("Успешно мутировано: [HM.name].")
 			return
 
@@ -1077,7 +1077,7 @@
 			// GUARD CHECK - We're running a research-type operation. If, for some
 			// reason, somehow the DNA Console has been disconnected from the research
 			// network - Or was never in it to begin with - don't proceed
-			if(!stored_research)
+			if(!netrun_research_snapshot())
 				return
 
 			var/first_bref = params["firstref"]
@@ -1106,11 +1106,11 @@
 			// If it's already discovered, end here. Otherwise, add it to the list of
 			//  discovered mutations
 			// We've already checked for stored_research earlier
-			if(result_path in stored_research.discovered_mutations)
+			if(result_path in netrun_research_snapshot()?.discovered_mutations)
 				return
 
 			var/datum/mutation/human/HM = GET_INITIALIZED_MUTATION(result_path)
-			stored_research.discovered_mutations += result_path
+			netrun_research_request("mutation", list("mutation" = result_path), usr)
 			say("Успешно мутировано: [HM.name].")
 			return
 
@@ -1854,7 +1854,7 @@
 			var/list/mutation_data = list()
 			var/text_sequence = scanner_occupant.dna.mutation_index[mutation_type]
 			var/default_sequence = scanner_occupant.dna.default_mutation_genes[mutation_type]
-			var/discovered = (stored_research && (mutation_type in stored_research.discovered_mutations))
+			var/discovered = (mutation_type in netrun_research_snapshot()?.discovered_mutations)
 
 			mutation_data["Alias"] = HM.alias
 			mutation_data["Sequence"] = text_sequence
@@ -2102,9 +2102,9 @@
 		return FALSE
 	if(M.scrambled)
 		return FALSE
-	if(stored_research && !(path in stored_research.discovered_mutations))
+	if(netrun_research_snapshot() && !(path in netrun_research_snapshot().discovered_mutations))
 		var/datum/mutation/human/HM = GET_INITIALIZED_MUTATION(path)
-		stored_research.discovered_mutations += path
+		netrun_research_request("mutation", list("mutation" = path), usr)
 		say("Мутация обнаружена: [HM.name].")
 		return TRUE
 

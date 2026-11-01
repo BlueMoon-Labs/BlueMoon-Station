@@ -71,8 +71,7 @@
 			if(CA.type == A.type)
 				if(C.number)
 					number = max(number, C.number+1)
-		c_tag = "[A.name] #[number]"
-		GLOB.cameranet.invalidate_camera_cache() //c_tag присвоен после Initialize (LateInitialize)
+		set_camera_tag("[A.name] #[number]")
 
 // CHECKS
 

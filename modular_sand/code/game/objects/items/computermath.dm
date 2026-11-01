@@ -125,7 +125,10 @@
 				last_result = "correct"
 			else
 				last_result = "incorrect"
-			if(consume_charges())
+			if(reward_type == "Science")
+				last_points = 0
+				last_message = netrun_research_request("problem", list("correct" = correct, "difficulty" = current_difficulty), usr) ? "Решение отправлено на сервер." : "Исследовательский сервер недоступен."
+			else if(consume_charges())
 				handle_reward(usr, reward_type, correct, current_difficulty)
 			else
 				last_points = 0
@@ -463,7 +466,7 @@
 	return FALSE
 
 // Математика
-/obj/item/computermath/proc/handle_reward(mob/user, var/reward_type, var/correct, var/difficulty)
+/obj/item/computermath/proc/handle_reward(mob/user, var/reward_type, var/correct, var/difficulty, datum/techweb/authority)
 	var/mob/living/LM = user
 	var/points_awarded
 	switch(difficulty)
@@ -479,7 +482,7 @@
 		if("Science")
 			points_awarded *= MATH_MULTIPLIER_SCIENCE
 
-	if(reward_type == "Science" && !linked_techweb) //BLUEMOON ADD: без подключения к серверной сети наука не начисляется
+	if(reward_type == "Science" && !netrun_research_authorizes(src, authority))
 		last_result = "incorrect"
 		last_points = 0
 		last_message = "Устройство не подключено к исследовательской сети."
@@ -494,7 +497,7 @@
 		switch(reward_type)
 			if("Science")
 				last_message = "Исследовательские данные были повреждены. Утеряно [points_lost] очков исследования."
-				linked_techweb.remove_point_list(list(TECHWEB_POINT_TYPE_GENERIC = points_lost))
+				authority.remove_point_list(list(TECHWEB_POINT_TYPE_GENERIC = points_lost))
 			if("Cargo")
 				last_message = "Бюрократическая ошибка. Списано [points_lost] очков карго."
 				var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
@@ -511,7 +514,7 @@
 	switch(reward_type)
 		if("Science")
 			last_message = "Данные корректны! Начислено [points_awarded] очков исследования."
-			linked_techweb.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = points_awarded))
+			authority.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = points_awarded))
 		if("Cargo")
 			last_message = "Данные корректны! Начислено [points_awarded] очков карго."
 			var/datum/bank_account/D = SSeconomy.get_dep_account(ACCOUNT_CAR)
@@ -586,34 +589,28 @@
 
 /obj/item/computermath/science/process()
 	var/old_charge_count = charge_count
-	if(!linked_techweb) //BLUEMOON ADD: сеть — источник задач
+	var/datum/techweb/research = netrun_research_snapshot()
+	if(!research)
 		charge_count = 0
 		if(!unlinked_notified)
 			unlinked_notified = TRUE
 			say("Нет подключения к исследовательской сети. Задачи недоступны.")
 		return
-	charge_count = linked_techweb.get_problem_computer_charges()
+	charge_count = research.problem_computer_charges
 	if(charge_count > old_charge_count)
 		say("Для решения стали доступны новые задачи! На данный момент доступно [charge_count] задач.")
 
 /obj/item/computermath/science/check_charges()
-	if(!linked_techweb) //BLUEMOON ADD
-		return FALSE
-	if(linked_techweb.get_problem_computer_charges() > 0)
-		return TRUE
-	return FALSE
+	return get_charges() > 0
 
 /obj/item/computermath/science/consume_charges()
-	if(!linked_techweb) //BLUEMOON ADD
-		return FALSE
-	return linked_techweb.consume_problem_computer_charge()
+	// Science submissions debit the authoritative task and reward in one delivered request.
+	return FALSE
 
 /obj/item/computermath/science/get_charges()
-	if(!linked_techweb) //BLUEMOON ADD
-		return 0
-	return linked_techweb.get_problem_computer_charges()
+	var/datum/techweb/research = netrun_research_snapshot()
+	return research ? research.problem_computer_charges : 0
 
 /obj/item/computermath/science/get_max_charges()
-	if(!linked_techweb) //BLUEMOON ADD
-		return 0
-	return linked_techweb.get_problem_computer_max_charges()
+	var/datum/techweb/research = netrun_research_snapshot()
+	return research ? research.problem_computer_max_charges : 0

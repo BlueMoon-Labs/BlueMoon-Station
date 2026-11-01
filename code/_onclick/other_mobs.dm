@@ -75,9 +75,9 @@
 		return FALSE
 	return TRUE
 
-/atom/ui_status(mob/user)
+/atom/ui_status(mob/user, datum/ui_state/state)
 	. = ..()
-	if(!can_interact(user))
+	if((!state || state.requires_physical_interaction) && !can_interact(user))
 		. = min(., UI_UPDATE)
 
 /atom/movable/can_interact(mob/user)

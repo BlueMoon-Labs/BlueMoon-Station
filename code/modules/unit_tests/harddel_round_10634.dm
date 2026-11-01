@@ -63,14 +63,14 @@
 /datum/unit_test/icon_smooth_skips_deleted_atoms
 
 /datum/unit_test/icon_smooth_skips_deleted_atoms/Run()
-	var/saved_state = SSicon_smooth.state
-	var/saved_can_fire = SSicon_smooth.can_fire
+	var/saved_can_fire = detach_subsystem(SSicon_smooth)
 	var/list/saved_queue = SSicon_smooth.smooth_queue
 	var/list/saved_deferred = SSicon_smooth.deferred
 	var/obj/structure/window/doomed = allocate(/obj/structure/window, run_loc_floor_bottom_left)
 	qdel(doomed)
 	SSicon_smooth.smooth_queue = list(null, doomed)
 	SSicon_smooth.deferred = list()
+	var/saved_state = SSicon_smooth.state
 	SSicon_smooth.state = SS_RUNNING
 	// после тяжёлых тестов тик уже съеден, и MC_TICK_CHECK бросает проход на первом атоме
 	var/saved_ticklimit = Master.current_ticklimit
@@ -81,7 +81,7 @@
 	var/list/leftover = SSicon_smooth.smooth_queue + SSicon_smooth.deferred
 	SSicon_smooth.smooth_queue = saved_queue
 	SSicon_smooth.deferred = saved_deferred
-	SSicon_smooth.can_fire = (length(saved_queue) || length(saved_deferred)) ? TRUE : saved_can_fire
+	release_subsystem(SSicon_smooth, (length(saved_queue) || length(saved_deferred)) ? TRUE : saved_can_fire)
 	TEST_ASSERT(!length(leftover), "в очереди сглаживания остались удалённые атомы")
 
 /// Маяк руины брал общий экземпляр события из runnable_events и оставался в его linked_z после удаления.

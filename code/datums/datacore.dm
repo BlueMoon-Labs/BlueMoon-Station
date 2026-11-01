@@ -470,13 +470,8 @@ GLOBAL_LIST_EMPTY(record_photos_in_flight)
 	))
 	signal.data["done"] = FALSE
 	signal.data["reject"] = FALSE
-	signal.send_to_receivers()
-	if(!signal.data["done"])
-		signal.broadcast()
-		signal.mark_done()
-	if(sender)
-		sender.log_message("(PDA: Штрафной Сервер) sent \"[message]\" to [signal.format_target()]", LOG_PDA)
-	return TRUE
+	new /datum/netrun_telecomms_transmission/notification(signal, sender)
+	return signal.send_to_receivers() > 0
 
 /datum/datacore/proc/createCrimeEntry(cname = "", cdetails = "", author = "", time = "", centcom_enforced = FALSE) // BLUEMOON EDIT - авторизация ЦК
 	var/datum/data/crime/c = new /datum/data/crime

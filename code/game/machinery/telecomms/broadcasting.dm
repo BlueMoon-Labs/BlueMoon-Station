@@ -81,10 +81,32 @@
 		current = current.original
 
 /datum/signal/subspace/proc/send_to_receivers()
-	for(var/obj/machinery/telecomms/receiver/R in GLOB.telecomms_list)
-		R.receive_signal(src)
-	for(var/obj/machinery/telecomms/allinone/R in GLOB.telecomms_list)
-		R.receive_signal(src)
+	var/datum/netrun_machine_service/sender = netrun_telecomms_origin(source)
+	if(!netrun_transmission)
+		netrun_transmission = new(src)
+	var/datum/netrun_telecomms_transmission/transmission = netrun_transmission
+	transmission.dispatching++
+	var/admitted = 0
+	if(sender)
+		for(var/obj/machinery/telecomms/machine as anything in GLOB.telecomms_list)
+			if(!istype(machine, /obj/machinery/telecomms/receiver) && !istype(machine, /obj/machinery/telecomms/allinone))
+				continue
+			var/datum/netrun_machine_service/recipient = machine.get_netrun_machine_service("telecomms.receiver")
+			if(!recipient)
+				continue
+			var/datum/netrun_machine_message/telecomms/packet = new(src)
+			packet.source = sender
+			if(!recipient.accepts(packet))
+				packet.failed("Приёмник не принимает этот канал.")
+				qdel(packet)
+				continue
+			if(sender.send(recipient.service_id, packet, recipient.service_tag()))
+				admitted++
+	if(!admitted)
+		transmission.failure_reason = "Нет доступного приёмника telecomms."
+	transmission.dispatching--
+	transmission.check_finished()
+	return admitted
 
 /datum/signal/subspace/proc/broadcast()
 	set waitfor = FALSE
@@ -141,6 +163,11 @@
 // This is the meat function for making radios hear vocal transmissions.
 /datum/signal/subspace/vocal/broadcast()
 	set waitfor = FALSE
+	if(QDELETED(virt))
+		return
+	// Hear() may yield after the transport has released its owned signal snapshot.
+	var/atom/movable/virtualspeaker/speaker = virt
+	var/lang_name = data["language"]
 
 	// Perform final composition steps on the message.
 	var/message = copytext_char(data["message"], 1, MAX_BROADCAST_LEN)
@@ -224,9 +251,9 @@
 	// Render the message and have everybody hear it.
 	// Always call this on the virtualspeaker to avoid issues.
 	var/spans = radio_broadcast_spans(data["spans"], compression)
-	var/rendered = virt.compose_message(virt, language, message, frequency, spans)
+	var/rendered = speaker.compose_message(speaker, language, message, frequency, spans)
 	for(var/atom/movable/hearer in receive)
-		hearer.Hear(rendered, virt, language, message, frequency, spans)
+		hearer.Hear(rendered, speaker, language, message, frequency, spans)
 
 	// This following recording is intended for research and feedback in the use of department radio channels
 	if(length(receive))
@@ -239,13 +266,12 @@
 			spans_part = "[spans_part] [S]"
 		spans_part = "[spans_part] ) "
 
-	var/lang_name = data["language"]
 	var/log_text = "\[[get_radio_name(frequency)]\] [spans_part]\"[message]\" (language: [lang_name])"
 
-	var/mob/source_mob = virt.source
+	var/mob/source_mob = speaker.source
 	if(istype(source_mob))
 		source_mob.log_message(log_text, LOG_TELECOMMS)
 	else
-		log_telecomms("[virt.source] [log_text] [loc_name(get_turf(virt.source))]")
+		log_telecomms("[speaker.source] [log_text] [loc_name(get_turf(speaker.source))]")
 
-	QDEL_IN(virt, 50)  // Make extra sure the virtualspeaker gets qdeleted
+	QDEL_IN(speaker, 50)  // Make extra sure the virtualspeaker gets qdeleted

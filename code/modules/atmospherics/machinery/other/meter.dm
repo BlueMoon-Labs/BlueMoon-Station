@@ -91,18 +91,16 @@
 		icon_state = "meter4"
 
 	if(frequency)
-		var/datum/radio_frequency/radio_connection = SSradio.return_frequency(frequency)
-
-		if(!radio_connection)
-			return
-
 		var/datum/signal/signal = new(list(
 			"id_tag" = id_tag,
 			"device" = "AM",
+			"timestamp" = world.time,
 			"pressure" = round(env_pressure),
+			"temperature" = environment.return_temperature(),
 			"sigtype" = "status"
 		))
-		radio_connection.post_signal(src, signal)
+		netrun_atmos_send("atmos.sensor", "atmos.monitor", signal.data)
+		qdel(signal)
 
 /obj/machinery/meter/proc/status()
 	if (target)

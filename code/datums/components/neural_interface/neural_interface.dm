@@ -36,7 +36,7 @@
 // ---------------------------------------------------------------------------
 /datum/component/neural_interface
 	// Host mob reference
-	var/mob/living/host_mob
+	var/mob/host_mob
 	var/list/sources = list()
 
 	// UI customization
@@ -62,7 +62,7 @@
 
 /datum/component/neural_interface/Initialize(mob/user, display_title_p = "NEURAL INTERFACE")
 
-	if(!isliving(parent))
+	if(!ismob(parent))
 		return COMPONENT_INCOMPATIBLE
 
 	host_mob = parent
@@ -111,6 +111,12 @@
 	attached_client = host_mob.client
 	is_client_attached = TRUE
 	toggle_button.Grant(host_mob)
+	// Processes can receive their client after initialization (mind transfer, ghost role).
+	if(attached_client?.prefs && visible != attached_client.prefs.neural_interface_visibility)
+		if(attached_client.prefs.neural_interface_visibility)
+			show()
+		else
+			hide()
 
 /datum/component/neural_interface/proc/delete_user()
 	if(!host_mob)
@@ -430,7 +436,7 @@
 // Visibility Control
 // ---------------------------------------------------------------------------
 /datum/component/neural_interface/proc/toggle()
-	if(!isliving(host_mob))
+	if(!ismob(host_mob))
 		return
 	if(host_mob.client?.prefs)
 		host_mob.client.prefs.neural_interface_visibility = !visible

@@ -151,11 +151,14 @@
 
 			if (!answer_index || !message_index || answer_index < 1 || message_index < 1)
 				return
-			var/datum/comm_message/message = messages[message_index]
-			if (message.answered)
+			var/datum/comm_message/message = LAZYACCESS(messages, message_index)
+			if (!message || message.answered || answer_index != round(answer_index) || answer_index > length(message.possible_answers))
+				return
+			if(message.netrun_message_id)
+				queue_netrun_answer(message, answer_index, usr)
 				return
 			message.answered = answer_index
-			message.answer_callback.InvokeAsync()
+			message.answer_callback?.InvokeAsync()
 		if ("callShuttle")
 			if (!authenticated(usr) || !SSshuttle.canEvac(usr, TRUE))
 				return
@@ -246,24 +249,8 @@
 			playsound(src, 'sound/machines/terminal_prompt_confirm.ogg', 50, FALSE)
 			var/message = trim(html_encode(params["message"]), MAX_MESSAGE_LEN)
 
-			var/emagged = obj_flags & EMAGGED
-			if (emagged && GLOB.master_mode == "Extended")
-				message_syndicate(message, usr)
-				to_chat(usr, span_danger("SYSERR @l(19833)of(transmit.dm): !@$ СООБЩЕНИЕ УСПЕШНО ОТПРАВЛЕНО ПО ПОДПРОСТРАНСТВЕННОЙ СВЯЗИ."))
-			else if (emagged)
-				message_inteq(message, usr)
-				to_chat(usr, span_danger("SYSERR @l(19833)of(transmit.dm): $^#^@#%@== СООБЩЕНИЕ УСПЕШНО БЫЛО ОТПРАВЛЕНО ВСЕГО ЗА 0,523 МИЛЛИСЕКУНД. АДРЕСАТ НАХОДИТСЯ ВСЕГО В $%#^@ КИЛЛОМЕТРАХ $#y%)%&==..."))
-			else if(syndicate)
-				message_syndicate(message, usr)
-				to_chat(usr, span_danger("Сообщение успешно отправлено по Подпространственной Связи."))
-			else
-				message_centcom(message, usr)
-				to_chat(usr, span_notice("Сообщение успешно отправлено Центральному Командованию."))
-
-			var/associates = (emagged || syndicate) ? "the Illegal Channel": "CentCom"
-			usr.log_talk(message, LOG_SAY, tag = "сообщение для [associates]")
-			deadchat_broadcast(" отправляет [associates], \"[message]\" где-то на территории [span_name("[get_area_name(usr, TRUE)]")].", span_name("[usr.real_name]"), usr, message_type = DEADCHAT_ANNOUNCEMENT)
-			COOLDOWN_START(src, important_action_cooldown, IMPORTANT_ACTION_COOLDOWN)
+			if(message && queue_netrun_outbound("associates", message, usr))
+				COOLDOWN_START(src, important_action_cooldown, IMPORTANT_ACTION_COOLDOWN)
 		if ("purchaseShuttle")
 			var/can_buy_shuttles_or_fail_reason = can_buy_shuttles(usr)
 			if (can_buy_shuttles_or_fail_reason != TRUE)
@@ -404,21 +391,8 @@
 
 			playsound(src, 'sound/machines/terminal_prompt_confirm.ogg', 50, FALSE)
 
-			var/destination = params["destination"]
-			var/list/payload = list()
-
-			var/network_name = CONFIG_GET(string/cross_comms_network)
-			if (network_name)
-				payload["network"] = network_name
-			payload["sender_ckey"] = usr.ckey
-
-			send2otherserver(html_decode(station_name()), message, "Comms_Console", destination == "all" ? null : list(destination), additional_data = payload)
-			minor_announce(message, title = "Outgoing message to allied station")
-			usr.log_talk(message, LOG_SAY, tag = "message to the other server")
-			message_admins("[ADMIN_LOOKUPFLW(usr)] has sent a message to the other server\[s].")
-			deadchat_broadcast(" has sent an outgoing message to the other station(s).</span>", "<span class='bold'>[usr.real_name]", usr, message_type = DEADCHAT_ANNOUNCEMENT)
-
-			COOLDOWN_START(src, important_action_cooldown, IMPORTANT_ACTION_COOLDOWN)
+			if(queue_netrun_outbound("sector", message, usr, params["destination"]))
+				COOLDOWN_START(src, important_action_cooldown, IMPORTANT_ACTION_COOLDOWN)
 		if ("setState")
 			if (!authenticated(usr))
 				return
@@ -911,6 +885,8 @@
 		var/trim_count = length(messages) - 150
 		messages.Cut(1, trim_count + 1)
 		messages_trimmed += trim_count
+	SStgui.update_uis(src)
+	SEND_SIGNAL(src, COMSIG_NETRUN_SERVICE_STATE_CHANGED)
 
 /obj/machinery/computer/communications/proc/print_report(message, title)
 	if(!COOLDOWN_FINISHED(src, report_print_cooldown))

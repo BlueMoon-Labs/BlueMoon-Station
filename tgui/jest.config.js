@@ -10,6 +10,7 @@ module.exports = {
     '^.+\\.(js|cjs|ts|tsx)$': require.resolve('babel-jest'),
   },
   moduleNameMapper: {
+    '\\.(css|scss)$': '<rootDir>/scripts/jest/styleMock.js',
     '\\.(svg|png|jpg|jpeg|gif|ogg|wav|mp3)$': '<rootDir>/scripts/jest/fileMock.js',
   },
   // marked ships ESM-only; let babel transform it instead of skipping it.

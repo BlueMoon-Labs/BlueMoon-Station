@@ -321,7 +321,8 @@ SUBSYSTEM_DEF(research)
 	point_types = TECHWEB_POINT_TYPE_LIST_ASSOCIATIVE_NAMES
 	initialize_all_techweb_designs()
 	initialize_all_techweb_nodes()
-	science_tech = new /datum/techweb/science
+	// Compatibility aliases are assigned only to memory owned by a physical server.
+	science_tech = null
 	admin_tech = new /datum/techweb/admin
 	autosort_categories()
 	error_design = new
@@ -341,14 +342,16 @@ SUBSYSTEM_DEF(research)
 
 /datum/controller/subsystem/research/fire()
 	var/list/techwebs_income = list()	//экземпляр техвеба = биткойны сети в секунду
+	var/list/server_counts = list()
 	if(multiserver_calculation)
 		for(var/obj/machinery/rnd/server/miner in servers)
-			if(!miner.working)
+			if(!miner.netrun_online())
 				continue
 			var/datum/techweb/mining_web = miner.stored_research
 			if(!mining_web)
 				continue	//сервер без подключённой сети (изолированная РНД) очков не приносит
 			var/list/mining_result = miner.mine()	//SLAVE AWAY, SLAVE.
+			server_counts[mining_web]++
 			if(!techwebs_income[mining_web])
 				techwebs_income[mining_web] = list()
 			for(var/i in mining_result)
@@ -356,17 +359,13 @@ SUBSYSTEM_DEF(research)
 				techwebs_income[mining_web][i] = cummulative ? cummulative + mining_result[i] : mining_result[i]
 		//BLUEMOON CHANGE: убывающая отдача теперь считается ПО СЕТЯМ, а не по всей ферме
 		for(var/datum/techweb/mining_web as anything in techwebs_income)
-			var/server_count = 0
-			for(var/obj/machinery/rnd/server/miner in servers)
-				if(miner.working && miner.stored_research == mining_web)
-					server_count++
-			var/eff = calculate_server_coefficient(server_count)
+			var/eff = calculate_server_coefficient(server_counts[mining_web])
 			if(eff)
 				for(var/i in techwebs_income[mining_web])
 					techwebs_income[mining_web][i] *= eff
 	else
 		for(var/obj/machinery/rnd/server/miner in servers)
-			if(miner.working && miner.stored_research && !techwebs_income[miner.stored_research])
+			if(miner.netrun_online() && miner.stored_research && !techwebs_income[miner.stored_research])
 				techwebs_income[miner.stored_research] = single_server_income.Copy()
 	if (!isnull(last_income))
 		var/income_time_difference = world.time - last_income
@@ -405,19 +404,41 @@ SUBSYSTEM_DEF(research)
 /datum/controller/subsystem/research/proc/get_rnd_network(network_id, techweb_type = /datum/techweb/isolated)
 	if(network_id == RND_NETWORK_STATION)
 		return science_tech
-	. = rnd_networks[network_id]
-	if(!.)
-		. = new techweb_type
-		rnd_networks[network_id] = .
+	return rnd_networks[network_id]
 
 /datum/controller/subsystem/research/proc/get_rnd_network_for(atom/target, network_id, techweb_type = /datum/techweb/isolated)
-	if(network_id == RND_NETWORK_AUTO)
-		if(target && is_station_level(target.z))
-			return science_tech
-		return new techweb_type
-	if(!network_id)
-		return new techweb_type
-	return get_rnd_network(network_id, techweb_type)
+	if(!target)
+		return null
+	var/turf/spot = get_turf(target)
+	if(!spot)
+		return null
+	var/selector = network_id
+	if(selector == RND_NETWORK_AUTO && is_station_level(spot.z))
+		selector = RND_NETWORK_STATION
+	// Registry insertion order picks the original reachable server deterministically.
+	for(var/obj/machinery/rnd/server/server as anything in servers)
+		if(QDELETED(server) || QDELETED(server.stored_research))
+			continue
+		if(selector && server.research_network_id() != selector)
+			continue
+		if(!selector && server.z != spot.z)
+			continue
+		if(netrun_research_route_available(target, server))
+			return server.stored_research
+	return null
+
+/// These references never allocate or retain an orphan database after owner deletion.
+/datum/controller/subsystem/research/proc/refresh_research_authorities()
+	science_tech = null
+	rnd_networks.Cut()
+	for(var/obj/machinery/rnd/server/server as anything in servers)
+		if(QDELETED(server) || QDELETED(server.stored_research))
+			continue
+		var/key = server.research_network_id()
+		if(key == RND_NETWORK_STATION && !science_tech)
+			science_tech = server.stored_research
+		if(!rnd_networks[key])
+			rnd_networks[key] = server.stored_research
 //BLUEMOON ADD END
 
 /datum/controller/subsystem/research/proc/autosort_categories()

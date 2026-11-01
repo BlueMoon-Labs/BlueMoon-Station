@@ -32,7 +32,7 @@
 		//WHITE-STEEL PORT: уже выпадавший диск не генерируется повторно.
 		if(SSorbits.generated_research_nodes[node_id])
 			continue
-		if(SSresearch.science_tech.isNodeResearchedID(node_id))
+		if(SSresearch.science_tech?.isNodeResearchedID(node_id))
 			continue
 		valid_nodes += node_id
 	if(!length(valid_nodes))

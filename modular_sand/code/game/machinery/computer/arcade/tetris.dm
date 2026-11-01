@@ -201,7 +201,7 @@
 				var/score_research_points = clamp(temp_score, 0, TETRIS_SCORE_MAX_SCI)
 
 				// Add science points based on score
-				SSresearch.science_tech.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = score_research_points))
+				SSresearch.science_tech?.add_point_list(list(TECHWEB_POINT_TYPE_GENERIC = score_research_points))
 
 				// Announce points earned
 				say("Research personnel detected. Applying gathered data to algorithms...")

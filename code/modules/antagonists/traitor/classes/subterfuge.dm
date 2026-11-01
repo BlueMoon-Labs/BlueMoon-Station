@@ -20,6 +20,8 @@
 	if(try_forge_assassinate_objective(T, mode))
 		return TRUE
 	else
+		if(prob(15) && try_forge_netrun_objective(T))
+			return TRUE
 		var/list/weights = list()
 		var/datum/objective/sabotage/sabotage_objective = new
 		sabotage_objective.owner = T.owner
