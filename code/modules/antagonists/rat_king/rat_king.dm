@@ -10,6 +10,8 @@
 	threat = 3
 	blacklisted_quirks = list(/datum/quirk/nonviolent, /datum/quirk/mute, /datum/quirk/rat_whisperer)
 	var/infected = 0
+	/// Уже обращённые, чтобы не считать одного и того же дважды.
+	var/list/infected_minds = list()
 
 /datum/antagonist/rat_king/greet()
 	to_chat(owner, span_boldannounce("Вы - крысиный король. Под вашими лапами техтоннели, а в зубах - жажда власти."))
@@ -30,6 +32,12 @@
 	var/datum/objective/rat_king/infect/infect_objective = new
 	infect_objective.king = src
 	objectives += infect_objective
+	var/datum/objective/rat_king/coffers/coffers_objective = new
+	coffers_objective.king = src
+	objectives += coffers_objective
+	var/datum/objective/rat_king/chew/chew_objective = new
+	chew_objective.king = src
+	objectives += chew_objective
 	var/datum/objective/rat_king/survive/survive_objective = new
 	survive_objective.owner = owner
 	objectives += survive_objective
@@ -59,7 +67,7 @@
 	if(!king || !king.owner || !king.owner.current)
 		return FALSE
 	var/mob/living/simple_animal/hostile/regalrat/rat_king = king.owner.current
-	if(!istype(rat_king) || !rat_king.horde)
+	if(!istype(rat_king) || !rat_king.horde || QDELETED(rat_king.horde))
 		return FALSE
 	return length(rat_king.horde.minions) >= target_amount
 
@@ -75,6 +83,34 @@
 	if(!king)
 		return FALSE
 	return king.infected >= target_amount
+
+/datum/objective/rat_king/coffers
+	var/datum/antagonist/rat_king/king
+
+/datum/objective/rat_king/coffers/New()
+	target_amount = rand(3, 6)
+	explanation_text = "Наполните королевскую казну [target_amount] раз."
+	. = ..()
+
+/datum/objective/rat_king/coffers/check_completion()
+	if(!king || !king.owner || !king.owner.current)
+		return FALSE
+	var/mob/living/simple_animal/hostile/regalrat/rat_king = king.owner.current
+	return istype(rat_king) && rat_king.coffers >= target_amount
+
+/datum/objective/rat_king/chew
+	var/datum/antagonist/rat_king/king
+
+/datum/objective/rat_king/chew/New()
+	target_amount = rand(4, 8)
+	explanation_text = "Пусть ваши крысы перегрызут [target_amount] кабелей."
+	. = ..()
+
+/datum/objective/rat_king/chew/check_completion()
+	if(!king || !king.owner || !king.owner.current)
+		return FALSE
+	var/mob/living/simple_animal/hostile/regalrat/rat_king = king.owner.current
+	return istype(rat_king) && rat_king.cables_chewed >= target_amount
 
 /datum/objective/rat_king/survive
 	explanation_text = "Доживите до конца раунда."
@@ -289,7 +325,10 @@
 	for(var/datum/antagonist/rat_king/king in GLOB.antagonists)
 		var/mob/king_mob = king.owner?.current
 		if(king_mob && !QDELETED(king_mob) && get_dist(king_mob, victim) <= RAT_HORDE_ORDER_RANGE)
-			king.infected++
+			var/infected_key = victim.mind || victim
+			if(!(infected_key in king.infected_minds))
+				king.infected_minds += infected_key
+				king.infected++
 			break
 	metabolization_rate = 10 * REAGENTS_METABOLISM
 

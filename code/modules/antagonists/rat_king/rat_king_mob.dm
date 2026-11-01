@@ -38,8 +38,12 @@
 	var/datum/action/cooldown/rat_domain/domain
 	var/datum/action/cooldown/rat_order/order_action
 	var/datum/action/cooldown/rat_lick/lick_action
-	/// Текущий королевский облик.
-	var/datum/rat_fashion/current_look
+	/// Название текущего королевского облика.
+	var/current_look
+	/// Сколько раз король пополнил казну.
+	var/coffers = 0
+	/// Сколько кабелей перегрызли его крысы.
+	var/cables_chewed = 0
 	/// Экшен смены облика.
 	var/datum/action/cooldown/rat_fashion/fashion_select
 
@@ -106,25 +110,19 @@
 	special_moniker = "Лучше не связываться с [p_their()] [selected_kingdom]... Как вообще становятся [selected_title] этого?"
 
 /mob/living/simple_animal/hostile/regalrat/proc/pick_random_look()
-	var/list/valid_styles = list()
-	for(var/style_path in subtypesof(/datum/rat_fashion))
-		var/datum/rat_fashion/style = new style_path()
-		if(!style.allow_random)
-			qdel(style)
-			continue
-		valid_styles += style
-	if(!length(valid_styles))
+	var/list/random_styles = list()
+	for(var/style_name in GLOB.rat_king_fashions)
+		var/list/style = GLOB.rat_king_fashions[style_name]
+		if(style[4])
+			random_styles[style_name] = style
+	if(!length(random_styles))
 		return
-	var/datum/rat_fashion/chosen = pick(valid_styles)
-	valid_styles -= chosen
-	for(var/datum/rat_fashion/style as anything in valid_styles)
-		qdel(style)
-	current_look = chosen
-	current_look.apply(src)
+	var/chosen_name = pick(random_styles)
+	current_look = chosen_name
+	apply_fashion(random_styles[chosen_name])
 
 /mob/living/simple_animal/hostile/regalrat/Destroy()
 	QDEL_NULL(fashion_select)
-	QDEL_NULL(current_look)
 	return ..()
 
 /mob/living/simple_animal/hostile/regalrat/proc/get_rat_horde()
@@ -283,6 +281,10 @@
 		if(41 to 100)
 			to_chat(owner, "<span class='notice'>Пусто. Ничего.</span>")
 			new /obj/effect/decal/cleanable/dirt(T)
+	if(loot <= 40)
+		var/mob/living/simple_animal/hostile/regalrat/king = owner
+		if(istype(king) && king.mind?.has_antag_datum(/datum/antagonist/rat_king))
+			king.coffers++
 	StartCooldown()
 
 /datum/action/cooldown/riot
@@ -438,18 +440,23 @@
 		visible_message("<span class='warning'>[src] перегрызает [wire]. Кабель мёртв!</span>")
 		playsound(src, 'sound/effects/sparks2.ogg', 100, TRUE)
 		wire.deconstruct()
+		credit_chewed_cable()
 		death()
 		return TRUE
 	visible_message("<span class='warning'>[src] перегрызает [wire]. Выглядит целым!</span>")
 	playsound(src, 'sound/effects/sparks2.ogg', 100, TRUE)
 	wire.deconstruct()
+	credit_chewed_cable()
 	return TRUE
 
-// Знаю что это когда-то сломается, но мне лень фиксить.
-#define REGALRAT_RIOT_PROB_PER_SECOND 10
-#define REGALRAT_COFFER_PROB_PER_SECOND 20
-#define RAT_GNAW_PROB_PER_SECOND 20
-#define RAT_KING_ORDER_RANGE 9
+/mob/living/simple_animal/hostile/rat/proc/credit_chewed_cable()
+	var/datum/component/rat_minion/minion = GetComponent(/datum/component/rat_minion)
+	if(!minion?.horde)
+		return
+	var/mob/living/simple_animal/hostile/regalrat/king = minion.horde.leader
+	if(!istype(king) || QDELETED(king) || !king.mind?.has_antag_datum(/datum/antagonist/rat_king))
+		return
+	king.cables_chewed++
 
 /datum/ai_controller/hostile_adapter/melee_chaser/regalrat
 	planning_subtrees = list(
@@ -485,9 +492,9 @@
 	if(!istype(king) || !king.riot || !king.coffer)
 		return
 	//легаси-структура ролла: сперва шанс риота, иначе шанс коффера
-	if(SPT_PROB(REGALRAT_RIOT_PROB_PER_SECOND, delta_time))
+	if(SPT_PROB(RAT_KING_RIOT_PROB_PER_SECOND, delta_time))
 		controller.queue_behavior(/datum/ai_behavior/regalrat_royal_duty/riot)
-	else if(SPT_PROB(REGALRAT_COFFER_PROB_PER_SECOND, delta_time))
+	else if(SPT_PROB(RAT_KING_COFFER_PROB_PER_SECOND, delta_time))
 		controller.queue_behavior(/datum/ai_behavior/regalrat_royal_duty/coffer)
 
 /datum/ai_behavior/regalrat_royal_duty
@@ -535,10 +542,10 @@
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
 	if(controller.blackboard_key_exists(BB_AI_CURRENT_TARGET))
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
-	for(var/mob/living/simple_animal/hostile/regalrat/king in SSspatial_grid.orthogonal_range_search(soldier, SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS, RAT_KING_ORDER_RANGE))
+	for(var/mob/living/simple_animal/hostile/regalrat/king in SSspatial_grid.orthogonal_range_search(soldier, SPATIAL_GRID_CONTENTS_TYPE_AI_TARGETS, RAT_HORDE_ORDER_RANGE))
 		if(QDELETED(king) || king.stat != CONSCIOUS)
 			continue
-		if(get_dist(soldier, king) > RAT_KING_ORDER_RANGE)
+		if(get_dist(soldier, king) > RAT_HORDE_ORDER_RANGE)
 			continue
 		if(!king.faction_check_mob(soldier, TRUE))
 			continue
@@ -574,11 +581,6 @@
 	if(!vermin.try_chew_cables())
 		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
 	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
-
-#undef REGALRAT_RIOT_PROB_PER_SECOND
-#undef REGALRAT_COFFER_PROB_PER_SECOND
-#undef RAT_GNAW_PROB_PER_SECOND
-#undef RAT_KING_ORDER_RANGE
 
 // Способности короля остальные
 /datum/action/cooldown/rat_domain
@@ -709,13 +711,14 @@
 	if(!choice || QDELETED(src) || !owner)
 		return
 	var/order = order_by_choice[choice]
+	if(isnull(order))
+		return
 	var/turf/order_turf = get_turf(order_target || owner)
-	var/duration = RAT_HORDE_ORDER_DURATION
 	switch(order)
 		if(RAT_ORDER_ATTACK, RAT_ORDER_GUARD, RAT_ORDER_PLAY)
-			horde.issue_order(order, order_target, order_turf, duration)
+			horde.issue_order(order, order_target, order_turf)
 		else
-			horde.issue_order(order, null, get_turf(owner), duration)
+			horde.issue_order(order, null, get_turf(owner))
 	StartCooldown()
 
 /datum/action/cooldown/rat_order/proc/get_horde()
@@ -808,60 +811,23 @@
 
 // Внешность короля
 
-/datum/rat_fashion
-	var/name = "".
-	var/allow_random = TRUE
-	var/icon = 'icons/mob/rat.dmi'
-	var/icon_state_living
-	var/icon_state_dead
+GLOBAL_LIST_INIT(rat_king_fashions, list(
+	"Королевская крыса" = list('icons/mob/animal.dmi', "regalrat", "regalrat_dead", TRUE),
+	"Ретро-крыса" = list('icons/mob/rat.dmi', "classic", "classic_dead", TRUE),
+	"Крыса-качок" = list('icons/mob/rat.dmi', "buffking", "buffking_dead", FALSE),
+	"Крысиная королева" = list('icons/mob/rat.dmi', "ratqueen", "ratqueen_dead", FALSE),
+	"Толстая королева" = list('icons/mob/rat.dmi', "ratqueen_fat", "ratqueen_dead", FALSE),
+	"Цирковой мастер" = list('icons/mob/rat.dmi', "ringmaster", "ratqueen_dead", FALSE),
+))
 
-/datum/rat_fashion/proc/get_radial_select()
-	return image(icon = icon, icon_state = icon_state_living)
-
-/datum/rat_fashion/proc/apply(mob/living/simple_animal/hostile/regalrat/rat_target)
-	if(QDELETED(rat_target))
+/mob/living/simple_animal/hostile/regalrat/proc/apply_fashion(list/style)
+	if(!style)
 		return
-	rat_target.icon = icon
-	rat_target.icon_living = icon_state_living
-	rat_target.icon_dead = icon_state_dead
-	rat_target.icon_state = (rat_target.stat == DEAD) ? icon_state_dead : icon_state_living
-	rat_target.update_appearance(UPDATE_ICON)
-
-/datum/rat_fashion/default
-	name = "Королевская крыса"
-	icon = 'icons/mob/animal.dmi'
-	icon_state_living = "regalrat"
-	icon_state_dead = "regalrat_dead"
-
-/datum/rat_fashion/classic
-	name = "Ретро-крыса"
-	icon_state_living = "classic"
-	icon_state_dead = "classic_dead"
-
-/// *buff
-/datum/rat_fashion/swole
-	name = "Крыса-качок"
-	allow_random = FALSE
-	icon_state_living = "buffking"
-	icon_state_dead = "buffking_dead"
-
-/datum/rat_fashion/rat_queen
-	name = "Крысиная королева"
-	allow_random = FALSE
-	icon_state_living = "ratqueen"
-	icon_state_dead = "ratqueen_dead"
-
-/datum/rat_fashion/rat_queen_alt
-	name = "Толстая королева"
-	allow_random = FALSE
-	icon_state_living = "ratqueen_fat"
-	icon_state_dead = "ratqueen_dead"
-
-/datum/rat_fashion/ringmaster
-	name = "цирковой мастер"
-	allow_random = FALSE
-	icon_state_living = "ringmaster"
-	icon_state_dead = "ratqueen_dead"
+	icon = style[1]
+	icon_living = style[2]
+	icon_dead = style[3]
+	icon_state = (stat == DEAD) ? icon_dead : icon_living
+	update_appearance(UPDATE_ICON)
 
 /datum/action/cooldown/rat_fashion
 	name = "Королевский облик"
@@ -884,44 +850,29 @@
 	if(QDELETED(src) || QDELETED(rat_owner) || owner != rat_owner)
 		return
 	var/list/options = list()
-	var/list/styles_by_choice = list()
-	for(var/style_path in subtypesof(/datum/rat_fashion))
-		var/datum/rat_fashion/style = new style_path()
-		options[style.name] = style.get_radial_select()
-		styles_by_choice[style.name] = style
+	for(var/style_name in GLOB.rat_king_fashions)
+		var/list/style = GLOB.rat_king_fashions[style_name]
+		options[style_name] = image(icon = style[1], icon_state = style[2])
 	var/choice = show_radial_menu(rat_owner, rat_owner, options, radius = 42)
-	if(!choice)
-		QDEL_LIST_ASSOC_VAL(styles_by_choice)
+	if(!choice || QDELETED(src) || QDELETED(rat_owner) || owner != rat_owner)
 		return
-	if(QDELETED(src) || QDELETED(rat_owner) || owner != rat_owner)
-		QDEL_LIST_ASSOC_VAL(styles_by_choice)
-		return
-	var/datum/rat_fashion/chosen = styles_by_choice[choice]
-	for(var/style_name in styles_by_choice)
-		var/datum/rat_fashion/style = styles_by_choice[style_name]
-		if(style != chosen)
-			qdel(style)
+	var/list/chosen = GLOB.rat_king_fashions[choice]
 	if(!chosen)
 		return
-	if(rat_owner.current_look?.name == chosen.name)
+	if(rat_owner.current_look == choice)
 		rat_owner.balloon_alert(rat_owner, "это уже ваш облик!")
-		qdel(chosen)
 		return
 	var/turf/origin = get_turf(rat_owner)
 	if(!origin)
-		qdel(chosen)
 		return
 	rat_owner.balloon_alert_to_viewers("дрожит...")
 	if(!do_after(rat_owner, 3 SECONDS, target = origin))
 		rat_owner.balloon_alert(rat_owner, "прервано!")
-		qdel(chosen)
 		return
 	if(QDELETED(src) || QDELETED(rat_owner))
-		qdel(chosen)
 		return
-	QDEL_NULL(rat_owner.current_look)
-	rat_owner.current_look = chosen
-	chosen.apply(rat_owner)
+	rat_owner.current_look = choice
+	rat_owner.apply_fashion(chosen)
 	StartCooldown()
 
 

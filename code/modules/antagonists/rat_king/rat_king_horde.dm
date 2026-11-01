@@ -83,8 +83,12 @@
 	order_turf = new_turf || (new_target ? get_turf(new_target) : get_turf(leader))
 	order_expires = world.time + duration
 	order_timer = addtimer(CALLBACK(src, PROC_REF(clear_order)), duration, TIMER_STOPPABLE)
+	wake_minions()
 	to_chat(leader, span_notice("Орда получила приказ: [get_order_label()]."))
 	return TRUE
+
+/datum/rat_horde/proc/has_active_order()
+	return order != RAT_ORDER_NONE && world.time <= order_expires
 
 /datum/rat_horde/proc/is_order_allowed(new_order)
 	switch(new_order)
@@ -103,6 +107,7 @@
 	order_target = null
 	order_turf = null
 	order_expires = 0
+	sleep_minions()
 
 /datum/rat_horde/proc/alert_betrayal(mob/living/traitor)
 	if(!traitor)
@@ -174,8 +179,17 @@
 		old_chew_probability = mouse.chew_probability
 		mouse.chew_probability = 0
 		mouse.stop_automated_movement = TRUE
-		START_PROCESSING(SSprocessing, src)
+		if(horde.has_active_order())
+			START_PROCESSING(SSprocessing, src)
 	RegisterSignal(parent, COMSIG_PARENT_QDELETING, PROC_REF(on_deleted))
+
+/datum/component/rat_minion/proc/start_processing()
+	if(istype(parent, /mob/living/simple_animal/mouse))
+		next_step = 0
+		START_PROCESSING(SSprocessing, src)
+
+/datum/component/rat_minion/proc/stop_processing()
+	STOP_PROCESSING(SSprocessing, src)
 
 /datum/component/rat_minion/Destroy()
 	STOP_PROCESSING(SSprocessing, src)
@@ -206,8 +220,8 @@
 		return PROCESS_KILL
 	if(mouse.has_buckled_mobs())
 		return
-	if(horde.order == RAT_ORDER_NONE || world.time > horde.order_expires)
-		return
+	if(!horde.has_active_order())
+		return PROCESS_KILL
 	if(world.time < next_step)
 		return
 	next_step = world.time + 1 SECONDS
@@ -242,7 +256,20 @@
 					new /obj/effect/temp_visual/heart(get_turf(mouse))
 					mouse.visible_message(span_notice("[mouse] ластится к [play_target]!"))
 
-// ЭйАй подобие сплюртовскому варианту. Я знаю что мобы у нас ну тупенькие ладно.
+/// останавливаем обработку для инактивных миньонов
+/datum/rat_horde/proc/wake_minions()
+	for(var/mob/living/minion as anything in minions)
+		var/datum/component/rat_minion/component = minion.GetComponent(/datum/component/rat_minion)
+		if(component)
+			component.start_processing()
+
+/datum/rat_horde/proc/sleep_minions()
+	for(var/mob/living/minion as anything in minions)
+		var/datum/component/rat_minion/component = minion.GetComponent(/datum/component/rat_minion)
+		if(component)
+			component.stop_processing()
+
+// АИ дерево приказов hard-орды.
 /datum/ai_behavior/travel_towards/rat_order
 	required_distance = RAT_HORDE_GATHER_DISTANCE
 	behavior_flags = AI_BEHAVIOR_REQUIRE_MOVEMENT | AI_BEHAVIOR_CAN_PLAN_DURING_EXECUTION
