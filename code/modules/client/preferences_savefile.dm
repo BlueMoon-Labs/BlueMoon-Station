@@ -1660,6 +1660,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	S["gender"] 							>> gender
 	S["body_model"] 						>> features["body_model"]
 	S["body_size"] 							>> features["body_size"]
+	S["normalized_size"] 					>> features["normalized_size"]
 	S["feature_fuzzy"] 						>> features["fuzzy"]
 	S["age"] 								>> age
 	S["hair_color"] 						>> hair_color
@@ -2145,7 +2146,8 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	var/static/size_max
 	if(!size_max)
 		size_max = CONFIG_GET(number/body_size_max)
-	features["body_size"] = sanitize_num_clamp(features["body_size"], size_min, size_max, RESIZE_DEFAULT_SIZE, 0.01)
+	features["body_size"] = sanitize_num_clamp(features["body_size"], size_min, size_max, RESIZE_DEFAULT_SIZE, 0.0001)
+	features["normalized_size"] = sanitize_num_clamp(features["normalized_size"], max(size_min, 0.81), min(size_max, 1.2), RESIZE_NORMAL, 0.0001)
 
 	var/static/list/B_sizes
 	if(!B_sizes)
@@ -2516,6 +2518,7 @@ SAVEFILE UPDATING/VERSIONING - 'Simplified', or rather, more coder-friendly ~Car
 	WRITE_FILE(S["gender"]								, gender)
 	WRITE_FILE(S["body_model"]							, features["body_model"])
 	WRITE_FILE(S["body_size"]							, features["body_size"])
+	WRITE_FILE(S["normalized_size"]						, features["normalized_size"])
 	WRITE_FILE(S["feature_fuzzy"]						, features["fuzzy"])
 	WRITE_FILE(S["age"]									, age)
 	WRITE_FILE(S["hair_color"]							, hair_color)

@@ -129,8 +129,7 @@
 	var/datum/preferences/navigation_test/modded_prefs = allocate(/datum/preferences/navigation_test)
 	modded_prefs.pref_species = new /datum/species/human
 	modded_prefs.random_character(MALE)
-	modded_prefs.organ_mods = list(ORGAN_SLOT_BREATHING_TUBE = "tube")
-	modded_prefs.implant_mods = list("disrobe" = TRUE)
+	modded_prefs.implant_mods = list("disrobe" = TRUE, "breathing_tube" = TRUE)
 	var/datum/preferences/navigation_test/plain_prefs = allocate(/datum/preferences/navigation_test)
 	plain_prefs.pref_species = new /datum/species/human
 	plain_prefs.random_character(FEMALE)

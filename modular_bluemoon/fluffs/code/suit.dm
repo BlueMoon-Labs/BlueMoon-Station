@@ -1044,6 +1044,10 @@
 	desc = "An upgraded version of the standard riot gear, featuring reinforced plating against melee."
 	icon_state = "elite_riot"
 	item_state = "elite_riot"
+	tail_state = ""
+	flags_inv = NONE
+	unique_reskin = null
+	taur_types_icon_whitelist = alist()
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
@@ -1053,6 +1057,10 @@
 	desc = "Worn by members of the US Marine Corps during the Yangtze Campaign, this armor found its way into the hands of the Desert Rangers."
 	icon_state = "rigscustom_suit"
 	item_state = "rigscustom_suit"
+	tail_state = ""
+	flags_inv = NONE
+	unique_reskin = null
+	taur_types_icon_whitelist = alist()
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/suit.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/suit.dmi'
 	mutantrace_variation = STYLE_DIGITIGRADE | STYLE_NO_ANTHRO_ICON
