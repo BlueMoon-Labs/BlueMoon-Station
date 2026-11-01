@@ -71,10 +71,16 @@
 	if(istype(A, /obj/item/gun/energy) && gun_charger != TRUE)
 		to_chat(user, span_warning("ОШИБКА: невозможно соединиться с устройством."))
 		return FALSE
+	var/obj/item/ammo_box/magazine/recharge/magazine = get_recharge_magazine(A)
+	if(magazine && gun_charger != TRUE)
+		to_chat(user, span_warning("ОШИБКА: невозможно соединиться с устройством."))
+		return FALSE
 	if(recharging)
 		return TRUE
-	else
-		recharging = TRUE
+	if(magazine)
+		recharge_magazine(A, magazine, user)
+		return TRUE
+	recharging = TRUE
 	var/obj/item/stock_parts/cell/C = A.get_cell()
 	var/obj/O
 	var/coefficient = 1
@@ -104,6 +110,41 @@
 		return TRUE
 	recharging = FALSE
 
+
+/// Энергомагазин цели: сам магазин или вставленный в пушку.
+/obj/item/inducer/proc/get_recharge_magazine(atom/movable/A)
+	if(istype(A, /obj/item/ammo_box/magazine/recharge))
+		return A
+	if(istype(A, /obj/item/gun/ballistic))
+		var/obj/item/gun/ballistic/gun = A
+		if(istype(gun.magazine, /obj/item/ammo_box/magazine/recharge))
+			return gun.magazine
+
+/obj/item/inducer/proc/recharge_magazine(atom/movable/A, obj/item/ammo_box/magazine/recharge/magazine, mob/user)
+	if(magazine.stored_ammo.len >= magazine.max_ammo)
+		to_chat(user, span_notice("Заряд [A] на максимуме!"))
+		return
+	recharging = TRUE
+	var/done_any = FALSE
+	user.visible_message("[user] начинает заряжать [A] при помощи [src].", span_notice("Вы начали заряжать [A] при помощи [src]."))
+	while(magazine.stored_ammo.len < magazine.max_ammo)
+		if(!do_after(user, 10, target = user) || QDELETED(magazine) || !cell || cell.charge < magazine.charge_per_round)
+			break
+		var/rounds = max(1, round(min(cell.charge, powertransfer) / magazine.charge_per_round))
+		rounds = magazine.add_charged_rounds(rounds)
+		cell.use(rounds * magazine.charge_per_round)
+		done_any = TRUE
+		if(istype(A, /obj/item/gun/ballistic))
+			var/obj/item/gun/ballistic/gun = A
+			gun.chamber_round()
+		if(opened)
+			do_sparks(1, FALSE, A)
+		cell.update_icon()
+		A.update_icon()
+		update_icon()
+	if(done_any)
+		user.visible_message("[user] перезарядил [A]!", span_notice("Вы перезарядили [A]!"))
+	recharging = FALSE
 
 /obj/item/inducer/attack(mob/M, mob/user)
 	if(user.a_intent == INTENT_HARM)
@@ -245,7 +286,7 @@
 	item_state = "inducer-combat"
 	slot_flags = ITEM_SLOT_BELT
 	w_class = WEIGHT_CLASS_NORMAL
-	desc = "Инструмент для индуктивного заряжания внешних аккумуляторов. Видны модификации и улучшения, которые утяжеляют индусер взамен на возможность зарядки энергооружия."
+	desc = "Инструмент для индуктивного заряжания внешних аккумуляторов. Видны модификации и улучшения, которые утяжеляют индусер взамен на возможность зарядки энергооружия и его энергомагазинов."
 	cell_type = /obj/item/stock_parts/cell/hyper
 	opened = FALSE
 	gun_charger = TRUE

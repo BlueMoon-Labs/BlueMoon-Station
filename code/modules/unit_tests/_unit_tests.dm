@@ -331,6 +331,7 @@
 #include "heretic_rust_ascension.dm"
 #include "heretic_preparation.dm"
 #include "heretic_onboarding.dm"
+#include "inducer_magazine.dm"
 #include "integrated_circuit_list_refs.dm"
 #include "necropolis_curse.dm"
 #include "heretic_visuals.dm"
