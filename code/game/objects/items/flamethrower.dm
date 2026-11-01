@@ -80,7 +80,8 @@
 		if(target_turf)
 			var/turflist = getline(user, target_turf)
 			playsound(user, fire_sound, 50, 1)
-			log_combat(user, target, "flamethrowered", src)
+			if(lit && has_fuel())
+				log_combat(user, target, "flamethrowered", src)
 			flame_turf(turflist)
 
 /obj/item/flamethrower/attackby(obj/item/W, mob/user, params)
@@ -225,8 +226,11 @@
 		attack_self(user)
 
 
-/obj/item/flamethrower/proc/default_ignite(turf/target, release_amount = 0.05)
-	if(!isopenturf(target) || !has_fuel())
+/// require_fuel = FALSE - разрыв баллона: выбрасывается всё, что в нём есть, даже меньше порога выстрела.
+/obj/item/flamethrower/proc/default_ignite(turf/target, release_amount = 0.05, require_fuel = TRUE)
+	if(!isopenturf(target) || !ptank || QDELETED(ptank) || !ptank.air_contents)
+		return
+	if(require_fuel && !has_fuel())
 		return
 	//Transfer a portion of current tank air contents to turf
 	var/datum/gas_mixture/air_transfer = ptank.remove_air_ratio(release_amount)
@@ -267,7 +271,7 @@
 		if(istype(P) && (P.damage_type != STAMINA) && damage && !P.nodamage && prob(15))
 			owner.visible_message("<span class='danger'>\The [attack_text] hits the fueltank on [owner]'s [name], rupturing it! What a shot!</span>")
 			var/target_turf = get_turf(owner)
-			igniter.ignite_turf(src,target_turf, release_amount = 100)
+			igniter.ignite_turf(src,target_turf, release_amount = 100, require_fuel = FALSE)
 			qdel(ptank)
 			ptank = null
 			lit = FALSE
@@ -282,7 +286,7 @@
 /obj/item/assembly/igniter/cold/flamethrower_process(turf/open/location)
 	return
 
-/obj/item/assembly/igniter/proc/ignite_turf(obj/item/flamethrower/F,turf/open/location,release_amount = 0.05)
-	F.default_ignite(location,release_amount)
+/obj/item/assembly/igniter/proc/ignite_turf(obj/item/flamethrower/F,turf/open/location,release_amount = 0.05, require_fuel = TRUE)
+	F.default_ignite(location,release_amount, require_fuel)
 
 #undef FLAMETHROWER_MIN_FUEL_MOLES

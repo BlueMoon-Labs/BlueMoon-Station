@@ -54,7 +54,7 @@
 	target.equip_to_slot_if_possible(borrowed, ITEM_SLOT_LPOCKET)
 	TEST_ASSERT_EQUAL(target.l_store, borrowed, "Санити: чужая вещь не легла в карман")
 
-	return_rune.attack_hand(target)
+	return_rune.return_home(target)
 
 	TEST_ASSERT_EQUAL(get_turf(target), run_loc_floor_top_right, "Призванный не вернулся домой")
 	TEST_ASSERT(QDELETED(return_rune), "Руна возврата должна исчезнуть")

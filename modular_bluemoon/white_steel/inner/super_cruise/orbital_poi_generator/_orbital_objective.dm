@@ -251,7 +251,7 @@
 			continue
 		if(is_station_level(beacon.z))
 			return beacon
-		if(!fallback)
+		if(!fallback && beacon.z != objective_z_level)
 			fallback = beacon
 	return fallback
 

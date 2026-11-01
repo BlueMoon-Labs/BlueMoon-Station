@@ -32,6 +32,9 @@
 	var/temp_tolerance_high = T20C
 	var/temp_penalty_coefficient = 0.5	//1 = -1 points per degree above high tolerance. 0.5 = -0.5 points per degree above high tolerance.
 	var/datum/looping_sound/server_alarm_small/alarmloop
+	/// Сеть AUTO-сервера, выбранная по запросу соседа до LateInitialize; сам сервер потом встаёт в неё же.
+	var/datum/techweb/early_network
+	var/resolving_network = FALSE
 
 /obj/machinery/rnd/server/Initialize(mapload)
 	. = ..()
@@ -48,7 +51,8 @@
 	. = ..()
 	AddComponent(/datum/component/techweb_holder)
 	RegisterSignal(src, COMSIG_ATOM_TECHWEB_CHANGED, PROC_REF(on_techweb_changed))
-	SEND_SIGNAL(src, COMSIG_ATOM_SET_TECHWEB, SSresearch.get_rnd_network_for(src, network_id, techweb_type))
+	SEND_SIGNAL(src, COMSIG_ATOM_SET_TECHWEB, get_rnd_network())
+	early_network = null
 
 /obj/machinery/rnd/server/process()
 	if(!(machine_stat & NOPOWER) && working)
@@ -76,6 +80,7 @@
 		. += span_notice("Исследовательская сеть: <b>[stored_research.organization]</b>. Мультитул с пустым буфером копирует её с сервера, после чего клик по консоли или машине РнД подключает их к этой сети.")
 
 /obj/machinery/rnd/server/Destroy()
+	early_network = null
 	SSresearch.servers -= src
 	GLOB.rndservers_list -= src
 	QDEL_NULL(alarmloop)
@@ -95,13 +100,17 @@
 
 	stored_research = new_web
 
-/// Сеть сервера; фракционная до LateInitialize сервера берётся по ID, чтобы соседи при загрузке карты не зависели от порядка.
+/// Сеть сервера. До LateInitialize фракционная берётся по ID, AUTO выбирается сразу и запоминается: соседи при загрузке карты не зависят от порядка.
 /obj/machinery/rnd/server/proc/get_rnd_network()
 	if(stored_research)
 		return stored_research
 	if(network_id)
 		return SSresearch.get_rnd_network(network_id, techweb_type)
-	return null
+	if(!early_network && !resolving_network)
+		resolving_network = TRUE // два AUTO-сервера рядом иначе спрашивали бы друг друга по кругу
+		early_network = SSresearch.get_rnd_network_for(src, network_id, techweb_type)
+		resolving_network = FALSE
+	return early_network
 
 /// Сеть ближайшего РНД-сервера на любом этаже связки источника (сам источник не в счёт), либо null.
 /proc/find_nearest_rnd_techweb(atom/source, max_range = INFINITY)

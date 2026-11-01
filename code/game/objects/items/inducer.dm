@@ -127,16 +127,17 @@
 	recharging = TRUE
 	var/done_any = FALSE
 	user.visible_message("[user] начинает заряжать [A] при помощи [src].", span_notice("Вы начали заряжать [A] при помощи [src]."))
+	var/obj/item/gun/ballistic/gun = istype(A, /obj/item/gun/ballistic) ? A : null
 	while(magazine.stored_ammo.len < magazine.max_ammo)
-		if(!do_after(user, 10, target = user) || QDELETED(magazine) || !cell || cell.charge < magazine.charge_per_round)
+		if(!do_after(user, 1 SECONDS, target = user) || QDELETED(magazine) || !cell || cell.charge < magazine.charge_per_round)
+			break
+		if(QDELETED(A) || get_dist(get_turf(user), get_turf(A)) > 1 || (gun && gun.magazine != magazine))
 			break
 		var/rounds = max(1, round(min(cell.charge, powertransfer) / magazine.charge_per_round))
 		rounds = magazine.add_charged_rounds(rounds)
 		cell.use(rounds * magazine.charge_per_round)
 		done_any = TRUE
-		if(istype(A, /obj/item/gun/ballistic))
-			var/obj/item/gun/ballistic/gun = A
-			gun.chamber_round()
+		gun?.chamber_round()
 		if(opened)
 			do_sparks(1, FALSE, A)
 		cell.update_icon()

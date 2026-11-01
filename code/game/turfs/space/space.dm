@@ -119,7 +119,7 @@
 /// Звёзды на PLANE_SPACE под картинкой этажа снизу: закрывают черноту там, куда сжатый нижний этаж не достаёт.
 /turf/open/space/proc/add_starfield_underlay()
 	//Прозрачного космоса на верхних этажах станции десятки тысяч турфов, а вариантов подложки - стейт на этаж.
-	var/static/list/starfields = list()
+	var/static/alist/starfields = alist()
 	var/state = SPACE_ICON_STATE
 	var/key = "[icon]|[state]|[GET_TURF_PLANE_OFFSET(src)]"
 	var/mutable_appearance/starfield = starfields[key]

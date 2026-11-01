@@ -59,3 +59,16 @@
 	qdel(lone_server)
 	var/obj/machinery/computer/rdconsole/lone_console = allocate(/obj/machinery/computer/rdconsole, console_spot)
 	TEST_ASSERT_NULL(lone_console.stored_research, "Консоль без сервера рядом получила сеть")
+
+/// AUTO-сервер вне станции до своего LateInitialize уже отдаёт соседям сеть, и ту же самую при повторном запросе.
+/datum/unit_test/techweb_auto_server_network_before_late_init
+
+/datum/unit_test/techweb_auto_server_network_before_late_init/Run()
+	var/turf/console_spot = locate(run_loc_floor_bottom_left.x + 2, run_loc_floor_bottom_left.y, run_loc_floor_bottom_left.z)
+	var/obj/machinery/rnd/server/server = allocate(/obj/machinery/rnd/server, run_loc_floor_bottom_left)
+	server.stored_research = null // как при загрузке карты: LateInitialize сервера ещё впереди
+	var/datum/techweb/early_web = server.get_rnd_network()
+	TEST_ASSERT_NOTNULL(early_web, "AUTO-сервер до LateInitialize не отдаёт сеть")
+	TEST_ASSERT_EQUAL(server.get_rnd_network(), early_web, "AUTO-сервер на каждый запрос заводит новую сеть")
+	var/obj/machinery/computer/rdconsole/console = allocate(/obj/machinery/computer/rdconsole, console_spot)
+	TEST_ASSERT_EQUAL(console.stored_research, early_web, "Консоль рядом с AUTO-сервером до его LateInitialize осталась без его сети")

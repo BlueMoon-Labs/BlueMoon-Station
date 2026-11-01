@@ -6,7 +6,12 @@
 /datum/unit_test/vanguard_mission_decapitated_remains/Run()
 	saved_beacons = GLOB.expedition_body_beacons.Copy()
 	GLOB.expedition_body_beacons.Cut()
-	var/obj/structure/fulton_beacon/beacon = allocate(/obj/structure/fulton_beacon, run_loc_floor_top_right)
+	allocate(/obj/structure/fulton_beacon, run_loc_floor_top_right)
+	var/datum/orbital_objective/probe = new
+	probe.objective_z_level = run_loc_floor_bottom_left.z
+	TEST_ASSERT_NULL(probe.get_expedition_body_beacon(), "Маяк на стираемом уровне задания выбран приёмным")
+	qdel(probe)
+	var/obj/structure/fulton_beacon/beacon = allocate(/obj/structure/fulton_beacon, vanguard_home_beacon_spot())
 
 	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
 	victim.mind_initialize()
@@ -42,7 +47,7 @@
 /datum/unit_test/vanguard_mission_held_brain/Run()
 	saved_beacons = GLOB.expedition_body_beacons.Copy()
 	GLOB.expedition_body_beacons.Cut()
-	var/obj/structure/fulton_beacon/beacon = allocate(/obj/structure/fulton_beacon, run_loc_floor_top_right)
+	var/obj/structure/fulton_beacon/beacon = allocate(/obj/structure/fulton_beacon, vanguard_home_beacon_spot())
 
 	var/mob/living/carbon/human/victim = allocate(/mob/living/carbon/human, run_loc_floor_bottom_left)
 	victim.mind_initialize()
@@ -70,3 +75,7 @@
 	if(saved_beacons)
 		GLOB.expedition_body_beacons = saved_beacons
 	return ..()
+
+/// Приёмный маяк стоит на станции: маяк на уровне задания стирается вместе с руиной.
+/datum/unit_test/proc/vanguard_home_beacon_spot()
+	return locate(run_loc_floor_top_right.x, run_loc_floor_top_right.y, SSmapping.levels_by_trait(ZTRAIT_STATION)[1])

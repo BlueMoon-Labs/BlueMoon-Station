@@ -79,3 +79,22 @@
 	chest.heal_damage(100, 0)
 	patient.update_size(1)
 	TEST_ASSERT_EQUAL(chest.brute_dam, 0, "Уменьшение после полного лечения увело урон в минус или вернуло его")
+
+/// Рост почти здорового бонуса не даёт, и уменьшение сперва отыгрывает именно его, не трогая уже набранную прибавку урона.
+/datum/unit_test/resize_free_growth_keeps_bonus
+
+/datum/unit_test/resize_free_growth_keeps_bonus/Run()
+	var/mob/living/carbon/human/patient = allocate(/mob/living/carbon/human)
+	var/obj/item/bodypart/chest/chest = patient.get_bodypart(BODY_ZONE_CHEST)
+	patient.apply_damage(30, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
+	patient.update_size(1.5)
+	TEST_ASSERT(abs(chest.brute_dam - 45) < 0.02, "Предпосылка: рост раненого до 1.5 дал [chest.brute_dam] урона вместо 45")
+	chest.heal_damage(30, 0)
+	patient.update_size(3)
+	TEST_ASSERT(abs(chest.brute_dam - 15) < 0.02, "Предпосылка: рост почти здорового изменил урон: [chest.brute_dam]")
+	patient.update_size(2)
+	TEST_ASSERT(abs(chest.brute_dam - 15) < 0.02, "Уменьшение в пределах роста без бонуса сняло урон: [chest.brute_dam]")
+	patient.update_size(1.25)
+	TEST_ASSERT(abs(chest.brute_dam - 7.5) < 0.02, "Уменьшение на половину бонусного роста сняло не половину прибавки: [chest.brute_dam]")
+	patient.update_size(1)
+	TEST_ASSERT_EQUAL(chest.brute_dam, 0, "Возврат к исходному размеру оставил [chest.brute_dam] урона")

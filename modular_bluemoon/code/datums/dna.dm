@@ -82,11 +82,10 @@
 		if(HSize >= 1)		head.max_damage = initial(head.max_damage) + (HSize - 1) * 100
 		else				head.max_damage = initial(head.max_damage) - (1 - HSize) * 100
 
-	//При уменьшении снимаем урон, добавленный ростом, в доле отыгранного роста
+	//При уменьшении снимаем урон, добавленный ростом, в доле отыгранного роста с бонусом
 	var/target_max_health = max(NewHMaxHealth, MINIMAL_SIZE_HEALTH)
-	if(target_max_health < HMaxHealth && !isnull(C.size_damage_base_health))
-		var/grown_health = HMaxHealth - C.size_damage_base_health
-		C.remove_size_damage_bonus(grown_health > 0 ? min(1, (HMaxHealth - target_max_health) / grown_health) : 1)
+	if(target_max_health < HMaxHealth && C.size_bonus_growth > 0)
+		C.shrink_size_damage_bonus(HMaxHealth - target_max_health)
 
 	//Если персонаж так мал, что его ХП должно быть ниже MINIMAL_SIZE_HEALTH после всех формул, то оно выставляется таким
 	if(NewHMaxHealth < MINIMAL_SIZE_HEALTH)
@@ -98,8 +97,7 @@
 	var/damage_formula = (NewHMaxHealth / HMaxHealth) //Разница между новым и старым хп
 	if(C.health < HMaxHealth * 0.9 && damage_formula > 1) //если хп меньше 90% и персонажа увеличивается хп
 		holder.visible_message(span_danger("[holder] body damage is getting worse from sudden expansion!"), span_danger("Your body damage is getting worse from sudden expansion!"))
-		if(isnull(C.size_damage_base_health))
-			C.size_damage_base_health = HMaxHealth
+		C.size_bonus_growth += NewHMaxHealth - HMaxHealth
 
 		//BRUTE & BURN
 		// Не выше max_damage конечности: иначе цикл роста и уменьшения копит урон сверх предела.
@@ -126,6 +124,8 @@
 		if(old_clone)
 			C.setCloneLoss(old_clone * damage_formula, FALSE)
 			C.size_clone_bonus += C.getCloneLoss() - old_clone
+	else if(damage_formula > 1 && C.size_bonus_growth > 0)
+		C.size_free_growth += NewHMaxHealth - HMaxHealth
 
 	holder.maxHealth = NewHMaxHealth
 	C.updatehealth()
@@ -133,14 +133,27 @@
 	#undef MINIMAL_SIZE_HEALTH
 
 /mob/living/carbon
-	/// maxHealth, с которого рост начал усиливать урон; null - прибавки от роста нет.
-	var/size_damage_base_health
+	/// Прирост maxHealth, при котором рост усилил урон; 0 - прибавки от роста нет.
+	var/size_bonus_growth = 0
+	/// Прирост maxHealth без усиления урона (персонаж был почти здоров), набранный поверх бонусного.
+	var/size_free_growth = 0
 	var/size_tox_bonus = 0
 	var/size_clone_bonus = 0
 
 /obj/item/bodypart
 	var/size_brute_bonus = 0
 	var/size_burn_bonus = 0
+
+/// Уменьшение сперва отыгрывает рост без бонуса, затем бонусный - и снимает его долю урона.
+/mob/living/carbon/proc/shrink_size_damage_bonus(shrunk_health)
+	var/free_undone = min(shrunk_health, size_free_growth)
+	size_free_growth -= free_undone
+	var/bonus_undone = min(shrunk_health - free_undone, size_bonus_growth)
+	if(bonus_undone <= 0)
+		return
+	var/share = bonus_undone / size_bonus_growth
+	size_bonus_growth -= bonus_undone
+	remove_size_damage_bonus(share)
 
 /// Снимает долю урона, добавленного ростом. Уже вылеченное не возвращается, лишнего не снимается.
 /mob/living/carbon/proc/remove_size_damage_bonus(share)
@@ -160,4 +173,5 @@
 	if(clone_back && getCloneLoss())
 		setCloneLoss(max(0, getCloneLoss() - clone_back), FALSE)
 	if(share >= 1)
-		size_damage_base_health = null
+		size_bonus_growth = 0
+		size_free_growth = 0

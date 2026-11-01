@@ -1,6 +1,6 @@
 /obj/item/summon_chalk
 	name = "summon chalk"
-	desc = "A weird chalk covered in ectoplasm."
+	desc = "Странный мел, покрытый эктоплазмой."
 	icon = 'modular_bluemoon/icons/obj/lewd_items/qareen_chalk.dmi'
 	icon_state = "chalk_pink"
 	throw_speed = 3
@@ -11,17 +11,17 @@
 	if(!proximity || !istype(target, /turf/open/floor))
 		return
 	if(!(GLOB.master_mode in list(ROUNDTYPE_EXTENDED, ROUNDTYPE_DYNAMIC_LIGHT)))
-		to_chat(user, "<span class='warning'>Unfortunately, magic does not work.</span>") //*boowomp
+		to_chat(user, span_warning("Увы, магия здесь не работает.")) //*boowomp
 		return
 
-	visible_message("<span class='notice'>[user] starts scribe some kind of runes!</span>")
+	visible_message(span_notice("[user] начинает чертить какие-то руны!"))
 	if(do_after(user, 1.5 SECONDS, target))
 		new /obj/effect/summon_rune(target)
 		qdel(src)
 
 /obj/effect/summon_rune
 	name = "Lewd summon rune"
-	desc = "It is believed this rune is capable of summoning horny creatures!"
+	desc = "Говорят, эта руна способна призывать похотливых созданий!"
 	icon = 'modular_bluemoon/icons/obj/lewd_items/qareen_chalk.dmi'
 	icon_state = "rune_pink"
 	light_color = LIGHT_COLOR_PINK
@@ -45,22 +45,22 @@
 
 /obj/effect/summon_rune/attack_hand(mob/living/carbon/M)
 	if(cooldown > world.time)// ~
-		to_chat(M, span_userdanger("Need to wait before new rite!"))
+		to_chat(M, span_userdanger("Нужно подождать перед новым ритуалом!"))
 		return
 
-	if(tgui_alert(M, "Do you want to attempt to summon?", "Attempt to summon?", list("Yes", "No")) != "Yes")
+	if(tgui_alert(M, "Попробовать призвать кого-нибудь?", "Призыв", list("Да", "Нет")) != "Да")
 		return
 	if(cooldown > world.time) // Двойная проверка на случай если сразу двое тыкнуть по руне
-		to_chat(M, span_userdanger("Someone started the rite!"))
+		to_chat(M, span_userdanger("Кто-то уже начал ритуал!"))
 		return
 
 	cooldown = world.time + 40 SECONDS
 
 	var/list/candidates = summon_candidates()
 	if(!length(candidates))
-		to_chat(M, span_userdanger("Nobody to summon!"))
+		to_chat(M, span_userdanger("Призывать некого!"))
 		return
-	var/target_info = input(M, "Please, select a person to summon!", "Select") as null|anything in candidates
+	var/target_info = input(M, "Выберите, кого призвать:", "Призыв") as null|anything in candidates
 	if(!target_info)
 		return
 	try_summon(M, candidates[target_info])
@@ -93,18 +93,18 @@
 
 /obj/effect/summon_rune/proc/try_summon(mob/living/summoner, mob/living/carbon/human/target)
 	if(QDELETED(target) || HAS_TRAIT(target, TRAIT_LEWD_SUMMONED)) // Двойная проверка на случай если призываемого уже призвали
-		to_chat(summoner, span_userdanger("It seems that this soul has already been called by someone else!"))
+		to_chat(summoner, span_userdanger("Похоже, эту душу уже призвал кто-то другой!"))
 		return FALSE
 	if(!ask_summon_consent(summoner, target))
 		return FALSE
 	if(QDELETED(src) || QDELETED(summoner) || QDELETED(target))
 		return FALSE
 	if(HAS_TRAIT(target, TRAIT_LEWD_SUMMONED)) // пока цель отвечала, её мог призвать кто-то другой
-		to_chat(summoner, span_userdanger("It seems that this soul has already been called by someone else!"))
+		to_chat(summoner, span_userdanger("Похоже, эту душу уже призвал кто-то другой!"))
 		return FALSE
 
 	if(istype(get_area(src), /area/hilbertshotelstorage)) // Отель свернулся = телепортация в подсобку 3 на 3 без воможности выбраться = плохо
-		to_chat(target, span_warning("The hotel administration apologizes, the room you tried to teleport already been collapsed."))
+		to_chat(target, span_warning("Администрация отеля приносит извинения: комната, куда вас пытались перенести, уже свёрнута."))
 		return FALSE
 
 	var/old_pos = get_turf(target)
@@ -113,16 +113,16 @@
 		if(Hhotel.parentSphere)
 			old_pos = get_turf(Hhotel.parentSphere)
 
-	to_chat(summoner, span_lewd("Something is happening!"))
-	var/summon_nickname = summoner.client?.prefs?.summon_nickname || "unus ex satellitibus tuis"
+	to_chat(summoner, span_lewd("Что-то происходит!"))
+	var/summon_nickname = target.client?.prefs?.summon_nickname || "unus ex satellitibus tuis"
 	if(!teleport_summoned(target, loc, TRUE, TRUE))
-		to_chat(summoner, span_userdanger("Something went wrong in summoning ritual!"))
+		to_chat(summoner, span_userdanger("Что-то пошло не так в ритуале призыва!"))
 		new /obj/effect/temp_visual/yellowsparkles(loc)
 		return FALSE
 	summoner.say(pick("O magne Asmodee! Quaeso inducere [summon_nickname] ad me!", \
 				"Coniuro te, daemon luxuriae! Utinam [summon_nickname] mea vota persolvat!", \
 				"Cupidus meus ardet, magne! Amor [summon_nickname] me moveat affectus!"))
-	to_chat(target, span_hypnophrase("You are turning on!"))
+	to_chat(target, span_hypnophrase("Вас охватывает возбуждение!"))
 	new /obj/effect/summon_rune/return_rune(loc, target, old_pos, src)
 	qdel(src)
 	return TRUE
@@ -141,17 +141,17 @@
 		if(carbon_summoner.dna.custom_species)
 			summoner_species = "[carbon_summoner.dna.custom_species]"
 		summoner_info += " [summoner_species]"
-	if(tgui_alert(target, "You have been summoned by [summoner_info]! Do you want to answer?", "Do you want to answer?", list("Yes", "No")) != "Yes")
+	if(tgui_alert(target, "Вас призывает [summoner_info]! Откликнуться?", "Призыв", list("Да", "Нет")) != "Да")
 		summoned_approve = FALSE
 	else if(massage_time > world.time)
-		if(tgui_alert(target, "Too quick! You are really want to answer?", "Do you really want to answer the summon?", list("Yes", "No")) != "Yes")
+		if(tgui_alert(target, "Слишком быстро! Вы точно хотите откликнуться?", "Призыв", list("Да", "Нет")) != "Да")
 			summoned_approve = FALSE
 	if(!target.client) // ответ дан уже не из тела: вышел в гост или агост, пока висело окно
 		to_chat(summoner, span_userdanger("Душа не откликается: хозяина этого тела сейчас нет в нём."))
 		return FALSE
 	if(!summoned_approve)
-		var/excuses = tgui_input_text(target, "Do you want to tell the summoner the reason for the refusal?", "Say Text", "", MAX_MESSAGE_LEN)
-		to_chat(summoner, span_userdanger((excuses ? "You can hear at the edge of your hearing, it says, \"[excuses]\"" : "It refuses to answer!")))
+		var/excuses = tgui_input_text(target, "Объяснить призывающему причину отказа?", "Отказ", "", MAX_MESSAGE_LEN)
+		to_chat(summoner, span_userdanger((excuses ? "На самом краю слуха вы различаете: \"[excuses]\"" : "Душа отказывается откликнуться!")))
 		return FALSE
 	return TRUE
 
@@ -258,8 +258,11 @@
 /obj/effect/summon_rune/return_rune/attack_hand(mob/living/carbon/M)
 	if(returner != M)
 		return
-	if(tgui_alert(M, "Do you want to attempt to return?", "Attempt to return?", list("Yes", "No")) != "Yes")
+	if(tgui_alert(M, "Вернуться обратно?", "Возврат", list("Да", "Нет")) != "Да")
 		return
+	return_home(M)
+
+/obj/effect/summon_rune/return_rune/proc/return_home(mob/living/carbon/M)
 	if(QDELETED(src) || returner != M)
 		return
 	if(!teleport_summoned(M, return_pos, TRUE))
