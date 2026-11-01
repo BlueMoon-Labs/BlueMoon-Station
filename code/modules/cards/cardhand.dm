@@ -98,6 +98,9 @@
 	// The parent insert qdels card_item. Its Destroy() clears parentdeck, so do not
 	// let apply_card_vars() turn the deleted card itself into this hand's deck.
 	parentdeck = original_parentdeck
+	var/datum/component/nif_construct/construct = original_parentdeck?.GetComponent(/datum/component/nif_construct)
+	if(construct)
+		construct.track_child(src)
 
 /obj/item/toy/cards/cardhand/apply_card_vars(obj/item/toy/cards/sourceobj)
 	. = ..()

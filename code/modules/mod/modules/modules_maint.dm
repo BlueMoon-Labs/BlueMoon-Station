@@ -20,18 +20,30 @@
 	incompatible_modules = list(/obj/item/mod/module/balloon)
 	cooldown_time = 15 SECONDS
 	required_modpart_index = MOD_PART_GLOVES
+	var/blowing_time = 5 SECONDS
+	var/balloon_path = /obj/item/toy/balloon
 
 /obj/item/mod/module/balloon/on_use()
 	. = ..()
 	if(!.)
 		return
-	if(!do_after(mod.wearer, 5 SECONDS, mod.wearer))
+	var/mob/living/carbon/human/user = mod.wearer
+	if(blowing_time && !do_after(user, blowing_time, user))
 		return FALSE
-	mod.wearer.adjustOxyLoss(20)
-	playsound(get_turf(mod.wearer), 'sound/items/modsuit/inflate_bloon.ogg', 50, TRUE)
-	var/obj/item/toy/balloon/new_ballon = new(get_turf(src))
-	mod.wearer.put_in_hands(new_ballon)
-	drain_power(use_power_cost)
+	if(QDELETED(src) || mod?.wearer != user || !mod.is_active() || !check_required_modpart() || !drain_power(use_power_cost))
+		return FALSE
+	user.adjustOxyLoss(MOD_BALLOON_OXYLOSS)
+	playsound(user, 'sound/items/modsuit/inflate_bloon.ogg', MOD_BALLOON_VOLUME, TRUE)
+	var/obj/item/toy/balloon/balloon = new balloon_path(get_turf(user))
+	user.put_in_hands(balloon)
+	return balloon
+
+/obj/item/mod/module/balloon/advanced
+	name = "MOD advanced balloon blower module"
+	desc = "Модуль надувает длинные шарики, из которых можно складывать фигурки животных."
+	cooldown_time = 20 SECONDS
+	balloon_path = /obj/item/toy/balloon/long
+	blowing_time = 15 SECONDS
 
 ///Paper Dispenser - Dispenses (sometimes burning) paper sheets.
 /obj/item/mod/module/paper_dispenser

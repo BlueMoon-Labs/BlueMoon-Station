@@ -10,6 +10,15 @@
 	group = "Medical"
 	crate_type = /obj/structure/closet/crate/medical
 
+/datum/supply_pack/medical/modsuit
+	name = "Медицинский MOD"
+	desc = "Один медицинский MOD с батареей и установленными штатными модулями."
+	cost = 2500
+	access = ACCESS_MEDICAL
+	contains = list(/obj/item/mod/control/pre_equipped/medical)
+	crate_name = "медицинский MOD"
+	crate_type = /obj/structure/closet/crate/secure
+
 //////////////////////////////////////////////////////////////////////////////
 /////////////////////////////// Equipment ////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////

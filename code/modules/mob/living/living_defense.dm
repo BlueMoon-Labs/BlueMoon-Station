@@ -243,6 +243,8 @@
 				return FALSE
 
 /mob/living/hitby(atom/movable/AM, skipcatch, hitpush = TRUE, blocked = FALSE, datum/thrownthing/throwingdatum)
+	if(HAS_TRAIT(src, TRAIT_NO_THROW_HITPUSH))
+		hitpush = FALSE
 	var/zone = ran_zone(BODY_ZONE_CHEST, 65)//Hits a random part of the body, geared towards the chest
 	if(!isitem(AM))
 		// Filled with made up numbers for non-items.

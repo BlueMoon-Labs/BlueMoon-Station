@@ -250,6 +250,7 @@
 
 /obj/item/storage/box/donator/bm/armolex_box/PopulateContents()
 	var/static/items_inside = list(
+		/obj/item/modsuit_modkit/armolex,
 		/obj/item/modkit/rsh_future,
 		/obj/item/modkit/razorsong_kit,
 		/obj/item/modkit/mpl21,

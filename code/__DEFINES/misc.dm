@@ -88,7 +88,8 @@ Will print: "/mob/living/carbon/human/death" (you can optionally embed it in a s
 #define ANTAG_LAYER                2
 #define FIRE_LAYER                 1
 
-#define TOTAL_LAYERS              49
+#define BODY_HARDLIGHT_LAYER       50
+#define TOTAL_LAYERS              50
 
 /// Задняя половина составной конечности без своего слоя рисуется на столько глубже передней.
 #define BEHIND_LIMB_LAYER_OFFSET 0.1
@@ -607,6 +608,7 @@ GLOBAL_LIST_INIT(payed_ert, list(
 #define STANDARD_GRAVITY 1 //Anything above this is high gravity, anything below no grav
 /// Гравитация, тянущая вверх: has_gravity() <= этого значит, что падают в потолок.
 #define NEGATIVE_GRAVITY -1
+#define GRAVITY_INVERSION_TIME (0.5 SECONDS)
 #define GRAVITY_DAMAGE_TRESHOLD 3 //Starting with this value gravity will start to damage mobs
 
 #define CAMERA_NO_GHOSTS 0

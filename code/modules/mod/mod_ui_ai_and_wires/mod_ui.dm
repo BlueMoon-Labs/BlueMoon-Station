@@ -11,6 +11,10 @@
 	data["malfunctioning"] = is_malfunctioning()
 	data["open"] = is_open()
 	data["active"] = is_active()
+	data["link_id"] = mod_link.id
+	data["link_name"] = mod_link.get_display_name()
+	data["link_freq"] = mod_link.frequency
+	data["link_call"] = mod_link.get_other()?.id
 	data["complexity"] = complexity
 	data["selected_module"] = selected_module?.name
 	data["wearer_name"] = wearer ? (wearer.get_authentification_name("Unknown") || "Unknown") : "No Occupant"
@@ -18,14 +22,15 @@
 	data["AI"] = ai?.name
 	data["is_pAI"] = ai ? ispAI(ai) : FALSE
 	data["is_user_AI"] = ai ? user == ai : FALSE
-	data["cell"] = cell?.name
-	data["charge"] = cell ? round(cell.percent(), 1) : 0
+	data["cell"] = cell?.name || core?.charge_source()?.name
+	data["charge"] = round(get_charge_percent(), 1)
 	data["modules"] = list()
 	for(var/obj/item/mod/module/module as anything in modules)
 		var/list/module_data = list(
 			name = module.name,
 			description = module.desc,
 			module_type = module.module_type,
+			can_pin = (user == wearer || user == ai) && module.module_type != MODULE_PASSIVE && module.module_type != MODULE_ARMOR,
 			active = module.active,
 			idle_power = module.idle_power_cost,
 			active_power = module.active_power_cost,
@@ -60,24 +65,39 @@
 	. = ..()
 	if(.)
 		return
+	return handle_ui_action(action, params, usr)
+
+/obj/item/mod/control/proc/handle_ui_action(action, list/params, mob/user)
 	if(is_malfunctioning() && prob(MOD_BUTTON_MALFUNCTION_CHANCE))
-		balloon_alert(usr, "button malfunctions!")
+		balloon_alert(user, "button malfunctions!")
 		return
 	switch(action)
+		if("call")
+			if(user != wearer)
+				return FALSE
+			mod_link.choose_call(user)
+		if("rename_link")
+			return mod_link.rename(user)
 		if("activate")
-			toggle_activate(usr)
+			toggle_activate(user)
 		if("select")
 			var/obj/item/mod/module/module = locate(params["ref"]) in modules
 			if(!module)
 				return
 			module.on_select()
+		if("pin")
+			if(user != wearer && user != ai)
+				return FALSE
+			var/obj/item/mod/module/module = locate(params["ref"]) in modules
+			if(!module)
+				return FALSE
+			return generate_ability_button(module, user)
 		if("configure")
 			var/obj/item/mod/module/module = locate(params["ref"]) in modules
 			if(!module)
 				return
 			module.configure_edit(params["key"], params["value"])
 		if("remove_pai")
-			if(ishuman(usr)) // Only the MODsuit's wearer should be removing the pAI.
-				var/mob/user = usr
+			if(ishuman(user)) // Only the MODsuit's wearer should be removing the pAI.
 				extract_pai(user)
 	return TRUE

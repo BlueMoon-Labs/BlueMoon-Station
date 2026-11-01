@@ -121,6 +121,7 @@
 	///флаг снят, handle_gravity() не опрашивает has_gravity заново: всё, что
 	///меняет гравитацию без перемещения, зовёт refresh_gravity() само.
 	var/gravity_cache_dirty = TRUE
+	var/gravity_inverted = FALSE
 
 	///Средa не может повлиять на моба: PhysicalLife не читает атмосферу вовсе.
 	///Прекомпьютится у simple_animal в refresh_atmos_pathing_sensitivity().

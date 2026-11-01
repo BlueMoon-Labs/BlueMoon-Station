@@ -72,7 +72,7 @@
 		if(isitem(parent))
 			UnregisterSignal(parent, list(COMSIG_ITEM_ATTACK, COMSIG_ITEM_ATTACK_OBJ, COMSIG_ITEM_HIT_REACT, COMSIG_ITEM_ATTACK_SELF,
 				COMSIG_ITEM_EQUIPPED, COMSIG_ITEM_DROPPED))
-			if(istype(parent, /obj/item/clothing/shoes))
+			if(istype(parent, /obj/item/clothing/shoes) || istype(parent, /obj/item/clothing/mod_part/shoes))
 				UnregisterSignal(parent, COMSIG_SHOES_STEP_ACTION)
 	return ..()
 

@@ -39,10 +39,17 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 	permeability_coefficient = 0.01
 	siemens_coefficient = 0.5
 	alternate_worn_layer = BODY_FRONT_LAYER
+	light_system = OVERLAY_LIGHT_DIRECTIONAL
+	light_on = FALSE
+	var/obj/item/mod/core/core
+	var/applied_core = /obj/item/mod/core/standard
+	var/datum/mod_link/mod_link
+	var/starting_frequency
 	var/status_flags
 	var/datum/mod_theme/theme = /datum/mod_theme
 
 	var/skin = "standard"
+	var/visual_skin
 	var/ui_theme = "ntos"
 	var/have_emp_special = FALSE
 	var/seconds_electrified = MACHINE_NOT_ELECTRIFIED
@@ -94,33 +101,44 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 		mod_parts[index] = part
 		part.mod = src
 	mod_parts[MOD_PART_SELF] = src
+	core = new applied_core
+	core.install(src)
+	mod_link = new(src, starting_frequency)
 	theme.setup_theme(src, new_skin)
 	update_flags()
 	update_speed()
 	for(var/obj/item/mod/module/module as anything in initial_modules)
 		module = new module
+		if(module.type in theme.inbuilt_modules)
+			module.removable = module.removable_inbuilt
 		install(module)
 	RegisterSignal(src, COMSIG_ATOM_EXITED, PROC_REF(on_exit))
 	movedelay = CONFIG_GET(number/movedelay/run_delay)
 	mod_parts[MOD_PART_SELF] = src
 
 /obj/item/mod/control/Destroy()
+	UnregisterSignal(src, COMSIG_ATOM_EXITED)
+	remove_pai()
+	QDEL_NULL(mod_link)
 	if(is_active())
 		STOP_PROCESSING(SSobj, src)
 	if(wearer)
+		for(var/obj/item/clothing/mod_part/part in get_mod_parts(include_cell = FALSE))
+			if(part.loc == wearer)
+				conceal(null, part, TRUE)
 		wearer.clear_bodypart_overlays()
 		unset_wearer()
+	for(var/obj/item/mod/module/module as anything in modules.Copy())
+		uninstall(module, deleting = TRUE)
+		qdel(module)
 	QDEL_NULL(hardlight_effect)
+	QDEL_NULL(core)
 	for(var/index in mod_parts.Copy())
 		var/obj/item/part = mod_parts[index]
 		mod_parts -= index
 		if(QDELETED(part))
 			continue
 		qdel(part)
-	for(var/obj/item/mod/module/module as anything in modules.Copy())
-		module.mod = null
-		modules -= module
-		qdel(module)
 	QDEL_NULL(ai)
 	QDEL_NULL(wires)
 	return ..()
@@ -133,15 +151,15 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 	var/obj/item/stock_parts/cell/cell = get_cell()
 	if(seconds_electrified > MACHINE_NOT_ELECTRIFIED)
 		seconds_electrified--
-	if((!cell || !cell.charge) && is_active())
+	if(!check_charge(cell_drain) && is_active())
 		power_off()
 		return PROCESS_KILL
-	if(cell.cell_is_radioactive)
+	if(cell?.cell_is_radioactive)
 		AddComponent(/datum/component/radioactive, 0, src, 0)
 	var/malfunctioning_charge_drain = 0
 	if(is_malfunctioning())
 		malfunctioning_charge_drain = rand(1,20)
-	cell.charge = max(0, cell.charge - (cell_drain + malfunctioning_charge_drain)*delta_time)
+	subtract_charge((cell_drain + malfunctioning_charge_drain) * delta_time)
 	update_cell_alert()
 	for(var/obj/item/mod/module/module as anything in modules)
 		if(is_malfunctioning() && module.active && DT_PROB(MOD_EMP_SHUTDOWN_CHANCE, delta_time))
@@ -211,12 +229,16 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 		if(shock(user))
 			return
 	if(is_open() && loc == user)
+		if(!can_replace_cell())
+			return
 		if(!cell)
 			balloon_alert(user, "нет батареи!")
 			return
 		balloon_alert(user, "изъятие батареи...")
 		if(!do_after(user, 1 SECONDS, target = src))
 			balloon_alert(user, "прервано!")
+			return
+		if(!can_replace_cell() || get_cell() != cell)
 			return
 		playsound(src, 'sound/machines/click.ogg', 50, TRUE, SILENCED_SOUND_EXTRARANGE)
 		if(!user.put_in_hands(cell))
@@ -235,34 +257,26 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 	return ..()
 
 /obj/item/mod/control/screwdriver_act(mob/living/user, obj/item/screwdriver)
-	. = ..()
-	if(.)
-		return TRUE
 	if(is_welded())
-		return balloon_alert(user, "Заварено!")
+		balloon_alert(user, "Заварено!")
+		return TOOL_ACT_TOOLTYPE_SUCCESS
 	if(is_dna_locked())
-		var/obj/item/mod/module/dna_lock/lock
-		if(!ishuman(user))
-			return
-		for(var/obj/item/mod/module in modules)
-			if(istype(module, /obj/item/mod/module/dna_lock))
-				lock = module
-		if(lock && !lock.dna_check(user))
-			playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
-			return balloon_alert(user, "Заблокировано на ДНК!")
+		var/obj/item/mod/module/dna_lock/lock = locate() in modules
+		if(!ishuman(user) || (lock && !lock.dna_check(user)))
+			balloon_alert(user, "Заблокировано на ДНК!")
+			return TOOL_ACT_TOOLTYPE_SUCCESS
 	if(is_active() || is_activating())
 		balloon_alert(user, "сначала отключите костюм!")
-
-		return FALSE
-	if(screwdriver.use_tool(src, user, 0.5 SECONDS))
-		if(is_active() || is_activating())
-			balloon_alert(user, "сначала отключите костюм!")
-			return FALSE
-		screwdriver.play_tool_sound(src, 100)
-		toggle_state(MOD_OPEN)
-	else
+		return TOOL_ACT_TOOLTYPE_SUCCESS
+	if(!screwdriver.use_tool(src, user, 0.5 SECONDS))
 		balloon_alert(user, "прервано!")
-	return TRUE
+		return TOOL_ACT_TOOLTYPE_SUCCESS
+	if(is_active() || is_activating() || is_welded())
+		balloon_alert(user, "панель заблокирована!")
+		return TOOL_ACT_TOOLTYPE_SUCCESS
+	screwdriver.play_tool_sound(src, MOD_PANEL_VOLUME)
+	toggle_state(MOD_OPEN)
+	return TOOL_ACT_TOOLTYPE_SUCCESS
 
 /obj/item/mod/control/crowbar_act(mob/living/user, obj/item/crowbar)
 	. = ..()
@@ -274,6 +288,8 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 		balloon_alert(user, "недостаточный доступ!")
 		playsound(src, 'sound/machines/scanbuzz.ogg', 25, TRUE, SILENCED_SOUND_EXTRARANGE)
 		return
+	if(SEND_SIGNAL(src, COMSIG_MOD_MODULE_REMOVAL, user) & MOD_CANCEL_REMOVAL)
+		return FALSE
 	if(length(modules))
 		var/list/removable_modules = list()
 		for(var/obj/item/mod/module/module as anything in modules)
@@ -281,7 +297,7 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 				continue
 			removable_modules += module
 		var/obj/item/mod/module/module_to_remove = tgui_input_list(user, "Какой модуль вы хотите снять?", "Снять модули", removable_modules)
-		if(!module_to_remove?.mod)
+		if(module_to_remove?.mod != src || !module_to_remove.removable || (SEND_SIGNAL(src, COMSIG_MOD_MODULE_REMOVAL, user) & MOD_CANCEL_REMOVAL))
 			return FALSE
 		uninstall(module_to_remove, user)
 		if(!QDELETED(module_to_remove))
@@ -395,7 +411,7 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 	. = ..()
 	if(!is_active())
 		return
-	if(istype(theme, /datum/mod_theme/station_combat/security/melatonin) || istype(theme, /datum/mod_theme/antagonist/syndicate/melatonin_syndicate)) // сделано, чтобы модули не рисовались на данной теме. Иного способа отключить я не нашёл.
+	if(get_visual_skin() == "luna")
 		return
 	for(var/obj/item/mod/module/module as anything in modules)
 		var/list/module_icons = module.generate_worn_overlay()
@@ -409,6 +425,7 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 	RegisterSignal(wearer, COMSIG_PROCESS_BORGCHARGER_OCCUPANT, PROC_REF(on_borg_charge))
 	RegisterSignal(wearer, COMSIG_PARENT_QDELETING, PROC_REF(on_wearer_deleted), override = TRUE)
 	update_cell_alert()
+	update_hardlight()
 	for(var/obj/item/mod/module/module as anything in modules)
 		module.on_equip()
 
@@ -417,16 +434,29 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 	unset_wearer()
 
 /obj/item/mod/control/proc/unset_wearer()
+	if(!wearer)
+		return
+	mod_link?.end_call()
+	for(var/obj/item/mod/module/module as anything in modules)
+		if(module.active)
+			module.on_deactivation()
+	if(is_active())
+		finish_activation(FALSE)
+	remove_hardlight()
 	for(var/obj/item/mod/module/module as anything in modules)
 		module.on_unequip()
 
-	for(var/datum/action/cooldown/module_action/action in wearer.actions)
-		action.Remove(wearer)
-		qdel(action)
+	remove_module_actions(wearer)
 
 	UnregisterSignal(wearer, list(COMSIG_ATOM_EXITED, COMSIG_PROCESS_BORGCHARGER_OCCUPANT, COMSIG_PARENT_QDELETING))
 	wearer.clear_alert("mod_charge")
 	wearer = null
+
+/obj/item/mod/control/proc/remove_module_actions(mob/user, obj/item/mod/module/removed_module)
+	for(var/datum/action/cooldown/module_action/action in user?.actions?.Copy())
+		var/obj/item/mod/module/module = action.target
+		if(module?.mod == src && (!removed_module || module == removed_module))
+			qdel(action)
 
 /obj/item/mod/control/proc/update_flags()
 	var/list/used_skin = theme.skins[skin]
@@ -451,15 +481,20 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 		return
 	var/module_reference = display_names[pick]
 	var/obj/item/mod/module/selected_module = locate(module_reference) in modules
-	if(!istype(selected_module) || user.incapacitated())
+	if(!istype(selected_module) || user.incapacitated() || (user != wearer && user != ai))
 		return
 
-	return right_click ? generate_ability_button(selected_module) : selected_module.on_select()
+	return right_click ? generate_ability_button(selected_module, user) : selected_module.on_select()
 
-/obj/item/mod/control/proc/generate_ability_button(obj/item/mod/module/M)
-	// Target обязан быть модулем: на его QDELETING действие удаляет себя само
+/obj/item/mod/control/proc/generate_ability_button(obj/item/mod/module/M, mob/user = wearer)
+	if(!user || (user != wearer && user != ai) || !(M in modules) || M.module_type == MODULE_PASSIVE || M.module_type == MODULE_ARMOR)
+		return FALSE
+	for(var/datum/action/cooldown/module_action/action in user.actions)
+		if(action.target == M)
+			return FALSE
 	var/datum/action/cooldown/module_action/new_action = new(M)
-	new_action.Grant(wearer)
+	new_action.Grant(user)
+	return TRUE
 
 /obj/item/mod/control/proc/set_mod_color(new_color)
 	var/list/all_parts = mod_parts
@@ -476,6 +511,8 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 /obj/item/mod/control/proc/set_mod_skin(new_skin)
 	if(is_active())
 		CRASH("[src] tried to set skin while active!")
+	clear_part_skins()
+	visual_skin = null
 	skin = new_skin
 	var/list/used_skin = theme.skins[new_skin]
 	if(used_skin[CONTROL_LAYER])
@@ -486,9 +523,30 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 			continue
 		var/obj/item/clothing/mod_part/piece = skin_updating[index]
 		piece.icon_state = "[skin]-[initial(piece.icon_state)]"
+		piece.item_state = "[skin]-[initial(piece.item_state)]"
 	src.icon_state = "[skin]-[initial(src.icon_state)]"
 	update_flags()
 	wearer?.regenerate_icons()
+
+/obj/item/mod/control/proc/get_visual_skin()
+	return visual_skin || skin
+
+/obj/item/mod/control/proc/set_visual_skin(new_skin)
+	if(!istext(new_skin) || !length(new_skin))
+		return FALSE
+	clear_part_skins()
+	visual_skin = new_skin
+	for(var/obj/item/part in get_mod_parts(include_cell = FALSE, include_mod = TRUE))
+		var/sealed_suffix = findtext(part.icon_state, "-sealed") ? "-sealed" : ""
+		part.icon_state = "[visual_skin]-[initial(part.icon_state)][sealed_suffix]"
+		part.item_state = "[visual_skin]-[initial(part.item_state)][sealed_suffix]"
+	update_icon_state()
+	wearer?.regenerate_icons()
+	return TRUE
+
+/obj/item/mod/control/proc/clear_part_skins()
+	for(var/obj/item/clothing/mod_part/part as anything in get_mod_parts(include_cell = FALSE))
+		part.paint_skin = null
 
 /obj/item/mod/control/proc/shock(mob/living/user)
 	var/obj/item/stock_parts/cell/cell = get_cell()
@@ -500,22 +558,24 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 
 /obj/item/mod/control/proc/install(module, mob/user)
 	var/obj/item/mod/module/new_module = module
+	if(QDELETED(new_module) || new_module.mod || is_active() || is_activating())
+		if(user)
+			balloon_alert(user, "Сначала отключите костюм!")
+		return FALSE
+	if(!new_module.can_install(src, user))
+		return FALSE
+	if(is_type_in_list(new_module, theme.module_blacklist))
+		return FALSE
+	if(new_module.is_armor_module())
+		if(!can_install_armor(new_module, user))
+			return FALSE
 	for(var/obj/item/mod/module/old_module as anything in modules)
 		if(!check_modules_in_restricted_list(old_module, new_module, module, user))
 			return
-		if(new_module.is_armor_module())
-			var/obj/item/mod/module/armor/armor_module = module
-			if(!check_compatible_theme_with_armor(user) || !armor_module.check_unfinished_armor_state(user))
-				return
-			var/armor_by_type_num = 0
-			for(var/obj/item/mod/module/armor/also_module in modules)
-				if(armor_module.armor_module_type != also_module.armor_module_type)
-					continue
-				armor_by_type_num += 1
-			if(!check_max_count_armor(armor_by_type_num, armor_module, user))
-				return
 	if(!check_new_complexity(new_module, user))
 		return
+	if(user && !user.temporarilyRemoveItemFromInventory(new_module))
+		return FALSE
 	handle_pre_install(new_module)
 	new_module.on_install()
 	if(wearer)
@@ -531,14 +591,29 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 		return
 	modules -= old_module
 	complexity -= old_module.complexity
+	remove_module_actions(wearer, old_module)
+	remove_module_actions(ai, old_module)
+	if(old_module.active)
+		old_module.on_deactivation()
 	if(is_active())
 		old_module.on_suit_deactivation()
-		if(old_module.active)
-			old_module.on_deactivation()
 	if(wearer)
 		old_module.on_unequip()
 	old_module.on_uninstall(deleting, user)
 	old_module.mod = null
+
+/obj/item/mod/control/proc/can_install_armor(obj/item/mod/module/armor/module, mob/user)
+	if(locate(/obj/item/mod/module/stealth/wraith) in modules)
+		if(user)
+			balloon_alert(user, "несовместимо с Wraith")
+		return FALSE
+	if(!check_compatible_theme_with_armor(user) || !module.check_unfinished_armor_state(user))
+		return FALSE
+	var/count = 0
+	for(var/obj/item/mod/module/armor/installed in modules)
+		if(installed.armor_module_type == module.armor_module_type)
+			count++
+	return check_max_count_armor(count, module, user)
 
 /obj/item/mod/control/proc/update_access(mob/user, obj/item/card/id/card)
 	if(!allowed(user))
@@ -549,13 +624,12 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 	balloon_alert(user, "доступ обновлён")
 
 /obj/item/mod/control/proc/update_cell_alert()
-	var/obj/item/stock_parts/cell/cell = get_cell()
 	if(!wearer)
 		return
-	if(!cell)
+	if(!core?.charge_source())
 		wearer.throw_alert("mod_charge", /atom/movable/screen/alert/nocell)
 		return
-	var/remaining_cell = cell.charge/cell.maxcharge
+	var/remaining_cell = get_charge() / core.max_charge_amount()
 	switch(remaining_cell)
 		if(0.75 to INFINITY)
 			wearer.clear_alert("mod_charge")
@@ -572,11 +646,12 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 	var/list/parts = get_mod_parts(include_cell = FALSE)
 	if(!length(parts))
 		return
-	var/part_slowdown = (is_active() ? slowdown_active : slowdown_inactive) / length(parts)
+	var/slowdown = is_active() ? slowdown_active : slowdown_inactive
+	for(var/obj/item/mod/module/module as anything in modules)
+		slowdown += module.get_slowdown()
+	var/part_slowdown = slowdown / length(parts)
 	for(var/obj/item/clothing/mod_part/part as anything in parts)
-		if(obj_flags & SPEED_POTION_EFFECT && !part.slowdown)
-			return FALSE
-		part.slowdown = part_slowdown
+		part.slowdown = (obj_flags & SPEED_POTION_EFFECT || part.obj_flags & SPEED_POTION_EFFECT) ? 0 : part_slowdown
 	wearer?.update_equipment_speed_mods()
 
 /obj/item/mod/control/proc/power_off()
@@ -587,6 +662,11 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 	SIGNAL_HANDLER
 	if(part.loc == src || part == src)
 		return
+	if(ispAI(ai))
+		var/mob/living/silicon/pai/pai = ai
+		if(part == pai || part == pai.card)
+			remove_pai()
+			return
 	var/obj/item/stock_parts/cell/cell = get_cell()
 	if(part == cell)
 		mod_parts[MOD_PART_CELL] = null
@@ -604,20 +684,25 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 		return
 
 /obj/item/mod/control/proc/quick_toggle_parts(mob/user)
-	var/on = is_active()
 	if(!wearer || is_activating())
 		return FALSE
-	for(var/obj/item/clothing/mod_part/part in get_mod_parts(include_cell = FALSE, include_mod = FALSE))
-		ENABLE_BITFIELD(status_flags, MOD_ACTIVATING)
-		if(part.loc == null)
-			if(do_after(wearer, activation_step_time, wearer, MOD_ACTIVATION_STEP_FLAGS, extra_checks = CALLBACK(src, PROC_REF(has_wearer))))
-				part.seal_part(seal = on)
-				deploy(wearer, part)
-		else
-			if(do_after(wearer, activation_step_time, wearer, MOD_ACTIVATION_STEP_FLAGS, extra_checks = CALLBACK(src, PROC_REF(has_wearer))))
-				part.seal_part(seal = on)
-				conceal(wearer, part)
-		DISABLE_BITFIELD(status_flags, MOD_ACTIVATING)
+	var/retract = all_parts_deployed()
+	var/mob/living/carbon/human/current_wearer = wearer
+	ENABLE_BITFIELD(status_flags, MOD_ACTIVATING)
+	for(var/obj/item/clothing/mod_part/part in get_mod_parts(include_cell = FALSE))
+		var/deployed = wearer.get_item_by_slot(part.slot_flags) == part
+		if(deployed != retract)
+			continue
+		if(!do_after(wearer, activation_step_time, wearer, MOD_ACTIVATION_STEP_FLAGS, extra_checks = CALLBACK(src, PROC_REF(has_wearer))))
+			break
+		if(QDELETED(src) || wearer != current_wearer)
+			break
+		if(retract)
+			conceal(user, part)
+		else if(deploy(user, part))
+			part.seal_part(is_active())
+	DISABLE_BITFIELD(status_flags, MOD_ACTIVATING)
+	update_control_overlay()
 	return TRUE
 
 /obj/item/mod/control/proc/on_borg_charge(datum/source, amount)

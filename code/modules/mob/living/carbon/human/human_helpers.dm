@@ -111,7 +111,7 @@
 		return FALSE
 	if(istype(head, /obj/item/clothing/head) || istype(head, /obj/item/clothing/mod_part/head))
 		var/obj/item/clothing/head/hat = head
-		if(hat.blockTracking)
+		if(hat.blockTracking || HAS_TRAIT(hat, TRAIT_MOD_CAMERA_BLOCK))
 			return FALSE
 
 	return ..()

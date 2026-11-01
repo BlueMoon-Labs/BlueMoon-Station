@@ -989,7 +989,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 				S = reference_list[H.dna.features[transformed_part]]
 			else
 				S = reference_list[H.dna.features[mutant_part]]
-			if(!S || S.is_not_visible(H, tauric) && !(S.mutant_part_string in H.layers_for_apply_effect))
+			if(!S || S.is_not_visible(H, tauric) && !((S.mutant_part_string || transformed_part || mutant_part) in H.layers_for_apply_effect))
 				bodyparts_to_add -= mutant_part
 
 	if(handle_digitigrade(H.bodyparts, H, tauric)) //Если хоть один бодипарт будет digi, то true. Если ни один - false
@@ -1051,7 +1051,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 				accessory_overlay = center_image(accessory_overlay, S.dimension_x, S.dimension_y)
 			var/advanced_color_system = (H.dna.features["color_scheme"] == ADVANCED_CHARACTER_COLORING)
 
-			var/mutant_string = S.mutant_part_string
+			var/mutant_string = S.mutant_part_string || bodypart
 			if(mutant_string == "tailwag")
 				mutant_string = "tail"
 			var/emissive_part = mutant_string || GLOB.mutant_transform_list[bodypart] || bodypart
@@ -2192,7 +2192,7 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 
 		switch(hit_area)
 			if(BODY_ZONE_HEAD)
-				if(!I.get_sharpness() && armor_block < 50)
+				if(!I.get_sharpness() && armor_block < 50 && !HAS_TRAIT(H, TRAIT_HEAD_INJURY_BLOCKED))
 					if(prob(I.force))
 						if(HAS_TRAIT(H, TRAIT_ROBOTIC_ORGANISM))
 							H.adjustToxLoss(5, toxins_type = TOX_SYSCORRUPT) //Bonk! - Effectively 5 bonus damage
@@ -2249,7 +2249,8 @@ GLOBAL_LIST_EMPTY(roundstart_race_names)
 					if(H.wear_suit)
 						H.wear_suit.add_mob_blood(H)
 						H.update_inv_wear_suit()
-					if(H.w_uniform)
+					var/obj/item/mod/control/mod = H.is_wearing_mod()
+					if(H.w_uniform && !mod?.all_parts_deployed())
 						H.w_uniform.add_mob_blood(H)
 						H.update_inv_w_uniform()
 
