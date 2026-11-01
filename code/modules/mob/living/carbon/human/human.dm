@@ -1110,6 +1110,7 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 	if(istype(target, /mob/living/simple_animal))
 		var/mob/living/simple_animal/rideable = target
 		if(rideable.can_buckle && rideable.tame && rideable != src && !src.buckled)
+			rideable.prepare_riding()
 			if(rideable.mouse_buckle_handling(src, user))
 				return
 	var/GS_needed = istype(target, /mob/living/silicon/pai)? GRAB_PASSIVE : GRAB_AGGRESSIVE

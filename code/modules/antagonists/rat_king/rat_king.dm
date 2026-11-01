@@ -222,6 +222,17 @@
 		horde = new(quirk_holder, RAT_HORDE_SOFT)
 	return horde
 
+/datum/quirk/rat_whisperer/transfer_mob(mob/living/to_mob)
+	. = ..()
+	if(!quirk_holder || QDELETED(src))
+		return
+	if(order_action)
+		order_action.Grant(quirk_holder)
+	if(call_action)
+		call_action.Grant(quirk_holder)
+	if(horde)
+		horde.set_leader(quirk_holder)
+
 
 // Статус друга. Появляется если скушать облизанную королем еду. Ну или если король облизал вас.
 
@@ -279,6 +290,9 @@
 		span_danger("[traitor] резко отдёргивается - крысиное родство разорвано!"),
 		span_userdanger("Вы предали крыс."),
 	)
+	var/datum/quirk/rat_whisperer/quirk = locate(/datum/quirk/rat_whisperer) in traitor.roundstart_quirks
+	if(quirk?.horde && !QDELETED(quirk.horde))
+		quirk.horde.alert_betrayal(traitor)
 	for(var/mob/living/simple_animal/hostile/regalrat/king in oview(RAT_HORDE_ORDER_RANGE, traitor))
 		if(king.horde && !QDELETED(king.horde))
 			king.horde.alert_betrayal(traitor)
@@ -314,7 +328,8 @@
 	to_chat(affected_mob, span_notice("У этой еды странный привкус!"))
 
 /datum/reagent/rat_spit/overdose_start(mob/living/affected_mob)
-	. = ..()
+	SEND_SIGNAL(affected_mob, COMSIG_ADD_MOOD_EVENT, "[type]_overdose", /datum/mood_event/overdose, name)
+	to_chat(affected_mob, span_userdanger("Вы чувствуете, что приняли слишком много крысиной слюны!"))
 	if(!iscarbon(affected_mob))
 		return
 	var/mob/living/carbon/victim = affected_mob
@@ -322,14 +337,16 @@
 		return
 	victim.vomit()
 	victim.apply_status_effect(/datum/status_effect/rat_friend)
-	for(var/datum/antagonist/rat_king/king in GLOB.antagonists)
-		var/mob/king_mob = king.owner?.current
-		if(king_mob && !QDELETED(king_mob) && get_dist(king_mob, victim) <= RAT_HORDE_ORDER_RANGE)
+	var/mob/living/source
+	if(data)
+		source = data["source"]
+	if(source && !QDELETED(source))
+		var/datum/antagonist/rat_king/king = source.mind?.has_antag_datum(/datum/antagonist/rat_king)
+		if(king)
 			var/infected_key = victim.mind || victim
 			if(!(infected_key in king.infected_minds))
 				king.infected_minds += infected_key
 				king.infected++
-			break
 	metabolization_rate = 10 * REAGENTS_METABOLISM
 
 /datum/reagent/rat_spit/on_mob_life(mob/living/carbon/affected_mob)

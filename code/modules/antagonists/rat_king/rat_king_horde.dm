@@ -34,6 +34,16 @@
 	SIGNAL_HANDLER
 	qdel(src)
 
+/// Переносит орду на новое тело по требованию кролика.
+/datum/rat_horde/proc/set_leader(mob/living/new_leader)
+	if(QDELETED(src) || !isliving(new_leader) || new_leader == leader)
+		return FALSE
+	if(leader)
+		UnregisterSignal(leader, COMSIG_PARENT_QDELETING)
+	leader = new_leader
+	RegisterSignal(leader, COMSIG_PARENT_QDELETING, PROC_REF(on_leader_deleted))
+	return TRUE
+
 /datum/rat_horde/proc/register_minion(mob/living/minion)
 	if(QDELETED(src) || QDELETED(minion) || minion == leader)
 		return FALSE
@@ -280,6 +290,24 @@
 /datum/ai_behavior/rat_hold/perform(delta_time, datum/ai_controller/controller)
 	return AI_BEHAVIOR_DELAY
 
+/datum/ai_behavior/rat_scatter
+	action_cooldown = 1 SECONDS
+
+/datum/ai_behavior/rat_scatter/perform(delta_time, datum/ai_controller/controller)
+	var/mob/living/simple_animal/hostile/soldier = controller.pawn
+	if(!istype(soldier))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	var/datum/component/rat_minion/minion = soldier.GetComponent(/datum/component/rat_minion)
+	var/datum/rat_horde/horde = minion?.horde
+	if(!horde || !horde.has_active_order() || horde.order != RAT_ORDER_SCATTER)
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	var/mob/living/leader = horde.leader
+	if(QDELETED(leader))
+		return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_FAILED
+	if(get_dist(soldier, leader) < RAT_HORDE_GUARD_LEASH)
+		step_away(soldier, leader, 7)
+	return AI_BEHAVIOR_DELAY | AI_BEHAVIOR_SUCCEEDED
+
 /datum/ai_planning_subtree/rat_horde_orders
 
 /datum/ai_planning_subtree/rat_horde_orders/SelectBehaviors(datum/ai_controller/controller, delta_time)
@@ -335,4 +363,5 @@
 			controller.queue_behavior(/datum/ai_behavior/rat_hold)
 			return SUBTREE_RETURN_FINISH_PLANNING
 		if(RAT_ORDER_SCATTER)
-			horde.clear_order()
+			controller.queue_behavior(/datum/ai_behavior/rat_scatter)
+			return SUBTREE_RETURN_FINISH_PLANNING

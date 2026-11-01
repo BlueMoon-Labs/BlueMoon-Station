@@ -180,7 +180,7 @@
 		return TRUE
 	if(QDELETED(target) || isnull(target.reagents))
 		return TRUE
-	target.reagents.add_reagent(/datum/reagent/rat_spit, rand(1, 3), no_react = TRUE)
+	target.reagents.add_reagent(/datum/reagent/rat_spit, rand(1, 3), list("source" = src), no_react = TRUE)
 	balloon_alert(src, "облизано")
 	return TRUE
 
@@ -776,11 +776,15 @@
 
 /mob/living/simple_animal/proc/rat_friend_attack_hand(datum/source, mob/living/user)
 	SIGNAL_HANDLER
+	if(!user || user.a_intent != INTENT_HARM)
+		return
 	if(rat_friend_harm_intercept(user, src))
 		return COMPONENT_NO_ATTACK_HAND
 
 /mob/living/simple_animal/proc/rat_friend_attackby(datum/source, obj/item/item, mob/living/user, params)
 	SIGNAL_HANDLER
+	if(!user || user.a_intent != INTENT_HARM)
+		return
 	if(rat_friend_harm_intercept(user, src))
 		return COMPONENT_NO_AFTERATTACK
 
