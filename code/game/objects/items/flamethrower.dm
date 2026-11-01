@@ -1,3 +1,6 @@
+/// Меньше плазмы в баллоне - огнемёт не стреляет: доля с тайла убывает по экспоненте и в ноль сама не уходит.
+#define FLAMETHROWER_MIN_FUEL_MOLES 0.5
+
 /obj/item/flamethrower
 	name = "flamethrower"
 	desc = "You are a firestarter!"
@@ -152,6 +155,13 @@
 	. = ..()
 	if(ptank)
 		. += "<span class='notice'>\The [src] has \a [ptank] attached. Alt-click to remove it.</span>"
+		if(!has_fuel())
+			. += span_warning("В баллоне почти не осталось плазмы - стрелять нечем.")
+
+/obj/item/flamethrower/proc/has_fuel()
+	if(!ptank || QDELETED(ptank) || !ptank.air_contents)
+		return FALSE
+	return ptank.air_contents.get_moles(GAS_PLASMA) >= FLAMETHROWER_MIN_FUEL_MOLES
 
 /obj/item/flamethrower/proc/toggle_igniter(mob/user)
 	if(!ptank || QDELETED(ptank) || !ptank.air_contents)
@@ -189,6 +199,9 @@
 		return
 	if(!lit || operating || !ptank || QDELETED(ptank) || !ptank.air_contents)
 		return
+	if(!has_fuel())
+		to_chat(user, span_warning("[src] только шипит: в баллоне кончилась плазма."))
+		return
 	operating = TRUE
 	var/turf/previousturf = get_turf(src)
 	for(var/turf/T in turflist)
@@ -199,6 +212,8 @@
 		var/list/turfs_sharing_with_prev = previousturf.GetAtmosAdjacentTurfs(alldir=1)
 		if(!(T in turfs_sharing_with_prev))
 			break
+		if(!has_fuel())
+			break
 		if(igniter)
 			igniter.ignite_turf(src,T)
 		else
@@ -206,12 +221,12 @@
 		sleep(1)
 		previousturf = T
 	operating = FALSE
-	if(usr.machine == src)
-		attack_self(usr)
+	if(user?.machine == src)
+		attack_self(user)
 
 
 /obj/item/flamethrower/proc/default_ignite(turf/target, release_amount = 0.05)
-	if(!isopenturf(target) || !ptank || QDELETED(ptank) || !ptank.air_contents)
+	if(!isopenturf(target) || !has_fuel())
 		return
 	//Transfer a portion of current tank air contents to turf
 	var/datum/gas_mixture/air_transfer = ptank.remove_air_ratio(release_amount)
@@ -262,7 +277,6 @@
 	return ..()
 
 /obj/item/assembly/igniter/proc/flamethrower_process(turf/open/location)
-	location.IgniteTurf(6)
 	location.hotspot_expose(700,2)
 
 /obj/item/assembly/igniter/cold/flamethrower_process(turf/open/location)
@@ -270,3 +284,5 @@
 
 /obj/item/assembly/igniter/proc/ignite_turf(obj/item/flamethrower/F,turf/open/location,release_amount = 0.05)
 	F.default_ignite(location,release_amount)
+
+#undef FLAMETHROWER_MIN_FUEL_MOLES

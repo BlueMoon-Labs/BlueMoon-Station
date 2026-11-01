@@ -241,6 +241,7 @@
 #include "event_ports.dm"
 #include "eye_blur_filters.dm"
 #include "families.dm"
+#include "flamethrower_fuel.dm"
 #include "flat_icon_static.dm"
 #include "foam_performance.dm"
 #include "foam_spread_limits.dm"
