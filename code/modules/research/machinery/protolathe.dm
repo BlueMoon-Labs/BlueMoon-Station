@@ -7,7 +7,6 @@
 		"Medical Designs",
 		"Implants",
 		"Organs",
-		"Bluespace Designs",
 		"Stock Parts",
 		"Equipment",
 		"Tool Designs",

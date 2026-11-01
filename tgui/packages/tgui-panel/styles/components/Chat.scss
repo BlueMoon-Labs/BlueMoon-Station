@@ -60,6 +60,14 @@ $color-bg-section: base.$color-bg-section !default;
   bottom: 1em;
 }
 
+.Chat__historyButton {
+  position: absolute;
+  z-index: 2;
+  top: 0.5em;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
 .Chat__reconnected {
   font-size: 0.85em;
   text-align: center;
@@ -79,6 +87,23 @@ $color-bg-section: base.$color-bg-section !default;
     display: block;
     margin-top: -0.75em;
     border-bottom: math.div(1em, 6) solid colors.$red;
+  }
+}
+
+.Chat__newMarker {
+  display: flex;
+  align-items: center;
+  margin: 0.4em 0;
+  font-size: 0.75em;
+  color: colors.$orange;
+  user-select: none;
+
+  &:after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    margin-left: 0.6em;
+    background-color: currentColor;
   }
 }
 
@@ -107,15 +132,34 @@ $color-bg-section: base.$color-bg-section !default;
   background-color: crimson;
   color: #fff;
   text-align: center;
-  animation: unreadPulse 2s ease-in-out infinite;
+  position: relative;
+
+  // Ореол неподвижен, мигает его прозрачность: это композитор, а не
+  // перерисовка вкладок каждый кадр. Четыре вспышки за итерацию.
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: 0 0 6px 2px rgba(220, 20, 60, 0.4);
+    opacity: 0;
+    pointer-events: none;
+    animation: unreadPulse 8s ease-in-out infinite;
+  }
 }
 
 @keyframes unreadPulse {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(220, 20, 60, 0);
+  0%, 25%, 50%, 75%, 100% {
+    opacity: 0;
   }
-  50% {
-    box-shadow: 0 0 6px 2px rgba(220, 20, 60, 0.4);
+  12.5%, 37.5%, 62.5%, 87.5% {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .Chat__unreadBadge::after {
+    animation: none !important;
   }
 }
 
@@ -125,7 +169,7 @@ $color-bg-section: base.$color-bg-section !default;
 
 .ChatMessage--highlighted {
   position: relative;
-  border-left: math.div(1em, 6) solid rgba(255, 221, 68);
+  border-left: math.div(1em, 6) solid var(--chat-accent, rgba(255, 221, 68));
   padding-left: 0.5em;
 
   &:after {
@@ -135,7 +179,9 @@ $color-bg-section: base.$color-bg-section !default;
     bottom: 0;
     left: 0;
     right: 0;
-    background-color: rgba(255, 221, 68, 0.1);
+    // Без акцента переменная недействительна: остаётся прежний тинт.
+    --highlight-tint: color-mix(in srgb, var(--chat-accent) 10%, transparent);
+    background-color: var(--highlight-tint, rgba(255, 221, 68, 0.1));
     // Make this click-through since this is an overlay
     pointer-events: none;
   }

@@ -39,8 +39,9 @@ Will print: "/mob/living/carbon/human/death" (you can optionally embed it in a s
 
 #define MUTATIONS_LAYER           49 // mutations. Tk headglows, cold resistance glow, etc
 #define BODY_BEHIND_LAYER         48 // certain mutantrace features, such as tail when looking south
-#define	LEGS_PART_LAYER           47 // legs bodyparts
+#define	LEGS_PART_LAYER           47 // legs bodyparts, back half (_behind)
 #define	CHEST_PART_LAYER          46 // chest bodypart
+#define	LEGS_FRONT_PART_LAYER     45.5 // legs bodyparts, front half (_front): over the bottom of the chest
 #define GENITALS_BEHIND_LAYER     45 // Some genitalia needs to be behind everything, such as with taurs
 #define	ARMS_PART_LAYER           44 // arms bodypart
 #define	HEAD_PART_LAYER           43 // head bodypart
@@ -89,6 +90,9 @@ Will print: "/mob/living/carbon/human/death" (you can optionally embed it in a s
 
 #define BODY_HARDLIGHT_LAYER       50
 #define TOTAL_LAYERS              50
+
+/// Задняя половина составной конечности без своего слоя рисуется на столько глубже передней.
+#define BEHIND_LIMB_LAYER_OFFSET 0.1
 
 /// Потолок общего кэша наборов конечностей (limb_icon_cache, см. cache_limb_icons).
 /// Двух тысяч записей хватает на популяцию прода с запасом: ключ разный у каждого
@@ -704,3 +708,8 @@ GLOBAL_LIST_INIT(day_names, list("Monday", "Tuesday", "Wednesday", "Thursday", "
 
 /// Это лист для всевозможных контейнеров реагентов закрытого типа, принимаемого кемдиспенсерами, кеммастерами и т.д.
 #define CLOSED_CONTAINERS_OPERABLE list(/obj/item/reagent_containers/glass/bottle/vial)
+
+/// Хелпер-дефайны для корректной работы стикеров карт
+#define SYNDI_NT_PREFIX_LIST list("Syndicate", "Syndi", "NT", "Nanotrasen") // Блэклист корпоративных неймингов
+#define STICKER_SLOT_PREFIX "prefix"
+#define STICKER_SLOT_SUFFIX "suffix"

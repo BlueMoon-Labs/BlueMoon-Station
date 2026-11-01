@@ -110,10 +110,10 @@ GLOBAL_LIST_EMPTY(hud_z_groups)
 			next_time_allowed -= M
 		if(queued_to_see[M])
 			queued_to_see -= M
-		else if(viewer_has_images(M))
+		if(viewer_has_images(M))
 			// Значки атомов, ушедших из группы зрителя, остаются у него до снятия худа - собираем все группы
 			var/list/images_to_remove = list()
-			collect_hud_images_for(M, images_to_remove, check_visibility = FALSE, z_group = HUD_Z_GROUP_ANY)
+			collect_hud_images_for_removal(M, images_to_remove)
 			remove_hud_images(M, images_to_remove)
 
 /// Картинки худа живут в client.images: у моба без клиента снимать нечего.
@@ -145,7 +145,8 @@ GLOBAL_LIST_EMPTY(hud_z_groups)
 	// худами исчисляется тысячами изображений.
 	var/client/their_client = M.client
 	var/list/atom_hud_list = A.hud_list
-	var/list/local_hud_icons = hud_icon_keys
+	// Явно переданный набор снимает старые изображения перед их заменой, например путь бота.
+	var/list/local_hud_icons = hud_icon_keys == hud_icons ? get_removable_hud_icons(M, A, hud_icon_keys) : hud_icon_keys
 	if(length(local_hud_icons) == 1)
 		var/hud_image = atom_hud_list[local_hud_icons[1]]
 		if(hud_image)
@@ -159,6 +160,37 @@ GLOBAL_LIST_EMPTY(hud_z_groups)
 		LAZYADD(to_remove, hud_image)
 	if(to_remove)
 		their_client.images -= to_remove
+
+// Изображения общие для всех худов атома: сохраняем категории, которые ещё видны через другой худ.
+/datum/atom_hud/proc/get_removable_hud_icons(mob/viewer, atom/movable/target, list/hud_icon_keys = hud_icons)
+	if(viewer.get_hud_view_group_cached() != target.get_hud_z_group_cached())
+		return hud_icon_keys
+	var/list/removable_icons = hud_icon_keys
+	for(var/datum/atom_hud/other_hud as anything in target.hud_memberships)
+		if(other_hud == src || !other_hud.hudusers[viewer] || other_hud.queued_to_see[viewer] || !other_hud.should_show_to(viewer, target))
+			continue
+		for(var/category in removable_icons)
+			if(category in other_hud.hud_icons)
+				if(removable_icons == hud_icon_keys)
+					removable_icons = hud_icon_keys.Copy()
+				removable_icons -= other_hud.hud_icons
+				break
+		if(!length(removable_icons))
+			break
+	return removable_icons
+
+// При снятии всего худа вычитаем изображения одним пакетом, учитывая оставшиеся источники.
+/datum/atom_hud/proc/collect_hud_images_for_removal(mob/viewer, list/out)
+	if(!length(hud_icons))
+		return
+	for(var/atom/movable/target as anything in hudatoms)
+		if(!target?.hud_list)
+			continue
+		var/list/removable_icons = get_removable_hud_icons(viewer, target)
+		for(var/category in removable_icons)
+			var/hud_image = target.hud_list[category]
+			if(hud_image)
+				out += hud_image
 
 /datum/atom_hud/proc/add_hud_to(mob/M)
 	if(!M)

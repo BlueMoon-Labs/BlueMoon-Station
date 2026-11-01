@@ -12,13 +12,13 @@
 	create_bodyparts()
 
 	setup_human_dna()
+	physiology = new()
 
 	if(dna.species)
 		set_species(dna.species.type)
 
 	//initialise organs
 	create_internal_organs() //most of it is done in set_species now, this is only for parent call
-	physiology = new()
 
 	AddComponent(/datum/component/personal_crafting)
 	AddComponent(/datum/component/footstep, FOOTSTEP_MOB_HUMAN, 1, 2)
@@ -1397,15 +1397,19 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
  * * Green if none of the others apply (aka, generic organic)
 */
 /mob/living/carbon/human/proc/spec_trait_examine_font()
+	return "<font color='[spec_trait_examine_color()]'>"
+
+// Общий цвет расы для осмотра, текстового отчёта и медицинского дисплея.
+/mob/living/carbon/human/proc/spec_trait_examine_color()
 	if(HAS_TRAIT(src, TRAIT_ROBOTIC_ORGANISM))
-		return "<font color='#aaa9ad'>"
+		return "#aaa9ad"
 	if(HAS_TRAIT(src, TRAIT_TOXINLOVER))
-		return "<font color='#00ffff'>"
+		return "#00ffff"
 	if(isplasmaman(src))
-		return "<font color='#800080'>"
+		return "#800080"
 	if(isgolem(src))
-		return "<font color='#8b4513'>"
-	return "<font color='#18d855'>"
+		return "#8b4513"
+	return "#18d855"
 
 
 /mob/living/carbon/human/get_tooltip_data()

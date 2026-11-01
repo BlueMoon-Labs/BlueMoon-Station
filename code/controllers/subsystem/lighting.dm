@@ -33,7 +33,7 @@ GLOBAL_VAR_INIT(nightshift_animate_until, 0)
 		return
 	if(choice != "Выбрать цвет")
 		return
-	var/new_color = input(src, "Выберите цвет освещения космоса:", "Цвет звёздного света", COLOR_STARLIGHT) as color|null
+	var/new_color = tgui_input_color(src, "Выберите цвет освещения космоса:", "Цвет звёздного света", COLOR_STARLIGHT)
 	if(!new_color)
 		return
 	SSnightshift.starlight_override = TRUE

@@ -462,6 +462,21 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 	if(just_sleeping)
 		msg += "[t_on] спит. Гы.\n"
 
+	// BLUEMOON ADD START - телесные метки (татуировки, надписи) видны, пока персонаж действительно не умер,
+	// даже если он выглядит мёртвым (TRAIT_FAKEDEATH: квирк "Не-мёртвый", вампиры и т.п.).
+	if(!appears_dead || stat != DEAD)
+		var/tattoo_examine_text = get_tattoo_examine_text()
+		if(tattoo_examine_text)
+			msg += tattoo_examine_text
+		// Отображение надписей на теле, если они видимы и есть
+		if(show_written_on_bodypart_text != "")
+			msg += show_written_on_bodypart_text
+		if(user?.client?.prefs.cit_toggles & GENITAL_EXAMINE)
+			for(var/obj/item/organ/genital/G in internal_organs)
+				if(length(G.writtentext) && istype(G) && G.is_exposed())
+					msg += "<span class='warning'>На [t_ego] [G.ru_name_v] написано: \"[html_encode(G.writtentext)]\".</span>\n"
+	// BLUEMOON ADD END
+
 	if(!appears_dead)
 		if(drunkenness && !skipface) //Drunkenness
 			// BLUEMOON EDIT START - опьянение для роботов
@@ -505,19 +520,6 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 				var/obj/item/bodypart/BP = X
 				msg += "<span class='warning'>На [t_ego] [BP.name] написано: \"[html_encode(BP.writtentext)]\".</span>\n"
 		/ BLUEMOON REMOVAL END */
-		// BLUEMOON ADD START - отображение надписей на теле, если они видимы и есть
-		if(show_written_on_bodypart_text != "")
-			msg += show_written_on_bodypart_text
-		// BLUEMOON ADD - отображение татуировок
-		var/tattoo_examine_text = get_tattoo_examine_text()
-		if(tattoo_examine_text)
-			msg += tattoo_examine_text
-		if(user.client?.prefs.cit_toggles & GENITAL_EXAMINE)
-		// BLUEMOON ADD END
-			for(var/obj/item/organ/genital/G in internal_organs)
-				if(length(G.writtentext) && istype(G) && G.is_exposed())
-					msg += "<span class='warning'>На [t_ego] [G.ru_name_v] написано: \"[html_encode(G.writtentext)]\".</span>\n"
-
 		if(!user)
 			return
 
@@ -638,6 +640,17 @@ BLUEMOON - mechanical_erp_verbs_examine - REMOVAL END*/
 		.[2] += "<hr>"
 
 	. += span_boldnotice("Профиль персонажа: <a href='?src=\ref[src];character_profile=1'>\[Осмотреть\]</a>")
+
+	if(!skipface && !obscure_name && dna?.headshot_links && length(dna.headshot_links))
+		var/headshot_html = ""
+		for(var/headshot_link in dna.headshot_links)
+			if(!headshot_link)
+				continue
+			headshot_html = headshot_preview_html(headshot_link, 128, 128)
+			break
+		if(headshot_html)
+			. += span_boldnotice("Хедшот персонажа:")
+			. += headshot_html
 
 	if(activity)
 		. += span_nicegreen("<b>Деятельность:</b> [activity]")

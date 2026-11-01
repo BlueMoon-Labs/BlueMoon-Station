@@ -212,6 +212,15 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 			return
 	if(href_list["reload_tguipanel"])
 		nuke_chat()
+	if(href_list["statbrowser_pick_color"])
+		var/color_key = href_list["statbrowser_pick_color"]
+		var/static/list/color_keys = list("--bg-primary", "--bg-secondary", "--text-primary", "--text-secondary", "--text-muted", "--accent", "--border", "--health-good", "--health-warn", "--health-bad")
+		if(!(color_key in color_keys))
+			return
+		var/new_color = tgui_input_color(src, "Выберите цвет оформления панели.", "Цвет панели", href_list["color"])
+		if(new_color && statbrowser_ready)
+			src << output("[url_encode(color_key)];[url_encode(new_color)]", "statbrowser:set_settings_color")
+		return
 	if(href_list["reload_statbrowser"])
 		statbrowser_ready = FALSE
 		statpanel_protocol_acked = FALSE
@@ -270,7 +279,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 			if (inprefs)
 				return
 			inprefs = TRUE
-			. = prefs.process_link(usr,href_list)
+			. = prefs.process_antag_opt_in_href(usr, href_list)
 			inprefs = FALSE
 			record_slow_topic(topic_started, href, "prefs")
 			return
@@ -509,10 +518,6 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 /// ответа клиента, и на плохом канале это секунды - результат нужен только ради текста
 /// предупреждения, так что на пути входа в игру ему делать нечего.
 #define ASSET_CACHE_BROWSER_CHECK_DELAY (10 SECONDS)
-/// Через сколько после логина подгонять вьюпорт. fit_viewport - это winget на размеры
-/// плюс до трёх round-trip'ов коррекции подряд; путь change_view откладывает его ровно
-/// по той же причине.
-#define LOGIN_FIT_VIEWPORT_DELAY (1 SECONDS)
 
 /client/New(TopicData)
 	last_activity = world.time
@@ -552,6 +557,8 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		GLOB.preferences_datums[ckey] = prefs
 
 	addtimer(CALLBACK(src, PROC_REF(ensure_keys_set), prefs), 10)	//prevents possible race conditions
+	// Разносим прогрев справочников по времени, чтобы массовый вход не собирал их в одном тике.
+	addtimer(CALLBACK(prefs, TYPE_PROC_REF(/datum/preferences, prewarm_character_setup)), rand(2 SECONDS, 5 SECONDS), TIMER_UNIQUE | TIMER_OVERRIDE)
 
 	prefs.last_ip = address				//these are gonna be used for banning
 	prefs.last_id = computer_id			//these are gonna be used for banning
@@ -847,7 +854,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	normalize_ui_layout()
 	// Подгонка вьюпорта - самая тяжёлая пачка round-trip'ов на логине: winget на размеры
 	// плюс цикл коррекции. Откладываем, как это уже делает change_view.
-	addtimer(CALLBACK(src, VERB_REF(fit_viewport)), LOGIN_FIT_VIEWPORT_DELAY)
+	queue_fit_viewport()
 	Master.UpdateTickRate()
 	connect_probe.mark("хвост")
 	connect_probe.finish(round_login_index)
@@ -861,7 +868,6 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	to_chat(src, "<span class='warning'>Unable to access asset cache browser, if you are using a custom skin file, please allow DS to download the updated version, if you are not, then make a bug report. This is not a critical issue but can cause issues with resource downloading, as it is impossible to know when extra resources arrived to you.</span>")
 
 #undef ASSET_CACHE_BROWSER_CHECK_DELAY
-#undef LOGIN_FIT_VIEWPORT_DELAY
 
 //////////////
 //DISCONNECT//
@@ -1156,6 +1162,7 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 
 /client/Destroy()
 	QDEL_NULL(fractional_movement)
+	QDEL_NULL(viewport_fit_queue)
 	GLOB.clients -= src
 	GLOB.directory -= ckey
 	log_access("Logout: [key_name(src)] | [connection_forensics()]")
@@ -1191,6 +1198,8 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 		SSblackbox.exp_update_queue -= src
 	if(SSparallax?.currentrun)
 		SSparallax.currentrun -= src
+	SSping_diag?.forget_client(src)
+	QDEL_NULL(ping_diag_ui)
 	if(GLOB.ahelp_tickets)
 		GLOB.ahelp_tickets.ClientLogout(src)
 	GLOB.mentor_tickets?.ClientLogout(src)
@@ -1218,7 +1227,6 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 			)
 
 			send2adminchat("Server", "[cheesy_message] (No admins online)")
-	clear_character_previews()
 	// seen_messages = null
 	Master.UpdateTickRate()
 	. = ..() //Even though we're going to be hard deleted there are still some things that want to know the destroy is happening
@@ -1874,8 +1882,9 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	var/list/old_view = getviewsize(view)
 	view = new_size
 	var/list/actualview = getviewsize(view)
+	var/size_changed = old_view[1] != actualview[1] || old_view[2] != actualview[2]
 	update_clickcatcher()
-	if(old_view[1] != actualview[1] || old_view[2] != actualview[2])
+	if(size_changed)
 		parallax_holder?.Reset()
 	mob?.hud_used?.screentip_text?.update_view()
 	// Гарды на mob здесь и на SEND_SIGNAL ниже: change_view зовётся из /datum/view_data/New()
@@ -1890,10 +1899,11 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 	if (isliving(mob))
 		var/mob/living/M = mob
 		M.update_damage_hud()
-	if (prefs.auto_fit_viewport)
-		// Отложено, чтобы не дёргать winget во время логина. Задержка обязана стоять
-		// аргументом addtimer: внутри CALLBACK она уходит в сам верб, и таймер срабатывает сразу.
-		addtimer(CALLBACK(src, VERB_REF(fit_viewport)), 1 SECONDS)
+	// Подгонка зависит только от пропорций вида. Без смены размера звать её незачем, а
+	// зовут часто: прицел и бинокль пересчитывают вид на каждый поворот, логин в моба -
+	// на каждую смену тела.
+	if (size_changed && prefs.auto_fit_viewport)
+		queue_fit_viewport()
 	if(mob)
 		SEND_SIGNAL(mob, COMSIG_MOB_CLIENT_CHANGE_VIEW, src, old_view, actualview)
 
@@ -1916,67 +1926,6 @@ GLOBAL_VAR_INIT(last_churn_alert, 0)
 /client/proc/AnnouncePR(announcement)
 	if(prefs && prefs.chat_toggles & CHAT_PULLR)
 		to_chat(src, announcement)
-
-/client/proc/show_character_previews(mutable_appearance/source)
-	LAZYINITLIST(char_render_holders)
-	if(!char_preview_planes)
-		//Через попап-группу: мастера без худа плодят реле на основной карте и заявляют те же имена render_target, что и худ игрока.
-		char_preview_planes = new /datum/plane_master_group/popup/on_demand(PLANE_GROUP_POPUP_WINDOW("character_preview"), "character_preview_map")
-		for(var/plane_key in char_preview_planes.plane_masters)
-			var/atom/movable/screen/plane_master/plane_master = char_preview_planes.plane_masters[plane_key]
-			plane_master.refresh_backdrop(mob)
-			plane_master.screen_loc = "character_preview_map:0,CENTER"
-		char_preview_planes.register_to_client(src)
-		// Disable lighting on the preview — no lighting objects exist there,
-		// and the blur edge-fix filter would force the empty plane opaque black
-		for(var/plane_key in char_preview_planes.plane_masters)
-			var/atom/movable/screen/plane_master/lighting/lighting_pm = char_preview_planes.plane_masters[plane_key]
-			if(!istype(lighting_pm))
-				continue
-			lighting_pm.set_alpha(LIGHTING_PLANE_ALPHA_INVISIBLE)
-			lighting_pm.filters = null
-		// The emissive plane only exists to feed the lighting plane's alpha mask, which is disabled
-		// above. Without that mask the raw white emissive overlays would blow out the whole preview,
-		// so hide the emissive plane in the character preview too.
-		var/atom/movable/screen/plane_master/emissive_pm = char_render_holders["plane_master-[EMISSIVE_PLANE]"]
-		if(emissive_pm)
-			emissive_pm.alpha = LIGHTING_PLANE_ALPHA_INVISIBLE
-			emissive_pm.filters = null
-
-	var/pos = 0
-	for(var/dir in GLOB.cardinals)
-		pos++
-		var/atom/movable/screen/preview = char_render_holders["preview-[dir]"]
-		if(!preview)
-			preview = new
-			char_render_holders["preview-[dir]"] = preview
-			screen |= preview
-		preview.appearance = source
-		preview.dir = dir
-		preview.screen_loc = "character_preview_map:0,[pos]"
-
-/client/proc/clear_character_previews()
-	char_preview_planes?.unregister_from_client(src)
-	QDEL_NULL(char_preview_planes)
-	if(!LAZYLEN(char_render_holders))
-		char_render_holders = null
-		return
-
-	var/list/char_render_holders_copy = char_render_holders.Copy()
-	char_render_holders = null
-
-	for(var/index in char_render_holders_copy)
-		var/atom/movable/screen/S = char_render_holders_copy[index]
-		S.vis_contents.Cut()
-		S.overlays.Cut()
-		S.underlays.Cut()
-		S.filters = null
-		S.maptext = null
-		S.icon = null
-		S.screen_loc = null
-		S.appearance = null
-		screen -= S
-		qdel(S)
 
 /client/proc/can_have_part(part_name)
 	return prefs.pref_species.mutant_bodyparts[part_name] || (part_name in GLOB.unlocked_mutant_parts)

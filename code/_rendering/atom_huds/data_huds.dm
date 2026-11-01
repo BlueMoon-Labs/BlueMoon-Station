@@ -43,6 +43,9 @@
 /datum/atom_hud/data/human/medical/advanced/should_show_to(mob/M, atom/A)
 	if(HAS_TRAIT(M, TRAIT_BLOCK_MEDHUD))
 		return FALSE
+	// На IceBox фауна луны в одной группе z со станцией: ~600 значков у каждого госта, SendMaps перебирал их каждый тик.
+	if(isobserver(M) && istype(A, /mob/living/simple_animal/hostile/asteroid))
+		return FALSE
 	return TRUE
 
 /datum/atom_hud/data/human/security/basic/should_show_to(mob/M, atom/A)
@@ -127,6 +130,9 @@
 				threat = D.severity
 	return threat
 
+/// С какого процента здоровья медхуд считает его полным: ближайшая ступень 100, а не 93.75.
+#define HUD_FULL_HEALTH_PERCENT 96.875
+
 //helper for getting the appropriate health status
 /proc/RoundHealth(mob/living/M)
 	if(M.stat == DEAD || (HAS_TRAIT(M, TRAIT_FAKEDEATH)))
@@ -135,10 +141,11 @@
 	if(iscarbon(M) && M.health < 0)
 		maxi_health = 100 //so crit shows up right for aliens and other high-health carbon mobs; noncarbons don't have crit.
 	var/resulthealth = (M.health / round(maxi_health, DAMAGE_PRECISION)) * 100
+	// Ступень берётся ближайшая, как у всех остальных: иначе сотые доли урона висят на худе отметкой 93.75.
+	if(resulthealth >= HUD_FULL_HEALTH_PERCENT)
+		return
 	switch(resulthealth)
-		if(100 to INFINITY)
-			return
-		if(90.625 to 100)
+		if(90.625 to HUD_FULL_HEALTH_PERCENT)
 			return "health93.75"
 		if(84.375 to 90.625)
 			return "health87.5"
@@ -176,6 +183,8 @@
 			return "health-85"
 		else
 			return "health-100"
+
+#undef HUD_FULL_HEALTH_PERCENT
 
 //HOOKS
 
@@ -219,7 +228,9 @@
 	if(!holder)
 		med_hud_set_radstatus()
 		return
-	holder.icon_state = "hud[RoundHealth(src)]"
+	var/health_state = RoundHealth(src)
+	// У полностью здорового персонажа полоска скрыта: состояния "hud" в файле иконок нет.
+	holder.icon_state = health_state ? "hud[health_state]" : ""
 	if(!icon)
 		med_hud_set_radstatus()
 		return

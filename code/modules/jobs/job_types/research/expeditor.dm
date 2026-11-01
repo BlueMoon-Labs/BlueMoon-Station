@@ -29,11 +29,8 @@
 		"Vanguard Trainee", //Стажер выше, для удобства
 		"Space Diver",
 		"Gateway Diver",
-		"Vanguard Combatant",
 		"Exploration Mercenary",
-		"Vanguard Field Medic",
 		"Vanguard Recruit",
-		"Vanguard Demolition Expert",
 		"Ranger",
 		"Expeditor"
 		)

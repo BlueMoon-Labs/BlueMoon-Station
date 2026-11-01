@@ -424,7 +424,7 @@
 		if(installed_cartridge.access & CART_MEDICAL)
 			user.visible_message("<span class='notice'>[user] analyzes [C]'s vitals.</span>", \
 								"<span class='notice'>You analyze [C]'s vitals.</span>")
-			healthscan(user, C, 1, FALSE)
+			healthscan(user, C)
 			return
 	return ..()
 
@@ -1080,9 +1080,14 @@
 /proc/get_viewable_pdas()
 	. = list()
 	for(var/obj/item/modular_computer/pda/P in GLOB.PDAs)
-		if(!P.owner || P.toff || P.hidden)
+		if(!P.owner || P.toff || P.hidden || is_ghost_cafe_pda(P))
 			continue
 		. += P
+
+/// КПК гостей Призрачного Кафе (борги, люди) не попадают в списки станции.
+/proc/is_ghost_cafe_pda(obj/item/modular_computer/pda/pda)
+	var/mob/living/holder = get(pda, /mob/living)
+	return !!holder?.mind?.has_antag_datum(/datum/antagonist/ghost_role/ghost_cafe)
 
 // ---- AI PDA messaging ----
 
@@ -1162,6 +1167,8 @@
 // ---- Borg PDA messaging ----
 
 /mob/living/silicon/robot/proc/cmd_send_pdamesg(mob/user)
+	if(QDELETED(aiPDA))
+		return
 	var/list/plist = list()
 	var/list/namecounts = list()
 

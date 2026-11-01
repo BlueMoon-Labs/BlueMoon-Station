@@ -172,6 +172,8 @@ GLOBAL_VAR_INIT(pda_messenger_directory_time, -1)
 			continue
 		if(!pda_device.saved_identification && !pda_device.saved_job)
 			continue
+		if(is_ghost_cafe_pda(pda_device))
+			continue
 		var/datum/computer_file/program/messenger/messenger = locate(/datum/computer_file/program/messenger) in pda_device.get_all_files()
 		if(!istype(messenger) || messenger.invisible)
 			continue

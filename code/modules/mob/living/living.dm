@@ -56,35 +56,9 @@
 		REMOVE_TRAIT(src, TRAIT_PROSOPAGNOSIA, "unconscious_obscurity")
 		for(var/datum/atom_hud/alternate_appearance/basic/unconscious_obscurity/AA in GLOB.active_alternate_appearances)
 			AA.remove_hud_from(src, TRUE)
-		if(client)
-			for(var/datum/atom_hud/H in GLOB.all_huds)
-				if(H.hudusers[src])
-					H.push_all_atoms_to_user(src)
-					continue
-				var/needs_hud = FALSE
-				if(istype(H, /datum/atom_hud/data/human/security))
-					if(HAS_TRAIT(src, TRAIT_SECURITY_HUD))
-						needs_hud = TRUE
-					else if(ishuman(src))
-						var/mob/living/carbon/human/HU = src
-						if(istype(HU.glasses, /obj/item/clothing/glasses/hud/security))
-							needs_hud = TRUE
-				else if(istype(H, /datum/atom_hud/data/human/medical))
-					if(HAS_TRAIT(src, TRAIT_MEDICAL_HUD))
-						needs_hud = TRUE
-					else if(ishuman(src))
-						var/mob/living/carbon/human/HU2 = src
-						if(istype(HU2.glasses, /obj/item/clothing/glasses/hud/health))
-							needs_hud = TRUE
-				else if(istype(H, /datum/atom_hud/data/diagnostic))
-					if(HAS_TRAIT(src, TRAIT_DIAGNOSTIC_HUD))
-						needs_hud = TRUE
-					else if(ishuman(src))
-						var/mob/living/carbon/human/HU3 = src
-						if(istype(HU3.glasses, /obj/item/clothing/glasses/hud/diagnostic))
-							needs_hud = TRUE
-				if(needs_hud)
-					H.add_hud_to(src)
+		// При обмороке снимаются только изображения; членство и число источников худа сохраняются.
+		refresh_hud_view_group()
+		reload_huds()
 
 /mob/living/prepare_huds()
 	..()
@@ -517,12 +491,15 @@
 			offset = GRAB_PIXEL_SHIFT_NECK
 		if(GRAB_KILL)
 			offset = GRAB_PIXEL_SHIFT_NECK
-	M.setDir(get_dir(M, src))
-	var/dir_filter = M.dir
+	// На одной клетке направления нет: прежний dir оставлял тело сдвинутым к месту, где тянущий был раньше
+	var/dir_filter = get_dir(M, src)
+	if(dir_filter)
+		M.setDir(dir_filter)
 	if(ISDIAGONALDIR(dir_filter))
 		dir_filter = EWCOMPONENT(dir_filter)
-	var/target_x = 0
-	var/target_y = 0
+	// От исходного смещения спрайта: у крупных мобов оно ненулевое
+	var/target_x = M.get_standard_pixel_x_offset()
+	var/target_y = M.get_standard_pixel_y_offset()
 	switch(dir_filter)
 		if(NORTH)
 			target_y += offset
@@ -540,13 +517,13 @@
 				M.update_transform(FALSE)
 				M.lying_prev = M.lying
 			target_x -= offset
-	if(target_x || target_y)
+	if(target_x != M.pixel_x || target_y != M.pixel_y)
 		animate(M, pixel_x = target_x, pixel_y = target_y, time = 3, flags = ANIMATION_PARALLEL)
 
 /mob/living/proc/reset_pull_offsets(mob/living/M, override)
 	if(!override && M.buckled)
 		return
-	animate(M, pixel_x = 0, pixel_y = 0, time = 3, flags = ANIMATION_PARALLEL)
+	animate(M, pixel_x = M.get_standard_pixel_x_offset(), pixel_y = M.get_standard_pixel_y_offset(), time = 3, flags = ANIMATION_PARALLEL)
 
 //mob verbs are a lot faster than object verbs
 //for more info on why this is not atom/pull, see examinate() in mob.dm
@@ -833,8 +810,10 @@
 	cure_nearsighted()
 	cure_blind()
 	cure_husk()
+	if(admin_revive)
+		cure_fakedeath(/datum/reagent/toxin/zombiepowder)
 	hallucination = 0
-	heal_overall_damage(INFINITY, INFINITY, INFINITY, FALSE, FALSE, TRUE, forced = admin_revive) //heal brute and burn dmg on both organic and robotic limbs, and update health right away.
+	heal_overall_damage(INFINITY, INFINITY, INFINITY, FALSE, FALSE, FALSE, forced = admin_revive) // Лечим органические и роботизированные конечности; здоровье пересчитаем после полного восстановления.
 	ExtinguishMob()
 	fire_stacks = 0
 	confused = 0
@@ -847,6 +826,8 @@
 				var/obj/item/organ/O = organ
 				O.organ_flags &= ~ORGAN_SYNTHETIC_EMP // BLUEMOON ADD
 				O.setOrganDamage(0)
+	// Пересчёт обязателен и без повреждений конечностей: OXY, TOX и CLONE обнулены без обновления.
+	updatehealth()
 
 //proc called by revive(), to check if we can actually ressuscitate the mob (we don't want to revive him and have him instantly die again)
 /mob/living/proc/can_be_revived()

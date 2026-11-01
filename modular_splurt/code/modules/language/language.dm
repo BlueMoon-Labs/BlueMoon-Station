@@ -7,7 +7,7 @@
 // I am not creative with this.
 /datum/language/modular_splurt/avian
 	name = "Avian"
-	desc = "A collection of bird songs and calls, mostly pleasant to human ears."
+	desc = "Сборник птичьих песен и криков, в основном приятных человеческому слуху."
 	speech_verb = "chirps"
 	ask_verb = "chirps curiously"
 	exclaim_verb = "chirps loudly"
@@ -22,7 +22,7 @@
 
 /datum/language/modular_splurt/nyanese
 	name = "Nyanese"
-	desc = "The intergalactic language of felines, often used to annoy gods."
+	desc = "Межгалактический язык кошачьих, часто используемый, чтобы раздражать богов."
 	speech_verb = "meows"
 	ask_verb = "mrrps"
 	exclaim_verb = "mrowls"

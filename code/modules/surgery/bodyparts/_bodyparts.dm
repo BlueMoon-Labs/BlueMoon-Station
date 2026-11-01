@@ -10,6 +10,8 @@
 	appearance_flags = KEEP_TOGETHER | LONG_GLIDE | PIXEL_SCALE | TILE_BOUND
 	layer = BELOW_MOB_LAYER //so it isn't hidden behind objects when on the floor
 	var/as_mob_layer = BODYPARTS_LAYER
+	/// Слой задней половины (_behind) на мобе; без него - чуть ниже as_mob_layer
+	var/behind_mob_layer
 	var/mob/living/carbon/owner = null
 	var/datum/weakref/original_owner = null
 	var/status = BODYPART_ORGANIC
@@ -973,7 +975,7 @@
 			limb.icon_state = "[render_species_id]_[body_zone]"
 
 		if(istype(src, /obj/item/bodypart/l_leg) || istype(src, /obj/item/bodypart/r_leg))
-			second_limb = image(layer = -as_mob_layer-0.1, dir = image_dir) // BLUEMOON CHANGES - WAS second_limb = image(layer = -BODYPARTS_LAYER, dir = image_dir) - фикс для отображения ног (РАБОТАЕТ ТОЛЬКО ЕСЛИ ИСПОЛЬЗУЕТСЯ НАШ GREYSCALE ФАЙЛ КОНЕЧНОСТЕЙ)
+			second_limb = image(layer = -(behind_mob_layer || as_mob_layer + BEHIND_LIMB_LAYER_OFFSET), dir = image_dir) // BLUEMOON CHANGES - WAS second_limb = image(layer = -BODYPARTS_LAYER, dir = image_dir) - фикс для отображения ног (РАБОТАЕТ ТОЛЬКО ЕСЛИ ИСПОЛЬЗУЕТСЯ НАШ GREYSCALE ФАЙЛ КОНЕЧНОСТЕЙ)
 			second_limb.icon = limb.icon
 			. += second_limb
 
@@ -1051,7 +1053,7 @@
 			if(prosthetic_digi_limbs_cache[cache_id])
 				limb.icon_state = "digi_[body_zone]"
 				if(istype(src, /obj/item/bodypart/l_leg) || istype(src, /obj/item/bodypart/r_leg))
-					second_limb = image(layer = -as_mob_layer-0.1, dir = image_dir)
+					second_limb = image(layer = -(behind_mob_layer || as_mob_layer + BEHIND_LIMB_LAYER_OFFSET), dir = image_dir)
 					second_limb.icon = limb.icon
 					var/original_state = limb.icon_state
 					limb.icon_state = "[original_state]_front"

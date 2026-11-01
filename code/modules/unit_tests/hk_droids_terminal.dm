@@ -286,6 +286,10 @@
 	TEST_ASSERT_NULL(offer_entry["photo"], "photos never ride in the per-second data")
 	var/list/static_data = terminal.ui_static_data(droid)
 	var/list/photos = static_data["photos"]
+	TEST_ASSERT(!length(photos), "the photo is taken on its own tick, not while building static data")
+	terminal.take_next_photo()
+	static_data = terminal.ui_static_data(droid)
+	photos = static_data["photos"]
 	TEST_ASSERT(length(photos[offer_entry["id"]]), "a known target comes with a photo in the static data")
 	terminal.ui_act("accept", list("ref" = REF(offer)), ui)
 	TEST_ASSERT_EQUAL(hunter.active_contract, offer, "accept takes the offer")
@@ -398,11 +402,17 @@
 	var/datum/hk_terminal/terminal = hunter.terminal
 	var/datum/mind/target = hunter.add_crew(src, "Assistant", ANTAG_OPT_IN_KILL)
 	var/datum/hk_contract/offer = hunter.add_offer(/datum/hk_contract_task/kill, target)
+	var/datum/hk_contract/second_offer = hunter.add_offer(/datum/hk_contract_task/kill, hunter.add_crew(src, "Assistant", ANTAG_OPT_IN_KILL))
+	terminal.take_next_photo()
+	TEST_ASSERT(offer.photo_taken != second_offer.photo_taken, "one photo per tick, the next one waits for its own timer")
+	terminal.take_next_photo()
 	var/list/static_data = terminal.ui_static_data(droid)
 	var/list/photos = static_data["photos"]
 	var/photo = photos["[offer.id]"]
 	TEST_ASSERT(length(photo), "the photo is taken")
-	TEST_ASSERT_EQUAL(terminal.sent_photos_key, "[offer.id]", "the terminal remembers which photos it sent")
+	TEST_ASSERT_EQUAL(terminal.sent_photos_key, "[offer.id]:photo,[second_offer.id]:photo", "the terminal remembers which photos it sent")
+	hunter.offers -= second_offer
+	qdel(second_offer)
 	offer.photo = "retaken"
 	static_data = terminal.ui_static_data(droid)
 	photos = static_data["photos"]

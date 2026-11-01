@@ -64,6 +64,23 @@ em						{font-style: normal;	font-weight: bold;}
 .greenteamradio			{color: #00ff00;}
 .yellowteamradio		{color: #d1ba22;}
 .gangradio				{color: #ac2ea1;}
+.radiojob-legacy-cmd	{color: #fcdf03;}
+.radiojob-legacy-sec	{color: #dd3535;}
+.radiojob-legacy-eng, .radiojob-legacy-tarkon	{color: #f37746;}
+.radiojob-legacy-med	{color: #57b8f0;}
+.radiojob-legacy-sci	{color: #c68cfa;}
+.radiojob-legacy-cargo	{color: #b88646;}
+.radiojob-legacy-srv, .radiojob-legacy-hotel	{color: #6ca729;}
+.radiojob-legacy-law, .radiojob-legacy-clown	{color: #ff69d7;}
+.radiojob-legacy-asst	{color: #1ecc43;}
+.radiojob-legacy-synd	{color: #8f4a4b;}
+.radiojob-legacy-inteq	{color: #e58200;}
+.radiojob-legacy-pirate	{color: #fafafa;}
+.radiojob-legacy-sol	{color: #3434fd;}
+.radiojob-legacy-nri	{color: #ff4444;}
+.radiojob-legacy-centcom	{color: #2681a5;}
+.radiojob-legacy-silicon	{color: #9e9e9e;}
+.radiojob-legacy-unk	{color: #b0b0b0;}
 
 .yell					{					font-weight: bold;}
 

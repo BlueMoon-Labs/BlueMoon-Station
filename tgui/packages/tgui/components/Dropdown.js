@@ -9,6 +9,7 @@ import { Component } from 'react';
 
 import { Box, unit } from './Box';
 import { Icon } from './Icon';
+import { Tooltip } from './Tooltip';
 
 // Вариант списка — либо примитив (значение и подпись совпадают), либо пара
 // { value, displayText }: она позволяет вызывающему держать выбор на
@@ -34,12 +35,16 @@ const optionLabel = option => (isOptionPair(option)
   ? (option.displayText !== undefined ? option.displayText : option.value)
   : option);
 
+const SEARCH_THRESHOLD = 9;
+
 export class Dropdown extends Component {
   constructor(props) {
     super(props);
     this.state = {
       selected: props.selected,
       open: false,
+      search: '',
+      flipUp: false,
     };
     this.handleClick = () => {
       if (this.state.open) {
@@ -55,9 +60,10 @@ export class Dropdown extends Component {
   setOpen(open) {
     // The menu node exists only after the re-render, so focus it
     // in the setState callback (setState is asynchronous in React).
-    this.setState({ open: open }, () => {
+    this.setState({ open: open, search: '', flipUp: false }, () => {
       if (open) {
-        this.menuRef?.focus();
+        (this.searchRef || this.menuRef)?.focus();
+        this.measureDirection();
       }
     });
     if (open) {
@@ -65,6 +71,25 @@ export class Dropdown extends Component {
     }
     else {
       window.removeEventListener('click', this.handleClick);
+    }
+  }
+
+  measureDirection() {
+    if (this.props.over) {
+      return;
+    }
+    const control = this.rootRef?.querySelector('.Dropdown__control');
+    const menu = this.menuRef;
+    if (!control || !menu) {
+      return;
+    }
+    const controlRect = control.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - controlRect.bottom;
+    const spaceAbove = controlRect.top;
+    const menuHeight = menu.getBoundingClientRect().height;
+    const flipUp = menuHeight > spaceBelow && spaceAbove > spaceBelow;
+    if (flipUp !== this.state.flipUp) {
+      this.setState({ flipUp: flipUp });
     }
   }
 
@@ -81,7 +106,20 @@ export class Dropdown extends Component {
   }
 
   buildMenu(optionList) {
-    const ops = optionList.map(option => {
+    const query = this.state.search.trim().toLowerCase();
+    const visible = query
+      ? optionList.filter(option => {
+        if (typeof option === 'string' || typeof option === 'number') {
+          return String(option).toLowerCase().includes(query);
+        }
+        if (isOptionPair(option)) {
+          return String(optionValue(option) ?? '').toLowerCase().includes(query)
+            || String(option.displayText ?? option.value ?? '').toLowerCase().includes(query);
+        }
+        return true;
+      })
+      : optionList;
+    const ops = visible.map(option => {
       const value = optionValue(option);
       return (
         <Box
@@ -94,7 +132,7 @@ export class Dropdown extends Component {
         </Box>
       );
     });
-    return ops.length ? ops : 'No Options Found';
+    return ops.length ? ops : 'Нет совпадений';
   }
 
   render() {
@@ -114,6 +152,9 @@ export class Dropdown extends Component {
       selected,
       disabled,
       displayText,
+      searchable,
+      tooltip,
+      tooltipPosition,
       ...boxProps
     } = props;
     const {
@@ -121,7 +162,7 @@ export class Dropdown extends Component {
       ...rest
     } = boxProps;
 
-    const adjustedOpen = over ? !this.state.open : this.state.open;
+    const menuUp = over || this.state.flipUp;
 
     // options приходит из окон и не обязан быть массивом: часть вызывающих
     // кладёт туда объект или строку (ComplexModal.js, IPCConstructor.js,
@@ -129,6 +170,9 @@ export class Dropdown extends Component {
     // теперь поиск подписи идёт в render() — и без приведения окно уходило
     // бы в белый экран на первом же рендере.
     const optionList = Array.isArray(options) ? options : [];
+
+    const showSearch = searchable === true
+      || (searchable !== false && optionList.length > SEARCH_THRESHOLD);
 
     // Контрол условно управляемый. Если проп selected передан, подпись всегда
     // считается из него: машина имеет право молча отвергнуть act
@@ -164,46 +208,71 @@ export class Dropdown extends Component {
         }}
         className={classes([
           noscroll && 'Dropdown__menu-noscroll' || 'Dropdown__menu',
-          over && 'Dropdown__over',
+          menuUp && 'Dropdown__over',
         ])}>
+        {showSearch && (
+          <input
+            className="Dropdown__search"
+            placeholder="Поиск..."
+            value={this.state.search}
+            ref={input => { this.searchRef = input; }}
+            onClick={e => e.stopPropagation()}
+            onChange={e => this.setState({ search: e.target.value })}
+            onKeyDown={e => {
+              if (e.key === 'Escape') {
+                e.stopPropagation();
+                this.setOpen(false);
+              }
+            }}
+          />
+        )}
         {this.buildMenu(optionList)}
       </div>
     ) : null;
 
-    return (
-      <div className="Dropdown">
-        <Box
-          width={width}
-          className={classes([
-            'Dropdown__control',
-            'Button',
-            'Button--color--' + color,
-            disabled && 'Button--disabled',
-            className,
-          ])}
-          {...rest}
-          onClick={() => {
-            if (disabled && !this.state.open) {
-              return;
-            }
-            this.setOpen(!this.state.open);
-          }}>
-          {icon && (
-            <Icon
-              name={icon}
-              rotation={iconRotation}
-              spin={iconSpin}
-              mr={1} />
-          )}
-          <span className="Dropdown__selected-text">
-            {displayText ? displayText : selectedLabel}
+    const control = (
+      <Box
+        width={width}
+        className={classes([
+          'Dropdown__control',
+          'Button',
+          'Button--color--' + color,
+          disabled && 'Button--disabled',
+          className,
+        ])}
+        {...rest}
+        onClick={() => {
+          if (disabled && !this.state.open) {
+            return;
+          }
+          this.setOpen(!this.state.open);
+        }}>
+        {icon && (
+          <Icon
+            name={icon}
+            rotation={iconRotation}
+            spin={iconSpin}
+            mr={1} />
+        )}
+        <span className="Dropdown__selected-text">
+          {displayText ? displayText : selectedLabel}
+        </span>
+        {!!nochevron || (
+          <span className="Dropdown__arrow-button">
+            <Icon name={menuUp || this.state.open ? 'chevron-up' : 'chevron-down'} />
           </span>
-          {!!nochevron || (
-            <span className="Dropdown__arrow-button">
-              <Icon name={adjustedOpen ? 'chevron-up' : 'chevron-down'} />
-            </span>
-          )}
-        </Box>
+        )}
+      </Box>
+    );
+    return (
+      <div className="Dropdown" ref={root => { this.rootRef = root; }}>
+        {tooltip ? (
+          <Tooltip content={<span className="Tooltip__text">{tooltip}</span>} position={tooltipPosition}>
+            <div>{control}</div>
+          </Tooltip>
+        ) : (
+          control
+        )}
         {menu}
       </div>
     );

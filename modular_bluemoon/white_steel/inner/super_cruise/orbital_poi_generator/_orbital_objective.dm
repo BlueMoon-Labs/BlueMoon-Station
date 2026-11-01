@@ -160,32 +160,86 @@
 	var/turf/bridge = null
 	if(!beacon)
 		bridge = get_exploration_bridge_turf()
-	if(!beacon && !bridge)
+	var/turf/shuttle_fallback = null
+	var/obj/docking_port/mobile/exploration_shuttle = SSshuttle.getShuttle("exploration")
+	if(exploration_shuttle)
+		for(var/area/A in exploration_shuttle.shuttle_areas)
+			for(var/turf/open/floor/F in A)
+				if(!F.density)
+					shuttle_fallback = F
+					break
+			if(shuttle_fallback)
+				break
+	if(!beacon && !bridge && !shuttle_fallback)
 		return
 	var/atom/movable/npc_target = get_target()
-	for(var/mob/living/carbon/human/H as() in GLOB.human_list)
-		if(QDELETED(H) || H == npc_target || H.z != objective_z_level)
+	for(var/mob/living/L as anything in GLOB.mob_living_list)
+		if(QDELETED(L) || L == npc_target || !L.mind)
 			continue
-		if(H.stat != DEAD || !H.mind)
+		var/turf/start = get_turf(L)
+		if(start?.z != objective_z_level)
 			continue
 		//Только авангард: трупы живцов руины и цель миссии на маяк не летят.
-		if(!is_expedition_crew(H))
+		if(!is_expedition_crew(L))
 			continue
-		//Тело уходит на маяк (на свободный пол рядом с ним) или, если маяка нет, на мостик шаттла.
-		var/turf/destination = beacon ? beacon.get_delivery_turf() : bridge
-		if(!destination)
+		//Сознание в отрубленной голове, мозге или MMI: сам он с руины не уйдёт, везём носитель.
+		var/atom/movable/remains = L
+		if(isbrain(L))
+			remains = get_brain_carrier(L)
+		else if(L.stat != DEAD)
 			continue
-		var/turf/start = get_turf(H)
-		H.forceMove(destination)
-		fulton_launch_effect(start)
+		//Останки уходят на маяк (на свободный пол рядом с ним) или, если маяка нет, на мостик шаттла.
+		if(!send_remains_home(remains, beacon ? beacon.get_delivery_turf() : (bridge || shuttle_fallback)))
+			continue
+		if(isbrain(L))
+			send_remains_home(find_brainless_body(L), beacon ? beacon.get_delivery_turf() : (bridge || shuttle_fallback))
+
+/datum/orbital_objective/proc/send_remains_home(atom/movable/remains, turf/destination)
+	if(QDELETED(remains) || !destination)
+		return FALSE
+	var/turf/start = get_turf(remains)
+	if(ismob(remains.loc) && isitem(remains))
+		var/mob/holder = remains.loc
+		if(!holder.is_holding(remains) || !holder.temporarilyRemoveItemFromInventory(remains, TRUE))
+			return FALSE
+	remains.forceMove(destination)
+	fulton_launch_effect(start)
+	return TRUE
+
+/// Предмет, в котором лежит сознание: отрубленная голова, мозг или MMI. null, если его не вынуть (MMI в киборге или мехе).
+/datum/orbital_objective/proc/get_brain_carrier(mob/living/brain/brainmob)
+	var/obj/item/carrier = brainmob.loc
+	while(istype(carrier?.loc, /obj/item/bodypart) || istype(carrier?.loc, /obj/item/mmi))
+		carrier = carrier.loc
+	if(!isitem(carrier) || istype(carrier.loc, /obj/vehicle))
+		return null
+	if(ismob(carrier.loc))
+		var/mob/holder = carrier.loc
+		if(!holder.is_holding(carrier))
+			return null
+	return carrier
+
+/// Тело, из которого достали этот мозг (вместе с головой или без), если оно лежит на руине.
+/datum/orbital_objective/proc/find_brainless_body(mob/living/brain/brainmob)
+	var/enzymes = brainmob.stored_dna?.unique_enzymes
+	if(!enzymes)
+		return null
+	for(var/mob/living/carbon/human/H as anything in GLOB.human_list)
+		if(QDELETED(H) || H.mind || H.getorganslot(ORGAN_SLOT_BRAIN))
+			continue
+		var/turf/T = get_turf(H)
+		if(T?.z != objective_z_level || H.dna?.unique_enzymes != enzymes)
+			continue
+		return H
+	return null
 
 //WHITE-STEEL PORT: авангардовец ли это? (по профессии). Цель миссии и прочие живцы руины - нет.
-/datum/orbital_objective/proc/is_expedition_crew(mob/living/carbon/human/H)
-	if(H == get_target())
+/datum/orbital_objective/proc/is_expedition_crew(mob/living/L)
+	if(L == get_target())
 		return FALSE
-	if(!H.mind || !H.mind.assigned_role)
+	if(!L.mind || !L.mind.assigned_role)
 		return FALSE
-	return istype(SSjob.GetJob(H.mind.assigned_role), /datum/job/expeditor)
+	return istype(SSjob.GetJob(L.mind.assigned_role), /datum/job/expeditor)
 
 //WHITE-STEEL PORT: приёмный маяк для тел экспедиции. Приоритет у маяков на станции (их ставит
 //игрок на карте сам), если таких нет - берём любой маяк. null - маяков на карте нет вообще.
@@ -197,7 +251,7 @@
 			continue
 		if(is_station_level(beacon.z))
 			return beacon
-		if(!fallback)
+		if(!fallback && beacon.z != objective_z_level)
 			fallback = beacon
 	return fallback
 

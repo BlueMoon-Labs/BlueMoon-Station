@@ -541,7 +541,7 @@
 /area/ruin/space/has_grav/MimicResrch)
 "uO" = (
 /obj/structure/lattice/catwalk,
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/indoor,
 /area/ruin/space/has_grav/MimicResrch)
 "uZ" = (
 /obj/effect/turf_decal/siding/purple{
@@ -587,7 +587,7 @@
 /turf/closed/wall,
 /area/ruin/space/has_grav/MimicResrch)
 "xE" = (
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/indoor,
 /area/ruin/space/has_grav/MimicResrch)
 "xQ" = (
 /obj/item/kirbyplants/random,
@@ -1118,7 +1118,7 @@
 /area/ruin/space/has_grav/MimicResrch)
 "Wu" = (
 /obj/structure/lattice,
-/turf/open/lava/plasma/ice_moon,
+/turf/open/lava/plasma/indoor,
 /area/ruin/space/has_grav/MimicResrch)
 "Wy" = (
 /obj/structure/chair/comfy/brown{

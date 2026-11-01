@@ -90,6 +90,37 @@ $shadow-color: rgba(0, 0, 0, 0.1) !default;
   text-align: center;
 }
 
+.TitleBar__maximize {
+  position: absolute;
+  top: -1px;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: base.rem(45px);
+  height: base.rem(32px);
+  padding: 0;
+  border: 0;
+  font-size: base.rem(14px);
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+
+  &:focus-visible {
+    outline: 2px solid $text-color;
+    outline-offset: -2px;
+  }
+
+  &--withClose {
+    right: base.rem(45px);
+
+    ~ .TitleBar__devBuildIndicator {
+      right: base.rem(97px);
+    }
+  }
+}
+
 .TitleBar__devBuildIndicator {
   position: absolute;
   top: 6px;

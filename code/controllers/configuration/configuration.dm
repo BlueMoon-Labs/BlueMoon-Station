@@ -254,7 +254,7 @@
 			else
 				warning("[new_ver.type] is deprecated but gave no proper return for DeprecationUpdate()")
 
-		var/validated = E.ValidateAndSet(value)
+		var/validated = E.ValidateAndSet(value, TRUE)
 		if(!validated)
 			log_config("LINE [linenumber]: Failed to validate setting \"[value]\" for [entry]")
 		else

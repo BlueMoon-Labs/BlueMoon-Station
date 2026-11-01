@@ -24,8 +24,16 @@ if (!token || !repository) {
   process.exit(2);
 }
 
+// The runner has no git identity, and commit-tree refuses to write the probe merge commit without one.
+const IDENTITY = {
+  GIT_AUTHOR_NAME: 'pr-conflicts',
+  GIT_AUTHOR_EMAIL: 'pr-conflicts@localhost',
+  GIT_COMMITTER_NAME: 'pr-conflicts',
+  GIT_COMMITTER_EMAIL: 'pr-conflicts@localhost',
+};
+
 const git = (args, { allow = [0] } = {}) => {
-  const result = spawnSync('git', args, { encoding: 'utf-8', maxBuffer: 256 * 1024 * 1024 });
+  const result = spawnSync('git', args, { encoding: 'utf-8', maxBuffer: 256 * 1024 * 1024, env: { ...process.env, ...IDENTITY } });
   if (!allow.includes(result.status)) {
     throw new Error(`git ${args.join(' ')} exited with ${result.status}: ${result.stderr}`);
   }

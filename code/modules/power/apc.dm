@@ -899,6 +899,7 @@
 	if(!user.canUseTopic(src, !area.hasSiliconAccessInArea(user)) || !isturf(loc))
 		return
 	togglelock(user)
+	balloon_alert(user, "[locked ? "заблокировано" : "разблокировано"]")
 	return TRUE
 
 /obj/machinery/power/apc/proc/togglelock(mob/living/user)

@@ -104,6 +104,8 @@
 				continue
 			if(istype(A, /obj/machinery/atmospherics))
 				atmos_machines += A
+	// Атомы шаблона меняют смежность по одному (окно уже встало, вентилятор ещё нет): перепад судить по готовой геометрии.
+	SSair.StartLoadingMap()
 	for(var/L in border)
 		var/turf/T = L
 		T.air_update_turf(TRUE) //calculate adjacent turfs along the border to prevent runtimes
@@ -112,6 +114,7 @@
 	SSatoms.InitializeAtoms(atoms)
 	SSmachines.setup_template_powernets(cables)
 	SSair.setup_template_machinery(atmos_machines)
+	SSair.StopLoadingMap()
 
 /// Грузит шаблон новыми z-уровнями, по одному на каждый z в файле, и сцепляет соседние этажи в связку.
 /// ztraits - либо один набор на все этажи, либо список наборов по этажам; копия набора у каждого этажа своя.
@@ -138,9 +141,12 @@
 
 	var/datum/space_level/first_level = created[1]
 
+	// Пробуждения от смежности копятся до конца initTemplateBounds(): там геометрия готова.
+	SSair.StartLoadingMap()
 	var/datum/parsed_map/parsed = load_map(file(mappath), x, y, first_level.z_value, no_changeturf=(SSatoms.initialized == INITIALIZATION_INSSATOMS), placeOnTop = TRUE, orientation = orientation)
 	var/list/bounds = parsed.bounds
 	if(!bounds)
+		SSair.StopLoadingMap()
 		SSmapping.loading_template = previous_template
 		return FALSE
 
@@ -151,6 +157,7 @@
 
 	//initialize things that are normally initialized after map load
 	parsed.initTemplateBounds()
+	SSair.StopLoadingMap()
 	for(var/datum/space_level/level as anything in created)
 		smooth_zlevel(level.z_value)
 	log_game("Z-level [name] loaded at [x],[y],[first_level.z_value][depth > 1 ? " (этажей: [depth])" : ""]")
@@ -255,10 +262,14 @@
 		var/cache_started_world_time = world.time
 		parsed.build_cache()
 		record_synchronous_map_phase("map model cache", cache_started_ms, cache_started_world_time)
+	// Пробуждения от смежности копятся до конца initTemplateBounds(): там геометрия готова.
+	SSair.StartLoadingMap()
 	if(!parsed.load(T.x, T.y, T.z, cropMap=TRUE, no_changeturf=(no_changeturf_override != null ? no_changeturf_override : (SSatoms.initialized == INITIALIZATION_INSSATOMS)), placeOnTop=TRUE, orientation = orientation, annihilate_tiles = (annihilate == MAP_TEMPLATE_ANNIHILATE_LOADING)))
+		SSair.StopLoadingMap()
 		return
 	var/list/bounds = parsed.bounds
 	if(!bounds)
+		SSair.StopLoadingMap()
 		return
 
 	if(!SSmapping.loading_ruins) //Will be done manually during mapping ss init
@@ -266,6 +277,7 @@
 
 	//initialize things that are normally initialized after map load
 	parsed.initTemplateBounds()
+	SSair.StopLoadingMap()
 
 	log_game("[name] loaded at [T.x],[T.y],[T.z]")
 	on_map_loaded(T.z, parsed.bounds)

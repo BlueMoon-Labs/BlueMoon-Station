@@ -74,6 +74,15 @@
 	rejected_air = new(200)
 	return ..()
 
+/obj/machinery/atmospherics/components/quaternary/omni_filter/CtrlClick(mob/user)
+	if(can_interact(user))
+		on = !on
+		atmos_wake()
+		investigate_log("was turned [on ? "on" : "off"] by [key_name(user)]", INVESTIGATE_ATMOS)
+		balloon_alert(user, "[on ? "включено" : "выключено"]")
+		update_appearance()
+	return ..()
+
 /obj/machinery/atmospherics/components/quaternary/omni_filter/Destroy()
 	QDEL_NULL(rejected_air)
 	port_roles = null
@@ -219,6 +228,15 @@
 	concentrations = list(1 / 3, 1 / 3, 1 / 3, 0)
 	. = ..()
 	airs[4].set_volume(300)
+
+/obj/machinery/atmospherics/components/quaternary/omni_mixer/CtrlClick(mob/user)
+	if(can_interact(user))
+		on = !on
+		atmos_wake()
+		investigate_log("was turned [on ? "on" : "off"] by [key_name(user)]", INVESTIGATE_ATMOS)
+		balloon_alert(user, "[on ? "включено" : "выключено"]")
+		update_appearance()
+	return ..()
 
 /obj/machinery/atmospherics/components/quaternary/omni_mixer/Destroy()
 	port_roles = null

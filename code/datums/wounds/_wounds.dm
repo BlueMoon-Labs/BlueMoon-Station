@@ -97,6 +97,8 @@
 
 	var/ru_name = ""
 	var/ru_name_r = ""
+	// Название иконки Font Awesome для медицинских отчётов.
+	var/scanner_icon
 
 /datum/wound/Destroy()
 	// A carbon destroys its wounds after the parent mob Destroy() has already
