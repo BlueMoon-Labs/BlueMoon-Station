@@ -20,7 +20,10 @@
 		return ShiftMiddleClickOn(A)
 	if(modifiers["middle"])
 		return MiddleClickOn(A)
-	if(modifiers["shift"])
+	if(right_click_opens_menu(modifiers, A))
+		open_context_menu(A, params)
+		return
+	if(shift_click_examines(modifiers))
 		return ShiftClickOn(A)
 	if(modifiers["alt"]) // alt and alt-gr (rightalt)
 		return AltClickOn(A)

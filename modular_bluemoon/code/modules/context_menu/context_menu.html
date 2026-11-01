@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<style type="text/css">
+	html, body {
+		margin: 0;
+		padding: 0;
+		overflow: hidden;
+		-webkit-user-select: none;
+		user-select: none;
+		cursor: default;
+	}
+	#menu {
+		position: absolute;
+		top: 0;
+		left: 0;
+		box-sizing: border-box;
+		white-space: nowrap;
+	}
+	#rows {
+		overflow-x: hidden;
+		overflow-y: auto;
+	}
+	#rows::-webkit-scrollbar { width: 6px; }
+	#rows::-webkit-scrollbar-thumb { background: rgba(127, 127, 127, 0.5); }
+	.layout-columns #rows { display: grid; grid-template-columns: 1fr 1fr; }
+	.layout-pills #rows { display: flex; flex-wrap: wrap; white-space: nowrap; }
+	.row {
+		display: flex;
+		align-items: center;
+		box-sizing: border-box;
+		cursor: pointer;
+	}
+	.layout-pills .row { border-radius: 3px; }
+	.row .name { flex: 1 1 auto; overflow: hidden; text-overflow: ellipsis; }
+	.row .hint { flex: 0 0 auto; opacity: 0.9; }
+	.badge { display: inline-block; border: 1px solid currentColor; border-radius: 3px; padding: 0 0.35em; margin-left: 0.3em; line-height: 1.35; }
+	.row img { flex: 0 0 auto; image-rendering: pixelated; object-fit: contain; }
+	.header { cursor: pointer; }
+	.header .name { font-weight: bold; }
+	#footer, #desc { overflow: hidden; text-overflow: ellipsis; }
+	.smooth-hover .row { transition: background-color 0.12s, color 0.12s, box-shadow 0.12s; }
+	@keyframes cm-fade { from { opacity: 0; } to { opacity: 1; } }
+	@keyframes cm-slide { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+	@keyframes cm-drop { from { opacity: 0; transform: translateY(-100%); } to { opacity: 1; transform: none; } }
+	@keyframes cm-cascade { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; transform: none; } }
+	@keyframes cm-zoom { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: none; } }
+</style>
+</head>
+<body>
+<div id="menu"></div>
+<script type="text/javascript">
+	// Мост к BYOND как у тултипов: location.href в WebView2, cef_to_byond у старого клиента
+	function byond_bridge_call(path, params) {
+		var query = [];
+		for (var key in params || {}) {
+			if (!params.hasOwnProperty(key)) {
+				continue;
+			}
+			var value = params[key];
+			query.push(encodeURIComponent(key) + "=" + encodeURIComponent(value === null || value === undefined ? "" : value));
+		}
+		var url = "byond://" + (path || "") + "?" + query.join("&");
+		if (window.cef_to_byond) {
+			try { window.cef_to_byond(url); return; } catch (e) {}
+		}
+		window.location.href = url;
+	}
+
+	function byond_winset(params) {
+		byond_bridge_call("winset", params);
+	}
+
+	var FONTS = {
+		segoe: "'Segoe UI', sans-serif",
+		calibri: "Calibri, sans-serif",
+		candara: "Candara, sans-serif",
+		tahoma: "Tahoma, sans-serif",
+		verdana: "Verdana, sans-serif",
+		arial: "Arial, sans-serif",
+		trebuchet: "'Trebuchet MS', sans-serif",
+		georgia: "Georgia, serif",
+		consolas: "Consolas, monospace",
+		pixel: "'Lucida Console', Consolas, monospace"
+	};
+	var WEIGHTS = { normal: 400, medium: 600, bold: 700 };
+	var WIDTHS = { auto: [0, 0], narrow: [0, 160], wide: [220, 0] };
+
+	function hexRgba(hex, alpha) {
+		var n = parseInt(String(hex).replace("#", ""), 16) || 0;
+		return "rgba(" + ((n >> 16) & 255) + "," + ((n >> 8) & 255) + "," + (n & 255) + "," + alpha + ")";
+	}
+
+	// чёрный или белый текст поверх цвета, смотря что читается
+	function contrastText(hex) {
+		var n = parseInt(String(hex).replace("#", ""), 16) || 0;
+		var luma = 0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255);
+		return luma > 150 ? "#101010" : "#ffffff";
+	}
+
+	// значки приходят целым стейтом, прозрачные поля обрезаются здесь, по значку один раз; "" - пустой стейт
+	var trimmedIcons = {};
+	var trimIcon = function (icon, done) {
+		var source = new Image();
+		source.onload = function () {
+			var w = source.width;
+			var h = source.height;
+			var canvas = document.createElement("canvas");
+			canvas.width = w;
+			canvas.height = h;
+			canvas.getContext("2d").drawImage(source, 0, 0);
+			var pixels;
+			try {
+				pixels = canvas.getContext("2d").getImageData(0, 0, w, h).data;
+			} catch (e) {
+				done("data:image/png;base64," + icon);
+				return;
+			}
+			var left = w;
+			var top = h;
+			var right = -1;
+			var bottom = -1;
+			for (var y = 0; y < h; y++) {
+				for (var x = 0; x < w; x++) {
+					if (pixels[(y * w + x) * 4 + 3]) {
+						left = Math.min(left, x);
+						right = Math.max(right, x);
+						top = Math.min(top, y);
+						bottom = Math.max(bottom, y);
+					}
+				}
+			}
+			if (right < 0) {
+				trimmedIcons[icon] = "";
+				done("");
+				return;
+			}
+			var crop = document.createElement("canvas");
+			crop.width = right - left + 1;
+			crop.height = bottom - top + 1;
+			crop.getContext("2d").drawImage(canvas, left, top, crop.width, crop.height, 0, 0, crop.width, crop.height);
+			trimmedIcons[icon] = crop.toDataURL("image/png");
+			done(trimmedIcons[icon]);
+		};
+		source.src = "data:image/png;base64," + icon;
+	};
+
+	var menu = {
+		data: null,
+		// клик возвращает фокус карте, иначе ходьба и хоткеи уйдут в эту страницу
+		refocus: function () {
+			byond_winset({ id: "mapwindow.map", focus: "true" });
+		},
+		hide: function () {
+			menu.data = null;
+			byond_winset({ id: "mainwindow.context_menu", "is-visible": "false" });
+		},
+		send: function (params) {
+			if (!menu.data) {
+				return;
+			}
+			params.src = menu.data.ref;
+			byond_bridge_call("", params);
+			menu.refocus();
+		},
+		show: function (json) {
+			menu.data = JSON.parse(json);
+			byond_bridge_call("winget", { callback: "menu.place", id: "mapwindow.map", property: "size,view-size" });
+		},
+		applyHover: function (row, on) {
+			var d = menu.data;
+			var t = d.theme;
+			var base = row.cmBase;
+			row.style.background = base.background;
+			row.style.color = base.color;
+			row.style.boxShadow = base.shadow;
+			if (!on) {
+				return;
+			}
+			switch (d.hover) {
+				case "accent":
+					row.style.boxShadow = "inset 3px 0 0 " + d.accent + (base.shadow !== "none" ? ", " + base.shadow : "");
+					row.style.background = t.current_bg;
+					break;
+				case "outline":
+					row.style.boxShadow = "inset 0 0 0 1px " + d.accent;
+					break;
+				case "invert":
+					row.style.background = base.color;
+					row.style.color = base.fill;
+					break;
+				default:
+					row.style.background = t.hover_bg;
+			}
+		},
+		build: function () {
+			var d = menu.data;
+			var t = d.theme;
+			var scale = d.scale / 100;
+			var fontPx = Math.round(d.text_size * scale);
+			var iconPx = d.icons ? Math.round(d.icon_size * scale) : 0;
+			var rowPx = Math.max(Math.round((20 + d.density * 2) * scale), iconPx + 4, fontPx + 8);
+			var pad = Math.round(6 * scale);
+			var gap = Math.round(6 * scale);
+			var el = document.getElementById("menu");
+			el.innerHTML = "";
+			el.className = "layout-" + d.layout + (d.smooth_hover ? " smooth-hover" : "");
+			el.style.fontFamily = FONTS[d.font] || FONTS.segoe;
+			el.style.fontSize = fontPx + "px";
+			el.style.fontWeight = WEIGHTS[d.weight] || 400;
+			el.style.border = d.border ? "1px solid " + (d.accent_custom || t.border) : "none";
+			el.style.background = d.separators ? (d.accent_custom || t.border) : t.row_bg;
+			el.style.textShadow = d.outline ? "0 0 2px " + t.outline + ", 0 0 1px " + t.outline : "none";
+			el.style.textTransform = d.caps ? "uppercase" : "none";
+			var widths = WIDTHS[d.width] || WIDTHS.auto;
+			el.style.minWidth = widths[0] ? Math.round(widths[0] * scale) + "px" : "";
+			el.style.maxWidth = widths[1] ? Math.round(widths[1] * scale) + "px" : "";
+			document.body.style.background = t.row_bg;
+
+			var makeIcon = function (icon) {
+				var img = document.createElement("img");
+				img.style.width = iconPx + "px";
+				img.style.height = iconPx + "px";
+				img.style.visibility = "hidden";
+				if (d.icon_frame !== "none" && icon) {
+					img.style.boxSizing = "border-box";
+					img.style.padding = Math.max(1, Math.round(iconPx / 10)) + "px";
+					img.style.background = hexRgba(t.text, 0.12);
+					img.style.borderRadius = d.icon_frame === "round" ? "50%" : Math.round(2 * scale) + "px";
+				}
+				if (!icon) {
+					return img;
+				}
+				var showTrimmed = function (src) {
+					if (src) {
+						img.src = src;
+						img.style.visibility = "";
+					}
+				};
+				if (trimmedIcons[icon] !== undefined) {
+					showTrimmed(trimmedIcons[icon]);
+				} else {
+					trimIcon(icon, showTrimmed);
+				}
+				return img;
+			};
+			// fill - сплошной цвет строки (для «инверсии»), background может быть с полосой поверх
+			var makeRow = function (entry, background, color, cls, fill, shadowOverride) {
+				var row = document.createElement("div");
+				row.className = "row " + (cls || "");
+				row.style.height = rowPx + "px";
+				row.style.padding = "0 " + pad + "px";
+				row.style.gap = gap + "px";
+				row.style.marginBottom = d.separators ? "1px" : "0";
+				if (d.layout === "pills") {
+					row.style.margin = Math.round(2 * scale) + "px";
+				}
+				var shadow = "none";
+				if (d.stripe && (entry.style === "current" || entry.style === "admin")) {
+					shadow = "inset " + Math.max(2, Math.round(3 * scale)) + "px 0 0 " + d.accent;
+				}
+				if (shadowOverride) {
+					shadow = shadowOverride;
+				}
+				row.cmBase = { background: background, color: color, shadow: shadow, fill: fill || background };
+				var showIcon = iconPx && ((d.rows_have_icons && !cls) || (cls === "header" && entry.icon));
+				if (showIcon && d.icon_side === "left") {
+					row.appendChild(makeIcon(entry.icon));
+				}
+				var nameEl = document.createElement("span");
+				nameEl.className = "name";
+				nameEl.textContent = entry.name;
+				row.appendChild(nameEl);
+				if (entry.inlineHint) {
+					var hintEl = document.createElement("span");
+					hintEl.className = "hint";
+					if (d.hint_style === "badge" && cls !== "header") {
+						entry.inlineHint.split(", ").forEach(function (part) {
+							var badge = document.createElement("span");
+							badge.className = "badge";
+							badge.textContent = part;
+							hintEl.appendChild(badge);
+						});
+					} else {
+						hintEl.textContent = entry.inlineHint;
+					}
+					hintEl.style.color = t.hint_text;
+					hintEl.style.fontSize = Math.round(fontPx * 0.92) + "px";
+					hintEl.style.fontWeight = 400;
+					row.appendChild(hintEl);
+				}
+				if (showIcon && d.icon_side === "right") {
+					row.appendChild(makeIcon(entry.icon));
+				}
+				menu.applyHover(row, false);
+				return row;
+			};
+
+			var animated = [];
+			if (d.header) {
+				var headerBg = t.header_bg;
+				var headerText = t.header_text;
+				var modeText = t.mode_text;
+				var headerShadow = null;
+				if (d.header_style === "accent") {
+					headerBg = d.accent;
+					headerText = contrastText(d.accent);
+					modeText = hexRgba(headerText === "#ffffff" ? "#ffffff" : "#000000", 0.6);
+				} else if (d.header_style === "line") {
+					headerBg = t.row_bg;
+					headerShadow = "inset 0 -" + Math.max(2, Math.round(2 * scale)) + "px 0 " + d.accent;
+				}
+				var header = makeRow({ name: d.header_text, inlineHint: "режим", icon: d.header_icon_data }, headerBg, headerText, "header", null, headerShadow);
+				header.lastChild.style.color = modeText;
+				if (d.header_desc) {
+					header.title = d.header_desc;
+				}
+				header.onclick = function () { menu.send({ header: 1 }); };
+				el.appendChild(header);
+				animated.push(header);
+				if (d.desc_line && d.header_desc) {
+					// ширина 0 и min-width 100%: длинное описание не растягивает меню, а обрезается
+					var desc = document.createElement("div");
+					desc.id = "desc";
+					desc.textContent = d.header_desc;
+					desc.style.width = "0";
+					desc.style.minWidth = "100%";
+					desc.style.boxSizing = "border-box";
+					desc.style.padding = Math.round(2 * scale) + "px " + pad + "px";
+					desc.style.fontSize = Math.round(fontPx * 0.85) + "px";
+					desc.style.fontWeight = 400;
+					desc.style.textTransform = "none";
+					desc.style.background = headerBg;
+					desc.style.color = d.header_style === "accent" ? modeText : t.service;
+					el.appendChild(desc);
+					animated.push(desc);
+				}
+			}
+			var rows = document.createElement("div");
+			rows.id = "rows";
+			var perLine = d.layout === "columns" ? 2 : 1;
+			if (d.layout !== "pills") {
+				rows.style.maxHeight = (Math.ceil(d.page_rows) * (rowPx + (d.separators ? 1 : 0))) + "px";
+			} else {
+				rows.style.maxWidth = Math.round(320 * scale) + "px";
+				rows.style.whiteSpace = "normal";
+				rows.style.padding = Math.round(2 * scale) + "px";
+			}
+			el.appendChild(rows);
+			var footer = null;
+			if (d.hints === "hover") {
+				footer = document.createElement("div");
+				footer.id = "footer";
+				footer.style.height = Math.round(rowPx * 0.85) + "px";
+				footer.style.lineHeight = Math.round(rowPx * 0.85) + "px";
+				footer.style.padding = "0 " + pad + "px";
+				footer.style.fontSize = Math.round(fontPx * 0.9) + "px";
+				footer.style.background = t.hint_bg;
+				footer.style.color = t.hint_text;
+				footer.textContent = " ";
+			}
+			d.rows.forEach(function (entry, index) {
+				var background = t.row_bg;
+				var color = t.text;
+				if (entry.style === "current") {
+					background = t.current_bg;
+				} else if (entry.style === "danger") {
+					color = t.danger;
+				} else if (entry.style === "service") {
+					color = t.service;
+				} else if (entry.style === "admin") {
+					color = t.admin_text;
+					background = t.admin_bg;
+				}
+				entry.inlineHint = d.hints === "inline" && d.layout === "list" ? entry.hint : null;
+				var fill = background;
+				if (d.zebra && index % 2 && entry.style !== "current" && entry.style !== "admin") {
+					var band = hexRgba(t.text, 0.06);
+					background = "linear-gradient(" + band + ", " + band + "), " + background;
+				}
+				var row = makeRow(entry, background, color, null, fill);
+				if (entry.hint && d.hints !== "none") {
+					row.title = entry.hint;
+				}
+				row.onmouseenter = function () {
+					menu.applyHover(row, true);
+					if (footer) {
+						footer.textContent = entry.hint || " ";
+					}
+				};
+				row.onmouseleave = function () {
+					menu.applyHover(row, false);
+					if (footer) {
+						footer.textContent = " ";
+					}
+				};
+				// ПКМ по строке вещи в списке клетки - её действия вместо «взять»
+				row.onmousedown = function (event) {
+					if (event.button !== 0 && event.button !== 2) {
+						return;
+					}
+					menu.send({ choose: index + 1, ctrl: event.ctrlKey ? 1 : 0, shift: event.shiftKey ? 1 : 0, alt: event.altKey ? 1 : 0, right: event.button === 2 ? 1 : 0 });
+				};
+				row.oncontextmenu = function (event) {
+					event.preventDefault();
+				};
+				rows.appendChild(row);
+				animated.push(row);
+			});
+			if (footer) {
+				el.appendChild(footer);
+			}
+			// колесо листает список, а не карту
+			rows.onwheel = function (event) {
+				rows.scrollTop += event.deltaY > 0 ? rowPx * 2 * perLine : -rowPx * 2 * perLine;
+				event.preventDefault();
+			};
+			// автозакрытие: курсор ушёл с меню и не вернулся
+			el.onmouseleave = function () {
+				if (d.auto_close > 0) {
+					menu.closeTimer = setTimeout(function () { menu.send({ close: 1 }); }, d.auto_close * 1000);
+				}
+			};
+			el.onmouseenter = function () {
+				clearTimeout(menu.closeTimer);
+			};
+			clearTimeout(menu.closeTimer);
+			if (d.animation !== "none") {
+				var speed = d.anim_speed;
+				animated.forEach(function (row, index) {
+					var delay = (d.animation === "cascade" || d.animation === "drop") ? index * 35 * speed : 0;
+					row.style.animation = "cm-" + d.animation + " " + Math.round(180 * speed) + "ms ease-out " + delay + "ms both";
+				});
+			}
+			return el;
+		},
+		place: function (map) {
+			var d = menu.data;
+			if (!d || !map || !map.size || !map["view-size"]) {
+				return;
+			}
+			var viewW = map["view-size"].x;
+			var viewH = map["view-size"].y;
+			var mapScale = viewW / d.view_w;
+			var leftOffset = (map.size.x - viewW) / 2;
+			var topOffset = (map.size.y - viewH) / 2;
+			var el = menu.build();
+			// страница считает в CSS-пикселях, а winset - в пикселях экрана
+			var dpr = window.devicePixelRatio || 1;
+			var width = Math.ceil(el.offsetWidth * dpr);
+			var height = Math.ceil(el.offsetHeight * dpr);
+			var cursorX = leftOffset + d.origin_x * mapScale;
+			var cursorY = topOffset + (d.view_h - d.origin_y) * mapScale;
+			var offset = d.offset * mapScale;
+			var x = cursorX + offset;
+			var y = cursorY;
+			if (d.position === "left") {
+				x = cursorX - width - offset;
+			} else if (d.position === "center") {
+				x = cursorX - width / 2;
+			} else if (d.position === "above") {
+				x = cursorX - width / 2;
+				y = cursorY - height - offset;
+			}
+			x = Math.max(0, Math.min(x, map.size.x - width));
+			y = Math.max(0, Math.min(y, map.size.y - height));
+			byond_winset({
+				id: "mainwindow.context_menu",
+				pos: Math.round(x) + "," + Math.round(y),
+				size: width + "x" + height,
+				"is-visible": "true"
+			});
+		}
+	};
+</script>
+</body>
+</html>

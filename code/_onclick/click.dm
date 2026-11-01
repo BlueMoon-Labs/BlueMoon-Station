@@ -27,6 +27,14 @@
 	//SHOULD_NOT_SLEEP(TRUE)
 	if(mob_transforming)
 		return
+	if(swallow_right_button_release(params))
+		return
+	// клик мимо открытого меню действий только закрывает его; клик, открывающий меню, сразу открывает новое
+	if(active_context_menu)
+		var/reopen = right_click_opens_menu(params2list(params), A)
+		close_context_menu(reopen ? "reopen" : "click")
+		if(!reopen)
+			return
 	if(SEND_SIGNAL(src, COMSIG_MOB_CLICKON, A, params) & COMSIG_MOB_CANCEL_CLICKON)
 		return
 	. = ClickOn(A, params)
@@ -62,7 +70,10 @@
 			return CtrlMiddleClickOn(A)
 		else
 			return MiddleClickOn(A)
-	if(modifiers["shift"] && (client && client.show_popup_menus || modifiers["right"])) //CIT CHANGE - makes shift-click examine use right click instead of left click in combat mode
+	if(right_click_opens_menu(modifiers, A))
+		open_context_menu(A, params)
+		return
+	if(shift_click_examines(modifiers))
 		return ShiftClickOn(A)
 	if(modifiers["alt"]) // alt and alt-gr (rightalt)
 		return AltClickOn(A)
@@ -71,8 +82,8 @@
 	if(modifiers["ctrl"])
 		return CtrlClickOn(A)
 
-	if(modifiers["right"]) //CIT CHANGE - allows right clicking to perform actions
-		return RightClickOn(A, params) //CIT CHANGE - ditto
+	if(modifiers["right"])
+		return RightClickOn(A, params)
 
 	if(incapacitated(ignore_restraints = 1))
 		return

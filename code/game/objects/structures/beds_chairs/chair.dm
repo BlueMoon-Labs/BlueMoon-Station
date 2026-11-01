@@ -114,6 +114,9 @@
 		return ..()
 
 /obj/structure/chair/alt_attack_hand(mob/living/user)
+	// выдернуть стул из-под сидящего - не на интенте помощи
+	if(user.a_intent == INTENT_HELP)
+		return FALSE
 	if(Adjacent(user) && istype(user))
 		if(!item_chair || !user.can_hold_items() || !has_buckled_mobs() || buckled_mobs.len > 1 || dir != user.dir || flags_1 & NODECONSTRUCT_1)
 			return TRUE

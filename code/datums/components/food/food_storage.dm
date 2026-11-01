@@ -217,11 +217,11 @@
 
 /datum/component/food_storage/proc/on_requesting_context_from_item(datum/source, list/context, obj/item/held_item, mob/user)
 	SIGNAL_HANDLER
-	context[SCREENTIP_CONTEXT_CTRL_LMB] = "Remove embedded item (if any)"
+	context[SCREENTIP_CONTEXT_CTRL_LMB] = "Достать спрятанное (если есть)"
 	. = CONTEXTUAL_SCREENTIP_SET
 
 	if(istype(held_item) && held_item.w_class <= WEIGHT_CLASS_SMALL && held_item != source && !IS_EDIBLE(held_item))
-		context[SCREENTIP_CONTEXT_CTRL_SHIFT_LMB] = "Embed item"
+		context[SCREENTIP_CONTEXT_CTRL_SHIFT_LMB] = "Спрятать предмет внутрь"
 		. = CONTEXTUAL_SCREENTIP_SET
 
 	return .

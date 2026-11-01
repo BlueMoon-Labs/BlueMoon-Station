@@ -17,4 +17,6 @@
 		SI.associative = associative
 
 		SI.timSort(fromIndex, toIndex)
+		// общий экземпляр иначе держит последний список и всё, что в нём лежит
+		SI.L = null
 	return L

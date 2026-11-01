@@ -109,11 +109,11 @@
 	. = ..()
 
 	if(can_unwrench && held_item?.tool_behaviour == TOOL_WRENCH)
-		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Unfasten")
+		LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Открутить")
 		. = CONTEXTUAL_SCREENTIP_SET
 
 	if(is_type_in_list(src, GLOB.ventcrawl_machinery) && isliving(user) && SEND_SIGNAL(user, COMSIG_CHECK_VENTCRAWL))
-		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Crawl into")
+		LAZYSET(context[SCREENTIP_CONTEXT_ALT_LMB], INTENT_ANY, "Залезть внутрь")
 		. = CONTEXTUAL_SCREENTIP_SET
 
 /obj/machinery/atmospherics/New(loc, process = TRUE, setdir)

@@ -247,10 +247,10 @@
 /obj/item/gun/ballistic/automatic/ak12/examine(mob/user)
 	. = ..()
 	if(underbarrel)
-		. += span_notice("Включите боевой режим и нажмите ПКМ, чтобы выстрелить из подствольного лазера.")
+		. += span_notice("ПКМ - выстрелить из подствольного лазера.")
 
 /obj/item/gun/ballistic/automatic/ak12/altafterattack(atom/target, mob/living/user, proximity_flag, params)
-	if(!underbarrel || !istype(user) || !SEND_SIGNAL(user, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE))
+	if(!underbarrel || !istype(user))
 		return ..()
 	underbarrel.afterattack(target, user, proximity_flag, params)
 	return TRUE

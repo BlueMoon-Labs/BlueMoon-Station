@@ -561,33 +561,33 @@
 
 	if(held_item)
 		if(istype(held_item, /obj/item/paicard) && !inserted_pai)
-			context[SCREENTIP_CONTEXT_LMB] = "Insert pAI"
+			context[SCREENTIP_CONTEXT_LMB] = "Вставить пИИ"
 			. = CONTEXTUAL_SCREENTIP_SET
 		else if(istype(held_item, /obj/item/card/id) && !stored_id)
-			context[SCREENTIP_CONTEXT_LMB] = "Insert ID"
+			context[SCREENTIP_CONTEXT_LMB] = "Вставить ID"
 			. = CONTEXTUAL_SCREENTIP_SET
 		else if((istype(held_item, /obj/item/computer_disk) || istype(held_item, /obj/item/cartridge)) && !inserted_disk)
-			context[SCREENTIP_CONTEXT_LMB] = "Insert disk"
+			context[SCREENTIP_CONTEXT_LMB] = "Вставить диск"
 			. = CONTEXTUAL_SCREENTIP_SET
 		else if(istype(held_item, /obj/item/photo))
-			context[SCREENTIP_CONTEXT_LMB] = "Scan photo"
+			context[SCREENTIP_CONTEXT_LMB] = "Сканировать фото"
 			. = CONTEXTUAL_SCREENTIP_SET
 		else if(is_type_in_list(held_item, contained_item) && !inserted_item)
-			context[SCREENTIP_CONTEXT_LMB] = "Insert [held_item]"
+			context[SCREENTIP_CONTEXT_LMB] = "Вставить [held_item]"
 			. = CONTEXTUAL_SCREENTIP_SET
 
 	if(stored_id)
-		context[SCREENTIP_CONTEXT_ALT_LMB] = "Remove ID"
+		context[SCREENTIP_CONTEXT_ALT_LMB] = "Извлечь ID"
 		. = CONTEXTUAL_SCREENTIP_SET
 	else if(inserted_disk)
-		context[SCREENTIP_CONTEXT_ALT_LMB] = "Remove disk"
+		context[SCREENTIP_CONTEXT_ALT_LMB] = "Извлечь диск"
 		. = CONTEXTUAL_SCREENTIP_SET
 	else if(inserted_item)
-		context[SCREENTIP_CONTEXT_ALT_LMB] = "Remove [inserted_item]"
+		context[SCREENTIP_CONTEXT_ALT_LMB] = "Извлечь [inserted_item]"
 		. = CONTEXTUAL_SCREENTIP_SET
 
 	if(inserted_item)
-		context[SCREENTIP_CONTEXT_CTRL_LMB] = "Remove [inserted_item]"
+		context[SCREENTIP_CONTEXT_CTRL_LMB] = "Извлечь [inserted_item]"
 		. = CONTEXTUAL_SCREENTIP_SET
 
 	return . || NONE

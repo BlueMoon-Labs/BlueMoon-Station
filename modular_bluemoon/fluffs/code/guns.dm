@@ -887,7 +887,7 @@ DONATE_ITEM_TOOLTIP_PARENT(/obj/item/gun/ballistic/automatic/pistol/enforcer/ded
 
 /obj/item/gun/energy/e_gun/hos/Anabel
 	name = "\improper Anabel"
-	desc = "This is an expensive, modern recreation of an antique laser gun. This gun has several unique firemodes, but lacks the ability to recharge over time in exchange for inbuilt advanced firearm EMP shielding. <span class='boldnotice'>Right click in combat mode to fire a taser shot with a cooldown.</span>"
+	desc = "This is an expensive, modern recreation of an antique laser gun. This gun has several unique firemodes, but lacks the ability to recharge over time in exchange for inbuilt advanced firearm EMP shielding. <span class='boldnotice'>Right click in combat mode, or use the action menu, to fire a taser shot with a cooldown.</span>"
 	icon = 'modular_bluemoon/fluffs/icons/obj/guns.dmi'
 	icon_state = "Anabel"
 	ammo_x_offset = 0

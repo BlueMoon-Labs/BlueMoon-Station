@@ -44,10 +44,10 @@
 	. = ..()
 	if(can_have_pen)
 		if(inserted_item)
-			LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Remove [inserted_item]")
+			LAZYSET(context[SCREENTIP_CONTEXT_CTRL_LMB], INTENT_ANY, "Извлечь [inserted_item]")
 			. = CONTEXTUAL_SCREENTIP_SET
 		else if(is_type_in_list(held_item, contained_item))
-			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Insert [held_item]")
+			LAZYSET(context[SCREENTIP_CONTEXT_LMB], INTENT_ANY, "Вставить [held_item]")
 			. = CONTEXTUAL_SCREENTIP_SET
 
 /obj/item/modular_computer/tablet/proc/insert_pen(obj/item/pen)

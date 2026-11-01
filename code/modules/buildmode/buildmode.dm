@@ -29,17 +29,17 @@
 	buttons = list()
 	li_cb = CALLBACK(src, PROC_REF(post_login))
 	holder.player_details.post_login_callbacks += li_cb
-	holder.show_popup_menus = FALSE
 	create_buttons()
 	holder.screen += buttons
 	holder.click_intercept = src
+	holder.refresh_popup_menus()
 	mode.enter_mode(src)
 
 /datum/buildmode/proc/quit()
 	mode.exit_mode(src)
 	holder.screen -= buttons
 	holder.click_intercept = null
-	holder.show_popup_menus = TRUE
+	holder.refresh_popup_menus()
 	qdel(src)
 
 /datum/buildmode/Destroy()
