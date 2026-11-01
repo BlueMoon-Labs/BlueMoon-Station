@@ -60,3 +60,5 @@
 #define CONTEXT_MENU_HTML_PAGE_GRACE (1 SECONDS)
 /// Сколько разных стейтов держит кэш значков браузерного меню
 #define CONTEXT_MENU_HTML_ICON_CACHE 2000
+/// Сколько процентов тика одна отрисовка тратит на новые значки; остальные дорисовываются следующим тиком
+#define CONTEXT_MENU_HTML_ICON_BUDGET 10

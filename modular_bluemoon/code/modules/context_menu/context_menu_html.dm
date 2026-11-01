@@ -44,8 +44,17 @@
 	page_entry = null
 	var/list/rows = list()
 	var/rows_have_icons = FALSE
+	// новый значок - icon() и base64, в большой куче это десятки мс за раз: сверх бюджета их дорисует следующий показ
+	var/icon_deadline = TICK_USAGE + CONTEXT_MENU_HTML_ICON_BUDGET
+	var/icons_pending = FALSE
 	for(var/datum/context_menu_entry/entry as anything in html_rows)
-		var/icon_data = show_icons ? context_menu_icon_base64(entry.icon_source()) : null
+		var/icon_data
+		if(show_icons)
+			var/atom/icon_source = entry.icon_source()
+			if(TICK_USAGE < icon_deadline || context_menu_icon_cached(icon_source))
+				icon_data = context_menu_icon_base64(icon_source)
+			else
+				icons_pending = TRUE
 		if(icon_data)
 			rows_have_icons = TRUE
 		rows += list(list("name" = entry_display_name(entry), "hint" = entry.hint, "style" = entry.style, "icon" = icon_data))
@@ -87,7 +96,8 @@
 		"smooth_hover" = smooth_hover,
 		"animation" = opened ? "none" : animation,
 		"anim_speed" = animation_speed,
-		"page_rows" = page_rows,
+		// список клетки листают в поисках вещи: видно больше строк, чем у действий
+		"page_rows" = rows_per_page(),
 		"origin_x" = origin_x,
 		"origin_y" = origin_y,
 		"view_w" = view_pixels[1],
@@ -98,6 +108,8 @@
 	opened = TRUE
 	html_shown = TRUE
 	viewer << output(list2params(list(json_encode(data))), "[CONTEXT_MENU_HTML_CONTROL]:menu.show")
+	if(icons_pending)
+		addtimer(CALLBACK(src, PROC_REF(render)), 1, TIMER_UNIQUE|TIMER_OVERRIDE)
 
 /datum/context_menu/proc/hide_html()
 	if(!html_shown)
@@ -135,20 +147,35 @@
  * Люди собраны из оверлеев, их основной стейт - пустое тело, им значка нет.
  */
 /proc/context_menu_icon_base64(atom/thing)
-	var/static/list/cache = list()
-	if(!thing?.icon || ishuman(thing))
+	var/key = context_menu_icon_key(thing)
+	if(!key)
 		return null
-	// у однонаправленного стейта другой стороны нет, а вещь в руках и в меню всегда лицом
-	var/icon_dir = isitem(thing) ? SOUTH : thing.dir
-	var/key = "[thing.icon]|[thing.icon_state]|[icon_dir]"
+	var/list/cache = GLOB.context_menu_icon_cache
 	if(key in cache)
 		return cache[key]
 	var/result
 	if(context_menu_icon_has_state(thing.icon, thing.icon_state))
-		result = icon2base64(icon(thing.icon, thing.icon_state, icon_dir, 1, FALSE)) || null
+		result = icon2base64(icon(thing.icon, thing.icon_state, context_menu_icon_dir(thing), 1, FALSE)) || null
 	if(length(cache) < CONTEXT_MENU_HTML_ICON_CACHE)
 		cache[key] = result
 	return result
+
+GLOBAL_LIST_EMPTY(context_menu_icon_cache)
+
+/// Значок уже готов (или известно, что его нет): отдать его ничего не стоит
+/proc/context_menu_icon_cached(atom/thing)
+	var/key = context_menu_icon_key(thing)
+	return !key || (key in GLOB.context_menu_icon_cache)
+
+/// Ключ кэша значков; null - значка у объекта не бывает
+/proc/context_menu_icon_key(atom/thing)
+	if(!thing?.icon || ishuman(thing))
+		return null
+	return "[thing.icon]|[thing.icon_state]|[context_menu_icon_dir(thing)]"
+
+/// У однонаправленного стейта другой стороны нет, а вещь в руках и в меню всегда лицом
+/proc/context_menu_icon_dir(atom/thing)
+	return isitem(thing) ? SOUTH : thing.dir
 
 /// Есть ли стейт в файле иконки; список стейтов файла собирается один раз
 /proc/context_menu_icon_has_state(icon_file, icon_state)

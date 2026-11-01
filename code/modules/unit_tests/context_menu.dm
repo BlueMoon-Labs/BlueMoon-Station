@@ -150,7 +150,8 @@
 	if(user.GetComponent(/datum/component/interaction_menu_granter))
 		TEST_ASSERT_NOTNULL(find_context_entry(menu, "Взаимодействовать"), "Нет пункта взаимодействий")
 	for(var/datum/context_menu_entry/entry as anything in menu.entries)
-		TEST_ASSERT(!istype(entry, /datum/context_menu_entry/verb_call), "У моба в меню оказался верб [entry.name]")
+		var/datum/context_menu_entry/verb_call/verb_entry = entry
+		TEST_ASSERT(!istype(verb_entry) || (verb_entry.verb_path in GLOB.context_menu_mob_verbs), "У моба в меню оказался верб [entry.name]")
 	TEST_ASSERT(length(menu.screen_objects) > length(menu.entries), "Меню не нарисовано")
 	user.close_context_menu()
 
@@ -1269,7 +1270,8 @@
 		var/datum/context_menu_entry/entry = menu.entries[i]
 		if(entry.style == CONTEXT_ENTRY_DANGER)
 			first_danger = min(first_danger, i)
-		else if(entry.style != CONTEXT_ENTRY_SERVICE && entry.style != CONTEXT_ENTRY_ADMIN)
+		// вербы - после опасных, как служебные
+		else if(entry.style != CONTEXT_ENTRY_SERVICE && entry.style != CONTEXT_ENTRY_ADMIN && !istype(entry, /datum/context_menu_entry/verb_call))
 			last_calm = i
 	TEST_ASSERT(last_calm < first_danger, "Опасные действия не в конце: спокойное [last_calm], опасное [first_danger]")
 
@@ -1427,3 +1429,100 @@
 	for(var/datum/context_menu_entry/pick/entry in menu.entries)
 		if(entry.picked_ref?.resolve() == thing)
 			return entry
+
+/// Модульные конечности: в меню по себе и по другому - «Отсоединить» по выбранной зоне, с конечностью в руке - «Присоединить»
+/datum/unit_test/context_menu_modular_limbs
+
+/datum/unit_test/context_menu_modular_limbs/Run()
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_user)
+	ADD_TRAIT(user, TRAIT_MODULAR_LIMBS, "test")
+	user.zone_selected = BODY_ZONE_CHEST
+	var/datum/context_menu/menu = user.open_context_menu(user, "right=1")
+	for(var/zone in GLOB.modular_limb_zones)
+		TEST_ASSERT_NOTNULL(find_context_entry(menu, "Отсоединить [ru_kogo_zone(zone)]"), "По себе нет пункта «Отсоединить [ru_kogo_zone(zone)]»")
+	user.close_context_menu()
+
+	user.zone_selected = BODY_ZONE_PRECISE_L_HAND
+	menu = user.open_context_menu(user, "right=1")
+	TEST_ASSERT_NOTNULL(find_context_entry(menu, "Отсоединить левую руку"), "Выбрана кисть, а левую руку отсоединить нельзя")
+	TEST_ASSERT_NULL(find_context_entry(menu, "Отсоединить правую ногу"), "Выбрана левая рука, а меню предлагает все конечности")
+	user.close_context_menu()
+
+	var/obj/item/bodypart/leg = user.get_bodypart(BODY_ZONE_R_LEG)
+	leg.drop_limb()
+	user.put_in_active_hand(leg)
+	menu = user.open_context_menu(user, "right=1")
+	TEST_ASSERT_NOTNULL(find_context_entry(menu, "Присоединить правую ногу"), "С ногой в руке нет пункта «Присоединить»")
+	user.close_context_menu()
+	qdel(leg)
+
+	var/mob/living/carbon/human/helper = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_user, get_step(user, EAST))
+	helper.zone_selected = BODY_ZONE_R_ARM
+	menu = helper.open_context_menu(user, "right=1")
+	TEST_ASSERT_NOTNULL(find_context_entry(menu, "Отсоединить правую руку"), "Другой не может отсоединить руку")
+	helper.close_context_menu()
+
+	menu = user.open_context_menu(helper, "right=1")
+	TEST_ASSERT_NULL(find_context_entry(menu, "Отсоединить правую руку"), "Конечности снимаются у того, у кого нет квирка")
+	user.close_context_menu()
+
+/// Вербы моба, которые были только в меню BYOND, есть пунктами меню действий
+/datum/unit_test/context_menu_mob_verbs
+
+/datum/unit_test/context_menu_mob_verbs/Run()
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_user)
+	var/mob/living/carbon/human/target = allocate(/mob/living/carbon/human/dummy/consistent, get_step(user, EAST))
+	var/datum/context_menu/menu = user.open_context_menu(target, "right=1")
+	var/datum/context_menu_entry/verb_call/entry = find_context_entry(menu, "Меню гениталий")
+	TEST_ASSERT_NOTNULL(entry, "Нет пункта «Меню гениталий»")
+	TEST_ASSERT_EQUAL(entry.verb_path, /mob/living/carbon/verb/genital_menu, "Пункт зовёт не тот верб")
+	user.close_context_menu()
+
+	var/mob/living/simple_animal/pet/dog/corgi/dog = allocate(/mob/living/simple_animal/pet/dog/corgi, get_step(user, EAST))
+	menu = user.open_context_menu(dog, "right=1")
+	TEST_ASSERT_NULL(find_context_entry(menu, "Переваривание"), "Переваривание у зверя без воре")
+	user.close_context_menu()
+	dog.vore_active = TRUE
+	menu = user.open_context_menu(dog, "right=1")
+	TEST_ASSERT_NOTNULL(find_context_entry(menu, "Переваривание"), "Нет переваривания у зверя с воре")
+	user.close_context_menu()
+
+/// open_with = tile: по вещи на клетке с другими сперва список клетки, вещь первой; одна вещь - сразу её действия
+/datum/unit_test/context_menu_open_with_tile
+
+/datum/unit_test/context_menu_open_with_tile/Run()
+	var/mob/living/carbon/human/dummy/consistent/context_menu_styled/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_styled)
+	user.style_prefs = new
+	var/turf/next_turf = get_step(user, EAST)
+	var/obj/item/pen/pen = allocate(/obj/item/pen, next_turf)
+
+	var/datum/context_menu/menu = user.open_context_menu(pen, "right=1")
+	TEST_ASSERT_EQUAL(menu.target, pen, "По умолчанию меню не на вещи")
+	user.close_context_menu()
+
+	user.style_prefs.context_menu_style = list("open_with" = "tile")
+	menu = user.open_context_menu(pen, "right=1")
+	TEST_ASSERT_EQUAL(menu.target, pen, "Вещь одна на клетке, а меню открыло список")
+	user.close_context_menu()
+
+	var/obj/item/paper/paper = allocate(/obj/item/paper, next_turf)
+	menu = user.open_context_menu(paper, "right=1")
+	TEST_ASSERT_NULL(menu.target, "С настройкой «список клетки» меню открыло действия вещи")
+	var/datum/context_menu_entry/pick/first_row = menu.entries[1]
+	TEST_ASSERT_EQUAL(first_row.picked_ref?.resolve(), paper, "Вещь под курсором не первой строкой")
+	menu.click_row(context_menu_pick_row(menu, pen), list("right" = "1"))
+	TEST_ASSERT_EQUAL(menu.target, pen, "ПКМ по строке не открыл действия вещи")
+	TEST_ASSERT_NOTNULL(find_context_entry(menu, "Назад"), "Из действий нет пути назад к списку")
+	user.close_context_menu()
+
+/// Готовый значок отдаётся из кэша, в бюджет отрисовки его не считают
+/datum/unit_test/context_menu_html_icon_cache
+
+/datum/unit_test/context_menu_html_icon_cache/Run()
+	var/obj/item/pen/pen = allocate(/obj/item/pen)
+	GLOB.context_menu_icon_cache -= context_menu_icon_key(pen)
+	TEST_ASSERT(!context_menu_icon_cached(pen), "Значок в кэше до первой отрисовки")
+	context_menu_icon_base64(pen)
+	TEST_ASSERT(context_menu_icon_cached(pen), "Значок не попал в кэш")
+	var/mob/living/carbon/human/human = allocate(/mob/living/carbon/human/dummy/consistent)
+	TEST_ASSERT(context_menu_icon_cached(human), "У человека значка нет, ждать его нечего")

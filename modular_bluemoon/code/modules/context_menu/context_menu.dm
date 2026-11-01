@@ -34,6 +34,13 @@
 		right_click_macros = macros
 		full_macro_assert()
 	refresh_popup_menus()
+	// страница браузерного меню грузится заранее: иначе первый ПКМ за сессию ждёт её загрузки
+	if(!context_menu_page_sent_at && mob?.uses_context_menu() && prefs?.context_menu_option("renderer") == "html")
+		addtimer(CALLBACK(src, PROC_REF(send_context_menu_page)), CONTEXT_MENU_HTML_PAGE_GRACE * 2, TIMER_UNIQUE)
+
+/// Хоть один из жестов ПКМ открывает меню действий
+/mob/proc/uses_context_menu()
+	return right_click_actions && (right_click_mode() == RIGHT_CLICK_MODE_MENU || shift_right_click_mode() == RIGHT_CLICK_MODE_MENU)
 
 /client/proc/refresh_popup_menus()
 	var/wanted = mob ? mob.popup_menus_wanted(click_intercept) : TRUE
@@ -308,7 +315,7 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
  *
  * Пункты - обычные клики с модификаторами и интентом, вербы и колбэки.
  * Открывается сразу по объекту под курсором, остальные объекты клетки - пунктом «Другие на клетке».
- * По полу с вещами сперва список клетки.
+ * По полу с вещами, а с настройкой open_with = tile - всегда, когда есть из чего выбрать, сперва список клетки.
  */
 /datum/context_menu
 	var/mob/user
@@ -413,8 +420,10 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	var/turf/target_turf = isturf(target) ? target : (isturf(target.loc) ? target.loc : null)
 	if(target_turf && target != user)
 		var/list/candidates = get_tile_candidates(target_turf)
+		// кто выбрал сперва список клетки, получает его, как только на клетке есть из чего выбирать
+		var/tile_first = !isturf(target) && length(candidates) > 1 && context_menu_style_option(user.context_menu_prefs()?.context_menu_style, "open_with") == "tile"
 		// по полу и по предмету в большой куче нужен именно список: вещь ищут в нём, а не в действиях верхней
-		if((isturf(target) && length(candidates)) || (isitem(target) && length(candidates) >= CONTEXT_MENU_PILE_MIN))
+		if(tile_first || (isturf(target) && length(candidates)) || (isitem(target) && length(candidates) >= CONTEXT_MENU_PILE_MIN))
 			tile = target_turf
 			show_tile()
 			return

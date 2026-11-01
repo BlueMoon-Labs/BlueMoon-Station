@@ -97,6 +97,7 @@ GLOBAL_LIST_INIT(context_menu_intent_short, list(
 		else
 			result += new /datum/context_menu_entry/intent_list("Интенты…", null, CONTEXT_ENTRY_SERVICE)
 	add_verb_entries(A, result)
+	add_mob_entries(A, result)
 	var/admin_pos = context_menu_style_option(style, "admin_pos")
 	if(admin_pos != "hidden" && user.client?.holder && length(context_menu_admin_verbs_for(A, user.client.verbs)))
 		var/datum/context_menu_entry/admin_list/admin_entry = new("Админ…", null, CONTEXT_ENTRY_ADMIN)
@@ -205,7 +206,31 @@ GLOBAL_LIST_INIT(context_menu_intent_short, list(
 				else
 					add_click(result, shown_clicks, A, capitalize(text), "[key_hint], [GLOB.context_menu_intent_short[intent]]", key_info[1], intent)
 
-/// Вербы предмета в руках/на себе или структуры рядом. У мобов и турфов вербы почти все про себя, их не трогаем.
+/// Вербы мобов, которые меню BYOND показывало по мобу: верб -> подпись. Остальные вербы мобов - про себя, они во вкладках.
+/// «Interact With» и «Give» тут не нужны: они уже есть пунктами «Взаимодействовать» и «Передать».
+GLOBAL_LIST_INIT(context_menu_mob_verbs, list(
+	/mob/living/carbon/verb/genital_menu = "Меню гениталий",
+	/mob/living/simple_animal/verb/toggle_digestion = "Переваривание",
+))
+
+/proc/context_menu_mob_verb_usable(verb_path, mob/target, mob/user)
+	if(verb_path == /mob/living/simple_animal/verb/toggle_digestion)
+		var/mob/living/simple_animal/animal = target
+		return target != user && user.Adjacent(target) && animal.vore_active
+	return TRUE
+
+/// Действия по мобу, которые раньше были только вербами меню BYOND
+/datum/context_menu/proc/add_mob_entries(atom/A, list/result)
+	if(!ismob(A))
+		return
+	if(ishuman(A))
+		var/mob/living/carbon/human/human = A
+		result += human.modular_limb_menu_entries(user)
+	for(var/verb_path in GLOB.context_menu_mob_verbs)
+		if((verb_path in A.verbs) && context_menu_mob_verb_usable(verb_path, A, user))
+			result += new /datum/context_menu_entry/verb_call(GLOB.context_menu_mob_verbs[verb_path], null, CONTEXT_ENTRY_NORMAL, verb_path)
+
+/// Вербы предмета в руках/на себе или структуры рядом. Вербы мобов - в add_mob_entries, у турфов вербы почти все про себя.
 /datum/context_menu/proc/add_verb_entries(atom/A, list/result)
 	if(!isobj(A))
 		return

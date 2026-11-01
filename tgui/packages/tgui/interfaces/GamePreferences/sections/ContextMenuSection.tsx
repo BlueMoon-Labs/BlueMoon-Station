@@ -52,6 +52,7 @@ type ContextMenuStyle = {
   show_point: boolean | number;
   intents: string;
   pile_click: string;
+  open_with: string;
   admin_pos: string;
   sound: string;
 };
@@ -444,6 +445,11 @@ const INTENTS_OPTIONS: Option<string>[] = [
   { value: 'inline', label: 'Сразу в списке' },
 ];
 
+const OPEN_WITH_OPTIONS: Option<string>[] = [
+  { value: 'target', label: 'Действия объекта под курсором' },
+  { value: 'tile', label: 'Список клетки, действия - по клику' },
+];
+
 const PILE_CLICK_OPTIONS: Option<string>[] = [
   { value: 'take', label: 'Взять, действия - ПКМ по строке' },
   { value: 'actions', label: 'Открыть действия вещи' },
@@ -672,6 +678,13 @@ export const ContextMenuSection = (props) => {
 
       <GroupTitle title="Содержимое" />
       <DropdownRow label="Интенты" options={INTENTS_OPTIONS} value={style.intents} onSelect={(value) => setStyle('intents', value)} />
+      <DropdownRow
+        label="Что открывать"
+        hint="Список клетки - если под курсором больше одного объекта, сперва выбор из них"
+        options={OPEN_WITH_OPTIONS}
+        value={style.open_with}
+        onSelect={(value) => setStyle('open_with', value)}
+      />
       <DropdownRow
         label="ЛКМ по вещи в списке клетки"
         hint="Занята активная рука - берёт вторая, свободная"
