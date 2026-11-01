@@ -1,5 +1,5 @@
 import { useBackend } from '../../../backend';
-import { Box, Button, Section, Stack } from '../../../components';
+import { Box, Button, Dropdown, Section, Stack } from '../../../components';
 import { FieldRow, SelectRow, TabDataMissing } from '../components';
 
 interface LimbRow {
@@ -63,6 +63,11 @@ const KIND_LABELS: Record<string, string> = {
 
 const costLabel = (cost: number): string => (cost > 0 ? ` (${cost} оч.)` : '');
 
+const brandLabel = (brand: string): string =>
+  brand === 'prosthetic'
+    ? 'Стандартная'
+    : brand.charAt(0).toUpperCase() + brand.slice(1);
+
 export const ModificationsTab = () => {
   const { act, data } = useBackend<ModsContext>();
   const mods = data.modsTab;
@@ -120,24 +125,28 @@ export const ModificationsTab = () => {
             }))}
             action="set_limb"
             params={{ zone: limb.zone }}
+            extra={
+              limb.kind === 'Prosthetic' ? (
+                <Dropdown
+                  width="118px"
+                  tooltip="Модель протеза"
+                  options={mods.limbBrands.map((brand) => ({
+                    value: brand,
+                    displayText: brandLabel(brand),
+                  }))}
+                  selected={limb.brand || 'prosthetic'}
+                  onSelected={(value) =>
+                    act('set_limb', { zone: limb.zone, value })
+                  }
+                />
+              ) : undefined
+            }
           />
         ))}
-        {mods.limbs
-          .filter((limb) => limb.kind === 'Prosthetic')
-          .map((limb) => (
-            <SelectRow
-              key={`${limb.zone}-brand`}
-              label="Модель протеза"
-              value={limb.brand || 'prosthetic'}
-              options={mods.limbBrands}
-              action="set_limb"
-              params={{ zone: limb.zone }}
-            />
-          ))}
       </Section>
 
       <Section title="Органы">
-        <Box color="label" mb={1}>
+        <Box bold color="label" mb={1}>
           Кибернетические органы стоят очков квирков, обычные - бесплатно.
         </Box>
         {mods.organs.map((group) =>

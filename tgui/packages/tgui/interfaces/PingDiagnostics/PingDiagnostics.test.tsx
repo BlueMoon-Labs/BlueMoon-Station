@@ -4,7 +4,7 @@ import { combineReducers, createStore, setGlobalStore } from 'common/redux';
 import { backendReducer, backendUpdate } from '../../backend';
 import { debugReducer } from '../../debug';
 import { PingDiagnostics } from '.';
-import { PingDiagnosticsData, VERDICTS } from './model';
+import { OLD_BUILD, PingDiagnosticsData, VERDICTS } from './model';
 
 const base: PingDiagnosticsData = {
   staff: 0,
@@ -81,6 +81,27 @@ describe('PingDiagnostics', () => {
     expect(screen.getByText(VERDICTS.jitter.advice[0])).toBeTruthy();
     expect(screen.getByText('Ещё с вашей стороны')).toBeTruthy();
     expect(screen.queryByText('Что можно сделать')).toBeNull();
+  });
+
+  it('старая сборка - отдельный совет, главный вердикт свой', () => {
+    mount();
+    expect(screen.queryByText(OLD_BUILD.title)).toBeNull();
+    mount({ old_build: 1, byond: '516.1662' });
+    expect(screen.getAllByText(VERDICTS.ok.title).length).toBe(2);
+    expect(screen.getByText(OLD_BUILD.title)).toBeTruthy();
+    expect(screen.getByText(OLD_BUILD.advice)).toBeTruthy();
+    expect(screen.queryByText('Что можно сделать')).toBeNull();
+    expect(screen.getAllByText('BYOND:').pop()?.closest('tr')?.textContent).toBe('BYOND:516.1662, старше рекомендуемой');
+  });
+
+  it('таблица игроков: старая сборка - пометка под вердиктом', () => {
+    mount({
+      staff: 1,
+      tab: 'server',
+      clients: [{ ckey: 'oldie', base: 30, rtt_median: 35, rtt_p95: 40, personal_median: 2, spikes_per_min: 0, freezes: 0, ours_fraction: null, verdict: 'ok', old_build: 1 }],
+    });
+    const cells = [...(screen.getByText('oldie').closest('tr')?.querySelectorAll('td') ?? [])].map((cell) => cell.textContent);
+    expect(cells[10]).toBe(`${VERDICTS.ok.title}старый BYOND`);
   });
 
   it('скрытое окно с числами - прочерк', () => {

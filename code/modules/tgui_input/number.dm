@@ -108,7 +108,9 @@
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
 		ui = new(user, src, "NumberInputModal")
-		ui.open()
+		if(!ui.open())
+			qdel(ui)
+			ui_close(user)
 
 /datum/tgui_input_number/ui_close(mob/user)
 	. = ..()
@@ -198,16 +200,16 @@
 	var/datum/callback/callback
 
 /datum/tgui_input_number/async/New(mob/user, message, title, default, callback, timeout, round_value)
-	..(user, title, message, default, timeout, round_value)
+	..(user, message, title, default, INFINITY, -INFINITY, timeout, round_value)
 	src.callback = callback
 
 /datum/tgui_input_number/async/Destroy(force, ...)
 	QDEL_NULL(callback)
 	. = ..()
 
-///datum/tgui_input_number/async/tgui_close(mob/user)
-//	. = ..()
-//	qdel(src)
+/datum/tgui_input_number/async/ui_close(mob/user)
+	. = ..()
+	qdel(src)
 
 /datum/tgui_input_number/async/set_entry(entry)
 	. = ..()

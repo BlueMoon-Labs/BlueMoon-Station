@@ -470,9 +470,11 @@
 
 	var/list/body_size_field = num_ff("body_size", "Размер тела, %", CONFIG_GET(number/body_size_min) * 100, CONFIG_GET(number/body_size_max) * 100)
 	body_size_field["scale"] = 100
+	body_size_field["step"] = 0.5
 	fields += list(body_size_field)
 	var/list/norm_field = num_ff("normalized_size", "Нормализованный размер, %", max(CONFIG_GET(number/body_size_min), 0.81) * 100, min(CONFIG_GET(number/body_size_max), 1.2) * 100)
 	norm_field["scale"] = 100
+	norm_field["step"] = 0.5
 	fields += list(norm_field)
 	fields += list(ff("fuzzy", "Размытые пиксели", FEATURE_BOOL, FEATURE_SCOPE_PREF))
 
@@ -2864,12 +2866,14 @@
 		old_cost = old_option["cost"]
 	if(isnull(option["path"]))
 		prefs.organ_mods -= slot
+		preview_dirty = TRUE
 		return
 	var/balance = quirk_balance()
 	if(balance + old_cost - option["cost"] < min(0, balance))
 		to_chat(user, span_warning("Недостаточно баланса: нужно ещё [option["cost"] - quirk_balance() - old_cost] очков квирков."))
 		return
 	prefs.organ_mods[slot] = option["id"]
+	preview_dirty = TRUE
 
 /datum/character_setup/proc/toggle_body_implant(list/params)
 	var/mob/user = prefs.parent?.mob
@@ -2885,11 +2889,13 @@
 			to_chat(user, span_warning("Возврат этого импланта увёл бы баланс в минус!"))
 			return
 		prefs.implant_mods -= implant_id
+		preview_dirty = TRUE
 		return
 	if(balance - option["cost"] < min(0, balance))
 		to_chat(user, span_warning("Недостаточно баланса для этого импланта!"))
 		return
 	prefs.implant_mods[implant_id] = TRUE
+	preview_dirty = TRUE
 
 /datum/character_setup/proc/build_options_static()
 	if(options_cache)

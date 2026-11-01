@@ -97,8 +97,18 @@ const CATEGORY_ICONS: Record<string, string> = {
   Glasses: 'glasses',
   Donator: 'star',
   Unlockable: 'unlock',
+  Wrists: 'clock',
+  'General Underwear': 'socks',
   Errors: 'exclamation-triangle',
 };
+
+const CATEGORY_PRIORITY = ['Donator', 'Unlockable', 'Errors'];
+
+const CATEGORY_COLUMNS = [
+  ['Head', 'Glasses', 'Mask', 'Neck'],
+  ['Suit', 'Uniform', 'Wrists', 'Gloves', 'Shoes'],
+  ['Hands', 'Accessory', 'General Underwear', 'In backpack'],
+];
 
 const ColorView = (props: { color: LoadoutColor }) => {
   const { color } = props;
@@ -386,6 +396,43 @@ export const LoadoutTab = () => {
     )
   );
 
+  const categoryByValue = new Map<string, CategoryEntry>(
+    (loadout.categories || []).map(
+      (category): [string, CategoryEntry] => [category.value, category]
+    )
+  );
+  const knownCategories = new Set([
+    ...CATEGORY_PRIORITY,
+    ...CATEGORY_COLUMNS.flat(),
+  ]);
+  const leftoverCategories = (loadout.categories || []).filter(
+    (category) => !knownCategories.has(category.value)
+  );
+  const renderCategory = (value: string) => {
+    const category = categoryByValue.get(value);
+    if (!category) {
+      return null;
+    }
+    return (
+      <Button
+        key={category.value}
+        icon={CATEGORY_ICONS[category.value] || 'box'}
+        selected={
+          !loadout.selectedView && loadout.category === category.value
+        }
+        content={
+          category.value === 'Errors' && loadout.errors > 0
+            ? `${category.label} (!)`
+            : category.label
+        }
+        onClick={() => {
+          setSearch('');
+          act('loadout_select_category', { value: category.value });
+        }}
+      />
+    );
+  };
+
   return (
     <Section fill scrollable title="Экипировка">
       {!!loadout.selectedView && (
@@ -472,7 +519,11 @@ export const LoadoutTab = () => {
         )}
       </Stack>
 
-      <Box mb={1} style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+      <Box
+        mb={1}
+        className="CharacterSetup__loadout-priority"
+        style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}
+      >
         <Button
           icon="check-double"
           selected={loadout.selectedView}
@@ -482,25 +533,18 @@ export const LoadoutTab = () => {
             act('loadout_selected');
           }}
         />
-        {loadout.categories.map((category) => (
-          <Button
-            key={category.value}
-            icon={CATEGORY_ICONS[category.value] || 'box'}
-            selected={
-              !loadout.selectedView && loadout.category === category.value
-            }
-            content={
-              category.value === 'Errors' && loadout.errors > 0
-                ? `${category.label} (!)`
-                : category.label
-            }
-            onClick={() => {
-              setSearch('');
-              act('loadout_select_category', { value: category.value });
-            }}
-          />
-        ))}
+        {CATEGORY_PRIORITY.map(renderCategory)}
       </Box>
+
+      <div className="CharacterSetup__loadout-columns">
+        {CATEGORY_COLUMNS.map((column, index) => (
+          <div key={index} className="CharacterSetup__loadout-column">
+            {column.map(renderCategory)}
+            {index === CATEGORY_COLUMNS.length - 1 &&
+              leftoverCategories.map((category) => renderCategory(category.value))}
+          </div>
+        ))}
+      </div>
 
       {!isErrors &&
         !loadout.selectedView &&
