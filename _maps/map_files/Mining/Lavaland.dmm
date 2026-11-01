@@ -31576,12 +31576,6 @@
 /obj/effect/turf_decal/tile/yellow/half/contrasted,
 /turf/open/floor/plasteel,
 /area/mine/xenoarch_area_a)
-"rYA" = (
-/obj/machinery/porta_turret/syndicate{
-	dir = 10
-	},
-/turf/closed/wall/r_wall/syndicate/nodiagonal,
-/area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
 "rYG" = (
 /obj/effect/spawner/structure/window/reinforced,
 /obj/structure/cable/yellow,
@@ -39360,7 +39354,9 @@
 /obj/structure/cable/yellow{
 	icon_state = "2-4"
 	},
-/obj/item/syndicate_uplink_high,
+/obj/item/gun/ballistic/automatic/sniper_rifle,
+/obj/item/ammo_box/magazine/sniper_rounds,
+/obj/item/ammo_box/magazine/sniper_rounds,
 /turf/open/floor/wood/wood_large,
 /area/ruin/lavaland/unpowered/deepspaceone/comms_officer)
 "wJs" = (
@@ -62801,7 +62797,7 @@ tke
 iwU
 eBl
 dIK
-rYA
+dIK
 dIK
 dIK
 dIK
