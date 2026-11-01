@@ -510,6 +510,7 @@
 #include "turf_reservation_flag.dm"
 #include "ui_numeric_exploits.dm"
 #include "unit_test.dm"
+#include "vanguard_mission_remains.dm"
 #include "vanguard_start_landmark.dm"
 #include "vending_product_enumeration.dm"
 #include "vending_stock_keys.dm"
