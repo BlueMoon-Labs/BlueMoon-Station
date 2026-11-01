@@ -13,6 +13,7 @@
 	droid.mind_initialize()
 	allocated += droid.mind
 	var/datum/antagonist/hk47/antag = droid.mind.add_antag_datum(/datum/antagonist/hk47)
+	TEST_ASSERT_NOTNULL(antag, "HK-47 gets the antag datum")
 	TEST_ASSERT_EQUAL(length(antag.voice_lines), length(expected), "voice line count")
 	for(var/key in expected)
 		var/voice = antag.voice_lines[key]

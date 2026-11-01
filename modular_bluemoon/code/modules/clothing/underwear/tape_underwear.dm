@@ -4,7 +4,7 @@
 	icon = 'modular_bluemoon/icons/obj/clothing/tape_underwear.dmi'
 	mob_overlay_icon = 'modular_bluemoon/icons/mob/clothing/tape_underwear.dmi'
 	icon_state = "tape_breasts"
-	togglename = "wearing style"
+	togglename = "стиль"
 	mutantrace_variation = STYLE_DIGITIGRADE|STYLE_NO_ANTHRO_ICON
 
 /obj/item/clothing/underwear/shirt/adjustable/toggle/black_tape/equipped(mob/user, slot)

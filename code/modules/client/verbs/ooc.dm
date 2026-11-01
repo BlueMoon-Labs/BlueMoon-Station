@@ -127,7 +127,7 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 	set category = "Admin.Fun"
 	if(IsAdminAdvancedProcCall())
 		return
-	var/newColor = input(src, "Please select the new player OOC color.", "OOC color") as color|null
+	var/newColor = tgui_input_color(src, "Please select the new player OOC color.", "OOC color")
 	if(isnull(newColor))
 		return
 	if(!check_rights(R_FUN))
@@ -163,7 +163,7 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 		if(!is_content_unlocked())
 			return
 
-	var/new_ooccolor = input(src, "Please select your OOC color.", "OOC color", prefs.ooccolor) as color|null
+	var/new_ooccolor = tgui_input_color(src, "Please select your OOC color.", "OOC color", prefs.ooccolor)
 	if(isnull(new_ooccolor))
 		return
 	new_ooccolor = sanitize_ooccolor(new_ooccolor)
@@ -279,12 +279,74 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 /// наступает за нулевую или первую итерацию, а недосошедшийся сплиттер - это лишь
 /// пара лишних пикселей у карты, за которые не стоит держать клиента на линии.
 #define FIT_VIEWPORT_MAX_CORRECTIONS 3
+/// Через сколько после запроса подгонять вьюпорт: на логине и при смене вида окно
+/// клиента ещё перестраивается, а winget в этот момент ждёт дольше всего.
+#define FIT_VIEWPORT_DELAY (1 SECONDS)
+
+/**
+ * Одна подгонка вьюпорта на клиента.
+ *
+ * Логин, смена вида и полноэкранный режим просили подгонку каждый своим таймером: на
+ * входе в игру два-три прохода шли одновременно (по прод-логам - парные winget
+ * mapwindow.size в одном тике) и тянули сплиттер друг у друга. Здесь запросы
+ * склеиваются в один таймер, а запрос во время идущей подгонки откладывается до её конца.
+ */
+/datum/viewport_fit_queue
+	var/client/owner
+	var/timer_id
+	var/running = FALSE
+	var/requested_while_running = FALSE
+
+/datum/viewport_fit_queue/New(client/owner)
+	src.owner = owner
+
+/datum/viewport_fit_queue/Destroy()
+	deltimer(timer_id)
+	timer_id = null
+	owner = null
+	return ..()
+
+/datum/viewport_fit_queue/proc/request()
+	if(running)
+		requested_while_running = TRUE
+		return
+	timer_id = addtimer(CALLBACK(src, PROC_REF(run_fit)), FIT_VIEWPORT_DELAY, TIMER_UNIQUE | TIMER_STOPPABLE)
+
+/datum/viewport_fit_queue/proc/run_fit()
+	if(running)
+		requested_while_running = TRUE
+		return
+	// Подгонка читает размеры в момент запуска, так что отложенный запрос ею уже исполнен.
+	deltimer(timer_id)
+	timer_id = null
+	running = TRUE
+	fit()
+	running = FALSE
+	if(requested_while_running && !QDELETED(src))
+		requested_while_running = FALSE
+		request()
+
+/datum/viewport_fit_queue/proc/fit()
+	owner?.do_fit_viewport()
+
+/client/proc/get_viewport_fit_queue()
+	if(!viewport_fit_queue)
+		viewport_fit_queue = new(src)
+	return viewport_fit_queue
+
+/client/proc/queue_fit_viewport()
+	var/datum/viewport_fit_queue/queue = get_viewport_fit_queue()
+	queue.request()
 
 /client/verb/fit_viewport()
 	set name = "Fit Viewport"
 	set category = "OOC"
 	set desc = "Fit the width of the map window to match the viewport"
 
+	var/datum/viewport_fit_queue/queue = get_viewport_fit_queue()
+	queue.run_fit()
+
+/client/proc/do_fit_viewport()
 	// Fetch aspect ratio
 	var/view_size = getviewsize(view)
 	var/aspect_ratio = view_size[1] / view_size[2]
@@ -350,6 +412,7 @@ GLOBAL_VAR_INIT(normal_ooc_colour, "#002eb8")
 		winset(src, "mainwindow.split", "splitter=[pct]")
 
 #undef FIT_VIEWPORT_MAX_CORRECTIONS
+#undef FIT_VIEWPORT_DELAY
 
 /client/verb/fix_stat_panel()
 	set name = "Fix Stat Panel"

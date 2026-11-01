@@ -307,13 +307,13 @@
 	fromitem = list(/obj/item/storage/belt/security/webbing/ds)
 
 /obj/item/storage/belt/security/webbing/ds/lapkee_belt
-	DONATE_ITEM_TOOLTIP_PARENT
 	name = "White security belt"
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/belt.dmi'
 	icon_state = "lapkee_belt"
 	item_state = "lapkee_belt"
 	content_overlays = TRUE
+DONATE_ITEM_TOOLTIP_PARENT(/obj/item/storage/belt/security/webbing/ds/lapkee_belt)
 
 /obj/item/melee/baton/get_belt_overlay()
 	if(istype(loc, /obj/item/storage/belt/security/webbing/ds/lapkee_belt))
@@ -366,26 +366,6 @@
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/accessories.dmi'
 	force = 11
 
-
-/obj/item/storage/box/kumiko_ncr_case
-	name = "NCR ranger case"
-	desc = "Old NCR ranger case issued to a single ranger. The engraving on the lid reads: 'Patrolling the Mojave almost makes you wish for a nuclear winter.'"
-	icon_state = "ammobox"
-
-/obj/item/storage/box/kumiko_ncr_case/ComponentInitialize()
-	. = ..()
-	var/datum/component/storage/STR = GetComponent(/datum/component/storage)
-	STR.max_combined_w_class = 21
-
-/obj/item/storage/box/kumiko_ncr_case/PopulateContents()
-	new /obj/item/clothing/suit/donator/bm/kumiko_ncr_duster(src)
-	new	/obj/item/modkit/kumiko_ncr_riot(src)
-	new	/obj/item/modkit/kumiko_ncr_bulletproof(src)
-	new	/obj/item/modkit/kumiko_ncr_armor_vest(src)
-	new	/obj/item/clothing/head/donator/bm/kumiko_ncr_helmet(src)
-	new	/obj/item/modkit/kumiko_ncr_riot_helmet(src)
-	new	/obj/item/modkit/kumiko_ncr_bulletproof_helmet(src)
-
 /obj/item/storage/wallet/xeno
 	name = "Xeno Wallet"
 	desc = "Плюшевый ксеноморф, в рот можно вставить карты и безделушки"
@@ -400,13 +380,13 @@
 		icon_state = new_state
 
 /obj/item/storage/belt/security/webbing/ds/melatonin_belt
-	DONATE_ITEM_TOOLTIP_PARENT
 	name = "Lycanthrope's Heavy Tactical Belt"
 	desc = "Массивный тактический пояс, который когда-то служил обычным утяжеленным ремнем. Со временем он оброс модификациями: к нему добавились прочная кожаная кобура, дополнительный поддерживающий ремень, подсумки для патронов и незаметные ножны для складного клинка. Вся эта конструкция выглядит исключительно надежной, хоть и неоправданно тяжелой. На крупной металлической пряжке по центру выгравирован оскал свирепого волка."
 	icon = 'modular_bluemoon/fluffs/icons/obj/clothing/belts.dmi'
 	mob_overlay_icon = 'modular_bluemoon/fluffs/icons/mob/clothing/belt.dmi'
 	icon_state = "melatonin_belt"
 	item_state = "melatonin_belt"
+DONATE_ITEM_TOOLTIP_PARENT(/obj/item/storage/belt/security/webbing/ds/melatonin_belt)
 
 /obj/item/melee/baton/stunsword/melatonin/get_belt_overlay()
 	if(istype(loc, /obj/item/storage/belt/security/webbing/ds/melatonin_belt))

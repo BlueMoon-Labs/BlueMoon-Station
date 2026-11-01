@@ -85,9 +85,9 @@
 /datum/plane_master_group/proc/get_plane(plane)
 	return plane_masters["[plane]"]
 
-/// Абстрактная плита без плоскости стала бы мастером на HUD_PLANE.
+// Частные мастера превью не должны подменять игровые плоскости основной карты.
 /datum/plane_master_group/proc/get_plane_types()
-	return subtypesof(/atom/movable/screen/plane_master) - /atom/movable/screen/plane_master/rendering_plate
+	return subtypesof(/atom/movable/screen/plane_master) - /atom/movable/screen/plane_master/rendering_plate - typesof(/atom/movable/screen/plane_master/character_setup)
 
 /datum/plane_master_group/proc/build_plane_masters(starting_offset, ending_offset)
 	for(var/atom/movable/screen/plane_master/master_type as anything in get_plane_types())

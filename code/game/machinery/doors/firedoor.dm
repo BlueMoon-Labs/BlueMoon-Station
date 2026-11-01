@@ -1119,6 +1119,7 @@
 	icon_state = "frame1"
 	anchored = FALSE
 	density = TRUE
+	max_integrity = 100
 	var/constructionStep = CONSTRUCTION_NOCIRCUIT
 	var/reinforced = 0
 	// Один лист стекла превращает обычный каркас в оконный.
@@ -1221,6 +1222,7 @@
 					playsound(get_turf(src), 'sound/items/deconstruct.ogg', 50, 1)
 					P.use(2)
 					reinforced = 1
+					modify_max_integrity(250)
 				return
 
 		if(CONSTRUCTION_WIRES_EXPOSED)
@@ -1293,6 +1295,7 @@
 				if(QDELETED(glass_sheet) || constructionStep != CONSTRUCTION_NOCIRCUIT || windowed || reinforced || !glass_sheet.use(1))
 					return
 				windowed = TRUE
+				modify_max_integrity(50)
 				update_appearance()
 				return
 			if(windowed && C.tool_behaviour == TOOL_WELDER)
@@ -1304,6 +1307,7 @@
 				if(constructionStep != CONSTRUCTION_NOCIRCUIT || !windowed)
 					return
 				windowed = FALSE
+				modify_max_integrity(100)
 				new /obj/item/stack/sheet/glass(drop_location(), 1)
 				update_appearance()
 				return
@@ -1370,10 +1374,12 @@
 /obj/structure/firelock_frame/heavy
 	name = "heavy firelock frame"
 	reinforced = TRUE
+	max_integrity = 250
 
 /obj/structure/firelock_frame/window
 	icon = 'icons/obj/doors/doorfirewindow.dmi'
 	windowed = TRUE
+	max_integrity = 50
 
 #undef CONSTRUCTION_COMPLETE
 #undef CONSTRUCTION_PANEL_OPEN

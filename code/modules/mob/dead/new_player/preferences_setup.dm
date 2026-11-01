@@ -29,61 +29,82 @@
 	bark_variance = BARK_VARIANCE_RAND
 	age = rand(AGE_MIN,AGE_MAX)
 
-/datum/preferences/proc/update_preview_icon(current_tab)
+/datum/preferences/proc/build_preview_appearance(aroused_preview = FALSE, preview_mode = PREVIEW_PREF_JOB)
 	// Determine what job is marked as 'High' priority, and dress them up as such.
 	var/datum/job/previewJob = get_highest_job()
 
-	if(previewJob)
-		// Silicons only need a very basic preview since there is no customization for them.
+	if(previewJob && preview_mode == PREVIEW_PREF_JOB)
+		var/mutable_appearance/silicon_sprite
 		if(istype(previewJob,/datum/job/ai))
-			parent.show_character_previews(image('icons/mob/AI.dmi', icon_state = resolve_ai_icon(preferred_ai_core_display), dir = SOUTH))
-			return
-		if(istype(previewJob,/datum/job/cyborg))
-			parent.show_character_previews(image('icons/mob/robots.dmi', icon_state = "robot", dir = SOUTH))
-			return
+			silicon_sprite = mutable_appearance('icons/mob/AI.dmi', resolve_ai_icon(preferred_ai_core_display), MOB_LAYER, GAME_PLANE)
+		else if(istype(previewJob,/datum/job/cyborg))
+			silicon_sprite = mutable_appearance('icons/mob/robots.dmi', "robot", MOB_LAYER, GAME_PLANE)
+		if(silicon_sprite)
+			return silicon_sprite
 
-	// Set up the dummy for its photoshoot. regenerate = FALSE: манекен всё равно
+	// regenerate = FALSE: манекен всё равно
 	// сразу переодевается и в конце проходит regenerate_icons() - восстанавливать
 	// срезанные wipe_state() иконки на входе значит рендерить его дважды.
 	var/mob/living/carbon/human/dummy/mannequin = generate_or_wait_for_human_dummy(DUMMY_HUMAN_SLOT_PREFERENCES, regenerate = FALSE)
-	// Apply the Dummy's preview background first so we properly layer everything else on top of it.
-	mannequin.add_overlay(mutable_appearance('modular_citadel/icons/ui/backgrounds.dmi', bgstate, layer = SPACE_LAYER))
-	copy_to(mannequin, icon_updates = FALSE, initial_spawn = TRUE)
+	if(!mannequin)
+		return null
+	var/mutable_appearance/result
+	try
+		// Новый манекен и взятый из пула начинают с одинаково очищенного состояния.
+		mannequin.wipe_state()
+		copy_to(mannequin, icon_updates = FALSE, initial_spawn = TRUE)
+		if(!preview_build_yield(mannequin))
+			return null
 
-	switch(preview_pref)
-		if(PREVIEW_PREF_JOB)
-			if(previewJob)
-				mannequin.job = previewJob.title
-				previewJob.equip(mannequin, TRUE, preference_source = parent)
-		if(PREVIEW_PREF_LOADOUT)
-			SSjob.equip_loadout(parent.mob, mannequin, bypass_prereqs = TRUE, can_drop = FALSE, is_dummy = TRUE)
-			SSjob.post_equip_loadout(parent.mob, mannequin, bypass_prereqs = TRUE, can_drop = FALSE, is_dummy = TRUE)
-		if(PREVIEW_PREF_NAKED)
-			/*
-			mannequin.hidden_underwear = TRUE
-			mannequin.hidden_undershirt = TRUE
-			mannequin.hidden_socks = TRUE
-			*/
-		if(PREVIEW_PREF_NAKED_AROUSED)
-			/*
-			mannequin.hidden_underwear = TRUE
-			mannequin.hidden_undershirt = TRUE
-			mannequin.hidden_socks = TRUE
-			*/
-			for(var/obj/item/organ/genital/genital in mannequin.internal_organs)
-				if(CHECK_BITFIELD(genital.genital_flags, GENITAL_CAN_AROUSE))
-					genital.set_aroused_state(TRUE, null)
+		switch(preview_mode)
+			if(PREVIEW_PREF_JOB)
+				if(previewJob)
+					mannequin.job = previewJob.title
+					previewJob.equip(mannequin, TRUE, preference_source = parent)
+			if(PREVIEW_PREF_LOADOUT)
+				SSjob.equip_loadout(parent?.mob, mannequin, bypass_prereqs = TRUE, can_drop = FALSE, is_dummy = TRUE, preferences_source = src)
+				SSjob.post_equip_loadout(parent?.mob, mannequin, bypass_prereqs = TRUE, can_drop = FALSE, is_dummy = TRUE, preferences_source = src)
+		if(!preview_build_yield(mannequin))
+			return null
 
-	mannequin.regenerate_icons()
+		// Органы манекена переиспользуются: каждый кадр явно задаёт выбранную позу,
+		// независимо от прошлого превью и игровых ограничений возбуждения.
+		for(var/obj/item/organ/genital/genital in mannequin.internal_organs)
+			if(CHECK_BITFIELD(genital.genital_flags, GENITAL_CAN_AROUSE))
+				genital.aroused_state = aroused_preview
+				genital.update_appearance()
 
-	parent.show_character_previews(new /mutable_appearance(mannequin))
-	unset_busy_human_dummy(DUMMY_HUMAN_SLOT_PREFERENCES)
+		mannequin.regenerate_icons()
 
-/datum/preferences/proc/get_highest_job()
+		result = new /mutable_appearance(mannequin)
+		// Конструктор mutable_appearance сбрасывает plane: сохраняем настоящую плоскость манекена.
+		result.plane = mannequin.plane
+		// Сброс манекена в пуле снимает всю одежду - ещё ~8 мс, тоже отдельным тиком.
+		if(!preview_build_yield(mannequin))
+			return result
+	catch(var/exception/error)
+		release_preview_mannequin(mannequin)
+		throw error
+	release_preview_mannequin(mannequin)
+	return result
+
+/// Сборка манекена одним куском стоила 30-50 мс, то есть целый тик сервера (прод 10645/10646: Timer 70-98% тика). Между этапами отдаём тик; FALSE - манекен удалили, пока ждали.
+/datum/preferences/proc/preview_build_yield(mob/living/carbon/human/dummy/mannequin)
+	stoplag()
+	return !QDELETED(mannequin)
+
+/// Пока сборка спала, слот мог получить новый манекен, занятый другой сборкой: освобождаем только свой.
+/datum/preferences/proc/release_preview_mannequin(mob/living/carbon/human/dummy/mannequin)
+	if(GLOB.human_dummy_list[DUMMY_HUMAN_SLOT_PREFERENCES] == mannequin)
+		unset_busy_human_dummy(DUMMY_HUMAN_SLOT_PREFERENCES)
+
+/datum/preferences/proc/get_highest_job(list/priorities)
+	if(isnull(priorities))
+		priorities = job_preferences
 	var/highest_pref = 0
 	var/datum/job/highest_job
-	for(var/job in job_preferences)
-		if(job_preferences["[job]"] > highest_pref)
+	for(var/job in priorities)
+		if(priorities["[job]"] > highest_pref)
 			highest_job = SSjob.GetJob(job)
-			highest_pref = job_preferences["[job]"]
+			highest_pref = priorities["[job]"]
 	return highest_job

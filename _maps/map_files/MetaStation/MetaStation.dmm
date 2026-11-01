@@ -59453,9 +59453,6 @@
 /obj/structure/disposalpipe/trunk{
 	dir = 8
 	},
-/obj/structure/disposalpipe/trunk{
-	dir = 8
-	},
 /obj/effect/turf_decal/tile/neutral{
 	dir = 1
 	},
@@ -73251,7 +73248,6 @@
 	name = "Gateway Atrium";
 	req_access_txt = "62"
 	},
-/obj/machinery/door/firedoor,
 /obj/effect/turf_decal/delivery,
 /obj/effect/turf_decal/stripes/yellow/corner{
 	dir = 4

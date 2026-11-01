@@ -4,7 +4,7 @@
  * @license MIT
  */
 
-import { addChatPage, changeChatPage, changeScrollTracking, loadChat, removeChatPage, toggleAcceptedType, updateChatPage, updateMessageCount } from './actions';
+import { addChatPage, changeChatPage, changeScrollTracking, clearChat, loadChat, removeChatPage, toggleAcceptedType, updateChatPage, updateMessageCount } from './actions';
 import { canPageAcceptType, createMainPage } from './model';
 
 const mainPage = createMainPage();
@@ -59,11 +59,21 @@ export const chatReducer = (state = initialState, action) => {
     }
     return nextState;
   }
+  if (type === clearChat.type) {
+    const pageById = {};
+    for (const id of state.pages) {
+      pageById[id] = { ...state.pageById[id], unreadCount: 0 };
+    }
+    return {
+      ...state,
+      pageById,
+    };
+  }
   if (type === updateMessageCount.type) {
     const countByType = payload;
     const pages = state.pages.map(id => state.pageById[id]);
     const currentPage = state.pageById[state.currentPageId];
-    const nextPageById = { ...state.pageById };
+    let nextPageById = null;
     for (let page of pages) {
       let unreadCount = 0;
       for (let type of Object.keys(countByType)) {
@@ -83,11 +93,17 @@ export const chatReducer = (state = initialState, action) => {
         unreadCount += countByType[type];
       }
       if (unreadCount > 0) {
+        nextPageById = nextPageById || { ...state.pageById };
         nextPageById[page.id] = {
           ...page,
           unreadCount: page.unreadCount + unreadCount,
         };
       }
+    }
+    // Новый объект только при смене счётчиков: панель перерисовывается
+    // по смене состояния, а этот экшен приходит на каждое сообщение.
+    if (!nextPageById) {
+      return state;
     }
     return {
       ...state,

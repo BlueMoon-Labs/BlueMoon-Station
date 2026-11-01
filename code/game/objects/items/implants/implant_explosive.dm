@@ -33,9 +33,9 @@
 		return FALSE
 	if(cause == "action_button" && !popup)
 		popup = TRUE
-		var/response = alert(imp_in, "Are you sure you want to activate your [name]? This will cause you to explode!", "[name] Confirmation", "Yes", "No")
+		var/response = tgui_alert(imp_in, "Вы уверены, что хотите активировать [name]? Это вас взорвёт!", "Подтверждение активации", list("Да", "Нет"))
 		popup = FALSE
-		if(response == "No")
+		if(response != "Да")
 			return FALSE
 	if(QDELETED(src) || !imp_in || active)
 		return FALSE
@@ -62,7 +62,7 @@
 	heavy = round(heavy)
 	medium = round(medium)
 	weak = round(weak)
-	to_chat(imp_in, "<span class='notice'>You activate your [name].</span>")
+	to_chat(imp_in, "<span class='notice'>Вы активируете [name].</span>")
 	active = TRUE
 	var/turf/boomturf = get_turf(imp_in)
 	if(is_antag_training_atom(boomturf))
@@ -70,7 +70,7 @@
 	else
 		message_admins("[ADMIN_LOOKUPFLW(imp_in)] has activated their [name] at [ADMIN_VERBOSEJMP(boomturf)], with cause of [cause].")
 	if(delay > 7)
-		imp_in?.visible_message("<span class='warning'>[imp_in] starts beeping ominously!</span>")
+		imp_in?.visible_message("<span class='warning'>[imp_in] начинает зловеще пищать!</span>")
 		playsound(get_turf(imp_in ? imp_in : src), 'sound/items/timer.ogg', 30, 0)
 		addtimer(CALLBACK(src, PROC_REF(double_pain), TRUE), delay * 0.25)
 		addtimer(CALLBACK(src, PROC_REF(double_pain)), delay * 0.5)
@@ -84,7 +84,7 @@
 	if(!imp_in)
 		return
 	if(message && imp_in.stat == CONSCIOUS)
-		imp_in.visible_message("<span class='warning'>[imp_in] doubles over in pain!</span>")
+		imp_in.visible_message("<span class='warning'>[imp_in] сгибается от боли!</span>")
 	imp_in.DefaultCombatKnockdown(140)
 
 /obj/item/implant/explosive/proc/boom_goes_the_weasel()

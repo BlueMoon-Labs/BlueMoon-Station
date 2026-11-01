@@ -180,7 +180,7 @@
 	var/rendered = "<span class='game say'><span class='name'>[name]</span> <span class='message'>[say_quote(message)]</span></span>"
 	var/dead_rendered = "<span class='game say'><span class='name'>[name] (Imaginary friend of [owner])</span> <span class='message'>[say_quote(message)]</span></span>"
 
-	to_chat(owner, "[rendered]")
+	to_chat(owner, owner?.apply_hearing_fx(rendered, src))
 	to_chat(src, "[rendered]")
 
 	//speech bubble

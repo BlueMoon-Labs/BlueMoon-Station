@@ -55,6 +55,10 @@
 /datum/brain_trauma/proc/handle_hearing(datum/source, list/hearing_args)
 	UnregisterSignal(owner, COMSIG_MOVABLE_HEAR)
 
+/// Только правки текста услышанного, без последствий: их получает и речь галлюцинаций.
+/datum/brain_trauma/proc/mark_heard_text(list/hearing_args)
+	return
+
 //Called when speaking
 /datum/brain_trauma/proc/handle_speech(datum/source, list/speech_args)
 	UnregisterSignal(owner, COMSIG_MOB_SAY)

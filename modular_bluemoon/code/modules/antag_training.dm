@@ -577,8 +577,9 @@ GLOBAL_VAR_INIT(antag_training_round_end_hooked, FALSE)
 	prompt.session_ref = WEAKREF(src)
 	exit_prompt = prompt
 	prompt.ui_interact(user)
-	if(exit_prompt == prompt && !SStgui.get_open_ui(user, prompt))
-		exit_prompt = null
+	if(!SStgui.get_open_ui(user, prompt))
+		if(exit_prompt == prompt)
+			exit_prompt = null
 		qdel(prompt)
 		return FALSE
 	return TRUE

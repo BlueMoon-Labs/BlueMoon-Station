@@ -1793,15 +1793,37 @@ li {
 }
 
 .vote-hint {
-	margin-top: 8px;
-	padding-top: 6px;
-	border-top: 1px solid rgba(0, 0, 0, 0.12);
-	color: #6b7684;
-	font-size: 12px;
+  position: relative;
+  margin-top: 8px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.035);
+  color: #1f262e;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.05s ease;
+  user-select: none;
 }
 
 .vote-hint a {
-	color: #0093c4;
+  color: inherit;
+  text-decoration: none;
+}
+
+.vote-hint a::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.vote-hint:hover {
+  background: rgba(0, 0, 0, 0.07);
+}
+
+.vote-hint:active {
+  transform: translateY(1px);
 }
 
 .vote-name {
@@ -1959,7 +1981,9 @@ li {
   font-weight: bold;
   font-size: 185%;
   text-shadow: 0 0 8px rgba(255, 90, 0, 0.4);
-  animation: infernoflicker 1400ms ease-in-out infinite alternate;
+  // text-shadow перерисовывает чат каждый кадр: 15 шагов в секунду
+  // почти не отличить от плавного, а кадров вчетверо меньше.
+  animation: infernoflicker 1400ms steps(21) infinite alternate;
 }
 
 @keyframes infernoflicker {
@@ -2006,7 +2030,7 @@ li {
   font-style: italic;
   font-weight: bold;
   text-shadow: 0 0 6px rgba(120, 0, 30, 0.4);
-  animation: mesmer-pulse 2600ms ease-in-out infinite alternate;
+  animation: mesmer-pulse 2600ms steps(39) infinite alternate;
 }
 
 @keyframes mesmer-pulse {
@@ -2027,7 +2051,7 @@ li {
   font-weight: bold;
   letter-spacing: 0.03em;
   text-shadow: 0 0 3px rgba(255, 60, 0, 0.35);
-  animation: sm_delam_pulse 2000ms ease-in-out infinite;
+  animation: sm_delam_pulse 2000ms steps(15) infinite;
 }
 
 @keyframes sm_delam_pulse {
@@ -2121,7 +2145,7 @@ li {
   letter-spacing: 1px;
   opacity: 0.85;
   text-shadow: 0 0 5px rgba(155, 176, 214, 0.3);
-  animation: last-fade 2200ms ease-out 1 both;
+  animation: last-fade 2200ms steps(33) 1 both;
 }
 
 @keyframes last-fade {

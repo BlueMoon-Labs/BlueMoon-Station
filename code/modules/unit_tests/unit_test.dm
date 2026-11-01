@@ -30,6 +30,9 @@ GLOBAL_VAR_INIT(unit_test_spritesheet_dir, "data/spritesheets_unit_tests/[unit_t
 GLOBAL_VAR_INIT(unit_test_asset_json_dir, "data/asset_cache/[unit_test_shard_subdir()]")
 
 /proc/unit_test_shard_subdir()
+	var/instance = world.params[UNIT_TEST_INSTANCE_PARAMETER]
+	if(instance)
+		return "[instance]/"
 	var/shard_param = world.params[UNIT_TEST_SHARD_PARAMETER]
 	return shard_param ? "shard[splittext(shard_param, "/")[1]]/" : ""
 
@@ -302,20 +305,9 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 #undef WAIT_BUDGET_TIMER_FIRES
 #undef WAIT_BUDGET_DESCRIPTION
 
-/// Reads repository source files for structural audit tests.
-/// Integration CI runs DreamDaemon from `ci_test/`, while source stays in the parent checkout.
+/// Reads repository source files for structural audit tests. Test worlds run from the repository root.
 /datum/unit_test/proc/read_source_file(source_path)
-	var/source = file2text(source_path)
-	if(length(source))
-		return source
-
-#ifdef CIBUILDING
-	source = file2text("../[source_path]")
-	if(length(source))
-		return source
-#endif
-
-	return source
+	return file2text(source_path)
 
 /*
 /datum/unit_test/proc/test_screenshot(name, icon/icon)
@@ -553,12 +545,17 @@ GLOBAL_VAR_INIT(focused_tests, focused_tests())
 /// Roundstart callbacks run before ticker flips to PLAYING and PostSetup is
 /// asynchronous. Poll those explicit readiness conditions instead of sleeping
 /// an arbitrary ten seconds before every test run.
+/// Tests also wait for the background seeding of the free z-level pool, so they run on a settled world.
 /proc/RunUnitTestsWhenReady(deadline)
 	if(isnull(deadline))
-		deadline = world.time + 2 MINUTES
+		deadline = world.time + 10 MINUTES
 	if(world.time > deadline)
-		CRASH("Unit test round bootstrap did not finish ticker PostSetup within two minutes")
-	if(!SSticker.HasRoundStarted() || !SSticker.setup_done)
+		// Nothing else would end this round: fail the run and reboot instead of waiting forever.
+		GLOB.failed_any_test = TRUE
+		log_test("FAIL: unit test round bootstrap did not finish ticker PostSetup within ten minutes")
+		SSticker.Reboot("Unit test round bootstrap timed out", "unit test timeout", 1)
+		CRASH("Unit test round bootstrap did not finish ticker PostSetup within ten minutes")
+	if(!SSticker.HasRoundStarted() || !SSticker.setup_done || SSzclear.is_seeding_pool())
 		addtimer(CALLBACK(GLOBAL_PROC, GLOBAL_PROC_REF(RunUnitTestsWhenReady), deadline), world.tick_lag)
 		return
 	RunUnitTests()

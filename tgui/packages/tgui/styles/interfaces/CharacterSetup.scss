@@ -1,0 +1,857 @@
+@use 'sass:color';
+
+.CharacterSetup {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 0.6rem;
+  container-type: inline-size;
+
+  &__header {
+    position: relative;
+    z-index: 7;
+    border-bottom: 2px solid #507c99;
+  }
+
+  > .Dimmer {
+    z-index: 8;
+  }
+
+  &__header-actions {
+    display: flex;
+    align-items: center;
+
+    .Button {
+      margin-bottom: 0;
+    }
+  }
+
+  &__preset-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+  }
+
+  &__preset-job-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 12px;
+    height: 12px;
+
+    .jobs8x8 {
+      transform: scale(1.5);
+      image-rendering: pixelated;
+    }
+  }
+
+  &__preset-name {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  // Списки пресетов не наследуют высоту и отступы списков полей редактора.
+  .Dropdown__control.CharacterSetup__preset-selector {
+    font-size: inherit;
+    min-height: 0;
+    height: 1.667em;
+    line-height: 1.667em;
+    padding: 0 0.5em;
+
+    .Dropdown__selected-text {
+      height: auto;
+      white-space: nowrap;
+      overflow-wrap: normal;
+    }
+
+    .Dropdown__arrow-button {
+      height: 100%;
+      line-height: inherit;
+    }
+  }
+
+  &__name {
+    font-size: 1.25rem;
+    font-weight: bold;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  &__body {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr) clamp(330px, 24%, 480px);
+    flex: 1;
+    min-height: 0;
+    gap: 0.6rem;
+
+    &--collapsed {
+      grid-template-columns: minmax(0, 1fr) clamp(330px, 24%, 480px);
+    }
+  }
+
+  &__editor {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+  }
+
+  &__search {
+    position: relative;
+    flex-shrink: 0;
+    margin-bottom: 0.5rem;
+    z-index: 6;
+  }
+
+  &__search-results {
+    max-height: min(50vh, 32rem);
+    overflow-y: auto;
+    padding: 0.6rem;
+    background: transparent;
+    border: 1px solid #507c99;
+
+    .Button {
+      white-space: normal;
+      padding: 0.5rem;
+      color: #fff;
+      background-color: transparent;
+      transition: background-color 50ms;
+
+      &:hover,
+      &.Button--selected {
+        background-color: rgba(255, 255, 255, 0.08);
+      }
+    }
+  }
+
+  &__search-highlight {
+    outline: 2px solid #e4be59;
+    outline-offset: -2px;
+    background-color: rgba(228, 190, 89, 0.12);
+  }
+
+  &__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    flex-shrink: 0;
+
+    .Tabs__tab {
+      flex: 1 0 auto;
+      text-align: center;
+    }
+  }
+
+  &__appearance > .Section__title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    .Section__buttons {
+      position: static;
+      display: flex;
+      align-items: center;
+      margin-top: 0;
+    }
+  }
+
+  &__content {
+    flex: 1;
+    min-height: 0;
+    min-width: 0;
+  }
+
+  &__slots > .Section__rest {
+    flex: 1 1 0;
+    min-height: 0;
+
+    > .Section__content {
+      position: absolute;
+      inset: 0;
+      height: auto;
+      overflow: hidden;
+    }
+  }
+
+  &__slot-panel {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 0.6rem;
+  }
+
+  &__slot-label-tools {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+
+    .Button {
+      margin: 0;
+    }
+  }
+
+  &__slot-list {
+    flex: 1;
+    min-height: 0;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    scrollbar-gutter: stable;
+    scrollbar-color: auto;
+
+    &::-webkit-scrollbar {
+      width: 14px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: #18212a;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: #6b8598;
+      border: 3px solid #18212a;
+      border-radius: 7px;
+      min-height: 32px;
+    }
+  }
+
+  &__slot.Button {
+    display: flex;
+    align-items: center;
+    padding: 0.65rem 0.5rem;
+    gap: 0.6rem;
+    line-height: 1.3;
+    white-space: normal;
+  }
+
+  &__slot-number {
+    color: #b3c8d8;
+    font-size: 0.9rem;
+    min-width: 1.6rem;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  &__slot-name {
+    flex: 1;
+    overflow-wrap: anywhere;
+  }
+
+  &__slot-tools {
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    padding-top: 0.7rem;
+    max-height: 45%;
+    overflow-y: auto;
+  }
+
+  &__preview {
+    min-height: 0;
+    margin-bottom: 0;
+
+    > .Section__rest {
+      flex: 1 1 0;
+      min-height: 0;
+
+      > .Section__content {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        height: auto;
+        overflow: hidden;
+      }
+    }
+  }
+
+  &__preview-toolbar {
+    flex-shrink: 0;
+    background: transparent;
+    padding: 0.6rem 0 0.8rem;
+    margin-bottom: 0.5rem;
+
+    // Список открывается вверх и помещается в панели, не заходя на нативную карту BYOND.
+    .Dropdown__menu {
+      max-height: 9.67rem;
+    }
+
+    .CharacterSetup__cycle {
+      > .Stack__item {
+        align-self: stretch;
+        display: flex;
+      }
+
+      .CharacterSetup__cycle-arrow {
+        height: auto;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+  }
+
+  &__preview-map {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+  }
+
+  &__preview-rotation,
+  &__preview-zoom {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr) 28px;
+    align-items: center;
+    gap: 4px;
+    margin-top: 6px;
+
+    .Button {
+      margin: 0;
+      min-height: 28px;
+    }
+  }
+
+  &__preview-zoom {
+    grid-template-columns: 28px minmax(0, 1fr) 28px 28px;
+
+    .NumberInput {
+      box-sizing: border-box;
+      margin: 0;
+    }
+  }
+
+  &__preview-modes {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 4px;
+    flex-shrink: 0;
+
+    .Button {
+      margin: 0;
+      white-space: normal;
+      line-height: 1.3;
+      padding-top: 0.4rem;
+      padding-bottom: 0.4rem;
+    }
+  }
+
+  &__loadout-columns {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px 8px;
+    margin-bottom: 0.6rem;
+  }
+
+  &__loadout-column {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+
+    .Button {
+      width: 100%;
+      margin: 0;
+      white-space: normal;
+      line-height: 1.3;
+    }
+  }
+
+  &__settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+    grid-auto-rows: 1px;
+    grid-auto-flow: dense;
+    column-gap: 0.7rem;
+
+    &--compact {
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    }
+  }
+
+  &__settings-item {
+    min-width: 0;
+  }
+
+  &__settings-content {
+    display: flow-root;
+    padding-bottom: 0.7rem;
+
+    > .Section {
+      margin: 0;
+
+      &:first-child {
+        margin-top: 0;
+      }
+    }
+  }
+
+  .CharacterSetup__card {
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 2px;
+    background: transparent;
+    margin-bottom: 0.7rem;
+    margin-left: 0;
+    margin-right: 0;
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  &__card-title {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.3rem 0.6rem 0.65rem 0.6rem;
+    margin: 0 0 0.8rem 0;
+    border-bottom: 1px solid rgba(150, 180, 200, 0.2);
+    border-radius: 2px;
+    background: rgba(120, 160, 190, 0.18);
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #fff;
+
+    .Icon {
+      width: 1.4rem;
+      color: #77b7dc;
+      text-align: center;
+    }
+  }
+
+  &__limb-title {
+    display: inline-block;
+    padding: 0.15rem 0.5rem;
+    border-radius: 2px;
+    background: rgba(120, 160, 190, 0.22);
+  }
+
+  &__limb-markings {
+    padding-right: 0.2rem;
+
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba(150, 180, 200, 0.35);
+      border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.25);
+    }
+  }
+
+  &__field-label {
+    color: #b9c6d1;
+  }
+
+  &__cycle {
+    width: 100%;
+    min-width: 0;
+
+    > .Stack__item {
+      min-width: 0;
+    }
+  }
+
+  .CharacterSetup__cycle-arrow,
+  .CharacterSetup__icon-button,
+  .CharacterSetup__toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 28px;
+    min-width: 28px;
+    height: 28px;
+    min-height: 28px;
+    padding: 0;
+    margin-right: 0;
+  }
+
+  .CharacterSetup__toggle {
+    align-self: center;
+    width: 20px;
+    min-width: 20px;
+    height: 20px;
+    min-height: 20px;
+    margin: 0;
+    line-height: 1;
+
+    .Icon {
+      font-size: 14px;
+    }
+  }
+
+  &__field-control > .Dropdown {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .Dropdown__control {
+    display: flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 0.3rem 0.45rem;
+    gap: 0.4rem;
+    line-height: 1.35;
+    margin-right: 0;
+  }
+
+  .Dropdown__selected-text {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+    height: auto;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .Dropdown__arrow-button {
+    flex-shrink: 0;
+    height: auto;
+  }
+
+  .Dropdown__menuentry {
+    min-height: 28px;
+    padding: 0.45rem 0.6rem;
+    line-height: 1.35;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  .CharacterSetup__preview-toolbar .Dropdown__control {
+    min-height: 30px;
+    font-size: 1.05rem;
+  }
+
+  .CharacterSetup__preview-toolbar .Dropdown__selected-text {
+    text-align: right;
+    padding-right: 0.25rem;
+  }
+
+  .CharacterSetup__preview-toolbar .Dropdown__arrow-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: auto;
+    padding-left: 0;
+    border-left: 0;
+  }
+
+}
+
+// Блоки темы панели, кнопки, вкладки и поля в акцент темы.
+@mixin character-setup-theme($accent, $alpha-buttons: false, $text: null, $border: null, $radius: null) {
+  $bg-c: null;
+  $panel-c: rgba(0, 0, 0, 0.4);
+  $radius-c: 0px;
+  $btn-radius: 0px;
+  $font-c: (Consolas, 'Courier New', monospace);
+  $text-c: $accent;
+  $border-c: rgba(color.scale($accent, $saturation: -30%), 0.55);
+  $title-border-c: $border-c;
+  $btn-rest: color.scale($accent, $lightness: -30%);
+  $btn-hover: $accent;
+  $btn-sel: color.scale($accent, $lightness: 30%);
+  $btn-sel-hover: color.scale($accent, $lightness: 45%);
+  $btn-sel-text: #ffffff;
+  $tab-hover: rgba($accent, 0.35);
+  $tab-selected: $accent;
+  $tab-underline: color.scale($accent, $lightness: 70%);
+  $menu-bg: color.scale($accent, $lightness: -60%, $saturation: -55%);
+  $track-c: $menu-bg;
+  $thumb-c: $accent;
+  $input-bg: rgba(0, 0, 0, 0.45);
+  $input-border: rgba($accent, 0.9);
+  $menuentry-hover: rgba($accent, 0.6);
+
+  @if $text {
+    $text-c: $text;
+  }
+
+  @if $border {
+    $border-c: $border;
+  }
+
+  @if $radius {
+    $radius-c: $radius;
+    $btn-radius: $radius;
+  }
+
+  @if $alpha-buttons {
+    // Чат-темы.
+    $bg-c: #202020;
+    $panel-c: #1b1b1b;
+    $radius-c: 6px;
+    $btn-radius: 4px;
+    $font-c: (Verdana, Geneva, sans-serif);
+    $text-c: $accent;
+    $title-border-c: rgba($accent, 0.3);
+    $btn-rest: rgba($accent, 0.1);
+    $btn-hover: rgba($accent, 0.2);
+    $btn-sel: rgba($accent, 0.3);
+    $btn-sel-hover: rgba($accent, 0.42);
+    $btn-sel-text: $accent;
+    $tab-hover: rgba($accent, 0.12);
+    $tab-selected: rgba($accent, 0.14);
+    $tab-underline: $accent;
+    $menu-bg: rgba(24, 24, 24, 0.97);
+    $track-c: #161616;
+    $thumb-c: #3a3a3a;
+    $input-bg: #111111;
+    $input-border: #3a3a3a;
+    $menuentry-hover: rgba($accent, 0.12);
+  }
+
+  $label-c: rgba($text-c, 0.62);
+
+  @if $bg-c {
+    background-color: $bg-c;
+  }
+
+  .CharacterSetup {
+    color: $text-c;
+    font-family: $font-c;
+  }
+
+  .Section {
+    background-color: $panel-c;
+    border: 1px solid $border-c;
+    border-radius: $radius-c;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+
+    .Section__title {
+      border-bottom-color: $title-border-c;
+    }
+  }
+
+  .CharacterSetup__header {
+    @if $alpha-buttons {
+      background-color: rgba(0, 0, 0, 0.4);
+      border-bottom: 1px solid #333333;
+    } @else {
+      background-color: rgba(0, 0, 0, 0.5);
+      border-bottom: 2px solid $accent;
+    }
+  }
+
+  .CharacterSetup__search-results {
+    background-color: $menu-bg;
+    border-color: $border-c;
+    border-radius: $radius-c;
+  }
+
+  .CharacterSetup__slot-list::-webkit-scrollbar-track {
+    background: $track-c;
+  }
+
+  .CharacterSetup__slot-list::-webkit-scrollbar-thumb {
+    background: $thumb-c;
+    border-color: $track-c;
+  }
+
+  .CharacterSetup__slot-number {
+    color: $label-c;
+  }
+
+  .CharacterSetup__slot-tools {
+    border-top-color: $border-c;
+  }
+
+  .CharacterSetup__card-title {
+    border-bottom-color: $border-c;
+    background: rgba($accent, 0.16);
+
+    .Icon {
+      color: rgba($text-c, 0.8);
+    }
+  }
+
+  // Заливка названий секций-категорий акцентом темы.
+  .CharacterSetup .Section > .Section__title {
+    background: rgba($accent, 0.12);
+  }
+
+  .CharacterSetup__limb-title {
+    background: rgba($accent, 0.2);
+  }
+
+  .CharacterSetup__limb-markings::-webkit-scrollbar-thumb {
+    background: rgba($accent, 0.45);
+  }
+
+  .CharacterSetup__limb-markings::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  .CharacterSetup__field-label {
+    color: $label-c;
+  }
+
+  .color-label {
+    color: $label-c !important;
+  }
+
+  .Tabs {
+    background-color: rgba(0, 0, 0, 0.35);
+  }
+
+  .Tab {
+    color: rgba($text-c, 0.6);
+
+    &:hover {
+      background-color: $tab-hover;
+    }
+
+    &.Tab--selected {
+      background-color: $tab-selected;
+      color: $btn-sel-text;
+      border-bottom-color: $tab-underline;
+    }
+  }
+
+  .Input {
+    background-color: $input-bg;
+    border-color: $input-border;
+    border-radius: $btn-radius;
+  }
+
+  .Input__input {
+    font-family: $font-c;
+  }
+
+  .Dropdown__menu,
+  .Dropdown__menu-noscroll {
+    background-color: $menu-bg;
+    border-radius: $radius-c;
+  }
+
+  .Dropdown__search {
+    background-color: $menu-bg;
+  }
+
+  .Dropdown__menuentry:hover {
+    background-color: $menuentry-hover;
+  }
+
+  .Button {
+    border-radius: $btn-radius;
+  }
+
+  // Шкала кнопок темы: покой, наведение и выбор отличаются яркостью акцента.
+  .Button--color--default {
+    background-color: $btn-rest;
+
+    &:hover,
+    &:focus {
+      background-color: $btn-hover;
+    }
+  }
+
+  .Button.Button--selected,
+  .Button.Button--selected:hover,
+  .Button.Button--selected:focus {
+    background-color: $btn-sel;
+    color: $btn-sel-text;
+  }
+
+  .Button.Button--selected:hover,
+  .Button.Button--selected:focus {
+    background-color: $btn-sel-hover;
+  }
+}
+
+// Темы КПК: оболочку (шапку и фон) красит tgui-тема окна, здесь — панели и элементы интерфейса.
+.Window__content.CharacterSetupTheme--kpk {
+  @include character-setup-theme(#384e68, $text: #cfe0f2);
+}
+
+.Window__content.CharacterSetupTheme--terminal {
+  @include character-setup-theme(#1a7a1a, $text: #8ce694);
+}
+
+.Window__content.CharacterSetupTheme--syndie {
+  @include character-setup-theme(#397439, $text: #f0c9c9);
+}
+
+.Window__content.CharacterSetupTheme--cat {
+  @include character-setup-theme(#c07550, $text: #efd6c4, $radius: 6px);
+}
+
+.Window__content.CharacterSetupTheme--synth {
+  @include character-setup-theme(#7b2fbe, $text: #e0ccf5);
+}
+
+.Window__content.CharacterSetupTheme--hotpink {
+  @include character-setup-theme(#ae4ab8, $text: #f2cef4);
+}
+
+.Window__content.CharacterSetupTheme--hackerman {
+  @include character-setup-theme(#00ff00, $text: #b4ffbc);
+}
+
+.Window__content.CharacterSetupTheme--malfunction {
+  @include character-setup-theme(#910101, $text: #dce7f0);
+}
+
+.Window__content.CharacterSetupTheme--heretic {
+  @include character-setup-theme(#a83232, $text: #e0d4cc);
+}
+
+.Window__content.CharacterSetupTheme--wizard {
+  @include character-setup-theme(#1596b6, $text: #d4e9f0);
+}
+
+.Window__content.CharacterSetupTheme--darkmode {
+  @include character-setup-theme(#4a5568, $text: #dce0e8);
+}
+
+.Window__content.CharacterSetupTheme--pact {
+  @include character-setup-theme(#397439, $text: #d2daee);
+}
+
+.Window__content.CharacterSetupTheme--abductor {
+  @include character-setup-theme(#ad2350, $text: #ecd6e2);
+}
+
+.Window__content.CharacterSetupTheme--neutral {
+  @include character-setup-theme(#ffb300, $text: #ffe9c4);
+}
+
+.Window__content.CharacterSetupTheme--inteq {
+  @include character-setup-theme(#397439, $text: #f2e2c8);
+}
+
+// Темы чата.
+.Window__content.CharacterSetupTheme--chat {
+  @include character-setup-theme(#abc6ec, $alpha-buttons: true, $border: #2b2b2b);
+}
+
+.Window__content.CharacterSetupTheme--chat_pink {
+  @include character-setup-theme(#ff9ec7, $alpha-buttons: true, $border: #2b2b2b);
+}
+
+.Window__content.CharacterSetupTheme--chat_violet {
+  @include character-setup-theme(#c9b6ff, $alpha-buttons: true, $border: #2b2b2b);
+}
+
+.Window__content.CharacterSetupTheme--chat_green {
+  @include character-setup-theme(#a5e8bc, $alpha-buttons: true, $border: #2b2b2b);
+}
+
+.Window__content.CharacterSetupTheme--chat_amber {
+  @include character-setup-theme(#f0c98a, $alpha-buttons: true, $border: #2b2b2b);
+}
+
+@container (max-width: 1100px) {
+  .CharacterSetup__body {
+    grid-template-columns: 174px minmax(0, 1fr) 290px;
+
+    &--collapsed {
+      grid-template-columns: minmax(0, 1fr) 290px;
+    }
+  }
+}

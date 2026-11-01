@@ -40530,7 +40530,6 @@
 /obj/structure/cable{
 	icon_state = "0-8"
 	},
-/obj/machinery/door/firedoor,
 /turf/open/floor/plating,
 /area/medical/virology)
 "fZh" = (
@@ -69836,7 +69835,6 @@
 /obj/structure/cable{
 	icon_state = "0-8"
 	},
-/obj/machinery/door/firedoor,
 /turf/open/floor/plating,
 /area/medical/virology)
 "kkB" = (
@@ -73310,9 +73308,6 @@
 	icon_state = "0-2"
 	},
 /obj/structure/cable,
-/obj/machinery/door/firedoor{
-	dir = 8
-	},
 /turf/open/floor/plating,
 /area/medical/virology)
 "kIz" = (
@@ -81328,7 +81323,6 @@
 /obj/structure/cable{
 	icon_state = "0-4"
 	},
-/obj/machinery/door/firedoor,
 /turf/open/floor/plating,
 /area/medical/virology)
 "lPp" = (
@@ -96076,9 +96070,6 @@
 /obj/machinery/door/firedoor,
 /obj/structure/cable{
 	icon_state = "0-2"
-	},
-/obj/machinery/door/firedoor{
-	dir = 8
 	},
 /turf/open/floor/plating,
 /area/medical/virology)
@@ -112558,7 +112549,6 @@
 	icon_state = "0-8"
 	},
 /obj/structure/cable,
-/obj/machinery/door/firedoor,
 /turf/open/floor/plating,
 /area/medical/virology)
 "qwI" = (

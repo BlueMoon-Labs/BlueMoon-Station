@@ -17337,11 +17337,11 @@
 /area/command/heads_quarters/cmo)
 "aIl" = (
 /obj/structure/chair/sofa/bench/left,
-/obj/effect/turf_decal/box/yellow/corners{
-	dir = 4
-	},
 /obj/effect/turf_decal/box/yellow/corners,
 /obj/effect/turf_decal/tile/neutral/half/contrasted,
+/obj/effect/turf_decal/box/yellow/corners{
+	dir = 8
+	},
 /turf/open/floor/plasteel/dark,
 /area/hallway/primary/central/fore)
 "aIm" = (
@@ -58132,7 +58132,7 @@
 /obj/effect/turf_decal/bot,
 /obj/structure/reagent_dispensers/watertank,
 /obj/effect/turf_decal/stripes/yellow/corner{
-	dir = 1
+	dir = 4
 	},
 /turf/open/floor/plating,
 /area/maintenance/starboard/aft)
@@ -60647,7 +60647,7 @@
 	},
 /obj/item/clothing/mask/gas,
 /obj/effect/turf_decal/stripes/yellow/corner{
-	dir = 8
+	dir = 1
 	},
 /turf/open/floor/plating,
 /area/maintenance/starboard/aft)
@@ -70881,10 +70881,10 @@
 /obj/structure/cable/yellow{
 	icon_state = "1-2"
 	},
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
+/obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4{
 	dir = 6
 	},
-/obj/effect/decal/cleanable/dirt,
 /turf/open/floor/plasteel/rivets/large,
 /area/maintenance/department/chapel/monastery)
 "eBc" = (
@@ -71813,7 +71813,7 @@
 	icon_state = "1-8"
 	},
 /obj/effect/turf_decal/stripes/yellow/corner{
-	dir = 4
+	dir = 8
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
 /turf/open/floor/plating{
@@ -73774,12 +73774,10 @@
 	dir = 4
 	},
 /obj/machinery/airalarm/directional/south,
-/obj/machinery/atmospherics/pipe/simple/supply/hidden{
-	dir = 5
-	},
 /obj/structure/cable/yellow{
 	icon_state = "4-8"
 	},
+/obj/machinery/atmospherics/pipe/simple/supply/hidden,
 /turf/open/floor/plasteel/rivets/large,
 /area/maintenance/department/chapel/monastery)
 "gUR" = (
@@ -75532,12 +75530,12 @@
 "ihz" = (
 /obj/structure/chair/sofa/bench/right,
 /obj/effect/turf_decal/box/yellow/corners{
-	dir = 8
-	},
-/obj/effect/turf_decal/box/yellow/corners{
 	dir = 1
 	},
 /obj/effect/turf_decal/tile/neutral/half/contrasted,
+/obj/effect/turf_decal/box/yellow/corners{
+	dir = 4
+	},
 /turf/open/floor/plasteel/dark,
 /area/hallway/primary/central/fore)
 "ihL" = (
@@ -79503,10 +79501,10 @@
 /turf/closed/wall/rust,
 /area/service/chapel)
 "lrb" = (
-/obj/machinery/atmospherics/components/unary/vent_pump/on{
+/obj/effect/landmark/event_spawn,
+/obj/machinery/atmospherics/components/unary/vent_pump/on/layer4{
 	dir = 8
 	},
-/obj/effect/landmark/event_spawn,
 /turf/open/floor/plasteel/rivets/large,
 /area/maintenance/department/chapel/monastery)
 "lrj" = (
@@ -81060,6 +81058,10 @@
 /obj/effect/turf_decal/tile/neutral/fourcorners,
 /turf/open/floor/plasteel,
 /area/hallway/primary/starboard)
+"mIC" = (
+/obj/effect/mapping_helpers/airlock/access/all/service/chapel_office,
+/turf/closed/wall/r_wall/rust,
+/area/service/chapel/office)
 "mIF" = (
 /obj/structure/lattice/catwalk,
 /turf/open/floor/plating/airless,
@@ -81677,10 +81679,8 @@
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
 	dir = 10
 	},
-/obj/machinery/atmospherics/pipe/manifold/supply/hidden{
-	dir = 4
-	},
 /obj/effect/decal/cleanable/dirt,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
 /turf/open/floor/plasteel/rivets/large,
 /area/maintenance/department/chapel/monastery)
 "nna" = (
@@ -82719,6 +82719,16 @@
 	initial_gas_mix = "plasma=70000;TEMP=293.15"
 	},
 /area/maintenance/space_hut/plasmaman)
+"oiU" = (
+/obj/structure/cable/yellow{
+	icon_state = "4-8"
+	},
+/obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2{
+	dir = 4
+	},
+/obj/machinery/atmospherics/pipe/manifold/supply/hidden/layer4,
+/turf/open/floor/plasteel/dark,
+/area/service/chapel)
 "ojq" = (
 /obj/structure/sink/puddle,
 /obj/structure/flora/ausbushes/reedbush{
@@ -82933,6 +82943,10 @@
 	},
 /turf/open/floor/plasteel/dark,
 /area/security/lockers)
+"oqm" = (
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
+/turf/open/floor/plasteel/dark,
+/area/service/chapel)
 "oqJ" = (
 /obj/machinery/door/airlock/external{
 	name = "Departure Shuttle Airlock";
@@ -86514,11 +86528,11 @@
 	icon_state = "1-2"
 	},
 /obj/machinery/atmospherics/pipe/simple/scrubbers/hidden/layer2,
-/obj/machinery/atmospherics/pipe/layer_manifold,
+/obj/effect/turf_decal/siding/thinplating/dark,
+/obj/machinery/atmospherics/pipe/simple/supply/hidden/layer4,
 /obj/machinery/door/airlock/grunge{
 	name = "Monastery Atmos"
 	},
-/obj/effect/turf_decal/siding/thinplating/dark,
 /turf/open/floor/plasteel/rivets/large,
 /area/maintenance/department/chapel/monastery)
 "rpM" = (
@@ -87951,6 +87965,10 @@
 /obj/effect/turf_decal/tile/neutral/fourcorners,
 /turf/open/floor/plasteel,
 /area/hallway/primary/central/fore)
+"syH" = (
+/obj/machinery/atmospherics/pipe/layer_manifold,
+/turf/closed/wall/rust,
+/area/maintenance/department/chapel/monastery)
 "szR" = (
 /obj/effect/turf_decal/stripes/yellow/line{
 	dir = 4
@@ -104073,7 +104091,7 @@ skV
 lzo
 sfM
 gdC
-skV
+mIC
 vnb
 vnb
 skV
@@ -106125,9 +106143,9 @@ hJx
 vzA
 rRs
 gUN
-jSV
-quE
-xOq
+syH
+oqm
+oiU
 cIp
 hzq
 gbP

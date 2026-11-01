@@ -1099,6 +1099,10 @@ use_mob_overlay_icon: if FALSE, it will always use the default_icon_file even if
 			. += "-[BP.dmg_overlay_type]"
 		if(BP.body_markings_list?.len)
 			. += "-[safe_json_encode(BP.body_markings_list)]"
+		// Импланты рисуются на конечности: без них тело с трубкой и без неё делили одну запись кэша
+		for(var/datum/bodypart_overlay/overlay as anything in BP.bodypart_overlays)
+			for(var/extra_key in overlay.icon_render_key(BP))
+				. += "-[overlay.type]-[extra_key]"
 		if(BP.icon)
 			. += "-[BP.icon]"
 		else

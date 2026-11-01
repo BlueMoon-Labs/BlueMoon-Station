@@ -405,7 +405,7 @@
 /obj/item/mod/module/flashlight/configure_edit(key, value)
 	switch(key)
 		if("light_color")
-			value = input(usr, "Pick new light color", "Flashlight Color") as color|null
+			value = tgui_input_color(usr, "Pick new light color", "Flashlight Color")
 			if(!value)
 				return
 			var/list/hsl = rgb2hsl(hex2num(copytext(value,2,4)),hex2num(copytext(value,4,6)),hex2num(copytext(value,6,8)))

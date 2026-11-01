@@ -1,0 +1,141 @@
+.Healthanalyzer__speciesAnchor {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+
+.Healthanalyzer__speciesBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35em;
+  max-width: 100%;
+  padding: 0.1em 0.45em;
+  border: 1px solid currentColor;
+  border-radius: 0.3em;
+  background-color: rgba(0, 0, 0, 0.25);
+  color: #18d855;
+  font-weight: bold;
+  line-height: 1.3;
+  vertical-align: baseline;
+
+  .Icon {
+    flex-shrink: 0;
+    font-size: 0.9em;
+  }
+
+  > span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  &--synthetic {
+    background-color: #303035;
+    color: #aaa9ad;
+
+    > span {
+      color: #dadade;
+    }
+  }
+
+  &--slime {
+    background-color: #123b3d;
+    color: #00ffff;
+
+    > span {
+      color: #b6ffff;
+    }
+  }
+
+  &--plasmaman {
+    background-color: #311934;
+    color: #c474d4;
+
+    > span {
+      color: #ebc4f1;
+    }
+  }
+
+  &--golem {
+    background-color: #372719;
+    color: #c58b4b;
+
+    > span {
+      color: #efd1ad;
+    }
+  }
+}
+
+.Healthanalyzer__limbRow {
+  display: grid;
+  grid-template-columns: minmax(0, 9rem) 5rem 4.5rem 6rem 6rem;
+  column-gap: 0.5rem;
+  text-align: left;
+}
+
+.Healthanalyzer__organCritical {
+  color: #6831a7;
+
+  .Healthanalyzer__organIcon {
+    filter: grayscale(1) brightness(0.5);
+  }
+}
+
+.Healthanalyzer__organDiagnosis {
+  overflow-wrap: anywhere;
+}
+
+.Healthanalyzer__missingOrgan {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.Healthanalyzer__organIcon {
+  width: 2rem;
+  height: 2rem;
+  object-fit: contain;
+  image-rendering: pixelated;
+  vertical-align: middle;
+  margin-right: 0.4rem;
+}
+
+.Healthanalyzer__wound {
+  position: relative;
+  display: inline-block;
+  max-width: calc(100% - 1rem);
+  margin-left: 1rem;
+  color: #c51e1e;
+  font-size: 0.95rem;
+}
+
+.Healthanalyzer__woundButton.Button {
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0.1em 0.3em;
+  margin: 0;
+  color: inherit;
+  background-color: transparent;
+  line-height: 1.4;
+  white-space: normal;
+  cursor: help;
+
+  &:hover,
+  &:focus-visible {
+    color: inherit;
+    background-color: rgba(197, 30, 30, 0.15);
+  }
+}
+
+.Healthanalyzer__woundTooltip,
+.Healthanalyzer__speciesTooltip {
+  position: absolute;
+  z-index: 10;
+  box-sizing: border-box;
+  overflow-y: auto;
+  overflow-wrap: anywhere;
+  pointer-events: auto;
+  font-size: 1rem;
+}
+
+.Healthanalyzer__speciesTooltip {
+  pointer-events: none;
+}

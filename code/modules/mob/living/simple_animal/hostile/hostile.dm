@@ -455,6 +455,8 @@
 		return FALSE
 	if(!src.loc || QDELETED(src)) // we're being destroyed or already removed from world
 		return FALSE
+	if(!can_damage_objects && isobj(the_target))
+		return FALSE
 
 	if(ismob(the_target)) //Target is in godmode, ignore it.
 		var/mob/M = the_target
@@ -613,6 +615,8 @@ GLOBAL_VAR_INIT(ai_move_delay_scale, 1)
 	if(QDELETED(src) || !target || QDELETED(target))
 		return
 	var/atom/attack_target = target
+	if(!can_damage_objects && isobj(attack_target))
+		return FALSE
 	if(SEND_SIGNAL(src, COMSIG_HOSTILE_ATTACKINGTARGET, attack_target) & COMPONENT_HOSTILE_NO_ATTACK)
 		return
 	// Signal handlers may clear or qdel the current target.

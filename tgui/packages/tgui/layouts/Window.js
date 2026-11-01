@@ -14,7 +14,8 @@ import { Icon } from '../components';
 import { UI_DISABLED, UI_INTERACTIVE, UI_UPDATE } from '../constants';
 import { useDebug } from '../debug';
 import { toggleKitchenSink } from '../debug/actions';
-import { dragStartHandler, recallWindowGeometry, resizeStartHandler, setWindowKey } from '../drag';
+import { dragStartHandler, getWindowSize, recallWindowGeometry, resizeStartHandler, setWindowKey } from '../drag';
+import { parseWingetSize } from '../drag.utils';
 import { IS_DEVELOPMENT } from '../env';
 import { createLogger } from '../logging';
 import { Layout } from './Layout';
@@ -29,7 +30,13 @@ const getZoomKey = config => (
 );
 
 export class Window extends Component {
+  state = { maximized: false };
+  _mounted = false;
+  _maximizedRead = 0;
+
   componentDidMount() {
+    this._mounted = true;
+    this.trackMaximized(this.props.canMaximize);
     const { suspended, config } = useBackend();
     const { canClose = true } = this.props;
     this._wasSuspended = suspended;
@@ -47,6 +54,13 @@ export class Window extends Component {
   }
 
   componentDidUpdate(prevProps) {
+    if (prevProps.canMaximize !== this.props.canMaximize) {
+      this.trackMaximized(this.props.canMaximize);
+      if (!this.props.canMaximize) {
+        this._cancelRestoreDrag?.();
+        Byond.winset(window.__windowId__, { 'is-maximized': false });
+      }
+    }
     const { suspended, config } = useBackend();
     const wasSuspended = this._wasSuspended;
     const zoomKey = getZoomKey(config);
@@ -66,6 +80,127 @@ export class Window extends Component {
     this._lastWindowScale = config.window?.scale;
     this._lastZoomKey = zoomKey;
   }
+
+  componentWillUnmount() {
+    this._mounted = false;
+    this.trackMaximized(false);
+    this._cancelRestoreDrag?.();
+    if (this.props.canMaximize) {
+      // Окно пула может следующим получить другой интерфейс.
+      Byond.winset(window.__windowId__, { 'is-maximized': false });
+    }
+  }
+
+  trackMaximized(enabled) {
+    clearTimeout(this._maximizedResizeTimer);
+    window.removeEventListener('resize', this.scheduleMaximizedRead);
+    window.removeEventListener('focus', this.readMaximized);
+    if (enabled) {
+      window.addEventListener('resize', this.scheduleMaximizedRead);
+      window.addEventListener('focus', this.readMaximized);
+      this.readMaximized();
+    }
+  }
+
+  scheduleMaximizedRead = () => {
+    // Изменение размера порождает много resize; не отправляем winget на каждый кадр.
+    clearTimeout(this._maximizedResizeTimer);
+    this._maximizedResizeTimer = setTimeout(this.readMaximized, 100);
+  };
+
+  readMaximized = async () => {
+    const request = ++this._maximizedRead;
+    try {
+      const value = await Byond.winget(window.__windowId__, 'is-maximized');
+      if (value === undefined || value === null) return null;
+      const maximized = value === true || value === 1
+        || value === 'true' || value === '1';
+      if (this._mounted && request === this._maximizedRead
+          && this.state.maximized !== maximized) {
+        this.setState({ maximized });
+      }
+      return maximized;
+    }
+    catch (error) {
+      logger.warn('Не удалось прочитать состояние окна', error);
+      return null;
+    }
+  };
+
+  toggleMaximize = async () => {
+    if (this._maximizing) return;
+    this._maximizing = true;
+    try {
+      const maximized = await this.readMaximized();
+      if (!this._mounted || maximized === null) return;
+      Byond.winset(window.__windowId__, { 'is-maximized': !maximized });
+      await this.readMaximized();
+    }
+    finally {
+      this._maximizing = false;
+    }
+  };
+
+  handleDragStart = event => {
+    if (event.button !== 0) return;
+    // Перетаскивание временно отключает pointer-events, поэтому dblclick не доходит до заголовка.
+    if (this.props.canMaximize && event.detail === 2) {
+      this._cancelRestoreDrag?.();
+      this.toggleMaximize();
+      return;
+    }
+    if (!this.props.canMaximize || !this.state.maximized) {
+      dragStartHandler(event);
+      return;
+    }
+    this._cancelRestoreDrag?.();
+    const anchor = {
+      horizontalRatio: event.clientX / window.innerWidth,
+      clientY: event.clientY,
+    };
+    const start = [event.screenX, event.screenY];
+    let latestEvent = event;
+    let active = true;
+    let restoring = false;
+    const cancel = () => {
+      active = false;
+      document.removeEventListener('mousemove', move);
+      document.removeEventListener('mouseup', cancel);
+      window.removeEventListener('blur', cancel);
+      this._cancelRestoreDrag = null;
+    };
+    const move = async moveEvent => {
+      if (!moveEvent.buttons) {
+        cancel();
+        return;
+      }
+      latestEvent = moveEvent;
+      // Один клик по заголовку не должен снимать максимизацию.
+      if (restoring || Math.hypot(moveEvent.screenX - start[0], moveEvent.screenY - start[1]) < 4) return;
+      restoring = true;
+      Byond.winset(window.__windowId__, { 'is-maximized': false });
+      try {
+        const [size] = await Promise.all([
+          Byond.winget(window.__windowId__, 'size'),
+          this.readMaximized(),
+        ]);
+        if (!active || !this._mounted) return;
+        cancel();
+        dragStartHandler(latestEvent, {
+          ...anchor,
+          width: (parseWingetSize(size) || getWindowSize())[0],
+        });
+      }
+      catch (error) {
+        cancel();
+        logger.warn('Не удалось восстановить окно для перетаскивания', error);
+      }
+    };
+    this._cancelRestoreDrag = cancel;
+    document.addEventListener('mousemove', move);
+    document.addEventListener('mouseup', cancel);
+    window.addEventListener('blur', cancel);
+  };
 
   updateGeometry() {
     const { config } = useBackend();
@@ -90,6 +225,7 @@ export class Window extends Component {
       title,
       children,
       buttons,
+      canMaximize,
     } = this.props;
     const {
       config,
@@ -98,6 +234,7 @@ export class Window extends Component {
     const { debugLayout } = useDebug();
     const dispatch = useDispatch();
     const fancy = config.window?.fancy;
+    const { maximized } = this.state;
     // Determine when to show dimmer
     const showDimmer = config.user && (
       config.user.observer
@@ -113,7 +250,9 @@ export class Window extends Component {
           title={!suspended && (title || decodeHtmlEntities(config.title))}
           status={config.status}
           fancy={fancy}
-          onDragStart={dragStartHandler}
+          maximized={maximized}
+          onMaximize={canMaximize ? this.toggleMaximize : undefined}
+          onDragStart={this.handleDragStart}
           onClose={() => {
             logger.log('pressed close');
             dispatch(backendSuspendStart());
@@ -131,7 +270,7 @@ export class Window extends Component {
             <div className="Window__dimmer" />
           )}
         </div>
-        {!!fancy && (
+        {!!fancy && !(canMaximize && maximized) && (
           <>
             <div className="Window__resizeHandle__e"
               onMouseDown={resizeStartHandler(1, 0)} />
@@ -190,6 +329,8 @@ const TitleBar = (props) => {
     status,
     canClose,
     fancy,
+    maximized,
+    onMaximize,
     onDragStart,
     onClose,
     children,
@@ -226,6 +367,20 @@ const TitleBar = (props) => {
           </div>
         )}
       </div>
+      {!!onMaximize && (
+        <button
+          type="button"
+          className={classes([
+            'TitleBar__maximize TitleBar__clickable',
+            fancy && canClose && 'TitleBar__maximize--withClose',
+          ])}
+          title={maximized ? 'Восстановить размер окна' : 'Развернуть окно'}
+          aria-label={maximized ? 'Восстановить размер окна' : 'Развернуть окно'}
+          onMouseDown={event => event.stopPropagation()}
+          onClick={onMaximize}>
+          <Icon name={maximized ? 'window-restore' : 'window-maximize'} />
+        </button>
+      )}
       {IS_DEVELOPMENT && (
         <div
           className="TitleBar__devBuildIndicator"

@@ -584,7 +584,10 @@
 	return min(possible_counts)
 
 /datum/component/personal_crafting/proc/build_recipe_data(datum/crafting_recipe/R, datum/asset/spritesheet_batched/crafting/sheet)
+	if(R.menu_data)
+		return R.menu_data
 	var/list/data = list()
+	R.menu_data = data
 	data["name"] = R.name
 	data["desc"] = R.desc
 	data["ref"] = "[REF(R)]"

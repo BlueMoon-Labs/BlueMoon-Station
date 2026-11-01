@@ -14,7 +14,7 @@
     return TRUE
 
 /obj/item/clothing/underwear/shirt/toggle/proc/on_toggle(mob/user) // override this, not suit_toggle, which does checks
-    to_chat(usr, "<span class='notice'>You toggle [src]'s [togglename].</span>")
+    to_chat(usr, span_notice("Вы изменили [togglename] на [src]."))
 
 /obj/item/clothing/underwear/shirt/toggle/ui_action_click()
     suit_toggle()
@@ -39,7 +39,7 @@
 
 /obj/item/clothing/underwear/shirt/toggle/examine(mob/user)
     . = ..()
-    . += "Alt-click on [src] to toggle the [togglename]."
+    . += "Alt-клик, чтобы изменить [togglename] на [src]."
 
 //Copypaste ends
 
