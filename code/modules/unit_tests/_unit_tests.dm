@@ -410,6 +410,7 @@
 #include "multiz_radio_levels.dm"
 #include "multiz_render_graph.dm"
 #include "multiz_simplemob_climb.dm"
+#include "multiz_station_transparent_space.dm"
 #include "multiz_ventcrawl.dm"
 #include "mod_suit_fixes.dm"
 #include "modular_map_loader.dm" //SPLURT EDIT

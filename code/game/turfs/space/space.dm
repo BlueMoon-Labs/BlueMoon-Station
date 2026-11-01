@@ -118,9 +118,16 @@
 
 /// Звёзды на PLANE_SPACE под картинкой этажа снизу: закрывают черноту там, куда сжатый нижний этаж не достаёт.
 /turf/open/space/proc/add_starfield_underlay()
-	var/mutable_appearance/starfield = mutable_appearance(icon, SPACE_ICON_STATE, layer = TURF_LAYER - 0.02)
-	SET_PLANE_EXPLICIT(starfield, PLANE_SPACE, src)
-	starfield.appearance_flags = RESET_ALPHA | RESET_COLOR
+	//Прозрачного космоса на верхних этажах станции десятки тысяч турфов, а вариантов подложки - стейт на этаж.
+	var/static/list/starfields = list()
+	var/state = SPACE_ICON_STATE
+	var/key = "[icon]|[state]|[GET_TURF_PLANE_OFFSET(src)]"
+	var/mutable_appearance/starfield = starfields[key]
+	if(!starfield)
+		starfield = mutable_appearance(icon, state, layer = TURF_LAYER - 0.02)
+		SET_PLANE_EXPLICIT(starfield, PLANE_SPACE, src)
+		starfield.appearance_flags = RESET_ALPHA | RESET_COLOR
+		starfields[key] = starfield
 	underlays += starfield
 
 //ATTACK GHOST IGNORING PARENT RETURN VALUE
