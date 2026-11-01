@@ -195,6 +195,7 @@
 // #include "breath.dm"
 #include "brig_assistant_console.dm"
 #include "bugreport_fixes_2026_10.dm"
+#include "bugreports_2026_11.dm"
 #include "byond_list_references.dm"
 #include "byond_native_helpers.dm"
 // #include "card_mismatch.dm"

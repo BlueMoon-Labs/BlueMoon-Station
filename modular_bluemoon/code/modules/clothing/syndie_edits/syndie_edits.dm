@@ -118,6 +118,7 @@
 	icon = 'icons/obj/clothing/suits.dmi'
 	mob_overlay_icon = 'icons/mob/clothing/suit.dmi'
 	icon_state = "bulletproof-wm"
+	tail_state = "hos"
 
 /obj/item/clothing/under/syndicate/overalls
 	name = "Utility Overalls Turtleneck"
