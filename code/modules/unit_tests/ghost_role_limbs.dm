@@ -139,3 +139,37 @@
 
 	var/obj/item/bodypart/r_leg = H.get_bodypart(BODY_ZONE_R_LEG)
 	TEST_ASSERT_NULL(r_leg, "Right leg should be amputated on ghost-role spawn")
+
+/// Протез у вида с роботизированными конечностями не даёт очков квирков, ампутация и протез человека - дают.
+/datum/unit_test/limb_modification_points_by_species
+
+/datum/unit_test/limb_modification_points_by_species/Run()
+	var/datum/preferences/synth_prefs = new
+	synth_prefs.pref_species = new /datum/species/mammal/synthetic
+	var/datum/character_setup/synth_setup = new(synth_prefs)
+	for(var/zone in list(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_L_LEG))
+		limb_act(synth_setup, zone, LOADOUT_LIMB_PROSTHETIC)
+	TEST_ASSERT_EQUAL(length(synth_prefs.modified_limbs), 3, "Synthetic should still be able to pick cosmetic prosthetics")
+	TEST_ASSERT_EQUAL(synth_prefs.quirk_balance(), 0, "Prosthetics on a robotic-limbed species should give no quirk points")
+	limb_act(synth_setup, BODY_ZONE_R_LEG, LOADOUT_LIMB_AMPUTATED)
+	TEST_ASSERT_EQUAL(synth_prefs.quirk_balance(), 2, "Amputation should still give points to a synthetic")
+	TEST_ASSERT_EQUAL(synth_setup.build_modifications_data()["limbBonus"], 2, "Modifications tab should show the same limb bonus as the balance")
+
+	var/datum/preferences/human_prefs = new
+	human_prefs.pref_species = new /datum/species/human
+	var/datum/character_setup/human_setup = new(human_prefs)
+	limb_act(human_setup, BODY_ZONE_L_ARM, LOADOUT_LIMB_PROSTHETIC)
+	TEST_ASSERT_EQUAL(human_prefs.quirk_balance(), 1, "Prosthetic on an organic species should give a quirk point")
+
+	qdel(synth_setup)
+	qdel(synth_prefs)
+	qdel(human_setup)
+	qdel(human_prefs)
+
+/datum/unit_test/limb_modification_points_by_species/proc/limb_act(datum/character_setup/setup, zone, kind)
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human)
+	var/datum/tgui/ui = allocate(/datum/tgui, user, setup, "CharacterSetup")
+	ui.status = UI_INTERACTIVE
+	usr = user
+	setup.ui_act("set_limb", list("zone" = zone, "value" = kind), ui)
+	usr = null
