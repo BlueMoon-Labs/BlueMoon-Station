@@ -175,6 +175,7 @@
 
 /// Доступы, которые несёт моб (ID в руке, на поясе/шее; у силиконов - всё)
 /proc/netrun_mob_access(mob/user)
+	RETURN_TYPE(/list)
 	. = list()
 	if(QDELETED(user))
 		return

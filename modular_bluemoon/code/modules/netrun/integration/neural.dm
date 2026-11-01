@@ -140,7 +140,7 @@
 	last_locked = locked
 	return TRUE
 
-/// «Сетевое зрение»: подсветка ближайших узлов с адресом и уровнем доступа
+/// «Сетевое зрение»: короткие подписи ближайших узлов и доступное состояние.
 /datum/neural_monitor/netrun_vision
 	name = "NETVISION MONITOR"
 	processing = TRUE
@@ -200,7 +200,7 @@
 		overlay.color = netrun_access_color(level, node.is_online())
 		var/key = "\ref[src]:\ref[node]:NETVISION"
 		// Anchor on the physical turf: nested/hidden endpoints have no rendered host sprite.
-		owner.write_image_data(key, overlay, node.physical_turf(), node_text(node, level), 1.5 SECONDS, 24, -6, 10)
+		owner.write_image_data(key, overlay, node.physical_turf(), node_text(node, level), 1.5 SECONDS, 24, -6, 12)
 		var/datum/neural_interface_module/image_highlight/images = owner.modules["image"]
 		var/datum/image_holder_data/mark = images?.get_image_data_entry_by_key(key)
 		if(mark)
@@ -210,23 +210,46 @@
 			mark.overlay.alpha = mark.enabled ? 255 : 0
 			mark.overlay.appearance_flags |= RESET_COLOR | RESET_ALPHA
 			mark.overlay.cut_overlay(mark.screen_text)
-			mark.screen_text.maptext_width = 180
-			mark.screen_text.maptext_height = 112
+			mark.screen_text.maptext_width = 192
+			mark.screen_text.maptext_height = 40
 			mark.overlay.add_overlay(mark.screen_text)
 	console.release_path_tree(tree)
 	return TRUE
 
 /datum/neural_monitor/netrun_vision/proc/node_text(datum/component/netrun_node/node, level)
-	var/text = "[netrun_neural_text(node.get_name(), 36)]<br>[node.address] [netrun_neural_access_name(level)]"
-	if(level < NETRUN_ACCESS_GUEST)
-		return "[text]<br>LOCKED"
+	var/name = replacetext(replacetext(node.get_name(), "\n", " "), "\t", " ")
+	var/text = netrun_neural_text(name, 24)
+	if(!node.is_online())
+		return "[text]<br>OFFLINE"
 	if(level < NETRUN_ACCESS_USER)
-		return "[text]<br>STATUS: USER REQUIRED"
+		return text
 	var/atom/host = node.parent
-	var/list/status = host.netrun_status()
-	for(var/i = 1, i <= min(3, length(status)), i++)
-		text += "<br>[netrun_neural_text(status[i], 52)]"
+	var/summary = host.netrun_neural_summary()
+	if(summary)
+		text += "<br>[netrun_neural_text(summary, 24)]"
 	return text
+
+/// HUD labels have two short lines. Detailed device reports belong to the console.
+/atom/proc/netrun_neural_summary()
+	return null
+
+/obj/item/radio/intercom/netrun_neural_summary()
+	return "MIC [broadcasting ? "ON" : "OFF"] / SPK [listening ? "ON" : "OFF"]"
+
+/obj/machinery/door/airlock/netrun_neural_summary()
+	if(isElectrified())
+		return "ELECTRIFIED"
+	if(welded)
+		return "WELDED"
+	if(locked)
+		return "BOLTED"
+	return density ? "CLOSED" : "OPEN"
+
+/obj/machinery/camera/netrun_neural_summary()
+	return "CAM [status ? "ON" : "OFF"]"
+
+/obj/machinery/power/apc/netrun_neural_summary()
+	return "PWR [operating ? "ON" : "OFF"] / CELL [cell ? "[round(cell.percent())]%" : "NONE"]"
 
 /proc/netrun_access_color(level, online = TRUE)
 	if(!online)

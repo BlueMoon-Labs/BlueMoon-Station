@@ -1,4 +1,6 @@
 /datum/antagonist/traitor/netrun_contract_fixture/on_removal()
+	// This fixture never installs the traitor class or its round-wide effects.
+	SHOULD_CALL_PARENT(FALSE)
 	return
 
 /datum/netrun_contract_scene

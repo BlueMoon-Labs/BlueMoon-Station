@@ -59,6 +59,7 @@
 	return null
 
 /proc/netrun_turn_encounter(datum/actor)
+	RETURN_TYPE(/datum/netrun_combat_encounter)
 	actor = netrun_turn_actor(actor)
 	if(istype(actor, /datum/netrun_fortress))
 		var/datum/netrun_fortress/fortress = actor

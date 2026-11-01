@@ -34,6 +34,7 @@
 	SEND_SIGNAL(src, COMSIG_NETRUN_ENTITY_MODULE_READY, module)
 
 /mob/camera/netrun_entity/proc/get_module_host()
+	RETURN_TYPE(/datum/netrun_module_host)
 	if(!module_host)
 		module_host = new(src, /datum/netrun_entity_module)
 	return module_host
