@@ -353,6 +353,7 @@
 #include "keybindings_stuck_keys.dm"
 // #include "language_transfer.dm"
 #include "latejoin_fallback.dm"
+#include "lewd_summon.dm"
 #include "lighting.dm"
 #include "lighting_build_scope.dm"
 #include "lighting_deferred_init.dm"
