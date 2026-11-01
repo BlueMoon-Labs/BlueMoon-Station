@@ -201,7 +201,7 @@
 /datum/mind/proc/set_original_character(new_original_character)
 	original_character = WEAKREF(new_original_character)
 
-/datum/mind/proc/transfer_to(mob/new_character, var/force_key_move = 0)
+/datum/mind/proc/transfer_to(mob/new_character, var/force_key_move = 0, transfer_observers = TRUE)
 	if(current && new_character && current.training_origin != new_character.training_origin)
 		if(current.training_origin || new_character.training_origin)
 			return FALSE
@@ -226,7 +226,8 @@
 	var/mob/living/old_current = current
 	if(current)
 		//transfer anyone observing the old character to the new one
-		current.transfer_observers_to(new_character)
+		if(transfer_observers)
+			current.transfer_observers_to(new_character)
 
 		// Offload all mind languages from the old holder to a temp one
 		var/datum/language_holder/empty/temp_holder = new()

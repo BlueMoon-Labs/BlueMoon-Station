@@ -88,7 +88,9 @@ Will print: "/mob/living/carbon/human/death" (you can optionally embed it in a s
 #define ANTAG_LAYER                2
 #define FIRE_LAYER                 1
 
-#define TOTAL_LAYERS              49
+#define BODY_HARDLIGHT_LAYER       50
+#define LATEX_CLOTHING_LAYER       51
+#define TOTAL_LAYERS              51
 
 /// Задняя половина составной конечности без своего слоя рисуется на столько глубже передней.
 #define BEHIND_LIMB_LAYER_OFFSET 0.1
