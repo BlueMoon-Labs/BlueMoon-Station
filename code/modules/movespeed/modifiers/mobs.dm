@@ -198,3 +198,13 @@
 // Для квирка /datum/quirk/chameleon
 /datum/movespeed_modifier/quirk_chameleon_slowdown
 	multiplicative_slowdown = 1.1
+
+/datum/movespeed_modifier/sandevistan
+	multiplicative_slowdown = -1.25
+	flags = IGNORE_NOSLOW
+	blacklisted_movetypes = FLOATING
+
+/datum/movespeed_modifier/sandevistan/military
+	multiplicative_slowdown = -1.8
+	flags = IGNORE_NOSLOW
+	blacklisted_movetypes = FLOATING

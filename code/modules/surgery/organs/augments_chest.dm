@@ -308,6 +308,75 @@
 	icon_state = "chem_implant_corpo"
 	active_security_level = CHEM_SEQ_SEC_LEVEL
 
+/obj/item/organ/cyberimp/chest/blood_pump
+	name = "Blood pump implant"
+	desc = "An emergency blood pump that injects regenerative compounds into the bloodstream when critically injured."
+	slot = INTERNAL_ORGAN_CHEM_IMPLANT
+	w_class = WEIGHT_CLASS_TINY
+	icon = 'modular_bluemoon/icons/obj/surgery.dmi'
+	icon_state = "chem_implant"
+	actions_types = list()
+	var/charge_capacity = 2
+	var/charge = 2
+	var/charge_recharge_time = 150
+	var/last_use_time = 0
+	var/last_charge_time = 0
+	var/health_threshold = 60
+	var/list/chem_list = list(/datum/reagent/medicine/synthflesh = 50, /datum/reagent/medicine/charcoal = 10)
+	var/between_use_cooldown = 150
+	var/ready = TRUE
+
+/obj/item/organ/cyberimp/chest/blood_pump/Initialize()
+	. = ..()
+	last_charge_time = world.time
+	last_use_time = 0
+
+/obj/item/organ/cyberimp/chest/blood_pump/on_life(seconds, times_fired)
+	. = ..()
+	if(!.)
+		return
+	if(!owner || owner.stat == DEAD)
+		return
+	// recharge
+	if(charge < charge_capacity && world.time - last_charge_time >= charge_recharge_time)
+		charge++
+		last_charge_time = world.time
+	// check
+	if(charge <= 0)
+		return
+	if(world.time - last_use_time < between_use_cooldown)
+		return
+	if(owner.health <= health_threshold)
+		trigger_pump()
+
+/obj/item/organ/cyberimp/chest/blood_pump/proc/trigger_pump()
+	if(!owner || charge <= 0)
+		return
+	if(world.time - last_use_time < between_use_cooldown)
+		return
+	for(var/reagent_type in chem_list)
+		var/amount = chem_list[reagent_type]
+		owner.reagents.add_reagent(reagent_type, amount)
+	charge--
+	last_use_time = world.time
+	last_charge_time = world.time
+	to_chat(owner, span_notice("The blood pump injects emergency compounds into your bloodstream."))
+
+/obj/item/organ/cyberimp/chest/blood_pump/sec_level
+	name = "Corporate Blood pump implant"
+	icon_state = "chem_implant_corpo"
+	active_security_level = CHEM_SEQ_SEC_LEVEL
+
+/obj/item/organ/cyberimp/chest/blood_pump/antag
+	name = "Combat Blood pump implant"
+	desc = "An emergency blood pump that injects advanced regenerative compounds into the bloodstream when critically injured."
+	charge_capacity = 3
+	charge = 3
+	charge_recharge_time = 300
+	health_threshold = 40
+	chem_list = list(/datum/reagent/medicine/synthflesh = 50, /datum/reagent/medicine/stimulants = 2)
+	between_use_cooldown = 300
+
 /datum/chem_implant
 	var/chemname
 	var/key

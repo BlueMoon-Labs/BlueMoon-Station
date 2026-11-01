@@ -56,6 +56,14 @@
 	build_path = /obj/item/camera
 	category = list("initial", "Misc")
 
+/datum/design/binoculars_strong
+	name = "Advanced Binoculars"
+	id = "binoculars_strong"
+	build_type = AUTOLATHE
+	materials = list(/datum/material/titanium = 2000, /datum/material/glass = 1000)
+	build_path = /obj/item/binoculars/strong
+	category = list("initial", "Misc")
+
 //BlueMoon Edit. Begin.
 /datum/design/poster
 	name = "Motivational Poster"

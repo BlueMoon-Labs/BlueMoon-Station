@@ -14,6 +14,9 @@
 	var/obj/item/holder = null
 	// You can use this var for item path, it would be converted into an item on New()
 	var/retracting = FALSE
+	/// While implanted, this augment binds both arm slots and can be deployed/extracted from either arm.
+	/// Only blade/claw augments opt in; tool, gun and shield augments stay in a single arm.
+	var/occupies_both_arms = FALSE
 
 /obj/item/organ/cyberimp/arm/Initialize(mapload)
 	. = ..()
@@ -58,7 +61,8 @@
 
 /// Arm augments use directional sprites (_left/_right) determined by which arm the implant is in.
 /obj/item/organ/cyberimp/arm/get_overlay_state(image_layer, obj/item/bodypart/limb)
-	return "[aug_overlay][zone == BODY_ZONE_L_ARM ? "_left" : "_right"]"
+	var/side_zone = limb?.body_zone || zone
+	return "[aug_overlay][side_zone == BODY_ZONE_L_ARM ? "_left" : "_right"]"
 
 /obj/item/organ/cyberimp/arm/proc/add_item(obj/item/I)
 	if(I in items_list)
@@ -97,6 +101,53 @@
 		else
 			CRASH("Invalid zone for [type]")
 
+/// TRUE if this augment is explicitly configured to bind both arms at once
+/// (mantis blades, claw implants, Ratvar's brass claw).
+/obj/item/organ/cyberimp/arm/proc/is_dual_arm_implant()
+	return occupies_both_arms
+
+/// Dual-arm augments hold both arm slots simultaneously, while `zone` decides the primary side.
+/// Single-arm augments keep the default behaviour and only occupy their own slot.
+/obj/item/organ/cyberimp/arm/get_organ_slots()
+	if(is_dual_arm_implant())
+		return list(ORGAN_SLOT_LEFT_ARM_AUG, ORGAN_SLOT_RIGHT_ARM_AUG)
+	return ..()
+
+/// Dual-arm augments display the augment overlay on both limbs.
+/obj/item/organ/cyberimp/arm/get_bodypart_zones()
+	if(is_dual_arm_implant())
+		return list(BODY_ZONE_L_ARM, BODY_ZONE_R_ARM)
+	return ..()
+
+/// A dual-arm implant counts as being inside either arm, so it can be extracted from both.
+/obj/item/organ/cyberimp/arm/occupies_zone(target_zone)
+	if(is_dual_arm_implant())
+		return target_zone == BODY_ZONE_L_ARM || target_zone == BODY_ZONE_R_ARM
+	return ..()
+
+/// Surgery may install a dual-arm implant into either arm; it takes over both afterwards.
+/obj/item/organ/cyberimp/arm/can_insert_into_zone(target_zone)
+	if(is_dual_arm_implant())
+		return target_zone == BODY_ZONE_L_ARM || target_zone == BODY_ZONE_R_ARM
+	return ..()
+
+/// Re-point a dual-arm implant at the arm it is being installed into.
+/obj/item/organ/cyberimp/arm/prepare_insert(mob/living/carbon/target, target_zone)
+	. = ..()
+	if(is_dual_arm_implant())
+		set_arm_zone(target_zone)
+
+/// Changes the primary arm of the implant (sprite direction and default deployment side).
+/obj/item/organ/cyberimp/arm/proc/set_arm_zone(new_zone)
+	if(new_zone != BODY_ZONE_L_ARM && new_zone != BODY_ZONE_R_ARM)
+		return FALSE
+	if(zone == new_zone)
+		return TRUE
+	zone = new_zone
+	SetSlotFromZone()
+	update_icon()
+	return TRUE
+
 /obj/item/organ/cyberimp/arm/update_icon_state()
 	if(zone == BODY_ZONE_R_ARM)
 		transform = null
@@ -105,20 +156,18 @@
 
 /obj/item/organ/cyberimp/arm/examine(mob/user)
 	. = ..()
-	. += "<span class='info'>[src] is assembled in the [zone == BODY_ZONE_R_ARM ? "right" : "left"] arm configuration. You can use a screwdriver to reassemble it.</span>"
+	if(is_dual_arm_implant())
+		. += "<span class='info'>[src] is assembled in the [zone == BODY_ZONE_R_ARM ? "right" : "left"] arm configuration, but takes over both arms once implanted. You can use a screwdriver to reassemble it.</span>"
+	else
+		. += "<span class='info'>[src] is assembled in the [zone == BODY_ZONE_R_ARM ? "right" : "left"] arm configuration. You can use a screwdriver to reassemble it.</span>"
 
 /obj/item/organ/cyberimp/arm/screwdriver_act(mob/living/user, obj/item/I)
 	. = ..()
 	if(.)
 		return TRUE
 	I.play_tool_sound(src)
-	if(zone == BODY_ZONE_R_ARM)
-		zone = BODY_ZONE_L_ARM
-	else
-		zone = BODY_ZONE_R_ARM
-	SetSlotFromZone()
+	set_arm_zone(zone == BODY_ZONE_R_ARM ? BODY_ZONE_L_ARM : BODY_ZONE_R_ARM)
 	to_chat(user, "<span class='notice'>You modify [src] to be installed on the [zone == BODY_ZONE_R_ARM ? "right" : "left"] arm.</span>")
-	update_icon()
 
 /obj/item/organ/cyberimp/arm/deactivate(removing)
 	. = ..()
@@ -160,7 +209,15 @@
 	holder.slot_flags = null
 	holder.set_custom_materials(null)
 
-	var/arm_index = owner.get_empty_held_index_for_side(zone) || owner.get_empty_held_index_for_side("left")
+	// A dual-arm augment deploys into whichever hand was activated (the active hand),
+	// falling back to the other hand. A single-arm augment always uses its own arm.
+	var/arm_index
+	if(is_dual_arm_implant())
+		var/active_side = (owner.active_hand_index % 2 == 0) ? BODY_ZONE_R_ARM : BODY_ZONE_L_ARM
+		var/other_side = (active_side == BODY_ZONE_R_ARM) ? BODY_ZONE_L_ARM : BODY_ZONE_R_ARM
+		arm_index = owner.get_empty_held_index_for_side(active_side) || owner.get_empty_held_index_for_side(other_side)
+	else
+		arm_index = owner.get_empty_held_index_for_side(zone) || owner.get_empty_held_index_for_side("left")
 
 	var/obj/item/arm_item = owner.get_item_for_held_index(arm_index)
 

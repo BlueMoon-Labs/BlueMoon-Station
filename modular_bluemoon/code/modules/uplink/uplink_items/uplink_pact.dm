@@ -197,16 +197,6 @@
 /obj/item/autosurgeon/syndicate/thrusters
 	starting_organ = /obj/item/organ/cyberimp/chest/thrusters
 
-/datum/uplink_item/implants/binocular_lenses
-	name = "Binocular Lenses"
-	desc = "A pair of binocular lenses, that can be attached to the eyes."
-	item = /obj/item/autosurgeon/syndicate/binocular_lenses
-	cost = 2
-	purchasable_from = UPLINK_SYNDICATE_PACT_CREW
-
-/obj/item/autosurgeon/syndicate/binocular_lenses
-	starting_organ = /obj/item/organ/cyberimp/arm/lenses
-
 /datum/uplink_item/implants/arm_taser
 	name = "Arm-mounted Taser Implant"
 	desc = "A variant of the arm cannon implant that fires electrodes and disabler shots. The cannon emerges from the subject's arm and remains inside when not in use."
@@ -226,6 +216,37 @@
 
 /obj/item/autosurgeon/syndicate/high_intensity_photon_projector
 	starting_organ = /obj/item/organ/cyberimp/arm/flash
+
+/datum/uplink_item/implants/sandevistan
+	name = "Sandevistan"
+	desc = "A neural implant that allows you to briefly overclock your nervous system, greatly increasing your speed and reaction time. Comes with a long cooldown."
+	item = /obj/item/autosurgeon/syndicate/sandevistan
+	cost = 12
+	purchasable_from = UPLINK_SYNDICATE | UPLINK_SYNDICATE_PACT_CREW
+
+/obj/item/autosurgeon/syndicate/sandevistan
+	starting_organ = /obj/item/organ/cyberimp/brain/sandevistan
+
+/datum/uplink_item/implants/sandevistan_military
+	name = "Military Sandevistan"
+	desc = "A military-grade neural overclocking implant. Much more potent than civilian models with significantly reduced cooldown. Limited stock for elite operatives."
+	item = /obj/item/autosurgeon/syndicate/sandevistan_military
+	cost = 18
+	purchasable_from = UPLINK_SYNDICATE
+	limited_stock = 1
+
+/obj/item/autosurgeon/syndicate/sandevistan_military
+	starting_organ = /obj/item/organ/cyberimp/brain/sandevistan/military
+
+/datum/uplink_item/implants/sandevistan_corp
+	name = "Corporate Sandevistan"
+	desc = "A corporate-issued neural overclocking implant, tuned for security use. Offers a balanced burst of speed with a reasonable cooldown."
+	item = /obj/item/autosurgeon/syndicate/sandevistan_corp
+	cost = 10
+	purchasable_from = UPLINK_SYNDICATE_PACT_CREW
+
+/obj/item/autosurgeon/syndicate/sandevistan_corp
+	starting_organ = /obj/item/organ/cyberimp/brain/sandevistan/sec_level
 
 /datum/uplink_item/stealthy_weapons/telescopic_baton
 	name = "Telescopic Baton"

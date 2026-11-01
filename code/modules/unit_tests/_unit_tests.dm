@@ -229,6 +229,8 @@
 // #include "designs.dm"
 #include "director.dm"
 #include "door_timer_airlock.dm"
+#include "dual_arm_implant.dm"
+#include "dual_leg_implant.dm"
 #include "dynamic_ruleset_sanity.dm"
 #include "echolocation.dm"
 // #include "egg_glands.dm"

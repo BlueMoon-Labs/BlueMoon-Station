@@ -24,7 +24,7 @@
 	radial_priority = SURGERY_RADIAL_PRIORITY_HEAL_STATIC
 
 /datum/surgery/organ_manipulation/soft
-	possible_locs = list(BODY_ZONE_PRECISE_GROIN, BODY_ZONE_PRECISE_EYES, BODY_ZONE_PRECISE_MOUTH, BODY_ZONE_L_ARM, BODY_ZONE_R_ARM)
+	possible_locs = list(BODY_ZONE_PRECISE_GROIN, BODY_ZONE_PRECISE_EYES, BODY_ZONE_PRECISE_MOUTH, BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)
 	steps = list(
 		/datum/surgery_step/incise,
 		/datum/surgery_step/retract_skin,
@@ -36,7 +36,7 @@
 
 /datum/surgery/organ_manipulation/alien
 	name = "Alien organ manipulation"
-	possible_locs = list(BODY_ZONE_CHEST, BODY_ZONE_HEAD, BODY_ZONE_PRECISE_GROIN, BODY_ZONE_PRECISE_EYES, BODY_ZONE_PRECISE_MOUTH, BODY_ZONE_L_ARM, BODY_ZONE_R_ARM)
+	possible_locs = list(BODY_ZONE_CHEST, BODY_ZONE_HEAD, BODY_ZONE_PRECISE_GROIN, BODY_ZONE_PRECISE_EYES, BODY_ZONE_PRECISE_MOUTH, BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)
 	target_mobtypes = list(/mob/living/carbon/alien/humanoid)
 	steps = list(
 		/datum/surgery_step/saw,
@@ -62,7 +62,7 @@
 		)
 
 /datum/surgery/organ_manipulation/mechanic/soft
-	possible_locs = list(BODY_ZONE_PRECISE_GROIN, BODY_ZONE_PRECISE_EYES, BODY_ZONE_PRECISE_MOUTH, BODY_ZONE_L_ARM, BODY_ZONE_R_ARM)
+	possible_locs = list(BODY_ZONE_PRECISE_GROIN, BODY_ZONE_PRECISE_EYES, BODY_ZONE_PRECISE_MOUTH, BODY_ZONE_L_ARM, BODY_ZONE_R_ARM, BODY_ZONE_L_LEG, BODY_ZONE_R_LEG)
 	steps = list(
 		/datum/surgery_step/mechanic_open,
 		/datum/surgery_step/open_hatch,
@@ -115,9 +115,13 @@
 		preop_sound = 'sound/surgery/hemostat1.ogg'
 		success_sound = 'sound/surgery/organ2.ogg'
 		I = tool
-		if(target_zone != I.zone || target.getorganslot(I.slot))
+		if(!I.can_insert_into_zone(target_zone))
 			to_chat(user, span_notice("[I] не поместиться в [parse_zone(target_zone)] [target]!"))
 			return -1
+		for(var/organ_slot in I.get_organ_slots())
+			if(target.getorganslot(organ_slot))
+				to_chat(user, span_notice("[I] не поместиться в [parse_zone(target_zone)] [target]!"))
+				return -1
 		var/obj/item/organ/meatslab = tool
 		if(!meatslab.useable)
 			to_chat(user, span_warning("[I] слишком поврежден, вы не можете его использовать!"))
@@ -186,6 +190,7 @@
 			else
 				I = tool
 			user.temporarilyRemoveItemFromInventory(I, TRUE)
+			I.prepare_insert(target, target_zone)
 			I.Insert(target)
 			display_results(user, target, span_notice("Вы трансплантируете [tool] в [parse_zone(target_zone)] [target]."),
 				"[user] трансплантирует [tool] в [parse_zone(target_zone)] [target]!",
