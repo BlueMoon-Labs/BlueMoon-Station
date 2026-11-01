@@ -35,6 +35,9 @@ GLOBAL_LIST_EMPTY(plague_rats)
 	pass_flags = PASSTABLE | PASSGRILLE | PASSMOB
 	mob_size = MOB_SIZE_TINY
 	mob_biotypes = MOB_ORGANIC|MOB_BEAST
+	can_buckle = TRUE
+	max_buckled_mobs = 1
+	tame = TRUE
 	var/datum/action/cooldown/scavenge
 	var/last_spawn_time = 0
 	var/in_vent = FALSE
@@ -47,6 +50,8 @@ GLOBAL_LIST_EMPTY(plague_rats)
 	GLOB.plague_rats += src
 	AddComponent(/datum/component/swarming)
 	AddElement(/datum/element/ventcrawling, given_tier = VENTCRAWLER_ALWAYS)
+	RegisterSignal(src, COMSIG_ATOM_ATTACK_HAND, PROC_REF(rat_friend_attack_hand))
+	RegisterSignal(src, COMSIG_PARENT_ATTACKBY, PROC_REF(rat_friend_attackby))
 	scavenge = new /datum/action/cooldown/scavenge
 	scavenge.Grant(src)
 
@@ -95,6 +100,8 @@ GLOBAL_LIST_EMPTY(plague_rats)
 				return FALSE
 			else
 				return TRUE
+	if(isliving(the_target) && faction_check_mob(the_target))
+		return FALSE
 	return ..()
 
 /**
