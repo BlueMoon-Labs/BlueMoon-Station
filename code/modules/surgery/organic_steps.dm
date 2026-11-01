@@ -23,7 +23,7 @@
 			display_results(user, target, "<span class='notice'>Blood pools around the incision in [H]'s [parse_zone(target_zone)].</span>",
 				"Blood pools around the incision in [H]'s [parse_zone(target_zone)].",
 				"")
-			var/obj/item/bodypart/BP = target.get_bodypart(target_zone)
+			var/obj/item/bodypart/BP = target.get_bodypart(check_zone(target_zone))
 			if(BP)
 				BP.generic_bleedstacks += 10
 	return TRUE
@@ -55,7 +55,7 @@
 		target.heal_bodypart_damage(20,0)
 	if (ishuman(target))
 		var/mob/living/carbon/human/H = target
-		var/obj/item/bodypart/BP = H.get_bodypart(target_zone)
+		var/obj/item/bodypart/BP = H.get_bodypart(check_zone(target_zone))
 		if(BP)
 			BP.generic_bleedstacks -= 3
 	return ..()
@@ -97,7 +97,7 @@
 		target.heal_bodypart_damage(45,0)
 	if (ishuman(target))
 		var/mob/living/carbon/human/H = target
-		var/obj/item/bodypart/BP = H.get_bodypart(target_zone)
+		var/obj/item/bodypart/BP = H.get_bodypart(check_zone(target_zone))
 		if(BP)
 			BP.generic_bleedstacks -= 3
 	return ..()
@@ -106,7 +106,7 @@
 	. = ..()
 	if (ishuman(target))
 		var/mob/living/carbon/human/H = target
-		var/obj/item/bodypart/BP = H.get_bodypart(target_zone)
+		var/obj/item/bodypart/BP = H.get_bodypart(check_zone(target_zone))
 		if(BP)
 			BP.take_damage(5, BURN)
 

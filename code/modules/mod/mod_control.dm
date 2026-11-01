@@ -411,6 +411,7 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 	update_cell_alert()
 	for(var/obj/item/mod/module/module as anything in modules)
 		module.on_equip()
+	update_speed()
 
 /obj/item/mod/control/proc/on_wearer_deleted(datum/source)
 	SIGNAL_HANDLER
@@ -569,7 +570,7 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 			wearer.throw_alert("mod_charge", /atom/movable/screen/alert/emptycell)
 
 /obj/item/mod/control/proc/update_speed()
-	var/list/parts = get_mod_parts(include_cell = FALSE)
+	var/list/parts = get_deployable_parts()
 	if(!length(parts))
 		return
 	var/part_slowdown = (is_active() ? slowdown_active : slowdown_inactive) / length(parts)
@@ -607,7 +608,7 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 	var/on = is_active()
 	if(!wearer || is_activating())
 		return FALSE
-	for(var/obj/item/clothing/mod_part/part in get_mod_parts(include_cell = FALSE, include_mod = FALSE))
+	for(var/obj/item/clothing/mod_part/part in get_deployable_parts())
 		ENABLE_BITFIELD(status_flags, MOD_ACTIVATING)
 		if(part.loc == null)
 			if(do_after(wearer, activation_step_time, wearer, MOD_ACTIVATION_STEP_FLAGS, extra_checks = CALLBACK(src, PROC_REF(has_wearer))))

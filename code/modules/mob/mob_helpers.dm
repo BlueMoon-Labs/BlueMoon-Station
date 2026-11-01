@@ -528,11 +528,11 @@ GLOBAL_LIST(unit_test_ghost_notifications)
 		if((brute_heal > 0 && affecting.brute_dam > 0) || (burn_heal > 0 && affecting.burn_dam > 0))
 			if(affecting.heal_damage(brute_heal, burn_heal, 0, TRUE, FALSE))
 				H.update_damage_overlays()
-			user.visible_message("[user] has fixed some of the [dam ? "dents on" : "burnt wires in"] [H]'s [affecting.name].", \
-			"<span class='notice'>You fix some of the [dam ? "dents on" : "burnt wires in"] [H]'s [affecting.name].</span>")
+			user.visible_message(span_notice("[user] частично восстанавливает [dam ? "обшивку" : "проводку"]: [affecting.ru_name] персонажа [H]."), \
+			span_notice("Вы частично восстанавливаете [dam ? "обшивку" : "проводку"]: [affecting.ru_name] персонажа [H]."))
 			return TRUE //successful heal
 		else
-			to_chat(user, "<span class='warning'>[affecting] is already in good condition!</span>")
+			to_chat(user, span_warning("Ремонт не требуется: [affecting.ru_name] персонажа [H]."))
 
 
 /proc/IsAdminGhost(var/mob/user)

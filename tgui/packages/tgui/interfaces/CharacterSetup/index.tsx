@@ -21,6 +21,7 @@ import { SearchSettings } from './SearchSettings';
 import { AppearanceTab } from './tabs/Appearance';
 import { BackgroundTab } from './tabs/Background';
 import { GeneralTab } from './tabs/General';
+import { InnateTab } from './tabs/Innate';
 import { LoadoutTab } from './tabs/Loadout';
 import { MarkingsTab } from './tabs/Markings';
 import { ModificationsTab } from './tabs/Modifications';
@@ -747,6 +748,8 @@ const TabContent = (props: { tab: number }) => {
       return <QuirksTab />;
     case 7:
       return <ModificationsTab />;
+    case 8:
+      return <InnateTab />;
     default:
       return (
         <Section fill scrollable>
