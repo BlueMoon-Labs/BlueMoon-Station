@@ -46,3 +46,36 @@
 		patient.adjustFireLoss(-50)
 	TEST_ASSERT_EQUAL(patient.getBruteLoss(), 0, "Урон от роста не лечится до нуля")
 	TEST_ASSERT_EQUAL(patient.getFireLoss(), 0, "Ожоги от роста не лечатся до нуля")
+
+/// Уменьшение снимает урон, добавленный ростом, и не больше него: циклы роста не копят урон, а лечение в большом размере не даёт выгоды.
+/datum/unit_test/resize_damage_returns_on_shrink
+
+/datum/unit_test/resize_damage_returns_on_shrink/Run()
+	var/mob/living/carbon/human/patient = allocate(/mob/living/carbon/human)
+	var/obj/item/bodypart/chest/chest = patient.get_bodypart(BODY_ZONE_CHEST)
+	patient.apply_damage(30, BRUTE, BODY_ZONE_CHEST, wound_bonus = CANT_WOUND)
+	patient.apply_damage(5, TOX)
+
+	for(var/i in 1 to 6)
+		patient.update_size(2)
+		TEST_ASSERT(chest.brute_dam > 30, "Предпосылка: рост раненого усиливает урон груди, а стало [chest.brute_dam]")
+		patient.update_size(1)
+	TEST_ASSERT(abs(chest.brute_dam - 30) < 0.02, "Шесть циклов роста и уменьшения оставили на груди [chest.brute_dam] урона вместо 30")
+	TEST_ASSERT(abs(patient.getToxLoss() - 5) < 0.02, "Циклы роста оставили [patient.getToxLoss()] токсинов вместо 5")
+
+	patient.update_size(2)
+	var/grown_damage = chest.brute_dam
+	patient.update_size(1.5)
+	TEST_ASSERT(abs(chest.brute_dam - (grown_damage + 30) / 2) < 0.02, "Уменьшение на половину роста сняло не половину прибавки: [chest.brute_dam]")
+	patient.update_size(1)
+	TEST_ASSERT(abs(chest.brute_dam - 30) < 0.02, "Возврат к исходному размеру оставил [chest.brute_dam] урона вместо 30")
+
+	patient.update_size(2)
+	chest.heal_damage(10, 0)
+	patient.update_size(1)
+	TEST_ASSERT(abs(chest.brute_dam - 20) < 0.02, "Лечение 10 в большом размере дало [chest.brute_dam] урона, а без роста было бы 20")
+
+	patient.update_size(2)
+	chest.heal_damage(100, 0)
+	patient.update_size(1)
+	TEST_ASSERT_EQUAL(chest.brute_dam, 0, "Уменьшение после полного лечения увело урон в минус или вернуло его")
