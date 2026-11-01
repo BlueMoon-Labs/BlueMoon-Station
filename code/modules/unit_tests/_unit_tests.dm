@@ -193,6 +193,7 @@
 #include "bodybag_open_sprite.dm"
 // #include "bloody_footprints.dm"
 // #include "breath.dm"
+#include "bodypart_leg_layers.dm"
 #include "brig_assistant_console.dm"
 #include "bugreport_fixes_2026_10.dm"
 #include "bugreports_2026_11.dm"
