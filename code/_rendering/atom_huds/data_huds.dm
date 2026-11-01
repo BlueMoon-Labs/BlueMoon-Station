@@ -138,10 +138,11 @@
 	if(iscarbon(M) && M.health < 0)
 		maxi_health = 100 //so crit shows up right for aliens and other high-health carbon mobs; noncarbons don't have crit.
 	var/resulthealth = (M.health / round(maxi_health, DAMAGE_PRECISION)) * 100
+	// Ступень берётся ближайшая, как у всех остальных: иначе сотые доли урона висят на худе отметкой 93.75.
 	switch(resulthealth)
-		if(100 to INFINITY)
+		if(96.875 to INFINITY)
 			return
-		if(90.625 to 100)
+		if(90.625 to 96.875)
 			return "health93.75"
 		if(84.375 to 90.625)
 			return "health87.5"

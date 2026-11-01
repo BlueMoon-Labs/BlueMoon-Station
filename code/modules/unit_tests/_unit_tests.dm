@@ -451,6 +451,7 @@
 #include "refactor_turfside.dm"
 #include "reinforced_plating.dm"
 #include "resist.dm"
+#include "resize_health_hud.dm"
 #include "riot_shield_implant.dm"
 #include "round_10458_10462_runtimes.dm"
 #include "round_10463_10470_runtimes.dm"

@@ -94,10 +94,14 @@
 		holder.visible_message(span_danger("[holder] body damage is getting worse from sudden expansion!"), span_danger("Your body damage is getting worse from sudden expansion!"))
 
 		//BRUTE & BURN
-		for(var/X in C.bodyparts)
-			var/obj/item/bodypart/BP = X
-			BP.brute_dam *= damage_formula
-			BP.burn_dam *= damage_formula
+		// Не выше max_damage конечности: иначе цикл роста и уменьшения копит урон сверх предела.
+		for(var/obj/item/bodypart/BP as anything in C.bodyparts)
+			var/limb_damage = BP.brute_dam + BP.burn_dam
+			if(!limb_damage)
+				continue
+			var/limb_formula = max(1, min(damage_formula, BP.max_damage / limb_damage))
+			BP.brute_dam = round(BP.brute_dam * limb_formula, DAMAGE_PRECISION)
+			BP.burn_dam = round(BP.burn_dam * limb_formula, DAMAGE_PRECISION)
 
 		//TOX
 		if(C.getToxLoss())
