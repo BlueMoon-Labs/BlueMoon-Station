@@ -230,6 +230,28 @@ GLOBAL_LIST_INIT(context_menu_mob_verbs, list(
 		if((verb_path in A.verbs) && context_menu_mob_verb_usable(verb_path, A, user))
 			result += new /datum/context_menu_entry/verb_call(GLOB.context_menu_mob_verbs[verb_path], null, CONTEXT_ENTRY_NORMAL, verb_path)
 
+/// Подписи частых вербов предметов: имя верба -> пункт меню. Остальные остаются как есть, админские тоже.
+GLOBAL_LIST_INIT(context_menu_verb_names, list(
+	"Adjust Suit Sensors" = "Датчики костюма",
+	"Adjust Jumpsuit Style" = "Стиль комбинезона",
+	"Spin Chamber" = "Крутануть барабан",
+	"Portal Settings" = "Настройки портала",
+	"Change PDA Skin" = "Сменить облик КПК",
+	"Remove Pen" = "Достать ручку",
+	"Toggle Flashlight" = "Фонарик",
+	"Set Transfer Amount" = "Объём переливания",
+	"Toggle Open" = "Открыть/закрыть",
+	"Rotate Clockwise" = "Повернуть по часовой",
+	"Rotate Counter-Clockwise" = "Повернуть против часовой",
+	"Set custom examine text" = "Свой текст осмотра",
+	"Change worn layer" = "Слой ношения",
+	"Toggle constant vibration" = "Постоянная вибрация",
+	"Toggle vibration" = "Вибрация",
+	"Rename paper" = "Переименовать лист",
+	"Shift Item Pixel Position" = "Сдвинуть предмет",
+	"Move To Top" = "Положить наверх",
+))
+
 /// Вербы предмета в руках/на себе или структуры рядом. Вербы мобов - в add_mob_entries, у турфов вербы почти все про себя.
 /datum/context_menu/proc/add_verb_entries(atom/A, list/result)
 	if(!isobj(A))
@@ -241,4 +263,4 @@ GLOBAL_LIST_INIT(context_menu_mob_verbs, list(
 			continue
 		if(verb_path == /obj/item/verb/verb_pickup)
 			continue
-		result += new /datum/context_menu_entry/verb_call(capitalize(verb_path.name), null, CONTEXT_ENTRY_NORMAL, verb_path)
+		result += new /datum/context_menu_entry/verb_call(GLOB.context_menu_verb_names[verb_path.name] || capitalize(verb_path.name), null, CONTEXT_ENTRY_NORMAL, verb_path)

@@ -435,6 +435,18 @@
 	menu.choose(verb_entry)
 	TEST_ASSERT(item.verb_used, "Верб из меню не сработал")
 
+/// Частые вербы предметов подписаны по-русски
+/datum/unit_test/context_menu_item_verb_names
+
+/datum/unit_test/context_menu_item_verb_names/Run()
+	var/mob/living/carbon/human/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_user)
+	var/obj/item/clothing/under/color/grey/jumpsuit = allocate(/obj/item/clothing/under/color/grey)
+	user.put_in_active_hand(jumpsuit)
+	var/datum/context_menu/menu = user.open_context_menu(jumpsuit, "right=1;shift=1")
+	TEST_ASSERT_NOTNULL(find_context_entry(menu, "Датчики костюма"), "Верб датчиков костюма без русской подписи")
+	TEST_ASSERT_NULL(find_context_entry(menu, "Adjust Suit Sensors"), "В меню осталось английское имя верба")
+	user.close_context_menu()
+
 /// Подсказки скринтипа превращаются в пункты с хоткеем
 /datum/unit_test/context_menu_screentip_entries
 
