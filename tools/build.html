@@ -1,0 +1,56 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../"><link rel="stylesheet" href="dmdoc.css"><title>tools/build/README.md - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>/tg/station build script <aside>tools/build/README.md</aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1be62a791be6ab2f428a8607717cebae4b51f4ca/tools/build/README.md"><img src="git.png" width="16" height="16" title="tools/build/README.md"></a></h1><table class="summary" cellspacing="0"><tr><td colspan="2"><p>This build script is the recommended way to compile the game, including not only the DM code but also the JavaScript and any other dependencies.</p>
+<ul>
+<li>VSCode:
+a) Press <code>Ctrl+Shift+B</code> to build.
+b) Press <code>F5</code> to build and run with debugger attached.</li>
+<li>Windows:
+a) Double-click <code>BUILD.bat</code> in the repository root to build (will wait for a key press before it closes).
+b) Double-click <code>tools/build/build.bat</code> to build (will exit as soon as it finishes building).</li>
+<li>Linux:
+a) Run <code>tools/build/build</code> from the repository root.</li>
+</ul>
+<p>The script will skip build steps whose inputs have not changed since the last run.</p>
+<h2 id="unit-tests">Unit tests</h2>
+<p><code>dm-test</code> remains the compile-and-run entrypoint. Test compilation and execution
+are also exposed separately so repeated focused runs can reuse the test DMB:</p>
+<pre><code>tools/build/build dm-test-build
+tools/build/build dm-test-run
+</code></pre>
+<p>Use <code>--unit-test-profile=hermetic</code> for the LOWMEMORYMODE-compatible suite and
+<code>--unit-test-profile=full-map</code> for tests explicitly marked as requiring the
+production map. The default <code>all</code> profile runs every test on the production map.
+For a faster world start, <code>hermetic</code> compiles CentCom without its empty event
+z-levels (<code>CentCom_hermetic.dmm</code>, generated from <code>CentCom.dmm</code>) and builds the
+batched spritesheets on first use instead of during SSassets init.
+Compiled artifacts are separated by profile and define set, and are invalidated
+when sources or the local BYOND compiler change.</p>
+<p><code>dm-test-run</code> can start several worlds side by side from one DMB:</p>
+<ul>
+<li><code>--shards=N</code> splits the run into N worlds, balanced by the wall times of past
+runs in <code>data/unit_test_durations.json</code>.</li>
+<li><code>--shard-group=J/M</code> makes this machine part J of M: its N worlds take their
+share of N*M shards, so several CI runners split one run.</li>
+<li><code>--maps=a,b</code> starts one world per <code>_maps/&lt;name&gt;.json</code>, usually with
+<code>--unit-test-profile=full-map</code>.</li>
+<li><code>--test-list=file</code> runs only the listed test types.</li>
+<li><code>--prebuilt</code> runs the DMB that is already there instead of compiling it, and
+<code>--world-timeout=MINUTES</code> kills a hung world.</li>
+<li><code>--retry-failed</code> runs the failed tests of a world once more in a fresh world.
+If all of them pass there, they are reported as flaky and the run stays clean.
+A world with more than ten failures is not retried.</li>
+</ul>
+<p><code>--warnings-as-errors</code> fails <code>dm</code> and <code>dm-test-build</code> on any DreamMaker warning,
+as CI does.</p>
+<h2 id="getting-list-of-available-targets">Getting list of available targets</h2>
+<p>You can get a list of all targets that you can build by running the following command:</p>
+<pre><code>tools/build/build --help
+</code></pre>
+<h2 id="dependencies">Dependencies</h2>
+<ul>
+<li>On Windows, <code>BUILD.bat</code> will automatically install a private (vendored) copy of Node.</li>
+<li>On Linux, install Node using your package manager or from <a href="https://nodejs.org/en/download/">https://nodejs.org/en/download/</a>.</li>
+<li>On Linux , unless using tgs4 or later you will need to compile rust-g on the server and obtain a .so file, for instructions see https://github.com/tgstation/rust-g</li>
+</ul>
+<h2 id="why">Why?</h2>
+<p>We used to include compiled versions of the tgui JavaScript code in the Git repository so that the project could be compiled using BYOND only. These pre-compiled files tended to have merge conflicts for no good reason. Using a build script lets us avoid this problem, while keeping builds convenient for people who are not modifying tgui.</p>
+<p>This build script is based on <a href="https://github.com/stylemistake/juke-build">Juke Build</a> - please follow the link and read the documentation for the project to understand how it works and how to contribute to this build script.</p></td></tr></table></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1be62a791be6ab2f428a8607717cebae4b51f4ca">1be62a7</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>

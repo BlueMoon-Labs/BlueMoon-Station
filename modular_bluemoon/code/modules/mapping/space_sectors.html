@@ -1,0 +1,141 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><base href="../../../../"><link rel="stylesheet" href="dmdoc.css"><title>modular_bluemoon/code/modules/mapping/space_sectors/README.md - Space Station 13</title></head><body><header><a href="index.html">Space Station 13</a> - <a href="index.html#modules">Modules</a> - <a href="index.html#types">Types</a></header><main><h1>Секторы космоса <aside>modular_bluemoon/code/modules/mapping/space_sectors/README.md</aside> <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/blob/1be62a791be6ab2f428a8607717cebae4b51f4ca/modular_bluemoon/code/modules/mapping/space_sectors/README.md"><img src="git.png" width="16" height="16" title="modular_bluemoon/code/modules/mapping/space_sectors/README.md"></a></h1><table class="summary" cellspacing="0"><tr><td colspan="2"><p>Инструмент для карт, которым нужен <strong>предсказуемый</strong> космос: нарисованные .dmm вместо
+случайных пустышек с руинами, и фиксированные переходы между ними вместо случайной
+раскладки, которая перетасовывается каждый раунд.</p>
+<p>Без объявленного набора всё работает как раньше: <code>space_ruin_levels</code> пустышек,
+случайные руины, случайные соседи.</p>
+<h2 id="как-объявить-набор">Как объявить набор</h2>
+<p>Секторы объявляются подтипами <code>/datum/space_sector</code> в коде — так путь к карте, id и
+ссылки на соседей проверяет компилятор и юнит-тест, а не рантайм на живом раунде.</p>
+<pre><code class="language-dm">/datum/space_sector/icebox
+	abstract_type = /datum/space_sector/icebox
+	sector_set = &quot;icebox&quot;
+
+/datum/space_sector/icebox/hub
+	id = &quot;icebox_hub&quot;
+	name = &quot;Перевалочный узел&quot;
+	mappath = &quot;_maps/map_files/bluemoon_sectors/icebox_hub.dmm&quot;
+	sector_x = 0
+	sector_y = 0
+
+/datum/space_sector/icebox/north
+	id = &quot;icebox_north&quot;
+	name = &quot;Северный дрейф&quot;
+	mappath = &quot;_maps/map_files/bluemoon_sectors/icebox_north.dmm&quot;
+	sector_x = 0
+	sector_y = 1
+</code></pre>
+<p>Файл кладётся в <code>modular_bluemoon/code/modules/mapping/space_sectors/</code> и включается в
+<code>tgstation.dme</code>.</p>
+<p>Карта заказывает набор одной строкой в своём json:</p>
+<pre><code class="language-json">&quot;space_sectors&quot;: &quot;icebox&quot;,
+&quot;space_ruin_levels&quot;: 0
+</code></pre>
+<p><code>space_ruin_levels: 0</code> означает «кроме объявленных секторов ничего не создавать».
+Ненулевое значение оставит и случайные пустышки — они сядут в свободные клетки
+вокруг объявленных.</p>
+<h2 id="поля-декларации">Поля декларации</h2><table><thead><tr><th>Поле</th><th>Что делает</th></tr></thead><tbody>
+<tr><td><code>id</code></td><td>Уникальный идентификатор. По нему на сектор ссылаются <code>links</code> соседей.</td></tr>
+<tr><td><code>sector_set</code></td><td>Имя набора. Карта включает набор целиком.</td></tr>
+<tr><td><code>name</code></td><td>Имя z-уровня: видно админам, в дампах и в логах.</td></tr>
+<tr><td><code>mappath</code></td><td>Путь к .dmm от корня репозитория, начиная с <code>_maps/</code>. <code>null</code> — пустой уровень без карты.</td></tr>
+<tr><td><code>sector_x</code>, <code>sector_y</code></td><td>Клетка сетки. X растёт на восток, Y на север, начало координат произвольное.</td></tr>
+<tr><td><code>sector_layer</code></td><td>Этаж вертикальной стопки.</td></tr>
+<tr><td><code>traits</code></td><td>Трейты поверх <code>ZTRAITS_SPACE</code>: гравитация, базовый турф, профиль параллакса, погода, прозрачный космос.</td></tr>
+<tr><td><code>ruin_budget</code></td><td><code>0</code> — случайных руин не будет. Число — засеять этот уровень отдельным проходом с таким бюджетом. <code>-1</code> — отдать уровень общему проходу вместе с обычным космосом.</td></tr>
+<tr><td><code>link_north</code>, <code>link_south</code>, <code>link_east</code>, <code>link_west</code></td><td>Явная связь по краю поверх координат: id сектора, в который ведёт эта сторона.</td></tr>
+</tbody></table>
+<h2 id="края-и-соседи">Края и соседи</h2>
+<p>Соседство считается по клеткам: улетел за восточный край — попал в сектор, объявленный
+восточнее. Край, за которым клетки нет, заворачивает на дальний конец ряда, то есть
+космос замкнут сам на себя и никуда не обрывается.</p>
+<p><code>link_north</code>/<code>link_south</code>/<code>link_east</code>/<code>link_west</code> перебивают координаты на своих
+сторонах; всё остальное соседство остаётся посчитанным по клеткам. Взаимность не
+подразумевается: если сосед должен смотреть назад, у него должна быть своя строчка.
+Односторонний край — законная топология, но валидация о нём скажет, потому что чаще
+это забытая строчка.</p>
+<pre><code class="language-dm">/datum/space_sector/icebox/east
+	id = &quot;icebox_east&quot;
+	sector_x = 1
+	// по координатам западный сосед - узел, но связь уводит на север
+	link_west = &quot;icebox_north&quot;
+</code></pre>
+<h2 id="вертикаль">Вертикаль</h2>
+<p>Секторы с одинаковыми <code>sector_x</code>/<code>sector_y</code> и соседними <code>sector_layer</code> сцепляются
+взаимными <code>ZTRAIT_UP</code>/<code>ZTRAIT_DOWN</code>. Между такими этажами работают все штатные способы
+вертикального движения, включая вербы <strong>Move Upwards</strong> и <strong>Move Down</strong>: в невесомости
+для них не нужен ни джетпак, ни лестница.</p>
+<p>Если в одном .dmm нарисовано несколько z, сектор занимает столько этажей подряд,
+начиная со своего, и стопка собирается сама.</p>
+<p>Этаж стопки без соседа на своей высоте выводит за край к соседней клетке, на её ближайший
+этаж ниже. Обратный край соседа ведёт на нижний этаж стопки, но улетевший возвращается
+на тот этаж, с которого улетел: номер этажа помнит сам атом (<code>space_departure_floor</code>).</p>
+<p>Два замечания по картинке и по воздуху:</p>
+<ul>
+<li>чтобы <strong>видеть</strong> нижний этаж, уровень должен попросить прозрачный космос — см.
+раздел ниже. Без этого космос вертикаль пропускает, но сквозь него ничего не видно;</li>
+<li>воздух между этажами через космос не течёт: <code>zAirIn</code>/<code>zAirOut</code> не трогали намеренно.
+Вертикальная атмосфера — это отдельная механика, и включать её заодно с проходимостью
+было бы сюрпризом.</li>
+</ul>
+<h2 id="видимая-многослойность">Видимая многослойность</h2>
+<p>Обычный космический турф рисует звёздную подложку параллакса и потому непрозрачен:
+стоя над станцией, игрок видит звёзды, а не палубу под ногами. Трейт
+<code>ZTRAIT_TRANSPARENT_SPACE</code> снимает подложку со всего космоса уровня и показывает вместо
+неё этаж снизу — как нарисованный маппером <code>/turf/open/space/transparent</code>, только на
+весь уровень разом.</p>
+<pre><code class="language-dm">/datum/space_sector/icebox/orbit
+	id = &quot;icebox_orbit&quot;
+	sector_x = 0
+	sector_y = 0
+	sector_layer = 1
+	// с этого этажа видно тот, что лежит под ним
+	traits = list(ZTRAIT_TRANSPARENT_SPACE = TRUE)
+</code></pre>
+<p>Что важно знать:</p>
+<ul>
+<li>трейт ставится <strong>верхнему</strong> этажу, тому, с которого смотрят. Нижнему он не нужен,
+если под ним самим ничего нет;</li>
+<li>этаж снизу приезжает готовой картинкой: со своим светом, своим параллаксом, чуть
+притушенный и сжатый на <code>MULTIZ_SCALE_PER_LEVEL</code> за уровень — так читается глубина;</li>
+<li>пока этажа снизу нет (не загрузился или его вообще не объявили), турф остаётся
+обычным космосом со звёздами, а не чёрной дырой;</li>
+<li>это стоит рендера: каждый такой турф держит в <code>vis_contents</code> турф снизу, а нижний
+этаж собирается отдельным комплектом plane master'ов. Поэтому трейт заказывают, а не
+получают по умолчанию. Игрок может ограничить глубину настройкой
+«Многоуровневый рендер» в настройках графики — тогда он увидит обычный звёздный
+космос, а не черноту: звёзды остаются подложкой под картинкой нижнего этажа;</li>
+<li>связка обязана строить плоскостной куб. <code>ZTRAIT_NO_PLANE_STACK</code> на той же стопке
+куб отключает — прозрачность после этого покажет нижний этаж без его собственного
+света; про такое сочетание загрузка пишет претензию в лог маппинга.</li>
+</ul>
+<p>Ровно тот же трейт работает и в json обычной карты, без секторов:</p>
+<pre><code class="language-json">&quot;traits&quot;: [{&quot;Linkage&quot;: &quot;Cross&quot;}, {&quot;Station&quot;: true, &quot;Transparent Space&quot;: true}]
+</code></pre>
+<p>Посмотреть глазами, ничего не рисуя:</p>
+<pre><code>powershell -ExecutionPolicy Bypass -File tools/multiz_test/run_multiz.ps1
+</code></pre>
+<p>Стенд <code>multiz_debug</code> — три уровня, у верхних двух трейт уже включён.
+Колонка «прозрачный космос» в дампе связок (<strong>Debug → Multi-Z: панель</strong>) показывает,
+кто его заказал и досталось ли заказчику что показывать.</p>
+<h2 id="гейты">Гейты</h2>
+<p>Переход не по краю карты, а из точки в точку: два <code>/obj/effect/sector_gate</code> с одинаковым
+<code>gate_id</code>. Всё, что заходит на один, выходит за вторым по направлению движения; если
+там стена или край карты — встаёт на сам гейт. Направление и дрейф переход переживают.</p>
+<p>Гейты могут стоять на разных картах и грузиться в любом порядке — пара ищется по id
+после загрузки всего. Непарный <code>gate_id</code> ничего не ломает: гейт просто молчит, а
+претензия уходит в лог маппинга и в отладочную панель.</p>
+<p>Буксируемых и пристёгнутых гейт за собой не тащит — через него проходит ровно то, что
+на него зашло.</p>
+<h2 id="отладка">Отладка</h2>
+<ul>
+<li><strong>Debug → Секторы космоса: сетка</strong> — картинка сетки по этажам, куда ведёт каждый край,
+какие стопки собрались, состояние гейтов и полный список претензий валидации. Дамп
+падает файлом в <code>data/multiz_debug/</code>.</li>
+<li>Тот же отчёт уходит в лог маппинга при загрузке набора, так что перекос топологии
+видно по логу раунда, не заходя в игру.</li>
+<li><strong>Debug → Multi-Z: панель</strong> — соседняя панель про вертикаль: связки, плоскости, почему
+сквозь дыру ничего не видно.</li>
+</ul>
+<p>Юнит-тесты набора лежат в <code>code/modules/unit_tests/space_sectors.dm</code>. Тест
+<code>space_sector_declarations</code> прогоняет валидацию по <strong>всем</strong> объявленным в коде секторам,
+поэтому опечатка в пути к карте или задвоенный id валят CI, а не раунд.</p></td></tr></table></main><footer>tgstation.dme <a href="https://github.com/BlueMoon-Labs/BlueMoon-Station/tree/1be62a791be6ab2f428a8607717cebae4b51f4ca">1be62a7</a> (master) — <a href="https://github.com/SpaceManiac/SpacemanDMM/blob/master/crates/dmdoc/README.md">dmdoc 1.11.0</a></footer></body></html>
