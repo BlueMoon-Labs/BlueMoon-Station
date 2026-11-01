@@ -40,6 +40,10 @@ interface ModsData {
   amputationCount: number;
   limbBonus: number;
   maxProsthetics: number;
+  prostheticBonus: number;
+  amputationBonus: number;
+  limbMaxDamage: number;
+  prostheticMaxDamage: number;
   organs: OrganGroup[];
   implants: ImplantRow[];
 }
@@ -62,6 +66,19 @@ const KIND_LABELS: Record<string, string> = {
 };
 
 const costLabel = (cost: number): string => (cost > 0 ? ` (${cost} оч.)` : '');
+
+const limbKindLabel = (kind: string, mods: ModsData): string => {
+  const label = KIND_LABELS[kind] || kind;
+  if (kind === 'Prosthetic') {
+    return mods.prostheticBonus > 0
+      ? `${label} (+${mods.prostheticBonus} оч.)`
+      : `${label} (без очков)`;
+  }
+  if (kind === 'Amputated') {
+    return `${label} (+${mods.amputationBonus} оч.)`;
+  }
+  return label;
+};
 
 const brandLabel = (brand: string): string =>
   brand === 'prosthetic'
@@ -114,6 +131,11 @@ export const ModificationsTab = () => {
       </Stack>
 
       <Section title="Конечности">
+        <Box color="label" mb={1}>
+          {mods.prostheticBonus > 0
+            ? `Протез - дешёвая кибернетика: держит ${mods.prostheticMaxDamage} урона вместо ${mods.limbMaxDamage}, не лечится лекарствами (только сваркой и кабелем), ЭМИ его обжигает и оглушает, зато он не получает ран.`
+            : `Конечности вашего вида уже роботизированы: протез лишь меняет одну механическую конечность на другую, поэтому очков не даёт. Учтите: протез держит ${mods.prostheticMaxDamage} урона вместо ${mods.limbMaxDamage} и отрывается раньше, зато не получает ран.`}
+        </Box>
         {mods.limbs.map((limb) => (
           <SelectRow
             key={limb.zone}
@@ -121,7 +143,7 @@ export const ModificationsTab = () => {
             value={limb.kind}
             options={mods.limbKinds.map((kind) => ({
               value: kind,
-              displayText: KIND_LABELS[kind] || kind,
+              displayText: limbKindLabel(kind, mods),
             }))}
             action="set_limb"
             params={{ zone: limb.zone }}

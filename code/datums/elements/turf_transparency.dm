@@ -5,10 +5,10 @@
 	id_arg_index = 2
 	/// Рисовать ли базовый турф z-уровня подложкой, когда снизу вообще нет уровня.
 	var/show_bottom_level = FALSE
-	/// Дыра -> турф под ней, на окрестность которого сейчас взят заказ.
-	var/list/shown_neighbourhood = list()
+	/// Дыра -> турф под ней, на окрестность которого сейчас взят заказ. alist: дыр с прозрачным космосом десятки тысяч, обычный список с турфами-ключами на таком размере тормозит каждую вставку.
+	var/alist/shown_neighbourhood = alist()
 	/// Дыра -> подложка базового турфа, пока снизу нечего показывать.
-	var/list/bottom_underlays = list()
+	var/alist/bottom_underlays = alist()
 
 ///This proc sets up the signals to handle updating viscontents when turfs above/below update. Handle plane and layer here too so that they don't cover other obs/turfs in Dream Maker
 /datum/element/turf_z_transparency/Attach(datum/target, show_bottom_level = TRUE)

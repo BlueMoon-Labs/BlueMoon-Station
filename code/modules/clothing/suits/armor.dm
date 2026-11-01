@@ -432,6 +432,9 @@
 	desc = "A classic suit of plate armour, highly effective at stopping melee attacks."
 	icon_state = "knight_green"
 	item_state = "knight_green"
+	tail_state = ""
+	unique_reskin = null
+	taur_types_icon_whitelist = alist()
 	armor_type = /datum/armor/suit_knight
 	brc_mitigation_bonus = 15  // BLUEMOON ADD
 	slowdown = 0.5

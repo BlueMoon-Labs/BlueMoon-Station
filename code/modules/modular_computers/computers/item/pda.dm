@@ -1080,9 +1080,14 @@
 /proc/get_viewable_pdas()
 	. = list()
 	for(var/obj/item/modular_computer/pda/P in GLOB.PDAs)
-		if(!P.owner || P.toff || P.hidden)
+		if(!P.owner || P.toff || P.hidden || is_ghost_cafe_pda(P))
 			continue
 		. += P
+
+/// КПК гостей Призрачного Кафе (борги, люди) не попадают в списки станции.
+/proc/is_ghost_cafe_pda(obj/item/modular_computer/pda/pda)
+	var/mob/living/holder = get(pda, /mob/living)
+	return !!holder?.mind?.has_antag_datum(/datum/antagonist/ghost_role/ghost_cafe)
 
 // ---- AI PDA messaging ----
 

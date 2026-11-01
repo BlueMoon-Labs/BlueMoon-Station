@@ -191,9 +191,14 @@
 	L.cure_fakedeath(type)
 	..()
 
+/// Мнимая смерть держится, пока порошок в теле, даже если он ещё не начал усваиваться.
+/datum/reagent/toxin/zombiepowder/on_mob_delete(mob/living/L)
+	L.cure_fakedeath(type)
+	return ..()
+
 /datum/reagent/toxin/zombiepowder/reaction_mob(mob/living/L, method=TOUCH, reac_volume, affected_bodypart)
 	L.adjustOxyLoss(0.5*REM, 0)
-	if(method == INGEST)
+	if(method == INGEST && !is_reagent_processing_invalid(src, L))
 		fakedeath_active = TRUE
 		L.fakedeath(type)
 
