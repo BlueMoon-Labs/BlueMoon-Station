@@ -27869,7 +27869,6 @@
 	dir = 9
 	},
 /obj/effect/spawner/structure/window/reinforced,
-/obj/effect/spawner/structure/window/reinforced,
 /turf/open/floor/engine,
 /area/mine/xenoarch_area_b)
 "pSY" = (
