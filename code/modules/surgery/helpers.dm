@@ -10,14 +10,10 @@
 /proc/get_available_surgeries(obj/item/tool, mob/living/patient, mob/user, selected_zone)
 	. = list()
 	selected_zone = get_surgery_zone(patient, selected_zone)
-	var/obj/item/bodypart/affecting
-	if(iscarbon(patient))
-		var/mob/living/carbon/carbon_patient = patient
-		affecting = carbon_patient.get_bodypart(check_zone(selected_zone))
-
 	for(var/datum/surgery/surgery as anything in GLOB.surgeries_list)
 		if(!surgery.possible_locs.Find(selected_zone))
 			continue
+		var/obj/item/bodypart/affecting = surgery.get_target_bodypart(patient, selected_zone)
 		if(affecting)
 			if(!surgery.requires_bodypart)
 				continue
@@ -136,7 +132,7 @@
 		if(user && user.Adjacent(M) && (I in user))
 			var/datum/surgery/S = available_surgeries[P]
 			if(C)
-				affecting = C.get_bodypart(check_zone(selected_zone))
+				affecting = S.get_target_bodypart(C, selected_zone)
 
 			for(var/datum/surgery/other in M.surgeries)
 				if(other.location == selected_zone || (istype(affecting, /obj/item/bodypart/l_leg/naga_tail) && other.operated_bodypart == affecting))
@@ -145,7 +141,7 @@
 
 			//we check that the surgery is still doable after the input() wait.
 			if(C)
-				affecting = C.get_bodypart(check_zone(selected_zone))
+				affecting = S.get_target_bodypart(C, selected_zone)
 			if(affecting)
 				if(!S.requires_bodypart)
 					return

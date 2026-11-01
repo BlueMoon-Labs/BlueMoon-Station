@@ -51,6 +51,10 @@
 	return ..()
 
 
+// Хирургический доступ может вести к иной части тела, например из паха к опорному хвосту.
+/datum/surgery/proc/get_target_bodypart(mob/living/patient, zone)
+	return patient.get_bodypart(check_zone(zone))
+
 /datum/surgery/proc/can_start(mob/user, mob/living/patient, obj/item/tool) //FALSE to not show in list
 	. = TRUE
 	if(replaced_by == /datum/surgery)
