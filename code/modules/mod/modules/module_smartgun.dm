@@ -32,7 +32,6 @@
 	return ..()
 
 /obj/item/mod/module/smartgun/marines
-	removable = FALSE
 
 /obj/item/gun/ballistic/automatic/smart_machine_gun
 	name = "M63A4 Smartgun"

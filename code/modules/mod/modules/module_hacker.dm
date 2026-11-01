@@ -2,7 +2,6 @@
 	name = "MOD hacker module"
 	desc = "Встроенный в перчатки модуль для взлома техники и электрического удара."
 	icon_state = "hacker"
-	removable = FALSE
 	required_modpart_index = MOD_PART_GLOVES
 	incompatible_modules = list(/obj/item/mod/module/hacker)
 	var/mob/living/carbon/human/hacking_user

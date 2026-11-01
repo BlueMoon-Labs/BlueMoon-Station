@@ -4,6 +4,7 @@
 	icon_state = "module"
 	/// If it can be removed
 	var/removable = TRUE
+	var/removable_inbuilt = FALSE
 	/// If it's passive, togglable, usable or active
 	var/module_type = MODULE_PASSIVE
 	/// Is the module active

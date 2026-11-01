@@ -86,7 +86,6 @@
 
 /obj/item/mod/module/storage/extended/syndicate/infiltrator
 	complexity = 0
-	removable = FALSE
 
 /obj/item/mod/module/storage/on_install()
 	. = ..()
@@ -439,6 +438,7 @@
 			light_range = clamp(value, min_range, max_range)
 
 /obj/item/mod/module/flashlight/vanguard
+	removable_inbuilt = TRUE
 	name = "Advanced Flaslight Module"
 	desc = "Особый улучшенный модуль фонарика эксклюзивно для экспедиционного корпуса Нанотрейзен"
 	complexity = 0

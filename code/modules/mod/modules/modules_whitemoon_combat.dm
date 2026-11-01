@@ -108,7 +108,6 @@
 	icon = 'icons/obj/clothing/modsuit/mod_modules_whitemoon.dmi'
 	icon_state = "recall"
 	module_type = MODULE_USABLE
-	removable = FALSE
 	use_power_cost = DEFAULT_CHARGE_DRAIN * 2
 	cooldown_time = 0.5 SECONDS
 	required_modpart_index = MOD_PART_GLOVES

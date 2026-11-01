@@ -167,7 +167,6 @@
 	desc = "Оптическая система шлема защищает глаза от вспышек и мешает камерам отслеживать владельца."
 	icon = 'icons/obj/clothing/modsuit/mod_modules_whitemoon.dmi'
 	icon_state = "welding_camera"
-	removable = FALSE
 	complexity = 0
 	overlay_state_inactive = null
 
@@ -183,7 +182,6 @@
 	name = "MODsuit flash-protected optical suite"
 	desc = "Встроенная оптическая система Синдиката защищает глаза и закрывает забрало при переходе в боевой режим."
 	complexity = 0
-	removable = FALSE
 	overlay_icon_file = 'icons/mob/clothing/modsuit/mod_modules_whitemoon.dmi'
 	overlay_state_inactive = "module_armorbooster_off"
 	use_mod_colors = TRUE

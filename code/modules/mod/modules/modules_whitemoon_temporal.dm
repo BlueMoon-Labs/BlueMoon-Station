@@ -39,7 +39,6 @@
 	icon = 'icons/obj/clothing/modsuit/mod_modules_whitemoon.dmi'
 	icon_state = "rewinder"
 	module_type = MODULE_USABLE
-	removable = FALSE
 	use_power_cost = DEFAULT_CHARGE_DRAIN * 5
 	cooldown_time = 20 SECONDS
 	incompatible_modules = list(/obj/item/mod/module/rewinder)
@@ -128,7 +127,6 @@
 	icon = 'icons/obj/clothing/modsuit/mod_modules_whitemoon.dmi'
 	icon_state = "timestop"
 	module_type = MODULE_USABLE
-	removable = FALSE
 	use_power_cost = DEFAULT_CHARGE_DRAIN * 5
 	cooldown_time = 60 SECONDS
 	incompatible_modules = list(/obj/item/mod/module/timestopper)
@@ -196,7 +194,6 @@
 	icon = 'icons/obj/clothing/modsuit/mod_modules_whitemoon.dmi'
 	icon_state = "timeline_jumper"
 	module_type = MODULE_USABLE
-	removable = FALSE
 	allowed_in_phaseout = TRUE
 	hands_free_use = TRUE
 	use_power_cost = DEFAULT_CHARGE_DRAIN * 5
@@ -305,7 +302,6 @@
 	icon = 'icons/obj/clothing/modsuit/mod_modules_whitemoon.dmi'
 	icon_state = "eradicationlock"
 	module_type = MODULE_USABLE
-	removable = FALSE
 	use_power_cost = DEFAULT_CHARGE_DRAIN * 3
 	cooldown_time = 0.5 SECONDS
 	incompatible_modules = list(/obj/item/mod/module/eradication_lock, /obj/item/mod/module/dna_lock)
@@ -356,7 +352,6 @@
 	icon_state = "chronogun"
 	module_type = MODULE_ACTIVE
 	have_shortcut_activation = TRUE
-	removable = FALSE
 	use_power_cost = DEFAULT_CHARGE_DRAIN * 5
 	cooldown_time = 0.5 SECONDS
 	incompatible_modules = list(/obj/item/mod/module/tem)

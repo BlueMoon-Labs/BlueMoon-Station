@@ -109,6 +109,8 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 	update_speed()
 	for(var/obj/item/mod/module/module as anything in initial_modules)
 		module = new module
+		if(module.type in theme.inbuilt_modules)
+			module.removable = module.removable_inbuilt
 		install(module)
 	RegisterSignal(src, COMSIG_ATOM_EXITED, PROC_REF(on_exit))
 	movedelay = CONFIG_GET(number/movedelay/run_delay)
@@ -295,7 +297,7 @@ GLOBAL_LIST_INIT(possible_modsuit_slot, list(ITEM_SLOT_BACK, ITEM_SLOT_BELT))
 				continue
 			removable_modules += module
 		var/obj/item/mod/module/module_to_remove = tgui_input_list(user, "Какой модуль вы хотите снять?", "Снять модули", removable_modules)
-		if(!module_to_remove?.mod || (SEND_SIGNAL(src, COMSIG_MOD_MODULE_REMOVAL, user) & MOD_CANCEL_REMOVAL))
+		if(module_to_remove?.mod != src || !module_to_remove.removable || (SEND_SIGNAL(src, COMSIG_MOD_MODULE_REMOVAL, user) & MOD_CANCEL_REMOVAL))
 			return FALSE
 		uninstall(module_to_remove, user)
 		if(!QDELETED(module_to_remove))

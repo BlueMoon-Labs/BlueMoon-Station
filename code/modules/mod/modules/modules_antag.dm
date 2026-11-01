@@ -8,7 +8,6 @@
 	module_type = MODULE_TOGGLE
 	complexity = 0
 	idle_power_cost = 0
-	removable = FALSE
 	required_modpart_index = MOD_PART_HEAD
 	startup_with_suit = TRUE
 	/// Голос носителя до включения: у удаляемого тела клиента уже нет, префы не прочитать.
@@ -95,7 +94,6 @@
 	name = "Spellcasting MOD enchanting"
 	desc = "Благославляющий свиток, позволяющий колдовать, нося элементы МОДа, словно в робе мага."
 	icon_state = "magic_neutralizer"
-	removable = FALSE
 
 /obj/item/mod/module/spellcasting/on_install()
 	. = ..()

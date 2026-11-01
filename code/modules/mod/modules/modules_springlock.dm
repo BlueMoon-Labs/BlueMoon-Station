@@ -383,7 +383,6 @@
 	springlock_integrity = SPRINGLOCK_INTEGRITY_INDESTRUCTIBLE
 	vulnerability_flags = null
 	idle_power_cost = DEFAULT_CHARGE_DRAIN * 1.1
-	removable = FALSE //невозможно снять и использовать на других костюмах
 
 /**
  * Особый эмоут для антуража (кекв)

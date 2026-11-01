@@ -19,7 +19,6 @@
 	name = "MOD holographic field projector"
 	desc = "Создаёт герметичный голографический костюм без теплоизоляции."
 	icon_state = "rad_protection"
-	removable = FALSE
 
 /obj/item/mod/module/holographic/on_install()
 	. = ..()

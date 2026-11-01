@@ -268,7 +268,6 @@
 	prebuilt = TRUE
 	complexity = 0
 	use_power_cost = DEFAULT_CHARGE_DRAIN * 5
-	removable = FALSE
 	core_removable = FALSE
 
 /obj/item/mod/module/anomaly_locked/kinesis/plus

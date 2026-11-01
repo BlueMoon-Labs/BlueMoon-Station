@@ -3,7 +3,6 @@
 	desc = "Пси-излучатель вызывает тревогу у экипажа и усиливает паранойю командования. Противникам станции его сигнал, напротив, придаёт уверенность."
 	icon = 'icons/obj/clothing/modsuit/mod_modules_whitemoon.dmi'
 	icon_state = "brain_hurties"
-	removable = FALSE
 	idle_power_cost = DEFAULT_CHARGE_DRAIN * 0.1
 	incompatible_modules = list(/obj/item/mod/module/demoralizer)
 	var/datum/proximity_monitor/mod_demoralizer/demoralizer

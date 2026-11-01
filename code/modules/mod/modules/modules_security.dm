@@ -308,7 +308,6 @@
 	device = /obj/item/shield/adamantineshield/mod_lesser
 	required_modpart_index = MOD_PART_GLOVES
 	use_power_cost = DEFAULT_CHARGE_DRAIN * 10
-	removable = FALSE
 
 /obj/item/shield/adamantineshield/mod_lesser
 	name = "MOD Energy Shield"

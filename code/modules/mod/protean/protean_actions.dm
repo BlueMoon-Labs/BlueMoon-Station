@@ -271,7 +271,6 @@
 	complexity = 0
 	use_power_cost = DEFAULT_CHARGE_DRAIN
 	module_type = MODULE_TOGGLE
-	removable = FALSE
 	var/list/servo_actions = list()
 	var/datum/weakref/servo_wearer_ref
 

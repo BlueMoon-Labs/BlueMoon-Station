@@ -67,7 +67,6 @@
 /obj/item/mod/module/hearing_protection
 	name = "MOD hearing protection module"
 	desc = "Защищает слух носителя от громких звуков."
-	removable = FALSE
 	incompatible_modules = list(/obj/item/mod/module/hearing_protection)
 	required_modpart_index = MOD_PART_HEAD
 
@@ -531,7 +530,6 @@
 
 /obj/item/mod/module/scorpion_hook/infiltrator
 	complexity = 0
-	removable = FALSE
 
 /obj/item/gun/magic/hook/contractor
 	name = "SCORPION hook"
@@ -658,7 +656,6 @@
 	icon = 'icons/obj/clothing/modsuit/mod_modules_whitemoon.dmi'
 	icon_state = "adrenaline_boost"
 	module_type = MODULE_USABLE
-	removable = FALSE
 	allowed_incapacitated = TRUE
 	incompatible_modules = list(/obj/item/mod/module/adrenaline_boost, /obj/item/mod/module/auto_doc)
 	cooldown_time = 12 SECONDS
@@ -981,7 +978,6 @@
 	desc = "A hardlight net launcher that immobilizes its target until the net is destroyed or the suit is shut down."
 	icon = 'icons/obj/clothing/modsuit/mod_modules_whitemoon.dmi'
 	icon_state = "energy_net"
-	removable = FALSE
 	module_type = MODULE_ACTIVE
 	have_shortcut_activation = TRUE
 	use_power_cost = DEFAULT_CHARGE_DRAIN * 6
@@ -1086,7 +1082,6 @@
 	icon = 'icons/obj/clothing/modsuit/mod_modules.dmi'
 	icon_state = "night_visor"
 	module_type = MODULE_TOGGLE
-	removable = FALSE
 	active_power_cost = DEFAULT_CHARGE_DRAIN * 0.1
 	incompatible_modules = list(/obj/item/mod/module/night, /obj/item/mod/module/visor/night)
 	required_modpart_index = MOD_PART_HEAD
@@ -1762,10 +1757,10 @@
 
 /obj/item/mod/module/shove_blocker/locked
 	name = "superglued MOD bulwark module"
-	removable = FALSE
 	complexity = 0
 
 /obj/item/mod/module/pepper_shoulders
+	removable_inbuilt = TRUE
 	custom_price = PRICE_ALMOST_EXPENSIVE
 	name = "MOD pepper shoulders module"
 	desc = "Плечевые распылители выпускают облако перцового аэрозоля при атаке на носителя или по его команде."
@@ -1972,7 +1967,6 @@
 /obj/item/mod/module/hat_stabilizer/syndicate
 	name = "MOD elite hat stabilizer module"
 	complexity = 0
-	removable = FALSE
 
 /obj/item/mod/module/criminalcapture
 	mod_module_flags = MOD_MODULE_SECURITY

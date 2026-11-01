@@ -82,7 +82,6 @@
 	idle_power_cost = DEFAULT_CHARGE_DRAIN * 0.2
 	active_power_cost = DEFAULT_CHARGE_DRAIN * 0.2
 	module_type = MODULE_TOGGLE
-	removable = FALSE
 	incompatible_modules = list(/obj/item/mod/module/waddle)
 	required_modpart_index = MOD_PART_FEET
 	startup_with_suit = TRUE

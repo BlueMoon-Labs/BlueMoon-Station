@@ -82,7 +82,6 @@
 
 /obj/item/mod/module/quick_carry/advanced
 	name = "MOD advanced quick carry module"
-	removable = FALSE
 	complexity = 0
 
 ///Injector - No piercing syringes, replace another time

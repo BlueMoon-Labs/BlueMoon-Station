@@ -4,7 +4,6 @@
 	icon = 'icons/obj/clothing/modsuit/mod_modules.dmi'
 	icon_state = "sphere"
 	module_type = MODULE_ACTIVE
-	removable = FALSE
 	active_power_cost = DEFAULT_CHARGE_DRAIN * 0.5
 	use_power_cost = DEFAULT_CHARGE_DRAIN * 3
 	cooldown_time = 1 SECONDS
