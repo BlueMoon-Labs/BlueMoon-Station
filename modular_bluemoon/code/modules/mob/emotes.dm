@@ -354,6 +354,17 @@
 	sound = 'modular_bluemoon/sound/emotes/mrrps3.ogg'
 	emote_cooldown = 0.5 SECONDS
 
+/// Спасибо мейн-куну Фоксику за его звуки
+/datum/emote/sound/human/mrrp_evil
+	name = "Муркнуть (Недовольно)"
+	key = "mrrp_mischief"
+	key_third_person = "mrrp_mischief"
+	message = "недовольно муркает."
+	emote_type = EMOTE_AUDIBLE
+	muzzle_ignore = TRUE
+	sound = 'modular_bluemoon/sound/emotes/mrrp_mischief.ogg'
+	emote_cooldown = 2 SECONDS
+
 /datum/emote/sound/human/girlymoan
 	key = "girlymoan"
 	key_third_person = "girlymoan"
@@ -421,6 +432,15 @@
 	'modular_bluemoon/sound/emotes/meow7_4.ogg',
 	'modular_bluemoon/sound/emotes/meow7_5.ogg')
 	. = ..()
+
+/// Порт со Сплуртов
+/datum/emote/sound/human/meow8
+	key = "meow8"
+	key_third_person = "meow8"
+	message = "требовательно мяукает."
+	message_mime = "безмолвно мяукает."
+	sound = 'modular_bluemoon/sound/emotes/meow8.ogg'
+	emote_cooldown = 1.5 SECONDS
 
 /datum/emote/sound/human/catscream1
 	key = "catscream1"
