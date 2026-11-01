@@ -1729,7 +1729,7 @@
 			var/screentip_images = user.client.prefs.screentip_images
 			// LMB and RMB on one line...
 			var/lmb_text = build_context(context, SCREENTIP_CONTEXT_LMB, screentip_images)
-			var/rmb_text = build_context(context, SCREENTIP_CONTEXT_RMB, screentip_images, user.right_click_screentip_prefix())
+			var/rmb_text = build_context(context, SCREENTIP_CONTEXT_RMB, screentip_images, user.right_click_screentip_prefix(FALSE, src))
 
 			if (lmb_text != "")
 				lmb_rmb_line = lmb_text

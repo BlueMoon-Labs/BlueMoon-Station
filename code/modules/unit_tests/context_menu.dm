@@ -435,6 +435,45 @@
 	menu.choose(verb_entry)
 	TEST_ASSERT(item.verb_used, "Верб из меню не сработал")
 
+/// В дизарме ПКМ по человеку рядом с пустой рукой - сразу толчок, меню по нему - на Shift+ПКМ
+/datum/unit_test/context_menu_disarm_shove
+
+/datum/unit_test/context_menu_disarm_shove/Run()
+	var/mob/living/carbon/human/dummy/consistent/context_menu_probe/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_probe)
+	var/mob/living/carbon/human/target = allocate(/mob/living/carbon/human/dummy/consistent, get_step(user, EAST))
+	var/mob/living/carbon/human/far_target = allocate(/mob/living/carbon/human/dummy/consistent, get_step(get_step(user, WEST), WEST))
+	user.a_intent = INTENT_DISARM
+
+	user.CommonClickOn(target, "right=1")
+	TEST_ASSERT(user.right_clicked, "ПКМ в дизарме по человеку рядом не толкнул")
+	TEST_ASSERT_NULL(user.active_context_menu, "ПКМ в дизарме по человеку рядом открыл меню")
+	TEST_ASSERT_EQUAL(user.right_click_action_hint(target), "ПКМ", "Подсказка толчка в дизарме не ПКМ")
+	TEST_ASSERT_EQUAL(user.right_click_screentip_prefix(FALSE, target), "", "Скринтип толчка с лишней приставкой")
+
+	user.right_clicked = FALSE
+	user.CommonClickOn(target, "right=1;shift=1")
+	TEST_ASSERT_NOTNULL(user.active_context_menu, "Shift+ПКМ в дизарме не открыл меню по человеку")
+	TEST_ASSERT(!user.right_clicked, "Shift+ПКМ в дизарме ещё и толкнул")
+	user.close_context_menu()
+
+	user.CommonClickOn(far_target, "right=1")
+	TEST_ASSERT_NOTNULL(user.active_context_menu, "ПКМ в дизарме по далёкому человеку не открыл меню")
+	user.close_context_menu()
+
+	var/obj/item/context_menu_test_item/item = allocate(/obj/item/context_menu_test_item)
+	user.put_in_active_hand(item)
+	user.CommonClickOn(target, "right=1")
+	TEST_ASSERT_NOTNULL(user.active_context_menu, "ПКМ в дизарме с предметом в руке не открыл меню")
+	user.close_context_menu()
+	qdel(item)
+
+	user.a_intent = INTENT_HELP
+	user.right_clicked = FALSE
+	user.CommonClickOn(target, "right=1")
+	TEST_ASSERT_NOTNULL(user.active_context_menu, "ПКМ вне дизарма по человеку не открыл меню")
+	TEST_ASSERT(!user.right_clicked, "ПКМ вне дизарма сделал действие")
+	user.close_context_menu()
+
 /// Частые вербы предметов подписаны по-русски
 /datum/unit_test/context_menu_item_verb_names
 

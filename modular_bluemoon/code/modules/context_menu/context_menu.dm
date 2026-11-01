@@ -80,29 +80,36 @@
 /mob/proc/right_click_needs_clicks()
 	return SEND_SIGNAL(src, COMSIG_COMBAT_MODE_CHECK, COMBAT_MODE_ACTIVE) || piloting_mecha()
 
+/// ПКМ по цели - толчок: в дизарме он сразу действие, как в бою, а меню по цели остаётся на Shift+ПКМ
+/mob/proc/right_click_shoves(atom/target)
+	return FALSE
+
+/mob/living/carbon/human/right_click_shoves(atom/target)
+	return a_intent == INTENT_DISARM && iscarbon(target) && target != src && !get_active_held_item() && Adjacent(target)
+
 /// Пилот меха, пока мех считает его своим: ПКМ у него - модуль меха, в том числе у ИИ
 /mob/proc/piloting_mecha()
 	var/obj/vehicle/sealed/mecha/mech = loc
 	return ismecha(mech) && mech.is_occupant(src)
 
 /// ПКМ открывает меню или делает второе действие - по настройкам игрока, у ПКМ и Shift+ПКМ они свои.
-/// В комбат-режиме и в мехе ПКМ всегда действие. Клики, которые повторяет само меню, всегда действие.
-/mob/proc/right_click_opens_menu(list/modifiers)
+/// В комбат-режиме, в мехе и при толчке ПКМ всегда действие. Клики, которые повторяет само меню, всегда действие.
+/mob/proc/right_click_opens_menu(list/modifiers, atom/target)
 	if(!modifiers["right"] || modifiers["ctrl"] || modifiers["alt"] || modifiers["middle"] || modifiers["context_menu"] || !right_click_actions)
 		return FALSE
 	// ЛКМ при зажатом ПКМ приходит с right=1 и button=left: это второе действие, как и раньше
 	if(modifiers["button"] && modifiers["button"] != "right")
 		return FALSE
-	return right_click_gesture(modifiers["shift"]) == RIGHT_CLICK_MODE_MENU
+	return right_click_gesture(modifiers["shift"], target) == RIGHT_CLICK_MODE_MENU
 
 /**
  * Что делает ПКМ, дошедший до сервера кликом: RIGHT_CLICK_MODE_ACTION, RIGHT_CLICK_MODE_MENU
  * или RIGHT_CLICK_MODE_NATIVE - для Shift+ПКМ это осмотр, как раньше в бою.
  * Меню BYOND сервер открыть не может: такой ПКМ кликом приходит только в бою, в мехе или раньше, чем дошёл Shift.
  */
-/mob/proc/right_click_gesture(shift)
+/mob/proc/right_click_gesture(shift, atom/target)
 	var/plain = right_click_mode()
-	var/in_combat = right_click_needs_clicks()
+	var/in_combat = right_click_needs_clicks() || right_click_shoves(target)
 	if(!shift)
 		return (!in_combat && plain == RIGHT_CLICK_MODE_MENU) ? RIGHT_CLICK_MODE_MENU : RIGHT_CLICK_MODE_ACTION
 	var/shifted = shift_right_click_mode()
@@ -128,22 +135,22 @@
 		right_button_chorded = TRUE
 	return FALSE
 
-/// Как нажать второе действие при текущих настройках
-/mob/proc/right_click_action_hint()
-	if(right_click_gesture(FALSE) == RIGHT_CLICK_MODE_ACTION && (right_click_mode() != RIGHT_CLICK_MODE_NATIVE || right_click_needs_clicks()))
+/// Как нажать второе действие по цели при текущих настройках
+/mob/proc/right_click_action_hint(atom/target)
+	if(right_click_gesture(FALSE, target) == RIGHT_CLICK_MODE_ACTION && (right_click_mode() != RIGHT_CLICK_MODE_NATIVE || right_click_needs_clicks()))
 		return "ПКМ"
-	if(right_click_gesture(TRUE) == RIGHT_CLICK_MODE_ACTION)
+	if(right_click_gesture(TRUE, target) == RIGHT_CLICK_MODE_ACTION)
 		return "Shift-ПКМ"
 	return "ПКМ в бою"
 
 /// Приставка к ПКМ в скринтипе: «Shift-», если второе действие на Shift+ПКМ, «В бою», если вне боя на ПКМ меню BYOND.
 /// with_modifier - Ctrl+ПКМ и Alt+ПКМ, меню действий они не открывают, а меню BYOND открывают.
-/mob/proc/right_click_screentip_prefix(with_modifier = FALSE)
+/mob/proc/right_click_screentip_prefix(with_modifier = FALSE, atom/target)
 	if(!right_click_actions)
 		return ""
 	if(with_modifier)
 		return (right_click_mode() == RIGHT_CLICK_MODE_NATIVE && !right_click_needs_clicks()) ? "В бою " : ""
-	switch(right_click_action_hint())
+	switch(right_click_action_hint(target))
 		if("Shift-ПКМ")
 			return "Shift-"
 		if("ПКМ в бою")
@@ -258,7 +265,7 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	var/text
 	switch(right_click_mode())
 		if(RIGHT_CLICK_MODE_MENU)
-			text = "ПКМ открывает меню действий у курсора: осмотреть, взять, действия интентов, подсказки с хоткеями, другие объекты на клетке. В списке клетки ЛКМ по вещи берёт её, ПКМ по строке - её действия. Shift+ПКМ - второе действие сразу (толкнуть, открыть сумку не снимая, постучать). В комбат-режиме ПКМ - действие."
+			text = "ПКМ открывает меню действий у курсора: осмотреть, взять, действия интентов, подсказки с хоткеями, другие объекты на клетке. В списке клетки ЛКМ по вещи берёт её, ПКМ по строке - её действия. Shift+ПКМ - второе действие сразу (толкнуть, открыть сумку не снимая, постучать). В комбат-режиме ПКМ - действие, в дизарме ПКМ по человеку рядом - сразу толчок."
 		if(RIGHT_CLICK_MODE_NATIVE)
 			text = "ПКМ открывает меню BYOND, как раньше. Можно включить меню действий у курсора: ПКМ - действия с объектом, Shift+ПКМ - второе действие (толкнуть, открыть сумку не снимая, постучать)."
 		else
@@ -276,7 +283,7 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	var/list/options = GLOB.right_click_mode_names.Copy()
 	options += CONTEXT_MENU_SETTINGS_CHOICE
 	var/current = right_click_mode_name(prefs.right_click_mode(), prefs.shift_right_click_mode())
-	var/choice = tgui_input_list(mob, "Действие - второе действие сразу (толкнуть, открыть сумку не снимая, постучать). Меню действий - меню у курсора. Меню BYOND - как раньше. В комбат-режиме и в мехе ПКМ всегда действие. Сейчас: [current].", "Режим ПКМ", options, (current in options) ? current : null)
+	var/choice = tgui_input_list(mob, "Действие - второе действие сразу (толкнуть, открыть сумку не снимая, постучать). Меню действий - меню у курсора. Меню BYOND - как раньше. В комбат-режиме и в мехе ПКМ всегда действие, в дизарме ПКМ по человеку рядом - толчок. Сейчас: [current].", "Режим ПКМ", options, (current in options) ? current : null)
 	if(!choice || QDELETED(src))
 		return
 	if(choice == CONTEXT_MENU_SETTINGS_CHOICE)
@@ -286,7 +293,7 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	if(!pair)
 		return
 	set_right_click_mode(pair[1], pair[2])
-	to_chat(src, span_notice("[right_click_mode_name(prefs.right_click_mode(), prefs.shift_right_click_mode())]. В комбат-режиме и в мехе ПКМ всё равно действует. Шрифт, размер и прозрачность меню - в настройках игры, раздел «Меню ПКМ»."))
+	to_chat(src, span_notice("[right_click_mode_name(prefs.right_click_mode(), prefs.shift_right_click_mode())]. В комбат-режиме и в мехе ПКМ всё равно действует, в дизарме ПКМ по человеку рядом - толчок. Шрифт, размер и прозрачность меню - в настройках игры, раздел «Меню ПКМ»."))
 
 /mob/proc/open_context_menu(atom/target, params)
 	close_context_menu("reopen")

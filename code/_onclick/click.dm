@@ -31,7 +31,7 @@
 		return
 	// клик мимо открытого меню действий только закрывает его; клик, открывающий меню, сразу открывает новое
 	if(active_context_menu)
-		var/reopen = right_click_opens_menu(params2list(params))
+		var/reopen = right_click_opens_menu(params2list(params), A)
 		close_context_menu(reopen ? "reopen" : "click")
 		if(!reopen)
 			return
@@ -70,7 +70,7 @@
 			return CtrlMiddleClickOn(A)
 		else
 			return MiddleClickOn(A)
-	if(right_click_opens_menu(modifiers))
+	if(right_click_opens_menu(modifiers, A))
 		open_context_menu(A, params)
 		return
 	if(shift_click_examines(modifiers))

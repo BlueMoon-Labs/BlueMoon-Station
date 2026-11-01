@@ -186,7 +186,7 @@ GLOBAL_LIST_INIT(context_menu_intent_short, list(
 			continue
 		var/list/result = key == SCREENTIP_CONTEXT_LMB ? main : other
 		// второе действие у игрока в режиме меню висит на Shift+ПКМ
-		var/key_hint = key == SCREENTIP_CONTEXT_RMB ? user.right_click_action_hint() : key_info[2]
+		var/key_hint = key == SCREENTIP_CONTEXT_RMB ? user.right_click_action_hint(A) : key_info[2]
 		var/list/by_intent = context[key]
 		if(!islist(by_intent))
 			by_intent = list(INTENT_ANY = by_intent)
