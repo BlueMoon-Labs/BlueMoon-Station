@@ -1526,3 +1526,61 @@
 	TEST_ASSERT(context_menu_icon_cached(pen), "Значок не попал в кэш")
 	var/mob/living/carbon/human/human = allocate(/mob/living/carbon/human/dummy/consistent)
 	TEST_ASSERT(context_menu_icon_cached(human), "У человека значка нет, ждать его нечего")
+
+/// Список клетки по алфавиту и без схлопывания одинаковых
+/datum/unit_test/context_menu_tile_sort_and_grouping
+
+/datum/unit_test/context_menu_tile_sort_and_grouping/Run()
+	var/mob/living/carbon/human/dummy/consistent/context_menu_styled/user = allocate(/mob/living/carbon/human/dummy/consistent/context_menu_styled)
+	user.style_prefs = new
+	var/turf/next_turf = get_step(user, EAST)
+	var/obj/item/wrench/wrench = allocate(/obj/item/wrench, next_turf)
+	var/obj/item/crowbar/crowbar = allocate(/obj/item/crowbar, next_turf)
+	var/obj/item/paper/paper = allocate(/obj/item/paper, next_turf)
+	var/list/pens = list()
+	for(var/i in 1 to CONTEXT_MENU_GROUP_MIN)
+		pens += allocate(/obj/item/pen, next_turf)
+	var/obj/item/pen/first_pen = pens[1]
+
+	user.style_prefs.context_menu_style = list("tile_sort" = "name")
+	var/datum/context_menu/menu = user.open_context_menu(next_turf, "right=1")
+	var/list/names = list()
+	for(var/datum/context_menu_entry/entry as anything in menu.entries)
+		names += entry.name
+	var/floor_name = names[length(names)]
+	names.len--
+	var/list/sorted = sortTim(names.Copy(), GLOBAL_PROC_REF(cmp_text_asc))
+	TEST_ASSERT_EQUAL(jointext(names, "|"), jointext(sorted, "|"), "Список клетки не по алфавиту")
+	TEST_ASSERT_EQUAL(floor_name, context_menu_name(next_turf.name), "Пол не последней строкой")
+	TEST_ASSERT_NOTNULL(find_context_entry(menu, "[context_menu_name(first_pen.name)] ([length(pens)])"), "Одинаковые не схлопнулись по умолчанию")
+	user.close_context_menu()
+
+	user.style_prefs.context_menu_style = list("group_same" = FALSE)
+	menu = user.open_context_menu(next_turf, "right=1")
+	for(var/datum/context_menu_entry/entry as anything in menu.entries)
+		TEST_ASSERT(!istype(entry, /datum/context_menu_entry/pick_group), "Одинаковые схлопнулись при выключенной настройке")
+	for(var/obj/item/pen/pen as anything in pens)
+		TEST_ASSERT_NOTNULL(context_menu_pick_row(menu, pen), "Нет строки одной из ручек")
+	for(var/atom/thing in list(wrench, crowbar, paper))
+		TEST_ASSERT_NOTNULL(context_menu_pick_row(menu, thing), "Нет строки [thing]")
+	user.close_context_menu()
+
+/// Набор вида не сбрасывает поведение, которого не задаёт; набор с поведением его выставляет
+/datum/unit_test/context_menu_preset_keeps_behavior
+
+/datum/unit_test/context_menu_preset_keeps_behavior/Run()
+	var/datum/preferences/prefs = new
+	prefs.set_context_menu_style("open_with", "tile")
+	prefs.set_context_menu_style("confirm_danger", TRUE)
+	TEST_ASSERT(prefs.apply_context_menu_preset("neon"), "Набор не применился")
+	TEST_ASSERT_EQUAL(prefs.context_menu_option("theme"), "neon", "Тема набора не выставлена")
+	TEST_ASSERT_EQUAL(prefs.context_menu_option("open_with"), "tile", "Набор вида сбросил «что открывать»")
+	TEST_ASSERT(prefs.context_menu_option("confirm_danger"), "Набор вида сбросил переспрос опасных")
+	TEST_ASSERT_EQUAL(prefs.current_context_menu_preset(), "neon", "Набор со своим поведением не узнан")
+
+	prefs.set_context_menu_style("pile_click", "take")
+	TEST_ASSERT(prefs.apply_context_menu_preset("pile"), "Набор «Сперва клетка» не применился")
+	TEST_ASSERT_EQUAL(prefs.context_menu_option("pile_click"), "actions", "Набор не выставил своё поведение")
+	TEST_ASSERT_EQUAL(prefs.context_menu_option("theme"), "dark", "Набор не сбросил тему прошлого набора")
+	prefs.set_context_menu_style("pile_click", "take")
+	TEST_ASSERT_NULL(prefs.current_context_menu_preset(), "Поведение, заданное набором, поменяли, а набор всё ещё узнан")

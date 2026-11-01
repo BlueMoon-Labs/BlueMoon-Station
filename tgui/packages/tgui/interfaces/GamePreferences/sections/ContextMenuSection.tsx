@@ -53,6 +53,12 @@ type ContextMenuStyle = {
   intents: string;
   pile_click: string;
   open_with: string;
+  tile_sort: string;
+  group_same: boolean | number;
+  zebra: boolean | number;
+  header_style: string;
+  icon_frame: string;
+  desc_line: string;
   admin_pos: string;
   sound: string;
 };
@@ -95,6 +101,11 @@ const THEME_OPTIONS: Option<string>[] = [
   { value: 'mono', label: 'Монохром' },
   { value: 'light', label: 'Светлая' },
   { value: 'contrast', label: 'Контрастная' },
+  { value: 'amber', label: 'Янтарь' },
+  { value: 'neon', label: 'Неон' },
+  { value: 'ice', label: 'Иней' },
+  { value: 'plasma', label: 'Плазма' },
+  { value: 'paper', label: 'Бумага' },
 ];
 
 const FONT_OPTIONS: Option<string>[] = [
@@ -343,10 +354,25 @@ const MenuPreview = (props: {
           height: `${iconPx}px`,
           flex: '0 0 auto',
           background: ['#8a6d3b', '#6b8fbf', '#9c5a5a', '#5a9c6b', '#9c8a5a'][n % 5],
+          borderRadius: style.icon_frame === 'round' ? '50%' : undefined,
+          outline:
+            style.icon_frame !== 'none'
+              ? `${Math.max(1, Math.round(iconPx / 10))}px solid ${hexRgba(theme.text, 0.12)}`
+              : undefined,
         }}
       />
     ) : null;
   const rows = style.layout === 'list' ? PREVIEW_ROWS : PREVIEW_ROWS.slice(0, 4);
+  let headerBg = theme.header_bg;
+  let headerText = theme.header_text;
+  let modeText = theme.mode_text;
+  if (style.header_style === 'accent') {
+    headerBg = accent;
+    headerText = contrastText(accent);
+    modeText = hexRgba(headerText === '#ffffff' ? '#ffffff' : '#000000', 0.6);
+  } else if (style.header_style === 'line') {
+    headerBg = theme.row_bg;
+  }
   return (
     <Box
       style={{
@@ -362,9 +388,31 @@ const MenuPreview = (props: {
       }}
     >
       {!!style.header && (
-        <div style={rowBox(theme.header_bg, theme.header_text, 'header')}>
+        <div
+          style={{
+            ...rowBox(headerBg, headerText, 'header'),
+            boxShadow:
+              style.header_style === 'line'
+                ? `inset 0 -${Math.max(2, Math.round(2 * scale))}px 0 ${accent}`
+                : 'none',
+          }}
+        >
           <span style={{ flex: '1 1 auto', fontWeight: 700 }}>Ящик с инструментами</span>
-          <span style={{ color: theme.mode_text }}>режим</span>
+          <span style={{ color: modeText }}>режим</span>
+        </div>
+      )}
+      {!!style.header && style.desc_line === 'line' && (
+        <div
+          style={{
+            padding: `${Math.round(2 * scale)}px ${pad}px`,
+            fontSize: `${Math.round(fontPx * 0.85)}px`,
+            fontWeight: 400,
+            textTransform: 'none',
+            background: headerBg,
+            color: style.header_style === 'accent' ? modeText : theme.service,
+          }}
+        >
+          Ящик со стандартным набором инструментов
         </div>
       )}
       <div
@@ -377,8 +425,13 @@ const MenuPreview = (props: {
         {rows.map((row, i) => {
           const [background, color] = rowColors(row.kind === 'hover' ? 'normal' : row.kind);
           const side = style.icon_side === 'right';
+          const box = rowBox(background, color, row.kind);
+          if (style.zebra && i % 2 && row.kind !== 'current' && row.kind !== 'admin' && row.kind !== 'hover') {
+            const band = hexRgba(theme.text, 0.06);
+            box.background = `linear-gradient(${band}, ${band}), ${background}`;
+          }
           return (
-            <div key={row.name} style={rowBox(background, color, row.kind)}>
+            <div key={row.name} style={box}>
               {!side && icon(i)}
               <span style={{ flex: '1 1 auto' }}>{row.name}</span>
               {listLayout && style.hints === 'inline' && row.hint && (
@@ -450,6 +503,41 @@ const OPEN_WITH_OPTIONS: Option<string>[] = [
   { value: 'tile', label: 'Список клетки, действия - по клику' },
 ];
 
+const TILE_SORT_OPTIONS: Option<string>[] = [
+  { value: 'layer', label: 'Как лежат, верхние первыми' },
+  { value: 'name', label: 'По алфавиту' },
+];
+
+const HEADER_STYLE_OPTIONS: Option<string>[] = [
+  { value: 'plain', label: 'Цвета темы' },
+  { value: 'accent', label: 'Цвета акцента' },
+  { value: 'line', label: 'Линия акцента снизу' },
+];
+
+const ICON_FRAME_OPTIONS: Option<string>[] = [
+  { value: 'none', label: 'Нет' },
+  { value: 'tile', label: 'Квадрат' },
+  { value: 'round', label: 'Круг' },
+];
+
+const DESC_LINE_OPTIONS: Option<string>[] = [
+  { value: 'tooltip', label: 'При наведении на шапку' },
+  { value: 'line', label: 'Строкой под шапкой' },
+  { value: 'none', label: 'Не показывать' },
+];
+
+/** Чёрный или белый текст поверх цвета - как в меню */
+const contrastText = (hex: string) => {
+  const n = parseInt(hex.replace('#', ''), 16) || 0;
+  const luma = 0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255);
+  return luma > 150 ? '#101010' : '#ffffff';
+};
+
+const hexRgba = (hex: string, alpha: number) => {
+  const n = parseInt(hex.replace('#', ''), 16) || 0;
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${alpha})`;
+};
+
 const PILE_CLICK_OPTIONS: Option<string>[] = [
   { value: 'take', label: 'Взять, действия - ПКМ по строке' },
   { value: 'actions', label: 'Открыть действия вещи' },
@@ -519,7 +607,7 @@ export const ContextMenuSection = (props) => {
       <GroupTitle title="Готовые наборы" />
       <Stack.Item>
         <div className="GamePreferences__hint">
-          Набор меняет весь вид меню, раскладку ПКМ не трогает. В игре - верб «Вид меню ПКМ» во вкладке OOC
+          Набор меняет вид меню. Раскладку ПКМ и поведение (что открывать, клики по списку), если сам их не задаёт, не трогает. В игре - верб «Вид меню ПКМ» во вкладке OOC
         </div>
         <Stack wrap="wrap" mt={0.5}>
           {(data.context_menu_presets || []).map((preset) => (
@@ -615,6 +703,13 @@ export const ContextMenuSection = (props) => {
       <PrefRow label="Полоска у основного действия" checked={!!style.stripe} tooltip="У действия текущего интента и у «Админ…»" onClick={() => toggle('stripe')} />
       <PrefRow label="Разделители строк" checked={!!style.separators} tooltip="Линия в пиксель между строками" onClick={() => toggle('separators')} />
       <PrefRow label="Шапка с именем" checked={!!style.header} tooltip="Без шапки режим ПКМ меняется только вербом «Режим ПКМ» и здесь" onClick={() => toggle('header')} />
+      {html && (
+        <>
+          <DropdownRow label="Цвет шапки" options={HEADER_STYLE_OPTIONS} value={style.header_style} onSelect={(value) => setStyle('header_style', value)} />
+          <DropdownRow label="Описание объекта" options={DESC_LINE_OPTIONS} value={style.desc_line} onSelect={(value) => setStyle('desc_line', value)} />
+          <PrefRow label="Полосатые строки" checked={!!style.zebra} tooltip="Каждая вторая строка чуть светлее: в длинном списке глазу легче" onClick={() => toggle('zebra')} />
+        </>
+      )}
       {!html && (
         <>
           <Stack.Item>
@@ -672,6 +767,7 @@ export const ContextMenuSection = (props) => {
       {html && (
         <>
           <DropdownRow label="Где значки" options={ICON_SIDE_OPTIONS} value={style.icon_side} onSelect={(value) => setStyle('icon_side', value)} />
+          <DropdownRow label="Подложка значков" options={ICON_FRAME_OPTIONS} value={style.icon_frame} onSelect={(value) => setStyle('icon_frame', value)} />
           <PrefRow label="Значок в шапке" checked={!!style.header_icon} tooltip="Картинка объекта рядом с его именем; описание объекта - при наведении на шапку" onClick={() => toggle('header_icon')} />
         </>
       )}
@@ -684,6 +780,13 @@ export const ContextMenuSection = (props) => {
         options={OPEN_WITH_OPTIONS}
         value={style.open_with}
         onSelect={(value) => setStyle('open_with', value)}
+      />
+      <DropdownRow label="Порядок в списке клетки" options={TILE_SORT_OPTIONS} value={style.tile_sort} onSelect={(value) => setStyle('tile_sort', value)} />
+      <PrefRow
+        label="Одинаковые вещи одной строкой"
+        checked={!!style.group_same}
+        tooltip="Несколько одинаковых - одна строка со счётом, ЛКМ берёт одну. Выключено - каждая вещь своей строкой"
+        onClick={() => toggle('group_same')}
       />
       <DropdownRow
         label="ЛКМ по вещи в списке клетки"

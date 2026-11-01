@@ -40,7 +40,7 @@
 	.row img { flex: 0 0 auto; image-rendering: pixelated; object-fit: contain; }
 	.header { cursor: pointer; }
 	.header .name { font-weight: bold; }
-	#footer { overflow: hidden; text-overflow: ellipsis; }
+	#footer, #desc { overflow: hidden; text-overflow: ellipsis; }
 	.smooth-hover .row { transition: background-color 0.12s, color 0.12s, box-shadow 0.12s; }
 	@keyframes cm-fade { from { opacity: 0; } to { opacity: 1; } }
 	@keyframes cm-slide { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
@@ -87,6 +87,18 @@
 	};
 	var WEIGHTS = { normal: 400, medium: 600, bold: 700 };
 	var WIDTHS = { auto: [0, 0], narrow: [0, 160], wide: [220, 0] };
+
+	function hexRgba(hex, alpha) {
+		var n = parseInt(String(hex).replace("#", ""), 16) || 0;
+		return "rgba(" + ((n >> 16) & 255) + "," + ((n >> 8) & 255) + "," + (n & 255) + "," + alpha + ")";
+	}
+
+	// чёрный или белый текст поверх цвета, смотря что читается
+	function contrastText(hex) {
+		var n = parseInt(String(hex).replace("#", ""), 16) || 0;
+		var luma = 0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255);
+		return luma > 150 ? "#101010" : "#ffffff";
+	}
 
 	// значки приходят целым стейтом, прозрачные поля обрезаются здесь, по значку один раз; "" - пустой стейт
 	var trimmedIcons = {};
@@ -177,7 +189,7 @@
 					break;
 				case "invert":
 					row.style.background = base.color;
-					row.style.color = base.background;
+					row.style.color = base.fill;
 					break;
 				default:
 					row.style.background = t.hover_bg;
@@ -212,6 +224,12 @@
 				img.style.width = iconPx + "px";
 				img.style.height = iconPx + "px";
 				img.style.visibility = "hidden";
+				if (d.icon_frame !== "none" && icon) {
+					img.style.boxSizing = "border-box";
+					img.style.padding = Math.max(1, Math.round(iconPx / 10)) + "px";
+					img.style.background = hexRgba(t.text, 0.12);
+					img.style.borderRadius = d.icon_frame === "round" ? "50%" : Math.round(2 * scale) + "px";
+				}
 				if (!icon) {
 					return img;
 				}
@@ -228,7 +246,8 @@
 				}
 				return img;
 			};
-			var makeRow = function (entry, background, color, cls) {
+			// fill - сплошной цвет строки (для «инверсии»), background может быть с полосой поверх
+			var makeRow = function (entry, background, color, cls, fill, shadowOverride) {
 				var row = document.createElement("div");
 				row.className = "row " + (cls || "");
 				row.style.height = rowPx + "px";
@@ -242,7 +261,10 @@
 				if (d.stripe && (entry.style === "current" || entry.style === "admin")) {
 					shadow = "inset " + Math.max(2, Math.round(3 * scale)) + "px 0 0 " + d.accent;
 				}
-				row.cmBase = { background: background, color: color, shadow: shadow };
+				if (shadowOverride) {
+					shadow = shadowOverride;
+				}
+				row.cmBase = { background: background, color: color, shadow: shadow, fill: fill || background };
 				var showIcon = iconPx && ((d.rows_have_icons && !cls) || (cls === "header" && entry.icon));
 				if (showIcon && d.icon_side === "left") {
 					row.appendChild(makeIcon(entry.icon));
@@ -278,14 +300,43 @@
 
 			var animated = [];
 			if (d.header) {
-				var header = makeRow({ name: d.header_text, inlineHint: "режим", icon: d.header_icon_data }, t.header_bg, t.header_text, "header");
-				header.lastChild.style.color = t.mode_text;
+				var headerBg = t.header_bg;
+				var headerText = t.header_text;
+				var modeText = t.mode_text;
+				var headerShadow = null;
+				if (d.header_style === "accent") {
+					headerBg = d.accent;
+					headerText = contrastText(d.accent);
+					modeText = hexRgba(headerText === "#ffffff" ? "#ffffff" : "#000000", 0.6);
+				} else if (d.header_style === "line") {
+					headerBg = t.row_bg;
+					headerShadow = "inset 0 -" + Math.max(2, Math.round(2 * scale)) + "px 0 " + d.accent;
+				}
+				var header = makeRow({ name: d.header_text, inlineHint: "режим", icon: d.header_icon_data }, headerBg, headerText, "header", null, headerShadow);
+				header.lastChild.style.color = modeText;
 				if (d.header_desc) {
 					header.title = d.header_desc;
 				}
 				header.onclick = function () { menu.send({ header: 1 }); };
 				el.appendChild(header);
 				animated.push(header);
+				if (d.desc_line && d.header_desc) {
+					// ширина 0 и min-width 100%: длинное описание не растягивает меню, а обрезается
+					var desc = document.createElement("div");
+					desc.id = "desc";
+					desc.textContent = d.header_desc;
+					desc.style.width = "0";
+					desc.style.minWidth = "100%";
+					desc.style.boxSizing = "border-box";
+					desc.style.padding = Math.round(2 * scale) + "px " + pad + "px";
+					desc.style.fontSize = Math.round(fontPx * 0.85) + "px";
+					desc.style.fontWeight = 400;
+					desc.style.textTransform = "none";
+					desc.style.background = headerBg;
+					desc.style.color = d.header_style === "accent" ? modeText : t.service;
+					el.appendChild(desc);
+					animated.push(desc);
+				}
 			}
 			var rows = document.createElement("div");
 			rows.id = "rows";
@@ -324,7 +375,12 @@
 					background = t.admin_bg;
 				}
 				entry.inlineHint = d.hints === "inline" && d.layout === "list" ? entry.hint : null;
-				var row = makeRow(entry, background, color);
+				var fill = background;
+				if (d.zebra && index % 2 && entry.style !== "current" && entry.style !== "admin") {
+					var band = hexRgba(t.text, 0.06);
+					background = "linear-gradient(" + band + ", " + band + "), " + background;
+				}
+				var row = makeRow(entry, background, color, null, fill);
 				if (entry.hint && d.hints !== "none") {
 					row.title = entry.hint;
 				}

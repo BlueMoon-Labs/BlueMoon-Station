@@ -464,7 +464,7 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 		candidates += thing
 	return sort_list(candidates, GLOBAL_PROC_REF(cmp_context_menu_order))
 
-/// Список клетки; одинаковые объекты (тип и имя) от CONTEXT_MENU_GROUP_MIN штук - одной строкой со счётом
+/// Список клетки; одинаковые объекты (тип и имя) от CONTEXT_MENU_GROUP_MIN штук - одной строкой со счётом, если игрок не отключил
 /datum/context_menu/proc/show_tile()
 	set_target(null)
 	tile_list_shown = TRUE
@@ -476,6 +476,10 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	entries = list()
 	var/list/same_things = list()
 	var/list/candidates = get_tile_candidates(tile)
+	var/list/style = user.context_menu_prefs()?.context_menu_style
+	if(context_menu_style_option(style, "tile_sort") == "name")
+		candidates = sort_list(candidates, GLOBAL_PROC_REF(cmp_context_menu_name))
+	var/group_same = context_menu_style_option(style, "group_same")
 	// вещь, по которой щёлкнули, - первой строкой: в куче её не надо искать
 	if(clicked in candidates)
 		candidates -= clicked
@@ -488,7 +492,7 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 	for(var/key in same_things)
 		var/list/atom/movable/things = same_things[key]
 		var/atom/movable/first = things[1]
-		if(length(things) >= CONTEXT_MENU_GROUP_MIN)
+		if(group_same && length(things) >= CONTEXT_MENU_GROUP_MIN)
 			entries += new /datum/context_menu_entry/pick_group("[context_menu_name(first.name)] ([length(things)])", null, CONTEXT_ENTRY_NORMAL, things)
 			continue
 		for(var/atom/movable/thing as anything in things)
@@ -755,6 +759,14 @@ GLOBAL_LIST_INIT(right_click_mode_names, list(
 /// Имя объекта для строки меню: без \proper и \improper (capitalize иначе ломает первую букву) и с заглавной
 /proc/context_menu_name(name)
 	return capitalize(replacetext(replacetext(format_text(name), "\proper", ""), "\improper", ""))
+
+/// Мобы первыми, дальше по алфавиту
+/proc/cmp_context_menu_name(atom/movable/a, atom/movable/b)
+	var/a_mob = ismob(a)
+	var/b_mob = ismob(b)
+	if(a_mob != b_mob)
+		return b_mob - a_mob
+	return sorttext(context_menu_name(b.name), context_menu_name(a.name))
 
 /proc/cmp_context_menu_order(atom/movable/a, atom/movable/b)
 	var/a_mob = ismob(a)

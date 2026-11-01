@@ -3,7 +3,7 @@
 GLOBAL_LIST_INIT(context_menu_style_choices, list(
 	"renderer" = list("html", "map"),
 	"layout" = list("list", "columns", "pills"),
-	"theme" = list("dark", "slate", "nanotrasen", "ocean", "forest", "syndicate", "rose", "terminal", "brass", "cult", "mono", "light", "contrast"),
+	"theme" = list("dark", "slate", "nanotrasen", "ocean", "forest", "syndicate", "rose", "terminal", "brass", "cult", "mono", "light", "contrast", "amber", "neon", "ice", "plasma", "paper"),
 	"font" = list("segoe", "calibri", "candara", "tahoma", "verdana", "arial", "trebuchet", "georgia", "consolas", "pixel"),
 	"weight" = list("normal", "medium", "bold"),
 	"scale" = list(100, 90, 80, 110, 125, 150, 200),
@@ -39,6 +39,12 @@ GLOBAL_LIST_INIT(context_menu_style_choices, list(
 	"intents" = list("submenu", "inline"),
 	"pile_click" = list("take", "actions"),
 	"open_with" = list("target", "tile"),
+	"tile_sort" = list("layer", "name"),
+	"group_same" = list(TRUE, FALSE),
+	"zebra" = list(FALSE, TRUE),
+	"header_style" = list("plain", "accent", "line"),
+	"icon_frame" = list("none", "tile", "round"),
+	"desc_line" = list("tooltip", "line", "none"),
 	"admin_pos" = list("bottom", "top", "hidden"),
 	"sound" = list("off", "click", "soft"),
 ))
@@ -50,7 +56,7 @@ GLOBAL_LIST_INIT(context_menu_sounds, list(
 ))
 
 /**
- * Готовые наборы вида: id -> list("name", "desc", "style"). Набор заменяет весь вид, раскладку ПКМ не трогает.
+ * Готовые наборы вида: id -> list("name", "desc", "style"). Набор заменяет весь вид; раскладку ПКМ и поведение, которого не задаёт, не трогает.
  * Порядок - порядок кнопок в настройках и в вербе «Вид меню ПКМ».
  */
 GLOBAL_LIST_INIT(context_menu_style_presets, list(
@@ -88,6 +94,24 @@ GLOBAL_LIST_INIT(context_menu_style_presets, list(
 	)),
 	"speedrun" = list("name" = "Быстро", "desc" = "Мельче, 20 пунктов на странице, без значков", "style" = list(
 		"page_rows" = 20, "hints" = "none", "icons" = FALSE, "scale" = 90,
+	)),
+	"pile" = list("name" = "Сперва клетка", "desc" = "Сразу список всего на клетке по алфавиту, клик по строке - действия, одинаковые не прячутся", "style" = list(
+		"open_with" = "tile", "pile_click" = "actions", "tile_sort" = "name", "group_same" = FALSE, "zebra" = TRUE, "icon_frame" = "tile",
+	)),
+	"amber" = list("name" = "Янтарь", "desc" = "Янтарный ЭЛТ-монитор: моноширинный, заглавные, разделители", "style" = list(
+		"theme" = "amber", "font" = "consolas", "caps" = TRUE, "separators" = TRUE, "hover" = "invert", "header_style" = "line", "animation" = "fade",
+	)),
+	"neon" = list("name" = "Неон", "desc" = "Розово-голубой неон, полосатые строки, шапка цвета акцента", "style" = list(
+		"theme" = "neon", "font" = "trebuchet", "zebra" = TRUE, "header_style" = "accent", "hover" = "outline", "animation" = "zoom", "icon_frame" = "round",
+	)),
+	"frost" = list("name" = "Иней", "desc" = "Холодный голубой, просторно, описание объекта под шапкой", "style" = list(
+		"theme" = "ice", "density" = "normal", "header_style" = "line", "desc_line" = "line", "hover" = "accent", "smooth_hover" = TRUE, "icon_frame" = "tile",
+	)),
+	"plasma" = list("name" = "Плазма", "desc" = "Фиолетовый, жирный шрифт, каскад", "style" = list(
+		"theme" = "plasma", "weight" = "medium", "animation" = "cascade", "anim_speed" = "fast", "stripe" = TRUE, "header_style" = "accent",
+	)),
+	"paper" = list("name" = "Бумага", "desc" = "Как бланк Нанотрейзен: светлый, Georgia, описание под шапкой", "style" = list(
+		"theme" = "paper", "font" = "georgia", "header_style" = "line", "desc_line" = "line", "zebra" = TRUE, "opacity" = 100, "border" = FALSE,
 	)),
 ))
 
@@ -183,6 +207,41 @@ GLOBAL_LIST_INIT(context_menu_themes, list(
 		"text" = "#ffffff", "danger" = "#ff4040", "service" = "#c0c0c0",
 		"admin_text" = "#ffd400", "admin_bg" = "#000000",
 		"hint_bg" = "#000000", "hint_text" = "#ffffff", "border" = "#ffffff", "accent" = "#ffd400", "outline" = "#000000",
+	),
+	"amber" = list(
+		"header_bg" = "#140c00", "header_text" = "#ffcc66", "mode_text" = "#9a6a1f",
+		"row_bg" = "#1c1200", "current_bg" = "#3a2600", "hover_bg" = "#5a3b00",
+		"text" = "#ffb000", "danger" = "#ff6a3d", "service" = "#b8822a",
+		"admin_text" = "#fff0a0", "admin_bg" = "#2a2000",
+		"hint_bg" = "#140c00", "hint_text" = "#b8822a", "border" = "#8a5a00", "accent" = "#ffb000", "outline" = "#000000",
+	),
+	"neon" = list(
+		"header_bg" = "#0d0221", "header_text" = "#ffffff", "mode_text" = "#8a6ac2",
+		"row_bg" = "#150535", "current_bg" = "#2a0e5c", "hover_bg" = "#3d1680",
+		"text" = "#e8f6ff", "danger" = "#ff3fa4", "service" = "#7fd8ff",
+		"admin_text" = "#fff35c", "admin_bg" = "#26103a",
+		"hint_bg" = "#0d0221", "hint_text" = "#7fd8ff", "border" = "#ff3fa4", "accent" = "#00e5ff", "outline" = "#000000",
+	),
+	"ice" = list(
+		"header_bg" = "#0e2233", "header_text" = "#f0fbff", "mode_text" = "#7fa6bf",
+		"row_bg" = "#16324a", "current_bg" = "#1f4a6b", "hover_bg" = "#2b6491",
+		"text" = "#e6f7ff", "danger" = "#ff8fa3", "service" = "#9cc8e0",
+		"admin_text" = "#ffe08a", "admin_bg" = "#2d3020",
+		"hint_bg" = "#0e2233", "hint_text" = "#9cc8e0", "border" = "#5fb8e8", "accent" = "#9be7ff", "outline" = "#000000",
+	),
+	"plasma" = list(
+		"header_bg" = "#1b0a2a", "header_text" = "#f7ecff", "mode_text" = "#9472b0",
+		"row_bg" = "#26103a", "current_bg" = "#3d1a5e", "hover_bg" = "#562685",
+		"text" = "#f0e0ff", "danger" = "#ff7a9c", "service" = "#b896d6",
+		"admin_text" = "#ffd27a", "admin_bg" = "#33201a",
+		"hint_bg" = "#1b0a2a", "hint_text" = "#b896d6", "border" = "#8a3fd1", "accent" = "#c77dff", "outline" = "#000000",
+	),
+	"paper" = list(
+		"header_bg" = "#e8dcc0", "header_text" = "#2a2318", "mode_text" = "#7a6a4c",
+		"row_bg" = "#f6efdc", "current_bg" = "#e6d6a8", "hover_bg" = "#d9c48e",
+		"text" = "#2e2618", "danger" = "#a3271b", "service" = "#6e6046",
+		"admin_text" = "#6a3d00", "admin_bg" = "#f3e0b0",
+		"hint_bg" = "#e8dcc0", "hint_text" = "#6e6046", "border" = "#a89468", "accent" = "#1f4f8f", "outline" = "#ffffff",
 	),
 ))
 
@@ -287,23 +346,35 @@ GLOBAL_LIST_INIT(context_menu_map_fonts, list("calibri", "candara", "tahoma", "v
 	GLOB.context_menu_stats.record_change(parent, "вид", "по умолчанию")
 	parent?.mob?.active_context_menu?.render()
 
-/// Готовый набор вида целиком: всё, чего в наборе нет, - по умолчанию
+/// Настройки поведения, а не вида: набор их не сбрасывает, если не задаёт сам
+GLOBAL_LIST_INIT(context_menu_behavior_options, list(
+	"renderer", "open_with", "pile_click", "tile_sort", "group_same", "intents", "danger_order", "confirm_danger",
+	"show_examine", "show_point", "admin_pos", "close_on_move", "auto_close", "sound",
+))
+
+/// Готовый набор вида целиком: всё, чего в наборе нет, - по умолчанию, кроме поведения игрока
 /datum/preferences/proc/apply_context_menu_preset(preset_id)
 	var/list/preset = GLOB.context_menu_style_presets[preset_id]
 	if(!preset)
 		return FALSE
-	context_menu_style = sanitize_context_menu_style(preset["style"])
+	var/list/new_style = sanitize_context_menu_style(preset["style"])
+	for(var/key in GLOB.context_menu_behavior_options)
+		if(!(key in new_style) && (key in context_menu_style))
+			new_style[key] = context_menu_style[key]
+	context_menu_style = new_style
 	save_pref_var("context_menu_style")
 	GLOB.context_menu_stats.record_change(parent, "набор", preset_id)
 	parent?.mob?.active_context_menu?.render()
 	return TRUE
 
-/// Набор, с которым вид совпадает, или null, если игрок что-то поменял сам
+/// Набор, с которым вид совпадает, или null, если игрок что-то поменял сам. Поведение, которого набор не задаёт, не в счёт.
 /datum/preferences/proc/current_context_menu_preset()
 	for(var/preset_id in GLOB.context_menu_style_presets)
 		var/list/preset_style = sanitize_context_menu_style(GLOB.context_menu_style_presets[preset_id]["style"])
 		var/matches = TRUE
 		for(var/key in GLOB.context_menu_style_choices + CONTEXT_MENU_FREE_OPTIONS)
+			if((key in GLOB.context_menu_behavior_options) && !(key in preset_style))
+				continue
 			if(context_menu_style_option(preset_style, key) != context_menu_option(key))
 				matches = FALSE
 				break
@@ -321,7 +392,7 @@ GLOBAL_LIST_INIT(context_menu_map_fonts, list("calibri", "candara", "tahoma", "v
 		var/list/preset = GLOB.context_menu_style_presets[preset_id]
 		options["[preset["name"]] - [preset["desc"]]"] = preset_id
 	options += CONTEXT_MENU_SETTINGS_CHOICE
-	var/choice = tgui_input_list(mob, "Набор меняет весь вид меню действий; раскладку ПКМ не трогает.", "Вид меню ПКМ", options)
+	var/choice = tgui_input_list(mob, "Набор меняет вид меню действий; раскладку ПКМ и поведение (что открывать, клики по списку), если сам их не задаёт, не трогает.", "Вид меню ПКМ", options)
 	if(!choice || QDELETED(src))
 		return
 	if(choice == CONTEXT_MENU_SETTINGS_CHOICE)
