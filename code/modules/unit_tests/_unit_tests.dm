@@ -585,7 +585,6 @@
 #include "personal_music_box.dm"
 #include "stationroom_landmark.dm"
 #include "latex_lockable.dm"
-#include "living_latex.dm"
 #include "mecha_leg_overload.dm"
 #include "parallax_position.dm"
 #include "parallax_profiles.dm"
