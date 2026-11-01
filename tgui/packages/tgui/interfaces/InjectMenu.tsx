@@ -12,8 +12,10 @@ import { Window } from '../layouts';
 type InjectMenuList = {
   subject: string;
   reagents: Reagent[];
-  time_to_next_injection: number;
+  cooldown_remaining: number;
   evolve_poins: number;
+  cost: number;
+  amount: number;
 };
 
 type Reagent = {
@@ -42,6 +44,9 @@ export const InjectMenu = () => {
           />
 
           <Divider />
+          {data.cooldown_remaining > 0 && (
+            <BlockQuote>Следующая инъекция через {Math.ceil(data.cooldown_remaining)} с.</BlockQuote>
+          )}
 
           <BlockQuote>Доступные реагенты:</BlockQuote>
 
@@ -49,6 +54,7 @@ export const InjectMenu = () => {
             {data.reagents.map((reagent) => (
               <Button
                 key={reagent.name}
+                disabled={data.cooldown_remaining > 0 || data.evolve_poins < data.cost}
                 onClick={() =>
                   act('inject', { reagent_name: reagent.name })
                 }
@@ -57,7 +63,7 @@ export const InjectMenu = () => {
                   margin: '2px',
                   flexGrow: 0,
                 }}>
-                {reagent.name} 5u
+                {reagent.name} {data.amount}u
               </Button>
             ))}
           </Flex>

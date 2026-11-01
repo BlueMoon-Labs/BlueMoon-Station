@@ -220,7 +220,7 @@ const StageAbilitiesGrid = (props: {
                   }}
                 >
                   <img
-                    src={`data:image/jpeg;base64, ${ability.icon}`}
+                    src={`data:image/png;base64, ${ability.icon}`}
                     alt="Спрайт"
                     style={{
                       imageRendering: 'pixelated',

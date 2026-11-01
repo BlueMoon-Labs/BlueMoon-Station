@@ -1,365 +1,254 @@
-//Способности
-
 /datum/action/cooldown/latexmob
-	name = "generic latexmob proc"
-	desc = "Вы не должны это видеть в игре. Это базовый прок холдер, он содержит базовые свойства."
+	name = "Living latex"
 	icon_icon = 'modular_bluemoon/horny_venom/icons/latex_abilities.dmi'
 	button_icon = 'modular_bluemoon/horny_venom/icons/latex_abilities.dmi'
 	background_icon_state = "background"
 	button_icon_state = "no_icon"
-	var/stage_required
+	var/stage_required = 0
 	var/stage = 0
-	var/finall_stage = 3
+	var/finall_stage = LATEX_MAX_STAGE
 	var/points_need_to_upgrade = 1
 	var/points_need_to_purchase = 1
-	var/delay
 	var/datum/antagonist/living_latex/my_living_latex
-	var/is_internal_ability = FALSE //если эта способность должна быть доступна только изнутри захваченного моба
+	var/is_internal_ability = FALSE
+
+/datum/action/cooldown/latexmob/Destroy()
+	my_living_latex = null
+	return ..()
 
 /datum/action/cooldown/latexmob/proc/update_stage()
-	if(!owner)
-		return
 	my_living_latex.evolve_points -= points_need_to_upgrade
-	++stage //сначала увеличивает на 1, потом возвращает результат сложения
-	button_icon_state = initial(button_icon_state) + "_[stage]" //initial нужен чтобы из Infiltrate_1 не получалось Infiltrate_1_2_3 которое сломает всю логику
+	stage++
+	var/upgraded_icon = "[initial(button_icon_state)]_[stage]"
+	if(upgraded_icon in icon_states(icon_icon))
+		button_icon_state = upgraded_icon
 	UpdateButtons()
 
 /datum/action/cooldown/latexmob/Activate(atom/target)
-	if(!isbackseatmob(owner) && is_internal_ability) //backseatmob появляется только когда игрок внутри
+	if(QDELETED(owner) || !owner.mind || owner.stat == DEAD)
 		return FALSE
-	if(owner.mind && !my_living_latex)
+	if(!my_living_latex)
 		my_living_latex = check_LL_antagDatum(owner)
-		delay = my_living_latex.mergingDelay
-	else
+	if(QDELETED(my_living_latex) || my_living_latex.owner != owner.mind)
 		return FALSE
+	if(is_internal_ability && !my_living_latex.host_organ)
+		return FALSE
+	return TRUE
 
 /datum/action/cooldown/latexmob/takeControl
 	stage_required = 3
 	button_icon_state = "Infiltrate"
 	name = "Захватить контроль над телом"
-	desc = "Возьмите тело под свой контроль и управляйте им как своим"
+	desc = "Обменяться управлением с носителем. Его тело и импланты сохраняются."
 	is_internal_ability = TRUE
 
 /datum/action/cooldown/latexmob/takeControl/Activate()
-	. = ..()
-	var/mob/living/body = is_venom_controlling(my_living_latex) ? owner : owner.loc
-	var/obj/item/organ/latexOrgan/organ = get_latexOrgan_if_captured_by_LL(body)
-	if(!organ)
-		return
-	var/mob/living/simple_animal/latexmob/venom/backseat = organ.ObserverBackseat
-	swap_LL_species(my_living_latex, owner)
-	if(!swap_minds(my_living_latex, owner, backseat))
-		swap_LL_species(my_living_latex, owner)
+	if(!..())
 		return FALSE
-	my_living_latex.evolve_points = 0 //BURN IT ALL, BACK TO ZERO. Делаю эту абилку самой дорогой.
+	if(my_living_latex.current_controller != VENOM_USER && my_living_latex.stage < stage_required)
+		return FALSE
+	if(!my_living_latex.host_organ.swap_control())
+		return FALSE
+	my_living_latex.evolve_points = 0
 	return TRUE
 
 /datum/action/cooldown/latexmob/venomAction
 	name = "Поглотить/освободить"
-	desc = "Станьте одним целым с кем-то."
+	desc = "Выбрать цель рядом. Повторное нажатие прерывает обволакивание или освобождает носителя."
 	button_icon_state = "Infiltrate"
 	stage_required = 1
 	var/pick_only_simplemob = TRUE
 	var/can_absorb_alive = FALSE
 	var/absorbed_mobs_counter = 1
+	var/busy = FALSE
 
 /datum/action/cooldown/latexmob/venomAction/update_stage()
 	. = ..()
-	if(stage == 2)
-		can_absorb_alive = TRUE
-	if(stage == 3)
-		pick_only_simplemob = FALSE
+	can_absorb_alive = stage >= 2
+	pick_only_simplemob = stage < 3
 
 /datum/action/cooldown/latexmob/venomAction/Activate()
-	. = ..()
-	if(protect_from_spam(owner))
-		return DEFAULT_ABILITY_ERROR_MESSAGE(owner)
+	if(!..())
+		return FALSE
+	if(my_living_latex.capture)
+		QDEL_NULL(my_living_latex.capture)
+		return TRUE
+	if(my_living_latex.host_organ)
+		my_living_latex.host_organ.release()
+		return TRUE
+	if(busy || !islatexmob(owner) || isbackseatmob(owner))
+		return FALSE
+	var/mob/living/simple_animal/latexmob/user = owner
+	if(user.mimicry_in_use)
+		user.go_back()
+	busy = TRUE
+	var/mob/living/target = LL_mob_choice_with_radial_menu(user, pick_only_simplemob)
+	if(QDELETED(src))
+		return FALSE
+	busy = FALSE
+	return try_target(target)
 
-	if(islatexmob(owner) && !isbackseatmob(owner))
-		var/mob/living/carbon/target_host = LL_mob_choice_with_radial_menu(owner, pick_only_simplemob)
+/datum/action/cooldown/latexmob/venomAction/proc/try_target(mob/living/target)
+	if(busy || !can_merge_target(owner, target, pick_only_simplemob, can_absorb_alive))
+		return FALSE
+	if(ishuman(target))
+		var/datum/latex_capture/attempt = new(my_living_latex, owner, target)
+		if(!attempt.start())
+			qdel(attempt)
+			return FALSE
+		return TRUE
+	busy = TRUE
+	var/mob/living/simple_animal/latexmob/user = owner
+	var/finished = user.LL_apply_animated_latex_overlay_with_progressbar(DEFAULT_LL_OVERLAY_ICON, DEFAULT_LL_OVERLAY_ICON_STATE, LATEX_ABSORB_DELAY, target)
+	if(QDELETED(src))
+		return FALSE
+	busy = FALSE
+	if(!finished)
+		return FALSE
+	return do_absorb_simple_mob(target, user, my_living_latex, src)
 
-		// Первая ветка поглощения простого моба
-		if(isanimal(target_host))
-			if(target_host && can_merge_target(owner, target_host, pick_only_simplemob, can_absorb_alive))
-				var/absorb_delay = 5 SECONDS
-				var/finished = owner.LL_apply_animated_latex_overlay_with_progressbar(DEFAULT_LL_OVERLAY_ICON, DEFAULT_LL_OVERLAY_ICON_STATE, absorb_delay, target_host)
-				if(finished)
-					do_absorb_simple_mob(target_host, owner, my_living_latex, src)
-			return
+/datum/action/cooldown/latexmob/traces
+	name = "Следы латекса"
+	desc = "Включить или выключить следы при касании."
 
-		// Вторая ветка слияния
-		if(target_host && can_merge_target(owner, target_host, pick_only_simplemob, can_absorb_alive))
-			if(checkplayerssd(target_host))
-				return MERGING_SSD_ERROR(owner)
-			handle_merging(target_host)
-			enter_in_host(my_living_latex, owner, delay, target_host)
-	else
-		var/mob/living/simple_animal/latexmob/venom/user = owner
-		if(ishuman(user.body))
-			exit_from_host(user.body.loc, owner.mind, user.body, delay, my_living_latex)
-		else
-			return DEFAULT_ABILITY_ERROR_MESSAGE(owner)
-
-	return
+/datum/action/cooldown/latexmob/traces/Activate()
+	if(!..())
+		return FALSE
+	my_living_latex.leave_traces = !my_living_latex.leave_traces
+	owner.balloon_alert(owner, my_living_latex.leave_traces ? "следы включены" : "следы выключены")
+	return TRUE
 
 /datum/action/cooldown/latexmob/ferral_form
 	name = "Форма животного"
-	desc = "Принять форму животного"
+	desc = "Переключиться между сгустком и маленьким латексным существом."
 	button_icon_state = "ferral_form"
 	stage_required = 2
-	var/melee_damage = 5
-	var/list/forms_list = list()
+	var/melee_damage = LATEX_FORM_DAMAGE
 
 /datum/action/cooldown/latexmob/ferral_form/update_stage()
 	. = ..()
-	melee_damage = melee_damage * 1.25
+	melee_damage *= LATEX_FORM_DAMAGE_STEP
 
 /datum/action/cooldown/latexmob/ferral_form/Activate()
-	. = ..()
-	var/mob/living/owner_mob = owner
-	var/old_body_health = owner_mob.health
-	var/mob/living/simple_animal/latexmob/new_body
-	if(istype(owner, /mob/living/simple_animal) && !istype(owner, /mob/living/simple_animal/latexmob/ferral))
-		LL_mob_choice_with_radial_menu(owner, use_custom_list = forms_list)
-		new_body = swap_LL_body_to_new_form(owner, /mob/living/simple_animal/latexmob/ferral, owner.loc)
-		if(forms_list.len == 0)
-			forms_list += new_body
-		new_body.health = old_body_health
-		new_body.melee_damage_lower = melee_damage - 2
-		new_body.melee_damage_upper = melee_damage
-
-	else if(istype(owner, /mob/living/simple_animal/latexmob/ferral))
-		new_body = swap_LL_body_to_new_form(owner, /mob/living/simple_animal/latexmob, owner.loc)
-		new_body.health = old_body_health
-
-	else
-		return DEFAULT_ABILITY_ERROR_MESSAGE(owner)
-
-	my_living_latex.grant_abilities(new_body)
+	if(!..() || my_living_latex.capture || my_living_latex.host_organ)
+		return FALSE
+	if(!islatexmob(owner) || !isturf(owner.loc) || owner.stat != CONSCIOUS)
+		return FALSE
+	var/mob/living/simple_animal/latexmob/user = owner
+	if(user.mimicry_in_use)
+		return FALSE
+	var/health_fraction = user.health / user.maxHealth
+	var/form = istype(user, /mob/living/simple_animal/latexmob/ferral) ? /mob/living/simple_animal/latexmob : /mob/living/simple_animal/latexmob/ferral
+	var/mob/living/simple_animal/latexmob/new_body = swap_LL_body_to_new_form(user, form, get_turf(user))
+	if(!new_body)
+		return FALSE
+	new_body.adjustBruteLoss(new_body.maxHealth * (1 - health_fraction))
+	new_body.melee_damage_lower = melee_damage - LATEX_FORM_DAMAGE_SPREAD
+	new_body.melee_damage_upper = melee_damage
+	return TRUE
 
 /datum/action/cooldown/latexmob/medscan
 	name = "Проверить здоровье"
-	desc = "Позволяет вам понять состояние своего носителя и реагенты в его крови. С более высокой стадией вашего развития этот сканер станет лучше."
+	desc = "Проверить здоровье носителя или собственного тела."
 	button_icon_state = "medscan"
 	stage_required = 1
-	var/is_simple = TRUE
-	var/list/modes = list("chem", "heal", "wound")
-
-/datum/action/cooldown/latexmob/medscan/update_stage()
-	. = ..()
-	if(stage == 2)
-		is_simple = FALSE
-	if(stage == 3)
-		var/datum/atom_hud/H = GLOB.huds[DATA_HUD_MEDICAL_ADVANCED]
-		H.add_hud_to(owner)
 
 /datum/action/cooldown/latexmob/medscan/Activate()
-	. = ..()
-	var/mob/living/carbon/host = owner.loc
-	if(is_simple)
-		healthscan(owner, istype(host) ? host : owner)
-	else
-		var/mode = tgui_input_list(owner, "Выбор режима", "Режим анализа", modes, default = "heal")
-		switch(mode)
-			if("heal")
-				healthscan(owner, istype(host) ? host : owner, advanced = TRUE)
-			if("chem")
-				chemscan(owner, istype(host) ? host : owner)
-			if("wound")
-				woundscan(owner, istype(host) ? host : owner)
+	if(!..())
+		return FALSE
+	var/mob/living/subject = my_living_latex.host_organ?.owner || owner
+	healthscan(owner, subject, advanced = stage >= 2)
+	if(stage >= 3)
+		chemscan(owner, subject)
+	return TRUE
 
 /datum/action/cooldown/latexmob/heal
 	name = "Лечение"
-	desc = "Впрыскивает в кровь носителя реагенты на выбор, для лечения или иных нужд. Чем выше стадия - тем больше выбора реагентов."
+	desc = "Вводить реагенты в носителя за очки эволюции."
 	button_icon_state = "heal"
 	stage_required = 1
-	cooldown_time = 30 SECONDS
 	var/datum/inject_menu/inject_menu
 
 /datum/action/cooldown/latexmob/heal/update_stage()
 	. = ..()
-	if(stage == 2)
-		my_living_latex.avaible_reagents += my_living_latex.second_stage_reagents
-	if(stage == 3)
-		my_living_latex.avaible_reagents += my_living_latex.last_stage_reagents
-
-/datum/action/cooldown/latexmob/heal/Grant(var/mob/user)
-	. = ..()
-	if(owner.mind)
-		my_living_latex = check_LL_antagDatum(owner)
-	if(!my_living_latex)
-		CRASH("inject menu cant locate living latex datum")
-	inject_menu = new /datum/inject_menu(owner, my_living_latex)
-	if(!inject_menu)
-		CRASH("inject_menu action created with non menu")
-
-/datum/inject_menu
-	var/name = "Injecting menu"
-	var/data
-	var/datum/antagonist/living_latex/living_latex
-	var/datum/owner
-	var/last_action_time = 0
-	var/cooldown_duration = 50 // 5 секунд
-
-/datum/inject_menu/New(my_owner, my_living_latex)
-	living_latex = my_living_latex
-	owner = my_owner
-
-/datum/inject_menu/ui_state(mob/user)
-	return GLOB.always_state
-
-/datum/inject_menu/ui_data(mob/user)
-	var/list/data = list()
-	var/list/reagents = list()
-
-	for(var/type_of_reagent in living_latex.avaible_reagents)
-		var/list/reag = list()
-		var/datum/reagent/R = new type_of_reagent
-		reag["name"] = R.name
-		reagents += list(reag)
-		qdel(R)
-
-	data["subject"] = living_latex.owner.current
-	data["reagents"] = reagents
-	data["cooldown_remaining"] = max(0, (last_action_time + cooldown_duration - world.time) / 10)
-	data["evolve_poins"] = living_latex.evolve_points
-	return data
-
-/datum/inject_menu/ui_act(action, params)
-	if(..())
-		return
-
-	if(world.time < last_action_time + cooldown_duration)
-		to_chat(owner, "Подождите [round((last_action_time + cooldown_duration - world.time) / 10)] секунд перед следующей инъекцией.")
-		return
-
-	if(action == "inject")
-		var/reagent_name = params["reagent_name"]
-		living_latex.inject_reagent(reagent_name)
-		last_action_time = world.time
-
-/datum/inject_menu/ui_interact(mob/user, datum/tgui/ui)
-	ui = SStgui.try_update_ui(user, src, ui)
-	if(!ui)
-		ui = new(user, src, "InjectMenu", name)
-		ui.open()
+	if(stage >= 2)
+		my_living_latex.avaible_reagents |= my_living_latex.second_stage_reagents
+	if(stage >= 3)
+		my_living_latex.avaible_reagents |= my_living_latex.last_stage_reagents
 
 /datum/action/cooldown/latexmob/heal/Activate()
+	if(!..())
+		return FALSE
+	if(!inject_menu)
+		inject_menu = new(my_living_latex)
 	inject_menu.ui_interact(owner)
+	return TRUE
+
+/datum/action/cooldown/latexmob/heal/Destroy()
+	QDEL_NULL(inject_menu)
+	return ..()
 
 /datum/action/cooldown/latexmob/stasis
 	name = "Стазис"
-	desc = "Позволяет спрятаться на время от сканеров и какого-либо обнаружения вне тела хозяина. Полностью отключает все ваши способности на время."
+	desc = "Прижаться к полу или скрыть присутствие в носителе от сканера."
 	button_icon_state = "Stasis"
 	stage_required = 2
 
 /datum/action/cooldown/latexmob/stasis/Activate()
-	. = ..()
-	if(owner.stat != CONSCIOUS && isanimal(owner))
-		return
-	if (owner.layer != ABOVE_NORMAL_TURF_LAYER)
-		owner.layer = ABOVE_NORMAL_TURF_LAYER
-		if(isbackseatmob(owner))
-			my_living_latex.hide_latexorgan_on_healscan = TRUE
-			owner.balloon_alert(owner, "Ваше присутствие в теле скрыто от сканеров!")
-			return
-		else
-			owner.visible_message("<span class='name'>[owner] прижимается к земле!</span>")
-			owner.balloon_alert(owner, "Вы начинаете прятаться!")
-	else
-		owner.layer = MOB_LAYER
-		my_living_latex.hide_latexorgan_on_healscan = FALSE
-		if(!isbackseatmob(owner))
-			owner.visible_message("[owner] медленно поднимается с земли...")
-		owner.balloon_alert(owner, "Вы перестаёте прятаться!")
+	if(!..() || my_living_latex.capture)
+		return FALSE
+	if(my_living_latex.host_organ)
+		my_living_latex.hide_latexorgan_on_healscan = !my_living_latex.hide_latexorgan_on_healscan
+		my_living_latex.host_organ.update_hiding_state()
+		return TRUE
+	if(!islatexmob(owner) || owner.stat != CONSCIOUS)
+		return FALSE
+	owner.layer = owner.layer == ABOVE_NORMAL_TURF_LAYER ? MOB_LAYER : ABOVE_NORMAL_TURF_LAYER
 	return TRUE
 
 /datum/action/cooldown/latexmob/leak_out
 	name = "Проползти под шлюзом"
-	desc = "Позволяет вашему гибкому телу проползать под шлюзами."
+	desc = "Проползти под соседним шлюзом."
 	button_icon_state = "leak_out"
 	stage_required = 3
 
 /datum/action/cooldown/latexmob/leak_out/Activate()
-	. = ..()
-	if(!istype(owner, /mob/living/simple_animal/latexmob))
-		return LEAK_OUT_ERROR_MESSAGE(owner)
-	var/list/nearby_things = range(1, get_turf(src))
-	var/list/valid_doors = list()
-	for(var/atom/thing in nearby_things)
-		if(!istype(thing, /obj/machinery/door/airlock))
-			continue
-		valid_doors.Add(thing)
-	if(valid_doors.len >= 1)
-		var/choice = pick(valid_doors)
-		if(do_after(usr, 1.5 SECONDS, usr))
-			owner.forceMove(get_turf(choice))
-	else
-		return NO_AIRLOCK_NEABY(owner)
+	if(!..() || !islatexmob(owner) || !isturf(owner.loc) || my_living_latex.capture)
+		return FALSE
+	var/list/doors = list()
+	for(var/obj/machinery/door/airlock/door in orange(1, owner))
+		if(owner.Adjacent(door))
+			doors += door
+	if(!length(doors))
+		return FALSE
+	var/obj/machinery/door/airlock/door = pick(doors)
+	var/mob/living/user = owner
+	if(!do_after(user, LATEX_LEAK_DELAY, target = door) || QDELETED(door) || !user.Adjacent(door))
+		return FALSE
+	return user.forceMove(get_turf(door))
 
 /datum/action/cooldown/latexmob/human_form
 	name = "Сформировать человеческое тело"
-	desc = "Вы накопили достаточно биоматериала, чтобы сформировать свое собственное отдельное тело"
+	desc = "Создать собственное тело живого латекса."
 	button_icon_state = "human_form"
 	stage_required = 3
-	var/list/human_visuals_storage = list() //Игрок должен иметь возможность удобного выбора внешки и сохранять её.
 
 /datum/action/cooldown/latexmob/human_form/Activate()
-	. = ..()
-
-/datum/action/cooldown/latexmob/mimicry
-	name = "Мимикрия"
-	desc = "Возможность мимикрировать под элементы окружения, или одежду для маскировки."
-	stage_required = 2
-	finall_stage = 4
-	var/obj/copied_object
-	var/list/avaible_types_for_mimicry = list()
-	var/alist/components_list = alist(
-		/datum/component/latex_mimicry/crate 			= /obj/structure/closet/crate,
-		/datum/component/latex_mimicry/closet 			= /obj/structure/closet,
-		/datum/component/latex_mimicry/chair 			= /obj/structure/chair,
-		/datum/component/latex_mimicry/food_container   = /obj/item/reagent_containers/food,
-		/datum/component/latex_mimicry/washing_machine  = /obj/machinery/washing_machine,
-		/datum/component/latex_mimicry/sleeper          = /obj/machinery/sleeper,
-		/datum/component/latex_mimicry/vending_machine  = /obj/machinery/vending,
-		/datum/component/latex_mimicry/computer         = /obj/machinery/computer,
-		/datum/component/latex_mimicry/book             = /obj/item/book,
-		/datum/component/latex_mimicry/clothing         = /obj/item/clothing,
-		/datum/component/latex_mimicry 	                = /obj/item,
-	)
-
-/datum/action/cooldown/latexmob/mimicry/proc/choose_component_datum(/obj/copied_object)
-	for(var/mimicry_type in components_list)
-		if(copied_object.parent_type == components_list[mimicry_type] || copied_object.type == components_list[mimicry_type])
-			return mimicry_type
-
-	owner.balloon_alert(owner, "Слишком сложный объект!")
-	return FALSE
-
-/datum/action/cooldown/latexmob/mimicry/update_stage()
-	. = ..()
-	if(stage == 3)
-		avaible_types_for_mimicry += my_living_latex.advanced_mimicry_types
-	if(stage == 4)
-		avaible_types_for_mimicry += my_living_latex.superior_special_mimicry_types
-
-/datum/action/cooldown/latexmob/mimicry/Activate(atom/target, var/try_copy = FALSE)
-	. = ..()
-
-	if(avaible_types_for_mimicry.len == 0)
-		avaible_types_for_mimicry += my_living_latex.base_mimicry_types
-
-	if(!copied_object && try_copy == FALSE)
-		owner.balloon_alert(owner, "Нажмите Ctrl+Click по объекту!")
-		return
-	if(islatexmob(owner) && try_copy == FALSE)
-		var/mob/living/simple_animal/latexmob/my_mob = owner
-		var/mimicry_in_use = my_mob?.mimicry_in_use
-		var/datum/component/latex_mimicry/choosed_mimicry_datum = choose_component_datum(copied_object)
-		if(!choosed_mimicry_datum)
-			return
-		if(!mimicry_in_use)
-			my_mob.do_mimicry(copied_object.appearance, copied_object.type, list_of_shapes, choosed_mimicry_datum)
-		else
-			my_mob.go_back()
-		my_mob.mimicry_in_use = !mimicry_in_use
+	if(!..() || !islatexmob(owner) || !isturf(owner.loc) || my_living_latex.capture || my_living_latex.host_organ)
+		return FALSE
+	var/mob/living/simple_animal/latexmob/user = owner
+	if(user.mimicry_in_use)
+		return FALSE
+	var/mob/living/carbon/human/body = new(get_turf(user))
+	body.set_species(/datum/species/jelly/living_latex)
+	body.name = my_living_latex.latex_name
+	body.real_name = body.name
+	var/datum/mind/latex_mind = user.mind
+	latex_mind.transfer_to(body)
+	if(latex_mind.current != body)
+		qdel(body)
+		return FALSE
+	body.AddComponent(/datum/component/latex_contact)
+	user.drop_all_held_items()
+	qdel(user)
+	return TRUE
