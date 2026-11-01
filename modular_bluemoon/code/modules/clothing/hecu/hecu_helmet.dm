@@ -7,6 +7,7 @@
 	icon_state = "hecu_helm"
 	item_state = "hecu_helm"
 	mutantrace_variation = STYLE_MUZZLE
+	flash_protect = 1
 	flags_cover = null // Doesn't cover eyes.
 	unique_reskin = list(
 		"Basic" = list(
