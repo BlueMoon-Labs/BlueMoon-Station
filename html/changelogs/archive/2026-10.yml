@@ -1299,6 +1299,11 @@
   FelixRuin:
   - image: спрайты животов у людей переделаны для адекватной работы с цветами кожи
     pr: 4293
+  Pingvas:
+  - pr: 4300
+    rscadd: Разрешаем дробные значения роста, такие как 92.5
+  - pr: 4300
+    rscadd: Фикшу отображение во вкладках.
   RG-TRK:
   - map: modified DS-2 dorm room. Removed upper one and replaced it with nice and
       cozy bathing room connected to fitness room. Also returned DS-2 cargo scanners

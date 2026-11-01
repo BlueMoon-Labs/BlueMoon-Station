@@ -11,20 +11,21 @@ import {
 } from '../../../components';
 import {
   AppearanceSubTab,
-  getAppearanceSubTab,
-  setAppearanceSubTab,
-  subscribeAppearanceSubTab,
-} from '../appearanceSubTab';
-import {
   asArray,
   asOptions,
   ColorField,
   CycleChoice,
   FeatureField,
   FieldRow,
+  getAppearanceSplitView,
+  getAppearanceSubTab,
   renderFeatureField,
   SelectRow,
+  setAppearanceSplitView,
+  setAppearanceSubTab,
   SettingsGrid,
+  subscribeAppearanceSplitView,
+  subscribeAppearanceSubTab,
   TabDataMissing,
   TextRow,
   ToggleRow,
@@ -197,10 +198,19 @@ export const AppearanceTab = () => {
   const [subTab, setSubTabLocal] = useState<AppearanceSubTab>(
     getAppearanceSubTab()
   );
+  const [splitView, setSplitViewLocal] = useState(getAppearanceSplitView());
 
   useEffect(
     () =>
       subscribeAppearanceSubTab(() => setSubTabLocal(getAppearanceSubTab())),
+    []
+  );
+
+  useEffect(
+    () =>
+      subscribeAppearanceSplitView(() =>
+        setSplitViewLocal(getAppearanceSplitView())
+      ),
     []
   );
 
@@ -222,32 +232,62 @@ export const AppearanceTab = () => {
     setSubTabLocal(next);
     setAppearanceSubTab(next);
   };
+  const toggleSplitView = () => setAppearanceSplitView(!splitView);
+
+  const showBody = !splitView || activeSubTab === 'body';
+  const showParts = !splitView || activeSubTab === 'parts';
+  const showGenitals =
+    (!splitView || activeSubTab === 'genitals') && hasGenitals && !!appearance.genitals;
 
   return (
-    <Section fill scrollable title="Внешность">
-      <Tabs mb={1}>
-        <Tabs.Tab
-          selected={activeSubTab === 'body'}
-          onClick={() => selectSubTab('body')}
-        >
-          Тело
-        </Tabs.Tab>
-        <Tabs.Tab
-          selected={activeSubTab === 'parts'}
-          onClick={() => selectSubTab('parts')}
-        >
-          Части тела
-        </Tabs.Tab>
-        {hasGenitals && (
+    <Section
+      fill
+      scrollable
+      title="Внешность"
+      className="CharacterSetup__appearance"
+      buttons={
+        <Button
+          icon={splitView ? 'layer-group' : 'list'}
+          selected={splitView}
+          tooltip={
+            splitView
+              ? 'Внешность разделена на подсекции. Нажмите, чтобы показать всё одной вкладкой.'
+              : 'Внешность показана одной вкладкой. Нажмите, чтобы разделить на подсекции.'
+          }
+          aria-label={
+            splitView
+              ? 'Показать внешность одной вкладкой'
+              : 'Разделить внешность на подсекции'
+          }
+          onClick={toggleSplitView}
+        />
+      }
+    >
+      {splitView && (
+        <Tabs mb={1}>
           <Tabs.Tab
-            selected={activeSubTab === 'genitals'}
-            onClick={() => selectSubTab('genitals')}
+            selected={activeSubTab === 'body'}
+            onClick={() => selectSubTab('body')}
           >
-            Гениталии
+            Тело
           </Tabs.Tab>
-        )}
-      </Tabs>
-      {activeSubTab === 'body' && (
+          <Tabs.Tab
+            selected={activeSubTab === 'parts'}
+            onClick={() => selectSubTab('parts')}
+          >
+            Части тела
+          </Tabs.Tab>
+          {hasGenitals && (
+            <Tabs.Tab
+              selected={activeSubTab === 'genitals'}
+              onClick={() => selectSubTab('genitals')}
+            >
+              Гениталии
+            </Tabs.Tab>
+          )}
+        </Tabs>
+      )}
+      {showBody && (
         <SettingsGrid>
         <Section title="Тело">
           <SelectRow
@@ -416,7 +456,7 @@ export const AppearanceTab = () => {
         </SettingsGrid>
       )}
 
-      {activeSubTab === 'parts' && (
+      {showParts && (
         <Section title="Части тела">
           <SettingsGrid compact>
             {asArray(appearance.mutantParts).map((part) => (
@@ -426,7 +466,7 @@ export const AppearanceTab = () => {
         </Section>
       )}
 
-      {activeSubTab === 'genitals' && hasGenitals && appearance.genitals && (
+      {showGenitals && appearance.genitals && (
         <GenitalsSection
           genitals={appearance.genitals}
           skinTone={

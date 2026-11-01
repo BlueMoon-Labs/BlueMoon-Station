@@ -102,26 +102,6 @@ export const BackgroundTab = () => {
             placeholder="Запах персонажа... (узнаётся при обнюхивании *sniff)"
             editField="smell"
           />
-          <TextAreaRow
-            label="Охранные записи"
-            tooltip={FORMAT_HINT}
-            value={background.securityRecords}
-            action="set_security_records"
-            maxLength={flavorLen}
-            height="90px"
-            placeholder="Что найдёт служба безопасности"
-            editField="security_records"
-          />
-          <TextAreaRow
-            label="Медицинские записи"
-            tooltip={FORMAT_HINT}
-            value={background.medicalRecords}
-            action="set_medical_records"
-            maxLength={flavorLen}
-            height="90px"
-            placeholder="Что найдёт медслужба"
-            editField="medical_records"
-          />
         </Section>
       </Stack.Item>
 
@@ -161,6 +141,26 @@ export const BackgroundTab = () => {
             height="80px"
             placeholder="Что произойдёт при смерти"
             editField="deathgasp"
+          />
+          <TextAreaRow
+            label="Охранные записи"
+            tooltip={FORMAT_HINT}
+            value={background.securityRecords}
+            action="set_security_records"
+            maxLength={flavorLen}
+            height="90px"
+            placeholder="Что найдёт служба безопасности"
+            editField="security_records"
+          />
+          <TextAreaRow
+            label="Медицинские записи"
+            tooltip={FORMAT_HINT}
+            value={background.medicalRecords}
+            action="set_medical_records"
+            maxLength={flavorLen}
+            height="90px"
+            placeholder="Что найдёт медслужба"
+            editField="medical_records"
           />
         </Section>
       </Stack.Item>

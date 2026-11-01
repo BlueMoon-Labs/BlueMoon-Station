@@ -911,20 +911,13 @@ GLOBAL_LIST_INIT(body_mod_organ_groups, list(
 			list("id" = "tier3", "label" = "Кибернетический III", "cost" = 2, "path" = /obj/item/organ/stomach/cybernetic/tier3),
 		),
 	),
-	list(
-		"slot" = ORGAN_SLOT_BREATHING_TUBE,
-		"label" = "Дыхательная трубка",
-		"options" = list(
-			list("id" = "none", "label" = "Нет", "cost" = 0),
-			list("id" = "tube", "label" = "Установить", "cost" = 1, "path" = /obj/item/organ/cyberimp/mouth/breathing_tube),
-		),
-	),
 ))
 
 GLOBAL_LIST_INIT(body_mod_implants, list(
 	list("id" = "hide_backpack", "label" = "Имплант Дорсуалифоба", "desc" = "Рюкзак на спине скрывается от посторонних глаз по кнопке.", "cost" = 0, "path" = /obj/item/implant/hide_backpack),
 	list("id" = "disrobe", "label" = "Мгновенное раздевание", "desc" = "Кнопка мгновенно сбрасывает всю надетую одежду.", "cost" = 0, "path" = /obj/item/implant/disrobe),
 	list("id" = "genital_fluid", "label" = "Жидкостный индуктор", "desc" = "Позволяет вырабатывать генитальную жидкость заданного реагента. (груди)", "cost" = 0, "path" = /obj/item/implant/genital_fluid),
+	list("id" = "breathing_tube", "label" = "Дыхательная трубка", "desc" = "Киберимплант в горле: позволяет дышать без лёгких и не снимать шлем ради дыхания.", "cost" = 1, "path" = /obj/item/organ/cyberimp/mouth/breathing_tube, "organ" = TRUE),
 ))
 
 /datum/preferences/proc/body_mod_organ_group(slot)
@@ -993,6 +986,11 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 			. += option["cost"]
 
 /datum/preferences/proc/sanitize_body_mods()
+	if(islist(organ_mods) && organ_mods[ORGAN_SLOT_BREATHING_TUBE])
+		if(!islist(implant_mods))
+			implant_mods = list()
+		implant_mods["breathing_tube"] = TRUE
+		organ_mods -= ORGAN_SLOT_BREATHING_TUBE
 	var/list/clean_organs = list()
 	if(islist(organ_mods))
 		for(var/slot in organ_mods)
@@ -1019,6 +1017,11 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 		organ_mods -= slot
 
 /datum/preferences/proc/migrate_legacy_body_mods(list/quirks = all_quirks, list/selected_organs = organ_mods, list/selected_implants = implant_mods)
+	if(islist(selected_organs) && selected_organs[ORGAN_SLOT_BREATHING_TUBE])
+		if(!islist(selected_implants))
+			selected_implants = list()
+		selected_implants["breathing_tube"] = TRUE
+		selected_organs -= ORGAN_SLOT_BREATHING_TUBE
 	var/static/list/legacy_quirks = list(
 		"Глаза с Повышенной Светимостью" = "eyes",
 		"Трубка для Горлового Дыхания" = "tube",
@@ -1045,8 +1048,8 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 		budget += limb_modification_bonus(modified_limbs[modification][1])
 	budget -= mob_size_name_to_quirk_cost(body_weight)
 	budget -= body_mods_cost(selected_organs, selected_implants)
-	if(("tube" in migrated) && !selected_organs[ORGAN_SLOT_BREATHING_TUBE] && budget >= 1)
-		selected_organs[ORGAN_SLOT_BREATHING_TUBE] = "tube"
+	if(("tube" in migrated) && !selected_implants["breathing_tube"] && budget >= 1)
+		selected_implants["breathing_tube"] = TRUE
 		budget -= 1
 	if(("eyes" in migrated) && !selected_organs[ORGAN_SLOT_EYES] && !body_mod_organ_locked(ORGAN_SLOT_EYES))
 		if(budget >= 2)
@@ -1093,6 +1096,12 @@ GLOBAL_LIST_INIT(body_mod_implants, list(
 		if(!option || !option["path"])
 			continue
 		var/new_path = option["path"]
+		if(option["organ"])
+			if(locate(new_path) in character.internal_organs)
+				continue
+			var/obj/item/organ/new_organ = new new_path
+			new_organ.Insert(character)
+			continue
 		if(locate(new_path) in character.implants)
 			continue
 		var/obj/item/implant/new_implant = new new_path
