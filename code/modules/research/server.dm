@@ -18,7 +18,7 @@
 
 	idle_power_usage = 500
 	var/datum/techweb/stored_research
-	var/network_id = RND_NETWORK_AUTO			//AUTO: станция — science_tech, иначе — автономная изолированная сеть (дефолт)
+	var/network_id = RND_NETWORK_AUTO			//AUTO: станция — science_tech, иначе — сеть сервера рядом, без него автономная изолированная (дефолт)
 	var/techweb_type = /datum/techweb/isolated	//Тип техвеба нестанционной сети (фракционные подтипы)
 	//Code for point mining here.
 	var/working = TRUE			//temperature should break it.
@@ -72,6 +72,8 @@
 		. += "\nThe server's status light is off."
 	else
 		. += "\nThe server's status light is blinking [span_green("green")]."
+	if(stored_research)
+		. += span_notice("Исследовательская сеть: <b>[stored_research.organization]</b>. Мультитул с пустым буфером копирует её с сервера, после чего клик по консоли или машине РнД подключает их к этой сети.")
 
 /obj/machinery/rnd/server/Destroy()
 	SSresearch.servers -= src
@@ -93,24 +95,39 @@
 
 	stored_research = new_web
 
-/// BLUEMOON ADD: сеть ближайшего РНД-сервера на том же Z-уровне, что и источник, либо null.
-/proc/find_nearest_rnd_techweb(atom/source)
+/// Сеть сервера; фракционная до LateInitialize сервера берётся по ID, чтобы соседи при загрузке карты не зависели от порядка.
+/obj/machinery/rnd/server/proc/get_rnd_network()
+	if(stored_research)
+		return stored_research
+	if(network_id)
+		return SSresearch.get_rnd_network(network_id, techweb_type)
+	return null
+
+/// Сеть ближайшего РНД-сервера на любом этаже связки источника (сам источник не в счёт), либо null.
+/proc/find_nearest_rnd_techweb(atom/source, max_range = INFINITY)
 	var/turf/source_turf = get_turf(source)
 	if(!source_turf)
 		return null
-	var/obj/machinery/rnd/server/nearest
+	var/list/levels = SSmapping.get_connected_levels(source_turf.z)
+	var/datum/techweb/nearest
 	var/best_dist = INFINITY
 	for(var/obj/machinery/rnd/server/S as anything in SSmachines.get_machines_by_type_and_subtypes(/obj/machinery/rnd/server))
-		var/turf/server_turf = get_turf(S)
-		if(!server_turf || server_turf.z != source_turf.z)
+		if(S == source || QDELETED(S))
 			continue
-		var/dist = get_dist(source_turf, server_turf)
-		if(dist <= best_dist)
-			best_dist = dist
-			nearest = S
-	return nearest?.stored_research
+		var/turf/server_turf = get_turf(S)
+		if(!server_turf || !(server_turf.z in levels))
+			continue
+		var/dist = max(abs(server_turf.x - source_turf.x), abs(server_turf.y - source_turf.y)) + abs(server_turf.z - source_turf.z)
+		if(dist > max_range || dist > best_dist)
+			continue
+		var/datum/techweb/web = S.get_rnd_network()
+		if(!web)
+			continue
+		best_dist = dist
+		nearest = web
+	return nearest
 
-/// BLUEMOON ADD: авто-подключение устройства к сети: сервер на том же Z-уровне,
+/// Авто-подключение устройства к сети: ближайший сервер на этажах связки,
 /// иначе на станции — глобальная научная сеть (как раньше), вне станции — null (подключается вручную).
 /proc/find_rnd_network_for_object(atom/source)
 	var/datum/techweb/nearest = find_nearest_rnd_techweb(source)
