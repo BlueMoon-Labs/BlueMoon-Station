@@ -27,6 +27,7 @@
 #define ROLE_ABDUCTOR				"abductor"
 #define ROLE_REVENANT				"revenant"
 #define ROLE_QAREEN					"qareen"
+#define ROLE_RAT_KING				"rat king"
 #define ROLE_DEVIL					"devil"
 #define ROLE_SERVANT_OF_RATVAR		"servant of Ratvar"
 #define ROLE_BROTHER				"blood brother"
@@ -79,6 +80,7 @@ GLOBAL_LIST_INIT(special_roles, list(
 	ROLE_HK47,
 	ROLE_MONKEY = /datum/game_mode/monkey,
 	ROLE_REVENANT,
+	ROLE_RAT_KING,
 	ROLE_ABDUCTOR,
 	ROLE_DEVIL = /datum/game_mode/devil,
 	ROLE_SERVANT_OF_RATVAR = /datum/game_mode/clockwork_cult,

@@ -1107,6 +1107,11 @@ Mark this mob, then navigate to the preferences of the client you desire and cal
 		admin_ticket_log(src, span_notice("[key_name_admin(usr, FALSE)] has [change_text]")) // In case they complained in an ahelp, we'll let them know anything happened
 
 /mob/living/carbon/human/MouseDrop_T(mob/living/target, mob/living/user)
+	if(istype(target, /mob/living/simple_animal))
+		var/mob/living/simple_animal/rideable = target
+		if(rideable.can_buckle && rideable.tame && rideable != src && !src.buckled)
+			if(rideable.mouse_buckle_handling(src, user))
+				return
 	var/GS_needed = istype(target, /mob/living/silicon/pai)? GRAB_PASSIVE : GRAB_AGGRESSIVE
 	if(pulling == target && grab_state >= GS_needed && stat == CONSCIOUS)
 		//If they dragged themselves and we're currently aggressively grabbing them try to piggyback
