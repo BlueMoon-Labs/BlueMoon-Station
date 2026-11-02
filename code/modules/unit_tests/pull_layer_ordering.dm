@@ -41,3 +41,35 @@
 	body.set_resting(TRUE, TRUE)
 	dragger.start_pulling(body)
 	TEST_ASSERT_EQUAL(body.layer, LYING_MOB_LAYER, "лежачий тащимый поднялся над полом лежачих")
+
+/// Средний в цепочке меняет слой без шага (его взяли или отпустили): следующий пересчитывается от него.
+/datum/unit_test/pull_layer_middle_change
+
+/datum/unit_test/pull_layer_middle_change/Run()
+	var/turf/bottom = run_loc_floor_bottom_left
+	// Следующий к северу от среднего, тянущий берёт среднего с юга: средний уходит вниз
+	var/mob/living/carbon/human/a = allocate(/mob/living/carbon/human, bottom)
+	var/mob/living/carbon/human/b = allocate(/mob/living/carbon/human, locate(bottom.x, bottom.y + 1, bottom.z))
+	var/mob/living/carbon/human/c = allocate(/mob/living/carbon/human, locate(bottom.x, bottom.y + 2, bottom.z))
+	b.start_pulling(c)
+	TEST_ASSERT_EQUAL(c.layer, MOB_LAYER - PULL_LAYER_STEP, "северный тащимый не под тянущим")
+	a.start_pulling(b)
+	TEST_ASSERT_EQUAL(b.layer, MOB_LAYER - PULL_LAYER_STEP, "средний не ушёл под южного тянущего")
+	TEST_ASSERT_EQUAL(c.layer, b.layer - PULL_LAYER_STEP, "следующий не пересчитан от нового слоя среднего")
+	a.stop_pulling()
+	TEST_ASSERT_EQUAL(b.layer, MOB_LAYER, "средний не вернул слой")
+	TEST_ASSERT_EQUAL(c.layer, MOB_LAYER - PULL_LAYER_STEP, "следующий не пересчитан после сброса среднего")
+	b.stop_pulling()
+
+	// Следующий к югу от среднего, тянущий берёт среднего с севера: средний уходит вверх
+	var/mob/living/carbon/human/d = allocate(/mob/living/carbon/human, locate(bottom.x + 2, bottom.y + 2, bottom.z))
+	var/mob/living/carbon/human/e = allocate(/mob/living/carbon/human, locate(bottom.x + 2, bottom.y + 1, bottom.z))
+	var/mob/living/carbon/human/f = allocate(/mob/living/carbon/human, locate(bottom.x + 2, bottom.y, bottom.z))
+	e.start_pulling(f)
+	TEST_ASSERT_EQUAL(f.layer, MOB_LAYER + PULL_LAYER_STEP, "южный тащимый не поверх тянущего")
+	d.start_pulling(e)
+	TEST_ASSERT_EQUAL(e.layer, MOB_LAYER + PULL_LAYER_STEP, "средний не поднялся над северным тянущим")
+	TEST_ASSERT_EQUAL(f.layer, e.layer + PULL_LAYER_STEP, "следующий не пересчитан от нового слоя среднего")
+	d.stop_pulling()
+	TEST_ASSERT_EQUAL(e.layer, MOB_LAYER, "средний не вернул слой")
+	TEST_ASSERT_EQUAL(f.layer, MOB_LAYER + PULL_LAYER_STEP, "следующий не пересчитан после сброса среднего")
