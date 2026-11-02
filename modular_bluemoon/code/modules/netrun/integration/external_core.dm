@@ -93,6 +93,12 @@
 
 /// Последовательный DM client: raw facts → bounded snapshot/journal → native bridge → локальный Host.
 /datum/netrun_external_core
+	/// Старый Host без capability сохраняет одиночную отправку; negotiated burst не превышает 16 команд.
+	var/max_input_commands = 1
+	/// Счётчики фактически принятых bridge групп, отдельно от logical ACK и общего TCP трафика.
+	var/sent_input_batches = 0
+	var/sent_batched_commands = 0
+	var/pending_batch_count = 0
 	/// Владелец исходных реестров; сетевой граф и маршруты для экспорта не запрашиваются.
 	var/datum/controller/subsystem/netrun/owner
 	/// Настроенная локальная библиотека и port; token поступает только из доверенного аргумента open.
@@ -338,6 +344,12 @@
 		if(state != "handshaking" || frame["protocol_major"] != 1 || frame["protocol_minor"] != 3 || frame["world_epoch"] != world_epoch || frame["binding_epoch"] != binding_epoch || !istext(frame["engine_epoch"]) || frame["snapshot_checksum_version"] != 3)
 			return abort_session("handshake_mismatch")
 		engine_epoch = frame["engine_epoch"]
+		max_input_commands = 1
+		var/batch_limit = frame["max_input_commands"]
+		if(!isnull(batch_limit))
+			if(!isnum(batch_limit) || batch_limit < 1 || batch_limit != round(batch_limit))
+				return abort_session("handshake_batch_limit")
+			max_input_commands = min(16, batch_limit)
 		session_token = null
 		snapshot_id = rustg_generate_uuid_v4()
 		snapshot_phase = "begin"
@@ -359,7 +371,7 @@
 	if(netrun_external_decimal_compare(applied, last_applied_sequence) < 0)
 		return abort_session("applied_sequence_regression")
 	var/list/results = frame["results"]
-	// Host может добавить один runtime_result к 64 transport events.
+	// Legacy: один result + 64 events; negotiated batch: до 16 results + 8 events.
 	if(!islist(results) || length(results) > 65)
 		return abort_session("invalid_output")
 	if(pending_sequence && pending_fact_through && netrun_external_decimal_compare(applied, pending_sequence) >= 0)
@@ -413,10 +425,14 @@
 	return FALSE
 
 /// Фиксирует immutable frame до первого try_enqueue; повтор не пересериализует ACK или payload.
-/datum/netrun_external_core/proc/enqueue(entries_json, record_count = 1)
-	if(state == "closed" || state == "resync_required" || pending_frame || !engine_epoch || record_count < 0 || record_count > 128)
+/datum/netrun_external_core/proc/enqueue(entries_json, record_count = 1, command_count = 1)
+	if(state == "closed" || state == "resync_required" || pending_frame || !engine_epoch || record_count < 0 || record_count > 128 || command_count < 1 || command_count > max_input_commands || command_count != round(command_count))
 		return FALSE
-	var/next_sequence = netrun_external_decimal_next(input_sequence)
+	var/next_sequence = input_sequence
+	for(var/index in 1 to command_count)
+		next_sequence = netrun_external_decimal_next(next_sequence)
+		if(!next_sequence)
+			return abort_session("clock_or_sequence_limit")
 	var/time_ds = max(0, round(world.time))
 	if(!next_sequence || time_ds < last_simulation_time || time_ds > 2147483647)
 		return abort_session("clock_or_sequence_limit")
@@ -424,8 +440,11 @@
 	pending_fact_through = null
 	last_simulation_time = time_ds
 	var/list/envelope = list("protocol_major" = "1", "protocol_minor" = "3", "world_epoch" = json_encode(world_epoch), "engine_epoch" = json_encode(engine_epoch), "binding_epoch" = json_encode(binding_epoch), "sequence" = json_encode(input_sequence), "ack_output_sequence" = json_encode(ack_output_sequence), "simulation_time_ds" = json_encode(time_ds), "entries" = entries_json)
+	if(command_count > 1)
+		envelope["kind"] = json_encode("input_batch")
 	pending_frame = netrun_external_json_object(envelope)
 	pending_sequence = input_sequence
+	pending_batch_count = command_count > 1 ? command_count : 0
 	pending_sent = FALSE
 	return TRUE
 
@@ -439,6 +458,9 @@
 		pending_started_at = world.timeofday
 		sent_frames++
 		sent_bytes += length(pending_frame)
+		if(pending_batch_count)
+			sent_input_batches++
+			sent_batched_commands += pending_batch_count
 	else if(result?["code"] != "would_block")
 		abort_session("bridge_enqueue_failed")
 

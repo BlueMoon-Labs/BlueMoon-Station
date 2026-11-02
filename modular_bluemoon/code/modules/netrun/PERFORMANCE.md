@@ -1,5 +1,30 @@
 # Разбор нагрузки Netrun
 
+## IPC: накопление pending и холодная карта
+
+`pending` — native contexts до terminal outcome, а `request_commands` — ещё не
+отправленные команды. Большой `pending` при пустом `invocations` сам по себе не
+означает медленное исполнение C#: stop-and-wait канал прежде передавал одну
+команду за кадр. Discovery, admission, native results и GraphSync делили этот
+канал; безусловный приоритет control replies мог задерживать карту.
+
+Host с `hello_ack.max_input_commands` принимает до 16 independently sequenced
+команд за кадр. DM сохраняет FIFO, captured fact barriers и request identity при
+`would_block`; размер группы ограничен 131072 JSON-символами. Лимиты pending,
+contexts и native invocations не увеличиваются. Read-only и machine очереди
+чередуются; control results сохраняют приоритет внутри machine очереди.
+GraphSync Continue получает одно место после первых 15 ожидающих lookups;
+для старого одиночного Host — после одного lookup. Каждая страница snapshot
+продвигается, не вытесняя очередь discovery целиком.
+
+В VV проверяйте `max_input_commands` (16 у нового Host), `sent_input_batches`,
+`sent_batched_commands`, `last_ack_ms` и `max_ack_ms`. Отсутствие capability у
+старого Host сохраняет отправку по одной команде, в том числе после reconnect.
+При `projection_sync.ack_pending = 1` принятая страница ждёт отправки Continue;
+`has_baseline = 0` до конца snapshot запрещает публикацию неполной карты.
+При `ordered: true` один destination service исполняет следующий effect только
+после результата предыдущего: это контракт порядка, отдельный от IPC batching.
+
 Исходная ветка: `net-feature`, PR #4257, исходный commit
 `1805d8935d0a02d3bc87f36cb033bc2a5d9835ad`.
 Разбор опирается на два приложенных снимка профайлера и проверку серверных

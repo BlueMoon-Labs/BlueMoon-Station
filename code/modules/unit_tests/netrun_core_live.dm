@@ -55,6 +55,27 @@
 	TEST_ASSERT(wait_outcome(state_outcomes, 90 SECONDS), "The real Host admits and invokes idempotent state")
 	TEST_ASSERT_EQUAL(state_outcomes["delivered"], 1, "State has one native terminal callback")
 	TEST_ASSERT_EQUAL(scene.target.received, before_received + 3, "State executes exactly one native receive")
+	log_world("NETRUN_CORE_LIVE_STAGE batch_burst")
+	TEST_ASSERT_EQUAL(client.max_input_commands, 16, "Production hello negotiates bounded command batches")
+	var/burst_start_frames = client.sent_frames
+	var/burst_start_batches = client.sent_input_batches
+	var/burst_start_commands = client.sent_batched_commands
+	var/burst_start_time = world.time
+	var/burst_received = scene.target.received
+	var/list/burst_outcomes = list()
+	for(var/index in 1 to 64)
+		var/list/result = list()
+		burst_outcomes += list(result)
+		TEST_ASSERT(scene.source.send_to(scene.target, new /datum/netrun_machine_message/transport_fixture(list("value" = "burst-[index]"), result)), "Every burst message has a distinct native context")
+	for(var/list/result as anything in burst_outcomes)
+		TEST_ASSERT(wait_outcome(result, 90 SECONDS), "Every burst request completes through the real Host and bridge")
+		TEST_ASSERT_EQUAL(result["delivered"], 1, "Each logical request receives exactly one terminal callback")
+	TEST_ASSERT_EQUAL(scene.target.received, burst_received + 64, "Batching never duplicates or loses native effects")
+	var/burst_frames = client.sent_frames - burst_start_frames
+	TEST_ASSERT(client.sent_batched_commands - burst_start_commands >= 64, "Production traffic actually traverses negotiated multi-command frames")
+	TEST_ASSERT(client.sent_input_batches > burst_start_batches, "The native bridge accepts real batch frames")
+	// Production operation is ordered per destination: its next effect still waits for the prior result.
+	log_world("NETRUN_CORE_LIVE_BURST requests=64 frames=[burst_frames] batches=[client.sent_input_batches - burst_start_batches] batched_commands=[client.sent_batched_commands - burst_start_commands] elapsed_ds=[world.time - burst_start_time]")
 	log_world("NETRUN_CORE_LIVE_STAGE relay_guest_map")
 	var/obj/machinery/ntnet_relay/guest_relay = scene.machine(/obj/machinery/ntnet_relay, get_step(scene.source_spot, SOUTH))
 	var/datum/component/netrun_node/relay_node = guest_relay.GetComponent(/datum/component/netrun_node)

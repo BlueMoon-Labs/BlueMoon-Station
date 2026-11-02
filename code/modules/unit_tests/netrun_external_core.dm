@@ -16,10 +16,11 @@
 /datum/netrun_external_core/fixture/native_call(export_name, list/arguments)
 	native_calls++
 	return list("state" = "closed", "code" = "closed", "frames" = list())
-/datum/netrun_external_core/fixture/enqueue(entries_json, record_count = 1)
+/datum/netrun_external_core/fixture/enqueue(entries_json, record_count = 1, command_count = 1)
 	if(pending_frame)
 		return FALSE
-	input_sequence = netrun_external_decimal_next(input_sequence)
+	for(var/index in 1 to command_count)
+		input_sequence = netrun_external_decimal_next(input_sequence)
 	pending_sequence = input_sequence
 	pending_frame = entries_json
 	last_simulation_time = max(0, round(world.time))
@@ -105,6 +106,40 @@
 	return list("kind" = "request_completed", "binding_epoch" = client.binding_epoch, "request_id" = request_id, "state" = state, "code" = code, "payload" = null)
 /datum/netrun_external_fixture/proc/first_context()
 	return length(executor.pending) ? executor.pending[executor.pending[1]] : null
+
+/// Bounded IPC burst сохраняет logical ACK, FIFO retries и captured fact prefix.
+/datum/unit_test/netrun_external_core_bounded_batch_retry/Run()
+	var/datum/netrun_transport_scene/scene = allocate(/datum/netrun_transport_scene, run_loc_floor_bottom_left)
+	var/datum/netrun_external_fixture/fixture = allocate(/datum/netrun_external_fixture, scene)
+	fixture.client.max_input_commands = 16
+	fixture.client.input_sequence = "16777216"
+	var/list/original = list()
+	for(var/index in 1 to 19)
+		TEST_ASSERT(fixture.executor.dispatch(fixture.source, fixture.destination, new /datum/netrun_machine_message/transport_fixture(list("value" = index), list())), "Each message has independent native ownership")
+		original += fixture.executor.request_commands[length(fixture.executor.request_commands)]
+	fixture.client.queue_fact("{}")
+	TEST_ASSERT(fixture.executor.dispatch(fixture.source, fixture.destination, new /datum/netrun_machine_message/transport_fixture(list("value" = 20), list())), "Newer command captures its own causal barrier")
+	TEST_ASSERT(fixture.executor.prepare_input(fixture.client), "A negotiated frame sends a bounded ready prefix")
+	TEST_ASSERT_EQUAL(fixture.client.pending_sequence, "16777232", "Each logical command advances an exact decimal sequence")
+	TEST_ASSERT_EQUAL(length(fixture.executor.inflight_commands), 16, "One wire frame retains sixteen independent ACK correlations")
+	var/list/entries = json_decode(fixture.client.pending_frame)
+	TEST_ASSERT_EQUAL(length(entries), 16, "The burst is bounded by the negotiated capability")
+	for(var/index in 1 to 16)
+		var/datum/netrun_external_command/command = original[index]
+		fixture.executor.observe_result(fixture.client, list("input_sequence" = command.sent_sequence, "admission" = list("status" = "would_block")))
+	for(var/index in 1 to 19)
+		TEST_ASSERT_EQUAL(fixture.executor.request_commands[index], original[index], "Sibling retries preserve FIFO before the unsent tail")
+	fixture.client.pending_frame = null
+	TEST_ASSERT(fixture.executor.prepare_input(fixture.client), "The unchanged request identities can retry as another bounded frame")
+	for(var/index in 1 to 16)
+		var/datum/netrun_external_command/command = original[index]
+		fixture.executor.observe_result(fixture.client, list("input_sequence" = command.sent_sequence, "admission" = list("status" = "accepted")))
+	fixture.client.pending_frame = null
+	TEST_ASSERT(fixture.executor.prepare_input(fixture.client), "Older work progresses before a newer unconsumed fact")
+	entries = json_decode(fixture.client.pending_frame)
+	TEST_ASSERT_EQUAL(length(entries), 3, "Batch stops exactly at the first command whose facts are not ready")
+	TEST_ASSERT_EQUAL(length(fixture.executor.request_commands), 1, "The fenced tail remains queued")
+	TEST_ASSERT_EQUAL(fixture.client.native_calls, 0, "Hermetic batching never loads the real bridge")
 
 /// Removed engine modes fail closed without opening IPC; decimal identities retain 64-bit precision.
 /datum/unit_test/netrun_external_core_removed_modes_and_decimal/Run()

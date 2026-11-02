@@ -111,11 +111,14 @@
 	query_consumers[request_id] = command.consumer
 	if(kind == "graph_sync_start")
 		query_persistent[request_id] = TRUE
-	// A persistent stream generates another Continue after every page. Keeping
-	// those ahead of earlier lookups starves discovery/anchors for the whole
-	// snapshot, and indefinitely under churn. FIFO bounds both kinds of progress;
-	// cancellation retains its separate priority path in forget_query().
-	query_commands += command
+	// Одна persistent Continue на query burst, после bounded prefix старых lookups.
+	// Полный FIFO за сотнями discovery задерживает каждую страницу snapshot;
+	// безусловный Insert(1) в legacy режиме, напротив, вытесняет сами lookups.
+	if(continuation)
+		var/slot = max(2, owner.external_core.max_input_commands)
+		query_commands.Insert(min(length(query_commands) + 1, slot), command)
+	else
+		query_commands += command
 	owner?.wake_ready_delivery()
 	return TRUE
 
@@ -164,27 +167,33 @@
 		return FALSE
 	prepare_backbone(client)
 	prepare_projection(client)
-	if(length(control_commands) || (!query_turn && length(request_commands)))
+	if(!query_turn && (length(control_commands) || length(request_commands)))
 		query_turn = TRUE
 		return ..()
-	while(length(query_commands))
-		var/datum/netrun_external_query_command/command = query_commands[1]
-		if(!command.control && QDELETED(get_query_consumer(command.request_id)))
-			query_commands.Cut(1, 2)
-			query_consumers -= command.request_id
-			query_persistent -= command.request_id
-			qdel(command)
-			continue
-		if(!client.command_facts_ready(command.fact_barrier))
-			return ..()
-		if(!client.enqueue(netrun_external_json_array(list(command.raw_json))))
-			return FALSE
-		query_commands.Cut(1, 2)
-		query_inflight[client.pending_sequence] = command
+	if(send_input_queue(client, query_commands))
 		query_turn = FALSE
 		return TRUE
 	query_turn = TRUE
 	return ..()
+
+/// Query consumers остаются weak и не продлевают жизнь native UI/graph cursors.
+/datum/netrun_external_effects/machines/queries/input_command_current(datum/netrun_external_command/command)
+	if(!istype(command, /datum/netrun_external_query_command))
+		return ..()
+	var/datum/netrun_external_query_command/query = command
+	return query.control || !QDELETED(get_query_consumer(query.request_id))
+
+/datum/netrun_external_effects/machines/queries/discard_input_command(datum/netrun_external_command/command)
+	if(istype(command, /datum/netrun_external_query_command))
+		var/datum/netrun_external_query_command/query = command
+		query_consumers -= query.request_id
+		query_persistent -= query.request_id
+	return ..()
+
+/datum/netrun_external_effects/machines/queries/track_input_command(datum/netrun_external_command/command, sequence)
+	if(!istype(command, /datum/netrun_external_query_command))
+		return ..()
+	query_inflight[sequence] = command
 
 /// Hints инвалидируют read-only caches до callbacks; would_block повторяет ровно прежний domain ID/body.
 /datum/netrun_external_effects/machines/queries/observe_result(datum/netrun_external_core/client, list/result)
@@ -208,7 +217,7 @@
 	var/list/action = result["action"]
 	if(admission?["status"] == "would_block" || action?["would_block"])
 		if(command.control || !QDELETED(get_query_consumer(command.request_id)))
-			query_commands.Insert(1, command)
+			prepend_retry(query_commands, command)
 			return
 	if(command.kind == "service_discover")
 		observe_discovery(client, result, command)

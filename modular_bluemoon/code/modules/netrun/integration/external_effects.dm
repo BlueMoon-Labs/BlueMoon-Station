@@ -201,6 +201,9 @@
 	var/datum/netrun_external_invocation/invocation
 	/// Последний native fact, причинно предшествующий этой immutable команде.
 	var/fact_barrier = "0"
+	/// Корреляция logical ACK и порядок sibling retries одного транспортного кадра.
+	var/sent_sequence
+	var/sent_frame_end
 
 /// Единственный исполнитель allowlisted machine-message операции; routing и transport остаются у C#.
 /datum/netrun_external_effects/machines
@@ -354,20 +357,64 @@
 		if(pending_current_count && client.journal_head > length(client.journal) && max(0, round(world.time)) > client.last_simulation_time)
 			return client.enqueue("\[\]", 0)
 		return FALSE
-	var/datum/netrun_external_command/command = queue[1]
-	if(!client.command_facts_ready(command.fact_barrier))
+	return send_input_queue(client, queue)
+
+/// Снимает только ready FIFO prefix: bounded burst не обгоняет facts и не копирует всю очередь.
+/datum/netrun_external_effects/machines/proc/send_input_queue(datum/netrun_external_core/client, list/queue)
+	var/list/commands = list()
+	var/list/bodies = list()
+	var/characters = 0
+	var/index = 1
+	var/scanned = 0
+	while(index <= length(queue) && length(commands) < client.max_input_commands && scanned++ < 32)
+		var/datum/netrun_external_command/command = queue[index]
+		if(!input_command_current(command))
+			queue.Cut(index, index + 1)
+			discard_input_command(command)
+			continue
+		if(!client.command_facts_ready(command.fact_barrier))
+			break
+		// UTF-8 занимает до четырёх bytes на символ. Большой legacy command передаётся отдельно.
+		if(length(commands) && characters + length(command.raw_json) > 131072)
+			break
+		commands += command
+		bodies += command.raw_json
+		characters += length(command.raw_json)
+		index++
+	if(!length(commands))
 		return FALSE
-	if(command.context && pending[command.context.request_id] != command.context)
-		queue.Cut(1, 2)
-		qdel(command)
+	var/sequence = client.input_sequence
+	if(!client.enqueue(netrun_external_json_array(bodies), length(commands), length(commands)))
 		return FALSE
-	if(!client.enqueue(netrun_external_json_array(list(command.raw_json))))
-		return FALSE
-	queue.Cut(1, 2)
-	inflight_commands[client.pending_sequence] = command
+	queue.Cut(1, length(commands) + 1)
+	for(var/datum/netrun_external_command/command as anything in commands)
+		sequence = netrun_external_decimal_next(sequence)
+		command.sent_sequence = sequence
+		command.sent_frame_end = client.pending_sequence
+		track_input_command(command, sequence)
+	return TRUE
+
+/// Удалённый context не остаётся strong reference в immutable queued command.
+/datum/netrun_external_effects/machines/proc/input_command_current(datum/netrun_external_command/command)
+	return !command.context || pending[command.context.request_id] == command.context
+
+/datum/netrun_external_effects/machines/proc/discard_input_command(datum/netrun_external_command/command)
+	qdel(command)
+
+/datum/netrun_external_effects/machines/proc/track_input_command(datum/netrun_external_command/command, sequence)
+	inflight_commands[sequence] = command
 	if(command.kind == "request_submit")
 		command.context.stage = "submitting"
-	return TRUE
+
+/// Несколько would_block в одном ответе сохраняют исходный FIFO, а не переворачиваются Insert(1).
+/datum/netrun_external_effects/machines/proc/prepend_retry(list/queue, datum/netrun_external_command/command)
+	var/index = 1
+	while(index <= min(16, length(queue)))
+		var/datum/netrun_external_command/earlier = queue[index]
+		if(!command.sent_frame_end || earlier.sent_frame_end != command.sent_frame_end || netrun_external_decimal_compare(earlier.sent_sequence, command.sent_sequence) >= 0)
+			break
+		index++
+	queue.Insert(index, command)
 
 /// Semantic would_block потребляет outer sequence, но сохраняет request identity и неизменяемую команду.
 /datum/netrun_external_effects/machines/observe_result(datum/netrun_external_core/client, list/result)
@@ -396,7 +443,7 @@
 		var/datum/netrun_external_request_context/context = command.context
 		if(admission?["status"] == "would_block")
 			context.stage = "queued"
-			request_commands.Insert(1, command)
+			prepend_retry(request_commands, command)
 			return
 		if(admission?["status"] == "coalesced" || (admission?["status"] == "duplicate" && admission?["coalesced_into"]))
 			if(!accept_coalesced(context, admission["coalesced_into"]))
@@ -406,7 +453,7 @@
 		else
 			finish_context(context, FALSE, admission?["code"] || "request_rejected")
 	else if(action?["would_block"])
-		control_commands.Insert(1, command)
+		prepend_retry(control_commands, command)
 		return
 	if(command.invocation)
 		var/datum/netrun_external_invocation/invocation = command.invocation

@@ -34,6 +34,28 @@
 	QDEL_NULL(worker)
 	return ..()
 
+/// Постоянный поток control results не вытесняет map/discovery очередь.
+/datum/unit_test/netrun_external_queries_control_fairness/Run()
+	var/datum/netrun_external_query_fixture/fixture = allocate(/datum/netrun_external_query_fixture)
+	var/datum/consumer = allocate(/datum)
+	for(var/index in 1 to 3)
+		var/id = fixture.executor.new_query_id("projection")
+		var/body = netrun_external_json_object(list("kind" = json_encode("projection_query"), "request_id" = json_encode(id)))
+		TEST_ASSERT(fixture.executor.enqueue_query("projection_query", body, consumer), "Independent map query is queued")
+	for(var/index in 1 to 6)
+		var/datum/netrun_external_command/control = new
+		control.kind = "request_cancel"
+		control.raw_json = "{\"kind\":\"request_cancel\",\"request_id\":\"dm:[index]\"}"
+		fixture.executor.control_commands += control
+	for(var/index in 1 to 6)
+		TEST_ASSERT(fixture.executor.prepare_input(fixture.client), "Both queues make bounded progress under continuous control pressure")
+		var/list/entries = json_decode(fixture.client.pending_frame)
+		TEST_ASSERT_EQUAL(entries[1]["kind"], index % 2 ? "projection_query" : "request_cancel", "Control replies and map lookups alternate without starvation")
+		fixture.executor.observe_result(fixture.client, list("input_sequence" = fixture.client.pending_sequence, "admission" = list("status" = "accepted"), "action" = list("accepted" = TRUE)))
+		fixture.client.pending_frame = null
+	TEST_ASSERT_EQUAL(length(fixture.executor.query_commands), 0, "All map lookups pass the machine control backlog")
+	TEST_ASSERT_EQUAL(length(fixture.executor.control_commands), 3, "Native result capacity also receives its fair share")
+
 /// Discovery/projection не обходят causal journal; semantic retry сохраняет прежний immutable command.
 /datum/unit_test/netrun_external_queries_causal_retry/Run()
 	var/datum/netrun_external_query_fixture/fixture = allocate(/datum/netrun_external_query_fixture)
@@ -71,7 +93,7 @@
 	TEST_ASSERT(fixture.executor.prepare_input(fixture.client), "A newer unrelated fact cannot starve an older causal command")
 	TEST_ASSERT(fixture.client.journal_head <= length(fixture.client.journal), "Newer facts remain queued behind the command")
 
-/// A persistent graph page cannot overtake older discovery, anchor, and route lookups.
+/// Legacy single-command Host делит query очередь между persistent graph и старыми lookups.
 /datum/unit_test/netrun_external_queries_stream_fairness/Run()
 	var/datum/netrun_external_query_fixture/fixture = allocate(/datum/netrun_external_query_fixture)
 	var/datum/stream_consumer = allocate(/datum)
@@ -89,14 +111,39 @@
 		TEST_ASSERT(fixture.executor.enqueue_query(kind, body, lookup_consumer), "An independent lookup is queued while the stream page arrives")
 	body = netrun_external_json_object(list("kind" = json_encode("graph_sync_continue"), "request_id" = json_encode(stream_id), "page_index" = json_encode("1")))
 	TEST_ASSERT(fixture.executor.enqueue_query("graph_sync_continue", body, stream_consumer), "The applied page queues its explicit continuation")
-	for(var/kind in list("service_discover", "anchor_query", "projection_query", "graph_sync_continue"))
+	for(var/kind in list("service_discover", "graph_sync_continue", "anchor_query", "projection_query"))
 		TEST_ASSERT(fixture.executor.prepare_input(fixture.client), "Every ready query makes bounded progress")
 		var/list/entries = json_decode(fixture.client.sent_entries[length(fixture.client.sent_entries)])
-		TEST_ASSERT_EQUAL(entries[1]["kind"], kind, "A new stream continuation cannot overtake older lookups")
+		TEST_ASSERT_EQUAL(entries[1]["kind"], kind, "A stream continuation follows one older lookup without waiting for the entire backlog")
 		fixture.executor.observe_result(fixture.client, list("input_sequence" = fixture.client.pending_sequence, "admission" = list("status" = "accepted"), "action" = list("accepted" = TRUE)))
 		fixture.client.pending_frame = null
 	TEST_ASSERT_EQUAL(length(fixture.executor.query_commands), 0, "Both lookups and the stream continuation drain without starvation")
 	TEST_ASSERT_EQUAL(length(fixture.executor.query_persistent), 1, "Fair scheduling preserves the persistent stream subscription")
+
+/// Negotiated burst включает одну Continue и пятнадцать старых lookups без отдельной strong queue.
+/datum/unit_test/netrun_external_queries_stream_batch_progress/Run()
+	var/datum/netrun_external_query_fixture/fixture = allocate(/datum/netrun_external_query_fixture)
+	fixture.client.max_input_commands = 16
+	var/datum/consumer = allocate(/datum)
+	var/stream_id = fixture.executor.new_query_id("projection")
+	var/body = netrun_external_json_object(list("kind" = json_encode("graph_sync_start"), "request_id" = json_encode(stream_id)))
+	TEST_ASSERT(fixture.executor.enqueue_query("graph_sync_start", body, consumer), "A persistent graph stream starts")
+	TEST_ASSERT(fixture.executor.prepare_input(fixture.client), "Start crosses the causal handoff")
+	fixture.executor.observe_result(fixture.client, list("input_sequence" = fixture.client.pending_sequence, "admission" = list("status" = "accepted")))
+	fixture.client.pending_frame = null
+	for(var/index in 1 to 20)
+		var/id = fixture.executor.new_query_id("discovery")
+		body = netrun_external_json_object(list("kind" = json_encode("service_discover"), "request_id" = json_encode(id)))
+		TEST_ASSERT(fixture.executor.enqueue_query("service_discover", body, consumer), "Independent discovery fills the ready backlog")
+	body = netrun_external_json_object(list("kind" = json_encode("graph_sync_continue"), "request_id" = json_encode(stream_id), "page_index" = json_encode("1")))
+	TEST_ASSERT(fixture.executor.enqueue_query("graph_sync_continue", body, consumer), "Applied page queues its continuation under load")
+	TEST_ASSERT(fixture.executor.prepare_input(fixture.client), "One bounded query burst makes progress on both lanes")
+	var/list/entries = json_decode(fixture.client.pending_frame)
+	TEST_ASSERT_EQUAL(length(entries), 16, "The negotiated command burst remains bounded")
+	for(var/index in 1 to 15)
+		TEST_ASSERT_EQUAL(entries[index]["kind"], "service_discover", "Older discovery retains its share of the burst")
+	TEST_ASSERT_EQUAL(entries[16]["kind"], "graph_sync_continue", "GraphSync does not wait for the entire backlog before advancing")
+	TEST_ASSERT_EQUAL(length(fixture.executor.query_commands), 5, "Only the processed prefix and continuation leave the queue")
 
 /// Cancel до admission убирает локальную работу; после handoff нужен отдельный Host cancel.
 /datum/unit_test/netrun_external_queries_cancel_and_late_page/Run()
