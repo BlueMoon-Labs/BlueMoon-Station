@@ -324,10 +324,8 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 /obj/item/examine(mob/user) //This might be spammy. Remove?
 	. = ..()
 	var/is_plural = (gender == PLURAL)
-	. += "[is_plural ? "Это вещи" : "Это предмет"] [weight_class_to_text(w_class)] размера."
-
+	var/resistance_text
 	if(resistance_flags)
-		var/resistance_text = ""
 		if(resistance_flags & INDESTRUCTIBLE)
 			resistance_text = "Выгляд[is_plural ? "я" : "и"]т особенно прочным[is_plural ? "и" : ""]. Скорее всего, выдерж[is_plural ? "а" : "и"]т что угодно."
 		else
@@ -343,8 +341,8 @@ GLOBAL_VAR_INIT(embedpocalypse, FALSE) // if true, all items will be able to emb
 
 			if(length(resistance_list))
 				resistance_text += "Устойчиво к [english_list(resistance_list)]."
-		if(resistance_text)
-			. += "[is_plural ? "Эти вещи устойчивы" : "Этот предмет устойчив"] к повреждениям. [span_tooltip_fast(resistance_text)]"
+	. += "[is_plural ? "Это вещи" : "Это предмет"] [weight_class_to_text(w_class)] размера\
+	[resistance_text ? ", [is_plural ? "устойчивые" : "устойчивый"] к повреждениям [span_tooltip_fast(resistance_text)]" : ""]."
 
 	if(item_flags & (ITEM_CAN_BLOCK | ITEM_CAN_PARRY))
 		var/datum/block_parry_data/data = return_block_parry_datum(block_parry_data)

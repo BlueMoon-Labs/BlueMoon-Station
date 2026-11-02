@@ -206,6 +206,11 @@ GLOBAL_LIST_EMPTY(dug_up_basalt)
 	baseturfs = /turf/open/lava/plasma/ice_moon
 	planetary_atmos = TRUE
 
+/// Плазменная лава в помещении: воздух станции вместо холодной плазмы.
+/turf/open/lava/plasma/indoor
+	initial_gas_mix = OPENTURF_DEFAULT_ATMOS
+	baseturfs = /turf/open/lava/plasma/indoor
+
 /turf/open/floor/plating/asteroid/snow/ice
 	name = "icy snow"
 	desc = "Looks colder."

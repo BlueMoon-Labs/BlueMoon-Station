@@ -15,7 +15,19 @@
 
 #define HAIR_PICKER_PAD 4
 
+#define HAIR_PICKER_BUILD_ATTEMPTS 3
+/// Миниатюра - около 400 байт base64, кэш общий для всех окон.
+#define HAIR_PICKER_CELL_CACHE_MAX 2048
+#define HAIR_PICKER_PREVIEW_CACHE_MAX 16
+
 GLOBAL_LIST_EMPTY(hair_style_pickers)
+/// "[контекст]|[стиль]" -> base64 миниатюры; контекст - всё, кроме стиля, от чего зависит картинка.
+GLOBAL_LIST_EMPTY(hair_picker_cell_cache)
+
+/proc/hair_picker_store_cell(key, cell)
+	GLOB.hair_picker_cell_cache[key] = cell
+	if(length(GLOB.hair_picker_cell_cache) > HAIR_PICKER_CELL_CACHE_MAX)
+		GLOB.hair_picker_cell_cache.Cut(1, (HAIR_PICKER_CELL_CACHE_MAX / 4) + 1)
 
 // В сейве храним отдельные массивы имён для каждой вкладки.
 /proc/sanitize_hair_style_favorites(candidate)
@@ -64,11 +76,21 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	var/portrait_width = 40
 	var/portrait_rows = 19
 	var/build_attempts = 0 // попытка построить базу...
-	var/sheet_cache_key
-	var/sheet_b64
-	var/sheet_cell_w = 32
-	var/sheet_cell_h = 32
+	var/base_signature
+	/// База и миниатюры собираются по тикам вне Topic, окно тем временем показывает пустые ячейки.
+	var/rendering = FALSE
+	var/list/wanted_cells
+	var/wanted_context
+	var/cell_builds = 0
+	var/page_cells_key
+	var/list/page_cells
+	var/page_cells_missing = FALSE
+	var/cell_w = 32
+	var/cell_h = 32
 	var/preview_cache_key
+	/// Уже показанные превью: повторный выбор стиля не собирает его заново.
+	var/list/preview_store = list()
+	var/preview_builds = 0
 	var/list/preview_portraits = list()
 	var/preview_full_b64
 	var/cached_list_tab
@@ -190,9 +212,11 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 		GLOB.hair_style_pickers -= owner_ckey
 	base_cache = null
 	base_offsets = null
-	sheet_b64 = null
+	page_cells = null
+	wanted_cells = null
 	preview_portraits = null
 	preview_full_b64 = null
+	preview_store = null
 	cached_list = null
 	prefs = null
 	target = null
@@ -243,12 +267,13 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 		.["error"] = TRUE
 		.["labels"] = build_labels(user)
 		return
-	if(!length(base_cache))
-		build_attempts++
-		if(build_attempts > 3 || !build_all_bases())
+	var/base_ready = length(base_cache)
+	if(!base_ready)
+		if(build_attempts >= HAIR_PICKER_BUILD_ATTEMPTS && !rendering)
 			.["error"] = TRUE
 			.["labels"] = build_labels(user)
 			return
+		queue_render()
 	if(!(tab in allowed_tabs))
 		tab = allowed_tabs[1]
 	if(!selected)
@@ -288,16 +313,36 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	var/selected_key = selected || ""
 	var/can_preview_full = can_preview_full_body(user)
 	var/color_key = "[applied_hair_color()]|[applied_facial_color()]|[applied_grad_color()]|[get_mcolor()]"
-	// единственное место где можно было сэкономить
-	var/sheet_key = "[tab]|[page]|[search]|[favorites_only]|[applied_hair_style]|[applied_facial_style]|[applied_grad_style]|[color_key]"
-	if(sheet_key != sheet_cache_key)
-		sheet_cache_key = sheet_key
-		sheet_b64 = build_sheet_b64(page_names)
-	// selected может меняться отдельно от листа, ключ для каждого свой
-	var/preview_key = "[can_preview_full]|[render_dir]|[tab]|[selected_key]|[applied_hair_style]|[applied_facial_style]|[applied_grad_style]|[color_key]"
-	if(preview_key != preview_cache_key)
-		preview_cache_key = preview_key
-		build_preview_b64(can_preview_full)
+	if(base_ready)
+		// Готовые миниатюры берём из кэша сразу, недостающие собираются по тикам и приходят следующими обновлениями окна.
+		var/context = cell_context_key()
+		var/cells_key = md5("[context]|[jointext(page_names, "\n")]")
+		if(cells_key != page_cells_key || page_cells_missing)
+			page_cells_key = cells_key
+			page_cells = new /list(length(page_names))
+			var/list/missing = list()
+			for(var/index in 1 to length(page_names))
+				var/cell = GLOB.hair_picker_cell_cache["[context]|[page_names[index]]"]
+				if(isnull(cell))
+					missing += page_names[index]
+				else
+					page_cells[index] = cell || null
+			page_cells_missing = length(missing) > 0
+			if(page_cells_missing)
+				request_cells(missing, context)
+		// selected может меняться отдельно от миниатюр, ключ для каждого свой
+		var/preview_key = "[can_preview_full]|[render_dir]|[tab]|[selected_key]|[applied_hair_style]|[applied_facial_style]|[applied_grad_style]|[color_key]"
+		if(preview_key != preview_cache_key)
+			preview_cache_key = preview_key
+			var/list/stored = preview_store[preview_key]
+			if(stored)
+				preview_portraits = stored[1]
+				preview_full_b64 = stored[2]
+			else
+				build_preview_b64(can_preview_full)
+				preview_store[preview_key] = list(preview_portraits, preview_full_b64)
+				if(length(preview_store) > HAIR_PICKER_PREVIEW_CACHE_MAX)
+					preview_store.Cut(1, 2)
 
 	.["allowed_tabs"] = allowed_tabs
 	.["mode"] = mode
@@ -315,9 +360,10 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	.["names"] = page_names
 	.["selected"] = selected
 	.["applied"] = applied
-	.["sheet"] = sheet_b64 || null
-	.["cell_w"] = sheet_cell_w
-	.["cell_h"] = sheet_cell_h
+	.["cells"] = base_ready ? page_cells : list()
+	.["cells_loading"] = length(page_names) && (!base_ready || page_cells_missing)
+	.["cell_w"] = cell_w
+	.["cell_h"] = cell_h
 	.["cols"] = HAIR_PICKER_COLS
 	.["preview_portraits"] = preview_portraits
 	.["preview_full"] = can_preview_full ? (preview_full_b64 || null) : null
@@ -382,7 +428,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 			viewer_prefs.favorite_hair_styles[tab] = favorites
 			viewer_prefs.save_single_pref("favorite_hair_styles", viewer_prefs.favorite_hair_styles)
 			if(favorites_only)
-				sheet_cache_key = null
+				page_cells_key = null
 			return TRUE
 
 		if("select")
@@ -470,8 +516,8 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 			preview_facial_color = new_color
 		if(HAIR_PICKER_TAB_GRAD)
 			preview_grad_color = new_color
-	// Пересобираем и лист миниатюр, и все направления предпросмотра в следующем ui_data.
-	sheet_cache_key = null
+	// Пересобираем и миниатюры, и все направления предпросмотра в следующем ui_data.
+	page_cells_key = null
 	preview_cache_key = null
 	return TRUE
 
@@ -669,58 +715,117 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 
 // рендер
 /datum/hair_style_picker/proc/get_base_icon(dir)
-	. = base_cache["[dir]"]
-	if(.)
+	return base_cache?["[dir]"]
+
+/// Всё, кроме самого стиля, от чего зависит миниатюра: база тела, раса, вкладка, надетые стили и цвета.
+/datum/hair_style_picker/proc/cell_context_key()
+	var/datum/species/species = get_species()
+	var/species_key = species ? "[species.type]|[species.hair_color]|[species.hair_alpha]|[(HAIR in species.species_traits)][(FACEHAIR in species.species_traits)]" : ""
+	return md5("[base_signature]|[species_key]|[tab]|[applied_hair()]|[applied_facial()]|[applied_grad()]|[applied_hair_color()]|[applied_facial_color()]|[applied_grad_color()]|[get_mcolor()]")
+
+/datum/hair_style_picker/proc/request_cells(list/names, context)
+	wanted_cells = names
+	wanted_context = context
+	queue_render()
+
+/datum/hair_style_picker/proc/queue_render()
+	if(rendering)
 		return
-	if(!build_all_bases())
-		return null
-	return base_cache["[dir]"]
+	rendering = TRUE
+	INVOKE_ASYNC(src, PROC_REF(render_loop))
+
+/// Сборка в Topic стоила до 300 мс на страницу (прод 10645/10646): начинаем со следующего тика, на исчерпанном тике показываем готовое и уступаем.
+/datum/hair_style_picker/proc/render_loop()
+	stoplag()
+	while(!QDELETED(src))
+		if(!length(base_cache))
+			if(build_attempts >= HAIR_PICKER_BUILD_ATTEMPTS)
+				break
+			build_attempts++
+			build_all_bases()
+			continue
+		if(!length(wanted_cells))
+			break
+		// Цвет или стиль сменились: окно само попросит миниатюры под новый контекст.
+		if(wanted_context != cell_context_key())
+			wanted_cells = null
+			break
+		var/style_name = wanted_cells[1]
+		wanted_cells.Cut(1, 2)
+		var/key = "[wanted_context]|[style_name]"
+		if(!isnull(GLOB.hair_picker_cell_cache[key]))
+			continue
+		// Несобравшаяся миниатюра запоминается пустой, иначе окно просило бы её каждый тик.
+		hair_picker_store_cell(key, build_cell_b64(style_name) || "")
+		if(TICK_CHECK)
+			SStgui.update_uis(src)
+			stoplag()
+	if(QDELETED(src))
+		return
+	rendering = FALSE
+	SStgui.update_uis(src)
 
 /datum/hair_style_picker/proc/build_all_bases()
 	var/mob/living/carbon/human/dummy/mannequin = generate_or_wait_for_human_dummy(DUMMY_HUMAN_SLOT_HAIR_PICKER, regenerate = FALSE)
 	var/list/dirs = list(SOUTH, WEST, NORTH, EAST)
-	base_cache = list()
-	base_offsets = list()
-	img_w = 0
-	img_h = 0
+	var/list/new_bases = list()
+	var/list/new_offsets = list()
+	var/new_w = 0
+	var/new_h = 0
 	try
 		if(prefs)
 			prefs.copy_to(mannequin, icon_updates = TRUE, roundstart_checks = FALSE, initial_spawn = TRUE)
 		else if(target?.dna)
 			target.dna.transfer_identity(mannequin, transfer_SE = FALSE, copy_clothing = TRUE)
-		mannequin.hair_style = "Bald"
-		mannequin.facial_hair_style = "Shaved"
-		mannequin.grad_style = null
-		mannequin.update_body()
-		mannequin.update_body_parts()
-		mannequin.update_mutant_bodyparts()
-		mannequin.update_hair()
-		mannequin.update_mutations_overlay()
-		is_taur = mannequin.have_tauric_body()
+		CHECK_TICK
+		if(QDELETED(src) || QDELETED(mannequin))
+			dirs = list()
+		else
+			mannequin.hair_style = "Bald"
+			mannequin.facial_hair_style = "Shaved"
+			mannequin.grad_style = null
+			mannequin.update_body()
+			mannequin.update_body_parts()
+			mannequin.update_mutant_bodyparts()
+			mannequin.update_hair()
+			mannequin.update_mutations_overlay()
+			is_taur = mannequin.have_tauric_body()
 		for(var/dir in dirs)
+			// Каждое направление - отдельный getFlatIcon, между ними отдаём тик, если он исчерпан.
+			CHECK_TICK
+			if(QDELETED(src) || QDELETED(mannequin))
+				break
 			mannequin.dir = dir
 			var/list/offsets = list()
 			var/icon/result = getFlatIcon(mannequin, defdir = dir, no_anim = TRUE, icon_offsets = offsets)
 			if(!isicon(result))
 				continue
 			result.Crop(1 - HAIR_PICKER_PAD, 1 - HAIR_PICKER_PAD, result.Width() + HAIR_PICKER_PAD, result.Height() + HAIR_PICKER_PAD)
-			base_cache["[dir]"] = result
-			base_offsets["[dir]"] = list("x" = offsets["x"] + HAIR_PICKER_PAD, "y" = offsets["y"] + HAIR_PICKER_PAD)
-			img_w = max(img_w, result.Width())
-			img_h = max(img_h, result.Height())
+			new_bases["[dir]"] = result
+			new_offsets["[dir]"] = list("x" = offsets["x"] + HAIR_PICKER_PAD, "y" = offsets["y"] + HAIR_PICKER_PAD)
+			new_w = max(new_w, result.Width())
+			new_h = max(new_h, result.Height())
 	catch(var/exception/base_error)
 		stack_trace("hair_style_picker: не собралась база превью: [base_error]")
-	unset_busy_human_dummy(DUMMY_HUMAN_SLOT_HAIR_PICKER)
-	if(length(base_cache) != length(dirs))
-		base_cache.Cut()
-		base_offsets.Cut()
+	// Пока сборка ждала тик, слот мог получить новый манекен: освобождаем только свой.
+	if(GLOB.human_dummy_list[DUMMY_HUMAN_SLOT_HAIR_PICKER] == mannequin)
+		unset_busy_human_dummy(DUMMY_HUMAN_SLOT_HAIR_PICKER)
+	if(QDELETED(src) || !length(dirs) || length(new_bases) != length(dirs))
 		return FALSE
 	// Полный рост использует общий размер, портрет кадрируется относительно головы.
 	for(var/dir in dirs)
-		var/icon/base = base_cache["[dir]"]
-		base.Crop(1, 1, img_w, img_h)
+		var/icon/base = new_bases["[dir]"]
+		base.Crop(1, 1, new_w, new_h)
+	base_cache = new_bases
+	base_offsets = new_offsets
+	img_w = new_w
+	img_h = new_h
 	portrait_width = world.icon_size + 2 * HAIR_PICKER_PAD
 	portrait_rows = round(world.icon_size * 0.5) + HAIR_PICKER_PAD
+	cell_w = portrait_width
+	cell_h = portrait_rows
+	var/list/south_offset = base_offsets["[SOUTH]"]
+	base_signature = md5("[icon2base64(base_cache["[SOUTH]"])]|[south_offset["x"]],[south_offset["y"]]|[portrait_width]x[portrait_rows]")
 	build_attempts = 0
 	return TRUE
 
@@ -810,6 +915,7 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 	return null
 
 /datum/hair_style_picker/proc/build_preview_b64(can_preview_full = FALSE)
+	preview_builds++
 	preview_portraits = list()
 	preview_full_b64 = null
 	if(!selected)
@@ -828,37 +934,11 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 			preview_portraits["[dir]"] = icon2base64(head)
 	return TRUE
 
-/datum/hair_style_picker/proc/build_sheet_b64(list/names)
-	sheet_cell_w = portrait_width
-	sheet_cell_h = portrait_rows
-	if(!length(names))
-		return FALSE
-	var/list/cells = list()
-	for(var/style_name in names)
-		var/icon/cell = compose_cell(style_name)
-		if(!cell)
-			cell = get_base_icon(SOUTH)
-			if(!cell)
-				return FALSE
-		cell = crop_head(cell)
-		if(!cell)
-			return FALSE
-		cells += cell
-	var/rows = max(1, CEILING(length(names) / HAIR_PICKER_COLS, 1))
-	var/icon/sheet
-	try
-		sheet = icon('icons/effects/effects.dmi', "nothing")
-		sheet.Scale(HAIR_PICKER_COLS * portrait_width, rows * portrait_rows)
-		var/i = 0
-		for(var/icon/cell in cells)
-			var/col = i % HAIR_PICKER_COLS
-			var/row = round(i / HAIR_PICKER_COLS)
-			sheet.Blend(cell, ICON_OVERLAY, 1 + col * portrait_width, sheet.Height() - row * portrait_rows - portrait_rows + 1)
-			i++
-	catch(var/exception/sheet_error)
-		stack_trace("hair_style_picker: не собрался лист миниатюр: [sheet_error]")
-		return FALSE
-	return icon2base64(icon(sheet, "", SOUTH, 1, FALSE))
+/datum/hair_style_picker/proc/build_cell_b64(style_name)
+	cell_builds++
+	var/icon/cell = compose_cell(style_name) || get_base_icon(SOUTH)
+	cell = crop_head(cell)
+	return cell ? icon2base64(cell) : null
 
 #undef HAIR_PICKER_TAB_HAIR
 #undef HAIR_PICKER_TAB_FACIAL
@@ -871,3 +951,6 @@ GLOBAL_LIST_EMPTY(hair_style_pickers)
 #undef HAIR_PICKER_PAGE_SIZE
 #undef HAIR_PICKER_COLS
 #undef HAIR_PICKER_PAD
+#undef HAIR_PICKER_BUILD_ATTEMPTS
+#undef HAIR_PICKER_CELL_CACHE_MAX
+#undef HAIR_PICKER_PREVIEW_CACHE_MAX

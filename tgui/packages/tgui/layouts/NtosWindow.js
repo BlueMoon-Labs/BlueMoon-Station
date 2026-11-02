@@ -17,6 +17,7 @@ export const NtosWindow = (props) => {
     height = 700,
     theme: themeProp,
     children,
+    canMaximize,
   } = props;
   const {
     PC_device_theme,
@@ -36,6 +37,7 @@ export const NtosWindow = (props) => {
       title={title}
       width={width}
       height={height}
+      canMaximize={canMaximize}
       theme={theme}>
       <div className="NtosWindow">
         <div className="NtosWindow__header NtosHeader">

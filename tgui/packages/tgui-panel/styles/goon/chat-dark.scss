@@ -505,7 +505,9 @@ blockquote.warning {
   bottom: calc(100% + 4px);
   transform: translateX(-50%);
   z-index: 5;
-  max-width: 260px;
+  width: max-content;
+  max-width: 20.94em;
+  white-space: normal;
   padding: 2px 6px;
   border: 1px solid #9b2929;
   border-radius: 3px;

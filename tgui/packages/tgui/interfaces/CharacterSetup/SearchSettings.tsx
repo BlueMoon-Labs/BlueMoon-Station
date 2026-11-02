@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { useBackend } from '../../backend';
 import { Box, Button, Input, Stack } from '../../components';
-import { FeatureField } from './components';
+import { FeatureField, setAppearanceSubTab } from './components';
 
 interface SearchEntry {
   tab: number;
@@ -22,15 +22,15 @@ interface SearchData {
 }
 
 const GROUPS: [number, string, string[]][] = [
-  [0, 'Личность', ['Имя', 'Возраст', 'Без имени', 'Всегда случайное имя', 'Скрывать ckey', 'Свой цвет крови', 'Цвет крови', 'Скафандр поверх хвоста']],
+  [0, 'Личность', ['Имя', 'Возраст', 'Без имени', 'Всегда случайное имя', 'Скрывать ckey', 'Свой цвет крови', 'Цвет крови', 'Скафандры имеют хвост']],
   [0, 'Профессии', ['Настройка профессий', 'Отдел охраны', 'Экран ядра ИИ']],
   [0, 'Особые имена', ['Запасное', 'Клоун', 'Мим', 'Киборг', 'ИИ', 'Религия', 'Божество']],
   [0, 'КПК', ['Цвет интерфейса КПК', 'Стиль КПК', 'Модель КПК', 'Рингтон КПК', 'Тема КПК']],
   [0, 'Синтетики', ['Свод законов']],
   [0, 'Одежда и снаряжение', ['Стиль комбинезона', 'Капля слизи', 'Очистить шрамы']],
   [0, 'Согласие', ['Задания антагов']],
-  [1, 'Описания', ['Описание при осмотре', 'Описание без одежды', 'Описание силикона', 'Описание вкуса', 'Описание запаха', 'Охранные записи', 'Медицинские записи']],
-  [1, 'Предыстория и смерть', ['Предыстория вида', 'OOC-заметки', 'Эмоут смерти']],
+  [1, 'Описания', ['Описание при осмотре', 'Описание без одежды', 'Описание силикона', 'Описание вкуса', 'Описание запаха']],
+  [1, 'Предыстория и смерть', ['Предыстория вида', 'OOC-заметки', 'Эмоут смерти', 'Охранные записи', 'Медицинские записи']],
   [1, 'Фотографии', ['Фотографии', 'Фотографии (NSFW)', 'Ass Shot']],
   [2, 'Тело', ['Пол', 'Телосложение', 'Вид', 'Кастомная раса', 'Продвинутая раскраска', 'Модификация конечностей', 'Спрайт тела']],
   [2, 'Цвет тела и размер', ['Тон кожи', 'Цвет тона', 'Вес персонажа']],
@@ -57,6 +57,22 @@ const GENITAL_GROUPS: Record<string, string> = {
 };
 
 const normalize = (text: string) => text.toLocaleLowerCase().replaceAll('ё', 'е');
+
+const APPEARANCE_TAB = 2;
+
+const APPEARANCE_SUBTAB_GROUPS: Record<string, 'body' | 'parts' | 'genitals'> = {
+  'Тело': 'body',
+  'Цвет тела и размер': 'body',
+  'Глаза и волосы': 'body',
+  'Части тела': 'parts',
+  'Гениталии': 'genitals',
+  'Пенис': 'genitals',
+  'Яички': 'genitals',
+  'Влагалище': 'genitals',
+  'Грудь': 'genitals',
+  'Попа': 'genitals',
+  'Живот': 'genitals',
+};
 
 export const SearchSettings = () => {
   const { act, data } = useBackend<SearchData>();
@@ -159,6 +175,9 @@ export const SearchSettings = () => {
   const select = (entry: SearchEntry) => {
     setPending({ entry, slot: data.defaultSlot });
     setOpen(false);
+    if (entry.tab === APPEARANCE_TAB) {
+      setAppearanceSubTab(APPEARANCE_SUBTAB_GROUPS[entry.group] || 'body');
+    }
     if (entry.tab >= 0 && entry.tab !== data.tab) act('set_tab', { tab: entry.tab });
   };
 

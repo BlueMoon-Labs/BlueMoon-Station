@@ -939,7 +939,7 @@
 	departmental_flags = DEPARTMENTAL_FLAG_SECURITY
 	min_security_level = SEC_LEVEL_BLUE
 
-/datum/design/exorcist_lethal
+/datum/design/exorcist_slug
 	name = "410 slug"
 	id = "410_slug"
 	build_type = PROTOLATHE

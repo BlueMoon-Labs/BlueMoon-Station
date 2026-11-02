@@ -15,6 +15,12 @@
 	var/datum/tgui_window/window
 	var/broken = FALSE
 	var/initialized_at
+	/// world.time последнего сообщения от панели.
+	var/last_message_at = 0
+	/// Страница грузится заново: до её ready чат идёт и в старый output, даже если старая страница ещё отвечает.
+	var/reloading = FALSE
+	/// world.time, раньше которого панель не зовём записать историю чата.
+	var/next_history_save_offer = 0
 
 /datum/tgui_panel/New(client/client)
 	src.client = client
@@ -34,6 +40,26 @@
 /datum/tgui_panel/proc/is_ready()
 	return !broken && window.is_ready()
 
+/// Панель готова, показана, не упала с ошибкой и не молчит, пока DS-путь (ds_alive) отвечает: чат игрок видит в ней.
+/datum/tgui_panel/proc/delivers_chat(ds_alive)
+	if(!is_ready() || reloading || window.fatally_errored)
+		return FALSE
+	return !ds_alive || !silent()
+
+/// От панели нет сообщений дольше TGUI_PANEL_SILENT_LIMIT.
+/datum/tgui_panel/proc/silent()
+	return world.time - last_message_at > TGUI_PANEL_SILENT_LIMIT
+
+/// Зовёт панель записать историю чата, пока игрок без ввода, не чаще раза в CHAT_HISTORY_SAVE_EVERY. TRUE - позвали.
+/datum/tgui_panel/proc/offer_history_save()
+	if(!client || reloading || !is_ready() || window.fatally_errored || world.time < next_history_save_offer)
+		return FALSE
+	if(world.time - client.last_activity < CHAT_HISTORY_SAVE_IDLE)
+		return FALSE
+	next_history_save_offer = world.time + CHAT_HISTORY_SAVE_EVERY
+	window.send_message("chat/saveIdle")
+	return TRUE
+
 /**
  * public
  *
@@ -41,6 +67,7 @@
  */
 /datum/tgui_panel/proc/initialize(force = FALSE)
 	set waitfor = FALSE
+	reloading = TRUE
 	// Minimal sleep to defer initialization to after client constructor
 	sleep(1)
 	initialized_at = world.time
@@ -70,17 +97,25 @@
  * Callback for handling incoming tgui messages.
  */
 /datum/tgui_panel/proc/on_message(type, payload, href_list)
+	last_message_at = world.time
+	if(type == "ping")
+		var/list/metrics = ping_payload_take_metrics(payload)
+		if(islist(metrics) && client)
+			client.get_ping_diag().record_browser(metrics["loopLag"], metrics["fps"], metrics["hidden"], metrics["rtt"], metrics["chatMessages"])
+		return FALSE
 	if(type == "ready")
 		// Масштаб окна панель получает один раз, здесь, а dpi едет отдельным winget - ждём его ответа.
 		var/dpi_deadline = world.time + TGUI_PANEL_DPI_WAIT
 		UNTIL(!client || client.window_scaling_resolved || world.time > dpi_deadline)
 		if(QDELETED(src) || !client)
+			reloading = FALSE
 			return FALSE
 		broken = FALSE
 		// Switch to new UI now that the panel is actually loaded.
 		// Respects the user's explicit choice to use legacy chat.
 		if(!client.use_legacy_chat)
 			winset(client, "legacy_output_selector", "left=output_browser")
+		reloading = FALSE
 		window.send_message("update", list(
 			"config" = list(
 				"client" = list(

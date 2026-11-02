@@ -606,7 +606,7 @@ const Preview = () => {
   // вместо персонажа видны лишь отдельные оверлеи. Переоткрытие окна скрывает проблему.
   return (
     <Section fill title="Внешний вид" className="CharacterSetup__preview"
-      buttons={<Button icon="palette" tooltip="Выбрать тему" aria-label="Выбрать тему"
+      buttons={<Button icon="palette" tooltip="Выбрать тему" tooltipPosition="left" aria-label="Выбрать тему"
         onClick={() => act('pick_theme')} />}>
 
       <div className="CharacterSetup__preview-toolbar">
@@ -621,6 +621,7 @@ const Preview = () => {
               icon={PREVIEW_MODES[mode]?.icon || 'user'}
               selected={data.previewPref === mode}
               content={PREVIEW_MODES[mode]?.label || mode}
+              tooltipPosition="left"
               onClick={() => act('set_preview_mode', { mode })}
             />
           ))}
@@ -629,6 +630,7 @@ const Preview = () => {
             checked={!!data.previewAroused}
             content="Возбуждён"
             tooltip="Показывать возбуждённые гениталии в выбранном режиме просмотра"
+            tooltipPosition="left"
             onClick={() =>
               act('set_preview_aroused', { value: !data.previewAroused })
             }
@@ -644,6 +646,7 @@ const Preview = () => {
             selected={autoFit}
             content="Крупно"
             tooltip="Подогнать область под текущее тело, чтобы лучше рассмотреть персонажа"
+            tooltipPosition="left"
             onClick={() => act('set_preview_auto_fit', { value: true })}
           />
           <Button
@@ -652,6 +655,7 @@ const Preview = () => {
             selected={!autoFit}
             content="Сравнение размеров"
             tooltip="Сохранять общий масштаб камеры при изменении размера тела"
+            tooltipPosition="left"
             onClick={() => act('set_preview_auto_fit', { value: false })}
           />
         </div>
@@ -659,6 +663,7 @@ const Preview = () => {
           <SelectRow
             over
             label="Фон превью"
+            tooltipPosition="left"
             value={backgroundStyle === 'texture' ? 'texture:' + data.previewBackground : backgroundStyle}
             options={backgroundOptions}
             onCycle={(dir) => act('set_preview_background', { dir })}
@@ -692,28 +697,29 @@ const Preview = () => {
         </Box>
         {!!data.previewSingleView && (
           <div className="CharacterSetup__preview-rotation" data-search-label="Поворот">
-            <Button className="CharacterSetup__icon-button" icon="undo" tooltip="Повернуть влево" aria-label="Повернуть влево"
+            <Button className="CharacterSetup__icon-button" icon="undo" tooltip="Повернуть влево" tooltipPosition="left" aria-label="Повернуть влево"
               onClick={() => act('rotate_preview', { direction: 'left' })} />
-            <Button fluid content={directionLabel} tooltip="Вернуть вид спереди"
+            <Button fluid content={directionLabel} tooltip="Вернуть вид спереди" tooltipPosition="left"
               onClick={() => act('rotate_preview', { direction: 'front' })} />
-            <Button className="CharacterSetup__icon-button" icon="redo" tooltip="Повернуть вправо" aria-label="Повернуть вправо"
+            <Button className="CharacterSetup__icon-button" icon="redo" tooltip="Повернуть вправо" tooltipPosition="left" aria-label="Повернуть вправо"
               onClick={() => act('rotate_preview', { direction: 'right' })} />
           </div>
         )}
         <div className="CharacterSetup__preview-zoom" data-search-label="Приближение">
-          <Button className="CharacterSetup__icon-button" icon="search-minus" tooltip="Отдалить" aria-label="Отдалить"
+          <Button className="CharacterSetup__icon-button" icon="search-minus" tooltip="Отдалить" tooltipPosition="left" aria-label="Отдалить"
             disabled={zoom <= 0.5} onClick={() => act('set_preview_zoom', { value: zoom - 0.25 })} />
           <NumberInput width="100%" height="28px" value={Math.round(zoom * 100)} minValue={50} maxValue={300} step={25}
             format={(value: number) => `${value}%`}
             onChange={(event, value) => act('set_preview_zoom', { value: value / 100 })} />
-          <Button className="CharacterSetup__icon-button" icon="search-plus" tooltip="Приблизить" aria-label="Приблизить"
+          <Button className="CharacterSetup__icon-button" icon="search-plus" tooltip="Приблизить" tooltipPosition="left" aria-label="Приблизить"
             disabled={zoom >= 3} onClick={() => act('set_preview_zoom', { value: zoom + 0.25 })} />
-          <Button className="CharacterSetup__icon-button" icon="expand-arrows-alt" tooltip="Сбросить приближение до 100%" aria-label="Сбросить масштаб"
+          <Button className="CharacterSetup__icon-button" icon="expand-arrows-alt" tooltip="Сбросить приближение до 100%" tooltipPosition="left" aria-label="Сбросить масштаб"
             disabled={zoom === 1} onClick={() => act('reset_preview_camera')} />
         </div>
         {!autoFit && (
           <Button.Checkbox fluid mt={0.5} checked={!!data.previewReference} content="Силуэт 100%"
             tooltip="Показать слева полупрозрачный силуэт текущего персонажа в размере 100%, выровненный по ногам"
+            tooltipPosition="left"
             onClick={() => act('set_preview_reference', { value: !data.previewReference })} />
         )}
       </div>

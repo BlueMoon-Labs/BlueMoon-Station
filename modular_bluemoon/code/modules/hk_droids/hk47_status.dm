@@ -432,7 +432,10 @@
 	add_fingerprint(user)
 	user.visible_message(span_notice("[user] предъявляет [icon2html(src, viewers(user))] [name]. [license_text()]"), span_notice("Вы предъявляете лицензию. [license_text()]"))
 
-/obj/item/card/id/hk47_license/bank_examine(mob/user)
+/obj/item/card/id/hk47_license/examine_basic_info(mob/user)
+	return list()
+
+/obj/item/card/id/hk47_license/examine_banking_info(mob/user)
 	return list()
 
 /obj/item/card/id/hk47_license/bodyguard

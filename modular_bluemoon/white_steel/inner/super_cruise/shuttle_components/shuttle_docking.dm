@@ -53,25 +53,37 @@
 	GLOB.navigation_computers -= src
 
 /obj/machinery/computer/shuttle_flight/proc/GrantActions(mob/living/user)
-	if(off_action)
-		off_action.target = user
-		off_action.Grant(user)
-		actions += off_action
+	if(QDELETED(off_action))
+		off_action = new
+	if(QDELETED(rotate_action))
+		rotate_action = new
+	if(QDELETED(place_action))
+		place_action = new
+	if(QDELETED(docker_action))
+		docker_action = new
+	for(var/datum/action/granted as anything in list(off_action, rotate_action, place_action, docker_action))
+		granted.target = user
+		granted.Grant(user)
+		actions += granted
+		// Кнопка удаляется вместе с телом оператора, а переменная консоли держала бы её
+		RegisterSignal(granted, COMSIG_PARENT_QDELETING, PROC_REF(forget_action), override = TRUE)
 
-	if(rotate_action)
-		rotate_action.target = user
-		rotate_action.Grant(user)
-		actions += rotate_action
+/obj/machinery/computer/shuttle_flight/proc/forget_action(datum/action/source)
+	SIGNAL_HANDLER
+	actions -= source
+	if(off_action == source)
+		off_action = null
+	if(rotate_action == source)
+		rotate_action = null
+	if(place_action == source)
+		place_action = null
+	if(docker_action == source)
+		docker_action = null
 
-	if(place_action)
-		place_action.target = user
-		place_action.Grant(user)
-		actions += place_action
-
-	if(docker_action)
-		docker_action.target = user
-		docker_action.Grant(user)
-		actions += docker_action
+/obj/machinery/computer/shuttle_flight/proc/forget_port(datum/source)
+	SIGNAL_HANDLER
+	if(my_port == source)
+		my_port = null
 
 /obj/machinery/computer/shuttle_flight/proc/CreateEye()
 	shuttle_port = SSshuttle.getShuttle(shuttleId)
@@ -207,6 +219,7 @@
 
 	///Make one use port that deleted after fly off, to don't lose info that need on to properly fly off.
 	if(my_port)
+		UnregisterSignal(my_port, COMSIG_PARENT_QDELETING)
 		my_port.delete_after = TRUE
 		my_port.shuttle_id = null
 		my_port.name = "Старый [my_port.name]"
@@ -224,6 +237,8 @@
 		my_port.dwidth = shuttle_port.dwidth
 		my_port.hidden = shuttle_port.hidden
 		my_port.register(TRUE)
+		// Точку на руине удаляет очистка z-уровня, консоль её не держит
+		RegisterSignal(my_port, COMSIG_PARENT_QDELETING, PROC_REF(forget_port))
 	my_port.setDir(the_eye.dir)
 	my_port.forceMove(locate(eyeobj.x, eyeobj.y, eyeobj.z))
 

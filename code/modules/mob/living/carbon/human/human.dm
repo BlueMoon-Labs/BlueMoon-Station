@@ -12,13 +12,13 @@
 	create_bodyparts()
 
 	setup_human_dna()
+	physiology = new()
 
 	if(dna.species)
 		set_species(dna.species.type)
 
 	//initialise organs
 	create_internal_organs() //most of it is done in set_species now, this is only for parent call
-	physiology = new()
 
 	AddComponent(/datum/component/personal_crafting)
 	AddComponent(/datum/component/footstep, FOOTSTEP_MOB_HUMAN, 1, 2)

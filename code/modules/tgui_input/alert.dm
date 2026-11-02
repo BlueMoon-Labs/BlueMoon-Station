@@ -100,7 +100,9 @@
 	ui = SStgui.try_update_ui(user, src, ui)
 	if(!ui)
 		ui = new(user, src, "AlertModal")
-		ui.open()
+		if(!ui.open())
+			qdel(ui)
+			ui_close(user)
 
 /datum/tgui_alert/ui_close(mob/user)
 	. = ..()
@@ -190,6 +192,10 @@
 /datum/tgui_alert/async/Destroy(force, ...)
 	QDEL_NULL(callback)
 	. = ..()
+
+/datum/tgui_alert/async/ui_close(mob/user)
+	. = ..()
+	qdel(src)
 
 /datum/tgui_alert/async/set_choice(choice)
 	. = ..()

@@ -491,12 +491,16 @@
 			offset = GRAB_PIXEL_SHIFT_NECK
 		if(GRAB_KILL)
 			offset = GRAB_PIXEL_SHIFT_NECK
-	M.setDir(get_dir(M, src))
-	var/dir_filter = M.dir
+	// На одной клетке направления нет: прежний dir оставлял тело сдвинутым к месту, где тянущий был раньше
+	var/dir_filter = get_dir(M, src)
+	if(dir_filter)
+		M.setDir(dir_filter)
+	update_pull_layer(M)
 	if(ISDIAGONALDIR(dir_filter))
 		dir_filter = EWCOMPONENT(dir_filter)
-	var/target_x = 0
-	var/target_y = 0
+	// От исходного смещения спрайта: у крупных мобов оно ненулевое
+	var/target_x = M.get_standard_pixel_x_offset()
+	var/target_y = M.get_standard_pixel_y_offset()
 	switch(dir_filter)
 		if(NORTH)
 			target_y += offset
@@ -514,13 +518,46 @@
 				M.update_transform(FALSE)
 				M.lying_prev = M.lying
 			target_x -= offset
-	if(target_x || target_y)
+	if(target_x != M.pixel_x || target_y != M.pixel_y)
 		animate(M, pixel_x = target_x, pixel_y = target_y, time = 3, flags = ANIMATION_PARALLEL)
 
+/// Сдвинутый к тянущему спрайт перекрывает его: тот, кто южнее, рисуется поверх. Сбоку и на одной клетке тащимый под тянущим.
+/// Дальше по цепочке слой каждого считается от нового слоя предыдущего.
+/mob/living/proc/update_pull_layer(mob/living/M)
+	var/mob/living/puller = src
+	var/list/chain = list(src)
+	while(isliving(M) && !(M in chain))
+		chain += M
+		var/base = M.get_unshifted_layer()
+		var/target = base
+		// Лежачий и так под стоящими, ручной сдвиг слоя тоже не трогаем
+		if(base == puller.get_unshifted_layer())
+			target = puller.layer + ((get_dir(M, puller) & NORTH) ? PULL_LAYER_STEP : -PULL_LAYER_STEP)
+		if(M.layer == target)
+			return
+		M.pull_layer_base = base
+		M.pull_layer_applied = target
+		M.layer = target
+		puller = M
+		M = M.pulling
+
+/mob/living/proc/get_unshifted_layer()
+	return (!isnull(pull_layer_applied) && layer == pull_layer_applied) ? pull_layer_base : layer
+
+/mob/living/proc/reset_pull_layer()
+	if(!isnull(pull_layer_applied) && layer == pull_layer_applied)
+		layer = pull_layer_base
+	pull_layer_base = null
+	pull_layer_applied = null
+	if(isliving(pulling))
+		update_pull_layer(pulling)
+
 /mob/living/proc/reset_pull_offsets(mob/living/M, override)
+	if(isliving(M))
+		M.reset_pull_layer()
 	if(!override && M.buckled)
 		return
-	animate(M, pixel_x = 0, pixel_y = 0, time = 3, flags = ANIMATION_PARALLEL)
+	animate(M, pixel_x = M.get_standard_pixel_x_offset(), pixel_y = M.get_standard_pixel_y_offset(), time = 3, flags = ANIMATION_PARALLEL)
 
 //mob verbs are a lot faster than object verbs
 //for more info on why this is not atom/pull, see examinate() in mob.dm
@@ -807,8 +844,10 @@
 	cure_nearsighted()
 	cure_blind()
 	cure_husk()
+	if(admin_revive)
+		cure_fakedeath(/datum/reagent/toxin/zombiepowder)
 	hallucination = 0
-	heal_overall_damage(INFINITY, INFINITY, INFINITY, FALSE, FALSE, TRUE, forced = admin_revive) //heal brute and burn dmg on both organic and robotic limbs, and update health right away.
+	heal_overall_damage(INFINITY, INFINITY, INFINITY, FALSE, FALSE, FALSE, forced = admin_revive) // Лечим органические и роботизированные конечности; здоровье пересчитаем после полного восстановления.
 	ExtinguishMob()
 	fire_stacks = 0
 	confused = 0
@@ -821,6 +860,8 @@
 				var/obj/item/organ/O = organ
 				O.organ_flags &= ~ORGAN_SYNTHETIC_EMP // BLUEMOON ADD
 				O.setOrganDamage(0)
+	// Пересчёт обязателен и без повреждений конечностей: OXY, TOX и CLONE обнулены без обновления.
+	updatehealth()
 
 //proc called by revive(), to check if we can actually ressuscitate the mob (we don't want to revive him and have him instantly die again)
 /mob/living/proc/can_be_revived()
