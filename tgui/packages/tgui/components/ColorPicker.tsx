@@ -1,3 +1,4 @@
+import { KEY_ENTER, KEY_ESCAPE } from 'common/keycodes';
 import { clamp } from 'common/math';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
@@ -410,6 +411,7 @@ export const ColorPickerPanel = (props: {
     hexToHsv(value)
   );
   const [draft, setDraft] = useState(() => safeHex(value));
+  const draftRef = useRef(draft);
   const [colorModel, setColorModel] = useState<'RGB' | 'HSL'>('RGB');
   const [history, setRecent] = useLocalState<string[]>(
     'colorPickerHistory',
@@ -419,13 +421,18 @@ export const ColorPickerPanel = (props: {
   const hex = hsvToHex(...hsv);
   const hsl = hsvToHsl(...hsv);
   const channels = colorModel === 'RGB' ? ['R', 'G', 'B'] : ['H', 'S', 'L'];
+  // Enter из числового поля приходит до перерисовки с новым значением канала.
+  const updateDraft = (next: string) => {
+    draftRef.current = next;
+    setDraft(next);
+  };
   const select = (next: string) => {
     setHsv(hexToHsv(next));
-    setDraft(safeHex(next));
+    updateDraft(safeHex(next));
   };
   const selectHsv = (next: [number, number, number]) => {
     setHsv(next);
-    setDraft(hsvToHex(...next));
+    updateDraft(hsvToHex(...next));
   };
   const valid = normalizeHex(draft);
   const commit = (color: string) => {
@@ -439,8 +446,20 @@ export const ColorPickerPanel = (props: {
     onCommit(color);
   };
   const apply = () => {
-    if (valid) commit(valid);
+    const color = normalizeHex(draftRef.current);
+    if (color) commit(color);
   };
+  useEffect(() => {
+    const escape = (event: KeyboardEvent) => {
+      if (event.key === KEY_ESCAPE) {
+        event.preventDefault();
+        event.stopPropagation();
+        if (!event.repeat) onCancel();
+      }
+    };
+    document.addEventListener('keydown', escape, true);
+    return () => document.removeEventListener('keydown', escape, true);
+  }, [onCancel]);
   const swatches = (
     colors: string[],
     position?: (index: number) => React.CSSProperties
@@ -467,6 +486,13 @@ export const ColorPickerPanel = (props: {
       role="dialog"
       aria-modal="true"
       aria-label={title || 'Выбор цвета'}
+      onKeyDown={(event) => {
+        if (event.key !== KEY_ENTER || event.nativeEvent.isComposing) return;
+        event.stopPropagation();
+        if (event.defaultPrevented || event.repeat) return;
+        event.preventDefault();
+        apply();
+      }}
     >
       {!!title && <Box className="ColorPicker__title">{title}</Box>}
       {!!message && (
@@ -604,11 +630,10 @@ export const ColorPickerPanel = (props: {
                     value={draft}
                     placeholder="#RRGGBB"
                     onInput={(event, next) => {
-                      setDraft(uppercaseHexInput(event, next));
+                      updateDraft(uppercaseHexInput(event, next));
                       const normalized = normalizeHex(next);
                       if (normalized) setHsv(hexToHsv(normalized));
                     }}
-                    onEnter={apply}
                   />
                 </div>
               </div>
@@ -686,19 +711,6 @@ export const ColorPicker = (props: {
     setOpen(false);
     anchorRef.current?.focus();
   };
-  useEffect(() => {
-    if (!open) return;
-    const escape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        event.stopPropagation();
-        setOpen(false);
-        anchorRef.current?.focus();
-      }
-    };
-    document.addEventListener('keydown', escape, true);
-    return () => document.removeEventListener('keydown', escape, true);
-  }, [open]);
   const root =
     anchorRef.current?.closest(portalRoot || '.Layout') || document.body;
   return (
